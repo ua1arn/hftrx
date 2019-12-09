@@ -1177,7 +1177,24 @@ static RAMFUNC void spool_adcdonebundle(void)
 }
 #endif /* WITHCPUADCHW */
 
-#if CPUSTYLE_STM32F
+#if CPUSTYLE_STM32MP1
+
+	#if WITHELKEY
+
+	// 1/20 dot length interval timer
+	void
+	TIM3_IRQHandler(void)
+	{
+		const portholder_t st = TIM3->SR;
+		if ((st & TIM_SR_UIF) != 0)
+		{
+			TIM3->SR = ~ TIM_SR_UIF;	// clear UIF interrupt request
+			spool_elkeybundle();
+		}
+	}
+	#endif /* WITHELKEY */
+
+#elif CPUSTYLE_STM32F
 
 	void  
 	SysTick_Handler(void)
@@ -4156,8 +4173,8 @@ void hardware_spi_master_initialize(void)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_APB2ENSETR = RCC_MC_APB2ENSETR_SPI1EN; // подать тактирование
-	(void) RCC->MC_APB2ENSETR;
+	RCC->MP_APB2ENSETR = RCC_MC_APB2ENSETR_SPI1EN; // подать тактирование
+	(void) RCC->MP_APB2ENSETR;
 	/* настраиваем в режиме disconnect */
 	SPIIO_INITIALIZE();
 
@@ -4337,7 +4354,7 @@ void hardware_spi_master_setfreq(uint_fast8_t spispeedindex, int_fast32_t spispe
 	const uint_fast8_t prei = calcdivider(calcdivround_per_ck(spispeed), STM32F_SPIBR_WIDTH, STM32F_SPIBR_TAPS, & value, 1);
 	const uint_fast32_t cfg1baudrate = (prei * SPI_CFG1_MBR_0) & SPI_CFG1_MBR_Msk;
 	const uint_fast32_t cfg1 = cfg1baudrate;// | (SPI_CFG1_CRCSIZE_0 * 7);
-	debug_printf_P(PSTR("hardware_spi_master_setfreq: prei=%u, value=%u, spispeed=%u\n"), prei, value, spispeed);
+	//debug_printf_P(PSTR("hardware_spi_master_setfreq: prei=%u, value=%u, spispeed=%u\n"), prei, value, spispeed);
 
 	spi_cfg1_val8w [spispeedindex] = cfg1 |
 		7 * SPI_CFG1_DSIZE_0 |
@@ -6123,22 +6140,18 @@ hardware_elkey_timer_initialize(void)
 #elif CPUSTYLE_STM32H7XX
 
 	RCC->APB1LENR |= RCC_APB1LENR_TIM3EN;   // подаем тактирование на TIM3
-	__DSB();
+	(void) RCC->APB1LENR;
 	TIM3->DIER = TIM_DIER_UIE;        	 // разрешить событие от таймера
 
-	NVIC_SetVector(TIM3_IRQn, (uintptr_t) & TIM3_IRQHandler);
-	NVIC_SetPriority(TIM3_IRQn, ARM_SYSTEM_PRIORITY);
-	NVIC_EnableIRQ(TIM3_IRQn);		// enable TIM3_IRQHandler();
+	arm_hardware_set_handler_system(TIM3_IRQn, TIM3_IRQHandler);
 
 #elif CPUSTYLE_STM32F
 
 	RCC->APB1ENR |= RCC_APB1ENR_TIM3EN;   // подаем тактирование на TIM3
-	__DSB();
+	(void) RCC->APB1ENR;
 	TIM3->DIER = TIM_DIER_UIE;        	 // разрешить событие от таймера
 
-	NVIC_SetVector(TIM3_IRQn, (uintptr_t) & TIM3_IRQHandler);
-	NVIC_SetPriority(TIM3_IRQn, ARM_SYSTEM_PRIORITY);
-	NVIC_EnableIRQ(TIM3_IRQn);		// enable TIM3_IRQHandler();
+	arm_hardware_set_handler_system(TIM3_IRQn, TIM3_IRQHandler);
 
 #elif CPUSTYLE_R7S721
 
@@ -6156,8 +6169,12 @@ hardware_elkey_timer_initialize(void)
 	OSTM1.OSTMnTS = 0x01u;      /* Start counting */
 
 #elif CPUSTYLE_STM32MP1
-	#warning Insert code for CPUSTYLE_STM32MP1
 
+	RCC->MP_APB1ENSETR |= RCC_MC_APB1ENSETR_TIM3EN;   // подаем тактирование на TIM3
+	(void) RCC->MP_APB1ENSETR;
+	TIM3->DIER = TIM_DIER_UIE;        	 // разрешить событие от таймера
+
+	arm_hardware_set_handler_system(TIM3_IRQn, TIM3_IRQHandler);
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -6208,7 +6225,7 @@ void hardware_elkey_set_speed(uint_fast32_t ticksfreq)
 	// разрешение прерываний на входе в PMIC
 	PMIC.CTRL |= (PMIC_HILVLEN_bm | PMIC_MEDLVLEN_bm | PMIC_LOLVLEN_bm);
 	
-#elif CPUSTYLE_STM32H7XX
+#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 	// TIM2 & TIM5 on CPUSTYLE_STM32F4XX have 32-bit CNT and ARR registers
 	// TIM7 located on APB1
 	// TIM7 on APB1
@@ -6241,10 +6258,6 @@ void hardware_elkey_set_speed(uint_fast32_t ticksfreq)
 		0 * (1U << 1) |	// Interval Timer Mode
 		1 * (1U << 0) |	// Enables the interrupts when counting starts.
 		0;
-
-#elif CPUSTYLE_STM32MP1
-	#warning Insert code for CPUSTYLE_STM32MP1
-
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -6761,7 +6774,7 @@ void RAMFUNC_NONILINE local_delay_us(int timeUS)
 
 	#elif CPUSTYLE_STM32MP1
 		#warning Update code for CPUSTYLE_STM32MP1
-		const int top = timeUS * 13800 / (CPU_FREQ / 1000000);
+		const int top = timeUS * 950 / (CPU_FREQ / 1000000);
 
 	#else
 		#error TODO: calibrate local_delay_us constant
@@ -9228,7 +9241,230 @@ uint_fast32_t cpu_getdebugticks(void)
 
 static void vectors_relocate(void);
 
-#if CPUSTYLE_STM32MP1 && defined (TZPC)
+#if CPUSTYLE_STM32MP1
+
+void stm32mp1_pll_initialize(void)
+{
+
+	//return;
+	// PLL1 DIVN=0x1f. DIVM=0x4, DIVP=0x0
+	// HSI 64MHz/5*32 = 409.6 MHz
+	// HSI 64MHz/5*42 = 537.6 MHz
+	//RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_TZPCEN;
+	//(void) RCC->MP_APB5ENSETR;
+	RCC->TZCR &= ~ (RCC_TZCR_MCKPROT);
+	RCC->TZCR &= ~ (RCC_TZCR_TZEN);
+
+	// переключение на HSI на всякий случай перед программированием PLL
+	// HSI ON
+	RCC->OCENSETR = RCC_OCENSETR_HSION;
+	while ((RCC->OCRDYR & RCC_OCRDYR_HSIRDY) == 0)
+		;
+	//0x0: HSI selected as AXI sub-system clock (hsi_ck) (default after reset)
+	//0x1: HSE selected as AXI sub-system clock (hse_ck)
+	//0x2: PLL2 selected as AXI sub-system clock (pll2_p_ck)
+	//others: axiss_ck is gated
+	RCC->ASSCKSELR = (RCC->ASSCKSELR & ~ (RCC_ASSCKSELR_AXISSRC_Msk)) |
+			(0x00 << RCC_ASSCKSELR_AXISSRC_Pos) |	// HSI
+			0;
+	while ((RCC->ASSCKSELR & RCC_ASSCKSELR_AXISSRCRDY_Msk) == 0)
+		;
+	//	0x0: HSI selected as MPU sub-system clock (hsi_ck) (default after reset)
+	//	0x1: HSE selected as MPU sub-system clock (hse_ck)
+	//	0x2: PLL1 selected as MPU sub-system clock (pll1_p_ck)
+	//	0x3: PLL1 via MPUDIV is selected as MPU sub-system clock (pll1_p_ck / 2 MPUDIV).
+	RCC->MPCKSELR = (RCC->MPCKSELR & ~ (RCC_MPCKSELR_MPUSRC_Msk)) |
+		(0x00 << RCC_MPCKSELR_MPUSRC_Pos) |	// HSI
+		0;
+	while((RCC->MPCKSELR & RCC_MPCKSELR_MPUSRCRDY_Msk) == 0)
+		;
+
+	// Stop PLL2
+	RCC->PLL2CR &= ~ RCC_PLL2CR_PLLON_Msk;
+	(void) RCC->PLL2CR;
+
+	// Stop PLL1
+	RCC->PLL1CR &= ~ RCC_PLL1CR_DIVPEN_Msk;
+	(void) RCC->PLL1CR;
+	RCC->PLL1CR &= ~ RCC_PLL1CR_PLLON_Msk;
+	(void) RCC->PLL1CR;
+	while ((RCC->PLL1CR & RCC_PLL1CR_PLL1RDY_Msk) != 0)
+		;
+
+	#if WITHCPUXOSC
+		#error rr1
+		// с внешним генератором
+		// HSEBYP
+		RCC->OCENSETR = RCC_OCENSETR_HSEBYP;
+		(void) RCC->OCENSETR;
+
+	#elif WITHCPUXTAL
+		//#error rr2
+		// с внешним кварцем
+		// HSE ON
+		RCC->OCENSETR = RCC_OCENSETR_HSEON;
+		(void) RCC->OCENSETR;
+		while ((RCC->OCRDYR & RCC_OCRDYR_HSERDY) == 0)
+			;
+
+	#elif CPUSTYLE_STM32MP1
+		// На внутреннем генераторе
+		RCC->OCENCLRR = RCC_OCENCLRR_HSEON;
+		(void) RCC->OCENCLRR;
+
+	#endif /* WITHCPUXTAL */
+
+	// PLL12 source mux
+	// 0x0: HSI selected as PLL clock (hsi_ck) (default after reset)
+	// 0x1: HSE selected as PLL clock (hse_ck)
+	RCC->RCK12SELR = (RCC->RCK12SELR & ~ (RCC_RCK12SELR_PLL12SRC_Msk)) |
+	#if WITHCPUXOSC || WITHCPUXTAL
+		// с внешним генератором
+		// с внешним кварцем
+		(0x01 << RCC_RCK12SELR_PLL12SRC_Pos) |	// HSE
+	#else
+		// На внутреннем генераторе
+		(0x00 << RCC_RCK12SELR_PLL12SRC_Pos) |	// HSI
+	#endif
+		0;
+	while ((RCC->RCK12SELR & RCC_RCK12SELR_PLL12SRCRDY_Msk) == 0)
+		;
+
+	RCC->PLL1CFGR1 = (RCC->PLL1CFGR1 & ~ (RCC_PLL1CFGR1_DIVN_Msk | RCC_PLL1CFGR1_DIVM1_Msk)) |
+		((PLL1DIVM - 1) << RCC_PLL1CFGR1_DIVM1_Pos) |
+		((PLL1DIVN - 1) << RCC_PLL1CFGR1_DIVN_Pos) |
+		0;
+
+	RCC->PLL1CFGR2 = (RCC->PLL1CFGR2 & ~ (RCC_PLL1CFGR2_DIVP_Msk | RCC_PLL1CFGR2_DIVQ_Msk | RCC_PLL1CFGR2_DIVR_Msk)) |
+		((PLL1DIVP - 1) << RCC_PLL1CFGR2_DIVP_Pos) |
+		((PLL1DIVQ - 1) << RCC_PLL1CFGR2_DIVQ_Pos) |
+		((PLL1DIVR - 1) << RCC_PLL1CFGR2_DIVR_Pos) |
+		0;
+
+	RCC->PLL1CR |= RCC_PLL1CR_DIVPEN_Msk;	// P output eable
+	(void) RCC->PLL1CR;
+
+	RCC->PLL1CR |= RCC_PLL1CR_PLLON_Msk;
+	while ((RCC->PLL1CR & RCC_PLL1CR_PLL1RDY_Msk) == 0)
+		;
+
+	RCC->PLL1CR &= ~ RCC_PLL1CR_SSCG_CTRL_Msk;
+
+	RCC->PLL2CFGR1 = (RCC->PLL2CFGR1 & ~ (RCC_PLL2CFGR1_DIVN_Msk | RCC_PLL2CFGR1_DIVM2_Msk)) |
+		((PLL2DIVN - 1) << RCC_PLL2CFGR1_DIVN_Pos) |
+		((PLL2DIVM - 1) << RCC_PLL2CFGR1_DIVM2_Pos) |
+		0;
+
+	RCC->PLL2CFGR2 = (RCC->PLL2CFGR2 & ~ (RCC_PLL2CFGR2_DIVP_Msk | RCC_PLL2CFGR2_DIVQ_Msk | RCC_PLL2CFGR2_DIVR_Msk)) |
+		((PLL2DIVP - 1) << RCC_PLL2CFGR2_DIVP_Pos) |	// pll2_p_ck - AXI clock (1..128 -> 0x00..0x7f)
+		((PLL2DIVQ - 1) << RCC_PLL2CFGR2_DIVQ_Pos) |	// GPU clock (1..128 -> 0x00..0x7f)
+		((PLL2DIVR - 1) << RCC_PLL2CFGR2_DIVR_Pos) |	// DDR clock (1..128 -> 0x00..0x7f)
+		0;
+
+	RCC->PLL2CR |= RCC_PLL2CR_DIVPEN_Msk;	// pll2_p_ck - AXI clock
+	(void) RCC->PLL2CR;
+
+	RCC->PLL2CR |= RCC_PLL2CR_DIVQEN_Msk;	// GPU clock
+	(void) RCC->PLL2CR;
+
+#if WITHSDRAMHW
+	RCC->PLL2CR |= RCC_PLL2CR_DIVREN_Msk;	// DDR clock
+	(void) RCC->PLL2CR;
+#endif /* WITHSDRAMHW */
+
+	RCC->PLL2CR |= RCC_PLL2CR_PLLON_Msk;
+	while ((RCC->PLL2CR & RCC_PLL2CR_PLL2RDY_Msk) == 0)
+		;
+
+	RCC->PLL2CR &= ~ RCC_PLL2CR_SSCG_CTRL_Msk;
+
+	//0x0: HSI selected as AXI sub-system clock (hsi_ck) (default after reset)
+	//0x1: HSE selected as AXI sub-system clock (hse_ck)
+	//0x2: PLL2 selected as AXI sub-system clock (pll2_p_ck)
+	//others: axiss_ck is gated
+	RCC->ASSCKSELR = (RCC->ASSCKSELR & ~ (RCC_ASSCKSELR_AXISSRC_Msk)) |
+			(0x02 << RCC_ASSCKSELR_AXISSRC_Pos) |	// PLL2
+			0;
+	while ((RCC->ASSCKSELR & RCC_ASSCKSELR_AXISSRCRDY_Msk) == 0)
+		;
+
+	//	0x0: HSI selected as MPU sub-system clock (hsi_ck) (default after reset)
+	//	0x1: HSE selected as MPU sub-system clock (hse_ck)
+	//	0x2: PLL1 selected as MPU sub-system clock (pll1_p_ck)
+	//	0x3: PLL1 via MPUDIV is selected as MPU sub-system clock (pll1_p_ck / 2 MPUDIV).
+	RCC->MPCKSELR = (RCC->MPCKSELR & ~ (RCC_MPCKSELR_MPUSRC_Msk)) |
+		(0x02 << RCC_MPCKSELR_MPUSRC_Pos) |	// PLL1
+		0;
+	while((RCC->MPCKSELR & RCC_MPCKSELR_MPUSRCRDY_Msk) == 0)
+		;
+
+	//0x0: hsi_ker_ck clock selected (default after reset)
+	//0x1: csi_ker_ck clock selected
+	//0x2: hse_ker_ck clock selected
+	//0x3: Clock disabled
+	RCC->CPERCKSELR = (RCC->CPERCKSELR & ~ (RCC_CPERCKSELR_CKPERSRC_Msk)) |
+		(0x00 << RCC_CPERCKSELR_CKPERSRC_Pos) |	// per_ck
+		0;
+	(void) RCC->CPERCKSELR;
+
+	// PLL3
+
+
+#if WITHUART1HW
+	// usart1
+	RCC->UART1CKSELR = (RCC->UART1CKSELR & ~ (RCC_UART1CKSELR_UART1SRC_Msk)) |
+		(0x02 << RCC_UART1CKSELR_UART1SRC_Pos) | // HSI
+		0;
+	(void) RCC->UART1CKSELR;
+#endif /* WITHUART1HW */
+
+#if WITHUART2HW
+	// usart2
+	//0x0: pclk1 clock selected as kernel peripheral clock (default after reset)
+	//0x1: pll4_q_ck clock selected as kernel peripheral clock
+	//0x2: hsi_ker_ck clock selected as kernel peripheral clock
+	//0x3: csi_ker_ck clock selected as kernel peripheral clock
+	//0x4: hse_ker_ck clock selected as kernel peripheral clock
+	RCC->UART24CKSELR = (RCC->UART24CKSELR & ~ (RCC_UART24CKSELR_UART24SRC_Msk)) |
+		(0x02 << RCC_UART24CKSELR_UART24SRC_Pos) |	// HSI
+		0;
+	(void) RCC->UART24CKSELR;
+#endif /* WITHUART2HW */
+
+#if WITHSPIHW
+	//0x0: pll4_p_ck clock selected as kernel peripheral clock (default after reset)
+	//0x1: pll3_q_ck clock selected as kernel peripheral clock
+	//0x2: I2S_CKIN clock selected as kernel peripheral clock
+	//0x3: per_ck clock selected as kernel peripheral clock
+	//0x4: pll3_r_ck clock selected as kernel peripheral clock
+	RCC->SPI2S1CKSELR = (RCC->SPI2S1CKSELR & ~ (RCC_SPI2S1CKSELR_SPI1SRC_Msk)) |
+		(0x03 << RCC_SPI2S1CKSELR_SPI1SRC_Pos) |	// per_ck
+		0;
+	(void) RCC->SPI2S1CKSELR;
+#endif /* WITHSPIHW */
+
+	// TIM2, TIM3, TIM4, TIM5, TIM6, TIM7, TIM12, TIM13 and TIM14.s
+	RCC->TIMG1PRER = (RCC->TIMG1PRER & ~ (RCC_TIMG1PRER_TIMG1PRE_Msk)) |
+		(0x00 << RCC_TIMG1PRER_TIMG1PRE_Pos) |
+		0;
+	(void) RCC->TIMG1PRER;
+	while ((RCC->TIMG1PRER & RCC_TIMG1PRER_TIMG1PRERDY_Msk) == 0)
+		;
+
+	// TIM1, TIM8, TIM15, TIM16, and TIM17.
+	RCC->TIMG2PRER = (RCC->TIMG2PRER & ~ (RCC_TIMG2PRER_TIMG2PRE_Msk)) |
+		(0x00 << RCC_TIMG2PRER_TIMG2PRE_Pos) |
+		0;
+	(void) RCC->TIMG2PRER;
+	while ((RCC->TIMG2PRER & RCC_TIMG2PRER_TIMG2PRERDY_Msk) == 0)
+		;
+
+#if WITHELKEY
+	// TIM3 used
+
+#endif /* WITHELKEY */
+}
+
 
 /* Extended TrustZone protection controller access function */
 static void FLASHMEMINITFUNC
@@ -9237,47 +9473,22 @@ tzpc_set_prot(
 	uint_fast8_t val	/* 0x00..0x03: protection style */
 	)
 {
-	const uint_fast8_t pos = (id % 16);
+	const uint_fast8_t pos = (id % 16) * 2;
 	const uint_fast8_t ix = (id / 16);
 	const uint_fast32_t mask = 0x03uL << pos;
 	volatile uint32_t * const reg = & TZPC->DECPROT0 + ix;
 	* reg = (* reg & ~ mask) | ((val << pos) & mask);
 }
 
-#endif /* CPUSTYLE_STM32MP1 && defined (TZPC) */
+#endif /* CPUSTYLE_STM32MP1 */
 
 /* функция вызывается из start-up до копирования в SRAM всех "быстрых" функций и до инициализации переменных
 */
 // watchdog disable, clock initialize, cache enable
-void 
+void
 FLASHMEMINITFUNC
 SystemInit(void)
 {
-#if CPUSTYLE_STM32MP1
-	RCC->TZCR &= ~ (RCC_TZCR_TZEN | RCC_TZCR_MCKPROT);
-	{
-		// LED blinking test
-		const uint_fast32_t mask = (1uL << 14);	// PA14 - GREEN LED LD5 on DK1/DK2 MB1272.pdf
-		for (;;)
-		{
-			arm_hardware_pioa_outputs(mask, 1 * mask);
-			local_delay_ms(250);
-			arm_hardware_pioa_outputs(mask, 0 * mask);
-			local_delay_ms(250);
-		}
-	}
-#endif /* CPUSTYLE_STM32MP1 */
-#if CPUSTYLE_STM32MP1
-
-	// Set peripheral is not secure (Read and Write by secure and non secure)
-	tzpc_set_prot(0, 0x03);		// STGENC
-	tzpc_set_prot(1, 0x03);		// BKPSRAM
-	tzpc_set_prot(3, 0x03);		// USART1
-	tzpc_set_prot(7, 0x03);		// RNG1
-	tzpc_set_prot(10, 0x03);	// DDRCTRL
-	tzpc_set_prot(11, 0x03);	// DDRPHYC
-
-#endif /* CPUSTYLE_STM32MP1 */
 #if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7
 
 	#if WITHDEBUG && WITHINTEGRATEDDSP && CPUSTYLE_ARM_CM7
@@ -9431,14 +9642,14 @@ SystemInit(void)
 
 // Плата с процессором STM32L051K6T (TQFP-32)
 
-#if ARM_STM32L051_TQFP32_CPUSTYLE_V1_H_INCLUDED
-	// power on bit
-	{
-		enum { WORKMASK = 1U << 11 };	/* PA11 */
-		arm_hardware_pioa_outputs(WORKMASK, WORKMASK * (1 != 0));
+	#if ARM_STM32L051_TQFP32_CPUSTYLE_V1_H_INCLUDED
+		// power on bit
+		{
+			enum { WORKMASK = 1U << 11 };	/* PA11 */
+			arm_hardware_pioa_outputs(WORKMASK, WORKMASK * (1 != 0));
 
-	}
-#endif /* ARM_STM32L051_TQFP32_CPUSTYLE_V1_H_INCLUDED */
+		}
+	#endif /* ARM_STM32L051_TQFP32_CPUSTYLE_V1_H_INCLUDED */
 	//lowlevel_stm32l0xx_pll_clock();
 	lowlevel_stm32l0xx_hsi_clock();
 
@@ -9538,16 +9749,60 @@ SystemInit(void)
 			0;
 	}
 
+#elif CPUSTYLE_STM32MP1
+
+	stm32mp1_pll_initialize();
+
+	/*
+	 * Interconnect update : select master using the port 1.
+	 * LTDC = AXI_M9.
+	 */
+	//mmio_write_32(syscfg_base + SYSCFG_ICNR, SYSCFG_ICNR_AXI_M9);
+	SYSCFG->ICNR = SYSCFG_ICNR_AXI_M9;
+	(void) SYSCFG->ICNR;
+
+	if (1)
+	{
+		//RCC->TZCR &= ~ (RCC_TZCR_TZEN | RCC_TZCR_MCKPROT);
+		RCC->TZCR &= ~ (RCC_TZCR_TZEN);
+		RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_TZPCEN;
+		(void) RCC->MP_APB5ENSETR;
+
+		// Set peripheral is not secure (Read and Write by secure and non secure)
+		tzpc_set_prot(0, 0x03);		// STGENC
+		tzpc_set_prot(1, 0x03);		// BKPSRAM
+		tzpc_set_prot(3, 0x03);		// USART1
+		tzpc_set_prot(7, 0x03);		// RNG1
+		tzpc_set_prot(10, 0x03);	// DDRCTRL
+		tzpc_set_prot(11, 0x03);	// DDRPHYC
+		tzpc_set_prot(32, 0x03);	// UART4
+	}
+
+	if (1)
+	{
+		// Hang-off QSPI memory
+		/*
+			QUADSPI_CLK 	PF10	AS pin 01	U13-38 (traced to PA7)
+			QUADSPI_BK1_NCS PB6 	AS pin 08	U12-21 (traced to PB12)
+			QUADSPI_BK1_IO0 PF8
+			QUADSPI_BK1_IO1 PF9
+		*/
+		arm_hardware_piof_inputs(1uL << 8);
+		arm_hardware_piof_inputs(1uL << 9);
+		arm_hardware_piof_inputs(1uL << 10);
+		arm_hardware_piob_inputs(1uL << 6);
+	}
+
 #else
-	//#error Undefined CPUSTYLE_XXX
+	#error Undefined CPUSTYLE_XXX
 
 #endif
 
-#if WITHSDRAMHW && WITHISBOOTLOADER
+#if 0000 && WITHSDRAMHW && WITHISBOOTLOADER
 	/* В процессоре есть внешняя память - если уже в ней то не трогаем */
 	arm_hardware_sdram_initialize();
 
-#elif WITHSDRAMHW && CTLSTYLE_V1D
+#elif 0000 && WITHSDRAMHW && CTLSTYLE_V1D
 	/* В процессоре есть внешняя память - только данные */
 	arm_hardware_sdram_initialize();
 
@@ -9558,13 +9813,29 @@ SystemInit(void)
 	vectors_relocate();
 
 #endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM0 || CPUSTYLE_ARM_CM7 */
+
 #if WITHDEBUG && ! WITHISBOOTLOADER
 	// В функции инициализации компорта есть NVIC_SetVector
 	// При вызове до перемещения таблиц прерывания получаем HardFault на STM32F7XXX
+	// UPD: пофиксено. Дебагер не вызывает NVIC_SetVector
 	HARDWARE_DEBUG_INITIALIZE();
 	HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
 
 #endif /* WITHDEBUG */
+
+#if WITHSDRAMHW && WITHISBOOTLOADER
+	/* В процессоре есть внешняя память - если уже в ней то не трогаем */
+	arm_hardware_sdram_initialize();
+
+#elif WITHSDRAMHW && CTLSTYLE_V1D
+	/* В процессоре есть внешняя память - только данные */
+	arm_hardware_sdram_initialize();
+
+#elif WITHSDRAMHW && CPUSTYLE_STM32MP157A
+	/* В процессоре есть внешняя память */
+	arm_hardware_sdram_initialize();
+
+#endif /* WITHSDRAMHW && WITHISBOOTLOADER */
 }
 
 #if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7 || CPUSTYLE_ARM_CM0
@@ -9633,7 +9904,8 @@ arm_cpu_CMx_initialize_NVIC(void)
 
 static void Userdef_INTC_Dummy_Interrupt(void)
 {
-	debug_printf_P(PSTR("Userdef_INTC_Dummy_Interrupt()\n"));
+	const IRQn_ID_t irqn = IRQ_GetActiveIRQ();
+	debug_printf_P(PSTR("Userdef_INTC_Dummy_Interrupt(), irqn=%d\n"), (int) irqn);
 	for (;;)
 		;
 }
@@ -10765,7 +11037,7 @@ arm_gic_initialize(void)
 	{
 	case 0x03:	PRINTF("arm_gic_initialize: ARM GICv1\n"); break;
 	case 0x04:	PRINTF("arm_gic_initialize: ARM GICv2\n"); break;
-	default:	PRINTF("arm_gic_initialize: ARM GICv? (code=%08lX)\n", (unsigned long) ICPIDR1); break;
+	default:	PRINTF("arm_gic_initialize: ARM GICv? (code=%08lX @%p)\n", (unsigned long) ICPIDR1, & ICPIDR1); break;
 	}
 
 
@@ -11168,7 +11440,35 @@ void cpu_initialize(void)
 		cpu_tms320f2833x_flash_waitstates(3, 5);		// commented in RAM configuration
 	#endif
 
-#elif CPUSTYLE_R7S721 || CPUSTYLE_STM32MP1
+#elif CPUSTYLE_STM32MP1
+
+	extern unsigned long __etext, __bss_start__, __bss_end__, __data_end__, __data_start__, __stack, __Vectors;
+
+	//debug_printf_P(PSTR("cpu_initialize1: CP15=%08lX, __data_start__=%p\n"), __get_SCTLR(), & __data_start__);
+	//debug_printf_P(PSTR("__etext=%p, __bss_start__=%p, __bss_end__=%p, __data_start__=%p, __data_end__=%p\n"), & __etext, & __bss_start__, & __bss_end__, & __data_start__, & __data_end__);
+	//debug_printf_P(PSTR("__stack=%p, SystemInit=%p, __Vectors=%p\n"), & __stack, SystemInit, & __Vectors);
+
+	const uintptr_t vbase = (uintptr_t) & __Vectors;
+	__set_VBAR(vbase);	 // Set Vector Base Address Register (bits 4..0 should be zero)
+	__set_MVBAR(vbase);	 // Set Vector Base Address Register (bits 4..0 should be zero) - на работу не вличет... но на всякий случай
+
+	__set_SCTLR(__get_SCTLR() & ~ SCTLR_V_Msk);	// v=0 - use VBAR as vectors address
+	__set_SCTLR(__get_SCTLR() & ~ SCTLR_A_Msk);	// 0 = Strict alignment fault checking disabled. This is the reset value.
+
+	//PRINTF("vbar=%08lX, mvbar=%08lX\n", __get_VBAR(), __get_MVBAR());
+
+	IRQn_ID_t irqn;
+	for (irqn = 0; irqn < 1020 /* IRQ_GIC_LINE_COUNT */; ++ irqn)
+	{
+		VERIFY(0 == IRQ_Disable(irqn));
+		//VERIFY(0 == IRQ_SetMode(irqn, modes [irqn]));
+		VERIFY(0 == IRQ_SetPriority(irqn, 31));
+		VERIFY(0 == IRQ_SetHandler(irqn, Userdef_INTC_Dummy_Interrupt));
+		GIC_SetGroup(irqn, 0);
+	}
+
+
+#elif CPUSTYLE_R7S721
 
 	extern unsigned long __etext, __bss_start__, __bss_end__, __data_end__, __data_start__, __stack;
 
@@ -11810,7 +12110,21 @@ static void vectors_relocate(void)
 // Set interrupt vector wrapper
 void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint_fast8_t priority)
 {
-#if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
+#if CPUSTYLE_AT91SAM7S
+
+	const uint_fast32_t mask32 = (1UL << int_id);
+
+	AT91C_BASE_AIC->AIC_IDCR = mask32;		// disable interrupt
+	AT91C_BASE_AIC->AIC_SVR [int_id] = (AT91_REG) handler;
+	AT91C_BASE_AIC->AIC_SMR [int_id] =
+		(AT91C_AIC_SRCTYPE & AT91C_AIC_SRCTYPE_HIGH_LEVEL) |
+		(AT91C_AIC_PRIOR & AT91C_AIC_PRIOR_HIGHEST) |
+		0;
+	AT91C_BASE_AIC->AIC_ICCR = mask32;		// clear pending interrupt
+	AT91C_BASE_AIC->AIC_IECR = mask32;	// enable interrupt
+
+#elif defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
+	// Cortex-A computers
 
 	VERIFY(IRQ_Disable(int_id) == 0);
 	VERIFY(IRQ_SetHandler(int_id, handler) == 0);

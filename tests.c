@@ -1,4 +1,3 @@
-/* $Id$ */
 //
 // Проект HF Dream Receiver (КВ приёмник мечты)
 // автор Гена Завидовский mgs2001@mail.ru
@@ -5359,11 +5358,56 @@ GrideTest(void)
 
 #endif /* LCDMODE_COLORED */
 
+#if 1
+static int
+toprintc(int c)
+{
+	if (c < 0x20 || c >= 0x7f)
+		return '.';
+	return c;
+}
+
+void
+printhex(unsigned long voffs, const unsigned char * buff, unsigned length)
+{
+	unsigned i, j;
+	unsigned rows = (length + 15) / 16;
+
+	for (i = 0; i < rows; ++ i)
+	{
+		const int trl = ((length - 1) - i * 16) % 16 + 1;
+		debug_printf_P(PSTR("%08lX "), voffs + i * 16);
+		for (j = 0; j < trl; ++ j)
+			debug_printf_P(PSTR(" %02X"), buff [i * 16 + j]);
+
+		debug_printf_P(PSTR("%*s"), (16 - trl) * 3, "");
+
+		debug_printf_P(PSTR("  "));
+		for (j = 0; j < trl; ++ j)
+			debug_printf_P(PSTR("%c"), toprintc(buff [i * 16 + j]));
+
+		debug_printf_P(PSTR("\n"));
+	}
+}
+
+#endif
+
+
+static void hw_swi(void)
+{
+	__asm volatile (" SWI  0" : /* no outputs */ : /* no inputs */  );
+}
+
 void hightests(void)
 {
 #if 1 && defined (__GNUC__)
 	{
 		debug_printf_P(PSTR("__GNUC__=%d, __GNUC_MINOR__=%d\n"), (int) __GNUC__, (int) __GNUC_MINOR__);
+		//printhex(0x20000000, (const uint8_t *) 0x20000000, 256);	// /* Cortex-M4 memories */
+		//printhex(0xC0000000, (const uint8_t *) 0xC0000000, 256);	// DDR3
+		//printhex(0x70000000, (const uint8_t *) 0x70000000, 256);	// QSPI
+		//hw_swi();
+		//arm_hardware_sdram_initialize();
 	}
 #endif
 #if 0
@@ -7644,6 +7688,33 @@ static unsigned RAMFUNC_NONILINE testramfunc2(void)
 
 void lowtests(void)
 {
+#if 0 && CPUSTYLE_STM32MP1
+	{
+		//RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_TZPCEN;
+		//PRINTF("Hello. STM32MP157\n");
+		//arm_hardware_pioa_altfn20(1uL << 13, 0);	// DBGTRO
+		// LED blinking test
+		//const uint_fast32_t mask = (1uL << 14);	// PA14 - GREEN LED LD5 on DK1/DK2 MB1272.pdf
+		const uint_fast32_t maskd = (1uL << 14);	// PD14 - LED on small board
+		const uint_fast32_t maskg = (1uL << 13);	// PG13 - LCD_R0
+		arm_hardware_piod_outputs(maskd, 1 * maskd);
+		arm_hardware_piog_outputs(maskg, 1 * maskg);
+		for (;;)
+		{
+			//dbg_putchar('5');
+			(GPIOD)->BSRR = BSRR_S(maskd);
+			(GPIOG)->BSRR = BSRR_S(maskg);
+			local_delay_ms(250);
+			__DSB();
+			//dbg_putchar('#');
+			(GPIOD)->BSRR = BSRR_C(maskd);
+			(GPIOG)->BSRR = BSRR_C(maskg);
+			local_delay_ms(250);
+			__DSB();
+
+		}
+	}
+#endif /* CPUSTYLE_STM32MP1 */
 #if 0 && WITHDEBUG
 	{
 		// c++ execution test

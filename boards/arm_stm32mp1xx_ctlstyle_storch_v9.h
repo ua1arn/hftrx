@@ -20,13 +20,48 @@
 	#define WITHSAICLOCKFROMPIN 1	// тактовая частота на SAI1 подается с внешнего генератора, в процессор вводится через MCK сигнал интерфейса
 
 	#define WITHUSEPLL		1	/* Главная PLL	*/
+	#define WITHUSEPLL1		1	/* PLL3 - для LTDC на STM32H743xx	*/
+	#define WITHUSEPLL2		1	/* PLL3 - для LTDC на STM32H743xx	*/
 	#define WITHUSEPLL3		1	/* PLL3 - для LTDC на STM32H743xx	*/
 	//#define WITHUSESAIPLL	1	/* SAI PLL	*/
 	//#define WITHUSESAII2S	1	/* I2S PLL	*/
 	//#define LTDC_DOTCLK	9000000UL	// частота пикселей при работе с интерфейсом RGB
 
-	// при наличии внешнего кварцевого резонатора
-	#define WITHCPUXTAL 24000000uL	/* На процессоре установлен кварц 24.000 МГц */
+	// Варианты конфигурации тактирования
+	// ref1_ck, ref2_ck - 8..16 MHz
+	// PLL1, PLL2 VCOs
+	#if 1
+		#define WITHCPUXTAL 24000000uL	/* На процессоре установлен кварц 24.000 МГц */
+		//#define WITHCPUXOSC 24000000uL	/* На процессоре установлен генератор 24.000 МГц */
+
+		#define PLL1DIVM	2	// ref1_ck = 12 MHz
+		#define PLL1DIVN	54	// 12*54 = 648 MHz
+		#define PLL1DIVP	1
+		#define PLL1DIVQ	2
+		#define PLL1DIVR	2
+
+		#define PLL2DIVM	2	// ref2_ck = 12 MHz
+		#define PLL2DIVN	44	// 528 MHz
+		#define PLL2DIVP	2	// div2=minimum 528/2 = 264 MHz
+		#define PLL2DIVQ	2	// GPU clock divider
+		#define PLL2DIVR	3	// DDR clock divider
+
+	#else
+		// HSI version (HSI=64 MHz)
+		#define PLL1DIVM	5	// ref1_ck = 12.8 MHz
+		#define PLL1DIVN	50	// x25..x100: 12.8 * 50 = 640 MHz
+		//#define PLL1DIVN	32	// x25..x100: 12.8 * 32 = 409.6 MHz
+		#define PLL1DIVP	1
+		#define PLL1DIVQ	2
+		#define PLL1DIVR	2
+
+		#define PLL2DIVM	5	// ref2_ck = 12.8 MHz
+		#define PLL2DIVN	35	// 12.8 * 35 = 448 MHz
+		#define PLL2DIVP	2	// div2=minimum
+		#define PLL2DIVQ	2	// GPU clock divider
+		#define PLL2DIVR	3	// DDR clock divider
+
+	#endif
 
 	#if WITHI2SCLOCKFROMPIN
 		#define FPGADECIMATION 2560
@@ -180,14 +215,14 @@
 	//#define CODEC_TYPE_WM8731_USE_SPI	1
 	//#define CODEC_TYPE_WM8731_USE_8KS	1	/* кодек работает с sample rate 8 kHz */
 
-	////*#define CODEC1_TYPE CODEC_TYPE_NAU8822L
+	#define CODEC1_TYPE CODEC_TYPE_NAU8822L
 	#define CODEC_TYPE_NAU8822_USE_SPI	1
 	//#define CODEC_TYPE_NAU8822_USE_8KS	1	/* кодек работает с sample rate 8 kHz */
 
 	//#define WITHDTMFPROCESSING 1
 	//#define WITHBBOXMIKESRC BOARD_TXAUDIO_LINE
 
-	////*#define CODEC2_TYPE	CODEC_TYPE_FPGAV1	/* квадратуры получаем от FPGA */
+	#define CODEC2_TYPE	CODEC_TYPE_FPGAV1	/* квадратуры получаем от FPGA */
 	//#define CODEC_TYPE_CS4272_USE_SPI	1		// codecboard v2.0
 	//#define CODEC_TYPE_CS4272_STANDALONE	1		// codecboard v3.0
 
@@ -201,6 +236,7 @@
 	//#define WITHSAI1HWTXRXMASTER	1		// SAI1 work in MASTER mode
 	#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
 	////*#define WITHINTEGRATEDDSP		1	/* в программу включена инициализация и запуск DSP части. */
+	////*#define WITHIF4DSP	1			/*  "Дятел" */
 	#define WITHIFDACWIDTH	32		// 1 бит знак и 31 бит значащих
 	#define WITHIFADCWIDTH	32		// 1 бит знак и 31 бит значащих
 	#define WITHAFADCWIDTH	16		// 1 бит знак и 15 бит значащих
@@ -210,7 +246,6 @@
 	////*#define WITHDSPEXTDDC 1			/* Квадратуры получаются внешней аппаратурой */
 	////*#define WITHDSPEXTFIR 1			/* Фильтрация квадратур осуществляется внешней аппаратурой */
 	//#define WITHDSPLOCALFIR 1		/* test: Фильтрация квадратур осуществляется процессором */
-	////*#define WITHIF4DSP	1			/*  "Дятел" */
 	#define WITHDACSTRAIGHT 1		/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
 
 	// FPGA section
@@ -375,9 +410,9 @@
 
 	#define WITHCATEXT	1	/* Расширенный набор команд CAT */
 	#define WITHELKEY	1
-	#define WITHKBDENCODER 1	// перестройка частоты кнопками
-	#define WITHKEYBOARD 1	/* в данном устройстве есть клавиатура */
-	#define KEYBOARD_USE_ADC	1	/* на одной линии установлено  четыре  клавиши. на vref - 6.8K, далее 2.2К, 4.7К и 13K. */
+	//#define WITHKBDENCODER 1	// перестройка частоты кнопками
+	//#define WITHKEYBOARD 1	/* в данном устройстве есть клавиатура */
+	//#define KEYBOARD_USE_ADC	1	/* на одной линии установлено  четыре  клавиши. на vref - 6.8K, далее 2.2К, 4.7К и 13K. */
 
 	#define VOLTLEVEL_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика напряжения
 	#define VOLTLEVEL_LOWER		10	// 1 kOhm - нижний резистор
@@ -455,7 +490,7 @@
 	#define KI_COUNT 5	// количество используемых под клавиатуру входов АЦП
 	#define KI_LIST	KI4, KI3, KI2, KI1, KI0,	// инициализаторы для функции перекодировки
 
-#ifndef WITHINTEGRATEDDSP
+#if ! WITHINTEGRATEDDSP
 	#define BOARD_DETECTOR_AM 	0		// Заглушка
 	#define BOARD_DETECTOR_FM 	0		// Заглушка
 	#define BOARD_DETECTOR_MUTE 	0		// Заглушка

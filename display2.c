@@ -4497,7 +4497,7 @@ enum
 		{	9,	0,	display_att4,		REDRM_MODE, PGALL, },
 		{	14,	0,	display_preovf3,	REDRM_BARS, PGALL, },
 		{	18,	0,	display_genham1,	REDRM_BARS, PGALL, },	// Отображение режима General Coverage / HAM bands
-		{	21,	0,	display_lockstate3, REDRM_MODE, PGALL, },	// LCK
+		{	21,	0,	display_lockstate4, REDRM_MODE, PGALL, },	// LOCK
 
 	#if WITHENCODER2
 		{	41, 0,	display_fnlabel9,	REDRM_MODE, PGALL, },	// FUNC item label
@@ -4528,10 +4528,10 @@ enum
 
 #if 1
 		{	0,	25,	display2_legend,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы S-метра
-		{	0,	30,	display2_bars,	REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
+		{	0,	30,	display2_bars,		REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
 		//{	0,	35,	display2_legend_tx,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы PWR & SWR-метра
 		//{	0,	40,	display2_bars_tx,	REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
-		{	31,	30, display_siglevel4, REDRM_BARS, PGSWR, },	// signal leval dBm
+		{	31,	30, display_siglevel4, 	REDRM_BARS, PGSWR, },	// signal leval dBm
 		{	36, 30,	display_freqdelta8, REDRM_BARS, PGSWR, },	// выход ЧМ демодулятора
 	#if WITHSPECTRUMWF
 		{	0,	DLES,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
@@ -4677,7 +4677,7 @@ static const FLASHMEM struct dzone dzones [] =
 		p->y = GRID2Y(DLES);	// позиция верхнего левого угла в пикселях
 		p->w = GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
 		p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
-		p->frame = (uintptr_t) getscratchpip();
+		p->frame = (uintptr_t) 0;
 	}
 
 #else

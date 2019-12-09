@@ -56,8 +56,9 @@
  
 	 STACKSIZEUND = 1024
 	 STACKSIZEABT = 1024
-	 STACKSIZEFIQ = 8192
+	 STACKSIZEFIQ = 1024
 	 STACKSIZEIRQ = 8192
+	 STACKSIZESVC = 1024
   
 	.global __Vectors
 	.section .vectors,"ax"
@@ -95,28 +96,47 @@ FIQAddr:       .word FIQ_Handler
    .extern _start
    .extern __libc_init_array
    .extern SystemInit
+   .global Reset_Handler7
 /****************************************************************************/
 /*                           Reset handler                                  */
 /****************************************************************************/
 Reset_Handler7:
 
+	/* Mask interrupts */
+    mov   	lr, #0
+	cpsid   if
+	mrc     p15, 0, r0, c0, c0, 5      /* Read MPIDR */
+	ands    r0, r0, #3
+gotosleep:
+	wfine
+	bne     gotosleep
+
   /*
     * Setup a stack for each mode
     */    
-   msr   CPSR_c, #ARM_MODE_UNDEF   /* Undefined Instruction Mode */     
+   msr   CPSR_c, #ARM_MODE_UNDEF   /* 0x1b Undefined Instruction Mode */
    ldr   sp, =__stack_und_end
+   mov   lr, #0
    
-   msr   CPSR_c, #ARM_MODE_ABORT   /* Abort Mode */
+   msr   CPSR_c, #ARM_MODE_ABORT   /* 0x17 Abort Mode */
    ldr   sp, =__stack_abt_end
+   mov   lr, #0
    
-   msr   CPSR_c, #ARM_MODE_FIQ     /* FIQ Mode */   
+   msr   CPSR_c, #ARM_MODE_FIQ     /* 0x11 FIQ Mode */
    ldr   sp, =__stack_fiq_end
+   mov   lr, #0
    
-   msr   CPSR_c, #ARM_MODE_IRQ     /* IRQ Mode */   
+   msr   CPSR_c, #ARM_MODE_IRQ     /* 0x12 IRQ Mode */
    ldr   sp, =__stack_irq_end
-   
-   msr   CPSR_c, #ARM_MODE_SVC     /* Supervisor Mode */
-   ldr   sp, =__stack	/* __stack_svc_end */
+   mov   lr, #0
+
+   msr   CPSR_c, #ARM_MODE_SVC     /* 0x13 Supervisor Mode */
+   ldr   sp, =__stack_svc_end
+   mov   lr, #0
+
+   msr   CPSR_c, #ARM_MODE_SYS     /* 0x1F Priviledged Operating Mode */
+   ldr   sp, =__stack	/* __stack_syc_end */
+   mov   lr, #0
 
 #if 0
 	/* Clean Data Cache  */
@@ -260,7 +280,7 @@ line_loop:
 #endif /* __STARTUP_CLEAR_BSS_MULTIPLE || __STARTUP_CLEAR_BSS */
 
 #ifndef __NO_SYSTEM_INIT
-	bl	SystemInit
+	/* bl	SystemInit */
 #endif
 
 #ifndef __START
@@ -274,8 +294,9 @@ ExitFunction:
    nop
    b ExitFunction   
 
+	.align 4, 0
 	.ascii " DREAM RX project " __DATE__ " " __TIME__ " "
-	.align 8
+	.align 4, 0
 
 /****************************************************************************/
 /*                         Default interrupt handler                        */
@@ -283,7 +304,7 @@ ExitFunction:
    .section .text
    .code 32
 
-	.align 4
+	.align 4, 0
 DummyResetHandler:
    b DummyResetHandler
 
@@ -321,7 +342,7 @@ IRQHandlerNested:
 		mrs     lr, SPSR
 		stmfd   sp!, {r0, lr}
 
-        msr     CPSR_c, #ARM_MODE_SVC | I_BIT
+        msr     CPSR_c, #ARM_MODE_SYS | I_BIT
 		stmfd   sp!, {r1-r3, r4, r12, lr}
 
 #if __ARM_NEON == 1
@@ -372,6 +393,8 @@ __stack_abt_end = .
 __stack_fiq_end = .
 	.space	STACKSIZEIRQ
 __stack_irq_end = .
+	.space	STACKSIZESVC
+__stack_svc_end = .
 
    .ltorg
 /*** EOF ***/   

@@ -15,7 +15,7 @@
 
 #if WITHSDRAMHW
 
-#if CPUSTYLE_STM32F
+#if CPUSTYLE_STM32F && ! CPUSTYLE_STM32MP157A
 
 #define assert_param(expr) do { } while (0)
 /**
@@ -2513,6 +2513,7 @@ void GPIO_Init(GPIO_TypeDef* GPIOx, GPIO_InitTypeDef* GPIO_InitStruct)
     }
   }
 }
+
 void GPIO_StructInit(GPIO_InitTypeDef* GPIO_InitStruct)
 {
   /* Reset GPIO init structure parameters values */
@@ -2522,6 +2523,7 @@ void GPIO_StructInit(GPIO_InitTypeDef* GPIO_InitStruct)
   GPIO_InitStruct->GPIO_OType = GPIO_OType_PP;
   GPIO_InitStruct->GPIO_PuPd = GPIO_PuPd_NOPULL;
 }
+
 void FMC_SDRAMInit(FMC_SDRAMInitTypeDef* FMC_SDRAMInitStruct)
 { 
   /* temporary registers */
@@ -3038,7 +3040,7 @@ void arm_hardware_sdram_initialize(void)
 
 // Taken from https://github.com/ARM-software/arm-trusted-firmware
 
-
+/*
 #define INT8_C(x)  x
 #define INT16_C(x) x
 #define INT32_C(x) x
@@ -3051,7 +3053,7 @@ void arm_hardware_sdram_initialize(void)
 
 #define INTMAX_C(x)  x ## LL
 #define UINTMAX_C(x) x ## ULL
-
+*/
 /* Compute the number of elements in the given array */
 #define ARRAY_SIZE(a)				\
 	(sizeof(a) / sizeof((a)[0]))
@@ -3298,16 +3300,65 @@ void arm_hardware_sdram_initialize(void)
 #define DDRPHYC_DXNDLLCR_SDPHASE_MASK		GENMASK(17, 14)
 #define DDRPHYC_DXNDLLCR_SDPHASE_SHIFT		14
 
+//	The initialization steps for DDR3 SDRAMs are as follows:
+//	1. Optionally maintain RESET# low for a minimum of either 200 us (power-up
+//	initialization) or 100ns (power-on initialization).
+//	The PUBL drives RESET# low from the beginning of reset assertion and therefore this
+//	step may be skipped if enough time may already have expired to satisfy the RESET#
+//	low time.
+//	2. After RESET# is de-asserted, wait a minimum of 500 us with CKE low.
+//	3. Apply NOP and drive CKE high.
+//	4. Wait a minimum of tXPR
+//	Caution: PUBL registers, SDRAM mode registers, and equivalent register fields inside
+//	the memory controller must be uniformly programmed. Mismatches between the
+//	register fields can cause transaction failures. Verify all register fields are consistently
+//	programmed before starting any SDRAM transaction.
+//	5. Issue a load Mode Register 2 (MR2) command.
+//	6. Issue a load Mode Register 3 (MR3) command.
+//	7. Issue a load Mode Register (MR1) command (to set parameters and enable DLL).
+//	8. Issue a load Mode Register (MR0) command to set parameters and reset DLL.
+//	9. Issue ZQ calibration command.
+//	10. Wait 512 SDRAM clock cycles for the DLL to lock (tDLLK) and ZQ calibration (tZQinit)
+//	to finish.
+//	This wait time is relative to Step 8, i.e. relative to when the DLL reset command was
+//	issued onto the SDRAM command bus.
+static void stm32mp1_ddr_init(void)
+{
+
+}
+
 void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 {
-/*
-	RCC->DDRITFCR |= RCC_DDRITFCR_DDRPHYCAPBEN;
+	PRINTF("arm_hardware_sdram_initialize start\n");
+
+	RCC->DDRITFCR |= (RCC_DDRITFCR_DDRPHYCAPBEN | RCC_DDRITFCR_DDRPHYCAPBLPEN);
 	(void) RCC->DDRITFCR;
-	RCC->DDRITFCR |= RCC_DDRITFCR_DDRCAPBEN;
+	RCC->DDRITFCR |= (RCC_DDRITFCR_DDRCAPBEN | RCC_DDRITFCR_DDRCAPBLPEN);
+	(void) RCC->DDRITFCR;
+	RCC->DDRITFCR |= (RCC_DDRITFCR_DDRPHYCEN | RCC_DDRITFCR_DDRPHYCLPEN);
+	(void) RCC->DDRITFCR;
+	RCC->DDRITFCR |= (RCC_DDRITFCR_DDRC1EN | RCC_DDRITFCR_DDRC2EN);
 	(void) RCC->DDRITFCR;
 
-	DDRPHYC->MSTR |= 0x00000001;	// DDR3 mode
-*/
+	//PRINTF("arm_hardware_sdram_initialize: DDRC->MSTR=%08lX\n", DDRC->MSTR);
+	/* Disable axidcg clock gating during init */
+	//mmio_clrbits_32(priv->rcc + RCC_DDRITFCR, RCC_DDRITFCR_AXIDCGEN);
+	RCC->DDRITFCR &= ~ RCC_DDRITFCR_AXIDCGEN;
+	(void) RCC->DDRITFCR;
+
+	stm32mp1_ddr_init();
+
+	/* Enable axidcg clock gating */
+	//mmio_setbits_32(priv->rcc + RCC_DDRITFCR, RCC_DDRITFCR_AXIDCGEN);
+	RCC->DDRITFCR |= RCC_DDRITFCR_AXIDCGEN;
+	(void) RCC->DDRITFCR;
+
+
+	//DDRPHYC->DDRCTRL_MSTR |= 0x00000001;	// DDR3 mode
+
+	//DDRC->MSTR =
+
+	PRINTF("arm_hardware_sdram_initialize done\n");
 }
 
 #endif
