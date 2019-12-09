@@ -11036,9 +11036,85 @@ static void r7s721_ttb_initialize(void)
 #endif
 }
 
+static uint32_t
+stm32mp1_accessbits(uintptr_t a)
+{
+	const uint32_t addrbase = a & 0xFFF00000uL;
+
+	if (a >= 0xC0000000uL && a < 0xE0000000uL)			// DDR memory
+		return addrbase | TTB_PARA_NORMAL_CACHE;
+	if (a >= 0x80000000uL && a < 0xC0000000uL)			// memory
+		return addrbase | TTB_PARA_NORMAL_CACHE;
+	if (a >= 0x30000000uL && a < 0x40000000uL)			// RAM aliases
+		return addrbase | TTB_PARA_NORMAL_CACHE;
+	if (a >= 0x20000000uL && a < 0x30000000uL)			// SYSRAM
+		return addrbase | TTB_PARA_NORMAL_CACHE;
+	if (a >= 0x10000000uL && a < 0x20000000uL)			// SRAMs
+		return addrbase | TTB_PARA_NORMAL_CACHE;
+	if (a >= 0x00000000uL && a < 0x10000000uL)			// BOOT
+		return addrbase | TTB_PARA_NORMAL_CACHE;
+
+	return addrbase | TTB_PARA_STRGLY;	// peripherials
+}
+
+static void stm32mp1_ttb_initialize(void)
+{
+	extern volatile uint32_t __TTB_BASE;		// получено из скрипта линкера
+	volatile uint32_t * const tlbbase = & __TTB_BASE;
+	unsigned i;
+
+	for (i = 0; i < 4096; ++ i)
+	{
+		const uintptr_t address = (uint32_t) i << 20;
+		tlbbase [i] =  stm32mp1_accessbits(address);
+	}
+
+#if 0
+	/* Set location of level 1 page table
+	; 31:14 - Translation table base addr (31:14-TTBCR.N, TTBCR.N is 0 out of reset)
+	; 13:7  - 0x0
+	; 6     - IRGN[0] 0x1  (Inner WB WA)
+	; 5     - NOS     0x0  (Non-shared)
+	; 4:3   - RGN     0x01 (Outer WB WA)
+	; 2     - IMP     0x0  (Implementation Defined)
+	; 1     - S       0x0  (Non-shared)
+	; 0     - IRGN[1] 0x0  (Inner WB WA) */
+	__set_TTBR0(((uint32_t)&Image$$TTB$$ZI$$Base) | 0x48);
+	__ISB();
+
+	/* Set up domain access control register
+	; We set domain 0 to Client and all other domains to No Access.
+	; All translation table entries specify domain 0 */
+	__set_DACR(1);
+	__ISB();
+#else
+	//CP15_writeTTBCR(0);
+	__set_TTBR0((unsigned int) tlbbase | 0x48);	// TTBR0
+	//CP15_writeTTB1((unsigned int) tlbbase | 0x48);	// TTBR1
+	  __ISB();
+
+	// Program the domain access register
+	//__set_DACR(0x55555555); // domain 15: access are not checked
+	__set_DACR(0xFFFFFFFF); // domain 15: access are not checked
+#endif
+}
+
 // TODO: use MMU_TTSection. See also MMU_TTPage4k MMU_TTPage64k and MMU_CreateTranslationTable
 // с точностью до 1 мегабайта
 static void r7s721_ttb_map(
+	uintptr_t va,	/* virtual address */
+	uintptr_t la	/* linear (physical) address */
+	)
+{
+	volatile extern uint32_t __TTB_BASE;		// получено из скрипта линкера
+	volatile uint32_t * const tlbbase = & __TTB_BASE;
+	unsigned i = va >> 20;
+	tlbbase [i] =  r7s721_accessbits(la);
+}
+
+// TODO: use MMU_TTSection. See also MMU_TTPage4k MMU_TTPage64k and MMU_CreateTranslationTable
+// с точностью до 1 мегабайта
+static void stm32mp1_ttb_map(
 	uintptr_t va,	/* virtual address */
 	uintptr_t la	/* linear (physical) address */
 	)
@@ -11061,11 +11137,11 @@ static void r7s721_ttb_map(
 static void
 arm_gic_initialize(void)
 {
-
+	TP();
 	//PRINTF("arm_gic_initialize: ICPIDR0=%08lX\n", ICPIDR0);	// ICPIDR0
 	//PRINTF("arm_gic_initialize: ICPIDR1=%08lX\n", ICPIDR1);	// ICPIDR1
 	//PRINTF("arm_gic_initialize: ICPIDR2=%08lX\n", ICPIDR2);	// ICPIDR2
-
+#if 0
 	// GIC version diagnostics
 	switch (ICPIDR1 & 0x0F)
 	{
@@ -11074,12 +11150,16 @@ arm_gic_initialize(void)
 	default:	PRINTF("arm_gic_initialize: ARM GICv? (code=%08lX @%p)\n", (unsigned long) ICPIDR1, & ICPIDR1); break;
 	}
 
+#endif
 
+	TP();
 	IRQ_Initialize();
+	TP();
 
 #if CPUSTYLE_R7S721
 	ca9_ca7_intc_initialize();
 #endif /* CPUSTYLE_R7S721 */
+	TP();
 
     /* Interrupt Priority Mask Register setting */
     /* Enable priorities for all interrupts */
@@ -11102,6 +11182,7 @@ arm_gic_initialize(void)
 #if WITHNESTEDINTERRUPTS
     GIC_SetInterfacePriorityMask(gARM_BASEPRI_ALL_ENABLED);
 #endif /* WITHNESTEDINTERRUPTS */
+	TP();
 }
 
 #endif /* (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7) */
@@ -11501,6 +11582,27 @@ void cpu_initialize(void)
 		GIC_SetGroup(irqn, 0);
 	}
 
+	if (1)
+	{
+		// MMU init
+		TP();
+		stm32mp1_ttb_initialize();
+		TP();
+		MMU_InvalidateTLB();
+		TP();
+
+		// Обеспечиваем нормальную обработку RESEТ
+		arm_hardware_invalidate_all();
+		TP();
+
+		//CP15_enableMMU();
+		MMU_Enable();
+		TP();
+
+		ca9_ca7_cache_setup();
+		TP();
+		PRINTF("MMU initialized\n");
+	}
 
 #elif CPUSTYLE_R7S721
 
