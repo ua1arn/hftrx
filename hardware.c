@@ -10583,48 +10583,6 @@ r7s721_accessbits(uintptr_t a)
 	return addrbase | TTB_PARA_STRGLY;
 }
 
-static void r7s721_ttb_initialize(void)
-{
-	extern volatile uint32_t __TTB_BASE;		// получено из скрипта линкера
-	volatile uint32_t * const tlbbase = & __TTB_BASE;
-	unsigned i;
-
-	for (i = 0; i < 4096; ++ i)
-	{
-		const uintptr_t address = (uint32_t) i << 20;
-		tlbbase [i] =  r7s721_accessbits(address);
-	}
-
-#if 0
-	/* Set location of level 1 page table
-	; 31:14 - Translation table base addr (31:14-TTBCR.N, TTBCR.N is 0 out of reset)
-	; 13:7  - 0x0
-	; 6     - IRGN[0] 0x1  (Inner WB WA)
-	; 5     - NOS     0x0  (Non-shared)
-	; 4:3   - RGN     0x01 (Outer WB WA)
-	; 2     - IMP     0x0  (Implementation Defined)
-	; 1     - S       0x0  (Non-shared)
-	; 0     - IRGN[1] 0x0  (Inner WB WA) */
-	__set_TTBR0(((uint32_t)&Image$$TTB$$ZI$$Base) | 0x48);
-	__ISB();
-
-	/* Set up domain access control register
-	; We set domain 0 to Client and all other domains to No Access.
-	; All translation table entries specify domain 0 */
-	__set_DACR(1);
-	__ISB();
-#else
-	//CP15_writeTTBCR(0);
-	__set_TTBR0((unsigned int) tlbbase | 0x48);	// TTBR0
-	//CP15_writeTTB1((unsigned int) tlbbase | 0x48);	// TTBR1
-	  __ISB();
-
-	// Program the domain access register
-	//__set_DACR(0x55555555); // domain 15: access are not checked
-	__set_DACR(0xFFFFFFFF); // domain 15: access are not checked
-#endif
-}
-
 static uint32_t
 stm32mp1_accessbits(uintptr_t a)
 {
@@ -10647,7 +10605,7 @@ stm32mp1_accessbits(uintptr_t a)
 	return addrbase | TTB_PARA_STRGLY;	// peripherials
 }
 
-static void stm32mp1_ttb_initialize(void)
+static void ttb_initialize(uint32_t (* accessbits)(uintptr_t a))
 {
 	extern volatile uint32_t __TTB_BASE;		// получено из скрипта линкера
 	volatile uint32_t * const tlbbase = & __TTB_BASE;
@@ -10656,7 +10614,7 @@ static void stm32mp1_ttb_initialize(void)
 	for (i = 0; i < 4096; ++ i)
 	{
 		const uintptr_t address = (uint32_t) i << 20;
-		tlbbase [i] =  stm32mp1_accessbits(address);
+		tlbbase [i] =  accessbits(address);
 	}
 
 #if 0
@@ -10691,28 +10649,16 @@ static void stm32mp1_ttb_initialize(void)
 
 // TODO: use MMU_TTSection. See also MMU_TTPage4k MMU_TTPage64k and MMU_CreateTranslationTable
 // с точностью до 1 мегабайта
-static void r7s721_ttb_map(
+static void ttb_map(
 	uintptr_t va,	/* virtual address */
-	uintptr_t la	/* linear (physical) address */
+	uintptr_t la,	/* linear (physical) address */
+	uint32_t (* accessbits)(uintptr_t a)
 	)
 {
 	volatile extern uint32_t __TTB_BASE;		// получено из скрипта линкера
 	volatile uint32_t * const tlbbase = & __TTB_BASE;
 	unsigned i = va >> 20;
-	tlbbase [i] =  r7s721_accessbits(la);
-}
-
-// TODO: use MMU_TTSection. See also MMU_TTPage4k MMU_TTPage64k and MMU_CreateTranslationTable
-// с точностью до 1 мегабайта
-static void stm32mp1_ttb_map(
-	uintptr_t va,	/* virtual address */
-	uintptr_t la	/* linear (physical) address */
-	)
-{
-	volatile extern uint32_t __TTB_BASE;		// получено из скрипта линкера
-	volatile uint32_t * const tlbbase = & __TTB_BASE;
-	unsigned i = va >> 20;
-	tlbbase [i] =  r7s721_accessbits(la);
+	tlbbase [i] =  accessbits(la);
 }
 
 #endif /* CPUSTYLE_R7S721 */
@@ -11141,10 +11087,10 @@ sysinit_mmu_initialize(void)
 	//debug_printf_P(PSTR("__etext=%p, __bss_start__=%p, __bss_end__=%p, __data_start__=%p, __data_end__=%p\n"), & __etext, & __bss_start__, & __bss_end__, & __data_start__, & __data_end__);
 	//debug_printf_P(PSTR("__stack=%p, SystemInit=%p\n"), & __stack, SystemInit);
 	// MMU setup
-	r7s721_ttb_initialize();
+	ttb_initialize(r7s721_accessbits);
 	// Отображение 10 мегабайт с 0x20000000 в 0x00000000
 	// Хотя, достаточно и одной страницы c с переходами на обработчики прерываний - код выполняется на 0x20000000
-	r7s721_ttb_map(0x00000000uL, (uint32_t) & __data_start__);	// с точностью до 1 мегабайта
+	ttb_map(0x00000000uL, (uint32_t) & __data_start__, r7s721_accessbits);	// с точностью до 1 мегабайта
 	//unsigned long offset;
 	//for (offset = 0; offset < 10uL * 1024 * 1024; offset += 1uL * 1024 * 1024)
 	//	r7s721_ttb_map(0x00000000uL + offset, __data_start__ + offset); // с точностью до 1 мегабайта
@@ -11162,7 +11108,7 @@ sysinit_mmu_initialize(void)
 #elif CPUSTYLE_STM32MP1
 
 	// MMU inuitialize
-	stm32mp1_ttb_initialize();
+	ttb_initialize(stm32mp1_accessbits);
 	MMU_InvalidateTLB();
 
 	// Обеспечиваем нормальную обработку RESEТ
