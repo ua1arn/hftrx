@@ -57,7 +57,7 @@
 	 STACKSIZEUND = 1024
 	 STACKSIZEABT = 1024
 	 STACKSIZEFIQ = 1024
-	 STACKSIZEIRQ = 8192
+	 STACKSIZEIRQ = 1024
 	 STACKSIZESVC = 1024
   
 	.global __Vectors
@@ -307,27 +307,6 @@ ExitFunction:
 	.align 4, 0
 DummyResetHandler:
    b DummyResetHandler
-
-#if 0
-Undef_Handler:
-   b Undef_Handler
-   
-SWI_Handler:
-   b SWI_Handler
-
-PAbort_Handler:
-   b PAbort_Handler
-
-DAbort_Handler:
-   b DAbort_Handler
-   
-FIQ_Handler:
-   b FIQ_Handler
-
-//IRQHandler:
-//   b IRQHandler
-
-#endif
 
 /* ================================================================== */
 /* Entry point for the IRQ handler */
