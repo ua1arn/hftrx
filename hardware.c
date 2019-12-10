@@ -6800,15 +6800,13 @@ void RAMFUNC_NONILINE local_delay_us(int timeUS)
 		const int top = timeUS * 11000 / (CPU_FREQ / 1000000);
 	#elif CPUSTYLE_R7S721
 		const int top = timeUS * 13800 / (CPU_FREQ / 1000000);
+	#elif CPUSTYLE_STM32MP1
+		const int top = timeUS * 52500 / (CPU_FREQ / 1000000);
 	#elif CPUSTYPE_TMS320F2833X && 1 // RAM code
 		const unsigned long top = timeUS * 760UL / (CPU_FREQ / 1000000);	// tested @ 100 MHz Execute from RAM
 		//const unsigned long top = timeUS * 1600UL / (CPU_FREQ / 1000000);	// tested @ 150 MHz Execute from RAM
 	#elif CPUSTYPE_TMS320F2833X	&& 0	// FLASH code
 		const unsigned long top = timeUS * 480UL / (CPU_FREQ / 1000000);	// Execute from RAM
-
-	#elif CPUSTYLE_STM32MP1
-		#warning Update code for CPUSTYLE_STM32MP1
-		const int top = timeUS * 950 / (CPU_FREQ / 1000000);
 
 	#else
 		#error TODO: calibrate local_delay_us constant
@@ -9118,9 +9116,6 @@ void arm_hardware_flush_invalidate(uintptr_t base, size_t size)
 
 #elif (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7)
 
-static unsigned long DCACHEROWSIZE; // 32
-static unsigned long ICACHEROWSIZE; // 32
-
 #define MK_MVA(addr) ((uintptr_t) (addr) & ~ (uintptr_t) (DCACHEROWSIZE - 1))
 
 // Сейчас в эту память будем читать по DMA
@@ -9136,7 +9131,7 @@ void arm_hardware_invalidate(uintptr_t base, size_t size)
 	}
 }
 
-
+#if 0
 /* считать конфигурационные параметры data cache */
 static void ca9_ca7_cache_setup(void)
 {
@@ -9164,7 +9159,10 @@ static void ca9_ca7_cache_setup(void)
 	// Установка размера строки кэша
 	DCACHEROWSIZE = 4uL << (((ccsidr0 [0] >> 0) & 0x07) + 2);
 	ICACHEROWSIZE = 4uL << (((ccsidr1 [0] >> 0) & 0x07) + 2);
+
+	PRINTF("DCACHEROWSIZE=%d, ICACHEROWSIZE=%d\n", (int) DCACHEROWSIZE, (int) ICACHEROWSIZE);
 }
+#endif
 
 // используется в startup
 static void 
@@ -9516,415 +9514,6 @@ tzpc_set_prot(
 
 #endif /* CPUSTYLE_STM32MP1 */
 
-/* функция вызывается из start-up до копирования в SRAM всех "быстрых" функций и до инициализации переменных
-*/
-// watchdog disable, clock initialize, cache enable
-void
-FLASHMEMINITFUNC
-SystemInit(void)
-{
-#if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7
-
-	#if WITHDEBUG && WITHINTEGRATEDDSP && CPUSTYLE_ARM_CM7
-		// Поддержка для функций диагностики быстродействия BEGINx_STAMP/ENDx_STAMP - audio.c
-		CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
-		DWT->LAR = 0xC5ACCE55;	// Key value for unlock
-		DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
-		DWT->LAR = 0x00000000;	// Key value for lock
-	#endif /* WITHDEBUG && WITHINTEGRATEDDSP */
-
-	#if (__FPU_PRESENT == 1) && (__FPU_USED == 1)
-
-		/* FPU enable on Cortex M4F */
-		SCB->CPACR |= ((3UL << 10 * 2) | (3UL << 11 * 2));  /* set CP10 and CP11 Full Access */
-
-		#if 0
-			/* Lazy stacking enabled, automatic state saving enabled is a default state */
-			/* http://infocenter.arm.com/help/topic/com.arm.doc.dai0298a/DAI0298A_cortex_m4f_lazy_stacking_and_context_switching.pdf */
-			__set_FPSCR(			/* Floating-Point Context Control Register */
-				(__get_FPSCR() & ~ (FPU_FPCCR_LSPEN_Msk)) | /* disable Lazy stacking feature */
-				FPU_FPCCR_ASPEN_Msk | 
-				0);
-		#endif
-
-	#endif
-	#ifdef UNALIGNED_SUPPORT_DISABLE
-		SCB->CCR |= SCB_CCR_UNALIGN_TRP_Msk;
-	#endif
-
-#endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7 */
-
-#if (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7)
-
-	#if WITHDEBUG
-	{
-		// Поддержка для функций диагностики быстродействия BEGINx_STAMP/ENDx_STAMP - audio.c
-		// From https://stackoverflow.com/questions/3247373/how-to-measure-program-execution-time-in-arm-cortex-a8-processor
-
-		enum { do_reset = 0, enable_divider = 0 };
-		// in general enable all counters (including cycle counter)
-		int32_t value = 1;
-
-		// peform reset:  
-		if (do_reset)
-		{
-			value |= 2;     // reset all counters to zero.
-			value |= 4;     // reset cycle counter to zero.
-		} 
-
-		if (enable_divider)
-			value |= 8;     // enable "by 64" divider for CCNT.
-
-		value |= 16;
-
-		// program the performance-counter control-register:
-		//asm volatile ("MCR p15, 0, %0, c9, c12, 0\t\n" :: "r"(value));  
-		__set_CP(15, 0, value, 9, 12, 0);
-
-		// enable all counters:  
-		//asm volatile ("MCR p15, 0, %0, c9, c12, 1\t\n" :: "r"(0x8000000f));  
-		__set_CP(15, 0, 0x8000000f, 9, 12, 1);
-
-		// clear overflows:
-		//asm volatile ("MCR p15, 0, %0, c9, c12, 3\t\n" :: "r"(0x8000000f));
-		__set_CP(15, 0, 0x8000000f, 9, 12, 3);
-	}
-	#endif /* WITHDEBUG */
-
-#endif /* (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7) */
-
-#if CPUSTYLE_STM32F1XX
-
-	lowlevel_stm32f10x_pll_clock();
-	if (1)
-	{
-		// PC13, PC14 and PC15 as the common IO:
-		RCC->APB1ENR |=  RCC_APB1ENR_BKPEN;     // включить тактирование Backup interface
-		__DSB();
-
-		PWR->CR |= PWR_CR_DBP; // cancel the backup area write protection  
-		//RCC->BDCR &= ~ RCC_BDCR_LSEON; // close external low-speed oscillator, PC14, PC15 as ordinary IO  
-		BKP->CR &= ~ BKP_CR_TPE; // TAMPER pin; intrusion detection (PC13) used as a universal IO port  
-		PWR->CR &= ~ PWR_CR_DBP; // backup area write protection </span> 
-
-		RCC->APB1ENR &=  ~ RCC_APB1ENR_BKPEN;     // выключить тактирование Backup interface
-		__DSB();
-	}
-
-#elif CPUSTYLE_STM32F4XX
-
-	lowlevel_stm32f4xx_pll_initialize();
-	lowlevel_stm32f4xx_MCOx_test();
-	arm_hardware_stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
-
-#elif CPUSTYLE_STM32H7XX
-
-	lowlevel_stm32h7xx_pll_initialize();
-	arm_hardware_stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
-	//lowlevel_stm32h7xx_mpu_initialize();
-
-	/* AXI SRAM Slave */
-	//AXI_TARG7_FN_MOD |= READ_ISS_OVERRIDE;
-	  /* dual core CM7 or single core line */
-	  if((DBGMCU->IDCODE & 0xFFFF0000U) < 0x20000000U)
-	  {
-		/* if stm32h7 revY*/
-		/* Change  the switch matrix read issuing capability to 1 for the AXI SRAM target (Target 7) */
-		*((__IO uint32_t*) 0x51008108) = 0x1; //Change  the switch matrix read issuing capability to 1 (Errata BUG fix)
-	  }
-	/* Change  the switch matrix read issuing capability to 1 for the AXI SRAM target (Target 7) */
-	//*((__IO uint32_t*)0x51008108) = 0x000000001;
-
-	RCC->AHB2ENR |= RCC_AHB2ENR_D2SRAM1EN;
-	(void) RCC->AHB2ENR;
-	RCC->AHB2ENR |= RCC_AHB2ENR_D2SRAM2EN;
-	(void) RCC->AHB2ENR;
-	RCC->AHB2ENR |= RCC_AHB2ENR_D2SRAM3EN;
-	(void) RCC->AHB2ENR;
-
-	RCC->AHB4ENR |= RCC_AHB4ENR_D3SRAM1EN;
-	(void) RCC->AHB4ENR;
-	
-	SCB_InvalidateICache();
-	SCB_EnableICache();
-
-	SCB_InvalidateDCache();
-	SCB_EnableDCache();
-
-#elif CPUSTYLE_STM32F7XX
-
-	lowlevel_stm32f7xx_pll_initialize();
-	arm_hardware_stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
-
-	SCB_InvalidateICache();
-	SCB_EnableICache();
-
-	SCB_InvalidateDCache();
-	SCB_EnableDCache();
-
-#elif CPUSTYLE_STM32F30X
-
-	lowlevel_stm32f30x_pll_clock();
-	arm_hardware_stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
-
-#elif CPUSTYLE_STM32F0XX
-
-	lowlevel_stm32f0xx_pll_clock();
-	//lowlevel_stm32f0xx_hsi_clock();
-
-#elif CPUSTYLE_STM32L0XX
-
-// Плата с процессором STM32L051K6T (TQFP-32)
-
-	#if ARM_STM32L051_TQFP32_CPUSTYLE_V1_H_INCLUDED
-		// power on bit
-		{
-			enum { WORKMASK = 1U << 11 };	/* PA11 */
-			arm_hardware_pioa_outputs(WORKMASK, WORKMASK * (1 != 0));
-
-		}
-	#endif /* ARM_STM32L051_TQFP32_CPUSTYLE_V1_H_INCLUDED */
-	//lowlevel_stm32l0xx_pll_clock();
-	lowlevel_stm32l0xx_hsi_clock();
-
-#elif CPUSTYLE_ATSAM3S
-
-	// Disable Watchdog
-	WDT->WDT_MR = WDT_MR_WDDIS;
-	lowlevel_sam3s_init_clock_12_RC12();	// программирует на работу от 12 МГц RC - для ускорения работы.
-	// инициализация PLL и программирование wait states (только из SRAM) делается позже.
-
-#elif CPUSTYLE_ATSAM4S
-
-	// Disable Watchdog
-	WDT->WDT_MR = WDT_MR_WDDIS;
-	lowlevel_sam4s_init_clock_12_RC12();	// программирует на работу от 12 МГц RC - для ускорения работы.
-	// инициализация PLL и программирование wait states (только из SRAM) делается позже.
-
-#elif CPUSTYLE_AT91SAM7S
-
-	// Disable Watchdog
-	AT91C_BASE_WDTC->WDTC_WDMR = AT91C_WDTC_WDDIS;
-
-	// Enable NRST input. Требуется для удобства при отладке.
-	AT91C_BASE_RSTC->RSTC_RMR = AT91C_RSTC_URSTEN | (AT91C_RSTC_KEY & (0xA5UL << 24));
-
-	// init clock sources and memory timings
-	// use one of alternatives
-	//
-
-	#if CPU_FREQ == 48000000UL
-		lowlevel_init_pll_clock_xtal(8, 1);
-	#elif CPU_FREQ == ((18432000UL * 73) / 14 / 2)
-		lowlevel_init_pll_clock_xtal(73, 14);
-	#elif CPU_FREQ == 12000000UL
-		lowlevel_init_pll_clock_from_xtal();
-	#else
-		#error Unsupported CPU_FREQ value
-	#endif
-
-#elif CPUSTYLE_AT91SAM9XE
-
-	// Disable Watchdog
-	AT91C_BASE_WDTC->WDTC_WDMR = AT91C_WDTC_WDDIS;
-
-	// Enable NRST input. Требуется для удобства при отладке.
-	AT91C_BASE_RSTC->RSTC_RMR = AT91C_RSTC_URSTEN | (AT91C_RSTC_KEY & (0xA5UL << 24));
-
-	at91sam9x_clocks(96, 9);
-	//at91sam9x_clocks_48x4();
-	//cp15_enable_i_cache();
-	__set_SCTLR(__get_SCTLR() | SCTLR_I_Msk);
-
-#elif CPUSTYLE_R7S721
-
-	// Программа исполняется из SERIAL FLASH - переключать режимы пока нельзя.
-	//while ((SPIBSC0.CMNSR & (1u << 0)) == 0)	// TEND bit
-	//	;
-	//SPIBSC0.SSLDR = 0x00;
-	//SPIBSC0.SPBCR = 0x200;
-	//SPIBSC0.DRCR = 0x0100;
-
-	CPG_Init();
-
-
-    /* ----  Writing to On-Chip Data-Retention RAM is enabled. ---- */
-	if (1)
-	{
-		// Нельзя отключить - т.к. r7s721_ttb_map работает со страницами по 1 мегабайту
-		CPG.SYSCR3 = (CPG_SYSCR3_RRAMWE3 | CPG_SYSCR3_RRAMWE2 | CPG_SYSCR3_RRAMWE1 | CPG_SYSCR3_RRAMWE0);
-		(void) CPG.SYSCR3;
-	}
-
-
-	* (volatile unsigned long *) 0x3FFFFF80 &= ~ 0x01uL;	// L2CTL Clear standby_mode_en bit of the power control register in the PL310
-	* (volatile unsigned long *) 0x3FFFF100 |= 0x01uL;		// REG1 Set bit L2 Cache enable
-
-	//INB.RMPR &= ~ (1U << 1);		// 0: Address remapping is enabled 0x20000000 visible at 0x00000000.
-	//(void) INB.RMPR;
-
-    /* ==== Initial setting of the level 1 cache ==== */
-	//__set_SCTLR(0);		
-    //L1CacheInit();
-
-	L1C_EnableCaches();
-	L1C_EnableBTAC();
-	__set_ACTLR(__get_ACTLR() | ACTLR_L1PE_Msk);	// Enable Dside prefetch
-
-
-	/* далее будет выполняться копирование data и инициализация bss - для нормальной работы RESET требуется без DATA CACHE */
-
-	/* Установить скорость обмена с SERIAL FLASH повыше */
-	if ((CPG.STBCR9 & CPG_STBCR9_BIT_MSTP93) == 0)
-	{
-		SPIBSC0.SPBCR = (SPIBSC0.SPBCR & ~ (SPIBSC_SPBCR_BRDV | SPIBSC_SPBCR_SPBR)) |
-			(0 << SPIBSC_SPBCR_BRDV_SHIFT) |	// 0..3
-			(2 << SPIBSC_SPBCR_SPBR_SHIFT) |	// 0..255
-			0;
-	}
-
-#elif CPUSTYLE_STM32MP1
-
-	stm32mp1_pll_initialize();
-
-	/*
-	 * Interconnect update : select master using the port 1.
-	 * LTDC = AXI_M9.
-	 */
-	//mmio_write_32(syscfg_base + SYSCFG_ICNR, SYSCFG_ICNR_AXI_M9);
-	SYSCFG->ICNR = SYSCFG_ICNR_AXI_M9;
-	(void) SYSCFG->ICNR;
-
-	if (1)
-	{
-		//RCC->TZCR &= ~ (RCC_TZCR_TZEN | RCC_TZCR_MCKPROT);
-		RCC->TZCR &= ~ (RCC_TZCR_TZEN);
-		RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_TZPCEN;
-		(void) RCC->MP_APB5ENSETR;
-
-		// Set peripheral is not secure (Read and Write by secure and non secure)
-		tzpc_set_prot(0, 0x03);		// STGENC
-		tzpc_set_prot(1, 0x03);		// BKPSRAM
-		tzpc_set_prot(3, 0x03);		// USART1
-		tzpc_set_prot(7, 0x03);		// RNG1
-		tzpc_set_prot(10, 0x03);	// DDRCTRL
-		tzpc_set_prot(11, 0x03);	// DDRPHYC
-		tzpc_set_prot(32, 0x03);	// UART4
-	}
-
-	if (1)
-	{
-		// Hang-off QSPI memory
-		/*
-			QUADSPI_CLK 	PF10	AS pin 01	U13-38 (traced to PA7)
-			QUADSPI_BK1_NCS PB6 	AS pin 08	U12-21 (traced to PB12)
-			QUADSPI_BK1_IO0 PF8
-			QUADSPI_BK1_IO1 PF9
-		*/
-		arm_hardware_piof_inputs(1uL << 8);
-		arm_hardware_piof_inputs(1uL << 9);
-		arm_hardware_piof_inputs(1uL << 10);
-		arm_hardware_piob_inputs(1uL << 6);
-	}
-
-#else
-	#error Undefined CPUSTYLE_XXX
-
-#endif
-
-#if 0000 && WITHSDRAMHW && WITHISBOOTLOADER
-	/* В процессоре есть внешняя память - если уже в ней то не трогаем */
-	arm_hardware_sdram_initialize();
-
-#elif 0000 && WITHSDRAMHW && CTLSTYLE_V1D
-	/* В процессоре есть внешняя память - только данные */
-	arm_hardware_sdram_initialize();
-
-#endif /* WITHSDRAMHW && WITHISBOOTLOADER */
-
-#if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM0 || CPUSTYLE_ARM_CM7
-	// Таблица находится в области вне Data Cache
-	vectors_relocate();
-
-#endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM0 || CPUSTYLE_ARM_CM7 */
-
-#if WITHDEBUG && ! WITHISBOOTLOADER
-	// В функции инициализации компорта есть NVIC_SetVector
-	// При вызове до перемещения таблиц прерывания получаем HardFault на STM32F7XXX
-	// UPD: пофиксено. Дебагер не вызывает NVIC_SetVector
-	HARDWARE_DEBUG_INITIALIZE();
-	HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
-
-#endif /* WITHDEBUG */
-
-#if WITHSDRAMHW && WITHISBOOTLOADER
-	/* В процессоре есть внешняя память - если уже в ней то не трогаем */
-	arm_hardware_sdram_initialize();
-
-#elif WITHSDRAMHW && CTLSTYLE_V1D
-	/* В процессоре есть внешняя память - только данные */
-	arm_hardware_sdram_initialize();
-
-#elif WITHSDRAMHW && CPUSTYLE_STM32MP157A
-	/* В процессоре есть внешняя память */
-	arm_hardware_sdram_initialize();
-
-#endif /* WITHSDRAMHW && WITHISBOOTLOADER */
-}
-
-#if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7 || CPUSTYLE_ARM_CM0
-
-uint32_t gARM_OVERREALTIME_PRIORITY = 0;
-uint32_t gARM_REALTIME_PRIORITY = 0;
-uint32_t gARM_SYSTEM_PRIORITY = 0;
-uint32_t gARM_BASEPRI_ONLY_REALTIME = 0;
-uint32_t gARM_BASEPRI_ALL_ENABLED = 0;
-
-static void 
-arm_cpu_CMx_initialize_NVIC(void)
-{
-	// See usage of functions NVIC_PriorityGroupConfig and NVIC_SetPriorityGrouping
-
-	//NVIC_SetPriorityGrouping(7);	// no preemption, 4 bit of subprio
-	//NVIC_SetPriorityGrouping(6);	// 1 bit preemption, 3 bit of subprio
-	NVIC_SetPriorityGrouping(5);	// 2 bit preemption, 2 bit of subprio
-	//NVIC_SetPriorityGrouping(4);	// 3 bit preemption, 1 bit of subprio
-	//NVIC_SetPriorityGrouping(3);	// 4 bit preemption, 0 bit of subprio
-	//NVIC_SetPriorityGrouping(0);
-
-	// Вычисление значений приоритета для данной конфигурации
-	gARM_OVERREALTIME_PRIORITY = NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 0, 0);
-	gARM_REALTIME_PRIORITY = NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 1, 0);
-	gARM_SYSTEM_PRIORITY = NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 2, 0);
-	// The processor does not process any exception with a priority value greater than or equal to BASEPRI.
-	gARM_BASEPRI_ONLY_REALTIME = ((gARM_SYSTEM_PRIORITY << (8 - __NVIC_PRIO_BITS)) & 0xff);
-	gARM_BASEPRI_ALL_ENABLED = 0;
-
-	/* System interrupt init*/
-	/* MemoryManagement_IRQn interrupt configuration */
-	NVIC_SetPriority(MemoryManagement_IRQn, ARM_SYSTEM_PRIORITY);
-	/* BusFault_IRQn interrupt configuration */
-	NVIC_SetPriority(BusFault_IRQn, ARM_SYSTEM_PRIORITY);
-	/* UsageFault_IRQn interrupt configuration */
-	NVIC_SetPriority(UsageFault_IRQn, ARM_SYSTEM_PRIORITY);
-	/* SVCall_IRQn interrupt configuration */
-	NVIC_SetPriority(SVCall_IRQn, ARM_SYSTEM_PRIORITY);
-	/* DebugMonitor_IRQn interrupt configuration */
-	NVIC_SetPriority(DebugMonitor_IRQn, ARM_SYSTEM_PRIORITY);
-	/* PendSV_IRQn interrupt configuration */
-	NVIC_SetPriority(PendSV_IRQn, ARM_SYSTEM_PRIORITY);
-	/* SysTick_IRQn interrupt configuration */
-	NVIC_SetPriority(SysTick_IRQn, ARM_SYSTEM_PRIORITY);
-
-	// Назначить таймеру приоритет, равный всем остальным прерываниям. Разрешать через NVIC не требуется
-	NVIC_SetVector(SysTick_IRQn, (uintptr_t) & SysTick_Handler);
-	NVIC_SetPriority(SysTick_IRQn, ARM_SYSTEM_PRIORITY);
-
-	//__set_BASEPRI(gARM_BASEPRI_ALL_ENABLED);
-}
-
-#endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7 */
-
 #if (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7)
 
 #include "hardware.h"
@@ -10106,7 +9695,7 @@ static void irq_modes_print(void)
 /******************************************************************************
 * Function Name: ca9_ca7_intc_initialize
 * Description  : Executes initial setting for the INTC.
-*              : The interrupt mask level is set to 31 to receive interrupts 
+*              : The interrupt mask level is set to 31 to receive interrupts
 *              : with the interrupt priority level 0 to 30.
 * Arguments    : none
 * Return Value : none
@@ -10946,7 +10535,7 @@ M_SIZE_IO_2     EQU     2550            ; [Area11] I/O area 2
     MCR  p15, 0, r0, c2, c0, 0      ;;; TTBR0
 
 ;===================================================================
-; PAGE TABLE generation 
+; PAGE TABLE generation
 ; Generate the page tables
 ; Build a flat translation table for the whole address space.
 ; ie: Create 4096 1MB sections from 0x000xxxxx to 0xFFFxxxxx
@@ -10956,7 +10545,7 @@ M_SIZE_IO_2     EQU     2550            ; [Area11] I/O area 2
 ; Bits[31:20]   - Top 12 bits of VA is pointer into table
 ; nG[17]=0      - Non global, enables matching against ASID in the TLB when set.
 ; S[16]=0       - Indicates normal memory is shared when set.
-; AP2[15]=0  
+; AP2[15]=0
 ; AP[11:10]=11  - Configure for full read/write access in all modes
 ; TEX[14:12]=000
 ; CB[3:2]= 00   - Set attributes to Strongly-ordered memory.
@@ -10982,7 +10571,8 @@ M_SIZE_IO_2     EQU     2550            ; [Area11] I/O area 2
 //#define	TTB_PARA_NORMAL_CACHE       0b_0000_0001_1101_1110_1110
 #define	TTB_PARA_NORMAL_CACHE       0b00000001110111101110UL	// 01DEE
 
-static uint32_t 
+static uint32_t
+FLASHMEMINITFUNC
 r7s721_accessbits(uintptr_t a)
 {
 	const uint32_t addrbase = a & 0xFFF00000uL;
@@ -10994,7 +10584,31 @@ r7s721_accessbits(uintptr_t a)
 	return addrbase | TTB_PARA_STRGLY;
 }
 
-static void r7s721_ttb_initialize(void)
+static uint32_t
+FLASHMEMINITFUNC
+stm32mp1_accessbits(uintptr_t a)
+{
+	const uint32_t addrbase = a & 0xFFF00000uL;
+
+	if (a >= 0x00000000uL && a < 0x10000000uL)			// BOOT
+		return addrbase | TTB_PARA_NORMAL_CACHE;
+	if (a >= 0x10000000uL && a < 0x20000000uL)			// SRAMs
+		return addrbase | TTB_PARA_NORMAL_CACHE;
+	if (a >= 0x20000000uL && a < 0x30000000uL)			// SYSRAM
+		return addrbase | TTB_PARA_NORMAL_CACHE;
+	if (a >= 0x30000000uL && a < 0x40000000uL)			// RAM aliases
+		return addrbase | TTB_PARA_NORMAL_CACHE;
+	if (a >= 0xC0000000uL && a < 0xE0000000uL)			// DDR memory
+		return addrbase | TTB_PARA_NORMAL_CACHE;
+/*
+	if (a >= 0x80000000uL && a < 0xC0000000uL)			// memory
+		return addrbase | TTB_PARA_NORMAL_CACHE;
+*/
+	return addrbase | TTB_PARA_STRGLY;	// peripherials
+}
+
+static void FLASHMEMINITFUNC
+ttb_initialize(uint32_t (* accessbits)(uintptr_t a))
 {
 	extern volatile uint32_t __TTB_BASE;		// получено из скрипта линкера
 	volatile uint32_t * const tlbbase = & __TTB_BASE;
@@ -11003,7 +10617,7 @@ static void r7s721_ttb_initialize(void)
 	for (i = 0; i < 4096; ++ i)
 	{
 		const uintptr_t address = (uint32_t) i << 20;
-		tlbbase [i] =  r7s721_accessbits(address);
+		tlbbase [i] =  accessbits(address);
 	}
 
 #if 0
@@ -11038,18 +10652,546 @@ static void r7s721_ttb_initialize(void)
 
 // TODO: use MMU_TTSection. See also MMU_TTPage4k MMU_TTPage64k and MMU_CreateTranslationTable
 // с точностью до 1 мегабайта
-static void r7s721_ttb_map(
+static void
+FLASHMEMINITFUNC
+ttb_map(
 	uintptr_t va,	/* virtual address */
-	uintptr_t la	/* linear (physical) address */
+	uintptr_t la,	/* linear (physical) address */
+	uint32_t (* accessbits)(uintptr_t a)
 	)
 {
 	volatile extern uint32_t __TTB_BASE;		// получено из скрипта линкера
 	volatile uint32_t * const tlbbase = & __TTB_BASE;
 	unsigned i = va >> 20;
-	tlbbase [i] =  r7s721_accessbits(la);
+	tlbbase [i] =  accessbits(la);
 }
 
 #endif /* CPUSTYLE_R7S721 */
+
+// PLL and caches inuitialize
+static void FLASHMEMINITFUNC
+sysinit_pll_initialize(void)
+{
+#if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7
+	#if (__FPU_PRESENT == 1) && (__FPU_USED == 1)
+
+		/* FPU enable on Cortex M4F */
+		SCB->CPACR |= ((3UL << 10 * 2) | (3UL << 11 * 2));  /* set CP10 and CP11 Full Access */
+
+		#if 0
+			/* Lazy stacking enabled, automatic state saving enabled is a default state */
+			/* http://infocenter.arm.com/help/topic/com.arm.doc.dai0298a/DAI0298A_cortex_m4f_lazy_stacking_and_context_switching.pdf */
+			__set_FPSCR(			/* Floating-Point Context Control Register */
+				(__get_FPSCR() & ~ (FPU_FPCCR_LSPEN_Msk)) | /* disable Lazy stacking feature */
+				FPU_FPCCR_ASPEN_Msk |
+				0);
+		#endif
+
+	#endif
+	#ifdef UNALIGNED_SUPPORT_DISABLE
+		SCB->CCR |= SCB_CCR_UNALIGN_TRP_Msk;
+	#endif
+
+#endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7 */
+
+#if CPUSTYLE_STM32F1XX
+
+	lowlevel_stm32f10x_pll_clock();
+	if (1)
+	{
+		// PC13, PC14 and PC15 as the common IO:
+		RCC->APB1ENR |=  RCC_APB1ENR_BKPEN;     // включить тактирование Backup interface
+		__DSB();
+
+		PWR->CR |= PWR_CR_DBP; // cancel the backup area write protection
+		//RCC->BDCR &= ~ RCC_BDCR_LSEON; // close external low-speed oscillator, PC14, PC15 as ordinary IO
+		BKP->CR &= ~ BKP_CR_TPE; // TAMPER pin; intrusion detection (PC13) used as a universal IO port
+		PWR->CR &= ~ PWR_CR_DBP; // backup area write protection </span>
+
+		RCC->APB1ENR &=  ~ RCC_APB1ENR_BKPEN;     // выключить тактирование Backup interface
+		__DSB();
+	}
+
+#elif CPUSTYLE_STM32F4XX
+
+	lowlevel_stm32f4xx_pll_initialize();
+	lowlevel_stm32f4xx_MCOx_test();
+	arm_hardware_stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
+
+#elif CPUSTYLE_STM32H7XX
+
+	lowlevel_stm32h7xx_pll_initialize();
+	arm_hardware_stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
+	//lowlevel_stm32h7xx_mpu_initialize();
+
+	/* AXI SRAM Slave */
+	//AXI_TARG7_FN_MOD |= READ_ISS_OVERRIDE;
+	  /* dual core CM7 or single core line */
+	  if((DBGMCU->IDCODE & 0xFFFF0000U) < 0x20000000U)
+	  {
+		/* if stm32h7 revY*/
+		/* Change  the switch matrix read issuing capability to 1 for the AXI SRAM target (Target 7) */
+		*((__IO uint32_t*) 0x51008108) = 0x1; //Change  the switch matrix read issuing capability to 1 (Errata BUG fix)
+	  }
+	/* Change  the switch matrix read issuing capability to 1 for the AXI SRAM target (Target 7) */
+	//*((__IO uint32_t*)0x51008108) = 0x000000001;
+
+	RCC->AHB2ENR |= RCC_AHB2ENR_D2SRAM1EN;
+	(void) RCC->AHB2ENR;
+	RCC->AHB2ENR |= RCC_AHB2ENR_D2SRAM2EN;
+	(void) RCC->AHB2ENR;
+	RCC->AHB2ENR |= RCC_AHB2ENR_D2SRAM3EN;
+	(void) RCC->AHB2ENR;
+
+	RCC->AHB4ENR |= RCC_AHB4ENR_D3SRAM1EN;
+	(void) RCC->AHB4ENR;
+
+	SCB_InvalidateICache();
+	SCB_EnableICache();
+
+	SCB_InvalidateDCache();
+	SCB_EnableDCache();
+
+#elif CPUSTYLE_STM32F7XX
+
+	lowlevel_stm32f7xx_pll_initialize();
+	arm_hardware_stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
+
+	SCB_InvalidateICache();
+	SCB_EnableICache();
+
+	SCB_InvalidateDCache();
+	SCB_EnableDCache();
+
+#elif CPUSTYLE_STM32F30X
+
+	lowlevel_stm32f30x_pll_clock();
+	arm_hardware_stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
+
+#elif CPUSTYLE_STM32F0XX
+
+	lowlevel_stm32f0xx_pll_clock();
+	//lowlevel_stm32f0xx_hsi_clock();
+
+#elif CPUSTYLE_STM32L0XX
+
+// Плата с процессором STM32L051K6T (TQFP-32)
+
+	#if ARM_STM32L051_TQFP32_CPUSTYLE_V1_H_INCLUDED
+		// power on bit
+		{
+			enum { WORKMASK = 1U << 11 };	/* PA11 */
+			arm_hardware_pioa_outputs(WORKMASK, WORKMASK * (1 != 0));
+
+		}
+	#endif /* ARM_STM32L051_TQFP32_CPUSTYLE_V1_H_INCLUDED */
+	//lowlevel_stm32l0xx_pll_clock();
+	lowlevel_stm32l0xx_hsi_clock();
+
+#elif CPUSTYLE_ATSAM3S
+
+	// Disable Watchdog
+	WDT->WDT_MR = WDT_MR_WDDIS;
+	lowlevel_sam3s_init_clock_12_RC12();	// программирует на работу от 12 МГц RC - для ускорения работы.
+	// инициализация PLL и программирование wait states (только из SRAM) делается позже.
+
+#elif CPUSTYLE_ATSAM4S
+
+	// Disable Watchdog
+	WDT->WDT_MR = WDT_MR_WDDIS;
+	lowlevel_sam4s_init_clock_12_RC12();	// программирует на работу от 12 МГц RC - для ускорения работы.
+	// инициализация PLL и программирование wait states (только из SRAM) делается позже.
+
+#elif CPUSTYLE_AT91SAM7S
+
+	// Disable Watchdog
+	AT91C_BASE_WDTC->WDTC_WDMR = AT91C_WDTC_WDDIS;
+
+	// Enable NRST input. Требуется для удобства при отладке.
+	AT91C_BASE_RSTC->RSTC_RMR = AT91C_RSTC_URSTEN | (AT91C_RSTC_KEY & (0xA5UL << 24));
+
+	// init clock sources and memory timings
+	// use one of alternatives
+	//
+
+	#if CPU_FREQ == 48000000UL
+		lowlevel_init_pll_clock_xtal(8, 1);
+	#elif CPU_FREQ == ((18432000UL * 73) / 14 / 2)
+		lowlevel_init_pll_clock_xtal(73, 14);
+	#elif CPU_FREQ == 12000000UL
+		lowlevel_init_pll_clock_from_xtal();
+	#else
+		#error Unsupported CPU_FREQ value
+	#endif
+
+#elif CPUSTYLE_AT91SAM9XE
+
+	// Disable Watchdog
+	AT91C_BASE_WDTC->WDTC_WDMR = AT91C_WDTC_WDDIS;
+
+	// Enable NRST input. Требуется для удобства при отладке.
+	AT91C_BASE_RSTC->RSTC_RMR = AT91C_RSTC_URSTEN | (AT91C_RSTC_KEY & (0xA5UL << 24));
+
+	at91sam9x_clocks(96, 9);
+	//at91sam9x_clocks_48x4();
+	//cp15_enable_i_cache();
+	__set_SCTLR(__get_SCTLR() | SCTLR_I_Msk);
+
+#elif CPUSTYLE_R7S721
+
+	CPG_Init();
+
+	// Программа исполняется из SERIAL FLASH - переключать режимы пока нельзя.
+	//while ((SPIBSC0.CMNSR & (1u << 0)) == 0)	// TEND bit
+	//	;
+	//SPIBSC0.SSLDR = 0x00;
+	//SPIBSC0.SPBCR = 0x200;
+	//SPIBSC0.DRCR = 0x0100;
+
+    /* ----  Writing to On-Chip Data-Retention RAM is enabled. ---- */
+	if (1)
+	{
+		// Нельзя отключить - т.к. r7s721_ttb_map работает со страницами по 1 мегабайту
+		CPG.SYSCR3 = (CPG_SYSCR3_RRAMWE3 | CPG_SYSCR3_RRAMWE2 | CPG_SYSCR3_RRAMWE1 | CPG_SYSCR3_RRAMWE0);
+		(void) CPG.SYSCR3;
+	}
+
+
+	* (volatile unsigned long *) 0x3FFFFF80 &= ~ 0x01uL;	// L2CTL Clear standby_mode_en bit of the power control register in the PL310
+	* (volatile unsigned long *) 0x3FFFF100 |= 0x01uL;		// REG1 Set bit L2 Cache enable
+
+	//INB.RMPR &= ~ (1U << 1);		// 0: Address remapping is enabled 0x20000000 visible at 0x00000000.
+	//(void) INB.RMPR;
+
+    /* ==== Initial setting of the level 1 cache ==== */
+	//__set_SCTLR(0);
+    //L1CacheInit();
+#if 0
+	// Перенесено в cpu_initialize
+	// Не получается разместить эти функции во FLASH
+	L1C_EnableCaches();
+	L1C_EnableBTAC();
+#endif
+	__set_ACTLR(__get_ACTLR() | ACTLR_L1PE_Msk);	// Enable Dside prefetch
+	/* далее будет выполняться копирование data и инициализация bss - для нормальной работы RESET требуется без DATA CACHE */
+
+	/* Установить скорость обмена с SERIAL FLASH повыше */
+	if ((CPG.STBCR9 & CPG_STBCR9_BIT_MSTP93) == 0)
+	{
+		SPIBSC0.SPBCR = (SPIBSC0.SPBCR & ~ (SPIBSC_SPBCR_BRDV | SPIBSC_SPBCR_SPBR)) |
+			(0 << SPIBSC_SPBCR_BRDV_SHIFT) |	// 0..3
+			(2 << SPIBSC_SPBCR_SPBR_SHIFT) |	// 0..255
+			0;
+	}
+
+#elif CPUSTYLE_STM32MP1
+
+	stm32mp1_pll_initialize();
+
+
+	L1C_EnableCaches();
+	L1C_EnableBTAC();
+	__set_ACTLR(__get_ACTLR() | ACTLR_L1PE_Msk);	// Enable Dside prefetch
+
+	/*
+	 * Interconnect update : select master using the port 1.
+	 * LTDC = AXI_M9.
+	 */
+	//mmio_write_32(syscfg_base + SYSCFG_ICNR, SYSCFG_ICNR_AXI_M9);
+	SYSCFG->ICNR = SYSCFG_ICNR_AXI_M9;
+	(void) SYSCFG->ICNR;
+
+	if (1)
+	{
+		//RCC->TZCR &= ~ (RCC_TZCR_TZEN | RCC_TZCR_MCKPROT);
+		RCC->TZCR &= ~ (RCC_TZCR_TZEN);
+		RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_TZPCEN;
+		(void) RCC->MP_APB5ENSETR;
+
+		// Set peripheral is not secure (Read and Write by secure and non secure)
+		tzpc_set_prot(0, 0x03);		// STGENC
+		tzpc_set_prot(1, 0x03);		// BKPSRAM
+		tzpc_set_prot(3, 0x03);		// USART1
+		tzpc_set_prot(7, 0x03);		// RNG1
+		tzpc_set_prot(10, 0x03);	// DDRCTRL
+		tzpc_set_prot(11, 0x03);	// DDRPHYC
+		tzpc_set_prot(32, 0x03);	// UART4
+	}
+
+	if (1)
+	{
+		// Hang-off QSPI memory
+		/*
+			QUADSPI_CLK 	PF10	AS pin 01	U13-38 (traced to PA7)
+			QUADSPI_BK1_NCS PB6 	AS pin 08	U12-21 (traced to PB12)
+			QUADSPI_BK1_IO0 PF8
+			QUADSPI_BK1_IO1 PF9
+		*/
+		arm_hardware_piof_inputs(1uL << 8);
+		arm_hardware_piof_inputs(1uL << 9);
+		arm_hardware_piof_inputs(1uL << 10);
+		arm_hardware_piob_inputs(1uL << 6);
+	}
+
+#endif
+}
+
+static void FLASHMEMINITFUNC
+sysintt_sdram_initialize(void)
+{
+#if WITHSDRAMHW && WITHISBOOTLOADER
+	/* В процессоре есть внешняя память - если уже в ней то не трогаем */
+	arm_hardware_sdram_initialize();
+
+#elif WITHSDRAMHW && CTLSTYLE_V1D
+	/* В процессоре есть внешняя память - только данные */
+	arm_hardware_sdram_initialize();
+
+#elif WITHSDRAMHW && CPUSTYLE_STM32MP157A
+	/* В процессоре есть внешняя память */
+	arm_hardware_sdram_initialize();
+
+#endif /* WITHSDRAMHW && WITHISBOOTLOADER */
+}
+
+static void FLASHMEMINITFUNC
+sysinit_debug_initialize(void)
+{
+#if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7
+
+	#if WITHDEBUG && WITHINTEGRATEDDSP && CPUSTYLE_ARM_CM7
+		// Поддержка для функций диагностики быстродействия BEGINx_STAMP/ENDx_STAMP - audio.c
+		CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
+		DWT->LAR = 0xC5ACCE55;	// Key value for unlock
+		DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
+		DWT->LAR = 0x00000000;	// Key value for lock
+	#endif /* WITHDEBUG && WITHINTEGRATEDDSP */
+
+#endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7 */
+
+#if (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7)
+
+	#if WITHDEBUG
+	{
+		// Поддержка для функций диагностики быстродействия BEGINx_STAMP/ENDx_STAMP - audio.c
+		// From https://stackoverflow.com/questions/3247373/how-to-measure-program-execution-time-in-arm-cortex-a8-processor
+
+		enum { do_reset = 0, enable_divider = 0 };
+		// in general enable all counters (including cycle counter)
+		int32_t value = 1;
+
+		// peform reset:
+		if (do_reset)
+		{
+			value |= 2;     // reset all counters to zero.
+			value |= 4;     // reset cycle counter to zero.
+		}
+
+		if (enable_divider)
+			value |= 8;     // enable "by 64" divider for CCNT.
+
+		value |= 16;
+
+		// program the performance-counter control-register:
+		//asm volatile ("MCR p15, 0, %0, c9, c12, 0\t\n" :: "r"(value));
+		__set_CP(15, 0, value, 9, 12, 0);
+
+		// enable all counters:
+		//asm volatile ("MCR p15, 0, %0, c9, c12, 1\t\n" :: "r"(0x8000000f));
+		__set_CP(15, 0, 0x8000000f, 9, 12, 1);
+
+		// clear overflows:
+		//asm volatile ("MCR p15, 0, %0, c9, c12, 3\t\n" :: "r"(0x8000000f));
+		__set_CP(15, 0, 0x8000000f, 9, 12, 3);
+	}
+	#endif /* WITHDEBUG */
+
+#endif /* (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7) */
+
+#if WITHDEBUG && ! WITHISBOOTLOADER
+	// В функции инициализации компорта есть NVIC_SetVector
+	// При вызове до перемещения таблиц прерывания получаем HardFault на STM32F7XXX
+	// UPD: пофиксено. Дебагер не вызывает NVIC_SetVector
+	HARDWARE_DEBUG_INITIALIZE();
+	HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
+
+#endif /* WITHDEBUG */
+}
+
+static void FLASHMEMINITFUNC
+sysinit_vbar_initialize(void)
+{
+#if CPUSTYLE_R7S721
+
+	__set_VBAR(0);	 // Set Vector Base Address Register
+	//CP15_set_vbase_address(0); // Set Vector Base Address Register
+
+	__set_MVBAR(0);	 // Set Vector Base Address Register
+	//CP15_set_mvbase_address(0);	//  Set Monitor Vector Base Address Register
+
+	//cp15_vectors_reloc_disable();
+	__set_SCTLR(__get_SCTLR() & ~ SCTLR_V_Msk);
+	__set_SCTLR(__get_SCTLR() & ~ SCTLR_A_Msk);	// 0 = Strict alignment fault checking disabled. This is the reset value.
+
+#elif CPUSTYLE_STM32MP157A
+	extern unsigned long __etext, __bss_start__, __bss_end__, __data_end__, __data_start__, __stack, __Vectors;
+
+	//debug_printf_P(PSTR("cpu_initialize1: CP15=%08lX, __data_start__=%p\n"), __get_SCTLR(), & __data_start__);
+	//debug_printf_P(PSTR("__etext=%p, __bss_start__=%p, __bss_end__=%p, __data_start__=%p, __data_end__=%p\n"), & __etext, & __bss_start__, & __bss_end__, & __data_start__, & __data_end__);
+	//debug_printf_P(PSTR("__stack=%p, SystemInit=%p, __Vectors=%p\n"), & __stack, SystemInit, & __Vectors);
+
+	const uintptr_t vbase = (uintptr_t) & __Vectors;
+	__set_VBAR(vbase);	 // Set Vector Base Address Register (bits 4..0 should be zero)
+	__set_MVBAR(vbase);	 // Set Vector Base Address Register (bits 4..0 should be zero) - на работу не вличет... но на всякий случай
+
+	__set_SCTLR(__get_SCTLR() & ~ SCTLR_V_Msk);	// v=0 - use VBAR as vectors address
+	__set_SCTLR(__get_SCTLR() & ~ SCTLR_A_Msk);	// 0 = Strict alignment fault checking disabled. This is the reset value.
+
+	//PRINTF("vbar=%08lX, mvbar=%08lX\n", __get_VBAR(), __get_MVBAR());
+
+#endif
+}
+
+static void FLASHMEMINITFUNC
+sysinit_mmu_initialize(void)
+{
+	PRINTF("sysinit_mmu_initialize\n");
+#if CPUSTYLE_R7S721
+	// MMU inuitialize
+
+#if 0 && WITHDEBUG
+	uint_fast32_t leveli;
+	for (leveli = 0; leveli <= ARM_CA9_CACHELEVELMAX; ++ leveli)
+	{
+
+		__set_CSSELR(leveli * 2 + 0);	// data cache select
+		const uint32_t ccsidr0 = __get_CCSIDR();
+		const uint32_t assoc0 = (ccsidr0 >> 3) & 0x3FF;
+		const int passoc0 = ilog2(assoc0);
+		const uint32_t maxsets0 = (ccsidr0 >> 13) & 0x7FFF;
+		const uint32_t linesize0 = 4uL << (((ccsidr0 >> 0) & 0x07) + 2);
+		debug_printf_P(PSTR("cpu_initialize1: level=%d, passoc=%d, assoc=%u, maxsets=%u, data cache row size = %u\n"), leveli, passoc0, assoc0, maxsets0, linesize0);
+
+		__set_CSSELR(leveli * 2 + 1);	// instruction cache select
+		const uint32_t ccsidr1 = __get_CCSIDR();
+		const uint32_t assoc1 = (ccsidr1 >> 3) & 0x3FF;
+		const int passoc1 = ilog2(assoc1);
+		const uint32_t maxsets1 = (ccsidr1 >> 13) & 0x7FFF;
+		const uint32_t linesize1 = 4uL << (((ccsidr1 >> 0) & 0x07) + 2);
+		debug_printf_P(PSTR("cpu_initialize1: level=%d, passoc=%d, assoc=%u, maxsets=%u, instr cache row size = %u\n"), leveli, passoc1, assoc1, maxsets1, linesize1);
+	}
+#endif /* WITHDEBUG */
+
+	//debug_printf_P(PSTR("cpu_initialize2: CP15(SCTLR)=%08lX\n"), __get_SCTLR());
+
+	extern unsigned long __etext, __bss_start__, __bss_end__, __data_end__, __data_start__, __stack;
+
+	//debug_printf_P(PSTR("cpu_initialize1: CP15=%08lX, __data_start__=%p\n"), __get_SCTLR(), & __data_start__);
+	//debug_printf_P(PSTR("__etext=%p, __bss_start__=%p, __bss_end__=%p, __data_start__=%p, __data_end__=%p\n"), & __etext, & __bss_start__, & __bss_end__, & __data_start__, & __data_end__);
+	//debug_printf_P(PSTR("__stack=%p, SystemInit=%p\n"), & __stack, SystemInit);
+	// MMU setup
+	ttb_initialize(r7s721_accessbits);
+	// Отображение 10 мегабайт с 0x20000000 в 0x00000000
+	// Хотя, достаточно и одной страницы c с переходами на обработчики прерываний - код выполняется на 0x20000000
+	ttb_map(0x00000000uL, (uint32_t) & __data_start__, r7s721_accessbits);	// с точностью до 1 мегабайта
+	//unsigned long offset;
+	//for (offset = 0; offset < 10uL * 1024 * 1024; offset += 1uL * 1024 * 1024)
+	//	r7s721_ttb_map(0x00000000uL + offset, __data_start__ + offset); // с точностью до 1 мегабайта
+	//CP15_writeTLBIALLIS(0);	// Invalidate TLB
+	MMU_InvalidateTLB();
+
+	// Обеспечиваем нормальную обработку RESEТ
+	arm_hardware_invalidate_all();
+
+	//CP15_enableMMU();
+	MMU_Enable();
+
+#elif CPUSTYLE_STM32MP1
+
+	// MMU inuitialize
+	ttb_initialize(stm32mp1_accessbits);
+	MMU_InvalidateTLB();
+
+	// Обеспечиваем нормальную обработку RESEТ
+	arm_hardware_invalidate_all();
+
+	//CP15_enableMMU();
+	MMU_Enable();
+
+#else
+	//#error Undefined CPUSTYLE_XXX
+
+#endif
+	PRINTF("MMU initialized\n");
+}
+
+/* функция вызывается из start-up до копирования в SRAM всех "быстрых" функций и до инициализации переменных
+*/
+// watchdog disable, clock initialize, cache enable
+void
+FLASHMEMINITFUNC
+SystemInit(void)
+{
+	sysinit_pll_initialize();
+	sysinit_debug_initialize();
+	sysintt_sdram_initialize();
+	sysinit_vbar_initialize();		// interrupt vectors relocate
+	sysinit_mmu_initialize();
+}
+
+
+#if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7 || CPUSTYLE_ARM_CM0
+
+uint32_t gARM_OVERREALTIME_PRIORITY = 0;
+uint32_t gARM_REALTIME_PRIORITY = 0;
+uint32_t gARM_SYSTEM_PRIORITY = 0;
+uint32_t gARM_BASEPRI_ONLY_REALTIME = 0;
+uint32_t gARM_BASEPRI_ALL_ENABLED = 0;
+
+static void
+arm_cpu_CMx_initialize_NVIC(void)
+{
+	// See usage of functions NVIC_PriorityGroupConfig and NVIC_SetPriorityGrouping
+
+	//NVIC_SetPriorityGrouping(7);	// no preemption, 4 bit of subprio
+	//NVIC_SetPriorityGrouping(6);	// 1 bit preemption, 3 bit of subprio
+	NVIC_SetPriorityGrouping(5);	// 2 bit preemption, 2 bit of subprio
+	//NVIC_SetPriorityGrouping(4);	// 3 bit preemption, 1 bit of subprio
+	//NVIC_SetPriorityGrouping(3);	// 4 bit preemption, 0 bit of subprio
+	//NVIC_SetPriorityGrouping(0);
+
+	// Вычисление значений приоритета для данной конфигурации
+	gARM_OVERREALTIME_PRIORITY = NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 0, 0);
+	gARM_REALTIME_PRIORITY = NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 1, 0);
+	gARM_SYSTEM_PRIORITY = NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 2, 0);
+	// The processor does not process any exception with a priority value greater than or equal to BASEPRI.
+	gARM_BASEPRI_ONLY_REALTIME = ((gARM_SYSTEM_PRIORITY << (8 - __NVIC_PRIO_BITS)) & 0xff);
+	gARM_BASEPRI_ALL_ENABLED = 0;
+
+	/* System interrupt init*/
+	/* MemoryManagement_IRQn interrupt configuration */
+	NVIC_SetPriority(MemoryManagement_IRQn, ARM_SYSTEM_PRIORITY);
+	/* BusFault_IRQn interrupt configuration */
+	NVIC_SetPriority(BusFault_IRQn, ARM_SYSTEM_PRIORITY);
+	/* UsageFault_IRQn interrupt configuration */
+	NVIC_SetPriority(UsageFault_IRQn, ARM_SYSTEM_PRIORITY);
+	/* SVCall_IRQn interrupt configuration */
+	NVIC_SetPriority(SVCall_IRQn, ARM_SYSTEM_PRIORITY);
+	/* DebugMonitor_IRQn interrupt configuration */
+	NVIC_SetPriority(DebugMonitor_IRQn, ARM_SYSTEM_PRIORITY);
+	/* PendSV_IRQn interrupt configuration */
+	NVIC_SetPriority(PendSV_IRQn, ARM_SYSTEM_PRIORITY);
+	/* SysTick_IRQn interrupt configuration */
+	NVIC_SetPriority(SysTick_IRQn, ARM_SYSTEM_PRIORITY);
+
+	// Назначить таймеру приоритет, равный всем остальным прерываниям. Разрешать через NVIC не требуется
+	NVIC_SetVector(SysTick_IRQn, (uintptr_t) & SysTick_Handler);
+	NVIC_SetPriority(SysTick_IRQn, ARM_SYSTEM_PRIORITY);
+
+	//__set_BASEPRI(gARM_BASEPRI_ALL_ENABLED);
+}
+
+#endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7 */
 
 #if (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7)
 /* 
@@ -11061,11 +11203,11 @@ static void r7s721_ttb_map(
 static void
 arm_gic_initialize(void)
 {
-
+	TP();
 	//PRINTF("arm_gic_initialize: ICPIDR0=%08lX\n", ICPIDR0);	// ICPIDR0
 	//PRINTF("arm_gic_initialize: ICPIDR1=%08lX\n", ICPIDR1);	// ICPIDR1
 	//PRINTF("arm_gic_initialize: ICPIDR2=%08lX\n", ICPIDR2);	// ICPIDR2
-
+#if 0
 	// GIC version diagnostics
 	switch (ICPIDR1 & 0x0F)
 	{
@@ -11074,12 +11216,16 @@ arm_gic_initialize(void)
 	default:	PRINTF("arm_gic_initialize: ARM GICv? (code=%08lX @%p)\n", (unsigned long) ICPIDR1, & ICPIDR1); break;
 	}
 
+#endif
 
+	TP();
 	IRQ_Initialize();
+	TP();
 
 #if CPUSTYLE_R7S721
 	ca9_ca7_intc_initialize();
 #endif /* CPUSTYLE_R7S721 */
+	TP();
 
     /* Interrupt Priority Mask Register setting */
     /* Enable priorities for all interrupts */
@@ -11102,6 +11248,7 @@ arm_gic_initialize(void)
 #if WITHNESTEDINTERRUPTS
     GIC_SetInterfacePriorityMask(gARM_BASEPRI_ALL_ENABLED);
 #endif /* WITHNESTEDINTERRUPTS */
+	TP();
 }
 
 #endif /* (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7) */
@@ -11343,6 +11490,7 @@ cpu_tms320f2833x_flash_waitstates(uint_fast8_t flashws, uint_fast8_t otpws)
 // Вызывается из main
 void cpu_initialize(void)
 {
+	PRINTF("cpu_initialize\n");
 #if CPUSTYLE_STM32F1XX
 
 	cpu_stm32f1xx_setmapr(0);	/* переключить отладочный интерфейс в SWD */
@@ -11380,14 +11528,14 @@ void cpu_initialize(void)
 	#endif /* WITHUSESAIPLL */
 
 #elif CPUSTYLE_STM32F0XX
- 
+
 	// Разрешить работу компаратора напряжения питания (нужно для разряда емкостей преобразователя питания дисплея)
 	RCC->APB1ENR |= RCC_APB1ENR_PWREN;     // включить тактирование power management
 	__DSB();
 	PWR->CR = (PWR->CR & ~ PWR_CR_PLS) | PWR_CR_PLS_LEV3 | PWR_CR_PVDE;
 
 #elif CPUSTYLE_STM32L0XX
- 
+
 	// Разрешить работу компаратора напряжения питания (нужно для разряда емкостей преобразователя питания дисплея)
 	RCC->APB1ENR |= RCC_APB1ENR_PWREN;     // включить тактирование power management
 	__DSB();
@@ -11401,11 +11549,11 @@ void cpu_initialize(void)
 	PWR->CR = (PWR->CR & ~ PWR_CR_PLS) | PWR_CR_PLS_LEV3 | PWR_CR_PVDE;
 
 #elif CPUSTYLE_ATSAM3S
-
+	// только из SRAM
 	arm_cpu_atsam3s_pll_initialize();
 
 #elif CPUSTYLE_ATSAM4S
-
+	// только из SRAM
 	arm_cpu_atsam4s_pll_initialize();
 
 #elif CPUSTYLE_AT91SAM7S
@@ -11474,133 +11622,19 @@ void cpu_initialize(void)
 		cpu_tms320f2833x_flash_waitstates(3, 5);		// commented in RAM configuration
 	#endif
 
-#elif CPUSTYLE_STM32MP1
-
-	extern unsigned long __etext, __bss_start__, __bss_end__, __data_end__, __data_start__, __stack, __Vectors;
-
-	//debug_printf_P(PSTR("cpu_initialize1: CP15=%08lX, __data_start__=%p\n"), __get_SCTLR(), & __data_start__);
-	//debug_printf_P(PSTR("__etext=%p, __bss_start__=%p, __bss_end__=%p, __data_start__=%p, __data_end__=%p\n"), & __etext, & __bss_start__, & __bss_end__, & __data_start__, & __data_end__);
-	//debug_printf_P(PSTR("__stack=%p, SystemInit=%p, __Vectors=%p\n"), & __stack, SystemInit, & __Vectors);
-
-	const uintptr_t vbase = (uintptr_t) & __Vectors;
-	__set_VBAR(vbase);	 // Set Vector Base Address Register (bits 4..0 should be zero)
-	__set_MVBAR(vbase);	 // Set Vector Base Address Register (bits 4..0 should be zero) - на работу не вличет... но на всякий случай
-
-	__set_SCTLR(__get_SCTLR() & ~ SCTLR_V_Msk);	// v=0 - use VBAR as vectors address
-	__set_SCTLR(__get_SCTLR() & ~ SCTLR_A_Msk);	// 0 = Strict alignment fault checking disabled. This is the reset value.
-
-	//PRINTF("vbar=%08lX, mvbar=%08lX\n", __get_VBAR(), __get_MVBAR());
-
-	IRQn_ID_t irqn;
-	for (irqn = 0; irqn < 1020 /* IRQ_GIC_LINE_COUNT */; ++ irqn)
-	{
-		VERIFY(0 == IRQ_Disable(irqn));
-		//VERIFY(0 == IRQ_SetMode(irqn, modes [irqn]));
-		VERIFY(0 == IRQ_SetPriority(irqn, 31));
-		VERIFY(0 == IRQ_SetHandler(irqn, Userdef_INTC_Dummy_Interrupt));
-		GIC_SetGroup(irqn, 0);
-	}
-
-
-#elif CPUSTYLE_R7S721
-
-	extern unsigned long __etext, __bss_start__, __bss_end__, __data_end__, __data_start__, __stack;
-
-	//debug_printf_P(PSTR("cpu_initialize1: CP15=%08lX, __data_start__=%p\n"), __get_SCTLR(), & __data_start__);
-	//debug_printf_P(PSTR("__etext=%p, __bss_start__=%p, __bss_end__=%p, __data_start__=%p, __data_end__=%p\n"), & __etext, & __bss_start__, & __bss_end__, & __data_start__, & __data_end__);
-	//debug_printf_P(PSTR("__stack=%p, SystemInit=%p\n"), & __stack, SystemInit);
-
-    /* ==== Writeback Cache ==== */
-    //io_cache_writeback();
-
-    /* ==== Vector base address setting ==== */
-    //VbarInit();
-	// TODO: see MMU_CreateTranslationTable
-
-	//MMU_Disable();
-	// MMU setup
-	r7s721_ttb_initialize();
-	// Отображение 10 мегабайт с 0x20000000 в 0x00000000
-	// Хотя, достаточно и одной страницы c с переходами на обработчики прерываний - код выполняется на 0x20000000
-	r7s721_ttb_map(0x00000000uL, (uint32_t) & __data_start__);	// с точностью до 1 мегабайта
-	//unsigned long offset;
-	//for (offset = 0; offset < 10uL * 1024 * 1024; offset += 1uL * 1024 * 1024)
-	//	r7s721_ttb_map(0x00000000uL + offset, __data_start__ + offset); // с точностью до 1 мегабайта
-	//CP15_writeTLBIALLIS(0);	// Invalidate TLB
-	MMU_InvalidateTLB();
-	
-	// диагностическая печать параметров CACHE
-	//const uint32_t clidr = __get_CLIDR();
-	//debug_printf_P(PSTR("cpu_initialize1: clidr=%08lX\n"), clidr);
-	//ASSERT((clidr & 0x03) != 0 && ARM_CA9_CACHELEVELMAX == 1);
-
-	// Обеспечиваем нормальную обработку RESEТ
-	arm_hardware_invalidate_all();
-
-	//CP15_enableMMU();
-	MMU_Enable();
-
-	ca9_ca7_cache_setup();
-
-#if 0 && WITHDEBUG
-	uint_fast32_t leveli;
-	for (leveli = 0; leveli <= ARM_CA9_CACHELEVELMAX; ++ leveli)
-	{
-
-		__set_CSSELR(leveli * 2 + 0);	// data cache select
-		const uint32_t ccsidr0 = __get_CCSIDR();
-		const uint32_t assoc0 = (ccsidr0 >> 3) & 0x3FF;
-		const int passoc0 = ilog2(assoc0);
-		const uint32_t maxsets0 = (ccsidr0 >> 13) & 0x7FFF;
-		const uint32_t linesize0 = 4uL << (((ccsidr0 >> 0) & 0x07) + 2);
-		debug_printf_P(PSTR("cpu_initialize1: level=%d, passoc=%d, assoc=%u, maxsets=%u, data cache row size = %u\n"), leveli, passoc0, assoc0, maxsets0, linesize0);
-
-		__set_CSSELR(leveli * 2 + 1);	// instruction cache select
-		const uint32_t ccsidr1 = __get_CCSIDR();
-		const uint32_t assoc1 = (ccsidr1 >> 3) & 0x3FF;
-		const int passoc1 = ilog2(assoc1);
-		const uint32_t maxsets1 = (ccsidr1 >> 13) & 0x7FFF;
-		const uint32_t linesize1 = 4uL << (((ccsidr1 >> 0) & 0x07) + 2);
-		debug_printf_P(PSTR("cpu_initialize1: level=%d, passoc=%d, assoc=%u, maxsets=%u, instr cache row size = %u\n"), leveli, passoc1, assoc1, maxsets1, linesize1);
-	}
-#endif /* WITHDEBUG */
-
-	//INB.RMPR &= ~ (1U << 1);		// 0: Address remapping is enabled 0x20000000 visible at 0x00000000.
-	//(void) INB.RMPR;
-
-	//extern unsigned long __isr_vector__;
-	//CP15_set_vbase_address((unsigned int) & __isr_vector__); // Set Vector Base Address Register
-	//CP15_set_mvbase_address((unsigned int) & __isr_vector__);	//  Set Monitor Vector Base Address Register
-
-	__set_VBAR(0);	 // Set Vector Base Address Register
-	//CP15_set_vbase_address(0); // Set Vector Base Address Register
-
-	__set_MVBAR(0);	 // Set Vector Base Address Register
-	//CP15_set_mvbase_address(0);	//  Set Monitor Vector Base Address Register
-
-	//cp15_vectors_reloc_disable();
-	__set_SCTLR(__get_SCTLR() & ~ SCTLR_V_Msk);
-	__set_SCTLR(__get_SCTLR() & ~ SCTLR_A_Msk);	// 0 = Strict alignment fault checking disabled. This is the reset value.
-
-	//debug_printf_P(PSTR("cpu_initialize2: CP15(SCTLR)=%08lX\n"), __get_SCTLR());
-#if 0
-	if (memcmp((void *) 4, (void *) 0x20000004, 16) == 0)
-	{
-		debug_printf_P(PSTR("cpu_initialize1: vectors mapped succesful\n"));
-		debug_printf_P(PSTR("cpu_initialize1: vectors mapped succesful. %08lX %08lX\n"), * (volatile uint32_t *) 0, * (volatile uint32_t *) 4);
-	}
-	else
-	{
-		debug_printf_P(PSTR("cpu_initialize1: vectors mapped failure.\n"));
-	}
-#endif
-
 #else
-	#error Undefined CPUSTYLE_XXX
-#endif
+	//#error Undefined CPUSTYLE_XXX
 
+#endif
 
 #if CPUSTYLE_R7S721
+#if 1
+	// Перенесено из systeminit
+	// Не получается разместить эти функции во FLASH
+	L1C_EnableCaches();
+	L1C_EnableBTAC();
+#endif
+
 	/* TN-RZ*-A011A/E recommends switch off USB_X1 if usb USB not used */
 	CPG.STBCR7 &= ~ CPG_STBCR7_MSTP70;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module runs.
 	CPG.STBCR7 &= ~ CPG_STBCR7_MSTP71;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module runs.
@@ -11617,10 +11651,10 @@ void cpu_initialize(void)
 	CPG.STBCR7 |= CPG_STBCR7_MSTP70;	// Module Stop 70 0: Channel 1 of the USB 2.0 host/function module halts.
 #endif
 
-	// Инициализация контроллера прерываний
-
 #if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7 || CPUSTYLE_ARM_CM0
 
+	// Таблица находится в области вне Data Cache
+	vectors_relocate();
 	arm_cpu_CMx_initialize_NVIC();
 
 #elif (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7)
@@ -11633,6 +11667,7 @@ void cpu_initialize(void)
 	arm_gic_initialize();
 
 #endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7 */
+	PRINTF("cpu_initialize done\n");
 }
 
 // секция init больше не нужна
@@ -11694,8 +11729,6 @@ uint8_t xxxxxpos(uint8_t num) // num = 0..8
 }
 
 */
-
-
 
 #if CPUSTYLE_ARM
 

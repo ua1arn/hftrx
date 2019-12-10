@@ -5358,7 +5358,7 @@ GrideTest(void)
 
 #endif /* LCDMODE_COLORED */
 
-#if 1
+#if 0
 static int
 toprintc(int c)
 {
@@ -7688,22 +7688,22 @@ void lowtests(void)
 		//arm_hardware_pioa_altfn20(1uL << 13, 0);	// DBGTRO
 		// LED blinking test
 		//const uint_fast32_t mask = (1uL << 14);	// PA14 - GREEN LED LD5 on DK1/DK2 MB1272.pdf
-		const uint_fast32_t maskd = (1uL << 14);	// PD14 - LED on small board
+		//const uint_fast32_t maskd = (1uL << 14);	// PD14 - LED on small board
 		const uint_fast32_t maskg = (1uL << 13);	// PG13 - LCD_R0
-		arm_hardware_piod_outputs(maskd, 1 * maskd);
+		//arm_hardware_piod_outputs(maskd, 1 * maskd);
 		arm_hardware_piog_outputs(maskg, 1 * maskg);
 		for (;;)
 		{
 			//dbg_putchar('5');
-			(GPIOD)->BSRR = BSRR_S(maskd);
+			//(GPIOD)->BSRR = BSRR_S(maskd);
 			(GPIOG)->BSRR = BSRR_S(maskg);
-			local_delay_ms(250);
 			__DSB();
+			local_delay_ms(50);
 			//dbg_putchar('#');
-			(GPIOD)->BSRR = BSRR_C(maskd);
+			//(GPIOD)->BSRR = BSRR_C(maskd);
 			(GPIOG)->BSRR = BSRR_C(maskg);
-			local_delay_ms(250);
 			__DSB();
+			local_delay_ms(50);
 
 		}
 	}
