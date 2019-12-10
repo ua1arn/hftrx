@@ -11023,17 +11023,18 @@ sysinit_vbar_initialize(void)
 {
 #if CPUSTYLE_R7S721
 
-	__set_VBAR(0);	 // Set Vector Base Address Register
-	//CP15_set_vbase_address(0); // Set Vector Base Address Register
+	extern unsigned long __etext, __bss_start__, __bss_end__, __data_end__, __data_start__, __stack, __Vectors;
 
-	__set_MVBAR(0);	 // Set Vector Base Address Register
-	//CP15_set_mvbase_address(0);	//  Set Monitor Vector Base Address Register
+	const uintptr_t vbase = (uintptr_t) & __Vectors;
+	__set_VBAR(vbase);	 // Set Vector Base Address Register (bits 4..0 should be zero)
+	__set_MVBAR(vbase);	 // Set Vector Base Address Register (bits 4..0 should be zero) - на работу не вличет... но на всякий случай
 
 	//cp15_vectors_reloc_disable();
 	__set_SCTLR(__get_SCTLR() & ~ SCTLR_V_Msk);
 	__set_SCTLR(__get_SCTLR() & ~ SCTLR_A_Msk);	// 0 = Strict alignment fault checking disabled. This is the reset value.
 
 #elif CPUSTYLE_STM32MP157A
+
 	extern unsigned long __etext, __bss_start__, __bss_end__, __data_end__, __data_start__, __stack, __Vectors;
 
 	//debug_printf_P(PSTR("cpu_initialize1: CP15=%08lX, __data_start__=%p\n"), __get_SCTLR(), & __data_start__);
@@ -11082,18 +11083,11 @@ sysinit_mmu_initialize(void)
 	}
 #endif /* WITHDEBUG */
 
-	//debug_printf_P(PSTR("cpu_initialize2: CP15(SCTLR)=%08lX\n"), __get_SCTLR());
-
-	extern unsigned long __etext, __bss_start__, __bss_end__, __data_end__, __data_start__, __stack;
-
-	//debug_printf_P(PSTR("cpu_initialize1: CP15=%08lX, __data_start__=%p\n"), __get_SCTLR(), & __data_start__);
-	//debug_printf_P(PSTR("__etext=%p, __bss_start__=%p, __bss_end__=%p, __data_start__=%p, __data_end__=%p\n"), & __etext, & __bss_start__, & __bss_end__, & __data_start__, & __data_end__);
-	//debug_printf_P(PSTR("__stack=%p, SystemInit=%p\n"), & __stack, SystemInit);
-	// MMU setup
+	// MMU inuitialize
 	ttb_initialize(r7s721_accessbits);
 	// Отображение 10 мегабайт с 0x20000000 в 0x00000000
 	// Хотя, достаточно и одной страницы c с переходами на обработчики прерываний - код выполняется на 0x20000000
-	ttb_map(0x00000000uL, (uint32_t) & __data_start__, r7s721_accessbits);	// с точностью до 1 мегабайта
+	//ttb_map(0x00000000uL, (uint32_t) & __data_start__, r7s721_accessbits);	// с точностью до 1 мегабайта
 	//unsigned long offset;
 	//for (offset = 0; offset < 10uL * 1024 * 1024; offset += 1uL * 1024 * 1024)
 	//	r7s721_ttb_map(0x00000000uL + offset, __data_start__ + offset); // с точностью до 1 мегабайта
@@ -11103,7 +11097,6 @@ sysinit_mmu_initialize(void)
 	// Обеспечиваем нормальную обработку RESEТ
 	arm_hardware_invalidate_all();
 
-	//CP15_enableMMU();
 	MMU_Enable();
 
 #elif CPUSTYLE_STM32MP1
@@ -11115,7 +11108,6 @@ sysinit_mmu_initialize(void)
 	// Обеспечиваем нормальную обработку RESEТ
 	arm_hardware_invalidate_all();
 
-	//CP15_enableMMU();
 	MMU_Enable();
 
 #else
