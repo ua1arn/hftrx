@@ -9491,6 +9491,16 @@ void stm32mp1_pll_initialize(void)
 	while ((RCC->TIMG2PRER & RCC_TIMG2PRER_TIMG2PRERDY_Msk) == 0)
 		;
 
+#if WITHUSBHW
+	// OTG_HS
+	//	0: pll4_r_ck clock selected as kernel peripheral clock (default after reset)
+	//	1: clock provided by the USB PHY (rcc_ck_usbo_48m) selected as kernel peripheral clock
+	RCC->USBCKSELR = (RCC->USBCKSELR & ~ (RCC_USBCKSELR_USBOSRC_Msk)) |
+		(0x00 << RCC_USBCKSELR_USBOSRC_Pos) |
+		0;
+	(void) RCC->USBCKSELR;
+#endif /* WITHUSBHW */
+
 #if WITHELKEY
 	// TIM3 used
 

@@ -4045,6 +4045,7 @@ HAL_StatusTypeDef  USB_DevConnect (USB_OTG_GlobalTypeDef *USBx)
 {
 	//PRINTF(PSTR("USB_DevConnect (USBx=%p)\n"), USBx);
 	USBx_DEVICE->DCTL &= ~ USB_OTG_DCTL_SDIS;
+	(void) USBx_DEVICE->DCTL;
 	ASSERT((USBx_DEVICE->DCTL & USB_OTG_DCTL_SDIS) == 0);
 
 	HARDWARE_DELAY_MS(3);
@@ -4063,6 +4064,7 @@ HAL_StatusTypeDef  USB_DevDisconnect (USB_OTG_GlobalTypeDef *USBx)
 	//PRINTF(PSTR("USB_DevDisconnect (USBx=%p)\n"), USBx);
 
 	USBx_DEVICE->DCTL |= USB_OTG_DCTL_SDIS;
+	(void) USBx_DEVICE->DCTL;
 	ASSERT((USBx_DEVICE->DCTL & USB_OTG_DCTL_SDIS) != 0);
 
 	HARDWARE_DELAY_MS(3);
@@ -11225,6 +11227,10 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 		//RCC->APB4ENR |= RCC_APB4ENR_SYSCFGEN;	/* USB/OTG HS companion - VBUS? */
 		//(void) RCC->APB4ENR;
 
+		RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_USBOEN;
+		(void) RCC->MP_AHB2ENSETR;
+		RCC->MP_AHB2LPENSETR = RCC_MC_AHB2LPENSETR_USBOLPEN;
+		(void) RCC->MP_AHB2LPENSETR;
 
 //		RCC->AHB2ENR |= RCC_AHB2ENR_D2SRAM1EN;
 //		(void) RCC->AHB2ENR;
@@ -11453,6 +11459,16 @@ void HAL_HCD_MspInit(HCD_HandleTypeDef* hcdHandle)
 			NVIC_EnableIRQ(OTG_FS_IRQn);	// OTG_FS_IRQHandler() enable
 
 		#endif
+	}
+	else if (hcdHandle->Instance == USB_OTG_HS)
+	{
+#if CPUSTYLE_STM32MP1
+		RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_USBOEN;
+		(void) RCC->MP_AHB2ENSETR;
+		RCC->MP_AHB2LPENSETR = RCC_MC_AHB2LPENSETR_USBOLPEN;
+		(void) RCC->MP_AHB2LPENSETR;
+		arm_hardware_set_handler_system(OTG_IRQn, device_OTG_HS_IRQHandler);
+#endif /* CPUSTYLE_STM32MP1 */
 	}
 	else
 	{
