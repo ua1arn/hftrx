@@ -5358,7 +5358,7 @@ GrideTest(void)
 
 #endif /* LCDMODE_COLORED */
 
-#if 1
+#if 0
 static int
 toprintc(int c)
 {

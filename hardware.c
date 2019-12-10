@@ -9116,9 +9116,6 @@ void arm_hardware_flush_invalidate(uintptr_t base, size_t size)
 
 #elif (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7)
 
-static unsigned long DCACHEROWSIZE; // 32
-static unsigned long ICACHEROWSIZE; // 32
-
 #define MK_MVA(addr) ((uintptr_t) (addr) & ~ (uintptr_t) (DCACHEROWSIZE - 1))
 
 // Сейчас в эту память будем читать по DMA
@@ -9134,7 +9131,7 @@ void arm_hardware_invalidate(uintptr_t base, size_t size)
 	}
 }
 
-
+#if 0
 /* считать конфигурационные параметры data cache */
 static void ca9_ca7_cache_setup(void)
 {
@@ -9162,7 +9159,10 @@ static void ca9_ca7_cache_setup(void)
 	// Установка размера строки кэша
 	DCACHEROWSIZE = 4uL << (((ccsidr0 [0] >> 0) & 0x07) + 2);
 	ICACHEROWSIZE = 4uL << (((ccsidr1 [0] >> 0) & 0x07) + 2);
+
+	PRINTF("DCACHEROWSIZE=%d, ICACHEROWSIZE=%d\n", (int) DCACHEROWSIZE, (int) ICACHEROWSIZE);
 }
+#endif
 
 // используется в startup
 static void 
@@ -10572,6 +10572,7 @@ M_SIZE_IO_2     EQU     2550            ; [Area11] I/O area 2
 #define	TTB_PARA_NORMAL_CACHE       0b00000001110111101110UL	// 01DEE
 
 static uint32_t
+FLASHMEMINITFUNC
 r7s721_accessbits(uintptr_t a)
 {
 	const uint32_t addrbase = a & 0xFFF00000uL;
@@ -10584,6 +10585,7 @@ r7s721_accessbits(uintptr_t a)
 }
 
 static uint32_t
+FLASHMEMINITFUNC
 stm32mp1_accessbits(uintptr_t a)
 {
 	const uint32_t addrbase = a & 0xFFF00000uL;
@@ -10605,7 +10607,8 @@ stm32mp1_accessbits(uintptr_t a)
 	return addrbase | TTB_PARA_STRGLY;	// peripherials
 }
 
-static void ttb_initialize(uint32_t (* accessbits)(uintptr_t a))
+static void FLASHMEMINITFUNC
+ttb_initialize(uint32_t (* accessbits)(uintptr_t a))
 {
 	extern volatile uint32_t __TTB_BASE;		// получено из скрипта линкера
 	volatile uint32_t * const tlbbase = & __TTB_BASE;
@@ -10649,7 +10652,9 @@ static void ttb_initialize(uint32_t (* accessbits)(uintptr_t a))
 
 // TODO: use MMU_TTSection. See also MMU_TTPage4k MMU_TTPage64k and MMU_CreateTranslationTable
 // с точностью до 1 мегабайта
-static void ttb_map(
+static void
+FLASHMEMINITFUNC
+ttb_map(
 	uintptr_t va,	/* virtual address */
 	uintptr_t la,	/* linear (physical) address */
 	uint32_t (* accessbits)(uintptr_t a)
@@ -10663,18 +10668,11 @@ static void ttb_map(
 
 #endif /* CPUSTYLE_R7S721 */
 
-static void sysinit_pll_initialize(void)
+// PLL and caches inuitialize
+static void FLASHMEMINITFUNC
+sysinit_pll_initialize(void)
 {
 #if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7
-
-	#if WITHDEBUG && WITHINTEGRATEDDSP && CPUSTYLE_ARM_CM7
-		// Поддержка для функций диагностики быстродействия BEGINx_STAMP/ENDx_STAMP - audio.c
-		CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
-		DWT->LAR = 0xC5ACCE55;	// Key value for unlock
-		DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
-		DWT->LAR = 0x00000000;	// Key value for lock
-	#endif /* WITHDEBUG && WITHINTEGRATEDDSP */
-
 	#if (__FPU_PRESENT == 1) && (__FPU_USED == 1)
 
 		/* FPU enable on Cortex M4F */
@@ -10695,45 +10693,6 @@ static void sysinit_pll_initialize(void)
 	#endif
 
 #endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7 */
-
-#if (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7)
-
-	#if WITHDEBUG
-	{
-		// Поддержка для функций диагностики быстродействия BEGINx_STAMP/ENDx_STAMP - audio.c
-		// From https://stackoverflow.com/questions/3247373/how-to-measure-program-execution-time-in-arm-cortex-a8-processor
-
-		enum { do_reset = 0, enable_divider = 0 };
-		// in general enable all counters (including cycle counter)
-		int32_t value = 1;
-
-		// peform reset:
-		if (do_reset)
-		{
-			value |= 2;     // reset all counters to zero.
-			value |= 4;     // reset cycle counter to zero.
-		}
-
-		if (enable_divider)
-			value |= 8;     // enable "by 64" divider for CCNT.
-
-		value |= 16;
-
-		// program the performance-counter control-register:
-		//asm volatile ("MCR p15, 0, %0, c9, c12, 0\t\n" :: "r"(value));
-		__set_CP(15, 0, value, 9, 12, 0);
-
-		// enable all counters:
-		//asm volatile ("MCR p15, 0, %0, c9, c12, 1\t\n" :: "r"(0x8000000f));
-		__set_CP(15, 0, 0x8000000f, 9, 12, 1);
-
-		// clear overflows:
-		//asm volatile ("MCR p15, 0, %0, c9, c12, 3\t\n" :: "r"(0x8000000f));
-		__set_CP(15, 0, 0x8000000f, 9, 12, 3);
-	}
-	#endif /* WITHDEBUG */
-
-#endif /* (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7) */
 
 #if CPUSTYLE_STM32F1XX
 
@@ -10901,19 +10860,19 @@ static void sysinit_pll_initialize(void)
 	* (volatile unsigned long *) 0x3FFFFF80 &= ~ 0x01uL;	// L2CTL Clear standby_mode_en bit of the power control register in the PL310
 	* (volatile unsigned long *) 0x3FFFF100 |= 0x01uL;		// REG1 Set bit L2 Cache enable
 
-
 	//INB.RMPR &= ~ (1U << 1);		// 0: Address remapping is enabled 0x20000000 visible at 0x00000000.
 	//(void) INB.RMPR;
 
     /* ==== Initial setting of the level 1 cache ==== */
 	//__set_SCTLR(0);
     //L1CacheInit();
-
+#if 0
+	// Перенесено в cpu_initialize
+	// Не получается разместить эти функции во FLASH
 	L1C_EnableCaches();
 	L1C_EnableBTAC();
+#endif
 	__set_ACTLR(__get_ACTLR() | ACTLR_L1PE_Msk);	// Enable Dside prefetch
-
-
 	/* далее будет выполняться копирование data и инициализация bss - для нормальной работы RESET требуется без DATA CACHE */
 
 	/* Установить скорость обмена с SERIAL FLASH повыше */
@@ -10977,7 +10936,7 @@ static void sysinit_pll_initialize(void)
 #endif
 }
 
-static void
+static void FLASHMEMINITFUNC
 sysintt_sdram_initialize(void)
 {
 #if WITHSDRAMHW && WITHISBOOTLOADER
@@ -10995,9 +10954,60 @@ sysintt_sdram_initialize(void)
 #endif /* WITHSDRAMHW && WITHISBOOTLOADER */
 }
 
-static void
+static void FLASHMEMINITFUNC
 sysinit_debug_initialize(void)
 {
+#if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7
+
+	#if WITHDEBUG && WITHINTEGRATEDDSP && CPUSTYLE_ARM_CM7
+		// Поддержка для функций диагностики быстродействия BEGINx_STAMP/ENDx_STAMP - audio.c
+		CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
+		DWT->LAR = 0xC5ACCE55;	// Key value for unlock
+		DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
+		DWT->LAR = 0x00000000;	// Key value for lock
+	#endif /* WITHDEBUG && WITHINTEGRATEDDSP */
+
+#endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7 */
+
+#if (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7)
+
+	#if WITHDEBUG
+	{
+		// Поддержка для функций диагностики быстродействия BEGINx_STAMP/ENDx_STAMP - audio.c
+		// From https://stackoverflow.com/questions/3247373/how-to-measure-program-execution-time-in-arm-cortex-a8-processor
+
+		enum { do_reset = 0, enable_divider = 0 };
+		// in general enable all counters (including cycle counter)
+		int32_t value = 1;
+
+		// peform reset:
+		if (do_reset)
+		{
+			value |= 2;     // reset all counters to zero.
+			value |= 4;     // reset cycle counter to zero.
+		}
+
+		if (enable_divider)
+			value |= 8;     // enable "by 64" divider for CCNT.
+
+		value |= 16;
+
+		// program the performance-counter control-register:
+		//asm volatile ("MCR p15, 0, %0, c9, c12, 0\t\n" :: "r"(value));
+		__set_CP(15, 0, value, 9, 12, 0);
+
+		// enable all counters:
+		//asm volatile ("MCR p15, 0, %0, c9, c12, 1\t\n" :: "r"(0x8000000f));
+		__set_CP(15, 0, 0x8000000f, 9, 12, 1);
+
+		// clear overflows:
+		//asm volatile ("MCR p15, 0, %0, c9, c12, 3\t\n" :: "r"(0x8000000f));
+		__set_CP(15, 0, 0x8000000f, 9, 12, 3);
+	}
+	#endif /* WITHDEBUG */
+
+#endif /* (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7) */
+
 #if WITHDEBUG && ! WITHISBOOTLOADER
 	// В функции инициализации компорта есть NVIC_SetVector
 	// При вызове до перемещения таблиц прерывания получаем HardFault на STM32F7XXX
@@ -11008,17 +11018,10 @@ sysinit_debug_initialize(void)
 #endif /* WITHDEBUG */
 }
 
-static void
+static void FLASHMEMINITFUNC
 sysinit_vbar_initialize(void)
 {
 #if CPUSTYLE_R7S721
-
-	//INB.RMPR &= ~ (1U << 1);		// 0: Address remapping is enabled 0x20000000 visible at 0x00000000.
-	//(void) INB.RMPR;
-
-	//extern unsigned long __isr_vector__;
-	//CP15_set_vbase_address((unsigned int) & __isr_vector__); // Set Vector Base Address Register
-	//CP15_set_mvbase_address((unsigned int) & __isr_vector__);	//  Set Monitor Vector Base Address Register
 
 	__set_VBAR(0);	 // Set Vector Base Address Register
 	//CP15_set_vbase_address(0); // Set Vector Base Address Register
@@ -11049,7 +11052,7 @@ sysinit_vbar_initialize(void)
 #endif
 }
 
-static void
+static void FLASHMEMINITFUNC
 sysinit_mmu_initialize(void)
 {
 	PRINTF("sysinit_mmu_initialize\n");
@@ -11103,8 +11106,6 @@ sysinit_mmu_initialize(void)
 	//CP15_enableMMU();
 	MMU_Enable();
 
-	ca9_ca7_cache_setup();
-
 #elif CPUSTYLE_STM32MP1
 
 	// MMU inuitialize
@@ -11116,8 +11117,6 @@ sysinit_mmu_initialize(void)
 
 	//CP15_enableMMU();
 	MMU_Enable();
-
-	ca9_ca7_cache_setup();
 
 #else
 	//#error Undefined CPUSTYLE_XXX
@@ -11629,6 +11628,13 @@ void cpu_initialize(void)
 #endif
 
 #if CPUSTYLE_R7S721
+#if 1
+	// Перенесено из systeminit
+	// Не получается разместить эти функции во FLASH
+	L1C_EnableCaches();
+	L1C_EnableBTAC();
+#endif
+
 	/* TN-RZ*-A011A/E recommends switch off USB_X1 if usb USB not used */
 	CPG.STBCR7 &= ~ CPG_STBCR7_MSTP70;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module runs.
 	CPG.STBCR7 &= ~ CPG_STBCR7_MSTP71;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module runs.
