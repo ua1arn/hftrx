@@ -7526,21 +7526,21 @@ static void hw_swi(void)
 	__asm volatile (" SWI  0" : /* no outputs */ : /* no inputs */  );
 }
 
-#if WITHDEBUG && 0
+#if WITHDEBUG && 1
 // ARM_SYSTEM_PRIORITY function
 static void r7s721_ostm0_interrupt_test(void)
 {
 	LOCK(& locklist8);
 	auto int marker;
 	global_disableIRQ();
-	debug_printf_P(PSTR("  Sy:@%p ICCRPR=%02x cpsr=%08lx!\n"), & marker, GICC_RPR, __get_CPSR());
+	debug_printf_P(PSTR("  Sy:@%p INTCICCRPR=%02x cpsr=%08lx!\n"), & marker, INTCICCRPR, __get_CPSR());
 	global_enableIRQ();
 
 	local_delay_ms(5);
 	local_delay_ms(5);
 
 	global_disableIRQ();
-	debug_printf_P(PSTR("  Sy: ICCRPR=%02x cpsr=%08lx.\n"), GICC_RPR, __get_CPSR());
+	debug_printf_P(PSTR("  Sy: INTCICCRPR=%02x cpsr=%08lx.\n"), INTCICCRPR, __get_CPSR());
 	global_enableIRQ();
 	UNLOCK(& locklist8);
 }
@@ -7552,7 +7552,7 @@ static void r7s721_ostm1_interrupt_test(void)
 
 	auto int marker;
 	global_disableIRQ();
-	debug_printf_P(PSTR("    Rt:@%p ICCRPR=%02x cpsr=%08lx!\n"), & marker, GICC_RPR, __get_CPSR());
+	debug_printf_P(PSTR("    Rt:@%p INTCICCRPR=%02x cpsr=%08lx!\n"), & marker, INTCICCRPR, __get_CPSR());
 	global_enableIRQ();
 
 	local_delay_ms(5);
@@ -7560,7 +7560,7 @@ static void r7s721_ostm1_interrupt_test(void)
 	local_delay_ms(5);
 
 	global_disableIRQ();
-	debug_printf_P(PSTR("    rt: ICCRPR=%02x cpsr=%08lx.\n"), GICC_RPR, __get_CPSR());
+	debug_printf_P(PSTR("    rt: INTCICCRPR=%02x cpsr=%08lx.\n"), INTCICCRPR, __get_CPSR());
 	global_enableIRQ();
 
 	UNLOCK(& locklist16);
@@ -7573,14 +7573,14 @@ static void spool_encinterruptR(void)
 
 	auto int marker;
 	global_disableIRQ();
-	debug_printf_P(PSTR("    E:@%p ICCRPR=%02x cpsr=%08lx!\n"), & marker, GICC_RPR, __get_CPSR());
+	debug_printf_P(PSTR("    E:@%p INTCICCRPR=%02x cpsr=%08lx!\n"), & marker, INTCICCRPR, __get_CPSR());
 	global_enableIRQ();
 
 	local_delay_ms(25);
 	local_delay_ms(5);
 
 	global_disableIRQ();
-	debug_printf_P(PSTR("    e:ICCRPR=%02x cpsr=%08lx.\n"), GICC_RPR, __get_CPSR());
+	debug_printf_P(PSTR("    e:INTCICCRPR=%02x cpsr=%08lx.\n"), INTCICCRPR, __get_CPSR());
 	global_enableIRQ();
 
 	UNLOCK(& locklist16);
@@ -7594,7 +7594,7 @@ void xSWIHandler(void)
 	for (;;)
 	{
 		global_disableIRQ();
-		debug_printf_P(PSTR("B: ICCRPR=%02x cpsr=%08lx*\n"), GICC_RPR, __get_CPSR());
+		debug_printf_P(PSTR("B: INTCICCRPR=%02x cpsr=%08lx*\n"), INTCICCRPR, __get_CPSR());
 		global_enableIRQ();
 
 		local_delay_ms(20);
@@ -7612,13 +7612,13 @@ nestedirqtest(void)
 	global_disableIRQ();
 	cpu_initialize();		// в случае ARM - инициализация прерываний и контроллеров, AVR - запрет JTAG
 
-	HARDWARE_DEBUG_INITIALIZE();
-	HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
+	//HARDWARE_DEBUG_INITIALIZE();
+	//HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
 	// выдача повторяющегося символа для тестирования скорости передачи, если ошибочная инициализация
 	//for (;;)
 	//	dbg_putchar(0xff);
 	// тестирование приёма и передачи символов
-	debug_printf_P(PSTR("GICC_PMR=%02X\n"), GICC_PMR);
+	debug_printf_P(PSTR("INTCICCPMR=%02X\n"), INTCICCPMR);
 	debug_printf_P(PSTR("ECHO test. Press ESC for done.\n"));
 	for (;1;)
 	{
@@ -7646,20 +7646,20 @@ nestedirqtest(void)
 		} while (0);
 	#endif
 #endif /* defined (ENCODER_BITS) */
-	debug_printf_P(PSTR("ICCRPR=%02x cpsr=%08lx* \n"), GICC_RPR, __get_CPSR());
+	debug_printf_P(PSTR("INTCICCRPR=%02x cpsr=%08lx* \n"), INTCICCRPR, __get_CPSR());
 	//hw_swi();
 	global_enableIRQ();
 
 	for (;;)
 	{
-		unsigned iccrpr0 = GICC_RPR;
+		unsigned iccrpr0 = INTCICCRPR;
 		disableIRQ();
-		unsigned iccrpr1 = GICC_RPR;
+		unsigned iccrpr1 = INTCICCRPR;
 		local_delay_ms(20);
 		enableIRQ();
 
 		global_disableIRQ();
-		debug_printf_P(PSTR("iccrpr0=%02x, iccrpr1=%02x, ICCRPR=%02x cpsr=%08lx*\n"), iccrpr0, iccrpr1, GICC_RPR, __get_CPSR());
+		debug_printf_P(PSTR("iccrpr0=%02x, iccrpr1=%02x, INTCICCRPR=%02x cpsr=%08lx*\n"), iccrpr0, iccrpr1, INTCICCRPR, __get_CPSR());
 		global_enableIRQ();
 
 		local_delay_ms(20);
