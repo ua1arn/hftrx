@@ -355,7 +355,7 @@ typedef struct
   // RENESAS specific field
   //uint_fast8_t	pipe_num;
 
-#elif CPUSTYLE_STM32F
+#elif CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
 
   // STM32 specific field
   uint_fast8_t  tx_fifo_num;    /*!< Transmission FIFO number
@@ -463,7 +463,7 @@ typedef USBALIGN_BEGIN struct
 	volatile PCD_StateTypeDef State;      /*!< PCD communication state            */
 	USBALIGN_BEGIN uint32_t PSetup [12] USBALIGN_END;  /*!< Setup packet buffer                */
 
-	#if CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX || CPUSTYLE_R7S721
+	#if CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX || CPUSTYLE_R7S721 || CPUSTYLE_STM32MP1
 
 		PCD_LPM_StateTypeDef    LPM_State;    /*!< LPM State                          */
 		uint32_t                BESL;
