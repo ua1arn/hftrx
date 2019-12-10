@@ -5358,7 +5358,7 @@ GrideTest(void)
 
 #endif /* LCDMODE_COLORED */
 
-#if 0
+#if 1
 static int
 toprintc(int c)
 {
@@ -5392,14 +5392,57 @@ printhex(unsigned long voffs, const unsigned char * buff, unsigned length)
 
 #endif
 
+#if 0
+// MCU_AHB_SRAM - 96k
+
+static void memfill(unsigned k)
+{
+	unsigned long offset = k * 1024uL;
+
+	((volatile uint8_t *) 0x20000000) [offset + 4] = 0xAA;
+	((volatile uint8_t *) 0x20000000) [offset + 5] = 0x55;
+	((volatile uint32_t *) 0x20000000) [offset + 0] = offset;
+}
+
+static int memprobe(unsigned k)
+{
+	unsigned long offset = k * 1024uL;
+
+	const uint_fast8_t ok1 = ((volatile uint8_t *) 0x20000000) [offset + 4] == 0xAA;
+	const uint_fast8_t ok2 = ((volatile uint8_t *) 0x20000000) [offset + 5] == 0x55;
+	const uint_fast8_t ok3 = ((volatile uint32_t *) 0x20000000) [offset + 0] == offset;
+	return ok1 && ok2 && ok3;
+}
+#endif
+
 void hightests(void)
 {
-#if 0 && defined (__GNUC__)
+#if 1 && defined (__GNUC__)
 	{
+
 		debug_printf_P(PSTR("__GNUC__=%d, __GNUC_MINOR__=%d\n"), (int) __GNUC__, (int) __GNUC_MINOR__);
-		//printhex(0x20000000, (const uint8_t *) 0x20000000, 256);	// /* Cortex-M4 memories */
-		//printhex(0xC0000000, (const uint8_t *) 0xC0000000, 256);	// DDR3
-		//printhex(0x70000000, (const uint8_t *) 0x70000000, 256);	// QSPI
+	}
+#endif
+#if 0
+	{
+		unsigned k;
+		TP();
+		for (k = 0; k < 1024; ++ k)
+		{
+			memfill(k);
+		}
+		TP();
+		for (k = 0; k < 1024; ++ k)
+		{
+			PRINTF("\r%4d ", k);
+			if (!memprobe(k))
+				break;
+		}
+		PRINTF("\n");
+		PRINTF("MCU_AHB_SRAM size = %uK\n", k);
+		printhex(MCU_AHB_SRAM, (const uint8_t *) MCU_AHB_SRAM, 256);	// /* Cortex-M4 memories */
+		//printhex(DRAM_MEM_BASE, (const uint8_t *) DRAM_MEM_BASE, 256);	// DDR3
+		//printhex(QSPI_MEM_BASE, (const uint8_t *) QSPI_MEM_BASE, 256);	// QSPI
 		//arm_hardware_sdram_initialize();
 	}
 #endif

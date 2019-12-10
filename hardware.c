@@ -10588,11 +10588,11 @@ ttb_accessbits(uintptr_t a)
 
 	if (a >= 0x00000000uL && a < 0x10000000uL)			// BOOT
 		return addrbase | TTB_PARA_NORMAL_CACHE;
-	if (a >= 0x10000000uL && a < 0x20000000uL)			// SRAMs
+	if (a >= 0x10000000uL && a < 0x20000000uL)			// SRAMs ??????
 		return addrbase | TTB_PARA_NORMAL_CACHE;
 	if (a >= 0x20000000uL && a < 0x30000000uL)			// SYSRAM
 		return addrbase | TTB_PARA_NORMAL_CACHE;
-	if (a >= 0x30000000uL && a < 0x40000000uL)			// RAM aliases
+	if (a >= 0x30000000uL && a < 0x40000000uL)			// RAM aliases - present
 		return addrbase | TTB_PARA_NORMAL_CACHE;
 	if (a >= 0x60000000uL && a < 0xA0000000uL)			//  FMC, QUADSPI, NOR, ...
 		return addrbase | TTB_PARA_NORMAL_CACHE;
@@ -11168,7 +11168,7 @@ arm_gic_initialize(void)
 	//PRINTF("arm_gic_initialize: ICPIDR0=%08lX\n", ICPIDR0);	// ICPIDR0
 	//PRINTF("arm_gic_initialize: ICPIDR1=%08lX\n", ICPIDR1);	// ICPIDR1
 	//PRINTF("arm_gic_initialize: ICPIDR2=%08lX\n", ICPIDR2);	// ICPIDR2
-#if 1
+#if 0
 	// GIC version diagnostics
 	switch (ICPIDR1 & 0x0F)
 	{

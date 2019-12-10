@@ -3346,6 +3346,9 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 	RCC->DDRITFCR &= ~ RCC_DDRITFCR_AXIDCGEN;
 	(void) RCC->DDRITFCR;
 
+	//PRINTF("DDRC->MSTR=%08lX\n", DDRC->MSTR);
+	PRINTF("DDRPHYC->RIDR=%08lX\n", DDRPHYC->RIDR);
+
 	stm32mp1_ddr_init();
 
 	/* Enable axidcg clock gating */
