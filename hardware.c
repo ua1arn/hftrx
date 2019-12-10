@@ -11084,7 +11084,7 @@ sysinit_mmu_initialize(void)
 
 #endif /* (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7) */
 
-	PRINTF("MMU initialized\n");
+	//PRINTF("MMU initialized\n");
 }
 
 /* функция вызывается из start-up до копирования в SRAM всех "быстрых" функций и до инициализации переменных
@@ -11446,7 +11446,7 @@ cpu_tms320f2833x_flash_waitstates(uint_fast8_t flashws, uint_fast8_t otpws)
 // Вызывается из main
 void cpu_initialize(void)
 {
-	PRINTF("cpu_initialize\n");
+	//PRINTF("cpu_initialize\n");
 #if CPUSTYLE_STM32F1XX
 
 	cpu_stm32f1xx_setmapr(0);	/* переключить отладочный интерфейс в SWD */
@@ -11623,7 +11623,7 @@ void cpu_initialize(void)
 	arm_gic_initialize();
 
 #endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7 */
-	PRINTF("cpu_initialize done\n");
+	//PRINTF("cpu_initialize done\n");
 }
 
 // секция init больше не нужна
