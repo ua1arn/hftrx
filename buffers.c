@@ -204,8 +204,8 @@ enum
 	// исправляемая погрешность = 0.02% - один сэмпл добавить/убрать на 5000 сэмплов
 
 	enum { SKIPPED = 5000 / (DMABUFFSIZE16 / DMABUFSTEP16) };
-	static const uint_fast8_t VOICESMIKE16NORMAL = 5;	// Нормальное количество буферов в очереди
-	static const uint_fast8_t RESAMPLE16NORMAL = SKIPPED * 2;	// Нормальное количество буферов в очереди
+	enum { VOICESMIKE16NORMAL = 5 };	// Нормальное количество буферов в очереди
+	enum { RESAMPLE16NORMAL = SKIPPED * 2 };	// Нормальное количество буферов в очереди
 
 	static RAMDTCM LIST_ENTRY3 voicesmike16;	// буферы с оцифрованными звуками с микрофона/Line in
 	static RAMDTCM LIST_ENTRY3 resample16;		// буферы от USB для синхронизации
