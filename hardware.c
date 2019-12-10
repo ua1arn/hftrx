@@ -10573,22 +10573,18 @@ M_SIZE_IO_2     EQU     2550            ; [Area11] I/O area 2
 
 static uint32_t
 FLASHMEMINITFUNC
-r7s721_accessbits(uintptr_t a)
+ttb_accessbits(uintptr_t a)
 {
 	const uint32_t addrbase = a & 0xFFF00000uL;
+
+#if CPUSTYLE_R7S721020
 
 	if (a >= 0x00000000uL && a < 0x00A00000uL)			// up to 10 MB
 		return addrbase | TTB_PARA_NORMAL_CACHE;
 	if (a >= 0x20000000uL && a < 0x20A00000uL)			// up to 10 MB
 		return addrbase | TTB_PARA_NORMAL_CACHE;
-	return addrbase | TTB_PARA_STRGLY;
-}
 
-static uint32_t
-FLASHMEMINITFUNC
-stm32mp1_accessbits(uintptr_t a)
-{
-	const uint32_t addrbase = a & 0xFFF00000uL;
+#elif CPUSTYLE_STM32MP1
 
 	if (a >= 0x00000000uL && a < 0x10000000uL)			// BOOT
 		return addrbase | TTB_PARA_NORMAL_CACHE;
@@ -10598,13 +10594,17 @@ stm32mp1_accessbits(uintptr_t a)
 		return addrbase | TTB_PARA_NORMAL_CACHE;
 	if (a >= 0x30000000uL && a < 0x40000000uL)			// RAM aliases
 		return addrbase | TTB_PARA_NORMAL_CACHE;
+	if (a >= 0x60000000uL && a < 0xA0000000uL)			//  FMC, QUADSPI, NOR, ...
+		return addrbase | TTB_PARA_NORMAL_CACHE;
 	if (a >= 0xC0000000uL && a < 0xE0000000uL)			// DDR memory
 		return addrbase | TTB_PARA_NORMAL_CACHE;
 /*
-	if (a >= 0x80000000uL && a < 0xC0000000uL)			// memory
+	if (a >= 0xA0000000uL && a < 0xC0000000uL)			// memory
 		return addrbase | TTB_PARA_NORMAL_CACHE;
 */
-	return addrbase | TTB_PARA_STRGLY;	// peripherials
+#endif
+
+	return addrbase | TTB_PARA_STRGLY;
 }
 
 static void FLASHMEMINITFUNC
@@ -10648,6 +10648,13 @@ ttb_initialize(uint32_t (* accessbits)(uintptr_t a))
 	//__set_DACR(0x55555555); // domain 15: access are not checked
 	__set_DACR(0xFFFFFFFF); // domain 15: access are not checked
 #endif
+
+	MMU_InvalidateTLB();
+
+	// Обеспечиваем нормальную обработку RESEТ
+	arm_hardware_invalidate_all();
+
+	MMU_Enable();
 }
 
 // TODO: use MMU_TTSection. See also MMU_TTPage4k MMU_TTPage64k and MMU_CreateTranslationTable
@@ -11021,19 +11028,7 @@ sysinit_debug_initialize(void)
 static void FLASHMEMINITFUNC
 sysinit_vbar_initialize(void)
 {
-#if CPUSTYLE_R7S721
-
-	extern unsigned long __etext, __bss_start__, __bss_end__, __data_end__, __data_start__, __stack, __Vectors;
-
-	const uintptr_t vbase = (uintptr_t) & __Vectors;
-	__set_VBAR(vbase);	 // Set Vector Base Address Register (bits 4..0 should be zero)
-	__set_MVBAR(vbase);	 // Set Vector Base Address Register (bits 4..0 should be zero) - на работу не вличет... но на всякий случай
-
-	//cp15_vectors_reloc_disable();
-	__set_SCTLR(__get_SCTLR() & ~ SCTLR_V_Msk);
-	__set_SCTLR(__get_SCTLR() & ~ SCTLR_A_Msk);	// 0 = Strict alignment fault checking disabled. This is the reset value.
-
-#elif CPUSTYLE_STM32MP157A
+#if (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7)
 
 	extern unsigned long __etext, __bss_start__, __bss_end__, __data_end__, __data_start__, __stack, __Vectors;
 
@@ -11050,14 +11045,15 @@ sysinit_vbar_initialize(void)
 
 	//PRINTF("vbar=%08lX, mvbar=%08lX\n", __get_VBAR(), __get_MVBAR());
 
-#endif
+#endif /* (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7) */
 }
 
 static void FLASHMEMINITFUNC
 sysinit_mmu_initialize(void)
 {
-	PRINTF("sysinit_mmu_initialize\n");
-#if CPUSTYLE_R7S721
+	//PRINTF("sysinit_mmu_initialize\n");
+
+#if (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7)
 	// MMU inuitialize
 
 #if 0 && WITHDEBUG
@@ -11084,36 +11080,10 @@ sysinit_mmu_initialize(void)
 #endif /* WITHDEBUG */
 
 	// MMU inuitialize
-	ttb_initialize(r7s721_accessbits);
-	// Отображение 10 мегабайт с 0x20000000 в 0x00000000
-	// Хотя, достаточно и одной страницы c с переходами на обработчики прерываний - код выполняется на 0x20000000
-	//ttb_map(0x00000000uL, (uint32_t) & __data_start__, r7s721_accessbits);	// с точностью до 1 мегабайта
-	//unsigned long offset;
-	//for (offset = 0; offset < 10uL * 1024 * 1024; offset += 1uL * 1024 * 1024)
-	//	r7s721_ttb_map(0x00000000uL + offset, __data_start__ + offset); // с точностью до 1 мегабайта
-	//CP15_writeTLBIALLIS(0);	// Invalidate TLB
-	MMU_InvalidateTLB();
+	ttb_initialize(ttb_accessbits);
 
-	// Обеспечиваем нормальную обработку RESEТ
-	arm_hardware_invalidate_all();
+#endif /* (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7) */
 
-	MMU_Enable();
-
-#elif CPUSTYLE_STM32MP1
-
-	// MMU inuitialize
-	ttb_initialize(stm32mp1_accessbits);
-	MMU_InvalidateTLB();
-
-	// Обеспечиваем нормальную обработку RESEТ
-	arm_hardware_invalidate_all();
-
-	MMU_Enable();
-
-#else
-	//#error Undefined CPUSTYLE_XXX
-
-#endif
 	PRINTF("MMU initialized\n");
 }
 
@@ -11195,11 +11165,10 @@ arm_cpu_CMx_initialize_NVIC(void)
 static void
 arm_gic_initialize(void)
 {
-	TP();
 	//PRINTF("arm_gic_initialize: ICPIDR0=%08lX\n", ICPIDR0);	// ICPIDR0
 	//PRINTF("arm_gic_initialize: ICPIDR1=%08lX\n", ICPIDR1);	// ICPIDR1
 	//PRINTF("arm_gic_initialize: ICPIDR2=%08lX\n", ICPIDR2);	// ICPIDR2
-#if 0
+#if 1
 	// GIC version diagnostics
 	switch (ICPIDR1 & 0x0F)
 	{
@@ -11207,17 +11176,13 @@ arm_gic_initialize(void)
 	case 0x04:	PRINTF("arm_gic_initialize: ARM GICv2\n"); break;
 	default:	PRINTF("arm_gic_initialize: ARM GICv? (code=%08lX @%p)\n", (unsigned long) ICPIDR1, & ICPIDR1); break;
 	}
-
 #endif
 
-	TP();
 	IRQ_Initialize();
-	TP();
 
 #if CPUSTYLE_R7S721
 	ca9_ca7_intc_initialize();
 #endif /* CPUSTYLE_R7S721 */
-	TP();
 
     /* Interrupt Priority Mask Register setting */
     /* Enable priorities for all interrupts */
@@ -11240,7 +11205,6 @@ arm_gic_initialize(void)
 #if WITHNESTEDINTERRUPTS
     GIC_SetInterfacePriorityMask(gARM_BASEPRI_ALL_ENABLED);
 #endif /* WITHNESTEDINTERRUPTS */
-	TP();
 }
 
 #endif /* (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7) */
