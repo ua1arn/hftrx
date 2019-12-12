@@ -9311,6 +9311,14 @@ void stm32mp1_pll_initialize(void)
 	while((RCC->MPCKSELR & RCC_MPCKSELR_MPUSRCRDY_Msk) == 0)
 		;
 
+	// Stop PLL4
+	RCC->PLL4CR &= ~ RCC_PLL4CR_PLLON_Msk;
+	(void) RCC->PLL4CR;
+
+	// Stop PLL3
+	RCC->PLL3CR &= ~ RCC_PLL3CR_PLLON_Msk;
+	(void) RCC->PLL3CR;
+
 	// Stop PLL2
 	RCC->PLL2CR &= ~ RCC_PLL2CR_PLLON_Msk;
 	(void) RCC->PLL2CR;
@@ -9494,15 +9502,33 @@ void stm32mp1_pll_initialize(void)
 
 #if WITHUSBHW || WITHLTDCHW
 	// PLL4
+	// PLL4 source mux
+	//	0x0: HSI selected as PLL clock (hsi_ck) (default after reset)
+	//	0x1: HSE selected as PLL clock (hse_ck)
+	//	0x2: CSI selected as PLL clock (csi_ck)
+	//	0x3: Signal I2S_CKIN used as reference clock
+	RCC->RCK4SELR = (RCC->RCK4SELR & ~ (RCC_RCK4SELR_PLL4SRC_Msk)) |
+	#if WITHCPUXOSC || WITHCPUXTAL
+		// с внешним генератором
+		// с внешним кварцем
+		(0x01 << RCC_RCK4SELR_PLL4SRC_Pos) |	// HSE
+	#else
+		// На внутреннем генераторе
+		(0x00 << RCC_RCK4SELR_PLL4SRC_Pos) |	// HSI
+	#endif
+		0;
+	while ((RCC->RCK4SELR & RCC_RCK4SELR_PLL4SRCRDY_Msk) == 0)
+		;
+
 	RCC->PLL4CFGR1 = (RCC->PLL4CFGR1 & ~ (RCC_PLL4CFGR1_DIVN_Msk | RCC_PLL4CFGR1_DIVM4_Msk)) |
 		((PLL4DIVN - 1) << RCC_PLL4CFGR1_DIVN_Pos) |
 		((PLL4DIVM - 1) << RCC_PLL4CFGR1_DIVM4_Pos) |
 		0;
 
 	RCC->PLL4CFGR2 = (RCC->PLL4CFGR2 & ~ (RCC_PLL4CFGR2_DIVP_Msk | RCC_PLL4CFGR2_DIVQ_Msk | RCC_PLL4CFGR2_DIVR_Msk)) |
-		((PLL4DIVP - 1) << RCC_PLL4CFGR2_DIVP_Pos) |	// pll2_p_ck - AXI clock (1..128 -> 0x00..0x7f)
-		((PLL4DIVQ - 1) << RCC_PLL4CFGR2_DIVQ_Pos) |	// GPU clock (1..128 -> 0x00..0x7f)
-		((PLL4DIVR - 1) << RCC_PLL4CFGR2_DIVR_Pos) |	// DDR clock (1..128 -> 0x00..0x7f)
+		((PLL4DIVP - 1) << RCC_PLL4CFGR2_DIVP_Pos) |	// pll4_p_ck - xxxxx (1..128 -> 0x00..0x7f)
+		((PLL4DIVQ - 1) << RCC_PLL4CFGR2_DIVQ_Pos) |	// LTDC clock (1..128 -> 0x00..0x7f)
+		((PLL4DIVR - 1) << RCC_PLL4CFGR2_DIVR_Pos) |	// USBPHY clock (1..128 -> 0x00..0x7f)
 		0;
 
 	RCC->PLL4CR |= RCC_PLL4CR_DIVPEN_Msk;	// pll2_p_ck - AXI clock
@@ -9536,7 +9562,7 @@ void stm32mp1_pll_initialize(void)
 	//  0x2: hse_ker_ck/2 clock selected as kernel peripheral clock
 	RCC->USBCKSELR = (RCC->USBCKSELR & ~ (RCC_USBCKSELR_USBOSRC_Msk | RCC_USBCKSELR_USBPHYSRC_Msk)) |
 		(0x00 << RCC_USBCKSELR_USBOSRC_Pos) |
-		(0x02 << RCC_USBCKSELR_USBPHYSRC_Pos) |
+		(0x01 << RCC_USBCKSELR_USBPHYSRC_Pos) |
 		0;
 	(void) RCC->USBCKSELR;
 #endif /* WITHUSBHW */
