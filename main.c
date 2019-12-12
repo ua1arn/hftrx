@@ -9701,7 +9701,8 @@ display2_adctest(
 		char b [WDTH + 1];
 		uint_fast8_t valid;
 
-		value = mcp3208_read(adcis [row].target, adcis [row].diff, adcis [row].adci, & valid) * (uint64_t) adcis [row].mul10 * vref_mV / 4095 / 10;
+		value = mcp3208_read(adcis [row].target, adcis [row].diff, adcis [row].adci & 0x07, & valid) * (uint64_t) adcis [row].mul10 * vref_mV / 4095 / 10;
+		//value = board_getadc_unfiltered_truevalue(adcis [row].adci) * (uint64_t) adcis [row].mul10 * vref_mV / board_getadc_fsval(adcis [row].adci) / 10;
 
 		local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%*u"), WDTH, (unsigned) value);
 		display_2states_P(x + (0), y + GRID2Y(row), valid, adcis [row].label, adcis [row].label);
