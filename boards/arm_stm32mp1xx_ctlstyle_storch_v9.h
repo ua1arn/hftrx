@@ -46,6 +46,12 @@
 		#define PLL2DIVQ	2	// GPU clock divider
 		#define PLL2DIVR	3	// DDR clock divider
 
+		#define PLL4DIVM	2	// ref2_ck = 12 MHz
+		#define PLL4DIVN	48	// 576 MHz
+		#define PLL4DIVP	2	// div2
+		#define PLL4DIVQ	18	// LTDC clock divider = 32
+		#define PLL4DIVR	12	// USBPHY clock divider = 48 MHz
+
 	#else
 		// HSI version (HSI=64 MHz)
 		#define PLL1DIVM	5	// ref1_ck = 12.8 MHz

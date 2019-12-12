@@ -4041,15 +4041,14 @@ HAL_StatusTypeDef  USB_SetDevAddress (USB_OTG_GlobalTypeDef *USBx, uint_fast8_t 
   * @param  USBx : Selected device
   * @retval HAL status
   */
-HAL_StatusTypeDef  USB_DevConnect (USB_OTG_GlobalTypeDef *USBx)
+HAL_StatusTypeDef  USB_DevConnect(USB_OTG_GlobalTypeDef *USBx)
 {
 	//PRINTF(PSTR("USB_DevConnect (USBx=%p)\n"), USBx);
 	USBx_DEVICE->DCTL &= ~ USB_OTG_DCTL_SDIS;
 	(void) USBx_DEVICE->DCTL;
-	ASSERT((USBx_DEVICE->DCTL & USB_OTG_DCTL_SDIS) == 0);
+	ASSERT((USBx_DEVICE->DCTL & USB_OTG_DCTL_SDIS) == 0);	// Chech USB_OTH clock is active
 
 	HARDWARE_DELAY_MS(3);
-
 	return HAL_OK;
 }
 
@@ -4059,13 +4058,12 @@ HAL_StatusTypeDef  USB_DevConnect (USB_OTG_GlobalTypeDef *USBx)
   * @param  USBx : Selected device
   * @retval HAL status
   */
-HAL_StatusTypeDef  USB_DevDisconnect (USB_OTG_GlobalTypeDef *USBx)
+HAL_StatusTypeDef  USB_DevDisconnect(USB_OTG_GlobalTypeDef *USBx)
 {
 	//PRINTF(PSTR("USB_DevDisconnect (USBx=%p)\n"), USBx);
-
 	USBx_DEVICE->DCTL |= USB_OTG_DCTL_SDIS;
 	(void) USBx_DEVICE->DCTL;
-	ASSERT((USBx_DEVICE->DCTL & USB_OTG_DCTL_SDIS) != 0);
+	ASSERT((USBx_DEVICE->DCTL & USB_OTG_DCTL_SDIS) != 0);	// Chech USB_OTH clock is active
 
 	HARDWARE_DELAY_MS(3);
 
@@ -11209,13 +11207,16 @@ USBH_StatusTypeDef  USBH_LL_DriverVBUS(USBH_HandleTypeDef *phost, uint_fast8_t s
 void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 {
 #if CPUSTYLE_STM32MP1
-	PWR->CR3 |= PWR_CR3_USB33DEN;
+	PWR->CR3 |= PWR_CR3_USB33DEN_Msk;
+	(void) PWR->CR3;
+	while ((PWR->CR3 & PWR_CR3_USB33RDY_Msk) == 0)
+		;
 
 	if (hpcd->Instance == USB1_OTG_HS)	// legacy name is USB_OTG_HS
 	{
 		if (hpcd->Init.phy_itface == USB_OTG_ULPI_PHY)
 		{
-			USBD_HS_ULPI_INITIALIZE();
+			//USBD_HS_ULPI_INITIALIZE();
 
 //			RCC->AHB1ENR |= RCC_AHB1ENR_USB1OTGHSEN | RCC_AHB1ENR_USB1OTGHSULPIEN;	/* USB/OTG HS with ULPI */
 //			(void) RCC->AHB1ENR;
@@ -11224,9 +11225,16 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 //			RCC->AHB1LPENR |= RCC_AHB1LPENR_USB1OTGHSULPILPEN; /* USB/OTG HS ULPI  */
 //			(void) RCC->AHB1LPENR;
 		}
+		else
+		{
+			USBD_HS_FS_INITIALIZE();
+		}
 		//RCC->APB4ENR |= RCC_APB4ENR_SYSCFGEN;	/* USB/OTG HS companion - VBUS? */
 		//(void) RCC->APB4ENR;
-
+		RCC->MP_APB4ENSETR = RCC_MC_APB4ENSETR_USBPHYEN;
+		(void)RCC-> MP_APB4ENSETR;
+		RCC->MP_APB4LPENSETR = RCC_MC_APB4LPENSETR_USBPHYLPEN;
+		(void) RCC->MP_APB4LPENSETR;
 		RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_USBOEN;
 		(void) RCC->MP_AHB2ENSETR;
 		RCC->MP_AHB2LPENSETR = RCC_MC_AHB2LPENSETR_USBOLPEN;
@@ -11463,11 +11471,15 @@ void HAL_HCD_MspInit(HCD_HandleTypeDef* hcdHandle)
 	else if (hcdHandle->Instance == USB_OTG_HS)
 	{
 #if CPUSTYLE_STM32MP1
+		RCC->MP_APB4ENSETR = RCC_MC_APB4ENSETR_USBPHYEN;
+		(void)RCC-> MP_APB4ENSETR;
+		RCC->MP_APB4LPENSETR = RCC_MC_APB4LPENSETR_USBPHYLPEN;
+		(void) RCC->MP_APB4LPENSETR;
 		RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_USBOEN;
 		(void) RCC->MP_AHB2ENSETR;
 		RCC->MP_AHB2LPENSETR = RCC_MC_AHB2LPENSETR_USBOLPEN;
 		(void) RCC->MP_AHB2LPENSETR;
-		arm_hardware_set_handler_system(OTG_IRQn, device_OTG_HS_IRQHandler);
+		arm_hardware_set_handler_system(OTG_IRQn, host_OTG_HS_IRQHandler);
 #endif /* CPUSTYLE_STM32MP1 */
 	}
 	else
