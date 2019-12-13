@@ -2691,6 +2691,59 @@ HAL_StatusTypeDef USB_FlushTxFifo(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t num)
 #if (CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1)
 
 #ifdef USBPHYC
+
+#define ULL(v) ((unsigned long long) (v))
+#define UL(v) ((unsigned long) (v))
+#define U(v) ((unsigned) (v))
+
+#define BIT_32(nr)			(U(1) << (nr))
+#define BIT_64(nr)			(ULL(1) << (nr))
+
+/*
+ * Create a contiguous bitmask starting at bit position @l and ending at
+ * position @h. For example
+ * GENMASK_64(39, 21) gives us the 64bit vector 0x000000ffffe00000.
+ */
+#if defined(__LINKER__) || defined(__ASSEMBLER__)
+#define GENMASK_32(h, l) \
+	(((0xFFFFFFFF) << (l)) & (0xFFFFFFFF >> (32 - 1 - (h))))
+
+#define GENMASK_64(h, l) \
+	((~0 << (l)) & (~0 >> (64 - 1 - (h))))
+#else
+#define GENMASK_32(h, l) \
+	(((~UINT32_C(0)) << (l)) & (~UINT32_C(0) >> (32 - 1 - (h))))
+
+#define GENMASK_64(h, l) \
+	(((~UINT64_C(0)) << (l)) & (~UINT64_C(0) >> (64 - 1 - (h))))
+#endif
+
+#ifdef __aarch64__
+#define GENMASK				GENMASK_64
+#else
+#define GENMASK				GENMASK_32
+#endif
+
+#ifdef __aarch64__
+#define BIT				BIT_64
+#else
+#define BIT				BIT_32
+#endif
+
+/* STM32_USBPHYC_PLL bit fields */
+#define USBPHYC_PLL_PLLNDIV			GENMASK(6, 0)
+#define USBPHYC_PLL_PLLFRACIN		GENMASK(25, 10)
+#define USBPHYC_PLL_PLLEN			BIT(26)
+#define USBPHYC_PLL_PLLSTRB			BIT(27)
+#define USBPHYC_PLL_PLLSTRBYP		BIT(28)
+#define USBPHYC_PLL_PLLFRACCTL		BIT(29)
+#define USBPHYC_PLL_PLLDITHEN0		BIT(30)
+#define USBPHYC_PLL_PLLDITHEN1		BIT(31)
+/* STM32_USBPHYC_MISC bit fields */
+
+#define USBPHYC_MISC_SWITHOST		BIT(0)
+
+
 // STM32MP1 UTMI interface
 HAL_StatusTypeDef USB_HS_PHYCInit(USB_OTG_GlobalTypeDef *USBx)
 {
@@ -2700,19 +2753,41 @@ HAL_StatusTypeDef USB_HS_PHYCInit(USB_OTG_GlobalTypeDef *USBx)
 	(void) RCC->MP_APB4LPENSETR;
 
 
-	USBPHYC->PLL = 0;
+	USBPHYC->PLL = (USBPHYC->PLL & ~ (USBPHYC_PLL_PLLDITHEN0 | USBPHYC_PLL_PLLDITHEN1 | USBPHYC_PLL_PLLEN | USBPHYC_PLL_PLLNDIV | USBPHYC_PLL_PLLFRACIN)) |
+		(0x00 << 6) |	// PLLNDIV
+		0;
+	(void) USBPHYC->PLL;
+
+	USBPHYC->PLL |= USBPHYC_PLL_PLLEN; //(1uL << 26);	// PLLEN
+	(void) USBPHYC->PLL;
+
+	USBPHYC->MISC = (USBPHYC->MISC & ~ (USBPHYC_MISC_SWITHOST)) |
+		(0x00 << 0) |	// SWITHOST
+		0;
+	(void) USBPHYC->MISC;
 
 	if (0)
 	{
-		USBPHYC_PHY1->TUNE = 0;
+//		USBPHYC_PHY1->TUNE = (USBPHYC->TUNE & ~ (xxx | xxxx)) |
+//			(0x00 << ssss) |
+//			(0x00 << ssss) |
+//			(0x00 << ssss) |
+//			0;
+		(void) USBPHYC_PHY1->TUNE;
 	}
 	else
 	{
-		USBPHYC_PHY1->TUNE = 0;
+//		USBPHYC_PHY2->TUNE = (USBPHYC->TUNE & ~ (xxx | xxxx)) |
+//			(0x00 << ssss) |
+//			(0x00 << ssss) |
+//			(0x00 << ssss) |
+//			0;
+		(void) USBPHYC_PHY2->TUNE;
 	}
 
 	return HAL_OK;
 }
+
 #endif /* USBPHYC */
 
 #ifdef USB_HS_PHYC
@@ -2807,31 +2882,34 @@ HAL_StatusTypeDef USB_CoreInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgTyp
 
 #if defined(USB_HS_PHYC) || defined (USBPHYC)
 
-  else if (cfg->phy_itface == USB_OTG_HS_EMBEDDED_PHY)
-  {
-    USBx->GCCFG &= ~(USB_OTG_GCCFG_PWRDWN);
+	else if (cfg->phy_itface == USB_OTG_HS_EMBEDDED_PHY)
+	{
 
-    /* Init The UTMI Interface */
-    USBx->GUSBCFG &= ~(USB_OTG_GUSBCFG_TSDPS | USB_OTG_GUSBCFG_ULPIFSLS | USB_OTG_GUSBCFG_PHYSEL);
+		//USBx->GUSBCFG &= ~ USB_OTG_GUSBCFG_PHYSEL_Msk;	// 0: USB 2.0 internal UTMI high-speed PHY.
 
-    /* Select vbus source */
-    USBx->GUSBCFG &= ~(USB_OTG_GUSBCFG_ULPIEVBUSD | USB_OTG_GUSBCFG_ULPIEVBUSI);
+		USBx->GCCFG &= ~(USB_OTG_GCCFG_PWRDWN);
 
-    /* Select UTMI Interace */
-    USBx->GUSBCFG &= ~ USB_OTG_GUSBCFG_ULPI_UTMI_SEL;
-    USBx->GCCFG |= USB_OTG_GCCFG_PHYHSEN;
+		/* Init The UTMI Interface */
+		USBx->GUSBCFG &= ~(USB_OTG_GUSBCFG_TSDPS | USB_OTG_GUSBCFG_ULPIFSLS | USB_OTG_GUSBCFG_PHYSEL);
 
-    /* Enables control of a High Speed USB PHY */
-    USB_HS_PHYCInit(USBx);
+		/* Select vbus source */
+		USBx->GUSBCFG &= ~(USB_OTG_GUSBCFG_ULPIEVBUSD | USB_OTG_GUSBCFG_ULPIEVBUSI);
 
-    if(cfg->use_external_vbus == USB_ENABLE)
-    {
-      USBx->GUSBCFG |= USB_OTG_GUSBCFG_ULPIEVBUSD;
-    }
-    /* Reset after a PHY select  */
-    USB_CoreReset(USBx);
+		/* Select UTMI Interace */
+		USBx->GUSBCFG &= ~ USB_OTG_GUSBCFG_ULPI_UTMI_SEL;
+		USBx->GCCFG |= USB_OTG_GCCFG_PHYHSEN;
 
-  }
+		/* Enables control of a High Speed USB PHY */
+		USB_HS_PHYCInit(USBx);
+
+	if(cfg->use_external_vbus == USB_ENABLE)
+	{
+		USBx->GUSBCFG |= USB_OTG_GUSBCFG_ULPIEVBUSD;
+	}
+	/* Reset after a PHY select  */
+	USB_CoreReset(USBx);
+
+	}
 #endif /* defined(USB_HS_PHYC) || defined (USBPHYC) */
 
   else /* FS interface (embedded Phy) */

@@ -3063,6 +3063,10 @@ void arm_hardware_sdram_initialize(void)
 
 #define SIZE_FROM_LOG2_WORDS(n)		(4 << (n))
 
+#define ULL(v) ((unsigned long long) (v))
+#define UL(v) ((unsigned long) (v))
+#define U(v) ((unsigned) (v))
+
 #define BIT_32(nr)			(U(1) << (nr))
 #define BIT_64(nr)			(ULL(1) << (nr))
 
