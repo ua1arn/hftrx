@@ -2690,6 +2690,134 @@ HAL_StatusTypeDef USB_FlushTxFifo(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t num)
 
 #if (CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1)
 
+#ifdef USBPHYC
+
+#define ULL(v) ((unsigned long long) (v))
+#define UL(v) ((unsigned long) (v))
+#define U(v) ((unsigned) (v))
+
+#define BIT_32(nr)			(U(1) << (nr))
+#define BIT_64(nr)			(ULL(1) << (nr))
+
+/*
+ * Create a contiguous bitmask starting at bit position @l and ending at
+ * position @h. For example
+ * GENMASK_64(39, 21) gives us the 64bit vector 0x000000ffffe00000.
+ */
+#if defined(__LINKER__) || defined(__ASSEMBLER__)
+#define GENMASK_32(h, l) \
+	(((0xFFFFFFFF) << (l)) & (0xFFFFFFFF >> (32 - 1 - (h))))
+
+#define GENMASK_64(h, l) \
+	((~0 << (l)) & (~0 >> (64 - 1 - (h))))
+#else
+#define GENMASK_32(h, l) \
+	(((~UINT32_C(0)) << (l)) & (~UINT32_C(0) >> (32 - 1 - (h))))
+
+#define GENMASK_64(h, l) \
+	(((~UINT64_C(0)) << (l)) & (~UINT64_C(0) >> (64 - 1 - (h))))
+#endif
+
+#ifdef __aarch64__
+#define GENMASK				GENMASK_64
+#else
+#define GENMASK				GENMASK_32
+#endif
+
+#ifdef __aarch64__
+#define BIT				BIT_64
+#else
+#define BIT				BIT_32
+#endif
+
+/* STM32_USBPHYC_PLL bit fields */
+#define USBPHYC_PLL_PLLNDIV_Msk		GENMASK(6, 0)
+#define USBPHYC_PLL_PLLNDIV_Pos		0
+#define USBPHYC_PLL_PLLODF_Msk		GENMASK(9, 7)
+#define USBPHYC_PLL_PLLODF_Pos		7
+#define USBPHYC_PLL_PLLFRACIN_Msk	GENMASK(25, 10)
+#define USBPHYC_PLL_PLLFRACIN_Pos	10
+#define USBPHYC_PLL_PLLEN_Msk			BIT(26)
+#define USBPHYC_PLL_PLLSTRB_Msk			BIT(27)
+#define USBPHYC_PLL_PLLSTRBYP_Msk		BIT(28)
+#define USBPHYC_PLL_PLLFRACCTL_Msk		BIT(29)
+#define USBPHYC_PLL_PLLDITHEN0_Msk		BIT(30)	// PLL dither 2 (triangular)
+#define USBPHYC_PLL_PLLDITHEN1_Msk		BIT(31)	// PLL dither 1 (rectangular)
+
+/* STM32_USBPHYC_MISC bit fields */
+#define USBPHYC_MISC_SWITHOST_Msk		BIT(0)
+#define USBPHYC_MISC_SWITHOST_Pos		0
+
+
+// STM32MP1 UTMI interface
+HAL_StatusTypeDef USB_HS_PHYCInit(USB_OTG_GlobalTypeDef *USBx)
+{
+	RCC->MP_APB4ENSETR = RCC_MC_APB4ENSETR_USBPHYEN;
+	(void)RCC-> MP_APB4ENSETR;
+	RCC->MP_APB4LPENSETR = RCC_MC_APB4LPENSETR_USBPHYLPEN;
+	(void) RCC->MP_APB4LPENSETR;
+
+
+	USBPHYC->PLL = (USBPHYC->PLL & ~ (USBPHYC_PLL_PLLDITHEN0_Msk | USBPHYC_PLL_PLLDITHEN1_Msk | USBPHYC_PLL_PLLEN_Msk | USBPHYC_PLL_PLLNDIV_Msk | USBPHYC_PLL_PLLODF_Msk | USBPHYC_PLL_PLLFRACIN_Msk | USBPHYC_PLL_PLLFRACCTL_Msk)) |
+		((60) << USBPHYC_PLL_PLLNDIV_Pos) |	// PLLNDIV
+		((0) << USBPHYC_PLL_PLLODF_Pos) |	// PLLODF
+		0;
+	(void) USBPHYC->PLL;
+
+	USBPHYC->PLL |= USBPHYC_PLL_PLLEN_Msk;
+	(void) USBPHYC->PLL;
+
+	if (1)
+	{
+		// USBOSRC
+		//	0: pll4_r_ck clock selected as kernel peripheral clock (default after reset)
+		//	1: clock provided by the USB PHY (rcc_ck_usbo_48m) selected as kernel peripheral clock
+		// USBPHYSRC
+		//  0x0: hse_ker_ck clock selected as kernel peripheral clock (default after reset)
+		//  0x1: pll4_r_ck clock selected as kernel peripheral clock
+		//  0x2: hse_ker_ck/2 clock selected as kernel peripheral clock
+		RCC->USBCKSELR = (RCC->USBCKSELR & ~ (RCC_USBCKSELR_USBOSRC_Msk | RCC_USBCKSELR_USBPHYSRC_Msk)) |
+			(0x01 << RCC_USBCKSELR_USBOSRC_Pos) |
+			(0x00 << RCC_USBCKSELR_USBPHYSRC_Pos) |
+			0;
+		(void) RCC->USBCKSELR;
+
+	}
+
+	// MISC
+	//	0: Select OTG controller for 2nd PHY port
+	//	1: Select Host controller for 2nd PHY port
+	USBPHYC->MISC = (USBPHYC->MISC & ~ (USBPHYC_MISC_SWITHOST_Msk)) |
+		(0x00 << USBPHYC_MISC_SWITHOST_Pos) |	// 0: Select OTG controller for 2nd PHY port
+		0;
+	(void) USBPHYC->MISC;
+
+	if (0)
+	{
+//		USBPHYC_PHY1->TUNE = (USBPHYC->TUNE & ~ (xxx | xxxx)) |
+//			(0x00 << ssss) |
+//			(0x00 << ssss) |
+//			(0x00 << ssss) |
+//			0;
+		USBPHYC_PHY1->TUNE = 0x04070004;
+		(void) USBPHYC_PHY1->TUNE;
+	}
+	else
+	{
+//		USBPHYC_PHY2->TUNE = (USBPHYC->TUNE & ~ (xxx | xxxx)) |
+//			(0x00 << ssss) |
+//			(0x00 << ssss) |
+//			(0x00 << ssss) |
+//			0;
+		USBPHYC_PHY2->TUNE = 0x04070004;
+		(void) USBPHYC_PHY2->TUNE;
+	}
+
+	return HAL_OK;
+}
+
+#endif /* USBPHYC */
+
 #ifdef USB_HS_PHYC
 /**
   * @brief  Enables control of a High Speed USB PHYВ’s
@@ -2779,34 +2907,39 @@ HAL_StatusTypeDef USB_CoreInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgTyp
     /* Reset after a PHY select  */
     USB_CoreReset(USBx);
   }
-#ifdef USB_HS_PHYC
 
-  else if (cfg->phy_itface == USB_OTG_HS_EMBEDDED_PHY)
-  {
-    USBx->GCCFG &= ~(USB_OTG_GCCFG_PWRDWN);
+#if defined(USB_HS_PHYC) || defined (USBPHYC)
 
-    /* Init The UTMI Interface */
-    USBx->GUSBCFG &= ~(USB_OTG_GUSBCFG_TSDPS | USB_OTG_GUSBCFG_ULPIFSLS | USB_OTG_GUSBCFG_PHYSEL);
+	else if (cfg->phy_itface == USB_OTG_HS_EMBEDDED_PHY)
+	{
 
-    /* Select vbus source */
-    USBx->GUSBCFG &= ~(USB_OTG_GUSBCFG_ULPIEVBUSD | USB_OTG_GUSBCFG_ULPIEVBUSI);
+		//USBx->GUSBCFG &= ~ USB_OTG_GUSBCFG_PHYSEL_Msk;	// 0: USB 2.0 internal UTMI high-speed PHY.
 
-    /* Select UTMI Interace */
-    USBx->GUSBCFG &= ~ USB_OTG_GUSBCFG_ULPI_UTMI_SEL;
-    USBx->GCCFG |= USB_OTG_GCCFG_PHYHSEN;
+		USBx->GCCFG &= ~(USB_OTG_GCCFG_PWRDWN);
 
-    /* Enables control of a High Speed USB PHY */
-    USB_HS_PHYCInit(USBx);
+		/* Init The UTMI Interface */
+		USBx->GUSBCFG &= ~(USB_OTG_GUSBCFG_TSDPS | USB_OTG_GUSBCFG_ULPIFSLS | USB_OTG_GUSBCFG_PHYSEL);
 
-    if(cfg->use_external_vbus == USB_ENABLE)
-    {
-      USBx->GUSBCFG |= USB_OTG_GUSBCFG_ULPIEVBUSD;
-    }
-    /* Reset after a PHY select  */
-    USB_CoreReset(USBx);
+		/* Select vbus source */
+		USBx->GUSBCFG &= ~(USB_OTG_GUSBCFG_ULPIEVBUSD | USB_OTG_GUSBCFG_ULPIEVBUSI);
 
-  }
-#endif
+		/* Select UTMI Interace */
+		USBx->GUSBCFG &= ~ USB_OTG_GUSBCFG_ULPI_UTMI_SEL;
+		USBx->GCCFG |= USB_OTG_GCCFG_PHYHSEN;
+
+		/* Enables control of a High Speed USB PHY */
+		USB_HS_PHYCInit(USBx);
+
+	if(cfg->use_external_vbus == USB_ENABLE)
+	{
+		USBx->GUSBCFG |= USB_OTG_GUSBCFG_ULPIEVBUSD;
+	}
+	/* Reset after a PHY select  */
+	USB_CoreReset(USBx);
+
+	}
+#endif /* defined(USB_HS_PHYC) || defined (USBPHYC) */
+
   else /* FS interface (embedded Phy) */
   {
     /* Select FS Embedded PHY */
@@ -11239,10 +11372,6 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 	while ((PWR->CR3 & PWR_CR3_USB33RDY_Msk) == 0)
 		;
 
-	RCC->MP_APB4ENSETR = RCC_MC_APB4ENSETR_USBPHYEN;
-	(void)RCC-> MP_APB4ENSETR;
-	RCC->MP_APB4LPENSETR = RCC_MC_APB4LPENSETR_USBPHYLPEN;
-	(void) RCC->MP_APB4LPENSETR;
 	RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_USBOEN;
 	(void) RCC->MP_AHB2ENSETR;
 	RCC->MP_AHB2LPENSETR = RCC_MC_AHB2LPENSETR_USBOLPEN;
@@ -11469,10 +11598,6 @@ void HAL_HCD_MspInit(HCD_HandleTypeDef* hcdHandle)
 			while ((PWR->CR3 & PWR_CR3_USB33RDY_Msk) == 0)
 				;
 
-			RCC->MP_APB4ENSETR = RCC_MC_APB4ENSETR_USBPHYEN;
-			(void)RCC-> MP_APB4ENSETR;
-			RCC->MP_APB4LPENSETR = RCC_MC_APB4LPENSETR_USBPHYLPEN;
-			(void) RCC->MP_APB4LPENSETR;
 			RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_USBOEN;
 			(void) RCC->MP_AHB2ENSETR;
 			RCC->MP_AHB2LPENSETR = RCC_MC_AHB2LPENSETR_USBOLPEN;
@@ -11517,10 +11642,6 @@ void HAL_HCD_MspInit(HCD_HandleTypeDef* hcdHandle)
 		while ((PWR->CR3 & PWR_CR3_USB33RDY_Msk) == 0)
 			;
 
-		RCC->MP_APB4ENSETR = RCC_MC_APB4ENSETR_USBPHYEN;
-		(void)RCC-> MP_APB4ENSETR;
-		RCC->MP_APB4LPENSETR = RCC_MC_APB4LPENSETR_USBPHYLPEN;
-		(void) RCC->MP_APB4LPENSETR;
 		RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_USBOEN;
 		(void) RCC->MP_AHB2ENSETR;
 		RCC->MP_AHB2LPENSETR = RCC_MC_AHB2LPENSETR_USBOLPEN;

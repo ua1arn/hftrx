@@ -20,7 +20,7 @@
 ////*#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
 #define WITHSDRAMHW	1	/* В процессоре есть внешняя память */
-//#define WIHSPIDFHW	1	/* обслуживание DATA FLASH */
+#define WIHSPIDFHW	1	/* обслуживание DATA FLASH */
 
 //#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 //#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
@@ -44,17 +44,17 @@
 
 #define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 #if WITHUSBHW
-	//#define WITHUSBDEV_VBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
-	//#define WITHUSBDEV_HSDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
+	//#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод VBUS_SENSE */
+	#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
 	//#define WITHUSBDEV_HIGHSPEEDULPI	1
-	//#define WITHUSBDEV_HIGHSPEEDPHYC	1
+	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USBH_HS_DP & USBH_HS_DM
 
 	/* For H7 exist: Legacy defines */
 	//#define USB_OTG_HS                   USB1_OTG_HS
 	//#define USB_OTG_FS                   USB2_OTG_FS
 
 	#define WITHUSBHW_DEVICE	USB_OTG_HS	/* на этом устройстве поддерживается функциональность DEVUCE	*/
-	//#define WITHUSBHW_HOST		USB_OTG_FS
+	//#define WITHUSBHW_HOST		USB_OTG_HS
 
 
 	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
@@ -72,7 +72,7 @@
 	//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
 	//#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
 	//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
-	//#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
+	#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
 
 #endif /* WITHUSBHW */
 
