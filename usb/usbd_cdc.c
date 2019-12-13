@@ -167,10 +167,13 @@ static void USBD_poke_u8(uint8_t * buff, uint_fast8_t v)
 }
 
 
+
+static RAMDTCM volatile uint_fast8_t usbd_cdc1_rxenabled;	/* виртуальный флаг разрешения прерывания по приёму символа - HARDWARE_CDC_ONRXCHAR */
 static USBALIGN_BEGIN uint8_t cdc1buffout [VIRTUAL_COM_PORT_OUT_DATA_SIZE] USBALIGN_END;
 static USBALIGN_BEGIN uint8_t cdc1buffin [VIRTUAL_COM_PORT_IN_DATA_SIZE] USBALIGN_END;
 static RAMDTCM uint_fast16_t cdc1buffinlevel;
 
+static RAMDTCM volatile uint_fast8_t usbd_cdc2_rxenabled;	/* виртуальный флаг разрешения прерывания по приёму символа - HARDWARE_CDC_ONRXCHAR */
 static USBALIGN_BEGIN uint8_t cdc2buffout [VIRTUAL_COM_PORT_OUT_DATA_SIZE] USBALIGN_END;
 static USBALIGN_BEGIN uint8_t cdc2buffin [VIRTUAL_COM_PORT_IN_DATA_SIZE] USBALIGN_END;
 static RAMDTCM uint_fast16_t cdc2buffinlevel;
@@ -208,20 +211,19 @@ void usbd_cdc_enabletx(uint_fast8_t state)	/* вызывается из обра
 	usbd_cdc_txenabled = state;
 }
 
-static RAMDTCM volatile uint_fast8_t usbd_cdc_rxenabled = 0;	/* виртуальный флаг разрешения прерывания по приёму символа - HARDWARE_CDC_ONRXCHAR */
-
 /* вызывается из обработчика прерываний или при запрещённых прерываниях. */
 /* Разрешение/запрещение прерываний про приёму символа */
 void usbd_cdc_enablerx(uint_fast8_t state)	/* вызывается из обработчика прерываний */
 {
-	usbd_cdc_rxenabled = state;
+	usbd_cdc1_rxenabled = state;
 }
 
 /* передача символа после прерывания о готовности передатчика - вызывается из HARDWARE_CDC_ONTXCHAR */
 void
 usbd_cdc_tx(void * ctx, uint_fast8_t c)
 {
-	//USBD_HandleTypeDef * const pdev = ctx;
+	USBD_HandleTypeDef * const pdev = ctx;
+	(void) ctx;
 	ASSERT(cdc1buffinlevel < VIRTUAL_COM_PORT_IN_DATA_SIZE);
 	cdc1buffin [cdc1buffinlevel ++] = c;
 }
@@ -229,12 +231,13 @@ usbd_cdc_tx(void * ctx, uint_fast8_t c)
 /* использование буфера принятых данных */
 static void cdc1out_buffer_save(
 	const uint8_t * data,
-	uint_fast16_t length
+	unsigned length
 	)
 {
 	unsigned i;
+	//PRINTF("0:%u '%*.*s'", length, length, length, data);
 
-	for (i = 0; usbd_cdc_rxenabled && i < length; ++ i)
+	for (i = 0; usbd_cdc1_rxenabled && i < length; ++ i)
 	{
 		HARDWARE_CDC_ONRXCHAR(data [i]);
 	}
@@ -243,12 +246,13 @@ static void cdc1out_buffer_save(
 /* использование буфера принятых данных */
 static void cdc2out_buffer_save(
 	const uint8_t * data,
-	uint_fast16_t length
+	unsigned length
 	)
 {
 	unsigned i;
+	//PRINTF("1:%u '%*.*s'", length, length, length, data);
 
-	for (i = 0; usbd_cdc_rxenabled && i < length; ++ i)
+	for (i = 0; usbd_cdc2_rxenabled && i < length; ++ i)
 	{
 		//HARDWARE_CDC_ONRXCHAR(data [i]);
 	}
@@ -262,7 +266,6 @@ static USBD_StatusTypeDef USBD_CDC_DataOut(USBD_HandleTypeDef *pdev, uint_fast8_
 	case USBD_EP_CDC_OUT:
 		/* CDC EP OUT */
 		// use CDC data
-		//PRINTF(PSTR("0:%u "), USBD_LL_GetRxDataSize(pdev, epnum));
 		cdc1out_buffer_save(cdc1buffout, USBD_LL_GetRxDataSize(pdev, epnum));	/* использование буфера принятых данных */
 		//memcpy(cdc1buffin, cdc1buffout, cdc1buffinlevel = USBD_LL_GetRxDataSize(pdev, epnum));
 		/* Prepare Out endpoint to receive next cdc data packet */
@@ -272,7 +275,6 @@ static USBD_StatusTypeDef USBD_CDC_DataOut(USBD_HandleTypeDef *pdev, uint_fast8_
 	case USBD_EP_CDC_OUTb:
 		/* CDC EP OUT */
 		// use CDC data
-		//PRINTF(PSTR("1:%u "), USBD_LL_GetRxDataSize(pdev, epnum));
 		cdc2out_buffer_save(cdc2buffout, USBD_LL_GetRxDataSize(pdev, epnum));	/* использование буфера принятых данных */
 		//memcpy(cdc2buffin, cdc2buffout, cdc2buffinlevel = USBD_LL_GetRxDataSize(pdev, epnum));
 		/* Prepare Out endpoint to receive next cdc data packet */
