@@ -4372,6 +4372,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 		}
 	}
 
+#if WITHUSBDFU
 	{
 		// При наличии этого дескриптора система начинает запрашивать по всем интеряейсам MsftCompFeatureDescr
 		// Microsoft OS String Descriptor 
@@ -4397,6 +4398,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 		MsftStringDescr [0].data = alldescbuffer + score;
 		score += partlen;
 	}
+#endif /* WITHUSBDFU */
 
 #if WITHUSBDFU
 	{

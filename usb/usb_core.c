@@ -4273,7 +4273,9 @@ HAL_StatusTypeDef USB_HostInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgTyp
   /* Activate VBUS Sensing B */
 #if CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7XX || CPUSTYLE_STM32F7XX || defined(STM32F446xx) || defined(STM32F469xx) || defined(STM32F479xx) || defined(STM32F412Zx) || defined(STM32F412Vx) || \
     defined(STM32F412Rx) || defined(STM32F412Cx)
+
   USBx->GCCFG |= USB_OTG_GCCFG_VBDEN;
+
 #else
   USBx->GCCFG &=~ (USB_OTG_GCCFG_VBUSASEN);
   USBx->GCCFG &=~ (USB_OTG_GCCFG_VBUSBSEN);
@@ -5283,7 +5285,7 @@ void HAL_PCD_ResetCallback(PCD_HandleTypeDef *hpcd)
 		speed = USBD_SPEED_FULL;
 		break;
 	}
-	PRINTF(PSTR("HAL_PCD_ResetCallback: speed=%d\n"), (int) speed);
+	//PRINTF(PSTR("HAL_PCD_ResetCallback: speed=%d\n"), (int) speed);
 	USBD_LL_SetSpeed((USBD_HandleTypeDef*)hpcd->pData, speed);	// USBD_SPEED_xxx
 
 	/*Reset Device*/
@@ -5301,6 +5303,7 @@ void HAL_PCD_ResetCallback(PCD_HandleTypeDef *hpcd)
   */
 void HAL_PCD_SuspendCallback(PCD_HandleTypeDef *hpcd)
 {
+	//PRINTF("HAL_PCD_SuspendCallback\n");
    /* Inform USB library that core enters in suspend Mode */
   USBD_LL_Suspend((USBD_HandleTypeDef*)hpcd->pData);
   __HAL_PCD_GATE_PHYCLOCK(hpcd);
@@ -5324,9 +5327,10 @@ void HAL_PCD_SuspendCallback(PCD_HandleTypeDef *hpcd)
   */
 void HAL_PCD_ResumeCallback(PCD_HandleTypeDef *hpcd)
 {
-  /* USER CODE BEGIN 3 */
-  /* USER CODE END 3 */
-  USBD_LL_Resume((USBD_HandleTypeDef*)hpcd->pData);
+	//PRINTF("HAL_PCD_ResumeCallback\n");
+	/* USER CODE BEGIN 3 */
+	/* USER CODE END 3 */
+	USBD_LL_Resume((USBD_HandleTypeDef*)hpcd->pData);
 
 }
 
@@ -5638,7 +5642,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 // На RENESAS ничего не делаем - req уже заполнен чтением из контроллера USB
 static void USBD_ParseSetupRequest(USBD_SetupReqTypedef *req, const uint32_t * pdata)
 {
-#if CPUSTYLE_STM32F
+#if CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
 	req->bmRequest     = (pdata [0] >> 0) & 0x00FF;
 	req->bRequest      = (pdata [0] >> 8) & 0x00FF;
 	req->wValue        = (pdata [0] >> 16) & 0xFFFF;
@@ -7266,7 +7270,15 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 				  if ((epint & USB_OTG_DOEPINT_XFRC) == USB_OTG_DOEPINT_XFRC)
 				  {
 					CLEAR_OUT_EP_INTR(epnum, USB_OTG_DOEPINT_XFRC);
-		#if CPUSTYLE_STM32H7XX
+		#if CPUSTYLE_STM32MP1
+					  if(hpcd->Init.dma_enable == USB_ENABLE)
+					  {
+						if(USBx_OUTEP(0)->DOEPINT & (1 << 15))
+						{
+						  CLEAR_OUT_EP_INTR(epnum, (1 << 15));
+						}
+					  }
+		#elif CPUSTYLE_STM32H7XX
 					/* setup/out transaction management for Core ID >= 310A */
 					if (USBx->GSNPSID >= USB_OTG_CORE_ID_310A)
 					{
@@ -7299,7 +7311,15 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 
 				  if ((epint & USB_OTG_DOEPINT_STUP) == USB_OTG_DOEPINT_STUP)
 				  {
-		#if CPUSTYLE_STM32H7XX
+		#if CPUSTYLE_STM32MP1
+					  if(hpcd->Init.dma_enable == USB_ENABLE)
+					  {
+						if(USBx_OUTEP(0)->DOEPINT & (1 << 15))
+						{
+						  CLEAR_OUT_EP_INTR(epnum, (1 << 15));
+						}
+					  }
+		#elif CPUSTYLE_STM32H7XX
 					/* setup/out transaction management for Core ID >= 310A */
 					if (USBx->GSNPSID >= USB_OTG_CORE_ID_310A)
 					{
@@ -10665,11 +10685,13 @@ void HAL_PCD_MspDeInit(PCD_HandleTypeDef *pcdHandle)
 	    NVIC_DisableIRQ(OTG_HS_IRQn);
 	  }
 #endif /* defined (USB_OTG_HS) */
+#if defined (USB_OTG_FS)
 	  if (pcdHandle->Instance == USB_OTG_FS)
 	  {
 	    /* Peripheral interrupt Deinit*/
 	    NVIC_DisableIRQ(OTG_FS_IRQn);
 	  }
+#endif /* defined (USB_OTG_FS) */
 
 #else
 	#error HAL_PCD_MspDeInit should be implemented
@@ -10745,7 +10767,7 @@ USBD_StatusTypeDef  USBD_LL_Init(PCD_HandleTypeDef * hpcd, USBD_HandleTypeDef *p
 
 #if CPUSTYLE_R7S721
 	usbd_pipes_initialize(hpcd);
-#elif CPUSTYLE_STM32H7XX
+#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 	// У OTH_HS размер FIFO 4096 байт
 	usbd_fifo_initialize(hpcd, 4096, 1);
 #else /* CPUSTYLE_R7S721 */
@@ -11207,10 +11229,20 @@ USBH_StatusTypeDef  USBH_LL_DriverVBUS(USBH_HandleTypeDef *phost, uint_fast8_t s
 void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 {
 #if CPUSTYLE_STM32MP1
+
 	PWR->CR3 |= PWR_CR3_USB33DEN_Msk;
 	(void) PWR->CR3;
 	while ((PWR->CR3 & PWR_CR3_USB33RDY_Msk) == 0)
 		;
+
+	RCC->MP_APB4ENSETR = RCC_MC_APB4ENSETR_USBPHYEN;
+	(void)RCC-> MP_APB4ENSETR;
+	RCC->MP_APB4LPENSETR = RCC_MC_APB4LPENSETR_USBPHYLPEN;
+	(void) RCC->MP_APB4LPENSETR;
+	RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_USBOEN;
+	(void) RCC->MP_AHB2ENSETR;
+	RCC->MP_AHB2LPENSETR = RCC_MC_AHB2LPENSETR_USBOLPEN;
+	(void) RCC->MP_AHB2LPENSETR;
 
 	if (hpcd->Instance == USB1_OTG_HS)	// legacy name is USB_OTG_HS
 	{
@@ -11231,14 +11263,6 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 		}
 		//RCC->APB4ENR |= RCC_APB4ENR_SYSCFGEN;	/* USB/OTG HS companion - VBUS? */
 		//(void) RCC->APB4ENR;
-		RCC->MP_APB4ENSETR = RCC_MC_APB4ENSETR_USBPHYEN;
-		(void)RCC-> MP_APB4ENSETR;
-		RCC->MP_APB4LPENSETR = RCC_MC_APB4LPENSETR_USBPHYLPEN;
-		(void) RCC->MP_APB4LPENSETR;
-		RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_USBOEN;
-		(void) RCC->MP_AHB2ENSETR;
-		RCC->MP_AHB2LPENSETR = RCC_MC_AHB2LPENSETR_USBOLPEN;
-		(void) RCC->MP_AHB2LPENSETR;
 
 //		RCC->AHB2ENR |= RCC_AHB2ENR_D2SRAM1EN;
 //		(void) RCC->AHB2ENR;
@@ -11436,6 +11460,22 @@ void HAL_HCD_MspInit(HCD_HandleTypeDef* hcdHandle)
 	{
 		#if CPUSTYLE_STM32MP1
 
+			PWR->CR3 |= PWR_CR3_USB33DEN_Msk;
+			(void) PWR->CR3;
+			while ((PWR->CR3 & PWR_CR3_USB33RDY_Msk) == 0)
+				;
+
+			RCC->MP_APB4ENSETR = RCC_MC_APB4ENSETR_USBPHYEN;
+			(void)RCC-> MP_APB4ENSETR;
+			RCC->MP_APB4LPENSETR = RCC_MC_APB4LPENSETR_USBPHYLPEN;
+			(void) RCC->MP_APB4LPENSETR;
+			RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_USBOEN;
+			(void) RCC->MP_AHB2ENSETR;
+			RCC->MP_AHB2LPENSETR = RCC_MC_AHB2LPENSETR_USBOLPEN;
+			(void) RCC->MP_AHB2LPENSETR;
+
+			arm_hardware_set_handler_system(OTG_IRQn, host_OTG_FS_IRQHandler);
+
 		#elif CPUSTYLE_STM32H7XX
 
 			//const uint_fast32_t stm32f4xx_pllq = arm_hardware_stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
@@ -11447,9 +11487,7 @@ void HAL_HCD_MspInit(HCD_HandleTypeDef* hcdHandle)
 			RCC->APB4ENR |= RCC_APB4ENR_SYSCFGEN;	/* USB/OTG HS companion - VBUS? */
 			(void) RCC->APB2ENR;
 
-			NVIC_SetVector(OTG_FS_IRQn, (uintptr_t) & host_OTG_FS_IRQHandler);
-			NVIC_SetPriority(OTG_FS_IRQn, ARM_SYSTEM_PRIORITY);
-			NVIC_EnableIRQ(OTG_FS_IRQn);	// OTG_FS_IRQHandler() enable
+			arm_hardware_set_handler_system(OTG_FS_IRQn, host_OTG_FS_IRQHandler);
 
 		#else
 			//const uint_fast32_t stm32f4xx_pllq = arm_hardware_stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
@@ -11462,15 +11500,19 @@ void HAL_HCD_MspInit(HCD_HandleTypeDef* hcdHandle)
 			RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;	/* USB/OTG FS companion - VBUS? */
 			(void) RCC->APB2ENR;
 
-			NVIC_SetVector(OTG_FS_IRQn, (uintptr_t) & host_OTG_FS_IRQHandler);
-			NVIC_SetPriority(OTG_FS_IRQn, ARM_SYSTEM_PRIORITY);
-			NVIC_EnableIRQ(OTG_FS_IRQn);	// OTG_FS_IRQHandler() enable
+			arm_hardware_set_handler_system(OTG_FS_IRQn, host_OTG_FS_IRQHandler);
 
 		#endif
 	}
 	else if (hcdHandle->Instance == USB_OTG_HS)
 	{
 #if CPUSTYLE_STM32MP1
+
+		PWR->CR3 |= PWR_CR3_USB33DEN_Msk;
+		(void) PWR->CR3;
+		while ((PWR->CR3 & PWR_CR3_USB33RDY_Msk) == 0)
+			;
+
 		RCC->MP_APB4ENSETR = RCC_MC_APB4ENSETR_USBPHYEN;
 		(void)RCC-> MP_APB4ENSETR;
 		RCC->MP_APB4LPENSETR = RCC_MC_APB4LPENSETR_USBPHYLPEN;
@@ -11479,7 +11521,9 @@ void HAL_HCD_MspInit(HCD_HandleTypeDef* hcdHandle)
 		(void) RCC->MP_AHB2ENSETR;
 		RCC->MP_AHB2LPENSETR = RCC_MC_AHB2LPENSETR_USBOLPEN;
 		(void) RCC->MP_AHB2LPENSETR;
+
 		arm_hardware_set_handler_system(OTG_IRQn, host_OTG_HS_IRQHandler);
+
 #endif /* CPUSTYLE_STM32MP1 */
 	}
 	else
@@ -11491,26 +11535,30 @@ void HAL_HCD_MspInit(HCD_HandleTypeDef* hcdHandle)
 void HAL_HCD_MspDeInit(HCD_HandleTypeDef* hpcd)
 {
 #if CPUSTYLE_STM32MP1
-	  if (hpcd->Instance == USB_OTG_HS)
-	  {
-	    /* Peripheral interrupt Deinit*/
-	    IRQ_Disable(OTG_IRQn);
-	  }
+
+	if (hpcd->Instance == USB_OTG_HS)
+	{
+		/* Peripheral interrupt Deinit*/
+		IRQ_Disable(OTG_IRQn);
+	}
 
 #else
 
 #if defined (USB_OTG_HS)
-  if (hpcd->Instance == USB_OTG_HS)
-  {
-    /* Peripheral interrupt Deinit*/
-    NVIC_DisableIRQ(OTG_HS_IRQn);
-  }
+	if (hpcd->Instance == USB_OTG_HS)
+	{
+		/* Peripheral interrupt Deinit*/
+		NVIC_DisableIRQ(OTG_HS_IRQn);
+	}
 #endif /* defined (USB_OTG_HS) */
-  if (hpcd->Instance == USB_OTG_FS)
-  {
-	    /* Peripheral interrupt Deinit*/
-	    NVIC_DisableIRQ(OTG_FS_IRQn);
-  }
+
+#if defined (USB_OTG_FS)
+	if (hpcd->Instance == USB_OTG_FS)
+	{
+		/* Peripheral interrupt Deinit*/
+		NVIC_DisableIRQ(OTG_FS_IRQn);
+	}
+#endif /* defined (USB_OTG_FS) */
 
 #endif
 }
