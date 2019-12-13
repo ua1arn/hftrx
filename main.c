@@ -10036,6 +10036,7 @@ void
 //NOINLINEAT
 static cat_answervariable(const char * p, uint_fast8_t len)
 {
+	//PRINTF(PSTR("cat_answervariable: '%*.*s'"), len, len, p);
 	disableIRQ();
 	if (catstateout != CATSTATEO_SENDREADY)
 	{
@@ -10998,7 +10999,7 @@ static void
 NOINLINEAT
 cat_answer_request(uint_fast8_t catindex)
 {
-	//debug_printf_P(PSTR("cat_answer_request: catindex=%u\n"), catindex);
+	//PRINTF(PSTR("cat_answer_request: catindex=%u\n"), catindex);
 	cat_answer_map [catindex] = 1;
 }
 

@@ -6969,6 +6969,10 @@ USBD_StatusTypeDef USBD_LL_DataInStage(USBD_HandleTypeDef *pdev, uint_fast8_t ep
 				pClass->DataIn(pdev, epnum);	// epnum without direction bit
 		}
 	}
+	else
+	{
+		TP();
+	}
 	return USBD_OK;
 }
 

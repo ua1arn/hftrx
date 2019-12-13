@@ -203,7 +203,7 @@ uint_fast8_t usbd_cdc_getdtr(void)
 		0;
 }
 
-static RAMDTCM volatile uint_fast8_t usbd_cdc_txenabled = 0;	/* виртуальный флаг разрешения прерывания по готовности передатчика - HARDWARE_CDC_ONTXCHAR*/
+static RAMDTCM volatile uint_fast8_t usbd_cdc_txenabled;	/* виртуальный флаг разрешения прерывания по готовности передатчика - HARDWARE_CDC_ONTXCHAR*/
 
 /* Разрешение/запрещение прерывания по передаче символа */
 void usbd_cdc_enabletx(uint_fast8_t state)	/* вызывается из обработчика прерываний */
@@ -322,8 +322,13 @@ static USBD_StatusTypeDef USBD_CDC_EP0_RxReady(USBD_HandleTypeDef *pdev)
 	}
 	return USBD_OK;
 }
+/*
+* @param  epnum: endpoint index without direction bit
+*
+ */
 static USBD_StatusTypeDef USBD_CDC_DataIn(USBD_HandleTypeDef *pdev, uint_fast8_t epnum)
 {
+	//PRINTF("USBD_CDC_DataIn: epnum=%d\n", (int) epnum);
 	switch (epnum)
 	{
 	case (USBD_EP_CDC_IN & 0x7F):
