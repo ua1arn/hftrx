@@ -488,7 +488,7 @@ static void sectoreraseDATAFLASH(unsigned long flashoffset)
 
 	// start byte programm
 	spidf_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
-	spidf_progval8_p1(target, 0xD8);				/* SECTOR ERASE */
+	spidf_progval8_p1(target, 0xD8);				/* 64KB SECTOR ERASE */
 
 	spidf_progval8_p2(target, flashoffset >> 16);
 	spidf_progval8_p2(target, flashoffset >> 8);
