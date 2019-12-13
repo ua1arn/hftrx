@@ -2690,6 +2690,19 @@ HAL_StatusTypeDef USB_FlushTxFifo(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t num)
 
 #if (CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1)
 
+#ifdef USBPHYC
+// STM32MP1
+HAL_StatusTypeDef USB_HS_PHYCInit(USB_OTG_GlobalTypeDef *USBx)
+{
+	RCC->MP_APB4ENSETR = RCC_MC_APB4ENSETR_USBPHYEN;
+	(void)RCC-> MP_APB4ENSETR;
+	RCC->MP_APB4LPENSETR = RCC_MC_APB4LPENSETR_USBPHYLPEN;
+	(void) RCC->MP_APB4LPENSETR;
+
+	return HAL_OK;
+}
+#endif /* USBPHYC */
+
 #ifdef USB_HS_PHYC
 /**
   * @brief  Enables control of a High Speed USB PHYВ’s
@@ -2779,7 +2792,8 @@ HAL_StatusTypeDef USB_CoreInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgTyp
     /* Reset after a PHY select  */
     USB_CoreReset(USBx);
   }
-#ifdef USB_HS_PHYC
+
+#if defined(USB_HS_PHYC) || defined (USBPHYC)
 
   else if (cfg->phy_itface == USB_OTG_HS_EMBEDDED_PHY)
   {
@@ -2806,7 +2820,8 @@ HAL_StatusTypeDef USB_CoreInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgTyp
     USB_CoreReset(USBx);
 
   }
-#endif
+#endif /* defined(USB_HS_PHYC) || defined (USBPHYC) */
+
   else /* FS interface (embedded Phy) */
   {
     /* Select FS Embedded PHY */
@@ -11239,10 +11254,6 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 	while ((PWR->CR3 & PWR_CR3_USB33RDY_Msk) == 0)
 		;
 
-	RCC->MP_APB4ENSETR = RCC_MC_APB4ENSETR_USBPHYEN;
-	(void)RCC-> MP_APB4ENSETR;
-	RCC->MP_APB4LPENSETR = RCC_MC_APB4LPENSETR_USBPHYLPEN;
-	(void) RCC->MP_APB4LPENSETR;
 	RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_USBOEN;
 	(void) RCC->MP_AHB2ENSETR;
 	RCC->MP_AHB2LPENSETR = RCC_MC_AHB2LPENSETR_USBOLPEN;
@@ -11469,10 +11480,6 @@ void HAL_HCD_MspInit(HCD_HandleTypeDef* hcdHandle)
 			while ((PWR->CR3 & PWR_CR3_USB33RDY_Msk) == 0)
 				;
 
-			RCC->MP_APB4ENSETR = RCC_MC_APB4ENSETR_USBPHYEN;
-			(void)RCC-> MP_APB4ENSETR;
-			RCC->MP_APB4LPENSETR = RCC_MC_APB4LPENSETR_USBPHYLPEN;
-			(void) RCC->MP_APB4LPENSETR;
 			RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_USBOEN;
 			(void) RCC->MP_AHB2ENSETR;
 			RCC->MP_AHB2LPENSETR = RCC_MC_AHB2LPENSETR_USBOLPEN;
@@ -11517,10 +11524,6 @@ void HAL_HCD_MspInit(HCD_HandleTypeDef* hcdHandle)
 		while ((PWR->CR3 & PWR_CR3_USB33RDY_Msk) == 0)
 			;
 
-		RCC->MP_APB4ENSETR = RCC_MC_APB4ENSETR_USBPHYEN;
-		(void)RCC-> MP_APB4ENSETR;
-		RCC->MP_APB4LPENSETR = RCC_MC_APB4LPENSETR_USBPHYLPEN;
-		(void) RCC->MP_APB4LPENSETR;
 		RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_USBOEN;
 		(void) RCC->MP_AHB2ENSETR;
 		RCC->MP_AHB2LPENSETR = RCC_MC_AHB2LPENSETR_USBOLPEN;

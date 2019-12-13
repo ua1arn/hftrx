@@ -47,7 +47,7 @@
 	//#define WITHUSBDEV_VBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
 	//#define WITHUSBDEV_HSDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
 	//#define WITHUSBDEV_HIGHSPEEDULPI	1
-	//#define WITHUSBDEV_HIGHSPEEDPHYC	1
+	#define WITHUSBDEV_HIGHSPEEDPHYC	1
 
 	/* For H7 exist: Legacy defines */
 	//#define USB_OTG_HS                   USB1_OTG_HS
