@@ -2731,17 +2731,22 @@ HAL_StatusTypeDef USB_FlushTxFifo(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t num)
 #endif
 
 /* STM32_USBPHYC_PLL bit fields */
-#define USBPHYC_PLL_PLLNDIV			GENMASK(6, 0)
-#define USBPHYC_PLL_PLLFRACIN		GENMASK(25, 10)
-#define USBPHYC_PLL_PLLEN			BIT(26)
-#define USBPHYC_PLL_PLLSTRB			BIT(27)
-#define USBPHYC_PLL_PLLSTRBYP		BIT(28)
-#define USBPHYC_PLL_PLLFRACCTL		BIT(29)
-#define USBPHYC_PLL_PLLDITHEN0		BIT(30)
-#define USBPHYC_PLL_PLLDITHEN1		BIT(31)
-/* STM32_USBPHYC_MISC bit fields */
+#define USBPHYC_PLL_PLLNDIV_Msk		GENMASK(6, 0)
+#define USBPHYC_PLL_PLLNDIV_Pos		0
+#define USBPHYC_PLL_PLLODF_Msk		GENMASK(9, 7)
+#define USBPHYC_PLL_PLLODF_Pos		7
+#define USBPHYC_PLL_PLLFRACIN_Msk	GENMASK(25, 10)
+#define USBPHYC_PLL_PLLFRACIN_Pos	10
+#define USBPHYC_PLL_PLLEN_Msk			BIT(26)
+#define USBPHYC_PLL_PLLSTRB_Msk			BIT(27)
+#define USBPHYC_PLL_PLLSTRBYP_Msk		BIT(28)
+#define USBPHYC_PLL_PLLFRACCTL_Msk		BIT(29)
+#define USBPHYC_PLL_PLLDITHEN0_Msk		BIT(30)	// PLL dither 2 (triangular)
+#define USBPHYC_PLL_PLLDITHEN1_Msk		BIT(31)	// PLL dither 1 (rectangular)
 
-#define USBPHYC_MISC_SWITHOST		BIT(0)
+/* STM32_USBPHYC_MISC bit fields */
+#define USBPHYC_MISC_SWITHOST_Msk		BIT(0)
+#define USBPHYC_MISC_SWITHOST_Pos		0
 
 
 // STM32MP1 UTMI interface
@@ -2753,16 +2758,37 @@ HAL_StatusTypeDef USB_HS_PHYCInit(USB_OTG_GlobalTypeDef *USBx)
 	(void) RCC->MP_APB4LPENSETR;
 
 
-	USBPHYC->PLL = (USBPHYC->PLL & ~ (USBPHYC_PLL_PLLDITHEN0 | USBPHYC_PLL_PLLDITHEN1 | USBPHYC_PLL_PLLEN | USBPHYC_PLL_PLLNDIV | USBPHYC_PLL_PLLFRACIN)) |
-		(0x00 << 6) |	// PLLNDIV
+	USBPHYC->PLL = (USBPHYC->PLL & ~ (USBPHYC_PLL_PLLDITHEN0_Msk | USBPHYC_PLL_PLLDITHEN1_Msk | USBPHYC_PLL_PLLEN_Msk | USBPHYC_PLL_PLLNDIV_Msk | USBPHYC_PLL_PLLODF_Msk | USBPHYC_PLL_PLLFRACIN_Msk | USBPHYC_PLL_PLLFRACCTL_Msk)) |
+		((60) << USBPHYC_PLL_PLLNDIV_Pos) |	// PLLNDIV
+		((0) << USBPHYC_PLL_PLLODF_Pos) |	// PLLODF
 		0;
 	(void) USBPHYC->PLL;
 
-	USBPHYC->PLL |= USBPHYC_PLL_PLLEN; //(1uL << 26);	// PLLEN
+	USBPHYC->PLL |= USBPHYC_PLL_PLLEN_Msk;
 	(void) USBPHYC->PLL;
 
-	USBPHYC->MISC = (USBPHYC->MISC & ~ (USBPHYC_MISC_SWITHOST)) |
-		(0x00 << 0) |	// SWITHOST
+	if (1)
+	{
+		// USBOSRC
+		//	0: pll4_r_ck clock selected as kernel peripheral clock (default after reset)
+		//	1: clock provided by the USB PHY (rcc_ck_usbo_48m) selected as kernel peripheral clock
+		// USBPHYSRC
+		//  0x0: hse_ker_ck clock selected as kernel peripheral clock (default after reset)
+		//  0x1: pll4_r_ck clock selected as kernel peripheral clock
+		//  0x2: hse_ker_ck/2 clock selected as kernel peripheral clock
+		RCC->USBCKSELR = (RCC->USBCKSELR & ~ (RCC_USBCKSELR_USBOSRC_Msk | RCC_USBCKSELR_USBPHYSRC_Msk)) |
+			(0x01 << RCC_USBCKSELR_USBOSRC_Pos) |
+			(0x00 << RCC_USBCKSELR_USBPHYSRC_Pos) |
+			0;
+		(void) RCC->USBCKSELR;
+
+	}
+
+	// MISC
+	//	0: Select OTG controller for 2nd PHY port
+	//	1: Select Host controller for 2nd PHY port
+	USBPHYC->MISC = (USBPHYC->MISC & ~ (USBPHYC_MISC_SWITHOST_Msk)) |
+		(0x00 << USBPHYC_MISC_SWITHOST_Pos) |	// 0: Select OTG controller for 2nd PHY port
 		0;
 	(void) USBPHYC->MISC;
 
@@ -2773,6 +2799,7 @@ HAL_StatusTypeDef USB_HS_PHYCInit(USB_OTG_GlobalTypeDef *USBx)
 //			(0x00 << ssss) |
 //			(0x00 << ssss) |
 //			0;
+		USBPHYC_PHY1->TUNE = 0x04070004;
 		(void) USBPHYC_PHY1->TUNE;
 	}
 	else
@@ -2782,6 +2809,7 @@ HAL_StatusTypeDef USB_HS_PHYCInit(USB_OTG_GlobalTypeDef *USBx)
 //			(0x00 << ssss) |
 //			(0x00 << ssss) |
 //			0;
+		USBPHYC_PHY2->TUNE = 0x04070004;
 		(void) USBPHYC_PHY2->TUNE;
 	}
 
