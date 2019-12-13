@@ -20,7 +20,7 @@
 ////*#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
 #define WITHSDRAMHW	1	/* В процессоре есть внешняя память */
-//#define WIHSPIDFHW	1	/* обслуживание DATA FLASH */
+#define WIHSPIDFHW	1	/* обслуживание DATA FLASH */
 
 //#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 //#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
@@ -72,7 +72,7 @@
 	//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
 	//#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
 	//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
-	//#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
+	#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
 
 #endif /* WITHUSBHW */
 

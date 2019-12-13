@@ -716,6 +716,7 @@ void spidf_initialize(void)
 		0;
 #endif
 
+#if CPUSTYLE_R7S721
 	// Connrect I/O pins
 	arm_hardware_pio4_outputs(1U << 2, 1U << 2);				/* P4_2 WP / SPBIO20_0 */
 	arm_hardware_pio4_outputs(1U << 3, 1U << 3);				/* P4_3 NC / SPBIO30_0 */
@@ -727,11 +728,24 @@ void spidf_initialize(void)
 	arm_hardware_pio4_outputs(1U << 6, 1U << 6);	/* P4_6 MOSI / SPBIO00_0 */
 	//arm_hardware_pio4_alternative(1U << 7, R7S721_PIOALT_4);	/* P4_7 MISO / SPBIO10_0 */
 	arm_hardware_pio4_inputs(1U << 7);	/* P4_7 MISO / SPBIO10_0 */
+#elif CPUSTYLE_STM32MP1
+
+#endif
 }
 
-#define SPIDF_MISO() ((R7S721_INPUT_PORT(4) & (1U << 7)) != 0)
-#define SPIDF_MOSI(v) do { if (v) R7S721_TARGET_PORT_S(4, (1U << 6)); else R7S721_TARGET_PORT_C(4, (1U << 6)); } while (0)
-#define SPIDF_SCLK(v) do { if (v) R7S721_TARGET_PORT_S(4, (1U << 4)); else R7S721_TARGET_PORT_C(4, (1U << 4)); } while (0)
+#if CPUSTYLE_R7S721
+
+	#define SPIDF_MISO() ((R7S721_INPUT_PORT(4) & (1U << 7)) != 0)
+	#define SPIDF_MOSI(v) do { if (v) R7S721_TARGET_PORT_S(4, (1U << 6)); else R7S721_TARGET_PORT_C(4, (1U << 6)); } while (0)
+	#define SPIDF_SCLK(v) do { if (v) R7S721_TARGET_PORT_S(4, (1U << 4)); else R7S721_TARGET_PORT_C(4, (1U << 4)); } while (0)
+
+#elif CPUSTYLE_STM32MP1
+
+	#define SPIDF_MISO() 0//((R7S721_INPUT_PORT(4) & (1U << 7)) != 0)
+	#define SPIDF_MOSI(v) //do { if (v) R7S721_TARGET_PORT_S(4, (1U << 6)); else R7S721_TARGET_PORT_C(4, (1U << 6)); } while (0)
+	#define SPIDF_SCLK(v) //do { if (v) R7S721_TARGET_PORT_S(4, (1U << 4)); else R7S721_TARGET_PORT_C(4, (1U << 4)); } while (0)
+
+#endif
 
 static uint_fast8_t spidf_rbit(uint_fast8_t v)
 {
@@ -791,18 +805,20 @@ void spidf_uninitialize(void)
 
 void spidf_select(spitarget_t target, uint_fast8_t mode)
 {
-#if 1
+#if CPUSTYLE_R7S721
 	// Connrect I/O pins
 	arm_hardware_pio4_outputs(0x7C, 0x7C);
-#endif
 	do {	R7S721_TARGET_PORT_C(4, (1U << 5)); } while (0);
+#elif CPUSTYLE_STM32MP1
+#endif
 }
 
 void spidf_unselect(spitarget_t target)
 {
+#if CPUSTYLE_R7S721
 	do {	R7S721_TARGET_PORT_S(4, (1U << 5)); } while (0);
-#if 1
 	arm_hardware_pio4_inputs(0x7C);		// Отключить процессор от SERIAL FLASH
+#elif CPUSTYLE_STM32MP1
 #endif
 }
 
