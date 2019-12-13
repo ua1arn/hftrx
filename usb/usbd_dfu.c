@@ -381,8 +381,18 @@ static int testchipDATAFLASH(void)
 			return 0;
 		uint8_t buff32 [len4 * 4];
 		readSFDPDATAFLASH(ptp, buff32, len4 * 4);
+		const uint_fast32_t dword1 = USBD_peek_u32(buff32 + 4 * 0);
+		const uint_fast32_t dword2 = USBD_peek_u32(buff32 + 4 * 1);
+		const uint_fast32_t dword3 = USBD_peek_u32(buff32 + 4 * 2);
+		const uint_fast32_t dword4 = USBD_peek_u32(buff32 + 4 * 3);
+		const uint_fast32_t dword5 = USBD_peek_u32(buff32 + 4 * 4);
+		const uint_fast32_t dword6 = USBD_peek_u32(buff32 + 4 * 5);
+		const uint_fast32_t dword7 = USBD_peek_u32(buff32 + 4 * 6);
+		const uint_fast32_t dword8 = USBD_peek_u32(buff32 + 4 * 7);
+		const uint_fast32_t dword9 = USBD_peek_u32(buff32 + 4 * 8);
 		//printhex(ptp, buff32, 256);
-		PRINTF("SFDP: density=%08lX (%uKbi)\n", USBD_peek_u32(buff32 + 4 * 1), (USBD_peek_u32(buff32 + 4 * 1) >> 10) + 1);
+		PRINTF("SFDP: density=%08lX (%uKbi)\n", dword2, (dword2 >> 10) + 1);
+		PRINTF("SFDP: Sector Type 1 Size=%08lX, Sector Type 1 Opcode=%02lX\n", 1uL << ((dword8 >> 0) & 0xFF), (dword8 >> 8) & 0xFF);
 	}
 
 	return 0;
