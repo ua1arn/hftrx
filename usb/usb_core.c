@@ -3951,7 +3951,7 @@ HAL_StatusTypeDef USB_EPSetStall(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_EPTy
 	else
 	{
 		USB_OTG_OUTEndpointTypeDef * const outep = USBx_OUTEP(ep->num);
-		if (((outep->DOEPCTL) & USB_OTG_DOEPCTL_EPENA) == 0)
+		if ((outep->DOEPCTL & USB_OTG_DOEPCTL_EPENA) == 0)
 		{
 			outep->DOEPCTL &= ~ USB_OTG_DOEPCTL_EPDIS;
 		}
@@ -4779,9 +4779,9 @@ HAL_StatusTypeDef HAL_PCD_Init(PCD_HandleTypeDef *hpcd)
 		/* Init ep structure */
 		hpcd->IN_ep[i].is_in = 1;
 		hpcd->IN_ep[i].num = i;
-#if CPUSTYLE_STM32F
+#if CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
 		hpcd->IN_ep[i].tx_fifo_num = i;
-#endif /* CPUSTYLE_STM32F */
+#endif /* CPUSTYLE_STM32F || CPUSTYLE_STM32MP1 */
 		/* Control until ep is activated */
 		hpcd->IN_ep[i].type = USBD_EP_TYPE_CTRL;
 		hpcd->IN_ep[i].maxpacket = 0;
@@ -4793,9 +4793,9 @@ HAL_StatusTypeDef HAL_PCD_Init(PCD_HandleTypeDef *hpcd)
 	{
 		hpcd->OUT_ep[i].is_in = 0;
 		hpcd->OUT_ep[i].num = i;
-#if CPUSTYLE_STM32F
+#if CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
 		hpcd->IN_ep[i].tx_fifo_num = i;
-#endif /* CPUSTYLE_STM32F */
+#endif /* CPUSTYLE_STM32F || CPUSTYLE_STM32MP1 */
 		/* Control until ep is activated */
 		hpcd->OUT_ep[i].type = USBD_EP_TYPE_CTRL;
 		hpcd->OUT_ep[i].maxpacket = 0;
@@ -4963,7 +4963,7 @@ HAL_StatusTypeDef HAL_PCD_EP_Open(PCD_HandleTypeDef *hpcd, uint_fast8_t ep_addr,
 	ep->maxpacket = ep_mps;
 	ep->type = ep_type;
 
-#if CPUSTYLE_STM32F
+#if CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
 	if (ep->is_in)
 	{
 		/* Assign a Tx FIFO */
@@ -7486,9 +7486,9 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
       for (i = 0; i < hpcd->Init.dev_endpoints ; ++ i)
       {
         USBx_INEP(i)->DIEPINT = 0xFF;
-        USBx_INEP(i)->DIEPCTL &= ~USB_OTG_DIEPCTL_STALL;
+        USBx_INEP(i)->DIEPCTL &= ~ USB_OTG_DIEPCTL_STALL;
         USBx_OUTEP(i)->DOEPINT = 0xFF;
-        USBx_OUTEP(i)->DOEPCTL &= ~USB_OTG_DOEPCTL_STALL;
+        USBx_OUTEP(i)->DOEPCTL &= ~ USB_OTG_DOEPCTL_STALL;
       }
       USBx_DEVICE->DAINT = 0xFFFFFFFF;
       USBx_DEVICE->DAINTMSK |= (1uL << USB_OTG_DAINTMSK_IEPM_Pos) | (1uL << USB_OTG_DAINTMSK_OEPM_Pos);
