@@ -142,7 +142,7 @@ CPFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 # makefile rules
 #
 
-all: APP2 app.stm32 app.hex
+all: APP2 fsbl.stm32 app.hex
 
 bootloader: BOOT2
 
