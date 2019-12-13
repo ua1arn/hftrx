@@ -634,7 +634,7 @@ void spi_initialize(void)
 	#define SPIDF_INITIALIZE() do { \
 		arm_hardware_pio4_outputs(1U << 2, 1U << 2);				/* P4_2 WP / SPBIO20_0 */ \
 		arm_hardware_pio4_outputs(1U << 3, 1U << 3);				/* P4_3 NC / SPBIO30_0 */ \
-		/* arm_hardware_pio4_alternative(1U << 4, R7S721_PIOALT_4);	*/ /* P4_4 SCLK / SPBCLK_0 */
+		/* arm_hardware_pio4_alternative(1U << 4, R7S721_PIOALT_4);	*/ /* P4_4 SCLK / SPBCLK_0 */ \
 		arm_hardware_pio4_outputs(1U << 4, 1U << 4);	/* P4_4 SCLK / SPBCLK_0 */ \
 		/* arm_hardware_pio4_alternative(1U << 5, R7S721_PIOALT_4);	*/ /* P4_5 CS# / SPBSSL_0 */ \
 		arm_hardware_pio4_outputs(1U << 5, 1 * (1U << 5));			/* P4_5 CS# / SPBSSL_0 */ \
@@ -653,6 +653,7 @@ void spi_initialize(void)
 		} while (0)
 
 #elif CPUSTYLE_STM32MP1
+
 	//	QUADSPI_CLK 	PF10	AS pin 01	U13-38 (traced to PA7)
 	//	QUADSPI_BK1_NCS PB6 	AS pin 08	U12-21 (traced to PB12)
 	//	QUADSPI_BK1_IO0 PF8		MOSI
@@ -672,11 +673,19 @@ void spi_initialize(void)
 			arm_hardware_piof_inputs(SPDIF_MISO_BIT); \
 		} while (0)
 	#define SPIDF_SELECT() do { \
+			arm_hardware_piob_outputs(SPDIF_NCS_BIT, SPDIF_NCS_BIT); \
+			arm_hardware_piof_outputs(SPDIF_SCLK_BIT, SPDIF_SCLK_BIT); \
+			arm_hardware_piof_outputs(SPDIF_MOSI_BIT, SPDIF_MOSI_BIT); \
+			arm_hardware_piof_inputs(SPDIF_MISO_BIT); \
 			GPIOB->BSRR = BSRR_C(SPDIF_NCS_BIT); \
 			__DSB(); \
 		} while (0)
 	#define SPIDF_UNSELECT() do { \
 			GPIOB->BSRR = BSRR_S(SPDIF_NCS_BIT); \
+			arm_hardware_piob_inputs(SPDIF_NCS_BIT); \
+			arm_hardware_piof_inputs(SPDIF_SCLK_BIT); \
+			arm_hardware_piof_inputs(SPDIF_MOSI_BIT); \
+			arm_hardware_piof_inputs(SPDIF_MISO_BIT); \
 			__DSB(); \
 		} while (0)
 

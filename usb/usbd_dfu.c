@@ -322,6 +322,10 @@ static int testchipDATAFLASH(void)
 	spidf_unselect(target);	/* done sending data to target chip */
 
 	debug_printf_P(PSTR("SFDP: signature=%08lX\n"), signature);
+	if (signature == 0x53464450)
+	{
+		// Serial Flash Discoverable Parameters (SFDP), for Serial NOR Flash
+	}
 
 	return 0;
 }
