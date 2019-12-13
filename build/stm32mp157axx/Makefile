@@ -151,17 +151,11 @@ BOOT2: $(OBJS) $(PROJECT)_boot.elf $(PROJECT)_boot.bin
 APP: $(OBJS) $(PROJECT)_app.elf $(PROJECT)_app.bin
 APP2: $(OBJS) $(PROJECT)_app.elf $(PROJECT)_app.hex
 
-app.stm32: $(PROJECT)_app.bin
+fsbl.stm32: $(PROJECT)_app.bin
 	./stm32image.exe -l 2FFC2500 -e 2FFC2500 -s $(PROJECT)_app.bin -d ./fsbl.stm32
-
-boot.stm32: $(PROJECT)_boot.bin
-	./stm32image.exe -l 2FFC2500 -e 2FFC2500 -s $(PROJECT)_boot.bin -d ./fsbl.stm32
 	
 app.hex: fsbl.stm32
 	./bin2ihex fsbl.stm32 >app.hex
-	
-boot.hex: fsbl.stm32
-	./bin2ihex fsbl.stm32 >boot.hex
 
 
 $(OBJDIR)/%.o: %.c
