@@ -134,6 +134,18 @@ USBD_peek_u32(
 		((uint_fast32_t) buff [0] << 0);
 }
 
+/* получить 32-бит значение */
+static uint_fast32_t
+USBD_peek_u24(
+	const uint8_t * buff
+	)
+{
+	return
+		((uint_fast32_t) buff [2] << 16) +
+		((uint_fast32_t) buff [1] << 8) +
+		((uint_fast32_t) buff [0] << 0);
+}
+
 
 static int
 toprintc(int c)
@@ -261,6 +273,53 @@ static int largetimed_dataflash_read_status(
 	debug_printf_P(PSTR("DATAFLASH erase timeout error\n"));
 	return 1;
 }
+
+/* чтение параметра с требуемым индексом
+ *
+ */
+static void readSFDPDATAFLASH(unsigned long flashoffset, uint8_t * buff, unsigned size)
+{
+	spitarget_t target = targetdataflash;	/* addressing to chip */
+	// Read SFDP
+	spidf_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
+	spidf_progval8_p1(target, 0x5A);		/* The Read SFDP instruction code is 0x5A */
+
+	spidf_progval8_p2(target, flashoffset >> 16);
+	spidf_progval8_p2(target, flashoffset >> 8);
+	spidf_progval8_p2(target, flashoffset >> 0);
+	spidf_progval8_p2(target, 0x00);	// dummy byte
+	spidf_complete(target);	/* done sending data to target chip */
+
+	spidf_to_read(target);
+
+	//while (skip --)
+	//	(void) spidf_read_byte(target, 0xff);
+	while (size --)
+		* buff ++ = spidf_read_byte(target, 0xff);
+
+	spidf_to_write(target);
+
+	spidf_unselect(target);	/* done sending data to target chip */
+}
+
+static int seekparamSFDPDATAFLASH(unsigned long * paramoffset, uint_fast8_t * paramlength, uint_fast8_t id, uint_fast8_t lastnum)
+{
+	uint8_t buff8 [8];
+	unsigned i;
+
+	for (i = 0; i <= lastnum; ++ i)
+	{
+		readSFDPDATAFLASH((i + 1) * 8uL, buff8, 8);
+		if (buff8 [0] == id)
+		{
+			* paramlength = buff8 [3];	// in double words
+			* paramoffset = USBD_peek_u24(& buff8 [4]);
+			return 0;
+		}
+	}
+	/* parameter id not found */
+	return 1;
+}
 // Atmel Data Flash: Read: ID = 0x1F devId = 0x4501, mf_dlen=0x00
 
 static int testchipDATAFLASH(void)
@@ -298,33 +357,32 @@ static int testchipDATAFLASH(void)
 	//debug_printf_P(PSTR("Need: ID = 0x%02X devId = 0x%02X%02X, mf_dlen=0x%02X\n"), 0x1f, 0x45, 0x01, 0x00);
 
 
-	// Read SFDP
-	spidf_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
-	spidf_progval8_p1(target, 0x5A);		/* The Read SFDP instruction code is 0x5A */
+	// Read root SFDP
+	uint8_t buff8 [8];
+	readSFDPDATAFLASH(0x000000, buff8, 8);
 
-	const uint_fast32_t flashoffset = 0x000000uL;
-	spidf_progval8_p2(target, flashoffset >> 16);
-	spidf_progval8_p2(target, flashoffset >> 8);
-	spidf_progval8_p2(target, flashoffset >> 0);
-	spidf_progval8_p2(target, 0x00);	// dummy byte
-	spidf_complete(target);	/* done sending data to target chip */
+	uint_fast32_t signature = USBD_peek_u32(& buff8 [0]);
 
-	spidf_to_read(target);
-
-	uint_fast32_t signature = 0;
-	signature = signature * 256 | spidf_read_byte(target, 0xff);
-	signature = signature * 256 | spidf_read_byte(target, 0xff);
-	signature = signature * 256 | spidf_read_byte(target, 0xff);
-	signature = signature * 256 | spidf_read_byte(target, 0xff);
-
-	spidf_to_write(target);
-
-	spidf_unselect(target);	/* done sending data to target chip */
-
-	debug_printf_P(PSTR("SFDP: signature=%08lX\n"), signature);
-	if (signature == 0x53464450)
+	debug_printf_P(PSTR("SFDP: signature=%08lX, lastparam=0x%02X\n"), signature, buff8 [6]);
+	if (signature == 0x50444653)
 	{
 		// Serial Flash Discoverable Parameters (SFDP), for Serial NOR Flash
+		const uint_fast8_t lastparam = buff8 [6];
+		unsigned long ptp;
+		uint_fast8_t len4;
+		if (seekparamSFDPDATAFLASH(& ptp, & len4, 0x00, lastparam))
+		{
+			PRINTF("SFDP parameter 0x00 not found\n");
+			return 0;
+		}
+
+		PRINTF("SFDP: ptp=%08lX, len4=%02X\n", ptp, len4);
+		if (len4 > 20)
+			return 0;
+		uint8_t buff32 [len4 * 4];
+		readSFDPDATAFLASH(ptp, buff32, len4 * 4);
+		//printhex(ptp, buff32, 256);
+		PRINTF("SFDP: density=%08lX (%uKbi)\n", USBD_peek_u32(buff32 + 4 * 1), (USBD_peek_u32(buff32 + 4 * 1) >> 10) + 1);
 	}
 
 	return 0;
