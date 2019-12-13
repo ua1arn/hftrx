@@ -363,7 +363,7 @@ static int testchipDATAFLASH(void)
 
 	uint_fast32_t signature = USBD_peek_u32(& buff8 [0]);
 
-	debug_printf_P(PSTR("SFDP: signature=%08lX, lastparam=0x%02X\n"), signature, buff8 [6]);
+	//debug_printf_P(PSTR("SFDP: signature=%08lX, lastparam=0x%02X\n"), signature, buff8 [6]);
 	if (signature == 0x50444653)
 	{
 		// Serial Flash Discoverable Parameters (SFDP), for Serial NOR Flash
@@ -376,8 +376,8 @@ static int testchipDATAFLASH(void)
 			return 0;
 		}
 
-		PRINTF("SFDP: ptp=%08lX, len4=%02X\n", ptp, len4);
-		if (len4 > 20)
+		//PRINTF("SFDP: ptp=%08lX, len4=%02X\n", ptp, len4);
+		if (len4 < 9 || len4 > 20)
 			return 0;
 		uint8_t buff32 [len4 * 4];
 		readSFDPDATAFLASH(ptp, buff32, len4 * 4);
@@ -391,8 +391,12 @@ static int testchipDATAFLASH(void)
 		const uint_fast32_t dword8 = USBD_peek_u32(buff32 + 4 * 7);
 		const uint_fast32_t dword9 = USBD_peek_u32(buff32 + 4 * 8);
 		//printhex(ptp, buff32, 256);
-		PRINTF("SFDP: density=%08lX (%uKbi)\n", dword2, (dword2 >> 10) + 1);
-		PRINTF("SFDP: Sector Type 1 Size=%08lX, Sector Type 1 Opcode=%02lX\n", 1uL << ((dword8 >> 0) & 0xFF), (dword8 >> 8) & 0xFF);
+		/* Print density information. */
+		if ((dword2 & 0x80000000uL) == 0)
+			PRINTF("SFDP: density=%08lX (%u Kbi)\n", dword2, (dword2 >> 10) + 1);
+		else
+			PRINTF("SFDP: density=%08lX (%u Mbi)\n", dword2, 1uL << ((dword2 & 0x7FFFFFFF) - 10));
+		//PRINTF("SFDP: Sector Type 1 Size=%08lX, Sector Type 1 Opcode=%02lX\n", 1uL << ((dword8 >> 0) & 0xFF), (dword8 >> 8) & 0xFF);
 	}
 
 	return 0;
