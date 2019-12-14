@@ -370,9 +370,10 @@ static USBD_StatusTypeDef USBD_CDC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 	static USBALIGN_BEGIN uint8_t buff [32] USBALIGN_END;	// was: 7
 	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 
+#if WITHUSBWCID
 	// WCID devices support
 	// В документе от Микрософт по другому расположены данные в запросе: LO_BYTE(req->wValue) это результат запуска и тестирования
-	if (req->bRequest == DFU_VENDOR_CODE &&
+	if (req->bRequest == USBD_WCID_VENDOR_CODE &&
 			(
 					LO_BYTE(req->wValue) == INTERFACE_CDC_CONTROL_3a ||
 					LO_BYTE(req->wValue) == INTERFACE_CDC_CONTROL_3b ||
@@ -383,6 +384,7 @@ static USBD_StatusTypeDef USBD_CDC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 		//USBD_CtlError(pdev, req);
 		return USBD_OK;
 	}
+#endif /* WITHUSBWCID */
 
 	if ((req->bmRequest & USB_REQ_TYPE_DIR) != 0)
 	{

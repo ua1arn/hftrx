@@ -1486,7 +1486,7 @@ extern struct descholder BinaryDeviceObjectStoreTbl [1];
 extern struct descholder HIDReportDescrTbl [1];
 uint_fast8_t usbd_get_stringsdesc_count(void);
 
-#define DFU_VENDOR_CODE 0x44
+#define USBD_WCID_VENDOR_CODE 0x44
 uint_fast16_t usbd_dfu_get_xfer_size(uint_fast8_t alt);
 
 #endif /* USB_USB_CORE_H_ */

@@ -4372,10 +4372,15 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 		}
 	}
 
-#if WITHUSBDFU
+#if WITHUSBWCID
 	{
 		// При наличии этого дескриптора система начинает запрашивать по всем интеряейсам MsftCompFeatureDescr
 		// Microsoft OS String Descriptor 
+
+		// https://github.com/pbatard/libwdi/wiki/WCID-Devices#Example
+		// HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\usbflags
+		// HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Enum\USB
+
 		static const uint8_t MsftStringDescrProto [18] =
 		{
 			0x12,	// Descriptor length (18 bytes)
@@ -4387,7 +4392,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 			'1', 0,
 			'0', 0,
 			'0', 0,
-			DFU_VENDOR_CODE,	// Vendor Code - for vendor request
+			USBD_WCID_VENDOR_CODE,	// Vendor Code - for vendor request
 			0x00,	// padding
 		};
 		unsigned partlen;
@@ -4398,7 +4403,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 		MsftStringDescr [0].data = alldescbuffer + score;
 		score += partlen;
 	}
-#endif /* WITHUSBDFU */
+#endif /* WITHUSBWCID */
 
 #if WITHUSBDFU
 	{

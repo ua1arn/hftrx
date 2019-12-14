@@ -968,13 +968,14 @@ static USBD_StatusTypeDef USBD_DFU_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 	//hdfu = (USBD_DFU_HandleTypeDef*) pdev->pClassData;
 	//hdfu = & gdfu;
 
+#if WITHUSBWCID
 	// WCID devices support
 	/*
 		Extended properties OS descriptors are associated with a particular interface or function,
 		so a device can have as many descriptors as it has interfaces or functions.
 	*/
 	// В документе от Микрософт по другому расположены данные в запросе: LO_BYTE(req->wValue) это результат запуска и тестирования
-	if (req->bRequest == DFU_VENDOR_CODE && LO_BYTE(req->wValue) == INTERFACE_DFU_CONTROL && req->wIndex == 0x05)
+	if (req->bRequest == USBD_WCID_VENDOR_CODE && LO_BYTE(req->wValue) == INTERFACE_DFU_CONTROL && req->wIndex == 0x05)
 	{
 		PRINTF(PSTR("MS USBD_DFU_Setup: bmRequest=%04X, bRequest=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
 		return USBD_OK;
@@ -1009,6 +1010,9 @@ static USBD_StatusTypeDef USBD_DFU_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 		return USBD_OK;
 
 	}
+
+#endif /* WITHUSBWCID */
+
 	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 
   switch (req->bmRequest & USB_REQ_TYPE_MASK)

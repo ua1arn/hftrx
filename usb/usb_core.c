@@ -6918,8 +6918,8 @@ USBD_StatusTypeDef  USBD_StdDevReq(USBD_HandleTypeDef *pdev, const USBD_SetupReq
 		USBD_ClrFeature (pdev, req);
 		break;
 
-#if WITHUSBDFU
-	case DFU_VENDOR_CODE:
+#if WITHUSBWCID
+	case USBD_WCID_VENDOR_CODE:
 		// WCID devices support
 		if (MsftCompFeatureDescr[0].size != 0)
 		{
@@ -6931,7 +6931,7 @@ USBD_StatusTypeDef  USBD_StdDevReq(USBD_HandleTypeDef *pdev, const USBD_SetupReq
 			USBD_CtlError(pdev, req);
 		}
 		return USBD_OK;
-#endif /* WITHUSBDFU */
+#endif /* WITHUSBWCID */
 
 	default:
 		TP();

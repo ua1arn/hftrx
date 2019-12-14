@@ -521,9 +521,10 @@ static USBD_StatusTypeDef USBD_UAC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 	static USBALIGN_BEGIN uint8_t buff [32] USBALIGN_END;	// was: 7
 	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 
+#if WITHUSBWCID
 	// WCID devices support
 	// В документе от Микрософт по другому расположены данные в запросе: LO_BYTE(req->wValue) это результат запуска и тестирования
-	if (req->bRequest == DFU_VENDOR_CODE &&
+	if (req->bRequest == USBD_WCID_VENDOR_CODE &&
 			(
 #if WITHUSBUACIN2
 					LO_BYTE(req->wValue) == INTERFACE_AUDIO_CONTROL_RTS ||
@@ -536,6 +537,8 @@ static USBD_StatusTypeDef USBD_UAC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 		PRINTF(PSTR("MS USBD_UAC_Setup: bmRequest=%04X, bRequest=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
 		return USBD_OK;
 	}
+#endif /* WITHUSBWCID */
+
 	//PRINTF(PSTR("USBD_UAC_Setup: bmRequest=%04X, bRequest=%02X, wIndex=%04X, wLength=%04X, wValue=%04X (interfacev=%02X)\n"), req->bmRequest, req->bRequest, req->wIndex, req->wLength, req->wValue, interfacev);
 	unsigned len = 0;
 	if ((req->bmRequest & USB_REQ_TYPE_DIR) != 0)
