@@ -3800,6 +3800,49 @@ int stm32mp1_ddr_clk_enable(struct ddr_info *priv, uint32_t mem_speed);
 static void stm32mp1_ddr_init(struct ddr_info *priv,
 		       struct stm32mp1_ddr_config *config);
 
+static struct ddr_info ddr_priv_data;
+
+
+void ddr_enable_clock(void)
+{
+	//stm32mp1_clk_rcc_regs_lock();
+
+	mmio_setbits_32((uintptr_t) RCC + RCC_DDRITFCR,
+			RCC_DDRITFCR_DDRC1EN |
+			RCC_DDRITFCR_DDRC2EN |
+			RCC_DDRITFCR_DDRPHYCEN |
+			RCC_DDRITFCR_DDRPHYCAPBEN |
+			RCC_DDRITFCR_DDRCAPBEN);
+
+	//stm32mp1_clk_rcc_regs_unlock();
+}
+
+int stm32mp1_ddr_clk_enable(struct ddr_info *priv, uint32_t mem_speed)
+{
+	unsigned long ddrphy_clk, ddr_clk, mem_speed_hz;
+
+	ddr_enable_clock();
+
+	ddrphy_clk = stm32mp_clk_get_rate(0 /*DDRPHYC */);
+
+	VERBOSE("DDR: mem_speed (%d kHz), RCC %ld kHz\n",
+		mem_speed, ddrphy_clk / 1000U);
+
+	mem_speed_hz = mem_speed * 1000U;
+
+	/* Max 10% frequency delta */
+	if (ddrphy_clk > mem_speed_hz) {
+		ddr_clk = ddrphy_clk - mem_speed_hz;
+	} else {
+		ddr_clk = mem_speed_hz - ddrphy_clk;
+	}
+	if (ddr_clk > (mem_speed_hz / 10)) {
+		ERROR("DDR expected freq %d kHz, current is %ld kHz\n",
+		      mem_speed, ddrphy_clk / 1000U);
+		return -1;
+	}
+	return 0;
+}
 
 
 struct reg_desc {
@@ -4550,9 +4593,9 @@ static void stm32mp1_ddr_init(struct ddr_info *priv,
 	mmio_setbits_32(priv->rcc + RCC_DDRITFCR, RCC_DDRITFCR_DPHYCTLRST);
 
 	/* 1.2. start CLOCK */
-//	if (stm32mp1_ddr_clk_enable(priv, config->info.speed) != 0) {
-//		panic();
-//	}
+	if (stm32mp1_ddr_clk_enable(priv, config->info.speed) != 0) {
+		panic();
+	}
 
 	/* 1.3. deassert reset */
 	/* De-assert PHY rstn and ctl_rstn via DPHYRST and DPHYCTLRST. */
@@ -4803,10 +4846,20 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 	}
 #else
 	memset(& config, 0, sizeof config);
-	config.info.speed = 0;//fdt_read_uint32_default(node, "st,mem-speed", 0);
+	config.info.speed = 266000; // kHz //fdt_read_uint32_default(node, "st,mem-speed", 0);
 	config.info.size = 0;//fdt_read_uint32_default(node, "st,mem-size", 0);
 	config.info.name = "DDR3-name"; //fdt_getprop(fdt, node, "st,mem-name", &len);
 #endif
+
+
+	mmio_setbits_32((uintptr_t) RCC + RCC_DDRITFCR,
+			RCC_DDRITFCR_DDRC1EN |
+			RCC_DDRITFCR_DDRC2EN |
+			RCC_DDRITFCR_DDRPHYCEN |
+			RCC_DDRITFCR_DDRPHYCAPBEN |
+			RCC_DDRITFCR_DDRCAPBEN);
+
+
 
 	RCC->DDRITFCR |= (RCC_DDRITFCR_DDRPHYCAPBEN | RCC_DDRITFCR_DDRPHYCAPBLPEN);
 	(void) RCC->DDRITFCR;
