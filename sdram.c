@@ -3361,7 +3361,7 @@ static void panic(void)
 
 unsigned long stm32mp_clk_get_rate(unsigned long id)
 {
-	return 266000000uL;
+	return 533000000uL;
 /*
 	int p = stm32mp1_clk_get_parent(id);
 
@@ -4863,7 +4863,7 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 	}
 #else
 	memset(& config, 0, sizeof config);
-	config.info.speed = 266000; // kHz //fdt_read_uint32_default(node, "st,mem-speed", 0);
+	config.info.speed = 533000; // kHz //fdt_read_uint32_default(node, "st,mem-speed", 0);
 	config.info.size = 0;//fdt_read_uint32_default(node, "st,mem-size", 0);
 	config.info.name = "DDR3-name"; //fdt_getprop(fdt, node, "st,mem-name", &len);
 #endif
