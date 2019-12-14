@@ -3361,7 +3361,7 @@ static void panic(void)
 
 unsigned long stm32mp_clk_get_rate(unsigned long id)
 {
-	return 225000000uL;
+	return 266000000uL;
 /*
 	int p = stm32mp1_clk_get_parent(id);
 
@@ -4558,6 +4558,7 @@ static void stm32mp1_ddr_init(struct ddr_info *priv,
 {
 	uint32_t pir;
 	int ret = - 1;
+/*
 
 	if ((config->c_reg.mstr & DDRCTRL_MSTR_DDR3) != 0U) {
 		ret = board_ddr_power_init(STM32MP_DDR3);
@@ -4572,18 +4573,24 @@ static void stm32mp1_ddr_init(struct ddr_info *priv,
 	if (ret != 0) {
 		panic();
 	}
+*/
 
 	VERBOSE("name = %s\n", config->info.name);
 	VERBOSE("speed = %d kHz\n", config->info.speed);
 	VERBOSE("size  = 0x%x\n", config->info.size);
 
 	/* DDR INIT SEQUENCE */
+	TP();
+	/* *************** copyed 1.2. start CLOCK */
+	if (stm32mp1_ddr_clk_enable(priv, config->info.speed) != 0) {
+		panic();
+	}
 
 	/*
 	 * 1. Program the DWC_ddr_umctl2 registers
 	 *     nota: check DFIMISC.dfi_init_complete = 0
 	 */
-
+	TP();
 	/* 1.1 RESETS: presetn, core_ddrc_rstn, aresetn */
 	mmio_setbits_32(priv->rcc + RCC_DDRITFCR, RCC_DDRITFCR_DDRCAPBRST);
 	mmio_setbits_32(priv->rcc + RCC_DDRITFCR, RCC_DDRITFCR_DDRCAXIRST);
@@ -4592,19 +4599,23 @@ static void stm32mp1_ddr_init(struct ddr_info *priv,
 	mmio_setbits_32(priv->rcc + RCC_DDRITFCR, RCC_DDRITFCR_DPHYRST);
 	mmio_setbits_32(priv->rcc + RCC_DDRITFCR, RCC_DDRITFCR_DPHYCTLRST);
 
+	TP();
 	/* 1.2. start CLOCK */
 	if (stm32mp1_ddr_clk_enable(priv, config->info.speed) != 0) {
 		panic();
 	}
 
+	TP();
 	/* 1.3. deassert reset */
 	/* De-assert PHY rstn and ctl_rstn via DPHYRST and DPHYCTLRST. */
 	mmio_clrbits_32(priv->rcc + RCC_DDRITFCR, RCC_DDRITFCR_DPHYRST);
 	mmio_clrbits_32(priv->rcc + RCC_DDRITFCR, RCC_DDRITFCR_DPHYCTLRST);
+	TP();
 	/*
 	 * De-assert presetn once the clocks are active
 	 * and stable via DDRCAPBRST bit.
 	 */
+	TP();
 	mmio_clrbits_32(priv->rcc + RCC_DDRITFCR, RCC_DDRITFCR_DDRCAPBRST);
 
 	/* 1.4. wait 128 cycles to permit initialization of end logic */
@@ -4613,6 +4624,7 @@ static void stm32mp1_ddr_init(struct ddr_info *priv,
 
 	/* 1.5. initialize registers ddr_umctl2 */
 	/* Stop uMCTL2 before PHY is ready */
+	TP();
 	mmio_clrbits_32((uintptr_t)&priv->ctl->dfimisc,
 			DDRCTRL_DFIMISC_DFI_INIT_COMPLETE_EN);
 	VERBOSE("[0x%lx] dfimisc = 0x%x\n",
@@ -4622,6 +4634,7 @@ static void stm32mp1_ddr_init(struct ddr_info *priv,
 	set_reg(priv, REG_REG, &config->c_reg);
 
 	/* DDR3 = don't set DLLOFF for init mode */
+	TP();
 	if ((config->c_reg.mstr &
 	     (DDRCTRL_MSTR_DDR3 | DDRCTRL_MSTR_DLL_OFF_MODE))
 	    == (DDRCTRL_MSTR_DDR3 | DDRCTRL_MSTR_DLL_OFF_MODE)) {
@@ -4633,6 +4646,7 @@ static void stm32mp1_ddr_init(struct ddr_info *priv,
 			mmio_read_32((uintptr_t)&priv->ctl->mstr));
 	}
 
+	TP();
 	set_reg(priv, REG_TIMING, &config->c_timing);
 	set_reg(priv, REG_MAP, &config->c_map);
 
@@ -4647,6 +4661,7 @@ static void stm32mp1_ddr_init(struct ddr_info *priv,
 	set_reg(priv, REG_PERF, &config->c_perf);
 
 	/*  2. deassert reset signal core_ddrc_rstn, aresetn and presetn */
+	TP();
 	mmio_clrbits_32(priv->rcc + RCC_DDRITFCR, RCC_DDRITFCR_DDRCORERST);
 	mmio_clrbits_32(priv->rcc + RCC_DDRITFCR, RCC_DDRITFCR_DDRCAXIRST);
 	mmio_clrbits_32(priv->rcc + RCC_DDRITFCR, RCC_DDRITFCR_DPHYAPBRST);
@@ -4655,11 +4670,13 @@ static void stm32mp1_ddr_init(struct ddr_info *priv,
 	 * 3. start PHY init by accessing relevant PUBL registers
 	 *    (DXGCR, DCR, PTR*, MR*, DTPR*)
 	 */
+	TP();
 	set_reg(priv, REGPHY_REG, &config->p_reg);
 	set_reg(priv, REGPHY_TIMING, &config->p_timing);
 	set_reg(priv, REGPHY_CAL, &config->p_cal);
 
 	/* DDR3 = don't set DLLOFF for init mode */
+	TP();
 	if ((config->c_reg.mstr &
 	     (DDRCTRL_MSTR_DDR3 | DDRCTRL_MSTR_DLL_OFF_MODE))
 	    == (DDRCTRL_MSTR_DDR3 | DDRCTRL_MSTR_DLL_OFF_MODE)) {
