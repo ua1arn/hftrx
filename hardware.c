@@ -9380,6 +9380,9 @@ void stm32mp1_pll_initialize(void)
 	while ((RCC->RCK12SELR & RCC_RCK12SELR_PLL12SRCRDY_Msk) == 0)
 		;
 
+	RCC->PLL1CR = (RCC->PLL1CR & ~ (RCC_PLL1CR_DIVPEN_Msk | RCC_PLL1CR_DIVQEN_Msk | RCC_PLL1CR_DIVREN_Msk));
+	(void) RCC->PLL1CR;
+
 	RCC->PLL1CFGR1 = (RCC->PLL1CFGR1 & ~ (RCC_PLL1CFGR1_DIVN_Msk | RCC_PLL1CFGR1_DIVM1_Msk)) |
 		((PLL1DIVM - 1) << RCC_PLL1CFGR1_DIVM1_Pos) |
 		((PLL1DIVN - 1) << RCC_PLL1CFGR1_DIVN_Pos) |
@@ -9391,16 +9394,20 @@ void stm32mp1_pll_initialize(void)
 		((PLL1DIVR - 1) << RCC_PLL1CFGR2_DIVR_Pos) |
 		0;
 
-	RCC->PLL1CR |= RCC_PLL1CR_DIVPEN_Msk;	// P output eable
-	(void) RCC->PLL1CR;
-
 	RCC->PLL1CR |= RCC_PLL1CR_PLLON_Msk;
 	while ((RCC->PLL1CR & RCC_PLL1CR_PLL1RDY_Msk) == 0)
 		;
 
 	RCC->PLL1CR &= ~ RCC_PLL1CR_SSCG_CTRL_Msk;
+	(void) RCC->PLL1CR;
+
+	RCC->PLL1CR |= RCC_PLL1CR_DIVPEN_Msk;	// P output enable
+	(void) RCC->PLL1CR;
 
 	// PLL2
+	RCC->PLL2CR = (RCC->PLL2CR & ~ (RCC_PLL2CR_DIVPEN_Msk | RCC_PLL2CR_DIVQEN_Msk | RCC_PLL2CR_DIVREN_Msk));
+	(void) RCC->PLL2CR;
+
 	RCC->PLL2CFGR1 = (RCC->PLL2CFGR1 & ~ (RCC_PLL2CFGR1_DIVN_Msk | RCC_PLL2CFGR1_DIVM2_Msk)) |
 		((PLL2DIVN - 1) << RCC_PLL2CFGR1_DIVN_Pos) |
 		((PLL2DIVM - 1) << RCC_PLL2CFGR1_DIVM2_Pos) |
@@ -9411,6 +9418,10 @@ void stm32mp1_pll_initialize(void)
 		((PLL2DIVQ - 1) << RCC_PLL2CFGR2_DIVQ_Pos) |	// GPU clock (1..128 -> 0x00..0x7f)
 		((PLL2DIVR - 1) << RCC_PLL2CFGR2_DIVR_Pos) |	// DDR clock (1..128 -> 0x00..0x7f)
 		0;
+
+	RCC->PLL2CR |= RCC_PLL2CR_PLLON_Msk;
+	while ((RCC->PLL2CR & RCC_PLL2CR_PLL2RDY_Msk) == 0)
+		;
 
 	RCC->PLL2CR |= RCC_PLL2CR_DIVPEN_Msk;	// pll2_p_ck - AXI clock
 	(void) RCC->PLL2CR;
@@ -9423,11 +9434,8 @@ void stm32mp1_pll_initialize(void)
 	(void) RCC->PLL2CR;
 #endif /* WITHSDRAMHW */
 
-	RCC->PLL2CR |= RCC_PLL2CR_PLLON_Msk;
-	while ((RCC->PLL2CR & RCC_PLL2CR_PLL2RDY_Msk) == 0)
-		;
-
 	RCC->PLL2CR &= ~ RCC_PLL2CR_SSCG_CTRL_Msk;
+	(void) RCC->PLL2CR;
 
 	//0x0: HSI selected as AXI sub-system clock (hsi_ck) (default after reset)
 	//0x1: HSE selected as AXI sub-system clock (hse_ck)
@@ -9551,6 +9559,9 @@ void stm32mp1_pll_initialize(void)
 	while ((RCC->RCK4SELR & RCC_RCK4SELR_PLL4SRCRDY_Msk) == 0)
 		;
 
+	RCC->PLL4CR = (RCC->PLL4CR & ~ (RCC_PLL4CR_DIVPEN_Msk | RCC_PLL4CR_DIVQEN_Msk | RCC_PLL4CR_DIVREN_Msk));
+	(void) RCC->PLL4CR;
+
 	RCC->PLL4CFGR1 = (RCC->PLL4CFGR1 & ~ (RCC_PLL4CFGR1_DIVN_Msk | RCC_PLL4CFGR1_DIVM4_Msk)) |
 		((PLL4DIVN - 1) << RCC_PLL4CFGR1_DIVN_Pos) |
 		((PLL4DIVM - 1) << RCC_PLL4CFGR1_DIVM4_Pos) |
@@ -9561,6 +9572,13 @@ void stm32mp1_pll_initialize(void)
 		((PLL4DIVQ - 1) << RCC_PLL4CFGR2_DIVQ_Pos) |	// LTDC clock (1..128 -> 0x00..0x7f)
 		((PLL4DIVR - 1) << RCC_PLL4CFGR2_DIVR_Pos) |	// USBPHY clock (1..128 -> 0x00..0x7f)
 		0;
+
+	RCC->PLL4CR |= RCC_PLL4CR_PLLON_Msk;
+	while ((RCC->PLL4CR & RCC_PLL4CR_PLL4RDY_Msk) == 0)
+		;
+
+	RCC->PLL4CR &= ~ RCC_PLL4CR_SSCG_CTRL_Msk;
+	(void) RCC->PLL4CR;
 
 	RCC->PLL4CR |= RCC_PLL4CR_DIVPEN_Msk;	// pll2_p_ck - AXI clock
 	(void) RCC->PLL4CR;
@@ -9574,12 +9592,6 @@ void stm32mp1_pll_initialize(void)
 	RCC->PLL4CR |= RCC_PLL4CR_DIVREN_Msk;	// USBPHY clock
 	(void) RCC->PLL4CR;
 #endif /* WITHUSBHW */
-
-	RCC->PLL4CR |= RCC_PLL4CR_PLLON_Msk;
-	while ((RCC->PLL4CR & RCC_PLL4CR_PLL4RDY_Msk) == 0)
-		;
-
-	RCC->PLL4CR &= ~ RCC_PLL4CR_SSCG_CTRL_Msk;
 
 #endif /* WITHUSBHW || WITHLTDCHW*/
 
