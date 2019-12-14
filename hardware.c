@@ -9301,6 +9301,7 @@ void stm32mp1_pll_initialize(void)
 	RCC->OCENSETR = RCC_OCENSETR_HSION;
 	while ((RCC->OCRDYR & RCC_OCRDYR_HSIRDY) == 0)
 		;
+
 	//0x0: HSI selected as AXI sub-system clock (hsi_ck) (default after reset)
 	//0x1: HSE selected as AXI sub-system clock (hse_ck)
 	//0x2: PLL2 selected as AXI sub-system clock (pll2_p_ck)
@@ -9438,7 +9439,7 @@ void stm32mp1_pll_initialize(void)
 	while ((RCC->ASSCKSELR & RCC_ASSCKSELR_AXISSRCRDY_Msk) == 0)
 		;
 
-	// AXI prescaler
+	// AXI, AHB5 and AHB6 clock divider
 	RCC->AXIDIVR = (RCC->AXIDIVR & ~ (RCC_AXIDIVR_AXIDIV_Msk)) |
 		((0x01 - 1) << RCC_AXIDIVR_AXIDIV_Pos) |	// div1 (no divide)
 		0;
