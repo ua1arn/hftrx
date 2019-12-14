@@ -4479,7 +4479,6 @@ static void stm32mp1_refresh_restore(struct stm32mp1_ddrctl *ctl,
 	stm32mp1_wait_sw_done_ack(ctl);
 }
 
-
 static int board_ddr_power_init(enum ddr_type ddr_type)
 {
 //	if (dt_pmic_status() > 0) {
@@ -4551,9 +4550,9 @@ static void stm32mp1_ddr_init(struct ddr_info *priv,
 	mmio_setbits_32(priv->rcc + RCC_DDRITFCR, RCC_DDRITFCR_DPHYCTLRST);
 
 	/* 1.2. start CLOCK */
-	if (stm32mp1_ddr_clk_enable(priv, config->info.speed) != 0) {
-		panic();
-	}
+//	if (stm32mp1_ddr_clk_enable(priv, config->info.speed) != 0) {
+//		panic();
+//	}
 
 	/* 1.3. deassert reset */
 	/* De-assert PHY rstn and ctl_rstn via DPHYRST and DPHYCTLRST. */
@@ -4723,9 +4722,91 @@ static void stm32mp1_ddr_init(struct ddr_info *priv,
 		mmio_read_32((uintptr_t)&priv->ctl->pctrl_1));
 }
 
+static struct ddr_info ddr_priv_data;
+
 void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 {
 	PRINTF("arm_hardware_sdram_initialize start\n");
+
+	struct ddr_info *priv = &ddr_priv_data;
+	int ret;
+	struct stm32mp1_ddr_config config;
+	int node, len;
+	uint32_t uret, idx;
+	void *fdt;
+
+#define PARAM(x, y)							\
+	{								\
+		.name = x,						\
+		.offset = offsetof(struct stm32mp1_ddr_config, y),	\
+		.size = sizeof(config.y) / sizeof(uint32_t)		\
+	}
+
+#define CTL_PARAM(x) PARAM("st,ctl-"#x, c_##x)
+#define PHY_PARAM(x) PARAM("st,phy-"#x, p_##x)
+
+	const struct {
+		const char *name; /* Name in DT */
+		const uint32_t offset; /* Offset in config struct */
+		const uint32_t size;   /* Size of parameters */
+	} param[] = {
+		CTL_PARAM(reg),
+		CTL_PARAM(timing),
+		CTL_PARAM(map),
+		CTL_PARAM(perf),
+		PHY_PARAM(reg),
+		PHY_PARAM(timing),
+		PHY_PARAM(cal)
+	};
+
+#if 0
+	if (fdt_get_address(&fdt) == 0) {
+		panic();
+	}
+
+	node = fdt_node_offset_by_compatible(fdt, -1, DT_DDR_COMPAT);
+	if (node < 0) {
+		ERROR("%s: Cannot read DDR node in DT\n", __func__);
+		panic();
+	}
+
+	config.info.speed = fdt_read_uint32_default(node, "st,mem-speed", 0);
+	if (!config.info.speed) {
+		VERBOSE("%s: no st,mem-speed\n", __func__);
+		panic();
+	}
+	config.info.size = fdt_read_uint32_default(node, "st,mem-size", 0);
+	if (!config.info.size) {
+		VERBOSE("%s: no st,mem-size\n", __func__);
+		panic();
+	}
+	config.info.name = fdt_getprop(fdt, node, "st,mem-name", &len);
+	if (config.info.name == NULL) {
+		VERBOSE("%s: no st,mem-name\n", __func__);
+		panic();
+	}
+	INFO("RAM: %s\n", config.info.name);
+
+	for (idx = 0; idx < ARRAY_SIZE(param); idx++) {
+		ret = fdt_read_uint32_array(node, param[idx].name,
+					    (void *)((uintptr_t)&config +
+						     param[idx].offset),
+					    param[idx].size);
+
+		VERBOSE("%s: %s[0x%x] = %d\n", __func__,
+			param[idx].name, param[idx].size, ret);
+		if (ret != 0) {
+			ERROR("%s: Cannot read %s\n",
+			      __func__, param[idx].name);
+			panic();
+		}
+	}
+#else
+	memset(& config, 0, sizeof config);
+	config.info.speed = 0;//fdt_read_uint32_default(node, "st,mem-speed", 0);
+	config.info.size = 0;//fdt_read_uint32_default(node, "st,mem-size", 0);
+	config.info.name = "DDR3-name"; //fdt_getprop(fdt, node, "st,mem-name", &len);
+#endif
 
 	RCC->DDRITFCR |= (RCC_DDRITFCR_DDRPHYCAPBEN | RCC_DDRITFCR_DDRPHYCAPBLPEN);
 	(void) RCC->DDRITFCR;
@@ -4742,10 +4823,11 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 	RCC->DDRITFCR &= ~ RCC_DDRITFCR_AXIDCGEN;
 	(void) RCC->DDRITFCR;
 
+	//DDR->MSTR = STM32MP_DDR3;
 	//PRINTF("DDRC->MSTR=%08lX\n", DDRC->MSTR);
 	PRINTF("DDRPHYC->RIDR=%08lX\n", DDRPHYC->RIDR);
 
-	stm32mp1_ddr_init(0, 0);
+	stm32mp1_ddr_init(priv, & config);
 
 	/* Enable axidcg clock gating */
 	//mmio_setbits_32(& RCC->DDRITFCR, RCC_DDRITFCR_AXIDCGEN);
