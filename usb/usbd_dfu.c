@@ -164,17 +164,17 @@ printhex(unsigned long voffs, const unsigned char * buff, unsigned length)
 	for (i = 0; i < rows; ++ i)
 	{
 		const int trl = ((length - 1) - i * 16) % 16 + 1;
-		debug_printf_P(PSTR("%08lX "), voffs + i * 16);
+		PRINTF(PSTR("%08lX "), voffs + i * 16);
 		for (j = 0; j < trl; ++ j)
-			debug_printf_P(PSTR(" %02X"), buff [i * 16 + j]);
+			PRINTF(PSTR(" %02X"), buff [i * 16 + j]);
 
-		debug_printf_P(PSTR("%*s"), (16 - trl) * 3, "");
+		PRINTF(PSTR("%*s"), (16 - trl) * 3, "");
 
-		debug_printf_P(PSTR("  "));
+		PRINTF(PSTR("  "));
 		for (j = 0; j < trl; ++ j)
-			debug_printf_P(PSTR("%c"), toprintc(buff [i * 16 + j]));
+			PRINTF(PSTR("%c"), toprintc(buff [i * 16 + j]));
 
-		debug_printf_P(PSTR("\n"));
+		PRINTF(PSTR("\n"));
 	}
 }
 
@@ -256,7 +256,7 @@ static int timed_dataflash_read_status(
 		if ((dataflash_read_status(target) & 0x01) == 0)
 			return 0;
 	}
-	debug_printf_P(PSTR("DATAFLASH timeout error\n"));
+	PRINTF(PSTR("DATAFLASH timeout error\n"));
 	return 1;
 }
 
@@ -270,7 +270,7 @@ static int largetimed_dataflash_read_status(
 		if ((dataflash_read_status(target) & 0x01) == 0)
 			return 0;
 	}
-	debug_printf_P(PSTR("DATAFLASH erase timeout error\n"));
+	PRINTF(PSTR("DATAFLASH erase timeout error\n"));
 	return 1;
 }
 
@@ -352,9 +352,7 @@ static int testchipDATAFLASH(void)
 
 	spidf_unselect(target);	/* done sending data to target chip */
 
-	debug_printf_P(PSTR("Read: ID = 0x%02X devId = 0x%02X%02X, mf_dlen=0x%02X\n"), mf_id, mf_devid1, mf_devid2, mf_dlen);
-	//debug_printf_P(PSTR("Need: ID = 0x%02X devId = 0x%02X%02X, mf_dlen=0x%02X\n"), 0x1f, 0x45, 0x01, 0x00);
-
+	PRINTF(PSTR("spidf: ID = 0x%02X devId = 0x%02X%02X, mf_dlen=0x%02X\n"), mf_id, mf_devid1, mf_devid2, mf_dlen);
 
 	// Read root SFDP
 	uint8_t buff8 [8];
@@ -362,7 +360,7 @@ static int testchipDATAFLASH(void)
 
 	uint_fast32_t signature = USBD_peek_u32(& buff8 [0]);
 
-	//debug_printf_P(PSTR("SFDP: signature=%08lX, lastparam=0x%02X\n"), signature, buff8 [6]);
+	//PRINTF(PSTR("SFDP: signature=%08lX, lastparam=0x%02X\n"), signature, buff8 [6]);
 	if (signature == 0x50444653)
 	{
 		// Serial Flash Discoverable Parameters (SFDP), for Serial NOR Flash
@@ -421,7 +419,7 @@ static int eraseDATAFLASH(void)
 
 	if ((dataflash_read_status(target) & (0x01 << 5)) != 0)	// write error
 	{
-		debug_printf_P(PSTR("Erase error\n"));
+		PRINTF(PSTR("Erase error\n"));
 		return 1;
 	}
 	return 0;
@@ -439,7 +437,7 @@ static int prepareDATAFLASH(void)
 	{
 		if (timed_dataflash_read_status(target))
 			return 1;
-		debug_printf_P(PSTR("Clear write protect bits\n"));
+		PRINTF(PSTR("Clear write protect bits\n"));
 		spidf_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
 		spidf_progval8(target, 0x06);		/* write enable */
 		spidf_unselect(target);	/* done sending data to target chip */
@@ -481,7 +479,7 @@ static void sectoreraseDATAFLASH(unsigned long flashoffset)
 {
 	spitarget_t target = targetdataflash;	/* addressing to chip */
 
-	//debug_printf_P(PSTR(" Erase sector at address %08lX\n"), flashoffset);
+	//PRINTF(PSTR(" Erase sector at address %08lX\n"), flashoffset);
 
 	timed_dataflash_read_status(target);
 
@@ -509,7 +507,7 @@ static void writesinglepageDATAFLASH(unsigned long flashoffset, const unsigned c
 	spitarget_t target = targetdataflash;	/* addressing to chip */
 
 	timed_dataflash_read_status(target);
-	//debug_printf_P(PSTR(" Prog to address %08lX %02X\n"), flashoffset, len);
+	//PRINTF(PSTR(" Prog to address %08lX %02X\n"), flashoffset, len);
 
 	spidf_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
 	spidf_progval8(target, 0x06);		/* write enable */
@@ -543,7 +541,7 @@ static unsigned long ulmin(
 
 static int writeDATAFLASH(unsigned long flashoffset, const unsigned char * data, unsigned long len)
 {
-	//debug_printf_P(PSTR("Write to address %08lX %02X\n"), flashoffset, len);
+	//PRINTF(PSTR("Write to address %08lX %02X\n"), flashoffset, len);
 	while (len != 0)
 	{
 		unsigned long offset = flashoffset & 0xFF;
@@ -567,7 +565,7 @@ static int verifyDATAFLASH(unsigned long flashoffset, const unsigned char * data
 
 	timed_dataflash_read_status(target);
 
-	//debug_printf_P(PSTR("Compare from address %08lX\n"), flashoffset);
+	//PRINTF(PSTR("Compare from address %08lX\n"), flashoffset);
 
 	spidf_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
 	spidf_progval8(target, 0x03);		/* sequential read block */
@@ -583,7 +581,7 @@ static int verifyDATAFLASH(unsigned long flashoffset, const unsigned char * data
 		v = spidf_read_byte(target, 0xff);
 		if (v != data [count])
 		{
-			debug_printf_P(PSTR("Data mismatch at %08lx: read=%02x, expected=%02x\n"), flashoffset + count, v, data [count]);
+			PRINTF(PSTR("Data mismatch at %08lx: read=%02x, expected=%02x\n"), flashoffset + count, v, data [count]);
 			err = 1;
 			break;
 		}
@@ -594,7 +592,7 @@ static int verifyDATAFLASH(unsigned long flashoffset, const unsigned char * data
 	spidf_unselect(target);	/* done sending data to target chip */
 
 	if (err)
-		debug_printf_P(PSTR("Done compare, have errors\n"));
+		PRINTF(PSTR("Done compare, have errors\n"));
 
 	return err;
 }
@@ -608,7 +606,7 @@ static void readDATAFLASH(unsigned long flashoffset, unsigned char * data, unsig
 
 	timed_dataflash_read_status(target);
 
-	//debug_printf_P(PSTR("Compare from address %08lX\n"), flashoffset);
+	//PRINTF(PSTR("Compare from address %08lX\n"), flashoffset);
 
 	spidf_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
 	spidf_progval8(target, 0x03);		/* sequential read block */
@@ -659,7 +657,7 @@ USBD_DFU_MediaTypeDef;
   */
 static USBD_StatusTypeDef MEM_If_Init_HS(void)
 {
-	PRINTF(PSTR("MEM_If_Init_HS\n"));
+	//PRINTF(PSTR("MEM_If_Init_HS\n"));
 	spidf_initialize();
 	testchipDATAFLASH();
 	prepareDATAFLASH();	// снятие защиты со страниц при первом програмимровании через SPI интерфейс
@@ -672,9 +670,9 @@ static USBD_StatusTypeDef MEM_If_Init_HS(void)
   */
 static USBD_StatusTypeDef MEM_If_DeInit_HS(void)
 {
-	PRINTF(PSTR("MEM_If_DeInit_HS\n"));
+	//PRINTF(PSTR("MEM_If_DeInit_HS\n"));
 	spidf_uninitialize();
-	PRINTF(PSTR("MEM_If_DeInit_HS 1\n"));
+	//PRINTF(PSTR("MEM_If_DeInit_HS 1\n"));
 	return (USBD_OK);
 }
 
