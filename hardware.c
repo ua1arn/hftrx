@@ -6378,7 +6378,16 @@ void hardware_elkey_set_speed128(uint_fast32_t ticksfreq, int scale)
 		0;
 
 #elif CPUSTYLE_STM32MP1
-	#warning Insert code for CPUSTYLE_STM32MP1
+	// TIM2 & TIM5 on CPUSTYLE_STM32F4XX have 32-bit CNT and ARR registers
+	// TIM7 located on APB1
+	// TIM7 on APB1
+	// Use basic timer
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(scale * calcdivround_pclk2(ticksfreq), STM32F_TIM3_TIMER_WIDTH, STM32F_TIM3_TIMER_TAPS, & value, 1);
+
+	TIM3->PSC = ((1UL << prei) - 1) & TIM_PSC_PSC;
+	TIM3->ARR = value;
+	TIM3->CR1 = TIM_CR1_CEN | TIM_CR1_ARPE; /* разрешить перезагрузку и включить таймер = перенесено в установку скорости - если счётчик успевал превысить значение ARR - считал до конца */
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -9429,6 +9438,27 @@ void stm32mp1_pll_initialize(void)
 	while ((RCC->ASSCKSELR & RCC_ASSCKSELR_AXISSRCRDY_Msk) == 0)
 		;
 
+	// AXI prescaler
+	RCC->AXIDIVR = (RCC->AXIDIVR & ~ (RCC_AXIDIVR_AXIDIV_Msk)) |
+		((0x01 - 1) << RCC_AXIDIVR_AXIDIV_Pos) |	// div1 (no divide)
+		0;
+	while((RCC->AXIDIVR & RCC_AXIDIVR_AXIDIVRDY_Msk) == 0)
+		;
+
+	// APB4 Output divider
+	RCC->APB4DIVR = (RCC->APB4DIVR & ~ (RCC_APB4DIVR_APB4DIV_Msk)) |
+		((0x02 - 1) << RCC_APB4DIVR_APB4DIV_Pos) |	// div2
+		0;
+	while((RCC->APB4DIVR & RCC_APB4DIVR_APB4DIVRDY_Msk) == 0)
+		;
+
+	// APB5 Output divider
+	RCC->APB5DIVR = (RCC->APB5DIVR & ~ (RCC_APB5DIVR_APB5DIV_Msk)) |
+		((0x04 - 1) << RCC_APB5DIVR_APB5DIV_Pos) |	// div4
+		0;
+	while((RCC->APB5DIVR & RCC_APB5DIVR_APB5DIVRDY_Msk) == 0)
+		;
+
 	//	0x0: HSI selected as MPU sub-system clock (hsi_ck) (default after reset)
 	//	0x1: HSE selected as MPU sub-system clock (hse_ck)
 	//	0x2: PLL1 selected as MPU sub-system clock (pll1_p_ck)
@@ -9768,20 +9798,21 @@ static void irq_modes_print(void)
 
 #endif
 
+#if CPUSTYLE_R7S721
+
 /******************************************************************************
-* Function Name: ca9_ca7_intc_initialize
+* Function Name: r7s721_intc_initialize
 * Description  : Executes initial setting for the INTC.
 *              : The interrupt mask level is set to 31 to receive interrupts
 *              : with the interrupt priority level 0 to 30.
 * Arguments    : none
 * Return Value : none
 ******************************************************************************/
-static void ca9_ca7_intc_initialize(void)
+static void r7s721_intc_initialize(void)
 {
 
 	static const uint32_t modes [] =
 	{
-#if CPUSTYLE_R7S721020
 		/*   0 00000024 */	(IRQ_MODE_TYPE_IRQ | IRQ_MODE_DOMAIN_NONSECURE | IRQ_MODE_CPU_0 | IRQ_MODE_TRIG_EDGE | IRQ_MODE_MODEL_NN),
 		/*   1 00000024 */	(IRQ_MODE_TYPE_IRQ | IRQ_MODE_DOMAIN_NONSECURE | IRQ_MODE_CPU_0 | IRQ_MODE_TRIG_EDGE | IRQ_MODE_MODEL_NN),
 		/*   2 00000024 */	(IRQ_MODE_TYPE_IRQ | IRQ_MODE_DOMAIN_NONSECURE | IRQ_MODE_CPU_0 | IRQ_MODE_TRIG_EDGE | IRQ_MODE_MODEL_NN),
@@ -10370,14 +10401,6 @@ static void ca9_ca7_intc_initialize(void)
 		/* 585 00002020 */	(IRQ_MODE_TYPE_IRQ | IRQ_MODE_DOMAIN_NONSECURE | IRQ_MODE_CPU_0 | IRQ_MODE_TRIG_LEVEL | IRQ_MODE_MODEL_1N),
 		/* 586 00002020 */	(IRQ_MODE_TYPE_IRQ | IRQ_MODE_DOMAIN_NONSECURE | IRQ_MODE_CPU_0 | IRQ_MODE_TRIG_LEVEL | IRQ_MODE_MODEL_1N),
 
-#elif CPUSTYLE_STM32MP1
-	#warning Insert table for CPUSTYLE_STM32MP1
-	/*   0 00000024 */	(IRQ_MODE_TYPE_IRQ | IRQ_MODE_DOMAIN_NONSECURE | IRQ_MODE_CPU_0 | IRQ_MODE_TRIG_EDGE | IRQ_MODE_MODEL_NN),
-	/*   1 00000024 */	(IRQ_MODE_TYPE_IRQ | IRQ_MODE_DOMAIN_NONSECURE | IRQ_MODE_CPU_0 | IRQ_MODE_TRIG_EDGE | IRQ_MODE_MODEL_NN),
-
-#else
-	#error Wronf CPUSTYLE_XXXXXXXXX
-#endif
 	};
 	IRQn_ID_t irqn;
 
@@ -10391,6 +10414,8 @@ static void ca9_ca7_intc_initialize(void)
 	}
 
 }
+
+#endif /* CPUSTYLE_R7S721 */
 
 #if 0
 /* Вызывается из crt_r7s721.s со сброшенным флагом прерываний */
@@ -10432,14 +10457,14 @@ void IRQ_HandlerOld(void)
 }
 
 /******************************************************************************
-* Function Name: ca9_ca7_intc_initialize
+* Function Name: r7s721_intc_initialize
 * Description  : Executes initial setting for the INTC.
 *              : The interrupt mask level is set to 31 to receive interrupts
 *              : with the interrupt priority level 0 to 30.
 * Arguments    : none
 * Return Value : none
 ******************************************************************************/
-static void ca9_ca7_intc_initializeOld(void)
+static void r7s721_intc_initializeOld(void)
 {
 
 	/* ==== Total number of registers ==== */
@@ -11257,7 +11282,7 @@ arm_gic_initialize(void)
 	IRQ_Initialize();
 
 #if CPUSTYLE_R7S721
-	ca9_ca7_intc_initialize();
+	r7s721_intc_initialize();
 #endif /* CPUSTYLE_R7S721 */
 
     /* Interrupt Priority Mask Register setting */
