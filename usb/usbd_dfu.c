@@ -277,9 +277,8 @@ static int largetimed_dataflash_read_status(
 /* чтение параметра с требуемым индексом
  *
  */
-static void readSFDPDATAFLASH(unsigned long flashoffset, uint8_t * buff, unsigned size)
+static void readSFDPDATAFLASH(spitarget_t target, unsigned long flashoffset, uint8_t * buff, unsigned size)
 {
-	spitarget_t target = targetdataflash;	/* addressing to chip */
 	// Read SFDP
 	spidf_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
 	spidf_progval8_p1(target, 0x5A);		/* The Read SFDP instruction code is 0x5A */
@@ -302,14 +301,14 @@ static void readSFDPDATAFLASH(unsigned long flashoffset, uint8_t * buff, unsigne
 	spidf_unselect(target);	/* done sending data to target chip */
 }
 
-static int seekparamSFDPDATAFLASH(unsigned long * paramoffset, uint_fast8_t * paramlength, uint_fast8_t id, uint_fast8_t lastnum)
+static int seekparamSFDPDATAFLASH(spitarget_t target, unsigned long * paramoffset, uint_fast8_t * paramlength, uint_fast8_t id, uint_fast8_t lastnum)
 {
 	uint8_t buff8 [8];
 	unsigned i;
 
 	for (i = 0; i <= lastnum; ++ i)
 	{
-		readSFDPDATAFLASH((i + 1) * 8uL, buff8, 8);
+		readSFDPDATAFLASH(target, (i + 1) * 8uL, buff8, 8);
 		if (buff8 [0] == id)
 		{
 			* paramlength = buff8 [3];	// in double words
@@ -359,7 +358,7 @@ static int testchipDATAFLASH(void)
 
 	// Read root SFDP
 	uint8_t buff8 [8];
-	readSFDPDATAFLASH(0x000000, buff8, 8);
+	readSFDPDATAFLASH(target, 0x000000, buff8, 8);
 
 	uint_fast32_t signature = USBD_peek_u32(& buff8 [0]);
 
@@ -370,17 +369,17 @@ static int testchipDATAFLASH(void)
 		const uint_fast8_t lastparam = buff8 [6];
 		unsigned long ptp;
 		uint_fast8_t len4;
-		if (seekparamSFDPDATAFLASH(& ptp, & len4, 0x00, lastparam))
+		if (seekparamSFDPDATAFLASH(target, & ptp, & len4, 0x00, lastparam))
 		{
 			PRINTF("SFDP parameter 0x00 not found\n");
 			return 0;
 		}
 
 		//PRINTF("SFDP: ptp=%08lX, len4=%02X\n", ptp, len4);
-		if (len4 < 9 || len4 > 20)
+		if (len4 < 9 || len4 > 16)
 			return 0;
 		uint8_t buff32 [len4 * 4];
-		readSFDPDATAFLASH(ptp, buff32, len4 * 4);
+		readSFDPDATAFLASH(target, ptp, buff32, len4 * 4);
 		const uint_fast32_t dword1 = USBD_peek_u32(buff32 + 4 * 0);
 		const uint_fast32_t dword2 = USBD_peek_u32(buff32 + 4 * 1);
 		const uint_fast32_t dword3 = USBD_peek_u32(buff32 + 4 * 2);
