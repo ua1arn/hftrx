@@ -740,10 +740,10 @@
 
 	// Bootloader parameters
 	#define BOOTLOADER_APPAREA Renesas_RZ_A1_ONCHIP_SRAM_BASE	/* адрес ОЗУ, куда перемещать application */
-	#define BOOTLOADER_APPFULL (1024uL * 2048)	// 2MB
+	#define BOOTLOADER_APPFULL (1024uL * 2048)	// 2M
 
 	#define BOOTLOADER_SELFBASE Renesas_RZ_A1_SPI_IO0	/* адрес где лежит во FLASH образ application */
-	#define BOOTLOADER_SELFSIZE (1024uL * 128)	// 128
+	#define BOOTLOADER_SELFSIZE (1024uL * 128)	// 128k
 
 	#define BOOTLOADER_APPBASE (BOOTLOADER_SELFBASE + BOOTLOADER_SELFSIZE)	/* адрес где лежит во FLASH образ application */
 	#define BOOTLOADER_APPSIZE (BOOTLOADER_APPFULL - BOOTLOADER_SELFSIZE)	// 2048 - 128
@@ -752,5 +752,39 @@
 	#define USBD_DFU_RAM_XFER_SIZE 1024
 	#define USBD_DFU_FLASH_XFER_SIZE 256	// match to (Q)SPI FLASH MEMORY page size
 	#define USBD_DFU_FLASHNAME "M25P16"
+
+	#if WIHSPIDFHW
+		// P4_2: WP#
+		// P4_4: SCLK
+		// P4_5: CS#
+		// P4_6: MOSI
+		// P4_7: MISO
+
+
+		#define SPIDF_MISO() ((R7S721_INPUT_PORT(4) & (1U << 7)) != 0)
+		#define SPIDF_MOSI(v) do { if (v) R7S721_TARGET_PORT_S(4, (1U << 6)); else R7S721_TARGET_PORT_C(4, (1U << 6)); } while (0)
+		#define SPIDF_SCLK(v) do { if (v) R7S721_TARGET_PORT_S(4, (1U << 4)); else R7S721_TARGET_PORT_C(4, (1U << 4)); } while (0)
+		#define SPIDF_INITIALIZE() do { \
+			arm_hardware_pio4_outputs(1U << 2, 1U << 2);				/* P4_2 WP / SPBIO20_0 */ \
+			arm_hardware_pio4_outputs(1U << 3, 1U << 3);				/* P4_3 NC / SPBIO30_0 */ \
+			/* arm_hardware_pio4_alternative(1U << 4, R7S721_PIOALT_4);	*/ /* P4_4 SCLK / SPBCLK_0 */ \
+			arm_hardware_pio4_outputs(1U << 4, 1U << 4);	/* P4_4 SCLK / SPBCLK_0 */ \
+			/* arm_hardware_pio4_alternative(1U << 5, R7S721_PIOALT_4);	*/ /* P4_5 CS# / SPBSSL_0 */ \
+			arm_hardware_pio4_outputs(1U << 5, 1 * (1U << 5));			/* P4_5 CS# / SPBSSL_0 */ \
+			/* arm_hardware_pio4_alternative(1U << 6, R7S721_PIOALT_4);	*/ /* P4_6 MOSI / SPBIO00_0 */ \
+			arm_hardware_pio4_outputs(1U << 6, 1U << 6);	/* P4_6 MOSI / SPBIO00_0 */ \
+			/* arm_hardware_pio4_alternative(1U << 7, R7S721_PIOALT_4);	*/ /* P4_7 MISO / SPBIO10_0 */ \
+			arm_hardware_pio4_inputs(1U << 7);	/* P4_7 MISO / SPBIO10_0 */ \
+			} while (0)
+		#define SPIDF_SELECT() do { \
+			arm_hardware_pio4_outputs(0x7C, 0x7C); \
+			R7S721_TARGET_PORT_C(4, (1U << 5)); \
+			} while (0)
+		#define SPIDF_UNSELECT() do { \
+			R7S721_TARGET_PORT_S(4, (1U << 5)); \
+			arm_hardware_pio4_inputs(0x7C); \
+			} while (0)
+
+	#endif /* WIHSPIDFHW */
 
 #endif /* ARM_R7S72_TQFP176_CPUSTYLE_RAVEN_V9_H_INCLUDED */

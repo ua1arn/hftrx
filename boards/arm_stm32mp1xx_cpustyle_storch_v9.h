@@ -758,20 +758,59 @@
 		} while (0)
 
 
-		// Bootloader parameters
-		#define BOOTLOADER_APPAREA DRAM_MEM_BASE	/* адрес ОЗУ, куда перемещать application */
-		#define BOOTLOADER_APPFULL (1024uL * 2048)	// 2MB
+	// Bootloader parameters
+	#define BOOTLOADER_APPAREA DRAM_MEM_BASE	/* адрес ОЗУ, куда перемещать application */
+	#define BOOTLOADER_APPFULL (1024uL * 4096)	// 4M
 
-		#define BOOTLOADER_SELFBASE QSPI_MEM_BASE	/* адрес где лежит во FLASH образ application */
-		#define BOOTLOADER_SELFSIZE (1024uL * 128)	// 128
+	#define BOOTLOADER_SELFBASE QSPI_MEM_BASE	/* адрес где лежит во FLASH образ application */
+	#define BOOTLOADER_SELFSIZE (1024uL * 128)	// 128k
 
-		#define BOOTLOADER_APPBASE (BOOTLOADER_SELFBASE + BOOTLOADER_SELFSIZE)	/* адрес где лежит во FLASH образ application */
-		#define BOOTLOADER_APPSIZE (BOOTLOADER_APPFULL - BOOTLOADER_SELFSIZE)	// 2048 - 128
+	#define BOOTLOADER_APPBASE (BOOTLOADER_SELFBASE + BOOTLOADER_SELFSIZE)	/* адрес где лежит во FLASH образ application */
+	#define BOOTLOADER_APPSIZE (BOOTLOADER_APPFULL - BOOTLOADER_SELFSIZE)	// 2048 - 128
 
-		#define BOOTLOADER_PAGESIZE (1024uL * 64)	// W25Q32FV with 64 KB pages
+	#define BOOTLOADER_PAGESIZE (1024uL * 64)	// W25Q32FV with 64 KB pages
 
-		#define USBD_DFU_RAM_XFER_SIZE 1024
-		#define USBD_DFU_FLASH_XFER_SIZE 256	// match to (Q)SPI FLASH MEMORY page size
-		#define USBD_DFU_FLASHNAME "W25Q32FV"
+	#define USBD_DFU_RAM_XFER_SIZE 1024
+	#define USBD_DFU_FLASH_XFER_SIZE 256	// match to (Q)SPI FLASH MEMORY page size
+	#define USBD_DFU_FLASHNAME "W25Q32FV"
+
+	#if WIHSPIDFHW
+
+		//	QUADSPI_CLK 	PF10	AS pin 01	U13-38 (traced to PA7)
+		//	QUADSPI_BK1_NCS PB6 	AS pin 08	U12-21 (traced to PB12)
+		//	QUADSPI_BK1_IO0 PF8		MOSI
+		//	QUADSPI_BK1_IO1 PF9 	MISO
+		#define SPDIF_MISO_BIT (1u << 9)	// PF9
+		#define SPDIF_MOSI_BIT (1u << 8)	// PF8
+		#define SPDIF_SCLK_BIT (1u << 10)	// PF10
+		#define SPDIF_NCS_BIT (1u << 6)		// PB6
+
+		#define SPIDF_MISO() ((GPIOF->IDR & SPDIF_MISO_BIT) != 0)
+		#define SPIDF_MOSI(v) do { if (v) GPIOF->BSRR = BSRR_S(SPDIF_MOSI_BIT); else GPIOF->BSRR = BSRR_C(SPDIF_MOSI_BIT); } while (0)
+		#define SPIDF_SCLK(v) do { if (v) GPIOF->BSRR = BSRR_S(SPDIF_SCLK_BIT); else GPIOF->BSRR = BSRR_C(SPDIF_SCLK_BIT); } while (0)
+		#define SPIDF_INITIALIZE() do { \
+				arm_hardware_piob_outputs(SPDIF_NCS_BIT, SPDIF_NCS_BIT); \
+				arm_hardware_piof_outputs(SPDIF_SCLK_BIT, SPDIF_SCLK_BIT); \
+				arm_hardware_piof_outputs(SPDIF_MOSI_BIT, SPDIF_MOSI_BIT); \
+				arm_hardware_piof_inputs(SPDIF_MISO_BIT); \
+			} while (0)
+		#define SPIDF_SELECT() do { \
+				arm_hardware_piob_outputs(SPDIF_NCS_BIT, SPDIF_NCS_BIT); \
+				arm_hardware_piof_outputs(SPDIF_SCLK_BIT, SPDIF_SCLK_BIT); \
+				arm_hardware_piof_outputs(SPDIF_MOSI_BIT, SPDIF_MOSI_BIT); \
+				arm_hardware_piof_inputs(SPDIF_MISO_BIT); \
+				GPIOB->BSRR = BSRR_C(SPDIF_NCS_BIT); \
+				__DSB(); \
+			} while (0)
+		#define SPIDF_UNSELECT() do { \
+				GPIOB->BSRR = BSRR_S(SPDIF_NCS_BIT); \
+				arm_hardware_piob_inputs(SPDIF_NCS_BIT); \
+				arm_hardware_piof_inputs(SPDIF_SCLK_BIT); \
+				arm_hardware_piof_inputs(SPDIF_MOSI_BIT); \
+				arm_hardware_piof_inputs(SPDIF_MISO_BIT); \
+				__DSB(); \
+			} while (0)
+
+	#endif /* WIHSPIDFHW */
 
 #endif /* ARM_STM32MP1_CPUSTYLE_STORCH_V9_H_INCLUDED */

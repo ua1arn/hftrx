@@ -619,77 +619,6 @@ void spi_initialize(void)
 // Use block SPIBSC0
 // 17. SPI Multi I/O Bus Controller
 //
-// P4_2: WP#
-// P4_4: SCLK
-// P4_5: CS#
-// P4_6: MOSI
-// P4_7: MISO
-
-
-#if CPUSTYLE_R7S721
-
-	#define SPIDF_MISO() ((R7S721_INPUT_PORT(4) & (1U << 7)) != 0)
-	#define SPIDF_MOSI(v) do { if (v) R7S721_TARGET_PORT_S(4, (1U << 6)); else R7S721_TARGET_PORT_C(4, (1U << 6)); } while (0)
-	#define SPIDF_SCLK(v) do { if (v) R7S721_TARGET_PORT_S(4, (1U << 4)); else R7S721_TARGET_PORT_C(4, (1U << 4)); } while (0)
-	#define SPIDF_INITIALIZE() do { \
-		arm_hardware_pio4_outputs(1U << 2, 1U << 2);				/* P4_2 WP / SPBIO20_0 */ \
-		arm_hardware_pio4_outputs(1U << 3, 1U << 3);				/* P4_3 NC / SPBIO30_0 */ \
-		/* arm_hardware_pio4_alternative(1U << 4, R7S721_PIOALT_4);	*/ /* P4_4 SCLK / SPBCLK_0 */ \
-		arm_hardware_pio4_outputs(1U << 4, 1U << 4);	/* P4_4 SCLK / SPBCLK_0 */ \
-		/* arm_hardware_pio4_alternative(1U << 5, R7S721_PIOALT_4);	*/ /* P4_5 CS# / SPBSSL_0 */ \
-		arm_hardware_pio4_outputs(1U << 5, 1 * (1U << 5));			/* P4_5 CS# / SPBSSL_0 */ \
-		/* arm_hardware_pio4_alternative(1U << 6, R7S721_PIOALT_4);	*/ /* P4_6 MOSI / SPBIO00_0 */ \
-		arm_hardware_pio4_outputs(1U << 6, 1U << 6);	/* P4_6 MOSI / SPBIO00_0 */ \
-		/* arm_hardware_pio4_alternative(1U << 7, R7S721_PIOALT_4);	*/ /* P4_7 MISO / SPBIO10_0 */ \
-		arm_hardware_pio4_inputs(1U << 7);	/* P4_7 MISO / SPBIO10_0 */ \
-		} while (0)
-	#define SPIDF_SELECT() do { \
-		arm_hardware_pio4_outputs(0x7C, 0x7C); \
-		R7S721_TARGET_PORT_C(4, (1U << 5)); \
-		} while (0)
-	#define SPIDF_UNSELECT() do { \
-		R7S721_TARGET_PORT_S(4, (1U << 5)); \
-		arm_hardware_pio4_inputs(0x7C); \
-		} while (0)
-
-#elif CPUSTYLE_STM32MP1
-
-	//	QUADSPI_CLK 	PF10	AS pin 01	U13-38 (traced to PA7)
-	//	QUADSPI_BK1_NCS PB6 	AS pin 08	U12-21 (traced to PB12)
-	//	QUADSPI_BK1_IO0 PF8		MOSI
-	//	QUADSPI_BK1_IO1 PF9 	MISO
-	#define SPDIF_MISO_BIT (1u << 9)	// PF9
-	#define SPDIF_MOSI_BIT (1u << 8)	// PF8
-	#define SPDIF_SCLK_BIT (1u << 10)	// PF10
-	#define SPDIF_NCS_BIT (1u << 6)		// PB6
-
-	#define SPIDF_MISO() ((GPIOF->IDR & SPDIF_MISO_BIT) != 0)
-	#define SPIDF_MOSI(v) do { if (v) GPIOF->BSRR = BSRR_S(SPDIF_MOSI_BIT); else GPIOF->BSRR = BSRR_C(SPDIF_MOSI_BIT); } while (0)
-	#define SPIDF_SCLK(v) do { if (v) GPIOF->BSRR = BSRR_S(SPDIF_SCLK_BIT); else GPIOF->BSRR = BSRR_C(SPDIF_SCLK_BIT); } while (0)
-	#define SPIDF_INITIALIZE() do { \
-			arm_hardware_piob_outputs(SPDIF_NCS_BIT, SPDIF_NCS_BIT); \
-			arm_hardware_piof_outputs(SPDIF_SCLK_BIT, SPDIF_SCLK_BIT); \
-			arm_hardware_piof_outputs(SPDIF_MOSI_BIT, SPDIF_MOSI_BIT); \
-			arm_hardware_piof_inputs(SPDIF_MISO_BIT); \
-		} while (0)
-	#define SPIDF_SELECT() do { \
-			arm_hardware_piob_outputs(SPDIF_NCS_BIT, SPDIF_NCS_BIT); \
-			arm_hardware_piof_outputs(SPDIF_SCLK_BIT, SPDIF_SCLK_BIT); \
-			arm_hardware_piof_outputs(SPDIF_MOSI_BIT, SPDIF_MOSI_BIT); \
-			arm_hardware_piof_inputs(SPDIF_MISO_BIT); \
-			GPIOB->BSRR = BSRR_C(SPDIF_NCS_BIT); \
-			__DSB(); \
-		} while (0)
-	#define SPIDF_UNSELECT() do { \
-			GPIOB->BSRR = BSRR_S(SPDIF_NCS_BIT); \
-			arm_hardware_piob_inputs(SPDIF_NCS_BIT); \
-			arm_hardware_piof_inputs(SPDIF_SCLK_BIT); \
-			arm_hardware_piof_inputs(SPDIF_MOSI_BIT); \
-			arm_hardware_piof_inputs(SPDIF_MISO_BIT); \
-			__DSB(); \
-		} while (0)
-
-#endif
 
 void spidf_initialize(void)
 {
@@ -783,7 +712,7 @@ void spidf_initialize(void)
 		0;
 #endif
 
-	// Connrect I/O pins
+	// Connect I/O pins
 	SPIDF_INITIALIZE();
 }
 
