@@ -9311,6 +9311,7 @@ void stm32mp1_pll_initialize(void)
 			0;
 	while ((RCC->ASSCKSELR & RCC_ASSCKSELR_AXISSRCRDY_Msk) == 0)
 		;
+
 	//	0x0: HSI selected as MPU sub-system clock (hsi_ck) (default after reset)
 	//	0x1: HSE selected as MPU sub-system clock (hse_ck)
 	//	0x2: PLL1 selected as MPU sub-system clock (pll1_p_ck)
@@ -9319,6 +9320,16 @@ void stm32mp1_pll_initialize(void)
 		(0x00 << RCC_MPCKSELR_MPUSRC_Pos) |	// HSI
 		0;
 	while((RCC->MPCKSELR & RCC_MPCKSELR_MPUSRCRDY_Msk) == 0)
+		;
+
+	//	0x0: HSI selected as MCU sub-system clock (hsi_ck) (default after reset)
+	//	0x1: HSE selected as MCU sub-system clock (hse_ck)
+	//	0x2: CSI selected as MCU sub-system clock (csi_ck)
+	//	0x3: PLL3 selected as MCU sub-system clock (pll3_p_ck).
+	RCC->MSSCKSELR = (RCC->MSSCKSELR & ~ (RCC_MSSCKSELR_MCUSSRC_Msk)) |
+		(0x00 << RCC_MSSCKSELR_MCUSSRC_Pos) |	// HSI
+		0;
+	while((RCC->MSSCKSELR & RCC_MSSCKSELR_MCUSSRCRDY_Msk) == 0)
 		;
 
 	// Stop PLL4
