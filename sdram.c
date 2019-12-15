@@ -3360,10 +3360,10 @@ static void panic(void)
 		;
 }
 
-
-unsigned long stm32mp_clk_get_rate(unsigned long id)
+// DDR clock in Hz
+unsigned long stm32mp_ddr_clk_get_rate(unsigned long id)
 {
-	return 533000000uL;
+	return DDR_FREQ;
 /*
 	int p = stm32mp1_clk_get_parent(id);
 
@@ -3823,10 +3823,10 @@ int stm32mp1_ddr_clk_enable(struct ddr_info *priv, uint32_t mem_speed)
 
 	ddr_enable_clock();
 
-	ddrphy_clk = stm32mp_clk_get_rate(0 /*DDRPHYC */);
+	ddrphy_clk = stm32mp_ddr_clk_get_rate(0 /*DDRPHYC */);
 
-	VERBOSE("DDR: mem_speed (%d kHz), RCC %ld kHz\n",
-		mem_speed, ddrphy_clk / 1000U);
+	VERBOSE("DDR: mem_speed (%lu kHz), RCC %lu kHz\n",
+		(unsigned long) mem_speed, ddrphy_clk / 1000lU);
 
 	mem_speed_hz = mem_speed * 1000U;
 
@@ -3839,7 +3839,7 @@ int stm32mp1_ddr_clk_enable(struct ddr_info *priv, uint32_t mem_speed)
 	if (ddr_clk > (mem_speed_hz / 10)) {
 		ERROR("DDR expected freq %d kHz, current is %ld kHz\n",
 		      mem_speed, ddrphy_clk / 1000U);
-		return -1;
+		//return -1;
 	}
 	return 0;
 }
@@ -4451,7 +4451,7 @@ static void stm32mp1_ddr3_dll_off(struct ddr_info *priv)
 	 */
 
 	/* Change Bypass Mode Frequency Range */
-	if (stm32mp_clk_get_rate(0/*DDRPHYC*/) < 100000000U) {
+	if (stm32mp_ddr_clk_get_rate(0/*DDRPHYC*/) < 100000000U) {
 		mmio_clrbits_32((uintptr_t)&priv->phy->dllgcr,
 				DDRPHYC_DLLGCR_BPS200);
 	} else {
