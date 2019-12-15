@@ -90,7 +90,7 @@ ASRC += \
  $(SRCDIR)/crt_r7s721.s
 
 # List all user directories here
-UINCDIR += ../.. ../../inc ../../rza1x_inc/
+UINCDIR += ../.. ../../inc
 
 # List the user directory to look for the libraries here
 ULIBDIR +=
