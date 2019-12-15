@@ -12,6 +12,7 @@
 #include <string.h>
 
 #include "formats.h"	// for debug prints
+#include "gpio.h"
 
 #if WITHSDRAMHW
 
@@ -5345,7 +5346,16 @@ int stpmic1_regulator_voltage_get(const char *name)
 
 int stpmic1_register_read(uint8_t register_id,  uint8_t *value)
 {
-	return -1;
+	i2c_start(pmic_i2c_addr | 0x01);
+	uint_fast8_t v;
+
+	i2c_start(pmic_i2c_addr | 0x00);
+	i2c_write_withrestart(register_id);
+	i2c_start(pmic_i2c_addr | 0x01);
+	i2c_read(& v, I2C_READ_ACK_NACK);	/* чтение первого и единственного байта ответа */
+
+	* value = v;
+	return 0;
 /*
 	return stm32_i2c_mem_read(pmic_i2c_handle, pmic_i2c_addr,
 				  (uint16_t)register_id,
@@ -5356,7 +5366,14 @@ int stpmic1_register_read(uint8_t register_id,  uint8_t *value)
 
 int stpmic1_register_write(uint8_t register_id, uint8_t value)
 {
-	int status = -1;
+	int status = 0;
+
+	i2c_start(pmic_i2c_addr | 0x00);
+	i2c_write(register_id);
+	i2c_write(value);
+	i2c_waitsend();
+	i2c_stop();
+
 /*
 
 	status = stm32_i2c_mem_write(pmic_i2c_handle, pmic_i2c_addr,
@@ -5409,7 +5426,7 @@ void stpmic1_dump_regulators(void)
 	for (i = 0U; i < MAX_REGUL; i++) {
 		const char *name __unused = regulators_table[i].dt_node_name;
 
-		VERBOSE("PMIC regul %s: %sable, %dmV",
+		VERBOSE("PMIC regul %s: %sable, %dmV\n",
 			name,
 			stpmic1_is_regulator_enabled(name) ? "en" : "dis",
 			stpmic1_regulator_voltage_get(name));
@@ -5419,7 +5436,7 @@ void stpmic1_dump_regulators(void)
 int stpmic1_get_version(unsigned long *version)
 {
 	int rc;
-	uint8_t read_val;
+	uint8_t read_val = 0xDD;
 
 	rc = stpmic1_register_read(VERSION_STATUS_REG, &read_val);
 	if (rc) {
@@ -5446,6 +5463,13 @@ void initialize_pmic(void)
 		VERBOSE("No PMIC\n");
 		return;
 	}
+
+	if (stpmic1_get_version(&pmic_version) != 0) {
+		ERROR("Failed to access PMIC\n");
+		panic();
+	}
+
+	INFO("PMIC version = 0x%02lx\n", pmic_version);
 
 	if (stpmic1_get_version(&pmic_version) != 0) {
 		ERROR("Failed to access PMIC\n");
@@ -5826,10 +5850,11 @@ static void stm32mp1_ddr_init(struct ddr_info *priv,
 
 #include "stm32mp15-mx.dtsi"
 
+// NT5CC128M16IP-DI BGA DDR3 NT5CC128M16IP DI
 void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 {
 	PRINTF("arm_hardware_sdram_initialize start\n");
-
+	TWISOFT_INITIALIZE();
 	initialize_pmic();
 
 	struct ddr_info ddr_priv_data;
@@ -5986,6 +6011,7 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 
 	//DDRC->MSTR =
 
+	TWISOFT_DEINITIALIZE();
 	PRINTF("arm_hardware_sdram_initialize done\n");
 }
 
