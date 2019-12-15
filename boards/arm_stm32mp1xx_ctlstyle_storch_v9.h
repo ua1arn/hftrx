@@ -20,9 +20,10 @@
 	#define WITHSAICLOCKFROMPIN 1	// тактовая частота на SAI1 подается с внешнего генератора, в процессор вводится через MCK сигнал интерфейса
 
 	#define WITHUSEPLL		1	/* Главная PLL	*/
-	#define WITHUSEPLL1		1	/* PLL3 - для LTDC на STM32H743xx	*/
-	#define WITHUSEPLL2		1	/* PLL3 - для LTDC на STM32H743xx	*/
-	#define WITHUSEPLL3		1	/* PLL3 - для LTDC на STM32H743xx	*/
+	#define WITHUSEPLL1		1	/* PLL1 - MPU, AXI	*/
+	#define WITHUSEPLL2		1	/* PLL2 - GPU, DDR	*/
+	//#define WITHUSEPLL3		1	/* PLL3 - для LTDC на STM32H743xx	*/
+	#define WITHUSEPLL4		1	/* PLL4 - для LTDC & USBPHY	*/
 	//#define WITHUSESAIPLL	1	/* SAI PLL	*/
 	//#define WITHUSESAII2S	1	/* I2S PLL	*/
 	//#define LTDC_DOTCLK	9000000UL	// частота пикселей при работе с интерфейсом RGB
