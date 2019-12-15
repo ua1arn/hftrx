@@ -5843,6 +5843,162 @@ static void stm32mp1_ddr_init(struct ddr_info *priv,
 
 #include "stm32mp15-mx.dtsi"
 
+void fill_config_ddr3(struct stm32mp1_ddr_config * cfg)
+{
+
+#if 0
+	if (fdt_get_address(&fdt) == 0) {
+		panic();
+	}
+
+	node = fdt_node_offset_by_compatible(fdt, -1, DT_DDR_COMPAT);
+	if (node < 0) {
+		ERROR("%s: Cannot read DDR node in DT\n", __func__);
+		panic();
+	}
+
+	cfg->info.speed = fdt_read_uint32_default(node, "st,mem-speed", 0);
+	if (!cfg->info.speed) {
+		VERBOSE("%s: no st,mem-speed\n", __func__);
+		panic();
+	}
+	cfg->info.size = fdt_read_uint32_default(node, "st,mem-size", 0);
+	if (!cfg->info.size) {
+		VERBOSE("%s: no st,mem-size\n", __func__);
+		panic();
+	}
+	cfg->info.name = fdt_getprop(fdt, node, "st,mem-name", &len);
+	if (cfg->info.name == NULL) {
+		VERBOSE("%s: no st,mem-name\n", __func__);
+		panic();
+	}
+	INFO("RAM: %s\n", cfg->info.name);
+
+	for (idx = 0; idx < ARRAY_SIZE(param); idx++) {
+		ret = fdt_read_uint32_array(node, param[idx].name,
+					    (void *)((uintptr_t)&config +
+						     param[idx].offset),
+					    param[idx].size);
+
+		VERBOSE("%s: %s[0x%x] = %d\n", __func__,
+			param[idx].name, param[idx].size, ret);
+		if (ret != 0) {
+			ERROR("%s: Cannot read %s\n",
+			      __func__, param[idx].name);
+			panic();
+		}
+	}
+#else
+
+	cfg->info.speed = DDR_MEM_SPEED; // kHz //fdt_read_uint32_default(node, "st,mem-speed", 0);
+	cfg->info.size = DDR_MEM_SIZE;//fdt_read_uint32_default(node, "st,mem-size", 0);
+	cfg->info.name = DDR_MEM_NAME; //fdt_getprop(fdt, node, "st,mem-name", &len);
+
+#endif
+
+	cfg->c_reg.mstr = 	 	DDR_MSTR;
+	cfg->c_reg.mrctrl0 = 	DDR_MRCTRL0;
+	cfg->c_reg.mrctrl1 = 	DDR_MRCTRL1;
+	cfg->c_reg.derateen =  	DDR_DERATEEN;
+	cfg->c_reg.derateint =	DDR_DERATEINT;
+	cfg->c_reg.pwrctl = 	DDR_PWRCTL;
+	cfg->c_reg.pwrtmg = 	DDR_PWRTMG;
+	cfg->c_reg.hwlpctl = 	DDR_HWLPCTL;
+	cfg->c_reg.rfshctl0 =  	DDR_RFSHCTL0;
+	cfg->c_reg.rfshctl3 =  	DDR_RFSHCTL3;
+	cfg->c_reg.crcparctl0  = DDR_CRCPARCTL0;
+	cfg->c_reg.zqctl0 = 	 DDR_ZQCTL0;
+	cfg->c_reg.dfitmg0 = 	 DDR_DFITMG0;
+	cfg->c_reg.dfitmg1 = 	 DDR_DFITMG1;
+	cfg->c_reg.dfilpcfg0 = 	DDR_DFILPCFG0;
+	cfg->c_reg.dfiupd0 = 	 DDR_DFIUPD0;
+	cfg->c_reg.dfiupd1 = 	 DDR_DFIUPD1;
+	cfg->c_reg.dfiupd2 = 	 DDR_DFIUPD2;
+	cfg->c_reg.dfiphymstr = DDR_DFIPHYMSTR;
+	cfg->c_reg.odtmap = 	DDR_ODTMAP;
+	cfg->c_reg.dbg0 = 	 	DDR_DBG0;
+	cfg->c_reg.dbg1 = 	 	DDR_DBG1;
+	cfg->c_reg.dbgcmd = 	DDR_DBGCMD;
+	cfg->c_reg.poisoncfg = DDR_POISONCFG;
+	cfg->c_reg.pccfg = 	 DDR_PCCFG;
+
+	cfg->c_timing.rfshtmg = 	 DDR_RFSHTMG;
+	cfg->c_timing.dramtmg0 =  DDR_DRAMTMG0;
+	cfg->c_timing.dramtmg1 =  DDR_DRAMTMG1;
+	cfg->c_timing.dramtmg2 =  DDR_DRAMTMG2;
+	cfg->c_timing.dramtmg3 =  DDR_DRAMTMG3;
+	cfg->c_timing.dramtmg4 =  DDR_DRAMTMG4;
+	cfg->c_timing.dramtmg5 =  DDR_DRAMTMG5;
+	cfg->c_timing.dramtmg6 =  DDR_DRAMTMG6;
+	cfg->c_timing.dramtmg7 =  DDR_DRAMTMG7;
+	cfg->c_timing.dramtmg8 =  DDR_DRAMTMG8;
+	cfg->c_timing.dramtmg14 = DDR_DRAMTMG14;
+	cfg->c_timing.odtcfg = 	 DDR_ODTCFG;
+
+	cfg->c_perf.sched = 	 DDR_SCHED;
+	cfg->c_perf.sched1 = 	 DDR_SCHED1;
+	cfg->c_perf.perfhpr1 =  DDR_PERFHPR1;
+	cfg->c_perf.perflpr1 =  DDR_PERFLPR1;
+	cfg->c_perf.perfwr1 = 	 DDR_PERFWR1;
+	cfg->c_perf.pcfgr_0 = 	 DDR_PCFGR_0;
+	cfg->c_perf.pcfgw_0 = 	 DDR_PCFGW_0;
+	cfg->c_perf.pcfgqos0_0  = DDR_PCFGQOS0_0;
+	cfg->c_perf.pcfgqos1_0  = DDR_PCFGQOS1_0;
+	cfg->c_perf.pcfgwqos0_0 = DDR_PCFGWQOS0_0;
+	cfg->c_perf.pcfgwqos1_0 = DDR_PCFGWQOS1_0;
+	cfg->c_perf.pcfgr_1 = 	 DDR_PCFGR_1;
+	cfg->c_perf.pcfgw_1 = 	 DDR_PCFGW_1;
+	cfg->c_perf.pcfgqos0_1  = DDR_PCFGQOS0_1;
+	cfg->c_perf.pcfgqos1_1  = DDR_PCFGQOS1_1;
+	cfg->c_perf.pcfgwqos0_1 = DDR_PCFGWQOS0_1;
+	cfg->c_perf.pcfgwqos1_1 = DDR_PCFGWQOS1_1;
+
+	cfg->c_map.addrmap1 =  DDR_ADDRMAP1;
+	cfg->c_map.addrmap2 =  DDR_ADDRMAP2;
+	cfg->c_map.addrmap3 =  DDR_ADDRMAP3;
+	cfg->c_map.addrmap4 =  DDR_ADDRMAP4;
+	cfg->c_map.addrmap5 =  DDR_ADDRMAP5;
+	cfg->c_map.addrmap6 =  DDR_ADDRMAP6;
+	cfg->c_map.addrmap9 =  DDR_ADDRMAP9;
+	cfg->c_map.addrmap10 = DDR_ADDRMAP10;
+	cfg->c_map.addrmap11 = DDR_ADDRMAP11;
+
+	cfg->p_reg.pgcr = 	 DDR_PGCR;
+	cfg->p_reg.aciocr = 	 DDR_ACIOCR;
+	cfg->p_reg.dxccr = 	 DDR_DXCCR;
+	cfg->p_reg.dsgcr = 	 DDR_DSGCR;
+	cfg->p_reg.dcr = 		 DDR_DCR;
+	cfg->p_reg.odtcr = 	 DDR_ODTCR;
+
+	cfg->p_timing.ptr0 = 	 DDR_PTR0;
+	cfg->p_timing.ptr1 = 	 DDR_PTR1;
+	cfg->p_timing.ptr2 = 	 DDR_PTR2;
+	cfg->p_timing.dtpr0 = 	 DDR_DTPR0;
+	cfg->p_timing.dtpr1 = 	 DDR_DTPR1;
+	cfg->p_timing.dtpr2 = 	 DDR_DTPR2;
+	cfg->p_timing.mr0 = 		 DDR_MR0;
+	cfg->p_timing.mr1 = 		 DDR_MR1;
+	cfg->p_timing.mr2 = 		 DDR_MR2;
+	cfg->p_timing.mr3 = 		 DDR_MR3;
+
+	cfg->p_reg.zq0cr1 = 	 DDR_ZQ0CR1;
+	cfg->p_reg.dx0gcr = 	 DDR_DX0GCR;
+	cfg->p_cal.dx0dllcr =  DDR_DX0DLLCR;
+	cfg->p_cal.dx0dqtr = 	 DDR_DX0DQTR;
+	cfg->p_cal.dx0dqstr =  DDR_DX0DQSTR;
+	cfg->p_reg.dx1gcr = 	 DDR_DX1GCR;
+	cfg->p_cal.dx1dllcr =  DDR_DX1DLLCR;
+	cfg->p_cal.dx1dqtr = 	 DDR_DX1DQTR;
+	cfg->p_cal.dx1dqstr =  	DDR_DX1DQSTR;
+	cfg->p_reg.dx2gcr = 	DDR_DX2GCR;
+	cfg->p_cal.dx2dllcr =  	DDR_DX2DLLCR;
+	cfg->p_cal.dx2dqtr = 	DDR_DX2DQTR;
+	cfg->p_cal.dx2dqstr =  	DDR_DX2DQSTR;
+	cfg->p_reg.dx3gcr = 	DDR_DX3GCR;
+	cfg->p_cal.dx3dllcr =  	DDR_DX3DLLCR;
+	cfg->p_cal.dx3dqtr = 	DDR_DX3DQTR;
+	cfg->p_cal.dx3dqstr =  	DDR_DX3DQSTR;
+}
 // NT5CC128M16IP-DI BGA DDR3 NT5CC128M16IP DI
 void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 {
@@ -5890,56 +6046,7 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 	priv->info.base = STM32MP_DDR_BASE;
 	priv->info.size = 0;
 
-#if 0
-	if (fdt_get_address(&fdt) == 0) {
-		panic();
-	}
-
-	node = fdt_node_offset_by_compatible(fdt, -1, DT_DDR_COMPAT);
-	if (node < 0) {
-		ERROR("%s: Cannot read DDR node in DT\n", __func__);
-		panic();
-	}
-
-	config.info.speed = fdt_read_uint32_default(node, "st,mem-speed", 0);
-	if (!config.info.speed) {
-		VERBOSE("%s: no st,mem-speed\n", __func__);
-		panic();
-	}
-	config.info.size = fdt_read_uint32_default(node, "st,mem-size", 0);
-	if (!config.info.size) {
-		VERBOSE("%s: no st,mem-size\n", __func__);
-		panic();
-	}
-	config.info.name = fdt_getprop(fdt, node, "st,mem-name", &len);
-	if (config.info.name == NULL) {
-		VERBOSE("%s: no st,mem-name\n", __func__);
-		panic();
-	}
-	INFO("RAM: %s\n", config.info.name);
-
-	for (idx = 0; idx < ARRAY_SIZE(param); idx++) {
-		ret = fdt_read_uint32_array(node, param[idx].name,
-					    (void *)((uintptr_t)&config +
-						     param[idx].offset),
-					    param[idx].size);
-
-		VERBOSE("%s: %s[0x%x] = %d\n", __func__,
-			param[idx].name, param[idx].size, ret);
-		if (ret != 0) {
-			ERROR("%s: Cannot read %s\n",
-			      __func__, param[idx].name);
-			panic();
-		}
-	}
-#else
-
-	memset(& config, 0, sizeof config);
-	config.info.speed = DDR_MEM_SPEED; // kHz //fdt_read_uint32_default(node, "st,mem-speed", 0);
-	config.info.size = DDR_MEM_SIZE;//fdt_read_uint32_default(node, "st,mem-size", 0);
-	config.info.name = DDR_MEM_NAME; //fdt_getprop(fdt, node, "st,mem-name", &len);
-
-#endif
+	fill_config_ddr3(& config);
 
 	mmio_setbits_32((uintptr_t) RCC + RCC_DDRITFCR,
 			RCC_DDRITFCR_DDRC1EN |
@@ -5987,10 +6094,6 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 	PRINTF("DDRC->MSTR=%08lX\n", DDRC->MSTR);
 
 	PRINTF("DDRPHYC->RIDR=%08lX\n", DDRPHYC->RIDR);
-
-	config.c_reg.mstr = DDR_MSTR;
-	config.c_reg.mrctrl0 = DDR_MRCTRL0;
-	config.c_reg.mrctrl1 = DDR_MRCTRL1;
 
 	stm32mp1_ddr_init(priv, & config);
 
