@@ -6176,6 +6176,7 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 
 	TWISOFT_DEINITIALIZE();
 
+#if 0
 	PRINTF("DDR memory tests:\n");
 	// инициализация выполняетмя еще до включения MMU
 	//__set_SCTLR(__get_SCTLR() & ~ SCTLR_C_Msk);
@@ -6204,7 +6205,7 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 
 	//__set_SCTLR(__get_SCTLR() | SCTLR_C_Msk);
 
-
+#endif
 	/* Enable axidcg clock gating */
 	//mmio_setbits_32(& RCC->DDRITFCR, RCC_DDRITFCR_AXIDCGEN);
 	//RCC->DDRITFCR |= RCC_DDRITFCR_AXIDCGEN;
