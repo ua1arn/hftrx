@@ -5843,7 +5843,7 @@ static void stm32mp1_ddr_init(struct ddr_info *priv,
 
 #include "stm32mp15-mx.dtsi"
 
-void fill_config_ddr3(struct stm32mp1_ddr_config * cfg)
+void stm32mp1_ddr_get_config(struct stm32mp1_ddr_config * cfg)
 {
 
 #if 0
@@ -6042,11 +6042,10 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 	priv->phy = (struct stm32mp1_ddrphy *) DDRPHYC_BASE;
 	priv->pwr = PWR_BASE;
 	priv->rcc = RCC_BASE;
-
 	priv->info.base = STM32MP_DDR_BASE;
-	priv->info.size = 0;
+	priv->info.size = DDR_MEM_SIZE;
 
-	fill_config_ddr3(& config);
+	stm32mp1_ddr_get_config(& config);
 
 	mmio_setbits_32((uintptr_t) RCC + RCC_DDRITFCR,
 			RCC_DDRITFCR_DDRC1EN |
