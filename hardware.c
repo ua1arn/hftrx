@@ -9294,7 +9294,7 @@ void stm32mp1_pll_initialize(void)
 	//RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_TZPCEN;
 	//(void) RCC->MP_APB5ENSETR;
 	RCC->TZCR &= ~ (RCC_TZCR_MCKPROT);
-	RCC->TZCR &= ~ (RCC_TZCR_TZEN);
+	//RCC->TZCR &= ~ (RCC_TZCR_TZEN);
 
 	// переключение на HSI на всякий случай перед программированием PLL
 	// HSI ON
@@ -11036,7 +11036,7 @@ sysinit_pll_initialize(void)
 	if (1)
 	{
 		//RCC->TZCR &= ~ (RCC_TZCR_TZEN | RCC_TZCR_MCKPROT);
-		RCC->TZCR &= ~ (RCC_TZCR_TZEN);
+		//RCC->TZCR &= ~ (RCC_TZCR_TZEN);
 		RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_TZPCEN;
 		(void) RCC->MP_APB5ENSETR;
 
