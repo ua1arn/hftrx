@@ -6145,7 +6145,6 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 		PRINTF("TZC->BUILD_CONFIG=%08lX\n", TZC->BUILD_CONFIG);
 		PRINTF("TZC->ACTION=%08lX\n", TZC->ACTION);
 
-		uint_fast8_t i;
 		const uint_fast8_t lastregion = TZC->BUILD_CONFIG & 0x0f;
 		for (i = 0; i <= lastregion; ++ i)
 		{
@@ -6162,11 +6161,18 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 		}
 */
 
-		// Switch off reaction
-		TZC->GATE_KEEPER |= 0x03;
-		(void) TZC->GATE_KEEPER;
-		while (((TZC->GATE_KEEPER >> 16) & 0x03) != 0x03)
-			;
+		const uint_fast8_t lastfilrer = (TZC->BUILD_CONFIG >> 24) & 0x03;
+		uint_fast8_t i;
+		for (i = 0; i <= lastfilrer; ++ i)
+		{
+			const uint32_t mask = 1uL << i;
+			// Switch off reaction
+			TZC->GATE_KEEPER |= mask;	// Gate open request
+			(void) TZC->GATE_KEEPER;
+			while (((TZC->GATE_KEEPER >> 16) & mask) == 0)
+				;
+		}
+		PRINTF("TZC->GATE_KEEPER=%08lX\n", TZC->GATE_KEEPER);
 	}
 
 	TWISOFT_INITIALIZE();
