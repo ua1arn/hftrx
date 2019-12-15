@@ -6123,6 +6123,52 @@ static uint32_t ddr_check_size(void)
 void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 {
 	PRINTF("arm_hardware_sdram_initialize start\n");
+
+	if (1)
+	{
+		// TrustZone address space controller for DDR (TZC)
+
+		// TZC AXI port 1 clocks enable
+		RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_TZC1EN;
+		(void) RCC->MP_APB5ENSETR;
+		RCC->MP_APB5LPENSETR = RCC_MC_APB5LPENSETR_TZC1LPEN;
+		(void) RCC->MP_APB5LPENSETR;
+
+		// TZC AXI port 2 clocks enable
+		RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_TZC2EN;
+		(void) RCC->MP_APB5ENSETR;
+		RCC->MP_APB5LPENSETR = RCC_MC_APB5LPENSETR_TZC2LPEN;
+		(void) RCC->MP_APB5LPENSETR;
+
+/*
+		// 0x01001F08
+		PRINTF("TZC->BUILD_CONFIG=%08lX\n", TZC->BUILD_CONFIG);
+		PRINTF("TZC->ACTION=%08lX\n", TZC->ACTION);
+
+		uint_fast8_t i;
+		const uint_fast8_t lastregion = TZC->BUILD_CONFIG & 0x0f;
+		for (i = 0; i <= lastregion; ++ i)
+		{
+			volatile uint32_t * const REG_BASE_LOWx = & TZC->REG_BASE_LOWO + (i * 8);
+			volatile uint32_t * const REG_BASE_HIGHx = & TZC->REG_BASE_HIGHO + (i * 8);
+			volatile uint32_t * const REG_ATTRIBUTESx = & TZC->REG_ATTRIBUTESO + (i * 8);
+
+			PRINTF("TZC->REG_BASE_LOW%d=%08lX\n", i, * REG_BASE_LOWx);
+			PRINTF("TZC->REG_BASE_HIGH%d=%08lX\n", i, * REG_BASE_HIGHx);
+			PRINTF("TZC->REG_ATTRIBUTES%d=%08lX\n", i, * REG_ATTRIBUTESx);
+			// * REG_ATTRIBUTES = (* REG_ATTRIBUTESx & ~ (0x03)) |
+			//		0;
+			//PRINTF("TZC->REG_ATTRIBUTES%d=%08lX\n", i, * REG_ATTRIBUTESx);
+		}
+*/
+
+		// Switch off reaction
+		TZC->GATE_KEEPER |= 0x03;
+		(void) TZC->GATE_KEEPER;
+		while (((TZC->GATE_KEEPER >> 16) & 0x03) != 0x03)
+			;
+	}
+
 	TWISOFT_INITIALIZE();
 	initialize_pmic();
 
@@ -6176,7 +6222,7 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 
 	TWISOFT_DEINITIALIZE();
 
-#if 0
+#if 1
 	PRINTF("DDR memory tests:\n");
 	// инициализация выполняетмя еще до включения MMU
 	//__set_SCTLR(__get_SCTLR() & ~ SCTLR_C_Msk);
