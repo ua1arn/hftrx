@@ -4152,7 +4152,7 @@ static void stm32mp1_ddrphy_idone_wait(struct stm32mp1_ddrphy *phy)
 	do {
 		pgsr = mmio_read_32((uintptr_t)&phy->pgsr);
 
-		VERBOSE("  > [0x%lx] pgsr = 0x%x &\r",
+		VERBOSE("  > [0x%lx] pgsr = 0x%x &",
 			(uintptr_t)&phy->pgsr, pgsr);
 
 //		if (timeout_elapsed(timeout)) {
@@ -4215,7 +4215,7 @@ static void stm32mp1_start_sw_done(struct stm32mp1_ddrctl *ctl)
 /* Wait quasi dynamic register update */
 static void stm32mp1_wait_sw_done_ack(struct stm32mp1_ddrctl *ctl)
 {
-	uint64_t timeout;
+//	uint64_t timeout;
 	uint32_t swstat;
 
 	mmio_setbits_32((uintptr_t)&ctl->swctl, DDRCTRL_SWCTL_SW_DONE);
@@ -4239,7 +4239,7 @@ static void stm32mp1_wait_sw_done_ack(struct stm32mp1_ddrctl *ctl)
 /* Wait quasi dynamic register update */
 static void stm32mp1_wait_operating_mode(struct ddr_info *priv, uint32_t mode)
 {
-	uint64_t timeout;
+//	uint64_t timeout;
 	uint32_t stat;
 	int break_loop = 0;
 
@@ -5843,6 +5843,7 @@ static void stm32mp1_ddr_init(struct ddr_info *priv,
 
 #include "stm32mp15-mx.dtsi"
 
+// NT5CC128M16IP-DI BGA DDR3 NT5CC128M16IP DI
 void stm32mp1_ddr_get_config(struct stm32mp1_ddr_config * cfg)
 {
 
@@ -5999,6 +6000,124 @@ void stm32mp1_ddr_get_config(struct stm32mp1_ddr_config * cfg)
 	cfg->p_cal.dx3dqtr = 	DDR_DX3DQTR;
 	cfg->p_cal.dx3dqstr =  	DDR_DX3DQSTR;
 }
+
+#define DDR_PATTERN	0xAAAAAAAAU
+#define DDR_ANTIPATTERN	0x55555555U
+
+
+/*******************************************************************************
+ * This function tests the DDR data bus wiring.
+ * This is inspired from the Data Bus Test algorithm written by Michael Barr
+ * in "Programming Embedded Systems in C and C++" book.
+ * resources.oreilly.com/examples/9781565923546/blob/master/Chapter6/
+ * File: memtest.c - This source code belongs to Public Domain.
+ * Returns 0 if success, and address value else.
+ ******************************************************************************/
+static uint32_t ddr_test_data_bus(void)
+{
+	uint32_t pattern;
+
+	for (pattern = 1U; pattern != 0U; pattern <<= 1) {
+		mmio_write_32(STM32MP_DDR_BASE, pattern);
+
+		if (mmio_read_32(STM32MP_DDR_BASE) != pattern) {
+			return (uint32_t)STM32MP_DDR_BASE;
+		}
+	}
+
+	return 0;
+}
+
+/*******************************************************************************
+ * This function tests the DDR address bus wiring.
+ * This is inspired from the Data Bus Test algorithm written by Michael Barr
+ * in "Programming Embedded Systems in C and C++" book.
+ * resources.oreilly.com/examples/9781565923546/blob/master/Chapter6/
+ * File: memtest.c - This source code belongs to Public Domain.
+ * Returns 0 if success, and address value else.
+ ******************************************************************************/
+static uint32_t ddr_test_addr_bus(void)
+{
+	uint64_t addressmask = (DDR_MEM_SIZE - 1U);
+	uint64_t offset;
+	uint64_t testoffset = 0;
+
+	/* Write the default pattern at each of the power-of-two offsets. */
+	for (offset = sizeof(uint32_t); (offset & addressmask) != 0U;
+	     offset <<= 1) {
+		mmio_write_32(STM32MP_DDR_BASE + (uint32_t)offset,
+			      DDR_PATTERN);
+	}
+
+	/* Check for address bits stuck high. */
+	mmio_write_32(STM32MP_DDR_BASE + (uint32_t)testoffset,
+		      DDR_ANTIPATTERN);
+
+	for (offset = sizeof(uint32_t); (offset & addressmask) != 0U;
+	     offset <<= 1) {
+		if (mmio_read_32(STM32MP_DDR_BASE + (uint32_t)offset) !=
+		    DDR_PATTERN) {
+			return (uint32_t)(STM32MP_DDR_BASE + offset);
+		}
+	}
+
+	mmio_write_32(STM32MP_DDR_BASE + (uint32_t)testoffset, DDR_PATTERN);
+
+	/* Check for address bits stuck low or shorted. */
+	for (testoffset = sizeof(uint32_t); (testoffset & addressmask) != 0U;
+	     testoffset <<= 1) {
+		mmio_write_32(STM32MP_DDR_BASE + (uint32_t)testoffset,
+			      DDR_ANTIPATTERN);
+
+		if (mmio_read_32(STM32MP_DDR_BASE) != DDR_PATTERN) {
+			return STM32MP_DDR_BASE;
+		}
+
+		for (offset = sizeof(uint32_t); (offset & addressmask) != 0U;
+		     offset <<= 1) {
+			if ((mmio_read_32(STM32MP_DDR_BASE +
+					  (uint32_t)offset) != DDR_PATTERN) &&
+			    (offset != testoffset)) {
+				return (uint32_t)(STM32MP_DDR_BASE + offset);
+			}
+		}
+
+		mmio_write_32(STM32MP_DDR_BASE + (uint32_t)testoffset,
+			      DDR_PATTERN);
+	}
+
+	return 0;
+}
+
+/*******************************************************************************
+ * This function checks the DDR size. It has to be run with Data Cache off.
+ * This test is run before data have been put in DDR, and is only done for
+ * cold boot. The DDR data can then be overwritten, and it is not useful to
+ * restore its content.
+ * Returns DDR computed size.
+ ******************************************************************************/
+static uint32_t ddr_check_size(void)
+{
+	uint32_t offset = sizeof(uint32_t);
+
+	mmio_write_32(STM32MP_DDR_BASE, DDR_PATTERN);
+
+	while (offset < STM32MP_DDR_MAX_SIZE) {
+		mmio_write_32(STM32MP_DDR_BASE + offset, DDR_ANTIPATTERN);
+		__DSB();
+
+		if (mmio_read_32(STM32MP_DDR_BASE) != DDR_PATTERN) {
+			break;
+		}
+
+		offset <<= 1;
+	}
+
+	INFO("Memory size = 0x%x (%d MB)\n", offset, offset / (1024U * 1024U));
+
+	return offset;
+}
+
 // NT5CC128M16IP-DI BGA DDR3 NT5CC128M16IP DI
 void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 {
@@ -6107,6 +6226,36 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 	//DDRC->MSTR =
 
 	TWISOFT_DEINITIALIZE();
+
+	PRINTF("DDR memory tests:\n");
+	// инициализация выполняетмя еще до включения MMU
+	//__set_SCTLR(__get_SCTLR() & ~ SCTLR_C_Msk);
+
+	uret = ddr_test_data_bus();
+	if (uret != 0U) {
+		ERROR("DDR data bus test: can't access memory @ 0x%x\n",
+		      uret);
+		panic();
+	}
+	TP();
+	uret = ddr_test_addr_bus();
+	if (uret != 0U) {
+		ERROR("DDR addr bus test: can't access memory @ 0x%x\n",
+		      uret);
+		panic();
+	}
+	TP();
+
+	uret = ddr_check_size();
+	if (uret < config.info.size) {
+		ERROR("DDR size: 0x%x does not match DT config: 0x%x\n",
+		      uret, config.info.size);
+		panic();
+	}
+
+	//__set_SCTLR(__get_SCTLR() | SCTLR_C_Msk);
+
+
 	PRINTF("arm_hardware_sdram_initialize done\n");
 }
 
