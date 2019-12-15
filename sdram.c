@@ -5346,7 +5346,6 @@ int stpmic1_regulator_voltage_get(const char *name)
 
 int stpmic1_register_read(uint8_t register_id,  uint8_t *value)
 {
-	i2c_start(pmic_i2c_addr | 0x01);
 	uint_fast8_t v;
 
 	i2c_start(pmic_i2c_addr | 0x00);
@@ -5463,13 +5462,6 @@ void initialize_pmic(void)
 		VERBOSE("No PMIC\n");
 		return;
 	}
-
-	if (stpmic1_get_version(&pmic_version) != 0) {
-		ERROR("Failed to access PMIC\n");
-		panic();
-	}
-
-	INFO("PMIC version = 0x%02lx\n", pmic_version);
 
 	if (stpmic1_get_version(&pmic_version) != 0) {
 		ERROR("Failed to access PMIC\n");
@@ -5656,6 +5648,7 @@ static void stm32mp1_ddr_init(struct ddr_info *priv,
 	if (ret != 0) {
 		panic();
 	}
+	stpmic1_dump_regulators();
 
 
 	VERBOSE("name = %s\n", config->info.name);
