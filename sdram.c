@@ -3808,7 +3808,7 @@ void ddr_enable_clock(void)
 
 	mmio_setbits_32(RCC_BASE + RCC_DDRITFCR,
 			RCC_DDRITFCR_DDRC1EN | RCC_DDRITFCR_DDRC1LPEN |
-			RCC_DDRITFCR_DDRC2EN | RCC_DDRITFCR_DDRC2LPEN |
+			//RCC_DDRITFCR_DDRC2EN | RCC_DDRITFCR_DDRC2LPEN |
 			RCC_DDRITFCR_DDRPHYCEN | RCC_DDRITFCR_DDRPHYCAPBLPEN |
 			RCC_DDRITFCR_DDRPHYCAPBEN | RCC_DDRITFCR_DDRCAPBLPEN |
 			RCC_DDRITFCR_DDRCAPBEN | RCC_DDRITFCR_DDRPHYCAPBLPEN
@@ -5232,36 +5232,36 @@ static uint8_t voltage_to_index(const char *name, uint16_t millivolts)
 }
 
 
-int stpmic1_register_update(uint8_t register_id, uint8_t value, uint8_t mask);
-int stpmic1_register_read(uint8_t register_id,  uint8_t *value);
+static int stpmic1_register_update(uint8_t register_id, uint8_t value, uint8_t mask);
+static int stpmic1_register_read(uint8_t register_id,  uint8_t *value);
 
-int stpmic1_powerctrl_on(void)
+static int stpmic1_powerctrl_on(void)
 {
 	return stpmic1_register_update(MAIN_CONTROL_REG, PWRCTRL_PIN_VALID,
 				       PWRCTRL_PIN_VALID);
 }
 
-int stpmic1_switch_off(void)
+static int stpmic1_switch_off(void)
 {
 	return stpmic1_register_update(MAIN_CONTROL_REG, 1,
 				       SOFTWARE_SWITCH_OFF_ENABLED);
 }
 
-int stpmic1_regulator_enable(const char *name)
+static int stpmic1_regulator_enable(const char *name)
 {
 	const struct regul_struct *regul = get_regulator_data(name);
 
 	return stpmic1_register_update(regul->control_reg, BIT(0), BIT(0));
 }
 
-int stpmic1_regulator_disable(const char *name)
+static int stpmic1_regulator_disable(const char *name)
 {
 	const struct regul_struct *regul = get_regulator_data(name);
 
 	return stpmic1_register_update(regul->control_reg, 0, BIT(0));
 }
 
-uint8_t stpmic1_is_regulator_enabled(const char *name)
+static uint8_t stpmic1_is_regulator_enabled(const char *name)
 {
 	uint8_t val;
 	const struct regul_struct *regul = get_regulator_data(name);
@@ -5273,7 +5273,7 @@ uint8_t stpmic1_is_regulator_enabled(const char *name)
 	return (val & 0x1U);
 }
 
-int stpmic1_regulator_voltage_set(const char *name, uint16_t millivolts)
+static int stpmic1_regulator_voltage_set(const char *name, uint16_t millivolts)
 {
 	uint8_t voltage_index = voltage_to_index(name, millivolts);
 	const struct regul_struct *regul = get_regulator_data(name);
@@ -5294,7 +5294,7 @@ int stpmic1_regulator_voltage_set(const char *name, uint16_t millivolts)
 				       mask);
 }
 
-int stpmic1_regulator_pull_down_set(const char *name)
+static int stpmic1_regulator_pull_down_set(const char *name)
 {
 	const struct regul_struct *regul = get_regulator_data(name);
 
@@ -5308,7 +5308,7 @@ int stpmic1_regulator_pull_down_set(const char *name)
 	return 0;
 }
 
-int stpmic1_regulator_mask_reset_set(const char *name)
+static int stpmic1_regulator_mask_reset_set(const char *name)
 {
 	const struct regul_struct *regul = get_regulator_data(name);
 
@@ -5318,7 +5318,7 @@ int stpmic1_regulator_mask_reset_set(const char *name)
 				       regul->mask_reset);
 }
 
-int stpmic1_regulator_voltage_get(const char *name)
+static int stpmic1_regulator_voltage_get(const char *name)
 {
 	const struct regul_struct *regul = get_regulator_data(name);
 	uint8_t value;
@@ -5345,7 +5345,7 @@ int stpmic1_regulator_voltage_get(const char *name)
 	return (int)regul->voltage_table[value];
 }
 
-int stpmic1_register_read(uint8_t register_id,  uint8_t *value)
+static int stpmic1_register_read(uint8_t register_id,  uint8_t *value)
 {
 	uint_fast8_t v;
 
@@ -5364,7 +5364,7 @@ int stpmic1_register_read(uint8_t register_id,  uint8_t *value)
 */
 }
 
-int stpmic1_register_write(uint8_t register_id, uint8_t value)
+static int stpmic1_register_write(uint8_t register_id, uint8_t value)
 {
 	int status = 0;
 
@@ -5404,7 +5404,7 @@ int stpmic1_register_write(uint8_t register_id, uint8_t value)
 	return status;
 }
 
-int stpmic1_register_update(uint8_t register_id, uint8_t value, uint8_t mask)
+static int stpmic1_register_update(uint8_t register_id, uint8_t value, uint8_t mask)
 {
 	int status;
 	uint8_t val;
@@ -5419,21 +5419,21 @@ int stpmic1_register_update(uint8_t register_id, uint8_t value, uint8_t mask)
 	return stpmic1_register_write(register_id, val);
 }
 
-void stpmic1_dump_regulators(void)
+static void stpmic1_dump_regulators(void)
 {
 	uint32_t i;
 
 	for (i = 0U; i < MAX_REGUL; i++) {
 		const char *name __unused = regulators_table[i].dt_node_name;
 
-		VERBOSE("PMIC regul %s: %sable, %dmV\n",
+		VERBOSE("PMIC regul %s: %sable, %d mV\n",
 			name,
 			stpmic1_is_regulator_enabled(name) ? "en" : "dis",
 			stpmic1_regulator_voltage_get(name));
 	}
 }
 
-int stpmic1_get_version(unsigned long *version)
+static int stpmic1_get_version(unsigned long *version)
 {
 	int rc;
 	uint8_t read_val = 0xDD;
@@ -5449,13 +5449,13 @@ int stpmic1_get_version(unsigned long *version)
 }
 
 
-int initialize_pmic_i2c(void)
+static int initialize_pmic_i2c(void)
 {
 
 	return 1;
 }
 
-void initialize_pmic(void)
+static void initialize_pmic(void)
 {
 	unsigned long pmic_version;
 
@@ -5649,6 +5649,7 @@ static void stm32mp1_ddr_init(struct ddr_info *priv,
 	if (ret != 0) {
 		panic();
 	}
+
 	stpmic1_dump_regulators();
 
 
