@@ -5490,6 +5490,7 @@ void hightests(void)
 #endif
 #if 0
 	{
+	#if 0
 		unsigned k;
 		TP();
 		for (k = 0; k < 1024; ++ k)
@@ -5506,7 +5507,10 @@ void hightests(void)
 		PRINTF("\n");
 		PRINTF("MCU_AHB_SRAM size = %uK\n", k);
 		printhex(MCU_AHB_SRAM, (const uint8_t *) MCU_AHB_SRAM, 256);	// /* Cortex-M4 memories */
-		//printhex(DRAM_MEM_BASE, (const uint8_t *) DRAM_MEM_BASE, 256);	// DDR3
+	#endif
+	#if WITHSDRAMHW
+		printhex(DRAM_MEM_BASE, (const uint8_t *) DRAM_MEM_BASE, 256);	// DDR3
+	#endif /* WITHSDRAMHW */
 		//printhex(QSPI_MEM_BASE, (const uint8_t *) QSPI_MEM_BASE, 256);	// QSPI
 		//arm_hardware_sdram_initialize();
 	}

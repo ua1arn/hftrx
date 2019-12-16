@@ -6237,22 +6237,20 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 	if (uret != 0U) {
 		ERROR("DDR data bus test: can't access memory @ 0x%x\n",
 		      uret);
-		panic();
+		//panic();
 	}
-	TP();
 	uret = ddr_test_addr_bus();
 	if (uret != 0U) {
 		ERROR("DDR addr bus test: can't access memory @ 0x%x\n",
 		      uret);
-		panic();
+		//panic();
 	}
-	TP();
 
 	uret = ddr_check_size();
 	if (uret < config.info.size) {
 		ERROR("DDR size: 0x%x does not match DT config: 0x%x\n",
 		      uret, config.info.size);
-		panic();
+		//panic();
 	}
 
 	//__set_SCTLR(__get_SCTLR() | SCTLR_C_Msk);
