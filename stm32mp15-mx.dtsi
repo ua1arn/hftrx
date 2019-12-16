@@ -11,10 +11,10 @@
  * DDR width: 16bits
  * DDR density: 2Gb
  * System frequency: 528000Khz
- * Relaxed Timing Mode: false
+ * Relaxed Timing Mode: true
  * Address mapping type: RBC
  *
- * Save Date: 2019.12.15, save Time: 02:03:05
+ * Save Date: 2019.12.16, save Time: 03:12:48
  */
 
 #define DDR_MEM_NAME	"DDR3-DDR3L 16bits 528000Khz"
@@ -33,11 +33,11 @@
 #define DDR_RFSHCTL3 0x00000000
 #define DDR_RFSHTMG 0x0080008A
 #define DDR_CRCPARCTL0 0x00000000
-#define DDR_DRAMTMG0 0x121B2414
-#define DDR_DRAMTMG1 0x000A041C
-#define DDR_DRAMTMG2 0x0608090F
+#define DDR_DRAMTMG0 0x131B2415
+#define DDR_DRAMTMG1 0x000A051D
+#define DDR_DRAMTMG2 0x06080A10
 #define DDR_DRAMTMG3 0x0050400C
-#define DDR_DRAMTMG4 0x08040608
+#define DDR_DRAMTMG4 0x09040709
 #define DDR_DRAMTMG5 0x06060403
 #define DDR_DRAMTMG6 0x02020002
 #define DDR_DRAMTMG7 0x00000202
@@ -92,8 +92,8 @@
 #define DDR_DXCCR 0x00000C40
 #define DDR_DSGCR 0xF200011F
 #define DDR_DCR 0x0000000B
-#define DDR_DTPR0 0x38D488D0
-#define DDR_DTPR1 0x098A00D8
+#define DDR_DTPR0 0xBAF599F4
+#define DDR_DTPR1 0x098A00DC
 #define DDR_DTPR2 0x10023600
 #define DDR_MR0 0x00000840
 #define DDR_MR1 0x00000000
