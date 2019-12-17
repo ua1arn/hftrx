@@ -1859,7 +1859,7 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 	// TIM7 on APB1
 	// Use basic timer
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(HSIFREQ, ticksfreq), STM32F_TIM5_TIMER_WIDTH, STM32F_TIM5_TIMER_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(calcdivround_per_ck(ticksfreq), STM32F_TIM5_TIMER_WIDTH, STM32F_TIM5_TIMER_TAPS, & value, 1);
 
 	TIM5->PSC = ((1UL << prei) - 1);
 	TIM5->ARR = value;
