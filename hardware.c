@@ -1074,40 +1074,6 @@ static void hardware_adc_startonescan(void);		// хотя бы один вход
 */
 static RAMFUNC void spool_elkeybundle(void)
 {
-#if 1 && CPUSTYLE_STM32MP1
-	{
-		// BLINK test
-		//const uint_fast32_t mask = (1uL << 14);	// PA14 - GREEN LED LD5 on DK1/DK2 MB1272.pdf
-		const uint_fast32_t maskd = (1uL << 14);	// PD14 - LED on small board
-		//const uint_fast32_t maskg = (1uL << 13);	// PG13 - LCD_R0
-		static uint_fast8_t inited;
-		if (! inited)
-		{
-			inited = 1;
-			arm_hardware_piod_outputs(maskd, 1 * maskd);
-			//arm_hardware_piog_outputs(maskg, 1 * maskg);
-		}
-		static uint_fast8_t count;
-		if (++ count >= 50)
-		{
-			count = 0;
-			static uint_fast8_t state;
-			if (state)
-			{
-				state = 0;
-				(GPIOD)->BSRR = BSRR_S(maskd);
-				//(GPIOG)->BSRR = BSRR_S(maskg);
-			}
-			else
-			{
-				state = 1;
-				(GPIOD)->BSRR = BSRR_C(maskd);
-				//(GPIOG)->BSRR = BSRR_C(maskg);
-			}
-		}
-	}
-#endif /* CPUSTYLE_STM32MP1 */
-
 #if WITHOPERA4BEACON
 	spool_0p128();
 #elif WITHELKEY
@@ -1182,9 +1148,43 @@ static RAMFUNC void spool_systimerbundle1(void)
 // Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
 static RAMFUNC void spool_systimerbundle2(void)
 {
+#if 1 && CPUSTYLE_STM32MP1
+	{
+		// BLINK test
+		//const uint_fast32_t mask = (1uL << 14);	// PA14 - GREEN LED LD5 on DK1/DK2 MB1272.pdf
+		const uint_fast32_t maskd = (1uL << 14);	// PD14 - LED on small board
+		//const uint_fast32_t maskg = (1uL << 13);	// PG13 - LCD_R0
+		static uint_fast8_t inited;
+		if (! inited)
+		{
+			inited = 1;
+			arm_hardware_piod_outputs(maskd, 1 * maskd);
+			//arm_hardware_piog_outputs(maskg, 1 * maskg);
+		}
+		static unsigned count;
+		if (++ count >= NTICKS(500))	// Togglw every 500 ms
+		{
+			count = 0;
+			static uint_fast8_t state;
+			if (state)
+			{
+				state = 0;
+				(GPIOD)->BSRR = BSRR_S(maskd);
+				//(GPIOG)->BSRR = BSRR_S(maskg);
+			}
+			else
+			{
+				state = 1;
+				(GPIOD)->BSRR = BSRR_C(maskd);
+				//(GPIOG)->BSRR = BSRR_C(maskg);
+			}
+		}
+	}
+#endif /* CPUSTYLE_STM32MP1 */
+
 #if WITHKEYBOARD
 #if ! KEYBOARD_USE_ADC
-	kbd_spool();	// 
+	kbd_spool();	//
 #endif /* ! KEYBOARD_USE_ADC */
 #endif /* WITHKEYBOARD */
 #if WITHCPUADCHW
@@ -1224,6 +1224,18 @@ static RAMFUNC void spool_adcdonebundle(void)
 		{
 			TIM3->SR = ~ TIM_SR_UIF;	// clear UIF interrupt request
 			spool_elkeybundle();
+		}
+	}
+
+	void
+	TIM5_IRQHandler(void)
+	{
+		const portholder_t st = TIM5->SR;
+		if ((st & TIM_SR_UIF) != 0)
+		{
+			TIM5->SR = ~ TIM_SR_UIF;	// clear UIF interrupt request
+			spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
+			spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
 		}
 	}
 	#endif /* WITHELKEY */
@@ -1837,7 +1849,23 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 	OSTM0.OSTMnTS = 0x01u;      /* Start counting */
 
 #elif CPUSTYLE_STM32MP1
-	#warning Insert code for CPUSTYLE_STM32MP1
+
+	RCC->MP_APB1ENSETR |= RCC_MC_APB1ENSETR_TIM5EN;   // подаем тактирование на TIM3
+	(void) RCC->MP_APB1ENSETR;
+	TIM5->DIER = TIM_DIER_UIE;        	 // разрешить событие от таймера
+
+	// TIM2 & TIM5 on CPUSTYLE_STM32F4XX have 32-bit CNT and ARR registers
+	// TIM7 located on APB1
+	// TIM7 on APB1
+	// Use basic timer
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(calcdivround2(HSIFREQ, ticksfreq), STM32F_TIM5_TIMER_WIDTH, STM32F_TIM5_TIMER_TAPS, & value, 1);
+
+	TIM5->PSC = ((1UL << prei) - 1) & TIM_PSC_PSC;
+	TIM5->ARR = value;
+	TIM5->CR1 = TIM_CR1_CEN | TIM_CR1_ARPE; /* разрешить перезагрузку и включить таймер = перенесено в установку скорости - если счётчик успевал превысить значение ARR - считал до конца */
+
+	arm_hardware_set_handler_system(TIM5_IRQn, TIM5_IRQHandler);
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -9534,6 +9562,7 @@ void stm32mp1_pll_initialize(void)
 	(void) RCC->SPI2S1CKSELR;
 #endif /* WITHSPIHW */
 
+	// prescaler value of timers located into APB1 domain
 	// TIM2, TIM3, TIM4, TIM5, TIM6, TIM7, TIM12, TIM13 and TIM14.s
 	RCC->TIMG1PRER = (RCC->TIMG1PRER & ~ (RCC_TIMG1PRER_TIMG1PRE_Msk)) |
 		(0x00 << RCC_TIMG1PRER_TIMG1PRE_Pos) |
