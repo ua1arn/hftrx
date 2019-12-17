@@ -1861,7 +1861,7 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround2(HSIFREQ, ticksfreq), STM32F_TIM5_TIMER_WIDTH, STM32F_TIM5_TIMER_TAPS, & value, 1);
 
-	TIM5->PSC = ((1UL << prei) - 1) & TIM_PSC_PSC;
+	TIM5->PSC = ((1UL << prei) - 1);
 	TIM5->ARR = value;
 	TIM5->CR1 = TIM_CR1_CEN | TIM_CR1_ARPE; /* разрешить перезагрузку и включить таймер = перенесено в установку скорости - если счётчик успевал превысить значение ARR - считал до конца */
 
