@@ -624,9 +624,9 @@ extern "C" {
 		#define	REFINFREQ HSIFREQ
 	#endif /* WITHCPUXTAL */
 
-	//#define CPU_FREQ	(WITHCPUXTAL * 15)		/* 360 MHz = 24 MHz * 15 */
-	#define CPU_FREQ	(REFINFREQ / (PLL1DIVM) * (PLL1DIVN))
+	#define CPU_FREQ	(REFINFREQ / (PLL1DIVM) * (PLL1DIVN) / (PLL1DIVP))
 	#define AXISS_FREQ	(REFINFREQ / (PLL2DIVM) * (PLL2DIVN) / (PLL2DIVP))
+	#define DDR_FREQ 	(REFINFREQ / (PLL2DIVM) * (PLL2DIVN) / (PLL2DIVR))
 	/* частоты, подающиеся на периферию */
 	#define	PCLK1_FREQ (AXISS_FREQ / 4)	// 42 MHz PCLK1 frequency
 	#define	PCLK1_TIMERS_FREQ (AXISS_FREQ / 2)	// 42 MHz PCLK1 frequency

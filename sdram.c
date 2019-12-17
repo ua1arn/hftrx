@@ -12,6 +12,7 @@
 #include <string.h>
 
 #include "formats.h"	// for debug prints
+#include "gpio.h"
 
 #if WITHSDRAMHW
 
@@ -3304,31 +3305,819 @@ void arm_hardware_sdram_initialize(void)
 #define DDRPHYC_DXNDLLCR_SDPHASE_MASK		GENMASK(17, 14)
 #define DDRPHYC_DXNDLLCR_SDPHASE_SHIFT		14
 
+#define RCC_DDRITFCR			U(0xD8)
 
 static void
-mmio_clrbits_32(volatile uint32_t * reg, uint32_t mask)
+mmio_write_32(uintptr_t addr, uint32_t value)
 {
+	volatile uint32_t * const reg = (volatile uint32_t * const) addr;
+	* reg = value;
+	(void) * reg;
+}
+
+static uint32_t
+mmio_read_32(uintptr_t addr)
+{
+	volatile uint32_t * const reg = (volatile uint32_t * const) addr;
+	return * reg;
+}
+
+static void
+mmio_clrbits_32(uintptr_t addr, uint32_t mask)
+{
+	volatile uint32_t * const reg = (volatile uint32_t * const) addr;
 	* reg &= ~ mask;
 	(void) * reg;
 }
 
 static void
-mmio_setbits_32(volatile uint32_t * reg, uint32_t mask)
+mmio_setbits_32(uintptr_t addr, uint32_t mask)
 {
+	volatile uint32_t * const reg = (volatile uint32_t * const) addr;
 	* reg |= mask;
 	(void) * reg;
 }
 
 
 static void
-mmio_clrsetbits_32(volatile uint32_t * reg, uint32_t cmask, uint32_t smask)
+mmio_clrsetbits_32(uintptr_t addr, uint32_t cmask, uint32_t smask)
 {
+	volatile uint32_t * const reg = (volatile uint32_t * const) addr;
 	* reg = (* reg & ~ cmask) | smask;
 	(void) * reg;
 }
 
 ////////////////////////
 
+#define VERBOSE PRINTF
+#define ERROR PRINTF
+#define INFO PRINTF
+
+static void panic(void)
+{
+	PRINTF("sdram: panic.\n");
+	for (;;)
+		;
+}
+
+// DDR clock in Hz
+unsigned long stm32mp_ddr_clk_get_rate(unsigned long id)
+{
+	return DDR_FREQ;
+/*
+	int p = stm32mp1_clk_get_parent(id);
+
+	if (p < 0) {
+		return 0;
+	}
+
+	return get_clock_rate(p);
+*/
+}
+
+
+/*******************************************************************************
+ * CHIP ID
+ ******************************************************************************/
+#define STM32MP157C_PART_NB	U(0x05000000)
+#define STM32MP157A_PART_NB	U(0x05000001)
+#define STM32MP153C_PART_NB	U(0x05000024)
+#define STM32MP153A_PART_NB	U(0x05000025)
+#define STM32MP151C_PART_NB	U(0x0500002E)
+#define STM32MP151A_PART_NB	U(0x0500002F)
+
+#define STM32MP1_REV_B		U(0x2000)
+
+/*******************************************************************************
+ * PACKAGE ID
+ ******************************************************************************/
+#define PKG_AA_LFBGA448		U(4)
+#define PKG_AB_LFBGA354		U(3)
+#define PKG_AC_TFBGA361		U(2)
+#define PKG_AD_TFBGA257		U(1)
+
+/*******************************************************************************
+ * STM32MP1 memory map related constants
+ ******************************************************************************/
+#define STM32MP_ROM_BASE		U(0x00000000)
+#define STM32MP_ROM_SIZE		U(0x00020000)
+
+#define STM32MP_SYSRAM_BASE		U(0x2FFC0000)
+#define STM32MP_SYSRAM_SIZE		U(0x00040000)
+
+/* DDR configuration */
+#define STM32MP_DDR_BASE		U(0xC0000000)
+#define STM32MP_DDR_MAX_SIZE		U(0x40000000)	/* Max 1GB */
+#ifdef AARCH32_SP_OPTEE
+#define STM32MP_DDR_S_SIZE		U(0x01E00000)	/* 30 MB */
+#define STM32MP_DDR_SHMEM_SIZE		U(0x00200000)	/* 2 MB */
+#endif
+
+/* DDR power initializations */
+#ifndef __ASSEMBLER__
+enum ddr_type {
+	STM32MP_DDR3,
+	STM32MP_LPDDR2,
+	STM32MP_LPDDR3
+};
+#endif
+
+/* DDR3/LPDDR2/LPDDR3 Controller (DDRCTRL) registers */
+struct stm32mp1_ddrctl {
+	uint32_t mstr ;		/* 0x0 Master */
+	uint32_t stat;		/* 0x4 Operating Mode Status */
+	uint8_t reserved008[0x10 - 0x8];
+	uint32_t mrctrl0;	/* 0x10 Control 0 */
+	uint32_t mrctrl1;	/* 0x14 Control 1 */
+	uint32_t mrstat;	/* 0x18 Status */
+	uint32_t reserved01c;	/* 0x1c */
+	uint32_t derateen;	/* 0x20 Temperature Derate Enable */
+	uint32_t derateint;	/* 0x24 Temperature Derate Interval */
+	uint8_t reserved028[0x30 - 0x28];
+	uint32_t pwrctl;	/* 0x30 Low Power Control */
+	uint32_t pwrtmg;	/* 0x34 Low Power Timing */
+	uint32_t hwlpctl;	/* 0x38 Hardware Low Power Control */
+	uint8_t reserved03c[0x50 - 0x3C];
+	uint32_t rfshctl0;	/* 0x50 Refresh Control 0 */
+	uint32_t reserved054;	/* 0x54 Refresh Control 1 */
+	uint32_t reserved058;	/* 0x58 Refresh Control 2 */
+	uint32_t reserved05C;
+	uint32_t rfshctl3;	/* 0x60 Refresh Control 0 */
+	uint32_t rfshtmg;	/* 0x64 Refresh Timing */
+	uint8_t reserved068[0xc0 - 0x68];
+	uint32_t crcparctl0;		/* 0xc0 CRC Parity Control0 */
+	uint32_t reserved0c4;	/* 0xc4 CRC Parity Control1 */
+	uint32_t reserved0c8;	/* 0xc8 CRC Parity Control2 */
+	uint32_t crcparstat;		/* 0xcc CRC Parity Status */
+	uint32_t init0;		/* 0xd0 SDRAM Initialization 0 */
+	uint32_t init1;		/* 0xd4 SDRAM Initialization 1 */
+	uint32_t init2;		/* 0xd8 SDRAM Initialization 2 */
+	uint32_t init3;		/* 0xdc SDRAM Initialization 3 */
+	uint32_t init4;		/* 0xe0 SDRAM Initialization 4 */
+	uint32_t init5;		/* 0xe4 SDRAM Initialization 5 */
+	uint32_t reserved0e8;
+	uint32_t reserved0ec;
+	uint32_t dimmctl;	/* 0xf0 DIMM Control */
+	uint8_t reserved0f4[0x100 - 0xf4];
+	uint32_t dramtmg0;	/* 0x100 SDRAM Timing 0 */
+	uint32_t dramtmg1;	/* 0x104 SDRAM Timing 1 */
+	uint32_t dramtmg2;	/* 0x108 SDRAM Timing 2 */
+	uint32_t dramtmg3;	/* 0x10c SDRAM Timing 3 */
+	uint32_t dramtmg4;	/* 0x110 SDRAM Timing 4 */
+	uint32_t dramtmg5;	/* 0x114 SDRAM Timing 5 */
+	uint32_t dramtmg6;	/* 0x118 SDRAM Timing 6 */
+	uint32_t dramtmg7;	/* 0x11c SDRAM Timing 7 */
+	uint32_t dramtmg8;	/* 0x120 SDRAM Timing 8 */
+	uint8_t reserved124[0x138 - 0x124];
+	uint32_t dramtmg14;	/* 0x138 SDRAM Timing 14 */
+	uint32_t dramtmg15;	/* 0x13C SDRAM Timing 15 */
+	uint8_t reserved140[0x180 - 0x140];
+	uint32_t zqctl0;	/* 0x180 ZQ Control 0 */
+	uint32_t zqctl1;	/* 0x184 ZQ Control 1 */
+	uint32_t zqctl2;	/* 0x188 ZQ Control 2 */
+	uint32_t zqstat;	/* 0x18c ZQ Status */
+	uint32_t dfitmg0;	/* 0x190 DFI Timing 0 */
+	uint32_t dfitmg1;	/* 0x194 DFI Timing 1 */
+	uint32_t dfilpcfg0;	/* 0x198 DFI Low Power Configuration 0 */
+	uint32_t reserved19c;
+	uint32_t dfiupd0;	/* 0x1a0 DFI Update 0 */
+	uint32_t dfiupd1;	/* 0x1a4 DFI Update 1 */
+	uint32_t dfiupd2;	/* 0x1a8 DFI Update 2 */
+	uint32_t reserved1ac;
+	uint32_t dfimisc;	/* 0x1b0 DFI Miscellaneous Control */
+	uint8_t reserved1b4[0x1bc - 0x1b4];
+	uint32_t dfistat;	/* 0x1bc DFI Miscellaneous Control */
+	uint8_t reserved1c0[0x1c4 - 0x1c0];
+	uint32_t dfiphymstr;	/* 0x1c4 DFI PHY Master interface */
+	uint8_t reserved1c8[0x204 - 0x1c8];
+	uint32_t addrmap1;	/* 0x204 Address Map 1 */
+	uint32_t addrmap2;	/* 0x208 Address Map 2 */
+	uint32_t addrmap3;	/* 0x20c Address Map 3 */
+	uint32_t addrmap4;	/* 0x210 Address Map 4 */
+	uint32_t addrmap5;	/* 0x214 Address Map 5 */
+	uint32_t addrmap6;	/* 0x218 Address Map 6 */
+	uint8_t reserved21c[0x224 - 0x21c];
+	uint32_t addrmap9;	/* 0x224 Address Map 9 */
+	uint32_t addrmap10;	/* 0x228 Address Map 10 */
+	uint32_t addrmap11;	/* 0x22C Address Map 11 */
+	uint8_t reserved230[0x240 - 0x230];
+	uint32_t odtcfg;	/* 0x240 ODT Configuration */
+	uint32_t odtmap;	/* 0x244 ODT/Rank Map */
+	uint8_t reserved248[0x250 - 0x248];
+	uint32_t sched;		/* 0x250 Scheduler Control */
+	uint32_t sched1;	/* 0x254 Scheduler Control 1 */
+	uint32_t reserved258;
+	uint32_t perfhpr1;	/* 0x25c High Priority Read CAM 1 */
+	uint32_t reserved260;
+	uint32_t perflpr1;	/* 0x264 Low Priority Read CAM 1 */
+	uint32_t reserved268;
+	uint32_t perfwr1;	/* 0x26c Write CAM 1 */
+	uint8_t reserved27c[0x300 - 0x270];
+	uint32_t dbg0;		/* 0x300 Debug 0 */
+	uint32_t dbg1;		/* 0x304 Debug 1 */
+	uint32_t dbgcam;	/* 0x308 CAM Debug */
+	uint32_t dbgcmd;	/* 0x30c Command Debug */
+	uint32_t dbgstat;	/* 0x310 Status Debug */
+	uint8_t reserved314[0x320 - 0x314];
+	uint32_t swctl;		/* 0x320 Software Programming Control Enable */
+	uint32_t swstat;	/* 0x324 Software Programming Control Status */
+	uint8_t reserved328[0x36c - 0x328];
+	uint32_t poisoncfg;	/* 0x36c AXI Poison Configuration Register */
+	uint32_t poisonstat;	/* 0x370 AXI Poison Status Register */
+	uint8_t reserved374[0x3fc - 0x374];
+
+	/* Multi Port registers */
+	uint32_t pstat;		/* 0x3fc Port Status */
+	uint32_t pccfg;		/* 0x400 Port Common Configuration */
+
+	/* PORT 0 */
+	uint32_t pcfgr_0;	/* 0x404 Configuration Read */
+	uint32_t pcfgw_0;	/* 0x408 Configuration Write */
+	uint8_t reserved40c[0x490 - 0x40c];
+	uint32_t pctrl_0;	/* 0x490 Port Control Register */
+	uint32_t pcfgqos0_0;	/* 0x494 Read QoS Configuration 0 */
+	uint32_t pcfgqos1_0;	/* 0x498 Read QoS Configuration 1 */
+	uint32_t pcfgwqos0_0;	/* 0x49c Write QoS Configuration 0 */
+	uint32_t pcfgwqos1_0;	/* 0x4a0 Write QoS Configuration 1 */
+	uint8_t reserved4a4[0x4b4 - 0x4a4];
+
+	/* PORT 1 */
+	uint32_t pcfgr_1;	/* 0x4b4 Configuration Read */
+	uint32_t pcfgw_1;	/* 0x4b8 Configuration Write */
+	uint8_t reserved4bc[0x540 - 0x4bc];
+	uint32_t pctrl_1;	/* 0x540 Port 2 Control Register */
+	uint32_t pcfgqos0_1;	/* 0x544 Read QoS Configuration 0 */
+	uint32_t pcfgqos1_1;	/* 0x548 Read QoS Configuration 1 */
+	uint32_t pcfgwqos0_1;	/* 0x54c Write QoS Configuration 0 */
+	uint32_t pcfgwqos1_1;	/* 0x550 Write QoS Configuration 1 */
+} __packed;
+
+/* DDR Physical Interface Control (DDRPHYC) registers*/
+struct stm32mp1_ddrphy {
+	uint32_t ridr;		/* 0x00 R Revision Identification */
+	uint32_t pir;		/* 0x04 R/W PHY Initialization */
+	uint32_t pgcr;		/* 0x08 R/W PHY General Configuration */
+	uint32_t pgsr;		/* 0x0C PHY General Status */
+	uint32_t dllgcr;	/* 0x10 R/W DLL General Control */
+	uint32_t acdllcr;	/* 0x14 R/W AC DLL Control */
+	uint32_t ptr0;		/* 0x18 R/W PHY Timing 0 */
+	uint32_t ptr1;		/* 0x1C R/W PHY Timing 1 */
+	uint32_t ptr2;		/* 0x20 R/W PHY Timing 2 */
+	uint32_t aciocr;	/* 0x24 AC I/O Configuration */
+	uint32_t dxccr;		/* 0x28 DATX8 Common Configuration */
+	uint32_t dsgcr;		/* 0x2C DDR System General Configuration */
+	uint32_t dcr;		/* 0x30 DRAM Configuration */
+	uint32_t dtpr0;		/* 0x34 DRAM Timing Parameters0 */
+	uint32_t dtpr1;		/* 0x38 DRAM Timing Parameters1 */
+	uint32_t dtpr2;		/* 0x3C DRAM Timing Parameters2 */
+	uint32_t mr0;		/* 0x40 Mode 0 */
+	uint32_t mr1;		/* 0x44 Mode 1 */
+	uint32_t mr2;		/* 0x48 Mode 2 */
+	uint32_t mr3;		/* 0x4C Mode 3 */
+	uint32_t odtcr;		/* 0x50 ODT Configuration */
+	uint32_t dtar;		/* 0x54 data training address */
+	uint32_t dtdr0;		/* 0x58 */
+	uint32_t dtdr1;		/* 0x5c */
+	uint8_t res1[0x0c0 - 0x060];	/* 0x60 */
+	uint32_t dcuar;		/* 0xc0 Address */
+	uint32_t dcudr;		/* 0xc4 DCU Data */
+	uint32_t dcurr;		/* 0xc8 DCU Run */
+	uint32_t dculr;		/* 0xcc DCU Loop */
+	uint32_t dcugcr;	/* 0xd0 DCU General Configuration */
+	uint32_t dcutpr;	/* 0xd4 DCU Timing Parameters */
+	uint32_t dcusr0;	/* 0xd8 DCU Status 0 */
+	uint32_t dcusr1;	/* 0xdc DCU Status 1 */
+	uint8_t res2[0x100 - 0xe0];	/* 0xe0 */
+	uint32_t bistrr;	/* 0x100 BIST Run */
+	uint32_t bistmskr0;	/* 0x104 BIST Mask 0 */
+	uint32_t bistmskr1;	/* 0x108 BIST Mask 0 */
+	uint32_t bistwcr;	/* 0x10c BIST Word Count */
+	uint32_t bistlsr;	/* 0x110 BIST LFSR Seed */
+	uint32_t bistar0;	/* 0x114 BIST Address 0 */
+	uint32_t bistar1;	/* 0x118 BIST Address 1 */
+	uint32_t bistar2;	/* 0x11c BIST Address 2 */
+	uint32_t bistupdr;	/* 0x120 BIST User Data Pattern */
+	uint32_t bistgsr;	/* 0x124 BIST General Status */
+	uint32_t bistwer;	/* 0x128 BIST Word Error */
+	uint32_t bistber0;	/* 0x12c BIST Bit Error 0 */
+	uint32_t bistber1;	/* 0x130 BIST Bit Error 1 */
+	uint32_t bistber2;	/* 0x134 BIST Bit Error 2 */
+	uint32_t bistwcsr;	/* 0x138 BIST Word Count Status */
+	uint32_t bistfwr0;	/* 0x13c BIST Fail Word 0 */
+	uint32_t bistfwr1;	/* 0x140 BIST Fail Word 1 */
+	uint8_t res3[0x178 - 0x144];	/* 0x144 */
+	uint32_t gpr0;		/* 0x178 General Purpose 0 (GPR0) */
+	uint32_t gpr1;		/* 0x17C General Purpose 1 (GPR1) */
+	uint32_t zq0cr0;	/* 0x180 zq 0 control 0 */
+	uint32_t zq0cr1;	/* 0x184 zq 0 control 1 */
+	uint32_t zq0sr0;	/* 0x188 zq 0 status 0 */
+	uint32_t zq0sr1;	/* 0x18C zq 0 status 1 */
+	uint8_t res4[0x1C0 - 0x190];	/* 0x190 */
+	uint32_t dx0gcr;	/* 0x1c0 Byte lane 0 General Configuration */
+	uint32_t dx0gsr0;	/* 0x1c4 Byte lane 0 General Status 0 */
+	uint32_t dx0gsr1;	/* 0x1c8 Byte lane 0 General Status 1 */
+	uint32_t dx0dllcr;	/* 0x1cc Byte lane 0 DLL Control */
+	uint32_t dx0dqtr;	/* 0x1d0 Byte lane 0 DQ Timing */
+	uint32_t dx0dqstr;	/* 0x1d4 Byte lane 0 DQS Timing */
+	uint8_t res5[0x200 - 0x1d8];	/* 0x1d8 */
+	uint32_t dx1gcr;	/* 0x200 Byte lane 1 General Configuration */
+	uint32_t dx1gsr0;	/* 0x204 Byte lane 1 General Status 0 */
+	uint32_t dx1gsr1;	/* 0x208 Byte lane 1 General Status 1 */
+	uint32_t dx1dllcr;	/* 0x20c Byte lane 1 DLL Control */
+	uint32_t dx1dqtr;	/* 0x210 Byte lane 1 DQ Timing */
+	uint32_t dx1dqstr;	/* 0x214 Byte lane 1 QS Timing */
+	uint8_t res6[0x240 - 0x218];	/* 0x218 */
+	uint32_t dx2gcr;	/* 0x240 Byte lane 2 General Configuration */
+	uint32_t dx2gsr0;	/* 0x244 Byte lane 2 General Status 0 */
+	uint32_t dx2gsr1;	/* 0x248 Byte lane 2 General Status 1 */
+	uint32_t dx2dllcr;	/* 0x24c Byte lane 2 DLL Control */
+	uint32_t dx2dqtr;	/* 0x250 Byte lane 2 DQ Timing */
+	uint32_t dx2dqstr;	/* 0x254 Byte lane 2 QS Timing */
+	uint8_t res7[0x280 - 0x258];	/* 0x258 */
+	uint32_t dx3gcr;	/* 0x280 Byte lane 3 General Configuration */
+	uint32_t dx3gsr0;	/* 0x284 Byte lane 3 General Status 0 */
+	uint32_t dx3gsr1;	/* 0x288 Byte lane 3 General Status 1 */
+	uint32_t dx3dllcr;	/* 0x28c Byte lane 3 DLL Control */
+	uint32_t dx3dqtr;	/* 0x290 Byte lane 3 DQ Timing */
+	uint32_t dx3dqstr;	/* 0x294 Byte lane 3 QS Timing */
+} __packed;
+
+struct stm32mp1_ddr_size {
+	uint64_t base;
+	uint64_t size;
+};
+
+/**
+ * struct ddr_info
+ *
+ * @dev: pointer for the device
+ * @info: UCLASS RAM information
+ * @ctl: DDR controleur base address
+ * @phy: DDR PHY base address
+ * @syscfg: syscfg base address
+ */
+struct ddr_info {
+	struct stm32mp1_ddr_size info;
+	struct stm32mp1_ddrctl *ctl;
+	struct stm32mp1_ddrphy *phy;
+	uintptr_t pwr;
+	uintptr_t rcc;
+};
+
+struct stm32mp1_ddrctrl_reg {
+	uint32_t mstr;
+	uint32_t mrctrl0;
+	uint32_t mrctrl1;
+	uint32_t derateen;
+	uint32_t derateint;
+	uint32_t pwrctl;
+	uint32_t pwrtmg;
+	uint32_t hwlpctl;
+	uint32_t rfshctl0;
+	uint32_t rfshctl3;
+	uint32_t crcparctl0;
+	uint32_t zqctl0;
+	uint32_t dfitmg0;
+	uint32_t dfitmg1;
+	uint32_t dfilpcfg0;
+	uint32_t dfiupd0;
+	uint32_t dfiupd1;
+	uint32_t dfiupd2;
+	uint32_t dfiphymstr;
+	uint32_t odtmap;
+	uint32_t dbg0;
+	uint32_t dbg1;
+	uint32_t dbgcmd;
+	uint32_t poisoncfg;
+	uint32_t pccfg;
+};
+
+struct stm32mp1_ddrctrl_timing {
+	uint32_t rfshtmg;
+	uint32_t dramtmg0;
+	uint32_t dramtmg1;
+	uint32_t dramtmg2;
+	uint32_t dramtmg3;
+	uint32_t dramtmg4;
+	uint32_t dramtmg5;
+	uint32_t dramtmg6;
+	uint32_t dramtmg7;
+	uint32_t dramtmg8;
+	uint32_t dramtmg14;
+	uint32_t odtcfg;
+};
+
+struct stm32mp1_ddrctrl_map {
+	uint32_t addrmap1;
+	uint32_t addrmap2;
+	uint32_t addrmap3;
+	uint32_t addrmap4;
+	uint32_t addrmap5;
+	uint32_t addrmap6;
+	uint32_t addrmap9;
+	uint32_t addrmap10;
+	uint32_t addrmap11;
+};
+
+struct stm32mp1_ddrctrl_perf {
+	uint32_t sched;
+	uint32_t sched1;
+	uint32_t perfhpr1;
+	uint32_t perflpr1;
+	uint32_t perfwr1;
+	uint32_t pcfgr_0;
+	uint32_t pcfgw_0;
+	uint32_t pcfgqos0_0;
+	uint32_t pcfgqos1_0;
+	uint32_t pcfgwqos0_0;
+	uint32_t pcfgwqos1_0;
+	uint32_t pcfgr_1;
+	uint32_t pcfgw_1;
+	uint32_t pcfgqos0_1;
+	uint32_t pcfgqos1_1;
+	uint32_t pcfgwqos0_1;
+	uint32_t pcfgwqos1_1;
+};
+
+struct stm32mp1_ddrphy_reg {
+	uint32_t pgcr;
+	uint32_t aciocr;
+	uint32_t dxccr;
+	uint32_t dsgcr;
+	uint32_t dcr;
+	uint32_t odtcr;
+	uint32_t zq0cr1;
+	uint32_t dx0gcr;
+	uint32_t dx1gcr;
+	uint32_t dx2gcr;
+	uint32_t dx3gcr;
+};
+
+struct stm32mp1_ddrphy_timing {
+	uint32_t ptr0;
+	uint32_t ptr1;
+	uint32_t ptr2;
+	uint32_t dtpr0;
+	uint32_t dtpr1;
+	uint32_t dtpr2;
+	uint32_t mr0;
+	uint32_t mr1;
+	uint32_t mr2;
+	uint32_t mr3;
+};
+
+struct stm32mp1_ddrphy_cal {
+	uint32_t dx0dllcr;
+	uint32_t dx0dqtr;
+	uint32_t dx0dqstr;
+	uint32_t dx1dllcr;
+	uint32_t dx1dqtr;
+	uint32_t dx1dqstr;
+	uint32_t dx2dllcr;
+	uint32_t dx2dqtr;
+	uint32_t dx2dqstr;
+	uint32_t dx3dllcr;
+	uint32_t dx3dqtr;
+	uint32_t dx3dqstr;
+};
+
+struct stm32mp1_ddr_info {
+	const char *name;
+	uint32_t speed; /* in kHZ */
+	uint32_t size;  /* Memory size in byte = col * row * width */
+};
+
+struct stm32mp1_ddr_config {
+	struct stm32mp1_ddr_info info;
+	struct stm32mp1_ddrctrl_reg c_reg;
+	struct stm32mp1_ddrctrl_timing c_timing;
+	struct stm32mp1_ddrctrl_map c_map;
+	struct stm32mp1_ddrctrl_perf c_perf;
+	struct stm32mp1_ddrphy_reg p_reg;
+	struct stm32mp1_ddrphy_timing p_timing;
+	struct stm32mp1_ddrphy_cal p_cal;
+};
+
+int stm32mp1_ddr_clk_enable(struct ddr_info *priv, uint32_t mem_speed);
+static void stm32mp1_ddr_init(struct ddr_info *priv,
+		       struct stm32mp1_ddr_config *config);
+
+void ddr_enable_clock(void)
+{
+	//stm32mp1_clk_rcc_regs_lock();
+
+	mmio_setbits_32(RCC_BASE + RCC_DDRITFCR,
+			RCC_DDRITFCR_DDRC1EN | RCC_DDRITFCR_DDRC1LPEN |
+			//RCC_DDRITFCR_DDRC2EN | RCC_DDRITFCR_DDRC2LPEN |
+			RCC_DDRITFCR_DDRPHYCEN | RCC_DDRITFCR_DDRPHYCAPBLPEN |
+			RCC_DDRITFCR_DDRPHYCAPBEN | RCC_DDRITFCR_DDRCAPBLPEN |
+			RCC_DDRITFCR_DDRCAPBEN | RCC_DDRITFCR_DDRPHYCAPBLPEN
+			);
+
+	//stm32mp1_clk_rcc_regs_unlock();
+}
+
+int stm32mp1_ddr_clk_enable(struct ddr_info *priv, uint32_t mem_speed)
+{
+	unsigned long ddrphy_clk, ddr_clk, mem_speed_hz;
+
+	ddr_enable_clock();
+
+	ddrphy_clk = stm32mp_ddr_clk_get_rate(0 /*DDRPHYC */);
+
+	VERBOSE("DDR: mem_speed (%lu kHz), RCC %lu kHz\n",
+		(unsigned long) mem_speed, ddrphy_clk / 1000lU);
+
+	mem_speed_hz = mem_speed * 1000U;
+
+	/* Max 10% frequency delta */
+	if (ddrphy_clk > mem_speed_hz) {
+		ddr_clk = ddrphy_clk - mem_speed_hz;
+	} else {
+		ddr_clk = mem_speed_hz - ddrphy_clk;
+	}
+	if (ddr_clk > (mem_speed_hz / 10)) {
+		ERROR("DDR expected freq %d kHz, current is %ld kHz\n",
+		      mem_speed, ddrphy_clk / 1000U);
+		//return -1;
+	}
+	return 0;
+}
+
+
+struct reg_desc {
+	const char *name;
+	uint16_t offset;	/* Offset for base address */
+	uint8_t par_offset;	/* Offset for parameter array */
+};
+
+#define INVALID_OFFSET	0xFFU
+
+#define TIMEOUT_US_1S	1000000U
+
+#define DDRCTL_REG(x, y)					\
+	{							\
+		.name = #x,					\
+		.offset = offsetof(struct stm32mp1_ddrctl, x),	\
+		.par_offset = offsetof(struct y, x)		\
+	}
+
+#define DDRPHY_REG(x, y)					\
+	{							\
+		.name = #x,					\
+		.offset = offsetof(struct stm32mp1_ddrphy, x),	\
+		.par_offset = offsetof(struct y, x)		\
+	}
+
+#define DDRCTL_REG_REG(x)	DDRCTL_REG(x, stm32mp1_ddrctrl_reg)
+static const struct reg_desc ddr_reg[] = {
+	DDRCTL_REG_REG(mstr),
+	DDRCTL_REG_REG(mrctrl0),
+	DDRCTL_REG_REG(mrctrl1),
+	DDRCTL_REG_REG(derateen),
+	DDRCTL_REG_REG(derateint),
+	DDRCTL_REG_REG(pwrctl),
+	DDRCTL_REG_REG(pwrtmg),
+	DDRCTL_REG_REG(hwlpctl),
+	DDRCTL_REG_REG(rfshctl0),
+	DDRCTL_REG_REG(rfshctl3),
+	DDRCTL_REG_REG(crcparctl0),
+	DDRCTL_REG_REG(zqctl0),
+	DDRCTL_REG_REG(dfitmg0),
+	DDRCTL_REG_REG(dfitmg1),
+	DDRCTL_REG_REG(dfilpcfg0),
+	DDRCTL_REG_REG(dfiupd0),
+	DDRCTL_REG_REG(dfiupd1),
+	DDRCTL_REG_REG(dfiupd2),
+	DDRCTL_REG_REG(dfiphymstr),
+	DDRCTL_REG_REG(odtmap),
+	DDRCTL_REG_REG(dbg0),
+	DDRCTL_REG_REG(dbg1),
+	DDRCTL_REG_REG(dbgcmd),
+	DDRCTL_REG_REG(poisoncfg),
+	DDRCTL_REG_REG(pccfg),
+};
+
+#define DDRCTL_REG_TIMING(x)	DDRCTL_REG(x, stm32mp1_ddrctrl_timing)
+static const struct reg_desc ddr_timing[] = {
+	DDRCTL_REG_TIMING(rfshtmg),
+	DDRCTL_REG_TIMING(dramtmg0),
+	DDRCTL_REG_TIMING(dramtmg1),
+	DDRCTL_REG_TIMING(dramtmg2),
+	DDRCTL_REG_TIMING(dramtmg3),
+	DDRCTL_REG_TIMING(dramtmg4),
+	DDRCTL_REG_TIMING(dramtmg5),
+	DDRCTL_REG_TIMING(dramtmg6),
+	DDRCTL_REG_TIMING(dramtmg7),
+	DDRCTL_REG_TIMING(dramtmg8),
+	DDRCTL_REG_TIMING(dramtmg14),
+	DDRCTL_REG_TIMING(odtcfg),
+};
+
+#define DDRCTL_REG_MAP(x)	DDRCTL_REG(x, stm32mp1_ddrctrl_map)
+static const struct reg_desc ddr_map[] = {
+	DDRCTL_REG_MAP(addrmap1),
+	DDRCTL_REG_MAP(addrmap2),
+	DDRCTL_REG_MAP(addrmap3),
+	DDRCTL_REG_MAP(addrmap4),
+	DDRCTL_REG_MAP(addrmap5),
+	DDRCTL_REG_MAP(addrmap6),
+	DDRCTL_REG_MAP(addrmap9),
+	DDRCTL_REG_MAP(addrmap10),
+	DDRCTL_REG_MAP(addrmap11),
+};
+
+#define DDRCTL_REG_PERF(x)	DDRCTL_REG(x, stm32mp1_ddrctrl_perf)
+static const struct reg_desc ddr_perf[] = {
+	DDRCTL_REG_PERF(sched),
+	DDRCTL_REG_PERF(sched1),
+	DDRCTL_REG_PERF(perfhpr1),
+	DDRCTL_REG_PERF(perflpr1),
+	DDRCTL_REG_PERF(perfwr1),
+	DDRCTL_REG_PERF(pcfgr_0),
+	DDRCTL_REG_PERF(pcfgw_0),
+	DDRCTL_REG_PERF(pcfgqos0_0),
+	DDRCTL_REG_PERF(pcfgqos1_0),
+	DDRCTL_REG_PERF(pcfgwqos0_0),
+	DDRCTL_REG_PERF(pcfgwqos1_0),
+	DDRCTL_REG_PERF(pcfgr_1),
+	DDRCTL_REG_PERF(pcfgw_1),
+	DDRCTL_REG_PERF(pcfgqos0_1),
+	DDRCTL_REG_PERF(pcfgqos1_1),
+	DDRCTL_REG_PERF(pcfgwqos0_1),
+	DDRCTL_REG_PERF(pcfgwqos1_1),
+};
+
+#define DDRPHY_REG_REG(x)	DDRPHY_REG(x, stm32mp1_ddrphy_reg)
+static const struct reg_desc ddrphy_reg[] = {
+	DDRPHY_REG_REG(pgcr),
+	DDRPHY_REG_REG(aciocr),
+	DDRPHY_REG_REG(dxccr),
+	DDRPHY_REG_REG(dsgcr),
+	DDRPHY_REG_REG(dcr),
+	DDRPHY_REG_REG(odtcr),
+	DDRPHY_REG_REG(zq0cr1),
+	DDRPHY_REG_REG(dx0gcr),
+	DDRPHY_REG_REG(dx1gcr),
+	DDRPHY_REG_REG(dx2gcr),
+	DDRPHY_REG_REG(dx3gcr),
+};
+
+#define DDRPHY_REG_TIMING(x)	DDRPHY_REG(x, stm32mp1_ddrphy_timing)
+static const struct reg_desc ddrphy_timing[] = {
+	DDRPHY_REG_TIMING(ptr0),
+	DDRPHY_REG_TIMING(ptr1),
+	DDRPHY_REG_TIMING(ptr2),
+	DDRPHY_REG_TIMING(dtpr0),
+	DDRPHY_REG_TIMING(dtpr1),
+	DDRPHY_REG_TIMING(dtpr2),
+	DDRPHY_REG_TIMING(mr0),
+	DDRPHY_REG_TIMING(mr1),
+	DDRPHY_REG_TIMING(mr2),
+	DDRPHY_REG_TIMING(mr3),
+};
+
+#define DDRPHY_REG_CAL(x)	DDRPHY_REG(x, stm32mp1_ddrphy_cal)
+static const struct reg_desc ddrphy_cal[] = {
+	DDRPHY_REG_CAL(dx0dllcr),
+	DDRPHY_REG_CAL(dx0dqtr),
+	DDRPHY_REG_CAL(dx0dqstr),
+	DDRPHY_REG_CAL(dx1dllcr),
+	DDRPHY_REG_CAL(dx1dqtr),
+	DDRPHY_REG_CAL(dx1dqstr),
+	DDRPHY_REG_CAL(dx2dllcr),
+	DDRPHY_REG_CAL(dx2dqtr),
+	DDRPHY_REG_CAL(dx2dqstr),
+	DDRPHY_REG_CAL(dx3dllcr),
+	DDRPHY_REG_CAL(dx3dqtr),
+	DDRPHY_REG_CAL(dx3dqstr),
+};
+
+#define DDR_REG_DYN(x)						\
+	{							\
+		.name = #x,					\
+		.offset = offsetof(struct stm32mp1_ddrctl, x),	\
+		.par_offset = INVALID_OFFSET \
+	}
+
+static const struct reg_desc ddr_dyn[] = {
+	DDR_REG_DYN(stat),
+	DDR_REG_DYN(init0),
+	DDR_REG_DYN(dfimisc),
+	DDR_REG_DYN(dfistat),
+	DDR_REG_DYN(swctl),
+	DDR_REG_DYN(swstat),
+	DDR_REG_DYN(pctrl_0),
+	DDR_REG_DYN(pctrl_1),
+};
+
+#define DDRPHY_REG_DYN(x)					\
+	{							\
+		.name = #x,					\
+		.offset = offsetof(struct stm32mp1_ddrphy, x),	\
+		.par_offset = INVALID_OFFSET			\
+	}
+
+static const struct reg_desc ddrphy_dyn[] = {
+	DDRPHY_REG_DYN(pir),
+	DDRPHY_REG_DYN(pgsr),
+};
+
+enum reg_type {
+	REG_REG,
+	REG_TIMING,
+	REG_PERF,
+	REG_MAP,
+	REGPHY_REG,
+	REGPHY_TIMING,
+	REGPHY_CAL,
+/*
+ * Dynamic registers => managed in driver or not changed,
+ * can be dumped in interactive mode.
+ */
+	REG_DYN,
+	REGPHY_DYN,
+	REG_TYPE_NB
+};
+
+enum base_type {
+	DDR_BASE,
+	DDRPHY_BASE,
+	NONE_BASE
+};
+
+struct ddr_reg_info {
+	const char *name;
+	const struct reg_desc *desc;
+	uint8_t size;
+	enum base_type base;
+};
+
+static const struct ddr_reg_info ddr_registers[REG_TYPE_NB] = {
+	[REG_REG] = {
+		.name = "static",
+		.desc = ddr_reg,
+		.size = ARRAY_SIZE(ddr_reg),
+		.base = DDR_BASE
+	},
+	[REG_TIMING] = {
+		.name = "timing",
+		.desc = ddr_timing,
+		.size = ARRAY_SIZE(ddr_timing),
+		.base = DDR_BASE
+	},
+	[REG_PERF] = {
+		.name = "perf",
+		.desc = ddr_perf,
+		.size = ARRAY_SIZE(ddr_perf),
+		.base = DDR_BASE
+	},
+	[REG_MAP] = {
+		.name = "map",
+		.desc = ddr_map,
+		.size = ARRAY_SIZE(ddr_map),
+		.base = DDR_BASE
+	},
+	[REGPHY_REG] = {
+		.name = "static",
+		.desc = ddrphy_reg,
+		.size = ARRAY_SIZE(ddrphy_reg),
+		.base = DDRPHY_BASE
+	},
+	[REGPHY_TIMING] = {
+		.name = "timing",
+		.desc = ddrphy_timing,
+		.size = ARRAY_SIZE(ddrphy_timing),
+		.base = DDRPHY_BASE
+	},
+	[REGPHY_CAL] = {
+		.name = "cal",
+		.desc = ddrphy_cal,
+		.size = ARRAY_SIZE(ddrphy_cal),
+		.base = DDRPHY_BASE
+	},
+	[REG_DYN] = {
+		.name = "dyn",
+		.desc = ddr_dyn,
+		.size = ARRAY_SIZE(ddr_dyn),
+		.base = DDR_BASE
+	},
+	[REGPHY_DYN] = {
+		.name = "dyn",
+		.desc = ddrphy_dyn,
+		.size = ARRAY_SIZE(ddrphy_dyn),
+		.base = DDRPHY_BASE
+	},
+};
+
+static uintptr_t get_base_addr(const struct ddr_info *priv, enum base_type base)
+{
+	if (base == DDRPHY_BASE) {
+		return (uintptr_t)priv->phy;
+	} else {
+		return (uintptr_t)priv->ctl;
+	}
+}
 
 static void set_reg(const struct ddr_info *priv,
 		    enum reg_type type,
@@ -3359,17 +4148,17 @@ static void stm32mp1_ddrphy_idone_wait(struct stm32mp1_ddrphy *phy)
 {
 	uint32_t pgsr;
 	int error = 0;
-	uint64_t timeout = timeout_init_us(TIMEOUT_US_1S);
+//	uint64_t timeout = timeout_init_us(TIMEOUT_US_1S);
 
 	do {
 		pgsr = mmio_read_32((uintptr_t)&phy->pgsr);
 
-		VERBOSE("  > [0x%lx] pgsr = 0x%x &\n",
+		VERBOSE("  > [0x%lx] pgsr = 0x%x &",
 			(uintptr_t)&phy->pgsr, pgsr);
 
-		if (timeout_elapsed(timeout)) {
-			panic();
-		}
+//		if (timeout_elapsed(timeout)) {
+//			panic();
+//		}
 
 		if ((pgsr & DDRPHYC_PGSR_DTERR) != 0U) {
 			VERBOSE("DQS Gate Trainig Error\n");
@@ -3410,7 +4199,7 @@ static void stm32mp1_ddrphy_init(struct stm32mp1_ddrphy *phy, uint32_t pir)
 		mmio_read_32((uintptr_t)&phy->pir));
 
 	/* Need to wait 10 configuration clock before start polling */
-	udelay(10);
+	local_delay_us(10);
 
 	/* Wait DRAM initialization and Gate Training Evaluation complete */
 	stm32mp1_ddrphy_idone_wait(phy);
@@ -3427,35 +4216,35 @@ static void stm32mp1_start_sw_done(struct stm32mp1_ddrctl *ctl)
 /* Wait quasi dynamic register update */
 static void stm32mp1_wait_sw_done_ack(struct stm32mp1_ddrctl *ctl)
 {
-	uint64_t timeout;
+//	uint64_t timeout;
 	uint32_t swstat;
 
 	mmio_setbits_32((uintptr_t)&ctl->swctl, DDRCTRL_SWCTL_SW_DONE);
 	VERBOSE("[0x%lx] swctl = 0x%x\n",
 		(uintptr_t)&ctl->swctl, mmio_read_32((uintptr_t)&ctl->swctl));
 
-	timeout = timeout_init_us(TIMEOUT_US_1S);
+//	timeout = timeout_init_us(TIMEOUT_US_1S);
 	do {
 		swstat = mmio_read_32((uintptr_t)&ctl->swstat);
-		VERBOSE("[0x%lx] swstat = 0x%x ",
+		VERBOSE("1 [0x%lx] swstat = 0x%x ",
 			(uintptr_t)&ctl->swstat, swstat);
-		if (timeout_elapsed(timeout)) {
-			panic();
-		}
+//		if (timeout_elapsed(timeout)) {
+//			panic();
+//		}
 	} while ((swstat & DDRCTRL_SWSTAT_SW_DONE_ACK) == 0U);
 
-	VERBOSE("[0x%lx] swstat = 0x%x\n",
+	VERBOSE("2 [0x%lx] swstat = 0x%x\n",
 		(uintptr_t)&ctl->swstat, swstat);
 }
 
 /* Wait quasi dynamic register update */
 static void stm32mp1_wait_operating_mode(struct ddr_info *priv, uint32_t mode)
 {
-	uint64_t timeout;
+//	uint64_t timeout;
 	uint32_t stat;
 	int break_loop = 0;
 
-	timeout = timeout_init_us(TIMEOUT_US_1S);
+//	timeout = timeout_init_us(TIMEOUT_US_1S);
 	for ( ; ; ) {
 		uint32_t operating_mode;
 		uint32_t selref_type;
@@ -3463,11 +4252,11 @@ static void stm32mp1_wait_operating_mode(struct ddr_info *priv, uint32_t mode)
 		stat = mmio_read_32((uintptr_t)&priv->ctl->stat);
 		operating_mode = stat & DDRCTRL_STAT_OPERATING_MODE_MASK;
 		selref_type = stat & DDRCTRL_STAT_SELFREF_TYPE_MASK;
-		VERBOSE("[0x%lx] stat = 0x%x\n",
+		VERBOSE("1 [0x%lx] stat = 0x%x\n",
 			(uintptr_t)&priv->ctl->stat, stat);
-		if (timeout_elapsed(timeout)) {
-			panic();
-		}
+//		if (timeout_elapsed(timeout)) {
+//			panic();
+//		}
 
 		if (mode == DDRCTRL_STAT_OPERATING_MODE_SR) {
 			/*
@@ -3493,7 +4282,7 @@ static void stm32mp1_wait_operating_mode(struct ddr_info *priv, uint32_t mode)
 		}
 	}
 
-	VERBOSE("[0x%lx] stat = 0x%x\n",
+	VERBOSE("2 [0x%lx] stat = 0x%x\n",
 		(uintptr_t)&priv->ctl->stat, stat);
 }
 
@@ -3662,7 +4451,7 @@ static void stm32mp1_ddr3_dll_off(struct ddr_info *priv)
 	 */
 
 	/* Change Bypass Mode Frequency Range */
-	if (stm32mp_clk_get_rate(DDRPHYC) < 100000000U) {
+	if (stm32mp_ddr_clk_get_rate(0/*DDRPHYC*/) < 100000000U) {
 		mmio_clrbits_32((uintptr_t)&priv->phy->dllgcr,
 				DDRPHYC_DLLGCR_BPS200);
 	} else {
@@ -3733,6 +4522,1092 @@ static void stm32mp1_refresh_restore(struct stm32mp1_ddrctl *ctl,
 	stm32mp1_wait_sw_done_ack(ctl);
 }
 
+
+#define I2C_TIMEOUT_MS		25
+
+struct regul_struct {
+	const char *dt_node_name;
+	const uint16_t *voltage_table;
+	uint8_t voltage_table_size;
+	uint8_t control_reg;
+	uint8_t low_power_reg;
+	uint8_t pull_down_reg;
+	uint8_t pull_down;
+	uint8_t mask_reset_reg;
+	uint8_t mask_reset;
+};
+
+//static struct i2c_handle_s *pmic_i2c_handle;
+static const uint16_t pmic_i2c_addr = (0x33 << 1);
+
+
+#define TURN_ON_REG			0x1U
+#define TURN_OFF_REG			0x2U
+#define ICC_LDO_TURN_OFF_REG		0x3U
+#define ICC_BUCK_TURN_OFF_REG		0x4U
+#define RESET_STATUS_REG		0x5U
+#define VERSION_STATUS_REG		0x6U
+#define MAIN_CONTROL_REG		0x10U
+#define PADS_PULL_REG			0x11U
+#define BUCK_PULL_DOWN_REG		0x12U
+#define LDO14_PULL_DOWN_REG		0x13U
+#define LDO56_PULL_DOWN_REG		0x14U
+#define VIN_CONTROL_REG			0x15U
+#define PONKEY_TIMER_REG		0x16U
+#define MASK_RANK_BUCK_REG		0x17U
+#define MASK_RESET_BUCK_REG		0x18U
+#define MASK_RANK_LDO_REG		0x19U
+#define MASK_RESET_LDO_REG		0x1AU
+#define WATCHDOG_CONTROL_REG		0x1BU
+#define WATCHDOG_TIMER_REG		0x1CU
+#define BUCK_ICC_TURNOFF_REG		0x1DU
+#define LDO_ICC_TURNOFF_REG		0x1EU
+#define BUCK_APM_CONTROL_REG		0x1FU
+#define BUCK1_CONTROL_REG		0x20U
+#define BUCK2_CONTROL_REG		0x21U
+#define BUCK3_CONTROL_REG		0x22U
+#define BUCK4_CONTROL_REG		0x23U
+#define VREF_DDR_CONTROL_REG		0x24U
+#define LDO1_CONTROL_REG		0x25U
+#define LDO2_CONTROL_REG		0x26U
+#define LDO3_CONTROL_REG		0x27U
+#define LDO4_CONTROL_REG		0x28U
+#define LDO5_CONTROL_REG		0x29U
+#define LDO6_CONTROL_REG		0x2AU
+#define BUCK1_PWRCTRL_REG		0x30U
+#define BUCK2_PWRCTRL_REG		0x31U
+#define BUCK3_PWRCTRL_REG		0x32U
+#define BUCK4_PWRCTRL_REG		0x33U
+#define VREF_DDR_PWRCTRL_REG		0x34U
+#define LDO1_PWRCTRL_REG		0x35U
+#define LDO2_PWRCTRL_REG		0x36U
+#define LDO3_PWRCTRL_REG		0x37U
+#define LDO4_PWRCTRL_REG		0x38U
+#define LDO5_PWRCTRL_REG		0x39U
+#define LDO6_PWRCTRL_REG		0x3AU
+#define FREQUENCY_SPREADING_REG		0x3BU
+#define USB_CONTROL_REG			0x40U
+#define ITLATCH1_REG			0x50U
+#define ITLATCH2_REG			0x51U
+#define ITLATCH3_REG			0x52U
+#define ITLATCH4_REG			0x53U
+#define ITSETLATCH1_REG			0x60U
+#define ITSETLATCH2_REG			0x61U
+#define ITSETLATCH3_REG			0x62U
+#define ITSETLATCH4_REG			0x63U
+#define ITCLEARLATCH1_REG		0x70U
+#define ITCLEARLATCH2_REG		0x71U
+#define ITCLEARLATCH3_REG		0x72U
+#define ITCLEARLATCH4_REG		0x73U
+#define ITMASK1_REG			0x80U
+#define ITMASK2_REG			0x81U
+#define ITMASK3_REG			0x82U
+#define ITMASK4_REG			0x83U
+#define ITSETMASK1_REG			0x90U
+#define ITSETMASK2_REG			0x91U
+#define ITSETMASK3_REG			0x92U
+#define ITSETMASK4_REG			0x93U
+#define ITCLEARMASK1_REG		0xA0U
+#define ITCLEARMASK2_REG		0xA1U
+#define ITCLEARMASK3_REG		0xA2U
+#define ITCLEARMASK4_REG		0xA3U
+#define ITSOURCE1_REG			0xB0U
+#define ITSOURCE2_REG			0xB1U
+#define ITSOURCE3_REG			0xB2U
+#define ITSOURCE4_REG			0xB3U
+
+/* Registers masks */
+#define LDO_VOLTAGE_MASK		0x7CU
+#define BUCK_VOLTAGE_MASK		0xFCU
+#define LDO_BUCK_VOLTAGE_SHIFT		2
+#define LDO_BUCK_ENABLE_MASK		0x01U
+#define LDO_BUCK_HPLP_ENABLE_MASK	0x02U
+#define LDO_BUCK_HPLP_SHIFT		1
+#define LDO_BUCK_RANK_MASK		0x01U
+#define LDO_BUCK_RESET_MASK		0x01U
+#define LDO_BUCK_PULL_DOWN_MASK		0x03U
+
+/* Pull down register */
+#define BUCK1_PULL_DOWN_SHIFT		0
+#define BUCK2_PULL_DOWN_SHIFT		2
+#define BUCK3_PULL_DOWN_SHIFT		4
+#define BUCK4_PULL_DOWN_SHIFT		6
+#define VREF_DDR_PULL_DOWN_SHIFT	4
+
+/* Buck Mask reset register */
+#define BUCK1_MASK_RESET		0
+#define BUCK2_MASK_RESET		1
+#define BUCK3_MASK_RESET		2
+#define BUCK4_MASK_RESET		3
+
+/* LDO Mask reset register */
+#define LDO1_MASK_RESET			0
+#define LDO2_MASK_RESET			1
+#define LDO3_MASK_RESET			2
+#define LDO4_MASK_RESET			3
+#define LDO5_MASK_RESET			4
+#define LDO6_MASK_RESET			5
+#define VREF_DDR_MASK_RESET		6
+
+/* Main PMIC Control Register (MAIN_CONTROL_REG) */
+#define ICC_EVENT_ENABLED		BIT(4)
+#define PWRCTRL_POLARITY_HIGH		BIT(3)
+#define PWRCTRL_PIN_VALID		BIT(2)
+#define RESTART_REQUEST_ENABLED		BIT(1)
+#define SOFTWARE_SWITCH_OFF_ENABLED	BIT(0)
+
+/* Main PMIC PADS Control Register (PADS_PULL_REG) */
+#define WAKEUP_DETECTOR_DISABLED	BIT(4)
+#define PWRCTRL_PD_ACTIVE		BIT(3)
+#define PWRCTRL_PU_ACTIVE		BIT(2)
+#define WAKEUP_PD_ACTIVE		BIT(1)
+#define PONKEY_PU_ACTIVE		BIT(0)
+
+/* Main PMIC VINLOW Control Register (VIN_CONTROL_REGC DMSC) */
+#define SWIN_DETECTOR_ENABLED		BIT(7)
+#define SWOUT_DETECTOR_ENABLED          BIT(6)
+#define VINLOW_HYST_MASK		0x3
+#define VINLOW_HYST_SHIFT		4
+#define VINLOW_THRESHOLD_MASK		0x7
+#define VINLOW_THRESHOLD_SHIFT		1
+#define VINLOW_ENABLED			0x01
+#define VINLOW_CTRL_REG_MASK		0xFF
+
+/* USB Control Register */
+#define BOOST_OVP_DISABLED		BIT(7)
+#define VBUS_OTG_DETECTION_DISABLED	BIT(6)
+#define OCP_LIMIT_HIGH			BIT(3)
+#define SWIN_SWOUT_ENABLED		BIT(2)
+#define USBSW_OTG_SWITCH_ENABLED	BIT(1)
+
+
+#define STPMIC1_LDO12356_OUTPUT_MASK	(uint8_t)(GENMASK(6, 2))
+#define STPMIC1_LDO12356_OUTPUT_SHIFT	2
+#define STPMIC1_LDO3_MODE		(uint8_t)(BIT(7))
+#define STPMIC1_LDO3_DDR_SEL		31U
+#define STPMIC1_LDO3_1800000		(9U << STPMIC1_LDO12356_OUTPUT_SHIFT)
+
+#define STPMIC1_BUCK_OUTPUT_SHIFT	2
+#define STPMIC1_BUCK3_1V8		(39U << STPMIC1_BUCK_OUTPUT_SHIFT)
+
+#define STPMIC1_DEFAULT_START_UP_DELAY_MS	1
+
+/* Voltage tables in mV */
+static const uint16_t buck1_voltage_table[] = {
+	725,
+	725,
+	725,
+	725,
+	725,
+	725,
+	750,
+	775,
+	800,
+	825,
+	850,
+	875,
+	900,
+	925,
+	950,
+	975,
+	1000,
+	1025,
+	1050,
+	1075,
+	1100,
+	1125,
+	1150,
+	1175,
+	1200,
+	1225,
+	1250,
+	1275,
+	1300,
+	1325,
+	1350,
+	1375,
+	1400,
+	1425,
+	1450,
+	1475,
+	1500,
+	1500,
+	1500,
+	1500,
+	1500,
+	1500,
+	1500,
+	1500,
+	1500,
+	1500,
+	1500,
+	1500,
+	1500,
+	1500,
+	1500,
+	1500,
+	1500,
+	1500,
+	1500,
+	1500,
+	1500,
+	1500,
+	1500,
+	1500,
+	1500,
+	1500,
+	1500,
+	1500,
+};
+
+static const uint16_t buck2_voltage_table[] = {
+	1000,
+	1000,
+	1000,
+	1000,
+	1000,
+	1000,
+	1000,
+	1000,
+	1000,
+	1000,
+	1000,
+	1000,
+	1000,
+	1000,
+	1000,
+	1000,
+	1000,
+	1000,
+	1050,
+	1050,
+	1100,
+	1100,
+	1150,
+	1150,
+	1200,
+	1200,
+	1250,
+	1250,
+	1300,
+	1300,
+	1350,
+	1350,
+	1400,
+	1400,
+	1450,
+	1450,
+	1500,
+};
+
+static const uint16_t buck3_voltage_table[] = {
+	1000,
+	1000,
+	1000,
+	1000,
+	1000,
+	1000,
+	1000,
+	1000,
+	1000,
+	1000,
+	1000,
+	1000,
+	1000,
+	1000,
+	1000,
+	1000,
+	1000,
+	1000,
+	1000,
+	1000,
+	1100,
+	1100,
+	1100,
+	1100,
+	1200,
+	1200,
+	1200,
+	1200,
+	1300,
+	1300,
+	1300,
+	1300,
+	1400,
+	1400,
+	1400,
+	1400,
+	1500,
+	1600,
+	1700,
+	1800,
+	1900,
+	2000,
+	2100,
+	2200,
+	2300,
+	2400,
+	2500,
+	2600,
+	2700,
+	2800,
+	2900,
+	3000,
+	3100,
+	3200,
+	3300,
+	3400,
+};
+
+static const uint16_t buck4_voltage_table[] = {
+	600,
+	625,
+	650,
+	675,
+	700,
+	725,
+	750,
+	775,
+	800,
+	825,
+	850,
+	875,
+	900,
+	925,
+	950,
+	975,
+	1000,
+	1025,
+	1050,
+	1075,
+	1100,
+	1125,
+	1150,
+	1175,
+	1200,
+	1225,
+	1250,
+	1275,
+	1300,
+	1300,
+	1350,
+	1350,
+	1400,
+	1400,
+	1450,
+	1450,
+	1500,
+	1600,
+	1700,
+	1800,
+	1900,
+	2000,
+	2100,
+	2200,
+	2300,
+	2400,
+	2500,
+	2600,
+	2700,
+	2800,
+	2900,
+	3000,
+	3100,
+	3200,
+	3300,
+	3400,
+	3500,
+	3600,
+	3700,
+	3800,
+	3900,
+};
+
+static const uint16_t ldo1_voltage_table[] = {
+	1700,
+	1700,
+	1700,
+	1700,
+	1700,
+	1700,
+	1700,
+	1700,
+	1700,
+	1800,
+	1900,
+	2000,
+	2100,
+	2200,
+	2300,
+	2400,
+	2500,
+	2600,
+	2700,
+	2800,
+	2900,
+	3000,
+	3100,
+	3200,
+	3300,
+};
+
+static const uint16_t ldo2_voltage_table[] = {
+	1700,
+	1700,
+	1700,
+	1700,
+	1700,
+	1700,
+	1700,
+	1700,
+	1700,
+	1800,
+	1900,
+	2000,
+	2100,
+	2200,
+	2300,
+	2400,
+	2500,
+	2600,
+	2700,
+	2800,
+	2900,
+	3000,
+	3100,
+	3200,
+	3300,
+};
+
+static const uint16_t ldo3_voltage_table[] = {
+	1700,
+	1700,
+	1700,
+	1700,
+	1700,
+	1700,
+	1700,
+	1700,
+	1700,
+	1800,
+	1900,
+	2000,
+	2100,
+	2200,
+	2300,
+	2400,
+	2500,
+	2600,
+	2700,
+	2800,
+	2900,
+	3000,
+	3100,
+	3200,
+	3300,
+	3300,
+	3300,
+	3300,
+	3300,
+	3300,
+	3300,
+	500,
+	0xFFFF, /* VREFDDR */
+};
+
+static const uint16_t ldo5_voltage_table[] = {
+	1700,
+	1700,
+	1700,
+	1700,
+	1700,
+	1700,
+	1700,
+	1700,
+	1700,
+	1800,
+	1900,
+	2000,
+	2100,
+	2200,
+	2300,
+	2400,
+	2500,
+	2600,
+	2700,
+	2800,
+	2900,
+	3000,
+	3100,
+	3200,
+	3300,
+	3400,
+	3500,
+	3600,
+	3700,
+	3800,
+	3900,
+};
+
+static const uint16_t ldo6_voltage_table[] = {
+	900,
+	1000,
+	1100,
+	1200,
+	1300,
+	1400,
+	1500,
+	1600,
+	1700,
+	1800,
+	1900,
+	2000,
+	2100,
+	2200,
+	2300,
+	2400,
+	2500,
+	2600,
+	2700,
+	2800,
+	2900,
+	3000,
+	3100,
+	3200,
+	3300,
+};
+
+static const uint16_t ldo4_voltage_table[] = {
+	3300,
+};
+
+static const uint16_t vref_ddr_voltage_table[] = {
+	3300,
+};
+
+/* Table of Regulators in PMIC SoC */
+static const struct regul_struct regulators_table[] = {
+	{
+		.dt_node_name	= "buck1",
+		.voltage_table	= buck1_voltage_table,
+		.voltage_table_size = ARRAY_SIZE(buck1_voltage_table),
+		.control_reg	= BUCK1_CONTROL_REG,
+		.low_power_reg	= BUCK1_PWRCTRL_REG,
+		.pull_down_reg	= BUCK_PULL_DOWN_REG,
+		.pull_down	= BUCK1_PULL_DOWN_SHIFT,
+		.mask_reset_reg	= MASK_RESET_BUCK_REG,
+		.mask_reset	= BUCK1_MASK_RESET,
+	},
+	{
+		.dt_node_name	= "buck2",
+		.voltage_table	= buck2_voltage_table,
+		.voltage_table_size = ARRAY_SIZE(buck2_voltage_table),
+		.control_reg	= BUCK2_CONTROL_REG,
+		.low_power_reg	= BUCK2_PWRCTRL_REG,
+		.pull_down_reg	= BUCK_PULL_DOWN_REG,
+		.pull_down	= BUCK2_PULL_DOWN_SHIFT,
+		.mask_reset_reg	= MASK_RESET_BUCK_REG,
+		.mask_reset	= BUCK2_MASK_RESET,
+	},
+	{
+		.dt_node_name	= "buck3",
+		.voltage_table	= buck3_voltage_table,
+		.voltage_table_size = ARRAY_SIZE(buck3_voltage_table),
+		.control_reg	= BUCK3_CONTROL_REG,
+		.low_power_reg	= BUCK3_PWRCTRL_REG,
+		.pull_down_reg	= BUCK_PULL_DOWN_REG,
+		.pull_down	= BUCK3_PULL_DOWN_SHIFT,
+		.mask_reset_reg	= MASK_RESET_BUCK_REG,
+		.mask_reset	= BUCK3_MASK_RESET,
+	},
+	{
+		.dt_node_name	= "buck4",
+		.voltage_table	= buck4_voltage_table,
+		.voltage_table_size = ARRAY_SIZE(buck4_voltage_table),
+		.control_reg	= BUCK4_CONTROL_REG,
+		.low_power_reg	= BUCK4_PWRCTRL_REG,
+		.pull_down_reg	= BUCK_PULL_DOWN_REG,
+		.pull_down	= BUCK4_PULL_DOWN_SHIFT,
+		.mask_reset_reg	= MASK_RESET_BUCK_REG,
+		.mask_reset	= BUCK4_MASK_RESET,
+	},
+	{
+		.dt_node_name	= "ldo1",
+		.voltage_table	= ldo1_voltage_table,
+		.voltage_table_size = ARRAY_SIZE(ldo1_voltage_table),
+		.control_reg	= LDO1_CONTROL_REG,
+		.low_power_reg	= LDO1_PWRCTRL_REG,
+		.mask_reset_reg	= MASK_RESET_LDO_REG,
+		.mask_reset	= LDO1_MASK_RESET,
+	},
+	{
+		.dt_node_name	= "ldo2",
+		.voltage_table	= ldo2_voltage_table,
+		.voltage_table_size = ARRAY_SIZE(ldo2_voltage_table),
+		.control_reg	= LDO2_CONTROL_REG,
+		.low_power_reg	= LDO2_PWRCTRL_REG,
+		.mask_reset_reg	= MASK_RESET_LDO_REG,
+		.mask_reset	= LDO2_MASK_RESET,
+	},
+	{
+		.dt_node_name	= "ldo3",
+		.voltage_table	= ldo3_voltage_table,
+		.voltage_table_size = ARRAY_SIZE(ldo3_voltage_table),
+		.control_reg	= LDO3_CONTROL_REG,
+		.low_power_reg	= LDO3_PWRCTRL_REG,
+		.mask_reset_reg	= MASK_RESET_LDO_REG,
+		.mask_reset	= LDO3_MASK_RESET,
+	},
+	{
+		.dt_node_name	= "ldo4",
+		.voltage_table	= ldo4_voltage_table,
+		.voltage_table_size = ARRAY_SIZE(ldo4_voltage_table),
+		.control_reg	= LDO4_CONTROL_REG,
+		.low_power_reg	= LDO4_PWRCTRL_REG,
+		.mask_reset_reg	= MASK_RESET_LDO_REG,
+		.mask_reset	= LDO4_MASK_RESET,
+	},
+	{
+		.dt_node_name	= "ldo5",
+		.voltage_table	= ldo5_voltage_table,
+		.voltage_table_size = ARRAY_SIZE(ldo5_voltage_table),
+		.control_reg	= LDO5_CONTROL_REG,
+		.low_power_reg	= LDO5_PWRCTRL_REG,
+		.mask_reset_reg	= MASK_RESET_LDO_REG,
+		.mask_reset	= LDO5_MASK_RESET,
+	},
+	{
+		.dt_node_name	= "ldo6",
+		.voltage_table	= ldo6_voltage_table,
+		.voltage_table_size = ARRAY_SIZE(ldo6_voltage_table),
+		.control_reg	= LDO6_CONTROL_REG,
+		.low_power_reg	= LDO6_PWRCTRL_REG,
+		.mask_reset_reg	= MASK_RESET_LDO_REG,
+		.mask_reset	= LDO6_MASK_RESET,
+	},
+	{
+		.dt_node_name	= "vref_ddr",
+		.voltage_table	= vref_ddr_voltage_table,
+		.voltage_table_size = ARRAY_SIZE(vref_ddr_voltage_table),
+		.control_reg	= VREF_DDR_CONTROL_REG,
+		.low_power_reg	= VREF_DDR_PWRCTRL_REG,
+		.mask_reset_reg	= MASK_RESET_LDO_REG,
+		.mask_reset	= VREF_DDR_MASK_RESET,
+	},
+};
+
+#define MAX_REGUL	ARRAY_SIZE(regulators_table)
+
+static const struct regul_struct *get_regulator_data(const char *name)
+{
+	uint8_t i;
+
+	for (i = 0 ; i < MAX_REGUL ; i++) {
+		if (strncmp(name, regulators_table[i].dt_node_name,
+			    strlen(regulators_table[i].dt_node_name)) == 0) {
+			return &regulators_table[i];
+		}
+	}
+
+	/* Regulator not found */
+	panic();
+	return NULL;
+}
+
+static uint8_t voltage_to_index(const char *name, uint16_t millivolts)
+{
+	const struct regul_struct *regul = get_regulator_data(name);
+	uint8_t i;
+
+	for (i = 0 ; i < regul->voltage_table_size ; i++) {
+		if (regul->voltage_table[i] == millivolts) {
+			return i;
+		}
+	}
+
+	/* Voltage not found */
+	panic();
+
+	return 0;
+}
+
+
+static int stpmic1_register_update(uint8_t register_id, uint8_t value, uint8_t mask);
+static int stpmic1_register_read(uint8_t register_id,  uint8_t *value);
+
+static int stpmic1_powerctrl_on(void)
+{
+	return stpmic1_register_update(MAIN_CONTROL_REG, PWRCTRL_PIN_VALID,
+				       PWRCTRL_PIN_VALID);
+}
+
+static int stpmic1_switch_off(void)
+{
+	return stpmic1_register_update(MAIN_CONTROL_REG, 1,
+				       SOFTWARE_SWITCH_OFF_ENABLED);
+}
+
+static int stpmic1_regulator_enable(const char *name)
+{
+	const struct regul_struct *regul = get_regulator_data(name);
+
+	return stpmic1_register_update(regul->control_reg, BIT(0), BIT(0));
+}
+
+static int stpmic1_regulator_disable(const char *name)
+{
+	const struct regul_struct *regul = get_regulator_data(name);
+
+	return stpmic1_register_update(regul->control_reg, 0, BIT(0));
+}
+
+static uint8_t stpmic1_is_regulator_enabled(const char *name)
+{
+	uint8_t val;
+	const struct regul_struct *regul = get_regulator_data(name);
+
+	if (stpmic1_register_read(regul->control_reg, &val) != 0) {
+		panic();
+	}
+
+	return (val & 0x1U);
+}
+
+static int stpmic1_regulator_voltage_set(const char *name, uint16_t millivolts)
+{
+	uint8_t voltage_index = voltage_to_index(name, millivolts);
+	const struct regul_struct *regul = get_regulator_data(name);
+	uint8_t mask;
+
+	/* Voltage can be set for buck<N> or ldo<N> (except ldo4) regulators */
+	if (strncmp(name, "buck", 4) == 0) {
+		mask = BUCK_VOLTAGE_MASK;
+	} else if ((strncmp(name, "ldo", 3) == 0) &&
+		   (strncmp(name, "ldo4", 4) != 0)) {
+		mask = LDO_VOLTAGE_MASK;
+	} else {
+		return 0;
+	}
+
+	return stpmic1_register_update(regul->control_reg,
+				       voltage_index << LDO_BUCK_VOLTAGE_SHIFT,
+				       mask);
+}
+
+static int stpmic1_regulator_pull_down_set(const char *name)
+{
+	const struct regul_struct *regul = get_regulator_data(name);
+
+	if (regul->pull_down_reg != 0) {
+		return stpmic1_register_update(regul->pull_down_reg,
+					       BIT(regul->pull_down),
+					       LDO_BUCK_PULL_DOWN_MASK <<
+					       regul->pull_down);
+	}
+
+	return 0;
+}
+
+static int stpmic1_regulator_mask_reset_set(const char *name)
+{
+	const struct regul_struct *regul = get_regulator_data(name);
+
+	return stpmic1_register_update(regul->mask_reset_reg,
+				       BIT(regul->mask_reset),
+				       LDO_BUCK_RESET_MASK <<
+				       regul->mask_reset);
+}
+
+static int stpmic1_regulator_voltage_get(const char *name)
+{
+	const struct regul_struct *regul = get_regulator_data(name);
+	uint8_t value;
+	uint8_t mask;
+
+	/* Voltage can be set for buck<N> or ldo<N> (except ldo4) regulators */
+	if (strncmp(name, "buck", 4) == 0) {
+		mask = BUCK_VOLTAGE_MASK;
+	} else if ((strncmp(name, "ldo", 3) == 0) &&
+		   (strncmp(name, "ldo4", 4) != 0)) {
+		mask = LDO_VOLTAGE_MASK;
+	} else {
+		return 0;
+	}
+
+	if (stpmic1_register_read(regul->control_reg, &value))
+		return -1;
+
+	value = (value & mask) >> LDO_BUCK_VOLTAGE_SHIFT;
+
+	if (value > regul->voltage_table_size)
+		return -1;
+
+	return (int)regul->voltage_table[value];
+}
+
+static int stpmic1_register_read(uint8_t register_id,  uint8_t *value)
+{
+	uint_fast8_t v;
+
+	i2c_start(pmic_i2c_addr | 0x00);
+	i2c_write_withrestart(register_id);
+	i2c_start(pmic_i2c_addr | 0x01);
+	i2c_read(& v, I2C_READ_ACK_NACK);	/* чтение первого и единственного байта ответа */
+
+	* value = v;
+	return 0;
+/*
+	return stm32_i2c_mem_read(pmic_i2c_handle, pmic_i2c_addr,
+				  (uint16_t)register_id,
+				  I2C_MEMADD_SIZE_8BIT, value,
+				  1, I2C_TIMEOUT_MS);
+*/
+}
+
+static int stpmic1_register_write(uint8_t register_id, uint8_t value)
+{
+	int status = 0;
+
+	i2c_start(pmic_i2c_addr | 0x00);
+	i2c_write(register_id);
+	i2c_write(value);
+	i2c_waitsend();
+	i2c_stop();
+
+/*
+
+	status = stm32_i2c_mem_write(pmic_i2c_handle, pmic_i2c_addr,
+				     (uint16_t)register_id,
+				     I2C_MEMADD_SIZE_8BIT, &value,
+				     1, I2C_TIMEOUT_MS);
+*/
+
+#if ENABLE_ASSERTIONS
+	if (status != 0) {
+		return status;
+	}
+
+	if ((register_id != WATCHDOG_CONTROL_REG) && (register_id <= 0x40U)) {
+		uint8_t readval;
+
+		status = stpmic1_register_read(register_id, &readval);
+		if (status != 0) {
+			return status;
+		}
+
+		if (readval != value) {
+			return -1;
+		}
+	}
+#endif
+
+	return status;
+}
+
+static int stpmic1_register_update(uint8_t register_id, uint8_t value, uint8_t mask)
+{
+	int status;
+	uint8_t val;
+
+	status = stpmic1_register_read(register_id, &val);
+	if (status != 0) {
+		return status;
+	}
+
+	val = (val & ~mask) | (value & mask);
+
+	return stpmic1_register_write(register_id, val);
+}
+
+static void stpmic1_dump_regulators(void)
+{
+	uint32_t i;
+
+	for (i = 0U; i < MAX_REGUL; i++) {
+		const char *name __unused = regulators_table[i].dt_node_name;
+
+		VERBOSE("PMIC regul %s: %sable, %d mV\n",
+			name,
+			stpmic1_is_regulator_enabled(name) ? "en" : "dis",
+			stpmic1_regulator_voltage_get(name));
+	}
+}
+
+static int stpmic1_get_version(unsigned long *version)
+{
+	int rc;
+	uint8_t read_val = 0xDD;
+
+	rc = stpmic1_register_read(VERSION_STATUS_REG, &read_val);
+	if (rc) {
+		return -1;
+	}
+
+	*version = (unsigned long)read_val;
+
+	return 0;
+}
+
+
+static int initialize_pmic_i2c(void)
+{
+
+	return 1;
+}
+
+static void initialize_pmic(void)
+{
+	unsigned long pmic_version;
+
+	if (!initialize_pmic_i2c()) {
+		VERBOSE("No PMIC\n");
+		return;
+	}
+
+	if (stpmic1_get_version(&pmic_version) != 0) {
+		ERROR("Failed to access PMIC\n");
+		panic();
+	}
+
+	INFO("PMIC version = 0x%02lx\n", pmic_version);
+	stpmic1_dump_regulators();
+
+#if defined(IMAGE_BL2)
+	if (dt_pmic_configure_boot_on_regulators() != 0) {
+		panic();
+	};
+#endif
+}
+
+
+int pmic_ddr_power_init(enum ddr_type ddr_type)
+{
+	int buck3_at_1v8 = 0;
+	uint8_t read_val;
+	int status;
+
+	switch (ddr_type) {
+	case STM32MP_DDR3:
+		/* Set LDO3 to sync mode */
+		status = stpmic1_register_read(LDO3_CONTROL_REG, &read_val);
+		if (status != 0) {
+			return status;
+		}
+
+		read_val &= ~STPMIC1_LDO3_MODE;
+		read_val &= ~STPMIC1_LDO12356_OUTPUT_MASK;
+		read_val |= STPMIC1_LDO3_DDR_SEL <<
+			    STPMIC1_LDO12356_OUTPUT_SHIFT;
+
+		status = stpmic1_register_write(LDO3_CONTROL_REG, read_val);
+		if (status != 0) {
+			return status;
+		}
+
+		status = stpmic1_regulator_voltage_set("buck2", 1350);
+		if (status != 0) {
+			return status;
+		}
+
+		status = stpmic1_regulator_enable("buck2");
+		if (status != 0) {
+			return status;
+		}
+
+		local_delay_ms(STPMIC1_DEFAULT_START_UP_DELAY_MS);
+
+		status = stpmic1_regulator_enable("vref_ddr");
+		if (status != 0) {
+			return status;
+		}
+
+		local_delay_ms(STPMIC1_DEFAULT_START_UP_DELAY_MS);
+
+		status = stpmic1_regulator_enable("ldo3");
+		if (status != 0) {
+			return status;
+		}
+
+		local_delay_ms(STPMIC1_DEFAULT_START_UP_DELAY_MS);
+		break;
+
+	case STM32MP_LPDDR2:
+	case STM32MP_LPDDR3:
+		/*
+		 * Set LDO3 to 1.8V
+		 * Set LDO3 to bypass mode if BUCK3 = 1.8V
+		 * Set LDO3 to normal mode if BUCK3 != 1.8V
+		 */
+		status = stpmic1_register_read(BUCK3_CONTROL_REG, &read_val);
+		if (status != 0) {
+			return status;
+		}
+
+		if ((read_val & STPMIC1_BUCK3_1V8) == STPMIC1_BUCK3_1V8) {
+			buck3_at_1v8 = 1;
+		}
+
+		status = stpmic1_register_read(LDO3_CONTROL_REG, &read_val);
+		if (status != 0) {
+			return status;
+		}
+
+		read_val &= ~STPMIC1_LDO3_MODE;
+		read_val &= ~STPMIC1_LDO12356_OUTPUT_MASK;
+		read_val |= STPMIC1_LDO3_1800000;
+		if (buck3_at_1v8) {
+			read_val |= STPMIC1_LDO3_MODE;
+		}
+
+		status = stpmic1_register_write(LDO3_CONTROL_REG, read_val);
+		if (status != 0) {
+			return status;
+		}
+
+		status = stpmic1_regulator_voltage_set("buck2", 1200);
+		if (status != 0) {
+			return status;
+		}
+
+		status = stpmic1_regulator_enable("ldo3");
+		if (status != 0) {
+			return status;
+		}
+
+		local_delay_ms(STPMIC1_DEFAULT_START_UP_DELAY_MS);
+
+		status = stpmic1_regulator_enable("buck2");
+		if (status != 0) {
+			return status;
+		}
+
+		local_delay_ms(STPMIC1_DEFAULT_START_UP_DELAY_MS);
+
+		status = stpmic1_regulator_enable("vref_ddr");
+		if (status != 0) {
+			return status;
+		}
+
+		local_delay_ms(STPMIC1_DEFAULT_START_UP_DELAY_MS);
+		break;
+
+	default:
+		break;
+	};
+
+	return 0;
+}
+
+static int board_ddr_power_init(enum ddr_type ddr_type)
+{
+	pmic_ddr_power_init(ddr_type);
+//	if (dt_pmic_status() > 0) {
+//		return pmic_ddr_power_init(ddr_type);
+//	}
+
+	return 0;
+}
+
 //	The initialization steps for DDR3 SDRAMs are as follows:
 //	1. Optionally maintain RESET# low for a minimum of either 200 us (power-up
 //	initialization) or 100ns (power-on initialization).
@@ -3755,11 +5630,12 @@ static void stm32mp1_refresh_restore(struct stm32mp1_ddrctl *ctl,
 //	to finish.
 //	This wait time is relative to Step 8, i.e. relative to when the DLL reset command was
 //	issued onto the SDRAM command bus.
-static void stm32mp1_ddr_init(void)
+static void stm32mp1_ddr_init(struct ddr_info *priv,
+	       struct stm32mp1_ddr_config *config)
 {
 	uint32_t pir;
-	int ret = -1; //-EINVAL;
-#if 0
+	int ret = - 1;
+
 	if ((config->c_reg.mstr & DDRCTRL_MSTR_DDR3) != 0U) {
 		ret = board_ddr_power_init(STM32MP_DDR3);
 	} else if ((config->c_reg.mstr & DDRCTRL_MSTR_LPDDR2) != 0U) {
@@ -3774,43 +5650,43 @@ static void stm32mp1_ddr_init(void)
 		panic();
 	}
 
+	stpmic1_dump_regulators();
+
+
 	VERBOSE("name = %s\n", config->info.name);
 	VERBOSE("speed = %d kHz\n", config->info.speed);
 	VERBOSE("size  = 0x%x\n", config->info.size);
-#endif
-	/* DDR INIT SEQUENCE */
 
+	/* DDR INIT SEQUENCE */
 	/*
 	 * 1. Program the DWC_ddr_umctl2 registers
 	 *     nota: check DFIMISC.dfi_init_complete = 0
 	 */
-
 	/* 1.1 RESETS: presetn, core_ddrc_rstn, aresetn */
-	mmio_setbits_32(& RCC->DDRITFCR, RCC_DDRITFCR_DDRCAPBRST);
-	mmio_setbits_32(& RCC->DDRITFCR, RCC_DDRITFCR_DDRCAXIRST);
-	mmio_setbits_32(& RCC->DDRITFCR, RCC_DDRITFCR_DDRCORERST);
-	mmio_setbits_32(& RCC->DDRITFCR, RCC_DDRITFCR_DPHYAPBRST);
-	mmio_setbits_32(& RCC->DDRITFCR, RCC_DDRITFCR_DPHYRST);
-	mmio_setbits_32(& RCC->DDRITFCR, RCC_DDRITFCR_DPHYCTLRST);
+	mmio_setbits_32(priv->rcc + RCC_DDRITFCR, RCC_DDRITFCR_DDRCAPBRST);
+	mmio_setbits_32(priv->rcc + RCC_DDRITFCR, RCC_DDRITFCR_DDRCAXIRST);
+	mmio_setbits_32(priv->rcc + RCC_DDRITFCR, RCC_DDRITFCR_DDRCORERST);
+	mmio_setbits_32(priv->rcc + RCC_DDRITFCR, RCC_DDRITFCR_DPHYAPBRST);
+	mmio_setbits_32(priv->rcc + RCC_DDRITFCR, RCC_DDRITFCR_DPHYRST);
+	mmio_setbits_32(priv->rcc + RCC_DDRITFCR, RCC_DDRITFCR_DPHYCTLRST);
 
 	/* 1.2. start CLOCK */
-	if (stm32mp1_ddr_clk_enable(CONFIG_DDR3_SPEED) != 0) {
+	if (stm32mp1_ddr_clk_enable(priv, config->info.speed) != 0) {
 		panic();
 	}
 
 	/* 1.3. deassert reset */
 	/* De-assert PHY rstn and ctl_rstn via DPHYRST and DPHYCTLRST. */
-	mmio_clrbits_32(& RCC->DDRITFCR, RCC_DDRITFCR_DPHYRST);
-	mmio_clrbits_32(& RCC->DDRITFCR, RCC_DDRITFCR_DPHYCTLRST);
+	mmio_clrbits_32(priv->rcc + RCC_DDRITFCR, RCC_DDRITFCR_DPHYRST);
+	mmio_clrbits_32(priv->rcc + RCC_DDRITFCR, RCC_DDRITFCR_DPHYCTLRST);
 	/*
 	 * De-assert presetn once the clocks are active
 	 * and stable via DDRCAPBRST bit.
 	 */
-	mmio_clrbits_32(& RCC->DDRITFCR, RCC_DDRITFCR_DDRCAPBRST);
+	mmio_clrbits_32(priv->rcc + RCC_DDRITFCR, RCC_DDRITFCR_DDRCAPBRST);
 
 	/* 1.4. wait 128 cycles to permit initialization of end logic */
-	//udelay(2);
-	local_delay_ms(1);
+	local_delay_us(2);
 	/* For PCLK = 133MHz => 1 us is enough, 2 to allow lower frequency */
 
 	/* 1.5. initialize registers ddr_umctl2 */
@@ -3849,9 +5725,9 @@ static void stm32mp1_ddr_init(void)
 	set_reg(priv, REG_PERF, &config->c_perf);
 
 	/*  2. deassert reset signal core_ddrc_rstn, aresetn and presetn */
-	mmio_clrbits_32(& RCC->DDRITFCR, RCC_DDRITFCR_DDRCORERST);
-	mmio_clrbits_32(& RCC->DDRITFCR, RCC_DDRITFCR_DDRCAXIRST);
-	mmio_clrbits_32(& RCC->DDRITFCR, RCC_DDRITFCR_DPHYAPBRST);
+	mmio_clrbits_32(priv->rcc + RCC_DDRITFCR, RCC_DDRITFCR_DDRCORERST);
+	mmio_clrbits_32(priv->rcc + RCC_DDRITFCR, RCC_DDRITFCR_DDRCAXIRST);
+	mmio_clrbits_32(priv->rcc + RCC_DDRITFCR, RCC_DDRITFCR_DPHYAPBRST);
 
 	/*
 	 * 3. start PHY init by accessing relevant PUBL registers
@@ -3967,39 +5843,424 @@ static void stm32mp1_ddr_init(void)
 		mmio_read_32((uintptr_t)&priv->ctl->pctrl_1));
 }
 
+#include "stm32mp15-mx.dtsi"
+
+// NT5CC128M16IP-DI BGA DDR3 NT5CC128M16IP DI
+void stm32mp1_ddr_get_config(struct stm32mp1_ddr_config * cfg)
+{
+
+#if 0
+	if (fdt_get_address(&fdt) == 0) {
+		panic();
+	}
+
+	node = fdt_node_offset_by_compatible(fdt, -1, DT_DDR_COMPAT);
+	if (node < 0) {
+		ERROR("%s: Cannot read DDR node in DT\n", __func__);
+		panic();
+	}
+
+	cfg->info.speed = fdt_read_uint32_default(node, "st,mem-speed", 0);
+	if (!cfg->info.speed) {
+		VERBOSE("%s: no st,mem-speed\n", __func__);
+		panic();
+	}
+	cfg->info.size = fdt_read_uint32_default(node, "st,mem-size", 0);
+	if (!cfg->info.size) {
+		VERBOSE("%s: no st,mem-size\n", __func__);
+		panic();
+	}
+	cfg->info.name = fdt_getprop(fdt, node, "st,mem-name", &len);
+	if (cfg->info.name == NULL) {
+		VERBOSE("%s: no st,mem-name\n", __func__);
+		panic();
+	}
+	INFO("RAM: %s\n", cfg->info.name);
+
+	for (idx = 0; idx < ARRAY_SIZE(param); idx++) {
+		ret = fdt_read_uint32_array(node, param[idx].name,
+					    (void *)((uintptr_t)&config +
+						     param[idx].offset),
+					    param[idx].size);
+
+		VERBOSE("%s: %s[0x%x] = %d\n", __func__,
+			param[idx].name, param[idx].size, ret);
+		if (ret != 0) {
+			ERROR("%s: Cannot read %s\n",
+			      __func__, param[idx].name);
+			panic();
+		}
+	}
+#else
+
+	cfg->info.speed = DDR_MEM_SPEED; // kHz //fdt_read_uint32_default(node, "st,mem-speed", 0);
+	cfg->info.size = DDR_MEM_SIZE;//fdt_read_uint32_default(node, "st,mem-size", 0);
+	cfg->info.name = DDR_MEM_NAME; //fdt_getprop(fdt, node, "st,mem-name", &len);
+
+#endif
+
+	cfg->c_reg.mstr = 	 	DDR_MSTR;
+	cfg->c_reg.mrctrl0 = 	DDR_MRCTRL0;
+	cfg->c_reg.mrctrl1 = 	DDR_MRCTRL1;
+	cfg->c_reg.derateen =  	DDR_DERATEEN;
+	cfg->c_reg.derateint =	DDR_DERATEINT;
+	cfg->c_reg.pwrctl = 	DDR_PWRCTL;
+	cfg->c_reg.pwrtmg = 	DDR_PWRTMG;
+	cfg->c_reg.hwlpctl = 	DDR_HWLPCTL;
+	cfg->c_reg.rfshctl0 =  	DDR_RFSHCTL0;
+	cfg->c_reg.rfshctl3 =  	DDR_RFSHCTL3;
+	cfg->c_reg.crcparctl0  = DDR_CRCPARCTL0;
+	cfg->c_reg.zqctl0 = 	 DDR_ZQCTL0;
+	cfg->c_reg.dfitmg0 = 	 DDR_DFITMG0;
+	cfg->c_reg.dfitmg1 = 	 DDR_DFITMG1;
+	cfg->c_reg.dfilpcfg0 = 	DDR_DFILPCFG0;
+	cfg->c_reg.dfiupd0 = 	 DDR_DFIUPD0;
+	cfg->c_reg.dfiupd1 = 	 DDR_DFIUPD1;
+	cfg->c_reg.dfiupd2 = 	 DDR_DFIUPD2;
+	cfg->c_reg.dfiphymstr = DDR_DFIPHYMSTR;
+	cfg->c_reg.odtmap = 	DDR_ODTMAP;
+	cfg->c_reg.dbg0 = 	 	DDR_DBG0;
+	cfg->c_reg.dbg1 = 	 	DDR_DBG1;
+	cfg->c_reg.dbgcmd = 	DDR_DBGCMD;
+	cfg->c_reg.poisoncfg = DDR_POISONCFG;
+	cfg->c_reg.pccfg = 	 DDR_PCCFG;
+
+	cfg->c_timing.rfshtmg = 	 DDR_RFSHTMG;
+	cfg->c_timing.dramtmg0 =  DDR_DRAMTMG0;
+	cfg->c_timing.dramtmg1 =  DDR_DRAMTMG1;
+	cfg->c_timing.dramtmg2 =  DDR_DRAMTMG2;
+	cfg->c_timing.dramtmg3 =  DDR_DRAMTMG3;
+	cfg->c_timing.dramtmg4 =  DDR_DRAMTMG4;
+	cfg->c_timing.dramtmg5 =  DDR_DRAMTMG5;
+	cfg->c_timing.dramtmg6 =  DDR_DRAMTMG6;
+	cfg->c_timing.dramtmg7 =  DDR_DRAMTMG7;
+	cfg->c_timing.dramtmg8 =  DDR_DRAMTMG8;
+	cfg->c_timing.dramtmg14 = DDR_DRAMTMG14;
+	cfg->c_timing.odtcfg = 	 DDR_ODTCFG;
+
+	cfg->c_perf.sched = 	 DDR_SCHED;
+	cfg->c_perf.sched1 = 	 DDR_SCHED1;
+	cfg->c_perf.perfhpr1 =  DDR_PERFHPR1;
+	cfg->c_perf.perflpr1 =  DDR_PERFLPR1;
+	cfg->c_perf.perfwr1 = 	 DDR_PERFWR1;
+	cfg->c_perf.pcfgr_0 = 	 DDR_PCFGR_0;
+	cfg->c_perf.pcfgw_0 = 	 DDR_PCFGW_0;
+	cfg->c_perf.pcfgqos0_0  = DDR_PCFGQOS0_0;
+	cfg->c_perf.pcfgqos1_0  = DDR_PCFGQOS1_0;
+	cfg->c_perf.pcfgwqos0_0 = DDR_PCFGWQOS0_0;
+	cfg->c_perf.pcfgwqos1_0 = DDR_PCFGWQOS1_0;
+	cfg->c_perf.pcfgr_1 = 	 DDR_PCFGR_1;
+	cfg->c_perf.pcfgw_1 = 	 DDR_PCFGW_1;
+	cfg->c_perf.pcfgqos0_1  = DDR_PCFGQOS0_1;
+	cfg->c_perf.pcfgqos1_1  = DDR_PCFGQOS1_1;
+	cfg->c_perf.pcfgwqos0_1 = DDR_PCFGWQOS0_1;
+	cfg->c_perf.pcfgwqos1_1 = DDR_PCFGWQOS1_1;
+
+	cfg->c_map.addrmap1 =  DDR_ADDRMAP1;
+	cfg->c_map.addrmap2 =  DDR_ADDRMAP2;
+	cfg->c_map.addrmap3 =  DDR_ADDRMAP3;
+	cfg->c_map.addrmap4 =  DDR_ADDRMAP4;
+	cfg->c_map.addrmap5 =  DDR_ADDRMAP5;
+	cfg->c_map.addrmap6 =  DDR_ADDRMAP6;
+	cfg->c_map.addrmap9 =  DDR_ADDRMAP9;
+	cfg->c_map.addrmap10 = DDR_ADDRMAP10;
+	cfg->c_map.addrmap11 = DDR_ADDRMAP11;
+
+	cfg->p_reg.pgcr = 	 DDR_PGCR;
+	cfg->p_reg.aciocr = 	 DDR_ACIOCR;
+	cfg->p_reg.dxccr = 	 DDR_DXCCR;
+	cfg->p_reg.dsgcr = 	 DDR_DSGCR;
+	cfg->p_reg.dcr = 		 DDR_DCR;
+	cfg->p_reg.odtcr = 	 DDR_ODTCR;
+
+	cfg->p_timing.ptr0 = 	 DDR_PTR0;
+	cfg->p_timing.ptr1 = 	 DDR_PTR1;
+	cfg->p_timing.ptr2 = 	 DDR_PTR2;
+	cfg->p_timing.dtpr0 = 	 DDR_DTPR0;
+	cfg->p_timing.dtpr1 = 	 DDR_DTPR1;
+	cfg->p_timing.dtpr2 = 	 DDR_DTPR2;
+	cfg->p_timing.mr0 = 		 DDR_MR0;
+	cfg->p_timing.mr1 = 		 DDR_MR1;
+	cfg->p_timing.mr2 = 		 DDR_MR2;
+	cfg->p_timing.mr3 = 		 DDR_MR3;
+
+	cfg->p_reg.zq0cr1 = 	 DDR_ZQ0CR1;
+	cfg->p_reg.dx0gcr = 	 DDR_DX0GCR;
+	cfg->p_cal.dx0dllcr =  DDR_DX0DLLCR;
+	cfg->p_cal.dx0dqtr = 	 DDR_DX0DQTR;
+	cfg->p_cal.dx0dqstr =  DDR_DX0DQSTR;
+	cfg->p_reg.dx1gcr = 	 DDR_DX1GCR;
+	cfg->p_cal.dx1dllcr =  DDR_DX1DLLCR;
+	cfg->p_cal.dx1dqtr = 	 DDR_DX1DQTR;
+	cfg->p_cal.dx1dqstr =  	DDR_DX1DQSTR;
+	cfg->p_reg.dx2gcr = 	DDR_DX2GCR;
+	cfg->p_cal.dx2dllcr =  	DDR_DX2DLLCR;
+	cfg->p_cal.dx2dqtr = 	DDR_DX2DQTR;
+	cfg->p_cal.dx2dqstr =  	DDR_DX2DQSTR;
+	cfg->p_reg.dx3gcr = 	DDR_DX3GCR;
+	cfg->p_cal.dx3dllcr =  	DDR_DX3DLLCR;
+	cfg->p_cal.dx3dqtr = 	DDR_DX3DQTR;
+	cfg->p_cal.dx3dqstr =  	DDR_DX3DQSTR;
+}
+
+#define DDR_PATTERN	0xAAAAAAAAU
+#define DDR_ANTIPATTERN	0x55555555U
+
+
+/*******************************************************************************
+ * This function tests the DDR data bus wiring.
+ * This is inspired from the Data Bus Test algorithm written by Michael Barr
+ * in "Programming Embedded Systems in C and C++" book.
+ * resources.oreilly.com/examples/9781565923546/blob/master/Chapter6/
+ * File: memtest.c - This source code belongs to Public Domain.
+ * Returns 0 if success, and address value else.
+ ******************************************************************************/
+static uint32_t ddr_test_data_bus(void)
+{
+	uint32_t pattern;
+
+	for (pattern = 1U; pattern != 0U; pattern <<= 1) {
+		mmio_write_32(STM32MP_DDR_BASE, pattern);
+
+		if (mmio_read_32(STM32MP_DDR_BASE) != pattern) {
+			return (uint32_t)STM32MP_DDR_BASE;
+		}
+	}
+
+	return 0;
+}
+
+/*******************************************************************************
+ * This function tests the DDR address bus wiring.
+ * This is inspired from the Data Bus Test algorithm written by Michael Barr
+ * in "Programming Embedded Systems in C and C++" book.
+ * resources.oreilly.com/examples/9781565923546/blob/master/Chapter6/
+ * File: memtest.c - This source code belongs to Public Domain.
+ * Returns 0 if success, and address value else.
+ ******************************************************************************/
+static uint32_t ddr_test_addr_bus(void)
+{
+	uint64_t addressmask = (DDR_MEM_SIZE - 1U);
+	uint64_t offset;
+	uint64_t testoffset = 0;
+
+	/* Write the default pattern at each of the power-of-two offsets. */
+	for (offset = sizeof(uint32_t); (offset & addressmask) != 0U;
+	     offset <<= 1) {
+		mmio_write_32(STM32MP_DDR_BASE + (uint32_t)offset,
+			      DDR_PATTERN);
+	}
+
+	/* Check for address bits stuck high. */
+	mmio_write_32(STM32MP_DDR_BASE + (uint32_t)testoffset,
+		      DDR_ANTIPATTERN);
+
+	for (offset = sizeof(uint32_t); (offset & addressmask) != 0U;
+	     offset <<= 1) {
+		if (mmio_read_32(STM32MP_DDR_BASE + (uint32_t)offset) !=
+		    DDR_PATTERN) {
+			return (uint32_t)(STM32MP_DDR_BASE + offset);
+		}
+	}
+
+	mmio_write_32(STM32MP_DDR_BASE + (uint32_t)testoffset, DDR_PATTERN);
+
+	/* Check for address bits stuck low or shorted. */
+	for (testoffset = sizeof(uint32_t); (testoffset & addressmask) != 0U;
+	     testoffset <<= 1) {
+		mmio_write_32(STM32MP_DDR_BASE + (uint32_t)testoffset,
+			      DDR_ANTIPATTERN);
+
+		if (mmio_read_32(STM32MP_DDR_BASE) != DDR_PATTERN) {
+			return STM32MP_DDR_BASE;
+		}
+
+		for (offset = sizeof(uint32_t); (offset & addressmask) != 0U;
+		     offset <<= 1) {
+			if ((mmio_read_32(STM32MP_DDR_BASE +
+					  (uint32_t)offset) != DDR_PATTERN) &&
+			    (offset != testoffset)) {
+				return (uint32_t)(STM32MP_DDR_BASE + offset);
+			}
+		}
+
+		mmio_write_32(STM32MP_DDR_BASE + (uint32_t)testoffset,
+			      DDR_PATTERN);
+	}
+
+	return 0;
+}
+
+/*******************************************************************************
+ * This function checks the DDR size. It has to be run with Data Cache off.
+ * This test is run before data have been put in DDR, and is only done for
+ * cold boot. The DDR data can then be overwritten, and it is not useful to
+ * restore its content.
+ * Returns DDR computed size.
+ ******************************************************************************/
+static uint32_t ddr_check_size(void)
+{
+	uint32_t offset = sizeof(uint32_t);
+
+	mmio_write_32(STM32MP_DDR_BASE, DDR_PATTERN);
+
+	while (offset < STM32MP_DDR_MAX_SIZE) {
+		mmio_write_32(STM32MP_DDR_BASE + offset, DDR_ANTIPATTERN);
+		__DSB();
+
+		if (mmio_read_32(STM32MP_DDR_BASE) != DDR_PATTERN) {
+			break;
+		}
+
+		offset <<= 1;
+	}
+
+	INFO("Memory size = 0x%x (%d MB)\n", offset, offset / (1024U * 1024U));
+
+	return offset;
+}
+
+// NT5CC128M16IP-DI BGA DDR3 NT5CC128M16IP DI
 void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 {
 	PRINTF("arm_hardware_sdram_initialize start\n");
 
-	RCC->DDRITFCR |= (RCC_DDRITFCR_DDRPHYCAPBEN | RCC_DDRITFCR_DDRPHYCAPBLPEN);
-	(void) RCC->DDRITFCR;
-	RCC->DDRITFCR |= (RCC_DDRITFCR_DDRCAPBEN | RCC_DDRITFCR_DDRCAPBLPEN);
-	(void) RCC->DDRITFCR;
-	RCC->DDRITFCR |= (RCC_DDRITFCR_DDRPHYCEN | RCC_DDRITFCR_DDRPHYCLPEN);
-	(void) RCC->DDRITFCR;
-	RCC->DDRITFCR |= (RCC_DDRITFCR_DDRC1EN | RCC_DDRITFCR_DDRC2EN);
-	(void) RCC->DDRITFCR;
+	if (1)
+	{
+		// TrustZone address space controller for DDR (TZC)
 
-	//PRINTF("arm_hardware_sdram_initialize: DDRC->MSTR=%08lX\n", DDRC->MSTR);
-	/* Disable axidcg clock gating during init */
-	//mmio_clrbits_32(& RCC->DDRITFCR, RCC_DDRITFCR_AXIDCGEN);
-	RCC->DDRITFCR &= ~ RCC_DDRITFCR_AXIDCGEN;
-	(void) RCC->DDRITFCR;
+		// TZC AXI port 1 clocks enable
+		RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_TZC1EN;
+		(void) RCC->MP_APB5ENSETR;
+		RCC->MP_APB5LPENSETR = RCC_MC_APB5LPENSETR_TZC1LPEN;
+		(void) RCC->MP_APB5LPENSETR;
 
-	//PRINTF("DDRC->MSTR=%08lX\n", DDRC->MSTR);
-	PRINTF("DDRPHYC->RIDR=%08lX\n", DDRPHYC->RIDR);
+		// TZC AXI port 2 clocks enable
+		RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_TZC2EN;
+		(void) RCC->MP_APB5ENSETR;
+		RCC->MP_APB5LPENSETR = RCC_MC_APB5LPENSETR_TZC2LPEN;
+		(void) RCC->MP_APB5LPENSETR;
 
-	stm32mp1_ddr_init();
+/*
+		// 0x01001F08
+		PRINTF("TZC->BUILD_CONFIG=%08lX\n", TZC->BUILD_CONFIG);
+		PRINTF("TZC->ACTION=%08lX\n", TZC->ACTION);
 
+		const uint_fast8_t lastregion = TZC->BUILD_CONFIG & 0x0f;
+		for (i = 0; i <= lastregion; ++ i)
+		{
+			volatile uint32_t * const REG_BASE_LOWx = & TZC->REG_BASE_LOWO + (i * 8);
+			volatile uint32_t * const REG_BASE_HIGHx = & TZC->REG_BASE_HIGHO + (i * 8);
+			volatile uint32_t * const REG_ATTRIBUTESx = & TZC->REG_ATTRIBUTESO + (i * 8);
+
+			PRINTF("TZC->REG_BASE_LOW%d=%08lX\n", i, * REG_BASE_LOWx);
+			PRINTF("TZC->REG_BASE_HIGH%d=%08lX\n", i, * REG_BASE_HIGHx);
+			PRINTF("TZC->REG_ATTRIBUTES%d=%08lX\n", i, * REG_ATTRIBUTESx);
+			// * REG_ATTRIBUTES = (* REG_ATTRIBUTESx & ~ (0x03)) |
+			//		0;
+			//PRINTF("TZC->REG_ATTRIBUTES%d=%08lX\n", i, * REG_ATTRIBUTESx);
+		}
+*/
+
+		const uint_fast8_t lastfilrer = (TZC->BUILD_CONFIG >> 24) & 0x03;
+		uint_fast8_t i;
+		for (i = 0; i <= lastfilrer; ++ i)
+		{
+			const uint32_t mask = 1uL << i;
+			// Switch off reaction
+			TZC->GATE_KEEPER |= mask;	// Gate open request
+			(void) TZC->GATE_KEEPER;
+			while (((TZC->GATE_KEEPER >> 16) & mask) == 0)
+				;
+		}
+		PRINTF("TZC->GATE_KEEPER=%08lX\n", TZC->GATE_KEEPER);
+	}
+
+	TWISOFT_INITIALIZE();
+	initialize_pmic();
+
+	struct ddr_info ddr_priv_data;
+	struct ddr_info * const priv = &ddr_priv_data;
+	int ret;
+	struct stm32mp1_ddr_config config;
+	int node, len;
+	uint32_t uret, idx;
+	void *fdt;
+
+#define PARAM(x, y)							\
+	{								\
+		.name = x,						\
+		.offset = offsetof(struct stm32mp1_ddr_config, y),	\
+		.size = sizeof(config.y) / sizeof(uint32_t)		\
+	}
+
+#define CTL_PARAM(x) PARAM("st,ctl-"#x, c_##x)
+#define PHY_PARAM(x) PARAM("st,phy-"#x, p_##x)
+
+	const struct {
+		const char *name; /* Name in DT */
+		const uint32_t offset; /* Offset in config struct */
+		const uint32_t size;   /* Size of parameters */
+	} param[] = {
+		CTL_PARAM(reg),
+		CTL_PARAM(timing),
+		CTL_PARAM(map),
+		CTL_PARAM(perf),
+		PHY_PARAM(reg),
+		PHY_PARAM(timing),
+		PHY_PARAM(cal)
+	};
+
+	priv->ctl = (struct stm32mp1_ddrctl *) DDRC_BASE;
+	priv->phy = (struct stm32mp1_ddrphy *) DDRPHYC_BASE;
+	priv->pwr = PWR_BASE;
+	priv->rcc = RCC_BASE;
+	priv->info.base = STM32MP_DDR_BASE;
+	priv->info.size = DDR_MEM_SIZE;
+
+	stm32mp1_ddr_get_config(& config);
+
+	/* Software Self-Refresh mode (SSR) during DDR initilialization */
+	mmio_clrsetbits_32(RCC_BASE + RCC_DDRITFCR,
+			   RCC_DDRITFCR_DDRCKMOD_Msk,
+			   (0) << RCC_DDRITFCR_DDRCKMOD_Pos); // RCC_DDRITFCR_DDRCKMOD_SSR
+
+	stm32mp1_ddr_init(priv, & config);
+
+	TWISOFT_DEINITIALIZE();
+
+#if 1
+	PRINTF("DDR memory tests:\n");
+	// инициализация выполняетмя еще до включения MMU
+	//__set_SCTLR(__get_SCTLR() & ~ SCTLR_C_Msk);
+
+	uret = ddr_test_data_bus();
+	if (uret != 0U) {
+		ERROR("DDR data bus test: can't access memory @ 0x%x\n",
+		      uret);
+		//panic();
+	}
+	uret = ddr_test_addr_bus();
+	if (uret != 0U) {
+		ERROR("DDR addr bus test: can't access memory @ 0x%x\n",
+		      uret);
+		//panic();
+	}
+
+	uret = ddr_check_size();
+	if (uret < config.info.size) {
+		ERROR("DDR size: 0x%x does not match DT config: 0x%x\n",
+		      uret, config.info.size);
+		//panic();
+	}
+
+	//__set_SCTLR(__get_SCTLR() | SCTLR_C_Msk);
+
+#endif
 	/* Enable axidcg clock gating */
 	//mmio_setbits_32(& RCC->DDRITFCR, RCC_DDRITFCR_AXIDCGEN);
-	RCC->DDRITFCR |= RCC_DDRITFCR_AXIDCGEN;
-	(void) RCC->DDRITFCR;
-
-
-	//DDRPHYC->DDRCTRL_MSTR |= 0x00000001;	// DDR3 mode
-
-	//DDRC->MSTR =
+	//RCC->DDRITFCR |= RCC_DDRITFCR_AXIDCGEN;
+	//(void) RCC->DDRITFCR;
 
 	PRINTF("arm_hardware_sdram_initialize done\n");
 }

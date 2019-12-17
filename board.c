@@ -6563,7 +6563,8 @@ void board_init_io(void)
 #endif /* WITHFPGAWAIT_AS */
 
 
-#if WITHTWIHW || WITHTWISW
+#if (WITHTWIHW || WITHTWISW) && ! CPUSTYLE_STM32MP1
+#warning CPUSTYLE_STM32MP1: wrong PB6 connection
 	i2c_initialize();
 #endif /* WITHTWIHW || WITHTWISW */
 

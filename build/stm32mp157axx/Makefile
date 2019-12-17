@@ -37,8 +37,8 @@ LTO = -flto
 
 # This product incorporates the ARM single-core Cortex-A9 MPCore, where the IP version is r3p0.
 MCU  = cortex-a7
-#CORE = -march=armv7-a -mfloat-abi=hard -mfpu=vfpv4-d16 -ftree-vectorize
-CORE = -march=armv7-a -mfloat-abi=hard -mfpu=vfpv4-d16 -mfpu=neon -ftree-vectorize
+CORE = -march=armv7-a -mfloat-abi=hard -mfpu=vfpv4-d16 -ftree-vectorize
+#CORE = -march=armv7-a -mfloat-abi=hard -mfpu=vfpv4-d16 -mfpu=neon -ftree-vectorize
 
 # List all default C defines here, like -D_DEBUG=1
 DDEFS = 
@@ -52,8 +52,8 @@ DINCDIR = $(CMSISDIR)/Core_A/Include $(CMSISDIR)/DSP/Include
 DLIBDIR = $(CMSISDIR)/DSP/Lib/GCC
 
 # List all default libraries here
-DLIBS = -lm -larm_cortexA9lneon_math
-#DLIBS = -lm -larm_cortexA9lfdp_math
+#DLIBS = -lm -larm_cortexA9lneon_math
+DLIBS = -lm -larm_cortexA9lfdp_math
 
 #
 # End of default section
@@ -90,7 +90,7 @@ ASRC += \
  $(SRCDIR)/crt_r7s721.s
 
 # List all user directories here
-UINCDIR += ../.. ../../inc ../../rza1x_inc/
+UINCDIR += ../.. ../../inc
 
 # List the user directory to look for the libraries here
 ULIBDIR +=

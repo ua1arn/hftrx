@@ -5415,8 +5415,73 @@ static int memprobe(unsigned k)
 }
 #endif
 
+
+#if 0
+// FPU speed test
+
+#define FFTZS 8192
+typedef struct
+{
+	float r;
+	float i;
+} cplxf;
+
+static cplxf src[FFTZS];
+static cplxf dst[FFTZS];
+static cplxf refv[FFTZS];
+
+static void cplxmla(cplxf *s, cplxf *d, cplxf *ref, int len) {
+	while (len--) {
+		d->r += s->r * ref->r - s->i * ref->i;
+		d->i += s->i * ref->r + s->r * ref->i;
+		++s;  ++d; ++ref;
+	}
+}
+
+static void cplxmlafast(cplxf *s, cplxf *d, cplxf *ref, int len) {
+	int i;
+	for (i = 0; i < len; ++ i) {
+		d [i].r += s [i].r * ref [i].r - s [i].i * ref [i].i;
+		d [i].i += s [i].i * ref [i].r + s [i].r * ref [i].i;
+	}
+}
+
+static void cplxmlasave(cplxf *d, int len) {
+	while (len--) {
+		volatile float t;
+		t = d->r;
+		t = d->i;
+	}
+}
+
+#endif
+
 void hightests(void)
 {
+#if 0
+	{
+		// FPU speed test
+		uint_fast8_t state = 0;
+		const uint_fast32_t maskg = (1uL << 13);	// PG13 - LCD_R0
+		arm_hardware_piog_outputs(maskg, 1 * maskg);
+		for (;;)
+		{
+			cplxmlafast(src, dst, refv,  FFTZS);
+			//cplxmlasave(dst, FFTZS);
+			if (state)
+			{
+				state = 0;
+				(GPIOG)->BSRR = BSRR_S(maskg);
+			}
+			else
+			{
+				state = 1;
+				(GPIOG)->BSRR = BSRR_C(maskg);
+			}
+		}
+
+	}
+#endif
 #if 1 && defined (__GNUC__)
 	{
 
@@ -5425,6 +5490,7 @@ void hightests(void)
 #endif
 #if 0
 	{
+	#if 0
 		unsigned k;
 		TP();
 		for (k = 0; k < 1024; ++ k)
@@ -5441,7 +5507,10 @@ void hightests(void)
 		PRINTF("\n");
 		PRINTF("MCU_AHB_SRAM size = %uK\n", k);
 		printhex(MCU_AHB_SRAM, (const uint8_t *) MCU_AHB_SRAM, 256);	// /* Cortex-M4 memories */
-		//printhex(DRAM_MEM_BASE, (const uint8_t *) DRAM_MEM_BASE, 256);	// DDR3
+	#endif
+	#if WITHSDRAMHW
+		printhex(DRAM_MEM_BASE, (const uint8_t *) DRAM_MEM_BASE, 256);	// DDR3
+	#endif /* WITHSDRAMHW */
 		//printhex(QSPI_MEM_BASE, (const uint8_t *) QSPI_MEM_BASE, 256);	// QSPI
 		//arm_hardware_sdram_initialize();
 	}
@@ -7722,6 +7791,7 @@ static unsigned RAMFUNC_NONILINE testramfunc2(void)
 	return 10;
 }
 
+// FPU тут еще нельзя использовать
 void lowtests(void)
 {
 #if 0 && CPUSTYLE_STM32MP1

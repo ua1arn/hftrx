@@ -20,9 +20,10 @@
 	#define WITHSAICLOCKFROMPIN 1	// тактовая частота на SAI1 подается с внешнего генератора, в процессор вводится через MCK сигнал интерфейса
 
 	#define WITHUSEPLL		1	/* Главная PLL	*/
-	#define WITHUSEPLL1		1	/* PLL3 - для LTDC на STM32H743xx	*/
-	#define WITHUSEPLL2		1	/* PLL3 - для LTDC на STM32H743xx	*/
-	#define WITHUSEPLL3		1	/* PLL3 - для LTDC на STM32H743xx	*/
+	#define WITHUSEPLL1		1	/* PLL1 - MPU, AXI	*/
+	#define WITHUSEPLL2		1	/* PLL2 - GPU, DDR	*/
+	//#define WITHUSEPLL3		1	/* PLL3 - для LTDC на STM32H743xx	*/
+	#define WITHUSEPLL4		1	/* PLL4 - для LTDC & USBPHY	*/
 	//#define WITHUSESAIPLL	1	/* SAI PLL	*/
 	//#define WITHUSESAII2S	1	/* I2S PLL	*/
 	//#define LTDC_DOTCLK	9000000UL	// частота пикселей при работе с интерфейсом RGB
@@ -44,7 +45,7 @@
 		#define PLL2DIVN	44	// 528 MHz
 		#define PLL2DIVP	2	// div2=minimum 528/2 = 264 MHz
 		#define PLL2DIVQ	2	// GPU clock divider
-		#define PLL2DIVR	3	// DDR clock divider
+		#define PLL2DIVR	1	// DDR clock divider = 528 MHz
 
 		#define PLL4DIVM	2	// ref2_ck = 12 MHz
 		#define PLL4DIVN	48	// 576 MHz
@@ -66,6 +67,13 @@
 		#define PLL2DIVP	2	// div2=minimum
 		#define PLL2DIVQ	2	// GPU clock divider
 		#define PLL2DIVR	3	// DDR clock divider
+
+		// TODO: compute USBPHY divider
+		#define PLL4DIVM	5	// ref2_ck = 12.8 MHz
+		#define PLL4DIVN	48	// 12.8 * 48 = 614.4 MHz
+		#define PLL4DIVP	2	// div2
+		#define PLL4DIVQ	x20	// LTDC clock divider = 32 MHz
+		#define PLL4DIVR	x12	// USBPHY clock divider = 48 MHz
 
 	#endif
 
