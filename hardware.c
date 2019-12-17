@@ -181,7 +181,7 @@ calcdivround2(
 
 
 	/*******************************************************************************
-	* Function Name: CPG_Init
+	* Function Name: r7s721_pll_initialize
 	* Description  : Executes initial setting for the CPG.
 	*              : In the sample code, the internal clock ratio is set to be
 	*              : I:G:B:P1:P0 = 30:20:10:5:5/2 in the state that the
@@ -199,7 +199,7 @@ calcdivround2(
 	*******************************************************************************/
 	static
 	FLASHMEMINITFUNC
-	void CPG_Init(void)
+	void r7s721_pll_initialize(void)
 	{
 	    /* Cancel L2C standby status before clock change */
 	    L2CREG15_POWER_CTRL = 0x00000001;
@@ -330,7 +330,7 @@ calcdivider(
 	return (rbi - 1);	// если надо обраьатывать невозможность подбора - возврат rbmax
 }
 
-static uint_fast32_t arm_hardware_stm32f7xx_pllq_initialize(void);	// Настроить выход PLLQ на 48 МГц
+static uint_fast32_t stm32f7xx_pllq_initialize(void);	// Настроить выход PLLQ на 48 МГц
 
 #if CPUSTYLE_AT91SAM7S
 
@@ -6607,7 +6607,7 @@ void hardware_sdhost_setspeed(unsigned long ticksfreq)
 		// Остальные
 	#endif
 
-	const uint_fast32_t stm32f4xx_pllq = arm_hardware_stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
+	const uint_fast32_t stm32f4xx_pllq = stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
 	// Использование автоматического расчёта делителя
 	// PLLQ: Main PLL (PLL) division factor for USB OTG FS, SDIO and random number generator clocks
 	// Should be 48 MHz or less for SDIO and 48 MHz with small tolerance.
@@ -6625,7 +6625,7 @@ void hardware_sdhost_setspeed(unsigned long ticksfreq)
 		0 * RCC_DCKCFGR2_SDMMC1SEL |	// 0: 48 MHz clock is selected as SDMMC clock
 		0;
 
-	const uint_fast32_t stm32f7xx_pllq = arm_hardware_stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
+	const uint_fast32_t stm32f7xx_pllq = stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
 	// Использование автоматического расчёта делителя
 	// PLLQ: Main PLL (PLL) division factor for USB OTG FS, SDIO and random number generator clocks
 	// Should be 48 MHz or less for SDIO and 48 MHz with small tolerance.
@@ -6648,7 +6648,7 @@ void hardware_sdhost_setspeed(unsigned long ticksfreq)
 	//	0 * RCC_DCKCFGR2_SDMMC1SEL |	// 0: 48 MHz clock is selected as SDMMC clock
 	//	0;
 
-	const uint_fast32_t stm32h7xx_pllq = arm_hardware_stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
+	const uint_fast32_t stm32h7xx_pllq = stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
 	// Использование автоматического расчёта делителя
 	// PLLQ: Main PLL (PLL) division factor for USB OTG FS, SDIO and random number generator clocks
 	// Should be 48 MHz or less for SDIO and 48 MHz with small tolerance.
@@ -6901,7 +6901,7 @@ static void lowlevel_init_direct_clock(void)
   частота генератора - 96 МГц
   Частота сравнения PLL = 12 МГц
 */
-static void lowlevel_init_pll_clock_xtal(
+static void sam7s_pll_init_clock_xtal(
 	unsigned osc_mul,	// Умножитель петли ФАПЧ
 	unsigned osc_div	// Делитель опорного сигнала петли ФАПЧ
 	)
@@ -6969,7 +6969,7 @@ static void lowlevel_init_pll_clock_xtal(
   Вход - кварцевый резонатор
   внутренняя тактовая - частота резонатора,
 */
-static void lowlevel_init_pll_clock_from_xtal(void)
+static void sam7s_pll_init_clock_from_xtal(void)
 {
 	// before reprogramming - set safe waitstates
 	AT91C_BASE_MC->MC_FMR = AT91C_MC_FWS_1FWS;
@@ -7017,7 +7017,7 @@ static void lowlevel_init_pll_clock_from_xtal(void)
 //------------------------------------------------------------------------------
 /// Performs the low-level initialization of the chip.
 //------------------------------------------------------------------------------
-void at91sam9x_clocks(	
+void at91sam9x_pll_initialize(
 	unsigned osc_mul,	// Умножитель петли ФАПЧ (96)
 	unsigned osc_div	// Делитель опорного сигнала петли ФАПЧ (9)
 	)
@@ -7365,7 +7365,7 @@ static void RAMFUNC_NONILINE lowlevel_sam3s_setws(unsigned fws)
 }
 
 // Перенастройка на работу с внутренним RC генератором 12 МГц
-static void lowlevel_sam3s_init_clock_12_RC12(void)
+static void sam3s_init_clock_12_RC12(void)
 {
 	program_enable_RC_12MHz();
 	program_use_xtal(0);			// use RC
@@ -7431,7 +7431,7 @@ lowlevel_sam3s_init_pll_clock_xtal(unsigned pllmul, unsigned plldiv, unsigned ws
 
 #if CPUSTYLE_STM32F7XX || CPUSTYLE_STM32F4XX
 // Настроить выход PLLQ на 48 МГц
-static uint_fast32_t arm_hardware_stm32f7xx_pllq_initialize(void)
+static uint_fast32_t stm32f7xx_pllq_initialize(void)
 {
 	const uint32_t stm32f4xx_pllq = calcdivround2(PLL_FREQ, 48000000uL);	// Как было сделано при инициализации PLL
 	// PLLQ: Main PLL (PLL) division factor for USB OTG FS, SDIO and random number generator clocks
@@ -7459,7 +7459,7 @@ static uint_fast32_t arm_hardware_stm32f7xx_pllq_initialize(void)
 #if CPUSTYLE_STM32F4XX
 
 static void 
-lowlevel_stm32f4xx_pll_initialize(void)
+stm32f4xx_pll_initialize(void)
 {
 	//const unsigned PLL1M = REF1_MUL;		// N умножитель в PLL1
 	//const unsigned PLL1P = PLL1_P;			//  делитель перед SYSTEM CLOCK MUX в PLL1
@@ -7625,7 +7625,7 @@ lowlevel_stm32f4xx_pllsai_initialize(void)
 #endif /* WITHUSESAIPLL */
 
 static void 
-lowlevel_stm32f4xx_MCOx_test(void)
+stm32f4xx_MCOx_test(void)
 {
 	if (0)
 	{
@@ -7658,7 +7658,7 @@ lowlevel_stm32f4xx_MCOx_test(void)
 
 // Программируем на 216 МГц
 static void 
-lowlevel_stm32f7xx_pll_initialize(void)
+stm32f7xx_pll_initialize(void)
 {
 	RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;     // включить тактирование альтернативных функций
 	__DSB();
@@ -7836,7 +7836,7 @@ lowlevel_stm32f7xx_pllsai_initialize(void)
 
 // Программируем на 384 МГц
 static void 
-lowlevel_stm32h7xx_pll_initialize(void)
+stm32h7xx_pll_initialize(void)
 {
 #if 1
 	RCC->APB4ENR |= RCC_APB4ENR_SYSCFGEN;     // включить тактирование альтернативных функций
@@ -8088,7 +8088,7 @@ lowlevel_stm32h7xx_pll_initialize(void)
 // Настроить выход PLLQ на 48 МГц, подключить SDMMC и USB к нему.
 // Настройка делителя делается при инициализации PLL, здесь измениь делитель не получается.
 // Версия для STM32H7 возвращает текушее значение делитедя.
-static uint_fast32_t arm_hardware_stm32f7xx_pllq_initialize(void)
+static uint_fast32_t stm32f7xx_pllq_initialize(void)
 {
 	const uint32_t stm32h7xx_pllq = ((RCC->PLL1DIVR & RCC_PLL1DIVR_Q1) >> RCC_PLL1DIVR_Q1_Pos) + 1;
 	return stm32h7xx_pllq;
@@ -8346,7 +8346,7 @@ lowlevel_stm32f10x_pll_clock(void)
 #if CPUSTYLE_STM32F30X
 
 static void 
-lowlevel_stm32f30x_pll_clock(void)
+stm32f30x_pll_clock(void)
 {
 	#if WITHCPUXTAL
 		// внешний кварцевый резонатор
@@ -8616,7 +8616,7 @@ static void RAMFUNC_NONILINE lowlevel_sam4s_setws(unsigned fws)
 }
 
 // Перенастройка на работу с внутренним RC генератором 12 МГц
-static void lowlevel_sam4s_init_clock_12_RC12(void)
+static void sam4s_init_clock_12_RC12(void)
 {
 	program_enable_RC_12MHz();
 	program_use_xtal(0);			// use RC
@@ -8683,7 +8683,7 @@ lowlevel_sam4s_init_pll_clock_xtal(unsigned pllmul, unsigned plldiv, unsigned ws
 
 // chip use internal 8 MHz RC ckock generator as main clock
 static void 
-lowlevel_stm32f0xx_hsi_clock(void)
+stm32f0xx_hsi_clock(void)
 {
 	// внутренний генератор
 	// Enable HSI
@@ -8705,7 +8705,7 @@ lowlevel_stm32f0xx_hsi_clock(void)
 }
 
 static void 
-lowlevel_stm32f0xx_pll_clock(void)
+stm32f0xx_pll_clock(void)
 {
 	#if WITHCPUXTAL
 		// внешний кварцевый резонатор
@@ -10846,14 +10846,14 @@ sysinit_pll_initialize(void)
 
 #elif CPUSTYLE_STM32F4XX
 
-	lowlevel_stm32f4xx_pll_initialize();
-	lowlevel_stm32f4xx_MCOx_test();
-	arm_hardware_stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
+	stm32f4xx_pll_initialize();
+	stm32f4xx_MCOx_test();
+	stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
 
 #elif CPUSTYLE_STM32H7XX
 
-	lowlevel_stm32h7xx_pll_initialize();
-	arm_hardware_stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
+	stm32h7xx_pll_initialize();
+	stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
 	//lowlevel_stm32h7xx_mpu_initialize();
 
 	/* AXI SRAM Slave */
@@ -10886,8 +10886,8 @@ sysinit_pll_initialize(void)
 
 #elif CPUSTYLE_STM32F7XX
 
-	lowlevel_stm32f7xx_pll_initialize();
-	arm_hardware_stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
+	stm32f7xx_pll_initialize();
+	stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
 
 	SCB_InvalidateICache();
 	SCB_EnableICache();
@@ -10897,13 +10897,13 @@ sysinit_pll_initialize(void)
 
 #elif CPUSTYLE_STM32F30X
 
-	lowlevel_stm32f30x_pll_clock();
-	arm_hardware_stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
+	stm32f30x_pll_clock();
+	stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
 
 #elif CPUSTYLE_STM32F0XX
 
-	lowlevel_stm32f0xx_pll_clock();
-	//lowlevel_stm32f0xx_hsi_clock();
+	stm32f0xx_pll_clock();
+	//stm32f0xx_hsi_clock();
 
 #elif CPUSTYLE_STM32L0XX
 
@@ -10924,14 +10924,14 @@ sysinit_pll_initialize(void)
 
 	// Disable Watchdog
 	WDT->WDT_MR = WDT_MR_WDDIS;
-	lowlevel_sam3s_init_clock_12_RC12();	// программирует на работу от 12 МГц RC - для ускорения работы.
+	sam3s_init_clock_12_RC12();	// программирует на работу от 12 МГц RC - для ускорения работы.
 	// инициализация PLL и программирование wait states (только из SRAM) делается позже.
 
 #elif CPUSTYLE_ATSAM4S
 
 	// Disable Watchdog
 	WDT->WDT_MR = WDT_MR_WDDIS;
-	lowlevel_sam4s_init_clock_12_RC12();	// программирует на работу от 12 МГц RC - для ускорения работы.
+	sam4s_init_clock_12_RC12();	// программирует на работу от 12 МГц RC - для ускорения работы.
 	// инициализация PLL и программирование wait states (только из SRAM) делается позже.
 
 #elif CPUSTYLE_AT91SAM7S
@@ -10947,11 +10947,11 @@ sysinit_pll_initialize(void)
 	//
 
 	#if CPU_FREQ == 48000000UL
-		lowlevel_init_pll_clock_xtal(8, 1);
+		sam7s_pll_init_clock_xtal(8, 1);
 	#elif CPU_FREQ == ((18432000UL * 73) / 14 / 2)
-		lowlevel_init_pll_clock_xtal(73, 14);
+		sam7s_pll_init_clock_xtal(73, 14);
 	#elif CPU_FREQ == 12000000UL
-		lowlevel_init_pll_clock_from_xtal();
+		sam7s_pll_init_clock_from_xtal();
 	#else
 		#error Unsupported CPU_FREQ value
 	#endif
@@ -10964,14 +10964,15 @@ sysinit_pll_initialize(void)
 	// Enable NRST input. Требуется для удобства при отладке.
 	AT91C_BASE_RSTC->RSTC_RMR = AT91C_RSTC_URSTEN | (AT91C_RSTC_KEY & (0xA5UL << 24));
 
-	at91sam9x_clocks(96, 9);
-	//at91sam9x_clocks_48x4();
+	at91sam9x_pll_initialize(96, 9);
+	//at91sam9x_pll_48x4_initialize();
+
 	//cp15_enable_i_cache();
 	__set_SCTLR(__get_SCTLR() | SCTLR_I_Msk);
 
 #elif CPUSTYLE_R7S721
 
-	CPG_Init();
+	r7s721_pll_initialize();
 
 	// Программа исполняется из SERIAL FLASH - переключать режимы пока нельзя.
 	//while ((SPIBSC0.CMNSR & (1u << 0)) == 0)	// TEND bit
