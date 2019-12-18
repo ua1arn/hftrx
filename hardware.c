@@ -11109,10 +11109,6 @@ sysintt_sdram_initialize(void)
 	/* В процессоре есть внешняя память - только данные */
 	arm_hardware_sdram_initialize();
 
-#elif WITHSDRAMHW && CPUSTYLE_STM32MP157A
-	/* В процессоре есть внешняя память */
-	arm_hardware_sdram_initialize();
-
 #endif /* WITHSDRAMHW && WITHISBOOTLOADER */
 }
 
@@ -11170,7 +11166,7 @@ sysinit_debug_initialize(void)
 
 #endif /* (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7) */
 
-#if WITHDEBUG && ! WITHISBOOTLOADER
+#if WITHDEBUG //&& ! WITHISBOOTLOADER
 	// В функции инициализации компорта есть NVIC_SetVector
 	// При вызове до перемещения таблиц прерывания получаем HardFault на STM32F7XXX
 	// UPD: пофиксено. Дебагер не вызывает NVIC_SetVector
@@ -11791,10 +11787,10 @@ static void bootloader_copyapp(uintptr_t apparea)
 	//void * const APPAREA = (void *) BOOTLOADER_APPAREA;
 	void * const APPSTORAGEBASE = (void *) BOOTLOADER_APPBASE;
 
-	//debug_printf_P(PSTR("Copy application image from %p to %p\n"), (void *) APPSTORAGEBASE, (void *) APPAREA);
-	memcpy(apparea, APPSTORAGEBASE, BOOTLOADER_APPSIZE);
-	//bootloader_readimage((void *) apparea, BOOTLOADER_APPSIZE);
-	//debug_printf_P(PSTR("Copy application image from %p to %p\n done"), (void *) APPSTORAGEBASE, (void *) APPAREA);
+	PRINTF(PSTR("Copy application image from %p to %p\n"), (void *) APPSTORAGEBASE, (void *) apparea);
+	//memcpy((void *) apparea, APPSTORAGEBASE, BOOTLOADER_APPSIZE);
+	bootloader_readimage((void *) apparea, BOOTLOADER_APPSIZE);
+	PRINTF(PSTR("Copy application image from %p to %p\n done"), (void *) APPSTORAGEBASE, (void *) apparea);
 }
 
 #endif /* WITHISBOOTLOADER */

@@ -17655,8 +17655,8 @@ static void bootloader_mainloop(void)
 	board_set_bglight(WITHLCDBACKLIGHTMIN);
 	board_update();
 	//local_delay_ms(1000);
-	//printhex(BOOTLOADER_APPAREA, (void *) BOOTLOADER_APPAREA, 512);
-	PRINTF(PSTR("Ready jump to application at %p. Press 'r' at any time\n"), (void *) BOOTLOADER_APPAREA);
+	printhex(BOOTLOADER_APPAREA, (void *) BOOTLOADER_APPAREA, 512);
+	PRINTF(PSTR("Ready jump to application at %p. Press 'r' at any time, 'd' for dump.\n"), (void *) BOOTLOADER_APPAREA);
 ddd:
 #if WITHUSBHW
 	for (;;)
@@ -17668,15 +17668,22 @@ ddd:
 			dbg_putchar(c);
 			if (c == 'r')
 				break;
+			if (c == 'd')
+			{
+				printhex(BOOTLOADER_APPAREA, (void *) BOOTLOADER_APPAREA, 512);
+				continue;
+			}
 		}
 #endif /* WITHDEBUG */
+#if ! WITHDEBUG
 		if (hardware_usbd_get_vbusbefore() == 0)
 			break;
 		if (hardware_usbd_get_vbusnow() == 0)
 			break;
+#endif /* ! WITHDEBUG */
 	}
 #endif /* WITHUSBHW */
-	PRINTF(PSTR("Compare signature of to application\n"));
+	//PRINTF(PSTR("Compare signature of to application\n"));
 
 	static const char sgn [] = "DREAM";
 	const size_t len = strlen(sgn);
