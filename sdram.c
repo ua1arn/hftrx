@@ -5650,8 +5650,7 @@ static void stm32mp1_ddr_init(struct ddr_info *priv,
 		panic();
 	}
 
-	stpmic1_dump_regulators();
-
+	//stpmic1_dump_regulators();
 
 	VERBOSE("name = %s\n", config->info.name);
 	VERBOSE("speed = %d kHz\n", config->info.speed);
