@@ -54,6 +54,7 @@ SECTIONS
 		KEEP(*(.fini))
 		*(.text*)
 		*(.itcm*)
+		*(.dtcm*)
 	} > RAM
 
 	.ARM.extab :

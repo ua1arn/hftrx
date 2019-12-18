@@ -17639,6 +17639,10 @@ void bootloader_detach(void)
 	GIC_DisableInterface();
 	GIC_DisableDistributor();
 
+	unsigned i;
+	for (i = 0; i < 1020; ++ i)
+		IRQ_Disable(i);
+
 	MMU_Disable();
 	MMU_InvalidateTLB();
 	//arm_hardware_invalidate_all()
