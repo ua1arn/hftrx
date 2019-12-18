@@ -1239,19 +1239,147 @@ static RAMFUNC void spool_adcdonebundle(void)
 		}
 	}
 	#endif /* WITHELKEY */
+#if 0
+	void EXTI0_IRQHandler(void)
+	{
+		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR0);
+		EXTI->PR = pr;		// reset all existing requests
+		//(void) EXTI->PR;
+		stm32fxxx_pinirq(pr);
+	}
 
+	void EXTI1_IRQHandler(void)
+	{
+		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR1);
+		EXTI->PR = pr;		// reset all existing requests
+		//(void) EXTI->PR;
+		stm32fxxx_pinirq(pr);
+	}
+
+	void EXTI2_IRQHandler(void)
+	{
+		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR2);
+		EXTI->PR = pr;		// reset all existing requests
+		//(void) EXTI->PR;
+		stm32fxxx_pinirq(pr);
+	}
+
+	void EXTI3_IRQHandler(void)
+	{
+		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR3);
+		EXTI->PR = pr;		// reset all existing requests
+		//(void) EXTI->PR;
+		stm32fxxx_pinirq(pr);
+	}
+
+	void EXTI4_IRQHandler(void)
+	{
+		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR4);
+		EXTI->PR = pr;		// reset all existing requests
+		//(void) EXTI->PR;
+		stm32fxxx_pinirq(pr);
+	}
+
+	void EXTI5_IRQHandler(void)
+	{
+		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR5);
+		EXTI->PR = pr;		// reset all existing requests
+		//(void) EXTI->PR;
+		stm32fxxx_pinirq(pr);
+	}
+
+	void EXTI6_IRQHandler(void)
+	{
+		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR6);
+		EXTI->PR = pr;		// reset all existing requests
+		//(void) EXTI->PR;
+		stm32fxxx_pinirq(pr);
+	}
+
+	void EXTI7_IRQHandler(void)
+	{
+		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR7);
+		EXTI->PR = pr;		// reset all existing requests
+		//(void) EXTI->PR;
+		stm32fxxx_pinirq(pr);
+	}
+
+	void EXTI8_IRQHandler(void)
+	{
+		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR8);
+		EXTI->PR = pr;		// reset all existing requests
+		//(void) EXTI->PR;
+		stm32fxxx_pinirq(pr);
+	}
+
+	void EXTI9_IRQHandler(void)
+	{
+		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR9);
+		EXTI->PR = pr;		// reset all existing requests
+		//(void) EXTI->PR;
+		stm32fxxx_pinirq(pr);
+	}
+
+	void EXTI10_IRQHandler(void)
+	{
+		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR10);
+		EXTI->PR = pr;		// reset all existing requests
+		//(void) EXTI->PR;
+		stm32fxxx_pinirq(pr);
+	}
+
+	void EXTI11_IRQHandler(void)
+	{
+		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR11);
+		EXTI->PR = pr;		// reset all existing requests
+		//(void) EXTI->PR;
+		stm32fxxx_pinirq(pr);
+	}
+
+	void EXTI12_IRQHandler(void)
+	{
+		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR12);
+		EXTI->PR = pr;		// reset all existing requests
+		//(void) EXTI->PR;
+		stm32fxxx_pinirq(pr);
+	}
+
+	void EXTI13_IRQHandler(void)
+	{
+		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR13);
+		EXTI->PR = pr;		// reset all existing requests
+		//(void) EXTI->PR;
+		stm32fxxx_pinirq(pr);
+	}
+
+	void EXTI14_IRQHandler(void)
+	{
+		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR14);
+		EXTI->PR = pr;		// reset all existing requests
+		//(void) EXTI->PR;
+		stm32fxxx_pinirq(pr);
+	}
+
+	void EXTI15_IRQHandler(void)
+	{
+		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR15);
+		EXTI->PR = pr;		// reset all existing requests
+		//(void) EXTI->PR;
+		stm32fxxx_pinirq(pr);
+	}
+#endif
 #elif CPUSTYLE_STM32F
 
-	void  
+	void
 	SysTick_Handler(void)
 	{
 		spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
 		spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
 	}
-	
+
 	#if WITHELKEY
 	// 1/20 dot length interval timer
-	void  
+	void
 	TIM3_IRQHandler(void)
 	{
 		const portholder_t st = TIM3->SR;
