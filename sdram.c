@@ -5848,56 +5848,9 @@ static void stm32mp1_ddr_init(struct ddr_info *priv,
 // NT5CC128M16IP-DI BGA DDR3 NT5CC128M16IP DI
 void stm32mp1_ddr_get_config(struct stm32mp1_ddr_config * cfg)
 {
-
-#if 0
-	if (fdt_get_address(&fdt) == 0) {
-		panic();
-	}
-
-	node = fdt_node_offset_by_compatible(fdt, -1, DT_DDR_COMPAT);
-	if (node < 0) {
-		ERROR("%s: Cannot read DDR node in DT\n", __func__);
-		panic();
-	}
-
-	cfg->info.speed = fdt_read_uint32_default(node, "st,mem-speed", 0);
-	if (!cfg->info.speed) {
-		VERBOSE("%s: no st,mem-speed\n", __func__);
-		panic();
-	}
-	cfg->info.size = fdt_read_uint32_default(node, "st,mem-size", 0);
-	if (!cfg->info.size) {
-		VERBOSE("%s: no st,mem-size\n", __func__);
-		panic();
-	}
-	cfg->info.name = fdt_getprop(fdt, node, "st,mem-name", &len);
-	if (cfg->info.name == NULL) {
-		VERBOSE("%s: no st,mem-name\n", __func__);
-		panic();
-	}
-	INFO("RAM: %s\n", cfg->info.name);
-
-	for (idx = 0; idx < ARRAY_SIZE(param); idx++) {
-		ret = fdt_read_uint32_array(node, param[idx].name,
-					    (void *)((uintptr_t)&config +
-						     param[idx].offset),
-					    param[idx].size);
-
-		VERBOSE("%s: %s[0x%x] = %d\n", __func__,
-			param[idx].name, param[idx].size, ret);
-		if (ret != 0) {
-			ERROR("%s: Cannot read %s\n",
-			      __func__, param[idx].name);
-			panic();
-		}
-	}
-#else
-
-	cfg->info.speed = DDR_MEM_SPEED; // kHz //fdt_read_uint32_default(node, "st,mem-speed", 0);
-	cfg->info.size = DDR_MEM_SIZE;//fdt_read_uint32_default(node, "st,mem-size", 0);
-	cfg->info.name = DDR_MEM_NAME; //fdt_getprop(fdt, node, "st,mem-name", &len);
-
-#endif
+	cfg->info.speed = DDR_MEM_SPEED; // kHz
+	cfg->info.size = DDR_MEM_SIZE;
+	cfg->info.name = DDR_MEM_NAME;
 
 	cfg->c_reg.mstr = 	 	DDR_MSTR;
 	cfg->c_reg.mrctrl0 = 	DDR_MRCTRL0;
@@ -6225,7 +6178,13 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 			   RCC_DDRITFCR_DDRCKMOD_Msk,
 			   (0) << RCC_DDRITFCR_DDRCKMOD_Pos); // RCC_DDRITFCR_DDRCKMOD_SSR
 
+	/* Disable axidcg clock gating during init */
+	mmio_clrbits_32(priv->rcc + RCC_DDRITFCR, RCC_DDRITFCR_AXIDCGEN);
+
 	stm32mp1_ddr_init(priv, & config);
+
+	/* Enable axidcg clock gating */
+	mmio_setbits_32(RCC_BASE + RCC_DDRITFCR, RCC_DDRITFCR_AXIDCGEN);
 
 	TWISOFT_DEINITIALIZE();
 
@@ -6257,10 +6216,6 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 	//__set_SCTLR(__get_SCTLR() | SCTLR_C_Msk);
 
 #endif
-	/* Enable axidcg clock gating */
-	//mmio_setbits_32(& RCC->DDRITFCR, RCC_DDRITFCR_AXIDCGEN);
-	//RCC->DDRITFCR |= RCC_DDRITFCR_AXIDCGEN;
-	//(void) RCC->DDRITFCR;
 
 	PRINTF("arm_hardware_sdram_initialize done\n");
 }
