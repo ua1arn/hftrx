@@ -3738,7 +3738,7 @@ toprintc(int c)
 	return c;
 }
 
-void
+static void
 printhex(unsigned long voffs, const unsigned char * buff, unsigned length)
 {
 	unsigned i, j;
@@ -5358,7 +5358,7 @@ GrideTest(void)
 
 #endif /* LCDMODE_COLORED */
 
-#if 1
+#if 0
 static int
 toprintc(int c)
 {
@@ -5367,7 +5367,7 @@ toprintc(int c)
 	return c;
 }
 
-void
+static void
 printhex(unsigned long voffs, const unsigned char * buff, unsigned length)
 {
 	unsigned i, j;

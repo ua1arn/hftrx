@@ -17607,7 +17607,7 @@ toprintc(int c)
 	return c;
 }
 
-void
+static void
 printhex(unsigned long voffs, const unsigned char * buff, unsigned length)
 {
 	unsigned i, j;

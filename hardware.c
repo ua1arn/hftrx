@@ -11782,16 +11782,28 @@ void cpu_initialize(void)
 	//PRINTF("cpu_initialize done\n");
 }
 
+#if WITHISBOOTLOADER
+
+void bootloader_readimage(uint8_t * dest, unsigned Len);
+
+static void bootloader_copyapp(uintptr_t apparea)
+{
+	//void * const APPAREA = (void *) BOOTLOADER_APPAREA;
+	void * const APPSTORAGEBASE = (void *) BOOTLOADER_APPBASE;
+
+	//debug_printf_P(PSTR("Copy application image from %p to %p\n"), (void *) APPSTORAGEBASE, (void *) APPAREA);
+	memcpy(apparea, APPSTORAGEBASE, BOOTLOADER_APPSIZE);
+	//bootloader_readimage((void *) apparea, BOOTLOADER_APPSIZE);
+	//debug_printf_P(PSTR("Copy application image from %p to %p\n done"), (void *) APPSTORAGEBASE, (void *) APPAREA);
+}
+
+#endif /* WITHISBOOTLOADER */
+
 // секция init больше не нужна
 void cpu_initdone(void)
 {
 #if WITHISBOOTLOADER
-	void * const APPAREA = (void *) BOOTLOADER_APPAREA;
-	void * const APPSTORAGEBASE = (void *) BOOTLOADER_APPBASE;
-
-	//debug_printf_P(PSTR("Copy application image from %p to %p\n"), (void *) APPSTORAGEBASE, (void *) APPAREA);
-	memcpy(APPAREA, APPSTORAGEBASE, BOOTLOADER_APPSIZE);
-	//debug_printf_P(PSTR("Copy application image from %p to %p\n done"), (void *) APPSTORAGEBASE, (void *) APPAREA);
+	bootloader_copyapp(BOOTLOADER_APPAREA);	/* копирование исполняемого образа (если есть) в требуемое место */
 
 #if CPUSTYLE_R7S721
 

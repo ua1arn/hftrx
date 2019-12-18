@@ -676,6 +676,14 @@ static USBD_StatusTypeDef MEM_If_DeInit_HS(void)
 	return (USBD_OK);
 }
 
+void bootloader_readimage(uint8_t * dest, unsigned Len)
+{
+	spitarget_t target = targetdataflash;	/* addressing to chip */
+	spidf_initialize();
+	readDATAFLASH(BOOTLOADER_APPBASE, dest, Len);
+	spidf_uninitialize();
+}
+
 /**
   * @brief  Erase sector.
   * @param  Add: Address of sector to be erased.
