@@ -769,7 +769,7 @@
 	#define BOOTLOADER_APPFULL (1024uL * 4096)	// 4M
 
 	#define BOOTLOADER_SELFBASE QSPI_MEM_BASE	/* адрес где лежит во FLASH образ application */
-	#define BOOTLOADER_SELFSIZE (1024uL * 128)	// 128k
+	#define BOOTLOADER_SELFSIZE (1024uL * 256)	// 256k
 
 	#define BOOTLOADER_APPBASE (BOOTLOADER_SELFBASE + BOOTLOADER_SELFSIZE)	/* адрес где лежит во FLASH образ application */
 	#define BOOTLOADER_APPSIZE (BOOTLOADER_APPFULL - BOOTLOADER_SELFSIZE)	// 2048 - 128
@@ -803,6 +803,12 @@
 				arm_hardware_piob_outputs(SPDIF_NCS_BIT, SPDIF_NCS_BIT); \
 				arm_hardware_piof_outputs(SPDIF_SCLK_BIT, SPDIF_SCLK_BIT); \
 				arm_hardware_piof_outputs(SPDIF_MOSI_BIT, SPDIF_MOSI_BIT); \
+				arm_hardware_piof_inputs(SPDIF_MISO_BIT); \
+			} while (0)
+		#define SPIDF_HANGOFF() do { \
+				arm_hardware_piob_inputs(SPDIF_NCS_BIT); \
+				arm_hardware_piof_inputs(SPDIF_SCLK_BIT); \
+				arm_hardware_piof_inputs(SPDIF_MOSI_BIT); \
 				arm_hardware_piof_inputs(SPDIF_MISO_BIT); \
 			} while (0)
 		#define SPIDF_SELECT() do { \

@@ -11760,7 +11760,8 @@ void cpu_initialize(void)
 	USB201.SYSCFG0 |= USB_SYSCFG_UCKSEL; // UCKSEL 1: The 12-MHz EXTAL clock is selected.
 	local_delay_ms(2);	// required 1 ms delay - see R01UH0437EJ0200 Rev.2.00 28.4.1 System Control and Oscillation Control
 	CPG.STBCR7 |= CPG_STBCR7_MSTP70;	// Module Stop 70 0: Channel 1 of the USB 2.0 host/function module halts.
-#endif
+
+#endif /* CPUSTYLE_R7S721 */
 
 #if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7 || CPUSTYLE_ARM_CM0
 
@@ -11820,9 +11821,11 @@ void cpu_initdone(void)
 		//CPG.STBCR9 |= CPG_STBCR9_BIT_MSTP93;	// Module Stop 93	- 1: Clock supply to channel 0 of the SPI multi I/O bus controller is halted.
 		//(void) CPG.STBCR9;			/* Dummy read */
 	}
-	arm_hardware_pio4_inputs(0xFC);		// Отключить процессор от SERIAL FLASH
 
 #endif /* CPUSTYLE_R7S721 */
+
+	SPIDF_HANGOFF();	// Отключить процессор от SERIAL FLASH
+
 #endif /* WITHISBOOTLOADER */
 }
 
