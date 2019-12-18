@@ -17649,7 +17649,6 @@ void bootloader_detach(void)
 		;
 }
 
-
 static void bootloader_mainloop(void)
 {
 	board_set_bglight(WITHLCDBACKLIGHTMIN);
@@ -17674,13 +17673,12 @@ ddd:
 				continue;
 			}
 		}
-#endif /* WITHDEBUG */
-#if ! WITHDEBUG
+#else /* WITHDEBUG */
 		if (hardware_usbd_get_vbusbefore() == 0)
 			break;
 		if (hardware_usbd_get_vbusnow() == 0)
 			break;
-#endif /* ! WITHDEBUG */
+#endif /* WITHDEBUG */
 	}
 #endif /* WITHUSBHW */
 	//PRINTF(PSTR("Compare signature of to application\n"));

@@ -11048,8 +11048,9 @@ sysinit_pll_initialize(void)
 
 #elif CPUSTYLE_STM32MP1
 
-	stm32mp1_pll_initialize();
-
+	#if ! WITHISBOOTLOADER
+		stm32mp1_pll_initialize();
+	#endif
 
 	L1C_EnableCaches();
 	L1C_EnableBTAC();

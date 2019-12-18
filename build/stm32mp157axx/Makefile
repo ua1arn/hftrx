@@ -69,9 +69,8 @@ SRCDIR = ../..
 PROJECT = stm32mp157axx
 
 # Define linker script file here
-#LDSCRIPT_BOOT = ./stm32mp15xx_cm7_boot.ld
-#LDSCRIPT_APP = ./stm32mp15xx_cm7_app.ld
-LDSCRIPT_APP = ./stm32mp15xx_cm7_boot.ld
+LDSCRIPT_BOOT = ./stm32mp15xx_cm7_boot.ld
+LDSCRIPT_APP = ./stm32mp15xx_cm7_app.ld
 
 # List all user C define here, like -D_DEBUG=1
 UDEFS = -DNDEBUG=1 -DCPUSTYLE_STM32MP1=1 -DCPUSTYLE_STM32MP157A=1 -DSTM32MP157Axx=1
@@ -142,20 +141,23 @@ CPFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 # makefile rules
 #
 
-all: APP2 fsbl.stm32 app.hex
+all: APP2 app.hex
 
-bootloader: BOOT2
+bootloader: BOOT2 fsbl.stm32 boot.hex
 
 BOOT: $(OBJS) $(PROJECT)_boot.elf $(PROJECT)_boot.hex
 BOOT2: $(OBJS) $(PROJECT)_boot.elf $(PROJECT)_boot.bin
 APP: $(OBJS) $(PROJECT)_app.elf $(PROJECT)_app.bin
 APP2: $(OBJS) $(PROJECT)_app.elf $(PROJECT)_app.hex
 
-fsbl.stm32: $(PROJECT)_app.bin
-	./stm32image.exe -l 2FFC2500 -e 2FFC2500 -s $(PROJECT)_app.bin -d ./fsbl.stm32
+fsbl.stm32: $(PROJECT)_boot.bin
+	./stm32image.exe -l 2FFC2500 -e 2FFC2500 -s $(PROJECT)_boot.bin -d ./fsbl.stm32
 	
-app.hex: fsbl.stm32
-	./bin2ihex fsbl.stm32 >app.hex
+boot.hex: fsbl.stm32
+	./bin2ihex fsbl.stm32 >boot.hex
+	
+app.hex: $(PROJECT)_app.bin
+	./bin2ihex $(PROJECT)_app.bin >app.hex
 
 
 $(OBJDIR)/%.o: %.c
