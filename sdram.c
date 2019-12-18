@@ -6202,22 +6202,46 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 	if (uret != 0U) {
 		ERROR("DDR data bus test: can't access memory @ 0x%x\n",
 		      uret);
-		//panic();
+		panic();
 	}
 	uret = ddr_test_addr_bus();
 	if (uret != 0U) {
 		ERROR("DDR addr bus test: can't access memory @ 0x%x\n",
 		      uret);
-		//panic();
+		panic();
 	}
 
 	uret = ddr_check_size();
 	if (uret < config.info.size) {
 		ERROR("DDR size: 0x%x does not match DT config: 0x%x\n",
 		      uret, config.info.size);
-		//panic();
+		panic();
 	}
-
+#if 0
+	// Бесконечный тест памяти.
+	for (;;)
+	{
+		uret = ddr_test_data_bus();
+		if (uret != 0U) {
+			ERROR("DDR data bus test: can't access memory @ 0x%x\n",
+			      uret);
+			panic();
+		}
+		uret = ddr_test_addr_bus();
+		if (uret != 0U) {
+			ERROR("DDR addr bus test: can't access memory @ 0x%x\n",
+			      uret);
+			panic();
+		}
+		uret = ddr_check_size();
+		if (uret != config.info.size) {
+			ERROR("DDR size: 0x%x does not match DT config: 0x%x\n",
+			      uret, config.info.size);
+			panic();
+		}
+		PRINTF(".");
+	}
+#endif
 	//__set_SCTLR(__get_SCTLR() | SCTLR_C_Msk);
 	//PRINTF("TZC->INT_STATUS=%08lX\n", TZC->INT_STATUS);
 
