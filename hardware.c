@@ -9658,7 +9658,7 @@ void stm32mp1_pll_initialize(void)
 	// PLL3
 
 
-#if WITHUART1HW
+#if 1//WITHUART1HW
 	// usart1
 	RCC->UART1CKSELR = (RCC->UART1CKSELR & ~ (RCC_UART1CKSELR_UART1SRC_Msk)) |
 		(0x02 << RCC_UART1CKSELR_UART1SRC_Pos) | // HSI
@@ -9666,7 +9666,7 @@ void stm32mp1_pll_initialize(void)
 	(void) RCC->UART1CKSELR;
 #endif /* WITHUART1HW */
 
-#if WITHUART2HW
+#if 1//WITHUART2HW
 	// usart2
 	//0x0: pclk1 clock selected as kernel peripheral clock (default after reset)
 	//0x1: pll4_q_ck clock selected as kernel peripheral clock
@@ -9708,7 +9708,7 @@ void stm32mp1_pll_initialize(void)
 	while ((RCC->TIMG2PRER & RCC_TIMG2PRER_TIMG2PRERDY_Msk) == 0)
 		;
 
-#if WITHUSBHW || WITHLTDCHW
+#if 1//WITHUSBHW || WITHLTDCHW
 	// PLL4
 	// PLL4 source mux
 	//	0x0: HSI selected as PLL clock (hsi_ck) (default after reset)
@@ -9736,9 +9736,10 @@ void stm32mp1_pll_initialize(void)
 		((PLL4DIVM - 1) << RCC_PLL4CFGR1_DIVM4_Pos) |
 		0;
 
+	const uint32_t pll4divq = calcdivround2(PLL4_FREQ, LTDC_DOTCLK);
 	RCC->PLL4CFGR2 = (RCC->PLL4CFGR2 & ~ (RCC_PLL4CFGR2_DIVP_Msk | RCC_PLL4CFGR2_DIVQ_Msk | RCC_PLL4CFGR2_DIVR_Msk)) |
 		((PLL4DIVP - 1) << RCC_PLL4CFGR2_DIVP_Pos) |	// pll4_p_ck - xxxxx (1..128 -> 0x00..0x7f)
-		((PLL4DIVQ - 1) << RCC_PLL4CFGR2_DIVQ_Pos) |	// LTDC clock (1..128 -> 0x00..0x7f)
+		((pll4divq - 1) << RCC_PLL4CFGR2_DIVQ_Pos) |	// LTDC clock (1..128 -> 0x00..0x7f)
 		((PLL4DIVR - 1) << RCC_PLL4CFGR2_DIVR_Pos) |	// USBPHY clock (1..128 -> 0x00..0x7f)
 		0;
 
@@ -9752,19 +9753,19 @@ void stm32mp1_pll_initialize(void)
 	RCC->PLL4CR |= RCC_PLL4CR_DIVPEN_Msk;	// pll2_p_ck - AXI clock
 	(void) RCC->PLL4CR;
 
-#if WITHLTDCHW
+#if 1//WITHLTDCHW
 	RCC->PLL4CR |= RCC_PLL4CR_DIVQEN_Msk;	// LTDC clock
 	(void) RCC->PLL4CR;
 #endif /* WITHLTDCHW */
 
-#if WITHUSBHW
+#if 1//WITHUSBHW
 	RCC->PLL4CR |= RCC_PLL4CR_DIVREN_Msk;	// USBPHY clock
 	(void) RCC->PLL4CR;
 #endif /* WITHUSBHW */
 
 #endif /* WITHUSBHW || WITHLTDCHW*/
 
-#if WITHUSBHW
+#if 1//WITHUSBHW
 	// USBOSRC
 	//	0: pll4_r_ck clock selected as kernel peripheral clock (default after reset)
 	//	1: clock provided by the USB PHY (rcc_ck_usbo_48m) selected as kernel peripheral clock

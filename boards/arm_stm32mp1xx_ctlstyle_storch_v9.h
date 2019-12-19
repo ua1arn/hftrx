@@ -50,7 +50,7 @@
 		#define PLL4DIVM	2	// ref2_ck = 12 MHz
 		#define PLL4DIVN	48	// 576 MHz
 		#define PLL4DIVP	2	// div2
-		#define PLL4DIVQ	18	// LTDC clock divider = 32 MHz
+		#define PLL4DIVQ	19	// LTDC clock divider = 30.315 MHz
 		#define PLL4DIVR	12	// USBPHY clock divider = 48 MHz
 
 	#else
