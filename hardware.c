@@ -1226,6 +1226,7 @@ static RAMFUNC void spool_adcdonebundle(void)
 			spool_elkeybundle();
 		}
 	}
+	#endif /* WITHELKEY */
 
 	void
 	TIM5_IRQHandler(void)
@@ -1238,7 +1239,7 @@ static RAMFUNC void spool_adcdonebundle(void)
 			spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
 		}
 	}
-	#endif /* WITHELKEY */
+
 #if 0
 	void EXTI0_IRQHandler(void)
 	{
@@ -11910,8 +11911,6 @@ void cpu_initialize(void)
 }
 
 #if WITHISBOOTLOADER
-
-void bootloader_readimage(uint8_t * dest, unsigned Len);
 
 static void bootloader_copyapp(uintptr_t apparea)
 {

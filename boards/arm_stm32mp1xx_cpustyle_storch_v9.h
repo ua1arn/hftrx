@@ -17,7 +17,6 @@
 #define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
 //#define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
 //#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
-////*#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
 #define WITHSDRAMHW	1	/* В процессоре есть внешняя память */
 #define WIHSPIDFHW	1	/* обслуживание DATA FLASH */
@@ -42,8 +41,43 @@
 #define WITHDEBUG_USART2	1
 #define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
 
-#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
-#if WITHUSBHW
+
+#if WITHISBOOTLOADER
+
+	//#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
+
+	//#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод VBUS_SENSE */
+	#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
+	//#define WITHUSBDEV_HIGHSPEEDULPI	1
+	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USBH_HS_DP & USBH_HS_DM
+
+	/* For H7 exist: Legacy defines */
+	//#define USB_OTG_HS                   USB1_OTG_HS
+	//#define USB_OTG_FS                   USB2_OTG_FS
+
+	#define WITHUSBHW_DEVICE	USB_OTG_HS	/* на этом устройстве поддерживается функциональность DEVUCE	*/
+	//#define WITHUSBHW_HOST		USB_OTG_HS
+
+
+	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
+	#define WITHMODEM_CDC	1
+
+	//#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
+	//#define WITHUSBUACIN2		1	/* формируются три канала передачи звука */
+		//#define WITHUABUACOUTAUDIO48MONO	1	/* для уменьшения размера буферов в endpoints */
+
+	//#define WITHUSBCDC		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
+	//#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
+	//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
+	//#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
+	//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
+	//#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
+	//#define WITHUSBWCID	1
+#else /* WITHISBOOTLOADER */
+
+	#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
+	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
+
 	//#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод VBUS_SENSE */
 	#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
 	//#define WITHUSBDEV_HIGHSPEEDULPI	1
@@ -74,8 +108,8 @@
 	//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
 	#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
 	//#define WITHUSBWCID	1
+#endif /* WITHISBOOTLOADER */
 
-#endif /* WITHUSBHW */
 
 #define LS020_RS_INITIALIZE() \
 	do { \

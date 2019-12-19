@@ -17634,6 +17634,7 @@ printhex(unsigned long voffs, const unsigned char * buff, unsigned length)
 // DFU_Detach после USBD_Stop
 void bootloader_detach(void)
 {
+	PRINTF("bootloader_detach...\n");
 	__disable_irq();
 	arm_hardware_flush(BOOTLOADER_APPAREA, BOOTLOADER_APPSIZE);
 	GIC_DisableInterface();
@@ -17648,6 +17649,7 @@ void bootloader_detach(void)
 	//arm_hardware_invalidate_all()
 	__ISB();
 	__DSB();
+	PRINTF("bootloader_detach 2...\n");
 	(* (void (*)(void)) BOOTLOADER_APPAREA)();
 	for (;;)
 		;
@@ -17658,9 +17660,10 @@ static void bootloader_mainloop(void)
 	board_set_bglight(WITHLCDBACKLIGHTMIN);
 	board_update();
 	//local_delay_ms(1000);
-	printhex(BOOTLOADER_APPAREA, (void *) BOOTLOADER_APPAREA, 512);
+	//printhex(BOOTLOADER_APPAREA, (void *) BOOTLOADER_APPAREA, 512);
 	PRINTF(PSTR("Ready jump to application at %p. Press 'r' at any time, 'd' for dump.\n"), (void *) BOOTLOADER_APPAREA);
 ddd:
+	;
 #if WITHUSBHW
 	for (;;)
 	{

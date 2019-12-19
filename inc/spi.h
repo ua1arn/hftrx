@@ -507,6 +507,19 @@ uint_fast8_t spidf_complete(spitarget_t target);
 uint_fast8_t spidf_progval8(spitarget_t target, uint_fast8_t sendval);
 uint_fast8_t spidf_read_byte(spitarget_t target, uint_fast8_t sendval);
 
+unsigned char dataflash_read_status(
+	spitarget_t target	/* addressing to chip */
+	);
+int timed_dataflash_read_status(spitarget_t target);
+int testchipDATAFLASH(void);
+int prepareDATAFLASH(void);
+void sectoreraseDATAFLASH(unsigned long flashoffset);
+int writeDATAFLASH(unsigned long flashoffset, const unsigned char * data, unsigned long len);
+int verifyDATAFLASH(unsigned long flashoffset, const unsigned char * data, unsigned long len);
+void readDATAFLASH(unsigned long flashoffset, unsigned char * data, unsigned long len);
+
+void bootloader_readimage(uint8_t * dest, unsigned Len);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
