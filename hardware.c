@@ -11176,7 +11176,9 @@ sysinit_pll_initialize(void)
 
 #elif CPUSTYLE_STM32MP1
 
-	#if ! WITHISBOOTLOADER
+	#if WITHISBOOTLOADER
+		// PLL только в bootloader.
+		// посеольку программа выполняется из DDR RAM, пеерпрограммировать PLL нельзя.
 		stm32mp1_pll_initialize();
 	#endif
 
