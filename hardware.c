@@ -7745,7 +7745,7 @@ stm32f4xx_pll_initialize(void)
 #if WITHUSESAIPLL
 
 static void 
-lowlevel_stm32f4xx_pllsai_initialize(void)
+stm32f4xx_pllsai_initialize(void)
 {
 	//#error TODO: write code to imitialize SAI PLL and LTDC output divider
 	/* для устройств на шине APB2 (up to 72 MHz) */
@@ -7761,7 +7761,7 @@ lowlevel_stm32f4xx_pllsai_initialize(void)
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround_saifreq(LTDC_DOTCLK), STM32F_LTDC_DIV_WIDTH, STM32F_LTDC_DIV_TAPS, & value, 0);
 	ASSERT(value >= 2);
-	debug_printf_P(PSTR("lowlevel_stm32f4xx_pllsai_initialize: value=%u, prei=%u\n"), value, prei);
+	debug_printf_P(PSTR("stm32f4xx_pllsai_initialize: value=%u, prei=%u\n"), value, prei);
 	// Настройка PLLSAI
 	// Частота сравнения та же самая, что и в основной PLL
 	// RCC_PLLSAICFGR_PLLSAIQ используется, если для SAI используется отдельная PLL - эта.
@@ -7778,6 +7778,40 @@ lowlevel_stm32f4xx_pllsai_initialize(void)
 	while ((RCC->CR & RCC_CR_PLLSAIRDY) == 0)	// пока заработает PLL
 		;
 }
+
+void hardware_set_dotclock(unsigned long dotfreq)
+{
+	//#error TODO: write code to imitialize SAI PLL and LTDC output divider
+	/* для устройств на шине APB2 (up to 72 MHz) */
+	auto uint_fast32_t
+	calcdivround_saifreq(
+		uint_fast32_t freq		/* требуемая частота на выходе делителя, в герцах. */
+		)
+	{
+		//#error TODO: check freq at outputs vsync/hsync
+		return (PLLSAI_FREQ + freq / 2) / freq;
+	}
+
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(calcdivround_saifreq(LTDC_DOTCLK), STM32F_LTDC_DIV_WIDTH, STM32F_LTDC_DIV_TAPS, & value, 0);
+	ASSERT(value >= 2);
+	// Настройка PLLSAI
+	// Частота сравнения та же самая, что и в основной PLL
+	// RCC_PLLSAICFGR_PLLSAIQ используется, если для SAI используется отдельная PLL - эта.
+	RCC->PLLSAICFGR = (RCC->PLLSAICFGR & ~ (RCC_PLLSAICFGR_PLLSAIN | /*RCC_PLLSAICFGR_PLLSAIQ | */ RCC_PLLSAICFGR_PLLSAIR)) |
+		((SAIREF1_MUL << RCC_PLLSAICFGR_PLLSAIN_Pos) & RCC_PLLSAICFGR_PLLSAIN) |	// PLLI2SN bits = multiplier, freq=192..432 MHz, vale = 2..432
+		((value * RCC_PLLSAICFGR_PLLSAIR_0) & RCC_PLLSAICFGR_PLLSAIR) |	// PLLI2SR bits - output divider, 2..7
+		0;
+
+	RCC->DCKCFGR = (RCC->DCKCFGR & ~ RCC_DCKCFGR_PLLSAIDIVR) |
+		((prei << RCC_DCKCFGR_PLLSAIDIVR_Pos) & RCC_DCKCFGR_PLLSAIDIVR) |	// division factor for LCD_CLK. 2: PLLSAIDIVR = /8  3: PLLSAIDIVR = /16
+		0;
+
+	RCC->CR |= RCC_CR_PLLSAION;				// Включил PLL
+	while ((RCC->CR & RCC_CR_PLLSAIRDY) == 0)	// пока заработает PLL
+		;
+}
+
 
 #endif /* WITHUSESAIPLL */
 
@@ -7939,7 +7973,7 @@ stm32f7xx_pll_initialize(void)
 #if WITHUSESAIPLL
 
 static void
-lowlevel_stm32f7xx_pllsai_initialize(void)
+stm32f7xx_pllsai_initialize(void)
 {
 
 	/* для устройств на шине APB2 (up to 72 MHz) */
@@ -7957,7 +7991,7 @@ lowlevel_stm32f7xx_pllsai_initialize(void)
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround_saifreq(LTDC_DOTCLK), STM32F_LTDC_DIV_WIDTH, STM32F_LTDC_DIV_TAPS, & value, 0);
 	ASSERT(value >= 2);
-	debug_printf_P(PSTR("lowlevel_stm32f7xx_pllsai_initialize: value=%u, prei=%u\n"), value, prei);
+	debug_printf_P(PSTR("stm32f7xx_pllsai_initialize: value=%u, prei=%u\n"), value, prei);
 
 
 	// Настройка PLLSAI
@@ -7985,6 +8019,15 @@ lowlevel_stm32f7xx_pllsai_initialize(void)
 	while ((RCC->CR & RCC_CR_PLLSAIRDY) == 0)	// пока заработает PLL
 		;
 }
+
+void hardware_set_dotclock(unsigned long dotfreq)
+{
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(calcdivround_saifreq(LTDC_DOTCLK), STM32F_LTDC_DIV_WIDTH, STM32F_LTDC_DIV_TAPS, & value, 0);
+	ASSERT(value >= 2);
+	debug_printf_P(PSTR("stm32f7xx_pllsai_initialize: value=%u, prei=%u\n"), value, prei);
+}
+
 #endif /* WITHUSESAIPLL */
 
 #endif /* CPUSTYLE_STM32F7XX */
@@ -8253,7 +8296,7 @@ static uint_fast32_t stm32f7xx_pllq_initialize(void)
 
 #if WITHUSESAIPLL
 
-static void lowlevel_stm32h7xx_pllsai_initialize(void)
+static void stm32h7xx_pllsai_initialize(void)
 {
 
 	/* для устройств на шине APB2 (up to 72 MHz) */
@@ -8269,7 +8312,7 @@ static void lowlevel_stm32h7xx_pllsai_initialize(void)
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround_saifreq(LTDC_DOTCLK), STM32F_LTDC_DIV_WIDTH, STM32F_LTDC_DIV_TAPS, & value, 0);
 	ASSERT(value >= 2);
-	debug_printf_P(PSTR("lowlevel_stm32h7xx_pllsai_initialize: value=%u, prei=%u\n"), value, prei);
+	debug_printf_P(PSTR("stm32h7xx_pllsai_initialize: value=%u, prei=%u\n"), value, prei);
 
 	// Настройка PLLSAI
 	// Частота сравнения та же самая, что и в основной PLL
@@ -9736,10 +9779,10 @@ void stm32mp1_pll_initialize(void)
 		((PLL4DIVM - 1) << RCC_PLL4CFGR1_DIVM4_Pos) |
 		0;
 
-	const uint32_t pll4divq = calcdivround2(PLL4_FREQ, 30000000uL);
-	RCC->PLL4CFGR2 = (RCC->PLL4CFGR2 & ~ (RCC_PLL4CFGR2_DIVP_Msk | RCC_PLL4CFGR2_DIVQ_Msk | RCC_PLL4CFGR2_DIVR_Msk)) |
+	//const uint32_t pll4divq = calcdivround2(PLL4_FREQ, LTDC_DOTCLK);
+	RCC->PLL4CFGR2 = (RCC->PLL4CFGR2 & ~ (RCC_PLL4CFGR2_DIVP_Msk | /* RCC_PLL4CFGR2_DIVQ_Msk | */ RCC_PLL4CFGR2_DIVR_Msk)) |
 		((PLL4DIVP - 1) << RCC_PLL4CFGR2_DIVP_Pos) |	// pll4_p_ck - xxxxx (1..128 -> 0x00..0x7f)
-		((pll4divq - 1) << RCC_PLL4CFGR2_DIVQ_Pos) |	// LTDC clock (1..128 -> 0x00..0x7f)
+		//((pll4divq - 1) << RCC_PLL4CFGR2_DIVQ_Pos) |	// LTDC clock (1..128 -> 0x00..0x7f)
 		((PLL4DIVR - 1) << RCC_PLL4CFGR2_DIVR_Pos) |	// USBPHY clock (1..128 -> 0x00..0x7f)
 		0;
 
@@ -9753,7 +9796,7 @@ void stm32mp1_pll_initialize(void)
 	RCC->PLL4CR |= RCC_PLL4CR_DIVPEN_Msk;	// pll2_p_ck - AXI clock
 	(void) RCC->PLL4CR;
 
-#if 1//WITHLTDCHW
+#if 0//WITHLTDCHW
 	RCC->PLL4CR |= RCC_PLL4CR_DIVQEN_Msk;	// LTDC clock
 	(void) RCC->PLL4CR;
 #endif /* WITHLTDCHW */
@@ -9786,6 +9829,22 @@ void stm32mp1_pll_initialize(void)
 #endif /* WITHELKEY */
 }
 
+void hardware_set_dotclock(unsigned long dotfreq)
+{
+	const uint32_t pll4divq = calcdivround2(PLL4_FREQ, dotfreq);
+	ASSERT(pll4divq >= 1);
+	RCC->PLL4CFGR2 = (RCC->PLL4CFGR2 & ~ (RCC_PLL4CFGR2_DIVQ_Msk)) |
+		((pll4divq - 1) << RCC_PLL4CFGR2_DIVQ_Pos) |	// LTDC clock (1..128 -> 0x00..0x7f)
+		0;
+	(void) RCC->PLL4CFGR2;
+
+	RCC->PLL4CR |= RCC_PLL4CR_DIVQEN_Msk;	// LTDC clock
+	(void) RCC->PLL4CR;
+
+	RCC->PLL4CR |= RCC_PLL4CR_PLLON_Msk;
+	while ((RCC->PLL4CR & RCC_PLL4CR_PLL4RDY_Msk) == 0)
+		;
+}
 
 /* Extended TrustZone protection controller access function */
 static void FLASHMEMINITFUNC
@@ -11213,20 +11272,14 @@ sysinit_pll_initialize(void)
 		tzpc_set_prot(32, 0x03);	// UART4
 	}
 
-	if (1)
-	{
-		// Hang-off QSPI memory
-		/*
-			QUADSPI_CLK 	PF10	AS pin 01	U13-38 (traced to PA7)
-			QUADSPI_BK1_NCS PB6 	AS pin 08	U12-21 (traced to PB12)
-			QUADSPI_BK1_IO0 PF8
-			QUADSPI_BK1_IO1 PF9
-		*/
-		arm_hardware_piof_inputs(1uL << 8);
-		arm_hardware_piof_inputs(1uL << 9);
-		arm_hardware_piof_inputs(1uL << 10);
-		arm_hardware_piob_inputs(1uL << 6);
-	}
+	// Hang-off QSPI memory
+	/*
+		QUADSPI_CLK 	PF10	AS pin 01	U13-38 (traced to PA7)
+		QUADSPI_BK1_NCS PB6 	AS pin 08	U12-21 (traced to PB12)
+		QUADSPI_BK1_IO0 PF8
+		QUADSPI_BK1_IO1 PF9
+	*/
+	SPIDF_HANGOFF();	// Отключить процессор от SERIAL FLASH
 
 #endif
 }
@@ -11299,10 +11352,7 @@ sysinit_debug_initialize(void)
 
 #endif /* (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7) */
 
-#if WITHDEBUG //&& ! WITHISBOOTLOADER
-	// В функции инициализации компорта есть NVIC_SetVector
-	// При вызове до перемещения таблиц прерывания получаем HardFault на STM32F7XXX
-	// UPD: пофиксено. Дебагер не вызывает NVIC_SetVector
+#if WITHDEBUG
 	HARDWARE_DEBUG_INITIALIZE();
 	HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
 
@@ -11745,7 +11795,7 @@ void cpu_initialize(void)
 	__DSB();
 
 	#if WITHUSESAIPLL
-		lowlevel_stm32f4xx_pllsai_initialize();
+		stm32f4xx_pllsai_initialize();
 	#endif /* WITHUSESAIPLL */
 
 #elif CPUSTYLE_STM32H7XX
@@ -11754,38 +11804,38 @@ void cpu_initialize(void)
 	//__DSB();
 
 	#if WITHUSESAIPLL
-		lowlevel_stm32h7xx_pllsai_initialize();
+		stm32h7xx_pllsai_initialize();
 	#endif /* WITHUSESAIPLL */
 
 #elif CPUSTYLE_STM32F7XX
 
 	RCC->APB1ENR |= RCC_APB1ENR_PWREN;	// включить тактирование power management
-	__DSB();
+	(void) RCC->APB1ENR;
 
 	arm_hardware_flush_all();
 	#if WITHUSESAIPLL
-		lowlevel_stm32f7xx_pllsai_initialize();
+		stm32f7xx_pllsai_initialize();
 	#endif /* WITHUSESAIPLL */
 
 #elif CPUSTYLE_STM32F0XX
 
 	// Разрешить работу компаратора напряжения питания (нужно для разряда емкостей преобразователя питания дисплея)
 	RCC->APB1ENR |= RCC_APB1ENR_PWREN;     // включить тактирование power management
-	__DSB();
+	(void) RCC->APB1ENR;
 	PWR->CR = (PWR->CR & ~ PWR_CR_PLS) | PWR_CR_PLS_LEV3 | PWR_CR_PVDE;
 
 #elif CPUSTYLE_STM32L0XX
 
 	// Разрешить работу компаратора напряжения питания (нужно для разряда емкостей преобразователя питания дисплея)
 	RCC->APB1ENR |= RCC_APB1ENR_PWREN;     // включить тактирование power management
-	__DSB();
+	(void) RCC->APB1ENR;
 	PWR->CR = (PWR->CR & ~ PWR_CR_PLS) | PWR_CR_PLS_LEV3 | PWR_CR_PVDE;
 
 #elif CPUSTYLE_STM32F30X
 
 	// Разрешить работу компаратора напряжения питания (нужно для разряда емкостей преобразователя питания дисплея)
 	RCC->APB1ENR |= RCC_APB1ENR_PWREN;     // включить тактирование power management
-	__DSB();
+	(void) RCC->APB1ENR;
 	PWR->CR = (PWR->CR & ~ PWR_CR_PLS) | PWR_CR_PLS_LEV3 | PWR_CR_PVDE;
 
 #elif CPUSTYLE_ATSAM3S
@@ -11913,7 +11963,9 @@ void cpu_initialize(void)
 
 #if WITHISBOOTLOADER
 
-static void bootloader_copyapp(uintptr_t apparea)
+static void bootloader_copyapp(
+		uintptr_t apparea	/* целевой алдрес для загрузки образа */
+		)
 {
 	//void * const APPAREA = (void *) BOOTLOADER_APPAREA;
 	void * const APPSTORAGEBASE = (void *) BOOTLOADER_APPBASE;

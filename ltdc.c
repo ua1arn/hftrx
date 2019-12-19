@@ -1806,6 +1806,7 @@ arm_hardware_ltdc_initialize(void)
 	(void) RCC->APB2ENR;
 #endif /* CPUSTYLE_STM32H7XX */
 
+	hardware_set_dotclock(LTDC_DOTCLK);
 	/* Configure the LCD Control pins */
 	HARDWARE_LTDC_INITIALIZE(BOARD_DEMODE);	// подключение к выводам процессора сигналов периферийного контроллера
 

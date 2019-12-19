@@ -1108,7 +1108,7 @@ extern "C" {
 	#define DIM_Y 600
 	#define LCDMODE_COLORED	1
 	#define LCDMODE_HORFILL	1
-	#define LTDC_DOTCLK	60000000uL	// частота пикселей при работе с интерфейсом RGB 40.8..67.2
+	#define LTDC_DOTCLK	51200000uL	// частота пикселей при работе с интерфейсом RGB 40.8..67.2
 #endif /* LCDMODE_AT070TNA2 */
 
 #if LCDMODE_S1D13781		/* PSP-1000 with S1D113780 */
