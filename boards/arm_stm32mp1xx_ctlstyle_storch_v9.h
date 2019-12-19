@@ -215,7 +215,8 @@
 	//#define LCDMODE_ILI9341	1	/* 320*240 SF-TC240T-9370-T с контроллером ILI9341 - STM32F4DISCO */
 	//#define LCDMODE_ILI9341_TOPDOWN	1	/* LCDMODE_ILI9341 - перевернуть изображение (для выводов справа) */
 	//#define LCDMODE_LQ043T3DX02K 1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 display */
-	#define LCDMODE_AT070TN90 1	/* AT070TN90 panel (800*480) - 7" display */
+	//#define LCDMODE_AT070TN90 1	/* AT070TN90 panel (800*480) - 7" display */
+	#define LCDMODE_AT070TNA2 1	/* AT070TNA2 panel (1024*600) - 7" display */
 	// --- Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
 #endif /* WITHISBOOTLOADER */
 

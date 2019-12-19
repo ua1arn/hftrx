@@ -9736,7 +9736,7 @@ void stm32mp1_pll_initialize(void)
 		((PLL4DIVM - 1) << RCC_PLL4CFGR1_DIVM4_Pos) |
 		0;
 
-	const uint32_t pll4divq = calcdivround2(PLL4_FREQ, LTDC_DOTCLK);
+	const uint32_t pll4divq = calcdivround2(PLL4_FREQ, 30000000uL);
 	RCC->PLL4CFGR2 = (RCC->PLL4CFGR2 & ~ (RCC_PLL4CFGR2_DIVP_Msk | RCC_PLL4CFGR2_DIVQ_Msk | RCC_PLL4CFGR2_DIVR_Msk)) |
 		((PLL4DIVP - 1) << RCC_PLL4CFGR2_DIVP_Pos) |	// pll4_p_ck - xxxxx (1..128 -> 0x00..0x7f)
 		((pll4divq - 1) << RCC_PLL4CFGR2_DIVQ_Pos) |	// LTDC clock (1..128 -> 0x00..0x7f)
