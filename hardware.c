@@ -11917,10 +11917,13 @@ static void bootloader_copyapp(uintptr_t apparea)
 	//void * const APPAREA = (void *) BOOTLOADER_APPAREA;
 	void * const APPSTORAGEBASE = (void *) BOOTLOADER_APPBASE;
 
+#if CPUSTYLE_R7S721
+	memcpy((void *) apparea, APPSTORAGEBASE, BOOTLOADER_APPSIZE);
+#else /* CPUSTYLE_R7S721 */
 	PRINTF(PSTR("Copy app image from %p to %p...\n"), (void *) APPSTORAGEBASE, (void *) apparea);
-	//memcpy((void *) apparea, APPSTORAGEBASE, BOOTLOADER_APPSIZE);
 	bootloader_readimage((void *) apparea, BOOTLOADER_APPSIZE);
 	PRINTF(PSTR("Copy app image from %p to %p\n done"), (void *) APPSTORAGEBASE, (void *) apparea);
+#endif /* CPUSTYLE_R7S721 */
 }
 
 #endif /* WITHISBOOTLOADER */
