@@ -810,7 +810,9 @@ typedef struct ticker
 } ticker_t;
 
 void ticker_initialize(ticker_t * p, unsigned nticks, void (* cb)(void *), void * ctx);
-void bootloader_detach(void);
+void bootloader_copyapp(uintptr_t apparea);
+uint_fast8_t bootloader_get_start(uintptr_t * ip);
+void bootloader_detach(uintptr_t ip);
 
 #define HARDWARE_ADCINPUTS	40	/* до 8-ти входов АЦП */
 
