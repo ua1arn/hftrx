@@ -17630,6 +17630,68 @@ printhex(unsigned long voffs, const unsigned char * buff, unsigned length)
 	}
 }
 
+struct stm32_header {
+	uint32_t magic_number;
+	uint8_t image_signature[64];
+	uint32_t image_checksum;
+	uint8_t  header_version[4];
+	uint32_t image_length;
+	uint32_t image_entry_point;
+	uint32_t reserved1;
+	uint32_t load_address;
+	uint32_t reserved2;
+	uint32_t version_number;
+	uint32_t option_flags;
+	uint32_t ecdsa_algorithm;
+	uint8_t ecdsa_public_key[64];
+	uint8_t padding[83];
+	uint8_t binary_type;
+} ATTRPACKED;
+
+//#define NEWBOOT 1
+
+uint_fast8_t bootloader_get_start(
+		uintptr_t apparea,	/* целевой адрес для загрузки образа - здесь ледми заголовок файла */
+		uintptr_t * ip)
+{
+#if NEWBOOT
+#else
+	static const char sgn [] = "DREAM";
+	const size_t len = strlen(sgn);
+	const size_t zonelen = 0x0200;
+	size_t offset;
+	for (offset = 0; (offset + len) <= zonelen; ++ offset)
+	{
+		if (memcmp(sgn, (void *) (apparea + offset), len) == 0)
+			break;
+	}
+	if ((offset + len) > zonelen)
+		return 0;
+
+	* ip = apparea;
+	return 0;
+#endif /* NEWBOOT */
+}
+
+void bootloader_copyapp(
+		uintptr_t apparea	/* целевой адрес для загрузки образа */
+		)
+{
+#if NEWBOOT
+#else /* NEWBOOT */
+	//void * const APPAREA = (void *) BOOTLOADER_APPAREA;
+	void * const APPSTORAGEBASE = (void *) BOOTLOADER_APPBASE;
+
+#if CPUSTYLE_R7S721
+	memcpy((void *) apparea, APPSTORAGEBASE, BOOTLOADER_APPSIZE);
+#else /* CPUSTYLE_R7S721 */
+	PRINTF(PSTR("Copy app image from %p to %p...\n"), (void *) APPSTORAGEBASE, (void *) apparea);
+	bootloader_readimage((void *) apparea, BOOTLOADER_APPSIZE);
+	PRINTF(PSTR("Copy app image from %p to %p\n done"), (void *) APPSTORAGEBASE, (void *) apparea);
+#endif /* CPUSTYLE_R7S721 */
+#endif /* NEWBOOT */
+}
+
 // Сюда попадаем из USB DFU клвсса при приходе команды
 // DFU_Detach после USBD_Stop
 void bootloader_detach(uintptr_t ip)
@@ -17655,24 +17717,6 @@ void bootloader_detach(uintptr_t ip)
 	(* (void (*)(void)) ip /*BOOTLOADER_APPAREA*/)();
 	for (;;)
 		;
-}
-
-uint_fast8_t bootloader_get_start(uintptr_t * ip)
-{
-	static const char sgn [] = "DREAM";
-	const size_t len = strlen(sgn);
-	const size_t zonelen = 0x0200;
-	size_t offset;
-	for (offset = 0; (offset + len) <= zonelen; ++ offset)
-	{
-		if (memcmp(sgn, (void *) (BOOTLOADER_APPAREA + offset), len) == 0)
-			break;
-	}
-	if ((offset + len) > zonelen)
-		return 0;
-
-	* ip = BOOTLOADER_APPAREA;
-	return 0;
 }
 
 static void bootloader_mainloop(void)
@@ -17711,7 +17755,7 @@ ddd:
 #endif /* WITHUSBHW */
 	uintptr_t ip;
 	//PRINTF(PSTR("Compare signature of to application\n"));
-	if (bootloader_get_start(& ip) != 0)	/* проверка сигнатуры и получение стартового адреса */
+	if (bootloader_get_start(BOOTLOADER_APPAREA, & ip) != 0)	/* проверка сигнатуры и получение стартового адреса */
 		goto ddd;
 
 #if WITHUSBHW
@@ -17719,22 +17763,6 @@ ddd:
 	board_usb_deinitialize();
 #endif /* WITHUSBHW */
 	bootloader_detach(ip);
-}
-
-void bootloader_copyapp(
-		uintptr_t apparea	/* целевой адрес для загрузки образа */
-		)
-{
-	//void * const APPAREA = (void *) BOOTLOADER_APPAREA;
-	void * const APPSTORAGEBASE = (void *) BOOTLOADER_APPBASE;
-
-#if CPUSTYLE_R7S721
-	memcpy((void *) apparea, APPSTORAGEBASE, BOOTLOADER_APPSIZE);
-#else /* CPUSTYLE_R7S721 */
-	PRINTF(PSTR("Copy app image from %p to %p...\n"), (void *) APPSTORAGEBASE, (void *) apparea);
-	bootloader_readimage((void *) apparea, BOOTLOADER_APPSIZE);
-	PRINTF(PSTR("Copy app image from %p to %p\n done"), (void *) APPSTORAGEBASE, (void *) apparea);
-#endif /* CPUSTYLE_R7S721 */
 }
 
 #endif /* WITHISBOOTLOADER */
