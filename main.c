@@ -17693,8 +17693,10 @@ void bootloader_detach(uintptr_t ip)
 {
 	__disable_irq();
 
-	//arm_hardware_flush(BOOTLOADER_APPAREA, BOOTLOADER_APPSIZE);
-	//arm_hardware_flush_all();
+#if (__L2C_PRESENT == 1)
+	L2C_CleanInvAllByWay();
+	L2C_Disable();
+#endif
 	L1C_CleanDCacheAll();
 
 	GIC_DisableInterface();
