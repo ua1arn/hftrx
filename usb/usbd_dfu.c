@@ -761,10 +761,14 @@ static void DFU_Detach(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req
   if (1) //((USBD_DFU_CfgDesc[12 + (9 * USBD_DFU_MAX_ITF_NUM)]) & DFU_DETACH_MASK)
   {
 #if WITHISBOOTLOADER
-    /* Perform an Attach-Detach operation on USB bus */
-    USBD_Stop (pdev);
-	bootloader_detach();
-    USBD_Start (pdev);
+	  uintptr_t ip;
+	  if (bootloader_get_start(BOOTLOADER_APPAREA, & ip) == 0)
+	  {
+			/* Perform an Attach-Detach operation on USB bus */
+			USBD_Stop (pdev);
+			bootloader_detach(ip);
+			USBD_Start (pdev);
+	  }
 #endif /* WITHISBOOTLOADER */
   }
   else

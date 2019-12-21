@@ -6,9 +6,8 @@
 	<width>1</width>
 	<mode>7</mode>
 	<hex_block>
-		<hex_filename>C:/user/SVN/hftrx/build/r7s721020/tc1_r7s721020_boot.hex</hex_filename>
-		<hex_addressing>relative</hex_addressing>
-		<hex_offset>0</hex_offset>
+		<hex_filename>C:/user/SVN/hftrx/build/r7s721020/boot.hex</hex_filename>
+		<hex_addressing>absolute</hex_addressing>
 	</hex_block>
 	<version>6</version>
 	<create_cvp_file>0</create_cvp_file>

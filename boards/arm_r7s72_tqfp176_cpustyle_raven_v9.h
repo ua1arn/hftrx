@@ -754,12 +754,12 @@
 	#define USBD_DFU_FLASHNAME "M25P16"
 
 	#if WIHSPIDFHW
-		// P4_2: WP#
-		// P4_4: SCLK
-		// P4_5: CS#
-		// P4_6: MOSI
-		// P4_7: MISO
-
+		// P4_2: SPBIO20_0 WP#
+		// P4_3: SPBIO30_0 HOLD#
+		// P4_4: SPBCLK_0 SCLK
+		// P4_5: SPBSSL_0 CS#
+		// P4_6: SPBIO00_0 MOSI
+		// P4_7: SPBIO10_0 MISO
 
 		#define SPIDF_MISO() ((R7S721_INPUT_PORT(4) & (1U << 7)) != 0)
 		#define SPIDF_MOSI(v) do { if (v) R7S721_TARGET_PORT_S(4, (1U << 6)); else R7S721_TARGET_PORT_C(4, (1U << 6)); } while (0)

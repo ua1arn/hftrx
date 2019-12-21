@@ -35,7 +35,7 @@ extern "C" {
 	#include <avr/cpufunc.h>
 	#include <util/delay.h>
 
-	#define ALIGNX_BEGIN /* __attribute__ ((aligned(32)))  */
+	#define ALIGNX_BEGIN /* __attribute__ ((aligned(64)))  */
 	#define ALIGNX_END /* nothing */
 
 #elif \
@@ -56,7 +56,7 @@ extern "C" {
 	#include <avr/cpufunc.h>
 	#include <util/delay.h>
 
-	#define ALIGNX_BEGIN /* __attribute__ ((aligned(32)))  */
+	#define ALIGNX_BEGIN /* __attribute__ ((aligned(64)))  */
 	#define ALIGNX_END /* nothing */
 
 #elif \
@@ -80,7 +80,7 @@ extern "C" {
 	#include <avr/cpufunc.h>
 	#include <util/delay.h>
 
-	#define ALIGNX_BEGIN /* __attribute__ ((aligned(32)))  */
+	#define ALIGNX_BEGIN /* __attribute__ ((aligned(64)))  */
 	#define ALIGNX_END /* nothing */
 
 #elif \
@@ -104,7 +104,7 @@ extern "C" {
 	#include <avr/cpufunc.h>
 	#include <util/delay.h>
 
-	#define ALIGNX_BEGIN /* __attribute__ ((aligned(32)))  */
+	#define ALIGNX_BEGIN /* __attribute__ ((aligned(64)))  */
 	#define ALIGNX_END /* nothing */
 
 #elif \
@@ -126,7 +126,7 @@ extern "C" {
 	#include <avr/cpufunc.h>
 	#include <util/delay.h>
 
-	#define ALIGNX_BEGIN /* __attribute__ ((aligned(32)))  */
+	#define ALIGNX_BEGIN /* __attribute__ ((aligned(64)))  */
 	#define ALIGNX_END /* nothing */
 
 #elif \
@@ -149,7 +149,7 @@ extern "C" {
 	#include <avr/cpufunc.h>
 	#include <util/delay.h>
 
-	#define ALIGNX_BEGIN /* __attribute__ ((aligned(32)))  */
+	#define ALIGNX_BEGIN /* __attribute__ ((aligned(64)))  */
 	#define ALIGNX_END /* nothing */
 
 #elif CPUSTYLE_STM32H7XX
@@ -161,7 +161,7 @@ extern "C" {
 
 	#include "armcpu/stm32h7xx.h"
 
-	#define ALIGNX_BEGIN __attribute__ ((aligned(32))) 
+	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
 	#define ALIGNX_END /* nothing */
 
 	#include "arm_math.h"
@@ -176,7 +176,7 @@ extern "C" {
 
 	#include "armcpu/stm32f7xx.h"
 
-	#define ALIGNX_BEGIN __attribute__ ((aligned(32))) 
+	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
 	#define ALIGNX_END /* nothing */
 
 	#include "arm_math.h"
@@ -190,7 +190,7 @@ extern "C" {
 
 	#include "armcpu/stm32f4xx.h"
 
-	#define ALIGNX_BEGIN __attribute__ ((aligned(32))) 
+	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
 	#define ALIGNX_END /* nothing */
 
 	#include "arm_math.h"
@@ -205,7 +205,7 @@ extern "C" {
 	// STM32F303VC processors
 	#include "armcpu/stm32f30x.h"
 
-	#define ALIGNX_BEGIN __attribute__ ((aligned(32))) 
+	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
 	#define ALIGNX_END /* nothing */
 
 	#include "arm_math.h"
@@ -219,7 +219,7 @@ extern "C" {
 
 	#include "armcpu/stm32f1xx.h"
 
-	#define ALIGNX_BEGIN __attribute__ ((aligned(32))) 
+	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
 	#define ALIGNX_END /* nothing */
 
 	#include "arm_math.h"
@@ -233,7 +233,7 @@ extern "C" {
 	
 	#include "armcpu/stm32f0xx.h"
 
-	#define ALIGNX_BEGIN __attribute__ ((aligned(32))) 
+	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
 	#define ALIGNX_END /* nothing */
 
 	#include "arm_math.h"
@@ -246,7 +246,7 @@ extern "C" {
 	#define CPUSTYLE_ARM_CM0	1		/* архитектура процессора CORTEX M0 */
 	#include "armcpu/stm32l0xx.h"
 
-	#define ALIGNX_BEGIN __attribute__ ((aligned(32))) 
+	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
 	#define ALIGNX_END /* nothing */
 
 	#include "arm_math.h"
@@ -260,7 +260,7 @@ extern "C" {
 	#define __SAM3S4C__ 1		// replace to __SAM3S4B__
 	#include "sam3s.h"
 
-	#define ALIGNX_BEGIN __attribute__ ((aligned(32))) 
+	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
 	#define ALIGNX_END /* nothing */
 
 	#include "arm_math.h"
@@ -274,7 +274,7 @@ extern "C" {
 	#define __SAM4SA16C__ 1
 	#include "sam4s.h"
 
-	#define ALIGNX_BEGIN __attribute__ ((aligned(32))) 
+	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
 	#define ALIGNX_END /* nothing */
 
 	#include "arm_math.h"
@@ -287,7 +287,7 @@ extern "C" {
 
 	#include "armcpu/MK20D5.h"
 
-	#define ALIGNX_BEGIN __attribute__ ((aligned(32))) 
+	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
 	#define ALIGNX_END /* nothing */
 
 	#include "arm_math.h"
@@ -305,7 +305,7 @@ extern "C" {
 
 	#include "tdmi7_gcc.h"
 
-	#define ALIGNX_BEGIN __attribute__ ((aligned(32))) 
+	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
 	#define ALIGNX_END /* nothing */
 
 #elif CPUSTYLE_AT91SAM9XE
@@ -314,7 +314,7 @@ extern "C" {
 	#define	CPUSTYLE_ARM7TDMI	1
 	#include "armcpu/at91sam9xe512.h"
 
-	#define ALIGNX_BEGIN __attribute__ ((aligned(32))) 
+	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
 	#define ALIGNX_END /* nothing */
 
 	#define __ASM            __asm           /*!< asm keyword for GNU Compiler          */
@@ -335,7 +335,7 @@ extern "C" {
 	#include "armcpu/iodefine.h"
 	#include "rza_io_regrw.h"
 
-	#define ALIGNX_BEGIN __attribute__ ((aligned(32))) 
+	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
 	#define ALIGNX_END /* nothing */
 
 	#if __ARM_NEON
@@ -361,7 +361,7 @@ extern "C" {
 	#include "irq_ctrl.h"
 	#include "armcpu/stm32mp1xx.h"
 
-	#define ALIGNX_BEGIN __attribute__ ((aligned(32)))
+	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
 	#define ALIGNX_END /* nothing */
 
 	#if __ARM_NEON
@@ -382,7 +382,7 @@ extern "C" {
 	#define CPU_FREQ 100000000uL
 	//#define CPU_FREQ 5000000uL		// Частота без инициализаwии PLL - xtal / 4
 
-	#define ALIGNX_BEGIN /* __attribute__ ((aligned(32)))  */
+	#define ALIGNX_BEGIN /* __attribute__ ((aligned(64)))  */
 	#define ALIGNX_END /* nothing */
 
 #else 
@@ -437,7 +437,7 @@ void hardware_adc_initialize(void);
 		#define RAMDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 		#define RAMBIGDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 		#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
-		#define RAMHEAP __attribute__((used, section(".heap"), aligned(32))) // memory used as heap zone
+		#define RAMHEAP __attribute__((used, section(".heap"), aligned(64))) // memory used as heap zone
 	#elif CPUSTYLE_STM32MP1
 		// TODO: Use SYSRAM as DTCM/ITCM
 		#define FLASHMEMINIT	__attribute__((section(".initdata"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
@@ -449,7 +449,7 @@ void hardware_adc_initialize(void);
 		#define RAMDTCM			__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 		#define RAMBIGDTCM		__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 		#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
-		#define RAMHEAP __attribute__((used, section(".heap"), aligned(32))) // memory used as heap zone
+		#define RAMHEAP __attribute__((used, section(".heap"), aligned(64))) // memory used as heap zone
 	#elif (CPUSTYLE_STM32H7XX)
 		#define VTRATTR	__attribute__ ((section("vtable"), used, aligned(256 * 4)))
 		#define FLASHMEMINIT	//__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
@@ -810,7 +810,9 @@ typedef struct ticker
 } ticker_t;
 
 void ticker_initialize(ticker_t * p, unsigned nticks, void (* cb)(void *), void * ctx);
-void bootloader_detach(void);
+void bootloader_copyapp(uintptr_t apparea);
+uint_fast8_t bootloader_get_start(uintptr_t apparea, uintptr_t * ip);
+void bootloader_detach(uintptr_t ip);
 
 #define HARDWARE_ADCINPUTS	40	/* до 8-ти входов АЦП */
 

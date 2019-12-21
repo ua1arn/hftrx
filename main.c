@@ -17630,9 +17630,66 @@ printhex(unsigned long voffs, const unsigned char * buff, unsigned length)
 	}
 }
 
+struct stm32_header {
+	uint32_t magic_number;
+	uint8_t image_signature[64];
+	uint32_t image_checksum;
+	uint8_t  header_version[4];
+	uint32_t image_length;
+	uint32_t image_entry_point;
+	uint32_t reserved1;
+	uint32_t load_address;
+	uint32_t reserved2;
+	uint32_t version_number;
+	uint32_t option_flags;
+	uint32_t ecdsa_algorithm;
+	uint8_t ecdsa_public_key[64];
+	uint8_t padding[83];
+	uint8_t binary_type;
+} ATTRPACKED;
+
+#define HEADER_MAGIC	0x324d5453  //	__be32_to_cpu(0x53544D32)
+
+uint_fast8_t bootloader_get_start(
+		uintptr_t apparea,	/* целевой адрес для загрузки образа - здесь лежит заголовок файла */
+		uintptr_t * ip)
+{
+	volatile struct stm32_header * const hdr = (volatile struct stm32_header *) apparea;
+	if (hdr->magic_number != HEADER_MAGIC)
+		return 1;
+	* ip = hdr->image_entry_point;
+	return 0;
+}
+
+void bootloader_copyapp(
+		uintptr_t apparea	/* целевой адрес для загрузки образа */
+		)
+{
+	enum { HEADERSIZE = 256 };
+	volatile struct stm32_header * const hdr = (volatile struct stm32_header *) apparea;
+
+#if CPUSTYLE_R7S721
+
+	memcpy((void *) apparea, (const void *) BOOTLOADER_APPBASE, HEADERSIZE);
+	if (hdr->magic_number != HEADER_MAGIC)
+		return;
+	memcpy((void *) hdr->load_address, (const void *) (BOOTLOADER_APPBASE + HEADERSIZE), hdr->image_length);
+
+#else /* CPUSTYLE_R7S721 */
+
+	bootloader_readimage(BOOTLOADER_APPBASE, (void *) apparea, HEADERSIZE);
+	if (hdr->magic_number != HEADER_MAGIC)
+		return;
+	PRINTF(PSTR("Copy app image from %p to %p...\n"), (void *) hdr->load_address, (void *) hdr->load_address);
+	bootloader_readimage(BOOTLOADER_APPBASE + HEADERSIZE, (void *) hdr->load_address, hdr->image_length);
+	PRINTF(PSTR("Copy app image from %p to %p\n done"), (void *) hdr->load_address, (void *) hdr->load_address);
+
+#endif /* CPUSTYLE_R7S721 */
+}
+
 // Сюда попадаем из USB DFU клвсса при приходе команды
 // DFU_Detach после USBD_Stop
-void bootloader_detach(void)
+void bootloader_detach(uintptr_t ip)
 {
 	__disable_irq();
 
@@ -17652,7 +17709,7 @@ void bootloader_detach(void)
 
 	__ISB();
 	__DSB();
-	(* (void (*)(void)) BOOTLOADER_APPAREA)();
+	(* (void (*)(void)) ip /*BOOTLOADER_APPAREA*/)();
 	for (;;)
 		;
 }
@@ -17691,25 +17748,16 @@ ddd:
 #endif /* WITHDEBUG */
 	}
 #endif /* WITHUSBHW */
+	uintptr_t ip;
 	//PRINTF(PSTR("Compare signature of to application\n"));
-
-	static const char sgn [] = "DREAM";
-	const size_t len = strlen(sgn);
-	const size_t zonelen = 0x0200;
-	size_t offset;
-	for (offset = 0; (offset + len) <= zonelen; ++ offset)
-	{
-		if (memcmp(sgn, (void *) (BOOTLOADER_APPAREA + offset), len) == 0)
-			break;
-	}
-	if ((offset + len) > zonelen)
+	if (bootloader_get_start(BOOTLOADER_APPAREA, & ip) != 0)	/* проверка сигнатуры и получение стартового адреса */
 		goto ddd;
 
 #if WITHUSBHW
 	board_usb_deactivate();
 	board_usb_deinitialize();
 #endif /* WITHUSBHW */
-	bootloader_detach();
+	bootloader_detach(ip);
 }
 
 #endif /* WITHISBOOTLOADER */

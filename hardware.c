@@ -11966,26 +11966,6 @@ void cpu_initialize(void)
 	//PRINTF("cpu_initialize done\n");
 }
 
-#if WITHISBOOTLOADER
-
-static void bootloader_copyapp(
-		uintptr_t apparea	/* целевой алдрес для загрузки образа */
-		)
-{
-	//void * const APPAREA = (void *) BOOTLOADER_APPAREA;
-	void * const APPSTORAGEBASE = (void *) BOOTLOADER_APPBASE;
-
-#if CPUSTYLE_R7S721
-	memcpy((void *) apparea, APPSTORAGEBASE, BOOTLOADER_APPSIZE);
-#else /* CPUSTYLE_R7S721 */
-	PRINTF(PSTR("Copy app image from %p to %p...\n"), (void *) APPSTORAGEBASE, (void *) apparea);
-	bootloader_readimage((void *) apparea, BOOTLOADER_APPSIZE);
-	PRINTF(PSTR("Copy app image from %p to %p\n done"), (void *) APPSTORAGEBASE, (void *) apparea);
-#endif /* CPUSTYLE_R7S721 */
-}
-
-#endif /* WITHISBOOTLOADER */
-
 // секция init больше не нужна
 void cpu_initdone(void)
 {
