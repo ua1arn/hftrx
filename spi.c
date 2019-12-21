@@ -1240,11 +1240,11 @@ void readDATAFLASH(unsigned long flashoffset, unsigned char * data, unsigned lon
 }
 
 
-void bootloader_readimage(uint8_t * dest, unsigned Len)
+void bootloader_readimage(unsigned long flashoffset, uint8_t * dest, unsigned Len)
 {
 	spitarget_t target = targetdataflash;	/* addressing to chip */
 	spidf_initialize();
-	readDATAFLASH(BOOTLOADER_APPBASE, dest, Len);
+	readDATAFLASH(flashoffset, dest, Len);
 	spidf_uninitialize();
 }
 

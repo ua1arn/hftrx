@@ -17648,6 +17648,8 @@ struct stm32_header {
 	uint8_t binary_type;
 } ATTRPACKED;
 
+#define HEADER_MAGIC	0x324d5453  //	__be32_to_cpu(0x53544D32)
+
 //#define NEWBOOT 1
 
 uint_fast8_t bootloader_get_start(
@@ -17655,6 +17657,11 @@ uint_fast8_t bootloader_get_start(
 		uintptr_t * ip)
 {
 #if NEWBOOT
+	volatile struct stm32_header * const hdr = (volatile struct stm32_header *) apparea;
+	if (hdr->magic_number != HEADER_MAGIC)
+		return 1;
+	* ip = hdr->image_entry_point;
+	return 1;
 #else
 	static const char sgn [] = "DREAM";
 	const size_t len = strlen(sgn);
@@ -17678,17 +17685,34 @@ void bootloader_copyapp(
 		)
 {
 #if NEWBOOT
-#else /* NEWBOOT */
-	//void * const APPAREA = (void *) BOOTLOADER_APPAREA;
-	void * const APPSTORAGEBASE = (void *) BOOTLOADER_APPBASE;
+	volatile struct stm32_header * const hdr = (volatile struct stm32_header *) apparea;
 
-#if CPUSTYLE_R7S721
-	memcpy((void *) apparea, APPSTORAGEBASE, BOOTLOADER_APPSIZE);
-#else /* CPUSTYLE_R7S721 */
-	PRINTF(PSTR("Copy app image from %p to %p...\n"), (void *) APPSTORAGEBASE, (void *) apparea);
-	bootloader_readimage((void *) apparea, BOOTLOADER_APPSIZE);
-	PRINTF(PSTR("Copy app image from %p to %p\n done"), (void *) APPSTORAGEBASE, (void *) apparea);
-#endif /* CPUSTYLE_R7S721 */
+	#if CPUSTYLE_R7S721
+
+		memcpy((void *) apparea, (const void *) BOOTLOADER_APPBASE, sizeof * hdr);
+		if (hdr->magic_number != HEADER_MAGIC)
+			return;
+		memcpy((void *) hdr->load_address, (const void *) (BOOTLOADER_APPBASE + 0x100), hdr->image_length);
+
+	#else /* CPUSTYLE_R7S721 */
+
+		bootloader_readimage(BOOTLOADER_APPBASE + 0x00, (void *) apparea, sizeof * hdr);
+		if (hdr->magic_number != HEADER_MAGIC)
+			return;
+		PRINTF(PSTR("Copy app image from %p to %p...\n"), (void *) hdr->load_address, (void *) apparea);
+		bootloader_readimage(BOOTLOADER_APPBASE + 0x100, (void *) hdr->load_address, hdr->image_length);
+		PRINTF(PSTR("Copy app image from %p to %p\n done"), (void *) hdr->load_address, (void *) apparea);
+
+	#endif /* CPUSTYLE_R7S721 */
+
+#else /* NEWBOOT */
+	#if CPUSTYLE_R7S721
+		memcpy((void *) apparea, (void *) BOOTLOADER_APPBASE, BOOTLOADER_APPSIZE);
+	#else /* CPUSTYLE_R7S721 */
+		PRINTF(PSTR("Copy app image from %p to %p...\n"), (void *) APPSTORAGEBASE, (void *) apparea);
+		bootloader_readimage(BOOTLOADER_APPBASE, (void *) apparea, BOOTLOADER_APPSIZE);
+		PRINTF(PSTR("Copy app image from %p to %p\n done"), (void *) APPSTORAGEBASE, (void *) apparea);
+	#endif /* CPUSTYLE_R7S721 */
 #endif /* NEWBOOT */
 }
 
