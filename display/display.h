@@ -205,6 +205,12 @@ typedef uint16_t PACKEDCOLOR565_T;
 	#define HALFCOUNT_FREQA HALFCOUNT_BIG
 
 #elif LCDMODE_DUMMY
+	/* При использовании frame buffer цвета восьмибитные */
+	typedef uint_fast8_t COLOR_T;
+
+	// для формирования растра с изображением водопада и спектра
+	// RRRR.RGGG.GGGB.BBBB
+	#define TFTRGB565(red, green, blue) 0
 
 #else
 	#error Undefined display type
