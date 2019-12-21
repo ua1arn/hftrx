@@ -523,7 +523,7 @@
 	} while (0)
 #define HARDWARE_USART2_INITIALIZE() do { \
 		arm_hardware_pioa_altfn2((1uL << 2) /*| (1uL << 3)*/, AF_USART2); /* PA2: TX DATA line (2 MHz), PA3: RX data line */ \
-		arm_hardware_pioa_updown(/*(1uL << 3)*/ | 0, 0);	/* PA3: pull-up RX data */ \
+		arm_hardware_pioa_updown(/*(1uL << 3) | */ 0, 0);	/* PA3: pull-up RX data */ \
 	} while (0)
 
 #if WITHKEYBOARD
@@ -726,7 +726,7 @@
 	enum
 	{
 		GPIO_AF_LTDC14 = 14,  /* LCD-TFT Alternate Function mapping */
-		GPIO_AF_LTDC9 = 9  /* LCD-TFT Alternate Function mapping */
+		GPIO_AF_LTDC9 = 9,  /* LCD-TFT Alternate Function mapping */
 		GPIO_AF_LTDC3 = 3  /* LCD-TFT Alternate Function mapping */
 	};
 	/* demode values: 0: static signal, 1: DE controlled */
@@ -736,8 +736,8 @@
 		arm_hardware_pioc_altfn20((1U << 6), GPIO_AF_LTDC14);		/* HSYNC PC6 */ \
 		arm_hardware_piog_altfn50((1U << 7), GPIO_AF_LTDC14);		/* CLK PG7 */ \
 		/* Control */ \
-		arm_hardware_piof_altfn50((demode != 0) * (1U << 10), GPIO_AF_LTDC14);	/* PF10 DE */ \
-		arm_hardware_piof_outputs((demode == 0) * (1U << 10), 0 * (1U << 10));	/* DE=0 (DISP, pin 31) */ \
+		arm_hardware_pioc_altfn50((demode != 0) * (1U << 0), GPIO_AF_LTDC14);	/* PC0 DE */ \
+		arm_hardware_pioc_outputs((demode == 0) * (1U << 10), 0 * (1U << 10));	/* DE=0 (DISP, pin 31) */ \
 		/* RED */ \
 		arm_hardware_piog_altfn50((1U << 13), GPIO_AF_LTDC14);	/* R0 PG13 */ \
 		arm_hardware_piod_altfn50((1U << 15), GPIO_AF_LTDC14);	/* R1 PD15 */ \
