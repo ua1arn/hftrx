@@ -17653,7 +17653,7 @@ struct stm32_header {
 //#define NEWBOOT 1
 
 uint_fast8_t bootloader_get_start(
-		uintptr_t apparea,	/* целевой адрес для загрузки образа - здесь ледми заголовок файла */
+		uintptr_t apparea,	/* целевой адрес для загрузки образа - здесь лежит заголовок файла */
 		uintptr_t * ip)
 {
 #if NEWBOOT
@@ -17669,13 +17669,13 @@ uint_fast8_t bootloader_get_start(
 	size_t offset;
 	for (offset = 0; (offset + len) <= zonelen; ++ offset)
 	{
-		if (memcmp(sgn, (void *) (apparea + offset), len) == 0)
+		if (memcmp(sgn, (void *) (apparea + offset + 0x100), len) == 0)
 			break;
 	}
 	if ((offset + len) > zonelen)
 		return 0;
 
-	* ip = apparea;
+	* ip = apparea + 0x100;
 	return 0;
 #endif /* NEWBOOT */
 }
@@ -17707,10 +17707,10 @@ void bootloader_copyapp(
 
 #else /* NEWBOOT */
 	#if CPUSTYLE_R7S721
-		memcpy((void *) apparea, (void *) BOOTLOADER_APPBASE, BOOTLOADER_APPSIZE);
+		memcpy((void *) (apparea + 0x100), (void *) (BOOTLOADER_APPBASE + 0x100), BOOTLOADER_APPSIZE - 256);
 	#else /* CPUSTYLE_R7S721 */
 		PRINTF(PSTR("Copy app image from %p to %p...\n"), (void *) APPSTORAGEBASE, (void *) apparea);
-		bootloader_readimage(BOOTLOADER_APPBASE, (void *) apparea, BOOTLOADER_APPSIZE);
+		bootloader_readimage((BOOTLOADER_APPBASE + 0x100), (void *) (apparea + 0x100), BOOTLOADER_APPSIZE - 256);
 		PRINTF(PSTR("Copy app image from %p to %p\n done"), (void *) APPSTORAGEBASE, (void *) apparea);
 	#endif /* CPUSTYLE_R7S721 */
 #endif /* NEWBOOT */
