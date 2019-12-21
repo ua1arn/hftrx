@@ -5416,7 +5416,7 @@ static int memprobe(unsigned k)
 #endif
 
 
-#if 0
+#if 0 && WITHDEBUG
 // FPU speed test
 
 #define FFTZS 8192
@@ -5458,13 +5458,15 @@ static void RAMFUNC_NONILINE cplxmlasave(cplxf *d, int len) {
 
 void hightests(void)
 {
-#if 0
+#if 0 && WITHDEBUG
 	{
 		// FPU speed test
 		uint_fast8_t state = 0;
-		const uint_fast32_t maskg = (1uL << 13);	// PG13 - LCD_R0
-		arm_hardware_piog_outputs(maskg, 1 * maskg);
+		const uint_fast32_t mask = (1uL << 14);	// PG13 - LCD_R0
+		arm_hardware_piog_outputs(mask, 1 * mask);
+		//arm_hardware_pio6_outputs(mask, mask);	/* P6_14: RXD0: RX DATA line */
 		PRINTF("cplxmla @%p, src @%p, dst @%p. refv @%p, CPU_FREQ=%lu MHz\n", cplxmla, src, dst, refv, CPU_FREQ / 1000000uL);
+		global_disableIRQ();
 		for (;;)
 		{
 			cplxmla(src, dst, refv,  FFTZS);
@@ -5472,12 +5474,14 @@ void hightests(void)
 			if (state)
 			{
 				state = 0;
-				(GPIOG)->BSRR = BSRR_S(maskg);
+				(GPIOG)->BSRR = BSRR_S(mask);
+				//R7S721_TARGET_PORT_S(6, mask);
 			}
 			else
 			{
 				state = 1;
-				(GPIOG)->BSRR = BSRR_C(maskg);
+				(GPIOG)->BSRR = BSRR_C(mask);
+				//R7S721_TARGET_PORT_C(6, mask);
 			}
 		}
 
