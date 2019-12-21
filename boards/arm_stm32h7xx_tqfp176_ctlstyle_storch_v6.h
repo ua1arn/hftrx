@@ -167,6 +167,7 @@
 	//#define WITHSPLITEX	1	/* Трехкнопочное управление режимами расстройки */
 
 	// +++ Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
+	//#define LCDMODE_DUMMY	1		/* заглушка - без отображения */
 	//#define LCDMODE_HARD_SPI	1	/* LCD over SPI line */
 	#define LCDMODE_LTDC	1		/* Use STM32F4xxx with LCD-TFT Controller (LTDC), also need LCDMODE_ILI9341 */
 	#define LCDMODE_LTDC_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит - RGB565. */
