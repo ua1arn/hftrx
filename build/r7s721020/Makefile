@@ -154,11 +154,11 @@ boot.hex: $(PROJECT)_boot.bin
 	
 APP2: $(OBJS) $(PROJECT)_app.elf $(PROJECT)_app.bin
 
-app.stm32: $(PROJECT)_app.bin
+$(PROJECT)_app.stm32: $(PROJECT)_app.bin
 	./stm32image.exe -l 0x20000100 -e 0x20000100 -s $(PROJECT)_app.bin -d $@
 
-app.hex: app.stm32
-	./bin2ihex -l 0x00020000 -s app.stm32 >$@
+app.hex: $(PROJECT)_app.stm32
+	./bin2ihex -l 0x00020000 -s $(PROJECT)_app.stm32 >$@
 
 $(OBJDIR)/%.o: %.c
 	@mkdir -p $(@D)
