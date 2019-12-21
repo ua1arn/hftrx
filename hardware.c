@@ -11227,8 +11227,12 @@ sysinit_pll_initialize(void)
 	// Не получается разместить эти функции во FLASH
 	L1C_EnableCaches();
 	L1C_EnableBTAC();
-#endif
 	__set_ACTLR(__get_ACTLR() | ACTLR_L1PE_Msk);	// Enable Dside prefetch
+	#if (__L2C_PRESENT == 1)
+	  // Enable GIC
+	  L2C_Enable();
+	#endif
+#endif
 	/* далее будет выполняться копирование data и инициализация bss - для нормальной работы RESET требуется без DATA CACHE */
 
 	/* Установить скорость обмена с SERIAL FLASH повыше */
@@ -11251,6 +11255,10 @@ sysinit_pll_initialize(void)
 	L1C_EnableCaches();
 	L1C_EnableBTAC();
 	__set_ACTLR(__get_ACTLR() | ACTLR_L1PE_Msk);	// Enable Dside prefetch
+	#if (__L2C_PRESENT == 1)
+	  // Enable GIC
+	  L2C_Enable();
+	#endif
 
 	/*
 	 * Interconnect update : select master using the port 1.
@@ -11928,6 +11936,11 @@ void cpu_initialize(void)
 	// Не получается разместить эти функции во FLASH
 	L1C_EnableCaches();
 	L1C_EnableBTAC();
+	__set_ACTLR(__get_ACTLR() | ACTLR_L1PE_Msk);	// Enable Dside prefetch
+	#if (__L2C_PRESENT == 1)
+	  // Enable GIC
+	  L2C_Enable();
+	#endif
 #endif
 
 	/* TN-RZ*-A011A/E recommends switch off USB_X1 if usb USB not used */
