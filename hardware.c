@@ -8294,6 +8294,11 @@ static uint_fast32_t stm32f7xx_pllq_initialize(void)
 	return stm32h7xx_pllq;
 }
 
+void hardware_set_dotclock(unsigned long dotfreq)
+{
+	(void) dotfreq;
+}
+
 #if WITHUSESAIPLL
 
 static void stm32h7xx_pllsai_initialize(void)
