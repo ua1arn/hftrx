@@ -5426,11 +5426,11 @@ typedef struct
 	float i;
 } cplxf;
 
-static ALIGNX_BEGIN cplxf src[FFTZS];
-static ALIGNX_BEGIN cplxf dst[FFTZS];
-static ALIGNX_BEGIN cplxf refv[FFTZS];
+static RAMFRAMEBUFF ALIGNX_BEGIN cplxf src [FFTZS];
+static RAMFRAMEBUFF ALIGNX_BEGIN cplxf dst [FFTZS];
+static RAMDTCM ALIGNX_BEGIN cplxf refv [FFTZS];
 
-static void cplxmla(cplxf *s, cplxf *d, cplxf *ref, int len) {
+static void RAMFUNC_NONILINE cplxmla(cplxf *s, cplxf *d, cplxf *ref, int len) {
 	while (len--) {
 		d->r += s->r * ref->r - s->i * ref->i;
 		d->i += s->i * ref->r + s->r * ref->i;
@@ -5438,7 +5438,7 @@ static void cplxmla(cplxf *s, cplxf *d, cplxf *ref, int len) {
 	}
 }
 
-static void cplxmlafast(cplxf *s, cplxf *d, cplxf *ref, int len) {
+static void RAMFUNC_NONILINE cplxmlafast(cplxf *s, cplxf *d, cplxf *ref, int len) {
 	int i;
 	for (i = 0; i < len; ++ i) {
 		d [i].r += s [i].r * ref [i].r - s [i].i * ref [i].i;
@@ -5446,7 +5446,7 @@ static void cplxmlafast(cplxf *s, cplxf *d, cplxf *ref, int len) {
 	}
 }
 
-static void cplxmlasave(cplxf *d, int len) {
+static void RAMFUNC_NONILINE cplxmlasave(cplxf *d, int len) {
 	while (len--) {
 		volatile float t;
 		t = d->r;
@@ -5464,10 +5464,10 @@ void hightests(void)
 		uint_fast8_t state = 0;
 		const uint_fast32_t maskg = (1uL << 13);	// PG13 - LCD_R0
 		arm_hardware_piog_outputs(maskg, 1 * maskg);
-		PRINTF("src @%p, dst @%p. refv @%p\n", src, dst, refv);
+		PRINTF("cplxmla @%p, src @%p, dst @%p. refv @%p, CPU_FREQ=%lu MHz\n", cplxmla, src, dst, refv, CPU_FREQ / 1000000uL);
 		for (;;)
 		{
-			cplxmlafast(src, dst, refv,  FFTZS);
+			cplxmla(src, dst, refv,  FFTZS);
 			//cplxmlasave(dst, FFTZS);
 			if (state)
 			{
