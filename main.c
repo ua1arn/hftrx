@@ -17650,70 +17650,41 @@ struct stm32_header {
 
 #define HEADER_MAGIC	0x324d5453  //	__be32_to_cpu(0x53544D32)
 
-//#define NEWBOOT 1
-
 uint_fast8_t bootloader_get_start(
 		uintptr_t apparea,	/* целевой адрес для загрузки образа - здесь лежит заголовок файла */
 		uintptr_t * ip)
 {
-#if NEWBOOT
 	volatile struct stm32_header * const hdr = (volatile struct stm32_header *) apparea;
 	if (hdr->magic_number != HEADER_MAGIC)
 		return 1;
 	* ip = hdr->image_entry_point;
-	return 1;
-#else
-	static const char sgn [] = "DREAM";
-	const size_t len = strlen(sgn);
-	const size_t zonelen = 0x0200;
-	size_t offset;
-	for (offset = 0; (offset + len) <= zonelen; ++ offset)
-	{
-		if (memcmp(sgn, (void *) (apparea + offset + 0x100), len) == 0)
-			break;
-	}
-	if ((offset + len) > zonelen)
-		return 0;
-
-	* ip = apparea + 0x100;
 	return 0;
-#endif /* NEWBOOT */
 }
 
 void bootloader_copyapp(
 		uintptr_t apparea	/* целевой адрес для загрузки образа */
 		)
 {
-#if NEWBOOT
+	enum { HEADERSIZE = 256 };
 	volatile struct stm32_header * const hdr = (volatile struct stm32_header *) apparea;
 
-	#if CPUSTYLE_R7S721
+#if CPUSTYLE_R7S721
 
-		memcpy((void *) apparea, (const void *) BOOTLOADER_APPBASE, sizeof * hdr);
-		if (hdr->magic_number != HEADER_MAGIC)
-			return;
-		memcpy((void *) hdr->load_address, (const void *) (BOOTLOADER_APPBASE + 0x100), hdr->image_length);
+	memcpy((void *) apparea, (const void *) BOOTLOADER_APPBASE, HEADERSIZE);
+	if (hdr->magic_number != HEADER_MAGIC)
+		return;
+	memcpy((void *) hdr->load_address, (const void *) (BOOTLOADER_APPBASE + HEADERSIZE), hdr->image_length);
 
-	#else /* CPUSTYLE_R7S721 */
+#else /* CPUSTYLE_R7S721 */
 
-		bootloader_readimage(BOOTLOADER_APPBASE + 0x00, (void *) apparea, sizeof * hdr);
-		if (hdr->magic_number != HEADER_MAGIC)
-			return;
-		PRINTF(PSTR("Copy app image from %p to %p...\n"), (void *) hdr->load_address, (void *) apparea);
-		bootloader_readimage(BOOTLOADER_APPBASE + 0x100, (void *) hdr->load_address, hdr->image_length);
-		PRINTF(PSTR("Copy app image from %p to %p\n done"), (void *) hdr->load_address, (void *) apparea);
+	bootloader_readimage(BOOTLOADER_APPBASE, (void *) apparea, HEADERSIZE);
+	if (hdr->magic_number != HEADER_MAGIC)
+		return;
+	PRINTF(PSTR("Copy app image from %p to %p...\n"), (void *) hdr->load_address, (void *) hdr->load_address);
+	bootloader_readimage(BOOTLOADER_APPBASE + HEADERSIZE, (void *) hdr->load_address, hdr->image_length);
+	PRINTF(PSTR("Copy app image from %p to %p\n done"), (void *) hdr->load_address, (void *) hdr->load_address);
 
-	#endif /* CPUSTYLE_R7S721 */
-
-#else /* NEWBOOT */
-	#if CPUSTYLE_R7S721
-		memcpy((void *) (apparea + 0x100), (void *) (BOOTLOADER_APPBASE + 0x100), BOOTLOADER_APPSIZE - 256);
-	#else /* CPUSTYLE_R7S721 */
-		PRINTF(PSTR("Copy app image from %p to %p...\n"), (void *) APPSTORAGEBASE, (void *) apparea);
-		bootloader_readimage((BOOTLOADER_APPBASE + 0x100), (void *) (apparea + 0x100), BOOTLOADER_APPSIZE - 256);
-		PRINTF(PSTR("Copy app image from %p to %p\n done"), (void *) APPSTORAGEBASE, (void *) apparea);
-	#endif /* CPUSTYLE_R7S721 */
-#endif /* NEWBOOT */
+#endif /* CPUSTYLE_R7S721 */
 }
 
 // Сюда попадаем из USB DFU клвсса при приходе команды

@@ -141,23 +141,25 @@ CPFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 # makefile rules
 #
 
-all: APP2 app.hex
+all: APP2 app.stm32 app.hex
 
 bootloader: BOOT2 fsbl.stm32 boot.hex
 
-BOOT: $(OBJS) $(PROJECT)_boot.elf $(PROJECT)_boot.hex
 BOOT2: $(OBJS) $(PROJECT)_boot.elf $(PROJECT)_boot.bin
-APP: $(OBJS) $(PROJECT)_app.elf $(PROJECT)_app.bin
-APP2: $(OBJS) $(PROJECT)_app.elf $(PROJECT)_app.hex
+
+APP2: $(OBJS) $(PROJECT)_app.elf $(PROJECT)_app.bin
 
 fsbl.stm32: $(PROJECT)_boot.bin
-	./stm32image.exe -l 2FFC2500 -e 2FFC2500 -s $(PROJECT)_boot.bin -d $@
+	./stm32image.exe -l 0x2FFC2500 -e 0x2FFC2500 -s $(PROJECT)_boot.bin -d $@
 	
 boot.hex: fsbl.stm32
 	./bin2ihex -l 0x00000000 -s fsbl.stm32 >$@
 	
-app.hex: $(PROJECT)_app.bin
-	./bin2ihex -l 0x00040000 -s $(PROJECT)_app.bin >$@
+app.stm32: $(PROJECT)_app.bin
+	./stm32image.exe -l 0xC00000100 -e 0xC00000100 -s $(PROJECT)_app.bin -d $@
+	
+app.hex: app.stm32
+	./bin2ihex -l 0x00040000 -s app.stm32 >$@
 
 
 $(OBJDIR)/%.o: %.c
