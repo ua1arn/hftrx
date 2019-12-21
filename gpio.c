@@ -4793,12 +4793,12 @@ arm_hardware_pioe_altfn50(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOFEN;	/* I/O port F clock enable */
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOEEN;	/* I/O port E clock enable */
 	(void) RCC->MP_AHB4ENSETR;
 
-	stm32mp1_pioX_altfn(GPIOF, opins, af);
+	stm32mp1_pioX_altfn(GPIOE, opins, af);
 	// Установка режима выводов
-	stm32mp1_pioX_prog(GPIOF, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
+	stm32mp1_pioX_prog(GPIOE, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
 #else
 	#error Undefined CPUSTYLE_XXX
