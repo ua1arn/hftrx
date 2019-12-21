@@ -154,10 +154,10 @@ fsbl.stm32: $(PROJECT)_boot.bin
 	./stm32image.exe -l 2FFC2500 -e 2FFC2500 -s $(PROJECT)_boot.bin -d ./fsbl.stm32
 	
 boot.hex: fsbl.stm32
-	./bin2ihex fsbl.stm32 >boot.hex
+	./bin2ihex -l 0x00000000 -s fsbl.stm32 >$@
 	
 app.hex: $(PROJECT)_app.bin
-	./bin2ihex $(PROJECT)_app.bin >app.hex
+	./bin2ihex -l 0x00040000 -s $(PROJECT)_app.bin >$@
 
 
 $(OBJDIR)/%.o: %.c
