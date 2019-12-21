@@ -161,26 +161,25 @@ SECTIONS
 
 	.bss :
 	{
-		. = ALIGN(32);
+		. = ALIGN(6);
 		__bss_start__ = .;
 		*(.bss*)
 		*(COMMON)
-		. = ALIGN(32);
+		. = ALIGN(64);
+		*(.noinit)
+		. = ALIGN(64);
+		*(.framebuff)
+		. = ALIGN(64);
 		__bss_end__ = .;
 	} > RAM
 
 	.noinit :
 	{
-		. = ALIGN(32);
-		*(.noinit)
-		. = ALIGN(32);
 	} > RAM
 
 	.vram :
 	{
-		. = ALIGN(32);
-		*(.framebuff)
-		. = ALIGN(32);
+		. = ALIGN(64);
 	} > RAM
 
 	.heap (COPY):
