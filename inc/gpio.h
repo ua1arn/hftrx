@@ -116,6 +116,25 @@ extern "C" {
 		(portname) ^= ((bitmask)); \
 		} while (0)
 
+#elif CPUSTYLE_R7S721
+
+	#define BSRR_S(v) ((v) * 0x10001uL)	/* Преобразование значения для установки бита в регистре */
+	#define BSRR_C(v) ((v) * 0x10000uL)	/* Преобразование значения для сброса бита в регистре */
+
+	// Функций-макросы установки/сброса битов в указанном порту
+	//
+	//  Пример использования:
+	//		R7S721_TARGET_PORT_S(6, 0x04);	/* P6_2=1 */
+	//		R7S721_TARGET_PORT_C(6, 0x04);	/* P6_2=0 */
+
+	#define R7S721_TARGET_PORT_S(p, v) do { const uint_fast16_t vv = 0xFFFF & (v); GPIO.PSR ## p = BSRR_S(vv); (void) GPIO.PSR ## p; } while (0)
+	#define R7S721_TARGET_PORT_C(p, v) do { const uint_fast16_t vv = 0xFFFF & (v); GPIO.PSR ## p = BSRR_C(vv); (void) GPIO.PSR ## p; } while (0)
+
+	#define R7S721_TARGET_JPORT_S(p, v) do { const uint_fast16_t vv = 0xFFFF & (v); GPIO.JPSR ## p = BSRR_S(vv); (void) GPIO.JPSR ## p; } while (0)
+	#define R7S721_TARGET_JPORT_C(p, v) do { const uint_fast16_t vv = 0xFFFF & (v); GPIO.JPSR ## p = BSRR_C(vv); (void) GPIO.JPSR ## p; } while (0)
+
+	#define R7S721_INPUT_PORT(p) ((uint16_t) GPIO.PPR ## p)
+	#define R7S721_INPUT_JPORT(p) ((uint16_t) GPIO.JPPR ## p)
 
 #endif /* CPUSTYLE_STM32F */
 
@@ -285,23 +304,6 @@ void arm_hardware_piok_periphopendrain_altfn2(unsigned long opins, unsigned af);
 void arm_hardware_pioa_analoginput(unsigned long ipins);
 void arm_hardware_piob_analoginput(unsigned long ipins);
 void arm_hardware_pioc_analoginput(unsigned long ipins);
-
-// Функций-макросы установки/сброса битов в указанном порту
-//
-//  Пример использования:
-//		R7S721_TARGET_PORT_S(6, 0x04);	/* P6_2=1 */
-//		R7S721_TARGET_PORT_C(6, 0x04);	/* P6_2=0 */
-
-#define R7S721_TARGET_PORT_S(p, v) do { const uint_fast16_t vv = 0xFFFF & (v); GPIO.PSR ## p = ((vv) * 0x10000uL) | (vv); (void) GPIO.PSR ## p; } while (0)
-#define R7S721_TARGET_PORT_C(p, v) do { const uint_fast16_t vv = 0xFFFF & (v); GPIO.PSR ## p = ((vv) * 0x10000uL) | (0); (void) GPIO.PSR ## p; } while (0)
-
-#define R7S721_TARGET_JPORT_S(p, v) do { const uint_fast16_t vv = 0xFFFF & (v); GPIO.JPSR ## p = ((vv) * 0x10000uL) | (vv); (void) GPIO.JPSR ## p; } while (0)
-#define R7S721_TARGET_JPORT_C(p, v) do { const uint_fast16_t vv = 0xFFFF & (v); GPIO.JPSR ## p = ((vv) * 0x10000uL) | (0); (void) GPIO.JPSR ## p; } while (0)
-
-#define R7S721_INPUT_PORT(p) ((uint16_t) GPIO.PPR ## p)
-
-#define R7S721_INPUT_JPORT(p) ((uint16_t) GPIO.JPPR ## p)
-
 
 // R7S721 ports
 void arm_hardware_jpio0_inputs(unsigned long ipins);	// JTAG inputs access
