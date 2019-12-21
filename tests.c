@@ -5426,9 +5426,9 @@ typedef struct
 	float i;
 } cplxf;
 
-static cplxf src[FFTZS];
-static cplxf dst[FFTZS];
-static cplxf refv[FFTZS];
+static ALIGNX_BEGIN cplxf src[FFTZS];
+static ALIGNX_BEGIN cplxf dst[FFTZS];
+static ALIGNX_BEGIN cplxf refv[FFTZS];
 
 static void cplxmla(cplxf *s, cplxf *d, cplxf *ref, int len) {
 	while (len--) {
@@ -5464,6 +5464,7 @@ void hightests(void)
 		uint_fast8_t state = 0;
 		const uint_fast32_t maskg = (1uL << 13);	// PG13 - LCD_R0
 		arm_hardware_piog_outputs(maskg, 1 * maskg);
+		PRINTF("src @%p, dst @%p. refv @%p\n", src, dst, refv);
 		for (;;)
 		{
 			cplxmlafast(src, dst, refv,  FFTZS);
