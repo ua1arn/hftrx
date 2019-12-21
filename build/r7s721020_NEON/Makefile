@@ -38,8 +38,7 @@ LTO = -flto
 # This product incorporates the ARM single-core Cortex-A9 MPCore, where the IP version is r3p0.
 MCU  = cortex-a9
 CORE = -march=armv7-a -mfloat-abi=hard -mfpu=vfpv3-d16 -mfpu=neon -ftree-vectorize
-#CORE = -march=armv7-a -mfloat-abi=hard -mfpu=neon
-#CORE = -march=armv7-a -mfloat-abi=hard -mfpu=neon -ftree-vectorize
+#CORE = -march=armv7-a -mfloat-abi=hard -mfpu=vfpv3-d16 -ftree-vectorize
 
 # List all default C defines here, like -D_DEBUG=1
 DDEFS = 
@@ -144,18 +143,26 @@ CPFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 # makefile rules
 #
 
-all: APP APP2
+all: APP2 app.stm32 app.hex
 
-bootloader: BOOT BOOT2
+bootloader: BOOT2 boot.hex
 
-BOOT: $(OBJS) $(PROJECT)_boot.elf $(PROJECT)_boot.hex
 BOOT2: $(OBJS) $(PROJECT)_boot.elf $(PROJECT)_boot.bin
-APP: $(OBJS) $(PROJECT)_app.elf $(PROJECT)_app.bin
-APP2: $(OBJS) $(PROJECT)_app.elf $(PROJECT)_app.hex
+
+boot.hex: $(PROJECT)_boot.bin
+	./bin2ihex -l 0x00000000 -s $(PROJECT)_boot.bin >$@
+	
+APP2: $(OBJS) $(PROJECT)_app.elf $(PROJECT)_app.bin
+
+$(PROJECT)_app.stm32: $(PROJECT)_app.bin
+	./stm32image.exe -l 0x20000100 -e 0x20000100 -s $(PROJECT)_app.bin -d $@
+
+app.hex: $(PROJECT)_app.stm32
+	./bin2ihex -l 0x00020000 -s $(PROJECT)_app.stm32 >$@
 
 $(OBJDIR)/%.o: %.c
 	@mkdir -p $(@D)
-	$(CC) -std=gnu11 -Wstrict-prototypes -c $(CPFLAGS) $(INCDIR) $(addprefix $(SRCDIR)/, $(patsubst $(OBJDIR2)/%, %, $(patsubst %.o, %.c, $@))) -o $@
+	$(CC) -std=gnu11 -Wstrict-prototypes -c $(CPFLAGS) $(INCDIR) $(addprefix $(SRCDIR)/, $(patsubst obj/%, %, $(patsubst %.o, %.c, $@))) -o $@
 
 $(OBJDIR)/%.o: %.cpp
 	@mkdir -p $(@D)
@@ -188,6 +195,7 @@ clean2:
 	-rm -fR $(OBJDIR)
 	-rm -f $(PROJECT)_boot.elf $(PROJECT)_boot.map $(PROJECT)_boot.hex $(PROJECT)_boot.bin
 	-rm -f $(PROJECT)_app.elf $(PROJECT)_app.map $(PROJECT)_app.hex $(PROJECT)_app.bin
+
 
 # 
 # Include the dependency files, should be the last of the makefile
