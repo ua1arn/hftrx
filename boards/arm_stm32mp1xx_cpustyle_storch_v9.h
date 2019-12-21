@@ -519,14 +519,14 @@
 
 #define HARDWARE_USART1_INITIALIZE() do { \
 		const uint_fast32_t TXMASK = (1uL << 9); /* PA9: TX DATA line (2 MHz) */ \
-		const uint_fast32_t RXMASK = (1uL << 9); /* PA10: RX DATA line (2 MHz) - pull-up RX data */  \
+		const uint_fast32_t RXMASK = (1uL << 10); /* PA10: RX DATA line (2 MHz) - pull-up RX data */  \
 		arm_hardware_pioa_altfn2(TXMASK, AF_USART1); \
 		arm_hardware_pioa_altfn2(RXMASK, 0, AF_USART1);  \
 		arm_hardware_pioa_updown(RXMASK, 0); \
 	} while (0)
 #define HARDWARE_USART2_INITIALIZE() do { \
-		const uint_fast32_t TXMASK = (1uL << 9); /* PA2: TX DATA line (2 MHz) */ \
-		const uint_fast32_t RXMASK = 0 * (1uL << 9); /* PA3: RX DATA line (2 MHz) - pull-up RX data */  \
+		const uint_fast32_t TXMASK = (1uL << 2); /* PA2: TX DATA line (2 MHz) */ \
+		const uint_fast32_t RXMASK = 0 * (1uL << 3); /* PA3: RX DATA line (2 MHz) - pull-up RX data */  \
 		arm_hardware_pioa_altfn2(TXMASK, AF_USART2); \
 		arm_hardware_pioa_altfn2(RXMASK, AF_USART2); \
 		arm_hardware_pioa_updown(RXMASK, 0); \

@@ -530,12 +530,18 @@
 		} while (0)
 
 	#define HARDWARE_USART1_INITIALIZE() do { \
-			arm_hardware_pioa_altfn2((1uL << 9) | (1uL << 10), AF_USART1); /* PA9: TX DATA line (2 MHz), PA10: RX data line */ \
-			arm_hardware_pioa_updown((1uL << 10), 0);	/* PA10: pull-up RX data */ \
+			const uint_fast32_t TXMASK = (1uL << 9); /* PA9: TX DATA line (2 MHz) */ \
+			const uint_fast32_t RXMASK = (1uL << 10); /* PA10: RX DATA line (2 MHz) - pull-up RX data */  \
+			arm_hardware_pioa_altfn2(TXMASK, AF_USART1);  \
+			arm_hardware_pioa_altfn2(RXMASK, AF_USART1);  \
+			arm_hardware_pioa_updown(RXMASK, 0); \
 		} while (0)
 	#define HARDWARE_USART2_INITIALIZE() do { \
-			arm_hardware_piod_altfn2((1uL << 5) | (1uL << 6), AF_USART2); /* PD5: TX DATA line (2 MHz), PD6: RX data line */ \
-			arm_hardware_piod_updown((1uL << 6), 0);	/* PD6: pull-up RX data */ \
+			const uint_fast32_t TXMASK = (1uL << 5); /* PD5: TX DATA line (2 MHz) */ \
+			const uint_fast32_t RXMASK = (1uL << 6); /* PD6: RX DATA line (2 MHz) - pull-up RX data */  \
+			arm_hardware_piod_altfn2(TXMASK, AF_USART2); \
+			arm_hardware_piod_altfn2(RXMASK, AF_USART2); \
+			arm_hardware_piod_updown(RXMASK, 0); \
 		} while (0)
 
 #endif
