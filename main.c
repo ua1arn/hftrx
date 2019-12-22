@@ -13707,7 +13707,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX, 					// Громкость в процентах
 		offsetof(struct nvmap, afgain1),
-		& afgain1,
+		& afgain1.value,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
 	},
@@ -13718,7 +13718,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		BOARD_IFGAIN_MIN, BOARD_IFGAIN_MAX, 					// Усиление ПЧ/ВЧ в процентах
 		offsetof(struct nvmap, rfgain1),
-		& rfgain1,
+		& rfgain1.value,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
 	},
