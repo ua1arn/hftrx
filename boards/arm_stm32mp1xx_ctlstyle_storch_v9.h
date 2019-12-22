@@ -43,7 +43,7 @@
 
 		#define PLL2DIVM	2	// ref2_ck = 12 MHz
 		#define PLL2DIVN	44	// 528 MHz
-		#define PLL2DIVP	2	// div2=minimum 528/2 = 264 MHz
+		#define PLL2DIVP	2	// AXISS_CK div2=minimum 528/2 = 264 MHz
 		#define PLL2DIVQ	1	// GPU clock divider = 528 MHz
 		#define PLL2DIVR	1	// DDR clock divider = 528 MHz
 
