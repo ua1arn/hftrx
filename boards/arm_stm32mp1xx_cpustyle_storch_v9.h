@@ -387,9 +387,9 @@
 	// PTT input - PD13
 	// PTT2 input - PD0
 	#define PTT_TARGET_PIN				(GPIOD->IDR)
-	#define PTT_BIT_PTT					(1uL << 13)		// PD13 - PTT
+	#define PTT_BIT_PTT					0//(1uL << 13)		// PD13 - PTT
 	#define PTT2_TARGET_PIN				(GPIOD->IDR)
-	#define PTT2_BIT_PTT				(1uL << 8)		// PD8 - PTT2
+	#define PTT2_BIT_PTT				0//(1uL << 8)		// PD8 - PTT2
 	// получить бит запроса оператором перехода на пердачу
 	#define HARDWARE_GET_PTT() ((PTT_TARGET_PIN & PTT_BIT_PTT) == 0 || (PTT2_TARGET_PIN & PTT2_BIT_PTT) == 0)
 	#define PTT_INITIALIZE() \
@@ -426,8 +426,8 @@
 #if WITHELKEY
 	// Electronic key inputs
 	#define ELKEY_TARGET_PIN			(GPIOD->IDR)
-	#define ELKEY_BIT_LEFT				(1uL << 11)		// PD11
-	#define ELKEY_BIT_RIGHT				(1uL << 12)		// PD12
+	#define ELKEY_BIT_LEFT				0//(1uL << 11)		// PD11
+	#define ELKEY_BIT_RIGHT				0//(1uL << 12)		// PD12
 
 	#define ELKEY_INITIALIZE() \
 		do { \
