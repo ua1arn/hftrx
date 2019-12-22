@@ -1802,13 +1802,26 @@ arm_hardware_ltdc_initialize(void)
 	/* Enable the LTDC Clock */
 	RCC->APB3ENR |= RCC_APB3ENR_LTDCEN;	/* LTDC clock enable */
 	(void) RCC->APB3ENR;
+
 #elif CPUSTYLE_STM32MP1
+
+	/* SYSCFG clock enable */
+	RCC->MP_APB3ENSETR = RCC_MC_APB3ENSETR_SYSCFGEN;
+	(void) RCC->MP_APB3ENSETR;
+	/*
+	 * Interconnect update : select master using the port 1.
+	 * LTDC = AXI_M9.
+	 */
+	SYSCFG->ICNR |= SYSCFG_ICNR_AXI_M9;
+	(void) SYSCFG->ICNR;
+
 	/* Enable the LTDC Clock */
 	RCC->MP_APB4ENSETR = RCC_MP_APB4ENSETR_LTDCEN;	/* LTDC clock enable */
 	/* Enable the LTDC Clock in low-power mode */
 	(void) RCC->MP_APB4ENSETR;
 	RCC->MP_APB4LPENSETR = RCC_MP_APB4LPENSETR_LTDCLPEN;	/* LTDC clock enable */
 	(void) RCC->MP_APB4LPENSETR;
+
 #else /* CPUSTYLE_STM32H7XX */
 	/* Enable the LTDC Clock */
 	RCC->APB2ENR |= RCC_APB2ENR_LTDCEN;	/* LTDC clock enable */

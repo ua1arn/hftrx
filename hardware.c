@@ -11283,15 +11283,6 @@ sysinit_pll_initialize(void)
 	  L2C_Enable();
 	#endif
 
-	/*
-	 * Interconnect update : select master using the port 1.
-	 * LTDC = AXI_M9.
-	 */
-	RCC->MP_APB3ENSETR = RCC_MC_APB3ENSETR_SYSCFGEN;
-	(void) RCC->MP_APB3ENSETR;
-	SYSCFG->ICNR |= SYSCFG_ICNR_AXI_M9;
-	(void) SYSCFG->ICNR;
-
 	if (1)
 	{
 		//RCC->TZCR &= ~ (RCC_TZCR_TZEN | RCC_TZCR_MCKPROT);
