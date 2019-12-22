@@ -47,6 +47,23 @@ prevfreq(uint_fast32_t oldfreq, uint_fast32_t freq,
 extern volatile uint_fast8_t spool_lfm_enable;
 extern volatile uint_fast8_t spool_lfm_flag;
 
+typedef struct dualctl8_tag
+{
+	uint_fast8_t value;		/* результирующее знаяение для формирования управляющего воздействия и инфопмирования по CAT */
+	uint_fast8_t potvalue;	/* значение после функции гистерезиса от потенциометра */
+} dualctl8_t;
+
+typedef struct dualctl16_tag
+{
+	uint_fast16_t value;	/* результирующее знаяение для формирования управляющего воздействия и инфопмирования по CAT */
+	uint_fast16_t potvalue;	/* значение после функции гистерезиса от потенциометра */
+} dualctl16_t;
+
+typedef struct dualctl32_tag
+{
+	uint_fast32_t value;	/* результирующее знаяение для формирования управляющего воздействия и инфопмирования по CAT */
+	uint_fast32_t potvalue;	/* значение после функции гистерезиса от потенциометра */
+} dualctl32_t;
 
 static uint_fast8_t
 getstablev8(volatile uint_fast8_t * p)
@@ -104,7 +121,7 @@ static uint_fast8_t local_isdigit(char c)
 static uint_fast8_t gtx;	/* текущее состояние прием или передача */
 static uint_fast8_t gcwpitch10 = 700 / CWPITCHSCALE;	/* тон при приеме телеграфа или самоконтроль (в десятках герц) */
 #if WITHIF4DSP
-static uint_fast8_t gsquelch;	/* squelch level */
+static dualctl8_t gsquelch = { 0, 0 };	/* squelch level */
 #endif /* WITHIF4DSP */
 #if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */
 
@@ -2710,9 +2727,7 @@ filter_t fi_2p0_455 =
 
 #if WITHELKEY
 	uint8_t	ggrpelkey; // последний посещённый пункт группы
-#if ! WITHPOTWPM
 	uint8_t elkeywpm;	/* скорость электронного ключа */
-#endif /* ! WITHPOTWPM */
 	uint8_t elkeymode;	/* режим электронного ключа - 0 - asf, 1 - paddle, 2 - keyer */
 	uint8_t dashratio;	/* отношение длителности тире к точке в десятках процентов */
 	uint8_t spaceratio;	/* отношение длителности паузы к точке в десятках процентов */
@@ -2882,9 +2897,18 @@ static uint_fast8_t gagcmode;
 	enum { IFSHIFTTMIN = 0, IFSHIFTHALF = 3000, IFSHIFTMAX = 2 * IFSHIFTHALF };
 	#if WITHIFSHIFTOFFSET
 		/* есть начальный сдвиг полосы пропускания */
-		static uint_fast16_t ifshifoffset = IFSHIFTHALF + WITHIFSHIFTOFFSET;		/* if shift offset value */
+		static dualctl16_t ifshifoffset =
+		{
+				IFSHIFTHALF + WITHIFSHIFTOFFSET,		/* if shift offset value */
+				IFSHIFTHALF + WITHIFSHIFTOFFSET,		/* if shift offset value */
+		};
 	#else
-		static uint_fast16_t ifshifoffset = IFSHIFTHALF;		/* if shift offset value */
+		/* Без начального сдвига полосы пропускания */
+		static dualctl16_t ifshifoffset =
+		{
+				IFSHIFTHALF,		/* if shift offset value */
+				IFSHIFTHALF,		/* if shift offset value */
+		};
 	#endif
 	static int_fast32_t getifshiftbase(void)
 	{
@@ -2894,7 +2918,11 @@ static uint_fast8_t gagcmode;
 
 #if WITHPBT // && (LO3_SIDE != LOCODE_INVALID)
 	enum { PBTMIN = 0, PBTHALF = 2560, PBTMAX = 5100 };	// Значения для управления потенциометром
-	static uint_fast16_t gpbtoffset = PBTHALF;		/* pbt offset value */
+	static dualctl16_t gpbtoffset =
+	{
+			PBTHALF;		/* pbt offset value */
+			PBTHALF;		/* pbt offset value */
+	};
 	static int_fast32_t getpbtbase(void)
 	{
 		return 0L - PBTHALF;
@@ -2902,7 +2930,7 @@ static uint_fast8_t gagcmode;
 	// Для отображения на дисплее
 	int_fast32_t hamradio_get_pbtvalue(void)
 	{
-		return gpbtoffset + getpbtbase();
+		return gpbtoffset.value + getpbtbase();
 	}
 #endif /* WITHPBT */
 
@@ -2952,8 +2980,8 @@ static uint_fast8_t gusefast;
 	static uint_fast8_t gnotch;
 #elif WITHNOTCHFREQ
 	static uint_fast8_t gnotch;
-	static uint_fast16_t gnotchfreq = 1000;
-	static uint_fast16_t gnotchwidth = 500;
+	static dualctl16_t gnotchfreq = { 1000, 1000 };
+	static dualctl16_t gnotchwidth = { 500, 500 };
 #endif /* WITHNOTCHFREQ */
 
 #if WITHSPLIT
@@ -3157,8 +3185,8 @@ enum
 #endif /* WITHCAT */
 
 #if WITHIF4DSP
-	static uint_fast16_t afgain1 = BOARD_AFGAIN_MAX;	// Усиление НЧ на максимуме
-	static uint_fast16_t rfgain1 = BOARD_IFGAIN_MAX;	// Усиление ПЧ на максимуме
+	static dualctl16_t afgain1 = { BOARD_AFGAIN_MAX, BOARD_AFGAIN_MAX };	// Усиление НЧ на максимуме
+	static dualctl16_t rfgain1 = { BOARD_IFGAIN_MAX, BOARD_IFGAIN_MAX };	// Усиление ПЧ на максимуме
 	static uint_fast16_t glineamp = WITHLINEINGAINMAX;	// усиление с LINE IN
 	static uint_fast8_t gmikebust20db;	// предусилитель микрофона
 	static uint_fast8_t gmikeagc = 1;	/* Включение программной АРУ перед модулятором */
@@ -3389,7 +3417,7 @@ enum
 
 #if WITHELKEY
 
-	static uint_fast8_t elkeywpm = 20;	/* скорость электронного ключа */
+	static dualctl8_t elkeywpm = { 20, 20 };	/* скорость электронного ключа */
 	static uint_fast8_t dashratio = 30;	/* отношение тире к длительности точки - в десятках процентов */
 	static uint_fast8_t spaceratio = 10;	/* отношение паузы к длительности точки - в десятках процентов */
 	static uint_fast8_t elkeyreverse;
@@ -4420,7 +4448,7 @@ getpbt(
 #if WITHPBT // && (LO3_SIDE != LOCODE_INVALID)
 	if (tx || mdt [mode].wpbt == 0)
 		return 0;
-	return gpbtoffset + getpbtbase();	/* из индицируемого значения получить знаковое */
+	return gpbtoffset.value + getpbtbase();	/* из индицируемого значения получить знаковое */
 
 #else /* WITHPBT */
 	(void) mode;
@@ -4441,7 +4469,7 @@ getifshift(
 #if WITHIFSHIFT
 	if (tx || mdt [mode].wifshift == 0)
 		return 0;
-	return ifshifoffset + getifshiftbase();	/* из индицируемого значения получить знаковое */
+	return ifshifoffset.value + getifshiftbase();	/* из индицируемого значения получить знаковое */
 
 #else /* WITHIFSHIFT */
 
@@ -5460,7 +5488,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		ISTEP1,
 		BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX, 					// Громкость в процентах
 		offsetof(struct nvmap, afgain1),
-		& afgain1,
+		& afgain1.value,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
 		enc2menu_adjust,	/* функция для изменения значения параметра */
@@ -5473,7 +5501,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		ISTEP1,
 		BOARD_IFGAIN_MIN, BOARD_IFGAIN_MAX, 					// Усиление ПЧ/ВЧ в процентах
 		offsetof(struct nvmap, rfgain1),
-		& rfgain1,
+		& rfgain1.value,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
 		enc2menu_adjust,	/* функция для изменения значения параметра */
@@ -5488,7 +5516,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		CWWPMMIN, CWWPMMAX,		// minimal WPM = 10, maximal = 60 (also changed by command KS).
 		offsetof(struct nvmap, elkeywpm),
 		NULL,
-		& elkeywpm,
+		& elkeywpm.value,
 		getzerobase, /* складывается со смещением и отображается */
 		enc2menu_adjust,	/* функция для изменения значения параметра */
 	},
@@ -5526,7 +5554,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		ISTEP50,
 		WITHNOTCHFREQMIN, WITHNOTCHFREQMAX,
 		offsetof(struct nvmap, gnotchfreq),	/* центральная частота NOTCH */
-		& gnotchfreq,
+		& gnotchfreq.value,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
 		enc2menu_adjust,	/* функция для изменения значения параметра */
@@ -5591,7 +5619,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		0, SQUELCHMAX, 
 		offsetof(struct nvmap, gsquelch),	/* уровень сигнала болше которого открывается шумодав */
 		NULL,
-		& gsquelch,
+		& gsquelch.value,
 		getzerobase, /* складывается со смещением и отображается */
 		enc2menu_adjust,	/* функция для изменения значения параметра */
 	},
@@ -5628,7 +5656,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		ISTEP50,
 		IFSHIFTTMIN, IFSHIFTMAX,			/* -3 kHz..+3 kHz in 50 Hz steps */
 		offsetof(struct nvmap, ifshifoffset),
-		& ifshifoffset,
+		& ifshifoffset.value,
 		NULL,
 		getifshiftbase, /* складывается со смещением и отображается */
 		enc2menu_adjust,	/* функция для изменения значения параметра */
@@ -7393,10 +7421,11 @@ flagne_u32(uint_fast32_t * oldval, uint_fast32_t v)
 
 /* формирование запроса на информирование управляющего компьютера при изменении параметра. */
 static uint_fast8_t
-flagne_u8_cat(uint_fast8_t * oldval, uint_fast8_t v, uint_fast8_t catindex)
+flagne_u8_cat(dualctl8_t * oldval, uint_fast8_t v, uint_fast8_t catindex)
 {
-	if (flagne_u8(oldval, v) != 0)
+	if (flagne_u8(& oldval->potvalue, v) != 0)
 	{
+		oldval->value = v;
 		cat_answer_request(catindex);
 		return 1;
 	}
@@ -7405,10 +7434,11 @@ flagne_u8_cat(uint_fast8_t * oldval, uint_fast8_t v, uint_fast8_t catindex)
 
 /* формирование запроса на информирование управляющего компьютера при изменении параметра. */
 static uint_fast8_t
-flagne_u16_cat(uint_fast16_t * oldval, uint_fast16_t v, uint_fast8_t catindex)
+flagne_u16_cat(dualctl16_t * oldval, uint_fast16_t v, uint_fast8_t catindex)
 {
-	if (flagne_u16(oldval, v) != 0)
+	if (flagne_u16(& oldval->potvalue, v) != 0)
 	{
+		oldval->value = v;
 		cat_answer_request(catindex);
 		return 1;
 	}
@@ -7417,10 +7447,11 @@ flagne_u16_cat(uint_fast16_t * oldval, uint_fast16_t v, uint_fast8_t catindex)
 
 /* формирование запроса на информирование управляющего компьютера при изменении параметра. */
 static uint_fast8_t
-flagne_u32_cat(uint_fast32_t * oldval, uint_fast32_t v, uint_fast8_t catindex)
+flagne_u32_cat(dualctl32_t * oldval, uint_fast32_t v, uint_fast8_t catindex)
 {
-	if (flagne_u32(oldval, v) != 0)
+	if (flagne_u32(& oldval->potvalue, v) != 0)
 	{
+		oldval->value = v;
 		cat_answer_request(catindex);
 		return 1;
 	}
@@ -7433,9 +7464,9 @@ flagne_u32_cat(uint_fast32_t * oldval, uint_fast32_t v, uint_fast8_t catindex)
 
 #else /* WITHCAT */
 
-#define FLAGNE_U8_CAT(a,b,c) flagne_u8((a), (b))
-#define FLAGNE_U16_CAT(a,b,c) flagne_u16((a), (b))
-#define FLAGNE_U32_CAT(a,b,c) flagne_u32((a), (b))
+#define FLAGNE_U8_CAT(a,b,c) flagne_u8(&(a).potvalue, (b))
+#define FLAGNE_U16_CAT(a,b,c) flagne_u16(&(a).potvalue, (b))
+#define FLAGNE_U32_CAT(a,b,c) flagne_u32(&(a).potvalue, (b))
 
 #endif /* WITHCAT */
 
@@ -7758,8 +7789,8 @@ updateboard(
 				board_set_notchnarrow(notchmodes [gnotch].code && pamodetempl->nar);
 			#elif WITHNOTCHFREQ
 				board_set_notch_on(notchmodes [gnotch].code);
-				board_set_notch_width(gnotchwidth);
-				board_set_notch_freq(gnotchfreq);	// TODO: при AUTONOTCH ставить INT16_MAX ?
+				board_set_notch_width(gnotchwidth.value);
+				board_set_notch_freq(gnotchfreq.value);	// TODO: при AUTONOTCH ставить INT16_MAX ?
 			#endif /* WITHNOTCHFREQ */
 			#if WITHIF4DSP
 				const uint_fast8_t agcseti = pamodetempl->agcseti;
@@ -7768,7 +7799,7 @@ updateboard(
 				board_set_agc_t2(gagc_release10 [agcseti]);		// время разряда медленной цепи АРУ
 				board_set_agc_t4(gagc_t4 [agcseti]);			// время разряда быстрой цепи АРУ
 				board_set_agc_thung(gagc_thung10 [agcseti]);	// hold time (hung time) in 0.1 sec
-				board_set_squelch(gsquelch);
+				board_set_squelch(gsquelch.value);
 			#endif /* WITHIF4DSP */
 			} /* tx == 0 */
 
@@ -7951,7 +7982,7 @@ updateboard(
 	#endif /* WITHANTSELECT */
 	#if WITHELKEY
 		#if ! WITHOPERA4BEACON
-			board_set_wpm(elkeywpm);	/* скорость электронного ключа */
+			board_set_wpm(elkeywpm.value);	/* скорость электронного ключа */
 		#endif /* ! WITHOPERA4BEACON */
 		#if WITHVIBROPLEX
 			elkey_set_slope(elkeyslopeenable ? elkeyslope : 0);	/* скорость уменьшения длительности точки и паузы - имитация виброплекса */
@@ -7969,8 +8000,8 @@ updateboard(
 	#endif /* WITHELKEY */
 
 	#if WITHIF4DSP
-		board_set_afgain(sleepflag == 0 ? afgain1 : BOARD_AFGAIN_MIN);	// Параметр для регулировки уровня на выходе аудио-ЦАП
-		board_set_ifgain(sleepflag == 0  ? rfgain1 : BOARD_IFGAIN_MIN);	// Параметр для регулировки усидения ПЧ
+		board_set_afgain(sleepflag == 0 ? afgain1.value : BOARD_AFGAIN_MIN);	// Параметр для регулировки уровня на выходе аудио-ЦАП
+		board_set_ifgain(sleepflag == 0  ? rfgain1.value : BOARD_IFGAIN_MIN);	// Параметр для регулировки усидения ПЧ
 
 		const uint_fast8_t txaprofile = gtxaprofiles [getmodetempl(txsubmode)->txaprofgp];	// значения 0..NMICPROFILES-1
 
@@ -8885,7 +8916,7 @@ hamradio_get_atuvalue(void)
 uint_fast8_t hamradio_get_notchvalue(int_fast32_t * p)
 {
 #if WITHNOTCHFREQ
-	* p = gnotchfreq;
+	* p = gnotchfreq.value;
 #else /* WITHNOTCHFREQ */
 	* p = 0;
 #endif /* WITHNOTCHFREQ */
@@ -9910,7 +9941,6 @@ display_redrawfreqmodesbars(
 	}
 }
 
-
 static void 
 directctlupdate(uint_fast8_t inmenu)
 {
@@ -9940,10 +9970,10 @@ directctlupdate(uint_fast8_t inmenu)
 	#endif /* WITHPBT && WITHPOTPBT */
 	#if WITHIFSHIFT && WITHPOTIFSHIFT
 		/* установка gifshftoffset IFSHIFTTMIN, IFSHIFTMAX, midscale = IFSHIFTHALF */
-		changed |= flagne_u16(& ifshifoffset, board_getpot_filtered_u16(POTIFSHIFT, IFSHIFTTMIN, IFSHIFTMAX) / 10 * 10);
+		changed |= flagne_u16(& ifshifoffset.value, board_getpot_filtered_u16(POTIFSHIFT, IFSHIFTTMIN, IFSHIFTMAX) / 10 * 10);
 	#endif /* WITHIFSHIFT && WITHPOTIFSHIFT */
 	#if WITHPOTNOTCH && WITHNOTCHFREQ
-		changed |= flagne_u16(& gnotchfreq, board_getpot_filtered_u16(POTNOTCH, WITHNOTCHFREQMIN, WITHNOTCHFREQMAX) / 50 * 50);	// регулировка частоты NOTCH фильтра
+		changed |= flagne_u16(& gnotchfreq.value, board_getpot_filtered_u16(POTNOTCH, WITHNOTCHFREQMIN, WITHNOTCHFREQMAX) / 50 * 50);	// регулировка частоты NOTCH фильтра
 	#endif /* WITHPOTNOTCH && WITHNOTCHFREQ */
 #endif /* WITHCPUADCHW */
 	#if CTLSTYLE_RA4YBO_V3
@@ -10524,7 +10554,7 @@ static void aganswer(uint_fast8_t arg)
 	// answer mode
 	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_2,
 		(int) arg,
-		(int) afgain1
+		(int) afgain1.value
 		);
 	cat_answer(len);
 }
@@ -10539,7 +10569,7 @@ static void rganswer(uint_fast8_t arg)
 
 	// answer mode
 	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_1,
-		(int) rfgain1
+		(int) rfgain1.value
 		);
 	cat_answer(len);
 }
@@ -10555,7 +10585,7 @@ static void sqanswer(uint_fast8_t arg)
 	// answer mode
 	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_2,
 		(int) arg,
-		(int) gsquelch
+		(int) gsquelch.value
 		);
 	cat_answer(len);
 }
@@ -10602,7 +10632,7 @@ static void ksanswer(uint_fast8_t arg)
 
 	// keyer speed information
 	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_1,
-		(int) elkeywpm
+		(int) elkeywpm.value
 		);
 	cat_answer(len);
 }
@@ -11450,9 +11480,11 @@ processcatmsg(
 			{
 				//const uint_fast32_t p1 = vfy32up(catscanint(catp + 0, 1), 0, 0, 0);
 				const uint_fast32_t p2 = vfy32up(catscanint(catp + 1, 3), 0, SQUELCHMAX, 0);
-				gsquelch = p2;
-				updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
-				rc = 1;
+				if (flagne_u8(& gsquelch.value, p2))
+				{
+					updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
+					rc = 1;
+				}
 			}
 			else if (catpcount == 1)
 			{
@@ -11478,16 +11510,13 @@ processcatmsg(
 		{
 			if (catpcount == 4)
 			{
-#if ! WITHPOTAFGAIN
 				//const uint_fast32_t p1 = vfy32up(catscanint(catp + 0, 1), 0, 0, 0);
 				const uint_fast32_t p2 = vfy32up(catscanint(catp + 1, 3), BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX, BOARD_AFGAIN_MAX);
-				if (afgain1 != p2)
+				if (flagne_u16(& afgain1.value, p2))
 				{
-					afgain1 = p2;
 					updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
 					rc = 1;
 				}
-#endif /* ! WITHPOTAFGAIN */
 			}
 			else if (catpcount == 1)
 			{
@@ -11511,15 +11540,12 @@ processcatmsg(
 		// RF gain level set/report
 		if (cathasparam != 0)
 		{
-#if ! WITHPOTIFGAIN
 			const uint_fast32_t p2 = vfy32up(catparam, BOARD_IFGAIN_MIN, BOARD_IFGAIN_MAX, BOARD_IFGAIN_MAX);
-			if (rfgain1 != p2)
+			if (flagne_u16(& rfgain1.value, p2))
 			{
-				rfgain1 = p2;
 				updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
 				rc = 1;
 			}
-#endif /* ! WITHPOTIFGAIN */
 		}
 		else
 		{
@@ -11759,14 +11785,11 @@ processcatmsg(
 		if (cathasparam != 0)
 		{
 			// Скорость передачи от 10 до 60 WPM (в TS-590 от 4 до 60).
-#if ! WITHPOTWPM
 			const uint_fast32_t p1 = vfy32up(catparam, CWWPMMIN, CWWPMMAX, 20); 
-			if (p1 != elkeywpm)
+			if (flagne_u8(& elkeywpm.value, p1))
 			{
-				elkeywpm = p1;
 				updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
 			}
-#endif /* ! WITHPOTWPM */
 		}
 		else
 		{
@@ -12772,7 +12795,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		IFSHIFTTMIN, IFSHIFTMAX,			/* -3 kHz..+3 kHz in 50 Hz steps */
 		offsetof(struct nvmap, ifshifoffset),
-		& ifshifoffset,
+		& ifshifoffset.value,
 		NULL,
 		getifshiftbase, 
 	},
@@ -13277,7 +13300,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		WITHNOTCHFREQMIN, WITHNOTCHFREQMAX,
 		offsetof(struct nvmap, gnotchfreq),	/* центральная частота NOTCH */
-		& gnotchfreq,
+		& gnotchfreq.value,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
 	},
@@ -13286,7 +13309,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		100, 1000,
 		offsetof(struct nvmap, gnotchwidth),	/* полоса режекции NOTCH */
-		& gnotchwidth,
+		& gnotchwidth.value,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
 	},
@@ -13358,7 +13381,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		CWWPMMIN, CWWPMMAX,		// minimal WPM = 10, maximal = 60 (also changed by command KS).
 		offsetof(struct nvmap, elkeywpm),
 		NULL,
-		& elkeywpm,
+		& elkeywpm.value,
 		getzerobase, 
 	},
   #endif /* ! WITHPOTWPM */
@@ -13730,7 +13753,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		0, SQUELCHMAX, 
 		offsetof(struct nvmap, gsquelch),	/* уровень сигнала болше которого открывается шумодав */
 		NULL,
-		& gsquelch,
+		& gsquelch.value,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
@@ -16052,20 +16075,17 @@ process_key_menuset_common(uint_fast8_t kbch)
 
 #if WITHELKEY
 
-#if ! WITHPOTWPM
 	case KBD_CODE_CWSPEEDDOWN:
-			if (elkeywpm > CWWPMMIN)
-				elkeywpm -= 1;
+			if (elkeywpm.value > CWWPMMIN)
+				elkeywpm.value -= 1;
 			updateboard(1, 0);
 		return 1;	/* клавиша уже обработана */
 
 	case KBD_CODE_CWSPEEDUP:
-			if (elkeywpm < CWWPMMAX)
-				elkeywpm += 1;
+			if (elkeywpm.value < CWWPMMAX)
+				elkeywpm.value += 1;
 			updateboard(1, 0);
 		return 1;	/* клавиша уже обработана */
-
-#endif /* ! WITHPOTWPM */
 
 #endif /* WITHELKEY */
 
