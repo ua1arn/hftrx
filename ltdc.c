@@ -1691,8 +1691,12 @@ static void LCD_LayerInit(
 	number of bytes per pixel = 2    (pixel_format : RGB565) 
 	number of bytes per pixel = 1    (pixel_format : L8) 
 	*/
-	LTDC_Layer_InitStruct.LTDC_CFBLineLength = ROWSIZE + 3; //((DIM_SECOND * 2) + 3);
-	//LTDC_Layer1->CFBLR = ((ROWSIZE << 16) & LTDC_LxCFBLR_CFBP) | (((ROWSIZE + 3) << 0) & LTDC_LxCFBLR_CFBLL);
+#if CPUSTYLE_STM32MP1
+	LTDC_Layer_InitStruct.LTDC_CFBLineLength = ROWSIZE + 7;
+#else /* CPUSTYLE_STM32MP1 */
+	LTDC_Layer_InitStruct.LTDC_CFBLineLength = ROWSIZE + 3;
+#endif /* CPUSTYLE_STM32MP1 */
+
 	/* the pitch is the increment from the start of one line of pixels to the 
 	start of the next line in bytes, then :
 	Pitch = Active high width x number of bytes per pixel */ 
@@ -1792,6 +1796,8 @@ arm_hardware_ltdc_initialize(void)
 
 	/* Initialize the LCD */
 
+	hardware_set_dotclock(LTDC_DOTCLK);
+
 #if CPUSTYLE_STM32H7XX
 	/* Enable the LTDC Clock */
 	RCC->APB3ENR |= RCC_APB3ENR_LTDCEN;	/* LTDC clock enable */
@@ -1799,14 +1805,16 @@ arm_hardware_ltdc_initialize(void)
 #elif CPUSTYLE_STM32MP1
 	/* Enable the LTDC Clock */
 	RCC->MP_APB4ENSETR = RCC_MP_APB4ENSETR_LTDCEN;	/* LTDC clock enable */
+	/* Enable the LTDC Clock in low-power mode */
 	(void) RCC->MP_APB4ENSETR;
+	RCC->MP_APB4LPENSETR = RCC_MP_APB4LPENSETR_LTDCLPEN;	/* LTDC clock enable */
+	(void) RCC->MP_APB4LPENSETR;
 #else /* CPUSTYLE_STM32H7XX */
 	/* Enable the LTDC Clock */
 	RCC->APB2ENR |= RCC_APB2ENR_LTDCEN;	/* LTDC clock enable */
 	(void) RCC->APB2ENR;
 #endif /* CPUSTYLE_STM32H7XX */
 
-	hardware_set_dotclock(LTDC_DOTCLK);
 	/* Configure the LCD Control pins */
 	HARDWARE_LTDC_INITIALIZE(BOARD_DEMODE);	// подключение к выводам процессора сигналов периферийного контроллера
 
@@ -1854,7 +1862,7 @@ arm_hardware_ltdc_initialize(void)
 	/* Configure R,G,B component values for LCD background color */                   
 	LTDC_InitStruct.LTDC_BackgroundColor = 0;		// all 0 - black
 
-	LTDC_Init(&LTDC_InitStruct);
+	LTDC_Init(& LTDC_InitStruct);
 
 	LTDC_Init(& LTDC_InitStruct);
 
