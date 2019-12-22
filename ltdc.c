@@ -1691,11 +1691,11 @@ static void LCD_LayerInit(
 	number of bytes per pixel = 2    (pixel_format : RGB565) 
 	number of bytes per pixel = 1    (pixel_format : L8) 
 	*/
-#if CPUSTYLE_STM32MP1
+#if CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7XX
 	LTDC_Layer_InitStruct.LTDC_CFBLineLength = ROWSIZE + 7;
-#else /* CPUSTYLE_STM32MP1 */
+#else /* CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7XX */
 	LTDC_Layer_InitStruct.LTDC_CFBLineLength = ROWSIZE + 3;
-#endif /* CPUSTYLE_STM32MP1 */
+#endif /* CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7XX */
 
 	/* the pitch is the increment from the start of one line of pixels to the 
 	start of the next line in bytes, then :
