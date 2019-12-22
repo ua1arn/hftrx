@@ -17692,12 +17692,12 @@ void bootloader_copyapp(
 void bootloader_detach(uintptr_t ip)
 {
 	__disable_irq();
+	L1C_CleanDCacheAll();
 
 #if (__L2C_PRESENT == 1)
 	L2C_CleanInvAllByWay();
 	L2C_Disable();
 #endif
-	L1C_CleanDCacheAll();
 
 	GIC_DisableInterface();
 	GIC_DisableDistributor();
@@ -17711,7 +17711,7 @@ void bootloader_detach(uintptr_t ip)
 
 	__ISB();
 	__DSB();
-	(* (void (*)(void)) ip /*BOOTLOADER_APPAREA*/)();
+	(* (void (*)(void)) ip)();
 	for (;;)
 		;
 }
