@@ -17697,12 +17697,10 @@ void bootloader_copyapp(
 
 #else /* CPUSTYLE_R7S721 */
 
-	bootloader_readimage(BOOTLOADER_APPBASE, (void *) apparea, HEADERSIZE);
+	bootloader_readimage(BOOTLOADER_SELFSIZE, (void *) apparea, HEADERSIZE);
 	if (hdr->magic_number != HEADER_MAGIC)
 		return;
-	PRINTF(PSTR("Copy app image from %p to %p...\n"), (void *) hdr->load_address, (void *) hdr->load_address);
-	bootloader_readimage(BOOTLOADER_APPBASE + HEADERSIZE, (void *) hdr->load_address, hdr->image_length);
-	PRINTF(PSTR("Copy app image from %p to %p\n done"), (void *) hdr->load_address, (void *) hdr->load_address);
+	bootloader_readimage(BOOTLOADER_SELFSIZE + HEADERSIZE, (void *) hdr->load_address, hdr->image_length);
 
 #endif /* CPUSTYLE_R7S721 */
 }

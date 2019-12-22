@@ -156,7 +156,7 @@ boot.hex: fsbl.stm32
 	./bin2ihex -l 0x00000000 -s fsbl.stm32 >$@
 	
 app.stm32: $(PROJECT)_app.bin
-	./stm32image.exe -l 0xC00000100 -e 0xC00000100 -s $(PROJECT)_app.bin -d $@
+	./stm32image.exe -l 0xC0000100 -e 0xC0000100 -s $(PROJECT)_app.bin -d $@
 	
 app.hex: app.stm32
 	./bin2ihex -l 0x00040000 -s app.stm32 >$@
