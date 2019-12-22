@@ -11215,14 +11215,24 @@ sysinit_pll_initialize(void)
 
 #elif CPUSTYLE_R7S721
 
+#if ! WITHISBOOTLOADER
 	r7s721_pll_initialize();
-
+#endif /* ! WITHISBOOTLOADER */
 	// Программа исполняется из SERIAL FLASH - переключать режимы пока нельзя.
 	//while ((SPIBSC0.CMNSR & (1u << 0)) == 0)	// TEND bit
 	//	;
 	//SPIBSC0.SSLDR = 0x00;
 	//SPIBSC0.SPBCR = 0x200;
 	//SPIBSC0.DRCR = 0x0100;
+
+	/* Установить скорость обмена с SERIAL FLASH повыше */
+	if ((CPG.STBCR9 & CPG_STBCR9_BIT_MSTP93) == 0)
+	{
+		SPIBSC0.SPBCR = (SPIBSC0.SPBCR & ~ (SPIBSC_SPBCR_BRDV | SPIBSC_SPBCR_SPBR)) |
+			(0 << SPIBSC_SPBCR_BRDV_SHIFT) |	// 0..3
+			(2 << SPIBSC_SPBCR_SPBR_SHIFT) |	// 0..255
+			0;
+	}
 
     /* ----  Writing to On-Chip Data-Retention RAM is enabled. ---- */
 	if (1)
@@ -11242,7 +11252,7 @@ sysinit_pll_initialize(void)
     /* ==== Initial setting of the level 1 cache ==== */
 	//__set_SCTLR(0);
     //L1CacheInit();
-#if 0
+#if ! WITHISBOOTLOADER
 	// Перенесено в cpu_initialize
 	// Не получается разместить эти функции во FLASH
 	L1C_EnableCaches();
@@ -11252,17 +11262,8 @@ sysinit_pll_initialize(void)
 	  // Enable Level 2 Cache
 	  L2C_Enable();
 	#endif
-#endif
+#endif /* ! WITHISBOOTLOADER */
 	/* далее будет выполняться копирование data и инициализация bss - для нормальной работы RESET требуется без DATA CACHE */
-
-	/* Установить скорость обмена с SERIAL FLASH повыше */
-	if ((CPG.STBCR9 & CPG_STBCR9_BIT_MSTP93) == 0)
-	{
-		SPIBSC0.SPBCR = (SPIBSC0.SPBCR & ~ (SPIBSC_SPBCR_BRDV | SPIBSC_SPBCR_SPBR)) |
-			(0 << SPIBSC_SPBCR_BRDV_SHIFT) |	// 0..3
-			(2 << SPIBSC_SPBCR_SPBR_SHIFT) |	// 0..255
-			0;
-	}
 
 #elif CPUSTYLE_STM32MP1
 
