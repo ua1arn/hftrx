@@ -5462,10 +5462,10 @@ void hightests(void)
 	{
 		// FPU speed test
 		uint_fast8_t state = 0;
-		const uint_fast32_t mask = (1uL << 14);	// P6_14: RXD0: RX DATA line
-		arm_hardware_pio6_outputs(mask, mask);
-		//const uint_fast32_t mask = (1uL << 13);	// PG13 - LCD_R0
-		//arm_hardware_piog_outputs(mask, 1 * mask);
+		//const uint_fast32_t mask = (1uL << 14);	// P6_14: RXD0: RX DATA line
+		//arm_hardware_pio6_outputs(mask, mask);
+		const uint_fast32_t mask = (1uL << 9);	// PG9 - U12-50
+		arm_hardware_piog_outputs(mask, 1 * mask);
 		PRINTF("cplxmla @%p, src @%p, dst @%p. refv @%p, CPU_FREQ=%lu MHz\n", cplxmla, src, dst, refv, CPU_FREQ / 1000000uL);
 		global_disableIRQ();
 		for (;;)
@@ -5475,14 +5475,14 @@ void hightests(void)
 			if (state)
 			{
 				state = 0;
-				//(GPIOG)->BSRR = BSRR_S(mask);
-				R7S721_TARGET_PORT_S(6, mask);
+				(GPIOG)->BSRR = BSRR_S(mask);
+				//R7S721_TARGET_PORT_S(6, mask);
 			}
 			else
 			{
 				state = 1;
-				//(GPIOG)->BSRR = BSRR_C(mask);
-				R7S721_TARGET_PORT_C(6, mask);
+				(GPIOG)->BSRR = BSRR_C(mask);
+				//R7S721_TARGET_PORT_C(6, mask);
 			}
 		}
 
