@@ -18,14 +18,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-#define __CORTEX_A				9
-#define __FPU_PRESENT             1       /*!< FPU present                                   */
-#define __GIC_PRESENT				1U
-#define __L2C_PRESENT				1U
-
-#define GIC_DISTRIBUTOR_BASE         (0xe8201000uL)                        /*!< (GIC DIST  ) Base Address */
-#define GIC_INTERFACE_BASE           (0xe8202000uL)                        /*!< (GIC CPU IF) Base Address */
-#define L2C_310_BASE                 (0x3ffff000uL)                        /*!< (PL310     ) Base Address */
 
 /* -------------------------  Interrupt Number Definition  ------------------------ */
 
@@ -648,12 +640,6 @@ typedef enum IRQn
 #define Renesas_RZ_A1_IRQ_MAX  TINT170_IRQn
 #endif /* (TARGET_RZA1 <= TARGET_RZA1LU) */
 
-/* --------  Configuration of the Cortex-A9 Processor and Core Peripherals  ------- */
-#define __CA_REV         0x0000    /*!< Core revision r0       */
-
-#include "core_ca.h"
-#include "system_Renesas_RZ_A1.h"
-
 
 /******************************************************************************/
 /*                Device Specific Peripheral Section                          */
@@ -709,6 +695,23 @@ typedef enum IRQn
 #if (TARGET_RZA1 <= TARGET_RZA1LU)
 #define Renesas_RZ_A1_ONCHIP_SRAM_MIRROR_BASE      (0x60000000UL)                        /*!< (SRAM_OC MIRROR  ) Base Address */
 #endif
+
+#define __CORTEX_A				9
+#define __FPU_PRESENT             1       /*!< FPU present                                   */
+#define __GIC_PRESENT				1U
+#define __L2C_PRESENT				1U
+
+#define GIC_DISTRIBUTOR_BASE         Renesas_RZ_A1_GIC_DISTRIBUTOR_BASE                        /*!< (GIC DIST  ) Base Address */
+#define GIC_INTERFACE_BASE           Renesas_RZ_A1_GIC_INTERFACE_BASE                        /*!< (GIC CPU IF) Base Address */
+#define L2C_310_BASE                 Renesas_RZ_A1_PL310_BASE                        /*!< (PL310     ) Base Address */
+
+
+/* --------  Configuration of the Cortex-A9 Processor and Core Peripherals  ------- */
+#define __CA_REV         0x0000    /*!< Core revision r0       */
+
+#include "core_ca.h"
+#include "system_Renesas_RZ_A1.h"
+
 // Already defined in core_ca.h
 #if 0
 //

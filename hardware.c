@@ -9341,6 +9341,10 @@ void arm_hardware_invalidate(uintptr_t base, size_t size)
 	{
 		uintptr_t mva = MK_MVA(base);
 		L1C_InvalidateDCacheMVA((void *) mva);	// очистить кэш
+	#if (__L2C_PRESENT == 1)
+		// Clean cache by physical address
+		L2C_InvPa((void *) mva);
+	#endif
 		base += DCACHEROWSIZE;
 	}
 }
@@ -9385,6 +9389,9 @@ arm_hardware_invalidate_all(void)
 	L1C_InvalidateDCacheAll();
 	L1C_InvalidateICacheAll();
 	L1C_InvalidateBTAC();
+#if (__L2C_PRESENT == 1)
+	L2C_InvAllByWay();
+#endif
 }
 
 // Записать содержимое кэша данных в память
@@ -9392,6 +9399,9 @@ arm_hardware_invalidate_all(void)
 void arm_hardware_flush_all(void)
 {
 	L1C_CleanDCacheAll();
+#if (__L2C_PRESENT == 1)
+	L2C_InvAllByWay();
+#endif
 }
 
 #if CPUSTYLE_ARM_CA7
@@ -9419,6 +9429,11 @@ void arm_hardware_flush(uintptr_t base, size_t size)
 	{
 		uintptr_t mva = MK_MVA(base);
 		L1C_CleanDCacheMVA((void *) mva);		// записать буфер, кэш продолжает хранить
+	#if (__L2C_PRESENT == 1)
+		// предполагается, что ращмер строки L2 и L2 cache равны
+		// Clean cache by physical address
+		L2C_CleanPa((void *) mva);
+	#endif
 		base += DCACHEROWSIZE;
 	}
 }
@@ -9431,6 +9446,11 @@ void arm_hardware_flush_invalidate(uintptr_t base, size_t size)
 	{
 		uintptr_t mva = MK_MVA(base);
 		L1C_CleanInvalidateDCacheMVA((void *) mva);	// записать буфер, очистить кэш
+	#if (__L2C_PRESENT == 1)
+		// предполагается, что ращмер строки L2 и L2 cache равны
+		// Clean cache by physical address
+		L2C_CleanInvPa((void *) mva);
+	#endif
 		base += DCACHEROWSIZE;
 	}
 }
@@ -9470,7 +9490,7 @@ void arm_hardware_flush_invalidate(uintptr_t base, size_t size)
 uint_fast32_t cpu_getdebugticks(void)
 {
 #if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7
-	return DWT->CYCCNT;
+	return DWT->CYCCNT;	// use TIMESTAMP_GET();
 #elif (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7)
 	{
 		uint32_t result;
@@ -11227,9 +11247,9 @@ sysinit_pll_initialize(void)
 	// Не получается разместить эти функции во FLASH
 	L1C_EnableCaches();
 	L1C_EnableBTAC();
-	__set_ACTLR(__get_ACTLR() | ACTLR_L1PE_Msk);	// Enable Dside prefetch
+	//__set_ACTLR(__get_ACTLR() | ACTLR_L1PE_Msk);	// Enable Dside prefetch
 	#if (__L2C_PRESENT == 1)
-	  // Enable GIC
+	  // Enable Level 2 Cache
 	  L2C_Enable();
 	#endif
 #endif
@@ -11254,9 +11274,9 @@ sysinit_pll_initialize(void)
 
 	L1C_EnableCaches();
 	L1C_EnableBTAC();
-	__set_ACTLR(__get_ACTLR() | ACTLR_L1PE_Msk);	// Enable Dside prefetch
+	//__set_ACTLR(__get_ACTLR() | ACTLR_L1PE_Msk);	// Enable Dside prefetch
 	#if (__L2C_PRESENT == 1)
-	  // Enable GIC
+	  // Enable Level 2 Cache
 	  L2C_Enable();
 	#endif
 
@@ -11936,9 +11956,9 @@ void cpu_initialize(void)
 	// Не получается разместить эти функции во FLASH
 	L1C_EnableCaches();
 	L1C_EnableBTAC();
-	__set_ACTLR(__get_ACTLR() | ACTLR_L1PE_Msk);	// Enable Dside prefetch
+	//__set_ACTLR(__get_ACTLR() | ACTLR_L1PE_Msk);	// Enable Dside prefetch
 	#if (__L2C_PRESENT == 1)
-	  // Enable GIC
+	  // Enable Level 2 Cache
 	  L2C_Enable();
 	#endif
 #endif
