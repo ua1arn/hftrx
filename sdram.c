@@ -6129,6 +6129,7 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 				;
 		}
 		TZC->REG_ATTRIBUTESO |= 0xC0000000;	// All permitted
+		TZC->REG_ID_ACCESSO |= 0xFFFFFFFF; // permits read and write non-secure to the region for all NSAIDs
 
 		PRINTF("TZC->GATE_KEEPER=%08lX\n", TZC->GATE_KEEPER);
 		//PRINTF("TZC->INT_STATUS=%08lX\n", TZC->INT_STATUS);
