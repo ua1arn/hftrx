@@ -11215,9 +11215,9 @@ sysinit_pll_initialize(void)
 
 #elif CPUSTYLE_R7S721
 
-#if ! WITHISBOOTLOADER
+#if WITHISBOOTLOADER
 	r7s721_pll_initialize();
-#endif /* ! WITHISBOOTLOADER */
+#endif /* WITHISBOOTLOADER */
 	// Программа исполняется из SERIAL FLASH - переключать режимы пока нельзя.
 	//while ((SPIBSC0.CMNSR & (1u << 0)) == 0)	// TEND bit
 	//	;
@@ -11285,8 +11285,9 @@ sysinit_pll_initialize(void)
 	 * Interconnect update : select master using the port 1.
 	 * LTDC = AXI_M9.
 	 */
-	//mmio_write_32(syscfg_base + SYSCFG_ICNR, SYSCFG_ICNR_AXI_M9);
-	SYSCFG->ICNR = SYSCFG_ICNR_AXI_M9;
+	RCC->MP_APB3ENSETR = RCC_MC_APB3ENSETR_SYSCFGEN;
+	(void) RCC->MP_APB3ENSETR;
+	SYSCFG->ICNR |= SYSCFG_ICNR_AXI_M9;
 	(void) SYSCFG->ICNR;
 
 	if (1)
