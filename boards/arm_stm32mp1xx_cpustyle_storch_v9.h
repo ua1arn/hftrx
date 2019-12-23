@@ -402,7 +402,7 @@
 	// ---
 	// TUNE input - PD9
 	#define TUNE_TARGET_PIN				(GPIOD->IDR)
-	#define TUNE_BIT_TUNE					(1U << 9)		// PD9
+	#define TUNE_BIT_TUNE					0//(1U << 9)		// PD9
 	#define HARDWARE_GET_TUNE() ((TUNE_TARGET_PIN & TUNE_BIT_TUNE) == 0)
 	#define TUNE_INITIALIZE() \
 		do { \
@@ -637,8 +637,8 @@
 #if 1
 	/* получение состояния переполнения АЦП */
 	#define TARGET_FPGA_OVF_INPUT		(GPIOF->IDR)
-	#define TARGET_FPGA_OVF_BIT			(1u << 12)	// PF12
-	#define TARGET_FPGA_OVF_GET			((TARGET_FPGA_OVF_INPUT & TARGET_FPGA_OVF_BIT) == 0)	// 1 - overflow active
+	#define TARGET_FPGA_OVF_BIT			0//(1u << 12)	// PF12
+	#define TARGET_FPGA_OVF_GET			0//((TARGET_FPGA_OVF_INPUT & TARGET_FPGA_OVF_BIT) == 0)	// 1 - overflow active
 	#define TARGET_FPGA_OVF_INITIALIZE() do { \
 				arm_hardware_piof_inputs(TARGET_FPGA_OVF_BIT); \
 			} while (0)
