@@ -153,7 +153,7 @@ SECTIONS
 		PROVIDE_HIDDEN (__fini_array_end = .);
 
 		KEEP(*(.jcr*))
-		. = ALIGN(32);
+		. = ALIGN(64);
 		/* All data end */
 		__data_end__ = .;
 
@@ -161,24 +161,25 @@ SECTIONS
 
 	.bss :
 	{
-		. = ALIGN(6);
 		__bss_start__ = .;
+		. = ALIGN(64);
 		*(.bss*)
 		*(COMMON)
-		. = ALIGN(64);
-		*(.noinit)
-		. = ALIGN(64);
-		*(.framebuff)
 		. = ALIGN(64);
 		__bss_end__ = .;
 	} > RAM
 
 	.noinit :
 	{
+		. = ALIGN(64);
+		*(.noinit)
+		. = ALIGN(64);
 	} > RAM
 
 	.vram :
 	{
+		. = ALIGN(64);
+		*(.framebuff)
 		. = ALIGN(64);
 	} > RAM
 
