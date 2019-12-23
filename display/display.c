@@ -28,6 +28,7 @@
 #define DMA2D_AMTCR_DT_ENABLE 1	/* 0..1 */
 
 #define MDMA_CH	MDMA_Channel0
+#define MDMA_CTCR_xSIZE_RGB565	0x01	// 2 byte
 
 #if LCDMODE_LTDC
 
@@ -36,10 +37,12 @@
 		#define DMA2D_OPFCCR_CM_VALUE	(1 * DMA2D_OPFCCR_CM_0)	/* 001: RGB888 */
 	#elif LCDMODE_LTDC_L8
 		#define DMA2D_FGPFCCR_CM_VALUE	(5 * DMA2D_FGPFCCR_CM_0)	/* 0101: L8 */
+		#define MDMA_CTCR_xSIZE			0x00	// 1 byte
 		//#define DMA2D_OPFCCR_CM_VALUE	(x * DMA2D_OPFCCR_CM_0)	/* not supported */
 	#else /* LCDMODE_LTDC_L8 */
 		#define DMA2D_FGPFCCR_CM_VALUE	(2 * DMA2D_FGPFCCR_CM_0)	/* 0010: RGB565 */
 		#define DMA2D_OPFCCR_CM_VALUE	(2 * DMA2D_OPFCCR_CM_0)	/* 010: RGB565 */
+		#define MDMA_CTCR_xSIZE			0x01	// 2 byte
 	#endif /* LCDMODE_LTDC_L8 */
 
 #endif /* LCDMODE_LTDC */
@@ -68,7 +71,7 @@ static void RAMFUNC_NONILINE display_fillrect(
 #if LCDMODE_LTDC
 
 #if WITHMDMAHW
-	ALIGNX_BEGIN COLOR_T tgcolor ALIGNX_END;
+	ALIGNX_BEGIN COLOR_T tgcolor ALIGNX_END;	/* значение цвета для заполнения области памяти */
 	tgcolor = fgcolor;
 
 	arm_hardware_flush((uintptr_t) & tgcolor, sizeof tgcolor);
@@ -77,13 +80,13 @@ static void RAMFUNC_NONILINE display_fillrect(
 	MDMA_CH->CDAR = (uintptr_t) & buffer [row * dx + col];
 	MDMA_CH->CSAR = (uintptr_t) & tgcolor;
 	MDMA_CH->CTCR =
-		(0x00 << MDMA_CTCR_SINC_Pos) | 	// Source increment mode
-		(0x00 << MDMA_CTCR_DINC_Pos) |	// Destination increment mode
-		(0x00 << MDMA_CTCR_SSIZE_Pos) |
-		(0x00 << MDMA_CTCR_DSIZE_Pos) |
+		(0x00 << MDMA_CTCR_SINC_Pos) | 	// Source increment mode: 00: Source address pointer is fixed
+		(MDMA_CTCR_xSIZE << MDMA_CTCR_SSIZE_Pos) |
 		(0x00 << MDMA_CTCR_SINCOS_Pos) |
-		(0x00 << MDMA_CTCR_DINCOS_Pos) |
 		(0x00 << MDMA_CTCR_SBURST_Pos) |
+		(0x02 << MDMA_CTCR_DINC_Pos) |	// Destination increment mode: 10: Destination address pointer is incremented
+		(MDMA_CTCR_xSIZE << MDMA_CTCR_DSIZE_Pos) |
+		(0x00 << MDMA_CTCR_DINCOS_Pos) |
 		(0x00 << MDMA_CTCR_DBURST_Pos) |	// Destination burst transfer configuration
 		(0x00 << MDMA_CTCR_TLEN_Pos) |		// buffer Transfer Length (number of bytes - 1)
 		(0x00 << MDMA_CTCR_PKE_Pos) |
@@ -96,7 +99,7 @@ static void RAMFUNC_NONILINE display_fillrect(
 		((sizeof (* buffer) * (w)) << MDMA_CBNDTR_BNDT_Pos) |	// Block Number of data bytes to transfer
 		(0x00 << MDMA_CBNDTR_BRSUM_Pos) |	// Block Repeat Source address Update Mode: 0 - increment
 		(0x00 << MDMA_CBNDTR_BRDUM_Pos) |	// Block Repeat Destination address Update Mode: 0 - increment
-		(h << MDMA_CBNDTR_BRC_Pos) |		// Block Repeat Count
+		((h) << MDMA_CBNDTR_BRC_Pos) |		// Block Repeat Count
 		0;
 	MDMA_CH->CBRUR =
 		((sizeof (* buffer) * (0)) << MDMA_CBRUR_SUV_Pos) |				// Source address Update Value
