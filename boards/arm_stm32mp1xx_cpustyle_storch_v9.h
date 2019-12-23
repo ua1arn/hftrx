@@ -770,7 +770,7 @@
 		arm_hardware_pioe_altfn50((1U << 12), GPIO_AF_LTDC9);	/* B4 PE12 */ \
 		arm_hardware_pioa_altfn50((1U << 3), GPIO_AF_LTDC14);	/* B5 PA3 */ \
 		arm_hardware_piob_altfn50((1U << 8), GPIO_AF_LTDC14);	/* B6 PB8 */ \
-		arm_hardware_piod_altfn50((1U << 7), GPIO_AF_LTDC14);	/* B7 PD8 */ \
+		arm_hardware_piod_altfn50((1U << 8), GPIO_AF_LTDC14);	/* B7 PD8 */ \
 	} while (0)
 
 	/* управление состоянием сигнала DISP панели */
