@@ -27,6 +27,8 @@
 #define DMA2D_AMTCR_DT_VALUE 255	/* 0..255 */
 #define DMA2D_AMTCR_DT_ENABLE 1	/* 0..1 */
 
+#define MDMA_CH	MDMA_Channel0
+
 #if LCDMODE_LTDC
 
 	#if LCDMODE_LTDC_L24
@@ -49,7 +51,7 @@ ltdc_horizontal_pixels(
 	uint_fast16_t width	// number of bits (start from LSB first byte in raster)
 	);
 
-/* заполнение прямоугольной области буфера цветом в представлении по умодяанию */
+/* заполнение прямоугольной области буфера цветом в представлении по умолчанию */
 static void RAMFUNC_NONILINE display_fillrect(
 	volatile PACKEDCOLOR_T * buffer,
 	uint_fast16_t dx,	// размеры буфера
@@ -66,8 +68,47 @@ static void RAMFUNC_NONILINE display_fillrect(
 #if LCDMODE_LTDC
 
 #if WITHMDMAHW
+	ALIGNX_BEGIN COLOR_T tgcolor ALIGNX_END;
+	tgcolor = fgcolor;
+
+	arm_hardware_flush((uintptr_t) & tgcolor, sizeof tgcolor);
 
 	arm_hardware_flush((uintptr_t) buffer, sizeof (* buffer) * dx * dy);
+	MDMA_CH->CDAR = (uintptr_t) & buffer [row * dx + col];
+	MDMA_CH->CSAR = (uintptr_t) & tgcolor;
+	MDMA_CH->CTCR =
+		(0x00 << MDMA_CTCR_SINC_Pos) | 	// Source increment mode
+		(0x00 << MDMA_CTCR_DINC_Pos) |	// Destination increment mode
+		(0x00 << MDMA_CTCR_SSIZE_Pos) |
+		(0x00 << MDMA_CTCR_DSIZE_Pos) |
+		(0x00 << MDMA_CTCR_SINCOS_Pos) |
+		(0x00 << MDMA_CTCR_DINCOS_Pos) |
+		(0x00 << MDMA_CTCR_SBURST_Pos) |
+		(0x00 << MDMA_CTCR_DBURST_Pos) |	// Destination burst transfer configuration
+		(0x00 << MDMA_CTCR_TLEN_Pos) |		// buffer Transfer Length (number of bytes - 1)
+		(0x00 << MDMA_CTCR_PKE_Pos) |
+		(0x00 << MDMA_CTCR_PAM_Pos) |
+		(0x02 << MDMA_CTCR_TRGM_Pos) |		// Trigger Mode: 10: Each MDMA request (software or hardware) triggers a repeated block transfer (if the block repeat is 0, a single block is transferred)
+		(0x01 << MDMA_CTCR_SWRM_Pos) |		// 1: hardware request are ignored. Transfer is triggered by software writing 1 to the SWRQ bit
+		(0x00 << MDMA_CTCR_BWM_Pos) |
+		0;
+	MDMA_CH->CBNDTR =
+		((sizeof (* buffer) * (w)) << MDMA_CBNDTR_BNDT_Pos) |	// Block Number of data bytes to transfer
+		(0x00 << MDMA_CBNDTR_BRSUM_Pos) |	// Block Repeat Source address Update Mode: 0 - increment
+		(0x00 << MDMA_CBNDTR_BRDUM_Pos) |	// Block Repeat Destination address Update Mode: 0 - increment
+		(h << MDMA_CBNDTR_BRC_Pos) |		// Block Repeat Count
+		0;
+	MDMA_CH->CBRUR =
+		((sizeof (* buffer) * (0)) << MDMA_CBRUR_SUV_Pos) |				// Source address Update Value
+		((sizeof (* buffer) * (dx - w)) << MDMA_CBRUR_DUV_Pos) |		// Destination address Update Value
+		0;
+
+	MDMA_CH->CIFCR = MDMA_CIFCR_CCTCIF_Msk;
+	/* start transfer */
+	MDMA_CH->CCR = MDMA_CCR_SWRQ_Msk;
+	/* wait for complete */
+	while ((MDMA_CH->CISR & MDMA_CISR_CTCIF_Msk) == 0)	// Channel x Channel Transfer Complete interrupt flag
+		;
 
 #elif WITHDMA2DHW && ! LCDMODE_LTDC_L8
 
@@ -210,15 +251,21 @@ void arm_hardware_mdma_initialize(void)
 	RCC->MP_AHB6ENSETR |= RCC_MC_AHB6ENSETR_MDMAEN;	/* MDMA clock enable */
 	(void) RCC->MP_AHB6ENSETR;
 
+	//MDMA->GISR0
+
 #elif CPUSTYLE_STM32H7XX
 	/* Enable the DMA2D Clock */
 	RCC->AHB3ENR |= RCC_AHB3ENR_MDMAEN_Msk;	/* MDMA clock enable */
 	(void) RCC->AHB3ENR;
 
+	//MDMA->GISR0
+
 #else /* CPUSTYLE_STM32H7XX */
 	/* Enable the DMA2D Clock */
 	RCC->AHB1ENR |= RCC_AHB1ENR_MDMAEN;	/* MDMA clock enable */
 	(void) RCC->AHB1ENR;
+
+	//MDMA->GISR0
 
 #endif /* CPUSTYLE_STM32H7XX */
 }
@@ -243,7 +290,11 @@ hwaccel_fillrect2_RGB565(
 
 #if WITHMDMAHW
 
+	// используется software triggered repeated block transfer
+
 	arm_hardware_flush((uintptr_t) buffer, sizeof (* buffer) * GXSIZE(dx, dy));
+
+
 
 #elif WITHDMA2DHW
 
