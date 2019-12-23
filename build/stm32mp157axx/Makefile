@@ -66,7 +66,7 @@ DLIBS = -lm -larm_cortexA9lfdp_math
 SRCDIR = ../..
 
 # Define project name here
-PROJECT = stm32mp157axx
+PROJECT = tc1_stm32mp157axx
 
 # Define linker script file here
 LDSCRIPT_BOOT = ./stm32mp15xx_cm7_boot.ld
@@ -141,7 +141,7 @@ CPFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 # makefile rules
 #
 
-all: APP2 app.stm32 app.hex
+all: APP2 $(PROJECT)_app.stm32 app.hex
 
 bootloader: BOOT2 fsbl.stm32 boot.hex
 
@@ -155,11 +155,11 @@ fsbl.stm32: $(PROJECT)_boot.bin
 boot.hex: fsbl.stm32
 	./bin2ihex -l 0x00000000 -s fsbl.stm32 >$@
 	
-app.stm32: $(PROJECT)_app.bin
+$(PROJECT)_app.stm32: $(PROJECT)_app.bin
 	./stm32image.exe -l 0xC0000100 -e 0xC0000100 -s $(PROJECT)_app.bin -d $@
 	
-app.hex: app.stm32
-	./bin2ihex -l 0x00040000 -s app.stm32 >$@
+app.hex: $(PROJECT)_app.stm32
+	./bin2ihex -l 0x00040000 -s $(PROJECT)_app.stm32 >$@
 
 
 $(OBJDIR)/%.o: %.c
