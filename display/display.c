@@ -49,7 +49,7 @@ ltdc_horizontal_pixels(
 	uint_fast16_t width	// number of bits (start from LSB first byte in raster)
 	);
 
-/* заполнение прямоугольной области буфера цветом */
+/* заполнение прямоугольной области буфера цветом в представлении по умодяанию */
 static void RAMFUNC_NONILINE display_fillrect(
 	volatile PACKEDCOLOR_T * buffer,
 	uint_fast16_t dx,	// размеры буфера
@@ -64,7 +64,12 @@ static void RAMFUNC_NONILINE display_fillrect(
 	)
 {
 #if LCDMODE_LTDC
-#if defined (DMA2D) && ! LCDMODE_LTDC_L8
+
+#if WITHMDMAHW
+
+	arm_hardware_flush((uintptr_t) buffer, sizeof (* buffer) * dx * dy);
+
+#elif WITHDMA2DHW && ! LCDMODE_LTDC_L8
 
 	// just writes the color defined in the DMA2D_OCOLR register 
 	// to the area located at the address pointed by the DMA2D_OMAR 
@@ -108,7 +113,7 @@ static void RAMFUNC_NONILINE display_fillrect(
 		;
 
 
-#else /* defined (DMA2D)*/
+#else /* WITHDMA2DHW*/
 
 	const uint_fast16_t tail = dx - w;	// сколько надо прибавить к указателю буфера после заполнения, чтобы оказатся в начале области в следующей строке
 	buffer += (dx * row) + col;	// начальная позиция в буфере
@@ -172,7 +177,7 @@ static void RAMFUNC_NONILINE display_fillrect(
 		}
 	}
 
-#endif /* defined (DMA2D) */
+#endif /* WITHDMA2DHW */
 #endif /* LCDMODE_LTDC */
 }
 
@@ -184,21 +189,46 @@ void arm_hardware_dma2d_initialize(void)
 #if CPUSTYLE_STM32H7XX
 	/* Enable the DMA2D Clock */
 	RCC->AHB3ENR |= RCC_AHB3ENR_DMA2DEN;	/* DMA2D clock enable */
-	(void) RCC->APB3ENR;
+	(void) RCC->AHB3ENR;
 
 #else /* CPUSTYLE_STM32H7XX */
 	/* Enable the DMA2D Clock */
 	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2DEN;	/* DMA2D clock enable */
 	(void) RCC->AHB1ENR;
+
 #endif /* CPUSTYLE_STM32H7XX */
 }
 
 #endif /* WITHDMA2DHW */
 
+#if WITHMDMAHW
+
+void arm_hardware_mdma_initialize(void)
+{
+#if CPUSTYLE_STM32MP1
+	/* Enable the DMA2D Clock */
+	RCC->MP_AHB6ENSETR |= RCC_MC_AHB6ENSETR_MDMAEN;	/* MDMA clock enable */
+	(void) RCC->MP_AHB6ENSETR;
+
+#elif CPUSTYLE_STM32H7XX
+	/* Enable the DMA2D Clock */
+	RCC->AHB3ENR |= RCC_AHB3ENR_MDMAEN_Msk;	/* MDMA clock enable */
+	(void) RCC->AHB3ENR;
+
+#else /* CPUSTYLE_STM32H7XX */
+	/* Enable the DMA2D Clock */
+	RCC->AHB1ENR |= RCC_AHB1ENR_MDMAEN;	/* MDMA clock enable */
+	(void) RCC->AHB1ENR;
+
+#endif /* CPUSTYLE_STM32H7XX */
+}
+
+#endif /* WITHMDMAHW */
+
 
 /* заполнение прямоугольной области буфера цветом */
 void 
-dma2d_fillrect2_RGB565(
+hwaccel_fillrect2_RGB565(
 	PACKEDCOLOR565_T * buffer,
 	uint_fast16_t dx,	// размеры буфера
 	uint_fast16_t dy,
@@ -210,7 +240,12 @@ dma2d_fillrect2_RGB565(
 	)
 {
 #if LCDMODE_LTDC
-#if defined (DMA2D)
+
+#if WITHMDMAHW
+
+	arm_hardware_flush((uintptr_t) buffer, sizeof (* buffer) * GXSIZE(dx, dy));
+
+#elif WITHDMA2DHW
 
 	// just writes the color defined in the DMA2D_OCOLR register 
 	// to the area located at the address pointed by the DMA2D_OMAR 
@@ -253,7 +288,7 @@ dma2d_fillrect2_RGB565(
 	while ((DMA2D->CR & DMA2D_CR_START) != 0)
 		;
 
-#else /* defined (DMA2D) */
+#else /* WITHDMA2DHW */
 
 	const unsigned t = dx - w;
 	buffer += (dx * row) + col;
@@ -270,21 +305,21 @@ dma2d_fillrect2_RGB565(
 
 
 
-#endif /* defined (DMA2D) */
+#endif /* WITHDMA2DHW */
 #endif /* LCDMODE_LTDC */
 }
 
 
 /* заполнение прямоугольного буфера цветом */
 static void 
-dma2d_fillrect(
+hwaccel_fillrect_RGB565(
 	PACKEDCOLOR565_T * buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy,
 	COLOR565_T color
 	)
 {
-	dma2d_fillrect2_RGB565(buffer, dx, dy, 0, 0, dx, dy, color);
+	hwaccel_fillrect2_RGB565(buffer, dx, dy, 0, 0, dx, dy, color);
 }
 
 #if LCDMODE_COLORED
@@ -475,11 +510,11 @@ void display_colorbuffer_fill(
 	COLOR565_T color
 	)
 {
-#if defined (DMA2D) && LCDMODE_LTDC
+#if WITHDMA2DHW && LCDMODE_LTDC
 
-	dma2d_fillrect(buffer, dx, dy, color);
+	hwaccel_fillrect_RGB565(buffer, dx, dy, color);
 
-#else /* defined (DMA2D) && LCDMODE_LTDC */
+#else /* WITHDMA2DHW && LCDMODE_LTDC */
 
 	uint_fast32_t len = (uint_fast32_t) dx * dy;
 	if (sizeof (* buffer) == 1)
@@ -518,7 +553,7 @@ void display_colorbuffer_fill(
 			* buffer ++ = color;
 	}
 
-#endif /* defined (DMA2D) && LCDMODE_LTDC && ! LCDMODE_LTDC_L8 */
+#endif /* WITHDMA2DHW && LCDMODE_LTDC && ! LCDMODE_LTDC_L8 */
 }
 
 // поставить цветную точку.
@@ -600,60 +635,65 @@ void display_colorbuffer_show(
 	uint_fast16_t row	// вертикальная координата левого верхнего угла на экране (0..dy-1) сверху вниз
 	)
 {
-#if defined (DMA2D) && LCDMODE_LTDC
+#if WITHMDMAHW && LCDMODE_LTDC
 
 	arm_hardware_flush((uintptr_t) buffer, sizeof (* buffer) * GXSIZE(dx, dy));
 
-#if LCDMODE_HORFILL
+#elif WITHDMA2DHW && LCDMODE_LTDC
 
-	/* исходный растр */
-	DMA2D->FGMAR = (uintptr_t) buffer;
-	DMA2D->FGOR = (DMA2D->FGOR & ~ (DMA2D_FGOR_LO)) |
-		(0 << DMA2D_FGOR_LO_Pos) |
-		0;
-	/* целевой растр */
-	DMA2D->OMAR = (uintptr_t) & framebuff [row] [col];
-	DMA2D->OOR = (DMA2D->OOR & ~ (DMA2D_OOR_LO)) |
-		((DIM_X - dx) << DMA2D_OOR_LO_Pos) |
-		0;
-	/* размер пересылаемого растра */
-	DMA2D->NLR = (DMA2D->NLR & ~ (DMA2D_NLR_NL | DMA2D_NLR_PL)) |
-		(dy << DMA2D_NLR_NL_Pos) |
-		(dx << DMA2D_NLR_PL_Pos) |
-		0;
-	/* формат пикселя */
-	DMA2D->FGPFCCR = (DMA2D->FGPFCCR & ~ (DMA2D_FGPFCCR_CM)) |
-		DMA2D_FGPFCCR_CM_VALUE |	/* Color mode - framebuffer pixel format */
-		0;
+	arm_hardware_flush((uintptr_t) buffer, sizeof (* buffer) * GXSIZE(dx, dy));
 
-	/* set AXI master timer */
-	DMA2D->AMTCR = (DMA2D->AMTCR & ~ (DMA2D_AMTCR_DT | DMA2D_AMTCR_EN)) |
-		(DMA2D_AMTCR_DT_VALUE << DMA2D_AMTCR_DT_Pos) |
-		DMA2D_AMTCR_DT_ENABLE * DMA2D_AMTCR_EN |
-		0;
+	#if LCDMODE_HORFILL
 
-	/* запустить операцию */
-	DMA2D->CR = (DMA2D->CR & ~ (DMA2D_CR_MODE)) |
-		0 * DMA2D_CR_MODE_0 |	// 00: Memory-to-memory (FG fetch only)
-		1 * DMA2D_CR_START |
-		0;
+		/* исходный растр */
+		DMA2D->FGMAR = (uintptr_t) buffer;
+		DMA2D->FGOR = (DMA2D->FGOR & ~ (DMA2D_FGOR_LO)) |
+			(0 << DMA2D_FGOR_LO_Pos) |
+			0;
+		/* целевой растр */
+		DMA2D->OMAR = (uintptr_t) & framebuff [row] [col];
+		DMA2D->OOR = (DMA2D->OOR & ~ (DMA2D_OOR_LO)) |
+			((DIM_X - dx) << DMA2D_OOR_LO_Pos) |
+			0;
+		/* размер пересылаемого растра */
+		DMA2D->NLR = (DMA2D->NLR & ~ (DMA2D_NLR_NL | DMA2D_NLR_PL)) |
+			(dy << DMA2D_NLR_NL_Pos) |
+			(dx << DMA2D_NLR_PL_Pos) |
+			0;
+		/* формат пикселя */
+		DMA2D->FGPFCCR = (DMA2D->FGPFCCR & ~ (DMA2D_FGPFCCR_CM)) |
+			DMA2D_FGPFCCR_CM_VALUE |	/* Color mode - framebuffer pixel format */
+			0;
 
-	/* ожидаем выполнения операции */
-	while ((DMA2D->CR & DMA2D_CR_START) != 0)
-		;
+		/* set AXI master timer */
+		DMA2D->AMTCR = (DMA2D->AMTCR & ~ (DMA2D_AMTCR_DT | DMA2D_AMTCR_EN)) |
+			(DMA2D_AMTCR_DT_VALUE << DMA2D_AMTCR_DT_Pos) |
+			DMA2D_AMTCR_DT_ENABLE * DMA2D_AMTCR_EN |
+			0;
 
-#else /* LCDMODE_HORFILL */
+		/* запустить операцию */
+		DMA2D->CR = (DMA2D->CR & ~ (DMA2D_CR_MODE)) |
+			0 * DMA2D_CR_MODE_0 |	// 00: Memory-to-memory (FG fetch only)
+			1 * DMA2D_CR_START |
+			0;
 
-#endif /* LCDMODE_HORFILL */
+		/* ожидаем выполнения операции */
+		while ((DMA2D->CR & DMA2D_CR_START) != 0)
+			;
 
-#else /* defined (DMA2D) && LCDMODE_LTDC */
+	#else /* LCDMODE_HORFILL */
+		#warning To be implemented
+	#endif /* LCDMODE_HORFILL */
+
+#else /* WITHDMA2DHW && LCDMODE_LTDC */
+
 	#if LCDMODE_COLORED
 		display_plotfrom(col, row);
 		display_plotstart(dy);
 		display_plot(buffer, dx, dy);
 		display_plotstop();
 	#endif
-#endif /* defined (DMA2D) && LCDMODE_LTDC */
+#endif /* WITHDMA2DHW && LCDMODE_LTDC */
 }
 #endif /* LCDMODE_LTDC_PIP16 */
 
@@ -888,15 +928,19 @@ bitblt_fill(
 	)
 {
 
-#if defined (DMA2D) && LCDMODE_LTDC && ! LCDMODE_LTDC_L8
+#if WITHMDMAHW && LCDMODE_LTDC && ! LCDMODE_LTDC_L8
 
-	dma2d_fillrect2_RGB565(& framebuff [0] [0], DIM_X, DIM_Y, x, y, w, h, fgcolor);
+	hwaccel_fillrect2_RGB565(& framebuff [0] [0], DIM_X, DIM_Y, x, y, w, h, fgcolor);
 
-#else /* defined (DMA2D) && LCDMODE_LTDC && ! LCDMODE_LTDC_L8 */
+#elif WITHDMA2DHW && LCDMODE_LTDC && ! LCDMODE_LTDC_L8
+
+	hwaccel_fillrect2_RGB565(& framebuff [0] [0], DIM_X, DIM_Y, x, y, w, h, fgcolor);
+
+#else /* WITHDMA2DHW && LCDMODE_LTDC && ! LCDMODE_LTDC_L8 */
 
 	display_fillrect(& framebuff [0] [0], DIM_X, DIM_Y, x, y, w, h, fgcolor, bgcolor, hpattern);
 
-#endif /* defined (DMA2D) && LCDMODE_LTDC && ! LCDMODE_LTDC_L8 */
+#endif /* WITHDMA2DHW && LCDMODE_LTDC && ! LCDMODE_LTDC_L8 */
 }
 
 void display_solidbar(uint_fast16_t x, uint_fast16_t y, uint_fast16_t x2, uint_fast16_t y2, COLOR_T color)
@@ -930,6 +974,10 @@ void display_hardware_initialize(void)
 	// Image construction hardware
 	arm_hardware_dma2d_initialize();
 #endif /* WITHDMA2DHW */
+#if WITHMDMAHW
+	// Image construction hardware
+	arm_hardware_mdma_initialize();
+#endif
 #if WITHLTDCHW
 	// STM32xxx LCD-TFT Controller (LTDC)
 	// RENESAS Video Display Controller 5
@@ -1253,7 +1301,7 @@ display_scroll_down(
 	int_fast16_t hshift	// количество пиксеелей для сдвига влево (отрицательное число) или вправо (положительное).
 	)
 {
-#if defined (DMA2D) && LCDMODE_LTDC
+#if WITHDMA2DHW && LCDMODE_LTDC
 
 #if LCDMODE_HORFILL
 	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
@@ -1297,7 +1345,7 @@ display_scroll_down(
 #else /* LCDMODE_HORFILL */
 #endif /* LCDMODE_HORFILL */
 
-#endif /* defined (DMA2D) && LCDMODE_LTDC */
+#endif /* WITHDMA2DHW && LCDMODE_LTDC */
 }
 
 /* копирование содержимого окна с перекрытием для водопада */
@@ -1311,7 +1359,7 @@ display_scroll_up(
 	int_fast16_t hshift	// количество пиксеелей для сдвига влево (отрицательное число) или вправо (положительное).
 	)
 {
-#if defined (DMA2D) && LCDMODE_LTDC
+#if WITHDMA2DHW && LCDMODE_LTDC
 #if LCDMODE_HORFILL
 	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
 
@@ -1353,7 +1401,7 @@ display_scroll_up(
 
 #else /* LCDMODE_HORFILL */
 #endif /* LCDMODE_HORFILL */
-#endif /* defined (DMA2D) && LCDMODE_LTDC */
+#endif /* WITHDMA2DHW && LCDMODE_LTDC */
 }
 
 
@@ -1362,9 +1410,13 @@ void display_clear(void)
 {
 	const COLOR_T bg = display_getbgcolor();
 
-#if defined (DMA2D) && LCDMODE_LTDC && ! LCDMODE_LTDC_L8
+#if WITHMDMAHW && LCDMODE_LTDC && ! LCDMODE_LTDC_L8
 
-	dma2d_fillrect(& framebuff [0] [0], DIM_X, DIM_Y, bg);
+	hwaccel_fillrect_RGB565(& framebuff [0] [0], DIM_X, DIM_Y, bg);
+
+#elif WITHDMA2DHW && LCDMODE_LTDC && ! LCDMODE_LTDC_L8
+
+	hwaccel_fillrect_RGB565(& framebuff [0] [0], DIM_X, DIM_Y, bg);
 
 #elif LCDMODE_LTDC_L8
 
