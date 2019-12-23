@@ -9404,23 +9404,6 @@ void arm_hardware_flush_all(void)
 #endif
 }
 
-#if CPUSTYLE_ARM_CA7
-
-// Snoop control unit (SCU) done these functionality
-// Сейчас эта память будет записываться по DMA куда-то
-void arm_hardware_flush(uintptr_t base, size_t size)
-{
-
-}
-
-// Snoop control unit (SCU) done these functionality
-// Сейчас эта память будет записываться по DMA куда-то. Потом содержимое не требуется
-void arm_hardware_flush_invalidate(uintptr_t base, size_t size)
-{
-}
-
-#else /* CPUSTYLE_ARM_CA7 */
-
 // Сейчас эта память будет записываться по DMA куда-то
 void arm_hardware_flush(uintptr_t base, size_t size)
 {
@@ -9454,8 +9437,6 @@ void arm_hardware_flush_invalidate(uintptr_t base, size_t size)
 		base += DCACHEROWSIZE;
 	}
 }
-
-#endif /* CPUSTYLE_ARM_CA7 */
 
 #else
 
