@@ -18,7 +18,7 @@
 //#define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
 //#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
-#define WITHSDRAMHW	1	/* В процессоре есть внешняя память */
+//#define WITHMDMAHW		1	/* Использование MDMA для формирования изображений */
 #define WIHSPIDFHW	1	/* обслуживание DATA FLASH */
 
 //#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
@@ -44,6 +44,7 @@
 
 #if WITHISBOOTLOADER
 
+	#define WITHSDRAMHW	1	/* В процессоре есть внешняя память */
 	//#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 
 	//#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод VBUS_SENSE */
