@@ -6080,7 +6080,6 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 	if (1)
 	{
 		// TrustZone address space controller for DDR (TZC)
-		uint_fast8_t i;
 
 		// TZC AXI port 1 clocks enable
 		RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_TZC1EN;
@@ -6094,47 +6093,45 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 		RCC->MP_APB5LPENSETR = RCC_MC_APB5LPENSETR_TZC2LPEN;
 		(void) RCC->MP_APB5LPENSETR;
 
-#if 0
-		// 0x01001F08
-		PRINTF("TZC->BUILD_CONFIG=%08lX\n", TZC->BUILD_CONFIG);
-		PRINTF("TZC->ACTION=%08lX\n", TZC->ACTION);
-
-		const uint_fast8_t lastregion = TZC->BUILD_CONFIG & 0x0f;
-		for (i = 0; i <= lastregion; ++ i)
-		{
-			volatile uint32_t * const REG_BASE_LOWx = & TZC->REG_BASE_LOWO + (i * 8);
-			volatile uint32_t * const REG_BASE_HIGHx = & TZC->REG_BASE_HIGHO + (i * 8);
-			volatile uint32_t * const REG_TOP_LOWx = & TZC->REG_TOP_LOWO + (i * 8);
-			volatile uint32_t * const REG_TOP_HIGHx = & TZC->REG_TOP_HIGHO + (i * 8);
-			volatile uint32_t * const REG_ATTRIBUTESx = & TZC->REG_ATTRIBUTESO + (i * 8);
-
-			PRINTF("TZC->REG_BASE_LOW%d=%08lX ", i, * REG_BASE_LOWx);
-			PRINTF("REG_BASE_HIGH%d=%08lX ", i, * REG_BASE_HIGHx);
-			PRINTF("REG_TOP_LOW%d=%08lX ", i, * REG_TOP_LOWx);
-			PRINTF("REG_TOP_HIGH%d=%08lX ", i, * REG_TOP_HIGHx);
-			PRINTF("REG_ATTRIBUTES%d=%08lX\n", i, * REG_ATTRIBUTESx);
-			// * REG_ATTRIBUTES = (* REG_ATTRIBUTESx & ~ (0x03)) |
-			//		0;
-			//PRINTF("TZC->REG_ATTRIBUTES%d=%08lX\n", i, * REG_ATTRIBUTESx);
-		}
-#endif
 		const uint_fast8_t lastfilrer = (TZC->BUILD_CONFIG >> 24) & 0x03;
-		for (i = 0; i <= lastfilrer; ++ i)
-		{
-			const uint32_t mask = 1uL << i;
-			// Switch off reaction
-			TZC->GATE_KEEPER |= mask;	// Gate open request
-			(void) TZC->GATE_KEEPER;
-			while (((TZC->GATE_KEEPER >> 16) & mask) == 0)
-				;
-		}
-		TZC->REG_ATTRIBUTESO |= 0xC0000000;	// All permitted
-		TZC->REG_ID_ACCESSO |= 0xFFFFFFFF; // permits read and write non-secure to the region for all NSAIDs
-
-		PRINTF("TZC->GATE_KEEPER=%08lX\n", TZC->GATE_KEEPER);
-		//PRINTF("TZC->INT_STATUS=%08lX\n", TZC->INT_STATUS);
+		const uint_fast32_t mask = (1uL << (lastfilrer + 1)) - 1;
+		TZC->GATE_KEEPER |= mask;	// Gate open request
+		(void) TZC->GATE_KEEPER;
+		while (((TZC->GATE_KEEPER >> 16) & mask) != mask)
+			;
+		TZC->REG_ATTRIBUTESO |= 0xC0000000;	// All (read and write) permitted
+		(void) TZC->REG_ATTRIBUTESO;
+		TZC->REG_ID_ACCESSO = 0xFFFFFFFF; // permits read and write non-secure to the region for all NSAIDs
+		(void) TZC->REG_ID_ACCESSO;
 	}
+	{
+#if 1
+        // 0x01001F08
+        //PRINTF("TZC->BUILD_CONFIG=%08lX\n", TZC->BUILD_CONFIG);
+        //PRINTF("TZC->ACTION=%08lX\n", TZC->ACTION);
 
+        const uint_fast8_t lastregion = TZC->BUILD_CONFIG & 0x0f;
+        uint_fast8_t i;
+        for (i = 1; i <= lastregion; ++ i)
+        {
+            volatile uint32_t * const REG_ATTRIBUTESx = & TZC->REG_ATTRIBUTESO + (i * 8);
+            //volatile uint32_t * const REG_BASE_LOWx = & TZC->REG_BASE_LOWO + (i * 8);
+            //volatile uint32_t * const REG_BASE_HIGHx = & TZC->REG_BASE_HIGHO + (i * 8);
+            //volatile uint32_t * const REG_TOP_LOWx = & TZC->REG_TOP_LOWO + (i * 8);
+            //volatile uint32_t * const REG_TOP_HIGHx = & TZC->REG_TOP_HIGHO + (i * 8);
+
+            //PRINTF("TZC->REG_BASE_LOW%d=%08lX ", i, * REG_BASE_LOWx);
+            //PRINTF("REG_BASE_HIGH%d=%08lX ", i, * REG_BASE_HIGHx);
+            //PRINTF("REG_TOP_LOW%d=%08lX ", i, * REG_TOP_LOWx);
+            //PRINTF("REG_TOP_HIGH%d=%08lX ", i, * REG_TOP_HIGHx);
+            //PRINTF("REG_ATTRIBUTES%d=%08lX\n", i, * REG_ATTRIBUTESx);
+
+             * REG_ATTRIBUTESx &= ~ 0x03uL;
+
+            //PRINTF("TZC->REG_ATTRIBUTES%d=%08lX\n", i, * REG_ATTRIBUTESx);
+        }
+#endif
+	}
 	TWISOFT_INITIALIZE();
 	initialize_pmic();
 
