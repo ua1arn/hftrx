@@ -9852,20 +9852,6 @@ void hardware_set_dotclock(unsigned long dotfreq)
 		;
 }
 
-/* Extended TrustZone protection controller access function */
-static void FLASHMEMINITFUNC
-tzpc_set_prot(
-	uint_fast8_t id,	/* IP code */
-	uint_fast8_t val	/* 0x00..0x03: protection style */
-	)
-{
-	const uint_fast8_t pos = (id % 16) * 2;
-	const uint_fast8_t ix = (id / 16);
-	const uint_fast32_t mask = 0x03uL << pos;
-	volatile uint32_t * const reg = & TZPC->DECPROT0 + ix;
-	* reg = (* reg & ~ mask) | ((val << pos) & mask);
-}
-
 #endif /* CPUSTYLE_STM32MP1 */
 
 #if (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7)
@@ -11264,30 +11250,7 @@ sysinit_pll_initialize(void)
 	  L2C_Enable();
 	#endif
 
-	if (1)
-	{
-		//RCC->TZCR &= ~ (RCC_TZCR_TZEN | RCC_TZCR_MCKPROT);
-		//RCC->TZCR &= ~ (RCC_TZCR_TZEN);
-		RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_TZPCEN;
-		(void) RCC->MP_APB5ENSETR;
-
-		// Set peripheral is not secure (Read and Write by secure and non secure)
-		tzpc_set_prot(0, 0x03);		// STGENC
-		tzpc_set_prot(1, 0x03);		// BKPSRAM
-		tzpc_set_prot(3, 0x03);		// USART1
-		tzpc_set_prot(7, 0x03);		// RNG1
-		tzpc_set_prot(10, 0x03);	// DDRCTRL
-		tzpc_set_prot(11, 0x03);	// DDRPHYC
-		tzpc_set_prot(32, 0x03);	// UART4
-	}
-
 	// Hang-off QSPI memory
-	/*
-		QUADSPI_CLK 	PF10	AS pin 01	U13-38 (traced to PA7)
-		QUADSPI_BK1_NCS PB6 	AS pin 08	U12-21 (traced to PB12)
-		QUADSPI_BK1_IO0 PF8
-		QUADSPI_BK1_IO1 PF9
-	*/
 	SPIDF_HANGOFF();	// Отключить процессор от SERIAL FLASH
 
 #endif

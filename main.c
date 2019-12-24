@@ -17710,10 +17710,9 @@ void bootloader_copyapp(
 void bootloader_detach(uintptr_t ip)
 {
 	__disable_irq();
-	L1C_CleanDCacheAll();
+	arm_hardware_flush_all();
 
 #if (__L2C_PRESENT == 1)
-	L2C_CleanInvAllByWay();
 	L2C_Disable();
 #endif
 
