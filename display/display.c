@@ -1693,6 +1693,7 @@ void display_plot(
 		arm_hardware_flush((uintptr_t) buffer, sizeof (* buffer) * dx * dy);
 		hwaccel_copy(buffer, & framebuff [ltdc_first] [ltdc_second], dx, DIM_SECOND - dx, dy);
 		ltdc_first += dy;
+
 	#else /* WITHMDMAHW || (WITHLTDCHW && ! LCDMODE_LTDC_L8) */
 		// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
 		const size_t len = dx * sizeof * buffer;
@@ -1702,7 +1703,6 @@ void display_plot(
 			memcpy((void *) p, buffer, len);
 			arm_hardware_flush((uintptr_t) p, len);
 			buffer += dx;
-
 			++ ltdc_first;
 		}
 
@@ -1722,7 +1722,6 @@ void display_plot(
 			memcpy((void *) p, buffer, len);
 			arm_hardware_flush((uintptr_t) p, len);
 			buffer += dy;
-
 			++ ltdc_first;
 		}
 
