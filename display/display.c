@@ -108,11 +108,13 @@ static void RAMFUNC_NONILINE display_fillrect(
 		0;
 
 	MDMA_CH->CIFCR = MDMA_CIFCR_CCTCIF_Msk;
+	MDMA_CH->CCR |= MDMA_CCR_EN_Msk;
 	/* start transfer */
-	MDMA_CH->CCR = MDMA_CCR_SWRQ_Msk;
+	MDMA_CH->CCR |= MDMA_CCR_SWRQ_Msk;
 	/* wait for complete */
 	while ((MDMA_CH->CISR & MDMA_CISR_CTCIF_Msk) == 0)	// Channel x Channel Transfer Complete interrupt flag
 		;
+	MDMA_CH->CCR &= ~ MDMA_CCR_EN_Msk;
 
 #elif WITHDMA2DHW && ! LCDMODE_LTDC_L8
 
@@ -301,7 +303,6 @@ hwaccel_fillrect2_RGB565(
 
 	arm_hardware_flush((uintptr_t) & tgcolor, sizeof tgcolor);
 
-
 	arm_hardware_flush((uintptr_t) buffer, sizeof (* buffer) * GXSIZE(dx, dy));
 
 	MDMA_CH->CDAR = (uintptr_t) & buffer [row * dx + col];
@@ -334,12 +335,13 @@ hwaccel_fillrect2_RGB565(
 		0;
 
 	MDMA_CH->CIFCR = MDMA_CIFCR_CCTCIF_Msk;
+	MDMA_CH->CCR |= MDMA_CCR_EN_Msk;
 	/* start transfer */
-	MDMA_CH->CCR = MDMA_CCR_SWRQ_Msk;
+	MDMA_CH->CCR |= MDMA_CCR_SWRQ_Msk;
 	/* wait for complete */
 	while ((MDMA_CH->CISR & MDMA_CISR_CTCIF_Msk) == 0)	// Channel x Channel Transfer Complete interrupt flag
 		;
-
+	MDMA_CH->CCR &= ~ MDMA_CCR_EN_Msk;
 
 #elif WITHDMA2DHW
 
@@ -1634,12 +1636,13 @@ static void hwaccel_copy(
 		0;
 
 	MDMA_CH->CIFCR = MDMA_CIFCR_CCTCIF_Msk;
+	MDMA_CH->CCR |= MDMA_CCR_EN_Msk;
 	/* start transfer */
-	MDMA_CH->CCR = MDMA_CCR_SWRQ_Msk;
+	MDMA_CH->CCR |= MDMA_CCR_SWRQ_Msk;
 	/* wait for complete */
 	while ((MDMA_CH->CISR & MDMA_CISR_CTCIF_Msk) == 0)	// Channel x Channel Transfer Complete interrupt flag
 		;
-
+	MDMA_CH->CCR &= ~ MDMA_CCR_EN_Msk;
 
 #elif WITHDMA2DHW
 	/* исходный растр */
