@@ -30,22 +30,18 @@
 #define MDMA_CH	MDMA_Channel0
 #define MDMA_CTCR_xSIZE_RGB565	0x01	// 2 byte
 
-#if LCDMODE_LTDC
-
-	#if LCDMODE_LTDC_L24
-		#define DMA2D_FGPFCCR_CM_VALUE	(1 * DMA2D_FGPFCCR_CM_0)	/* 0001: RGB888 */
-		#define DMA2D_OPFCCR_CM_VALUE	(1 * DMA2D_OPFCCR_CM_0)	/* 001: RGB888 */
-	#elif LCDMODE_LTDC_L8
-		#define DMA2D_FGPFCCR_CM_VALUE	(5 * DMA2D_FGPFCCR_CM_0)	/* 0101: L8 */
-		#define MDMA_CTCR_xSIZE			0x00	// 1 byte
-		//#define DMA2D_OPFCCR_CM_VALUE	(x * DMA2D_OPFCCR_CM_0)	/* not supported */
-	#else /* LCDMODE_LTDC_L8 */
-		#define DMA2D_FGPFCCR_CM_VALUE	(2 * DMA2D_FGPFCCR_CM_0)	/* 0010: RGB565 */
-		#define DMA2D_OPFCCR_CM_VALUE	(2 * DMA2D_OPFCCR_CM_0)	/* 010: RGB565 */
-		#define MDMA_CTCR_xSIZE			0x01	// 2 byte
-	#endif /* LCDMODE_LTDC_L8 */
-
-#endif /* LCDMODE_LTDC */
+#if LCDMODE_LTDC_L24
+	#define DMA2D_FGPFCCR_CM_VALUE	(1 * DMA2D_FGPFCCR_CM_0)	/* 0001: RGB888 */
+	#define DMA2D_OPFCCR_CM_VALUE	(1 * DMA2D_OPFCCR_CM_0)	/* 001: RGB888 */
+#elif LCDMODE_LTDC_L8
+	#define DMA2D_FGPFCCR_CM_VALUE	(5 * DMA2D_FGPFCCR_CM_0)	/* 0101: L8 */
+	#define MDMA_CTCR_xSIZE			0x00	// 1 byte
+	//#define DMA2D_OPFCCR_CM_VALUE	(x * DMA2D_OPFCCR_CM_0)	/* not supported */
+#else /* LCDMODE_LTDC_L8 */
+	#define DMA2D_FGPFCCR_CM_VALUE	(2 * DMA2D_FGPFCCR_CM_0)	/* 0010: RGB565 */
+	#define DMA2D_OPFCCR_CM_VALUE	(2 * DMA2D_OPFCCR_CM_0)	/* 010: RGB565 */
+	#define MDMA_CTCR_xSIZE			0x01	// 2 byte
+#endif /* LCDMODE_LTDC_L8 */
 
 static void
 ltdc_horizontal_pixels(
@@ -54,6 +50,20 @@ ltdc_horizontal_pixels(
 	uint_fast16_t width	// number of bits (start from LSB first byte in raster)
 	);
 
+static uint_fast8_t
+mdma_getbus(uintptr_t addr)
+{
+#if CPUSTYLE_STM32H7XX
+	addr &= 0xFF000000uL;
+	return (addr == 0x00000000uL || addr == 0x20000000uL);
+#elif CPUSTYLE_STM32MP1
+	return 0;
+	addr &= 0xFF000000uL;
+	return (addr == 0x00000000uL || addr == 0x20000000uL);
+#else
+	return 0;
+#endif
+}
 /* заполнение прямоугольной области буфера цветом в представлении по умолчанию */
 static void RAMFUNC_NONILINE display_fillrect(
 	volatile PACKEDCOLOR_T * buffer,
@@ -68,16 +78,17 @@ static void RAMFUNC_NONILINE display_fillrect(
 	uint_fast8_t hpattern	// horizontal pattern (LSB - left)
 	)
 {
-#if LCDMODE_LTDC
-
+	if (w == 0 || h == 0)
+		return;
 #if WITHMDMAHW
-	ALIGNX_BEGIN COLOR_T tgcolor ALIGNX_END;	/* значение цвета для заполнения области памяти */
+	ALIGNX_BEGIN PACKEDCOLOR_T tgcolor ALIGNX_END;	/* значение цвета для заполнения области памяти */
 	tgcolor = fgcolor;
 
 	arm_hardware_flush((uintptr_t) & tgcolor, sizeof tgcolor);
 
 	arm_hardware_flush((uintptr_t) buffer, sizeof (* buffer) * dx * dy);
 
+	MDMA_CH->CCR &= ~ MDMA_CCR_EN_Msk;
 	MDMA_CH->CDAR = (uintptr_t) & buffer [row * dx + col];
 	MDMA_CH->CSAR = (uintptr_t) & tgcolor;
 	MDMA_CH->CTCR =
@@ -100,13 +111,18 @@ static void RAMFUNC_NONILINE display_fillrect(
 		((sizeof (* buffer) * (w)) << MDMA_CBNDTR_BNDT_Pos) |	// Block Number of data bytes to transfer
 		(0x00 << MDMA_CBNDTR_BRSUM_Pos) |	// Block Repeat Source address Update Mode: 0 - increment
 		(0x00 << MDMA_CBNDTR_BRDUM_Pos) |	// Block Repeat Destination address Update Mode: 0 - increment
-		((h) << MDMA_CBNDTR_BRC_Pos) |		// Block Repeat Count
+		((h - 1) << MDMA_CBNDTR_BRC_Pos) |		// Block Repeat Count
 		0;
 	MDMA_CH->CBRUR =
 		((sizeof (* buffer) * (0)) << MDMA_CBRUR_SUV_Pos) |				// Source address Update Value
 		((sizeof (* buffer) * (dx - w)) << MDMA_CBRUR_DUV_Pos) |		// Destination address Update Value
 		0;
 
+	//PRINTF("w=%d, MDMA_CH->CDAR=%08lX, CSAR=%08lX, MDMA_CH->CBNDTR=%08lX\n", w, MDMA_CH->CDAR, MDMA_CH->CSAR, MDMA_CH->CBNDTR);
+	MDMA_CH->CTBR = (MDMA_CH->CTBR & ~ (MDMA_CTBR_SBUS_Msk | MDMA_CTBR_DBUS_Msk)) |
+		mdma_getbus(MDMA_CH->CSAR) * MDMA_CTBR_SBUS_Msk |
+		mdma_getbus(MDMA_CH->CDAR) * MDMA_CTBR_DBUS_Msk |
+		0;
 	MDMA_CH->CIFCR = MDMA_CIFCR_CCTCIF_Msk;
 	MDMA_CH->CCR |= MDMA_CCR_EN_Msk;
 	/* start transfer */
@@ -114,7 +130,6 @@ static void RAMFUNC_NONILINE display_fillrect(
 	/* wait for complete */
 	while ((MDMA_CH->CISR & MDMA_CISR_CTCIF_Msk) == 0)	// Channel x Channel Transfer Complete interrupt flag
 		;
-	MDMA_CH->CCR &= ~ MDMA_CCR_EN_Msk;
 
 #elif WITHDMA2DHW && ! LCDMODE_LTDC_L8
 
@@ -225,7 +240,6 @@ static void RAMFUNC_NONILINE display_fillrect(
 	}
 
 #endif /* WITHDMA2DHW */
-#endif /* LCDMODE_LTDC */
 }
 
 
@@ -256,22 +270,24 @@ void arm_hardware_mdma_initialize(void)
 	/* Enable the DMA2D Clock */
 	RCC->MP_AHB6ENSETR |= RCC_MC_AHB6ENSETR_MDMAEN;	/* MDMA clock enable */
 	(void) RCC->MP_AHB6ENSETR;
-
-	//MDMA->GISR0
+	RCC->MP_AHB6LPENSETR |= RCC_MC_AHB6LPENSETR_MDMALPEN;	/* MDMA clock enable */
+	(void) RCC->MP_AHB6LPENSETR;
+	//RCC->MP_TZAHB6ENSETR |= RCC_MP_TZAHB6ENSETR_MDMAEN;
+	//(void) RCC->MP_TZAHB6ENSETR;
 
 #elif CPUSTYLE_STM32H7XX
 	/* Enable the DMA2D Clock */
 	RCC->AHB3ENR |= RCC_AHB3ENR_MDMAEN_Msk;	/* MDMA clock enable */
 	(void) RCC->AHB3ENR;
-
-	//MDMA->GISR0
+	RCC->AHB3LPENR |= RCC_AHB3LPENR_MDMALPEN_Msk;
+	(void) RCC->AHB3LPENR;
 
 #else /* CPUSTYLE_STM32H7XX */
 	/* Enable the DMA2D Clock */
 	RCC->AHB1ENR |= RCC_AHB1ENR_MDMAEN;	/* MDMA clock enable */
 	(void) RCC->AHB1ENR;
-
-	//MDMA->GISR0
+	RCC->AHB3LPENR |= RCC_AHB3LPENR_MDMALPEN_Msk;
+	(void) RCC->AHB3LPENR;
 
 #endif /* CPUSTYLE_STM32H7XX */
 }
@@ -292,6 +308,8 @@ hwaccel_fillrect2_RGB565(
 	COLOR565_T color
 	)
 {
+	if (w == 0 || h == 0)
+		return;
 #if LCDMODE_LTDC
 
 #if WITHMDMAHW
@@ -305,6 +323,7 @@ hwaccel_fillrect2_RGB565(
 
 	arm_hardware_flush((uintptr_t) buffer, sizeof (* buffer) * GXSIZE(dx, dy));
 
+	MDMA_CH->CCR &= ~ MDMA_CCR_EN_Msk;
 	MDMA_CH->CDAR = (uintptr_t) & buffer [row * dx + col];
 	MDMA_CH->CSAR = (uintptr_t) & tgcolor;
 	MDMA_CH->CTCR =
@@ -327,13 +346,17 @@ hwaccel_fillrect2_RGB565(
 		((sizeof (* buffer) * (w)) << MDMA_CBNDTR_BNDT_Pos) |	// Block Number of data bytes to transfer
 		(0x00 << MDMA_CBNDTR_BRSUM_Pos) |	// Block Repeat Source address Update Mode: 0 - increment
 		(0x00 << MDMA_CBNDTR_BRDUM_Pos) |	// Block Repeat Destination address Update Mode: 0 - increment
-		((h) << MDMA_CBNDTR_BRC_Pos) |		// Block Repeat Count
+		((h - 1) << MDMA_CBNDTR_BRC_Pos) |		// Block Repeat Count
 		0;
 	MDMA_CH->CBRUR =
 		((sizeof (* buffer) * (0)) << MDMA_CBRUR_SUV_Pos) |				// Source address Update Value
 		((sizeof (* buffer) * (dx - w)) << MDMA_CBRUR_DUV_Pos) |		// Destination address Update Value
 		0;
 
+	MDMA_CH->CTBR = (MDMA_CH->CTBR & ~ (MDMA_CTBR_SBUS_Msk | MDMA_CTBR_DBUS_Msk)) |
+		mdma_getbus(MDMA_CH->CSAR) * MDMA_CTBR_SBUS_Msk |
+		mdma_getbus(MDMA_CH->CDAR) * MDMA_CTBR_DBUS_Msk |
+		0;
 	MDMA_CH->CIFCR = MDMA_CIFCR_CCTCIF_Msk;
 	MDMA_CH->CCR |= MDMA_CCR_EN_Msk;
 	/* start transfer */
@@ -341,7 +364,6 @@ hwaccel_fillrect2_RGB565(
 	/* wait for complete */
 	while ((MDMA_CH->CISR & MDMA_CISR_CTCIF_Msk) == 0)	// Channel x Channel Transfer Complete interrupt flag
 		;
-	MDMA_CH->CCR &= ~ MDMA_CCR_EN_Msk;
 
 #elif WITHDMA2DHW
 
@@ -1605,7 +1627,10 @@ static void hwaccel_copy(
 	unsigned h
 	)
 {
+	if (w == 0 || h == 0)
+		return;
 #if WITHMDMAHW
+	MDMA_CH->CCR &= ~ MDMA_CCR_EN_Msk;
 	MDMA_CH->CDAR = (uintptr_t) dst;
 	MDMA_CH->CSAR = (uintptr_t) src;
 	MDMA_CH->CTCR =
@@ -1628,13 +1653,17 @@ static void hwaccel_copy(
 		((sizeof (PACKEDCOLOR_T) * (w)) << MDMA_CBNDTR_BNDT_Pos) |	// Block Number of data bytes to transfer
 		(0x00 << MDMA_CBNDTR_BRSUM_Pos) |	// Block Repeat Source address Update Mode: 0 - increment
 		(0x00 << MDMA_CBNDTR_BRDUM_Pos) |	// Block Repeat Destination address Update Mode: 0 - increment
-		((h) << MDMA_CBNDTR_BRC_Pos) |		// Block Repeat Count
+		((h - 1) << MDMA_CBNDTR_BRC_Pos) |		// Block Repeat Count
 		0;
 	MDMA_CH->CBRUR =
 		((sizeof (PACKEDCOLOR_T) * (0)) << MDMA_CBRUR_SUV_Pos) |		// Source address Update Value
 		((sizeof (PACKEDCOLOR_T) * (t)) << MDMA_CBRUR_DUV_Pos) |		// Destination address Update Value
 		0;
 
+	MDMA_CH->CTBR = (MDMA_CH->CTBR & ~ (MDMA_CTBR_SBUS_Msk | MDMA_CTBR_DBUS_Msk)) |
+		mdma_getbus(MDMA_CH->CSAR) * MDMA_CTBR_SBUS_Msk |
+		mdma_getbus(MDMA_CH->CDAR) * MDMA_CTBR_DBUS_Msk |
+		0;
 	MDMA_CH->CIFCR = MDMA_CIFCR_CCTCIF_Msk;
 	MDMA_CH->CCR |= MDMA_CCR_EN_Msk;
 	/* start transfer */
@@ -1642,7 +1671,6 @@ static void hwaccel_copy(
 	/* wait for complete */
 	while ((MDMA_CH->CISR & MDMA_CISR_CTCIF_Msk) == 0)	// Channel x Channel Transfer Complete interrupt flag
 		;
-	MDMA_CH->CCR &= ~ MDMA_CCR_EN_Msk;
 
 #elif WITHDMA2DHW
 	/* исходный растр */
