@@ -165,6 +165,10 @@ display_put_char_small2(uint_fast8_t c, uint_fast8_t lowhalf)
 	(void) c;
 }
 
+void display_solidbar(uint_fast16_t x, uint_fast16_t y, uint_fast16_t x2, uint_fast16_t y2, COLOR_T color)
+{
+}
+
 #endif /* LCDMODE_DUMMY */
 
 

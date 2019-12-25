@@ -309,7 +309,7 @@
 		#define SHORTSET8	1
 		#define WITHAUTOTUNER_AVBELNN	1	/* Плата управления LPF и тюнером от avbelnn */
 	#elif 0
-		/* TUNER by R3LL */
+		/* TUNER by R3KBL */
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
 		#define SHORTSET7	1
 	#endif
