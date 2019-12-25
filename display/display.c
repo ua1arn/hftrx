@@ -64,6 +64,34 @@ mdma_getbus(uintptr_t addr)
 	return 0;
 #endif
 }
+
+
+static uint_fast8_t
+mdma_tlen(uint_fast16_t nb)
+{
+	return nb < 128 ? nb : 128;
+}
+
+static uint_fast8_t
+mdma_getburst(uint_fast16_t w)
+{
+	if (w >= 128)
+		return 7;
+	if (w >= 64)
+		return 6;
+	if (w >= 32)
+		return 5;
+	if (w >= 16)
+		return 4;
+	if (w >= 8)
+		return 3;
+	if (w >= 4)
+		return 2;
+	if (w >= 2)
+		return 1;
+	return 0;
+}
+
 /* заполнение прямоугольной области буфера цветом в представлении по умолчанию */
 static void RAMFUNC_NONILINE display_fillrect(
 	volatile PACKEDCOLOR_T * buffer,
@@ -80,6 +108,7 @@ static void RAMFUNC_NONILINE display_fillrect(
 {
 	if (w == 0 || h == 0)
 		return;
+
 #if WITHMDMAHW
 	ALIGNX_BEGIN PACKEDCOLOR_T tgcolor ALIGNX_END;	/* значение цвета для заполнения области памяти */
 	tgcolor = fgcolor;
@@ -88,6 +117,8 @@ static void RAMFUNC_NONILINE display_fillrect(
 
 	arm_hardware_flush((uintptr_t) buffer, sizeof (* buffer) * dx * dy);
 
+	const uint_fast8_t burst = mdma_getburst(w);
+	const uint_fast8_t tlen = mdma_tlen(w * sizeof (* buffer));
 	MDMA_CH->CCR &= ~ MDMA_CCR_EN_Msk;
 	MDMA_CH->CDAR = (uintptr_t) & buffer [row * dx + col];
 	MDMA_CH->CSAR = (uintptr_t) & tgcolor;
@@ -95,17 +126,17 @@ static void RAMFUNC_NONILINE display_fillrect(
 		(0x00 << MDMA_CTCR_SINC_Pos) | 	// Source increment mode: 00: Source address pointer is fixed
 		(MDMA_CTCR_xSIZE << MDMA_CTCR_SSIZE_Pos) |
 		(0x00 << MDMA_CTCR_SINCOS_Pos) |
-		(0x00 << MDMA_CTCR_SBURST_Pos) |
+		(burst << MDMA_CTCR_SBURST_Pos) |
 		(0x02 << MDMA_CTCR_DINC_Pos) |	// Destination increment mode: 10: Destination address pointer is incremented
 		(MDMA_CTCR_xSIZE << MDMA_CTCR_DSIZE_Pos) |
 		(0x00 << MDMA_CTCR_DINCOS_Pos) |
-		(0x00 << MDMA_CTCR_DBURST_Pos) |	// Destination burst transfer configuration
-		(0x00 << MDMA_CTCR_TLEN_Pos) |		// buffer Transfer Length (number of bytes - 1)
+		(burst << MDMA_CTCR_DBURST_Pos) |	// Destination burst transfer configuration
+		((tlen - 1) << MDMA_CTCR_TLEN_Pos) |		// buffer Transfer Length (number of bytes - 1)
 		(0x00 << MDMA_CTCR_PKE_Pos) |
 		(0x00 << MDMA_CTCR_PAM_Pos) |
 		(0x02 << MDMA_CTCR_TRGM_Pos) |		// Trigger Mode: 10: Each MDMA request (software or hardware) triggers a repeated block transfer (if the block repeat is 0, a single block is transferred)
 		(0x01 << MDMA_CTCR_SWRM_Pos) |		// 1: hardware request are ignored. Transfer is triggered by software writing 1 to the SWRQ bit
-		(0x00 << MDMA_CTCR_BWM_Pos) |
+		(0x01 << MDMA_CTCR_BWM_Pos) |
 		0;
 	MDMA_CH->CBNDTR =
 		((sizeof (* buffer) * (w)) << MDMA_CBNDTR_BNDT_Pos) |	// Block Number of data bytes to transfer
@@ -323,6 +354,8 @@ hwaccel_fillrect2_RGB565(
 
 	arm_hardware_flush((uintptr_t) buffer, sizeof (* buffer) * GXSIZE(dx, dy));
 
+	const uint_fast8_t tlen = mdma_tlen(w * sizeof (* buffer));
+	const uint_fast8_t burst = mdma_getburst(w);
 	MDMA_CH->CCR &= ~ MDMA_CCR_EN_Msk;
 	MDMA_CH->CDAR = (uintptr_t) & buffer [row * dx + col];
 	MDMA_CH->CSAR = (uintptr_t) & tgcolor;
@@ -330,17 +363,17 @@ hwaccel_fillrect2_RGB565(
 		(0x00 << MDMA_CTCR_SINC_Pos) | 	// Source increment mode: 00: Source address pointer is fixed
 		(MDMA_CTCR_xSIZE_RGB565 << MDMA_CTCR_SSIZE_Pos) |
 		(0x00 << MDMA_CTCR_SINCOS_Pos) |
-		(0x00 << MDMA_CTCR_SBURST_Pos) |
+		(burst << MDMA_CTCR_SBURST_Pos) |
 		(0x02 << MDMA_CTCR_DINC_Pos) |	// Destination increment mode: 10: Destination address pointer is incremented
 		(MDMA_CTCR_xSIZE_RGB565 << MDMA_CTCR_DSIZE_Pos) |
 		(0x00 << MDMA_CTCR_DINCOS_Pos) |
-		(0x00 << MDMA_CTCR_DBURST_Pos) |	// Destination burst transfer configuration
-		(0x00 << MDMA_CTCR_TLEN_Pos) |		// buffer Transfer Length (number of bytes - 1)
+		(burst << MDMA_CTCR_DBURST_Pos) |	// Destination burst transfer configuration
+		((tlen - 1) << MDMA_CTCR_TLEN_Pos) |		// buffer Transfer Length (number of bytes - 1)
 		(0x00 << MDMA_CTCR_PKE_Pos) |
 		(0x00 << MDMA_CTCR_PAM_Pos) |
 		(0x02 << MDMA_CTCR_TRGM_Pos) |		// Trigger Mode: 10: Each MDMA request (software or hardware) triggers a repeated block transfer (if the block repeat is 0, a single block is transferred)
 		(0x01 << MDMA_CTCR_SWRM_Pos) |		// 1: hardware request are ignored. Transfer is triggered by software writing 1 to the SWRQ bit
-		(0x00 << MDMA_CTCR_BWM_Pos) |
+		(0x01 << MDMA_CTCR_BWM_Pos) |
 		0;
 	MDMA_CH->CBNDTR =
 		((sizeof (* buffer) * (w)) << MDMA_CBNDTR_BNDT_Pos) |	// Block Number of data bytes to transfer
@@ -1630,6 +1663,8 @@ static void hwaccel_copy(
 	if (w == 0 || h == 0)
 		return;
 #if WITHMDMAHW
+	const uint_fast8_t tlen = mdma_tlen(w * sizeof (PACKEDCOLOR_T));
+	const uint_fast8_t burst = mdma_getburst(w);
 	MDMA_CH->CCR &= ~ MDMA_CCR_EN_Msk;
 	MDMA_CH->CDAR = (uintptr_t) dst;
 	MDMA_CH->CSAR = (uintptr_t) src;
@@ -1637,17 +1672,17 @@ static void hwaccel_copy(
 		(0x02 << MDMA_CTCR_SINC_Pos) | 	// Source increment mode: 10: address pointer is incremented
 		(MDMA_CTCR_xSIZE << MDMA_CTCR_SSIZE_Pos) |
 		(0x00 << MDMA_CTCR_SINCOS_Pos) |
-		(0x00 << MDMA_CTCR_SBURST_Pos) |
+		(burst << MDMA_CTCR_SBURST_Pos) |
 		(0x02 << MDMA_CTCR_DINC_Pos) |	// Destination increment mode: 10: Destination address pointer is incremented
 		(MDMA_CTCR_xSIZE << MDMA_CTCR_DSIZE_Pos) |
 		(0x00 << MDMA_CTCR_DINCOS_Pos) |
-		(0x00 << MDMA_CTCR_DBURST_Pos) |	// Destination burst transfer configuration
-		(0x00 << MDMA_CTCR_TLEN_Pos) |		// buffer Transfer Length (number of bytes - 1)
+		(burst << MDMA_CTCR_DBURST_Pos) |	// Destination burst transfer configuration
+		((tlen - 1) << MDMA_CTCR_TLEN_Pos) |		// buffer Transfer Length (number of bytes - 1)
 		(0x00 << MDMA_CTCR_PKE_Pos) |
 		(0x00 << MDMA_CTCR_PAM_Pos) |
 		(0x02 << MDMA_CTCR_TRGM_Pos) |		// Trigger Mode: 10: Each MDMA request (software or hardware) triggers a repeated block transfer (if the block repeat is 0, a single block is transferred)
 		(0x01 << MDMA_CTCR_SWRM_Pos) |		// 1: hardware request are ignored. Transfer is triggered by software writing 1 to the SWRQ bit
-		(0x00 << MDMA_CTCR_BWM_Pos) |
+		(0x01 << MDMA_CTCR_BWM_Pos) |
 		0;
 	MDMA_CH->CBNDTR =
 		((sizeof (PACKEDCOLOR_T) * (w)) << MDMA_CBNDTR_BNDT_Pos) |	// Block Number of data bytes to transfer
