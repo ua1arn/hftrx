@@ -2391,12 +2391,12 @@ struct nvmap
 	uint8_t gbluebgnd;
 #endif /* LCDMODE_COLORED */
 
+#if WITHMIC1LEVEL
+	uint16_t mik1level;
+#endif /* WITHMIC1LEVEL */
 #if WITHTX
 	uint8_t	ggrptxparams; // последний посещённый пункт группы
 	//uint8_t gfitx;		/* номер используемого фильтра на передачу */
-	#if WITHMIC1LEVEL
-		uint16_t mik1level;
-	#endif /* WITHMIC1LEVEL */
 	#if WITHPOWERLPHP
 		uint8_t gpwr;
 	#endif /* WITHPOWERLPHP */
@@ -3609,12 +3609,12 @@ static uint_fast8_t gkeybeep10 = 1850 / 10;	/* озвучка нажатий к�
 static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий клавиш - 880 Гц - нота ля второй октавы (A5) (аналогично FT1000) */
 #endif /* CTLSTYLE_SW2011ALL */
 
-#if WITHIF4DSP
 
-#if WITHTX
-	#if WITHMIC1LEVEL
+#if WITHMIC1LEVEL
 	static uint_fast16_t mik1level = WITHMIKEINGAINMAX;
-	#endif /* WITHMIC1LEVEL */
+#endif /* WITHMIC1LEVEL */
+#if WITHIF4DSP
+#if WITHTX
 	static uint_fast8_t gamdepth = 30;		/* Глубина модуляции в АМ - 0..100% */
 	static uint_fast8_t gdacscale = 64;	/* прегруз драйвера Использование амплитуды сигнала с ЦАП передатчика - 0..100% */
 	static uint_fast16_t gdigiscale = 250;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
@@ -13909,7 +13909,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 
 	#endif /* WITHAFCODEC1HAVEPROC */
 #endif /* WITHTX && WITHIF4DSP */
-#if WITHMIC1LEVEL && WITHTX
+#if WITHMIC1LEVEL
 	{
 		"MIC LEVL", 7, 0, 0,	ISTEP1,		/* подстройка усиления микрофонного усилителя через меню. */
 		ITEM_VALUE,
@@ -13919,7 +13919,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
 	},
-#endif /* ITHMIC1LEVEL && WITHTX */
+#endif /* ITHMIC1LEVEL */
 #if WITHUSEAUDIOREC
 	{
 		"SD RECRD", 7, 3, RJ_ON,	ISTEP1,		/* автоматически начинаем запись на SD CARD при включении */

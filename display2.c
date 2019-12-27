@@ -4414,7 +4414,7 @@ enum
 		#define SWRPWRMAP	"1    2    3    4  0%   |  100%"
 		#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - значение на полной шкале
 	#else
-		#error Should be defined WITHSHOWSWRPWR
+		#warning Should be defined WITHSHOWSWRPWR
 	#endif
 	//						"012345678901234567890123456789"
 	#define SMETERMAP		"1   3   5   7   9  +20 +40 +60"
