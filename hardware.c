@@ -8296,6 +8296,7 @@ static uint_fast32_t stm32f7xx_pllq_initialize(void)
 
 void hardware_set_dotclock(unsigned long dotfreq)
 {
+	// при разрешенной PLLSAI модификация регистров невозможна
 	(void) dotfreq;
 }
 
@@ -8338,7 +8339,7 @@ static void stm32h7xx_pllsai_initialize(void)
 
 #endif /* WITHUSESAIPLL */
 
-	// MPU initialize
+// MPU initialize
 static void lowlevel_stm32h7xx_mpu_initialize(void)
 {
 	/* Disables the MPU */
