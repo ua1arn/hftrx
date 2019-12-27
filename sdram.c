@@ -6081,10 +6081,10 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 	{
 		// TrustZone address space controller for DDR (TZC)
 
-		// TZC AXI port 1 clocks enable
-		RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_TZC1EN;
+		// TZC AXI port 1 & port 2 clocks enable
+		RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_TZC1EN | RCC_MC_APB5ENSETR_TZC2EN;
 		(void) RCC->MP_APB5ENSETR;
-		RCC->MP_APB5LPENSETR = RCC_MC_APB5LPENSETR_TZC1LPEN;
+		RCC->MP_APB5LPENSETR = RCC_MC_APB5LPENSETR_TZC1LPEN | RCC_MC_APB5LPENSETR_TZC2LPEN;
 		(void) RCC->MP_APB5LPENSETR;
 
 		// TZC AXI port 2 clocks enable
