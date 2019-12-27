@@ -1014,9 +1014,17 @@ void display_colorbuffer_pip(
 	arm_hardware_ltdc_pip_set((uintptr_t) buffer);
 }
 
-#else /* LCDMODE_LTDC_PIP16 */
+#elif LCDMODE_LTDC_L8
 
-// Выдать буфер на дисплей
+// Для L8 основного дисплея копирование в него RGB565 не очень простая задача...
+
+#elif LCDMODE_LTDC_L24
+
+// Для L24 RGB888 основного дисплея копирование в него RGB565 еще надо сделать... С этим справится DMA2D
+
+#else
+
+// Выдать буфер на дисплей. Функции бывают только для не L8 режимов
 void display_colorbuffer_show(
 	const PACKEDCOLOR565_T * buffer,
 	uint_fast16_t dx,	
