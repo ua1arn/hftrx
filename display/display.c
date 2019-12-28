@@ -103,7 +103,7 @@ mdma_getburst(uint_fast16_t w, uint_fast8_t force0)
 }
 
 /* заполнение прямоугольной области буфера цветом в представлении по умолчанию. DMA2D не умеет 8-bit пиксели */
-static void RAMFUNC_NONILINE display_fillrect(
+static void RAMFUNC_NONILINE display_fillrect_main(
 	volatile PACKEDCOLOR_T * buffer,
 	uint_fast16_t dx,	// размеры буфера
 	uint_fast16_t dy,
@@ -347,7 +347,7 @@ void arm_hardware_mdma_initialize(void)
 
 /* заполнение прямоугольной области буфера цветом */
 static void
-hwaccel_fillrect2_RGB565(
+hwaccel_fillrect_RGB565(
 	volatile PACKEDCOLOR565_T * buffer,
 	uint_fast16_t dx,	// размеры буфера
 	uint_fast16_t dy,
@@ -491,19 +491,6 @@ hwaccel_fillrect2_RGB565(
 
 
 #endif /* WITHDMA2DHW */
-}
-
-
-/* заполнение прямоугольного буфера цветом */
-static void 
-hwaccel_fillrect_RGB565(
-	volatile PACKEDCOLOR565_T * buffer,
-	uint_fast16_t dx,
-	uint_fast16_t dy,
-	COLOR565_T color
-	)
-{
-	hwaccel_fillrect2_RGB565(buffer, dx, dy, 0, 0, dx, dy, color);
 }
 
 #if LCDMODE_COLORED
@@ -696,7 +683,7 @@ void display_colorbuffer_fill(
 {
 #if WITHDMA2DHW && LCDMODE_LTDC
 
-	hwaccel_fillrect_RGB565(buffer, dx, dy, color);
+	hwaccel_fillrect_RGB565(buffer, dx, dy, 0, 0, dx, dy, color);
 
 #else /* WITHDMA2DHW && LCDMODE_LTDC */
 
@@ -1338,17 +1325,17 @@ bitblt_fill(
 	)
 {
 
-#if WITHMDMAHW && LCDMODE_LTDC && ! LCDMODE_LTDC_L8
+#if WITHMDMAHW && LCDMODE_LTDC
 
-	hwaccel_fillrect2_RGB565(& framebuff [0] [0], DIM_X, DIM_Y, x, y, w, h, fgcolor);
+	display_fillrect_main(& framebuff [0] [0], DIM_X, DIM_Y, x, y, w, h, fgcolor, bgcolor, hpattern);
 
 #elif WITHDMA2DHW && LCDMODE_LTDC && ! LCDMODE_LTDC_L8
 
-	hwaccel_fillrect2_RGB565(& framebuff [0] [0], DIM_X, DIM_Y, x, y, w, h, fgcolor);
+	hwaccel_fillrect_RGB565(& framebuff [0] [0], DIM_X, DIM_Y, x, y, w, h, fgcolor);
 
 #else /* WITHDMA2DHW && LCDMODE_LTDC && ! LCDMODE_LTDC_L8 */
 
-	display_fillrect(& framebuff [0] [0], DIM_X, DIM_Y, x, y, w, h, fgcolor, bgcolor, hpattern);
+	display_fillrect_main(& framebuff [0] [0], DIM_X, DIM_Y, x, y, w, h, fgcolor, bgcolor, hpattern);
 
 #endif /* WITHDMA2DHW && LCDMODE_LTDC && ! LCDMODE_LTDC_L8 */
 }
@@ -1820,23 +1807,23 @@ void display_clear(void)
 {
 	const COLOR_T bg = display_getbgcolor();
 
-#if WITHMDMAHW && LCDMODE_LTDC && ! LCDMODE_LTDC_L8
+#if WITHMDMAHW && LCDMODE_LTDC
 
-	hwaccel_fillrect_RGB565(& framebuff [0] [0], DIM_X, DIM_Y, bg);
+	display_fillrect_main(& framebuff [0] [0], DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, bg, bg, 0xFF);
 
 #elif WITHDMA2DHW && LCDMODE_LTDC && ! LCDMODE_LTDC_L8
 
-	hwaccel_fillrect_RGB565(& framebuff [0] [0], DIM_X, DIM_Y, bg);
+	hwaccel_fillrect_RGB565(& framebuff [0] [0], DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, bg);
 
-#elif LCDMODE_LTDC_L8
+#elif LCDMODE_LTDC_L8 && LCDMODE_LTDC
 
 	memset((void *) framebuff, bg, DIM_FIRST * DIM_SECOND);
 	//memset((void *) framebuff, COLOR_WHITE, DIM_FIRST * DIM_SECOND);	// debug version
 	arm_hardware_flush((uintptr_t) framebuff, sizeof framebuff);
 
-#elif LCDMODE_LTDC_L24
+#elif LCDMODE_LTDC_L24 && LCDMODE_LTDC
 
-	unsigned i, j;
+	uint_fast16_t i, j;
 	// fill
 	PACKEDCOLOR_T c;
 	c.r = bg >> 16;
@@ -1850,9 +1837,9 @@ void display_clear(void)
 
 	arm_hardware_flush((uintptr_t) framebuff, sizeof framebuff);
 
-#else /* LCDMODE_LTDC_L8 */
+#elif LCDMODE_LTDC
 
-	unsigned i, j;
+	uint_fast16_t i, j;
 	// fill
 	for (i = 0; i < DIM_FIRST; ++ i)
 	{
