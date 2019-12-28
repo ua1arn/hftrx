@@ -84,7 +84,7 @@ mdma_getburst(uint_fast16_t w, uint_fast8_t force0)
 {
 	if (force0)
 		return 0;
-	return 6;
+	return 4;	// if RAMFRAMEBUFF used for tgcolor. Then RAMDTCM - 6 is valid
 	if (w >= 128)
 		return 7;
 	if (w >= 64)
