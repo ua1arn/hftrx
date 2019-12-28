@@ -70,7 +70,7 @@ mdma_getbus(uintptr_t addr)
 static uint_fast8_t
 mdma_tlen(uint_fast32_t nb, uint_fast8_t ds)
 {
-	return 128;
+	return 32; //128;
 	return (nb < 128 ? nb : 128) / ds * ds;
 }
 
