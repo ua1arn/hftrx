@@ -1,4 +1,4 @@
-WITHK/* $Id$ */
+/* $Id$ */
 /* board-specific CPU attached signals */
 //
 // Проект HF Dream Receiver (КВ приёмник мечты)
