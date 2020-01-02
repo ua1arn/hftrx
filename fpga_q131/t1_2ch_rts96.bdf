@@ -2856,21 +2856,6 @@ applicable agreement for further details.
 	)
 )
 (symbol
-	(rect -4208 -360 -4176 -344)
-	(text "VCC" (rect 7 0 27 10)(font "Arial" (font_size 6)))
-	(text "inst86" (rect 3 5 32 17)(font "Arial" )(invisible))
-	(port
-		(pt 16 16)
-		(output)
-		(text "1" (rect 19 7 24 19)(font "Courier New" (bold))(invisible))
-		(text "1" (rect 19 7 24 19)(font "Courier New" (bold))(invisible))
-		(line (pt 16 16)(pt 16 8))
-	)
-	(drawing
-		(line (pt 8 8)(pt 24 8))
-	)
-)
-(symbol
 	(rect -3592 -672 -3528 -592)
 	(text "OR4" (rect 1 0 19 10)(font "Arial" (font_size 6)))
 	(text "inst51" (rect 3 69 32 81)(font "Arial" ))
@@ -6855,10 +6840,6 @@ applicable agreement for further details.
 	(pt -4176 -328)
 )
 (connector
-	(pt -4192 -344)
-	(pt -4160 -344)
-)
-(connector
 	(pt -4192 -312)
 	(pt -4160 -312)
 	(bus)
@@ -7623,6 +7604,26 @@ applicable agreement for further details.
 	(pt -3608 600)
 	(pt -3528 600)
 	(bus)
+)
+(connector
+	(pt -4160 -344)
+	(pt -4192 -344)
+)
+(connector
+	(pt -4192 -528)
+	(pt -4192 -344)
+)
+(connector
+	(pt -3928 -424)
+	(pt -3864 -424)
+)
+(connector
+	(pt -3864 -424)
+	(pt -3864 -528)
+)
+(connector
+	(pt -3864 -528)
+	(pt -4192 -528)
 )
 (junction (pt -1592 -696))
 (junction (pt -4384 -696))
