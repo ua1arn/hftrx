@@ -9,6 +9,8 @@
 #include <stdint.h>
 #include <inttypes.h>	// format specifiers for printing
 
+#include "hardware.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */

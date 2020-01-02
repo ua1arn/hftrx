@@ -377,7 +377,7 @@ void bandf2_calc_initialize(void)
 #elif \
 	(CTLSTYLE_STORCH_V8 && ARM_R7S72_TQFP176_CTLSTYLE_STORCH_V8_R4DZ_H_INCLUDED) || \
 	0
-	/* плата усилителя 2*RD100 */
+	/* плата усилителя 2*RD100 UA1CEI */
 	// R4DZ version: 1.8-2.0  3.5-4.0,   7-7.2,   10-10.2.  14-18.2    21-30
 	// R4DZ version: 2.4 3.9 7.4 12.8 20 30
 
@@ -397,8 +397,9 @@ void bandf2_calc_initialize(void)
 	CTLREGMODE_STORCH_V2 || \
 	CTLREGMODE_STORCH_V3 || \
 	CTLREGMODE_STORCH_V7 || \
+	CTLREGMODE_STORCH_V9 || \
 	0
-	/* плата усилителя 2*RD100 */
+	/* плата усилителя 2*RD100 UA1CEI */
 	// 2.4 3.9 7.4 14.8 22 30
 
 	static const fseltype_t board_band2fs [] =

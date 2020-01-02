@@ -3504,7 +3504,7 @@ prog_ctrlreg(uint_fast8_t plane)
 #define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 // "Storch" с USB, DSP и FPGA, SD-CARD, TFT 4.3"
-static void 
+static void
 //NOINLINEAT
 prog_ctrlreg(uint_fast8_t plane)
 {
@@ -3512,7 +3512,7 @@ prog_ctrlreg(uint_fast8_t plane)
 #if defined(DDS1_TYPE)
 	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
 #endif
-	prog_rfadc_update();			// AD9246 vref divider update 
+	prog_rfadc_update();			// AD9246 vref divider update
 
 	// registers chain control register
 	{
@@ -3605,6 +3605,137 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0007, ! glob_reset_n);		// D7: NMEA reset
 		RBBIT(0006, glob_tx);				// D6: DIN8 EXT PTT signal - removed in LVDS version
 		RBBIT(0005, 0);						// D5: not used
+		RBBIT(0004, 0);						/* D4: not used */
+		RBBIT(0003, lcdblcode & 0x02);		/* D3	- LCD backlight  - removed in LVDS version*/
+		RBBIT(0002, lcdblcode & 0x02);		/* D2	- LCD backlight  - removed in LVDS version*/
+		RBBIT(0001, lcdblcode & 0x01);		/* D2:D1 - LCD backlight  - removed in LVDS version*/
+		RBBIT(0000, glob_kblight);			/* D0: keyboard backlight */
+
+		spi_select(target, CTLREG_SPIMODE);
+		prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
+		spi_unselect(target);
+	}
+}
+
+#elif CTLREGMODE_STORCH_V9
+
+/* TFT 4.3", 7" "Аист" с DSP и FPGA R7S721020VCFP, LVDS, дополнения для подключения трансвертора */
+
+#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
+
+// "Storch" с USB, DSP и FPGA, SD-CARD, TFT 4.3"
+static void 
+//NOINLINEAT
+prog_ctrlreg(uint_fast8_t plane)
+{
+
+#if defined(DDS1_TYPE)
+	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
+#endif
+	//prog_rfadc_update();			// AD9246 vref divider update
+
+	// registers chain control register
+	{
+		const uint_fast8_t lcdblcode = (glob_bglight - WITHLCDBACKLIGHTMIN);
+		//Current Output at Full Power A1 = 1, A0 = 1, VO = 0 ±500 ±380 ±350 ±320 mA min A
+		//Current Output at Power Cutback A1 = 1, A0 = 0, VO = 0 ±450 ±350 ±320 ±300 mA min A
+		//Current Output at Idle Power A1 = 0, A0 = 1, VO = 0 ±100 ±60 ±55 ±50 mA min A
+
+		enum
+		{
+			HARDWARE_OPA2674I_FULLPOWER = 0x03,
+			HARDWARE_OPA2674I_POWERCUTBACK = 0x02,
+			HARDWARE_OPA2674I_IDLEPOWER = 0x01,
+			HARDWARE_OPA2674I_SHUTDOWN = 0x00
+		};
+		static const FLASHMEM uint_fast8_t powerxlat [] =
+		{
+			HARDWARE_OPA2674I_IDLEPOWER,
+			HARDWARE_OPA2674I_POWERCUTBACK,
+			HARDWARE_OPA2674I_FULLPOWER,
+		};
+		const spitarget_t target = targetctl1;
+
+		rbtype_t rbbuff [10] = { 0 };
+		const uint_fast8_t txgated = glob_tx && glob_txgate;
+		const uint_fast8_t xvrtr = glob_bandf >= 8;
+
+#if WITHAUTOTUNER
+	#if WITHAUTOTUNER_AVBELNN
+		// Плата управления LPF и тюнером от avbelnn
+
+		// Схему брал на краснодарском форуме Аист сообщение 545 от avbelnn.
+		// http://www.cqham.ru/forum/showthread.php?36525-QRP-SDR-трансивер-Аист-(Storch)&p=1541543&viewfull=1#post1541543
+
+		RBBIT(0117, 0);	// REZ4
+		RBBIT(0116, 0);	// REZ3
+		RBBIT(0115, 0);	// REZ2_OC
+		RBBIT(0114, 0);	// REZ1_OC
+		RBBIT(0113, ! (glob_tx && ! glob_autotune));	// HP/LP: 0: high power, 1: low power
+		RBBIT(0112, glob_tx);
+		RBBIT(0111, glob_fanflag);	// FAN
+
+		RBVAL(0102, 1U << glob_bandf2, 7);	// BPF7..BPF1 (fences: 2.4 MHz, 3.9 MHz, 7.4 MHz, 14.8 MHz, 22 MHz, 30 MHz, 50 MHz)
+		RBBIT(0101, glob_tuner_type);		// TY
+		RBBIT(0100, ! glob_tuner_bypass);	// в обесточенном состоянии - режим BYPASS
+		RBVAL8(0070, glob_tuner_C);
+		RBVAL8(0060, glob_tuner_L);
+
+	#elif SHORTSET8 || FULLSET8
+
+	#elif SHORTSET7 || FULLSET7
+
+		/* +++ Управление согласующим устройством */
+		/* регистр управления массивом конденсаторов */
+		RBBIT(077, glob_tuner_bypass ? 0 : glob_tuner_type);		/* pin 7: TYPE OF TUNER 	*/
+		RBVAL(070, glob_tuner_bypass ? 0 : (revbits8(glob_tuner_C) >> 1), 7);/* Capacitors tuner bank 	*/
+		/* регистр управления наборной индуктивностью. */
+		RBBIT(067, ! glob_tuner_bypass);		// pin 7: обход СУ
+		RBVAL(060, glob_tuner_bypass ? 0 : (revbits8(glob_tuner_L) >> 1), 7);			/* pin 15, 1..6: Inductors tuner bank 	*/
+		/* --- Управление согласующим устройством */
+
+	#else
+		#error WITHAUTOTUNER and unknown details
+	#endif
+#endif /* WITHAUTOTUNER */
+
+		// DD23 SN74HC595PW + ULN2003APW на разъём управления LPF
+		RBBIT(0057, txgated);		// D7 - XS18 PIN 16: PTT
+		RBVAL(0050, 1U << glob_bandf2, 7);		// D0..D6: band select бит выбора диапазонного фильтра передатчика
+
+		// DD42 SN74HC595PW + ULN2003APW на разъём управления LPF
+		RBBIT(0047, xvrtr && ! glob_tx);	// D7 - XVR_RXMODE
+		RBBIT(0046, xvrtr && glob_tx);		// D7 - XVR_TXMODE
+		RBBIT(0045, 0);			// D5: CTLSPARE2
+		RBBIT(0044, 0);			// D4: CTLSPARE1
+		RBBIT(0043, 0);			// D3: not used
+		RBBIT(0042, 0);			// D2: not used
+		RBBIT(0041, 0);			// D1: not used
+		RBBIT(0040, 0);			// D0: not used
+
+		// DD22 SN74HC595PW в управлении диапазонными фильтрами приёмника
+		RBVAL(0031, glob_tx ? 0 : (1U << glob_bandf) >> 1, 7);		// D1: 1, D7..D1: band select бит выбора диапазонного фильтра приёмника
+		RBBIT(0030, txgated);		// D0: включение подачи смещения на выходной каскад усилителя мощности
+
+		// DD21 SN74HC595PW в управлении диапазонными фильтрами приёмника
+		RBVAL(0026, glob_att, 2);			/* D7:D6: 12 dB and 6 dB attenuator control */
+		RBVAL(0024, ~ (txgated ? powerxlat [glob_stage1level] : HARDWARE_OPA2674I_SHUTDOWN), 2);	// A1..A0 of OPA2674I-14D in stage 1
+		RBBIT(0023, glob_fanflag);			/* D3: PA FAN - removed in LVDS version */
+		RBBIT(0022, glob_bandf == 0);		// D2: средневолновый ФНЧ - управление реле на выходе фильтров
+		RBBIT(0021, glob_tx);				// D1: TX ANT relay
+		RBBIT(0020, glob_bandf == 0);		// D0: средневолновый ФНЧ - управление реле на входе
+
+		// DD28 SN74HC595PW рядом с DIN8
+		RBBIT(0017, glob_poweron);			// POWER_HOLD_ON added in next version
+		RBBIT(0016, glob_fanflag);			// FAN_CTL added in LVDS version
+		RBBIT(0015, glob_tx);				// EXT_PTT2 added in LVDS version
+		RBBIT(0014, glob_tx);				// EXT_PTT added in LVDS version
+		RBVAL(0010, glob_bandf3, 4);		/* D3:D0: DIN8 EXT PA band select */
+
+		// DD20 STP08CP05TTR рядом с DIN8
+		RBBIT(0007, ! glob_reset_n);		// D7: NMEA reset
+		RBBIT(0006, 0);						/* D6: not used */
+		RBBIT(0005, 0);						/* D5: not used */
 		RBBIT(0004, 0);						/* D4: not used */
 		RBBIT(0003, lcdblcode & 0x02);		/* D3	- LCD backlight  - removed in LVDS version*/
 		RBBIT(0002, lcdblcode & 0x02);		/* D2	- LCD backlight  - removed in LVDS version*/
@@ -3750,11 +3881,11 @@ prog_ctrlreg(uint_fast8_t plane)
 
 	// registers chain control register
 	{
-		uint_fast8_t xvr = glob_bandf >= 11;
+		const uint_fast8_t xvrtr = glob_bandf >= 11;
 		uint_fast16_t xvtr_bandmask = (1U << 4);	// See R820T_IFFREQ
-		uint_fast16_t bandmask = xvr ? xvtr_bandmask : 1U << glob_bandf;
+		uint_fast16_t bandmask = xvrtr ? xvtr_bandmask : 1U << glob_bandf;
 		//bandmask = 0;
-		//xvr = 0;
+		//xvrtr = 0;
 		const spitarget_t target = targetctl1;
 
 		rbtype_t rbbuff [2] = { 0 };
@@ -3764,10 +3895,10 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0010, 0);						/*  */
 
 		// U9 SN74HC595PW в управлении диапазонными фильтрами приёмника
-		RBVAL(0006, xvr ? 0x03 : glob_att, 2);			// DG..DH: ATT
+		RBVAL(0006, xvrtr ? 0x03 : glob_att, 2);			// DG..DH: ATT
 		RBVAL(0002, bandmask >> 7, 4);		// DC..DF: band select бит выбора диапазонного фильтра передатчика
 		RBBIT(0001, 0);						// QB
-		RBBIT(0000, xvr);					// QA: > 50 MHz ON
+		RBBIT(0000, xvrtr);					// QA: > 50 MHz ON
 
 		spi_select(target, CTLREG_SPIMODE);
 		prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
@@ -3799,7 +3930,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		enum { STARTNUX = 14 };
 		enum { RF1, RF2, RF3, RF4, RF5, RF6 };
 		const uint_fast8_t rfi = glob_bandf >= STARTNUX ? (glob_bandf - STARTNUX) : 5;
-		uint_fast8_t xvr = glob_bandf >= 11;
+		uint_fast8_t xvrtr = glob_bandf >= 11;
 		//uint_fast32_t xvtr_bandmask = ((uint_fast32_t) 1U << 4);	// See R820T_IFFREQ
 		uint_fast32_t bandmask = (uint_fast32_t) 1U << glob_bandf;
 		static const uint_fast8_t xltIN [] =  { RF5, RF4, RF3, RF2, RF1, /* */ RF6, RF6, RF6, RF6, RF6, RF6, RF6};	// каналы входного клммутатора HMC252AQS24E
@@ -3816,7 +3947,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		//debug_printf_P(PSTR("prog_ctrlreg: glob_bandf=%u, uhfmuxIN=%02X, uhfmuxOUT=%02X\n"), glob_bandf, uhfmuxIN, uhfmuxOUT);
 
 		//bandmask = 0;
-		//xvr = 0;
+		//xvrtr = 0;
 		const spitarget_t target = targetctl1;
 
 		rbtype_t rbbuff [4] = { 0 };
@@ -3828,7 +3959,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(023, bpfon19);
 		RBBIT(022, bpfon18);
 		RBBIT(021, bpfon17);
-		RBBIT(020, xvr);	
+		RBBIT(020, xvrtr);
 
 		RBBIT(017, bpfon15);
 		RBVAL(011, bandmask >> 8, 6);
@@ -6001,7 +6132,8 @@ static void board_fpga_loader_PS(void)
 	#elif CTLSTYLE_STORCH_V2 && (DDS1_CLK_MUL == 1)
 		#include "rbf/rbfimage_v7a_2ch.h"	// same as CTLSTYLE_RAVENDSP_V7
 	#elif CTLSTYLE_STORCH_V3 && ! WITHUSEDUALWATCH && (DDS1_CLK_MUL == 1)
-		#include "rbf/rbfimage_v7_1ch.h"	//
+		//#include "rbf/rbfimage_v7_1ch.h"	//
+		#include "rbf/rbfimage_v7a_2ch.h"	// same as CTLSTYLE_RAVENDSP_V7
 	#elif CTLSTYLE_STORCH_V3 && (DDS1_CLK_MUL == 1)
 		#include "rbf/rbfimage_v7a_2ch.h"	// same as CTLSTYLE_RAVENDSP_V7
 	#elif CTLSTYLE_STORCH_V4 && ! WITHUSEDUALWATCH && (DDS1_CLK_MUL == 1)	// modem v2
@@ -6025,6 +6157,10 @@ static void board_fpga_loader_PS(void)
 	#elif CTLSTYLE_STORCH_V8 && (DDS1_CLK_MUL == 1) && WITHRTS192	// renesas & TFT panel on CPU
 		#include "rbf/rbfimage_v8t_192k.h"
 	#elif CTLSTYLE_STORCH_V8 && (DDS1_CLK_MUL == 1)	// renesas & TFT panel on CPU
+		#include "rbf/rbfimage_v8t_96k.h"
+	#elif CTLSTYLE_STORCH_V9 && (DDS1_CLK_MUL == 1) && WITHRTS192	// renesas & TFT panel on CPU
+		#include "rbf/rbfimage_v8t_192k.h"
+	#elif CTLSTYLE_STORCH_V9 && (DDS1_CLK_MUL == 1)	// renesas & TFT panel on CPU
 		#include "rbf/rbfimage_v8t_96k.h"
 	#else
 		#error Missing FPGA image file
