@@ -453,7 +453,6 @@ void bandf_calc_initialize(void)
 	CTLREGMODE_STORCH_V1_R4DR || \
 	CTLREGMODE_STORCH_V4 ||		/* modem only v2 */ \
 	CTLREGMODE_STORCH_V5 ||		/* mimni RX */ \
-	CTLREGMODE_RAVENDSP_V9 || /* renesas */ \
 	1 || \
 	0
 	// 3 5 9 16 22 35
