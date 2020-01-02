@@ -278,5 +278,5 @@ set_global_assignment -name BDF_FILE t1_1ch_wfm.bdf
 set_global_assignment -name QIP_FILE lpm_counter_mod4.qip
 set_global_assignment -name QIP_FILE lpm_counter_mod2.qip
 set_global_assignment -name QIP_FILE fir5_spec.qip
-set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
 set_global_assignment -name BDF_FILE nb_4ch.bdf
+set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
