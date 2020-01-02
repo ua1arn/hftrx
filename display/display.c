@@ -58,7 +58,7 @@ mdma_getbus(uintptr_t addr)
 	addr &= 0xFF000000uL;
 	return (addr == 0x00000000uL || addr == 0x20000000uL);
 #elif CPUSTYLE_STM32MP1
-	return 0;
+	return 1;
 	addr &= 0xFF000000uL;
 	return (addr == 0x00000000uL || addr == 0x20000000uL);
 #else
