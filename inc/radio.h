@@ -723,12 +723,15 @@ void spool_0p128(void);	// OPERA support
 	#if BANDSELSTYLERE_UPCONV56M
 		#define TUNE_BOTTOM 30000L		/* 30 kHz нижняя частота настройки */
 		#define TUNE_TOP 56000000L		/* верхняя частота настройки */
+		#define NOXVRTUNE_TOP 56000000L		/* верхняя частота настройки бещ трансвертора */
 	#elif BANDSELSTYLERE_UPCONV56M_45M	/* версия до 45 МГц */
 		#define TUNE_BOTTOM 30000L		/* 30 kHz нижняя частота настройки */
 		#define TUNE_TOP 45000000L		/* верхняя частота настройки */
+		#define NOXVRTUNE_TOP 45000000L		/* верхняя частота настройки бещ трансвертора */
 	#elif BANDSELSTYLERE_UPCONV56M_36M	/* версия до 36 МГц */
 		#define TUNE_BOTTOM 30000L		/* 30 kHz нижняя частота настройки */
 		#define TUNE_TOP 36000000L		/* верхняя частота настройки */
+		#define NOXVRTUNE_TOP 36000000L		/* верхняя частота настройки бещ трансвертора */
 	#else
 		#error Wrong BANDSELSTYLERE_xxx used
 	#endif /* BANDSELSTYLERE_UPCONV56M */
@@ -794,6 +797,7 @@ void spool_0p128(void);	// OPERA support
 	#if BANDSELSTYLERE_UPCONV56M
 		#define TUNE_BOTTOM 30000L		/* 30 kHz нижняя частота настройки */
 		#define TUNE_TOP 56000000L		/* верхняя частота настройки */
+		#define NOXVRTUNE_TOP 56000000L		/* верхняя частота настройки бещ трансвертора */
 	#elif BANDSELSTYLERE_UPCONV56M_45M	/* версия до 45 МГц */
 		#define TUNE_BOTTOM 30000L		/* 30 kHz нижняя частота настройки */
 		#define TUNE_TOP 45000000L		/* верхняя частота настройки */
@@ -872,6 +876,7 @@ void spool_0p128(void);	// OPERA support
 	#if BANDSELSTYLERE_UPCONV56M
 		#define TUNE_BOTTOM 30000L		/* 30 kHz нижняя частота настройки */
 		#define TUNE_TOP 56000000L		/* верхняя частота настройки */
+		#define NOXVRTUNE_TOP 56000000L		/* верхняя частота настройки бещ трансвертора */
 	#elif BANDSELSTYLERE_UPCONV56M_45M	/* версия до 45 МГц */
 		#define TUNE_BOTTOM 30000L		/* 30 kHz нижняя частота настройки */
 		#define TUNE_TOP 45000000L		/* верхняя частота настройки */
@@ -998,6 +1003,7 @@ void spool_0p128(void);	// OPERA support
 	#if BANDSELSTYLERE_UPCONV56M
 		#define TUNE_BOTTOM 30000L		/* 30 kHz нижняя частота настройки */
 		#define TUNE_TOP 56000000L		/* верхняя частота настройки */
+		#define NOXVRTUNE_TOP 56000000L		/* верхняя частота настройки бещ трансвертора */
 	#elif BANDSELSTYLERE_UPCONV56M_45M	/* версия до 45 МГц */
 		#define TUNE_BOTTOM 30000L		/* 30 kHz нижняя частота настройки */
 		#define TUNE_TOP 45000000L		/* верхняя частота настройки */
@@ -1060,6 +1066,7 @@ void spool_0p128(void);	// OPERA support
 		#define TUNE_BOTTOM 30000L		/* 30 kHz нижняя частота настройки */
 		#define TUNE_TOP (DUCDDC_FREQ + 56000000L)		/* верхняя частота настройки */
 		//#define TUNE_TOP 56000000L		/* верхняя частота настройки */
+		#define NOXVRTUNE_TOP 56000000L		/* верхняя частота настройки бещ трансвертора */
 	#elif BANDSELSTYLERE_UPCONV56M
 		#define TUNE_BOTTOM 30000L		/* 30 kHz нижняя частота настройки */
 		#define TUNE_TOP 56000000L		/* верхняя частота настройки */
@@ -1152,6 +1159,7 @@ void spool_0p128(void);	// OPERA support
 	#if BANDSELSTYLERE_UPCONV56M
 		#define TUNE_BOTTOM 30000L		/* нижняя частота настройки */
 		#define TUNE_TOP 56000000L		/* верхняя частота настройки */
+		#define NOXVRTUNE_TOP 56000000L		/* верхняя частота настройки бещ трансвертора */
 	#else
 		#error Wrong BANDSELSTYLERE_xxx used
 	#endif /* BANDSELSTYLERE_UPCONV56M */
@@ -1212,6 +1220,7 @@ void spool_0p128(void);	// OPERA support
 	#if BANDSELSTYLERE_UPCONV56M
 		#define TUNE_BOTTOM 100000L		/* нижняя частота настройки */
 		#define TUNE_TOP 30000000L		/* верхняя частота настройки */
+		#define NOXVRTUNE_TOP 30000000L		/* верхняя частота настройки бещ трансвертора */
 	#else
 		#error Wrong BANDSELSTYLERE_xxx used
 	#endif /* BANDSELSTYLERE_UPCONV56M */

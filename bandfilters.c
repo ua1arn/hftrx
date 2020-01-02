@@ -8,6 +8,7 @@
 #include "hardware.h"
 #include "board.h"
 #include "synthcalcs.h"
+#include "formats.h"
 
 // На 8-битном микропроцессоре для ускорения вычислений
 // частота округляется (отбрасываются младшие 16 бит).
@@ -227,8 +228,9 @@
 	#define BANDF_FREQMIN 1600000UL
 	#define BANDF_FREQ_SCALE 1661809UL
 	#define BANDF_FREQ_DENOM 1000000UL
+	#define BANDF_FREQ_TOP NOXVRTUNE_TOP		/* после этой частоты переходим к трансвертору */
 
-	#define BANDCALCS	7	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
+	#define BANDCALCS	8	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
 	#define BANDF_USE_BANDINIT 1	/* необходимость функции инициализации. */
 
 	static fseltype_t board_bandfs [BANDCALCS];
@@ -339,26 +341,38 @@ void bandf_calc_initialize(void)
 		board_bandfs [i] = (fseltype_t) (tmp >> BANDDIVPOWER);
 		tmp = (uint_fast32_t) ((uint_fast64_t) tmp * BANDF_FREQ_SCALE / BANDF_FREQ_DENOM);
 	}
-#if CTLSTYLE_RA4YBO
-		board_bandfs [7] = (fseltype_t) (56000000UL >> BANDDIVPOWER);
-		board_bandfs [8] = (fseltype_t) (80000000UL >> BANDDIVPOWER);
-		board_bandfs [9] = (fseltype_t) (100000000UL >> BANDDIVPOWER);
-		board_bandfs [10] = (fseltype_t) (120000000UL >> BANDDIVPOWER);
-		board_bandfs [11] = (fseltype_t) (140000000UL >> BANDDIVPOWER);
-#endif /* CTLSTYLE_RA4YBO */
-#if CTLSTYLE_RA4YBO_V1 || CTLSTYLE_RA4YBO_V2
-		board_bandfs [7] = (fseltype_t) (60000000UL >> BANDDIVPOWER);
-		board_bandfs [8] = (fseltype_t) (90000000UL >> BANDDIVPOWER);
-		board_bandfs [9] = (fseltype_t) (111000000UL >> BANDDIVPOWER);
-		board_bandfs [10] = (fseltype_t) (120000000UL >> BANDDIVPOWER);
-		board_bandfs [11] = (fseltype_t) (140000000UL >> BANDDIVPOWER);
-		board_bandfs [12] = (fseltype_t) (160000000UL >> BANDDIVPOWER);
-#endif /* CTLSTYLE_RA4YBO_V1 || CTLSTYLE_RA4YBO_V2 */
-#endif /* BANDF_USE_BANDINIT */
-}
+	#if BANDF_FREQ_TOP
+		/* если выше этой частоты - работает трансвертор */
+		board_bandfs [BANDCALCS - 1] = (fseltype_t) (BANDF_FREQ_TOP >> BANDDIVPOWER);
+	#endif /* BANDF_FREQ_TOP */
 
-void bandf2_calc_initialize(void)
-{
+	#if CTLSTYLE_RA4YBO
+			board_bandfs [7] = (fseltype_t) (56000000UL >> BANDDIVPOWER);
+			board_bandfs [8] = (fseltype_t) (80000000UL >> BANDDIVPOWER);
+			board_bandfs [9] = (fseltype_t) (100000000UL >> BANDDIVPOWER);
+			board_bandfs [10] = (fseltype_t) (120000000UL >> BANDDIVPOWER);
+			board_bandfs [11] = (fseltype_t) (140000000UL >> BANDDIVPOWER);
+	#endif /* CTLSTYLE_RA4YBO */
+	#if CTLSTYLE_RA4YBO_V1 || CTLSTYLE_RA4YBO_V2
+			board_bandfs [7] = (fseltype_t) (60000000UL >> BANDDIVPOWER);
+			board_bandfs [8] = (fseltype_t) (90000000UL >> BANDDIVPOWER);
+			board_bandfs [9] = (fseltype_t) (111000000UL >> BANDDIVPOWER);
+			board_bandfs [10] = (fseltype_t) (120000000UL >> BANDDIVPOWER);
+			board_bandfs [11] = (fseltype_t) (140000000UL >> BANDDIVPOWER);
+			board_bandfs [12] = (fseltype_t) (160000000UL >> BANDDIVPOWER);
+	#endif /* CTLSTYLE_RA4YBO_V1 || CTLSTYLE_RA4YBO_V2 */
+#endif /* BANDF_USE_BANDINIT */
+
+	if (0)
+	{
+		/* отладочная печать граний диапазонов */
+		uint_fast8_t i;
+		for (i = 0; i < sizeof board_bandfs / sizeof board_bandfs [0]; ++ i)
+		{
+			uint_fast32_t freq = board_bandfs [i] << BANDDIVPOWER;
+			PRINTF("board_bandfs[%d]=%lu\n", (int) i, (unsigned long) freq);
+		}
+	}
 }
 
 #if \
@@ -481,10 +495,6 @@ void bandf2_calc_initialize(void)
 
 #endif
 
-void bandf3_calc_initialize(void)
-{
-}
-
 /* получить номер диапазонного фильтра по частоте */
 uint8_t bandf_calc(
 	uint_fast32_t freq
@@ -519,6 +529,22 @@ uint8_t bandf_calc(
 #endif /* BANDCALCS */
 }
 
+void bandf2_calc_initialize(void)
+{
+#ifdef BAND2CALCS
+	if (0)
+	{
+		/* отладочная печать граний диапазонов */
+		uint_fast8_t i;
+		for (i = 0; i < sizeof board_band2fs / sizeof board_band2fs [0]; ++ i)
+		{
+			uint_fast32_t freq = board_band2fs [i] << BANDDIVPOWER;
+			PRINTF("board_band2fs[%d]=%lu\n", (int) i, (unsigned long) freq);
+		}
+	}
+#endif /* BAND2CALCS */
+}
+
 /* получить номер диапазонного фильтра передатчика по частоте */
 uint8_t bandf2_calc(
 	uint_fast32_t freq
@@ -551,6 +577,23 @@ uint8_t bandf2_calc(
 #else
 	return 0;
 #endif
+}
+
+
+void bandf3_calc_initialize(void)
+{
+#ifdef BAND3CALCS
+	if (0)
+	{
+		/* отладочная печать граний диапазонов */
+		uint_fast8_t i;
+		for (i = 0; i < sizeof board_band3fs / sizeof board_band3fs [0]; ++ i)
+		{
+			uint_fast32_t freq = board_band3fs [i] << BANDDIVPOWER;
+			PRINTF("board_band3fs[%d]=%lu\n", (int) i, (unsigned long) freq);
+		}
+	}
+#endif /* BAND3CALCS */
 }
 
 /* получить код для управления через разъем ACC */

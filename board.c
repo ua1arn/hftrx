@@ -3658,7 +3658,8 @@ prog_ctrlreg(uint_fast8_t plane)
 
 		rbtype_t rbbuff [10] = { 0 };
 		const uint_fast8_t txgated = glob_tx && glob_txgate;
-		const uint_fast8_t xvrtr = glob_bandf >= 8;
+		const uint_fast8_t xvrtr = glob_bandf >= 8;		/* 8 = BANDCALCS */
+		//PRINTF("prog_ctrlreg: glob_bandf=%d, xvrtr=%d\n", glob_bandf, xvrtr);
 
 #if WITHAUTOTUNER
 	#if WITHAUTOTUNER_AVBELNN
@@ -3687,11 +3688,11 @@ prog_ctrlreg(uint_fast8_t plane)
 
 		/* +++ Управление согласующим устройством */
 		/* регистр управления массивом конденсаторов */
-		RBBIT(077, glob_tuner_bypass ? 0 : glob_tuner_type);		/* pin 7: TYPE OF TUNER 	*/
-		RBVAL(070, glob_tuner_bypass ? 0 : (revbits8(glob_tuner_C) >> 1), 7);/* Capacitors tuner bank 	*/
+		RBBIT(0077, glob_tuner_bypass ? 0 : glob_tuner_type);		/* pin 7: TYPE OF TUNER 	*/
+		RBVAL(0070, glob_tuner_bypass ? 0 : (revbits8(glob_tuner_C) >> 1), 7);/* Capacitors tuner bank 	*/
 		/* регистр управления наборной индуктивностью. */
-		RBBIT(067, ! glob_tuner_bypass);		// pin 7: обход СУ
-		RBVAL(060, glob_tuner_bypass ? 0 : (revbits8(glob_tuner_L) >> 1), 7);			/* pin 15, 1..6: Inductors tuner bank 	*/
+		RBBIT(0067, ! glob_tuner_bypass);		// pin 7: обход СУ
+		RBVAL(0060, glob_tuner_bypass ? 0 : (revbits8(glob_tuner_L) >> 1), 7);			/* pin 15, 1..6: Inductors tuner bank 	*/
 		/* --- Управление согласующим устройством */
 
 	#else
@@ -3703,9 +3704,9 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0057, txgated);		// D7 - XS18 PIN 16: PTT
 		RBVAL(0050, 1U << glob_bandf2, 7);		// D0..D6: band select бит выбора диапазонного фильтра передатчика
 
-		// DD42 SN74HC595PW + ULN2003APW на разъём управления LPF
+		// DD42 SN74HC595PW
 		RBBIT(0047, xvrtr && ! glob_tx);	// D7 - XVR_RXMODE
-		RBBIT(0046, xvrtr && glob_tx);		// D7 - XVR_TXMODE
+		RBBIT(0046, xvrtr && glob_tx);		// D6 - XVR_TXMODE
 		RBBIT(0045, 0);			// D5: CTLSPARE2
 		RBBIT(0044, 0);			// D4: CTLSPARE1
 		RBBIT(0043, 0);			// D3: not used
@@ -3720,8 +3721,8 @@ prog_ctrlreg(uint_fast8_t plane)
 		// DD21 SN74HC595PW в управлении диапазонными фильтрами приёмника
 		RBVAL(0026, glob_att, 2);			/* D7:D6: 12 dB and 6 dB attenuator control */
 		RBVAL(0024, ~ (txgated ? powerxlat [glob_stage1level] : HARDWARE_OPA2674I_SHUTDOWN), 2);	// A1..A0 of OPA2674I-14D in stage 1
-		RBBIT(0023, glob_fanflag);			/* D3: PA FAN - removed in LVDS version */
-		RBBIT(0022, glob_bandf == 0);		// D2: средневолновый ФНЧ - управление реле на выходе фильтров
+		RBBIT(0023, xvrtr && glob_fanflag);			/* D3: XVRTR PA FAN */
+		RBBIT(0022, xvrtr || (glob_bandf == 0));		// D2: средневолновый ФНЧ - управление реле на выходе фильтров
 		RBBIT(0021, glob_tx);				// D1: TX ANT relay
 		RBBIT(0020, glob_bandf == 0);		// D0: средневолновый ФНЧ - управление реле на входе
 
