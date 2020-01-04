@@ -3531,7 +3531,8 @@ enum
 		#if WITHAMHIGHKBDADJ
 			{	6, 14,	display_amfmhighcut4,REDRM_MODE, PG0, },	// 3.70
 		#endif /* WITHAMHIGHKBDADJ */
-			{	18, 14,	display_samfreqdelta8, REDRM_BARS, PG0, },	/* Получить информацию об ошибке настройки в режиме SAM */
+			{	19, 14, display_siglevel7, 	REDRM_BARS, PG0, },		// signal level dBm
+			//{	18, 14,	display_samfreqdelta8, REDRM_BARS, PG0, },	/* Получить информацию об ошибке настройки в режиме SAM */
 		#if WITHNOTCHONOFF || WITHNOTCHFREQ
 			{	27, 14,	display_notch3, REDRM_MODE, PG0, },	// 3.7
 		#endif /* WITHNOTCHONOFF || WITHNOTCHFREQ */
@@ -4531,7 +4532,7 @@ enum
 		{	0,	30,	display2_bars,		REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
 		//{	0,	35,	display2_legend_tx,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы PWR & SWR-метра
 		//{	0,	40,	display2_bars_tx,	REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
-		{	31,	30, display_siglevel4, 	REDRM_BARS, PGSWR, },	// signal leval dBm
+		{	31,	30, display_siglevel4, 	REDRM_BARS, PGSWR, },	// signal level dBm
 		{	36, 30,	display_freqdelta8, REDRM_BARS, PGSWR, },	// выход ЧМ демодулятора
 	#if WITHSPECTRUMWF
 		{	0,	DLES,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
