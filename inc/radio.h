@@ -1064,7 +1064,7 @@ void spool_0p128(void);	// OPERA support
 
 	#if BANDSELSTYLERE_UPCONV56M && XVTR_NYQ1
 		#define TUNE_BOTTOM 30000L		/* 30 kHz нижняя частота настройки */
-		#define TUNE_TOP (DUCDDC_FREQ + 56000000L)		/* верхняя частота настройки */
+		#define TUNE_TOP (DUCDDC_FREQ * 4 + 56000000L)		/* верхняя частота настройки */
 		//#define TUNE_TOP 56000000L		/* верхняя частота настройки */
 		#define NOXVRTUNE_TOP 56000000L		/* верхняя частота настройки бещ трансвертора */
 	#elif BANDSELSTYLERE_UPCONV56M
