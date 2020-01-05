@@ -3701,7 +3701,7 @@ prog_ctrlreg(uint_fast8_t plane)
 #endif /* WITHAUTOTUNER */
 
 		// DD23 SN74HC595PW + ULN2003APW на разъём управления LPF
-		RBBIT(0057, txgated);		// D7 - XS18 PIN 16: PTT
+		RBBIT(0057, ! xvrtr && txgated);		// D7 - XS18 PIN 16: PTT
 		RBVAL(0050, 1U << glob_bandf2, 7);		// D0..D6: band select бит выбора диапазонного фильтра передатчика
 
 		// DD42 SN74HC595PW
@@ -3720,17 +3720,17 @@ prog_ctrlreg(uint_fast8_t plane)
 
 		// DD21 SN74HC595PW в управлении диапазонными фильтрами приёмника
 		RBVAL(0026, glob_att, 2);			/* D7:D6: 12 dB and 6 dB attenuator control */
-		RBVAL(0024, ~ (txgated ? powerxlat [glob_stage1level] : HARDWARE_OPA2674I_SHUTDOWN), 2);	// A1..A0 of OPA2674I-14D in stage 1
+		RBVAL(0024, ~ ((! xvrtr && txgated) ? powerxlat [glob_stage1level] : HARDWARE_OPA2674I_SHUTDOWN), 2);	// A1..A0 of OPA2674I-14D in stage 1
 		RBBIT(0023, xvrtr && glob_fanflag);			/* D3: XVRTR PA FAN */
 		RBBIT(0022, xvrtr || (glob_bandf == 0));		// D2: средневолновый ФНЧ - управление реле на выходе фильтров
-		RBBIT(0021, glob_tx);				// D1: TX ANT relay
+		RBBIT(0021, ! xvrtr && glob_tx);				// D1: TX ANT relay
 		RBBIT(0020, glob_bandf == 0);		// D0: средневолновый ФНЧ - управление реле на входе
 
 		// DD28 SN74HC595PW рядом с DIN8
 		RBBIT(0017, glob_poweron);			// POWER_HOLD_ON added in next version
-		RBBIT(0016, glob_fanflag);			// FAN_CTL added in LVDS version
-		RBBIT(0015, glob_tx);				// EXT_PTT2 added in LVDS version
-		RBBIT(0014, glob_tx);				// EXT_PTT added in LVDS version
+		RBBIT(0016, ! xvrtr && glob_fanflag);			// FAN_CTL added in LVDS version
+		RBBIT(0015, ! xvrtr && glob_tx);				// EXT_PTT2 added in LVDS version
+		RBBIT(0014, ! xvrtr && glob_tx);				// EXT_PTT added in LVDS version
 		RBVAL(0010, glob_bandf3, 4);		/* D3:D0: DIN8 EXT PA band select */
 
 		// DD20 STP08CP05TTR рядом с DIN8
