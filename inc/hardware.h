@@ -847,4 +847,8 @@ void hardware_set_dotclock(unsigned long dotfreq);
 #include "product.h"
 #include "taildefs.h"
 
+#define USBALIGN_BEGIN __attribute__ ((aligned (64)))
+#define USBALIGN_END /* nothing */
+#define UNUSED(x) ((void)(x))
+
 #endif // HARDWARE_H_INCLUDED

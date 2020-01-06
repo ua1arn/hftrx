@@ -668,10 +668,6 @@ void uacout_buffer_save_system(const uint8_t * buff, uint_fast16_t size);
 void uacout_buffer_save_realtime(const uint8_t * buff, uint_fast16_t size);
 
 
-#define USBALIGN_BEGIN __attribute__ ((aligned (32)))
-#define USBALIGN_END /* nothing */
-
-
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

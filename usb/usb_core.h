@@ -8,6 +8,8 @@
 #ifndef USB_USB_CORE_H_
 #define USB_USB_CORE_H_
 
+#include "hardware.h"
+#include <stdint.h>
 #include "usb200.h"
 #include "usbch9.h"
 
@@ -1488,5 +1490,45 @@ uint_fast8_t usbd_get_stringsdesc_count(void);
 
 #define USBD_WCID_VENDOR_CODE 0x44
 uint_fast16_t usbd_dfu_get_xfer_size(uint_fast8_t alt);
+
+/* USB Host defines and prototypes */
+
+/* Memory management macros */
+//#define USBH_malloc               malloc
+//#define USBH_free                 free
+#define USBH_memset               memset
+#define USBH_memcpy               memcpy
+
+extern USBH_HandleTypeDef hUSB_Host;
+
+USBH_StatusTypeDef USBH_CtlReq(USBH_HandleTypeDef *phost,
+                             uint8_t             *buff,
+                             uint16_t            length);
+USBH_StatusTypeDef USBH_ClrFeature(USBH_HandleTypeDef *phost,
+                                   uint8_t ep_num);
+USBH_StatusTypeDef USBH_BulkSendData(USBH_HandleTypeDef *phost,
+                                uint8_t *buff,
+                                uint16_t length,
+                                uint8_t pipe_num,
+                                uint8_t do_ping );
+USBH_StatusTypeDef USBH_BulkReceiveData(USBH_HandleTypeDef *phost,
+                                uint8_t *buff,
+                                uint16_t length,
+                                uint8_t pipe_num);
+
+uint8_t USBH_AllocPipe  (USBH_HandleTypeDef *phost, uint8_t ep_addr);
+USBH_StatusTypeDef USBH_FreePipe  (USBH_HandleTypeDef *phost, uint8_t idx);
+USBH_StatusTypeDef USBH_OpenPipe  (USBH_HandleTypeDef *phost,
+                           uint8_t pipe_num,
+                           uint8_t epnum,
+                           uint8_t dev_address,
+                           uint8_t speed,
+                           uint8_t ep_type,
+                           uint16_t mps);
+USBH_StatusTypeDef USBH_ClosePipe  (USBH_HandleTypeDef *phost,
+                            uint8_t pipe_num);
+
+#define USBH_UsrLog(...) do { PRINTF(__VA_ARGS__); PRINTF("\n"); } while (0)
+#define USBH_DbgLog(...) do { PRINTF(__VA_ARGS__); PRINTF("\n"); } while (0)
 
 #endif /* USB_USB_CORE_H_ */
