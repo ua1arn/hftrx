@@ -9690,7 +9690,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 
 void HAL_HCD_MspInit(HCD_HandleTypeDef* hcdHandle)
 {
-	PRINTF(PSTR("HAL_HCD_MspInit()\n"));
+	//PRINTF(PSTR("HAL_HCD_MspInit()\n"));
 	if (hcdHandle->Instance == USB_OTG_FS)
 	{
 		#if CPUSTYLE_STM32MP1
@@ -9890,6 +9890,39 @@ HAL_StatusTypeDef HAL_HCD_Init(HCD_HandleTypeDef *hhcd)
 	return HAL_OK;
 }
 
+
+#if defined (WITHUSBHW_HOST)
+//++++ сюда переносим используемые хостом функции
+
+/**
+  * @brief  USBH_LL_Init
+  *         Initialize the Low Level portion of the Host driver.
+  * @param  phost: Host handle
+  * @retval USBH Status
+  */
+USBH_StatusTypeDef  USBH_LL_Init(USBH_HandleTypeDef *phost)
+{
+	/* Init USB_IP */
+	/* Link The driver to the stack */
+	hhcd_USB_OTG.pData = phost;
+	phost->pData = & hhcd_USB_OTG;
+
+	hhcd_USB_OTG.Instance = WITHUSBHW_HOST;
+	hhcd_USB_OTG.Init.Host_channels = 16;
+	hhcd_USB_OTG.Init.speed = PCD_SPEED_FULL;
+	hhcd_USB_OTG.Init.dma_enable = ! USB_ENABLE;	 // xyz HOST
+	hhcd_USB_OTG.Init.phy_itface = HCD_PHY_EMBEDDED;
+	hhcd_USB_OTG.Init.Sof_enable = USB_DISABLE;
+	if (HAL_HCD_Init(& hhcd_USB_OTG) != HAL_OK)
+	{
+		ASSERT(0);
+	}
+
+	USBH_LL_SetTimer(phost, HAL_HCD_GetCurrentFrame(& hhcd_USB_OTG));
+	return USBH_OK;
+}
+
+#endif /* defined (WITHUSBHW_HOST) */
 
 /**
   * @brief  Initialize a host channel
@@ -12868,44 +12901,6 @@ void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 
 #endif /* CPUSTYLE_STM32F */
 
-
-#if defined (WITHUSBHW_DEVICE)
-//++++ сюда переносим используемые хостом функции
-
-#endif /* WITHUSBHW_DEVICE */
-
-#if defined (WITHUSBHW_HOST)
-//++++ сюда переносим используемые хостом функции
-
-/**
-  * @brief  USBH_LL_Init
-  *         Initialize the Low Level portion of the Host driver.
-  * @param  phost: Host handle
-  * @retval USBH Status
-  */
-USBH_StatusTypeDef  USBH_LL_Init(USBH_HandleTypeDef *phost)
-{
-	/* Init USB_IP */
-	/* Link The driver to the stack */
-	hhcd_USB_OTG.pData = phost;
-	phost->pData = & hhcd_USB_OTG;
-
-	hhcd_USB_OTG.Instance = WITHUSBHW_HOST;
-	hhcd_USB_OTG.Init.Host_channels = 16;
-	hhcd_USB_OTG.Init.speed = PCD_SPEED_FULL;
-	hhcd_USB_OTG.Init.dma_enable = USB_DISABLE;
-	hhcd_USB_OTG.Init.phy_itface = HCD_PHY_EMBEDDED;
-	hhcd_USB_OTG.Init.Sof_enable = USB_DISABLE;
-	if (HAL_HCD_Init(& hhcd_USB_OTG) != HAL_OK)
-	{
-		ASSERT(0);
-	}
-
-	USBH_LL_SetTimer(phost, HAL_HCD_GetCurrentFrame(& hhcd_USB_OTG));
-	return USBH_OK;
-}
-
-#endif /* defined (WITHUSBHW_HOST) */
 
 // вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 static void
