@@ -369,7 +369,7 @@ void bandf_calc_initialize(void)
 		uint_fast8_t i;
 		for (i = 0; i < sizeof board_bandfs / sizeof board_bandfs [0]; ++ i)
 		{
-			uint_fast32_t freq = board_bandfs [i] << BANDDIVPOWER;
+			uint_fast32_t freq = (uint_fast32_t) board_bandfs [i] << BANDDIVPOWER;
 			PRINTF("board_bandfs[%d]=%lu\n", (int) i, (unsigned long) freq);
 		}
 	}
@@ -537,7 +537,7 @@ void bandf2_calc_initialize(void)
 		uint_fast8_t i;
 		for (i = 0; i < sizeof board_band2fs / sizeof board_band2fs [0]; ++ i)
 		{
-			uint_fast32_t freq = board_band2fs [i] << BANDDIVPOWER;
+			uint_fast32_t freq = (uint_fast32_t) board_band2fs [i] << BANDDIVPOWER;
 			PRINTF("board_band2fs[%d]=%lu\n", (int) i, (unsigned long) freq);
 		}
 	}
@@ -588,7 +588,7 @@ void bandf3_calc_initialize(void)
 		uint_fast8_t i;
 		for (i = 0; i < sizeof board_band3fs / sizeof board_band3fs [0]; ++ i)
 		{
-			uint_fast32_t freq = board_band3fs [i] << BANDDIVPOWER;
+			uint_fast32_t freq = (uint_fast32_t) board_band3fs [i] << BANDDIVPOWER;
 			PRINTF("board_band3fs[%d]=%lu\n", (int) i, (unsigned long) freq);
 		}
 	}
