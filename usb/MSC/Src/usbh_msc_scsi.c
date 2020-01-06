@@ -180,12 +180,10 @@ USBH_StatusTypeDef USBH_MSC_SCSI_ReadCapacity(USBH_HandleTypeDef *phost,
       if (error == USBH_OK)
       {
         /*assign the capacity*/
-        capacity->block_nbr = MSC_Handle->hbot.pbuf[3] | ((uint32_t)MSC_Handle->hbot.pbuf[2] << 8U) | \
-                              ((uint32_t)MSC_Handle->hbot.pbuf[1] << 16U) | ((uint32_t)MSC_Handle->hbot.pbuf[0] << 24U);
-
+    	capacity->block_nbr = USBD_peek_u32_LE(& MSC_Handle->hbot.pbuf[0]) + 1;	// last block LBA to number of blocks conversion
         /*assign the page length*/
-        capacity->block_size = (uint16_t)(MSC_Handle->hbot.pbuf[7] | ((uint32_t)MSC_Handle->hbot.pbuf[6] << 8U));
-      }
+        capacity->block_size = USBD_peek_u32_LE(& MSC_Handle->hbot.pbuf[4]);
+       }
       break;
 
     default:

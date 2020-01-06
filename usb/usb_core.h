@@ -1475,6 +1475,53 @@ struct descholder
 	unsigned size;
 };
 
+/* получить 32-бит значение */
+uint_fast32_t
+USBD_peek_u32(
+	const uint8_t * buff
+	);
+
+/* записать в буфер для ответа 32-бит значение */
+unsigned USBD_poke_u32(uint8_t * buff, uint_fast32_t v);
+
+/* получить 24-бит значение */
+uint_fast32_t
+USBD_peek_u24(
+	const uint8_t * buff
+	);
+
+/* записать в буфер для ответа 24-бит значение */
+unsigned USBD_poke_u24(uint8_t * buff, uint_fast32_t v);
+
+/* получить 16-бит значение */
+uint_fast32_t
+USBD_peek_u16(
+	const uint8_t * buff
+	);
+
+/* записать в буфер для ответа 16-бит значение */
+unsigned USBD_poke_u16(uint8_t * buff, uint_fast16_t v);
+
+/* получить 8-бит значение */
+uint_fast8_t
+USBD_peek_u8(
+	const uint8_t * buff
+	);
+
+/* записать в буфер для ответа 8-бит значение */
+unsigned USBD_poke_u8(uint8_t * buff, uint_fast8_t v);
+
+/* получить 32-бит значение */
+/* low endian memory layout */
+uint_fast32_t
+USBD_peek_u32_LE(
+	const uint8_t * buff
+	);
+
+/* записать в буфер для ответа 32-бит значение */
+/* low endian memory layout */
+unsigned USBD_poke_u32_LE(uint8_t * buff, uint_fast32_t v);
+
 #define USBD_CONFIGCOUNT 4
 
 extern struct descholder MsftStringDescr [1];	// Microsoft OS String Descriptor

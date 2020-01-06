@@ -113,40 +113,6 @@ static uint_fast16_t ulmax16(uint_fast16_t a, uint_fast16_t b)
 	return a > b ? a : b;
 }
 
-/* записать в буфер для ответа 24-бит значение */
-static void USBD_poke_u24(uint8_t * buff, uint_fast32_t v)
-{
-	buff [0] = LO_BYTE(v);
-	buff [1] = HI_BYTE(v);
-	buff [2] = HI_24BY(v);
-}
-
-/* получить 32-бит значение */
-static uint_fast32_t
-USBD_peek_u32(
-	const uint8_t * buff
-	)
-{
-	return
-		((uint_fast32_t) buff [3] << 24) +
-		((uint_fast32_t) buff [2] << 16) +
-		((uint_fast32_t) buff [1] << 8) +
-		((uint_fast32_t) buff [0] << 0);
-}
-
-/* получить 32-бит значение */
-static uint_fast32_t
-USBD_peek_u24(
-	const uint8_t * buff
-	)
-{
-	return
-		((uint_fast32_t) buff [2] << 16) +
-		((uint_fast32_t) buff [1] << 8) +
-		((uint_fast32_t) buff [0] << 0);
-}
-
-
 static int
 toprintc(int c)
 {

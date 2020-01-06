@@ -123,51 +123,6 @@ static uint_fast16_t ulmax16(uint_fast16_t a, uint_fast16_t b)
 	return a > b ? a : b;
 }
 
-/* получить 32-бит значение */
-static uint_fast32_t
-USBD_peek_u32(
-	const uint8_t * buff
-	)
-{
-	return
-		((uint_fast32_t) buff [3] << 24) +
-		((uint_fast32_t) buff [2] << 16) +
-		((uint_fast32_t) buff [1] << 8) +
-		((uint_fast32_t) buff [0] << 0);
-}
-
-/* записать в буфер для ответа 32-бит значение */
-static void USBD_poke_u32(uint8_t * buff, uint_fast32_t v)
-{
-	buff [0] = LO_BYTE(v);
-	buff [1] = HI_BYTE(v);
-	buff [2] = HI_24BY(v);
-	buff [3] = HI_32BY(v);
-}
-
-/* записать в буфер для ответа 24-бит значение */
-static void USBD_poke_u24(uint8_t * buff, uint_fast32_t v)
-{
-	buff [0] = LO_BYTE(v);
-	buff [1] = HI_BYTE(v);
-	buff [2] = HI_24BY(v);
-}
-
-/* записать в буфер для ответа 16-бит значение */
-static void USBD_poke_u16(uint8_t * buff, uint_fast16_t v)
-{
-	buff [0] = LO_BYTE(v);
-	buff [1] = HI_BYTE(v);
-}
-
-/* записать в буфер для ответа 8-бит значение */
-static void USBD_poke_u8(uint8_t * buff, uint_fast8_t v)
-{
-	buff [0] = v;
-}
-
-
-
 static RAMDTCM volatile uint_fast8_t usbd_cdc1_rxenabled;	/* виртуальный флаг разрешения прерывания по приёму символа - HARDWARE_CDC_ONRXCHAR */
 static USBALIGN_BEGIN uint8_t cdc1buffout [VIRTUAL_COM_PORT_OUT_DATA_SIZE] USBALIGN_END;
 static USBALIGN_BEGIN uint8_t cdc1buffin [VIRTUAL_COM_PORT_IN_DATA_SIZE] USBALIGN_END;
