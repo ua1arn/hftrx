@@ -11607,9 +11607,9 @@ void HAL_HCD_MspInit(HCD_HandleTypeDef* hcdHandle)
 			while ((PWR->CR3 & PWR_CR3_USB33RDY_Msk) == 0)
 				;
 
-			RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_USBOEN;
+			RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_USBOEN_Msk;
 			(void) RCC->MP_AHB2ENSETR;
-			RCC->MP_AHB2LPENSETR = RCC_MC_AHB2LPENSETR_USBOLPEN;
+			RCC->MP_AHB2LPENSETR = RCC_MC_AHB2LPENSETR_USBOLPEN_Msk;
 			(void) RCC->MP_AHB2LPENSETR;
 
 			arm_hardware_set_handler_system(OTG_IRQn, host_OTG_FS_IRQHandler);
@@ -11620,9 +11620,9 @@ void HAL_HCD_MspInit(HCD_HandleTypeDef* hcdHandle)
 			//PRINTF(PSTR("HAL_HCD_MspInit: stm32f4xx_pllq=%lu, freq=%lu\n"), (unsigned long) stm32f4xx_pllq, PLL_FREQ / stm32f4xx_pllq);
 			USBD_FS_INITIALIZE();
 
-			RCC->AHB1ENR |= RCC_AHB1ENR_USB1OTGHSEN;	/* USB/OTG HS  */
+			RCC->AHB1ENR |= RCC_AHB1ENR_USB2OTGFSEN_Msk;	/* USB/OTG FS  */
 			(void) RCC->AHB1ENR;
-			RCC->APB4ENR |= RCC_APB4ENR_SYSCFGEN;	/* USB/OTG HS companion - VBUS? */
+			RCC->APB4ENR |= RCC_APB4ENR_SYSCFGEN_Msk;	/* USB/OTG FS companion - VBUS? */
 			(void) RCC->APB2ENR;
 
 			arm_hardware_set_handler_system(OTG_FS_IRQn, host_OTG_FS_IRQHandler);
@@ -11633,9 +11633,9 @@ void HAL_HCD_MspInit(HCD_HandleTypeDef* hcdHandle)
 
 			USBD_FS_INITIALIZE();
 
-			RCC->AHB2ENR |= RCC_AHB2ENR_OTGFSEN;	/* USB/OTG FS  */
+			RCC->AHB2ENR |= RCC_AHB2ENR_OTGFSEN_Msk;	/* USB/OTG FS  */
 			(void) RCC->AHB2ENR;
-			RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;	/* USB/OTG FS companion - VBUS? */
+			RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN_Msk;	/* USB/OTG FS companion - VBUS? */
 			(void) RCC->APB2ENR;
 
 			arm_hardware_set_handler_system(OTG_FS_IRQn, host_OTG_FS_IRQHandler);
@@ -11644,21 +11644,48 @@ void HAL_HCD_MspInit(HCD_HandleTypeDef* hcdHandle)
 	}
 	else if (hcdHandle->Instance == USB_OTG_HS)
 	{
-#if CPUSTYLE_STM32MP1
+	#if CPUSTYLE_STM32MP1
 
 		PWR->CR3 |= PWR_CR3_USB33DEN_Msk;
 		(void) PWR->CR3;
 		while ((PWR->CR3 & PWR_CR3_USB33RDY_Msk) == 0)
 			;
 
-		RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_USBOEN;
+		RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_USBOEN_Msk;
 		(void) RCC->MP_AHB2ENSETR;
-		RCC->MP_AHB2LPENSETR = RCC_MC_AHB2LPENSETR_USBOLPEN;
+		RCC->MP_AHB2LPENSETR = RCC_MC_AHB2LPENSETR_USBOLPEN_Msk;
 		(void) RCC->MP_AHB2LPENSETR;
 
 		arm_hardware_set_handler_system(OTG_IRQn, host_OTG_HS_IRQHandler);
 
-#endif /* CPUSTYLE_STM32MP1 */
+	#elif CPUSTYLE_STM32H7XX
+
+		//const uint_fast32_t stm32f4xx_pllq = arm_hardware_stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
+		//PRINTF(PSTR("HAL_HCD_MspInit: stm32f4xx_pllq=%lu, freq=%lu\n"), (unsigned long) stm32f4xx_pllq, PLL_FREQ / stm32f4xx_pllq);
+		USBD_FS_INITIALIZE();
+
+		RCC->AHB1ENR |= RCC_AHB1ENR_USB1OTGHSEN_Msk;	/* USB/OTG HS  */
+		(void) RCC->AHB1ENR;
+		RCC->APB4ENR |= RCC_APB4ENR_SYSCFGEN_Msk;	/* USB/OTG HS companion - VBUS? */
+		(void) RCC->APB2ENR;
+
+		arm_hardware_set_handler_system(OTG_HS_IRQn, host_OTG_HS_IRQHandler);
+
+	#else
+		//const uint_fast32_t stm32f4xx_pllq = arm_hardware_stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
+		//PRINTF(PSTR("HAL_HCD_MspInit: stm32f4xx_pllq=%lu, freq=%lu\n"), (unsigned long) stm32f4xx_pllq, PLL_FREQ / stm32f4xx_pllq);
+
+		USBD_FS_INITIALIZE();
+
+		RCC->AHB2ENR |= RCC_AHB2ENR_OTGHSEN_Msk;	/* USB/OTG HS  */
+		(void) RCC->AHB2ENR;
+		RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN_Msk;	/* USB/OTG HS companion - VBUS? */
+		(void) RCC->APB2ENR;
+
+		arm_hardware_set_handler_system(OTG_HS_IRQn, host_OTG_HS_IRQHandler);
+
+
+	#endif
 	}
 	else
 	{
@@ -12371,7 +12398,7 @@ USBH_StatusTypeDef  USBH_LL_Connect(USBH_HandleTypeDef *phost)
 	switch (phost->gState)
 	{
 	case HOST_IDLE:
-		PRINTF(PSTR("USBH_LL_Connect at HOST_IDLE\n"));
+		//PRINTF(PSTR("USBH_LL_Connect at HOST_IDLE\n"));
 		phost->device.is_connected = 1;
 
 		if (phost->pUser != NULL)
@@ -12381,7 +12408,7 @@ USBH_StatusTypeDef  USBH_LL_Connect(USBH_HandleTypeDef *phost)
 		break;
 
 	case HOST_DEV_WAIT_FOR_ATTACHMENT:
-		PRINTF(PSTR("USBH_LL_Connect at HOST_DEV_WAIT_FOR_ATTACHMENT\n"));
+		//PRINTF(PSTR("USBH_LL_Connect at HOST_DEV_WAIT_FOR_ATTACHMENT\n"));
 		phost->gState = HOST_DEV_BEFORE_ATTACHED;
 		break;
 
@@ -12407,11 +12434,11 @@ USBH_StatusTypeDef  USBH_LL_Disconnect(USBH_HandleTypeDef *phost)
 	switch (phost->gState)
 	{
 	case HOST_DEV_BEFORE_ATTACHED:
-		PRINTF(PSTR("USBH_LL_Disconnect at HOST_DEV_BEFORE_ATTACHED\n"));
+		//PRINTF(PSTR("USBH_LL_Disconnect at HOST_DEV_BEFORE_ATTACHED\n"));
 		return USBH_OK;
 
 	default:
-		PRINTF(PSTR("USBH_LL_Disconnect at phost->gState=%d\n"), (int) phost->gState);
+		//PRINTF(PSTR("USBH_LL_Disconnect at phost->gState=%d\n"), (int) phost->gState);
 		break;
 	}
 	/*Stop Host */
@@ -12454,7 +12481,7 @@ USBH_StatusTypeDef  USBH_LL_Disconnect(USBH_HandleTypeDef *phost)
   * @param  mps: Endpoint Max Packet Size
   * @retval USBH Status
   */
-USBH_StatusTypeDef   USBH_LL_OpenPipe    (USBH_HandleTypeDef *phost,
+USBH_StatusTypeDef   USBH_LL_OpenPipe(USBH_HandleTypeDef *phost,
                                       uint8_t pipe_num,
                                       uint8_t epnum,
                                       uint8_t dev_address,
