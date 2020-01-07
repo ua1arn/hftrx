@@ -8938,6 +8938,7 @@ void HAL_PCD_MspDeInit(PCD_HandleTypeDef *pcdHandle)
 #endif
 }
 
+#ifdef WITHUSBHW_DEVICE
 
 /**
   * @brief  Initializes the Low Level portion of the Device driver.
@@ -9100,6 +9101,7 @@ USBD_StatusTypeDef USBD_DeInit(USBD_HandleTypeDef *pdev)
 	return USBD_OK;
 }
 
+
 // BOOTLOADER support
 static uint_fast8_t device_vbusbefore;
 
@@ -9149,6 +9151,8 @@ static void board_usbd_initialize(void)
 	hardware_usbd_initialize();
 }
 
+
+#endif /* WITHUSBHW_DEVICE */
 
 #if CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
 /**
@@ -9701,9 +9705,9 @@ void HAL_HCD_MspInit(HCD_HandleTypeDef* hcdHandle)
 			while ((PWR->CR3 & PWR_CR3_USB33RDY_Msk) == 0)
 				;
 
-			RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_USBOEN_Msk;
+			RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_USBOEN;
 			(void) RCC->MP_AHB2ENSETR;
-			RCC->MP_AHB2LPENSETR = RCC_MC_AHB2LPENSETR_USBOLPEN_Msk;
+			RCC->MP_AHB2LPENSETR = RCC_MC_AHB2LPENSETR_USBOLPEN;
 			(void) RCC->MP_AHB2LPENSETR;
 
 			arm_hardware_set_handler_system(OTG_IRQn, host_OTG_FS_IRQHandler);
@@ -9745,9 +9749,9 @@ void HAL_HCD_MspInit(HCD_HandleTypeDef* hcdHandle)
 		while ((PWR->CR3 & PWR_CR3_USB33RDY_Msk) == 0)
 			;
 
-		RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_USBOEN_Msk;
+		RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_USBOEN;
 		(void) RCC->MP_AHB2ENSETR;
-		RCC->MP_AHB2LPENSETR = RCC_MC_AHB2LPENSETR_USBOLPEN_Msk;
+		RCC->MP_AHB2LPENSETR = RCC_MC_AHB2LPENSETR_USBOLPEN;
 		(void) RCC->MP_AHB2LPENSETR;
 
 		arm_hardware_set_handler_system(OTG_IRQn, host_OTG_HS_IRQHandler);
@@ -12334,7 +12338,7 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
  return USBH_OK;
 }
 
-#if CPUSTYLE_STM32F
+#if CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
 //++++ host interrupt handlers
 
 /**
@@ -12796,7 +12800,7 @@ void HAL_HCD_HC_NotifyURBChange_Callback(HCD_HandleTypeDef *hhcd, uint8_t chnum,
 }
 
 //---- host interrupt handlers
-#if CPUSTYLE_STM32F
+#if CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
 /**
   * @brief  This function handles HCD interrupt request.
   * @param  hhcd: HCD handle
@@ -12989,6 +12993,7 @@ void board_usb_deinitialize(void)
 uint_fast8_t hamradio_get_usbh_active(void)
 {
 #if defined (WITHUSBHW_HOST)
+	return hUSB_Host.device.is_connected != 0 && hUSB_Host.gState == HOST_CLASS;
 	return hUSB_Host.device.is_connected != 0;
 #else
 	return  0;

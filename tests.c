@@ -4168,6 +4168,38 @@ static void sdcard_filesystest(void)
 	}
 }
 
+static void sdcard_filesyspeedstest(void)
+{
+	ALIGNX_BEGIN BYTE work [FF_MAX_SS] ALIGNX_END;
+	FRESULT rc;
+	uint_fast16_t year;
+	uint_fast8_t month, day;
+	uint_fast8_t hour, minute, secounds;
+	board_rtc_getdatetime(& year, & month, & day, & hour, & minute, & secounds);
+	static unsigned ser;
+	static RAMNOINIT_D1 FATFS Fatfs;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
+	static const char testfile [] = "readme.txt";
+	char testlog [FF_MAX_LFN + 1];
+	static ticker_t test_recordticker;
+	//int nlog = 0;
+
+	ticker_initialize(& test_recordticker, 1, test_recodspool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
+	mmcInitialize();
+	debug_printf_P(PSTR("FAT FS test.\n"));
+	f_mount(& Fatfs, "", 0);		/* Register volume work area (never fails) */
+	local_snprintf_P(testlog, sizeof testlog / sizeof testlog [0],
+		PSTR("rec_%04d-%02d-%02d_%02d%02d%02d_%08lX_%u.txt"),
+		year, month, day,
+		hour, minute, secounds,
+		hardware_get_random(),
+		++ ser
+		);
+	debug_printf_P(PSTR("FAT FS test - write file '%s'.\n"), testlog);
+	f_mount(NULL, "", 0);		/* Unregister volume work area (never fails) */
+	f_mount(& Fatfs, "", 0);		/* Register volume work area (never fails) */
+	dosaveblocks(testlog);
+}
+
 #endif /* WITHDEBUG && WITHUSEAUDIOREC */
 
 //HARDWARE_SPI_HANGON()	- поддержка SPI программатора - подключение к программируемому устройству
@@ -6109,6 +6141,15 @@ void hightests(void)
 	// SD CARD file system level functions test
 	{
 		sdcard_filesystest();
+	}
+#endif
+#if 0 && WITHDEBUG && WITHUSEAUDIOREC
+	// SD CARD file system level functions test
+	// no interactive
+	{
+		while (hamradio_get_usbh_active() == 0)
+			;
+		sdcard_filesyspeedstest();
 	}
 #endif
 #if 0 && WITHDEBUG && WITHUSEAUDIOREC
