@@ -2379,7 +2379,8 @@ HAL_StatusTypeDef USB_HostInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgTyp
 	(void) USBx->SYSCFG0;
 
 	USBx->SYSCFG0 = (USBx->SYSCFG0 & ~ (USB_SYSCFG_HSE)) |
-			(cfg->speed == USBD_SPEED_HIGH) * USB_SYSCFG_HSE |	// HSE
+			//(cfg->speed == USBD_SPEED_HIGH) * USB_SYSCFG_HSE |	// HSE
+			(1) * USB_SYSCFG_HSE |	// HSE
 			0;
 	(void) USBx->SYSCFG0;
 
@@ -11929,8 +11930,8 @@ USBH_StatusTypeDef USBH_HandleEnum(USBH_HandleTypeDef *phost)
     /* Get FULL Device Desc  */
     if (USBH_Get_DevDesc(phost, USB_DEVICE_DESC_SIZE) == USBH_OK)
     {
-      PRINTF(PSTR("PID: %04X\n"), phost->device.DevDesc.idProduct );
-      PRINTF(PSTR("VID: %04X\n"), phost->device.DevDesc.idVendor );
+    	USBH_UsrLog("PID: %04X", phost->device.DevDesc.idProduct );
+    	USBH_UsrLog("VID: %04X", phost->device.DevDesc.idVendor );
 
       phost->EnumState = ENUM_SET_ADDR;
 
@@ -11951,7 +11952,7 @@ USBH_StatusTypeDef USBH_HandleEnum(USBH_HandleTypeDef *phost)
       phost->device.address = USBH_DEVICE_ADDRESS;
 
       /* user callback for device address assigned */
-      PRINTF(PSTR("Address (#%d) assigned.\n"), phost->device.address);
+      USBH_UsrLog("Address (#%d) assigned.", phost->device.address);
       phost->EnumState = ENUM_GET_CFG_DESC;
 
       /* modify control channels to update device address */
@@ -12002,7 +12003,7 @@ USBH_StatusTypeDef USBH_HandleEnum(USBH_HandleTypeDef *phost)
                                0xff) == USBH_OK)
       {
         /* User callback for Manufacturing string */
-        PRINTF(PSTR("Manufacturer : %s\n"),  (char *)phost->device.Data);
+    	  USBH_UsrLog("Manufacturer : %s",  (char *)phost->device.Data);
         phost->EnumState = ENUM_GET_PRODUCT_STRING_DESC;
 
 #if (USBH_USE_OS == 1)
@@ -12012,7 +12013,7 @@ USBH_StatusTypeDef USBH_HandleEnum(USBH_HandleTypeDef *phost)
     }
     else
     {
-     PRINTF(PSTR("Manufacturer : N/A\n"));
+    	USBH_UsrLog("Manufacturer : N/A");
      phost->EnumState = ENUM_GET_PRODUCT_STRING_DESC;
 #if (USBH_USE_OS == 1)
     osMessagePut ( phost->os_event, USBH_STATE_CHANGED_EVENT, 0);
@@ -12029,13 +12030,13 @@ USBH_StatusTypeDef USBH_HandleEnum(USBH_HandleTypeDef *phost)
                                0xff) == USBH_OK)
       {
         /* User callback for Product string */
-        PRINTF(PSTR("Product : %s\n"),  (char *)phost->device.Data);
+    	  USBH_UsrLog("Product : %s",  (char *)phost->device.Data);
         phost->EnumState = ENUM_GET_SERIALNUM_STRING_DESC;
       }
     }
     else
     {
-      PRINTF(PSTR("Product : N/A\n"));
+    	USBH_UsrLog("Product : N/A");
       phost->EnumState = ENUM_GET_SERIALNUM_STRING_DESC;
 #if (USBH_USE_OS == 1)
     osMessagePut ( phost->os_event, USBH_STATE_CHANGED_EVENT, 0);
@@ -12052,13 +12053,13 @@ USBH_StatusTypeDef USBH_HandleEnum(USBH_HandleTypeDef *phost)
                                0xff) == USBH_OK)
       {
         /* User callback for Serial number string */
-         PRINTF(PSTR("Serial Number : %s\n"),  (char *)phost->device.Data);
+    	  USBH_UsrLog("Serial Number : %s",  (char *)phost->device.Data);
         Status = USBH_OK;
       }
     }
     else
     {
-      PRINTF(PSTR("Serial Number : N/A\n"));
+    	USBH_UsrLog("Serial Number : N/A");
       Status = USBH_OK;
 #if (USBH_USE_OS == 1)
     osMessagePut ( phost->os_event, USBH_STATE_CHANGED_EVENT, 0);
