@@ -274,12 +274,10 @@ enum
 
 #if WITHUSEAUDIOREC
 
-	#define SDCARDBUFFSIZE16 (2048)	// размер данных должен быть не меньше размера кластера на SD карте
-
 	typedef ALIGNX_BEGIN struct records16
 	{
 		LIST_ENTRY item;
-		ALIGNX_BEGIN int16_t buff [SDCARDBUFFSIZE16] ALIGNX_END;
+		ALIGNX_BEGIN int16_t buff [AUDIORECBUFFSIZE16] ALIGNX_END;
 	} ALIGNX_END records16_t;
 
 	static RAMDTCM LIST_ENTRY2 recordsfree16;		// Свободные буферы
@@ -687,15 +685,15 @@ void buffers_initialize(void)
 #if WITHUSEAUDIOREC
 
 	#if CPUSTYLE_R7S721
-		RAMNOINIT_D1 static records16_t recordsarray16 [16];
+		RAMNOINIT_D1 static records16_t recordsarray16 [8];
 	#elif defined (STM32F767xx)
 		RAMNOINIT_D1 static records16_t recordsarray16 [8];
 	#elif defined (STM32F746xx)
 		RAMNOINIT_D1 static records16_t recordsarray16 [8];
 	#elif defined (STM32F429xx)
-		RAMNOINIT_D1 static records16_t recordsarray16 [4];
-	#elif defined (STM32H743xx)
 		RAMNOINIT_D1 static records16_t recordsarray16 [8];
+	#elif defined (STM32H743xx)
+		/*RAMNOINIT_D1 */ static records16_t recordsarray16 [6];
 	#else
 		RAMNOINIT_D1 static records16_t recordsarray16 [8];
 	#endif
@@ -726,7 +724,7 @@ void buffers_initialize(void)
 	}
 #endif /* WITHMODEM */
 
-	static RAMDTCM denoise16_t speexarray16 [3];
+	static RAMDTCM denoise16_t speexarray16 [6];
 
 	InitializeListHead2(& speexfree16);	// Незаполненные
 	InitializeListHead2(& speexready16);	// Для обработки
@@ -1337,8 +1335,8 @@ void RAMFUNC savesamplerecord16SD(int_fast16_t left, int_fast16_t right)
 		
 		//preparerecord16->buff [0] = 'd' | 'a' * 256;
 		//preparerecord16->buff [1] = 't' | 'a' * 256;
-		//preparerecord16->buff [2] = ((SDCARDBUFFSIZE16 * sizeof preparerecord16->buff [0]) - 8) >> 0;
-		//preparerecord16->buff [3] = ((SDCARDBUFFSIZE16 * sizeof preparerecord16->buff [0]) - 8) >> 16;
+		//preparerecord16->buff [2] = ((AUDIORECBUFFSIZE16 * sizeof preparerecord16->buff [0]) - 8) >> 0;
+		//preparerecord16->buff [3] = ((AUDIORECBUFFSIZE16 * sizeof preparerecord16->buff [0]) - 8) >> 16;
 		//level16record = 4;
 
 		level16record = 0;
@@ -1355,7 +1353,7 @@ void RAMFUNC savesamplerecord16SD(int_fast16_t left, int_fast16_t right)
 
 #endif /* WITHUSEAUDIOREC2CH */
 
-	if (level16record >= SDCARDBUFFSIZE16)
+	if (level16record >= AUDIORECBUFFSIZE16)
 	{
 		++ recbuffered;
 		InsertHeadList2(& recordsready16, & preparerecord16->item);
@@ -1373,7 +1371,7 @@ unsigned takerecordbuffer(void * * dest)
 		-- recbuffered;
 		records16_t * const p = CONTAINING_RECORD(t, records16_t, item);
 		* dest = p->buff;
-		return (SDCARDBUFFSIZE16 * sizeof p->buff [0]);
+		return (AUDIORECBUFFSIZE16 * sizeof p->buff [0]);
 	}
 	global_enableIRQ();
 	return 0;
