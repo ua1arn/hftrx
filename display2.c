@@ -559,6 +559,7 @@ static void display_recstatus(
 
 #endif /* WITHUSEAUDIOREC */
 }
+
 // Отображение режима записи аудио фрагмента
 static void display_rec3(
 	uint_fast8_t x, 
@@ -4189,8 +4190,9 @@ enum
 		{	21,	12,	display_rxbw3,		REDRM_MODE, PGALL, },	// 3.1 / 0,5 / WID / NAR
 		{	26,	8,	display_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
 
+		{	0,	16,	display_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
 		{	0,	16,	display_mainsub3,	REDRM_MODE, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
-		//{	0,	16,	display_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
+
 		{	5,	16,	display_vfomode3,	REDRM_MODE, PGALL, },	// SPLIT - не очень нужно при наличии индикации на A/B (display_mainsub3) яркостью.
 		{	9,	16,	display_freqX_b,	REDRM_FRQB, PGALL, },	// SUB FREQ
 		{	21,	16,	display_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
