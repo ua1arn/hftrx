@@ -3476,7 +3476,7 @@ void fb_initialize(struct fb * p)
 #endif
 }
 
-static RAMNOINIT_D1 char FATFSALIGN_BEGIN rbuff [FF_MAX_SS * 4] FATFSALIGN_END;		// буфер записи - при совпадении с _MAX_SS нельзя располагать в Cortex-M4 CCM
+static RAMNOINIT_D1 char FATFSALIGN_BEGIN rbuff [FF_MAX_SS * 32] FATFSALIGN_END;		// буфер записи - при совпадении с _MAX_SS нельзя располагать в Cortex-M4 CCM
 
 
 static void showprogress(
@@ -3579,7 +3579,11 @@ static void dosaveserialport(const char * fname)
 	FRESULT rc;				/* Result code */
 
 	rc = f_open(& Fil, fname, FA_WRITE | FA_CREATE_ALWAYS);
-	if (rc) return;	//die(rc);
+	if (rc)
+	{
+		debug_printf_P(PSTR("can not start recording\n"));
+		return;	//die(rc);
+	}
 
 	rxqclear();	// очистить буфер принятых символов
 
@@ -3620,7 +3624,7 @@ static void dosaveserialport(const char * fname)
 	{
 		UINT bw;
 		rc = f_write(& Fil, rbuff, i, & bw);
-		if (rc != 0 || bw == 0)
+		if (rc != 0 || bw != i)
 		{
 			TP();
 			debug_printf_P(PSTR("Failed with rc=%u.\n"), rc);
@@ -3629,6 +3633,47 @@ static void dosaveserialport(const char * fname)
 	}
 	rc = f_close(& Fil);
 	if (rc) 
+	{
+		TP();
+		debug_printf_P(PSTR("Failed with rc=%u.\n"), rc);
+		return;
+	}
+}
+
+// сохранение потока данных большими блоками
+static void dosaveblocks(const char * fname)
+{
+	static RAMNOINIT_D1 FIL Fil;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
+	FRESULT rc;				/* Result code */
+
+	memset(rbuff, ' ', sizeof rbuff);
+	rc = f_open(& Fil, fname, FA_WRITE | FA_CREATE_ALWAYS);
+	if (rc)
+	{
+		debug_printf_P(PSTR("can not start recording\n"));
+		return;	//die(rc);
+	}
+
+	for (;;)
+	{
+		char kbch;
+		char c;
+
+		if (dbg_getchar(& kbch) != 0)
+		{
+			if (kbch == 0x1b)
+			{
+				debug_printf_P(PSTR("break recording\n"));
+				break;
+			}
+		}
+		UINT bw;
+		rc = f_write(& Fil, rbuff, sizeof rbuff, & bw);
+		if (rc != 0 || bw != sizeof rbuff)
+			break;
+	}
+	rc = f_close(& Fil);
+	if (rc)
 	{
 		TP();
 		debug_printf_P(PSTR("Failed with rc=%u.\n"), rc);
@@ -4065,6 +4110,27 @@ static void sdcard_filesystest(void)
 					f_mount(NULL, "", 0);		/* Unregister volume work area (never fails) */
 					f_mount(& Fatfs, "", 0);		/* Register volume work area (never fails) */
 					dosaveserialport(testlog);
+				}
+				break;
+
+			case 'W':
+				{
+					uint_fast16_t year;
+					uint_fast8_t month, day;
+					uint_fast8_t hour, minute, secounds;
+					board_rtc_getdatetime(& year, & month, & day, & hour, & minute, & secounds);
+					static unsigned ser;
+					local_snprintf_P(testlog, sizeof testlog / sizeof testlog [0],
+						PSTR("rec_%04d-%02d-%02d_%02d%02d%02d_%08lX_%u.txt"),
+						year, month, day,
+						hour, minute, secounds,
+						hardware_get_random(),
+						++ ser
+						);
+					debug_printf_P(PSTR("FAT FS test - %d bytes block write file '%s'.\n"), sizeof rbuff, testlog);
+					f_mount(NULL, "", 0);		/* Unregister volume work area (never fails) */
+					f_mount(& Fatfs, "", 0);		/* Register volume work area (never fails) */
+					dosaveblocks(testlog);
 				}
 				break;
 			}
