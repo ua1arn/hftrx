@@ -3476,7 +3476,7 @@ void fb_initialize(struct fb * p)
 #endif
 }
 
-static RAMNOINIT_D1 char FATFSALIGN_BEGIN rbuff [FF_MAX_SS * 32] FATFSALIGN_END;		// буфер записи - при совпадении с _MAX_SS нельзя располагать в Cortex-M4 CCM
+static RAMNOINIT_D1 char FATFSALIGN_BEGIN rbuff [FF_MAX_SS * 4] FATFSALIGN_END;		// буфер записи - при совпадении с _MAX_SS нельзя располагать в Cortex-M4 CCM
 
 
 static void showprogress(
@@ -3640,6 +3640,29 @@ static void dosaveserialport(const char * fname)
 	}
 }
 
+static volatile unsigned long recticks;
+static volatile int recstop;
+
+static void test_recodspool(void * ctx)
+{
+	if (recticks < NTICKS(60000))
+	{
+		++ recticks;
+	}
+	else
+	{
+		recstop = 1;
+	}
+}
+
+static void test_recodstart(void)
+{
+	disableIRQ();
+	recticks = 0;
+	recstop = 0;
+	enableIRQ();
+}
+
 // сохранение потока данных большими блоками
 static void dosaveblocks(const char * fname)
 {
@@ -3653,12 +3676,17 @@ static void dosaveblocks(const char * fname)
 		debug_printf_P(PSTR("can not start recording\n"));
 		return;	//die(rc);
 	}
-
+	test_recodstart();
 	for (;;)
 	{
 		char kbch;
 		char c;
 
+		if (recstop != 0)
+		{
+			debug_printf_P(PSTR("end of timed recording\n"));
+			break;
+		}
 		if (dbg_getchar(& kbch) != 0)
 		{
 			if (kbch == 0x1b)
@@ -4025,8 +4053,10 @@ static void sdcard_filesystest(void)
 	static RAMNOINIT_D1 FATFS Fatfs;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
 	static const char testfile [] = "readme.txt";
 	char testlog [FF_MAX_LFN + 1];
+	static ticker_t test_recordticker;
 	//int nlog = 0;
 
+	ticker_initialize(& test_recordticker, 1, test_recodspool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 	mmcInitialize();
 	debug_printf_P(PSTR("FAT FS test.\n"));
 	f_mount(& Fatfs, "", 0);		/* Register volume work area (never fails) */
@@ -4077,7 +4107,7 @@ static void sdcard_filesystest(void)
 				printtextfile(testfile);
 				break;
 
-			case 'f':
+			case 'F':
 				debug_printf_P(PSTR("FAT FS formatting.\n"));
 				f_mount(NULL, "", 0);		/* Unregister volume work area (never fails) */
 				rc = f_mkfs("0:", FM_ANY, 0, work, sizeof (work));
