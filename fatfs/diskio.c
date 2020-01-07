@@ -174,7 +174,7 @@ static const unsigned int num_channels = 1;	/* 1: monoaural */
 	static const unsigned int DATACHUNKSTARTOFFSET = 0x0024;		// miltibloak write используется через раз (3-1-3-1-3-1-3-1-3-1-1-1-3-1-3-1)
 #else
 	// С дополнительным объёмом данных (не всеми устройствами распознается)
-	static const unsigned int DATACHUNKSTARTOFFSET = 4096 - 8;	// 4-4-4-4-4-4-4
+	static const unsigned int DATACHUNKSTARTOFFSET = (AUDIORECBUFFSIZE16 * 2) - 8;	// 4-4-4-4-4-4-4
 #endif
 
 /* make_wav.c

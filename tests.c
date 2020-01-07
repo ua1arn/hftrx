@@ -3579,7 +3579,11 @@ static void dosaveserialport(const char * fname)
 	FRESULT rc;				/* Result code */
 
 	rc = f_open(& Fil, fname, FA_WRITE | FA_CREATE_ALWAYS);
-	if (rc) return;	//die(rc);
+	if (rc)
+	{
+		debug_printf_P(PSTR("can not start recording\n"));
+		return;	//die(rc);
+	}
 
 	rxqclear();	// очистить буфер принятых символов
 
@@ -3620,7 +3624,7 @@ static void dosaveserialport(const char * fname)
 	{
 		UINT bw;
 		rc = f_write(& Fil, rbuff, i, & bw);
-		if (rc != 0 || bw == 0)
+		if (rc != 0 || bw != i)
 		{
 			TP();
 			debug_printf_P(PSTR("Failed with rc=%u.\n"), rc);
@@ -3629,6 +3633,75 @@ static void dosaveserialport(const char * fname)
 	}
 	rc = f_close(& Fil);
 	if (rc) 
+	{
+		TP();
+		debug_printf_P(PSTR("Failed with rc=%u.\n"), rc);
+		return;
+	}
+}
+
+static volatile unsigned long recticks;
+static volatile int recstop;
+
+static void test_recodspool(void * ctx)
+{
+	if (recticks < NTICKS(60000))
+	{
+		++ recticks;
+	}
+	else
+	{
+		recstop = 1;
+	}
+}
+
+static void test_recodstart(void)
+{
+	disableIRQ();
+	recticks = 0;
+	recstop = 0;
+	enableIRQ();
+}
+
+// сохранение потока данных большими блоками
+static void dosaveblocks(const char * fname)
+{
+	static RAMNOINIT_D1 FIL Fil;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
+	FRESULT rc;				/* Result code */
+
+	memset(rbuff, ' ', sizeof rbuff);
+	rc = f_open(& Fil, fname, FA_WRITE | FA_CREATE_ALWAYS);
+	if (rc)
+	{
+		debug_printf_P(PSTR("can not start recording\n"));
+		return;	//die(rc);
+	}
+	test_recodstart();
+	for (;;)
+	{
+		char kbch;
+		char c;
+
+		if (recstop != 0)
+		{
+			debug_printf_P(PSTR("end of timed recording\n"));
+			break;
+		}
+		if (dbg_getchar(& kbch) != 0)
+		{
+			if (kbch == 0x1b)
+			{
+				debug_printf_P(PSTR("break recording\n"));
+				break;
+			}
+		}
+		UINT bw;
+		rc = f_write(& Fil, rbuff, sizeof rbuff, & bw);
+		if (rc != 0 || bw != sizeof rbuff)
+			break;
+	}
+	rc = f_close(& Fil);
+	if (rc)
 	{
 		TP();
 		debug_printf_P(PSTR("Failed with rc=%u.\n"), rc);
@@ -3980,8 +4053,10 @@ static void sdcard_filesystest(void)
 	static RAMNOINIT_D1 FATFS Fatfs;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
 	static const char testfile [] = "readme.txt";
 	char testlog [FF_MAX_LFN + 1];
+	static ticker_t test_recordticker;
 	//int nlog = 0;
 
+	ticker_initialize(& test_recordticker, 1, test_recodspool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 	mmcInitialize();
 	debug_printf_P(PSTR("FAT FS test.\n"));
 	f_mount(& Fatfs, "", 0);		/* Register volume work area (never fails) */
@@ -4032,7 +4107,7 @@ static void sdcard_filesystest(void)
 				printtextfile(testfile);
 				break;
 
-			case 'f':
+			case 'F':
 				debug_printf_P(PSTR("FAT FS formatting.\n"));
 				f_mount(NULL, "", 0);		/* Unregister volume work area (never fails) */
 				rc = f_mkfs("0:", FM_ANY, 0, work, sizeof (work));
@@ -4067,9 +4142,62 @@ static void sdcard_filesystest(void)
 					dosaveserialport(testlog);
 				}
 				break;
+
+			case 'W':
+				{
+					uint_fast16_t year;
+					uint_fast8_t month, day;
+					uint_fast8_t hour, minute, secounds;
+					board_rtc_getdatetime(& year, & month, & day, & hour, & minute, & secounds);
+					static unsigned ser;
+					local_snprintf_P(testlog, sizeof testlog / sizeof testlog [0],
+						PSTR("rec_%04d-%02d-%02d_%02d%02d%02d_%08lX_%u.txt"),
+						year, month, day,
+						hour, minute, secounds,
+						hardware_get_random(),
+						++ ser
+						);
+					debug_printf_P(PSTR("FAT FS test - %d bytes block write file '%s'.\n"), sizeof rbuff, testlog);
+					f_mount(NULL, "", 0);		/* Unregister volume work area (never fails) */
+					f_mount(& Fatfs, "", 0);		/* Register volume work area (never fails) */
+					dosaveblocks(testlog);
+				}
+				break;
 			}
 		}
 	}
+}
+
+static void sdcard_filesyspeedstest(void)
+{
+	ALIGNX_BEGIN BYTE work [FF_MAX_SS] ALIGNX_END;
+	FRESULT rc;
+	uint_fast16_t year;
+	uint_fast8_t month, day;
+	uint_fast8_t hour, minute, secounds;
+	board_rtc_getdatetime(& year, & month, & day, & hour, & minute, & secounds);
+	static unsigned ser;
+	static RAMNOINIT_D1 FATFS Fatfs;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
+	static const char testfile [] = "readme.txt";
+	char testlog [FF_MAX_LFN + 1];
+	static ticker_t test_recordticker;
+	//int nlog = 0;
+
+	ticker_initialize(& test_recordticker, 1, test_recodspool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
+	mmcInitialize();
+	debug_printf_P(PSTR("FAT FS test.\n"));
+	f_mount(& Fatfs, "", 0);		/* Register volume work area (never fails) */
+	local_snprintf_P(testlog, sizeof testlog / sizeof testlog [0],
+		PSTR("rec_%04d-%02d-%02d_%02d%02d%02d_%08lX_%u.txt"),
+		year, month, day,
+		hour, minute, secounds,
+		hardware_get_random(),
+		++ ser
+		);
+	debug_printf_P(PSTR("FAT FS test - write file '%s'.\n"), testlog);
+	f_mount(NULL, "", 0);		/* Unregister volume work area (never fails) */
+	f_mount(& Fatfs, "", 0);		/* Register volume work area (never fails) */
+	dosaveblocks(testlog);
 }
 
 #endif /* WITHDEBUG && WITHUSEAUDIOREC */
@@ -6013,6 +6141,15 @@ void hightests(void)
 	// SD CARD file system level functions test
 	{
 		sdcard_filesystest();
+	}
+#endif
+#if 0 && WITHDEBUG && WITHUSEAUDIOREC
+	// SD CARD file system level functions test
+	// no interactive
+	{
+		while (hamradio_get_usbh_active() == 0)
+			;
+		sdcard_filesyspeedstest();
 	}
 #endif
 #if 0 && WITHDEBUG && WITHUSEAUDIOREC

@@ -847,4 +847,11 @@ void hardware_set_dotclock(unsigned long dotfreq);
 #include "product.h"
 #include "taildefs.h"
 
+#define USBALIGN_BEGIN __attribute__ ((aligned (64)))
+#define USBALIGN_END /* nothing */
+#define UNUSED(x) ((void)(x))
+
+
+#define AUDIORECBUFFSIZE16 (2048 * 4)	// размер данных должен быть не меньше размера кластера на SD карте
+
 #endif // HARDWARE_H_INCLUDED

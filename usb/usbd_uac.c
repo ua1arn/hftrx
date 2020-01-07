@@ -37,53 +37,6 @@ static uint_fast16_t ulmax16(uint_fast16_t a, uint_fast16_t b)
 	return a > b ? a : b;
 }
 
-/* получить 32-бит значение */
-static uint_fast32_t
-USBD_peek_u32(
-	const uint8_t * buff
-	)
-{
-	return
-		((uint_fast32_t) buff [3] << 24) +
-		((uint_fast32_t) buff [2] << 16) +
-		((uint_fast32_t) buff [1] << 8) +
-		((uint_fast32_t) buff [0] << 0);
-}
-
-/* записать в буфер для ответа 32-бит значение */
-static unsigned USBD_poke_u32(uint8_t * buff, uint_fast32_t v)
-{
-	buff [0] = LO_BYTE(v);
-	buff [1] = HI_BYTE(v);
-	buff [2] = HI_24BY(v);
-	buff [3] = HI_32BY(v);
-	return 4;
-}
-
-/* записать в буфер для ответа 24-бит значение */
-static unsigned USBD_poke_u24(uint8_t * buff, uint_fast32_t v)
-{
-	buff [0] = LO_BYTE(v);
-	buff [1] = HI_BYTE(v);
-	buff [2] = HI_24BY(v);
-	return 3;
-}
-
-/* записать в буфер для ответа 16-бит значение */
-static unsigned USBD_poke_u16(uint8_t * buff, uint_fast16_t v)
-{
-	buff [0] = LO_BYTE(v);
-	buff [1] = HI_BYTE(v);
-	return 2;
-}
-
-/* записать в буфер для ответа 8-бит значение */
-static unsigned USBD_poke_u8(uint8_t * buff, uint_fast8_t v)
-{
-	buff [0] = v;
-	return 1;
-}
-
 // Fill Layout 1 Parameter Block
 static unsigned USBD_fill_range_lay1pb(uint8_t * b, uint_fast8_t v)
 {
