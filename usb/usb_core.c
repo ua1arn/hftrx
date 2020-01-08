@@ -153,9 +153,9 @@ unsigned USBD_poke_u32(uint8_t * buff, uint_fast32_t v)
 }
 
 /* получить 32-бит значение */
-/* low endian memory layout */
+/* Big endian memory layout */
 uint_fast32_t
-USBD_peek_u32_LE(
+USBD_peek_u32_BE(
 	const uint8_t * buff
 	)
 {
@@ -167,8 +167,8 @@ USBD_peek_u32_LE(
 }
 
 /* записать в буфер для ответа 32-бит значение */
-/* low endian memory layout */
-unsigned USBD_poke_u32_LE(uint8_t * buff, uint_fast32_t v)
+/* Big endian memory layout */
+unsigned USBD_poke_u32_BE(uint8_t * buff, uint_fast32_t v)
 {
 	buff [3] = LO_BYTE(v);
 	buff [2] = HI_BYTE(v);

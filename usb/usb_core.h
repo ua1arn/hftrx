@@ -1512,15 +1512,15 @@ USBD_peek_u8(
 unsigned USBD_poke_u8(uint8_t * buff, uint_fast8_t v);
 
 /* получить 32-бит значение */
-/* low endian memory layout */
+/* Big endian memory layout */
 uint_fast32_t
-USBD_peek_u32_LE(
+USBD_peek_u32_BE(
 	const uint8_t * buff
 	);
 
 /* записать в буфер для ответа 32-бит значение */
-/* low endian memory layout */
-unsigned USBD_poke_u32_LE(uint8_t * buff, uint_fast32_t v);
+/* Big endian memory layout */
+unsigned USBD_poke_u32_BE(uint8_t * buff, uint_fast32_t v);
 
 #define USBD_CONFIGCOUNT 4
 
