@@ -2525,16 +2525,18 @@ HAL_StatusTypeDef USB_HC_StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_HCTypeDe
 	    		USB_Setup_TypeDef * const pSetup = (USB_Setup_TypeDef *) hc->xfer_buff;
 	    		ASSERT(hc->xfer_len == 8);
 
-				PRINTF("USB_HC_StartXfer: bmRequestType=%02X, bRequest=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n",
+				PRINTF("USB_HC_StartXfer: dev_addr=%d, bmRequestType=%02X, bRequest=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n",
+						(int) hc->dev_addr,
 						pSetup->b.bmRequestType, pSetup->b.bRequest, pSetup->b.wValue.w, pSetup->b.wIndex.w, pSetup->b.wLength.w);
 
-	    	  USBx->USBREQ = ((pSetup->b.bRequest) << 8) | pSetup->b.bmRequestType;
-	    	  USBx->USBVAL = pSetup->b.wValue.w;
-	    	  USBx->USBINDX = pSetup->b.wIndex.w;
-	    	  USBx->USBLENG = pSetup->b.wLength.w;
+				USBx->USBREQ = ((pSetup->b.bRequest) << 8) | pSetup->b.bmRequestType;
+				USBx->USBVAL = pSetup->b.wValue.w;
+				USBx->USBINDX = pSetup->b.wIndex.w;
+				USBx->USBLENG = pSetup->b.wLength.w;
+				USBx->DCPMAXP = (USBx->DCPMAXP & ~ (USB_DCPMAXP_DEVSEL)) | (hc->dev_addr << USB_DCPMAXP_DEVSEL_SHIFT);
 
-	    	  //USBx->DCPCTR |= USB_DCPCTR_SUREQCLR;
-	    	  USBx->DCPCTR |= USB_DCPCTR_SUREQ;
+				//USBx->DCPCTR |= USB_DCPCTR_SUREQCLR;
+				USBx->DCPCTR |= USB_DCPCTR_SUREQ;
 	      }
 	      else
 	      {
@@ -2631,7 +2633,8 @@ HAL_StatusTypeDef USB_HC_Init(USB_OTG_GlobalTypeDef *USBx,
 	                                USB_OTG_HCINTMSK_NAKM |
 									0;
 */
-		USBx->NRDYENB |= (1uL << pipe);	// Прерывание по заполненности приёмного (OUT) буфера
+		if (ep_type != USBD_EP_TYPE_CTRL)
+			USBx->NRDYENB |= (1uL << pipe);	// Прерывание по заполненности приёмного (OUT) буфера
 		USBx->BRDYENB |= (1uL << pipe);	// Прерывание по заполненности приёмного (OUT) буфера
 		USBx->BEMPENB |= (1uL << pipe);	// Прерывание окончания передачи передающего (IN) буфера
 
@@ -2785,6 +2788,7 @@ HAL_StatusTypeDef USB_HostInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgTyp
 	USBx->SYSCFG0 |= USB_SYSCFG_USBE;	// USBE 1: USB module operation is enabled.
 	(void) USBx->SYSCFG0;
 
+	// may be PCD_SPEED_HIGH or USBD_SPEED_HIGH
 	USBx->SYSCFG0 = (USBx->SYSCFG0 & ~ (USB_SYSCFG_HSE)) |
 			(cfg->speed == USBD_SPEED_HIGH) * USB_SYSCFG_HSE |	// HSE
 			//(1) * USB_SYSCFG_HSE |	// HSE
@@ -10329,6 +10333,8 @@ USBH_StatusTypeDef  USBH_LL_Init(USBH_HandleTypeDef *phost)
 
 #if CPUSTYLE_R7S721
 	hhcd_USB_OTG.Init.Host_channels = 16;
+	//hhcd_USB_OTG.Init.speed = PCD_SPEED_HIGH;
+	//hhcd_USB_OTG.Init.speed = USBD_SPEED_HIGH;	// USB_OTG_SPEED_
 	hhcd_USB_OTG.Init.speed = PCD_SPEED_FULL;
 	hhcd_USB_OTG.Init.dma_enable = ! USB_ENABLE;	 // xyz HOST
 
