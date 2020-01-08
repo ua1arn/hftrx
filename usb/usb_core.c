@@ -2574,6 +2574,10 @@ HAL_StatusTypeDef USB_HC_Init(USB_OTG_GlobalTypeDef *USBx,
                               uint16_t mps)
 {
 	PRINTF("USB_HC_Init, ch_num=%d, epnum=%d, ep_type=%d\n", (int) ch_num, (int) epnum, (int) ep_type);
+
+	//USBx->DVSTCTR0 |= USB_DVSTCTR0_UACT;
+	//(void) USBx->DVSTCTR0;
+
 	const uint_fast8_t pipe = 0;
 	volatile uint16_t * const PIPEnCTR = get_pipectr_reg(USBx, pipe);
 
@@ -2596,15 +2600,20 @@ HAL_StatusTypeDef USB_HC_Init(USB_OTG_GlobalTypeDef *USBx,
 /**
 * @brief  USB_OTG_ResetPort : Reset Host Port
   * @param  USBx : Selected device
-  * @param  state : activate reset
+  * @param  status : activate reset
   * @retval HAL status
   * @note : (1)The application must wait at least 10 ms
   *   before clearing the reset bit.
   */
-HAL_StatusTypeDef USB_ResetPort(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t state)
+// вызывается только для HOST
+HAL_StatusTypeDef USB_ResetPort(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t status)
 {
-	if (state)
+	// status 0: reset off, 1: reset on
+	if (status)
 	{
+		//USBx->DVSTCTR0 &= ~ USB_DVSTCTR0_UACT;
+		//(void) USBx->DVSTCTR0;
+
 		USBx->DVSTCTR0 |= USB_DVSTCTR0_USBRST;
 		(void) USBx->DVSTCTR0;
 	}
@@ -2612,6 +2621,9 @@ HAL_StatusTypeDef USB_ResetPort(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t state)
 	{
 		USBx->DVSTCTR0 &= ~ USB_DVSTCTR0_USBRST;
 		(void) USBx->DVSTCTR0;
+
+		//USBx->DVSTCTR0 |= USB_DVSTCTR0_UACT;
+		//(void) USBx->DVSTCTR0;
 	}
 
 	return HAL_OK;
@@ -4819,6 +4831,7 @@ HAL_StatusTypeDef USB_InitFSLSPClkSel(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t 
   * @note : (1)The application must wait at least 10 ms
   *   before clearing the reset bit.
   */
+// вызывается только для HOST
 HAL_StatusTypeDef USB_ResetPort(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t state)
 {
   uint32_t hprt0 = USBx_HPRT0;
@@ -5213,7 +5226,7 @@ HAL_StatusTypeDef HAL_PCD_Init(PCD_HandleTypeDef *hpcd)
 	USB_CoreInit(hpcd->Instance, & hpcd->Init);
 
 	/* Force Device Mode*/
-	USB_SetCurrentMode(hpcd->Instance , USB_OTG_DEVICE_MODE);
+	USB_SetCurrentMode(hpcd->Instance, USB_OTG_DEVICE_MODE);
 
 	/* Init endpoints structures */
 	for (i = 0; i < 15 ; i ++)
@@ -9538,9 +9551,10 @@ HAL_StatusTypeDef HAL_HCD_Stop(HCD_HandleTypeDef *hhcd)
   * @param  hhcd: HCD handle
   * @retval HAL status
   */
-HAL_StatusTypeDef HAL_HCD_ResetPort(HCD_HandleTypeDef *hhcd, uint_fast8_t status)
+HAL_StatusTypeDef HAL_HCD_ResetPort(HCD_HandleTypeDef *hhcd, uint_fast8_t state)
 {
-	USB_ResetPort(hhcd->Instance, status);
+	// state 0: reset off, 1: reset on
+	USB_ResetPort(hhcd->Instance, state);
 	return HAL_OK;
 }
 
@@ -9670,30 +9684,31 @@ USBH_SpeedTypeDef USBH_LL_GetSpeed  (USBH_HandleTypeDef *phost)
   * @param  phost: Host handle
   * @retval USBH Status
   */
-USBH_StatusTypeDef USBH_LL_ResetPort (USBH_HandleTypeDef *phost, uint_fast8_t status)
+USBH_StatusTypeDef USBH_LL_ResetPort(USBH_HandleTypeDef *phost, uint_fast8_t state)
 {
-  HAL_StatusTypeDef hal_status = HAL_OK;
-  USBH_StatusTypeDef usb_status = USBH_OK;
+	// state 0: reset off, 1: reset on
+	const HAL_StatusTypeDef hal_status = HAL_HCD_ResetPort(phost->pData, state);
+	USBH_StatusTypeDef usb_status = USBH_OK;
 
-  hal_status = HAL_HCD_ResetPort(phost->pData, status);
-  switch (hal_status) {
-    case HAL_OK :
-      usb_status = USBH_OK;
-    break;
-    case HAL_ERROR :
-      usb_status = USBH_FAIL;
-    break;
-    case HAL_BUSY :
-      usb_status = USBH_BUSY;
-    break;
-    case HAL_TIMEOUT :
-      usb_status = USBH_FAIL;
-    break;
-    default :
-      usb_status = USBH_FAIL;
-    break;
-  }
-  return usb_status;
+	switch (hal_status)
+	{
+	case HAL_OK:
+		usb_status = USBH_OK;
+		break;
+	case HAL_ERROR:
+		usb_status = USBH_FAIL;
+		break;
+	case HAL_BUSY:
+		usb_status = USBH_BUSY;
+		break;
+	case HAL_TIMEOUT:
+		usb_status = USBH_FAIL;
+		break;
+	default:
+		usb_status = USBH_FAIL;
+		break;
+	}
+	return usb_status;
 }
 
 /**
@@ -10515,29 +10530,28 @@ void  USBH_LL_IncTimer  (USBH_HandleTypeDef *phost)
   */
 USBH_StatusTypeDef  USBH_LL_DeInit (USBH_HandleTypeDef *phost)
 {
-  HAL_StatusTypeDef hal_status = HAL_OK;
-  USBH_StatusTypeDef usb_status = USBH_OK;
+	HAL_StatusTypeDef hal_status = HAL_HCD_DeInit(phost->pData);
+	USBH_StatusTypeDef usb_status = USBH_OK;
 
-  hal_status = HAL_HCD_DeInit(phost->pData);
-
-  switch (hal_status) {
-    case HAL_OK :
-      usb_status = USBH_OK;
-    break;
-    case HAL_ERROR :
-      usb_status = USBH_FAIL;
-    break;
-    case HAL_BUSY :
-      usb_status = USBH_BUSY;
-    break;
-    case HAL_TIMEOUT :
-      usb_status = USBH_FAIL;
-    break;
-    default :
-      usb_status = USBH_FAIL;
-    break;
-  }
-  return usb_status;
+	switch (hal_status)
+	{
+	case HAL_OK:
+		usb_status = USBH_OK;
+		break;
+	case HAL_ERROR:
+		usb_status = USBH_FAIL;
+		break;
+	case HAL_BUSY:
+		usb_status = USBH_BUSY;
+		break;
+	case HAL_TIMEOUT:
+		usb_status = USBH_FAIL;
+		break;
+	default:
+		usb_status = USBH_FAIL;
+		break;
+	}
+	return usb_status;
 }
 
 
@@ -10549,16 +10563,16 @@ USBH_StatusTypeDef  USBH_LL_DeInit (USBH_HandleTypeDef *phost)
   */
 static uint16_t USBH_GetFreePipe (USBH_HandleTypeDef *phost)
 {
-  uint8_t idx = 0;
+	uint8_t idx = 0;
 
-  for (idx = 0 ; idx < 11 ; idx++)
-  {
-	if ((phost->Pipes[idx] & 0x8000) == 0)
+	for (idx = 0 ; idx < USBHNPIPES; idx++)
 	{
-	   return idx;
+		if ((phost->Pipes [idx] & 0x8000) == 0)
+		{
+			return idx;
+		}
 	}
-  }
-  return 0xFFFF;
+	return 0xFFFF;
 }
 
 /**
@@ -10588,13 +10602,13 @@ uint8_t USBH_AllocPipe  (USBH_HandleTypeDef *phost, uint8_t ep_addr)
   * @param  idx: Pipe number to be freed
   * @retval USBH Status
   */
-USBH_StatusTypeDef USBH_FreePipe  (USBH_HandleTypeDef *phost, uint8_t idx)
+USBH_StatusTypeDef USBH_FreePipe(USBH_HandleTypeDef *phost, uint8_t idx)
 {
-   if(idx < 11)
-   {
-	 phost->Pipes[idx] &= 0x7FFF;
-   }
-   return USBH_OK;
+	if (idx < USBHNPIPES)
+	{
+		phost->Pipes [idx] &= 0x7FFF;
+	}
+	return USBH_OK;
 }
 
 
@@ -11007,15 +11021,13 @@ USBH_StatusTypeDef   USBH_LL_SubmitURB  (USBH_HandleTypeDef *phost,
                                             uint16_t length,
                                             uint8_t do_ping )
 {
-	HAL_StatusTypeDef hal_status = HAL_HCD_HC_SubmitRequest (phost->pData, pipe,
-		direction,
-		ep_type,
+	HAL_StatusTypeDef hal_status = HAL_HCD_HC_SubmitRequest (phost->pData, pipe, direction, ep_type,
 		token,
 		pbuff,
 		length,
-		do_ping);
+		do_ping
+		);
 	USBH_StatusTypeDef usb_status = USBH_OK;
-
 
 	switch (hal_status)
 	{
@@ -12381,13 +12393,13 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
 		break;
 
 	case HOST_DEV_BUS_RESET_ON:
-		//PRINTF(PSTR("USBH_Process: HOST_DEV_BUS_RESET_ON\n"));
+		PRINTF(PSTR("USBH_Process: HOST_DEV_BUS_RESET_ON\n"));
 		USBH_LL_ResetPort(phost, 1);
 		USBH_ProcessDelay(phost, HOST_DEV_BUS_RESET_OFF, 50);
 		break;
 
 	case HOST_DEV_BUS_RESET_OFF:
-		//PRINTF(PSTR("USBH_Process: HOST_DEV_BUS_RESET_OFF\n"));
+		PRINTF(PSTR("USBH_Process: HOST_DEV_BUS_RESET_OFF\n"));
 		USBH_LL_ResetPort(phost, 0);
 
 	#if (USBH_USE_OS == 1)
@@ -12402,7 +12414,7 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
 		break;
 
 	case HOST_DEV_WAIT_FOR_ATTACHMENT:
-		//PRINTF(PSTR("USBH_Process: HOST_DEV_WAIT_FOR_ATTACHMENT\n"));
+		PRINTF(PSTR("USBH_Process: HOST_DEV_WAIT_FOR_ATTACHMENT\n"));
 		break;
 
 	case HOST_DEV_BEFORE_ATTACHED:
@@ -12413,14 +12425,14 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
 		break;
 
 	case HOST_DEV_ATTACHED:
-		  //PRINTF(PSTR("USBH_Process: HOST_DEV_ATTACHED\n"));
+		  PRINTF(PSTR("USBH_Process: HOST_DEV_ATTACHED\n"));
 		/* после таймаута */
 		phost->device.speed = USBH_LL_GetSpeed(phost);
 
 		phost->gState = HOST_ENUMERATION;
 
-		phost->Control.pipe_out = USBH_AllocPipe (phost, 0x00);
-		phost->Control.pipe_in  = USBH_AllocPipe (phost, 0x80);
+		phost->Control.pipe_out = USBH_AllocPipe(phost, 0x00);
+		phost->Control.pipe_in  = USBH_AllocPipe(phost, 0x80);
 
 
 		/* Open Control pipes */

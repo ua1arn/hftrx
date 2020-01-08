@@ -884,6 +884,7 @@ typedef struct
 	void*                pData;
 } USBH_ClassTypeDef;
 
+#define USBHNPIPES 15
 /* USB Host handle structure */
 typedef struct _USBH_HandleTypeDef
 {
@@ -899,7 +900,7 @@ typedef struct _USBH_HandleTypeDef
 	USBH_ClassTypeDef*    pClass[USBH_MAX_NUM_SUPPORTED_CLASS];
 	USBH_ClassTypeDef*    pActiveClass;
 	uint32_t              ClassNumber;
-	uint32_t              Pipes [15];
+	uint32_t              Pipes [USBHNPIPES];
 	volatile uint32_t         Timer;
 	//uint8_t               id;
 	void*                 pData;
