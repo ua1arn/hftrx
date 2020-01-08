@@ -1822,7 +1822,16 @@ void HAL_HCD_MspDeInit(HCD_HandleTypeDef* hpcd)
 */
 uint32_t USB_GetCurrentFrame(USB_OTG_GlobalTypeDef *USBx)
 {
-	return (USBx->FRMNUM & USB_FRMNUM_FRNM) >> USB_FRMNUM_FRNM_SHIFT;
+	uint_fast16_t fn = (USBx->FRMNUM & USB_FRMNUM_FRNM) >> USB_FRMNUM_FRNM_SHIFT;
+	for (;;)
+	{
+		uint_fast16_t fn2 = (USBx->FRMNUM & USB_FRMNUM_FRNM) >> USB_FRMNUM_FRNM_SHIFT;
+		if (fn == fn2)
+			break;
+		fn = fn2;
+
+	}
+	return fn;
 }
 
 
@@ -2293,30 +2302,6 @@ HAL_StatusTypeDef USB_HC_Halt(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t hc_num)
 
 
 /**
-* @brief  USB_OTG_ResetPort : Reset Host Port
-  * @param  USBx : Selected device
-  * @param  state : activate reset
-  * @retval HAL status
-  * @note : (1)The application must wait at least 10 ms
-  *   before clearing the reset bit.
-  */
-HAL_StatusTypeDef USB_ResetPort(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t state)
-{
-	if (state)
-	{
-		USBx->DVSTCTR0 |= USB_DVSTCTR0_USBRST;
-		(void) USBx->DVSTCTR0;
-	}
-	else
-	{
-		USBx->DVSTCTR0 &= ~ USB_DVSTCTR0_USBRST;
-		(void) USBx->DVSTCTR0;
-	}
-
-	return HAL_OK;
-}
-
-/**
   * @brief  Initialize a host channel
   * @param  USBx : Selected device
   * @param  ch_num : Channel number
@@ -2348,6 +2333,30 @@ HAL_StatusTypeDef USB_HC_Init(USB_OTG_GlobalTypeDef *USBx,
                               uint8_t ep_type,
                               uint16_t mps)
 {
+	return HAL_OK;
+}
+
+/**
+* @brief  USB_OTG_ResetPort : Reset Host Port
+  * @param  USBx : Selected device
+  * @param  state : activate reset
+  * @retval HAL status
+  * @note : (1)The application must wait at least 10 ms
+  *   before clearing the reset bit.
+  */
+HAL_StatusTypeDef USB_ResetPort(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t state)
+{
+	if (state)
+	{
+		USBx->DVSTCTR0 |= USB_DVSTCTR0_USBRST;
+		(void) USBx->DVSTCTR0;
+	}
+	else
+	{
+		USBx->DVSTCTR0 &= ~ USB_DVSTCTR0_USBRST;
+		(void) USBx->DVSTCTR0;
+	}
+
 	return HAL_OK;
 }
 
@@ -11903,7 +11912,7 @@ USBH_StatusTypeDef USBH_HandleEnum(USBH_HandleTypeDef *phost)
       phost->EnumState = ENUM_GET_FULL_DEV_DESC;
 
       /* modify control channels configuration for MaxPacket size */
-      USBH_OpenPipe (phost,
+      USBH_OpenPipe(phost,
                            phost->Control.pipe_in,
                            0x80,
                            phost->device.address,
@@ -11912,7 +11921,7 @@ USBH_StatusTypeDef USBH_HandleEnum(USBH_HandleTypeDef *phost)
                            phost->Control.pipe_size);
 
       /* Open Control pipes */
-      USBH_OpenPipe (phost,
+      USBH_OpenPipe(phost,
                            phost->Control.pipe_out,
                            0x00,
                            phost->device.address,
@@ -11960,7 +11969,7 @@ USBH_StatusTypeDef USBH_HandleEnum(USBH_HandleTypeDef *phost)
       phost->EnumState = ENUM_GET_CFG_DESC;
 
       /* modify control channels to update device address */
-      USBH_OpenPipe (phost,
+      USBH_OpenPipe(phost,
                            phost->Control.pipe_in,
                            0x80,
                            phost->device.address,
@@ -11969,7 +11978,7 @@ USBH_StatusTypeDef USBH_HandleEnum(USBH_HandleTypeDef *phost)
                            phost->Control.pipe_size);
 
       /* Open Control pipes */
-      USBH_OpenPipe (phost,
+      USBH_OpenPipe(phost,
                            phost->Control.pipe_out,
                            0x00,
                            phost->device.address,
@@ -12161,7 +12170,7 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
 
 
 		/* Open Control pipes */
-		USBH_OpenPipe (phost,
+		USBH_OpenPipe(phost,
 			phost->Control.pipe_in,
 			0x80,
 			phost->device.address,
@@ -12170,7 +12179,7 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
 			phost->Control.pipe_size);
 
 		/* Open Control pipes */
-		USBH_OpenPipe (phost,
+		USBH_OpenPipe(phost,
 			phost->Control.pipe_out,
 			0x00,
 			phost->device.address,

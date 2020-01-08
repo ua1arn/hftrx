@@ -1578,4 +1578,7 @@ USBH_StatusTypeDef USBH_ClosePipe  (USBH_HandleTypeDef *phost,
 #define USBH_UsrLog(...) do { PRINTF(__VA_ARGS__); PRINTF("\n"); } while (0)
 #define USBH_DbgLog(...) do { PRINTF(__VA_ARGS__); PRINTF("\n"); } while (0)
 
+
+HAL_StatusTypeDef USB_DoPing(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t ch_num);
+
 #endif /* USB_USB_CORE_H_ */
