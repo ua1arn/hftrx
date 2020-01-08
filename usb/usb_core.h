@@ -556,8 +556,7 @@ typedef union
     uint8_t lsb;
   }
   bw;
-}
-uint16_t_uint8_t;
+} uint16_t_uint8_t;
 
 
 typedef union _USB_Setup
@@ -572,15 +571,13 @@ typedef union _USB_Setup
     uint16_t_uint8_t  wIndex;
     uint16_t_uint8_t  wLength;
   } b;
-}
-USB_Setup_TypeDef;
+} USB_Setup_TypeDef;
 
 typedef  struct  _DescHeader
 {
     uint8_t  bLength;
     uint8_t  bDescriptorType;
-}
-USBH_DescHeader_t;
+} USBH_DescHeader_t;
 
 typedef struct _DeviceDescriptor
 {
@@ -601,8 +598,7 @@ typedef struct _DeviceDescriptor
   uint8_t   iProduct;       /* Index of Product String Descriptor */
   uint8_t   iSerialNumber;  /* Index of Serial Number String Descriptor */
   uint8_t   bNumConfigurations; /* Number of Possible Configurations */
-}
-USBH_DevDescTypeDef;
+} USBH_DevDescTypeDef;
 
 typedef struct _EndpointDescriptor
 {

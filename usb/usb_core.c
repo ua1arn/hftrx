@@ -1752,7 +1752,7 @@ void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 	{
 		uint_fast8_t pipe;
 		PRINTF(PSTR("HAL_HCD_IRQHandler trapped - NRDY, NRDYSTS=0x%04X\n"), USBx->NRDYSTS);
-#if 0
+#if 1
 		const uint_fast16_t nrdysts = USBx->NRDYSTS & USBx->NRDYENB;	// NRDY Interrupt Status Register
 		for (pipe = 0; pipe < 16; ++ pipe)
 		{
@@ -1853,6 +1853,18 @@ void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 		USBx->INTSTS0 = (uint16_t) ~ USB_INTSTS0_VBINT;	// Clear VBINT - enabled by VBSE
 		//PRINTF(PSTR("HAL_HCD_IRQHandler trapped - VBINT, VBSTS=%d\n"), (intsts0 & USB_INTSTS0_VBSTS) != 0);	// TODO: masked VBSTS
 	//	usbd_handle_vbuse(usbd_getvbus());
+	}
+	if ((intsts1msk & USB_INTSTS1_SIGN) != 0)	// SIGN
+	{
+		USBx->INTSTS1 = (uint16_t) ~ USB_INTSTS1_SIGN;
+		PRINTF(PSTR("HAL_HCD_IRQHandler trapped - SIGN\n"));
+		//HAL_HCD_Connect_Callback(hhcd);
+	}
+	if ((intsts1msk & USB_INTSTS1_SACK) != 0)	// SACK
+	{
+		USBx->INTSTS1 = (uint16_t) ~ USB_INTSTS1_SACK;
+		PRINTF(PSTR("HAL_HCD_IRQHandler trapped - SACK\n"));
+		//HAL_HCD_Connect_Callback(hhcd);
 	}
 }
 
@@ -2427,6 +2439,7 @@ HAL_StatusTypeDef USB_HC_StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_HCTypeDe
 	{
 		num_packets = 1;
 	}
+
 	if (hc->ep_is_in)
 	{
 		hc->xfer_len = num_packets * hc->max_packet;
@@ -2506,9 +2519,30 @@ HAL_StatusTypeDef USB_HC_StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_HCTypeDe
 	        break;
 	      }
 
-	      /* Write packet into the Tx FIFO. */
-	      //USB_WritePacket(USBx, hc->xfer_buff, hc->ch_num, hc->xfer_len, 0);
-	      USB_WritePacketNec(USBx, hc->ch_num, hc->xfer_buff, hc->xfer_len);
+	      if (hc->ep_num == 0)
+	      {
+
+	    		USB_Setup_TypeDef * const pSetup = (USB_Setup_TypeDef *) hc->xfer_buff;
+	    		ASSERT(hc->xfer_len == 8);
+
+				PRINTF("USB_HC_StartXfer: bmRequestType=%02X, bRequest=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n",
+						pSetup->b.bmRequestType, pSetup->b.bRequest, pSetup->b.wValue.w, pSetup->b.wIndex.w, pSetup->b.wLength.w);
+
+	    	  USBx->USBREQ = ((pSetup->b.bRequest) << 8) | pSetup->b.bmRequestType;
+	    	  USBx->USBVAL = pSetup->b.wValue.w;
+	    	  USBx->USBINDX = pSetup->b.wIndex.w;
+	    	  USBx->USBLENG = pSetup->b.wLength.w;
+
+	    	  //USBx->DCPCTR |= USB_DCPCTR_SUREQCLR;
+	    	  USBx->DCPCTR |= USB_DCPCTR_SUREQ;
+	      }
+	      else
+	      {
+			  /* Write packet into the Tx FIFO. */
+			  //USB_WritePacket(USBx, hc->xfer_buff, hc->ch_num, hc->xfer_len, 0);
+			  TP();
+			  USB_WritePacketNec(USBx, hc->ch_num, hc->xfer_buff, hc->xfer_len);
+	      }
 	    }
 	  }
 
@@ -2573,13 +2607,111 @@ HAL_StatusTypeDef USB_HC_Init(USB_OTG_GlobalTypeDef *USBx,
                               uint8_t ep_type,
                               uint16_t mps)
 {
-	PRINTF("USB_HC_Init, ch_num=%d, epnum=%d, ep_type=%d\n", (int) ch_num, (int) epnum, (int) ep_type);
-
-	//USBx->DVSTCTR0 |= USB_DVSTCTR0_UACT;
-	//(void) USBx->DVSTCTR0;
+	PRINTF("USB_HC_Init, ch_num=%d, epnum=%d, ep_type=%d, mps=%lu\n", (int) ch_num, (int) epnum, (int) ep_type, (unsigned long) mps);
 
 	const uint_fast8_t pipe = 0;
 	volatile uint16_t * const PIPEnCTR = get_pipectr_reg(USBx, pipe);
+
+
+	/* Clear old interrupt conditions for this host channel. */
+	////USBx_HC(ch_num)->HCINT = 0xFFFFFFFF;
+
+	/* Enable channel interrupts required for this transfer. */
+	switch (ep_type)
+	{
+	case USBD_EP_TYPE_CTRL:
+	case USBD_EP_TYPE_BULK:
+
+/*
+	    USBx_HC(ch_num)->HCINTMSK = USB_OTG_HCINTMSK_XFRCM  |
+	                                USB_OTG_HCINTMSK_STALLM |
+	                                USB_OTG_HCINTMSK_TXERRM |
+	                                USB_OTG_HCINTMSK_DTERRM |
+	                                USB_OTG_HCINTMSK_AHBERR |
+	                                USB_OTG_HCINTMSK_NAKM |
+									0;
+*/
+		USBx->NRDYENB |= (1uL << pipe);	// Прерывание по заполненности приёмного (OUT) буфера
+		USBx->BRDYENB |= (1uL << pipe);	// Прерывание по заполненности приёмного (OUT) буфера
+		USBx->BEMPENB |= (1uL << pipe);	// Прерывание окончания передачи передающего (IN) буфера
+
+	    if (epnum & 0x80)
+	    {
+			// IN (to host) direction
+			//USBx_HC(ch_num)->HCINTMSK |= USB_OTG_HCINTMSK_BBERRM;
+	    }
+	    else
+	    {
+	    	// OUT (to device) direction
+	      ////if (USBx != USB_OTG_FS)
+	      {
+			  // HS
+	        ////USBx_HC(ch_num)->HCINTMSK |= (USB_OTG_HCINTMSK_NYET | USB_OTG_HCINTMSK_ACKM);
+	      }
+	    }
+	    break;
+
+	  case USBD_EP_TYPE_INTR:
+
+/*
+	    USBx_HC(ch_num)->HCINTMSK = USB_OTG_HCINTMSK_XFRCM  |
+	                                USB_OTG_HCINTMSK_STALLM |
+	                                USB_OTG_HCINTMSK_TXERRM |
+	                                USB_OTG_HCINTMSK_DTERRM |
+	                                USB_OTG_HCINTMSK_NAKM   |
+	                                USB_OTG_HCINTMSK_AHBERR |
+	                                USB_OTG_HCINTMSK_FRMORM ;
+*/
+
+	    if (epnum & 0x80)
+	    {
+			// IN (to host) direction
+	      //USBx_HC(ch_num)->HCINTMSK |= USB_OTG_HCINTMSK_BBERRM;
+	    }
+
+	    break;
+	  case USBD_EP_TYPE_ISOC:
+
+/*
+	    USBx_HC(ch_num)->HCINTMSK = USB_OTG_HCINTMSK_XFRCM  |
+	                                USB_OTG_HCINTMSK_ACKM   |
+	                                USB_OTG_HCINTMSK_AHBERR |
+	                                USB_OTG_HCINTMSK_FRMORM ;
+*/
+
+	    if (epnum & 0x80)
+	    {
+	    	// IN (to host) direction
+
+	      //USBx_HC(ch_num)->HCINTMSK |= (USB_OTG_HCINTMSK_TXERRM | USB_OTG_HCINTMSK_BBERRM);
+	    }
+	    break;
+	  }
+
+	  /* Enable the top level host channel interrupt. */
+	  ////USBx_HOST->HAINTMSK |= (1 << ch_num);
+
+	  /* Make sure host channel interrupts are enabled. */
+	  ////USBx->GINTMSK |= USB_OTG_GINTMSK_HCIM;
+
+	  /* Program the HCCHAR register */
+/*
+	  USBx_HC(ch_num)->HCCHAR = (((dev_address << 22) & USB_OTG_HCCHAR_DAD)  |
+	                             (((epnum & 0x7F)<< 11) & USB_OTG_HCCHAR_EPNUM)|
+	                             ((((epnum & 0x80) == 0x80)<< 15) & USB_OTG_HCCHAR_EPDIR)|
+	                             (((speed == HPRT0_PRTSPD_LOW_SPEED)<< 17) & USB_OTG_HCCHAR_LSDEV)|
+	                             ((ep_type << 18) & USB_OTG_HCCHAR_EPTYP)|
+	                             (mps & USB_OTG_HCCHAR_MPSIZ));
+*/
+
+	  if (ep_type == USBD_EP_TYPE_INTR)
+	  {
+	    //USBx_HC(ch_num)->HCCHAR |= USB_OTG_HCCHAR_ODDFRM ;
+	  }
+
+
+	USBx->DVSTCTR0 |= USB_DVSTCTR0_UACT;
+	(void) USBx->DVSTCTR0;
 
 	* PIPEnCTR = 0x0000;	// NAK
 	while ((* PIPEnCTR & (USB_PIPEnCTR_1_5_PBUSY | USB_PIPEnCTR_1_5_CSSTS)) != 0)	// PBUSY, CSSTS
@@ -2591,9 +2723,6 @@ HAL_StatusTypeDef USB_HC_Init(USB_OTG_GlobalTypeDef *USBx,
 	* PIPEnCTR = 0x0002;	// NAK->STALL
 	* PIPEnCTR = 0x0001;	// STALL->BUF
 
-	USBx->NRDYENB |= (1uL << pipe);	// Прерывание по заполненности приёмного (OUT) буфера
-	USBx->BRDYENB |= (1uL << pipe);	// Прерывание по заполненности приёмного (OUT) буфера
-	USBx->BEMPENB |= (1uL << pipe);	// Прерывание окончания передачи передающего (IN) буфера
 	return HAL_OK;
 }
 
@@ -2657,8 +2786,8 @@ HAL_StatusTypeDef USB_HostInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgTyp
 	(void) USBx->SYSCFG0;
 
 	USBx->SYSCFG0 = (USBx->SYSCFG0 & ~ (USB_SYSCFG_HSE)) |
-			//(cfg->speed == USBD_SPEED_HIGH) * USB_SYSCFG_HSE |	// HSE
-			(1) * USB_SYSCFG_HSE |	// HSE
+			(cfg->speed == USBD_SPEED_HIGH) * USB_SYSCFG_HSE |	// HSE
+			//(1) * USB_SYSCFG_HSE |	// HSE
 			0;
 	(void) USBx->SYSCFG0;
 
@@ -2682,8 +2811,10 @@ HAL_StatusTypeDef USB_HostInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgTyp
 
 	USBx->INTENB1 =
 		//1 * USB_INTENB1_BCHGE |	// BCHG
-		1 * USB_INTENB1_DTCHE |	// DTCH
+		1 * USB_INTENB1_DTCHE |		// DTCH
 		1 * USB_INTENB1_ATTCHE |	// ATTCH
+		1 * USB_INTENB1_SIGNE |		// SIGN
+		1 * USB_INTENB1_SACKE |		// SACK
 		0;
 
 
@@ -8899,7 +9030,7 @@ USBH_StatusTypeDef   USBH_LL_SetToggle   (USBH_HandleTypeDef *phost, uint8_t pip
   * @param  pipe: Pipe index
   * @retval toggle (0/1)
   */
-uint8_t  USBH_LL_GetToggle   (USBH_HandleTypeDef *phost, uint8_t pipe)
+uint8_t  USBH_LL_GetToggle(USBH_HandleTypeDef *phost, uint8_t pipe)
 {
   uint8_t toggle = 0;
   HCD_HandleTypeDef *pHandle;
@@ -8956,7 +9087,7 @@ USBH_StatusTypeDef USBH_BulkSendData (USBH_HandleTypeDef *phost,
     do_ping = 0;
   }
 
-  USBH_LL_SubmitURB (phost,                     /* Driver handle    */
+  USBH_LL_SubmitURB(phost,                     /* Driver handle    */
                           pipe_num,             /* Pipe index       */
                           0,                    /* Direction : IN   */
                           USBH_EP_BULK,         /* EP type          */
@@ -8982,7 +9113,7 @@ USBH_StatusTypeDef USBH_BulkReceiveData(USBH_HandleTypeDef *phost,
                                 uint16_t length,
                                 uint8_t pipe_num)
 {
-  USBH_LL_SubmitURB (phost,                     /* Driver handle    */
+  USBH_LL_SubmitURB(phost,                     /* Driver handle    */
                           pipe_num,             /* Pipe index       */
                           1,                    /* Direction : IN   */
                           USBH_EP_BULK,         /* EP type          */
@@ -9008,7 +9139,7 @@ USBH_StatusTypeDef USBH_InterruptReceiveData(USBH_HandleTypeDef *phost,
                                 uint8_t length,
                                 uint8_t pipe_num)
 {
-  USBH_LL_SubmitURB (phost,                     /* Driver handle    */
+  USBH_LL_SubmitURB(phost,                     /* Driver handle    */
                           pipe_num,             /* Pipe index       */
                           1,                    /* Direction : IN   */
                           USBH_EP_INTERRUPT,    /* EP type          */
@@ -9034,7 +9165,7 @@ USBH_StatusTypeDef USBH_InterruptSendData(USBH_HandleTypeDef *phost,
                                 uint8_t length,
                                 uint8_t pipe_num)
 {
-  USBH_LL_SubmitURB (phost,                     /* Driver handle    */
+  USBH_LL_SubmitURB(phost,                     /* Driver handle    */
                           pipe_num,             /* Pipe index       */
                           0,                    /* Direction : OUT   */
                           USBH_EP_INTERRUPT,    /* EP type          */
@@ -9060,7 +9191,7 @@ USBH_StatusTypeDef USBH_IsocReceiveData(USBH_HandleTypeDef *phost,
                                 uint32_t length,
                                 uint8_t pipe_num)
 {
-  USBH_LL_SubmitURB (phost,                     /* Driver handle    */
+  USBH_LL_SubmitURB(phost,                     /* Driver handle    */
                           pipe_num,             /* Pipe index       */
                           1,                    /* Direction : IN   */
                           USBH_EP_ISO,          /* EP type          */
@@ -9087,7 +9218,7 @@ USBH_StatusTypeDef USBH_IsocSendData(USBH_HandleTypeDef *phost,
                                 uint32_t length,
                                 uint8_t pipe_num)
 {
-  USBH_LL_SubmitURB (phost,                     /* Driver handle    */
+  USBH_LL_SubmitURB(phost,                     /* Driver handle    */
                           pipe_num,             /* Pipe index       */
                           0,                    /* Direction : OUT   */
                           USBH_EP_ISO,          /* EP type          */
@@ -10195,9 +10326,18 @@ USBH_StatusTypeDef  USBH_LL_Init(USBH_HandleTypeDef *phost)
 	phost->pData = & hhcd_USB_OTG;
 
 	hhcd_USB_OTG.Instance = WITHUSBHW_HOST;
+
+#if CPUSTYLE_R7S721
 	hhcd_USB_OTG.Init.Host_channels = 16;
 	hhcd_USB_OTG.Init.speed = PCD_SPEED_FULL;
 	hhcd_USB_OTG.Init.dma_enable = ! USB_ENABLE;	 // xyz HOST
+
+#else /* CPUSTYLE_R7S721 */
+	hhcd_USB_OTG.Init.Host_channels = 16;
+	hhcd_USB_OTG.Init.speed = PCD_SPEED_FULL;
+	hhcd_USB_OTG.Init.dma_enable = ! USB_ENABLE;	 // xyz HOST
+
+#endif /* CPUSTYLE_R7S721 */
 	hhcd_USB_OTG.Init.phy_itface = HCD_PHY_EMBEDDED;
 	hhcd_USB_OTG.Init.Sof_enable = USB_DISABLE;
 	if (HAL_HCD_Init(& hhcd_USB_OTG) != HAL_OK)
@@ -10516,7 +10656,7 @@ HAL_StatusTypeDef HAL_HCD_DeInit(HCD_HandleTypeDef *hhcd)
   * @param  phost: Host Handle
   * @retval None
   */
-void  USBH_LL_IncTimer  (USBH_HandleTypeDef *phost)
+void  USBH_LL_IncTimer(USBH_HandleTypeDef *phost)
 {
   phost->Timer ++;
   USBH_HandleSof(phost);
@@ -10528,7 +10668,7 @@ void  USBH_LL_IncTimer  (USBH_HandleTypeDef *phost)
   * @param  phost: Host handle
   * @retval USBH Status
   */
-USBH_StatusTypeDef  USBH_LL_DeInit (USBH_HandleTypeDef *phost)
+USBH_StatusTypeDef  USBH_LL_DeInit(USBH_HandleTypeDef *phost)
 {
 	HAL_StatusTypeDef hal_status = HAL_HCD_DeInit(phost->pData);
 	USBH_StatusTypeDef usb_status = USBH_OK;
@@ -10792,7 +10932,7 @@ static void USBH_UserProcess  (USBH_HandleTypeDef *phost, uint8_t id)
   * @param  phost: Host Handle
   * @retval None
   */
-void  USBH_HandleSof  (USBH_HandleTypeDef *phost)
+void  USBH_HandleSof(USBH_HandleTypeDef *phost)
 {
 	if ((phost->gState == HOST_CLASS) && (phost->pActiveClass != NULL))
 	{
@@ -11012,7 +11152,7 @@ USBH_URBStateTypeDef  USBH_LL_GetURBState(USBH_HandleTypeDef *phost, uint8_t pip
   * @retval Status
   */
 
-USBH_StatusTypeDef   USBH_LL_SubmitURB  (USBH_HandleTypeDef *phost,
+USBH_StatusTypeDef   USBH_LL_SubmitURB(USBH_HandleTypeDef *phost,
                                             uint8_t pipe,
                                             uint8_t direction ,
                                             uint8_t ep_type,  
@@ -11021,7 +11161,7 @@ USBH_StatusTypeDef   USBH_LL_SubmitURB  (USBH_HandleTypeDef *phost,
                                             uint16_t length,
                                             uint8_t do_ping )
 {
-	HAL_StatusTypeDef hal_status = HAL_HCD_HC_SubmitRequest (phost->pData, pipe, direction, ep_type,
+	HAL_StatusTypeDef hal_status = HAL_HCD_HC_SubmitRequest(phost->pData, pipe, direction, ep_type,
 		token,
 		pbuff,
 		length,
@@ -11058,12 +11198,12 @@ USBH_StatusTypeDef   USBH_LL_SubmitURB  (USBH_HandleTypeDef *phost,
   * @param  pipe_num: Pipe Number
   * @retval USBH Status
   */
-USBH_StatusTypeDef USBH_CtlSendSetup (USBH_HandleTypeDef *phost,
+USBH_StatusTypeDef USBH_CtlSendSetup(USBH_HandleTypeDef *phost,
                                 uint8_t *buff,
                                 uint8_t pipe_num)
 {
 
-  USBH_LL_SubmitURB (phost,                     /* Driver handle    */
+  USBH_LL_SubmitURB(phost,                     /* Driver handle    */
                           pipe_num,             /* Pipe index       */
                           0,                    /* Direction : OUT  */
                           USBH_EP_CONTROL,      /* EP type          */
@@ -11095,7 +11235,7 @@ USBH_StatusTypeDef USBH_CtlSendData (USBH_HandleTypeDef *phost,
     do_ping = 0;
   }
   
-  USBH_LL_SubmitURB (phost,                     /* Driver handle    */
+  USBH_LL_SubmitURB(phost,                     /* Driver handle    */
                           pipe_num,             /* Pipe index       */
                           0,                    /* Direction : OUT  */
                           USBH_EP_CONTROL,      /* EP type          */
@@ -11122,7 +11262,7 @@ USBH_StatusTypeDef USBH_CtlReceiveData(USBH_HandleTypeDef *phost,
                                 uint16_t length,
                                 uint8_t pipe_num)
 {
-  USBH_LL_SubmitURB (phost,                     /* Driver handle    */
+  USBH_LL_SubmitURB(phost,                     /* Driver handle    */
                           pipe_num,             /* Pipe index       */
                           1,                    /* Direction : IN   */
                           USBH_EP_CONTROL,      /* EP type          */
@@ -11898,7 +12038,7 @@ USBH_StatusTypeDef USBH_GetDescriptor(USBH_HandleTypeDef *phost,
     }
     phost->Control.setup.b.wLength.w = length;
   }
-  return USBH_CtlReq(phost, buff , length );
+  return USBH_CtlReq(phost, buff, length );
 }
 
 /**
@@ -11922,7 +12062,7 @@ USBH_StatusTypeDef USBH_SetAddress(USBH_HandleTypeDef *phost,
     phost->Control.setup.b.wIndex.w = 0;
     phost->Control.setup.b.wLength.w = 0;
   }
-  return USBH_CtlReq(phost, 0 , 0 );
+  return USBH_CtlReq(phost, 0, 0 );
 }
 
 /**
