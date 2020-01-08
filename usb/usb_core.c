@@ -1724,6 +1724,113 @@ void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 		USBx->INTSTS0 = (uint16_t) ~ USB_INTSTS0_SOFR;	// Clear SOFR
 		//PRINTF(PSTR("HAL_HCD_IRQHandler trapped - SOFR\n"));
 	}
+	if ((intsts0msk & USB_INTSTS0_BEMP) != 0)	// BEMP
+	{
+		PRINTF(PSTR("HAL_HCD_IRQHandler trapped - BEMP, BEMPSTS=0x%04X\n"), USBx->BEMPSTS);
+		const uint_fast16_t bempsts = USBx->BEMPSTS & USBx->BEMPENB;	// BEMP Interrupt Status Register
+		USBx->BEMPSTS = ~ bempsts;
+#if 0
+		if ((bempsts & (1U << 0)) != 0)	// PIPE0, DCP
+		{
+			USB_OTG_EPTypeDef * const ep = & hpcd->IN_ep [0];
+			// Отсюда вызывается с проблемными параметрами на RENESAS
+			//TP();
+			/* TX COMPLETE */
+			// Использование maxpacket вместо xfer_len важно для обработки персылок больше чем maxpacket
+			ep->xfer_buff += ep->maxpacket;	// пересланный размер может отличаться от максимального
+			HAL_PCD_DataInStageCallback(hpcd, 0);
+
+			//if (control_transmit2(pdev) != 0)
+			//{
+			//	control_stall(pdev);
+			//	TP();
+			//}
+		}
+#endif
+	}
+	if ((intsts0msk & USB_INTSTS0_NRDY) != 0)	// NRDY
+	{
+		uint_fast8_t pipe;
+		PRINTF(PSTR("HAL_HCD_IRQHandler trapped - NRDY, NRDYSTS=0x%04X\n"), USBx->NRDYSTS);
+#if 0
+		const uint_fast16_t nrdysts = USBx->NRDYSTS & USBx->NRDYENB;	// NRDY Interrupt Status Register
+		for (pipe = 0; pipe < 16; ++ pipe)
+		{
+			const uint_fast16_t mask = (uint_fast16_t) 1 << pipe;
+			if ((nrdysts & mask) != 0)
+			{
+				USBx->NRDYSTS = ~ mask;
+				if (pipe == 0)
+					continue;
+				//usbd_handler_nrdy(pdev, pipe);
+                /*if (pipe_ctrl[i].enable) */ {
+					const uint_fast8_t pid = get_pid(USBx, pipe);
+                    if (((pid & DEVDRV_USBF_PID_STALL) != DEVDRV_USBF_PID_STALL) && ((pid & DEVDRV_USBF_PID_STALL2) != DEVDRV_USBF_PID_STALL2)) {
+                        set_pid(USBx, pipe, DEVDRV_USBF_PID_BUF);
+                    }
+                }
+			}
+		}
+#endif
+	}
+	if ((intsts0msk & USB_INTSTS0_BRDY) != 0)	// BRDY
+	{
+		uint_fast8_t i;
+		PRINTF(PSTR("HAL_HCD_IRQHandler trapped - BRDY, BRDYSTS=0x%04X\n"), USBx->BRDYSTS);
+		const uint_fast16_t brdysts = USBx->BRDYSTS & USBx->BRDYENB;	// BRDY Interrupt Status Register
+		USBx->BRDYSTS = ~ brdysts;
+#if 0
+		if ((brdysts & (1U << 0)) != 0)		// PIPE0 - DCP
+		{
+			USB_OTG_EPTypeDef * const ep = & hpcd->OUT_ep [0];
+		  	unsigned bcnt;
+		  	if (USB_ReadPacketNec(USBx, 0, ep->xfer_buff, ep->xfer_len - ep->xfer_count, & bcnt) == 0)
+		  	{
+				ep->xfer_buff += bcnt;
+				ep->xfer_count += bcnt;
+				HAL_PCD_DataOutStageCallback(hpcd, ep->num);	// start next transfer
+		  	}
+		  	else
+		  	{
+		  		TP();
+		  		//control_stall(pdev);
+		  	}
+		}
+
+		for (i = 1; i < 16; ++ i)
+		{
+			const uint_fast8_t pipe = i;
+			if ((brdysts & (1U << pipe)) != 0)
+			{
+				const uint_fast8_t epnt = usbd_pipe2epaddr(pipe);
+				if ((epnt & 0x80) != 0)
+				{
+					USB_OTG_EPTypeDef * const ep = & hpcd->IN_ep [epnt & 0x7F];
+					ASSERT(ep->xfer_len == 0 || ep->xfer_buff != NULL);
+					ep->xfer_buff += ep->maxpacket;
+					HAL_PCD_DataInStageCallback(hpcd, 0x7f & epnt);
+				}
+				else
+				{
+					USB_OTG_EPTypeDef * const ep = & hpcd->OUT_ep [epnt];
+				  	unsigned bcnt;
+				  	if (USB_ReadPacketNec(USBx, pipe, ep->xfer_buff, ep->xfer_len - ep->xfer_count, & bcnt) == 0)
+				  	{
+						ep->xfer_buff += bcnt;
+						ep->xfer_count += bcnt;
+						HAL_PCD_DataOutStageCallback(hpcd, ep->num);	// start next transfer
+				  	}
+				  	else
+				  	{
+				  		// todo: not control ep
+				  		//control_stall(pdev);
+				  		TP();
+				  	}
+				}
+			}
+		}
+#endif
+	}
 	if ((intsts1msk & USB_INTSTS1_BCHG) != 0)	// BCHG
 	{
 		USBx->INTSTS1 = (uint16_t) ~ USB_INTSTS1_BCHG;
@@ -1844,7 +1951,7 @@ uint32_t USB_GetCurrentFrame(USB_OTG_GlobalTypeDef *USBx)
   *            @arg USB_OTG_SPEED_FULL: Full speed mode
   *            @arg USB_OTG_SPEED_LOW: Low speed mode
   */
-uint32_t USB_GetHostSpeed (USB_OTG_GlobalTypeDef *USBx)
+uint32_t USB_GetHostSpeed(USB_OTG_GlobalTypeDef *USBx)
 {
 	switch ((USBx->DVSTCTR0 & USB_DVSTCTR0_RHST) >> USB_DVSTCTR0_RHST_SHIFT)
 	{
@@ -1868,7 +1975,7 @@ uint32_t USB_GetHostSpeed (USB_OTG_GlobalTypeDef *USBx)
   *           1 : VBUS Inactive
   * @retval HAL status
 */
-HAL_StatusTypeDef USB_DriveVbus (USB_OTG_GlobalTypeDef *USBx, uint_fast8_t state)
+HAL_StatusTypeDef USB_DriveVbus(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t state)
 {
 	// renesas version
 	/*
@@ -2283,7 +2390,128 @@ HAL_StatusTypeDef USB_EPStartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDef
 
 HAL_StatusTypeDef USB_HC_StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_HCTypeDef *hc, uint_fast8_t dma)
 {
+	PRINTF("USB_HC_StartXfer, ep_is_in=%d, ch_num=%d, ep_num=%d, xfer_len=%d\n", (int) hc->ep_is_in, (int) hc->ch_num, (int) hc->ep_num, (int) hc->xfer_len);
 	ASSERT(dma == 0);
+	uint8_t  is_oddframe;
+	uint16_t num_packets = 0;
+	uint16_t max_hc_pkt_count = 256;
+	uint32_t tmpreg = 0;
+
+	if (hc->speed == USB_OTG_SPEED_HIGH)
+	{
+		// HS
+		if ((dma == 0) && (hc->do_ping == 1))
+		{
+			USB_DoPing(USBx, hc->ch_num);
+			return HAL_OK;
+		}
+		else if (dma == 1)
+		{
+			////* USBx_HC(hc->ch_num)->HCINTMSK &= ~(USB_OTG_HCINTMSK_NYET | USB_OTG_HCINTMSK_ACKM);
+			hc->do_ping = 0;
+		}
+	}
+
+	/* Compute the expected number of packets associated to the transfer */
+	if (hc->xfer_len > 0)
+	{
+		num_packets = (hc->xfer_len + hc->max_packet - 1) / hc->max_packet;
+
+		if (num_packets > max_hc_pkt_count)
+		{
+			num_packets = max_hc_pkt_count;
+			hc->xfer_len = num_packets * hc->max_packet;
+		}
+	}
+	else
+	{
+		num_packets = 1;
+	}
+	if (hc->ep_is_in)
+	{
+		hc->xfer_len = num_packets * hc->max_packet;
+	}
+
+
+
+	  /* Initialize the HCTSIZn register */
+/*
+	  USBx_HC(hc->ch_num)->HCTSIZ = (((hc->xfer_len) & USB_OTG_HCTSIZ_XFRSIZ)) |
+	    ((num_packets << USB_OTG_HCTSIZ_PKTCNT_Pos) & USB_OTG_HCTSIZ_PKTCNT) |
+	      (((hc->data_pid) << USB_OTG_HCTSIZ_DPID_Pos) & USB_OTG_HCTSIZ_DPID);
+*/
+
+	  if (dma)
+	  {
+	    /* xfer_buff MUST be 32-bits aligned */
+	    ////* USBx_HC(hc->ch_num)->HCDMA = (uintptr_t) hc->xfer_buff;
+	  }
+
+	  // FRMNUM or UFRMNUM ?
+	  is_oddframe = (USB_GetCurrentFrame(USBx) & 0x01) ? 0 : 1;
+
+	  ////* USBx_HC(hc->ch_num)->HCCHAR &= ~ USB_OTG_HCCHAR_ODDFRM;
+	  ////* USBx_HC(hc->ch_num)->HCCHAR |= (is_oddframe << USB_OTG_HCCHAR_ODDFRM_Pos);
+
+	  /* Set host channel enable */
+	  ////* tmpreg = USBx_HC(hc->ch_num)->HCCHAR;
+	  ////* tmpreg &= ~USB_OTG_HCCHAR_CHDIS;
+
+	  /* make sure to set the correct ep direction */
+	  if (hc->ep_is_in)
+	  {
+		  ////* tmpreg |= USB_OTG_HCCHAR_EPDIR;
+	  }
+	  else
+	  {
+		  ////* tmpreg &= ~USB_OTG_HCCHAR_EPDIR;
+	  }
+
+	  ////* tmpreg |= USB_OTG_HCCHAR_CHENA;
+	  ////* USBx_HC(hc->ch_num)->HCCHAR = tmpreg;
+
+	  if (dma == 0) /* Slave mode */
+	  {
+		uint16_t len_words = 0;
+	    if ((hc->ep_is_in == 0) && (hc->xfer_len > 0))
+	    {
+	      switch(hc->ep_type)
+	      {
+	        /* Non periodic transfer */
+	      case USBD_EP_TYPE_CTRL:
+	      case USBD_EP_TYPE_BULK:
+
+	        len_words = (hc->xfer_len + 3) / 4;
+
+	        /* check if there is enough space in FIFO space */
+	        ////* if(len_words > (USBx->HNPTXSTS & 0xFFFF))
+	        {
+	          /* need to process data in nptxfempty interrupt */
+	          ////* USBx->GINTMSK |= USB_OTG_GINTMSK_NPTXFEM;
+	        }
+	        break;
+	        /* Periodic transfer */
+	      case USBD_EP_TYPE_INTR:
+	      case USBD_EP_TYPE_ISOC:
+	        len_words = (hc->xfer_len + 3) / 4;
+	        /* check if there is enough space in FIFO space */
+	        ////* if(len_words > (USBx_HOST->HPTXSTS & 0xFFFF)) /* split the transfer */
+	        {
+	          /* need to process data in ptxfempty interrupt */
+	        	////* USBx->GINTMSK |= USB_OTG_GINTMSK_PTXFEM;
+	        }
+	        break;
+
+	      default:
+	        break;
+	      }
+
+	      /* Write packet into the Tx FIFO. */
+	      //USB_WritePacket(USBx, hc->xfer_buff, hc->ch_num, hc->xfer_len, 0);
+	      USB_WritePacketNec(USBx, hc->ch_num, hc->xfer_buff, hc->xfer_len);
+	    }
+	  }
+
 
 	return HAL_OK;
 }
@@ -2297,6 +2525,18 @@ HAL_StatusTypeDef USB_HC_StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_HCTypeDe
   */
 HAL_StatusTypeDef USB_HC_Halt(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t hc_num)
 {
+	PRINTF("USB_HC_Halt, hc_num=%d\n", (int) hc_num);
+	//const uint_fast8_t pipe = usbd_getpipe(ep);
+	const uint_fast8_t pipe = 0;
+	volatile uint16_t * const PIPEnCTR = get_pipectr_reg(USBx, pipe);
+
+	* PIPEnCTR = 0x0000;	// NAK
+	while ((* PIPEnCTR & (USB_PIPEnCTR_1_5_PBUSY | USB_PIPEnCTR_1_5_CSSTS)) != 0)	// PBUSY, CSSTS
+		;
+
+	USBx->NRDYENB &= ~ (1uL << pipe);	// Прерывание по заполненности приёмного (OUT) буфера
+	USBx->BRDYENB &= ~ (1uL << pipe);	// Прерывание по заполненности приёмного (OUT) буфера
+	USBx->BEMPENB &= ~ (1uL << pipe);	// Прерывание окончания передачи передающего (IN) буфера
 	return HAL_OK;
 }
 
@@ -2333,6 +2573,23 @@ HAL_StatusTypeDef USB_HC_Init(USB_OTG_GlobalTypeDef *USBx,
                               uint8_t ep_type,
                               uint16_t mps)
 {
+	PRINTF("USB_HC_Init, ch_num=%d, epnum=%d, ep_type=%d\n", (int) ch_num, (int) epnum, (int) ep_type);
+	const uint_fast8_t pipe = 0;
+	volatile uint16_t * const PIPEnCTR = get_pipectr_reg(USBx, pipe);
+
+	* PIPEnCTR = 0x0000;	// NAK
+	while ((* PIPEnCTR & (USB_PIPEnCTR_1_5_PBUSY | USB_PIPEnCTR_1_5_CSSTS)) != 0)	// PBUSY, CSSTS
+		;
+
+	* PIPEnCTR = USB_PIPEnCTR_1_5_SQCLR;
+
+	* PIPEnCTR = 0x0003;	// NAK->STALL
+	* PIPEnCTR = 0x0002;	// NAK->STALL
+	* PIPEnCTR = 0x0001;	// STALL->BUF
+
+	USBx->NRDYENB |= (1uL << pipe);	// Прерывание по заполненности приёмного (OUT) буфера
+	USBx->BRDYENB |= (1uL << pipe);	// Прерывание по заполненности приёмного (OUT) буфера
+	USBx->BEMPENB |= (1uL << pipe);	// Прерывание окончания передачи передающего (IN) буфера
 	return HAL_OK;
 }
 
@@ -2406,9 +2663,9 @@ HAL_StatusTypeDef USB_HostInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgTyp
 		1 * USB_INTENB0_BEMPE |	// BEMPE
 		1 * USB_INTENB0_NRDYE |	// NRDYE
 		1 * USB_INTENB0_BRDYE |	// BRDYE
-		//1 * USB_INTENB0_CTRE |	// CTRE
-		//1 * USB_INTENB0_DVSE |	// DVSE
-		//1 * USB_INTENB0_RSME |	// RSME
+		0 * USB_INTENB0_CTRE |	// CTRE - not enable for host
+		0 * USB_INTENB0_DVSE |	// DVSE - not enable for host
+		0 * USB_INTENB0_RSME |	// RSME - not enable for host
 		0;
 
 	USBx->INTENB1 =
@@ -2439,6 +2696,7 @@ HAL_StatusTypeDef USB_StopHost(USB_OTG_GlobalTypeDef *USBx)
   */
 HAL_StatusTypeDef USB_DoPing(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t ch_num)
 {
+	PRINTF("USB_DoPing, ch_num=%d\n", (int) ch_num);
 	return HAL_OK;
 }
 
@@ -10629,34 +10887,27 @@ USBH_StatusTypeDef   USBH_LL_OpenPipe(USBH_HandleTypeDef *phost,
                                       uint8_t ep_type,
                                       uint16_t mps)
 {
-  HAL_StatusTypeDef hal_status = HAL_OK;
-  USBH_StatusTypeDef usb_status = USBH_OK;
+	const HAL_StatusTypeDef hal_status = hal_status = HAL_HCD_HC_Init(phost->pData, pipe_num, epnum, dev_address, speed, ep_type, mps);
+	USBH_StatusTypeDef usb_status = USBH_OK;
 
-  hal_status = HAL_HCD_HC_Init(phost->pData,
-                               pipe_num,
-                               epnum,
-                               dev_address,
-                               speed,
-                               ep_type,
-                              mps);
-  switch (hal_status) {
-    case HAL_OK :
-      usb_status = USBH_OK;
-    break;
-    case HAL_ERROR :
-      usb_status = USBH_FAIL;
-    break;
-    case HAL_BUSY :
-      usb_status = USBH_BUSY;
-    break;
-    case HAL_TIMEOUT :
-      usb_status = USBH_FAIL;
-    break;
-    default :
-      usb_status = USBH_FAIL;
-    break;
-  }
-  return usb_status;
+	switch (hal_status) {
+	case HAL_OK:
+		usb_status = USBH_OK;
+		break;
+	case HAL_ERROR:
+		usb_status = USBH_FAIL;
+		break;
+	case HAL_BUSY:
+		usb_status = USBH_BUSY;
+		break;
+	case HAL_TIMEOUT:
+		usb_status = USBH_FAIL;
+		break;
+	default:
+		usb_status = USBH_FAIL;
+		break;
+	}
+	return usb_status;
 }
 
 /**
