@@ -2414,6 +2414,9 @@ HAL_StatusTypeDef USB_HC_StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_HCTypeDe
 	volatile uint16_t * const PIPEnTRE = get_pipetre_reg(USBx, pipe);
 	volatile uint16_t * const PIPEnTRN = get_pipetrn_reg(USBx, pipe);
 
+	USBx->DVSTCTR0 |= USB_DVSTCTR0_UACT;
+	(void) USBx->DVSTCTR0;
+
 	if (hc->usbh_otg_speed == USB_OTG_SPEED_HIGH)
 	{
 		// HS
@@ -2466,7 +2469,7 @@ HAL_StatusTypeDef USB_HC_StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_HCTypeDe
 	  }
 
 	  // FRMNUM or UFRMNUM ?
-	  is_oddframe = (USB_GetCurrentFrame(USBx) & 0x01) ? 0 : 1;
+	  ////is_oddframe = (USB_GetCurrentFrame(USBx) & 0x01) ? 0 : 1;
 
 	  ////* USBx_HC(hc->ch_num)->HCCHAR &= ~ USB_OTG_HCCHAR_ODDFRM;
 	  ////* USBx_HC(hc->ch_num)->HCCHAR |= (is_oddframe << USB_OTG_HCCHAR_ODDFRM_Pos);
@@ -2490,7 +2493,7 @@ HAL_StatusTypeDef USB_HC_StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_HCTypeDe
 
 	  if (dma == 0) /* Slave mode */
 	  {
-		uint16_t len_words = 0;
+		////uint16_t len_words = 0;
 	    if ((hc->ep_is_in == 0) && (hc->xfer_len > 0))
 	    {
 	      switch(hc->ep_type)
@@ -2499,7 +2502,7 @@ HAL_StatusTypeDef USB_HC_StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_HCTypeDe
 	      case USBD_EP_TYPE_CTRL:
 	      case USBD_EP_TYPE_BULK:
 
-	        len_words = (hc->xfer_len + 3) / 4;
+	        ////len_words = (hc->xfer_len + 3) / 4;
 
 	        /* check if there is enough space in FIFO space */
 	        ////* if(len_words > (USBx->HNPTXSTS & 0xFFFF))
@@ -2511,7 +2514,7 @@ HAL_StatusTypeDef USB_HC_StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_HCTypeDe
 	        /* Periodic transfer */
 	      case USBD_EP_TYPE_INTR:
 	      case USBD_EP_TYPE_ISOC:
-	        len_words = (hc->xfer_len + 3) / 4;
+	        ////len_words = (hc->xfer_len + 3) / 4;
 	        /* check if there is enough space in FIFO space */
 	        ////* if (len_words > (USBx_HOST->HPTXSTS & 0xFFFF)) /* split the transfer */
 	        {
@@ -2529,6 +2532,7 @@ HAL_StatusTypeDef USB_HC_StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_HCTypeDe
 
 	    		USB_Setup_TypeDef * const pSetup = (USB_Setup_TypeDef *) hc->xfer_buff;
 	    		ASSERT(hc->xfer_len == 8);
+	    		ASSERT((USBx->DCPCTR & USB_DCPCTR_SUREQ) == 0);
 
 				PRINTF("USB_HC_StartXfer: DCPMAXP=%08lX, dev_addr=%d, bmRequestType=%02X, bRequest=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n",
 						USBx->DCPMAXP,
@@ -2613,24 +2617,29 @@ HAL_StatusTypeDef USB_HC_Halt(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t hc_num)
   *          This parameter can be a value from 0 to32K
   * @retval HAL state
   */
-HAL_StatusTypeDef USB_HC_Init(USB_OTG_GlobalTypeDef *USBx,
-                              uint8_t ch_num,
-                              uint8_t epnum,
-                              uint8_t dev_address,
-                              uint8_t usb_otg_speed,
-                              uint8_t ep_type,
-                              uint16_t mps)
+HAL_StatusTypeDef USB_HC_Init(
+	USB_OTG_GlobalTypeDef *USBx,
+	uint8_t ch_num,
+	uint8_t epnum,
+	uint8_t dev_address,
+	uint8_t usb_otg_speed,
+	uint8_t ep_type,
+	uint16_t mps
+	)
 {
 	PRINTF("USB_HC_Init, ch_num=%d, epnum=%d, ep_type=%d, mps=%lu\n", (int) ch_num, (int) epnum, (int) ep_type, (unsigned long) mps);
 
 	const uint_fast8_t pipe = 0;
 	volatile uint16_t * const PIPEnCTR = get_pipectr_reg(USBx, pipe);
 
-	USBx->DVSTCTR0 |= USB_DVSTCTR0_UACT;
-	(void) USBx->DVSTCTR0;
-
 	/* Clear old interrupt conditions for this host channel. */
 	////USBx_HC(ch_num)->HCINT = 0xFFFFFFFF;
+
+//	USBx->INTSTS1 = (uint16_t) ~ USB_INTSTS1_SIGN;
+//	USBx->INTSTS1 = (uint16_t) ~ USB_INTSTS1_SACK;
+	USBx->NRDYSTS = (uint16_t) ~ (1uL << pipe);
+	USBx->BEMPSTS = (uint16_t) ~ (1uL << pipe);
+	USBx->BRDYSTS = (uint16_t) ~ (1uL << pipe);
 
 	/* Enable channel interrupts required for this transfer. */
 	switch (ep_type)
@@ -2755,8 +2764,10 @@ HAL_StatusTypeDef USB_ResetPort(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t status
 	// status 0: reset off, 1: reset on
 	if (status)
 	{
-		//USBx->DVSTCTR0 &= ~ USB_DVSTCTR0_UACT;
-		//(void) USBx->DVSTCTR0;
+		USBx->DVSTCTR0 &= ~ USB_DVSTCTR0_UACT;
+		(void) USBx->DVSTCTR0;
+
+		USBx->DCPCTR |= USB_DCPCTR_SUREQCLR;
 
 		USBx->DVSTCTR0 |= USB_DVSTCTR0_USBRST;
 		(void) USBx->DVSTCTR0;
@@ -2766,8 +2777,8 @@ HAL_StatusTypeDef USB_ResetPort(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t status
 		USBx->DVSTCTR0 &= ~ USB_DVSTCTR0_USBRST;
 		(void) USBx->DVSTCTR0;
 
-		//USBx->DVSTCTR0 |= USB_DVSTCTR0_UACT;
-		//(void) USBx->DVSTCTR0;
+//		USBx->DVSTCTR0 |= USB_DVSTCTR0_UACT;
+//		(void) USBx->DVSTCTR0;
 	}
 
 	return HAL_OK;
@@ -4462,7 +4473,6 @@ void USB_ReadPacket(USB_OTG_GlobalTypeDef *USBx, uint8_t * dest, uint_fast16_t l
 HAL_StatusTypeDef USB_HC_StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_HCTypeDef *hc, uint_fast8_t dma)
 {
   uint8_t  is_oddframe = 0;
-  uint16_t len_words = 0;
   uint16_t num_packets = 0;
   uint16_t max_hc_pkt_count = 256;
   uint32_t tmpreg = 0;
@@ -4540,6 +4550,8 @@ HAL_StatusTypeDef USB_HC_StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_HCTypeDe
   {
     if ((hc->ep_is_in == 0) && (hc->xfer_len > 0))
     {
+	  uint16_t len_words = 0;
+
       switch(hc->ep_type)
       {
         /* Non periodic transfer */
