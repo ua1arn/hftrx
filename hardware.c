@@ -2950,23 +2950,24 @@ void hardware_adc_initialize(void)
 		const adcinmap_t * const adcmap = getadcmap(adci);
 		ADC_TypeDef * const adc = adcmap->adc;
 
-		if ((adc->ISR & ADC_ISR_ADRDY) != 0)
+		if ((adc->CR & ADC_CR_ADEN) != 0)
 			continue;	// already enabled
 
+		// Калибровка.
+		adc->CR |= ADC_CR_ADCAL; // Запуск калибровки АЦП
+		while ((adc->CR & ADC_CR_ADCAL) != 0)
+			; // Ожидаем окончания калибровки
+
+		// Enable
 		adc->CR |= ADC_CR_ADEN;
 
 		// Wait for  ADC_ISR_ADRDY
 		while ((adc->ISR & ADC_ISR_ADRDY) == 0)
 			;
 	}
-
-	NVIC_SetVector(ADC_IRQn, (uintptr_t) & ADC_IRQHandler);
-	NVIC_SetPriority(ADC_IRQn, ARM_SYSTEM_PRIORITY);
-	NVIC_EnableIRQ(ADC_IRQn);    // Включаем прерывания с АЦП. Обрабатывает ADC_IRQHandler()
-
-	NVIC_SetVector(ADC3_IRQn, (uintptr_t) & ADC3_IRQHandler);
-	NVIC_SetPriority(ADC3_IRQn, ARM_SYSTEM_PRIORITY);
-	NVIC_EnableIRQ(ADC3_IRQn);    // Включаем прерывания с АЦП. Обрабатывает ADC3_IRQHandler()
+	// connect to interrupt
+	arm_hardware_set_handler_system(ADC_IRQn, ADC_IRQHandler);
+	arm_hardware_set_handler_system(ADC3_IRQn, ADC3_IRQHandler);
 
 	// первый запуск производится в hardware_adc_startonescan().
 	// А здесь всё...
@@ -3159,12 +3160,12 @@ void hardware_adc_initialize(void)
 	//	ADC1->CR2 |= ADC_CR2_TSVREFE;	// для тестов
 
 	//ADC1->CR |= ADC_CR_ADCAL; //Запуск калибровки АЦП
-	//while ((ADC1->CR & ADC_CR_ADCAL) == 0)
-	//	; //Ожидаем окончания калибровки
+	//while ((ADC1->CR & ADC_CR_ADCAL) != 0)
+	//	; // Ожидаем окончания калибровки
 
 	//ADC2->CR |= ADC_CR_ADCAL; //Запуск калибровки АЦП
-	//while ((ADC2->CR & ADC_CR_ADCAL) == 0)
-	//	; //Ожидаем окончания калибровки
+	//while ((ADC2->CR & ADC_CR_ADCAL) != 0)
+	//	; // Ожидаем окончания калибровки
 
 	// первый запуск производится в hardware_adc_startonescan().
 	// А здесь всё...
@@ -3293,6 +3294,7 @@ void hardware_adc_initialize(void)
 
 	//debug_printf_P(PSTR("hardware_adc_initialize done\n"));
 }
+
 // хотя бы один вход (s-метр) есть.
 static void 
 hardware_adc_startonescan(void)
@@ -3340,10 +3342,14 @@ hardware_adc_startonescan(void)
 	ADCA.CH0.CTRL |= (1U << ADC_CH_START_bp);			// Start the AD conversion
 
 #elif CPUSTYLE_STM32H7XX
-	
 	// Установить следующий вход (блок ADC может измениться)
 	const adcinmap_t * const adcmap = getadcmap(board_get_adcch(adc_input));
 	ADC_TypeDef * const adc = adcmap->adc;
+	
+	if ((adc->CR & ADC_CR_ADEN) == 0)
+		return;
+	if ((adc->CR & ADC_CR_ADSTART) != 0)
+		return;	// еще не закончилось ранее запущеное преобразование
 
 	ASSERT((adc->CR & (ADC_CR_JADSTART | ADC_CR_ADSTART)) == 0);
 	adc->SQR1 = (adc->SQR1 & ~ (ADC_SQR1_L | ADC_SQR1_SQ1)) |
