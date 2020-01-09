@@ -2533,7 +2533,10 @@ HAL_StatusTypeDef USB_HC_StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_HCTypeDe
 				USBx->USBVAL = pSetup->b.wValue.w;
 				USBx->USBINDX = pSetup->b.wIndex.w;
 				USBx->USBLENG = pSetup->b.wLength.w;
-				USBx->DCPMAXP = (USBx->DCPMAXP & ~ (USB_DCPMAXP_DEVSEL)) | (hc->dev_addr << USB_DCPMAXP_DEVSEL_SHIFT);
+
+				USBx->DCPMAXP = (USBx->DCPMAXP & ~ (USB_DCPMAXP_DEVSEL)) |
+						(0x00 << USB_DCPMAXP_DEVSEL_SHIFT) |	// DEVADD0 used
+						0;
 
 				//USBx->DCPCTR |= USB_DCPCTR_SUREQCLR;
 				USBx->DCPCTR |= USB_DCPCTR_SUREQ;
@@ -2614,6 +2617,8 @@ HAL_StatusTypeDef USB_HC_Init(USB_OTG_GlobalTypeDef *USBx,
 	const uint_fast8_t pipe = 0;
 	volatile uint16_t * const PIPEnCTR = get_pipectr_reg(USBx, pipe);
 
+	USBx->DVSTCTR0 |= USB_DVSTCTR0_UACT;
+	(void) USBx->DVSTCTR0;
 
 	/* Clear old interrupt conditions for this host channel. */
 	////USBx_HC(ch_num)->HCINT = 0xFFFFFFFF;
@@ -2673,6 +2678,7 @@ HAL_StatusTypeDef USB_HC_Init(USB_OTG_GlobalTypeDef *USBx,
 	    }
 
 	    break;
+
 	  case USBD_EP_TYPE_ISOC:
 
 /*
@@ -2712,9 +2718,6 @@ HAL_StatusTypeDef USB_HC_Init(USB_OTG_GlobalTypeDef *USBx,
 	    //USBx_HC(ch_num)->HCCHAR |= USB_OTG_HCCHAR_ODDFRM ;
 	  }
 
-
-	USBx->DVSTCTR0 |= USB_DVSTCTR0_UACT;
-	(void) USBx->DVSTCTR0;
 
 	* PIPEnCTR = 0x0000;	// NAK
 	while ((* PIPEnCTR & (USB_PIPEnCTR_1_5_PBUSY | USB_PIPEnCTR_1_5_CSSTS)) != 0)	// PBUSY, CSSTS
@@ -2772,6 +2775,8 @@ HAL_StatusTypeDef USB_ResetPort(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t status
 
 HAL_StatusTypeDef USB_HostInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgTypeDef * cfg)
 {
+	uint_fast8_t i;
+
 	USBx->SYSCFG0 &= ~ USB_SYSCFG_USBE;	// USBE 0: USB module operation is disabled.
 	(void) USBx->SYSCFG0;
 
@@ -2820,7 +2825,23 @@ HAL_StatusTypeDef USB_HostInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgTyp
 		1 * USB_INTENB1_SACKE |		// SACK
 		0;
 
+	//	Note 1. When the host controller mode is selected, the bits in this register should be set before starting communication using each pipe.
+	//	(1) When the host controller mode is selected, this module refers to the settings of the UPPHUB bits and HUBPORT bits to
+	//	generate packets for split transactions.
+	//	(2) When the host controller mode is selected, this module refers to the setting of the USBSPD bits to generate packets.
+	//	Note 2. The bits in this register should be modified while no valid pipes are using the settings of this register. Valid pipes refer to the ones
+	//	satisfying both of conditions (1) and (2) below.
+	//	(1) This register is selected by the DEVSEL bits as the communication target.
+	//	(2) The PID bits are set to BUF for the pertinent pipe or the pertinent pipe is the DCP with SUREQ being 1.
 
+	for (i = 0; i < USB20_DEVADD0_COUNT; ++ i)
+	{
+		volatile uint16_t * const DEVADDx = (& USBx->DEVADD0) + i;
+
+		* DEVADDx = (* DEVADDx & ~ (USB_DEVADDn_USBSPD)) |
+			(((cfg->pcd_speed == PCD_SPEED_HIGH) ? 0x03 : 0x02) << USB_DEVADDn_USBSPD_SHIFT) |
+			0;
+	}
 	return HAL_OK;
 }
 
@@ -3067,6 +3088,8 @@ HAL_StatusTypeDef USB_CoreInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgTyp
   */
 HAL_StatusTypeDef USB_DevInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgTypeDef * cfg)
 {
+	uint_fast8_t i;
+
 	USBx->SYSCFG0 &= ~ USB_SYSCFG_USBE;	// USBE 0: USB module operation is disabled.
 	(void) USBx->SYSCFG0;
 
@@ -3104,6 +3127,14 @@ HAL_StatusTypeDef USB_DevInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgType
 		1 * USB_INTENB0_RSME |	// RSME
 		0;
 	USBx->INTENB1 = 0;
+
+	// When the function controller mode is selected, set all the bits in this register to 0.
+	for (i = 0; i < USB20_DEVADD0_COUNT; ++ i)
+	{
+		volatile uint16_t * const DEVADDx = (& USBx->DEVADD0) + i;
+
+		* DEVADDx = 0;
+	}
 
 	return HAL_OK;
 }
@@ -10371,8 +10402,8 @@ USBH_StatusTypeDef  USBH_LL_Init(USBH_HandleTypeDef *phost)
 
 #if CPUSTYLE_R7S721
 	hhcd_USB_OTG.Init.Host_channels = 16;
-	//hhcd_USB_OTG.Init.pcd_speed = PCD_SPEED_HIGH;
-	hhcd_USB_OTG.Init.pcd_speed = PCD_SPEED_FULL;
+	hhcd_USB_OTG.Init.pcd_speed = PCD_SPEED_HIGH;
+	//hhcd_USB_OTG.Init.pcd_speed = PCD_SPEED_FULL;
 	hhcd_USB_OTG.Init.dma_enable = USB_DISABLE;
 	hhcd_USB_OTG.Init.phy_itface = HCD_PHY_EMBEDDED;
 
