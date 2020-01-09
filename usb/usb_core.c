@@ -2409,6 +2409,11 @@ HAL_StatusTypeDef USB_HC_StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_HCTypeDe
 	uint16_t max_hc_pkt_count = 256;
 	uint32_t tmpreg = 0;
 
+	const uint_fast8_t pipe = 0;
+	volatile uint16_t * const PIPEnCTR = get_pipectr_reg(USBx, pipe);
+	volatile uint16_t * const PIPEnTRE = get_pipetre_reg(USBx, pipe);
+	volatile uint16_t * const PIPEnTRN = get_pipetrn_reg(USBx, pipe);
+
 	if (hc->usbh_otg_speed == USB_OTG_SPEED_HIGH)
 	{
 		// HS
@@ -2525,7 +2530,8 @@ HAL_StatusTypeDef USB_HC_StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_HCTypeDe
 	    		USB_Setup_TypeDef * const pSetup = (USB_Setup_TypeDef *) hc->xfer_buff;
 	    		ASSERT(hc->xfer_len == 8);
 
-				PRINTF("USB_HC_StartXfer: dev_addr=%d, bmRequestType=%02X, bRequest=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n",
+				PRINTF("USB_HC_StartXfer: DCPMAXP=%08lX, dev_addr=%d, bmRequestType=%02X, bRequest=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n",
+						USBx->DCPMAXP,
 						(int) hc->dev_addr,
 						pSetup->b.bmRequestType, pSetup->b.bRequest, pSetup->b.wValue.w, pSetup->b.wIndex.w, pSetup->b.wLength.w);
 
@@ -2537,6 +2543,9 @@ HAL_StatusTypeDef USB_HC_StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_HCTypeDe
 				USBx->DCPMAXP = (USBx->DCPMAXP & ~ (USB_DCPMAXP_DEVSEL)) |
 						(0x00 << USB_DCPMAXP_DEVSEL_SHIFT) |	// DEVADD0 used
 						0;
+
+				//USBx->DCPCFG &= ~ USB_DCPCFG_DIR;
+				//USBx->DCPCFG |= USB_DCPCFG_DIR;
 
 				//USBx->DCPCTR |= USB_DCPCTR_SUREQCLR;
 				USBx->DCPCTR |= USB_DCPCTR_SUREQ;
@@ -9155,6 +9164,7 @@ USBH_StatusTypeDef USBH_BulkSendData (USBH_HandleTypeDef *phost,
                                 uint8_t pipe_num,
                                 uint8_t do_ping )
 {
+	PRINTF("USBH_BulkSendData\n");
   if (phost->device.usb_otg_speed != USB_OTG_SPEED_HIGH)
   {
     do_ping = 0;
@@ -9186,6 +9196,7 @@ USBH_StatusTypeDef USBH_BulkReceiveData(USBH_HandleTypeDef *phost,
                                 uint16_t length,
                                 uint8_t pipe_num)
 {
+	PRINTF("USBH_BulkReceiveData\n");
   USBH_LL_SubmitURB(phost,                     /* Driver handle    */
                           pipe_num,             /* Pipe index       */
                           1,                    /* Direction : IN   */
@@ -9212,6 +9223,7 @@ USBH_StatusTypeDef USBH_InterruptReceiveData(USBH_HandleTypeDef *phost,
                                 uint8_t length,
                                 uint8_t pipe_num)
 {
+	PRINTF("USBH_InterruptReceiveData\n");
   USBH_LL_SubmitURB(phost,                     /* Driver handle    */
                           pipe_num,             /* Pipe index       */
                           1,                    /* Direction : IN   */
@@ -9238,6 +9250,7 @@ USBH_StatusTypeDef USBH_InterruptSendData(USBH_HandleTypeDef *phost,
                                 uint8_t length,
                                 uint8_t pipe_num)
 {
+	PRINTF("USBH_InterruptSendData\n");
   USBH_LL_SubmitURB(phost,                     /* Driver handle    */
                           pipe_num,             /* Pipe index       */
                           0,                    /* Direction : OUT   */
@@ -9264,6 +9277,7 @@ USBH_StatusTypeDef USBH_IsocReceiveData(USBH_HandleTypeDef *phost,
                                 uint32_t length,
                                 uint8_t pipe_num)
 {
+	PRINTF("USBH_IsocReceiveData\n");
   USBH_LL_SubmitURB(phost,                     /* Driver handle    */
                           pipe_num,             /* Pipe index       */
                           1,                    /* Direction : IN   */
@@ -9291,6 +9305,7 @@ USBH_StatusTypeDef USBH_IsocSendData(USBH_HandleTypeDef *phost,
                                 uint32_t length,
                                 uint8_t pipe_num)
 {
+	PRINTF("USBH_IsocSendData\n");
   USBH_LL_SubmitURB(phost,                     /* Driver handle    */
                           pipe_num,             /* Pipe index       */
                           0,                    /* Direction : OUT   */
@@ -11033,7 +11048,7 @@ USBH_StatusTypeDef  USBH_LL_Connect(USBH_HandleTypeDef *phost)
 	switch (phost->gState)
 	{
 	case HOST_IDLE:
-		//PRINTF(PSTR("USBH_LL_Connect at HOST_IDLE\n"));
+		PRINTF(PSTR("USBH_LL_Connect at HOST_IDLE\n"));
 		phost->device.is_connected = 1;
 
 		if (phost->pUser != NULL)
@@ -11043,7 +11058,7 @@ USBH_StatusTypeDef  USBH_LL_Connect(USBH_HandleTypeDef *phost)
 		break;
 
 	case HOST_DEV_WAIT_FOR_ATTACHMENT:
-		//PRINTF(PSTR("USBH_LL_Connect at HOST_DEV_WAIT_FOR_ATTACHMENT\n"));
+		PRINTF(PSTR("USBH_LL_Connect at HOST_DEV_WAIT_FOR_ATTACHMENT\n"));
 		phost->gState = HOST_DEV_BEFORE_ATTACHED;
 		break;
 
@@ -11069,11 +11084,11 @@ USBH_StatusTypeDef  USBH_LL_Disconnect(USBH_HandleTypeDef *phost)
 	switch (phost->gState)
 	{
 	case HOST_DEV_BEFORE_ATTACHED:
-		//PRINTF(PSTR("USBH_LL_Disconnect at HOST_DEV_BEFORE_ATTACHED\n"));
+		PRINTF(PSTR("USBH_LL_Disconnect at HOST_DEV_BEFORE_ATTACHED\n"));
 		return USBH_OK;
 
 	default:
-		//PRINTF(PSTR("USBH_LL_Disconnect at phost->gState=%d\n"), (int) phost->gState);
+		PRINTF(PSTR("USBH_LL_Disconnect at phost->gState=%d\n"), (int) phost->gState);
 		break;
 	}
 	/*Stop Host */
@@ -11286,6 +11301,7 @@ USBH_StatusTypeDef USBH_CtlSendSetup(USBH_HandleTypeDef *phost,
                                 uint8_t pipe_num)
 {
 
+	PRINTF("USBH_CtlSendSetup\n");
   USBH_LL_SubmitURB(phost,                     /* Driver handle    */
                           pipe_num,             /* Pipe index       */
                           0,                    /* Direction : OUT  */
@@ -11313,6 +11329,7 @@ USBH_StatusTypeDef USBH_CtlSendData (USBH_HandleTypeDef *phost,
                                 uint8_t pipe_num,
                                 uint8_t do_ping )
 {
+	PRINTF("USBH_CtlSendData\n");
   if (phost->device.usb_otg_speed != USB_OTG_SPEED_HIGH)
   {
     do_ping = 0;
@@ -11345,6 +11362,7 @@ USBH_StatusTypeDef USBH_CtlReceiveData(USBH_HandleTypeDef *phost,
                                 uint16_t length,
                                 uint8_t pipe_num)
 {
+	PRINTF("USBH_CtlReceiveData\n");
   USBH_LL_SubmitURB(phost,                     /* Driver handle    */
                           pipe_num,             /* Pipe index       */
                           1,                    /* Direction : IN   */
