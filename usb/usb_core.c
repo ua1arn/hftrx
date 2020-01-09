@@ -4427,7 +4427,7 @@ HAL_StatusTypeDef USB_HC_StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_HCTypeDe
   uint16_t max_hc_pkt_count = 256;
   uint32_t tmpreg = 0;
 
-  if ((USBx != USB_OTG_FS) && (hc->usb_otg_speed == USB_OTG_SPEED_HIGH))
+  if ((USBx != USB_OTG_FS) && (hc->usbh_otg_speed == USB_OTG_SPEED_HIGH))
   {
 	  // HS
     if ((dma == 0) && (hc->do_ping == 1))
