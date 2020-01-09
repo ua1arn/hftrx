@@ -1617,7 +1617,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 		case 0x01:
 			if (USB_GetDevSpeed(hpcd->Instance) == USB_OTG_SPEED_HIGH)
 			{
-				hpcd->Init.speed = PCD_SPEED_HIGH;
+				hpcd->Init.pcd_speed = PCD_SPEED_HIGH;
 				//hpcd->Init.ep0_mps = USB_OTG_MAX_EP0_SIZE; //USB_OTG_HS_MAX_PACKET_SIZE;
 				/*
 				hpcd->Instance->GUSBCFG = (hpcd->Instance->GUSBCFG & ~ USB_OTG_GUSBCFG_TRDT) |
@@ -1627,7 +1627,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 			}
 			else
 			{
-				hpcd->Init.speed = PCD_SPEED_FULL;
+				hpcd->Init.pcd_speed = PCD_SPEED_FULL;
 				//hpcd->Init.ep0_mps = USB_OTG_MAX_EP0_SIZE; //USB_OTG_FS_MAX_PACKET_SIZE ;
 			}
 			HAL_PCD_ResetCallback(hpcd);
@@ -2277,7 +2277,7 @@ HAL_StatusTypeDef  USB_DevConnect (USB_OTG_GlobalTypeDef *USBx)
 	return HAL_OK;
 }
 /**
-  * @brief  USB_GetDevSpeed :Return the  Dev Speed
+  * @brief  USB_GetDevSpeed :Return the Dev Speed
   * @param  USBx : Selected device
   * @retval speed : device speed
   *          This parameter can be one of these values:
@@ -2409,7 +2409,7 @@ HAL_StatusTypeDef USB_HC_StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_HCTypeDe
 	uint16_t max_hc_pkt_count = 256;
 	uint32_t tmpreg = 0;
 
-	if (hc->speed == USB_OTG_SPEED_HIGH)
+	if (hc->usbh_otg_speed == USB_OTG_SPEED_HIGH)
 	{
 		// HS
 		if ((dma == 0) && (hc->do_ping == 1))
@@ -2605,7 +2605,7 @@ HAL_StatusTypeDef USB_HC_Init(USB_OTG_GlobalTypeDef *USBx,
                               uint8_t ch_num,
                               uint8_t epnum,
                               uint8_t dev_address,
-                              uint8_t speed,
+                              uint8_t usb_otg_speed,
                               uint8_t ep_type,
                               uint16_t mps)
 {
@@ -2788,9 +2788,8 @@ HAL_StatusTypeDef USB_HostInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgTyp
 	USBx->SYSCFG0 |= USB_SYSCFG_USBE;	// USBE 1: USB module operation is enabled.
 	(void) USBx->SYSCFG0;
 
-	// may be PCD_SPEED_HIGH or USBD_SPEED_HIGH
 	USBx->SYSCFG0 = (USBx->SYSCFG0 & ~ (USB_SYSCFG_HSE)) |
-			(cfg->speed == USBD_SPEED_HIGH) * USB_SYSCFG_HSE |	// HSE
+			(cfg->pcd_speed == PCD_SPEED_HIGH) * USB_SYSCFG_HSE |	// HSE
 			//(1) * USB_SYSCFG_HSE |	// HSE
 			0;
 	(void) USBx->SYSCFG0;
@@ -3087,7 +3086,7 @@ HAL_StatusTypeDef USB_DevInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgType
 
 	//PRINTF("USB_DevInit: cfg->speed=%d\n", (int) cfg->speed);
 	USBx->SYSCFG0 = (USBx->SYSCFG0 & ~ (USB_SYSCFG_HSE)) |
-			(cfg->speed == USBD_SPEED_HIGH) * USB_SYSCFG_HSE |	// HSE
+			(cfg->pcd_speed == PCD_SPEED_HIGH) * USB_SYSCFG_HSE |	// HSE
 			0;
 	(void) USBx->SYSCFG0;
 
@@ -3552,7 +3551,7 @@ HAL_StatusTypeDef USB_DevInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgType
 
 	if(cfg->phy_itface  == USB_OTG_ULPI_PHY)
 	{
-		if(cfg->speed == USB_OTG_SPEED_HIGH)
+		if(cfg->pcd_speed == PCD_SPEED_HIGH)
 		{
 			/* Set High speed phy */
 			USB_SetDevSpeed(USBx, USB_OTG_SPEED_HIGH);
@@ -3566,7 +3565,7 @@ HAL_StatusTypeDef USB_DevInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgType
 
 	else if(cfg->phy_itface  == USB_OTG_HS_EMBEDDED_PHY)
 	{
-		if(cfg->speed == USB_OTG_SPEED_HIGH)
+		if(cfg->pcd_speed == PCD_SPEED_HIGH)
 		{
 			/* Set High speed phy */
 			USB_SetDevSpeed(USBx, USB_OTG_SPEED_HIGH);
@@ -3792,10 +3791,31 @@ HAL_StatusTypeDef USB_FlushRxFifo(USB_OTG_GlobalTypeDef *USBx)
   *            @arg USB_OTG_SPEED_LOW: Low speed mode
   * @retval  Hal status
   */
-HAL_StatusTypeDef USB_SetDevSpeed(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t speed)
+HAL_StatusTypeDef USB_SetDevSpeed(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t usb_otg_speed)
 {
-	USBx_DEVICE->DCFG = (USBx_DEVICE->DCFG & ~ (USB_OTG_DCFG_DSPD)) |
-		(USB_OTG_DCFG_DSPD & speed * USB_OTG_DCFG_DSPD_0) |
+	uint_fast32_t speed;
+	switch (usb_otg_speed)
+	{
+	case USB_OTG_SPEED_HIGH:
+		speed = 0x00;
+		break;
+	case USB_OTG_SPEED_FULL:
+		speed = 0x03;	// 01: Full speed using HS, 03: Full speed using internal FS PHY
+		break;
+	case USB_OTG_SPEED_LOW:
+		// N/A
+		speed = 0x01;
+		break;
+	case USB_OTG_SPEED_HIGH_IN_FULL:
+		speed = 0x01;
+		break;
+	default:
+		ASSERT(0);
+		speed = 0x00;
+		break;
+	}
+	USBx_DEVICE->DCFG = (USBx_DEVICE->DCFG & ~ (USB_OTG_DCFG_DSPD_Msk)) |
+		(speed << USB_OTG_DCFG_DSPD_Pos) |
 		0;
 	return HAL_OK;
 }
@@ -3811,7 +3831,7 @@ HAL_StatusTypeDef USB_SetDevSpeed(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t spee
   */
 uint_fast8_t USB_GetDevSpeed(USB_OTG_GlobalTypeDef *USBx)
 {
-	uint_fast8_t speed = 0;
+	uint_fast8_t speed = USB_OTG_SPEED_FULL;
 
 	if ((USBx_DEVICE->DSTS & USB_OTG_DSTS_ENUMSPD) == DSTS_ENUMSPD_HS_PHY_30MHZ_OR_60MHZ)
 	{
@@ -4407,7 +4427,7 @@ HAL_StatusTypeDef USB_HC_StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_HCTypeDe
   uint16_t max_hc_pkt_count = 256;
   uint32_t tmpreg = 0;
 
-  if ((USBx != USB_OTG_FS) && (hc->speed == USB_OTG_SPEED_HIGH))
+  if ((USBx != USB_OTG_FS) && (hc->usb_otg_speed == USB_OTG_SPEED_HIGH))
   {
 	  // HS
     if ((dma == 0) && (hc->do_ping == 1))
@@ -4872,7 +4892,7 @@ HAL_StatusTypeDef USB_HostInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgTyp
 #endif /* STM32F446xx || STM32F469xx || STM32F479xx || STM32F412Zx || STM32F412Rx || STM32F412Vx || STM32F412Cx */
 
   /* Disable the FS/LS support mode only */
-  if ((cfg->speed == USB_OTG_SPEED_FULL) && (USBx != USB_OTG_FS))
+  if ((cfg->pcd_speed == PCD_SPEED_FULL) && (USBx != USB_OTG_FS))
   {
     USBx_HOST->HCFG |= USB_OTG_HCFG_FSLSS;
   }
@@ -5015,9 +5035,21 @@ HAL_StatusTypeDef USB_DriveVbus (USB_OTG_GlobalTypeDef *USBx, uint_fast8_t state
   *            @arg USB_OTG_SPEED_FULL: Full speed mode
   *            @arg USB_OTG_SPEED_LOW: Low speed mode
   */
-uint32_t USB_GetHostSpeed (USB_OTG_GlobalTypeDef *USBx)
+uint32_t USB_GetHostSpeed(USB_OTG_GlobalTypeDef *USBx)
 {
-  return ((USBx_HPRT0 & USB_OTG_HPRT_PSPD) / MASK2LSB(USB_OTG_HPRT_PSPD));
+	switch ((USBx_HPRT0 & USB_OTG_HPRT_PSPD_Msk) >> USB_OTG_HPRT_PSPD_Pos)
+	{
+	case 0x00:
+		return USB_OTG_SPEED_HIGH;
+	case 0x01:
+		return USB_OTG_SPEED_FULL;
+	case 0x02:
+		return USB_OTG_SPEED_LOW;
+	default:
+	case 0x03:
+		// reserved
+		return USB_OTG_SPEED_FULL;
+	}
 }
 
 /* Exported types ------------------------------------------------------------*/
@@ -5861,8 +5893,8 @@ void HAL_PCD_ResetCallback(PCD_HandleTypeDef *hpcd)
 {
 	USBD_SpeedTypeDef speed = USBD_SPEED_FULL;
 
-	/*Set USB Current Speed*/
-	switch (hpcd->Init.speed)
+	/* Set USB Current Speed */
+	switch (hpcd->Init.pcd_speed)
 	{
 	case PCD_SPEED_HIGH:
 		speed = USBD_SPEED_HIGH;
@@ -5876,6 +5908,7 @@ void HAL_PCD_ResetCallback(PCD_HandleTypeDef *hpcd)
 		break;
 	}
 	//PRINTF(PSTR("HAL_PCD_ResetCallback: speed=%d\n"), (int) speed);
+	// Set speed information for enumeration responce
 	USBD_LL_SetSpeed((USBD_HandleTypeDef*)hpcd->pData, speed);	// USBD_SPEED_xxx
 
 	/*Reset Device*/
@@ -7611,7 +7644,7 @@ USBD_StatusTypeDef USBD_LL_Reset(USBD_HandleTypeDef  *pdev)
 */
 USBD_StatusTypeDef USBD_LL_SetSpeed(USBD_HandleTypeDef  *pdev, USBD_SpeedTypeDef speed)
 {
-	pdev->dev_speed = speed;	// USBD_SPEED_xxx
+	pdev->dev_speed = speed;	// USBD_SPEED_xxx for enumeration responce
 	return USBD_OK;
 }
 
@@ -8118,7 +8151,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 
       if (USB_GetDevSpeed(hpcd->Instance) == USB_OTG_SPEED_HIGH)
       {
-        hpcd->Init.speed = PCD_SPEED_HIGH;
+        hpcd->Init.pcd_speed = PCD_SPEED_HIGH;
         //hpcd->Init.ep0_mps = USB_OTG_MAX_EP0_SIZE; //USB_OTG_HS_MAX_PACKET_SIZE;
         hpcd->Instance->GUSBCFG = (hpcd->Instance->GUSBCFG & ~ USB_OTG_GUSBCFG_TRDT) |
 			(uint32_t)((USBD_HS_TRDT_VALUE << USB_OTG_GUSBCFG_TRDT_Pos) & USB_OTG_GUSBCFG_TRDT) |
@@ -8126,7 +8159,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
       }
       else
       {
-        hpcd->Init.speed = PCD_SPEED_FULL;
+        hpcd->Init.pcd_speed = PCD_SPEED_FULL;
         //hpcd->Init.ep0_mps = USB_OTG_MAX_EP0_SIZE;//USB_OTG_FS_MAX_PACKET_SIZE ;
 
         /* The USBTRD is configured according to the tables below, depending on AHB frequency
@@ -8822,7 +8855,7 @@ HAL_StatusTypeDef USB_HC_Init(USB_OTG_GlobalTypeDef *USBx,
                               uint8_t ch_num,
                               uint8_t epnum,
                               uint8_t dev_address,
-                              uint8_t speed,
+                              uint8_t usb_otg_speed,
                               uint8_t ep_type,
                               uint16_t mps)
 {
@@ -8894,11 +8927,11 @@ HAL_StatusTypeDef USB_HC_Init(USB_OTG_GlobalTypeDef *USBx,
   USBx->GINTMSK |= USB_OTG_GINTMSK_HCIM;
 
   /* Program the HCCHAR register */
-  USBx_HC(ch_num)->HCCHAR = (((dev_address << 22) & USB_OTG_HCCHAR_DAD)  |
-                             (((epnum & 0x7F)<< 11) & USB_OTG_HCCHAR_EPNUM)|
-                             ((((epnum & 0x80) == 0x80)<< 15) & USB_OTG_HCCHAR_EPDIR)|
-                             (((speed == HPRT0_PRTSPD_LOW_SPEED)<< 17) & USB_OTG_HCCHAR_LSDEV)|
-                             ((ep_type << 18) & USB_OTG_HCCHAR_EPTYP)|
+  USBx_HC(ch_num)->HCCHAR = (((dev_address << USB_OTG_HCCHAR_DAD_Pos) & USB_OTG_HCCHAR_DAD)  |
+                             (((epnum & 0x7F)<< USB_OTG_HCCHAR_EPNUM_Pos) & USB_OTG_HCCHAR_EPNUM)|
+                             ((((epnum & 0x80) == 0x80)<< USB_OTG_HCCHAR_EPDIR_Pos) & USB_OTG_HCCHAR_EPDIR)|
+                             (((usb_otg_speed == USB_OTG_SPEED_LOW) << USB_OTG_HCCHAR_LSDEV_Pos) & USB_OTG_HCCHAR_LSDEV)|
+                             ((ep_type << USB_OTG_HCCHAR_EPTYP_Pos) & USB_OTG_HCCHAR_EPTYP)|
                              (mps & USB_OTG_HCCHAR_MPSIZ));
 
   if (ep_type == USBD_EP_TYPE_INTR)
@@ -9086,7 +9119,7 @@ USBH_StatusTypeDef USBH_BulkSendData (USBH_HandleTypeDef *phost,
                                 uint8_t pipe_num,
                                 uint8_t do_ping )
 {
-  if (phost->device.speed != USBH_SPEED_HIGH)
+  if (phost->device.usb_otg_speed != USB_OTG_SPEED_HIGH)
   {
     do_ping = 0;
   }
@@ -9371,10 +9404,10 @@ USBD_StatusTypeDef  USBD_LL_Init(PCD_HandleTypeDef * hpcd, USBD_HandleTypeDef *p
 #if CPUSTYLE_R7S721
 	// Значение ep0_mps и speed обновится после reset шины
 	#if WITHUSBDEV_HSDESC
-		hpcd->Init.speed = PCD_SPEED_HIGH;
+		hpcd->Init.pcd_speed = PCD_SPEED_HIGH;
 		//hpcd->Init.ep0_mps = USB_OTG_MAX_EP0_SIZE; //USB_OTG_HS_MAX_PACKET_SIZE;
 	#else /* WITHUSBDEV_HSDESC */
-		hpcd->Init.speed = PCD_SPEED_FULL;
+		hpcd->Init.pcd_speed = PCD_SPEED_FULL;
 		//hpcd->Init.ep0_mps = USB_OTG_MAX_EP0_SIZE; //USB_OTG_FS_MAX_PACKET_SIZE;
 	#endif /* WITHUSBDEV_HSDESC */
 	hpcd->Init.phy_itface = USB_OTG_EMBEDDED_PHY;
@@ -9384,10 +9417,10 @@ USBD_StatusTypeDef  USBD_LL_Init(PCD_HandleTypeDef * hpcd, USBD_HandleTypeDef *p
 #else /* CPUSTYLE_R7S721 */
 
 	#if WITHUSBDEV_HSDESC
-		hpcd->Init.speed = PCD_SPEED_HIGH;
+		hpcd->Init.pcd_speed = PCD_SPEED_HIGH;
 		//hpcd->Init.ep0_mps = USB_OTG_MAX_EP0_SIZE; //DEP0CTL_MPS_64;
 	#else /* WITHUSBDEV_HSDESC */
-		hpcd->Init.speed = PCD_SPEED_FULL;
+		hpcd->Init.pcd_speed = PCD_SPEED_FULL;
 		//hpcd->Init.ep0_mps = USB_OTG_MAX_EP0_SIZE; //DEP0CTL_MPS_64;
 	#endif /* WITHUSBDEV_HSDESC */
 
@@ -9784,32 +9817,32 @@ USBH_StatusTypeDef  USBH_LL_Stop (USBH_HandleTypeDef *phost)
   * @brief  USBH_LL_GetSpeed
   *         Return the USB Host Speed from the Low Level Driver.
   * @param  phost: Host handle
-  * @retval USBH Speeds
+  * @retval USB_OTG_SPEED_xxx Speeds
   */
-USBH_SpeedTypeDef USBH_LL_GetSpeed  (USBH_HandleTypeDef *phost)
+uint8_t USBH_LL_GetSpeed(USBH_HandleTypeDef *phost)
 {
-	USBH_SpeedTypeDef speed;
+	uint8_t speed;
 
 	switch (HAL_HCD_GetCurrentSpeed(phost->pData))
 	{
 	case USB_OTG_SPEED_HIGH:
-		speed = USBH_SPEED_HIGH;
+		speed = USB_OTG_SPEED_HIGH;
 		break;
 
 	case USB_OTG_SPEED_HIGH_IN_FULL:
-		speed = USBH_SPEED_FULL;
+		speed = USB_OTG_SPEED_FULL;
 		break;
 
 	case USB_OTG_SPEED_LOW:
-		speed = USBH_SPEED_LOW;
+		speed = USB_OTG_SPEED_LOW;
 		break;
 
 	default:
 	case USB_OTG_SPEED_FULL:
-		speed = USBH_SPEED_FULL;
+		speed = USB_OTG_SPEED_FULL;
 		break;
 	}
-	PRINTF(PSTR("USBH_LL_GetSpeed: (high=0, full=1, low=2) speed=%d\n"), (int) speed);
+	PRINTF("USBH_LL_GetSpeed: (high=%d, full=%d, low=%d) speed=%d\n", (int) USB_OTG_SPEED_HIGH, (int) USB_OTG_SPEED_FULL, (int) USB_OTG_SPEED_LOW, (int) speed);
 	return speed;
 }
 
@@ -10333,14 +10366,14 @@ USBH_StatusTypeDef  USBH_LL_Init(USBH_HandleTypeDef *phost)
 
 #if CPUSTYLE_R7S721
 	hhcd_USB_OTG.Init.Host_channels = 16;
-	//hhcd_USB_OTG.Init.speed = PCD_SPEED_HIGH;
-	//hhcd_USB_OTG.Init.speed = USBD_SPEED_HIGH;	// USB_OTG_SPEED_
-	hhcd_USB_OTG.Init.speed = PCD_SPEED_FULL;
+	//hhcd_USB_OTG.Init.pcd_speed = PCD_SPEED_HIGH;
+	//hhcd_USB_OTG.Init.pcd_speed = USBD_SPEED_HIGH;	// USB_OTG_SPEED_
+	hhcd_USB_OTG.Init.pcd_speed = PCD_SPEED_FULL;
 	hhcd_USB_OTG.Init.dma_enable = ! USB_ENABLE;	 // xyz HOST
 
 #else /* CPUSTYLE_R7S721 */
 	hhcd_USB_OTG.Init.Host_channels = 16;
-	hhcd_USB_OTG.Init.speed = PCD_SPEED_FULL;
+	hhcd_USB_OTG.Init.pcd_speed = PCD_SPEED_FULL;
 	hhcd_USB_OTG.Init.dma_enable = ! USB_ENABLE;	 // xyz HOST
 
 #endif /* CPUSTYLE_R7S721 */
@@ -10385,7 +10418,7 @@ HAL_StatusTypeDef HAL_HCD_HC_Init(HCD_HandleTypeDef *hhcd,
                                   uint8_t ch_num,
                                   uint8_t epnum,
                                   uint8_t dev_address,
-                                  uint8_t speed,
+                                  uint8_t usbh_otg_speed,
                                   uint8_t ep_type,
                                   uint16_t mps)
 {
@@ -10399,13 +10432,13 @@ HAL_StatusTypeDef HAL_HCD_HC_Init(HCD_HandleTypeDef *hhcd,
   hhcd->hc[ch_num].ep_type = ep_type;
   hhcd->hc[ch_num].ep_num = epnum & 0x7F;
   hhcd->hc[ch_num].ep_is_in = ((epnum & 0x80) == 0x80);
-  hhcd->hc[ch_num].speed = speed;
+  hhcd->hc[ch_num].usbh_otg_speed = usbh_otg_speed;
 
   status = USB_HC_Init(hhcd->Instance,
                         ch_num,
                         epnum,
                         dev_address,
-                        speed,
+                        usbh_otg_speed,
                         ep_type,
                         mps);
   __HAL_UNLOCK(hhcd);
@@ -11044,12 +11077,12 @@ USBH_StatusTypeDef USBH_LL_OpenPipe(
 	uint8_t pipe_num,
 	uint8_t epnum,
 	uint8_t dev_address,
-	uint8_t speed,
+	uint8_t usbh_otg_speed,
 	uint8_t ep_type,
 	uint16_t mps
 	)
 {
-	const HAL_StatusTypeDef hal_status = HAL_HCD_HC_Init(phost->pData, pipe_num, epnum, dev_address, speed, ep_type, mps);
+	const HAL_StatusTypeDef hal_status = HAL_HCD_HC_Init(phost->pData, pipe_num, epnum, dev_address, usbh_otg_speed, ep_type, mps);
 	USBH_StatusTypeDef usb_status;
 
 	switch (hal_status)
@@ -11236,7 +11269,7 @@ USBH_StatusTypeDef USBH_CtlSendData (USBH_HandleTypeDef *phost,
                                 uint8_t pipe_num,
                                 uint8_t do_ping )
 {
-  if (phost->device.speed != USBH_SPEED_HIGH)
+  if (phost->device.usb_otg_speed != USB_OTG_SPEED_HIGH)
   {
     do_ping = 0;
   }
@@ -11288,7 +11321,7 @@ USBH_StatusTypeDef USBH_CtlReceiveData(USBH_HandleTypeDef *phost,
   * @param  phost: Host Handle
   * @param  pipe_num: Pipe Number
   * @param  dev_address: USB Device address allocated to attached device
-  * @param  speed : USB device speed (Full/Low)
+  * @param  speed : USB device speed (Full/Low) - USB_OTG_SPEED_xxx
   * @param  ep_type: end point type (Bulk/int/ctl)
   * @param  mps: max pkt size
   * @retval USBH Status
@@ -11297,7 +11330,7 @@ USBH_StatusTypeDef USBH_OpenPipe  (USBH_HandleTypeDef *phost,
                             uint8_t pipe_num,
                             uint8_t epnum,
                             uint8_t dev_address,
-                            uint8_t speed,
+                            uint8_t usb_otg_speed,	// USB_OTG_SPEED_xxx
                             uint8_t ep_type,
                             uint16_t mps)
 {
@@ -11306,7 +11339,7 @@ USBH_StatusTypeDef USBH_OpenPipe  (USBH_HandleTypeDef *phost,
                         pipe_num,
                         epnum,
                         dev_address,
-                        speed,
+						usb_otg_speed,
                         ep_type,
                         mps);
   
@@ -11346,7 +11379,7 @@ USBH_StatusTypeDef  DeInitStateMachine(USBH_HandleTypeDef *phost)
   phost->Control.errorcount = 0;
 
   phost->device.address = USBH_ADDRESS_DEFAULT;
-  phost->device.speed   = USBH_SPEED_FULL;
+  phost->device.usb_otg_speed = USB_OTG_SPEED_FULL;
 
   return USBH_OK;
 }
@@ -12328,7 +12361,7 @@ USBH_StatusTypeDef USBH_HandleEnum(USBH_HandleTypeDef *phost)
                            phost->Control.pipe_in,
                            0x80,
                            phost->device.address,
-                           phost->device.speed,
+                           phost->device.usb_otg_speed,
                            USBH_EP_CONTROL,
                            phost->Control.pipe_size);
 
@@ -12337,7 +12370,7 @@ USBH_StatusTypeDef USBH_HandleEnum(USBH_HandleTypeDef *phost)
                            phost->Control.pipe_out,
                            0x00,
                            phost->device.address,
-                           phost->device.speed,
+                           phost->device.usb_otg_speed,
                            USBH_EP_CONTROL,
                            phost->Control.pipe_size);
 
@@ -12385,7 +12418,7 @@ USBH_StatusTypeDef USBH_HandleEnum(USBH_HandleTypeDef *phost)
                            phost->Control.pipe_in,
                            0x80,
                            phost->device.address,
-                           phost->device.speed,
+                           phost->device.usb_otg_speed,
                            USBH_EP_CONTROL,
                            phost->Control.pipe_size);
 
@@ -12394,7 +12427,7 @@ USBH_StatusTypeDef USBH_HandleEnum(USBH_HandleTypeDef *phost)
                            phost->Control.pipe_out,
                            0x00,
                            phost->device.address,
-                           phost->device.speed,
+                           phost->device.usb_otg_speed,
                            USBH_EP_CONTROL,
                            phost->Control.pipe_size);
     }
@@ -12573,7 +12606,7 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
 	case HOST_DEV_ATTACHED:
 		  PRINTF(PSTR("USBH_Process: HOST_DEV_ATTACHED\n"));
 		/* после таймаута */
-		phost->device.speed = USBH_LL_GetSpeed(phost);
+		phost->device.usb_otg_speed = USBH_LL_GetSpeed(phost);
 
 		phost->gState = HOST_ENUMERATION;
 
@@ -12586,7 +12619,7 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
 			phost->Control.pipe_in,
 			0x80,
 			phost->device.address,
-			phost->device.speed,
+			phost->device.usb_otg_speed,
 			USBH_EP_CONTROL,
 			phost->Control.pipe_size);
 
@@ -12595,7 +12628,7 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
 			phost->Control.pipe_out,
 			0x00,
 			phost->device.address,
-			phost->device.speed,
+			phost->device.usb_otg_speed,
 			USBH_EP_CONTROL,
 			phost->Control.pipe_size);
 
@@ -12858,14 +12891,14 @@ static void HCD_Port_IRQHandler(HCD_HandleTypeDef *hhcd)
       }
       else
       {
-        if (hhcd->Init.speed == HCD_SPEED_FULL)
+        if (hhcd->Init.pcd_speed == PCD_SPEED_FULL)
         {
           USBx_HOST->HFIR = (uint32_t)60000;
         }
       }
       HAL_HCD_Connect_Callback(hhcd);
 
-      if (hhcd->Init.speed == HCD_SPEED_HIGH)
+      if (hhcd->Init.pcd_speed == PCD_SPEED_HIGH)
       {
         USB_UNMASK_INTERRUPT(hhcd->Instance, USB_OTG_GINTSTS_DISCINT);
       }

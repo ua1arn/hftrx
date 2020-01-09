@@ -216,11 +216,11 @@ static USBH_StatusTypeDef USBH_MSC_InterfaceInit(USBH_HandleTypeDef *phost)
 
   /* Open the new channels */
   USBH_OpenPipe(phost, MSC_Handle->OutPipe, MSC_Handle->OutEp,
-                phost->device.address, phost->device.speed,
+                phost->device.address, phost->device.usb_otg_speed,
                 USB_EP_TYPE_BULK, MSC_Handle->OutEpSize);
 
   USBH_OpenPipe(phost, MSC_Handle->InPipe, MSC_Handle->InEp,
-                phost->device.address, phost->device.speed, USB_EP_TYPE_BULK,
+                phost->device.address, phost->device.usb_otg_speed, USB_EP_TYPE_BULK,
                 MSC_Handle->InEpSize);
 
   USBH_LL_SetToggle(phost, MSC_Handle->InPipe, 0U);
