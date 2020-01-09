@@ -2508,7 +2508,7 @@ HAL_StatusTypeDef USB_HC_StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_HCTypeDe
 	      case USBD_EP_TYPE_ISOC:
 	        len_words = (hc->xfer_len + 3) / 4;
 	        /* check if there is enough space in FIFO space */
-	        ////* if(len_words > (USBx_HOST->HPTXSTS & 0xFFFF)) /* split the transfer */
+	        ////* if (len_words > (USBx_HOST->HPTXSTS & 0xFFFF)) /* split the transfer */
 	        {
 	          /* need to process data in ptxfempty interrupt */
 	        	////* USBx->GINTMSK |= USB_OTG_GINTMSK_PTXFEM;
@@ -4875,81 +4875,86 @@ HAL_StatusTypeDef USB_CoreReset(USB_OTG_GlobalTypeDef *USBx)
 
 HAL_StatusTypeDef USB_HostInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgTypeDef * cfg)
 {
-  uint32_t i;
+	uint32_t i;
 
-  /* Restart the Phy Clock */
-  USBx_PCGCCTL = 0;
-  /* Activate VBUS Sensing B */
+	/* Restart the Phy Clock */
+	USBx_PCGCCTL = 0;
+	/* Activate VBUS Sensing B */
 #if CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7XX || CPUSTYLE_STM32F7XX || defined(STM32F446xx) || defined(STM32F469xx) || defined(STM32F479xx) || defined(STM32F412Zx) || defined(STM32F412Vx) || \
     defined(STM32F412Rx) || defined(STM32F412Cx)
 
-  USBx->GCCFG |= USB_OTG_GCCFG_VBDEN;
+	USBx->GCCFG |= USB_OTG_GCCFG_VBDEN;
 
 #else
-  USBx->GCCFG &=~ (USB_OTG_GCCFG_VBUSASEN);
-  USBx->GCCFG &=~ (USB_OTG_GCCFG_VBUSBSEN);
-  USBx->GCCFG |= USB_OTG_GCCFG_NOVBUSSENS;
+	USBx->GCCFG &=~ (USB_OTG_GCCFG_VBUSASEN);
+	USBx->GCCFG &=~ (USB_OTG_GCCFG_VBUSBSEN);
+	USBx->GCCFG |= USB_OTG_GCCFG_NOVBUSSENS;
 #endif /* STM32F446xx || STM32F469xx || STM32F479xx || STM32F412Zx || STM32F412Rx || STM32F412Vx || STM32F412Cx */
 
-  /* Disable the FS/LS support mode only */
-  if ((cfg->pcd_speed == PCD_SPEED_FULL) && (USBx != USB_OTG_FS))
-  {
-    USBx_HOST->HCFG |= USB_OTG_HCFG_FSLSS;
-  }
-  else
-  {
-    USBx_HOST->HCFG &= ~ (USB_OTG_HCFG_FSLSS);
-  }
+	/* Disable the FS/LS support mode only */
+	if ((cfg->pcd_speed == PCD_SPEED_FULL) && (USBx != USB_OTG_FS))
+	{
+		USBx_HOST->HCFG |= USB_OTG_HCFG_FSLSS;
+	}
+	else
+	{
+		USBx_HOST->HCFG &= ~ (USB_OTG_HCFG_FSLSS);
+	}
 
-  /* Make sure the FIFOs are flushed. */
-  USB_FlushTxFifoAll(USBx); /* all Tx FIFOs */
-  USB_FlushRxFifo(USBx);
+	/* Make sure the FIFOs are flushed. */
+	USB_FlushTxFifoAll(USBx); /* all Tx FIFOs */
+	USB_FlushRxFifo(USBx);
 
-  /* Clear all pending HC Interrupts */
-  for (i = 0; i < cfg->Host_channels; i++)
-  {
-    USBx_HC(i)->HCINT = 0xFFFFFFFF;
-    USBx_HC(i)->HCINTMSK = 0;
-  }
+	/* Clear all pending HC Interrupts */
+	for (i = 0; i < cfg->Host_channels; i++)
+	{
+		USBx_HC(i)->HCINT = 0xFFFFFFFF;
+		USBx_HC(i)->HCINTMSK = 0;
+	}
 
-  /* Enable VBUS driving */
-  USB_DriveVbus(USBx, 1);
+	/* Enable VBUS driving */
+	USB_DriveVbus(USBx, 1);
 
-  HARDWARE_DELAY_MS(200);
+	HARDWARE_DELAY_MS(200);
 
-  /* Disable all interrupts. */
-  USBx->GINTMSK = 0;
+	/* Disable all interrupts. */
+	USBx->GINTMSK = 0;
 
-  /* Clear any pending interrupts */
-  USBx->GINTSTS = 0xFFFFFFFF;
+	/* Clear any pending interrupts */
+	USBx->GINTSTS = 0xFFFFFFFF;
 
-  if(USBx == USB_OTG_FS)
-  {
-    /* set Rx FIFO size */
-    USBx->GRXFSIZ  = (uint32_t )0x80;
-    USBx->DIEPTXF0_HNPTXFSIZ = (uint32_t )(((0x60 << 16)& USB_OTG_NPTXFD) | 0x80);
-    USBx->HPTXFSIZ = (uint32_t )(((0x40 << 16)& USB_OTG_HPTXFSIZ_PTXFD) | 0xE0);
-  }
-  else
-  {
-    /* set Rx FIFO size */
-    USBx->GRXFSIZ  = (uint32_t )0x200;
-    USBx->DIEPTXF0_HNPTXFSIZ = (uint32_t )(((0x100 << 16)& USB_OTG_NPTXFD) | 0x200);
-    USBx->HPTXFSIZ = (uint32_t )(((0xE0 << 16)& USB_OTG_HPTXFSIZ_PTXFD) | 0x300);
-  }
+	if(USBx == USB_OTG_FS)
+	{
+		/* set Rx FIFO size */
+		USBx->GRXFSIZ  = (uint32_t )0x80;
+		USBx->DIEPTXF0_HNPTXFSIZ = (uint32_t )(((0x60 << 16)& USB_OTG_NPTXFD) | 0x80);
+		USBx->HPTXFSIZ = (uint32_t )(((0x40 << 16)& USB_OTG_HPTXFSIZ_PTXFD) | 0xE0);
+	}
+	else
+	{
+		/* set Rx FIFO size */
+		USBx->GRXFSIZ  = (uint32_t) 0x200;
+		USBx->DIEPTXF0_HNPTXFSIZ = (uint32_t) (((0x100 << 16)& USB_OTG_NPTXFD) | 0x200);
+		USBx->HPTXFSIZ = (uint32_t) (((0xE0 << 16)& USB_OTG_HPTXFSIZ_PTXFD) | 0x300);
+	}
 
-  /* Enable the common interrupts */
-  if (cfg->dma_enable == USB_DISABLE)
-  {
-    USBx->GINTMSK |= USB_OTG_GINTMSK_RXFLVLM;
-  }
+	/* Enable the common interrupts */
+	if (cfg->dma_enable == USB_DISABLE)
+	{
+		USBx->GINTMSK |= USB_OTG_GINTMSK_RXFLVLM;
+	}
 
-  /* Enable interrupts matching to the Host mode ONLY */
-  USBx->GINTMSK |= (USB_OTG_GINTMSK_PRTIM            | USB_OTG_GINTMSK_HCIM |
-                    USB_OTG_GINTMSK_SOFM             |USB_OTG_GINTSTS_DISCINT|
-                    USB_OTG_GINTMSK_PXFRM_IISOOXFRM  | USB_OTG_GINTMSK_WUIM);
+	/* Enable interrupts matching to the Host mode ONLY */
+	USBx->GINTMSK |= (
+		USB_OTG_GINTMSK_PRTIM |
+		USB_OTG_GINTMSK_HCIM |
+		USB_OTG_GINTMSK_SOFM |
+		USB_OTG_GINTSTS_DISCINT |
+		USB_OTG_GINTMSK_PXFRM_IISOOXFRM |
+		USB_OTG_GINTMSK_WUIM |
+		0);
 
-  return HAL_OK;
+	return HAL_OK;
 }
 
 /**
