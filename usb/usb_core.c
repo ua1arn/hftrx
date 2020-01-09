@@ -10372,17 +10372,25 @@ USBH_StatusTypeDef  USBH_LL_Init(USBH_HandleTypeDef *phost)
 #if CPUSTYLE_R7S721
 	hhcd_USB_OTG.Init.Host_channels = 16;
 	//hhcd_USB_OTG.Init.pcd_speed = PCD_SPEED_HIGH;
-	//hhcd_USB_OTG.Init.pcd_speed = USBD_SPEED_HIGH;	// USB_OTG_SPEED_
 	hhcd_USB_OTG.Init.pcd_speed = PCD_SPEED_FULL;
+	hhcd_USB_OTG.Init.dma_enable = USB_DISABLE;
+	hhcd_USB_OTG.Init.phy_itface = HCD_PHY_EMBEDDED;
+
+#elif CPUSTYLE_STM32MP1
+	hhcd_USB_OTG.Init.Host_channels = 16;
+	hhcd_USB_OTG.Init.pcd_speed = PCD_SPEED_HIGH;
 	hhcd_USB_OTG.Init.dma_enable = ! USB_ENABLE;	 // xyz HOST
+	hhcd_USB_OTG.Init.phy_itface = HCD_PHY_EMBEDDED;
+
 
 #else /* CPUSTYLE_R7S721 */
 	hhcd_USB_OTG.Init.Host_channels = 16;
 	hhcd_USB_OTG.Init.pcd_speed = PCD_SPEED_FULL;
 	hhcd_USB_OTG.Init.dma_enable = ! USB_ENABLE;	 // xyz HOST
+	hhcd_USB_OTG.Init.phy_itface = HCD_PHY_EMBEDDED;
 
 #endif /* CPUSTYLE_R7S721 */
-	hhcd_USB_OTG.Init.phy_itface = HCD_PHY_EMBEDDED;
+
 	hhcd_USB_OTG.Init.Sof_enable = USB_DISABLE;
 	if (HAL_HCD_Init(& hhcd_USB_OTG) != HAL_OK)
 	{
@@ -10894,7 +10902,7 @@ USBH_StatusTypeDef  USBH_Init(USBH_HandleTypeDef *phost, void (*pUsrFunc)(USBH_H
   DeInitStateMachine(phost);
 
   /* Assign User process */
-  if(pUsrFunc != NULL)
+  if (pUsrFunc != NULL)
   {
     phost->pUser = pUsrFunc;
   }
