@@ -986,10 +986,8 @@ static uint_fast8_t USB_ReadPacketNec(PCD_TypeDef * const USBx, uint_fast8_t pip
 	if (size == 0)
 	{
 		USBx->CFIFOCTR = USB_CFIFOCTR_BCLR;	// BCLR
-		return 0;
 	}
-
-	if (mbw == 0x02)
+	else if (mbw == 0x02)
 	{
 		// MBW 10: 32-bit width
 		uint32_t * data32 = (uint32_t *) data;
@@ -1079,7 +1077,6 @@ USB_WritePacketNec(PCD_TypeDef * const USBx, uint_fast8_t pipe, const uint8_t * 
 			USBx->CFIFO.UINT8 [R_IO_HH] = * data ++; // R_IO_HH=3
 		} while (-- size8);
 	}
-
     USBx->CFIFOCTR = USB_CFIFOCTR_BVAL;	// BVAL
 	return 0;	// OK
 }
@@ -1709,6 +1706,38 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 
 }
 
+static int
+toprintc(int c)
+{
+	if (c < 0x20 || c >= 0x7f)
+		return '.';
+	return c;
+}
+
+static void
+printhex(unsigned long voffs, const unsigned char * buff, unsigned length)
+{
+	unsigned i, j;
+	unsigned rows = (length + 15) / 16;
+
+	for (i = 0; i < rows; ++ i)
+	{
+		const int trl = ((length - 1) - i * 16) % 16 + 1;
+		debug_printf_P(PSTR("%08lX "), voffs + i * 16);
+		for (j = 0; j < trl; ++ j)
+			debug_printf_P(PSTR(" %02X"), buff [i * 16 + j]);
+
+		debug_printf_P(PSTR("%*s"), (16 - trl) * 3, "");
+
+		debug_printf_P(PSTR("  "));
+		for (j = 0; j < trl; ++ j)
+			debug_printf_P(PSTR("%c"), toprintc(buff [i * 16 + j]));
+
+		debug_printf_P(PSTR("\n"));
+	}
+}
+
+
 // Renesas, usb host
 void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 {
@@ -1718,7 +1747,7 @@ void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 	const uint_fast16_t intsts0msk = intsts0 & USBx->INTENB0;
 	const uint_fast16_t intsts1msk = intsts1 & USBx->INTENB1;
 
-	//PRINTF(PSTR("HAL_HCD_IRQHandler trapped, intsts0=%04X, intsts1=%04X\n"), intsts0, intsts1);
+	PRINTF(PSTR("HAL_HCD_IRQHandler trapped, intsts0=%04X, intsts1=%04X\n"), intsts0, intsts1);
 	if ((intsts0msk & USB_INTSTS0_SOFR) != 0)	// SOFR
 	{
 		USBx->INTSTS0 = (uint16_t) ~ USB_INTSTS0_SOFR;	// Clear SOFR
@@ -1752,6 +1781,21 @@ void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 	{
 		uint_fast8_t pipe;
 		PRINTF(PSTR("HAL_HCD_IRQHandler trapped - NRDY, NRDYSTS=0x%04X\n"), USBx->NRDYSTS);
+
+/*
+	  	unsigned bcnt;
+	  	static uint8_t tmpb [256];
+	  	if (USB_ReadPacketNec(USBx, 0, tmpb, 256, & bcnt) == 0)
+	  	{
+	  		printhex(0, tmpb, bcnt);
+	  	}
+	  	else
+	  	{
+	  		TP();
+	  		//control_stall(pdev);
+	  	}
+*/
+
 #if 1
 		const uint_fast16_t nrdysts = USBx->NRDYSTS & USBx->NRDYENB;	// NRDY Interrupt Status Register
 		for (pipe = 0; pipe < 16; ++ pipe)
@@ -1865,6 +1909,18 @@ void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 		USBx->INTSTS1 = (uint16_t) ~ USB_INTSTS1_SACK;
 		PRINTF(PSTR("HAL_HCD_IRQHandler trapped - SACK\n"));
 		//HAL_HCD_Connect_Callback(hhcd);
+
+	  	unsigned bcnt;
+	  	static uint8_t tmpb [256];
+	  	if (USB_ReadPacketNec(USBx, 0, tmpb, 256, & bcnt) == 0)
+	  	{
+	  		printhex(0, tmpb, bcnt);
+	  	}
+	  	else
+	  	{
+	  		TP();
+	  		//control_stall(pdev);
+	  	}
 	}
 }
 
@@ -2548,7 +2604,10 @@ HAL_StatusTypeDef USB_HC_StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_HCTypeDe
 						(0x00 << USB_DCPMAXP_DEVSEL_SHIFT) |	// DEVADD0 used
 						0;
 
-				//USBx->DCPCFG &= ~ USB_DCPCFG_DIR;
+				USBx->DCPCTR |= USB_DCPCTR_SQCLR;	// DATA0 as answer
+				//USBx->DCPCTR |= USB_DCPCTR_SQSET;	// DATA1 as answer
+
+				USBx->DCPCFG &= ~ USB_DCPCFG_DIR;
 				//USBx->DCPCFG |= USB_DCPCFG_DIR;
 
 				//USBx->DCPCTR |= USB_DCPCTR_SUREQCLR;
@@ -2656,7 +2715,7 @@ HAL_StatusTypeDef USB_HC_Init(
 	                                USB_OTG_HCINTMSK_NAKM |
 									0;
 */
-		if (ep_type != USBD_EP_TYPE_CTRL)
+		//if (ep_type != USBD_EP_TYPE_CTRL)
 			USBx->NRDYENB |= (1uL << pipe);	// Прерывание по заполненности приёмного (OUT) буфера
 		USBx->BRDYENB |= (1uL << pipe);	// Прерывание по заполненности приёмного (OUT) буфера
 		USBx->BEMPENB |= (1uL << pipe);	// Прерывание окончания передачи передающего (IN) буфера
