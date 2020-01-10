@@ -46,8 +46,7 @@
 #define USB_FUNCTION_VENDOR_ID	0xFFFF	// Generic
 //#define USB_FUNCTION_VENDOR_ID	0x041C	// Altera Corp.
 //#define USB_FUNCTION_VENDOR_ID	0x04d9	// Holtek Semiconductor, Inc.
-
-
+//#define USB_FUNCTION_VENDOR_ID	0x1D6B	// Linux Foundation
 
 // From STMicroelectronics Comunication Device Class driver (CDC) INF FILE:
 //#define USB_FUNCTION_VENDOR_ID	0x0483	// STM
