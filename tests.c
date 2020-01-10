@@ -3870,7 +3870,7 @@ static uint_fast64_t mmcCardSize(void)
 	return st != RES_OK ? 0 : (uint_fast64_t) v * MMC_SECTORSIZE;
 }
 
-static void sdcard_test(void)
+static void fatfs_test(void)
 {
 	const unsigned long MMC_SUCCESS2 = 0x00;
 	unsigned long lba_sector = 0;
@@ -4046,7 +4046,7 @@ static void sdcard_test(void)
 	}
 }
 
-static void sdcard_filesystest(void)
+static void fatfs_filesystest(void)
 {
 	ALIGNX_BEGIN BYTE work [FF_MAX_SS] ALIGNX_END;
 	FRESULT rc;  
@@ -4168,7 +4168,7 @@ static void sdcard_filesystest(void)
 	}
 }
 
-static void sdcard_filesyspeedstest(void)
+static void fatfs_filesyspeedstest(void)
 {
 	ALIGNX_BEGIN BYTE work [FF_MAX_SS] ALIGNX_END;
 	FRESULT rc;
@@ -4743,7 +4743,7 @@ static int parsehex(const TCHAR * filename, int (* usedata)(unsigned long addr, 
 }
 
 static void
-sdcard_proghexfile(const char * hexfile)
+fatfs_proghexfile(const char * hexfile)
 {
 	spi_hangon();
 	debug_printf_P(PSTR("SPI FLASH programmer\n"));
@@ -4776,11 +4776,11 @@ sdcard_proghexfile(const char * hexfile)
 }
 
 static void
-sdcard_progspi(void)
+fatfs_progspi(void)
 {
 	static RAMNOINIT_D1 FATFS Fatfs;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
 	f_mount(& Fatfs, "", 0);		/* Register volume work area (never fails) */
-	sdcard_proghexfile("tc1_r7s721_rom.hex");
+	fatfs_proghexfile("tc1_r7s721_rom.hex");
 	f_mount(NULL, "", 0);		/* Unregister volume work area (never fails) */
 
 	for (;;)
@@ -6134,13 +6134,7 @@ void hightests(void)
 #if 0 && WITHDEBUG && WITHUSEAUDIOREC
 	// SD CARD low level functions test
 	{
-		sdcard_test();
-	}
-#endif
-#if 0 && WITHDEBUG && WITHUSEAUDIOREC
-	// SD CARD file system level functions test
-	{
-		sdcard_filesystest();
+		fatfs_test();
 	}
 #endif
 #if 0 && WITHDEBUG && WITHUSEAUDIOREC
@@ -6149,16 +6143,22 @@ void hightests(void)
 	{
 		while (hamradio_get_usbh_active() == 0)
 			;
-		sdcard_filesyspeedstest();
+		fatfs_filesyspeedstest();
+	}
+#endif
+#if 0 && WITHDEBUG && WITHUSEAUDIOREC
+	// SD CARD file system level functions test
+	{
+		fatfs_filesystest();
 	}
 #endif
 #if 0 && WITHDEBUG && WITHUSEAUDIOREC
 	// Автономный программатор SPI flash memory
 	{
-		//sdcard_test();
+		//fatfs_test();
 		////mmcCardSize();
 		////mmcCardSize();
-		sdcard_progspi();
+		fatfs_progspi();
 	}
 #endif
 #if 0
