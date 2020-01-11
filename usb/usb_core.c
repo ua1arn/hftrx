@@ -3748,13 +3748,13 @@ HAL_StatusTypeDef USB_DevInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgType
 
 #else /* CPUSTYLE_STM32H7XX */
 
-	#if CPUSTYLE_STM32H7XX
+	#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 		  const int TXTHRLEN = 256;		// in DWORDS: The threshold length has to be at least eight DWORDS.
 		  const int RXTHRLEN = 8;	// in DWORDS: 128 - енумерация проходтит, 256 - нет.
-	#else /* CPUSTYLE_STM32H7XX */
+	#else /* CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1 */
 		  const int TXTHRLEN = 64;		// in DWORDS: The threshold length has to be at least eight DWORDS.
 		  const int RXTHRLEN = 2;	// in DWORDS:
-	#endif /* CPUSTYLE_STM32H7XX */
+	#endif /* CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1 */
 	  // Configuration register applies only to USB OTG HS
     /*Set threshold parameters */
     USBx_DEVICE->DTHRCTL = (USBx_DEVICE->DTHRCTL & ~ (USB_OTG_DTHRCTL_TXTHRLEN | USB_OTG_DTHRCTL_RXTHRLEN |
@@ -9880,7 +9880,7 @@ USBH_StatusTypeDef  USBH_LL_Start(USBH_HandleTypeDef *phost)
   HAL_StatusTypeDef hal_status = HAL_OK;
   USBH_StatusTypeDef usb_status = USBH_OK;
 
-  hal_status = HAL_HCD_Start(phost->pData);
+  hal_status = HAL_HCD_Start(phost->pData);	// USB_DriveVbus inside
 
   switch (hal_status) {
     case HAL_OK :
@@ -10498,6 +10498,14 @@ USBH_StatusTypeDef  USBH_LL_Init(USBH_HandleTypeDef *phost)
 	hhcd_USB_OTG.Init.pcd_speed = PCD_SPEED_HIGH;
 	hhcd_USB_OTG.Init.dma_enable = ! USB_ENABLE;	 // xyz HOST
 	hhcd_USB_OTG.Init.phy_itface = HCD_PHY_EMBEDDED;
+	hhcd_USB_OTG.Init.phy_itface = USB_OTG_HS_EMBEDDED_PHY;
+	#if WITHUSBHOST_HIGHSPEEDULPI
+		hhcd_USB_OTG.Init.phy_itface = USB_OTG_ULPI_PHY;
+	#elif WITHUSBHOST_HIGHSPEEDPHYC
+		hhcd_USB_OTG.Init.phy_itface = USB_OTG_HS_EMBEDDED_PHY;
+	#else /* WITHUSBHOST_HIGHSPEEDULPI */
+		hhcd_USB_OTG.Init.phy_itface = USB_OTG_EMBEDDED_PHY;
+	#endif /* WITHUSBHOST_HIGHSPEEDULPI */
 
 
 #else /* CPUSTYLE_R7S721 */
@@ -11068,7 +11076,7 @@ USBH_StatusTypeDef  USBH_DeInit(USBH_HandleTypeDef *phost)
 /*
  * user callback definition
 */
-static void USBH_UserProcess  (USBH_HandleTypeDef *phost, uint8_t id)
+static void USBH_UserProcess(USBH_HandleTypeDef *phost, uint8_t id)
 {
 
 	/* USER CODE BEGIN CALL_BACK_1 */
@@ -11372,7 +11380,7 @@ USBH_StatusTypeDef USBH_CtlSendSetup(USBH_HandleTypeDef *phost,
                                 uint8_t pipe_num)
 {
 
-	PRINTF("USBH_CtlSendSetup\n");
+	//PRINTF("USBH_CtlSendSetup\n");
   USBH_LL_SubmitURB(phost,                     /* Driver handle    */
                           pipe_num,             /* Pipe index       */
                           0,                    /* Direction : OUT  */
@@ -11400,7 +11408,7 @@ USBH_StatusTypeDef USBH_CtlSendData (USBH_HandleTypeDef *phost,
                                 uint8_t pipe_num,
                                 uint8_t do_ping )
 {
-	PRINTF("USBH_CtlSendData\n");
+	//PRINTF("USBH_CtlSendData\n");
   if (phost->device.usb_otg_speed != USB_OTG_SPEED_HIGH)
   {
     do_ping = 0;
@@ -11433,7 +11441,7 @@ USBH_StatusTypeDef USBH_CtlReceiveData(USBH_HandleTypeDef *phost,
                                 uint16_t length,
                                 uint8_t pipe_num)
 {
-	PRINTF("USBH_CtlReceiveData\n");
+	//PRINTF("USBH_CtlReceiveData\n");
   USBH_LL_SubmitURB(phost,                     /* Driver handle    */
                           pipe_num,             /* Pipe index       */
                           1,                    /* Direction : IN   */
