@@ -3528,7 +3528,7 @@ HAL_StatusTypeDef USB_CoreInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgTyp
 			//(0 << USB_OTG_GAHBCFG_HBSTLEN_Pos) |	// Single
 			//(1 << USB_OTG_GAHBCFG_HBSTLEN_Pos) |	// INCR
 			//(3 << USB_OTG_GAHBCFG_HBSTLEN_Pos) |	// INCR4
-		#if CPUSTYLE_STM32H7XX
+		#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 			(USB_OTG_GAHBCFG_HBSTLEN_1 | USB_OTG_GAHBCFG_HBSTLEN_2) | // (0x06 << USB_OTG_GAHBCFG_HBSTLEN_Pos)
 		#else /* CPUSTYLE_STM32H7XX */
 			(5 << USB_OTG_GAHBCFG_HBSTLEN_Pos) |	// INCR8
@@ -9579,7 +9579,7 @@ USBD_StatusTypeDef  USBD_LL_Init(PCD_HandleTypeDef * hpcd, USBD_HandleTypeDef *p
 #if CPUSTYLE_R7S721
 	usbd_pipes_initialize(hpcd);
 #elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
-	// У OTH_HS размер FIFO 4096 байт
+	// У OTG_HS размер FIFO 4096 байт
 	usbd_fifo_initialize(hpcd, 4096, 1);
 #else /* CPUSTYLE_R7S721 */
 
