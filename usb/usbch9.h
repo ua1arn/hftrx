@@ -23,6 +23,9 @@
 // STM32F446, STM32F746:
 //	valid EPs: dcp, 0x01/0x81, 0x02/0x82, 0x03/0x83, 0x04/0x84, 0x05/0x85
 
+// Переместить интерфейс DFU в обоасть меньшиз номеров.
+// Утилита dfu-util 0.9 не раотает с DFU на интерфейсе с индексом 10
+#define WITHMOVEDFU WITHUSBUACIN2 && WITHUSBDFU
 
 #if WITHUSBUAC
 	#if WITHUSBUACIN2
@@ -254,6 +257,10 @@ enum
 	INTERFACE_CDC_last = INTERFACE_CDC_base + WITHUSBHWCDC_N * 2 - 1,
 #endif /* WITHUSBCDC */
 
+#if WITHUSBDFU && WITHMOVEDFU
+	INTERFACE_DFU_CONTROL,		/* DFU control Interface */
+#endif /* WITHUSBDFU */
+
 #if WITHUSBUAC
 	#if WITHUSBUACIN2
 		INTERFACE_AUDIO_CONTROL_MIKE,		/* AUDIO receiever out control interface */
@@ -294,7 +301,7 @@ enum
 	INTERFACE_HID_CONTROL_7,	/* HID control Interface */
 #endif /* WITHUSBHID */
 
-#if WITHUSBDFU
+#if WITHUSBDFU && ! WITHMOVEDFU
 	INTERFACE_DFU_CONTROL,		/* DFU control Interface */
 #endif /* WITHUSBDFU */
 	// 

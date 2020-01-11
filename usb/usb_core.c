@@ -9235,7 +9235,7 @@ USBH_StatusTypeDef USBH_BulkSendData (USBH_HandleTypeDef *phost,
                                 uint8_t pipe_num,
                                 uint8_t do_ping )
 {
-	PRINTF("USBH_BulkSendData\n");
+	//PRINTF("USBH_BulkSendData\n");
   if (phost->device.usb_otg_speed != USB_OTG_SPEED_HIGH)
   {
     do_ping = 0;
@@ -9267,7 +9267,7 @@ USBH_StatusTypeDef USBH_BulkReceiveData(USBH_HandleTypeDef *phost,
                                 uint16_t length,
                                 uint8_t pipe_num)
 {
-	PRINTF("USBH_BulkReceiveData\n");
+	//PRINTF("USBH_BulkReceiveData\n");
   USBH_LL_SubmitURB(phost,                     /* Driver handle    */
                           pipe_num,             /* Pipe index       */
                           1,                    /* Direction : IN   */
@@ -9294,7 +9294,7 @@ USBH_StatusTypeDef USBH_InterruptReceiveData(USBH_HandleTypeDef *phost,
                                 uint8_t length,
                                 uint8_t pipe_num)
 {
-	PRINTF("USBH_InterruptReceiveData\n");
+	//PRINTF("USBH_InterruptReceiveData\n");
   USBH_LL_SubmitURB(phost,                     /* Driver handle    */
                           pipe_num,             /* Pipe index       */
                           1,                    /* Direction : IN   */
@@ -9321,7 +9321,7 @@ USBH_StatusTypeDef USBH_InterruptSendData(USBH_HandleTypeDef *phost,
                                 uint8_t length,
                                 uint8_t pipe_num)
 {
-	PRINTF("USBH_InterruptSendData\n");
+	//PRINTF("USBH_InterruptSendData\n");
   USBH_LL_SubmitURB(phost,                     /* Driver handle    */
                           pipe_num,             /* Pipe index       */
                           0,                    /* Direction : OUT   */
@@ -9348,7 +9348,7 @@ USBH_StatusTypeDef USBH_IsocReceiveData(USBH_HandleTypeDef *phost,
                                 uint32_t length,
                                 uint8_t pipe_num)
 {
-	PRINTF("USBH_IsocReceiveData\n");
+	//PRINTF("USBH_IsocReceiveData\n");
   USBH_LL_SubmitURB(phost,                     /* Driver handle    */
                           pipe_num,             /* Pipe index       */
                           1,                    /* Direction : IN   */
@@ -9376,7 +9376,7 @@ USBH_StatusTypeDef USBH_IsocSendData(USBH_HandleTypeDef *phost,
                                 uint32_t length,
                                 uint8_t pipe_num)
 {
-	PRINTF("USBH_IsocSendData\n");
+	//PRINTF("USBH_IsocSendData\n");
   USBH_LL_SubmitURB(phost,                     /* Driver handle    */
                           pipe_num,             /* Pipe index       */
                           0,                    /* Direction : OUT   */

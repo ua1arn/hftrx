@@ -3476,7 +3476,7 @@ void fb_initialize(struct fb * p)
 #endif
 }
 
-static RAMNOINIT_D1 char FATFSALIGN_BEGIN rbuff [FF_MAX_SS * 4] FATFSALIGN_END;		// буфер записи - при совпадении с _MAX_SS нельзя располагать в Cortex-M4 CCM
+static RAMNOINIT_D1 char FATFSALIGN_BEGIN rbuff [FF_MAX_SS * 256] FATFSALIGN_END;		// буфер записи - при совпадении с _MAX_SS нельзя располагать в Cortex-M4 CCM
 
 
 static void showprogress(
@@ -3666,6 +3666,7 @@ static void test_recodstart(void)
 // сохранение потока данных большими блоками
 static void dosaveblocks(const char * fname)
 {
+	unsigned long long kbs = 0;
 	static RAMNOINIT_D1 FIL Fil;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
 	FRESULT rc;				/* Result code */
 
@@ -3673,7 +3674,7 @@ static void dosaveblocks(const char * fname)
 	rc = f_open(& Fil, fname, FA_WRITE | FA_CREATE_ALWAYS);
 	if (rc)
 	{
-		debug_printf_P(PSTR("can not start recording\n"));
+		PRINTF("can not start recording\n");
 		return;	//die(rc);
 	}
 	test_recodstart();
@@ -3684,14 +3685,14 @@ static void dosaveblocks(const char * fname)
 
 		if (recstop != 0)
 		{
-			debug_printf_P(PSTR("end of timed recording\n"));
+			PRINTF("end of timed recording\n");
 			break;
 		}
 		if (dbg_getchar(& kbch) != 0)
 		{
 			if (kbch == 0x1b)
 			{
-				debug_printf_P(PSTR("break recording\n"));
+				PRINTF("break recording\n");
 				break;
 			}
 		}
@@ -3699,13 +3700,18 @@ static void dosaveblocks(const char * fname)
 		rc = f_write(& Fil, rbuff, sizeof rbuff, & bw);
 		if (rc != 0 || bw != sizeof rbuff)
 			break;
+		kbs += bw;
 	}
 	rc = f_close(& Fil);
 	if (rc)
 	{
 		TP();
-		debug_printf_P(PSTR("Failed with rc=%u.\n"), rc);
+		PRINTF("Failed with rc=%u.\n", rc);
 		return;
+	}
+	else
+	{
+		PRINTF("Write speed %ld kB/S\n", (long) (kbs / 1000 / 60));
 	}
 }
 
@@ -4182,6 +4188,20 @@ static void fatfs_filesyspeedstest(void)
 	char testlog [FF_MAX_LFN + 1];
 	static ticker_t test_recordticker;
 	//int nlog = 0;
+
+	debug_printf_P(PSTR("FAT FS formatting.\n"));
+	f_mount(NULL, "", 0);		/* Unregister volume work area (never fails) */
+	rc = f_mkfs("0:", FM_ANY, 0, work, sizeof (work));
+	if (rc != FR_OK)
+	{
+		debug_printf_P(PSTR("sdcardformat: f_mkfs failure\n"));
+		return;
+	}
+	else
+	{
+		debug_printf_P(PSTR("sdcardformat: f_mkfs okay\n"));
+	}
+	f_mount(& Fatfs, "", 0);		/* Register volume work area (never fails) */
 
 	ticker_initialize(& test_recordticker, 1, test_recodspool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 	mmcInitialize();
@@ -6141,8 +6161,12 @@ void hightests(void)
 	// SD CARD file system level functions test
 	// no interactive
 	{
+		PRINTF("Wait for storage device ready\n");
 		while (hamradio_get_usbh_active() == 0)
 			;
+		PRINTF("Storage device ready\n");
+		local_delay_ms(7000);
+		PRINTF("Storage device test\n");
 		fatfs_filesyspeedstest();
 	}
 #endif

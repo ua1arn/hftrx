@@ -4000,6 +4000,10 @@ static unsigned fill_Configuration_compound(uint_fast8_t fill, uint8_t * p, unsi
 	n += fill_CDCACM_function(fill, p + n, maxsize - n, highspeed);
 #endif /* WITHUSBCDC */
 
+#if WITHUSBDFU && WITHMOVEDFU
+	n += fill_DFU_function(fill, p + n, maxsize - n, highspeed);
+#endif /* WITHUSBDFU */
+
 #if WITHUSBUAC
 	#if 0
 		n += fill_UAC2_IN48_OUT48_function(fill, p + n, maxsize - n, highspeed, 0);
@@ -4022,7 +4026,7 @@ static unsigned fill_Configuration_compound(uint_fast8_t fill, uint8_t * p, unsi
 	n += fill_HID_XXXX_function(fill, p + n, maxsize - n, highspeed);
 #endif /* WITHUSBHID */
 
-#if WITHUSBDFU
+#if WITHUSBDFU && ! WITHMOVEDFU
 	n += fill_DFU_function(fill, p + n, maxsize - n, highspeed);
 #endif /* WITHUSBDFU */
 
