@@ -24,7 +24,7 @@
 //	valid EPs: dcp, 0x01/0x81, 0x02/0x82, 0x03/0x83, 0x04/0x84, 0x05/0x85
 
 // Переместить интерфейс DFU в обоасть меньшиз номеров.
-// Утилита dfu-util 0.9 не раотает с DFU на интерфейсе с индексом 10
+// Утилита dfu-util 0.9 не работает с DFU на интерфейсе с индексом 10
 #define WITHMOVEDFU WITHUSBUACIN2 && WITHUSBDFU
 
 #if WITHUSBUAC
