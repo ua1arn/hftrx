@@ -2006,7 +2006,6 @@ uint32_t USB_GetCurrentFrame(USB_OTG_GlobalTypeDef *USBx)
 		fn = fn2;
 
 	}
-	return fn;
 }
 
 
@@ -11167,9 +11166,9 @@ void HAL_HCD_MspDeInit(HCD_HandleTypeDef* hpcd)
   * @param  USBx : Selected device
   * @retval current frame number
 */
-uint32_t USB_GetCurrentFrame (USB_OTG_GlobalTypeDef *USBx)
+uint32_t USB_GetCurrentFrame(USB_OTG_GlobalTypeDef *USBx)
 {
-	return (USBx_HOST->HFNUM & USB_OTG_HFNUM_FRNUM);
+	return (USBx_HOST->HFNUM & USB_OTG_HFNUM_FRNUM_Msk) >> USB_OTG_HFNUM_FRNUM_Pos;
 }
 
 
@@ -11181,7 +11180,7 @@ uint32_t USB_GetCurrentFrame (USB_OTG_GlobalTypeDef *USBx)
   * @param  phost: Host Handle
   * @retval None
   */
-void  USBH_LL_SetTimer  (USBH_HandleTypeDef *phost, uint32_t time)
+void  USBH_LL_SetTimer(USBH_HandleTypeDef *phost, uint32_t time)
 {
 	phost->Timer = time;
 }
@@ -11290,9 +11289,9 @@ USBH_StatusTypeDef  USBH_LL_Init(USBH_HandleTypeDef *phost)
 #endif /* CPUSTYLE_R7S721 */
 
 #if WITHUSBHOST_DMAENABLE
-	hpcd->Init.dma_enable = USB_ENABLE; // xyz HOST
+	hhcd_USB_OTG.Init.dma_enable = USB_ENABLE; // xyz HOST
 #else /* WITHUSBHOST_DMAENABLE */
-	hpcd->Init.dma_enable = USB_DISABLE; // xyz HOST
+	hhcd_USB_OTG.dma_enable = USB_DISABLE; // xyz HOST
 #endif /* WITHUSBHOST_DMAENABLE */
 
 	hhcd_USB_OTG.Init.Sof_enable = USB_DISABLE;

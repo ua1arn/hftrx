@@ -720,7 +720,7 @@ typedef enum
   CTRL_ERROR,
   CTRL_STALLED,
   CTRL_COMPLETE
-}CTRL_StateTypeDef;
+} CTRL_StateTypeDef;
 
 
 /* Following states are used for RequestState */
@@ -738,7 +738,7 @@ typedef enum {
   USBH_URB_NYET,
   USBH_URB_ERROR,
   USBH_URB_STALL
-}USBH_URBStateTypeDef;
+} USBH_URBStateTypeDef;
 
 typedef enum
 {
@@ -747,8 +747,7 @@ typedef enum
   USBH_CONTROL_EVENT,
   USBH_CLASS_EVENT,
   USBH_STATE_CHANGED_EVENT,
-}
-USBH_OSEventTypeDef;
+} USBH_OSEventTypeDef;
 
 /* Control request structure */
 typedef struct
