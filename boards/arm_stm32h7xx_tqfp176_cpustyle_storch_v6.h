@@ -40,7 +40,7 @@
 //#define USB_OTG_FS                   USB2_OTG_FS
 
 #define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
-#define WITHUSBHW_DEVICE	USB_OTG_HS	/* на этом устройстве поддерживается функциональность DEVUCE	*/
+#define WITHUSBHW_DEVICE	USB_OTG_HS	/* на этом устройстве поддерживается функциональность DEVICE	*/
 #define WITHUSBDEV_VBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
 //#define WITHUSBDEV_HSDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
 //#define WITHUSBDEV_HIGHSPEEDULPI	1

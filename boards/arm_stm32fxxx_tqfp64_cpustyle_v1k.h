@@ -29,7 +29,7 @@
 	#define WITHUSBDEV_VBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
 	//#define WITHUSBDEV_HSDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
 	//#define WITHUART2HW	1	/* Используется периферийный контроллер последовательного порта #2 */
-	#define WITHUSBHW_DEVICE	USB_OTG_FS	/* на этом устройстве поддерживается функциональность DEVUCE	*/
+	#define WITHUSBHW_DEVICE	USB_OTG_FS	/* на этом устройстве поддерживается функциональность DEVICE	*/
 
 	//#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
 	#define WITHUSBCDC		1	/* ACM использовать виртуальный последовательный порт на USB соединении */

@@ -13,23 +13,23 @@ struct drvfunc
 	DRESULT (* Status)(BYTE drv);
 	DRESULT (* Sync)(BYTE drv);
 	DRESULT (* Disk_write) (
-		BYTE drv,			/* Physical drive nmuber (0..) */
+		BYTE drv,			/* Physical drive number (0..) */
 		const BYTE *buff,	/* Data to be written */
 		DWORD sector,		/* Sector address (LBA) */
 		UINT count			/* Number of sectors to write */
 		);
 	DRESULT (* Disk_read) (
-		BYTE drv,		/* Physical drive nmuber (0..) */
+		BYTE drv,		/* Physical drive number (0..) */
 		BYTE *buff,		/* Data buffer to store read data */
 		DWORD sector,	/* Sector address (LBA) */
 		UINT count		/* Number of sectors to read */
 	);
 	DRESULT (* Get_Sector_Count) (
-		BYTE drv,		/* Physical drive nmuber (0..) */
+		BYTE drv,		/* Physical drive number (0..) */
 		DWORD  *buff	/* Data buffer to store read data */
 	);
 	DRESULT (* Get_Block_Size) (
-		BYTE drv,		/* Physical drive nmuber (0..) */
+		BYTE drv,		/* Physical drive number (0..) */
 		DWORD  *buff	/* Data buffer to store read data */
 	);
 };
