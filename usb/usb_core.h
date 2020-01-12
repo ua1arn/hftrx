@@ -1462,23 +1462,28 @@ struct descholder
 
 /* получить 32-бит значение */
 uint_fast32_t
+/* Low endian memory layout */
 USBD_peek_u32(
 	const uint8_t * buff
 	);
 
 /* записать в буфер для ответа 32-бит значение */
+/* Low endian memory layout */
 unsigned USBD_poke_u32(uint8_t * buff, uint_fast32_t v);
 
 /* получить 24-бит значение */
+/* Low endian memory layout */
 uint_fast32_t
 USBD_peek_u24(
 	const uint8_t * buff
 	);
 
 /* записать в буфер для ответа 24-бит значение */
+/* Low endian memory layout */
 unsigned USBD_poke_u24(uint8_t * buff, uint_fast32_t v);
 
 /* получить 16-бит значение */
+/* Low endian memory layout */
 uint_fast32_t
 USBD_peek_u16(
 	const uint8_t * buff
@@ -1503,9 +1508,11 @@ USBD_peek_u32_BE(
 	const uint8_t * buff
 	);
 
-/* записать в буфер для ответа 32-бит значение */
+/* записать в буфер для ответа n-бит значение */
 /* Big endian memory layout */
 unsigned USBD_poke_u32_BE(uint8_t * buff, uint_fast32_t v);
+unsigned USBD_poke_u24_BE(uint8_t * buff, uint_fast32_t v);
+unsigned USBD_poke_u16_BE(uint8_t * buff, uint_fast16_t v);
 
 #define USBD_CONFIGCOUNT 4
 

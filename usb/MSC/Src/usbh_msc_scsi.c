@@ -354,16 +354,10 @@ USBH_StatusTypeDef USBH_MSC_SCSI_Write(USBH_HandleTypeDef *phost,
       MSC_Handle->hbot.cbw.field.CB[0]  = OPCODE_WRITE10;
 
       /*logical block address*/
-      MSC_Handle->hbot.cbw.field.CB[2]  = (((uint8_t *)(void *)&address)[3]);
-      MSC_Handle->hbot.cbw.field.CB[3]  = (((uint8_t *)(void *)&address)[2]);
-      MSC_Handle->hbot.cbw.field.CB[4]  = (((uint8_t *)(void *)&address)[1]);
-      MSC_Handle->hbot.cbw.field.CB[5]  = (((uint8_t *)(void *)&address)[0]);
-
+      USBD_poke_u32_BE(& MSC_Handle->hbot.cbw.field.CB[2], address);
 
       /*Transfer length */
-      MSC_Handle->hbot.cbw.field.CB[7]  = (((uint8_t *)(void *)&length)[1]) ;
-      MSC_Handle->hbot.cbw.field.CB[8]  = (((uint8_t *)(void *)&length)[0]) ;
-
+      USBD_poke_u16_BE(& MSC_Handle->hbot.cbw.field.CB[7], length);
 
       MSC_Handle->hbot.state = BOT_SEND_CBW;
       MSC_Handle->hbot.cmd_state = BOT_CMD_WAIT;
@@ -414,16 +408,10 @@ USBH_StatusTypeDef USBH_MSC_SCSI_Read(USBH_HandleTypeDef *phost,
       MSC_Handle->hbot.cbw.field.CB[0]  = OPCODE_READ10;
 
       /*logical block address*/
-      MSC_Handle->hbot.cbw.field.CB[2]  = (((uint8_t *)(void *)&address)[3]);
-      MSC_Handle->hbot.cbw.field.CB[3]  = (((uint8_t *)(void *)&address)[2]);
-      MSC_Handle->hbot.cbw.field.CB[4]  = (((uint8_t *)(void *)&address)[1]);
-      MSC_Handle->hbot.cbw.field.CB[5]  = (((uint8_t *)(void *)&address)[0]);
+       USBD_poke_u32_BE(& MSC_Handle->hbot.cbw.field.CB[2], address);
 
-
-      /*Transfer length */
-      MSC_Handle->hbot.cbw.field.CB[7]  = (((uint8_t *)(void *)&length)[1]) ;
-      MSC_Handle->hbot.cbw.field.CB[8]  = (((uint8_t *)(void *)&length)[0]) ;
-
+       /*Transfer length */
+       USBD_poke_u16_BE(& MSC_Handle->hbot.cbw.field.CB[7], length);
 
       MSC_Handle->hbot.state = BOT_SEND_CBW;
       MSC_Handle->hbot.cmd_state = BOT_CMD_WAIT;

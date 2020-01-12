@@ -197,6 +197,16 @@ unsigned USBD_poke_u16(uint8_t * buff, uint_fast16_t v)
 	return 2;
 }
 
+/* записать в буфер для ответа 16-бит значение */
+/* Big endian memory layout */
+unsigned USBD_poke_u16_BE(uint8_t * buff, uint_fast16_t v)
+{
+	buff [1] = LO_BYTE(v);
+	buff [0] = HI_BYTE(v);
+
+	return 2;
+}
+
 /* записать в буфер для ответа 8-бит значение */
 unsigned USBD_poke_u8(uint8_t * buff, uint_fast8_t v)
 {
@@ -14282,11 +14292,10 @@ void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 
 // вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 static void
-board_usb_spool(void * ctx)
+board_usbh_spool(void * ctx)
 {
-#if defined (WITHUSBHW_HOST)
-	USBH_Process(& hUSB_Host);
-#endif /* defined (WITHUSBHW_HOST) */
+	USBH_HandleTypeDef * const host = (USBH_HandleTypeDef *) ctx;
+	USBH_Process(host);
 }
 
 static ticker_t usbticker;
@@ -14312,7 +14321,7 @@ void board_usb_initialize(void)
 	#if WITHUSEUSBFLASH
 		USBH_RegisterClass(& hUSB_Host, & USBH_msc);
 	#endif /* WITHUSEUSBFLASH */
-	ticker_initialize(& usbticker, 1, board_usb_spool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
+	ticker_initialize(& usbticker, 1, board_usbh_spool, & hUSB_Host);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 
 #endif /* defined (WITHUSBHW_HOST) */
 
