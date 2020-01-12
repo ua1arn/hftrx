@@ -10,7 +10,7 @@
 #include <ctype.h>
 #include <string.h>
 
-#if 1//WITHUSEAUDIOREC
+#if WITHUSEAUDIOREC
 
 #include "board.h"
 #include "sdcard.h"
@@ -123,6 +123,10 @@ DRESULT disk_ioctl (
 		case GET_SECTOR_SIZE:
 			* (WORD *) buff = 512;
 			return RES_OK;
+		/*
+		case CTRL_TRIM:
+			return RES_PARERR;
+		 */
 
 		}
 		debug_printf_P(PSTR("Unsupported ioctl: ctrl = %u\n"), ctrl);
