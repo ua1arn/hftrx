@@ -3476,7 +3476,7 @@ void fb_initialize(struct fb * p)
 #endif
 }
 
-static RAMNOINIT_D1 char FATFSALIGN_BEGIN rbuff [FF_MAX_SS * 256] FATFSALIGN_END;		// буфер записи - при совпадении с _MAX_SS нельзя располагать в Cortex-M4 CCM
+static RAMNOINIT_D1 FATFSALIGN_BEGIN char rbuff [FF_MAX_SS * 256] FATFSALIGN_END;		// буфер записи - при совпадении с _MAX_SS нельзя располагать в Cortex-M4 CCM
 
 
 static void showprogress(
@@ -3494,7 +3494,7 @@ static void printtextfile(const char * filename)
 	UINT i = 0;			// номер выводимого байта
 	
 	FRESULT rc;				/* Result code */
-	static RAMNOINIT_D1 FIL Fil;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
+	static FATFSALIGN_BEGIN RAMNOINIT_D1 FIL Fil FATFSALIGN_END;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
 	// чтение файла
 	rc = f_open(& Fil, filename, FA_READ);
 	if (rc) 
@@ -3574,7 +3574,7 @@ static uint_fast8_t rxqpeek(char * ch)
 // сохранение потока данных с CNC на флэшке
 static void dosaveserialport(const char * fname)
 {
-	static RAMNOINIT_D1 FIL Fil;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
+	static FATFSALIGN_BEGIN RAMNOINIT_D1 FIL Fil FATFSALIGN_END;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
 	unsigned i;
 	FRESULT rc;				/* Result code */
 
@@ -3663,14 +3663,21 @@ static void test_recodstart(void)
 	enableIRQ();
 }
 
+unsigned USBD_poke_u32(uint8_t * buff, uint_fast32_t v);
+
 // сохранение потока данных большими блоками
 static void dosaveblocks(const char * fname)
 {
 	unsigned long long kbs = 0;
-	static RAMNOINIT_D1 FIL Fil;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
+	static FATFSALIGN_BEGIN RAMNOINIT_D1 FATFS Fatfs FATFSALIGN_END;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
+	static FATFSALIGN_BEGIN RAMNOINIT_D1 FIL Fil FATFSALIGN_END;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
 	FRESULT rc;				/* Result code */
 
-	memset(rbuff, ' ', sizeof rbuff);
+	debug_printf_P(PSTR("FAT FS test - write file '%s'.\n"), fname);
+	f_mount(& Fatfs, "", 0);		/* Register volume work area (never fails) */
+	memset(rbuff, 0xE5, sizeof rbuff);
+	static int i;
+	USBD_poke_u32(rbuff, ++ i);
 	rc = f_open(& Fil, fname, FA_WRITE | FA_CREATE_ALWAYS);
 	if (rc)
 	{
@@ -3703,6 +3710,7 @@ static void dosaveblocks(const char * fname)
 		kbs += bw;
 	}
 	rc = f_close(& Fil);
+	f_mount(NULL, "", 0);		/* Unregister volume work area (never fails) */
 	if (rc)
 	{
 		TP();
@@ -3880,8 +3888,8 @@ static void fatfs_test(void)
 {
 	const unsigned long MMC_SUCCESS2 = 0x00;
 	unsigned long lba_sector = 0;
-	static RAMNOINIT_D1 ALIGNX_BEGIN unsigned char sectbuffr [MMC_SECTORSIZE] ALIGNX_END;
-	static RAMNOINIT_D1 ALIGNX_BEGIN unsigned char sectbuffw [MMC_SECTORSIZE] ALIGNX_END;
+	static RAMNOINIT_D1 FATFSALIGN_BEGIN unsigned char sectbuffr [MMC_SECTORSIZE] FATFSALIGN_END;
+	static RAMNOINIT_D1 FATFSALIGN_BEGIN unsigned char sectbuffw [MMC_SECTORSIZE] FATFSALIGN_END;
 
 	debug_printf_P(PSTR("Test SD card\n"));
 	mmcInitialize();
@@ -4054,15 +4062,13 @@ static void fatfs_test(void)
 
 static void fatfs_filesystest(void)
 {
-	ALIGNX_BEGIN BYTE work [FF_MAX_SS] ALIGNX_END;
+	FATFSALIGN_BEGIN BYTE work [FF_MAX_SS] FATFSALIGN_END;
 	FRESULT rc;  
-	static RAMNOINIT_D1 FATFS Fatfs;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
+	static FATFSALIGN_BEGIN RAMNOINIT_D1 FATFS Fatfs FATFSALIGN_END;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
 	static const char testfile [] = "readme.txt";
 	char testlog [FF_MAX_LFN + 1];
-	static ticker_t test_recordticker;
 	//int nlog = 0;
 
-	ticker_initialize(& test_recordticker, 1, test_recodspool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 	mmcInitialize();
 	debug_printf_P(PSTR("FAT FS test.\n"));
 	f_mount(& Fatfs, "", 0);		/* Register volume work area (never fails) */
@@ -4163,9 +4169,7 @@ static void fatfs_filesystest(void)
 						hardware_get_random(),
 						++ ser
 						);
-					debug_printf_P(PSTR("FAT FS test - %d bytes block write file '%s'.\n"), sizeof rbuff, testlog);
 					f_mount(NULL, "", 0);		/* Unregister volume work area (never fails) */
-					f_mount(& Fatfs, "", 0);		/* Register volume work area (never fails) */
 					dosaveblocks(testlog);
 				}
 				break;
@@ -4176,37 +4180,17 @@ static void fatfs_filesystest(void)
 
 static void fatfs_filesyspeedstest(void)
 {
-	ALIGNX_BEGIN BYTE work [FF_MAX_SS] ALIGNX_END;
-	FRESULT rc;
 	uint_fast16_t year;
 	uint_fast8_t month, day;
 	uint_fast8_t hour, minute, secounds;
 	board_rtc_getdatetime(& year, & month, & day, & hour, & minute, & secounds);
 	static unsigned ser;
-	static RAMNOINIT_D1 FATFS Fatfs;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
 	static const char testfile [] = "readme.txt";
 	char testlog [FF_MAX_LFN + 1];
-	static ticker_t test_recordticker;
 	//int nlog = 0;
 
-	debug_printf_P(PSTR("FAT FS formatting.\n"));
-	f_mount(NULL, "", 0);		/* Unregister volume work area (never fails) */
-	rc = f_mkfs("0:", FM_ANY, 0, work, sizeof (work));
-	if (rc != FR_OK)
-	{
-		debug_printf_P(PSTR("sdcardformat: f_mkfs failure\n"));
-		return;
-	}
-	else
-	{
-		debug_printf_P(PSTR("sdcardformat: f_mkfs okay\n"));
-	}
-	f_mount(& Fatfs, "", 0);		/* Register volume work area (never fails) */
 
-	ticker_initialize(& test_recordticker, 1, test_recodspool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 	mmcInitialize();
-	debug_printf_P(PSTR("FAT FS test.\n"));
-	f_mount(& Fatfs, "", 0);		/* Register volume work area (never fails) */
 	local_snprintf_P(testlog, sizeof testlog / sizeof testlog [0],
 		PSTR("rec_%04d-%02d-%02d_%02d%02d%02d_%08lX_%u.txt"),
 		year, month, day,
@@ -4214,9 +4198,6 @@ static void fatfs_filesyspeedstest(void)
 		hardware_get_random(),
 		++ ser
 		);
-	debug_printf_P(PSTR("FAT FS test - write file '%s'.\n"), testlog);
-	f_mount(NULL, "", 0);		/* Unregister volume work area (never fails) */
-	f_mount(& Fatfs, "", 0);		/* Register volume work area (never fails) */
 	dosaveblocks(testlog);
 }
 
@@ -4567,7 +4548,7 @@ static int parsehex(const TCHAR * filename, int (* usedata)(unsigned long addr, 
 	UINT i = 0;			// номер выводимого байта
 	
 	FRESULT rc;				/* Result code */
-	static RAMNOINIT_D1 FIL Fil;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
+	static FATFSALIGN_BEGIN RAMNOINIT_D1 FIL Fil FATFSALIGN_END;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
 	// чтение файла
 	rc = f_open(& Fil, filename, FA_READ);
 	if (rc) 
@@ -4798,7 +4779,7 @@ fatfs_proghexfile(const char * hexfile)
 static void
 fatfs_progspi(void)
 {
-	static RAMNOINIT_D1 FATFS Fatfs;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
+	static FATFSALIGN_BEGIN RAMNOINIT_D1 FATFS Fatfs FATFSALIGN_END;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
 	f_mount(& Fatfs, "", 0);		/* Register volume work area (never fails) */
 	fatfs_proghexfile("tc1_r7s721_rom.hex");
 	f_mount(NULL, "", 0);		/* Unregister volume work area (never fails) */
@@ -5574,9 +5555,9 @@ typedef struct
 	float i;
 } cplxf;
 
-static RAMFRAMEBUFF ALIGNX_BEGIN cplxf src [FFTZS];
-static RAMFRAMEBUFF ALIGNX_BEGIN cplxf dst [FFTZS];
-static RAMDTCM ALIGNX_BEGIN cplxf refv [FFTZS];
+static RAMFRAMEBUFF FATFSALIGN_BEGIN cplxf src [FFTZS];
+static RAMFRAMEBUFF FATFSALIGN_BEGIN cplxf dst [FFTZS];
+static RAMDTCM FATFSALIGN_BEGIN cplxf refv [FFTZS];
 
 static void RAMFUNC_NONILINE cplxmla(cplxf *s, cplxf *d, cplxf *ref, int len) {
 	while (len--) {
@@ -5680,11 +5661,11 @@ void hightests(void)
 
 		arm_hardware_piog_outputs(WORKMASK, 0);
 
-		static RAMNOINIT_D1 ALIGNX_BEGIN float Etalon [2048] ALIGNX_END;
-		static RAMNOINIT_D1 ALIGNX_BEGIN float TM [2048] ALIGNX_END;
-		static RAMNOINIT_D1 FIL WPFile;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
+		static RAMNOINIT_D1 FATFSALIGN_BEGIN float Etalon [2048] FATFSALIGN_END;
+		static RAMNOINIT_D1 FATFSALIGN_BEGIN float TM [2048] FATFSALIGN_END;
+		static FATFSALIGN_BEGIN RAMNOINIT_D1 FIL WPFile FATFSALIGN_END;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
 		static const char fmname [] = "tstdata.dat";
-		static RAMNOINIT_D1 FATFS wave_Fatfs;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
+		static FATFSALIGN_BEGIN RAMNOINIT_D1 FATFS wave_Fatfs FATFSALIGN_END;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
 	
 		int CountZap=0;
 		int LC=2048;
@@ -6027,7 +6008,7 @@ void hightests(void)
 		}
 	#else /* LCDMODE_COLORED */
 
-		static ALIGNX_BEGIN GX_t scr [MGSIZE(dx, dy)] ALIGNX_END;
+		static FATFSALIGN_BEGIN GX_t scr [MGSIZE(dx, dy)] FATFSALIGN_END;
 
 		display_setcolors(COLOR_WHITE, COLOR_BLACK);
 		
@@ -6161,18 +6142,48 @@ void hightests(void)
 	// SD CARD file system level functions test
 	// no interactive
 	{
+		FATFSALIGN_BEGIN BYTE work [FF_MAX_SS] FATFSALIGN_END;
+		FRESULT rc;
 		PRINTF("Wait for storage device ready\n");
 		while (hamradio_get_usbh_active() == 0)
 			;
 		PRINTF("Storage device ready\n");
 		local_delay_ms(7000);
-		PRINTF("Storage device test\n");
-		fatfs_filesyspeedstest();
+		static ticker_t test_recordticker;
+		disableIRQ();
+		ticker_initialize(& test_recordticker, 1, test_recodspool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
+		enableIRQ();
+		{
+ 			f_mount(NULL, "", 0);		/* Unregister volume work area (never fails) */
+			rc = f_mkfs("0:", FM_ANY, 0, work, sizeof (work));
+			if (rc != FR_OK)
+			{
+				debug_printf_P(PSTR("sdcardformat: f_mkfs failure, rc=0x%02X\n"), (int) rc);
+				return;
+			}
+			else
+			{
+				debug_printf_P(PSTR("sdcardformat: f_mkfs okay\n"));
+			}
+
+		}
+		for (;;)
+		{
+			debug_printf_P(PSTR("Storage device test - %d bytes block.\n"), sizeof rbuff);
+			PRINTF("Storage device test\n");
+			fatfs_filesyspeedstest();
+			local_delay_ms(60000);
+		}
+
 	}
 #endif
 #if 0 && WITHDEBUG && WITHUSEAUDIOREC
 	// SD CARD file system level functions test
 	{
+		static ticker_t test_recordticker;
+		disableIRQ();
+		ticker_initialize(& test_recordticker, 1, test_recodspool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
+		enableIRQ();
 		fatfs_filesystest();
 	}
 #endif
@@ -6667,7 +6678,7 @@ void hightests(void)
 
 	/* буфер размером x=64, y=112 точек */
 	enum { bufY = DIM_Y - 8, dx = DIM_X, dy = /*24 */ bufY, DBX_0 = 0, DBY_1 = 1};
-	static ALIGNX_BEGIN PACKEDCOLOR_T scr [GXSIZE(dx, dy)] ALIGNX_END;
+	static FATFSALIGN_BEGIN PACKEDCOLOR_T scr [GXSIZE(dx, dy)] FATFSALIGN_END;
 
 
 	/* отображение надписей самым маленьким шрифтом (8 точек) */
