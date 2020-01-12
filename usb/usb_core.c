@@ -3542,7 +3542,6 @@ HAL_StatusTypeDef USB_CoreInit(USB_OTG_GlobalTypeDef * USBx, const USB_OTG_CfgTy
  		USBx->GAHBCFG = (USBx->GAHBCFG & ~ (USB_OTG_GAHBCFG_HBSTLEN_Msk | USB_OTG_GAHBCFG_DMAEN_Msk | USB_OTG_GAHBCFG_TXFELVL_Msk | USB_OTG_GAHBCFG_PTXFELVL_Msk)) |
 			(0x04uL << USB_OTG_GAHBCFG_HBSTLEN_Pos) |	// INCR8
 			//(0x06uL << USB_OTG_GAHBCFG_HBSTLEN_Pos) |	// INCR16
-			//(1uL << USB_OTG_GAHBCFG_PTXFELVL_Pos) |	// in host mode only
 			//(1uL << USB_OTG_GAHBCFG_TXFELVL_Pos) |
 			USB_OTG_GAHBCFG_DMAEN |
 			0;
@@ -3551,7 +3550,6 @@ HAL_StatusTypeDef USB_CoreInit(USB_OTG_GlobalTypeDef * USBx, const USB_OTG_CfgTy
  		USBx->GAHBCFG = (USBx->GAHBCFG & ~ (USB_OTG_GAHBCFG_HBSTLEN_Msk | USB_OTG_GAHBCFG_DMAEN_Msk | USB_OTG_GAHBCFG_TXFELVL_Msk | USB_OTG_GAHBCFG_PTXFELVL_Msk)) |
 			(0x04uL << USB_OTG_GAHBCFG_HBSTLEN_Pos) |	// INCR8
 			//(0x06uL << USB_OTG_GAHBCFG_HBSTLEN_Pos) |	// INCR16
-			//(1uL << USB_OTG_GAHBCFG_PTXFELVL_Pos) |	// in host mode only
 			//(1uL << USB_OTG_GAHBCFG_TXFELVL_Pos) |
 			USB_OTG_GAHBCFG_DMAEN |
 			0;
@@ -3560,7 +3558,6 @@ HAL_StatusTypeDef USB_CoreInit(USB_OTG_GlobalTypeDef * USBx, const USB_OTG_CfgTy
  		USBx->GAHBCFG = (USBx->GAHBCFG & ~ (USB_OTG_GAHBCFG_HBSTLEN_Msk | USB_OTG_GAHBCFG_DMAEN_Msk | USB_OTG_GAHBCFG_TXFELVL_Msk | USB_OTG_GAHBCFG_PTXFELVL_Msk)) |
 			(0x04uL << USB_OTG_GAHBCFG_HBSTLEN_Pos) |	// INCR8
 			//(0x06uL << USB_OTG_GAHBCFG_HBSTLEN_Pos) |	// INCR16
-			//(1uL << USB_OTG_GAHBCFG_PTXFELVL_Pos) |	// in host mode only
 			//(1uL << USB_OTG_GAHBCFG_TXFELVL_Pos) |
 			USB_OTG_GAHBCFG_DMAEN |
 			0;
@@ -3569,7 +3566,6 @@ HAL_StatusTypeDef USB_CoreInit(USB_OTG_GlobalTypeDef * USBx, const USB_OTG_CfgTy
  		USBx->GAHBCFG = (USBx->GAHBCFG & ~ (USB_OTG_GAHBCFG_HBSTLEN_Msk | USB_OTG_GAHBCFG_DMAEN_Msk | USB_OTG_GAHBCFG_TXFELVL_Msk | USB_OTG_GAHBCFG_PTXFELVL_Msk)) |
 			(0x04uL << USB_OTG_GAHBCFG_HBSTLEN_Pos) |	// INCR8
 			//(0x06uL << USB_OTG_GAHBCFG_HBSTLEN_Pos) |	// INCR16
-			//(1uL << USB_OTG_GAHBCFG_PTXFELVL_Pos) |	// in host mode only
 			//(1uL << USB_OTG_GAHBCFG_TXFELVL_Pos) |
 			USB_OTG_GAHBCFG_DMAEN |
 			0;
@@ -3578,7 +3574,6 @@ HAL_StatusTypeDef USB_CoreInit(USB_OTG_GlobalTypeDef * USBx, const USB_OTG_CfgTy
  		USBx->GAHBCFG = (USBx->GAHBCFG & ~ (USB_OTG_GAHBCFG_HBSTLEN_Msk | USB_OTG_GAHBCFG_DMAEN_Msk | USB_OTG_GAHBCFG_TXFELVL_Msk | USB_OTG_GAHBCFG_PTXFELVL_Msk)) |
 			(0x04uL << USB_OTG_GAHBCFG_HBSTLEN_Pos) |	// INCR8
 			//(0x06uL << USB_OTG_GAHBCFG_HBSTLEN_Pos) |	// INCR16
-			//(1uL << USB_OTG_GAHBCFG_PTXFELVL_Pos) |	// in host mode only
 			//(1uL << USB_OTG_GAHBCFG_TXFELVL_Pos) |
 			USB_OTG_GAHBCFG_DMAEN |
 			0;
@@ -3814,40 +3809,13 @@ HAL_StatusTypeDef USB_DevInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgType
 			TXTHRLEN * USB_OTG_DTHRCTL_TXTHRLEN_0 |		// Transmit (IN) threshold length
 			RXTHRLEN * USB_OTG_DTHRCTL_RXTHRLEN_0 | // see HBSTLEN bit in OTG_GAHBCFG).
 			//USB_OTG_DTHRCTL_RXTHREN |		//  Receive (OUT) threshold enable
-			USB_OTG_DTHRCTL_ISOTHREN |		// ISO IN endpoint threshold enable
-			USB_OTG_DTHRCTL_NONISOTHREN |	// Nonisochronous IN endpoints threshold enable
-			USB_OTG_DTHRCTL_ARPEN |			// Arbiter parking enable
+			//USB_OTG_DTHRCTL_ISOTHREN |		// ISO IN endpoint threshold enable
+			//USB_OTG_DTHRCTL_NONISOTHREN |	// Nonisochronous IN endpoints threshold enable
+			//USB_OTG_DTHRCTL_ARPEN |			// Arbiter parking enable
 			0;
 	#endif /* CPUSTYLE_STM32H7XX */
 
     	(void) USBx_DEVICE->DTHRCTL;
-
-#if CPUSTYLE_STM32MP1
-		USBx->GAHBCFG = (USBx->GAHBCFG & ~ (USB_OTG_GAHBCFG_PTXFELVL_Msk)) |
-			(1uL << USB_OTG_GAHBCFG_PTXFELVL_Pos) |	// in host mode only
-			0;
-
-#elif CPUSTYLE_STM32H7XX
-		USBx->GAHBCFG = (USBx->GAHBCFG & ~ (USB_OTG_GAHBCFG_PTXFELVL_Msk)) |
-			(1uL << USB_OTG_GAHBCFG_PTXFELVL_Pos) |	// in host mode only
-			0;
-
-#elif CPUSTYLE_STM32F7XX
-		USBx->GAHBCFG = (USBx->GAHBCFG & ~ (USB_OTG_GAHBCFG_PTXFELVL_Msk)) |
-			(1uL << USB_OTG_GAHBCFG_PTXFELVL_Pos) |	// in host mode only
-			0;
-
-#elif CPUSTYLE_STM32F4XX
-		USBx->GAHBCFG = (USBx->GAHBCFG & ~ (USB_OTG_GAHBCFG_PTXFELVL_Msk)) |
-			(1uL << USB_OTG_GAHBCFG_PTXFELVL_Pos) |	// in host mode only
-			0;
-
-#else
-		USBx->GAHBCFG = (USBx->GAHBCFG & ~ (USB_OTG_GAHBCFG_PTXFELVL_Msk)) |
-			(1uL << USB_OTG_GAHBCFG_PTXFELVL_Pos) |	// in host mode only
-			0;
-
-#endif
 	}
 
 	/* Disable all interrupts. */
@@ -5019,6 +4987,34 @@ HAL_StatusTypeDef USB_EP0_OutStart(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t dma
 }
 
 
+#define USB_OTG_CORE_ID_300A          0x4F54300AU
+#define USB_OTG_CORE_ID_310A          0x4F54310AU
+#define USB_OTG_CORE_ID_320A          0x4F54320AU
+
+static uint_fast32_t
+USB_GetSNPSiD(USB_OTG_GlobalTypeDef *USBx)
+{
+#if CPUSTYLE_STM32H7XX
+	return USBx->GSNPSID;
+#elif CPUSTYLE_STM32MP1
+	return USB_OTG_CORE_ID_320A;
+#else
+	return 0;//* (__IO uint32_t *) (& USBx->CID + 0x1U);
+#endif
+}
+
+static uint_fast8_t
+USB_Is_OTG_HS(USB_OTG_GlobalTypeDef *USBx)
+{
+#if CPUSTYLE_STM32MP1
+	return 1;
+#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32F7XX
+	return (USBx->CID & (0x1U << 8)) != 0U;
+#else
+		return 0;
+#endif
+}
+
 /**
   * @brief  Reset the USB Core (needed after USB clock settings change)
   * @param  USBx : Selected device
@@ -5091,7 +5087,7 @@ HAL_StatusTypeDef USB_HostInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgTyp
 		USBx_HOST->HCFG &= ~ (USB_OTG_HCFG_FSLSS);
 	}
 	// +++ newly added
-	if ((USBx->CID & (0x1U << 8)) != 0U)
+	if (USB_Is_OTG_HS(USBx))
 	{
 		// HS instance
 		if (cfg->pcd_speed == PCD_SPEED_FULL)
@@ -5153,6 +5149,35 @@ HAL_StatusTypeDef USB_HostInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgTyp
 	if (cfg->dma_enable == USB_DISABLE)
 	{
 		USBx->GINTMSK |= USB_OTG_GINTMSK_RXFLVLM;
+
+
+#if CPUSTYLE_STM32MP1
+		USBx->GAHBCFG = (USBx->GAHBCFG & ~ (USB_OTG_GAHBCFG_PTXFELVL_Msk)) |
+			//(1uL << USB_OTG_GAHBCFG_PTXFELVL_Pos) |	// in host mode only
+			0;
+
+#elif CPUSTYLE_STM32H7XX
+		USBx->GAHBCFG = (USBx->GAHBCFG & ~ (USB_OTG_GAHBCFG_PTXFELVL_Msk)) |
+			//(1uL << USB_OTG_GAHBCFG_PTXFELVL_Pos) |	// in host mode only
+			0;
+
+#elif CPUSTYLE_STM32F7XX
+		USBx->GAHBCFG = (USBx->GAHBCFG & ~ (USB_OTG_GAHBCFG_PTXFELVL_Msk)) |
+			//(1uL << USB_OTG_GAHBCFG_PTXFELVL_Pos) |	// in host mode only
+			0;
+
+#elif CPUSTYLE_STM32F4XX
+		USBx->GAHBCFG = (USBx->GAHBCFG & ~ (USB_OTG_GAHBCFG_PTXFELVL_Msk)) |
+			//(1uL << USB_OTG_GAHBCFG_PTXFELVL_Pos) |	// in host mode only
+			0;
+
+#else
+		USBx->GAHBCFG = (USBx->GAHBCFG & ~ (USB_OTG_GAHBCFG_PTXFELVL_Msk)) |
+			//(1uL << USB_OTG_GAHBCFG_PTXFELVL_Pos) |	// in host mode only
+			0;
+
+#endif
+
 	}
 
 	/* Enable interrupts matching to the Host mode ONLY */
@@ -8065,10 +8090,6 @@ static HAL_StatusTypeDef PCD_WriteEmptyTxFifo(PCD_HandleTypeDef *hpcd, uint32_t 
 	return HAL_OK;
 }
 
-#define USB_OTG_CORE_ID_300A          0x4F54300AU
-#define USB_OTG_CORE_ID_310A          0x4F54310AU
-#define USB_OTG_CORE_ID_320A          0x4F54320AU
-
 #ifndef USB_OTG_DOEPINT_STPKTRX
 	#define USB_OTG_DOEPINT_STPKTRX                (0x1UL << 15)      /*!< Setup Packet Received interrupt */
 #endif
@@ -8179,16 +8200,6 @@ HAL_StatusTypeDef USB_SetTurnaroundTime(USB_OTG_GlobalTypeDef *USBx,
   return HAL_OK;
 }
 
-static uint_fast32_t USB_GetSNPSiD(USB_OTG_GlobalTypeDef *USBx)
-{
-#if CPUSTYLE_STM32H7XX
-	return USBx->GSNPSID;
-#elif CPUSTYLE_STM32MP1
-	return USB_OTG_CORE_ID_320A;
-#else
-	return 0;//* (__IO uint32_t *) (& USBx->CID + 0x1U);
-#endif
-}
 /**
   * @brief  process EP OUT setup packet received interrupt.
   * @param  hpcd PCD handle
@@ -10339,7 +10350,7 @@ USBD_StatusTypeDef  USBD_LL_Init(PCD_HandleTypeDef * hpcd, USBD_HandleTypeDef *p
 	hpcd->Init.low_power_enable = USB_DISABLE;
 	hpcd->Init.lpm_enable = USB_DISABLE;
 	hpcd->Init.battery_charging_enable = USB_ENABLE;
-	hpcd->Init.use_dedicated_ep1 = USB_ENABLE; // xyz
+	hpcd->Init.use_dedicated_ep1 = ! USB_ENABLE; // xyz
 	hpcd->Init.use_external_vbus = USB_DISABLE;
 
 #if WITHUSBDEV_DMAENABLE
@@ -11205,7 +11216,6 @@ uint32_t HAL_HCD_GetCurrentFrame(HCD_HandleTypeDef *hhcd)
 	return (USB_GetCurrentFrame(hhcd->Instance));
 }
 
-
 /**
   * @brief  Initialize the host driver
   * @param  hhcd: HCD handle
@@ -11230,7 +11240,7 @@ HAL_StatusTypeDef HAL_HCD_Init(HCD_HandleTypeDef *hhcd)
 	HAL_HCD_MspInit(hhcd);
 
 	/* Disable DMA mode for FS instance */
-	if ((USBx->CID & (0x1U << 8)) == 0U)
+	if (! USB_Is_OTG_HS(USBx))
 	{
 		hhcd->Init.dma_enable = 0U;
 	}
@@ -11301,7 +11311,7 @@ USBH_StatusTypeDef  USBH_LL_Init(USBH_HandleTypeDef *phost)
 #if WITHUSBHOST_DMAENABLE
 	hhcd_USB_OTG.Init.dma_enable = USB_ENABLE; // xyz HOST
 #else /* WITHUSBHOST_DMAENABLE */
-	hhcd_USB_OTG.dma_enable = USB_DISABLE; // xyz HOST
+	hhcd_USB_OTG.Init.dma_enable = USB_DISABLE; // xyz HOST
 #endif /* WITHUSBHOST_DMAENABLE */
 
 	hhcd_USB_OTG.Init.Sof_enable = USB_DISABLE;
@@ -14295,8 +14305,11 @@ static void
 board_usbh_spool(void * ctx)
 {
 	USBH_HandleTypeDef * const host = (USBH_HandleTypeDef *) ctx;
-	USBH_Process(host);
+	//USBH_Process(host);
+	USBH_Process(& hUSB_Host);
 }
+
+
 
 static ticker_t usbticker;
 
@@ -14321,7 +14334,7 @@ void board_usb_initialize(void)
 	#if WITHUSEUSBFLASH
 		USBH_RegisterClass(& hUSB_Host, & USBH_msc);
 	#endif /* WITHUSEUSBFLASH */
-	ticker_initialize(& usbticker, 1, board_usbh_spool, & hUSB_Host);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
+	//ticker_initialize(& usbticker, 1, board_usbh_spool, & hUSB_Host);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 
 #endif /* defined (WITHUSBHW_HOST) */
 
@@ -14358,6 +14371,14 @@ void board_usb_deactivate(void)
 #endif /* defined (WITHUSBHW_DEVICE) */
 
 	//PRINTF(PSTR("board_usb_activate done.\n"));
+}
+
+/* вызывается при разрешённых прерываниях. */
+void board_usb_spool(void)
+{
+#if defined (WITHUSBHW_HOST)
+	USBH_Process(& hUSB_Host);
+#endif /* defined (WITHUSBHW_HOST) */
 }
 
 /* вызывается при разрешенных прерываниях. */

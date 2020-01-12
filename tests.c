@@ -3684,6 +3684,21 @@ static void dosaveblocks(const char * fname)
 		PRINTF("can not create file, rc=0x%02X\n", (unsigned) rc);
 		return;	//die(rc);
 	}
+
+#if 1
+	//409,337,856
+	rc = f_expand(& Fil, 1uLL * 1024 * 1024 * 1024, 0);
+	if (rc)
+	{
+		PRINTF("f_expand: rc=0x%02X\n", (unsigned) rc);
+		return;	//die(rc);
+	}
+	else
+	{
+		PRINTF("f_expand: rc=0x%02X\n", (unsigned) rc);
+	}
+#endif
+
 #if 0
 	enum { SZ_TBL = 8192 };
 	static DWORD clmt [SZ_TBL];                    /* Cluster link map table buffer */
@@ -3700,19 +3715,9 @@ static void dosaveblocks(const char * fname)
 		PRINTF("f_lseek info, clmt [0]=%u\n", (unsigned) clmt [0]);
 	}
 #endif
-	//409,337,856
-	rc = f_expand(& Fil, 1uLL * 1024 * 1024 * 1024, 0);
-	if (rc)
-	{
-		PRINTF("f_expand: rc=0x%02X\n", (unsigned) rc);
-		return;	//die(rc);
-	}
-	else
-	{
-		PRINTF("f_expand: rc=0x%02X\n", (unsigned) rc);
-	}
 
 	test_recodstart();
+
 	for (;;)
 	{
 		char kbch;
@@ -6191,9 +6196,14 @@ void hightests(void)
 
 		PRINTF("Wait for storage device ready\n");
 		while (hamradio_get_usbh_active() == 0)
-			;
+			sdcardbgprocess();
 		PRINTF("Storage device ready\n");
-		local_delay_ms(7000);
+		unsigned t;
+		for (t = 0; t < 7000; t += 5)
+		{
+			sdcardbgprocess();
+			local_delay_ms(5);
+		}
 		static ticker_t test_recordticker;
 		disableIRQ();
 		ticker_initialize(& test_recordticker, 1, test_recodspool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
@@ -6217,7 +6227,11 @@ void hightests(void)
 			debug_printf_P(PSTR("Storage device test - %d bytes block.\n"), sizeof rbuff);
 			PRINTF("Storage device test\n");
 			fatfs_filesyspeedstest();
-			local_delay_ms(60000);
+			for (t = 0; t < 7000; t += 5)
+			{
+				sdcardbgprocess();
+				local_delay_ms(5);
+			}
 		}
 
 	}
