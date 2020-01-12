@@ -745,7 +745,7 @@ void sdcardformat(void)
 	{
 	case SDSTATE_IDLE:
 		debug_printf_P(PSTR("sdcardformat: start formatting\n"));
-		rc = f_mkfs("0:", FM_ANY, 0, work, sizeof (work));
+		rc = f_mkfs("0:", NULL, work, sizeof (work));
 		if (rc != FR_OK)
 		{
 			debug_printf_P(PSTR("sdcardformat: f_mkfs failure\n"));

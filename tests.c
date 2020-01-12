@@ -3476,7 +3476,7 @@ void fb_initialize(struct fb * p)
 #endif
 }
 
-static RAMNOINIT_D1 FATFSALIGN_BEGIN char rbuff [FF_MAX_SS * 256] FATFSALIGN_END;		// буфер записи - при совпадении с _MAX_SS нельзя располагать в Cortex-M4 CCM
+static RAMNOINIT_D1 FATFSALIGN_BEGIN uint8_t rbuff [FF_MAX_SS * 256] FATFSALIGN_END;		// буфер записи - при совпадении с _MAX_SS нельзя располагать в Cortex-M4 CCM
 
 
 static void showprogress(
@@ -3681,9 +3681,37 @@ static void dosaveblocks(const char * fname)
 	rc = f_open(& Fil, fname, FA_WRITE | FA_CREATE_ALWAYS);
 	if (rc)
 	{
-		PRINTF("can not start recording\n");
+		PRINTF("can not create file, rc=0x%02X\n", (unsigned) rc);
 		return;	//die(rc);
 	}
+#if 0
+	enum { SZ_TBL = 8192 };
+	static DWORD clmt [SZ_TBL];                    /* Cluster link map table buffer */
+	Fil.cltbl = clmt;
+	clmt [0] = SZ_TBL;                      /* Set table size */
+	rc = f_lseek(& Fil, CREATE_LINKMAP);     /* Create CLMT */
+	if (rc)
+	{
+		PRINTF("can set clusters map recording, rc=0x%02X\n", (unsigned) rc);
+		return;	//die(rc);
+	}
+	else
+	{
+		PRINTF("f_lseek info, clmt [0]=%u\n", (unsigned) clmt [0]);
+	}
+#endif
+	//409,337,856
+	rc = f_expand(& Fil, 1uLL * 1024 * 1024 * 1024, 0);
+	if (rc)
+	{
+		PRINTF("f_expand: rc=0x%02X\n", (unsigned) rc);
+		return;	//die(rc);
+	}
+	else
+	{
+		PRINTF("f_expand: rc=0x%02X\n", (unsigned) rc);
+	}
+
 	test_recodstart();
 	for (;;)
 	{
@@ -3706,15 +3734,23 @@ static void dosaveblocks(const char * fname)
 		UINT bw;
 		rc = f_write(& Fil, rbuff, sizeof rbuff, & bw);
 		if (rc != 0 || bw != sizeof rbuff)
+		{
+			PRINTF("write fail, rc=0x%02X\n", (unsigned) rc);
 			break;
+		}
 		kbs += bw;
+	}
+	rc = f_truncate(& Fil);
+	if (rc)
+	{
+		PRINTF("f_truncate: rc=0x%02X\n", (unsigned) rc);
 	}
 	rc = f_close(& Fil);
 	f_mount(NULL, "", 0);		/* Unregister volume work area (never fails) */
 	if (rc)
 	{
 		TP();
-		PRINTF("Failed with rc=%u.\n", rc);
+		PRINTF("f_close failed, rc=0x%02X\n", (unsigned) rc);
 		return;
 	}
 	else
@@ -4122,7 +4158,7 @@ static void fatfs_filesystest(void)
 			case 'F':
 				debug_printf_P(PSTR("FAT FS formatting.\n"));
 				f_mount(NULL, "", 0);		/* Unregister volume work area (never fails) */
-				rc = f_mkfs("0:", FM_ANY, 0, work, sizeof (work));
+				rc = f_mkfs("0:", NULL, work, sizeof (work));
 				if (rc != FR_OK)
 				{
 					debug_printf_P(PSTR("sdcardformat: f_mkfs failure\n"));
@@ -6142,8 +6178,17 @@ void hightests(void)
 	// SD CARD file system level functions test
 	// no interactive
 	{
+
 		FATFSALIGN_BEGIN BYTE work [FF_MAX_SS] FATFSALIGN_END;
 		FRESULT rc;
+//
+//		static const MKFS_PARM defopt = { FM_ANY, 0, 0, 0, 0};	/* Default parameter */
+//		defopt.fmt = FM_ANY;	/* Format option (FM_FAT, FM_FAT32, FM_EXFAT and FM_SFD) */
+//		defopt.n_fat = 2;		/* Number of FATs */
+//		defopt.align = 0;		/* Data area alignment (sector) */
+//		defopt.n_root = 128;	/* Number of root directory entries */
+//		defopt.au_size = 0;		/* Cluster size (byte) */
+
 		PRINTF("Wait for storage device ready\n");
 		while (hamradio_get_usbh_active() == 0)
 			;
@@ -6155,7 +6200,7 @@ void hightests(void)
 		enableIRQ();
 		{
  			f_mount(NULL, "", 0);		/* Unregister volume work area (never fails) */
-			rc = f_mkfs("0:", FM_ANY, 0, work, sizeof (work));
+			rc = f_mkfs("0:", NULL, work, sizeof (work));
 			if (rc != FR_OK)
 			{
 				debug_printf_P(PSTR("sdcardformat: f_mkfs failure, rc=0x%02X\n"), (int) rc);
