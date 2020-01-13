@@ -432,14 +432,15 @@
 
 #if WITHELKEY
 	// Electronic key inputs
-	#define ELKEY_TARGET_PIN			(GPIOD->IDR)
-	#define ELKEY_BIT_LEFT				0//(1uL << 11)		// PD11
-	#define ELKEY_BIT_RIGHT				0//(1uL << 12)		// PD12
+	#define ELKEY_BIT_LEFT				(1uL << 11)		// PD11
+	#define ELKEY_BIT_RIGHT				(1uL << 12)		// PD12
+
+	#define ELKEY_TARGET_PIN			((ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT)) //(GPIOD->IDR)
 
 	#define ELKEY_INITIALIZE() \
 		do { \
-			arm_hardware_piod_inputs(ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT); \
-			arm_hardware_piod_updown(ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT, 0); \
+			/*arm_hardware_piod_inputs(ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT); */\
+			/*arm_hardware_piod_updown(ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT, 0); */\
 		} while (0)
 
 #endif /* WITHELKEY */
@@ -812,17 +813,6 @@
 	#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
 #endif
 
-	/* макроопределение, которое должно включить в себя все инициализации */
-	#define	HARDWARE_INITIALIZE() do { \
-		HARDWARE_KBD_INITIALIZE(); \
-		HARDWARE_DAC_INITIALIZE(); \
-		HARDWARE_BL_INITIALIZE(); \
-		/* HARDWARE_DCDC_INITIALIZE(); */ \
-		TXDISABLE_INITIALIZE(); \
-		TUNE_INITIALIZE(); \
-		} while (0)
-
-
 	// Bootloader parameters
 	#define BOOTLOADER_APPAREA DRAM_MEM_BASE	/* адрес ОЗУ, куда перемещать application */
 	#define BOOTLOADER_APPFULL (1024uL * 4096)	// 4M
@@ -888,5 +878,31 @@
 			} while (0)
 
 	#endif /* WIHSPIDFHW */
+
+	//#define BOARD_BLINK_BITS (1uL << 14)	// PA14 - GREEN LED LD5 on DK1/DK2 MB1272.pdf
+	//#define BOARD_BLINK_BITS (1uL << 14)	// PD14 - LED on small board
+	#define BOARD_BLINK_BITS (1uL << 11)	// PI11 - LED1# on PanGu board
+	//#define BOARD_BLINK_BITS (1uL << 11)	// PH6 - LED2# on PanGu board
+
+	#define BOARD_BLINK_INITIALIZE() do { \
+			arm_hardware_pioi_outputs(BOARD_BLINK_BITS, 0 * BOARD_BLINK_BITS); \
+		} while (0)
+	#define BOARD_BLINK_SETSTATE(state) do { \
+			if (state) \
+				(GPIOI)->BSRR = BSRR_C(BOARD_BLINK_BITS); \
+			else \
+				(GPIOI)->BSRR = BSRR_S(BOARD_BLINK_BITS); \
+		} while (0)
+
+	/* макроопределение, которое должно включить в себя все инициализации */
+	#define	HARDWARE_INITIALIZE() do { \
+		BOARD_BLINK_INITIALIZE(); \
+		HARDWARE_KBD_INITIALIZE(); \
+		HARDWARE_DAC_INITIALIZE(); \
+		HARDWARE_BL_INITIALIZE(); \
+		/* HARDWARE_DCDC_INITIALIZE(); */ \
+		TXDISABLE_INITIALIZE(); \
+		TUNE_INITIALIZE(); \
+		} while (0)
 
 #endif /* ARM_STM32MP1_CPUSTYLE_STORCH_V9_H_INCLUDED */

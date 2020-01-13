@@ -1144,7 +1144,7 @@ static RAMFUNC void spool_systimerbundle1(void)
 }
 
 /* Машинно-независимый обработчик прерываний. */
-// Функции с побочным эффектом редиспетчеризайии.
+// Функции с побочным эффектом редиспетчеризации.
 // Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
 static RAMFUNC void spool_systimerbundle2(void)
 {
@@ -1162,7 +1162,7 @@ static RAMFUNC void spool_systimerbundle2(void)
 			//arm_hardware_piog_outputs(maskg, 1 * maskg);
 		}
 		static unsigned count;
-		if (++ count >= NTICKS(500))	// Togglw every 500 ms
+		if (++ count >= NTICKS(500))	// Toggle every 500 ms
 		{
 			count = 0;
 			static uint_fast8_t state;
@@ -1181,6 +1181,19 @@ static RAMFUNC void spool_systimerbundle2(void)
 		}
 	}
 #endif /* CPUSTYLE_STM32MP1 */
+#if 0 && defined (BOARD_BLINK_SETSTATE)
+	{
+		// BLINK test
+		static unsigned count;
+		if (++ count >= NTICKS(500))	// Toggle every 500 ms
+		{
+			count = 0;
+			static uint_fast8_t state;
+			BOARD_BLINK_SETSTATE(state);
+			state = ! state;
+		}
+	}
+#endif /* defined (BOARD_BLINK_SETSTATE) */
 
 #if WITHKEYBOARD
 #if ! KEYBOARD_USE_ADC
