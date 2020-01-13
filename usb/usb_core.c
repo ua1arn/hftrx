@@ -5130,19 +5130,19 @@ HAL_StatusTypeDef USB_HostInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgTyp
 	/* Clear any pending interrupts */
 	USBx->GINTSTS = 0xFFFFFFFF;
 
-	if(USBx == USB_OTG_FS)
+	if(USB_Is_OTG_HS(USBx))
 	{
 		/* set Rx FIFO size */
-		USBx->GRXFSIZ  = (uint32_t )0x80;
-		USBx->DIEPTXF0_HNPTXFSIZ = (uint32_t )(((0x60 << 16)& USB_OTG_NPTXFD) | 0x80);
-		USBx->HPTXFSIZ = (uint32_t )(((0x40 << 16)& USB_OTG_HPTXFSIZ_PTXFD) | 0xE0);
+		USBx->GRXFSIZ  = (uint32_t) 0x200;
+		USBx->DIEPTXF0_HNPTXFSIZ = (uint32_t) (((0x100 << USB_OTG_NPTXFD_Pos) & USB_OTG_NPTXFD) | 0x200);
+		USBx->HPTXFSIZ = (uint32_t) (((0xE0 << USB_OTG_HPTXFSIZ_PTXFD_Pos) & USB_OTG_HPTXFSIZ_PTXFD) | 0x300);
 	}
 	else
 	{
 		/* set Rx FIFO size */
-		USBx->GRXFSIZ  = (uint32_t) 0x200;
-		USBx->DIEPTXF0_HNPTXFSIZ = (uint32_t) (((0x100 << 16)& USB_OTG_NPTXFD) | 0x200);
-		USBx->HPTXFSIZ = (uint32_t) (((0xE0 << 16)& USB_OTG_HPTXFSIZ_PTXFD) | 0x300);
+		USBx->GRXFSIZ  = (uint32_t) 0x80;
+		USBx->DIEPTXF0_HNPTXFSIZ = (uint32_t) (((0x60 << USB_OTG_NPTXFD_Pos) & USB_OTG_NPTXFD) | 0x80);
+		USBx->HPTXFSIZ = (uint32_t) (((0x40 << USB_OTG_HPTXFSIZ_PTXFD_Pos) & USB_OTG_HPTXFSIZ_PTXFD) | 0xE0);
 	}
 
 	/* Enable the common interrupts */
@@ -5150,10 +5150,12 @@ HAL_StatusTypeDef USB_HostInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgTyp
 	{
 		USBx->GINTMSK |= USB_OTG_GINTMSK_RXFLVLM;
 
-
+	}
+	else
+	{
 #if CPUSTYLE_STM32MP1
 		USBx->GAHBCFG = (USBx->GAHBCFG & ~ (USB_OTG_GAHBCFG_PTXFELVL_Msk)) |
-			//(1uL << USB_OTG_GAHBCFG_PTXFELVL_Pos) |	// in host mode only
+			(1uL << USB_OTG_GAHBCFG_PTXFELVL_Pos) |	// in host mode only
 			0;
 
 #elif CPUSTYLE_STM32H7XX
