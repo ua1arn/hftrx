@@ -15,7 +15,6 @@
 #include "board.h"
 #include "sdcard.h"
 #include "fatfs/ff.h"
-//#include "fatfs/diskio.h"		/* FatFs lower layer API */
 
 #include "display/display.h"	/* используем функцию получения рабочей частоты */
 #include "audio.h"
