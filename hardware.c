@@ -1148,52 +1148,19 @@ static RAMFUNC void spool_systimerbundle1(void)
 // Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
 static RAMFUNC void spool_systimerbundle2(void)
 {
-#if 1 && CPUSTYLE_STM32MP1
+#if 1 && defined (BOARD_BLINK_SETSTATE)
 	{
 		// BLINK test
-		//const uint_fast32_t mask = (1uL << 14);	// PA14 - GREEN LED LD5 on DK1/DK2 MB1272.pdf
-		const uint_fast32_t maskd = (1uL << 14);	// PD14 - LED on small board
-		//const uint_fast32_t maskg = (1uL << 13);	// PG13 - LCD_R0
-		static uint_fast8_t inited;
-		if (! inited)
-		{
-			inited = 1;
-			arm_hardware_piod_outputs(maskd, 1 * maskd);
-			//arm_hardware_piog_outputs(maskg, 1 * maskg);
-		}
 		static unsigned count;
 		if (++ count >= NTICKS(500))	// Toggle every 500 ms
 		{
 			count = 0;
 			static uint_fast8_t state;
-			if (state)
-			{
-				state = 0;
-				(GPIOD)->BSRR = BSRR_S(maskd);
-				//(GPIOG)->BSRR = BSRR_S(maskg);
-			}
-			else
-			{
-				state = 1;
-				(GPIOD)->BSRR = BSRR_C(maskd);
-				//(GPIOG)->BSRR = BSRR_C(maskg);
-			}
+			state = ! state;
+			BOARD_BLINK_SETSTATE(state);
 		}
 	}
 #endif /* CPUSTYLE_STM32MP1 */
-#if 0 && defined (BOARD_BLINK_SETSTATE)
-	{
-		// BLINK test
-		static unsigned count;
-		if (++ count >= NTICKS(500))	// Toggle every 500 ms
-		{
-			count = 0;
-			static uint_fast8_t state;
-			BOARD_BLINK_SETSTATE(state);
-			state = ! state;
-		}
-	}
-#endif /* defined (BOARD_BLINK_SETSTATE) */
 
 #if WITHKEYBOARD
 #if ! KEYBOARD_USE_ADC

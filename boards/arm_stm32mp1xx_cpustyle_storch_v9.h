@@ -87,7 +87,7 @@
 	#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
 	//#define WITHUSBDEV_HIGHSPEEDULPI	1
 	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USB_DP2 & USB_DM2
-	#define WITHUSBDEV_DMAENABLE 1
+	//#define WITHUSBDEV_DMAENABLE 1
 
 	/* For H7 exist: Legacy defines */
 	//#define USB_OTG_HS                   USB1_OTG_HS
@@ -896,13 +896,13 @@
 
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
-		BOARD_BLINK_INITIALIZE(); \
-		HARDWARE_KBD_INITIALIZE(); \
-		HARDWARE_DAC_INITIALIZE(); \
-		HARDWARE_BL_INITIALIZE(); \
-		/* HARDWARE_DCDC_INITIALIZE(); */ \
-		TXDISABLE_INITIALIZE(); \
-		TUNE_INITIALIZE(); \
+			BOARD_BLINK_INITIALIZE(); \
+			HARDWARE_KBD_INITIALIZE(); \
+			HARDWARE_DAC_INITIALIZE(); \
+			HARDWARE_BL_INITIALIZE(); \
+			/* HARDWARE_DCDC_INITIALIZE(); */ \
+			TXDISABLE_INITIALIZE(); \
+			TUNE_INITIALIZE(); \
 		} while (0)
 
 #endif /* ARM_STM32MP1_CPUSTYLE_STORCH_V9_H_INCLUDED */
