@@ -3792,7 +3792,7 @@ HAL_StatusTypeDef USB_DevInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgType
 	#else /* CPUSTYLE_STM32H7XX */
 
 	#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
-		const int TXTHRLEN = 256;		// in DWORDS: The threshold length has to be at least eight DWORDS.
+		const int TXTHRLEN = 64;//256;		// in DWORDS: The threshold length has to be at least eight DWORDS.
 		const int RXTHRLEN = 8;	// in DWORDS: 128 - енумерация проходтит, 256 - нет.
 	#else /* CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1 */
 		const int TXTHRLEN = 64;		// in DWORDS: The threshold length has to be at least eight DWORDS.
@@ -3800,18 +3800,18 @@ HAL_StatusTypeDef USB_DevInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgType
 	#endif /* CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1 */
 		// Configuration register applies only to USB OTG HS
 		/*Set threshold parameters */
-		USBx_DEVICE->DTHRCTL = (USBx_DEVICE->DTHRCTL & ~ (USB_OTG_DTHRCTL_TXTHRLEN |
-						USB_OTG_DTHRCTL_RXTHRLEN |
-						USB_OTG_DTHRCTL_RXTHREN |
-						USB_OTG_DTHRCTL_ISOTHREN |
-						USB_OTG_DTHRCTL_NONISOTHREN |
-						USB_OTG_DTHRCTL_ARPEN)) |
-			TXTHRLEN * USB_OTG_DTHRCTL_TXTHRLEN_0 |		// Transmit (IN) threshold length
-			RXTHRLEN * USB_OTG_DTHRCTL_RXTHRLEN_0 | // see HBSTLEN bit in OTG_GAHBCFG).
-			//USB_OTG_DTHRCTL_RXTHREN |		//  Receive (OUT) threshold enable
-			//USB_OTG_DTHRCTL_ISOTHREN |		// ISO IN endpoint threshold enable
-			//USB_OTG_DTHRCTL_NONISOTHREN |	// Nonisochronous IN endpoints threshold enable
-			//USB_OTG_DTHRCTL_ARPEN |			// Arbiter parking enable
+		USBx_DEVICE->DTHRCTL = (USBx_DEVICE->DTHRCTL & ~ (USB_OTG_DTHRCTL_TXTHRLEN_Msk |
+						USB_OTG_DTHRCTL_RXTHRLEN_Msk |
+						USB_OTG_DTHRCTL_RXTHREN_Msk |
+						USB_OTG_DTHRCTL_ISOTHREN_Msk |
+						USB_OTG_DTHRCTL_NONISOTHREN_Msk |
+						USB_OTG_DTHRCTL_ARPEN_Msk)) |
+			(TXTHRLEN << USB_OTG_DTHRCTL_TXTHRLEN_Pos) |		// Transmit (IN) threshold length
+			(RXTHRLEN << USB_OTG_DTHRCTL_RXTHRLEN_Pos) | // see HBSTLEN bit in OTG_GAHBCFG).
+			USB_OTG_DTHRCTL_RXTHREN |		//  Receive (OUT) threshold enable
+			USB_OTG_DTHRCTL_ISOTHREN |		// ISO IN endpoint threshold enable
+			USB_OTG_DTHRCTL_NONISOTHREN |	// Nonisochronous IN endpoints threshold enable
+			USB_OTG_DTHRCTL_ARPEN |			// Arbiter parking enable (enabled by default).
 			0;
 	#endif /* CPUSTYLE_STM32H7XX */
 
