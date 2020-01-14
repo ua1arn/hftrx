@@ -50,6 +50,9 @@
 		HFULL = HSYNC + HBP + WIDTH + HFP,	/* horisontal full period */
 		VFULL = VSYNC + VBP + HEIGHT + VFP,	/* vertical full period */
 
+		// MODE: DE/SYNC mode select.
+		// DE MODE: MODE="1", VS and HS must pull high.
+		// SYNC MODE: MODE="0". DE nust be grounded
 		VSYNCNEG = 1,			/* Negative polarity required for VSYNC signel */
 		HSYNCNEG = 1,			/* Negative polarity required for HSYNC signel */
 		DENEG = 1,				/* DE polarity (ignored) */
@@ -82,14 +85,14 @@
 		HFULL = LEFTMARGIN + WIDTH + HFP,	/* horisontal full period */
 		VFULL = TOPMARGIN + HEIGHT + VFP,	/* vertical full period */
 
+		// MODE: DE/SYNC mode select.
+		// DE MODE: MODE="1", VS and HS must pull high.
+		// SYNC MODE: MODE="0". DE nust be grounded
 		VSYNCNEG = 1,			/* Negative polarity required for VSYNC signel */
 		HSYNCNEG = 1,			/* Negative polarity required for HSYNC signel */
 		DENEG = 0,				/* DE polarity */
 		BOARD_DEMODE = 0		/* 0: static signal, 1: DE controlled */
 	};
-
-	#define BOARD_MODEVALUE 0			/* hold MODE=0 */
-	#define BOARD_DEVALUE 0			/* hold DE=0 */
 
 #elif LCDMODE_AT070TNA2
 
@@ -119,14 +122,14 @@
 		HFULL = LEFTMARGIN + WIDTH + HFP,	/* horisontal full period */
 		VFULL = TOPMARGIN + HEIGHT + VFP,	/* vertical full period */
 
+		// MODE: DE/SYNC mode select.
+		// DE MODE: MODE="1", VS and HS must pull high.
+		// SYNC MODE: MODE="0". DE nust be grounded
 		VSYNCNEG = 1,			/* Negative polarity required for VSYNC signel */
 		HSYNCNEG = 1,			/* Negative polarity required for HSYNC signel */
 		DENEG = 0,				/* DE polarity */
 		BOARD_DEMODE = 0		/* 0: static signal, 1: DE controlled */
 	};
-
-	#define BOARD_MODEVALUE 0			/* hold MODE=0 */
-	#define BOARD_DEVALUE 0			/* hold DE=0 */
 
 #elif LCDMODE_ILI8961
 	// HHT270C-8961-6A6 (320*240)
@@ -1927,6 +1930,7 @@ arm_hardware_ltdc_initialize(void)
 #if defined (BOARD_DEVALUE)
 	HARDWARE_LTDC_SET_DISP(BOARD_DEMODE, BOARD_DEVALUE);
 #else
+	/* SONY PSP-1000 display (4.3") required. */
 	HARDWARE_LTDC_SET_DISP(BOARD_DEMODE, 0);
 	local_delay_ms(150);
 	HARDWARE_LTDC_SET_DISP(BOARD_DEMODE, 1);

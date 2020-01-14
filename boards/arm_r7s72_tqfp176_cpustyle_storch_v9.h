@@ -99,25 +99,6 @@
 
 //#define WRITEE_BIT				(1u << 12)	// RD/~WR  P3_12 - должен быть в "0" - как при записи - для управления буферами на шине данных LCD
 
-#define LS020_RS_INITIALIZE() \
-	do { \
-		arm_hardware_pio7_outputs(LS020_RS, LS020_RS); \
-	} while (0)
-
-#define LS020_RESET_INITIALIZE() \
-	do { \
-		arm_hardware_pio7_outputs(LS020_RESET, LS020_RESET); \
-	} while (0)
-
-#define LS020_RS_SET(v) do { \
-		if ((v) != 0) LS020_RS_PORT_S(LS020_RS); \
-		else  LS020_RS_PORT_C(LS020_RS); \
-	} while (0)
-#define LS020_RESET_SET(v) do { \
-		if ((v) != 0) LS020_RESET_PORT_S(LS020_RESET); \
-		else  LS020_RESET_PORT_C(LS020_RESET); \
-	} while (0)
-
 #if LCDMODE_SPI_NA
 	// эти контроллеры требуют только RS
 
@@ -710,15 +691,27 @@
 	#define LS020_RESET_PORT_C(v) do {	R7S721_TARGET_PORT_C(7, v); } while (0)
 	#define LS020_RESET			(1u << 1)			// * P7_1 D6 NRESET
 
-	/* demode values: 0: static signal, 1: DE controlled */
+	// MODE: DE/SYNC mode select.
+	// DE MODE: MODE="1", VS and HS must pull high.
+	// SYNC MODE: MODE="0". DE must be grounded
 	/* Table 34.9 Bit Allocation of RGB Signal Input for RGB565 Output */ 
 	#define HARDWARE_LTDC_INITIALIZE(demode) do { \
+		const uint32_t MODE = (1U << 0); /* P7_0 MODE */ \
+		const uint32_t DE = (1U << 7); /* P7_0 DE */ \
+		const uint32_t VS = (1U << 5); /* P7_5 VSYNC */ \
+		const uint32_t HS = (1U << 6); /* P7_6 HSYNC */ \
+		/* Control signal */ \
+		arm_hardware_pio7_outputs(MODE, (demode != 0) * MODE);	/* P7_0 MODE=demode */ \
 		/* Synchronisation signals */ \
 		arm_hardware_pio7_alternative((1U << 4), R7S721_PIOALT_6);	/* P7_4 CLK LCD0_CLK */ \
-		arm_hardware_pio7_alternative((1U << 5), R7S721_PIOALT_6);	/* P7_5 VSYNC */ \
-		arm_hardware_pio7_alternative((1U << 6), R7S721_PIOALT_6);	/* P7_6 HSYNC */ \
-		arm_hardware_pio7_alternative((demode != 0) * (1U << 7), R7S721_PIOALT_6); 	/* P7_7 DE */ \
-		arm_hardware_pio7_outputs((demode == 0) * (1U << 7), 0 * (1U << 7));	/* P7_7 DE=0 */ \
+		/* MODE=1: DE MODE */ \
+		arm_hardware_pio7_outputs((demode != 0) * VS, (1U << 5));	/* P7_5 VSYNC */ \
+		arm_hardware_pio7_outputs((demode != 0) * HS, HS);	/* P7_6 HSYNC */ \
+		arm_hardware_pio7_alternative((demode != 0) * DE, R7S721_PIOALT_6); 	/* P7_7 DE */ \
+		/* MODE=0: SYNC MODE */ \
+		arm_hardware_pio7_alternative((demode == 0) * VS, R7S721_PIOALT_6);	/* P7_5 VSYNC */ \
+		arm_hardware_pio7_alternative((demode == 0) * HS, R7S721_PIOALT_6);	/* P7_6 HSYNC */ \
+		arm_hardware_pio7_outputs((demode == 0) * DE, 0);	/* P7_7 DE=0 */ \
 		/* BLUE */ \
 		arm_hardware_pio3_alternative((1U << 0), R7S721_PIOALT_3);	/* P3_0 LCD0_DATA0 B3 */ \
 		arm_hardware_pio3_alternative((1U << 1), R7S721_PIOALT_3);	/* P3_1 LCD0_DATA1 B4 */ \
@@ -740,18 +733,58 @@
 		arm_hardware_pio6_alternative((1U << 7), R7S721_PIOALT_2);	/* P6_7 LCD0_DATA15 R7 */ \
 	} while (0)
 
+	/* управление состоянием сигнала MODE панели */
+	#define HARDWARE_LTDC_SET_MODE(state) do { \
+		const uint32_t MODE = (1U << 0); /* P7_0 MODE */ \
+		arm_hardware_pio7_outputs(MODE, (state != 0) * MODE);	/* P7_0 MODE=demode */ \
+	} while (0)
+
 	/* управление состоянием сигнала DISP панели */
 	/* demode values: 0: static signal, 1: DE controlled */
 	#define HARDWARE_LTDC_SET_DISP(demode, state) do { \
 		if (demode != 0) break; \
-		const uint32_t mask = (1U << 7); /* P7_7 */ \
-		arm_hardware_pio7_outputs(mask, (state != 0) * mask);	/* P7_7 DE=state */ \
+		const uint32_t demask = (1U << 7); /* P7_7 */ \
+		arm_hardware_pio7_outputs(demask, (state != 0) * demask);	/* P7_7 DE=state */ \
 	} while (0)
-	/* управление состоянием сигнала MODE панели */
-	#define HARDWARE_LTDC_SET_MODE(state) do { \
-		const uint32_t mask = (1U << 0); /* P7_0 */ \
-		arm_hardware_pio7_outputs(mask, (state != 0) * mask);	/* P7_0 MODE=state */ \
-	} while (0)
+
+
+	#define LS020_RS_INITIALIZE() \
+		do { \
+		} while (0)
+
+	#define LS020_RESET_INITIALIZE() \
+		do { \
+			arm_hardware_pio7_outputs(LS020_RESET, LS020_RESET); \
+		} while (0)
+
+	#define LS020_RS_SET(v) do { \
+		} while (0)
+	#define LS020_RESET_SET(v) do { \
+			if ((v) != 0) LS020_RESET_PORT_S(LS020_RESET); \
+			else  LS020_RESET_PORT_C(LS020_RESET); \
+		} while (0)
+
+
+#else
+
+	#define LS020_RS_INITIALIZE() \
+		do { \
+			arm_hardware_pio7_outputs(LS020_RS, LS020_RS); \
+		} while (0)
+
+	#define LS020_RESET_INITIALIZE() \
+		do { \
+			arm_hardware_pio7_outputs(LS020_RESET, LS020_RESET); \
+		} while (0)
+
+	#define LS020_RS_SET(v) do { \
+			if ((v) != 0) LS020_RS_PORT_S(LS020_RS); \
+			else  LS020_RS_PORT_C(LS020_RS); \
+		} while (0)
+	#define LS020_RESET_SET(v) do { \
+			if ((v) != 0) LS020_RESET_PORT_S(LS020_RESET); \
+			else  LS020_RESET_PORT_C(LS020_RESET); \
+		} while (0)
 
 #endif /* LCDMODE_LTDC */
 

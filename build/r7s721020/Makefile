@@ -143,6 +143,8 @@ CPFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 # makefile rules
 #
 
+.PHONY: all bootloader flash clean
+
 all: APP2 app.stm32 app.hex
 
 bootloader: BOOT2 boot.hex
