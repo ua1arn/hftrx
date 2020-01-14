@@ -2016,6 +2016,7 @@ uint32_t USB_GetCurrentFrame(USB_OTG_GlobalTypeDef *USBx)
 		fn = fn2;
 
 	}
+	return fn;
 }
 
 
@@ -3255,6 +3256,35 @@ HAL_StatusTypeDef USB_FlushTxFifoEx(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t nu
 
 #if (CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1)
 
+
+
+#define USB_OTG_CORE_ID_300A          0x4F54300AU
+#define USB_OTG_CORE_ID_310A          0x4F54310AU
+#define USB_OTG_CORE_ID_320A          0x4F54320AU
+
+static uint_fast32_t
+USB_GetSNPSiD(USB_OTG_GlobalTypeDef *USBx)
+{
+#if CPUSTYLE_STM32H7XX
+	return USBx->GSNPSID;
+#elif CPUSTYLE_STM32MP1
+	return USB_OTG_CORE_ID_320A;
+#else
+	return 0;//* (__IO uint32_t *) (& USBx->CID + 0x1U);
+#endif
+}
+
+static uint_fast8_t
+USB_Is_OTG_HS(USB_OTG_GlobalTypeDef *USBx)
+{
+#if CPUSTYLE_STM32MP1
+	return 1;
+#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32F7XX
+	return (USBx->CID & (0x1U << 8)) != 0U;
+#else
+		return 0;
+#endif
+}
 #ifdef USBPHYC
 
 #define ULL(v) ((unsigned long long) (v))
@@ -3539,7 +3569,7 @@ HAL_StatusTypeDef USB_CoreInit(USB_OTG_GlobalTypeDef * USBx, const USB_OTG_CfgTy
 	if (cfg->dma_enable == USB_ENABLE)
 	{
 #if CPUSTYLE_STM32MP1
- 		USBx->GAHBCFG = (USBx->GAHBCFG & ~ (USB_OTG_GAHBCFG_HBSTLEN_Msk | USB_OTG_GAHBCFG_DMAEN_Msk | USB_OTG_GAHBCFG_TXFELVL_Msk | USB_OTG_GAHBCFG_PTXFELVL_Msk)) |
+ 		USBx->GAHBCFG = (USBx->GAHBCFG & ~ (USB_OTG_GAHBCFG_HBSTLEN_Msk | USB_OTG_GAHBCFG_DMAEN_Msk | USB_OTG_GAHBCFG_TXFELVL_Msk)) |
 			(0x04uL << USB_OTG_GAHBCFG_HBSTLEN_Pos) |	// INCR8
 			//(0x06uL << USB_OTG_GAHBCFG_HBSTLEN_Pos) |	// INCR16
 			//(1uL << USB_OTG_GAHBCFG_TXFELVL_Pos) |
@@ -3547,7 +3577,7 @@ HAL_StatusTypeDef USB_CoreInit(USB_OTG_GlobalTypeDef * USBx, const USB_OTG_CfgTy
 			0;
 
 #elif CPUSTYLE_STM32H7XX
- 		USBx->GAHBCFG = (USBx->GAHBCFG & ~ (USB_OTG_GAHBCFG_HBSTLEN_Msk | USB_OTG_GAHBCFG_DMAEN_Msk | USB_OTG_GAHBCFG_TXFELVL_Msk | USB_OTG_GAHBCFG_PTXFELVL_Msk)) |
+ 		USBx->GAHBCFG = (USBx->GAHBCFG & ~ (USB_OTG_GAHBCFG_HBSTLEN_Msk | USB_OTG_GAHBCFG_DMAEN_Msk | USB_OTG_GAHBCFG_TXFELVL_Msk)) |
 			(0x04uL << USB_OTG_GAHBCFG_HBSTLEN_Pos) |	// INCR8
 			//(0x06uL << USB_OTG_GAHBCFG_HBSTLEN_Pos) |	// INCR16
 			//(1uL << USB_OTG_GAHBCFG_TXFELVL_Pos) |
@@ -3555,7 +3585,7 @@ HAL_StatusTypeDef USB_CoreInit(USB_OTG_GlobalTypeDef * USBx, const USB_OTG_CfgTy
 			0;
 
 #elif CPUSTYLE_STM32F7XX
- 		USBx->GAHBCFG = (USBx->GAHBCFG & ~ (USB_OTG_GAHBCFG_HBSTLEN_Msk | USB_OTG_GAHBCFG_DMAEN_Msk | USB_OTG_GAHBCFG_TXFELVL_Msk | USB_OTG_GAHBCFG_PTXFELVL_Msk)) |
+ 		USBx->GAHBCFG = (USBx->GAHBCFG & ~ (USB_OTG_GAHBCFG_HBSTLEN_Msk | USB_OTG_GAHBCFG_DMAEN_Msk | USB_OTG_GAHBCFG_TXFELVL_Msk)) |
 			(0x04uL << USB_OTG_GAHBCFG_HBSTLEN_Pos) |	// INCR8
 			//(0x06uL << USB_OTG_GAHBCFG_HBSTLEN_Pos) |	// INCR16
 			//(1uL << USB_OTG_GAHBCFG_TXFELVL_Pos) |
@@ -3563,7 +3593,7 @@ HAL_StatusTypeDef USB_CoreInit(USB_OTG_GlobalTypeDef * USBx, const USB_OTG_CfgTy
 			0;
 
 #elif CPUSTYLE_STM32F4XX
- 		USBx->GAHBCFG = (USBx->GAHBCFG & ~ (USB_OTG_GAHBCFG_HBSTLEN_Msk | USB_OTG_GAHBCFG_DMAEN_Msk | USB_OTG_GAHBCFG_TXFELVL_Msk | USB_OTG_GAHBCFG_PTXFELVL_Msk)) |
+ 		USBx->GAHBCFG = (USBx->GAHBCFG & ~ (USB_OTG_GAHBCFG_HBSTLEN_Msk | USB_OTG_GAHBCFG_DMAEN_Msk | USB_OTG_GAHBCFG_TXFELVL_Msk)) |
 			(0x04uL << USB_OTG_GAHBCFG_HBSTLEN_Pos) |	// INCR8
 			//(0x06uL << USB_OTG_GAHBCFG_HBSTLEN_Pos) |	// INCR16
 			//(1uL << USB_OTG_GAHBCFG_TXFELVL_Pos) |
@@ -3571,7 +3601,7 @@ HAL_StatusTypeDef USB_CoreInit(USB_OTG_GlobalTypeDef * USBx, const USB_OTG_CfgTy
 			0;
 
 #else
- 		USBx->GAHBCFG = (USBx->GAHBCFG & ~ (USB_OTG_GAHBCFG_HBSTLEN_Msk | USB_OTG_GAHBCFG_DMAEN_Msk | USB_OTG_GAHBCFG_TXFELVL_Msk | USB_OTG_GAHBCFG_PTXFELVL_Msk)) |
+ 		USBx->GAHBCFG = (USBx->GAHBCFG & ~ (USB_OTG_GAHBCFG_HBSTLEN_Msk | USB_OTG_GAHBCFG_DMAEN_Msk | USB_OTG_GAHBCFG_TXFELVL_Msk)) |
 			(0x04uL << USB_OTG_GAHBCFG_HBSTLEN_Pos) |	// INCR8
 			//(0x06uL << USB_OTG_GAHBCFG_HBSTLEN_Pos) |	// INCR16
 			//(1uL << USB_OTG_GAHBCFG_TXFELVL_Pos) |
@@ -4583,7 +4613,7 @@ HAL_StatusTypeDef USB_HC_StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_HCTypeDe
   uint16_t max_hc_pkt_count = 256;
   uint32_t tmpreg = 0;
 
-  if ((USBx != USB_OTG_FS) && (hc->usbh_otg_speed == USB_OTG_SPEED_HIGH))
+  if (USB_Is_OTG_HS(USBx) && (hc->usbh_otg_speed == USB_OTG_SPEED_HIGH))
   {
 	  // HS
     if ((dma == 0) && (hc->do_ping == 1))
@@ -4591,7 +4621,7 @@ HAL_StatusTypeDef USB_HC_StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_HCTypeDe
       USB_DoPing(USBx, hc->ch_num);
       return HAL_OK;
     }
-    else if(dma == 1)
+    else if (dma == 1)
     {
       USBx_HC(hc->ch_num)->HCINTMSK &= ~(USB_OTG_HCINTMSK_NYET | USB_OTG_HCINTMSK_ACKM);
       hc->do_ping = 0;
@@ -4987,34 +5017,6 @@ HAL_StatusTypeDef USB_EP0_OutStart(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t dma
 }
 
 
-#define USB_OTG_CORE_ID_300A          0x4F54300AU
-#define USB_OTG_CORE_ID_310A          0x4F54310AU
-#define USB_OTG_CORE_ID_320A          0x4F54320AU
-
-static uint_fast32_t
-USB_GetSNPSiD(USB_OTG_GlobalTypeDef *USBx)
-{
-#if CPUSTYLE_STM32H7XX
-	return USBx->GSNPSID;
-#elif CPUSTYLE_STM32MP1
-	return USB_OTG_CORE_ID_320A;
-#else
-	return 0;//* (__IO uint32_t *) (& USBx->CID + 0x1U);
-#endif
-}
-
-static uint_fast8_t
-USB_Is_OTG_HS(USB_OTG_GlobalTypeDef *USBx)
-{
-#if CPUSTYLE_STM32MP1
-	return 1;
-#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32F7XX
-	return (USBx->CID & (0x1U << 8)) != 0U;
-#else
-		return 0;
-#endif
-}
-
 /**
   * @brief  Reset the USB Core (needed after USB clock settings change)
   * @param  USBx : Selected device
@@ -5155,7 +5157,7 @@ HAL_StatusTypeDef USB_HostInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgTyp
 	{
 #if CPUSTYLE_STM32MP1
 		USBx->GAHBCFG = (USBx->GAHBCFG & ~ (USB_OTG_GAHBCFG_PTXFELVL_Msk)) |
-			(1uL << USB_OTG_GAHBCFG_PTXFELVL_Pos) |	// in host mode only
+			//(1uL << USB_OTG_GAHBCFG_PTXFELVL_Pos) |	// in host mode only
 			0;
 
 #elif CPUSTYLE_STM32H7XX
