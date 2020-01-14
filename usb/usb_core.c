@@ -2010,7 +2010,7 @@ uint32_t USB_GetCurrentFrame(USB_OTG_GlobalTypeDef *USBx)
 	uint_fast16_t fn = (USBx->FRMNUM & USB_FRMNUM_FRNM) >> USB_FRMNUM_FRNM_SHIFT;
 	for (;;)
 	{
-		uint_fast16_t fn2 = (USBx->FRMNUM & USB_FRMNUM_FRNM) >> USB_FRMNUM_FRNM_SHIFT;
+		const uint_fast16_t fn2 = (USBx->FRMNUM & USB_FRMNUM_FRNM) >> USB_FRMNUM_FRNM_SHIFT;
 		if (fn == fn2)
 			break;
 		fn = fn2;
@@ -3252,7 +3252,15 @@ HAL_StatusTypeDef USB_FlushTxFifoEx(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t nu
 	return HAL_OK;
 }
 
+
+static uint_fast8_t
+USB_Is_OTG_HS(USB_OTG_GlobalTypeDef *USBx)
+{
+	return 1;
+}
+
 #endif /* CPUSTYLE_R7S721 */
+
 
 #if (CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1)
 
@@ -3274,6 +3282,7 @@ USB_GetSNPSiD(USB_OTG_GlobalTypeDef *USBx)
 #endif
 }
 
+
 static uint_fast8_t
 USB_Is_OTG_HS(USB_OTG_GlobalTypeDef *USBx)
 {
@@ -3285,6 +3294,7 @@ USB_Is_OTG_HS(USB_OTG_GlobalTypeDef *USBx)
 		return 0;
 #endif
 }
+
 #ifdef USBPHYC
 
 #define ULL(v) ((unsigned long long) (v))

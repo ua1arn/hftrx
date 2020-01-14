@@ -1263,6 +1263,7 @@ arm_hardware_ltdc_initialize(void)
 #if defined (BOARD_DEVALUE)
 	HARDWARE_LTDC_SET_DISP(BOARD_DEMODE, BOARD_DEVALUE);
 #else
+	/* SONY PSP-1000 display (4.3") required. */
 	HARDWARE_LTDC_SET_DISP(BOARD_DEMODE, 0);
 	local_delay_ms(150);
 	HARDWARE_LTDC_SET_DISP(BOARD_DEMODE, 1);
