@@ -1096,7 +1096,7 @@ extern "C" {
 #endif /* LCDMODE_S1D13781 */
 
 #if LCDMODE_AT070TN90	/* AT070TN90 panel (800*480) - 7" display */
-	#define LCDMODE_SPI_RN 1 // эти контроллеры требуют только RESET
+	#define LCDMODE_SPI_RN 1 // эти дисплеи требуют только RESET
 	#define DIM_X 800
 	#define DIM_Y 480
 	#define LCDMODE_COLORED	1
@@ -1105,7 +1105,7 @@ extern "C" {
 #endif /* LCDMODE_AT070TN90 */
 
 #if LCDMODE_AT070TNA2	/* AT070TNA2 panel (1024*600) - 7" display */
-	#define LCDMODE_SPI_RN 1 // эти контроллеры требуют только RESET
+	#define LCDMODE_SPI_RN 1 // эти дисплеи требуют только RESET
 	#define DIM_X 1024
 	#define DIM_Y 600
 	#define LCDMODE_COLORED	1

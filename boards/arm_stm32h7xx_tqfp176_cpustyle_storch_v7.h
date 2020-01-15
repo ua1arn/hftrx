@@ -73,14 +73,14 @@
 
 #define LS020_RS_INITIALIZE() \
 	do { \
-		arm_hardware_piof_outputs2m(LS020_RS, LS020_RS); \
-		arm_hardware_pioe_outputs((1U << 0), 0 * (1U << 0));		/* PE0 - enable backlight */ \
+		arm_hardware_piof_outputs2m(LS020_RS, LS020_RS);	/* PF4 */ \
+		arm_hardware_piof_outputs((1U << 1), 0 * (1U << 1));		/* PF1 - enable backlight */ \
 	} while (0)
 
 #define LS020_RESET_INITIALIZE() \
 	do { \
-		arm_hardware_piof_outputs2m(LS020_RESET, LS020_RESET); \
-		arm_hardware_pioe_outputs((1U << 0), 0 * (1U << 0));		/* PE0 - enable backlight */ \
+		arm_hardware_piof_outputs2m(LS020_RESET, LS020_RESET);	/* PF5 */ \
+		arm_hardware_piof_outputs((1U << 1), 0 * (1U << 1));		/* PF1 - enable backlight */ \
 	} while (0)
 
 #define LS020_RS_SET(v) do { \
@@ -98,14 +98,14 @@
 
 	#define LS020_RS_PORT_S(v)		do { GPIOF->BSRR = BSRR_S(v); __DSB(); } while (0)
 	#define LS020_RS_PORT_C(v)		do { GPIOF->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define LS020_RS			(1u << 3)			// PF3 D7 signal
+	#define LS020_RS			(1u << 4)			// PF4
 
 #elif LCDMODE_SPI_RN
 	// эти контроллеры требуют только RESET
 
 	#define LS020_RESET_PORT_S(v)		do { GPIOF->BSRR = BSRR_S(v); __DSB(); } while (0)
 	#define LS020_RESET_PORT_C(v)		do { GPIOF->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define LS020_RESET			(1u << 2)			// PF2 D6 signal in HD44780 socket
+	#define LS020_RESET			(1u << 5)			// PF5
 
 #elif LCDMODE_SPI_RA
 	// Эти контроллеры требуют RESET и RS
@@ -113,11 +113,11 @@
 
 	#define LS020_RS_PORT_S(v)		do { GPIOF->BSRR = BSRR_S(v); __DSB(); } while (0)
 	#define LS020_RS_PORT_C(v)		do { GPIOF->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define LS020_RS			(1u << 3)			// PF3 D7 signal
+	#define LS020_RS			(1u << 4)			// PF4
 
 	#define LS020_RESET_PORT_S(v)		do { GPIOF->BSRR = BSRR_S(v); __DSB(); } while (0)
 	#define LS020_RESET_PORT_C(v)		do { GPIOF->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define LS020_RESET			(1u << 2)			// PF2 D6 signal in HD44780 socket
+	#define LS020_RESET			(1u << 5)			// PF5
 
 #elif LCDMODE_HD44780 && (LCDMODE_SPI == 0)
 
