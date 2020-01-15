@@ -942,7 +942,7 @@ static void vdc5fb_init_tcon(struct st_vdc5 * const vdc)
 
 	// Horisontal sync generation parameters
 	SETREG32_CK(& vdc->TCON_TIM, 11, 16, HFULL);		// TCON_HALF
-	SETREG32_CK(& vdc->TCON_TIM, 11, 0, 0);			// TCON_OFFSET
+	SETREG32_CK(& vdc->TCON_TIM, 11, 0, 0);				// TCON_OFFSET
 
 	//SETREG32_CK(& vdc->TCON_TIM_POLA2, 2, 12, 0x00);	// TCON_POLA_MD
 	//SETREG32_CK(& vdc->TCON_TIM_POLB2, 2, 12, 0x00);	// TCON_POLB_MD
@@ -950,8 +950,8 @@ static void vdc5fb_init_tcon(struct st_vdc5 * const vdc)
 	// HSYNC signal
 	SETREG32_CK(& vdc->TCON_TIM_STH1, 11, 16,	0);		// TCON_STH_HS
 	SETREG32_CK(& vdc->TCON_TIM_STH1, 11, 0, HSYNC);	// TCON_STH_HW
-	// Source strobe signal
-	SETREG32_CK(& vdc->TCON_TIM_STB1, 11, 16, 0);		// TCON_STB_HS
+	// Source strobe signal - used as DE
+	SETREG32_CK(& vdc->TCON_TIM_STB1, 11, 16, LEFTMARGIN);		// TCON_STB_HS
 	SETREG32_CK(& vdc->TCON_TIM_STB1, 11, 0, WIDTH);	// TCON_STB_HW
 
 	/* hardware-dependent control signals */
