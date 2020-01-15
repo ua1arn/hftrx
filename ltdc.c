@@ -45,16 +45,16 @@
 
 		/* Accumulated parameters for this display */
 		LEFTMARGIN = HSYNC + HBP,	/* horizontal delay before DE start */
-		TOPMARGIN = VSYNC + VBP,	/* vertival delay before DE start */
+		TOPMARGIN = VSYNC + VBP,	/* vertical delay before DE start */
 
-		HFULL = HSYNC + HBP + WIDTH + HFP,	/* horisontal full period */
+		HFULL = HSYNC + HBP + WIDTH + HFP,	/* horizontal full period */
 		VFULL = VSYNC + VBP + HEIGHT + VFP,	/* vertical full period */
 
 		// MODE: DE/SYNC mode select.
 		// DE MODE: MODE="1", VS and HS must pull high.
-		// SYNC MODE: MODE="0". DE nust be grounded
-		VSYNCNEG = 1,			/* Negative polarity required for VSYNC signel */
-		HSYNCNEG = 1,			/* Negative polarity required for HSYNC signel */
+		// SYNC MODE: MODE="0". DE must be grounded
+		VSYNCNEG = 1,			/* Negative polarity required for VSYNC signal */
+		HSYNCNEG = 1,			/* Negative polarity required for HSYNC signal */
 		DENEG = 1,				/* DE polarity (ignored) */
 		BOARD_DEMODE = 0		/* 0: static signal, 1: DE controlled */
 	};
@@ -80,16 +80,16 @@
 
 		/* Accumulated parameters for this display */
 		LEFTMARGIN = 46,		/* horizontal blanking EXACTLY */
-		TOPMARGIN = 23,			/* vertival blanking EXACTLY */
+		TOPMARGIN = 23,			/* vertical blanking EXACTLY */
 
-		HFULL = LEFTMARGIN + WIDTH + HFP,	/* horisontal full period */
+		HFULL = LEFTMARGIN + WIDTH + HFP,	/* horizontal full period */
 		VFULL = TOPMARGIN + HEIGHT + VFP,	/* vertical full period */
 
 		// MODE: DE/SYNC mode select.
 		// DE MODE: MODE="1", VS and HS must pull high.
-		// SYNC MODE: MODE="0". DE nust be grounded
-		VSYNCNEG = 1,			/* Negative polarity required for VSYNC signel */
-		HSYNCNEG = 1,			/* Negative polarity required for HSYNC signel */
+		// SYNC MODE: MODE="0". DE must be grounded
+		VSYNCNEG = 1,			/* Negative polarity required for VSYNC signal */
+		HSYNCNEG = 1,			/* Negative polarity required for HSYNC signal */
 		DENEG = 0,				/* DE polarity */
 		BOARD_DEMODE = 0		/* 0: static signal, 1: DE controlled */
 	};
@@ -117,16 +117,16 @@
 
 		/* Accumulated parameters for this display */
 		LEFTMARGIN = 160,		/* horizontal blanking EXACTLY */
-		TOPMARGIN = 23,			/* vertival blanking EXACTLY */
+		TOPMARGIN = 23,			/* vertical blanking EXACTLY */
 
-		HFULL = LEFTMARGIN + WIDTH + HFP,	/* horisontal full period */
+		HFULL = LEFTMARGIN + WIDTH + HFP,	/* horizontal full period */
 		VFULL = TOPMARGIN + HEIGHT + VFP,	/* vertical full period */
 
 		// MODE: DE/SYNC mode select.
 		// DE MODE: MODE="1", VS and HS must pull high.
-		// SYNC MODE: MODE="0". DE nust be grounded
-		VSYNCNEG = 1,			/* Negative polarity required for VSYNC signel */
-		HSYNCNEG = 1,			/* Negative polarity required for HSYNC signel */
+		// SYNC MODE: MODE="0". DE must be grounded
+		VSYNCNEG = 1,			/* Negative polarity required for VSYNC signal */
+		HSYNCNEG = 1,			/* Negative polarity required for HSYNC signal */
 		DENEG = 0,				/* DE polarity */
 		BOARD_DEMODE = 0		/* 0: static signal, 1: DE controlled */
 	};
@@ -151,13 +151,13 @@
 
 		/* TODO: should be changed Accumulated parameters for this display */
 		LEFTMARGIN = HSYNC + HBP,	/* horizontal delay before DE start */
-		TOPMARGIN = VSYNC + VBP,	/* vertival delay before DE start */
+		TOPMARGIN = VSYNC + VBP,	/* vertical delay before DE start */
 
-		HFULL = HSYNC + HBP + WIDTH + HFP,	/* horisontal full period */
+		HFULL = HSYNC + HBP + WIDTH + HFP,	/* horizontal full period */
 		VFULL = VSYNC + VBP + HEIGHT + VFP,	/* vertical full period */
 
-		VSYNCNEG = 1,			/* Negative polarity required for VSYNC signel */
-		HSYNCNEG = 1,			/* Negative polarity required for HSYNC signel */
+		VSYNCNEG = 1,			/* Negative polarity required for VSYNC signal */
+		HSYNCNEG = 1,			/* Negative polarity required for HSYNC signal */
 		DENEG = 1,				/* DE polarity */
 		BOARD_DEMODE = 0		/* 0: static signal, 1: DE controlled */
 	};
@@ -182,13 +182,13 @@
 
 		/* Accumulated parameters for this display */
 		LEFTMARGIN = HSYNC + HBP,	/* horizontal delay before DE start */
-		TOPMARGIN = VSYNC + VBP,	/* vertival delay before DE start */
+		TOPMARGIN = VSYNC + VBP,	/* vertical delay before DE start */
 
-		HFULL = HSYNC + HBP + WIDTH + HFP,	/* horisontal full period */
+		HFULL = HSYNC + HBP + WIDTH + HFP,	/* horizontal full period */
 		VFULL = VSYNC + VBP + HEIGHT + VFP,	/* vertical full period */
 
-		VSYNCNEG = 1,			/* Negative polarity required for VSYNC signel */
-		HSYNCNEG = 1,			/* Negative polarity required for HSYNC signel */
+		VSYNCNEG = 1,			/* Negative polarity required for VSYNC signal */
+		HSYNCNEG = 1,			/* Negative polarity required for HSYNC signal */
 		DENEG = 1,				/* DE polarity */
 		BOARD_DEMODE = 0		/* 0: static signal, 1: DE controlled */
 	};
