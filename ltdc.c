@@ -55,7 +55,7 @@
 		// SYNC MODE: MODE="0". DE must be grounded
 		VSYNCNEG = 1,			/* Negative polarity required for VSYNC signal */
 		HSYNCNEG = 1,			/* Negative polarity required for HSYNC signal */
-		DENEG = 1,				/* DE polarity (ignored) */
+		DENEG = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
 		BOARD_DEMODE = 0		/* 0: static signal, 1: DE controlled */
 	};
 #elif LCDMODE_AT070TN90
@@ -90,7 +90,7 @@
 		// SYNC MODE: MODE="0". DE must be grounded
 		VSYNCNEG = 1,			/* Negative polarity required for VSYNC signal */
 		HSYNCNEG = 1,			/* Negative polarity required for HSYNC signal */
-		DENEG = 0,				/* DE polarity */
+		DENEG = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
 		BOARD_DEMODE = 0		/* 0: static signal, 1: DE controlled */
 	};
 
@@ -127,7 +127,7 @@
 		// SYNC MODE: MODE="0". DE must be grounded
 		VSYNCNEG = 1,			/* Negative polarity required for VSYNC signal */
 		HSYNCNEG = 1,			/* Negative polarity required for HSYNC signal */
-		DENEG = 0,				/* DE polarity */
+		DENEG = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
 		BOARD_DEMODE = 0		/* 0: static signal, 1: DE controlled */
 	};
 
@@ -158,7 +158,7 @@
 
 		VSYNCNEG = 1,			/* Negative polarity required for VSYNC signal */
 		HSYNCNEG = 1,			/* Negative polarity required for HSYNC signal */
-		DENEG = 1,				/* DE polarity */
+		DENEG = 0,				/* DE polarity: (normal: DE is 0 while sync) */
 		BOARD_DEMODE = 0		/* 0: static signal, 1: DE controlled */
 	};
 #elif LCDMODE_ILI9341
@@ -189,7 +189,7 @@
 
 		VSYNCNEG = 1,			/* Negative polarity required for VSYNC signal */
 		HSYNCNEG = 1,			/* Negative polarity required for HSYNC signal */
-		DENEG = 1,				/* DE polarity */
+		DENEG = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
 		BOARD_DEMODE = 0		/* 0: static signal, 1: DE controlled */
 	};
 #else
@@ -256,35 +256,6 @@ void vdc5_update(
 	local_delay_ms(0); \
 } while (0)
 
-
-#define     LCD_CH0_S_VSYNC         (0u)                     /* Vertical Pulse start position                               */
-#define     LCD_CH0_W_VSYNC         (10u)                    /* Vertical Pulse Width(VPW)                                   */
-#define     LCD_CH0_DISP_VS         (10u + 2u)                    /* LCD display area vertical start position
-                                                                 = Vertical Pulse Width(VPW) + Vertical Back Porch(VBP)     */
-#define     LCD_CH0_DISP_VW         (272u)                   /* Vertical Display Period(VDP)                                */
-
-#define     LCD_CH0_S_HSYNC         (0u)                     /* Horizontal Pulse start position                             */
-#define     LCD_CH0_W_HSYNC         (41u)                    /* Horizontal Pulse Width(HPW)                                 */
-#define     LCD_CH0_DISP_HS         (41u + 2u)                    /* LCD display area horizontal start position
-                                                                 = Horizontal Pulse Width(HPW) + Horizontal Back Porch(HBP) */
-#define     LCD_CH0_DISP_HW         (480u)                   /* Horizontal Display Period(HDP)                              */
-
-#define     LCD_CH0_SIG_FV          (272u + 16u - 1u)              /* Vertical Total Period(VTP)                                  */
-#define     LCD_CH0_SIG_FH          (539u - 1u)             /* Horizontal Total Period(HTP)                                */
-
-#define     LCD_CH0_TCON_PIN_VSYNC  VDC5_LCD_TCON_PIN_4      /* Select TCON of a Vsync signal (Vsync_TCON_select)           */
-#define     LCD_CH0_TCON_PIN_HSYNC  VDC5_LCD_TCON_PIN_5      /* Select TCON of a Hsync signal (Hsync_TCON_select)           */
-#define     LCD_CH0_TCON_PIN_DE     VDC5_LCD_TCON_PIN_6      /* Select TCON of a DE signal    (DE_TCON_select)              */
-
-#define     LCD_CH0_TOCN_POL_VSYNC  VDC5_SIG_POL_INVERTED    /* Select polarity of a Vsync signal (Vsync_POL)               */
-#define     LCD_CH0_TOCN_POL_HSYNC  VDC5_SIG_POL_INVERTED    /* Select polarity of a Hsync signal (Hsync_POL)               */
-#define     LCD_CH0_TOCN_POL_DE     VDC5_SIG_POL_NOT_INVERTED/* Select polarity of a Hsync signal (DE_POL)                  */
-
-#define     LCD_CH0_TCON_HALF       (539u)                  /* TCON reference timing, 1/2fH timing(HTP)                          */
-#define     LCD_CH0_TCON_OFFSET     (0u)                     /* TCON reference timing, offset Hsync signal timing           */
-
-#define     LCD_CH0_OUT_EDGE        (VDC5_EDGE_FALLING)       /* Output phase control of LCD_DATA signal(LCD_DATA_OUT_EDGE)  */
-#define     LCD_CH0_OUT_FORMAT      (VDC5_LCD_OUTFORMAT_RGB565) /* LCD output format select (LCD_OUT_FORMAT)                */
 
 /************************************************************************/
 
@@ -370,10 +341,10 @@ static void vdc5fb_init_sync(struct st_vdc5 * const vdc)
 	SETREG32_CK(& vdc->SC0_SCL0_FRC4, 11, 16, VFULL - 1);// SC0_RES_FV Free-Running Vsync Period Setting
 	SETREG32_CK(& vdc->SC0_SCL0_FRC4, 11, 0, HFULL - 1);	// SC0_RES_FH Hsync Period Setting
 
-	SETREG32_CK(& vdc->SC0_SCL0_FRC6, 11, 16, TOPMARGIN);	// SC0_RES_F_VS
+	SETREG32_CK(& vdc->SC0_SCL0_FRC6, 11, 16, TOPMARGIN);	// SC0_RES_F_VS VSYNC + V backporch lines)
 	SETREG32_CK(& vdc->SC0_SCL0_FRC6, 11, 0, HEIGHT);			// SC0_RES_F_VW
 
-	SETREG32_CK(& vdc->SC0_SCL0_FRC7, 11, 16, LEFTMARGIN);	// SC0_RES_F_HS
+	SETREG32_CK(& vdc->SC0_SCL0_FRC7, 11, 16, LEFTMARGIN);	// SC0_RES_F_HS HSYNC+H backporch pixel-clock cycles
 	SETREG32_CK(& vdc->SC0_SCL0_FRC7, 11, 0, WIDTH);			// SC0_RES_F_HW
 
 	SETREG32_CK(& vdc->SC0_SCL0_FRC3, 1, 0, 0x01);	// SC0_RES_VS_SEL Vsync Signal Output Select 1: Internally generated free-running Vsync signal
@@ -680,7 +651,7 @@ static void vdc5fb_init_graphics(struct st_vdc5 * const vdc)
 	SETREG32_CK(& vdc->GR0_BASE, 24, 0, 0x00FF0000);	// GREEN GR0_BASE GBR Background Color B,Gb & R Signal
 	SETREG32_CK(& vdc->GR0_AB2, 11, 16, TOPMARGIN);	// GR0_GRC_VS
 	SETREG32_CK(& vdc->GR0_AB2, 11, 0, HEIGHT);		// GR0_GRC_VW
-	SETREG32_CK(& vdc->GR0_AB3, 11, 16, LEFTMARGIN);	// GR0_GRC_HS
+	SETREG32_CK(& vdc->GR0_AB3, 11, 16, LEFTMARGIN);	// GR0_GRC_HS HSYNC + HBP
 	SETREG32_CK(& vdc->GR0_AB3, 11, 0, WIDTH);			// GR0_GRC_HW
 
 	////////////////////////////////////////////////////////////////
@@ -1853,7 +1824,8 @@ arm_hardware_ltdc_initialize(void)
 	//LTDC_InitStruct.LTDC_VSPolarity = LTDC_VSPolarity_AH;     
 	/* Initialize the data enable polarity as active low */ 
 	//LTDC_InitStruct.LTDC_DEPolarity = LTDC_DEPolarity_AH;		// While VSYNC is low, do not change DISP signal "Low" or "High"
-	LTDC_InitStruct.LTDC_DEPolarity = DENEG ? LTDC_DEPolarity_AL : LTDC_DEPolarity_AH;		// While VSYNC is low, do not change DISP signal "Low" or "High"
+	// LTDC datasheet say: "DE: Not data enable"
+	LTDC_InitStruct.LTDC_DEPolarity = DENEG ? LTDC_DEPolarity_AH : LTDC_DEPolarity_AL;		// While VSYNC is low, do not change DISP signal "Low" or "High"
 	/* Initialize the pixel clock polarity as input pixel clock */ 
 	LTDC_InitStruct.LTDC_PCPolarity = LTDC_PCPolarity_IPC;
 
