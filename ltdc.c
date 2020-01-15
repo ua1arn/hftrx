@@ -58,6 +58,10 @@
 		DENEG = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
 		BOARD_DEMODE = 0		/* 0: static signal, 1: DE controlled */
 	};
+	/* SONY PSP-1000 display (4.3") required. */
+	/* Используется при BOARD_DEMODE = 0 */
+	#define BOARD_DERESET 1		/* требуется формирование сигнала RESET для панели по этому выводу после начала формирования синхронизации */
+
 #elif LCDMODE_AT070TN90
 
 	/* AT070TN90 panel (800*480) - 7" display HV mode */
@@ -1236,7 +1240,7 @@ arm_hardware_ltdc_initialize(void)
 
 #if defined (BOARD_DEVALUE)
 	HARDWARE_LTDC_SET_DISP(BOARD_DEMODE, BOARD_DEVALUE);
-#else
+#elif defined (BOARD_DERESET)
 	/* SONY PSP-1000 display (4.3") required. */
 	HARDWARE_LTDC_SET_DISP(BOARD_DEMODE, 0);
 	local_delay_ms(150);
@@ -1901,7 +1905,7 @@ arm_hardware_ltdc_initialize(void)
 	// LQ043T3DX02K rules: While “VSYNC” is “Low”, don’t change “DISP” signal “Low” to “High”.
 #if defined (BOARD_DEVALUE)
 	HARDWARE_LTDC_SET_DISP(BOARD_DEMODE, BOARD_DEVALUE);
-#else
+#elif defined (BOARD_DERESET)
 	/* SONY PSP-1000 display (4.3") required. */
 	HARDWARE_LTDC_SET_DISP(BOARD_DEMODE, 0);
 	local_delay_ms(150);
