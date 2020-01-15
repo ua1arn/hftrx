@@ -576,7 +576,8 @@ extern "C" {
 		AF_TIM9 = 3,	//!< AF3 - TIM9/10/11
 		AF_TIM10 = 3,	//!< AF3 - TIM9/10/11
 		AF_TIM11 = 3,	//!< AF3 - TIM9/10/11
-		AF_I2C1,		//!< AF4 - I2C1/2/3
+		AF_USART1,		//!< AF4 - USART1
+		AF_I2C1 = 4,	//!< AF4 - I2C1/2/3
 		AF_I2C2 = 4,	//!< AF4 - I2C1/2/3
 		AF_I2C3 = 4,	//!< AF4 - I2C1/2/3
 		AF_SPI1,		//!< AF5 - SPI1/2
@@ -584,8 +585,7 @@ extern "C" {
 		AF_SPI3,		//!< AF6 - SPI3
 		AF_SPI2ext = 6,	//!< AF6 - SPI3
 		AF_SAI = 6,		//!< AF6 - SAI1/SAI2
-		AF_USART1,		//!< AF7 - USART1/2/3
-		AF_USART2 = 7,	//!< AF7 - USART1/2/3
+		AF_USART2,		//!< AF7 - USART2/3
 		AF_USART3 = 7,	//!< AF7 - USART1/2/3
 		AF_USART4,		//!< AF8 - USART4/5/6
 		AF_USART5 = 8,	//!< AF8 - USART4/5/6
@@ -1096,6 +1096,7 @@ extern "C" {
 #endif /* LCDMODE_S1D13781 */
 
 #if LCDMODE_AT070TN90	/* AT070TN90 panel (800*480) - 7" display */
+	#define LCDMODE_SPI_RN 1 // эти дисплеи требуют только RESET
 	#define DIM_X 800
 	#define DIM_Y 480
 	#define LCDMODE_COLORED	1
@@ -1104,6 +1105,7 @@ extern "C" {
 #endif /* LCDMODE_AT070TN90 */
 
 #if LCDMODE_AT070TNA2	/* AT070TNA2 panel (1024*600) - 7" display */
+	#define LCDMODE_SPI_RN 1 // эти дисплеи требуют только RESET
 	#define DIM_X 1024
 	#define DIM_Y 600
 	#define LCDMODE_COLORED	1

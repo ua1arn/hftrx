@@ -46,8 +46,7 @@
 #define USB_FUNCTION_VENDOR_ID	0xFFFF	// Generic
 //#define USB_FUNCTION_VENDOR_ID	0x041C	// Altera Corp.
 //#define USB_FUNCTION_VENDOR_ID	0x04d9	// Holtek Semiconductor, Inc.
-
-
+//#define USB_FUNCTION_VENDOR_ID	0x1D6B	// Linux Foundation
 
 // From STMicroelectronics Comunication Device Class driver (CDC) INF FILE:
 //#define USB_FUNCTION_VENDOR_ID	0x0483	// STM
@@ -4001,6 +4000,10 @@ static unsigned fill_Configuration_compound(uint_fast8_t fill, uint8_t * p, unsi
 	n += fill_CDCACM_function(fill, p + n, maxsize - n, highspeed);
 #endif /* WITHUSBCDC */
 
+#if WITHUSBDFU && WITHMOVEDFU
+	n += fill_DFU_function(fill, p + n, maxsize - n, highspeed);
+#endif /* WITHUSBDFU */
+
 #if WITHUSBUAC
 	#if 0
 		n += fill_UAC2_IN48_OUT48_function(fill, p + n, maxsize - n, highspeed, 0);
@@ -4023,7 +4026,7 @@ static unsigned fill_Configuration_compound(uint_fast8_t fill, uint8_t * p, unsi
 	n += fill_HID_XXXX_function(fill, p + n, maxsize - n, highspeed);
 #endif /* WITHUSBHID */
 
-#if WITHUSBDFU
+#if WITHUSBDFU && ! WITHMOVEDFU
 	n += fill_DFU_function(fill, p + n, maxsize - n, highspeed);
 #endif /* WITHUSBDFU */
 

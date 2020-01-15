@@ -16,6 +16,8 @@
 #if WITHUSBHW
 
 #include "usb_core.h"
+#include "fatfs/ff.h"
+#include "fatfs/diskio.h"		/* FatFs lower layer API */
 #include "MSC/inc/usbh_msc.h"
 
 

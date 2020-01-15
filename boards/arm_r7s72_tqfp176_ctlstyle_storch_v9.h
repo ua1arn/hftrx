@@ -347,6 +347,14 @@
 	#define WITHIF4DSP	1	// "Дятел"
 	#define WITHDACSTRAIGHT 1		/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
 
+	// выбор накопителя
+	//#define WITHUSESDCARD		1	// Включение поддержки SD CARD
+	//#define WITHUSEUSBFLASH		1	// Включение поддержки USB memory stick
+
+	// выбор функциональности
+	//#define WITHUSEAUDIOREC		1	// Запись звука
+	//#define WITHUSEAUDIOREC2CH	1	// Запись звука в стерео формате
+	//#define WITHUSEAUDIORECCLASSIC	1	// стандартный формат записи, без "дыр"
 
 	#define WITHBARS		1	/* отображение S-метра и SWR-метра */
 
@@ -449,15 +457,6 @@
 		#define	WITHBBOXTX		1		// автоматический переход на передачу
 		#define	WITHBBOXMIKESRC	BOARD_TXAUDIO_2TONE	// 2: 2tone, 1: noise 
 	#endif
-
-	// выбор накопителя
-	//#define WITHUSESDCARD		1	// Включение поддержки SD CARD
-	#define WITHUSEUSBFLASH		1	// Включение поддержки USB memory stick
-
-	// выбор функциональности
-	#define WITHUSEAUDIOREC		1	// Запись звука
-	//#define WITHUSEAUDIOREC2CH	1	// Запись звука в стерео формате
-	//#define WITHUSEAUDIORECCLASSIC	1	// стандартный формат записи, без "дыр"
 
 	#define FTW_RESOLUTION 32	/* разрядность FTW выбранного DDS */
 

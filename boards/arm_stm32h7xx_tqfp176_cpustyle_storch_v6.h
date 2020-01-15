@@ -40,7 +40,7 @@
 //#define USB_OTG_FS                   USB2_OTG_FS
 
 #define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
-#define WITHUSBHW_DEVICE	USB_OTG_HS	/* на этом устройстве поддерживается функциональность DEVUCE	*/
+#define WITHUSBHW_DEVICE	USB_OTG_HS	/* на этом устройстве поддерживается функциональность DEVICE	*/
 #define WITHUSBDEV_VBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
 //#define WITHUSBDEV_HSDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
 //#define WITHUSBDEV_HIGHSPEEDULPI	1
@@ -734,13 +734,16 @@
 	};
 	/* demode values: 0: static signal, 1: DE controlled */
 	#define HARDWARE_LTDC_INITIALIZE(demode) do { \
+		const uint32_t HS = (1U << 10); /* VSYNC PI10 */ \
+		const uint32_t VS = (1U << 9); /* VSYNC PI9 */ \
+		const uint32_t DE = (1U << 13); /* DE PE13 */ \
 		/* Synchronisation signals */ \
-		arm_hardware_pioi_altfn20((1U << 9), GPIO_AF_LTDC);		/* VSYNC */ \
-		arm_hardware_pioi_altfn20((1U << 10), GPIO_AF_LTDC);	/* HSYNC */ \
+		arm_hardware_pioi_altfn20(VS, GPIO_AF_LTDC);		/* VSYNC */ \
+		arm_hardware_pioi_altfn20(HS, GPIO_AF_LTDC);		/* HSYNC */ \
 		arm_hardware_pioe_altfn20((1U << 14), GPIO_AF_LTDC);	/* CLK */ \
 		/* Control */ \
 		/* arm_hardware_pioe_altfn20((1U << 13), GPIO_AF_LTDC); */	/* DE */ \
-		arm_hardware_pioe_outputs((1U << 13), 0 * (1U << 13));	/* DE=0 (DISP, pin 31) */ \
+		arm_hardware_pioe_outputs(DE, 0 * DE);		/* DE=0 (DISP, pin 31) */ \
 		/* RED */ \
 		arm_hardware_pioh_altfn20((1U << 8), GPIO_AF_LTDC);		/* R2 */ \
 		arm_hardware_pioh_altfn20((1U << 9), GPIO_AF_LTDC);		/* R3 */ \
@@ -767,16 +770,16 @@
 	/* управление состоянием сигнала DISP панели */
 	/* demode values: 0: static signal, 1: DE controlled */
 	#define HARDWARE_LTDC_SET_DISP(demode, state) do { \
-		const uint32_t VSYNC = (1U << 9); \
-		const uint32_t mask = (1U << 13); \
+		const uint32_t VS = (1U << 9); /* VSYNC PI9 */ \
+		const uint32_t DE = (1U << 13); /* DE PE13 */ \
 		if (demode != 0) break; \
-		while ((GPIOI->IDR & VSYNC) != 0) ; /* дождаться 0 */ \
-		while ((GPIOI->IDR & VSYNC) == 0) ; /* дождаться 1 */ \
-		arm_hardware_pioe_outputs(mask, ((state) != 0) * mask);	/* DE=DISP, pin 31 - можно менять только при VSYNC=1 */ \
+		while ((GPIOI->IDR & VS) != 0) ; /* дождаться 0 */ \
+		while ((GPIOI->IDR & VS) == 0) ; /* дождаться 1 */ \
+		arm_hardware_pioe_outputs(DE, ((state) != 0) * DE);	/* DE=DISP, pin 31 - можно менять только при VSYNC=1 */ \
 	} while (0)
-	/* управление состоянием сигнала MODE 7" панели */
+	/* управление состоянием сигнала MODE 7" панели - на этой плате не используется */
 	#define HARDWARE_LTDC_SET_MODE(state) do { \
-		const uint32_t mask = (1U << 4); /* PF4 */ \
+		const uint32_t mask = (1U << 4); /* PF4 - RS of HD4408 */ \
 		arm_hardware_piof_outputs(mask, (state != 0) * mask);	/* PF4 MODE=state */ \
 	} while (0)
 #endif /* LCDMODE_LTDC */

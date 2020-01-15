@@ -143,9 +143,14 @@ CPFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 # makefile rules
 #
 
+.PHONY: all bootloader flash clean
+
 all: APP2 app.stm32 app.hex
 
 bootloader: BOOT2 boot.hex
+
+flash: $(PROJECT)_app.stm32
+	./dfu-util.exe --device ffff:0738 --alt 0 --dfuse-address 0x18020000 --download $(PROJECT)_app.stm32
 
 BOOT2: $(OBJS) $(PROJECT)_boot.elf $(PROJECT)_boot.bin
 

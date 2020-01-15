@@ -100,10 +100,10 @@
   * @{
   */
 // Эти значения пишутся в регистр USB_OTG_DCFG после умножения на USB_OTG_DCFG_DSPD_0
-#define USB_OTG_SPEED_HIGH                     0U
-#define USB_OTG_SPEED_HIGH_IN_FULL             1U
-#define USB_OTG_SPEED_LOW                      2U
-#define USB_OTG_SPEED_FULL                     3U
+#define USB_OTG_SPEED_HIGH                     0U	// 00: High speed
+#define USB_OTG_SPEED_HIGH_IN_FULL             1U	// Full speed using HS
+#define USB_OTG_SPEED_LOW                      2U	// Reserved
+#define USB_OTG_SPEED_FULL                     3U	// Full speed using internal FS PHY
 /**
   * @}
   */
@@ -297,7 +297,7 @@ typedef struct
                                       This parameter Depends on the used USB core.
                                       This parameter must be a number between Min_Data = 1 and Max_Data = 15 */
 
-  uint32_t speed;                /*!< USB Core speed.
+  uint32_t pcd_speed;                /*!< USB Core speed. PCD_SPEED_xxx
                                       This parameter can be any value of @ref USB_Core_Speed_                */
 
   uint32_t dma_enable;           /*!< Enable or disable of the USB embedded DMA.                             */
@@ -393,7 +393,7 @@ typedef struct
   uint8_t   ep_is_in;      /*!< Endpoint direction
                                 This parameter must be a number between Min_Data = 0 and Max_Data = 1      */
 
-  uint8_t   speed;         /*!< USB Host speed.
+  uint8_t   usbh_otg_speed;         /*!< USB Host speed. USB_OTG_SPEED_
                                 This parameter can be any value of @ref USB_Core_Speed_                    */
 
   uint8_t   do_ping;       /*!< Enable or disable the use of the PING protocol for HS mode.                */
@@ -556,8 +556,7 @@ typedef union
     uint8_t lsb;
   }
   bw;
-}
-uint16_t_uint8_t;
+} uint16_t_uint8_t;
 
 
 typedef union _USB_Setup
@@ -572,15 +571,13 @@ typedef union _USB_Setup
     uint16_t_uint8_t  wIndex;
     uint16_t_uint8_t  wLength;
   } b;
-}
-USB_Setup_TypeDef;
+} USB_Setup_TypeDef;
 
 typedef  struct  _DescHeader
 {
     uint8_t  bLength;
     uint8_t  bDescriptorType;
-}
-USBH_DescHeader_t;
+} USBH_DescHeader_t;
 
 typedef struct _DeviceDescriptor
 {
@@ -601,8 +598,7 @@ typedef struct _DeviceDescriptor
   uint8_t   iProduct;       /* Index of Product String Descriptor */
   uint8_t   iSerialNumber;  /* Index of Serial Number String Descriptor */
   uint8_t   bNumConfigurations; /* Number of Possible Configurations */
-}
-USBH_DevDescTypeDef;
+} USBH_DevDescTypeDef;
 
 typedef struct _EndpointDescriptor
 {
@@ -642,8 +638,7 @@ typedef struct _ConfigurationDescriptor
   uint8_t   bmAttributes;         /* D7 Bus Powered , D6 Self Powered, D5 Remote Wakeup , D4..0 Reserved (0)*/
   uint8_t   bMaxPower;            /*Maximum Power Consumption */
   USBH_InterfaceDescTypeDef        Itf_Desc[USBH_MAX_NUM_INTERFACES];
-}
-USBH_CfgDescTypeDef;
+} USBH_CfgDescTypeDef;
 
 
 typedef struct _InterfaceAssocDescriptor
@@ -656,8 +651,7 @@ typedef struct _InterfaceAssocDescriptor
   uint8_t   bFunctionSubClass;
   uint8_t   bFunctionProtocol;
   uint8_t   iConfiguration;       /*Index of String Descriptor Describing this configuration */
-}
-USBH_IfAssocDescTypeDef;
+} USBH_IfAssocDescTypeDef;
 
 /* Following USB Host status */
 typedef enum
@@ -668,20 +662,9 @@ typedef enum
   USBH_NOT_SUPPORTED,
   USBH_UNRECOVERED_ERROR,
   USBH_ERROR_SPEED_UNKNOWN,
-}USBH_StatusTypeDef;
+} USBH_StatusTypeDef;
 
 
-/** @defgroup USBH_CORE_Exported_Types
-  * @{
-  */
-
-typedef enum
-{
-  USBH_SPEED_HIGH  = 0,
-  USBH_SPEED_FULL  = 1,
-  USBH_SPEED_LOW   = 2,
-
-}USBH_SpeedTypeDef;
 
 /* Following states are used for gState */
 typedef enum
@@ -692,9 +675,9 @@ typedef enum
 	HOST_DEV_WAIT_FOR_ATTACHMENT,
 	HOST_DEV_BEFORE_ATTACHED,
 	HOST_DEV_ATTACHED,
-	HOST_DEV_DISCONNECTED,
+	HOST_DEV_DISCONNECTED,		// 6
 	HOST_DETECT_DEVICE_SPEED,
-	HOST_ENUMERATION,
+	HOST_ENUMERATION,			// 8
 	HOST_CLASS_REQUEST,
 	HOST_INPUT,
 	HOST_SET_CONFIGURATION,
@@ -703,7 +686,7 @@ typedef enum
 	HOST_SUSPENDED,
 	HOST_ABORT_STATE,
 	HOST_DELAY
-}HOST_StateTypeDef;
+} HOST_StateTypeDef;
 
 /* Following states are used for EnumerationState */
 typedef enum
@@ -737,7 +720,7 @@ typedef enum
   CTRL_ERROR,
   CTRL_STALLED,
   CTRL_COMPLETE
-}CTRL_StateTypeDef;
+} CTRL_StateTypeDef;
 
 
 /* Following states are used for RequestState */
@@ -755,7 +738,7 @@ typedef enum {
   USBH_URB_NYET,
   USBH_URB_ERROR,
   USBH_URB_STALL
-}USBH_URBStateTypeDef;
+} USBH_URBStateTypeDef;
 
 typedef enum
 {
@@ -764,8 +747,7 @@ typedef enum
   USBH_CONTROL_EVENT,
   USBH_CLASS_EVENT,
   USBH_STATE_CHANGED_EVENT,
-}
-USBH_OSEventTypeDef;
+} USBH_OSEventTypeDef;
 
 /* Control request structure */
 typedef struct
@@ -861,7 +843,7 @@ typedef struct
 #endif
 	uint8_t                           Data [USBH_MAX_DATA_BUFFER];
 	uint8_t                           address;
-	uint8_t                           speed;
+	uint8_t                           usb_otg_speed;
 	volatile uint8_t                      is_connected;
 	uint8_t                           current_interface;
 	USBH_DevDescTypeDef               DevDesc;
@@ -884,6 +866,7 @@ typedef struct
 	void*                pData;
 } USBH_ClassTypeDef;
 
+#define USBHNPIPES 15
 /* USB Host handle structure */
 typedef struct _USBH_HandleTypeDef
 {
@@ -899,7 +882,7 @@ typedef struct _USBH_HandleTypeDef
 	USBH_ClassTypeDef*    pClass[USBH_MAX_NUM_SUPPORTED_CLASS];
 	USBH_ClassTypeDef*    pActiveClass;
 	uint32_t              ClassNumber;
-	uint32_t              Pipes [15];
+	uint32_t              Pipes [USBHNPIPES];
 	volatile uint32_t         Timer;
 	//uint8_t               id;
 	void*                 pData;
@@ -1147,7 +1130,9 @@ USBH_StatusTypeDef   USBH_LL_Stop         (USBH_HandleTypeDef *phost);
 
 USBH_StatusTypeDef   USBH_LL_Connect      (USBH_HandleTypeDef *phost);
 USBH_StatusTypeDef   USBH_LL_Disconnect   (USBH_HandleTypeDef *phost);
-USBH_SpeedTypeDef    USBH_LL_GetSpeed     (USBH_HandleTypeDef *phost);
+
+uint8_t    USBH_LL_GetSpeed     (USBH_HandleTypeDef *phost);
+
 USBH_StatusTypeDef   USBH_LL_ResetPort    (USBH_HandleTypeDef *phost, uint_fast8_t status);
 uint32_t             USBH_LL_GetLastXferSize   (USBH_HandleTypeDef *phost, uint8_t );
 USBH_StatusTypeDef   USBH_LL_DriverVBUS   (USBH_HandleTypeDef *phost, uint_fast8_t );
@@ -1477,23 +1462,28 @@ struct descholder
 
 /* получить 32-бит значение */
 uint_fast32_t
+/* Low endian memory layout */
 USBD_peek_u32(
 	const uint8_t * buff
 	);
 
 /* записать в буфер для ответа 32-бит значение */
+/* Low endian memory layout */
 unsigned USBD_poke_u32(uint8_t * buff, uint_fast32_t v);
 
 /* получить 24-бит значение */
+/* Low endian memory layout */
 uint_fast32_t
 USBD_peek_u24(
 	const uint8_t * buff
 	);
 
 /* записать в буфер для ответа 24-бит значение */
+/* Low endian memory layout */
 unsigned USBD_poke_u24(uint8_t * buff, uint_fast32_t v);
 
 /* получить 16-бит значение */
+/* Low endian memory layout */
 uint_fast32_t
 USBD_peek_u16(
 	const uint8_t * buff
@@ -1518,9 +1508,11 @@ USBD_peek_u32_BE(
 	const uint8_t * buff
 	);
 
-/* записать в буфер для ответа 32-бит значение */
+/* записать в буфер для ответа n-бит значение */
 /* Big endian memory layout */
 unsigned USBD_poke_u32_BE(uint8_t * buff, uint_fast32_t v);
+unsigned USBD_poke_u24_BE(uint8_t * buff, uint_fast32_t v);
+unsigned USBD_poke_u16_BE(uint8_t * buff, uint_fast16_t v);
 
 #define USBD_CONFIGCOUNT 4
 

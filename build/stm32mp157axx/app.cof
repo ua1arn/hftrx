@@ -17,5 +17,6 @@
 	<create_cvp_file>0</create_cvp_file>
 	<auto_create_rpd>0</auto_create_rpd>
 	<options>
+		<map_file>1</map_file>
 	</options>
 </cof>

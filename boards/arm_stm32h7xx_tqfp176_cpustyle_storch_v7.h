@@ -45,8 +45,8 @@
 //#define USB_OTG_HS                   USB1_OTG_HS
 //#define USB_OTG_FS                   USB2_OTG_FS
 
-#define WITHUSBHW_DEVICE	USB_OTG_HS	/* на этом устройстве поддерживается функциональность DEVUCE	*/
-#define WITHUSBHW_HOST		USB_OTG_FS	/* на этом устройстве поддерживается функциональность HOST	*/
+#define WITHUSBHW_DEVICE	USB_OTG_HS	/* на этом устройстве поддерживается функциональность DEVICE	*/
+//#define WITHUSBHW_HOST		USB_OTG_FS	/* на этом устройстве поддерживается функциональность HOST	*/
 
 //#define WITHUART1HW	1	/* PA9, PA10 Используется периферийный контроллер последовательного порта #1 */
 #define WITHUART2HW	1	/* PD5, PD6 Используется периферийный контроллер последовательного порта #2 */
@@ -73,14 +73,14 @@
 
 #define LS020_RS_INITIALIZE() \
 	do { \
-		arm_hardware_piof_outputs2m(LS020_RS, LS020_RS); \
-		arm_hardware_pioe_outputs((1U << 0), 0 * (1U << 0));		/* PE0 - enable backlight */ \
+		arm_hardware_piof_outputs2m(LS020_RS, LS020_RS);	/* PF4 */ \
+		arm_hardware_piof_outputs((1U << 1), 0 * (1U << 1));		/* PF1 - enable backlight */ \
 	} while (0)
 
 #define LS020_RESET_INITIALIZE() \
 	do { \
-		arm_hardware_piof_outputs2m(LS020_RESET, LS020_RESET); \
-		arm_hardware_pioe_outputs((1U << 0), 0 * (1U << 0));		/* PE0 - enable backlight */ \
+		arm_hardware_piof_outputs2m(LS020_RESET, LS020_RESET);	/* PF5 */ \
+		arm_hardware_piof_outputs((1U << 1), 0 * (1U << 1));		/* PF1 - enable backlight */ \
 	} while (0)
 
 #define LS020_RS_SET(v) do { \
@@ -98,14 +98,14 @@
 
 	#define LS020_RS_PORT_S(v)		do { GPIOF->BSRR = BSRR_S(v); __DSB(); } while (0)
 	#define LS020_RS_PORT_C(v)		do { GPIOF->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define LS020_RS			(1u << 3)			// PF3 D7 signal
+	#define LS020_RS			(1u << 4)			// PF4
 
 #elif LCDMODE_SPI_RN
 	// эти контроллеры требуют только RESET
 
 	#define LS020_RESET_PORT_S(v)		do { GPIOF->BSRR = BSRR_S(v); __DSB(); } while (0)
 	#define LS020_RESET_PORT_C(v)		do { GPIOF->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define LS020_RESET			(1u << 2)			// PF2 D6 signal in HD44780 socket
+	#define LS020_RESET			(1u << 5)			// PF5
 
 #elif LCDMODE_SPI_RA
 	// Эти контроллеры требуют RESET и RS
@@ -113,11 +113,11 @@
 
 	#define LS020_RS_PORT_S(v)		do { GPIOF->BSRR = BSRR_S(v); __DSB(); } while (0)
 	#define LS020_RS_PORT_C(v)		do { GPIOF->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define LS020_RS			(1u << 3)			// PF3 D7 signal
+	#define LS020_RS			(1u << 4)			// PF4
 
 	#define LS020_RESET_PORT_S(v)		do { GPIOF->BSRR = BSRR_S(v); __DSB(); } while (0)
 	#define LS020_RESET_PORT_C(v)		do { GPIOF->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define LS020_RESET			(1u << 2)			// PF2 D6 signal in HD44780 socket
+	#define LS020_RESET			(1u << 5)			// PF5
 
 #elif LCDMODE_HD44780 && (LCDMODE_SPI == 0)
 
@@ -702,15 +702,27 @@
 		GPIO_AF_LTDC = 14,  /* LCD-TFT Alternate Function mapping */
 		GPIO_AF_LTDC9 = 9  /* LCD-TFT Alternate Function mapping */
 	};
+	// MODE: DE/SYNC mode select.
+	// DE MODE: MODE="1", VS and HS must pull high.
+	// SYNC MODE: MODE="0". DE must be grounded
 	/* demode values: 0: static signal, 1: DE controlled */
 	#define HARDWARE_LTDC_INITIALIZE(demode) do { \
-		/* Synchronisation signals */ \
-		arm_hardware_pioi_altfn20((1U << 9), GPIO_AF_LTDC);		/* VSYNC */ \
-		arm_hardware_pioi_altfn20((1U << 10), GPIO_AF_LTDC);	/* HSYNC */ \
+		const uint32_t MODE = (1U << 4); /* PF4 - MODE */ \
+		const uint32_t DE = (1U << 13); /* PE13 - DE */ \
+		const uint32_t HS = (1U << 10); /* PI10 - HSYNC */ \
+		const uint32_t VS = (1U << 9); 	/* PI9 - VSYNC */ \
+		/* Synchronisation signal */ \
 		arm_hardware_pioe_altfn20((1U << 14), GPIO_AF_LTDC);	/* CLK */ \
 		/* Control */ \
-		arm_hardware_pioe_altfn20((demode != 0) * (1U << 13), GPIO_AF_LTDC);	/* DE */ \
-		arm_hardware_pioe_outputs((demode == 0) * (1U << 13), 0 * (1U << 13));	/* DE=0 (DISP, pin 31) */ \
+		arm_hardware_piof_outputs(MODE, (demode != 0) * MODE);	/* PF4 MODE=state */ \
+		/* Synchronisation signals in SYNC MODE */ \
+		arm_hardware_pioe_outputs((demode == 0) * DE, 0);	/* DE=0 (DISP, pin 31) */ \
+		arm_hardware_pioi_altfn20((demode == 0) * VS, GPIO_AF_LTDC);	/* VSYNC */ \
+		arm_hardware_pioi_altfn20((demode == 0) * HS, GPIO_AF_LTDC);	/* HSYNC */ \
+		/* Synchronisation signals in DE mode*/ \
+		arm_hardware_pioe_altfn20((demode != 0) * DE, GPIO_AF_LTDC);	/* DE */ \
+		arm_hardware_pioi_outputs((demode != 0) * VS, VS);	/* VSYNC */ \
+		arm_hardware_pioi_outputs((demode != 0) * HS, HS);	/* HSYNC */ \
 		/* RED */ \
 		arm_hardware_pioh_altfn20((1U << 9), GPIO_AF_LTDC);		/* R3 */ \
 		arm_hardware_pioh_altfn20((1U << 10), GPIO_AF_LTDC);	/* R4 */ \
@@ -744,8 +756,8 @@
 	} while (0)
 	/* управление состоянием сигнала MODE 7" панели */
 	#define HARDWARE_LTDC_SET_MODE(state) do { \
-		const uint32_t mask = (1U << 4); /* PF4 */ \
-		arm_hardware_piof_outputs(mask, (state != 0) * mask);	/* PF4 MODE=state */ \
+		const uint32_t MODE = (1U << 4); /* PF4 - mode */ \
+		arm_hardware_piof_outputs(MODE, (state != 0) * MODE);	/* PF4 MODE=state */ \
 	} while (0)
 #endif /* LCDMODE_LTDC */
 

@@ -335,10 +335,10 @@ prog_gpioreg(void)
 		HARDWARE_SDIOPOWER_SET(glob_sdcardpoweron);
 	#endif /* defined (HARDWARE_SDIOPOWER_SET) */
 
-	#if defined (TARGET_USBFS_VBUSON_SET)
+	#if defined (TARGET_USBFS_VBUSON_SET) && defined (WITHUSBHW_HOST)
 		// USB FLASH POWER ENABLE BIT
 		TARGET_USBFS_VBUSON_SET(glob_usbflashpoweron);
-	#endif /* defined (TARGET_USBFS_VBUSON_SET) */
+	#endif /* defined (TARGET_USBFS_VBUSON_SET) && defined (WITHUSBHW_HOST) */
 
 	#if defined (HARDWARE_BL_SET)
 		// яркость подсветки
