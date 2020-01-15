@@ -704,7 +704,7 @@
 		/* Synchronisation signals */ \
 		arm_hardware_pio7_alternative((1U << 4), R7S721_PIOALT_6);	/* P7_4 CLK LCD0_CLK */ \
 		/* MODE=1: DE MODE */ \
-		arm_hardware_pio7_outputs((demode != 0) * VS, (1U << 5));	/* P7_5 VSYNC */ \
+		arm_hardware_pio7_outputs((demode != 0) * VS, VS);	/* P7_5 VSYNC */ \
 		arm_hardware_pio7_outputs((demode != 0) * HS, HS);	/* P7_6 HSYNC */ \
 		arm_hardware_pio7_alternative((demode != 0) * DE, R7S721_PIOALT_6); 	/* P7_7 DE */ \
 		/* MODE=0: SYNC MODE */ \
