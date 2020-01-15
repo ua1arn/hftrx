@@ -959,14 +959,14 @@ static void vdc5fb_init_tcon(struct st_vdc5 * const vdc)
 	//SETREG32_CK(& vdc->TCON_TIM_STVB2, 3, 0, 0xXX);	// Output Signal Select for LCD_TCON1 pin - 
 	//SETREG32_CK(& vdc->TCON_TIM_STH2, 3, 0, 0xXX);	// Output Signal Select for LCD_TCON2 pin - 
 	SETREG32_CK(& vdc->TCON_TIM_CPV2, 3, 0, 0x00);		// Output Signal Select for LCD_TCON4 Pin - VSYNC 0: STVA/VS
-	SETREG32_CK(& vdc->TCON_TIM_POLA2, 3, 0, 0x02);	// Output Signal Select for LCD_TCON5 Pin - HSYNC 2: STH/SP/HS
-	SETREG32_CK(& vdc->TCON_TIM_POLB2, 3, 0, 0x07);	// Output Signal Select for LCD_TCON6 Pin - DE
+	SETREG32_CK(& vdc->TCON_TIM_POLA2, 3, 0, 0x02);		// Output Signal Select for LCD_TCON5 Pin - HSYNC 2: STH/SP/HS
+	SETREG32_CK(& vdc->TCON_TIM_POLB2, 3, 0, 0x07);		// Output Signal Select for LCD_TCON6 Pin - DE 7: DE
 	// HSYMC polarity
 	SETREG32_CK(& vdc->TCON_TIM_STH2, 1, 4, HSYNCNEG * 0x01);		// TCON_STH_INV
 	// VSYNC polarity
 	SETREG32_CK(& vdc->TCON_TIM_STVA2, 1, 4, VSYNCNEG * 0x01);		// TCON_STVA_INV
 	// DE polarity
-	SETREG32_CK(& vdc->TCON_TIM_STB2, 1, 4, DENEG * 0x01);			// TCON_STB_INV
+	SETREG32_CK(& vdc->TCON_TIM_DE, 1, 0, DENEG * 0x01);			// TCON_DE_INV
 
 #if 0
 	static const unsigned char tcon_sel[LCD_MAX_TCON]
