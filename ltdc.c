@@ -16,7 +16,7 @@
 #include <string.h>
 
 #include "formats.h"	// for debug prints
-#include "inc/spi.h"
+#include "gpio.h"
 
 #if WITHLTDCHW
 
