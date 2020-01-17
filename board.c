@@ -6131,7 +6131,7 @@ restart:
 			{
 				if (board_fpga_get_CONF_DONE() != 0)
 				{
-					//debug_printf_P(PSTR("fpga: Unexpected state of CONF_DONE==1\n"));
+					debug_printf_P(PSTR("fpga: Unexpected state of CONF_DONE==1\n"));
 					break;
 				}
 				hardware_spi_b16_p2(* p ++);
@@ -6165,7 +6165,14 @@ restart:
 		if (-- w == 0)
 			goto restart;
 	}
-	debug_printf_P(PSTR("fpga: board_fpga_loader_PS: usermode okay\n"));
+	if (w != 0)
+	{
+		debug_printf_P(PSTR("fpga: board_fpga_loader_PS: usermode okay\n"));
+	}
+	else
+	{
+		debug_printf_P(PSTR("fpga: board_fpga_loader_PS: usermode ERROR\n"));
+	}
 #endif /* (WITHSPIHW && WITHSPI16BIT) */	// for skip in test configurations
 }
 
