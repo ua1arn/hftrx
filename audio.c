@@ -2924,7 +2924,8 @@ static void audio_update(const uint_fast8_t spf, uint_fast8_t pathi)
 	debug_cleardtmax();		// сброс максимального значения в тесте производительности DSP
 
 #if 1
-	debug_printf_P(PSTR("audio_update[pathi=%d]: dsp_mode=%d, bw6=%d, lo6=%d, rx=%d..%d, tx=%d..%d\n"), 
+	PRINTF("audio_update tx=%d [pathi=%d]: dsp_mode=%d, bw6=%d, lo6=%d, rx=%d..%d, tx=%d..%d\n",
+		(int) isdspmodetx(glob_dspmodes [pathi]),
 		(int) pathi, 
 		(int) glob_dspmodes [pathi], 
 		(int) glob_fullbw6 [pathi], 
