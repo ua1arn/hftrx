@@ -6307,7 +6307,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 	const int mul2 = bigbuff ? 3 : 1;	// tx fifo buffers
 	PCD_TypeDef * const USBx = hpcd->Instance;
 
-	PRINTF(PSTR("usbd_fifo_initialize: power-on GRXFSIZ=%u\n"), USBx->GRXFSIZ & USB_OTG_GRXFSIZ_RXFD);
+	PRINTF(PSTR("usbd_fifo_initialize: bigbuff=%d, fullsize=%u, power-on GRXFSIZ=%u\n"), (int) bigbuff, (unsigned) fullsize, USBx->GRXFSIZ & USB_OTG_GRXFSIZ_RXFD);
 	// DocID028270 Rev 2 (RM0410): 41.11.3 FIFO RAM allocation
 	// DocID028270 Rev 2 (RM0410): 41.16.6 Device programming model
 
@@ -10395,7 +10395,7 @@ USBD_StatusTypeDef  USBD_LL_Init(PCD_HandleTypeDef * hpcd, USBD_HandleTypeDef *p
 #endif /* defined (USB_OTG_HS) */
 	{
 		// У OTH_FS размер FIFO 1280 байт
-		usbd_fifo_initialize(hpcd, 1280, 1);
+		usbd_fifo_initialize(hpcd, 1280, 0);
 	}
 	// У OTH_HS размер FIFO 4096 байт
 	usbd_fifo_initialize(hpcd, 4096, 1);
