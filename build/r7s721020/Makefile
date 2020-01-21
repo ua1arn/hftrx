@@ -145,7 +145,7 @@ CPFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 
 .PHONY: all bootloader flash clean
 
-all: APP2 app.stm32 app.hex
+all: APP2 $(PROJECT)_app.stm32 app.hex
 
 bootloader: BOOT2 boot.hex
 
