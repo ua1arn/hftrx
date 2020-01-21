@@ -10988,7 +10988,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 	NVIC_EnableIRQ(OTG_FS_IRQn);	// OTG_FS_IRQHandler() enable
 
 #elif CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX
-#error rrrr2
+
 	if (hpcd->Instance == USB_OTG_HS)
 	{
 		//const uint_fast32_t stm32f4xx_pllq = arm_hardware_stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
