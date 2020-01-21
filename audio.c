@@ -642,12 +642,13 @@ int get_lout16(void)
 	return v;
 }
 
-#if 0
+#if 1
+#define INT24_MAX 0x7FFFFL
 static int get_rout24(void)
 {
 	// Формирование значения для ROUT
 	//const int v = arm_sin_q31(angle_rout2 / 2) / 256;
-	const int v = peekvali24(FTW2ANGLEI(angle_rout2));
+	const int v = getcosf(angle_rout2) * INT24_MAX;
 	angle_rout2 = FTWROUND(angle_rout2 + anglestep_rout2);
 	return v;
 }
@@ -656,7 +657,7 @@ static int get_lout24(void)
 {
 	// Формирование значения для LOUT
 	//const int v = arm_sin_q31(angle_lout2 / 2) / 256;
-	const int v = peekvali24(FTW2ANGLEI(angle_lout2));
+	const int v = getcosf(angle_lout2) * INT24_MAX;
 	angle_lout2 = FTWROUND(angle_lout2 + anglestep_lout2);
 	return v;
 }
@@ -5360,7 +5361,15 @@ void RAMFUNC dsp_extbuffer32rx(const int32_t * buff)
 		nco_setlo_delay(0, tx);
 	#endif /* WITHUSEDUALWATCH */
 
-#if WITHSUSBSPKONLY
+#if WITHUSBAUDIOSAI1
+		//const INT32P_t dual = loopbacktestaudio(vi, dspmodeA, shape);
+		const INT32P_t dual = { { get_lout24(), get_lout24() } }; // vi;
+		savesampleout32stereo(iq2tx(dual.IV), iq2tx(dual.QV));	// êîäåê ïîëó÷àåò 24 áèòà left justified â 32-õ áèòíîì ÷èñëå.
+		//savesampleout32stereo(0x55555555, 0xFFFF0000);
+		//savesampleout16stereo(injectsidetone(dual.IV, sdtn), injectsidetone(dual.QV, sdtn));
+		recordsampleUAC(dual.IV >> 8, dual.QV >> 8);	// Çàïèñü â UAC äåìîäóëèðîâàííîãî ñèãíàëà áåç îçâó÷êè êëàâèø
+
+#elif WITHSUSBSPKONLY
 		// тестирование в режиме USB SPEAKER
 
 		if (isdspmodetx(dspmodeA))
