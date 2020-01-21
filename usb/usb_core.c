@@ -10380,25 +10380,19 @@ USBD_StatusTypeDef  USBD_LL_Init(PCD_HandleTypeDef * hpcd, USBD_HandleTypeDef *p
 
 #if CPUSTYLE_R7S721
 	usbd_pipes_initialize(hpcd);
-#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
-	// У OTG_HS размер FIFO 4096 байт
-	usbd_fifo_initialize(hpcd, 4096, 1);
-#else /* CPUSTYLE_R7S721 */
+#elif CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
 
-#if defined (USB_OTG_HS)
-	if (hpcd->Instance == USB_OTG_HS)
+	if (USB_Is_OTG_HS(hpcd->Instance))
 	{
 		// У OTH_HS размер FIFO 4096 байт
 		usbd_fifo_initialize(hpcd, 4096, 1);
 	}
 	else
-#endif /* defined (USB_OTG_HS) */
 	{
 		// У OTH_FS размер FIFO 1280 байт
 		usbd_fifo_initialize(hpcd, 1280, 0);
 	}
-	// У OTH_HS размер FIFO 4096 байт
-	usbd_fifo_initialize(hpcd, 4096, 1);
+
 #endif /* CPUSTYLE_R7S721 */
 
 	return USBD_OK;
@@ -10994,7 +10988,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 	NVIC_EnableIRQ(OTG_FS_IRQn);	// OTG_FS_IRQHandler() enable
 
 #elif CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX
-
+#error rrrr2
 	if (hpcd->Instance == USB_OTG_HS)
 	{
 		//const uint_fast32_t stm32f4xx_pllq = arm_hardware_stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
