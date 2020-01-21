@@ -8124,7 +8124,7 @@ static HAL_StatusTypeDef PCD_WriteEmptyTxFifo(PCD_HandleTypeDef *hpcd, uint32_t 
 #define USB_OTG_DOEPMSK_OTEPSPRM_Msk             (0x1UL << USB_OTG_DOEPMSK_OTEPSPRM_Pos) /*!< 0x00000020 */
 #define USB_OTG_DOEPMSK_OTEPSPRM                 USB_OTG_DOEPMSK_OTEPSPRM_Msk  /*!< Status Phase Received mask                     */
 
-#define USB_OTG_DOEPMSK_NAKM                   (0x1UL << 13)      /*!< OUT Packet NAK interrupt mask */
+//#define USB_OTG_DOEPMSK_NAKM                   (0x1UL << 13)      /*!< OUT Packet NAK interrupt mask */
 
 // D2 clock freq
 uint_fast32_t HAL_RCC_GetHCLKFreq(void)
@@ -11149,8 +11149,8 @@ void HAL_HCD_MspInit(HCD_HandleTypeDef* hcdHandle)
 
 		USBD_FS_INITIALIZE();
 
-		RCC->AHB2ENR |= RCC_AHB2ENR_OTGHSEN_Msk;	/* USB/OTG HS  */
-		(void) RCC->AHB2ENR;
+		RCC->AHB1ENR |= RCC_AHB1ENR_OTGHSEN_Pos;	/* USB/OTG HS  */
+		(void) RCC->AHB1ENR;
 		RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN_Msk;	/* USB/OTG HS companion - VBUS? */
 		(void) RCC->APB2ENR;
 

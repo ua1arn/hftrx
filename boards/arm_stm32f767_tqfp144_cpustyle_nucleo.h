@@ -491,10 +491,6 @@
 		arm_hardware_pioa_outputs2m(SPI_MOSI_BIT, SPI_MOSI_BIT);	/* PIO enable for MOSI bit (SD CARD read support)  */ \
 	} while (0)
 
-#define HARDWARE_USART1_INITIALIZE() do { \
-		arm_hardware_pioa_altfn2((1U << 9) | (1U << 10), AF_USART1); /* PA9: TX DATA line (2 MHz), PA10: RX data line */ \
-		arm_hardware_pioa_updown((1U << 10), 0);	/* PA10: pull-up RX data */ \
-	} while (0)
 #define HARDWARE_SIDETONE_INITIALIZE() do { \
 	} while (0)
 

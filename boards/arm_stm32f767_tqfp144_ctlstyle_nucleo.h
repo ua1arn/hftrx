@@ -267,8 +267,8 @@
 	#define WITHSAI1HWTXRXMASTER	1		// SAI1 work in MASTER mode
 	#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
 	#define WITHINTEGRATEDDSP		1	/* в программу включена инициализация и запуск DSP части. */
-	#define WITHIFDACWIDTH	32		// 1 бит знак и 31 бит значащих
-	#define WITHIFADCWIDTH	32		// 1 бит знак и 31 бит значащих
+	#define WITHIFDACWIDTH	24		// 1 бит знак и 23 бит значащих
+	#define WITHIFADCWIDTH	24		// 1 бит знак и 23 бит значащих
 	#define WITHAFADCWIDTH	16		// 1 бит знак и 15 бит значащих
 	#define WITHAFDACWIDTH	16		// 1 бит знак и 15 бит значащих
 	//#define WITHDACOUTDSPAGC		1	/* АРУ реализовано как выход ЦАП на аналоговую часть. */
@@ -290,11 +290,13 @@
 	//#define WITHUSESDCARD		1	// Включение поддержки SD CARD
 	//#define WITHUSEAUDIOREC		1	// Запись звука на SD CARD
 	//#define WITHMODEMIQLOOPBACK	1	/* модем получает собственные передаваемые квадратуры */
-	//#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
+	//#define WITHRTS96 1		/* вместо выходного аудиосигнала передача квадратур по USB */
 	//#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
 	//#define WITHOPERA4BEACON	1	/* работа маяком в OPERA */
 
-	#if 0
+	#if 1
+		#define WITHUSBAUDIOSAI1	1	/* 48000 USB audio on SAI1 */
+	#elif 0
 		#define WITHUSBHEADSET 1	/* трансивер работает USB гарнитурой для компьютера - режим тестирования */
 		#define WITHBBOX	1	// Black Box mode - устройство без органов управления
 		#define	WITHBBOXMIKESRC	BOARD_TXAUDIO_USB
