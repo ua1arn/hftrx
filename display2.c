@@ -5168,7 +5168,7 @@ enum
 	SPY0 = GRID2Y(BDCO_SPMRX)				// смещение по вертикали в пикселях части отведенной спектру
 };
 
-#if LCDMODE_LTDC_PIP16
+#if (LCDMODE_LTDC_PIP16 && LCDMODE_LTDC)
 
 	// один буфер установлен для отображения, второй еше отображается.
 	// Третий заполняем новым изображением.
@@ -5193,7 +5193,7 @@ enum
 
 PACKEDCOLOR565_T * getscratchpip(void)
 {
-#if LCDMODE_LTDC_PIP16
+#if (LCDMODE_LTDC_PIP16 && LCDMODE_LTDC)
 	return colorpips [pipphase];
 #else /* LCDMODE_LTDC_PIP16 */
 	return colorpip0;
@@ -5972,7 +5972,7 @@ static void display2_colorbuff(
 
 	PACKEDCOLOR565_T * const colorpip = getscratchpip();
 
-	#if LCDMODE_LTDC_PIP16
+	#if (LCDMODE_LTDC_PIP16 && LCDMODE_LTDC)
 		display_colorbuffer_pip(colorpip, ALLDX, ALLDY);
 		nextpip();
 	#else /* LCDMODE_LTDC_PIP16 */
@@ -5990,7 +5990,7 @@ display2_pip_off(
 	void * pv
 	)
 {
-#if LCDMODE_LTDC_PIP16
+#if (LCDMODE_LTDC_PIP16 && LCDMODE_LTDC)
 	arm_hardware_ltdc_pip_off();
 #endif /* LCDMODE_LTDC_PIP16 */
 }
