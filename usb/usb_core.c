@@ -13552,7 +13552,7 @@ void
 board_usb_spool(void)
 {
 #if defined (WITHUSBHW_HOST)
-	USBH_Process(& hUSB_Host);
+	//USBH_Process(& hUSB_Host);
 
 #endif /* defined (WITHUSBHW_HOST) */
 }
@@ -13580,7 +13580,7 @@ void board_usb_initialize(void)
 	#if WITHUSEUSBFLASH
 		USBH_RegisterClass(& hUSB_Host, & USBH_msc);
 	#endif /* WITHUSEUSBFLASH */
-	//ticker_initialize(& usbticker, 1, board_usb_tspool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
+	ticker_initialize(& usbticker, 1, board_usb_tspool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 
 #endif /* defined (WITHUSBHW_HOST) */
 
