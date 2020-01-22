@@ -3278,7 +3278,7 @@ USB_GetSNPSiD(USB_OTG_GlobalTypeDef *USBx)
 #elif CPUSTYLE_STM32MP1
 	return USB_OTG_CORE_ID_320A;
 #else
-	return (__IO uint32_t *) (& USBx->CID + 0x1U);
+	return * (__IO uint32_t *) (& USBx->CID + 0x1U);
 #endif
 }
 
@@ -10383,7 +10383,7 @@ void HAL_HCD_MspInit(HCD_HandleTypeDef* hcdHandle)
 
 		USBD_FS_INITIALIZE();
 
-		RCC->AHB2ENR |= RCC_AHB2ENR_OTGHSEN_Msk;	/* USB/OTG HS  */
+		RCC->AHB2ENR |= RCC_AHB2ENR_OTGFSEN_Msk;	/* USB/OTG HS  */
 		(void) RCC->AHB2ENR;
 		RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN_Msk;	/* USB/OTG HS companion - VBUS? */
 		(void) RCC->APB2ENR;
