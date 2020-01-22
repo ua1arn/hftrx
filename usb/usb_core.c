@@ -3278,7 +3278,7 @@ USB_GetSNPSiD(USB_OTG_GlobalTypeDef *USBx)
 #elif CPUSTYLE_STM32MP1
 	return USB_OTG_CORE_ID_320A;
 #else
-	return 0;//* (__IO uint32_t *) (& USBx->CID + 0x1U);
+	return (__IO uint32_t *) (& USBx->CID + 0x1U);
 #endif
 }
 
@@ -8124,7 +8124,10 @@ static HAL_StatusTypeDef PCD_WriteEmptyTxFifo(PCD_HandleTypeDef *hpcd, uint32_t 
 #define USB_OTG_DOEPMSK_OTEPSPRM_Msk             (0x1UL << USB_OTG_DOEPMSK_OTEPSPRM_Pos) /*!< 0x00000020 */
 #define USB_OTG_DOEPMSK_OTEPSPRM                 USB_OTG_DOEPMSK_OTEPSPRM_Msk  /*!< Status Phase Received mask                     */
 
-//#define USB_OTG_DOEPMSK_NAKM                   (0x1UL << 13)      /*!< OUT Packet NAK interrupt mask */
+#ifndef USB_OTG_DOEPMSK_NAKM
+	// non-H7 bit
+	#define USB_OTG_DOEPMSK_NAKM                   (0x1UL << 13)      /*!< OUT Packet NAK interrupt mask */
+#endif /* USB_OTG_DOEPMSK_NAKM */
 
 // D2 clock freq
 uint_fast32_t HAL_RCC_GetHCLKFreq(void)
