@@ -110,7 +110,7 @@
 	//#define WITHPBT		1	/* используется PBT */
 	#define WITHIFSHIFT	1	/* используется IF SHIFT */
 	#define WITHIFSHIFTOFFSET	(-250)	/* Начальное занчение IF SHIFT */
-	//#define WITHCAT		1	/* используется CAT */
+	//#define WITHCAT		(! WITHDEBUG)	/* используется CAT */
 	//#define WITHVOX		1	/* используется VOX */
 	#if 0
 		#define WITHPWRMTR	1	/* Индикатор выходной мощности или */
