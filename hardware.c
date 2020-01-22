@@ -6860,8 +6860,8 @@ void hardware_sdhost_initialize(void)
 	hardware_sdhost_setbuswidth(0);
 	hardware_sdhost_setspeed(400000uL);
 
-   arm_hardware_set_handler_system(SDIO_IRQn, SDIO_IRQHandler);
-   arm_hardware_set_handler_system(DMA2_Stream6_IRQn, DMA2_Stream6_IRQHandler);
+	arm_hardware_set_handler_system(SDIO_IRQn, SDIO_IRQHandler);
+	arm_hardware_set_handler_system(DMA2_Stream6_IRQn, DMA2_Stream6_IRQHandler);
 
 	HARDWARE_SDIO_INITIALIZE();	// Подсоединить контроллер к выводам процессора
 	// разрешить тактирование карты памяти
@@ -6883,8 +6883,8 @@ void hardware_sdhost_initialize(void)
 	hardware_sdhost_setbuswidth(0);
 	hardware_sdhost_setspeed(400000uL);
 
-   arm_hardware_set_handler_system(SDMMC1_IRQn, SDMMC1_IRQHandler);
-   arm_hardware_set_handler_system(DMA2_Stream6_IRQn, DMA2_Stream6_IRQHandler);
+	arm_hardware_set_handler_system(SDMMC1_IRQn, SDMMC1_IRQHandler);
+	arm_hardware_set_handler_system(DMA2_Stream6_IRQn, DMA2_Stream6_IRQHandler);
 
 	HARDWARE_SDIO_INITIALIZE();	// Подсоединить контроллер к выводам процессора
 	// разрешить тактирование карты памяти
@@ -6908,7 +6908,7 @@ void hardware_sdhost_initialize(void)
 	hardware_sdhost_setbuswidth(0);
 	hardware_sdhost_setspeed(400000uL);
 
-   arm_hardware_set_handler_system(SDMMC1_IRQn, SDMMC1_IRQHandler);
+	arm_hardware_set_handler_system(SDMMC1_IRQn, SDMMC1_IRQHandler);
 
 	// разрешить тактирование карты памяти
 	SDMMC1->POWER = 3 * SDMMC_POWER_PWRCTRL_0;
