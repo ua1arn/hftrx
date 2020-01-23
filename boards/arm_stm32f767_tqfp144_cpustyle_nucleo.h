@@ -21,7 +21,7 @@
 #define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	*/
 
 //#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
-//#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
+#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 
 #define WITHI2SHW	1	/* Использование I2S2 & I2S3 - аудиокодек	*/
 #define WITHSAI1HW	1	/* Использование SAI1 - FPGA или IF codec	*/
@@ -218,14 +218,27 @@
 
 #if WITHSAI1HW
 	#define SAI1HW_INITIALIZE()	do { \
+		enum { SDOUT = 1U << 3 }; /* PE3 - data from codec */ \
+		enum { MCK = 1U << 2 }; /* PE2 */ \
+		enum { WS = 1U << 4 }; /* PE4 - WS, LRCK */ \
 		arm_hardware_pioc_altfn50(1U << 9, AF_SPI2);	/* PC9 - MCLK source - I2S_CKIN signal */ \
-		arm_hardware_pioe_altfn20(1U << 2, AF_SAI); 	/* PE2 - SAI1_MCK_A - 12.288 MHz	*/ \
-		arm_hardware_pioe_altfn20(1U << 3, AF_SAI);		/* PE3 - SAI1_SD_B	(i2s data from codec)	*/ \
-		arm_hardware_pioe_altfn20(1U << 4, AF_SAI);		/* PE4 - SAI1_FS_A	- 48 kHz - WS codec signal	*/ \
+		arm_hardware_pioe_altfn20(MCK, AF_SAI); 		/* PE2 - SAI1_MCK_A - 12.288 MHz	*/ \
+		arm_hardware_pioe_altfn20(SDOUT, AF_SAI);		/* PE3 - SAI1_SD_B	(i2s data from codec)	*/ \
+		arm_hardware_pioe_updown(0, SDOUT);				/* pull-down codec SDOUT for slave mode */ \
+		arm_hardware_pioe_altfn20(WS, AF_SAI);			/* PE4 - SAI1_FS_A	- 48 kHz - WS codec signal	*/ \
 		arm_hardware_pioe_altfn20(1U << 5, AF_SAI);		/* PE5 - SAI1_SCK_A	- BCLK codec signal */ \
 		arm_hardware_pioe_altfn20(1U << 6, AF_SAI);		/* PE6 - SAI1_SD_A	(i2s data to codec)	*/ \
 	} while (0)
 #endif /* WITHSAI1HW */
+
+#define TARGET_CS4272_RESET_PORT_S(v)		do { GPIOE->BSRR = BSRR_S(v); __DSB(); } while (0)
+#define TARGET_CS4272_RESET_PORT_C(v)		do { GPIOE->BSRR = BSRR_C(v); __DSB(); } while (0)
+#define TARGET_CS4272_RESET_BIT		(1U << 1)	// PE1
+
+#define CS4272_RESET_INITIALIZE() \
+	do { \
+		arm_hardware_pioe_outputs2m(TARGET_CS4272_RESET_BIT, TARGET_CS4272_RESET_BIT); \
+	} while (0)
 
 #if WITHSAI2HW
 	/* 
@@ -418,19 +431,19 @@
 #define SPI_ALLCS_PORT_S(v)	do { GPIOG->BSRR = BSRR_S(v); __DSB(); } while (0)
 #define SPI_ALLCS_PORT_C(v)	do { GPIOG->BSRR = BSRR_C(v); __DSB(); } while (0)
 
-#define SPI_CSEL_PG12	(1U << 12)	// PG12 on-board DAC AD5260BRUZ50
-#define SPI_CSEL_PG11	(1U << 11)	// PG11 ext1
-#define SPI_CSEL_PG10	(1U << 10)	// PG10 ext2
-#define SPI_CSEL_PG9	(1U << 9)	// PG9 nvmem FM25L16B
-#define SPI_CSEL_PG8	(1U << 8)	// PG8 on-board codec1 TLV320AIC23B
+#define SPI_CSEL_PG12	0//(1U << 12)	// PG12 on-board DAC AD5260BRUZ50
+#define SPI_CSEL_PG11	0//(1U << 11)	// PG11 ext1
+#define SPI_CSEL_PG10	0//(1U << 10)	// PG10 ext2
+#define SPI_CSEL_PG9	0//(1U << 9)	// PG9 nvmem FM25L16B
+#define SPI_CSEL_PG8	0//(1U << 8)	// PG8 on-board codec1 TLV320AIC23B
 //#define SPI_CSEL_PG7	(1U << 7)	// PG7 FPGA fir CLK
 //#define SPI_CSEL_PG6	(1U << 6)	// PG1 FPGA ~FPGA_FIR2_WE - see TARGET_FPGA_FIR2_WE_BIT usage
-#define SPI_CSEL_PG5	(1U << 5)	// PG5 board control registers chain
+#define SPI_CSEL_PG5	0//(1U << 5)	// PG5 board control registers chain
 //#define SPI_CSEL_PG4	(1U << 4)	// PG4 FPGA FLASH_nCE
 //#define SPI_CSEL_PG3	(1U << 3)	// PG3 FPGA NCO2 registers CS - используется как индикатор перегрузки АЦП (нулём)
 //#define SPI_CSEL_PG2	(1U << 2)	// PG1 FPGA ~FPGA_FIR1_WE - see TARGET_FPGA_FIR1_WE_BIT usage
-#define SPI_CSEL_PG1	(1U << 1)	// PG0 FPGA control registers CS
-#define SPI_CSEL_PG0	(1U << 0)	// PG1 FPGA NCO1 registers CS
+#define SPI_CSEL_PG1	0//(1U << 1)	// PG0 FPGA control registers CS
+#define SPI_CSEL_PG0	0//(1U << 0)	// PG1 FPGA NCO1 registers CS
 
 // Здесь должны быть перечислены все биты формирования CS в устройстве.
 #define SPI_ALLCS_BITS ( \
@@ -445,7 +458,8 @@
 	SPI_CSEL_PG0 |		/* PG1 FPGA NCO registers CS */ \
 	0)
 
-#define SPI_ALLCS_BITSNEG 0		// Выходы, активные при "1"
+#define SPI_ALLCS_BITSNEG ( \
+			0)		// Выходы, активные при "1"
 
 //#define SPI_NAEN_PORT_S(v)	do { GPIOE->BSRR = BSRR_S(v); __DSB(); } while (0)
 //#define SPI_NAEN_PORT_C(v)	do { GPIOE->BSRR = BSRR_C(v); __DSB(); } while (0)
@@ -509,8 +523,8 @@
 	#define TARGET_TWI_TWD_PORT_S(v) do { GPIOB->BSRR = BSRR_S(v); __DSB(); } while (0)
 	#define TARGET_TWI_TWCK_PIN		(GPIOB->IDR)
 	#define TARGET_TWI_TWD_PIN		(GPIOB->IDR)
-	#define TARGET_TWI_TWCK		(1u << 6)		// * PB6
-	#define TARGET_TWI_TWD		(1u << 7)		// * PB6
+	#define TARGET_TWI_TWCK		(1u << 6)		// * PB6 - SCL
+	#define TARGET_TWI_TWD		(1u << 7)		// * PB7 - SDA
 
 	// Инициализация битов портов ввода-вывода для программной реализации I2C
 	#define	TWISOFT_INITIALIZE() do { \

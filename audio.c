@@ -5274,7 +5274,7 @@ void dsp_addsidetone(int16_t * buff)
 		int_fast16_t left = b [L];
 		int_fast16_t right = b [R];
 		//
-#if WITHUSBHEADSET
+#if WITHUSBHEADSET || WITHUSBAUDIOSAI1
 		// Обеспечиваем прослушивание стерео
 #else /* WITHUSBHEADSET */
 		switch (glob_mainsubrxmode)
@@ -5362,12 +5362,17 @@ void RAMFUNC dsp_extbuffer32rx(const int32_t * buff)
 	#endif /* WITHUSEDUALWATCH */
 
 #if WITHUSBAUDIOSAI1
-		//const INT32P_t dual = loopbacktestaudio(vi, dspmodeA, shape);
-		const INT32P_t dual = { { get_lout24(), get_lout24() } }; // vi;
-		savesampleout32stereo(iq2tx(dual.IV), iq2tx(dual.QV));	// êîäåê ïîëó÷àåò 24 áèòà left justified â 32-õ áèòíîì ÷èñëå.
+		//processafadcsampleiq(vi, dspmodeA, shape, ctcss);	// Передатчик - формирование одного сэмпда (пары I/Q).
+		const INT32P_t dual = vi;
+		//const INT32P_t dual = { { get_lout24(), get_rout24() } }; // vi;
+		savesampleout32stereo(iq2tx(dual.IV), iq2tx(dual.QV));	// кодек получает 24 бита left justified в 32-х битном числе.
 		//savesampleout32stereo(0x55555555, 0xFFFF0000);
 		//savesampleout16stereo(injectsidetone(dual.IV, sdtn), injectsidetone(dual.QV, sdtn));
-		recordsampleUAC(dual.IV >> 8, dual.QV >> 8);	// Çàïèñü â UAC äåìîäóëèðîâàííîãî ñèãíàëà áåç îçâó÷êè êëàâèø
+//		recordsampleUAC(dual.IV >> 8, dual.QV >> 8);	// Запись в UAC демодулированного сигнала без озвучки клавиш
+		recordsampleUAC(
+			(int_fast32_t) buff [i + DMABUF32RXI] >> 16,
+			(int_fast32_t) buff [i + DMABUF32RXQ] >> 16
+			);
 
 #elif WITHSUSBSPKONLY
 		// тестирование в режиме USB SPEAKER
@@ -5770,7 +5775,7 @@ rxparam_update(uint_fast8_t profile, uint_fast8_t pathi)
 	}
 
 	// Уровень сигнала самоконтроля
-#if WITHUSBHEADSET
+#if WITHUSBHEADSET || WITHUSBAUDIOSAI1
 	sidetonevolume = 0;
 #else /* WITHUSBHEADSET */
 	sidetonevolume = (glob_sidetonelevel / (FLOAT_t) 100);
