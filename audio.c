@@ -3817,6 +3817,11 @@ static RAMFUNC int_fast32_t iq2tx(int_fast32_t v)
 	return v << (32 - WITHIFDACWIDTH);
 }
 
+static RAMFUNC int_fast32_t intn_to_tx(int_fast32_t v, uint_fast8_t bits)
+{
+	return v << (32 - bits);
+}
+
 
 #if WITHDSPEXTDDC
 
@@ -5363,9 +5368,9 @@ void RAMFUNC dsp_extbuffer32rx(const int32_t * buff)
 
 #if WITHUSBAUDIOSAI1
 		//processafadcsampleiq(vi, dspmodeA, shape, ctcss);	// Передатчик - формирование одного сэмпда (пары I/Q).
-		const INT32P_t dual = vi;
-		//const INT32P_t dual = { { get_lout24(), get_rout24() } }; // vi;
-		savesampleout32stereo(iq2tx(dual.IV), iq2tx(dual.QV));	// кодек получает 24 бита left justified в 32-х битном числе.
+		//const INT32P_t dual = vi;
+		const INT32P_t dual = { { get_lout24(), get_rout24() } }; // vi;
+		savesampleout32stereo(intn_to_tx(dual.IV, 24), intn_to_tx(dual.QV, 24));	// кодек получает 24 бита left justified в 32-х битном числе.
 		//savesampleout32stereo(0x55555555, 0xFFFF0000);
 		//savesampleout16stereo(injectsidetone(dual.IV, sdtn), injectsidetone(dual.QV, sdtn));
 //		recordsampleUAC(dual.IV >> 8, dual.QV >> 8);	// Запись в UAC демодулированного сигнала без озвучки клавиш
