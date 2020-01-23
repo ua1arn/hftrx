@@ -170,11 +170,13 @@ static void cs4272_initialize_fullduplex_addr(uint_fast8_t tg)
 		0);
     cs4272_setreg(tg, DAC_VOLUME_AND_MIXING,	// DACVolume and Mixing control
 		//(1U << 6) |	// A=B
-		(0x09 << 0) |	// ATAPI mixing control aL bR
+		(0x09 << 0) |	// ATAPI mixing control: aL & bR
 		//(0x06 << 0) |	// ATAPI mixing control reverse
 		0);
-    cs4272_setreg(tg, DAC_VOLUME_A, 0);	// set attenuation
-    cs4272_setreg(tg, DAC_VOLUME_B, 0);	// set attenuation
+    cs4272_setreg(tg, DAC_VOLUME_A,
+    	0);	// set attenuation
+    cs4272_setreg(tg, DAC_VOLUME_B,
+    	0);	// set attenuation
 
     cs4272_setreg(tg, ADC_CONTROL,
 		((USE_I2S ? 0x01 : 0x00) * ADC_CONTROL_I2S) |		/* ADC_DIF: format LJ/I2S */
