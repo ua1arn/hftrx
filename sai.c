@@ -1275,7 +1275,7 @@ static void hardware_sai1_master_fullduplex_initialize(void)		/* инициал�
 	// CR1 value
 	const portholder_t commoncr1 =
 		(1 * SAI_xCR1_OUTDRIV) |	//
-		(0 * SAI_xCR1_MONO) |	// stereo MODE - with IQ pairs - see DMABUFFSIZE32
+		//(0 * SAI_xCR1_MONO) |	// stereo MODE - with IQ pairs - see DMABUFFSIZE32
 		(1 * SAI_xCR1_DMAEN) |	// 1: DMA enable 
 		(1 * SAI_xCR1_CKSTR) |	// 0: данные на выходе меняются по нарастающему фронту, 1: по спадающему
 		(7 * SAI_xCR1_DS_0) |	// 6: data size - 24 bit, 7: 32 bit, 4: 16 bit
@@ -1322,11 +1322,11 @@ static void hardware_sai1_master_fullduplex_initialize(void)		/* инициал�
 		//(1 * SAI_xSLOTR_FBOFF_0) | // slot offset - "1" for I2S 24 bit in 32 bit slot
 		0;
 	SAI1_Block_A->SLOTR = 
-		((SLOTEN_TX_SAI1 * MASK2LSB(SAI_xSLOTR_SLOTEN)) & SAI_xSLOTR_SLOTEN) |			// TX slots enabled
+		((SLOTEN_TX_SAI1 << SAI_xSLOTR_SLOTEN_Pos) & SAI_xSLOTR_SLOTEN_Msk) |			// TX slots enabled
 		commonslotr |
 		0;
 	SAI1_Block_B->SLOTR = 
-		((SLOTEN_RX_SAI1 * MASK2LSB(SAI_xSLOTR_SLOTEN)) & SAI_xSLOTR_SLOTEN) |			// RX slots enabled
+		((SLOTEN_RX_SAI1 << SAI_xSLOTR_SLOTEN_Pos) & SAI_xSLOTR_SLOTEN_Msk) |			// RX slots enabled
 		commonslotr |
 		0;
 
@@ -1396,7 +1396,7 @@ static void hardware_sai1_slave_fullduplex_initialize(void)		/* инициали
 	// CR1 value
 	const portholder_t commoncr1 =
 		(1 * SAI_xCR1_OUTDRIV) |	//
-		(0 * SAI_xCR1_MONO) |	// stereo MODE - with IQ pairs - see DMABUFFSIZE32
+		//(0 * SAI_xCR1_MONO) |	// stereo MODE - with IQ pairs - see DMABUFFSIZE32
 		(1 * SAI_xCR1_DMAEN) |	// 1: DMA enable 
 		(1 * SAI_xCR1_CKSTR) |	// 0: данные на выходе меняются по нарастающему фронту, 1: по спадающему
 		(7 * SAI_xCR1_DS_0) |	// 6: data size - 24 bit, 7: 32 bit, 4: 16 bit
@@ -1443,11 +1443,11 @@ static void hardware_sai1_slave_fullduplex_initialize(void)		/* инициали
 		//(1 * SAI_xSLOTR_FBOFF_0) | // slot offset - "1" for I2S 24 bit in 32 bit slot
 		0;
 	SAI1_Block_A->SLOTR = 
-		((SLOTEN_TX_SAI1 * MASK2LSB(SAI_xSLOTR_SLOTEN)) & SAI_xSLOTR_SLOTEN) |			// TX slots enabled
+		((SLOTEN_TX_SAI1 << SAI_xSLOTR_SLOTEN_Pos) & SAI_xSLOTR_SLOTEN_Msk) |			// TX slots enabled
 		commonslotr |
 		0;
 	SAI1_Block_B->SLOTR = 
-		((SLOTEN_RX_SAI1 * MASK2LSB(SAI_xSLOTR_SLOTEN)) & SAI_xSLOTR_SLOTEN) |			// RX slots enabled
+		((SLOTEN_RX_SAI1 << SAI_xSLOTR_SLOTEN_Pos) & SAI_xSLOTR_SLOTEN_Msk) |			// RX slots enabled
 		commonslotr |
 		0;
 
@@ -1852,7 +1852,7 @@ static void hardware_sai2_slave_fullduplex_initialize(void)
 	// CR1 value (синхронизация с SAI1)
 	const portholder_t commoncr1 =
 		(1 * SAI_xCR1_OUTDRIV) |	//
-		(0 * SAI_xCR1_MONO) |	// stereo MODE - with IQ pairs - see DMABUFFSIZE32
+		//(0 * SAI_xCR1_MONO) |	// stereo MODE - with IQ pairs - see DMABUFFSIZE32
 		(1 * SAI_xCR1_DMAEN) |	// 1: DMA enable 
 		(1 * SAI_xCR1_CKSTR) |	// 0: данные на выходе меняются по нарастающему фронту, 1: по спадающему
 		(7 * SAI_xCR1_DS_0) |	// 6: data size - 24 bit, 7: 32 bit, 4: 16 bit
@@ -1896,11 +1896,11 @@ static void hardware_sai2_slave_fullduplex_initialize(void)
 		//(1 * SAI_xSLOTR_FBOFF_0) | // slot offset - "1" for I2S 24 bit in 32 bit slot
 		0;
 	SAI2_Block_A->SLOTR = 
-		((SLOTEN_TX_SAI2 * MASK2LSB(SAI_xSLOTR_SLOTEN)) & SAI_xSLOTR_SLOTEN) |			// TX slots enabled
+		((SLOTEN_TX_SAI2 << SAI_xSLOTR_SLOTEN_Pos) & SAI_xSLOTR_SLOTEN_Msk) |			// TX slots enabled
 		commonslotr |
 		0;
 	SAI2_Block_B->SLOTR = 
-		((SLOTEN_RX_SAI2 * MASK2LSB(SAI_xSLOTR_SLOTEN)) & SAI_xSLOTR_SLOTEN) |			// RX slots enabled
+		((SLOTEN_RX_SAI2 << SAI_xSLOTR_SLOTEN_Pos) & SAI_xSLOTR_SLOTEN_Msk) |			// RX slots enabled
 		commonslotr |
 		0;
 
@@ -1986,7 +1986,7 @@ static void hardware_sai2_master_fullduplex_initialize(void)		/* инициал�
 	// CR1 value
 	const portholder_t commoncr1 =
 		(1 * SAI_xCR1_OUTDRIV) |	//
-		(0 * SAI_xCR1_MONO) |	// stereo MODE - with IQ pairs - see DMABUFFSIZE32
+		//(0 * SAI_xCR1_MONO) |	// stereo MODE - with IQ pairs - see DMABUFFSIZE32
 		(1 * SAI_xCR1_DMAEN) |	// 1: DMA enable 
 		(1 * SAI_xCR1_CKSTR) |	// 0: данные на выходе меняются по нарастающему фронту, 1: по спадающему
 		(7 * SAI_xCR1_DS_0) |	// 6: data size - 24 bit, 7: 32 bit, 4: 16 bit
@@ -2033,11 +2033,11 @@ static void hardware_sai2_master_fullduplex_initialize(void)		/* инициал�
 		//(1 * SAI_xSLOTR_FBOFF_0) | // slot offset - "1" for I2S 24 bit in 32 bit slot
 		0;
 	SAI2_Block_A->SLOTR = 
-		((SLOTEN_TX_SAI2 * MASK2LSB(SAI_xSLOTR_SLOTEN)) & SAI_xSLOTR_SLOTEN) |			// TX slots enabled
+		((SLOTEN_TX_SAI2 << SAI_xSLOTR_SLOTEN_Pos) & SAI_xSLOTR_SLOTEN_Msk) |			// TX slots enabled
 		commonslotr |
 		0;
 	SAI2_Block_B->SLOTR = 
-		((SLOTEN_RX_SAI2 * MASK2LSB(SAI_xSLOTR_SLOTEN)) & SAI_xSLOTR_SLOTEN) |			// RX slots enabled
+		((SLOTEN_RX_SAI2 << SAI_xSLOTR_SLOTEN_Pos) & SAI_xSLOTR_SLOTEN_Msk) |			// RX slots enabled
 		commonslotr |
 		0;
 
