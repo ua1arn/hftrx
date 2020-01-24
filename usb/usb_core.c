@@ -3869,7 +3869,7 @@ HAL_StatusTypeDef USB_DevInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgType
             16 means Flush all Tx FIFOs
   * @retval HAL status
   */
-HAL_StatusTypeDef USB_FlushTxFifo(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t num)
+HAL_StatusTypeDef USB_FlushTxFifoEx(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t num)
 {
 	uint32_t count = 0;
 
@@ -5995,7 +5995,7 @@ HAL_StatusTypeDef HAL_PCD_EP_Flush(PCD_HandleTypeDef *hpcd, uint_fast8_t ep_addr
 
   if ((ep_addr & 0x80) != 0)
   {
-    USB_FlushTxFifo(hpcd->Instance, ep_addr & 0x0F);
+    USB_FlushTxFifoEx(hpcd->Instance, ep_addr & 0x0F);
   }
   else
   {
@@ -8265,7 +8265,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
     {
 	  uint32_t i;
       USBx_DEVICE->DCTL &= ~USB_OTG_DCTL_RWUSIG;
-      USB_FlushTxFifo(hpcd->Instance,  0);/* flush control endpoint tx FIFO */
+      USB_FlushTxFifoEx(hpcd->Instance,  0);	/* flush control endpoint tx FIFO */
 
       for (i = 0; i < hpcd->Init.dev_endpoints ; ++ i)
       {
