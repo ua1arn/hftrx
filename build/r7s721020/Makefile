@@ -145,12 +145,12 @@ CPFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 
 .PHONY: all bootloader flash clean
 
-all: APP2 $(PROJECT)_app.stm32 app.hex
+all: APP2 $(PROJECT)_app.nec32 app.hex
 
 bootloader: BOOT2 boot.hex
 
-flash: $(PROJECT)_app.stm32
-	./dfu-util.exe --device ffff:0738 --alt 0 --dfuse-address 0x18020000 --download $(PROJECT)_app.stm32
+flash: $(PROJECT)_app.nec32
+	./dfu-util.exe --device ffff:0738 --alt 0 --dfuse-address 0x18020000 --download $(PROJECT)_app.nec32
 
 BOOT2: $(OBJS) $(PROJECT)_boot.elf $(PROJECT)_boot.bin
 
@@ -159,11 +159,11 @@ boot.hex: $(PROJECT)_boot.bin
 	
 APP2: $(OBJS) $(PROJECT)_app.elf $(PROJECT)_app.bin
 
-$(PROJECT)_app.stm32: $(PROJECT)_app.bin
+$(PROJECT)_app.nec32: $(PROJECT)_app.bin
 	./stm32image.exe -l 0x20000100 -e 0x20000100 -s $(PROJECT)_app.bin -d $@
 
-app.hex: $(PROJECT)_app.stm32
-	./bin2ihex -l 0x00020000 -s $(PROJECT)_app.stm32 >$@
+app.hex: $(PROJECT)_app.nec32
+	./bin2ihex -l 0x00020000 -s $(PROJECT)_app.nec32 >$@
 
 $(OBJDIR)/%.o: %.c
 	@mkdir -p $(@D)
