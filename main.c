@@ -3618,12 +3618,15 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 #endif /* WITHMIC1LEVEL */
 #if WITHIF4DSP
 #if WITHTX
-	static uint_fast8_t gamdepth = 30;		/* Глубина модуляции в АМ - 0..100% */
-	static uint_fast8_t gdacscale = 64;	/* прегруз драйвера Использование амплитуды сигнала с ЦАП передатчика - 0..100% */
 	static uint_fast16_t gdigiscale = 250;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
+	static uint_fast8_t gamdepth = 30;		/* Глубина модуляции в АМ - 0..100% */
+
+	/*  Использование амплитуды сигнала с ЦАП передатчика - 0..100% */
+	static uint_fast8_t gdacscale = 64;	/* настраивается под прегруз драйвера. */
 	#if WITHLOWPOWEREXTTUNE
+		/*  Использование амплитуды сигнала с ЦАП передатчика - 0..100% */
 		static uint_fast8_t gdactunescale = 32; /* Сброс мощности при запросе TUNE от автотюнера или извне */
-	#endif
+	#endif /* WITHLOWPOWEREXTTUNE */
 #endif /* WITHTX */
 
 
@@ -6965,6 +6968,13 @@ getactualtune(void)
 	return tunemode || (catenable && cattunemode) || reqautotune || hardware_get_tune();
 }
 
+// вызывается из user mode
+static uint_fast8_t
+getactualdownpower(void)
+{
+	return reqautotune || hardware_get_tune();
+}
+
 // вызывается из user mode - признак передачи в режиме данных
 static uint_fast8_t
 getcattxdata(void)
@@ -7853,14 +7863,13 @@ updateboard(
 			board_set_mikemute(gmuteall || getactualtune() || getmodetempl(txsubmode)->mute);	/* отключить микрофонный усилитель */
 			seq_set_txgate_P(pamodetempl->txgfva, pamodetempl->sdtnva);		/* как должен переключаться тракт на передачу */
 
-			const uint_fast8_t downpower = reqautotune || hardware_get_tune();
 			#if WITHPOTPOWER
 				// gnormalpower устанавливается в таймерном обработчике по состоянию потенциометра
-				board_set_opowerlevel(downpower ? gotunerpower : gnormalpower);			/* установить выходную мощность передатчика WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
+				board_set_opowerlevel(getactualdownpower() ? gotunerpower : gnormalpower);			/* установить выходную мощность передатчика WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
 			#elif WITHPOWERTRIM
-				board_set_opowerlevel(downpower ? gotunerpower : gnormalpower);			/* установить выходную мощность передатчика WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
+				board_set_opowerlevel(getactualdownpower() ? gotunerpower : gnormalpower);			/* установить выходную мощность передатчика WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
 			#elif WITHPOWERLPHP
-				board_set_opowerlevel(downpower ? gotunerpower : pwrmodes [gpwr].code);
+				board_set_opowerlevel(getactualdownpower() ? gotunerpower : pwrmodes [gpwr].code);
 			#endif /* WITHPOWERLPHP */
 		#if WITHPABIASTRIM
 			board_set_pabias(gpabias);	// Подстройка тока оконечного каскада передатчика
@@ -8068,11 +8077,14 @@ updateboard(
 			board_set_afhighcuttx(bwseti_gethigh(bwseti));	/* Верхняя частота среза фильтра НЧ по передаче */
 			board_set_afresponcetx(bwseti_getafresponce(bwseti));	/* коррекция АЧХ НЧ тракта передатчика */
 			board_set_nfmdeviation100(75);
-			#if WITHLOWPOWEREXTTUNE							/* Сброс мощности при запросе TUNE от автотюнера или извне */
-						if (hardware_get_tune()) board_set_dacscale(gdactunescale);	else board_set_dacscale(gdacscale);
-			#else
-						board_set_dacscale(gdacscale);		/* Использование амплитуды сигнала с ЦАП передатчика - 0..100% */
-			#endif
+		#if WITHLOWPOWEREXTTUNE							/* Сброс мощности при запросе TUNE от автотюнера или извне */
+			if (getactualdownpower())
+				board_set_dacscale(gdactunescale);
+			else
+				board_set_dacscale(gdacscale);
+		#else /* WITHLOWPOWEREXTTUNE */
+			board_set_dacscale(gdacscale);		/* Использование амплитуды сигнала с ЦАП передатчика - 0..100% */
+		#endif /* WITHLOWPOWEREXTTUNE */
 			board_set_gdigiscale(gdigiscale);	/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 			board_set_amdepth(gamdepth);	/* Глубина модуляции в АМ - 0..100% */
 		}
@@ -14381,7 +14393,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase,
 	},
   #endif /* ! WITHPOTPOWER */
-  #if WITHAUTOTUNER || defined (HARDWARE_GET_TUNE)
+  #if WITHLOWPOWEREXTTUNE
 	{
 		"ATU PWR ", 7, 0, 0,	ISTEP1,		/* мощность при работе автоматического согласующего устройства */
 		ITEM_VALUE,
@@ -14391,7 +14403,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		& gotunerpower,
 		getzerobase,
 	},
-  #endif /* WITHAUTOTUNER || defined (HARDWARE_GET_TUNE) */
+  #endif /* WITHLOWPOWEREXTTUNE */
 #elif WITHPOWERLPHP
   #if ! WITHPOTPOWER
 	#if ! CTLSTYLE_SW2011ALL
@@ -14406,7 +14418,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 	#endif /* ! CTLSTYLE_SW2011ALL */
   #endif /* ! WITHPOTPOWER */
-  #if WITHAUTOTUNER || defined (HARDWARE_GET_TUNE)
+  #if WITHLOWPOWEREXTTUNE
 	{
 		"ATU PWR ", 7, 0, RJ_POWER,	ISTEP1,		/* мощность при работе автоматического согласующего устройства */
 		ITEM_VALUE,
@@ -14416,7 +14428,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		& gotunerpower,
 		getzerobase, 
 	},
-  #endif /* WITHAUTOTUNER || defined (HARDWARE_GET_TUNE) */
+  #endif /* WITHLOWPOWEREXTTUNE */
 #endif /* WITHPOWERTRIM */
 #endif /* WITHTX */
 

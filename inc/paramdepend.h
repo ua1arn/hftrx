@@ -2114,6 +2114,9 @@ extern "C" {
 
 #define WITHSPECTRUMWF (WITHIF4DSP && (WITHRTS96 || WITHRTS192) && ! LCDMODE_HD44780)
 
+/* Сброс мощности при запросе TUNE от автотюнера или извне */
+#define WITHLOWPOWEREXTTUNE	(defined (HARDWARE_GET_TUNE) || WITHAUTOTUNER)
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

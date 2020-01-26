@@ -8,8 +8,8 @@
 // rmainunit_v5km2.pcb rmainunit_v5km3
 // R7S721020VCFP, TFT 4.3" or 7", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N, AD9246BCPZ-125
 
-#ifndef ARM_R7S72_TQFP176_CTLSTYLE_STORCH_V8_H_INCLUDED
-#define ARM_R7S72_TQFP176_CTLSTYLE_STORCH_V8_H_INCLUDED 1
+#ifndef ARM_R7S72_TQFP176_CTLSTYLE_STORCH_V8_RA4ASN_H_INCLUDED
+#define ARM_R7S72_TQFP176_CTLSTYLE_STORCH_V8_RA4ASN_H_INCLUDED 1
 
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */
 	#define WITHI2SCLOCKFROMPIN 1	// тактовая частота на SPI2 (I2S) подается с внешнего генератора, в процессор вводится через AUDIO_X1 сигнал интерфейса
@@ -302,7 +302,6 @@
 	#define WITHSWRMTR	1		/* Измеритель КСВ */
 	//#define WITHPWRMTR	1	/* Индикатор выходной мощности или */
 	//#define WITHPWRLIN	1	/* Индикатор выходной мощности показывает напряжение а не мощность */
-	#define WITHLOWPOWEREXTTUNE	1 /* Сброс мощности при запросе TUNE от автотюнера или извне */
 
 	#if 0
 		/* TUNER & PA board 2*RD16 by avbelnn@yandex.ru */
@@ -531,4 +530,4 @@
 	#define KI_COUNT 5	// количество используемых под клавиатуру входов АЦП
 	#define KI_LIST	KI4, KI3, KI2, KI1, KI0,	// инициализаторы для функции перекодировки
 
-#endif /* ARM_R7S72_TQFP176_CTLSTYLE_STORCH_V8_H_INCLUDED */
+#endif /* ARM_R7S72_TQFP176_CTLSTYLE_STORCH_V8_RA4ASN_H_INCLUDED */
