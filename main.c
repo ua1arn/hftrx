@@ -2472,6 +2472,9 @@ struct nvmap
 	uint8_t gagcoff;
 	uint8_t gamdepth;		/* Глубина модуляции в АМ - 0..100% */
 	uint8_t gdacscale;		/* Использование амплитуды сигнала с ЦАП передатчика - 0..100% */
+#if WITHLOWPOWEREXTTUNE
+	uint8_t gdactunescale;	/* Сброс мощности при запросе TUNE от автотюнера или извне */
+#endif
 	uint16_t gdigiscale;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 	uint8_t	gcwedgetime;			/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
 	uint8_t	gsidetonelevel;	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
@@ -3618,6 +3621,9 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 	static uint_fast8_t gamdepth = 30;		/* Глубина модуляции в АМ - 0..100% */
 	static uint_fast8_t gdacscale = 64;	/* прегруз драйвера Использование амплитуды сигнала с ЦАП передатчика - 0..100% */
 	static uint_fast16_t gdigiscale = 250;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
+	#if WITHLOWPOWEREXTTUNE
+		static uint_fast8_t gdactunescale = 32; /* Сброс мощности при запросе TUNE от автотюнера или извне */
+	#endif
 #endif /* WITHTX */
 
 
@@ -8062,7 +8068,11 @@ updateboard(
 			board_set_afhighcuttx(bwseti_gethigh(bwseti));	/* Верхняя частота среза фильтра НЧ по передаче */
 			board_set_afresponcetx(bwseti_getafresponce(bwseti));	/* коррекция АЧХ НЧ тракта передатчика */
 			board_set_nfmdeviation100(75);
-			board_set_dacscale(gdacscale);	/* Использование амплитуды сигнала с ЦАП передатчика - 0..100% */
+			#if WITHLOWPOWEREXTTUNE							/* Сброс мощности при запросе TUNE от автотюнера или извне */
+						if (hardware_get_tune()) board_set_dacscale(gdactunescale);	else board_set_dacscale(gdacscale);
+			#else
+						board_set_dacscale(gdacscale);		/* Использование амплитуды сигнала с ЦАП передатчика - 0..100% */
+			#endif
 			board_set_gdigiscale(gdigiscale);	/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 			board_set_amdepth(gamdepth);	/* Глубина модуляции в АМ - 0..100% */
 		}
@@ -14456,6 +14466,17 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		& gdacscale,
 		getzerobase, /* складывается со смещением и отображается */
 	},
+#if WITHLOWPOWEREXTTUNE
+	{
+		"TUNESCALE", 7, 0, 0,	ISTEP1,		/* Сброс мощности при запросе TUNE от автотюнера или извне */
+		ITEM_VALUE,
+		0, 100,
+		offsetof(struct nvmap, gdactunescale),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		NULL,
+		& gdactunescale,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+#endif
 	{
 		"FT8BOOST",	7, 2, 0,	ISTEP1,		/* Увеличение усиления при передаче в цифровых режимах 90..300% */
 		ITEM_VALUE,

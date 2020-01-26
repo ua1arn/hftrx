@@ -302,6 +302,7 @@
 	#define WITHSWRMTR	1		/* Измеритель КСВ */
 	//#define WITHPWRMTR	1	/* Индикатор выходной мощности или */
 	//#define WITHPWRLIN	1	/* Индикатор выходной мощности показывает напряжение а не мощность */
+	#define WITHLOWPOWEREXTTUNE	1 /* Сброс мощности при запросе TUNE от автотюнера или извне */
 
 	#if 0
 		/* TUNER & PA board 2*RD16 by avbelnn@yandex.ru */
