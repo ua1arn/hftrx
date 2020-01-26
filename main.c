@@ -7869,7 +7869,7 @@ updateboard(
 			#elif WITHPOWERTRIM
 				board_set_opowerlevel(getactualdownpower() ? gotunerpower : gnormalpower);			/* установить выходную мощность передатчика WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
 			#elif WITHPOWERLPHP
-				board_set_opowerlevel(getactualdownpower() ? gotunerpower : pwrmodes [gpwr].code);
+				board_set_opowerlevel(getactualdownpower() ? pwrmodes [gotunerpower].code : pwrmodes [gpwr].code);
 			#endif /* WITHPOWERLPHP */
 		#if WITHPABIASTRIM
 			board_set_pabias(gpabias);	// Подстройка тока оконечного каскада передатчика
@@ -14405,24 +14405,22 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
   #endif /* WITHLOWPOWEREXTTUNE */
 #elif WITHPOWERLPHP
-  #if ! WITHPOTPOWER
 	#if ! CTLSTYLE_SW2011ALL
 	{
 		"TX POWER", 7, 0, RJ_POWER,	ISTEP1,		/* мощность при обычной работе на передачу */
 		ITEM_VALUE,
-		WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
+		0, PWRMODE_COUNT - 1,
 		offsetof(struct nvmap, gnormalpower),
 		NULL,
 		& gnormalpower,
 		getzerobase,
 	},
 	#endif /* ! CTLSTYLE_SW2011ALL */
-  #endif /* ! WITHPOTPOWER */
-  #if WITHLOWPOWEREXTTUNE
+  	#if WITHLOWPOWEREXTTUNE
 	{
 		"ATU PWR ", 7, 0, RJ_POWER,	ISTEP1,		/* мощность при работе автоматического согласующего устройства */
 		ITEM_VALUE,
-		WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
+		0, PWRMODE_COUNT - 1,
 		offsetof(struct nvmap, gotunerpower),
 		NULL,
 		& gotunerpower,
