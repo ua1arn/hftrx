@@ -418,13 +418,6 @@
 
 #endif /* WITHELKEY */
 
-#if WITHUSBHW
-	#define USB_INITIALIZE() \
-		do { \
-		} while (0)
-
-#endif /* WITHUSBHW */
-
 // IOUPDATE = PA15
 //#define SPI_IOUPDATE_PORT_S(v) do {	R7S721_TARGET_PORT_S(1, v); } while (0)
 //#define SPI_IOUPDATE_PORT_C(v) do {	R7S721_TARGET_PORT_C(1, v); } while (0)
