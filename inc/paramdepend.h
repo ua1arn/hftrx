@@ -1456,8 +1456,9 @@ extern "C" {
 #if CTLREGSTYLE_SW2012_MINI
 
 	#define WITHPOWERTRIM		1	// Имеется управление мощностью
-	#define WITHPOWERTRIMMIN	1	// Нижний предел регулировки (показываетый на дисплее)
-	#define WITHPOWERTRIMMAX	4	// Верхний предел регулировки (показываетый на дисплее)
+	#define WITHPOWERTRIMMIN	1	// Нижний предел регулировки (показываемый на дисплее)
+	#define WITHPOWERTRIMMAX	4	// Верхний предел регулировки (показываемый на дисплее)
+	//#define WITHPOWERTRIMATU	2	// Значение для работы автотюнера
 	#define	WITHMUTEALL			1	// Отключение микрофона во всех режимах
 	#define WITHONEATTONEAMP	1	/* только одно положение аттенюатора и УВЧ */
 
@@ -1482,8 +1483,9 @@ extern "C" {
 #elif CTLREGSTYLE_SW2012C
 
 	#define WITHPOWERTRIM		1	// Имеется управление мощностью
-	#define WITHPOWERTRIMMIN	1	// Нижний предел регулировки (показываетый на дисплее)
-	#define WITHPOWERTRIMMAX	4	// Верхний предел регулировки (показываетый на дисплее)
+	#define WITHPOWERTRIMMIN	1	// Нижний предел регулировки (показываемый на дисплее)
+	#define WITHPOWERTRIMMAX	4	// Верхний предел регулировки (показываемый на дисплее)
+	//#define WITHPOWERTRIMATU	2	// Значение для работы автотюнера
 	#define	WITHMUTEALL			1	// Отключение микрофона во всех режимах
 	#define WITHONEATTONEAMP	1	/* только одно положение аттенюатора и УВЧ */
 
@@ -1510,8 +1512,9 @@ extern "C" {
 	// управляющие регистры SW2016MINI
 
 	#define WITHPOWERTRIM		1	// Имеется управление мощностью
-	#define WITHPOWERTRIMMIN	1	// Нижний предел регулировки (показываетый на дисплее)
-	#define WITHPOWERTRIMMAX	4	// Верхний предел регулировки (показываетый на дисплее)
+	#define WITHPOWERTRIMMIN	1	// Нижний предел регулировки (показываемый на дисплее)
+	#define WITHPOWERTRIMMAX	4	// Верхний предел регулировки (показываемый на дисплее)
+	//#define WITHPOWERTRIMATU	2	// Значение для работы автотюнера
 	#define	WITHMUTEALL			1	// Отключение микрофона во всех режимах
 	#define WITHONEATTONEAMP	1	/* только одно положение аттенюатора и УВЧ */
 
@@ -1536,8 +1539,9 @@ extern "C" {
 #elif CTLREGSTYLE_SW2012CN_RN3ZOB
 
 	#define WITHPOWERTRIM		1	// Имеется управление мощностью
-	#define WITHPOWERTRIMMIN	1	// Нижний предел регулировки (показываетый на дисплее)
-	#define WITHPOWERTRIMMAX	4	// Верхний предел регулировки (показываетый на дисплее)
+	#define WITHPOWERTRIMMIN	1	// Нижний предел регулировки (показываемый на дисплее)
+	#define WITHPOWERTRIMMAX	4	// Верхний предел регулировки (показываемый на дисплее)
+	//#define WITHPOWERTRIMATU	2	// Значение для работы автотюнера
 	#define	WITHMUTEALL			1	// Отключение микрофона во всех режимах
 	#define WITHONEATTONEAMP	1	/* только одно положение аттенюатора и УВЧ */
 
@@ -1564,6 +1568,7 @@ extern "C" {
 	#define WITHPOWERLPHP		1	// Имеется переключение и отображение HP / LP
 	#define WITHPOWERTRIMMIN	0	// Нижний предел регулировки
 	#define WITHPOWERTRIMMAX	1	// Верхний предел регулировки
+	//#define WITHPOWERTRIMATU	0	// Значение для работы автотюнера
 	#define	WITHMUTEALL			1	// Отключение микрофона во всех режимах
 	#define WITHONEATTONEAMP	1	/* только одно положение аттенюатора и УВЧ */
 
@@ -1590,11 +1595,12 @@ extern "C" {
 	#define WITHPOWERLPHP		1	// Имеется переключение и отображение HP / LP
 	#define WITHPOWERTRIMMIN	0	// Нижний предел регулировки
 	#define WITHPOWERTRIMMAX	1	// Верхний предел регулировки
+	//#define WITHPOWERTRIMATU	0	// Значение для работы автотюнера
 	#define	WITHMUTEALL			1	// Отключение микрофона во всех режимах
 	#define WITHONEATTONEAMP	1	/* только одно положение аттенюатора и УВЧ */
 	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея
-	#define WITHLCDBACKLIGHTMIN	1	// Нижний предел регулировки (показываетый на дисплее)
-	#define WITHLCDBACKLIGHTMAX	3	// Верхний предел регулировки (показываетый на дисплее)
+	#define WITHLCDBACKLIGHTMIN	1	// Нижний предел регулировки (показываемый на дисплее)
+	#define WITHLCDBACKLIGHTMAX	3	// Верхний предел регулировки (показываемый на дисплее)
 
 	//#define	BOARD_AGCCODE_0		0x00
 	//#define	BOARD_AGCCODE_1		0x01
@@ -1616,8 +1622,8 @@ extern "C" {
 #elif CTLREGSTYLE_SW2013RDX
 
 	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея
-	#define WITHLCDBACKLIGHTMIN	1	// Нижний предел регулировки (показываетый на дисплее)
-	#define WITHLCDBACKLIGHTMAX	4	// Верхний предел регулировки (показываетый на дисплее)
+	#define WITHLCDBACKLIGHTMIN	1	// Нижний предел регулировки (показываемый на дисплее)
+	#define WITHLCDBACKLIGHTMAX	4	// Верхний предел регулировки (показываемый на дисплее)
 	#define WITHPOWERLPHP		1	// Имеется переключение и отображение HP / LP
 	#define WITHPOWERTRIMMIN	0	// Нижний предел регулировки
 	#define WITHPOWERTRIMMAX	1	// Верхний предел регулировки
@@ -1645,8 +1651,8 @@ extern "C" {
 #elif CTLREGSTYLE_SW2013RDX_UY5UM_WO240
 
 	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея
-	#define WITHLCDBACKLIGHTMIN	1	// Нижний предел регулировки (показываетый на дисплее)
-	#define WITHLCDBACKLIGHTMAX	4	// Верхний предел регулировки (показываетый на дисплее)
+	#define WITHLCDBACKLIGHTMIN	1	// Нижний предел регулировки (показываемый на дисплее)
+	#define WITHLCDBACKLIGHTMAX	4	// Верхний предел регулировки (показываемый на дисплее)
 	#define WITHPOWERLPHP		1	// Имеется переключение и отображение HP / LP
 	#define WITHPOWERTRIMMIN	0	// Нижний предел регулировки
 	#define WITHPOWERTRIMMAX	1	// Верхний предел регулировки
@@ -1731,12 +1737,13 @@ extern "C" {
 #elif CTLREGSTYLE_SW2013RDX_UY5UM	/* с регулировкой мощности R-2R на сигналах выбора диапазонного фильтра */
 
 	#define WITHPOWERTRIM		1	// Имеется управление мощностью
-	#define WITHPOWERTRIMMIN	1	// Нижний предел регулировки (показываетый на дисплее)
-	#define WITHPOWERTRIMMAX	16	// Верхний предел регулировки (показываетый на дисплее)
+	#define WITHPOWERTRIMMIN	1	// Нижний предел регулировки (показываемый на дисплее)
+	#define WITHPOWERTRIMMAX	16	// Верхний предел регулировки (показываемый на дисплее)
+	//#define WITHPOWERTRIMATU	4	// Значение для работы автотюнера
 
 	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея
-	#define WITHLCDBACKLIGHTMIN	1	// Нижний предел регулировки (показываетый на дисплее)
-	#define WITHLCDBACKLIGHTMAX	4	// Верхний предел регулировки (показываетый на дисплее)
+	#define WITHLCDBACKLIGHTMIN	1	// Нижний предел регулировки (показываемый на дисплее)
+	#define WITHLCDBACKLIGHTMAX	4	// Верхний предел регулировки (показываемый на дисплее)
 	#define	WITHMUTEALL			1	// Отключение микрофона во всех режимах
 	#define WITHONEATTONEAMP	1	/* только одно положение аттенюатора и УВЧ */
 
@@ -1760,8 +1767,8 @@ extern "C" {
 #elif CTLREGSTYLE_SW2013RDX_LTIYUR	// SW2013SF с индикатором RDX154
 
 	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея
-	#define WITHLCDBACKLIGHTMIN	1	// Нижний предел регулировки (показываетый на дисплее)
-	#define WITHLCDBACKLIGHTMAX	4	// Верхний предел регулировки (показываетый на дисплее)
+	#define WITHLCDBACKLIGHTMIN	1	// Нижний предел регулировки (показываемый на дисплее)
+	#define WITHLCDBACKLIGHTMAX	4	// Верхний предел регулировки (показываемый на дисплее)
 	#define WITHPOWERLPHP		1	// Имеется переключение и отображение HP / LP
 	#define WITHPOWERTRIMMIN	0	// Нижний предел регулировки
 	#define WITHPOWERTRIMMAX	1	// Верхний предел регулировки
@@ -1888,8 +1895,8 @@ extern "C" {
 #elif CTLREGSTYLE_SW2011
 
 	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея
-	#define WITHLCDBACKLIGHTMIN	1	// Нижний предел регулировки (показываетый на дисплее)
-	#define WITHLCDBACKLIGHTMAX	3	// Верхний предел регулировки (показываетый на дисплее)
+	#define WITHLCDBACKLIGHTMIN	1	// Нижний предел регулировки (показываемый на дисплее)
+	#define WITHLCDBACKLIGHTMAX	3	// Верхний предел регулировки (показываемый на дисплее)
 	#define	WITHMUTEALL			1	// Отключение микрофона во всех режимах
 	#define WITHONEATTONEAMP	1	/* только одно положение аттенюатора и УВЧ */
 
@@ -1914,8 +1921,8 @@ extern "C" {
 #elif CTLREGSTYLE_SW2011N
 
 	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея
-	#define WITHLCDBACKLIGHTMIN	1	// Нижний предел регулировки (показываетый на дисплее)
-	#define WITHLCDBACKLIGHTMAX	3	// Верхний предел регулировки (показываетый на дисплее)
+	#define WITHLCDBACKLIGHTMIN	1	// Нижний предел регулировки (показываемый на дисплее)
+	#define WITHLCDBACKLIGHTMAX	3	// Верхний предел регулировки (показываемый на дисплее)
 	#define	WITHMUTEALL			1	// Отключение микрофона во всех режимах
 	#define WITHONEATTONEAMP	1	/* только одно положение аттенюатора и УВЧ */
 
@@ -1941,8 +1948,8 @@ extern "C" {
 #elif CTLREGMODE32_V1	/* управляющий регистр - "Воробей-3" с 3*ULN2003 */
 
 	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея
-	#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываетый на дисплее)
-	#define WITHLCDBACKLIGHTMAX	3	// Верхний предел регулировки (показываетый на дисплее)
+	#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываемый на дисплее)
+	#define WITHLCDBACKLIGHTMAX	3	// Верхний предел регулировки (показываемый на дисплее)
 	#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
 
 	/* коды входов коммутатора источников сигнала для УНЧ приёмника (2 бита) */
@@ -1965,8 +1972,8 @@ extern "C" {
 #elif CTLREGMODE24_V1	/* управляющий регистр - "Воробей" и "Колибри" */
 
 	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея
-	#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываетый на дисплее)
-	#define WITHLCDBACKLIGHTMAX	3	// Верхний предел регулировки (показываетый на дисплее)
+	#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываемый на дисплее)
+	#define WITHLCDBACKLIGHTMAX	3	// Верхний предел регулировки (показываемый на дисплее)
 	#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
 
 	/* коды входов коммутатора источников сигнала для УНЧ приёмника */

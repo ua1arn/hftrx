@@ -139,13 +139,14 @@
 	// Сигналы DIN8 дублируются на разъеме управления тюнером
 	#define CTLREGMODE_STORCH_V1_R4DR	1	/* "Воронёнок" с DSP и FPGA, SD-CARD, dual watch & PA on board */
 
-	//#define WITHPOWERTRIM		1	// Имеется управление мощностью
-	//#define WITHPOWERTRIMMIN	10	// Нижний предел регулировки (показываетый на дисплее)
-	//#define WITHPOWERTRIMMAX	100	// Верхний предел регулировки (показываетый на дисплее)
+	#define WITHPOWERTRIM		1	// Имеется управление мощностью
+	#define WITHPOWERTRIMMIN	5	// Нижний предел регулировки (показываемый на дисплее)
+	#define WITHPOWERTRIMMAX	100	// Верхний предел регулировки (показываемый на дисплее)
+	#define WITHPOWERTRIMATU	50	// Значение для работы автотюнера
 
 	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея
-	#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываетый на дисплее)
-	#define WITHLCDBACKLIGHTMAX	3	// Верхний предел регулировки (показываетый на дисплее)
+	#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываемый на дисплее)
+	#define WITHLCDBACKLIGHTMAX	3	// Верхний предел регулировки (показываемый на дисплее)
 	#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
 
 	//#define WITHPABIASTRIM		1	// имеется управление током оконечного каскада усидителя мощности передатчика
@@ -357,6 +358,11 @@
 	//#define WITHPOTPOWER	1	/* регулятор мощности на потенциометре */
 	//#define WITHANTSELECT	1	// Управление переключением антенн
 	#define WITHSLEEPTIMER	1	/* выключить индикатор и вывод звука по истечениии указанного времени */
+	#define WITHOUTTXCADCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
+	#define WITHPOWERTRIM		1	// Имеется управление мощностью
+	#define WITHPOWERTRIMMIN	5	// Нижний предел регулировки (показываемый на дисплее)
+	#define WITHPOWERTRIMMAX	100	// Верхний предел регулировки (показываемый на дисплее)
+	#define WITHPOWERTRIMATU	50	// Значение для работы автотюнера
 
 	#define WITHMENU 	1	/* функциональность меню может быть отключена - если настраивать нечего */
 
