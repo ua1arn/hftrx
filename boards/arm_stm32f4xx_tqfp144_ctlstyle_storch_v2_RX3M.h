@@ -5,7 +5,7 @@
 // автор Гена Завидовский mgs2001@mail.ru
 // UA1ARN
 //
-// Трансивер с DSP обработкой "Воронёнок-2" на процессоре 
+// Трансивер с DSP обработкой "Воронёнок-2" на процессоре
 // STM32F746ZGT6 кодеком NAU8822L и FPGA EP4CE22E22I7N
 // с функцией DUAL WATCH
 // 2xUSB
@@ -113,15 +113,15 @@
 
 	// +++ вариации прошивки, специфические для разных частот опорного генератора
 	#if 0
-		#define DIRECT_80M0_X1		1	/* Тактовый генератор на плате 80.0 МГц */	
-		//#define DIRECT_72M595_X1	1	/* Тактовый генератор 122.880 МГц */	
+		#define DIRECT_80M0_X1		1	/* Тактовый генератор на плате 80.0 МГц */
+		//#define DIRECT_72M595_X1	1	/* Тактовый генератор 122.880 МГц */
 		#define BANDSELSTYLERE_UPCONV56M_36M	1	/* Up-conversion with working band .030..36 MHz */
 	#elif 0
-		#define DIRECT_100M0_X1		1	/* Тактовый генератор на плате 100.0 МГц */	
+		#define DIRECT_100M0_X1		1	/* Тактовый генератор на плате 100.0 МГц */
 		#define BANDSELSTYLERE_UPCONV56M_45M	1	/* Up-conversion with working band .030..45 MHz */
 	#else
-		//#define DIRECT_125M0_X1		1	/* Тактовый генератор на плате 125.0 МГц */	
-		#define DIRECT_122M88_X1	1	/* Тактовый генератор 122.880 МГц */	
+		//#define DIRECT_125M0_X1		1	/* Тактовый генератор на плате 125.0 МГц */
+		#define DIRECT_122M88_X1	1	/* Тактовый генератор 122.880 МГц */
 		#define BANDSELSTYLERE_UPCONV56M	1	/* Up-conversion with working band .030..56 MHz */
 	#endif
 	#define FQMODEL_FPGA		1	// FPGA + IQ over I2S
@@ -134,10 +134,10 @@
 	#define WITHPOWERTRIMMIN	10	// Нижний предел регулировки (показываетый на дисплее)
 	#define WITHPOWERTRIMMAX	100	// Верхний предел регулировки (показываетый на дисплее)
 
-	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея 
+	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея
 	#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываетый на дисплее)
 	#define WITHLCDBACKLIGHTMAX	3	// Верхний предел регулировки (показываетый на дисплее)
-	#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры 
+	#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
 
 	//#define WITHPABIASTRIM		1	// имеется управление током оконечного каскада усидителя мощности передатчика
 	#define	WITHPABIASMIN		0
@@ -267,9 +267,10 @@
 	//#define WITHUSESDCARD		1	// Включение поддержки SD CARD
 	//#define WITHUSEUSBFLASH		1	// Включение поддержки USB memory stick
 	//#define WITHUSEAUDIOREC		1	// Запись звука на SD CARD
-	#define WITHUSEDUALWATCH	1	// Второй приемник
+	//#define WITHUSEDUALWATCH	1	// Второй приемник
 	//#define WITHUSEAUDIORECCLASSIC	1	// стандартный формат записи, без "дыр"
 	//#define WITHUSEAUDIOREC2CH	1	// Запись звука на SD CARD в стерео
+	#define BOARD_FFTZOOM_POW2MAX 1	// Возможные масштабы FFT x1, x2
 
 	#define WITHDACSTRAIGHT 1	/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
 	#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
@@ -328,7 +329,7 @@
 	#define WITHCAT		1	/* используется CAT */
 	//#define WITHDEBUG		1	/* Отладочная печать через COM-порт. Без CAT (WITHCAT) */
 	//#define WITHMODEM		1	/* Устройство работает как радиомодем с последовательным интерфейсом */
-	//#define WITHFREEDV	1	/* поддержка режима FreeDV - http://freedv.org/ */ 
+	//#define WITHFREEDV	1	/* поддержка режима FreeDV - http://freedv.org/ */
 	//#define WITHNMEA		1	/* используется NMEA parser */
 	//#define WITHBEACON	1	/* Используется режим маяка */
 	#define WITHVOX			1	/* используется VOX */
