@@ -3046,10 +3046,17 @@ static uint_fast8_t alignmode;		/* режимы для настройки апп
 	enum { gcontrast = 0 };
 #endif
 
-
 static const uint_fast8_t displaymodesfps = DISPLAYMODES_FPS;
-static uint_fast8_t displayfreqsfps = DISPLAY_FPS;
-static uint_fast8_t displaybarsfps = DISPLAYSWR_FPS;
+#if defined (WITHDISPLAY_FPS)
+	static uint_fast8_t displayfreqsfps = WITHDISPLAY_FPS;
+#else
+	static uint_fast8_t displayfreqsfps = DISPLAY_FPS;
+#endif /* WITHDISPLAY_FPS */
+#if defined (WITHDISPLAYSWR_FPS)
+	static uint_fast8_t displaybarsfps = WITHDISPLAYSWR_FPS;
+#else
+	static uint_fast8_t displaybarsfps = DISPLAYSWR_FPS;
+#endif /* WITHDISPLAYSWR_FPS */
 #if WITHSPECTRUMWF
 	static uint_fast8_t gfillspect;
 	static uint_fast8_t gtopdb = 30;	/* верхний предел FFT */
