@@ -445,10 +445,11 @@ void
 modem_frames_decode(
 	uint_fast8_t v
 	);
-	uint_fast8_t getsampmlemike(INT32P_t * v);			/* получить очередной оцифрованый сэмпл с микрофона */
 
-	FLOAT_t local_log(FLOAT_t x);
-	FLOAT_t local_pow(FLOAT_t x, FLOAT_t y);
+uint_fast8_t getsampmlemike(INT32P_t * v);			/* получить очередной оцифрованый сэмпл с микрофона */
+
+FLOAT_t local_log(FLOAT_t x);
+FLOAT_t local_pow(FLOAT_t x, FLOAT_t y);
 
 //#endif /* WITHINTEGRATEDDSP */
 
