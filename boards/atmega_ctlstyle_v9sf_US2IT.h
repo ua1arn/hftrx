@@ -48,12 +48,13 @@
 	#define WITHPOWERLPHP		1	// Имеется переключение и отображение HP / LP
 	#define WITHPOWERTRIMMIN	0	// Нижний предел регулировки
 	#define WITHPOWERTRIMMAX	1	// Верхний предел регулировки
+	//#define WITHPOWERTRIMATU	0	// Значение для работы автотюнера
 	#define	WITHMUTEALL			1	// Отключение микрофона во всех режимах
 	//#define WITHONEATTONEAMP	1	/* только одно положение аттенюатора и УВЧ - "по кругу". */
 	#define WITHATT1PRE1		1	// Управление УВЧ и одиночным аттенюатором
-	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея 
-	#define WITHLCDBACKLIGHTMIN	1	// Нижний предел регулировки (показываетый на дисплее)
-	#define WITHLCDBACKLIGHTMAX	4	// Верхний предел регулировки (показываетый на дисплее)
+	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея
+	#define WITHLCDBACKLIGHTMIN	1	// Нижний предел регулировки (показываемый на дисплее)
+	#define WITHLCDBACKLIGHTMAX	4	// Верхний предел регулировки (показываемый на дисплее)
 
 	//#define	BOARD_AGCCODE_0		0x00
 	//#define	BOARD_AGCCODE_1		0x01

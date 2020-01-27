@@ -197,6 +197,9 @@ enum
 	CAT_AG_INDEX,		// aganswer()
 	CAT_SQ_INDEX,		// sqanswer()
 #endif /* WITHIF4DSP */
+#if WITHPOWERTRIM
+	CAT_PC_INDEX,		// pcanswer()
+#endif /* WITHPOWERTRIM */
 #if WITHIF4DSP
 	CAT_NR_INDEX,		// nranswer()
 #endif /* WITHIF4DSP */
@@ -2398,8 +2401,12 @@ struct nvmap
 	uint8_t	ggrptxparams; // последний посещённый пункт группы
 	//uint8_t gfitx;		/* номер используемого фильтра на передачу */
 	#if WITHPOWERLPHP
-		uint8_t gpwr;
-	#endif /* WITHPOWERLPHP */
+		uint8_t gpwri;		// индекс в pwrmodes - мощность при обычной работе
+		uint8_t gpwratunei;	// индекс в pwrmodes - моность при работе автотюнера или по внешнему запросу
+	#elif WITHPOWERTRIM
+		uint8_t gnormalpower;/* мощность WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
+		uint8_t gtunepower;/* мощность при работе автоматического согласующего устройства WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
+	#endif /* WITHPOWERLPHP, WITHPOWERTRIM */
 #endif /* WITHTX */
 
 #if WITHNOTCHONOFF
@@ -2410,7 +2417,7 @@ struct nvmap
 	uint8_t gnotch;
 	uint16_t gnotchfreq;
 	uint16_t gnotchwidth;
-#endif /* WITHNOTCHFREQ */
+#endif /* WITHNOTCHONOFF, WITHNOTCHFREQ */
 
 #if WITHRFSG
 	uint8_t userfsg;
@@ -2472,9 +2479,6 @@ struct nvmap
 	uint8_t gagcoff;
 	uint8_t gamdepth;		/* Глубина модуляции в АМ - 0..100% */
 	uint8_t gdacscale;		/* Использование амплитуды сигнала с ЦАП передатчика - 0..100% */
-#if WITHLOWPOWEREXTTUNE
-	uint8_t gdactunescale;	/* Сброс мощности при запросе TUNE от автотюнера или извне */
-#endif
 	uint16_t gdigiscale;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 	uint8_t	gcwedgetime;			/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
 	uint8_t	gsidetonelevel;	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
@@ -2695,12 +2699,6 @@ filter_t fi_2p0_455 =
 		uint8_t bkinenable;	/* автоматическое управление передатчиком (от телеграфного манипулятора) */
 	#endif /* WITHELKEY */
 
-	#if WITHPOWERTRIM || WITHPOWERLPHP
-		#if ! WITHPOTPOWER
-			uint8_t gnormalpower;/* мощность WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
-		#endif /* ! WITHPOTPOWER */
-		uint8_t gotunerpower;/* мощность при работе автоматического согласующего устройства WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
-	#endif /* WITHPOWERTRIM || WITHPOWERLPHP */
 	#if WITHPABIASTRIM
 		uint8_t gpabias;	/* ток оконечного каскада передатчика */
 	#endif /* WITHPABIASTRIM */
@@ -2848,7 +2846,7 @@ filter_t fi_2p0_455 =
 #define RMT_ANTENNA_BASE(i) offsetof(struct nvmap, bands[(i)].ant)			/* код включённой антенны (1 байт) */
 #define RMT_MODEROW_BASE(i)	offsetof(struct nvmap, bands[(i)].moderow)			/* номер строки в массиве режимов. */
 #define RMT_MODECOLS_BASE(i, j)	offsetof(struct nvmap, bands[(i)].modecols [(j)])	/* выбранный столбец в каждой строке режимов. */
-#define RMT_PWR_BASE offsetof(struct nvmap, gpwr)								/* большая мощность sw2012sf */
+#define RMT_PWR_BASE offsetof(struct nvmap, gpwri)								/* большая мощность sw2012sf */
 #define RMT_NOTCH_BASE offsetof(struct nvmap, gnotch)							/* NOTCH filter */
 //#define RMT_NOTCHFREQ_BASE offsetof(struct nvmap, gnotchfreq)							/* NOTCH filter frequency */
 
@@ -2976,9 +2974,6 @@ static uint_fast8_t lockmode;
 #endif /* WITHLCDBACKLIGHT */
 static uint_fast8_t gusefast;
 
-#if WITHPOWERLPHP
-	static uint_fast8_t gpwr;
-#endif /* WITHPOWERLPHP */
 #if WITHNOTCHONOFF
 	static uint_fast8_t gnotch;
 #elif WITHNOTCHFREQ
@@ -3323,10 +3318,23 @@ enum
 		static uint_fast8_t gsbtonenable;	// разрешить формирование subtone
 	#endif /* WITHSUBTONES */
 
-	#if WITHPOWERTRIM || WITHPOWERLPHP
-		static uint_fast8_t gnormalpower = WITHPOWERTRIMMAX;
-		static uint_fast8_t gotunerpower = WITHPOWERTRIMMIN; /* мощность при работе автоматического согласующего устройства */
-	#endif /* WITHPOWERTRIM || WITHPOWERLPHP */
+
+	#if WITHPOWERTRIM
+		static dualctl8_t gnormalpower = { WITHPOWERTRIMMAX, WITHPOWERTRIMMAX };
+		#if WITHLOWPOWEREXTTUNE
+			static uint_fast8_t gtunepower = WITHPOWERTRIMATU; /* мощность при работе автоматического согласующего устройства */
+		#else /* WITHLOWPOWEREXTTUNE */
+			enum { gtunepower = WITHPOWERTRIMMAX }; /* мощность при работе автоматического согласующего устройства */
+		#endif /* WITHLOWPOWEREXTTUNE */
+	#elif WITHPOWERLPHP
+		static uint_fast8_t gpwri = 1;	// индекс нормальной мощности
+		#if WITHLOWPOWEREXTTUNE
+			static uint_fast8_t gpwratunei = 0; // индекс мощность при работе автоматического согласующего устройства
+		#else /* WITHLOWPOWEREXTTUNE */
+			enum { gpwratunei = 1 }; // индекс нормальной мощности
+		#endif /* WITHLOWPOWEREXTTUNE */
+	#endif /* WITHPOWERTRIM, WITHPOWERLPHP */
+
 	#if WITHPABIASTRIM
 		#if defined (WITHBBOXPABIAS)
 			static uint_fast8_t gpabias = WITHBBOXPABIAS; //WITHPABIASMIN;	/* ток оконечного каскада передатчика */
@@ -3630,10 +3638,6 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 
 	/*  Использование амплитуды сигнала с ЦАП передатчика - 0..100% */
 	static uint_fast8_t gdacscale = 64;	/* настраивается под прегруз драйвера. */
-	#if WITHLOWPOWEREXTTUNE
-		/*  Использование амплитуды сигнала с ЦАП передатчика - 0..100% */
-		static uint_fast8_t gdactunescale = 32; /* Сброс мощности при запросе TUNE от автотюнера или извне */
-	#endif /* WITHLOWPOWEREXTTUNE */
 #endif /* WITHTX */
 
 
@@ -5538,7 +5542,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 	},
 #endif /* WITHELKEY && ! WITHPOTWPM */
 #if WITHTX
-#if WITHPOWERTRIM
+#if WITHPOWERTRIM && ! WITHPOTPOWER
 	{
 		"TX POWER ",
 		RJ_UNSIGNED,		// rj
@@ -5546,23 +5550,11 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
 		offsetof(struct nvmap, gnormalpower),
 		NULL,
-		& gnormalpower,
+		& gnormalpower.value,
 		getzerobase, /* складывается со смещением и отображается */
 		enc2menu_adjust,	/* функция для изменения значения параметра */
 	},
-#elif WITHIF4DSP
-	{
-		"DAC SCALE",
-		RJ_UNSIGNED,		// rj
-		ISTEP1,
-		0, 100,
-		offsetof(struct nvmap, gdacscale),
-		NULL,
-		& gdacscale,
-		getzerobase, /* складывается со смещением и отображается */
-		enc2menu_adjust,	/* функция для изменения значения параметра */
-	},
-#endif /* WITHPOWERTRIM */
+#endif /* WITHPOWERTRIM && ! WITHPOTPOWER */
 #if WITHNOTCHFREQ && ! WITHPOTNOTCH
 	{
 		"NOTCH FRQ",
@@ -5926,7 +5918,7 @@ loadsavedstate(void)
 	mainsubrxmode = loadvfy8up(RMT_MAINSUBRXMODE_BASE, 0, MAINSUBRXMODE_COUNT - 1, mainsubrxmode);	/* состояние dual watch */
 #endif /* WITHUSEDUALWATCH */
 #if WITHPOWERLPHP
-	gpwr = loadvfy8up(RMT_PWR_BASE, 0, PWRMODE_COUNT - 1, gpwr);
+	gpwri = loadvfy8up(RMT_PWR_BASE, 0, PWRMODE_COUNT - 1, gpwri);
 #endif /* WITHPOWERLPHP */
 #if WITHNOTCHONOFF
 	gnotch = loadvfy8up(RMT_NOTCH_BASE, 0, NOTCHMODE_COUNT - 1, gnotch);
@@ -7870,13 +7862,12 @@ updateboard(
 			board_set_mikemute(gmuteall || getactualtune() || getmodetempl(txsubmode)->mute);	/* отключить микрофонный усилитель */
 			seq_set_txgate_P(pamodetempl->txgfva, pamodetempl->sdtnva);		/* как должен переключаться тракт на передачу */
 
-			#if WITHPOTPOWER
-				// gnormalpower устанавливается в таймерном обработчике по состоянию потенциометра
-				board_set_opowerlevel(getactualdownpower() ? gotunerpower : gnormalpower);			/* установить выходную мощность передатчика WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
-			#elif WITHPOWERTRIM
-				board_set_opowerlevel(getactualdownpower() ? gotunerpower : gnormalpower);			/* установить выходную мощность передатчика WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
+			#if WITHPOWERTRIM
+				/* установить выходную мощность передатчика WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
+				board_set_opowerlevel(getactualdownpower() ? gtunepower : gnormalpower.value);
 			#elif WITHPOWERLPHP
-				board_set_opowerlevel(getactualdownpower() ? gotunerpower : pwrmodes [gpwr].code);
+				/* установить выходную мощность передатчика WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
+				board_set_opowerlevel(getactualdownpower() ? pwrmodes [gpwratunei].code : pwrmodes [gpwri].code);
 			#endif /* WITHPOWERLPHP */
 		#if WITHPABIASTRIM
 			board_set_pabias(gpabias);	// Подстройка тока оконечного каскада передатчика
@@ -8084,14 +8075,13 @@ updateboard(
 			board_set_afhighcuttx(bwseti_gethigh(bwseti));	/* Верхняя частота среза фильтра НЧ по передаче */
 			board_set_afresponcetx(bwseti_getafresponce(bwseti));	/* коррекция АЧХ НЧ тракта передатчика */
 			board_set_nfmdeviation100(75);
-		#if WITHLOWPOWEREXTTUNE							/* Сброс мощности при запросе TUNE от автотюнера или извне */
-			if (getactualdownpower())
-				board_set_dacscale(gdactunescale);
-			else
-				board_set_dacscale(gdacscale);
-		#else /* WITHLOWPOWEREXTTUNE */
-			board_set_dacscale(gdacscale);		/* Использование амплитуды сигнала с ЦАП передатчика - 0..100% */
-		#endif /* WITHLOWPOWEREXTTUNE */
+		#if WITHOUTTXCADCONTROL
+			/* мощность регулируется умножнением выходных значений в потоке к FPGA / IF CODEC */
+			board_set_dacscale(getactualdownpower() ? (gdacscale * (unsigned long) gtunepower / (WITHPOWERTRIMMAX - WITHPOWERTRIMMIN) + WITHPOWERTRIMMIN) : gdacscale);
+		#else /* CPUDAC */
+			/* мощность регулируется постоянны напряжением на ЦАП */
+			board_set_dacscale(gdacscale);
+		#endif /* CPUDAC */
 			board_set_gdigiscale(gdigiscale);	/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 			board_set_amdepth(gamdepth);	/* Глубина модуляции в АМ - 0..100% */
 		}
@@ -8667,8 +8657,8 @@ uif_key_click_attenuator(void)
 static void 
 uif_key_click_pwr(void)
 {
-	gpwr = calc_next(gpwr, 0, PWRMODE_COUNT - 1);
-	save_i8(RMT_PWR_BASE, gpwr);
+	gpwri = calc_next(gpwri, 0, PWRMODE_COUNT - 1);
+	save_i8(RMT_PWR_BASE, gpwri);
 
 	updateboard(1, 0);
 }
@@ -9233,7 +9223,7 @@ const FLASHMEM char * hamradio_get_agc4_value_P(void)
 // HP/LP
 const FLASHMEM char * hamradio_get_hplp_value_P(void)
 {
-	return pwrmodes [gpwr].label;
+	return pwrmodes [gpwri].label;
 }
 #endif /* WITHPOWERLPHP */
 
@@ -9982,7 +9972,7 @@ directctlupdate(uint_fast8_t inmenu)
 		// +++ получение состояния органов управления */
 #if WITHCPUADCHW
 	#if WITHPOTPOWER
-		changed |= flagne_u8(& gnormalpower, board_getpot_filtered_u8(POTPOWER, WITHPOWERTRIMMIN, WITHPOWERTRIMMAX));	// регулировка мощности
+		changed |= FLAGNE_U8_CAT(& gnormalpower, board_getpot_filtered_u8(POTPOWER, WITHPOWERTRIMMIN, WITHPOWERTRIMMAX), CAT_PC_INDEX);	// регулировка мощности
 	#endif /* WITHPOTPOWER */
 	#if WITHPOTWPM
 		changed |= FLAGNE_U8_CAT(& elkeywpm, board_getpot_filtered_u8(POTWPM, CWWPMMIN, CWWPMMAX), CAT_KS_INDEX);
@@ -10618,9 +10608,7 @@ static void sqanswer(uint_fast8_t arg)
 		);
 	cat_answer(len);
 }
-#endif /* WITHIF4DSP */
 
-#if WITHIF4DSP
 static void nranswer(uint_fast8_t arg)
 {
 	static const FLASHMEM char fmt_1 [] =
@@ -10635,6 +10623,24 @@ static void nranswer(uint_fast8_t arg)
 	cat_answer(len);
 }
 #endif /* WITHIF4DSP */
+
+#if WITHPOWERTRIM
+static void pcanswer(uint_fast8_t arg)
+{
+	static const FLASHMEM char fmt_1 [] =
+		"PC"			// 2 characters - status information code
+		"%03d"			// P1 005..100: SSB/CW/FM/FSK, 25: AM
+		";";				// 1 char - line terminator
+
+	// answer mode
+	// Нормирование значений WITHPOWERTRIMMIN..WITHPOWERTRIMMAX к диапазону Kenwook CAT
+	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_1,
+		(int) ((gnormalpower.value - WITHPOWERTRIMMIN) * 95 / (WITHPOWERTRIMMAX - WITHPOWERTRIMMIN) + 5)
+		);
+	cat_answer(len);
+}
+
+#endif /* WITHPOWERTRIM */
 
 #if WITHCATEXT && WITHELKEY
 
@@ -11058,6 +11064,8 @@ static void
 NOINLINEAT
 cat_answer_request(uint_fast8_t catindex)
 {
+	if (CAT_MAX_INDEX == catindex)
+		return;
 	//PRINTF(PSTR("cat_answer_request: catindex=%u\n"), catindex);
 	cat_answer_map [catindex] = 1;
 }
@@ -11159,6 +11167,9 @@ static const canapfn catanswers [CAT_MAX_INDEX] =
 	aganswer,
 	sqanswer,
 #endif /* WITHIF4DSP */
+#if WITHPOWERTRIM
+	pcanswer,
+#endif /* WITHPOWERTRIM */
 #if WITHIF4DSP
 	nranswer,
 #endif /* WITHIF4DSP */
@@ -11581,6 +11592,26 @@ processcatmsg(
 			cat_answer_request(CAT_RG_INDEX);	// rganswer
 		}
 	}
+#if WITHPOWERTRIM
+	else if (match2('P', 'C'))
+	{
+		// Sets and reads the output power
+		if (cathasparam != 0)
+		{
+			const uint_fast32_t p2 = vfy32up(catparam, 5, 100, 100);
+			// Нормирование Значений Kenwook CAT к диапазону WITHPOWERTRIMMIN..WITHPOWERTRIMMAX
+			if (flagne_u16(& gnormalpower.value, (p2 - 5) * (WITHPOWERTRIMMAX - WITHPOWERTRIMMIN) / 95 + WITHPOWERTRIMMIN))
+			{
+				updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
+				rc = 1;
+			}
+		}
+		else
+		{
+			cat_answer_request(CAT_PC_INDEX);	// pcanswer
+		}
+	}
+#endif /* WITHPOWERTRIM */
 #endif /* WITHIF4DSP */
 	else if (match2('R', 'A'))
 	{
@@ -14396,7 +14427,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
 		offsetof(struct nvmap, gnormalpower),
 		NULL,
-		& gnormalpower,
+		& gnormalpower.value,
 		getzerobase,
 	},
   #endif /* ! WITHPOTPOWER */
@@ -14405,34 +14436,32 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		"ATU PWR ", 7, 0, 0,	ISTEP1,		/* мощность при работе автоматического согласующего устройства */
 		ITEM_VALUE,
 		WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
-		offsetof(struct nvmap, gotunerpower),
+		offsetof(struct nvmap, gtunepower),
 		NULL,
-		& gotunerpower,
+		& gtunepower,
 		getzerobase,
 	},
   #endif /* WITHLOWPOWEREXTTUNE */
 #elif WITHPOWERLPHP
-  #if ! WITHPOTPOWER
 	#if ! CTLSTYLE_SW2011ALL
 	{
 		"TX POWER", 7, 0, RJ_POWER,	ISTEP1,		/* мощность при обычной работе на передачу */
 		ITEM_VALUE,
-		WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
-		offsetof(struct nvmap, gnormalpower),
+		0, PWRMODE_COUNT - 1,
+		offsetof(struct nvmap, gpwri),
 		NULL,
-		& gnormalpower,
+		& gpwri,
 		getzerobase,
 	},
 	#endif /* ! CTLSTYLE_SW2011ALL */
-  #endif /* ! WITHPOTPOWER */
-  #if WITHLOWPOWEREXTTUNE
+  	#if WITHLOWPOWEREXTTUNE
 	{
 		"ATU PWR ", 7, 0, RJ_POWER,	ISTEP1,		/* мощность при работе автоматического согласующего устройства */
 		ITEM_VALUE,
-		WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
-		offsetof(struct nvmap, gotunerpower),
+		0, PWRMODE_COUNT - 1,
+		offsetof(struct nvmap, gtunepower),
 		NULL,
-		& gotunerpower,
+		& gtunepower,
 		getzerobase, 
 	},
   #endif /* WITHLOWPOWEREXTTUNE */
@@ -14485,17 +14514,6 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		& gdacscale,
 		getzerobase, /* складывается со смещением и отображается */
 	},
-#if WITHLOWPOWEREXTTUNE
-	{
-		"TUNESCALE", 7, 0, 0,	ISTEP1,		/* Сброс мощности при запросе TUNE от автотюнера или извне */
-		ITEM_VALUE,
-		0, 100,
-		offsetof(struct nvmap, gdactunescale),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		NULL,
-		& gdactunescale,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#endif
 	{
 		"FT8BOOST",	7, 2, 0,	ISTEP1,		/* Увеличение усиления при передаче в цифровых режимах 90..300% */
 		ITEM_VALUE,

@@ -133,12 +133,13 @@
 	#define CTLREGMODE_RAVENDSP_V4	1	/* "Воронёнок" с DSP и FPGA, SD-CARD */
 
 	#define WITHPOWERTRIM		1	// Имеется управление мощностью
-	#define WITHPOWERTRIMMIN	10	// Нижний предел регулировки (показываетый на дисплее)
-	#define WITHPOWERTRIMMAX	100	// Верхний предел регулировки (показываетый на дисплее)
+	#define WITHPOWERTRIMMIN	5	// Нижний предел регулировки (показываемый на дисплее)
+	#define WITHPOWERTRIMMAX	100	// Верхний предел регулировки (показываемый на дисплее)
+	#define WITHPOWERTRIMATU	50	// Значение для работы автотюнера
 
 	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея
-	#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываетый на дисплее)
-	#define WITHLCDBACKLIGHTMAX	2	// Верхний предел регулировки (показываетый на дисплее)
+	#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываемый на дисплее)
+	#define WITHLCDBACKLIGHTMAX	2	// Верхний предел регулировки (показываемый на дисплее)
 	#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
 
 	/* коды входов коммутатора источников сигнала для УНЧ приёмника */

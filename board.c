@@ -6041,7 +6041,7 @@ static void board_fpga_loader_PS(void)
 	#elif CTLSTYLE_STORCH_V1 && (DDS1_CLK_MUL == 1)
 		#include "rbf/rbfimage_v7a_2ch.h"	// same as CTLSTYLE_RAVENDSP_V7
 	#elif CTLSTYLE_STORCH_V2 && ! WITHUSEDUALWATCH && (DDS1_CLK_MUL == 1)
-		#include "rbf/rbfimage_v7_1ch.h"	//
+		#include "rbf/rbfimage_v7a_2ch.h"	//
 	#elif CTLSTYLE_STORCH_V2 && (DDS1_CLK_MUL == 1)
 		#include "rbf/rbfimage_v7a_2ch.h"	// same as CTLSTYLE_RAVENDSP_V7
 	#elif CTLSTYLE_STORCH_V3 && ! WITHUSEDUALWATCH && (DDS1_CLK_MUL == 1)
@@ -6079,7 +6079,7 @@ static void board_fpga_loader_PS(void)
 		#error Missing FPGA image file
 	#endif
 
-	unsigned r = 3;
+	unsigned r = 4;
 restart:
 	;
 	if (-- r == 0)
@@ -6088,13 +6088,14 @@ restart:
 		return;
 	}
 	unsigned w = 500;
+	unsigned long w2 = 500000;
 	do {
 		debug_printf_P(PSTR("fpga: board_fpga_loader_PS start\n"));
 		const size_t rbflength = sizeof rbfimage / sizeof rbfimage [0];
 		/* After power up, the Cyclone IV device holds nSTATUS low during POR delay. */
 
 		FPGA_NCONFIG_PORT_S(FPGA_NCONFIG_BIT);
-		local_delay_ms(1);
+		local_delay_ms(10);
 		/* 1) Выставить "1" на nCONFIG */
 		//debug_printf_P(PSTR("fpga: FPGA_NCONFIG_BIT=1\n"));
 		FPGA_NCONFIG_PORT_C(FPGA_NCONFIG_BIT);
@@ -6102,18 +6103,26 @@ restart:
 		//debug_printf_P(PSTR("fpga: waiting for FPGA_NSTATUS_BIT==0\n"));
 		while (board_fpga_get_NSTATUS() != 0)
 		{
-			local_delay_ms(1);
+			local_delay_ms(10);
 			if (-- w == 0)
+			{
+				debug_printf_P(PSTR("fpga: waiting for FPGA_NSTATUS_BIT==0 failure.\n"));
 				goto restart;
+			}
+			//PRINTF(".");
 		}
 		FPGA_NCONFIG_PORT_S(FPGA_NCONFIG_BIT);
 		/* 2) Дождаться "1" на nSTATUS */
 		//debug_printf_P(PSTR("fpga: waiting for FPGA_NSTATUS_BIT==1\n"));
 		while (board_fpga_get_NSTATUS() == 0)
 		{
-			local_delay_ms(1);
+			local_delay_ms(10);
 			if (-- w == 0)
+			{
+				debug_printf_P(PSTR("fpga: waiting for FPGA_NSTATUS_BIT==1 failure.\n"));
 				goto restart;
+			}
+			//PRINTF(".");
 		}
 		/* 3) Выдать байты (бладший бит .rbf файла первым) */
 		//debug_printf_P(PSTR("fpga: start sending RBF image (%lu of 16-bit words)\n"), rbflength);
@@ -6142,7 +6151,12 @@ restart:
 			while (board_fpga_get_CONF_DONE() == 0)
 			{
 				++ wcd;
-				hardware_spi_b16_p2(0xffff);
+				hardware_spi_b16_p2(0xFFFF);
+				if (-- w2 == 0)
+				{
+					PRINTF("fpga: board_fpga_get_CONF_DONE waiting failure");
+					goto restart;
+				}
 			}
 
 			hardware_spi_complete_b16();
@@ -6157,11 +6171,11 @@ restart:
 			*/
 		}
 	} while (board_fpga_get_NSTATUS() == 0);	// если ошибка - повторяем
-	//debug_printf_P(PSTR("fpga: board_fpga_loader_PS done\n"));
+	debug_printf_P(PSTR("fpga: board_fpga_loader_PS done\n"));
 	/* проверяем, проинициализировалась ли FPGA (вошла в user mode). */
 	while (HARDWARE_FPGA_IS_USER_MODE() == 0)
 	{
-		local_delay_ms(1);
+		local_delay_ms(10);
 		if (-- w == 0)
 			goto restart;
 	}
