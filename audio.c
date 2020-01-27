@@ -643,7 +643,7 @@ int get_lout16(void)
 }
 
 #if 1
-#define INT24_MAX 0x7FFFFL
+#define INT24_MAX 0x7FFFFFL
 static int get_rout24(void)
 {
 	// Формирование значения для ROUT
@@ -5368,17 +5368,14 @@ void RAMFUNC dsp_extbuffer32rx(const int32_t * buff)
 
 #if WITHUSBAUDIOSAI1
 		//processafadcsampleiq(vi, dspmodeA, shape, ctcss);	// Передатчик - формирование одного сэмпда (пары I/Q).
+		savesampleout32stereo(intn_to_tx(vi.IV, WITHAFADCWIDTH), intn_to_tx(vi.QV, WITHAFADCWIDTH));	// кодек получает 24 бита left justified в 32-х битном числе.
 		//const INT32P_t dual = vi;
 		//const INT32P_t dual = { { get_lout24(), get_rout24() } }; // vi;
-		static long lcode, rcode;
-		const INT32P_t dual = { { 1uL << (lcode ++ & 0x1F), 1uL << (rcode ++ & 0x1F) } }; // vi;
-		savesampleout32stereo(dual.IV, dual.QV);	// кодек получает 24 бита left justified в 32-х битном числе.
-		//savesampleout32stereo(0x55555555, 0xFFFF0000);
-		//savesampleout16stereo(injectsidetone(dual.IV, sdtn), injectsidetone(dual.QV, sdtn));
+		//savesampleout32stereo(intn_to_tx(dual.IV, 24), intn_to_tx(dual.QV, 24));	// кодек получает 24 бита left justified в 32-х битном числе.
 //		recordsampleUAC(dual.IV >> 8, dual.QV >> 8);	// Запись в UAC демодулированного сигнала без озвучки клавиш
 		recordsampleUAC(
-			(int_fast32_t) buff [i + DMABUF32RXI] >> 16,
-			(int_fast32_t) buff [i + DMABUF32RXQ] >> 16
+			(int_fast32_t) buff [i + DMABUF32RXI] >> (32 - HARDWARE_USBD_AUDIO_IN_SAMPLEBITS_AUDIO48),
+			(int_fast32_t) buff [i + DMABUF32RXQ] >> (32 - HARDWARE_USBD_AUDIO_IN_SAMPLEBITS_AUDIO48)
 			);
 
 #elif WITHSUSBSPKONLY

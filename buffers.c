@@ -663,7 +663,7 @@ void buffers_initialize(void)
 
 #endif /* WITHUSBUAC */
 
-	static voice32tx_t voicesarray32tx [6];
+	static voice32tx_t voicesarray32tx [(DMABUFFSIZE32RX / DMABUFSTEP32RX) / (DMABUFFSIZE32TX / DMABUFSTEP32TX) + 4];
 
 	InitializeListHead2(& voicesready32tx);	// список для выдачи на ЦАП
 	InitializeListHead2(& voicesfree32tx);	// Незаполненные

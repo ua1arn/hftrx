@@ -5561,19 +5561,6 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		enc2menu_adjust,	/* функция для изменения значения параметра */
 	},
 #endif /* WITHPOWERTRIM && ! WITHPOTPOWER */
-#if WITHNOTCHFREQ && ! WITHPOTNOTCH
-	{
-		"NOTCH FRQ",
-		RJ_UNSIGNED,		// rj
-		ISTEP50,
-		WITHNOTCHFREQMIN, WITHNOTCHFREQMAX,
-		offsetof(struct nvmap, gnotchfreq),	/* центральная частота NOTCH */
-		& gnotchfreq.value,
-		NULL,
-		getzerobase, /* складывается со смещением и отображается */
-		enc2menu_adjust,	/* функция для изменения значения параметра */
-	},
-#endif /* WITHNOTCHFREQ && ! WITHPOTNOTCH */
 #if WITHSUBTONES
 	{
 		"CTCSS FRQ", 
@@ -5614,6 +5601,19 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 	},
 #endif /* WITHIF4DSP */
 #endif /* WITHTX */
+#if WITHNOTCHFREQ && ! WITHPOTNOTCH
+	{
+		"NOTCH FRQ",
+		RJ_UNSIGNED,		// rj
+		ISTEP50,
+		WITHNOTCHFREQMIN, WITHNOTCHFREQMAX,
+		offsetof(struct nvmap, gnotchfreq),	/* центральная частота NOTCH */
+		& gnotchfreq.value,
+		NULL,
+		getzerobase, /* складывается со смещением и отображается */
+		enc2menu_adjust,	/* функция для изменения значения параметра */
+	},
+#endif /* WITHNOTCHFREQ && ! WITHPOTNOTCH */
 #if WITHIF4DSP
 	{
 		"NR LEVEL ", 
