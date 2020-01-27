@@ -265,6 +265,7 @@
 	#define WITHRTS96		1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 
 	#define ENCRES_DEFAULT ENCRES_400
+	#define ENCDIV_DEFAULT	6
 	//#define ENCRES_DEFAULT ENCRES_24
 	#define WITHDIRECTFREQENER	1
 	#define	WITHENCODER	1	/* для изменения частоты имеется енкодер */
@@ -356,6 +357,11 @@
 	//#define WITHUSEAUDIORECCLASSIC	1	// стандартный формат записи, без "дыр"
 
 	#define WITHBARS		1	/* отображение S-метра и SWR-метра */
+	#define WITHDISPLAY_FPS		20
+	#define WITHDISPLAYSWR_FPS	15
+
+	#define WITHMAXPWRCALI		78
+	#define WITHSWRCALI			79
 
 	#define WITHVOLTLEVEL	1	/* отображение напряжения питания */
 	////#define WITHTHERMOLEVEL	1	/* отображение температуры */

@@ -3041,10 +3041,17 @@ static uint_fast8_t alignmode;		/* режимы для настройки апп
 	enum { gcontrast = 0 };
 #endif
 
-
 static const uint_fast8_t displaymodesfps = DISPLAYMODES_FPS;
-static uint_fast8_t displayfreqsfps = DISPLAY_FPS;
-static uint_fast8_t displaybarsfps = DISPLAYSWR_FPS;
+#if defined (WITHDISPLAY_FPS)
+	static uint_fast8_t displayfreqsfps = WITHDISPLAY_FPS;
+#else
+	static uint_fast8_t displayfreqsfps = DISPLAY_FPS;
+#endif /* WITHDISPLAY_FPS */
+#if defined (WITHDISPLAYSWR_FPS)
+	static uint_fast8_t displaybarsfps = WITHDISPLAYSWR_FPS;
+#else
+	static uint_fast8_t displaybarsfps = DISPLAYSWR_FPS;
+#endif /* WITHDISPLAYSWR_FPS */
 #if WITHSPECTRUMWF
 	static uint_fast8_t gfillspect;
 	static uint_fast8_t gtopdb = 30;	/* верхний предел FFT */
@@ -3366,10 +3373,16 @@ enum
 #if WITHBARS
 	#if (WITHSWRMTR || WITHSHOWSWRPWR)
 		static uint_fast16_t minforward = (1U << HARDWARE_ADCBITS) / 8;
-		static uint_fast8_t swrcalibr = 100;	/* калибровочный параметр SWR-метра */
+		#if WITHSWRCALI
+			static uint_fast8_t swrcalibr = WITHSWRCALI;	/* калибровочный параметр SWR-метра */
+		#else /* WITHSWRCALI */
+			static uint_fast8_t swrcalibr = 100;	/* калибровочный параметр SWR-метра */
+		#endif /* WITHSWRCALI */
 	#endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
 	#if WITHPWRMTR || WITHSWRMTR
-		#if CTLSTYLE_SW2013RDX
+		#if WITHMAXPWRCALI
+			static uint_fast8_t maxpwrcali = WITHMAXPWRCALI;	/* калибровочный параметр PWR-метра */
+		#elif CTLSTYLE_SW2013RDX
 			static uint_fast8_t maxpwrcali = 216;	/* калибровочный параметр PWR-метра */
 		#elif CTLSTYLE_SW2015
 			static uint_fast8_t maxpwrcali = 216;	/* калибровочный параметр PWR-метра */

@@ -13,3 +13,5 @@
 product.h
 boards/atmega644_ctlstyle_v1.h
 .settings/language.settings.xml
+*.stm32
+*.nec32
