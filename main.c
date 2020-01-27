@@ -3373,7 +3373,11 @@ enum
 #if WITHBARS
 	#if (WITHSWRMTR || WITHSHOWSWRPWR)
 		static uint_fast16_t minforward = (1U << HARDWARE_ADCBITS) / 8;
-		static uint_fast8_t swrcalibr = 100;	/* калибровочный параметр SWR-метра */
+		#if WITHSWRCALI
+			static uint_fast8_t swrcalibr = WITHSWRCALI;	/* калибровочный параметр SWR-метра */
+		#else
+			static uint_fast8_t swrcalibr = 100;	/* калибровочный параметр SWR-метра */
+		#endif /* WITHSWRCALI */
 	#endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
 	#if WITHPWRMTR || WITHSWRMTR
 		#if CTLSTYLE_SW2013RDX
@@ -3386,6 +3390,8 @@ enum
 			static uint_fast8_t maxpwrcali = 216;	/* калибровочный параметр PWR-метра */
 		#elif CTLSTYLE_SW2016MINI
 			static uint_fast8_t maxpwrcali = 100;	/* калибровочный параметр PWR-метра */
+		#elif WITHMAXPWRCALI
+			static uint_fast8_t maxpwrcali = WITHMAXPWRCALI;	/* калибровочный параметр PWR-метра */
 		#else
 			static uint_fast8_t maxpwrcali = 255;	/* калибровочный параметр PWR-метра */
 		#endif

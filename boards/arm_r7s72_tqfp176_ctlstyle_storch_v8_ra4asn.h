@@ -360,6 +360,9 @@
 	#define WITHDISPLAY_FPS		20
 	#define WITHDISPLAYSWR_FPS	15
 
+	#define WITHMAXPWRCALI		78
+	#define WITHSWRCALI			79
+
 	#define WITHVOLTLEVEL	1	/* отображение напряжения питания */
 	////#define WITHTHERMOLEVEL	1	/* отображение температуры */
 
