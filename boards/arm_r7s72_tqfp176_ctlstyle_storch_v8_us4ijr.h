@@ -306,6 +306,7 @@
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
 		#define WITHAUTOTUNER_AVBELNN	1	/* Плата управления LPF и тюнером от avbelnn */
 		#define SHORTSET8	1
+		#define WITHANTSELECT	1	/* Управление переключением антенн */
 	#endif
 
 	/* Board hardware configuration */
@@ -374,7 +375,6 @@
 	#define WITHDATAMODE	1	/* управление с клавиатуры передачей с USB AUDIO канала */
 	#define WITHSLEEPTIMER	1	/* выключить индикатор и вывод звука по истечениии указанного времени */
 	#define WITHFANTIMER	1	/* выключающийся по таймеру вентилятор в усилителе мощности */
-	#define WITHANTSELECT	1	/* Управление переключением антенн */
 	// --- Эти строки можно отключать, уменьшая функциональность готового изделия
 
 	#define WITHMODESETFULLNFM 1
