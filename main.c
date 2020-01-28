@@ -8083,7 +8083,7 @@ updateboard(
 			board_set_nfmdeviation100(75);
 		#if WITHOUTTXCADCONTROL
 			/* мощность регулируется умножнением выходных значений в потоке к FPGA / IF CODEC */
-			board_set_dacscale(getactualdownpower() ? (gdacscale * (unsigned long) gtunepower / (WITHPOWERTRIMMAX - WITHPOWERTRIMMIN) + WITHPOWERTRIMMIN) : gdacscale);
+			board_set_dacscale(gdacscale * (unsigned long) (getactualdownpower() ? gtunepower : gnormalpower.value) / (WITHPOWERTRIMMAX - WITHPOWERTRIMMIN) + WITHPOWERTRIMMIN);
 		#else /* CPUDAC */
 			/* мощность регулируется постоянны напряжением на ЦАП */
 			board_set_dacscale(gdacscale);
