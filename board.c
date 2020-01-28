@@ -3549,7 +3549,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0107, 0);	// REZ4
 		RBBIT(0106, 0);	// REZ3
 		RBBIT(0105, 0);	// REZ2_OC
-		RBBIT(0104, 0);	// REZ1_OC
+		RBBIT(0104, glob_antenna);	// REZ1_OC -> antenna switch
 		RBBIT(0103, ! (glob_tx && ! glob_autotune));	// HP/LP: 0: high power, 1: low power
 		RBBIT(0102, glob_tx);
 		RBBIT(0101, glob_fanflag);	// FAN
@@ -3671,7 +3671,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0117, 0);	// REZ4
 		RBBIT(0116, 0);	// REZ3
 		RBBIT(0115, 0);	// REZ2_OC
-		RBBIT(0114, 0);	// REZ1_OC
+		RBBIT(0114, glob_antenna);	// REZ1_OC -> antenna switch
 		RBBIT(0113, ! (glob_tx && ! glob_autotune));	// HP/LP: 0: high power, 1: low power
 		RBBIT(0112, glob_tx);
 		RBBIT(0111, glob_fanflag);	// FAN
