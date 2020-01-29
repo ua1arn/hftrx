@@ -146,6 +146,7 @@ static uint_fast8_t tscpresetnt;
 /* TS registers masks */
 #define STMPE811_TS_CTRL_ENABLE         0x01
 #define STMPE811_TS_CTRL_STATUS         0x80
+#define STMPE811_TS_CTRL_STATUS_POS     0x07
 
 int32_t i2cperiph_readN(uint_fast8_t d_adr, uint_fast8_t r_adr, uint32_t r_byte, uint_fast8_t * r_buffer)
 {
@@ -251,7 +252,7 @@ uint8_t stmpe811_TS_GetXY(
 			(dataXY [2] << 0);
 	* X = (vdataXY >> 12) & 0x00000FFF;
 	* Y = (vdataXY >> 0) & 0x00000FFF;
-#if 0
+#if 1
 	/* Reset FIFO */
 	i2cperiph_write8(DeviceAddr, STMPE811_REG_FIFO_STA, 0x01);
 	/* Enable the FIFO again */
@@ -369,11 +370,11 @@ tcsnormalize(
 }
 
 /* top left raw data values */
-static uint_fast16_t xrawmin = 200;
-static uint_fast16_t yrawmin = 3500;
+static uint_fast16_t xrawmin = 70;
+static uint_fast16_t yrawmin = 3890;
 /* bottom right raw data values */
-static uint_fast16_t xrawmax = 3880;
-static uint_fast16_t yrawmax = 275;
+static uint_fast16_t xrawmax = 3990;
+static uint_fast16_t yrawmax = 150;
 
 // On AT070TN90 with touch screen attached Y coordinate increments from bottom to top, X from left to right
 uint_fast8_t board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
@@ -403,6 +404,11 @@ void stmpe811_initialize(void)
 	{
 		stmpe811_TS_Start(BOARD_I2C_STMPE811);
 	}
+}
+
+uint_fast8_t board_tsc_is_pressed (void) /* Return 1 if touch detection */
+{
+	return (i2cperiph_read8(BOARD_I2C_STMPE811, STMPE811_REG_TSC_CTRL) & STMPE811_TS_CTRL_STATUS) >> STMPE811_TS_CTRL_STATUS_POS;
 }
 
 #endif /* defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811) */

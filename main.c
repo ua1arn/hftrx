@@ -17502,6 +17502,11 @@ hamradio_main_step(void)
 					updateboard(0, 0);	/* частичная перенастройка - без смены режима работы */
 				}
 			}
+			#if WITHDEBUG && WITHTOUCHTEST
+				if (board_tsc_is_pressed)
+				{
+				}
+			#endif /* WITHDEBUG && WITHTOUCHTEST */
 		}
 		break;
 

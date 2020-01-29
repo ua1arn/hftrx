@@ -6493,7 +6493,7 @@ void hightests(void)
 		BarTest();
 	}
 #endif
-#if 0 && defined (TSC1_TYPE)
+#if 1 && defined (TSC1_TYPE)
 	{
 		uint_fast16_t gridx = 16;
 		uint_fast16_t gridy = 16;
@@ -6502,21 +6502,28 @@ void hightests(void)
 
 		display2_bgreset();
 		display_solidbar(markerx, markery, markerx + gridx, markery + gridy, COLOR_WHITE);
+		display_setcolors(COLOR_WHITE,COLOR_BLACK);
 
-		// touch screen test
-		for (;;)
-		{
-			uint_fast16_t x, y;
-			if (board_tsc_getxy(& x, & y))
+			// touch screen test
+			for (;;)
 			{
-				debug_printf_P(PSTR("board_tsc_getxy: x=%5d, y=%5d\n"), x, y);
-				display_solidbar(markerx, markery, markerx + gridx, markery + gridy, COLOR_BLACK);
-				markerx = x / gridx * gridx;
-				markery = y / gridy * gridy;
-				display_solidbar(markerx, markery, markerx + gridx, markery + gridy, COLOR_WHITE);
+				uint_fast16_t x, y;
+				if (board_tsc_is_pressed())
+				{
+					board_tsc_getxy(& x, & y);
+					debug_printf_P(PSTR("board_tsc_getxy: x=%5d, y=%5d\n"), x, y);
+					display_solidbar(markerx, markery, markerx + gridx, markery + gridy, COLOR_BLACK);
+					markerx = x / gridx * gridx;
+					markery = y / gridy * gridy;
+					display_solidbar(markerx, markery, markerx + gridx, markery + gridy, COLOR_WHITE);
+					display_at(22, 26,"Pressed");
+				} else {
+					display_at(22, 26,"       ");
+				}
+				local_delay_ms(4);
 			}
 		}
-	}
+
 #endif
 #if 0 && (CTLSTYLE_V1E || CTLSTYLE_V1F)
 	{
