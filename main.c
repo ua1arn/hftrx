@@ -17503,7 +17503,7 @@ hamradio_main_step(void)
 				}
 			}
 			#if WITHDEBUG && WITHTOUCHTEST
-				if (board_tsc_is_pressed)
+				if (board_tsc_is_pressed())
 				{
 				}
 			#endif /* WITHDEBUG && WITHTOUCHTEST */
