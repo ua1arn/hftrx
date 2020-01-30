@@ -2587,7 +2587,7 @@ HAL_StatusTypeDef USB_HC_StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_HCTypeDe
 	      {
 
 	    		USB_Setup_TypeDef * const pSetup = (USB_Setup_TypeDef *) hc->xfer_buff;
-	    		ASSERT(hc->xfer_len == 8);
+	    		ASSERT(hc->xfer_len >= 8);
 	    		ASSERT((USBx->DCPCTR & USB_DCPCTR_SUREQ) == 0);
 
 				PRINTF("USB_HC_StartXfer: DCPMAXP=%08lX, dev_addr=%d, bmRequestType=%02X, bRequest=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n",
@@ -2715,7 +2715,7 @@ HAL_StatusTypeDef USB_HC_Init(
 	                                USB_OTG_HCINTMSK_NAKM |
 									0;
 */
-		//if (ep_type != USBD_EP_TYPE_CTRL)
+		if (ep_type != USBD_EP_TYPE_CTRL)
 			USBx->NRDYENB |= (1uL << pipe);	// Прерывание по заполненности приёмного (OUT) буфера
 		USBx->BRDYENB |= (1uL << pipe);	// Прерывание по заполненности приёмного (OUT) буфера
 		USBx->BEMPENB |= (1uL << pipe);	// Прерывание окончания передачи передающего (IN) буфера
@@ -10040,22 +10040,19 @@ USBH_StatusTypeDef USBH_LL_ResetPort(USBH_HandleTypeDef *phost, uint_fast8_t sta
 USBH_StatusTypeDef  USBH_LL_DriverVBUS(USBH_HandleTypeDef *phost, uint_fast8_t state)
 {
 	//PRINTF(PSTR("USBH_LL_DriverVBUS(%d), phost->id=%d, HOST_FS=%d\n"), (int) state, (int) phost->id, (int) HOST_FS);
-	//if (phost->id == HOST_FS) // compare to WITHUSBHW_HOST
+	if (state != USB_FALSE)
 	{
-		if (state != USB_FALSE)
-		{
-			/* Drive high Charge pump */
-			/* ToDo: Add IOE driver control */
-			board_set_usbflashpoweron(1);
-			board_update();
-		}
-		else
-		{
-			/* Drive low Charge pump */
-			/* ToDo: Add IOE driver control */
-			board_set_usbflashpoweron(0);
-			board_update();
-		}
+		/* Drive high Charge pump */
+		/* ToDo: Add IOE driver control */
+		board_set_usbflashpoweron(1);
+		board_update();
+	}
+	else
+	{
+		/* Drive low Charge pump */
+		/* ToDo: Add IOE driver control */
+		board_set_usbflashpoweron(0);
+		board_update();
 	}
 	HARDWARE_DELAY_MS(200);
 	return USBH_OK;
