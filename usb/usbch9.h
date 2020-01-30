@@ -114,20 +114,6 @@ enum
 	epoutcount
 };
 
-#if WITHUSBHWCDC_N == 1
-
-#elif WITHUSBHWCDC_N == 2
-
-	enum { USBD_EP_CDC_OUTb = USBD_EP_CDC_OUT + 1 };
-	enum { USBD_EP_CDC_INb = USBD_EP_CDC_IN + 1 };
-	enum { USBD_EP_CDC_INTb = USBD_EP_CDC_INT + 1 };
-
-	enum { INTERFACE_CDC_CONTROL_3b = INTERFACE_CDC_CONTROL_3a + 2, INTERFACE_CDC_DATA_4b };	/* CDC ACM control Interface */
-
-#else
-	#error Unsupported WITHUSBHWCDC_N
-#endif
-
 #if WITHUSBCDC
 	#define VIRTUAL_COM_PORT_INT_SIZE 			10
 	#if 0 && WITHUSBDEV_HSDESC
@@ -300,7 +286,22 @@ enum
 	INTERFACE_count				/* Значение для configuration descriptor */
 };
 
-#define INTERFACE_CDCACM_count 2	/* количество интерфейсов в одном CDC */
+
+#if WITHUSBHWCDC_N == 1
+
+#elif WITHUSBHWCDC_N == 2
+
+	enum { USBD_EP_CDC_OUTb = USBD_EP_CDC_OUT + 1 };
+	enum { USBD_EP_CDC_INb = USBD_EP_CDC_IN + 1 };
+	enum { USBD_EP_CDC_INTb = USBD_EP_CDC_INT + 1 };
+
+	enum { INTERFACE_CDC_CONTROL_3b = INTERFACE_CDC_CONTROL_3a + 2, INTERFACE_CDC_DATA_4b };	/* CDC ACM control Interface */
+
+#else
+	#error Unsupported WITHUSBHWCDC_N
+#endif
+
+#define INTERFACE_CDCACM_count WITHUSBHWCDC_N	/* количество интерфейсов в одном CDC */
 #define INTERFACE_CDCEEM_count 1	/* количество интерфейсов в одном CDC EEM */
 #define INTERFACE_CDCECM_count 2	/* количество интерфейсов в одном CDC EEM */
 #define INTERFACE_HID_count 1	/* количество интерфейсов в одном HID */
@@ -385,7 +386,7 @@ enum
 		};
 	#endif /* WITHUSBDFU */
 
-	#define INTERFACE_CDCACM_count 2	/* количество интерфейсов в одном CDC */
+	#define INTERFACE_CDCACM_count WITHUSBHWCDC_N	/* количество интерфейсов в одном CDC */
 	#define INTERFACE_CDCEEM_count 1	/* количество интерфейсов в одном CDC EEM */
 	#define INTERFACE_CDCECM_count 2	/* количество интерфейсов в одном CDC ECM */
 	#define INTERFACE_HID_count 1	/* количество интерфейсов в одном HID */
