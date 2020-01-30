@@ -301,7 +301,7 @@ enum
 	#error Unsupported WITHUSBHWCDC_N
 #endif
 
-#define INTERFACE_CDCACM_count WITHUSBHWCDC_N	/* количество интерфейсов в одном CDC */
+#define INTERFACE_CDCACM_count 2	/* количество интерфейсов в одном CDC - control & data */
 #define INTERFACE_CDCEEM_count 1	/* количество интерфейсов в одном CDC EEM */
 #define INTERFACE_CDCECM_count 2	/* количество интерфейсов в одном CDC EEM */
 #define INTERFACE_HID_count 1	/* количество интерфейсов в одном HID */
@@ -386,7 +386,7 @@ enum
 		};
 	#endif /* WITHUSBDFU */
 
-	#define INTERFACE_CDCACM_count WITHUSBHWCDC_N	/* количество интерфейсов в одном CDC */
+	#define INTERFACE_CDCACM_count 2	/* количество интерфейсов в одном CDC - control & data */
 	#define INTERFACE_CDCEEM_count 1	/* количество интерфейсов в одном CDC EEM */
 	#define INTERFACE_CDCECM_count 2	/* количество интерфейсов в одном CDC ECM */
 	#define INTERFACE_HID_count 1	/* количество интерфейсов в одном HID */

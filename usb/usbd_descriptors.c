@@ -3997,6 +3997,7 @@ static unsigned fill_Configuration_compound(uint_fast8_t fill, uint8_t * p, unsi
 #endif /* WITHUSBRNDIS */
 
 #if WITHUSBCDC
+	/* создаем одно или несколько (WITHUSBHWCDC_N) устройств */
 	n += fill_CDCACM_function(fill, p + n, maxsize - n, highspeed);
 #endif /* WITHUSBCDC */
 
