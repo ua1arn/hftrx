@@ -383,7 +383,7 @@
 #if WITHTX
 
 	// Управление передатчиком - единственный сигнал разрешения тракта
-	#define TXPATH_BIT_GATE (1u << 0)	// PD0 выходной сигнал из процессора - управление передатчиком.
+	#define TXPATH_BIT_GATE 0//(1u << 0)	// PD0 выходной сигнал из процессора - управление передатчиком.
 	#define TXPATH_BIT_GATE_RX 0	// сигнал tx2 - управление передатчиком. При приёме не активен
 
 	#define TXPATH_TARGET_PORT_S(v)		do { GPIOD->BSRR = BSRR_S(v); __DSB(); } while (0)
