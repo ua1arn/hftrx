@@ -1919,18 +1919,8 @@ void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 		USBx->INTSTS1 = (uint16_t) ~ USB_INTSTS1_SACK;
 		PRINTF(PSTR("HAL_HCD_IRQHandler trapped - SACK\n"));
 		//HAL_HCD_Connect_Callback(hhcd);
-
-	  	unsigned bcnt;
-	  	static uint8_t tmpb [256];
-	  	if (USB_ReadPacketNec(USBx, 0, tmpb, 256, & bcnt) == 0)
-	  	{
-	  		printhex(0, tmpb, bcnt);
-	  	}
-	  	else
-	  	{
-	  		TP();
-	  		//control_stall(pdev);
-	  	}
+		//int err = USB_WritePacketNec(USBx, 0, NULL, 0);	// pipe=0: DCP
+		//ASSERT(err == 0);
 	}
 }
 
@@ -2605,7 +2595,7 @@ HAL_StatusTypeDef USB_HC_StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_HCTypeDe
 						(int) hc->dev_addr,
 						pSetup->b.bmRequestType, pSetup->b.bRequest, pSetup->b.wValue.w, pSetup->b.wIndex.w, pSetup->b.wLength.w);
 
-				USBx->USBREQ = ((pSetup->b.bRequest) << 8) | pSetup->b.bmRequestType;
+				USBx->USBREQ = ((pSetup->b.bRequest) << USB_USBREQ_BREQUEST_SHIFT) | pSetup->b.bmRequestType;
 				USBx->USBVAL = pSetup->b.wValue.w;
 				USBx->USBINDX = pSetup->b.wIndex.w;
 				USBx->USBLENG = pSetup->b.wLength.w;
