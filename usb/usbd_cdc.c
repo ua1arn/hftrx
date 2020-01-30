@@ -128,10 +128,12 @@ static USBALIGN_BEGIN uint8_t cdc1buffout [VIRTUAL_COM_PORT_OUT_DATA_SIZE] USBAL
 static USBALIGN_BEGIN uint8_t cdc1buffin [VIRTUAL_COM_PORT_IN_DATA_SIZE] USBALIGN_END;
 static RAMDTCM uint_fast16_t cdc1buffinlevel;
 
-static RAMDTCM volatile uint_fast8_t usbd_cdc2_rxenabled;	/* виртуальный флаг разрешения прерывания по приёму символа - HARDWARE_CDC_ONRXCHAR */
-static USBALIGN_BEGIN uint8_t cdc2buffout [VIRTUAL_COM_PORT_OUT_DATA_SIZE] USBALIGN_END;
-static USBALIGN_BEGIN uint8_t cdc2buffin [VIRTUAL_COM_PORT_IN_DATA_SIZE] USBALIGN_END;
-static RAMDTCM uint_fast16_t cdc2buffinlevel;
+#if WITHUSBHWCDC_N > 1
+	static RAMDTCM volatile uint_fast8_t usbd_cdc2_rxenabled;	/* виртуальный флаг разрешения прерывания по приёму символа - HARDWARE_CDC_ONRXCHAR */
+	static USBALIGN_BEGIN uint8_t cdc2buffout [VIRTUAL_COM_PORT_OUT_DATA_SIZE] USBALIGN_END;
+	static USBALIGN_BEGIN uint8_t cdc2buffin [VIRTUAL_COM_PORT_IN_DATA_SIZE] USBALIGN_END;
+	static RAMDTCM uint_fast16_t cdc2buffinlevel;
+#endif /* WITHUSBHWCDC_N > 1 */
 
 static USBALIGN_BEGIN uint8_t cdc_epXdatabuffout [USB_OTG_MAX_EP0_SIZE] USBALIGN_END;
 
@@ -145,7 +147,9 @@ uint_fast8_t usbd_cdc_getrts(void)
 {
 	return
 		((usb_cdc_control_state [INTERFACE_CDC_CONTROL_3a] & CDC_ACTIVATE_CARRIER) != 0) ||
+#if WITHUSBHWCDC_N > 1
 		((usb_cdc_control_state [INTERFACE_CDC_CONTROL_3b] & CDC_ACTIVATE_CARRIER) != 0) ||
+#endif
 		0;
 }
 
@@ -154,7 +158,9 @@ uint_fast8_t usbd_cdc_getdtr(void)
 {
 	return
 		((usb_cdc_control_state [INTERFACE_CDC_CONTROL_3a] & CDC_DTE_PRESENT) != 0) ||
+#if WITHUSBHWCDC_N > 1
 		((usb_cdc_control_state [INTERFACE_CDC_CONTROL_3b] & CDC_DTE_PRESENT) != 0) ||
+#endif
 		0;
 }
 
@@ -198,6 +204,7 @@ static void cdc1out_buffer_save(
 	}
 }
 
+#if WITHUSBHWCDC_N > 1
 /* использование буфера принятых данных */
 static void cdc2out_buffer_save(
 	const uint8_t * data,
@@ -212,7 +219,7 @@ static void cdc2out_buffer_save(
 		//HARDWARE_CDC_ONRXCHAR(data [i]);
 	}
 }
-
+#endif
 
 static USBD_StatusTypeDef USBD_CDC_DataOut(USBD_HandleTypeDef *pdev, uint_fast8_t epnum)
 {
@@ -227,6 +234,7 @@ static USBD_StatusTypeDef USBD_CDC_DataOut(USBD_HandleTypeDef *pdev, uint_fast8_
 		USBD_LL_PrepareReceive(pdev, USB_ENDPOINT_OUT(epnum), cdc1buffout, VIRTUAL_COM_PORT_OUT_DATA_SIZE);
 		break;
 
+#if WITHUSBHWCDC_N > 1
 	case USBD_EP_CDC_OUTb:
 		/* CDC EP OUT */
 		// use CDC data
@@ -235,7 +243,7 @@ static USBD_StatusTypeDef USBD_CDC_DataOut(USBD_HandleTypeDef *pdev, uint_fast8_
 		/* Prepare Out endpoint to receive next cdc data packet */
 		USBD_LL_PrepareReceive(pdev, USB_ENDPOINT_OUT(epnum), cdc2buffout, VIRTUAL_COM_PORT_OUT_DATA_SIZE);
 		break;
-
+#endif
 	default:
 		break;
 	}
@@ -252,7 +260,9 @@ static USBD_StatusTypeDef USBD_CDC_EP0_RxReady(USBD_HandleTypeDef *pdev)
 	switch (interfacev)
 	{
 	case INTERFACE_CDC_CONTROL_3a:	// CDC interface
+#if WITHUSBHWCDC_N > 1
 	case INTERFACE_CDC_CONTROL_3b:	// CDC interface
+#endif
 		{
 			switch (req->bRequest)
 			{
@@ -302,6 +312,10 @@ static USBD_StatusTypeDef USBD_CDC_DataIn(USBD_HandleTypeDef *pdev, uint_fast8_t
 		cdc1buffinlevel = 0;
 		break;
 
+	case (USBD_EP_CDC_INT & 0x7F):
+		break;
+
+#if WITHUSBHWCDC_N > 1
 	case (USBD_EP_CDC_INb & 0x7F):
 		//while (usbd_cdc_txenabled && (cdc2buffinlevel < ARRAY_SIZE(cdc2buffin)))
 		//{
@@ -311,11 +325,9 @@ static USBD_StatusTypeDef USBD_CDC_DataIn(USBD_HandleTypeDef *pdev, uint_fast8_t
 		cdc2buffinlevel = 0;
 		break;
 
-	case (USBD_EP_CDC_INT & 0x7F):
-		break;
-
 	case (USBD_EP_CDC_INTb & 0x7F):
 		break;
+#endif
 	}
 	return USBD_OK;
 }
@@ -351,7 +363,9 @@ static USBD_StatusTypeDef USBD_CDC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 			{
 
 			case INTERFACE_CDC_CONTROL_3a:	// CDC interface
+#if WITHUSBHWCDC_N > 1
 			case INTERFACE_CDC_CONTROL_3b:	// CDC interface
+#endif
 				{
 					switch (req->bRequest)
 					{
@@ -382,10 +396,12 @@ static USBD_StatusTypeDef USBD_CDC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 			switch (interfacev)
 			{
 
-			case INTERFACE_CDC_CONTROL_3a:	// CDC interface
-			case INTERFACE_CDC_CONTROL_3b:	// CDC interface
-			case INTERFACE_CDC_DATA_4a:	// CDC interface
-			case INTERFACE_CDC_DATA_4b:	// CDC interface
+			case INTERFACE_CDC_CONTROL_3a:	// CDC control interface
+			case INTERFACE_CDC_DATA_4a:	// CDC data interface
+#if WITHUSBHWCDC_N > 1
+			case INTERFACE_CDC_CONTROL_3b:	// CDC control interface
+			case INTERFACE_CDC_DATA_4b:	// CDC data interface
+#endif
 				{
 					case USB_REQ_GET_INTERFACE:
 					{
@@ -409,7 +425,9 @@ static USBD_StatusTypeDef USBD_CDC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 			switch (interfacev)
 			{
 			case INTERFACE_CDC_CONTROL_3a:	// CDC interface
+#if WITHUSBHWCDC_N > 1
 			case INTERFACE_CDC_CONTROL_3b:	// CDC interface
+#endif
 				switch (req->bRequest)
 				{
 				case CDC_SET_CONTROL_LINE_STATE:
@@ -444,10 +462,12 @@ static USBD_StatusTypeDef USBD_CDC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 			case USB_REQ_SET_INTERFACE:
 				switch (interfacev)
 				{
-				case INTERFACE_CDC_CONTROL_3a:	// CDC interface
-				case INTERFACE_CDC_DATA_4a:	// CDC interface
-				case INTERFACE_CDC_CONTROL_3b:	// CDC interface
-				case INTERFACE_CDC_DATA_4b:	// CDC interface
+				case INTERFACE_CDC_CONTROL_3a:	// CDC control interface
+				case INTERFACE_CDC_DATA_4a:	// CDC data interface
+#if WITHUSBHWCDC_N > 1
+				case INTERFACE_CDC_CONTROL_3b:	// CDC control interface
+				case INTERFACE_CDC_DATA_4b:	// CDC data interface
+#endif
 					// Only zero value here
 					//altinterfaces [interfacev] = LO_BYTE(req->wValue);
 					//PRINTF("USBD_CDC_Setup: CDC interface %d set to %d\n", (int) interfacev, (int) altinterfaces [interfacev]);
@@ -467,7 +487,7 @@ static USBD_StatusTypeDef USBD_CDC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 
 static USBD_StatusTypeDef USBD_CDC_Init(USBD_HandleTypeDef *pdev, uint_fast8_t cfgidx)
 {
-	uint8_t offset;
+	uint_fast8_t offset;
 
     /* cdc Open EP IN */
  	for (offset = 0; offset < WITHUSBHWCDC_N; ++ offset)
@@ -486,13 +506,14 @@ static USBD_StatusTypeDef USBD_CDC_Init(USBD_HandleTypeDef *pdev, uint_fast8_t c
 
     /* CDC Prepare Out endpoint to receive 1st packet */
     USBD_LL_PrepareReceive(pdev, USB_ENDPOINT_OUT(USBD_EP_CDC_OUT), cdc1buffout,  VIRTUAL_COM_PORT_OUT_DATA_SIZE);
-    USBD_LL_PrepareReceive(pdev, USB_ENDPOINT_OUT(USBD_EP_CDC_OUTb), cdc2buffout,  VIRTUAL_COM_PORT_OUT_DATA_SIZE);
- 	//USBD_LL_StallEP(pdev, USBD_EP_CDC_OUTb); // нельзя
-
 	usb_cdc_control_state [INTERFACE_CDC_CONTROL_3a] = 0;
-	usb_cdc_control_state [INTERFACE_CDC_CONTROL_3b] = 0;
 	dwDTERate [INTERFACE_CDC_CONTROL_3a] = 115200;
+
+#if WITHUSBHWCDC_N > 1
+    USBD_LL_PrepareReceive(pdev, USB_ENDPOINT_OUT(USBD_EP_CDC_OUTb), cdc2buffout,  VIRTUAL_COM_PORT_OUT_DATA_SIZE);
+	usb_cdc_control_state [INTERFACE_CDC_CONTROL_3b] = 0;
 	dwDTERate [INTERFACE_CDC_CONTROL_3b] = 115200;
+#endif
 
 	return USBD_OK;
 
@@ -514,7 +535,9 @@ static USBD_StatusTypeDef USBD_CDC_DeInit(USBD_HandleTypeDef *pdev, uint_fast8_t
 	HARDWARE_CDC_ONDISCONNECT();
 	/* при потере связи с host снять запрос на передачу */
 	usb_cdc_control_state [INTERFACE_CDC_CONTROL_3a] = 0;
+#if WITHUSBHWCDC_N > 1
 	usb_cdc_control_state [INTERFACE_CDC_CONTROL_3b] = 0;
+#endif
 
 #endif /* WITHUSBCDC */
 	return USBD_OK;
@@ -523,8 +546,9 @@ static USBD_StatusTypeDef USBD_CDC_DeInit(USBD_HandleTypeDef *pdev, uint_fast8_t
 static void USBD_CDC_ColdInit(void)
 {
 	usb_cdc_control_state [INTERFACE_CDC_CONTROL_3a] = 0;
+#if WITHUSBHWCDC_N > 1
 	usb_cdc_control_state [INTERFACE_CDC_CONTROL_3b] = 0;
-	//memset(altinterfaces, 0, sizeof altinterfaces);
+#endif
 }
 
 const USBD_ClassTypeDef USBD_CLASS_CDC =

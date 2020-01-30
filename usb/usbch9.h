@@ -25,24 +25,7 @@
 
 // Переместить интерфейс DFU в обоасть меньшиз номеров.
 // Утилита dfu-util 0.9 не работает с DFU на интерфейсе с индексом 10
-#define WITHMOVEDFU WITHUSBUACIN2 && WITHUSBDFU
-
-#if WITHUSBUAC
-	#if WITHUSBUACIN2
-
-		#define WITHUSBHWCDC_N	2	// количество виртуальных последовательных портов
-
-	#else /* WITHUSBUACIN2 */
-
-		#define WITHUSBHWCDC_N	2	// количество виртуальных последовательных портов
-
-	#endif /* WITHUSBUACIN2 */
-#endif /* WITHUSBUAC */
-
-#if ! defined (WITHUSBHWCDC_N)
-	#define WITHUSBHWCDC_N	2	// количество виртуальных последовательных портов
-#endif /* ! defined (WITHUSBHWCDC_N) */
-
+#define WITHMOVEDFU (WITHUSBUACIN2 && WITHUSBDFU)
 
 // IN and INT Endpoints allocation
 enum
@@ -65,11 +48,9 @@ enum
 
 #if WITHUSBCDC
 	USBD_EP_CDC_IN,		// CDC IN Данные ком-порта в компьютер из TRX
-	USBD_EP_CDC_INb,	// CDC IN Данные ком-порта в компьютер из TRX
 	USBD_EP_CDC_INlast = USBD_EP_CDC_IN + WITHUSBHWCDC_N - 1,
 
 	USBD_EP_CDC_INT,	// CDC INT События ком-порта в компьютер из TRX
-	USBD_EP_CDC_INTb,	// CDC INT События ком-порта в компьютер из TRX
 	USBD_EP_CDC_INTlast = USBD_EP_CDC_INT + WITHUSBHWCDC_N - 1,
 #endif /* WITHUSBCDC */
 
@@ -112,7 +93,6 @@ enum
 
 #if WITHUSBCDC
 	USBD_EP_CDC_OUT,	// CDC OUT Данные ком-порта от компьютера в TRX
-	USBD_EP_CDC_OUTb,	// CDC OUT Данные ком-порта от компьютера в TRX
 	USBD_EP_CDC_OUTlast = USBD_EP_CDC_OUT + WITHUSBHWCDC_N - 1,
 #endif /* WITHUSBCDC */
 
@@ -133,6 +113,20 @@ enum
 	//
 	epoutcount
 };
+
+#if WITHUSBHWCDC_N == 1
+
+#elif WITHUSBHWCDC_N == 2
+
+	enum { USBD_EP_CDC_OUTb = USBD_EP_CDC_OUT + 1 };
+	enum { USBD_EP_CDC_INb = USBD_EP_CDC_IN + 1 };
+	enum { USBD_EP_CDC_INTb = USBD_EP_CDC_INT + 1 };
+
+	enum { INTERFACE_CDC_CONTROL_3b = INTERFACE_CDC_CONTROL_3a + 2, INTERFACE_CDC_DATA_4b };	/* CDC ACM control Interface */
+
+#else
+	#error Unsupported WITHUSBHWCDC_N
+#endif
 
 #if WITHUSBCDC
 	#define VIRTUAL_COM_PORT_INT_SIZE 			10
@@ -252,8 +246,6 @@ enum
 	INTERFACE_CDC_base,
 	INTERFACE_CDC_CONTROL_3a = INTERFACE_CDC_base,	/* CDC ACM control Interface */
 	INTERFACE_CDC_DATA_4a,		/* CDC ACM data Interface */
-	INTERFACE_CDC_CONTROL_3b,	/* CDC ACM control Interface */
-	INTERFACE_CDC_DATA_4b,		/* CDC ACM data Interface */
 	INTERFACE_CDC_last = INTERFACE_CDC_base + WITHUSBHWCDC_N * 2 - 1,
 #endif /* WITHUSBCDC */
 
@@ -361,8 +353,6 @@ enum
 			INTERFACE_CDC_base,
 			INTERFACE_CDC_CONTROL_3a = INTERFACE_CDC_base,	/* CDC ACM control Interface */
 			INTERFACE_CDC_DATA_4a,		/* CDC ACM data Interface */
-			INTERFACE_CDC_CONTROL_3b,	/* CDC ACM control Interface */
-			INTERFACE_CDC_DATA_4b,		/* CDC ACM data Interface */
 			INTERFACE_CDC_last = INTERFACE_CDC_base + WITHUSBHWCDC_N * 2 - 1,
 		};
 	#endif /* WITHUSBCDC */
