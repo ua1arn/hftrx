@@ -286,20 +286,22 @@ enum
 	INTERFACE_count				/* Значение для configuration descriptor */
 };
 
+#if WITHUSBCDC
 
-#if WITHUSBHWCDC_N == 1
+	#if WITHUSBHWCDC_N == 1
 
-#elif WITHUSBHWCDC_N == 2
+	#elif WITHUSBHWCDC_N == 2
 
-	enum { USBD_EP_CDC_OUTb = USBD_EP_CDC_OUT + 1 };
-	enum { USBD_EP_CDC_INb = USBD_EP_CDC_IN + 1 };
-	enum { USBD_EP_CDC_INTb = USBD_EP_CDC_INT + 1 };
+		enum { USBD_EP_CDC_OUTb = USBD_EP_CDC_OUT + 1 };
+		enum { USBD_EP_CDC_INb = USBD_EP_CDC_IN + 1 };
+		enum { USBD_EP_CDC_INTb = USBD_EP_CDC_INT + 1 };
 
-	enum { INTERFACE_CDC_CONTROL_3b = INTERFACE_CDC_CONTROL_3a + 2, INTERFACE_CDC_DATA_4b };	/* CDC ACM control Interface */
+		enum { INTERFACE_CDC_CONTROL_3b = INTERFACE_CDC_CONTROL_3a + 2, INTERFACE_CDC_DATA_4b };	/* CDC ACM control Interface */
 
-#else
-	#error Unsupported WITHUSBHWCDC_N
-#endif
+	#else
+		//#error Unsupported WITHUSBHWCDC_N
+	#endif
+#endif /* WITHUSBCDC */
 
 #define INTERFACE_CDCACM_count 2	/* количество интерфейсов в одном CDC - control & data */
 #define INTERFACE_CDCEEM_count 1	/* количество интерфейсов в одном CDC EEM */
