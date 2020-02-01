@@ -925,6 +925,51 @@ void board_set_zoomxpow2(uint_fast8_t v);	/* уменьшение отображ
 void board_set_fillspect(uint_fast8_t v); /* заливать заполнением площадь под графиком спектра */
 void board_set_wflevelsep(uint_fast8_t v); /* чувствительность водопада регулируется отдельной парой параметров */
 
+#if WITHTOUCHTEST
+
+struct button_handler {
+	uint_fast16_t x1;
+	uint_fast16_t y1;
+	uint_fast16_t x2;
+	uint_fast16_t y2;
+	void(*onClickHandler) (void);
+	uint_fast8_t state;
+	uint8_t need_redraw;
+};
+
+enum {
+	PRESSED,						// нажато
+	RELEASED,						// отпущено после нажатия внутри элемента
+	CANCELLED						// первоначальное состояние или отпущено после нажатия вне элемента
+};
+
+struct element1 {
+	uint_fast16_t last_pressed_x; 	// последняя точка касания экрана
+	uint_fast16_t last_pressed_y;
+	uint_fast8_t selected;			// индекс элемента; 0xFF - не выбран ни один
+	uint_fast8_t state;				// последнее состояние
+	uint_fast8_t is_touching_screen; // есть ли касание экрана в данный момент
+	uint_fast8_t is_after_touch; 	 // есть ли касание экрана после выхода точки касания из элемента
+	uint_fast8_t fix;
+};
+
+void button1_handler (void);
+void button2_handler (void);
+void button3_handler (void);
+void button4_handler (void);
+
+void display_test_button(uint_fast8_t x, uint_fast8_t y, void * pv);
+void display_buttons (uint_fast8_t menuset, uint_fast8_t extra);
+void
+bitblt_fill(
+	uint_fast16_t x, uint_fast16_t y, 	// координаты в пикселях
+	uint_fast16_t w, uint_fast16_t h, 	// размеры в пикселях
+	COLOR_T fgcolor,
+	COLOR_T bgcolor,
+	uint_fast8_t hpattern	// horizontal pattern (LSB - left)
+	);
+#endif /* WITHTOUCHTEST */
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

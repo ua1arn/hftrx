@@ -6493,7 +6493,7 @@ void hightests(void)
 		BarTest();
 	}
 #endif
-#if 1 && defined (TSC1_TYPE)
+#if 0 && defined (TSC1_TYPE)
 	{
 		uint_fast16_t gridx = 16;
 		uint_fast16_t gridy = 16;
@@ -6520,7 +6520,7 @@ void hightests(void)
 				} else {
 					display_at(22, 26,"       ");
 				}
-				local_delay_ms(4);
+				local_delay_ms(10);
 			}
 		}
 

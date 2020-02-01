@@ -1706,6 +1706,7 @@ enum
 	REDRM_MFXX,		// код редактируемого параметра
 	REDRM_MLBL,		// название редактируемого параметра
 	REDRM_MVAL,		// значение параметра меню
+	REDRM_BUTTONS,  // область отображения экранных кнопок
 	REDRM_count
 };
 
@@ -4570,7 +4571,73 @@ enum
 		// sleep mode display
 		{	5,	25,	display_datetime12,	REDRM_BARS, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40
 		{	20, 25,	display_voltlevelV5, REDRM_VOLT, PGSLP, },	// voltmeter with "V"
+#if WITHTOUCHTEST
+		{	0,	0,	display_test_button, REDRM_BUTTONS, PGSWR, },
+#endif /* WITHTOUCHTEST */
 	};
+
+#if WITHTOUCHTEST
+	struct button_handler button_handlers[];
+	struct button_handler button_handlers[]={
+		{720, 235, 799,	285, button1_handler, CANCELLED, 1},
+		{720, 290, 799,	340, button2_handler, CANCELLED, 1},
+		{720, 345, 799,	395, button3_handler, CANCELLED, 1},
+		{720, 400, 799,	450, button4_handler, CANCELLED, 1},
+	};
+	uint8_t button_handlers_count = sizeof button_handlers / sizeof button_handlers[0];
+	struct element1 element={0, 0, 0, CANCELLED, 0, 0, 1};
+
+	void button1_handler (void)
+	{
+		display_at (46, 40, "1");
+	}
+
+	void button2_handler (void)
+	{
+		display_at (46, 40, "2");
+	}
+
+	void button3_handler (void)
+	{
+		display_at (46, 40, "3");
+	}
+
+	void button4_handler (void)
+	{
+		display_at (46, 40, "4");
+	}
+
+	void draw_rect (uint_fast16_t x, uint_fast16_t y, uint_fast16_t w, uint_fast16_t h, COLOR_T color)
+	{
+		display_wrdatabar_begin();
+		bitblt_fill (x,   y,   w, 1, color, COLOR_BLACK, 0xFF);
+		bitblt_fill (x,   y+h, w, 1, color, COLOR_BLACK, 0xFF);
+		bitblt_fill (x,   y,   1, h, color, COLOR_BLACK, 0xFF);
+		bitblt_fill (x+w, y,   1, h, color, COLOR_BLACK, 0xFF);
+		display_wrdatabar_end();
+	}
+
+	void draw_button (uint_fast16_t x1, uint_fast16_t y1, uint_fast16_t x2, uint_fast16_t y2, uint_fast8_t pressed) // pressed = 0
+	{
+		display_solidbar (x1, y1, x2, y2, pressed?COLOR_GREEN:COLOR_DARKGREEN2);
+		draw_rect (x1, 	 y1,   x2-x1,   y2-y1,   COLOR_GRAY);
+		draw_rect (x1+3, y1+3, x2-x1-6, y2-y1-6, COLOR_BLACK);
+	}
+
+	void display_test_button(uint_fast8_t x, uint_fast8_t y, void * pv)
+	{
+		for (uint_fast8_t i=0; i<button_handlers_count; i++)
+		{
+			debug_printf_P(PSTR("button %d need %d state %d\n"), i, button_handlers[i].need_redraw, button_handlers[i].state);
+			if (button_handlers[i].need_redraw==1) {
+				draw_button (button_handlers[i].x1, button_handlers[i].y1,
+							 button_handlers[i].x2, button_handlers[i].y2,
+							 button_handlers[i].state);
+				button_handlers[i].need_redraw=0;
+			}
+		}
+	}
+#endif /* WITHTOUCHTEST */
 
 #if WITHMENU
 	void display2_getmultimenu(multimenuwnd_t * p)
@@ -6316,3 +6383,10 @@ board_set_wflevelsep(uint_fast8_t v)
 {
 	glob_wflevelsep = v != 0;
 }
+
+#if WITHTOUCHTEST
+void display_buttons (uint_fast8_t menuset, uint_fast8_t extra)
+{
+	display_walktroughsteps(REDRM_BUTTONS, getsubset(menuset, extra));
+}
+#endif
