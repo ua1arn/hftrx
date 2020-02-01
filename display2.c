@@ -4576,6 +4576,11 @@ enum
 #endif /* WITHTOUCHTEST */
 	};
 
+void display2_clear_menu_bk (void)
+{
+	display_solidbar (0, GRID2Y(BDTH_ALLRXBARS), GRID2X(CHARS2GRID(BDTH_ALLRX)) - 1, GRID2Y(DLE1) - 1, display_getbgcolor());
+}
+
 #if WITHTOUCHTEST
 	struct button_handler button_handlers[];
 	struct button_handler button_handlers[]={
@@ -6109,7 +6114,7 @@ display2_pip_off(
 
 #endif /* WITHSPECTRUMWF */
 
-#define STMD 1
+//#define STMD 1
 
 #if STMD
 

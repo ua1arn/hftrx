@@ -1398,7 +1398,7 @@ void i2c_read(uint_fast8_t *data, uint_fast8_t ack_type)
 // sequence on the I2C bus. This is nothing more than a subroutine call and return.
 static void i2c_dly(void)
 {
-	local_delay_us(3);
+	local_delay_us(10);
 #if PCF8576C
 	local_delay_us(15);
 #endif /* PCF8576C */

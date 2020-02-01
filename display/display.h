@@ -418,6 +418,8 @@ void display_menuitemvalue(
 	void * pv
 	);
 
+void display2_clear_menu_bk (void);
+
 // Вызывается из display2.c
 void 
 display2_bars(

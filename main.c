@@ -15564,9 +15564,13 @@ modifysettings(
 		display_redrawbars(0, 1);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 
 #if WITHKEYBOARD
-
-		if (kbready != 0)
+		int_least16_t nr2;
+		uint_fast8_t js;
+		nr2 = getRotateHiRes2(&js);  // перемещение по меню также с помощью 2го энкодера
+		if (kbready != 0 || nr2 != 0)
 		{
+			if (nr2 > 0) kbch=KBD_CODE_BAND_DOWN;
+			else if (nr2 < 0) kbch=KBD_CODE_BAND_UP;
 			switch (kbch)
 			{
 			default:
@@ -15574,6 +15578,7 @@ modifysettings(
 					continue;
 				/* в случчае несовпадения - прожолжаем работать. */
 			case KBD_CODE_DISPMODE:
+			case KBD_ENC2_PRESS:
 				/* выход из меню */
 				if (posnvram != MENUNONVRAM)
 					save_i8(posnvram, menupos);	/* сохраняем номер пункта меню, с которым работаем */
@@ -15582,6 +15587,7 @@ modifysettings(
 
 #if ! WITHFLATMENU
 			case KBD_CODE_MENU:
+			case KBD_ENC2_HOLD:
 				if (ismenukind(mp, ITEM_GROUP))
 				{
 					/* вход в подменю */
@@ -15593,10 +15599,12 @@ modifysettings(
 					#if defined (RTC1_TYPE)
 						getstamprtc();
 					#endif /* defined (RTC1_TYPE) */
-						display2_bgreset();		/* возможно уже с новой цветовой схемой */
+//						display2_bgreset();		/* возможно уже с новой цветовой схемой */
+						display2_clear_menu_bk();
 						modifysettings(first, last, ITEM_VALUE, mp->qnvram, exitkey, byname);
 
-						display2_bgreset();		/* возможно уже с новой цветовой схемой */
+//						display2_bgreset();		/* возможно уже с новой цветовой схемой */
+						display2_clear_menu_bk();
 						display_menuitemlabel((void *) mp, byname);
 						display_menuitemvalue((void *) mp);
 						display_redrawbars(1, 1);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
@@ -15641,7 +15649,8 @@ modifysettings(
 					save_i8(posnvram, menupos);	/* сохраняем номер пункта меню, с которым работаем */
 #endif /* (NVRAM_TYPE != NVRAM_TYPE_CPUEEPROM) */
 				
-				display2_bgreset();
+//				display2_bgreset();
+				display2_clear_menu_bk();
 #if WITHDEBUG
 				debug_printf_P(PSTR("menu: ")); debug_printf_P(mp->qlabel); debug_printf_P(PSTR("\n")); 
 #endif /* WITHDEBUG */
@@ -17527,7 +17536,7 @@ hamradio_main_step(void)
 
 			if (board_tsc_is_pressed())
 			{
-				if (element.fix)
+				if (element.fix)			// первые координаты после нажатия от контролера тачскрина приходят старые, пропускаем
 				{
 					element.last_pressed_x=tx;
 					element.last_pressed_y=ty;
@@ -17555,13 +17564,13 @@ hamradio_main_step(void)
 						{
 							element.selected=i;
 							element.state=PRESSED;
-							button_handlers[i].state=PRESSED;
-							TP();
 						}
 					} /* for */
 				} /* if (element.is_touching_screen) */
 
-			} else if (element.state==PRESSED) {
+			}
+			if (element.state==PRESSED)
+			{
 				if (button_handlers[element.selected].x1 < element.last_pressed_x && button_handlers[element.selected].x2 > element.last_pressed_x
 				 && button_handlers[element.selected].y1 < element.last_pressed_y && button_handlers[element.selected].y2 > element.last_pressed_y
 				 && ! element.is_after_touch)
@@ -17569,6 +17578,7 @@ hamradio_main_step(void)
 					if (element.is_touching_screen)
 					{
 						debug_printf_P(PSTR("do redraw 1\n"));
+						button_handlers[element.selected].state=PRESSED;
 						button_handlers[element.selected].need_redraw=1;
 						display_buttons (0, 0);
 					}
@@ -17585,8 +17595,10 @@ hamradio_main_step(void)
 					element.is_after_touch=1; // точка непрерывного нажатия вышла за пределы выбранного элемента
 				}
 
-			} else if (element.state==RELEASED)
+			}
+			if (element.state==RELEASED)
 			{
+				button_handlers[element.selected].state=RELEASED;
 				button_handlers[element.selected].need_redraw=1;
 				debug_printf_P(PSTR("do redraw 3\n"));
 				display_buttons (0, 0);
