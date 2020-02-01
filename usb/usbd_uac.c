@@ -358,6 +358,8 @@ static unsigned USBD_UAC2_FeatureUnit_req(
 	return 0;
 }
 
+#if WITHUAC2
+
 // UAC2: Выполнение запроса CURR
 static unsigned USBD_UAC2_CloclMultiplier_req_48k(
 	const USBD_SetupReqTypedef *req,
@@ -423,6 +425,7 @@ static unsigned USBD_UAC2_CloclMultiplier_req_96k(
 	}
 	return 0;
 }
+#endif /* WITHUAC2 */
 
 // UAC2: Выполнение запроса CURR/RANGE
 static unsigned USBD_UAC2_ClockSource_req(
@@ -518,7 +521,7 @@ static USBD_StatusTypeDef USBD_UAC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 						PRINTF(PSTR("USBD_UAC_Setup IN: default path 1: req->bRequest=%02X\n"), req->bRequest);
 						len = 0;
 						break;
-
+#if WITHUAC2
 					case TERMINAL_ID_CLKMULTIPLIER_UACIN48_UACINRTS:
 					case TERMINAL_ID_CLKMULTIPLIER_UACIN48:
 					case TERMINAL_ID_CLKMULTIPLIER_UACOUT48:
@@ -544,7 +547,7 @@ static USBD_StatusTypeDef USBD_UAC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 					case TERMINAL_ID_FU2_OUT + 2 * MAX_TERMINALS_IN_INTERFACE:
 						len = USBD_UAC2_FeatureUnit_req(req, buff);
 						break;
-
+#endif /* WITHUAC2 */
 					case TERMINAL_ID_FU1_IN + 0 * MAX_TERMINALS_IN_INTERFACE:
 					case TERMINAL_ID_FU1_IN + 1 * MAX_TERMINALS_IN_INTERFACE:
 					case TERMINAL_ID_FU1_IN + 2 * MAX_TERMINALS_IN_INTERFACE:

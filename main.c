@@ -17835,10 +17835,15 @@ uint_fast8_t bootloader_get_start(
 		uintptr_t * ip)
 {
 	volatile struct stm32_header * const hdr = (volatile struct stm32_header *) apparea;
+	uint_fast32_t checksum = hdr->image_checksum;
+	uint_fast32_t length = hdr->image_length;
+	const uint8_t * p = (const uint8_t *) hdr->load_address;
 	if (hdr->magic_number != HEADER_MAGIC)
 		return 1;
 	* ip = hdr->image_entry_point;
-	return 0;
+	while (length --)
+		checksum -= * p ++;
+	return checksum != 0;	// возврат 0 если контрольная сумма совпала
 }
 
 void bootloader_copyapp(

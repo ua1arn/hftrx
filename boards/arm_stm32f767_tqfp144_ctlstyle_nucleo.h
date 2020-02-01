@@ -102,13 +102,15 @@
 
 
 	#if WITHI2SCLOCKFROMPIN
-		#define FPGADECIMATION 2560
-		#define FPGADIVIDERATIO 5
-		#define EXTI2S_FREQ (REFERENCE_FREQ * DDS1_CLK_MUL / FPGADIVIDERATIO)
-		#define EXTSAI_FREQ (REFERENCE_FREQ * DDS1_CLK_MUL / FPGADIVIDERATIO)
 
-		#define ARMI2SMCLK	(REFERENCE_FREQ * DDS1_CLK_MUL / (FPGADECIMATION / 256))
-		#define ARMSAIMCLK	(REFERENCE_FREQ * DDS1_CLK_MUL / (FPGADECIMATION / 256))
+		#define AUDIREF_FREQ 24576000uL	// 24.576 kHz
+
+		#define EXTI2S_FREQ AUDIREF_FREQ
+		#define EXTSAI_FREQ AUDIREF_FREQ
+
+		#define ARMI2SMCLK	(EXTI2S_FREQ / 2)
+		#define ARMSAIMCLK	(EXTSAI_FREQ / 2)
+
 	#else /* WITHI2SCLOCKFROMPIN */
 		#define PLLI2SN_MUL 336		// 344.064 (192 <= PLLI2SN <= 432)
 		#define SAIREF1_MUL 240		// 245.76 / 1.024 = 240 (49 <= PLLSAIN <= 432)
@@ -132,10 +134,19 @@
 	//#define FQMODEL_60700_IF02	1	// 60.7 -> 10.7 -> 0.2
 	//#define FQMODEL_70200		1	// 1-st if = 70.2 MHz, 2-nd IF-200 kHz
 
-	#define FQMODEL_FPGA		1	// FPGA + IQ over I2S
 	#define WITHIF4DSP	1	// "Дятел"
 
-	#if 0
+	#if 1
+		/* Версии частотных схем - с прямым преобразованием  */
+		#define FQMODEL_DCTRX		1	// прямое преобразование
+		//#define DIRECT_50M0_X8		1	/* Board hardware configuration */
+		#define DIRECT_27M0_X1		1	/* Board hardware configuration */
+		#define BANDSELSTYLERE_LOCONV32M	1	/* Down-conversion with working band .030..32 MHz */
+		//#define DEFAULT_DSP_IF	12000
+		//#define WITHEXTERNALDDSP		1	/* имеется управление внешней DSP платой. */
+		#define MODEL_DIRECT	1	/* использовать прямой синтез, а не гибридный */
+
+	#elif 0
 		#define DIRECT_80M0_X1		1	/* Тактовый генератор на плате 80.0 МГц */
 		#define BANDSELSTYLERE_UPCONV56M_36M	1	/* Up-conversion with working band .030..36 MHz */
 	#elif 0
@@ -399,6 +410,7 @@
 	//#define RTC1_TYPE RTC_TYPE_STM32F4xx	/* STM32F4xx internal RTC peripherial */
 	//#define TSC1_TYPE TSC_TYPE_STMPE811	/* touch screen controller */
 	//#define DAC1_TYPE	99999		/* наличие ЦАП для подстройки тактовой частоты */
+	#define WITHSI5351AREPLACE 1
 
 	#define DDS1_CLK_DIV	1		/* Делитель опорной частоты перед подачей в DDS1 */
 

@@ -48,6 +48,8 @@
 	//#define WITHUABUACOUTAUDIO48MONO	1	/* для уменьшения размера буферов в endpoints */
 
 	#define WITHUSBCDC		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
+	#define WITHUSBHWCDC_N	1	/* количество виртуальных последовательных портов */
+
 	//#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
 	//#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
 	//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
@@ -380,9 +382,12 @@
 
 #if WITHTX
 
-	// txpath outputs not used
-	////#define TXPATH_TARGET_PORT_S(v)		do { GPIOD->BSRR = BSRR_S(v); __DSB(); } while (0)
-	////#define TXPATH_TARGET_PORT_C(v)		do { GPIOD->BSRR = BSRR_C(v); __DSB(); } while (0)
+	// Управление передатчиком - единственный сигнал разрешения тракта
+	#define TXPATH_BIT_GATE 0//(1u << 0)	// PD0 выходной сигнал из процессора - управление передатчиком.
+	#define TXPATH_BIT_GATE_RX 0	// сигнал tx2 - управление передатчиком. При приёме не активен
+
+	#define TXPATH_TARGET_PORT_S(v)		do { GPIOD->BSRR = BSRR_S(v); __DSB(); } while (0)
+	#define TXPATH_TARGET_PORT_C(v)		do { GPIOD->BSRR = BSRR_C(v); __DSB(); } while (0)
 	// 
 	#define TXGFV_RX		(1u << 4)
 	#define TXGFV_TRANS		0			// переход между режимами приёма и передачи
@@ -393,6 +398,7 @@
 
 	#define TXPATH_INITIALIZE() \
 		do { \
+			arm_hardware_piod_outputs2m(TXPATH_BIT_GATE, 0); \
 		} while (0)
 
 	// PTT input - PD10

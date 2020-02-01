@@ -41,6 +41,7 @@
 	#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
 
 	#define WITHUSBCDC		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
+	#define WITHUSBHWCDC_N	2	/* количество виртуальных последовательных портов */
 	#define WITHUSBHW_DEVICE	USB_OTG_FS	/* на этом устройстве поддерживается функциональность DEVICE	*/
 
 	//#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
