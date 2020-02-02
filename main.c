@@ -15115,6 +15115,7 @@ void display_multilinemenu_block_groups(uint_fast8_t x, uint_fast8_t y, void * p
 
 	display2_getgridparams(& z);
 	display2_clear_menu_bk (x - 1, y, x, z.w);
+
 	// выводим на экран блок с параметрами
 	for (el = 0; el < MENUROW_COUNT; el ++)
 	{
@@ -15609,6 +15610,7 @@ modifysettings(
 						getstamprtc();
 					#endif /* defined (RTC1_TYPE) */
 						modifysettings(first, last, ITEM_VALUE, mp->qnvram, exitkey, byname);
+
 						display_menuitemlabel((void *) mp, byname);
 						display_menuitemvalue((void *) mp);
 						display_redrawbars(1, 1);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
