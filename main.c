@@ -15068,6 +15068,7 @@ void display_multilinemenu_block_groups(uint_fast8_t x, uint_fast8_t y, void * p
 	uint_fast16_t selected_group_left_margin; // первый элемент группы
 	uint_fast16_t el;
 	multimenuwnd_t window;
+	pipparams_t z;
 
 	display2_getmultimenu(& window);
 
@@ -15092,6 +15093,9 @@ void display_multilinemenu_block_groups(uint_fast8_t x, uint_fast8_t y, void * p
 	}
 	index_groups = 0;
 	const uint_fast16_t menu_block_scroll_offset_groups = window.multilinemenu_max_rows * (selected_group_index / window.multilinemenu_max_rows);
+
+	display2_getgridparams(& z);
+	display2_clear_menu_bk (x - 1, y, x, z.w);
 
 	// выводим на экран блок с параметрами
 	for (el = 0; el < MENUROW_COUNT; el ++)
@@ -15125,6 +15129,7 @@ void display_multilinemenu_block_params(uint_fast8_t x, uint_fast8_t y, void * p
 	uint_fast16_t selected_group_right_margin; // последний элемент группы
 	uint_fast16_t el;
 	multimenuwnd_t window;
+	pipparams_t z;
 
 	display2_getmultimenu(& window);
 
@@ -15155,6 +15160,9 @@ void display_multilinemenu_block_params(uint_fast8_t x, uint_fast8_t y, void * p
 	index_params = 0;
 	const uint_fast16_t menu_block_scroll_offset_params = window.multilinemenu_max_rows * (selected_params_index / window.multilinemenu_max_rows);
 
+	display2_getgridparams(& z);
+	display2_clear_menu_bk (x - 1, y, x, z.w);
+
 	// выводим на экран блок с параметрами
 	for (el = 0; el < MENUROW_COUNT; el ++)
 	{
@@ -15176,9 +15184,11 @@ void display_multilinemenu_block_params(uint_fast8_t x, uint_fast8_t y, void * p
 				display_at_P(x - 1, y_position_params, PSTR(">"));
 			}
 			display_menu_lblng(x, y_position_params, (void *) mv); // название редактируемого параметра
+			display_at (x + 8, y_position_params, "                    ");
 			y_position_params += window.ystep;
 		}
 	}
+	display2_clear_menu_bk (x, y_position_params, z.h, z.w);
 }
 // Отображение многострочного меню для больших экранов (значения)
 void display_multilinemenu_block_vals(uint_fast8_t x, uint_fast8_t y, void * pv)
@@ -15545,9 +15555,13 @@ modifysettings(
 		display_redrawbars(0, 1);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 
 #if WITHKEYBOARD
-
-		if (kbready != 0)
+		int_least16_t nr2;
+		uint_fast8_t js;
+		nr2 = getRotateHiRes2(&js);  // перемещение по меню также с помощью 2го энкодера
+		if (kbready != 0 || nr2 != 0)
 		{
+			if (nr2 > 0) kbch=KBD_CODE_BAND_DOWN;
+			else if (nr2 < 0) kbch=KBD_CODE_BAND_UP;
 			switch (kbch)
 			{
 			default:
@@ -15555,6 +15569,7 @@ modifysettings(
 					continue;
 				/* в случчае несовпадения - прожолжаем работать. */
 			case KBD_CODE_DISPMODE:
+			case KBD_ENC2_PRESS:
 				/* выход из меню */
 				if (posnvram != MENUNONVRAM)
 					save_i8(posnvram, menupos);	/* сохраняем номер пункта меню, с которым работаем */
@@ -15563,6 +15578,7 @@ modifysettings(
 
 #if ! WITHFLATMENU
 			case KBD_CODE_MENU:
+			case KBD_ENC2_HOLD:
 				if (ismenukind(mp, ITEM_GROUP))
 				{
 					/* вход в подменю */
@@ -15574,10 +15590,8 @@ modifysettings(
 					#if defined (RTC1_TYPE)
 						getstamprtc();
 					#endif /* defined (RTC1_TYPE) */
-						display2_bgreset();		/* возможно уже с новой цветовой схемой */
 						modifysettings(first, last, ITEM_VALUE, mp->qnvram, exitkey, byname);
 
-						display2_bgreset();		/* возможно уже с новой цветовой схемой */
 						display_menuitemlabel((void *) mp, byname);
 						display_menuitemvalue((void *) mp);
 						display_redrawbars(1, 1);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
@@ -15622,7 +15636,6 @@ modifysettings(
 					save_i8(posnvram, menupos);	/* сохраняем номер пункта меню, с которым работаем */
 #endif /* (NVRAM_TYPE != NVRAM_TYPE_CPUEEPROM) */
 				
-				display2_bgreset();
 #if WITHDEBUG
 				debug_printf_P(PSTR("menu: ")); debug_printf_P(mp->qlabel); debug_printf_P(PSTR("\n")); 
 #endif /* WITHDEBUG */
