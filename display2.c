@@ -4576,9 +4576,9 @@ enum
 #endif /* WITHTOUCHTEST */
 	};
 
-void display2_clear_menu_bk (void)
+void display2_clear_menu_bk (uint_fast16_t x, uint_fast16_t y, uint_fast16_t x2, uint_fast16_t y2)
 {
-	display_solidbar (0, GRID2Y(BDTH_ALLRXBARS), GRID2X(CHARS2GRID(BDTH_ALLRX)) - 1, GRID2Y(DLE1) - 1, display_getbgcolor());
+	display_solidbar (GRID2X(x), GRID2Y(y), GRID2X(x2), GRID2Y(y2), display_getbgcolor());
 }
 
 #if WITHTOUCHTEST
