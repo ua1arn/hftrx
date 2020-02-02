@@ -15087,6 +15087,7 @@ void display_multilinemenu_block_groups(uint_fast8_t x, uint_fast8_t y, void * p
 	uint_fast16_t selected_group_left_margin; // первый элемент группы
 	uint_fast16_t el;
 	multimenuwnd_t window;
+	pipparams_t z;
 
 	display2_getmultimenu(& window);
 
@@ -15112,7 +15113,8 @@ void display_multilinemenu_block_groups(uint_fast8_t x, uint_fast8_t y, void * p
 	index_groups = 0;
 	const uint_fast16_t menu_block_scroll_offset_groups = window.multilinemenu_max_rows * (selected_group_index / window.multilinemenu_max_rows);
 
-	display2_clear_menu_bk (x - 1, y, x, 90);
+	display2_getgridparams(& z);
+	display2_clear_menu_bk (x - 1, y, x, z.w);
 	// выводим на экран блок с параметрами
 	for (el = 0; el < MENUROW_COUNT; el ++)
 	{
@@ -15145,6 +15147,7 @@ void display_multilinemenu_block_params(uint_fast8_t x, uint_fast8_t y, void * p
 	uint_fast16_t selected_group_right_margin; // последний элемент группы
 	uint_fast16_t el;
 	multimenuwnd_t window;
+	pipparams_t z;
 
 	display2_getmultimenu(& window);
 
@@ -15175,6 +15178,9 @@ void display_multilinemenu_block_params(uint_fast8_t x, uint_fast8_t y, void * p
 	index_params = 0;
 	const uint_fast16_t menu_block_scroll_offset_params = window.multilinemenu_max_rows * (selected_params_index / window.multilinemenu_max_rows);
 
+	display2_getgridparams(& z);
+	display2_clear_menu_bk (x - 1, y, x, z.w);
+
 	// выводим на экран блок с параметрами
 	for (el = 0; el < MENUROW_COUNT; el ++)
 	{
@@ -15200,7 +15206,7 @@ void display_multilinemenu_block_params(uint_fast8_t x, uint_fast8_t y, void * p
 			y_position_params += window.ystep;
 		}
 	}
-	display2_clear_menu_bk (x, y_position_params, 35, 90);
+	display2_clear_menu_bk (x, y_position_params, z.h, z.w);
 }
 // Отображение многострочного меню для больших экранов (значения)
 void display_multilinemenu_block_vals(uint_fast8_t x, uint_fast8_t y, void * pv)
