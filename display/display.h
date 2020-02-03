@@ -364,6 +364,13 @@ uint_fast8_t display_getpagesmax(void);	// количество разных в�
 uint_fast8_t display_getpagesleep(void);	// номер варианта отображения для "сна"
 uint_fast8_t display_getfreqformat(uint_fast8_t * prjv);	// получить параметры отображения частоты (для функции прямого ввода)
 
+// Параметры окна меню
+typedef struct gridparams_tag
+{
+	uint_fast16_t gy2, gx2;	// в ячейках сетки разметки
+
+} gridparams_t;
+
 typedef struct pipparams_tag
 {
 	uint_fast16_t x, y, w, h;	// в пикселях
@@ -371,6 +378,7 @@ typedef struct pipparams_tag
 
 } pipparams_t;
 
+void display2_getgridparams (gridparams_t * p);
 void display2_getpipparams(pipparams_t * p);	/* получить координаты окна с панорамой и/или водопадом. */
 
 
@@ -419,7 +427,6 @@ void display_menuitemvalue(
 	);
 
 void display2_clear_menu_bk (uint_fast16_t x, uint_fast16_t y, uint_fast16_t x2, uint_fast16_t y2);
-void display2_getgridparams (pipparams_t * p);
 
 // Вызывается из display2.c
 void 

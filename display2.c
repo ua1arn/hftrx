@@ -4573,15 +4573,15 @@ enum
 	};
 
 #if WITHMENU
-	void display2_getgridparams (pipparams_t * p)
+	void display2_getgridparams(gridparams_t * p)
 	{
-		p->w = DLE1;
-		p->h = DLES;
+		p->gy2 = DLE1;
+		p->gx2 = DLES;
 	}
 
-	void display2_clear_menu_bk (uint_fast16_t x, uint_fast16_t y, uint_fast16_t x2, uint_fast16_t y2)
+	void display2_clear_menu_bk(uint_fast16_t x, uint_fast16_t y, uint_fast16_t x2, uint_fast16_t y2)
 	{
-		display_solidbar (GRID2X(x), GRID2Y(y), GRID2X(x2), GRID2Y(y2), display_getbgcolor());
+		display_solidbar(GRID2X(x), GRID2Y(y), GRID2X(x2), GRID2Y(y2), display_getbgcolor());
 	}
 
 	void display2_getmultimenu(multimenuwnd_t * p)
