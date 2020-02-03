@@ -1826,6 +1826,23 @@ const FLASHMEM PACKEDCOLOR_T byte2run_COLOR_RED_COLOR_BLACK [256][8] =
  { COLOR_BLACK, COLOR_RED, COLOR_RED, COLOR_RED, COLOR_RED, COLOR_RED, COLOR_RED, COLOR_RED, },	/* 0xFE */
  { COLOR_RED, COLOR_RED, COLOR_RED, COLOR_RED, COLOR_RED, COLOR_RED, COLOR_RED, COLOR_RED, },	/* 0xFF */
 };
+/* Use in display_setcolors function.*/
+#define COLOR_SELECTOR(tgt) do { \
+ if (fg == COLOR_WHITE && bg == COLOR_DARKGREEN) \
+  tgt = & byte2run_COLOR_WHITE_COLOR_DARKGREEN; \
+ else if (fg == COLOR_YELLOW && bg == COLOR_BLACK) \
+  tgt = & byte2run_COLOR_YELLOW_COLOR_BLACK; \
+ else if (fg == COLOR_BLACK && bg == COLOR_GREEN) \
+  tgt = & byte2run_COLOR_BLACK_COLOR_GREEN; \
+ else if (fg == COLOR_BLACK && bg == COLOR_RED) \
+  tgt = & byte2run_COLOR_BLACK_COLOR_RED; \
+ else if (fg == COLOR_GREEN && bg == COLOR_BLACK) \
+  tgt = & byte2run_COLOR_GREEN_COLOR_BLACK; \
+ else if (fg == COLOR_RED && bg == COLOR_BLACK) \
+  tgt = & byte2run_COLOR_RED_COLOR_BLACK; \
+ else \
+  tgt = & byte2run_COLOR_WHITE_COLOR_BLACK; \
+} while (0)
 /* Foreground COLOR565_WHITE, background COLOR565_BLACK */
 //extern const FLASHMEM PACKEDCOLOR565_T byte2run565_COLOR565_WHITE_COLOR565_BLACK [256][8]; // fg=COLOR565_WHITE, bg=COLOR565_BLACK
 const FLASHMEM PACKEDCOLOR565_T byte2run565_COLOR565_WHITE_COLOR565_BLACK [256][8] =
@@ -3653,35 +3670,20 @@ const FLASHMEM PACKEDCOLOR565_T byte2run565_COLOR565_RED_COLOR565_BLACK [256][8]
  { COLOR565_BLACK, COLOR565_RED, COLOR565_RED, COLOR565_RED, COLOR565_RED, COLOR565_RED, COLOR565_RED, COLOR565_RED, },	/* 0xFE */
  { COLOR565_RED, COLOR565_RED, COLOR565_RED, COLOR565_RED, COLOR565_RED, COLOR565_RED, COLOR565_RED, COLOR565_RED, },	/* 0xFF */
 };
-/* Template of program. Copy in to display_setcolors function.
-if (fg == COLOR_WHITE && bg == COLOR_DARKGREEN)
-	byte2run = & byte2run_COLOR_WHITE_COLOR_DARKGREEN;
-else if (fg == COLOR_YELLOW && bg == COLOR_BLACK)
-	byte2run = & byte2run_COLOR_YELLOW_COLOR_BLACK;
-else if (fg == COLOR_BLACK && bg == COLOR_GREEN)
-	byte2run = & byte2run_COLOR_BLACK_COLOR_GREEN;
-else if (fg == COLOR_BLACK && bg == COLOR_RED)
-	byte2run = & byte2run_COLOR_BLACK_COLOR_RED;
-else if (fg == COLOR_GREEN && bg == COLOR_BLACK)
-	byte2run = & byte2run_COLOR_GREEN_COLOR_BLACK;
-else if (fg == COLOR_RED && bg == COLOR_BLACK)
-	byte2run = & byte2run_COLOR_RED_COLOR_BLACK;
-else
-	byte2run = & byte2run_COLOR_WHITE_COLOR_BLACK;
-*/
-/* Template of program. Copy in to display_setcolors function.
-if (fg == COLOR_WHITE && bg == COLOR_DARKGREEN)
-	byte2run565 = & byte2run565_COLOR565_WHITE_COLOR565_DARKGREEN;
-else if (fg == COLOR_YELLOW && bg == COLOR_BLACK)
-	byte2run565 = & byte2run565_COLOR565_YELLOW_COLOR565_BLACK;
-else if (fg == COLOR_BLACK && bg == COLOR_GREEN)
-	byte2run565 = & byte2run565_COLOR565_BLACK_COLOR565_GREEN;
-else if (fg == COLOR_BLACK && bg == COLOR_RED)
-	byte2run565 = & byte2run565_COLOR565_BLACK_COLOR565_RED;
-else if (fg == COLOR_GREEN && bg == COLOR_BLACK)
-	byte2run565 = & byte2run565_COLOR565_GREEN_COLOR565_BLACK;
-else if (fg == COLOR_RED && bg == COLOR_BLACK)
-	byte2run565 = & byte2run565_COLOR565_RED_COLOR565_BLACK;
-else
-	byte2run565 = & byte2run565_COLOR565_WHITE_COLOR565_BLACK;
-*/
+/* Use in display_setcolors function.*/
+#define COLOR565_SELECTOR(tgt) do { \
+ if (fg == COLOR_WHITE && bg == COLOR_DARKGREEN) \
+  tgt = & byte2run565_COLOR565_WHITE_COLOR565_DARKGREEN; \
+ else if (fg == COLOR_YELLOW && bg == COLOR_BLACK) \
+  tgt = & byte2run565_COLOR565_YELLOW_COLOR565_BLACK; \
+ else if (fg == COLOR_BLACK && bg == COLOR_GREEN) \
+  tgt = & byte2run565_COLOR565_BLACK_COLOR565_GREEN; \
+ else if (fg == COLOR_BLACK && bg == COLOR_RED) \
+  tgt = & byte2run565_COLOR565_BLACK_COLOR565_RED; \
+ else if (fg == COLOR_GREEN && bg == COLOR_BLACK) \
+  tgt = & byte2run565_COLOR565_GREEN_COLOR565_BLACK; \
+ else if (fg == COLOR_RED && bg == COLOR_BLACK) \
+  tgt = & byte2run565_COLOR565_RED_COLOR565_BLACK; \
+ else \
+  tgt = & byte2run565_COLOR565_WHITE_COLOR565_BLACK; \
+} while (0)
