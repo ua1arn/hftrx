@@ -4430,7 +4430,7 @@ enum
 		BDCV_ALLRX = ROWS2GRID(49),	// количество строк, отведенное под S-метр, панораму, иные отображения
 #else
 		BDTH_ALLRX = 40,	// ширина зоны для отображение графического окна на индикаторе
-		BDCV_ALLRX = ROWS2GRID(55),	// количество строк, отведенное под S-метр, панораму, иные отображения
+		BDCV_ALLRX = ROWS2GRID(50),	// количество строк, отведенное под S-метр, панораму, иные отображения
 #endif
 
 		BDTH_LEFTRX = 17,	// ширина индикатора баллов (без плюсов)
@@ -4541,6 +4541,9 @@ enum
 		{	0,	DLES,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 		{	0,	DLES,	display2_spectrum,	REDRM_BARS, PGSPE, },// подготовка изображения спектра
 		{	0,	DLES,	display2_waterfall,	REDRM_BARS, PGWFL, },// подготовка изображения водопада
+#if WITHTOUCHTEST
+		{	0,	DLES,	display_pip_popup, REDRM_BARS, PGSPE, },
+#endif /* WITHTOUCHTEST */
 		{	0,	DLES,	display2_colorbuff,	REDRM_BARS,	PGWFL | PGSPE, },// Отображение водопада и/или спектра
 	#endif /* WITHSPECTRUMWF */
 #else
@@ -4550,13 +4553,13 @@ enum
 
 
 	
-		{	0,	DLE1,	display_datetime12,	REDRM_BARS, PGALL,	},	// DATE&TIME Jan-01 13:40
-		{	13,	DLE1,	display_span9,		REDRM_MODE, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
-		{	23, DLE1,	display_thermo4,	REDRM_VOLT, PGALL, },	// thermo sensor
-		{	28, DLE1,	display_usb3,		REDRM_BARS, PGALL, },	// USB host status
-
-		{	39, DLE1,	display_currlevel5, REDRM_VOLT, PGALL, },	// PA drain current d.dd without "A"
-		{	45, DLE1,	display_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
+//		{	0,	DLE1,	display_datetime12,	REDRM_BARS, PGALL,	},	// DATE&TIME Jan-01 13:40
+//		{	13,	DLE1,	display_span9,		REDRM_MODE, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
+//		{	23, DLE1,	display_thermo4,	REDRM_VOLT, PGALL, },	// thermo sensor
+//		{	28, DLE1,	display_usb3,		REDRM_BARS, PGALL, },	// USB host status
+//
+//		{	39, DLE1,	display_currlevel5, REDRM_VOLT, PGALL, },	// PA drain current d.dd without "A"
+//		{	45, DLE1,	display_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
 	#if WITHAMHIGHKBDADJ
 		//{	XX, DLE1,	display_amfmhighcut4,REDRM_MODE, PGALL, },	// 3.70
 	#endif /* WITHAMHIGHKBDADJ */
@@ -4579,11 +4582,16 @@ enum
 #if WITHTOUCHTEST
 	struct button_handler button_handlers[];
 	struct button_handler button_handlers[]={
-		{720, 235, 799,	285, button1_handler, CANCELLED, 1},
-		{720, 290, 799,	340, button2_handler, CANCELLED, 1},
-		{720, 345, 799,	395, button3_handler, CANCELLED, 1},
-		{720, 400, 799,	450, button4_handler, CANCELLED, 1},
+		{0,   430, 79,  479, button1_handler, CANCELLED, 1},
+		{82,  430, 161,	479, button2_handler, CANCELLED, 1},
+		{164, 430, 243,	479, button3_handler, CANCELLED, 1},
+		{246, 430, 325,	479, button4_handler, CANCELLED, 1},
+		{328, 430, 407,	479, button5_handler, CANCELLED, 1},
+		{410, 430, 489,	479, button6_handler, CANCELLED, 1},
+		{492, 430, 571,	479, button7_handler, CANCELLED, 1},
+		{574, 430, 653,	479, button8_handler, CANCELLED, 1},
 	};
+
 	uint8_t button_handlers_count = sizeof button_handlers / sizeof button_handlers[0];
 	struct element1 element={0, 0, 0, CANCELLED, 0, 0, 1};
 
@@ -4607,6 +4615,26 @@ enum
 		display_at (46, 40, "4");
 	}
 
+	void button5_handler (void)
+	{
+		display_at (46, 40, "5");
+	}
+
+	void button6_handler (void)
+	{
+		display_at (46, 40, "6");
+	}
+
+	void button7_handler (void)
+	{
+		display_at (46, 40, "7");
+	}
+
+	void button8_handler (void)
+	{
+		display_at (46, 40, "8");
+	}
+
 	void draw_rect (uint_fast16_t x, uint_fast16_t y, uint_fast16_t w, uint_fast16_t h, COLOR_T color)
 	{
 		display_wrdatabar_begin();
@@ -4628,7 +4656,7 @@ enum
 	{
 		for (uint_fast8_t i=0; i<button_handlers_count; i++)
 		{
-			debug_printf_P(PSTR("button %d need %d state %d\n"), i, button_handlers[i].need_redraw, button_handlers[i].state);
+//			debug_printf_P(PSTR("button %d need %d state %d\n"), i, button_handlers[i].need_redraw, button_handlers[i].state);
 			if (button_handlers[i].need_redraw==1) {
 				draw_button (button_handlers[i].x1, button_handlers[i].y1,
 							 button_handlers[i].x2, button_handlers[i].y2,
@@ -6399,5 +6427,18 @@ board_set_wflevelsep(uint_fast8_t v)
 void display_buttons (uint_fast8_t menuset, uint_fast8_t extra)
 {
 	display_walktroughsteps(REDRM_BUTTONS, getsubset(menuset, extra));
+}
+
+void display_pip_popup (uint_fast8_t x, uint_fast8_t y, void * pv)
+{
+//	PACKEDCOLOR565_T * const colorpip = getscratchpip();
+//
+//	for (uint_fast16_t x=100; x<=400; x++)
+//	{
+//		for (uint_fast16_t y=50; y<=200; y++)
+//		{
+//				colorpip[ALLDX * y + x] ^= TFTRGB565(0xA9, 0xA9, 0xA9);
+//		}
+//	}
 }
 #endif

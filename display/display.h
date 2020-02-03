@@ -947,21 +947,26 @@ enum {
 };
 
 struct element1 {
-	uint_fast16_t last_pressed_x; 	// последняя точка касания экрана
+	uint_fast16_t last_pressed_x; 	 // последняя точка касания экрана
 	uint_fast16_t last_pressed_y;
-	uint_fast8_t selected;			// индекс элемента; 0xFF - не выбран ни один
-	uint_fast8_t state;				// последнее состояние
+	uint_fast8_t selected;			 // индекс элемента; 0xFF - не выбран ни один
+	uint_fast8_t state;				 // последнее состояние
 	uint_fast8_t is_touching_screen; // есть ли касание экрана в данный момент
 	uint_fast8_t is_after_touch; 	 // есть ли касание экрана после выхода точки касания из элемента
-	uint_fast8_t fix;
+	uint_fast8_t fix;				 // первые координаты после нажатия от контролера тачскрина приходят старые, пропускаем
 };
 
 void button1_handler (void);
 void button2_handler (void);
 void button3_handler (void);
 void button4_handler (void);
+void button5_handler (void);
+void button6_handler (void);
+void button7_handler (void);
+void button8_handler (void);
 
 void display_test_button(uint_fast8_t x, uint_fast8_t y, void * pv);
+void display_pip_popup (uint_fast8_t x, uint_fast8_t y, void * pv);
 void display_buttons (uint_fast8_t menuset, uint_fast8_t extra);
 void
 bitblt_fill(
