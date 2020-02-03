@@ -1439,6 +1439,7 @@ static PACKEDCOLOR_T ltdc_fg, ltdc_bg;
 
 #if ! LCDMODE_LTDC_L24
 static const FLASHMEM PACKEDCOLOR_T (* byte2run) [256][8] = & byte2run_COLOR_WHITE_COLOR_BLACK;
+static const FLASHMEM PACKEDCOLOR565_T (* byte2run565) [256][8] = & byte2run565_COLOR565_WHITE_COLOR565_BLACK;
 #endif /* ! LCDMODE_LTDC_L24 */
 
 static unsigned ltdc_first, ltdc_second;	// в пикселях
@@ -1478,8 +1479,21 @@ void display_setcolors(COLOR_T fg, COLOR_T bg)
 		byte2run = & byte2run_COLOR_GREEN_COLOR_BLACK;
 	else if (fg == COLOR_RED && bg == COLOR_BLACK)
 		byte2run = & byte2run_COLOR_RED_COLOR_BLACK;
-	else
-		byte2run = & byte2run_COLOR_WHITE_COLOR_BLACK;
+
+	if (fg == COLOR_WHITE && bg == COLOR_DARKGREEN)
+		byte2run565 = & byte2run565_COLOR565_WHITE_COLOR565_DARKGREEN;
+	else if (fg == COLOR_YELLOW && bg == COLOR_BLACK)
+		byte2run565 = & byte2run565_COLOR565_YELLOW_COLOR565_BLACK;
+	else if (fg == COLOR_WHITE && bg == COLOR_BLACK)
+		byte2run565 = & byte2run565_COLOR565_WHITE_COLOR565_BLACK;
+	else if (fg == COLOR_BLACK && bg == COLOR_GREEN)
+		byte2run565 = & byte2run565_COLOR565_BLACK_COLOR565_GREEN;
+	else if (fg == COLOR_BLACK && bg == COLOR_RED)
+		byte2run565 = & byte2run565_COLOR565_BLACK_COLOR565_RED;
+	else if (fg == COLOR_GREEN && bg == COLOR_BLACK)
+		byte2run565 = & byte2run565_COLOR565_GREEN_COLOR565_BLACK;
+	else if (fg == COLOR_RED && bg == COLOR_BLACK)
+		byte2run565 = & byte2run565_COLOR565_RED_COLOR565_BLACK;
 
 #endif /* ! LCDMODE_LTDC_L24 */
 
@@ -1578,6 +1592,28 @@ smallfont_decode(uint_fast8_t c)
 
 #if LCDMODE_HORFILL
 // для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
+
+static void RAMFUNC ltdc565_horizontal_pixels(
+	volatile PACKEDCOLOR565_T * tgr,		// target raster
+	const FLASHMEM uint8_t * raster,
+	uint_fast16_t width	// number of bits (start from LSB first byte in raster)
+	)
+{
+	uint_fast16_t col;
+	uint_fast16_t w = width;
+
+	for (col = 0; w >= 8; col += 8, w -= 8)
+	{
+		const FLASHMEM PACKEDCOLOR565_T * const pcl = (* byte2run565) [* raster ++];
+		memcpy((void *) (tgr + col), pcl, sizeof (* tgr) * 8);
+	}
+	if (w != 0)
+	{
+		const FLASHMEM PACKEDCOLOR565_T * const pcl = (* byte2run565) [* raster ++];
+		memcpy((void *) (tgr + col), pcl, sizeof (* tgr) * w);
+	}
+	arm_hardware_flush((uintptr_t) tgr, sizeof (* tgr) * width);
+}
 
 static void RAMFUNC ltdc_horizontal_pixels(
 	volatile PACKEDCOLOR_T * tgr,		// target raster
