@@ -4448,7 +4448,8 @@ enum
 	};
 	enum {
 		DLES = 35,	// spectrum window upper line
-		DLE1 = 93
+		//
+		DLE_unused
 	};
 
 
@@ -4575,8 +4576,8 @@ enum
 #if WITHMENU
 	void display2_getgridparams(gridparams_t * p)
 	{
-		p->gy2 = DLE1;
-		p->gx2 = DLES;
+		p->gy2 = DLE1;	// положение первой строки меню
+		p->gx2 = CHARS2GRID(DIM_X / CHAR_W);	// Правый край области меню
 	}
 
 	void display2_clear_menu_bk(uint_fast16_t x, uint_fast16_t y, uint_fast16_t x2, uint_fast16_t y2)
@@ -4637,8 +4638,7 @@ enum
 	BDCV_WFLRX = BDCV_ALLRX - BDCV_SPMRX	// вертикальный размер водопада в ячейках
 };
 enum {
-	DLES = 35,	// spectrum window upper line
-	DLE1 = 93
+	DLES = 35	// spectrum window upper line
 };
 
 
