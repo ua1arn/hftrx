@@ -4671,7 +4671,7 @@ enum
 #if WITHMENU
 	void display2_getgridparams(gridparams_t * p)
 	{
-		p->gy2 = DLES;	// положение первой строки меню
+		p->gy2 = DLE1;	// положение последней строки меню
 		p->gx2 = CHARS2GRID(DIM_X / CHAR_W);	// Правый край области меню
 	}
 
