@@ -1469,8 +1469,6 @@ void display_setcolors(COLOR_T fg, COLOR_T bg)
 		byte2run = & byte2run_COLOR_WHITE_COLOR_DARKGREEN;
 	else if (fg == COLOR_YELLOW && bg == COLOR_BLACK)
 		byte2run = & byte2run_COLOR_YELLOW_COLOR_BLACK;
-	else if (fg == COLOR_WHITE && bg == COLOR_BLACK)
-		byte2run = & byte2run_COLOR_WHITE_COLOR_BLACK;
 	else if (fg == COLOR_BLACK && bg == COLOR_GREEN)
 		byte2run = & byte2run_COLOR_BLACK_COLOR_GREEN;
 	else if (fg == COLOR_BLACK && bg == COLOR_RED)
@@ -1488,8 +1486,6 @@ void display_setcolors(COLOR_T fg, COLOR_T bg)
 		byte2run565 = & byte2run565_COLOR565_WHITE_COLOR565_DARKGREEN;
 	else if (fg == COLOR_YELLOW && bg == COLOR_BLACK)
 		byte2run565 = & byte2run565_COLOR565_YELLOW_COLOR565_BLACK;
-	else if (fg == COLOR_WHITE && bg == COLOR_BLACK)
-		byte2run565 = & byte2run565_COLOR565_WHITE_COLOR565_BLACK;
 	else if (fg == COLOR_BLACK && bg == COLOR_GREEN)
 		byte2run565 = & byte2run565_COLOR565_BLACK_COLOR565_GREEN;
 	else if (fg == COLOR_BLACK && bg == COLOR_RED)
