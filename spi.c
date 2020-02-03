@@ -943,11 +943,12 @@ int testchipDATAFLASH(void)
 {
 	spitarget_t target = targetdataflash;	/* addressing to chip */
 
+#if WITHDEBUG
 	unsigned char mf_id;	// Manufacturer ID
 	unsigned char mf_devid1;	// device ID (part 1)
 	unsigned char mf_devid2;	// device ID (part 2)
 	unsigned char mf_dlen;	// Extended Device Information String Length
-
+#endif /* WITHDEBUG */
 
 	/* Ожидание бита ~RDY в слове состояния. Для FRAM не имеет смысла.
 	Вставлено для возможности использования DATAFLASH */
@@ -960,11 +961,13 @@ int testchipDATAFLASH(void)
 
 	spidf_to_read(target);
 
+#if WITHDEBUG
 	//prog_spidf_to_read();
 	mf_id = spidf_read_byte(target, 0xff);
 	mf_devid1 = spidf_read_byte(target, 0xff);
 	mf_devid2 = spidf_read_byte(target, 0xff);
 	mf_dlen = spidf_read_byte(target, 0xff);
+#endif /* WITHDEBUG */
 
 	spidf_to_write(target);
 
