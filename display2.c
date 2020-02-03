@@ -4447,7 +4447,7 @@ enum
 		BDCV_WFLRX = BDCV_ALLRX - BDCV_SPMRX	// вертикальный размер водопада в ячейках
 	};
 	enum {
-		DLES = 35,	// spectrum window upper line
+		DLE1 = 35,	// spectrum window upper line
 		//
 		DLE_unused
 	};
