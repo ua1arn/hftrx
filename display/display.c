@@ -1567,6 +1567,7 @@ smallfont_decode(uint_fast8_t c)
 #if LCDMODE_HORFILL
 // для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
 
+// функции работы с colorbuffer не занимаются выталкиванеим кэш-памяти
 static void RAMFUNC ltdc565_horizontal_pixels(
 	volatile PACKEDCOLOR565_T * tgr,		// target raster
 	const FLASHMEM uint8_t * raster,
@@ -1586,9 +1587,11 @@ static void RAMFUNC ltdc565_horizontal_pixels(
 		const FLASHMEM PACKEDCOLOR565_T * const pcl = (* byte2run565) [* raster ++];
 		memcpy((void *) (tgr + col), pcl, sizeof (* tgr) * w);
 	}
-	arm_hardware_flush((uintptr_t) tgr, sizeof (* tgr) * width);
+	// функции работы с colorbuffer не занимаются выталкиванеим кэш-памяти
+	//arm_hardware_flush((uintptr_t) tgr, sizeof (* tgr) * width);
 }
 
+// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
 static void RAMFUNC ltdc_horizontal_pixels(
 	volatile PACKEDCOLOR_T * tgr,		// target raster
 	const FLASHMEM uint8_t * raster,
