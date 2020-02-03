@@ -1479,6 +1479,8 @@ void display_setcolors(COLOR_T fg, COLOR_T bg)
 		byte2run = & byte2run_COLOR_GREEN_COLOR_BLACK;
 	else if (fg == COLOR_RED && bg == COLOR_BLACK)
 		byte2run = & byte2run_COLOR_RED_COLOR_BLACK;
+	else
+		byte2run = & byte2run_COLOR_WHITE_COLOR_BLACK;
 
 	if (fg == COLOR_WHITE && bg == COLOR_DARKGREEN)
 		byte2run565 = & byte2run565_COLOR565_WHITE_COLOR565_DARKGREEN;
@@ -1494,6 +1496,8 @@ void display_setcolors(COLOR_T fg, COLOR_T bg)
 		byte2run565 = & byte2run565_COLOR565_GREEN_COLOR565_BLACK;
 	else if (fg == COLOR_RED && bg == COLOR_BLACK)
 		byte2run565 = & byte2run565_COLOR565_RED_COLOR565_BLACK;
+	else
+		byte2run565 = & byte2run565_COLOR565_WHITE_COLOR565_BLACK;
 
 #endif /* ! LCDMODE_LTDC_L24 */
 
