@@ -3653,7 +3653,7 @@ const FLASHMEM PACKEDCOLOR565_T byte2run565_COLOR565_RED_COLOR565_BLACK [256][8]
  { COLOR565_BLACK, COLOR565_RED, COLOR565_RED, COLOR565_RED, COLOR565_RED, COLOR565_RED, COLOR565_RED, COLOR565_RED, },	/* 0xFE */
  { COLOR565_RED, COLOR565_RED, COLOR565_RED, COLOR565_RED, COLOR565_RED, COLOR565_RED, COLOR565_RED, COLOR565_RED, },	/* 0xFF */
 };
-/* Template of programm. Copy in to display_setcolors function.
+/* Template of program. Copy in to display_setcolors function.
 if (fg == COLOR_WHITE && bg == COLOR_DARKGREEN)
 	byte2run = & byte2run_COLOR_WHITE_COLOR_DARKGREEN;
 else if (fg == COLOR_YELLOW && bg == COLOR_BLACK)
@@ -3669,7 +3669,7 @@ else if (fg == COLOR_RED && bg == COLOR_BLACK)
 else
 	byte2run = & byte2run_COLOR_WHITE_COLOR_BLACK;
 */
-/* Template of programm. Copy in to display_setcolors function.
+/* Template of program. Copy in to display_setcolors function.
 if (fg == COLOR_WHITE && bg == COLOR_DARKGREEN)
 	byte2run565 = & byte2run565_COLOR565_WHITE_COLOR565_DARKGREEN;
 else if (fg == COLOR_YELLOW && bg == COLOR_BLACK)
