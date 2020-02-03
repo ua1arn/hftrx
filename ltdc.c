@@ -587,6 +587,10 @@ static void vdc5fb_init_scalers(struct st_vdc5 * const vdc)
 void arm_hardware_ltdc_pip_set(uintptr_t p)
 {
 	struct st_vdc5 * const vdc = & VDC50;
+	pipparams_t pipwnd;
+
+	display2_getpipparams(& pipwnd);
+	arm_hardware_flush(p, pipwnd.w * pipwnd.h * sizeof (PACKEDCOLOR565_T));
 
 	SETREG32_CK(& vdc->GR3_FLM_RD, 1, 0, 1);			// GR3_R_ENB Frame Buffer Read Enable 1: Frame buffer reading is enabled.
 	SETREG32_CK(& vdc->GR3_FLM2, 32, 0, p);			// GR3_BASE
@@ -1926,6 +1930,11 @@ arm_hardware_ltdc_initialize(void)
 /* set bottom buffer start */
 void arm_hardware_ltdc_pip_set(uintptr_t p)
 {
+	pipparams_t pipwnd;
+
+	display2_getpipparams(& pipwnd);
+	arm_hardware_flush(p, pipwnd.w * pipwnd.h * sizeof (PACKEDCOLOR565_T));
+
 	LAYER_PIP->CFBAR = p;
 	LAYER_PIP->CR |= LTDC_LxCR_LEN;
 	LTDC->SRCR = LTDC_SRCR_VBR;	/* Vertical Blanking Reload. */
