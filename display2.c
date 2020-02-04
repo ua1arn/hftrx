@@ -4560,7 +4560,7 @@ enum
 //		{	28, DLE1,	display_usb3,		REDRM_BARS, PGALL, },	// USB host status
 //
 //		{	39, DLE1,	display_currlevel5, REDRM_VOLT, PGALL, },	// PA drain current d.dd without "A"
-//		{	45, DLE1,	display_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
+		{	45, 40,	display_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
 	#if WITHAMHIGHKBDADJ
 		//{	XX, DLE1,	display_amfmhighcut4,REDRM_MODE, PGALL, },	// 3.70
 	#endif /* WITHAMHIGHKBDADJ */
@@ -4595,10 +4595,13 @@ enum
 
 	uint8_t button_handlers_count = sizeof button_handlers / sizeof button_handlers[0];
 	struct element1 element={0, 0, 0, CANCELLED, 0, 0, 1};
+	static uint_fast8_t is_popup_pip=0;
 
 	void button1_handler (void)
 	{
 		display_at (46, 40, "1");
+		if (is_popup_pip) is_popup_pip=0;
+		else is_popup_pip=1;
 	}
 
 	void button2_handler (void)
@@ -6429,16 +6432,55 @@ void display_buttons (uint_fast8_t menuset, uint_fast8_t extra)
 	display_walktroughsteps(REDRM_BUTTONS, getsubset(menuset, extra));
 }
 
+static uint_fast16_t
+normalize(
+		uint_fast16_t raw,
+		uint_fast16_t rawmin,
+		uint_fast16_t rawmax,
+		uint_fast16_t range
+		)
+{
+		const uint_fast16_t distance = rawmax - rawmin;
+		if (raw < rawmin)
+			return 0;
+		raw = raw - rawmin;
+		if (raw > distance)
+			return range;
+		return (uint_fast32_t) raw * range / distance;
+}
+
 void display_pip_popup (uint_fast8_t x, uint_fast8_t y, void * pv)
 {
-//	PACKEDCOLOR565_T * const colorpip = getscratchpip();
-//
-//	for (uint_fast16_t x=100; x<=400; x++)
-//	{
-//		for (uint_fast16_t y=50; y<=200; y++)
-//		{
-//				colorpip[ALLDX * y + x] ^= TFTRGB565(0xA9, 0xA9, 0xA9);
-//		}
-//	}
+	PACKEDCOLOR565_T * const colorpip = getscratchpip();
+	uint_fast16_t yt;
+	PACKEDCOLOR565_T dot, color_red, color_green, color_blue;
+	uint_fast8_t alpha = 10; // на сколько затемнять цвета
+
+	if (is_popup_pip)
+	{
+		for (uint_fast16_t y1=50; y1<=200; y1++)
+		{
+			yt = ALLDX * y1;
+			for (uint_fast16_t x1=100; x1<=400; x1++)
+			{
+				dot = colorpip[yt + x1];
+				if (dot==COLOR565_BLACK)
+					colorpip[yt + x1] = 0x0841; // back gray
+				else // RRRR.RGGG.GGGB.BBBB
+				{
+					color_red = dot >> 11;
+					color_green = (dot >> 5) & 0x003f;
+					color_blue = dot & 0x001f;
+
+					colorpip[yt + x1] = (normalize(color_red, 0, 32, alpha) << 11) |
+										(normalize (color_green, 0, 64, alpha) << 5) |
+										(normalize(color_blue, 0, 32, alpha));
+				}
+			} // for x1
+		} // for y1
+		display_setcolors(COLOR_BLACK, COLOR_GREEN);
+		display_colorbuff_string (colorpip, ALLDX, ALLDY, 150, 150, "qwerty");
+		display_colorbuff_string (colorpip, ALLDX, ALLDY, 150, 170, "Test");
+	} // if (is_popup_pip)
 }
-#endif
+#endif /* WITHTOUCHTEST */
