@@ -1810,7 +1810,7 @@ display_colorbuff_string_tbg(
 	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
 	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
 	const char * s,
-	COLOR565_T fg
+	COLOR565_T fg		// цвет вывода текста
 	)
 {
 	char c;
