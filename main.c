@@ -17962,6 +17962,18 @@ ddd:
 
 #endif /* WITHISBOOTLOADER */
 
+void change_mode (uint_fast8_t v)
+{
+	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
+	const uint_fast8_t defsubmode = findkenwoodsubmode(v, gsubmode);	/* поиск по кенвудовскому номеру */
+	//defsubmode = getdefaultbandsubmode(gfreqs [bi]);		/* режим по-умолчанию для частоты - USB или LSB */
+	// todo: не очень хорошо, если locatesubmode не находит режима, она обнуляет row.
+	const uint_fast8_t defcol = locatesubmode(defsubmode, & gmoderows [bi]);	/* строка/колонка для SSB. Что делать, если не нашли? */
+	putmodecol(gmoderows [bi], defcol, bi);	/* внести новое значение в битовую маску */
+	updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
+	display_redrawfreqmodesbars(0);
+}
+
 /* Главная функция программы */
 int 
 //__attribute__ ((used))

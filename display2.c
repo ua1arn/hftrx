@@ -4580,97 +4580,6 @@ enum
 #endif /* WITHTOUCHTEST */
 	};
 
-#if WITHTOUCHTEST
-	struct button_handler button_handlers[];
-	struct button_handler button_handlers[]={
-		{0,   430, 79,  479, button1_handler, CANCELLED, 1},
-		{82,  430, 161,	479, button2_handler, CANCELLED, 1},
-		{164, 430, 243,	479, button3_handler, CANCELLED, 1},
-		{246, 430, 325,	479, button4_handler, CANCELLED, 1},
-		{328, 430, 407,	479, button5_handler, CANCELLED, 1},
-		{410, 430, 489,	479, button6_handler, CANCELLED, 1},
-		{492, 430, 571,	479, button7_handler, CANCELLED, 1},
-		{574, 430, 653,	479, button8_handler, CANCELLED, 1},
-	};
-
-	uint8_t button_handlers_count = sizeof button_handlers / sizeof button_handlers[0];
-	struct element1 element={0, 0, 0, CANCELLED, 0, 0, 1};
-	static uint_fast8_t is_popup_pip=0;
-
-	void button1_handler (void)
-	{
-		display_at (46, 40, "1");
-		if (is_popup_pip) is_popup_pip=0;
-		else is_popup_pip=1;
-	}
-
-	void button2_handler (void)
-	{
-		display_at (46, 40, "2");
-	}
-
-	void button3_handler (void)
-	{
-		display_at (46, 40, "3");
-	}
-
-	void button4_handler (void)
-	{
-		display_at (46, 40, "4");
-	}
-
-	void button5_handler (void)
-	{
-		display_at (46, 40, "5");
-	}
-
-	void button6_handler (void)
-	{
-		display_at (46, 40, "6");
-	}
-
-	void button7_handler (void)
-	{
-		display_at (46, 40, "7");
-	}
-
-	void button8_handler (void)
-	{
-		display_at (46, 40, "8");
-	}
-
-	void draw_rect (uint_fast16_t x, uint_fast16_t y, uint_fast16_t w, uint_fast16_t h, COLOR_T color)
-	{
-		display_wrdatabar_begin();
-		bitblt_fill (x,   y,   w, 1, color, COLOR_BLACK, 0xFF);
-		bitblt_fill (x,   y+h, w, 1, color, COLOR_BLACK, 0xFF);
-		bitblt_fill (x,   y,   1, h, color, COLOR_BLACK, 0xFF);
-		bitblt_fill (x+w, y,   1, h, color, COLOR_BLACK, 0xFF);
-		display_wrdatabar_end();
-	}
-
-	void draw_button (uint_fast16_t x1, uint_fast16_t y1, uint_fast16_t x2, uint_fast16_t y2, uint_fast8_t pressed) // pressed = 0
-	{
-		display_solidbar (x1, y1, x2, y2, pressed?COLOR_GREEN:COLOR_DARKGREEN2);
-		draw_rect (x1, 	 y1,   x2-x1,   y2-y1,   COLOR_GRAY);
-		draw_rect (x1+3, y1+3, x2-x1-6, y2-y1-6, COLOR_BLACK);
-	}
-
-	void display_test_button(uint_fast8_t x, uint_fast8_t y, void * pv)
-	{
-		for (uint_fast8_t i=0; i<button_handlers_count; i++)
-		{
-//			debug_printf_P(PSTR("button %d need %d state %d\n"), i, button_handlers[i].need_redraw, button_handlers[i].state);
-			if (button_handlers[i].need_redraw==1) {
-				draw_button (button_handlers[i].x1, button_handlers[i].y1,
-							 button_handlers[i].x2, button_handlers[i].y2,
-							 button_handlers[i].state);
-				button_handlers[i].need_redraw=0;
-			}
-		}
-	}
-#endif /* WITHTOUCHTEST */
-
 #if WITHMENU
 	void display2_getgridparams(gridparams_t * p)
 	{
@@ -6427,6 +6336,124 @@ board_set_wflevelsep(uint_fast8_t v)
 }
 
 #if WITHTOUCHTEST
+	struct button_handler button_handlers[];
+	struct button_handler button_handlers[]={
+		{0,   430, 79,  479, button1_handler, CANCELLED, 1},
+		{82,  430, 161,	479, button2_handler, CANCELLED, 1},
+		{164, 430, 243,	479, button3_handler, CANCELLED, 1},
+		{246, 430, 325,	479, button4_handler, CANCELLED, 1},
+		{328, 430, 407,	479, button5_handler, CANCELLED, 1},
+		{410, 430, 489,	479, button6_handler, CANCELLED, 1},
+		{492, 430, 571,	479, button7_handler, CANCELLED, 1},
+		{574, 430, 653,	479, button8_handler, CANCELLED, 1},
+	};
+
+	uint8_t button_handlers_count = sizeof button_handlers / sizeof button_handlers[0];
+	struct element1 element={0, 0, 0, CANCELLED, 0, 0, 1};
+	static uint_fast8_t is_popup_pip=0;
+	extern void change_mode (uint_fast8_t v);
+	struct withpopuppip popup_pip1, popup_pip2;
+
+
+	void button1_handler (void)
+	{
+		display_at (46, 40, "1");
+		if (is_popup_pip) is_popup_pip=0;
+		else is_popup_pip=1;
+	}
+
+	void button2_handler (void)
+	{
+		display_at (46, 40, "2");
+		change_mode (5); // usb-2, lsb-1, cw-3, cwr-7, am-5, dgl-9, dgu-6, nfm-4,
+	}
+
+	void button3_handler (void)
+	{
+		display_at (46, 40, "3");
+	}
+
+	void button4_handler (void)
+	{
+		display_at (46, 40, "4");
+	}
+
+	void button5_handler (void)
+	{
+		display_at (46, 40, "5");
+	}
+
+	void button6_handler (void)
+	{
+		display_at (46, 40, "6");
+	}
+
+	void button7_handler (void)
+	{
+		display_at (46, 40, "7");
+	}
+
+	void button8_handler (void)
+	{
+		display_at (46, 40, "8");
+	}
+
+	void draw_rect (uint_fast16_t x, uint_fast16_t y, uint_fast16_t w, uint_fast16_t h, COLOR_T color)
+	{
+		display_wrdatabar_begin();
+		bitblt_fill (x,   y,   w, 1, color, COLOR_BLACK, 0xFF);
+		bitblt_fill (x,   y+h, w, 1, color, COLOR_BLACK, 0xFF);
+		bitblt_fill (x,   y,   1, h, color, COLOR_BLACK, 0xFF);
+		bitblt_fill (x+w, y,   1, h, color, COLOR_BLACK, 0xFF);
+		display_wrdatabar_end();
+
+	}
+
+	void draw_button (uint_fast16_t x1, uint_fast16_t y1, uint_fast16_t x2, uint_fast16_t y2, uint_fast8_t pressed) // pressed = 0
+	{
+		display_solidbar (x1, y1, x2, y2, pressed?COLOR_GREEN:COLOR_DARKGREEN2);
+		draw_rect (x1, 	 y1,   x2-x1,   y2-y1,   COLOR_GRAY);
+		draw_rect (x1+3, y1+3, x2-x1-6, y2-y1-6, COLOR_BLACK);
+	}
+
+	void draw_rect_pip (uint_fast16_t x1, uint_fast16_t y1, uint_fast16_t x2, uint_fast16_t y2, PACKEDCOLOR565_T color, uint8_t fill)
+	{
+		PACKEDCOLOR565_T * const colorpip = getscratchpip();
+		if (fill)
+		{
+			for (uint_fast16_t i=y1; i<=y2; i++)
+				display_colorbuffer_line_set (colorpip, ALLDX, ALLDY, x1, i, x2, i, color);
+		} else
+		{
+			display_colorbuffer_line_set (colorpip, ALLDX, ALLDY, x1, y1, x2, y1, color);
+			display_colorbuffer_line_set (colorpip, ALLDX, ALLDY, x1, y1, x1, y2, color);
+			display_colorbuffer_line_set (colorpip, ALLDX, ALLDY, x1, y2, x2, y2, color);
+			display_colorbuffer_line_set (colorpip, ALLDX, ALLDY, x2, y1, x2, y2, color);
+		}
+
+	}
+
+	void draw_button_pip (uint_fast16_t x1, uint_fast16_t y1, uint_fast16_t x2, uint_fast16_t y2, uint_fast8_t pressed) // pressed = 0
+	{
+		draw_rect_pip (x1, y1, x2, y2, pressed?COLOR565_GREEN:COLOR565_DARKGREEN2, 1);
+		draw_rect_pip (x1, 	 y1,   x2,   y2,   COLOR565_GRAY, 0);
+		draw_rect_pip (x1+2, y1+2, x2-2, y2-2, COLOR565_BLACK, 0);
+	}
+
+	void display_test_button(uint_fast8_t x, uint_fast8_t y, void * pv)
+	{
+		for (uint_fast8_t i=0; i<button_handlers_count; i++)
+		{
+//			debug_printf_P(PSTR("button %d need %d state %d\n"), i, button_handlers[i].need_redraw, button_handlers[i].state);
+			if (button_handlers[i].need_redraw==1) {
+				draw_button (button_handlers[i].x1, button_handlers[i].y1,
+							 button_handlers[i].x2, button_handlers[i].y2,
+							 button_handlers[i].state);
+				button_handlers[i].need_redraw=0;
+			}
+		}
+	}
+
 void display_buttons (uint_fast8_t menuset, uint_fast8_t extra)
 {
 	display_walktroughsteps(REDRM_BUTTONS, getsubset(menuset, extra));
@@ -6479,8 +6506,11 @@ void display_pip_popup (uint_fast8_t x, uint_fast8_t y, void * pv)
 			} // for x1
 		} // for y1
 		display_setcolors(COLOR_BLACK, COLOR_GREEN);
-		display_colorbuff_string (colorpip, ALLDX, ALLDY, 150, 150, "qwerty");
 		display_colorbuff_string (colorpip, ALLDX, ALLDY, 150, 170, "Test");
+		display_colorbuff_string_tbg (colorpip, ALLDX, ALLDY, 150, 140, "Transparent", COLOR565_YELLOW);
+
+		draw_button_pip (110,60,190,110,0);
+		draw_button_pip (200,60,280,110,1);
 	} // if (is_popup_pip)
 }
 #endif /* WITHTOUCHTEST */

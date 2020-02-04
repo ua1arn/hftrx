@@ -317,18 +317,12 @@ typedef uint16_t PACKEDCOLOR565_T;
 /* RGB 24-bits color table definition (RGB888). */
 #define COLOR_BLACK          TFTRGB(0x00, 0x00, 0x00)
 #define COLOR_WHITE          TFTRGB(0xFF, 0xFF, 0xFF)
-#define COLOR565_BLACK          TFTRGB565(0x00, 0x00, 0x00)
-#define COLOR565_WHITE          TFTRGB565(0xFF, 0xFF, 0xFF)
 #define COLOR_BLUE           TFTRGB(0x00, 0x00, 0xFF)
 #define COLOR_GREEN          TFTRGB(0x00, 0xFF, 0x00)
 #define COLOR_RED            TFTRGB(0xFF, 0x00, 0x00)
-#define COLOR565_BLUE           TFTRGB565(0x00, 0x00, 0xFF)
-#define COLOR565_GREEN          TFTRGB565(0x00, 0xFF, 0x00)
-#define COLOR565_RED            TFTRGB565(0xFF, 0x00, 0x00)
 #define COLOR_NAVY           TFTRGB(0x00, 0x00, 0x80)
 #define COLOR_DARKBLUE       TFTRGB(0x00, 0x00, 0x8B)
 #define COLOR_DARKGREEN      TFTRGB(0x00, 0x64, 0x00)
-#define COLOR565_DARKGREEN      TFTRGB565(0x00, 0x64, 0x00)
 #define COLOR_DARKGREEN2     TFTRGB(0x00, 0x20, 0x00)
 #define COLOR_DARKCYAN       TFTRGB(0x00, 0x8B, 0x8B)
 #define COLOR_CYAN           TFTRGB(0x00, 0xFF, 0xFF)
@@ -360,12 +354,20 @@ typedef uint16_t PACKEDCOLOR565_T;
 #define COLOR_ORANGE         TFTRGB(0xFF, 0xA5, 0x00)
 #define COLOR_SNOW           TFTRGB(0xFF, 0xFA, 0xFA)
 #define COLOR_YELLOW         TFTRGB(0xFF, 0xFF, 0x00)
-#define COLOR565_YELLOW         TFTRGB565(0xFF, 0xFF, 0x00)
-
-#define COLOR_BROWN   TFTRGB(0xA5, 0x2A, 0x2A)	// коричневый
-#define COLOR_PEAR    TFTRGB(0xD1, 0xE2, 0x31)	// грушевый
+#define COLOR_BROWN   		 TFTRGB(0xA5, 0x2A, 0x2A)	// коричневый
+#define COLOR_PEAR    		 TFTRGB(0xD1, 0xE2, 0x31)	// грушевый
 
 #define COLOR_KEY	TFTRGB(0xA0, 0, 0xA0)	// Цвет для прозрачных пикселей
+
+#define COLOR565_YELLOW      TFTRGB565(0xFF, 0xFF, 0x00)
+#define COLOR565_BLACK       TFTRGB565(0x00, 0x00, 0x00)
+#define COLOR565_WHITE       TFTRGB565(0xFF, 0xFF, 0xFF)
+#define COLOR565_GRAY        TFTRGB565(0x80, 0x80, 0x80)
+#define COLOR565_DARKGREEN   TFTRGB565(0x00, 0x64, 0x00)
+#define COLOR565_DARKGREEN2  TFTRGB565(0x00, 0x20, 0x00)
+#define COLOR565_BLUE        TFTRGB565(0x00, 0x00, 0xFF)
+#define COLOR565_GREEN       TFTRGB565(0x00, 0xFF, 0x00)
+#define COLOR565_RED         TFTRGB565(0xFF, 0x00, 0x00)
 
 uint_fast8_t display_getpagesmax(void);	// количество разных вариантов отображения (menuset)
 uint_fast8_t display_getpagesleep(void);	// номер варианта отображения для "сна"
@@ -984,11 +986,20 @@ enum {
 struct element1 {
 	uint_fast16_t last_pressed_x; 	 // последняя точка касания экрана
 	uint_fast16_t last_pressed_y;
-	uint_fast8_t selected;			 // индекс элемента; 0xFF - не выбран ни один
+	uint_fast8_t selected;			 // индекс последнего выбранного элемента
 	uint_fast8_t state;				 // последнее состояние
 	uint_fast8_t is_touching_screen; // есть ли касание экрана в данный момент
 	uint_fast8_t is_after_touch; 	 // есть ли касание экрана после выхода точки касания из элемента
 	uint_fast8_t fix;				 // первые координаты после нажатия от контролера тачскрина приходят старые, пропускаем
+};
+
+struct withpopuppip {
+	uint_fast16_t x1;
+	uint_fast16_t x2;
+	uint_fast16_t y1;
+	uint_fast16_t y2;
+	char title;
+	uint_fast8_t is_show;
 };
 
 void button1_handler (void);
