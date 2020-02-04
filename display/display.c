@@ -1591,6 +1591,44 @@ static void RAMFUNC ltdc565_horizontal_pixels(
 	//arm_hardware_flush((uintptr_t) tgr, sizeof (* tgr) * width);
 }
 
+// функции работы с colorbuffer не занимаются выталкиванеим кэш-памяти
+// Фон не трогаем
+static void RAMFUNC ltdc565_horizontal_pixels_tbg(
+	volatile PACKEDCOLOR565_T * tgr,		// target raster
+	const FLASHMEM uint8_t * raster,
+	uint_fast16_t width,	// number of bits (start from LSB first byte in raster)
+	COLOR565_T fg
+	)
+{
+	uint_fast16_t w = width;
+
+	for (; w >= 8; w -= 8, tgr += 8)
+	{
+		const uint_fast8_t v = * raster ++;
+		if (v & 0x01)	tgr [0] = fg;
+		if (v & 0x02)	tgr [1] = fg;
+		if (v & 0x04)	tgr [2] = fg;
+		if (v & 0x08)	tgr [3] = fg;
+		if (v & 0x10)	tgr [4] = fg;
+		if (v & 0x20)	tgr [5] = fg;
+		if (v & 0x40)	tgr [6] = fg;
+		if (v & 0x80)	tgr [7] = fg;
+	}
+	if (w != 0)
+	{
+		uint_fast8_t vlast = * raster;
+		do
+		{
+			if (vlast & 0x01)
+				* tgr = fg;
+			++ tgr;
+			vlast >>= 1;
+		} while (-- w);
+	}
+}
+
+
+
 // для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
 static void RAMFUNC ltdc_horizontal_pixels(
 	volatile PACKEDCOLOR_T * tgr,		// target raster
@@ -1645,6 +1683,29 @@ static uint_fast16_t RAMFUNC_NONILINE ltdc565_horizontal_put_char_small(
 	{
 		volatile PACKEDCOLOR565_T * const tgr = & buffer [(y + cgrow) * dx + x];
 		ltdc565_horizontal_pixels(tgr, S1D13781_smallfont_LTDC [c] [cgrow], width);
+	}
+	return width;
+}
+
+// возвращаем на сколько пикселей вправо занимет отрисованный символ
+// Фон не трогаем
+static uint_fast16_t RAMFUNC_NONILINE ltdc565_horizontal_put_char_small_tbg(
+	PACKEDCOLOR565_T * buffer,
+	uint_fast16_t dx,
+	uint_fast16_t dy,
+	uint_fast16_t x,
+	uint_fast16_t y,
+	char cc,
+	COLOR565_T fg
+	)
+{
+	const uint_fast8_t width = SMALLCHARW;
+	const uint_fast8_t c = smallfont_decode((unsigned char) cc);
+	uint_fast8_t cgrow;
+	for (cgrow = 0; cgrow < SMALLCHARH; ++ cgrow)
+	{
+		volatile PACKEDCOLOR565_T * const tgr = & buffer [(y + cgrow) * dx + x];
+		ltdc565_horizontal_pixels_tbg(tgr, S1D13781_smallfont_LTDC [c] [cgrow], width, fg);
 	}
 	return width;
 }
@@ -1736,6 +1797,27 @@ display_colorbuff_string(
 	while((c = * s ++) != '\0')
 	{
 		x += ltdc565_horizontal_put_char_small(buffer, dx, dy, x, y, c);
+	}
+}
+
+// Используется при выводе на графический индикатор,
+// transparent background - не меняем цвет фона.
+void
+display_colorbuff_string_tbg(
+	PACKEDCOLOR565_T * buffer,
+	uint_fast16_t dx,
+	uint_fast16_t dy,
+	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	const char * s,
+	COLOR565_T fg
+	)
+{
+	char c;
+
+	while((c = * s ++) != '\0')
+	{
+		x += ltdc565_horizontal_put_char_small_tbg(buffer, dx, dy, x, y, c, fg);
 	}
 }
 

@@ -774,6 +774,18 @@ display_colorbuff_string(
 	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
 	const char * s
 	);
+// Используется при выводе на графический индикатор,
+// transparent background - не меняем цвет фона.
+void
+display_colorbuff_string_tbg(
+	PACKEDCOLOR565_T * buffer,
+	uint_fast16_t dx,
+	uint_fast16_t dy,
+	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	const char * s,
+	COLOR565_T fg		// цвет вывода текста
+	);
 
 /* копирование содержимого окна с перекрытием для водопада */
 void
