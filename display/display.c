@@ -1630,20 +1630,20 @@ static void RAMFUNC_NONILINE ltdc_horizontal_put_char_small(char cc)
 
 // возвращаем на сколько пикселей вправо занимет отрисованный символ
 static uint_fast16_t RAMFUNC_NONILINE ltdc565_horizontal_put_char_small(
-		PACKEDCOLOR565_T * buffer,
-		uint_fast16_t dx,
-		uint_fast16_t dy,
-		uint_fast16_t x,
-		uint_fast16_t y,
-		char cc
-		)
+	PACKEDCOLOR565_T * buffer,
+	uint_fast16_t dx,
+	uint_fast16_t dy,
+	uint_fast16_t x,
+	uint_fast16_t y,
+	char cc
+	)
 {
 	const uint_fast8_t width = SMALLCHARW;
 	const uint_fast8_t c = smallfont_decode((unsigned char) cc);
 	uint_fast8_t cgrow;
 	for (cgrow = 0; cgrow < SMALLCHARH; ++ cgrow)
 	{
-		volatile PACKEDCOLOR565_T * const tgr = & buffer [y * dx + cgrow + x];
+		volatile PACKEDCOLOR565_T * const tgr = & buffer [(y + cgrow) * dx + x];
 		ltdc565_horizontal_pixels(tgr, S1D13781_smallfont_LTDC [c] [cgrow], width);
 	}
 	return width;
