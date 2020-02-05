@@ -36,14 +36,12 @@
 #endif /* WITHRFSG */
 
 #if WITHTOUCHTEST
-	extern struct button_handler button_handlers[];
-	extern uint8_t button_handlers_count;
-	extern struct element1 element;
+	void update_buttons (void);
+	void need_redraw_buttons (void);
 
 	void display_redrawbuttons (void)
 	{
-		for (uint_fast8_t i=0; i<button_handlers_count; i++)
-			button_handlers[i].need_redraw=1;
+		need_redraw_buttons();
 		display_buttons (0, 0);
 	}
 #endif /* WITHTOUCHTEST */
@@ -17535,84 +17533,7 @@ hamradio_main_step(void)
 				}
 			}
 			#if WITHTOUCHTEST
-			uint_fast16_t tx,ty;
-			board_tsc_getxy (& tx, & ty);
-
-			if (board_tsc_is_pressed())
-			{
-				if (element.fix)			// первые координаты после нажатия от контролера тачскрина приходят старые, пропускаем
-				{
-					element.last_pressed_x=tx;
-					element.last_pressed_y=ty;
-					element.is_touching_screen=1;
-
-				}
-				element.fix=1;
-				debug_printf_P(PSTR("touch %d after %d, sel %d, state %d, x %d, Y %d\n"), element.is_touching_screen, element.is_after_touch,
-									 element.selected, button_handlers[element.selected].state, element.last_pressed_x, element.last_pressed_y);
-			}
-			else
-			{
-				element.is_touching_screen=0;
-				element.is_after_touch=0;
-				element.fix=0;
-			}
-
-			if (element.state==CANCELLED)
-			{
-				if (element.is_touching_screen && ! element.is_after_touch)
-				{
-					for (uint_fast8_t i=0; i<button_handlers_count; i++) {
-						if (button_handlers[i].x1 < element.last_pressed_x && button_handlers[i].x2 > element.last_pressed_x
-						 && button_handlers[i].y1 < element.last_pressed_y && button_handlers[i].y2 > element.last_pressed_y)
-						{
-							element.selected=i;
-							element.state=PRESSED;
-						}
-					} /* for */
-				} /* if (element.is_touching_screen) */
-
-			}
-			if (element.state==PRESSED)
-			{
-				if (button_handlers[element.selected].x1 < element.last_pressed_x && button_handlers[element.selected].x2 > element.last_pressed_x
-				 && button_handlers[element.selected].y1 < element.last_pressed_y && button_handlers[element.selected].y2 > element.last_pressed_y
-				 && ! element.is_after_touch)
-				{
-					if (element.is_touching_screen)
-					{
-						debug_printf_P(PSTR("do redraw 1\n"));
-						button_handlers[element.selected].state=PRESSED;
-						button_handlers[element.selected].need_redraw=1;
-						display_buttons (0, 0);
-					}
-					else
-						element.state=RELEASED;
-				}
-				else
-				{
-					element.state=CANCELLED;
-					button_handlers[element.selected].state=CANCELLED;
-					button_handlers[element.selected].need_redraw=1;
-					debug_printf_P(PSTR("do redraw 2\n"));
-					display_buttons (0, 0);
-					element.is_after_touch=1; // точка непрерывного нажатия вышла за пределы выбранного элемента
-				}
-
-			}
-			if (element.state==RELEASED)
-			{
-				button_handlers[element.selected].state=RELEASED;
-				button_handlers[element.selected].need_redraw=1;
-				debug_printf_P(PSTR("do redraw 3\n"));
-				display_buttons (0, 0);
-				button_handlers[element.selected].onClickHandler();
-				debug_printf_P(PSTR("handler %d runned\n"), element.selected);
-				button_handlers[element.selected].state=CANCELLED;
-				element.is_after_touch=0;
-				element.state=CANCELLED;
-
-			}
+				update_buttons ();
 			#endif /* WITHTOUCHTEST */
 		}
 		break;

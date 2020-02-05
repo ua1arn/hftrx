@@ -4554,7 +4554,7 @@ enum
 		{	0,	DLES,	display2_spectrum,	REDRM_BARS, PGSPE, },// подготовка изображения спектра
 		{	0,	DLES,	display2_waterfall,	REDRM_BARS, PGWFL, },// подготовка изображения водопада
 #if WITHTOUCHTEST
-		{	0,	DLES,	display_pip_popup, REDRM_BARS, PGSPE, },
+		{	0,	DLES,	display_pip_update, REDRM_BARS, PGSPE, },
 #endif /* WITHTOUCHTEST */
 		{	0,	DLES,	display2_colorbuff,	REDRM_BARS,	PGWFL | PGSPE, },// Отображение водопада и/или спектра
 	#endif /* WITHSPECTRUMWF */
@@ -4587,7 +4587,7 @@ enum
 		{	5,	25,	display_datetime12,	REDRM_BARS, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40
 		{	20, 25,	display_voltlevelV5, REDRM_VOLT, PGSLP, },	// voltmeter with "V"
 #if WITHTOUCHTEST
-		{	0,	0,	display_test_button, REDRM_BUTTONS, PGSWR, },
+		{	0,	0,	display_footer_buttons, REDRM_BUTTONS, PGSWR, },
 #endif /* WITHTOUCHTEST */
 	};
 
@@ -6348,30 +6348,48 @@ board_set_wflevelsep(uint_fast8_t v)
 }
 
 #if WITHTOUCHTEST
-	struct button_handler button_handlers[];
+//	struct button_handler button_handlers[];
 	struct button_handler button_handlers[]={
-		{0,   430, 79,  479, button1_handler, CANCELLED, 1},
-		{82,  430, 161,	479, button2_handler, CANCELLED, 1},
-		{164, 430, 243,	479, button3_handler, CANCELLED, 1},
-		{246, 430, 325,	479, button4_handler, CANCELLED, 1},
-		{328, 430, 407,	479, button5_handler, CANCELLED, 1},
-		{410, 430, 489,	479, button6_handler, CANCELLED, 1},
-		{492, 430, 571,	479, button7_handler, CANCELLED, 1},
-		{574, 430, 653,	479, button8_handler, CANCELLED, 1},
+	//	 x1,  y1,  x2,  y2,  onClickHandler,    state, redraw,    type,       for_window, visible
+		{0,   430, 79,  479, button1_handler, CANCELLED, 1, TYPE_FOOTER_BUTTON, FOOTER, VISIBLE,},
+		{82,  430, 161,	479, button2_handler, CANCELLED, 1, TYPE_FOOTER_BUTTON, FOOTER, VISIBLE,},
+		{164, 430, 243,	479, button3_handler, CANCELLED, 1, TYPE_FOOTER_BUTTON, FOOTER, VISIBLE,},
+		{246, 430, 325,	479, button4_handler, CANCELLED, 1, TYPE_FOOTER_BUTTON, FOOTER, VISIBLE,},
+		{328, 430, 407,	479, button5_handler, CANCELLED, 1, TYPE_FOOTER_BUTTON, FOOTER, VISIBLE,},
+		{410, 430, 489,	479, button6_handler, CANCELLED, 1, TYPE_FOOTER_BUTTON, FOOTER, VISIBLE,},
+		{492, 430, 571,	479, button7_handler, CANCELLED, 1, TYPE_FOOTER_BUTTON, FOOTER, VISIBLE,},
+		{574, 430, 653,	479, button8_handler, CANCELLED, 1, TYPE_FOOTER_BUTTON, FOOTER, VISIBLE,},
 	};
-
 	uint8_t button_handlers_count = sizeof button_handlers / sizeof button_handlers[0];
-	struct element1 element={0, 0, 0, CANCELLED, 0, 0, 1};
-	static uint_fast8_t is_popup_pip=0;
-	extern void change_mode (uint_fast8_t v);
-	struct withpopuppip popup_pip1, popup_pip2;
+
+	struct windowpip windows[] = {
+	//  window_id, x1, y1, x2, y2, title, is_show
+		{},
+		{WINDOW_MODES, 50, 50, 400, 200, "Select mode", NON_VISIBLE,},
+	};
+	uint8_t windows_count = sizeof windows / sizeof windows[0];
+
+	struct element1 element = {0, 0, 0, CANCELLED, 0, 0, 1};
+	void change_mode (uint_fast8_t v);
+
+	uint_fast8_t find_index_window (uint_fast8_t id)
+	{
+		for (uint_fast8_t i=0; i<=windows_count; i++)
+		{
+			if (windows[i].window_id == id)
+				return i;
+		}
+		return 0;
+	}
 
 
 	void button1_handler (void)
 	{
+		element.window_to_draw = find_index_window(WINDOW_MODES);
+
 		display_at (46, 40, "1");
-		if (is_popup_pip) is_popup_pip=0;
-		else is_popup_pip=1;
+		if (windows[element.window_to_draw].is_show == VISIBLE) windows[element.window_to_draw].is_show = NON_VISIBLE;
+		else windows[element.window_to_draw].is_show = VISIBLE;
 	}
 
 	void button2_handler (void)
@@ -6452,7 +6470,7 @@ board_set_wflevelsep(uint_fast8_t v)
 		draw_rect_pip (x1+2, y1+2, x2-2, y2-2, COLOR565_BLACK, 0);
 	}
 
-	void display_test_button(uint_fast8_t x, uint_fast8_t y, void * pv)
+	void display_footer_buttons(uint_fast8_t x, uint_fast8_t y, void * pv)
 	{
 		for (uint_fast8_t i=0; i<button_handlers_count; i++)
 		{
@@ -6471,13 +6489,7 @@ void display_buttons (uint_fast8_t menuset, uint_fast8_t extra)
 	display_walktroughsteps(REDRM_BUTTONS, getsubset(menuset, extra));
 }
 
-static uint_fast16_t
-normalize(
-		uint_fast16_t raw,
-		uint_fast16_t rawmin,
-		uint_fast16_t rawmax,
-		uint_fast16_t range
-		)
+static uint_fast16_t normalize(uint_fast16_t raw, uint_fast16_t rawmin,	uint_fast16_t rawmax,uint_fast16_t range)
 {
 		const uint_fast16_t distance = rawmax - rawmin;
 		if (raw < rawmin)
@@ -6488,19 +6500,19 @@ normalize(
 		return (uint_fast32_t) raw * range / distance;
 }
 
-void display_pip_popup (uint_fast8_t x, uint_fast8_t y, void * pv)
+void display_pip_update (uint_fast8_t x, uint_fast8_t y, void * pv)
 {
 	PACKEDCOLOR565_T * const colorpip = getscratchpip();
 	uint_fast16_t yt;
 	PACKEDCOLOR565_T dot, color_red, color_green, color_blue;
 	uint_fast8_t alpha = 10; // на сколько затемнять цвета
 
-	if (is_popup_pip)
+	if (windows[element.window_to_draw].is_show)
 	{
-		for (uint_fast16_t y1=50; y1<=200; y1++)
+		for (uint_fast16_t y1=windows[element.window_to_draw].y1; y1<=windows[element.window_to_draw].y2; y1++)
 		{
 			yt = ALLDX * y1;
-			for (uint_fast16_t x1=100; x1<=400; x1++)
+			for (uint_fast16_t x1=windows[element.window_to_draw].x1; x1<=windows[element.window_to_draw].x2; x1++)
 			{
 				dot = colorpip[yt + x1];
 				if (dot==COLOR565_BLACK)
@@ -6517,12 +6529,104 @@ void display_pip_popup (uint_fast8_t x, uint_fast8_t y, void * pv)
 				}
 			} // for x1
 		} // for y1
-		display_setcolors(COLOR_BLACK, COLOR_GREEN);
-		display_colorbuff_string (colorpip, ALLDX, ALLDY, 150, 170, "Test");
-		display_colorbuff_string_tbg (colorpip, ALLDX, ALLDY, 150, 140, "Transparent", COLOR565_YELLOW);
+//		display_setcolors(COLOR_BLACK, COLOR_GREEN);
+//		display_colorbuff_string (colorpip, ALLDX, ALLDY, 150, 170, "Test");
+		display_colorbuff_string_tbg (colorpip, ALLDX, ALLDY, windows[element.window_to_draw].x1,
+									  windows[element.window_to_draw].y1, windows[element.window_to_draw].title, COLOR565_YELLOW);
 
-		draw_button_pip (110,60,190,110,0);
-		draw_button_pip (200,60,280,110,1);
+//		draw_button_pip (110,60,190,110,0);
+//		draw_button_pip (200,60,280,110,1);
 	} // if (is_popup_pip)
+}
+
+void need_redraw_buttons (void) // запрос на перерисовку кнопок внизу экрана
+{
+	for (uint_fast8_t i=0; i<button_handlers_count; i++)
+	{
+		if (button_handlers[i].type==TYPE_FOOTER_BUTTON)
+			button_handlers[i].need_redraw=1;
+	}
+}
+
+void update_buttons (void)
+{
+	uint_fast16_t tx,ty;
+				board_tsc_getxy (& tx, & ty);
+
+				if (board_tsc_is_pressed())
+				{
+					if (element.fix)			// первые координаты после нажатия от контролера тачскрина приходят старые, пропускаем
+					{
+						element.last_pressed_x=tx;
+						element.last_pressed_y=ty;
+						element.is_touching_screen=1;
+
+					}
+					element.fix=1;
+					debug_printf_P(PSTR("touch %d after %d, sel %d, state %d, x %d, Y %d\n"), element.is_touching_screen, element.is_after_touch,
+										 element.selected, button_handlers[element.selected].state, element.last_pressed_x, element.last_pressed_y);
+				}
+				else
+				{
+					element.is_touching_screen=0;
+					element.is_after_touch=0;
+					element.fix=0;
+				}
+
+				if (element.state==CANCELLED)
+				{
+					if (element.is_touching_screen && ! element.is_after_touch)
+					{
+						for (uint_fast8_t i=0; i<button_handlers_count; i++) {
+							if (button_handlers[i].x1 < element.last_pressed_x && button_handlers[i].x2 > element.last_pressed_x
+							 && button_handlers[i].y1 < element.last_pressed_y && button_handlers[i].y2 > element.last_pressed_y)
+							{
+								element.selected=i;
+								element.state=PRESSED;
+							}
+						} /* for */
+					} /* if (element.is_touching_screen) */
+
+				}
+				if (element.state==PRESSED)
+				{
+					if (button_handlers[element.selected].x1 < element.last_pressed_x && button_handlers[element.selected].x2 > element.last_pressed_x
+					 && button_handlers[element.selected].y1 < element.last_pressed_y && button_handlers[element.selected].y2 > element.last_pressed_y
+					 && ! element.is_after_touch)
+					{
+						if (element.is_touching_screen)
+						{
+							debug_printf_P(PSTR("do redraw 1\n"));
+							button_handlers[element.selected].state=PRESSED;
+							button_handlers[element.selected].need_redraw=1;
+							display_buttons (0, 0);
+						}
+						else
+							element.state=RELEASED;
+					}
+					else
+					{
+						element.state=CANCELLED;
+						button_handlers[element.selected].state=CANCELLED;
+						button_handlers[element.selected].need_redraw=1;
+						debug_printf_P(PSTR("do redraw 2\n"));
+						display_buttons (0, 0);
+						element.is_after_touch=1; // точка непрерывного нажатия вышла за пределы выбранного элемента
+					}
+
+				}
+				if (element.state==RELEASED)
+				{
+					button_handlers[element.selected].state=RELEASED;
+					button_handlers[element.selected].need_redraw=1;
+					debug_printf_P(PSTR("do redraw 3\n"));
+					display_buttons (0, 0);
+					button_handlers[element.selected].onClickHandler();
+					debug_printf_P(PSTR("handler %d runned\n"), element.selected);
+					button_handlers[element.selected].state=CANCELLED;
+					element.is_after_touch=0;
+					element.state=CANCELLED;
+
+				}
 }
 #endif /* WITHTOUCHTEST */
