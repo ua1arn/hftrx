@@ -4240,8 +4240,8 @@ enum
 #if WITHMENU
 	void display2_getgridparams(gridparams_t * p)
 	{
-		p->gy2 = 51;	// положение последней строки меню
-		p->gx2 = CHARS2GRID(DIM_X / 16);	// Правый край области меню
+		p->gy2 = 51;	// Первая строка (grid) за меню.
+		p->gx2 = CHARS2GRID(DIM_X / 16);	// Правый край за областью меню
 	}
 	void display2_getmultimenu(multimenuwnd_t * p)
 	{
@@ -4396,8 +4396,8 @@ enum
 #if WITHMENU
 	void display2_getgridparams(gridparams_t * p)
 	{
-		p->gy2 = 51;	// положение последней строки меню
-		p->gx2 = CHARS2GRID(DIM_X / 16);	// Правый край области меню
+		p->gy2 = 51;	// Первая строка (grid) за меню.
+		p->gx2 = CHARS2GRID(DIM_X / 16);	// Правый край за областью меню
 	}
 
 	void display2_getmultimenu(multimenuwnd_t * p)
@@ -4587,8 +4587,8 @@ enum
 #if WITHMENU
 	void display2_getgridparams(gridparams_t * p)
 	{
-		p->gy2 = DLE1;	// положение последней строки меню
-		p->gx2 = CHARS2GRID(DIM_X / CHAR_W);	// Правый край области меню
+		p->gy2 = DLE1;	// Первая строка (grid) за меню.
+		p->gx2 = CHARS2GRID(DIM_X / 16);	// Правый край за областью меню
 	}
 
 	void display2_getmultimenu(multimenuwnd_t * p)
