@@ -4238,6 +4238,11 @@ enum
 	};
 
 #if WITHMENU
+	void display2_getgridparams(gridparams_t * p)
+	{
+		p->gy2 = 51;	// положение последней строки меню
+		p->gx2 = CHARS2GRID(DIM_X / 16);	// Правый край области меню
+	}
 	void display2_getmultimenu(multimenuwnd_t * p)
 	{
 		p->multilinemenu_max_rows = 6;
@@ -4389,6 +4394,12 @@ enum
 	};
 
 #if WITHMENU
+	void display2_getgridparams(gridparams_t * p)
+	{
+		p->gy2 = 51;	// положение последней строки меню
+		p->gx2 = CHARS2GRID(DIM_X / 16);	// Правый край области меню
+	}
+
 	void display2_getmultimenu(multimenuwnd_t * p)
 	{
 		p->multilinemenu_max_rows = 6;
@@ -4578,11 +4589,6 @@ enum
 	{
 		p->gy2 = DLE1;	// положение последней строки меню
 		p->gx2 = CHARS2GRID(DIM_X / CHAR_W);	// Правый край области меню
-	}
-
-	void display2_clear_menu_bk(uint_fast16_t x, uint_fast16_t y, uint_fast16_t x2, uint_fast16_t y2)
-	{
-		display_solidbar(GRID2X(x), GRID2Y(y), GRID2X(x2), GRID2Y(y2), display_getbgcolor());
 	}
 
 	void display2_getmultimenu(multimenuwnd_t * p)
@@ -6052,6 +6058,11 @@ display2_pip_off(
 }
 
 #endif /* WITHSPECTRUMWF */
+
+void display2_clear_menu_bk(uint_fast16_t x, uint_fast16_t y, uint_fast16_t x2, uint_fast16_t y2)
+{
+	display_solidbar(GRID2X(x), GRID2Y(y), GRID2X(x2), GRID2Y(y2), display_getbgcolor());
+}
 
 #define STMD 1
 
