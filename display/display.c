@@ -2238,5 +2238,19 @@ void display_discharge(void)
 {
 }
 
+#if WITHTOUCHTEST
+void display_at_xy(uint_fast16_t x, uint_fast16_t y, const char * s)
+{
+	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
+	do
+	{
+		ltdc_second = x;
+		ltdc_first = y + lowhalf;
+		display_string(s, lowhalf);
+
+	} while (lowhalf --);
+}
+#endif /* WITHTOUCHTEST */
+
 #endif /* LCDMODE_LQ043T3DX02K */
 #endif /* LCDMODE_LTDC */

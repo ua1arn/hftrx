@@ -999,6 +999,7 @@ typedef struct  {
 	uint_fast8_t type;				// тип кнопки - постоянная или динамическая
 	uint_fast8_t for_window;		// индекс окна, в котором будет отображаться кнопка при type = TYPE_PIP_BUTTON
 	uint_fast8_t visible;			// рисовать ли кнопку на экране при type = TYPE_PIP_BUTTON
+	char * text;					// текст внутри кнопки
 } button_handler;
 
 typedef struct {
@@ -1032,6 +1033,7 @@ void button7_handler (void);
 void button8_handler (void);
 void buttons_mode_handler (void);
 
+void display_at_xy(uint_fast16_t x, uint_fast16_t y, const char * s);
 void display_footer_buttons(uint_fast8_t x, uint_fast8_t y, void * pv);
 void display_pip_update (uint_fast8_t x, uint_fast8_t y, void * pv);
 void display_buttons (uint_fast8_t menuset, uint_fast8_t extra);

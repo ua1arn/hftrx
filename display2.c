@@ -6356,18 +6356,23 @@ board_set_wflevelsep(uint_fast8_t v)
 	uint8_t windows_count = sizeof windows / sizeof windows[0];
 
 	static button_handler button_handlers[]={
-	//	 x1,  y1,  x2,  y2,  onClickHandler,            state,        redraw,    type,      for_window,   visible
-		{0,   430, 79,  479, button1_handler, 	   BUTTON_CANCELLED, 1, TYPE_FOOTER_BUTTON, FOOTER, 	  VISIBLE,},
-		{82,  430, 161,	479, button2_handler, 	   BUTTON_CANCELLED, 1, TYPE_FOOTER_BUTTON, FOOTER, 	  VISIBLE,},
-		{164, 430, 243,	479, button3_handler, 	   BUTTON_CANCELLED, 1, TYPE_FOOTER_BUTTON, FOOTER, 	  VISIBLE,},
-		{246, 430, 325,	479, button4_handler, 	   BUTTON_CANCELLED, 1, TYPE_FOOTER_BUTTON, FOOTER, 	  VISIBLE,},
-		{328, 430, 407,	479, button5_handler, 	   BUTTON_CANCELLED, 1, TYPE_FOOTER_BUTTON, FOOTER, 	  VISIBLE,},
-		{410, 430, 489,	479, button6_handler, 	   BUTTON_CANCELLED, 1, TYPE_FOOTER_BUTTON, FOOTER, 	  VISIBLE,},
-		{492, 430, 571,	479, button7_handler, 	   BUTTON_CANCELLED, 1, TYPE_FOOTER_BUTTON, FOOTER, 	  VISIBLE,},
-		{574, 430, 653,	479, button8_handler, 	   BUTTON_CANCELLED, 1, TYPE_FOOTER_BUTTON, FOOTER, 	  VISIBLE,},
-		{70,  86,  150, 136, buttons_mode_handler, BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	WINDOW_MODES, NON_VISIBLE,},
-		{70,  141, 150, 191, buttons_mode_handler, BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	WINDOW_MODES, NON_VISIBLE,},
-
+	//	 x1,  y1,  x2,  y2,  onClickHandler,            state,     redraw,    type,       for_window,     visible, text
+		{0,   430, 79,  479, button1_handler, 	   BUTTON_CANCELLED, 1, TYPE_FOOTER_BUTTON, FOOTER, 	  VISIBLE,    "Mode",},
+		{82,  430, 161,	479, button2_handler, 	   BUTTON_CANCELLED, 1, TYPE_FOOTER_BUTTON, FOOTER, 	  VISIBLE,     "",},
+		{164, 430, 243,	479, button3_handler, 	   BUTTON_CANCELLED, 1, TYPE_FOOTER_BUTTON, FOOTER, 	  VISIBLE,     "",},
+		{246, 430, 325,	479, button4_handler, 	   BUTTON_CANCELLED, 1, TYPE_FOOTER_BUTTON, FOOTER, 	  VISIBLE,     "",},
+		{328, 430, 407,	479, button5_handler, 	   BUTTON_CANCELLED, 1, TYPE_FOOTER_BUTTON, FOOTER, 	  VISIBLE,     "",},
+		{410, 430, 489,	479, button6_handler, 	   BUTTON_CANCELLED, 1, TYPE_FOOTER_BUTTON, FOOTER, 	  VISIBLE,     "",},
+		{492, 430, 571,	479, button7_handler, 	   BUTTON_CANCELLED, 1, TYPE_FOOTER_BUTTON, FOOTER, 	  VISIBLE,     "",},
+		{574, 430, 653,	479, button8_handler, 	   BUTTON_CANCELLED, 1, TYPE_FOOTER_BUTTON, FOOTER, 	  VISIBLE,     "",},
+		{234,  55, 314, 105, buttons_mode_handler, BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	WINDOW_MODES, NON_VISIBLE, "LSB",}, // 8
+		{319,  55, 399, 105, buttons_mode_handler, BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	WINDOW_MODES, NON_VISIBLE, "CW",},  // 9
+		{404,  55, 484, 105, buttons_mode_handler, BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	WINDOW_MODES, NON_VISIBLE, "AM",},  // 10
+		{489,  55, 569, 105, buttons_mode_handler, BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	WINDOW_MODES, NON_VISIBLE, "DGL",}, // 11
+		{234, 110, 314, 160, buttons_mode_handler, BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	WINDOW_MODES, NON_VISIBLE, "USB",}, // 12
+		{319, 110, 399, 160, buttons_mode_handler, BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	WINDOW_MODES, NON_VISIBLE, "CWR",}, // 13
+		{404, 110, 484, 160, buttons_mode_handler, BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	WINDOW_MODES, NON_VISIBLE, "NFM",}, // 14
+		{489, 110, 569, 160, buttons_mode_handler, BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	WINDOW_MODES, NON_VISIBLE, "DGU",}, // 15
 	};
 	uint8_t button_handlers_count = sizeof button_handlers / sizeof button_handlers[0];
 
@@ -6376,11 +6381,49 @@ board_set_wflevelsep(uint_fast8_t v)
 	static element1 element = {0, 0, 0, BUTTON_CANCELLED, 0, 0, 1};
 	void change_mode (uint_fast8_t v);
 
-	void buttons_mode_handler (void)
+	void buttons_mode_handler (void) // usb-2, lsb-1, cw-3, cwr-7, am-5, dgl-9, dgu-6, nfm-4,
 	{
-		debug_printf_P(PSTR("buttons_mode_handler\n"));
-	}
+		debug_printf_P(PSTR("%s, %d\n"), button_handlers[element.selected].text, strlen (button_handlers[element.selected].text));
+		if (windows[WINDOW_MODES].is_show && button_handlers[element.selected].for_window == WINDOW_MODES)
+		{
+			switch (element.selected)
+			{
+			case 8:
+				change_mode (1);
+				break;
+			case 9:
+				change_mode (3);
+				break;
+			case 10:
+				change_mode (5);
+				break;
+			case 11:
+				change_mode (9);
+				break;
+			case 12:
+				change_mode (2);
+				break;
+			case 13:
+				change_mode (7);
+				break;
+			case 14:
+				change_mode (4);
+				break;
+			case 15:
+				change_mode (6);
+				break;
+			default:
+				break;
+			}
+			for (uint_fast8_t i=0; i<button_handlers_count; i++)
+			{
+				if (button_handlers[i].for_window == WINDOW_MODES)
+					button_handlers[i].visible = NON_VISIBLE;
+			}
+			windows[element.window_to_draw].is_show = NON_VISIBLE;
 
+		}
+	}
 
 	void button1_handler (void)
 	{
@@ -6409,7 +6452,6 @@ board_set_wflevelsep(uint_fast8_t v)
 	void button2_handler (void)
 	{
 		display_at (46, 40, "2");
-		change_mode (5); // usb-2, lsb-1, cw-3, cwr-7, am-5, dgl-9, dgu-6, nfm-4,
 	}
 
 	void button3_handler (void)
@@ -6495,6 +6537,9 @@ board_set_wflevelsep(uint_fast8_t v)
 							 button_handlers[i].x2, button_handlers[i].y2,
 							 button_handlers[i].state);
 				button_handlers[i].need_redraw=0;
+				display_setcolors (COLOR_BLACK, button_handlers[i].state?COLOR_GREEN:COLOR_DARKGREEN2);
+				display_at_xy (button_handlers[i].x1 + ((button_handlers[i].x2 - button_handlers[i].x1) -
+							  (strlen (button_handlers[i].text) * 16)) / 2, button_handlers[i].y1 + 17, button_handlers[i].text);
 			}
 		}
 	}
@@ -6556,8 +6601,12 @@ void display_pip_update (uint_fast8_t x, uint_fast8_t y, void * pv)
 		for (uint_fast8_t i=0; i<button_handlers_count; i++)
 		{
 			if (button_handlers[i].for_window == element.window_to_draw && button_handlers[i].visible == VISIBLE)
+			{
 				draw_button_pip (button_handlers[i].x1, button_handlers[i].y1,
 							     button_handlers[i].x2, button_handlers[i].y2, button_handlers[i].state);
+				display_colorbuff_string_tbg (colorpip, ALLDX, ALLDY, button_handlers[i].x1 + ((button_handlers[i].x2 - button_handlers[i].x1) -
+											 (strlen (button_handlers[i].text) * 16)) / 2, button_handlers[i].y1 + 17, button_handlers[i].text, COLOR565_BLACK);
+			}
 		}
 
 	} // if (is_popup_pip)
