@@ -3275,7 +3275,7 @@ void spool_0p128(void);	// OPERA support
 #define LABELW 8
 
 #if WITHTOUCHTEST
-	void change_mode (uint_fast8_t v);
+	void change_submode(uint_fast8_t newsubmode);
 #endif /* WITHTOUCHTEST */
 
 #ifdef __cplusplus

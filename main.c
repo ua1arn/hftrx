@@ -17883,11 +17883,10 @@ ddd:
 
 #endif /* WITHISBOOTLOADER */
 
-void change_mode (uint_fast8_t v)
+void change_submode(uint_fast8_t newsubmode)
 {
-	const uint_fast8_t  bi = getbankindex_tx(gtx);	/* vfo bank index */
-	uint_fast8_t defsubmode = v;
-	const uint_fast8_t defcol = locatesubmode(defsubmode, & gmoderows [bi]);	/* строка/колонка для SSB. Что делать, если не нашли? */
+	const uint_fast8_t bi = getbankindex_tx(gtx);	/* VFO bank index */
+	const uint_fast8_t defcol = locatesubmode(newsubmode, & gmoderows [bi]);	/* строка/колонка для SSB. Что делать, если не нашли? */
 	putmodecol(gmoderows [bi], defcol, bi);	/* внести новое значение в битовую маску */
 	gsubmodechange(getsubmode(bi), bi);
 	updateboard(1, 1);	/* полная перенастройка (как после смены режима) */

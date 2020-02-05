@@ -6350,54 +6350,40 @@ board_set_wflevelsep(uint_fast8_t v)
 #if WITHTOUCHTEST
 	static windowpip windows[] = {
 	//  window_id, x1, y1, x2, y2, title, is_show
-		{},
-		{WINDOW_MODES, 214, 20, 586, 175, "Select mode", NON_VISIBLE,},
+		{ },
+		{ WINDOW_MODES, 214, 20, 586, 175, "Select mode", NON_VISIBLE,},
 	};
-	uint8_t windows_count = sizeof windows / sizeof windows[0];
+	enum { windows_count = sizeof windows / sizeof windows[0] };
 
-	static button_handler button_handlers[]={
-	//	 x1,  y1,  x2,  y2,  onClickHandler,            state,     redraw,    type,         parent,       visible,   text
-		{0,   430, 79,  479, button1_handler, 	   BUTTON_CANCELLED, 1, TYPE_FOOTER_BUTTON, FOOTER, 	  VISIBLE,    "Mode",},
-		{82,  430, 161,	479, button2_handler, 	   BUTTON_CANCELLED, 1, TYPE_FOOTER_BUTTON, FOOTER, 	  VISIBLE,     "",},
-		{164, 430, 243,	479, button3_handler, 	   BUTTON_CANCELLED, 1, TYPE_FOOTER_BUTTON, FOOTER, 	  VISIBLE,     "",},
-		{246, 430, 325,	479, button4_handler, 	   BUTTON_CANCELLED, 1, TYPE_FOOTER_BUTTON, FOOTER, 	  VISIBLE,     "",},
-		{328, 430, 407,	479, button5_handler, 	   BUTTON_CANCELLED, 1, TYPE_FOOTER_BUTTON, FOOTER, 	  VISIBLE,     "",},
-		{410, 430, 489,	479, button6_handler, 	   BUTTON_CANCELLED, 1, TYPE_FOOTER_BUTTON, FOOTER, 	  VISIBLE,     "",},
-		{492, 430, 571,	479, button7_handler, 	   BUTTON_CANCELLED, 1, TYPE_FOOTER_BUTTON, FOOTER, 	  VISIBLE,     "",},
-		{574, 430, 653,	479, button8_handler, 	   BUTTON_CANCELLED, 1, TYPE_FOOTER_BUTTON, FOOTER, 	  VISIBLE,     "",},
-		{234,  55, 314, 105, buttons_mode_handler, BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	WINDOW_MODES, NON_VISIBLE, "LSB",}, // 8
-		{319,  55, 399, 105, buttons_mode_handler, BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	WINDOW_MODES, NON_VISIBLE, "CW",},  // 9
-		{404,  55, 484, 105, buttons_mode_handler, BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	WINDOW_MODES, NON_VISIBLE, "AM",},  // 10
-		{489,  55, 569, 105, buttons_mode_handler, BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	WINDOW_MODES, NON_VISIBLE, "DGL",}, // 11
-		{234, 110, 314, 160, buttons_mode_handler, BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	WINDOW_MODES, NON_VISIBLE, "USB",}, // 12
-		{319, 110, 399, 160, buttons_mode_handler, BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	WINDOW_MODES, NON_VISIBLE, "CWR",}, // 13
-		{404, 110, 484, 160, buttons_mode_handler, BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	WINDOW_MODES, NON_VISIBLE, "NFM",}, // 14
-		{489, 110, 569, 160, buttons_mode_handler, BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	WINDOW_MODES, NON_VISIBLE, "DGU",}, // 15
+	static button_handler button_handlers [] = {
+	//	 x1,  y1,  x2,  y2,  onClickHandler,            state,     redraw,    type,         parent,       visible,   payload,	text
+		{ 0,   430, 79,  	479, button1_handler, 	   BUTTON_CANCELLED, 1, TYPE_FOOTER_BUTTON, FOOTER, 	  VISIBLE,    INT32_MAX, "Mode", },
+		{ 82,  430, 161,	479, button2_handler, 	   BUTTON_CANCELLED, 1, TYPE_FOOTER_BUTTON, FOOTER, 	  VISIBLE,    INT32_MAX,  "", },
+		{ 164, 430, 243,	479, button3_handler, 	   BUTTON_CANCELLED, 1, TYPE_FOOTER_BUTTON, FOOTER, 	  VISIBLE,    INT32_MAX,  "", },
+		{ 246, 430, 325,	479, button4_handler, 	   BUTTON_CANCELLED, 1, TYPE_FOOTER_BUTTON, FOOTER, 	  VISIBLE,    INT32_MAX,  "", },
+		{ 328, 430, 407,	479, button5_handler, 	   BUTTON_CANCELLED, 1, TYPE_FOOTER_BUTTON, FOOTER, 	  VISIBLE,    INT32_MAX,  "", },
+		{ 410, 430, 489,	479, button6_handler, 	   BUTTON_CANCELLED, 1, TYPE_FOOTER_BUTTON, FOOTER, 	  VISIBLE,    INT32_MAX,  "", },
+		{ 492, 430, 571,	479, button7_handler, 	   BUTTON_CANCELLED, 1, TYPE_FOOTER_BUTTON, FOOTER, 	  VISIBLE,    INT32_MAX,  "", },
+		{ 574, 430, 653,	479, button8_handler, 	   BUTTON_CANCELLED, 1, TYPE_FOOTER_BUTTON, FOOTER, 	  VISIBLE,    INT32_MAX,  "", },
+		{ 234,  55, 314, 	105, buttons_mode_handler, BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	WINDOW_MODES, NON_VISIBLE, SUBMODE_LSB, "LSB", }, // 8
+		{ 319,  55, 399, 	105, buttons_mode_handler, BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	WINDOW_MODES, NON_VISIBLE, SUBMODE_CW, 	"CW", },  // 9
+		{ 404,  55, 484, 	105, buttons_mode_handler, BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	WINDOW_MODES, NON_VISIBLE, SUBMODE_AM, 	"AM", },  // 10
+		{ 489,  55, 569, 	105, buttons_mode_handler, BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	WINDOW_MODES, NON_VISIBLE, SUBMODE_DGL, "DGL", }, // 11
+		{ 234, 110, 314, 	160, buttons_mode_handler, BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	WINDOW_MODES, NON_VISIBLE, SUBMODE_USB, "USB", }, // 12
+		{ 319, 110, 399, 	160, buttons_mode_handler, BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	WINDOW_MODES, NON_VISIBLE, SUBMODE_CWR, "CWR", }, // 13
+		{ 404, 110, 484, 	160, buttons_mode_handler, BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	WINDOW_MODES, NON_VISIBLE, SUBMODE_NFM, "NFM", }, // 14
+		{ 489, 110, 569, 	160, buttons_mode_handler, BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	WINDOW_MODES, NON_VISIBLE, SUBMODE_DGU, "DGU", }, // 15
 	};
-	uint8_t button_handlers_count = sizeof button_handlers / sizeof button_handlers[0];
+	enum { button_handlers_count = sizeof button_handlers / sizeof button_handlers[0] };
 
 	static element1 element = {0, 0, 0, BUTTON_CANCELLED, 0, 0, 1};
 
-	void buttons_mode_handler (void) // usb-2, lsb-1, cw-3, cwr-7, am-5, dgl-9, dgu-6, nfm-4,
+	void buttons_mode_handler(void) // usb-2, lsb-1, cw-3, cwr-7, am-5, dgl-9, dgu-6, nfm-4,
 	{
 		if (windows[WINDOW_MODES].is_show && button_handlers[element.selected].parent == WINDOW_MODES)
 		{
-			if (button_handlers[element.selected].text == "LSB")
-				change_mode (SUBMODE_LSB);
-			else if (button_handlers[element.selected].text == "CW")
-				change_mode (SUBMODE_CW);
-			else if (button_handlers[element.selected].text == "AM")
-				change_mode (SUBMODE_AM);
-			else if (button_handlers[element.selected].text == "DGL")
-				change_mode (SUBMODE_DGL);
-			else if (button_handlers[element.selected].text == "USB")
-				change_mode (SUBMODE_USB);
-			else if (button_handlers[element.selected].text == "CWR")
-				change_mode (SUBMODE_CWR);
-			else if (button_handlers[element.selected].text == "NFM")
-				change_mode (SUBMODE_NFM);
-			else if (button_handlers[element.selected].text == "DGU")
-				change_mode (SUBMODE_DGU);
+			if (button_handlers[element.selected].payload != INT32_MAX)
+				change_submode(button_handlers[element.selected].payload);
 
 			for (uint_fast8_t i=0; i<button_handlers_count; i++)
 			{
