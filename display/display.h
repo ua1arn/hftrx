@@ -997,8 +997,8 @@ typedef struct  {
 	uint_fast8_t state;				// текущее состояние кнопки
 	uint_fast8_t need_redraw;		// запрос на перерисовку после изменения состояния
 	uint_fast8_t type;				// тип кнопки - постоянная или динамическая
-	uint_fast8_t for_window;		// индекс окна, в котором будет отображаться кнопка при type = TYPE_PIP_BUTTON
-	uint_fast8_t visible;			// рисовать ли кнопку на экране при type = TYPE_PIP_BUTTON
+	uint_fast8_t parent;			// индекс окна, в котором будет отображаться кнопка при type = TYPE_PIP_BUTTON
+	uint_fast8_t visible;			// рисовать ли кнопку на экране
 	char * text;					// текст внутри кнопки
 } button_handler;
 

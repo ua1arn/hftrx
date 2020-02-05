@@ -6356,7 +6356,7 @@ board_set_wflevelsep(uint_fast8_t v)
 	uint8_t windows_count = sizeof windows / sizeof windows[0];
 
 	static button_handler button_handlers[]={
-	//	 x1,  y1,  x2,  y2,  onClickHandler,            state,     redraw,    type,       for_window,     visible, text
+	//	 x1,  y1,  x2,  y2,  onClickHandler,            state,     redraw,    type,         parent,       visible,   text
 		{0,   430, 79,  479, button1_handler, 	   BUTTON_CANCELLED, 1, TYPE_FOOTER_BUTTON, FOOTER, 	  VISIBLE,    "Mode",},
 		{82,  430, 161,	479, button2_handler, 	   BUTTON_CANCELLED, 1, TYPE_FOOTER_BUTTON, FOOTER, 	  VISIBLE,     "",},
 		{164, 430, 243,	479, button3_handler, 	   BUTTON_CANCELLED, 1, TYPE_FOOTER_BUTTON, FOOTER, 	  VISIBLE,     "",},
@@ -6376,52 +6376,35 @@ board_set_wflevelsep(uint_fast8_t v)
 	};
 	uint8_t button_handlers_count = sizeof button_handlers / sizeof button_handlers[0];
 
-
-
 	static element1 element = {0, 0, 0, BUTTON_CANCELLED, 0, 0, 1};
-	void change_mode (uint_fast8_t v);
 
 	void buttons_mode_handler (void) // usb-2, lsb-1, cw-3, cwr-7, am-5, dgl-9, dgu-6, nfm-4,
 	{
-		debug_printf_P(PSTR("%s, %d\n"), button_handlers[element.selected].text, strlen (button_handlers[element.selected].text));
-		if (windows[WINDOW_MODES].is_show && button_handlers[element.selected].for_window == WINDOW_MODES)
+		if (windows[WINDOW_MODES].is_show && button_handlers[element.selected].parent == WINDOW_MODES)
 		{
-			switch (element.selected)
-			{
-			case 8:
-				change_mode (1);
-				break;
-			case 9:
-				change_mode (3);
-				break;
-			case 10:
-				change_mode (5);
-				break;
-			case 11:
-				change_mode (9);
-				break;
-			case 12:
-				change_mode (2);
-				break;
-			case 13:
-				change_mode (7);
-				break;
-			case 14:
-				change_mode (4);
-				break;
-			case 15:
-				change_mode (6);
-				break;
-			default:
-				break;
-			}
+			if (button_handlers[element.selected].text == "LSB")
+				change_mode (SUBMODE_LSB);
+			else if (button_handlers[element.selected].text == "CW")
+				change_mode (SUBMODE_CW);
+			else if (button_handlers[element.selected].text == "AM")
+				change_mode (SUBMODE_AM);
+			else if (button_handlers[element.selected].text == "DGL")
+				change_mode (SUBMODE_DGL);
+			else if (button_handlers[element.selected].text == "USB")
+				change_mode (SUBMODE_USB);
+			else if (button_handlers[element.selected].text == "CWR")
+				change_mode (SUBMODE_CWR);
+			else if (button_handlers[element.selected].text == "NFM")
+				change_mode (SUBMODE_NFM);
+			else if (button_handlers[element.selected].text == "DGU")
+				change_mode (SUBMODE_DGU);
+
 			for (uint_fast8_t i=0; i<button_handlers_count; i++)
 			{
-				if (button_handlers[i].for_window == WINDOW_MODES)
+				if (button_handlers[i].parent == WINDOW_MODES)
 					button_handlers[i].visible = NON_VISIBLE;
 			}
 			windows[element.window_to_draw].is_show = NON_VISIBLE;
-
 		}
 	}
 
@@ -6433,7 +6416,7 @@ board_set_wflevelsep(uint_fast8_t v)
 		{
 			for (uint_fast8_t i=0; i<button_handlers_count; i++)
 			{
-				if (button_handlers[i].for_window == WINDOW_MODES)
+				if (button_handlers[i].parent == WINDOW_MODES)
 					button_handlers[i].visible = VISIBLE;
 			}
 		windows[element.window_to_draw].is_show = VISIBLE;
@@ -6442,7 +6425,7 @@ board_set_wflevelsep(uint_fast8_t v)
 		{
 			for (uint_fast8_t i=0; i<button_handlers_count; i++)
 			{
-				if (button_handlers[i].for_window == WINDOW_MODES)
+				if (button_handlers[i].parent == WINDOW_MODES)
 					button_handlers[i].visible = NON_VISIBLE;
 			}
 			windows[element.window_to_draw].is_show = NON_VISIBLE;
@@ -6600,7 +6583,7 @@ void display_pip_update (uint_fast8_t x, uint_fast8_t y, void * pv)
 		// отрисовка принадлежащих окну кнопок
 		for (uint_fast8_t i=0; i<button_handlers_count; i++)
 		{
-			if (button_handlers[i].for_window == element.window_to_draw && button_handlers[i].visible == VISIBLE)
+			if (button_handlers[i].parent == element.window_to_draw && button_handlers[i].visible == VISIBLE)
 			{
 				draw_button_pip (button_handlers[i].x1, button_handlers[i].y1,
 							     button_handlers[i].x2, button_handlers[i].y2, button_handlers[i].state);
@@ -6638,8 +6621,8 @@ void update_buttons (void)
 
 		}
 		element.fix=1;
-		debug_printf_P(PSTR("touch %d after %d, sel %d, state %d, x %d, Y %d\n"), element.is_touching_screen, element.is_after_touch,
-							 element.selected, button_handlers[element.selected].state, element.last_pressed_x, element.last_pressed_y);
+//		debug_printf_P(PSTR("touch %d after %d, sel %d, state %d, x %d, Y %d\n"), element.is_touching_screen, element.is_after_touch,
+//							 element.selected, button_handlers[element.selected].state, element.last_pressed_x, element.last_pressed_y);
 	}
 	else
 	{
@@ -6674,7 +6657,7 @@ void update_buttons (void)
 		{
 			if (element.is_touching_screen)
 			{
-				debug_printf_P(PSTR("do redraw 1\n"));
+//				debug_printf_P(PSTR("do redraw 1\n"));
 				button_handlers[element.selected].state=BUTTON_PRESSED;
 				button_handlers[element.selected].need_redraw=1;
 				display_buttons (0, 0);
@@ -6687,7 +6670,7 @@ void update_buttons (void)
 			element.state=BUTTON_CANCELLED;
 			button_handlers[element.selected].state=BUTTON_CANCELLED;
 			button_handlers[element.selected].need_redraw=1;
-			debug_printf_P(PSTR("do redraw 2\n"));
+//			debug_printf_P(PSTR("do redraw 2\n"));
 			display_buttons (0, 0);
 			element.is_after_touch=1; // точка непрерывного нажатия вышла за пределы выбранного элемента
 		}
@@ -6697,7 +6680,7 @@ void update_buttons (void)
 	{
 		button_handlers[element.selected].state=BUTTON_RELEASED;
 		button_handlers[element.selected].need_redraw=1;
-		debug_printf_P(PSTR("do redraw 3\n"));
+//		debug_printf_P(PSTR("do redraw 3\n"));
 		display_buttons (0, 0);
 		button_handlers[element.selected].onClickHandler();
 		debug_printf_P(PSTR("handler %d runned\n"), element.selected);
