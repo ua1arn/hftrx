@@ -151,10 +151,10 @@ extern "C" {
 	#define WITHUSENOFU_IN48_INRTS 		0	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
 	#define WITHUSENOFU_OUT48 			0	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
 #else /* WITHUAC2 */
-	#define WITHUSENOFU_IN48 			0	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
-	#define WITHUSENOFU_INRTS 			0	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
-	#define WITHUSENOFU_IN48_INRTS 		0	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
-	#define WITHUSENOFU_OUT48 			0	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
+	#define WITHUSENOFU_IN48 			1	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
+	#define WITHUSENOFU_INRTS 			1	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
+	#define WITHUSENOFU_IN48_INRTS 		1	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
+	#define WITHUSENOFU_OUT48 			1	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
 #endif /* WITHUAC2 */
 
 // Конфигурация потоков в Input Terminal Descriptor

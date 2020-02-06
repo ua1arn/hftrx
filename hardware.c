@@ -3331,7 +3331,10 @@ hardware_adc_startonescan(void)
 	if ((adc->CR & ADC_CR_ADSTART) != 0)
 		return;	// еще не закончилось ранее запущеное преобразование
 
+	ASSERT((adc->CR & ADC_CR_JADSTART) == 0);
+	ASSERT((adc->CR & ADC_CR_ADSTART) == 0);
 	ASSERT((adc->CR & (ADC_CR_JADSTART | ADC_CR_ADSTART)) == 0);
+
 	adc->SQR1 = (adc->SQR1 & ~ (ADC_SQR1_L | ADC_SQR1_SQ1)) |
 		0 * ADC_SQR1_L_0 |	//Выбираем преобразование с одного канала. Сканирования нет.
 		adcmap->ch * ADC_SQR1_SQ1_0 |

@@ -107,11 +107,12 @@ enum
 		InitializeListHead2(& (ListHead)->item2);
 	}
 
+	// forceReady - если в источнике данных закончился поток.
 	__STATIC_INLINE void
-	InsertHeadList3(PLIST_ENTRY3 ListHead, PLIST_ENTRY Entry)
+	InsertHeadList3(PLIST_ENTRY3 ListHead, PLIST_ENTRY Entry, uint_fast8_t forceReady)
 	{
 		InsertHeadList2(& (ListHead)->item2, (Entry));
-		(ListHead)->Rdy = fiforeadyupdate((ListHead)->Rdy, (ListHead)->item2.Count, (ListHead)->RdyLevel);
+		(ListHead)->Rdy = forceReady || fiforeadyupdate((ListHead)->Rdy, (ListHead)->item2.Count, (ListHead)->RdyLevel);
 	}
 
 	__STATIC_INLINE PLIST_ENTRY
@@ -849,7 +850,7 @@ static RAMFUNC void buffers_tonulluacin(uacin16_t * p)
 static RAMFUNC void buffers_tomodulators16(voice16_t * p)
 {
 	LOCK(& locklist16);
-	InsertHeadList3(& voicesmike16, & p->item);
+	InsertHeadList3(& voicesmike16, & p->item, 0);
 	UNLOCK(& locklist16);
 }
 
@@ -934,7 +935,7 @@ RAMFUNC static void buffers_savetoresampling16(voice16_t * p)
 {
 	LOCK(& locklist16);
 	// Помеестить в очередь принятых с USB UAC
-	InsertHeadList3(& resample16, & p->item);
+	InsertHeadList3(& resample16, & p->item, 0);
 
 	if (GetCountList3(& resample16) > (RESAMPLE16NORMAL * 2))
 	{
