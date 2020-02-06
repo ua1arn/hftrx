@@ -967,8 +967,6 @@ void board_set_wflevelsep(uint_fast8_t v); /* чувствительность �
 
 #if WITHTOUCHTEST
 
-
-
 void button1_handler(void);
 void button2_handler(void);
 void button3_handler(void);

@@ -4571,7 +4571,7 @@ enum
 //		{	28, DLE1,	display_usb3,		REDRM_BARS, PGALL, },	// USB host status
 //
 //		{	39, DLE1,	display_currlevel5, REDRM_VOLT, PGALL, },	// PA drain current d.dd without "A"
-		{	45, 40,	display_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
+//		{	45, 40,	display_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
 	#if WITHAMHIGHKBDADJ
 		//{	XX, DLE1,	display_amfmhighcut4,REDRM_MODE, PGALL, },	// 3.70
 	#endif /* WITHAMHIGHKBDADJ */
@@ -6506,173 +6506,190 @@ board_set_wflevelsep(uint_fast8_t v)
 		}
 	}
 
-void display_buttons(uint_fast8_t menuset, uint_fast8_t extra)
-{
-	display_walktroughsteps(REDRM_BUTTONS, getsubset(menuset, extra));
-}
-
-static uint_fast16_t normalize(uint_fast16_t raw, uint_fast16_t rawmin,	uint_fast16_t rawmax,uint_fast16_t range)
-{
-		const uint_fast16_t distance = rawmax - rawmin;
-		if (raw < rawmin)
-			return 0;
-		raw = raw - rawmin;
-		if (raw > distance)
-			return range;
-		return (uint_fast32_t) raw * range / distance;
-}
-
-void display_pip_update(uint_fast8_t x, uint_fast8_t y, void * pv)
-{
-	PACKEDCOLOR565_T * const colorpip = getscratchpip();
-	uint_fast16_t yt;
-	PACKEDCOLOR565_T dot, color_red, color_green, color_blue;
-	uint_fast8_t alpha = 10; // на сколько затемнять цвета
-
-	if (windows[element.window_to_draw].is_show)
+	void display_buttons(uint_fast8_t menuset, uint_fast8_t extra)
 	{
-		for (uint_fast16_t y1 = windows[element.window_to_draw].y1; y1 <= windows[element.window_to_draw].y2; y1++)
+		display_walktroughsteps(REDRM_BUTTONS, getsubset(menuset, extra));
+	}
+
+	static uint_fast16_t normalize(uint_fast16_t raw, uint_fast16_t rawmin,	uint_fast16_t rawmax,uint_fast16_t range)
+	{
+			const uint_fast16_t distance = rawmax - rawmin;
+			if (raw < rawmin)
+				return 0;
+			raw = raw - rawmin;
+			if (raw > distance)
+				return range;
+			return (uint_fast32_t) raw * range / distance;
+	}
+
+	void display_pip_update(uint_fast8_t x, uint_fast8_t y, void * pv)
+	{
+		PACKEDCOLOR565_T * const colorpip = getscratchpip();
+		uint_fast16_t yt;
+		PACKEDCOLOR565_T dot, color_red, color_green, color_blue;
+		uint_fast8_t alpha = 10; // на сколько затемнять цвета
+		char buff [16];
+
+		// вывод на PIP служебной информации
+	#if WITHIF4DSP
+		local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("SPAN:%3dk"), (int) ((display_zoomedbw() + 0) / 1000));
+		display_colorbuff_string_tbg(colorpip, ALLDX, ALLDY, 495, 230, buff, COLOR565_YELLOW);
+	#endif /* WITHIF4DSP */
+	#if WITHVOLTLEVEL && WITHCPUADCHW
+		local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("%d.%1dV"), hamradio_get_volt_value() / 10, hamradio_get_volt_value() % 10);
+		display_colorbuff_string_tbg(colorpip, ALLDX, ALLDY, 400, 230, buff, COLOR565_YELLOW);
+	#endif /* WITHVOLTLEVEL && WITHCPUADCHW */
+	#if WITHCURRLEVEL && WITHCPUADCHW
+		int_fast16_t drain = hamradio_get_pacurrent_value();
+		if (drain < 0) drain = 0;
+		local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("%d.%02dA"), drain / 100, drain % 100);
+		display_colorbuff_string_tbg(colorpip, ALLDX, ALLDY, 310, 230, buff, COLOR565_YELLOW);
+	#endif /* WITHCURRLEVEL && WITHCPUADCHW */
+
+		if (windows[element.window_to_draw].is_show)
 		{
-			yt = ALLDX * y1;
-			for (uint_fast16_t x1 = windows[element.window_to_draw].x1; x1 <= windows[element.window_to_draw].x2; x1++)
+			for (uint_fast16_t y1 = windows[element.window_to_draw].y1; y1 <= windows[element.window_to_draw].y2; y1++)
 			{
-				dot = colorpip[yt + x1];
-				if (dot==COLOR565_BLACK)
-					colorpip[yt + x1] = 0x0841; // back gray
-				else // RRRR.RGGG.GGGB.BBBB
+				yt = ALLDX * y1;
+				for (uint_fast16_t x1 = windows[element.window_to_draw].x1; x1 <= windows[element.window_to_draw].x2; x1++)
 				{
-					color_red = dot >> 11;
-					color_green = (dot >> 5) & 0x003f;
-					color_blue = dot & 0x001f;
+					dot = colorpip[yt + x1];
+					if (dot==COLOR565_BLACK)
+						colorpip[yt + x1] = 0x0841; // back gray
+					else // RRRR.RGGG.GGGB.BBBB
+					{
+						color_red = dot >> 11;
+						color_green = (dot >> 5) & 0x003f;
+						color_blue = dot & 0x001f;
 
-					colorpip[yt + x1] = (normalize(color_red, 0, 32, alpha) << 11) |
-										(normalize(color_green, 0, 64, alpha) << 5) |
-										(normalize(color_blue, 0, 32, alpha));
+						colorpip[yt + x1] = (normalize(color_red, 0, 32, alpha) << 11) |
+											(normalize(color_green, 0, 64, alpha) << 5) |
+											(normalize(color_blue, 0, 32, alpha));
+					}
+				} // for x1
+			} // for y1
+
+			// вывод заголовка окна
+			display_colorbuff_string_tbg(colorpip, ALLDX, ALLDY,
+										 windows[element.window_to_draw].x1 + 20,
+										 windows[element.window_to_draw].y1 + 10,
+										 windows[element.window_to_draw].title,
+										 COLOR565_YELLOW);
+
+			// отрисовка принадлежащих окну элементов
+			for (uint_fast8_t i = 0; i < button_handlers_count; i++)
+			{
+				if (button_handlers[i].parent == element.window_to_draw && button_handlers[i].visible == VISIBLE)	// кнопки
+				{
+					draw_button_pip(button_handlers[i].x1, button_handlers[i].y1,
+									button_handlers[i].x2, button_handlers[i].y2, button_handlers[i].state);
+					display_colorbuff_string_tbg(colorpip, ALLDX, ALLDY, button_handlers[i].x1 + ((button_handlers[i].x2 - button_handlers[i].x1) -
+								   (strlen (button_handlers[i].text) * 16)) / 2, button_handlers[i].y1 + 17, button_handlers[i].text, COLOR565_BLACK);
 				}
-			} // for x1
-		} // for y1
+			}
+			for (uint_fast8_t i = 0; i < labels_count; i++)
+			{
+				if (labels[i].parent == element.window_to_draw && labels[i].visible == VISIBLE)						// метки
+					display_colorbuff_string_tbg(colorpip, ALLDX, ALLDY, labels[i].x, labels[i].y, labels[i].value, labels[i].color);
+			}
 
-		// вывод заголовка окна
-		display_colorbuff_string_tbg(colorpip, ALLDX, ALLDY,
-									 windows[element.window_to_draw].x1 + 20,
-									 windows[element.window_to_draw].y1 + 10,
-									 windows[element.window_to_draw].title,
-									 COLOR565_YELLOW);
 
-		// отрисовка принадлежащих окну элементов
+
+		} // if (is_popup_pip)
+	}
+
+	void need_redraw_buttons(void) // запрос на перерисовку кнопок внизу экрана
+	{
 		for (uint_fast8_t i = 0; i < button_handlers_count; i++)
 		{
-			if (button_handlers[i].parent == element.window_to_draw && button_handlers[i].visible == VISIBLE)	// кнопки
+			if (button_handlers[i].type == TYPE_FOOTER_BUTTON)
+				button_handlers[i].need_redraw = 1;
+		}
+	}
+
+	void update_buttons(void)
+	{
+		uint_fast16_t tx,ty;
+		pipparams_t pipparam;
+		board_tsc_getxy(& tx, & ty);
+
+		if (board_tsc_is_pressed())
+		{
+			if (element.fix)			// первые координаты после нажатия от контролера тачскрина приходят старые, пропускаем
 			{
-				draw_button_pip(button_handlers[i].x1, button_handlers[i].y1,
-							     button_handlers[i].x2, button_handlers[i].y2, button_handlers[i].state);
-				display_colorbuff_string_tbg(colorpip, ALLDX, ALLDY, button_handlers[i].x1 + ((button_handlers[i].x2 - button_handlers[i].x1) -
-											 (strlen (button_handlers[i].text) * 16)) / 2, button_handlers[i].y1 + 17, button_handlers[i].text, COLOR565_BLACK);
+				element.last_pressed_x = tx;
+				element.last_pressed_y = ty;
+				element.is_touching_screen = 1;
+				display2_getpipparams(&pipparam);
+
 			}
-		}
-		for (uint_fast8_t i = 0; i < labels_count; i++)
-		{
-			if (labels[i].parent == element.window_to_draw && labels[i].visible == VISIBLE)						// метки
-				display_colorbuff_string_tbg(colorpip, ALLDX, ALLDY, labels[i].x, labels[i].y, labels[i].value, labels[i].color);
-		}
-
-
-
-	} // if (is_popup_pip)
-}
-
-void need_redraw_buttons(void) // запрос на перерисовку кнопок внизу экрана
-{
-	for (uint_fast8_t i = 0; i < button_handlers_count; i++)
-	{
-		if (button_handlers[i].type == TYPE_FOOTER_BUTTON)
-			button_handlers[i].need_redraw = 1;
-	}
-}
-
-void update_buttons(void)
-{
-	uint_fast16_t tx,ty;
-	pipparams_t pipparam;
-	board_tsc_getxy(& tx, & ty);
-
-	if (board_tsc_is_pressed())
-	{
-		if (element.fix)			// первые координаты после нажатия от контролера тачскрина приходят старые, пропускаем
-		{
-			element.last_pressed_x = tx;
-			element.last_pressed_y = ty;
-			element.is_touching_screen = 1;
-			display2_getpipparams(&pipparam);
-
-		}
-		element.fix = 1;
-//		debug_printf_P(PSTR("touch %d after %d, sel %d, state %d, x %d, Y %d\n"), element.is_touching_screen, element.is_after_touch,
-//							 element.selected, button_handlers[element.selected].state, element.last_pressed_x, element.last_pressed_y);
-		debug_printf_P(PSTR("pip x - %d, pip y - %d\n"), element.last_pressed_x, element.last_pressed_y - pipparam.y);
-	}
-	else
-	{
-		element.is_touching_screen = 0;
-		element.is_after_touch = 0;
-		element.fix = 0;
-	}
-
-	if (element.state == BUTTON_CANCELLED)
-	{
-		if (element.is_touching_screen && ! element.is_after_touch)
-		{
-			for (uint_fast8_t i=0; i<button_handlers_count; i++) {
-				if (button_handlers[i].x1 < element.last_pressed_x && button_handlers[i].x2 > element.last_pressed_x
-				 && (button_handlers[i].type ? button_handlers[i].y1 + pipparam.y : button_handlers[i].y1) < element.last_pressed_y
-				 && (button_handlers[i].type ? button_handlers[i].y2 + pipparam.y : button_handlers[i].y2) > element.last_pressed_y
-				 && button_handlers[i].visible == VISIBLE)
-				{
-					element.selected = i;
-					element.state = BUTTON_PRESSED;
-				}
-			} /* for */
-		} /* if (element.is_touching_screen) */
-
-	}
-	if (element.state == BUTTON_PRESSED)
-	{
-		if (button_handlers[element.selected].x1 < element.last_pressed_x && button_handlers[element.selected].x2 > element.last_pressed_x
-		 && (button_handlers[element.selected].type ? button_handlers[element.selected].y1 + pipparam.y : button_handlers[element.selected].y1) < element.last_pressed_y
-		 && (button_handlers[element.selected].type ? button_handlers[element.selected].y2 + pipparam.y : button_handlers[element.selected].y2) > element.last_pressed_y
-		 && ! element.is_after_touch)
-		{
-			if (element.is_touching_screen)
-			{
-//				debug_printf_P(PSTR("do redraw 1\n"));
-				button_handlers[element.selected].state = BUTTON_PRESSED;
-				button_handlers[element.selected].need_redraw = 1;
-				display_buttons(0, 0);
-			}
-			else
-				element.state = BUTTON_RELEASED;
+			element.fix = 1;
+	//		debug_printf_P(PSTR("touch %d after %d, sel %d, state %d, x %d, Y %d\n"), element.is_touching_screen, element.is_after_touch,
+	//							 element.selected, button_handlers[element.selected].state, element.last_pressed_x, element.last_pressed_y);
+			debug_printf_P(PSTR("pip x - %d, pip y - %d\n"), element.last_pressed_x, element.last_pressed_y - pipparam.y);
 		}
 		else
 		{
-			element.state = BUTTON_CANCELLED;
-			button_handlers[element.selected].state = BUTTON_CANCELLED;
+			element.is_touching_screen = 0;
+			element.is_after_touch = 0;
+			element.fix = 0;
+		}
+
+		if (element.state == BUTTON_CANCELLED)
+		{
+			if (element.is_touching_screen && ! element.is_after_touch)
+			{
+				for (uint_fast8_t i=0; i<button_handlers_count; i++) {
+					if (button_handlers[i].x1 < element.last_pressed_x && button_handlers[i].x2 > element.last_pressed_x
+					 && (button_handlers[i].type ? button_handlers[i].y1 + pipparam.y : button_handlers[i].y1) < element.last_pressed_y
+					 && (button_handlers[i].type ? button_handlers[i].y2 + pipparam.y : button_handlers[i].y2) > element.last_pressed_y
+					 && button_handlers[i].visible == VISIBLE)
+					{
+						element.selected = i;
+						element.state = BUTTON_PRESSED;
+					}
+				} /* for */
+			} /* if (element.is_touching_screen) */
+
+		}
+		if (element.state == BUTTON_PRESSED)
+		{
+			if (button_handlers[element.selected].x1 < element.last_pressed_x && button_handlers[element.selected].x2 > element.last_pressed_x
+			 && (button_handlers[element.selected].type ? button_handlers[element.selected].y1 + pipparam.y : button_handlers[element.selected].y1) < element.last_pressed_y
+			 && (button_handlers[element.selected].type ? button_handlers[element.selected].y2 + pipparam.y : button_handlers[element.selected].y2) > element.last_pressed_y
+			 && ! element.is_after_touch)
+			{
+				if (element.is_touching_screen)
+				{
+	//				debug_printf_P(PSTR("do redraw 1\n"));
+					button_handlers[element.selected].state = BUTTON_PRESSED;
+					button_handlers[element.selected].need_redraw = 1;
+					display_buttons(0, 0);
+				}
+				else
+					element.state = BUTTON_RELEASED;
+			}
+			else
+			{
+				element.state = BUTTON_CANCELLED;
+				button_handlers[element.selected].state = BUTTON_CANCELLED;
+				button_handlers[element.selected].need_redraw = 1;
+	//			debug_printf_P(PSTR("do redraw 2\n"));
+				display_buttons (0, 0);
+				element.is_after_touch = 1; // точка непрерывного нажатия вышла за пределы выбранного элемента
+			}
+		}
+		if (element.state == BUTTON_RELEASED)
+		{
+			button_handlers[element.selected].state = BUTTON_RELEASED;
 			button_handlers[element.selected].need_redraw = 1;
-//			debug_printf_P(PSTR("do redraw 2\n"));
-			display_buttons (0, 0);
-			element.is_after_touch = 1; // точка непрерывного нажатия вышла за пределы выбранного элемента
+	//		debug_printf_P(PSTR("do redraw 3\n"));
+			display_buttons(0, 0);
+			button_handlers[element.selected].onClickHandler();
+			debug_printf_P(PSTR("handler %d runned\n"), element.selected);
+			button_handlers[element.selected].state = BUTTON_CANCELLED;
+			element.is_after_touch = 0;
+			element.state = BUTTON_CANCELLED;
 		}
 	}
-	if (element.state == BUTTON_RELEASED)
-	{
-		button_handlers[element.selected].state = BUTTON_RELEASED;
-		button_handlers[element.selected].need_redraw = 1;
-//		debug_printf_P(PSTR("do redraw 3\n"));
-		display_buttons(0, 0);
-		button_handlers[element.selected].onClickHandler();
-		debug_printf_P(PSTR("handler %d runned\n"), element.selected);
-		button_handlers[element.selected].state = BUTTON_CANCELLED;
-		element.is_after_touch = 0;
-		element.state = BUTTON_CANCELLED;
-	}
-}
 #endif /* WITHTOUCHTEST */
