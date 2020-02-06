@@ -492,6 +492,11 @@ void savesamplerecord16SD(int_fast16_t ch0, int_fast16_t ch1); /* to SD CARD */
 void savesamplerecord16uacin(int_fast16_t ch0, int_fast16_t ch1); /* to USB AUDIO */
 unsigned takerecordbuffer(void * * dest);
 void releaserecordbuffer(void * dest);
+/* to play */
+unsigned savesamplesplay_user(
+	const int16_t * buff,
+	unsigned length
+	);
 
 // Обслуживание модема
 size_t takemodemtxbuffer(uint8_t * * dest);	// Буферы с данными для передачи через модем
@@ -668,6 +673,10 @@ void uacout_buffer_stop(void);
 void uacout_buffer_save_system(const uint8_t * buff, uint_fast16_t size);
 void uacout_buffer_save_realtime(const uint8_t * buff, uint_fast16_t size);
 
+/* Получение пары (левый и правый) сжмплов для воспроизведения через аудиовыход трансивера.
+ * Возврат 0, если нет ничего для воспроизведения.
+ */
+uint_fast8_t takesoundsample(INT32P_t * rv);
 
 #ifdef __cplusplus
 }

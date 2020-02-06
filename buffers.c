@@ -279,6 +279,8 @@ enum
 	{
 		LIST_ENTRY item;
 		ALIGNX_BEGIN int16_t buff [AUDIORECBUFFSIZE16] ALIGNX_END;
+		unsigned startdata;	// data start
+		unsigned topdata;	// index after last element
 	} ALIGNX_END records16_t;
 
 	static RAMDTCM LIST_ENTRY2 recordsfree16;		// Свободные буферы
@@ -1312,7 +1314,7 @@ void RAMFUNC savesamplerecord16SD(int_fast16_t left, int_fast16_t right)
 {
 	// если есть инициализированный канал для выдачи звука
 	static records16_t * preparerecord16 = NULL;
-	static unsigned level16record = 0;
+	static unsigned level16record;
 
 	if (preparerecord16 == NULL)
 	{
@@ -1329,6 +1331,7 @@ void RAMFUNC savesamplerecord16SD(int_fast16_t left, int_fast16_t right)
 			PLIST_ENTRY t = RemoveTailList2(& recordsready16);
 			preparerecord16 = CONTAINING_RECORD(t, records16_t, item);
 		}
+		level16record = 0;
 		
 		// Подготовка к записи файла WAV со множеством DATA CHUNK, но получившийся файл
 		// нормально читает только ADOBE AUDITION, Windows Media Player 12 проигрывает только один - первый.
@@ -1340,7 +1343,6 @@ void RAMFUNC savesamplerecord16SD(int_fast16_t left, int_fast16_t right)
 		//preparerecord16->buff [3] = ((AUDIORECBUFFSIZE16 * sizeof preparerecord16->buff [0]) - 8) >> 16;
 		//level16record = 4;
 
-		level16record = 0;
 	}
 
 #if WITHUSEAUDIOREC2CH
@@ -1357,11 +1359,15 @@ void RAMFUNC savesamplerecord16SD(int_fast16_t left, int_fast16_t right)
 	if (level16record >= AUDIORECBUFFSIZE16)
 	{
 		++ recbuffered;
+		/* используется буфер целиклом */
+		preparerecord16->startdata = 0;
+		preparerecord16->topdata = AUDIORECBUFFSIZE16;
 		InsertHeadList2(& recordsready16, & preparerecord16->item);
 		preparerecord16 = NULL;
 	}
 }
 
+// user-mode function
 unsigned takerecordbuffer(void * * dest)
 {
 	global_disableIRQ();
@@ -1378,12 +1384,97 @@ unsigned takerecordbuffer(void * * dest)
 	return 0;
 }
 
+// user-mode function
+void saveplaybuffer(void * dest, unsigned used)
+{
+	records16_t * const p = CONTAINING_RECORD(dest, records16_t, buff);
+	p->startdata = 0;
+	p->topdata = used / sizeof p->buff [0];
+	global_disableIRQ();
+	InsertHeadList2(& recordsready16, & p->item);
+	global_enableIRQ();
+}
+
+/* to play */
+unsigned savesamplesplay_user(
+	const int16_t * buff,
+	unsigned length
+	)
+{
+	void * p;
+	unsigned size;
+
+	size = takerecordbuffer(& p);
+
+	if (size == 0)
+		return 0;
+
+	unsigned part = ulmin(size, length);
+	memcpy(p, buff, part);
+	saveplaybuffer(p, part);
+	return part;
+}
+
+
+// realtime-mode function
+unsigned takerecordbuffer_low(void * * dest)
+{
+	if (! IsListEmpty2(& recordsready16))
+	{
+		PLIST_ENTRY t = RemoveTailList2(& recordsready16);
+		-- recbuffered;
+		records16_t * const p = CONTAINING_RECORD(t, records16_t, item);
+		* dest = p->buff;
+		return (AUDIORECBUFFSIZE16 * sizeof p->buff [0]);
+	}
+	return 0;
+}
+
+// user-mode function
 void releaserecordbuffer(void * dest)
 {
 	records16_t * const p = CONTAINING_RECORD(dest, records16_t, buff);
 	global_disableIRQ();
 	InsertHeadList2(& recordsfree16, & p->item);
 	global_enableIRQ();
+}
+
+// realtime-mode function
+void releaserecordbuffer_low(void * dest)
+{
+	records16_t * const p = CONTAINING_RECORD(dest, records16_t, buff);
+	InsertHeadList2(& recordsfree16, & p->item);
+}
+
+/* Получение пары (левый и правый) сжмплов для воспроизведения через аудиовыход трансивера.
+ * Возврат 0, если нет ничего для воспроизведения.
+ */
+uint_fast8_t takesoundsample(INT32P_t * rv)
+{
+	static records16_t * p = NULL;
+	static unsigned n;
+	if (p == NULL && ! IsListEmpty2(& recordsready16))
+	{
+		PLIST_ENTRY t = RemoveTailList2(& recordsready16);
+		-- recbuffered;
+		p = CONTAINING_RECORD(t, records16_t, item);
+		n = p->startdata;	// reset samples count
+	}
+	else
+	{
+		return 0;
+	}
+	int_fast16_t sample = p->buff [n];
+	rv->IV = sample;
+	rv->QV = sample;
+
+	if (++ n >= AUDIORECBUFFSIZE16 || n >= p->topdata)
+	{
+		// Last sample used
+		InsertHeadList2(& recordsfree16, & p->item);
+		p = NULL;
+	}
+	return 1;	// Сэмпл считан
 }
 
 #endif /* WITHUSEAUDIOREC */
