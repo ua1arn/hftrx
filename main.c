@@ -17893,6 +17893,13 @@ void change_submode(uint_fast8_t newsubmode)
 	display_redrawfreqmodesbars(0);
 }
 
+void bandpass (uint_fast8_t *r, uint_fast8_t *l)
+{
+	*r = bwprop_ssbwide.right100;
+	*l = bwprop_ssbwide.left10_width10;
+	debug_printf_P(PSTR("SSB W HI %d LO %d\n"), bwprop_ssbwide.right100, bwprop_ssbwide.left10_width10);
+}
+
 /* Главная функция программы */
 int 
 //__attribute__ ((used))

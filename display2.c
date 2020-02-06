@@ -6348,172 +6348,165 @@ board_set_wflevelsep(uint_fast8_t v)
 }
 
 #if WITHTOUCHTEST
-	static windowpip windows[] = {
-	//  window_id, x1, y1, x2, y2, title, is_show
-		{ },
-		{ WINDOW_MODES, 214, 20, 586, 175, "Select mode", NON_VISIBLE, },
-	};
-	enum { windows_count = sizeof windows / sizeof windows[0] };
+	#include "gui.h"
 
-	static button_handler button_handlers [] = {
-	//	 x1,  y1,  x2,  y2,  onClickHandler,            state,     redraw,    type,         parent,       visible,   payload,	text
-		{ 0,   430, 79,  	479, button1_handler, 	   BUTTON_CANCELLED, 1, TYPE_FOOTER_BUTTON, FOOTER, 	  VISIBLE,    UINTPTR_MAX, "Mode", },
-		{ 82,  430, 161,	479, button2_handler, 	   BUTTON_CANCELLED, 1, TYPE_FOOTER_BUTTON, FOOTER, 	  VISIBLE,    UINTPTR_MAX,  "", },
-		{ 164, 430, 243,	479, button3_handler, 	   BUTTON_CANCELLED, 1, TYPE_FOOTER_BUTTON, FOOTER, 	  VISIBLE,    UINTPTR_MAX,  "", },
-		{ 246, 430, 325,	479, button4_handler, 	   BUTTON_CANCELLED, 1, TYPE_FOOTER_BUTTON, FOOTER, 	  VISIBLE,    UINTPTR_MAX,  "", },
-		{ 328, 430, 407,	479, button5_handler, 	   BUTTON_CANCELLED, 1, TYPE_FOOTER_BUTTON, FOOTER, 	  VISIBLE,    UINTPTR_MAX,  "", },
-		{ 410, 430, 489,	479, button6_handler, 	   BUTTON_CANCELLED, 1, TYPE_FOOTER_BUTTON, FOOTER, 	  VISIBLE,    UINTPTR_MAX,  "", },
-		{ 492, 430, 571,	479, button7_handler, 	   BUTTON_CANCELLED, 1, TYPE_FOOTER_BUTTON, FOOTER, 	  VISIBLE,    UINTPTR_MAX,  "", },
-		{ 574, 430, 653,	479, button8_handler, 	   BUTTON_CANCELLED, 1, TYPE_FOOTER_BUTTON, FOOTER, 	  VISIBLE,    UINTPTR_MAX,  "", },
-		{ 234,  55, 314, 	105, buttons_mode_handler, BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	WINDOW_MODES, NON_VISIBLE, SUBMODE_LSB, "LSB", }, // 8
-		{ 319,  55, 399, 	105, buttons_mode_handler, BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	WINDOW_MODES, NON_VISIBLE, SUBMODE_CW, 	"CW", },  // 9
-		{ 404,  55, 484, 	105, buttons_mode_handler, BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	WINDOW_MODES, NON_VISIBLE, SUBMODE_AM, 	"AM", },  // 10
-		{ 489,  55, 569, 	105, buttons_mode_handler, BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	WINDOW_MODES, NON_VISIBLE, SUBMODE_DGL, "DGL", }, // 11
-		{ 234, 110, 314, 	160, buttons_mode_handler, BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	WINDOW_MODES, NON_VISIBLE, SUBMODE_USB, "USB", }, // 12
-		{ 319, 110, 399, 	160, buttons_mode_handler, BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	WINDOW_MODES, NON_VISIBLE, SUBMODE_CWR, "CWR", }, // 13
-		{ 404, 110, 484, 	160, buttons_mode_handler, BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	WINDOW_MODES, NON_VISIBLE, SUBMODE_NFM, "NFM", }, // 14
-		{ 489, 110, 569, 	160, buttons_mode_handler, BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	WINDOW_MODES, NON_VISIBLE, SUBMODE_DGU, "DGU", }, // 15
-	};
-	enum { button_handlers_count = sizeof button_handlers / sizeof button_handlers[0] };
+	void set_visible_elements (uint_fast8_t parent, uint_fast8_t value)
+	{
+		for (uint_fast8_t i = 0; i < button_handlers_count; i++)
+		{
+			if (button_handlers[i].parent == parent)
+				button_handlers[i].visible = value;
+		}
+		for (uint_fast8_t i = 0; i < labels_count; i++)
+		{
+			if (labels[i].parent == parent)
+				labels[i].visible = value;
+		}
+	}
 
-	static element1_t element = { 0, 0, 0, BUTTON_CANCELLED, 0, 0, 1, };
-
-	void buttons_mode_handler(void) // usb-2, lsb-1, cw-3, cwr-7, am-5, dgl-9, dgu-6, nfm-4,
+	void buttons_mode_handler(void)
 	{
 		if (windows[WINDOW_MODES].is_show && button_handlers[element.selected].parent == WINDOW_MODES)
 		{
 			if (button_handlers[element.selected].payload != UINTPTR_MAX)
 				change_submode(button_handlers[element.selected].payload);
 
-			for (uint_fast8_t i = 0; i < button_handlers_count; i ++)
-			{
-				if (button_handlers[i].parent == WINDOW_MODES)
-					button_handlers[i].visible = NON_VISIBLE;
-			}
+			set_visible_elements(WINDOW_MODES, NON_VISIBLE);
 			windows[element.window_to_draw].is_show = NON_VISIBLE;
+			element.window_to_draw = 0;
 		}
 	}
 
-	void button1_handler (void)
+	void button1_handler(void)
 	{
-		element.window_to_draw = WINDOW_MODES;
+		if (element.window_to_draw == 0) element.window_to_draw = WINDOW_MODES;
 
 		if (windows[element.window_to_draw].is_show == NON_VISIBLE)
 		{
-			for (uint_fast8_t i=0; i<button_handlers_count; i++)
-			{
-				if (button_handlers[i].parent == WINDOW_MODES)
-					button_handlers[i].visible = VISIBLE;
-			}
-		windows[element.window_to_draw].is_show = VISIBLE;
+			set_visible_elements(WINDOW_MODES, VISIBLE);
+			windows[element.window_to_draw].is_show = VISIBLE;
 		}
 		else
 		{
-			for (uint_fast8_t i=0; i<button_handlers_count; i++)
-			{
-				if (button_handlers[i].parent == WINDOW_MODES)
-					button_handlers[i].visible = NON_VISIBLE;
-			}
+			set_visible_elements(WINDOW_MODES, NON_VISIBLE);
 			windows[element.window_to_draw].is_show = NON_VISIBLE;
+			element.window_to_draw = 0;
 		}
 	}
 
-	void button2_handler (void)
+
+	void button2_handler(void)
 	{
-		display_at (46, 40, "2");
+		if (element.window_to_draw == 0) element.window_to_draw = WINDOW_TEST;
+
+		if (windows[element.window_to_draw].is_show == NON_VISIBLE)
+		{
+			uint_fast8_t r, l;
+			bandpass(&r, &l);
+			local_snprintf_P (labels[0].value, sizeof labels[0].value, "%d", r);
+
+			set_visible_elements(WINDOW_TEST, VISIBLE);
+			windows[element.window_to_draw].is_show = VISIBLE;
+		}
+		else
+		{
+			set_visible_elements(WINDOW_TEST, NON_VISIBLE);
+			windows[element.window_to_draw].is_show = NON_VISIBLE;
+			element.window_to_draw = 0;
+		}
 	}
 
-	void button3_handler (void)
+	void button3_handler(void)
 	{
-		display_at (46, 40, "3");
+
 	}
 
-	void button4_handler (void)
+	void button4_handler(void)
 	{
-		display_at (46, 40, "4");
+
 	}
 
-	void button5_handler (void)
+	void button5_handler(void)
 	{
-		display_at (46, 40, "5");
+
 	}
 
-	void button6_handler (void)
+	void button6_handler(void)
 	{
-		display_at (46, 40, "6");
+;
 	}
 
-	void button7_handler (void)
+	void button7_handler(void)
 	{
-		display_at (46, 40, "7");
+
 	}
 
-	void button8_handler (void)
+	void button8_handler(void)
 	{
-		display_at (46, 40, "8");
+
 	}
 
-	void draw_rect (uint_fast16_t x, uint_fast16_t y, uint_fast16_t w, uint_fast16_t h, COLOR_T color)
+	void draw_rect(uint_fast16_t x, uint_fast16_t y, uint_fast16_t w, uint_fast16_t h, COLOR_T color)
 	{
 		display_wrdatabar_begin();
-		bitblt_fill (x,   y,   w, 1, color, COLOR_BLACK, 0xFF);
-		bitblt_fill (x,   y+h, w, 1, color, COLOR_BLACK, 0xFF);
-		bitblt_fill (x,   y,   1, h, color, COLOR_BLACK, 0xFF);
-		bitblt_fill (x+w, y,   1, h, color, COLOR_BLACK, 0xFF);
+		bitblt_fill(x,   y,   w, 1, color, COLOR_BLACK, 0xFF);
+		bitblt_fill(x,   y+h, w, 1, color, COLOR_BLACK, 0xFF);
+		bitblt_fill(x,   y,   1, h, color, COLOR_BLACK, 0xFF);
+		bitblt_fill(x+w, y,   1, h, color, COLOR_BLACK, 0xFF);
 		display_wrdatabar_end();
 
 	}
 
-	void draw_button (uint_fast16_t x1, uint_fast16_t y1, uint_fast16_t x2, uint_fast16_t y2, uint_fast8_t pressed) // pressed = 0
+	void draw_button(uint_fast16_t x1, uint_fast16_t y1, uint_fast16_t x2, uint_fast16_t y2, uint_fast8_t pressed) // pressed = 0
 	{
-		display_solidbar (x1, y1, x2, y2, pressed?COLOR_GREEN:COLOR_DARKGREEN2);
-		draw_rect (x1, 	 y1,   x2-x1,   y2-y1,   COLOR_GRAY);
-		draw_rect (x1+3, y1+3, x2-x1-6, y2-y1-6, COLOR_BLACK);
+		display_solidbar(x1, y1, x2, y2, pressed?COLOR_GREEN:COLOR_DARKGREEN2);
+		draw_rect(x1, 	y1,   x2-x1,   y2-y1,   COLOR_GRAY);
+		draw_rect(x1+3, y1+3, x2-x1-6, y2-y1-6, COLOR_BLACK);
 	}
 
-	void draw_rect_pip (uint_fast16_t x1, uint_fast16_t y1, uint_fast16_t x2, uint_fast16_t y2, PACKEDCOLOR565_T color, uint8_t fill)
+	void draw_rect_pip(uint_fast16_t x1, uint_fast16_t y1, uint_fast16_t x2, uint_fast16_t y2, PACKEDCOLOR565_T color, uint8_t fill)
 	{
 		PACKEDCOLOR565_T * const colorpip = getscratchpip();
 		if (fill)
 		{
-			for (uint_fast16_t i=y1; i<=y2; i++)
-				display_colorbuffer_line_set (colorpip, ALLDX, ALLDY, x1, i, x2, i, color);
+			for (uint_fast16_t i = y1; i <= y2; i++)
+				display_colorbuffer_line_set(colorpip, ALLDX, ALLDY, x1, i, x2, i, color);
 		} else
 		{
-			display_colorbuffer_line_set (colorpip, ALLDX, ALLDY, x1, y1, x2, y1, color);
-			display_colorbuffer_line_set (colorpip, ALLDX, ALLDY, x1, y1, x1, y2, color);
-			display_colorbuffer_line_set (colorpip, ALLDX, ALLDY, x1, y2, x2, y2, color);
-			display_colorbuffer_line_set (colorpip, ALLDX, ALLDY, x2, y1, x2, y2, color);
+			display_colorbuffer_line_set(colorpip, ALLDX, ALLDY, x1, y1, x2, y1, color);
+			display_colorbuffer_line_set(colorpip, ALLDX, ALLDY, x1, y1, x1, y2, color);
+			display_colorbuffer_line_set(colorpip, ALLDX, ALLDY, x1, y2, x2, y2, color);
+			display_colorbuffer_line_set(colorpip, ALLDX, ALLDY, x2, y1, x2, y2, color);
 		}
 
 	}
 
-	void draw_button_pip (uint_fast16_t x1, uint_fast16_t y1, uint_fast16_t x2, uint_fast16_t y2, uint_fast8_t pressed) // pressed = 0
+	void draw_button_pip(uint_fast16_t x1, uint_fast16_t y1, uint_fast16_t x2, uint_fast16_t y2, uint_fast8_t pressed) // pressed = 0
 	{
-		draw_rect_pip (x1, y1, x2, y2, pressed?COLOR565_GREEN:COLOR565_DARKGREEN2, 1);
-		draw_rect_pip (x1, 	 y1,   x2,   y2,   COLOR565_GRAY, 0);
-		draw_rect_pip (x1+2, y1+2, x2-2, y2-2, COLOR565_BLACK, 0);
+		draw_rect_pip(x1, 	y1,	  x2,   y2,   pressed ? COLOR565_GREEN : COLOR565_DARKGREEN2, 1);
+		draw_rect_pip(x1, 	y1,   x2,   y2,   COLOR565_GRAY, 0);
+		draw_rect_pip(x1+2, y1+2, x2-2, y2-2, COLOR565_BLACK, 0);
 	}
 
 	void display_footer_buttons(uint_fast8_t x, uint_fast8_t y, void * pv)
 	{
-		for (uint_fast8_t i=0; i<button_handlers_count; i++)
+		for (uint_fast8_t i = 0; i < button_handlers_count; i++)
 		{
 //			debug_printf_P(PSTR("button %d need %d state %d\n"), i, button_handlers[i].need_redraw, button_handlers[i].state);
 			if (button_handlers[i].need_redraw==1 && button_handlers[i].type == TYPE_FOOTER_BUTTON)
 			{
-				draw_button (button_handlers[i].x1, button_handlers[i].y1,
-							 button_handlers[i].x2, button_handlers[i].y2,
-							 button_handlers[i].state);
-				button_handlers[i].need_redraw=0;
-				display_setcolors (COLOR_BLACK, button_handlers[i].state?COLOR_GREEN:COLOR_DARKGREEN2);
-				display_at_xy (button_handlers[i].x1 + ((button_handlers[i].x2 - button_handlers[i].x1) -
+				draw_button(button_handlers[i].x1, button_handlers[i].y1,
+							button_handlers[i].x2, button_handlers[i].y2,
+							button_handlers[i].state);
+				button_handlers[i].need_redraw = 0;
+				display_setcolors(COLOR_BLACK, button_handlers[i].state ? COLOR_GREEN : COLOR_DARKGREEN2);
+				display_at_xy(button_handlers[i].x1 + ((button_handlers[i].x2 - button_handlers[i].x1) -
 							  (strlen (button_handlers[i].text) * 16)) / 2, button_handlers[i].y1 + 17, button_handlers[i].text);
 			}
 		}
 	}
 
-void display_buttons (uint_fast8_t menuset, uint_fast8_t extra)
+void display_buttons(uint_fast8_t menuset, uint_fast8_t extra)
 {
 	display_walktroughsteps(REDRM_BUTTONS, getsubset(menuset, extra));
 }
@@ -6529,7 +6522,7 @@ static uint_fast16_t normalize(uint_fast16_t raw, uint_fast16_t rawmin,	uint_fas
 		return (uint_fast32_t) raw * range / distance;
 }
 
-void display_pip_update (uint_fast8_t x, uint_fast8_t y, void * pv)
+void display_pip_update(uint_fast8_t x, uint_fast8_t y, void * pv)
 {
 	PACKEDCOLOR565_T * const colorpip = getscratchpip();
 	uint_fast16_t yt;
@@ -6538,10 +6531,10 @@ void display_pip_update (uint_fast8_t x, uint_fast8_t y, void * pv)
 
 	if (windows[element.window_to_draw].is_show)
 	{
-		for (uint_fast16_t y1=windows[element.window_to_draw].y1; y1<=windows[element.window_to_draw].y2; y1++)
+		for (uint_fast16_t y1 = windows[element.window_to_draw].y1; y1 <= windows[element.window_to_draw].y2; y1++)
 		{
 			yt = ALLDX * y1;
-			for (uint_fast16_t x1=windows[element.window_to_draw].x1; x1<=windows[element.window_to_draw].x2; x1++)
+			for (uint_fast16_t x1 = windows[element.window_to_draw].x1; x1 <= windows[element.window_to_draw].x2; x1++)
 			{
 				dot = colorpip[yt + x1];
 				if (dot==COLOR565_BLACK)
@@ -6560,64 +6553,72 @@ void display_pip_update (uint_fast8_t x, uint_fast8_t y, void * pv)
 		} // for y1
 
 		// вывод заголовка окна
-		display_colorbuff_string_tbg (colorpip, ALLDX, ALLDY,
-									  windows[element.window_to_draw].x1 + 20,
-									  windows[element.window_to_draw].y1 + 10,
-									  windows[element.window_to_draw].title,
-									  COLOR565_YELLOW);
+		display_colorbuff_string_tbg(colorpip, ALLDX, ALLDY,
+									 windows[element.window_to_draw].x1 + 20,
+									 windows[element.window_to_draw].y1 + 10,
+									 windows[element.window_to_draw].title,
+									 COLOR565_YELLOW);
 
-		// отрисовка принадлежащих окну кнопок
-		for (uint_fast8_t i=0; i<button_handlers_count; i++)
+		// отрисовка принадлежащих окну элементов
+		for (uint_fast8_t i = 0; i < button_handlers_count; i++)
 		{
-			if (button_handlers[i].parent == element.window_to_draw && button_handlers[i].visible == VISIBLE)
+			if (button_handlers[i].parent == element.window_to_draw && button_handlers[i].visible == VISIBLE)	// кнопки
 			{
-				draw_button_pip (button_handlers[i].x1, button_handlers[i].y1,
+				draw_button_pip(button_handlers[i].x1, button_handlers[i].y1,
 							     button_handlers[i].x2, button_handlers[i].y2, button_handlers[i].state);
-				display_colorbuff_string_tbg (colorpip, ALLDX, ALLDY, button_handlers[i].x1 + ((button_handlers[i].x2 - button_handlers[i].x1) -
+				display_colorbuff_string_tbg(colorpip, ALLDX, ALLDY, button_handlers[i].x1 + ((button_handlers[i].x2 - button_handlers[i].x1) -
 											 (strlen (button_handlers[i].text) * 16)) / 2, button_handlers[i].y1 + 17, button_handlers[i].text, COLOR565_BLACK);
 			}
 		}
+		for (uint_fast8_t i = 0; i < labels_count; i++)
+		{
+			if (labels[i].parent == element.window_to_draw && labels[i].visible == VISIBLE)						// метки
+				display_colorbuff_string_tbg(colorpip, ALLDX, ALLDY, labels[i].x, labels[i].y, labels[i].value, labels[i].color);
+		}
+
+
 
 	} // if (is_popup_pip)
 }
 
-void need_redraw_buttons (void) // запрос на перерисовку кнопок внизу экрана
+void need_redraw_buttons(void) // запрос на перерисовку кнопок внизу экрана
 {
-	for (uint_fast8_t i=0; i<button_handlers_count; i++)
+	for (uint_fast8_t i = 0; i < button_handlers_count; i++)
 	{
-		if (button_handlers[i].type==TYPE_FOOTER_BUTTON)
-			button_handlers[i].need_redraw=1;
+		if (button_handlers[i].type == TYPE_FOOTER_BUTTON)
+			button_handlers[i].need_redraw = 1;
 	}
 }
 
-void update_buttons (void)
+void update_buttons(void)
 {
 	uint_fast16_t tx,ty;
 	pipparams_t pipparam;
-	board_tsc_getxy (& tx, & ty);
+	board_tsc_getxy(& tx, & ty);
 
 	if (board_tsc_is_pressed())
 	{
 		if (element.fix)			// первые координаты после нажатия от контролера тачскрина приходят старые, пропускаем
 		{
-			element.last_pressed_x=tx;
-			element.last_pressed_y=ty;
-			element.is_touching_screen=1;
-			display2_getpipparams (&pipparam);
+			element.last_pressed_x = tx;
+			element.last_pressed_y = ty;
+			element.is_touching_screen = 1;
+			display2_getpipparams(&pipparam);
 
 		}
-		element.fix=1;
+		element.fix = 1;
 //		debug_printf_P(PSTR("touch %d after %d, sel %d, state %d, x %d, Y %d\n"), element.is_touching_screen, element.is_after_touch,
 //							 element.selected, button_handlers[element.selected].state, element.last_pressed_x, element.last_pressed_y);
+		debug_printf_P(PSTR("pip x - %d, pip y - %d\n"), element.last_pressed_x, element.last_pressed_y - pipparam.y);
 	}
 	else
 	{
-		element.is_touching_screen=0;
-		element.is_after_touch=0;
-		element.fix=0;
+		element.is_touching_screen = 0;
+		element.is_after_touch = 0;
+		element.fix = 0;
 	}
 
-	if (element.state==BUTTON_CANCELLED)
+	if (element.state == BUTTON_CANCELLED)
 	{
 		if (element.is_touching_screen && ! element.is_after_touch)
 		{
@@ -6627,14 +6628,14 @@ void update_buttons (void)
 				 && (button_handlers[i].type ? button_handlers[i].y2 + pipparam.y : button_handlers[i].y2) > element.last_pressed_y
 				 && button_handlers[i].visible == VISIBLE)
 				{
-					element.selected=i;
-					element.state=BUTTON_PRESSED;
+					element.selected = i;
+					element.state = BUTTON_PRESSED;
 				}
 			} /* for */
 		} /* if (element.is_touching_screen) */
 
 	}
-	if (element.state==BUTTON_PRESSED)
+	if (element.state == BUTTON_PRESSED)
 	{
 		if (button_handlers[element.selected].x1 < element.last_pressed_x && button_handlers[element.selected].x2 > element.last_pressed_x
 		 && (button_handlers[element.selected].type ? button_handlers[element.selected].y1 + pipparam.y : button_handlers[element.selected].y1) < element.last_pressed_y
@@ -6644,36 +6645,34 @@ void update_buttons (void)
 			if (element.is_touching_screen)
 			{
 //				debug_printf_P(PSTR("do redraw 1\n"));
-				button_handlers[element.selected].state=BUTTON_PRESSED;
-				button_handlers[element.selected].need_redraw=1;
-				display_buttons (0, 0);
+				button_handlers[element.selected].state = BUTTON_PRESSED;
+				button_handlers[element.selected].need_redraw = 1;
+				display_buttons(0, 0);
 			}
 			else
-				element.state=BUTTON_RELEASED;
+				element.state = BUTTON_RELEASED;
 		}
 		else
 		{
-			element.state=BUTTON_CANCELLED;
-			button_handlers[element.selected].state=BUTTON_CANCELLED;
-			button_handlers[element.selected].need_redraw=1;
+			element.state = BUTTON_CANCELLED;
+			button_handlers[element.selected].state = BUTTON_CANCELLED;
+			button_handlers[element.selected].need_redraw = 1;
 //			debug_printf_P(PSTR("do redraw 2\n"));
 			display_buttons (0, 0);
-			element.is_after_touch=1; // точка непрерывного нажатия вышла за пределы выбранного элемента
+			element.is_after_touch = 1; // точка непрерывного нажатия вышла за пределы выбранного элемента
 		}
-
 	}
-	if (element.state==BUTTON_RELEASED)
+	if (element.state == BUTTON_RELEASED)
 	{
-		button_handlers[element.selected].state=BUTTON_RELEASED;
-		button_handlers[element.selected].need_redraw=1;
+		button_handlers[element.selected].state = BUTTON_RELEASED;
+		button_handlers[element.selected].need_redraw = 1;
 //		debug_printf_P(PSTR("do redraw 3\n"));
-		display_buttons (0, 0);
+		display_buttons(0, 0);
 		button_handlers[element.selected].onClickHandler();
 		debug_printf_P(PSTR("handler %d runned\n"), element.selected);
-		button_handlers[element.selected].state=BUTTON_CANCELLED;
-		element.is_after_touch=0;
-		element.state=BUTTON_CANCELLED;
-
+		button_handlers[element.selected].state = BUTTON_CANCELLED;
+		element.is_after_touch = 0;
+		element.state = BUTTON_CANCELLED;
 	}
 }
 #endif /* WITHTOUCHTEST */

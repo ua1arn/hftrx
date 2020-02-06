@@ -967,77 +967,22 @@ void board_set_wflevelsep(uint_fast8_t v); /* чувствительность �
 
 #if WITHTOUCHTEST
 
-enum {								// button_handler.type
-	TYPE_FOOTER_BUTTON,				// группа постоянных кнопок внизу экрана
-	TYPE_PIP_BUTTON					// динамически рисуемая кнопка на PIP без фиксированных координат
-};
 
-enum {								// button_handler.state
-	BUTTON_PRESSED,					// нажато
-	BUTTON_RELEASED,				// отпущено после нажатия внутри элемента
-	BUTTON_CANCELLED				// первоначальное состояние или отпущено после нажатия вне элемента
-};
 
-enum {								// button_handler.visible & windowpip.is_show
-	NON_VISIBLE,					// parent window закрыто, кнопка не отрисовывается
-	VISIBLE							// parent window на экране, кнопка отрисовывается
-};
-
-enum {								// button_handler.for_window & windowpip.window_id
-	FOOTER,							// заглушка для заполнения структуры для кнопок внизу экрана
-	WINDOW_MODES,					// переключение режимов работы, видов модуляции
-};
-
-typedef struct  {
-	uint_fast16_t x1;				// для TYPE_FOOTER_BUTTON координаты от начала экрана,
-	uint_fast16_t y1;				// для TYPE_PIP_BUTTON координаты от начала PIP
-	uint_fast16_t x2;
-	uint_fast16_t y2;
-	void(*onClickHandler) (void);	// обработчик события RELEASED
-	uint_fast8_t state;				// текущее состояние кнопки
-	uint_fast8_t need_redraw;		// запрос на перерисовку после изменения состояния
-	uint_fast8_t type;				// тип кнопки - постоянная или динамическая
-	uint_fast8_t parent;			// индекс окна, в котором будет отображаться кнопка при type = TYPE_PIP_BUTTON
-	uint_fast8_t visible;			// рисовать ли кнопку на экране
-	uintptr_t payload;
-	char * text;					// текст внутри кнопки
-} button_handler;
-
-typedef struct {
-	uint_fast16_t last_pressed_x; 	 // последняя точка касания экрана
-	uint_fast16_t last_pressed_y;
-	uint_fast8_t selected;			 // индекс последнего выбранного элемента
-	uint_fast8_t state;				 // последнее состояние
-	uint_fast8_t is_touching_screen; // есть ли касание экрана в данный момент
-	uint_fast8_t is_after_touch; 	 // есть ли касание экрана после выхода точки касания из элемента
-	uint_fast8_t fix;				 // первые координаты после нажатия от контролера тачскрина приходят старые, пропускаем
-	uint_fast8_t window_to_draw;	 // индекс записи с описанием запрошенного к отображению окна
-} element1_t;
-
-typedef struct {
-	uint_fast8_t window_id;			// в окне будут отображаться кнопки с соответствующим полем for_window
-	uint_fast16_t x1;
-	uint_fast16_t y1;
-	uint_fast16_t x2;
-	uint_fast16_t y2;
-	char * title;					// текст, выводимый в заголовке окна
-	uint_fast8_t is_show;			// запрос на отрисовку окна
-} windowpip;
-
-void button1_handler (void);
-void button2_handler (void);
-void button3_handler (void);
-void button4_handler (void);
-void button5_handler (void);
-void button6_handler (void);
-void button7_handler (void);
-void button8_handler (void);
-void buttons_mode_handler (void);
+void button1_handler(void);
+void button2_handler(void);
+void button3_handler(void);
+void button4_handler(void);
+void button5_handler(void);
+void button6_handler(void);
+void button7_handler(void);
+void button8_handler(void);
+void buttons_mode_handler(void);
 
 void display_at_xy(uint_fast16_t x, uint_fast16_t y, const char * s);
 void display_footer_buttons(uint_fast8_t x, uint_fast8_t y, void * pv);
-void display_pip_update (uint_fast8_t x, uint_fast8_t y, void * pv);
-void display_buttons (uint_fast8_t menuset, uint_fast8_t extra);
+void display_pip_update(uint_fast8_t x, uint_fast8_t y, void * pv);
+void display_buttons(uint_fast8_t menuset, uint_fast8_t extra);
 void
 bitblt_fill(
 	uint_fast16_t x, uint_fast16_t y, 	// координаты в пикселях
