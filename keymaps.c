@@ -1005,14 +1005,14 @@ uint_fast8_t getexitkey(void)
 const struct qmkey qmdefs [NQMKEYS] =
 {
 	/* ! ряд справа от индикатора - снизу вверх */
-	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX, 		' ', },		// LOCK
-	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX, 		' ', },		// BAND DOWN
-	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX, 		' ', },		// BAND UP
+	{ KIF_NONE,		KBD_CODE_PLAYSTOP,		KBD_CODE_MAX, 		' ', },		// LOCK
+	{ KIF_SLOW4,	KBD_CODE_PLAYQUITE,		KBD_CODE_MAX, 		' ', },		// BAND DOWN
+	{ KIF_SLOW4,	KBD_CODE_PLAYLOUD,		KBD_CODE_MAX, 		' ', },		// BAND UP
 	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX, 		' ', },		// MODE/SUBMODE
 
 	/* ! матрица слева от индикатора - ряд 1 по счету слева - снизу вверх */
 	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX, 		' ', },		// DISPLAY/MENU
-	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX,		' ', },		// MOX/TUNE
+	{ KIF_NONE,		KBD_CODE_MOX,			KBD_CODE_TXTUNE,	' ', },		// MOX/TUNE
 	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX,		' ', },		// TUNER BYP/ATU START
 	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX,		' ', },		// SPLIT/SPLIT OFF
 

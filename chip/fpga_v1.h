@@ -127,7 +127,7 @@ prog_fpga_ctrlreg(
 	RBBIT(5, glob_dither);					/* b5: adc_dith net */
 	RBBIT(4, glob_adcrand);					/* b4: adc_rand net  */
 	RBBIT(3, ! glob_sleep && glob_preamp);	/* b3: adc_pga net */
-#if 1//! WITHWAVPLAYER
+#if ! WITHWAVPLAYER
 	// Для экономии потребления - не включаеи АЦП и ЦАП
 	RBBIT(2, ! glob_sleep && glob_tx);		/* b2: mode_tx net  */
 	RBBIT(1, ! glob_sleep && ! glob_tx);	/* b1: mode_rx net  */

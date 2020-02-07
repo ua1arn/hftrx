@@ -16497,6 +16497,25 @@ processkeyboard(uint_fast8_t kbch)
 	case KBD_CODE_PLAYFILE5:
 		playwavfile("5.wav");
 		return 1;	/* клавиша уже обработана */
+	case KBD_CODE_PLAYSTOP:
+		playwavstop();
+		return 1;	/* клавиша уже обработана */
+	case KBD_CODE_PLAYLOUD:	// громче
+		if (afgain1.value != BOARD_AFGAIN_MAX)
+		{
+			afgain1.value = calc_next(afgain1.value, BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX);
+			save_i8(offsetof(struct nvmap, afgain1), afgain1.value);
+			updateboard(1, 0);
+		}
+		return 1;
+	case KBD_CODE_PLAYQUITE:	// тише
+		if (afgain1.value != BOARD_AFGAIN_MIN)
+		{
+			afgain1.value = calc_prev(afgain1.value, BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX);
+			save_i8(offsetof(struct nvmap, afgain1), afgain1.value);
+			updateboard(1, 0);
+		}
+		return 1;
 	}
 #endif /* WITHWAVPLAYER */
 

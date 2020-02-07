@@ -666,6 +666,17 @@ uint_fast8_t isplayfile(void)
 	return playfile;
 }
 
+void playwavstop(void)
+{
+	if (playfile)
+	{
+		FRESULT rc;				/* Result code */
+		debug_printf_P(PSTR("Stop active play file\n"));
+		rc = f_close(& Fil);
+		playfile = 0;
+	}
+}
+
 void playwavfile(const char * filename)
 {
 	FRESULT rc;				/* Result code */

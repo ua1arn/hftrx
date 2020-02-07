@@ -138,6 +138,9 @@ enum
 	KBD_CODE_PLAYFILE3,
 	KBD_CODE_PLAYFILE4,
 	KBD_CODE_PLAYFILE5,
+	KBD_CODE_PLAYSTOP,
+	KBD_CODE_PLAYLOUD,	// громче
+	KBD_CODE_PLAYQUITE,	// тише
 #endif /* WITHWAVPLAYER */
 	//
 	KBD_CODE_MAX		// на этот код назначаются неиспользуемые клавиши.
