@@ -17506,8 +17506,11 @@ hamradio_main_step(void)
 				nrotate = getRotateHiRes(& jumpsize, ghiresdiv * gencderate);
 				nrotate2 = getRotateHiRes2(& jumpsize2);
 			#endif
-
+#if WITHTOUCHTEST
 			if (uif_encoder2_rotate(nrotate2) && !encoder2busy)
+#else
+			if (uif_encoder2_rotate(nrotate2))
+#endif
 			{
 				nrotate2 = 0;
 				display_redrawfreqmodesbars(0);			/* Обновление дисплея - всё, включая частоту */
