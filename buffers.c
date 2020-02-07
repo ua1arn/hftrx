@@ -1425,30 +1425,15 @@ unsigned savesamplesplay_user(
 
 	if (size == 0)
 	{
-		PRINTF("savesamplesplay_user: length=%u - no memory\n", length);
+		//PRINTF("savesamplesplay_user: length=%u - no memory\n", length);
 		return 0;
 	}
 
-	PRINTF("savesamplesplay_user: length=%u\n", length);
+	//PRINTF("savesamplesplay_user: length=%u\n", length);
 	unsigned chunk = ulmin(size, length);
 	memcpy(p, buff, chunk);
 	saveplaybuffer(p, chunk);
 	return chunk;
-}
-
-
-// realtime-mode function
-unsigned takerecordbuffer_low(void * * dest)
-{
-	if (! IsListEmpty2(& recordsready16))
-	{
-		PLIST_ENTRY t = RemoveTailList2(& recordsready16);
-		-- recbuffered;
-		records16_t * const p = CONTAINING_RECORD(t, records16_t, item);
-		* dest = p->buff;
-		return (AUDIORECBUFFSIZE16 * sizeof p->buff [0]);
-	}
-	return 0;
 }
 
 // user-mode function
@@ -1460,13 +1445,6 @@ void releaserecordbuffer(void * dest)
 	global_enableIRQ();
 }
 
-// realtime-mode function
-void releaserecordbuffer_low(void * dest)
-{
-	records16_t * const p = CONTAINING_RECORD(dest, records16_t, buff);
-	InsertHeadList2(& recordsfree16, & p->item);
-}
-
 /* Получение пары (левый и правый) сжмплов для воспроизведения через аудиовыход трансивера.
  * Возврат 0, если нет ничего для воспроизведения.
  */
@@ -1474,17 +1452,21 @@ uint_fast8_t takesoundsample(INT32P_t * rv)
 {
 	static records16_t * p = NULL;
 	static unsigned n;
-	if (p == NULL && ! IsListEmpty2(& recordsready16))
+	if (p == NULL)
 	{
-		PLIST_ENTRY t = RemoveTailList2(& recordsready16);
-		-- recbuffered;
-		p = CONTAINING_RECORD(t, records16_t, item);
-		n = p->startdata;	// reset samples count
-		PRINTF("takesoundsample: startdata=%u, topdata=%u\n", p->startdata, p->topdata);
-	}
-	else
-	{
-		return 0;
+		if (! IsListEmpty2(& recordsready16))
+		{
+			PLIST_ENTRY t = RemoveTailList2(& recordsready16);
+			-- recbuffered;
+			p = CONTAINING_RECORD(t, records16_t, item);
+			n = p->startdata;	// reset samples count
+			//PRINTF("takesoundsample: startdata=%u, topdata=%u\n", p->startdata, p->topdata);
+		}
+		else
+		{
+			// Нет данных для воспроизведения
+			return 0;
+		}
 	}
 	int_fast16_t sample = p->buff [n];
 	rv->IV = sample;
@@ -1495,7 +1477,7 @@ uint_fast8_t takesoundsample(INT32P_t * rv)
 		// Last sample used
 		InsertHeadList2(& recordsfree16, & p->item);
 		p = NULL;
-		PRINTF("Release record buffer\n");
+		//PRINTF("Release record buffer\n");
 	}
 	return 1;	// Сэмпл считан
 }

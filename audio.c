@@ -5789,7 +5789,7 @@ rxparam_update(uint_fast8_t profile, uint_fast8_t pathi)
 	}
 
 	// Уровень сигнала самоконтроля
-#if WITHUSBHEADSET || WITHUSBAUDIOSAI1 //|| WITHWAVPLAYER
+#if WITHUSBHEADSET || WITHUSBAUDIOSAI1 || WITHWAVPLAYER
 	sidetonevolume = 0;
 #else /* WITHUSBHEADSET */
 	sidetonevolume = (glob_sidetonelevel / (FLOAT_t) 100);
