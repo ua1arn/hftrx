@@ -151,10 +151,10 @@ extern "C" {
 	#define WITHUSENOFU_IN48_INRTS 		0	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
 	#define WITHUSENOFU_OUT48 			0	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
 #else /* WITHUAC2 */
-	#define WITHUSENOFU_IN48 			0	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
-	#define WITHUSENOFU_INRTS 			0	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
-	#define WITHUSENOFU_IN48_INRTS 		0	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
-	#define WITHUSENOFU_OUT48 			0	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
+	#define WITHUSENOFU_IN48 			1	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
+	#define WITHUSENOFU_INRTS 			1	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
+	#define WITHUSENOFU_IN48_INRTS 		1	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
+	#define WITHUSENOFU_OUT48 			1	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
 #endif /* WITHUAC2 */
 
 // Конфигурация потоков в Input Terminal Descriptor
@@ -492,6 +492,14 @@ void savesamplerecord16SD(int_fast16_t ch0, int_fast16_t ch1); /* to SD CARD */
 void savesamplerecord16uacin(int_fast16_t ch0, int_fast16_t ch1); /* to USB AUDIO */
 unsigned takerecordbuffer(void * * dest);
 void releaserecordbuffer(void * dest);
+/* data to play */
+unsigned savesamplesplay_user(
+	const void * buff,
+	unsigned length
+	);
+void spoolplayfile(void);
+void playwavfile(const char * filename);
+uint_fast8_t isplayfile(void);
 
 // Обслуживание модема
 size_t takemodemtxbuffer(uint8_t * * dest);	// Буферы с данными для передачи через модем
@@ -668,6 +676,10 @@ void uacout_buffer_stop(void);
 void uacout_buffer_save_system(const uint8_t * buff, uint_fast16_t size);
 void uacout_buffer_save_realtime(const uint8_t * buff, uint_fast16_t size);
 
+/* Получение пары (левый и правый) сжмплов для воспроизведения через аудиовыход трансивера.
+ * Возврат 0, если нет ничего для воспроизведения.
+ */
+uint_fast8_t takesoundsample(INT32P_t * rv);
 
 #ifdef __cplusplus
 }
