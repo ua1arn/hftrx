@@ -998,6 +998,53 @@ uint_fast8_t getexitkey(void)
 	return KBD_CODE_DISPMODE;
 }
 
+#elif KEYB_FPANEL20_V0A_PLAYFILE
+
+/* 20 кнопок на 5 линий - плата Rfrontpanel_v7a, Rfrontpanel_v4b, Rfrontpanel_v0 + LCDMODE_UC1608 в нормальном расположении */
+/* Новый вариант под корпус с надписями от RK1AQ */
+const struct qmkey qmdefs [NQMKEYS] =
+{
+	/* ! ряд справа от индикатора - снизу вверх */
+	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX, 		' ', },		// LOCK
+	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX, 		' ', },		// BAND DOWN
+	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX, 		' ', },		// BAND UP
+	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX, 		' ', },		// MODE/SUBMODE
+
+	/* ! матрица слева от индикатора - ряд 1 по счету слева - снизу вверх */
+	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX, 		' ', },		// DISPLAY/MENU
+	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX,		' ', },		// MOX/TUNE
+	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX,		' ', },		// TUNER BYP/ATU START
+	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX,		' ', },		// SPLIT/SPLIT OFF
+
+	/* ! матрица слева от индикатора - ряд 4 по счету слева - снизу вверх */
+	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX, 		' ', },		// CW SPEED
+	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX, 		' ', },		// NOTCH
+	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX, 		' ', },		// BW/NR
+	{ KIF_NONE,		KBD_CODE_PLAYFILE5,		KBD_CODE_MAX,		' ', },		// DUAL
+
+	/* матрица слева от индикатора - ряд 3 по счету слева - снизу вверх */
+	{ KIF_NONE,		KBD_CODE_PLAYFILE4,		KBD_CODE_MAX, 		' ', },		// BREAK-IN
+	{ KIF_NONE,		KBD_CODE_PLAYFILE3,		KBD_CODE_MAX,		' ', },		// SPK
+	{ KIF_NONE,		KBD_CODE_PLAYFILE2,		KBD_CODE_MAX, 		' ', },		// ATT/PRE
+	{ KIF_NONE,		KBD_CODE_PLAYFILE1,		KBD_CODE_MAX, 		' ', },		// A/B
+
+	/* матрица слева от индикатора - ряд 2 по счету слева - снизу вверх */
+	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX,		' ', },		// VOX/DATA
+	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX,		' ', },		// REC
+	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX, 		' ', },		// ANTEMMA
+	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX, 		' ', },		// A=B
+
+	/* кнопка дополнительного валкодера */
+	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX, 		' ', },
+	/* кнопка выключения питания (включение аппаратно) */
+	{ KIF_POWER, 	KBD_CODE_POWEROFF,		KBD_CODE_MAX, 		' ', },
+};
+
+uint_fast8_t getexitkey(void)
+{
+	return KBD_CODE_DISPMODE;
+}
+
 #elif KEYB_FPANEL30_V3_BASE
 
 /* 30 кнопок на 5 линий - плата rfrontpanel_v3 + LCDMODE_S1D13781 & LCDMODE_LQ043T3DX02K в нормальном расположении */

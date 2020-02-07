@@ -131,6 +131,14 @@ enum
 #endif /* WITHDIRECTBANDS */
 	//
 	KBD_ENC2_PRESS, KBD_ENC2_HOLD,
+
+#if WITHWAVPLAYER
+	KBD_CODE_PLAYFILE1,
+	KBD_CODE_PLAYFILE2,
+	KBD_CODE_PLAYFILE3,
+	KBD_CODE_PLAYFILE4,
+	KBD_CODE_PLAYFILE5,
+#endif /* WITHWAVPLAYER */
 	//
 	KBD_CODE_MAX		// на этот код назначаются неиспользуемые клавиши.
 };

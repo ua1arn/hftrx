@@ -16479,6 +16479,27 @@ processkeyboard(uint_fast8_t kbch)
 		break;
 	}
 
+#if WITHWAVPLAYER
+	switch (kbch)
+	{
+	case KBD_CODE_PLAYFILE1:
+		playwavfile("1.wav");
+		return 1;	/* клавиша уже обработана */
+	case KBD_CODE_PLAYFILE2:
+		playwavfile("2.wav");
+		return 1;	/* клавиша уже обработана */
+	case KBD_CODE_PLAYFILE3:
+		playwavfile("3.wav");
+		return 1;	/* клавиша уже обработана */
+	case KBD_CODE_PLAYFILE4:
+		playwavfile("4.wav");
+		return 1;	/* клавиша уже обработана */
+	case KBD_CODE_PLAYFILE5:
+		playwavfile("5.wav");
+		return 1;	/* клавиша уже обработана */
+	}
+#endif /* WITHWAVPLAYER */
+
 	uint_fast8_t processed = 0;
 #if 1
 	processed = process_key_menuset0(kbch);
