@@ -499,6 +499,7 @@ unsigned savesamplesplay_user(
 	);
 void spoolplayfile(void);
 void playwavfile(const char * filename);
+uint_fast8_t isplayfile(void);
 
 // Обслуживание модема
 size_t takemodemtxbuffer(uint8_t * * dest);	// Буферы с данными для передачи через модем

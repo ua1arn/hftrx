@@ -629,24 +629,6 @@ void sdcardformat(void)
 
 #if WITHWAVPLAYER
 
-static BYTE targetdrv = 0;
-
-static char mmcInitialize(void)
-{
-	DSTATUS st = disk_initialize (targetdrv);				/* Physical drive nmuber (0..) */
-	//debug_printf_P(PSTR("disk_initialize code=%02X\n"), st);
-	return st != RES_OK;
-}
-
-// read a size Byte big block beginning at the address.
-//char mmcReadBlock(uint_fast32_t address, unsigned long count, unsigned char *pBuffer);
-static char mmcReadSector(uint_fast32_t sector, unsigned char *pBuffer)
-{
-	DSTATUS st = disk_read(targetdrv, pBuffer, sector, 1);
-	//debug_printf_P(PSTR("disk_read code=%02X\n"), st);
-	return st != RES_OK;
-}
-
 static FATFSALIGN_BEGIN RAMNOINIT_D1 FATFS Fatfs FATFSALIGN_END;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
 static FATFSALIGN_BEGIN RAMNOINIT_D1 FIL Fil FATFSALIGN_END;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
 static RAMNOINIT_D1 FATFSALIGN_BEGIN uint8_t rbuff [FF_MAX_SS * 16] FATFSALIGN_END;		// буфер записи - при совпадении с _MAX_SS нельзя располагать в Cortex-M4 CCM
@@ -678,6 +660,11 @@ struct WavHdr0
 static struct WavHdr0 hdr0;
 
 static int playfile = 0;
+
+uint_fast8_t isplayfile(void)
+{
+	return playfile;
+}
 
 void playwavfile(const char * filename)
 {
@@ -787,4 +774,5 @@ void spoolplayfile(void)
 
 	}
 }
+
 #endif /* WITHWAVPLAYER */

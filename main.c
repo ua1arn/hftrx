@@ -12255,6 +12255,12 @@ processtxrequest(void)
 #endif	/* WITHCAT */
 		txreq = 1;
 	}
+#if WITHWAVPLAYER
+	if (isplayfile())
+	{
+		txreq = 1;
+	}
+#endif /* WITHWAVPLAYER */
 #if WITHBEACON	
 	if (beacon_get_ptt())
 	{
