@@ -492,7 +492,7 @@ void savesamplerecord16SD(int_fast16_t ch0, int_fast16_t ch1); /* to SD CARD */
 void savesamplerecord16uacin(int_fast16_t ch0, int_fast16_t ch1); /* to USB AUDIO */
 unsigned takerecordbuffer(void * * dest);
 void releaserecordbuffer(void * dest);
-/* to play */
+/* data to play */
 unsigned savesamplesplay_user(
 	const void * buff,
 	unsigned length

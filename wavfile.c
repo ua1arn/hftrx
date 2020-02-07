@@ -687,7 +687,7 @@ void spoolplayfile(void)
 	int endoffile = 0;
 	if (playfile == 0)
 		return;
-	// печать тестового файла
+
 	do
 	{
 		if (ipos >= ibr)
