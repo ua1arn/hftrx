@@ -173,6 +173,7 @@ struct WavHdr24
 
 };
 #endif
+
 static FRESULT write_wav_header(const char * filename, unsigned int sample_rate)
 {
     //unsigned int byte_rate = sample_rate * num_channels * bytes_per_sample;
@@ -653,6 +654,29 @@ static UINT ibr = 0;		//  количество считанных байтов
 static UINT ipos = 0;			// номер выводимого байта
 
 
+// Complete WAV file header
+struct WavHdr0
+{
+	char  _RIFF[4]; // "RIFF"
+	DWORD FileLen;  // length of all data after this (FileLength - 8)
+
+	char _WAVE[4];  // "WAVE"
+
+	char _fmt[4];        // "fmt "
+	DWORD FmtLen;        // length of the next item (sizeof(WAVEFORMATEX))
+
+	WORD  wFormatTag;
+	WORD  nChannels;
+	DWORD nSamplesPerSec;
+	DWORD nAvgBytesPerSec;
+	WORD  nBlockAlign;
+	WORD  wBitsPerSample;
+	WORD  cbSize;
+
+} ATTRPACKED;
+
+static struct WavHdr0 hdr0;
+
 static int playfile = 0;
 
 void playwavfile(const char * filename)
@@ -675,6 +699,46 @@ void playwavfile(const char * filename)
 		debug_printf_P(PSTR("Failed with rc=%u.\n"), rc);
 		playfile = 0;
 		return;
+	}
+	// check format
+	{
+		rc = f_read(& Fil, & hdr0, sizeof hdr0, & ibr);	/* Read a chunk of file */
+		if (rc || ibr < sizeof hdr0)
+		{
+			debug_printf_P(PSTR("Can not check format of file '%s'\n"), filename);
+			debug_printf_P(PSTR("Failed with rc=%u.\n"), rc);
+			playfile = 0;
+			rc = f_close(& Fil);
+			return;
+		}
+		if (memcmp(hdr0._fmt, "fmt ", 4) != 0 || hdr0.nChannels != 1 || hdr0.wBitsPerSample != 16 || hdr0.nSamplesPerSec != dsp_get_sampleraterx())
+		{
+			debug_printf_P(PSTR("Wrong format of file '%s'\n"), filename);
+			playfile = 0;
+			rc = f_close(& Fil);
+			return;
+		}
+		FSIZE_t startdata = hdr0.FmtLen + 0x001C;
+		PRINTF("startdata = %08lX\n", (unsigned long) startdata);
+		rc = f_lseek(& Fil, startdata);
+		if (rc)
+		{
+			debug_printf_P(PSTR("Can not seek to wav data of file '%s'\n"), filename);
+			debug_printf_P(PSTR("Failed with rc=%u.\n"), rc);
+			playfile = 0;
+			rc = f_close(& Fil);
+			return;
+		}
+		unsigned long offs = startdata % sizeof rbuff;
+		rc = f_read(& Fil, rbuff + offs, sizeof rbuff - offs, & ibr);	/* Read a chunk of file */
+		if (rc || ! ibr)
+		{
+			debug_printf_P(PSTR("1-st read Failed with rc=%u.\n"), rc);
+			playfile = 0;
+			rc = f_close(& Fil);
+			return;
+		}
+		ipos = offs;		// начальное положение указателя в буфере для вывода данных
 	}
 	ibr = 0;
 	ipos = 0;
