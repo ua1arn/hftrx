@@ -1388,8 +1388,8 @@ unsigned takerecordbuffer(void * * dest)
 void saveplaybuffer(void * dest, unsigned used)
 {
 	records16_t * const p = CONTAINING_RECORD(dest, records16_t, buff);
-	p->startdata = 0;
-	p->topdata = used / sizeof p->buff [0];
+	p->startdata = 0;	// перыфй сэмпл в буфере
+	p->topdata = used / sizeof p->buff [0];	// количество сэмплов
 	global_disableIRQ();
 	InsertHeadList2(& recordsready16, & p->item);
 	global_enableIRQ();
@@ -1397,7 +1397,7 @@ void saveplaybuffer(void * dest, unsigned used)
 
 /* to play */
 unsigned savesamplesplay_user(
-	const int16_t * buff,
+	const void * buff,
 	unsigned length
 	)
 {

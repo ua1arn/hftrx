@@ -626,4 +626,101 @@ void sdcardformat(void)
 #endif /* WITHUSEAUDIOREC */
 
 
+#if WITHWAVPLAYER
 
+static BYTE targetdrv = 0;
+
+static char mmcInitialize(void)
+{
+	DSTATUS st = disk_initialize (targetdrv);				/* Physical drive nmuber (0..) */
+	//debug_printf_P(PSTR("disk_initialize code=%02X\n"), st);
+	return st != RES_OK;
+}
+
+// read a size Byte big block beginning at the address.
+//char mmcReadBlock(uint_fast32_t address, unsigned long count, unsigned char *pBuffer);
+static char mmcReadSector(uint_fast32_t sector, unsigned char *pBuffer)
+{
+	DSTATUS st = disk_read(targetdrv, pBuffer, sector, 1);
+	//debug_printf_P(PSTR("disk_read code=%02X\n"), st);
+	return st != RES_OK;
+}
+
+static FATFSALIGN_BEGIN RAMNOINIT_D1 FATFS Fatfs FATFSALIGN_END;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
+static FATFSALIGN_BEGIN RAMNOINIT_D1 FIL Fil FATFSALIGN_END;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
+static RAMNOINIT_D1 FATFSALIGN_BEGIN uint8_t rbuff [FF_MAX_SS * 16] FATFSALIGN_END;		// буфер записи - при совпадении с _MAX_SS нельзя располагать в Cortex-M4 CCM
+static UINT ibr = 0;		//  количество считанных байтов
+static UINT ipos = 0;			// номер выводимого байта
+
+
+static int playfile = 0;
+
+void playwavfile(const char * filename)
+{
+	FRESULT rc;				/* Result code */
+
+	if (playfile)
+	{
+		debug_printf_P(PSTR("Stop active play file\n"));
+		rc = f_close(& Fil);
+		playfile = 0;
+	}
+	f_mount(NULL, "", 0);		/* Unregister volume work area (never fails) */
+	f_mount(& Fatfs, "", 0);		/* Register volume work area (never fails) */
+	// открываем файл
+	rc = f_open(& Fil, filename, FA_READ);
+	if (rc)
+	{
+		debug_printf_P(PSTR("Can not open file '%s'\n"), filename);
+		debug_printf_P(PSTR("Failed with rc=%u.\n"), rc);
+		playfile = 0;
+		return;
+	}
+	ibr = 0;
+	ipos = 0;
+	playfile = 1;
+}
+
+void spoolplayfile(void)
+{
+	FRESULT rc;				/* Result code */
+	int endoffile = 0;
+	if (playfile == 0)
+		return;
+	// печать тестового файла
+	do
+	{
+		if (ipos >= ibr)
+		{
+			// если буфер не заполнен - читаем
+			rc = f_read(& Fil, rbuff, sizeof rbuff, & ibr);	/* Read a chunk of file */
+			if (rc || ! ibr)
+			{
+				endoffile = 1;
+				break;			/* Error or end of file */
+			}
+			ipos = 0;		// начальное положение указателя в буфере для вывода данных
+		}
+		else
+		{
+			unsigned saved = savesamplesplay_user(rbuff, ibr - ipos);
+			ipos += saved;
+		}
+	} while (0);
+
+	if (endoffile)
+	{
+		playfile = 0;
+
+		debug_printf_P("End file play.\n");
+		rc = f_close(& Fil);
+		if (rc)
+		{
+			TP();
+			debug_printf_P(PSTR("Failed with rc=%u.\n"), rc);
+			return;
+		}
+
+	}
+}
+#endif /* WITHWAVPLAYER */

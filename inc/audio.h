@@ -494,9 +494,11 @@ unsigned takerecordbuffer(void * * dest);
 void releaserecordbuffer(void * dest);
 /* to play */
 unsigned savesamplesplay_user(
-	const int16_t * buff,
+	const void * buff,
 	unsigned length
 	);
+void spoolplayfile(void);
+void playwavfile(const char * filename);
 
 // Обслуживание модема
 size_t takemodemtxbuffer(uint8_t * * dest);	// Буферы с данными для передачи через модем
