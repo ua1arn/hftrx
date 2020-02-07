@@ -168,11 +168,11 @@
 	//#define WITHSPLITEX	1	/* Трехкнопочное управление режимами расстройки */
 
 	// +++ Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
-	#define LCDMODE_DUMMY	1		/* заглушка - без отображения */
+	//#define LCDMODE_DUMMY	1		/* заглушка - без отображения */
 	//#define LCDMODE_HARD_SPI	1	/* LCD over SPI line */
-	//#define LCDMODE_LTDC	1		/* Use STM32F4xxx with LCD-TFT Controller (LTDC), also need LCDMODE_ILI9341 */
-	//#define LCDMODE_LTDC_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит - RGB565. */
-	//#define LCDMODE_LTDC_PIP16	1	/* используется PIP с форматом 16 бит - RGB565 */
+	#define LCDMODE_LTDC	1		/* Use STM32F4xxx with LCD-TFT Controller (LTDC), also need LCDMODE_ILI9341 */
+	#define LCDMODE_LTDC_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит - RGB565. */
+	#define LCDMODE_LTDC_PIP16	1	/* используется PIP с форматом 16 бит - RGB565 */
 	//#define LCDMODE_WH2002	1	/* тип применяемого индикатора 20*2, возможно вместе с LCDMODE_HARD_SPI */
 	//#define LCDMODE_WH1602	1	/* тип применяемого индикатора 16*2 */
 	//#define LCDMODE_WH1604	1	/* тип применяемого индикатора 16*4 */
@@ -209,7 +209,7 @@
 	//#define LCDMODE_ILI9320	1	/* Индикатор 248*320 с контроллером ILI9320 */
 	//#define LCDMODE_ILI9341	1	/* 320*240 SF-TC240T-9370-T с контроллером ILI9341 - STM32F4DISCO */
 	//#define LCDMODE_ILI9341_TOPDOWN	1	/* LCDMODE_ILI9341 - перевернуть изображение (для выводов справа) */
-	//#define LCDMODE_LQ043T3DX02K 1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 display */
+	#define LCDMODE_LQ043T3DX02K 1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 display */
 	//#define LCDMODE_AT070TN90 1	/* AT070TN90 panel (800*480) - 7" display */
 	// --- Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
 
@@ -291,9 +291,13 @@
 	//#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
 	//#define WITHOPERA4BEACON	1	/* работа маяком в OPERA */
 
-	#if 1
+	#if 0
 		#define WITHWAVPLAYER 1	/* трансивер работает проигрывателем файлов с USB/SD накопителя */
 		//#define WITHUSBHEADSET 1	/* трансивер работает USB гарнитурой для компьютера - режим тестирования */
+		//#define WITHBBOX	1	// Black Box mode - устройство без органов управления
+		//#define	WITHBBOXMIKESRC	BOARD_TXAUDIO_USB
+	#elif 0
+		#define WITHUSBHEADSET 1	/* трансивер работает USB гарнитурой для компьютера - режим тестирования */
 		#define WITHBBOX	1	// Black Box mode - устройство без органов управления
 		#define	WITHBBOXMIKESRC	BOARD_TXAUDIO_USB
 	#elif 0
