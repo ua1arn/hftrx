@@ -15208,7 +15208,7 @@ void display_multilinemenu_block_params(uint_fast8_t x, uint_fast8_t y, void * p
 				display_at_P(x - 1, y_position_params, PSTR(">"));
 			}
 			display_menu_lblng(x, y_position_params, (void *) mv); // название редактируемого параметра
-			display_at(x + 8, y_position_params, "                    ");
+			display_at(x + 8, y_position_params, "           ");
 			y_position_params += window.ystep;
 		}
 	}
