@@ -3276,7 +3276,11 @@ void spool_0p128(void);	// OPERA support
 
 #if WITHTOUCHTEST
 	void change_submode(uint_fast8_t newsubmode);
-	void bandpass (uint_fast8_t * r, uint_fast8_t * l);
+	uint_fast8_t bandpass (int_least16_t num);
+	void process_gui(void);
+	uint_fast8_t check_encoder2 (int_least16_t rotate);
+	uint_fast8_t encoder2_done (void);
+	void need_redraw_buttons (void);
 #endif /* WITHTOUCHTEST */
 
 #ifdef __cplusplus

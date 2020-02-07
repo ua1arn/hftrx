@@ -967,16 +967,6 @@ void board_set_wflevelsep(uint_fast8_t v); /* чувствительность �
 
 #if WITHTOUCHTEST
 
-void button1_handler(void);
-void button2_handler(void);
-void button3_handler(void);
-void button4_handler(void);
-void button5_handler(void);
-void button6_handler(void);
-void button7_handler(void);
-void button8_handler(void);
-void buttons_mode_handler(void);
-
 void display_at_xy(uint_fast16_t x, uint_fast16_t y, const char * s);
 void display_footer_buttons(uint_fast8_t x, uint_fast8_t y, void * pv);
 void display_pip_update(uint_fast8_t x, uint_fast8_t y, void * pv);

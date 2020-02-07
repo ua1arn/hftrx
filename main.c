@@ -36,9 +36,7 @@
 #endif /* WITHRFSG */
 
 #if WITHTOUCHTEST
-	void update_buttons (void);
-	void need_redraw_buttons (void);
-
+	uint_fast8_t encoder2busy;			// признак занятости энкодера в обработке gui
 	void display_redrawbuttons (void)
 	{
 		need_redraw_buttons();
@@ -17460,7 +17458,7 @@ hamradio_main_step(void)
 				nrotate2 = getRotateHiRes2(& jumpsize2);
 			#endif
 
-			if (uif_encoder2_rotate(nrotate2))
+			if (uif_encoder2_rotate(nrotate2) && !encoder2busy)
 			{
 				nrotate2 = 0;
 				display_redrawfreqmodesbars(0);			/* Обновление дисплея - всё, включая частоту */
@@ -17533,7 +17531,8 @@ hamradio_main_step(void)
 				}
 			}
 			#if WITHTOUCHTEST
-				update_buttons ();
+				encoder2busy = check_encoder2(nrotate2);
+				process_gui ();
 			#endif /* WITHTOUCHTEST */
 		}
 		break;
@@ -17543,6 +17542,18 @@ hamradio_main_step(void)
 	}
 	return STTE_OK;
 }
+
+uint_fast8_t bandpass (int_least16_t num)
+{
+	if (num != 0)
+	{
+		bwprop_ssbwide.right100 += num;
+		updateboard (1, 0);
+		return bwprop_ssbwide.right100;
+	}
+	return bwprop_ssbwide.right100;
+}
+
 // основной цикл программы при работе в режиме любительского премника
 static void
 hamradio_mainloop(void)
@@ -17891,13 +17902,6 @@ void change_submode(uint_fast8_t newsubmode)
 	gsubmodechange(getsubmode(bi), bi);
 	updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
 	display_redrawfreqmodesbars(0);
-}
-
-void bandpass (uint_fast8_t *r, uint_fast8_t *l)
-{
-	*r = bwprop_ssbwide.right100;
-	*l = bwprop_ssbwide.left10_width10;
-	debug_printf_P(PSTR("SSB W HI %d LO %d\n"), bwprop_ssbwide.right100, bwprop_ssbwide.left10_width10);
 }
 
 /* Главная функция программы */

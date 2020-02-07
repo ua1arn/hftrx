@@ -6350,18 +6350,40 @@ board_set_wflevelsep(uint_fast8_t v)
 #if WITHTOUCHTEST
 	#include "gui.h"
 
-	void set_visible_elements (uint_fast8_t parent, uint_fast8_t value)
+	void set_visible_window(uint_fast8_t parent, uint_fast8_t value)
 	{
 		for (uint_fast8_t i = 0; i < button_handlers_count; i++)
 		{
 			if (button_handlers[i].parent == parent)
-				button_handlers[i].visible = value;
+				button_handlers[i].visible = value ? VISIBLE : NON_VISIBLE;
 		}
 		for (uint_fast8_t i = 0; i < labels_count; i++)
 		{
 			if (labels[i].parent == parent)
-				labels[i].visible = value;
+				labels[i].visible = value ? VISIBLE : NON_VISIBLE;
 		}
+		windows[element.window_to_draw].is_show = value ? VISIBLE : NON_VISIBLE;
+		element.window_to_draw = value ? element.window_to_draw : 0;
+	}
+
+	void window_test_process (void)
+	{
+		if (element.enc2rotate != 0)
+		{
+			local_snprintf_P(labels[1].value, sizeof labels[1].value / sizeof labels[1].value [0], PSTR("%d"), bandpass(element.enc2rotate));
+			element.enc2done = 1;
+		}
+		debug_printf_P(PSTR("enc2rotate %d enc2done %d\n"), element.enc2rotate, element.enc2done);
+	}
+
+	uint_fast8_t check_encoder2 (int_least16_t rotate)
+	{
+		if (element.enc2done || element.enc2rotate == 0)
+		{
+			element.enc2rotate = rotate;
+			element.enc2done = 0;
+		}
+		return element.enc2busy;
 	}
 
 	void buttons_mode_handler(void)
@@ -6371,9 +6393,7 @@ board_set_wflevelsep(uint_fast8_t v)
 			if (button_handlers[element.selected].payload != UINTPTR_MAX)
 				change_submode(button_handlers[element.selected].payload);
 
-			set_visible_elements(WINDOW_MODES, NON_VISIBLE);
-			windows[element.window_to_draw].is_show = NON_VISIBLE;
-			element.window_to_draw = 0;
+			set_visible_window(WINDOW_MODES, NON_VISIBLE);
 		}
 	}
 
@@ -6382,18 +6402,10 @@ board_set_wflevelsep(uint_fast8_t v)
 		if (element.window_to_draw == 0) element.window_to_draw = WINDOW_MODES;
 
 		if (windows[element.window_to_draw].is_show == NON_VISIBLE)
-		{
-			set_visible_elements(WINDOW_MODES, VISIBLE);
-			windows[element.window_to_draw].is_show = VISIBLE;
-		}
+			set_visible_window(WINDOW_MODES, VISIBLE);
 		else
-		{
-			set_visible_elements(WINDOW_MODES, NON_VISIBLE);
-			windows[element.window_to_draw].is_show = NON_VISIBLE;
-			element.window_to_draw = 0;
-		}
+			set_visible_window(WINDOW_MODES, NON_VISIBLE);
 	}
-
 
 	void button2_handler(void)
 	{
@@ -6401,18 +6413,13 @@ board_set_wflevelsep(uint_fast8_t v)
 
 		if (windows[element.window_to_draw].is_show == NON_VISIBLE)
 		{
-			uint_fast8_t r, l;
-			bandpass(&r, &l);
-			local_snprintf_P (labels[0].value, sizeof labels[0].value, "%d", r);
-
-			set_visible_elements(WINDOW_TEST, VISIBLE);
-			windows[element.window_to_draw].is_show = VISIBLE;
+			element.enc2busy = 1;
+			set_visible_window(WINDOW_TEST, VISIBLE);
 		}
 		else
 		{
-			set_visible_elements(WINDOW_TEST, NON_VISIBLE);
-			windows[element.window_to_draw].is_show = NON_VISIBLE;
-			element.window_to_draw = 0;
+			set_visible_window(WINDOW_TEST, NON_VISIBLE);
+			element.enc2busy = 0;
 		}
 	}
 
@@ -6433,7 +6440,7 @@ board_set_wflevelsep(uint_fast8_t v)
 
 	void button6_handler(void)
 	{
-;
+
 	}
 
 	void button7_handler(void)
@@ -6526,8 +6533,8 @@ board_set_wflevelsep(uint_fast8_t v)
 	{
 		PACKEDCOLOR565_T * const colorpip = getscratchpip();
 		uint_fast16_t yt;
-		PACKEDCOLOR565_T dot, color_red, color_green, color_blue;
-		uint_fast8_t alpha = 10; // на сколько затемнять цвета
+		uint_fast8_t alpha = 20; // на сколько затемнять цвета
+		PACKEDCOLOR565_T dot, color_red, color_green, color_blue, color_bg = TFTRGB565 (alpha, alpha, alpha);
 		char buff [16];
 
 		// вывод на PIP служебной информации
@@ -6555,7 +6562,7 @@ board_set_wflevelsep(uint_fast8_t v)
 				{
 					dot = colorpip[yt + x1];
 					if (dot==COLOR565_BLACK)
-						colorpip[yt + x1] = 0x0841; // back gray
+						colorpip[yt + x1] = color_bg; // back gray
 					else // RRRR.RGGG.GGGB.BBBB
 					{
 						color_red = dot >> 11;
@@ -6593,6 +6600,9 @@ board_set_wflevelsep(uint_fast8_t v)
 					display_colorbuff_string_tbg(colorpip, ALLDX, ALLDY, labels[i].x, labels[i].y, labels[i].value, labels[i].color);
 			}
 
+			if (windows[element.window_to_draw].onVisibleProcess != 0)
+				windows[element.window_to_draw].onVisibleProcess();
+
 
 
 		} // if (is_popup_pip)
@@ -6607,7 +6617,7 @@ board_set_wflevelsep(uint_fast8_t v)
 		}
 	}
 
-	void update_buttons(void)
+	void process_gui(void)
 	{
 		uint_fast16_t tx,ty;
 		pipparams_t pipparam;

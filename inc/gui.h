@@ -2,6 +2,16 @@
 #define GUI_H_INCLUDED
 
 #if WITHTOUCHTEST
+	void button1_handler(void);
+	void button2_handler(void);
+	void button3_handler(void);
+	void button4_handler(void);
+	void button5_handler(void);
+	void button6_handler(void);
+	void button7_handler(void);
+	void button8_handler(void);
+	void buttons_mode_handler(void);
+	void window_test_process (void);
 
 	enum {								// button_handler.type
 		TYPE_FOOTER_BUTTON,				// группа постоянных кнопок внизу экрана
@@ -58,6 +68,9 @@
 		uint_fast8_t is_after_touch; 	 // есть ли касание экрана после выхода точки касания из элемента
 		uint_fast8_t fix;				 // первые координаты после нажатия от контролера тачскрина приходят старые, пропускаем
 		uint_fast8_t window_to_draw;	 // индекс записи с описанием запрошенного к отображению окна
+		uint_fast8_t enc2busy;			 // второй энкодер выделен для обработки данных окна
+		int_least16_t enc2rotate;		 // признак поворота второго энкодера
+		uint_fast8_t enc2done;
 	} element1_t;
 
 	typedef struct {
@@ -68,13 +81,14 @@
 		uint_fast16_t y2;
 		char * title;					// текст, выводимый в заголовке окна
 		uint_fast8_t is_show;			// запрос на отрисовку окна
+		void(*onVisibleProcess) (void);
 	} windowpip;
 
 	static windowpip windows[] = {
-	//     window_id,   x1,  y1, x2,  y2,  title,         is_show
+	//     window_id,   x1,  y1, x2,  y2,  title,         is_show,     onVisibleProcess
 		{ },
 		{ WINDOW_MODES, 214, 20, 586, 175, "Select mode", NON_VISIBLE, },
-		{ WINDOW_TEST,  214, 20, 586, 175, "Test",        NON_VISIBLE, },
+		{ WINDOW_TEST,  214, 20, 586, 175, "Test",        NON_VISIBLE, window_test_process},
 	};
 	enum { windows_count = sizeof windows / sizeof windows[0] };
 
@@ -106,7 +120,7 @@
 	};
 	enum { labels_count = sizeof labels / sizeof labels[0] };
 
-	static element1_t element = { 0, 0, 0, BUTTON_CANCELLED, 0, 0, 1, };
+	static element1_t element = { 0, 0, 0, BUTTON_CANCELLED, 0, 0, 1, 0, 0, 0, 1, };
 
 
 #endif /* #if WITHTOUCHTEST */
