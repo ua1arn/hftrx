@@ -127,8 +127,11 @@ prog_fpga_ctrlreg(
 	RBBIT(5, glob_dither);					/* b5: adc_dith net */
 	RBBIT(4, glob_adcrand);					/* b4: adc_rand net  */
 	RBBIT(3, ! glob_sleep && glob_preamp);	/* b3: adc_pga net */
+#if ! WITHWAVPLAYER
+	// Для экономии потребления - не включаеи АЦП и ЦАП
 	RBBIT(2, ! glob_sleep && glob_tx);		/* b2: mode_tx net  */
 	RBBIT(1, ! glob_sleep && ! glob_tx);	/* b1: mode_rx net  */
+#endif /* ! WITHWAVPLAYER */
 	RBBIT(0, glob_reset_n);					/* b0: ! reset_n net - FIR filter требует перехода из "1" в "0" на reset_n для нормальной работы */
 
 	spi_select2(target, CTLREG_SPIMODE, SPIC_SPEEDUFAST);

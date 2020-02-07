@@ -173,6 +173,7 @@ struct WavHdr24
 
 };
 #endif
+
 static FRESULT write_wav_header(const char * filename, unsigned int sample_rate)
 {
     //unsigned int byte_rate = sample_rate * num_channels * bytes_per_sample;
@@ -626,4 +627,163 @@ void sdcardformat(void)
 #endif /* WITHUSEAUDIOREC */
 
 
+#if WITHWAVPLAYER
 
+static FATFSALIGN_BEGIN RAMNOINIT_D1 FATFS Fatfs FATFSALIGN_END;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
+static FATFSALIGN_BEGIN RAMNOINIT_D1 FIL Fil FATFSALIGN_END;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
+static RAMNOINIT_D1 FATFSALIGN_BEGIN uint8_t rbuff [FF_MAX_SS * 16] FATFSALIGN_END;		// буфер записи - при совпадении с _MAX_SS нельзя располагать в Cortex-M4 CCM
+static UINT ibr = 0;		//  количество считанных байтов
+static UINT ipos = 0;			// номер выводимого байта
+
+
+// Complete WAV file header
+struct WavHdr0
+{
+	char  _RIFF[4]; // "RIFF"
+	DWORD FileLen;  // length of all data after this (FileLength - 8)
+
+	char _WAVE[4];  // "WAVE"
+
+	char _fmt[4];        // "fmt "
+	DWORD FmtLen;        // length of the next item (sizeof(WAVEFORMATEX))
+
+	WORD  wFormatTag;
+	WORD  nChannels;
+	DWORD nSamplesPerSec;
+	DWORD nAvgBytesPerSec;
+	WORD  nBlockAlign;
+	WORD  wBitsPerSample;
+	WORD  cbSize;
+
+} ATTRPACKED;
+
+static struct WavHdr0 hdr0;
+
+static int playfile = 0;
+
+uint_fast8_t isplayfile(void)
+{
+	return playfile;
+}
+
+void playwavstop(void)
+{
+	if (playfile)
+	{
+		FRESULT rc;				/* Result code */
+		debug_printf_P(PSTR("Stop active play file\n"));
+		rc = f_close(& Fil);
+		playfile = 0;
+	}
+}
+
+void playwavfile(const char * filename)
+{
+	FRESULT rc;				/* Result code */
+
+	if (playfile)
+	{
+		debug_printf_P(PSTR("Stop active play file\n"));
+		rc = f_close(& Fil);
+		playfile = 0;
+	}
+	f_mount(NULL, "", 0);		/* Unregister volume work area (never fails) */
+	f_mount(& Fatfs, "", 0);		/* Register volume work area (never fails) */
+	// открываем файл
+	rc = f_open(& Fil, filename, FA_READ);
+	if (rc)
+	{
+		debug_printf_P(PSTR("Can not open file '%s'\n"), filename);
+		debug_printf_P(PSTR("Failed with rc=%u.\n"), rc);
+		playfile = 0;
+		return;
+	}
+	// check format
+	{
+		rc = f_read(& Fil, & hdr0, sizeof hdr0, & ibr);	/* Read a chunk of file */
+		if (rc || ibr < sizeof hdr0)
+		{
+			debug_printf_P(PSTR("Can not check format of file '%s'\n"), filename);
+			debug_printf_P(PSTR("Failed with rc=%u.\n"), rc);
+			playfile = 0;
+			rc = f_close(& Fil);
+			return;
+		}
+		if (memcmp(hdr0._fmt, "fmt ", 4) != 0 || hdr0.nChannels != 1 || hdr0.wBitsPerSample != 16 || hdr0.nSamplesPerSec != dsp_get_sampleraterx())
+		{
+			debug_printf_P(PSTR("Wrong format of file '%s'\n"), filename);
+			playfile = 0;
+			rc = f_close(& Fil);
+			return;
+		}
+		FSIZE_t startdata = hdr0.FmtLen + 0x001C;
+		PRINTF("startdata = %08lX\n", (unsigned long) startdata);
+		rc = f_lseek(& Fil, startdata);
+		if (rc)
+		{
+			debug_printf_P(PSTR("Can not seek to wav data of file '%s'\n"), filename);
+			debug_printf_P(PSTR("Failed with rc=%u.\n"), rc);
+			playfile = 0;
+			rc = f_close(& Fil);
+			return;
+		}
+		unsigned long offs = startdata % sizeof rbuff;
+		rc = f_read(& Fil, rbuff + offs, sizeof rbuff - offs, & ibr);	/* Read a chunk of file */
+		if (rc || ! ibr)
+		{
+			debug_printf_P(PSTR("1-st read Failed with rc=%u.\n"), rc);
+			playfile = 0;
+			rc = f_close(& Fil);
+			return;
+		}
+		ipos = offs;		// начальное положение указателя в буфере для вывода данных
+	}
+	ibr = 0;
+	ipos = 0;
+	playfile = 1;
+}
+
+void spoolplayfile(void)
+{
+	FRESULT rc;				/* Result code */
+	int endoffile = 0;
+	if (playfile == 0)
+		return;
+
+	do
+	{
+		if (ipos >= ibr)
+		{
+			// если буфер не заполнен - читаем
+			rc = f_read(& Fil, rbuff, sizeof rbuff, & ibr);	/* Read a chunk of file */
+			if (rc || ! ibr)
+			{
+				endoffile = 1;
+				break;			/* Error or end of file */
+			}
+			ipos = 0;		// начальное положение указателя в буфере для вывода данных
+		}
+		else
+		{
+			unsigned saved = savesamplesplay_user(rbuff, ibr - ipos);
+			ipos += saved;
+		}
+	} while (0);
+
+	if (endoffile)
+	{
+		playfile = 0;
+
+		debug_printf_P("End file play.\n");
+		rc = f_close(& Fil);
+		if (rc)
+		{
+			TP();
+			debug_printf_P(PSTR("Failed with rc=%u.\n"), rc);
+			return;
+		}
+
+	}
+}
+
+#endif /* WITHWAVPLAYER */

@@ -12113,6 +12113,9 @@ processmessages(uint_fast8_t * kbch, uint_fast8_t * kbready, uint_fast8_t inmenu
 #if WITHUSEAUDIOREC
 		sdcardbgprocess();
 #endif /* WITHUSEAUDIOREC */
+#if WITHWAVPLAYER
+		spoolplayfile();
+#endif /* WITHWAVPLAYER */
 #if WITHLCDBACKLIGHT || WITHKBDBACKLIGHT
 		// обработать запрос на обновление состояния аппаратуры из user mode программы
 		if (dimmflagch != 0)
@@ -12267,6 +12270,12 @@ processtxrequest(void)
 #endif	/* WITHCAT */
 		txreq = 1;
 	}
+#if WITHWAVPLAYER
+	if (isplayfile())
+	{
+		txreq = 1;
+	}
+#endif /* WITHWAVPLAYER */
 #if WITHBEACON	
 	if (beacon_get_ptt())
 	{
@@ -16485,6 +16494,46 @@ processkeyboard(uint_fast8_t kbch)
 		break;
 	}
 
+#if WITHWAVPLAYER
+	switch (kbch)
+	{
+	case KBD_CODE_PLAYFILE1:
+		playwavfile("1.wav");
+		return 1;	/* клавиша уже обработана */
+	case KBD_CODE_PLAYFILE2:
+		playwavfile("2.wav");
+		return 1;	/* клавиша уже обработана */
+	case KBD_CODE_PLAYFILE3:
+		playwavfile("3.wav");
+		return 1;	/* клавиша уже обработана */
+	case KBD_CODE_PLAYFILE4:
+		playwavfile("4.wav");
+		return 1;	/* клавиша уже обработана */
+	case KBD_CODE_PLAYFILE5:
+		playwavfile("5.wav");
+		return 1;	/* клавиша уже обработана */
+	case KBD_CODE_PLAYSTOP:
+		playwavstop();
+		return 1;	/* клавиша уже обработана */
+	case KBD_CODE_PLAYLOUD:	// громче
+		if (afgain1.value != BOARD_AFGAIN_MAX)
+		{
+			afgain1.value = calc_next(afgain1.value, BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX);
+			save_i8(offsetof(struct nvmap, afgain1), afgain1.value);
+			updateboard(1, 0);
+		}
+		return 1;
+	case KBD_CODE_PLAYQUITE:	// тише
+		if (afgain1.value != BOARD_AFGAIN_MIN)
+		{
+			afgain1.value = calc_prev(afgain1.value, BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX);
+			save_i8(offsetof(struct nvmap, afgain1), afgain1.value);
+			updateboard(1, 0);
+		}
+		return 1;
+	}
+#endif /* WITHWAVPLAYER */
+
 	uint_fast8_t processed = 0;
 #if 1
 	processed = process_key_menuset0(kbch);
@@ -17463,6 +17512,26 @@ hamradio_main_step(void)
 				nrotate2 = 0;
 				display_redrawfreqmodesbars(0);			/* Обновление дисплея - всё, включая частоту */
 			}
+	#if WITHDEBUG
+			{
+				/* здесь можно добавить обработку каких-либо команд с debug порта */
+				char c;
+				if (dbg_getchar(& c))
+				{
+					switch (c)
+					{
+					default:
+						break;
+		#if WITHWAVPLAYER
+					case 'p':
+						debug_printf_P(PSTR("Play test file\n"));
+						playwavfile("1.wav");
+						break;
+		#endif /* WITHWAVPLAYER */
+					}
+				}
+			}
+	#endif /* WITHDEBUG */
 	#if WITHKEYBOARD
 			if (kbready != 0)
 			{
