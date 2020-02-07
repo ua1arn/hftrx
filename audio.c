@@ -5254,7 +5254,7 @@ static RAMFUNC void recordsampleUAC(int left, int right)
 // Запись на SD CARD
 static RAMFUNC void recordsampleSD(int left, int right)
 {
-#if WITHUSEAUDIOREC
+#if WITHUSEAUDIOREC && ! WITHWAVPLAYER
 	savesamplerecord16SD(left, right);	// Запись демодулированного сигнала без озвучки клавиш на SD CARD
 #endif /* WITHUSEAUDIOREC */
 }
@@ -5279,7 +5279,17 @@ void dsp_addsidetone(int16_t * buff)
 		int_fast16_t left = b [L];
 		int_fast16_t right = b [R];
 		//
-#if WITHUSBHEADSET || WITHUSBAUDIOSAI1 || WITHWAVPLAYER
+#if WITHWAVPLAYER
+		{
+			INT32P_t dual;
+
+			if (takesoundsample(& dual) != 0)
+			{
+				left = dual.IV;
+				right = dual.QV;
+			}
+		}
+#elif WITHUSBHEADSET || WITHUSBAUDIOSAI1
 		// Обеспечиваем прослушивание стерео
 #else /* WITHUSBHEADSET */
 		switch (glob_mainsubrxmode)
@@ -5333,20 +5343,6 @@ void dsp_addsidetone(int16_t * buff)
 			break;
 		}
 	}
-}
-
-/* получение пары (левый и правый) сжмплов для воспроизведения через аудиовыход трансивера */
-static INT32P_t
-getplayersample(void)
-{
-	INT32P_t dual;
-
-	if (takesoundsample(& dual) == 0)
-	{
-		dual.IV = 0;
-		dual.QV = 0;
-	}
-	return dual;
 }
 
 // Обработка полученного от DMA буфера с выборками или квадратурами (или двухканальный приём).
@@ -5482,13 +5478,6 @@ void RAMFUNC dsp_extbuffer32rx(const int32_t * buff)
 		processafadcsampleiq(dual, dspmodeA, shape, ctcss);	// Передатчик - формирование одного сэмпда (пары I/Q).
 		//
 		// Тестирование источников и потребителей звука
-		save16demod(dual.IV, dual.QV);
-
-	#elif WITHWAVPLAYER
-		/* трансивер работает проигрывателем файлов с USB/SD накопителя */
-
-		const INT32P_t dual = getplayersample();
-		processafadcsampleiq(vi, dspmodeA, shape, ctcss);	// Передатчик - формирование одного сэмпда (пары I/Q).
 		save16demod(dual.IV, dual.QV);
 
 	#elif WITHUSBHEADSET
@@ -5800,7 +5789,7 @@ rxparam_update(uint_fast8_t profile, uint_fast8_t pathi)
 	}
 
 	// Уровень сигнала самоконтроля
-#if WITHUSBHEADSET || WITHUSBAUDIOSAI1
+#if WITHUSBHEADSET || WITHUSBAUDIOSAI1 //|| WITHWAVPLAYER
 	sidetonevolume = 0;
 #else /* WITHUSBHEADSET */
 	sidetonevolume = (glob_sidetonelevel / (FLOAT_t) 100);

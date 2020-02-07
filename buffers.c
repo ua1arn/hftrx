@@ -1385,6 +1385,23 @@ unsigned takerecordbuffer(void * * dest)
 }
 
 // user-mode function
+unsigned takefreerecordbuffer(void * * dest)
+{
+	global_disableIRQ();
+	if (! IsListEmpty2(& recordsfree16))
+	{
+		PLIST_ENTRY t = RemoveTailList2(& recordsfree16);
+		global_enableIRQ();
+		-- recbuffered;
+		records16_t * const p = CONTAINING_RECORD(t, records16_t, item);
+		* dest = p->buff;
+		return (AUDIORECBUFFSIZE16 * sizeof p->buff [0]);
+	}
+	global_enableIRQ();
+	return 0;
+}
+
+// user-mode function
 void saveplaybuffer(void * dest, unsigned used)
 {
 	records16_t * const p = CONTAINING_RECORD(dest, records16_t, buff);
@@ -1395,7 +1412,7 @@ void saveplaybuffer(void * dest, unsigned used)
 	global_enableIRQ();
 }
 
-/* to play */
+/* data to play */
 unsigned savesamplesplay_user(
 	const void * buff,
 	unsigned length
@@ -1404,15 +1421,19 @@ unsigned savesamplesplay_user(
 	void * p;
 	unsigned size;
 
-	size = takerecordbuffer(& p);
+	size = takefreerecordbuffer(& p);
 
 	if (size == 0)
+	{
+		PRINTF("savesamplesplay_user: length=%u - no memory\n", length);
 		return 0;
+	}
 
-	unsigned part = ulmin(size, length);
-	memcpy(p, buff, part);
-	saveplaybuffer(p, part);
-	return part;
+	PRINTF("savesamplesplay_user: length=%u\n", length);
+	unsigned chunk = ulmin(size, length);
+	memcpy(p, buff, chunk);
+	saveplaybuffer(p, chunk);
+	return chunk;
 }
 
 
@@ -1459,6 +1480,7 @@ uint_fast8_t takesoundsample(INT32P_t * rv)
 		-- recbuffered;
 		p = CONTAINING_RECORD(t, records16_t, item);
 		n = p->startdata;	// reset samples count
+		PRINTF("takesoundsample: startdata=%u, topdata=%u\n", p->startdata, p->topdata);
 	}
 	else
 	{
@@ -1473,6 +1495,7 @@ uint_fast8_t takesoundsample(INT32P_t * rv)
 		// Last sample used
 		InsertHeadList2(& recordsfree16, & p->item);
 		p = NULL;
+		PRINTF("Release record buffer\n");
 	}
 	return 1;	// Сэмпл считан
 }
