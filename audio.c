@@ -137,6 +137,7 @@ static uint_fast8_t 	glob_notch_on;		/* включение NOTCH фильтра 
 
 static uint_fast8_t 	glob_cwedgetime = 4;		/* CW Rise Time (in 1 ms discrete) */
 static uint_fast8_t 	glob_sidetonelevel = 10;	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
+static uint_fast8_t 	glob_monilevel = 10;	/* Уровень сигнала самопрослушивания в процентах - 0%..100% */
 static uint_fast8_t 	glob_subtonelevel = 0;	/* Уровень сигнала CTCSS в процентах - 0%..100% */
 static uint_fast8_t 	glob_amdepth = 30;		/* Глубина модуляции в АМ - 0..100% */
 static uint_fast8_t		glob_dacscale = 100;	/* На какую часть (в процентах) от полной амплитуды использцется ЦАП передатчика */
@@ -3650,8 +3651,12 @@ static RAMFUNC float iir_nfmnbbpf(FLOAT_t NewSample) {
 
 static FLOAT_t sidetonevolume = 0; //(glob_sidetonelevel / (FLOAT_t) 100);
 static FLOAT_t mainvolumerx = 1; //1 - sidetonevolume;
+
 static FLOAT_t subtonevolume = 0; //(glob_subtonelevel / (FLOAT_t) 100);
 static FLOAT_t mainvolumetx = 1; //1 - subtonevolume;
+
+static FLOAT_t monisublvl = 0;
+static FLOAT_t monimainlvl = 1;
 
 // Здесь значение выборки в диапазоне, допустимом для кодека
 static RAMFUNC FLOAT_t injectsidetone(FLOAT_t v, FLOAT_t sdtn)
@@ -3665,6 +3670,13 @@ static RAMFUNC FLOAT_t injectsubtone(FLOAT_t v, FLOAT_t ctcss)
 {
 
 	return v * mainvolumetx + ctcss * subtonevolume;
+}
+
+// Здесь значение выборки в диапазоне, допустимом для кодека
+static RAMFUNC FLOAT_t injectmoni(FLOAT_t v, FLOAT_t moni)
+{
+
+	return v * monimainlvl + moni * monisublvl;
 }
 
 // Поддержка генерации белого шума
@@ -5313,7 +5325,8 @@ void dsp_addsidetone(int16_t * buff)
 #else /* WITHUSBHEADSET */
 		if (tx)
 		{
-			left = right = monitx;
+			left = injectmoni(left, monitx);
+			right = injectmoni(right, monitx);
 		}
 		switch (glob_mainsubrxmode)
 		{
@@ -5818,6 +5831,11 @@ rxparam_update(uint_fast8_t profile, uint_fast8_t pathi)
 	sidetonevolume = (glob_sidetonelevel / (FLOAT_t) 100);
 #endif /* WITHUSBHEADSET */
 	mainvolumerx = 1 - sidetonevolume;
+
+	// Уровень сигнала самопрослушивания
+	monisublvl = (glob_monilevel / (FLOAT_t) 100);
+	FLOAT_t monimainlvl = 1 - monisublvl;
+
 }
 // Передача параметров в DSP модуль
 // Обновление параметров передатчика (кроме фильтров).
@@ -6364,6 +6382,16 @@ board_set_sidetonelevel(uint_fast8_t n)	/* Уровень сигнала сам�
 }
 
 void 
+board_set_monilevel(uint_fast8_t n)	/* Уровень сигнала самопрослушивания в процентах - 0%..100% */
+{
+	if (glob_monilevel != n)
+	{
+		glob_monilevel = n;
+		board_dsp1regchanged();
+	}
+}
+
+void
 board_set_subtonelevel(uint_fast8_t n)	/* Уровень сигнала CTCSS в процентах - 0%..100% */
 {
 	if (glob_subtonelevel != n)
