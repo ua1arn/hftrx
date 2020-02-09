@@ -5302,10 +5302,13 @@ void dsp_addsidetone(int16_t * buff)
 		INT32P_t moni;
 		if (getsampmlemoni(& moni) == 0)
 		{
+			// Еще нет сэмплов в канале самоконтроля (самопрослушивание)
+			// TODO: сделать самоконтроль телеграфа в этом же канале.
 			moni.IV = 0;
 			moni.QV = 0;
 		}
-		const int_fast16_t monitx = getmonitx(dspmodeA, sdtn, moni.IV);
+		const int_fast16_t monitxL = getmonitx(dspmodeA, sdtn, moni.IV);
+		const int_fast16_t monitxR = getmonitx(dspmodeA, sdtn, moni.QV);
 
 		int_fast16_t left = b [L];
 		int_fast16_t right = b [R];
@@ -5325,8 +5328,8 @@ void dsp_addsidetone(int16_t * buff)
 #else /* WITHUSBHEADSET */
 		if (tx)
 		{
-			left = injectmoni(left, monitx);
-			right = injectmoni(right, monitx);
+			left = injectmoni(left, monitxL);
+			right = injectmoni(right, monitxR);
 		}
 		switch (glob_mainsubrxmode)
 		{
