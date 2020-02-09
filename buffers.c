@@ -930,6 +930,46 @@ buffers_savefromresampling(voice16_t * p)
 
 #endif /* WITHUSBUAC */
 
+// Сохранить звук от несинхронного источника - USB - для последующего ресэмплинга
+RAMFUNC static void buffers_savetoresampling16(voice16_t * p)
+{
+	LOCK(& locklist16);
+	// Помеестить в очередь принятых с USB UAC
+	InsertHeadList3(& resample16, & p->item, 0);
+
+	if (GetCountList3(& resample16) > (RESAMPLE16NORMAL * 2))
+	{
+		// Из-за ошибок с асинхронным аудио пришлось добавить ограничение на размер этой очереди
+		const PLIST_ENTRY t = RemoveTailList3(& resample16);
+		InsertHeadList2(& voicesfree16, t);
+
+	#if WITHBUFFERSDEBUG
+		++ e6;
+	#endif /* WITHBUFFERSDEBUG */
+	}
+	UNLOCK(& locklist16);
+}
+
+// приняли данные от USB AUDIO
+static RAMFUNC void
+buffers_savefromuacout(voice16_t * p)
+{
+#if WITHBUFFERSDEBUG
+	// подсчёт скорости в сэмплах за секунду
+	debugcount_uacout += sizeof p->buff / sizeof p->buff [0] / DMABUFSTEP16;	// в буфере пары сэмплов по два байта
+#endif /* WITHBUFFERSDEBUG */
+
+#if WITHUSBUAC
+
+	if (uacoutplayer || uacoutmike)
+		buffers_savetoresampling16(p);
+	else
+		buffers_tonull16(p);
+#else /* WITHUSBUAC */
+	buffers_tonull16(p);
+#endif /* WITHUSBUAC */
+}
+
 //////////////////////////////////////////
 // Поэлементное чтение буфера AF ADC
 
@@ -1045,46 +1085,6 @@ void savemoni16stereo(int_fast32_t ch0, int_fast32_t ch1)
 		buffers_savefrommoni(p);
 		p = NULL;
 	}
-}
-
-// Сохранить звук от несинхронного источника - USB - для последующего ресэмплинга
-RAMFUNC static void buffers_savetoresampling16(voice16_t * p)
-{
-	LOCK(& locklist16);
-	// Помеестить в очередь принятых с USB UAC
-	InsertHeadList3(& resample16, & p->item, 0);
-
-	if (GetCountList3(& resample16) > (RESAMPLE16NORMAL * 2))
-	{
-		// Из-за ошибок с асинхронным аудио пришлось добавить ограничение на размер этой очереди
-		const PLIST_ENTRY t = RemoveTailList3(& resample16);
-		InsertHeadList2(& voicesfree16, t);
-
-	#if WITHBUFFERSDEBUG
-		++ e6;
-	#endif /* WITHBUFFERSDEBUG */
-	}
-	UNLOCK(& locklist16);
-}
-
-// приняли данные от USB AUDIO
-static RAMFUNC void
-buffers_savefromuacout(voice16_t * p)
-{
-#if WITHBUFFERSDEBUG
-	// подсчёт скорости в сэмплах за секунду
-	debugcount_uacout += sizeof p->buff / sizeof p->buff [0] / DMABUFSTEP16;	// в буфере пары сэмплов по два байта
-#endif /* WITHBUFFERSDEBUG */
-
-#if WITHUSBUAC
-
-	if (uacoutplayer || uacoutmike)
-		buffers_savetoresampling16(p);
-	else
-		buffers_tonull16(p);
-#else /* WITHUSBUAC */
-	buffers_tonull16(p);
-#endif /* WITHUSBUAC */
 }
 
 #if WITHUSBUAC

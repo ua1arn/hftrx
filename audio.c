@@ -3838,6 +3838,7 @@ static RAMFUNC void processafadcsampleiq(
 {
 	// vi - audio sample in range [- txlevelfence.. + txlevelfence]
 	FLOAT_t vi = preparevi(vi0.IV, dspmode, ctcss);	// vi нормирован к разрядности выходного ЦАП
+	savemoni16stereo(vi0.IV, vi0.QV);
 	if (isdspmodetx(dspmode))
 	{
 #if WITHMODEM
@@ -5168,7 +5169,7 @@ static FLOAT_t
 getmonitx(
 	uint_fast8_t dspmode, 
 	FLOAT_t sdtn, 
-	FLOAT_t mike
+	FLOAT_t moni
 	)
 {
 	switch (dspmode)
@@ -5181,7 +5182,7 @@ getmonitx(
 	case DSPCTL_MODE_TX_AM:
 	case DSPCTL_MODE_TX_NFM:
 	case DSPCTL_MODE_TX_SSB:
-		return mike;
+		return moni;
 	}
 }
 
@@ -5379,7 +5380,6 @@ void RAMFUNC dsp_extbuffer32rx(const int32_t * buff)
 		const FLOAT_t ctcss = get_float_subtone() * txlevelfenceSSB;
 		const INT32P_t vi = getsampmlemike2();	// с микрофона (или 0, если ещё не запустился) */
 		const FLOAT_t shape = shapeCWEnvelopStep() * scaleDAC;	// 0..1
-		savemoni16stereo(vi.IV, vi.QV);
 	#endif /* ! WITHTRANSPARENTIQ */
 
 	/* отсрочка установки частоты lo6 на время прохождения сигнала через FPGA FIR - аосле смены частоты LO1 */
