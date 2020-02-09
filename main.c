@@ -15077,7 +15077,6 @@ void display_multilinemenu_block_groups(uint_fast8_t x, uint_fast8_t y, void * p
 	uint_fast16_t selected_group_left_margin; // первый элемент группы
 	uint_fast16_t el;
 	multimenuwnd_t window;
-	gridparams_t z;
 
 	display2_getmultimenu(& window);
 
@@ -15103,8 +15102,11 @@ void display_multilinemenu_block_groups(uint_fast8_t x, uint_fast8_t y, void * p
 	index_groups = 0;
 	const uint_fast16_t menu_block_scroll_offset_groups = window.multilinemenu_max_rows * (selected_group_index / window.multilinemenu_max_rows);
 
+#if DSTYLE_G_X800_Y480
+	gridparams_t z;
 	display2_getgridparams(& z);
 	display2_clear_menu_bk(x - 1, y, x, z.gy2);
+#endif
 
 	// выводим на экран блок с параметрами
 	for (el = 0; el < MENUROW_COUNT; el ++)
@@ -15138,7 +15140,6 @@ void display_multilinemenu_block_params(uint_fast8_t x, uint_fast8_t y, void * p
 	uint_fast16_t selected_group_right_margin; // последний элемент группы
 	uint_fast16_t el;
 	multimenuwnd_t window;
-	gridparams_t z;
 
 	display2_getmultimenu(& window);
 
@@ -15169,8 +15170,11 @@ void display_multilinemenu_block_params(uint_fast8_t x, uint_fast8_t y, void * p
 	index_params = 0;
 	const uint_fast16_t menu_block_scroll_offset_params = window.multilinemenu_max_rows * (selected_params_index / window.multilinemenu_max_rows);
 
+#if DSTYLE_G_X800_Y480
+	gridparams_t z;
 	display2_getgridparams(& z);
 	display2_clear_menu_bk(x - 1, y, x, z.gy2);
+#endif
 
 	// выводим на экран блок с параметрами
 	for (el = 0; el < MENUROW_COUNT; el ++)
@@ -15193,11 +15197,15 @@ void display_multilinemenu_block_params(uint_fast8_t x, uint_fast8_t y, void * p
 				display_at_P(x - 1, y_position_params, PSTR(">"));
 			}
 			display_menu_lblng(x, y_position_params, (void *) mv); // название редактируемого параметра
-			display_at(x + 8, y_position_params, "                    ");
+#if DSTYLE_G_X800_Y480
+			display_at(x + 8, y_position_params, "           ");
+#endif
 			y_position_params += window.ystep;
 		}
 	}
+#if DSTYLE_G_X800_Y480
 	display2_clear_menu_bk(x, y_position_params, z.gx2, z.gy2);
+#endif
 }
 // Отображение многострочного меню для больших экранов (значения)
 void display_multilinemenu_block_vals(uint_fast8_t x, uint_fast8_t y, void * pv)
@@ -15599,8 +15607,13 @@ modifysettings(
 					#if defined (RTC1_TYPE)
 						getstamprtc();
 					#endif /* defined (RTC1_TYPE) */
+#if !DSTYLE_G_X800_Y480
+						display2_bgreset();		/* возможно уже с новой цветовой схемой */
+#endif
 						modifysettings(first, last, ITEM_VALUE, mp->qnvram, exitkey, byname);
-
+#if !DSTYLE_G_X800_Y480
+						display2_bgreset();		/* возможно уже с новой цветовой схемой */
+#endif
 						display_menuitemlabel((void *) mp, byname);
 						display_menuitemvalue((void *) mp);
 						display_redrawbars(1, 1);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
@@ -15644,7 +15657,10 @@ modifysettings(
 				if (posnvram != MENUNONVRAM)
 					save_i8(posnvram, menupos);	/* сохраняем номер пункта меню, с которым работаем */
 #endif /* (NVRAM_TYPE != NVRAM_TYPE_CPUEEPROM) */
-				
+
+#if !DSTYLE_G_X800_Y480
+				display2_bgreset();		/* возможно уже с новой цветовой схемой */
+#endif
 #if WITHDEBUG
 				debug_printf_P(PSTR("menu: ")); debug_printf_P(mp->qlabel); debug_printf_P(PSTR("\n")); 
 #endif /* WITHDEBUG */
