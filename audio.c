@@ -4501,6 +4501,14 @@ static INT32P_t loopbacktestaudio(INT32P_t vi0, uint_fast8_t dspmode, FLOAT_t sh
 static RAMFUNC INT32P_t getsampmlemike2(void)			
 {
 	INT32P_t v;
+#if WITHSENDWAV
+	if (takewavsample(& v) != 0)
+	{
+		INT32P_t dummy;
+		getsampmlemike(& dummy);
+	}
+	else
+#endif /* WITHSENDWAV */
 	if (getsampmlemike(& v) == 0)
 	{
 		v.IV = 0;
@@ -5254,9 +5262,9 @@ static RAMFUNC void recordsampleUAC(int left, int right)
 // Запись на SD CARD
 static RAMFUNC void recordsampleSD(int left, int right)
 {
-#if WITHUSEAUDIOREC && ! WITHWAVPLAYER
+#if WITHUSEAUDIOREC && ! (WITHWAVPLAYER || WITHSENDWAV)
 	savesamplerecord16SD(left, right);	// Запись демодулированного сигнала без озвучки клавиш на SD CARD
-#endif /* WITHUSEAUDIOREC */
+#endif /* WITHUSEAUDIOREC && ! (WITHWAVPLAYER || WITHSENDWAV) */
 }
 
 // перед передачей по DMA в аудиокодек
@@ -5283,7 +5291,7 @@ void dsp_addsidetone(int16_t * buff)
 		{
 			INT32P_t dual;
 
-			if (takesoundsample(& dual) != 0)
+			if (takewavsample(& dual) != 0)
 			{
 				left = dual.IV;
 				right = dual.QV;
@@ -5790,6 +5798,7 @@ rxparam_update(uint_fast8_t profile, uint_fast8_t pathi)
 
 	// Уровень сигнала самоконтроля
 #if WITHUSBHEADSET || WITHUSBAUDIOSAI1 || WITHWAVPLAYER
+	// В этих вариантвх самоконтроля нет.
 	sidetonevolume = 0;
 #else /* WITHUSBHEADSET */
 	sidetonevolume = (glob_sidetonelevel / (FLOAT_t) 100);

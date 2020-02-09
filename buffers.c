@@ -1445,10 +1445,11 @@ void releaserecordbuffer(void * dest)
 	global_enableIRQ();
 }
 
-/* Получение пары (левый и правый) сжмплов для воспроизведения через аудиовыход трансивера.
+/* Получение пары (левый и правый) сжмплов для воспроизведения через аудиовыход трансивера
+ * или для переачи
  * Возврат 0, если нет ничего для воспроизведения.
  */
-uint_fast8_t takesoundsample(INT32P_t * rv)
+uint_fast8_t takewavsample(INT32P_t * rv)
 {
 	static records16_t * p = NULL;
 	static unsigned n;
@@ -1460,7 +1461,7 @@ uint_fast8_t takesoundsample(INT32P_t * rv)
 			-- recbuffered;
 			p = CONTAINING_RECORD(t, records16_t, item);
 			n = p->startdata;	// reset samples count
-			//PRINTF("takesoundsample: startdata=%u, topdata=%u\n", p->startdata, p->topdata);
+			//PRINTF("takewavsample: startdata=%u, topdata=%u\n", p->startdata, p->topdata);
 		}
 		else
 		{

@@ -680,7 +680,7 @@ void uacout_buffer_save_realtime(const uint8_t * buff, uint_fast16_t size);
 /* Получение пары (левый и правый) сжмплов для воспроизведения через аудиовыход трансивера.
  * Возврат 0, если нет ничего для воспроизведения.
  */
-uint_fast8_t takesoundsample(INT32P_t * rv);
+uint_fast8_t takewavsample(INT32P_t * rv);
 
 #ifdef __cplusplus
 }
