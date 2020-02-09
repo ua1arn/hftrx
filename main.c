@@ -17523,14 +17523,22 @@ hamradio_main_step(void)
 				nrotate2 = getRotateHiRes2(& jumpsize2);
 			#endif
 #if WITHTOUCHTEST
-			if (uif_encoder2_rotate(nrotate2) && !encoder2busy)
+			if (!encoder2busy)
+			{
+				if (uif_encoder2_rotate(nrotate2))
+				{
 #else
 			if (uif_encoder2_rotate(nrotate2))
-#endif
 			{
-				nrotate2 = 0;
-				display_redrawfreqmodesbars(0);			/* Обновление дисплея - всё, включая частоту */
+#endif
+						nrotate2 = 0;
+						display_redrawfreqmodesbars(0);			/* Обновление дисплея - всё, включая частоту */
+#if WITHTOUCHTEST
+				}
 			}
+#else
+			}
+#endif
 	#if WITHDEBUG
 			{
 				/* здесь можно добавить обработку каких-либо команд с debug порта */

@@ -360,6 +360,7 @@ typedef uint16_t PACKEDCOLOR565_T;
 #define COLOR_KEY	TFTRGB(0xA0, 0, 0xA0)	// Цвет для прозрачных пикселей
 
 #define COLOR565_YELLOW      TFTRGB565(0xFF, 0xFF, 0x00)
+#define COLOR565_ORANGE      TFTRGB565(0xFF, 0xA5, 0x00)
 #define COLOR565_BLACK       TFTRGB565(0x00, 0x00, 0x00)
 #define COLOR565_WHITE       TFTRGB565(0xFF, 0xFF, 0xFF)
 #define COLOR565_GRAY        TFTRGB565(0x80, 0x80, 0x80)
