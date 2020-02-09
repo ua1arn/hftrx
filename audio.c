@@ -4502,7 +4502,7 @@ static RAMFUNC INT32P_t getsampmlemike2(void)
 {
 	INT32P_t v;
 #if WITHSENDWAV
-	if (takewavsample(& v) != 0)
+	if (takewavsample(& v, getTxShapeNotComplete()) != 0)
 	{
 		INT32P_t dummy;
 		getsampmlemike(& dummy);
@@ -5291,7 +5291,7 @@ void dsp_addsidetone(int16_t * buff)
 		{
 			INT32P_t dual;
 
-			if (takewavsample(& dual) != 0)
+			if (takewavsample(& dual, 0) != 0)
 			{
 				left = dual.IV;
 				right = dual.QV;

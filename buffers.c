@@ -1449,7 +1449,7 @@ void releaserecordbuffer(void * dest)
  * или для переачи
  * Возврат 0, если нет ничего для воспроизведения.
  */
-uint_fast8_t takewavsample(INT32P_t * rv)
+uint_fast8_t takewavsample(INT32P_t * rv, uint_fast8_t suspend)
 {
 	static records16_t * p = NULL;
 	static unsigned n;
