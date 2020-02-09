@@ -29,8 +29,8 @@ static const COLOR_T colorsfg_4state [4] = { COLOR_BLACK, COLOR_RED, DESIGNCOLOR
 static const COLOR_T colorsbg_4state [4] = { DESIGNCOLORSTATE, DESIGNCOLORDARKSTATE, DESIGNCOLORDARKSTATE, DESIGNCOLORDARKSTATE, };
 
 // параметры отображения состояний из двух вариантов
-static const COLOR_T colorsfg_2state [2] = { COLOR_BLACK, DESIGNCOLORSTATE, };
-static const COLOR_T colorsbg_2state [2] = { DESIGNCOLORSTATE, DESIGNCOLORDARKSTATE, };
+static const COLOR_T colorsfg_2state [2] = { COLOR_BLACK, COLOR_WHITE, };
+static const COLOR_T colorsbg_2state [2] = { DESIGNCOLORSTATE, DESIGNCOLORDARKSTATE, };	// COLOR_GREEN	COLOR_DARKGREEN
 
 // параметры отображения текстов без вариантов
 static const COLOR_T colorsfg_1state [1] = { DESIGNCOLORSTATE, };
