@@ -3838,8 +3838,6 @@ static RAMFUNC void processafadcsampleiq(
 {
 	// vi - audio sample in range [- txlevelfence.. + txlevelfence]
 	FLOAT_t vi = preparevi(vi0.IV, dspmode, ctcss);	// vi нормирован к разрядности выходного ЦАП
-	//savemoni16stereo(get_lout16(), get_rout16());
-	savemoni16stereo(vi0.IV, vi0.QV);
 	if (isdspmodetx(dspmode))
 	{
 #if WITHMODEM
@@ -3854,12 +3852,14 @@ static RAMFUNC void processafadcsampleiq(
 	#endif /* WITHMODEMIQLOOPBACK */
 			const int vv = txb ? 0 : - 1;	// txiq[63] управляет инверсией сигнала переж АЦП
 			savesampleout32stereo(vv, vv);
+			savemoni16stereo(0, 0);
 			return;
 		}
 #endif /* WITHMODEM */
 
 		
 		vi = filter_fir_tx_MIKE(vi, 0);
+		savemoni16stereo(vi / 65536, vi / vi);
 #if WITHDSPLOCALFIR
 		const FLOAT32P_t vfb = filter_firp_tx_SSB_IQ(baseband_modulator(vi, dspmode, shape));
 #else /* WITHDSPLOCALFIR */
@@ -3870,6 +3870,7 @@ static RAMFUNC void processafadcsampleiq(
 	else
 	{
 		filter_fir_tx_MIKE(vi, 1);		// Фильтр не применяется, только выполняется сдвиг в линии задержки
+		savemoni16stereo(0, 0);
 		savesampleout32stereo(0, 0);
 	}
 }
@@ -3895,6 +3896,7 @@ static RAMFUNC void processafadcsample(
 	if (isdspmodetx(dspmode))
 	{
 		vi = filter_fir_tx_MIKE(vi, 0);
+		savemoni16stereo(vi / 65536. vi / vi);
 		const FLOAT32P_t vfb = baseband_modulator(vi, dspmode, shape);
 		// Здесь, имея квадратурные сигналы vfb.IV и vfb.QV,
 		// производим Digital Up Conversion
@@ -3908,6 +3910,7 @@ static RAMFUNC void processafadcsample(
 	{
 		filter_fir_tx_MIKE(vi, 1);		// Фильтр не применяется, только выполняется сдвиг в линии задержки
 		savesampleout32stereo(0, 0);
+		savemoni16stereo(0, 0);
 	}
 }
 
