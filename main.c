@@ -16516,6 +16516,7 @@ processkeyboard(uint_fast8_t kbch)
 	case KBD_CODE_PLAYSTOP:
 		playwavstop();
 		return 1;	/* клавиша уже обработана */
+#if ! WITHPOTAFGAIN
 	case KBD_CODE_PLAYLOUD:	// громче
 		if (afgain1.value != BOARD_AFGAIN_MAX)
 		{
@@ -16532,6 +16533,7 @@ processkeyboard(uint_fast8_t kbch)
 			updateboard(1, 0);
 		}
 		return 1;
+#endif /* ! WITHPOTAFGAIN */
 	}
 #endif /* WITHWAVPLAYER */
 
