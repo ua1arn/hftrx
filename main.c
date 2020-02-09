@@ -12113,9 +12113,9 @@ processmessages(uint_fast8_t * kbch, uint_fast8_t * kbready, uint_fast8_t inmenu
 #if WITHUSEAUDIOREC
 		sdcardbgprocess();
 #endif /* WITHUSEAUDIOREC */
-#if WITHWAVPLAYER
+#if WITHWAVPLAYER || WITHSENDWAV
 		spoolplayfile();
-#endif /* WITHWAVPLAYER */
+#endif /* WITHWAVPLAYER || WITHSENDWAV */
 #if WITHLCDBACKLIGHT || WITHKBDBACKLIGHT
 		// обработать запрос на обновление состояния аппаратуры из user mode программы
 		if (dimmflagch != 0)
@@ -12270,12 +12270,12 @@ processtxrequest(void)
 #endif	/* WITHCAT */
 		txreq = 1;
 	}
-#if WITHWAVPLAYER
+#if WITHSENDWAV
 	if (isplayfile())
 	{
 		txreq = 1;
 	}
-#endif /* WITHWAVPLAYER */
+#endif /* WITHSENDWAV */
 #if WITHBEACON	
 	if (beacon_get_ptt())
 	{
@@ -16510,7 +16510,7 @@ processkeyboard(uint_fast8_t kbch)
 		break;
 	}
 
-#if WITHWAVPLAYER
+#if WITHWAVPLAYER || WITHSENDWAV
 	switch (kbch)
 	{
 	case KBD_CODE_PLAYFILE1:
@@ -16531,6 +16531,7 @@ processkeyboard(uint_fast8_t kbch)
 	case KBD_CODE_PLAYSTOP:
 		playwavstop();
 		return 1;	/* клавиша уже обработана */
+#if ! WITHPOTAFGAIN
 	case KBD_CODE_PLAYLOUD:	// громче
 		if (afgain1.value != BOARD_AFGAIN_MAX)
 		{
@@ -16547,6 +16548,7 @@ processkeyboard(uint_fast8_t kbch)
 			updateboard(1, 0);
 		}
 		return 1;
+#endif /* ! WITHPOTAFGAIN */
 	}
 #endif /* WITHWAVPLAYER */
 
@@ -17549,7 +17551,7 @@ hamradio_main_step(void)
 					{
 					default:
 						break;
-		#if WITHWAVPLAYER
+		#if WITHWAVPLAYER || WITHSENDWAV
 					case 'p':
 						debug_printf_P(PSTR("Play test file\n"));
 						playwavfile("1.wav");

@@ -41,7 +41,7 @@
 /* Left (right) channel headphone volume control register */
 #define TLV320AIC23_LZC_ON              0x0080
 //#define TLV320AIC23_LHV_DEFAULT         0x0079
-#define TLV320AIC23_LHV_MAX             0x007f //0x0079	// default value
+#define TLV320AIC23_LHV_MAX             0x0079
 #define TLV320AIC23_LHV_MAX_overload    0x007f
 #define TLV320AIC23_LHV_MIN             0x0010
 

@@ -627,7 +627,7 @@ void sdcardformat(void)
 #endif /* WITHUSEAUDIOREC */
 
 
-#if WITHWAVPLAYER
+#if WITHWAVPLAYER || WITHSENDWAV
 
 static FATFSALIGN_BEGIN RAMNOINIT_D1 FATFS Fatfs FATFSALIGN_END;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
 static FATFSALIGN_BEGIN RAMNOINIT_D1 FIL Fil FATFSALIGN_END;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
@@ -670,9 +670,8 @@ void playwavstop(void)
 {
 	if (playfile)
 	{
-		FRESULT rc;				/* Result code */
 		debug_printf_P(PSTR("Stop active play file\n"));
-		rc = f_close(& Fil);
+		f_close(& Fil);
 		playfile = 0;
 	}
 }
@@ -684,7 +683,7 @@ void playwavfile(const char * filename)
 	if (playfile)
 	{
 		debug_printf_P(PSTR("Stop active play file\n"));
-		rc = f_close(& Fil);
+		f_close(& Fil);
 		playfile = 0;
 	}
 	f_mount(NULL, "", 0);		/* Unregister volume work area (never fails) */
@@ -786,4 +785,4 @@ void spoolplayfile(void)
 	}
 }
 
-#endif /* WITHWAVPLAYER */
+#endif /* WITHWAVPLAYER || WITHSENDWAV */

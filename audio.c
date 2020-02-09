@@ -3852,12 +3852,14 @@ static RAMFUNC void processafadcsampleiq(
 	#endif /* WITHMODEMIQLOOPBACK */
 			const int vv = txb ? 0 : - 1;	// txiq[63] управляет инверсией сигнала переж АЦП
 			savesampleout32stereo(vv, vv);
+			savemoni16stereo(0, 0);
 			return;
 		}
 #endif /* WITHMODEM */
 
 		
 		vi = filter_fir_tx_MIKE(vi, 0);
+		savemoni16stereo(vi / 65536, vi / vi);
 #if WITHDSPLOCALFIR
 		const FLOAT32P_t vfb = filter_firp_tx_SSB_IQ(baseband_modulator(vi, dspmode, shape));
 #else /* WITHDSPLOCALFIR */
@@ -3868,6 +3870,7 @@ static RAMFUNC void processafadcsampleiq(
 	else
 	{
 		filter_fir_tx_MIKE(vi, 1);		// Фильтр не применяется, только выполняется сдвиг в линии задержки
+		savemoni16stereo(0, 0);
 		savesampleout32stereo(0, 0);
 	}
 }
@@ -3893,6 +3896,7 @@ static RAMFUNC void processafadcsample(
 	if (isdspmodetx(dspmode))
 	{
 		vi = filter_fir_tx_MIKE(vi, 0);
+		savemoni16stereo(vi / 65536. vi / vi);
 		const FLOAT32P_t vfb = baseband_modulator(vi, dspmode, shape);
 		// Здесь, имея квадратурные сигналы vfb.IV и vfb.QV,
 		// производим Digital Up Conversion
@@ -3906,6 +3910,7 @@ static RAMFUNC void processafadcsample(
 	{
 		filter_fir_tx_MIKE(vi, 1);		// Фильтр не применяется, только выполняется сдвиг в линии задержки
 		savesampleout32stereo(0, 0);
+		savemoni16stereo(0, 0);
 	}
 }
 
@@ -4501,6 +4506,14 @@ static INT32P_t loopbacktestaudio(INT32P_t vi0, uint_fast8_t dspmode, FLOAT_t sh
 static RAMFUNC INT32P_t getsampmlemike2(void)			
 {
 	INT32P_t v;
+#if WITHSENDWAV
+	if (takewavsample(& v, getTxShapeNotComplete()) != 0)
+	{
+		INT32P_t dummy;
+		getsampmlemike(& dummy);
+	}
+	else
+#endif /* WITHSENDWAV */
 	if (getsampmlemike(& v) == 0)
 	{
 		v.IV = 0;
@@ -5160,7 +5173,7 @@ static FLOAT_t
 getmonitx(
 	uint_fast8_t dspmode, 
 	FLOAT_t sdtn, 
-	FLOAT_t mike
+	FLOAT_t moni
 	)
 {
 	switch (dspmode)
@@ -5173,7 +5186,7 @@ getmonitx(
 	case DSPCTL_MODE_TX_AM:
 	case DSPCTL_MODE_TX_NFM:
 	case DSPCTL_MODE_TX_SSB:
-		return mike;
+		return moni;
 	}
 }
 
@@ -5254,9 +5267,9 @@ static RAMFUNC void recordsampleUAC(int left, int right)
 // Запись на SD CARD
 static RAMFUNC void recordsampleSD(int left, int right)
 {
-#if WITHUSEAUDIOREC && ! WITHWAVPLAYER
+#if WITHUSEAUDIOREC && ! (WITHWAVPLAYER || WITHSENDWAV)
 	savesamplerecord16SD(left, right);	// Запись демодулированного сигнала без озвучки клавиш на SD CARD
-#endif /* WITHUSEAUDIOREC */
+#endif /* WITHUSEAUDIOREC && ! (WITHWAVPLAYER || WITHSENDWAV) */
 }
 
 // перед передачей по DMA в аудиокодек
@@ -5274,7 +5287,13 @@ void dsp_addsidetone(int16_t * buff)
 	{
 		int16_t * const b = & buff [i];
 		const FLOAT_t sdtn = get_float_sidetone() * phonefence * shapeSidetoneStep();	// Здесь значение выборки в диапазоне, допустимом для кодека
-		const int16_t monitx = getmonitx(dspmodeA, sdtn, 0);
+		INT32P_t moni;
+		if (getsampmlemoni(& moni) == 0)
+		{
+			moni.IV = 0;
+			moni.QV = 0;
+		}
+		const int_fast16_t monitx = getmonitx(dspmodeA, sdtn, moni.IV);
 
 		int_fast16_t left = b [L];
 		int_fast16_t right = b [R];
@@ -5283,7 +5302,7 @@ void dsp_addsidetone(int16_t * buff)
 		{
 			INT32P_t dual;
 
-			if (takesoundsample(& dual) != 0)
+			if (takewavsample(& dual, 0) != 0)
 			{
 				left = dual.IV;
 				right = dual.QV;
@@ -5292,6 +5311,10 @@ void dsp_addsidetone(int16_t * buff)
 #elif WITHUSBHEADSET || WITHUSBAUDIOSAI1
 		// Обеспечиваем прослушивание стерео
 #else /* WITHUSBHEADSET */
+		if (tx)
+		{
+			left = right = monitx;
+		}
 		switch (glob_mainsubrxmode)
 		{
 		case BOARD_RXMAINSUB_A_A:
@@ -5358,7 +5381,6 @@ void RAMFUNC dsp_extbuffer32rx(const int32_t * buff)
 #endif /* WITHUSEDUALWATCH */
 	unsigned i;
 	const int rxgate = getRxGate();
-
 
 	for (i = 0; i < DMABUFFSIZE32RX; i += DMABUFSTEP32RX)
 	{
@@ -5790,6 +5812,7 @@ rxparam_update(uint_fast8_t profile, uint_fast8_t pathi)
 
 	// Уровень сигнала самоконтроля
 #if WITHUSBHEADSET || WITHUSBAUDIOSAI1 || WITHWAVPLAYER
+	// В этих вариантвх самоконтроля нет.
 	sidetonevolume = 0;
 #else /* WITHUSBHEADSET */
 	sidetonevolume = (glob_sidetonelevel / (FLOAT_t) 100);

@@ -447,6 +447,7 @@ modem_frames_decode(
 	);
 
 uint_fast8_t getsampmlemike(INT32P_t * v);			/* получить очередной оцифрованый сэмпл с микрофона */
+uint_fast8_t getsampmlemoni(INT32P_t * v);			/* получить очередной сэмпл для самоконтроля */
 
 FLOAT_t local_log(FLOAT_t x);
 FLOAT_t local_pow(FLOAT_t x, FLOAT_t y);
@@ -520,6 +521,7 @@ void savesampleout16stereo(int_fast32_t ch0, int_fast32_t ch1);
 void savesampleout32stereo(int_fast32_t ch0, int_fast32_t ch1);
 void savesampleout96stereo(int_fast32_t ch0, int_fast32_t ch1);
 void savesampleout192stereo(int_fast32_t ch0, int_fast32_t ch1);
+void savemoni16stereo(int_fast32_t ch0, int_fast32_t ch1);
 
 #if WITHINTEGRATEDDSP
 	#include "speex\arch.h"
@@ -680,7 +682,7 @@ void uacout_buffer_save_realtime(const uint8_t * buff, uint_fast16_t size);
 /* Получение пары (левый и правый) сжмплов для воспроизведения через аудиовыход трансивера.
  * Возврат 0, если нет ничего для воспроизведения.
  */
-uint_fast8_t takesoundsample(INT32P_t * rv);
+uint_fast8_t takewavsample(INT32P_t * rv, uint_fast8_t suspend);
 
 #ifdef __cplusplus
 }

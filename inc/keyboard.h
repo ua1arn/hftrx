@@ -132,7 +132,7 @@ enum
 	//
 	KBD_ENC2_PRESS, KBD_ENC2_HOLD,
 
-#if WITHWAVPLAYER
+#if WITHWAVPLAYER || WITHSENDWAV
 	KBD_CODE_PLAYFILE1,
 	KBD_CODE_PLAYFILE2,
 	KBD_CODE_PLAYFILE3,
@@ -141,7 +141,7 @@ enum
 	KBD_CODE_PLAYSTOP,
 	KBD_CODE_PLAYLOUD,	// громче
 	KBD_CODE_PLAYQUITE,	// тише
-#endif /* WITHWAVPLAYER */
+#endif /* WITHWAVPLAYER || WITHSENDWAV */
 	//
 	KBD_CODE_MAX		// на этот код назначаются неиспользуемые клавиши.
 };
