@@ -213,6 +213,7 @@ enum
 
 	static RAMDTCM LIST_ENTRY2 voicesfree16;
 	static RAMDTCM LIST_ENTRY2 voicesphones16;	// буферы, предназначенные для выдачи на наушники
+	static RAMDTCM LIST_ENTRY2 voicesmoni16;	// буферы, предназначенные для звука самоконтроля
 
 	static RAMDTCM LIST_ENTRY2 voicesready32tx;	// буферы, предназначенные для выдачи на IF DAC
 	static RAMDTCM LIST_ENTRY2 voicesfree32tx;
@@ -377,6 +378,7 @@ void buffers_diagnostics(void)
 	LIST2PRINT(voicesfree16);
 	LIST3PRINT(voicesmike16);
 	LIST2PRINT(voicesphones16);
+	LIST2PRINT(voicesmoni16);
 
 	#if WITHUSBUAC
 		#if WITHRTS192
@@ -601,6 +603,7 @@ void buffers_initialize(void)
 	InitializeListHead3(& resample16, RESAMPLE16NORMAL);	// буферы от USB для синхронизации
 	InitializeListHead3(& voicesmike16, VOICESMIKE16NORMAL);	// список оцифрованных с АЦП
 	InitializeListHead2(& voicesphones16);	// список для выдачи на ЦАП
+	InitializeListHead2(& voicesmoni16);	// самоконтроль
 	InitializeListHead2(& voicesfree16);	// Незаполненные
 	for (i = 0; i < (sizeof voicesarray16 / sizeof voicesarray16 [0]); ++ i)
 	{
@@ -831,6 +834,13 @@ static RAMFUNC void buffers_tophones16(voice16_t * p)
 	InsertHeadList2(& voicesphones16, & p->item);
 	UNLOCK(& locklist16);
 }
+// Сохранить звук для самоклнтроля на звуковой выход трансивера
+static RAMFUNC void buffers_tomoni16(voice16_t * p)
+{
+	LOCK(& locklist16);
+	InsertHeadList2(& voicesmoni16, & p->item);
+	UNLOCK(& locklist16);
+}
 
 // Сохранить звук в никуда...
 static RAMFUNC void buffers_tonull16(voice16_t * p)
@@ -884,6 +894,42 @@ static RAMFUNC void buffers_aftermodulators(voice16_t * p)
 		buffers_tonull16(p);
 }
 
+// +++ Коммутация потоков аудиоданных
+// первый канал выхода приёмника - для прослушивания
+static RAMFUNC void
+buffers_savefromrxout(voice16_t * p)
+{
+	if (uacoutplayer != 0)
+		buffers_tonull16(p);
+	else
+		buffers_tophones16(p);
+}
+
+
+static RAMFUNC void
+buffers_savefrommoni(voice16_t * p)
+{
+	buffers_tomoni16(p);
+}
+
+#if WITHUSBUAC
+// приняли данные от синхронизатора
+static RAMFUNC void
+buffers_savefromresampling(voice16_t * p)
+{
+	// если поток используется и как источник аудиоинформации для модулятора и для динамиков,
+	// в динамики будет направлен после модулятора
+
+	if (uacoutmike != 0)
+		buffers_tomodulators16(p);
+	else if (uacoutplayer != 0)
+		buffers_tophones16(p);
+	else
+		buffers_tonull16(p);
+}
+
+#endif /* WITHUSBUAC */
+
 //////////////////////////////////////////
 // Поэлементное чтение буфера AF ADC
 
@@ -932,6 +978,75 @@ RAMFUNC uint_fast8_t getsampmlemike(INT32P_t * v)
 	return 1;	
 }
 
+// 16 bit, signed
+RAMFUNC uint_fast8_t getsampmlemoni(INT32P_t * v)
+{
+	enum { L, R };
+	static voice16_t * RAMDTCM p = NULL;
+	static RAMDTCM unsigned pos = 0;	// позиция по выходному количеству
+	const unsigned CNT = (DMABUFFSIZE16 / DMABUFSTEP16);	// фиксированное число сэмплов во входном буфере
+
+	LOCK(& locklist16);
+	if (p == NULL)
+	{
+		if (! IsListEmpty2(& voicesmoni16))
+		{
+			PLIST_ENTRY t = RemoveTailList2(& voicesmoni16);
+			p = CONTAINING_RECORD(t, voice16_t, item);
+			UNLOCK(& locklist16);
+			pos = 0;
+		}
+		else
+		{
+			// Микрофонный кодек ещё не успел начать работать - возвращаем 0.
+			UNLOCK(& locklist16);
+			return 0;
+		}
+	}
+	else
+	{
+		UNLOCK(& locklist16);
+	}
+
+	// Использование данных.
+	v->ivqv [L] = (int16_t) p->buff [pos * DMABUFSTEP16 + L];	// левый канал
+	v->ivqv [R] = (int16_t) p->buff [pos * DMABUFSTEP16 + R];	// правый канал
+
+	if (++ pos >= CNT)
+	{
+		buffers_tonull16(p);
+		p = NULL;
+	}
+	return 1;
+}
+
+// звук для самоконтроля
+void savemoni16stereo(int_fast32_t ch0, int_fast32_t ch1)
+{
+	// если есть инициализированный канал для выдачи звука
+	static voice16_t * p = NULL;
+	static unsigned n;
+
+	if (p == NULL)
+	{
+		uintptr_t addr = allocate_dmabuffer16();
+		p = CONTAINING_RECORD(addr, voice16_t, buff);
+		n = 0;
+	}
+
+	p->buff [n + 0] = ch0;		// sample value
+#if DMABUFSTEP16 > 1
+	p->buff [n + 1] = ch1;	// sample value
+#endif
+	n += DMABUFSTEP16;
+
+	if (n >= DMABUFFSIZE16)
+	{
+		buffers_savefrommoni(p);
+		p = NULL;
+	}
+}
+
 // Сохранить звук от несинхронного источника - USB - для последующего ресэмплинга
 RAMFUNC static void buffers_savetoresampling16(voice16_t * p)
 {
@@ -950,6 +1065,26 @@ RAMFUNC static void buffers_savetoresampling16(voice16_t * p)
 	#endif /* WITHBUFFERSDEBUG */
 	}
 	UNLOCK(& locklist16);
+}
+
+// приняли данные от USB AUDIO
+static RAMFUNC void
+buffers_savefromuacout(voice16_t * p)
+{
+#if WITHBUFFERSDEBUG
+	// подсчёт скорости в сэмплах за секунду
+	debugcount_uacout += sizeof p->buff / sizeof p->buff [0] / DMABUFSTEP16;	// в буфере пары сэмплов по два байта
+#endif /* WITHBUFFERSDEBUG */
+
+#if WITHUSBUAC
+
+	if (uacoutplayer || uacoutmike)
+		buffers_savetoresampling16(p);
+	else
+		buffers_tonull16(p);
+#else /* WITHUSBUAC */
+	buffers_tonull16(p);
+#endif /* WITHUSBUAC */
 }
 
 #if WITHUSBUAC
@@ -1105,55 +1240,6 @@ buffers_savetouacin(uacin16_t * p)
 int_fast32_t dsp_get_samplerateuacin_rts(void)		// RTS samplerate
 {
 	return 48000L;
-}
-
-#endif /* WITHUSBUAC */
-
-// +++ Коммутация потоков аудиоданных
-// первый канал выхода приёмника - для прослушивания
-static RAMFUNC void
-buffers_savefromrxout(voice16_t * p)
-{
-	if (uacoutplayer != 0)
-		buffers_tonull16(p);
-	else
-		buffers_tophones16(p);
-}
-
-// приняли данные от USB AUDIO
-static RAMFUNC void
-buffers_savefromuacout(voice16_t * p)
-{
-#if WITHBUFFERSDEBUG
-	// подсчёт скорости в сэмплах за секунду
-	debugcount_uacout += sizeof p->buff / sizeof p->buff [0] / DMABUFSTEP16;	// в буфере пары сэмплов по два байта
-#endif /* WITHBUFFERSDEBUG */
-
-#if WITHUSBUAC
-	
-	if (uacoutplayer || uacoutmike)
-		buffers_savetoresampling16(p);
-	else
-		buffers_tonull16(p);
-#else /* WITHUSBUAC */
-	buffers_tonull16(p);
-#endif /* WITHUSBUAC */
-}
-
-#if WITHUSBUAC
-// приняли данные от синхронизатора
-static RAMFUNC void
-buffers_savefromresampling(voice16_t * p)
-{
-	// если поток используется и как источник аудиоинформации для модулятора и для динамиков,
-	// в динамики будет направлен после модулятора
-
-	if (uacoutmike != 0)
-		buffers_tomodulators16(p);
-	else if (uacoutplayer != 0)
-		buffers_tophones16(p);
-	else
-		buffers_tonull16(p);
 }
 
 #endif /* WITHUSBUAC */

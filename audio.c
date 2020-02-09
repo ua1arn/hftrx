@@ -5282,7 +5282,13 @@ void dsp_addsidetone(int16_t * buff)
 	{
 		int16_t * const b = & buff [i];
 		const FLOAT_t sdtn = get_float_sidetone() * phonefence * shapeSidetoneStep();	// Здесь значение выборки в диапазоне, допустимом для кодека
-		const int16_t monitx = getmonitx(dspmodeA, sdtn, 0);
+		INT32P_t moni;
+		if (getsampmlemoni(& moni) == 0)
+		{
+			moni.IV = 0;
+			moni.QV = 0;
+		}
+		const int_fast16_t monitx = getmonitx(dspmodeA, sdtn, moni.IV);
 
 		int_fast16_t left = b [L];
 		int_fast16_t right = b [R];
@@ -5367,13 +5373,13 @@ void RAMFUNC dsp_extbuffer32rx(const int32_t * buff)
 	unsigned i;
 	const int rxgate = getRxGate();
 
-
 	for (i = 0; i < DMABUFFSIZE32RX; i += DMABUFSTEP32RX)
 	{
 	#if ! WITHTRANSPARENTIQ
 		const FLOAT_t ctcss = get_float_subtone() * txlevelfenceSSB;
 		const INT32P_t vi = getsampmlemike2();	// с микрофона (или 0, если ещё не запустился) */
 		const FLOAT_t shape = shapeCWEnvelopStep() * scaleDAC;	// 0..1
+		savemoni16stereo(vi.IV, vi.QV);
 	#endif /* ! WITHTRANSPARENTIQ */
 
 	/* отсрочка установки частоты lo6 на время прохождения сигнала через FPGA FIR - аосле смены частоты LO1 */
