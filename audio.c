@@ -3838,6 +3838,7 @@ static RAMFUNC void processafadcsampleiq(
 {
 	// vi - audio sample in range [- txlevelfence.. + txlevelfence]
 	FLOAT_t vi = preparevi(vi0.IV, dspmode, ctcss);	// vi нормирован к разрядности выходного ЦАП
+	//savemoni16stereo(get_lout16(), get_rout16());
 	savemoni16stereo(vi0.IV, vi0.QV);
 	if (isdspmodetx(dspmode))
 	{
@@ -5307,6 +5308,10 @@ void dsp_addsidetone(int16_t * buff)
 #elif WITHUSBHEADSET || WITHUSBAUDIOSAI1
 		// Обеспечиваем прослушивание стерео
 #else /* WITHUSBHEADSET */
+		if (tx)
+		{
+			left = right = monitx;
+		}
 		switch (glob_mainsubrxmode)
 		{
 		case BOARD_RXMAINSUB_A_A:
