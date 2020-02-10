@@ -2491,6 +2491,7 @@ struct nvmap
 	uint16_t gdigiscale;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 	uint8_t	gcwedgetime;			/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
 	uint8_t	gsidetonelevel;	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
+	uint8_t gmonilevel;		/* Уровень сигнала самопрослушивания в процентах - 0%..100% */
 	uint8_t	gsubtonelevel;	/* Уровень сигнала CTCSS в процентах - 0%..100% */
 	uint8_t gdigigainmax;	/* диапазон ручной регулировки цифрового усиления - максимальное значение */
 	uint8_t gsquelch;		/* уровень открытия шумоподавителя */
@@ -3691,6 +3692,8 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 		(- 230) + FSADCPOWEROFFSET10,	// с конвертором
 	};
 #endif /* CTLSTYLE_OLEG4Z_V1 */
+	static uint_fast8_t gmonilevel = 15;		/* Уровень сигнала самопрослушивания в процентах - 0%..100% */
+
 	static uint_fast8_t gvad605 = 180; //UINT8_MAX;	/* напряжение на AD605 (управление усилением тракта ПЧ */
 	#if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */
 		static uint_fast8_t gdither;		/* управление зашумлением в LTC2208 */
@@ -8065,6 +8068,7 @@ updateboard(
 
 		board_set_cwedgetime(gcwedgetime);	/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
 		board_set_sidetonelevel(gsidetonelevel);	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
+		board_set_monilevel(gmonilevel);	/* Уровень сигнала самопрослушивания в процентах - 0%..100% */
 		#if WITHSPECTRUMWF
 			board_set_fillspect(gfillspect);	/* заливать заполнением площадь под графиком спектра */
 			board_set_topdb(gtopdb);		/* верхний предел FFT */
@@ -13853,6 +13857,15 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		offsetof(struct nvmap, gsidetonelevel),	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
 		NULL,
 		& gsidetonelevel,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		"MONI LVL", 7, 0, 0,	ISTEP1,		/* Select the monitoring sound output level.. */
+		ITEM_VALUE,
+		0, 100,
+		offsetof(struct nvmap, gmonilevel),	/* Уровень сигнала самопрослушивания в процентах - 0%..100% */
+		NULL,
+		& gmonilevel,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #endif /* WITHIF4DSP */
