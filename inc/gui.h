@@ -58,6 +58,7 @@
 
 	static button_handler button_handlers [] = {
 	//   x1,   y1,  x2,  y2,  onClickHandler,            state,     redraw,    type,         is_locked,			parent,       visible,      payload,	text
+		{ },
 		{ 0,   430, 86,  479, button1_handler, 	    BUTTON_CANCELLED, 1, TYPE_FOOTER_BUTTON, BUTTON_NON_LOCKED, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "Mode", },
 		{ 89,  430, 175, 479, button2_handler, 	    BUTTON_CANCELLED, 1, TYPE_FOOTER_BUTTON, BUTTON_NON_LOCKED, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "Test", },
 		{ 178, 430, 264, 479, button3_handler, 	    BUTTON_CANCELLED, 1, TYPE_FOOTER_BUTTON, BUTTON_NON_LOCKED, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "", },
@@ -92,6 +93,7 @@
 
 	static label_handler labels[] = {
 	//     x,   y,  parent,      visible,  Text,  color
+		{ },
 		{ 250, 120, WINDOW_BP, NON_VISIBLE, "q", COLOR565_YELLOW, },
 		{ 490, 120, WINDOW_BP, NON_VISIBLE, 0, COLOR565_YELLOW, },
 	};

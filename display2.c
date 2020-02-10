@@ -6393,9 +6393,19 @@ board_set_wflevelsep(uint_fast8_t v)
 		}
 	}
 
+	uint_fast8_t find (uint_fast8_t id_window, char * val)				// возврат id кнопки окна по ее названию
+	{
+		for (uint_fast8_t i = 1; i < button_handlers_count; i++)
+		{
+			if (button_handlers[i].parent == id_window && button_handlers[i].text == val)
+				return i;
+		}
+		return 0;
+	}
+
 	void set_visible_window(uint_fast8_t parent, uint_fast8_t value)
 	{
-		for (uint_fast8_t i = 0; i < button_handlers_count; i++)
+		for (uint_fast8_t i = 1; i < button_handlers_count; i++)
 		{
 			if (button_handlers[i].parent == parent)
 				button_handlers[i].visible = value ? VISIBLE : NON_VISIBLE;
@@ -6424,6 +6434,7 @@ board_set_wflevelsep(uint_fast8_t v)
 		{
 			val = bandpass(0);
 		}
+
 		local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d.%dk"), val/10, val%10);
 		strcpy (labels[1].text, buf);
 		x_new = normalize (val, 0, 50, 290) + 290;
@@ -6461,9 +6472,15 @@ board_set_wflevelsep(uint_fast8_t v)
 		if (gui.window_to_draw == 0) gui.window_to_draw = WINDOW_MODES;
 
 		if (windows[gui.window_to_draw].is_show == NON_VISIBLE)
+		{
 			set_visible_window(WINDOW_MODES, VISIBLE);
+			button_handlers[find(WINDOW_MODES, "Mode")].is_locked = 1;
+		}
 		else
+		{
 			set_visible_window(WINDOW_MODES, NON_VISIBLE);
+			button_handlers[find(WINDOW_MODES, "Mode")].is_locked = 0;
+		}
 	}
 
 	void button2_handler(void)
@@ -6533,8 +6550,8 @@ board_set_wflevelsep(uint_fast8_t v)
 	void draw_button_pip(uint_fast16_t x1, uint_fast16_t y1, uint_fast16_t x2, uint_fast16_t y2, uint_fast8_t pressed, uint_fast8_t is_locked) // pressed = 0
 	{
 		PACKEDCOLOR565_T c1, c2;
-		c1 = is_locked ? COLOR_BUTTON_NON_LOCKED : COLOR_BUTTON_LOCKED;
-		c2 = is_locked ? COLOR_BUTTON_PR_NON_LOCKED : COLOR_BUTTON_PR_LOCKED;
+		c1 = is_locked ? COLOR_BUTTON_LOCKED : COLOR_BUTTON_NON_LOCKED;
+		c2 = is_locked ? COLOR_BUTTON_PR_LOCKED : COLOR_BUTTON_PR_NON_LOCKED;
 		draw_rect_pip(x1, 	y1,	  x2,   y2,   pressed ? c1 : c2, 1);
 		draw_rect_pip(x1, 	y1,   x2,   y2,   COLOR565_GRAY, 0);
 		draw_rect_pip(x1+2, y1+2, x2-2, y2-2, COLOR565_BLACK, 0);
@@ -6542,7 +6559,7 @@ board_set_wflevelsep(uint_fast8_t v)
 
 	void display_footer_buttons(uint_fast8_t x, uint_fast8_t y, void * pv)
 	{
-		for (uint_fast8_t i = 0; i < button_handlers_count; i++)
+		for (uint_fast8_t i = 1; i < button_handlers_count; i++)
 		{
 //			debug_printf_P(PSTR("button %d need %d state %d\n"), i, button_handlers[i].need_redraw, button_handlers[i].state);
 			if (button_handlers[i].need_redraw==1 && button_handlers[i].type == TYPE_FOOTER_BUTTON)
@@ -6623,7 +6640,7 @@ board_set_wflevelsep(uint_fast8_t v)
 										 COLOR565_YELLOW);
 
 			// отрисовка принадлежащих окну элементов
-			for (uint_fast8_t i = 0; i < button_handlers_count; i++)
+			for (uint_fast8_t i = 1; i < button_handlers_count; i++)
 			{
 				if (button_handlers[i].parent == gui.window_to_draw && button_handlers[i].visible == VISIBLE)	// кнопки
 				{
@@ -6633,7 +6650,7 @@ board_set_wflevelsep(uint_fast8_t v)
 								   (strlen (button_handlers[i].text) * 16)) / 2, button_handlers[i].y1 + 17, button_handlers[i].text, COLOR565_BLACK);
 				}
 			}
-			for (uint_fast8_t i = 0; i < labels_count; i++)
+			for (uint_fast8_t i = 1; i < labels_count; i++)
 			{
 				if (labels[i].parent == gui.window_to_draw && labels[i].visible == VISIBLE)						// метки
 					display_colorbuff_string_tbg(colorpip, ALLDX, ALLDY, labels[i].x, labels[i].y, labels[i].text, labels[i].color);
@@ -6649,7 +6666,7 @@ board_set_wflevelsep(uint_fast8_t v)
 
 	void need_redraw_buttons(void) // запрос на перерисовку кнопок внизу экрана
 	{
-		for (uint_fast8_t i = 0; i < button_handlers_count; i++)
+		for (uint_fast8_t i = 1; i < button_handlers_count; i++)
 		{
 			if (button_handlers[i].type == TYPE_FOOTER_BUTTON)
 				button_handlers[i].need_redraw = 1;
@@ -6688,7 +6705,7 @@ board_set_wflevelsep(uint_fast8_t v)
 		{
 			if (gui.is_touching_screen && ! gui.is_after_touch)
 			{
-				for (uint_fast8_t i=0; i<button_handlers_count; i++) {
+				for (uint_fast8_t i = 1; i < button_handlers_count; i++) {
 					if (button_handlers[i].x1 < gui.last_pressed_x && button_handlers[i].x2 > gui.last_pressed_x
 					 && (button_handlers[i].type ? button_handlers[i].y1 + pipparam.y : button_handlers[i].y1) < gui.last_pressed_y
 					 && (button_handlers[i].type ? button_handlers[i].y2 + pipparam.y : button_handlers[i].y2) > gui.last_pressed_y
