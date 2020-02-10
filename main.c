@@ -2484,6 +2484,7 @@ struct nvmap
 	uint8_t	gsidetonelevel;	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
 	uint8_t gmonilevel;		/* Уровень сигнала самопрослушивания в процентах - 0%..100% */
 	uint8_t	gsubtonelevel;	/* Уровень сигнала CTCSS в процентах - 0%..100% */
+	uint8_t gloopmsg, gloopsec;
 	uint8_t gdigigainmax;	/* диапазон ручной регулировки цифрового усиления - максимальное значение */
 	uint8_t gsquelch;		/* уровень открытия шумоподавителя */
 	uint8_t gvad605;		/* напряжение на AD605 (управление усилением тракта ПЧ */
@@ -3653,6 +3654,18 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 	{
 		return - FSADCPOWEROFFSET10;
 	}
+	static uint_fast8_t gloopmsg, gloopsec = 15;
+	static uint_fast8_t loopticks;
+	static const char * const loopnames [] =
+	{
+			"none",
+			"1.wav",
+			"2.wav",
+			"3.wav",
+			"4.wav",
+			"5.wav",
+	};
+	void playhandler(uint8_t code);
 
 	static uint_fast8_t gcwedgetime = 5;			/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
 	static uint_fast8_t gsubtonelevel = 10;	/* Уровень сигнала CTCSS в процентах - 0%..100% */
@@ -12142,6 +12155,16 @@ processmessages(uint_fast8_t * kbch, uint_fast8_t * kbready, uint_fast8_t inmenu
 		return;
 	
 	case MSGT_1SEC:
+#if WITHWAVPLAYER || WITHSENDWAV
+		if (gloopmsg > 0)
+		{
+			if (++ loopticks >= gloopsec)
+			{
+				loopticks = 0;
+				playhandler(gloopmsg);
+			}
+		}
+#endif /* WITHWAVPLAYER || WITHSENDWAV */
 #if WITHLCDBACKLIGHT || WITHKBDBACKLIGHT
 		if (dimmtime == 0)
 		{
@@ -13855,6 +13878,26 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #endif /* WITHIF4DSP */
 #if WITHTX && WITHIF4DSP
+#if WITHWAVPLAYER || WITHSENDWAV
+	{
+		"LOOP MSG", 7, 0, 0,	ISTEP1,		/* Select the monitoring sound output level.. */
+		ITEM_VALUE,
+		0, (sizeof loopnames / sizeof loopnames [0]) - 1,
+		offsetof(struct nvmap, gloopmsg),	/* Уровень сигнала самопрослушивания в процентах - 0%..100% */
+		NULL,
+		& gloopmsg,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		"LOOP SEC", 7, 0, 0,	ISTEP1,		/* Select the monitoring sound output level.. */
+		ITEM_VALUE,
+		15, 240,
+		offsetof(struct nvmap, gloopsec),	/* Уровень сигнала самопрослушивания в процентах - 0%..100% */
+		NULL,
+		& gloopsec,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+#endif /* WITHWAVPLAYER || WITHSENDWAV */
 	#if WITHAFCODEC1HAVELINEINLEVEL	/* кодек имеет управление усилением с линейного входа */
 	{
 		"LINE LVL", 7, 0, 0,	ISTEP1,		/* подстройка усиления с линейного входа через меню. */
@@ -16385,6 +16428,16 @@ process_key_menuset_common(uint_fast8_t kbch)
 	}
 }
 
+#if WITHWAVPLAYER || WITHSENDWAV
+void playhandler(uint8_t code)
+{
+	if (code >= 1 && code < (sizeof loopnames / sizeof loopnames [0]))
+		playwavfile(loopnames [code]);
+	else
+		playwavstop();
+
+}
+#endif /* WITHWAVPLAYER || WITHSENDWAV */
 
 /* возврат ненуля - было какое-либо нажатие,
 	требуется обновление дисплея и состояния аппаратуры */
@@ -16512,19 +16565,19 @@ processkeyboard(uint_fast8_t kbch)
 	switch (kbch)
 	{
 	case KBD_CODE_PLAYFILE1:
-		playwavfile("1.wav");
+		playhandler(1);
 		return 1;	/* клавиша уже обработана */
 	case KBD_CODE_PLAYFILE2:
-		playwavfile("2.wav");
+		playhandler(2);
 		return 1;	/* клавиша уже обработана */
 	case KBD_CODE_PLAYFILE3:
-		playwavfile("3.wav");
+		playhandler(3);
 		return 1;	/* клавиша уже обработана */
 	case KBD_CODE_PLAYFILE4:
-		playwavfile("4.wav");
+		playhandler(4);
 		return 1;	/* клавиша уже обработана */
 	case KBD_CODE_PLAYFILE5:
-		playwavfile("5.wav");
+		playhandler(5);
 		return 1;	/* клавиша уже обработана */
 	case KBD_CODE_PLAYSTOP:
 		playwavstop();
