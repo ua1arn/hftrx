@@ -17654,13 +17654,22 @@ hamradio_main_step(void)
 	return STTE_OK;
 }
 
-uint_fast8_t bandpass (int_least16_t num)
+uint_fast8_t get_low_bp (int_least16_t rotate)
 {
-	if (num != 0)
+	if (rotate != 0)
 	{
-		bwprop_ssbwide.right100 += num;
+		bwprop_ssbwide.left10_width10 += rotate;
 		updateboard (1, 0);
-		return bwprop_ssbwide.right100;
+	}
+	return bwprop_ssbwide.left10_width10;
+}
+
+uint_fast8_t get_high_bp (int_least16_t rotate)
+{
+	if (rotate != 0)
+	{
+		bwprop_ssbwide.right100 += rotate;
+		updateboard (1, 0);
 	}
 	return bwprop_ssbwide.right100;
 }

@@ -6393,7 +6393,7 @@ board_set_wflevelsep(uint_fast8_t v)
 		}
 	}
 
-	uint_fast8_t find (uint_fast8_t id_window, char * val)				// возврат id кнопки окна по ее названию
+	uint_fast8_t find_button (uint_fast8_t id_window, char * val)				// возврат id кнопки окна по ее названию
 	{
 		for (uint_fast8_t i = 1; i < button_handlers_count; i++)
 		{
@@ -6403,46 +6403,86 @@ board_set_wflevelsep(uint_fast8_t v)
 		return 0;
 	}
 
-	void set_visible_window(uint_fast8_t parent, uint_fast8_t value)
+	uint_fast8_t find_label (uint_fast8_t id_window, char * val)				// возврат id метки окна по ее названию
+	{
+		for (uint_fast8_t i = 1; i < labels_count; i++)
+		{
+			if (labels[i].parent == id_window && labels[i].name == val)
+				return i;
+		}
+		return 0;
+	}
+
+	void set_window(uint_fast8_t parent, uint_fast8_t value)
 	{
 		for (uint_fast8_t i = 1; i < button_handlers_count; i++)
 		{
 			if (button_handlers[i].parent == parent)
+			{
 				button_handlers[i].visible = value ? VISIBLE : NON_VISIBLE;
+				button_handlers[i].is_locked = 0;
+			}
 		}
-		for (uint_fast8_t i = 0; i < labels_count; i++)
+		for (uint_fast8_t i = 1; i < labels_count; i++)
 		{
 			if (labels[i].parent == parent)
 				labels[i].visible = value ? VISIBLE : NON_VISIBLE;
 		}
 		windows[gui.window_to_draw].is_show = value ? VISIBLE : NON_VISIBLE;
+		windows[gui.window_to_draw].first_call = 0;
 		gui.window_to_draw = value ? gui.window_to_draw : 0;
 	}
 
 	void window_bp_process (void)
 	{
 		PACKEDCOLOR565_T * const colorpip = getscratchpip();
-		uint_fast8_t val;
-		uint_fast16_t x_new;
+		static uint_fast8_t val_high, val_low;
+		static uint_fast16_t x_h, x_l;
 		char buf[10];
+		static uint_fast8_t id_lbl_high, id_lbl_low;
 
-		if (gui.enc2rotate != 0)
+		if (windows[WINDOW_BP].first_call == 1)
 		{
-			val = bandpass(gui.enc2rotate);
-			gui.enc2done = 1;
-		} else
-		{
-			val = bandpass(0);
+			windows[WINDOW_BP].first_call = 0;
+			button_handlers[find_button(WINDOW_BP, "High")].is_locked = 1;
+			id_lbl_low = find_label(WINDOW_BP, "lbl_low");
+			id_lbl_high = find_label(WINDOW_BP, "lbl_high");
+			val_high = get_high_bp(0);
+			val_low = get_low_bp(0) / 10;
+
+			local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d.%dk"), val_high/10, val_high%10);
+			strcpy (labels[id_lbl_high].text, buf);
+			x_h = normalize (val_high, 0, 50, 290) + 290;
+			labels[id_lbl_high].x = x_h - 20;
+
+			local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d.%dk"), val_low/10, val_low%10);
+			strcpy (labels[id_lbl_low].text, buf);
+			x_l = normalize (val_low, 0, 50, 290) + 290;
+			labels[id_lbl_low].x = x_l - 20;
+
 		}
 
-		local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d.%dk"), val/10, val%10);
-		strcpy (labels[1].text, buf);
-		x_new = normalize (val, 0, 50, 290) + 290;
-		labels[1].x = x_new - 20;
-		display_colorbuffer_line_set(colorpip, ALLDX, ALLDY, 260, 110, 560, 110, COLOR565_GRAY);
+		if (gui.enc2rotate != 0 && button_handlers[find_button(WINDOW_BP, "High")].is_locked == 1)
+		{
+			val_high = get_high_bp(gui.enc2rotate);
+			gui.enc2done = 1;
+			local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d.%dk"), val_high/10, val_high%10);
+			strcpy (labels[id_lbl_high].text, buf);
+			x_h = normalize (val_high, 0, 50, 290) + 290;
+			labels[id_lbl_high].x = x_h - 20;
+		}
+		else if (gui.enc2rotate != 0 && button_handlers[find_button(WINDOW_BP, "Low")].is_locked == 1)
+		{
+			val_low = get_low_bp(gui.enc2rotate * 10) / 10;
+			gui.enc2done = 1;
+			local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d.%dk"), val_low/10, val_low%10);
+			strcpy (labels[id_lbl_low].text, buf);
+			x_l = normalize (val_low, 0, 50, 290) + 290;
+			labels[id_lbl_low].x = x_l - 20;
+		}
+		display_colorbuffer_line_set(colorpip, ALLDX, ALLDY, 251, 110, 549, 110, COLOR565_GRAY);
 		display_colorbuffer_line_set(colorpip, ALLDX, ALLDY, 290, 70, 290, 120, COLOR565_GRAY);
-//		display_colorbuffer_line_set(colorpip, ALLDX, ALLDY, x_new, 70, x_new + 5, 120, COLOR565_YELLOW);
-		draw_rect_pip(295, 70, x_new, 108, COLOR565_YELLOW, 1);
+		draw_rect_pip(x_l, 70, x_h, 108, COLOR565_YELLOW, 1);
 
 	}
 
@@ -6463,7 +6503,26 @@ board_set_wflevelsep(uint_fast8_t v)
 			if (button_handlers[gui.selected].payload != UINTPTR_MAX)
 				change_submode(button_handlers[gui.selected].payload);
 
-			set_visible_window(WINDOW_MODES, NON_VISIBLE);
+			set_window(WINDOW_MODES, NON_VISIBLE);
+		}
+	}
+
+	void buttons_bp_handler (void)
+	{
+		if (gui.selected == find_button(WINDOW_BP, "Low"))
+		{
+			button_handlers[find_button(WINDOW_BP, "High")].is_locked = 0;
+			button_handlers[find_button(WINDOW_BP, "Low")].is_locked = 1;
+		}
+		else if (gui.selected == find_button(WINDOW_BP, "High"))
+		{
+			button_handlers[find_button(WINDOW_BP, "High")].is_locked = 1;
+			button_handlers[find_button(WINDOW_BP, "Low")].is_locked = 0;
+		}
+		else if (gui.selected == find_button(WINDOW_BP, "OK"))
+		{
+			set_window(WINDOW_BP, NON_VISIBLE);
+			gui.enc2busy = 0;
 		}
 	}
 
@@ -6473,13 +6532,14 @@ board_set_wflevelsep(uint_fast8_t v)
 
 		if (windows[gui.window_to_draw].is_show == NON_VISIBLE)
 		{
-			set_visible_window(WINDOW_MODES, VISIBLE);
-			button_handlers[find(WINDOW_MODES, "Mode")].is_locked = 1;
+			set_window(WINDOW_MODES, VISIBLE);
+			button_handlers[find_button(WINDOW_MODES, "Mode")].is_locked = 1;
+			windows[gui.window_to_draw].first_call = 1;
 		}
 		else
 		{
-			set_visible_window(WINDOW_MODES, NON_VISIBLE);
-			button_handlers[find(WINDOW_MODES, "Mode")].is_locked = 0;
+			set_window(WINDOW_MODES, NON_VISIBLE);
+			button_handlers[find_button(WINDOW_MODES, "Mode")].is_locked = 0;
 		}
 	}
 
@@ -6490,11 +6550,12 @@ board_set_wflevelsep(uint_fast8_t v)
 		if (windows[gui.window_to_draw].is_show == NON_VISIBLE)
 		{
 			gui.enc2busy = 1;
-			set_visible_window(WINDOW_BP, VISIBLE);
+			set_window(WINDOW_BP, VISIBLE);
+			windows[gui.window_to_draw].first_call = 1;
 		}
 		else
 		{
-			set_visible_window(WINDOW_BP, NON_VISIBLE);
+			set_window(WINDOW_BP, NON_VISIBLE);
 			gui.enc2busy = 0;
 		}
 	}

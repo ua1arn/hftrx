@@ -11,6 +11,7 @@
 	void button7_handler(void);
 	void button8_handler(void);
 	void buttons_mode_handler(void);
+	void buttons_bp_handler (void);
 	void window_bp_process (void);
 
 	enum {								// button_handler.type
@@ -76,28 +77,29 @@
 		{ 319, 110, 399, 160, buttons_mode_handler, BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	 BUTTON_NON_LOCKED, WINDOW_MODES, NON_VISIBLE, SUBMODE_CWR, "CWR", },
 		{ 404, 110, 484, 160, buttons_mode_handler, BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	 BUTTON_NON_LOCKED, WINDOW_MODES, NON_VISIBLE, SUBMODE_NFM, "NFM", },
 		{ 489, 110, 569, 160, buttons_mode_handler, BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	 BUTTON_NON_LOCKED, WINDOW_MODES, NON_VISIBLE, SUBMODE_DGU, "DGU", },
-		{ 251, 155, 337, 205, button8_handler, 		BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	 BUTTON_NON_LOCKED, WINDOW_BP,    NON_VISIBLE, UINTPTR_MAX, "Low", },
-		{ 357, 155, 443, 205, button2_handler, 		BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	 BUTTON_NON_LOCKED, WINDOW_BP,    NON_VISIBLE, UINTPTR_MAX, "OK", },
-		{ 463, 155, 549, 205, button8_handler, 		BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	 BUTTON_NON_LOCKED, WINDOW_BP,    NON_VISIBLE, UINTPTR_MAX, "High", },
+		{ 251, 155, 337, 205, buttons_bp_handler,	BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	 BUTTON_NON_LOCKED, WINDOW_BP,    NON_VISIBLE, UINTPTR_MAX, "Low", },
+		{ 357, 155, 443, 205, buttons_bp_handler, 	BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	 BUTTON_NON_LOCKED, WINDOW_BP,    NON_VISIBLE, UINTPTR_MAX, "OK", },
+		{ 463, 155, 549, 205, buttons_bp_handler, 	BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	 BUTTON_NON_LOCKED, WINDOW_BP,    NON_VISIBLE, UINTPTR_MAX, "High", },
 	};
-	enum { button_handlers_count = sizeof button_handlers / sizeof button_handlers[0] };
+	enum { button_handlers_count = sizeof button_handlers / sizeof button_handlers[1] };
 
 	typedef struct {
 		uint_fast16_t x;
 		uint_fast16_t y;
 		uint_fast8_t parent;
 		uint_fast8_t visible;
-		char * text;
+		const char * name;
+		char text[10];
 		COLOR565_T color;
 	} label_handler;
 
 	static label_handler labels[] = {
-	//     x,   y,  parent,      visible,  Text,  color
+	//     x,   y,  parent,      visible,     name,   Text,  color
 		{ },
-		{ 250, 120, WINDOW_BP, NON_VISIBLE, "q", COLOR565_YELLOW, },
-		{ 490, 120, WINDOW_BP, NON_VISIBLE, 0, COLOR565_YELLOW, },
+		{ 250, 120, WINDOW_BP, NON_VISIBLE, "lbl_low",  "          ", COLOR565_YELLOW, },
+		{ 490, 120, WINDOW_BP, NON_VISIBLE, "lbl_high", "          ", COLOR565_YELLOW, },
 	};
-	enum { labels_count = sizeof labels / sizeof labels[0] };
+	enum { labels_count = sizeof labels / sizeof labels[1] };
 
 	typedef struct {
 		uint_fast16_t last_pressed_x; 	 // последняя точка касания экрана
@@ -123,21 +125,22 @@
 		uint_fast16_t y2;
 		char * title;					// текст, выводимый в заголовке окна
 		uint_fast8_t is_show;			// запрос на отрисовку окна
+		uint_fast8_t first_call;		// признак первого вызова для различных инициализаций
 		void(*onVisibleProcess) (void);
 	} windowpip;
 
 	static windowpip windows[] = {
-	//     window_id,   x1,  y1, x2,  y2,  title,         is_show,     onVisibleProcess
+	//     window_id,   x1,  y1, x2,  y2,  title,         is_show, first_call, onVisibleProcess
 		{ },
-		{ WINDOW_MODES, 214, 20, 586, 175, "Select mode", NON_VISIBLE, },
-		{ WINDOW_BP,    214, 20, 586, 225, "Bandpass",    NON_VISIBLE, window_bp_process},
+		{ WINDOW_MODES, 214, 20, 586, 175, "Select mode", NON_VISIBLE, 0, },
+		{ WINDOW_BP,    214, 20, 586, 225, "Bandpass",    NON_VISIBLE, 0, window_bp_process},
 	};
-	enum { windows_count = sizeof windows / sizeof windows[0] };
+	enum { windows_count = sizeof windows / sizeof windows[1] };
 
 #define COLOR_BUTTON_NON_LOCKED		COLOR565_GREEN
 #define COLOR_BUTTON_PR_NON_LOCKED	COLOR565_DARKGREEN2
 #define COLOR_BUTTON_LOCKED			COLOR565_YELLOW
-#define COLOR_BUTTON_PR_LOCKED		COLOR565_ORANGE
+#define COLOR_BUTTON_PR_LOCKED		TFTRGB565(0x3C, 0x3C, 0x00)
 
 #endif /* #if WITHTOUCHTEST */
 #endif /* GUI_H_INCLUDED */
