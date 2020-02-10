@@ -5344,8 +5344,8 @@ void dsp_addsidetone(int16_t * buff)
 		//
 		if (tx)
 		{
-			recordsampleSD(monitx, monitx);	// Запись демодулированного сигнала без озвучки клавиш
-			recordsampleUAC(monitx, monitx);	// Запись в UAC демодулированного сигнала без озвучки клавиш
+			recordsampleSD(monitxL, monitxR);	// Запись демодулированного сигнала без озвучки клавиш
+			recordsampleUAC(monitxL, monitxR);	// Запись в UAC демодулированного сигнала без озвучки клавиш
 		}
 		else
 		{
