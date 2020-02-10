@@ -2391,19 +2391,22 @@ enum
 		#define DISPLC_RJ		1	// количество скрытых справа цифр в отображении частоты
 		static const FLASHMEM struct dzone dzones [] =
 		{
-			{	0,	0,	display_txrxstate2, REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	3,	0,	display_voxtune3,	REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	7,	0,	display_att4,		REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	16, 0,	display_lockstate1, REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	18, 0,	display_rxbw3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	12, 0,	display_pre3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	0,	2,	display_freqX_a,	REDRM_FREQ, REDRSUBSET(DPAGE0), },		// col = 1 for !WIDEFREQ
-			{	18, 3,	display_mode3_a,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
-			{	18, 5,	display_mode3_b,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
-			{	0,	5,	display_vfomode3,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// SPLIT
-			{	7,	5,	display_freqX_b,	REDRM_FRQB, REDRSUBSET(DPAGE0), },		// x=8 then !WIDEFREQ
-			{	18, 7,	display_agc3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	0,	7,	display2_bars,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// S-METER, SWR-METER, POWER-METER
+//			{	0,	0,	display_txrxstate2, REDRM_MODE, REDRSUBSET(DPAGE0), },
+//			{	3,	0,	display_voxtune3,	REDRM_MODE, REDRSUBSET(DPAGE0), },
+//			{	7,	0,	display_att4,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+//			{	16, 0,	display_lockstate1, REDRM_MODE, REDRSUBSET(DPAGE0), },
+//			{	18, 0,	display_rxbw3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+//			{	12, 0,	display_pre3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+//			{	0,	2,	display_freqX_a,	REDRM_FREQ, REDRSUBSET(DPAGE0), },		// col = 1 for !WIDEFREQ
+//			{	18, 3,	display_mode3_a,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
+//			{	18, 5,	display_mode3_b,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
+//			{	0,	5,	display_vfomode3,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// SPLIT
+//			{	7,	5,	display_freqX_b,	REDRM_FRQB, REDRSUBSET(DPAGE0), },		// x=8 then !WIDEFREQ
+//			{	18, 7,	display_agc3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+//			{	0,	7,	display2_bars,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// S-METER, SWR-METER, POWER-METER
+
+				{	0,	3,	display_datetime12,	REDRM_BARS, REDRSUBSET(DPAGE0)/*REDRSUBSET_SLEEP*/, },	// DATE & TIME // DATE&TIME Jan-01 13:40
+				{	0,	5,	display_time8,	REDRM_BARS, REDRSUBSET(DPAGE0)/*REDRSUBSET_SLEEP*/, },	// DATE & TIME // DATE&TIME Jan-01 13:40
 		#if WITHMENU
 			{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
 			{	0, 1,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра

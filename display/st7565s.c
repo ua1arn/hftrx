@@ -395,8 +395,8 @@ static void st7565s_initialize(void)
 	st7565s_write_cmd(CMD_SET_POWER_CONTROL | 0x7);
 	local_delay_ms(50);
 
-	st7565s_write_cmd2(CMD_SET_BOOSTER_FIRST, CMD_SET_BOOSTER_6);	// данная команда не требуется
-	//st7565s_write_cmd2(CMD_SET_BOOSTER_FIRST, CMD_SET_BOOSTER_234);	// внешнее питание данная команда не требуется
+	//st7565s_write_cmd2(CMD_SET_BOOSTER_FIRST, CMD_SET_BOOSTER_6);	// данная команда не требуется
+	st7565s_write_cmd2(CMD_SET_BOOSTER_FIRST, CMD_SET_BOOSTER_234);	// если внешнее питание данная команда не требуется
 
 
 	st7565s_write_cmd(CMD_DISPLAY_ON);
