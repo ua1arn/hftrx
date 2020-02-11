@@ -8025,8 +8025,8 @@ stm32h7xx_pll_initialize(void)
 {
 #if 1
 	RCC->APB4ENR |= RCC_APB4ENR_SYSCFGEN;     // включить тактирование альтернативных функций
-	__DSB();
-	SYSCFG->CCCSR |= SYSCFG_CCCSR_EN;	// enable i/o compensaion cell
+	(void) RCC->APB4ENR;
+	SYSCFG->CCCSR |= SYSCFG_CCCSR_EN;	// enable i/o compensation cell
 	//while ((SYSCFG->CCCSR & SYSCFG_CCCSR_READY) == 0)
 	//	;
 #endif
