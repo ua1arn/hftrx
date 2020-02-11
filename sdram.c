@@ -2586,6 +2586,7 @@ void SDRAM_GPIOConfig(void)
  +-------------------+  
   
 */
+  enum { GPIO_AF_FMC = 12 };
   
   /* Common GPIO configuration */
   GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_AF;
