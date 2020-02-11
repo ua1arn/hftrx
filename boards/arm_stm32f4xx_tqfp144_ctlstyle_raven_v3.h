@@ -260,8 +260,10 @@
 	//#define WITHLOOPBACKTEST	1
 	//#define WITHMODEMIQLOOPBACK	1	/* модем получает собственные передаваемые квадратуры */
 	//#define WITHDACSTRAIGHT 1	/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
-	#define WITHRTS96 1		/* кроме выходного аудиосигнала передача квадратур по USB */
+	//#define WITHRTS96 1		/* кроме выходного аудиосигнала передача квадратур по USB */
 	//#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
+	//#define BOARD_FFTZOOM_POW2MAX	1	// x1, x2
+	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
 
 	#define WITHDSPEXTDDC 1			/* Квадратуры получаются внешней аппаратурой */
 	#define WITHDSPEXTFIR 1			/* Фильтрация квадратур осуществляется внешней аппаратурой */

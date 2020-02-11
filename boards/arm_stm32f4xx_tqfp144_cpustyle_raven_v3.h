@@ -40,11 +40,11 @@
 	#define WITHUSBHW_DEVICE	USB_OTG_FS	/* на этом устройстве поддерживается функциональность DEVICE	*/
 
 	#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
-	#define WITHUSBUACIN2		1	/* формируются три канала передачи звука */
+	//#define WITHUSBUACIN2		1	/* формируются три канала передачи звука */
 	//#define WITHUABUACOUTAUDIO48MONO	1	/* для уменьшения размера буферов в endpoints */
 
 	#define WITHUSBCDC		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
-	#define WITHUSBHWCDC_N	2	/* количество виртуальных последовательных портов */
+	#define WITHUSBHWCDC_N	1	/* количество виртуальных последовательных портов */
 	//#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
 	//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
 	//#define WITHUSBHID		1	/* HID использовать Human Interface Device на USB соединении */
@@ -57,7 +57,7 @@
 	//#define WITHNMEA_CDC		1	/* порт подключения GPS/GLONASS */
 
 #else
-	// Оригинальный вариант - только с CAT серез UART1 и FT232RL
+	// Оригинальный вариант - только с CAT через UART1 и FT232RL
 
 	#define WITHUART1HW	1	/* Используется периферийный контроллер последовательного порта #1 */
 
@@ -538,6 +538,7 @@
 		} while (0)
 #endif /* WITHUSBHW */
 
+	#define SIDETONE_TARGET_BIT 0
 
 	#define HARDWARE_SPI_CONNECT() do { \
 			arm_hardware_piob_altfn50(SPI_MOSI_BIT | SPI_SCLK_BIT | SPI_MISO_BIT, AF_SPI1); /* В этих процессорах и входы и выходы перекдючаются на ALT FN */ \

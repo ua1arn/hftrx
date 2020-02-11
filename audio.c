@@ -390,9 +390,7 @@ static FLOAT_t omega2ftw_k1; // = POWF(2, NCOFTWBITS);
 #define FTW2_COS_Q31(angle) ((q31_t) ((((ncoftw_t) (angle)) + 0x80000000uL) / 2))
 #define FAST_Q31_2_FLOAT(val) ((q31_t) (val) / (FLOAT_t) 2147483648)
 
-#ifndef BOARD_FFTZOOM_POW2MAX
-	#define BOARD_FFTZOOM_POW2MAX 1
-#endif
+#if WITHSPECTRUMWF
 enum
 {
 
@@ -401,6 +399,7 @@ enum
 
 	NORMALFFT = FFTSizeSpectrum			// размер буфера для отображения
 };
+
 
 // параметры масштабирования спектра
 
@@ -509,6 +508,7 @@ static const struct zoom_param zoom_params [BOARD_FFTZOOM_POW2MAX] =
 #endif
 };
 
+#endif /* WITHSPECTRUMWF */
 
 #if 0
 static RAMFUNC FLOAT_t peekvalf(uint32_t a)
