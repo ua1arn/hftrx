@@ -6448,17 +6448,17 @@ board_set_wflevelsep(uint_fast8_t v)
 			id_lbl_low = find_label(WINDOW_BP, "lbl_low");
 			id_lbl_high = find_label(WINDOW_BP, "lbl_high");
 			val_high = get_high_bp(0);
-			val_low = get_low_bp(0) / 10;
+			val_low = get_low_bp(0);
 
-			local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d.%dk"), val_high/10, val_high%10);
+			local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), val_high * 100);
 			strcpy (labels[id_lbl_high].text, buf);
 			x_h = normalize (val_high, 0, 50, 290) + 290;
-			labels[id_lbl_high].x = x_h - 20;
+			labels[id_lbl_high].x = x_h + 64 > 550 ? 486 : x_h;
 
-			local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d.%dk"), val_low/10, val_low%10);
+			local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), val_low * 10);
 			strcpy (labels[id_lbl_low].text, buf);
-			x_l = normalize (val_low, 0, 50, 290) + 290;
-			labels[id_lbl_low].x = x_l - 20;
+			x_l = normalize (val_low / 10, 0, 50, 290) + 290;
+			labels[id_lbl_low].x = x_l - strlen(buf) * 16;
 
 		}
 
@@ -6466,19 +6466,19 @@ board_set_wflevelsep(uint_fast8_t v)
 		{
 			val_high = get_high_bp(gui.enc2rotate);
 			gui.enc2done = 1;
-			local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d.%dk"), val_high/10, val_high%10);
+			local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), val_high * 100);
 			strcpy (labels[id_lbl_high].text, buf);
 			x_h = normalize (val_high, 0, 50, 290) + 290;
-			labels[id_lbl_high].x = x_h - 20;
+			labels[id_lbl_high].x = x_h + 64 > 550 ? 486 : x_h;
 		}
 		else if (gui.enc2rotate != 0 && button_handlers[find_button(WINDOW_BP, "Low")].is_locked == 1)
 		{
-			val_low = get_low_bp(gui.enc2rotate * 10) / 10;
+			val_low = get_low_bp(gui.enc2rotate * 10);
 			gui.enc2done = 1;
-			local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d.%dk"), val_low/10, val_low%10);
+			local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), val_low * 10);
 			strcpy (labels[id_lbl_low].text, buf);
-			x_l = normalize (val_low, 0, 50, 290) + 290;
-			labels[id_lbl_low].x = x_l - 20;
+			x_l = normalize (val_low / 10, 0, 50, 290) + 290;
+			labels[id_lbl_low].x = x_l - strlen(buf) * 16;
 		}
 		display_colorbuffer_line_set(colorpip, ALLDX, ALLDY, 251, 110, 549, 110, COLOR565_GRAY);
 		display_colorbuffer_line_set(colorpip, ALLDX, ALLDY, 290, 70, 290, 120, COLOR565_GRAY);

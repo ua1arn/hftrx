@@ -38,7 +38,8 @@
 	enum {								// button_handler.for_window & windowpip.window_id
 		FOOTER,							// заглушка для заполнения структуры для кнопок внизу экрана
 		WINDOW_MODES,					// переключение режимов работы, видов модуляции
-		WINDOW_BP
+		WINDOW_BP,						// регулировка полосы пропускания фильтров выбранного режима
+		WINDOW_AGC
 	};
 
 	typedef struct {
@@ -50,7 +51,7 @@
 		uint_fast8_t state;				// текущее состояние кнопки
 		uint_fast8_t need_redraw;		// запрос на перерисовку после изменения состояния
 		uint_fast8_t type;				// тип кнопки - постоянная или динамическая
-		uint_fast8_t is_locked;
+		uint_fast8_t is_locked;			// признак фиксации кнопки
 		uint_fast8_t parent;			// индекс окна, в котором будет отображаться кнопка при type = TYPE_PIP_BUTTON
 		uint_fast8_t visible;			// рисовать ли кнопку на экране
 		uintptr_t payload;
@@ -134,6 +135,7 @@
 		{ },
 		{ WINDOW_MODES, 214, 20, 586, 175, "Select mode", NON_VISIBLE, 0, },
 		{ WINDOW_BP,    214, 20, 586, 225, "Bandpass",    NON_VISIBLE, 0, window_bp_process},
+		{ WINDOW_AGC,   214, 20, 586, 225, "AGC", 		  NON_VISIBLE, 0, },
 	};
 	enum { windows_count = sizeof windows / sizeof windows[1] };
 

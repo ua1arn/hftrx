@@ -17656,22 +17656,80 @@ hamradio_main_step(void)
 
 uint_fast8_t get_low_bp (int_least16_t rotate)
 {
-	if (rotate != 0)
-	{
-		bwprop_ssbwide.left10_width10 += rotate;
-		updateboard (1, 0);
-	}
-	return bwprop_ssbwide.left10_width10;
+	uint_fast8_t tx = gettxstate();
+	const uint_fast8_t asubmode = getasubmode(0);
+	const uint_fast8_t amode = submodes [asubmode].mode;
+	const uint_fast8_t bwseti = mdt [amode].bwsetis [tx];
+
+	uint_fast16_t low;
+
+	const uint_fast8_t pos = bwsetpos [bwseti];
+	bwprop_t * p = bwsetsc [bwseti].prop [pos];
+	switch (p->type)
+		{
+		case BWSET_WIDE:
+			if (rotate != 0 && (p->left10_width10 + rotate) > 0 && (p->left10_width10 + rotate) < p->right100 * 10)
+			{
+				p->left10_width10 += rotate;
+				updateboard (1, 0);
+			}
+			low =  p->left10_width10;
+			break;
+
+		default:
+		case BWSET_NARROW:
+			{
+				if (rotate != 0)
+				{
+					p->left10_width10 += rotate * 10;
+					updateboard (1, 0);
+				}
+				const int_fast16_t width = p->left10_width10;
+				const int_fast16_t width2 = width / 2;
+				const int_fast16_t center = gcwpitch10 * CWPITCHSCALE;
+				low =  ((center > width2) ? (center - width2) : 0) / 10;
+			}
+		}
+	return low;
 }
 
 uint_fast8_t get_high_bp (int_least16_t rotate)
 {
-	if (rotate != 0)
+	uint_fast8_t tx = gettxstate();
+	const uint_fast8_t asubmode = getasubmode(0);
+	const uint_fast8_t amode = submodes [asubmode].mode;
+	const uint_fast8_t bwseti = mdt [amode].bwsetis [tx];
+
+	uint_fast16_t high;
+
+	const uint_fast8_t pos = bwsetpos [bwseti];
+	bwprop_t * p = bwsetsc [bwseti].prop [pos];
+	switch (p->type)
 	{
-		bwprop_ssbwide.right100 += rotate;
-		updateboard (1, 0);
+	case BWSET_WIDE:
+		if (rotate != 0 && (p->right100 + rotate) * 10 > p->left10_width10 && (p->right100 + rotate) < 45)
+		{
+			p->right100 += rotate;
+			updateboard (1, 0);
+		}
+		high =  p->right100;
+		break;
+
+	default:
+	case BWSET_NARROW:
+		{
+			if (rotate != 0)
+			{
+				gcwpitch10 += rotate * CWPITCHSCALE;
+				updateboard (1, 0);
+			}
+			const int_fast16_t width = p->left10_width10;
+			const int_fast16_t width2 = width / 2;
+			const int_fast16_t center = gcwpitch10 * CWPITCHSCALE;
+			high = ((center > width2) ? (center + width2) : (center * 2)) / 100;
+		}
 	}
-	return bwprop_ssbwide.right100;
+	return high;
 }
 
 // основной цикл программы при работе в режиме любительского премника
