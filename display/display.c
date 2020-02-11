@@ -1010,6 +1010,16 @@ void display_colorbuffer_pip(
 #elif LCDMODE_LTDC_L8
 
 // Для L8 основного дисплея копирование в него RGB565 не очень простая задача...
+// Выдать буфер на дисплей. Функции бывают только для не L8 режимов
+void display_colorbuffer_show(
+	const PACKEDCOLOR565_T * buffer,
+	uint_fast16_t dx,
+	uint_fast16_t dy,
+	uint_fast16_t col,	// горизонтальная координата левого верхнего угла на экране (0..dx-1) слева направо
+	uint_fast16_t row	// вертикальная координата левого верхнего угла на экране (0..dy-1) сверху вниз
+	)
+{
+}
 
 #elif LCDMODE_LTDC_L24
 
