@@ -2713,18 +2713,14 @@ void hardware_adc_initialize(void)
 	#if defined (ADC2)
 
 		RCC->APB2ENR |= (RCC_APB2ENR_ADC1EN | RCC_APB2ENR_ADC2EN);    // Затактировали АЦП
-		__DSB();
-		NVIC_SetVector(ADC1_2_IRQn, (uintptr_t) & ADC1_2_IRQHandler);
-		NVIC_SetPriority(ADC1_2_IRQn, ARM_SYSTEM_PRIORITY);
-		NVIC_EnableIRQ(ADC1_2_IRQn);    //Включаем прерывания с АЦП. Обрабатывает ADC1_2_IRQHandler()
+		(void) RCC->APB2ENR;
+		arm_hardware_set_handler_system(ADC1_2_IRQn, ADC1_2_IRQHandler);
 
 	#else /* defined (ADC2) */
 
 		RCC->APB2ENR |= (RCC_APB2ENR_ADC1EN);    // Затактировали АЦП
-		__DSB();
-		NVIC_SetVector(ADC1_IRQn, (uintptr_t) & ADC1_IRQHandler);
-		NVIC_SetPriority(ADC1_IRQn, ARM_SYSTEM_PRIORITY);
-		NVIC_EnableIRQ(ADC1_IRQn);    //Включаем прерывания с АЦП. Обрабатывает ADC1_IRQHandler()
+		(void) RCC->APB2ENR;
+		arm_hardware_set_handler_system(ADC1_IRQn, ADC1_IRQHandler);
 
 	#endif /* defined (ADC2) */
 
