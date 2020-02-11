@@ -1083,35 +1083,34 @@ enum
 struct agcseti
 {
 	/* параметры АРУ по режимам работы */
-	uint8_t agc_rate;
-	uint8_t agc_t1;
-	uint8_t agc_release10;
-	uint8_t agc_t4;
-	uint8_t agc_thung10;
+	uint8_t rate;
+	uint8_t t1;
+	uint8_t release10;
+	uint8_t t4;
+	uint8_t thung10;
 } ATTRPACKED;	// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
 
 struct afsetitempl
 {
 	/* начальные значения параметров АРУ */
-	uint_fast8_t agc_rate; // = 10;	// на agc_rate дБ изменения входного сигнала 1 дБ выходного
-	uint_fast8_t agc_t1; // = 120;	// in 1 mS steps. 120=120 mS	charge slow
-	uint_fast8_t agc_release10; // = 5;		// in 0.1 S steps. 0.5 S discharge slow
-	uint_fast8_t agc_t4; // = 50;	// in 1 mS steps. 35=35 mS discharge fast
-	uint_fast8_t agc_thung10; // = 3;	// 0.1 S hung time (0.3 S recomennded).
+	uint8_t rate; 		// = 10;	// на agc_rate дБ изменения входного сигнала 1 дБ выходного
+	uint8_t t1; 		// = 120;	// in 1 mS steps. 120=120 mS	charge slow
+	uint8_t release10; 	// = 5;		// in 0.1 S steps. 0.5 S discharge slow
+	uint8_t t4; 		// = 50;	// in 1 mS steps. 35=35 mS discharge fast
+	uint8_t thung10; 	// = 3;	// 0.1 S hung time (0.3 S recomennded).
 };
 
-#define AGC_RATE_FLAT	(UINT8_MAX - 1)
+#define AGC_RATE_FLAT	192	//(UINT8_MAX - 1)
 #if CTLSTYLE_OLEG4Z_V1
 	/* во всех режимах "плоская" АРУ */
 	#define AGC_RATE_SSB	AGC_RATE_FLAT //(UINT8_MAX - 1)
 	#define AGC_RATE_DIGI	AGC_RATE_FLAT //(UINT8_MAX - 1)
 	#define AGC_RATE_DRM	AGC_RATE_FLAT //(UINT8_MAX - 1)
 #else /* CTLSTYLE_OLEG4Z_V1 */
-	#define AGC_RATE_SSB	(10)
-	#define AGC_RATE_DIGI	(3)
-	#define AGC_RATE_DRM	(20)
+	#define AGC_RATE_SSB	10
+	#define AGC_RATE_DIGI	3
+	#define AGC_RATE_DRM	20
 #endif /* CTLSTYLE_OLEG4Z_V1 */
-
 
 static FLASHMEM const struct afsetitempl aft [AGCSETI_COUNT] =
 {
@@ -1156,6 +1155,18 @@ static FLASHMEM const struct afsetitempl aft [AGCSETI_COUNT] =
 		1,		// agc_thung10
 	},
 };
+
+
+typedef struct agcp_tag
+{
+	uint_fast8_t rate; 		// = 10;	// на gagc_rate дБ изменения входного сигнала 1 дБ выходного
+	uint_fast8_t t1; 		// = 120;	// in 1 mS steps. 120=120 mS	charge slow
+	uint_fast8_t release10; // = 5;		// in 0.1 S steps. 0.5 S discharge slow - время разряда медленной цепи АРУ
+	uint_fast8_t t4; 		// = 50;	// in 1 mS steps. 35=35 mS discharge fast - время разряда быстрой цепи АРУ
+	uint_fast8_t thung10; 	// = 3;	// 0.1 S hung time (0.3 S recomennded).
+} agcp_t;
+
+static agcp_t gagc [AGCSETI_COUNT];
 
 #endif /* WITHIF4DSP */
 
@@ -5290,16 +5301,7 @@ getdefaultbandsubmode(
 	return getdefaultsubmode(freq);
 }
 
-#if WITHIF4DSP
 
-	static uint_fast8_t gagc_rate [AGCSETI_COUNT]; // = 10;	// на gagc_rate дБ изменения входного сигнала 1 дБ выходного
-	static uint_fast8_t gagc_t1 [AGCSETI_COUNT]; // = 120;	// in 1 mS steps. 120=120 mS	charge slow
-	static uint_fast8_t gagc_release10 [AGCSETI_COUNT]; // = 5;		// in 0.1 S steps. 0.5 S discharge slow - время разряда медленной цепи АРУ
-	static uint_fast8_t gagc_t4 [AGCSETI_COUNT]; // = 50;	// in 1 mS steps. 35=35 mS discharge fast - время разряда быстрой цепи АРУ
-	static uint_fast8_t gagc_thung10 [AGCSETI_COUNT]; // = 3;	// 0.1 S hung time (0.3 S recomennded).
-
-#endif /* WITHIF4DSP */
- 
 #if CTLSTYLE_RA4YBO || CTLSTYLE_RA4YBO_V1 || CTLSTYLE_RA4YBO_V2 || CTLSTYLE_RA4YBO_V3
 
 	static uint_fast16_t gtxpower [MODE_COUNT];
@@ -5356,12 +5358,14 @@ agcseti_load(void)
 	uint_fast8_t agcseti;
 	for (agcseti = 0; agcseti < AGCSETI_COUNT; ++ agcseti)
 	{
+		agcp_t * const p = & gagc [agcseti];
+		const struct afsetitempl * const t = & aft [agcseti];
 		// параметры АРУ
-		gagc_rate [agcseti] = loadvfy8up(offsetof(struct nvmap, afsets [agcseti].agc_rate), 1, UINT8_MAX - 1, aft [agcseti].agc_rate);
-		gagc_t1 [agcseti] = loadvfy8up(offsetof(struct nvmap, afsets [agcseti].agc_t1), 10, 250, aft [agcseti].agc_t1);
-		gagc_release10 [agcseti] = loadvfy8up(offsetof(struct nvmap, afsets [agcseti].agc_release10), 1, 100, aft [agcseti].agc_release10);
-		gagc_t4 [agcseti] = loadvfy8up(offsetof(struct nvmap, afsets [agcseti].agc_t4), 10, 250, aft [agcseti].agc_t4);
-		gagc_thung10 [agcseti] =	loadvfy8up(offsetof(struct nvmap, afsets [agcseti].agc_thung10), 0, 250, aft [agcseti].agc_thung10);
+		p->rate = loadvfy8up(offsetof(struct nvmap, afsets [agcseti].rate), 1, AGC_RATE_FLAT, t->rate);
+		p->t1 = loadvfy8up(offsetof(struct nvmap, afsets [agcseti].t1), 10, 250, t->t1);
+		p->release10 = loadvfy8up(offsetof(struct nvmap, afsets [agcseti].release10), 1, 100, t->release10);
+		p->t4 = loadvfy8up(offsetof(struct nvmap, afsets [agcseti].t4), 10, 250, t->t4);
+		p->thung10  =	loadvfy8up(offsetof(struct nvmap, afsets [agcseti].thung10), 0, 250, t->thung10);
 	}
 }
 
@@ -7831,11 +7835,11 @@ updateboard(
 			#endif /* WITHNOTCHFREQ */
 			#if WITHIF4DSP
 				const uint_fast8_t agcseti = pamodetempl->agcseti;
-				board_set_agcrate(agcseti == AGCSETI_FLAT ? UINT8_MAX : gagc_rate [agcseti]);			/* на n децибел изменения входного сигнала 1 дБ выходного. UINT8_MAX - "плоская" АРУ */
-				board_set_agc_t1(gagc_t1 [agcseti]);
-				board_set_agc_t2(gagc_release10 [agcseti]);		// время разряда медленной цепи АРУ
-				board_set_agc_t4(gagc_t4 [agcseti]);			// время разряда быстрой цепи АРУ
-				board_set_agc_thung(gagc_thung10 [agcseti]);	// hold time (hung time) in 0.1 sec
+				board_set_agcrate(agcseti == AGCSETI_FLAT ? UINT8_MAX : gagc [agcseti].rate);			/* на n децибел изменения входного сигнала 1 дБ выходного. UINT8_MAX - "плоская" АРУ */
+				board_set_agc_t1(gagc [agcseti].t1);
+				board_set_agc_t2(gagc [agcseti].release10);		// время разряда медленной цепи АРУ
+				board_set_agc_t4(gagc [agcseti].t4);			// время разряда быстрой цепи АРУ
+				board_set_agc_thung(gagc [agcseti].thung10);	// hold time (hung time) in 0.1 sec
 				board_set_squelch(gsquelch.value);
 			#endif /* WITHIF4DSP */
 			} /* tx == 0 */
@@ -14159,46 +14163,46 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	{
 		"AGC RATE", 7, 0, 0,	ISTEP1,		/* подстройка параметра АРУ через меню. */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		1, 80, 
-		offsetof(struct nvmap, afsets [AGCSETI_SSB].agc_rate),	/* На N децибел изменения входного сигнала происходит 1 дБ выходного */
+		1, AGC_RATE_FLAT,
+		offsetof(struct nvmap, afsets [AGCSETI_SSB].rate),	/* На N децибел изменения входного сигнала происходит 1 дБ выходного */
 		NULL,
-		& gagc_rate [AGCSETI_SSB],
+		& gagc [AGCSETI_SSB].rate,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
 		"AGC HUNG", 6, 1, 0,	ISTEP1,		/* подстройка параметра АРУ (время удержания медленной цепи) через меню. */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, 250, 
-		offsetof(struct nvmap, afsets [AGCSETI_SSB].agc_thung10),	/* время удержания медленной цепи АРУ */
+		offsetof(struct nvmap, afsets [AGCSETI_SSB].thung10),	/* время удержания медленной цепи АРУ */
 		NULL,
-		& gagc_thung10 [AGCSETI_SSB],
+		& gagc [AGCSETI_SSB].thung10,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
 		"AGC T1  ", 7, 0, 0,	ISTEP10,		/* подстройка параметра АРУ (время срабатывания медленной цепи) через меню. */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		10, 250, 
-		offsetof(struct nvmap, afsets [AGCSETI_SSB].agc_t1),	/* время срабатывания медленной цепи АРУ */
+		offsetof(struct nvmap, afsets [AGCSETI_SSB].t1),	/* время срабатывания медленной цепи АРУ */
 		NULL,
-		& gagc_t1 [AGCSETI_SSB],
+		& gagc [AGCSETI_SSB].t1,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
 		"AGC T2  ", 6, 1, 0,	ISTEP1,		/* подстройка параметра АРУ (время разряда медленной цепи) через меню. */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		1, 100, 
-		offsetof(struct nvmap, afsets [AGCSETI_SSB].agc_release10),	/* время разряда медленной цепи АРУ */
+		offsetof(struct nvmap, afsets [AGCSETI_SSB].release10),	/* время разряда медленной цепи АРУ */
 		NULL,
-		& gagc_release10 [AGCSETI_SSB],
+		& gagc [AGCSETI_SSB].release10,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
 		"AGC T4  ", 7, 0, 0,	ISTEP10,		/* подстройка параметра АРУ (время разряда быстрой цепи) через меню. */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		10, 250, 
-		offsetof(struct nvmap, afsets [AGCSETI_SSB].agc_t4),	/* время разряда быстрой цепи АРУ */
+		offsetof(struct nvmap, afsets [AGCSETI_SSB].t4),	/* время разряда быстрой цепи АРУ */
 		NULL,
-		& gagc_t4 [AGCSETI_SSB],
+		& gagc [AGCSETI_SSB].t4,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #if ! WITHFLATMENU
@@ -14215,46 +14219,46 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	{
 		"AGC RATE", 7, 0, 0,	ISTEP1,		/* подстройка параметра АРУ через меню. */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		1, 80, 
-		offsetof(struct nvmap, afsets [AGCSETI_CW].agc_rate),	/* На N децибел изменения входного сигнала происходит 1 дБ выходного */
+		1, AGC_RATE_FLAT,
+		offsetof(struct nvmap, afsets [AGCSETI_CW].rate),	/* На N децибел изменения входного сигнала происходит 1 дБ выходного */
 		NULL,
-		& gagc_rate [AGCSETI_CW],
+		& gagc [AGCSETI_CW].rate,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
 		"AGC HUNG", 6, 1, 0,	ISTEP1,		/* подстройка параметра АРУ (время удержания медленной цепи) через меню. */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, 250, 
-		offsetof(struct nvmap, afsets [AGCSETI_CW].agc_thung10),	/* время удержания медленной цепи АРУ */
+		offsetof(struct nvmap, afsets [AGCSETI_CW].thung10),	/* время удержания медленной цепи АРУ */
 		NULL,
-		& gagc_thung10 [AGCSETI_CW],
+		& gagc [AGCSETI_CW].thung10,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
 		"AGC T1  ", 7, 0, 0,	ISTEP10,		/* подстройка параметра АРУ (время срабатывания медленной цепи) через меню. */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		10, 250, 
-		offsetof(struct nvmap, afsets [AGCSETI_CW].agc_t1),	/* время срабатывания медленной цепи АРУ */
+		offsetof(struct nvmap, afsets [AGCSETI_CW].t1),	/* время срабатывания медленной цепи АРУ */
 		NULL,
-		& gagc_t1 [AGCSETI_CW],
+		& gagc [AGCSETI_CW].t1,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
 		"AGC T2  ", 6, 1, 0,	ISTEP1,		/* подстройка параметра АРУ (время разряда медленной цепи) через меню. */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		1, 100, 
-		offsetof(struct nvmap, afsets [AGCSETI_CW].agc_release10),	/* время разряда медленной цепи АРУ */
+		offsetof(struct nvmap, afsets [AGCSETI_CW].release10),	/* время разряда медленной цепи АРУ */
 		NULL,
-		& gagc_release10 [AGCSETI_CW],
+		& gagc [AGCSETI_CW].release10,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
 		"AGC T4  ", 7, 0, 0,	ISTEP10,		/* подстройка параметра АРУ (время разряда быстрой цепи) через меню. */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		10, 250, 
-		offsetof(struct nvmap, afsets [AGCSETI_CW].agc_t4),	/* время разряда быстрой цепи АРУ */
+		offsetof(struct nvmap, afsets [AGCSETI_CW].t4),	/* время разряда быстрой цепи АРУ */
 		NULL,
-		& gagc_t4 [AGCSETI_CW],
+		& gagc [AGCSETI_CW].t4,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #if ! WITHFLATMENU
@@ -14271,46 +14275,46 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	{
 		"AGC RATE", 7, 0, 0,	ISTEP1,		/* подстройка параметра АРУ через меню. */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		1, 80, 
-		offsetof(struct nvmap, afsets [AGCSETI_DIGI].agc_rate),	/* На N децибел изменения входного сигнала происходит 1 дБ выходного */
+		1, AGC_RATE_FLAT,
+		offsetof(struct nvmap, afsets [AGCSETI_DIGI].rate),	/* На N децибел изменения входного сигнала происходит 1 дБ выходного */
 		NULL,
-		& gagc_rate [AGCSETI_DIGI],
+		& gagc [AGCSETI_DIGI].rate,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
 		"AGC HUNG", 6, 1, 0,	ISTEP1,		/* подстройка параметра АРУ (время удержания медленной цепи) через меню. */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, 250, 
-		offsetof(struct nvmap, afsets [AGCSETI_DIGI].agc_thung10),	/* время удержания медленной цепи АРУ */
+		offsetof(struct nvmap, afsets [AGCSETI_DIGI].thung10),	/* время удержания медленной цепи АРУ */
 		NULL,
-		& gagc_thung10 [AGCSETI_DIGI],
+		& gagc [AGCSETI_DIGI].thung10,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
 		"AGC T1  ", 7, 0, 0,	ISTEP10,		/* подстройка параметра АРУ (время срабатывания медленной цепи) через меню. */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		10, 250, 
-		offsetof(struct nvmap, afsets [AGCSETI_DIGI].agc_t1),	/* время срабатывания медленной цепи АРУ */
+		offsetof(struct nvmap, afsets [AGCSETI_DIGI].t1),	/* время срабатывания медленной цепи АРУ */
 		NULL,
-		& gagc_t1 [AGCSETI_DIGI],
+		& gagc [AGCSETI_DIGI].t1,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
 		"AGC T2  ", 6, 1, 0,	ISTEP1,		/* подстройка параметра АРУ (время разряда медленной цепи) через меню. */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		1, 100, 
-		offsetof(struct nvmap, afsets [AGCSETI_DIGI].agc_release10),	/* время разряда медленной цепи АРУ */
+		offsetof(struct nvmap, afsets [AGCSETI_DIGI].release10),	/* время разряда медленной цепи АРУ */
 		NULL,
-		& gagc_release10 [AGCSETI_DIGI],
+		& gagc [AGCSETI_DIGI].release10,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
 		"AGC T4  ", 7, 0, 0,	ISTEP10,		/* подстройка параметра АРУ (время разряда быстрой цепи) через меню. */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		10, 250, 
-		offsetof(struct nvmap, afsets [AGCSETI_DIGI].agc_t4),	/* время разряда быстрой цепи АРУ */
+		offsetof(struct nvmap, afsets [AGCSETI_DIGI].t4),	/* время разряда быстрой цепи АРУ */
 		NULL,
-		& gagc_t4 [AGCSETI_DIGI],
+		& gagc [AGCSETI_DIGI].t4,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #endif /* WITHIF4DSP */
