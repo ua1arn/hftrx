@@ -8,7 +8,7 @@ MEMORY
 }
 
 /* Library configurations */
-/* GROUP(libgcc.a libc.a libm.a libnosys.a) */
+GROUP(libgcc.a libc.a libm.a libnosys.a)
 
 /* Linker script to place sections and symbol values. Should be used together
  * with other linker script that defines memory regions FLASH and RAM.
@@ -18,6 +18,10 @@ MEMORY
  * It defines following symbols, which code can use without definition:
  *   __exidx_start
  *   __exidx_end
+ *   __copy_table_start__
+ *   __copy_table_end__
+ *   __zero_table_start__
+ *   __zero_table_end__
  *   __etext
  *   __data_start__
  *   __preinit_array_start
@@ -35,14 +39,20 @@ MEMORY
  *   __StackLimit
  *   __StackTop
  *   __stack
+ *   __Vectors_End
+ *   __Vectors_Size
  */
-/* ENTRY(Reset_Handler) */
+ENTRY(Reset_Handler)
 
 SECTIONS
 {
 	.text :
 	{
-		KEEP(*(.isr_vector))
+		KEEP(*(.vectors))
+		__Vectors_End = .;
+		__Vectors_Size = __Vectors_End - __Vectors;
+		__end__ = .;
+
 		*(.text*)
 
 		KEEP(*(.init))
@@ -79,13 +89,45 @@ SECTIONS
 	} > FLASH
 	__exidx_end = .;
 
+	/* To copy multiple ROM to RAM sections,
+	 * uncomment .copy.table section and,
+	 * define __STARTUP_COPY_MULTIPLE in startup_ARMCMx.S */
+
+	.copy.table :
+	{
+		. = ALIGN(4);
+		__copy_table_start__ = .;
+		LONG (__etext)
+		LONG (__data_start__)
+		LONG ((__data_end__ - __data_start__) / 4)
+		LONG (__etext2)
+		LONG (__data2_start__)
+		LONG ((__data2_end__ - __data2_start__) / 4)
+		__copy_table_end__ = .;
+	} > FLASH
+
+	/* To clear multiple BSS sections,
+	 * uncomment .zero.table section and,
+	 * define __STARTUP_CLEAR_BSS_MULTIPLE in startup_ARMCMx.S */
+	.zero.table :
+	{
+		. = ALIGN(4);
+		__zero_table_start__ = .;
+		LONG (__bss_start__)
+		LONG ((__bss_end__ - __bss_start__) / 4)
+		__zero_table_end__ = .;
+	} > FLASH
+
 	__etext = .;
 
 	.data : AT (__etext)
 	{
 		__data_start__ = .;
 		*(vtable)
+		. = ALIGN(4);
 		*(.data*)
+		. = ALIGN(4);
+		*(.dtcm*)
 	   . = ALIGN(4);	/* two lines added by ua1arn */
 		*(.ramfunc)
 
@@ -116,6 +158,24 @@ SECTIONS
 		__data_end__ = .;
 
 	} > RAM
+	
+	__etext2 = .;
+
+	.itcm : AT (__etext2)
+	{
+		__data2_start__ = .;
+		*(.itcm*)
+		*(.text.__ieee754_logf)
+		*(.text.__ieee754_powf)
+		*(.text.__ieee754_rem_pio2f)
+		*(.text.__ieee754_sqrtf)
+		*(.text.__kernel_rem_pio2f)
+
+		. = ALIGN(4);	/* may be 32 */
+		__data2_end__ = .;
+	} > ITCM
+
+	. = __etext2 + __data2_end__ - __data2_start__;
 
 	.bss :
 	{
@@ -136,9 +196,10 @@ SECTIONS
 
 	.heap (COPY):
 	{
+		__HeapBase = .;
 		__end__ = .;
 		end = __end__;
-		*(.heap*)
+		KEEP(*(.heap*))
 		__HeapLimit = .;
 	} > RAM
 
@@ -147,7 +208,7 @@ SECTIONS
 	 * values to stack symbols later */
 	.stack_dummy (COPY):
 	{
-		*(.stack*)
+		KEEP(*(.stack*))
 	} > RAM
 
 	/* Set stack top to end of RAM, and stack limit move down by
