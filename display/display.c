@@ -12,7 +12,7 @@
 #include "display.h"
 #include "formats.h"
 #include <string.h>
-#include "../inc/spi.h"	// hardware_spi_master_send_frame
+#include "spi.h"	// hardware_spi_master_send_frame
 
 #if LCDMODE_LTDC && ! defined (SDRAM_BANK_ADDR)
 	// буфер экрана
@@ -1409,12 +1409,14 @@ void display_hardware_initialize(void)
 
 #elif DSTYLE_G_X480_Y272
 	// в знакогенераторе изображения символов "по горизонтали"
+	#include "./fonts/S1D13781_font_small2_LTDC.h"
 	#include "./fonts/S1D13781_font_small_LTDC.h"
 	#include "./fonts/S1D13781_font_half_LTDC.h"
 	#include "./fonts/S1D13781_font_big_LTDC.h"
 
 #elif DSTYLE_G_X800_Y480
 	// в знакогенераторе изображения символов "по горизонтали"
+	#include "./fonts/S1D13781_font_small2_LTDC.h"
 	#include "./fonts/S1D13781_font_small_LTDC.h"
 	#include "./fonts/S1D13781_font_half_LTDC.h"
 	#include "./fonts/S1D13781_font_big_LTDC.h"
@@ -1710,6 +1712,29 @@ static uint_fast16_t RAMFUNC_NONILINE ltdc565_horizontal_put_char_small_tbg(
 	return width;
 }
 
+// возвращаем на сколько пикселей вправо занимет отрисованный символ
+// Фон не трогаем
+static uint_fast16_t RAMFUNC_NONILINE ltdc565_horizontal_put_char_small2_tbg(
+	PACKEDCOLOR565_T * buffer,
+	uint_fast16_t dx,
+	uint_fast16_t dy,
+	uint_fast16_t x,
+	uint_fast16_t y,
+	char cc,
+	COLOR565_T fg
+	)
+{
+	const uint_fast8_t width = SMALLCHARW2;
+	const uint_fast8_t c = smallfont_decode((unsigned char) cc);
+	uint_fast8_t cgrow;
+	for (cgrow = 0; cgrow < SMALLCHARH; ++ cgrow)
+	{
+		volatile PACKEDCOLOR565_T * const tgr = & buffer [(y + cgrow) * dx + x];
+		ltdc565_horizontal_pixels_tbg(tgr, S1D13781_smallfont2_LTDC [c] [cgrow], width, fg);
+	}
+	return width;
+}
+
 // Вызов этой функции только внутри display_wrdatabig_begin() и display_wrdatabig_end();
 static void RAMFUNC_NONILINE ltdc_horizontal_put_char_big(char cc)
 {
@@ -1818,6 +1843,27 @@ display_colorbuff_string_tbg(
 	while((c = * s ++) != '\0')
 	{
 		x += ltdc565_horizontal_put_char_small_tbg(buffer, dx, dy, x, y, c, fg);
+	}
+}
+
+// Используется при выводе на графический индикатор,
+// transparent background - не меняем цвет фона.
+void
+display_colorbuff_string2_tbg(
+	PACKEDCOLOR565_T * buffer,
+	uint_fast16_t dx,
+	uint_fast16_t dy,
+	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	const char * s,
+	COLOR565_T fg		// цвет вывода текста
+	)
+{
+	char c;
+
+	while((c = * s ++) != '\0')
+	{
+		x += ltdc565_horizontal_put_char_small2_tbg(buffer, dx, dy, x, y, c, fg);
 	}
 }
 
