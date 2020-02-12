@@ -6459,7 +6459,6 @@ board_set_wflevelsep(uint_fast8_t v)
 			strcpy (labels[id_lbl_low].text, buf);
 			x_l = normalize (val_low / 10, 0, 50, 290) + 290;
 			labels[id_lbl_low].x = x_l - strlen(buf) * 16;
-
 		}
 
 		if (gui.enc2rotate != 0 && button_handlers[find_button(WINDOW_BP, "High")].is_locked == 1)
@@ -6526,6 +6525,11 @@ board_set_wflevelsep(uint_fast8_t v)
 		}
 	}
 
+	void buttons_agc_handler(void)
+	{
+
+	}
+
 	void button1_handler(void)
 	{
 		if (gui.window_to_draw == 0) gui.window_to_draw = WINDOW_MODES;
@@ -6562,7 +6566,17 @@ board_set_wflevelsep(uint_fast8_t v)
 
 	void button3_handler(void)
 	{
+		if (gui.window_to_draw == 0) gui.window_to_draw = WINDOW_AGC;
 
+		if (windows[gui.window_to_draw].is_show == NON_VISIBLE)
+		{
+			set_window(WINDOW_AGC, VISIBLE);
+			windows[gui.window_to_draw].first_call = 1;
+		}
+		else
+		{
+			set_window(WINDOW_AGC, NON_VISIBLE);
+		}
 	}
 
 	void button4_handler(void)
@@ -6654,11 +6668,11 @@ board_set_wflevelsep(uint_fast8_t v)
 		// вывод на PIP служебной информации
 	#if WITHIF4DSP																												// ширина панорамы
 		local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("SPAN:%3dk"), (int) ((display_zoomedbw() + 0) / 1000));
-		display_colorbuff_string_tbg(colorpip, ALLDX, ALLDY, 655, 230, buff, COLOR565_YELLOW);
+		display_colorbuff_string2_tbg(colorpip, ALLDX, ALLDY, 700, 230, buff, COLOR565_YELLOW);
 	#endif /* WITHIF4DSP */
 	#if WITHVOLTLEVEL && WITHCPUADCHW																							// напряжение питания
 		local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("%d.%1dV"), hamradio_get_volt_value() / 10, hamradio_get_volt_value() % 10);
-		display_colorbuff_string_tbg(colorpip, ALLDX, ALLDY, 555, 230, buff, COLOR565_YELLOW);
+		display_colorbuff_string2_tbg(colorpip, ALLDX, ALLDY, 635, 230, buff, COLOR565_YELLOW);
 	#endif /* WITHVOLTLEVEL && WITHCPUADCHW */
 	#if WITHCURRLEVEL && WITHCPUADCHW																							// ток PA (при передаче)
 		if (gettxstate())
@@ -6666,7 +6680,7 @@ board_set_wflevelsep(uint_fast8_t v)
 			int_fast16_t drain = hamradio_get_pacurrent_value();
 			if (drain < 0) drain = 0;
 			local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("%d.%02dA"), drain / 100, drain % 100);
-			display_colorbuff_string_tbg(colorpip, ALLDX, ALLDY, 465, 230, buff, COLOR565_YELLOW);
+			display_colorbuff_string2_tbg(colorpip, ALLDX, ALLDY, 570, 230, buff, COLOR565_YELLOW);
 		}
 	#endif /* WITHCURRLEVEL && WITHCPUADCHW */
 
@@ -6707,8 +6721,19 @@ board_set_wflevelsep(uint_fast8_t v)
 				{
 					draw_button_pip(button_handlers[i].x1, button_handlers[i].y1,
 									button_handlers[i].x2, button_handlers[i].y2, button_handlers[i].state, button_handlers[i].is_locked);
-					display_colorbuff_string_tbg(colorpip, ALLDX, ALLDY, button_handlers[i].x1 + ((button_handlers[i].x2 - button_handlers[i].x1) -
-								   (strlen (button_handlers[i].text) * 16)) / 2, button_handlers[i].y1 + 17, button_handlers[i].text, COLOR565_BLACK);
+
+					if (button_handlers[i].text2 == NULL)
+					{
+						display_colorbuff_string2_tbg(colorpip, ALLDX, ALLDY, button_handlers[i].x1 + ((button_handlers[i].x2 - button_handlers[i].x1) -
+								(strlen (button_handlers[i].text) * 10)) / 2, button_handlers[i].y1 + 17, button_handlers[i].text, COLOR565_BLACK);
+					} else
+					{
+						display_colorbuff_string2_tbg(colorpip, ALLDX, ALLDY, button_handlers[i].x1 + ((button_handlers[i].x2 - button_handlers[i].x1) -
+								(strlen (button_handlers[i].text) * 10)) / 2, button_handlers[i].y1 + 10, button_handlers[i].text, COLOR565_BLACK);
+
+						display_colorbuff_string2_tbg(colorpip, ALLDX, ALLDY, button_handlers[i].x1 + ((button_handlers[i].x2 - button_handlers[i].x1) -
+								(strlen (button_handlers[i].text2) * 10)) / 2, button_handlers[i].y1 + 25, button_handlers[i].text2, COLOR565_BLACK);
+					}
 				}
 			}
 			for (uint_fast8_t i = 1; i < labels_count; i++)

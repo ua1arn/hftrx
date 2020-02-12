@@ -1727,7 +1727,7 @@ static uint_fast16_t RAMFUNC_NONILINE ltdc565_horizontal_put_char_small2_tbg(
 	const uint_fast8_t width = SMALLCHARW2;
 	const uint_fast8_t c = smallfont_decode((unsigned char) cc);
 	uint_fast8_t cgrow;
-	for (cgrow = 0; cgrow < SMALLCHARH; ++ cgrow)
+	for (cgrow = 0; cgrow < SMALLCHARH2; ++ cgrow)
 	{
 		volatile PACKEDCOLOR565_T * const tgr = & buffer [(y + cgrow) * dx + x];
 		ltdc565_horizontal_pixels_tbg(tgr, S1D13781_smallfont2_LTDC [c] [cgrow], width, fg);

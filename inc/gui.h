@@ -56,6 +56,7 @@
 		uint_fast8_t visible;			// рисовать ли кнопку на экране
 		uintptr_t payload;
 		char * text;					// текст внутри кнопки
+		char * text2;
 	} button_handler;
 
 	static button_handler button_handlers [] = {
@@ -63,7 +64,7 @@
 		{ },
 		{ 0,   430, 86,  479, button1_handler, 	    BUTTON_CANCELLED, 1, TYPE_FOOTER_BUTTON, BUTTON_NON_LOCKED, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "Mode", },
 		{ 89,  430, 175, 479, button2_handler, 	    BUTTON_CANCELLED, 1, TYPE_FOOTER_BUTTON, BUTTON_NON_LOCKED, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "Test", },
-		{ 178, 430, 264, 479, button3_handler, 	    BUTTON_CANCELLED, 1, TYPE_FOOTER_BUTTON, BUTTON_NON_LOCKED, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "", },
+		{ 178, 430, 264, 479, button3_handler, 	    BUTTON_CANCELLED, 1, TYPE_FOOTER_BUTTON, BUTTON_NON_LOCKED, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "AGC", },
 		{ 267, 430, 353, 479, button4_handler, 	    BUTTON_CANCELLED, 1, TYPE_FOOTER_BUTTON, BUTTON_NON_LOCKED, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "", },
 		{ 356, 430, 442, 479, button5_handler, 	    BUTTON_CANCELLED, 1, TYPE_FOOTER_BUTTON, BUTTON_NON_LOCKED, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "", },
 		{ 445, 430, 531, 479, button6_handler, 	    BUTTON_CANCELLED, 1, TYPE_FOOTER_BUTTON, BUTTON_NON_LOCKED, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "", },
@@ -78,9 +79,12 @@
 		{ 319, 110, 399, 160, buttons_mode_handler, BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	 BUTTON_NON_LOCKED, WINDOW_MODES, NON_VISIBLE, SUBMODE_CWR, "CWR", },
 		{ 404, 110, 484, 160, buttons_mode_handler, BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	 BUTTON_NON_LOCKED, WINDOW_MODES, NON_VISIBLE, SUBMODE_NFM, "NFM", },
 		{ 489, 110, 569, 160, buttons_mode_handler, BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	 BUTTON_NON_LOCKED, WINDOW_MODES, NON_VISIBLE, SUBMODE_DGU, "DGU", },
-		{ 251, 155, 337, 205, buttons_bp_handler,	BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	 BUTTON_NON_LOCKED, WINDOW_BP,    NON_VISIBLE, UINTPTR_MAX, "Low", },
+		{ 251, 155, 337, 205, buttons_bp_handler,	BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	 BUTTON_NON_LOCKED, WINDOW_BP,    NON_VISIBLE, UINTPTR_MAX, "Low", "cut", },
 		{ 357, 155, 443, 205, buttons_bp_handler, 	BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	 BUTTON_NON_LOCKED, WINDOW_BP,    NON_VISIBLE, UINTPTR_MAX, "OK", },
-		{ 463, 155, 549, 205, buttons_bp_handler, 	BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	 BUTTON_NON_LOCKED, WINDOW_BP,    NON_VISIBLE, UINTPTR_MAX, "High", },
+		{ 463, 155, 549, 205, buttons_bp_handler, 	BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	 BUTTON_NON_LOCKED, WINDOW_BP,    NON_VISIBLE, UINTPTR_MAX, "High", "cut", },
+		{ 251, 70, 337, 120, buttons_bp_handler, 	BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	 BUTTON_NON_LOCKED, WINDOW_AGC,   NON_VISIBLE, UINTPTR_MAX, "AGC", "off", },
+		{ 357, 70, 443, 120, buttons_bp_handler, 	BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	 BUTTON_NON_LOCKED, WINDOW_AGC,   NON_VISIBLE, UINTPTR_MAX, "AGC", "slow", },
+		{ 463, 70, 549, 120, buttons_bp_handler, 	BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	 BUTTON_NON_LOCKED, WINDOW_AGC,   NON_VISIBLE, UINTPTR_MAX, "AGC", "fast", },
 	};
 	enum { button_handlers_count = sizeof button_handlers / sizeof button_handlers[1] };
 
@@ -135,7 +139,7 @@
 		{ },
 		{ WINDOW_MODES, 214, 20, 586, 175, "Select mode", NON_VISIBLE, 0, },
 		{ WINDOW_BP,    214, 20, 586, 225, "Bandpass",    NON_VISIBLE, 0, window_bp_process},
-		{ WINDOW_AGC,   214, 20, 586, 225, "AGC", 		  NON_VISIBLE, 0, },
+		{ WINDOW_AGC,   214, 20, 586, 130, "AGC control", NON_VISIBLE, 0, },
 	};
 	enum { windows_count = sizeof windows / sizeof windows[1] };
 
