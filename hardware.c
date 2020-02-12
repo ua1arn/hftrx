@@ -8158,6 +8158,41 @@ stm32h7xx_pll_initialize(void)
 	while ((RCC->CR & RCC_CR_PLL1RDY) == 0)	// пока заработает PLL
 		;
 
+
+#if WITHSAICLOCKFROMI2S && ! WITHUSEPLL2
+	#error WITHUSEPLL2 should be defined if WITHSAICLOCKFROMI2S used.
+#endif /* LCDMODE_LTDC && ! WITHUSEPLL3 */
+
+#if WITHUSEPLL2
+	// PLL2 P output used for SAI1, SAI2, SAI3 clocking
+
+	RCC->PLLCKSELR = (RCC->PLLCKSELR & ~ RCC_PLLCKSELR_DIVM2) |
+		((REF2_DIV << RCC_PLLCKSELR_DIVM2_Pos) & RCC_PLLCKSELR_DIVM2) |	// Reference divider - не требуется корректировань число
+		0;
+	//
+	RCC->PLL2DIVR = (RCC->PLL2DIVR & ~ (RCC_PLL2DIVR_N2 | RCC_PLL2DIVR_P2)) |
+		(((REF2_MUL - 1) << RCC_PLL2DIVR_N2_Pos) & RCC_PLL2DIVR_N2) |
+		(((PLL2_DIVP - 1) << RCC_PLL2DIVR_P2_Pos) & RCC_PLL2DIVR_P2) |
+		0;
+	RCC->PLLCFGR = (RCC->PLLCFGR & ~ (RCC_PLLCFGR_DIVR2EN | RCC_PLLCFGR_PLL2RGE | RCC_PLLCFGR_PLL2VCOSEL)) |
+		RCC_PLLCFGR_DIVP2EN |	// This bit can be written only when the PLL2 is disabled (PLL2ON = ‘0’ and PLL3RDY = ‘0’).
+#if PLL2_FREQ >= 150000000uL && PLL2_FREQ <= 420000000uL
+		1 * RCC_PLLCFGR_PLL2VCOSEL |	// 1: Medium VCO range: 150 to 420 MHz
+#else
+		0 * RCC_PLLCFGR_PLL2VCOSEL |	// 0: Wide VCO range: 192 to 836 MHz (default after reset)
+#endif
+		0 * RCC_PLLCFGR_PLL2RGE_0 |	// 00: The PLL2 input (ref3_ck) clock range frequency is between 1 and 2 MHz
+		0;
+
+	RCC->CR |= RCC_CR_PLL2ON;				// Включил PLL2
+
+
+	while ((RCC->CR & RCC_CR_PLL2RDY) == 0)	// пока заработает PLL
+		;
+
+
+#endif /* WITHUSEPLL2 */
+
 #if LCDMODE_LTDC && ! WITHUSEPLL3
 	#error WITHUSEPLL3 should be defined if LCDMODE_LTDC used.
 #endif /* LCDMODE_LTDC && ! WITHUSEPLL3 */

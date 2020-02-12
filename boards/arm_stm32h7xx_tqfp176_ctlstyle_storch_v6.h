@@ -15,11 +15,12 @@
 		#error Wrong CPU selected. STM32H743xx expected
 	#endif /* ! defined(STM32F767xx) */
 
-	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */
+	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL2 P выхода */
 	#define WITHI2SCLOCKFROMPIN 1	// тактовая частота на SPI2 (I2S) подается с внешнего генератора, в процессор вводится через MCK сигнал интерфейса
 	#define WITHSAICLOCKFROMPIN 1	// тактовая частота на SAI1 подается с внешнего генератора, в процессор вводится через MCK сигнал интерфейса
 
 	#define WITHUSEPLL		1	/* Главная PLL	*/
+	//#define WITHUSEPLL2		1	/* PLL для автономного тактирования SAI (PLL2 P)	*/
 	#define WITHUSEPLL3		1	/* PLL3 - для LTDC на STM32H743xx	*/
 	//#define WITHUSESAIPLL	1	/* SAI PLL	*/
 	//#define WITHUSESAII2S	1	/* I2S PLL	*/
@@ -29,6 +30,7 @@
 		// при наличии внешнего кварцевого резонатора
 		#define WITHCPUXTAL 12000000uL	/* На процессоре установлен кварц 12.000 МГц */
 		#define REF1_DIV 6			// ref freq = 2.0000 MHz
+		#define REF2_DIV 6			// ref freq = 2.0000 MHz
 		#define REF3_DIV 6			// ref freq = 2.0000 MHz
 
 		#if defined(STM32F767xx)
@@ -43,6 +45,9 @@
 			// normal operation frequency
 			#define REF1_MUL 384		// 2*384.000 MHz (192 <= PLLN <= 432)
 			#define REF3_MUL 135		// 2*135.000 MHz (192 <= PLLN <= 432)
+
+			#define REF2_MUL 384		// 2*384.000 MHz (192 <= PLLN <= 432)
+			#define PLL2_DIVP 4
 			#define HARDWARE_FLASH_LATENCY FLASH_ACR_LATENCY_2WS
 		#endif
 
