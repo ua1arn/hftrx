@@ -969,14 +969,6 @@ void display_putpixel(
 	uint_fast16_t y,
 	COLOR_T color
 	);
-static void
-bitblt_fill(
-	uint_fast16_t x, uint_fast16_t y, 	// координаты в пикселях
-	uint_fast16_t w, uint_fast16_t h, 	// размеры в пикселях
-	COLOR_T fgcolor,
-	COLOR_T bgcolor,
-	uint_fast8_t hpattern	// horizontal pattern (LSB - left)
-	);
 void display_at_xy(uint_fast16_t x, uint_fast16_t y, const char * s);
 
 void board_set_topdb(int_fast16_t v);	/* верхний предел FFT */

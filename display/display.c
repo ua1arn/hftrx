@@ -1325,7 +1325,7 @@ void display_putpixel(
 #endif /* LCDMODE_HORFILL */
 }
 
-void
+static void
 bitblt_fill(
 	uint_fast16_t x, uint_fast16_t y, 	// координаты в пикселях
 	uint_fast16_t w, uint_fast16_t h, 	// размеры в пикселях
