@@ -3246,7 +3246,7 @@ void spool_0p128(void);	// OPERA support
 
 
 
-#if 0
+#if WITHCOLORS_ATS52
 	// new (for ats52).
 	#define COLOR565_GRIDCOLOR		TFTRGB565(128, 0, 0)		//COLOR_GRAY - center marker
 	#define COLOR565_GRIDCOLOR2		TFTRGB565(96, 96, 96)		//COLOR_DARKRED - other markers
