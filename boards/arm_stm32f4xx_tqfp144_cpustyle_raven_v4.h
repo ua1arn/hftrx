@@ -39,9 +39,11 @@
 	#define WITHUSBDEV_VBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
 	//#define WITHUSBDEV_HSDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
 	#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
+	//#define WITHUSBUACIN2		1	/* формируются три канала передачи звука */
+	//#define WITHUABUACOUTAUDIO48MONO	1	/* для уменьшения размера буферов в endpoints */
 
 	#define WITHUSBCDC		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
-	#define WITHUSBHWCDC_N	2	/* количество виртуальных последовательных портов */
+	#define WITHUSBHWCDC_N	1	/* количество виртуальных последовательных портов */
 	#define WITHUSBHW_DEVICE	USB_OTG_FS	/* на этом устройстве поддерживается функциональность DEVICE	*/
 
 	//#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
@@ -52,7 +54,7 @@
 	#define WITHMODEM_CDC	1
 
 #else
-	// Оригинальный вариант - только с CAT серез UART1 и FT232RL
+	// Оригинальный вариант - только с CAT через UART1 и FT232RL
 
 	#define WITHUART1HW	1	/* Используется периферийный контроллер последовательного порта #1 */
 

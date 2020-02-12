@@ -215,6 +215,7 @@ extern "C" {
 		#endif /* WITHCPUXTAL */
 
 		#define PLL_FREQ	(REFINFREQ / REF1_DIV * REF1_MUL)
+		#define PLL2_FREQ	(REFINFREQ / REF2_DIV * REF2_MUL)	// STM32H7xxx
 		#define PLL3_FREQ	(REFINFREQ / REF3_DIV * REF3_MUL)	// STM32H7xxx
 
 		#if defined(STM32F401xC)

@@ -69,8 +69,8 @@
 
 #elif CPUSTYLE_STM32F7XX && WITHNOSPEEX
 	// No speex
-	#define FFTSizeFiltersM 8
-	#define FFTCONFIGFilters	(& arm_cfft_sR_f32_len256)
+	#define FFTSizeFiltersM 10
+	#define FFTCONFIGFilters	(& arm_cfft_sR_f32_len1024)
 
 	#define FFTSizeSpectrumM 8
 	#define FFTCONFIGSpectrum	(& arm_cfft_sR_f32_len256)
@@ -85,19 +85,19 @@
 
 #elif CPUSTYLE_STM32F4XX
 
-	#define FFTSizeFiltersM 8
-	#define FFTCONFIGFilters	(& arm_cfft_sR_f32_len256)
+	#define FFTSizeFiltersM 10
+	#define FFTCONFIGFilters	(& arm_cfft_sR_f32_len1024)
 
-	#define FFTSizeSpectrumM 10
-	#define FFTCONFIGSpectrum	(& arm_cfft_sR_f32_len1024)
+	#define FFTSizeSpectrumM 8
+	#define FFTCONFIGSpectrum	(& arm_cfft_sR_f32_len256)
 
 #else
 
-	#define FFTSizeFiltersM 9
-	#define FFTCONFIGFilters	(& arm_cfft_sR_f32_len512)
+	#define FFTSizeFiltersM 10
+	#define FFTCONFIGFilters	(& arm_cfft_sR_f32_len1024)
 
-	#define FFTSizeSpectrumM 10
-	#define FFTCONFIGSpectrum	(& arm_cfft_sR_f32_len1024)
+	#define FFTSizeSpectrumM 8
+	#define FFTCONFIGSpectrum	(& arm_cfft_sR_f32_len256)
 
 #endif
 

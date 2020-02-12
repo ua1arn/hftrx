@@ -942,6 +942,13 @@ static void hardware_sai1_sai2_clock_selection(void)
 			(1 * RCC_DCKCFGR1_SAI2SEL_0) |	// SAI2 clock frequency = f(PLLI2S_Q) / PLLI2SDIVQ
 			0;
 
+	#elif CPUSTYLE_STM32H7XX
+
+		RCC->D2CCIP1R = (RCC->D2CCIP1R & ~ (RCC_D2CCIP1R_SAI1SEL | RCC_D2CCIP1R_SAI23SEL)) |
+			(0x01 << RCC_D2CCIP1R_SAI1SEL_Pos) |	// PLL2 Q
+			(0x01 << RCC_D2CCIP1R_SAI23SEL_Pos) |	// I2S APB2 clock source selection
+			0;
+
 	#else /* defined (STM32F446xx) */
 		RCC->PLLI2SCFGR = 
 			(RCC->PLLI2SCFGR & ~ (RCC_PLLI2SCFGR_PLLI2SQ)) |
