@@ -14,11 +14,6 @@
 	void buttons_bp_handler (void);
 	void window_bp_process (void);
 
-	enum {								// button_handler.type
-		TYPE_FOOTER_BUTTON,				// группа постоянных кнопок внизу экрана
-		TYPE_PIP_BUTTON					// динамически рисуемая кнопка на PIP без фиксированных координат
-	};
-
 	enum {								// button_handler.state
 		BUTTON_PRESSED,					// нажато
 		BUTTON_RELEASED,				// отпущено после нажатия внутри элемента
@@ -35,11 +30,11 @@
 		VISIBLE							// parent window на экране, кнопка отрисовывается
 	};
 
-	enum {								// button_handler.for_window & windowpip.window_id
-		FOOTER,							// заглушка для заполнения структуры для кнопок внизу экрана
+	enum {								// button_handler.parent & windowpip.window_id
+		FOOTER,							// постоянно отображаемые кнопки внизу экрана
 		WINDOW_MODES,					// переключение режимов работы, видов модуляции
 		WINDOW_BP,						// регулировка полосы пропускания фильтров выбранного режима
-		WINDOW_AGC
+		WINDOW_AGC						// выбор пресетов настроек АРУ для текущего режима модуляции
 	};
 
 	typedef struct {
@@ -49,8 +44,6 @@
 		uint_fast16_t y2;
 		void(*onClickHandler) (void);	// обработчик события RELEASED
 		uint_fast8_t state;				// текущее состояние кнопки
-		uint_fast8_t need_redraw;		// запрос на перерисовку после изменения состояния
-		uint_fast8_t type;				// тип кнопки - постоянная или динамическая
 		uint_fast8_t is_locked;			// признак фиксации кнопки
 		uint_fast8_t parent;			// индекс окна, в котором будет отображаться кнопка при type = TYPE_PIP_BUTTON
 		uint_fast8_t visible;			// рисовать ли кнопку на экране
@@ -60,31 +53,31 @@
 	} button_handler;
 
 	static button_handler button_handlers [] = {
-	//   x1,   y1,  x2,  y2,  onClickHandler,            state,     redraw,    type,         is_locked,			parent,       visible,      payload,	text
+	//   x1,   y1,  x2,  y2,  onClickHandler,            state,       is_locked,		parent,       visible,      payload,	text
 		{ },
-		{ 0,   430, 86,  479, button1_handler, 	    BUTTON_CANCELLED, 1, TYPE_FOOTER_BUTTON, BUTTON_NON_LOCKED, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "Mode", },
-		{ 89,  430, 175, 479, button2_handler, 	    BUTTON_CANCELLED, 1, TYPE_FOOTER_BUTTON, BUTTON_NON_LOCKED, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "Test", },
-		{ 178, 430, 264, 479, button3_handler, 	    BUTTON_CANCELLED, 1, TYPE_FOOTER_BUTTON, BUTTON_NON_LOCKED, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "AGC", },
-		{ 267, 430, 353, 479, button4_handler, 	    BUTTON_CANCELLED, 1, TYPE_FOOTER_BUTTON, BUTTON_NON_LOCKED, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "", },
-		{ 356, 430, 442, 479, button5_handler, 	    BUTTON_CANCELLED, 1, TYPE_FOOTER_BUTTON, BUTTON_NON_LOCKED, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "", },
-		{ 445, 430, 531, 479, button6_handler, 	    BUTTON_CANCELLED, 1, TYPE_FOOTER_BUTTON, BUTTON_NON_LOCKED, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "", },
-		{ 534, 430, 620, 479, button7_handler, 	    BUTTON_CANCELLED, 1, TYPE_FOOTER_BUTTON, BUTTON_NON_LOCKED, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "", },
-		{ 623, 430, 709, 479, button8_handler, 	    BUTTON_CANCELLED, 1, TYPE_FOOTER_BUTTON, BUTTON_NON_LOCKED, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "", },
-		{ 712, 430, 798, 479, button8_handler, 	    BUTTON_CANCELLED, 1, TYPE_FOOTER_BUTTON, BUTTON_NON_LOCKED, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "", },
-		{ 234,  55, 314, 105, buttons_mode_handler, BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	 BUTTON_NON_LOCKED, WINDOW_MODES, NON_VISIBLE, SUBMODE_LSB, "LSB", },
-		{ 319,  55, 399, 105, buttons_mode_handler, BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	 BUTTON_NON_LOCKED, WINDOW_MODES, NON_VISIBLE, SUBMODE_CW,  "CW", },
-		{ 404,  55, 484, 105, buttons_mode_handler, BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	 BUTTON_NON_LOCKED, WINDOW_MODES, NON_VISIBLE, SUBMODE_AM,  "AM", },
-		{ 489,  55, 569, 105, buttons_mode_handler, BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	 BUTTON_NON_LOCKED, WINDOW_MODES, NON_VISIBLE, SUBMODE_DGL, "DGL", },
-		{ 234, 110, 314, 160, buttons_mode_handler, BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	 BUTTON_NON_LOCKED, WINDOW_MODES, NON_VISIBLE, SUBMODE_USB, "USB", },
-		{ 319, 110, 399, 160, buttons_mode_handler, BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	 BUTTON_NON_LOCKED, WINDOW_MODES, NON_VISIBLE, SUBMODE_CWR, "CWR", },
-		{ 404, 110, 484, 160, buttons_mode_handler, BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	 BUTTON_NON_LOCKED, WINDOW_MODES, NON_VISIBLE, SUBMODE_NFM, "NFM", },
-		{ 489, 110, 569, 160, buttons_mode_handler, BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	 BUTTON_NON_LOCKED, WINDOW_MODES, NON_VISIBLE, SUBMODE_DGU, "DGU", },
-		{ 251, 155, 337, 205, buttons_bp_handler,	BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	 BUTTON_NON_LOCKED, WINDOW_BP,    NON_VISIBLE, UINTPTR_MAX, "Low", "cut", },
-		{ 357, 155, 443, 205, buttons_bp_handler, 	BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	 BUTTON_NON_LOCKED, WINDOW_BP,    NON_VISIBLE, UINTPTR_MAX, "OK", },
-		{ 463, 155, 549, 205, buttons_bp_handler, 	BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	 BUTTON_NON_LOCKED, WINDOW_BP,    NON_VISIBLE, UINTPTR_MAX, "High", "cut", },
-		{ 251, 70, 337, 120, buttons_bp_handler, 	BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	 BUTTON_NON_LOCKED, WINDOW_AGC,   NON_VISIBLE, UINTPTR_MAX, "AGC", "off", },
-		{ 357, 70, 443, 120, buttons_bp_handler, 	BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	 BUTTON_NON_LOCKED, WINDOW_AGC,   NON_VISIBLE, UINTPTR_MAX, "AGC", "slow", },
-		{ 463, 70, 549, 120, buttons_bp_handler, 	BUTTON_CANCELLED, 1, TYPE_PIP_BUTTON, 	 BUTTON_NON_LOCKED, WINDOW_AGC,   NON_VISIBLE, UINTPTR_MAX, "AGC", "fast", },
+		{ 0,   254, 86,  304, button1_handler, 	    BUTTON_CANCELLED, BUTTON_NON_LOCKED, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "Mode", },
+		{ 89,  254, 175, 304, button2_handler, 	    BUTTON_CANCELLED, BUTTON_NON_LOCKED, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "Test", },
+		{ 178, 254, 264, 304, button3_handler, 	    BUTTON_CANCELLED, BUTTON_NON_LOCKED, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "AGC", },
+		{ 267, 254, 353, 304, button4_handler, 	    BUTTON_CANCELLED, BUTTON_NON_LOCKED, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "", },
+		{ 356, 254, 442, 304, button5_handler, 	    BUTTON_CANCELLED, BUTTON_NON_LOCKED, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "", },
+		{ 445, 254, 531, 304, button6_handler, 	    BUTTON_CANCELLED, BUTTON_NON_LOCKED, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "", },
+		{ 534, 254, 620, 304, button7_handler, 	    BUTTON_CANCELLED, BUTTON_NON_LOCKED, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "", },
+		{ 623, 254, 709, 304, button8_handler, 	    BUTTON_CANCELLED, BUTTON_NON_LOCKED, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "", },
+		{ 712, 254, 798, 304, button8_handler, 	    BUTTON_CANCELLED, BUTTON_NON_LOCKED, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "", },
+		{ 234,  55, 314, 105, buttons_mode_handler, BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_MODES, NON_VISIBLE, SUBMODE_LSB, "LSB", },
+		{ 319,  55, 399, 105, buttons_mode_handler, BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_MODES, NON_VISIBLE, SUBMODE_CW,  "CW", },
+		{ 404,  55, 484, 105, buttons_mode_handler, BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_MODES, NON_VISIBLE, SUBMODE_AM,  "AM", },
+		{ 489,  55, 569, 105, buttons_mode_handler, BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_MODES, NON_VISIBLE, SUBMODE_DGL, "DGL", },
+		{ 234, 110, 314, 160, buttons_mode_handler, BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_MODES, NON_VISIBLE, SUBMODE_USB, "USB", },
+		{ 319, 110, 399, 160, buttons_mode_handler, BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_MODES, NON_VISIBLE, SUBMODE_CWR, "CWR", },
+		{ 404, 110, 484, 160, buttons_mode_handler, BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_MODES, NON_VISIBLE, SUBMODE_NFM, "NFM", },
+		{ 489, 110, 569, 160, buttons_mode_handler, BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_MODES, NON_VISIBLE, SUBMODE_DGU, "DGU", },
+		{ 251, 155, 337, 205, buttons_bp_handler,	BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_BP,    NON_VISIBLE, UINTPTR_MAX, "Low", "cut", },
+		{ 357, 155, 443, 205, buttons_bp_handler, 	BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_BP,    NON_VISIBLE, UINTPTR_MAX, "OK", },
+		{ 463, 155, 549, 205, buttons_bp_handler, 	BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_BP,    NON_VISIBLE, UINTPTR_MAX, "High", "cut", },
+		{ 251, 70,  337, 120, set_agc_off, 			BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_AGC,   NON_VISIBLE, UINTPTR_MAX, "AGC", "off", },
+		{ 357, 70,  443, 120, set_agc_slow, 		BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_AGC,   NON_VISIBLE, UINTPTR_MAX, "AGC", "slow", },
+		{ 463, 70,  549, 120, set_agc_fast, 		BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_AGC,   NON_VISIBLE, UINTPTR_MAX, "AGC", "fast", },
 	};
 	enum { button_handlers_count = sizeof button_handlers / sizeof button_handlers[1] };
 
@@ -139,7 +132,7 @@
 		{ },
 		{ WINDOW_MODES, 214, 20, 586, 175, "Select mode", NON_VISIBLE, 0, },
 		{ WINDOW_BP,    214, 20, 586, 225, "Bandpass",    NON_VISIBLE, 0, window_bp_process},
-		{ WINDOW_AGC,   214, 20, 586, 130, "AGC control", NON_VISIBLE, 0, },
+		{ WINDOW_AGC,   214, 20, 586, 140, "AGC control", NON_VISIBLE, 0, },
 	};
 	enum { windows_count = sizeof windows / sizeof windows[1] };
 

@@ -969,6 +969,15 @@ void display_putpixel(
 	uint_fast16_t y,
 	COLOR_T color
 	);
+static void
+bitblt_fill(
+	uint_fast16_t x, uint_fast16_t y, 	// координаты в пикселях
+	uint_fast16_t w, uint_fast16_t h, 	// размеры в пикселях
+	COLOR_T fgcolor,
+	COLOR_T bgcolor,
+	uint_fast8_t hpattern	// horizontal pattern (LSB - left)
+	);
+void display_at_xy(uint_fast16_t x, uint_fast16_t y, const char * s);
 
 void board_set_topdb(int_fast16_t v);	/* верхний предел FFT */
 void board_set_bottomdb(int_fast16_t v);	/* нижний предел FFT */
@@ -979,19 +988,7 @@ void board_set_fillspect(uint_fast8_t v); /* заливать заполнени
 void board_set_wflevelsep(uint_fast8_t v); /* чувствительность водопада регулируется отдельной парой параметров */
 
 #if WITHTOUCHTEST
-
-void display_at_xy(uint_fast16_t x, uint_fast16_t y, const char * s);
-void display_footer_buttons(uint_fast8_t x, uint_fast8_t y, void * pv);
-void display_pip_update(uint_fast8_t x, uint_fast8_t y, void * pv);
-void display_buttons(uint_fast8_t menuset, uint_fast8_t extra);
-void
-bitblt_fill(
-	uint_fast16_t x, uint_fast16_t y, 	// координаты в пикселях
-	uint_fast16_t w, uint_fast16_t h, 	// размеры в пикселях
-	COLOR_T fgcolor,
-	COLOR_T bgcolor,
-	uint_fast8_t hpattern	// horizontal pattern (LSB - left)
-	);
+	void display_pip_update(uint_fast8_t x, uint_fast8_t y, void * pv);
 #endif /* WITHTOUCHTEST */
 
 #ifdef __cplusplus

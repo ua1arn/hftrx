@@ -3281,7 +3281,9 @@ void spool_0p128(void);	// OPERA support
 	void process_gui(void);
 	uint_fast8_t check_encoder2 (int_least16_t rotate);
 	uint_fast8_t encoder2_done (void);
-	void need_redraw_buttons (void);
+	void set_agc_off(void);
+	void set_agc_slow(void);
+	void set_agc_fast(void);
 #endif /* WITHTOUCHTEST */
 
 #ifdef __cplusplus

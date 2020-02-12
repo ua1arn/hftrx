@@ -37,11 +37,6 @@
 
 #if WITHTOUCHTEST
 	uint_fast8_t encoder2busy;			// признак занятости энкодера в обработке gui
-	void display_redrawbuttons (void)
-	{
-		need_redraw_buttons();
-		display_buttons (0, 0);
-	}
 #endif /* WITHTOUCHTEST */
 
 static uint_fast32_t 
@@ -9989,16 +9984,10 @@ display_redrawfreqmodesbars(
 		display_redrawfreqs(1);	/* безусловное обновление показания частоты */
 		display_redrawmodes(1);
 		display_redrawbars(1, extra);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
-#if WITHTOUCHTEST
-		display_redrawbuttons ();
-#endif /* WITHTOUCHTEST */
 	}
 	else
 	{
 		display_redrawbars(1, extra);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
-#if WITHTOUCHTEST
-		display_redrawbuttons ();
-#endif /* WITHTOUCHTEST */
 	}
 }
 
@@ -17700,7 +17689,7 @@ hamradio_main_step(void)
 			}
 			#if WITHTOUCHTEST
 				encoder2busy = check_encoder2(nrotate2);
-				process_gui ();
+				process_gui();
 			#endif /* WITHTOUCHTEST */
 		}
 		break;
@@ -17711,15 +17700,50 @@ hamradio_main_step(void)
 	return STTE_OK;
 }
 
-uint_fast8_t get_low_bp (int_least16_t rotate)
+void set_agc_off(void)
+{
+	gagcoff = 1;
+	board_set_agc(BOARD_AGCCODE_OFF);
+	updateboard (1, 0);
+}
+
+void set_agc_fast(void)
+{
+	gagcoff = 0;
+	board_set_agc(BOARD_AGCCODE_ON);
+//	const uint_fast8_t asubmode = getasubmode(0);
+//	const struct modetempl * const pmodet = getmodetempl(gsubmode);
+//	const uint_fast8_t agcseti = pmodet->agcseti;
+//	board_set_agcrate(agcseti == AGCSETI_FLAT ? UINT8_MAX : gagc [agcseti].rate);
+//	board_set_agc_t1(120);
+//	board_set_agc_t2(1);
+//	board_set_agc_t4(50);
+//	board_set_agc_thung(1);
+	updateboard (1, 0);
+}
+
+void set_agc_slow(void)
+{
+	gagcoff = 0;
+	board_set_agc(BOARD_AGCCODE_ON);
+//	const uint_fast8_t asubmode = getasubmode(0);
+//	const struct modetempl * const pmodet = getmodetempl(gsubmode);
+//	const uint_fast8_t agcseti = pmodet->agcseti;
+//	board_set_agcrate(agcseti == AGCSETI_FLAT ? UINT8_MAX : gagc [agcseti].rate);
+//	board_set_agc_t1(120);
+//	board_set_agc_t2(5);
+//	board_set_agc_t4(50);
+//	board_set_agc_thung(3);
+	updateboard (1, 0);
+}
+
+uint_fast8_t get_low_bp(int_least16_t rotate)
 {
 	uint_fast8_t tx = gettxstate();
 	const uint_fast8_t asubmode = getasubmode(0);
 	const uint_fast8_t amode = submodes [asubmode].mode;
 	const uint_fast8_t bwseti = mdt [amode].bwsetis [tx];
-
 	uint_fast16_t low;
-
 	const uint_fast8_t pos = bwsetpos [bwseti];
 	bwprop_t * p = bwsetsc [bwseti].prop [pos];
 	switch (p->type)
@@ -17750,15 +17774,13 @@ uint_fast8_t get_low_bp (int_least16_t rotate)
 	return low;
 }
 
-uint_fast8_t get_high_bp (int_least16_t rotate)
+uint_fast8_t get_high_bp(int_least16_t rotate)
 {
 	uint_fast8_t tx = gettxstate();
 	const uint_fast8_t asubmode = getasubmode(0);
 	const uint_fast8_t amode = submodes [asubmode].mode;
 	const uint_fast8_t bwseti = mdt [amode].bwsetis [tx];
-
 	uint_fast16_t high;
-
 	const uint_fast8_t pos = bwsetpos [bwseti];
 	bwprop_t * p = bwsetsc [bwseti].prop [pos];
 	switch (p->type)

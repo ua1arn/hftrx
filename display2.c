@@ -4438,7 +4438,7 @@ enum
 		BDTH_ALLRXBARS = 30,	// ширина зоны для отображение барграфов на индикаторе
 #if 1
 		BDTH_ALLRX = 50,	// ширина зоны для отображение графического окна на индикаторе
-		BDCV_ALLRX = ROWS2GRID(50),	// количество строк, отведенное под S-метр, панораму, иные отображения
+		BDCV_ALLRX = ROWS2GRID(61),	// количество строк, отведенное под S-метр, панораму, иные отображения
 #else
 		BDTH_ALLRX = 40,	// ширина зоны для отображение графического окна на индикаторе
 		BDCV_ALLRX = ROWS2GRID(50),	// количество строк, отведенное под S-метр, панораму, иные отображения
@@ -4587,9 +4587,6 @@ enum
 		// sleep mode display
 		{	5,	25,	display_datetime12,	REDRM_BARS, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40
 		{	20, 25,	display_voltlevelV5, REDRM_VOLT, PGSLP, },	// voltmeter with "V"
-#if WITHTOUCHTEST
-		{	0,	0,	display_footer_buttons, REDRM_BUTTONS, PGSWR, },
-#endif /* WITHTOUCHTEST */
 	};
 
 #if WITHMENU
@@ -5197,7 +5194,7 @@ enum
 
 	// один буфер установлен для отображения, второй еше отображается.
 	// Третий заполняем новым изображением.
-	enum { NPIPS = 3 };
+	enum { NPIPS = 2 };
 	static RAMFRAMEBUFF ALIGNX_BEGIN PACKEDCOLOR565_T colorpips [NPIPS] [GXSIZE(ALLDX, ALLDY)] ALIGNX_END;
 	static int pipphase;
 
@@ -6482,7 +6479,6 @@ board_set_wflevelsep(uint_fast8_t v)
 		display_colorbuffer_line_set(colorpip, ALLDX, ALLDY, 251, 110, 549, 110, COLOR565_GRAY);
 		display_colorbuffer_line_set(colorpip, ALLDX, ALLDY, 290, 70, 290, 120, COLOR565_GRAY);
 		draw_rect_pip(x_l, 70, x_h, 108, COLOR565_YELLOW, 1);
-
 	}
 
 	uint_fast8_t check_encoder2 (int_least16_t rotate)
@@ -6523,11 +6519,6 @@ board_set_wflevelsep(uint_fast8_t v)
 			set_window(WINDOW_BP, NON_VISIBLE);
 			gui.enc2busy = 0;
 		}
-	}
-
-	void buttons_agc_handler(void)
-	{
-
 	}
 
 	void button1_handler(void)
@@ -6604,24 +6595,6 @@ board_set_wflevelsep(uint_fast8_t v)
 
 	}
 
-	void draw_rect(uint_fast16_t x, uint_fast16_t y, uint_fast16_t w, uint_fast16_t h, COLOR_T color)
-	{
-		display_wrdatabar_begin();
-		bitblt_fill(x,   y,   w, 1, color, COLOR_BLACK, 0xFF);
-		bitblt_fill(x,   y+h, w, 1, color, COLOR_BLACK, 0xFF);
-		bitblt_fill(x,   y,   1, h, color, COLOR_BLACK, 0xFF);
-		bitblt_fill(x+w, y,   1, h, color, COLOR_BLACK, 0xFF);
-		display_wrdatabar_end();
-
-	}
-
-	void draw_button(uint_fast16_t x1, uint_fast16_t y1, uint_fast16_t x2, uint_fast16_t y2, uint_fast8_t pressed) // pressed = 0
-	{
-		display_solidbar(x1, y1, x2, y2, pressed?COLOR_GREEN:COLOR_DARKGREEN2);
-		draw_rect(x1, 	y1,   x2-x1,   y2-y1,   COLOR_GRAY);
-		draw_rect(x1+3, y1+3, x2-x1-6, y2-y1-6, COLOR_BLACK);
-	}
-
 	void draw_button_pip(uint_fast16_t x1, uint_fast16_t y1, uint_fast16_t x2, uint_fast16_t y2, uint_fast8_t pressed, uint_fast8_t is_locked) // pressed = 0
 	{
 		PACKEDCOLOR565_T c1, c2;
@@ -6631,31 +6604,6 @@ board_set_wflevelsep(uint_fast8_t v)
 		draw_rect_pip(x1, 	y1,   x2,   y2,   COLOR565_GRAY, 0);
 		draw_rect_pip(x1+2, y1+2, x2-2, y2-2, COLOR565_BLACK, 0);
 	}
-
-	void display_footer_buttons(uint_fast8_t x, uint_fast8_t y, void * pv)
-	{
-		for (uint_fast8_t i = 1; i < button_handlers_count; i++)
-		{
-//			debug_printf_P(PSTR("button %d need %d state %d\n"), i, button_handlers[i].need_redraw, button_handlers[i].state);
-			if (button_handlers[i].need_redraw==1 && button_handlers[i].type == TYPE_FOOTER_BUTTON)
-			{
-				draw_button(button_handlers[i].x1, button_handlers[i].y1,
-							button_handlers[i].x2, button_handlers[i].y2,
-							button_handlers[i].state);
-				button_handlers[i].need_redraw = 0;
-				display_setcolors(COLOR_BLACK, button_handlers[i].state ? COLOR_GREEN : COLOR_DARKGREEN2);
-				display_at_xy(button_handlers[i].x1 + ((button_handlers[i].x2 - button_handlers[i].x1) -
-							  (strlen (button_handlers[i].text) * 16)) / 2, button_handlers[i].y1 + 17, button_handlers[i].text);
-			}
-		}
-	}
-
-	void display_buttons(uint_fast8_t menuset, uint_fast8_t extra)
-	{
-		display_walktroughsteps(REDRM_BUTTONS, getsubset(menuset, extra));
-	}
-
-
 
 	void display_pip_update(uint_fast8_t x, uint_fast8_t y, void * pv)
 	{
@@ -6706,36 +6654,14 @@ board_set_wflevelsep(uint_fast8_t v)
 					}
 				} // for x1
 			} // for y1
-
 			// вывод заголовка окна
 			display_colorbuff_string_tbg(colorpip, ALLDX, ALLDY,
 										 windows[gui.window_to_draw].x1 + 20,
 										 windows[gui.window_to_draw].y1 + 10,
 										 windows[gui.window_to_draw].title,
 										 COLOR565_YELLOW);
-
 			// отрисовка принадлежащих окну элементов
-			for (uint_fast8_t i = 1; i < button_handlers_count; i++)
-			{
-				if (button_handlers[i].parent == gui.window_to_draw && button_handlers[i].visible == VISIBLE)	// кнопки
-				{
-					draw_button_pip(button_handlers[i].x1, button_handlers[i].y1,
-									button_handlers[i].x2, button_handlers[i].y2, button_handlers[i].state, button_handlers[i].is_locked);
 
-					if (button_handlers[i].text2 == NULL)
-					{
-						display_colorbuff_string2_tbg(colorpip, ALLDX, ALLDY, button_handlers[i].x1 + ((button_handlers[i].x2 - button_handlers[i].x1) -
-								(strlen (button_handlers[i].text) * 10)) / 2, button_handlers[i].y1 + 17, button_handlers[i].text, COLOR565_BLACK);
-					} else
-					{
-						display_colorbuff_string2_tbg(colorpip, ALLDX, ALLDY, button_handlers[i].x1 + ((button_handlers[i].x2 - button_handlers[i].x1) -
-								(strlen (button_handlers[i].text) * 10)) / 2, button_handlers[i].y1 + 10, button_handlers[i].text, COLOR565_BLACK);
-
-						display_colorbuff_string2_tbg(colorpip, ALLDX, ALLDY, button_handlers[i].x1 + ((button_handlers[i].x2 - button_handlers[i].x1) -
-								(strlen (button_handlers[i].text2) * 10)) / 2, button_handlers[i].y1 + 25, button_handlers[i].text2, COLOR565_BLACK);
-					}
-				}
-			}
 			for (uint_fast8_t i = 1; i < labels_count; i++)
 			{
 				if (labels[i].parent == gui.window_to_draw && labels[i].visible == VISIBLE)						// метки
@@ -6744,18 +6670,28 @@ board_set_wflevelsep(uint_fast8_t v)
 
 			if (windows[gui.window_to_draw].onVisibleProcess != 0)												// запуск процедуры фоновой обработки для окна, если есть
 				windows[gui.window_to_draw].onVisibleProcess();
-
-
-
 		} // if (is_popup_pip)
-	}
-
-	void need_redraw_buttons(void) // запрос на перерисовку кнопок внизу экрана
-	{
 		for (uint_fast8_t i = 1; i < button_handlers_count; i++)
 		{
-			if (button_handlers[i].type == TYPE_FOOTER_BUTTON)
-				button_handlers[i].need_redraw = 1;
+			if ((button_handlers[i].parent == gui.window_to_draw && button_handlers[i].visible == VISIBLE && windows[gui.window_to_draw].is_show)
+					|| button_handlers[i].parent == FOOTER)														// кнопки
+			{
+				draw_button_pip(button_handlers[i].x1, button_handlers[i].y1,
+								button_handlers[i].x2, button_handlers[i].y2, button_handlers[i].state, button_handlers[i].is_locked);
+
+				if (button_handlers[i].text2 == NULL)
+				{
+					display_colorbuff_string2_tbg(colorpip, ALLDX, ALLDY, button_handlers[i].x1 + ((button_handlers[i].x2 - button_handlers[i].x1) -
+							(strlen (button_handlers[i].text) * 10)) / 2, button_handlers[i].y1 + 17, button_handlers[i].text, COLOR565_BLACK);
+				} else
+				{
+					display_colorbuff_string2_tbg(colorpip, ALLDX, ALLDY, button_handlers[i].x1 + ((button_handlers[i].x2 - button_handlers[i].x1) -
+							(strlen (button_handlers[i].text) * 10)) / 2, button_handlers[i].y1 + 10, button_handlers[i].text, COLOR565_BLACK);
+
+					display_colorbuff_string2_tbg(colorpip, ALLDX, ALLDY, button_handlers[i].x1 + ((button_handlers[i].x2 - button_handlers[i].x1) -
+							(strlen (button_handlers[i].text2) * 10)) / 2, button_handlers[i].y1 + 25, button_handlers[i].text2, COLOR565_BLACK);
+				}
+			}
 		}
 	}
 
@@ -6793,8 +6729,8 @@ board_set_wflevelsep(uint_fast8_t v)
 			{
 				for (uint_fast8_t i = 1; i < button_handlers_count; i++) {
 					if (button_handlers[i].x1 < gui.last_pressed_x && button_handlers[i].x2 > gui.last_pressed_x
-					 && (button_handlers[i].type ? button_handlers[i].y1 + pipparam.y : button_handlers[i].y1) < gui.last_pressed_y
-					 && (button_handlers[i].type ? button_handlers[i].y2 + pipparam.y : button_handlers[i].y2) > gui.last_pressed_y
+					 && button_handlers[i].y1 + pipparam.y < gui.last_pressed_y
+					 && button_handlers[i].y2 + pipparam.y > gui.last_pressed_y
 					 && button_handlers[i].visible == VISIBLE)
 					{
 						gui.selected = i;
@@ -6807,17 +6743,12 @@ board_set_wflevelsep(uint_fast8_t v)
 		if (gui.state == BUTTON_PRESSED)
 		{
 			if (button_handlers[gui.selected].x1 < gui.last_pressed_x && button_handlers[gui.selected].x2 > gui.last_pressed_x
-			 && (button_handlers[gui.selected].type ? button_handlers[gui.selected].y1 + pipparam.y : button_handlers[gui.selected].y1) < gui.last_pressed_y
-			 && (button_handlers[gui.selected].type ? button_handlers[gui.selected].y2 + pipparam.y : button_handlers[gui.selected].y2) > gui.last_pressed_y
+			 && button_handlers[gui.selected].y1 + pipparam.y < gui.last_pressed_y
+			 && button_handlers[gui.selected].y2 + pipparam.y > gui.last_pressed_y
 			 && ! gui.is_after_touch)
 			{
 				if (gui.is_touching_screen)
-				{
-	//				debug_printf_P(PSTR("do redraw 1\n"));
 					button_handlers[gui.selected].state = BUTTON_PRESSED;
-					button_handlers[gui.selected].need_redraw = 1;
-					display_buttons(0, 0);
-				}
 				else
 					gui.state = BUTTON_RELEASED;
 			}
@@ -6825,18 +6756,12 @@ board_set_wflevelsep(uint_fast8_t v)
 			{
 				gui.state = BUTTON_CANCELLED;
 				button_handlers[gui.selected].state = BUTTON_CANCELLED;
-				button_handlers[gui.selected].need_redraw = 1;
-	//			debug_printf_P(PSTR("do redraw 2\n"));
-				display_buttons (0, 0);
 				gui.is_after_touch = 1; // точка непрерывного нажатия вышла за пределы выбранного элемента
 			}
 		}
 		if (gui.state == BUTTON_RELEASED)
 		{
 			button_handlers[gui.selected].state = BUTTON_RELEASED;
-			button_handlers[gui.selected].need_redraw = 1;
-	//		debug_printf_P(PSTR("do redraw 3\n"));
-			display_buttons(0, 0);
 			button_handlers[gui.selected].onClickHandler();
 			debug_printf_P(PSTR("handler %d runned\n"), gui.selected);
 			button_handlers[gui.selected].state = BUTTON_CANCELLED;
