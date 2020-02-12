@@ -249,17 +249,18 @@
 	#define WITHAFADCWIDTH	16		// 1 бит знак и 15 бит значащих
 	#define WITHAFDACWIDTH	16		// 1 бит знак и 15 бит значащих
 	//#define WITHLOOPBACKTEST	1
-	#define WITHRTS96 1		/* кроме выходного аудиосигнала передача квадратур по USB */
+	//#define WITHRTS96 1		/* кроме выходного аудиосигнала передача квадратур по USB */
 	//#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
 
 	#define WITHDSPEXTDDC 1			/* Квадратуры получаются внешней аппаратурой */
 	#define WITHDSPEXTFIR 1			/* Фильтрация квадратур осуществляется внешней аппаратурой */
 
-	#define WITHUSESDCARD	1		// Включение поддержки SD CARD
-	#define WITHUSEAUDIOREC	1		// Запись звука на SD CARD
+	//#define WITHUSESDCARD	1		// Включение поддержки SD CARD
+	//#define WITHUSEAUDIOREC	1		// Запись звука на SD CARD
 	//#define WITHUSEDUALWATCH	1	// Второй приемник
 	//#define WITHMODEMIQLOOPBACK	1	/* модем получает собственные передаваемые квадратуры */
-	#define BOARD_FFTZOOM_POW2MAX 2	// Возможные масштабы FFT x1, x2, x4
+	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
+	//#define BOARD_FFTZOOM_POW2MAX 2	// Возможные масштабы FFT x1, x2, x4
 
 	#if 0
 		#define WITHBBOX	1	// Black Box mode - устройство без органов управления

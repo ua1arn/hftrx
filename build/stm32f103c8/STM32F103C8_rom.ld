@@ -100,6 +100,9 @@ SECTIONS
 		LONG (__etext)
 		LONG (__data_start__)
 		LONG ((__data_end__ - __data_start__) / 4)
+		LONG (__etext2)
+		LONG (__data2_start__)
+		LONG ((__data2_end__ - __data2_start__) / 4)
 		__copy_table_end__ = .;
 	} > FLASH
 
@@ -155,6 +158,24 @@ SECTIONS
 		__data_end__ = .;
 
 	} > RAM
+	
+	__etext2 = .;
+
+	.itcm : AT (__etext2)
+	{
+		__data2_start__ = .;
+		*(.itcm*)
+		*(.text.__ieee754_logf)
+		*(.text.__ieee754_powf)
+		*(.text.__ieee754_rem_pio2f)
+		*(.text.__ieee754_sqrtf)
+		*(.text.__kernel_rem_pio2f)
+
+		. = ALIGN(4);	/* may be 32 */
+		__data2_end__ = .;
+	} > ITCM
+
+	. = __etext2 + __data2_end__ - __data2_start__;
 
 	.bss :
 	{
