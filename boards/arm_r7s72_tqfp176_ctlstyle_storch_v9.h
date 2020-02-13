@@ -304,11 +304,12 @@
 	//#define WITHPWRMTR	1	/* Индикатор выходной мощности или */
 	//#define WITHPWRLIN	1	/* Индикатор выходной мощности показывает напряжение а не мощность */
 
-	#if 0
+	#if 1
 		/* TUNER & PA board 2*RD16 by avbelnn@yandex.ru */
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
 		#define SHORTSET8	1
 		#define WITHAUTOTUNER_AVBELNN	1	/* Плата управления LPF и тюнером от avbelnn */
+		#define WITHANTSELECT	1	/* Управление переключением антенн */
 	#elif 0
 		/* TUNER by R3KBL */
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */

@@ -407,13 +407,10 @@ void bandf_calc_initialize(void)
 	#define BAND2CALCS	(sizeof board_band2fs / sizeof board_band2fs [0])	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
 
 #elif \
-	CTLREGMODE_STORCH_V1 || \
-	CTLREGMODE_STORCH_V2 || \
-	CTLREGMODE_STORCH_V3 || \
-	CTLREGMODE_STORCH_V7 || \
-	CTLREGMODE_STORCH_V9 || \
+	WITHAUTOTUNER_AVBELNN || \
+	CTLREGMODE_STORCH_V6 ||		/* mimni RX + TFT 4.3" */ \
 	0
-	/* плата усилителя 2*RD100 UA1CEI */
+	/* TUNER & PA board 2*RD16 by avbelnn@yandex.ru */
 	// 2.4 3.9 7.4 14.8 22 30
 
 	static const fseltype_t board_band2fs [] =
@@ -426,10 +423,15 @@ void bandf_calc_initialize(void)
 		(fseltype_t) (30000000uL >> BANDDIVPOWER),
 	};
 	#define BAND2CALCS	(sizeof board_band2fs / sizeof board_band2fs [0])	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
+
 #elif \
-	CTLREGMODE_STORCH_V6 ||		/* mimni RX + TFT 4.3" */ \
+	CTLREGMODE_STORCH_V1 || \
+	CTLREGMODE_STORCH_V2 || \
+	CTLREGMODE_STORCH_V3 || \
+	CTLREGMODE_STORCH_V7 || \
+	CTLREGMODE_STORCH_V9 || \
 	0
-	/* TUNER & PA board 2*RD16 by avbelnn@yandex.ru */
+	/* плата усилителя 2*RD100 UA1CEI */
 	// 2.4 3.9 7.4 14.8 22 30
 
 	static const fseltype_t board_band2fs [] =
