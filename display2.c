@@ -5487,8 +5487,7 @@ display_colorgrid_xor(
 		{
 			// Маркер частоты кратной glob_gridstep - XOR линию
 			xmarker = deltafreq2x_abs(f0, df, bw, ALLDX);
-			local_snprintf_P(buf, sizeof buf / sizeof buf [0], "%d", (int) (f0 + df) / 1000);
-			freqlen = strlen(buf);
+			freqlen = local_snprintf_P(buf, sizeof buf / sizeof buf [0], "%d", (int) (f0 + df) / 1000);
 			if (xmarker != UINT16_MAX)
 			{
 				if (xmarker > (freqlen << 3) && xmarker < ALLDX - (freqlen << 3))
@@ -5530,8 +5529,7 @@ display_colorgrid_set(
 		{
 			// Маркер частоты кратной glob_gridstep - XOR линию
 			xmarker = deltafreq2x_abs(f0, df, bw, ALLDX);
-			local_snprintf_P(buf, sizeof buf / sizeof buf [0], "%d", (int) (f0 + df) / 1000);
-			freqlen = strlen(buf);
+			freqlen = local_snprintf_P(buf, sizeof buf / sizeof buf [0], "%d", (int) (f0 + df) / 1000);
 
 			if (xmarker != UINT16_MAX)
 			{
