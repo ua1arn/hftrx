@@ -5477,6 +5477,8 @@ display_colorgrid_xor(
 	const int_fast32_t go = f0 % (int) glob_gridstep;	// шаг сетки
 	const int_fast32_t gs = (int) glob_gridstep;	// шаг сетки
 	const int_fast32_t halfbw = bw / 2;
+	char buf[10];
+	uint_fast8_t freqlen;							// длина строки со значением частоты
 	int_fast32_t df;	// кратное сетке значение
 	for (df = - halfbw / gs * gs - go; df < halfbw; df += gs)
 	{
@@ -5485,8 +5487,18 @@ display_colorgrid_xor(
 		{
 			// Маркер частоты кратной glob_gridstep - XOR линию
 			xmarker = deltafreq2x_abs(f0, df, bw, ALLDX);
+			local_snprintf_P(buf, sizeof buf / sizeof buf [0], "%d", (int) (f0 + df) / 1000);
+			freqlen = strlen(buf);
 			if (xmarker != UINT16_MAX)
-				display_colorbuffer_xor_vline(buffer, ALLDX, ALLDY, xmarker, row0, h, color);
+			{
+				if (xmarker > (freqlen << 3) && xmarker < ALLDX - (freqlen << 3))
+				{
+					display_colorbuff_string2_tbg(buffer, ALLDX, ALLDY, xmarker - (freqlen * 5), row0, buf, COLOR565_YELLOW);
+					display_colorbuffer_xor_vline(buffer, ALLDX, ALLDY, xmarker, row0 + 18, h - 18, color);
+				}
+				else
+					display_colorbuffer_xor_vline(buffer, ALLDX, ALLDY, xmarker, row0, h, color);
+			}
 		}
 	}
 	display_colorbuffer_xor_vline(buffer, ALLDX, ALLDY, ALLDX / 2, row0, h, color0);	// center frequency marker
