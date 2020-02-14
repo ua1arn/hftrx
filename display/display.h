@@ -599,6 +599,15 @@ void display_string(const char * s, uint_fast8_t lowhalf);
 void display_string_P(const FLASHMEM char * s, uint_fast8_t lowhalf);
 void display_string2(const char * s, uint_fast8_t lowhalf);		// самый маленький шрифт
 void display_string2_P(const FLASHMEM char * s, uint_fast8_t lowhalf);	// самый маленький шрифт
+void display_colorbuff_string3_tbg(
+	PACKEDCOLOR565_T * buffer,
+	uint_fast16_t dx,
+	uint_fast16_t dy,
+	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	const char * s,
+	COLOR565_T fg		// цвет вывода текста
+	);
 
 // Интерфейсные функции, специфические для драйвера дисплея - зависящие от типа микросхемы контроллера.
 void display_hardware_initialize(void);	/* вызывается при запрещённых прерываниях. */

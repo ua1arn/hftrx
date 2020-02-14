@@ -12,7 +12,7 @@
 #include "display.h"
 #include "formats.h"
 #include <string.h>
-#include "../inc/spi.h"	// hardware_spi_master_send_frame
+#include "spi.h"	// hardware_spi_master_send_frame
 
 #if LCDMODE_LTDC && ! defined (SDRAM_BANK_ADDR)
 	// буфер экрана
@@ -1419,12 +1419,14 @@ void display_hardware_initialize(void)
 
 #elif DSTYLE_G_X480_Y272
 	// в знакогенераторе изображения символов "по горизонтали"
+	#include "./fonts/S1D13781_font_small3_LTDC.h"
 	#include "./fonts/S1D13781_font_small_LTDC.h"
 	#include "./fonts/S1D13781_font_half_LTDC.h"
 	#include "./fonts/S1D13781_font_big_LTDC.h"
 
 #elif DSTYLE_G_X800_Y480
 	// в знакогенераторе изображения символов "по горизонтали"
+	#include "./fonts/S1D13781_font_small3_LTDC.h"
 	#include "./fonts/S1D13781_font_small_LTDC.h"
 	#include "./fonts/S1D13781_font_half_LTDC.h"
 	#include "./fonts/S1D13781_font_big_LTDC.h"
@@ -1611,6 +1613,42 @@ static void RAMFUNC ltdc_horizontal_pixels(
 	arm_hardware_flush((uintptr_t) tgr, sizeof (* tgr) * width);
 }
 
+// функции работы с colorbuffer не занимаются выталкиванеим кэш-памяти
+// Фон не трогаем
+static void RAMFUNC ltdc565_horizontal_pixels_tbg(
+	volatile PACKEDCOLOR565_T * tgr,		// target raster
+	const FLASHMEM uint8_t * raster,
+	uint_fast16_t width,	// number of bits (start from LSB first byte in raster)
+	COLOR565_T fg
+	)
+{
+	uint_fast16_t w = width;
+
+	for (; w >= 8; w -= 8, tgr += 8)
+	{
+		const uint_fast8_t v = * raster ++;
+		if (v & 0x01)	tgr [0] = fg;
+		if (v & 0x02)	tgr [1] = fg;
+		if (v & 0x04)	tgr [2] = fg;
+		if (v & 0x08)	tgr [3] = fg;
+		if (v & 0x10)	tgr [4] = fg;
+		if (v & 0x20)	tgr [5] = fg;
+		if (v & 0x40)	tgr [6] = fg;
+		if (v & 0x80)	tgr [7] = fg;
+	}
+	if (w != 0)
+	{
+		uint_fast8_t vlast = * raster;
+		do
+		{
+			if (vlast & 0x01)
+				* tgr = fg;
+			++ tgr;
+			vlast >>= 1;
+		} while (-- w);
+	}
+}
+
 // Вызов этой функции только внутри display_wrdata_begin() и 	display_wrdata_end();
 static void RAMFUNC_NONILINE ltdc_horizontal_put_char_small(char cc)
 {
@@ -1651,6 +1689,29 @@ static void RAMFUNC_NONILINE ltdc_horizontal_put_char_half(char cc)
 		ltdc_horizontal_pixels(tgr, S1D13781_halffont_LTDC [c] [cgrow], width);
 	}
 	ltdc_second += width;
+}
+
+// возвращаем на сколько пикселей вправо занимет отрисованный символ
+// Фон не трогаем
+static uint_fast16_t RAMFUNC_NONILINE ltdc565_horizontal_put_char_small3_tbg(
+	PACKEDCOLOR565_T * buffer,
+	uint_fast16_t dx,
+	uint_fast16_t dy,
+	uint_fast16_t x,
+	uint_fast16_t y,
+	char cc,
+	COLOR565_T fg
+	)
+{
+	const uint_fast8_t width = SMALLCHARW3;
+	const uint_fast8_t c = smallfont_decode((unsigned char) cc);
+	uint_fast8_t cgrow;
+	for (cgrow = 0; cgrow < SMALLCHARH3; ++ cgrow)
+	{
+		volatile PACKEDCOLOR565_T * const tgr = & buffer [(y + cgrow) * dx + x];
+		ltdc565_horizontal_pixels_tbg(tgr, & S1D13781_smallfont3_LTDC [c] [cgrow], width, fg);
+	}
+	return width;
 }
 
 #else /* LCDMODE_HORFILL */
@@ -1695,7 +1756,26 @@ static void RAMFUNC_NONILINE ltdc_vertical_put_char_half(char cc)
 
 #endif /* LCDMODE_HORFILL */
 
+// Используется при выводе на графический индикатор,
+// transparent background - не меняем цвет фона.
+void
+display_colorbuff_string3_tbg(
+	PACKEDCOLOR565_T * buffer,
+	uint_fast16_t dx,
+	uint_fast16_t dy,
+	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	const char * s,
+	COLOR565_T fg		// цвет вывода текста
+	)
+{
+	char c;
 
+	while((c = * s ++) != '\0')
+	{
+		x += ltdc565_horizontal_put_char_small3_tbg(buffer, dx, dy, x, y, c, fg);
+	}
+}
 
 /* копирование содержимого окна с перекрытием для водопада */
 void
