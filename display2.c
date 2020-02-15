@@ -5492,8 +5492,8 @@ display_colorgrid_xor(
 			{
 				if (xmarker > (freqlen << 3) && xmarker < ALLDX - (freqlen << 3))
 				{
-					display_colorbuff_string2_tbg(buffer, ALLDX, ALLDY, xmarker - (freqlen * 5), row0, buf, COLOR565_YELLOW);
-					display_colorbuffer_xor_vline(buffer, ALLDX, ALLDY, xmarker, row0 + 18, h - 18, color);
+					display_colorbuff_string2_tbg(buffer, ALLDX, ALLDY, xmarker - (freqlen * 4), row0, buf, COLOR565_YELLOW);
+					display_colorbuffer_xor_vline(buffer, ALLDX, ALLDY, xmarker, row0 + 10, h - 10, color);
 				}
 				else
 					display_colorbuffer_xor_vline(buffer, ALLDX, ALLDY, xmarker, row0, h, color);
@@ -5535,8 +5535,8 @@ display_colorgrid_set(
 			{
 				if (xmarker > (freqlen << 3) && xmarker < ALLDX - (freqlen << 3))
 				{
-					display_colorbuff_string2_tbg(buffer, ALLDX, ALLDY, xmarker - (freqlen * 5), row0, buf, COLOR565_YELLOW);
-					display_colorbuffer_set_vline(buffer, ALLDX, ALLDY, xmarker, row0 + 18, h - 18, color);
+					display_colorbuff_string3_tbg(buffer, ALLDX, ALLDY, xmarker - (freqlen * 4), row0, buf, COLOR565_YELLOW);
+					display_colorbuffer_set_vline(buffer, ALLDX, ALLDY, xmarker, row0 + 10, h - 10, color);
 				}
 				else
 					display_colorbuffer_set_vline(buffer, ALLDX, ALLDY, xmarker, row0, h, color);
