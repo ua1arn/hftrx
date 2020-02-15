@@ -359,6 +359,7 @@ typedef uint16_t PACKEDCOLOR565_T;
 #define COLOR_PEAR    TFTRGB(0xD1, 0xE2, 0x31)	// грушевый
 
 #define COLOR_KEY	TFTRGB(0xA0, 0, 0xA0)	// Цвет для прозрачных пикселей
+#define COLOR565_YELLOW      TFTRGB565(0xFF, 0xFF, 0x00)
 
 uint_fast8_t display_getpagesmax(void);	// количество разных вариантов отображения (menuset)
 uint_fast8_t display_getpagesleep(void);	// номер варианта отображения для "сна"
