@@ -20,6 +20,13 @@
 
 #if WITHLTDCHW
 
+#if ! LCDMODE_LTDC_L8 && ! LCDMODE_LTDC_L24
+PACKEDCOLOR565_T *
+rgb565_fb(void)
+{
+	return (PACKEDCOLOR565_T *) & framebuff [0] [0];
+}
+#endif /* ! LCDMODE_LTDC_L8 && ! LCDMODE_LTDC_L24 */
 
 #if LCDMODE_LQ043T3DX02K
 	// Sony PSP-1000 display panel

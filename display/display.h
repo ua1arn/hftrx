@@ -992,6 +992,8 @@ void board_set_wflevelsep(uint_fast8_t v); /* чувствительность �
 	void display_pip_update(uint_fast8_t x, uint_fast8_t y, void * pv);
 #endif /* WITHTOUCHTEST */
 
+PACKEDCOLOR565_T * rgb565_fb(void);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
