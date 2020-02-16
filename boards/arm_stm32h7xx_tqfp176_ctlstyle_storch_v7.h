@@ -8,8 +8,8 @@
 // Трансивер с DSP обработкой "Аист" на процессоре
 // rmainunit_v5km0.pcb, rmainunit_v5km1.pcb STM32H743IIT6, TFT 4.3", 2xUSB, SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
 
-#ifndef ARM_STM32H7XX_TQFP176_CTLSTYLE_STORCH_V6_H_INCLUDED
-#define ARM_STM32H7XX_TQFP176_CTLSTYLE_STORCH_V6_H_INCLUDED 1
+#ifndef ARM_STM32H7XX_TQFP176_CTLSTYLE_STORCH_V7_H_INCLUDED
+#define ARM_STM32H7XX_TQFP176_CTLSTYLE_STORCH_V7_H_INCLUDED 1
 
 	#if ! defined(STM32H743xx)
 		#error Wrong CPU selected. STM32H743xx expected
@@ -515,4 +515,4 @@
 	#define KI_COUNT 5	// количество используемых под клавиатуру входов АЦП
 	#define KI_LIST	KI4, KI3, KI2, KI1, KI0,	// инициализаторы для функции перекодировки
 
-#endif /* ARM_STM32H7XX_TQFP176_CTLSTYLE_STORCH_V6_H_INCLUDED */
+#endif /* ARM_STM32H7XX_TQFP176_CTLSTYLE_STORCH_V7_H_INCLUDED */
