@@ -11,6 +11,8 @@
 
 #if LCDMODE_ST7735 || LCDMODE_ILI9163 || LCDMODE_ILI9341
 
+#define LCDMODE_COLORED	1
+
 #if ! LCDMODE_LTDC
 
 	#define DISPLAYMODES_FPS 5	/* количество обновлений отображения режимов работы */

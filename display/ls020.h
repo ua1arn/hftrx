@@ -44,6 +44,8 @@ typedef uint8_t PACKEDCOLOR_T;
 typedef PACKEDCOLOR_T PACKEDCOLORPIP_T;
 typedef COLOR_T COLORPIP_T;
 
+#define LCDMODE_COLORED	1
+
 #endif /* LCDMODE_LS020 */
 
 #endif /* LS020_H_INCLUDED */

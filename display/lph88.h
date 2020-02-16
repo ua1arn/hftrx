@@ -43,6 +43,8 @@ typedef uint16_t PACKEDCOLOR_T;
 typedef PACKEDCOLOR_T PACKEDCOLORPIP_T;
 typedef COLOR_T COLORPIP_T;
 
+#define LCDMODE_COLORED	1
+
 #endif /* LCDMODE_LPH88 */
 #endif /* LPH88_H_INCLUDED */
 
