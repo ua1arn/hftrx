@@ -6879,7 +6879,7 @@ void display2_xltrgb24(COLOR24_T * xtable)
 	xtable [COLORPIP_LOCKED	   ] = COLOR24(0x3C, 0x3C, 0x00);
 
 
-#if 0
+#if COLORSTYLE_ATS52
 	// new (for ats52);.
 	xtable [COLORPIP_GRIDCOLOR		] = COLOR24(128, 0, 0);		//COLOR_GRAY - center marker
 	xtable [COLORPIP_GRIDCOLOR2		] = COLOR24(96, 96, 96);		//COLOR_DARKRED - other markers
@@ -6887,7 +6887,7 @@ void display2_xltrgb24(COLOR24_T * xtable)
 	xtable [COLORPIP_SPECTRUMBG2	] = COLOR24(0, 24, 8);		//COLOR_xxx - ïîëîñà ïðîïóñêàíèÿ ïðèåìíèêà
 	xtable [COLORPIP_SPECTRUMFG		] = COLOR24(0, 255, 0);		//COLOR_GREEN
 	xtable [COLORPIP_SPECTRUMFENCE	] = COLOR24(255, 255, 255);	//COLOR_WHITE
-#else
+#else /* COLORSTYLE_ATS52 */
 	// old
 	xtable [COLORPIP_GRIDCOLOR      ] = COLOR24(128, 128, 0);        //COLOR_GRAY - center marker
 	xtable [COLORPIP_GRIDCOLOR2     ] = COLOR24(128, 0, 0x00);        //COLOR_DARKRED - other markers
@@ -6895,7 +6895,7 @@ void display2_xltrgb24(COLOR24_T * xtable)
 	xtable [COLORPIP_SPECTRUMBG2    ] = COLOR24(0, 128, 128);        //COLOR_CYAN - ïîëîñà ïðîïóñêàíèÿ ïðèåìíèêà
 	xtable [COLORPIP_SPECTRUMFG		] = COLOR24(0, 255, 0);		//COLOR_GREEN
 	xtable [COLORPIP_SPECTRUMFENCE	] = COLOR24(255, 255, 255);	//COLOR_WHITE
-#endif
+#endif /* COLORSTYLE_ATS52 */
 
 #else /* LCDMODE_LTDC_L8 && LCDMODE_LTDC_PIPL8 */
 	// Обычная таблица - все цвета могут быть использованы как индекс
