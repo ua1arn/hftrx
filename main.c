@@ -13,13 +13,14 @@
 #include "list.h"
 
 #include "display/display.h"
+#include "gui.h"
 #include "formats.h"
 
 #include "audio.h"
 
 #include "codecs/tlv320aic23.h"	// константы управления усилением кодека
 #include "codecs/nau8822.h"
-#include "inc/spi.h"
+#include "spi.h"
 
 #if WITHUSEAUDIOREC || WITHUSESDCARD
 	#include "sdcard.h"
@@ -7035,8 +7036,8 @@ updateboard2(void)
 {
 #if WITHENCODER
 	encoder_set_resolution(encresols [ghiresres], ghiresdyn);
-#endif
-	display_setbgcolor(gbluebgnd ? COLOR_BLUE : COLOR_BLACK);
+#endif /* WITHENCODER */
+	display_setbgcolor(gbluebgnd ? COLORMAIN_BLUE : COLORMAIN_BLACK);
 }
 
 

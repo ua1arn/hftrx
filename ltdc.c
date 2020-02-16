@@ -20,13 +20,11 @@
 
 #if WITHLTDCHW
 
-#if ! LCDMODE_LTDC_L8 && ! LCDMODE_LTDC_L24
-PACKEDCOLOR565_T *
+PACKEDCOLOR_T *
 rgb565_fb(void)
 {
-	return (PACKEDCOLOR565_T *) & framebuff [0] [0];
+	return (PACKEDCOLOR_T *) & framebuff [0] [0];
 }
-#endif /* ! LCDMODE_LTDC_L8 && ! LCDMODE_LTDC_L24 */
 
 #if LCDMODE_LQ043T3DX02K
 	// Sony PSP-1000 display panel
@@ -274,45 +272,20 @@ void vdc5_update(
 
 static void
 VDC5_fillLUT_L8(
-	volatile uint32_t * reg
+	volatile uint32_t * reg,
+	const COLOR24_T * xltrgb24
 	)
 {
-	unsigned color;
+	unsigned i;
 
-	for (color = 0; color < 256; ++ color)
+	for (i = 0; i < 256; ++ i)
 	{
-#define XRGB(zr,zg,zb) do { r = (zr), g = (zg), b = (zb); } while (0)
-		uint_fast8_t r, g, b;
-
-		switch (color)
-		{
-		case TFTRGB(0, 0, 0)			/*COLOR_BLACK*/:		XRGB(0, 0, 0);			break;	// 0x00 черный
-		case TFTRGB(255, 0, 0)			/*COLOR_RED*/:			XRGB(255, 0, 0);		break; 	// 0xE0 красный
-		case TFTRGB(0, 255, 0)			/*COLOR_GREEN*/:		XRGB(0, 255, 0);		break; 	// 0x1C зеленый
-		case TFTRGB(0, 0, 255)			/*COLOR_BLUE*/:			XRGB(0, 0, 255);		break; 	// 0x03 синий
-		case TFTRGB(128, 0, 0)			/*COLOR_DARKRED*/:		XRGB(128, 0, 0);		break; 	// 
-		case TFTRGB(0, 128, 0)			/*COLOR_DARKGREEN*/:	XRGB(0, 128, 0);		break; 	// 
-		case TFTRGB(0, 0, 128)			/*COLOR_DARKBLUE*/:		XRGB(0, 0, 128);		break; 	// 
-		case TFTRGB(255, 255, 0)		/*COLOR_YELLOW*/:		XRGB(255, 255, 0);		break; 	// 0xFC желтый
-		case TFTRGB(255, 0, 255)		/*COLOR_MAGENTA*/:		XRGB(255, 0, 255);		break; 	// 0x83 пурпурный
-		case TFTRGB(0, 255, 255)		/*COLOR_CYAN*/:			XRGB(0, 255, 255);		break; 	// 0x1F голубой
-		case TFTRGB(255, 255, 255)		/*COLOR_WHITE*/:		XRGB(255, 255, 255);	break;  // 0xff	белый
-		case TFTRGB(128, 128, 128)		/*COLOR_GRAY*/:			XRGB(128, 128, 128);	break; 	// серый
-		case TFTRGB(0xa5, 0x2a, 0x2a)	/*COLOR_BROWN*/:		XRGB(0xa5, 0x2a, 0x2a);	break; 	// 0x64 коричневый
-		case TFTRGB(0xff, 0xd7, 0x00)	/*COLOR_GOLD*/:			XRGB(0xff, 0xd7, 0x00);	break; 	// 0xF4 золото
-		case TFTRGB(0xd1, 0xe2, 0x31)	/*COLOR_PEAR*/:			XRGB(0xd1, 0xe2, 0x31);	break; 	// 0xDC грушевый
-#undef XRGB
-		default:
-			r = ((color & 0xe0) << 0) | ((color & 0x80) ? 0x1f : 0);	// red
-			g = ((color & 0x1c) << 3) | ((color & 0x10) ? 0x1f : 0);	// green
-			b = ((color & 0x03) << 6) | ((color & 0x02) ? 0x3f : 0);	// blue
-			break;
-		}
+		uint_fast32_t color = xltrgb24 [i];
 		/* запись значений в регистры палитры */
-		SETREG32_CK(reg + color, 8, 24, 0x00);	// alpha
-		SETREG32_CK(reg + color, 8, 16, r);
-		SETREG32_CK(reg + color, 8, 8, g);
-		SETREG32_CK(reg + color, 8, 0, b);
+		SETREG32_CK(reg + i, 8, 24, 0x00);	// alpha
+		SETREG32_CK(reg + i, 8, 16, COLOR24_R(color));
+		SETREG32_CK(reg + i, 8, 8, COLOR24_G(color));
+		SETREG32_CK(reg + i, 8, 0, COLOR24_B(color));
 	}
 }
 
@@ -588,7 +561,7 @@ static void vdc5fb_init_scalers(struct st_vdc5 * const vdc)
 #endif
 }
 
-#if LCDMODE_LTDC_PIP16
+#if LCDMODE_LTDC_PIPL8 || LCDMODE_LTDC_PIP16
 
 /* set bottom buffer start */
 void arm_hardware_ltdc_pip_set(uintptr_t p)
@@ -597,7 +570,7 @@ void arm_hardware_ltdc_pip_set(uintptr_t p)
 	pipparams_t pipwnd;
 
 	display2_getpipparams(& pipwnd);
-	arm_hardware_flush(p, pipwnd.w * pipwnd.h * sizeof (PACKEDCOLOR565_T));
+	arm_hardware_flush(p, pipwnd.w * pipwnd.h * sizeof (PACKEDCOLORPIP_T));
 
 	SETREG32_CK(& vdc->GR3_FLM_RD, 1, 0, 1);			// GR3_R_ENB Frame Buffer Read Enable 1: Frame buffer reading is enabled.
 	SETREG32_CK(& vdc->GR3_FLM2, 32, 0, p);			// GR3_BASE
@@ -632,12 +605,14 @@ void arm_hardware_ltdc_pip_off(void)	// set PIP framebuffer address
 		);
 }
 
-#endif /* LCDMODE_LTDC_PIP16 */
+#endif /* LCDMODE_LTDC_PIPL8 || LCDMODE_LTDC_PIP16 */
 
 static void vdc5fb_init_graphics(struct st_vdc5 * const vdc)
 {
-
 	const unsigned ROWSIZE = sizeof framebuff [0];	// размер одной строки в байтах
+	// Таблица используемой при отображении палитры
+	COLOR24_T xltrgb24 [256];
+	display2_xltrgb24(xltrgb24);
 
 #if LCDMODE_LTDC_L8
 	const unsigned grx_format_MAIN = 0x05;	// GRx_FORMAT 5: CLUT8
@@ -646,9 +621,15 @@ static void vdc5fb_init_graphics(struct st_vdc5 * const vdc)
 	const unsigned grx_format_MAIN = 0x00;	// GRx_FORMAT 0: RGB565
 	const unsigned grx_rdswa_MAIN = 0x06;	// GRx_RDSWA 110: (7) (8) (5) (6) (3) (4) (1) (2) [32-bit swap + 16-bit swap]
 #endif /* LCDMODE_LTDC_L8 */
+
+#if LCDMODE_LTDC_PIPL8
+	const unsigned grx_format_PIP = 0x05;	// GRx_FORMAT 5: CLUT8
+	const unsigned grx_rdswa_PIP = 0x06;	// GRx_RDSWA 110: (7) (8) (5) (6) (3) (4) (1) (2) [32-bit swap + 16-bit swap]
+#else
+	// LCDMODE_LTDC_PIP16
 	const unsigned grx_format_PIP = 0x00;	// GRx_FORMAT 0: RGB565
 	const unsigned grx_rdswa_PIP = 0x06;	// GRx_RDSWA 110: (7) (8) (5) (6) (3) (4) (1) (2) [32-bit swap + 16-bit swap]
-
+#endif
 	////////////////////////////////////////////////////////////////
 	// GR0
 	SETREG32_CK(& vdc->GR0_FLM_RD, 1, 0, 0);	// GR0_R_ENB Frame Buffer Read Enable
@@ -697,10 +678,17 @@ static void vdc5fb_init_graphics(struct st_vdc5 * const vdc)
 	#define     VDC5_CH0_GR3_CLUT_TBL           (*(volatile uint32_t*)0xFCFF6C00)
 
 	SETREG32_CK(& vdc->GR2_CLUT, 1, 16, 0x00);			// GR2_CLT_SEL
-	VDC5_fillLUT_L8(& VDC5_CH0_GR2_CLUT_TBL);
+	VDC5_fillLUT_L8(& VDC5_CH0_GR2_CLUT_TBL, xltrgb24);
 	SETREG32_CK(& vdc->GR2_CLUT, 1, 16, 0x01);			// GR2_CLT_SEL
 	//vdc->GR2_CLUT ^= (1uL << 16);	// GR2_CLT_SEL Switch to filled table
 #endif /* LCDMODE_LTDC_L8 */
+
+#if LCDMODE_LTDC_PIPL8
+	// PIP on GR3
+	SETREG32_CK(& vdc->GR3_CLUT_INT, 1, 16, 0x00);			// GR3_CLT_SEL
+	VDC5_fillLUT_L8(& VDC5_CH0_GR3_CLUT_TBL, xltrgb24);
+	SETREG32_CK(& vdc->GR3_CLUT_INT, 1, 16, 0x01);			// GR3_CLT_SEL
+#endif /* LCDMODE_LTDC_PIPL8 */
 
 	////////////////////////////////////////////////////////////////
 	// GR3 - PIP screen
@@ -723,7 +711,7 @@ static void vdc5fb_init_graphics(struct st_vdc5 * const vdc)
 	SETREG32_CK(& vdc->GR3_AB3, 11, 16, LEFTMARGIN);	// GR3_GRC_HS
 	SETREG32_CK(& vdc->GR3_AB3, 11, 0, WIDTH);			// GR3_GRC_HW
 
-#if LCDMODE_LTDC_PIP16
+#if LCDMODE_LTDC_PIPL8 || LCDMODE_LTDC_PIP16
 
 	/* Adjust GR3 parameters for PIP mode (GR2 - mani window, GR3 - PIP) */
 
@@ -733,9 +721,9 @@ static void vdc5fb_init_graphics(struct st_vdc5 * const vdc)
 
 	SETREG32_CK(& vdc->GR3_FLM_RD, 1, 0, 0);			// GR3_R_ENB Frame Buffer Read Enable
 	SETREG32_CK(& vdc->GR3_AB1, 2, 0,	0x02);			// GR2_DISP_SEL 2: Current graphics display
-	SETREG32_CK(& vdc->GR3_FLM3, 15, 16, pipwnd.w * sizeof (PACKEDCOLOR565_T));		// GR3_LN_OFF
+	SETREG32_CK(& vdc->GR3_FLM3, 15, 16, pipwnd.w * sizeof (PACKEDCOLORPIP_T));		// GR3_LN_OFF
 	SETREG32_CK(& vdc->GR3_FLM3, 10, 0, 0x00);			// GR3_FLM_NUM
-	SETREG32_CK(& vdc->GR3_FLM4, 23, 0, pipwnd.w * pipwnd.h * sizeof (PACKEDCOLOR565_T));	// GR3_FLM_OFF
+	SETREG32_CK(& vdc->GR3_FLM4, 23, 0, pipwnd.w * pipwnd.h * sizeof (PACKEDCOLORPIP_T));	// GR3_FLM_OFF
 	SETREG32_CK(& vdc->GR3_FLM5, 11, 16, pipwnd.h - 1);	// GR3_FLM_LNUM Sets the number of lines in a frame
 	SETREG32_CK(& vdc->GR3_FLM5, 11, 0, pipwnd.h - 1);	// GR3_FLM_LOOP Sets the number of lines in a frame
 	SETREG32_CK(& vdc->GR3_FLM6, 11, 16, pipwnd.w - 1);	// GR3_HW Sets the width of the horizontal valid period.
@@ -1261,9 +1249,9 @@ arm_hardware_ltdc_initialize(void)
 	HARDWARE_LTDC_SET_MODE(BOARD_MODEVALUE);
 #endif
 
-#if LCDMODE_LTDC_PIP16
+#if LCDMODE_LTDC_PIP16 || LCDMODE_LTDC_PIPL8
 	arm_hardware_ltdc_pip_off();
-#endif /* LCDMODE_LTDC_PIP16 */
+#endif /* LCDMODE_LTDC_PIP16 || LCDMODE_LTDC_PIPL8 */
 
 	debug_printf_P(PSTR("arm_hardware_ltdc_initialize done\n"));
 }
@@ -1485,46 +1473,21 @@ fillLUT_L24(
 
 static void
 fillLUT_L8(
-	LTDC_Layer_TypeDef* LTDC_Layerx
+	LTDC_Layer_TypeDef* LTDC_Layerx,
+	const COLOR24_T * xltrgb24
 	)
 {
-	unsigned color;
+	unsigned i;
 
-	for (color = 0; color < 256; ++ color)
+	for (i = 0; i < 256; ++ i)
 	{
-#define XRGB(zr,zg,zb) do { r = (zr), g = (zg), b = (zb); } while (0)
-		uint_fast8_t r, g, b;
-
-		switch (color)
-		{
-		case TFTRGB(0, 0, 0)			/*COLOR_BLACK*/:		XRGB(0, 0, 0);			break;	// 0x00 черный
-		case TFTRGB(255, 0, 0)			/*COLOR_RED*/:			XRGB(255, 0, 0);		break; 	// 0xE0 красный
-		case TFTRGB(0, 255, 0)			/*COLOR_GREEN*/:		XRGB(0, 255, 0);		break; 	// 0x1C зеленый
-		case TFTRGB(0, 0, 255)			/*COLOR_BLUE*/:			XRGB(0, 0, 255);		break; 	// 0x03 синий
-		case TFTRGB(128, 0, 0)			/*COLOR_DARKRED*/:		XRGB(128, 0, 0);		break; 	// 
-		case TFTRGB(0, 128, 0)			/*COLOR_DARKGREEN*/:	XRGB(0, 128, 0);		break; 	// 
-		case TFTRGB(0, 0, 128)			/*COLOR_DARKBLUE*/:		XRGB(0, 0, 128);		break; 	// 
-		case TFTRGB(255, 255, 0)		/*COLOR_YELLOW*/:		XRGB(255, 255, 0);		break; 	// 0xFC желтый
-		case TFTRGB(255, 0, 255)		/*COLOR_MAGENTA*/:		XRGB(255, 0, 255);		break; 	// 0x83 пурпурный
-		case TFTRGB(0, 255, 255)		/*COLOR_CYAN*/:			XRGB(0, 255, 255);		break; 	// 0x1F голубой
-		case TFTRGB(255, 255, 255)		/*COLOR_WHITE*/:		XRGB(255, 255, 255);	break;  // 0xff	белый
-		case TFTRGB(128, 128, 128)		/*COLOR_GRAY*/:			XRGB(128, 128, 128);	break; 	// серый
-		case TFTRGB(0xa5, 0x2a, 0x2a)	/*COLOR_BROWN*/:		XRGB(0xa5, 0x2a, 0x2a);	break; 	// 0x64 коричневый
-		case TFTRGB(0xff, 0xd7, 0x00)	/*COLOR_GOLD*/:			XRGB(0xff, 0xd7, 0x00);	break; 	// 0xF4 золото
-		case TFTRGB(0xd1, 0xe2, 0x31)	/*COLOR_PEAR*/:			XRGB(0xd1, 0xe2, 0x31);	break; 	// 0xDC грушевый
-#undef XRGB
-		default:
-			r = ((color & 0xe0) << 0) | ((color & 0x80) ? 0x1f : 0);	// red
-			g = ((color & 0x1c) << 3) | ((color & 0x10) ? 0x1f : 0);	// green
-			b = ((color & 0x03) << 6) | ((color & 0x02) ? 0x3f : 0);	// blue
-			break;
-		}
+		uint_fast32_t color = xltrgb24 [i];
 		/* запись значений в регистры палитры */
 		LTDC_Layerx->CLUTWR = 
-			((color << LTDC_LxCLUTWR_CLUTADD_Pos) & LTDC_LxCLUTWR_CLUTADD) |
-			((r << LTDC_LxCLUTWR_RED_Pos) & LTDC_LxCLUTWR_RED) |
-			((g << LTDC_LxCLUTWR_GREEN_Pos) & LTDC_LxCLUTWR_GREEN) |
-			((b << LTDC_LxCLUTWR_BLUE_Pos) & LTDC_LxCLUTWR_BLUE) |
+			((i << LTDC_LxCLUTWR_CLUTADD_Pos) & LTDC_LxCLUTWR_CLUTADD) |
+			((COLOR24_R(color) << LTDC_LxCLUTWR_RED_Pos) & LTDC_LxCLUTWR_RED) |
+			((COLOR24_G(color) << LTDC_LxCLUTWR_GREEN_Pos) & LTDC_LxCLUTWR_GREEN) |
+			((COLOR24_B(color) << LTDC_LxCLUTWR_BLUE_Pos) & LTDC_LxCLUTWR_BLUE) |
 			0;
 	}
 
@@ -1735,7 +1698,7 @@ static void LCD_LayerInitMain(
 {
 	// преобразование из упакованного пикселя RGB565 по правилам pfc LTDC
 	// в требующийся RGB888
-	const unsigned long key = COLOR_KEY;
+	const unsigned long key = COLOR24_KEY;
 	const unsigned long keyr = (key >> 11) & 0x1F;
 	const unsigned long keyg = (key >> 6) & 0x3F;
 	const unsigned long keyb = (key >> 0) & 0x1F;
@@ -1818,6 +1781,10 @@ arm_hardware_ltdc_initialize(void)
 	(void) RCC->APB2ENR;
 #endif /* CPUSTYLE_STM32H7XX */
 
+	// Таблица используемой при отображении палитры
+	COLOR24_T xltrgb24 [256];
+	display2_xltrgb24(xltrgb24);
+
 	/* Configure the LCD Control pins */
 	HARDWARE_LTDC_INITIALIZE(BOARD_DEMODE);	// подключение к выводам процессора сигналов периферийного контроллера
 
@@ -1825,12 +1792,13 @@ arm_hardware_ltdc_initialize(void)
 	LTDC_InitTypeDef LTDC_InitStruct;
 
 	pipparams_t mainwnd = { 0, 0, DIM_SECOND, DIM_FIRST, (uintptr_t) & framebuff };
-#if LCDMODE_LTDC_PIP16
+
+#if LCDMODE_LTDC_PIP16 || LCDMODE_LTDC_PIPL8
 	pipparams_t pipwnd;
 	display2_getpipparams(& pipwnd);
 
 	debug_printf_P(PSTR("arm_hardware_ltdc_initialize: pip: x/y=%u/%u, w/h=%u/%u\n"), pipwnd.x, pipwnd.y, pipwnd.w, pipwnd.h);
-#endif /* LCDMODE_LTDC_PIP16 */
+#endif /* LCDMODE_LTDC_PIP16 || LCDMODE_LTDC_PIPL8 */
 
 	LTDC_InitStruct.LTDC_HSPolarity = HSYNCNEG ? LTDC_HSPolarity_AL : LTDC_HSPolarity_AH;     
 	//LTDC_InitStruct.LTDC_HSPolarity = LTDC_HSPolarity_AH;     
@@ -1889,12 +1857,20 @@ arm_hardware_ltdc_initialize(void)
 
 #endif /* LCDMODE_LTDC_L8 */
 
-#if LCDMODE_LTDC_PIP16
+#if LCDMODE_LTDC_PIPL8
 
 	LCD_LayerInitMain(LAYER_MAIN);	// довести инициализацию
 
 	// Bottom layer
-	LCD_LayerInit(LAYER_PIP, LEFTMARGIN, TOPMARGIN, & pipwnd, LTDC_Pixelformat_RGB565, 1, sizeof (uint16_t));
+	LCD_LayerInit(LAYER_PIP, LEFTMARGIN, TOPMARGIN, & pipwnd, LTDC_Pixelformat_L8, 1, sizeof (PACKEDCOLORPIP_T));
+	LCD_LayerInitPIP(LAYER_PIP);	// довести инициализацию
+
+#elif LCDMODE_LTDC_PIP16
+
+	LCD_LayerInitMain(LAYER_MAIN);	// довести инициализацию
+
+	// Bottom layer
+	LCD_LayerInit(LAYER_PIP, LEFTMARGIN, TOPMARGIN, & pipwnd, LTDC_Pixelformat_RGB565, 1, sizeof (PACKEDCOLORPIP_T));
 	LCD_LayerInitPIP(LAYER_PIP);	// довести инициализацию
 
 #endif /* LCDMODE_LTDC_PIP16 */
@@ -1907,8 +1883,11 @@ arm_hardware_ltdc_initialize(void)
 #if LCDMODE_LTDC_L24
 	fillLUT_L24(LAYER_MAIN);	// прямая трансляция всех ьайтов из памяти на выход. загрузка палитры - имеет смысл до Reload
 #elif LCDMODE_LTDC_L8
-	fillLUT_L8(LAYER_MAIN);	// загрузка палитры - имеет смысл до Reload
+	fillLUT_L8(LAYER_MAIN, xltrgb24);	// загрузка палитры - имеет смысл до Reload
 #endif /* LCDMODE_LTDC_L8 */
+#if LCDMODE_LTDC_PIPL8
+	fillLUT_L8(LAYER_PIP, xltrgb24);	// загрузка палитры - имеет смысл до Reload
+#endif /* LCDMODE_LTDC_PIPL8 */
 
 	/* LTDC reload configuration */  
 	LTDC->SRCR = LTDC_SRCR_IMR;	/* Immediately Reload. */
@@ -1932,7 +1911,7 @@ arm_hardware_ltdc_initialize(void)
 	debug_printf_P(PSTR("arm_hardware_ltdc_initialize done\n"));
 }
 
-#if LCDMODE_LTDC_PIP16
+#if LCDMODE_LTDC_PIPL8 || LCDMODE_LTDC_PIP16
 
 /* set bottom buffer start */
 void arm_hardware_ltdc_pip_set(uintptr_t p)
@@ -1940,7 +1919,7 @@ void arm_hardware_ltdc_pip_set(uintptr_t p)
 	pipparams_t pipwnd;
 
 	display2_getpipparams(& pipwnd);
-	arm_hardware_flush(p, pipwnd.w * pipwnd.h * sizeof (PACKEDCOLOR565_T));
+	arm_hardware_flush(p, pipwnd.w * pipwnd.h * sizeof (PACKEDCOLORPIP_T));
 
 	LAYER_PIP->CFBAR = p;
 	LAYER_PIP->CR |= LTDC_LxCR_LEN;

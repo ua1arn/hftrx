@@ -15,6 +15,7 @@
 #include <stdio.h>
 
 #include "display/display.h"
+#include "gui.h"
 #include "formats.h"
 
 #include "codecs/tlv320aic23.h"	// константы управления усилением кодека
@@ -5380,8 +5381,8 @@ display_limb(void)
 		gm + 5 * step2,
 	};
 
-	const COLOR_T smeter = COLOR_WHITE;
-	const COLOR_T smeterplus = COLOR_GRAY;
+	const COLOR_T smeter = COLORMAIN_WHITE;
+	const COLOR_T smeterplus = COLORMAIN_GRAY;
 
 	//if (bitblt_waitbusy())	// перед рисованием прямым доступом к видеопамяти дождаться конца работы BitBlt
 	{
@@ -5390,7 +5391,7 @@ display_limb(void)
 		display_segm(xc, yc, gs, gm, r1, 1, smeter);
 		display_segm(xc, yc, gm, ge, r1, 1, smeterplus);
 
-		display_segm(xc, yc, gs, ge, r2, 1, COLOR_WHITE);		// POWER
+		display_segm(xc, yc, gs, ge, r2, 1, COLORMAIN_WHITE);		// POWER
 		//display_radius(xc, yc, gs, r1, r2, COLOR_RED);
 		//display_radius(xc, yc, ge, r1, r2, COLOR_RED);
 		for (i = 0; i < sizeof markers / sizeof markers [0]; ++ i)
@@ -5412,11 +5413,11 @@ display_limb(void)
 
 		//display_segm(xc, yc, gs, ge, rv1, 1, BLUE);	// показывает зоны перемещения стрелки
 		//display_segm(xc, yc, gs, ge, rv2, 1, BLUE);	// показывает зоны перемещения стрелки
-		display_radius(xc - 2, yc, gv, rv1, rv2, COLOR_RED);
-		display_radius(xc - 1, yc, gv, rv1, rv2, COLOR_RED);
-		display_radius(xc, yc, gv, rv1, rv2, COLOR_RED);
-		display_radius(xc + 1, yc, gv, rv1, rv2, COLOR_RED);
-		display_radius(xc + 2, yc, gv, rv1, rv2, COLOR_RED);
+		display_radius(xc - 2, yc, gv, rv1, rv2, COLORMAIN_RED);
+		display_radius(xc - 1, yc, gv, rv1, rv2, COLORMAIN_RED);
+		display_radius(xc, yc, gv, rv1, rv2, COLORMAIN_RED);
+		display_radius(xc + 1, yc, gv, rv1, rv2, COLORMAIN_RED);
+		display_radius(xc + 2, yc, gv, rv1, rv2, COLORMAIN_RED);
 	}
 }
 
