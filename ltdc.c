@@ -268,8 +268,6 @@ void vdc5_update(
 
 /************************************************************************/
 
-#if LCDMODE_LTDC_L8
-
 static void
 VDC5_fillLUT_L8(
 	volatile uint32_t * reg,
@@ -288,8 +286,6 @@ VDC5_fillLUT_L8(
 		SETREG32_CK(reg + i, 8, 0, COLOR24_B(color));
 	}
 }
-
-#endif /* LCDMODE_LTDC_L8 */
 
 static void vdc5fb_init_syscnt(struct st_vdc5 * vdc)
 {
@@ -609,7 +605,7 @@ void arm_hardware_ltdc_pip_off(void)	// set PIP framebuffer address
 
 static void vdc5fb_init_graphics(struct st_vdc5 * const vdc)
 {
-	const unsigned ROWSIZE = sizeof framebuff [0];	// размер одной строки в байтах
+	const unsigned MAINROWSIZE = sizeof framebuff [0];	// размер одной строки в байтах
 	// Таблица используемой при отображении палитры
 	COLOR24_T xltrgb24 [256];
 	display2_xltrgb24(xltrgb24);
@@ -635,9 +631,9 @@ static void vdc5fb_init_graphics(struct st_vdc5 * const vdc)
 	SETREG32_CK(& vdc->GR0_FLM_RD, 1, 0, 0);	// GR0_R_ENB Frame Buffer Read Enable
 	SETREG32_CK(& vdc->GR0_FLM1, 2, 8, 0x01);	// GR0_FLM_SEL 1: Selects GR0_FLM_NUM.
 	SETREG32_CK(& vdc->GR0_FLM2, 32, 0, (uintptr_t) & framebuff);	// GR0_BASE
-	SETREG32_CK(& vdc->GR0_FLM3, 15, 16, ROWSIZE);	// GR0_LN_OFF
+	SETREG32_CK(& vdc->GR0_FLM3, 15, 16, MAINROWSIZE);	// GR0_LN_OFF
 	SETREG32_CK(& vdc->GR0_FLM3, 10, 0, 0x00);	// GR0_FLM_NUM
-	SETREG32_CK(& vdc->GR0_FLM4, 23, 0, ROWSIZE * HEIGHT);	// GR0_FLM_OFF
+	SETREG32_CK(& vdc->GR0_FLM4, 23, 0, MAINROWSIZE * HEIGHT);	// GR0_FLM_OFF
 	SETREG32_CK(& vdc->GR0_FLM5, 11, 16, HEIGHT - 1);	// GR0_FLM_LNUM Sets the number of lines in a frame
 	SETREG32_CK(& vdc->GR0_FLM5, 11, 0, HEIGHT - 1);	// GR0_FLM_LOOP
 	SETREG32_CK(& vdc->GR0_FLM6, 11, 16, WIDTH - 1);	// GR0_HW Sets the width of the horizontal valid period.
@@ -656,9 +652,9 @@ static void vdc5fb_init_graphics(struct st_vdc5 * const vdc)
 	SETREG32_CK(& vdc->GR2_FLM_RD, 1, 0, 1);	// GR2_R_ENB Frame Buffer Read Enable
 	SETREG32_CK(& vdc->GR2_FLM1, 2, 8, 0x01);	// GR2_FLM_SEL 1: Selects GR2_FLM_NUM.
 	SETREG32_CK(& vdc->GR2_FLM2, 32, 0, (uintptr_t) & framebuff);	// GR2_BASE
-	SETREG32_CK(& vdc->GR2_FLM3, 15, 16, ROWSIZE);	// GR2_LN_OFF
+	SETREG32_CK(& vdc->GR2_FLM3, 15, 16, MAINROWSIZE);	// GR2_LN_OFF
 	SETREG32_CK(& vdc->GR2_FLM3, 10, 0, 0x00);	// GR0_FLM_NUM
-	SETREG32_CK(& vdc->GR2_FLM4, 23, 0, ROWSIZE * HEIGHT);	// GR2_FLM_OFF
+	SETREG32_CK(& vdc->GR2_FLM4, 23, 0, MAINROWSIZE * HEIGHT);	// GR2_FLM_OFF
 	SETREG32_CK(& vdc->GR2_FLM5, 11, 16, HEIGHT - 1);	// GR2_FLM_LNUM Sets the number of lines in a frame
 	SETREG32_CK(& vdc->GR2_FLM5, 11, 0, HEIGHT - 1);	// GR2_FLM_LOOP Sets the number of lines in a frame
 	SETREG32_CK(& vdc->GR2_FLM6, 11, 16, WIDTH - 1);	// GR2_HW Sets the width of the horizontal valid period.
@@ -696,13 +692,13 @@ static void vdc5fb_init_graphics(struct st_vdc5 * const vdc)
 	SETREG32_CK(& vdc->GR3_FLM_RD, 1, 0, 0);			// GR3_R_ENB Frame Buffer Read Enable
 	SETREG32_CK(& vdc->GR3_FLM1, 2, 8, 0x01);			// GR3_FLM_SEL 1: Selects GR3_FLM_NUM.
 	SETREG32_CK(& vdc->GR3_FLM2, 32, 0, (uintptr_t) & framebuff);	// GR3_BASE
-	SETREG32_CK(& vdc->GR3_FLM3, 15, 16, ROWSIZE);		// GR3_LN_OFF
+	SETREG32_CK(& vdc->GR3_FLM3, 15, 16, MAINROWSIZE);		// GR3_LN_OFF
 	SETREG32_CK(& vdc->GR3_FLM3, 10, 0, 0x00);			// GR3_FLM_NUM
-	SETREG32_CK(& vdc->GR3_FLM4, 23, 0, ROWSIZE * HEIGHT);	// GR0_FLM_OFF
+	SETREG32_CK(& vdc->GR3_FLM4, 23, 0, MAINROWSIZE * HEIGHT);	// GR0_FLM_OFF
 	SETREG32_CK(& vdc->GR3_FLM5, 11, 16, HEIGHT - 1);	// GR3_FLM_LNUM Sets the number of lines in a frame
 	SETREG32_CK(& vdc->GR3_FLM5, 11, 0, HEIGHT - 1);	// GR3_FLM_LOOP Sets the number of lines in a frame
 	SETREG32_CK(& vdc->GR3_FLM6, 11, 16, WIDTH - 1);	// GR3_HW Sets the width of the horizontal valid period.
-	SETREG32_CK(& vdc->GR3_FLM6, 4, 28, grx_format_PIP);	// GR3_FORMAT 0: RGB565
+	SETREG32_CK(& vdc->GR3_FLM6, 4, 28, grx_format_PIP);	// GR3_FORMAT 0: RGB565 or 5: CLUT8
 	SETREG32_CK(& vdc->GR3_FLM6, 3, 10, grx_rdswa_PIP);	// GR3_RDSWA 110: (7) (8) (5) (6) (3) (4) (1) (2) [32-bit swap + 16-bit swap]
 	SETREG32_CK(& vdc->GR3_AB1, 2, 0,	0x01);			// GR3_DISP_SEL 1: Lower-layer graphics display
 	SETREG32_CK(& vdc->GR3_BASE, 24, 0, 0x000000FF);	// RED GR3_BASE GBR Background Color B,Gb & R Signal
@@ -720,7 +716,7 @@ static void vdc5fb_init_graphics(struct st_vdc5 * const vdc)
 	display2_getpipparams(& pipwnd);
 
 	SETREG32_CK(& vdc->GR3_FLM_RD, 1, 0, 0);			// GR3_R_ENB Frame Buffer Read Enable
-	SETREG32_CK(& vdc->GR3_AB1, 2, 0,	0x02);			// GR2_DISP_SEL 2: Current graphics display
+	SETREG32_CK(& vdc->GR3_AB1, 2, 0,	0x02);			// GR3_DISP_SEL 2: Current graphics display
 	SETREG32_CK(& vdc->GR3_FLM3, 15, 16, pipwnd.w * sizeof (PACKEDCOLORPIP_T));		// GR3_LN_OFF
 	SETREG32_CK(& vdc->GR3_FLM3, 10, 0, 0x00);			// GR3_FLM_NUM
 	SETREG32_CK(& vdc->GR3_FLM4, 23, 0, pipwnd.w * pipwnd.h * sizeof (PACKEDCOLORPIP_T));	// GR3_FLM_OFF

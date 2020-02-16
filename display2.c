@@ -6938,6 +6938,7 @@ void display2_xltrgb24(COLOR24_T * xtable)
 		}
 		xtable [i] = color;
 	}
-
+#else
+	#warning Monochrome display without indexing colors
 #endif /* LCDMODE_LTDC_L8 && LCDMODE_LTDC_PIPL8 */
 }
