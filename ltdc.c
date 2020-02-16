@@ -278,7 +278,7 @@ VDC5_fillLUT_L8(
 
 	for (i = 0; i < 256; ++ i)
 	{
-		uint_fast32_t color = xltrgb24 [i];
+		const uint_fast32_t color = xltrgb24 [i];
 		/* запись значений в регистры палитры */
 		SETREG32_CK(reg + i, 8, 24, 0x00);	// alpha
 		SETREG32_CK(reg + i, 8, 16, COLOR24_R(color));
@@ -610,6 +610,12 @@ static void vdc5fb_init_graphics(struct st_vdc5 * const vdc)
 	COLOR24_T xltrgb24 [256];
 	display2_xltrgb24(xltrgb24);
 
+	// Addresses from chapter 33.1.15 CLUT Table
+	volatile uint32_t * const VDC5_CH0_GR0_CLUT_TBL = (volatile uint32_t *) 0xFCFF6000;
+	//volatile uint32_t * const VDC5_CH0_GR1_CLUT_TBL = (volatile uint32_t *) 0xFCFF6400;
+	volatile uint32_t * const VDC5_CH0_GR2_CLUT_TBL = (volatile uint32_t *) 0xFCFF6800;
+	volatile uint32_t * const VDC5_CH0_GR3_CLUT_TBL = (volatile uint32_t *) 0xFCFF6C00;
+
 #if LCDMODE_LTDC_L8
 	const unsigned grx_format_MAIN = 0x05;	// GRx_FORMAT 5: CLUT8
 	const unsigned grx_rdswa_MAIN = 0x07;	// GRx_RDSWA 111: (8) (7) (6) (5) (4) (3) (2) (1) [32-bit swap + 16-bit swap + 8-bit swap]
@@ -668,23 +674,11 @@ static void vdc5fb_init_graphics(struct st_vdc5 * const vdc)
 	SETREG32_CK(& vdc->GR2_AB3, 11, 0, WIDTH);			// GR2_GRC_HW
 
 #if LCDMODE_LTDC_L8
-	#define     VDC5_CH0_GR0_CLUT_TBL           (*(volatile uint32_t*)0xFCFF6000)
-	//#define     VDC5_CH0_GR1_CLUT_TBL           (*(volatile uint32_t*)0xFCFF6400)
-	#define     VDC5_CH0_GR2_CLUT_TBL           (*(volatile uint32_t*)0xFCFF6800)
-	#define     VDC5_CH0_GR3_CLUT_TBL           (*(volatile uint32_t*)0xFCFF6C00)
 
 	SETREG32_CK(& vdc->GR2_CLUT, 1, 16, 0x00);			// GR2_CLT_SEL
-	VDC5_fillLUT_L8(& VDC5_CH0_GR2_CLUT_TBL, xltrgb24);
+	VDC5_fillLUT_L8(VDC5_CH0_GR2_CLUT_TBL, xltrgb24);	// write to CLUT 1
 	SETREG32_CK(& vdc->GR2_CLUT, 1, 16, 0x01);			// GR2_CLT_SEL
-	//vdc->GR2_CLUT ^= (1uL << 16);	// GR2_CLT_SEL Switch to filled table
 #endif /* LCDMODE_LTDC_L8 */
-
-#if LCDMODE_LTDC_PIPL8
-	// PIP on GR3
-	SETREG32_CK(& vdc->GR3_CLUT_INT, 1, 16, 0x00);			// GR3_CLT_SEL
-	VDC5_fillLUT_L8(& VDC5_CH0_GR3_CLUT_TBL, xltrgb24);
-	SETREG32_CK(& vdc->GR3_CLUT_INT, 1, 16, 0x01);			// GR3_CLT_SEL
-#endif /* LCDMODE_LTDC_PIPL8 */
 
 	////////////////////////////////////////////////////////////////
 	// GR3 - PIP screen
@@ -727,6 +721,13 @@ static void vdc5fb_init_graphics(struct st_vdc5 * const vdc)
 	SETREG32_CK(& vdc->GR3_AB2, 11, 0, pipwnd.h);		// GR3_GRC_VW
 	SETREG32_CK(& vdc->GR3_AB3, 11, 16, LEFTMARGIN + pipwnd.x);	// GR3_GRC_HS
 	SETREG32_CK(& vdc->GR3_AB3, 11, 0, pipwnd.w);			// GR3_GRC_HW
+
+#if LCDMODE_LTDC_PIPL8
+	// PIP on GR3
+	SETREG32_CK(& vdc->GR3_CLUT_INT, 1, 16, 0x00);			// GR3_CLT_SEL
+	VDC5_fillLUT_L8(VDC5_CH0_GR3_CLUT_TBL, xltrgb24);		// write to CLUT 1
+	SETREG32_CK(& vdc->GR3_CLUT_INT, 1, 16, 0x01);			// GR3_CLT_SEL
+#endif /* LCDMODE_LTDC_PIPL8 */
 
 #endif /* LCDMODE_LTDC_PIPL8 || LCDMODE_LTDC_PIP16 */
 
