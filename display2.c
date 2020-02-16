@@ -5255,9 +5255,9 @@ static const FLOAT_t spectrum_alpha = 1 - (FLOAT_t) DISPLAY_SPECTRUM_BETA;	// ol
 static const FLOAT_t waterfall_beta = (FLOAT_t) DISPLAY_WATERFALL_BETA;					// incoming value coefficient
 static const FLOAT_t waterfall_alpha = 1 - (FLOAT_t) DISPLAY_WATERFALL_BETA;	// old value coefficient
 
-static RAMBIG FLOAT_t spavgarray [ALLDX];	// массив входных данных для отображения (через фильтры).
-static RAMBIG FLOAT_t Yold_wtf [ALLDX];
-static RAMBIG FLOAT_t Yold_fft [ALLDX];
+static /*RAMBIG */FLOAT_t spavgarray [ALLDX];	// массив входных данных для отображения (через фильтры).
+static /*RAMBIG */FLOAT_t Yold_wtf [ALLDX];
+static /*RAMBIG */FLOAT_t Yold_fft [ALLDX];
 
 static FLOAT_t filter_waterfall(
 	uint_fast16_t x
@@ -5385,7 +5385,8 @@ deltafreq2x(
 // получить горизонтальную позицию для заданного отклонения в герцах
 // Использовать для "динамической" разметки дисплея - риски, кратные 10 кГц.
 // Возврат UINT16_MAX при невозможности отобразить запрошенную частоту в указанном окне
-static uint_fast16_t
+static
+uint_fast16_t
 deltafreq2x_abs(
 	int_fast32_t fc,	// центральная частота
 	int_fast16_t delta,	// отклонение от центральной частоты в герцах
@@ -5407,6 +5408,7 @@ deltafreq2x_abs(
 }
 
 // получить адрес требуемой позиции в буфере
+static
 volatile PACKEDCOLORPIP_T *
 display_colorbuffer_at(
 	PACKEDCOLORPIP_T * buffer,
@@ -5427,9 +5429,11 @@ display_colorbuffer_at(
 
 
 
-// Поставить цветную полосу
+/// Нарисовать вертикальную цветную полосу
 // Формат RGB565
-void display_colorbuffer_xor_vline(
+static
+void
+display_colorbuffer_xor_vline(
 	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy,
@@ -5443,9 +5447,10 @@ void display_colorbuffer_xor_vline(
 		display_colorbuffer_xor(buffer, dx, dy, col, row0 ++, color);
 }
 
-// Нарисовать цветную полосу
+// Нарисовать вертикальную цветную полосу
 // Формат RGB565
-static void 
+static
+void
 display_colorbuffer_set_vline(
 	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,	
@@ -5453,7 +5458,7 @@ display_colorbuffer_set_vline(
 	uint_fast16_t col,	// горизонтальная координата начального пикселя (0..dx-1) слева направо
 	uint_fast16_t row0,	// вертикальная координата начального пикселя (0..dy-1) сверху вниз
 	uint_fast16_t h,	// высота
-	COLOR565_T color
+	COLORPIP_T color
 	)
 {
 	while (h --)
@@ -5461,7 +5466,8 @@ display_colorbuffer_set_vline(
 }
 
 // отрисовка маркеров частот
-static void
+static
+void
 display_colorgrid_xor(
 	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t row0,	// вертикальная координата начала занимаемой области (0..dy-1) сверху вниз
@@ -5503,7 +5509,8 @@ display_colorgrid_xor(
 }
 
 // отрисовка маркеров частот
-static void 
+static
+void
 display_colorgrid_set(
 	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t row0,	// вертикальная координата начала занимаемой области (0..dy-1) сверху вниз
