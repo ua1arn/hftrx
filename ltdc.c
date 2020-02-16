@@ -262,7 +262,6 @@ void vdc5_update(
 	* (reg) = (* (reg) & ~ (mask)) | (val & mask); \
 	(void) * (reg);	/* dummy read */ \
 	ASSERT(((* (reg)) & mask) == val); \
-	local_delay_ms(0); \
 } while (0)
 
 
@@ -730,163 +729,6 @@ static void vdc5fb_init_graphics(struct st_vdc5 * const vdc)
 #endif /* LCDMODE_LTDC_PIPL8 */
 
 #endif /* LCDMODE_LTDC_PIPL8 || LCDMODE_LTDC_PIP16 */
-
-#if 0
-	struct fb_videomode *mode = priv->videomode;
-	uint32_t tmp;
-	struct vdc5fb_layer *layer;
-	uint32_t update_addr[4];
-	int i;
-
-	/* Need at least 1 graphic layer for /dev/fb0 */
-	for (i=0;i<4;i++)
-		if( priv->pdata->layers[i].xres )
-			break;
-	if( i == 4 )
-	{
-		printk("\n\n\n%s: You need to define at least 1 'layer' to be used as /dev/fb0\n\n\n",__func__);
-		return -1;
-	}
-
-	update_addr[0] = (uint32_t)priv->base + vdc5fb_offsets[GR0_UPDATE];
-	update_addr[1] = (uint32_t)priv->base + vdc5fb_offsets[GR1_UPDATE];
-	update_addr[2] = (uint32_t)priv->base + vdc5fb_offsets[GR2_UPDATE];
-	update_addr[3] = (uint32_t)priv->base + vdc5fb_offsets[GR3_UPDATE];
-
-	for (i=0;i<4;i++) {
-#ifdef DEBUG
-		/* Set Background color (really for debugging only) */
-		switch (i) {
-			case 0:	tmp = 0x00800000;	// GR0 = Green
-				break;
-			case 1:	tmp = 0x00000080;	// GR1 = red
-				break;
-			case 2:	tmp = 0x00008000;	// GR2 = Blue
-				break;
-			case 3:	tmp = 0x00008080;	// GR3 = purple
-		}
-		vdc5fb_iowrite32(tmp, update_addr[i] + GR_BASE_OFFSET);	/* Background color (0-G-B-R) */
-#endif
-		layer = &priv->pdata->layers[i];
-		if( layer->xres == 0 ) {
-			/* not used */
-			vdc5fb_iowrite32(0, update_addr[i] + GR_FLM_RD_OFFSET);
-			if( i == 0 )
-				vdc5fb_iowrite32(0, update_addr[i] + GR_AB1_OFFSET);	/* background graphics display */
-			else
-				vdc5fb_iowrite32(1, update_addr[i] + GR_AB1_OFFSET);	/* Lower-layer graphics display */
-			continue;
-		}
-
-		vdc5fb_iowrite32(GR_R_ENB, update_addr[i] + GR_FLM_RD_OFFSET);
-		vdc5fb_iowrite32(GR_FLM_SEL(1), update_addr[i] + GR_FLM1_OFFSET); /* scalers MUST use FLM_SEL */
-		if( layer->base == 0 )
-			layer->base = priv->dma_handle;	/* Allocated during probe */
-		if( layer->base >= 0xC0000000 )
-			layer->base = virt_to_phys((void *)layer->base);	/* Convert to physical address */
-
-		printk("vdc5fb: Layer %u Enabled (%ux%u @ 0x%08x)\n",i,layer->xres,layer->yres, layer->base);
-
-		vdc5fb_iowrite32(layer->base, update_addr[i] + GR_FLM2_OFFSET);	/* frame buffer address*/
-		tmp = GR_LN_OFF(layer->xres * (layer->bpp / 8));	/* length of each line (and Frame Number=0)*/
-		vdc5fb_iowrite32(tmp, update_addr[i] + GR_FLM3_OFFSET);
-		tmp = GR_FLM_LOOP(layer->yres - 1);
-		tmp |= GR_FLM_LNUM(layer->yres - 1);
-		vdc5fb_iowrite32(tmp, update_addr[i] + GR_FLM5_OFFSET);		/* lines per frame */
-		tmp = layer->format;
-		tmp |= GR_HW(layer->xres - 1);
-		vdc5fb_iowrite32(tmp, update_addr[i] + GR_FLM6_OFFSET);	/* frame format */
-
-		tmp = 0;
-		if( layer->blend )
-			tmp |= GR_DISP_SEL(3);		/* Blended display of lower-layer graphics and current graphics */
-		else
-			tmp |= GR_DISP_SEL(2);		/* Current graphics display */
-		vdc5fb_iowrite32(tmp, update_addr[i] + GR_AB1_OFFSET);
-
-		tmp = GR_GRC_VW(layer->yres);
-		tmp |= GR_GRC_VS(mode->vsync_len + mode->upper_margin + layer->y_offset);
-		vdc5fb_iowrite32(tmp, update_addr[i] + GR_AB2_OFFSET);
-
-		tmp = GR_GRC_HW(layer->xres);
-		tmp |= GR_GRC_HS(mode->hsync_len + mode->left_margin + layer->x_offset);
-		vdc5fb_iowrite32(tmp, update_addr[i] + GR_AB3_OFFSET);
-	}
-
-	/* Graphics VIN (Image Synthsizer) */
-	/* Scaler 0 and Scaler 1 are blended together using this */
-	/* GR0 = lower */
-	/* GR1 = current */
-	tmp = vdc5fb_read(priv, GR_VIN_AB1);
-	tmp &= GR_AB1_MASK;
-	if ( priv->pdata->layers[0].xres != 0 ) {
-		if ( priv->pdata->layers[1].xres == 0 )
-			// GR0 used, GR1 not used
-			tmp |= GR_DISP_SEL(1);		/* lower only*/
-		else
-			// GR0 used, GR1 used
-			tmp |= GR_DISP_SEL(3);		/* blend */
-	}
-	else if ( priv->pdata->layers[1].xres != 0 )
-	{
-			// GR0 not used, GR1 used
-			tmp |= GR_DISP_SEL(2);		/* current only */
-	}
-	vdc5fb_write(priv, GR_VIN_AB1, tmp);
-	vdc5fb_write(priv, GR_VIN_BASE, 0x00FF00);	/* Background color (0-G-B-R) */
-
-	/* Set the LCD margins, other wise the pixels will be cliped
-	  (and background color will show through instead */
-	tmp = GR_GRC_VW(priv->panel_pixel_yres);
-	tmp |= GR_GRC_VS(mode->vsync_len + mode->upper_margin);
-	vdc5fb_write(priv, GR_VIN_AB2, tmp);
-	tmp = GR_GRC_HW(priv->panel_pixel_xres);
-	tmp |= GR_GRC_HS(mode->hsync_len + mode->left_margin);
-	vdc5fb_write(priv, GR_VIN_AB3, tmp);
-
-	/* Graphics OIR */
-#ifdef OUTPUT_IMAGE_GENERATOR
-	vdc5fb_write(priv, GR_OIR_FLM_RD, GR_R_ENB);
-	vdc5fb_write(priv, GR_OIR_FLM1, GR_FLM_SEL(1));
-	vdc5fb_write(priv, GR_OIR_FLM2, priv->dma_handle);
-	tmp = GR_FLM_NUM(priv->flm_num);
-	tmp |= GR_LN_OFF(mode->xres * (priv->info->var.bits_per_pixel / 8));
-	vdc5fb_write(priv, GR_OIR_FLM3, tmp);
-	tmp = GR_FLM_OFF(priv->flm_off);
-	vdc5fb_write(priv, GR_OIR_FLM4, tmp);
-	tmp = GR_FLM_LOOP(mode->yres - 1);
-	tmp |= GR_FLM_LNUM(mode->yres - 1);
-	vdc5fb_write(priv, GR_OIR_FLM5, tmp);
-	if (priv->info->var.bits_per_pixel == 16)
-		tmp = D_GR_FLM6_RGB565;		/* RGB565 LE, 78563412 */
-	else
-		tmp = D_GR_FLM6_ARGB8888;	/* ARGB8888 LE, 56781234 */
-	tmp |= GR_HW(mode->xres - 1);
-	vdc5fb_write(priv, GR_OIR_FLM6, tmp);
-
-	tmp = vdc5fb_read(priv, GR_OIR_AB1);
-	tmp &= GR_AB1_MASK;
-	tmp |= GR_DISP_SEL(2);		/* current graphics */
-	vdc5fb_write(priv, GR_OIR_AB1, tmp);
-
-	tmp = GR_GRC_VW(mode->yres);
-	tmp |= GR_GRC_VS(mode->vsync_len + mode->upper_margin);
-	vdc5fb_write(priv, GR_OIR_AB2, tmp);
-
-	tmp = GR_GRC_HW(mode->xres);
-	tmp |= GR_GRC_HS(mode->hsync_len + mode->left_margin);
-	vdc5fb_write(priv, GR_OIR_AB3, tmp);
-
-	vdc5fb_write(priv, GR_OIR_AB7, 0);
-	vdc5fb_write(priv, GR_OIR_AB8, D_GR_AB8);
-	vdc5fb_write(priv, GR_OIR_AB9, D_GR_AB9);
-	vdc5fb_write(priv, GR_OIR_AB10, D_GR_AB10);
-	vdc5fb_write(priv, GR_OIR_AB11, D_GR_AB11);
-
-	vdc5fb_write(priv, GR_OIR_BASE, D_GR_BASE);
-#endif
-
-#endif
 }
 
 static void vdc5fb_init_outcnt(struct st_vdc5 * const vdc)
@@ -1471,7 +1313,7 @@ fillLUT_L24(
 static void
 fillLUT_L8(
 	LTDC_Layer_TypeDef* LTDC_Layerx,
-	const COLOR24_T * xltrgb24
+	const PACKEDCOLOR24_T * xltrgb24
 	)
 {
 	unsigned i;
