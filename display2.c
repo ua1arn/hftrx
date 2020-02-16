@@ -6901,7 +6901,7 @@ void display2_xltrgb24(COLOR24_T * xtable)
 	xtable [COLORPIP_SPECTRUMFENCE	] = COLOR24(255, 255, 255);	//COLOR_WHITE
 #endif /* COLORSTYLE_ATS52 */
 
-#elif LCDMODE_COLORED /* LCDMODE_LTDC_L8 && LCDMODE_LTDC_PIPL8 */
+#elif LCDMODE_COLORED && ! LCDMODE_DUMMY	/* LCDMODE_LTDC_L8 && LCDMODE_LTDC_PIPL8 */
 	// Обычная таблица - все цвета могут быть использованы как индекс
 	// Водопад отображается без использования инлдексов цветов
 	int i;

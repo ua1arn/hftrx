@@ -224,6 +224,8 @@ typedef uint_fast32_t COLOR24_T;
 #elif LCDMODE_DUMMY
 	/* При использовании frame buffer цвета восьмибитные */
 	typedef uint_fast8_t COLOR_T;
+	typedef uint_fast8_t COLORPIP_T;
+	typedef uint8_t PACKEDCOLORPIP_T;
 
 	// для формирования растра с изображением водопада и спектра
 	// RRRR.RGGG.GGGB.BBBB
