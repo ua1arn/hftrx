@@ -6025,10 +6025,7 @@ static void display2_colorbuff(
 
 	PACKEDCOLORPIP_T * const colorpip = getscratchpip();
 
-	#if (LCDMODE_LTDC_PIPL8 && LCDMODE_LTDC)
-		display_colorbuffer_pip(colorpip, ALLDX, ALLDY);
-		nextpip();
-	#elif (LCDMODE_LTDC_PIP16 && LCDMODE_LTDC)
+	#if ((LCDMODE_LTDC_PIP16 || LCDMODE_LTDC_PIPL8) && LCDMODE_LTDC)
 		display_colorbuffer_pip(colorpip, ALLDX, ALLDY);
 		nextpip();
 	#else /* LCDMODE_LTDC_PIP16 */
@@ -6046,7 +6043,7 @@ display2_pip_off(
 	void * pv
 	)
 {
-#if (LCDMODE_LTDC_PIP16 && LCDMODE_LTDC)
+#if ((LCDMODE_LTDC_PIP16 || LCDMODE_LTDC_PIPL8) && LCDMODE_LTDC)
 	arm_hardware_ltdc_pip_off();
 #endif /* LCDMODE_LTDC_PIP16 */
 }
@@ -6904,7 +6901,7 @@ void display2_xltrgb24(COLOR24_T * xtable)
 	xtable [COLORPIP_SPECTRUMFENCE	] = COLOR24(255, 255, 255);	//COLOR_WHITE
 #endif /* COLORSTYLE_ATS52 */
 
-#else /* LCDMODE_LTDC_L8 && LCDMODE_LTDC_PIPL8 */
+#elif LCDMODE_COLORED /* LCDMODE_LTDC_L8 && LCDMODE_LTDC_PIPL8 */
 	// Обычная таблица - все цвета могут быть использованы как индекс
 	// Водопад отображается без использования инлдексов цветов
 	int i;
