@@ -240,6 +240,8 @@ typedef uint_fast32_t COLOR24_T;
 	#define DISPLAY_FPS	10	/* обновление показаний частоты десять раз в секунду */
 	#define DISPLAYSWR_FPS 10	/* количество обновлений SWR и панорамы за секунду */
 
+	#define LCDMODE_COLORED	1
+
 	#if LCDMODE_LTDC_L24
 
 		typedef uint_fast32_t COLOR_T;
