@@ -13,8 +13,8 @@
 
 #include "display/display.h"
 #include "formats.h"
-#include "inc/gpio.h"
-#include "inc/spi.h"
+#include "gpio.h"
+#include "spi.h"
 
 #if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811)
 
