@@ -17701,6 +17701,8 @@ hamradio_main_step(void)
 	return STTE_OK;
 }
 
+#if WITHIF4DSP
+
 void set_agc_off(void)
 {
 	gagcoff = 1;
@@ -17811,6 +17813,7 @@ uint_fast8_t get_high_bp(int_least16_t rotate)
 	}
 	return high;
 }
+#endif /* WITHIF4DSP */
 
 // основной цикл программы при работе в режиме любительского премника
 static void

@@ -22,6 +22,9 @@
 typedef uint_fast8_t COLOR_T;	/* цвета не поддерживаются - заглушка */
 typedef uint8_t PACKEDCOLOR_T;	/* цвета не поддерживаются - заглушка */
 
+typedef PACKEDCOLOR_T PACKEDCOLORPIP_T;
+typedef COLOR_T COLORPIP_T;
+
 #endif /* LCDMODE_ST7565S || LCDMODE_PTE1206 */
 
 #endif /* ST7565S_H_INCLUDED */

@@ -25,6 +25,8 @@ typedef uint16_t PACKEDCOLOR_T;
 		) \
 	)
 
+typedef PACKEDCOLOR_T PACKEDCOLORPIP_T;
+typedef COLOR_T COLORPIP_T;
 
 #if LCDMODE_ST7781
 

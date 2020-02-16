@@ -81,6 +81,8 @@
 			) \
 		)
 
+	typedef PACKEDCOLOR_T PACKEDCOLORPIP_T;
+	typedef COLOR_T COLORPIP_T;
 
 #elif S1D_DISPLAY_BPP == 16 || ! LCDMODE_LTDC_L8
 
@@ -100,6 +102,9 @@
 
 	#define TFTRGB565 TFTRGB
 
+	typedef PACKEDCOLOR_T PACKEDCOLORPIP_T;
+	typedef COLOR_T COLORPIP_T;
+
 #elif S1D_DISPLAY_BPP == 24
 
 	typedef uint_fast32_t COLOR_T;
@@ -114,6 +119,9 @@
 				(((unsigned long) (blue) >> 0) &  0xFFul) \
 			) \
 		)
+
+	typedef PACKEDCOLOR_T PACKEDCOLORPIP_T;
+	typedef COLOR_T COLORPIP_T;
 
 #endif
 

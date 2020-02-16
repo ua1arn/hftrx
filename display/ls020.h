@@ -41,6 +41,8 @@ typedef uint8_t PACKEDCOLOR_T;
 		) \
 	)
 
+typedef PACKEDCOLOR_T PACKEDCOLORPIP_T;
+typedef COLOR_T COLORPIP_T;
 
 #endif /* LCDMODE_LS020 */
 

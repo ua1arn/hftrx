@@ -40,6 +40,9 @@ typedef uint_fast8_t COLOR_T;	/* цвета не поддерживаются - 
 typedef uint8_t PACKEDCOLOR_T;
 
 
+typedef PACKEDCOLOR_T PACKEDCOLORPIP_T;
+typedef COLOR_T COLORPIP_T;
+
 // начальные коды символов для отображения псевдографики
 #define PATTERN_BAR_FULL 4	/* в случае двух градаций может быть 3 - и будет место ещё для двух специсмволов */
 #define PATTERN_BAR_HALF 0

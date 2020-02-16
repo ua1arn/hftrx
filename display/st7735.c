@@ -32,6 +32,7 @@
 #include "hardware.h"
 #include "board.h"
 #include "display.h"
+#include "gui.h"
 #include <stdint.h>
 
 #include "../inc/spi.h"
@@ -673,7 +674,7 @@ static void st7735_clear(COLOR_T bg)
 	unsigned long i;
 	
 	display_gotoxy(0, 0);
-	st7735_setcolor(COLOR_WHITE, bg, bg);
+	st7735_setcolor(COLORMAIN_WHITE, bg, bg);
 
 #if WITHSPIEXT16 && WITHSPIHWDMA
 	enum { LNBURST = 1 };
