@@ -624,7 +624,7 @@ static void vdc5fb_init_graphics(struct st_vdc5 * const vdc)
 
 #if LCDMODE_LTDC_PIPL8
 	const unsigned grx_format_PIP = 0x05;	// GRx_FORMAT 5: CLUT8
-	const unsigned grx_rdswa_PIP = 0x06;	// GRx_RDSWA 110: (7) (8) (5) (6) (3) (4) (1) (2) [32-bit swap + 16-bit swap]
+	const unsigned grx_rdswa_PIP = 0x07;	// GRx_RDSWA 111: (8) (7) (6) (5) (4) (3) (2) (1) [32-bit swap + 16-bit swap + 8-bit swap]
 #else
 	// LCDMODE_LTDC_PIP16
 	const unsigned grx_format_PIP = 0x00;	// GRx_FORMAT 0: RGB565
@@ -732,7 +732,7 @@ static void vdc5fb_init_graphics(struct st_vdc5 * const vdc)
 	SETREG32_CK(& vdc->GR3_AB3, 11, 16, LEFTMARGIN + pipwnd.x);	// GR3_GRC_HS
 	SETREG32_CK(& vdc->GR3_AB3, 11, 0, pipwnd.w);			// GR3_GRC_HW
 
-#endif /* LCDMODE_LTDC_PIP16 */
+#endif /* LCDMODE_LTDC_PIPL8 || LCDMODE_LTDC_PIP16 */
 
 #if 0
 	struct fb_videomode *mode = priv->videomode;
