@@ -15,16 +15,16 @@
 //#define HARDWARE_ARM_USEUSART1 1		// US1: PA21/PA22 pins
 
 #define WITHSPI16BIT	1		/* возможно использование 16-ти битных слов при обмене по SPI */
-#define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
-#define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
-//#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
+//#define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
+//#define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
+#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
 
 //#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 //#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 //#define WITHCPUADCHW 	1	/* использование ADC */
 
-#define WITHUSBHW_DEVICE		USB_OTG_FS
-#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
+//#define WITHUSBHW_DEVICE		USB_OTG_FS
+//#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 //#define WITHUSBDEV_VBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
 //#define WITHUSBDEV_HSDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
 
@@ -306,15 +306,15 @@
 
 #if 1
 	// Набор определений для работы без внешнего дешифратора
-	#define SPI_ADDRESS_PORT_S(v)	do { GPIOB->BSRR = BSRR_S(v); __DSB(); } while (0)
-	#define SPI_ADDRESS_PORT_C(v)	do { GPIOB->BSRR = BSRR_C(v); __DSB(); } while (0)
+	#define SPI_ADDRESS_PORT_S(v)	do { GPIOE->BSRR = BSRR_S(v); __DSB(); } while (0)
+	#define SPI_ADDRESS_PORT_C(v)	do { GPIOE->BSRR = BSRR_C(v); __DSB(); } while (0)
 	
 
-	#define SPI_CSEL0	0	//(GPIO_ODR_ODR0)	/* NPCS0 */
+	#define SPI_CSEL0	((1uL << 3))	//(GPIO_ODR_ODR0)	/* PE3 */
 	#define SPI_CSEL1	0	//(GPIO_ODR_ODR0)	/* LED */
 	#define SPI_CSEL2	0	//(GPIO_ODR_ODR0)	/* LED */
 	#define SPI_CSEL3	0	//(GPIO_ODR_ODR0)	/* LED */ 
-	#define SPI_CSEL4	((1u << 0))	/* PB0 - display */ 
+	#define SPI_CSEL4	((1u << 2))	/* PE2 - display */
 	#define SPI_CSEL5	0	//(GPIO_ODR_ODR16)	/*  */
 	#define SPI_CSEL6	0	//(GPIO_ODR_ODR17)	/* */
 	#define SPI_CSEL7	0	//(GPIO_ODR_ODR18) 	/*  */
@@ -482,9 +482,22 @@
 		} while (0)
 #endif /* WITHUSBHW */
 
+	// PD12 - green, PD13 - orange, PD14 - red, PD15 - blue (LED4, LED3, LED5, LED6)
+	#define BOARD_BLINK_BITS (1uL << 12)
+
+	#define BOARD_BLINK_INITIALIZE() do { \
+			arm_hardware_piod_outputs(BOARD_BLINK_BITS, 1 * BOARD_BLINK_BITS); \
+		} while (0)
+	#define BOARD_BLINK_SETSTATE(state) do { \
+			if (state) \
+				(GPIOD)->BSRR = BSRR_S(BOARD_BLINK_BITS); \
+			else \
+				(GPIOD)->BSRR = BSRR_C(BOARD_BLINK_BITS); \
+		} while (0)
 
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
+		BOARD_BLINK_INITIALIZE(); \
 		} while (0)
 
 #endif /* ARM_STM32FXXX_TQFP64_CPUSTYLE_V8C_H_INCLUDED */
