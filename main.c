@@ -17700,6 +17700,14 @@ hamradio_main_step(void)
 	return STTE_OK;
 }
 
+#if WITHTOUCHTEST
+uint_fast8_t send_key_code (uint_fast8_t code)
+{
+	processkeyboard(code);
+	display_redrawfreqs(1);
+	return editfreqmode;
+}
+
 void set_agc_off(void)
 {
 	gagcoff = 1;
@@ -17810,6 +17818,7 @@ uint_fast8_t get_high_bp(int_least16_t rotate)
 	}
 	return high;
 }
+#endif /* WITHTOUCHTEST */
 
 // основной цикл программы при работе в режиме любительского премника
 static void

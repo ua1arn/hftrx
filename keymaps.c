@@ -998,6 +998,55 @@ uint_fast8_t getexitkey(void)
 	return KBD_CODE_DISPMODE;
 }
 
+#elif KEYB_FPANEL20_V0A_RA4ASN
+
+/* 20 кнопок на 5 линий - плата Rfrontpanel_v7a, Rfrontpanel_v4b, Rfrontpanel_v0 + LCDMODE_UC1608 в нормальном расположении */
+/* Новый вариант под корпус с надписями от RK1AQ */
+/* дополнительно коды для прямого ввода частоты */
+const struct qmkey qmdefs [NQMKEYS] =
+{
+	/* ! ряд справа от индикатора - снизу вверх */
+	{ KIF_NONE,		KBD_CODE_LOCK,			KBD_CODE_LOCK_HOLDED, 	' ', },		// LOCK
+	{ KIF_SLOW,		KBD_CODE_BAND_DOWN,		KBD_CODE_BAND_DOWN, 	' ', },		// BAND DOWN
+	{ KIF_SLOW,		KBD_CODE_BAND_UP,		KBD_CODE_BAND_UP, 		' ', },		// BAND UP
+	{ KIF_NONE,		KBD_CODE_MODE,			KBD_CODE_MODEMOD, 		' ', },		// MODE/SUBMODE
+
+	/* ! матрица слева от индикатора - ряд 1 по счету слева - снизу вверх */
+	{ KIF_EXTMENU,	KBD_CODE_DISPMODE,		KBD_CODE_MENU, 			' ', },		// DISPLAY/MENU
+	{ KIF_NONE,		KBD_CODE_MOX,			KBD_CODE_TXTUNE,		'7', },		// MOX/TUNE
+	{ KIF_NONE,		KBD_CODE_ATUBYPASS,		KBD_CODE_ATUSTART,		'4', },		// TUNER BYP/ATU START
+	{ KIF_ERASE,	KBD_CODE_SPLIT,			KBD_CODE_SPLIT_HOLDED,	'1', },		// SPLIT/SPLIT OFF
+
+	/* ! матрица слева от индикатора - ряд 4 по счету слева - снизу вверх */
+	{ KIF_NONE,		KBD_CODE_MENU_CWSPEED,	KBD_CODE_11, 			' ', },		// CW SPEED
+	{ KIF_NONE,		KBD_CODE_NOTCHTOGGLE,	KBD_CODE_NOTCHFREQ, 	' ', },		// NOTCH
+	{ KIF_NONE,		KBD_CODE_BW,			KBD_CODE_NR, 			' ', },		// BW/NR
+	{ KIF_NONE,		KBD_CODE_DWATCHTOGGLE,	KBD_CODE_DWATCHHOLD,	' ', },		// DUAL
+
+	/* матрица слева от индикатора - ряд 3 по счету слева - снизу вверх */
+	{ KIF_NONE,		KBD_CODE_BKIN,			KBD_CODE_BKIN_HOLDED, 	'#', },		// BREAK-IN
+	{ KIF_NONE,		KBD_CODE_LDSPTGL,		KBD_CODE_15,			'9', },		// SPK
+	{ KIF_NONE,		KBD_CODE_ATT,			KBD_CODE_PAMP, 			'6', },		// ATT/PRE
+	{ KIF_NONE,		KBD_CODE_A_EX_B,		KBD_CODE_17, 			'3', },		// A/B
+
+	/* матрица слева от индикатора - ряд 2 по счету слева - снизу вверх */
+	{ KIF_NONE,		KBD_CODE_VOXTOGGLE,		KBD_CODE_DATATOGGLE,	'0', },		// VOX/DATA
+	{ KIF_NONE,		KBD_CODE_RECORDTOGGLE,	KBD_CODE_RECORD_HOLDED,	'8', },		// REC
+	{ KIF_NONE,		KBD_CODE_ANTENNA,		KBD_CODE_19, 			'5', },		// ANTEMMA
+	{ KIF_NONE,		KBD_CODE_A_EQ_B,		KBD_CODE_21, 			'2', },		// A=B
+
+	/* кнопка дополнительного валкодера */
+	{ KIF_NONE,		KBD_ENC2_PRESS,		KBD_ENC2_HOLD, 		' ', },
+	/* кнопка выключения питания (включение аппаратно) */
+	{ KIF_POWER, 	KBD_CODE_POWEROFF,	KBD_CODE_MAX, 		' ', },
+};
+
+uint_fast8_t getexitkey(void)
+{
+	return KBD_CODE_DISPMODE;
+}
+
+
 #elif KEYB_FPANEL20_V0A_PLAYFILE
 
 /* 20 кнопок на 5 линий - плата Rfrontpanel_v7a, Rfrontpanel_v4b, Rfrontpanel_v0 + LCDMODE_UC1608 в нормальном расположении */

@@ -6544,6 +6544,15 @@ board_set_wflevelsep(uint_fast8_t v)
 		}
 	}
 
+	void buttons_freq_handler (void)
+	{
+		uint_fast8_t editfreqmode = 0;
+		if (gui.window_to_draw == WINDOW_FREQ)
+			editfreqmode = send_key_code(button_handlers[gui.selected].payload);
+		if (editfreqmode == 0)
+			set_window(WINDOW_FREQ, NON_VISIBLE);
+	}
+
 	void button1_handler(void)
 	{
 		if (gui.window_to_draw == 0) gui.window_to_draw = WINDOW_MODES;
@@ -6595,7 +6604,19 @@ board_set_wflevelsep(uint_fast8_t v)
 
 	void button4_handler(void)
 	{
+		if (gui.window_to_draw == 0) gui.window_to_draw = WINDOW_FREQ;
 
+		if (windows[gui.window_to_draw].is_show == NON_VISIBLE)
+		{
+			set_window(WINDOW_FREQ, VISIBLE);
+			windows[gui.window_to_draw].first_call = 1;
+			send_key_code(KBD_CODE_ENTERFREQ);
+		}
+		else
+		{
+			set_window(WINDOW_FREQ, NON_VISIBLE);
+			send_key_code(KBD_CODE_ENTERFREQDONE);
+		}
 	}
 
 	void button5_handler(void)
