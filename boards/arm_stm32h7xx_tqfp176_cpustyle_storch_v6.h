@@ -46,7 +46,7 @@
 //#define WITHUSBDEV_HIGHSPEEDULPI	1
 //#define WITHUSBDEV_HIGHSPEEDPHYC	1
 
-#define WITHUSBHW_HOST		USB_OTG_FS
+//#define WITHUSBHW_HOST		USB_OTG_FS
 
 //#define WITHUART1HW	1	/* PA9, PA10 Используется периферийный контроллер последовательного порта #1 */
 #define WITHUART2HW	1	/* PD5, PD6 Используется периферийный контроллер последовательного порта #2 */
@@ -315,6 +315,11 @@
 		} while (0)
 
 #endif /* (WITHCAT && WITHCAT_CDC) */
+
+	/* сигнал PPS от GPS/GLONASS/GALILEO модуля */
+	#define NMEA_INITIALIZE() \
+		do { \
+		} while (0)
 
 #if WITHSDHCHW
 	#if WITHSDHCHW4BIT

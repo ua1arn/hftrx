@@ -114,7 +114,7 @@
 		#define DIRECT_80M0_X1		1	/* Тактовый генератор на плате 80.0 МГц */
 		//#define DIRECT_72M595_X1	1	/* Тактовый генератор 75.595 МГц */
 		#define BANDSELSTYLERE_UPCONV56M_36M	1	/* Up-conversion with working band .030..36 MHz */
-	#elif 0
+	#elif 1
 		#define DIRECT_100M0_X1		1	/* Тактовый генератор на плате 100.0 МГц */
 		#define BANDSELSTYLERE_UPCONV56M_45M	1	/* Up-conversion with working band .030..45 MHz */
 	#else
@@ -165,8 +165,8 @@
 
 	// +++ Особые варианты расположения кнопок на клавиатуре
 	//#define KEYB_RAVEN20_V5	1		/* 5 линий клавиатуры: расположение кнопок для Воробей с DSP обработкой */
-	#define KEYB_FPANEL20_V0A	1	/* 20 кнопок на 5 линий - плата rfrontpanel_v0 + LCDMODE_UC1608 в нормальном расположении с новым расположением */
-	//#define KEYB_FPANEL20_V0A_AVB	1	/* перевернутый */
+	//#define KEYB_FPANEL20_V0A	1	/* 20 кнопок на 5 линий - плата rfrontpanel_v0 + LCDMODE_UC1608 в нормальном расположении с новым расположением */
+	#define KEYB_FPANEL20_V0A_AVB	1	/* перевернутый */
 	//#define KEYB_FPANEL20_V0A_PLAYFILE 1
 	//#define WITHAMHIGHKBDADJ	1	/* Параметры НЧ фильтра настраиваются клавиатурой */
 	// --- Особые варианты расположения кнопок на клавиатуре
@@ -286,10 +286,10 @@
 
 	// выбор накопителя
 	//#define WITHUSESDCARD		1	// Включение поддержки SD CARD
-	#define WITHUSEUSBFLASH		1	// Включение поддержки USB memory stick
+	//#define WITHUSEUSBFLASH		1	// Включение поддержки USB memory stick
 
 	// выбор функциональности
-	#define WITHUSEAUDIOREC		1	// Запись звука
+	//#define WITHUSEAUDIOREC		1	// Запись звука
 	//#define WITHUSEAUDIOREC2CH	1	// Запись звука в стерео формате
 	//#define WITHUSEAUDIORECCLASSIC	1	// стандартный формат записи, без "дыр"
 
@@ -343,8 +343,24 @@
 	// +++ Эти строки можно отключать, уменьшая функциональность готового изделия
 	//#define WITHRFSG	1	/* включено управление ВЧ сигнал-генератором. */
 	#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
-	#if 0
+
+	#if 1
 		/* TUNER & PA board 2*RD16 by avbelnn@yandex.ru */
+		#define WITHAUTOTUNER_UA1CEI	1	/* Плата управления LPF и тюнером от UA1CEI - по компорту */
+		#define WITHNMEA		1	/* используется NMEA parser */
+		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
+		#define FULLSET8	1
+		//#define SHORTSET8	1
+		//#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
+		//#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
+		//#define WITHTHERMOLEVEL	1	/* отображение температуры */
+
+		#define WITHENCODER2	1		/* есть второй валкодер */
+		#define BOARD_ENCODER2_DIVIDE 2		/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
+		//#define WITHPOTWPM		1	/* используется регулировка скорости передачи в телеграфе потенциометром */
+	#elif 0
+		/* TUNER & PA board 2*RD16 by avbelnn@yandex.ru */
+		#define WITHAUTOTUNER_AVBELNN	1	/* Плата управления LPF и тюнером от avbelnn */
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
 		#define SHORTSET8	1	
 		#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
