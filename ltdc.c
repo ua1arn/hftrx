@@ -279,7 +279,7 @@ VDC5_fillLUT_L8(
 	{
 		const uint_fast32_t color = xltrgb24 [i];
 		/* запись значений в регистры палитры */
-		SETREG32_CK(reg + i, 8, 24, 0x00);	// alpha
+		SETREG32_CK(reg + i, 8, 24, 0xFF);	// alpha
 		SETREG32_CK(reg + i, 8, 16, COLOR24_R(color));
 		SETREG32_CK(reg + i, 8, 8, COLOR24_G(color));
 		SETREG32_CK(reg + i, 8, 0, COLOR24_B(color));
