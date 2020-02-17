@@ -183,6 +183,7 @@
 
 #endif /* COLORSTYLE_RED */
 
+#include "keyboard.h"
 
 #if WITHTOUCHTEST
 	void button1_handler(void);
@@ -195,6 +196,7 @@
 	void button8_handler(void);
 	void buttons_mode_handler(void);
 	void buttons_bp_handler (void);
+	void buttons_freq_handler (void);
 	void window_bp_process (void);
 
 	enum {								// button_handler.state
@@ -217,7 +219,8 @@
 		FOOTER,							// постоянно отображаемые кнопки внизу экрана
 		WINDOW_MODES,					// переключение режимов работы, видов модуляции
 		WINDOW_BP,						// регулировка полосы пропускания фильтров выбранного режима
-		WINDOW_AGC						// выбор пресетов настроек АРУ для текущего режима модуляции
+		WINDOW_AGC,						// выбор пресетов настроек АРУ для текущего режима модуляции
+		WINDOW_FREQ
 	};
 
 	typedef struct {
@@ -233,15 +236,15 @@
 		uintptr_t payload;
 		char * text;					// текст внутри кнопки
 		char * text2;
-	} button_handler;
+	} button_t;
 
-	static button_handler button_handlers [] = {
+	static button_t button_handlers [] = {
 	//   x1,   y1,  x2,  y2,  onClickHandler,            state,       is_locked,		parent,       visible,      payload,	text
 		{ },
 		{ 0,   254, 86,  304, button1_handler, 	    BUTTON_CANCELLED, BUTTON_NON_LOCKED, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "Mode", },
 		{ 89,  254, 175, 304, button2_handler, 	    BUTTON_CANCELLED, BUTTON_NON_LOCKED, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "Test", },
 		{ 178, 254, 264, 304, button3_handler, 	    BUTTON_CANCELLED, BUTTON_NON_LOCKED, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "AGC", },
-		{ 267, 254, 353, 304, button4_handler, 	    BUTTON_CANCELLED, BUTTON_NON_LOCKED, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "", },
+		{ 267, 254, 353, 304, button4_handler, 	    BUTTON_CANCELLED, BUTTON_NON_LOCKED, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "Freq", },
 		{ 356, 254, 442, 304, button5_handler, 	    BUTTON_CANCELLED, BUTTON_NON_LOCKED, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "", },
 		{ 445, 254, 531, 304, button6_handler, 	    BUTTON_CANCELLED, BUTTON_NON_LOCKED, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "", },
 		{ 534, 254, 620, 304, button7_handler, 	    BUTTON_CANCELLED, BUTTON_NON_LOCKED, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "", },
@@ -261,6 +264,19 @@
 		{ 251, 70,  337, 120, set_agc_off, 			BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_AGC,   NON_VISIBLE, UINTPTR_MAX, "AGC", "off", },
 		{ 357, 70,  443, 120, set_agc_slow, 		BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_AGC,   NON_VISIBLE, UINTPTR_MAX, "AGC", "slow", },
 		{ 463, 70,  549, 120, set_agc_fast, 		BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_AGC,   NON_VISIBLE, UINTPTR_MAX, "AGC", "fast", },
+		{ 120, 28,  170, 78,  buttons_freq_handler, BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_SPLIT,  		"1", },
+		{ 173, 28,  223, 78,  buttons_freq_handler, BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_A_EQ_B, 		"2", },
+		{ 226, 28,  276, 78,  buttons_freq_handler, BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_A_EX_B, 		"3", },
+		{ 279, 28,  329, 78,  buttons_freq_handler, BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_BKIN,   		"<-", },
+		{ 120, 81,  170, 131, buttons_freq_handler, BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_ATUBYPASS, 	"4", },
+		{ 173, 81,  223, 131, buttons_freq_handler, BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_ANTENNA, 		"5", },
+		{ 226, 81,  276, 131, buttons_freq_handler, BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_ATT,     		"6", },
+		{ 279, 81,  329, 131, buttons_freq_handler, BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_ENTERFREQDONE, "OK", },
+		{ 120, 134, 170, 184, buttons_freq_handler, BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_MOX, 			"7", },
+		{ 173, 134, 223, 184, buttons_freq_handler, BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_RECORDTOGGLE, 	"8", },
+		{ 226, 134, 276, 184, buttons_freq_handler, BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_LDSPTGL, 		"9", },
+		{ 279, 134, 329, 184, buttons_freq_handler, BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_VOXTOGGLE, 	"0", },
+
 	};
 	enum { button_handlers_count = sizeof button_handlers / sizeof button_handlers[1] };
 
@@ -271,10 +287,10 @@
 		uint_fast8_t visible;
 		const char * name;
 		char text[10];
-		COLORPIP_T color;
-	} label_handler;
+		COLOR565_T color;
+	} label_t;
 
-	static label_handler labels[] = {
+	static label_t labels[] = {
 	//     x,   y,  parent,      visible,     name,   Text,  color
 		{ },
 		{ 250, 120, WINDOW_BP, NON_VISIBLE, "lbl_low",  "          ", COLORPIP_YELLOW, },
@@ -308,14 +324,15 @@
 		uint_fast8_t is_show;			// запрос на отрисовку окна
 		uint_fast8_t first_call;		// признак первого вызова для различных инициализаций
 		void(*onVisibleProcess) (void);
-	} windowpip;
+	} windowpip_t;
 
-	static windowpip windows[] = {
+	static windowpip_t windows[] = {
 	//     window_id,   x1,  y1, x2,  y2,  title,         is_show, first_call, onVisibleProcess
 		{ },
 		{ WINDOW_MODES, 214, 20, 586, 175, "Select mode", NON_VISIBLE, 0, },
 		{ WINDOW_BP,    214, 20, 586, 225, "Bandpass",    NON_VISIBLE, 0, window_bp_process},
 		{ WINDOW_AGC,   214, 20, 586, 140, "AGC control", NON_VISIBLE, 0, },
+		{ WINDOW_FREQ,   100, 0, 350, 200, "Freq", 		  NON_VISIBLE, 0, },
 	};
 	enum { windows_count = sizeof windows / sizeof windows[1] };
 

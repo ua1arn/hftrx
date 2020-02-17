@@ -3227,6 +3227,7 @@ void spool_0p128(void);	// OPERA support
 	void set_agc_off(void);
 	void set_agc_slow(void);
 	void set_agc_fast(void);
+	uint_fast8_t send_key_code (uint_fast8_t code);
 #endif /* WITHTOUCHTEST */
 
 #ifdef __cplusplus
