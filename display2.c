@@ -6649,55 +6649,77 @@ board_set_wflevelsep(uint_fast8_t v)
 		draw_rect_pip(x1+2, y1+2, x2-2, y2-2, COLOR565_BLACK, 0);
 	}
 
+	void pip_transparency_rect (uint_fast16_t x1, uint_fast16_t y1, uint_fast16_t x2, uint_fast16_t y2, uint_fast8_t alpha)
+	{
+		PACKEDCOLOR565_T * const colorpip = getscratchpip();
+		PACKEDCOLOR565_T dot, color_red, color_green, color_blue, color_bg = TFTRGB565 (alpha, alpha, alpha);
+		uint_fast16_t yt;
+
+		for (uint_fast16_t y = y1; y <= y2; y++)
+		{
+			yt = ALLDX * y;
+			for (uint_fast16_t x = x1; x <= x2; x++)
+			{
+				dot = colorpip[yt + x];
+				if (dot==COLOR565_BLACK)
+					colorpip[yt + x] = color_bg; // back gray
+				else // RRRR.RGGG.GGGB.BBBB
+				{
+					color_red = dot >> 11;
+					color_green = (dot >> 5) & 0x003f;
+					color_blue = dot & 0x001f;
+
+					colorpip[yt + x] = (normalize(color_red, 0, 32, alpha) << 11) |
+										(normalize(color_green, 0, 64, alpha) << 5) |
+										(normalize(color_blue, 0, 32, alpha));
+				}
+			}
+		}
+	}
+
 	void display_pip_update(uint_fast8_t x, uint_fast8_t y, void * pv)
 	{
 		PACKEDCOLOR565_T * const colorpip = getscratchpip();
-		uint_fast16_t yt;
+		uint_fast16_t yt, xt;
 		uint_fast8_t alpha = 10; // на сколько затемнять цвета
 		PACKEDCOLOR565_T dot, color_red, color_green, color_blue, color_bg = TFTRGB565 (alpha, alpha, alpha);
-		char buff [16];
+		char buff [30];
+		uint_fast8_t str_len = 0;
 
 		// вывод на PIP служебной информации
-	#if WITHIF4DSP																												// ширина панорамы
-		local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("SPAN:%3dk"), (int) ((display_zoomedbw() + 0) / 1000));
-		display_colorbuff_string2_tbg(colorpip, ALLDX, ALLDY, 700, 230, buff, COLOR565_YELLOW);
-	#endif /* WITHIF4DSP */
-	#if WITHVOLTLEVEL && WITHCPUADCHW																							// напряжение питания
-		local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("%d.%1dV"), hamradio_get_volt_value() / 10, hamradio_get_volt_value() % 10);
-		display_colorbuff_string2_tbg(colorpip, ALLDX, ALLDY, 635, 230, buff, COLOR565_YELLOW);
-	#endif /* WITHVOLTLEVEL && WITHCPUADCHW */
-	#if WITHCURRLEVEL && WITHCPUADCHW																							// ток PA (при передаче)
+	#if WITHCURRLEVEL && WITHCPUADCHW	// ток PA (при передаче)
 		if (gettxstate())
 		{
 			int_fast16_t drain = hamradio_get_pacurrent_value();
 			if (drain < 0) drain = 0;
-			local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("%d.%02dA"), drain / 100, drain % 100);
-			display_colorbuff_string2_tbg(colorpip, ALLDX, ALLDY, 570, 230, buff, COLOR565_YELLOW);
+			str_len += local_snprintf_P(&buff[str_len], sizeof buff / sizeof buff [0], PSTR("%d.%02dA "), drain / 100, drain % 100);
 		}
 	#endif /* WITHCURRLEVEL && WITHCPUADCHW */
+	#if WITHVOLTLEVEL && WITHCPUADCHW	// напряжение питания
+		str_len += local_snprintf_P(&buff[str_len], sizeof buff / sizeof buff [0], PSTR("%d.%1dV "), hamradio_get_volt_value() / 10, hamradio_get_volt_value() % 10);
+	#endif /* WITHVOLTLEVEL && WITHCPUADCHW */
+	#if WITHIF4DSP						// ширина панорамы
+		str_len += local_snprintf_P(&buff[str_len], sizeof buff / sizeof buff [0], PSTR("SPAN:%3dk"), (int) ((display_zoomedbw() + 0) / 1000));
+	#endif /* WITHIF4DSP */
+		xt = ALLDX - 10 - str_len * 10;
+		pip_transparency_rect(xt - 5, 225, ALLDX - 5, 248, alpha);
+		display_colorbuff_string2_tbg(colorpip, ALLDX, ALLDY, xt, 230, buff, COLOR565_YELLOW);
+
+	#if defined (RTC1_TYPE)				// текущее время
+		uint_fast16_t year;
+		uint_fast8_t month, day, hour, minute, secounds;
+		str_len = 0;
+		board_rtc_getdatetime(& year, & month, & day, & hour, & minute, & secounds);
+		str_len += local_snprintf_P(&buff[str_len], sizeof buff / sizeof buff [0], PSTR("%02d%c%02d"), hour, ((secounds & 1) ? ' ' : ':'), minute);
+		pip_transparency_rect(5, 225, str_len * 10 + 15, 248, alpha);
+		display_colorbuff_string2_tbg(colorpip, ALLDX, ALLDY, 10, 230, buff, COLOR565_YELLOW);
+	#endif 	/* defined (RTC1_TYPE) */
 
 		if (windows[gui.window_to_draw].is_show)
 		{
-			for (uint_fast16_t y1 = windows[gui.window_to_draw].y1; y1 <= windows[gui.window_to_draw].y2; y1++)
-			{
-				yt = ALLDX * y1;
-				for (uint_fast16_t x1 = windows[gui.window_to_draw].x1; x1 <= windows[gui.window_to_draw].x2; x1++)
-				{
-					dot = colorpip[yt + x1];
-					if (dot==COLOR565_BLACK)
-						colorpip[yt + x1] = color_bg; // back gray
-					else // RRRR.RGGG.GGGB.BBBB
-					{
-						color_red = dot >> 11;
-						color_green = (dot >> 5) & 0x003f;
-						color_blue = dot & 0x001f;
+			pip_transparency_rect(windows[gui.window_to_draw].x1, windows[gui.window_to_draw].y1,
+								  windows[gui.window_to_draw].x2, windows[gui.window_to_draw].y2, alpha);
 
-						colorpip[yt + x1] = (normalize(color_red, 0, 32, alpha) << 11) |
-											(normalize(color_green, 0, 64, alpha) << 5) |
-											(normalize(color_blue, 0, 32, alpha));
-					}
-				} // for x1
-			} // for y1
 			// вывод заголовка окна
 			display_colorbuff_string_tbg(colorpip, ALLDX, ALLDY,
 										 windows[gui.window_to_draw].x1 + 20,
@@ -6714,7 +6736,7 @@ board_set_wflevelsep(uint_fast8_t v)
 
 			if (windows[gui.window_to_draw].onVisibleProcess != 0)												// запуск процедуры фоновой обработки для окна, если есть
 				windows[gui.window_to_draw].onVisibleProcess();
-		} // if (is_popup_pip)
+		}
 		for (uint_fast8_t i = 1; i < button_handlers_count; i++)
 		{
 			if ((button_handlers[i].parent == gui.window_to_draw && button_handlers[i].visible == VISIBLE && windows[gui.window_to_draw].is_show)

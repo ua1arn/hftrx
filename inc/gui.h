@@ -150,7 +150,7 @@
 		{ WINDOW_MODES, 214, 20, 586, 175, "Select mode", NON_VISIBLE, 0, },
 		{ WINDOW_BP,    214, 20, 586, 225, "Bandpass",    NON_VISIBLE, 0, window_bp_process},
 		{ WINDOW_AGC,   214, 20, 586, 140, "AGC control", NON_VISIBLE, 0, },
-		{ WINDOW_FREQ,   100, 0, 350, 190, "Freq", NON_VISIBLE, 0, },
+		{ WINDOW_FREQ,   100, 0, 350, 200, "Freq", 		  NON_VISIBLE, 0, },
 	};
 	enum { windows_count = sizeof windows / sizeof windows[1] };
 
