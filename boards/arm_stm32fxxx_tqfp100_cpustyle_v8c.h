@@ -65,7 +65,6 @@
 #define LS020_RESET_INITIALIZE() \
 	do { \
 	arm_hardware_pioc_outputs2m(LS020_RESET, LS020_RESET); \
-	arm_hardware_piob_outputs2m(1u << 9, 0); /* PB9 backlight enable */ \
 	} while (0)
 
 #define LS020_RS_SET(v) do { \
@@ -83,7 +82,7 @@
 
 	#define LS020_RS_PORT_S(v)		do { GPIOC->BSRR = BSRR_S(v); __DSB(); } while (0)
 	#define LS020_RS_PORT_C(v)		do { GPIOC->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define LS020_RS			(1u << 4)			// PC4 RS signal
+	#define LS020_RS			(1u << 2)			// PC2 RS signal
 
 #elif LCDMODE_SPI_RN
 	// эти контроллеры требуют только RESET
@@ -98,7 +97,7 @@
 
 	#define LS020_RS_PORT_S(v)		do { GPIOC->BSRR = BSRR_S(v); __DSB(); } while (0)
 	#define LS020_RS_PORT_C(v)		do { GPIOC->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define LS020_RS			(1u << 4)			// PC4 RS signal
+	#define LS020_RS			(1u << 2)			// PC2 RS signal
 
 	#define LS020_RESET_PORT_S(v)		do { GPIOC->BSRR = BSRR_S(v); __DSB(); } while (0)
 	#define LS020_RESET_PORT_C(v)		do { GPIOC->BSRR = BSRR_C(v); __DSB(); } while (0)
@@ -109,17 +108,17 @@
 	// E (enable) bit
 	#define LCD_STROBE_PORT_S(v)		do { GPIOC->BSRR = BSRR_S(v); __DSB(); } while (0)
 	#define LCD_STROBE_PORT_C(v)		do { GPIOC->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define LCD_STROBE_BIT			(1u << 6)	// PF6
+	#define LCD_STROBE_BIT			(1u << 6)	// PC6
 
 	// RS (address, register select) bit
 	#define LCD_RS_PORT_S(v)		do { GPIOC->BSRR = BSRR_S(v); __DSB(); } while (0)
 	#define LCD_RS_PORT_C(v)		do { GPIOC->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define ADDRES_BIT				(1u << 4)	// PF4 - bit in RS port
+	#define ADDRES_BIT				(1u << 4)	// PC4 - bit in RS port
 
 	// WE (write enable) bit
 	#define LCD_WE_PORT_S(v)		do { GPIOC->BSRR = BSRR_S(v); __DSB(); } while (0)
 	#define LCD_WE_PORT_C(v)		do { GPIOC->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define WRITEE_BIT				(1u << 5)	// PF5 - bit in 
+	#define WRITEE_BIT				(1u << 5)	// PC5 - bit in
 	
 	// Выводы подключения ЖКИ индикатора WH2002 или аналогичного HD44780.
 	#define LCD_DATA_INPUT			(GPIOF->IDR)
