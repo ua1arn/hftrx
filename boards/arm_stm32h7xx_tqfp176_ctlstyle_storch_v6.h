@@ -109,12 +109,12 @@
 	//#define FQMODEL_70200		1	// 1-st if = 70.2 MHz, 2-nd IF-200 kHz
 
 	// +++ вариации прошивки, специфические для разных частот опорного генератора
-	#if 0
+	#if 1
 		//#define DIRECT_50M0_X1		1	/* Тактовый генератор на плате 50.0 МГц */
 		#define DIRECT_80M0_X1		1	/* Тактовый генератор на плате 80.0 МГц */
 		//#define DIRECT_72M595_X1	1	/* Тактовый генератор 75.595 МГц */
 		#define BANDSELSTYLERE_UPCONV56M_36M	1	/* Up-conversion with working band .030..36 MHz */
-	#elif 1
+	#elif 0
 		#define DIRECT_100M0_X1		1	/* Тактовый генератор на плате 100.0 МГц */
 		#define BANDSELSTYLERE_UPCONV56M_45M	1	/* Up-conversion with working band .030..45 MHz */
 	#else
