@@ -1143,6 +1143,13 @@ static RAMFUNC void spool_systimerbundle1(void)
 	tickers_spool();
 }
 
+static volatile uint_fast8_t blstate;
+
+int blinkst(void)
+{
+	return blstate;
+}
+
 /* Машинно-независимый обработчик прерываний. */
 // Функции с побочным эффектом редиспетчеризации.
 // Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
@@ -1155,9 +1162,8 @@ static RAMFUNC void spool_systimerbundle2(void)
 		if (++ count >= NTICKS(500))	// Toggle every 500 ms
 		{
 			count = 0;
-			static uint_fast8_t state;
-			state = ! state;
-			BOARD_BLINK_SETSTATE(state);
+			blstate = ! blstate;
+			BOARD_BLINK_SETSTATE(blstate);
 		}
 	}
 #endif /* CPUSTYLE_STM32MP1 */

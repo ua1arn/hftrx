@@ -1623,6 +1623,32 @@ static void display_time5(
 #endif /* WITHNMEA */
 }
 
+
+
+static void display_blinkpos16(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	void * pv
+	)
+{
+	char s [DIM_X / CHAR_W + 1];
+	memset(s, blinkst() ? '#' : ' ', sizeof s);
+	s [sizeof s - 1] = '\0';
+	display_at(x, y, s);
+}
+
+
+static void display_blinkneg16(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	void * pv
+	)
+{
+	char s [DIM_X / CHAR_W + 1];
+	memset(s, ! blinkst() ? '#' : ' ', sizeof s);
+	s [sizeof s - 1] = '\0';
+	display_at(x, y, s);
+}
 // Печать времени - только часы и минуты, без секунд
 // Jan-01 13:40
 static void display_datetime12(
@@ -2405,8 +2431,14 @@ enum
 //			{	18, 7,	display_agc3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 //			{	0,	7,	display2_bars,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// S-METER, SWR-METER, POWER-METER
 
-				{	0,	3,	display_datetime12,	REDRM_BARS, REDRSUBSET(DPAGE0)/*REDRSUBSET_SLEEP*/, },	// DATE & TIME // DATE&TIME Jan-01 13:40
-				{	0,	5,	display_time8,	REDRM_BARS, REDRSUBSET(DPAGE0)/*REDRSUBSET_SLEEP*/, },	// DATE & TIME // DATE&TIME Jan-01 13:40
+			{	0,	0,	display_blinkpos16,	REDRM_BARS, REDRSUBSET(DPAGE0)/*REDRSUBSET_SLEEP*/, },	// DATE & TIME // DATE&TIME Jan-01 13:40
+			{	0,	1,	display_blinkneg16,	REDRM_BARS, REDRSUBSET(DPAGE0)/*REDRSUBSET_SLEEP*/, },	// DATE & TIME // DATE&TIME Jan-01 13:40
+			{	0,	2,	display_blinkpos16,	REDRM_BARS, REDRSUBSET(DPAGE0)/*REDRSUBSET_SLEEP*/, },	// DATE & TIME // DATE&TIME Jan-01 13:40
+			{	0,	3,	display_blinkneg16,	REDRM_BARS, REDRSUBSET(DPAGE0)/*REDRSUBSET_SLEEP*/, },	// DATE & TIME // DATE&TIME Jan-01 13:40
+			{	0,	4,	display_blinkpos16,	REDRM_BARS, REDRSUBSET(DPAGE0)/*REDRSUBSET_SLEEP*/, },	// DATE & TIME // DATE&TIME Jan-01 13:40
+			{	0,	5,	display_blinkneg16,	REDRM_BARS, REDRSUBSET(DPAGE0)/*REDRSUBSET_SLEEP*/, },	// DATE & TIME // DATE&TIME Jan-01 13:40
+			{	0,	6,	display_blinkpos16,	REDRM_BARS, REDRSUBSET(DPAGE0)/*REDRSUBSET_SLEEP*/, },	// DATE & TIME // DATE&TIME Jan-01 13:40
+			{	0,	7,	display_blinkneg16,	REDRM_BARS, REDRSUBSET(DPAGE0)/*REDRSUBSET_SLEEP*/, },	// DATE & TIME // DATE&TIME Jan-01 13:40
 		#if WITHMENU
 			{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
 			{	0, 1,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра

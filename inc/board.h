@@ -342,7 +342,7 @@ enum
 typedef uint_fast8_t STTE_t;
 
 void board_fpga_reset(void);
-
+int blinkst(void);
 
 #ifdef __cplusplus
 }

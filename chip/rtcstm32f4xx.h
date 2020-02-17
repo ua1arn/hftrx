@@ -314,16 +314,16 @@ uint_fast8_t board_rtc_chip_initialize(void)
 
 	// RCC_APB1ENR_RTCAPBEN ???
 #if defined(RCC_APB1ENR_RTCEN)
-	RCC->APB1ENR |= RCC_APB1ENR_PWREN | RCC_APB1ENR_RTCEN;  // Включить тактирование 
+	RCC->APB1ENR |= RCC_APB1ENR_PWREN | RCC_APB1ENR_RTCEN;  // Включить тактирование
 	__DSB();
 #elif defined(RCC_APB1ENR_PWREN)
-	RCC->APB1ENR |= RCC_APB1ENR_PWREN;  // Включить тактирование 
+	RCC->APB1ENR |= RCC_APB1ENR_PWREN;  // Включить тактирование
 	__DSB();
 #else
 
 #endif /* defined(RCC_APB1ENR_RTCEN) */
 
-	//RCC->APB1ENR |= RCC_APB1ENR_PWREN | RCC_APB1ENR_BKPEN;  // STM32F1xx: Включить тактирование 
+	//RCC->APB1ENR |= RCC_APB1ENR_PWREN | RCC_APB1ENR_BKPEN;  // STM32F1xx: Включить тактирование
 	//__DSB();
 
 	stm32f4xx_rtc_bdenable();	// Разрешить запись в Backup domain

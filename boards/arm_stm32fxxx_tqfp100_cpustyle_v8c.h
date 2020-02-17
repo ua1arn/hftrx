@@ -15,7 +15,7 @@
 //#define HARDWARE_ARM_USEUSART1 1		// US1: PA21/PA22 pins
 
 #define WITHSPI16BIT	1		/* возможно использование 16-ти битных слов при обмене по SPI */
-//#define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
+#define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
 //#define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
 #define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
 
@@ -344,13 +344,13 @@
 	#define SPI_ALLCS_BITS	0		// требуется для указания того, что работа с прямым выбором CS (без дешифратора) не требуется
 #endif
 // Набор определений для работы без внешнего дешифратора
-#define SPI_ALLCS_PORT_S(v)	do { GPIOB->BSRR = BSRR_S(v); __DSB(); } while (0)
-#define SPI_ALLCS_PORT_C(v)	do { GPIOB->BSRR = BSRR_C(v); __DSB(); } while (0)
+#define SPI_ALLCS_PORT_S(v)	do { GPIOE->BSRR = BSRR_S(v); __DSB(); } while (0)
+#define SPI_ALLCS_PORT_C(v)	do { GPIOE->BSRR = BSRR_C(v); __DSB(); } while (0)
 
 /* инициализация лиий выбора периферийных микросхем */
 #define SPI_ALLCS_INITIALIZE() \
 	do { \
-		arm_hardware_piob_outputs2m(SPI_ALLCS_BITS, SPI_ALLCS_BITS); \
+		arm_hardware_pioe_outputs2m(SPI_ALLCS_BITS, SPI_ALLCS_BITS); \
 	} while (0)
 /* инициализация сигналов управлдения дешифратором CS */
 #define SPI_ADDRESS_AEN_INITIALIZE() \
