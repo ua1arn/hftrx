@@ -605,15 +605,6 @@ void arm_hardware_ltdc_pip_off(void)	// set PIP framebuffer address
 static void vdc5fb_init_graphics(struct st_vdc5 * const vdc)
 {
 	const unsigned MAINROWSIZE = sizeof framebuff [0];	// размер одной строки в байтах
-	// Таблица используемой при отображении палитры
-	COLOR24_T xltrgb24 [256];
-	display2_xltrgb24(xltrgb24);
-
-	// Addresses from chapter 33.1.15 CLUT Table
-	volatile uint32_t * const VDC5_CH0_GR0_CLUT_TBL = (volatile uint32_t *) 0xFCFF6000;
-	//volatile uint32_t * const VDC5_CH0_GR1_CLUT_TBL = (volatile uint32_t *) 0xFCFF6400;
-	volatile uint32_t * const VDC5_CH0_GR2_CLUT_TBL = (volatile uint32_t *) 0xFCFF6800;
-	volatile uint32_t * const VDC5_CH0_GR3_CLUT_TBL = (volatile uint32_t *) 0xFCFF6C00;
 
 #if LCDMODE_LTDC_L8
 	const unsigned grx_format_MAIN = 0x05;	// GRx_FORMAT 5: CLUT8
@@ -672,13 +663,6 @@ static void vdc5fb_init_graphics(struct st_vdc5 * const vdc)
 	SETREG32_CK(& vdc->GR2_AB3, 11, 16, LEFTMARGIN);	// GR2_GRC_HS
 	SETREG32_CK(& vdc->GR2_AB3, 11, 0, WIDTH);			// GR2_GRC_HW
 
-#if LCDMODE_LTDC_L8
-
-	SETREG32_CK(& vdc->GR2_CLUT, 1, 16, 0x00);			// GR2_CLT_SEL
-	VDC5_fillLUT_L8(VDC5_CH0_GR2_CLUT_TBL, xltrgb24);	// write to CLUT 1
-	SETREG32_CK(& vdc->GR2_CLUT, 1, 16, 0x01);			// GR2_CLT_SEL
-#endif /* LCDMODE_LTDC_L8 */
-
 	////////////////////////////////////////////////////////////////
 	// GR3 - PIP screen
 
@@ -721,13 +705,6 @@ static void vdc5fb_init_graphics(struct st_vdc5 * const vdc)
 	SETREG32_CK(& vdc->GR3_AB3, 11, 16, LEFTMARGIN + pipwnd.x);	// GR3_GRC_HS
 	SETREG32_CK(& vdc->GR3_AB3, 11, 0, pipwnd.w);			// GR3_GRC_HW
 
-#if LCDMODE_LTDC_PIPL8
-	// PIP on GR3
-	SETREG32_CK(& vdc->GR3_CLUT_INT, 1, 16, 0x00);			// GR3_CLT_SEL
-	VDC5_fillLUT_L8(VDC5_CH0_GR3_CLUT_TBL, xltrgb24);		// write to CLUT 1
-	SETREG32_CK(& vdc->GR3_CLUT_INT, 1, 16, 0x01);			// GR3_CLT_SEL
-#endif /* LCDMODE_LTDC_PIPL8 */
-
 #endif /* LCDMODE_LTDC_PIPL8 || LCDMODE_LTDC_PIP16 */
 }
 
@@ -760,6 +737,71 @@ static void vdc5fb_init_outcnt(struct st_vdc5 * const vdc)
 	vdc5fb_write(priv, OUT_SET, tmp);
 
 #endif
+}
+
+static void vdc5fb_init_clut(struct st_vdc5 * const vdc)
+{
+	// Addresses from chapter 33.1.15 CLUT Table
+	volatile uint32_t * const VDC5_CH0_GR0_CLUT_TBL = (volatile uint32_t *) 0xFCFF6000;
+	//volatile uint32_t * const VDC5_CH0_GR1_CLUT_TBL = (volatile uint32_t *) 0xFCFF6400;
+	volatile uint32_t * const VDC5_CH0_GR2_CLUT_TBL = (volatile uint32_t *) 0xFCFF6800;
+	volatile uint32_t * const VDC5_CH0_GR3_CLUT_TBL = (volatile uint32_t *) 0xFCFF6C00;
+
+	// Таблица используемой при отображении палитры
+	COLOR24_T xltrgb24 [256];
+	display2_xltrgb24(xltrgb24);
+
+#if LCDMODE_LTDC_L8
+
+	TP();
+	SETREG32_CK(& vdc->GR2_CLUT, 1, 16, 0x00);			// GR2_CLT_SEL
+	vdc5_update(& vdc->GR2_UPDATE, "GR2_UPDATE",
+			(1 << 8) |	// GR2_UPDATE Frame Buffer Read Control Register Update
+			(1 << 4) |	// GR2_P_VEN Graphics Display Register Update
+			(1 << 0) |	// GR2_IBUS_VEN Frame Buffer Read Control Register Update
+			0
+		);
+	while ((vdc->SYSCNT_CLUT & (1uL << 8)) != 0)		// ждем пока переключится на CLUT 0
+		;
+	TP();
+	VDC5_fillLUT_L8(VDC5_CH0_GR2_CLUT_TBL, xltrgb24);	// write to CLUT 1
+	SETREG32_CK(& vdc->GR2_CLUT, 1, 16, 0x01);			// GR2_CLT_SEL
+	vdc5_update(& vdc->GR2_UPDATE, "GR2_UPDATE",
+			(1 << 8) |	// GR2_UPDATE Frame Buffer Read Control Register Update
+			(1 << 4) |	// GR2_P_VEN Graphics Display Register Update
+			(1 << 0) |	// GR2_IBUS_VEN Frame Buffer Read Control Register Update
+			0
+		);
+	while ((vdc->SYSCNT_CLUT & (1uL << 8)) == 0)		// ждем пока переключится на CLUT 1
+		;
+	TP();
+#endif /* LCDMODE_LTDC_L8 */
+
+#if LCDMODE_LTDC_PIPL8
+	TP();
+	// PIP on GR3
+	SETREG32_CK(& vdc->GR3_CLUT_INT, 1, 16, 0x00);			// GR3_CLT_SEL
+	vdc5_update(& vdc->GR3_UPDATE, "GR3_UPDATE",
+			(1 << 8) |	// GR3_UPDATE Frame Buffer Read Control Register Update
+			(1 << 4) |	// GR3_P_VEN Graphics Display Register Update
+			(1 << 0) |	// GR3_IBUS_VEN Frame Buffer Read Control Register Update
+			0
+		);
+	while ((vdc->SYSCNT_CLUT & (1uL << 12)) != 0)		// ждем пока переключится на CLUT 0
+		;
+	TP();
+	VDC5_fillLUT_L8(VDC5_CH0_GR3_CLUT_TBL, xltrgb24);		// write to CLUT 1
+	SETREG32_CK(& vdc->GR3_CLUT_INT, 1, 16, 0x01);			// GR3_CLT_SEL
+	vdc5_update(& vdc->GR3_UPDATE, "GR3_UPDATE",
+			(1 << 8) |	// GR3_UPDATE Frame Buffer Read Control Register Update
+			(1 << 4) |	// GR3_P_VEN Graphics Display Register Update
+			(1 << 0) |	// GR3_IBUS_VEN Frame Buffer Read Control Register Update
+			0
+		);
+	while ((vdc->SYSCNT_CLUT & (1uL << 12)) == 0)		// ждем пока переключится на CLUT 1
+		;
+	TP();
+#endif /* LCDMODE_LTDC_PIPL8 */
 }
 
 static void vdc5fb_init_tcon(struct st_vdc5 * const vdc)
@@ -1070,7 +1112,7 @@ arm_hardware_ltdc_initialize(void)
 
 	vdc5fb_update_all(vdc);
 
-
+	vdc5fb_init_clut(vdc);
 
 
 	/* Configure the LCD Control pins */
