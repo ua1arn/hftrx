@@ -9322,7 +9322,7 @@ uif_key_click_xxxx(void)
 // ****************
 // NMEA parser
 // dummy function
-#if WITHNMEA
+#if WITHNMEA && 0
 
 enum nmea_states
 {

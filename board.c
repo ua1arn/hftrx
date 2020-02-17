@@ -295,6 +295,339 @@ static void prog_rfadc_update(void);
 
 #endif
 
+
+#if WITHNMEA && WITHAUTOTUNER_UA1CEI
+
+// Очереди символов для обмена с согласующим устройством
+enum { qSZ = 512 };
+static uint8_t queue [qSZ];
+static volatile unsigned qp, qg;
+
+// Передать символ в host
+static uint_fast8_t	qput(uint_fast8_t c)
+{
+	unsigned qpt = qp;
+	const unsigned next = (qpt + 1) % qSZ;
+	if (next != qg)
+	{
+		queue [qpt] = c;
+		qp = next;
+		HARDWARE_NMEA_ENABLETX(1);
+		return 1;
+	}
+	return 0;
+}
+
+// Получить символ в host
+static uint_fast8_t qget(uint_fast8_t * pc)
+{
+	if (qp != qg)
+	{
+		* pc = queue [qg];
+		qg = (qg + 1) % qSZ;
+		return 1;
+	}
+	return 0;
+}
+
+// получить состояние очереди передачи
+static uint_fast8_t qempty(void)
+{
+	return qp == qg;
+}
+
+// Передать массив символов
+static void qputs(const char * s, int n)
+{
+	while (n --)
+		qput(* s ++);
+}
+
+
+/* вызывается из обработчика прерываний */
+// компорт готов передавать
+void nmea_sendchar(void * ctx)
+{
+	uint_fast8_t c;
+	if (qget(& c))
+	{
+		HARDWARE_NMEA_TX(ctx, c);
+		if (qempty())
+			HARDWARE_NMEA_ENABLETX(0);
+	}
+	else
+	{
+		HARDWARE_NMEA_ENABLETX(0);
+	}
+}
+
+int nmea_putc(int c)
+{
+	disableIRQ();
+	qput(c);
+	enableIRQ();
+	return c;
+}
+
+#include <stdarg.h>
+#include <ctype.h>
+
+void nmea_format(const char * format, ...)
+{
+	char b [256];
+	int n, i;
+	va_list	ap;
+	va_start(ap, format);
+
+	n = vsnprintf(b, sizeof b / sizeof b [0], format, ap);
+
+	for (i = 0; i < n; ++ i)
+		nmea_putc(b [i]);
+
+	va_end(ap);
+}
+
+
+
+enum nmeaparser_states
+{
+	NMEAST_INITIALIZED,
+	NMEAST_OPENED,	// встретился символ '$'
+	NMEAST_CHSHI,	// прём старшего символа контрольной суммы
+	NMEAST_CHSLO,	// приём младшего символа контрольной суммы
+
+
+	//
+	NMEAST_COUNTSTATES
+
+};
+
+
+static uint_fast8_t nmeaparser_state = NMEAST_INITIALIZED;
+static uint_fast8_t nmeaparser_checksum;
+static uint_fast8_t nmeaparser_chsval;
+static uint_fast8_t nmeaparser_param;		// номер принимаемого параметра в строке
+static uint_fast8_t nmeaparser_chars;		// количество символов, помещённых в буфер
+
+#define NMEA_PARAMS			5
+#define NMEA_CHARSSMALL		16
+#define NMEA_CHARSBIG		257
+#define NMEA_BIGFIELD		3	// номер большого поля
+
+static char nmeaparser_buffsmall [NMEA_PARAMS] [NMEA_CHARSSMALL];
+static char nmeaparser_buffbig [NMEA_CHARSBIG];
+
+static unsigned nmeaparser_get_buffsize(uint_fast8_t field)
+{
+	switch (field)
+	{
+	case NMEA_BIGFIELD:
+		return NMEA_CHARSBIG;
+	default:
+		return NMEA_CHARSSMALL;
+	}
+}
+
+static char * nmeaparser_get_buff(uint_fast8_t field)
+{
+	switch (field)
+	{
+	case NMEA_BIGFIELD:
+		return nmeaparser_buffbig;
+	default:
+		return nmeaparser_buffsmall [field];
+	}
+}
+
+static uint_fast8_t calcxorv(
+	const char * s,
+	size_t len
+	)
+{
+	unsigned char r = '*';
+	while (len --)
+		r ^= (unsigned char) * s ++;
+	return r & 0xff;
+}
+
+static uint_fast8_t hex2int(uint_fast8_t c)
+{
+	if (isdigit(c))
+		return c - '0';
+	if (isupper(c))
+		return c - 'A' + 10;
+	if (islower(c))
+		return c - 'a' + 10;
+	return 0;
+}
+
+/* вызывается из обработчика прерываний */
+// принятый символ с последовательного порта
+void nmea_parsechar(uint_fast8_t c)
+{
+	switch (nmeaparser_state)
+	{
+	case NMEAST_INITIALIZED:
+		if (c == '$')
+		{
+			nmeaparser_checksum = '*';
+			nmeaparser_state = NMEAST_OPENED;
+			nmeaparser_param = 0;		// номер принимаемого параметра в строке
+			nmeaparser_chars = 0;		// количество символов, помещённых в буфер
+		}
+		break;
+
+	case NMEAST_OPENED:
+		nmeaparser_checksum ^= c;
+		if (c == ',')
+		{
+			// закрываем буфер параметра, переходим к следующему параметру
+			nmeaparser_get_buff(nmeaparser_param) [nmeaparser_chars] = '\0';
+			nmeaparser_param += 1;
+			nmeaparser_chars = 0;
+		}
+		else if (c == '*')
+		{
+			// закрываем буфер параметра, переходим к следующему параметру
+			nmeaparser_get_buff(nmeaparser_param) [nmeaparser_chars] = '\0';
+			nmeaparser_param += 1;
+			// переходим к приёму контрольной суммы
+			nmeaparser_state = NMEAST_CHSHI;
+		}
+		else if (nmeaparser_param < NMEA_PARAMS && nmeaparser_chars < (nmeaparser_get_buffsize(nmeaparser_param) - 1))
+		{
+			nmeaparser_get_buff(nmeaparser_param) [nmeaparser_chars] = c;
+			nmeaparser_chars += 1;
+			//stat_l1 = stat_l1 > nmeaparser_chars ? stat_l1 : nmeaparser_chars;
+		}
+		else
+			nmeaparser_state = NMEAST_INITIALIZED;	// при ошибках формата строки
+		break;
+
+	case NMEAST_CHSHI:
+		nmeaparser_chsval = hex2int(c) * 16;
+		nmeaparser_state = NMEAST_CHSLO;
+		break;
+
+	case NMEAST_CHSLO:
+		//debugstate();
+		nmeaparser_state = NMEAST_INITIALIZED;
+		////if (nmeaparser_checksum == (nmeaparser_chsval + hex2int(c)))	// для тесто проверка контрольной суммы отключена
+#if 0
+		{
+			if (nmeaparser_param >= 2 && strcmp(nmeaparser_get_buff(0), "GPMDS") == 0)
+			{
+				const unsigned code = strtoul(nmeaparser_get_buff(1) , NULL, 10);
+				if (nmeaparser_param >= 4)
+				{
+					const unsigned page = strtoul(nmeaparser_get_buff(2) , NULL, 10);
+					switch (code)
+					{
+					case 1:
+						// заполняем буфер
+						{
+
+							char * const buff = nmeaparser_get_buff(3);
+							const size_t j = strlen(buff);
+							unsigned i;
+							for (i = 0; (i + 1) < j; i += 2)
+							{
+								unsigned v = hex2int(buff [i + 0]);
+								v = v * 16 + hex2int(buff [i + 1]);
+								modem_placenextchartosend(page, v);
+							}
+						}
+						break;
+					case 2:
+						// Ранее накопленные данные передать с указанием адреса получателя
+						{
+							char * const buff = nmeaparser_get_buff(3);
+							const size_t j = strlen(buff);
+							unsigned i;
+							for (i = 0; (i + 1) < j && i < (MODEMBINADDRESSSIZE * 2); i += 2)
+							{
+								unsigned v = hex2int(buff [i + 0]);
+								v = v * 16 + hex2int(buff [i + 1]);
+								modem_placenextchartosend(page, v);
+							}
+							modem_flushsend(page);
+						}
+						break;
+
+					}
+				}
+				else if (nmeaparser_param >= 3)
+				{
+					const unsigned p2 = strtoul(nmeaparser_get_buff(2) , NULL, 10);
+					switch (code)
+					{
+					case 2:
+						// Ранее накопленные данные передать к мастеру (без указания адреса олучателя)
+						{
+							modem_flushsend(p2);
+						}
+						break;
+
+					case 3:
+						modem_cancelsending(p2);
+						// Сбросить ранее накопленные данные (не передавать)
+						break;
+					case 4:
+						// Установить рабочую частоту
+						// Частота в герцах
+						{
+							modemfreq = p2;
+							paramschangedfreq = 1;
+
+						}
+						break;
+					case 5:
+						// Установить скорость передачи в эфире
+						// Baud rate (в сотых долях бода)
+						{
+							modemspeed100 = p2;
+							paramschangedspeed = 1;
+						}
+						break;
+					case 6:
+						// Установить тип модуляции
+						// 0 – BPSK, 1 - QPSK
+						{
+							modemmode = p2;
+							paramschangedmode = 1;
+						}
+						break;
+					case 7:
+						// Установить режтм арбты себя в режиме мастер (1) или слэйв (0) - 0 по включению питания
+						// 0 – slave, 1 - master
+						{
+							mastermode = p2;
+						}
+						break;
+					}
+				}
+			}
+		}
+#endif
+		break;
+
+	default:
+		break;
+	}
+}
+/* вызывается из обработчика прерываний */
+// произошла потеря символа (символов) при получении данных с CAT компорта
+void nmea_rxoverflow(void)
+{
+}
+/* вызывается из обработчика прерываний */
+void nmea_disconnect(void)
+{
+
+}
+
+#endif /* WITHNMEA && WITHAUTOTUNER_UA1CEI */
+
 /* вывод битов через PIO процессора, если они управляются напрямую без SPI */
 static void 
 prog_gpioreg(void)
@@ -3826,7 +4159,56 @@ prog_ctrlreg(uint_fast8_t plane)
 #if defined(DDS1_TYPE)
 	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
 #endif
+#if WITHAUTOTUNER_UA1CEI
+	//управление устройством
+	/*
+	запрос:
+	$COM,
+	RX_TX_state,        //0 = RX 1 = TX
+	BND_number,       //номер диапазона  1 - 10
+	PA_class,         //0 = class A 1 = class AB
+	FAN,              //0 = Вентиляторы выключены 1 = FAN1 = ON, 2 = FAN1+FAN2 = ON
+	ANT,              //0 = антенна 1, 1 = антенна 2
+	SEL_CTUNio,       //0 = конденсатор на входе тюнера 1 = конденсатор на входе тюнера
+	SEL_CTUN,         //перебор емкости конденсатора тюнера  0 - 255
+	SEL_LTUN,          //перебор ендуктивностей тюнера  0 - 255
+	*CS<CR><LF>
 
+
+	  ответ:
+	  $ANSW,
+	  state,          //состояние устройства (пока = 0)
+	  V_FWD,            //ADC датчик апрямой волны
+	  V_REF,            //ADC датчика отраженной волны
+	  T_SENS,           //ADC датчика температуры LM235
+	  C_SENS,           //ADC датчика тока ACS712
+	  U_SENS,           //ADC входного напряжения питания 12V
+	  SENS_3V3,         //ADC  напряжения питания 3.3V
+	  SENS_5V,          //ADC  напряжения питания 5V
+	  VREF              //ADC  измерения опорного напряжения
+	  *CS<CR><LF>
+	*/
+	nmea_format(
+			"$COM,"
+			"%d,"	// RX_TX_state,        //0 = RX 1 = TX
+			"%d,"	// BND_number,       //номер диапазона  1 - 10
+			"%d,"	// PA_class,         //0 = class A 1 = class AB
+			"%d,"	// FAN,              //0 = Вентиляторы выключены 1 = FAN1 = ON, 2 = FAN1+FAN2 = ON
+			"%d,"	// ANT,              //0 = антенна 1, 1 = антенна 2
+			"%d,"	// SEL_CTUNio,       //0 = конденсатор на входе тюнера 1 = конденсатор на входе тюнера
+			"%d,"	// SEL_CTUN,         //перебор емкости конденсатора тюнера  0 - 255
+			"%d,"	// SEL_LTUN,          //перебор ендуктивностей тюнера  0 - 255
+			"*FF\r\n",	// *CS<CR><LF>
+			glob_tx,
+			glob_bandf3,
+			1,	// 1=class AB, 0=class A
+			glob_fanflag,
+			glob_antenna,
+			glob_tuner_type,
+			glob_tuner_C,
+			glob_tuner_L
+		);
+#endif
 	// registers chain control register
 	{
 		const uint_fast8_t lcdblcode = (glob_bglight - WITHLCDBACKLIGHTMIN);
