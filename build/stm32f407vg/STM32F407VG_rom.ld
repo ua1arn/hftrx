@@ -130,8 +130,6 @@ SECTIONS
 		*(.data*)
 		. = ALIGN(4);
 		*(.ccm*)
-	   . = ALIGN(4);	/* two lines added by ua1arn */
-		*(.ramfunc)
 
 		. = ALIGN(4);
 		/* preinit data */
@@ -159,7 +157,7 @@ SECTIONS
 		/* All data end */
 		__data_end__ = .;
 
-	} > CCM
+	} > RAM
 	
 	__etext2 = .;
 
