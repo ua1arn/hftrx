@@ -406,6 +406,10 @@ static void st7565s_initialize(void)
 	debug_printf_P(PSTR("st7565s_initialize() done\n"));
 }
 
+void display_testframe(uint_fast8_t state)
+{
+	st7565s_write_cmd(state ? CMD_SET_ALLPTS_ON : CMD_SET_ALLPTS_NORMAL);
+}
 /* вызывается при разрешённых прерываниях. */
 void display_initialize(void)
 {

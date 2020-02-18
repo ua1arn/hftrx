@@ -927,6 +927,8 @@ void display_putpixel(
 	COLOR_T color
 	);
 
+void display_testframe(uint_fast8_t state);
+
 void board_set_topdb(int_fast16_t v);	/* верхний предел FFT */
 void board_set_bottomdb(int_fast16_t v);	/* нижний предел FFT */
 void board_set_topdbwf(int_fast16_t v);	/* верхний предел FFT */
