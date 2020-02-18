@@ -373,6 +373,23 @@ static void pte1206_initialize(void)
 	debug_printf_P(PSTR("pte1206_initialize() done\n"));
 }
 
+static void st7565s_initialize_bad(void)
+{
+	 st7565s_write_cmd(0xa2);//set seg direct
+	 st7565s_write_cmd(0xc8);//set com direct
+	 st7565s_write_cmd(0x40);//set com direct
+	 st7565s_write_cmd(0xA2);//set lcd bias
+	 st7565s_write_cmd(0x25);//set internal rb/ra
+	 st7565s_write_cmd(0x2f);//all power on
+	 st7565s_write_cmd(0x81);//set contrast
+	 st7565s_write_cmd(0x23);//
+	 st7565s_write_cmd(0xf8);
+	 st7565s_write_cmd(0x00);
+	 st7565s_write_cmd(0x2f);
+	 st7565s_write_cmd(0xaf);//dispaly on
+
+
+}
 static void st7565s_initialize(void)
 {
 	debug_printf_P(PSTR("st7565s_initialize()\n"));
