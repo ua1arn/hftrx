@@ -23,8 +23,8 @@
 //#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 //#define WITHCPUADCHW 	1	/* использование ADC */
 
-//#define WITHUSBHW_DEVICE		USB_OTG_FS
-//#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
+#define WITHUSBHW_DEVICE		USB_OTG_FS
+#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 //#define WITHUSBDEV_VBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
 //#define WITHUSBDEV_HSDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
 
@@ -38,7 +38,7 @@
 	//#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
 
 	#define WITHUSBCDC		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
-	#define WITHUSBHWCDC_N	2	/* количество виртуальных последовательных портов */
+	#define WITHUSBHWCDC_N	1	/* количество виртуальных последовательных портов */
 	//#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
 	//#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
 	//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
@@ -386,26 +386,26 @@
 #define SPI_TARGET_MISO_PIN		(GPIOA->IDR)		// was PINA 
 #define	SPI_MISO_BIT			(1U << 6)	// * PA6 бит, через который идет ввод с SPI.
 
-	#define SPIIO_INITIALIZE() do { \
-			arm_hardware_pioa_outputs(SPI_SCLK_BIT, SPI_SCLK_BIT); \
-			arm_hardware_pioa_outputs(SPI_MOSI_BIT, SPI_MOSI_BIT); \
-			arm_hardware_pioa_inputs(SPI_MISO_BIT); \
-		} while (0)
-	#define HARDWARE_SPI_CONNECT() do { \
-			arm_hardware_pioa_altfn20(SPI_MOSI_BIT | SPI_MISO_BIT, AF_SPI1); /* В этих процессорах и входы и выходы перекдючаются на ALT FN */ \
-			arm_hardware_pioa_altfn20(SPI_SCLK_BIT, AF_SPI1); /* В этих процессорах и входы и выходы перекдючаются на ALT FN */ \
-		} while (0)
-	#define HARDWARE_SPI_DISCONNECT() do { \
-			arm_hardware_pioa_outputs(SPI_SCLK_BIT, SPI_SCLK_BIT); \
-			arm_hardware_pioa_outputs(SPI_MOSI_BIT, SPI_MOSI_BIT); \
-			arm_hardware_pioa_inputs(SPI_MISO_BIT); \
-		} while (0)
-	#define HARDWARE_SPI_CONNECT_MOSI() do { \
-			arm_hardware_pioa_altfn20(SPI_MOSI_BIT, AF_SPI1);	/* PIO disable for MOSI bit (SD CARD read support) */ \
-		} while (0)
-	#define HARDWARE_SPI_DISCONNECT_MOSI() do { \
-			arm_hardware_pioa_outputs(SPI_MOSI_BIT, SPI_MOSI_BIT);	/* PIO enable for MOSI bit (SD CARD read support)  */ \
-		} while (0)
+#define SPIIO_INITIALIZE() do { \
+		arm_hardware_pioa_outputs(SPI_SCLK_BIT, SPI_SCLK_BIT); \
+		arm_hardware_pioa_outputs(SPI_MOSI_BIT, SPI_MOSI_BIT); \
+		arm_hardware_pioa_inputs(SPI_MISO_BIT); \
+	} while (0)
+#define HARDWARE_SPI_CONNECT() do { \
+		arm_hardware_pioa_altfn20(SPI_MOSI_BIT | SPI_MISO_BIT, AF_SPI1); /* В этих процессорах и входы и выходы перекдючаются на ALT FN */ \
+		arm_hardware_pioa_altfn20(SPI_SCLK_BIT, AF_SPI1); /* В этих процессорах и входы и выходы перекдючаются на ALT FN */ \
+	} while (0)
+#define HARDWARE_SPI_DISCONNECT() do { \
+		arm_hardware_pioa_outputs(SPI_SCLK_BIT, SPI_SCLK_BIT); \
+		arm_hardware_pioa_outputs(SPI_MOSI_BIT, SPI_MOSI_BIT); \
+		arm_hardware_pioa_inputs(SPI_MISO_BIT); \
+	} while (0)
+#define HARDWARE_SPI_CONNECT_MOSI() do { \
+		arm_hardware_pioa_altfn20(SPI_MOSI_BIT, AF_SPI1);	/* PIO disable for MOSI bit (SD CARD read support) */ \
+	} while (0)
+#define HARDWARE_SPI_DISCONNECT_MOSI() do { \
+		arm_hardware_pioa_outputs(SPI_MOSI_BIT, SPI_MOSI_BIT);	/* PIO enable for MOSI bit (SD CARD read support)  */ \
+	} while (0)
 
 //#define SIDETONE_TARGET_BIT		(1u << 8)	// output TIM4_CH3 (PB8, base mapping)
 
