@@ -6512,6 +6512,33 @@ board_set_wflevelsep(uint_fast8_t v)
 		draw_rect_pip(x_l, 70, x_h, 108, COLORPIP_YELLOW, 1);
 	}
 
+	void window_menu_process(void)
+	{
+		char tmp[10];
+		const uint_fast8_t num_rows = 4;
+		const uint_fast8_t num_cols = 4;
+		static uint_fast8_t first_id_button;
+
+		if (windows[WINDOW_MENU].first_call == 1)
+		{
+			windows[WINDOW_MENU].first_call = 0;
+			first_id_button = 1;
+			while (button_handlers[first_id_button].parent != WINDOW_MENU)
+				first_id_button++;
+			for(uint_fast8_t i = 0; i < num_rows; i++)
+			{
+				local_snprintf_P(tmp, sizeof tmp / sizeof tmp[0], PSTR("test %d"), i);
+				strcpy(button_handlers[first_id_button++].text, tmp);
+			}
+		}
+
+	}
+
+	void buttons_menu_handler(void)
+	{
+
+	}
+
 	uint_fast8_t check_encoder2 (int_least16_t rotate)
 	{
 		if (gui.enc2done || gui.enc2rotate == 0)
@@ -6647,6 +6674,21 @@ board_set_wflevelsep(uint_fast8_t v)
 
 	}
 
+	void button9_handler(void)
+	{
+		if (gui.window_to_draw == 0) gui.window_to_draw = WINDOW_MENU;
+
+		if (windows[gui.window_to_draw].is_show == NON_VISIBLE)
+		{
+			set_window(gui.window_to_draw, VISIBLE);
+			windows[gui.window_to_draw].first_call = 1;
+		}
+		else
+		{
+			set_window(gui.window_to_draw, NON_VISIBLE);
+		}
+	}
+
 	void draw_button_pip(uint_fast16_t x1, uint_fast16_t y1, uint_fast16_t x2, uint_fast16_t y2, uint_fast8_t pressed, uint_fast8_t is_locked) // pressed = 0
 	{
 		PACKEDCOLOR565_T c1, c2;
@@ -6678,8 +6720,8 @@ board_set_wflevelsep(uint_fast8_t v)
 					color_blue = dot & 0x001f;
 
 					colorpip[yt + x] = (normalize(color_red, 0, 32, alpha) << 11) |
-										(normalize(color_green, 0, 64, alpha) << 5) |
-										(normalize(color_blue, 0, 32, alpha));
+									   (normalize(color_green, 0, 64, alpha) << 5) |
+									   (normalize(color_blue, 0, 32, alpha));
 				}
 			}
 		}
@@ -6701,12 +6743,12 @@ board_set_wflevelsep(uint_fast8_t v)
 		{
 			int_fast16_t drain = hamradio_get_pacurrent_value();
 			if (drain < 0) drain = 0;
-
 			str_len += local_snprintf_P(&buff[str_len], sizeof buff / sizeof buff [0], PSTR("%d.%02dA "), drain / 100, drain % 100);
 		}
 	#endif /* WITHCURRLEVEL && WITHCPUADCHW */
 	#if WITHVOLTLEVEL && WITHCPUADCHW	// напряжение питания
-		str_len += local_snprintf_P(&buff[str_len], sizeof buff / sizeof buff [0], PSTR("%d.%1dV "), hamradio_get_volt_value() / 10, hamradio_get_volt_value() % 10);
+		str_len += local_snprintf_P(&buff[str_len], sizeof buff / sizeof buff [0],
+									PSTR("%d.%1dV "), hamradio_get_volt_value() / 10, hamradio_get_volt_value() % 10);
 	#endif /* WITHVOLTLEVEL && WITHCPUADCHW */
 	#if WITHIF4DSP						// ширина панорамы
 		str_len += local_snprintf_P(&buff[str_len], sizeof buff / sizeof buff [0], PSTR("SPAN:%3dk"), (int) ((display_zoomedbw() + 0) / 1000));
@@ -6720,7 +6762,8 @@ board_set_wflevelsep(uint_fast8_t v)
 		uint_fast8_t month, day, hour, minute, secounds;
 		str_len = 0;
 		board_rtc_getdatetime(& year, & month, & day, & hour, & minute, & secounds);
-		str_len += local_snprintf_P(&buff[str_len], sizeof buff / sizeof buff [0], PSTR("%02d%c%02d"), hour, ((secounds & 1) ? ' ' : ':'), minute);
+		str_len += local_snprintf_P(&buff[str_len], sizeof buff / sizeof buff [0],
+									PSTR("%02d.%02d.%04d %02d%c%02d"), day, month, year, hour, ((secounds & 1) ? ' ' : ':'), minute);
 		pip_transparency_rect(5, 225, str_len * 10 + 15, 248, alpha);
 		display_colorbuff_string2_tbg(colorpip, ALLDX, ALLDY, 10, 230, buff, COLORPIP_YELLOW);
 	#endif 	/* defined (RTC1_TYPE) */
@@ -6740,22 +6783,22 @@ board_set_wflevelsep(uint_fast8_t v)
 
 			for (uint_fast8_t i = 1; i < labels_count; i++)
 			{
-				if (labels[i].parent == gui.window_to_draw && labels[i].visible == VISIBLE)						// метки
+				if (labels[i].parent == gui.window_to_draw && labels[i].visible == VISIBLE)	// метки
 					display_colorbuff_string_tbg(colorpip, ALLDX, ALLDY, labels[i].x, labels[i].y, labels[i].text, labels[i].color);
 			}
 
-			if (windows[gui.window_to_draw].onVisibleProcess != 0)												// запуск процедуры фоновой обработки для окна, если есть
+			if (windows[gui.window_to_draw].onVisibleProcess != 0)							// запуск процедуры фоновой обработки для окна, если есть
 				windows[gui.window_to_draw].onVisibleProcess();
 		}
 		for (uint_fast8_t i = 1; i < button_handlers_count; i++)
 		{
 			if ((button_handlers[i].parent == gui.window_to_draw && button_handlers[i].visible == VISIBLE && windows[gui.window_to_draw].is_show)
-					|| button_handlers[i].parent == FOOTER)														// кнопки
+					|| button_handlers[i].parent == FOOTER)									// кнопки
 			{
 				draw_button_pip(button_handlers[i].x1, button_handlers[i].y1,
 								button_handlers[i].x2, button_handlers[i].y2, button_handlers[i].state, button_handlers[i].is_locked);
 
-				if (button_handlers[i].text2 == NULL)
+				if (strlen(button_handlers[i].text2) == 0)
 				{
 					display_colorbuff_string2_tbg(colorpip, ALLDX, ALLDY, button_handlers[i].x1 + ((button_handlers[i].x2 - button_handlers[i].x1) -
 							(strlen (button_handlers[i].text) * 10)) / 2, button_handlers[i].y1 + 17, button_handlers[i].text, COLORPIP_BLACK);
@@ -6788,8 +6831,6 @@ board_set_wflevelsep(uint_fast8_t v)
 
 			}
 			gui.fix = 1;
-	//		debug_printf_P(PSTR("touch %d after %d, sel %d, state %d, x %d, Y %d\n"), gui.is_touching_screen, gui.is_after_touch,
-	//							 gui.selected, button_handlers[gui.selected].state, gui.last_pressed_x, gui.last_pressed_y);
 			debug_printf_P(PSTR("pip x - %d, pip y - %d\n"), gui.last_pressed_x, gui.last_pressed_y - pipparam.y);
 		}
 		else

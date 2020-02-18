@@ -151,7 +151,7 @@
 
 #else /* LCDMODE_LTDC_PIPL8 */
 	#define COLOR_BUTTON_NON_LOCKED		COLORPIP_GREEN
-	#define COLOR_BUTTON_PR_NON_LOCKED	COLORPIP_DARKGREEN2
+	#define COLOR_BUTTON_PR_NON_LOCKED	COLORPIP_DARKGREEN
 	#define COLOR_BUTTON_LOCKED			COLORPIP_YELLOW
 	#define COLOR_BUTTON_PR_LOCKED		COLORPIP_LOCKED // TFTRGB565(0x3C, 0x3C, 0x00)
 
@@ -203,10 +203,13 @@
 	void button6_handler(void);
 	void button7_handler(void);
 	void button8_handler(void);
+	void button9_handler(void);
 	void buttons_mode_handler(void);
 	void buttons_bp_handler (void);
 	void buttons_freq_handler (void);
+	void buttons_menu_handler (void);
 	void window_bp_process (void);
+	void window_menu_process (void);
 
 	enum {								// button_handler.state
 		BUTTON_PRESSED,					// нажато
@@ -229,12 +232,13 @@
 		WINDOW_MODES,					// переключение режимов работы, видов модуляции
 		WINDOW_BP,						// регулировка полосы пропускания фильтров выбранного режима
 		WINDOW_AGC,						// выбор пресетов настроек АРУ для текущего режима модуляции
-		WINDOW_FREQ
+		WINDOW_FREQ,
+		WINDOW_MENU
 	};
 
 	typedef struct {
-		uint_fast16_t x1;				// для TYPE_FOOTER_BUTTON координаты от начала экрана,
-		uint_fast16_t y1;				// для TYPE_PIP_BUTTON координаты от начала PIP
+		uint_fast16_t x1;				// координаты от начала PIP
+		uint_fast16_t y1;
 		uint_fast16_t x2;
 		uint_fast16_t y2;
 		void(*onClickHandler) (void);	// обработчик события RELEASED
@@ -243,8 +247,8 @@
 		uint_fast8_t parent;			// индекс окна, в котором будет отображаться кнопка при type = TYPE_PIP_BUTTON
 		uint_fast8_t visible;			// рисовать ли кнопку на экране
 		uintptr_t payload;
-		char * text;					// текст внутри кнопки
-		char * text2;
+		char text[15];					// текст внутри кнопки
+		char text2[15];
 	} button_t;
 
 	static button_t button_handlers [] = {
@@ -258,7 +262,7 @@
 		{ 445, 254, 531, 304, button6_handler, 	    BUTTON_CANCELLED, BUTTON_NON_LOCKED, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "", },
 		{ 534, 254, 620, 304, button7_handler, 	    BUTTON_CANCELLED, BUTTON_NON_LOCKED, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "", },
 		{ 623, 254, 709, 304, button8_handler, 	    BUTTON_CANCELLED, BUTTON_NON_LOCKED, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "", },
-		{ 712, 254, 798, 304, button8_handler, 	    BUTTON_CANCELLED, BUTTON_NON_LOCKED, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "", },
+		{ 712, 254, 798, 304, button9_handler, 	    BUTTON_CANCELLED, BUTTON_NON_LOCKED, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "Menu", },
 		{ 234,  55, 314, 105, buttons_mode_handler, BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_MODES, NON_VISIBLE, SUBMODE_LSB, "LSB", },
 		{ 319,  55, 399, 105, buttons_mode_handler, BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_MODES, NON_VISIBLE, SUBMODE_CW,  "CW", },
 		{ 404,  55, 484, 105, buttons_mode_handler, BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_MODES, NON_VISIBLE, SUBMODE_AM,  "AM", },
@@ -285,7 +289,10 @@
 		{ 173, 134, 223, 184, buttons_freq_handler, BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_RECORDTOGGLE, 	"8", },
 		{ 226, 134, 276, 184, buttons_freq_handler, BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_LDSPTGL, 		"9", },
 		{ 279, 134, 329, 184, buttons_freq_handler, BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_VOXTOGGLE, 	"0", },
-
+		{ 70,   40, 220,  80, buttons_menu_handler, BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_MENU,  NON_VISIBLE, UINTPTR_MAX, },
+		{ 70,   83, 220, 123, buttons_menu_handler, BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_MENU,  NON_VISIBLE, UINTPTR_MAX, },
+		{ 70,  126, 220, 166, buttons_menu_handler, BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_MENU,  NON_VISIBLE, UINTPTR_MAX, },
+		{ 70,  169, 220, 209, buttons_menu_handler, BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_MENU,  NON_VISIBLE, UINTPTR_MAX, },
 	};
 	enum { button_handlers_count = sizeof button_handlers / sizeof button_handlers[1] };
 
@@ -318,7 +325,7 @@
 		uint_fast8_t window_to_draw;	 // индекс записи с описанием запрошенного к отображению окна
 		uint_fast8_t enc2busy;			 // второй энкодер выделен для обработки данных окна
 		int_least16_t enc2rotate;		 // признак поворота второго энкодера
-		uint_fast8_t enc2done;
+		uint_fast8_t enc2done;			 // событие от энкодера обработано, можно получать новые данные
 	} gui_t;
 
 	static gui_t gui = { 0, 0, 0, BUTTON_CANCELLED, 0, 0, 1, 0, 0, 0, 1, };
@@ -342,6 +349,7 @@
 		{ WINDOW_BP,    214, 20, 586, 225, "Bandpass",    NON_VISIBLE, 0, window_bp_process},
 		{ WINDOW_AGC,   214, 20, 586, 140, "AGC control", NON_VISIBLE, 0, },
 		{ WINDOW_FREQ,   100, 0, 350, 200, "Freq", 		  NON_VISIBLE, 0, },
+		{ WINDOW_MENU,   50, 10, 550, 220, "Settings",	  NON_VISIBLE, 0, window_menu_process},
 	};
 	enum { windows_count = sizeof windows / sizeof windows[1] };
 
