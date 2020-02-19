@@ -17821,6 +17821,24 @@ uint_fast8_t get_high_bp(int_least16_t rotate)
 	return high;
 }
 
+uint_fast8_t get_multilinemenu_block_groups(menu_names_t * vals)
+{
+	uint_fast16_t el;
+	uint_fast8_t count = 0;
+
+	for (el = 0; el < MENUROW_COUNT; el ++)
+	{
+		const FLASHMEM struct menudef * const mv = & menutable [el];
+		if (ismenukind(mv, ITEM_GROUP))
+		{
+			menu_names_t * const v = & vals[count];
+			strcpy (v->name, mv->qlabel);
+			count++;
+		}
+	}
+	return count;
+}
+
 #endif /* WITHTOUCHTEST */
 
 // основной цикл программы при работе в режиме любительского премника

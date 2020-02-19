@@ -3218,6 +3218,10 @@ void spool_0p128(void);	// OPERA support
 #define LABELW 8
 
 #if WITHTOUCHTEST
+	typedef struct {
+		char name[15];
+	} menu_names_t;
+
 	void change_submode(uint_fast8_t newsubmode);
 	uint_fast8_t get_low_bp (int_least16_t rotate);
 	uint_fast8_t get_high_bp (int_least16_t rotate);
@@ -3228,6 +3232,7 @@ void spool_0p128(void);	// OPERA support
 	void set_agc_slow(void);
 	void set_agc_fast(void);
 	uint_fast8_t send_key_code (uint_fast8_t code);
+	uint_fast8_t get_multilinemenu_block_groups(menu_names_t * vals);
 #endif /* WITHTOUCHTEST */
 
 #ifdef __cplusplus
