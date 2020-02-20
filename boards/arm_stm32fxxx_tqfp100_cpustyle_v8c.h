@@ -20,7 +20,7 @@
 #define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
 
 //#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
-//#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
+#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 //#define WITHCPUADCHW 	1	/* использование ADC */
 
 #define WITHUSBHW_DEVICE		USB_OTG_FS
@@ -416,31 +416,34 @@
 	//#define TARGET_TWI_TWCK	(1U << PC0)
 	//#define TARGET_TWI_TWD	(1U << PC1)
 //#elif CPUSTYLE_ARM
-	#define TARGET_TWI_PORT_C(v) do { GPIOB->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define TARGET_TWI_PORT_S(v) do { GPIOB->BSRR = BSRR_S(v); __DSB(); } while (0)
-	#define TARGET_TWI_PIN		GPIOB->IDR)
+	#define TARGET_TWI_TWD_PORT_C(v) do { GPIOB->BSRR = BSRR_C(v); __DSB(); } while (0)
+	#define TARGET_TWI_TWD_PORT_S(v) do { GPIOB->BSRR = BSRR_S(v); __DSB(); } while (0)
+	#define TARGET_TWI_TWD_PIN		(GPIOB->IDR)
+	#define TARGET_TWI_TWCK_PORT_C(v) do { GPIOB->BSRR = BSRR_C(v); __DSB(); } while (0)
+	#define TARGET_TWI_TWCK_PORT_S(v) do { GPIOB->BSRR = BSRR_S(v); __DSB(); } while (0)
+	#define TARGET_TWI_TWCK_PIN		(GPIOB->IDR)
 	#define TARGET_TWI_TWCK		(1u << 6)		// PB6
-	#define TARGET_TWI_TWD		(1u << 7)		// PB7
+	#define TARGET_TWI_TWD		(1u << 9)		// PB9
 //#endif
 	// Инициализация битов портов ввода-вывода для программной реализации I2C
 	#define	TWISOFT_INITIALIZE() do { \
-			enum { WORKMASK = TARGET_TWI_TWCK | TARGET_TWI_TWD };		/* битовая маска, определяет каким выводом шевелить */ \
-			arm_hardware_piob_opendrain(WORKMASK, WORKMASK); \
+			arm_hardware_piob_opendrain(TARGET_TWI_TWCK, TARGET_TWI_TWCK); \
+			arm_hardware_piob_opendrain(TARGET_TWI_TWD, TARGET_TWI_TWD); \
 		} while (0) 
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
 	#if CPUSTYLE_STM32F1XX
 
 		#define	TWIHARD_INITIALIZE() do { \
-				enum { WORKMASK = TARGET_TWI_TWCK | TARGET_TWI_TWD };		/* битовая маска, определяет каким выводом шевелить */ \
-				arm_hardware_piob_periphopendrain_altfn2(TARGET_TWI_TWCK | TARGET_TWI_TWD, 255);	/* AF=4 */ \
+				arm_hardware_piob_periphopendrain_altfn2(TARGET_TWI_TWCK, 255);	/* AF=4 */ \
+				arm_hardware_piob_periphopendrain_altfn2(TARGET_TWI_TWD, 255);	/* AF=4 */ \
 			} while (0) 
 
 	#elif CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX
 
 		#define	TWIHARD_INITIALIZE() do { \
-				enum { WORKMASK = TARGET_TWI_TWCK | TARGET_TWI_TWD };		/* битовая маска, определяет каким выводом шевелить */ \
-				arm_hardware_piob_periphopendrain_altfn2(TARGET_TWI_TWCK | TARGET_TWI_TWD, AF_I2C1);	/* AF=4 */ \
+				arm_hardware_piob_periphopendrain_altfn2(TARGET_TWI_TWCK, AF_I2C1);	/* AF=4 */ \
+				arm_hardware_piob_periphopendrain_altfn2(TARGET_TWI_TWD, AF_I2C1);	/* AF=4 */ \
 			} while (0) 
 
 	#endif
