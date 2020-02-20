@@ -72,7 +72,7 @@
 
 
 #define ST7565S_SPIMODE		SPIC_MODE3 /* mode3 & mode0 работает, mode2 не работает */
-
+#define ST7565S_SPIC_SPEED	SPIC_SPEED400k	// st7565s. st7565v: 10 MHz max
 
 #define ST7565S_CTRL() do { board_lcd_rs(0); } while (0)	/* RS: Low: CONTROL */
 #define ST7565S_DATA() do { board_lcd_rs(1); } while (0)	/* RS: High: DISPLAY DATA TRANSFER */
@@ -98,7 +98,7 @@ static void st7565s_write_cmd(uint_fast8_t v1)
 {
 	//ST7565S_CTRL();	/* сделано состоянием по умолчанию RS: Low: select an index or status register */
 	/* Enable SPI */
-	spi_select(targetlcd, ST7565S_SPIMODE);
+	spi_select2(targetlcd, ST7565S_SPIMODE, ST7565S_SPIC_SPEED);	/* Enable SPI */
 
 	/* Transfer cmd */
 	spi_progval8_p1(targetlcd, v1);
@@ -113,7 +113,7 @@ static void st7565s_write_cmd2(uint_fast8_t v1, uint_fast8_t v2)
 {
 	//ST7565S_CTRL();	/* сделано состоянием по умолчанию RS: Low: select an index or status register */
 	/* Enable SPI */
-	spi_select(targetlcd, ST7565S_SPIMODE);
+	spi_select2(targetlcd, ST7565S_SPIMODE, ST7565S_SPIC_SPEED);	/* Enable SPI */
 
 	/* Transfer cmd */
 	spi_progval8_p1(targetlcd, v1);
@@ -134,7 +134,7 @@ static void st7565s_put_char_begin(void)
 {
     ST7565S_DATA();
 	/* Enable SPI */
-	spi_select(targetlcd, ST7565S_SPIMODE);
+	spi_select2(targetlcd, ST7565S_SPIMODE, ST7565S_SPIC_SPEED);	/* Enable SPI */
 	st7565s_started = 1;		/* первый символ выдаём без ожидания готовности */
 }
 
@@ -176,7 +176,7 @@ static void st7565s_set_addr_column(uint_fast8_t x, uint_fast8_t y)		//
 {
 	//ST7565S_CTRL();	/* сделано состоянием по умолчанию RS: Low: select an index or status register */
 	/* Enable SPI */
-	spi_select(targetlcd, ST7565S_SPIMODE);
+	spi_select2(targetlcd, ST7565S_SPIMODE, ST7565S_SPIC_SPEED);	/* Enable SPI */
 
 	/* Transfer cmd */
 	spi_progval8_p1(targetlcd, CMD_SET_PAGE | (y & 0x0f));
@@ -430,6 +430,16 @@ void display_testframe(uint_fast8_t state)
 /* вызывается при разрешённых прерываниях. */
 void display_initialize(void)
 {
+	enum { BLADDR_W = 0x5E };	// MCP4017
+	{
+		// backlight control
+		i2c_start(BLADDR_W);
+	    i2c_write(0x60);	// 0x7F: off, 0x70: minimal
+	    i2c_waitsend();
+	    i2c_stop();
+
+	}
+
 	#if LCDMODE_PTE1206
 	pte1206_initialize();
 	#else /* LCDMODE_PTE1206 */
