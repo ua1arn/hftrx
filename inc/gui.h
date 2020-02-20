@@ -211,6 +211,7 @@
 	void buttons_menu_handler (void);
 	void window_bp_process (void);
 	void window_menu_process (void);
+	void window_freq_process (void);
 
 	enum {								// button_handler.state
 		BUTTON_PRESSED,					// нажато
@@ -249,22 +250,21 @@
 		uint_fast8_t parent;			// индекс окна, в котором будет отображаться кнопка
 		uint_fast8_t visible;			// рисовать ли кнопку на экране
 		uintptr_t payload;
-		char text[15];					// текст внутри кнопки
-		char text2[15];
+		char text[20];					// текст внутри кнопки
 	} button_t;
 
 	static button_t button_handlers [] = {
 	//   x1,   y1,  x2,  y2,  onClickHandler,            state,       is_locked,		parent,       visible,      payload,	text
 		{ },
 		{ 0,   254, 86,  304, button1_handler, 	    BUTTON_CANCELLED, BUTTON_NON_LOCKED, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "Mode", },
-		{ 89,  254, 175, 304, button2_handler, 	    BUTTON_CANCELLED, BUTTON_NON_LOCKED, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "AF", "filter", },
+		{ 89,  254, 175, 304, button2_handler, 	    BUTTON_CANCELLED, BUTTON_NON_LOCKED, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "AF filter", },
 		{ 178, 254, 264, 304, button3_handler, 	    BUTTON_CANCELLED, BUTTON_NON_LOCKED, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "AGC", },
 		{ 267, 254, 353, 304, button4_handler, 	    BUTTON_CANCELLED, BUTTON_NON_LOCKED, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "Freq", },
 		{ 356, 254, 442, 304, button5_handler, 	    BUTTON_CANCELLED, BUTTON_NON_LOCKED, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "", },
 		{ 445, 254, 531, 304, button6_handler, 	    BUTTON_CANCELLED, BUTTON_NON_LOCKED, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "", },
 		{ 534, 254, 620, 304, button7_handler, 	    BUTTON_CANCELLED, BUTTON_NON_LOCKED, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "", },
 		{ 623, 254, 709, 304, button8_handler, 	    BUTTON_CANCELLED, BUTTON_NON_LOCKED, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "", },
-		{ 712, 254, 798, 304, button9_handler, 	    BUTTON_CANCELLED, BUTTON_NON_LOCKED, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "System", "settings", },
+		{ 712, 254, 798, 304, button9_handler, 	    BUTTON_CANCELLED, BUTTON_NON_LOCKED, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "System settings", },
 		{ 234,  55, 314, 105, buttons_mode_handler, BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_MODES, NON_VISIBLE, SUBMODE_LSB, "LSB", },
 		{ 319,  55, 399, 105, buttons_mode_handler, BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_MODES, NON_VISIBLE, SUBMODE_CW,  "CW", },
 		{ 404,  55, 484, 105, buttons_mode_handler, BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_MODES, NON_VISIBLE, SUBMODE_AM,  "AM", },
@@ -273,12 +273,12 @@
 		{ 319, 110, 399, 160, buttons_mode_handler, BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_MODES, NON_VISIBLE, SUBMODE_CWR, "CWR", },
 		{ 404, 110, 484, 160, buttons_mode_handler, BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_MODES, NON_VISIBLE, SUBMODE_NFM, "NFM", },
 		{ 489, 110, 569, 160, buttons_mode_handler, BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_MODES, NON_VISIBLE, SUBMODE_DGU, "DGU", },
-		{ 251, 155, 337, 205, buttons_bp_handler,	BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_BP,    NON_VISIBLE, UINTPTR_MAX, "Low", "cut", },
+		{ 251, 155, 337, 205, buttons_bp_handler,	BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_BP,    NON_VISIBLE, UINTPTR_MAX, "Low cut", },
 		{ 357, 155, 443, 205, buttons_bp_handler, 	BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_BP,    NON_VISIBLE, UINTPTR_MAX, "OK", },
-		{ 463, 155, 549, 205, buttons_bp_handler, 	BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_BP,    NON_VISIBLE, UINTPTR_MAX, "High", "cut", },
-		{ 251, 70,  337, 120, set_agc_off, 			BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_AGC,   NON_VISIBLE, UINTPTR_MAX, "AGC", "off", },
-		{ 357, 70,  443, 120, set_agc_slow, 		BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_AGC,   NON_VISIBLE, UINTPTR_MAX, "AGC", "slow", },
-		{ 463, 70,  549, 120, set_agc_fast, 		BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_AGC,   NON_VISIBLE, UINTPTR_MAX, "AGC", "fast", },
+		{ 463, 155, 549, 205, buttons_bp_handler, 	BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_BP,    NON_VISIBLE, UINTPTR_MAX, "High cut", },
+		{ 251, 70,  337, 120, set_agc_off, 			BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_AGC,   NON_VISIBLE, UINTPTR_MAX, "AGC off", },
+		{ 357, 70,  443, 120, set_agc_slow, 		BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_AGC,   NON_VISIBLE, UINTPTR_MAX, "AGC slow", },
+		{ 463, 70,  549, 120, set_agc_fast, 		BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_AGC,   NON_VISIBLE, UINTPTR_MAX, "AGC fast", },
 		{ 120, 28,  170, 78,  buttons_freq_handler, BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_SPLIT,  		"1", },
 		{ 173, 28,  223, 78,  buttons_freq_handler, BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_A_EQ_B, 		"2", },
 		{ 226, 28,  276, 78,  buttons_freq_handler, BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_A_EX_B, 		"3", },
@@ -291,23 +291,6 @@
 		{ 173, 134, 223, 184, buttons_freq_handler, BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_RECORDTOGGLE, 	"8", },
 		{ 226, 134, 276, 184, buttons_freq_handler, BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_LDSPTGL, 		"9", },
 		{ 279, 134, 329, 184, buttons_freq_handler, BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_VOXTOGGLE, 	"0", },
-		{ 70,   40, 220,  80, buttons_menu_handler, BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_MENU,  NON_VISIBLE, UINTPTR_MAX, },
-		{ 70,   83, 220, 123, buttons_menu_handler, BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_MENU,  NON_VISIBLE, UINTPTR_MAX, },
-		{ 70,  126, 220, 166, buttons_menu_handler, BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_MENU,  NON_VISIBLE, UINTPTR_MAX, },
-		{ 70,  169, 220, 209, buttons_menu_handler, BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_MENU,  NON_VISIBLE, UINTPTR_MAX, },
-		{ 223,  40, 373,  80, buttons_menu_handler, BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_MENU,  NON_VISIBLE, UINTPTR_MAX, },
-		{ 223,  83, 373, 123, buttons_menu_handler, BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_MENU,  NON_VISIBLE, UINTPTR_MAX, },
-		{ 223, 126, 373, 166, buttons_menu_handler, BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_MENU,  NON_VISIBLE, UINTPTR_MAX, },
-		{ 223, 169, 373, 209, buttons_menu_handler, BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_MENU,  NON_VISIBLE, UINTPTR_MAX, },
-		{ 376,  40, 526,  80, buttons_menu_handler, BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_MENU,  NON_VISIBLE, UINTPTR_MAX, },
-		{ 376,  83, 526, 123, buttons_menu_handler, BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_MENU,  NON_VISIBLE, UINTPTR_MAX, },
-		{ 376, 126, 526, 166, buttons_menu_handler, BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_MENU,  NON_VISIBLE, UINTPTR_MAX, },
-		{ 376, 169, 526, 209, buttons_menu_handler, BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_MENU,  NON_VISIBLE, UINTPTR_MAX, },
-		{ 529,  40, 679,  80, buttons_menu_handler, BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_MENU,  NON_VISIBLE, UINTPTR_MAX, },
-		{ 529,  83, 679, 123, buttons_menu_handler, BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_MENU,  NON_VISIBLE, UINTPTR_MAX, },
-		{ 529, 126, 679, 166, buttons_menu_handler, BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_MENU,  NON_VISIBLE, UINTPTR_MAX, },
-		{ 529, 169, 679, 209, buttons_menu_handler, BUTTON_CANCELLED, BUTTON_NON_LOCKED, WINDOW_MENU,  NON_VISIBLE, UINTPTR_MAX, },
-
 	};
 	enum { button_handlers_count = sizeof button_handlers / sizeof button_handlers[1] };
 
@@ -316,16 +299,23 @@
 		uint_fast16_t y;
 		uint_fast8_t parent;
 		uint_fast8_t visible;
-		const char * name;
-		char text[10];
+		const char name[12];
+		char text[20];
 		COLOR565_T color;
 	} label_t;
 
 	static label_t labels[] = {
 	//     x,   y,  parent,      visible,     name,   Text,  color
 		{ },
-		{ 250, 120, WINDOW_BP, NON_VISIBLE, "lbl_low",  "          ", COLORPIP_YELLOW, },
-		{ 490, 120, WINDOW_BP, NON_VISIBLE, "lbl_high", "          ", COLORPIP_YELLOW, },
+		{ 250, 120, WINDOW_BP, NON_VISIBLE, "lbl_low",  "", COLORPIP_YELLOW, },
+		{ 490, 120, WINDOW_BP, NON_VISIBLE, "lbl_high", "", COLORPIP_YELLOW, },
+		{ 100,  50, WINDOW_MENU, NON_VISIBLE, "lbl_group_1", "", COLORPIP_YELLOW, },
+		{ 100,  75, WINDOW_MENU, NON_VISIBLE, "lbl_group_2", "", COLORPIP_YELLOW, },
+		{ 100, 100, WINDOW_MENU, NON_VISIBLE, "lbl_group_3", "", COLORPIP_YELLOW, },
+		{ 100, 125, WINDOW_MENU, NON_VISIBLE, "lbl_group_4", "", COLORPIP_YELLOW, },
+		{ 100, 150, WINDOW_MENU, NON_VISIBLE, "lbl_group_5", "", COLORPIP_YELLOW, },
+		{ 100, 175, WINDOW_MENU, NON_VISIBLE, "lbl_group_6", "", COLORPIP_YELLOW, },
+		{ 100, 200, WINDOW_MENU, NON_VISIBLE, "lbl_group_7", "", COLORPIP_YELLOW, },
 	};
 	enum { labels_count = sizeof labels / sizeof labels[1] };
 
@@ -361,10 +351,10 @@
 	//     window_id,   x1,  y1, x2,  y2,  title,         is_show, first_call, onVisibleProcess
 		{ },
 		{ WINDOW_MODES, 214, 20, 586, 175, "Select mode", NON_VISIBLE, 0, },
-		{ WINDOW_BP,    214, 20, 586, 225, "Bandpass",    NON_VISIBLE, 0, window_bp_process},
+		{ WINDOW_BP,    214, 20, 586, 225, "Bandpass",    NON_VISIBLE, 0, window_bp_process, },
 		{ WINDOW_AGC,   214, 20, 586, 140, "AGC control", NON_VISIBLE, 0, },
-		{ WINDOW_FREQ,   100, 0, 350, 200, "Freq", 		  NON_VISIBLE, 0, },
-		{ WINDOW_MENU,   50, 10, 699, 220, "Settings",	  NON_VISIBLE, 0, window_menu_process},
+		{ WINDOW_FREQ,   100, 0, 350, 200, "Freq", 		  NON_VISIBLE, 0, window_freq_process, },
+		{ WINDOW_MENU,   50, 10, 699, 220, "Settings",	  NON_VISIBLE, 0, window_menu_process, },
 	};
 	enum { windows_count = sizeof windows / sizeof windows[1] };
 

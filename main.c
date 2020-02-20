@@ -12456,7 +12456,7 @@ static const FLASHMEM struct menudef menutable [] =
 #endif /* WITHAUTOTUNER */
 #if ! WITHFLATMENU
 	{
-		QLABEL("DISPLAY "), 0, 0, 0, 0,
+		QLABEL2("DISPLAY ", "Display"), 0, 0, 0, 0,
 		ITEM_GROUP, 
 		0, 0, 
 		offsetof(struct nvmap, ggrpdisplay),
@@ -17844,7 +17844,7 @@ uint_fast8_t get_multilinemenu_block_groups(menu_names_t * vals)
 		if (ismenukind(mv, ITEM_GROUP))
 		{
 			menu_names_t * const v = & vals[count];
-			strcpy (v->name, mv->qlabel);
+			strcpy (v->name, mv->label);
 			count++;
 		}
 	}

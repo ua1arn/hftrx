@@ -6443,6 +6443,14 @@ board_set_wflevelsep(uint_fast8_t v)
 
 	void footer_buttons_state (uint_fast8_t state, char * name)					// блокируются все, кроме name == text
 	{
+		static uint_fast8_t id = 0;
+		if (state == BUTTON_DISABLED)
+		{
+			id = find_button(FOOTER, name);
+			button_handlers[id].is_locked = BUTTON_LOCKED;
+		} else
+			button_handlers[id].is_locked = BUTTON_NON_LOCKED;
+
 		for (uint_fast8_t i = 1; i < button_handlers_count; i++)
 		{
 			if (button_handlers[i].parent != FOOTER)
@@ -6482,7 +6490,7 @@ board_set_wflevelsep(uint_fast8_t v)
 		if (windows[WINDOW_BP].first_call == 1)
 		{
 			windows[WINDOW_BP].first_call = 0;
-			button_handlers[find_button(WINDOW_BP, "High")].is_locked = 1;
+			button_handlers[find_button(WINDOW_BP, "High cut")].is_locked = 1;
 			id_lbl_low = find_label(WINDOW_BP, "lbl_low");
 			id_lbl_high = find_label(WINDOW_BP, "lbl_high");
 			val_high = get_high_bp(0);
@@ -6499,7 +6507,7 @@ board_set_wflevelsep(uint_fast8_t v)
 			labels[id_lbl_low].x = x_l - strlen(buf) * 16;
 		}
 
-		if (gui.enc2rotate != 0 && button_handlers[find_button(WINDOW_BP, "High")].is_locked == 1)
+		if (gui.enc2rotate != 0 && button_handlers[find_button(WINDOW_BP, "High cut")].is_locked == 1)
 		{
 			val_high = get_high_bp(gui.enc2rotate);
 			gui.enc2done = 1;
@@ -6508,7 +6516,7 @@ board_set_wflevelsep(uint_fast8_t v)
 			x_h = normalize (val_high, 0, 50, 290) + 290;
 			labels[id_lbl_high].x = x_h + 64 > 550 ? 486 : x_h;
 		}
-		else if (gui.enc2rotate != 0 && button_handlers[find_button(WINDOW_BP, "Low")].is_locked == 1)
+		else if (gui.enc2rotate != 0 && button_handlers[find_button(WINDOW_BP, "Low cut")].is_locked == 1)
 		{
 			val_low = get_low_bp(gui.enc2rotate * 10);
 			gui.enc2done = 1;
@@ -6522,29 +6530,53 @@ board_set_wflevelsep(uint_fast8_t v)
 		draw_rect_pip(x_l, 70, x_h, 108, COLORPIP_YELLOW, 1);
 	}
 
+	void window_freq_process (void)
+	{
+		if (windows[WINDOW_FREQ].first_call == 1)
+		{
+			windows[WINDOW_FREQ].first_call = 0;
+			button_handlers[find_button(WINDOW_FREQ, "OK")].is_locked = BUTTON_LOCKED;
+		}
+	}
+
 	void window_menu_process(void)
 	{
+		PACKEDCOLORPIP_T * const colorpip = getscratchpip();
 		char tmp[10];
-		menu_names_t menu_block_groups[20];
-		static uint_fast8_t first_id_button, count_groups_menu;
+		static menu_names_t menu_block_groups[20];
+		static uint_fast8_t first_id, last_id, num_rows, count_groups_menu, selected_label;
+		static int_fast8_t selected_group, first_view_group, last_view_group;
 
 		if (windows[WINDOW_MENU].first_call == 1)
 		{
 			windows[WINDOW_MENU].first_call = 0;
 			count_groups_menu = get_multilinemenu_block_groups(menu_block_groups);
-			first_id_button = 1;
-			while (button_handlers[first_id_button].parent != WINDOW_MENU)
-				first_id_button++;
+			first_id = 1;
+			selected_group = 0;
+			while (labels[++first_id].parent != WINDOW_MENU)
+			last_id = first_id;
+			while (labels[++last_id].parent == WINDOW_MENU);
+			first_view_group = 0;
 
-			for(uint_fast8_t i = 0; i < count_groups_menu; i++)
+			num_rows = last_id - first_id - 1;
+
+			for(uint_fast8_t i = 0; i <= num_rows; i++)
 			{
-
-				strcpy(button_handlers[first_id_button].text, menu_block_groups[i].name);
-				button_handlers[first_id_button].visible = VISIBLE;
-				first_id_button++;
+				strcpy(labels[first_id + i].text, menu_block_groups[i].name);
+				labels[first_id + i].visible = VISIBLE;
 			}
+			selected_label = first_id;
+		}
+		if (gui.enc2rotate != 0)
+		{
+			gui.enc2done = 1;
+			selected_group = (selected_group + gui.enc2rotate) <= 0 ? 0 : selected_group + gui.enc2rotate;
+			selected_group = selected_group >= num_rows ? num_rows : selected_group;
+
+			selected_label = selected_group + first_id;
 		}
 
+		display_colorbuff_string_tbg(colorpip, ALLDX, ALLDY, labels[selected_label].x - 16, labels[selected_label].y, ">", COLORPIP_GREEN);
 	}
 
 	void buttons_menu_handler(void)
@@ -6576,15 +6608,15 @@ board_set_wflevelsep(uint_fast8_t v)
 
 	void buttons_bp_handler (void)
 	{
-		if (gui.selected == find_button(WINDOW_BP, "Low"))
+		if (gui.selected == find_button(WINDOW_BP, "Low cut"))
 		{
-			button_handlers[find_button(WINDOW_BP, "High")].is_locked = 0;
-			button_handlers[find_button(WINDOW_BP, "Low")].is_locked = 1;
+			button_handlers[find_button(WINDOW_BP, "High cut")].is_locked = 0;
+			button_handlers[find_button(WINDOW_BP, "Low cut")].is_locked = 1;
 		}
-		else if (gui.selected == find_button(WINDOW_BP, "High"))
+		else if (gui.selected == find_button(WINDOW_BP, "High cut"))
 		{
-			button_handlers[find_button(WINDOW_BP, "High")].is_locked = 1;
-			button_handlers[find_button(WINDOW_BP, "Low")].is_locked = 0;
+			button_handlers[find_button(WINDOW_BP, "High cut")].is_locked = 1;
+			button_handlers[find_button(WINDOW_BP, "Low cut")].is_locked = 0;
 		}
 		else if (gui.selected == find_button(WINDOW_BP, "OK"))
 		{
@@ -6709,6 +6741,7 @@ board_set_wflevelsep(uint_fast8_t v)
 			windows[gui.window_to_draw].is_show = VISIBLE;
 			windows[gui.window_to_draw].first_call = 1;
 			footer_buttons_state(BUTTON_DISABLED, button_handlers[gui.selected].text);
+			gui.enc2busy = 1;
 		}
 		else
 		{
@@ -6724,6 +6757,7 @@ board_set_wflevelsep(uint_fast8_t v)
 			windows[gui.window_to_draw].first_call = 0;
 			gui.window_to_draw = 0;
 			footer_buttons_state(BUTTON_CANCELLED, "");
+			gui.enc2busy = 0;
 		}
 	}
 
@@ -6772,6 +6806,7 @@ board_set_wflevelsep(uint_fast8_t v)
 		uint_fast8_t alpha = 10; // на сколько затемнять цвета
 		PACKEDCOLOR565_T dot, color_red, color_green, color_blue, color_bg = TFTRGB565 (alpha, alpha, alpha);
 		char buff [30];
+		char * text2 = NULL;
 		uint_fast8_t str_len = 0;
 
 		// вывод на PIP служебной информации
@@ -6837,17 +6872,20 @@ board_set_wflevelsep(uint_fast8_t v)
 								button_handlers[i].x2, button_handlers[i].y2, button_handlers[i].state, button_handlers[i].is_locked,
 								button_handlers[i].state == BUTTON_DISABLED ? 1 : 0);
 
-				if (strlen(button_handlers[i].text2) == 0)
+
+				if (strchr(button_handlers[i].text, ' ') == NULL)
 				{
 					display_colorbuff_string2_tbg(colorpip, ALLDX, ALLDY, button_handlers[i].x1 + ((button_handlers[i].x2 - button_handlers[i].x1) -
 							(strlen (button_handlers[i].text) * 10)) / 2, button_handlers[i].y1 + 17, button_handlers[i].text, COLORPIP_BLACK);
 				} else
 				{
+					strcpy (buff, button_handlers[i].text);
+					text2 = strtok(buff, " ");
 					display_colorbuff_string2_tbg(colorpip, ALLDX, ALLDY, button_handlers[i].x1 + ((button_handlers[i].x2 - button_handlers[i].x1) -
-							(strlen (button_handlers[i].text) * 10)) / 2, button_handlers[i].y1 + 10, button_handlers[i].text, COLORPIP_BLACK);
-
+							(strlen (text2) * 10)) / 2, button_handlers[i].y1 + 10, text2, COLORPIP_BLACK);
+					text2 = strtok(NULL, " ");
 					display_colorbuff_string2_tbg(colorpip, ALLDX, ALLDY, button_handlers[i].x1 + ((button_handlers[i].x2 - button_handlers[i].x1) -
-							(strlen (button_handlers[i].text2) * 10)) / 2, button_handlers[i].y1 + 25, button_handlers[i].text2, COLORPIP_BLACK);
+							(strlen (text2) * 10)) / 2, button_handlers[i].y1 + 25, text2, COLORPIP_BLACK);
 				}
 			}
 		}
