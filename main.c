@@ -12408,7 +12408,7 @@ static const FLASHMEM struct menudef menutable [] =
 #if WITHAUTOTUNER && 1 // Tuner parameters debug
 #if ! WITHFLATMENU
 	{
-		QLABE2L("TUNER   ", "Tuner"), 0, 0, 0, 0,
+		QLABEL2("TUNER   ", "Tuner"), 0, 0, 0, 0,
 		ITEM_GROUP, 
 		0, 0, 
 		offsetof(struct nvmap, ggrptuner),
