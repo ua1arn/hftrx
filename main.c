@@ -7349,7 +7349,7 @@ void
 audioproc_spool_user(void)
 {
 	speexel_t * p;
-	while (takespeexready_user(& p))
+	if (takespeexready_user(& p))
 	{
 		// обработка и сохранение в savesampleout16stereo_user()
 		uint_fast8_t pathi;
@@ -12102,9 +12102,6 @@ processmessages(uint_fast8_t * kbch, uint_fast8_t * kbready, uint_fast8_t inmenu
 			;
 	}
 
-#if WITHINTEGRATEDDSP
-	audioproc_spool_user();
-#endif /* WITHINTEGRATEDDSP */
 
 	uint8_t * buff;
 
@@ -12114,14 +12111,17 @@ processmessages(uint_fast8_t * kbch, uint_fast8_t * kbready, uint_fast8_t inmenu
 	switch (takemsgready_user(& buff))
 	{
 	case MSGT_EMPTY:
-		display2_bgprocess();			/* выполнение шагов state machine отображения дисплея */
-		directctlupdate(inmenu);		/* управление скоростью передачи (и другими параметрами) через потенциометр */
+#if WITHINTEGRATEDDSP
+		audioproc_spool_user();
+#endif /* WITHINTEGRATEDDSP */
 #if WITHUSEAUDIOREC
 		sdcardbgprocess();
 #endif /* WITHUSEAUDIOREC */
 #if WITHWAVPLAYER || WITHSENDWAV
 		spoolplayfile();
 #endif /* WITHWAVPLAYER || WITHSENDWAV */
+		display2_bgprocess();			/* выполнение шагов state machine отображения дисплея */
+		directctlupdate(inmenu);		/* управление скоростью передачи (и другими параметрами) через потенциометр */
 #if WITHLCDBACKLIGHT || WITHKBDBACKLIGHT
 		// обработать запрос на обновление состояния аппаратуры из user mode программы
 		if (dimmflagch != 0)
