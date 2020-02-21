@@ -12159,6 +12159,13 @@ processmessages(uint_fast8_t * kbch, uint_fast8_t * kbready, uint_fast8_t inmenu
 		return;
 	
 	case MSGT_1SEC:
+#if 1
+		// автоматический перебор тестовых экранов
+		if (display_getpagesmax() != 0)
+		{
+			menuset = calc_next(menuset, 0, display_getpagesmax());
+		}
+#endif
 #if WITHWAVPLAYER || WITHSENDWAV
 		if (gloopmsg > 0)
 		{

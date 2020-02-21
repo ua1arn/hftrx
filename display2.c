@@ -1659,7 +1659,89 @@ static void display_blanktest(
 	display_testframe(blinkst());
 }
 
+static void wline(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	uint_fast8_t pattern, uint_fast16_t len)
+{
+	display_gotoxy(x, y);
+	display_wrdatabar_begin();
+	while (len --)
+		display_barcolumn(pattern);
+	display_wrdatabar_end();
+}
 
+static void display_4linestest(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	void * pv
+	)
+{
+	wline(x, y + 0, 0x00, DIM_X);
+	wline(x, y + 1, 0xFF, DIM_X);
+	wline(x, y + 2, 0x00, DIM_X);
+	wline(x, y + 3, 0xFF, DIM_X);
+	wline(x, y + 4, 0x00, DIM_X);
+	wline(x, y + 5, 0xFF, DIM_X);
+	wline(x, y + 6, 0x00, DIM_X);
+	wline(x, y + 7, 0xFF, DIM_X);
+}
+
+static void display_2linestest(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	void * pv
+	)
+{
+	wline(x, y + 0, 0x00, DIM_X);
+	wline(x, y + 1, 0x00, DIM_X);
+	wline(x, y + 2, 0xFF, DIM_X);
+	wline(x, y + 3, 0xFF, DIM_X);
+	wline(x, y + 4, 0x00, DIM_X);
+	wline(x, y + 5, 0x00, DIM_X);
+	wline(x, y + 6, 0xFF, DIM_X);
+	wline(x, y + 7, 0xFF, DIM_X);
+}
+
+static void display_vlinestest(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	void * pv
+	)
+{
+	enum { PART = DIM_X / 8 };
+	for (y = 0; y < 8; ++ y)
+	{
+		int i;
+		display_gotoxy(x, y);
+		display_wrdatabar_begin();
+		for (i = PART; i --; )
+			display_barcolumn(0xFF);
+		for (i = PART; i --; )
+			display_barcolumn(0x00);
+		for (i = PART; i --; )
+			display_barcolumn(0xFF);
+		for (i = PART; i --; )
+			display_barcolumn(0x00);
+		for (i = PART; i --; )
+			display_barcolumn(0xFF);
+		for (i = PART; i --; )
+			display_barcolumn(0x00);
+		for (i = PART; i --; )
+			display_barcolumn(0xFF);
+		for (i = PART; i --; )
+			display_barcolumn(0x00);
+		display_wrdatabar_end();
+	}
+}
+
+static void display_timertest(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	void * pv
+	)
+{
+}
 
 // Печать времени - только часы и минуты, без секунд
 // Jan-01 13:40
@@ -2423,6 +2505,9 @@ enum
 
 		enum {
 			DPAGE0,					// Страница, в которой отображаются основные (или все)
+			DPAGE1,					// Страница, в которой отображаются основные (или все)
+			DPAGE2,					// Страница, в которой отображаются основные (или все)
+			//DPAGE3,					// Страница, в которой отображаются основные (или все)
 			DISPLC_MODCOUNT
 		};
 		#define DISPLC_WIDTH	7	// количество цифр в отображении частоты
@@ -2452,7 +2537,10 @@ enum
 //			{	0,	6,	display_blinkpos16,	REDRM_BARS, REDRSUBSET(DPAGE0)/*REDRSUBSET_SLEEP*/, },	// DATE & TIME // DATE&TIME Jan-01 13:40
 //			{	0,	7,	display_blinkneg16,	REDRM_BARS, REDRSUBSET(DPAGE0)/*REDRSUBSET_SLEEP*/, },	// DATE & TIME // DATE&TIME Jan-01 13:40
 
-			{	0,	0,	display_blanktest,	REDRM_BARS, REDRSUBSET(DPAGE0)/*REDRSUBSET_SLEEP*/, },	// DATE & TIME // DATE&TIME Jan-01 13:40
+			{	0,	0,	display_4linestest,	REDRM_BARS, REDRSUBSET(DPAGE0)/*REDRSUBSET_SLEEP*/, },	// DATE & TIME // DATE&TIME Jan-01 13:40
+			{	0,	0,	display_2linestest,	REDRM_BARS, REDRSUBSET(DPAGE1)/*REDRSUBSET_SLEEP*/, },	// DATE & TIME // DATE&TIME Jan-01 13:40
+			{	0,	0,	display_vlinestest,	REDRM_BARS, REDRSUBSET(DPAGE2)/*REDRSUBSET_SLEEP*/, },	// DATE & TIME // DATE&TIME Jan-01 13:40
+			//{	0,	0,	display_timertest,	REDRM_BARS, REDRSUBSET(DPAGE3)/*REDRSUBSET_SLEEP*/, },	// DATE & TIME // DATE&TIME Jan-01 13:40
 
 		#if WITHMENU
 			{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
@@ -6114,7 +6202,7 @@ void display2_clear_menu_bk(uint_fast16_t x, uint_fast16_t y, uint_fast16_t x2, 
 	display_solidbar(GRID2X(x), GRID2Y(y), GRID2X(x2), GRID2Y(y2), display_getbgcolor());
 }
 
-#define STMD 1
+//#define STMD 1
 
 #if STMD
 

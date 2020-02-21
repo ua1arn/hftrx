@@ -59,7 +59,6 @@
 #define CMD_SET_POWER_CONTROL  0x28
 #define CMD_SET_RESISTOR_RATIO  0x20
 #define CMD_SET_VOLUME_FIRST  0x81
-#define  CMD_SET_VOLUME_SECOND  0
 #define CMD_SET_STATIC_OFF  0xAC
 #define  CMD_SET_STATIC_ON  0xAD
 #define CMD_SET_STATIC_REG  0x0
@@ -70,9 +69,8 @@
 #define CMD_NOP  0xE3
 #define CMD_TEST  0xF0
 
-
 #define ST7565S_SPIMODE		SPIC_MODE3 /* mode3 & mode0 работает, mode2 не работает */
-#define ST7565S_SPIC_SPEED	SPIC_SPEED400k	// st7565s. st7565v: 10 MHz max
+#define ST7565S_SPIC_SPEED	SPIC_SPEED100k //SPIC_SPEED4M	// st7565s. st7565v: 10 MHz max
 
 #define ST7565S_CTRL() do { board_lcd_rs(0); } while (0)	/* RS: Low: CONTROL */
 #define ST7565S_DATA() do { board_lcd_rs(1); } while (0)	/* RS: High: DISPLAY DATA TRANSFER */
@@ -419,7 +417,7 @@ static void st7565s_initialize(void)
 	st7565s_write_cmd(CMD_DISPLAY_ON);
 	st7565s_write_cmd(CMD_SET_ALLPTS_NORMAL);
 
-	st7565s_write_cmd2(CMD_SET_VOLUME_FIRST, 0x20);
+	st7565s_write_cmd2(CMD_SET_VOLUME_FIRST, 0x24);
 	debug_printf_P(PSTR("st7565s_initialize() done\n"));
 }
 

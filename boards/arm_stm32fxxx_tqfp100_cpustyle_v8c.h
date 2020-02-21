@@ -14,7 +14,7 @@
 //#define HARDWARE_ARM_USEUSART0 1		// US0: PA5/PA6 pins
 //#define HARDWARE_ARM_USEUSART1 1		// US1: PA21/PA22 pins
 
-#define WITHSPI16BIT	1		/* возможно использование 16-ти битных слов при обмене по SPI */
+//#define WITHSPI16BIT	1		/* возможно использование 16-ти битных слов при обмене по SPI */
 #define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
 //#define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
 #define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
