@@ -17845,6 +17845,28 @@ uint_fast8_t get_multilinemenu_block_groups(menu_names_t * vals)
 		{
 			menu_names_t * const v = & vals[count];
 			strcpy (v->name, mv->label);
+			v->index = el;
+			count++;
+		}
+	}
+	return count;
+}
+
+uint_fast8_t get_multilinemenu_block_params(menu_names_t * vals, uint_fast8_t index)
+{
+	uint_fast16_t el;
+	uint_fast8_t count = 0;
+
+	for (el = index + 1; el < MENUROW_COUNT; el ++)
+	{
+		const FLASHMEM struct menudef * const mv = & menutable [el];
+		if (ismenukind(mv, ITEM_GROUP))
+			break;
+		if (ismenukind(mv, ITEM_VALUE))
+		{
+			menu_names_t * const v = & vals[count];
+			strcpy (v->name, mv->label);
+			v->index = el;
 			count++;
 		}
 	}
