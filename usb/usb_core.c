@@ -12488,7 +12488,7 @@ static void USBH_HandleEnumDelay(
 	)
 {
 	const uint_fast16_t nticks = NTICKS(delayMS);
-	if (nticks > 2)
+	if (nticks > 1)
 	{
 		phost->EnumPushTicks = nticks;
 		phost->EnumPushedState = state;
