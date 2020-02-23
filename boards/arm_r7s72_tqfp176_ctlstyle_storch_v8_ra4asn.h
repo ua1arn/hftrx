@@ -372,7 +372,8 @@
 	#define WITHTOUCHTEST	1
 
 	#define WITHVOLTLEVEL	1	/* отображение напряжения питания */
-	////#define WITHTHERMOLEVEL	1	/* отображение температуры */
+	#define WITHTHERMOLEVEL	1	/* отображение температуры */
+	#define WITHMCP9700		1	/* датчик температуры MCP9700, без делителя и подтяжки на +12В, на R131 перемычка */
 
 	//#define WITHSWLMODE	1	/* поддержка запоминания множества частот в swl-mode */
 	#define WITHVIBROPLEX	1	/* возможность эмуляции передачи виброплексом */
