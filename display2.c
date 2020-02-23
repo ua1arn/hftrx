@@ -6547,40 +6547,81 @@ board_set_wflevelsep(uint_fast8_t v)
 	{
 		PACKEDCOLORPIP_T * const colorpip = getscratchpip();
 		char tmp[10];
-		static menu_names_t menu_block_groups[20];
-		static uint_fast8_t first_id, last_id, num_rows, count_groups_menu, selected_label;
-		static int_fast8_t selected_group, first_view_group, last_view_group;
+		static menu_names_t menu_block_groups[20], menu_block_params[30];
+		static uint_fast8_t first_id_group, last_id_group, first_id_params, last_id_params, num_rows_group, num_rows_params, count_groups_menu, count_params_menu, add_group = 0;
+		static int_fast8_t selected_group = 0, selected_label = 0;
 
 		if (windows[WINDOW_MENU].first_call == 1)
 		{
 			windows[WINDOW_MENU].first_call = 0;
-			count_groups_menu = get_multilinemenu_block_groups(menu_block_groups);
-			first_id = 1;
-			selected_group = 0;
-			while (labels[++first_id].parent != WINDOW_MENU)
-			last_id = first_id;
-			while (labels[++last_id].parent == WINDOW_MENU);
-			first_view_group = 0;
+			first_id_group = 1;
 
-			num_rows = last_id - first_id - 1;
-
-			for(uint_fast8_t i = 0; i <= num_rows; i++)
+			while (labels[++first_id_group].parent != WINDOW_MENU);				// первое вхождение метки group
+			last_id_group = first_id_group;
+			while (strcmp(labels[++last_id_group].name, "lbl_group") == 0);		// последнее вхождение метки group
+			last_id_group--;
+			first_id_params = last_id_group + 1;
+			last_id_params = first_id_params;
+			while (strcmp(labels[++last_id_params].name, "lbl_params") == 0);	// последнее вхождение метки params
+			last_id_params--;
+			num_rows_group = last_id_group - first_id_group;
+			num_rows_params = last_id_params - first_id_params;
+			count_groups_menu = get_multilinemenu_block_groups(menu_block_groups) - 1;
+			for(uint_fast8_t i = 0; i <= num_rows_group; i++)
 			{
-				strcpy(labels[first_id + i].text, menu_block_groups[i].name);
-				labels[first_id + i].visible = VISIBLE;
+				strcpy(labels[first_id_group + i].text, menu_block_groups[i + add_group].name);
+				labels[first_id_group + i].visible = VISIBLE;
 			}
-			selected_label = first_id;
+
+			count_params_menu = get_multilinemenu_block_params(menu_block_params, menu_block_groups[selected_group].index) - 1;
+			for(uint_fast8_t i = 0; i <= num_rows_params; i++)
+			{
+				labels[first_id_params + i].visible = NON_VISIBLE;
+				if (count_params_menu < i)
+					continue;
+				strcpy(labels[first_id_params + i].text, menu_block_params[i + add_group].name);
+				labels[first_id_params + i].visible = VISIBLE;
+			}
+
 		}
+
 		if (gui.enc2rotate != 0)
 		{
 			gui.enc2done = 1;
 			selected_group = (selected_group + gui.enc2rotate) <= 0 ? 0 : selected_group + gui.enc2rotate;
-			selected_group = selected_group >= num_rows ? num_rows : selected_group;
+			selected_group = selected_group > count_groups_menu ? count_groups_menu : selected_group;
 
-			selected_label = selected_group + first_id;
+			if (gui.enc2rotate > 0)
+			{
+				if (++selected_label > num_rows_group)
+				{
+					selected_label = num_rows_group;
+					add_group = selected_group - selected_label;
+				}
+			}
+			if (gui.enc2rotate < 0)
+			{
+				if (--selected_label < 0)
+				{
+					selected_label = 0;
+					add_group = selected_group - selected_label;
+				}
+			}
+			for(uint_fast8_t i = 0; i <= num_rows_group; i++)
+			{
+				strcpy(labels[first_id_group + i].text, menu_block_groups[i + add_group].name);
+			}
+			count_params_menu = get_multilinemenu_block_params(menu_block_params, menu_block_groups[selected_group].index) - 1;
+			for(uint_fast8_t i = 0; i <= num_rows_params; i++)
+			{
+				labels[first_id_params + i].visible = NON_VISIBLE;
+				if (i > count_params_menu)
+					continue;
+				strcpy(labels[first_id_params + i].text, menu_block_params[i].name);
+				labels[first_id_params + i].visible = VISIBLE;
+			}
 		}
-
-		display_colorbuff_string_tbg(colorpip, ALLDX, ALLDY, labels[selected_label].x - 16, labels[selected_label].y, ">", COLORPIP_GREEN);
+		display_colorbuff_string_tbg(colorpip, ALLDX, ALLDY, labels[selected_label + first_id_group].x - 16, labels[selected_label + first_id_group].y, ">", COLORPIP_GREEN);
 	}
 
 	void buttons_menu_handler(void)

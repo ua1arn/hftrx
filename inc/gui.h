@@ -309,13 +309,20 @@
 		{ },
 		{ 250, 120, WINDOW_BP, NON_VISIBLE, "lbl_low",  "", COLORPIP_YELLOW, },
 		{ 490, 120, WINDOW_BP, NON_VISIBLE, "lbl_high", "", COLORPIP_YELLOW, },
-		{ 100,  50, WINDOW_MENU, NON_VISIBLE, "lbl_group_1", "", COLORPIP_YELLOW, },
-		{ 100,  75, WINDOW_MENU, NON_VISIBLE, "lbl_group_2", "", COLORPIP_YELLOW, },
-		{ 100, 100, WINDOW_MENU, NON_VISIBLE, "lbl_group_3", "", COLORPIP_YELLOW, },
-		{ 100, 125, WINDOW_MENU, NON_VISIBLE, "lbl_group_4", "", COLORPIP_YELLOW, },
-		{ 100, 150, WINDOW_MENU, NON_VISIBLE, "lbl_group_5", "", COLORPIP_YELLOW, },
-		{ 100, 175, WINDOW_MENU, NON_VISIBLE, "lbl_group_6", "", COLORPIP_YELLOW, },
-		{ 100, 200, WINDOW_MENU, NON_VISIBLE, "lbl_group_7", "", COLORPIP_YELLOW, },
+		{ 100,  50, WINDOW_MENU, NON_VISIBLE, "lbl_group", "", COLORPIP_WHITE, },
+		{ 100,  80, WINDOW_MENU, NON_VISIBLE, "lbl_group", "", COLORPIP_WHITE, },
+		{ 100, 110, WINDOW_MENU, NON_VISIBLE, "lbl_group", "", COLORPIP_WHITE, },
+		{ 100, 140, WINDOW_MENU, NON_VISIBLE, "lbl_group", "", COLORPIP_WHITE, },
+		{ 100, 170, WINDOW_MENU, NON_VISIBLE, "lbl_group", "", COLORPIP_WHITE, },
+		{ 100, 200, WINDOW_MENU, NON_VISIBLE, "lbl_group", "", COLORPIP_WHITE, },
+		{ 300,  50, WINDOW_MENU, NON_VISIBLE, "lbl_params", "", COLORPIP_WHITE, },
+		{ 300,  80, WINDOW_MENU, NON_VISIBLE, "lbl_params", "", COLORPIP_WHITE, },
+		{ 300, 110, WINDOW_MENU, NON_VISIBLE, "lbl_params", "", COLORPIP_WHITE, },
+		{ 300, 140, WINDOW_MENU, NON_VISIBLE, "lbl_params", "", COLORPIP_WHITE, },
+		{ 300, 170, WINDOW_MENU, NON_VISIBLE, "lbl_params", "", COLORPIP_WHITE, },
+		{ 300, 200, WINDOW_MENU, NON_VISIBLE, "lbl_params", "", COLORPIP_WHITE, },
+
+
 	};
 	enum { labels_count = sizeof labels / sizeof labels[1] };
 
