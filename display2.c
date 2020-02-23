@@ -1684,6 +1684,7 @@ static void display_4linestest(
 	wline(x, y + 4, 0x00, DIM_X);
 	wline(x, y + 5, 0xFF, DIM_X);
 	wline(x, y + 6, 0x00, DIM_X);
+	wline(x, y + 6, 0x00, DIM_X);
 	wline(x, y + 7, 0xFF, DIM_X);
 }
 
