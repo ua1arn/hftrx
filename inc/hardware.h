@@ -852,6 +852,6 @@ void hardware_set_dotclock(unsigned long dotfreq);
 #define UNUSED(x) ((void)(x))
 
 
-#define AUDIORECBUFFSIZE16 (2048 * 4)	// размер данных должен быть не меньше размера кластера на SD карте
+#define AUDIORECBUFFSIZE16 (16384)	// размер данных должен быть не меньше размера кластера на SD карте
 
 #endif // HARDWARE_H_INCLUDED
