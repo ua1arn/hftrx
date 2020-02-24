@@ -9030,7 +9030,11 @@ uint_fast8_t hamradio_get_volt_value(void)
 // Read from thermo sensor ST LM235Z (1 kOhm to +3.3)
 int_fast16_t hamradio_get_temperature_value(void)
 {
+#if WITHMCP9700
+	const uint_fast16_t offset_MCP9700 = 500; 	// При 0 °С на выходе 500 мВ. Шкала 10 mV / °С
+#else
 	const int_fast16_t offset_LM235 = - 2731;	// -273.15 approximation of temperature at 0 volt. Slope = 10 mV / celsius
+#endif /* WITHMCP9700 */
 #if WITHREFSENSOR
 	// Измерение опрного напряжения
 	const uint_fast8_t vrefi = VREFIX;
@@ -9049,7 +9053,11 @@ int_fast16_t hamradio_get_temperature_value(void)
 #else /* WITHREFSENSOR */
 	const unsigned Vref_mV = ADCVREF_CPU * 100;
 	//debug_printf_P(PSTR("hamradio_get_temperature_value: XTHERMOIX=%u\n"), board_getadc_filtered_u16(XTHERMOIX, 0, Vref_mV));
+#if WITHMCP9700
+	return (int32_t) board_getadc_unfiltered_u32(XTHERMOIX, 0, (uint_fast64_t) Vref_mV) - offset_MCP9700;
+#else
 	return (int32_t) board_getadc_unfiltered_u32(XTHERMOIX, 0, (uint_fast64_t) Vref_mV * (THERMOSENSOR_UPPER + THERMOSENSOR_LOWER) / THERMOSENSOR_LOWER) + offset_LM235;
+#endif /* WITHMCP9700 */
 #endif /* WITHREFSENSOR */
 }
 

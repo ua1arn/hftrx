@@ -6855,7 +6855,13 @@ board_set_wflevelsep(uint_fast8_t v)
 		uint_fast8_t str_len = 0;
 
 		// вывод на PIP служебной информации
-
+	#if WITHTHERMOLEVEL && WITHCPUADCHW
+//		if (gettxstate())
+//		{
+			int_fast16_t temp = hamradio_get_temperature_value();
+			str_len += local_snprintf_P(&buff[str_len], sizeof buff / sizeof buff [0], PSTR("%d.%dC "), temp / 10, temp %10);
+//		}
+	#endif /* WITHTHERMOLEVEL && WITHCPUADCHW */
 	#if WITHCURRLEVEL && WITHCPUADCHW	// ток PA (при передаче)
 		if (gettxstate())
 		{
