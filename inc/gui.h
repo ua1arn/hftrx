@@ -335,12 +335,9 @@
 		uint_fast8_t is_after_touch; 	 // есть ли касание экрана после выхода точки касания из элемента
 		uint_fast8_t fix;				 // первые координаты после нажатия от контролера тачскрина приходят старые, пропускаем
 		uint_fast8_t window_to_draw;	 // индекс записи с описанием запрошенного к отображению окна
-		uint_fast8_t enc2busy;			 // второй энкодер выделен для обработки данных окна
-		int_least16_t enc2rotate;		 // признак поворота второго энкодера
-		uint_fast8_t enc2done;			 // событие от энкодера обработано, можно получать новые данные
 	} gui_t;
 
-	static gui_t gui = { 0, 0, 0, BUTTON_CANCELLED, 0, 0, 1, 0, 0, 0, 1, };
+	static gui_t gui = { 0, 0, 0, BUTTON_CANCELLED, 0, 0, 1, 0, };
 
 	typedef struct {
 		uint_fast8_t window_id;			// в окне будут отображаться кнопки с соответствующим полем for_window
@@ -364,6 +361,17 @@
 		{ WINDOW_MENU,   50, 10, 699, 220, "Settings",	  NON_VISIBLE, 0, window_menu_process, },
 	};
 	enum { windows_count = sizeof windows / sizeof windows[1] };
+
+	typedef struct {
+		int_least16_t rotate;		// признак поворота второго энкодера
+		uint_fast8_t press;			// короткое нажание
+		uint_fast8_t hold;			// длинное нажатие
+		uint_fast8_t busy;			// второй энкодер выделен для обработки данных окна
+		uint_fast8_t rotate_done;	// событие поворота от энкодера обработано, можно получать новые данные
+		uint_fast8_t press_done;	// событие нажатия от энкодера обработано, можно получать новые данные
+	} enc2_t;
+
+	static enc2_t encoder2 = { 0, 0, 0, 0, 1, 1, };
 
 	#endif /* #if WITHTOUCHTEST */
 #endif /* GUI_H_INCLUDED */

@@ -3228,7 +3228,7 @@ void spool_0p128(void);	// OPERA support
 	uint_fast8_t get_high_bp (int_least16_t rotate);
 	void process_gui(void);
 	uint_fast8_t check_encoder2 (int_least16_t rotate);
-	uint_fast8_t encoder2_done (void);
+	void set_encoder2_state (uint_fast8_t code);
 	void set_agc_off(void);
 	void set_agc_slow(void);
 	void set_agc_fast(void);
