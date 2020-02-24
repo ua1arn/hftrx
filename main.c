@@ -16145,12 +16145,21 @@ process_key_menuset_common(uint_fast8_t kbch)
 #endif /* WITHPWBUTTON */
 
 #if WITHENCODER2
-	case KBD_ENC2_PRESS:
-		uif_encoder2_press();
-		return 1;
-	case KBD_ENC2_HOLD:
-		uif_encoder2_hold();
-		return 1;
+	#if WITHTOUCHTEST
+		case KBD_ENC2_PRESS:
+			encoder2busy ? set_encoder2_state (KBD_ENC2_PRESS): uif_encoder2_press();
+			return 1;
+		case KBD_ENC2_HOLD:
+			encoder2busy ? set_encoder2_state (KBD_ENC2_HOLD) : uif_encoder2_hold();
+			return 1;
+	#else
+		case KBD_ENC2_PRESS:
+			uif_encoder2_press();
+			return 1;
+		case KBD_ENC2_HOLD:
+			uif_encoder2_hold();
+			return 1;
+	#endif /* WITHTOUCHTEST */
 #endif /* WITHENCODER2 */
 
 #if WITHTX

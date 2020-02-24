@@ -6511,19 +6511,19 @@ board_set_wflevelsep(uint_fast8_t v)
 			labels[id_lbl_low].x = x_l - strlen(buf) * 16;
 		}
 
-		if (gui.enc2rotate != 0 && button_handlers[find_button(WINDOW_BP, "High cut")].is_locked == 1)
+		if (encoder2.rotate != 0 && button_handlers[find_button(WINDOW_BP, "High cut")].is_locked == 1)
 		{
-			val_high = get_high_bp(gui.enc2rotate);
-			gui.enc2done = 1;
+			val_high = get_high_bp(encoder2.rotate);
+			encoder2.rotate_done = 1;
 			local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), val_high * 100);
 			strcpy (labels[id_lbl_high].text, buf);
 			x_h = normalize (val_high, 0, 50, 290) + 290;
 			labels[id_lbl_high].x = x_h + 64 > 550 ? 486 : x_h;
 		}
-		else if (gui.enc2rotate != 0 && button_handlers[find_button(WINDOW_BP, "Low cut")].is_locked == 1)
+		else if (encoder2.rotate != 0 && button_handlers[find_button(WINDOW_BP, "Low cut")].is_locked == 1)
 		{
-			val_low = get_low_bp(gui.enc2rotate * 10);
-			gui.enc2done = 1;
+			val_low = get_low_bp(encoder2.rotate * 10);
+			encoder2.rotate_done = 1;
 			local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), val_low * 10);
 			strcpy (labels[id_lbl_low].text, buf);
 			x_l = normalize (val_low / 10, 0, 50, 290) + 290;
@@ -6585,13 +6585,13 @@ board_set_wflevelsep(uint_fast8_t v)
 
 		}
 
-		if (gui.enc2rotate != 0)
+		if (encoder2.rotate != 0)
 		{
-			gui.enc2done = 1;
-			selected_group = (selected_group + gui.enc2rotate) <= 0 ? 0 : selected_group + gui.enc2rotate;
+			encoder2.rotate_done = 1;
+			selected_group = (selected_group + encoder2.rotate) <= 0 ? 0 : selected_group + encoder2.rotate;
 			selected_group = selected_group > count_groups_menu ? count_groups_menu : selected_group;
 
-			if (gui.enc2rotate > 0)
+			if (encoder2.rotate > 0)
 			{
 				if (++selected_label > num_rows_group)
 				{
@@ -6599,7 +6599,7 @@ board_set_wflevelsep(uint_fast8_t v)
 					add_group = selected_group - selected_label;
 				}
 			}
-			if (gui.enc2rotate < 0)
+			if (encoder2.rotate < 0)
 			{
 				if (--selected_label < 0)
 				{
@@ -6631,12 +6631,21 @@ board_set_wflevelsep(uint_fast8_t v)
 
 	uint_fast8_t check_encoder2 (int_least16_t rotate)
 	{
-		if (gui.enc2done || gui.enc2rotate == 0)
+		if (encoder2.rotate_done || encoder2.rotate == 0)
 		{
-			gui.enc2rotate = rotate;
-			gui.enc2done = 0;
+			encoder2.rotate = rotate;
+			encoder2.rotate_done = 0;
 		}
-		return gui.enc2busy;
+		return encoder2.busy;
+	}
+
+	void set_encoder2_state (uint_fast8_t code)
+	{
+		if (code == KBD_ENC2_PRESS)
+			encoder2.press = 1;
+		if (code == KBD_ENC2_HOLD)
+			encoder2.hold = 1;
+		encoder2.press_done = 0;
 	}
 
 	void buttons_mode_handler(void)
@@ -6666,7 +6675,7 @@ board_set_wflevelsep(uint_fast8_t v)
 		else if (gui.selected == find_button(WINDOW_BP, "OK"))
 		{
 			set_window(WINDOW_BP, NON_VISIBLE);
-			gui.enc2busy = 0;
+			encoder2.busy = 0;
 			footer_buttons_state(BUTTON_CANCELLED, "");
 		}
 	}
@@ -6708,7 +6717,7 @@ board_set_wflevelsep(uint_fast8_t v)
 
 		if (windows[gui.window_to_draw].is_show == NON_VISIBLE)
 		{
-			gui.enc2busy = 1;
+			encoder2.busy = 1;
 			set_window(WINDOW_BP, VISIBLE);
 			windows[gui.window_to_draw].first_call = 1;
 			footer_buttons_state(BUTTON_DISABLED, button_handlers[gui.selected].text);
@@ -6716,7 +6725,7 @@ board_set_wflevelsep(uint_fast8_t v)
 		else
 		{
 			set_window(WINDOW_BP, NON_VISIBLE);
-			gui.enc2busy = 0;
+			encoder2.busy = 0;
 			footer_buttons_state(BUTTON_CANCELLED, "");
 		}
 	}
@@ -6786,7 +6795,7 @@ board_set_wflevelsep(uint_fast8_t v)
 			windows[gui.window_to_draw].is_show = VISIBLE;
 			windows[gui.window_to_draw].first_call = 1;
 			footer_buttons_state(BUTTON_DISABLED, button_handlers[gui.selected].text);
-			gui.enc2busy = 1;
+			encoder2.busy = 1;
 		}
 		else
 		{
@@ -6802,7 +6811,7 @@ board_set_wflevelsep(uint_fast8_t v)
 			windows[gui.window_to_draw].first_call = 0;
 			gui.window_to_draw = 0;
 			footer_buttons_state(BUTTON_CANCELLED, "");
-			gui.enc2busy = 0;
+			encoder2.busy = 0;
 		}
 	}
 
