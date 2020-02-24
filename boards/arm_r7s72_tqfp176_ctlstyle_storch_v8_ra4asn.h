@@ -372,8 +372,14 @@
 	#define WITHTOUCHTEST	1
 
 	#define WITHVOLTLEVEL	1	/* отображение напряжения питания */
+	#define VOLTLEVEL_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика напряжения
+	#define VOLTLEVEL_LOWER		10	// 1.0 kOhm - нижний резистор
+
+	/* датчик температуры MCP9700, без делителя и подтяжки на +12В, на R131 перемычка - параметры ниже */
 	#define WITHTHERMOLEVEL	1	/* отображение температуры */
-	#define WITHMCP9700		1	/* датчик температуры MCP9700, без делителя и подтяжки на +12В, на R131 перемычка */
+	#define THERMOSENSOR_UPPER		0	// 0 Ohm - верхний резистор делителя датчика температуры
+	#define THERMOSENSOR_LOWER		10	// 1.0 kOhm - нижний резистор
+	#define THERMOSENSOR_OFFSET (- 500)	// температура при 0 вольт с датчика. MCP9700 parameter // При 0 °С на выходе 500 мВ. Шкала 10 mV / °С
 
 	//#define WITHSWLMODE	1	/* поддержка запоминания множества частот в swl-mode */
 	#define WITHVIBROPLEX	1	/* возможность эмуляции передачи виброплексом */
@@ -541,11 +547,6 @@
 
 		KI0 = 3, KI1 = 4, KI2 = 5, KI3 = 6, KI4 = 7		// клавиатура
 	};
-
-	#define VOLTLEVEL_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика напряжения
-	#define VOLTLEVEL_LOWER		10	// 1.0 kOhm - нижний резистор
-	#define XTHERMOLEVEL_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика температуры
-	#define XTHERMOLEVEL_LOWER		10	// 1.0 kOhm - нижний резистор
 
 	#define KI_COUNT 5	// количество используемых под клавиатуру входов АЦП
 	#define KI_LIST	KI4, KI3, KI2, KI1, KI0,	// инициализаторы для функции перекодировки
