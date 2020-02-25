@@ -1285,7 +1285,7 @@ static void display_thermo4(
 	void * pv
 	)
 {
-#if WITHTHERMOLEVEL && WITHCPUADCHW
+#if WITHTHERMOLEVEL
 	int_fast16_t tempv = hamradio_get_temperature_value() / 10;	// Градусы в десятых долях в целые градусы
 
 	display_setcolors(colorsfg_1state [0], colorsbg_1state [0]);
@@ -1297,7 +1297,7 @@ static void display_thermo4(
 		//display_gotoxy(x + CHARS2GRID(4), y + lowhalf);	
 		//display_string_P(PSTR("С"), lowhalf);
 	} while (lowhalf --);
-#endif /* WITHTHERMOLEVEL && WITHCPUADCHW */
+#endif /* WITHTHERMOLEVEL */
 }
 
 // +d.ddA - 6 places (with "A")
@@ -6864,13 +6864,13 @@ board_set_wflevelsep(uint_fast8_t v)
 		uint_fast8_t str_len = 0;
 
 		// вывод на PIP служебной информации
-	#if WITHTHERMOLEVEL && WITHCPUADCHW
+	#if WITHTHERMOLEVEL
 //		if (gettxstate())
 //		{
 			int_fast16_t temp = hamradio_get_temperature_value();
 			str_len += local_snprintf_P(&buff[str_len], sizeof buff / sizeof buff [0], PSTR("%d.%dC "), temp / 10, temp %10);
 //		}
-	#endif /* WITHTHERMOLEVEL && WITHCPUADCHW */
+	#endif /* WITHTHERMOLEVEL */
 	#if WITHCURRLEVEL && WITHCPUADCHW	// ток PA (при передаче)
 		if (gettxstate())
 		{
