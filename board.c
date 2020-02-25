@@ -8205,10 +8205,10 @@ board_get_pressed_key(void)
 
 	uint_fast8_t i;
 	uint_fast8_t bitpos;
-	const portholder_t v = ~ KBD_TARGET_PIN;
+	const portholder_t v = ~ (KBD_TARGET_PIN ^ KBD_XOR);
 	portholder_t srcmask = KBD_MASK;
 	
-	for (bitpos = 0, i = AKBDEND; srcmask != 0; ++ bitpos, srcmask >>= 1)
+	for (bitpos = 0, i = 0; srcmask != 0; ++ bitpos, srcmask >>= 1)
 	{
 		const portholder_t mask = (portholder_t)1 << bitpos;
 		if ((srcmask & 0x01) == 0)

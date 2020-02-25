@@ -6012,18 +6012,36 @@ void hightests(void)
 		display_pixelbuffer_text(scr3, DX, DY, 16, DY - 9, "Ok");
 		display_pixelbuffer_text(scr3, DX, DY, 94, DY - 9, "Back");
 
+		display_showbuffer(scr3, DX, DY, 0, 0);
 
 		// text display
+		uint_fast8_t page = 3;
 		for (;;)
 		{
-			display_showbuffer(scr0, DX, DY, 0, 0);
-			local_delay_ms(1000);
-			display_showbuffer(scr1, DX, DY, 0, 0);
-			local_delay_ms(1000);
-			display_showbuffer(scr2, DX, DY, 0, 0);
-			local_delay_ms(1000);
-			display_showbuffer(scr3, DX, DY, 0, 0);
-			local_delay_ms(1000);
+			uint_fast8_t kbch;
+			while (kbd_scan(& kbch) == 0)
+				;
+			//if (kbch == KBD_CODE_BW)
+			{
+				page += 1;
+				if (page >= 4)
+					page = 0;
+				switch (page)
+				{
+				case 0:
+					display_showbuffer(scr0, DX, DY, 0, 0);
+					break;
+				case 1:
+					display_showbuffer(scr1, DX, DY, 0, 0);
+					break;
+				case 2:
+					display_showbuffer(scr2, DX, DY, 0, 0);
+					break;
+				case 3:
+					display_showbuffer(scr3, DX, DY, 0, 0);
+					break;
+				}
+			}
 		}
 
 	}

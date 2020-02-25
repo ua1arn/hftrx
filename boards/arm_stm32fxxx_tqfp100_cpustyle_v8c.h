@@ -497,9 +497,24 @@
 				(GPIOD)->BSRR = BSRR_C(BOARD_BLINK_BITS); \
 		} while (0)
 
+#if KEYBOARD_USE_ADC
+	#define HARDWARE_KBD_INITIALIZE() do { \
+			zzzzz; \
+		} while (0)
+#else
+	#define KBD_MASK	(1uL << 0)	// PA0
+	#define KBD_XOR		(1uL << 0)	// PA0  реагирует на "1"
+	#define KBD_TARGET_PIN (GPIOA->IDR)
+	#define HARDWARE_KBD_INITIALIZE() do { \
+			arm_hardware_pioa_inputs(KBD_MASK); \
+			arm_hardware_pioa_updown(0, KBD_MASK);	/* PA0 pull-down */ \
+		} while (0)
+#endif
+
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
 		BOARD_BLINK_INITIALIZE(); \
+		HARDWARE_KBD_INITIALIZE(); \
 		} while (0)
 
 #endif /* ARM_STM32FXXX_TQFP64_CPUSTYLE_V8C_H_INCLUDED */
