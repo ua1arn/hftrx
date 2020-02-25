@@ -529,6 +529,19 @@ display_string(const char * s, uint_fast8_t lowhalf)
 	display_wrdata_end();
 }
 
+
+// Используется при выводе на графический индикатор,
+void
+display_neg_string(const char * s, uint_fast8_t lowhalf)
+{
+	char c;
+
+	display_wrdata_begin();
+	while((c = * s ++) != '\0')
+		display_neg_put_char_small(c, lowhalf);
+	display_wrdata_end();
+}
+
 // Используется при выводе на графический индикатор,
 void
 display_string_P(const FLASHMEM  char * s, uint_fast8_t lowhalf)
@@ -581,6 +594,21 @@ display_at(uint_fast8_t x, uint_fast8_t y, const char * s)
 
 		display_gotoxy(x, y + lowhalf);
 		display_string(s, lowhalf);
+
+	} while (lowhalf --);
+}
+
+// Выдача строки из ОЗУ в указанное место экрана.
+void
+//NOINLINEAT
+display_neg_at(uint_fast8_t x, uint_fast8_t y, const char * s)
+{
+	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
+	do
+	{
+
+		display_gotoxy(x, y + lowhalf);
+		display_neg_string(s, lowhalf);
 
 	} while (lowhalf --);
 }

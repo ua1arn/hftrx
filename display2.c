@@ -1742,6 +1742,8 @@ static void display_timertest(
 	void * pv
 	)
 {
+	display_at(x, y + 0, "Hello");
+	display_neg_at(x, y + 1, "Hello");
 }
 
 // Печать времени - только часы и минуты, без секунд
@@ -2508,7 +2510,7 @@ enum
 			DPAGE0,					// Страница, в которой отображаются основные (или все)
 			DPAGE1,					// Страница, в которой отображаются основные (или все)
 			DPAGE2,					// Страница, в которой отображаются основные (или все)
-			//DPAGE3,					// Страница, в которой отображаются основные (или все)
+			DPAGE3,					// Страница, в которой отображаются основные (или все)
 			DISPLC_MODCOUNT
 		};
 		#define DISPLC_WIDTH	7	// количество цифр в отображении частоты
@@ -2541,7 +2543,7 @@ enum
 			{	0,	0,	display_4linestest,	REDRM_BARS, REDRSUBSET(DPAGE0)/*REDRSUBSET_SLEEP*/, },	// DATE & TIME // DATE&TIME Jan-01 13:40
 			{	0,	0,	display_2linestest,	REDRM_BARS, REDRSUBSET(DPAGE1)/*REDRSUBSET_SLEEP*/, },	// DATE & TIME // DATE&TIME Jan-01 13:40
 			{	0,	0,	display_vlinestest,	REDRM_BARS, REDRSUBSET(DPAGE2)/*REDRSUBSET_SLEEP*/, },	// DATE & TIME // DATE&TIME Jan-01 13:40
-			//{	0,	0,	display_timertest,	REDRM_BARS, REDRSUBSET(DPAGE3)/*REDRSUBSET_SLEEP*/, },	// DATE & TIME // DATE&TIME Jan-01 13:40
+			{	0,	0,	display_timertest,	REDRM_BARS, REDRSUBSET(DPAGE3)/*REDRSUBSET_SLEEP*/, },	// DATE & TIME // DATE&TIME Jan-01 13:40
 
 		#if WITHMENU
 			{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра

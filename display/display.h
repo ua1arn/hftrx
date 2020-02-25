@@ -596,6 +596,7 @@ COLOR_T display_getbgcolor(void);
 void display_setbgcolor(COLOR_T c);
 
 void display_string(const char * s, uint_fast8_t lowhalf);
+void display_neg_string(const char * s, uint_fast8_t lowhalf);
 void display_string_P(const FLASHMEM char * s, uint_fast8_t lowhalf);
 void display_string2(const char * s, uint_fast8_t lowhalf);		// самый маленький шрифт
 void display_string2_P(const FLASHMEM char * s, uint_fast8_t lowhalf);	// самый маленький шрифт
@@ -635,6 +636,7 @@ void display_wrdatabig_end(void);
 // обычный шрифт
 void display_wrdata_begin(void);
 void display_put_char_small(uint_fast8_t c, uint_fast8_t lowhalf);
+void display_neg_put_char_small(uint_fast8_t c, uint_fast8_t lowhalf);
 void display_wrdata_end(void);
 
 /* выдать на дисплей монохромный буфер с размерами dx * dy битов */
@@ -811,6 +813,7 @@ void display_dispbar(
 	);
 
 void display_at(uint_fast8_t x, uint_fast8_t y, const char * s);		// Выдача строки из ОЗУ в указанное место экрана.
+void display_neg_at(uint_fast8_t x, uint_fast8_t y, const char * s);		// Выдача строки из ОЗУ в указанное место экрана.
 void display_at_P(uint_fast8_t x, uint_fast8_t y, const FLASHMEM char * s); // Выдача строки из ПЗУ в указанное место экрана.
 
 

@@ -246,6 +246,20 @@ static void st7565s_put_char_small(char cc)
     	st7565s_pix8(p [i]);
 }
 
+// Вызовы этой функции (или группу вызовов) требуется "обрамить" парой вызовов
+// st7565s_put_char_begin() и st7565s_put_char_end().
+//
+static void st7565s_neg_put_char_small(char cc)
+{
+	uint_fast8_t i = 0;
+    const uint_fast8_t c = smallfont_decode((unsigned char) cc);
+	enum { NCOLS = (sizeof uc1601s_font [0] / sizeof uc1601s_font [0][0]) };
+	const FLASHMEM uint8_t * const p = & uc1601s_font [c][0];
+
+	for (; i < NCOLS; ++ i)
+    	st7565s_pix8(~ p [i]);
+}
+
 // многополосный вывод символов - за несколько горизонтальных проходов.
 // Нумерация полос - сверху вниз, начиная с 0
 
@@ -535,6 +549,15 @@ display_put_char_small(uint_fast8_t c, uint_fast8_t lowhalf)
 {
 	(void) lowhalf;
 	st7565s_put_char_small(c);
+}
+
+// Вызов этой функции только внутри display_wrdata_begin() и display_wrdata_end();
+// Используется при выводе на графический ндикатор, если ТРЕБУЕТСЯ переключать полосы отображения
+void
+display_neg_put_char_small(uint_fast8_t c, uint_fast8_t lowhalf)
+{
+	(void) lowhalf;
+	st7565s_neg_put_char_small(c);
 }
 
 // самый маленький шрифт
