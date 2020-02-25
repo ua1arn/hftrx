@@ -94,7 +94,7 @@ st7565s_reset(void)
 
 static void st7565s_write_cmd(uint_fast8_t v1)
 {
-	//ST7565S_CTRL();	/* сделано состоянием по умолчанию RS: Low: select an index or status register */
+	ST7565S_CTRL();	/* сделано состоянием по умолчанию RS: Low: select an index or status register */
 	/* Enable SPI */
 	spi_select2(targetlcd, ST7565S_SPIMODE, ST7565S_SPIC_SPEED);	/* Enable SPI */
 
@@ -109,7 +109,7 @@ static void st7565s_write_cmd(uint_fast8_t v1)
 // В контроллере ST7565s команды нормально исполняются и если снимать /CS между ними - но для ускорения выдачи сделаю такую функцию
 static void st7565s_write_cmd2(uint_fast8_t v1, uint_fast8_t v2)
 {
-	//ST7565S_CTRL();	/* сделано состоянием по умолчанию RS: Low: select an index or status register */
+	ST7565S_CTRL();	/* сделано состоянием по умолчанию RS: Low: select an index or status register */
 	/* Enable SPI */
 	spi_select2(targetlcd, ST7565S_SPIMODE, ST7565S_SPIC_SPEED);	/* Enable SPI */
 
@@ -170,9 +170,9 @@ st7565s_pix8(
  X - координата по горизонтали в пределах 9..127 .0-132,
  Y - координата по вертикали (строка, Page) в пределах 0-7
 */ 
-static void st7565s_set_addr_column(uint_fast8_t x, uint_fast8_t y)		// 
+static void st7565s_set_addr_column(uint_fast16_t x, uint_fast16_t y)		//
 {
-	//ST7565S_CTRL();	/* сделано состоянием по умолчанию RS: Low: select an index or status register */
+	ST7565S_CTRL();	/* сделано состоянием по умолчанию RS: Low: select an index or status register */
 	/* Enable SPI */
 	spi_select2(targetlcd, ST7565S_SPIMODE, ST7565S_SPIC_SPEED);	/* Enable SPI */
 
@@ -244,6 +244,39 @@ static void st7565s_put_char_small(char cc)
 
 	for (; i < NCOLS; ++ i)
     	st7565s_pix8(p [i]);
+}
+
+
+/* Исключающее ИЛИ с точкой в растре */
+// use display_pixelbuffer_xor
+uint_fast16_t display_pixelbuffer_char(
+	GX_t * buffer,
+	uint_fast16_t dx,
+	uint_fast16_t dy,
+	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t row,	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	char cc
+	)
+{
+	uint_fast8_t i = 0;
+    const uint_fast8_t c = smallfont_decode((unsigned char) cc);
+	enum { NCOLS = (sizeof uc1601s_font [0] / sizeof uc1601s_font [0][0]) };
+	const FLASHMEM uint8_t * const p = & uc1601s_font [c][0];
+
+	for (; i < NCOLS; ++ i)
+	{
+		const uint_fast8_t v = p [i];
+
+		if (v & 0x01)	display_pixelbuffer_xor(buffer, dx, dy, col + i, row + 7);
+		if (v & 0x02)	display_pixelbuffer_xor(buffer, dx, dy, col + i, row + 6);
+		if (v & 0x04)	display_pixelbuffer_xor(buffer, dx, dy, col + i, row + 5);
+		if (v & 0x08)	display_pixelbuffer_xor(buffer, dx, dy, col + i, row + 4);
+		if (v & 0x10)	display_pixelbuffer_xor(buffer, dx, dy, col + i, row + 3);
+		if (v & 0x20)	display_pixelbuffer_xor(buffer, dx, dy, col + i, row + 2);
+		if (v & 0x40)	display_pixelbuffer_xor(buffer, dx, dy, col + i, row + 1);
+		if (v & 0x80)	display_pixelbuffer_xor(buffer, dx, dy, col + i, row + 0);
+	}
+	return NCOLS;
 }
 
 // Вызовы этой функции (или группу вызовов) требуется "обрамить" парой вызовов

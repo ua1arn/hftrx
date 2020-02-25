@@ -1677,15 +1677,14 @@ static void display_4linestest(
 	void * pv
 	)
 {
-	wline(x, y + 0, 0x00, DIM_X);
-	wline(x, y + 1, 0xFF, DIM_X);
-	wline(x, y + 2, 0x00, DIM_X);
-	wline(x, y + 3, 0xFF, DIM_X);
-	wline(x, y + 4, 0x00, DIM_X);
-	wline(x, y + 5, 0xFF, DIM_X);
-	wline(x, y + 6, 0x00, DIM_X);
-	wline(x, y + 6, 0x00, DIM_X);
-	wline(x, y + 7, 0xFF, DIM_X);
+	wline(x, y + 0, 0xFF, DIM_X);
+	wline(x, y + 1, 0x00, DIM_X);
+	wline(x, y + 2, 0xFF, DIM_X);
+	wline(x, y + 3, 0x00, DIM_X);
+	wline(x, y + 4, 0xFF, DIM_X);
+	wline(x, y + 5, 0x00, DIM_X);
+	wline(x, y + 6, 0xFF, DIM_X);
+	wline(x, y + 7, 0x00, DIM_X);
 }
 
 static void display_2linestest(
@@ -1694,14 +1693,14 @@ static void display_2linestest(
 	void * pv
 	)
 {
-	wline(x, y + 0, 0x00, DIM_X);
-	wline(x, y + 1, 0x00, DIM_X);
-	wline(x, y + 2, 0xFF, DIM_X);
-	wline(x, y + 3, 0xFF, DIM_X);
-	wline(x, y + 4, 0x00, DIM_X);
-	wline(x, y + 5, 0x00, DIM_X);
-	wline(x, y + 6, 0xFF, DIM_X);
-	wline(x, y + 7, 0xFF, DIM_X);
+	wline(x, y + 0, 0xFF, DIM_X);
+	wline(x, y + 1, 0xFF, DIM_X);
+	wline(x, y + 2, 0x00, DIM_X);
+	wline(x, y + 3, 0x00, DIM_X);
+	wline(x, y + 4, 0xFF, DIM_X);
+	wline(x, y + 5, 0xFF, DIM_X);
+	wline(x, y + 6, 0x00, DIM_X);
+	wline(x, y + 7, 0x00, DIM_X);
 }
 
 static void display_vlinestest(

@@ -5969,119 +5969,62 @@ void hightests(void)
 			;
 	}
 #endif
-#if 0
+#if 1
 	{
-		// Движущиеся картинки
-		enum 
-		{ 
-			topreserved = 6,
-			bufY = DIM_Y - GRID2Y(ROWS2GRID(topreserved)), 
-			dx = DIM_X, dy = bufY, 
-			// куда выводить
-			DBX_0 = CHARS2GRID(0), 
-			DBY_1 = ROWS2GRID(topreserved)
-		};
-		debug_printf_P(PSTR("test: dx=%d, dy=%d\n"), dx, dy);
+		enum { DX = DIM_X, DY = DIM_Y };
+		static ALIGNX_BEGIN GX_t scr0 [MGSIZE(DX, DY)] ALIGNX_END;
+		static ALIGNX_BEGIN GX_t scr1 [MGSIZE(DX, DY)] ALIGNX_END;
+		static ALIGNX_BEGIN GX_t scr2 [MGSIZE(DX, DY)] ALIGNX_END;
+		static ALIGNX_BEGIN GX_t scr3 [MGSIZE(DX, DY)] ALIGNX_END;
 
-
-		/* отображение надписей самым маленьким шрифтом (8 точек) */
-		display_setcolors(COLOR_GREEN, COLOR_BLACK);
-		uint_fast8_t lowhalf2 = HALFCOUNT_SMALL2 - 1;
-		do
-		{
 		
-			display_gotoxy(CHARS2GRID(0), ROWS2GRID(0) + lowhalf2);
-			display_string2_P(PSTR("PT-Electronics 2017"), lowhalf2);
-			//display_string2_P(PSTR("PT-Electronics 2015 RENESAS 2.7 inch TFT"), lowhalf2);
+		memset(scr0, 0xFF, sizeof scr0);
+		memset(scr1, 0x00, sizeof scr1);
+		memset(scr2, 0x00, sizeof scr2);
+		memset(scr3, 0x00, sizeof scr3);
 
-			//display_gotoxy(CHARS2GRID(0), CHARS2GRID(1) + lowhalf2);
-			//display_string2_P(PSTR("PT-Electronics 2014"), lowhalf2);
+		// Four vertical lines
+		display_pixelbuffer_rect(scr0, DX, DY, 0 * DX / 8, 0, DX / 8, DY);
+		display_pixelbuffer_rect(scr0, DX, DY, 2 * DX / 8, 0, DX / 8, DY);
+		display_pixelbuffer_rect(scr0, DX, DY, 4 * DX / 8, 0, DX / 8, DY);
+		display_pixelbuffer_rect(scr0, DX, DY, 6 * DX / 8, 0, DX / 8, DY);
 
-		} while (lowhalf2 --);
-	#if 1
-		/* отображение надписей маленьким шрифтом (16 точек) */
-		display_setcolors(COLOR_GREEN, COLOR_BLACK);
-		uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
-		do
+
+		// Four horizontal lines
+		display_pixelbuffer_rect(scr1, DX, DY, 0, 0 * DY / 8, DX, DY / 8);
+		display_pixelbuffer_rect(scr1, DX, DY, 0, 2 * DY / 8, DX, DY / 8);
+		display_pixelbuffer_rect(scr1, DX, DY, 0, 4 * DY / 8, DX, DY / 8);
+		display_pixelbuffer_rect(scr1, DX, DY, 0, 6 * DY / 8, DX, DY / 8);
+
+		// Two horizontal lines
+		display_pixelbuffer_rect(scr2, DX, DY, 0, 0 * DY / 4, DX, DY / 4);
+		display_pixelbuffer_rect(scr2, DX, DY, 0, 2 * DY / 4, DX, DY / 4);
+
+		// Text & timer
+		//display_pixelbuffer_line(scr3, DX, DY, 0, 0, DX - 1, DY - 1);
+		display_pixelbuffer_rect(scr3, DX, DY, 0, 	DY - 11, 40, 11);
+		display_pixelbuffer_rect(scr3, DX, DY, 43,	DY - 11, 41, 11);
+		display_pixelbuffer_rect(scr3, DX, DY, 87,	DY - 11, 41, 11);
+		//display_pixelbuffer_text(scr3, DX, DY, 0, 0, "Top");
+		//display_pixelbuffer_text(scr3, DX, DY, 0, 0, "Bottom");
+
+		display_pixelbuffer_text(scr3, DX, DY, 16, DY - 9, "Ok");
+		display_pixelbuffer_text(scr3, DX, DY, 94, DY - 9, "Back");
+
+
+		// text display
+		for (;;)
 		{
-		
-			display_gotoxy(CHARS2GRID(0), ROWS2GRID(1) + lowhalf);
-			display_string_P(PSTR("Start "), lowhalf);
-
-			display_gotoxy(CHARS2GRID(0), ROWS2GRID(2) + lowhalf);
-			display_string_P(PSTR("Stop "), lowhalf);
-
-		} while (lowhalf --);
-	#endif
-
-	#if 0//LCDMODE_COLORED
-
-		static ALIGNX_BEGIN volatile PACKEDCOLOR565_T scr [GXSIZE(dx, dy)] ALIGNX_END;
-
-		display_colorbuffer_fill(scr, dx, dy, COLOR_WHITE);
-		display_colorbuffer_show(scr, dx, dy, 0, GRID2Y(topreserved));
-		//for (;;)
-		//	;
-		int phase = 0;
-		int count = 0;
-		const int top = (DIM_X - bufY);
-		unsigned loop;
-		for (loop = 0; ;loop = loop < top ? loop + 1 : 0)
-		{
-		
-			// рисование линии
-			unsigned i;
-			for (i = 0; i < bufY; ++ i)
-				display_colorbuffer_set(scr, dx, dy, i + loop, i, COLOR_BLUE);		// поставить точку
-
-			display_colorbuffer_show(scr, dx, dy, 0, GRID2Y(topreserved));
-			//local_delay_ms(25);
-			if (++ count > top)
-			{
-				count = 0;
-				phase = ! phase;
-				if (phase)
-					display_colorbuffer_fill(scr, dx, dy, COLOR_YELLOW);
-				else
-					display_colorbuffer_fill(scr, dx, dy, COLOR_RED);
-			}
-			
+			display_showbuffer(scr0, DX, DY, 0, 0);
+			local_delay_ms(1000);
+			display_showbuffer(scr1, DX, DY, 0, 0);
+			local_delay_ms(1000);
+			display_showbuffer(scr2, DX, DY, 0, 0);
+			local_delay_ms(1000);
+			display_showbuffer(scr3, DX, DY, 0, 0);
+			local_delay_ms(1000);
 		}
-	#else /* LCDMODE_COLORED */
 
-		static FATFSALIGN_BEGIN GX_t scr [MGSIZE(dx, dy)] FATFSALIGN_END;
-
-		display_setcolors(COLOR_WHITE, COLOR_BLACK);
-		
-		memset(scr, 0xFF, sizeof scr);
-		display_showbuffer(scr, dx, dy, DBX_0, DBY_1);
-		int phase = 0;
-		int count = 0;
-		const int top = (DIM_X - bufY);
-		unsigned loop;
-		for (loop = 0; ;loop = loop < top ? loop + 1 : 0)
-		{
-		
-			// рисование линии
-			unsigned i;
-			for (i = 0; i < bufY; ++ i)
-				display_pixelbuffer(scr, dx, dy, i + loop, i);		// погасить точку
-
-			display_showbuffer(scr, dx, dy, DBX_0, DBY_1);
-			//local_delay_ms(25);
-			if (++ count > top)
-			{
-				count = 0;
-				phase = ! phase;
-				if (phase)
-					display_setcolors(COLOR_YELLOW, COLOR_BLACK);
-				else
-					display_setcolors(COLOR_RED, COLOR_BLACK);
-				memset(scr, 0xFF, sizeof scr);
-			}
-			
-		}
-	#endif /* LCDMODE_COLORED */
 	}
 #endif
 #if 0 && WITHDEBUG

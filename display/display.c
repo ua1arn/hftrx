@@ -682,7 +682,7 @@ void display_showbuffer(
 		0x0100, 0x0200, 0x0400, 0x0800, 0x1000, 0x2000, 0x4000, 0x8000,
 	};
 
-#elif LCDMODE_UC1608 || LCDMODE_UC1601
+#elif LCDMODE_UC1608 || LCDMODE_UC1601 || LCDMODE_ST7565S
 
 	/* старшие биты соответствуют верхним пикселям изображения */
 	// млдший бит ниже в растре
@@ -1221,6 +1221,8 @@ void display_pixelbuffer(
 	//* p ^= mapcolumn [col % 16];	// инвертировать точку
 
 #else /* LCDMODE_S1D13781 */
+	row = DIM_Y - 1 - row;
+	col = DIM_X - 1 - col;
 
 	//row = (dy - 1) - row;		// смена направления
 	GX_t * const p = buffer + (row / 8) * dx + col;	// начало данных горизонтальной полосы в памяти
@@ -1249,7 +1251,8 @@ void display_pixelbuffer_xor(
 	* p ^= mapcolumn [col % 16];	// инвертировать точку
 
 #else /* LCDMODE_S1D13781 */
-
+	row = DIM_Y - 1 - row;
+	col = DIM_X - 1 - col;
 	//row = (dy - 1) - row;		// смена направления
 	GX_t * const p = buffer + (row / 8) * dx + col;	// начало данных горизонтальной полосы в памяти
 	//* p |= mapcolumn [row % 8];	// установить точку
@@ -1268,6 +1271,44 @@ void display_pixelbuffer_clear(
 	memset(buffer, 0xFF, (size_t) MGSIZE(dx, dy) * (sizeof * buffer));			// рисование способом погасить точку
 }
 
+/* Исключающее ИЛИ с точкой в растре */
+void display_pixelbuffer_text(
+	GX_t * buffer,
+	uint_fast16_t dx,
+	uint_fast16_t dy,
+	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t row,	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	const char * text
+	)
+{
+	char c;
+
+	while ((c = * text ++) != '\0')
+	{
+		col += display_pixelbuffer_char(buffer, dx, dy, col, row, c);
+	}
+}
+
+
+/* Исключающее ИЛИ с точкой в растре - прямоугольник */
+void display_pixelbuffer_rect(
+	GX_t * buffer,
+	uint_fast16_t dx,
+	uint_fast16_t dy,
+	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t row,	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	uint_fast16_t w,
+	uint_fast16_t h
+	)
+{
+	uint_fast16_t x;
+	for (x = 0; x < w; ++ x)
+	{
+		uint_fast16_t y;
+		for (y = 0; y < h; ++ y)
+			display_pixelbuffer_xor(buffer, dx, dy, col + x, row + y);
+	}
+}
 // Routine to draw a line in the RGB565 color to the LCD.
 // The line is drawn from (xmin,ymin) to (xmax,ymax).
 // The algorithm used to draw the line is "Bresenham's line
@@ -1324,7 +1365,7 @@ void display_pixelbuffer_line(
        }
        // plot
        //LCD_PlotPoint(xDraw, yDraw, color);
-	   display_pixelbuffer(buffer, dx, dy, xDraw, yDraw);
+	   display_pixelbuffer_xor(buffer, dx, dy, xDraw, yDraw);
        // next
        if (E > 0) {
            E += TwoDyTwoDx; //E += 2*Dy - 2*Dx;
