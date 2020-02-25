@@ -6896,7 +6896,7 @@ board_set_wflevelsep(uint_fast8_t v)
 //		if (gettxstate())
 //		{
 			int_fast16_t temp = hamradio_get_temperature_value();
-			str_len += local_snprintf_P(&buff[str_len], sizeof buff / sizeof buff [0], PSTR("%d.%dC "), temp / 10, temp %10);
+			str_len += local_snprintf_P(&buff[str_len], sizeof buff / sizeof buff [0] - str_len, PSTR("%d.%dC "), temp / 10, temp %10);
 //		}
 	#endif /* WITHTHERMOLEVEL */
 	#if WITHCURRLEVEL && WITHCPUADCHW	// ток PA (при передаче)
@@ -6904,15 +6904,15 @@ board_set_wflevelsep(uint_fast8_t v)
 		{
 			int_fast16_t drain = hamradio_get_pacurrent_value();
 			if (drain < 0) drain = 0;
-			str_len += local_snprintf_P(&buff[str_len], sizeof buff / sizeof buff [0], PSTR("%d.%02dA "), drain / 100, drain % 100);
+			str_len += local_snprintf_P(&buff[str_len], sizeof buff / sizeof buff [0] - str_len, PSTR("%d.%02dA "), drain / 100, drain % 100);
 		}
 	#endif /* WITHCURRLEVEL && WITHCPUADCHW */
 	#if WITHVOLTLEVEL && WITHCPUADCHW	// напряжение питания
-		str_len += local_snprintf_P(&buff[str_len], sizeof buff / sizeof buff [0],
+		str_len += local_snprintf_P(&buff[str_len], sizeof buff / sizeof buff [0] - str_len,
 									PSTR("%d.%1dV "), hamradio_get_volt_value() / 10, hamradio_get_volt_value() % 10);
 	#endif /* WITHVOLTLEVEL && WITHCPUADCHW */
 	#if WITHIF4DSP						// ширина панорамы
-		str_len += local_snprintf_P(&buff[str_len], sizeof buff / sizeof buff [0], PSTR("SPAN:%3dk"), (int) ((display_zoomedbw() + 0) / 1000));
+		str_len += local_snprintf_P(&buff[str_len], sizeof buff / sizeof buff [0] - str_len, PSTR("SPAN:%3dk"), (int) ((display_zoomedbw() + 0) / 1000));
 	#endif /* WITHIF4DSP */
 		xt = ALLDX - 10 - str_len * 10;
 		pip_transparency_rect(xt - 5, 225, ALLDX - 5, 248, alpha);
@@ -6923,7 +6923,7 @@ board_set_wflevelsep(uint_fast8_t v)
 		uint_fast8_t month, day, hour, minute, secounds;
 		str_len = 0;
 		board_rtc_getdatetime(& year, & month, & day, & hour, & minute, & secounds);
-		str_len += local_snprintf_P(&buff[str_len], sizeof buff / sizeof buff [0],
+		str_len += local_snprintf_P(&buff[str_len], sizeof buff / sizeof buff [0] - str_len,
 									PSTR("%02d.%02d.%04d %02d%c%02d"), day, month, year, hour, ((secounds & 1) ? ' ' : ':'), minute);
 		pip_transparency_rect(5, 225, str_len * 10 + 15, 248, alpha);
 		display_colorbuff_string2_tbg(colorpip, ALLDX, ALLDY, 10, 230, buff, COLORPIP_YELLOW);
