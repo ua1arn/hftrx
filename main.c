@@ -2498,7 +2498,7 @@ struct nvmap
 	uint16_t gdigiscale;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 	uint8_t	gcwedgetime;			/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
 	uint8_t	gsidetonelevel;	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
-	uint8_t gmonilevel;		/* Уровень сигнала самопрослушивания в процентах - 0%..100% */
+	uint8_t gmoniflag;		/* разрешение самопрослушивания */
 	uint8_t	gsubtonelevel;	/* Уровень сигнала CTCSS в процентах - 0%..100% */
 	uint8_t gloopmsg, gloopsec;
 	uint8_t gdigigainmax;	/* диапазон ручной регулировки цифрового усиления - максимальное значение */
@@ -3712,7 +3712,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 		(- 230) + FSADCPOWEROFFSET10,	// с конвертором
 	};
 #endif /* CTLSTYLE_OLEG4Z_V1 */
-	static uint_fast8_t gmonilevel = 15;		/* Уровень сигнала самопрослушивания в процентах - 0%..100% */
+	static uint_fast8_t gmoniflag = 1;		/* разрешение самопрослушивания */
 
 	static uint_fast8_t gvad605 = 180; //UINT8_MAX;	/* напряжение на AD605 (управление усилением тракта ПЧ */
 	#if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */
@@ -8081,7 +8081,7 @@ updateboard(
 
 		board_set_cwedgetime(gcwedgetime);	/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
 		board_set_sidetonelevel(gsidetonelevel);	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
-		board_set_monilevel(gmonilevel);	/* Уровень сигнала самопрослушивания в процентах - 0%..100% */
+		board_set_moniflag(gmoniflag);	/* glob_moniflag */
 		#if WITHSPECTRUMWF
 			board_set_fillspect(gfillspect);	/* заливать заполнением площадь под графиком спектра */
 			board_set_topdb(gtopdb);		/* верхний предел FFT */
@@ -12516,7 +12516,7 @@ static const FLASHMEM struct menudef menutable [] =
 #endif /* WITHLCDBACKLIGHT */
 #if WITHKBDBACKLIGHT
 	{
-		QLABEL("KBD LIGH"), 7, 3, RJ_ON,	ISTEP1,
+		QLABEL("KBD LIGH"), 8, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, kblight),
@@ -12550,7 +12550,7 @@ static const FLASHMEM struct menudef menutable [] =
 #if LCDMODE_COLORED
 	// Для цветных дисплеев можно менять цвет фона
 	{
-		QLABEL("BLUE BG "), 7, 3, RJ_ON,	ISTEP1,
+		QLABEL("BLUE BG "), 8, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, gbluebgnd),
@@ -13415,7 +13415,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #endif /* ! WITHFLATMENU */
 	{
-		QLABEL("NOTCH   "), 7, 3, RJ_ON,	ISTEP1,		/* управление режимом NOTCH */
+		QLABEL("NOTCH   "), 8, 3, RJ_ON,	ISTEP1,		/* управление режимом NOTCH */
 		ITEM_VALUE,
 		0, NOTCHMODE_COUNT - 1,
 		RMT_NOTCH_BASE,							/* управление режимом NOTCH */
@@ -13456,7 +13456,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #endif /* ! WITHFLATMENU */
 	{
-		QLABEL("NOTCH   "), 7, 3, RJ_ON,	ISTEP1,		/* управление режимом NOTCH */
+		QLABEL("NOTCH   "), 8, 3, RJ_ON,	ISTEP1,		/* управление режимом NOTCH */
 		ITEM_VALUE,
 		0, NOTCHMODE_COUNT - 1,
 		RMT_NOTCH_BASE,							/* управление режимом NOTCH */
@@ -13526,7 +13526,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
     #if ELKEY328
 	{
-		QLABEL("VIBROENB"), 7, 3, RJ_ON,	ISTEP1,		/* разрешение работы в режиме виброплекса */
+		QLABEL("VIBROENB"), 8, 3, RJ_ON,	ISTEP1,		/* разрешение работы в режиме виброплекса */
 		ITEM_VALUE,
 		0, 1,		// minimal 0 - без эффекта Виброплекса
 		offsetof(struct nvmap, elkeyslopeenable),
@@ -13574,7 +13574,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #if WITHTX
 	{
-		QLABEL("BREAK-IN"), 7, 3, RJ_ON,	ISTEP1,
+		QLABEL("BREAK-IN"), 8, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, bkinenable),
@@ -13617,7 +13617,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #endif /* ! WITHFLATMENU */
 	{
-		QLABEL("ADC RAND"), 7, 3, RJ_ON,	ISTEP1,	/* управление интерфейсом в LTC2208 */
+		QLABEL("ADC RAND"), 8, 3, RJ_ON,	ISTEP1,	/* управление интерфейсом в LTC2208 */
 		ITEM_VALUE,
 		0, 1,
 		offsetof(struct nvmap, gadcrand),
@@ -13626,7 +13626,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, 
 	},
 	{
-		QLABEL("ADC DITH"), 7, 3, RJ_ON,	ISTEP1,	/* управление зашумлением в LTC2208 */
+		QLABEL("ADC DITH"), 8, 3, RJ_ON,	ISTEP1,	/* управление зашумлением в LTC2208 */
 		ITEM_VALUE,
 		0, 1,
 		offsetof(struct nvmap, gdither),
@@ -13635,7 +13635,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, 
 	},
 	{
-		QLABEL("ADC FIFO"), 7, 3, RJ_ON,	ISTEP1,	/*  */
+		QLABEL("ADC FIFO"), 8, 3, RJ_ON,	ISTEP1,	/*  */
 		ITEM_VALUE,
 		0, 1,
 		offsetof(struct nvmap, gadcfifo),
@@ -13653,7 +13653,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getadcoffsbase,	/* складывается со смещением и отображается */
 	},
 	{
-		QLABEL("DAC TEST"), 7, 3, RJ_ON,	ISTEP1,	/*  */
+		QLABEL("DAC TEST"), 8, 3, RJ_ON,	ISTEP1,	/*  */
 		ITEM_VALUE,
 		0, 1,
 		offsetof(struct nvmap, gdactest),
@@ -13676,7 +13676,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #endif /* ! WITHFLATMENU */
 	{
-		QLABEL("VOX EN  "), 7, 3, RJ_ON,	ISTEP1,
+		QLABEL("VOX EN  "), 8, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, gvoxenable),
@@ -13726,7 +13726,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #endif /* ! WITHFLATMENU */
 	{
-		QLABEL("CAT ENAB"), 7, 3, RJ_ON,	ISTEP1,
+		QLABEL("CAT ENAB"), 8, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, catenable),
@@ -13789,7 +13789,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #endif /* ! WITHFLATMENU */
 	{
-		QLABEL("CTCSS   "), 7, 3, RJ_ON,	ISTEP1,	//  Continuous Tone-Coded Squelch System or CTCSS control
+		QLABEL("CTCSS   "), 8, 3, RJ_ON,	ISTEP1,	//  Continuous Tone-Coded Squelch System or CTCSS control
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, gsbtonenable),
@@ -13895,12 +13895,12 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		QLABEL("MONI LVL"), 7, 0, 0,	ISTEP1,		/* Select the monitoring sound output level.. */
+		QLABEL("MONI EN "), 8, 3, RJ_ON,	ISTEP1,		/* Select the monitoring sound output level.. */
 		ITEM_VALUE,
-		0, 100,
-		offsetof(struct nvmap, gmonilevel),	/* Уровень сигнала самопрослушивания в процентах - 0%..100% */
+		0, 1,
+		offsetof(struct nvmap, gmoniflag),	/* разрешение самопрослушивания */
 		NULL,
-		& gmonilevel,
+		& gmoniflag,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #endif /* WITHIF4DSP */
@@ -14000,7 +14000,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		QLABEL("MIK BUST"), 7, 3, RJ_ON,	ISTEP1,
+		QLABEL("MIK BUST"), 8, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,	
 		0, 1, 					// предусилитель сигнала с микрофона
 		offsetof(struct nvmap, gmikebust20db),
@@ -14010,7 +14010,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 	#if WITHAFCODEC1HAVEPROC	/* кодек имеет управление обработкой микрофонного сигнала (эффекты, эквалайзер, ...) */
 	{
-		QLABEL("MIK EQUA"), 7, 3, RJ_ON,	ISTEP1,
+		QLABEL("MIK EQUA"), 8, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,
 		offsetof(struct nvmap, gmikeequalizer),
@@ -14080,7 +14080,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #endif /* ITHMIC1LEVEL */
 #if WITHUSEAUDIOREC
 	{
-		QLABEL("SD RECRD"), 7, 3, RJ_ON,	ISTEP1,		/* автоматически начинаем запись на SD CARD при включении */
+		QLABEL("SD RECRD"), 8, 3, RJ_ON,	ISTEP1,		/* автоматически начинаем запись на SD CARD при включении */
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, recmode),
@@ -14385,7 +14385,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #endif /* ! WITHFLATMENU */
 	{
-		QLABEL("LFM MODE"), 7, 3, RJ_ON, 	ISTEP1,
+		QLABEL("LFM MODE"), 8, 3, RJ_ON, 	ISTEP1,
 		ITEM_VALUE,
 		0, 1,			/* LFM mode enable */
 		offsetof(struct nvmap, lfmmode),
@@ -14454,7 +14454,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #endif /* ! WITHFLATMENU */
 #if WITHRFSG
 	{
-		QLABEL("RFSG MOD"), 7, 3, RJ_ON,	ISTEP1,
+		QLABEL("RFSG MOD"), 8, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, userfsg),
@@ -14474,7 +14474,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		QLABEL("ENC DYNA"), 7, 3, RJ_ON,	ISTEP1,
+		QLABEL("ENC DYNA"), 8, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,
 		offsetof(struct nvmap, ghiresdyn),
@@ -14569,7 +14569,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #if WITHTX
 #if ! CTLSTYLE_SW2011ALL
 	{
-		QLABEL("TX GATE "), 7, 3, RJ_ON,	ISTEP1,
+		QLABEL("TX GATE "), 8, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,
 		offsetof(struct nvmap, gtxgate),
@@ -14679,7 +14679,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #endif /* WITHONLYBANDS */
 	{
-		QLABEL("STAYFREQ"), 7, 3, RJ_ON,	ISTEP1,
+		QLABEL("STAYFREQ"), 8, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, stayfreq),
@@ -14701,7 +14701,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #if WITHTX
 #if WITHSWRMTR && ! WITHSHOWSWRPWR
 	{
-		QLABEL("SWR SHOW"), 7, 3, RJ_ON,	ISTEP1,
+		QLABEL("SWR SHOW"), 8, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, swrmode),
@@ -14912,7 +14912,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #if CTLSTYLE_SW2011ALL
 #if TUNE_6MBAND
 	{
-		QLABEL("BAND 50 "), 7, 3, RJ_ON,	ISTEP1,
+		QLABEL("BAND 50 "), 8, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, bandset6m),
@@ -14923,7 +14923,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #endif /* TUNE_6MBAND */
 #if TUNE_4MBAND
 	{
-		QLABEL("BAND 70 "), 7, 3, RJ_ON,	ISTEP1,
+		QLABEL("BAND 70 "), 8, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, bandset4m),
@@ -14934,7 +14934,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #endif /* TUNE_6MBAND */
 #if TUNE_2MBAND
 	{
-		QLABEL("BAND 144"), 7, 3, RJ_ON,	ISTEP1,
+		QLABEL("BAND 144"), 8, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, bandset2m),
