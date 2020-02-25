@@ -497,11 +497,7 @@
 				(GPIOD)->BSRR = BSRR_C(BOARD_BLINK_BITS); \
 		} while (0)
 
-#if KEYBOARD_USE_ADC
-	#define HARDWARE_KBD_INITIALIZE() do { \
-			zzzzz; \
-		} while (0)
-#else
+#if 1
 	#define KBD_MASK	(1uL << 0)	// PA0
 	#define KBD_XOR		(1uL << 0)	// PA0  реагирует на "1"
 	#define KBD_TARGET_PIN (GPIOA->IDR)

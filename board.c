@@ -8191,14 +8191,16 @@ board_get_pressed_key(void)
 #else	/* KEYBOARD_USE_ADC */
 	enum { AKBDEND = 0 };
 #endif	/* KEYBOARD_USE_ADC */
-
+	int ie = AKBDEND;
 #if defined (TARGET_ENC2BTN_GET)
 	if (TARGET_ENC2BTN_GET != 0)
-		return AKBDEND + 0;
+		return ie;
+	++ ie;
 #endif /* defined (TARGET_ENC2BTN_GET) */
 #if defined (TARGET_POWERBTN_GET)
 	if (TARGET_POWERBTN_GET != 0)
-		return AKBDEND + 1;
+		return ie;
+	++ ie;
 #endif /* defined (TARGET_POWERBTN_GET) */
 
 #if KBD_MASK
@@ -8208,7 +8210,7 @@ board_get_pressed_key(void)
 	const portholder_t v = ~ (KBD_TARGET_PIN ^ KBD_XOR);
 	portholder_t srcmask = KBD_MASK;
 	
-	for (bitpos = 0, i = 0; srcmask != 0; ++ bitpos, srcmask >>= 1)
+	for (bitpos = 0, i = AKBDEND; srcmask != 0; ++ bitpos, srcmask >>= 1)
 	{
 		const portholder_t mask = (portholder_t)1 << bitpos;
 		if ((srcmask & 0x01) == 0)
