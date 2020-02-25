@@ -506,24 +506,36 @@ void display_testframe(uint_fast8_t state)
 {
 	st7565s_write_cmd(state ? CMD_SET_ALLPTS_ON : CMD_SET_ALLPTS_NORMAL);
 }
-/* вызывается при разрешённых прерываниях. */
-void display_initialize(void)
+
+void display_backlight1(uint_fast8_t v)
 {
 	enum { BLADDR_W = 0x5E };	// MCP4017
 	{
 		// backlight control
 		i2c_start(BLADDR_W);
-	    i2c_write(0x60);	// 0x7F: off, 0x70: minimal
+	    i2c_write(v);	// 0x7F: off, 0x70: minimal
 	    i2c_waitsend();
 	    i2c_stop();
 
 	}
+}
+void display_contrast1(uint_fast8_t v)
+{
+	st7565s_write_cmd2(CMD_SET_VOLUME_FIRST, v);
+}
+
+/* вызывается при разрешённых прерываниях. */
+void display_initialize(void)
+{
+	display_backlight1(0x60);
 
 	#if LCDMODE_PTE1206
 	pte1206_initialize();
 	#else /* LCDMODE_PTE1206 */
 	st7565s_initialize();
 	#endif /* LCDMODE_PTE1206 */
+	display_contrast1(0x24);
+
 }
 
 void display_set_contrast(uint_fast8_t v)

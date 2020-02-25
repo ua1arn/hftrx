@@ -989,6 +989,10 @@ void board_set_zoomxpow2(uint_fast8_t v);	/* уменьшение отображ
 void board_set_fillspect(uint_fast8_t v); /* заливать заполнением площадь под графиком спектра */
 void board_set_wflevelsep(uint_fast8_t v); /* чувствительность водопада регулируется отдельной парой параметров */
 
+
+void display_backlight1(uint_fast8_t v);
+void display_contrast1(uint_fast8_t v);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

@@ -5976,6 +5976,7 @@ void hightests(void)
 		static ALIGNX_BEGIN GX_t scr1 [MGSIZE(DX, DY)] ALIGNX_END;
 		static ALIGNX_BEGIN GX_t scr2 [MGSIZE(DX, DY)] ALIGNX_END;
 		static ALIGNX_BEGIN GX_t scr3 [MGSIZE(DX, DY)] ALIGNX_END;
+		static ALIGNX_BEGIN GX_t scr4 [MGSIZE(DX, DY)] ALIGNX_END;
 
 		
 		memset(scr0, 0x00, sizeof scr0);
@@ -6013,9 +6014,23 @@ void hightests(void)
 		display_pixelbuffer_text(scr3, DX, DY, 94, DY - 9, "Back");
 
 		display_showbuffer(scr3, DX, DY, 0, 0);
+		enum { BLMIN = 40, BLMAX = 0x78 };
+		enum { CTMIN = 0, CTMAX = 0x3F };
+		uint_fast8_t page = 3;
+		uint_fast8_t backlight = 0x60;
+		uint_fast8_t contrast = 0x24;
+		char s [64];
+		const char * format2 = "bl=0x%02X,contrast=0x%02X";
+
+		local_snprintf_P(s, 64, format2, backlight, contrast);
+		memset(scr4, 0x00, sizeof scr3);
+		display_pixelbuffer_text(scr4, DX, DY, 0, 0, s);
+		display_backlight1(backlight);
+		display_contrast1(contrast);
+		if (page == 4)
+			display_showbuffer(scr4, DX, DY, 0, 0);
 
 		// text display
-		uint_fast8_t page = 3;
 		for (;;)
 		{
 			uint_fast8_t kbch;
@@ -6024,27 +6039,67 @@ void hightests(void)
 			if (kbch == KBD_CODE_MODE)
 			{
 				// PA1 short
+				// backlight up
+				if (backlight < BLMAX)
+					backlight += 1;
 
+				local_snprintf_P(s, 64, format2, backlight, contrast);
+				memset(scr4, 0x00, sizeof scr3);
+				display_pixelbuffer_text(scr4, DX, DY, 0, 0, s);
+				display_backlight1(backlight);
+				display_contrast1(contrast);
+				if (page == 4)
+					display_showbuffer(scr4, DX, DY, 0, 0);
 			}
 			else if (kbch == KBD_CODE_MODEMOD)
 			{
 				// PA1 long
+				// backlight down
+				if (backlight > BLMIN)
+					backlight -= 1;
 
+				local_snprintf_P(s, 64, format2, backlight, contrast);
+				memset(scr4, 0x00, sizeof scr3);
+				display_pixelbuffer_text(scr4, DX, DY, 0, 0, s);
+				display_backlight1(backlight);
+				display_contrast1(contrast);
+				if (page == 4)
+					display_showbuffer(scr4, DX, DY, 0, 0);
 			}
 			else if (kbch == KBD_CODE_ATT)
 			{
 				// PA2 short
+				// contrast up
+				if (contrast < CTMAX)
+					contrast += 1;
 
+				local_snprintf_P(s, 64, format2, backlight, contrast);
+				memset(scr4, 0x00, sizeof scr3);
+				display_pixelbuffer_text(scr4, DX, DY, 0, 0, s);
+				display_backlight1(backlight);
+				display_contrast1(contrast);
+				if (page == 4)
+					display_showbuffer(scr4, DX, DY, 0, 0);
 			}
 			else if (kbch == KBD_CODE_PAMP)
 			{
 				// PA2 long
+				// contrast down
+				if (contrast > CTMIN)
+					contrast -= 1;
 
+				local_snprintf_P(s, 64, format2, backlight, contrast);
+				memset(scr4, 0x00, sizeof scr3);
+				display_pixelbuffer_text(scr4, DX, DY, 0, 0, s);
+				display_backlight1(backlight);
+				display_contrast1(contrast);
+				if (page == 4)
+					display_showbuffer(scr4, DX, DY, 0, 0);
 			}
 			else if (kbch == KBD_CODE_BW)
 			{
 				page += 1;
-				if (page >= 4)
+				if (page >= 5)
 					page = 0;
 				switch (page)
 				{
@@ -6059,6 +6114,9 @@ void hightests(void)
 					break;
 				case 3:
 					display_showbuffer(scr3, DX, DY, 0, 0);
+					break;
+				case 4:
+					display_showbuffer(scr4, DX, DY, 0, 0);
 					break;
 				}
 			}
