@@ -6021,7 +6021,27 @@ void hightests(void)
 			uint_fast8_t kbch;
 			while (kbd_scan(& kbch) == 0)
 				;
-			//if (kbch == KBD_CODE_BW)
+			if (kbch == KBD_CODE_MODE)
+			{
+				// PA1 short
+
+			}
+			else if (kbch == KBD_CODE_MODEMOD)
+			{
+				// PA1 long
+
+			}
+			else if (kbch == KBD_CODE_ATT)
+			{
+				// PA2 short
+
+			}
+			else if (kbch == KBD_CODE_PAMP)
+			{
+				// PA2 long
+
+			}
+			else if (kbch == KBD_CODE_BW)
 			{
 				page += 1;
 				if (page >= 4)

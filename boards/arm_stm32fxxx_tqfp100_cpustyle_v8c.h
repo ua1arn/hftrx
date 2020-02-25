@@ -498,12 +498,15 @@
 		} while (0)
 
 #if 1
-	#define KBD_MASK	(1uL << 0)	// PA0
-	#define KBD_XOR		(1uL << 0)	// PA0  реагирует на "1"
+	//	PA0, PA1, PA2
+	#define KBD_MASK_DOWN (1uL << 1) | (1uL << 2)	// PA1, PA2 реагирует на "0"
+	#define KBD_MASK_UP	(1uL << 0)		// PA0  реагирует на "1"
+	#define KBD_MASK	(KBD_MASK_UP | KBD_MASK_DOWN)	//PA0, PA1, PA2
+
 	#define KBD_TARGET_PIN (GPIOA->IDR)
 	#define HARDWARE_KBD_INITIALIZE() do { \
-			arm_hardware_pioa_inputs(KBD_MASK); \
-			arm_hardware_pioa_updown(0, KBD_MASK);	/* PA0 pull-down */ \
+			arm_hardware_pioa_inputs(KBD_MASK_UP | KBD_MASK_DOWN); \
+			arm_hardware_pioa_updown(KBD_MASK_DOWN, KBD_MASK_UP);	/* PA0 pull-down */ \
 		} while (0)
 #endif
 

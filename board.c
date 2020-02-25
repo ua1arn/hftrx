@@ -8207,7 +8207,7 @@ board_get_pressed_key(void)
 
 	uint_fast8_t i;
 	uint_fast8_t bitpos;
-	const portholder_t v = ~ (KBD_TARGET_PIN ^ KBD_XOR);
+	const portholder_t v = ~ (KBD_TARGET_PIN ^ KBD_MASK_UP);
 	portholder_t srcmask = KBD_MASK;
 	
 	for (bitpos = 0, i = AKBDEND; srcmask != 0; ++ bitpos, srcmask >>= 1)
