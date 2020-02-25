@@ -1290,6 +1290,30 @@ void display_pixelbuffer_text(
 }
 
 
+/* Исключающее ИЛИ с точкой в растре */
+void display_pixelbuffer_text_big(
+	GX_t * buffer,
+	uint_fast16_t dx,
+	uint_fast16_t dy,
+	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t row,	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	const char * text
+	)
+{
+	char c;
+
+	while ((c = * text ++) != '\0')
+	{
+		uint_fast16_t w;
+		uint_fast8_t lowhalf = HALFCOUNT_FREQA - 1;
+		do
+		{
+			w = display_pixelbuffer_char_big(buffer, dx, dy, col, row + lowhalf * 8, c, lowhalf);	// отрисовываем верхнюю часть строки
+		} while (lowhalf --);
+		col += w;
+	}
+}
+
 /* Исключающее ИЛИ с точкой в растре - прямоугольник */
 void display_pixelbuffer_rect(
 	GX_t * buffer,

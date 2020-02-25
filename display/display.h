@@ -694,6 +694,15 @@ void display_pixelbuffer_text(
 	uint_fast16_t row,	// вертикальная координата пикселя (0..dy-1) сверху вниз
 	const char * text
 	);
+/* Исключающее ИЛИ с точкой в растре */
+void display_pixelbuffer_text_big(
+	GX_t * buffer,
+	uint_fast16_t dx,
+	uint_fast16_t dy,
+	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t row,	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	const char * text
+	);
 
 /* Исключающее ИЛИ с точкой в растре */
 uint_fast16_t display_pixelbuffer_char(
@@ -703,6 +712,16 @@ uint_fast16_t display_pixelbuffer_char(
 	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
 	uint_fast16_t row,	// вертикальная координата пикселя (0..dy-1) сверху вниз
 	char cc
+	);
+/* Исключающее ИЛИ с точкой в растре */
+// use display_pixelbuffer_xor
+uint_fast16_t display_pixelbuffer_char_big(
+	GX_t * buffer,
+	uint_fast16_t dx,
+	uint_fast16_t dy,
+	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t row,	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	char cc, uint_fast8_t lowhalf
 	);
 
 /* Исключающее ИЛИ с точкой в растре - прямоугольник */

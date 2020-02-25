@@ -6008,6 +6008,7 @@ void hightests(void)
 		//display_pixelbuffer_text(scr3, DX, DY, 0, 0, "Top");
 		//display_pixelbuffer_text(scr3, DX, DY, 0, 0, "Bottom");
 
+		display_pixelbuffer_text_big(scr3, DX, DY, 20, 16, "12.34.56");
 		display_pixelbuffer_text(scr3, DX, DY, 16, DY - 9, "Ok");
 		display_pixelbuffer_text(scr3, DX, DY, 94, DY - 9, "Back");
 

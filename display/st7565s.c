@@ -302,7 +302,7 @@ static void st7565s_neg_put_char_small(char cc)
 static void st7565s_put_char_big(char cc, uint_fast8_t lowhalf)
 {
 	// '#' - узкий пробел
-	enum { NBV = (BIGCHARH / 8) }; // сколько байтов в одной вертикали
+	//enum { NBV = (BIGCHARH / 8) }; // сколько байтов в одной вертикали
 	uint_fast8_t i = 1 * ((cc == '.' || cc == '#') ? 6 : 0);	// начальная колонка знакогенератора, откуда начинать.
     const uint_fast8_t c = bigfont_decode((unsigned char) cc);
 	enum { NCOLS = (sizeof uc1601s_bigfont [0][0] / sizeof uc1601s_bigfont [0][0][0]) };
@@ -310,6 +310,41 @@ static void st7565s_put_char_big(char cc, uint_fast8_t lowhalf)
 
 	for (; i < NCOLS; ++ i)
     	st7565s_pix8(p [i]);
+}
+
+
+/* Исключающее ИЛИ с точкой в растре */
+// use display_pixelbuffer_xor
+uint_fast16_t display_pixelbuffer_char_big(
+	GX_t * buffer,
+	uint_fast16_t dx,
+	uint_fast16_t dy,
+	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t row,	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	char cc, uint_fast8_t lowhalf
+	)
+{
+	// '#' - узкий пробел
+	//enum { NBV = (BIGCHARH / 8) }; // сколько байтов в одной вертикали
+	uint_fast8_t i = 1 * ((cc == '.' || cc == '#') ? 6 : 0);	// начальная колонка знакогенератора, откуда начинать.
+    const uint_fast8_t c = bigfont_decode((unsigned char) cc);
+	enum { NCOLS = (sizeof uc1601s_bigfont [0][0] / sizeof uc1601s_bigfont [0][0][0]) };
+	const FLASHMEM uint8_t * const p = & uc1601s_bigfont [c][lowhalf][0];
+	uint_fast8_t bo = i;
+	for (; i < NCOLS; ++ i)
+	{
+		const uint_fast8_t v = p [i];
+
+		if (v & 0x01)	display_pixelbuffer_xor(buffer, dx, dy, col + i - bo, row + 7);
+		if (v & 0x02)	display_pixelbuffer_xor(buffer, dx, dy, col + i - bo, row + 6);
+		if (v & 0x04)	display_pixelbuffer_xor(buffer, dx, dy, col + i - bo, row + 5);
+		if (v & 0x08)	display_pixelbuffer_xor(buffer, dx, dy, col + i - bo, row + 4);
+		if (v & 0x10)	display_pixelbuffer_xor(buffer, dx, dy, col + i - bo, row + 3);
+		if (v & 0x20)	display_pixelbuffer_xor(buffer, dx, dy, col + i - bo, row + 2);
+		if (v & 0x40)	display_pixelbuffer_xor(buffer, dx, dy, col + i - bo, row + 1);
+		if (v & 0x80)	display_pixelbuffer_xor(buffer, dx, dy, col + i - bo, row + 0);
+	}
+	return i - bo;
 }
 
 // многополосный вывод символов - за несколько горизонтальных проходов.
@@ -327,7 +362,6 @@ static void st7565s_put_char_half(char cc, uint_fast8_t lowhalf)
 
 	for (; i < NCOLS; ++ i)
     	st7565s_pix8(p [i]);
-
 }
 
 /* вызывается между вызовами display_wrdatabar_begin() и display_wrdatabar_end() */
