@@ -6014,11 +6014,11 @@ void hightests(void)
 		display_pixelbuffer_text(scr3, DX, DY, 94, DY - 9, "Back");
 
 		display_showbuffer(scr3, DX, DY, 0, 0);
-		enum { BLMIN = 40, BLMAX = 0x78 };
+		enum { BLMIN = 38, BLMAX = 0x7F };
 		enum { CTMIN = 0, CTMAX = 0x3F };
 		uint_fast8_t page = 3;
-		uint_fast8_t backlight = 0x60;
-		uint_fast8_t contrast = 0x24;
+		uint_fast8_t backlight = 0x4A;
+		uint_fast8_t contrast = 0x22;
 		char s [64];
 		const char * format2 = "bl=0x%02X,contrast=0x%02X";
 
