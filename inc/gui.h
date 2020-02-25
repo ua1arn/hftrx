@@ -373,5 +373,26 @@
 
 	static enc2_t encoder2 = { 0, 0, 0, 0, 1, 1, };
 
+	enum {
+		MENU_OFF,
+		MENU_GROUPS,
+		MENU_PARAMS,
+		MENU_VALS,
+		MENU_COUNT
+	};
+
+	typedef struct {
+		uint_fast8_t first_id;
+		uint_fast8_t last_id;
+		uint_fast8_t num_rows;
+		uint_fast8_t count;
+		int_fast8_t selected_str;
+		int_fast8_t selected_label;
+		uint_fast8_t add_id;
+		menu_names_t menu_block[30];
+	} menu_t;
+
+	menu_t menu[MENU_COUNT - 1];
+
 	#endif /* #if WITHTOUCHTEST */
 #endif /* GUI_H_INCLUDED */

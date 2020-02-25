@@ -6547,81 +6547,109 @@ board_set_wflevelsep(uint_fast8_t v)
 	{
 		PACKEDCOLORPIP_T * const colorpip = getscratchpip();
 		char tmp[10];
-		static menu_names_t menu_block_groups[20], menu_block_params[30];
-		static uint_fast8_t first_id_group, last_id_group, first_id_params, last_id_params, num_rows_group, num_rows_params, count_groups_menu, count_params_menu, add_group = 0;
-		static int_fast8_t selected_group = 0, selected_label = 0;
+		static int_fast8_t menu_level;
 
 		if (windows[WINDOW_MENU].first_call == 1)
 		{
 			windows[WINDOW_MENU].first_call = 0;
-			first_id_group = 1;
 
-			while (labels[++first_id_group].parent != WINDOW_MENU);				// первое вхождение метки group
-			last_id_group = first_id_group;
-			while (strcmp(labels[++last_id_group].name, "lbl_group") == 0);		// последнее вхождение метки group
-			last_id_group--;
-			first_id_params = last_id_group + 1;
-			last_id_params = first_id_params;
-			while (strcmp(labels[++last_id_params].name, "lbl_params") == 0);	// последнее вхождение метки params
-			last_id_params--;
-			num_rows_group = last_id_group - first_id_group;
-			num_rows_params = last_id_params - first_id_params;
-			count_groups_menu = get_multilinemenu_block_groups(menu_block_groups) - 1;
-			for(uint_fast8_t i = 0; i <= num_rows_group; i++)
+			menu[MENU_GROUPS].first_id = 1;
+			while (labels[++menu[MENU_GROUPS].first_id].parent != WINDOW_MENU);				// первое вхождение метки group
+			menu[MENU_GROUPS].last_id = menu[MENU_GROUPS].first_id;
+			while (strcmp(labels[++menu[MENU_GROUPS].last_id].name, "lbl_group") == 0);		// последнее вхождение метки group
+			menu[MENU_GROUPS].last_id--;
+			menu[MENU_GROUPS].num_rows = menu[MENU_GROUPS].last_id - menu[MENU_GROUPS].first_id;
+
+			menu[MENU_PARAMS].first_id = menu[MENU_GROUPS].last_id + 1;
+			menu[MENU_PARAMS].last_id = menu[MENU_PARAMS].first_id;
+			while (strcmp(labels[++menu[MENU_PARAMS].last_id].name, "lbl_params") == 0);	// последнее вхождение метки params
+			menu[MENU_PARAMS].last_id--;
+			menu[MENU_PARAMS].num_rows = menu[MENU_PARAMS].last_id - menu[MENU_PARAMS].first_id;
+
+			menu[MENU_GROUPS].count = get_multilinemenu_block_groups(menu[MENU_GROUPS].menu_block) - 1;
+			for(uint_fast8_t i = 0; i <= menu[MENU_GROUPS].num_rows; i++)
 			{
-				strcpy(labels[first_id_group + i].text, menu_block_groups[i + add_group].name);
-				labels[first_id_group + i].visible = VISIBLE;
+				strcpy(labels[menu[MENU_GROUPS].first_id + i].text, menu[MENU_GROUPS].menu_block[i + menu[MENU_GROUPS].add_id].name);
+				labels[menu[MENU_GROUPS].first_id + i].visible = VISIBLE;
 			}
 
-			count_params_menu = get_multilinemenu_block_params(menu_block_params, menu_block_groups[selected_group].index) - 1;
-			for(uint_fast8_t i = 0; i <= num_rows_params; i++)
+			menu[MENU_PARAMS].count = get_multilinemenu_block_params(menu[MENU_PARAMS].menu_block, menu[MENU_GROUPS].menu_block[menu[MENU_GROUPS].selected_str].index) - 1;
+			for(uint_fast8_t i = 0; i <= menu[MENU_PARAMS].num_rows; i++)
 			{
-				labels[first_id_params + i].visible = NON_VISIBLE;
-				if (count_params_menu < i)
+				labels[menu[MENU_PARAMS].first_id + i].visible = NON_VISIBLE;
+				if (menu[MENU_PARAMS].count < i)
 					continue;
-				strcpy(labels[first_id_params + i].text, menu_block_params[i + add_group].name);
-				labels[first_id_params + i].visible = VISIBLE;
+				strcpy(labels[menu[MENU_PARAMS].first_id + i].text, menu[MENU_PARAMS].menu_block[i + menu[MENU_PARAMS].add_id].name);
+				labels[menu[MENU_PARAMS].first_id + i].visible = VISIBLE;
 			}
+			menu_level = MENU_GROUPS;
+		}
 
+		if (! encoder2.press_done)
+		{
+			if (encoder2.press)
+				++menu_level;
+			if (encoder2.hold)
+				--menu_level;
+			menu_level = menu_level < MENU_OFF ? MENU_OFF : menu_level;
+			menu_level = menu_level > MENU_PARAMS ? MENU_PARAMS : menu_level;
+			encoder2.press = 0;
+			encoder2.hold = 0;
+			encoder2.press_done = 1;
+			PRINTF("menu level %d\n", menu_level);
+			menu[MENU_PARAMS].add_id = 0;
+			menu[MENU_PARAMS].selected_str = 0;
+			menu[MENU_PARAMS].selected_label = 0;
+		}
+
+		if (menu_level == MENU_OFF)
+		{
+			set_window(WINDOW_MENU, NON_VISIBLE);
+			encoder2.busy = 0;
+			footer_buttons_state(BUTTON_CANCELLED, "");
+			return;
 		}
 
 		if (encoder2.rotate != 0)
 		{
 			encoder2.rotate_done = 1;
-			selected_group = (selected_group + encoder2.rotate) <= 0 ? 0 : selected_group + encoder2.rotate;
-			selected_group = selected_group > count_groups_menu ? count_groups_menu : selected_group;
+			menu[menu_level].selected_str = (menu[menu_level].selected_str + encoder2.rotate) <= 0 ? 0 : menu[menu_level].selected_str + encoder2.rotate;
+			menu[menu_level].selected_str = menu[menu_level].selected_str > menu[menu_level].count ? menu[menu_level].count : menu[menu_level].selected_str;
 
 			if (encoder2.rotate > 0)
 			{
-				if (++selected_label > num_rows_group)
+				if (++menu[menu_level].selected_label > menu[menu_level].num_rows)
 				{
-					selected_label = num_rows_group;
-					add_group = selected_group - selected_label;
+					menu[menu_level].selected_label = menu[menu_level].num_rows;
+					menu[menu_level].add_id = menu[menu_level].selected_str - menu[menu_level].selected_label;
 				}
 			}
 			if (encoder2.rotate < 0)
 			{
-				if (--selected_label < 0)
+				if (--menu[menu_level].selected_label < 0)
 				{
-					selected_label = 0;
-					add_group = selected_group - selected_label;
+					menu[menu_level].selected_label = 0;
+					menu[menu_level].add_id = menu[menu_level].selected_str;
 				}
 			}
-			for(uint_fast8_t i = 0; i <= num_rows_group; i++)
+
+			if (menu_level == MENU_GROUPS)
+				for(uint_fast8_t i = 0; i <= menu[MENU_GROUPS].num_rows; i++)
+					strcpy(labels[menu[MENU_GROUPS].first_id + i].text, menu[MENU_GROUPS].menu_block[i + menu[MENU_GROUPS].add_id].name);
+
+			menu[MENU_PARAMS].count = get_multilinemenu_block_params(menu[MENU_PARAMS].menu_block, menu[MENU_GROUPS].menu_block[menu[MENU_GROUPS].selected_str].index) - 1;
+			for(uint_fast8_t i = 0; i <= menu[MENU_PARAMS].num_rows; i++)
 			{
-				strcpy(labels[first_id_group + i].text, menu_block_groups[i + add_group].name);
-			}
-			count_params_menu = get_multilinemenu_block_params(menu_block_params, menu_block_groups[selected_group].index) - 1;
-			for(uint_fast8_t i = 0; i <= num_rows_params; i++)
-			{
-				labels[first_id_params + i].visible = NON_VISIBLE;
-				if (i > count_params_menu)
+				labels[menu[MENU_PARAMS].first_id + i].visible = NON_VISIBLE;
+				if (i > menu[MENU_PARAMS].count)
 					continue;
-				strcpy(labels[first_id_params + i].text, menu_block_params[i].name);
-				labels[first_id_params + i].visible = VISIBLE;
+				strcpy(labels[menu[MENU_PARAMS].first_id + i].text, menu[MENU_PARAMS].menu_block[i + menu[MENU_PARAMS].add_id].name);
+				labels[menu[MENU_PARAMS].first_id + i].visible = VISIBLE;
 			}
+			PRINTF("%d %s\n", menu[menu_level].selected_str, menu[menu_level].menu_block[menu[menu_level].selected_str].name);
 		}
-		display_colorbuff_string_tbg(colorpip, ALLDX, ALLDY, labels[selected_label + first_id_group].x - 16, labels[selected_label + first_id_group].y, ">", COLORPIP_GREEN);
+		display_colorbuff_string_tbg(colorpip, ALLDX, ALLDY, labels[menu[menu_level].selected_label + menu[menu_level].first_id].x - 16,
+															 labels[menu[menu_level].selected_label + menu[menu_level].first_id].y, ">", COLORPIP_GREEN);
 	}
 
 	void buttons_menu_handler(void)
