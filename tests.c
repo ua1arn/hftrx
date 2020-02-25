@@ -5978,7 +5978,7 @@ void hightests(void)
 		static ALIGNX_BEGIN GX_t scr3 [MGSIZE(DX, DY)] ALIGNX_END;
 
 		
-		memset(scr0, 0xFF, sizeof scr0);
+		memset(scr0, 0x00, sizeof scr0);
 		memset(scr1, 0x00, sizeof scr1);
 		memset(scr2, 0x00, sizeof scr2);
 		memset(scr3, 0x00, sizeof scr3);

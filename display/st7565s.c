@@ -614,9 +614,11 @@ void
 display_gotoxy(uint_fast8_t x, uint_fast8_t y)
 {
 #if LCDMODE_ST7565S_TOPDOWN || LCDMODE_PTE1206_TOPDOWN
-	st7565s_set_addr_column(x * CHAR_W + (132 - DIM_X), DIM_Y / CHAR_H - 1 - y);
+	st7565s_set_addr_column(x * CHAR_W + (132 - DIM_X), DIM_Y / 8 - 1 - y);
+	st7565s_set_addr_column(x * CHAR_W + (132 - DIM_X), DIM_Y / 8 - 1 - y);
 #else /* LCDMODE_ST7565S_TOPDOWN */
-	st7565s_set_addr_column(x * CHAR_W, DIM_Y / CHAR_H - 1 - y);
+	st7565s_set_addr_column(x * CHAR_W, DIM_Y / 8 - 1 - y);
+	st7565s_set_addr_column(x * CHAR_W, DIM_Y / 8 - 1 - y);
 #endif /* LCDMODE_ST7565S_TOPDOWN */
 }
 
@@ -624,9 +626,11 @@ display_gotoxy(uint_fast8_t x, uint_fast8_t y)
 void display_plotfrom(uint_fast16_t x, uint_fast16_t y)
 {
 #if LCDMODE_ST7565S_TOPDOWN || LCDMODE_PTE1206_TOPDOWN
-	st7565s_set_addr_column(x + (132 - DIM_X), DIM_Y / CHAR_H - 1 - (y / CHAR_H));
+	st7565s_set_addr_column(x + (132 - DIM_X), DIM_Y / 8 - 1 - (y / 8));
+	st7565s_set_addr_column(x + (132 - DIM_X), DIM_Y / 8 - 1 - (y / 8));
 #else /* LCDMODE_ST7565S_TOPDOWN */
-	st7565s_set_addr_column(x, DIM_Y / CHAR_H - 1 - (y / CHAR_H));
+	st7565s_set_addr_column(x, DIM_Y / 8 - 1 - (y / 8));
+	st7565s_set_addr_column(x, DIM_Y / 8 - 1 - (y / 8));
 #endif /* LCDMODE_ST7565S_TOPDOWN */
 }
 
