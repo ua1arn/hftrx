@@ -6721,8 +6721,7 @@ board_set_wflevelsep(uint_fast8_t v)
 	void window_menu_process(void)
 	{
 		PACKEDCOLORPIP_T * const colorpip = getscratchpip();
-		char tmp[10];
-		static int_fast8_t menu_level;
+		static uint_fast8_t menu_level;
 
 		if (windows[WINDOW_MENU].first_call == 1)
 		{
@@ -6758,16 +6757,21 @@ board_set_wflevelsep(uint_fast8_t v)
 				labels[menu[MENU_PARAMS].first_id + i].visible = VISIBLE;
 			}
 			menu_level = MENU_GROUPS;
+			menu[MENU_GROUPS].selected_label = 0;
 		}
 
 		if (! encoder2.press_done)
 		{
 			if (encoder2.press)
-				++menu_level;
+				menu_level = ++menu_level > MENU_PARAMS ? MENU_PARAMS : menu_level;
 			if (encoder2.hold)
-				--menu_level;
-			menu_level = menu_level < MENU_OFF ? MENU_OFF : menu_level;
-			menu_level = menu_level > MENU_PARAMS ? MENU_PARAMS : menu_level;
+				menu_level = --menu_level == MENU_OFF ? MENU_OFF : menu_level;
+
+			if (menu_level == MENU_PARAMS)	// при переходе на следующий уровень пункт меню подсвечивается
+				labels[menu[MENU_GROUPS].selected_label + menu[MENU_GROUPS].first_id].color = COLORPIP_YELLOW;
+			if (menu_level == MENU_GROUPS)
+				labels[menu[MENU_GROUPS].selected_label + menu[MENU_GROUPS].first_id].color = COLORPIP_WHITE;
+
 			encoder2.press = 0;
 			encoder2.hold = 0;
 			encoder2.press_done = 1;
@@ -6791,16 +6795,20 @@ board_set_wflevelsep(uint_fast8_t v)
 			menu[menu_level].selected_str = (menu[menu_level].selected_str + encoder2.rotate) <= 0 ? 0 : menu[menu_level].selected_str + encoder2.rotate;
 			menu[menu_level].selected_str = menu[menu_level].selected_str > menu[menu_level].count ? menu[menu_level].count : menu[menu_level].selected_str;
 
+			menu[MENU_PARAMS].count = get_multilinemenu_block_params(menu[MENU_PARAMS].menu_block, menu[MENU_GROUPS].menu_block[menu[MENU_GROUPS].selected_str].index) - 1;
+
 			if (encoder2.rotate > 0)
 			{
-				if (++menu[menu_level].selected_label > menu[menu_level].num_rows)
+				// указатель подошел к нижней границе списка
+				if (++menu[menu_level].selected_label > (menu[menu_level].count < menu[menu_level].num_rows ? menu[menu_level].count : menu[menu_level].num_rows))
 				{
-					menu[menu_level].selected_label = menu[menu_level].num_rows;
+					menu[menu_level].selected_label = (menu[menu_level].count < menu[menu_level].num_rows ? menu[menu_level].count : menu[menu_level].num_rows);
 					menu[menu_level].add_id = menu[menu_level].selected_str - menu[menu_level].selected_label;
 				}
 			}
 			if (encoder2.rotate < 0)
 			{
+				// указатель подошел к верхней границе списка
 				if (--menu[menu_level].selected_label < 0)
 				{
 					menu[menu_level].selected_label = 0;
@@ -6812,7 +6820,6 @@ board_set_wflevelsep(uint_fast8_t v)
 				for(uint_fast8_t i = 0; i <= menu[MENU_GROUPS].num_rows; i++)
 					strcpy(labels[menu[MENU_GROUPS].first_id + i].text, menu[MENU_GROUPS].menu_block[i + menu[MENU_GROUPS].add_id].name);
 
-			menu[MENU_PARAMS].count = get_multilinemenu_block_params(menu[MENU_PARAMS].menu_block, menu[MENU_GROUPS].menu_block[menu[MENU_GROUPS].selected_str].index) - 1;
 			for(uint_fast8_t i = 0; i <= menu[MENU_PARAMS].num_rows; i++)
 			{
 				labels[menu[MENU_PARAMS].first_id + i].visible = NON_VISIBLE;
@@ -6821,7 +6828,7 @@ board_set_wflevelsep(uint_fast8_t v)
 				strcpy(labels[menu[MENU_PARAMS].first_id + i].text, menu[MENU_PARAMS].menu_block[i + menu[MENU_PARAMS].add_id].name);
 				labels[menu[MENU_PARAMS].first_id + i].visible = VISIBLE;
 			}
-			PRINTF("%d %s\n", menu[menu_level].selected_str, menu[menu_level].menu_block[menu[menu_level].selected_str].name);
+			PRINTF("%d %s %d\n", menu[menu_level].selected_str, menu[menu_level].menu_block[menu[menu_level].selected_str].name, menu[menu_level].selected_label);
 		}
 		display_colorbuff_string_tbg(colorpip, ALLDX, ALLDY, labels[menu[menu_level].selected_label + menu[menu_level].first_id].x - 16,
 															 labels[menu[menu_level].selected_label + menu[menu_level].first_id].y, ">", COLORPIP_GREEN);
