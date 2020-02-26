@@ -330,6 +330,16 @@
 	#error No band selection hardware supported
 #endif
 
+uint_fast8_t
+bandf_calc_getxvrtr(uint_fast8_t bandf)
+{
+#if BANDF_FREQ_TOP
+	return bandf >= BANDCALCS;
+#else /* BANDF_FREQ_TOP */
+	return 0;
+#endif /* BANDF_FREQ_TOP */
+}
+
 void bandf_calc_initialize(void)
 {
 #if BANDF_USE_BANDINIT
@@ -365,7 +375,7 @@ void bandf_calc_initialize(void)
 
 	if (0)
 	{
-		/* отладочная печать граний диапазонов */
+		/* отладочная печать границ диапазонов */
 		uint_fast8_t i;
 		for (i = 0; i < sizeof board_bandfs / sizeof board_bandfs [0]; ++ i)
 		{
@@ -497,7 +507,7 @@ void bandf_calc_initialize(void)
 #endif
 
 /* получить номер диапазонного фильтра по частоте */
-uint8_t bandf_calc(
+uint_fast8_t bandf_calc(
 	uint_fast32_t freq
 	 )
 {
@@ -535,7 +545,7 @@ void bandf2_calc_initialize(void)
 #ifdef BAND2CALCS
 	if (0)
 	{
-		/* отладочная печать граний диапазонов */
+		/* отладочная печать границ диапазонов */
 		uint_fast8_t i;
 		for (i = 0; i < sizeof board_band2fs / sizeof board_band2fs [0]; ++ i)
 		{
@@ -547,7 +557,7 @@ void bandf2_calc_initialize(void)
 }
 
 /* получить номер диапазонного фильтра передатчика по частоте */
-uint8_t bandf2_calc(
+uint_fast8_t bandf2_calc(
 	uint_fast32_t freq
 	 )
 {
@@ -586,7 +596,7 @@ void bandf3_calc_initialize(void)
 #ifdef BAND3CALCS
 	if (0)
 	{
-		/* отладочная печать граний диапазонов */
+		/* отладочная печать границ диапазонов */
 		uint_fast8_t i;
 		for (i = 0; i < sizeof board_band3fs / sizeof board_band3fs [0]; ++ i)
 		{
@@ -598,7 +608,7 @@ void bandf3_calc_initialize(void)
 }
 
 /* получить код для управления через разъем ACC */
-uint8_t bandf3_calc(
+uint_fast8_t bandf3_calc(
 	uint_fast32_t freq
 	 )
 {

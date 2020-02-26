@@ -7527,7 +7527,7 @@ nyquistadj(uint_fast32_t f)
 {
 #if 0//XVTR_R820T2
 	reuturn R820T_IFFREQ;
-#elif XVTR_NYQ1
+#elif 0//XVTR_NYQ1
 	return FQMODEL_TUNING_TO_NYQ1(f);
 #else /* XVTR_NYQ1 */
 	return f;

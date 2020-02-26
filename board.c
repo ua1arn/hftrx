@@ -3991,7 +3991,7 @@ prog_ctrlreg(uint_fast8_t plane)
 
 		rbtype_t rbbuff [10] = { 0 };
 		const uint_fast8_t txgated = glob_tx && glob_txgate;
-		const uint_fast8_t xvrtr = glob_bandf >= 8;		/* 8 = BANDCALCS */
+		const uint_fast8_t xvrtr = bandf_calc_getxvrtr(glob_bandf);
 		//PRINTF("prog_ctrlreg: glob_bandf=%d, xvrtr=%d\n", glob_bandf, xvrtr);
 
 #if WITHAUTOTUNER
