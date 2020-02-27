@@ -17920,6 +17920,55 @@ void get_multilinemenu_block_vals(menu_names_t * vals, uint_fast8_t index, uint_
 	}
 }
 
+char * gui_edit_menu_item (uint_fast8_t index, int_least16_t rotate)
+{
+	const FLASHMEM struct menudef * const mp = & menutable [index];
+	if (rotate != 0 && ismenukind(mp, ITEM_VALUE))
+	{
+		/* редактирование паратметра */
+		const uint_fast16_t step = mp->qistep;
+		uint_fast16_t * const pv16 = mp->qpval16;
+		uint_fast8_t * const pv8 = mp->qpval8;
+
+		if (rotate < 0)
+		{
+			// negative change value
+			const uint_fast32_t bottom = mp->qbottom;
+			if (pv16 != NULL)
+			{
+				* pv16 =
+					prevfreq(* pv16, * pv16 - (- rotate * step), step, bottom);
+			}
+			else
+			{
+				* pv8 =
+					prevfreq(* pv8, * pv8 - (- rotate * step), step, bottom);
+			}
+		}
+		else
+		{
+			// positive change value
+			const uint_fast32_t upper = mp->qupper;
+			if (pv16 != NULL)
+			{
+				* pv16 =
+					nextfreq(* pv16, * pv16 + (rotate * step), step, upper + (uint_fast32_t) step);
+			}
+			else
+			{
+				* pv8 =
+					nextfreq(* pv8, * pv8 + (rotate * step), step, upper + (uint_fast32_t) step);
+			}
+		}
+		display_menu_valxx(0, 0, (void *) mp);
+		updateboard(1, 0);
+#if (NVRAM_TYPE != NVRAM_TYPE_CPUEEPROM)
+		savemenuvalue(mp);		/* сохраняем отредактированное значение */
+#endif
+		}
+	return w;
+}
+
 void set_menu_cond (uint_fast8_t m)
 {
 	is_menu_opened = m;
