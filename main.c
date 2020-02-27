@@ -12584,7 +12584,11 @@ static const FLASHMEM struct menudef menutable [] =
 	{
 		QLABEL("BARS FPS"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
+#if WITHDISPLAYSWR_FPS
+		4, 40,							/* частота обновления барграфов от 5 до 40 раз в секунду */
+#else
 		4, 25,							/* частота обновления барграфов от 5 до 25 раз в секунду */
+#endif
 		offsetof(struct nvmap, displaybarsfps),
 		NULL,
 		& displaybarsfps,
