@@ -321,7 +321,12 @@
 		{ 300, 140, WINDOW_MENU, NON_VISIBLE, "lbl_params", "", COLORPIP_WHITE, },
 		{ 300, 170, WINDOW_MENU, NON_VISIBLE, "lbl_params", "", COLORPIP_WHITE, },
 		{ 300, 200, WINDOW_MENU, NON_VISIBLE, "lbl_params", "", COLORPIP_WHITE, },
-
+		{ 520,  50, WINDOW_MENU, NON_VISIBLE, "lbl_vals", "", COLORPIP_WHITE, },
+		{ 520,  80, WINDOW_MENU, NON_VISIBLE, "lbl_vals", "", COLORPIP_WHITE, },
+		{ 520, 110, WINDOW_MENU, NON_VISIBLE, "lbl_vals", "", COLORPIP_WHITE, },
+		{ 520, 140, WINDOW_MENU, NON_VISIBLE, "lbl_vals", "", COLORPIP_WHITE, },
+		{ 520, 170, WINDOW_MENU, NON_VISIBLE, "lbl_vals", "", COLORPIP_WHITE, },
+		{ 520, 200, WINDOW_MENU, NON_VISIBLE, "lbl_vals", "", COLORPIP_WHITE, },
 
 	};
 	enum { labels_count = sizeof labels / sizeof labels[1] };
@@ -392,7 +397,7 @@
 		menu_names_t menu_block[30];
 	} menu_t;
 
-	menu_t menu[MENU_COUNT - 1];
+	menu_t menu[MENU_COUNT];
 
 	#endif /* #if WITHTOUCHTEST */
 #endif /* GUI_H_INCLUDED */

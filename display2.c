@@ -6726,19 +6726,36 @@ board_set_wflevelsep(uint_fast8_t v)
 		if (windows[WINDOW_MENU].first_call == 1)
 		{
 			windows[WINDOW_MENU].first_call = 0;
+			set_menu_cond(VISIBLE);
+
+			menu[MENU_GROUPS].add_id = 0;
+			menu[MENU_GROUPS].selected_str = 0;
+			menu[MENU_GROUPS].selected_label = 0;
+			menu[MENU_PARAMS].add_id = 0;
+			menu[MENU_PARAMS].selected_str = 0;
+			menu[MENU_PARAMS].selected_label = 0;
+			menu[MENU_VALS].add_id = 0;
+			menu[MENU_VALS].selected_str = 0;
+			menu[MENU_VALS].selected_label = 0;
 
 			menu[MENU_GROUPS].first_id = 1;
 			while (labels[++menu[MENU_GROUPS].first_id].parent != WINDOW_MENU);				// первое вхождение метки group
 			menu[MENU_GROUPS].last_id = menu[MENU_GROUPS].first_id;
-			while (strcmp(labels[++menu[MENU_GROUPS].last_id].name, "lbl_group") == 0);		// последнее вхождение метки group
-			menu[MENU_GROUPS].last_id--;
+			while (strcmp(labels[++menu[MENU_GROUPS].last_id].name, "lbl_group") == 0);
+			menu[MENU_GROUPS].last_id--;													// последнее вхождение метки group
 			menu[MENU_GROUPS].num_rows = menu[MENU_GROUPS].last_id - menu[MENU_GROUPS].first_id;
 
-			menu[MENU_PARAMS].first_id = menu[MENU_GROUPS].last_id + 1;
+			menu[MENU_PARAMS].first_id = menu[MENU_GROUPS].last_id + 1;						// первое вхождение метки params
 			menu[MENU_PARAMS].last_id = menu[MENU_PARAMS].first_id;
-			while (strcmp(labels[++menu[MENU_PARAMS].last_id].name, "lbl_params") == 0);	// последнее вхождение метки params
-			menu[MENU_PARAMS].last_id--;
+			while (strcmp(labels[++menu[MENU_PARAMS].last_id].name, "lbl_params") == 0);
+			menu[MENU_PARAMS].last_id--;													// последнее вхождение метки params
 			menu[MENU_PARAMS].num_rows = menu[MENU_PARAMS].last_id - menu[MENU_PARAMS].first_id;
+
+			menu[MENU_VALS].first_id = menu[MENU_PARAMS].last_id + 1;						// первое вхождение метки vals
+			menu[MENU_VALS].last_id = menu[MENU_VALS].first_id;
+			while (strcmp(labels[++menu[MENU_VALS].last_id].name, "lbl_vals") == 0);
+			menu[MENU_VALS].last_id--;														// последнее вхождение метки vals
+			menu[MENU_VALS].num_rows = menu[MENU_VALS].last_id - menu[MENU_VALS].first_id;
 
 			menu[MENU_GROUPS].count = get_multilinemenu_block_groups(menu[MENU_GROUPS].menu_block) - 1;
 			for(uint_fast8_t i = 0; i <= menu[MENU_GROUPS].num_rows; i++)
@@ -6756,14 +6773,27 @@ board_set_wflevelsep(uint_fast8_t v)
 				strcpy(labels[menu[MENU_PARAMS].first_id + i].text, menu[MENU_PARAMS].menu_block[i + menu[MENU_PARAMS].add_id].name);
 				labels[menu[MENU_PARAMS].first_id + i].visible = VISIBLE;
 			}
+
+			menu[MENU_PARAMS].selected_str = 0;
+			menu[MENU_VALS].count = menu[MENU_PARAMS].count < menu[MENU_VALS].num_rows ? menu[MENU_PARAMS].count :  menu[MENU_VALS].num_rows;
+			get_multilinemenu_block_vals(menu[MENU_VALS].menu_block, menu[MENU_PARAMS].menu_block[menu[MENU_PARAMS].selected_str].index, menu[MENU_VALS].count);
+			for(uint_fast8_t i = 0; i <= menu[MENU_VALS].num_rows; i++)
+			{
+				labels[menu[MENU_VALS].first_id + i].visible = NON_VISIBLE;
+				if (menu[MENU_VALS].count < i)
+					continue;
+				strcpy(labels[menu[MENU_VALS].first_id + i].text, menu[MENU_VALS].menu_block[i + menu[MENU_VALS].add_id].name);
+				labels[menu[MENU_VALS].first_id + i].visible = VISIBLE;
+			}
+			PRINTF("count %d rows %d\n", menu[MENU_VALS].count, menu[MENU_VALS].num_rows);
+
 			menu_level = MENU_GROUPS;
-			menu[MENU_GROUPS].selected_label = 0;
 		}
 
 		if (! encoder2.press_done)
 		{
 			if (encoder2.press)
-				menu_level = ++menu_level > MENU_PARAMS ? MENU_PARAMS : menu_level;
+				menu_level = ++menu_level > MENU_PARAMS ? MENU_VALS : menu_level;
 			if (encoder2.hold)
 				menu_level = --menu_level == MENU_OFF ? MENU_OFF : menu_level;
 
@@ -6779,6 +6809,9 @@ board_set_wflevelsep(uint_fast8_t v)
 			menu[MENU_PARAMS].add_id = 0;
 			menu[MENU_PARAMS].selected_str = 0;
 			menu[MENU_PARAMS].selected_label = 0;
+			menu[MENU_VALS].add_id = 0;
+			menu[MENU_VALS].selected_str = 0;
+			menu[MENU_VALS].selected_label = 0;
 		}
 
 		if (menu_level == MENU_OFF)
@@ -6786,10 +6819,11 @@ board_set_wflevelsep(uint_fast8_t v)
 			set_window(WINDOW_MENU, NON_VISIBLE);
 			encoder2.busy = 0;
 			footer_buttons_state(BUTTON_CANCELLED, "");
+			set_menu_cond(NON_VISIBLE);
 			return;
 		}
 
-		if (encoder2.rotate != 0)
+		if (encoder2.rotate != 0 && menu_level != MENU_VALS)
 		{
 			encoder2.rotate_done = 1;
 			menu[menu_level].selected_str = (menu[menu_level].selected_str + encoder2.rotate) <= 0 ? 0 : menu[menu_level].selected_str + encoder2.rotate;
@@ -6820,15 +6854,32 @@ board_set_wflevelsep(uint_fast8_t v)
 				for(uint_fast8_t i = 0; i <= menu[MENU_GROUPS].num_rows; i++)
 					strcpy(labels[menu[MENU_GROUPS].first_id + i].text, menu[MENU_GROUPS].menu_block[i + menu[MENU_GROUPS].add_id].name);
 
+			menu[MENU_VALS].count = menu[MENU_PARAMS].count < menu[MENU_VALS].num_rows ? menu[MENU_PARAMS].count :  menu[MENU_VALS].num_rows;
+			get_multilinemenu_block_vals(menu[MENU_VALS].menu_block,  menu[MENU_PARAMS].menu_block[menu[MENU_PARAMS].add_id].index,
+										 menu[MENU_VALS].count);
+
 			for(uint_fast8_t i = 0; i <= menu[MENU_PARAMS].num_rows; i++)
 			{
 				labels[menu[MENU_PARAMS].first_id + i].visible = NON_VISIBLE;
+				labels[menu[MENU_VALS].first_id + i].visible = NON_VISIBLE;
 				if (i > menu[MENU_PARAMS].count)
 					continue;
 				strcpy(labels[menu[MENU_PARAMS].first_id + i].text, menu[MENU_PARAMS].menu_block[i + menu[MENU_PARAMS].add_id].name);
+				strcpy(labels[menu[MENU_VALS].first_id + i].text,   menu[MENU_VALS].menu_block[i].name);
 				labels[menu[MENU_PARAMS].first_id + i].visible = VISIBLE;
+				labels[menu[MENU_VALS].first_id + i].visible = VISIBLE;
 			}
-			PRINTF("%d %s %d\n", menu[menu_level].selected_str, menu[menu_level].menu_block[menu[menu_level].selected_str].name, menu[menu_level].selected_label);
+
+
+//			for(uint_fast8_t i = 0; i <= menu[MENU_VALS].num_rows; i++)
+//			{
+//				labels[menu[MENU_VALS].first_id + i].visible = NON_VISIBLE;
+//				if (menu[MENU_VALS].count < i)
+//					continue;
+//				strcpy(labels[menu[MENU_VALS].first_id + i].text, menu[MENU_VALS].menu_block[i + menu[MENU_VALS].add_id].name);
+//				labels[menu[MENU_VALS].first_id + i].visible = VISIBLE;
+//			}
+			PRINTF("%d %s %d\n", menu[menu_level].selected_str, menu[menu_level].menu_block[menu[menu_level].selected_str].name, menu[menu_level].add_id);
 		}
 		display_colorbuff_string_tbg(colorpip, ALLDX, ALLDY, labels[menu[menu_level].selected_label + menu[menu_level].first_id].x - 16,
 															 labels[menu[menu_level].selected_label + menu[menu_level].first_id].y, ">", COLORPIP_GREEN);
@@ -7022,6 +7073,7 @@ board_set_wflevelsep(uint_fast8_t v)
 			gui.window_to_draw = 0;
 			footer_buttons_state(BUTTON_CANCELLED, "");
 			encoder2.busy = 0;
+			set_menu_cond(NON_VISIBLE);
 		}
 	}
 

@@ -3235,6 +3235,8 @@ void spool_0p128(void);	// OPERA support
 	uint_fast8_t send_key_code (uint_fast8_t code);
 	uint_fast8_t get_multilinemenu_block_groups(menu_names_t * vals);
 	uint_fast8_t get_multilinemenu_block_params(menu_names_t * vals, uint_fast8_t index);
+	void get_multilinemenu_block_vals(menu_names_t * vals, uint_fast8_t index, uint_fast8_t cnt);
+	void set_menu_cond (uint_fast8_t m);
 #endif /* WITHTOUCHTEST */
 
 #ifdef __cplusplus

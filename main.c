@@ -37,7 +37,9 @@
 #endif /* WITHRFSG */
 
 #if WITHTOUCHTEST
-	uint_fast8_t encoder2busy;			// признак занятости энкодера в обработке gui
+	uint_fast8_t encoder2busy = 0;		// признак занятости энкодера в обработке gui
+	uint_fast8_t is_menu_opened = 0;	// открыто gui системное меню
+	char * w;
 #endif /* WITHTOUCHTEST */
 
 static uint_fast32_t 
@@ -12346,6 +12348,11 @@ display_menu_digit(
 	uint_fast8_t rj
 	)
 {
+	if (is_menu_opened)
+	{
+		local_snprintf_P(w, width, "%d", value);
+		return;
+	}
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 
 	display_setcolors(MNUVALCOLOR, BGCOLOR);
@@ -12368,6 +12375,11 @@ display_menu_string_P(
 	uint_fast8_t comma
 	)
 {
+	if(is_menu_opened)
+	{
+		strcpy(w, s);
+		return;
+	}
 	display_setcolors(MNUVALCOLOR, BGCOLOR);
 	display_at_P(x + width - comma, y, s);
 }
@@ -17853,6 +17865,7 @@ uint_fast8_t get_multilinemenu_block_groups(menu_names_t * vals)
 	uint_fast16_t el;
 	uint_fast8_t count = 0;
 
+	getstamprtc();
 	for (el = 0; el < MENUROW_COUNT; el ++)
 	{
 		const FLASHMEM struct menudef * const mv = & menutable [el];
@@ -17886,6 +17899,30 @@ uint_fast8_t get_multilinemenu_block_params(menu_names_t * vals, uint_fast8_t in
 		}
 	}
 	return count;
+}
+
+void get_multilinemenu_block_vals(menu_names_t * vals, uint_fast8_t index, uint_fast8_t cnt)
+{
+	uint_fast16_t el;
+	uint_fast8_t count = 0;
+
+	for (el = index; el <= index + cnt; el ++)
+	{
+		const FLASHMEM struct menudef * const mv = & menutable [el];
+		if (ismenukind(mv, ITEM_VALUE))
+		{
+			menu_names_t * const v = & vals[count];
+			display_menu_valxx(0, 0, (void *) mv);
+			strcpy (v->name, w);
+			v->index = el;
+			count++;
+		}
+	}
+}
+
+void set_menu_cond (uint_fast8_t m)
+{
+	is_menu_opened = m;
 }
 
 #endif /* WITHTOUCHTEST */
