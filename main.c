@@ -12348,11 +12348,13 @@ display_menu_digit(
 	uint_fast8_t rj
 	)
 {
+#if WITHTOUCHTEST
 	if (is_menu_opened)
 	{
 		local_snprintf_P(w, width, "%d", value);
 		return;
 	}
+#endif /* WITHTOUCHTEST */
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 
 	display_setcolors(MNUVALCOLOR, BGCOLOR);
@@ -12375,11 +12377,13 @@ display_menu_string_P(
 	uint_fast8_t comma
 	)
 {
-	if(is_menu_opened)
+#if WITHTOUCHTEST
+	if (is_menu_opened)
 	{
 		strcpy(w, s);
 		return;
 	}
+#endif /* WITHTOUCHTEST */
 	display_setcolors(MNUVALCOLOR, BGCOLOR);
 	display_at_P(x + width - comma, y, s);
 }
