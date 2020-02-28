@@ -5640,6 +5640,8 @@ display_colorbuffer_set_vline(
 		display_colorbuffer_set(buffer, dx, dy, col, row0 ++, color);
 }
 
+#define SMALLCHARW 8
+
 // отрисовка маркеров частот
 static
 void
@@ -5672,7 +5674,7 @@ display_colorgrid_xor(
 				uint_fast16_t freqw;	// ширина строки со значением частоты
 				//freqlen = local_snprintf_P(buf, sizeof buf / sizeof buf [0], "%03d", (int) ((f0 + df) / 1000));
 				freqlen = local_snprintf_P(buf, sizeof buf / sizeof buf [0], "%03d", (int) ((f0 + df) / 1000 % 1000));
-				freqw = freqlen * 8;
+				freqw = freqlen * SMALLCHARW;
 				if (xmarker >= freqw / 2 && xmarker < (ALLDX - freqw / 2))
 				{
 					display_colorbuff_string3_tbg(buffer, ALLDX, ALLDY, xmarker - freqw / 2, row0, buf, COLORPIP_YELLOW);
@@ -5718,7 +5720,7 @@ display_colorgrid_set(
 				uint_fast16_t freqw;	// ширина строки со значением частоты
 				//freqlen = local_snprintf_P(buf, sizeof buf / sizeof buf [0], "%03d", (int) ((f0 + df) / 1000));
 				freqlen = local_snprintf_P(buf, sizeof buf / sizeof buf [0], "%03d", (int) ((f0 + df) / 1000 % 1000));
-				freqw = freqlen * 8;
+				freqw = freqlen * SMALLCHARW;
 				if (xmarker >= freqw / 2 && xmarker < (ALLDX - freqw / 2))
 				{
 					display_colorbuff_string3_tbg(buffer, ALLDX, ALLDY, xmarker - freqw / 2, row0, buf, COLORPIP_YELLOW);
