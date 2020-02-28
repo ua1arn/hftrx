@@ -5657,22 +5657,25 @@ display_colorgrid_xor(
 	const int_fast32_t go = f0 % (int) glob_gridstep;	// шаг сетки
 	const int_fast32_t gs = (int) glob_gridstep;	// шаг сетки
 	const int_fast32_t halfbw = bw / 2;
-	char buf[10];
-	uint_fast8_t freqlen;							// длина строки со значением частоты
 	int_fast32_t df;	// кратное сетке значение
 	for (df = - halfbw / gs * gs - go; df < halfbw; df += gs)
 	{
-		uint_fast16_t xmarker;
 		if (df > - halfbw)
 		{
+			uint_fast16_t xmarker;
 			// Маркер частоты кратной glob_gridstep - XOR линию
 			xmarker = deltafreq2x_abs(f0, df, bw, ALLDX);
-			freqlen = local_snprintf_P(buf, sizeof buf / sizeof buf [0], "%d", (int) (f0 + df) / 1000);
 			if (xmarker != UINT16_MAX)
 			{
-				if (xmarker > (freqlen << 3) && xmarker < ALLDX - (freqlen << 3))
+				char buf [4];
+				uint_fast8_t freqlen;	// длина строки со значением частоты
+				uint_fast16_t freqw;	// ширина строки со значением частоты
+				//freqlen = local_snprintf_P(buf, sizeof buf / sizeof buf [0], "%03d", (int) ((f0 + df) / 1000));
+				freqlen = local_snprintf_P(buf, sizeof buf / sizeof buf [0], "%03d", (int) ((f0 + df) / 1000 % 1000));
+				freqw = freqlen * 8;
+				if (xmarker >= freqw / 2 && xmarker < (ALLDX - freqw / 2))
 				{
-					display_colorbuff_string3_tbg(buffer, ALLDX, ALLDY, xmarker - (freqlen * 4), row0, buf, COLORPIP_YELLOW);
+					display_colorbuff_string3_tbg(buffer, ALLDX, ALLDY, xmarker - freqw / 2, row0, buf, COLORPIP_YELLOW);
 					display_colorbuffer_xor_vline(buffer, ALLDX, ALLDY, xmarker, row0 + 10, h - 10, color);
 				}
 				else
@@ -5700,8 +5703,6 @@ display_colorgrid_set(
 	const int_fast32_t go = f0 % (int) glob_gridstep;	// шаг сетки
 	const int_fast32_t gs = (int) glob_gridstep;	// шаг сетки
 	const int_fast32_t halfbw = bw / 2;
-	char buf[10];
-	uint_fast8_t freqlen;							// длина строки со значением частоты
 	int_fast32_t df;	// кратное сетке значение
 	for (df = - halfbw / gs * gs - go; df < halfbw; df += gs)
 	{
@@ -5710,13 +5711,17 @@ display_colorgrid_set(
 		{
 			// Маркер частоты кратной glob_gridstep - XOR линию
 			xmarker = deltafreq2x_abs(f0, df, bw, ALLDX);
-			freqlen = local_snprintf_P(buf, sizeof buf / sizeof buf [0], "%d", (int) (f0 + df) / 1000);
-
 			if (xmarker != UINT16_MAX)
 			{
-				if (xmarker > (freqlen << 3) && xmarker < ALLDX - (freqlen << 3))
+				char buf [4];
+				uint_fast8_t freqlen;	// длина строки со значением частоты
+				uint_fast16_t freqw;	// ширина строки со значением частоты
+				//freqlen = local_snprintf_P(buf, sizeof buf / sizeof buf [0], "%03d", (int) ((f0 + df) / 1000));
+				freqlen = local_snprintf_P(buf, sizeof buf / sizeof buf [0], "%03d", (int) ((f0 + df) / 1000 % 1000));
+				freqw = freqlen * 8;
+				if (xmarker >= freqw / 2 && xmarker < (ALLDX - freqw / 2))
 				{
-					display_colorbuff_string3_tbg(buffer, ALLDX, ALLDY, xmarker - (freqlen * 4), row0, buf, COLORPIP_YELLOW);
+					display_colorbuff_string3_tbg(buffer, ALLDX, ALLDY, xmarker - freqw / 2, row0, buf, COLORPIP_YELLOW);
 					display_colorbuffer_set_vline(buffer, ALLDX, ALLDY, xmarker, row0 + 10, h - 10, color);
 				}
 				else
