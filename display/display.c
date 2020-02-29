@@ -1927,6 +1927,9 @@ uint_fast16_t display_colorbuff_string3_width(
 	const char * s
 	)
 {
+	(void) buffer;
+	(void) dx;
+	(void) dy;
 	return SMALLCHARW3 * strlen(s);
 }
 
