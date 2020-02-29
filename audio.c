@@ -137,7 +137,7 @@ static uint_fast8_t 	glob_notch_on;		/* включение NOTCH фильтра 
 
 static uint_fast8_t 	glob_cwedgetime = 4;		/* CW Rise Time (in 1 ms discrete) */
 static uint_fast8_t 	glob_sidetonelevel = 10;	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
-static uint_fast8_t 	glob_monilevel = 10;	/* Уровень сигнала самопрослушивания в процентах - 0%..100% */
+static uint_fast8_t 	glob_moniflag = 1;		/* Уровень сигнала самопрослушивания в процентах - 0%..100% */
 static uint_fast8_t 	glob_subtonelevel = 0;	/* Уровень сигнала CTCSS в процентах - 0%..100% */
 static uint_fast8_t 	glob_amdepth = 30;		/* Глубина модуляции в АМ - 0..100% */
 static uint_fast8_t		glob_dacscale = 100;	/* На какую часть (в процентах) от полной амплитуды использцется ЦАП передатчика */
@@ -3655,9 +3655,6 @@ static FLOAT_t mainvolumerx = 1; //1 - sidetonevolume;
 static FLOAT_t subtonevolume = 0; //(glob_subtonelevel / (FLOAT_t) 100);
 static FLOAT_t mainvolumetx = 1; //1 - subtonevolume;
 
-static FLOAT_t monisublvl = 0;
-static FLOAT_t monimainlvl = 1;
-
 // Здесь значение выборки в диапазоне, допустимом для кодека
 static RAMFUNC FLOAT_t injectsidetone(FLOAT_t v, FLOAT_t sdtn)
 {
@@ -3668,15 +3665,7 @@ static RAMFUNC FLOAT_t injectsidetone(FLOAT_t v, FLOAT_t sdtn)
 // Здесь значение выборки в диапазоне, допустимом для кодека
 static RAMFUNC FLOAT_t injectsubtone(FLOAT_t v, FLOAT_t ctcss)
 {
-
 	return v * mainvolumetx + ctcss * subtonevolume;
-}
-
-// Здесь значение выборки в диапазоне, допустимом для кодека
-static RAMFUNC FLOAT_t injectmoni(FLOAT_t v, FLOAT_t moni)
-{
-
-	return v * monimainlvl + moni * monisublvl;
 }
 
 // Поддержка генерации белого шума
@@ -3707,10 +3696,12 @@ static RAMFUNC FLOAT_t preparevi(
 	switch (dspmode)
 	{
 	case DSPCTL_MODE_TX_BPSK:
-		return txlevelfenceBPSK;	// постоянная составляющая с максимальным уровнем
+		savemoni16stereo(0, 0);
+		return 0;	//txlevelfenceBPSK;	// постоянная составляющая с максимальным уровнем
 
 	case DSPCTL_MODE_TX_CW:
-		return txlevelfenceCW;	// постоянная составляющая с максимальным уровнем
+		savemoni16stereo(0, 0);
+		return 0;	//txlevelfenceCW;	// постоянная составляющая с максимальным уровнем
 
 	case DSPCTL_MODE_TX_DIGI:
 	case DSPCTL_MODE_TX_SSB:
@@ -3725,6 +3716,7 @@ static RAMFUNC FLOAT_t preparevi(
 			// источник - микрофон
 			// дополнительно работает ограничитель.
 			// see glob_mik1level (0..100)
+			savemoni16stereo(vi0f, vi0f);
 			return injectsubtone(txmikeagc(vi0f * txlevelXXX / mikefenceIN), ctcss); //* TXINSCALE; // источник сигнала - микрофон
 
 #if WITHUSBUACOUT
@@ -3733,25 +3725,30 @@ static RAMFUNC FLOAT_t preparevi(
 		default:
 			// источник - LINE IN или USB
 			// see glob_mik1level (0..100)
+			savemoni16stereo(vi0f, vi0f);
 			return injectsubtone(vi0f * txlevelXXX / mikefenceIN, ctcss); //* TXINSCALE; // источник сигнала - микрофон
 
 		case BOARD_TXAUDIO_NOISE:
 			// источник - шум
 			//vf = filter_fir_tx_MIKE((local_random(2UL * IFDACMAXVAL) - IFDACMAXVAL), 0);	// шум
 			// return audio sample in range [- txlevelfence.. + txlevelfence]
+			savemoni16stereo(0, 0);
 			return injectsubtone((int) (local_random(2 * txlevelfenceXXX_INTEGER - 1) - txlevelfenceXXX_INTEGER), ctcss);	// шум
 
 		case BOARD_TXAUDIO_2TONE:
 			// источник - двухтоновый сигнал
 			// return audio sample in range [- txlevelfence.. + txlevelfence]
+			savemoni16stereo(0, 0);
 			return injectsubtone(get_dualtonefloat() * txlevelXXX, ctcss);		// источник сигнала - двухтональный генератор для настройки
 
 		case BOARD_TXAUDIO_1TONE:
 			// источник - синусоидальный сигнал
 			// return audio sample in range [- txlevelfence.. + txlevelfence]
+			savemoni16stereo(0, 0);
 			return injectsubtone(get_singletonefloat() * txlevelXXX, ctcss);
 
 		case BOARD_TXAUDIO_MUTE:
+			savemoni16stereo(0, 0);
 			return injectsubtone(0, ctcss);
 		}
 	}
@@ -3871,7 +3868,6 @@ static RAMFUNC void processafadcsampleiq(
 
 		
 		vi = filter_fir_tx_MIKE(vi, 0);
-		savemoni16stereo(vi / 65536, vi / vi);
 #if WITHDSPLOCALFIR
 		const FLOAT32P_t vfb = filter_firp_tx_SSB_IQ(baseband_modulator(vi, dspmode, shape));
 #else /* WITHDSPLOCALFIR */
@@ -3882,7 +3878,6 @@ static RAMFUNC void processafadcsampleiq(
 	else
 	{
 		filter_fir_tx_MIKE(vi, 1);		// Фильтр не применяется, только выполняется сдвиг в линии задержки
-		savemoni16stereo(0, 0);
 		savesampleout32stereo(0, 0);
 	}
 }
@@ -3908,7 +3903,6 @@ static RAMFUNC void processafadcsample(
 	if (isdspmodetx(dspmode))
 	{
 		vi = filter_fir_tx_MIKE(vi, 0);
-		savemoni16stereo(vi / 65536. vi / vi);
 		const FLOAT32P_t vfb = baseband_modulator(vi, dspmode, shape);
 		// Здесь, имея квадратурные сигналы vfb.IV и vfb.QV,
 		// производим Digital Up Conversion
@@ -3922,7 +3916,6 @@ static RAMFUNC void processafadcsample(
 	{
 		filter_fir_tx_MIKE(vi, 1);		// Фильтр не применяется, только выполняется сдвиг в линии задержки
 		savesampleout32stereo(0, 0);
-		savemoni16stereo(0, 0);
 	}
 }
 
@@ -5181,27 +5174,6 @@ demod_WFM(
 	return d_fi;
 }
 
-static FLOAT_t
-getmonitx(
-	uint_fast8_t dspmode, 
-	FLOAT_t sdtn, 
-	FLOAT_t moni
-	)
-{
-	switch (dspmode)
-	{
-	default:
-		return sdtn;
-
-	case DSPCTL_MODE_TX_DIGI:
-	case DSPCTL_MODE_TX_FREEDV:
-	case DSPCTL_MODE_TX_AM:
-	case DSPCTL_MODE_TX_NFM:
-	case DSPCTL_MODE_TX_SSB:
-		return moni;
-	}
-}
-
 // Сохранение сэмплов с выхода демодулятора
 static void save16demod(FLOAT_t ch0, FLOAT_t ch1)
 {
@@ -5284,6 +5256,12 @@ static RAMFUNC void recordsampleSD(int left, int right)
 #endif /* WITHUSEAUDIOREC && ! (WITHWAVPLAYER || WITHSENDWAV) */
 }
 
+// sdtn, moni: значение выборки в диапазоне, допустимом для кодека
+// shape: 0..1: 0 - monitor, 1 - sidetone
+static FLOAT_t mixmonitor(FLOAT_t shape, FLOAT_t sdtn, FLOAT_t moni)
+{
+	return sdtn * shape + moni * glob_moniflag * (1 - shape);
+}
 // перед передачей по DMA в аудиокодек
 //  Здесь ответвляются потоки в USB и для записи на SD CARD
 // realtime level
@@ -5298,7 +5276,8 @@ void dsp_addsidetone(int16_t * buff)
 	for (i = 0; i < DMABUFFSIZE16; i += DMABUFSTEP16)
 	{
 		int16_t * const b = & buff [i];
-		const FLOAT_t sdtn = get_float_sidetone() * phonefence * shapeSidetoneStep();	// Здесь значение выборки в диапазоне, допустимом для кодека
+		const FLOAT_t sdtnshape = shapeSidetoneStep();	// 0..1: 0 - monitor, 1 - sidetone
+		const FLOAT_t sdtnv = get_float_sidetone() * phonefence;	// Здесь значение выборки в диапазоне, допустимом для кодека
 		INT32P_t moni;
 		if (getsampmlemoni(& moni) == 0)
 		{
@@ -5307,8 +5286,8 @@ void dsp_addsidetone(int16_t * buff)
 			moni.IV = 0;
 			moni.QV = 0;
 		}
-		const int_fast16_t monitxL = getmonitx(dspmodeA, sdtn, moni.IV);
-		const int_fast16_t monitxR = getmonitx(dspmodeA, sdtn, moni.QV);
+		const int_fast16_t moniL = mixmonitor(sdtnshape, sdtnv, moni.IV);
+		const int_fast16_t moniR = mixmonitor(sdtnshape, sdtnv, moni.QV);
 
 		int_fast16_t left = b [L];
 		int_fast16_t right = b [R];
@@ -5326,11 +5305,6 @@ void dsp_addsidetone(int16_t * buff)
 #elif WITHUSBHEADSET || WITHUSBAUDIOSAI1
 		// Обеспечиваем прослушивание стерео
 #else /* WITHUSBHEADSET */
-		if (tx)
-		{
-			left = injectmoni(left, monitxL);
-			right = injectmoni(right, monitxR);
-		}
 		switch (glob_mainsubrxmode)
 		{
 		case BOARD_RXMAINSUB_A_A:
@@ -5344,8 +5318,8 @@ void dsp_addsidetone(int16_t * buff)
 		//
 		if (tx)
 		{
-			recordsampleSD(monitxL, monitxR);	// Запись демодулированного сигнала без озвучки клавиш
-			recordsampleUAC(monitxL, monitxR);	// Запись в UAC демодулированного сигнала без озвучки клавиш
+			recordsampleSD(moniL, moniR);	// Запись самоконтроля и самопрослушки
+			recordsampleUAC(moniL, moniR);	// Запись самоконтроля и самопрослушки
 		}
 		else
 		{
@@ -5358,27 +5332,28 @@ void dsp_addsidetone(int16_t * buff)
 		default:
 		case BOARD_RXMAINSUB_A_A:
 			// left:A/right:A
-			b [L] = injectsidetone(left, sdtn);
-			b [R] = injectsidetone(right, sdtn);
+			b [L] = injectsidetone(left, moniL);
+			b [R] = injectsidetone(right, moniR);
 			break;
 		case BOARD_RXMAINSUB_A_B:
 			// left:A/right:B
-			b [L] = injectsidetone(left, sdtn);
-			b [R] = injectsidetone(right, sdtn);
+			b [L] = injectsidetone(left, moniL);
+			b [R] = injectsidetone(right, moniR);
 			break;
 		case BOARD_RXMAINSUB_B_A:
 			// left:B/right:A
-			b [L] = injectsidetone(right, sdtn);
-			b [R] = injectsidetone(left, sdtn);
+			b [L] = injectsidetone(right, moniL);
+			b [R] = injectsidetone(left, moniR);
 			break;
 		case BOARD_RXMAINSUB_B_B:
 			// left:B/right:B
-			b [L] = injectsidetone(left, sdtn);
-			b [R] = injectsidetone(right, sdtn);
+			b [L] = injectsidetone(left, moniL);
+			b [R] = injectsidetone(right, moniR);
 			break;
 		case BOARD_RXMAINSUB_TWO:
 			// left, right:A+B
-			b [L] = b [R] = injectsidetone(((int_fast32_t) left + right) / 2, sdtn);
+			b [L] = injectsidetone(((int_fast32_t) left + right) / 2, moniL);
+			b [R] = injectsidetone(((int_fast32_t) left + right) / 2, moniR);
 			break;
 		}
 	}
@@ -5834,11 +5809,6 @@ rxparam_update(uint_fast8_t profile, uint_fast8_t pathi)
 	sidetonevolume = (glob_sidetonelevel / (FLOAT_t) 100);
 #endif /* WITHUSBHEADSET */
 	mainvolumerx = 1 - sidetonevolume;
-
-	// Уровень сигнала самопрослушивания
-	monisublvl = (glob_monilevel / (FLOAT_t) 100);
-	FLOAT_t monimainlvl = 1 - monisublvl;
-
 }
 // Передача параметров в DSP модуль
 // Обновление параметров передатчика (кроме фильтров).
@@ -6385,11 +6355,12 @@ board_set_sidetonelevel(uint_fast8_t n)	/* Уровень сигнала сам�
 }
 
 void 
-board_set_monilevel(uint_fast8_t n)	/* Уровень сигнала самопрослушивания в процентах - 0%..100% */
+board_set_moniflag(uint_fast8_t v)	/* разрешение самопрослушивания */
 {
-	if (glob_monilevel != n)
+	const uint_fast8_t n = v != 0;
+	if (glob_moniflag != n)
 	{
-		glob_monilevel = n;
+		glob_moniflag = n;
 		board_dsp1regchanged();
 	}
 }

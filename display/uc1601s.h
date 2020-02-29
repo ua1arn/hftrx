@@ -21,6 +21,9 @@
 typedef uint_fast8_t COLOR_T;	/* цвета не поддерживаются - заглушка */
 typedef uint8_t PACKEDCOLOR_T;	/* цвета не поддерживаются - заглушка */
 
+typedef PACKEDCOLOR_T PACKEDCOLORPIP_T;
+typedef COLOR_T COLORPIP_T;
+
 #endif /* LCDMODE_UC1601 */
 
 #endif /* UC1601S_H_INCLUDED */

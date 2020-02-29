@@ -13,8 +13,8 @@
 
 #include "display/display.h"
 #include "formats.h"
-#include "inc/gpio.h"
-#include "inc/spi.h"
+#include "gpio.h"
+#include "spi.h"
 
 #if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811)
 
@@ -146,6 +146,7 @@ static uint_fast8_t tscpresetnt;
 /* TS registers masks */
 #define STMPE811_TS_CTRL_ENABLE         0x01
 #define STMPE811_TS_CTRL_STATUS         0x80
+#define STMPE811_TS_CTRL_STATUS_POS     0x07
 
 int32_t i2cperiph_readN(uint_fast8_t d_adr, uint_fast8_t r_adr, uint32_t r_byte, uint_fast8_t * r_buffer)
 {
@@ -185,7 +186,7 @@ void i2cperiph_write8(uint_fast8_t DeviceAddr, uint_fast8_t reg, uint_fast8_t va
 	i2c_stop();
 }
 
-uint_fast8_t i2cperiph_read8(uint_fast8_t DeviceAddr, uint_fast8_t reg)
+uint_fast16_t i2cperiph_read8(uint_fast8_t DeviceAddr, uint_fast8_t reg)
 {
 	uint_fast8_t v;
 
@@ -196,15 +197,15 @@ uint_fast8_t i2cperiph_read8(uint_fast8_t DeviceAddr, uint_fast8_t reg)
 	return v;
 }
 
-uint16_t i2cperiph_read16(uint_fast8_t DeviceAddr, uint_fast8_t reg)
+uint_fast16_t i2cperiph_read16(uint_fast8_t DeviceAddr, uint_fast8_t reg)
 {
 	uint_fast8_t v [2];
 
 	i2c_start(DeviceAddr);
 	i2c_write_withrestart(reg);		// Register 135
 	i2c_start(DeviceAddr | 1);
-	i2c_read(& v [0], I2C_READ_ACK_1);	/* чтение первого и единственного байта ответа */
-	i2c_read(& v [1], I2C_READ_NACK);	/* чтение первого и единственного байта ответа */
+	i2c_read(& v [0], I2C_READ_ACK_1);
+	i2c_read(& v [1], I2C_READ_NACK);
 	return v [0] * 256 + v [1];
 }
 
@@ -216,7 +217,7 @@ uint16_t i2cperiph_read16(uint_fast8_t DeviceAddr, uint_fast8_t reg)
   *   @arg  STMPE811_PIN_x: Where x can be from 0 to 7.
   * @retval None
   */
-void stmpe811_IO_DisableAF(uint16_t DeviceAddr, uint16_t IO_Pin)
+void stmpe811_IO_DisableAF(uint_fast8_t DeviceAddr, uint_fast16_t IO_Pin)
 {
   uint8_t tmp = 0;
 
@@ -224,34 +225,36 @@ void stmpe811_IO_DisableAF(uint16_t DeviceAddr, uint16_t IO_Pin)
   tmp = i2cperiph_read8(DeviceAddr, STMPE811_REG_IO_AF);
 
   /* Disable the selected pins alternate function */
-  tmp &= ~(uint8_t)IO_Pin;
+  tmp &= ~ (uint8_t) IO_Pin;
 
   /* Write back the new register value */
   i2cperiph_write8(DeviceAddr, STMPE811_REG_IO_AF, tmp);
 
 }
 
-uint8_t stmpe811_TS_GetXY(
-	uint_fast16_t *X,
-	uint_fast16_t *Y
+static uint_fast8_t stmpe811_TS_GetXYZ(
+	uint_fast16_t * X,
+	uint_fast16_t * Y,
+	uint_fast8_t * Z
 	)
 {
 	uint_fast8_t DeviceAddr = BOARD_I2C_STMPE811;
-	uint_fast8_t dataXY [3];
+	uint_fast8_t dataXYZ [4];
 	uint_fast32_t vdataXY;
 	uint_fast8_t sta = i2cperiph_read8(DeviceAddr, STMPE811_REG_FIFO_STA);
 	if ((sta & 0x10) == 0)
 		return 0;
-	i2cperiph_readN(DeviceAddr, STMPE811_REG_TSC_DATA_NON_INC, sizeof(dataXY) / sizeof(dataXY) [0], dataXY);
+	i2cperiph_readN(DeviceAddr, STMPE811_REG_TSC_DATA_NON_INC, sizeof dataXYZ / sizeof dataXYZ [0], dataXYZ);
 
 	/* Calculate positions values */
 	vdataXY =
-			(dataXY [0] << 16) |
-			(dataXY [1] << 8) |
-			(dataXY [2] << 0);
+			((uint_fast32_t) dataXYZ [0] << 16) |
+			((uint_fast32_t) dataXYZ [1] << 8) |
+			((uint_fast32_t) dataXYZ [2] << 0);
 	* X = (vdataXY >> 12) & 0x00000FFF;
 	* Y = (vdataXY >> 0) & 0x00000FFF;
-#if 0
+	* Z = dataXYZ [3];
+#if 1
 	/* Reset FIFO */
 	i2cperiph_write8(DeviceAddr, STMPE811_REG_FIFO_STA, 0x01);
 	/* Enable the FIFO again */
@@ -265,15 +268,15 @@ uint8_t stmpe811_TS_GetXY(
   * @param  DeviceAddr: Device address on communication Bus.
   * @retval None.
   */
-void stmpe811_TS_Start(uint16_t DeviceAddr)
+static void stmpe811_TS_Start(uint_fast8_t DeviceAddr)
 {
-  uint8_t mode;
+	uint_fast8_t mode;
 
   /* Get the current register value */
   mode = i2cperiph_read8(DeviceAddr, STMPE811_REG_SYS_CTRL2);
 
    /* Set the Functionalities to be Enabled */
-  mode &= ~(STMPE811_TS_FCT | STMPE811_ADC_FCT);
+  mode &= ~ (STMPE811_TS_FCT | STMPE811_ADC_FCT);
 
   /* Set the new register value */
   i2cperiph_write8(DeviceAddr, STMPE811_REG_SYS_CTRL2, mode);
@@ -323,7 +326,7 @@ void stmpe811_TS_Start(uint16_t DeviceAddr)
    */
   i2cperiph_write8(DeviceAddr, STMPE811_REG_TSC_CTRL,
 		  (0x05 << 4)	 | /* Tracking index */
-		  (0x01 << 1)	 | /* TTSC operating mode: 001: X, Y only */
+		  (0x00 << 1)	 | /* 000: X, Y, Z acquisition */
 		  0x01			 | /* EN: Enable TSC */
 		  0
 		  );
@@ -346,7 +349,7 @@ tcsnormalize(
 {
 	if (rawmin < rawmax)
 	{
-		// Normal directiom
+		// Normal direction
 		const uint_fast16_t distance = rawmax - rawmin;
 		if (raw < rawmin)
 			return 0;
@@ -369,17 +372,18 @@ tcsnormalize(
 }
 
 /* top left raw data values */
-static uint_fast16_t xrawmin = 200;
-static uint_fast16_t yrawmin = 3500;
+static uint_fast16_t xrawmin = 70;
+static uint_fast16_t yrawmin = 3890;
 /* bottom right raw data values */
-static uint_fast16_t xrawmax = 3880;
-static uint_fast16_t yrawmax = 275;
+static uint_fast16_t xrawmax = 3990;
+static uint_fast16_t yrawmax = 150;
 
 // On AT070TN90 with touch screen attached Y coordinate increments from bottom to top, X from left to right
 uint_fast8_t board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
 {
 	uint_fast16_t x, y;
-	if (tscpresetnt && stmpe811_TS_GetXY(& x, & y))
+	uint_fast8_t z;
+	if (tscpresetnt && stmpe811_TS_GetXYZ(& x, & y, & z))
 	{
 		* xr = tcsnormalize(x, xrawmin, xrawmax, DIM_X - 1);
 		* yr = tcsnormalize(y, yrawmin, yrawmax, DIM_Y - 1);
@@ -403,6 +407,11 @@ void stmpe811_initialize(void)
 	{
 		stmpe811_TS_Start(BOARD_I2C_STMPE811);
 	}
+}
+
+uint_fast8_t board_tsc_is_pressed (void) /* Return 1 if touch detection */
+{
+	return (i2cperiph_read8(BOARD_I2C_STMPE811, STMPE811_REG_TSC_CTRL) & STMPE811_TS_CTRL_STATUS) >> STMPE811_TS_CTRL_STATUS_POS;
 }
 
 #endif /* defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811) */

@@ -38,10 +38,10 @@
 //#define CTLSTYLE_STORCH_V3	1	// Rmainunit_v5fm.pcb, Rmainunit_v5jm.pcb, Rmainunit_v5km.pcb STM32F767ZET6, 2xUSB, SD-CARD, 8-bit display interface, NAU8822L и FPGA EP4CE22E22I7N
 //#define CTLSTYLE_STORCH_V5	1	// Rmainunit_v5l.pcb STM32F767ZET6, 2xmini-USB, mini SD-CARD, 8-bit display c, NAU8822L и FPGA EP4CE22E22I7N
 
-// Дисплей с фреймбуфером
+// Дисплей с фреймбуфером:
 //#define CTLSTYLE_STORCH_V6	1	// Rmainunit_v5la.pcb STM32H743IIT6, TFT 4.3", 2xmini-USB, mini SD-CARD, 8-bit display interface, NAU8822L и FPGA EP4CE22E22I7N
-//#define CTLSTYLE_STORCH_V7	1	// rmainunit_v5km0.pcb, rmainunit_v5km1.pcb STM32H743IIT6, TFT 4.3", 2xUSB, SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
-#define CTLSTYLE_STORCH_V8	1	// rmainunit_v5km2.pcb rmainunit_v5km3.pcb rmainunit_v5km4.pcb R7S721020VCFP, TFT 4.3" или 7", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N, AD9246BCPZ-125
+#define CTLSTYLE_STORCH_V7	1	// rmainunit_v5km0.pcb, rmainunit_v5km1.pcb STM32H743IIT6, TFT 4.3", 2xUSB, SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
+//#define CTLSTYLE_STORCH_V8	1	// rmainunit_v5km2.pcb rmainunit_v5km3.pcb rmainunit_v5km4.pcb R7S721020VCFP, TFT 4.3" или 7", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N, AD9246BCPZ-125
 //#define CTLSTYLE_STORCH_V9	1	// rmainunit_v5km2.pcb rmainunit_v5km3.pcb rmainunit_v5km4.pcb R7S721020VCFP, TFT 4.3" или 7", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N, AD9246BCPZ-125
 
 //
@@ -54,11 +54,11 @@
 //#define CTLSTYLE_V1K	1	// Контроллер на STM32F401RB - новый SW20xx
 //#define CTLSTYLE_OLEG4Z_V1	1	// Rmainunit_v5fm.pcb STM32F767ZET6, 2xUSB, WFM, FPGA EP4CE22E22I7N, R820T2
 
-// Модемы
+// Модемы:
 //#define CTLSTYLE_STORCH_V4	1	// Rmainunit_v5im.pcb UHF modem v2
 
 // Конфигурации под трансиверы UR3LMZ (без внешнего дешифратора адреса).
-// Полные...
+// Полные:
 //#define CTLSTYLE_SW2011 1		// ATMega: SW-2011-RDX - А.Шатун, UR3LMZ (atmega_ctlstyle_v9.h)
 //#define CTLSTYLE_SW2012N 1	// ATMega: SW-2012-RDX 6 МГц ПЧ и встроенный преобразователь RDX0154 - А.Шатун, UR3LMZ (atmega_ctlstyle_v9n.h)
 //#define CTLSTYLE_SW2013SF 1	// ATMega: SW-2012С - с ПЧ 6 МГЦ и цветным индикатором SF-TC220H-9223A-N_IC_ILI9225C_2011-01-15, двухступенчатой регулировкой мощности, ...
@@ -68,18 +68,19 @@
 //#define CTLSTYLE_SW2016	1		// ATMega: Si5351, SW20116 (LCD RDT065, Si5351 с ПЧ 6 МГц) - с ФНЧ, без УКВ
 //#define CTLSTYLE_SW2016VHF	1	// ATMega: Si5351, SW20116 (LCD RDT065, Si5351 с ПЧ 6 МГц, FM)
 //#define CTLSTYLE_SW2018XVR	1	// ATMega: Si5351, SW20116 (LCD RDT065, Si5351 с ПЧ 6 МГц, FM)
-// mini...
+//
+// mini:
 //#define CTLSTYLE_SW2012_MINI 1	// ATMega: SW-2012-MINI 32*64 - А.Шатун, UR3LMZ (atmega_ctlstyle_v9m.h)
 //#define CTLSTYLE_SW2012MC 1	// ATMega: SW-2012С LS020 - MINI с ПЧ 6 МГЦ и цветным индикатором LS020
 //#define CTLSTYLE_SW2012CN 1	// ATMega: mini 2013 TFT1.8 - MINI с ПЧ 6 МГЦ и цветным индикатором 160*128 с контроллером Sitronix ST7735
 //#define CTLSTYLE_SW2012CN5 1	// ATMega: mini 2013 TFT1.8 - SWR METER + VOLT METER - MINI с ПЧ 6 МГЦ и цветным индикатором 160*128 с контроллером Sitronix ST7735
 //#define CTLSTYLE_SW2016MINI 1		// ATMega: mini 2013 TFT1.8 - SWR METER + VOLT METER - MINI с ПЧ 6 МГЦ и цветным индикатором 160*128 с контроллером Sitronix ST7735
 
-// Простой синтезатор на AD9835/AD9834/AD9851/Si570
+// Простой синтезатор на AD9835/AD9834/AD9851/Si570:
 //#define CTLSTYLE_V8S 1		// ATMega: "Простой синтезатор на AD9835" - без внешнего дешифратора адресов atmega_ctlstyle_v8s.h
 //#define CTLSTYLE_V8S2X 1		// ATMega:Синтезатор на двух модулях AD9850 @ 125 MHz
 
-// "Персональные" конфигурации
+// "Персональные" конфигурации:
 //#define CTLSTYLE_V1A 1		// ATMega: DU VENT SI570+AD9834 (66MHz), LS020, ATMega32 - без внешнего дешифратора адресов - atmega_cpustyle_v1a.h, atmega_ctlstyle_v1a.h - похожа на sw2011
 //#define STYLE_TS850_V1 	1	// ARM: Vorobey board for (rd3pq@rambler.ru - Si570), new call: R2PM
 //#define CTLSTYLE_RA4YBO	1	// "Стационарный c Павлином" ATMega1284, up-conversion to 73050 для RA4YBO
@@ -170,8 +171,8 @@
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32f4xx_tqfp144_cpustyle_storch_v1.h"	// Rmainunit_v5cm.pcb, Rmainunit_v5dm.pcb
 #elif CPUSTYLE_STM32F && CTLSTYLE_STORCH_V2	// wide LCD, SD-CARD. 2xUSB, DUAL WATCH, STM32F446ZET6, TLV320AIC23B и FPGA EP4CE22E22I7N
-	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v2.h"	// UA0YAS (RA0CGS) Rmainunit_v5em.pcb (USBx2)
-	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v2_RX3M.h"	// RX3M Rmainunit_v5em.pcb (USBx2)
+	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v2.h"	// UA0YAS (RA0CGS) Rmainunit_v5em.pcb (USBx2)
+	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v2_RX3M.h"	// RX3M Rmainunit_v5em.pcb (USBx2)
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32f4xx_tqfp144_cpustyle_storch_v2.h"	// Rmainunit_v5em.pcb (USBx2)
 #elif CPUSTYLE_STM32F && CTLSTYLE_STORCH_V3	// SD-CARD. 2xUSB, DUAL WATCH, STM32F446ZET6, TLV320AIC23B и FPGA EP4CE22E22I7N
@@ -201,6 +202,7 @@
 	#include "boards/arm_stm32h7xx_tqfp176_cpustyle_storch_v6.h"	// Rmainunit_v5l.pcb (mini USBx2, wide display interface) - mini RX
 #elif CPUSTYLE_STM32H7XX && CTLSTYLE_STORCH_V7	// rmainunit_v5km0.pcb STM32H743IIT6, TFT 4.3", 2xUSB, SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
 	#include "boards/arm_stm32h7xx_tqfp176_ctlstyle_storch_v7.h"	// rmainunit_v5km0.pcb, rmainunit_v5km1.pcb STM32H743IIT6, TFT 4.3", 2xmini-USB, mini SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
+	//#include "boards/arm_stm32h7xx_tqfp176_ctlstyle_storch_v7_ats52.h"	// ATS52 version: rmainunit_v5km1.pcb STM32H743IIT6, TFT 4.3", 2xmini-USB, mini SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
 	//#include "boards/arm_stm32h7xx_tqfp176_ctlstyle_storch_v7_no_radio.h"	// Rmainunit_v5la.pcb STM32H743IIT6, TFT 4.3", 2xmini-USB, mini SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32h7xx_tqfp176_cpustyle_storch_v7.h"	// Rmainunit_v5l.pcb (mini USBx2, wide display interface) - mini RX

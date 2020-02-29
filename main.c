@@ -13,13 +13,14 @@
 #include "list.h"
 
 #include "display/display.h"
+#include "gui.h"
 #include "formats.h"
 
 #include "audio.h"
 
 #include "codecs/tlv320aic23.h"	// константы управления усилением кодека
 #include "codecs/nau8822.h"
-#include "inc/spi.h"
+#include "spi.h"
 
 #if WITHUSEAUDIOREC || WITHUSESDCARD
 	#include "sdcard.h"
@@ -34,6 +35,12 @@
 #if WITHRFSG
 	#error WITHRFSG now not supported
 #endif /* WITHRFSG */
+
+#if WITHTOUCHTEST
+	uint_fast8_t encoder2busy = 0;		// признак занятости энкодера в обработке gui
+	uint_fast8_t is_menu_opened = 0;	// открыто gui системное меню
+	char * w;
+#endif /* WITHTOUCHTEST */
 
 static uint_fast32_t 
 //NOINLINEAT
@@ -2493,7 +2500,7 @@ struct nvmap
 	uint16_t gdigiscale;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 	uint8_t	gcwedgetime;			/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
 	uint8_t	gsidetonelevel;	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
-	uint8_t gmonilevel;		/* Уровень сигнала самопрослушивания в процентах - 0%..100% */
+	uint8_t gmoniflag;		/* разрешение самопрослушивания */
 	uint8_t	gsubtonelevel;	/* Уровень сигнала CTCSS в процентах - 0%..100% */
 	uint8_t gloopmsg, gloopsec;
 	uint8_t gdigigainmax;	/* диапазон ручной регулировки цифрового усиления - максимальное значение */
@@ -3707,7 +3714,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 		(- 230) + FSADCPOWEROFFSET10,	// с конвертором
 	};
 #endif /* CTLSTYLE_OLEG4Z_V1 */
-	static uint_fast8_t gmonilevel = 15;		/* Уровень сигнала самопрослушивания в процентах - 0%..100% */
+	static uint_fast8_t gmoniflag = 1;		/* разрешение самопрослушивания */
 
 	static uint_fast8_t gvad605 = 180; //UINT8_MAX;	/* напряжение на AD605 (управление усилением тракта ПЧ */
 	#if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */
@@ -7031,8 +7038,8 @@ updateboard2(void)
 {
 #if WITHENCODER
 	encoder_set_resolution(encresols [ghiresres], ghiresdyn);
-#endif
-	display_setbgcolor(gbluebgnd ? COLOR_BLUE : COLOR_BLACK);
+#endif /* WITHENCODER */
+	display_setbgcolor(gbluebgnd ? COLORMAIN_BLUE : COLORMAIN_BLACK);
 }
 
 
@@ -8076,7 +8083,7 @@ updateboard(
 
 		board_set_cwedgetime(gcwedgetime);	/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
 		board_set_sidetonelevel(gsidetonelevel);	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
-		board_set_monilevel(gmonilevel);	/* Уровень сигнала самопрослушивания в процентах - 0%..100% */
+		board_set_moniflag(gmoniflag);	/* glob_moniflag */
 		#if WITHSPECTRUMWF
 			board_set_fillspect(gfillspect);	/* заливать заполнением площадь под графиком спектра */
 			board_set_topdb(gtopdb);		/* верхний предел FFT */
@@ -9019,13 +9026,19 @@ uint_fast8_t hamradio_get_volt_value(void)
 
 #endif /* WITHVOLTLEVEL && WITHCPUADCHW */
 
-#if WITHTHERMOLEVEL && WITHCPUADCHW
+#if WITHTHERMOLEVEL
 
 // Градусы в десятых долях
 // Read from thermo sensor ST LM235Z (1 kOhm to +3.3)
 int_fast16_t hamradio_get_temperature_value(void)
 {
-	const int_fast16_t offset_LM235 = - 2731;	// -273.15 approximation of temperature at 0 volt. Slope = 10 mV / celsius
+#if defined(THERMOSENSOR_OFFSET)
+	const int_fast16_t thermo_offset = THERMOSENSOR_OFFSET; 	// При 0 °С на выходе 500 мВ. Шкала 10 mV / °С
+#else /* defined(THERMOSENSOR_OFFSET) */
+	#warning WITHTHERMOLEVEL should be defined with full list of sensor parameters - THERMOSENSOR_OFFSET, THERMOSENSOR_UPPER and THERMOSENSOR_LOWER
+	// ST LM235Z
+	const int_fast16_t thermo_offset = - 2731;	// -273.15 approximation of temperature at 0 volt. Slope = 10 mV / celsius
+#endif /* defined(THERMOSENSOR_OFFSET) */
 #if WITHREFSENSOR
 	// Измерение опрного напряжения
 	const uint_fast8_t vrefi = VREFIX;
@@ -9033,7 +9046,7 @@ int_fast16_t hamradio_get_temperature_value(void)
 	if (ref != 0)
 	{
 		const unsigned Vref_mV = (uint_fast32_t) board_getadc_fsval(vrefi) * WITHREFSENSORVAL / ref;
-		const int_fast32_t mv = (int32_t) board_getadc_unfiltered_u32(XTHERMOIX, 0, (uint_fast64_t) Vref_mV * (THERMOSENSOR_UPPER + THERMOSENSOR_LOWER) / THERMOSENSOR_LOWER);
+		const int_fast32_t mv = (int32_t) board_getadc_unfiltered_u32(XTHERMOIX, 0, (uint_fast64_t) Vref_mV * (THERMOSENSOR_UPPER + THERMOSENSOR_LOWER) / THERMOSENSOR_LOWER) + thermo_offset;
 		return mv + offset_LM235;	// Приводим к десятым долям градуса
 	}
 	else
@@ -9044,11 +9057,11 @@ int_fast16_t hamradio_get_temperature_value(void)
 #else /* WITHREFSENSOR */
 	const unsigned Vref_mV = ADCVREF_CPU * 100;
 	//debug_printf_P(PSTR("hamradio_get_temperature_value: XTHERMOIX=%u\n"), board_getadc_filtered_u16(XTHERMOIX, 0, Vref_mV));
-	return (int32_t) board_getadc_unfiltered_u32(XTHERMOIX, 0, (uint_fast64_t) Vref_mV * (THERMOSENSOR_UPPER + THERMOSENSOR_LOWER) / THERMOSENSOR_LOWER) + offset_LM235;
+	return (int32_t) board_getadc_unfiltered_u32(XTHERMOIX, 0, (uint_fast64_t) Vref_mV * (THERMOSENSOR_UPPER + THERMOSENSOR_LOWER) / THERMOSENSOR_LOWER) + thermo_offset;
 #endif /* WITHREFSENSOR */
 }
 
-#endif /* WITHTHERMOLEVEL && WITHCPUADCHW */
+#endif /* WITHTHERMOLEVEL */
 
 #if (WITHCURRLEVEL || WITHCURRLEVEL2) && WITHCPUADCHW
 
@@ -12335,6 +12348,13 @@ display_menu_digit(
 	uint_fast8_t rj
 	)
 {
+#if WITHTOUCHTEST
+	if (is_menu_opened)
+	{
+		local_snprintf_P(w, width, "%d", value);
+		return;
+	}
+#endif /* WITHTOUCHTEST */
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 
 	display_setcolors(MNUVALCOLOR, BGCOLOR);
@@ -12357,6 +12377,13 @@ display_menu_string_P(
 	uint_fast8_t comma
 	)
 {
+#if WITHTOUCHTEST
+	if (is_menu_opened)
+	{
+		strcpy(w, s);
+		return;
+	}
+#endif /* WITHTOUCHTEST */
 	display_setcolors(MNUVALCOLOR, BGCOLOR);
 	display_at_P(x + width - comma, y, s);
 }
@@ -12371,9 +12398,21 @@ display_menu_string_P(
 
 #define ITEM_NOINITNVRAM	0x10	/* значение этого пункта не используется при начальной инициализации NVRAM */
 
+#if CPUSTYLE_ATMEGA
+	#define QLABEL(s) (s)
+	#define QLABEL2(s1, s2) (s1)
+#else /* CPUSTYLE_ATMEGA */
+	#define QLABEL(s) (s), (s)
+	#define QLABEL2(s1, s2) (s1), (s2)
+#endif /* CPUSTYLE_ATMEGA */
 struct menudef
 {
+#if CPUSTYLE_ATMEGA
 	char qlabel [LABELW + 1];		/* текст - название пункта меню */
+#else /* CPUSTYLE_ATMEGA */
+	char qlabel [LABELW + 1];		/* текст - название пункта меню */
+	const char * label;
+#endif /* CPUSTYLE_ATMEGA */
 	uint8_t qwidth, qcomma, qrj;
 	uint8_t qistep;
 	uint8_t qspecial;	/* признак к какому меню относится */
@@ -12391,7 +12430,7 @@ static const FLASHMEM struct menudef menutable [] =
 #if WITHAUTOTUNER && 1 // Tuner parameters debug
 #if ! WITHFLATMENU
 	{
-		"TUNER   ", 0, 0, 0, 0,	
+		QLABEL2("TUNER   ", "Tuner"), 0, 0, 0, 0,
 		ITEM_GROUP, 
 		0, 0, 
 		offsetof(struct nvmap, ggrptuner),
@@ -12401,7 +12440,7 @@ static const FLASHMEM struct menudef menutable [] =
 	},
 #endif /* ! WITHFLATMENU */
 	{
-		"TUNER L ", 7, 0, 0,	ISTEP1,	
+		QLABEL("TUNER L "), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE, 
 		LMIN, LMAX, 
 		MENUNONVRAM, //offsetof(struct nvmap, tunerind),
@@ -12410,7 +12449,7 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"TUNER C ", 7, 0, 0,	ISTEP1,	
+		QLABEL("TUNER C "), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE, 
 		CMIN, CMAX, 
 		MENUNONVRAM, //offsetof(struct nvmap, tunercap),
@@ -12419,7 +12458,7 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"TUNER TY", 7, 0, 0,	ISTEP1,	
+		QLABEL("TUNER TY"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE, 
 		0, KSCH_COUNT - 1, 
 		MENUNONVRAM, //offsetof(struct nvmap, tunertype),
@@ -12428,7 +12467,7 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"TUNER WT", 7, 0, 0,	ISTEP5,	// задержка перед измерением после переключения реле
+		QLABEL("TUNER WT"), 7, 0, 0,	ISTEP5,	// задержка перед измерением после переключения реле
 		ITEM_VALUE, 
 		10, 80, 
 		offsetof(struct nvmap, tunerdelay),
@@ -12439,7 +12478,7 @@ static const FLASHMEM struct menudef menutable [] =
 #endif /* WITHAUTOTUNER */
 #if ! WITHFLATMENU
 	{
-		"DISPLAY ", 0, 0, 0, 0,	
+		QLABEL2("DISPLAY ", "Display"), 0, 0, 0, 0,
 		ITEM_GROUP, 
 		0, 0, 
 		offsetof(struct nvmap, ggrpdisplay),
@@ -12450,7 +12489,7 @@ static const FLASHMEM struct menudef menutable [] =
 #endif /* ! WITHFLATMENU */
 #if defined (DEFAULT_LCD_CONTRAST)
 	{
-		"LCD CONT", 7, 0, 0,	ISTEP1,	
+		QLABEL("LCD CONT"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 #if LCDMODE_PCF8535
 		42, 70, 				// для TIC218 @ 3.3 volt - 45..60
@@ -12471,7 +12510,7 @@ static const FLASHMEM struct menudef menutable [] =
 #endif /* defined (DEFAULT_LCD_CONTRAST) */
 #if 0//WITHDCDCFREQCTL
 	{
-		"DCDC DIV", 7, 0, 0,	ISTEP1,	
+		QLABEL("DCDC DIV"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		4, UINT16_MAX, 
 		offsetof(struct nvmap, dcdcrefdiv),
@@ -12482,7 +12521,7 @@ static const FLASHMEM struct menudef menutable [] =
 #endif /* WITHDCDCFREQCTL */
 #if WITHLCDBACKLIGHT
 	{
-		"LCD LIGH", 7, 0, 0,	ISTEP1,	
+		QLABEL("LCD LIGH"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		WITHLCDBACKLIGHTMIN, WITHLCDBACKLIGHTMAX, 
 		offsetof(struct nvmap, bglight),
@@ -12493,7 +12532,7 @@ static const FLASHMEM struct menudef menutable [] =
 #endif /* WITHLCDBACKLIGHT */
 #if WITHKBDBACKLIGHT
 	{
-		"KBD LIGH", 7, 3, RJ_ON,	ISTEP1,
+		QLABEL("KBD LIGH"), 8, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, kblight),
@@ -12504,7 +12543,7 @@ static const FLASHMEM struct menudef menutable [] =
 #endif /* WITHKBDBACKLIGHT */
 #if WITHLCDBACKLIGHT || WITHKBDBACKLIGHT
 	{
-		"DIMM TIM", 7, 0, 0,	ISTEP5,	
+		QLABEL("DIMM TIM"), 7, 0, 0,	ISTEP5,
 		ITEM_VALUE,
 		0, 240, 
 		offsetof(struct nvmap, dimmtime),
@@ -12515,7 +12554,7 @@ static const FLASHMEM struct menudef menutable [] =
 #endif /* WITHKBDBACKLIGHT */
 #if WITHSLEEPTIMER
 	{
-		"SLEEPTIM", 7, 0, 0,	ISTEP5,	
+		QLABEL("SLEEPTIM"), 7, 0, 0,	ISTEP5,
 		ITEM_VALUE,
 		0, 240, 
 		offsetof(struct nvmap, sleeptime),
@@ -12527,7 +12566,7 @@ static const FLASHMEM struct menudef menutable [] =
 #if LCDMODE_COLORED
 	// Для цветных дисплеев можно менять цвет фона
 	{
-		"BLUE BG ", 7, 3, RJ_ON,	ISTEP1,
+		QLABEL("BLUE BG "), 8, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, gbluebgnd),
@@ -12537,7 +12576,7 @@ static const FLASHMEM struct menudef menutable [] =
 	},
 #endif
 	{
-		"FREQ FPS", 7, 0, 0,	ISTEP1,	
+		QLABEL("FREQ FPS"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		4, 25,							/* частота обновления показаний частоты от 5 до 25 раз в секунду */
 		offsetof(struct nvmap, displayfreqsfps),
@@ -12547,9 +12586,13 @@ static const FLASHMEM struct menudef menutable [] =
 	},
 #if WITHBARS
 	{
-		"BARS FPS", 7, 0, 0,	ISTEP1,
+		QLABEL("BARS FPS"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
+#if WITHDISPLAYSWR_FPS
+		4, 40,							/* частота обновления барграфов от 5 до 40 раз в секунду */
+#else
 		4, 25,							/* частота обновления барграфов от 5 до 25 раз в секунду */
+#endif
 		offsetof(struct nvmap, displaybarsfps),
 		NULL,
 		& displaybarsfps,
@@ -12558,7 +12601,7 @@ static const FLASHMEM struct menudef menutable [] =
 #endif /* WITHBARS */
 #if WITHSPECTRUMWF
 	{
-		"FILL SPE", 7, 3, RJ_YES,	ISTEP1,
+		QLABEL("FILL SPE"), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,							/* отказ от заполнения */
 		offsetof(struct nvmap, gfillspect),
@@ -12567,7 +12610,7 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"TOP DB  ", 7, 0, 0,	ISTEP1,
+		QLABEL("TOP DB  "), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		0, 60,							/* сколько не показывать сверху */
 		offsetof(struct nvmap, gtopdb),
@@ -12576,7 +12619,7 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"BOTTM DB", 7, 0, 0,	ISTEP1,
+		QLABEL("BOTTM DB"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		80, 160,							/* диапазон отображаемых значений */
 		offsetof(struct nvmap, gbottomdb),
@@ -12585,7 +12628,7 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"WFPARAMS", 7, 3, RJ_YES,	ISTEP1,
+		QLABEL("WFPARAMS"), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,							/* водопад отдельными папаметрами */
 		offsetof(struct nvmap, gwflevelsep),
@@ -12594,7 +12637,7 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"TOP WF  ", 7, 0, 0,	ISTEP1,
+		QLABEL("TOP WF  "), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		0, 60,							/* сколько не показывать сверху */
 		offsetof(struct nvmap, gtopdbwf),
@@ -12603,7 +12646,7 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"BOTTM WF", 7, 0, 0,	ISTEP1,
+		QLABEL("BOTTM WF"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		80, 160,							/* диапазон отображаемых значений */
 		offsetof(struct nvmap, gbottomdbwf),
@@ -12612,7 +12655,7 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"ZOOM PAN", 7, 0, RJ_POW2,	ISTEP1,	
+		QLABEL("ZOOM PAN"), 7, 0, RJ_POW2,	ISTEP1,
 		ITEM_VALUE,
 		0, BOARD_FFTZOOM_POW2MAX,							/* уменьшение отображаемого участка спектра */
 		offsetof(struct nvmap, gzoomxpow2),
@@ -12624,7 +12667,7 @@ static const FLASHMEM struct menudef menutable [] =
 #if defined (RTC1_TYPE)
 #if ! WITHFLATMENU
 	{
-		"CLOCK   ", 0, 0, 0, 0,	
+		QLABEL("CLOCK   "), 0, 0, 0, 0,
 		ITEM_GROUP, 
 		0, 0, 
 		offsetof(struct nvmap, ggrpclock),
@@ -12634,7 +12677,7 @@ static const FLASHMEM struct menudef menutable [] =
 	},
 #endif /* ! WITHFLATMENU */
 	{
-		"TM YEAR ", 7, 0, 0,	ISTEP1,	
+		QLABEL("TM YEAR "), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE, 
 		2015, 2099, 
 		MENUNONVRAM, //offsetof(struct nvmap, tunerind),
@@ -12643,7 +12686,7 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"TM MONTH", 7, 3, RJ_MONTH,	ISTEP1,
+		QLABEL("TM MONTH"), 7, 3, RJ_MONTH,	ISTEP1,
 		ITEM_VALUE, 
 		1, 12, 
 		MENUNONVRAM, //offsetof(struct nvmap, tunerind),
@@ -12652,7 +12695,7 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"TM DAY  ", 7, 0, 0,	ISTEP1,	
+		QLABEL("TM DAY  "), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE, 
 		1, 31, 
 		MENUNONVRAM, //offsetof(struct nvmap, tunerind),
@@ -12661,7 +12704,7 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"TM HOUR ", 7, 0, 0,	ISTEP1,	
+		QLABEL("TM HOUR "), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE, 
 		0, 23, 
 		MENUNONVRAM, //offsetof(struct nvmap, tunerind),
@@ -12670,7 +12713,7 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"TM MIN  ", 7, 0, 0,	ISTEP1,	
+		QLABEL("TM MIN  "), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE, 
 		0, 59, 
 		MENUNONVRAM, //offsetof(struct nvmap, tunerind),
@@ -12679,7 +12722,7 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"TM SET  ", 7, 3, RJ_YES,	ISTEP1,
+		QLABEL("TM SET  "), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE, 
 		0, 1, 
 		MENUNONVRAM, //offsetof(struct nvmap, tunerind),
@@ -12690,7 +12733,7 @@ static const FLASHMEM struct menudef menutable [] =
 #endif /* defined (RTC1_TYPE) */
 #if ! WITHFLATMENU
 	{
-		"FILTERS ", 0, 0, 0, 0,	
+		QLABEL2("FILTERS ", "Filters"), 0, 0, 0, 0,
 		ITEM_GROUP, 
 		0, 0, 
 		offsetof(struct nvmap, ggrpfilters),
@@ -12701,7 +12744,7 @@ static const FLASHMEM struct menudef menutable [] =
 #endif /* ! WITHFLATMENU */
 	// разрешено не только в случае наличия электронного ключа - требуется при переключении режимов CW/SSB
 	{
-		"CW PITCH", 7, 2, 0, 	ISTEP10, 
+		QLABEL("CW PITCH"), 7, 2, 0, 	ISTEP10,
 		ITEM_VALUE,
 		CWPITCHMIN10, CWPITCHMAX10,	// 40, 190,			/* 400 Hz..1900, Hz in 100 Hz steps */
 		offsetof(struct nvmap, gcwpitch10),
@@ -12711,7 +12754,7 @@ static const FLASHMEM struct menudef menutable [] =
 	},
 #if WITHIF4DSP
 	{
-		"NR LEVEL", 7, 0, 0,	ISTEP1,	
+		QLABEL("NR LEVEL"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		0, NRLEVELMAX, 
 		offsetof(struct nvmap, gnoisereductvl),
@@ -12722,7 +12765,7 @@ static const FLASHMEM struct menudef menutable [] =
 #endif /* WITHIF4DSP */
 #if WITHIF4DSP
 	{
-		"CW W WDT", 7, 2, 0, 	ISTEP10,	// CW bandwidth for WIDE
+		QLABEL("CW W WDT"), 7, 2, 0, 	ISTEP10,	// CW bandwidth for WIDE
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		10, 180,			/* 100 Hz..1800, Hz in 100 Hz steps */
 		RMT_BWPROPSLEFT_BASE(BWPROPI_CWWIDE),
@@ -12731,7 +12774,7 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, 
 	},
 	{
-		"CW N WDT", 7, 2, 0, 	ISTEP10,	// CW bandwidth for NARROW
+		QLABEL("CW N WDT"), 7, 2, 0, 	ISTEP10,	// CW bandwidth for NARROW
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		10, 180,			/* 100 Hz..1800, Hz in 100 Hz steps */
 		RMT_BWPROPSLEFT_BASE(BWPROPI_CWNARROW),
@@ -12740,7 +12783,7 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, 
 	},
 	{
-		"SSB W HI", 6, 1, 0,	ISTEP1,		/* Подстройка полосы пропускания - SSB WIDE */
+		QLABEL("SSB W HI"), 6, 1, 0,	ISTEP1,		/* Подстройка полосы пропускания - SSB WIDE */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
 		RMT_BWPROPSRIGHT_BASE(BWPROPI_SSBWIDE),
@@ -12749,7 +12792,7 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"SSB W LO", 7, 2, 0,	ISTEP5,		/* Подстройка полосы пропускания - SSB WIDE */
+		QLABEL("SSB W LO"), 7, 2, 0,	ISTEP5,		/* Подстройка полосы пропускания - SSB WIDE */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		BWLEFTMIN, BWLEFTMAX, 		// 50 Hz-700 Hz
 		RMT_BWPROPSLEFT_BASE(BWPROPI_SSBWIDE),
@@ -12758,7 +12801,7 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"SSBW AFR", 3 + WSIGNFLAG, 0, 0,	ISTEP1,
+		QLABEL("SSBW AFR"), 3 + WSIGNFLAG, 0, 0,	ISTEP1,
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		AFRESPONCEMIN, AFRESPONCEMAX,			/* изменение тембра звука - на Samplerate/2 АЧХ изменяется на столько децибел  */
 		RMT_BWPROPSAFRESPONCE_BASE(BWPROPI_SSBWIDE),
@@ -12767,7 +12810,7 @@ static const FLASHMEM struct menudef menutable [] =
 		getafresponcebase, /* складывается со смещением и отображается */
 	},
 	{
-		"SSB N HI", 6, 1, 0,	ISTEP1,		/* Подстройка полосы пропускания - SSB NARROW */
+		QLABEL("SSB N HI"), 6, 1, 0,	ISTEP1,		/* Подстройка полосы пропускания - SSB NARROW */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
 		RMT_BWPROPSRIGHT_BASE(BWPROPI_SSBNARROW),
@@ -12776,7 +12819,7 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"SSB N LO", 7, 2, 0,	ISTEP5,		/* Подстройка полосы пропускания - SSB NARROW */
+		QLABEL("SSB N LO"), 7, 2, 0,	ISTEP5,		/* Подстройка полосы пропускания - SSB NARROW */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		BWLEFTMIN, BWLEFTMAX, 		// 50 Hz-700 Hz
 		RMT_BWPROPSLEFT_BASE(BWPROPI_SSBNARROW),
@@ -12785,7 +12828,7 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"SSBN AFR", 3 + WSIGNFLAG, 0, 0,	ISTEP1,
+		QLABEL("SSBN AFR"), 3 + WSIGNFLAG, 0, 0,	ISTEP1,
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		AFRESPONCEMIN, AFRESPONCEMAX,			/* изменение тембра звука - на Samplerate/2 АЧХ изменяется на столько децибел  */
 		RMT_BWPROPSAFRESPONCE_BASE(BWPROPI_SSBNARROW),
@@ -12794,7 +12837,7 @@ static const FLASHMEM struct menudef menutable [] =
 		getafresponcebase, /* складывается со смещением и отображается */
 	},
 	{
-		"AM W HI ", 6, 1, 0,	ISTEP2,		/* Подстройка полосы пропускания - AM WIDE */
+		QLABEL("AM W HI "), 6, 1, 0,	ISTEP2,		/* Подстройка полосы пропускания - AM WIDE */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
 		RMT_BWPROPSRIGHT_BASE(BWPROPI_AMWIDE),
@@ -12803,7 +12846,7 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"AM W LO ", 7, 2, 0,	ISTEP5,		/* подстройка полосы пропускания - AM WIDE */
+		QLABEL("AM W LO "), 7, 2, 0,	ISTEP5,		/* подстройка полосы пропускания - AM WIDE */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		BWLEFTMIN, BWLEFTMAX,		// 50 Hz..700 Hz
 		RMT_BWPROPSLEFT_BASE(BWPROPI_AMWIDE),
@@ -12812,7 +12855,7 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"AM W AFR", 3 + WSIGNFLAG, 0, 0,	ISTEP1,
+		QLABEL("AM W AFR"), 3 + WSIGNFLAG, 0, 0,	ISTEP1,
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		AFRESPONCEMIN, AFRESPONCEMAX,			/* изменение тембра звука - на Samplerate/2 АЧХ изменяется на столько децибел  */
 		RMT_BWPROPSAFRESPONCE_BASE(BWPROPI_AMWIDE),
@@ -12821,7 +12864,7 @@ static const FLASHMEM struct menudef menutable [] =
 		getafresponcebase, /* складывается со смещением и отображается */
 	},
 	{
-		"AM N HI ", 6, 1, 0,	ISTEP2,		/* Подстройка полосы пропускания - AM NARROW */
+		QLABEL("AM N HI "), 6, 1, 0,	ISTEP2,		/* Подстройка полосы пропускания - AM NARROW */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
 		RMT_BWPROPSRIGHT_BASE(BWPROPI_AMNARROW),
@@ -12830,7 +12873,7 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"AM N LO ", 7, 2, 0,	ISTEP5,		/* подстройка полосы пропускания - AM NARROW */
+		QLABEL("AM N LO "), 7, 2, 0,	ISTEP5,		/* подстройка полосы пропускания - AM NARROW */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		BWLEFTMIN, BWLEFTMAX,		// 50 Hz..700 Hz
 		RMT_BWPROPSLEFT_BASE(BWPROPI_AMNARROW),
@@ -12839,7 +12882,7 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"AM N AFR", 3 + WSIGNFLAG, 0, 0,	ISTEP1,
+		QLABEL("AM N AFR"), 3 + WSIGNFLAG, 0, 0,	ISTEP1,
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		AFRESPONCEMIN, AFRESPONCEMAX,			/* изменение тембра звука - на Samplerate/2 АЧХ изменяется на столько децибел  */
 		RMT_BWPROPSAFRESPONCE_BASE(BWPROPI_AMNARROW),
@@ -12848,7 +12891,7 @@ static const FLASHMEM struct menudef menutable [] =
 		getafresponcebase, /* складывается со смещением и отображается */
 	},
 	{
-		"SSBTX HI", 6, 1, 0,	ISTEP1,		/* Подстройка полосы пропускания - TX SSB */
+		QLABEL("SSBTX HI"), 6, 1, 0,	ISTEP1,		/* Подстройка полосы пропускания - TX SSB */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
 		RMT_BWPROPSRIGHT_BASE(BWPROPI_SSBTX),
@@ -12857,7 +12900,7 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"SSBTX LO", 7, 2, 0,	ISTEP1,		/* подстройка полосы пропускания - TX SSB */
+		QLABEL("SSBTX LO"), 7, 2, 0,	ISTEP1,		/* подстройка полосы пропускания - TX SSB */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		BWLEFTMIN, BWLEFTMAX,		// 50 Hz..700 Hz
 		RMT_BWPROPSLEFT_BASE(BWPROPI_SSBTX),
@@ -12866,7 +12909,7 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"SSBTXAFR", 3 + WSIGNFLAG, 0, 0,	ISTEP1,
+		QLABEL("SSBTXAFR"), 3 + WSIGNFLAG, 0, 0,	ISTEP1,
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		AFRESPONCEMIN, AFRESPONCEMAX,			/* изменение тембра звука - на Samplerate/2 АЧХ изменяется на столько децибел  */
 		RMT_BWPROPSAFRESPONCE_BASE(BWPROPI_SSBTX),
@@ -12875,7 +12918,7 @@ static const FLASHMEM struct menudef menutable [] =
 		getafresponcebase, /* складывается со смещением и отображается */
 	},
 	{
-		"DIGI HI ", 6, 1, 0,	ISTEP1,		/* Подстройка полосы пропускания - TX SSB */
+		QLABEL("DIGI HI "), 6, 1, 0,	ISTEP1,		/* Подстройка полосы пропускания - TX SSB */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
 		RMT_BWPROPSRIGHT_BASE(BWPROPI_DIGIWIDE),
@@ -12884,7 +12927,7 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"DIGI LO ", 7, 2, 0,	ISTEP1,		/* подстройка полосы пропускания - TX SSB */
+		QLABEL("DIGI LO "), 7, 2, 0,	ISTEP1,		/* подстройка полосы пропускания - TX SSB */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		BWLEFTMIN, BWLEFTMAX,		// 50 Hz..700 Hz
 		RMT_BWPROPSLEFT_BASE(BWPROPI_DIGIWIDE),
@@ -12897,7 +12940,7 @@ static const FLASHMEM struct menudef menutable [] =
 #if WITHIFSHIFT && ! WITHPOTIFSHIFT
 	// Увеличение значения параметра смещает слышимую часть спектра в более высокие частоты
 	{
-		"IF SHIFT", 4 + WSIGNFLAG, 2, 1, 	ISTEP50, 
+		QLABEL("IF SHIFT"), 4 + WSIGNFLAG, 2, 1, 	ISTEP50,
 		ITEM_VALUE,
 		IFSHIFTTMIN, IFSHIFTMAX,			/* -3 kHz..+3 kHz in 50 Hz steps */
 		offsetof(struct nvmap, ifshifoffset),
@@ -12917,7 +12960,7 @@ filter_t fi_6p0_455 =
 filter_t fi_2p0_455 =	// strFlash2p0
 */
 	{
-		"3.1 USB ", 7, 2, 1,	ISTEP10,	
+		QLABEL("3.1 USB "), 7, 2, 1,	ISTEP10,
 		ITEM_FILTERU | ITEM_VALUE,
 		10, IF3OFFS * 2 - 10, 
 		offsetof(struct nvmap, usbe3p1),
@@ -12926,7 +12969,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
 	},
 	{
-		"3.1 LSB ", 7, 2, 1,	ISTEP10,	
+		QLABEL("3.1 LSB "), 7, 2, 1,	ISTEP10,
 		ITEM_FILTERL | ITEM_VALUE,
 		10, IF3OFFS * 2 - 10,
 		offsetof(struct nvmap, lsbe3p1),
@@ -12935,7 +12978,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
 	},
 	{
-		"2.4 USB ", 7, 2, 1,	ISTEP10,	
+		QLABEL("2.4 USB "), 7, 2, 1,	ISTEP10,
 		ITEM_FILTERU | ITEM_VALUE,
 		10, IF3OFFS * 2 - 10, 
 		offsetof(struct nvmap, usbe3p0),
@@ -12944,7 +12987,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
 	},
 	{
-		"2.4 LSB ", 7, 2, 1,	ISTEP10,	
+		QLABEL("2.4 LSB "), 7, 2, 1,	ISTEP10,
 		ITEM_FILTERL | ITEM_VALUE,
 		10, IF3OFFS * 2 - 10,
 		offsetof(struct nvmap, lsbe3p0),
@@ -12953,7 +12996,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
 	},
 	{
-		"CNTR 0.5", 7, 2, 1,	ISTEP10,	/* центральная частота телеграфного фильтра */
+		QLABEL("CNTR 0.5"), 7, 2, 1,	ISTEP10,	/* центральная частота телеграфного фильтра */
 		ITEM_FILTERL | ITEM_VALUE,
 		10, IF3OFFS * 2 - 10, 
 		offsetof(struct nvmap, carr0p5),
@@ -12963,7 +13006,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 	/* нстройка центральной частоты для тех фильтров, у которых нет индивидуальной настройки скатов */
 	{
-		"2K OFFS ", 4 + WSIGNFLAG, 2, 1, 	ISTEP10, 
+		QLABEL("2K OFFS "), 4 + WSIGNFLAG, 2, 1, 	ISTEP10,
 		ITEM_VALUE,
 		0, IF3CEOFFS * 2,
 		offsetof(struct nvmap, cfreq2k),
@@ -12973,7 +13016,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 	/* нстройка центральной частоты для тех фильтров, у которых нет индивидуальной настройки скатов */
 	{
-		"6K OFFS ", 4 + WSIGNFLAG, 2, 1, 	ISTEP10, 
+		QLABEL("6K OFFS "), 4 + WSIGNFLAG, 2, 1, 	ISTEP10,
 		ITEM_VALUE,
 		0, IF3CEOFFS * 2,
 		offsetof(struct nvmap, cfreq6k),
@@ -12983,7 +13026,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 	/* нстройка центральной частоты для тех фильтров, у которых нет индивидуальной настройки скатов */
 	{
-		"10K OFFS", 4 + WSIGNFLAG, 2, 1, 	ISTEP10, 
+		QLABEL("10K OFFS"), 4 + WSIGNFLAG, 2, 1, 	ISTEP10,
 		ITEM_VALUE,
 		0, IF3CEOFFS * 2,
 		offsetof(struct nvmap, cfreq10k),
@@ -12994,7 +13037,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 
 #elif WITHDUALFLTR	/* Переворот боковых за счёт переключения фильтра верхней или нижней боковой полосы */
 	{
-		"BFO FREQ", 7, 2, 1,	ISTEP10,	
+		QLABEL("BFO FREQ"), 7, 2, 1,	ISTEP10,
 		ITEM_VALUE,
 		10, IF3OFFS * 2 - 10,
 		offsetof(struct nvmap, lo4offset),
@@ -13004,7 +13047,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #elif WITHDUALBFO	/* Переворот боковых за счёт переключения частоты опорного генератора */
 	{
-		"BFO USB ", 7, 2, 1,	ISTEP10,	
+		QLABEL("BFO USB "), 7, 2, 1,	ISTEP10,
 		ITEM_VALUE,
 		10, IF3OFFS * 2 - 10,
 		offsetof(struct nvmap, lo4offsets [0]),
@@ -13013,7 +13056,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getlo4base, /* складывается со смещением и отображается */
 	},
 	{
-		"BFO LSB ", 7, 2, 1,	ISTEP10,	
+		QLABEL("BFO LSB "), 7, 2, 1,	ISTEP10,
 		ITEM_VALUE,
 		10, IF3OFFS * 2 - 10,
 		offsetof(struct nvmap, lo4offsets [1]),
@@ -13023,7 +13066,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #elif WITHFIXEDBFO	/* Переворот боковых за счёт 1-го гетродина (особенно, если нет подстраиваемого BFO) */
 	{
-		"BFO FREQ", 7, 2, 1,	ISTEP10,	
+		QLABEL("BFO FREQ"), 7, 2, 1,	ISTEP10,
 		ITEM_VALUE,
 		10, IF3OFFS * 2 - 10,
 		offsetof(struct nvmap, lo4offset),
@@ -13032,7 +13075,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getlo4base, /* складывается со смещением и отображается */
 	},
 	{
-		"LAST LSB", 7, 3, RJ_YES,	ISTEP1,
+		QLABEL("LAST LSB"), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, glo4lsb),
@@ -13047,7 +13090,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #if ! CTLSTYLE_SW2011ALL
 #if WITHTX
 	{
-		"DC TX CW", 7, 3, RJ_YES,	ISTEP1,
+		QLABEL("DC TX CW"), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, /* 0 - off, 1 - on */
 		offsetof(struct nvmap, dctxmodecw),
@@ -13060,7 +13103,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 
 	#if (IF3_FMASK & IF3_FMASK_2P4)
 	{
-		"2.4 USB ", 7, 2, 1,	ISTEP10,	
+		QLABEL("2.4 USB "), 7, 2, 1,	ISTEP10,
 		ITEM_FILTERU | ITEM_VALUE,
 		10, IF3OFFS * 2 - 10, 
 		offsetof(struct nvmap, usbe2p4),
@@ -13069,7 +13112,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
 	},
 	{
-		"2.4 LSB ", 7, 2, 1,	ISTEP10,	
+		QLABEL("2.4 LSB "), 7, 2, 1,	ISTEP10,
 		ITEM_FILTERL | ITEM_VALUE,
 		10, IF3OFFS * 2 - 10,
 		offsetof(struct nvmap, lsbe2p4),
@@ -13080,7 +13123,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	#endif /* (IF3_FMASK & IF3_FMASK_2P4) */
 	#if (IF3_FMASK & IF3_FMASK_2P7)
 	{
-		"BFO7 USB", 7, 2, 1,	ISTEP10,	
+		QLABEL("BFO7 USB"), 7, 2, 1,	ISTEP10,
 		ITEM_FILTERU | ITEM_VALUE,
 		10, IF3OFFS * 2 - 10, 
 		offsetof(struct nvmap, usbe2p7),
@@ -13089,7 +13132,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
 	},
 	{
-		"BFO7 LSB", 7, 2, 1,	ISTEP10,	
+		QLABEL("BFO7 LSB"), 7, 2, 1,	ISTEP10,
 		ITEM_FILTERL | ITEM_VALUE,
 		10, IF3OFFS * 2 - 10,
 		offsetof(struct nvmap, lsbe2p7),
@@ -13099,7 +13142,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 	#if WITHTX && WITHSAMEBFO == 0 && (IF3_FMASKTX & IF3_FMASK_2P7) != 0
 	{
-		"CAR7 USB", 7, 2, 1,	ISTEP10,	
+		QLABEL("CAR7 USB"), 7, 2, 1,	ISTEP10,
 		ITEM_FILTERU | ITEM_VALUE,
 		10, IF3OFFS * 2 - 10, 
 		offsetof(struct nvmap, usbe2p7tx),
@@ -13108,7 +13151,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
 	},
 	{
-		"CAR7 LSB", 7, 2, 1,	ISTEP10,	
+		QLABEL("CAR7 LSB"), 7, 2, 1,	ISTEP10,
 		ITEM_FILTERL | ITEM_VALUE,
 		10, IF3OFFS * 2 - 10,
 		offsetof(struct nvmap, lsbe2p7tx),
@@ -13121,7 +13164,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	
 	#if (IF3_FMASK & IF3_FMASK_3P1)
 	{
-		"BFO USB ", 7, 2, 1,	ISTEP10,	
+		QLABEL("BFO USB "), 7, 2, 1,	ISTEP10,
 		ITEM_FILTERU | ITEM_VALUE,
 		10, IF3OFFS * 2 - 10, 
 		offsetof(struct nvmap, usbe3p1),
@@ -13130,7 +13173,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
 	},
 	{
-		"BFO LSB ", 7, 2, 1,	ISTEP10,	
+		QLABEL("BFO LSB "), 7, 2, 1,	ISTEP10,
 		ITEM_FILTERL | ITEM_VALUE,
 		10, IF3OFFS * 2 - 10,
 		offsetof(struct nvmap, lsbe3p1),
@@ -13140,7 +13183,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 	#if WITHTX && WITHSAMEBFO == 0 && (IF3_FMASKTX & IF3_FMASK_3P1) != 0
 	{
-		"CAR USB ", 7, 2, 1,	ISTEP10,	
+		QLABEL("CAR USB "), 7, 2, 1,	ISTEP10,
 		ITEM_FILTERU | ITEM_VALUE,
 		10, IF3OFFS * 2 - 10, 
 		offsetof(struct nvmap, usbe3p1tx),
@@ -13149,7 +13192,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
 	},
 	{
-		"CAR LSB ", 7, 2, 1,	ISTEP10,	
+		QLABEL("CAR LSB "), 7, 2, 1,	ISTEP10,
 		ITEM_FILTERL | ITEM_VALUE,
 		10, IF3OFFS * 2 - 10,
 		offsetof(struct nvmap, lsbe3p1tx),
@@ -13162,7 +13205,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	
 	#if (IF3_FMASK & IF3_FMASK_0P3)
 	{
-		"HAVE 0.3", 7, 3, RJ_YES,	ISTEP1,
+		QLABEL("HAVE 0.3"), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, hascw0p3),
@@ -13171,7 +13214,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"CNTR 0.3", 7, 2, 1,	ISTEP10,	/* центральная частота телеграфного фильтра */
+		QLABEL("CNTR 0.3"), 7, 2, 1,	ISTEP10,	/* центральная частота телеграфного фильтра */
 		ITEM_FILTERL | ITEM_VALUE,
 		10, IF3OFFS * 2 - 10, 
 		offsetof(struct nvmap, carr0p3),
@@ -13183,7 +13226,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 
 	#if (IF3_FMASK & IF3_FMASK_0P5)
 	{
-		"HAVE 0.5", 7, 3, RJ_YES,	ISTEP1,
+		QLABEL("HAVE 0.5"), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, hascw0p5),
@@ -13192,7 +13235,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"CNTR 0.5", 7, 2, 1,	ISTEP10,	/* центральная частота телеграфного фильтра */
+		QLABEL("CNTR 0.5"), 7, 2, 1,	ISTEP10,	/* центральная частота телеграфного фильтра */
 		ITEM_FILTERL | ITEM_VALUE,
 		10, IF3OFFS * 2 - 10, 
 		offsetof(struct nvmap, carr0p5),
@@ -13204,7 +13247,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 
 	#if (IF3_FMASK & IF3_FMASK_1P8)
 	{
-		"HAVE 1.8", 7, 3, RJ_YES,	ISTEP1,
+		QLABEL("HAVE 1.8"), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, hascw1p8),
@@ -13213,7 +13256,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"1.8 USB ", 7, 2, 1,	ISTEP10,	
+		QLABEL("1.8 USB "), 7, 2, 1,	ISTEP10,
 		ITEM_FILTERU | ITEM_VALUE,
 		10, IF3OFFS * 2 - 10, 
 		offsetof(struct nvmap, usbe1p8),
@@ -13222,7 +13265,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
 	},
 	{
-		"1.8 LSB ", 7, 2, 1,	ISTEP10,	
+		QLABEL("1.8 LSB "), 7, 2, 1,	ISTEP10,
 		ITEM_FILTERL | ITEM_VALUE,
 		10, IF3OFFS * 2 - 10,
 		offsetof(struct nvmap, lsbe1p8),
@@ -13234,7 +13277,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 
 	#if (IF3_FMASK & IF3_FMASK_2P4)
 	{
-		"HAVE 2.4", 7, 3, RJ_YES,	ISTEP1,
+		QLABEL("HAVE 2.4"), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, hascw2p4),
@@ -13246,7 +13289,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 
 	#if WITHTX && WITHSAMEBFO == 0 && (IF3_FMASKTX & IF3_FMASK_2P4)
 	{
-		"HAVE T24", 7, 3, RJ_YES,	ISTEP1,
+		QLABEL("HAVE T24"), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, hascw2p4_tx),
@@ -13258,7 +13301,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 
 	#if WITHTX && WITHSAMEBFO == 0 && (IF3_FMASKTX & IF3_FMASK_2P7)
 	{
-		"HAVE T27", 7, 3, RJ_YES,	ISTEP1,
+		QLABEL("HAVE T27"), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, hascw2p7_tx),
@@ -13270,7 +13313,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 
 	#if 0 && WITHTX && WITHSAMEBFO == 0 && (IF3_FMASKTX & IF3_FMASK_3P1)
 	{
-		"HAVE T31", 7, 3, RJ_YES,	ISTEP1,
+		QLABEL("HAVE T31"), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, hascw3p1_tx),
@@ -13282,7 +13325,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 
 	#if (IF3_FMASK & IF3_FMASK_6P0)
 	{
-		"HAVE 6.0", 7, 3, RJ_YES,	ISTEP1,
+		QLABEL("HAVE 6.0"), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, hascw6p0),
@@ -13292,7 +13335,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 	/* нстройка центральной частоты для тех фильтров, у которых нет индивидуальной настройки скатов */
 	{
-		"6K OFFS ", 4 + WSIGNFLAG, 2, 1, 	ISTEP10, 
+		QLABEL("6K OFFS "), 4 + WSIGNFLAG, 2, 1, 	ISTEP10,
 		ITEM_VALUE,
 		0, IF3CEOFFS * 2,
 		offsetof(struct nvmap, cfreq6k),
@@ -13305,7 +13348,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	#if (IF3_FMASK & IF3_FMASK_7P8)
 	/* нстройка центральной частоты для тех фильтров, у которых нет индивидуальной настройки скатов */
 	{
-		"7K8 OFFS", 4 + WSIGNFLAG, 2, 1, 	ISTEP10, 
+		QLABEL("7K8 OFFS"), 4 + WSIGNFLAG, 2, 1, 	ISTEP10,
 		ITEM_VALUE,
 		0, IF3CEOFFS * 2,
 		offsetof(struct nvmap, cfreq7p8k),
@@ -13318,7 +13361,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	#if (IF3_FMASK & IF3_FMASK_8P0)
 	/* нстройка центральной частоты для тех фильтров, у которых нет индивидуальной настройки скатов */
 	{
-		"8K OFFS ", 4 + WSIGNFLAG, 2, 1, 	ISTEP10, 
+		QLABEL("8K OFFS "), 4 + WSIGNFLAG, 2, 1, 	ISTEP10,
 		ITEM_VALUE,
 		0, IF3CEOFFS * 2,
 		offsetof(struct nvmap, cfreq8k),
@@ -13330,7 +13373,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	#if (IF3_FMASK & IF3_FMASK_9P0)
 	/* нстройка центральной частоты для тех фильтров, у которых нет индивидуальной настройки скатов */
 	{
-		"9K OFFS ", 4 + WSIGNFLAG, 2, 1, 	ISTEP10, 
+		QLABEL("9K OFFS "), 4 + WSIGNFLAG, 2, 1, 	ISTEP10,
 		ITEM_VALUE,
 		0, IF3CEOFFS * 2,
 		offsetof(struct nvmap, cfreq9k),
@@ -13343,7 +13386,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	#if WITHDEDICATEDNFM /* Для NFM отдельный тракт со своим фильтром */
 	/* нстройка центральной частоты для тех фильтров, у которых нет индивидуальной настройки скатов */
 	{
-		"NFM OFFS", 4 + WSIGNFLAG, 2, 1, 	ISTEP10, 
+		QLABEL("NFM OFFS"), 4 + WSIGNFLAG, 2, 1, 	ISTEP10,
 		ITEM_VALUE,
 		0, IF3CEOFFS * 2,
 		offsetof(struct nvmap, cfreq15k_nfm),
@@ -13354,7 +13397,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	#else /* WITHDEDICATEDNFM */
 	/* нстройка центральной частоты для тех фильтров, у которых нет индивидуальной настройки скатов */
 	{
-		"15K OFFS", 4 + WSIGNFLAG, 2, 1, 	ISTEP10, 
+		QLABEL("15K OFFS"), 4 + WSIGNFLAG, 2, 1, 	ISTEP10,
 		ITEM_VALUE,
 		0, IF3CEOFFS * 2,
 		offsetof(struct nvmap, cfreq15k),
@@ -13367,7 +13410,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	#if (IF3_FMASK & IF3_FMASK_17P0)
 	/* нстройка центральной частоты для тех фильтров, у которых нет индивидуальной настройки скатов */
 	{
-		"17K OFFS", 4 + WSIGNFLAG, 2, 1, 	ISTEP10, 
+		QLABEL("17K OFFS"), 4 + WSIGNFLAG, 2, 1, 	ISTEP10,
 		ITEM_VALUE,
 		0, IF3CEOFFS * 2,
 		offsetof(struct nvmap, cfreq17k),
@@ -13382,7 +13425,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #if WITHNOTCHFREQ
 #if ! WITHFLATMENU
 	{
-		"NOTCH   ", 0, 0, 0, 0,	
+		QLABEL("NOTCH   "), 0, 0, 0, 0,
 		ITEM_GROUP, 
 		0, 0, 
 		offsetof(struct nvmap, ggrpnotch),
@@ -13392,7 +13435,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #endif /* ! WITHFLATMENU */
 	{
-		"NOTCH   ", 7, 3, RJ_ON,	ISTEP1,		/* управление режимом NOTCH */
+		QLABEL("NOTCH   "), 8, 3, RJ_ON,	ISTEP1,		/* управление режимом NOTCH */
 		ITEM_VALUE,
 		0, NOTCHMODE_COUNT - 1,
 		RMT_NOTCH_BASE,							/* управление режимом NOTCH */
@@ -13402,7 +13445,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 	#if ! WITHPOTNOTCH
 	{
-		"NTCH FRQ", 7, 2, 1,	ISTEP50,		/* управление частотой NOTCH. */
+		QLABEL("NTCH FRQ"), 7, 2, 1,	ISTEP50,		/* управление частотой NOTCH. */
 		ITEM_VALUE,
 		WITHNOTCHFREQMIN, WITHNOTCHFREQMAX,
 		offsetof(struct nvmap, gnotchfreq),	/* центральная частота NOTCH */
@@ -13411,7 +13454,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"NTCH WDT", 7, 0, 0,	ISTEP50,		/* полоса режекции NOTCH. */
+		QLABEL("NTCH WDT"), 7, 0, 0,	ISTEP50,		/* полоса режекции NOTCH. */
 		ITEM_VALUE,
 		100, 1000,
 		offsetof(struct nvmap, gnotchwidth),	/* полоса режекции NOTCH */
@@ -13423,7 +13466,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #elif WITHNOTCHONOFF
 #if ! WITHFLATMENU
 	{
-		"NOTCH   ", 0, 0, 0, 0,	
+		QLABEL("NOTCH   "), 0, 0, 0, 0,
 		ITEM_GROUP, 
 		0, 0, 
 		offsetof(struct nvmap, ggrpnotch),
@@ -13433,7 +13476,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #endif /* ! WITHFLATMENU */
 	{
-		"NOTCH   ", 7, 3, RJ_ON,	ISTEP1,		/* управление режимом NOTCH */
+		QLABEL("NOTCH   "), 8, 3, RJ_ON,	ISTEP1,		/* управление режимом NOTCH */
 		ITEM_VALUE,
 		0, NOTCHMODE_COUNT - 1,
 		RMT_NOTCH_BASE,							/* управление режимом NOTCH */
@@ -13447,7 +13490,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #if ! WITHPOTPBT && WITHPBT // && (LO3_SIDE != LOCODE_INVALID)
 #if ! WITHFLATMENU
 	{
-		"PBTS   ", 0, 0, 0, 0,	
+		QLABEL("PBTS   "), 0, 0, 0, 0,
 		ITEM_GROUP, 
 		0, 0, 
 		offsetof(struct nvmap, ggrppbts),
@@ -13457,7 +13500,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #endif /* ! WITHFLATMENU */
 	{
-		"PBT     ", 4 + WSIGNFLAG, 2, 1, 	ISTEP50, 
+		QLABEL("PBT     "), 4 + WSIGNFLAG, 2, 1, 	ISTEP50,
 		ITEM_VALUE,
 		PBTMIN, PBTMAX,			/* -15 kHz..+15 kHz in 5 Hz steps */
 		offsetof(struct nvmap, pbtoffset),
@@ -13471,7 +13514,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #if WITHELKEY
 #if ! WITHFLATMENU
 	{
-		"ELKEY   ", 0, 0, 0, 0,	
+		QLABEL("ELKEY   "), 0, 0, 0, 0,
 		ITEM_GROUP, 
 		0, 0, 
 		offsetof(struct nvmap, ggrpelkey),
@@ -13482,7 +13525,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #endif /* ! WITHFLATMENU */
   #if ! WITHPOTWPM
 	{
-		"CW SPEED", 7, 0, 0,	ISTEP1,	
+		QLABEL("CW SPEED"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		CWWPMMIN, CWWPMMAX,		// minimal WPM = 10, maximal = 60 (also changed by command KS).
 		offsetof(struct nvmap, elkeywpm),
@@ -13493,7 +13536,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
   #endif /* ! WITHPOTWPM */
   #if WITHVIBROPLEX
 	{
-		"VIBROPLX", 7, 0, 0,	ISTEP1,		/* скорость уменьшения длительности точки и паузы - имитация виброплекса */
+		QLABEL("VIBROPLX"), 7, 0, 0,	ISTEP1,		/* скорость уменьшения длительности точки и паузы - имитация виброплекса */
 		ITEM_VALUE,
 		0, 5,		// minimal 0 - без эффекта Виброплекса
 		offsetof(struct nvmap, elkeyslope),
@@ -13503,7 +13546,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
     #if ELKEY328
 	{
-		"VIBROENB", 7, 3, RJ_ON,	ISTEP1,		/* разрешение работы в режиме виброплекса */
+		QLABEL("VIBROENB"), 8, 3, RJ_ON,	ISTEP1,		/* разрешение работы в режиме виброплекса */
 		ITEM_VALUE,
 		0, 1,		// minimal 0 - без эффекта Виброплекса
 		offsetof(struct nvmap, elkeyslopeenable),
@@ -13514,7 +13557,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
     #endif /* ELKEY328 */
   #endif /* WITHVIBROPLEX */
 	{
-		"KEYER   ", 6, 0, RJ_ELKEYMODE,	ISTEP1,	
+		QLABEL("KEYER   "), 6, 0, RJ_ELKEYMODE,	ISTEP1,
 		ITEM_VALUE,
 		0, 3,	/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key */
 		offsetof(struct nvmap, elkeymode),
@@ -13523,7 +13566,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, 
 	},
 	{
-		"CWKEYREV", 7, 3, RJ_YES,	ISTEP1,
+		QLABEL("CWKEYREV"), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,	/* режим электронного ключа - поменять местами точки с тире или нет. */
 		offsetof(struct nvmap, elkeyreverse),
@@ -13532,7 +13575,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, 
 	},
 	{
-		"CWWEIGHT", 7, 1, 0,	ISTEP1,	
+		QLABEL("CWWEIGHT"), 7, 1, 0,	ISTEP1,
 		ITEM_VALUE,
 		23, 45, 
 		offsetof(struct nvmap, dashratio),
@@ -13541,7 +13584,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, 
 	},
 	{
-		"SPACEWGH", 7, 1, 0,	ISTEP1,	
+		QLABEL("SPACEWGH"), 7, 1, 0,	ISTEP1,
 		ITEM_VALUE,
 		7, 13, 
 		offsetof(struct nvmap, spaceratio),
@@ -13551,7 +13594,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #if WITHTX
 	{
-		"BREAK-IN", 7, 3, RJ_ON,	ISTEP1,
+		QLABEL("BREAK-IN"), 8, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, bkinenable),
@@ -13560,7 +13603,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, 
 	},
 	{
-		"CW DELAY", 7, 2, 0,	ISTEP5,	/* задержка в десятках ms */
+		QLABEL("CW DELAY"), 7, 2, 0,	ISTEP5,	/* задержка в десятках ms */
 		ITEM_VALUE,
 		5, 160,						/* 0.05..1.6 секунды */
 		offsetof(struct nvmap, bkindelay),
@@ -13571,7 +13614,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #endif /* WITHTX */
 #if WITHIF4DSP
 	{
-		"EDGE TIM", 7, 0, 0,	ISTEP1,		/* Set the rise time of the transmitted CW envelope. */
+		QLABEL("EDGE TIM"), 7, 0, 0,	ISTEP1,		/* Set the rise time of the transmitted CW envelope. */
 		ITEM_VALUE,
 		2, 16, 
 		offsetof(struct nvmap, gcwedgetime),	/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
@@ -13581,10 +13624,10 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #endif /* WITHIF4DSP */
 #endif /* WITHELKEY */
-#if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */
+#if WITHDSPEXTDDC	/* QLABEL("ВоронёнокQLABEL(" с DSP и FPGA */
 #if ! WITHFLATMENU
 	{
-		"RF ADC  ", 0, 0, 0, 0,
+		QLABEL("RF ADC  "), 0, 0, 0, 0,
 		ITEM_GROUP, 
 		0, 0, 
 		offsetof(struct nvmap, ggrprfadc),
@@ -13594,7 +13637,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #endif /* ! WITHFLATMENU */
 	{
-		"ADC RAND", 7, 3, RJ_ON,	ISTEP1,	/* управление интерфейсом в LTC2208 */
+		QLABEL("ADC RAND"), 8, 3, RJ_ON,	ISTEP1,	/* управление интерфейсом в LTC2208 */
 		ITEM_VALUE,
 		0, 1,
 		offsetof(struct nvmap, gadcrand),
@@ -13603,7 +13646,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, 
 	},
 	{
-		"ADC DITH", 7, 3, RJ_ON,	ISTEP1,	/* управление зашумлением в LTC2208 */
+		QLABEL("ADC DITH"), 8, 3, RJ_ON,	ISTEP1,	/* управление зашумлением в LTC2208 */
 		ITEM_VALUE,
 		0, 1,
 		offsetof(struct nvmap, gdither),
@@ -13612,7 +13655,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, 
 	},
 	{
-		"ADC FIFO", 7, 3, RJ_ON,	ISTEP1,	/*  */
+		QLABEL("ADC FIFO"), 8, 3, RJ_ON,	ISTEP1,	/*  */
 		ITEM_VALUE,
 		0, 1,
 		offsetof(struct nvmap, gadcfifo),
@@ -13621,7 +13664,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, 
 	},
 	{
-		"ADC OFFS", 5 + WSIGNFLAG, 0, 0,	ISTEP1,	/* смещение для выходного сигнала с АЦП */
+		QLABEL("ADC OFFS"), 5 + WSIGNFLAG, 0, 0,	ISTEP1,	/* смещение для выходного сигнала с АЦП */
 		ITEM_VALUE,
 		ADCOFFSETMID - 200, ADCOFFSETMID + 200,
 		offsetof(struct nvmap, gadcoffset),
@@ -13630,7 +13673,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getadcoffsbase,	/* складывается со смещением и отображается */
 	},
 	{
-		"DAC TEST", 7, 3, RJ_ON,	ISTEP1,	/*  */
+		QLABEL("DAC TEST"), 8, 3, RJ_ON,	ISTEP1,	/*  */
 		ITEM_VALUE,
 		0, 1,
 		offsetof(struct nvmap, gdactest),
@@ -13643,7 +13686,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #if WITHVOX
 #if ! WITHFLATMENU
 	{
-		"VOX     ", 0, 0, 0, 0,	
+		QLABEL("VOX     "), 0, 0, 0, 0,
 		ITEM_GROUP, 
 		0, 0, 
 		offsetof(struct nvmap, ggrpvox),
@@ -13653,7 +13696,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #endif /* ! WITHFLATMENU */
 	{
-		"VOX EN  ", 7, 3, RJ_ON,	ISTEP1,
+		QLABEL("VOX EN  "), 8, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, gvoxenable),
@@ -13662,7 +13705,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, 
 	},
 	{
-		"VOXDELAY", 7, 2, 0,	ISTEP5,	/* 50 mS step of changing value */
+		QLABEL("VOXDELAY"), 7, 2, 0,	ISTEP5,	/* 50 mS step of changing value */
 		ITEM_VALUE,
 		10, 250,						/* 0.1..2.5 secounds delay */ 
 		offsetof(struct nvmap, voxdelay),
@@ -13671,7 +13714,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, 
 	},
 	{
-		"VOX LEVL", 7, 0, 0,	ISTEP1,	
+		QLABEL("VOX LEVL"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		0, 100, 
 		offsetof(struct nvmap, gvoxlevel),
@@ -13680,7 +13723,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, 
 	},
 	{
-		"AVOX LEV", 7, 0, 0,	ISTEP1,	
+		QLABEL("AVOX LEV"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		0, 100, 
 		offsetof(struct nvmap, gavoxlevel),
@@ -13693,7 +13736,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #if WITHCAT
 #if ! WITHFLATMENU
 	{
-		"CAT     ", 0, 0, 0, 0,	
+		QLABEL("CAT     "), 0, 0, 0, 0,
 		ITEM_GROUP, 
 		0, 0, 
 		offsetof(struct nvmap, ggrpcat),
@@ -13703,7 +13746,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #endif /* ! WITHFLATMENU */
 	{
-		"CAT ENAB", 7, 3, RJ_ON,	ISTEP1,
+		QLABEL("CAT ENAB"), 8, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, catenable),
@@ -13713,7 +13756,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 	#if WITHUSBCDC == 0
 	{
-		"CAT SPD ", 7, 0, RJ_CATSPEED,	ISTEP1,	
+		QLABEL("CAT SPD "), 7, 0, RJ_CATSPEED,	ISTEP1,
 		ITEM_VALUE,
 		0, (sizeof catbr2int / sizeof catbr2int [0]) - 1, 
 		offsetof(struct nvmap, catbaudrate),
@@ -13723,7 +13766,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 	#endif /* WITHUSBCDC == 0 */
 	{
-		"CAT DTR ", 7, 3, RJ_YES,	ISTEP1,
+		QLABEL("CAT DTR "), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, catdtrenable),
@@ -13733,7 +13776,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 	#if WITHTX
 	{
-		"CAT RTS ", 7, 3, RJ_YES,	ISTEP1,
+		QLABEL("CAT RTS "), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, catrtsenable),
@@ -13742,7 +13785,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, 
 	},
 	{
-		"CATTXDTR", 7, 3, RJ_YES,	ISTEP1,	/* Передача управляется по DTR, а не по RTS */
+		QLABEL("CATTXDTR"), 7, 3, RJ_YES,	ISTEP1,	/* Передача управляется по DTR, а не по RTS */
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, catdtrptt),	
@@ -13756,7 +13799,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #if WITHSUBTONES && WITHTX
 #if ! WITHFLATMENU
 	{
-		"CTCSS   ", 0, 0, 0, 0,	
+		QLABEL("CTCSS   "), 0, 0, 0, 0,
 		ITEM_GROUP, 
 		0, 0, 
 		offsetof(struct nvmap, ggrpctcss),
@@ -13766,7 +13809,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #endif /* ! WITHFLATMENU */
 	{
-		"CTCSS   ", 7, 3, RJ_ON,	ISTEP1,	//  Continuous Tone-Coded Squelch System or CTCSS control
+		QLABEL("CTCSS   "), 8, 3, RJ_ON,	ISTEP1,	//  Continuous Tone-Coded Squelch System or CTCSS control
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, gsbtonenable),
@@ -13775,7 +13818,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, 
 	},
 	{
-		"CTCSS FQ", 7, 1, RJ_SUBTONE,	ISTEP1,	//  Continuous Tone-Coded Squelch System or CTCSS freq
+		QLABEL("CTCSS FQ"), 7, 1, RJ_SUBTONE,	ISTEP1,	//  Continuous Tone-Coded Squelch System or CTCSS freq
 		ITEM_VALUE,
 		0, sizeof gsubtones / sizeof gsubtones [0] - 1, 
 		offsetof(struct nvmap, gsubtonei),
@@ -13785,7 +13828,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #if WITHIF4DSP
 	{
-		"CTCSSLVL", 7, 0, 0,	ISTEP1,		/* Select the CTCSS transmit level. */
+		QLABEL("CTCSSLVL"), 7, 0, 0,	ISTEP1,		/* Select the CTCSS transmit level. */
 		ITEM_VALUE,
 		0, 100, 
 		offsetof(struct nvmap, gsubtonelevel),	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
@@ -13797,7 +13840,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #endif /* WITHSUBTONES && WITHTX */
 #if ! WITHFLATMENU
 	{
-		"AUDIO   ", 0, 0, 0, 0,	
+		QLABEL("AUDIO   "), 0, 0, 0, 0,
 		ITEM_GROUP, 
 		0, 0, 
 		offsetof(struct nvmap, ggrpaudio),
@@ -13809,7 +13852,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #if WITHIF4DSP
 	#if ! WITHPOTAFGAIN
 	{
-		"AF GAIN ", 7, 0, 0,	ISTEP1,	
+		QLABEL("AF GAIN "), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX, 					// Громкость в процентах
 		offsetof(struct nvmap, afgain1),
@@ -13820,7 +13863,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	#endif /* ! WITHPOTAFGAIN */
 	#if ! WITHPOTIFGAIN
 	{
-		"RF GAIN ", 7, 0, 0,	ISTEP1,	
+		QLABEL("RF GAIN "), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		BOARD_IFGAIN_MIN, BOARD_IFGAIN_MAX, 					// Усиление ПЧ/ВЧ в процентах
 		offsetof(struct nvmap, rfgain1),
@@ -13832,7 +13875,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #endif /* WITHIF4DSP */
 #if (SIDETONE_TARGET_BIT != 0) || WITHINTEGRATEDDSP
 	{
-		"KEY BEEP", 6, 2, 0, 	ISTEP5,		/* регулировка тона озвучки клавиш */
+		QLABEL("KEY BEEP"), 6, 2, 0, 	ISTEP5,		/* регулировка тона озвучки клавиш */
 		ITEM_VALUE,
 		80, 250,			/* 800 Hz..2500, Hz in 50 Hz steps */
 		offsetof(struct nvmap, gkeybeep10),
@@ -13843,7 +13886,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #endif
 #if WITHMUTEALL && WITHTX
 	{
-		"MUTE ALL", 7, 3, RJ_YES,	ISTEP1,
+		QLABEL("MUTE ALL"), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, gmuteall),
@@ -13854,7 +13897,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #endif /* WITHMUTEALL && WITHTX */
 #if WITHIF4DSP
 	{
-		"SQUELCH ", 7, 0, 0,	ISTEP1,		/* squelch level */
+		QLABEL("SQUELCH "), 7, 0, 0,	ISTEP1,		/* squelch level */
 		ITEM_VALUE,
 		0, SQUELCHMAX, 
 		offsetof(struct nvmap, gsquelch),	/* уровень сигнала болше которого открывается шумодав */
@@ -13863,7 +13906,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"SDTN LVL", 7, 0, 0,	ISTEP1,		/* Select the CW sidetone or keypad sound output level.. */
+		QLABEL("SDTN LVL"), 7, 0, 0,	ISTEP1,		/* Select the CW sidetone or keypad sound output level.. */
 		ITEM_VALUE,
 		0, 100, 
 		offsetof(struct nvmap, gsidetonelevel),	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
@@ -13872,19 +13915,19 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"MONI LVL", 7, 0, 0,	ISTEP1,		/* Select the monitoring sound output level.. */
+		QLABEL("MONI EN "), 8, 3, RJ_ON,	ISTEP1,		/* Select the monitoring sound output level.. */
 		ITEM_VALUE,
-		0, 100,
-		offsetof(struct nvmap, gmonilevel),	/* Уровень сигнала самопрослушивания в процентах - 0%..100% */
+		0, 1,
+		offsetof(struct nvmap, gmoniflag),	/* разрешение самопрослушивания */
 		NULL,
-		& gmonilevel,
+		& gmoniflag,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #endif /* WITHIF4DSP */
 #if WITHTX && WITHIF4DSP
 #if WITHWAVPLAYER || WITHSENDWAV
 	{
-		"LOOP MSG", 7, 0, 0,	ISTEP1,		/* Select the monitoring sound output level.. */
+		QLABEL("LOOP MSG"), 7, 0, 0,	ISTEP1,		/* Select the monitoring sound output level.. */
 		ITEM_VALUE,
 		0, (sizeof loopnames / sizeof loopnames [0]) - 1,
 		offsetof(struct nvmap, gloopmsg),	/* Уровень сигнала самопрослушивания в процентах - 0%..100% */
@@ -13893,7 +13936,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"LOOP SEC", 7, 0, 0,	ISTEP1,		/* Select the monitoring sound output level.. */
+		QLABEL("LOOP SEC"), 7, 0, 0,	ISTEP1,		/* Select the monitoring sound output level.. */
 		ITEM_VALUE,
 		15, 240,
 		offsetof(struct nvmap, gloopsec),	/* Уровень сигнала самопрослушивания в процентах - 0%..100% */
@@ -13904,7 +13947,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #endif /* WITHWAVPLAYER || WITHSENDWAV */
 	#if WITHAFCODEC1HAVELINEINLEVEL	/* кодек имеет управление усилением с линейного входа */
 	{
-		"LINE LVL", 7, 0, 0,	ISTEP1,		/* подстройка усиления с линейного входа через меню. */
+		QLABEL("LINE LVL"), 7, 0, 0,	ISTEP1,		/* подстройка усиления с линейного входа через меню. */
 		ITEM_VALUE,
 		WITHLINEINGAINMIN, WITHLINEINGAINMAX, 
 		offsetof(struct nvmap, glineamp),	/* усиление с линейного входа */
@@ -13914,7 +13957,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 	#endif /* WITHAFCODEC1HAVELINEINLEVEL */
 	{
-		"MIKE SSB", 8, 5, RJ_TXAUDIO,	ISTEP1,
+		QLABEL("MIKE SSB"), 8, 5, RJ_TXAUDIO,	ISTEP1,
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, BOARD_TXAUDIO_count - 1, 					// при SSB/AM/FM передача с тестовых источников
 		RMT_TXAUDIO_BASE(MODE_SSB),
@@ -13923,7 +13966,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"MIKE DIG", 8, 5, RJ_TXAUDIO,	ISTEP1,
+		QLABEL("MIKE DIG"), 8, 5, RJ_TXAUDIO,	ISTEP1,
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, BOARD_TXAUDIO_count - 1, 					// при SSB/AM/FM передача с тестовых источников
 		RMT_TXAUDIO_BASE(MODE_DIGI),
@@ -13932,7 +13975,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"MIKE AM ", 8, 5, RJ_TXAUDIO,	ISTEP1,
+		QLABEL("MIKE AM "), 8, 5, RJ_TXAUDIO,	ISTEP1,
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, BOARD_TXAUDIO_count - 1, 					// при SSB/AM/FM передача с тестовых источников
 		RMT_TXAUDIO_BASE(MODE_AM),
@@ -13941,7 +13984,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"MIKE FM ", 8, 5, RJ_TXAUDIO,	ISTEP1,
+		QLABEL("MIKE FM "), 8, 5, RJ_TXAUDIO,	ISTEP1,
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, BOARD_TXAUDIO_count - 1, 					// при SSB/AM/FM передача с тестовых источников
 		RMT_TXAUDIO_BASE(MODE_NFM),
@@ -13950,7 +13993,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"MIKE AGC", 8, 3, RJ_ON,	ISTEP1,
+		QLABEL("MIKE AGC"), 8, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,	
 		0, 1, 					/* Включение программной АРУ перед модулятором */
 		offsetof(struct nvmap, gmikeagc),
@@ -13959,7 +14002,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"MK AGCGN", 7, 0, 0,	ISTEP1,	
+		QLABEL("MK AGCGN"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,	
 		10, 60, 					/* максимальное усиление АРУ микрофона в дБ */
 		offsetof(struct nvmap, gmikeagcgain),
@@ -13968,7 +14011,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"MIK CLIP", 7, 0, 0,	ISTEP1,	
+		QLABEL("MIK CLIP"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,	
 		0, 90, 					/* Ограничение */
 		offsetof(struct nvmap, gmikehclip),
@@ -13977,7 +14020,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"MIK BUST", 7, 3, RJ_ON,	ISTEP1,
+		QLABEL("MIK BUST"), 8, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,	
 		0, 1, 					// предусилитель сигнала с микрофона
 		offsetof(struct nvmap, gmikebust20db),
@@ -13987,7 +14030,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 	#if WITHAFCODEC1HAVEPROC	/* кодек имеет управление обработкой микрофонного сигнала (эффекты, эквалайзер, ...) */
 	{
-		"MIK EQUA", 7, 3, RJ_ON,	ISTEP1,
+		QLABEL("MIK EQUA"), 8, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,
 		offsetof(struct nvmap, gmikeequalizer),
@@ -13997,7 +14040,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 	// Эквалайзер 80Hz 230Hz 650Hz 	1.8kHz 5.3kHz
 	{
-		"EQUA .08", 2 + WSIGNFLAG, 0, 0,	ISTEP1,	
+		QLABEL("EQUA .08"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		0, EQUALIZERBASE * 2,
 		offsetof(struct nvmap, gmikeequalizerparams [0]),
@@ -14006,7 +14049,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getequalizerbase, /* складывается с -12 и отображается */
 	},
 	{
-		"EQUA .23", 2 + WSIGNFLAG, 0, 0,	ISTEP1,	
+		QLABEL("EQUA .23"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		0, EQUALIZERBASE * 2,
 		offsetof(struct nvmap, gmikeequalizerparams [1]),
@@ -14015,7 +14058,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getequalizerbase, /* складывается с -12 и отображается */
 	},
 	{
-		"EQUA .65", 2 + WSIGNFLAG, 0, 0,	ISTEP1,	
+		QLABEL("EQUA .65"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		0, EQUALIZERBASE * 2,
 		offsetof(struct nvmap, gmikeequalizerparams [2]),
@@ -14024,7 +14067,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getequalizerbase, /* складывается с -12 и отображается */
 	},
 	{
-		"EQUA 1.8", 2 + WSIGNFLAG, 0, 0,	ISTEP1,	
+		QLABEL("EQUA 1.8"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		0, EQUALIZERBASE * 2,
 		offsetof(struct nvmap, gmikeequalizerparams [3]),
@@ -14033,7 +14076,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getequalizerbase, /* складывается с -12 и отображается */
 	},
 	{
-		"EQUA 5.3", 2 + WSIGNFLAG, 0, 0,	ISTEP1,	
+		QLABEL("EQUA 5.3"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		0, EQUALIZERBASE * 2,
 		offsetof(struct nvmap, gmikeequalizerparams [4]),
@@ -14046,7 +14089,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #endif /* WITHTX && WITHIF4DSP */
 #if WITHMIC1LEVEL
 	{
-		"MIC LEVL", 7, 0, 0,	ISTEP1,		/* подстройка усиления микрофонного усилителя через меню. */
+		QLABEL("MIC LEVL"), 7, 0, 0,	ISTEP1,		/* подстройка усиления микрофонного усилителя через меню. */
 		ITEM_VALUE,
 		WITHMIKEINGAINMIN, WITHMIKEINGAINMAX, 
 		offsetof(struct nvmap, mik1level),	/* усиление микрофонного усилителя */
@@ -14057,7 +14100,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #endif /* ITHMIC1LEVEL */
 #if WITHUSEAUDIOREC
 	{
-		"SD RECRD", 7, 3, RJ_ON,	ISTEP1,		/* автоматически начинаем запись на SD CARD при включении */
+		QLABEL("SD RECRD"), 8, 3, RJ_ON,	ISTEP1,		/* автоматически начинаем запись на SD CARD при включении */
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, recmode),
@@ -14069,7 +14112,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #if WITHIF4DSP
 #if WITHUSBUAC
 	{
-		"PLAY USB", 7, 3, RJ_YES,	ISTEP1,
+		QLABEL("PLAY USB"), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,	
 		0, 1, 					/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 		offsetof(struct nvmap, guacplayer),
@@ -14079,7 +14122,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 	#if WITHRTS96 || WITHRTS192 || WITHTRANSPARENTIQ
 	{
-		"I/Q SWAP", 7, 3, RJ_YES,	ISTEP1,
+		QLABEL("I/Q SWAP"), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,	
 		0, 1, 					/* Поменять местами I и Q сэмплы в потоке RTS96 */
 		offsetof(struct nvmap, gswapiq),
@@ -14093,7 +14136,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #if WITHIF4DSP
 #if ! WITHFLATMENU
 	{
-		"AGC     ", 0, 0, 0, 0,	
+		QLABEL("AGC     "), 0, 0, 0, 0,
 		ITEM_GROUP, 
 		0, 0, 
 		offsetof(struct nvmap, ggrpagc),
@@ -14103,7 +14146,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #endif /* ! WITHFLATMENU */
 	{
-		"ADC FS  ", 3 + WSIGNFLAG, 1, 0,	ISTEP1,		/* Калиьровка S-метра - момент перегрузки */
+		QLABEL("ADC FS  "), 3 + WSIGNFLAG, 1, 0,	ISTEP1,		/* Калиьровка S-метра - момент перегрузки */
 		ITEM_VALUE,
 		0, FSADCPOWEROFFSET10 * 2, 		// -50..+50 dBm
 		offsetof(struct nvmap, gfsadcpower10 [0]),
@@ -14112,7 +14155,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getfsasdcbase10, /* складывается со смещением и отображается */
 	},
 	{
-		"ADC FSXV", 3 + WSIGNFLAG, 1, 0,	ISTEP1,		/* с колнвертором Калиьровка S-метра - момент перегрузки */
+		QLABEL("ADC FSXV"), 3 + WSIGNFLAG, 1, 0,	ISTEP1,		/* с колнвертором Калиьровка S-метра - момент перегрузки */
 		ITEM_VALUE,
 		0, FSADCPOWEROFFSET10 * 2, 		// -50..+50 dBm
 		offsetof(struct nvmap, gfsadcpower10 [1]),
@@ -14121,7 +14164,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getfsasdcbase10, /* складывается со смещением и отображается */
 	},
 	{
-		"AGC OFF ", 7, 3, RJ_YES,	ISTEP1,
+		QLABEL("AGC OFF "), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,	
 		0, 1, 					// предусилитель сигнала с микрофона
 		offsetof(struct nvmap, gagcoff),
@@ -14130,7 +14173,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"IFGN MAX", 7, 0, 0,	ISTEP1,		/* диапазон ручной (или автоматической) регулировки цифрового усиления - максимальное значение */
+		QLABEL("IFGN MAX"), 7, 0, 0,	ISTEP1,		/* диапазон ручной (или автоматической) регулировки цифрового усиления - максимальное значение */
 		ITEM_VALUE,
 		40, 120, 		// 40..120 dB
 		offsetof(struct nvmap, gdigigainmax),
@@ -14140,7 +14183,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #if CTLSTYLE_RAVENDSP_V1 || WITHEXTERNALDDSP
 	{
-		"AD605 GN", 7, 0, 0,	ISTEP1,		/* напряжение на AD605 (управление усилением тракта ПЧ */
+		QLABEL("AD605 GN"), 7, 0, 0,	ISTEP1,		/* напряжение на AD605 (управление усилением тракта ПЧ */
 		ITEM_VALUE,
 		0, UINT8_MAX, 		//
 		offsetof(struct nvmap, gvad605),
@@ -14151,7 +14194,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #endif /* CTLSTYLE_RAVENDSP_V1 || WITHEXTERNALDDSP */
 #if ! WITHFLATMENU
 	{
-		"AGC SSB ", 0, 0, 0, 0,	
+		QLABEL("AGC SSB "), 0, 0, 0, 0,
 		ITEM_GROUP, 
 		0, 0, 
 		offsetof(struct nvmap, ggrpagcssb),
@@ -14161,7 +14204,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #endif /* ! WITHFLATMENU */
 	{
-		"AGC RATE", 7, 0, 0,	ISTEP1,		/* подстройка параметра АРУ через меню. */
+		QLABEL("AGC RATE"), 7, 0, 0,	ISTEP1,		/* подстройка параметра АРУ через меню. */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		1, AGC_RATE_FLAT,
 		offsetof(struct nvmap, afsets [AGCSETI_SSB].rate),	/* На N децибел изменения входного сигнала происходит 1 дБ выходного */
@@ -14170,7 +14213,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"AGC HUNG", 6, 1, 0,	ISTEP1,		/* подстройка параметра АРУ (время удержания медленной цепи) через меню. */
+		QLABEL("AGC HUNG"), 6, 1, 0,	ISTEP1,		/* подстройка параметра АРУ (время удержания медленной цепи) через меню. */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, 250, 
 		offsetof(struct nvmap, afsets [AGCSETI_SSB].thung10),	/* время удержания медленной цепи АРУ */
@@ -14179,7 +14222,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"AGC T1  ", 7, 0, 0,	ISTEP10,		/* подстройка параметра АРУ (время срабатывания медленной цепи) через меню. */
+		QLABEL("AGC T1  "), 7, 0, 0,	ISTEP10,		/* подстройка параметра АРУ (время срабатывания медленной цепи) через меню. */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		10, 250, 
 		offsetof(struct nvmap, afsets [AGCSETI_SSB].t1),	/* время срабатывания медленной цепи АРУ */
@@ -14188,7 +14231,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"AGC T2  ", 6, 1, 0,	ISTEP1,		/* подстройка параметра АРУ (время разряда медленной цепи) через меню. */
+		QLABEL("AGC T2  "), 6, 1, 0,	ISTEP1,		/* подстройка параметра АРУ (время разряда медленной цепи) через меню. */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		1, 100, 
 		offsetof(struct nvmap, afsets [AGCSETI_SSB].release10),	/* время разряда медленной цепи АРУ */
@@ -14197,7 +14240,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"AGC T4  ", 7, 0, 0,	ISTEP10,		/* подстройка параметра АРУ (время разряда быстрой цепи) через меню. */
+		QLABEL("AGC T4  "), 7, 0, 0,	ISTEP10,		/* подстройка параметра АРУ (время разряда быстрой цепи) через меню. */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		10, 250, 
 		offsetof(struct nvmap, afsets [AGCSETI_SSB].t4),	/* время разряда быстрой цепи АРУ */
@@ -14207,7 +14250,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #if ! WITHFLATMENU
 	{
-		"AGC CW  ", 0, 0, 0, 0,	
+		QLABEL("AGC CW  "), 0, 0, 0, 0,
 		ITEM_GROUP, 
 		0, 0, 
 		offsetof(struct nvmap, ggrpagccw),
@@ -14217,7 +14260,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #endif /* ! WITHFLATMENU */
 	{
-		"AGC RATE", 7, 0, 0,	ISTEP1,		/* подстройка параметра АРУ через меню. */
+		QLABEL("AGC RATE"), 7, 0, 0,	ISTEP1,		/* подстройка параметра АРУ через меню. */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		1, AGC_RATE_FLAT,
 		offsetof(struct nvmap, afsets [AGCSETI_CW].rate),	/* На N децибел изменения входного сигнала происходит 1 дБ выходного */
@@ -14226,7 +14269,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"AGC HUNG", 6, 1, 0,	ISTEP1,		/* подстройка параметра АРУ (время удержания медленной цепи) через меню. */
+		QLABEL("AGC HUNG"), 6, 1, 0,	ISTEP1,		/* подстройка параметра АРУ (время удержания медленной цепи) через меню. */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, 250, 
 		offsetof(struct nvmap, afsets [AGCSETI_CW].thung10),	/* время удержания медленной цепи АРУ */
@@ -14235,7 +14278,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"AGC T1  ", 7, 0, 0,	ISTEP10,		/* подстройка параметра АРУ (время срабатывания медленной цепи) через меню. */
+		QLABEL("AGC T1  "), 7, 0, 0,	ISTEP10,		/* подстройка параметра АРУ (время срабатывания медленной цепи) через меню. */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		10, 250, 
 		offsetof(struct nvmap, afsets [AGCSETI_CW].t1),	/* время срабатывания медленной цепи АРУ */
@@ -14244,7 +14287,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"AGC T2  ", 6, 1, 0,	ISTEP1,		/* подстройка параметра АРУ (время разряда медленной цепи) через меню. */
+		QLABEL("AGC T2  "), 6, 1, 0,	ISTEP1,		/* подстройка параметра АРУ (время разряда медленной цепи) через меню. */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		1, 100, 
 		offsetof(struct nvmap, afsets [AGCSETI_CW].release10),	/* время разряда медленной цепи АРУ */
@@ -14253,7 +14296,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"AGC T4  ", 7, 0, 0,	ISTEP10,		/* подстройка параметра АРУ (время разряда быстрой цепи) через меню. */
+		QLABEL("AGC T4  "), 7, 0, 0,	ISTEP10,		/* подстройка параметра АРУ (время разряда быстрой цепи) через меню. */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		10, 250, 
 		offsetof(struct nvmap, afsets [AGCSETI_CW].t4),	/* время разряда быстрой цепи АРУ */
@@ -14263,7 +14306,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #if ! WITHFLATMENU
 	{
-		"AGC DIGI", 0, 0, 0, 0,	
+		QLABEL("AGC DIGI"), 0, 0, 0, 0,
 		ITEM_GROUP, 
 		0, 0, 
 		offsetof(struct nvmap, ggrpagcdigi),
@@ -14273,7 +14316,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #endif /* ! WITHFLATMENU */
 	{
-		"AGC RATE", 7, 0, 0,	ISTEP1,		/* подстройка параметра АРУ через меню. */
+		QLABEL("AGC RATE"), 7, 0, 0,	ISTEP1,		/* подстройка параметра АРУ через меню. */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		1, AGC_RATE_FLAT,
 		offsetof(struct nvmap, afsets [AGCSETI_DIGI].rate),	/* На N децибел изменения входного сигнала происходит 1 дБ выходного */
@@ -14282,7 +14325,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"AGC HUNG", 6, 1, 0,	ISTEP1,		/* подстройка параметра АРУ (время удержания медленной цепи) через меню. */
+		QLABEL("AGC HUNG"), 6, 1, 0,	ISTEP1,		/* подстройка параметра АРУ (время удержания медленной цепи) через меню. */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, 250, 
 		offsetof(struct nvmap, afsets [AGCSETI_DIGI].thung10),	/* время удержания медленной цепи АРУ */
@@ -14291,7 +14334,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"AGC T1  ", 7, 0, 0,	ISTEP10,		/* подстройка параметра АРУ (время срабатывания медленной цепи) через меню. */
+		QLABEL("AGC T1  "), 7, 0, 0,	ISTEP10,		/* подстройка параметра АРУ (время срабатывания медленной цепи) через меню. */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		10, 250, 
 		offsetof(struct nvmap, afsets [AGCSETI_DIGI].t1),	/* время срабатывания медленной цепи АРУ */
@@ -14300,7 +14343,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"AGC T2  ", 6, 1, 0,	ISTEP1,		/* подстройка параметра АРУ (время разряда медленной цепи) через меню. */
+		QLABEL("AGC T2  "), 6, 1, 0,	ISTEP1,		/* подстройка параметра АРУ (время разряда медленной цепи) через меню. */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		1, 100, 
 		offsetof(struct nvmap, afsets [AGCSETI_DIGI].release10),	/* время разряда медленной цепи АРУ */
@@ -14309,7 +14352,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"AGC T4  ", 7, 0, 0,	ISTEP10,		/* подстройка параметра АРУ (время разряда быстрой цепи) через меню. */
+		QLABEL("AGC T4  "), 7, 0, 0,	ISTEP10,		/* подстройка параметра АРУ (время разряда быстрой цепи) через меню. */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		10, 250, 
 		offsetof(struct nvmap, afsets [AGCSETI_DIGI].t4),	/* время разряда быстрой цепи АРУ */
@@ -14321,7 +14364,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #if WITHMODEM
 #if ! WITHFLATMENU
 	{
-		"MODEM   ", 0, 0, 0, 0,	
+		QLABEL("MODEM   "), 0, 0, 0, 0,
 		ITEM_GROUP, 
 		0, 0, 
 		offsetof(struct nvmap, ggrpmodem),
@@ -14331,7 +14374,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #endif /* ! WITHFLATMENU */
 	{
-		"DATA MOD", 5, 0, RJ_MDMMODE, 	ISTEP1, 
+		QLABEL("DATA MOD"), 5, 0, RJ_MDMMODE, 	ISTEP1,
 		ITEM_VALUE,
 		0, 1,			/* 0: BPSK, 1: QPSK */
 		offsetof(struct nvmap, gmodemmode),
@@ -14340,7 +14383,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, 
 	},
 	{
-		"DATA SPD", 7, 2, RJ_MDMSPEED, 	ISTEP1, 
+		QLABEL("DATA SPD"), 7, 2, RJ_MDMSPEED, 	ISTEP1,
 		ITEM_VALUE,
 		0, (sizeof modembr2int100 / sizeof modembr2int100 [0]) - 1, 
 		offsetof(struct nvmap, gmodemspeed),
@@ -14352,7 +14395,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #if WITHLFM
 #if ! WITHFLATMENU
 	{
-		"LFM     ", 0, 0, 0, 0,	
+		QLABEL("LFM     "), 0, 0, 0, 0,
 		ITEM_GROUP, 
 		0, 0, 
 		offsetof(struct nvmap, ggrplfm),
@@ -14362,7 +14405,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #endif /* ! WITHFLATMENU */
 	{
-		"LFM MODE", 7, 3, RJ_ON, 	ISTEP1,
+		QLABEL("LFM MODE"), 8, 3, RJ_ON, 	ISTEP1,
 		ITEM_VALUE,
 		0, 1,			/* LFM mode enable */
 		offsetof(struct nvmap, lfmmode),
@@ -14371,7 +14414,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, 
 	},
 	{
-		"LFM STRT", 5, 1, 0, 	ISTEP1, 
+		QLABEL("LFM STRT"), 5, 1, 0, 	ISTEP1,
 		ITEM_VALUE,
 		10, 300,			/* 10.0 MHz.. 30.0 MHz in 100 kHz steps */
 		offsetof(struct nvmap, lfmstart100k),
@@ -14380,7 +14423,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, 
 	},
 	{
-		"LFM STOP", 5, 1, 0, 	ISTEP1, 
+		QLABEL("LFM STOP"), 5, 1, 0, 	ISTEP1,
 		ITEM_VALUE,
 		10, 300,			/* 0.0 MHz.. 30.0 MHz in 100 kHz steps */
 		offsetof(struct nvmap, lfmstop100k),
@@ -14389,7 +14432,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, 
 	},
 	{
-		"LFM SPD ", 5, 0, 0, 	ISTEP1, 
+		QLABEL("LFM SPD "), 5, 0, 0, 	ISTEP1,
 		ITEM_VALUE,
 		50, 550,			/* 50 kHz/sec..550 kHz/sec, 1 kHz/sec steps */
 		offsetof(struct nvmap, lfmspeed1k),
@@ -14399,7 +14442,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 	// Секунды от начала часа до запуска
 	{
-		"LFM OFST", 5, 0, 0, 	ISTEP1, 
+		QLABEL("LFM OFST"), 5, 0, 0, 	ISTEP1,
 		ITEM_VALUE,
 		0, 60 * 60 - 1,			/* 0..59:59 */
 		offsetof(struct nvmap, lfmtoffset),
@@ -14409,7 +14452,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 	// Интервал в секундах между запусками в пределах часа
 	{
-		"LFM PERI", 5, 0, 0, 	ISTEP1, 
+		QLABEL("LFM PERI"), 5, 0, 0, 	ISTEP1,
 		ITEM_VALUE,
 		1, 60 * 60 - 1,			/* 00:01..59:59 */
 		offsetof(struct nvmap, lfmtinterval),
@@ -14420,7 +14463,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #endif /* WITHLFM */
 #if ! WITHFLATMENU
 	{
-		"SPECIAL ", 0, 0, 0, 0,	
+		QLABEL("SPECIAL "), 0, 0, 0, 0,
 		ITEM_GROUP, 
 		0, 0, 
 		offsetof(struct nvmap, ggrpsecial),
@@ -14431,7 +14474,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #endif /* ! WITHFLATMENU */
 #if WITHRFSG
 	{
-		"RFSG MOD", 7, 3, RJ_ON,	ISTEP1,
+		QLABEL("RFSG MOD"), 8, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, userfsg),
@@ -14442,7 +14485,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #endif /* WITHRFSG */
 #if WITHENCODER
 	{
-		"ENC RES ", 7, 0, RJ_ENCRES,	ISTEP1,
+		QLABEL("ENC RES "), 7, 0, RJ_ENCRES,	ISTEP1,
 		ITEM_VALUE,
 		0, (sizeof encresols / sizeof encresols [0]) - 1,
 		offsetof(struct nvmap, ghiresres),
@@ -14451,7 +14494,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"ENC DYNA", 7, 3, RJ_ON,	ISTEP1,
+		QLABEL("ENC DYNA"), 8, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,
 		offsetof(struct nvmap, ghiresdyn),
@@ -14460,7 +14503,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"ENC DIVS", 7, 0, 0,	ISTEP1,
+		QLABEL("ENC DIVS"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		1, 128, 	/* /1 ... /128 */
 		offsetof(struct nvmap, ghiresdiv),
@@ -14469,7 +14512,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase,
 	},
 	{
-		"BIG STEP", 7, 3, RJ_YES,	ISTEP1,
+		QLABEL("BIG STEP"), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,
 		offsetof(struct nvmap, gbigstep),
@@ -14482,7 +14525,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #if WITHTX
 #if WITHFANTIMER
 	{
-		"FAN TIME", 7, 0, 0,	ISTEP5,
+		QLABEL("FAN TIME"), 7, 0, 0,	ISTEP5,
 		ITEM_VALUE,
 		0, FANPATIMEMAX,
 		offsetof(struct nvmap, fanpatime),
@@ -14497,7 +14540,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #if WITHPOWERTRIM
   #if ! WITHPOTPOWER
 	{
-		"TX POWER", 7, 0, 0,	ISTEP1,		/* мощность при обычной работе на передачу */
+		QLABEL("TX POWER"), 7, 0, 0,	ISTEP1,		/* мощность при обычной работе на передачу */
 		ITEM_VALUE,
 		WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
 		offsetof(struct nvmap, gnormalpower),
@@ -14508,7 +14551,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
   #endif /* ! WITHPOTPOWER */
   #if WITHLOWPOWEREXTTUNE
 	{
-		"ATU PWR ", 7, 0, 0,	ISTEP1,		/* мощность при работе автоматического согласующего устройства */
+		QLABEL("ATU PWR "), 7, 0, 0,	ISTEP1,		/* мощность при работе автоматического согласующего устройства */
 		ITEM_VALUE,
 		WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
 		offsetof(struct nvmap, gtunepower),
@@ -14520,7 +14563,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #elif WITHPOWERLPHP
 	#if ! CTLSTYLE_SW2011ALL
 	{
-		"TX POWER", 7, 0, RJ_POWER,	ISTEP1,		/* мощность при обычной работе на передачу */
+		QLABEL("TX POWER"), 7, 0, RJ_POWER,	ISTEP1,		/* мощность при обычной работе на передачу */
 		ITEM_VALUE,
 		0, PWRMODE_COUNT - 1,
 		offsetof(struct nvmap, gpwri),
@@ -14531,7 +14574,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	#endif /* ! CTLSTYLE_SW2011ALL */
   	#if WITHLOWPOWEREXTTUNE
 	{
-		"ATU PWR ", 7, 0, RJ_POWER,	ISTEP1,		/* мощность при работе автоматического согласующего устройства */
+		QLABEL("ATU PWR "), 7, 0, RJ_POWER,	ISTEP1,		/* мощность при работе автоматического согласующего устройства */
 		ITEM_VALUE,
 		0, PWRMODE_COUNT - 1,
 		offsetof(struct nvmap, gtunepower),
@@ -14546,7 +14589,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #if WITHTX
 #if ! CTLSTYLE_SW2011ALL
 	{
-		"TX GATE ", 7, 3, RJ_ON,	ISTEP1,
+		QLABEL("TX GATE "), 8, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,
 		offsetof(struct nvmap, gtxgate),
@@ -14559,7 +14602,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #if WITHTX
 #if WITHPABIASTRIM && WITHTX
 	{
-		"PA BIAS ", 7, 0, 0,	ISTEP1,		/* Подстройка тока оконечного каскада передатчика */
+		QLABEL("PA BIAS "), 7, 0, 0,	ISTEP1,		/* Подстройка тока оконечного каскада передатчика */
 		ITEM_VALUE,
 		WITHPABIASMIN, WITHPABIASMAX,
 		offsetof(struct nvmap, gpabias),
@@ -14572,7 +14615,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #if WITHTX
 #if WITHIF4DSP && WITHTX
 	{
-		"AM DEPTH", 7, 0, 0,	ISTEP1,		/* Подстройка глубины модуляции в АМ */
+		QLABEL("AM DEPTH"), 7, 0, 0,	ISTEP1,		/* Подстройка глубины модуляции в АМ */
 		ITEM_VALUE,
 		0, 100, 
 		offsetof(struct nvmap, gamdepth),	/* Глубина модуляции в АМ - 0..100% */
@@ -14581,7 +14624,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"DACSCALE", 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("DACSCALE"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100, 
 		offsetof(struct nvmap, gdacscale),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
@@ -14590,7 +14633,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"FT8BOOST",	7, 2, 0,	ISTEP1,		/* Увеличение усиления при передаче в цифровых режимах 90..300% */
+		QLABEL("FT8BOOST"),	7, 2, 0,	ISTEP1,		/* Увеличение усиления при передаче в цифровых режимах 90..300% */
 		ITEM_VALUE,
 		90, 300,
 		offsetof(struct nvmap, gdigiscale),
@@ -14603,7 +14646,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #if defined(REFERENCE_FREQ)
 #if defined (DAC1_TYPE)
 	{
-		"REF ADJ ", 7, 0, 0,	ISTEP1,		/* подстройка частоты опорного генератора (напряжением) через меню. */
+		QLABEL("REF ADJ "), 7, 0, 0,	ISTEP1,		/* подстройка частоты опорного генератора (напряжением) через меню. */
 		ITEM_VALUE,
 		WITHDAC1VALMIN, WITHDAC1VALMAX, 
 		offsetof(struct nvmap, dac1level),
@@ -14613,7 +14656,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #endif /* defined (DAC1_TYPE) */
 	{
-		"REF FREQ", 9, 3, 0,	ISTEP1,		/* ввод реальной частоты опорного генератора через меню. */
+		QLABEL("REF FREQ"), 9, 3, 0,	ISTEP1,		/* ввод реальной частоты опорного генератора через меню. */
 		ITEM_VALUE,
 		0, OSCSHIFT * 2 - 1, 
 		offsetof(struct nvmap, refbias),
@@ -14624,7 +14667,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #endif	/* defined(REFERENCE_FREQ) */
 #if (LO3_SIDE != LOCODE_INVALID) && LO3_FREQADJ	/* подстройка частоты гетеродина через меню. */
 	{
-		"LO3 FRQ ", 9, 3, 0,	ISTEP1,	
+		QLABEL("LO3 FRQ "), 9, 3, 0,	ISTEP1,
 		ITEM_VALUE,
 		LO2AMIN, LO2AMAX, 
 		offsetof(struct nvmap, lo3offset),
@@ -14635,7 +14678,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #endif	/* (LO3_SIDE != LOCODE_INVALID) && LO3_FREQADJ */
 #if defined(PLL1_TYPE) && (PLL1_TYPE == PLL_TYPE_SI570)
 	{
-		"REFSI570", 9, 3, 0,	ISTEP1,	
+		QLABEL("REFSI570"), 9, 3, 0,	ISTEP1,
 		ITEM_VALUE,
 		0, OSCSHIFT * 2 - 1, 
 		offsetof(struct nvmap, si570_xtall_offset),
@@ -14646,7 +14689,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #endif /* defined(PLL1_TYPE) && (PLL1_TYPE == PLL_TYPE_SI570) */
 #if WITHONLYBANDS
 	{
-		"BANDONLY", 7, 3, RJ_YES,	ISTEP1,
+		QLABEL("BANDONLY"), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, withonlybands),
@@ -14656,7 +14699,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #endif /* WITHONLYBANDS */
 	{
-		"STAYFREQ", 7, 3, RJ_ON,	ISTEP1,
+		QLABEL("STAYFREQ"), 8, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, stayfreq),
@@ -14666,7 +14709,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #if WITHVOLTLEVEL && ! WITHREFSENSOR
 	{
-		"BAT CALI", 7, 1, 0,	ISTEP1,			/* калибровочный параметр делителя напряжения АКБ */
+		QLABEL("BAT CALI"), 7, 1, 0,	ISTEP1,			/* калибровочный параметр делителя напряжения АКБ */
 		ITEM_VALUE,
 		ADCVREF_CPU, 255,	// 3.3/5.0 .. 25.5 вольта
 		offsetof(struct nvmap, voltcalibr),
@@ -14678,7 +14721,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #if WITHTX
 #if WITHSWRMTR && ! WITHSHOWSWRPWR
 	{
-		"SWR SHOW", 7, 3, RJ_ON,	ISTEP1,
+		QLABEL("SWR SHOW"), 8, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, swrmode),
@@ -14689,7 +14732,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #endif /* WITHSWRMTR && ! WITHSHOWSWRPWR */
 #if (WITHSWRMTR || WITHSHOWSWRPWR)
 	{
-		"SWR CALI", 7, 2, 0,	ISTEP1,		/* калибровка SWR-метра */
+		QLABEL("SWR CALI"), 7, 2, 0,	ISTEP1,		/* калибровка SWR-метра */
 		ITEM_VALUE,
 		50, 200, //80, 120, 
 		offsetof(struct nvmap, swrcalibr),
@@ -14698,7 +14741,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, 
 	},
 	{
-		"FWD LOWR", 7, 0, 0,	ISTEP1,		/* нечувствительность SWR-метра */
+		QLABEL("FWD LOWR"), 7, 0, 0,	ISTEP1,		/* нечувствительность SWR-метра */
 		ITEM_VALUE,
 		1, (1U << HARDWARE_ADCBITS) - 1, 
 		offsetof(struct nvmap, minforward),
@@ -14707,7 +14750,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, 
 	},
 	{
-		"PWR CALI", 7, 0, 0,	ISTEP1,		/* калибровка PWR-метра */
+		QLABEL("PWR CALI"), 7, 0, 0,	ISTEP1,		/* калибровка PWR-метра */
 		ITEM_VALUE,
 		1, 255, 
 		offsetof(struct nvmap, maxpwrcali),
@@ -14718,7 +14761,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	
 #elif WITHPWRMTR
 	{
-		"PWR CALI", 7, 0, 0,	ISTEP1,		/* калибровка PWR-метра */
+		QLABEL("PWR CALI"), 7, 0, 0,	ISTEP1,		/* калибровка PWR-метра */
 		ITEM_VALUE,
 		10, 255, 
 		offsetof(struct nvmap, maxpwrcali),
@@ -14729,7 +14772,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #endif
 #if WITHIF4DSP || defined (TXPATH_BIT_ENABLE_SSB) || defined (TXPATH_BIT_ENABLE_CW) || defined (TXPATH_BIT_GATE)
 	{
-		"RXTX DLY", 7, 0, 0,	ISTEP5,	/* 5 mS step of changing value */
+		QLABEL("RXTX DLY"), 7, 0, 0,	ISTEP5,	/* 5 mS step of changing value */
 		ITEM_VALUE,
 		5, WITHMAXRXTXDELAY,						/* 5..100 ms delay */
 		offsetof(struct nvmap, rxtxdelay),
@@ -14738,7 +14781,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, 
 	},
 	{
-		"TXRX DLY", 7, 0, 0,	ISTEP5,	/* 5 mS step of changing value */
+		QLABEL("TXRX DLY"), 7, 0, 0,	ISTEP5,	/* 5 mS step of changing value */
 		ITEM_VALUE,
 		5, WITHMAXTXRXDELAY,						/* 5..100 ms delay */
 		offsetof(struct nvmap, txrxdelay),
@@ -14750,7 +14793,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #endif /* WITHTX */
 #if WITHLO1LEVELADJ
 	{
-		"LO1 LEVL", 7, 0, 0,	ISTEP1,	
+		QLABEL("LO1 LEVL"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		0, 100, 		/* уровень (амплитуда) LO1 в процентах */
 		offsetof(struct nvmap, lo1level),
@@ -14761,7 +14804,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #endif /* WITHLO1LEVELADJ */
 #if LO1PHASES
 	{
-		"PHASE RX", 7, 0, 0,	ISTEP1,	
+		QLABEL("PHASE RX"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		0, 65535, /* добавление к коду смещения фазы */
 		offsetof(struct nvmap, phaserx),
@@ -14771,7 +14814,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #if WITHTX
 	{
-		"PHASE TX", 7, 0, 0,	ISTEP1,	
+		QLABEL("PHASE TX"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		0, 65535, /* добавление к коду смещения фазы */
 		offsetof(struct nvmap, phasetx),
@@ -14784,7 +14827,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 
 #if LO1MODE_HYBRID
 	{
-		"ALIGN MD", 7, 3, RJ_YES,	ISTEP1,
+		QLABEL("ALIGN MD"), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, alignmode),
@@ -14796,7 +14839,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 
 #if LO1FDIV_ADJ
 	{
-		"LO1DV RX", 7, 0, RJ_POW2,	ISTEP1,	
+		QLABEL("LO1DV RX"), 7, 0, RJ_POW2,	ISTEP1,
 		ITEM_VALUE,
 		0, 3, 	/* Output of synthesizer multiplied to 1, 2, 4 or 8 */
 		offsetof(struct nvmap, lo1powrx),
@@ -14805,7 +14848,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"LO1DV TX", 7, 0, RJ_POW2,	ISTEP1,	
+		QLABEL("LO1DV TX"), 7, 0, RJ_POW2,	ISTEP1,
 		ITEM_VALUE,
 		0, 3, 	/* Output of synthesizer multiplied to 1, 2, 4 or 8 */
 		offsetof(struct nvmap, lo1powtx),
@@ -14816,7 +14859,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #endif
 #if LO4FDIV_ADJ
 	{
-		"LO4DV RX", 7, 0, RJ_POW2,	ISTEP1,	
+		QLABEL("LO4DV RX"), 7, 0, RJ_POW2,	ISTEP1,
 		ITEM_VALUE,
 		0, 3, 	/* Output of synthesizer multiplied to 1, 2, 4 or 8 */
 		offsetof(struct nvmap, lo4powrx),
@@ -14825,7 +14868,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"LO4DV TX", 7, 0, RJ_POW2,	ISTEP1,	
+		QLABEL("LO4DV TX"), 7, 0, RJ_POW2,	ISTEP1,
 		ITEM_VALUE,
 		0, 3, 	/* Output of synthesizer multiplied to 1, 2, 4 or 8 */
 		offsetof(struct nvmap, lo4powtx),
@@ -14837,7 +14880,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 
 #if WITHBARS
 	{
-		"S9 LEVEL", 7, 0, 0,	ISTEP1,	
+		QLABEL("S9 LEVEL"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		1, UINT8_MAX - 1, 
 		offsetof(struct nvmap, s9level),
@@ -14846,7 +14889,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, 
 	},
 	{
-		"S9 DELTA", 7, 0, 0,	ISTEP1,	
+		QLABEL("S9 DELTA"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		1, UINT8_MAX - 1, 
 		offsetof(struct nvmap, s9delta),
@@ -14855,7 +14898,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"+60DELTA", 7, 0, 0,	ISTEP1,	
+		QLABEL("+60DELTA"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		1, UINT8_MAX - 1, 
 		offsetof(struct nvmap, s9_60_delta),
@@ -14866,7 +14909,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #endif /* WITHBARS */
 
 	{
-		"BAND 27 ", 7, 3, RJ_YES,	ISTEP1,
+		QLABEL("BAND 27 "), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, bandset11m),
@@ -14876,7 +14919,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #if WITHBCBANDS
 	{
-		"BAND BC ", 7, 3, RJ_YES,	ISTEP1,
+		QLABEL("BAND BC "), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, bandsetbcast),
@@ -14889,7 +14932,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #if CTLSTYLE_SW2011ALL
 #if TUNE_6MBAND
 	{
-		"BAND 50 ", 7, 3, RJ_ON,	ISTEP1,
+		QLABEL("BAND 50 "), 8, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, bandset6m),
@@ -14900,7 +14943,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #endif /* TUNE_6MBAND */
 #if TUNE_4MBAND
 	{
-		"BAND 70 ", 7, 3, RJ_ON,	ISTEP1,
+		QLABEL("BAND 70 "), 8, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, bandset4m),
@@ -14911,7 +14954,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #endif /* TUNE_6MBAND */
 #if TUNE_2MBAND
 	{
-		"BAND 144", 7, 3, RJ_ON,	ISTEP1,
+		QLABEL("BAND 144"), 8, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, bandset2m),
@@ -14925,7 +14968,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #if CTLREGMODE_RA4YBO || CTLREGMODE_RA4YBO_V1 || CTLREGMODE_RA4YBO_V2 || CTLREGMODE_RA4YBO_V3 || CTLREGMODE_RA4YBO_V3A
 #if ! WITHFLATMENU
 	{
-		"TXPARAMS", 0, 0, 0, 0,	
+		QLABEL("TXPARAMS"), 0, 0, 0, 0,
 		ITEM_GROUP, 
 		0, 0, 
 		offsetof(struct nvmap, ggrptxparams),
@@ -14935,7 +14978,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #endif /* ! WITHFLATMENU */
 	{
-		"TXPW SSB", 7, 0, 0,	ISTEP1,	
+		QLABEL("TXPW SSB"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE | ITEM_NOINITNVRAM,
 		0, 255, 		/*  */
 		RMT_TXPOWER_BASE(MODE_SSB),
@@ -14944,7 +14987,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, 
 	},
 	{
-		"TXPW CW ", 7, 0, 0,	ISTEP1,	
+		QLABEL("TXPW CW "), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE | ITEM_NOINITNVRAM,
 		0, 255, 		/*  */
 		RMT_TXPOWER_BASE(MODE_CW),
@@ -14953,7 +14996,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, 
 	},
 	{
-		"TXPW FM ", 7, 0, 0,	ISTEP1,	
+		QLABEL("TXPW FM "), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE | ITEM_NOINITNVRAM,
 		0, 255, 		/*  */
 		RMT_TXPOWER_BASE(MODE_NFM),
@@ -14962,7 +15005,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, 
 	},
 	{
-		"TXPW AM ", 7, 0, 0,	ISTEP1,	
+		QLABEL("TXPW AM "), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE | ITEM_NOINITNVRAM,
 		0, 255, 		/*  */
 		RMT_TXPOWER_BASE(MODE_AM),
@@ -14971,7 +15014,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, 
 	},
 	{
-		"TXPW TUN", 7, 0, 0,	ISTEP1,	
+		QLABEL("TXPW TUN"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE | ITEM_NOINITNVRAM,
 		0, 255, 		/*  */
 		RMT_TXPOWER_BASE(MODE_TUNE),
@@ -14980,7 +15023,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, 
 	},
 	{
-		"TXCP SSB", 7, 0, 0,	ISTEP1,	
+		QLABEL("TXCP SSB"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE | ITEM_NOINITNVRAM,
 		0, 255, 		/*  */
 		RMT_TXPOWER_BASE(MODE_SSB),
@@ -14989,7 +15032,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, 
 	},
 	{
-		"TXCP AM ", 7, 0, 0,	ISTEP1,	
+		QLABEL("TXCP AM "), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE | ITEM_NOINITNVRAM,
 		0, 255, 		/*  */
 		RMT_TXPOWER_BASE(MODE_AM),
@@ -14998,7 +15041,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, 
 	},
 	{
-		"TXCP FM ", 7, 0, 0,	ISTEP1,	
+		QLABEL("TXCP FM "), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE | ITEM_NOINITNVRAM,
 		0, 255, 		/*  */
 		RMT_TXPOWER_BASE(MODE_NFM),
@@ -16120,12 +16163,21 @@ process_key_menuset_common(uint_fast8_t kbch)
 #endif /* WITHPWBUTTON */
 
 #if WITHENCODER2
-	case KBD_ENC2_PRESS:
-		uif_encoder2_press();
-		return 1;
-	case KBD_ENC2_HOLD:
-		uif_encoder2_hold();
-		return 1;
+	#if WITHTOUCHTEST
+		case KBD_ENC2_PRESS:
+			encoder2busy ? set_encoder2_state (KBD_ENC2_PRESS): uif_encoder2_press();
+			return 1;
+		case KBD_ENC2_HOLD:
+			encoder2busy ? set_encoder2_state (KBD_ENC2_HOLD) : uif_encoder2_hold();
+			return 1;
+	#else
+		case KBD_ENC2_PRESS:
+			uif_encoder2_press();
+			return 1;
+		case KBD_ENC2_HOLD:
+			uif_encoder2_hold();
+			return 1;
+	#endif /* WITHTOUCHTEST */
 #endif /* WITHENCODER2 */
 
 #if WITHTX
@@ -17579,12 +17631,23 @@ hamradio_main_step(void)
 				nrotate = getRotateHiRes(& jumpsize, ghiresdiv * gencderate);
 				nrotate2 = getRotateHiRes2(& jumpsize2);
 			#endif
-
+#if WITHTOUCHTEST
+			if (!encoder2busy)
+			{
+				if (uif_encoder2_rotate(nrotate2))
+				{
+#else
 			if (uif_encoder2_rotate(nrotate2))
 			{
-				nrotate2 = 0;
-				display_redrawfreqmodesbars(0);			/* Обновление дисплея - всё, включая частоту */
+#endif
+						nrotate2 = 0;
+						display_redrawfreqmodesbars(0);			/* Обновление дисплея - всё, включая частоту */
+#if WITHTOUCHTEST
+				}
 			}
+#else
+			}
+#endif
 	#if WITHDEBUG
 			{
 				/* здесь можно добавить обработку каких-либо команд с debug порта */
@@ -17647,7 +17710,7 @@ hamradio_main_step(void)
 					//gfreqs [bi_main] = nextfreq(gfreqs [bi_main], gfreqs [bi_main] + (jumpsize * nrotate), gstep, TUNE_TOP);
 					freqchanged = 1;
 				}
-
+#if !WITHENCODER2NOFREQ
 				if (nrotate2 < 0)
 				{
 					/* Валкодер B: вращали "вниз" */
@@ -17664,7 +17727,7 @@ hamradio_main_step(void)
 					//gfreqs [bi_sub] = nextfreq(gfreqs [bi_sub], gfreqs [bi_sub] + (jumpsize2 * nrotate2), gstep, TUNE_TOP);
 					freqchanged = 1;
 				}
-
+#endif
 				if (freqchanged != 0)
 				{
 					// Ограничение по скорости обновления дисплея уже заложено в него
@@ -17672,6 +17735,10 @@ hamradio_main_step(void)
 					updateboard(0, 0);	/* частичная перенастройка - без смены режима работы */
 				}
 			}
+			#if WITHTOUCHTEST
+				encoder2busy = check_encoder2(nrotate2);
+				process_gui();
+			#endif /* WITHTOUCHTEST */
 		}
 		break;
 
@@ -17680,6 +17747,243 @@ hamradio_main_step(void)
 	}
 	return STTE_OK;
 }
+
+#if WITHTOUCHTEST
+uint_fast8_t send_key_code (uint_fast8_t code)
+{
+	processkeyboard(code);
+	display_redrawfreqs(1);
+	return editfreqmode;
+}
+
+
+void set_agc_off(void)
+{
+	gagcoff = 1;
+	board_set_agc(BOARD_AGCCODE_OFF);
+	updateboard (1, 0);
+}
+
+void set_agc_fast(void)
+{
+	gagcoff = 0;
+	board_set_agc(BOARD_AGCCODE_ON);
+//	const uint_fast8_t asubmode = getasubmode(0);
+//	const struct modetempl * const pmodet = getmodetempl(gsubmode);
+//	const uint_fast8_t agcseti = pmodet->agcseti;
+//	board_set_agcrate(agcseti == AGCSETI_FLAT ? UINT8_MAX : gagc [agcseti].rate);
+//	board_set_agc_t1(120);
+//	board_set_agc_t2(1);
+//	board_set_agc_t4(50);
+//	board_set_agc_thung(1);
+	updateboard (1, 0);
+}
+
+void set_agc_slow(void)
+{
+	gagcoff = 0;
+	board_set_agc(BOARD_AGCCODE_ON);
+//	const uint_fast8_t asubmode = getasubmode(0);
+//	const struct modetempl * const pmodet = getmodetempl(gsubmode);
+//	const uint_fast8_t agcseti = pmodet->agcseti;
+//	board_set_agcrate(agcseti == AGCSETI_FLAT ? UINT8_MAX : gagc [agcseti].rate);
+//	board_set_agc_t1(120);
+//	board_set_agc_t2(5);
+//	board_set_agc_t4(50);
+//	board_set_agc_thung(3);
+	updateboard (1, 0);
+}
+
+uint_fast8_t get_low_bp(int_least16_t rotate)
+{
+	uint_fast8_t tx = gettxstate();
+	const uint_fast8_t asubmode = getasubmode(0);
+	const uint_fast8_t amode = submodes [asubmode].mode;
+	const uint_fast8_t bwseti = mdt [amode].bwsetis [tx];
+	uint_fast16_t low;
+	const uint_fast8_t pos = bwsetpos [bwseti];
+	bwprop_t * p = bwsetsc [bwseti].prop [pos];
+	switch (p->type)
+		{
+		case BWSET_WIDE:
+			if (rotate != 0 && (p->left10_width10 + rotate) > 0 && (p->left10_width10 + rotate) < p->right100 * 10)
+			{
+				p->left10_width10 += rotate;
+				updateboard (1, 0);
+			}
+			low =  p->left10_width10;
+			break;
+
+		default:
+		case BWSET_NARROW:
+			{
+				if (rotate != 0)
+				{
+					p->left10_width10 += rotate * 10;
+					updateboard (1, 0);
+				}
+				const int_fast16_t width = p->left10_width10;
+				const int_fast16_t width2 = width / 2;
+				const int_fast16_t center = gcwpitch10 * CWPITCHSCALE;
+				low =  ((center > width2) ? (center - width2) : 0) / 10;
+			}
+		}
+	return low;
+}
+
+uint_fast8_t get_high_bp(int_least16_t rotate)
+{
+	uint_fast8_t tx = gettxstate();
+	const uint_fast8_t asubmode = getasubmode(0);
+	const uint_fast8_t amode = submodes [asubmode].mode;
+	const uint_fast8_t bwseti = mdt [amode].bwsetis [tx];
+	uint_fast16_t high;
+	const uint_fast8_t pos = bwsetpos [bwseti];
+	bwprop_t * p = bwsetsc [bwseti].prop [pos];
+	switch (p->type)
+	{
+	case BWSET_WIDE:
+		if (rotate != 0 && (p->right100 + rotate) * 10 > p->left10_width10 && (p->right100 + rotate) < 45)
+		{
+			p->right100 += rotate;
+			updateboard (1, 0);
+		}
+		high =  p->right100;
+		break;
+
+	default:
+	case BWSET_NARROW:
+		{
+			if (rotate != 0)
+			{
+				gcwpitch10 += rotate * CWPITCHSCALE;
+				updateboard (1, 0);
+			}
+			const int_fast16_t width = p->left10_width10;
+			const int_fast16_t width2 = width / 2;
+			const int_fast16_t center = gcwpitch10 * CWPITCHSCALE;
+			high = ((center > width2) ? (center + width2) : (center * 2)) / 100;
+		}
+	}
+	return high;
+}
+
+uint_fast8_t get_multilinemenu_block_groups(menu_names_t * vals)
+{
+	uint_fast16_t el;
+	uint_fast8_t count = 0;
+
+	getstamprtc();
+	for (el = 0; el < MENUROW_COUNT; el ++)
+	{
+		const FLASHMEM struct menudef * const mv = & menutable [el];
+		if (ismenukind(mv, ITEM_GROUP))
+		{
+			menu_names_t * const v = & vals[count];
+			strcpy (v->name, mv->label);
+			v->index = el;
+			count++;
+		}
+	}
+	return count;
+}
+
+uint_fast8_t get_multilinemenu_block_params(menu_names_t * vals, uint_fast8_t index)
+{
+	uint_fast16_t el;
+	uint_fast8_t count = 0;
+
+	for (el = index + 1; el < MENUROW_COUNT; el ++)
+	{
+		const FLASHMEM struct menudef * const mv = & menutable [el];
+		if (ismenukind(mv, ITEM_GROUP))
+			break;
+		if (ismenukind(mv, ITEM_VALUE))
+		{
+			menu_names_t * const v = & vals[count];
+			strcpy (v->name, mv->label);
+			v->index = el;
+			count++;
+		}
+	}
+	return count;
+}
+
+void get_multilinemenu_block_vals(menu_names_t * vals, uint_fast8_t index, uint_fast8_t cnt)
+{
+	uint_fast16_t el;
+	uint_fast8_t count = 0;
+
+	for (el = index; el <= index + cnt; el ++)
+	{
+		const FLASHMEM struct menudef * const mv = & menutable [el];
+		if (ismenukind(mv, ITEM_VALUE))
+		{
+			menu_names_t * const v = & vals[count];
+			display_menu_valxx(0, 0, (void *) mv);
+			strcpy (v->name, w);
+			v->index = el;
+			count++;
+		}
+	}
+}
+
+char * gui_edit_menu_item (uint_fast8_t index, int_least16_t rotate)
+{
+	const FLASHMEM struct menudef * const mp = & menutable [index];
+	if (rotate != 0 && ismenukind(mp, ITEM_VALUE))
+	{
+		/* редактирование паратметра */
+		const uint_fast16_t step = mp->qistep;
+		uint_fast16_t * const pv16 = mp->qpval16;
+		uint_fast8_t * const pv8 = mp->qpval8;
+
+		if (rotate < 0)
+		{
+			// negative change value
+			const uint_fast32_t bottom = mp->qbottom;
+			if (pv16 != NULL)
+			{
+				* pv16 =
+					prevfreq(* pv16, * pv16 - (- rotate * step), step, bottom);
+			}
+			else
+			{
+				* pv8 =
+					prevfreq(* pv8, * pv8 - (- rotate * step), step, bottom);
+			}
+		}
+		else
+		{
+			// positive change value
+			const uint_fast32_t upper = mp->qupper;
+			if (pv16 != NULL)
+			{
+				* pv16 =
+					nextfreq(* pv16, * pv16 + (rotate * step), step, upper + (uint_fast32_t) step);
+			}
+			else
+			{
+				* pv8 =
+					nextfreq(* pv8, * pv8 + (rotate * step), step, upper + (uint_fast32_t) step);
+			}
+		}
+		display_menu_valxx(0, 0, (void *) mp);
+		updateboard(1, 0);
+#if (NVRAM_TYPE != NVRAM_TYPE_CPUEEPROM)
+		savemenuvalue(mp);		/* сохраняем отредактированное значение */
+#endif
+		}
+	return w;
+}
+
+void set_menu_cond (uint_fast8_t m)
+{
+	is_menu_opened = m;
+}
+
+#endif /* WITHTOUCHTEST */
+
 // основной цикл программы при работе в режиме любительского премника
 static void
 hamradio_mainloop(void)
@@ -18019,6 +18323,16 @@ ddd:
 }
 
 #endif /* WITHISBOOTLOADER */
+
+void change_submode(uint_fast8_t newsubmode)
+{
+	const uint_fast8_t bi = getbankindex_tx(gtx);	/* VFO bank index */
+	const uint_fast8_t defcol = locatesubmode(newsubmode, & gmoderows [bi]);	/* строка/колонка для SSB. Что делать, если не нашли? */
+	putmodecol(gmoderows [bi], defcol, bi);	/* внести новое значение в битовую маску */
+	gsubmodechange(getsubmode(bi), bi);
+	updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
+	display_redrawfreqmodesbars(0);
+}
 
 /* Главная функция программы */
 int 

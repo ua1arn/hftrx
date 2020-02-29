@@ -18,6 +18,8 @@
 #define DISPLAY_FPS	20	/* обновление показаний частоты десять раз в секунду */
 #define DISPLAYSWR_FPS 10	/* количество обновлений SWR и панорамы за секунду */
 
+#define LCDMODE_COLORED	1
+
 #if LCDMODE_S1D13781
 
 	// размеры могут отличаться - для эмуляции мелких дисплеев на этом.
@@ -81,6 +83,8 @@
 			) \
 		)
 
+	typedef PACKEDCOLOR_T PACKEDCOLORPIP_T;
+	typedef COLOR_T COLORPIP_T;
 
 #elif S1D_DISPLAY_BPP == 16 || ! LCDMODE_LTDC_L8
 
@@ -100,6 +104,9 @@
 
 	#define TFTRGB565 TFTRGB
 
+	typedef PACKEDCOLOR_T PACKEDCOLORPIP_T;
+	typedef COLOR_T COLORPIP_T;
+
 #elif S1D_DISPLAY_BPP == 24
 
 	typedef uint_fast32_t COLOR_T;
@@ -114,6 +121,9 @@
 				(((unsigned long) (blue) >> 0) &  0xFFul) \
 			) \
 		)
+
+	typedef PACKEDCOLOR_T PACKEDCOLORPIP_T;
+	typedef COLOR_T COLORPIP_T;
 
 #endif
 

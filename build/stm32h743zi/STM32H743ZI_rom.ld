@@ -235,7 +235,7 @@ SECTIONS
 	.stack_dummy (COPY):
 	{
 		KEEP(*(.stack*))
-	} > RAM_D3
+	} > RAM_D1
 
 	/* Set stack top to end of RAM, and stack limit move down by
 	 * size of stack_dummy section */

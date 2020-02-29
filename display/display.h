@@ -18,6 +18,23 @@ extern "C" {
 
 typedef uint_fast16_t COLOR565_T;
 typedef uint16_t PACKEDCOLOR565_T;
+typedef uint_fast32_t COLOR24_T;
+// RRRRRRR.GGGGGGGG.BBBBBBBB
+#define COLOR24(red, green, blue) \
+	(  (unsigned long) \
+		(	\
+			(((unsigned long) (red) << 16) & 0xFF0000ul)  | \
+			(((unsigned long) (green) << 8) & 0xFF00ul) | \
+			(((unsigned long) (blue) << 0) & 0xFFul) \
+		) \
+	)
+
+// Get color componens from COLOR24_T value
+#define COLOR24_R(v) (((v) >> 16) & 0xFF)
+#define COLOR24_G(v) (((v) >> 8) & 0xFF)
+#define COLOR24_B(v) (((v) >> 0) & 0xFF)
+
+#define COLOR24_KEY	COLOR24(0xA0, 0, 0xA0)	// Цвет для прозрачных пикселей
 
 #if LCDMODE_UC1601
 
@@ -207,6 +224,8 @@ typedef uint16_t PACKEDCOLOR565_T;
 #elif LCDMODE_DUMMY
 	/* При использовании frame buffer цвета восьмибитные */
 	typedef uint_fast8_t COLOR_T;
+	typedef uint_fast8_t COLORPIP_T;
+	typedef uint8_t PACKEDCOLORPIP_T;
 
 	// для формирования растра с изображением водопада и спектра
 	// RRRR.RGGG.GGGB.BBBB
@@ -222,6 +241,8 @@ typedef uint16_t PACKEDCOLOR565_T;
 	#define DISPLAYMODES_FPS 5	/* количество обновлений отображения режимов работы */
 	#define DISPLAY_FPS	10	/* обновление показаний частоты десять раз в секунду */
 	#define DISPLAYSWR_FPS 10	/* количество обновлений SWR и панорамы за секунду */
+
+	#define LCDMODE_COLORED	1
 
 	#if LCDMODE_LTDC_L24
 
@@ -243,7 +264,7 @@ typedef uint16_t PACKEDCOLOR565_T;
 				) \
 			)
 
-  #elif LCDMODE_LTDC_L8
+	#elif LCDMODE_LTDC_L8
 
 		/* При использовании frame buffer цвета восьмибитные */
 		typedef uint_fast8_t COLOR_T;
@@ -291,6 +312,14 @@ typedef uint16_t PACKEDCOLOR565_T;
 
 	#endif /* LCDMODE_LTDC_L8 */
 
+	#if LCDMODE_LTDC_PIPL8
+			typedef PACKEDCOLOR_T PACKEDCOLORPIP_T;
+			typedef uint_fast8_t COLORPIP_T;
+	#else /* LCDMODE_LTDC_PIP16 */
+			typedef uint16_t PACKEDCOLORPIP_T;
+			typedef uint_fast16_t COLORPIP_T;
+	#endif /* LCDMODE_LTDC_PIPL8 */
+
 #endif /* LCDMODE_LTDC */
 
 #if LCDMODE_S1D13781
@@ -310,56 +339,6 @@ typedef uint16_t PACKEDCOLOR565_T;
 	#define MGSIZE(dx, dy)	((dx) * (((unsigned long) (dy) + 7) / 8))	// размер буфера для монохромного растра
 	#define GXSIZE(dx, dy)	((unsigned long) (dx) * (dy))	// размер буфера для цветного растра
 #endif	/* */
-
-// определение основных цветов
-///
-
-/* RGB 24-bits color table definition (RGB888). */
-#define COLOR_BLACK          TFTRGB(0x00, 0x00, 0x00)
-#define COLOR_WHITE          TFTRGB(0xFF, 0xFF, 0xFF)
-#define COLOR_BLUE           TFTRGB(0x00, 0x00, 0xFF)
-#define COLOR_GREEN          TFTRGB(0x00, 0xFF, 0x00)
-#define COLOR_RED            TFTRGB(0xFF, 0x00, 0x00)
-#define COLOR_NAVY           TFTRGB(0x00, 0x00, 0x80)
-#define COLOR_DARKBLUE       TFTRGB(0x00, 0x00, 0x8B)
-#define COLOR_DARKGREEN      TFTRGB(0x00, 0x64, 0x00)
-#define COLOR_DARKGREEN2     TFTRGB(0x00, 0x20, 0x00)
-#define COLOR_DARKCYAN       TFTRGB(0x00, 0x8B, 0x8B)
-#define COLOR_CYAN           TFTRGB(0x00, 0xFF, 0xFF)
-#define COLOR_TURQUOISE      TFTRGB(0x40, 0xE0, 0xD0)
-#define COLOR_INDIGO         TFTRGB(0x4B, 0x00, 0x82)
-#define COLOR_DARKRED        TFTRGB(0x80, 0x00, 0x00)
-#define COLOR_DARKRED2       TFTRGB(0x40, 0x00, 0x00)
-#define COLOR_OLIVE          TFTRGB(0x80, 0x80, 0x00)
-#define COLOR_GRAY           TFTRGB(0x80, 0x80, 0x80)
-#define COLOR_SKYBLUE        TFTRGB(0x87, 0xCE, 0xEB)
-#define COLOR_BLUEVIOLET     TFTRGB(0x8A, 0x2B, 0xE2)
-#define COLOR_LIGHTGREEN     TFTRGB(0x90, 0xEE, 0x90)
-#define COLOR_DARKVIOLET     TFTRGB(0x94, 0x00, 0xD3)
-#define COLOR_YELLOWGREEN    TFTRGB(0x9A, 0xCD, 0x32)
-#define COLOR_BROWN          TFTRGB(0xA5, 0x2A, 0x2A)
-#define COLOR_DARKGRAY       TFTRGB(0xA9, 0xA9, 0xA9)
-#define COLOR_SIENNA         TFTRGB(0xA0, 0x52, 0x2D)
-#define COLOR_LIGHTBLUE      TFTRGB(0xAD, 0xD8, 0xE6)
-#define COLOR_GREENYELLOW    TFTRGB(0xAD, 0xFF, 0x2F)
-#define COLOR_SILVER         TFTRGB(0xC0, 0xC0, 0xC0)
-#define COLOR_LIGHTGREY      TFTRGB(0xD3, 0xD3, 0xD3)
-#define COLOR_LIGHTCYAN      TFTRGB(0xE0, 0xFF, 0xFF)
-#define COLOR_VIOLET         TFTRGB(0xEE, 0x82, 0xEE)
-#define COLOR_AZUR           TFTRGB(0xF0, 0xFF, 0xFF)
-#define COLOR_BEIGE          TFTRGB(0xF5, 0xF5, 0xDC)
-#define COLOR_MAGENTA        TFTRGB(0xFF, 0x00, 0xFF)
-#define COLOR_TOMATO         TFTRGB(0xFF, 0x63, 0x47)
-#define COLOR_GOLD           TFTRGB(0xFF, 0xD7, 0x00)
-#define COLOR_ORANGE         TFTRGB(0xFF, 0xA5, 0x00)
-#define COLOR_SNOW           TFTRGB(0xFF, 0xFA, 0xFA)
-#define COLOR_YELLOW         TFTRGB(0xFF, 0xFF, 0x00)
-
-#define COLOR_BROWN   TFTRGB(0xA5, 0x2A, 0x2A)	// коричневый
-#define COLOR_PEAR    TFTRGB(0xD1, 0xE2, 0x31)	// грушевый
-
-#define COLOR_KEY	TFTRGB(0xA0, 0, 0xA0)	// Цвет для прозрачных пикселей
-#define COLOR565_YELLOW      TFTRGB565(0xFF, 0xFF, 0x00)
 
 uint_fast8_t display_getpagesmax(void);	// количество разных вариантов отображения (menuset)
 uint_fast8_t display_getpagesleep(void);	// номер варианта отображения для "сна"
@@ -600,15 +579,6 @@ void display_string(const char * s, uint_fast8_t lowhalf);
 void display_string_P(const FLASHMEM char * s, uint_fast8_t lowhalf);
 void display_string2(const char * s, uint_fast8_t lowhalf);		// самый маленький шрифт
 void display_string2_P(const FLASHMEM char * s, uint_fast8_t lowhalf);	// самый маленький шрифт
-void display_colorbuff_string3_tbg(
-	PACKEDCOLOR565_T * buffer,
-	uint_fast16_t dx,
-	uint_fast16_t dy,
-	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
-	const char * s,
-	COLOR565_T fg		// цвет вывода текста
-	);
 
 // Интерфейсные функции, специфические для драйвера дисплея - зависящие от типа микросхемы контроллера.
 void display_hardware_initialize(void);	/* вызывается при запрещённых прерываниях. */
@@ -698,29 +668,29 @@ void display_pixelbuffer_clear(
 // начальная инициализация буфера
 // Формат RGB565
 void display_colorbuffer_fill(
-	PACKEDCOLOR565_T * buffer,
+	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy,
-	COLOR565_T color
+	COLORPIP_T color
 	);
 
 // Формат RGB565
 void 
 dma2d_fillrect2_RGB565(
-	PACKEDCOLOR565_T * buffer,
+	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,	// размеры буфера
 	uint_fast16_t dy,
 	uint_fast16_t x,	// позиция окна в буфере
 	uint_fast16_t y,
 	uint_fast16_t w,	// размер окна
 	uint_fast16_t h,
-	COLOR565_T color
+	COLORPIP_T color
 	);
 
 // Выдать цветной буфер на дисплей
 // Формат RGB565
 void display_colorbuffer_show(
-	const PACKEDCOLOR565_T * buffer,
+	const PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy,
 	uint_fast16_t col,	// горизонтальная координата левого верхнего угла на экране (0..dx-1) слева направо
@@ -728,20 +698,20 @@ void display_colorbuffer_show(
 	);
 // Нарисовать линию указанным цветом
 void display_colorbuffer_line_set(
-	PACKEDCOLOR565_T * buffer,
+	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy,
 	uint_fast16_t x0,	
 	uint_fast16_t y0,
 	uint_fast16_t x1,	
 	uint_fast16_t y1,
-	COLOR565_T color
+	COLORPIP_T color
 	);
 
 // установить данный буфер как область для PIP
 // Формат RGB565
 void display_colorbuffer_pip(
-	const PACKEDCOLOR565_T * buffer,
+	const PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy
 	);
@@ -749,25 +719,77 @@ void display_colorbuffer_pip(
 // Поставить цветную точку.
 // Формат RGB565
 void display_colorbuffer_set(
-	PACKEDCOLOR565_T * buffer,
+	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy,
 	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
 	uint_fast16_t row,	// вертикальная координата пикселя (0..dy-1) сверху вниз
-	COLOR565_T color
+	COLORPIP_T color
 	);
 
 // Поставить цветную точку.
 // Формат RGB565
 void display_colorbuffer_xor(
-	PACKEDCOLOR565_T * buffer,
+	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy,
 	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
 	uint_fast16_t row,	// вертикальная координата пикселя (0..dy-1) сверху вниз
-	COLOR565_T color
+	COLORPIP_T color
 	);
 
+void
+display_colorbuff_string(
+	PACKEDCOLORPIP_T * buffer,
+	uint_fast16_t dx,	// размеры буфера
+	uint_fast16_t dy,
+	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	const char * s
+	);
+// Используется при выводе на графический индикатор,
+// transparent background - не меняем цвет фона.
+void
+display_colorbuff_string_tbg(
+	PACKEDCOLORPIP_T * buffer,
+	uint_fast16_t dx,
+	uint_fast16_t dy,
+	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	const char * s,
+	COLORPIP_T fg		// цвет вывода текста
+	);
+// Используется при выводе на графический индикатор,
+// transparent background - не меняем цвет фона.
+void
+display_colorbuff_string2_tbg(
+	PACKEDCOLORPIP_T * buffer,
+	uint_fast16_t dx,
+	uint_fast16_t dy,
+	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	const char * s,
+	COLORPIP_T fg		// цвет вывода текста
+	);
+// Используется при выводе на графический индикатор,
+// transparent background - не меняем цвет фона.
+void display_colorbuff_string3_tbg(
+	PACKEDCOLORPIP_T * buffer,
+	uint_fast16_t dx,
+	uint_fast16_t dy,
+	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	const char * s,
+	COLORPIP_T fg		// цвет вывода текста
+	);
+// Используется при выводе на графический индикатор,
+// Возвращает ширину строки в пикселях
+uint_fast16_t display_colorbuff_string3_width(
+	PACKEDCOLORPIP_T * buffer,
+	uint_fast16_t dx,
+	uint_fast16_t dy,
+	const char * s
+	);
 
 /* копирование содержимого окна с перекрытием для водопада */
 void
@@ -936,6 +958,7 @@ void display_putpixel(
 	uint_fast16_t y,
 	COLOR_T color
 	);
+void display_at_xy(uint_fast16_t x, uint_fast16_t y, const char * s);
 
 void board_set_topdb(int_fast16_t v);	/* верхний предел FFT */
 void board_set_bottomdb(int_fast16_t v);	/* нижний предел FFT */
@@ -944,6 +967,13 @@ void board_set_bottomdbwf(int_fast16_t v);	/* нижний предел FFT */
 void board_set_zoomxpow2(uint_fast8_t v);	/* уменьшение отображаемого участка спектра */
 void board_set_fillspect(uint_fast8_t v); /* заливать заполнением площадь под графиком спектра */
 void board_set_wflevelsep(uint_fast8_t v); /* чувствительность водопада регулируется отдельной парой параметров */
+
+#if WITHTOUCHTEST
+	void display_pip_update(uint_fast8_t x, uint_fast8_t y, void * pv);
+#endif /* WITHTOUCHTEST */
+
+PACKEDCOLOR_T * rgb565_fb(void);
+void display2_xltrgb24(COLOR24_T * xtable);
 
 #ifdef __cplusplus
 }

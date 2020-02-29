@@ -11,6 +11,8 @@
 
 #if LCDMODE_ST7735 || LCDMODE_ILI9163 || LCDMODE_ILI9341
 
+#define LCDMODE_COLORED	1
+
 #if ! LCDMODE_LTDC
 
 	#define DISPLAYMODES_FPS 5	/* количество обновлений отображения режимов работы */
@@ -66,6 +68,9 @@
 	#define TFTRGB565 TFTRGB
 
 #endif /* LCDMODE_LTDC */
+
+typedef PACKEDCOLOR_T PACKEDCOLORPIP_T;
+typedef COLOR_T COLORPIP_T;
 
 // some flags for initR() :(
 #define INITR_GREENTAB 0x0

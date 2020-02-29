@@ -10,6 +10,7 @@
 #include "audio.h"
 
 #include "display/display.h"
+#include "gui.h"
 #include "formats.h"
 
 #include <string.h>
@@ -21,24 +22,24 @@
 // todo: учесть LCDMODE_COLORED
 
 // параметры отображения состояния прием/пеердача
-static const COLOR_T colorsfg_2rxtx [2] = { COLOR_GREEN, COLOR_RED, };
-static const COLOR_T colorsbg_2rxtx [2] = { COLOR_BLACK, COLOR_BLACK, };
+static const COLOR_T colorsfg_2rxtx [2] = { COLORMAIN_GREEN, COLORMAIN_RED, };
+static const COLOR_T colorsbg_2rxtx [2] = { COLORMAIN_BLACK, COLORMAIN_BLACK, };
 
 // параметры отображения состояний из трех вариантов
-static const COLOR_T colorsfg_4state [4] = { COLOR_BLACK, COLOR_RED, DESIGNCOLORSTATE, DESIGNCOLORSTATE, };
+static const COLOR_T colorsfg_4state [4] = { COLORMAIN_BLACK, COLORMAIN_RED, DESIGNCOLORSTATE, DESIGNCOLORSTATE, };
 static const COLOR_T colorsbg_4state [4] = { DESIGNCOLORSTATE, DESIGNCOLORDARKSTATE, DESIGNCOLORDARKSTATE, DESIGNCOLORDARKSTATE, };
 
 // параметры отображения состояний из двух вариантов
-static const COLOR_T colorsfg_2state [2] = { COLOR_BLACK, COLOR_WHITE, };
-static const COLOR_T colorsbg_2state [2] = { DESIGNCOLORSTATE, DESIGNCOLORDARKSTATE, };	// COLOR_GREEN	COLOR_DARKGREEN
+static const COLOR_T colorsfg_2state [2] = { COLORMAIN_BLACK, COLORMAIN_WHITE, };
+static const COLOR_T colorsbg_2state [2] = { DESIGNCOLORSTATE, DESIGNCOLORDARKSTATE, };	// COLORMAIN_GREEN	COLOR_DARKGREEN
 
 // параметры отображения текстов без вариантов
 static const COLOR_T colorsfg_1state [1] = { DESIGNCOLORSTATE, };
-static const COLOR_T colorsbg_1state [1] = { COLOR_BLACK, };	// устанавливается в цвет фона из палитры
+static const COLOR_T colorsbg_1state [1] = { COLORMAIN_BLACK, };	// устанавливается в цвет фона из палитры
 
 // параметры отображения текстов без вариантов
 static const COLOR_T colorsfg_1freq [1] = { DESIGNBIGCOLOR, };
-static const COLOR_T colorsbg_1freq [1] = { COLOR_BLACK, };	// устанавливается в цвет фона из палитры
+static const COLOR_T colorsbg_1freq [1] = { COLORMAIN_BLACK, };	// устанавливается в цвет фона из палитры
 
 // todo: switch off -Wunused-function
 
@@ -98,7 +99,7 @@ static void display2_legend_tx(
 	void * pv
 	);
 
-PACKEDCOLOR565_T * getscratchpip(void);
+PACKEDCOLORPIP_T * getscratchpip(void);
 
 // Параметры отображения спектра и водопада
 
@@ -1284,7 +1285,7 @@ static void display_thermo4(
 	void * pv
 	)
 {
-#if WITHTHERMOLEVEL && WITHCPUADCHW
+#if WITHTHERMOLEVEL
 	int_fast16_t tempv = hamradio_get_temperature_value() / 10;	// Градусы в десятых долях в целые градусы
 
 	display_setcolors(colorsfg_1state [0], colorsbg_1state [0]);
@@ -1296,7 +1297,7 @@ static void display_thermo4(
 		//display_gotoxy(x + CHARS2GRID(4), y + lowhalf);	
 		//display_string_P(PSTR("С"), lowhalf);
 	} while (lowhalf --);
-#endif /* WITHTHERMOLEVEL && WITHCPUADCHW */
+#endif /* WITHTHERMOLEVEL */
 }
 
 // +d.ddA - 6 places (with "A")
@@ -1706,6 +1707,7 @@ enum
 	REDRM_MFXX,		// код редактируемого параметра
 	REDRM_MLBL,		// название редактируемого параметра
 	REDRM_MVAL,		// значение параметра меню
+	REDRM_BUTTONS,  // область отображения экранных кнопок
 	REDRM_count
 };
 
@@ -4120,7 +4122,7 @@ enum
 
 		/* совмещение на одном экрание водопада и панорамы */
 		BDCO_SPMRX = ROWS2GRID(0),	// смещение спектра по вертикали в ячейках от начала общего поля
-		BDCV_SPMRX = ROWS2GRID(11),	// вертикальный размер спектра в ячейках		};
+		BDCV_SPMRX = ROWS2GRID(12),	// вертикальный размер спектра в ячейках		};
 		BDCO_WFLRX = BDCV_SPMRX,	// смещение водопада по вертикали в ячейках от начала общего поля
 		BDCV_WFLRX = BDCV_ALLRX - BDCO_WFLRX	// вертикальный размер водопада в ячейках		};
 	};
@@ -4418,8 +4420,8 @@ enum
 		p->frame = (uintptr_t) getscratchpip();
 	}
 
-#elif DSTYLE_G_X800_Y480 //&& WITHSPECTRUMWF
-
+#elif DSTYLE_G_X800_Y480 && WITHTOUCHTEST //&& WITHSPECTRUMWF
+	// Вариант с сенсорным экраном
 	// TFT панель AT070TN90
 	// 480/5 = 96, 800/16=50
 
@@ -4435,13 +4437,8 @@ enum
 	enum
 	{
 		BDTH_ALLRXBARS = 30,	// ширина зоны для отображение барграфов на индикаторе
-#if 0
 		BDTH_ALLRX = 50,	// ширина зоны для отображение графического окна на индикаторе
-		BDCV_ALLRX = ROWS2GRID(49),	// количество строк, отведенное под S-метр, панораму, иные отображения
-#else
-		BDTH_ALLRX = 40,	// ширина зоны для отображение графического окна на индикаторе
-		BDCV_ALLRX = ROWS2GRID(55),	// количество строк, отведенное под S-метр, панораму, иные отображения
-#endif
+		BDCV_ALLRX = ROWS2GRID(61),	// количество строк, отведенное под S-метр, панораму, иные отображения
 
 		BDTH_LEFTRX = 17,	// ширина индикатора баллов (без плюсов)
 		BDTH_RIGHTRX = BDTH_ALLRXBARS - BDTH_LEFTRX,	// ширина индикатора плюсов
@@ -4552,6 +4549,7 @@ enum
 		{	0,	DLES,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 		{	0,	DLES,	display2_spectrum,	REDRM_BARS, PGSPE, },// подготовка изображения спектра
 		{	0,	DLES,	display2_waterfall,	REDRM_BARS, PGWFL, },// подготовка изображения водопада
+		{	0,	DLES,	display_pip_update, REDRM_BARS, PGSPE, },
 		{	0,	DLES,	display2_colorbuff,	REDRM_BARS,	PGWFL | PGSPE, },// Отображение водопада и/или спектра
 	#endif /* WITHSPECTRUMWF */
 #else
@@ -4560,7 +4558,190 @@ enum
 #endif
 
 
-	
+	#if WITHAMHIGHKBDADJ
+		//{	XX, DLE1,	display_amfmhighcut4,REDRM_MODE, PGALL, },	// 3.70
+	#endif /* WITHAMHIGHKBDADJ */
+		//{	XX,	DLE1,	display_samfreqdelta8, REDRM_BARS, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
+
+	#if WITHMENU
+		{	3,				30,	display_multilinemenu_block_groups,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
+		{	LABELW + 5,		30,	display_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
+		{	LABELW*2 + 6,	30,	display_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
+	#endif /* WITHMENU */
+
+		// sleep mode display
+		{	5,	25,	display_datetime12,	REDRM_BARS, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40
+		{	20, 25,	display_voltlevelV5, REDRM_VOLT, PGSLP, },	// voltmeter with "V"
+	};
+
+#if WITHMENU
+	void display2_getgridparams(gridparams_t * p)
+	{
+		p->gy2 = DLE1;	// Первая строка (grid) за меню.
+		p->gx2 = CHARS2GRID(DIM_X / 16);	// Правый край за областью меню
+	}
+
+	void display2_getmultimenu(multimenuwnd_t * p)
+	{
+		p->multilinemenu_max_rows = 15;
+		p->ystep = 4;	// количество ячеек разметки на одну строку меню
+		p->reverse = 1;
+	}
+#endif /* WITHMENU */
+
+	/* получить координаты окна с панорамой и/или водопадом. */
+	void display2_getpipparams(pipparams_t * p)
+	{
+		p->x = GRID2X(0);	// позиция верхнего левого угла в пикселях
+		p->y = GRID2Y(DLES);	// позиция верхнего левого угла в пикселях
+		p->w = GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
+		p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
+		p->frame = (uintptr_t) getscratchpip();
+	}
+
+#elif DSTYLE_G_X800_Y480 //&& WITHSPECTRUMWF
+	// вариант без сенсорного экрана
+	// TFT панель AT070TN90
+	// 480/5 = 96, 800/16=50
+
+	#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
+		//					"012345678901234567890123456789"
+		#define SWRPWRMAP	"1    2    3    4  0%   |  100%"
+		#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - значение на полной шкале
+	#else
+		#warning Should be defined WITHSHOWSWRPWR
+	#endif
+	//						"012345678901234567890123456789"
+	#define SMETERMAP		"1   3   5   7   9  +20 +40 +60"
+	enum
+	{
+		BDTH_ALLRXBARS = 30,	// ширина зоны для отображение барграфов на индикаторе
+#if 0
+		BDTH_ALLRX = 50,	// ширина зоны для отображение графического окна на индикаторе
+		BDCV_ALLRX = ROWS2GRID(49),	// количество строк, отведенное под S-метр, панораму, иные отображения
+#else
+		BDTH_ALLRX = 40,	// ширина зоны для отображение графического окна на индикаторе
+		BDCV_ALLRX = ROWS2GRID(55),	// количество строк, отведенное под S-метр, панораму, иные отображения
+#endif
+
+		BDTH_LEFTRX = 17,	// ширина индикатора баллов (без плюсов)
+		BDTH_RIGHTRX = BDTH_ALLRXBARS - BDTH_LEFTRX,	// ширина индикатора плюсов
+		BDTH_SPACERX = 0,
+		BDTH_ALLSWR = 16,
+		BDTH_SPACESWR = 2,
+		BDTH_ALLPWR = 12,
+		BDTH_SPACEPWR = 0,
+
+		/* совмещение на одном экрание водопада и панорамы */
+		BDCO_SPMRX = ROWS2GRID(0),	// смещение спектра по вертикали в ячейках от начала общего поля
+		BDCV_SPMRX = ROWS2GRID(27),	// вертикальный размер спектра в ячейках
+		BDCO_WFLRX = BDCV_SPMRX,	// смещение водопада по вертикали в ячейках от начала общего поля
+		BDCV_WFLRX = BDCV_ALLRX - BDCV_SPMRX	// вертикальный размер водопада в ячейках
+	};
+	enum {
+		DLES = 35,		// spectrum window upper line
+        DLE1 = 93,		//
+		DLE_unused
+	};
+
+
+	enum
+	{
+		PATTERN_SPACE = 0x00,	/* очищаем место за SWR и PWR метром этим символом */
+		PATTERN_BAR_FULL = 0xFF,
+		PATTERN_BAR_HALF = 0x3c,
+		PATTERN_BAR_EMPTYFULL = 0x00,	//0x00
+		PATTERN_BAR_EMPTYHALF = 0x00	//0x00
+	};
+
+	enum
+	{
+		DPAGE0,					// Страница, в которой отображаются основные (или все)
+		DISPLC_MODCOUNT
+	};
+
+	enum
+	{
+		PG0 = REDRSUBSET(DPAGE0),
+		PGALL = PG0 | REDRSUBSET_MENU,
+		PGWFL = PG0,	// страница отображения водопада
+		PGSPE = PG0,	// страница отображения панорамы
+		PGSWR = PG0,	// страница отоюражения S-meter и SWR-meter
+		PGLATCH = PGALL | REDRSUBSET_SLEEP,	// страницы, на которых возможно отображение водопада или панорамы.
+		PGSLP = REDRSUBSET_SLEEP,
+		PGunused
+	};
+
+	#if 1//TUNE_TOP > 100000000uL
+		#define DISPLC_WIDTH	9	// количество цифр в отображении частоты
+	#else
+		#define DISPLC_WIDTH	8	// количество цифр в отображении частоты
+	#endif
+	#define DISPLC_RJ		0	// количество скрытых справа цифр в отображении частоты
+
+	// 480/5 = 96, 800/16=50
+	// 272/5 = 54, 480/16=30 (old)
+	//#define GRID2X(cellsx) ((cellsx) * 16)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
+	//#define GRID2Y(cellsy) ((cellsy) * 5)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
+	//#define SMALLCHARH 15 /* Font height */
+	//#define SMALLCHARW 16 /* Font width */
+	static const FLASHMEM struct dzone dzones [] =
+	{
+		{	0,	0,	display2_pip_off,	REDRM_MODE,	PGSLP | REDRSUBSET_MENU },	// Выключить PIP если на данной странице не требуется
+		{	0,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
+		{	3,	0,	display_ant5,		REDRM_MODE, PGALL, },
+		{	9,	0,	display_att4,		REDRM_MODE, PGALL, },
+		{	14,	0,	display_preovf3,	REDRM_BARS, PGALL, },
+		{	18,	0,	display_genham1,	REDRM_BARS, PGALL, },	// Отображение режима General Coverage / HAM bands
+		{	21,	0,	display_lockstate4, REDRM_MODE, PGALL, },	// LOCK
+
+	#if WITHENCODER2
+		{	41, 0,	display_fnlabel9,	REDRM_MODE, PGALL, },	// FUNC item label
+		{	41,	4,	display_fnvalue9,	REDRM_MODE, PGALL, },	// FUNC item value
+		{	45, 15,	display_notch5,		REDRM_MODE, PGALL, },	// NOTCH on/off
+	#else /* WITHENCODER2 */
+		{	45, 0,	display_notch5,		REDRM_MODE, PGALL, },	// FUNC item label
+		{	45,	4,	display_notchfreq5,	REDRM_BARS, PGALL, },	// FUNC item value
+	#endif /* WITHENCODER2 */
+
+		{	46, 20,	display_agc3,		REDRM_MODE, PGALL, },	// AGC mode
+		{	46, 25,	display_voxtune3,	REDRM_MODE, PGALL, },	// VOX
+		{	46, 30,	display_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
+//		{	46, 35,	display_nr3,		REDRM_MODE, PGALL, },	// NR
+		{	46, 40,	display_atu3,		REDRM_MODE, PGALL, },	// TUNER state (optional)
+		{	46, 45,	display_byp3,		REDRM_MODE, PGALL, },	// TUNER BYPASS state (optional)
+		{	46, 50,	display_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
+
+		{	0,	7,	display_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
+		{	21, 10,	display_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
+		{	26, 10,	display_rxbw3,		REDRM_MODE, PGALL, },	// 3.1 / 0,5 / WID / NAR
+		{	30, 10,	display_nr3,		REDRM_MODE, PGALL, },	// NR : was: AGC
+		{	21, 15,	display_mainsub3,	REDRM_MODE, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
+
+		{	26,	15,	display_vfomode3,	REDRM_MODE, PGALL, },	// SPLIT
+		{	9,	20,	display_freqX_b,	REDRM_FRQB, PGALL, },	// SUB FREQ
+		{	21, 20,	display_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
+
+#if 1
+		{	0,	25,	display2_legend,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы S-метра
+		{	0,	30,	display2_bars,		REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
+		//{	0,	35,	display2_legend_tx,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы PWR & SWR-метра
+		//{	0,	40,	display2_bars_tx,	REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
+		{	31,	30, display_siglevel4, 	REDRM_BARS, PGSWR, },	// signal level dBm
+		{	36, 30,	display_freqdelta8, REDRM_BARS, PGSWR, },	// выход ЧМ демодулятора
+	#if WITHSPECTRUMWF
+		{	0,	DLES,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
+		{	0,	DLES,	display2_spectrum,	REDRM_BARS, PGSPE, },// подготовка изображения спектра
+		{	0,	DLES,	display2_waterfall,	REDRM_BARS, PGWFL, },// подготовка изображения водопада
+		{	0,	DLES,	display2_colorbuff,	REDRM_BARS,	PGWFL | PGSPE, },// Отображение водопада и/или спектра
+	#endif /* WITHSPECTRUMWF */
+#else
+		{	0,	0,	display2_pip_off,	REDRM_MODE,	PGSWR },	// Выключить PIP если на данной странице не требуется
+		{	0,	25,	display2_adctest,	REDRM_BARS, PGSWR, },	// ADC raw data print
+#endif
+
+
+
 		{	0,	DLE1,	display_datetime12,	REDRM_BARS, PGALL,	},	// DATE&TIME Jan-01 13:40
 		{	13,	DLE1,	display_span9,		REDRM_MODE, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
 		{	23, DLE1,	display_thermo4,	REDRM_VOLT, PGALL, },	// thermo sensor
@@ -5185,12 +5366,26 @@ enum
 	SPY0 = GRID2Y(BDCO_SPMRX)				// смещение по вертикали в пикселях части отведенной спектру
 };
 
-#if (LCDMODE_LTDC_PIP16 && LCDMODE_LTDC)
+#if (LCDMODE_LTDC_PIPL8 && LCDMODE_LTDC)
 
 	// один буфер установлен для отображения, второй еше отображается.
 	// Третий заполняем новым изображением.
 	enum { NPIPS = 3 };
-	static RAMFRAMEBUFF ALIGNX_BEGIN PACKEDCOLOR565_T colorpips [NPIPS] [GXSIZE(ALLDX, ALLDY)] ALIGNX_END;
+	static RAMFRAMEBUFF ALIGNX_BEGIN PACKEDCOLORPIP_T colorpips [NPIPS] [GXSIZE(ALLDX, ALLDY)] ALIGNX_END;
+	static int pipphase;
+
+	static void nextpip(void)
+	{
+		pipphase = (pipphase + 1) % NPIPS;
+	}
+
+
+#elif (LCDMODE_LTDC_PIP16 && LCDMODE_LTDC)
+
+	// один буфер установлен для отображения, второй еше отображается.
+	// Третий заполняем новым изображением.
+	enum { NPIPS = 2 };
+	static RAMFRAMEBUFF ALIGNX_BEGIN PACKEDCOLORPIP_T colorpips [NPIPS] [GXSIZE(ALLDX, ALLDY)] ALIGNX_END;
 	static int pipphase;
 
 	static void nextpip(void)
@@ -5208,15 +5403,23 @@ enum
 
 #endif /* LCDMODE_LTDC_PIP16 */
 
-PACKEDCOLOR565_T * getscratchpip(void)
-{
-#if (LCDMODE_LTDC_PIP16 && LCDMODE_LTDC)
-	return colorpips [pipphase];
-#else /* LCDMODE_LTDC_PIP16 */
-	return colorpip0;
-#endif /* LCDMODE_LTDC_PIP16 */
-}
+#if LCDMODE_LTDC_PIPL8
+	PACKEDCOLORPIP_T * getscratchpip(void)
+	{
+		return colorpips [pipphase];
+	}
 
+#else
+	PACKEDCOLORPIP_T * getscratchpip(void)
+	{
+	#if (LCDMODE_LTDC_PIP16 && LCDMODE_LTDC)
+		return colorpips [pipphase];
+	#else /* LCDMODE_LTDC_PIP16 */
+		return colorpip0;
+	#endif /* LCDMODE_LTDC_PIP16 */
+	}
+
+#endif
 // Параметры фильтров данных спектра и водопада
 #define DISPLAY_SPECTRUM_BETA (0.25)
 #define DISPLAY_WATERFALL_BETA (0.5)
@@ -5227,9 +5430,9 @@ static const FLOAT_t spectrum_alpha = 1 - (FLOAT_t) DISPLAY_SPECTRUM_BETA;	// ol
 static const FLOAT_t waterfall_beta = (FLOAT_t) DISPLAY_WATERFALL_BETA;					// incoming value coefficient
 static const FLOAT_t waterfall_alpha = 1 - (FLOAT_t) DISPLAY_WATERFALL_BETA;	// old value coefficient
 
-static RAMBIG FLOAT_t spavgarray [ALLDX];	// массив входных данных для отображения (через фильтры).
-static RAMBIG FLOAT_t Yold_wtf [ALLDX];
-static RAMBIG FLOAT_t Yold_fft [ALLDX];
+static /*RAMBIG */FLOAT_t spavgarray [ALLDX];	// массив входных данных для отображения (через фильтры).
+static /*RAMBIG */FLOAT_t Yold_wtf [ALLDX];
+static /*RAMBIG */FLOAT_t Yold_fft [ALLDX];
 
 static FLOAT_t filter_waterfall(
 	uint_fast16_t x
@@ -5251,10 +5454,19 @@ static FLOAT_t filter_spectrum(
 	return Y;
 }
 
-#if WITHFASTWATERFLOW
+#if LCDMODE_LTDC_PIPL8
+
+	enum { PALETTESIZE = COLORPIP_BASE };
+	static RAMBIG PACKEDCOLORPIP_T wfarray [WFDY] [ALLDX];	// массив "водопада"
+	static uint_fast16_t wfrow;		// строка, в которую последней занесены данные
+
+#elif WITHFASTWATERFLOW
 
 	/* быстрое отображение водопада (но требует больше памяти) */
-	static RAMBIG PACKEDCOLOR565_T wfarray [WFDY] [ALLDX];	// массив "водопада"
+	static RAMBIG PACKEDCOLORPIP_T wfarray [WFDY] [ALLDX];	// массив "водопада"
+
+	enum { PALETTESIZE = 256 };
+	static PACKEDCOLORPIP_T wfpalette [PALETTESIZE];
 	static uint_fast16_t wfrow;		// строка, в которую последней занесены данные
 
 #elif (! LCDMODE_S1D13781_NHWACCEL && LCDMODE_S1D13781)
@@ -5262,10 +5474,17 @@ static FLOAT_t filter_spectrum(
 	static RAMBIG PACKEDCOLOR565_T wfarray [1] [ALLDX];	// массив "водопада"
 	enum { wfrow = 0 };				// строка, в которую последней занесены данные
 
+	enum { PALETTESIZE = 256 };
+	static PACKEDCOLOR565_T wfpalette [PALETTESIZE];
+
+#elif LCDMODE_LTDC_PIPL8
 #else
 
 	static RAMBIG uint8_t wfarray [WFDY] [ALLDX];	// массив "водопада"
 	static uint_fast16_t wfrow;		// строка, в которую последней занесены данные
+
+	enum { PALETTESIZE = 256 };
+	static PACKEDCOLOR565_T wfpalette [PALETTESIZE];
 
 #endif
 
@@ -5275,93 +5494,53 @@ static int_fast16_t wfhorshift;			// сдвиг по шоризонтали (о�
 static uint_fast16_t wfscroll;			// сдвиг по вертикали (в раьочем направлении) для водопада.
 static uint_fast8_t wfclear;			// стирание всей областии отображение водопада.
 
-enum { PALETTESIZE = 256 };
-static PACKEDCOLOR565_T wfpalette [PALETTESIZE];
-
 // Код взят из проекта Malamute
 static void wfpalette_initialize(void)
 {
-	int type = 0;
-
-	if (type)
+#if LCDMODE_LTDC_PIPL8
+#else /* LCDMODE_LTDC_PIP16 */
+	// PALETTESIZE == 256
+	int a = 0;
+	int i;
+	// a = 0
+	for (i = 0; i < 64; ++ i)
 	{
-		int a = 0;
-		int i;
-		for (i = 0; i < 42; ++ i)
-		{
-			wfpalette [a + i] = TFTRGB565(0, 0, (int) (powf((float) 0.095 * i, 4)));
-		}
-		a += i;
-		for (i = 0; i < 42; ++ i)
-		{
-			wfpalette [a + i] = TFTRGB565(0, i * 6, 255);
-		}
-		a += i;
-		for (i = 0; i < 42; ++ i)
-		{
-			wfpalette [a + i] = TFTRGB565(0, 255, (int)(((float) 0.39 * (41 - i )) * ((float) 0.39 * (41 - i))) );
-		}
-		a += i;
-		for (i = 0; i < 42; ++ i)
-		{
-			wfpalette [a + i] = TFTRGB565(i * 6, 255, 0);
-		}
-		a += i;
-		for (i = 0; i < 42; ++ i)
-		{
-			wfpalette [a + i] = TFTRGB565(255, (41 - i) * 6, 0);
-		}
-		a += i;
-		for (i = 0; i < 42; ++ i)
-		{
-			wfpalette [a + i] = TFTRGB565(255, 0, i * 6);
-		}
-		a += i;
-		// a = 252
+		// для i = 0..15 результат формулы = ноль
+		wfpalette [a + i] = TFTRGB565(0, 0, (int) (powf((float) 0.0625 * i, 4)));	// проверить результат перед попыткой применить целочисленные вычисления!
 	}
-	else
+	a += i;
+	// a = 64
+	for (i = 0; i < 32; ++ i)
 	{
-		int a = 0;
-		int i;
-		// a = 0
-		for (i = 0; i < 64; ++ i)
-		{
-			// для i = 0..15 результат формулы = ноль
-			wfpalette [a + i] = TFTRGB565(0, 0, (int) (powf((float) 0.0625 * i, 4)));	// проверить результат перед попыткой применить целочисленные вычисления!
-		}
-		a += i;
-		// a = 64
-		for (i = 0; i < 32; ++ i)
-		{
-			wfpalette [a + i] = TFTRGB565(0, i * 8, 255);
-		}
-		a += i;
-		// a = 96
-		for (i = 0; i < 32; ++ i)
-		{
-			wfpalette [a + i] = TFTRGB565(0, 255, 255 - i * 8);
-		}
-		a += i;
-		// a = 128
-		for (i = 0; i < 32; ++ i)
-		{
-			wfpalette [a + i] = TFTRGB565(i * 8, 255, 0);
-		}
-		a += i;
-		// a = 160
-		for (i = 0; i < 64; ++ i)
-		{
-			wfpalette [a + i] = TFTRGB565(255, 255 - i * 4, 0);
-		}
-		a += i;
-		// a = 224
-		for (i = 0; i < 32; ++ i)
-		{
-			wfpalette [a + i] = TFTRGB565(255, 0, i * 8);
-		}
-		a += i;
-		// a = 256
+		wfpalette [a + i] = TFTRGB565(0, i * 8, 255);
 	}
+	a += i;
+	// a = 96
+	for (i = 0; i < 32; ++ i)
+	{
+		wfpalette [a + i] = TFTRGB565(0, 255, 255 - i * 8);
+	}
+	a += i;
+	// a = 128
+	for (i = 0; i < 32; ++ i)
+	{
+		wfpalette [a + i] = TFTRGB565(i * 8, 255, 0);
+	}
+	a += i;
+	// a = 160
+	for (i = 0; i < 64; ++ i)
+	{
+		wfpalette [a + i] = TFTRGB565(255, 255 - i * 4, 0);
+	}
+	a += i;
+	// a = 224
+	for (i = 0; i < 32; ++ i)
+	{
+		wfpalette [a + i] = TFTRGB565(255, 0, i * 8);
+	}
+	a += i;
+	// a = 256
+#endif /* LCDMODE_LTDC_PIPL8 */
 }
 
 // получить горизонтальную позицию для заданного отклонения в герцах
@@ -5381,7 +5560,8 @@ deltafreq2x(
 // получить горизонтальную позицию для заданного отклонения в герцах
 // Использовать для "динамической" разметки дисплея - риски, кратные 10 кГц.
 // Возврат UINT16_MAX при невозможности отобразить запрошенную частоту в указанном окне
-static uint_fast16_t
+static
+uint_fast16_t
 deltafreq2x_abs(
 	int_fast32_t fc,	// центральная частота
 	int_fast16_t delta,	// отклонение от центральной частоты в герцах
@@ -5403,9 +5583,10 @@ deltafreq2x_abs(
 }
 
 // получить адрес требуемой позиции в буфере
-volatile PACKEDCOLOR565_T *
+static
+volatile PACKEDCOLORPIP_T *
 display_colorbuffer_at(
-	PACKEDCOLOR565_T * buffer,
+	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy,
 	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
@@ -5423,72 +5604,79 @@ display_colorbuffer_at(
 
 
 
-// Поставить цветную полосу
+/// Нарисовать вертикальную цветную полосу
 // Формат RGB565
-void display_colorbuffer_xor_vline(
-	PACKEDCOLOR565_T * buffer,
+static
+void
+display_colorbuffer_xor_vline(
+	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy,
 	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
 	uint_fast16_t row0,	// вертикальная координата пикселя (0..dy-1) сверху вниз
 	uint_fast16_t h,	// высота
-	COLOR565_T color
+	COLORPIP_T color
 	)
 {
 	while (h --)
 		display_colorbuffer_xor(buffer, dx, dy, col, row0 ++, color);
 }
 
-// Нарисовать цветную полосу
+// Нарисовать вертикальную цветную полосу
 // Формат RGB565
-static void 
+static
+void
 display_colorbuffer_set_vline(
-	PACKEDCOLOR565_T * buffer,
+	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy,
 	uint_fast16_t col,	// горизонтальная координата начального пикселя (0..dx-1) слева направо
 	uint_fast16_t row0,	// вертикальная координата начального пикселя (0..dy-1) сверху вниз
 	uint_fast16_t h,	// высота
-	COLOR565_T color
+	COLORPIP_T color
 	)
 {
 	while (h --)
 		display_colorbuffer_set(buffer, dx, dy, col, row0 ++, color);
 }
 
+#define MARKERH 10
 // отрисовка маркеров частот
-static void
+static
+void
 display_colorgrid_xor(
-	PACKEDCOLOR565_T * buffer,
+	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t row0,	// вертикальная координата начала занимаемой области (0..dy-1) сверху вниз
 	uint_fast16_t h,	// высота
 	int_fast32_t f0,	// center frequency
 	int_fast32_t bw		// span
 	)
 {
-	const COLOR565_T color0 = COLOR565_GRIDCOLOR;	// макркр на центре
-	const COLOR565_T color = COLOR565_GRIDCOLOR2;
+	const COLORPIP_T color0 = COLORPIP_GRIDCOLOR;	// макркр на центре
+	const COLORPIP_T color = COLORPIP_GRIDCOLOR2;
 	//
 	const int_fast32_t go = f0 % (int) glob_gridstep;	// шаг сетки
 	const int_fast32_t gs = (int) glob_gridstep;	// шаг сетки
 	const int_fast32_t halfbw = bw / 2;
-	char buf[10];
-	uint_fast8_t freqlen;							// длина строки со значением частоты
 	int_fast32_t df;	// кратное сетке значение
 	for (df = - halfbw / gs * gs - go; df < halfbw; df += gs)
 	{
-		uint_fast16_t xmarker;
 		if (df > - halfbw)
 		{
+			uint_fast16_t xmarker;
 			// Маркер частоты кратной glob_gridstep - XOR линию
 			xmarker = deltafreq2x_abs(f0, df, bw, ALLDX);
-			freqlen = local_snprintf_P(buf, sizeof buf / sizeof buf [0], "%d", (int) (f0 + df) / 1000);
 			if (xmarker != UINT16_MAX)
 			{
-				if (xmarker > (freqlen << 3) && xmarker < ALLDX - (freqlen << 3))
+				char buf [4];
+				uint_fast16_t freqw;	// ширина строки со значением частоты
+				//local_snprintf_P(buf, sizeof buf / sizeof buf [0], "%03d", (int) ((f0 + df) / 1000));
+				local_snprintf_P(buf, sizeof buf / sizeof buf [0], "%03d", (int) ((f0 + df) / 1000 % 1000));
+				freqw = display_colorbuff_string3_width(buffer, ALLDX, ALLDY, buf);
+				if (xmarker > freqw / 2 && xmarker < (ALLDX - freqw / 2))
 				{
-					display_colorbuff_string3_tbg(buffer, ALLDX, ALLDY, xmarker - (freqlen * 4), row0, buf, COLOR565_YELLOW);
-					display_colorbuffer_xor_vline(buffer, ALLDX, ALLDY, xmarker, row0 + 10, h - 10, color);
+					display_colorbuff_string3_tbg(buffer, ALLDX, ALLDY, xmarker - freqw / 2, row0, buf, COLORPIP_YELLOW);
+					display_colorbuffer_xor_vline(buffer, ALLDX, ALLDY, xmarker, row0 + MARKERH, h - MARKERH, color);
 				}
 				else
 					display_colorbuffer_xor_vline(buffer, ALLDX, ALLDY, xmarker, row0, h, color);
@@ -5499,23 +5687,22 @@ display_colorgrid_xor(
 }
 
 // отрисовка маркеров частот
-static void 
+static
+void
 display_colorgrid_set(
-	PACKEDCOLOR565_T * buffer,
+	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t row0,	// вертикальная координата начала занимаемой области (0..dy-1) сверху вниз
 	uint_fast16_t h,	// высота
 	int_fast32_t f0,	// center frequency
 	int_fast32_t bw		// span
 	)
 {
-	const COLOR565_T color0 = COLOR565_GRIDCOLOR;	// макркр на центре
-	const COLOR565_T color = COLOR565_GRIDCOLOR2;
+	const COLORPIP_T color0 = COLORPIP_GRIDCOLOR;	// макркр на центре
+	const COLORPIP_T color = COLORPIP_GRIDCOLOR2;
 	// 
 	const int_fast32_t go = f0 % (int) glob_gridstep;	// шаг сетки
 	const int_fast32_t gs = (int) glob_gridstep;	// шаг сетки
 	const int_fast32_t halfbw = bw / 2;
-	char buf[10];
-	uint_fast8_t freqlen;							// длина строки со значением частоты
 	int_fast32_t df;	// кратное сетке значение
 	for (df = - halfbw / gs * gs - go; df < halfbw; df += gs)
 	{
@@ -5524,14 +5711,17 @@ display_colorgrid_set(
 		{
 			// Маркер частоты кратной glob_gridstep - XOR линию
 			xmarker = deltafreq2x_abs(f0, df, bw, ALLDX);
-			freqlen = local_snprintf_P(buf, sizeof buf / sizeof buf [0], "%d", (int) (f0 + df) / 1000);
-
 			if (xmarker != UINT16_MAX)
 			{
-				if (xmarker > (freqlen << 3) && xmarker < ALLDX - (freqlen << 3))
+				char buf [4];
+				uint_fast16_t freqw;	// ширина строки со значением частоты
+				//local_snprintf_P(buf, sizeof buf / sizeof buf [0], "%03d", (int) ((f0 + df) / 1000));
+				local_snprintf_P(buf, sizeof buf / sizeof buf [0], "%03d", (int) ((f0 + df) / 1000 % 1000));
+				freqw = display_colorbuff_string3_width(buffer, ALLDX, ALLDY, buf);
+				if (xmarker > freqw / 2 && xmarker < (ALLDX - freqw / 2))
 				{
-					display_colorbuff_string3_tbg(buffer, ALLDX, ALLDY, xmarker - (freqlen * 4), row0, buf, COLOR565_YELLOW);
-					display_colorbuffer_set_vline(buffer, ALLDX, ALLDY, xmarker, row0 + 10, h - 10, color);
+					display_colorbuff_string3_tbg(buffer, ALLDX, ALLDY, xmarker - freqw / 2, row0, buf, COLORPIP_YELLOW);
+					display_colorbuffer_set_vline(buffer, ALLDX, ALLDY, xmarker, row0 + MARKERH, h - MARKERH, color);
 				}
 				else
 					display_colorbuffer_set_vline(buffer, ALLDX, ALLDY, xmarker, row0, h, color);
@@ -5565,7 +5755,7 @@ static void display2_spectrum(
 		uint_fast16_t x;
 		uint_fast16_t y;
 		const uint_fast8_t pathi = 0;	// RX A
-		const uint_fast32_t f0 = hamradio_get_freq_pathi(pathi);	/* frequecy at middle of spectrum */
+		const uint_fast32_t f0 = hamradio_get_freq_pathi(pathi);	/* frequency at middle of spectrum */
 		const int_fast32_t bw = display_zoomedbw();
 		uint_fast16_t xleft = deltafreq2x(f0, hamradio_getleft_bp(pathi), bw, ALLDX);	// левый край шторуи
 		uint_fast16_t xright = deltafreq2x(f0, hamradio_getright_bp(pathi), bw, ALLDX);	// правый край шторки
@@ -5621,10 +5811,10 @@ static void display2_spectrum(
 	{
 		display_pixelbuffer_clear(spectmonoscr, ALLDX, SPDY);
 	}
-	display_setcolors(COLOR565_SPECTRUMBG, COLOR565_SPECTRUMFG);
+	display_setcolors(COLORPIP_SPECTRUMBG, COLORPIP_SPECTRUMFG);
 
 #else /* */
-	PACKEDCOLOR565_T * const colorpip = getscratchpip();
+	PACKEDCOLORPIP_T * const colorpip = getscratchpip();
 	(void) x0;
 	(void) y0;
 	(void) pv;
@@ -5633,7 +5823,7 @@ static void display2_spectrum(
 	if (1 || hamradio_get_tx() == 0)
 	{
 		const uint_fast8_t pathi = 0;	// RX A
-		const uint_fast32_t f0 = hamradio_get_freq_pathi(pathi);	/* frequecy at middle of spectrum */
+		const uint_fast32_t f0 = hamradio_get_freq_pathi(pathi);	/* frequency at middle of spectrum */
 		const int_fast32_t bw = display_zoomedbw();
 		uint_fast16_t xleft = deltafreq2x(f0, hamradio_getleft_bp(pathi), bw, ALLDX);	// левый край шторки
 		uint_fast16_t xright = deltafreq2x(f0, hamradio_getright_bp(pathi), bw, ALLDX);	// правый край шторки
@@ -5653,7 +5843,7 @@ static void display2_spectrum(
 			{
 				const uint_fast8_t inband = (x >= xleft && x <= xright);	// в полосе пропускания приемника = "шторка"
 				// формирование фона растра
-				display_colorbuffer_set_vline(colorpip, ALLDX, ALLDY, x, SPY0, SPDY, inband ? COLOR565_SPECTRUMBG2 : COLOR565_SPECTRUMBG);
+				display_colorbuffer_set_vline(colorpip, ALLDX, ALLDY, x, SPY0, SPDY, inband ? COLORPIP_SPECTRUMBG2 : COLORPIP_SPECTRUMBG);
 			}
 			display_colorgrid_set(colorpip, SPY0, SPDY, f0, bw);	// отрисовка маркеров частот
 			for (x = 0; x < ALLDX; ++ x)
@@ -5661,7 +5851,7 @@ static void display2_spectrum(
 				// ломанная
 				uint_fast16_t ynew = SPDY - 1 - dsp_mag2y(filter_spectrum(x), SPDY - 1, glob_topdb, glob_bottomdb);
 				if (x != 0)
-					display_colorbuffer_line_set(colorpip, ALLDX, ALLDY, x - 1, ylast, x, ynew, COLOR565_SPECTRUMLINE);
+					display_colorbuffer_line_set(colorpip, ALLDX, ALLDY, x - 1, ylast, x, ynew, COLORPIP_SPECTRUMLINE);
 				ylast = ynew;
 			}
 		}
@@ -5679,18 +5869,18 @@ static void display2_spectrum(
 
 				// формирование фона растра - верхняя часть графика (Шторка)
 				//debug_printf_P(PSTR("xl=%d xr=%d\n"), xleft, xright);
-				display_colorbuffer_set_vline(colorpip, ALLDX, ALLDY, x, SPY0, yv, inband ? COLOR565_SPECTRUMBG2 : COLOR565_SPECTRUMBG);
+				display_colorbuffer_set_vline(colorpip, ALLDX, ALLDY, x, SPY0, yv, inband ? COLORPIP_SPECTRUMBG2 : COLORPIP_SPECTRUMBG);
 
 				// точку на границе
 				if (yv < SPDY)
 				{
-					display_colorbuffer_set(colorpip, ALLDX, ALLDY, x, yv + SPY0, COLOR565_SPECTRUMFENCE);	
+					display_colorbuffer_set(colorpip, ALLDX, ALLDY, x, yv + SPY0, COLORPIP_SPECTRUMFENCE);
 
 					// Нижняя часть экрана
 					const int yb = yv + 1;
 					if (yb < SPDY)
 					{
-						display_colorbuffer_set_vline(colorpip, ALLDX, ALLDY, x, yb + SPY0, SPDY - yb, COLOR565_SPECTRUMFG);
+						display_colorbuffer_set_vline(colorpip, ALLDX, ALLDY, x, yb + SPY0, SPDY - yb, COLORPIP_SPECTRUMFG);
 					}
 				}
 			}
@@ -5796,7 +5986,7 @@ static void wfsetupnew(void)
 }
 
 // отрисовка вновь появившихся данных на водопаде (в случае использования аппаратного scroll видеопамяти).
-static void display_wfputrow(uint_fast16_t x, uint_fast16_t y, const PACKEDCOLOR565_T * p)
+static void display_wfputrow(uint_fast16_t x, uint_fast16_t y, const PACKEDCOLORPIP_T * p)
 {
 	display_colorbuffer_show(p, ALLDX, 1, x, y);
 }
@@ -5829,7 +6019,9 @@ static void dsp_latchwaterfall(
 		// для водопада
 		const int val = dsp_mag2y(filter_waterfall(x), PALETTESIZE - 1, glob_wflevelsep ? glob_topdbwf : glob_topdb, glob_wflevelsep ? glob_bottomdbwf : glob_bottomdb); // возвращает значения от 0 до dy включительно
 
-#if WITHFASTWATERFLOW
+#if LCDMODE_LTDC_PIPL8
+		wfarray [wfrow] [x] = val;	// запись в буфер водопада индекса палитры
+#elif WITHFASTWATERFLOW
 		wfarray [wfrow] [x] = wfpalette [val];	// запись в буфер водопада цветовой точки
 #elif (! LCDMODE_S1D13781_NHWACCEL && LCDMODE_S1D13781)
 		wfarray [wfrow] [x] = wfpalette [val];	// запись в буфер водопада цветовой точки
@@ -5840,7 +6032,7 @@ static void dsp_latchwaterfall(
 
 	// Сдвиг изображения при необходимости (перестройка/переклбчение диапащонов или масштаба).
 	const uint_fast8_t pathi = 0;	// RX A
-	const uint_fast32_t f0 = hamradio_get_freq_pathi(pathi);	/* frequecy at middle of spectrum */
+	const uint_fast32_t f0 = hamradio_get_freq_pathi(pathi);	/* frequency at middle of spectrum */
 	const int_fast32_t bw = display_zoomedbw();
 	const uint_fast16_t xm = deltafreq2x(f0, 0, bw, ALLDX);
 
@@ -5907,7 +6099,7 @@ static void display2_waterfall(
 #if (! LCDMODE_S1D13781_NHWACCEL && LCDMODE_S1D13781)
 
 		const uint_fast8_t pathi = 0;	// RX A
-		const uint_fast32_t f0 = hamradio_get_freq_pathi(pathi);	/* frequecy at middle of spectrum */
+		const uint_fast32_t f0 = hamradio_get_freq_pathi(pathi);	/* frequency at middle of spectrum */
 		const int_fast32_t bw = display_zoomedbw();
 		uint_fast16_t x, y;
 		const uint_fast16_t xm = deltafreq2x(f0, 0, bw, ALLDX);
@@ -5950,7 +6142,7 @@ static void display2_waterfall(
 	(void) y0;
 	(void) pv;
 
-#elif WITHFASTWATERFLOW
+#elif WITHFASTWATERFLOW || LCDMODE_LTDC_PIPL8
 	// следы спектра ("водопад") на цветных дисплеях
 	/* быстрое отображение водопада (но требует больше памяти) */
 
@@ -5958,7 +6150,7 @@ static void display2_waterfall(
 		#error LCDMODE_HORFILL must be defined
 	#endif /* ! LCDMODE_HORFILL */
 
-	PACKEDCOLOR565_T * const colorpip = getscratchpip();
+	PACKEDCOLORPIP_T * const colorpip = getscratchpip();
 	const uint_fast16_t p1h = WFDY - wfrow;	// высота верхней части в результируюшем изображении
 	const uint_fast16_t p2h = wfrow;		// высота нижней части в результируюшем изображении
 	const uint_fast16_t p1y = WFY0;
@@ -5969,14 +6161,14 @@ static void display2_waterfall(
 
 	/* перенос растра. Организация предполагается LCDMODE_HORFILL */
 
-	memcpy((void *) display_colorbuffer_at(colorpip, ALLDX, ALLDY, 0, p1y), (const void *) & wfarray [wfrow] [0], p1h * sizeof (PACKEDCOLOR565_T) * ALLDX);
+	memcpy((void *) display_colorbuffer_at(colorpip, ALLDX, ALLDY, 0, p1y), (const void *) & wfarray [wfrow] [0], p1h * sizeof (PACKEDCOLORPIP_T) * ALLDX);
 	if (p2h != 0)
-		memcpy((void *) display_colorbuffer_at(colorpip, ALLDX, ALLDY, 0, p2y), (const void *) & wfarray [0] [0], p2h * sizeof (PACKEDCOLOR565_T) * ALLDX);
+		memcpy((void *) display_colorbuffer_at(colorpip, ALLDX, ALLDY, 0, p2y), (const void *) & wfarray [0] [0], p2h * sizeof (PACKEDCOLORPIP_T) * ALLDX);
 
 #else /* */
 
 	// следы спектра ("водопад") на цветных дисплеях
-	PACKEDCOLOR565_T * const colorpip = getscratchpip();
+	PACKEDCOLORPIP_T * const colorpip = getscratchpip();
 	uint_fast16_t x, y;
 	(void) x0;
 	(void) y0;
@@ -6010,9 +6202,9 @@ static void display2_colorbuff(
 
 #else /* */
 
-	PACKEDCOLOR565_T * const colorpip = getscratchpip();
+	PACKEDCOLORPIP_T * const colorpip = getscratchpip();
 
-	#if (LCDMODE_LTDC_PIP16 && LCDMODE_LTDC)
+	#if ((LCDMODE_LTDC_PIP16 || LCDMODE_LTDC_PIPL8) && LCDMODE_LTDC)
 		display_colorbuffer_pip(colorpip, ALLDX, ALLDY);
 		nextpip();
 	#else /* LCDMODE_LTDC_PIP16 */
@@ -6030,7 +6222,7 @@ display2_pip_off(
 	void * pv
 	)
 {
-#if (LCDMODE_LTDC_PIP16 && LCDMODE_LTDC)
+#if ((LCDMODE_LTDC_PIP16 || LCDMODE_LTDC_PIPL8) && LCDMODE_LTDC)
 	arm_hardware_ltdc_pip_off();
 #endif /* LCDMODE_LTDC_PIP16 */
 }
@@ -6087,7 +6279,11 @@ void display2_clear_menu_bk(uint_fast16_t x, uint_fast16_t y, uint_fast16_t x2, 
 	display_solidbar(GRID2X(x), GRID2Y(y), GRID2X(x2), GRID2Y(y2), display_getbgcolor());
 }
 
-#define STMD 1
+#if WITHTOUCHTEST
+	//#define STMD 1
+#else /* WITHTOUCHTEST */
+	#define STMD 1
+#endif /* WITHTOUCHTEST */
 
 #if STMD
 
@@ -6360,4 +6556,893 @@ void
 board_set_wflevelsep(uint_fast8_t v)
 {
 	glob_wflevelsep = v != 0;
+}
+
+#if WITHTOUCHTEST
+	#include "gui.h"
+
+	void draw_rect_pip(uint_fast16_t x1, uint_fast16_t y1, uint_fast16_t x2, uint_fast16_t y2, PACKEDCOLOR565_T color, uint8_t fill)
+	{
+		PACKEDCOLORPIP_T * const colorpip = getscratchpip();
+		if (fill)
+		{
+			for (uint_fast16_t i = y1; i <= y2; i++)
+				display_colorbuffer_line_set(colorpip, ALLDX, ALLDY, x1, i, x2, i, color);
+		} else
+		{
+			display_colorbuffer_line_set(colorpip, ALLDX, ALLDY, x1, y1, x2, y1, color);
+			display_colorbuffer_line_set(colorpip, ALLDX, ALLDY, x1, y1, x1, y2, color);
+			display_colorbuffer_line_set(colorpip, ALLDX, ALLDY, x1, y2, x2, y2, color);
+			display_colorbuffer_line_set(colorpip, ALLDX, ALLDY, x2, y1, x2, y2, color);
+		}
+
+	}
+
+	static uint_fast16_t normalize(uint_fast16_t raw, uint_fast16_t rawmin,	uint_fast16_t rawmax,uint_fast16_t range)
+	{
+		if (rawmin < rawmax)
+		{
+			// Normal direction
+			const uint_fast16_t distance = rawmax - rawmin;
+			if (raw < rawmin)
+				return 0;
+			raw = raw - rawmin;
+			if (raw > distance)
+				return range;
+			return (uint_fast32_t) raw * range / distance;
+		}
+		else
+		{
+			// reverse direction
+			const uint_fast16_t distance = rawmin - rawmax;
+			if (raw >= rawmin)
+				return 0;
+			raw = rawmin - raw;
+			if (raw > distance)
+				return range;
+			return (uint_fast32_t) raw * range / distance;
+		}
+	}
+
+	uint_fast8_t find_button (uint_fast8_t id_window, char * val)				// возврат id кнопки окна по ее названию
+	{
+		for (uint_fast8_t i = 1; i < button_handlers_count; i++)
+		{
+			if (button_handlers[i].parent == id_window && strcmp(button_handlers[i].text, val) == 0)
+				return i;
+		}
+		return 0;
+	}
+
+	uint_fast8_t find_label (uint_fast8_t id_window, char * val)				// возврат id метки окна по ее названию
+	{
+		for (uint_fast8_t i = 1; i < labels_count; i++)
+		{
+			if (labels[i].parent == id_window && strcmp(labels[i].name, val) == 0)
+				return i;
+		}
+		return 0;
+	}
+
+	void footer_buttons_state (uint_fast8_t state, char * name)					// блокируются все, кроме name == text
+	{
+		static uint_fast8_t id = 0;
+		if (state == BUTTON_DISABLED)
+		{
+			id = find_button(FOOTER, name);
+			button_handlers[id].is_locked = BUTTON_LOCKED;
+		} else
+			button_handlers[id].is_locked = BUTTON_NON_LOCKED;
+
+		for (uint_fast8_t i = 1; i < button_handlers_count; i++)
+		{
+			if (button_handlers[i].parent != FOOTER)
+				break;
+			button_handlers[i].state = button_handlers[i].text == name ? BUTTON_DISABLED : state;
+		}
+	}
+
+	void set_window(uint_fast8_t parent, uint_fast8_t value)
+	{
+		for (uint_fast8_t i = 1; i < button_handlers_count; i++)
+		{
+			if (button_handlers[i].parent == parent)
+			{
+				button_handlers[i].visible = value ? VISIBLE : NON_VISIBLE;
+				button_handlers[i].is_locked = 0;
+			}
+		}
+		for (uint_fast8_t i = 1; i < labels_count; i++)
+		{
+			if (labels[i].parent == parent)
+				labels[i].visible = value ? VISIBLE : NON_VISIBLE;
+		}
+		windows[gui.window_to_draw].is_show = value ? VISIBLE : NON_VISIBLE;
+		windows[gui.window_to_draw].first_call = 0;
+		gui.window_to_draw = value ? gui.window_to_draw : 0;
+	}
+
+	void window_bp_process (void)
+	{
+		PACKEDCOLORPIP_T * const colorpip = getscratchpip();
+		static uint_fast8_t val_high, val_low;
+		static uint_fast16_t x_h, x_l;
+		char buf[10];
+		static uint_fast8_t id_lbl_high, id_lbl_low;
+
+		if (windows[WINDOW_BP].first_call == 1)
+		{
+			windows[WINDOW_BP].first_call = 0;
+			button_handlers[find_button(WINDOW_BP, "High cut")].is_locked = 1;
+			id_lbl_low = find_label(WINDOW_BP, "lbl_low");
+			id_lbl_high = find_label(WINDOW_BP, "lbl_high");
+			val_high = get_high_bp(0);
+			val_low = get_low_bp(0);
+
+			local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), val_high * 100);
+			strcpy (labels[id_lbl_high].text, buf);
+			x_h = normalize (val_high, 0, 50, 290) + 290;
+			labels[id_lbl_high].x = x_h + 64 > 550 ? 486 : x_h;
+
+			local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), val_low * 10);
+			strcpy (labels[id_lbl_low].text, buf);
+			x_l = normalize (val_low / 10, 0, 50, 290) + 290;
+			labels[id_lbl_low].x = x_l - strlen(buf) * 16;
+		}
+
+		if (encoder2.rotate != 0 && button_handlers[find_button(WINDOW_BP, "High cut")].is_locked == 1)
+		{
+			val_high = get_high_bp(encoder2.rotate);
+			encoder2.rotate_done = 1;
+			local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), val_high * 100);
+			strcpy (labels[id_lbl_high].text, buf);
+			x_h = normalize (val_high, 0, 50, 290) + 290;
+			labels[id_lbl_high].x = x_h + 64 > 550 ? 486 : x_h;
+		}
+		else if (encoder2.rotate != 0 && button_handlers[find_button(WINDOW_BP, "Low cut")].is_locked == 1)
+		{
+			val_low = get_low_bp(encoder2.rotate * 10);
+			encoder2.rotate_done = 1;
+			local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), val_low * 10);
+			strcpy (labels[id_lbl_low].text, buf);
+			x_l = normalize (val_low / 10, 0, 50, 290) + 290;
+			labels[id_lbl_low].x = x_l - strlen(buf) * 16;
+		}
+		display_colorbuffer_line_set(colorpip, ALLDX, ALLDY, 251, 110, 549, 110, COLORPIP_GRAY);
+		display_colorbuffer_line_set(colorpip, ALLDX, ALLDY, 290, 70, 290, 120, COLORPIP_GRAY);
+		draw_rect_pip(x_l, 70, x_h, 108, COLORPIP_YELLOW, 1);
+	}
+
+	void window_freq_process (void)
+	{
+		if (windows[WINDOW_FREQ].first_call == 1)
+		{
+			windows[WINDOW_FREQ].first_call = 0;
+			button_handlers[find_button(WINDOW_FREQ, "OK")].is_locked = BUTTON_LOCKED;
+		}
+	}
+
+	void window_menu_process(void)
+	{
+		PACKEDCOLORPIP_T * const colorpip = getscratchpip();
+		static uint_fast8_t menu_level;
+
+		if (windows[WINDOW_MENU].first_call == 1)
+		{
+			windows[WINDOW_MENU].first_call = 0;
+			set_menu_cond(VISIBLE);
+
+			menu[MENU_GROUPS].add_id = 0;
+			menu[MENU_GROUPS].selected_str = 0;
+			menu[MENU_GROUPS].selected_label = 0;
+			menu[MENU_PARAMS].add_id = 0;
+			menu[MENU_PARAMS].selected_str = 0;
+			menu[MENU_PARAMS].selected_label = 0;
+			menu[MENU_VALS].add_id = 0;
+			menu[MENU_VALS].selected_str = 0;
+			menu[MENU_VALS].selected_label = 0;
+
+			menu[MENU_GROUPS].first_id = 1;
+			while (labels[++menu[MENU_GROUPS].first_id].parent != WINDOW_MENU);				// первое вхождение метки group
+			menu[MENU_GROUPS].last_id = menu[MENU_GROUPS].first_id;
+			while (strcmp(labels[++menu[MENU_GROUPS].last_id].name, "lbl_group") == 0);
+			menu[MENU_GROUPS].last_id--;													// последнее вхождение метки group
+			menu[MENU_GROUPS].num_rows = menu[MENU_GROUPS].last_id - menu[MENU_GROUPS].first_id;
+
+			menu[MENU_PARAMS].first_id = menu[MENU_GROUPS].last_id + 1;						// первое вхождение метки params
+			menu[MENU_PARAMS].last_id = menu[MENU_PARAMS].first_id;
+			while (strcmp(labels[++menu[MENU_PARAMS].last_id].name, "lbl_params") == 0);
+			menu[MENU_PARAMS].last_id--;													// последнее вхождение метки params
+			menu[MENU_PARAMS].num_rows = menu[MENU_PARAMS].last_id - menu[MENU_PARAMS].first_id;
+
+			menu[MENU_VALS].first_id = menu[MENU_PARAMS].last_id + 1;						// первое вхождение метки vals
+			menu[MENU_VALS].last_id = menu[MENU_VALS].first_id;
+			while (strcmp(labels[++menu[MENU_VALS].last_id].name, "lbl_vals") == 0);
+			menu[MENU_VALS].last_id--;														// последнее вхождение метки vals
+			menu[MENU_VALS].num_rows = menu[MENU_VALS].last_id - menu[MENU_VALS].first_id;
+
+			menu[MENU_GROUPS].count = get_multilinemenu_block_groups(menu[MENU_GROUPS].menu_block) - 1;
+			for(uint_fast8_t i = 0; i <= menu[MENU_GROUPS].num_rows; i++)
+			{
+				strcpy(labels[menu[MENU_GROUPS].first_id + i].text, menu[MENU_GROUPS].menu_block[i + menu[MENU_GROUPS].add_id].name);
+				labels[menu[MENU_GROUPS].first_id + i].visible = VISIBLE;
+				labels[menu[MENU_GROUPS].first_id + i].color = COLORPIP_WHITE;
+			}
+
+			menu[MENU_PARAMS].count = get_multilinemenu_block_params(menu[MENU_PARAMS].menu_block, menu[MENU_GROUPS].menu_block[menu[MENU_GROUPS].selected_str].index) - 1;
+			for(uint_fast8_t i = 0; i <= menu[MENU_PARAMS].num_rows; i++)
+			{
+				labels[menu[MENU_PARAMS].first_id + i].visible = NON_VISIBLE;
+				if (menu[MENU_PARAMS].count < i)
+					continue;
+				strcpy(labels[menu[MENU_PARAMS].first_id + i].text, menu[MENU_PARAMS].menu_block[i + menu[MENU_PARAMS].add_id].name);
+				labels[menu[MENU_PARAMS].first_id + i].visible = VISIBLE;
+				labels[menu[MENU_PARAMS].first_id + i].color = COLORPIP_WHITE;
+			}
+
+			menu[MENU_PARAMS].selected_str = 0;
+			menu[MENU_VALS].count = menu[MENU_PARAMS].count < menu[MENU_VALS].num_rows ? menu[MENU_PARAMS].count :  menu[MENU_VALS].num_rows;
+			get_multilinemenu_block_vals(menu[MENU_VALS].menu_block, menu[MENU_PARAMS].menu_block[menu[MENU_PARAMS].selected_str].index, menu[MENU_VALS].count);
+			for(uint_fast8_t i = 0; i <= menu[MENU_VALS].num_rows; i++)
+			{
+				labels[menu[MENU_VALS].first_id + i].visible = NON_VISIBLE;
+				if (menu[MENU_VALS].count < i)
+					continue;
+				strcpy(labels[menu[MENU_VALS].first_id + i].text, menu[MENU_VALS].menu_block[i + menu[MENU_VALS].add_id].name);
+				labels[menu[MENU_VALS].first_id + i].visible = VISIBLE;
+			}
+			menu_level = MENU_GROUPS;
+		}
+
+		if (! encoder2.press_done)
+		{
+			// выход из режима редактирования параметра  - краткое или длинное нажатие на энкодер
+			if (encoder2.press && menu_level == MENU_VALS)
+			{
+				menu_level = MENU_PARAMS;
+				encoder2.press = 0;
+			}
+			if (encoder2.press)
+				menu_level = ++menu_level > MENU_VALS ? MENU_VALS : menu_level;
+			if (encoder2.hold)
+			{
+				menu_level = --menu_level == MENU_OFF ? MENU_OFF : menu_level;
+				if (menu_level == MENU_GROUPS)
+				{
+					menu[MENU_PARAMS].add_id = 0;
+					menu[MENU_PARAMS].selected_str = 0;
+					menu[MENU_PARAMS].selected_label = 0;
+					menu[MENU_VALS].add_id = 0;
+					menu[MENU_VALS].selected_str = 0;
+					menu[MENU_VALS].selected_label = 0;
+				}
+			}
+
+			// при переходе на следующий уровень пункт меню подсвечивается
+			if (menu_level == MENU_VALS)
+				labels[menu[MENU_PARAMS].selected_label + menu[MENU_PARAMS].first_id].color = COLORPIP_YELLOW;
+			if (menu_level == MENU_PARAMS)
+			{
+				labels[menu[MENU_GROUPS].selected_label + menu[MENU_GROUPS].first_id].color = COLORPIP_YELLOW;
+				labels[menu[MENU_PARAMS].selected_label + menu[MENU_PARAMS].first_id].color = COLORPIP_WHITE;
+			}
+			if (menu_level == MENU_GROUPS)
+				labels[menu[MENU_GROUPS].selected_label + menu[MENU_GROUPS].first_id].color = COLORPIP_WHITE;
+
+			encoder2.press = 0;
+			encoder2.hold = 0;
+			encoder2.press_done = 1;
+			PRINTF("menu level %d\n", menu_level);
+		}
+
+		if (menu_level == MENU_OFF)
+		{
+			set_window(WINDOW_MENU, NON_VISIBLE);
+			encoder2.busy = 0;
+			footer_buttons_state(BUTTON_CANCELLED, "");
+			set_menu_cond(NON_VISIBLE);
+			return;
+		}
+
+		if (encoder2.rotate != 0 && menu_level == MENU_VALS)
+		{
+			encoder2.rotate_done = 1;
+			strcpy(labels[menu[MENU_VALS].first_id + menu[MENU_PARAMS].selected_label].text, gui_edit_menu_item(menu[MENU_PARAMS].menu_block[menu[MENU_PARAMS].selected_str].index, encoder2.rotate));
+		}
+
+		if (encoder2.rotate != 0 && menu_level != MENU_VALS)
+		{
+			encoder2.rotate_done = 1;
+
+			menu[menu_level].selected_str = (menu[menu_level].selected_str + encoder2.rotate) <= 0 ? 0 : menu[menu_level].selected_str + encoder2.rotate;
+			menu[menu_level].selected_str = menu[menu_level].selected_str > menu[menu_level].count ? menu[menu_level].count : menu[menu_level].selected_str;
+
+			menu[MENU_PARAMS].count = get_multilinemenu_block_params(menu[MENU_PARAMS].menu_block, menu[MENU_GROUPS].menu_block[menu[MENU_GROUPS].selected_str].index) - 1;
+
+			if (encoder2.rotate > 0)
+			{
+				// указатель подошел к нижней границе списка
+				if (++menu[menu_level].selected_label > (menu[menu_level].count < menu[menu_level].num_rows ? menu[menu_level].count : menu[menu_level].num_rows))
+				{
+					menu[menu_level].selected_label = (menu[menu_level].count < menu[menu_level].num_rows ? menu[menu_level].count : menu[menu_level].num_rows);
+					menu[menu_level].add_id = menu[menu_level].selected_str - menu[menu_level].selected_label;
+				}
+			}
+			if (encoder2.rotate < 0)
+			{
+				// указатель подошел к верхней границе списка
+				if (--menu[menu_level].selected_label < 0)
+				{
+					menu[menu_level].selected_label = 0;
+					menu[menu_level].add_id = menu[menu_level].selected_str;
+				}
+			}
+
+			if (menu_level == MENU_GROUPS)
+				for(uint_fast8_t i = 0; i <= menu[MENU_GROUPS].num_rows; i++)
+					strcpy(labels[menu[MENU_GROUPS].first_id + i].text, menu[MENU_GROUPS].menu_block[i + menu[MENU_GROUPS].add_id].name);
+
+			menu[MENU_VALS].count = menu[MENU_PARAMS].count < menu[MENU_VALS].num_rows ? menu[MENU_PARAMS].count :  menu[MENU_VALS].num_rows;
+			get_multilinemenu_block_vals(menu[MENU_VALS].menu_block,  menu[MENU_PARAMS].menu_block[menu[MENU_PARAMS].add_id].index,
+										 menu[MENU_VALS].count);
+
+			for(uint_fast8_t i = 0; i <= menu[MENU_PARAMS].num_rows; i++)
+			{
+				labels[menu[MENU_PARAMS].first_id + i].visible = NON_VISIBLE;
+				labels[menu[MENU_VALS].first_id + i].visible = NON_VISIBLE;
+				if (i > menu[MENU_PARAMS].count)
+					continue;
+				strcpy(labels[menu[MENU_PARAMS].first_id + i].text, menu[MENU_PARAMS].menu_block[i + menu[MENU_PARAMS].add_id].name);
+				strcpy(labels[menu[MENU_VALS].first_id + i].text,   menu[MENU_VALS].menu_block[i].name);
+				labels[menu[MENU_PARAMS].first_id + i].visible = VISIBLE;
+				labels[menu[MENU_VALS].first_id + i].visible = VISIBLE;
+			}
+			PRINTF("%d %s %d\n", menu[menu_level].selected_str, menu[menu_level].menu_block[menu[menu_level].selected_str].name, menu[menu_level].add_id);
+		}
+		if (menu_level != MENU_VALS)
+			display_colorbuff_string_tbg(colorpip, ALLDX, ALLDY, labels[menu[menu_level].selected_label + menu[menu_level].first_id].x - 16,
+										 labels[menu[menu_level].selected_label + menu[menu_level].first_id].y, ">", COLORPIP_GREEN);
+	}
+
+	void buttons_menu_handler(void)
+	{
+
+	}
+
+	uint_fast8_t check_encoder2 (int_least16_t rotate)
+	{
+		if (encoder2.rotate_done || encoder2.rotate == 0)
+		{
+			encoder2.rotate = rotate;
+			encoder2.rotate_done = 0;
+		}
+		return encoder2.busy;
+	}
+
+	void set_encoder2_state (uint_fast8_t code)
+	{
+		if (code == KBD_ENC2_PRESS)
+			encoder2.press = 1;
+		if (code == KBD_ENC2_HOLD)
+			encoder2.hold = 1;
+		encoder2.press_done = 0;
+	}
+
+	void buttons_mode_handler(void)
+	{
+		if (windows[WINDOW_MODES].is_show && button_handlers[gui.selected].parent == WINDOW_MODES)
+		{
+			if (button_handlers[gui.selected].payload != UINTPTR_MAX)
+				change_submode(button_handlers[gui.selected].payload);
+
+			set_window(WINDOW_MODES, NON_VISIBLE);
+			footer_buttons_state(BUTTON_CANCELLED, "");
+		}
+	}
+
+	void buttons_bp_handler (void)
+	{
+		if (gui.selected == find_button(WINDOW_BP, "Low cut"))
+		{
+			button_handlers[find_button(WINDOW_BP, "High cut")].is_locked = 0;
+			button_handlers[find_button(WINDOW_BP, "Low cut")].is_locked = 1;
+		}
+		else if (gui.selected == find_button(WINDOW_BP, "High cut"))
+		{
+			button_handlers[find_button(WINDOW_BP, "High cut")].is_locked = 1;
+			button_handlers[find_button(WINDOW_BP, "Low cut")].is_locked = 0;
+		}
+		else if (gui.selected == find_button(WINDOW_BP, "OK"))
+		{
+			set_window(WINDOW_BP, NON_VISIBLE);
+			encoder2.busy = 0;
+			footer_buttons_state(BUTTON_CANCELLED, "");
+		}
+	}
+
+	void buttons_freq_handler (void)
+	{
+		uint_fast8_t editfreqmode = 0;
+		if (gui.window_to_draw == WINDOW_FREQ)
+			editfreqmode = send_key_code(button_handlers[gui.selected].payload);
+		if (editfreqmode == 0)
+		{
+			set_window(WINDOW_FREQ, NON_VISIBLE);
+			footer_buttons_state(BUTTON_CANCELLED, "");
+		}
+	}
+
+	void button1_handler(void)
+	{
+		if (gui.window_to_draw == 0) gui.window_to_draw = WINDOW_MODES;
+
+		if (windows[gui.window_to_draw].is_show == NON_VISIBLE)
+		{
+			set_window(WINDOW_MODES, VISIBLE);
+//			button_handlers[find_button(WINDOW_MODES, "Mode")].is_locked = 1;
+			windows[gui.window_to_draw].first_call = 1;
+			footer_buttons_state(BUTTON_DISABLED, button_handlers[gui.selected].text);
+		}
+		else
+		{
+			set_window(WINDOW_MODES, NON_VISIBLE);
+//			button_handlers[find_button(WINDOW_MODES, "Mode")].is_locked = 0;
+			footer_buttons_state(BUTTON_CANCELLED, "");
+		}
+	}
+
+	void button2_handler(void)
+	{
+		if (gui.window_to_draw == 0) gui.window_to_draw = WINDOW_BP;
+
+		if (windows[gui.window_to_draw].is_show == NON_VISIBLE)
+		{
+			encoder2.busy = 1;
+			set_window(WINDOW_BP, VISIBLE);
+			windows[gui.window_to_draw].first_call = 1;
+			footer_buttons_state(BUTTON_DISABLED, button_handlers[gui.selected].text);
+		}
+		else
+		{
+			set_window(WINDOW_BP, NON_VISIBLE);
+			encoder2.busy = 0;
+			footer_buttons_state(BUTTON_CANCELLED, "");
+		}
+	}
+
+	void button3_handler(void)
+	{
+		if (gui.window_to_draw == 0) gui.window_to_draw = WINDOW_AGC;
+
+		if (windows[gui.window_to_draw].is_show == NON_VISIBLE)
+		{
+			set_window(WINDOW_AGC, VISIBLE);
+			windows[gui.window_to_draw].first_call = 1;
+			footer_buttons_state(BUTTON_DISABLED, button_handlers[gui.selected].text);
+		}
+		else
+		{
+			set_window(WINDOW_AGC, NON_VISIBLE);
+			footer_buttons_state(BUTTON_CANCELLED, "");
+		}
+	}
+
+	void button4_handler(void)
+	{
+		if (gui.window_to_draw == 0) gui.window_to_draw = WINDOW_FREQ;
+
+		if (windows[gui.window_to_draw].is_show == NON_VISIBLE)
+		{
+			set_window(WINDOW_FREQ, VISIBLE);
+			windows[gui.window_to_draw].first_call = 1;
+			send_key_code(KBD_CODE_ENTERFREQ);
+			footer_buttons_state(BUTTON_DISABLED, button_handlers[gui.selected].text);
+		}
+		else
+		{
+			set_window(WINDOW_FREQ, NON_VISIBLE);
+			send_key_code(KBD_CODE_ENTERFREQDONE);
+			footer_buttons_state(BUTTON_CANCELLED, "");
+		}
+	}
+
+	void button5_handler(void)
+	{
+
+	}
+
+	void button6_handler(void)
+	{
+
+	}
+
+	void button7_handler(void)
+	{
+
+	}
+
+	void button8_handler(void)
+	{
+
+	}
+
+	void button9_handler(void)
+	{
+		if (gui.window_to_draw == 0) gui.window_to_draw = WINDOW_MENU;
+
+		if (windows[gui.window_to_draw].is_show == NON_VISIBLE)
+		{
+			windows[gui.window_to_draw].is_show = VISIBLE;
+			windows[gui.window_to_draw].first_call = 1;
+			footer_buttons_state(BUTTON_DISABLED, button_handlers[gui.selected].text);
+			encoder2.busy = 1;
+		}
+		else
+		{
+			for (uint_fast8_t i = 1; i < button_handlers_count; i++)
+			{
+				if (button_handlers[i].parent == gui.window_to_draw)
+				{
+					button_handlers[i].visible = NON_VISIBLE;
+					button_handlers[i].is_locked = 0;
+				}
+			}
+			windows[gui.window_to_draw].is_show = NON_VISIBLE;
+			windows[gui.window_to_draw].first_call = 0;
+			gui.window_to_draw = 0;
+			footer_buttons_state(BUTTON_CANCELLED, "");
+			encoder2.busy = 0;
+			set_menu_cond(NON_VISIBLE);
+		}
+	}
+
+	void draw_button_pip(uint_fast16_t x1, uint_fast16_t y1, uint_fast16_t x2, uint_fast16_t y2, uint_fast8_t pressed, uint_fast8_t is_locked, uint_fast8_t is_disabled) // pressed = 0
+	{
+		PACKEDCOLOR565_T c1, c2;
+		c1 = is_disabled ? COLOR_BUTTON_DISABLED : (is_locked ? COLOR_BUTTON_LOCKED : COLOR_BUTTON_NON_LOCKED);
+		c2 = is_disabled ? COLOR_BUTTON_DISABLED : (is_locked ? COLOR_BUTTON_PR_LOCKED : COLOR_BUTTON_PR_NON_LOCKED);
+		draw_rect_pip(x1, 	y1,	  x2,   y2,   pressed ? c1 : c2, 1);
+		draw_rect_pip(x1, 	y1,   x2,   y2,   COLORPIP_GRAY, 0);
+		draw_rect_pip(x1+2, y1+2, x2-2, y2-2, COLORPIP_BLACK, 0);
+	}
+
+	void pip_transparency_rect (uint_fast16_t x1, uint_fast16_t y1, uint_fast16_t x2, uint_fast16_t y2, uint_fast8_t alpha)
+	{
+		PACKEDCOLOR565_T * const colorpip = getscratchpip();
+		PACKEDCOLOR565_T dot, color_red, color_green, color_blue, color_bg = TFTRGB565 (alpha, alpha, alpha);
+		uint_fast16_t yt;
+
+		for (uint_fast16_t y = y1; y <= y2; y++)
+		{
+			yt = ALLDX * y;
+			for (uint_fast16_t x = x1; x <= x2; x++)
+			{
+				dot = colorpip[yt + x];
+				if (dot == COLORPIP_BLACK)
+					colorpip[yt + x] = color_bg; // back gray
+				else // RRRR.RGGG.GGGB.BBBB
+				{
+					color_red = dot >> 11;
+					color_green = (dot >> 5) & 0x003f;
+					color_blue = dot & 0x001f;
+
+					colorpip[yt + x] = (normalize(color_red, 0, 32, alpha) << 11) |
+									   (normalize(color_green, 0, 64, alpha) << 5) |
+									   (normalize(color_blue, 0, 32, alpha));
+				}
+			}
+		}
+	}
+
+	void display_pip_update(uint_fast8_t x, uint_fast8_t y, void * pv)
+	{
+		PACKEDCOLOR565_T * const colorpip = getscratchpip();
+		uint_fast16_t yt, xt;
+		uint_fast8_t alpha = 10; // на сколько затемнять цвета
+		PACKEDCOLOR565_T dot, color_red, color_green, color_blue, color_bg = TFTRGB565 (alpha, alpha, alpha);
+		char buff [30];
+		char * text2 = NULL;
+		uint_fast8_t str_len = 0;
+
+		// вывод на PIP служебной информации
+	#if WITHTHERMOLEVEL
+//		if (gettxstate())
+//		{
+			int_fast16_t temp = hamradio_get_temperature_value();
+			str_len += local_snprintf_P(&buff[str_len], sizeof buff / sizeof buff [0] - str_len, PSTR("%d.%dC "), temp / 10, temp %10);
+//		}
+	#endif /* WITHTHERMOLEVEL */
+	#if WITHCURRLEVEL && WITHCPUADCHW	// ток PA (при передаче)
+		if (gettxstate())
+		{
+			int_fast16_t drain = hamradio_get_pacurrent_value();
+			if (drain < 0) drain = 0;
+			str_len += local_snprintf_P(&buff[str_len], sizeof buff / sizeof buff [0] - str_len, PSTR("%d.%02dA "), drain / 100, drain % 100);
+		}
+	#endif /* WITHCURRLEVEL && WITHCPUADCHW */
+	#if WITHVOLTLEVEL && WITHCPUADCHW	// напряжение питания
+		str_len += local_snprintf_P(&buff[str_len], sizeof buff / sizeof buff [0] - str_len,
+									PSTR("%d.%1dV "), hamradio_get_volt_value() / 10, hamradio_get_volt_value() % 10);
+	#endif /* WITHVOLTLEVEL && WITHCPUADCHW */
+	#if WITHIF4DSP						// ширина панорамы
+		str_len += local_snprintf_P(&buff[str_len], sizeof buff / sizeof buff [0] - str_len, PSTR("SPAN:%3dk"), (int) ((display_zoomedbw() + 0) / 1000));
+	#endif /* WITHIF4DSP */
+		xt = ALLDX - 10 - str_len * 10;
+		pip_transparency_rect(xt - 5, 225, ALLDX - 5, 248, alpha);
+		display_colorbuff_string2_tbg(colorpip, ALLDX, ALLDY, xt, 230, buff, COLORPIP_YELLOW);
+
+	#if defined (RTC1_TYPE)				// текущее время
+		uint_fast16_t year;
+		uint_fast8_t month, day, hour, minute, secounds;
+		str_len = 0;
+		board_rtc_getdatetime(& year, & month, & day, & hour, & minute, & secounds);
+		str_len += local_snprintf_P(&buff[str_len], sizeof buff / sizeof buff [0] - str_len,
+									PSTR("%02d.%02d.%04d %02d%c%02d"), day, month, year, hour, ((secounds & 1) ? ' ' : ':'), minute);
+		pip_transparency_rect(5, 225, str_len * 10 + 15, 248, alpha);
+		display_colorbuff_string2_tbg(colorpip, ALLDX, ALLDY, 10, 230, buff, COLORPIP_YELLOW);
+	#endif 	/* defined (RTC1_TYPE) */
+
+		if (windows[gui.window_to_draw].is_show)
+		{
+			pip_transparency_rect(windows[gui.window_to_draw].x1, windows[gui.window_to_draw].y1,
+								  windows[gui.window_to_draw].x2, windows[gui.window_to_draw].y2, alpha);
+
+			// вывод заголовка окна
+			display_colorbuff_string_tbg(colorpip, ALLDX, ALLDY,
+										 windows[gui.window_to_draw].x1 + 20,
+										 windows[gui.window_to_draw].y1 + 10,
+										 windows[gui.window_to_draw].title,
+										 COLORPIP_YELLOW);
+			// отрисовка принадлежащих окну элементов
+
+			for (uint_fast8_t i = 1; i < labels_count; i++)
+			{
+				if (labels[i].parent == gui.window_to_draw && labels[i].visible == VISIBLE)	// метки
+					display_colorbuff_string_tbg(colorpip, ALLDX, ALLDY, labels[i].x, labels[i].y, labels[i].text, labels[i].color);
+			}
+
+			if (windows[gui.window_to_draw].onVisibleProcess != 0)							// запуск процедуры фоновой обработки для окна, если есть
+				windows[gui.window_to_draw].onVisibleProcess();
+		}
+		for (uint_fast8_t i = 1; i < button_handlers_count; i++)
+		{
+			if ((button_handlers[i].parent == gui.window_to_draw && button_handlers[i].visible == VISIBLE && windows[gui.window_to_draw].is_show)
+					|| button_handlers[i].parent == FOOTER)									// кнопки
+			{
+				draw_button_pip(button_handlers[i].x1, button_handlers[i].y1,
+								button_handlers[i].x2, button_handlers[i].y2, button_handlers[i].state, button_handlers[i].is_locked,
+								button_handlers[i].state == BUTTON_DISABLED ? 1 : 0);
+
+
+				if (strchr(button_handlers[i].text, ' ') == NULL)
+				{
+					display_colorbuff_string2_tbg(colorpip, ALLDX, ALLDY, button_handlers[i].x1 + ((button_handlers[i].x2 - button_handlers[i].x1) -
+							(strlen (button_handlers[i].text) * 10)) / 2, button_handlers[i].y1 + 17, button_handlers[i].text, COLORPIP_BLACK);
+				} else
+				{
+					strcpy (buff, button_handlers[i].text);
+					text2 = strtok(buff, " ");
+					display_colorbuff_string2_tbg(colorpip, ALLDX, ALLDY, button_handlers[i].x1 + ((button_handlers[i].x2 - button_handlers[i].x1) -
+							(strlen (text2) * 10)) / 2, button_handlers[i].y1 + 10, text2, COLORPIP_BLACK);
+					text2 = strtok(NULL, " ");
+					display_colorbuff_string2_tbg(colorpip, ALLDX, ALLDY, button_handlers[i].x1 + ((button_handlers[i].x2 - button_handlers[i].x1) -
+							(strlen (text2) * 10)) / 2, button_handlers[i].y1 + 25, text2, COLORPIP_BLACK);
+				}
+			}
+		}
+	}
+
+	void process_gui(void)
+	{
+		uint_fast16_t tx,ty;
+		pipparams_t pipparam;
+		board_tsc_getxy(& tx, & ty);
+
+		if (board_tsc_is_pressed())
+		{
+			if (gui.fix)			// первые координаты после нажатия от контролера тачскрина приходят старые, пропускаем
+			{
+				gui.last_pressed_x = tx;
+				gui.last_pressed_y = ty;
+				gui.is_touching_screen = 1;
+				display2_getpipparams(&pipparam);
+
+			}
+			gui.fix = 1;
+			debug_printf_P(PSTR("pip x - %d, pip y - %d\n"), gui.last_pressed_x, gui.last_pressed_y - pipparam.y);
+		}
+		else
+		{
+			gui.is_touching_screen = 0;
+			gui.is_after_touch = 0;
+			gui.fix = 0;
+		}
+
+		if (gui.state == BUTTON_CANCELLED)
+		{
+			if (gui.is_touching_screen && ! gui.is_after_touch)
+			{
+				for (uint_fast8_t i = 1; i < button_handlers_count; i++) {
+					if (button_handlers[i].x1 < gui.last_pressed_x && button_handlers[i].x2 > gui.last_pressed_x
+					 && button_handlers[i].y1 + pipparam.y < gui.last_pressed_y
+					 && button_handlers[i].y2 + pipparam.y > gui.last_pressed_y
+					 && button_handlers[i].visible == VISIBLE && button_handlers[i].state != BUTTON_DISABLED)
+					{
+						gui.selected = i;
+						gui.state = BUTTON_PRESSED;
+					}
+				} /* for */
+			} /* if (gui.is_touching_screen) */
+
+		}
+		if (gui.state == BUTTON_PRESSED)
+		{
+			if (button_handlers[gui.selected].x1 < gui.last_pressed_x && button_handlers[gui.selected].x2 > gui.last_pressed_x
+			 && button_handlers[gui.selected].y1 + pipparam.y < gui.last_pressed_y
+			 && button_handlers[gui.selected].y2 + pipparam.y > gui.last_pressed_y
+			 && ! gui.is_after_touch)
+			{
+				if (gui.is_touching_screen)
+					button_handlers[gui.selected].state = BUTTON_PRESSED;
+				else
+					gui.state = BUTTON_RELEASED;
+			}
+			else
+			{
+				gui.state = BUTTON_CANCELLED;
+				button_handlers[gui.selected].state = BUTTON_CANCELLED;
+				gui.is_after_touch = 1; // точка непрерывного нажатия вышла за пределы выбранного элемента
+			}
+		}
+		if (gui.state == BUTTON_RELEASED)
+		{
+			button_handlers[gui.selected].state = BUTTON_RELEASED;
+			button_handlers[gui.selected].onClickHandler();
+			debug_printf_P(PSTR("handler %d runned\n"), gui.selected);
+			button_handlers[gui.selected].state = BUTTON_CANCELLED;
+			gui.is_after_touch = 0;
+			gui.state = BUTTON_CANCELLED;
+		}
+	}
+#endif /* WITHTOUCHTEST */
+
+void display2_xltrgb24(COLOR24_T * xtable)
+{
+#if LCDMODE_LTDC_L8 && LCDMODE_LTDC_PIPL8
+	// часть цветов с 0-го индекса используется в отображении водопада
+	// остальные в дизайне
+	// PALETTESIZE == 240
+	int a = 0;
+	int i;
+	// a = 0
+	for (i = 0; i < 60; ++ i)
+	{
+		// для i = 0..15 результат формулы = ноль
+		xtable [a + i] = COLOR24(0, 0, (int) (powf((float) 0.0625 * i, 4)));	// проверить результат перед попыткой применить целочисленные вычисления!
+	}
+	a += i;
+	// a = 64
+	for (i = 0; i < 30; ++ i)
+	{
+		xtable [a + i] = COLOR24(0, i * 8, 255);
+	}
+	a += i;
+	// a = 96
+	for (i = 0; i < 30; ++ i)
+	{
+		xtable [a + i] = COLOR24(0, 255, 255 - i * 8);
+	}
+	a += i;
+	// a = 128
+	for (i = 0; i < 30; ++ i)
+	{
+		xtable [a + i] = COLOR24(i * 8, 255, 0);
+	}
+	a += i;
+	// a = 160
+	for (i = 0; i < 60; ++ i)
+	{
+		xtable [a + i] = COLOR24(255, 255 - i * 4, 0);
+	}
+	a += i;
+	// a = 224
+	for (i = 0; i < 30; ++ i)
+	{
+		xtable [a + i] = COLOR24(255, 0, i * 8);
+	}
+	a += i;
+	// a = 240
+
+	// Цвета используемые в дизайне
+
+	ASSERT(a == COLORPIP_BASE);
+
+	xtable [COLORPIP_BASE + 0] = COLOR24(255, 255, 255);
+	xtable [COLORPIP_BASE + 1] = COLOR24(255, 255, 255);
+	xtable [COLORPIP_BASE + 2] = COLOR24(255, 255, 255);
+	xtable [COLORPIP_BASE + 3] = COLOR24(255, 255, 255);
+	xtable [COLORPIP_BASE + 4] = COLOR24(255, 255, 255);
+	xtable [COLORPIP_BASE + 5] = COLOR24(255, 255, 255);
+	xtable [COLORPIP_BASE + 6] = COLOR24(255, 255, 255);
+	xtable [COLORPIP_BASE + 7] = COLOR24(255, 255, 255);
+	xtable [COLORPIP_BASE + 8] = COLOR24(255, 255, 255);
+	xtable [COLORPIP_BASE + 9] = COLOR24(255, 255, 255);
+	xtable [COLORPIP_BASE + 10] = COLOR24(255, 255, 255);
+	xtable [COLORPIP_BASE + 11] = COLOR24(255, 255, 255);
+	xtable [COLORPIP_BASE + 12] = COLOR24(255, 255, 255);
+	xtable [COLORPIP_BASE + 13] = COLOR24(255, 255, 255);
+	xtable [COLORPIP_BASE + 14] = COLOR24(255, 255, 255);
+	xtable [COLORPIP_BASE + 15] = COLOR24(255, 255, 255);
+
+
+	xtable [COLORPIP_YELLOW    ] = COLOR24(0xFF, 0xFF, 0x00);
+	xtable [COLORPIP_ORANGE    ] = COLOR24(0xFF, 0xA5, 0x00);
+	xtable [COLORPIP_BLACK     ] = COLOR24(0x00, 0x00, 0x00);
+	xtable [COLORPIP_WHITE     ] = COLOR24(0xFF, 0xFF, 0xFF);
+	xtable [COLORPIP_GRAY      ] = COLOR24(0x80, 0x80, 0x80);
+	xtable [COLORPIP_DARKGREEN ] = COLOR24(0x00, 0x64, 0x00);
+	xtable [COLORPIP_BLUE      ] = COLOR24(0x00, 0x00, 0xFF);
+	xtable [COLORPIP_GREEN     ] = COLOR24(0x00, 0xFF, 0x00);
+	xtable [COLORPIP_RED       ] = COLOR24(0xFF, 0x00, 0x00);
+	xtable [COLORPIP_LOCKED	   ] = COLOR24(0x3C, 0x3C, 0x00);
+
+
+#if COLORSTYLE_ATS52
+	// new (for ats52);.
+	xtable [COLORPIP_GRIDCOLOR		] = COLOR24(128, 0, 0);		//COLOR_GRAY - center marker
+	xtable [COLORPIP_GRIDCOLOR2		] = COLOR24(96, 96, 96);		//COLOR_DARKRED - other markers
+	xtable [COLORPIP_SPECTRUMBG		] = COLOR24(0, 64, 24);			//
+	xtable [COLORPIP_SPECTRUMBG2	] = COLOR24(0, 24, 8);		//COLOR_xxx - ïîëîñà ïðîïóñêàíèÿ ïðèåìíèêà
+	xtable [COLORPIP_SPECTRUMFG		] = COLOR24(0, 255, 0);		//COLOR_GREEN
+	xtable [COLORPIP_SPECTRUMFENCE	] = COLOR24(255, 255, 255);	//COLOR_WHITE
+#else /* COLORSTYLE_ATS52 */
+	// old
+	xtable [COLORPIP_GRIDCOLOR      ] = COLOR24(128, 128, 0);        //COLOR_GRAY - center marker
+	xtable [COLORPIP_GRIDCOLOR2     ] = COLOR24(128, 0, 0x00);        //COLOR_DARKRED - other markers
+	xtable [COLORPIP_SPECTRUMBG     ] = COLOR24(0, 0, 0);            //COLOR_BLACK
+	xtable [COLORPIP_SPECTRUMBG2    ] = COLOR24(0, 128, 128);        //COLOR_CYAN - ïîëîñà ïðîïóñêàíèÿ ïðèåìíèêà
+	xtable [COLORPIP_SPECTRUMFG		] = COLOR24(0, 255, 0);		//COLOR_GREEN
+	xtable [COLORPIP_SPECTRUMFENCE	] = COLOR24(255, 255, 255);	//COLOR_WHITE
+#endif /* COLORSTYLE_ATS52 */
+
+#elif LCDMODE_COLORED && ! LCDMODE_DUMMY	/* LCDMODE_LTDC_L8 && LCDMODE_LTDC_PIPL8 */
+	// Обычная таблица - все цвета могут быть использованы как индекс
+	// Водопад отображается без использования инлдексов цветов
+	int i;
+
+	for (i = 0; i < 256; ++ i)
+	{
+		COLOR24_T color;
+		switch (i)
+		{
+		case TFTRGB(0, 0, 0)			/*COLOR_BLACK*/:		color = COLOR24(0, 0, 0);			break;	// 0x00 черный
+		case TFTRGB(255, 0, 0)			/*COLOR_RED*/:			color = COLOR24(255, 0, 0);		break; 	// 0xE0 красный
+		case TFTRGB(0, 255, 0)			/*COLOR_GREEN*/:		color = COLOR24(0, 255, 0);		break; 	// 0x1C зеленый
+		case TFTRGB(0, 0, 255)			/*COLOR_BLUE*/:			color = COLOR24(0, 0, 255);		break; 	// 0x03 синий
+		case TFTRGB(128, 0, 0)			/*COLOR_DARKRED*/:		color = COLOR24(128, 0, 0);		break; 	//
+		case TFTRGB(0, 128, 0)			/*COLOR_DARKGREEN*/:	color = COLOR24(0, 128, 0);		break; 	//
+		case TFTRGB(0, 0, 128)			/*COLOR_DARKBLUE*/:		color = COLOR24(0, 0, 128);		break; 	//
+		case TFTRGB(255, 255, 0)		/*COLOR_YELLOW*/:		color = COLOR24(255, 255, 0);		break; 	// 0xFC желтый
+		case TFTRGB(255, 0, 255)		/*COLOR_MAGENTA*/:		color = COLOR24(255, 0, 255);		break; 	// 0x83 пурпурный
+		case TFTRGB(0, 255, 255)		/*COLOR_CYAN*/:			color = COLOR24(0, 255, 255);		break; 	// 0x1F голубой
+		case TFTRGB(255, 255, 255)		/*COLOR_WHITE*/:		color = COLOR24(255, 255, 255);	break;  // 0xff	белый
+		case TFTRGB(128, 128, 128)		/*COLOR_GRAY*/:			color = COLOR24(128, 128, 128);	break; 	// серый
+		case TFTRGB(0xa5, 0x2a, 0x2a)	/*COLOR_BROWN*/:		color = COLOR24(0xa5, 0x2a, 0x2a);	break; 	// 0x64 коричневый
+		case TFTRGB(0xff, 0xd7, 0x00)	/*COLOR_GOLD*/:			color = COLOR24(0xff, 0xd7, 0x00);	break; 	// 0xF4 золото
+		case TFTRGB(0xd1, 0xe2, 0x31)	/*COLOR_PEAR*/:			color = COLOR24(0xd1, 0xe2, 0x31);	break; 	// 0xDC грушевый
+		default:
+			{
+				uint_fast8_t r, g, b;
+				r = ((i & 0xe0) << 0) | ((i & 0x80) ? 0x1f : 0);	// red
+				g = ((i & 0x1c) << 3) | ((i & 0x10) ? 0x1f : 0);	// green
+				b = ((i & 0x03) << 6) | ((i & 0x02) ? 0x3f : 0);	// blue
+				color = COLOR24(r, g, b);
+			}
+			break;
+		}
+		xtable [i] = color;
+	}
+#else
+	#warning Monochrome display without indexing colors
+#endif /* LCDMODE_LTDC_L8 && LCDMODE_LTDC_PIPL8 */
 }

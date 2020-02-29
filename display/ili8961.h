@@ -26,6 +26,8 @@
 
 	#endif /* LCDMODE_LTDC */
 
+#define LCDMODE_COLORED	1
+
 #endif /* LCDMODE_ILI8961 */
 
 #endif /* ILI8961_H_INCLUDED */
