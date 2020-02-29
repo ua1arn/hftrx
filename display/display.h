@@ -782,6 +782,14 @@ void display_colorbuff_string3_tbg(
 	const char * s,
 	COLORPIP_T fg		// цвет вывода текста
 	);
+// Используется при выводе на графический индикатор,
+// Возвращает ширину строки в пикселях
+uint_fast16_t display_colorbuff_string3_width(
+	PACKEDCOLORPIP_T * buffer,
+	uint_fast16_t dx,
+	uint_fast16_t dy,
+	const char * s
+	);
 
 /* копирование содержимого окна с перекрытием для водопада */
 void

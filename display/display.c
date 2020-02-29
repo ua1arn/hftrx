@@ -1919,6 +1919,17 @@ display_colorbuff_string3_tbg(
 	}
 }
 
+// Возвращает ширину строки в пикселях
+uint_fast16_t display_colorbuff_string3_width(
+	PACKEDCOLORPIP_T * buffer,
+	uint_fast16_t dx,
+	uint_fast16_t dy,
+	const char * s
+	)
+{
+	return SMALLCHARW3 * strlen(s);
+}
+
 
 /* копирование содержимого окна с перекрытием для водопада */
 void

@@ -5640,8 +5640,7 @@ display_colorbuffer_set_vline(
 		display_colorbuffer_set(buffer, dx, dy, col, row0 ++, color);
 }
 
-#define SMALLCHARW 8
-
+#define MARKERH 10
 // отрисовка маркеров частот
 static
 void
@@ -5670,15 +5669,14 @@ display_colorgrid_xor(
 			if (xmarker != UINT16_MAX)
 			{
 				char buf [4];
-				uint_fast8_t freqlen;	// длина строки со значением частоты
 				uint_fast16_t freqw;	// ширина строки со значением частоты
-				//freqlen = local_snprintf_P(buf, sizeof buf / sizeof buf [0], "%03d", (int) ((f0 + df) / 1000));
-				freqlen = local_snprintf_P(buf, sizeof buf / sizeof buf [0], "%03d", (int) ((f0 + df) / 1000 % 1000));
-				freqw = freqlen * SMALLCHARW;
-				if (xmarker >= freqw / 2 && xmarker < (ALLDX - freqw / 2))
+				//local_snprintf_P(buf, sizeof buf / sizeof buf [0], "%03d", (int) ((f0 + df) / 1000));
+				local_snprintf_P(buf, sizeof buf / sizeof buf [0], "%03d", (int) ((f0 + df) / 1000 % 1000));
+				freqw = display_colorbuff_string3_width(buffer, ALLDX, ALLDY, buf);
+				if (xmarker > freqw / 2 && xmarker < (ALLDX - freqw / 2))
 				{
 					display_colorbuff_string3_tbg(buffer, ALLDX, ALLDY, xmarker - freqw / 2, row0, buf, COLORPIP_YELLOW);
-					display_colorbuffer_xor_vline(buffer, ALLDX, ALLDY, xmarker, row0 + 10, h - 10, color);
+					display_colorbuffer_xor_vline(buffer, ALLDX, ALLDY, xmarker, row0 + MARKERH, h - MARKERH, color);
 				}
 				else
 					display_colorbuffer_xor_vline(buffer, ALLDX, ALLDY, xmarker, row0, h, color);
@@ -5716,15 +5714,14 @@ display_colorgrid_set(
 			if (xmarker != UINT16_MAX)
 			{
 				char buf [4];
-				uint_fast8_t freqlen;	// длина строки со значением частоты
 				uint_fast16_t freqw;	// ширина строки со значением частоты
-				//freqlen = local_snprintf_P(buf, sizeof buf / sizeof buf [0], "%03d", (int) ((f0 + df) / 1000));
-				freqlen = local_snprintf_P(buf, sizeof buf / sizeof buf [0], "%03d", (int) ((f0 + df) / 1000 % 1000));
-				freqw = freqlen * SMALLCHARW;
-				if (xmarker >= freqw / 2 && xmarker < (ALLDX - freqw / 2))
+				//local_snprintf_P(buf, sizeof buf / sizeof buf [0], "%03d", (int) ((f0 + df) / 1000));
+				local_snprintf_P(buf, sizeof buf / sizeof buf [0], "%03d", (int) ((f0 + df) / 1000 % 1000));
+				freqw = display_colorbuff_string3_width(buffer, ALLDX, ALLDY, buf);
+				if (xmarker > freqw / 2 && xmarker < (ALLDX - freqw / 2))
 				{
 					display_colorbuff_string3_tbg(buffer, ALLDX, ALLDY, xmarker - freqw / 2, row0, buf, COLORPIP_YELLOW);
-					display_colorbuffer_set_vline(buffer, ALLDX, ALLDY, xmarker, row0 + 10, h - 10, color);
+					display_colorbuffer_set_vline(buffer, ALLDX, ALLDY, xmarker, row0 + MARKERH, h - MARKERH, color);
 				}
 				else
 					display_colorbuffer_set_vline(buffer, ALLDX, ALLDY, xmarker, row0, h, color);
