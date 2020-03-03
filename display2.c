@@ -6578,7 +6578,7 @@ board_set_wflevelsep(uint_fast8_t v)
 
 	}
 
-	static uint_fast16_t normalize(uint_fast16_t raw, uint_fast16_t rawmin,	uint_fast16_t rawmax,uint_fast16_t range)
+	static uint_fast16_t normalize(uint_fast16_t raw, uint_fast16_t rawmin,	uint_fast16_t rawmax, uint_fast16_t range)
 	{
 		if (rawmin < rawmax)
 		{
@@ -6665,10 +6665,10 @@ board_set_wflevelsep(uint_fast8_t v)
 	void window_bp_process (void)
 	{
 		PACKEDCOLORPIP_T * const colorpip = getscratchpip();
-		static uint_fast8_t val_high, val_low;
-		static uint_fast16_t x_h, x_l;
+		static uint_fast8_t val_high, val_low, val_c, val_w;
+		static uint_fast16_t x_h, x_l, x_c = 0;
 		char buf[10];
-		static uint_fast8_t id_lbl_high, id_lbl_low;
+		static uint_fast8_t id_lbl_high, id_lbl_low, bw_type;
 
 		if (windows[WINDOW_BP].first_call == 1)
 		{
@@ -6676,42 +6676,110 @@ board_set_wflevelsep(uint_fast8_t v)
 			button_handlers[find_button(WINDOW_BP, "High cut")].is_locked = 1;
 			id_lbl_low = find_label(WINDOW_BP, "lbl_low");
 			id_lbl_high = find_label(WINDOW_BP, "lbl_high");
-			val_high = get_high_bp(0);
-			val_low = get_low_bp(0);
 
-			local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), val_high * 100);
-			strcpy (labels[id_lbl_high].text, buf);
-			x_h = normalize (val_high, 0, 50, 290) + 290;
-			labels[id_lbl_high].x = x_h + 64 > 550 ? 486 : x_h;
+			bw_type = get_bp_type();
+			if (bw_type)	// BWSET_WIDE
+			{
+				val_high = get_high_bp(0);
+				val_low = get_low_bp(0);
 
-			local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), val_low * 10);
-			strcpy (labels[id_lbl_low].text, buf);
-			x_l = normalize (val_low / 10, 0, 50, 290) + 290;
-			labels[id_lbl_low].x = x_l - strlen(buf) * 16;
+				local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), val_high * 100);
+				strcpy (labels[id_lbl_high].text, buf);
+				x_h = normalize (val_high, 0, 50, 290) + 290;
+				labels[id_lbl_high].x = x_h + 64 > 550 ? 486 : x_h;
+
+				local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), val_low * 10);
+				strcpy (labels[id_lbl_low].text, buf);
+				x_l = normalize (val_low, 0, 500, 290) + 290;
+				labels[id_lbl_low].x = x_l - strlen(buf) * 16;
+			}
+			else			// BWSET_NARROW
+			{
+				val_c = get_high_bp(0);
+				x_c = normalize (val_c, 0, 500, 290) + 290;
+				val_w = get_low_bp(0) / 2;
+				val_low = val_c - val_w;
+				val_high = 	val_c + val_w;
+				x_l = normalize (val_low , 0, 500, 290) + 290;
+				x_h = normalize (val_high , 0, 500, 290) + 290;
+			}
 		}
 
-		if (encoder2.rotate != 0 && button_handlers[find_button(WINDOW_BP, "High cut")].is_locked == 1)
+		if (encoder2.rotate != 0)
 		{
-			val_high = get_high_bp(encoder2.rotate);
-			encoder2.rotate_done = 1;
-			local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), val_high * 100);
-			strcpy (labels[id_lbl_high].text, buf);
-			x_h = normalize (val_high, 0, 50, 290) + 290;
-			labels[id_lbl_high].x = x_h + 64 > 550 ? 486 : x_h;
+			bw_type = get_bp_type();
+			if (bw_type)	// BWSET_WIDE
+			{
+				if (button_handlers[find_button(WINDOW_BP, "High cut")].is_locked == 1)
+				{
+					val_high = get_high_bp(encoder2.rotate);
+					encoder2.rotate_done = 1;
+					local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), val_high * 100);
+					strcpy (labels[id_lbl_high].text, buf);
+					x_h = normalize (val_high, 0, 50, 290) + 290;
+					labels[id_lbl_high].x = x_h + 64 > 550 ? 486 : x_h;
+				}
+				else if (button_handlers[find_button(WINDOW_BP, "Low cut")].is_locked == 1)
+				{
+					val_low = get_low_bp(encoder2.rotate * 10);
+					encoder2.rotate_done = 1;
+					local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), val_low * 10);
+					strcpy (labels[id_lbl_low].text, buf);
+					x_l = normalize (val_low / 10, 0, 50, 290) + 290;
+					labels[id_lbl_low].x = x_l - strlen(buf) * 16;
+				}
+			}
+			else				// BWSET_NARROW
+			{
+				if (button_handlers[find_button(WINDOW_BP, "High cut")].is_locked == 1)
+				{
+					encoder2.rotate_done = 1;
+					val_c = get_high_bp(encoder2.rotate);
+					x_c = normalize (val_c, 0, 500, 290) + 290;
+					val_w = get_low_bp(0) / 2;
+					val_low = val_c - val_w;
+					val_high = 	val_c + val_w;
+					x_l = normalize (val_low , 0, 500, 290) + 290;
+					x_h = normalize (val_high , 0, 500, 290) + 290;
+				}
+				else if (button_handlers[find_button(WINDOW_BP, "Low cut")].is_locked == 1)
+				{
+					encoder2.rotate_done = 1;
+					val_c = get_high_bp(0);
+					x_c = normalize (val_c, 0, 500, 290) + 290;
+					val_w = get_low_bp(encoder2.rotate) / 2;
+					val_low = val_c - val_w;
+					val_high = 	val_c + val_w;
+					x_l = normalize (val_low , 0, 500, 290) + 290;
+					x_h = normalize (val_high , 0, 500, 290) + 290;
+				}
+			}
 		}
-		else if (encoder2.rotate != 0 && button_handlers[find_button(WINDOW_BP, "Low cut")].is_locked == 1)
-		{
-			val_low = get_low_bp(encoder2.rotate * 10);
-			encoder2.rotate_done = 1;
-			local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), val_low * 10);
-			strcpy (labels[id_lbl_low].text, buf);
-			x_l = normalize (val_low / 10, 0, 50, 290) + 290;
-			labels[id_lbl_low].x = x_l - strlen(buf) * 16;
-		}
+
+//		if (encoder2.rotate != 0 && button_handlers[find_button(WINDOW_BP, "High cut")].is_locked == 1)
+//		{
+//			val_high = get_high_bp(encoder2.rotate);
+//			encoder2.rotate_done = 1;
+//			local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), val_high * 100);
+//			strcpy (labels[id_lbl_high].text, buf);
+//			x_h = normalize (val_high, 0, 50, 290) + 290;
+//			labels[id_lbl_high].x = x_h + 64 > 550 ? 486 : x_h;
+//		}
+//		else if (encoder2.rotate != 0 && button_handlers[find_button(WINDOW_BP, "Low cut")].is_locked == 1)
+//		{
+//			val_low = get_low_bp(encoder2.rotate * 10);
+//			encoder2.rotate_done = 1;
+//			local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), val_low * 10);
+//			strcpy (labels[id_lbl_low].text, buf);
+//			x_l = normalize (val_low / 10, 0, 50, 290) + 290;
+//			labels[id_lbl_low].x = x_l - strlen(buf) * 16;
+//		}
 		display_colorbuffer_line_set(colorpip, ALLDX, ALLDY, 251, 110, 549, 110, COLORPIP_GRAY);
 		display_colorbuffer_line_set(colorpip, ALLDX, ALLDY, 290, 70, 290, 120, COLORPIP_GRAY);
 		draw_rect_pip(x_l, 70, x_h, 108, COLORPIP_YELLOW, 1);
-	}
+		if (! bw_type)
+			display_colorbuffer_line_set(colorpip, ALLDX, ALLDY, x_c, 60, x_c, 120, COLORPIP_RED);
+}
 
 	void window_freq_process (void)
 	{

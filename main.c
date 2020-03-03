@@ -12588,11 +12588,7 @@ static const FLASHMEM struct menudef menutable [] =
 	{
 		QLABEL("BARS FPS"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
-#if WITHDISPLAYSWR_FPS
 		4, 40,							/* частота обновления барграфов от 5 до 40 раз в секунду */
-#else
-		4, 25,							/* частота обновления барграфов от 5 до 25 раз в секунду */
-#endif
 		offsetof(struct nvmap, displaybarsfps),
 		NULL,
 		& displaybarsfps,
@@ -17794,6 +17790,16 @@ void set_agc_slow(void)
 	updateboard (1, 0);
 }
 
+uint_fast8_t get_bp_type (void)
+{
+	uint_fast8_t tx = gettxstate();
+	const uint_fast8_t asubmode = getasubmode(0);
+	const uint_fast8_t amode = submodes [asubmode].mode;
+	const uint_fast8_t bwseti = mdt [amode].bwsetis [tx];
+	const uint_fast8_t pos = bwsetpos [bwseti];
+	return bwsetsc [bwseti].prop [pos]->type;
+}
+
 uint_fast8_t get_low_bp(int_least16_t rotate)
 {
 	uint_fast8_t tx = gettxstate();
@@ -17823,9 +17829,9 @@ uint_fast8_t get_low_bp(int_least16_t rotate)
 					updateboard (1, 0);
 				}
 				const int_fast16_t width = p->left10_width10;
-				const int_fast16_t width2 = width / 2;
-				const int_fast16_t center = gcwpitch10 * CWPITCHSCALE;
-				low =  ((center > width2) ? (center - width2) : 0) / 10;
+//				const int_fast16_t width2 = width / 2;
+//				const int_fast16_t center = gcwpitch10 * CWPITCHSCALE;
+				low =  width; //((center > width2) ? (center - width2) : 0) / 10;
 			}
 		}
 	return low;
@@ -17840,6 +17846,7 @@ uint_fast8_t get_high_bp(int_least16_t rotate)
 	uint_fast16_t high;
 	const uint_fast8_t pos = bwsetpos [bwseti];
 	bwprop_t * p = bwsetsc [bwseti].prop [pos];
+
 	switch (p->type)
 	{
 	case BWSET_WIDE:
@@ -17859,10 +17866,11 @@ uint_fast8_t get_high_bp(int_least16_t rotate)
 				gcwpitch10 += rotate * CWPITCHSCALE;
 				updateboard (1, 0);
 			}
-			const int_fast16_t width = p->left10_width10;
-			const int_fast16_t width2 = width / 2;
-			const int_fast16_t center = gcwpitch10 * CWPITCHSCALE;
-			high = ((center > width2) ? (center + width2) : (center * 2)) / 100;
+//			const int_fast16_t width = p->left10_width10;
+//			const int_fast16_t width2 = width / 2;
+//			const int_fast16_t center = gcwpitch10 * CWPITCHSCALE;
+//			high = ((center > width2) ? (center + width2) : (center * 2)) / 100;
+			high = gcwpitch10;
 		}
 	}
 	return high;

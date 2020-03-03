@@ -3226,6 +3226,7 @@ void spool_0p128(void);	// OPERA support
 	void change_submode(uint_fast8_t newsubmode);
 	uint_fast8_t get_low_bp (int_least16_t rotate);
 	uint_fast8_t get_high_bp (int_least16_t rotate);
+	uint_fast8_t get_bp_type (void);
 	void process_gui(void);
 	uint_fast8_t check_encoder2 (int_least16_t rotate);
 	void set_encoder2_state (uint_fast8_t code);
