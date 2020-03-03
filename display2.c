@@ -6677,7 +6677,7 @@ board_set_wflevelsep(uint_fast8_t v)
 			id_lbl_low = find_label(WINDOW_BP, "lbl_low");
 			id_lbl_high = find_label(WINDOW_BP, "lbl_high");
 			id_button_high = find_button(WINDOW_BP, "High cut");
-			id_button_low = find_button(WINDOW_BP, "low cut");
+			id_button_low = find_button(WINDOW_BP, "Low cut");
 			id_button_width = find_button(WINDOW_BP, "Width");
 			id_button_pitch = find_button(WINDOW_BP, "Pitch");
 
