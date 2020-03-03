@@ -5971,18 +5971,20 @@ void hightests(void)
 #endif
 #if 1
 	{
+		// st7565v tests
 		enum { DX = DIM_X, DY = DIM_Y };
 		static ALIGNX_BEGIN GX_t scr0 [MGSIZE(DX, DY)] ALIGNX_END;
 		static ALIGNX_BEGIN GX_t scr1 [MGSIZE(DX, DY)] ALIGNX_END;
 		static ALIGNX_BEGIN GX_t scr2 [MGSIZE(DX, DY)] ALIGNX_END;
 		static ALIGNX_BEGIN GX_t scr3 [MGSIZE(DX, DY)] ALIGNX_END;
 		static ALIGNX_BEGIN GX_t scr4 [MGSIZE(DX, DY)] ALIGNX_END;
-
+		static ALIGNX_BEGIN GX_t scr5 [MGSIZE(DX, DY)] ALIGNX_END;
 		
 		memset(scr0, 0x00, sizeof scr0);
 		memset(scr1, 0x00, sizeof scr1);
 		memset(scr2, 0x00, sizeof scr2);
 		memset(scr3, 0x00, sizeof scr3);
+		memset(scr4, 0x00, sizeof scr4);
 
 		// Four vertical lines
 		display_pixelbuffer_rect(scr0, DX, DY, 0 * DX / 8, 0, DX / 8, DY);
@@ -6001,7 +6003,7 @@ void hightests(void)
 		display_pixelbuffer_rect(scr2, DX, DY, 0, 0 * DY / 4, DX, DY / 4);
 		display_pixelbuffer_rect(scr2, DX, DY, 0, 2 * DY / 4, DX, DY / 4);
 
-		// Text & timer
+		// Text & buttons timer
 		//display_pixelbuffer_line(scr3, DX, DY, 0, 0, DX - 1, DY - 1);
 		display_pixelbuffer_rect(scr3, DX, DY, 0, 	DY - 11, 40, 11);
 		display_pixelbuffer_rect(scr3, DX, DY, 43,	DY - 11, 41, 11);
@@ -6013,22 +6015,31 @@ void hightests(void)
 		display_pixelbuffer_text(scr3, DX, DY, 16, DY - 9, "Ok");
 		display_pixelbuffer_text(scr3, DX, DY, 94, DY - 9, "Back");
 
+		// Text & buttons
+		//display_pixelbuffer_line(scr4, DX, DY, 0, 0, DX - 1, DY - 1);
+		display_pixelbuffer_rect(scr4, DX, DY, 0, 	DY - 11, 40, 11);
+		display_pixelbuffer_rect(scr4, DX, DY, 43,	DY - 11, 41, 11);
+		display_pixelbuffer_rect(scr4, DX, DY, 87,	DY - 11, 41, 11);
+		//display_pixelbuffer_text(scr4, DX, DY, 16, DY - 9, "Ok");
+		display_pixelbuffer_text(scr4, DX, DY, 94, DY - 9, "Back");
+
+		uint_fast8_t page = 3;
 		display_showbuffer(scr3, DX, DY, 0, 0);
+
 		enum { BLMIN = 38, BLMAX = 0x7F };
 		enum { CTMIN = 0, CTMAX = 0x3F };
-		uint_fast8_t page = 3;
 		uint_fast8_t backlight = 0x4A;
 		uint_fast8_t contrast = 0x22;
 		char s [64];
-		const char * format2 = "bl=0x%02X,contrast=0x%02X";
+		const char * format2 = "bl=0x%02X contrast=0x%02X";
 
 		local_snprintf_P(s, 64, format2, backlight, contrast);
-		memset(scr4, 0x00, sizeof scr3);
-		display_pixelbuffer_text(scr4, DX, DY, 0, 0, s);
+		memset(scr5, 0x00, sizeof scr3);
+		display_pixelbuffer_text(scr5, DX, DY, 0, 0, s);
 		display_backlight1(backlight);
 		display_contrast1(contrast);
-		if (page == 4)
-			display_showbuffer(scr4, DX, DY, 0, 0);
+		if (page == 5)
+			display_showbuffer(scr5, DX, DY, 0, 0);
 
 		// text display
 		for (;;)
@@ -6048,8 +6059,8 @@ void hightests(void)
 				display_pixelbuffer_text(scr4, DX, DY, 0, 0, s);
 				display_backlight1(backlight);
 				display_contrast1(contrast);
-				if (page == 4)
-					display_showbuffer(scr4, DX, DY, 0, 0);
+				if (page == 5)
+					display_showbuffer(scr5, DX, DY, 0, 0);
 			}
 			else if (kbch == KBD_CODE_MODEMOD)
 			{
@@ -6063,8 +6074,8 @@ void hightests(void)
 				display_pixelbuffer_text(scr4, DX, DY, 0, 0, s);
 				display_backlight1(backlight);
 				display_contrast1(contrast);
-				if (page == 4)
-					display_showbuffer(scr4, DX, DY, 0, 0);
+				if (page == 5)
+					display_showbuffer(scr5, DX, DY, 0, 0);
 			}
 			else if (kbch == KBD_CODE_ATT)
 			{
@@ -6078,8 +6089,8 @@ void hightests(void)
 				display_pixelbuffer_text(scr4, DX, DY, 0, 0, s);
 				display_backlight1(backlight);
 				display_contrast1(contrast);
-				if (page == 4)
-					display_showbuffer(scr4, DX, DY, 0, 0);
+				if (page == 5)
+					display_showbuffer(scr5, DX, DY, 0, 0);
 			}
 			else if (kbch == KBD_CODE_PAMP)
 			{
@@ -6093,13 +6104,14 @@ void hightests(void)
 				display_pixelbuffer_text(scr4, DX, DY, 0, 0, s);
 				display_backlight1(backlight);
 				display_contrast1(contrast);
-				if (page == 4)
-					display_showbuffer(scr4, DX, DY, 0, 0);
+				if (page == 5)
+					display_showbuffer(scr5, DX, DY, 0, 0);
 			}
 			else if (kbch == KBD_CODE_BW)
 			{
+				// next screen
 				page += 1;
-				if (page >= 5)
+				if (page > 5)
 					page = 0;
 				switch (page)
 				{
@@ -6117,6 +6129,9 @@ void hightests(void)
 					break;
 				case 4:
 					display_showbuffer(scr4, DX, DY, 0, 0);
+					break;
+				case 5:
+					display_showbuffer(scr5, DX, DY, 0, 0);
 					break;
 				}
 			}
