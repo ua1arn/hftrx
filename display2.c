@@ -6665,43 +6665,65 @@ board_set_wflevelsep(uint_fast8_t v)
 	void window_bp_process (void)
 	{
 		PACKEDCOLORPIP_T * const colorpip = getscratchpip();
-		static uint_fast8_t val_high, val_low, val_c, val_w;
-		static uint_fast16_t x_h, x_l, x_c = 0;
+		static uint_fast8_t val_high, val_low, val_c, val_w, bw_type;
+		static uint_fast16_t x_h, x_l, x_c;
 		char buf[10];
-		static uint_fast8_t id_lbl_high, id_lbl_low, bw_type;
+		static uint_fast8_t id_button_high, id_button_low, id_button_width, id_button_pitch, id_lbl_high, id_lbl_low;
 
 		if (windows[WINDOW_BP].first_call == 1)
 		{
 			windows[WINDOW_BP].first_call = 0;
-			button_handlers[find_button(WINDOW_BP, "High cut")].is_locked = 1;
+
 			id_lbl_low = find_label(WINDOW_BP, "lbl_low");
 			id_lbl_high = find_label(WINDOW_BP, "lbl_high");
+			id_button_high = find_button(WINDOW_BP, "High cut");
+			id_button_low = find_button(WINDOW_BP, "low cut");
+			id_button_width = find_button(WINDOW_BP, "Width");
+			id_button_pitch = find_button(WINDOW_BP, "Pitch");
 
 			bw_type = get_bp_type();
 			if (bw_type)	// BWSET_WIDE
 			{
+				button_handlers[id_button_high].visible = VISIBLE;
+				button_handlers[id_button_low].visible = VISIBLE;
+				button_handlers[id_button_width].visible = NON_VISIBLE;
+				button_handlers[id_button_pitch].visible = NON_VISIBLE;
+				button_handlers[id_button_high].is_locked = 1;
+
 				val_high = get_high_bp(0);
 				val_low = get_low_bp(0);
 
 				local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), val_high * 100);
 				strcpy (labels[id_lbl_high].text, buf);
-				x_h = normalize (val_high, 0, 50, 290) + 290;
+				x_h = normalize(val_high, 0, 50, 290) + 290;
 				labels[id_lbl_high].x = x_h + 64 > 550 ? 486 : x_h;
 
 				local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), val_low * 10);
 				strcpy (labels[id_lbl_low].text, buf);
-				x_l = normalize (val_low, 0, 500, 290) + 290;
+				x_l = normalize(val_low, 0, 500, 290) + 290;
 				labels[id_lbl_low].x = x_l - strlen(buf) * 16;
 			}
 			else			// BWSET_NARROW
 			{
+				button_handlers[id_button_high].visible = NON_VISIBLE;
+				button_handlers[id_button_low].visible = NON_VISIBLE;
+				button_handlers[id_button_width].visible = VISIBLE;
+				button_handlers[id_button_pitch].visible = VISIBLE;
+
+				button_handlers[id_button_width].is_locked = 1;
+
 				val_c = get_high_bp(0);
-				x_c = normalize (val_c, 0, 500, 290) + 290;
+				x_c = normalize(val_c, 0, 500, 290) + 290;
 				val_w = get_low_bp(0) / 2;
-				val_low = val_c - val_w;
-				val_high = 	val_c + val_w;
-				x_l = normalize (val_low , 0, 500, 290) + 290;
-				x_h = normalize (val_high , 0, 500, 290) + 290;
+				x_l = normalize(val_c - val_w , 0, 500, 290) + 290;
+				x_h = normalize(val_c + val_w , 0, 500, 290) + 290;
+
+				local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), val_c * 10);
+				labels[id_lbl_high].x = x_c - strlen(buf) * 8;
+				strcpy (labels[id_lbl_high].text, buf);
+				local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("W %d"), val_w * 20);
+				strcpy (labels[id_lbl_low].text, buf);
+				labels[id_lbl_low].x = 550 - strlen(buf) * 16;
 			}
 		}
 
@@ -6710,70 +6732,51 @@ board_set_wflevelsep(uint_fast8_t v)
 			bw_type = get_bp_type();
 			if (bw_type)	// BWSET_WIDE
 			{
-				if (button_handlers[find_button(WINDOW_BP, "High cut")].is_locked == 1)
+				if (button_handlers[id_button_high].is_locked == 1)
 				{
 					val_high = get_high_bp(encoder2.rotate);
 					encoder2.rotate_done = 1;
 					local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), val_high * 100);
 					strcpy (labels[id_lbl_high].text, buf);
-					x_h = normalize (val_high, 0, 50, 290) + 290;
+					x_h = normalize(val_high, 0, 50, 290) + 290;
 					labels[id_lbl_high].x = x_h + 64 > 550 ? 486 : x_h;
 				}
-				else if (button_handlers[find_button(WINDOW_BP, "Low cut")].is_locked == 1)
+				else if (button_handlers[id_button_low].is_locked == 1)
 				{
 					val_low = get_low_bp(encoder2.rotate * 10);
 					encoder2.rotate_done = 1;
 					local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), val_low * 10);
 					strcpy (labels[id_lbl_low].text, buf);
-					x_l = normalize (val_low / 10, 0, 50, 290) + 290;
+					x_l = normalize(val_low / 10, 0, 50, 290) + 290;
 					labels[id_lbl_low].x = x_l - strlen(buf) * 16;
 				}
 			}
 			else				// BWSET_NARROW
 			{
-				if (button_handlers[find_button(WINDOW_BP, "High cut")].is_locked == 1)
+				if (button_handlers[id_button_pitch].is_locked == 1)
 				{
-					encoder2.rotate_done = 1;
 					val_c = get_high_bp(encoder2.rotate);
-					x_c = normalize (val_c, 0, 500, 290) + 290;
 					val_w = get_low_bp(0) / 2;
-					val_low = val_c - val_w;
-					val_high = 	val_c + val_w;
-					x_l = normalize (val_low , 0, 500, 290) + 290;
-					x_h = normalize (val_high , 0, 500, 290) + 290;
 				}
-				else if (button_handlers[find_button(WINDOW_BP, "Low cut")].is_locked == 1)
+				else if (button_handlers[id_button_width].is_locked == 1)
 				{
-					encoder2.rotate_done = 1;
 					val_c = get_high_bp(0);
-					x_c = normalize (val_c, 0, 500, 290) + 290;
 					val_w = get_low_bp(encoder2.rotate) / 2;
-					val_low = val_c - val_w;
-					val_high = 	val_c + val_w;
-					x_l = normalize (val_low , 0, 500, 290) + 290;
-					x_h = normalize (val_high , 0, 500, 290) + 290;
 				}
+				encoder2.rotate_done = 1;
+				x_c = normalize(val_c, 0, 500, 290) + 290;
+				x_l = normalize(val_c - val_w , 0, 500, 290) + 290;
+				x_h = normalize(val_c + val_w , 0, 500, 290) + 290;
+
+				local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), val_c * 10);
+				labels[id_lbl_high].x = x_c - strlen(buf) * 8;
+				strcpy (labels[id_lbl_high].text, buf);
+				local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("W %d"), val_w * 20);
+				strcpy (labels[id_lbl_low].text, buf);
+				labels[id_lbl_low].x = 550 - strlen(buf) * 16;
 			}
 		}
 
-//		if (encoder2.rotate != 0 && button_handlers[find_button(WINDOW_BP, "High cut")].is_locked == 1)
-//		{
-//			val_high = get_high_bp(encoder2.rotate);
-//			encoder2.rotate_done = 1;
-//			local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), val_high * 100);
-//			strcpy (labels[id_lbl_high].text, buf);
-//			x_h = normalize (val_high, 0, 50, 290) + 290;
-//			labels[id_lbl_high].x = x_h + 64 > 550 ? 486 : x_h;
-//		}
-//		else if (encoder2.rotate != 0 && button_handlers[find_button(WINDOW_BP, "Low cut")].is_locked == 1)
-//		{
-//			val_low = get_low_bp(encoder2.rotate * 10);
-//			encoder2.rotate_done = 1;
-//			local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), val_low * 10);
-//			strcpy (labels[id_lbl_low].text, buf);
-//			x_l = normalize (val_low / 10, 0, 50, 290) + 290;
-//			labels[id_lbl_low].x = x_l - strlen(buf) * 16;
-//		}
 		display_colorbuffer_line_set(colorpip, ALLDX, ALLDY, 251, 110, 549, 110, COLORPIP_GRAY);
 		display_colorbuffer_line_set(colorpip, ALLDX, ALLDY, 290, 70, 290, 120, COLORPIP_GRAY);
 		draw_rect_pip(x_l, 70, x_h, 108, COLORPIP_YELLOW, 1);
@@ -6888,14 +6891,24 @@ board_set_wflevelsep(uint_fast8_t v)
 
 			// при переходе на следующий уровень пункт меню подсвечивается
 			if (menu_level == MENU_VALS)
-				labels[menu[MENU_PARAMS].selected_label + menu[MENU_PARAMS].first_id].color = COLORPIP_YELLOW;
+				for (uint8_t i = 0; i <= menu[MENU_GROUPS].num_rows; i++)
+				{
+					labels[i + menu[MENU_PARAMS].first_id].color = i == menu[MENU_PARAMS].selected_label ? COLORPIP_YELLOW : COLORPIP_DARKGRAY;
+					labels[i + menu[MENU_VALS].first_id].color = i == menu[MENU_VALS].selected_label ? COLORPIP_YELLOW : COLORPIP_DARKGRAY;
+				}
+
 			if (menu_level == MENU_PARAMS)
 			{
-				labels[menu[MENU_GROUPS].selected_label + menu[MENU_GROUPS].first_id].color = COLORPIP_YELLOW;
-				labels[menu[MENU_PARAMS].selected_label + menu[MENU_PARAMS].first_id].color = COLORPIP_WHITE;
+				for (uint8_t i = 0; i <= menu[MENU_GROUPS].num_rows; i++)
+				{
+					labels[i + menu[MENU_GROUPS].first_id].color = i == menu[MENU_GROUPS].selected_label ? COLORPIP_YELLOW : COLORPIP_DARKGRAY;
+					labels[i + menu[MENU_PARAMS].first_id].color = COLORPIP_WHITE;
+					labels[i + menu[MENU_VALS].first_id].color = COLORPIP_WHITE;
+				}
 			}
 			if (menu_level == MENU_GROUPS)
-				labels[menu[MENU_GROUPS].selected_label + menu[MENU_GROUPS].first_id].color = COLORPIP_WHITE;
+				for (uint8_t i = 0; i <= menu[MENU_GROUPS].num_rows; i++)
+					labels[i + menu[MENU_GROUPS].first_id].color = COLORPIP_WHITE;
 
 			encoder2.press = 0;
 			encoder2.hold = 0;
@@ -6950,7 +6963,7 @@ board_set_wflevelsep(uint_fast8_t v)
 				for(uint_fast8_t i = 0; i <= menu[MENU_GROUPS].num_rows; i++)
 					strcpy(labels[menu[MENU_GROUPS].first_id + i].text, menu[MENU_GROUPS].menu_block[i + menu[MENU_GROUPS].add_id].name);
 
-			menu[MENU_VALS].count = menu[MENU_PARAMS].count < menu[MENU_VALS].num_rows ? menu[MENU_PARAMS].count :  menu[MENU_VALS].num_rows;
+			menu[MENU_VALS].count = menu[MENU_PARAMS].count < menu[MENU_VALS].num_rows ? menu[MENU_PARAMS].count : menu[MENU_VALS].num_rows;
 			get_multilinemenu_block_vals(menu[MENU_VALS].menu_block,  menu[MENU_PARAMS].menu_block[menu[MENU_PARAMS].add_id].index,
 										 menu[MENU_VALS].count);
 
@@ -7019,6 +7032,16 @@ board_set_wflevelsep(uint_fast8_t v)
 		{
 			button_handlers[find_button(WINDOW_BP, "High cut")].is_locked = 1;
 			button_handlers[find_button(WINDOW_BP, "Low cut")].is_locked = 0;
+		}
+		else if (gui.selected == find_button(WINDOW_BP, "Width"))
+		{
+			button_handlers[find_button(WINDOW_BP, "Width")].is_locked = 1;
+			button_handlers[find_button(WINDOW_BP, "Pitch")].is_locked = 0;
+		}
+		else if (gui.selected == find_button(WINDOW_BP, "Pitch"))
+		{
+			button_handlers[find_button(WINDOW_BP, "Width")].is_locked = 0;
+			button_handlers[find_button(WINDOW_BP, "Pitch")].is_locked = 1;
 		}
 		else if (gui.selected == find_button(WINDOW_BP, "OK"))
 		{
@@ -7255,6 +7278,9 @@ board_set_wflevelsep(uint_fast8_t v)
 			pip_transparency_rect(windows[gui.window_to_draw].x1, windows[gui.window_to_draw].y1,
 								  windows[gui.window_to_draw].x2, windows[gui.window_to_draw].y2, alpha);
 
+			if (windows[gui.window_to_draw].onVisibleProcess != 0)							// запуск процедуры фоновой обработки для окна, если есть
+				windows[gui.window_to_draw].onVisibleProcess();
+
 			// вывод заголовка окна
 			display_colorbuff_string_tbg(colorpip, ALLDX, ALLDY,
 										 windows[gui.window_to_draw].x1 + 20,
@@ -7268,9 +7294,6 @@ board_set_wflevelsep(uint_fast8_t v)
 				if (labels[i].parent == gui.window_to_draw && labels[i].visible == VISIBLE)	// метки
 					display_colorbuff_string_tbg(colorpip, ALLDX, ALLDY, labels[i].x, labels[i].y, labels[i].text, labels[i].color);
 			}
-
-			if (windows[gui.window_to_draw].onVisibleProcess != 0)							// запуск процедуры фоновой обработки для окна, если есть
-				windows[gui.window_to_draw].onVisibleProcess();
 		}
 		for (uint_fast8_t i = 1; i < button_handlers_count; i++)
 		{

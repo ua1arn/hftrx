@@ -17822,17 +17822,12 @@ uint_fast8_t get_low_bp(int_least16_t rotate)
 
 		default:
 		case BWSET_NARROW:
+			if (rotate != 0)
 			{
-				if (rotate != 0)
-				{
-					p->left10_width10 += rotate * 10;
-					updateboard (1, 0);
-				}
-				const int_fast16_t width = p->left10_width10;
-//				const int_fast16_t width2 = width / 2;
-//				const int_fast16_t center = gcwpitch10 * CWPITCHSCALE;
-				low =  width; //((center > width2) ? (center - width2) : 0) / 10;
+				p->left10_width10 += rotate * p->limits->granulationleft;
+				updateboard (1, 0);
 			}
+			low = p->left10_width10;
 		}
 	return low;
 }
@@ -17860,18 +17855,12 @@ uint_fast8_t get_high_bp(int_least16_t rotate)
 
 	default:
 	case BWSET_NARROW:
+		if (rotate != 0)
 		{
-			if (rotate != 0)
-			{
-				gcwpitch10 += rotate * CWPITCHSCALE;
-				updateboard (1, 0);
-			}
-//			const int_fast16_t width = p->left10_width10;
-//			const int_fast16_t width2 = width / 2;
-//			const int_fast16_t center = gcwpitch10 * CWPITCHSCALE;
-//			high = ((center > width2) ? (center + width2) : (center * 2)) / 100;
-			high = gcwpitch10;
+			gcwpitch10 += rotate * CWPITCHSCALE;
+			updateboard (1, 0);
 		}
+		high = gcwpitch10;
 	}
 	return high;
 }
