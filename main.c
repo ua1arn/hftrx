@@ -12351,7 +12351,8 @@ display_menu_digit(
 #if WITHTOUCHTEST
 	if (is_menu_opened)
 	{
-		local_snprintf_P(w, width, "%d", value);
+		uint_fast16_t c = pow(10, comma);
+		comma == 0 ? local_snprintf_P(w, width, "%d", value) : local_snprintf_P(w, width, "%d.%d", value / c, value % c);
 		return;
 	}
 #endif /* WITHTOUCHTEST */
@@ -17822,7 +17823,12 @@ uint_fast8_t get_low_bp(int_least16_t rotate)
 
 		default:
 		case BWSET_NARROW:
-			if (rotate != 0)
+			if (rotate != 0
+					&& p->left10_width10 + rotate * p->limits->granulationleft > p->limits->left10_width10_low
+					&& p->left10_width10 + rotate * p->limits->granulationleft < p->limits->left10_width10_high
+					&& bwseti_getlow(bwseti) / BWGRANLOW + rotate * BWGRANLOW > p->limits->left10_width10_low
+					&& bwseti_gethigh(bwseti) / BWGRANLOW + rotate * BWGRANLOW < p->limits->left10_width10_high)
+					// исправить баг сравнения лимитов
 			{
 				p->left10_width10 += rotate * p->limits->granulationleft;
 				updateboard (1, 0);
@@ -17855,7 +17861,9 @@ uint_fast8_t get_high_bp(int_least16_t rotate)
 
 	default:
 	case BWSET_NARROW:
-		if (rotate != 0)
+		if (rotate != 0 && gcwpitch10 + rotate * CWPITCHSCALE <= 190 && gcwpitch10 + rotate * CWPITCHSCALE >= 40
+				&& bwseti_getlow(bwseti) / BWGRANLOW + rotate * BWGRANLOW > p->limits->left10_width10_low
+				&& bwseti_gethigh(bwseti) / BWGRANLOW + rotate * BWGRANLOW < p->limits->left10_width10_high)
 		{
 			gcwpitch10 += rotate * CWPITCHSCALE;
 			updateboard (1, 0);

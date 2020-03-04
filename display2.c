@@ -6844,11 +6844,11 @@ board_set_wflevelsep(uint_fast8_t v)
 			for(uint_fast8_t i = 0; i <= menu[MENU_PARAMS].num_rows; i++)
 			{
 				labels[menu[MENU_PARAMS].first_id + i].visible = NON_VISIBLE;
+				labels[menu[MENU_PARAMS].first_id + i].color = COLORPIP_WHITE;
 				if (menu[MENU_PARAMS].count < i)
 					continue;
 				strcpy(labels[menu[MENU_PARAMS].first_id + i].text, menu[MENU_PARAMS].menu_block[i + menu[MENU_PARAMS].add_id].name);
 				labels[menu[MENU_PARAMS].first_id + i].visible = VISIBLE;
-				labels[menu[MENU_PARAMS].first_id + i].color = COLORPIP_WHITE;
 			}
 
 			menu[MENU_PARAMS].selected_str = 0;
@@ -6857,6 +6857,7 @@ board_set_wflevelsep(uint_fast8_t v)
 			for(uint_fast8_t i = 0; i <= menu[MENU_VALS].num_rows; i++)
 			{
 				labels[menu[MENU_VALS].first_id + i].visible = NON_VISIBLE;
+				labels[menu[MENU_VALS].first_id + i].color = COLORPIP_WHITE;
 				if (menu[MENU_VALS].count < i)
 					continue;
 				strcpy(labels[menu[MENU_VALS].first_id + i].text, menu[MENU_VALS].menu_block[i + menu[MENU_VALS].add_id].name);
@@ -6894,9 +6895,8 @@ board_set_wflevelsep(uint_fast8_t v)
 				for (uint8_t i = 0; i <= menu[MENU_GROUPS].num_rows; i++)
 				{
 					labels[i + menu[MENU_PARAMS].first_id].color = i == menu[MENU_PARAMS].selected_label ? COLORPIP_YELLOW : COLORPIP_DARKGRAY;
-					labels[i + menu[MENU_VALS].first_id].color = i == menu[MENU_VALS].selected_label ? COLORPIP_YELLOW : COLORPIP_DARKGRAY;
+					labels[i + menu[MENU_VALS].first_id].color = i == menu[MENU_PARAMS].selected_label ? COLORPIP_YELLOW : COLORPIP_DARKGRAY;
 				}
-
 			if (menu_level == MENU_PARAMS)
 			{
 				for (uint8_t i = 0; i <= menu[MENU_GROUPS].num_rows; i++)
@@ -7240,7 +7240,7 @@ board_set_wflevelsep(uint_fast8_t v)
 //		if (gettxstate())
 //		{
 			int_fast16_t temp = hamradio_get_temperature_value();
-			str_len += local_snprintf_P(&buff[str_len], sizeof buff / sizeof buff [0] - str_len, PSTR("%d.%dC "), temp / 10, temp %10);
+			str_len += local_snprintf_P(&buff[str_len], sizeof buff / sizeof buff [0] - str_len, PSTR("%d.%dC "), temp / 10, temp % 10);
 //		}
 	#endif /* WITHTHERMOLEVEL */
 	#if WITHCURRLEVEL && WITHCPUADCHW	// ток PA (при передаче)
