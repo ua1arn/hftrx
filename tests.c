@@ -6034,7 +6034,7 @@ void hightests(void)
 		const char * format2 = "bl=0x%02X contrast=0x%02X";
 
 		local_snprintf_P(s, sizeof s / sizeof s [0], format2, backlight, contrast);
-		memset(scr5, 0x00, sizeof scr3);
+		memset(scr5, 0x00, sizeof scr5);
 		display_pixelbuffer_text(scr5, DX, DY, 0, 0, s);
 		display_backlight1(backlight);
 		display_contrast1(contrast);
