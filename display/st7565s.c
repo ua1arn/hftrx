@@ -475,7 +475,7 @@ static void st7565s_initialize(void)
 	
 	local_delay_ms(10);			// delay required after [power on] reset
 
-	st7565s_write_cmd(CMD_SET_BIAS_9);
+	st7565s_write_cmd(CMD_SET_BIAS_7);
 
 #if LCDMODE_ST7565S_TOPDOWN
 	st7565s_write_cmd(CMD_SET_ADC_REVERSE);		// left-right reverse (on 132 columns basis)
