@@ -6028,8 +6028,8 @@ void hightests(void)
 
 		enum { BLMIN = 38, BLMAX = 0x7F };
 		enum { CTMIN = 0, CTMAX = 0x3F };
-		uint_fast8_t backlight = 0x3A;
-		uint_fast8_t contrast = 0x36;
+		uint_fast8_t backlight = 0x4A;
+		uint_fast8_t contrast = 0x34;
 		char s [64];
 		const char * format2 = "bl=0x%02X contrast=0x%02X";
 
