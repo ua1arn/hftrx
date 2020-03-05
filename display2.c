@@ -6713,15 +6713,15 @@ board_set_wflevelsep(uint_fast8_t v)
 				button_handlers[id_button_width].is_locked = 1;
 
 				val_c = get_high_bp(0);
-				x_c = normalize(val_c, 0, 500, 290) + 290;
+				x_c = 400; //normalize(val_c, 0, 500, 290) + 290;
 				val_w = get_low_bp(0) / 2;
-				x_l = normalize(val_c - val_w , 0, 500, 290) + 290;
-				x_h = normalize(val_c + val_w , 0, 500, 290) + 290;
+				x_l = normalize(190 - val_w , 0, 500, 290) + 290;
+				x_h = normalize(190 + val_w , 0, 500, 290) + 290;
 
-				local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), val_c * 10);
+				local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), val_w * 20);
 				labels[id_lbl_high].x = x_c - strlen(buf) * 8;
 				strcpy (labels[id_lbl_high].text, buf);
-				local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("W %d"), val_w * 20);
+				local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("P %d"), val_c * 10);
 				strcpy (labels[id_lbl_low].text, buf);
 				labels[id_lbl_low].x = 550 - strlen(buf) * 16;
 			}
@@ -6764,14 +6764,14 @@ board_set_wflevelsep(uint_fast8_t v)
 					val_w = get_low_bp(encoder2.rotate) / 2;
 				}
 				encoder2.rotate_done = 1;
-				x_c = normalize(val_c, 0, 500, 290) + 290;
-				x_l = normalize(val_c - val_w , 0, 500, 290) + 290;
-				x_h = normalize(val_c + val_w , 0, 500, 290) + 290;
+				x_c = 400;
+				x_l = normalize(190 - val_w , 0, 500, 290) + 290;
+				x_h = normalize(190 + val_w , 0, 500, 290) + 290;
 
-				local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), val_c * 10);
+				local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), val_w * 20);
 				labels[id_lbl_high].x = x_c - strlen(buf) * 8;
 				strcpy (labels[id_lbl_high].text, buf);
-				local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("W %d"), val_w * 20);
+				local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("P %d"), val_c * 10);
 				strcpy (labels[id_lbl_low].text, buf);
 				labels[id_lbl_low].x = 550 - strlen(buf) * 16;
 			}

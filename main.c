@@ -17823,16 +17823,12 @@ uint_fast8_t get_low_bp(int_least16_t rotate)
 
 		default:
 		case BWSET_NARROW:
-			if (rotate != 0
-					&& p->left10_width10 + rotate * p->limits->granulationleft > p->limits->left10_width10_low
-					&& p->left10_width10 + rotate * p->limits->granulationleft < p->limits->left10_width10_high
-					&& bwseti_getlow(bwseti) / BWGRANLOW + rotate * BWGRANLOW > p->limits->left10_width10_low
-					&& bwseti_gethigh(bwseti) / BWGRANLOW + rotate * BWGRANLOW < p->limits->left10_width10_high)
-					// исправить баг сравнения лимитов
-			{
-				p->left10_width10 += rotate * p->limits->granulationleft;
-				updateboard (1, 0);
-			}
+			if (rotate < 0)
+				p->left10_width10 = prevfreq(p->left10_width10, p->left10_width10 - p->limits->granulationleft, p->limits->granulationleft, p->limits->left10_width10_low);
+			if (rotate > 0)
+				p->left10_width10 = nextfreq(p->left10_width10, p->left10_width10 + p->limits->granulationleft, p->limits->granulationleft, p->limits->left10_width10_high);
+
+			updateboard (1, 0);
 			low = p->left10_width10;
 		}
 	return low;
@@ -17861,9 +17857,7 @@ uint_fast8_t get_high_bp(int_least16_t rotate)
 
 	default:
 	case BWSET_NARROW:
-		if (rotate != 0 && gcwpitch10 + rotate * CWPITCHSCALE <= 190 && gcwpitch10 + rotate * CWPITCHSCALE >= 40
-				&& bwseti_getlow(bwseti) / BWGRANLOW + rotate * BWGRANLOW > p->limits->left10_width10_low
-				&& bwseti_gethigh(bwseti) / BWGRANLOW + rotate * BWGRANLOW < p->limits->left10_width10_high)
+		if (rotate != 0 && gcwpitch10 + rotate * CWPITCHSCALE <= 190 && gcwpitch10 + rotate * CWPITCHSCALE >= 40)
 		{
 			gcwpitch10 += rotate * CWPITCHSCALE;
 			updateboard (1, 0);
