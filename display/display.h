@@ -968,10 +968,6 @@ void board_set_zoomxpow2(uint_fast8_t v);	/* уменьшение отображ
 void board_set_fillspect(uint_fast8_t v); /* заливать заполнением площадь под графиком спектра */
 void board_set_wflevelsep(uint_fast8_t v); /* чувствительность водопада регулируется отдельной парой параметров */
 
-#if WITHTOUCHTEST
-	void display_pip_update(uint_fast8_t x, uint_fast8_t y, void * pv);
-#endif /* WITHTOUCHTEST */
-
 PACKEDCOLOR_T * rgb565_fb(void);
 void display2_xltrgb24(COLOR24_T * xtable);
 

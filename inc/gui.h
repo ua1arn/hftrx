@@ -196,7 +196,17 @@
 
 #include "keyboard.h"
 
-#if WITHTOUCHTEST
+#if WITHTOUCHGUI
+	#include "list.h"
+
+	typedef struct listcnt
+	{
+		LIST_ENTRY item0;
+		uint_fast8_t Count;	// количество элментов в списке
+	} LIST_ENTRY2, * PLIST_ENTRY2;
+
+	LIST_ENTRY2 touch_elements;
+
 	void button1_handler(void);
 	void button2_handler(void);
 	void button3_handler(void);
@@ -213,6 +223,10 @@
 	void window_bp_process (void);
 	void window_menu_process (void);
 	void window_freq_process (void);
+	void display_pip_update(uint_fast8_t x, uint_fast8_t y, void * pv);
+	void display2_getpipparams(pipparams_t * p);
+	PACKEDCOLORPIP_T * getscratchpip(void);
+	int_fast32_t display_zoomedbw(void);
 
 	enum {								// button_handler.state
 		BUTTON_PRESSED,					// нажато
@@ -252,6 +266,7 @@
 		uint_fast8_t visible;			// рисовать ли кнопку на экране
 		uintptr_t payload;
 		char text[20];					// текст внутри кнопки
+		LIST_ENTRY item;
 	} button_t;
 
 	static button_t button_handlers [] = {
@@ -305,6 +320,7 @@
 		const char name[12];
 		char text[20];
 		COLOR565_T color;
+		LIST_ENTRY item;
 	} label_t;
 
 	static label_t labels[] = {
@@ -402,5 +418,5 @@
 
 	menu_t menu[MENU_COUNT];
 
-	#endif /* #if WITHTOUCHTEST */
+	#endif /* #if WITHTOUCHGUI */
 #endif /* GUI_H_INCLUDED */

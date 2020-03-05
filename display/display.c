@@ -2350,7 +2350,7 @@ void display_discharge(void)
 {
 }
 
-#if WITHTOUCHTEST
+#if WITHTOUCHGUI
 void display_at_xy(uint_fast16_t x, uint_fast16_t y, const char * s)
 {
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
@@ -2362,7 +2362,7 @@ void display_at_xy(uint_fast16_t x, uint_fast16_t y, const char * s)
 
 	} while (lowhalf --);
 }
-#endif /* WITHTOUCHTEST */
+#endif /* WITHTOUCHGUI */
 
 #endif /* LCDMODE_LQ043T3DX02K */
 #endif /* LCDMODE_LTDC */

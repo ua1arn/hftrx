@@ -36,11 +36,11 @@
 	#error WITHRFSG now not supported
 #endif /* WITHRFSG */
 
-#if WITHTOUCHTEST
+#if WITHTOUCHGUI
 	uint_fast8_t encoder2busy = 0;		// признак занятости энкодера в обработке gui
 	uint_fast8_t is_menu_opened = 0;	// открыто gui системное меню
 	char * w;
-#endif /* WITHTOUCHTEST */
+#endif /* WITHTOUCHGUI */
 
 static uint_fast32_t 
 //NOINLINEAT
@@ -12348,14 +12348,14 @@ display_menu_digit(
 	uint_fast8_t rj
 	)
 {
-#if WITHTOUCHTEST
+#if WITHTOUCHGUI
 	if (is_menu_opened)
 	{
 		uint_fast16_t c = pow(10, comma);
 		comma == 0 ? local_snprintf_P(w, width, "%d", value) : local_snprintf_P(w, width, "%d.%d", value / c, value % c);
 		return;
 	}
-#endif /* WITHTOUCHTEST */
+#endif /* WITHTOUCHGUI */
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 
 	display_setcolors(MNUVALCOLOR, BGCOLOR);
@@ -12378,13 +12378,13 @@ display_menu_string_P(
 	uint_fast8_t comma
 	)
 {
-#if WITHTOUCHTEST
+#if WITHTOUCHGUI
 	if (is_menu_opened)
 	{
 		strcpy(w, s);
 		return;
 	}
-#endif /* WITHTOUCHTEST */
+#endif /* WITHTOUCHGUI */
 	display_setcolors(MNUVALCOLOR, BGCOLOR);
 	display_at_P(x + width - comma, y, s);
 }
@@ -16160,7 +16160,7 @@ process_key_menuset_common(uint_fast8_t kbch)
 #endif /* WITHPWBUTTON */
 
 #if WITHENCODER2
-	#if WITHTOUCHTEST
+	#if WITHTOUCHGUI
 		case KBD_ENC2_PRESS:
 			encoder2busy ? set_encoder2_state (KBD_ENC2_PRESS): uif_encoder2_press();
 			return 1;
@@ -16174,7 +16174,7 @@ process_key_menuset_common(uint_fast8_t kbch)
 		case KBD_ENC2_HOLD:
 			uif_encoder2_hold();
 			return 1;
-	#endif /* WITHTOUCHTEST */
+	#endif /* WITHTOUCHGUI */
 #endif /* WITHENCODER2 */
 
 #if WITHTX
@@ -17154,6 +17154,10 @@ hamradio_initialize(void)
 #endif /* WITHSPISLAVE */
 
 	board_init_chips2();	// программирование кодеков при подающейся тактовой частоте
+
+#if WITHTOUCHGUI
+	gui_initialize();
+#endif /* WITHTOUCHGUI */
 }
 
 #if WITHSPISLAVE
@@ -17628,7 +17632,7 @@ hamradio_main_step(void)
 				nrotate = getRotateHiRes(& jumpsize, ghiresdiv * gencderate);
 				nrotate2 = getRotateHiRes2(& jumpsize2);
 			#endif
-#if WITHTOUCHTEST
+#if WITHTOUCHGUI
 			if (!encoder2busy)
 			{
 				if (uif_encoder2_rotate(nrotate2))
@@ -17639,7 +17643,7 @@ hamradio_main_step(void)
 #endif
 						nrotate2 = 0;
 						display_redrawfreqmodesbars(0);			/* Обновление дисплея - всё, включая частоту */
-#if WITHTOUCHTEST
+#if WITHTOUCHGUI
 				}
 			}
 #else
@@ -17732,10 +17736,10 @@ hamradio_main_step(void)
 					updateboard(0, 0);	/* частичная перенастройка - без смены режима работы */
 				}
 			}
-			#if WITHTOUCHTEST
+			#if WITHTOUCHGUI
 				encoder2busy = check_encoder2(nrotate2);
 				process_gui();
-			#endif /* WITHTOUCHTEST */
+			#endif /* WITHTOUCHGUI */
 		}
 		break;
 
@@ -17745,7 +17749,7 @@ hamradio_main_step(void)
 	return STTE_OK;
 }
 
-#if WITHTOUCHTEST
+#if WITHTOUCHGUI
 uint_fast8_t send_key_code (uint_fast8_t code)
 {
 	processkeyboard(code);
@@ -17981,7 +17985,17 @@ void set_menu_cond (uint_fast8_t m)
 	is_menu_opened = m;
 }
 
-#endif /* WITHTOUCHTEST */
+void change_submode(uint_fast8_t newsubmode)
+{
+	const uint_fast8_t bi = getbankindex_tx(gtx);	/* VFO bank index */
+	const uint_fast8_t defcol = locatesubmode(newsubmode, & gmoderows [bi]);	/* строка/колонка для SSB. Что делать, если не нашли? */
+	putmodecol(gmoderows [bi], defcol, bi);	/* внести новое значение в битовую маску */
+	gsubmodechange(getsubmode(bi), bi);
+	updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
+	display_redrawfreqmodesbars(0);
+}
+
+#endif /* WITHTOUCHGUI */
 
 // основной цикл программы при работе в режиме любительского премника
 static void
@@ -18322,16 +18336,6 @@ ddd:
 }
 
 #endif /* WITHISBOOTLOADER */
-
-void change_submode(uint_fast8_t newsubmode)
-{
-	const uint_fast8_t bi = getbankindex_tx(gtx);	/* VFO bank index */
-	const uint_fast8_t defcol = locatesubmode(newsubmode, & gmoderows [bi]);	/* строка/колонка для SSB. Что делать, если не нашли? */
-	putmodecol(gmoderows [bi], defcol, bi);	/* внести новое значение в битовую маску */
-	gsubmodechange(getsubmode(bi), bi);
-	updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
-	display_redrawfreqmodesbars(0);
-}
 
 /* Главная функция программы */
 int 
