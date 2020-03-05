@@ -6013,7 +6013,7 @@ void hightests(void)
 
 		display_pixelbuffer_text_big(scr3, DX, DY, 20, 16, "12.34.56");
 		display_pixelbuffer_text(scr3, DX, DY, 16, DY - 9, "Ok");
-		display_pixelbuffer_text(scr3, DX, DY, 94, DY - 9, "Back");
+		display_pixelbuffer_text(scr3, DX, DY, 94, DY - 9, "Nazad");
 
 		// Text & buttons
 		//display_pixelbuffer_line(scr4, DX, DY, 0, 0, DX - 1, DY - 1);
@@ -6021,7 +6021,7 @@ void hightests(void)
 		display_pixelbuffer_rect(scr4, DX, DY, 43,	DY - 11, 41, 11);
 		display_pixelbuffer_rect(scr4, DX, DY, 87,	DY - 11, 41, 11);
 		//display_pixelbuffer_text(scr4, DX, DY, 16, DY - 9, "Ok");
-		display_pixelbuffer_text(scr4, DX, DY, 94, DY - 9, "Back");
+		display_pixelbuffer_text(scr4, DX, DY, 94, DY - 9, "Nazad");
 
 		uint_fast8_t page = 3;
 		display_showbuffer(scr3, DX, DY, 0, 0);
