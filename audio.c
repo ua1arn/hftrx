@@ -191,7 +191,7 @@ static uint_fast8_t		glob_nfmdeviation100 = 75;	// 7.5 kHz максимальн�
 
 	#define BEGIN_STAMP() do { \
 			perft = cpu_getdebugticks(); \
-		} while (0);
+		} while (0)
 
 	#define END_STAMP() do { \
 			const uint_fast32_t t2 = cpu_getdebugticks(); \
@@ -203,11 +203,11 @@ static uint_fast8_t		glob_nfmdeviation100 = 75;	// 7.5 kHz максимальн�
 					dtmax = vdt; /* максимальное значение длительности */ \
 				++ dtcount; \
 			} \
-		} while (0);
+		} while (0)
 
 	#define BEGIN_STAMP2() do { \
 			perft2 = cpu_getdebugticks(); \
-		} while (0);
+		} while (0)
 
 	#define END_STAMP2() do { \
 			const uint_fast32_t t2 = cpu_getdebugticks(); \
@@ -219,11 +219,11 @@ static uint_fast8_t		glob_nfmdeviation100 = 75;	// 7.5 kHz максимальн�
 					dtmax2 = vdt; /* максимальное значение длительности */ \
 				++ dtcount2; \
 			} \
-		} while (0);
+		} while (0)
 
 	#define BEGIN_STAMP3() do { \
 			perft3 = cpu_getdebugticks(); \
-		} while (0);
+		} while (0)
 
 	#define END_STAMP3() do { \
 			const uint_fast32_t t2 = cpu_getdebugticks(); \
@@ -235,7 +235,7 @@ static uint_fast8_t		glob_nfmdeviation100 = 75;	// 7.5 kHz максимальн�
 					dtmax3 = vdt; /* максимальное значение длительности */ \
 				++ dtcount3; \
 			} \
-		} while (0);
+		} while (0)
 
 
 	//static uint32_t dd [4];
@@ -251,22 +251,22 @@ static uint_fast8_t		glob_nfmdeviation100 = 75;	// 7.5 kHz максимальн�
 #else /* WITHDEBUG */
 
 	#define BEGIN_STAMP() do { \
-		} while (0);
+		} while (0)
 
 	#define END_STAMP() do { \
-		} while (0);
+		} while (0)
 
 	#define BEGIN_STAMP2() do { \
-		} while (0);
+		} while (0)
 
 	#define END_STAMP2() do { \
-		} while (0);
+		} while (0)
 
 	#define BEGIN_STAMP3() do { \
-		} while (0);
+		} while (0)
 
 	#define END_STAMP3() do { \
-		} while (0);
+		} while (0)
 
 	static void debug_cleardtmax(void)
 	{
