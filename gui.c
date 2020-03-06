@@ -858,10 +858,10 @@
 	{
 		uint_fast16_t tx,ty;
 		pipparams_t pipparam;
-		board_tsc_getxy(& tx, & ty);
 
 		if (board_tsc_is_pressed())
 		{
+			board_tsc_getxy(& tx, & ty);
 			if (gui.fix)			// первые координаты после нажатия от контролера тачскрина приходят старые, пропускаем
 			{
 				gui.last_pressed_x = tx;
@@ -871,7 +871,7 @@
 
 			}
 			gui.fix = 1;
-			debug_printf_P(PSTR("pip x - %d, pip y - %d\n"), gui.last_pressed_x, gui.last_pressed_y - pipparam.y);
+			debug_printf_P(PSTR("pip x: %d, pip y: %d\n"), gui.last_pressed_x, gui.last_pressed_y - pipparam.y);
 		}
 		else
 		{
