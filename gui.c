@@ -129,7 +129,7 @@
 				}
 				else
 				{
-					p = RemoveTailList(& touch_elements);
+					p = RemoveHeadList(& touch_elements);
 				}
 			}
 		}
@@ -503,7 +503,7 @@
 		}
 	}
 
-	void buttons_bp_handler (void)
+	void buttons_bp_handler (void) // переделать
 	{
 		if (gui.selected == find_button(WINDOW_BP, "Low cut"))
 		{
@@ -629,7 +629,7 @@
 	{
 //		LIST_ENTRY list_test;
 //		PLIST_ENTRY p;
-//		testlist_t list1, list2, * alist;
+//		testlist_t list1, list2, list3, * alist;
 //
 //		InitializeListHead(&list_test);
 //
@@ -639,6 +639,9 @@
 //		list2.val = 22;
 //		InsertHeadList(& list_test, & list2.item);
 //
+//		list3.val = 33;
+//		InsertHeadList(& list_test, & list3.item);
+
 //		p = RemoveHeadList(&list_test);
 //		alist = CONTAINING_RECORD(p, testlist_t, item);
 //		PRINTF("%d\n", alist->val);
@@ -647,16 +650,20 @@
 //		alist = CONTAINING_RECORD(p, testlist_t, item);
 //		PRINTF("%d\n", alist->val);
 
-		uint_fast8_t i = 0;
-
-		PLIST_ENTRY t;
-		for (t = touch_elements.Blink; t != & touch_elements; t = t->Blink)
-		{
-			button_t * const p = CONTAINING_RECORD(t, button_t, item);
-			PRINTF("%s\n", p->text);
-			i++;
-		}
-		PRINTF("%d\n", i);
+//		uint_fast8_t i = 0;
+//		uint_fast8_t r = 0;
+//		PLIST_ENTRY t;
+//		for (t = list_test.Blink; t != & list_test; t = t->Blink)
+//		{
+//			button_t * p = CONTAINING_RECORD(t, button_t, item);
+//			if (strcmp(p->text, "Freq") == 0)
+//			{
+//				r = p - button_handlers;
+//			}
+//			PRINTF("%s\n", p->text);
+//			i++;
+//		}
+//		PRINTF("%d %d\n", i, r);
 	}
 
 	void button6_handler(void)
@@ -844,6 +851,8 @@
 	{
 		uint_fast16_t tx,ty;
 		pipparams_t pipparam;
+		PLIST_ENTRY t;
+		static button_t * p = NULL;
 
 		if (board_tsc_is_pressed())
 		{
@@ -854,10 +863,9 @@
 				gui.last_pressed_y = ty;
 				gui.is_touching_screen = 1;
 				display2_getpipparams(&pipparam);
-
+//				debug_printf_P(PSTR("pip x: %d, pip y: %d\n"), gui.last_pressed_x, gui.last_pressed_y - pipparam.y);
 			}
 			gui.fix = 1;
-			debug_printf_P(PSTR("pip x: %d, pip y: %d\n"), gui.last_pressed_x, gui.last_pressed_y - pipparam.y);
 		}
 		else
 		{
@@ -866,48 +874,46 @@
 			gui.fix = 0;
 		}
 
-		if (gui.state == BUTTON_CANCELLED)
+		if (gui.state == BUTTON_CANCELLED && gui.is_touching_screen && ! gui.is_after_touch)
 		{
-			if (gui.is_touching_screen && ! gui.is_after_touch)
+			for (t = touch_elements.Blink; t != & touch_elements; t = t->Blink)
 			{
-				for (uint_fast8_t i = 1; i < button_handlers_count; i++) {
-					if (button_handlers[i].x1 < gui.last_pressed_x && button_handlers[i].x2 > gui.last_pressed_x
-					 && button_handlers[i].y1 + pipparam.y < gui.last_pressed_y
-					 && button_handlers[i].y2 + pipparam.y > gui.last_pressed_y
-					 && button_handlers[i].visible == VISIBLE && button_handlers[i].state != BUTTON_DISABLED)
-					{
-						gui.selected = i;
-						gui.state = BUTTON_PRESSED;
-					}
-				} /* for */
-			} /* if (gui.is_touching_screen) */
+				p = CONTAINING_RECORD(t, button_t, item);
 
+				if (p->x1 < gui.last_pressed_x && p->x2 > gui.last_pressed_x && p->y1 + pipparam.y < gui.last_pressed_y
+				 && p->y2 + pipparam.y > gui.last_pressed_y && p->state != BUTTON_DISABLED)
+				{
+					gui.selected = p - button_handlers;
+					gui.state = BUTTON_PRESSED;
+					break;
+				}
+			}
 		}
 		if (gui.state == BUTTON_PRESSED)
 		{
-			if (button_handlers[gui.selected].x1 < gui.last_pressed_x && button_handlers[gui.selected].x2 > gui.last_pressed_x
-			 && button_handlers[gui.selected].y1 + pipparam.y < gui.last_pressed_y
-			 && button_handlers[gui.selected].y2 + pipparam.y > gui.last_pressed_y
+			if (p->x1 < gui.last_pressed_x && p->x2 > gui.last_pressed_x
+			 && p->y1 + pipparam.y < gui.last_pressed_y
+			 && p->y2 + pipparam.y > gui.last_pressed_y
 			 && ! gui.is_after_touch)
 			{
 				if (gui.is_touching_screen)
-					button_handlers[gui.selected].state = BUTTON_PRESSED;
+					p->state = BUTTON_PRESSED;
 				else
 					gui.state = BUTTON_RELEASED;
 			}
 			else
 			{
 				gui.state = BUTTON_CANCELLED;
-				button_handlers[gui.selected].state = BUTTON_CANCELLED;
+				p->state = BUTTON_CANCELLED;
 				gui.is_after_touch = 1; // точка непрерывного нажатия вышла за пределы выбранного элемента
 			}
 		}
 		if (gui.state == BUTTON_RELEASED)
 		{
-			button_handlers[gui.selected].state = BUTTON_RELEASED;
-			button_handlers[gui.selected].onClickHandler();
+			p->state = BUTTON_RELEASED;
+			p->onClickHandler();
 			debug_printf_P(PSTR("handler %d runned\n"), gui.selected);
-			button_handlers[gui.selected].state = BUTTON_CANCELLED;
+			p->state = BUTTON_CANCELLED;
 			gui.is_after_touch = 0;
 			gui.state = BUTTON_CANCELLED;
 		}
