@@ -11,9 +11,10 @@
 #include "hardware.h"
 #include "board.h"
 #include "display.h"
+#include "gui.h"
 #include <stdint.h>
 
-#include "../inc/spi.h"
+#include "spi.h"
 #include "formats.h"		// debug output support
 
 #if LCDMODE_S1D13781
