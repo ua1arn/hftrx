@@ -199,13 +199,7 @@
 #if WITHTOUCHGUI
 	#include "list.h"
 
-	typedef struct listcnt
-	{
-		LIST_ENTRY item0;
-		uint_fast8_t Count;	// количество элментов в списке
-	} LIST_ENTRY2, * PLIST_ENTRY2;
-
-	LIST_ENTRY2 touch_elements;
+	LIST_ENTRY touch_elements;
 
 	void button1_handler(void);
 	void button2_handler(void);

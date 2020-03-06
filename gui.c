@@ -21,49 +21,14 @@
 
 	uint_fast16_t pip_width, pip_height;
 
-	/* отладочные врапперы для функций работы со списком - позволяют получить размер очереди */
-	#define LIST2PRINT(name) do { \
-			debug_printf_P(PSTR(# name "[%3d] "), (int) name.Count); \
-		} while (0)
-
-	__STATIC_INLINE int
-	IsListEmpty2(const LIST_ENTRY2 * ListHead)
-	{
-		return (ListHead)->Count == 0;
-		//return IsListEmpty(& (ListHead)->item0);
-	}
-
-	__STATIC_INLINE void
-	InitializeListHead2(LIST_ENTRY2 * ListHead)
-	{
-		(ListHead)->Count = 0;
-		InitializeListHead(& (ListHead)->item0);
-	}
-
-	__STATIC_INLINE void
-	InsertHeadList2(PLIST_ENTRY2 ListHead, PLIST_ENTRY Entry)
-	{
-		(ListHead)->Count += 1;
-		InsertHeadList(& (ListHead)->item0, (Entry));
-	}
-
-	__STATIC_INLINE PLIST_ENTRY
-	RemoveTailList2(PLIST_ENTRY2 ListHead)
-	{
-		(ListHead)->Count -= 1;
-		const PLIST_ENTRY t = RemoveTailList(& (ListHead)->item0);	/* прямо вернуть значение RemoveTailList нельзя - Microsoft сделал не совсем правильный макрос. Но по другому и не плучилось бы в стандартном языке C. */
-		return t;
-	}
-
-	__STATIC_INLINE uint_fast8_t GetCountList2(const LIST_ENTRY2 * ListHead)
-	{
-		return (ListHead)->Count;
-	}
-
 	void gui_initialize (void)
 	{
 		pipparams_t pip;
-		InitializeListHead2(& touch_elements);
+		uint_fast8_t i=1;
+		InitializeListHead(& touch_elements);
+		do {
+			InsertHeadList(& touch_elements, & button_handlers[i].item);
+		} while (button_handlers[++i].parent == FOOTER);
 		display2_getpipparams(& pip);
 		pip_width = pip.w;
 		pip_height = pip.h;
@@ -151,12 +116,21 @@
 
 	void set_window(uint_fast8_t parent, uint_fast8_t value)
 	{
+		PLIST_ENTRY p;
 		for (uint_fast8_t i = 1; i < button_handlers_count; i++)
 		{
 			if (button_handlers[i].parent == parent)
 			{
 				button_handlers[i].visible = value ? VISIBLE : NON_VISIBLE;
 				button_handlers[i].is_locked = 0;
+				if (value)
+				{
+					InsertHeadList(& touch_elements, & button_handlers[i].item);
+				}
+				else
+				{
+					p = RemoveTailList(& touch_elements);
+				}
 			}
 		}
 		for (uint_fast8_t i = 1; i < labels_count; i++)
@@ -167,6 +141,7 @@
 		windows[gui.window_to_draw].is_show = value ? VISIBLE : NON_VISIBLE;
 		windows[gui.window_to_draw].first_call = 0;
 		gui.window_to_draw = value ? gui.window_to_draw : 0;
+		(void) p;
 	}
 
 	void window_bp_process (void)
@@ -652,25 +627,36 @@
 
 	void button5_handler(void)
 	{
-		LIST_ENTRY2 list_test;
-		PLIST_ENTRY p;
-		testlist_t list1, list2, * alist;
+//		LIST_ENTRY list_test;
+//		PLIST_ENTRY p;
+//		testlist_t list1, list2, * alist;
+//
+//		InitializeListHead(&list_test);
+//
+//		list1.val = 10;
+//		InsertHeadList(& list_test, & list1.item);
+//
+//		list2.val = 22;
+//		InsertHeadList(& list_test, & list2.item);
+//
+//		p = RemoveHeadList(&list_test);
+//		alist = CONTAINING_RECORD(p, testlist_t, item);
+//		PRINTF("%d\n", alist->val);
+//
+//		p = RemoveHeadList(&list_test);
+//		alist = CONTAINING_RECORD(p, testlist_t, item);
+//		PRINTF("%d\n", alist->val);
 
-		InitializeListHead2(&list_test);
+		uint_fast8_t i = 0;
 
-		list1.val = 10;
-		InsertHeadList2(& list_test, & list1.item);
-
-		list2.val = 22;
-		InsertHeadList2(& list_test, & list2.item);
-
-		p = RemoveTailList2(&list_test);
-		alist = CONTAINING_RECORD(p, testlist_t, item);
-		PRINTF("%d\n", alist->val);
-
-		p = RemoveTailList2(&list_test);
-		alist = CONTAINING_RECORD(p, testlist_t, item);
-		PRINTF("%d\n", alist->val);
+		PLIST_ENTRY t;
+		for (t = touch_elements.Blink; t != & touch_elements; t = t->Blink)
+		{
+			button_t * const p = CONTAINING_RECORD(t, button_t, item);
+			PRINTF("%s\n", p->text);
+			i++;
+		}
+		PRINTF("%d\n", i);
 	}
 
 	void button6_handler(void)
