@@ -385,7 +385,27 @@ void bandf_calc_initialize(void)
 	}
 }
 
+/* Частоы переключения bandf2 */
+
 #if \
+	WITHBANDF2_FT757 || \
+	0
+
+	// FT-757
+	// 1.9, 3.5, 7, 10 & 14, 18 & 21, 24.5 & 30
+
+	static const fseltype_t board_band2fs [] =
+	{
+		(fseltype_t) ( 2400000uL >> BANDDIVPOWER),
+		(fseltype_t) ( 3900000uL >> BANDDIVPOWER),
+		(fseltype_t) ( 7400000uL >> BANDDIVPOWER),
+		(fseltype_t) (14800000uL >> BANDDIVPOWER),
+		(fseltype_t) (22000000uL >> BANDDIVPOWER),
+		(fseltype_t) (30000000uL >> BANDDIVPOWER),
+	};
+	#define BAND2CALCS	(sizeof board_band2fs / sizeof board_band2fs [0])	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
+
+#elif \
 	CTLREGSTYLE_SW2013SF_V2 || \
 	CTLREGSTYLE_SW2013SF_V3 || \
 	0
