@@ -747,10 +747,10 @@ static void modem_spool(void * ctx)
 			PSTR("$GPMDR,%ld,%ld,%u,%u,%d,%d*"),  
 			2L, 
 			(long) hamradio_get_freq_rx(), 
-			seq ++, 
-			rxerrchar, 
-			gettxstate(), 
-			modem_rx_state
+			(int) seq ++,
+			(int) rxerrchar,
+			(int) hamradio_get_tx(),
+			(int) modem_rx_state
 			);
 #endif /* CTLREGMODE_STORCH_V4 */
 		unsigned xorv = calcxorv(buff + 1, len - 1);

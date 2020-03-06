@@ -145,8 +145,6 @@ static uint_fast8_t 	glob_user4;
 static uint_fast8_t 	glob_user5;
 static uint_fast8_t		glob_attvalue;	// RF signal gen attenuator value
 
-int gettxstate(void) { return glob_tx; }
-
 static void prog_rfadc_update(void);
 
 /**********************/

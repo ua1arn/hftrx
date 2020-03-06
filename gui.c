@@ -768,14 +768,14 @@
 
 		// вывод на PIP служебной информации
 	#if WITHTHERMOLEVEL
-//		if (gettxstate())
+//		if (hamradio_get_tx())
 //		{
 			int_fast16_t temp = hamradio_get_temperature_value();
 			str_len += local_snprintf_P(&buff[str_len], sizeof buff / sizeof buff [0] - str_len, PSTR("%d.%dC "), temp / 10, temp % 10);
 //		}
 	#endif /* WITHTHERMOLEVEL */
 	#if WITHCURRLEVEL && WITHCPUADCHW	// ток PA (при передаче)
-		if (gettxstate())
+		if (hamradio_get_tx())
 		{
 			int_fast16_t drain = hamradio_get_pacurrent_value();
 			if (drain < 0) drain = 0;

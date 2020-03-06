@@ -17795,9 +17795,9 @@ void set_agc_slow(void)
 	updateboard (1, 0);
 }
 
-uint_fast8_t get_bp_type (void)
+uint_fast8_t get_bp_type(void)
 {
-	uint_fast8_t tx = gettxstate();
+	const uint_fast8_t tx = hamradio_get_tx();
 	const uint_fast8_t asubmode = getasubmode(0);
 	const uint_fast8_t amode = submodes [asubmode].mode;
 	const uint_fast8_t bwseti = mdt [amode].bwsetis [tx];
@@ -17807,7 +17807,7 @@ uint_fast8_t get_bp_type (void)
 
 uint_fast8_t get_low_bp(int_least16_t rotate)
 {
-	uint_fast8_t tx = gettxstate();
+	const uint_fast8_t tx = hamradio_get_tx();
 	const uint_fast8_t asubmode = getasubmode(0);
 	const uint_fast8_t amode = submodes [asubmode].mode;
 	const uint_fast8_t bwseti = mdt [amode].bwsetis [tx];
@@ -17840,7 +17840,7 @@ uint_fast8_t get_low_bp(int_least16_t rotate)
 
 uint_fast8_t get_high_bp(int_least16_t rotate)
 {
-	uint_fast8_t tx = gettxstate();
+	const uint_fast8_t tx = hamradio_get_tx();
 	const uint_fast8_t asubmode = getasubmode(0);
 	const uint_fast8_t amode = submodes [asubmode].mode;
 	const uint_fast8_t bwseti = mdt [amode].bwsetis [tx];
