@@ -11,8 +11,8 @@
 // 2xUSB
 // Rmainunit_v5em.pcb, Rmainunit_v5jm.pcb
 
-#ifndef ARM_STM32F4XX_TQFP144_CTLSTYLE_STORCH_V3_RA9W_H_INCLUDED
-#define ARM_STM32F4XX_TQFP144_CTLSTYLE_STORCH_V3_RA9W_H_INCLUDED 1
+#ifndef ARM_STM32F7XX_TQFP144_CTLSTYLE_STORCH_V3_RA9W_H_INCLUDED
+#define ARM_STM32F7XX_TQFP144_CTLSTYLE_STORCH_V3_RA9W_H_INCLUDED 1
 
 	#if ! defined(STM32F767xx)
 		#error Wrong CPU selected. STM32F767xx expected
@@ -483,4 +483,4 @@
 	#define KI_COUNT 5	// количество используемых под клавиатуру входов АЦП
 	#define KI_LIST	KI4, KI3, KI2, KI1, KI0,	// инициализаторы для функции перекодировки
 
-#endif /* ARM_STM32F4XX_TQFP144_CTLSTYLE_STORCH_V3_RA9W_H_INCLUDED */
+#endif /* ARM_STM32F7XX_TQFP144_CTLSTYLE_STORCH_V3_RA9W_H_INCLUDED */
