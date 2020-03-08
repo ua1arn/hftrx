@@ -1079,7 +1079,8 @@ enum
 {
 	AGCSETI_SSB,
 	AGCSETI_CW,
-	AGCSETI_FLAT,	// AM, SAM, NFM
+	AGCSETI_FLAT,	// NFM
+	AGCSETI_AM,		// AM, SAM
 	AGCSETI_DRM,
 	AGCSETI_DIGI,
 	//
@@ -1087,10 +1088,11 @@ enum
 };
 
 /* структура хранения параметров в NVRAM */
-struct agcseti
+struct agcseti_tag
 {
 	/* параметры АРУ по режимам работы */
 	uint8_t rate;
+	uint8_t t0;
 	uint8_t t1;
 	uint8_t release10;
 	uint8_t t4;
@@ -1101,10 +1103,12 @@ struct afsetitempl
 {
 	/* начальные значения параметров АРУ */
 	uint8_t rate; 		// = 10;	// на agc_rate дБ изменения входного сигнала 1 дБ выходного
+	uint8_t t0; 		// = 0;	// in 1 mS steps. 0=0 mS	charge fast
 	uint8_t t1; 		// = 120;	// in 1 mS steps. 120=120 mS	charge slow
 	uint8_t release10; 	// = 5;		// in 0.1 S steps. 0.5 S discharge slow
 	uint8_t t4; 		// = 50;	// in 1 mS steps. 35=35 mS discharge fast
 	uint8_t thung10; 	// = 3;	// 0.1 S hung time (0.3 S recomennded).
+	uint8_t scale; 		// = 100;	// 100% - требуемый выход от АРУ
 };
 
 #define AGC_RATE_FLAT	192	//(UINT8_MAX - 1)
@@ -1124,42 +1128,62 @@ static FLASHMEM const struct afsetitempl aft [AGCSETI_COUNT] =
 	//AGCSETI_SSB,
 	{
 		AGC_RATE_SSB,		// agc_rate
+		0,		// agc_t0
 		120,	// agc_t1
 		5,		// agc_release10
 		50,		// agc_t4
 		3,		// agc_thung10
+		100,	// agc_scale
 	},
 	//AGCSETI_CW,
 	{
 		AGC_RATE_SSB,		// agc_rate
+		0,		// agc_t0
 		120,	// agc_t1
 		1,		// agc_release10
 		50,		// agc_t4
 		1,		// agc_thung10
+		100,	// agc_scale
 	},
 	//AGCSETI_FLAT,
 	{
 		AGC_RATE_FLAT,		// agc_rate
+		0,		// agc_t0
 		120,	// agc_t1
 		1,		// agc_release10
 		50,		// agc_t4
 		1,		// agc_thung10
+		100,	// agc_scale
+	},
+	//AGCSETI_AM,
+	{
+		AGC_RATE_FLAT,		// agc_rate
+		100,	// agc_t0
+		100,	// agc_t1
+		1,		// agc_release10
+		1,		// agc_t4
+		0,		// agc_thung10
+		20,		// agc_scale
 	},
 	//AGCSETI_DRM,
 	{
 		AGC_RATE_DRM,		// agc_rate
+		0,		// agc_t0
 		120,	// agc_t1
 		1,		// agc_release10
 		50,		// agc_t4
 		1,		// agc_thung10
+		100,	// agc_scale
 	},
 	//AGCSETI_DIGI,
 	{
 		AGC_RATE_DIGI,		// agc_rate
+		0,		// agc_t0
 		120,	// agc_t1
 		1,		// agc_release10
 		50,		// agc_t4
 		1,		// agc_thung10
+		100,	// agc_scale
 	},
 };
 
@@ -1167,10 +1191,12 @@ static FLASHMEM const struct afsetitempl aft [AGCSETI_COUNT] =
 typedef struct agcp_tag
 {
 	uint_fast8_t rate; 		// = 10;	// на gagc_rate дБ изменения входного сигнала 1 дБ выходного
+	uint_fast8_t t0; 		// = 0;		// in 1 mS steps. 0=0 mS	charge fast
 	uint_fast8_t t1; 		// = 120;	// in 1 mS steps. 120=120 mS	charge slow
 	uint_fast8_t release10; // = 5;		// in 0.1 S steps. 0.5 S discharge slow - время разряда медленной цепи АРУ
 	uint_fast8_t t4; 		// = 50;	// in 1 mS steps. 35=35 mS discharge fast - время разряда быстрой цепи АРУ
 	uint_fast8_t thung10; 	// = 3;	// 0.1 S hung time (0.3 S recomennded).
+	uint_fast8_t scale; 	// = 100
 } agcp_t;
 
 static agcp_t gagc [AGCSETI_COUNT];
@@ -1416,7 +1442,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 		{ 0, INT16_MAX, },	// фиксированная полоса пропускания в DSP (if6) для данного режима (если не ноль).
 		BOARD_TXAUDIO_MIKE,		// источник звукового сигнала для данного режима
 		TXAPROFIG_AM,				// группа профилей обработки звука
-		AGCSETI_FLAT,
+		AGCSETI_AM,
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_AM, BOARD_DETECTOR_AM, }, 		/* AM detector used */
 #endif /* WITHIF4DSP */
@@ -1449,7 +1475,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 		{ 0, INT16_MAX, },	// фиксированная полоса пропускания в DSP (if6) для данного режима (если не ноль).
 		BOARD_TXAUDIO_MIKE,		// источник звукового сигнала для данного режима
 		TXAPROFIG_AM,				// группа профилей обработки звука
-		AGCSETI_FLAT,
+		AGCSETI_AM,
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_AM, BOARD_DETECTOR_AM, }, 		/* AM detector used */
 #endif /* WITHIF4DSP */
@@ -2492,7 +2518,7 @@ struct nvmap
 	//uint8_t bwpropsfltsofter [BWPROPI_count];	/* Код управления сглаживанием скатов фильтра основной селекции на приёме */
 	uint8_t bwpropsafresponce [BWPROPI_count];	/* Наклон АЧХ */
 
-	struct agcseti afsets [AGCSETI_COUNT];	/* режимы приема */
+	struct agcseti_tag afsets [AGCSETI_COUNT];	/* режимы приема */
 
 	uint8_t gagcoff;
 	uint8_t gamdepth;		/* Глубина модуляции в АМ - 0..100% */
@@ -5369,10 +5395,12 @@ agcseti_load(void)
 		const struct afsetitempl * const t = & aft [agcseti];
 		// параметры АРУ
 		p->rate = loadvfy8up(offsetof(struct nvmap, afsets [agcseti].rate), 1, AGC_RATE_FLAT, t->rate);
+		p->t0 = loadvfy8up(offsetof(struct nvmap, afsets [agcseti].t0), 0, 250, t->t0);
 		p->t1 = loadvfy8up(offsetof(struct nvmap, afsets [agcseti].t1), 10, 250, t->t1);
 		p->release10 = loadvfy8up(offsetof(struct nvmap, afsets [agcseti].release10), 1, 100, t->release10);
 		p->t4 = loadvfy8up(offsetof(struct nvmap, afsets [agcseti].t4), 10, 250, t->t4);
-		p->thung10  =	loadvfy8up(offsetof(struct nvmap, afsets [agcseti].thung10), 0, 250, t->thung10);
+		p->thung10 = loadvfy8up(offsetof(struct nvmap, afsets [agcseti].thung10), 0, 250, t->thung10);
+		p->scale = t->scale;
 	}
 }
 
@@ -7842,7 +7870,9 @@ updateboard(
 			#endif /* WITHNOTCHFREQ */
 			#if WITHIF4DSP
 				const uint_fast8_t agcseti = pamodetempl->agcseti;
-				board_set_agcrate(agcseti == AGCSETI_FLAT ? UINT8_MAX : gagc [agcseti].rate);			/* на n децибел изменения входного сигнала 1 дБ выходного. UINT8_MAX - "плоская" АРУ */
+				board_set_agcrate(gagc [agcseti].rate);			/* на n децибел изменения входного сигнала 1 дБ выходного. UINT8_MAX - "плоская" АРУ */
+				board_set_agc_scale(gagc [agcseti].scale);
+				board_set_agc_t0(gagc [agcseti].t0);
 				board_set_agc_t1(gagc [agcseti].t1);
 				board_set_agc_t2(gagc [agcseti].release10);		// время разряда медленной цепи АРУ
 				board_set_agc_t4(gagc [agcseti].t4);			// время разряда быстрой цепи АРУ
