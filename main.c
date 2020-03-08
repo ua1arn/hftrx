@@ -1158,12 +1158,12 @@ static FLASHMEM const struct afsetitempl aft [AGCSETI_COUNT] =
 	//AGCSETI_AM,
 	{
 		AGC_RATE_FLAT,		// agc_rate
-		100,	// agc_t0
-		100,	// agc_t1
+		0,		// agc_t0
+		120,	// agc_t1
 		1,		// agc_release10
-		1,		// agc_t4
-		0,		// agc_thung10
-		25,		// agc_scale
+		50,		// agc_t4
+		1,		// agc_thung10
+		100,	// agc_scale
 	},
 	//AGCSETI_DRM,
 	{
