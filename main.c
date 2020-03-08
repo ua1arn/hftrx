@@ -39,7 +39,7 @@
 #if WITHTOUCHGUI
 	uint_fast8_t encoder2busy = 0;		// признак занятости энкодера в обработке gui
 	uint_fast8_t is_menu_opened = 0;	// открыто gui системное меню
-	char * w;
+	char w[10];							// буфер для вывода значений системного меню
 #endif /* WITHTOUCHGUI */
 
 static uint_fast32_t 
@@ -12335,6 +12335,14 @@ processtxrequest(void)
 #endif /* WITHTX */
 }
 
+unsigned ipow(int v)
+{
+	unsigned r = 1;
+	while (v --)
+		r *= 10;
+	return r;
+}
+
 // При редактировании настроек - показ цифровых значений параметров.
 // Или диагностическое сообщение при запуске
 static void 
@@ -12342,7 +12350,7 @@ static void
 display_menu_digit(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	uint_fast32_t value,
+	int_fast32_t value,
 	uint_fast8_t width,		// WSIGNFLAG can be added for display '+; or '-'
 	uint_fast8_t comma,
 	uint_fast8_t rj
@@ -12352,8 +12360,8 @@ display_menu_digit(
 	if (is_menu_opened)
 	{
 		width = width & WWIDTHFLAG;
-		uint_fast16_t c = pow(10, comma);
-		comma == 0 ? local_snprintf_P(w, width + 1, "%d", value) : (int)value < 0 ? local_snprintf_P(w, width + 3, "-%d.%d", abs(value) / c, abs(value) % c) : local_snprintf_P(w, width + 3, "%d.%d", value / c, value % c);
+		uint_fast16_t c = ipow(comma);
+		c == 1 ? local_snprintf_P(w, sizeof w / sizeof w[0], "%d", value) : value < 0 ? local_snprintf_P(w, sizeof w / sizeof w[0], "-%d.%d", abs(value) / c, abs(value) % c) : local_snprintf_P(w, sizeof w / sizeof w[0], "%d.%d", value / c, value % c);
 		return;
 	}
 #endif /* WITHTOUCHGUI */

@@ -19,8 +19,6 @@
 	#include "gui.h"
 	#include "list.h"
 
-	uint_fast16_t pip_width, pip_height;
-
 	void gui_initialize (void)
 	{
 		pipparams_t pip;
@@ -30,8 +28,8 @@
 			InsertHeadList(& touch_elements, & button_handlers[i].item);
 		} while (button_handlers[++i].parent == FOOTER);
 		display2_getpipparams(& pip);
-		pip_width = pip.w;
-		pip_height = pip.h;
+		gui.pip_width = pip.w;
+		gui.pip_height = pip.h;
 	}
 
 	void draw_rect_pip(uint_fast16_t x1, uint_fast16_t y1, uint_fast16_t x2, uint_fast16_t y2, PACKEDCOLOR565_T color, uint8_t fill)
@@ -40,13 +38,13 @@
 		if (fill)
 		{
 			for (uint_fast16_t i = y1; i <= y2; i++)
-				display_colorbuffer_line_set(colorpip, pip_width, pip_height, x1, i, x2, i, color);
+				display_colorbuffer_line_set(colorpip, gui.pip_width, gui.pip_height, x1, i, x2, i, color);
 		} else
 		{
-			display_colorbuffer_line_set(colorpip, pip_width, pip_height, x1, y1, x2, y1, color);
-			display_colorbuffer_line_set(colorpip, pip_width, pip_height, x1, y1, x1, y2, color);
-			display_colorbuffer_line_set(colorpip, pip_width, pip_height, x1, y2, x2, y2, color);
-			display_colorbuffer_line_set(colorpip, pip_width, pip_height, x2, y1, x2, y2, color);
+			display_colorbuffer_line_set(colorpip, gui.pip_width, gui.pip_height, x1, y1, x2, y1, color);
+			display_colorbuffer_line_set(colorpip, gui.pip_width, gui.pip_height, x1, y1, x1, y2, color);
+			display_colorbuffer_line_set(colorpip, gui.pip_width, gui.pip_height, x1, y2, x2, y2, color);
+			display_colorbuffer_line_set(colorpip, gui.pip_width, gui.pip_height, x2, y1, x2, y2, color);
 		}
 	}
 
@@ -99,7 +97,7 @@
 	void footer_buttons_state (uint_fast8_t state, char * name)					// блокируются все, кроме name == text
 	{
 		static uint_fast8_t id = 0;
-		if (state == BUTTON_DISABLED)
+		if (state == DISABLED)
 		{
 			id = find_button(FOOTER, name);
 			button_handlers[id].is_locked = BUTTON_LOCKED;
@@ -110,7 +108,7 @@
 		{
 			if (button_handlers[i].parent != FOOTER)
 				break;
-			button_handlers[i].state = button_handlers[i].text == name ? BUTTON_DISABLED : state;
+			button_handlers[i].state = button_handlers[i].text == name ? DISABLED : state;
 		}
 	}
 
@@ -259,11 +257,11 @@
 			}
 		}
 
-		display_colorbuffer_line_set(colorpip, pip_width, pip_height, 251, 110, 549, 110, COLORPIP_GRAY);
-		display_colorbuffer_line_set(colorpip, pip_width, pip_height, 290, 70, 290, 120, COLORPIP_GRAY);
+		display_colorbuffer_line_set(colorpip, gui.pip_width, gui.pip_height, 251, 110, 549, 110, COLORPIP_GRAY);
+		display_colorbuffer_line_set(colorpip, gui.pip_width, gui.pip_height, 290, 70, 290, 120, COLORPIP_GRAY);
 		draw_rect_pip(x_l, 70, x_h, 108, COLORPIP_YELLOW, 1);
 		if (! bw_type)
-			display_colorbuffer_line_set(colorpip, pip_width, pip_height, x_c, 60, x_c, 120, COLORPIP_RED);
+			display_colorbuffer_line_set(colorpip, gui.pip_width, gui.pip_height, x_c, 60, x_c, 120, COLORPIP_RED);
 }
 
 	void window_freq_process (void)
@@ -402,7 +400,7 @@
 		{
 			set_window(WINDOW_MENU, NON_VISIBLE);
 			encoder2.busy = 0;
-			footer_buttons_state(BUTTON_CANCELLED, "");
+			footer_buttons_state(CANCELLED, "");
 			set_menu_cond(NON_VISIBLE);
 			return;
 		}
@@ -463,7 +461,7 @@
 			PRINTF("%d %s %d\n", menu[menu_level].selected_str, menu[menu_level].menu_block[menu[menu_level].selected_str].name, menu[menu_level].add_id);
 		}
 		if (menu_level != MENU_VALS)
-			display_colorbuff_string_tbg(colorpip, pip_width, pip_height, labels[menu[menu_level].selected_label + menu[menu_level].first_id].x - 16,
+			display_colorbuff_string_tbg(colorpip, gui.pip_width, gui.pip_height, labels[menu[menu_level].selected_label + menu[menu_level].first_id].x - 16,
 										 labels[menu[menu_level].selected_label + menu[menu_level].first_id].y, ">", COLORPIP_GREEN);
 	}
 
@@ -499,7 +497,7 @@
 				change_submode(button_handlers[gui.selected].payload);
 
 			set_window(WINDOW_MODES, NON_VISIBLE);
-			footer_buttons_state(BUTTON_CANCELLED, "");
+			footer_buttons_state(CANCELLED, "");
 		}
 	}
 
@@ -529,7 +527,7 @@
 		{
 			set_window(WINDOW_BP, NON_VISIBLE);
 			encoder2.busy = 0;
-			footer_buttons_state(BUTTON_CANCELLED, "");
+			footer_buttons_state(CANCELLED, "");
 		}
 	}
 
@@ -541,7 +539,7 @@
 		if (editfreqmode == 0)
 		{
 			set_window(WINDOW_FREQ, NON_VISIBLE);
-			footer_buttons_state(BUTTON_CANCELLED, "");
+			footer_buttons_state(CANCELLED, "");
 		}
 	}
 
@@ -554,13 +552,13 @@
 			set_window(WINDOW_MODES, VISIBLE);
 //			button_handlers[find_button(WINDOW_MODES, "Mode")].is_locked = 1;
 			windows[gui.window_to_draw].first_call = 1;
-			footer_buttons_state(BUTTON_DISABLED, button_handlers[gui.selected].text);
+			footer_buttons_state(DISABLED, button_handlers[gui.selected].text);
 		}
 		else
 		{
 			set_window(WINDOW_MODES, NON_VISIBLE);
 //			button_handlers[find_button(WINDOW_MODES, "Mode")].is_locked = 0;
-			footer_buttons_state(BUTTON_CANCELLED, "");
+			footer_buttons_state(CANCELLED, "");
 		}
 	}
 
@@ -573,13 +571,13 @@
 			encoder2.busy = 1;
 			set_window(WINDOW_BP, VISIBLE);
 			windows[gui.window_to_draw].first_call = 1;
-			footer_buttons_state(BUTTON_DISABLED, button_handlers[gui.selected].text);
+			footer_buttons_state(DISABLED, button_handlers[gui.selected].text);
 		}
 		else
 		{
 			set_window(WINDOW_BP, NON_VISIBLE);
 			encoder2.busy = 0;
-			footer_buttons_state(BUTTON_CANCELLED, "");
+			footer_buttons_state(CANCELLED, "");
 		}
 	}
 
@@ -591,12 +589,12 @@
 		{
 			set_window(WINDOW_AGC, VISIBLE);
 			windows[gui.window_to_draw].first_call = 1;
-			footer_buttons_state(BUTTON_DISABLED, button_handlers[gui.selected].text);
+			footer_buttons_state(DISABLED, button_handlers[gui.selected].text);
 		}
 		else
 		{
 			set_window(WINDOW_AGC, NON_VISIBLE);
-			footer_buttons_state(BUTTON_CANCELLED, "");
+			footer_buttons_state(CANCELLED, "");
 		}
 	}
 
@@ -609,13 +607,13 @@
 			set_window(WINDOW_FREQ, VISIBLE);
 			windows[gui.window_to_draw].first_call = 1;
 			send_key_code(KBD_CODE_ENTERFREQ);
-			footer_buttons_state(BUTTON_DISABLED, button_handlers[gui.selected].text);
+			footer_buttons_state(DISABLED, button_handlers[gui.selected].text);
 		}
 		else
 		{
 			set_window(WINDOW_FREQ, NON_VISIBLE);
 			send_key_code(KBD_CODE_ENTERFREQDONE);
-			footer_buttons_state(BUTTON_CANCELLED, "");
+			footer_buttons_state(CANCELLED, "");
 		}
 	}
 
@@ -689,7 +687,7 @@
 		{
 			windows[gui.window_to_draw].is_show = VISIBLE;
 			windows[gui.window_to_draw].first_call = 1;
-			footer_buttons_state(BUTTON_DISABLED, button_handlers[gui.selected].text);
+			footer_buttons_state(DISABLED, button_handlers[gui.selected].text);
 			encoder2.busy = 1;
 		}
 		else
@@ -705,7 +703,7 @@
 			windows[gui.window_to_draw].is_show = NON_VISIBLE;
 			windows[gui.window_to_draw].first_call = 0;
 			gui.window_to_draw = 0;
-			footer_buttons_state(BUTTON_CANCELLED, "");
+			footer_buttons_state(CANCELLED, "");
 			encoder2.busy = 0;
 			set_menu_cond(NON_VISIBLE);
 		}
@@ -729,7 +727,7 @@
 
 		for (uint_fast16_t y = y1; y <= y2; y++)
 		{
-			yt = pip_width * y;
+			yt = gui.pip_width * y;
 			for (uint_fast16_t x = x1; x <= x2; x++)
 			{
 				dot = colorpip[yt + x];
@@ -782,9 +780,9 @@
 	#if WITHIF4DSP						// ширина панорамы
 		str_len += local_snprintf_P(&buff[str_len], sizeof buff / sizeof buff [0] - str_len, PSTR("SPAN:%3dk"), (int) ((display_zoomedbw() + 0) / 1000));
 	#endif /* WITHIF4DSP */
-		xt = pip_width - 10 - str_len * 10;
-		pip_transparency_rect(xt - 5, 225, pip_width - 5, 248, alpha);
-		display_colorbuff_string2_tbg(colorpip, pip_width, pip_height, xt, 230, buff, COLORPIP_YELLOW);
+		xt = gui.pip_width - 10 - str_len * 10;
+		pip_transparency_rect(xt - 5, 225, gui.pip_width - 5, 248, alpha);
+		display_colorbuff_string2_tbg(colorpip, gui.pip_width, gui.pip_height, xt, 230, buff, COLORPIP_YELLOW);
 
 	#if defined (RTC1_TYPE)				// текущее время
 		uint_fast16_t year;
@@ -794,7 +792,7 @@
 		str_len += local_snprintf_P(&buff[str_len], sizeof buff / sizeof buff [0] - str_len,
 									PSTR("%02d.%02d.%04d %02d%c%02d"), day, month, year, hour, ((secounds & 1) ? ' ' : ':'), minute);
 		pip_transparency_rect(5, 225, str_len * 10 + 15, 248, alpha);
-		display_colorbuff_string2_tbg(colorpip, pip_width, pip_height, 10, 230, buff, COLORPIP_YELLOW);
+		display_colorbuff_string2_tbg(colorpip, gui.pip_width, gui.pip_height, 10, 230, buff, COLORPIP_YELLOW);
 	#endif 	/* defined (RTC1_TYPE) */
 
 		if (windows[gui.window_to_draw].is_show)
@@ -806,7 +804,7 @@
 				windows[gui.window_to_draw].onVisibleProcess();
 
 			// вывод заголовка окна
-			display_colorbuff_string_tbg(colorpip, pip_width, pip_height,
+			display_colorbuff_string_tbg(colorpip, gui.pip_width, gui.pip_height,
 										 windows[gui.window_to_draw].x1 + 20,
 										 windows[gui.window_to_draw].y1 + 10,
 										 windows[gui.window_to_draw].title,
@@ -816,7 +814,7 @@
 			for (uint_fast8_t i = 1; i < labels_count; i++)
 			{
 				if (labels[i].parent == gui.window_to_draw && labels[i].visible == VISIBLE)	// метки
-					display_colorbuff_string_tbg(colorpip, pip_width, pip_height, labels[i].x, labels[i].y, labels[i].text, labels[i].color);
+					display_colorbuff_string_tbg(colorpip, gui.pip_width, gui.pip_height, labels[i].x, labels[i].y, labels[i].text, labels[i].color);
 			}
 		}
 		for (uint_fast8_t i = 1; i < button_handlers_count; i++)
@@ -826,21 +824,21 @@
 			{
 				draw_button_pip(button_handlers[i].x1, button_handlers[i].y1,
 								button_handlers[i].x2, button_handlers[i].y2, button_handlers[i].state, button_handlers[i].is_locked,
-								button_handlers[i].state == BUTTON_DISABLED ? 1 : 0);
+								button_handlers[i].state == DISABLED ? 1 : 0);
 
 
 				if (strchr(button_handlers[i].text, ' ') == NULL)
 				{
-					display_colorbuff_string2_tbg(colorpip, pip_width, pip_height, button_handlers[i].x1 + ((button_handlers[i].x2 - button_handlers[i].x1) -
+					display_colorbuff_string2_tbg(colorpip, gui.pip_width, gui.pip_height, button_handlers[i].x1 + ((button_handlers[i].x2 - button_handlers[i].x1) -
 							(strlen (button_handlers[i].text) * 10)) / 2, button_handlers[i].y1 + 17, button_handlers[i].text, COLORPIP_BLACK);
 				} else
 				{
 					strcpy (buff, button_handlers[i].text);
 					text2 = strtok(buff, " ");
-					display_colorbuff_string2_tbg(colorpip, pip_width, pip_height, button_handlers[i].x1 + ((button_handlers[i].x2 - button_handlers[i].x1) -
+					display_colorbuff_string2_tbg(colorpip, gui.pip_width, gui.pip_height, button_handlers[i].x1 + ((button_handlers[i].x2 - button_handlers[i].x1) -
 							(strlen (text2) * 10)) / 2, button_handlers[i].y1 + 10, text2, COLORPIP_BLACK);
 					text2 = strtok(NULL, " ");
-					display_colorbuff_string2_tbg(colorpip, pip_width, pip_height, button_handlers[i].x1 + ((button_handlers[i].x2 - button_handlers[i].x1) -
+					display_colorbuff_string2_tbg(colorpip, gui.pip_width, gui.pip_height, button_handlers[i].x1 + ((button_handlers[i].x2 - button_handlers[i].x1) -
 							(strlen (text2) * 10)) / 2, button_handlers[i].y1 + 25, text2, COLORPIP_BLACK);
 				}
 			}
@@ -849,7 +847,7 @@
 
 	void process_gui(void)
 	{
-		uint_fast16_t tx,ty;
+		uint_fast16_t tx, ty;
 		pipparams_t pipparam;
 		PLIST_ENTRY t;
 		static button_t * p = NULL;
@@ -874,22 +872,22 @@
 			gui.fix = 0;
 		}
 
-		if (gui.state == BUTTON_CANCELLED && gui.is_touching_screen && ! gui.is_after_touch)
+		if (gui.state == CANCELLED && gui.is_touching_screen && ! gui.is_after_touch)
 		{
 			for (t = touch_elements.Blink; t != & touch_elements; t = t->Blink)
 			{
 				p = CONTAINING_RECORD(t, button_t, item);
 
 				if (p->x1 < gui.last_pressed_x && p->x2 > gui.last_pressed_x && p->y1 + pipparam.y < gui.last_pressed_y
-				 && p->y2 + pipparam.y > gui.last_pressed_y && p->state != BUTTON_DISABLED)
+				 && p->y2 + pipparam.y > gui.last_pressed_y && p->state != DISABLED)
 				{
 					gui.selected = p - button_handlers;
-					gui.state = BUTTON_PRESSED;
+					gui.state = PRESSED;
 					break;
 				}
 			}
 		}
-		if (gui.state == BUTTON_PRESSED)
+		if (gui.state == PRESSED)
 		{
 			if (p->x1 < gui.last_pressed_x && p->x2 > gui.last_pressed_x
 			 && p->y1 + pipparam.y < gui.last_pressed_y
@@ -897,25 +895,25 @@
 			 && ! gui.is_after_touch)
 			{
 				if (gui.is_touching_screen)
-					p->state = BUTTON_PRESSED;
+					p->state = PRESSED;
 				else
-					gui.state = BUTTON_RELEASED;
+					gui.state = RELEASED;
 			}
 			else
 			{
-				gui.state = BUTTON_CANCELLED;
-				p->state = BUTTON_CANCELLED;
+				gui.state = CANCELLED;
+				p->state = CANCELLED;
 				gui.is_after_touch = 1; // точка непрерывного нажатия вышла за пределы выбранного элемента
 			}
 		}
-		if (gui.state == BUTTON_RELEASED)
+		if (gui.state == RELEASED)
 		{
-			p->state = BUTTON_RELEASED;
+			p->state = RELEASED;
 			p->onClickHandler();
 			debug_printf_P(PSTR("handler %d runned\n"), gui.selected);
-			p->state = BUTTON_CANCELLED;
+			p->state = CANCELLED;
 			gui.is_after_touch = 0;
-			gui.state = BUTTON_CANCELLED;
+			gui.state = CANCELLED;
 		}
 	}
 #endif /* WITHTOUCHGUI */
