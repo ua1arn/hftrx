@@ -12351,8 +12351,9 @@ display_menu_digit(
 #if WITHTOUCHGUI
 	if (is_menu_opened)
 	{
+		width = width & WWIDTHFLAG;
 		uint_fast16_t c = pow(10, comma);
-		comma == 0 ? local_snprintf_P(w, width, "%d", value) : local_snprintf_P(w, width, "%d.%d", value / c, value % c);
+		comma == 0 ? local_snprintf_P(w, width + 1, "%d", value) : (int)value < 0 ? local_snprintf_P(w, width + 3, "-%d.%d", abs(value) / c, abs(value) % c) : local_snprintf_P(w, width + 3, "%d.%d", value / c, value % c);
 		return;
 	}
 #endif /* WITHTOUCHGUI */
