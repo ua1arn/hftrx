@@ -1432,7 +1432,8 @@ static void agc_parameters_update(volatile agcparams_t * const agcp, FLOAT_t gai
 	agcp->dischargespeedslow = MAKETAUIF((int) glob_agc_t2 [pathi] * (FLOAT_t) 0.1);	// в сотнях милисекунд (0.1 секунды)
 	agcp->hungticks = NSAITICKS(glob_agc_thung [pathi] * 100);			// в сотнях милисекунд (0.1 секунды)
 
-	agcp->gainlimit = gainlimit * (int) glob_agc_scale [pathi] * (FLOAT_t) 0.01;
+	agcp->gainlimit = gainlimit;
+	agcp->levelfence = rxlevelfence * (int) glob_agc_scale [pathi] * (FLOAT_t) 0.01;
 	agcp->agcfactor = flatgain ? (FLOAT_t) -1 : agc_calcagcfactor(glob_agcrate [pathi]);
 
 	//debug_printf_P(PSTR("agc_parameters_update: dischargespeedfast=%f, chargespeedfast=%f\n"), agcp->dischargespeedfast, agcp->chargespeedfast);
@@ -1498,14 +1499,15 @@ static void comp_parameters_update(volatile agcparams_t * const agcp, FLOAT_t ga
 static void
 performagc(const volatile agcparams_t * agcp, volatile agcstate_t * st, FLOAT_t sample)
 {
-	// быстрая цепь АРУ
 	if (st->agcfastcap < sample)
 	{
+		// быстрая цепь АРУ
 		// заряжается в соответствии с параметром agcp->chargespeedfast
 		charge2(& st->agcfastcap, sample, agcp->chargespeedfast);
 	}
 	else
 	{
+		// быстрая цепь АРУ
 		// разряд со скоростью agcp->dischargespeedfast
 		charge2(& st->agcfastcap, sample, agcp->dischargespeedfast);
 	}
