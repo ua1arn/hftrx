@@ -16263,10 +16263,10 @@ process_key_menuset_common(uint_fast8_t kbch)
 	#if WITHTOUCHGUI
 		case KBD_ENC2_PRESS:
 			encoder2busy ? set_encoder2_state (KBD_ENC2_PRESS): uif_encoder2_press();
-			return 1;
+			return 0;
 		case KBD_ENC2_HOLD:
 			encoder2busy ? set_encoder2_state (KBD_ENC2_HOLD) : uif_encoder2_hold();
-			return 1;
+			return 0;
 	#else
 		case KBD_ENC2_PRESS:
 			uif_encoder2_press();
@@ -17782,9 +17782,7 @@ hamradio_main_step(void)
 				{
 					/* обновление индикатора без сохранения состояния диапазона */
 					encoder_clear();				/* при возможном уменьшении шага исключение случайного накопления */
-	#if !WITHTOUCHGUI
 					display_redrawfreqmodesbars(0);			/* Обновление дисплея - всё, включая частоту */
-	#endif
 				} // end keyboard processing
 			}
 	#endif /* WITHKEYBOARD */
