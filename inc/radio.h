@@ -3223,6 +3223,12 @@ void spool_0p128(void);	// OPERA support
 		uint_fast8_t index;
 	} menu_names_t;
 
+	typedef struct {
+		char param[20];
+		char val[20];
+		uint_fast8_t state;
+	} enc2_menu_t;
+
 	void change_submode(uint_fast8_t newsubmode);
 	uint_fast8_t get_low_bp (int_least16_t rotate);
 	uint_fast8_t get_high_bp (int_least16_t rotate);

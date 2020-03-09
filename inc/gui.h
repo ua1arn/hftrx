@@ -211,12 +211,14 @@
 	void button8_handler(void);
 	void button9_handler(void);
 	void buttons_mode_handler(void);
-	void buttons_bp_handler (void);
-	void buttons_freq_handler (void);
-	void buttons_menu_handler (void);
-	void window_bp_process (void);
-	void window_menu_process (void);
-	void window_freq_process (void);
+	void buttons_bp_handler(void);
+	void buttons_freq_handler(void);
+	void buttons_menu_handler(void);
+	void window_bp_process(void);
+	void window_menu_process(void);
+	void window_freq_process(void);
+	void window_enc2_process(void);
+	void encoder2_menu (enc2_menu_t * enc2_menu);
 	void display_pip_update(uint_fast8_t x, uint_fast8_t y, void * pv);
 	void display2_getpipparams(pipparams_t * p);
 	PACKEDCOLORPIP_T * getscratchpip(void);
@@ -245,7 +247,8 @@
 		WINDOW_BP,						// регулировка полосы пропускания фильтров выбранного режима
 		WINDOW_AGC,						// выбор пресетов настроек АРУ для текущего режима модуляции
 		WINDOW_FREQ,
-		WINDOW_MENU
+		WINDOW_MENU,
+		WINDOW_ENC2
 	};
 
 	typedef struct {
@@ -311,7 +314,7 @@
 		uint_fast16_t y;
 		uint_fast8_t parent;
 		uint_fast8_t visible;
-		const char name[12];
+		const char name[20];
 		char text[20];
 		COLOR565_T color;
 		LIST_ENTRY item;
@@ -340,7 +343,8 @@
 		{ 520, 140, WINDOW_MENU, NON_VISIBLE, "lbl_vals", "", COLORPIP_WHITE, },
 		{ 520, 170, WINDOW_MENU, NON_VISIBLE, "lbl_vals", "", COLORPIP_WHITE, },
 		{ 520, 200, WINDOW_MENU, NON_VISIBLE, "lbl_vals", "", COLORPIP_WHITE, },
-
+		{ 580,  60, WINDOW_ENC2, NON_VISIBLE, "lbl_enc2_param", "", COLORPIP_WHITE, },
+		{ 580,  90, WINDOW_ENC2, NON_VISIBLE, "lbl_enc2_val", "", COLORPIP_WHITE, },
 	};
 	enum { labels_count = sizeof labels / sizeof labels[1] };
 
@@ -377,8 +381,10 @@
 		{ WINDOW_MODES, 214, 20, 586, 175, "Select mode", NON_VISIBLE, 0, },
 		{ WINDOW_BP,    214, 20, 586, 225, "Bandpass",    NON_VISIBLE, 0, window_bp_process, },
 		{ WINDOW_AGC,   214, 20, 586, 140, "AGC control", NON_VISIBLE, 0, },
-		{ WINDOW_FREQ,   100, 0, 350, 200, "Freq", 		  NON_VISIBLE, 0, window_freq_process, },
+		{ WINDOW_FREQ,  100,  0, 350, 200, "Freq", 		  NON_VISIBLE, 0, window_freq_process, },
 		{ WINDOW_MENU,   50, 10, 699, 220, "Settings",	  NON_VISIBLE, 0, window_menu_process, },
+		{ WINDOW_ENC2, 	550, 15, 735, 120, "Fast menu",   NON_VISIBLE, 0, window_enc2_process, },
+
 	};
 	enum { windows_count = sizeof windows / sizeof windows[1] };
 

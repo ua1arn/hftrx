@@ -489,6 +489,39 @@
 		encoder2.press_done = 0;
 	}
 
+	void remove_spaces(char * str)
+	{
+		uint_fast8_t i;
+		char c[1], outstr[20];
+		for(i = strlen(str) - 1; i > 0; i--)
+		{
+			strncpy(c, & str[i], 1);
+			if(strcmp(c, " ") != 0)
+				break;
+		}
+		str[i + 1] = 0;
+	}
+
+	void encoder2_menu (enc2_menu_t * enc2_menu)
+	{
+		uint_fast8_t id_lbl_param = find_label(WINDOW_ENC2, "lbl_enc2_param");
+		uint_fast8_t id_lbl_val = find_label(WINDOW_ENC2, "lbl_enc2_val");
+		gui.window_to_draw = WINDOW_ENC2;
+		set_window(gui.window_to_draw, enc2_menu->state != 0);
+		if (windows[gui.window_to_draw].is_show == VISIBLE)
+		{
+			footer_buttons_state(DISABLED, "");
+			strcpy(labels[id_lbl_param].text, enc2_menu->param);
+			remove_spaces(labels[id_lbl_param].text);
+			PRINTF("%d\n", strlen(labels[id_lbl_param].text));
+			strcpy(labels[id_lbl_val].text, enc2_menu->val);
+			labels[id_lbl_val].color = enc2_menu->state == 2 ? COLORPIP_YELLOW : COLORPIP_WHITE;
+			labels[id_lbl_val].x = windows[WINDOW_ENC2].x1 + ((windows[WINDOW_ENC2].x2 - windows[WINDOW_ENC2].x1) - (strlen (labels[id_lbl_val].text) * 16)) / 2;
+			labels[id_lbl_param].x = windows[WINDOW_ENC2].x1 + ((windows[WINDOW_ENC2].x2 - windows[WINDOW_ENC2].x1) - (strlen (labels[id_lbl_param].text) * 16)) / 2;
+		} else
+			footer_buttons_state(CANCELLED, "");
+	}
+
 	void buttons_mode_handler(void)
 	{
 		if (windows[WINDOW_MODES].is_show && button_handlers[gui.selected].parent == WINDOW_MODES)
@@ -617,51 +650,9 @@
 		}
 	}
 
-	typedef struct testlist
-	{
-		LIST_ENTRY item;
-		uint16_t val;
-	}testlist_t;
-
 	void button5_handler(void)
 	{
-//		LIST_ENTRY list_test;
-//		PLIST_ENTRY p;
-//		testlist_t list1, list2, list3, * alist;
-//
-//		InitializeListHead(&list_test);
-//
-//		list1.val = 10;
-//		InsertHeadList(& list_test, & list1.item);
-//
-//		list2.val = 22;
-//		InsertHeadList(& list_test, & list2.item);
-//
-//		list3.val = 33;
-//		InsertHeadList(& list_test, & list3.item);
 
-//		p = RemoveHeadList(&list_test);
-//		alist = CONTAINING_RECORD(p, testlist_t, item);
-//		PRINTF("%d\n", alist->val);
-//
-//		p = RemoveHeadList(&list_test);
-//		alist = CONTAINING_RECORD(p, testlist_t, item);
-//		PRINTF("%d\n", alist->val);
-
-//		uint_fast8_t i = 0;
-//		uint_fast8_t r = 0;
-//		PLIST_ENTRY t;
-//		for (t = list_test.Blink; t != & list_test; t = t->Blink)
-//		{
-//			button_t * p = CONTAINING_RECORD(t, button_t, item);
-//			if (strcmp(p->text, "Freq") == 0)
-//			{
-//				r = p - button_handlers;
-//			}
-//			PRINTF("%s\n", p->text);
-//			i++;
-//		}
-//		PRINTF("%d %d\n", i, r);
 	}
 
 	void button6_handler(void)

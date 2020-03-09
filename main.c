@@ -40,6 +40,7 @@
 	uint_fast8_t encoder2busy = 0;		// признак занятости энкодера в обработке gui
 	uint_fast8_t is_menu_opened = 0;	// открыто gui системное меню
 	char w[10];							// буфер для вывода значений системного меню
+	enc2_menu_t enc2_menu;
 #endif /* WITHTOUCHGUI */
 
 static uint_fast32_t 
@@ -5772,30 +5773,57 @@ enc2menu_value(
 		value = mp->bottom;	/* чтобы не ругался компилятор */
 	}
 
+#if WITHTOUCHGUI
 	switch (mp->rj)
 	{
 #if WITHSUBTONES && WITHTX
 	case RJ_SUBTONE:
-		local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%*u.%1u"), WDTH - 2, gsubtones [value] / 10, gsubtones [value] % 10);
+		local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%u.%1u"), gsubtones [value] / 10, gsubtones [value] % 10);
 		break;
 #endif /* WITHSUBTONES && WITHTX */
 	case RJ_YES:
-		local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%*s"), WDTH, value ? "YES" : "NO");
+		local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%s"), value ? "YES" : "NO");
 		break;
 	case RJ_ON:
-		local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%*s"), WDTH, value ? "ON" : "OFF");
+		local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%s"), value ? "ON" : "OFF");
 		break;
 	case RJ_POW2:
-		local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%*u"), WDTH, 1U << value);
+		local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%u"), 1U << value);
 		break;
 	case RJ_SIGNED:
-		local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%*+ld"), WDTH, (signed long) value);
+		local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%+ld"), (signed long) value);
 		break;
 	case RJ_UNSIGNED:
 	default:
-		local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%*lu"), WDTH, (unsigned long) value);
+		local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%lu"), (unsigned long) value);
 		break;
 	}
+#else
+	switch (mp->rj)
+		{
+	#if WITHSUBTONES && WITHTX
+		case RJ_SUBTONE:
+			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%*u.%1u"), WDTH - 2, gsubtones [value] / 10, gsubtones [value] % 10);
+			break;
+	#endif /* WITHSUBTONES && WITHTX */
+		case RJ_YES:
+			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%*s"), WDTH, value ? "YES" : "NO");
+			break;
+		case RJ_ON:
+			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%*s"), WDTH, value ? "ON" : "OFF");
+			break;
+		case RJ_POW2:
+			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%*u"), WDTH, 1U << value);
+			break;
+		case RJ_SIGNED:
+			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%*+ld"), WDTH, (signed long) value);
+			break;
+		case RJ_UNSIGNED:
+		default:
+			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%*lu"), WDTH, (unsigned long) value);
+			break;
+		}
+#endif
 	return b;
 }
 
@@ -5835,7 +5863,20 @@ uif_encoder2_press(void)
 		break;
 	}
 	save_i8(RMT_ENC2STATE_BASE, enc2state);
+#if ! WITHTOUCHGUI
 	display_redrawmodes(1);
+#else
+	enc2_menu.state = enc2state;
+	if (enc2state != ENC2STATE_INITIALIZE)
+	{
+		const char FLASHMEM * text = enc2menu_label_P(enc2pos);
+		strcpy(enc2_menu.param, text);
+		text = enc2menu_value(enc2pos);
+
+		strcpy(enc2_menu.val, text);
+		encoder2_menu(&enc2_menu);
+	}
+#endif /* ! WITHTOUCHGUI */
 }
 
 /* удержанное нажатие на второй валкодер - выход из режима редактирования */
@@ -5855,7 +5896,13 @@ uif_encoder2_hold(void)
 		break;
 	}
 	save_i8(RMT_ENC2STATE_BASE, enc2state);
+#if ! WITHTOUCHGUI
 	display_redrawmodes(1);
+#else
+	enc2_menu.state = enc2state;
+	if (enc2state == ENC2STATE_INITIALIZE)
+		encoder2_menu(&enc2_menu);
+#endif /* ! WITHTOUCHGUI */
 }
 
 /* обработка вращения второго валкодера */
@@ -5923,7 +5970,7 @@ void display_fnlabel9(
 	void * pv
 	)
 {
-#if WITHENCODER2
+#if WITHENCODER2 && ! WITHTOUCHGUI
 	const char FLASHMEM * const text = enc2menu_label_P(enc2pos);
 	switch (enc2state)
 	{
@@ -5947,7 +5994,7 @@ void display_fnvalue9(
 	void * pv
 	)
 {
-#if WITHENCODER2
+#if WITHENCODER2 && ! WITHTOUCHGUI
 	const char * const text = enc2menu_value(enc2pos);
 	switch (enc2state)
 	{
@@ -16597,7 +16644,7 @@ processkeyboard(uint_fast8_t kbch)
 	case KBD_CODE_MENU:
 		/* Вход в меню
 			 - не вызывает сохранение состояния диапазона */
-#if WITHMENU
+#if WITHMENU && ! WITHTOUCHGUI
 	#if WITHAUTOTUNER
 		if (reqautotune != 0)
 			return 1;
@@ -16614,7 +16661,7 @@ processkeyboard(uint_fast8_t kbch)
 		updateboard(1, 0);
 		updateboard2();			/* настройки валкодера и цветовой схемы дисплея. */
 		display2_bgreset();		/* возможно уже с новой цветовой схемой */
-#endif //WITHMENU
+#endif //WITHMENU && ! WITHTOUCHGUI
 		return 1;	// требуется обновление индикатора
 
 	case KBD_CODE_DISPMODE:
@@ -17681,13 +17728,19 @@ hamradio_main_step(void)
 			{
 #endif
 						nrotate2 = 0;
-						display_redrawfreqmodesbars(0);			/* Обновление дисплея - всё, включая частоту */
+//
 #if WITHTOUCHGUI
+						const char FLASHMEM * text = enc2menu_label_P(enc2pos);
+						strcpy(enc2_menu.param, text);
+						text = enc2menu_value(enc2pos);
+						strcpy(enc2_menu.val, text);
+						encoder2_menu(&enc2_menu);
 				}
 			}
 #else
+				display_redrawfreqmodesbars(0);			/* Обновление дисплея - всё, включая частоту */
 			}
-#endif
+#endif /* WITHTOUCHGUI */
 	#if WITHDEBUG
 			{
 				/* здесь можно добавить обработку каких-либо команд с debug порта */
@@ -17715,7 +17768,12 @@ hamradio_main_step(void)
 				{
 					/* обновление индикатора без сохранения состояния диапазона */
 					encoder_clear();				/* при возможном уменьшении шага исключение случайного накопления */
+	#if WITHTOUCHGUI
+					if (enc2_menu.state == 0)
+						display_redrawfreqmodesbars(0);		/* Обновление дисплея - всё, включая частоту */
+	#else
 					display_redrawfreqmodesbars(0);			/* Обновление дисплея - всё, включая частоту */
+	#endif
 				} // end keyboard processing
 			}
 	#endif /* WITHKEYBOARD */
