@@ -217,7 +217,6 @@
 	void window_bp_process(void);
 	void window_menu_process(void);
 	void window_freq_process(void);
-	void window_enc2_process(void);
 	void encoder2_menu (enc2_menu_t * enc2_menu);
 	void display_pip_update(uint_fast8_t x, uint_fast8_t y, void * pv);
 	void display2_getpipparams(pipparams_t * p);
@@ -383,7 +382,7 @@
 		{ WINDOW_AGC,   214, 20, 586, 140, "AGC control", NON_VISIBLE, 0, },
 		{ WINDOW_FREQ,  100,  0, 350, 200, "Freq", 		  NON_VISIBLE, 0, window_freq_process, },
 		{ WINDOW_MENU,   50, 10, 699, 220, "Settings",	  NON_VISIBLE, 0, window_menu_process, },
-		{ WINDOW_ENC2, 	550, 15, 735, 120, "Fast menu",   NON_VISIBLE, 0, window_enc2_process, },
+		{ WINDOW_ENC2, 	550, 15, 735, 120, "Fast menu",   NON_VISIBLE, 0, },
 
 	};
 	enum { windows_count = sizeof windows / sizeof windows[1] };

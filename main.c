@@ -5872,7 +5872,6 @@ uif_encoder2_press(void)
 		const char FLASHMEM * text = enc2menu_label_P(enc2pos);
 		strcpy(enc2_menu.param, text);
 		text = enc2menu_value(enc2pos);
-
 		strcpy(enc2_menu.val, text);
 		encoder2_menu(&enc2_menu);
 	}
@@ -17783,10 +17782,7 @@ hamradio_main_step(void)
 				{
 					/* обновление индикатора без сохранения состояния диапазона */
 					encoder_clear();				/* при возможном уменьшении шага исключение случайного накопления */
-	#if WITHTOUCHGUI
-					if (enc2_menu.state == 0)
-						display_redrawfreqmodesbars(0);		/* Обновление дисплея - всё, включая частоту */
-	#else
+	#if !WITHTOUCHGUI
 					display_redrawfreqmodesbars(0);			/* Обновление дисплея - всё, включая частоту */
 	#endif
 				} // end keyboard processing

@@ -489,7 +489,7 @@
 		encoder2.press_done = 0;
 	}
 
-	void remove_spaces(char * str)
+	void remove_end_line_spaces(char * str)
 	{
 		uint_fast8_t i;
 		char c[1], outstr[20];
@@ -512,7 +512,7 @@
 		{
 			footer_buttons_state(DISABLED, "");
 			strcpy(labels[id_lbl_param].text, enc2_menu->param);
-			remove_spaces(labels[id_lbl_param].text);
+			remove_end_line_spaces(labels[id_lbl_param].text);
 			PRINTF("%d\n", strlen(labels[id_lbl_param].text));
 			strcpy(labels[id_lbl_val].text, enc2_menu->val);
 			labels[id_lbl_val].color = enc2_menu->state == 2 ? COLORPIP_YELLOW : COLORPIP_WHITE;
