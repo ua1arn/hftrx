@@ -12390,22 +12390,22 @@ display_menu_digit(
 	if (is_menu_opened)
 	{
 		const uint_fast8_t iwidth = width & WWIDTHFLAG;	// ширина поля
-		const uint_fast32_t c = ipow10(comma);
-		if (c == 1)
+		const uint_fast32_t ca = ipow10(comma);
+		if (ca == 1)
 		{
 			local_snprintf_P(menuw, sizeof menuw / sizeof menuw[0], PSTR("%ld"), value);
 		}
 		else if (value < 0)
 		{
 			ldiv_t d;
-			d = ldiv(- value, c);
-			local_snprintf_P(menuw, sizeof menuw / sizeof menuw[0], PSTR("-%ld.%0#ld"), d.quot, d.rem);
+			d = ldiv(- value, ca);
+			local_snprintf_P(menuw, sizeof menuw / sizeof menuw[0], PSTR("-%ld.%0#ld"), d.quot, (int) ca, d.rem);
 		}
 		else
 		{
 			ldiv_t d;
-			d = ldiv(value, c);
-			local_snprintf_P(menuw, sizeof menuw / sizeof menuw[0], PSTR("%ld.%0#ld"), d.quot, d.rem);
+			d = ldiv(value, ca);
+			local_snprintf_P(menuw, sizeof menuw / sizeof menuw[0], PSTR("%ld.%0#ld"), d.quot, (int) ca, d.rem);
 		}
 		return;
 	}
