@@ -37,10 +37,10 @@
 #endif /* WITHRFSG */
 
 #if WITHTOUCHGUI
-	uint_fast8_t encoder2busy = 0;		// признак занятости энкодера в обработке gui
-	uint_fast8_t is_menu_opened = 0;	// открыто gui системное меню
-	char w[10];							// буфер для вывода значений системного меню
-	enc2_menu_t enc2_menu;
+static uint_fast8_t encoder2busy = 0;		// признак занятости энкодера в обработке gui
+static uint_fast8_t is_menu_opened = 0;		// открыто gui системное меню
+static char menuw [10];						// буфер для вывода значений системного меню
+static enc2_menu_t enc2_menu;
 #endif /* WITHTOUCHGUI */
 
 static uint_fast32_t 
@@ -12412,9 +12412,9 @@ processtxrequest(void)
 #endif /* WITHTX */
 }
 
-unsigned ipow(int v)
+static uint_fast32_t ipow10(uint_fast8_t v)
 {
-	unsigned r = 1;
+	uint_fast32_t r = 1;
 	while (v --)
 		r *= 10;
 	return r;
@@ -12436,9 +12436,24 @@ display_menu_digit(
 #if WITHTOUCHGUI
 	if (is_menu_opened)
 	{
-		width = width & WWIDTHFLAG;
-		uint_fast16_t c = ipow(comma);
-		c == 1 ? local_snprintf_P(w, sizeof w / sizeof w[0], "%d", value) : value < 0 ? local_snprintf_P(w, sizeof w / sizeof w[0], "-%d.%d", abs(value) / c, abs(value) % c) : local_snprintf_P(w, sizeof w / sizeof w[0], "%d.%d", value / c, value % c);
+		const uint_fast8_t iwidth = width & WWIDTHFLAG;	// ширина поля
+		const uint_fast32_t ca = ipow10(comma);
+		if (ca == 1)
+		{
+			local_snprintf_P(menuw, sizeof menuw / sizeof menuw[0], PSTR("%ld"), value);
+		}
+		else if (value < 0)
+		{
+			ldiv_t d;
+			d = ldiv(- value, ca);
+			local_snprintf_P(menuw, sizeof menuw / sizeof menuw[0], PSTR("-%ld.%0#ld"), d.quot, (int) ca, d.rem);
+		}
+		else
+		{
+			ldiv_t d;
+			d = ldiv(value, ca);
+			local_snprintf_P(menuw, sizeof menuw / sizeof menuw[0], PSTR("%ld.%0#ld"), d.quot, (int) ca, d.rem);
+		}
 		return;
 	}
 #endif /* WITHTOUCHGUI */
@@ -12467,7 +12482,7 @@ display_menu_string_P(
 #if WITHTOUCHGUI
 	if (is_menu_opened)
 	{
-		strcpy(w, s);
+		strcpy(menuw, s);
 		return;
 	}
 #endif /* WITHTOUCHGUI */
@@ -18019,16 +18034,16 @@ void get_multilinemenu_block_vals(menu_names_t * vals, uint_fast8_t index, uint_
 		const FLASHMEM struct menudef * const mv = & menutable [el];
 		if (ismenukind(mv, ITEM_VALUE))
 		{
-			menu_names_t * const v = & vals[count];
+			menu_names_t * const v = & vals [count];
 			display_menu_valxx(0, 0, (void *) mv);
-			strcpy (v->name, w);
+			strcpy (v->name, menuw);
 			v->index = el;
 			count++;
 		}
 	}
 }
 
-char * gui_edit_menu_item (uint_fast8_t index, int_least16_t rotate)
+const char * gui_edit_menu_item(uint_fast8_t index, int_least16_t rotate)
 {
 	const FLASHMEM struct menudef * const mp = & menutable [index];
 	if (rotate != 0 && ismenukind(mp, ITEM_VALUE))
@@ -18074,7 +18089,7 @@ char * gui_edit_menu_item (uint_fast8_t index, int_least16_t rotate)
 		savemenuvalue(mp);		/* сохраняем отредактированное значение */
 #endif
 		}
-	return w;
+	return menuw;
 }
 
 void set_menu_cond (uint_fast8_t m)
