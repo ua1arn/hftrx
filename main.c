@@ -12397,11 +12397,15 @@ display_menu_digit(
 		}
 		else if (value < 0)
 		{
-			local_snprintf_P(menuw, sizeof menuw / sizeof menuw[0], PSTR("-%ld.%0#ld"), - value / c, - value % c);
+			ldiv_t d;
+			d = ldiv(- value, c);
+			local_snprintf_P(menuw, sizeof menuw / sizeof menuw[0], PSTR("-%ld.%0#ld"), d.quot, d.rem);
 		}
 		else
 		{
-			local_snprintf_P(menuw, sizeof menuw / sizeof menuw[0], PSTR("%ld.%0#ld"), value / c, value % c);
+			ldiv_t d;
+			d = ldiv(value, c);
+			local_snprintf_P(menuw, sizeof menuw / sizeof menuw[0], PSTR("%ld.%0#ld"), d.quot, d.rem);
 		}
 		return;
 	}
