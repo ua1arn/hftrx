@@ -210,6 +210,7 @@
 	void button7_handler(void);
 	void button8_handler(void);
 	void button9_handler(void);
+	void button_move_handler(void);
 	void buttons_mode_handler(void);
 	void buttons_bp_handler(void);
 	void buttons_freq_handler(void);
@@ -217,6 +218,7 @@
 	void window_bp_process(void);
 	void window_menu_process(void);
 	void window_freq_process(void);
+	void window_tracking_process(void);
 	void encoder2_menu (enc2_menu_t * enc2_menu);
 	void display_pip_update(uint_fast8_t x, uint_fast8_t y, void * pv);
 	void display2_getpipparams(pipparams_t * p);
@@ -247,7 +249,8 @@
 		WINDOW_AGC,						// выбор пресетов настроек АРУ для текущего режима модуляции
 		WINDOW_FREQ,
 		WINDOW_MENU,
-		WINDOW_ENC2
+		WINDOW_ENC2,
+		WINDOW_TEST_TRACKING
 	};
 
 	typedef struct {
@@ -275,7 +278,7 @@
 		{ 356, 254, 442, 304, button5_handler, 	    CANCELLED, BUTTON_NON_LOCKED, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "", },
 		{ 445, 254, 531, 304, button6_handler, 	    CANCELLED, BUTTON_NON_LOCKED, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "", },
 		{ 534, 254, 620, 304, button7_handler, 	    CANCELLED, BUTTON_NON_LOCKED, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "", },
-		{ 623, 254, 709, 304, button8_handler, 	    CANCELLED, BUTTON_NON_LOCKED, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "", },
+		{ 623, 254, 709, 304, button8_handler, 	    CANCELLED, BUTTON_NON_LOCKED, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "Moving test", },
 		{ 712, 254, 798, 304, button9_handler, 	    CANCELLED, BUTTON_NON_LOCKED, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "System settings", },
 		{ 234,  55, 314, 105, buttons_mode_handler, CANCELLED, BUTTON_NON_LOCKED, WINDOW_MODES, NON_VISIBLE, SUBMODE_LSB, "LSB", },
 		{ 319,  55, 399, 105, buttons_mode_handler, CANCELLED, BUTTON_NON_LOCKED, WINDOW_MODES, NON_VISIBLE, SUBMODE_CW,  "CW", },
@@ -305,6 +308,8 @@
 		{ 173, 134, 223, 184, buttons_freq_handler, CANCELLED, BUTTON_NON_LOCKED, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_RECORDTOGGLE, 	"8", },
 		{ 226, 134, 276, 184, buttons_freq_handler, CANCELLED, BUTTON_NON_LOCKED, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_LDSPTGL, 		"9", },
 		{ 279, 134, 329, 184, buttons_freq_handler, CANCELLED, BUTTON_NON_LOCKED, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_VOXTOGGLE, 	"0", },
+		{ 251, 155, 337, 205, button_move_handler, 	CANCELLED, BUTTON_NON_LOCKED, WINDOW_TEST_TRACKING,  NON_VISIBLE, 0xAABBCCDD, 	"Press & move1", },
+		{ 463, 155, 549, 205, button_move_handler, 	CANCELLED, BUTTON_NON_LOCKED, WINDOW_TEST_TRACKING,  NON_VISIBLE, 0xAABBCCDD, 	"Press & move2", },
 	};
 	enum { button_handlers_count = sizeof button_handlers / sizeof button_handlers[1] };
 
@@ -358,9 +363,12 @@
 		uint_fast8_t window_to_draw;	 // индекс записи с описанием запрошенного к отображению окна
 		uint_fast16_t pip_width;
 		uint_fast16_t pip_height;
+		uint_fast8_t is_tracking;
+		int_least16_t vector_move_x;
+		int_least16_t vector_move_y;
 	} gui_t;
 
-	static gui_t gui = { 0, 0, 0, CANCELLED, 0, 0, 1, 0, 0, 0, };
+	static gui_t gui = { 0, 0, 0, CANCELLED, 0, 0, 1, 0, 0, 0, 0, 0, 0, };
 
 	typedef struct {
 		uint_fast8_t window_id;			// в окне будут отображаться кнопки с соответствующим полем for_window
@@ -383,6 +391,7 @@
 		{ WINDOW_FREQ,  100,  0, 350, 200, "Freq", 		  NON_VISIBLE, 0, window_freq_process, },
 		{ WINDOW_MENU,   50, 10, 699, 220, "Settings",	  NON_VISIBLE, 0, window_menu_process, },
 		{ WINDOW_ENC2, 	550, 15, 735, 120, "Fast menu",   NON_VISIBLE, 0, },
+		{ WINDOW_TEST_TRACKING,   214, 20, 586, 215, "Tracking test", NON_VISIBLE, 0, window_tracking_process, },
 
 	};
 	enum { windows_count = sizeof windows / sizeof windows[1] };

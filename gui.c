@@ -667,6 +667,41 @@
 
 	void button8_handler(void)
 	{
+		if (gui.window_to_draw == 0) gui.window_to_draw = WINDOW_TEST_TRACKING;
+
+		if (windows[gui.window_to_draw].is_show == NON_VISIBLE)
+		{
+			set_window(WINDOW_TEST_TRACKING, VISIBLE);
+			windows[gui.window_to_draw].first_call = 1;
+			footer_buttons_state(DISABLED, button_handlers[gui.selected].text);
+		}
+		else
+		{
+			set_window(WINDOW_TEST_TRACKING, NON_VISIBLE);
+			footer_buttons_state(CANCELLED, "");
+		}
+	}
+
+	void window_tracking_process(void)
+	{
+		if (windows[WINDOW_TEST_TRACKING].first_call)
+		{
+			windows[WINDOW_TEST_TRACKING].first_call = 0;
+		}
+
+		if(gui.is_tracking)				// добавить проверку границ окна
+		{
+			button_handlers[gui.selected].x1 += gui.vector_move_x;
+			button_handlers[gui.selected].x2 += gui.vector_move_x;
+			button_handlers[gui.selected].y1 += gui.vector_move_y;
+			button_handlers[gui.selected].y2 += gui.vector_move_y;
+			gui.vector_move_x = 0;
+			gui.vector_move_y = 0;
+		}
+	}
+
+	void button_move_handler(void)
+	{
 
 	}
 
@@ -828,7 +863,7 @@
 					text2 = strtok(buff, " ");
 					display_colorbuff_string2_tbg(colorpip, gui.pip_width, gui.pip_height, button_handlers[i].x1 + ((button_handlers[i].x2 - button_handlers[i].x1) -
 							(strlen (text2) * 10)) / 2, button_handlers[i].y1 + 10, text2, COLORPIP_BLACK);
-					text2 = strtok(NULL, " ");
+					text2 = strtok(NULL, '\0');
 					display_colorbuff_string2_tbg(colorpip, gui.pip_width, gui.pip_height, button_handlers[i].x1 + ((button_handlers[i].x2 - button_handlers[i].x1) -
 							(strlen (text2) * 10)) / 2, button_handlers[i].y1 + 25, text2, COLORPIP_BLACK);
 				}
@@ -839,6 +874,7 @@
 	void process_gui(void)
 	{
 		uint_fast16_t tx, ty;
+		static uint_fast16_t x_old = 0, y_old = 0;
 		pipparams_t pipparam;
 		PLIST_ENTRY t;
 		static button_t * p = NULL;
@@ -848,11 +884,11 @@
 			board_tsc_getxy(& tx, & ty);
 			if (gui.fix)			// первые координаты после нажатия от контролера тачскрина приходят старые, пропускаем
 			{
-				gui.last_pressed_x = tx;
-				gui.last_pressed_y = ty;
-				gui.is_touching_screen = 1;
 				display2_getpipparams(&pipparam);
-//				debug_printf_P(PSTR("pip x: %d, pip y: %d\n"), gui.last_pressed_x, gui.last_pressed_y - pipparam.y);
+				gui.last_pressed_x = tx;
+				gui.last_pressed_y = ty - pipparam.y;
+				gui.is_touching_screen = 1;
+				debug_printf_P(PSTR("pip x: %d, pip y: %d %d\n"), gui.last_pressed_x, gui.last_pressed_y, gui.is_tracking);
 			}
 			gui.fix = 1;
 		}
@@ -869,8 +905,8 @@
 			{
 				p = CONTAINING_RECORD(t, button_t, item);
 
-				if (p->x1 < gui.last_pressed_x && p->x2 > gui.last_pressed_x && p->y1 + pipparam.y < gui.last_pressed_y
-				 && p->y2 + pipparam.y > gui.last_pressed_y && p->state != DISABLED)
+				if (p->x1 < gui.last_pressed_x && p->x2 > gui.last_pressed_x
+				 && p->y1 < gui.last_pressed_y && p->y2 > gui.last_pressed_y && p->state != DISABLED)
 				{
 					gui.selected = p - button_handlers;
 					gui.state = PRESSED;
@@ -878,12 +914,30 @@
 				}
 			}
 		}
+
+		if (gui.is_tracking && ! gui.is_touching_screen)
+		{
+			gui.is_tracking = 0;
+			gui.vector_move_x = 0;
+			gui.vector_move_y = 0;
+			x_old = 0;
+			y_old = 0;
+		}
+
 		if (gui.state == PRESSED)
 		{
-			if (p->x1 < gui.last_pressed_x && p->x2 > gui.last_pressed_x
-			 && p->y1 + pipparam.y < gui.last_pressed_y
-			 && p->y2 + pipparam.y > gui.last_pressed_y
-			 && ! gui.is_after_touch)
+			if (p->payload == 0xAABBCCDD && gui.is_touching_screen)
+			{
+				gui.is_tracking = 1;
+				gui.vector_move_x = x_old ? gui.vector_move_x + gui.last_pressed_x - x_old : 0;
+				gui.vector_move_y = y_old ? gui.vector_move_y + gui.last_pressed_y - y_old : 0;
+				p->state = PRESSED;
+				x_old = gui.last_pressed_x;
+				y_old = gui.last_pressed_y;
+				debug_printf_P(PSTR("move x: %d, move y: %d\n"), gui.vector_move_x, gui.vector_move_y);
+			}
+			else if (p->x1 < gui.last_pressed_x && p->x2 > gui.last_pressed_x
+			 && p->y1 < gui.last_pressed_y && p->y2 > gui.last_pressed_y && ! gui.is_after_touch)
 			{
 				if (gui.is_touching_screen)
 					p->state = PRESSED;
@@ -900,11 +954,13 @@
 		if (gui.state == RELEASED)
 		{
 			p->state = RELEASED;
-			p->onClickHandler();
+			if(p->onClickHandler)
+				p->onClickHandler();
 			debug_printf_P(PSTR("handler %d runned\n"), gui.selected);
 			p->state = CANCELLED;
 			gui.is_after_touch = 0;
 			gui.state = CANCELLED;
+			gui.is_tracking = 0;
 		}
 	}
 #endif /* WITHTOUCHGUI */
