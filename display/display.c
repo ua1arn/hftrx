@@ -702,7 +702,7 @@ static COLORPIP_T getshadedcolor(
 		const uint_fast8_t g = scalecolor((dot >> 5) & 0x003f, 63, alpha);
 		const uint_fast8_t b = scalecolor(dot & 0x001f, 31, alpha);
 
-		return TFTRGB565(r, g, b);
+		return (r << 11) | (g << 5) | b; //TFTRGB565(r, g, b);
 	}
 #else /*  */
 	#warning LCDMODE_LTDC_PIPL8 or LCDMODE_LTDC_PIP16 not defined
