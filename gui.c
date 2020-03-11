@@ -795,40 +795,53 @@
 		draw_rect_pip(x1+2, y1+2, x2-2, y2-2, COLORPIP_BLACK, 0);
 	}
 
-	void pip_transparency_rect (uint_fast16_t x1, uint_fast16_t y1, uint_fast16_t x2, uint_fast16_t y2, uint_fast8_t alpha)
+	// FIXME: доелать модификацию цвета для LCDMODE_LTDC_L8
+	static PACKEDCOLORPIP_T getshadedcolor(
+			PACKEDCOLORPIP_T dot, // исходный цвет
+			uint_fast8_t alpha	// на сколько затемнять цвета
+			)
 	{
-		PACKEDCOLOR565_T * const colorpip = getscratchpip();
-		PACKEDCOLOR565_T dot, color_red, color_green, color_blue, color_bg = TFTRGB565 (alpha, alpha, alpha);
-		uint_fast16_t yt;
+	#if LCDMODE_LTDC_L8
+		return dot ^ 0x80;	// FIXME: use indexed color
+	#else /* LCDMODE_LTDC_L8 */
+		PACKEDCOLORPIP_T color_bg = TFTRGB565 (alpha, alpha, alpha);
+		if (dot == COLORPIP_BLACK)
+			return color_bg; // back gray
+		else // RRRR.RGGG.GGGB.BBBB
+		{
+			PACKEDCOLORPIP_T color_red, color_green, color_blue;
+			color_red = dot >> 11;
+			color_green = (dot >> 5) & 0x003f;
+			color_blue = dot & 0x001f;
+
+			return
+				(normalize(color_red, 0, 32, alpha) << 11) |
+				(normalize(color_green, 0, 64, alpha) << 5) |
+				(normalize(color_blue, 0, 32, alpha));
+		}
+	#endif /* LCDMODE_LTDC_L8 */
+	}
+
+	void pip_transparency_rect(uint_fast16_t x1, uint_fast16_t y1, uint_fast16_t x2, uint_fast16_t y2, uint_fast8_t alpha)
+	{
+		PACKEDCOLORPIP_T * const colorpip = getscratchpip();
 
 		for (uint_fast16_t y = y1; y <= y2; y++)
 		{
-			yt = gui.pip_width * y;
+			const uint_fast16_t yt = gui.pip_width * y;
 			for (uint_fast16_t x = x1; x <= x2; x++)
 			{
-				dot = colorpip[yt + x];
-				if (dot == COLORPIP_BLACK)
-					colorpip[yt + x] = color_bg; // back gray
-				else // RRRR.RGGG.GGGB.BBBB
-				{
-					color_red = dot >> 11;
-					color_green = (dot >> 5) & 0x003f;
-					color_blue = dot & 0x001f;
-
-					colorpip[yt + x] = (normalize(color_red, 0, 32, alpha) << 11) |
-									   (normalize(color_green, 0, 64, alpha) << 5) |
-									   (normalize(color_blue, 0, 32, alpha));
-				}
+				colorpip[yt + x] = getshadedcolor(colorpip[yt + x], alpha);
 			}
 		}
 	}
 
 	void display_pip_update(uint_fast8_t x, uint_fast8_t y, void * pv)
 	{
-		PACKEDCOLOR565_T * const colorpip = getscratchpip();
+		PACKEDCOLORPIP_T * const colorpip = getscratchpip();
 		uint_fast16_t yt, xt;
 		uint_fast8_t alpha = 10; // на сколько затемнять цвета
-		PACKEDCOLOR565_T dot, color_red, color_green, color_blue, color_bg = TFTRGB565 (alpha, alpha, alpha);
+		//PACKEDCOLORPIP_T dot, color_red, color_green, color_blue, color_bg = TFTRGB565 (alpha, alpha, alpha);
 		char buff [30];
 		char * text2 = NULL;
 		uint_fast8_t str_len = 0;
