@@ -16675,9 +16675,11 @@ processkeyboard(uint_fast8_t kbch)
 		updateboard(1, 0);
 		updateboard2();			/* настройки валкодера и цветовой схемы дисплея. */
 		display2_bgreset();		/* возможно уже с новой цветовой схемой */
-#endif //WITHMENU && ! WITHTOUCHGUI
 		return 1;	// требуется обновление индикатора
-
+#else
+		button9_handler();
+		return 0;
+#endif //WITHMENU && ! WITHTOUCHGUI
 	case KBD_CODE_DISPMODE:
 		if (display_getpagesmax() != 0)
 		{

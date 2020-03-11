@@ -706,7 +706,6 @@
 
 	void button7_handler(void)
 	{
-		PRINTF("%d %d\n", sizeof button_handlers[0], sizeof labels[0]);
 
 	}
 
@@ -1000,9 +999,9 @@
 			if (p->is_trackable && gui.is_touching_screen)
 			{
 				gui.is_tracking = 1;
-				gui.vector_move_x = x_old ? gui.vector_move_x + gui.last_pressed_x - x_old : 0;
-				gui.vector_move_y = y_old ? gui.vector_move_y + gui.last_pressed_y - y_old : 0;
-				p->state = PRESSED;
+				gui.vector_move_x = x_old ? gui.vector_move_x + gui.last_pressed_x - x_old : 0; // т.к. process_gui и display_pip_update
+				gui.vector_move_y = y_old ? gui.vector_move_y + gui.last_pressed_y - y_old : 0; // вызываются с разной частотой, необходимо
+				p->state = PRESSED;																// накопление вектора перемещения точки
 				set_state_record(p);
 				x_old = gui.last_pressed_x;
 				y_old = gui.last_pressed_y;
@@ -1029,7 +1028,7 @@
 		}
 		if (gui.state == RELEASED)
 		{
-			p->state = RELEASED;
+			p->state = RELEASED;			// для запуска обработчика нажатия
 			set_state_record(p);
 			p->state = CANCELLED;
 			set_state_record(p);
