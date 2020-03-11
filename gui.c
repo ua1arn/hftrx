@@ -796,23 +796,22 @@
 	}
 
 	// FIXME: доелать модификацию цвета для LCDMODE_LTDC_L8
-	static PACKEDCOLORPIP_T getshadedcolor(
-			PACKEDCOLORPIP_T dot, // исходный цвет
-			uint_fast8_t alpha	// на сколько затемнять цвета
+	static COLORPIP_T getshadedcolor(
+			COLORPIP_T dot, // исходный цвет
+			uint_fast8_t alpha	// на сколько затемнять цвета (0 - чёрный, 255 - без изменений)
 			)
 	{
 	#if LCDMODE_LTDC_L8
 		return dot ^ 0x80;	// FIXME: use indexed color
 	#else /* LCDMODE_LTDC_L8 */
-		PACKEDCOLORPIP_T color_bg = TFTRGB565 (alpha, alpha, alpha);
+		const COLORPIP_T color_bg = TFTRGB565 (alpha, alpha, alpha);
 		if (dot == COLORPIP_BLACK)
 			return color_bg; // back gray
 		else // RRRR.RGGG.GGGB.BBBB
 		{
-			PACKEDCOLORPIP_T color_red, color_green, color_blue;
-			color_red = dot >> 11;
-			color_green = (dot >> 5) & 0x003f;
-			color_blue = dot & 0x001f;
+			COLORPIP_T color_red = dot >> 11;
+			COLORPIP_T color_green = (dot >> 5) & 0x003f;
+			COLORPIP_T color_blue = dot & 0x001f;
 
 			return
 				(normalize(color_red, 0, 32, alpha) << 11) |
