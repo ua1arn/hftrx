@@ -795,46 +795,6 @@
 		draw_rect_pip(x1+2, y1+2, x2-2, y2-2, COLORPIP_BLACK, 0);
 	}
 
-	// FIXME: доелать модификацию цвета для LCDMODE_LTDC_L8
-	static COLORPIP_T getshadedcolor(
-			COLORPIP_T dot, // исходный цвет
-			uint_fast8_t alpha	// на сколько затемнять цвета (0 - чёрный, 255 - без изменений)
-			)
-	{
-	#if LCDMODE_LTDC_L8
-		return dot ^ 0x80;	// FIXME: use indexed color
-	#else /* LCDMODE_LTDC_L8 */
-		const COLORPIP_T color_bg = TFTRGB565 (alpha, alpha, alpha);
-		if (dot == COLORPIP_BLACK)
-			return color_bg; // back gray
-		else // RRRR.RGGG.GGGB.BBBB
-		{
-			COLORPIP_T color_red = dot >> 11;
-			COLORPIP_T color_green = (dot >> 5) & 0x003f;
-			COLORPIP_T color_blue = dot & 0x001f;
-
-			return
-				(normalize(color_red, 0, 32, alpha) << 11) |
-				(normalize(color_green, 0, 64, alpha) << 5) |
-				(normalize(color_blue, 0, 32, alpha));
-		}
-	#endif /* LCDMODE_LTDC_L8 */
-	}
-
-	void pip_transparency_rect(uint_fast16_t x1, uint_fast16_t y1, uint_fast16_t x2, uint_fast16_t y2, uint_fast8_t alpha)
-	{
-		PACKEDCOLORPIP_T * const colorpip = getscratchpip();
-
-		for (uint_fast16_t y = y1; y <= y2; y++)
-		{
-			const uint_fast16_t yt = gui.pip_width * y;
-			for (uint_fast16_t x = x1; x <= x2; x++)
-			{
-				colorpip[yt + x] = getshadedcolor(colorpip[yt + x], alpha);
-			}
-		}
-	}
-
 	void display_pip_update(uint_fast8_t x, uint_fast8_t y, void * pv)
 	{
 		PACKEDCOLORPIP_T * const colorpip = getscratchpip();
@@ -869,7 +829,8 @@
 		str_len += local_snprintf_P(&buff[str_len], sizeof buff / sizeof buff [0] - str_len, PSTR("SPAN:%3dk"), (int) ((display_zoomedbw() + 0) / 1000));
 	#endif /* WITHIF4DSP */
 		xt = gui.pip_width - 10 - str_len * 10;
-		pip_transparency_rect(xt - 5, 225, gui.pip_width - 5, 248, alpha);
+		pip_transparency_rect(colorpip, gui.pip_width, gui.pip_height,
+				xt - 5, 225, gui.pip_width - 5, 248, alpha);
 		display_colorbuff_string2_tbg(colorpip, gui.pip_width, gui.pip_height, xt, 230, buff, COLORPIP_YELLOW);
 
 	#if defined (RTC1_TYPE)				// текущее время
@@ -879,13 +840,15 @@
 		board_rtc_getdatetime(& year, & month, & day, & hour, & minute, & secounds);
 		str_len += local_snprintf_P(&buff[str_len], sizeof buff / sizeof buff [0] - str_len,
 									PSTR("%02d.%02d.%04d %02d%c%02d"), day, month, year, hour, ((secounds & 1) ? ' ' : ':'), minute);
-		pip_transparency_rect(5, 225, str_len * 10 + 15, 248, alpha);
+		pip_transparency_rect(colorpip, gui.pip_width, gui.pip_height,
+				5, 225, str_len * 10 + 15, 248, alpha);
 		display_colorbuff_string2_tbg(colorpip, gui.pip_width, gui.pip_height, 10, 230, buff, COLORPIP_YELLOW);
 	#endif 	/* defined (RTC1_TYPE) */
 
 		if (windows[gui.window_to_draw].is_show)
 		{
-			pip_transparency_rect(windows[gui.window_to_draw].x1, windows[gui.window_to_draw].y1,
+			pip_transparency_rect(colorpip, gui.pip_width, gui.pip_height,
+					windows[gui.window_to_draw].x1, windows[gui.window_to_draw].y1,
 								  windows[gui.window_to_draw].x2, windows[gui.window_to_draw].y2, alpha);
 
 			if (windows[gui.window_to_draw].onVisibleProcess != 0)							// запуск процедуры фоновой обработки для окна, если есть

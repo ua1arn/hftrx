@@ -970,6 +970,15 @@ void board_set_wflevelsep(uint_fast8_t v); /* чувствительность �
 
 PACKEDCOLOR_T * rgb565_fb(void);
 void display2_xltrgb24(COLOR24_T * xtable);
+// Установить прозрачность для прямоугольника
+void pip_transparency_rect(
+	PACKEDCOLORPIP_T * const colorpip,
+	uint_fast16_t dx,
+	uint_fast16_t dy,
+	uint_fast16_t x1, uint_fast16_t y1,
+	uint_fast16_t x2, uint_fast16_t y2,
+	uint_fast8_t alpha	// на сколько затемнять цвета (0 - чёрный, 255 - без изменений)
+	);
 
 #ifdef __cplusplus
 }

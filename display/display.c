@@ -674,6 +674,65 @@ void display_showbuffer(
 
 #endif /* LCDMODE_UC1608 || LCDMODE_UC1601 */
 
+
+static uint_fast8_t scalecolor(
+		uint_fast8_t cv,	// color component value
+		uint_fast8_t maxv,	// maximal color component value
+		uint_fast8_t rmaxv	// resulting color component value
+		)
+{
+	return (cv * rmaxv) / maxv;
+}
+
+// FIXME: доелать модификацию цвета для LCDMODE_LTDC_L8
+static COLORPIP_T getshadedcolor(
+		COLORPIP_T dot, // исходный цвет
+		uint_fast8_t alpha	// на сколько затемнять цвета (0 - чёрный, 255 - без изменений)
+		)
+{
+#if LCDMODE_LTDC_PIPL8
+	return dot ^ 0x80;	// FIXME: use indexed color
+
+#elif LCDMODE_LTDC_PIP16
+	if (dot == COLORPIP_BLACK)
+		return TFTRGB565(alpha, alpha, alpha); // back gray
+	else // RRRR.RGGG.GGGB.BBBB
+	{
+		const uint_fast8_t r = scalecolor((dot >> 11)  & 0x001f, 31, alpha);
+		const uint_fast8_t g = scalecolor((dot >> 5) & 0x003f, 63, alpha);
+		const uint_fast8_t b = scalecolor(dot & 0x001f, 31, alpha);
+
+		return TFTRGB565(r, g, b);
+	}
+#else /*  */
+	#warning LCDMODE_LTDC_PIPL8 or LCDMODE_LTDC_PIP16 not defined
+	return dot;
+
+#endif /* LCDMODE_LTDC_PIPL8 */
+}
+
+// Установить прозрачность для прямоугольника
+void pip_transparency_rect(
+		PACKEDCOLORPIP_T * const colorpip,
+		uint_fast16_t dx,
+		uint_fast16_t dy,
+		uint_fast16_t x1, uint_fast16_t y1,
+		uint_fast16_t x2, uint_fast16_t y2,
+		uint_fast8_t alpha	// на сколько затемнять цвета (0 - чёрный, 255 - без изменений)
+		)
+{
+	uint_fast16_t y;
+
+	for (y = y1; y <= y2; y ++)
+	{
+		const uint_fast16_t yt = dx * y;
+		for (uint_fast16_t x = x1; x <= x2; x ++)
+		{
+			colorpip [yt + x] = getshadedcolor(colorpip [yt + x], alpha);
+		}
+	}
+}
+
 // начальная инициализация буфера
 void display_colorbuffer_fill(
 	PACKEDCOLORPIP_T * buffer,
