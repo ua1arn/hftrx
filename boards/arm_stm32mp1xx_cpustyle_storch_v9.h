@@ -22,7 +22,7 @@
 #define WIHSPIDFHW	1	/* обслуживание DATA FLASH */
 
 //#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
-//#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
+#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 #if WITHINTEGRATEDDSP
 	#define WITHI2SHW	1	/* Использование I2S - аудиокодек на I2S2 и I2S2_alt или I2S2 и I2S3	*/
 	#define WITHSAI1HW	1	/* Использование SAI1 - FPGA или IF codec	*/
@@ -35,17 +35,17 @@
 //#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
 //#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 
-#define WITHUART1HW	1	/* PA9, PA10 Используется периферийный контроллер последовательного порта #1 */
-//#define WITHUART2HW	1	/* PA2, PA3 Используется периферийный контроллер последовательного порта #2 */
+//#define WITHUART1HW	1	/* PA9, PA10 Используется периферийный контроллер последовательного порта #1 */
+#define WITHUART2HW	1	/* PA2, PA3 Используется периферийный контроллер последовательного порта #2 */
 //#define WITHCAT_USART1		1
-#define WITHDEBUG_USART1	1
-#define WITHNMEA_USART1		1	/* порт подключения GPS/GLONASS */
+#define WITHDEBUG_USART2	1
+#define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
 
 
 #if WITHISBOOTLOADER
 
 	#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
-	//#define WITHSDRAM_PMC1	1	/* power management chip */
+	#define WITHSDRAM_PMC1	1	/* power management chip */
 	//#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 
 	//#define WITHUSBHW_DEVICE	USB_OTG_HS	/* на этом устройстве поддерживается функциональность DEVICE	*/
@@ -80,11 +80,11 @@
 	//#define WITHUSBWCID	1
 #else /* WITHISBOOTLOADER */
 
-	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
+	#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 
 	#define WITHUSBHW_DEVICE	USB_OTG_HS	/* на этом устройстве поддерживается функциональность DEVICE	*/
-	#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод VBUS_SENSE */
+	//#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод VBUS_SENSE */
 	#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
 	//#define WITHUSBDEV_HIGHSPEEDULPI	1
 	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USB_DP2 & USB_DM2
@@ -882,18 +882,18 @@
 	#endif /* WIHSPIDFHW */
 
 	//#define BOARD_BLINK_BITS (1uL << 14)	// PA14 - GREEN LED LD5 on DK1/DK2 MB1272.pdf
-	//#define BOARD_BLINK_BITS (1uL << 14)	// PD14 - LED on small board
-	#define BOARD_BLINK_BITS (1uL << 11)	// PI11 - LED1# on PanGu board
+	#define BOARD_BLINK_BITS (1uL << 14)	// PD14 - LED on small board
+	//#define BOARD_BLINK_BITS (1uL << 11)	// PI11 - LED1# on PanGu board
 	//#define BOARD_BLINK_BITS (1uL << 11)	// PH6 - LED2# on PanGu board
 
 	#define BOARD_BLINK_INITIALIZE() do { \
-			arm_hardware_pioi_outputs(BOARD_BLINK_BITS, 0 * BOARD_BLINK_BITS); \
+			arm_hardware_piod_outputs(BOARD_BLINK_BITS, 1 * BOARD_BLINK_BITS); \
 		} while (0)
 	#define BOARD_BLINK_SETSTATE(state) do { \
 			if (state) \
-				(GPIOI)->BSRR = BSRR_C(BOARD_BLINK_BITS); \
+				(GPIOD)->BSRR = BSRR_C(BOARD_BLINK_BITS); \
 			else \
-				(GPIOI)->BSRR = BSRR_S(BOARD_BLINK_BITS); \
+				(GPIOD)->BSRR = BSRR_S(BOARD_BLINK_BITS); \
 		} while (0)
 
 	/* макроопределение, которое должно включить в себя все инициализации */
