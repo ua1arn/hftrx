@@ -112,6 +112,15 @@ mdma_getburst(uint_fast16_t tlen, uint_fast8_t bus, uint_fast8_t xinc)
 	return 0;
 }
 
+/* получение значения для поля MDMA_CBNDTR_BNDT */
+// Block Number of data bytes to transfer
+static size_t bndtsize(size_t n, uint_fast16_t w)
+{
+	ASSERT(n != 0);
+	ASSERT(w != 0);
+	return n * n * w;
+}
+
 /* заполнение прямоугольной области буфера цветом в представлении по умолчанию. DMA2D не умеет 8-bit пиксели */
 static void RAMFUNC_NONILINE display_fillrect_main(
 	volatile PACKEDCOLOR_T * buffer,
@@ -164,7 +173,7 @@ static void RAMFUNC_NONILINE display_fillrect_main(
 		(0x01 << MDMA_CTCR_BWM_Pos) |
 		0;
 	MDMA_CH->CBNDTR =
-		((sizeof (* buffer) * sizeof (* buffer) * (w)) << MDMA_CBNDTR_BNDT_Pos) |	// Block Number of data bytes to transfer
+		(bndtsize(sizeof * buffer, w) << MDMA_CBNDTR_BNDT_Pos) |	// Block Number of data bytes to transfer
 		(0x00 << MDMA_CBNDTR_BRSUM_Pos) |	// Block Repeat Source address Update Mode: 0 - increment
 		(0x00 << MDMA_CBNDTR_BRDUM_Pos) |	// Block Repeat Destination address Update Mode: 0 - increment
 		((h - 1) << MDMA_CBNDTR_BRC_Pos) |		// Block Repeat Count
@@ -174,7 +183,6 @@ static void RAMFUNC_NONILINE display_fillrect_main(
 		((sizeof (* buffer) * (dx - w)) << MDMA_CBRUR_DUV_Pos) |		// Destination address Update Value
 		0;
 
-	//PRINTF("w=%d, MDMA_CH->CDAR=%08lX, CSAR=%08lX, MDMA_CH->CBNDTR=%08lX\n", w, MDMA_CH->CDAR, MDMA_CH->CSAR, MDMA_CH->CBNDTR);
 	MDMA_CH->CTBR = (MDMA_CH->CTBR & ~ (MDMA_CTBR_SBUS_Msk | MDMA_CTBR_DBUS_Msk)) |
 		((uint_fast32_t) sbus << MDMA_CTBR_SBUS_Pos) |
 		((uint_fast32_t) dbus << MDMA_CTBR_DBUS_Pos) |
@@ -416,7 +424,7 @@ hwaccel_fillrect_RGB565(
 		(0x01 << MDMA_CTCR_BWM_Pos) |
 		0;
 	MDMA_CH->CBNDTR =
-		((sizeof (* buffer) * sizeof (* buffer) * (w)) << MDMA_CBNDTR_BNDT_Pos) |	// Block Number of data bytes to transfer
+		(bndtsize(sizeof * buffer, w) << MDMA_CBNDTR_BNDT_Pos) |	// Block Number of data bytes to transfer
 		(0x00 << MDMA_CBNDTR_BRSUM_Pos) |	// Block Repeat Source address Update Mode: 0 - increment
 		(0x00 << MDMA_CBNDTR_BRDUM_Pos) |	// Block Repeat Destination address Update Mode: 0 - increment
 		((h - 1) << MDMA_CBNDTR_BRC_Pos) |		// Block Repeat Count
@@ -889,7 +897,7 @@ static void hwaccel_copy_main(
 		(0x01 << MDMA_CTCR_BWM_Pos) |
 		0;
 	MDMA_CH->CBNDTR =
-		((sizeof (PACKEDCOLOR_T) * sizeof (PACKEDCOLOR_T) * (w)) << MDMA_CBNDTR_BNDT_Pos) |	// Block Number of data bytes to transfer
+		(bndtsize(sizeof (PACKEDCOLOR_T), w) << MDMA_CBNDTR_BNDT_Pos) |	// Block Number of data bytes to transfer
 		(0x00 << MDMA_CBNDTR_BRSUM_Pos) |	// Block Repeat Source address Update Mode: 0 - increment
 		(0x00 << MDMA_CBNDTR_BRDUM_Pos) |	// Block Repeat Destination address Update Mode: 0 - increment
 		((h - 1) << MDMA_CBNDTR_BRC_Pos) |		// Block Repeat Count
@@ -998,7 +1006,7 @@ static void hwaccel_copy_RGB565(
 		(0x01 << MDMA_CTCR_BWM_Pos) |
 		0;
 	MDMA_CH->CBNDTR =
-		((sizeof (PACKEDCOLOR565_T) * sizeof (PACKEDCOLOR565_T) * (w)) << MDMA_CBNDTR_BNDT_Pos) |	// Block Number of data bytes to transfer
+		(bndtsize(sizeof (PACKEDCOLOR565_T), w) << MDMA_CBNDTR_BNDT_Pos) |	// Block Number of data bytes to transfer
 		(0x00 << MDMA_CBNDTR_BRSUM_Pos) |	// Block Repeat Source address Update Mode: 0 - increment
 		(0x00 << MDMA_CBNDTR_BRDUM_Pos) |	// Block Repeat Destination address Update Mode: 0 - increment
 		((h - 1) << MDMA_CBNDTR_BRC_Pos) |		// Block Repeat Count
