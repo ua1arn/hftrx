@@ -58,8 +58,16 @@ mdma_getbus(uintptr_t addr)
 #if CPUSTYLE_STM32H7XX
 	addr &= 0xFF000000uL;
 	return (addr == 0x00000000uL || addr == 0x20000000uL);
-#elif CPUSTYLE_STM32MP1
-	return 1;
+#elif CPUSTYLE_STM32MP1 && CORE_CA7
+	// SYSMEM
+	// DDRCTRL
+	return 0;
+#elif CPUSTYLE_STM32MP1 && ! CORE_CA7
+	#error M4 core not supported
+	/*
+	 * 0: The system/AXI bus is used on channel x.
+	 * 1: The AHB bus/TCM is used on channel x.
+	 */
 	addr &= 0xFF000000uL;
 	return (addr == 0x00000000uL || addr == 0x20000000uL);
 #else
@@ -83,6 +91,7 @@ mdma_tlen(uint_fast32_t nb, uint_fast8_t ds)
 static uint_fast8_t
 mdma_getburst(uint_fast16_t w, uint_fast8_t force0)
 {
+	return 0;
 	if (force0)
 		return 0;
 	return 4;	// if RAMFRAMEBUFF used for tgcolor. Then RAMDTCM - 6 is valid
@@ -121,7 +130,7 @@ static void RAMFUNC_NONILINE display_fillrect_main(
 		return;
 
 #if WITHMDMAHW
-	static RAMFRAMEBUFF ALIGNX_BEGIN volatile PACKEDCOLOR_T tgcolor ALIGNX_END;	/* значение цвета для заполнения области памяти */
+	ALIGNX_BEGIN volatile PACKEDCOLOR_T tgcolor ALIGNX_END;	/* значение цвета для заполнения области памяти */
 	tgcolor = fgcolor;
 
 	arm_hardware_flush((uintptr_t) & tgcolor, sizeof tgcolor);
@@ -369,7 +378,7 @@ hwaccel_fillrect_RGB565(
 	// используется software triggered repeated block transfer
 	//dx=480,dy=272,col=0,row=0,w=480,h=272;
 
-	static RAMFRAMEBUFF ALIGNX_BEGIN volatile PACKEDCOLOR565_T tgcolor ALIGNX_END;	/* значение цвета для заполнения области памяти */
+	ALIGNX_BEGIN volatile PACKEDCOLOR565_T tgcolor ALIGNX_END;	/* значение цвета для заполнения области памяти */
 	tgcolor = color;
 
 	arm_hardware_flush((uintptr_t) & tgcolor, sizeof tgcolor);

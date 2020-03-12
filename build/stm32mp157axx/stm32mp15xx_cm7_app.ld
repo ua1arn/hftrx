@@ -198,11 +198,11 @@ SECTIONS
 	.stack_dummy (COPY):
 	{
 		KEEP(*(.stack*))
-	} > SYSRAM
+	} > RAM
 
 	/* Set stack top to end of RAM, and stack limit move down by
 	 * size of stack_dummy section */
-	__StackTop = ORIGIN(SYSRAM) + LENGTH(SYSRAM);
+	__StackTop = ORIGIN(RAM) + LENGTH(RAM);
 	__StackLimit = __StackTop - SIZEOF(.stack_dummy);
 	PROVIDE(__stack = __StackTop);
 
@@ -210,5 +210,5 @@ SECTIONS
 	/* PROVIDE(__ttb_end__ = ORIGIN(TTB) + LENGTH(TTB)); */
 
 	/* Check if data + heap + stack exceeds RAM limit */
-	/* ASSERT(__StackLimit >= __HeapLimit, "region RAM overflowed with stack") */
+	ASSERT(__StackLimit >= __HeapLimit, "region RAM overflowed with stack")
 }
