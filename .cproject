@@ -3026,6 +3026,9 @@
 	</storageModule>
 	<storageModule moduleId="scannerConfiguration">
 		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		<scannerConfigBuildInfo instanceId="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.1180705410.1819153991;ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.1180705410.1819153991.;ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.289646041;ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.1683573035">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.1180705410;ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.1180705410.;ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.1100771111;ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.1058551991">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
@@ -3093,6 +3096,9 @@
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.1180705410.976493333;ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.1180705410.976493333.;ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.900757978;ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.1092272083">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.1180705410.1819153991;ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.1180705410.1819153991.;ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.1939814958;ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input.1341894635">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.1180705410.1840083264;ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.1180705410.1840083264.;ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.97770211;ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input.1962167838">
