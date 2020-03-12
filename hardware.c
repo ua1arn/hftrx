@@ -8007,6 +8007,15 @@ stm32f7xx_pllsai_initialize(void)
 
 void hardware_set_dotclock(unsigned long dotfreq)
 {
+	auto uint_fast32_t
+	calcdivround_saifreq(
+		uint_fast32_t freq		/* требуемая частота на выходе делителя, в герцах. */
+		)
+	{
+		//#error TODO: check freq at outputs vsync/hsync
+		return (PLLSAI_FREQ + freq / 2) / freq;
+	}
+
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround_saifreq(LTDC_DOTCLK), STM32F_LTDC_DIV_WIDTH, STM32F_LTDC_DIV_TAPS, & value, 0);
 	ASSERT(value >= 2);
