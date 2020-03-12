@@ -151,7 +151,8 @@ bootloader: BOOT2 boot.hex
 
   
 app_run: $(PROJECT)_app.nec32
-	./dfu-util.exe --device ffff:0738 --alt 2 --dfuse-address 0x18020000 --download $(PROJECT)_app.nec32
+	./dfu-util.exe --device ffff:0738 --alt 2 --dfuse-address 0x20000000 --download $(PROJECT)_app.nec32
+	./dfu-util.exe --device ffff:0738 --alt 2 --detach
 
 flash: $(PROJECT)_app.nec32
 	./dfu-util.exe --device ffff:0738 --alt 0 --dfuse-address 0x18020000 --download $(PROJECT)_app.nec32
