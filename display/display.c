@@ -991,11 +991,11 @@ static void hwaccel_copy_RGB565(
 	const uint_fast8_t dburst = mdma_getburst(tlen, dbus, dinc);
 	MDMA_CH->CTCR =
 		((uint_fast32_t) sinc << MDMA_CTCR_SINC_Pos) | 	// Source increment mode: 10: address pointer is incremented
-		(MDMA_CTCR_xSIZE << MDMA_CTCR_SSIZE_Pos) |
+		(MDMA_CTCR_xSIZE_RGB565 << MDMA_CTCR_SSIZE_Pos) |
 		(0x00 << MDMA_CTCR_SINCOS_Pos) |
 		((uint_fast32_t) sburst << MDMA_CTCR_SBURST_Pos) |
 		(0x02 << MDMA_CTCR_DINC_Pos) |	// Destination increment mode: 10: Destination address pointer is incremented
-		(MDMA_CTCR_xSIZE << MDMA_CTCR_DSIZE_Pos) |
+		(MDMA_CTCR_xSIZE_RGB565 << MDMA_CTCR_DSIZE_Pos) |
 		(0x00 << MDMA_CTCR_DINCOS_Pos) |
 		((uint_fast32_t) dburst << MDMA_CTCR_DBURST_Pos) |	// Destination burst transfer configuration
 		((tlen - 1) << MDMA_CTCR_TLEN_Pos) |		// buffer Transfer Length (number of bytes - 1)
