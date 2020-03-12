@@ -76,7 +76,7 @@
 		#define UAC2_MUL 344
 	#endif /* WITHI2SCLOCKFROMPIN */
 
-	#define HARDWARE_DACSCALE 1
+	//#define HARDWARE_DACSCALE 1
 
 	/* модели синтезаторов - схемы частотообразования */
 
