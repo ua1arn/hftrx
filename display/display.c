@@ -761,8 +761,8 @@ display_colorbuffer_at(
 	uint_fast16_t y	// вертикальная координата пикселя (0..dy-1) сверху вниз
 	)
 {
-	ASSERT(col < dx);
-	ASSERT(row < dy);
+	ASSERT(x < dx);
+	ASSERT(y < dy);
 #if LCDMODE_HORFILL
 	return & buffer [y * dx + x];
 #else /* LCDMODE_HORFILL */
