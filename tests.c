@@ -5421,7 +5421,8 @@ display_limb(void)
 	}
 }
 
-
+// Получение псевдослучайныз чисел.
+// 0 .. num-1
 static int local_randomgr( int num )
 {
 
@@ -5437,7 +5438,7 @@ static int local_randomgr( int num )
 
 
 /*                                                                      */
-/*      RANDOMBARS: Display local_randomgr bars                                 */
+/*      RANDOMBARS: Display random bars                                 */
 /*                                                                      */
 
 static void BarTest(void)
@@ -5445,16 +5446,16 @@ static void BarTest(void)
 	unsigned n = 20000;
 	for (;n --;)
 	{                    /* Until user enters a key...   */
-		int r = local_randomgr(255);
-		int g = local_randomgr(255);
-		int b = local_randomgr(255);
+		const int r = local_randomgr(256);
+		const int g = local_randomgr(256);
+		const int b = local_randomgr(256);
 
 		const COLOR_T color = TFTRGB(r, g, b);
 
-		int x = local_randomgr(DIM_X - 1);
-		int y = local_randomgr(DIM_Y - 1);
-		int x2 = local_randomgr(DIM_X - 1);
-		int y2 = local_randomgr(DIM_Y - 1);
+		int x = local_randomgr(DIM_X);
+		int y = local_randomgr(DIM_Y);
+		int x2 = local_randomgr(DIM_X);
+		int y2 = local_randomgr(DIM_Y);
 
 		display_solidbar(x, y, x2, y2, color);
 		//local_delay_ms(50);
