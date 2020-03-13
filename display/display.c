@@ -54,6 +54,8 @@ ltdc_horizontal_pixels(
 	uint_fast16_t width	// number of bits (start from LSB first byte in raster)
 	);
 
+#if WITHMDMAHW
+
 static uint_fast8_t
 mdma_getbus(uintptr_t addr)
 {
@@ -116,6 +118,7 @@ mdma_getburst(uint_fast16_t tlen, uint_fast8_t bus, uint_fast8_t xinc)
 		return 1;
 	return 0;
 }
+#endif /* WITHMDMAHW */
 
 // получение адреса в видобуфере
 volatile uint8_t * hwacc_getbufaddr_u8(
