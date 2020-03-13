@@ -112,15 +112,6 @@ mdma_getburst(uint_fast16_t tlen, uint_fast8_t bus, uint_fast8_t xinc)
 	return 0;
 }
 
-/* получение значения для поля MDMA_CBNDTR_BNDT */
-// Block Number of data bytes to transfer
-static size_t bndtsize(size_t n, uint_fast16_t w)
-{
-	ASSERT(n != 0);
-	ASSERT(w != 0);
-	return n * n * w;
-}
-
 /* заполнение прямоугольной области буфера цветом в представлении по умолчанию. DMA2D не умеет 8-bit пиксели */
 static void RAMFUNC_NONILINE display_fillrect_main(
 	volatile PACKEDCOLOR_T * buffer,
@@ -149,22 +140,22 @@ static void RAMFUNC_NONILINE display_fillrect_main(
 	MDMA_CH->CCR &= ~ MDMA_CCR_EN_Msk;
 	MDMA_CH->CDAR = (uintptr_t) & buffer [row * dx + col];
 	MDMA_CH->CSAR = (uintptr_t) & tgcolor;
-	const uint_fast8_t tlen = mdma_tlen(w * sizeof (* buffer), sizeof (* buffer));
-	const uint_fast8_t sbus = mdma_getbus(MDMA_CH->CSAR);
-	const uint_fast8_t dbus = mdma_getbus(MDMA_CH->CDAR);
-	const uint_fast8_t sinc = 0x00; // Source increment mode: 00: Source address pointer is fixed
-	const uint_fast8_t dinc = 0x02; // Destination increment mode: 10: Destination address pointer is incremented
-	const uint_fast8_t sburst = mdma_getburst(tlen, sbus, sinc);
-	const uint_fast8_t dburst = mdma_getburst(tlen, dbus, dinc);
+	const uint_fast32_t tlen = mdma_tlen(w * sizeof (* buffer), sizeof (* buffer));
+	const uint_fast32_t sbus = mdma_getbus(MDMA_CH->CSAR);
+	const uint_fast32_t dbus = mdma_getbus(MDMA_CH->CDAR);
+	const uint_fast32_t sinc = 0x00; // Source increment mode: 00: Source address pointer is fixed
+	const uint_fast32_t dinc = 0x02; // Destination increment mode: 10: Destination address pointer is incremented
+	const uint_fast32_t sburst = mdma_getburst(tlen, sbus, sinc);
+	const uint_fast32_t dburst = mdma_getburst(tlen, dbus, dinc);
 	MDMA_CH->CTCR =
-		((uint_fast32_t) sinc << MDMA_CTCR_SINC_Pos) | 	// Source increment mode: 00: Source address pointer is fixed
+		(sinc << MDMA_CTCR_SINC_Pos) | 	// Source increment mode: 00: Source address pointer is fixed
 		(MDMA_CTCR_xSIZE << MDMA_CTCR_SSIZE_Pos) |
-		(0x00 << MDMA_CTCR_SINCOS_Pos) |
-		((uint_fast32_t) sburst << MDMA_CTCR_SBURST_Pos) |
-		((uint_fast32_t) dinc << MDMA_CTCR_DINC_Pos) |	// Destination increment mode: 10: Destination address pointer is incremented
+		(MDMA_CTCR_xSIZE << MDMA_CTCR_SINCOS_Pos) |
+		(sburst << MDMA_CTCR_SBURST_Pos) |
+		(dinc << MDMA_CTCR_DINC_Pos) |	// Destination increment mode: 10: Destination address pointer is incremented
 		(MDMA_CTCR_xSIZE << MDMA_CTCR_DSIZE_Pos) |
-		(0x00 << MDMA_CTCR_DINCOS_Pos) |
-		((uint_fast32_t) dburst << MDMA_CTCR_DBURST_Pos) |	// Destination burst transfer configuration
+		(MDMA_CTCR_xSIZE << MDMA_CTCR_DINCOS_Pos) |
+		(dburst << MDMA_CTCR_DBURST_Pos) |	// Destination burst transfer configuration
 		((tlen - 1) << MDMA_CTCR_TLEN_Pos) |		// buffer Transfer Length (number of bytes - 1)
 		(0x00 << MDMA_CTCR_PKE_Pos) |
 		(0x00 << MDMA_CTCR_PAM_Pos) |
@@ -173,7 +164,7 @@ static void RAMFUNC_NONILINE display_fillrect_main(
 		(0x01 << MDMA_CTCR_BWM_Pos) |
 		0;
 	MDMA_CH->CBNDTR =
-		(bndtsize(sizeof * buffer, w) << MDMA_CBNDTR_BNDT_Pos) |	// Block Number of data bytes to transfer
+		((sizeof (* buffer) * (w)) << MDMA_CBNDTR_BNDT_Pos) |	// Block Number of data bytes to transfer
 		(0x00 << MDMA_CBNDTR_BRSUM_Pos) |	// Block Repeat Source address Update Mode: 0 - increment
 		(0x00 << MDMA_CBNDTR_BRDUM_Pos) |	// Block Repeat Destination address Update Mode: 0 - increment
 		((h - 1) << MDMA_CBNDTR_BRC_Pos) |		// Block Repeat Count
@@ -184,11 +175,10 @@ static void RAMFUNC_NONILINE display_fillrect_main(
 		0;
 
 	MDMA_CH->CTBR = (MDMA_CH->CTBR & ~ (MDMA_CTBR_SBUS_Msk | MDMA_CTBR_DBUS_Msk)) |
-		((uint_fast32_t) sbus << MDMA_CTBR_SBUS_Pos) |
-		((uint_fast32_t) dbus << MDMA_CTBR_DBUS_Pos) |
+		(sbus << MDMA_CTBR_SBUS_Pos) |
+		(dbus << MDMA_CTBR_DBUS_Pos) |
 		0;
 
-	//TP();
 	MDMA_CH->CIFCR = MDMA_CIFCR_CLTCIF_Msk | MDMA_CIFCR_CBTIF_Msk |
 					MDMA_CIFCR_CBRTIF_Msk | MDMA_CIFCR_CCTCIF_Msk | MDMA_CIFCR_CTEIF_Msk;
 	// Set priority
@@ -400,22 +390,22 @@ hwaccel_fillrect_RGB565(
 	//	;
 	MDMA_CH->CDAR = (uintptr_t) & buffer [row * dx + col];
 	MDMA_CH->CSAR = (uintptr_t) & tgcolor;
-	const uint_fast8_t tlen = mdma_tlen(w * sizeof (* buffer), sizeof (* buffer));
-	const uint_fast8_t sbus = mdma_getbus(MDMA_CH->CSAR);
-	const uint_fast8_t dbus = mdma_getbus(MDMA_CH->CDAR);
-	const uint_fast8_t sinc = 0x00; // Source increment mode: 00: Source address pointer is fixed
-	const uint_fast8_t dinc = 0x02; // Destination increment mode: 10: Destination address pointer is incremented
-	const uint_fast8_t sburst = mdma_getburst(tlen, sbus, sinc);
-	const uint_fast8_t dburst = mdma_getburst(tlen, dbus, dinc);
+	const uint_fast32_t tlen = mdma_tlen(w * sizeof (* buffer), sizeof (* buffer));
+	const uint_fast32_t sbus = mdma_getbus(MDMA_CH->CSAR);
+	const uint_fast32_t dbus = mdma_getbus(MDMA_CH->CDAR);
+	const uint_fast32_t sinc = 0x00; // Source increment mode: 00: Source address pointer is fixed
+	const uint_fast32_t dinc = 0x02; // Destination increment mode: 10: Destination address pointer is incremented
+	const uint_fast32_t sburst = mdma_getburst(tlen, sbus, sinc);
+	const uint_fast32_t dburst = mdma_getburst(tlen, dbus, dinc);
 	MDMA_CH->CTCR =
-		((uint_fast32_t) sinc << MDMA_CTCR_SINC_Pos) | 	// Source increment mode: 00: Source address pointer is fixed
+		(sinc << MDMA_CTCR_SINC_Pos) | 	// Source increment mode: 00: Source address pointer is fixed
 		(MDMA_CTCR_xSIZE_RGB565 << MDMA_CTCR_SSIZE_Pos) |
-		(0x00 << MDMA_CTCR_SINCOS_Pos) |
-		((uint_fast32_t) sburst << MDMA_CTCR_SBURST_Pos) |
-		((uint_fast32_t) dinc << MDMA_CTCR_DINC_Pos) |	// Destination increment mode: 10: Destination address pointer is incremented
+		(MDMA_CTCR_xSIZE_RGB565 << MDMA_CTCR_SINCOS_Pos) |
+		(sburst << MDMA_CTCR_SBURST_Pos) |
+		(dinc << MDMA_CTCR_DINC_Pos) |	// Destination increment mode: 10: Destination address pointer is incremented
 		(MDMA_CTCR_xSIZE_RGB565 << MDMA_CTCR_DSIZE_Pos) |
-		(0x00 << MDMA_CTCR_DINCOS_Pos) |
-		((uint_fast32_t) dburst << MDMA_CTCR_DBURST_Pos) |	// Destination burst transfer configuration
+		(MDMA_CTCR_xSIZE_RGB565 << MDMA_CTCR_DINCOS_Pos) |
+		(dburst << MDMA_CTCR_DBURST_Pos) |	// Destination burst transfer configuration
 		((tlen - 1) << MDMA_CTCR_TLEN_Pos) |		// buffer Transfer Length (number of bytes - 1)
 		(0x00 << MDMA_CTCR_PKE_Pos) |
 		(0x00 << MDMA_CTCR_PAM_Pos) |
@@ -424,7 +414,7 @@ hwaccel_fillrect_RGB565(
 		(0x01 << MDMA_CTCR_BWM_Pos) |
 		0;
 	MDMA_CH->CBNDTR =
-		(bndtsize(sizeof * buffer, w) << MDMA_CBNDTR_BNDT_Pos) |	// Block Number of data bytes to transfer
+		((sizeof (* buffer) * (w)) << MDMA_CBNDTR_BNDT_Pos) |	// Block Number of data bytes to transfer
 		(0x00 << MDMA_CBNDTR_BRSUM_Pos) |	// Block Repeat Source address Update Mode: 0 - increment
 		(0x00 << MDMA_CBNDTR_BRDUM_Pos) |	// Block Repeat Destination address Update Mode: 0 - increment
 		((h - 1) << MDMA_CBNDTR_BRC_Pos) |		// Block Repeat Count
@@ -435,12 +425,10 @@ hwaccel_fillrect_RGB565(
 		0;
 
 	MDMA_CH->CTBR = (MDMA_CH->CTBR & ~ (MDMA_CTBR_SBUS_Msk | MDMA_CTBR_DBUS_Msk)) |
-		((uint_fast32_t) sbus << MDMA_CTBR_SBUS_Pos) |
-		((uint_fast32_t) dbus << MDMA_CTBR_DBUS_Pos) |
+		(sbus << MDMA_CTBR_SBUS_Pos) |
+		(dbus << MDMA_CTBR_DBUS_Pos) |
 		0;
 
-	//TP();
-	//PRINTF("dx=%d,dy=%d,x=%d,y=%d,w=%d,h=%d, CSAR=%08lX, CDAR=%08lX\n", dx, dy, col, row, w, h, MDMA_CH->CSAR, MDMA_CH->CDAR);
 	MDMA_CH->CIFCR = MDMA_CIFCR_CLTCIF_Msk | MDMA_CIFCR_CBTIF_Msk |
 					MDMA_CIFCR_CBRTIF_Msk | MDMA_CIFCR_CCTCIF_Msk | MDMA_CIFCR_CTEIF_Msk;
 	// Set priority
@@ -873,22 +861,22 @@ static void hwaccel_copy_main(
 	MDMA_CH->CCR &= ~ MDMA_CCR_EN_Msk;
 	MDMA_CH->CDAR = (uintptr_t) dst;
 	MDMA_CH->CSAR = (uintptr_t) src;
-	const uint_fast8_t tlen = mdma_tlen(w * sizeof (PACKEDCOLOR_T), sizeof (PACKEDCOLOR_T));
-	const uint_fast8_t sbus = mdma_getbus(MDMA_CH->CSAR);
-	const uint_fast8_t dbus = mdma_getbus(MDMA_CH->CDAR);
-	const uint_fast8_t sinc = 0x02; // Source increment mode: 10: address pointer is incremented
-	const uint_fast8_t dinc = 0x02; // Destination increment mode: 10: Destination address pointer is incremented
-	const uint_fast8_t sburst = mdma_getburst(tlen, sbus, sinc);
-	const uint_fast8_t dburst = mdma_getburst(tlen, dbus, dinc);
+	const uint_fast32_t tlen = mdma_tlen(w * sizeof (PACKEDCOLOR_T), sizeof (PACKEDCOLOR_T));
+	const uint_fast32_t sbus = mdma_getbus(MDMA_CH->CSAR);
+	const uint_fast32_t dbus = mdma_getbus(MDMA_CH->CDAR);
+	const uint_fast32_t sinc = 0x02; // Source increment mode: 10: address pointer is incremented
+	const uint_fast32_t dinc = 0x02; // Destination increment mode: 10: Destination address pointer is incremented
+	const uint_fast32_t sburst = mdma_getburst(tlen, sbus, sinc);
+	const uint_fast32_t dburst = mdma_getburst(tlen, dbus, dinc);
 	MDMA_CH->CTCR =
-		((uint_fast32_t) sinc << MDMA_CTCR_SINC_Pos) | 	// Source increment mode: 10: address pointer is incremented
+		(sinc << MDMA_CTCR_SINC_Pos) | 	// Source increment mode: 10: address pointer is incremented
 		(MDMA_CTCR_xSIZE << MDMA_CTCR_SSIZE_Pos) |
-		(0x00 << MDMA_CTCR_SINCOS_Pos) |
-		((uint_fast32_t) sburst << MDMA_CTCR_SBURST_Pos) |
-		((uint_fast32_t) dinc << MDMA_CTCR_DINC_Pos) |	// Destination increment mode: 10: Destination address pointer is incremented
+		(MDMA_CTCR_xSIZE << MDMA_CTCR_SINCOS_Pos) |
+		(sburst << MDMA_CTCR_SBURST_Pos) |
+		(dinc << MDMA_CTCR_DINC_Pos) |	// Destination increment mode: 10: Destination address pointer is incremented
 		(MDMA_CTCR_xSIZE << MDMA_CTCR_DSIZE_Pos) |
-		(0x00 << MDMA_CTCR_DINCOS_Pos) |
-		((uint_fast32_t) dburst << MDMA_CTCR_DBURST_Pos) |	// Destination burst transfer configuration
+		(MDMA_CTCR_xSIZE << MDMA_CTCR_DINCOS_Pos) |
+		(dburst << MDMA_CTCR_DBURST_Pos) |	// Destination burst transfer configuration
 		((tlen - 1) << MDMA_CTCR_TLEN_Pos) |		// buffer Transfer Length (number of bytes - 1)
 		(0x00 << MDMA_CTCR_PKE_Pos) |
 		(0x00 << MDMA_CTCR_PAM_Pos) |
@@ -897,7 +885,7 @@ static void hwaccel_copy_main(
 		(0x01 << MDMA_CTCR_BWM_Pos) |
 		0;
 	MDMA_CH->CBNDTR =
-		(bndtsize(sizeof (PACKEDCOLOR_T), w) << MDMA_CBNDTR_BNDT_Pos) |	// Block Number of data bytes to transfer
+		((sizeof (PACKEDCOLOR_T) * (w)) << MDMA_CBNDTR_BNDT_Pos) |	// Block Number of data bytes to transfer
 		(0x00 << MDMA_CBNDTR_BRSUM_Pos) |	// Block Repeat Source address Update Mode: 0 - increment
 		(0x00 << MDMA_CBNDTR_BRDUM_Pos) |	// Block Repeat Destination address Update Mode: 0 - increment
 		((h - 1) << MDMA_CBNDTR_BRC_Pos) |		// Block Repeat Count
@@ -908,11 +896,10 @@ static void hwaccel_copy_main(
 		0;
 
 	MDMA_CH->CTBR = (MDMA_CH->CTBR & ~ (MDMA_CTBR_SBUS_Msk | MDMA_CTBR_DBUS_Msk)) |
-		((uint_fast32_t) sbus << MDMA_CTBR_SBUS_Pos) |
-		((uint_fast32_t) dbus << MDMA_CTBR_DBUS_Pos) |
+		(sbus << MDMA_CTBR_SBUS_Pos) |
+		(dbus << MDMA_CTBR_DBUS_Pos) |
 		0;
 
-	//TP();
 	MDMA_CH->CIFCR = MDMA_CIFCR_CLTCIF_Msk | MDMA_CIFCR_CBTIF_Msk |
 					MDMA_CIFCR_CBRTIF_Msk | MDMA_CIFCR_CCTCIF_Msk | MDMA_CIFCR_CTEIF_Msk;
 	// Set priority
@@ -982,22 +969,22 @@ static void hwaccel_copy_RGB565(
 	MDMA_CH->CCR &= ~ MDMA_CCR_EN_Msk;
 	MDMA_CH->CDAR = (uintptr_t) dst;
 	MDMA_CH->CSAR = (uintptr_t) src;
-	const uint_fast8_t tlen = mdma_tlen(w * sizeof (PACKEDCOLOR565_T), sizeof (PACKEDCOLOR565_T));
-	const uint_fast8_t sbus = mdma_getbus(MDMA_CH->CSAR);
-	const uint_fast8_t dbus = mdma_getbus(MDMA_CH->CDAR);
-	const uint_fast8_t sinc = 0x02; // Source increment mode: 10: address pointer is incremented
-	const uint_fast8_t dinc = 0x02; // Destination increment mode: 10: Destination address pointer is incremented
-	const uint_fast8_t sburst = mdma_getburst(tlen, sbus, sinc);
-	const uint_fast8_t dburst = mdma_getburst(tlen, dbus, dinc);
+	const uint_fast32_t tlen = mdma_tlen(w * sizeof (PACKEDCOLOR565_T), sizeof (PACKEDCOLOR565_T));
+	const uint_fast32_t sbus = mdma_getbus(MDMA_CH->CSAR);
+	const uint_fast32_t dbus = mdma_getbus(MDMA_CH->CDAR);
+	const uint_fast32_t sinc = 0x02; // Source increment mode: 10: address pointer is incremented
+	const uint_fast32_t dinc = 0x02; // Destination increment mode: 10: Destination address pointer is incremented
+	const uint_fast32_t sburst = mdma_getburst(tlen, sbus, sinc);
+	const uint_fast32_t dburst = mdma_getburst(tlen, dbus, dinc);
 	MDMA_CH->CTCR =
-		((uint_fast32_t) sinc << MDMA_CTCR_SINC_Pos) | 	// Source increment mode: 10: address pointer is incremented
+		(sinc << MDMA_CTCR_SINC_Pos) | 	// Source increment mode: 10: address pointer is incremented
 		(MDMA_CTCR_xSIZE_RGB565 << MDMA_CTCR_SSIZE_Pos) |
-		(0x00 << MDMA_CTCR_SINCOS_Pos) |
-		((uint_fast32_t) sburst << MDMA_CTCR_SBURST_Pos) |
-		(0x02 << MDMA_CTCR_DINC_Pos) |	// Destination increment mode: 10: Destination address pointer is incremented
+		(MDMA_CTCR_xSIZE_RGB565 << MDMA_CTCR_SINCOS_Pos) |
+		(sburst << MDMA_CTCR_SBURST_Pos) |
+		(dinc << MDMA_CTCR_DINC_Pos) |	// Destination increment mode: 10: Destination address pointer is incremented
 		(MDMA_CTCR_xSIZE_RGB565 << MDMA_CTCR_DSIZE_Pos) |
-		(0x00 << MDMA_CTCR_DINCOS_Pos) |
-		((uint_fast32_t) dburst << MDMA_CTCR_DBURST_Pos) |	// Destination burst transfer configuration
+		(MDMA_CTCR_xSIZE_RGB565 << MDMA_CTCR_DINCOS_Pos) |
+		(dburst << MDMA_CTCR_DBURST_Pos) |	// Destination burst transfer configuration
 		((tlen - 1) << MDMA_CTCR_TLEN_Pos) |		// buffer Transfer Length (number of bytes - 1)
 		(0x00 << MDMA_CTCR_PKE_Pos) |
 		(0x00 << MDMA_CTCR_PAM_Pos) |
@@ -1006,7 +993,7 @@ static void hwaccel_copy_RGB565(
 		(0x01 << MDMA_CTCR_BWM_Pos) |
 		0;
 	MDMA_CH->CBNDTR =
-		(bndtsize(sizeof (PACKEDCOLOR565_T), w) << MDMA_CBNDTR_BNDT_Pos) |	// Block Number of data bytes to transfer
+		((sizeof (PACKEDCOLOR565_T) * (w)) << MDMA_CBNDTR_BNDT_Pos) |	// Block Number of data bytes to transfer
 		(0x00 << MDMA_CBNDTR_BRSUM_Pos) |	// Block Repeat Source address Update Mode: 0 - increment
 		(0x00 << MDMA_CBNDTR_BRDUM_Pos) |	// Block Repeat Destination address Update Mode: 0 - increment
 		((h - 1) << MDMA_CBNDTR_BRC_Pos) |		// Block Repeat Count
@@ -1017,11 +1004,10 @@ static void hwaccel_copy_RGB565(
 		0;
 
 	MDMA_CH->CTBR = (MDMA_CH->CTBR & ~ (MDMA_CTBR_SBUS_Msk | MDMA_CTBR_DBUS_Msk)) |
-		((uint_fast32_t) sbus << MDMA_CTBR_SBUS_Pos) |
-		((uint_fast32_t) dbus << MDMA_CTBR_DBUS_Pos) |
+		(sbus << MDMA_CTBR_SBUS_Pos) |
+		(dbus << MDMA_CTBR_DBUS_Pos) |
 		0;
 
-	//TP();
 	MDMA_CH->CIFCR = MDMA_CIFCR_CLTCIF_Msk | MDMA_CIFCR_CBTIF_Msk |
 					MDMA_CIFCR_CBRTIF_Msk | MDMA_CIFCR_CCTCIF_Msk | MDMA_CIFCR_CTEIF_Msk;
 	// Set priority
