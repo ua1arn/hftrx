@@ -994,13 +994,13 @@ display_colorbuffer_set_vline(
 	);
 
 // получить адрес требуемой позиции в буфере
-volatile PACKEDCOLORPIP_T *
+PACKEDCOLORPIP_T *
 display_colorbuffer_at(
 	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
-	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t row	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t y	// вертикальная координата пикселя (0..dy-1) сверху вниз
 	);
 
 void display_putpixel(
@@ -1022,12 +1022,24 @@ PACKEDCOLOR_T * rgb565_fb(void);
 void display2_xltrgb24(COLOR24_T * xtable);
 // Установить прозрачность для прямоугольника
 void pip_transparency_rect(
-	PACKEDCOLORPIP_T * const colorpip,
+	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy,
 	uint_fast16_t x1, uint_fast16_t y1,
 	uint_fast16_t x2, uint_fast16_t y2,
 	uint_fast8_t alpha	// на сколько затемнять цвета (0 - чёрный, 255 - без изменений)
+	);
+
+// заполнение прямоугольной области в видеобуфере
+void display_colorbuffer_fillrect(
+	PACKEDCOLORPIP_T * buffer,
+	uint_fast16_t dx,	// ширина буфера
+	uint_fast16_t dy,	// высота буфера
+	uint_fast16_t x,	// начальная координата
+	uint_fast16_t y,	// начальная координата
+	uint_fast16_t w,	// ширниа
+	uint_fast16_t h,	// высота
+	COLORPIP_T color	// цвет
 	);
 
 void display2_getpipparams(pipparams_t * p);

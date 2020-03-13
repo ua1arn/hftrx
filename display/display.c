@@ -729,7 +729,7 @@ static COLORPIP_T getshadedcolor(
 
 // Установить прозрачность для прямоугольника
 void pip_transparency_rect(
-	PACKEDCOLORPIP_T * const colorpip,
+	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
 	uint_fast16_t x1, uint_fast16_t y1,
@@ -744,28 +744,29 @@ void pip_transparency_rect(
 		const uint_fast16_t yt = dx * y;
 		for (uint_fast16_t x = x1; x <= x2; x ++)
 		{
-			colorpip [yt + x] = getshadedcolor(colorpip [yt + x], alpha);
+			PACKEDCOLORPIP_T * const p = display_colorbuffer_at(buffer, dx, dy, yt + x, y);
+			* p = getshadedcolor(* p, alpha);
 		}
 	}
 }
 
 
 // получить адрес требуемой позиции в буфере
-volatile PACKEDCOLORPIP_T *
+PACKEDCOLORPIP_T *
 display_colorbuffer_at(
 	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
-	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t row	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t y	// вертикальная координата пикселя (0..dy-1) сверху вниз
 	)
 {
 	ASSERT(col < dx);
 	ASSERT(row < dy);
 #if LCDMODE_HORFILL
-	return & buffer [row * dx + col];
+	return & buffer [y * dx + x];
 #else /* LCDMODE_HORFILL */
-	return & buffer [row * dx + col];
+	return & buffer [y * dx + x];
 #endif /* LCDMODE_HORFILL */
 }
 

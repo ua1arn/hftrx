@@ -6103,9 +6103,9 @@ static void display2_waterfall(
 
 	/* перенос растра. Организация предполагается LCDMODE_HORFILL */
 
-	memcpy((void *) display_colorbuffer_at(colorpip, ALLDX, ALLDY, 0, p1y), (const void *) & wfarray [wfrow] [0], p1h * sizeof (PACKEDCOLORPIP_T) * ALLDX);
+	memcpy(display_colorbuffer_at(colorpip, ALLDX, ALLDY, 0, p1y), (const void *) & wfarray [wfrow] [0], p1h * sizeof (PACKEDCOLORPIP_T) * ALLDX);
 	if (p2h != 0)
-		memcpy((void *) display_colorbuffer_at(colorpip, ALLDX, ALLDY, 0, p2y), (const void *) & wfarray [0] [0], p2h * sizeof (PACKEDCOLORPIP_T) * ALLDX);
+		memcpy(display_colorbuffer_at(colorpip, ALLDX, ALLDY, 0, p2y), (const void *) & wfarray [0] [0], p2h * sizeof (PACKEDCOLORPIP_T) * ALLDX);
 
 #else /* */
 
