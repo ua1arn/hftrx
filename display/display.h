@@ -406,7 +406,9 @@ void display_menuitemvalue(
 	void * pv
 	);
 
-void display2_clear_menu_bk (uint_fast16_t x, uint_fast16_t y, uint_fast16_t x2, uint_fast16_t y2);
+// Рисуем на основном экране цветной прямоугольник цветом фона.
+// x2, y2 - текстовые координаты второго угла (не входящие в закрашиваемый прямоугольник)
+void display2_clear_menu_bk(uint_fast16_t x, uint_fast16_t y, uint_fast16_t x2, uint_fast16_t y2);
 
 // Вызывается из display2.c
 void 
@@ -951,6 +953,17 @@ void display_1state(
 
 #endif /* LCDMODE_LTDC */
 
+/* заполнение прямоугольника на основном экране произвольным цветом
+*/
+void
+display_fillrect(
+	uint_fast16_t x, uint_fast16_t y, 	// координаты в пикселях
+	uint_fast16_t w, uint_fast16_t h, 	// размеры в пикселях
+	COLOR_T color
+	);
+
+// Рисуем на основном экране цветной прямоугольник.
+// x2, y2 - координаты второго угла (не входящие в закрашиваемый прямоугольник)
 void display_solidbar(uint_fast16_t x, uint_fast16_t y, uint_fast16_t x2, uint_fast16_t y2, COLOR_T color);
 
 /// Нарисовать вертикальную цветную полосу
