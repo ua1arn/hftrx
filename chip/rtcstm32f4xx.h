@@ -208,11 +208,14 @@ stm32f4xx_rtc_lsXstart(void)
 #endif /* WITHRTCLSI */
 }
 
+/* возврат не-0 если требуется начальная загрузка значений */
 static uint_fast8_t board_rtc_get_inits(void)
 {
 #if CPUSTYLE_STM32MP1
-	// TODO: implementing
-	return 0;
+	//	0: Calendar has not been initialized
+	//	1: Calendar has been initialized
+	const uint_fast8_t inits = (RTC->ICSR & RTC_ISR_INITS) == 0;	// if year is zero
+	return inits;
 
 #else /* CPUSTYLE_STM32MP1 */
 	const uint_fast8_t inits = (RTC->ISR & RTC_ISR_INITS) == 0;	// if year is zero
@@ -224,7 +227,18 @@ static uint_fast8_t board_rtc_get_inits(void)
 static void board_rtc_initmode(uint_fast8_t on)
 {
 #if CPUSTYLE_STM32MP1
-	// TODO: implementing
+	if (on != 0)
+	{
+		/* INIT mode ON */
+		RTC->ICSR |= RTC_ISR_INIT;
+		while ((RTC->ICSR & RTC_ISR_INITF) == 0)
+			;
+	}
+	else
+	{
+		// INIT mode OFF
+		RTC->ICSR &= ~ RTC_ISR_INIT;
+	}
 
 #else /* CPUSTYLE_STM32MP1 */
 	if (on != 0)
@@ -239,6 +253,7 @@ static void board_rtc_initmode(uint_fast8_t on)
 		// INIT mode OFF
 		RTC->ISR &= ~ RTC_ISR_INIT;
 	}
+
 #endif /* CPUSTYLE_STM32MP1 */
 }
 
