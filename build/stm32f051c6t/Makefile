@@ -178,6 +178,7 @@ clean:
 # 
 # Include the dependency files, should be the last of the makefile
 #
+-include $(wildcard $(OBJDIR)/*.d)
 -include $(wildcard $(OBJDIR)/*/*.d)
 -include $(wildcard $(OBJDIR)/*/*/*.d)
 -include $(wildcard $(OBJDIR)/*/*/*/*.d)
