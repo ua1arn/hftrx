@@ -95,10 +95,12 @@ static uint_fast16_t 	glob_ifgain = BOARD_IFGAIN_MIN;
 static uint_fast8_t 	glob_dspmodes [2] = { DSPCTL_MODE_IDLE, DSPCTL_MODE_IDLE, };
 
 static uint_fast8_t		glob_agcrate [2] = { 20, 20 }; //10	// 10 дБ изменение входного на 1 дБ выходного
-static uint_fast8_t 	glob_agc_t1 [2] = { 95, 95 };
-static uint_fast8_t 	glob_agc_t2 [2] = { 2, 2 };
+static uint_fast8_t 	glob_agc_scale [2] = { 100, 100 }; // scale в процентах
+static uint_fast8_t 	glob_agc_t0 [2] = { 0, 0 }; // chargespeedfast в милисекундах
+static uint_fast8_t 	glob_agc_t1 [2] = { 95, 95 }; // chargespeedslow в милисекундах
+static uint_fast8_t 	glob_agc_t2 [2] = { 2, 2 };	// dischargespeedslow в сотнях милисекунд (0.1 секунды)
 static uint_fast8_t 	glob_agc_thung [2] = { 3, 3 };	// 0.3 S
-static uint_fast8_t 	glob_agc_t4 [2] = { 120, 120 };
+static uint_fast8_t 	glob_agc_t4 [2] = { 120, 120 }; // dischargespeedfast в милисекундах
 
 static int_fast16_t 	glob_aflowcutrx [2] = { 300, 300 } ;		// Частота низкочастотного среза полосы пропускания (в 10 Гц дискретах)
 static int_fast16_t 	glob_afhighcutrx [2] = { 3400, 3400 };	// Частота высокочастотного среза полосы пропускания (в 100 Гц дискретах)
@@ -191,7 +193,7 @@ static uint_fast8_t		glob_nfmdeviation100 = 75;	// 7.5 kHz максимальн�
 
 	#define BEGIN_STAMP() do { \
 			perft = cpu_getdebugticks(); \
-		} while (0);
+		} while (0)
 
 	#define END_STAMP() do { \
 			const uint_fast32_t t2 = cpu_getdebugticks(); \
@@ -203,11 +205,11 @@ static uint_fast8_t		glob_nfmdeviation100 = 75;	// 7.5 kHz максимальн�
 					dtmax = vdt; /* максимальное значение длительности */ \
 				++ dtcount; \
 			} \
-		} while (0);
+		} while (0)
 
 	#define BEGIN_STAMP2() do { \
 			perft2 = cpu_getdebugticks(); \
-		} while (0);
+		} while (0)
 
 	#define END_STAMP2() do { \
 			const uint_fast32_t t2 = cpu_getdebugticks(); \
@@ -219,11 +221,11 @@ static uint_fast8_t		glob_nfmdeviation100 = 75;	// 7.5 kHz максимальн�
 					dtmax2 = vdt; /* максимальное значение длительности */ \
 				++ dtcount2; \
 			} \
-		} while (0);
+		} while (0)
 
 	#define BEGIN_STAMP3() do { \
 			perft3 = cpu_getdebugticks(); \
-		} while (0);
+		} while (0)
 
 	#define END_STAMP3() do { \
 			const uint_fast32_t t2 = cpu_getdebugticks(); \
@@ -235,7 +237,7 @@ static uint_fast8_t		glob_nfmdeviation100 = 75;	// 7.5 kHz максимальн�
 					dtmax3 = vdt; /* максимальное значение длительности */ \
 				++ dtcount3; \
 			} \
-		} while (0);
+		} while (0)
 
 
 	//static uint32_t dd [4];
@@ -251,22 +253,22 @@ static uint_fast8_t		glob_nfmdeviation100 = 75;	// 7.5 kHz максимальн�
 #else /* WITHDEBUG */
 
 	#define BEGIN_STAMP() do { \
-		} while (0);
+		} while (0)
 
 	#define END_STAMP() do { \
-		} while (0);
+		} while (0)
 
 	#define BEGIN_STAMP2() do { \
-		} while (0);
+		} while (0)
 
 	#define END_STAMP2() do { \
-		} while (0);
+		} while (0)
 
 	#define BEGIN_STAMP3() do { \
-		} while (0);
+		} while (0)
 
 	#define END_STAMP3() do { \
-		} while (0);
+		} while (0)
 
 	static void debug_cleardtmax(void)
 	{
@@ -1425,11 +1427,13 @@ static void agc_parameters_update(volatile agcparams_t * const agcp, FLOAT_t gai
 
 	agcp->dischargespeedfast = MAKETAUIF((int) glob_agc_t4 [pathi] * (FLOAT_t) 0.001);	// в милисекундах
 
+	agcp->chargespeedfast = MAKETAUIF((int) glob_agc_t0 [pathi] * (FLOAT_t) 0.001);	// в милисекундах
 	agcp->chargespeedslow = MAKETAUIF((int) glob_agc_t1 [pathi] * (FLOAT_t) 0.001);	// в милисекундах
 	agcp->dischargespeedslow = MAKETAUIF((int) glob_agc_t2 [pathi] * (FLOAT_t) 0.1);	// в сотнях милисекунд (0.1 секунды)
 	agcp->hungticks = NSAITICKS(glob_agc_thung [pathi] * 100);			// в сотнях милисекунд (0.1 секунды)
 
 	agcp->gainlimit = gainlimit;
+	agcp->levelfence = rxlevelfence * (int) glob_agc_scale [pathi] * (FLOAT_t) 0.01;
 	agcp->agcfactor = flatgain ? (FLOAT_t) -1 : agc_calcagcfactor(glob_agcrate [pathi]);
 
 	//debug_printf_P(PSTR("agc_parameters_update: dischargespeedfast=%f, chargespeedfast=%f\n"), agcp->dischargespeedfast, agcp->chargespeedfast);
@@ -1495,14 +1499,15 @@ static void comp_parameters_update(volatile agcparams_t * const agcp, FLOAT_t ga
 static void
 performagc(const volatile agcparams_t * agcp, volatile agcstate_t * st, FLOAT_t sample)
 {
-	// быстрая цепь АРУ
 	if (st->agcfastcap < sample)
 	{
+		// быстрая цепь АРУ
 		// заряжается в соответствии с параметром agcp->chargespeedfast
 		charge2(& st->agcfastcap, sample, agcp->chargespeedfast);
 	}
 	else
 	{
+		// быстрая цепь АРУ
 		// разряд со скоростью agcp->dischargespeedfast
 		charge2(& st->agcfastcap, sample, agcp->dischargespeedfast);
 	}
@@ -6242,6 +6247,29 @@ board_set_agcrate(uint_fast8_t n)	/* на n децибел изменения в
 	}
 }
 
+// scale в процентах
+void
+board_set_agc_scale(uint_fast8_t n)	/* подстройка параметра АРУ */
+{
+	if (glob_agc_scale [glob_trxpath] != n)
+	{
+		glob_agc_scale [glob_trxpath] = n;
+		board_dsp1regchanged();
+	}
+}
+
+// chargespeedfast в милисекундах
+void
+board_set_agc_t0(uint_fast8_t n)	/* подстройка параметра АРУ */
+{
+	if (glob_agc_t0 [glob_trxpath] != n)
+	{
+		glob_agc_t0 [glob_trxpath] = n;
+		board_dsp1regchanged();
+	}
+}
+
+// chargespeedslow в милисекундах
 void
 board_set_agc_t1(uint_fast8_t n)	/* подстройка параметра АРУ */
 {
@@ -6252,6 +6280,7 @@ board_set_agc_t1(uint_fast8_t n)	/* подстройка параметра АР
 	}
 }
 
+// dischargespeedslow в сотнях милисекунд (0.1 секунды)
 void
 board_set_agc_t2(uint_fast8_t n)	/* подстройка параметра АРУ */
 {
@@ -6262,6 +6291,7 @@ board_set_agc_t2(uint_fast8_t n)	/* подстройка параметра АР
 	}
 }
 
+// dischargespeedfast в милисекундах
 void
 board_set_agc_t4(uint_fast8_t n)	/* подстройка параметра АРУ */
 {

@@ -169,7 +169,7 @@
 	#define WITHSPLIT	1	/* управление режимами расстройки одной кнопкой */
 	//#define WITHSPLITEX	1	/* Трехкнопочное управление режимами расстройки */
 
-#if 1//WITHISBOOTLOADER
+#if WITHISBOOTLOADER
 	#define LCDMODE_DUMMY	1
 
 #else /* WITHISBOOTLOADER */
@@ -178,8 +178,8 @@
 	//#define LCDMODE_HARD_SPI	1	/* LCD over SPI line */
 	#define LCDMODE_LTDC	1		/* Use STM32F4xxx with LCD-TFT Controller (LTDC), also need LCDMODE_ILI9341 */
 	#define LCDMODE_LTDC_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит - RGB565. */
-	//#define LCDMODE_LTDC_PIP16	1	/* используется PIP с форматом 16 бит - RGB565 */
-	#define LCDMODE_LTDC_PIPL8	1	/* используется PIP с форматом 8 бит - индексные цвета */
+	#define LCDMODE_LTDC_PIP16	1	/* используется PIP с форматом 16 бит - RGB565 */
+	//#define LCDMODE_LTDC_PIPL8	1	/* используется PIP с форматом 8 бит - индексные цвета */
 	//#define LCDMODE_WH2002	1	/* тип применяемого индикатора 20*2, возможно вместе с LCDMODE_HARD_SPI */
 	//#define LCDMODE_WH1602	1	/* тип применяемого индикатора 16*2 */
 	//#define LCDMODE_WH1604	1	/* тип применяемого индикатора 16*4 */
@@ -353,8 +353,15 @@
 	#if 0
 		/* TUNER & PA board 2*RD16 by avbelnn@yandex.ru */
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
-		#define SHORTSET8	1	
+		#define SHORTSET8	1
+		#define WITHAUTOTUNER_AVBELNN	1	/* Плата управления LPF и тюнером от avbelnn */
+		#define WITHANTSELECT	1	/* Управление переключением антенн */
+	#elif 0
+		/* TUNER by R3KBL */
+		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
+		#define SHORTSET7	1
 	#endif
+	//#define WITHOUTTXCADCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
 
 	#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
 	//#define WITHTHERMOLEVEL	1	/* отображение температуры */
@@ -431,7 +438,7 @@
 	//#define PLL1_TYPE PLL_TYPE_ADF4001
 	//#define DDS2_TYPE DDS_TYPE_AD9834
 	//#define RTC1_TYPE RTC_TYPE_M41T81	/* ST M41T81M6 RTC clock chip with I2C interface */
-	//#define RTC1_TYPE RTC_TYPE_STM32F4xx	/* STM32F4xx/STM32F7xx internal RTC peripherial */
+	#define RTC1_TYPE RTC_TYPE_STM32F4xx	/* STM32F4xx/STM32F7xx internal RTC peripherial */
 	//#define TSC1_TYPE TSC_TYPE_STMPE811	/* touch screen controller */
 	//#define DAC1_TYPE	99999		/* наличие ЦАП для подстройки тактовой частоты */
 

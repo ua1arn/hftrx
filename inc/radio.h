@@ -3217,15 +3217,23 @@ void spool_0p128(void);	// OPERA support
 
 #define LABELW 8
 
-#if WITHTOUCHTEST
+#if WITHTOUCHGUI
 	typedef struct {
 		char name[15];
 		uint_fast8_t index;
 	} menu_names_t;
 
+	typedef struct {
+		char param[20];
+		char val[20];
+		uint_fast8_t state;
+	} enc2_menu_t;
+
 	void change_submode(uint_fast8_t newsubmode);
 	uint_fast8_t get_low_bp (int_least16_t rotate);
 	uint_fast8_t get_high_bp (int_least16_t rotate);
+	uint_fast8_t get_bp_type (void);
+	void gui_initialize (void);
 	void process_gui(void);
 	uint_fast8_t check_encoder2 (int_least16_t rotate);
 	void set_encoder2_state (uint_fast8_t code);
@@ -3237,8 +3245,8 @@ void spool_0p128(void);	// OPERA support
 	uint_fast8_t get_multilinemenu_block_params(menu_names_t * vals, uint_fast8_t index);
 	void get_multilinemenu_block_vals(menu_names_t * vals, uint_fast8_t index, uint_fast8_t cnt);
 	void set_menu_cond (uint_fast8_t m);
-	char * gui_edit_menu_item (uint_fast8_t index, int_least16_t rotate);
-#endif /* WITHTOUCHTEST */
+	const char * gui_edit_menu_item (uint_fast8_t index, int_least16_t rotate);
+#endif /* WITHTOUCHGUI */
 
 #ifdef __cplusplus
 }

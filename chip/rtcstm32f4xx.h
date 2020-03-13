@@ -138,6 +138,42 @@ stm32f4xx_rtc_lsXstart(void)
 		while ((RCC->BDCR & RCC_BDCR_RTCEN) == 0)
 			;
 
+	#elif CPUSTYLE_STM32MP1
+		// See RCC_BDCR_RTCSRC
+		//		0x0: No clock (default after backup domain reset)
+		//		0x1: LSE clock used as RTC clock
+		//		0x2: LSI clock used as RTC clock
+		//		0x3: HSE clock divided by RTCDIV value is used as RTC clock
+
+		const uint_fast32_t bcdrrtcsrc =
+			(0x01 << RCC_BDCR_RTCSRC_Pos) |		/* 01: LSE oscillator clock used as the RTC clock */
+			0;
+
+		if ((RCC->BDCR & RCC_BDCR_RTCSRC_Msk) != bcdrrtcsrc)
+		{
+			// TODO: implementing
+//			RCC->BDCR |= RCC_BDCR_BDRST;
+//			RCC->BDCR &= ~ RCC_BDCR_BDRST;
+
+			RCC->BDCR = (RCC->BDCR & ~ (RCC_BDCR_RTCSRC_Msk)) |
+				bcdrrtcsrc |
+				0;
+
+			RCC->BDCR = (RCC->BDCR & ~ (RCC_BDCR_LSEDRV | RCC_BDCR_LSEBYP)) |
+				(0x03 << RCC_BDCR_LSEDRV_Pos) |
+				RCC_BDCR_LSEON_Msk |
+				0;
+
+			while ((RCC->BDCR & RCC_BDCR_LSERDY_Msk) == 0)
+				;
+
+		}
+
+		RCC->BDCR |= RCC_BDCR_RTCCKEN;	/* RTC clock enabled */
+		while ((RCC->BDCR & RCC_BDCR_RTCCKEN) == 0)
+			;
+
+
 	#else /* CPUSTYLE_STM32F4XX */
 
 		const uint_fast32_t bcdrrtcsel = 
@@ -172,6 +208,55 @@ stm32f4xx_rtc_lsXstart(void)
 #endif /* WITHRTCLSI */
 }
 
+/* возврат не-0 если требуется начальная загрузка значений */
+static uint_fast8_t board_rtc_get_inits(void)
+{
+#if CPUSTYLE_STM32MP1
+	//	0: Calendar has not been initialized
+	//	1: Calendar has been initialized
+	const uint_fast8_t inits = (RTC->ICSR & RTC_ISR_INITS) == 0;	// if year is zero
+	return inits;
+
+#else /* CPUSTYLE_STM32MP1 */
+	const uint_fast8_t inits = (RTC->ISR & RTC_ISR_INITS) == 0;	// if year is zero
+	return inits;
+
+#endif /* CPUSTYLE_STM32MP1 */
+}
+
+static void board_rtc_initmode(uint_fast8_t on)
+{
+#if CPUSTYLE_STM32MP1
+	if (on != 0)
+	{
+		/* INIT mode ON */
+		RTC->ICSR |= RTC_ISR_INIT;
+		while ((RTC->ICSR & RTC_ISR_INITF) == 0)
+			;
+	}
+	else
+	{
+		// INIT mode OFF
+		RTC->ICSR &= ~ RTC_ISR_INIT;
+	}
+
+#else /* CPUSTYLE_STM32MP1 */
+	if (on != 0)
+	{
+		/* INIT mode ON */
+		RTC->ISR |= RTC_ISR_INIT;
+		while ((RTC->ISR & RTC_ISR_INITF) == 0)
+			;
+	}
+	else
+	{
+		// INIT mode OFF
+		RTC->ISR &= ~ RTC_ISR_INIT;
+	}
+
+#endif /* CPUSTYLE_STM32MP1 */
+}
+
 void board_rtc_settime(
 	uint_fast8_t hours,
 	uint_fast8_t minutes,
@@ -180,10 +265,8 @@ void board_rtc_settime(
 {
 	stm32f4xx_rtc_bdenable();	// Разрешить запись в Backup domain
 	stm32f4xx_rtc_wrenable();	/* Disable the write protection for RTC registers */
-	/* INIT mode ON */
-	RTC->ISR |= RTC_ISR_INIT;	
-	while ((RTC->ISR & RTC_ISR_INITF) == 0)
-		;
+
+	board_rtc_initmode(1);	/* INIT mode ON */
 
 	RTC->TR =
 		stm32f4xx_bin2bcd(hours) * RTC_TR_HU_0 |
@@ -192,7 +275,7 @@ void board_rtc_settime(
 		0;
 	
 	stm32f4xx_rtc_wrdisable();	/* Enable the write protection for RTC registers */
-	RTC->ISR &= ~ RTC_ISR_INIT;	// INIT mode OFF
+	board_rtc_initmode(0);	// INIT mode OFF
 	stm32f4xx_rtc_bddisable();	// Запретить запись в Backup domain
 }
 
@@ -204,18 +287,16 @@ void board_rtc_setdate(
 {
 	stm32f4xx_rtc_bdenable();	// Разрешить запись в Backup domain
 	stm32f4xx_rtc_wrenable();	/* Disable the write protection for RTC registers */
-	/* INIT mode ON */
-	RTC->ISR |= RTC_ISR_INIT;	
-	while ((RTC->ISR & RTC_ISR_INITF) == 0)
-		;
+	board_rtc_initmode(1);	/* INIT mode ON */
 
 	RTC->DR =
 		stm32f4xx_bin2bcd(year - 2000) * RTC_DR_YU_0 |
 		stm32f4xx_bin2bcd(month) * RTC_DR_MU_0 |
 		stm32f4xx_bin2bcd(dayofmonth) * RTC_DR_DU_0 |
 		0;
+
 	stm32f4xx_rtc_wrdisable();	/* Enable the write protection for RTC registers */
-	RTC->ISR &= ~ RTC_ISR_INIT;	// INIT mode OFF
+	board_rtc_initmode(0);	// INIT mode OFF
 	stm32f4xx_rtc_bddisable();	// Запретить запись в Backup domain
 }
 
@@ -231,10 +312,7 @@ void board_rtc_setdatetime(
 	stm32f4xx_rtc_bdenable();	// Разрешить запись в Backup domain
 	/* Disable the write protection for RTC registers */
 	stm32f4xx_rtc_wrenable();
-	/* INIT mode ON */
-	RTC->ISR |= RTC_ISR_INIT;	
-	while ((RTC->ISR & RTC_ISR_INITF) == 0)
-		;
+	board_rtc_initmode(1);	/* INIT mode ON */
 
 	RTC->DR =
 		stm32f4xx_bin2bcd(year - 2000) * RTC_DR_YU_0 |
@@ -246,8 +324,9 @@ void board_rtc_setdatetime(
 		stm32f4xx_bin2bcd(minutes) * RTC_TR_MNU_0 |
 		stm32f4xx_bin2bcd(secounds) * RTC_TR_SU_0 |
 		0;
+
 	stm32f4xx_rtc_wrdisable();	/* Enable the write protection for RTC registers */
-	RTC->ISR &= ~ RTC_ISR_INIT;	// INIT mode OFF
+	board_rtc_initmode(0);	// INIT mode OFF
 	stm32f4xx_rtc_bddisable();	// Запретить запись в Backup domain
 }
 
@@ -312,18 +391,25 @@ uint_fast8_t board_rtc_chip_initialize(void)
 {
 	debug_printf_P(PSTR("rtc_stm32f4xx_initialize\n"));
 
-	// RCC_APB1ENR_RTCAPBEN ???
-#if defined(RCC_APB1ENR_RTCEN)
-	RCC->APB1ENR |= RCC_APB1ENR_PWREN | RCC_APB1ENR_RTCEN;  // Включить тактирование 
-	__DSB();
+#if CPUSTYLE_STM32MP1
+	RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_RTCAPBEN;  // Включить тактирование
+	(void) RCC->MP_APB5ENSETR;
+	RCC->MP_APB5LPENSETR = RCC_MC_APB5LPENSETR_RTCAPBLPEN;  // Включить тактирование
+	(void) RCC->MP_APB5LPENSETR;
+
+#elif defined(RCC_APB1ENR_RTCEN)
+	RCC->APB1ENR |= RCC_APB1ENR_PWREN | RCC_APB1ENR_RTCEN;  // Включить тактирование
+	(void) RCC->APB1ENR;
+
 #elif defined(RCC_APB1ENR_PWREN)
-	RCC->APB1ENR |= RCC_APB1ENR_PWREN;  // Включить тактирование 
-	__DSB();
+	RCC->APB1ENR |= RCC_APB1ENR_PWREN;  // Включить тактирование
+	(void) RCC->APB1ENR;
+
 #else
 
 #endif /* defined(RCC_APB1ENR_RTCEN) */
 
-	//RCC->APB1ENR |= RCC_APB1ENR_PWREN | RCC_APB1ENR_BKPEN;  // STM32F1xx: Включить тактирование 
+	//RCC->APB1ENR |= RCC_APB1ENR_PWREN | RCC_APB1ENR_BKPEN;  // STM32F1xx: Включить тактирование
 	//__DSB();
 
 	stm32f4xx_rtc_bdenable();	// Разрешить запись в Backup domain
@@ -367,7 +453,7 @@ uint_fast8_t board_rtc_chip_initialize(void)
 	stm32f4xx_rtc_bddisable();	// Запретить запись в Backup domain
 
 	/* Установка начальных значений времени и даты */
-	const uint_fast8_t inits = (RTC->ISR & RTC_ISR_INITS) == 0;	// if year is zero
+	const uint_fast8_t inits = board_rtc_get_inits();	// if year is zero
 	debug_printf_P(PSTR("rtc_stm32f4xx_initialize: INITS=%d\n"), inits);
 	debug_printf_P(PSTR("rtc_stm32f4xx_initialize: done\n"));
 

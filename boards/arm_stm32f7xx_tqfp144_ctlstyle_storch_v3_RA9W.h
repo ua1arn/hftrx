@@ -11,8 +11,8 @@
 // 2xUSB
 // Rmainunit_v5em.pcb, Rmainunit_v5jm.pcb
 
-#ifndef ARM_STM32F4XX_TQFP144_CTLSTYLE_STORCH_V3_RA9W_H_INCLUDED
-#define ARM_STM32F4XX_TQFP144_CTLSTYLE_STORCH_V3_RA9W_H_INCLUDED 1
+#ifndef ARM_STM32F7XX_TQFP144_CTLSTYLE_STORCH_V3_RA9W_H_INCLUDED
+#define ARM_STM32F7XX_TQFP144_CTLSTYLE_STORCH_V3_RA9W_H_INCLUDED 1
 
 	#if ! defined(STM32F767xx)
 		#error Wrong CPU selected. STM32F767xx expected
@@ -270,7 +270,7 @@
 	//#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
 	//#define BOARD_FFTZOOM_POW2MAX 1	// Возможные масштабы FFT x1, x2
 	//#define BOARD_FFTZOOM_POW2MAX 2	// Возможные масштабы FFT x1, x2, x4
-	#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
+	#define BOARD_FFTZOOM_POW2MAX 2	// Возможные масштабы FFT x1, x2, x4, x8
 	//#define BOARD_FFTZOOM_POW2MAX 4	// Возможные масштабы FFT x1, x2, x4, x8, x16
 	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
 	//#define WITHUSEDUALWATCH	1	// Второй приемник
@@ -483,4 +483,4 @@
 	#define KI_COUNT 5	// количество используемых под клавиатуру входов АЦП
 	#define KI_LIST	KI4, KI3, KI2, KI1, KI0,	// инициализаторы для функции перекодировки
 
-#endif /* ARM_STM32F4XX_TQFP144_CTLSTYLE_STORCH_V3_RA9W_H_INCLUDED */
+#endif /* ARM_STM32F7XX_TQFP144_CTLSTYLE_STORCH_V3_RA9W_H_INCLUDED */

@@ -97,6 +97,7 @@ clean:
 	-rm -f $(ASRC:.s=.lst)
 
 ## Other dependencies
+-include $(wildcard $(OBJDIR)/*.d)
 -include $(wildcard $(OBJDIR)/*/*.d)
 -include $(wildcard $(OBJDIR)/*/*/*.d)
 -include $(wildcard $(OBJDIR)/*/*/*/*.d)

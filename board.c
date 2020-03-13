@@ -52,7 +52,7 @@ static uint_fast8_t dds3_profile;		/* информация о последнем
 // board specific functions
 
 uint_fast8_t 	glob_agc;
-uint_fast8_t 	glob_opowerlevel;
+uint_fast8_t 	glob_opowerlevel = WITHPOWERTRIMMIN;	/* WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
 uint_fast8_t	glob_loudspeaker_off;
 
 static uint_fast8_t 	glob_tx;			// находимся в режиме передачи
@@ -144,8 +144,6 @@ static uint_fast8_t 	glob_user3;
 static uint_fast8_t 	glob_user4;
 static uint_fast8_t 	glob_user5;
 static uint_fast8_t		glob_attvalue;	// RF signal gen attenuator value
-
-int gettxstate(void) { return glob_tx; }
 
 static void prog_rfadc_update(void);
 

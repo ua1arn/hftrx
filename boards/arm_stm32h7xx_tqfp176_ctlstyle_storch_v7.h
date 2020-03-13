@@ -343,8 +343,15 @@
 	#if 0
 		/* TUNER & PA board 2*RD16 by avbelnn@yandex.ru */
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
-		#define SHORTSET8	1	
+		#define SHORTSET8	1
+		#define WITHAUTOTUNER_AVBELNN	1	/* Плата управления LPF и тюнером от avbelnn */
+		#define WITHANTSELECT	1	/* Управление переключением антенн */
+	#elif 0
+		/* TUNER by R3KBL */
+		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
+		#define SHORTSET7	1
 	#endif
+	//#define WITHOUTTXCADCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
 
 	#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
 	//#define WITHTHERMOLEVEL	1	/* отображение температуры */

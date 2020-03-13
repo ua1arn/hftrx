@@ -149,6 +149,11 @@ all: APP2 $(PROJECT)_app.nec32 app.hex
 
 bootloader: BOOT2 boot.hex
 
+  
+app_run: $(PROJECT)_app.nec32
+	./dfu-util.exe --device ffff:0738 --alt 2 --dfuse-address 0x20000000 --download $(PROJECT)_app.nec32
+	./dfu-util.exe --device ffff:0738 --alt 2 --detach
+
 flash: $(PROJECT)_app.nec32
 	./dfu-util.exe --device ffff:0738 --alt 0 --dfuse-address 0x18020000 --download $(PROJECT)_app.nec32
 
@@ -200,11 +205,11 @@ clean2:
 	-rm -fR $(OBJDIR)
 	-rm -f $(PROJECT)_boot.elf $(PROJECT)_boot.map $(PROJECT)_boot.hex $(PROJECT)_boot.bin
 	-rm -f $(PROJECT)_app.elf $(PROJECT)_app.map $(PROJECT)_app.hex $(PROJECT)_app.bin
-
-
+	
 # 
 # Include the dependency files, should be the last of the makefile
 #
+-include $(wildcard $(OBJDIR)/*.d)
 -include $(wildcard $(OBJDIR)/*/*.d)
 -include $(wildcard $(OBJDIR)/*/*/*.d)
 -include $(wildcard $(OBJDIR)/*/*/*/*.d)

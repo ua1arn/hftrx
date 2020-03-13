@@ -559,10 +559,12 @@ void board_set_trxpath(uint_fast8_t v);	/* Тракт, к которому от�
 void board_set_mikemute(uint_fast8_t v);	/* отключить микрофонный усилитель */
 void board_set_mik1level(uint_fast16_t v);	/* усиление микрофонного усилителя */
 void board_set_agcrate(uint_fast8_t v);	/* на n децибел изменения входного сигнала 1 дБ выходного. UINT8_MAX - "плоская" АРУ */
+void board_set_agc_t0(uint_fast8_t v);	/* подстройка параметра АРУ */
 void board_set_agc_t1(uint_fast8_t v);	/* подстройка параметра АРУ */
 void board_set_agc_t2(uint_fast8_t v);	/* подстройка параметра АРУ */
 void board_set_agc_t4(uint_fast8_t v);	/* подстройка параметра АРУ */
 void board_set_agc_thung(uint_fast8_t v);	/* подстройка параметра АРУ */
+void board_set_agc_scale(uint_fast8_t v);	/* подстройка параметра АРУ */
 void board_set_squelch(uint_fast8_t v);	/* уровень открывания шумоподавителя */
 void board_set_notch_freq(uint_fast16_t n);	/* частота NOTCH фильтра */
 void board_set_notch_width(uint_fast16_t n);	/* полоса NOTCH фильтра */

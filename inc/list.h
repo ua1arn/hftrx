@@ -279,6 +279,33 @@ RemoveEntryList(
     _EX_Flink->Blink = _EX_Blink;\
     }
 
+//
+// Taken from https://github.com/vathpela/gnu-efi/blob/master/inc/efilink.h
+//
+//  VOID
+//  SwapListEntries(
+//      PLIST_ENTRY Entry1,
+//      PLIST_ENTRY Entry2
+//      );
+//
+// Put Entry2 before Entry1
+//
+
+#define SwapListEntries(Entry1,Entry2) {\
+    LIST_ENTRY *Entry1Flink, *Entry1Blink;     \
+    LIST_ENTRY *Entry2Flink, *Entry2Blink;     \
+    Entry2Flink = (Entry2)->Flink;             \
+    Entry2Blink = (Entry2)->Blink;             \
+    Entry1Flink = (Entry1)->Flink;             \
+    Entry1Blink = (Entry1)->Blink;             \
+    Entry2Blink->Flink = Entry2Flink;       \
+    Entry2Flink->Blink = Entry2Blink;        \
+    (Entry2)->Flink = Entry1;               \
+    (Entry2)->Blink = Entry1Blink;          \
+    Entry1Blink->Flink = (Entry2);            \
+    (Entry1)->Blink = (Entry2);             \
+    }
+
 
 //
 //

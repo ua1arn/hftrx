@@ -667,23 +667,11 @@ void display_pixelbuffer_clear(
 
 // начальная инициализация буфера
 // Формат RGB565
+// Эта функция используется только в тесте
 void display_colorbuffer_fill(
 	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy,
-	COLORPIP_T color
-	);
-
-// Формат RGB565
-void 
-dma2d_fillrect2_RGB565(
-	PACKEDCOLORPIP_T * buffer,
-	uint_fast16_t dx,	// размеры буфера
-	uint_fast16_t dy,
-	uint_fast16_t x,	// позиция окна в буфере
-	uint_fast16_t y,
-	uint_fast16_t w,	// размер окна
-	uint_fast16_t h,
 	COLORPIP_T color
 	);
 
@@ -708,6 +696,19 @@ void display_colorbuffer_line_set(
 	COLORPIP_T color
 	);
 
+// Нарисовать закрашенный или пустой прямоугольник
+void display_draw_rectangle_colorbuffer(
+		PACKEDCOLORPIP_T * buffer,
+		uint_fast16_t dx,
+		uint_fast16_t dy,
+		uint_fast16_t x1,
+		uint_fast16_t y1,
+		uint_fast16_t x2,
+		uint_fast16_t y2,
+		PACKEDCOLOR565_T color,
+		uint_fast8_t fill
+		);
+
 // установить данный буфер как область для PIP
 // Формат RGB565
 void display_colorbuffer_pip(
@@ -717,7 +718,6 @@ void display_colorbuffer_pip(
 	);
 
 // Поставить цветную точку.
-// Формат RGB565
 void display_colorbuffer_set(
 	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,	
@@ -727,8 +727,7 @@ void display_colorbuffer_set(
 	COLORPIP_T color
 	);
 
-// Поставить цветную точку.
-// Формат RGB565
+// поставить цветную точку (модификация с сохранением старого изоьражения).
 void display_colorbuffer_xor(
 	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,	
@@ -953,9 +952,46 @@ void display_1state(
 #endif /* LCDMODE_LTDC */
 
 void display_solidbar(uint_fast16_t x, uint_fast16_t y, uint_fast16_t x2, uint_fast16_t y2, COLOR_T color);
+
+/// Нарисовать вертикальную цветную полосу
+// Формат RGB565
+void
+display_colorbuffer_xor_vline(
+	PACKEDCOLORPIP_T * buffer,
+	uint_fast16_t dx,	// ширина буфера
+	uint_fast16_t dy,	// высота буфера
+	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t row0,	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	uint_fast16_t h,	// высота
+	COLORPIP_T color
+	);
+
+// Нарисовать вертикальную цветную полосу
+// Формат RGB565
+void
+display_colorbuffer_set_vline(
+	PACKEDCOLORPIP_T * buffer,
+	uint_fast16_t dx,	// ширина буфера
+	uint_fast16_t dy,	// высота буфера
+	uint_fast16_t col,	// горизонтальная координата начального пикселя (0..dx-1) слева направо
+	uint_fast16_t row0,	// вертикальная координата начального пикселя (0..dy-1) сверху вниз
+	uint_fast16_t h,	// высота
+	COLORPIP_T color
+	);
+
+// получить адрес требуемой позиции в буфере
+PACKEDCOLORPIP_T *
+display_colorbuffer_at(
+	PACKEDCOLORPIP_T * buffer,
+	uint_fast16_t dx,	// ширина буфера
+	uint_fast16_t dy,	// высота буфера
+	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t y	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	);
+
 void display_putpixel(
-	uint_fast16_t x,
-	uint_fast16_t y,
+		uint_fast16_t dx,	// ширина буфера
+		uint_fast16_t dy,	// высота буфера
 	COLOR_T color
 	);
 void display_at_xy(uint_fast16_t x, uint_fast16_t y, const char * s);
@@ -968,12 +1004,33 @@ void board_set_zoomxpow2(uint_fast8_t v);	/* уменьшение отображ
 void board_set_fillspect(uint_fast8_t v); /* заливать заполнением площадь под графиком спектра */
 void board_set_wflevelsep(uint_fast8_t v); /* чувствительность водопада регулируется отдельной парой параметров */
 
-#if WITHTOUCHTEST
-	void display_pip_update(uint_fast8_t x, uint_fast8_t y, void * pv);
-#endif /* WITHTOUCHTEST */
-
 PACKEDCOLOR_T * rgb565_fb(void);
 void display2_xltrgb24(COLOR24_T * xtable);
+// Установить прозрачность для прямоугольника
+void pip_transparency_rect(
+	PACKEDCOLORPIP_T * buffer,
+	uint_fast16_t dx,
+	uint_fast16_t dy,
+	uint_fast16_t x1, uint_fast16_t y1,
+	uint_fast16_t x2, uint_fast16_t y2,
+	uint_fast8_t alpha	// на сколько затемнять цвета (0 - чёрный, 255 - без изменений)
+	);
+
+// заполнение прямоугольной области в видеобуфере
+void display_colorbuffer_fillrect(
+	PACKEDCOLORPIP_T * buffer,
+	uint_fast16_t dx,	// ширина буфера
+	uint_fast16_t dy,	// высота буфера
+	uint_fast16_t x,	// начальная координата
+	uint_fast16_t y,	// начальная координата
+	uint_fast16_t w,	// ширниа
+	uint_fast16_t h,	// высота
+	COLORPIP_T color	// цвет
+	);
+
+void display2_getpipparams(pipparams_t * p);
+PACKEDCOLORPIP_T * getscratchpip(void);
+int_fast32_t display_zoomedbw(void);
 
 #ifdef __cplusplus
 }

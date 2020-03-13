@@ -301,8 +301,6 @@ modemchangemode(
 	uint_fast32_t modemmode		// режим, который устанавливаем по команде от modem
 	);
 
-int gettxstate(void);
-
 
 enum 
 {

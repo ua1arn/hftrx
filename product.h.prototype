@@ -182,7 +182,7 @@
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v3_UT3NZ.h"	// stm32h743ziT6, EPSON 50 MHz Rmainunit_v5km.pcb (USBx2, wide display interface)
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v3_hansolo.h"	// Дачь gansolo@rambler.ru Rmainunit_v5jm.pcb (USBx2, wide display interface)
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v3_UA9WF.h"	// Rmainunit_v5fm.pcb LTC2217 (USBx2, wide display interface)
-	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v3_RA9W.h"	// Rmainunit_v5fm.pcb (USBx2, wide display interface)
+	//#include "boards/arm_stm32f7xx_tqfp144_ctlstyle_storch_v3_RA9W.h"	// Rmainunit_v5fm.pcb (USBx2, wide display interface)
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v3_headset.h"	// Rmainunit_v5fm.pcb (USBx2, wide display interface)
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32f4xx_tqfp144_cpustyle_storch_v3.h"	// Rmainunit_v5fm.pcb (USBx2, wide display interface)
