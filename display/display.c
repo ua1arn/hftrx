@@ -633,19 +633,19 @@ void display_showbuffer(
 
 
 static uint_fast8_t scalecolor(
-		uint_fast8_t cv,	// color component value
-		uint_fast8_t maxv,	// maximal color component value
-		uint_fast8_t rmaxv	// resulting color component value
-		)
+	uint_fast8_t cv,	// color component value
+	uint_fast8_t maxv,	// maximal color component value
+	uint_fast8_t rmaxv	// resulting color component value
+	)
 {
 	return (cv * rmaxv) / maxv;
 }
 
 // FIXME: доелать модификацию цвета для LCDMODE_LTDC_L8
 static COLORPIP_T getshadedcolor(
-		COLORPIP_T dot, // исходный цвет
-		uint_fast8_t alpha	// на сколько затемнять цвета (0 - чёрный, 255 - без изменений)
-		)
+	COLORPIP_T dot, // исходный цвет
+	uint_fast8_t alpha	// на сколько затемнять цвета (0 - чёрный, 255 - без изменений)
+	)
 {
 #if LCDMODE_LTDC_PIPL8
 	return dot ^ 0x80;	// FIXME: use indexed color
@@ -1214,28 +1214,29 @@ void display_colorbuffer_line_set(
 	int xmax = x1;
 	int ymin = y0;
 	int ymax = y1;
-   int Dx = xmax - xmin; 
-   int Dy = ymax - ymin;
-   int steep = (abs(Dy) >= abs(Dx));
-   if (steep) {
-       SWAP(xmin, ymin);
-       SWAP(xmax, ymax);
-       // recompute Dx, Dy after swap
-       Dx = xmax - xmin;
-       Dy = ymax - ymin;
-   }
-   int xstep = 1;
-   if (Dx < 0) {
-       xstep = -1;
-       Dx = -Dx;
-   }
-   int ystep = 1;
-   if (Dy < 0) {
-       ystep = -1;		
-       Dy = -Dy; 
-   }
-   int TwoDy = 2*Dy; 
-   int TwoDyTwoDx = TwoDy - 2*Dx; // 2*Dy - 2*Dx
+	int Dx = xmax - xmin;
+	int Dy = ymax - ymin;
+	int steep = (abs(Dy) >= abs(Dx));
+	if (steep) {
+	   SWAP(xmin, ymin);
+	   SWAP(xmax, ymax);
+	   // recompute Dx, Dy after swap
+	   Dx = xmax - xmin;
+	   Dy = ymax - ymin;
+	}
+	int xstep = 1;
+	if (Dx < 0) {
+	   xstep = -1;
+	   Dx = -Dx;
+	}
+	int ystep = 1;
+	if (Dy < 0) {
+	   ystep = -1;
+	   Dy = -Dy;
+	}
+
+   int TwoDy = 2 * Dy;
+   int TwoDyTwoDx = TwoDy - 2 * Dx; // 2*Dy - 2*Dx
    int E = TwoDy - Dx; //2*Dy - Dx
    int y = ymin;
    int xDraw, yDraw;
@@ -1261,34 +1262,42 @@ void display_colorbuffer_line_set(
    }
 }
 
+#undef SWAP
+
 // Нарисовать закрашенный или пустой прямоугольник
-void display_draw_rectangle_colorbuffer(
-		PACKEDCOLORPIP_T * buffer,
-		uint_fast16_t dx,
-		uint_fast16_t dy,
-		uint_fast16_t x1,
-		uint_fast16_t y1,
-		uint_fast16_t x2,
-		uint_fast16_t y2,
-		PACKEDCOLOR565_T color,
-		uint_fast8_t fill
-		)
+void display_colorbuffer_rect(
+	PACKEDCOLORPIP_T * buffer,
+	uint_fast16_t dx,	// размер буфера
+	uint_fast16_t dy,	// размер буфера
+	uint_fast16_t x1,	// начальная координата
+	uint_fast16_t y1,	// начальная координата
+	uint_fast16_t x2,	// конечная координата (включена в заполняемую облсть)
+	uint_fast16_t y2,	// конечная координата (включена в заполняемую облсть)
+	PACKEDCOLOR565_T color,
+	uint_fast8_t fill
+	)
 {
+	ASSERT(x2 > x1);
+	ASSERT(y2 > y1);
+
+	const uint_fast16_t w = x2 - x1 + 1;	// размер по горизонтали
+	const uint_fast16_t h = y2 - y1 + 1;	// размер по вертикали
+
+	if (w < 3 || h < 3)
+		return;
+
 	if (fill != 0)
 	{
-		display_colorbuffer_fillrect(buffer, dx, dy, x1, y1, x2 - x1 + 1, y2 - y1 + 1, color);
+		display_colorbuffer_fillrect(buffer, dx, dy, x1, y1, w, h, color);
 	}
 	else
 	{
-		display_colorbuffer_line_set(buffer, dx, dy, x1, y1, x2, y1, color);
-		display_colorbuffer_line_set(buffer, dx, dy, x1, y1, x1, y2, color);
-		display_colorbuffer_line_set(buffer, dx, dy, x1, y2, x2, y2, color);
-		display_colorbuffer_line_set(buffer, dx, dy, x2, y1, x2, y2, color);
+		display_colorbuffer_fillrect(buffer, dx, dy, x1, y1, w, 1, color);	// верхняя горизонталь
+		display_colorbuffer_fillrect(buffer, dx, dy, x1, y2, w, 1, color);	// нижняя горизонталь
+		display_colorbuffer_fillrect(buffer, dx, dy, x1, y1 + 1, 1, h - 2, color);	// левая вертикаль
+		display_colorbuffer_fillrect(buffer, dx, dy, x2, y1 + 1, 1, h - 2, color);	// правая вертикаль
 	}
 }
-
-#undef SWAP
-
 
 // погасить точку
 void display_pixelbuffer(

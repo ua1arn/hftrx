@@ -6488,7 +6488,7 @@ void hightests(void)
 		}
 	}
 #endif
-#if 0 && LCDMODE_COLORED
+#if 1 && LCDMODE_COLORED
 	{
 		display2_bgreset();
 		//GrideTest();

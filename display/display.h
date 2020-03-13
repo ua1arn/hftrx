@@ -686,6 +686,7 @@ void display_colorbuffer_show(
 	uint_fast16_t col,	// горизонтальная координата левого верхнего угла на экране (0..dx-1) слева направо
 	uint_fast16_t row	// вертикальная координата левого верхнего угла на экране (0..dy-1) сверху вниз
 	);
+
 // Нарисовать линию указанным цветом
 void display_colorbuffer_line_set(
 	PACKEDCOLORPIP_T * buffer,
@@ -699,17 +700,17 @@ void display_colorbuffer_line_set(
 	);
 
 // Нарисовать закрашенный или пустой прямоугольник
-void display_draw_rectangle_colorbuffer(
-		PACKEDCOLORPIP_T * buffer,
-		uint_fast16_t dx,
-		uint_fast16_t dy,
-		uint_fast16_t x1,
-		uint_fast16_t y1,
-		uint_fast16_t x2,
-		uint_fast16_t y2,
-		PACKEDCOLOR565_T color,
-		uint_fast8_t fill
-		);
+void display_colorbuffer_rect(
+	PACKEDCOLORPIP_T * buffer,
+	uint_fast16_t dx,	// размер буфера
+	uint_fast16_t dy,	// размер буфера
+	uint_fast16_t x1,	// начальная координата
+	uint_fast16_t y1,	// начальная координата
+	uint_fast16_t x2,	// конечная координата (включена в заполняемую облсть)
+	uint_fast16_t y2,	// конечная координата (включена в заполняемую облсть)
+	PACKEDCOLOR565_T color,
+	uint_fast8_t fill
+	);
 
 // установить данный буфер как область для PIP
 // Формат RGB565

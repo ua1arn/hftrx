@@ -570,7 +570,7 @@ void button1_handler(void);
 
 		display_colorbuffer_line_set(colorpip, gui.pip_width, gui.pip_height, 251, 110, 549, 110, COLORPIP_GRAY);
 		display_colorbuffer_line_set(colorpip, gui.pip_width, gui.pip_height, 290, 70, 290, 120, COLORPIP_GRAY);
-		display_draw_rectangle_colorbuffer(colorpip, gui.pip_width, gui.pip_height, x_l, 70, x_h, 108, COLORPIP_YELLOW, 1);
+		display_colorbuffer_rect(colorpip, gui.pip_width, gui.pip_height, x_l, 70, x_h, 108, COLORPIP_YELLOW, 1);
 		if (! bw_type)
 			display_colorbuffer_line_set(colorpip, gui.pip_width, gui.pip_height, x_c, 60, x_c, 120, COLORPIP_RED);
 }
@@ -1080,9 +1080,9 @@ void button1_handler(void);
 		PACKEDCOLORPIP_T * const colorpip = getscratchpip();
 		c1 = is_disabled ? COLOR_BUTTON_DISABLED : (is_locked ? COLOR_BUTTON_LOCKED : COLOR_BUTTON_NON_LOCKED);
 		c2 = is_disabled ? COLOR_BUTTON_DISABLED : (is_locked ? COLOR_BUTTON_PR_LOCKED : COLOR_BUTTON_PR_NON_LOCKED);
-		display_draw_rectangle_colorbuffer(colorpip, gui.pip_width, gui.pip_height, x1,	y1, x2, y2, pressed ? c1 : c2, 1);
-		display_draw_rectangle_colorbuffer(colorpip, gui.pip_width, gui.pip_height, x1,	y1, x2, y2, COLORPIP_GRAY, 0);
-		display_draw_rectangle_colorbuffer(colorpip, gui.pip_width, gui.pip_height, x1 + 2, y1 + 2, x2 - 2, y2 - 2, COLORPIP_BLACK, 0);
+		display_colorbuffer_rect(colorpip, gui.pip_width, gui.pip_height, x1,	y1, x2, y2, pressed ? c1 : c2, 1);
+		display_colorbuffer_rect(colorpip, gui.pip_width, gui.pip_height, x1,	y1, x2, y2, COLORPIP_GRAY, 0);
+		display_colorbuffer_rect(colorpip, gui.pip_width, gui.pip_height, x1 + 2, y1 + 2, x2 - 2, y2 - 2, COLORPIP_BLACK, 0);
 	}
 
 	void display_pip_update(uint_fast8_t x, uint_fast8_t y, void * pv)
