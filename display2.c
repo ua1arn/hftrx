@@ -5582,64 +5582,6 @@ deltafreq2x_abs(
 	return pm - p0;
 }
 
-// получить адрес требуемой позиции в буфере
-static
-volatile PACKEDCOLORPIP_T *
-display_colorbuffer_at(
-	PACKEDCOLORPIP_T * buffer,
-	uint_fast16_t dx,
-	uint_fast16_t dy,
-	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t row	// вертикальная координата пикселя (0..dy-1) сверху вниз
-	)
-{
-	ASSERT(col < dx);
-	ASSERT(row < dy);
-#if LCDMODE_HORFILL
-	return & buffer [row * dx + col];
-#else /* LCDMODE_HORFILL */
-	return & buffer [row * dx + col];
-#endif /* LCDMODE_HORFILL */
-}
-
-
-
-/// Нарисовать вертикальную цветную полосу
-// Формат RGB565
-static
-void
-display_colorbuffer_xor_vline(
-	PACKEDCOLORPIP_T * buffer,
-	uint_fast16_t dx,	
-	uint_fast16_t dy,
-	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t row0,	// вертикальная координата пикселя (0..dy-1) сверху вниз
-	uint_fast16_t h,	// высота
-	COLORPIP_T color
-	)
-{
-	while (h --)
-		display_colorbuffer_xor(buffer, dx, dy, col, row0 ++, color);
-}
-
-// Нарисовать вертикальную цветную полосу
-// Формат RGB565
-static
-void
-display_colorbuffer_set_vline(
-	PACKEDCOLORPIP_T * buffer,
-	uint_fast16_t dx,	
-	uint_fast16_t dy,
-	uint_fast16_t col,	// горизонтальная координата начального пикселя (0..dx-1) слева направо
-	uint_fast16_t row0,	// вертикальная координата начального пикселя (0..dy-1) сверху вниз
-	uint_fast16_t h,	// высота
-	COLORPIP_T color
-	)
-{
-	while (h --)
-		display_colorbuffer_set(buffer, dx, dy, col, row0 ++, color);
-}
-
 #define MARKERH 10
 // отрисовка маркеров частот
 static

@@ -729,13 +729,13 @@ static COLORPIP_T getshadedcolor(
 
 // Установить прозрачность для прямоугольника
 void pip_transparency_rect(
-		PACKEDCOLORPIP_T * const colorpip,
-		uint_fast16_t dx,
-		uint_fast16_t dy,
-		uint_fast16_t x1, uint_fast16_t y1,
-		uint_fast16_t x2, uint_fast16_t y2,
-		uint_fast8_t alpha	// на сколько затемнять цвета (0 - чёрный, 255 - без изменений)
-		)
+	PACKEDCOLORPIP_T * const colorpip,
+	uint_fast16_t dx,	// ширина буфера
+	uint_fast16_t dy,	// высота буфера
+	uint_fast16_t x1, uint_fast16_t y1,
+	uint_fast16_t x2, uint_fast16_t y2,
+	uint_fast8_t alpha	// на сколько затемнять цвета (0 - чёрный, 255 - без изменений)
+	)
 {
 	uint_fast16_t y;
 
@@ -748,6 +748,81 @@ void pip_transparency_rect(
 		}
 	}
 }
+
+
+// получить адрес требуемой позиции в буфере
+volatile PACKEDCOLORPIP_T *
+display_colorbuffer_at(
+	PACKEDCOLORPIP_T * buffer,
+	uint_fast16_t dx,	// ширина буфера
+	uint_fast16_t dy,	// высота буфера
+	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t row	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	)
+{
+	ASSERT(col < dx);
+	ASSERT(row < dy);
+#if LCDMODE_HORFILL
+	return & buffer [row * dx + col];
+#else /* LCDMODE_HORFILL */
+	return & buffer [row * dx + col];
+#endif /* LCDMODE_HORFILL */
+}
+
+
+/// Нарисовать вертикальную цветную полосу
+// Формат RGB565
+void
+display_colorbuffer_xor_vline(
+	PACKEDCOLORPIP_T * buffer,
+	uint_fast16_t dx,	// ширина буфера
+	uint_fast16_t dy,	// высота буфера
+	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t row0,	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	uint_fast16_t h,	// высота
+	COLORPIP_T color
+	)
+{
+	while (h --)
+		display_colorbuffer_xor(buffer, dx, dy, col, row0 ++, color);
+}
+
+// Нарисовать вертикальную цветную полосу
+// Формат RGB565
+void
+display_colorbuffer_set_vline(
+	PACKEDCOLORPIP_T * buffer,
+	uint_fast16_t dx,	// ширина буфера
+	uint_fast16_t dy,	// высота буфера
+	uint_fast16_t col,	// горизонтальная координата начального пикселя (0..dx-1) слева направо
+	uint_fast16_t row0,	// вертикальная координата начального пикселя (0..dy-1) сверху вниз
+	uint_fast16_t h,	// высота
+	COLORPIP_T color
+	)
+{
+	while (h --)
+		display_colorbuffer_set(buffer, dx, dy, col, row0 ++, color);
+}
+
+// заполнение прямоугольной области в видеобуфере
+void display_colorbuffer_fillrect(
+	PACKEDCOLORPIP_T * buffer,
+	uint_fast16_t dx,	// ширина буфера
+	uint_fast16_t dy,	// высота буфера
+	uint_fast16_t x,	// начальная координата
+	uint_fast16_t y,	// начальная координата
+	uint_fast16_t w,	// ширниа
+	uint_fast16_t h,	// высота
+	COLORPIP_T color	// цвет
+	)
+{
+	// Временная реализация для отладки
+	while (w --)
+	{
+		display_colorbuffer_set_vline(buffer, dx, dy, x ++, y, h, color);
+	}
+}
+
 
 // начальная инициализация буфера
 void display_colorbuffer_fill(
@@ -1279,14 +1354,14 @@ void display_draw_rectangle_colorbuffer(
 		uint_fast16_t x2,
 		uint_fast16_t y2,
 		PACKEDCOLOR565_T color,
-		uint8_t fill
+		uint_fast8_t fill
 		)
 {
-	if (fill)
+	if (fill != 0)
 	{
-		for (uint_fast16_t i = y1; i <= y2; i++)
-			display_colorbuffer_line_set(buffer, dx, dy, x1, i, x2, i, color);
-	} else
+		display_colorbuffer_fillrect(buffer, dx, dy, x1, y1, x2 - x1 + 1, y2 - y1 + 1, color);
+	}
+	else
 	{
 		display_colorbuffer_line_set(buffer, dx, dy, x1, y1, x2, y1, color);
 		display_colorbuffer_line_set(buffer, dx, dy, x1, y1, x1, y2, color);
@@ -1296,6 +1371,7 @@ void display_draw_rectangle_colorbuffer(
 }
 
 #undef SWAP
+
 
 // погасить точку
 void display_pixelbuffer(

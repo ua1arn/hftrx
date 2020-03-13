@@ -718,7 +718,8 @@ void display_draw_rectangle_colorbuffer(
 		uint_fast16_t x2,
 		uint_fast16_t y2,
 		PACKEDCOLOR565_T color,
-		uint8_t fill);
+		uint_fast8_t fill
+		);
 
 // установить данный буфер как область для PIP
 // Формат RGB565
@@ -965,9 +966,46 @@ void display_1state(
 #endif /* LCDMODE_LTDC */
 
 void display_solidbar(uint_fast16_t x, uint_fast16_t y, uint_fast16_t x2, uint_fast16_t y2, COLOR_T color);
+
+/// Нарисовать вертикальную цветную полосу
+// Формат RGB565
+void
+display_colorbuffer_xor_vline(
+	PACKEDCOLORPIP_T * buffer,
+	uint_fast16_t dx,	// ширина буфера
+	uint_fast16_t dy,	// высота буфера
+	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t row0,	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	uint_fast16_t h,	// высота
+	COLORPIP_T color
+	);
+
+// Нарисовать вертикальную цветную полосу
+// Формат RGB565
+void
+display_colorbuffer_set_vline(
+	PACKEDCOLORPIP_T * buffer,
+	uint_fast16_t dx,	// ширина буфера
+	uint_fast16_t dy,	// высота буфера
+	uint_fast16_t col,	// горизонтальная координата начального пикселя (0..dx-1) слева направо
+	uint_fast16_t row0,	// вертикальная координата начального пикселя (0..dy-1) сверху вниз
+	uint_fast16_t h,	// высота
+	COLORPIP_T color
+	);
+
+// получить адрес требуемой позиции в буфере
+volatile PACKEDCOLORPIP_T *
+display_colorbuffer_at(
+	PACKEDCOLORPIP_T * buffer,
+	uint_fast16_t dx,	// ширина буфера
+	uint_fast16_t dy,	// высота буфера
+	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t row	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	);
+
 void display_putpixel(
-	uint_fast16_t x,
-	uint_fast16_t y,
+		uint_fast16_t dx,	// ширина буфера
+		uint_fast16_t dy,	// высота буфера
 	COLOR_T color
 	);
 void display_at_xy(uint_fast16_t x, uint_fast16_t y, const char * s);
