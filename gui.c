@@ -350,7 +350,7 @@ void button1_handler(void);
 		}
 	}
 
-	uint_fast8_t find_button (uint_fast8_t id_window, char * val)				// возврат id кнопки окна по ее названию
+	uint_fast8_t find_button (uint_fast8_t id_window, const char * val)				// возврат id кнопки окна по ее названию
 	{
 		for (uint_fast8_t i = 1; i < button_handlers_count; i++)
 		{
@@ -360,7 +360,7 @@ void button1_handler(void);
 		return 0;
 	}
 
-	uint_fast8_t find_label (uint_fast8_t id_window, char * val)				// возврат id метки окна по ее названию
+	uint_fast8_t find_label (uint_fast8_t id_window, const char * val)				// возврат id метки окна по ее названию
 	{
 		for (uint_fast8_t i = 1; i < labels_count; i++)
 		{
@@ -370,7 +370,7 @@ void button1_handler(void);
 		return 0;
 	}
 
-	void footer_buttons_state (uint_fast8_t state, char * name)					// блокируются все, кроме name == text
+	void footer_buttons_state (uint_fast8_t state, const char * name)					// блокируются все, кроме name == text
 	{
 		static uint_fast8_t id = 0;
 		if (state == DISABLED)
