@@ -584,14 +584,17 @@ bitblt_waitbusy2(void)
 		;
 }
 
+/* заполнение прямоугольника на основном экране произвольным цветом
+*/
 /* заполнение прямоугольника произвольным цветом с помощью BitBlt engine
    Например, очистка дисплея.
 */
-static void 
-bitblt_fill(
+void
+display_fillrect(
 	uint_fast16_t x, uint_fast16_t y, 	// координаты в пикселях
 	uint_fast16_t w, uint_fast16_t h, 	// размеры в пикселях
-	COLOR_T color)
+	COLOR_T color
+	)
 {
 	// дождаться выполнения предидущей команды BitBlt engine.
 	if (bitblt_waitbusy() != 0)
@@ -719,7 +722,7 @@ display_scroll_down(
 	if ((hshift < 0 && - hshift >= w) || (hshift > 0 && hshift >= w) || (n >= h))
 	{
 		// очистка используемой зоны экрана
-		bitblt_fill(x, y, w, h, fillnewcolor);
+		display_fillrect(x, y, w, h, fillnewcolor);
 		return;
 	}
 
@@ -757,12 +760,12 @@ display_scroll_down(
 		if (hshift < 0)
 		{
 			// очистка правого края экрана
-			bitblt_fill(x + w + hshift, y + n, - hshift, h - n, fillnewcolor);
+			display_fillrect(x + w + hshift, y + n, - hshift, h - n, fillnewcolor);
 		}
 		else if (hshift > 0)
 		{
 			// очистка левого края экрана
-			bitblt_fill(x, y + n, hshift, h - n, fillnewcolor);
+			display_fillrect(x, y + n, hshift, h - n, fillnewcolor);
 		}
 	}
 }
@@ -791,7 +794,7 @@ display_scroll_up(
 	if ((hshift < 0 && - hshift >= w) || (hshift > 0 && hshift >= w) || (n >= h))
 	{
 		// очистка используемой зоны экрана
-		bitblt_fill(x, y, w, h, fillnewcolor);
+		display_fillrect(x, y, w, h, fillnewcolor);
 		return;
 	}
 
@@ -827,12 +830,12 @@ display_scroll_up(
 		if (hshift < 0)
 		{
 			// очистка правого края экрана
-			bitblt_fill(x + w + hshift, y, - hshift, h - n, fillnewcolor);
+			display_fillrect(x + w + hshift, y, - hshift, h - n, fillnewcolor);
 		}
 		else if (hshift > 0)
 		{
 			// очистка левого края экрана
-			bitblt_fill(x, y, hshift, h - n, fillnewcolor);
+			display_fillrect(x, y, hshift, h - n, fillnewcolor);
 		}
 	}
 }
@@ -1305,11 +1308,11 @@ static void rectangle(
 {
 	enum { thickness = 1 };
 
-	bitblt_fill(x, y, w, thickness, color1);			// horizontal top line
-	bitblt_fill(x, y + h - thickness, w, thickness, color1);	// horizontal bottom line
-	bitblt_fill(x, y + thickness, thickness, h - 2 * thickness, color1);	// vertical left line
-	bitblt_fill(x + w - thickness, y + thickness, thickness, h - 2 * thickness, color1);	// vertical right line
-	bitblt_fill(x + thickness, y + thickness, w - 2 * thickness, h - 2 * thickness, color2);							// central panel
+	display_fillrect(x, y, w, thickness, color1);			// horizontal top line
+	display_fillrect(x, y + h - thickness, w, thickness, color1);	// horizontal bottom line
+	display_fillrect(x, y + thickness, thickness, h - 2 * thickness, color1);	// vertical left line
+	display_fillrect(x + w - thickness, y + thickness, thickness, h - 2 * thickness, color1);	// vertical right line
+	display_fillrect(x + thickness, y + thickness, w - 2 * thickness, h - 2 * thickness, color2);							// central panel
 }
 
 // рисование 3D прямоугольника
@@ -1339,11 +1342,11 @@ static void rectangle3d(
 	else
 	{
 		// отпущенное состояние
-		bitblt_fill(x, y, w, thickness, color1);						// horizontal top line
-		bitblt_fill(x1, y2, w - thickness, thickness, color2);			// horizontal bottom line
-		bitblt_fill(x, y + thickness, thickness, h - thickness, color1);	// vertical left line
-		bitblt_fill(x2, y1, thickness, h - thickness, color2);			// vertical right line
-		//bitblt_fill(x1, y1, wi, hi, color1);							// central panel
+		display_fillrect(x, y, w, thickness, color1);						// horizontal top line
+		display_fillrect(x1, y2, w - thickness, thickness, color2);			// horizontal bottom line
+		display_fillrect(x, y + thickness, thickness, h - thickness, color1);	// vertical left line
+		display_fillrect(x2, y1, thickness, h - thickness, color2);			// vertical right line
+		//display_fillrect(x1, y1, wi, hi, color1);							// central panel
 	}
 }
 
@@ -1485,7 +1488,7 @@ static void display_putpixel_complete(void)
 
 static void s1d13781_clear(COLOR_T bg)
 {
-	bitblt_fill(0, 0, S1D_DISPLAY_WIDTH, S1D_DISPLAY_HEIGHT, bg);
+	display_fillrect(0, 0, S1D_DISPLAY_WIDTH, S1D_DISPLAY_HEIGHT, bg);
 	s1d13781_setcolor(COLOR_WHITE, bg);
 }
 
@@ -1651,23 +1654,6 @@ void display_initialize(void)
 
 void display_set_contrast(uint_fast8_t v)
 {
-}
-
-// Рисуем на основном экране цветной прямоугольник.
-// x2, y2 - координаты второго угла (не входящие в закрашиваемый прямоугольник)
-void display_solidbar(uint_fast16_t x, uint_fast16_t y, uint_fast16_t x2, uint_fast16_t y2, COLOR_T color)
-{
-	if (x2 < x)
-	{
-		const uint_fast16_t t = x;
-		x = x2, x2 = t;
-	}
-	if (y2 < y)
-	{
-		const uint_fast16_t t = y;
-		y = y2, y2 = t;
-	}
-	bitblt_fill(x, y, x2 - x, y2 - y, color);
 }
 
 
@@ -1979,10 +1965,10 @@ void display_dispbar(
 	const uint_fast16_t wpart = (uint_fast32_t) wfull * value / topvalue;
 	const uint_fast16_t wmark = (uint_fast32_t) wfull * tracevalue / topvalue;
 
-	bitblt_fill(x, y, wpart, h, stored_fgcolor);
-	bitblt_fill(x + wpart, y, wfull - wpart, h, stored_bgcolor);
+	display_fillrect(x, y, wpart, h, stored_fgcolor);
+	display_fillrect(x + wpart, y, wfull - wpart, h, stored_bgcolor);
 	if (wmark < wfull && wmark >= wpart)
-		bitblt_fill(x + wmark, y, 1, h, stored_fgcolor);
+		display_fillrect(x + wmark, y, 1, h, stored_fgcolor);
 }
 
 #endif /* ! LCDMODE_LTDC */

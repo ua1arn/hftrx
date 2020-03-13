@@ -33,15 +33,15 @@
 #define MDMA_CCR_PL_VALUE 0	// PL: prioruty 0..3: min..max
 
 #if LCDMODE_LTDC_L24
-	//#define DMA2D_FGPFCCR_CM_VALUE	(1 * DMA2D_FGPFCCR_CM_0)	/* 0001: RGB888 */
+	#define DMA2D_FGPFCCR_CM_VALUE_MAIN	(1 * DMA2D_FGPFCCR_CM_0)	/* 0001: RGB888 */
 	//#define DMA2D_OPFCCR_CM_VALUE	(1 * DMA2D_OPFCCR_CM_0)	/* 001: RGB888 */
 #elif LCDMODE_LTDC_L8
-	//#define DMA2D_FGPFCCR_CM_VALUE	(5 * DMA2D_FGPFCCR_CM_0)	/* 0101: L8 */
+	#define DMA2D_FGPFCCR_CM_VALUE_MAIN	(5 * DMA2D_FGPFCCR_CM_0)	/* 0101: L8 */
 	#define MDMA_CTCR_xSIZE_MAIN			0x00	// 1 byte
 	#define MDMA_CTCR_xSIZE_U8				0x00	// 1 byte
 	////#define DMA2D_OPFCCR_CM_VALUE	(x * DMA2D_OPFCCR_CM_0)	/* not supported */
 #else /* LCDMODE_LTDC_L8 */
-	//#define DMA2D_FGPFCCR_CM_VALUE	(2 * DMA2D_FGPFCCR_CM_0)	/* 0010: RGB565 */
+	#define DMA2D_FGPFCCR_CM_VALUE_MAIN	(2 * DMA2D_FGPFCCR_CM_0)	/* 0010: RGB565 */
 	//#define DMA2D_OPFCCR_CM_VALUE	(2 * DMA2D_OPFCCR_CM_0)	/* 010: RGB565 */
 	#define MDMA_CTCR_xSIZE_MAIN			0x01	// 2 byte
 	#define MDMA_CTCR_xSIZE_U16			0x01	// 2 byte
@@ -447,157 +447,6 @@ void arm_hardware_mdma_initialize(void)
 }
 
 #endif /* WITHMDMAHW */
-
-
-/* заполнение прямоугольной области буфера цветом */
-static void
-hwaccel_fillrect_RGB565(
-	volatile PACKEDCOLOR565_T * buffer,
-	uint_fast16_t dx,	// размеры буфера
-	uint_fast16_t dy,
-	uint_fast16_t col,	// позиция окна в буфере,
-	uint_fast16_t row,
-	uint_fast16_t w,	// размер окна
-	uint_fast16_t h,
-	COLOR565_T color
-	)
-{
-	enum { PIXSIZE = sizeof (* buffer) };
-	if (w == 0 || h == 0)
-		return;
-#if WITHMDMAHW
-
-	// используется software triggered repeated block transfer
-	//dx=480,dy=272,col=0,row=0,w=480,h=272;
-
-	ALIGNX_BEGIN volatile PACKEDCOLOR565_T tgcolor ALIGNX_END;	/* значение цвета для заполнения области памяти */
-	tgcolor = color;
-
-	arm_hardware_flush((uintptr_t) & tgcolor, sizeof tgcolor);
-
-	arm_hardware_flush((uintptr_t) buffer, sizeof (* buffer) * GXSIZE(dx, dy));
-
-	MDMA_CH->CCR &= ~ MDMA_CCR_EN_Msk;
-	//while ((MDMA_CH->CCR & MDMA_CCR_EN_Msk) != 0)
-	//	;
-	MDMA_CH->CDAR = (uintptr_t) & buffer [row * dx + col];
-	MDMA_CH->CSAR = (uintptr_t) & tgcolor;
-	const uint_fast32_t tlen = mdma_tlen(w * sizeof (* buffer), sizeof (* buffer));
-	const uint_fast32_t sbus = mdma_getbus(MDMA_CH->CSAR);
-	const uint_fast32_t dbus = mdma_getbus(MDMA_CH->CDAR);
-	const uint_fast32_t sinc = 0x00; // Source increment mode: 00: Source address pointer is fixed
-	const uint_fast32_t dinc = 0x02; // Destination increment mode: 10: Destination address pointer is incremented
-	const uint_fast32_t sburst = mdma_getburst(tlen, sbus, sinc);
-	const uint_fast32_t dburst = mdma_getburst(tlen, dbus, dinc);
-	MDMA_CH->CTCR =
-		(sinc << MDMA_CTCR_SINC_Pos) | 	// Source increment mode: 00: Source address pointer is fixed
-		(MDMA_CTCR_xSIZE_RGB565 << MDMA_CTCR_SSIZE_Pos) |
-		(MDMA_CTCR_xSIZE_RGB565 << MDMA_CTCR_SINCOS_Pos) |
-		(sburst << MDMA_CTCR_SBURST_Pos) |
-		(dinc << MDMA_CTCR_DINC_Pos) |	// Destination increment mode: 10: Destination address pointer is incremented
-		(MDMA_CTCR_xSIZE_RGB565 << MDMA_CTCR_DSIZE_Pos) |
-		(MDMA_CTCR_xSIZE_RGB565 << MDMA_CTCR_DINCOS_Pos) |
-		(dburst << MDMA_CTCR_DBURST_Pos) |	// Destination burst transfer configuration
-		((tlen - 1) << MDMA_CTCR_TLEN_Pos) |		// buffer Transfer Length (number of bytes - 1)
-		(0x00 << MDMA_CTCR_PKE_Pos) |
-		(0x00 << MDMA_CTCR_PAM_Pos) |
-		(0x02 << MDMA_CTCR_TRGM_Pos) |		// Trigger Mode: 10: Each MDMA request (software or hardware) triggers a repeated block transfer (if the block repeat is 0, a single block is transferred)
-		(0x01 << MDMA_CTCR_SWRM_Pos) |		// 1: hardware request are ignored. Transfer is triggered by software writing 1 to the SWRQ bit
-		(0x01 << MDMA_CTCR_BWM_Pos) |
-		0;
-	MDMA_CH->CBNDTR =
-		((sizeof (* buffer) * (w)) << MDMA_CBNDTR_BNDT_Pos) |	// Block Number of data bytes to transfer
-		(0x00 << MDMA_CBNDTR_BRSUM_Pos) |	// Block Repeat Source address Update Mode: 0 - increment
-		(0x00 << MDMA_CBNDTR_BRDUM_Pos) |	// Block Repeat Destination address Update Mode: 0 - increment
-		((h - 1) << MDMA_CBNDTR_BRC_Pos) |		// Block Repeat Count
-		0;
-	MDMA_CH->CBRUR =
-		((sizeof (* buffer) * (0)) << MDMA_CBRUR_SUV_Pos) |				// Source address Update Value
-		((sizeof (* buffer) * (dx - w)) << MDMA_CBRUR_DUV_Pos) |		// Destination address Update Value
-		0;
-
-	MDMA_CH->CTBR = (MDMA_CH->CTBR & ~ (MDMA_CTBR_SBUS_Msk | MDMA_CTBR_DBUS_Msk)) |
-		(sbus << MDMA_CTBR_SBUS_Pos) |
-		(dbus << MDMA_CTBR_DBUS_Pos) |
-		0;
-
-	MDMA_CH->CIFCR = MDMA_CIFCR_CLTCIF_Msk | MDMA_CIFCR_CBTIF_Msk |
-					MDMA_CIFCR_CBRTIF_Msk | MDMA_CIFCR_CCTCIF_Msk | MDMA_CIFCR_CTEIF_Msk;
-	// Set priority
-	MDMA_CH->CCR = (MDMA_CH->CCR & ~ (MDMA_CCR_PL_Msk)) |
-			(MDMA_CCR_PL_VALUE < MDMA_CCR_PL_Pos) |
-			0;
-	MDMA_CH->CCR |= MDMA_CCR_EN_Msk;
-	/* start transfer */
-	MDMA_CH->CCR |= MDMA_CCR_SWRQ_Msk;
-	/* wait for complete */
-	while ((MDMA_CH->CISR & MDMA_CISR_CTCIF_Msk) == 0)	// Channel x Channel Transfer Complete interrupt flag
-		; // PRINTF("MDMA_CH->CISR=%08lX ", MDMA_CH->CISR)
-	//local_delay_ms(1250);
-	//TP();
-
-#elif WITHDMA2DHW
-
-	// just writes the color defined in the DMA2D_OCOLR register 
-	// to the area located at the address pointed by the DMA2D_OMAR 
-	// and defined in the DMA2D_NLR and DMA2D_OOR.
-
-	arm_hardware_flush((uintptr_t) buffer, sizeof (* buffer) * GXSIZE(dx, dy));
-
-	/* целевой растр */
-	DMA2D->OMAR = (uintptr_t) & buffer [row * dx + col];
-	DMA2D->OOR = (DMA2D->OOR & ~ (DMA2D_OOR_LO)) |
-		((dx - w) << DMA2D_OOR_LO_Pos) |
-		0;
-
-	DMA2D->NLR = (DMA2D->NLR & ~ (DMA2D_NLR_NL | DMA2D_NLR_PL)) |
-		(h << DMA2D_NLR_NL_Pos) |
-		(w << DMA2D_NLR_PL_Pos) |
-		0;
-
-	DMA2D->OCOLR = 
-		color |
-		0;
-
-	DMA2D->OPFCCR = (DMA2D->OPFCCR & ~ (DMA2D_OPFCCR_CM)) |
-		(2 * DMA2D_FGPFCCR_CM_0) |	/* 010: RGB565 Color mode - framebuffer pixel format */
-		0;
-
-	/* set AXI master timer */
-	DMA2D->AMTCR = (DMA2D->AMTCR & ~ (DMA2D_AMTCR_DT | DMA2D_AMTCR_EN)) |
-		(DMA2D_AMTCR_DT_VALUE << DMA2D_AMTCR_DT_Pos) |
-		DMA2D_AMTCR_DT_ENABLE * DMA2D_AMTCR_EN |
-		0;
-
-	/* запустить операцию */
-	DMA2D->CR = (DMA2D->CR & ~ (DMA2D_CR_MODE)) |
-		3 * DMA2D_CR_MODE_0 |	// 11: Register-to-memory (no FG nor BG, only output stage active)
-		1 * DMA2D_CR_START |
-		0;
-
-	/* ожидаем выполнения операции */
-	while ((DMA2D->CR & DMA2D_CR_START) != 0)
-		;
-
-#else /* WITHDMA2DHW */
-
-	const unsigned t = dx - w;
-	buffer += (dx * row) + col;
-	while (h --)
-	{
-		volatile PACKEDCOLOR565_T * const startmem = buffer;
-
-		unsigned n = w;
-		while (n --)
-			* buffer ++ = color;
-		buffer += t;
-		arm_hardware_flush((uintptr_t) startmem, sizeof (* startmem) * w);
-	}
-
-
-
-#endif /* WITHDMA2DHW */
-}
 
 #if LCDMODE_COLORED
 static COLOR_T bgcolor;
@@ -1044,7 +893,7 @@ static void hwaccel_copy_main(
 		0;
 	/* формат пикселя */
 	DMA2D->FGPFCCR = (DMA2D->FGPFCCR & ~ (DMA2D_FGPFCCR_CM)) |
-		DMA2D_FGPFCCR_CM_VALUE |	/* Color mode - framebuffer pixel format */
+		DMA2D_FGPFCCR_CM_VALUE_MAIN |	/* Color mode - framebuffer pixel format */
 		0;
 
 	/* set AXI master timer */
@@ -1169,7 +1018,7 @@ static void hwaccel_copy_RGB565(
 		0;
 	/* формат пикселя */
 	DMA2D->FGPFCCR = (DMA2D->FGPFCCR & ~ (DMA2D_FGPFCCR_CM)) |
-		DMA2D_FGPFCCR_CM_VALUE |	/* Color mode - framebuffer pixel format */
+		DMA2D_FGPFCCR_CM_VALUE_MAIN |	/* Color mode - framebuffer pixel format */
 		0;
 
 	/* set AXI master timer */
@@ -1306,7 +1155,7 @@ void display_colorbuffer_show(
 			0;
 		/* формат пикселя */
 		DMA2D->FGPFCCR = (DMA2D->FGPFCCR & ~ (DMA2D_FGPFCCR_CM)) |
-			DMA2D_FGPFCCR_CM_VALUE |	/* Color mode - framebuffer pixel format */
+			DMA2D_FGPFCCR_CM_VALUE_MAIN |	/* Color mode - framebuffer pixel format */
 			0;
 
 		/* set AXI master timer */
@@ -1590,7 +1439,7 @@ void display_putpixel(
 }
 
 static void
-bitblt_fill(
+display_fillrect_pattern(
 	uint_fast16_t x, uint_fast16_t y, 	// координаты в пикселях
 	uint_fast16_t w, uint_fast16_t h, 	// размеры в пикселях
 	COLOR_T fgcolor,
@@ -1598,44 +1447,24 @@ bitblt_fill(
 	uint_fast8_t hpattern	// horizontal pattern (LSB - left)
 	)
 {
-#if LCDMODE_LTDC_L8
+	// TODO: bgcolor и hpattern пока игнорируются
+#if LCDMODE_LTDC_L8 && LCDMODE_LTDC
 	hwacc_fillrect_u8(& framebuff [0] [0], DIM_X, DIM_Y, x, y, w, h, fgcolor);
 #elif LCDMODE_LTDC
 	hwacc_fillrect_u16(& framebuff [0] [0], DIM_X, DIM_Y, x, y, w, h, fgcolor);
 #endif
-
-#if 0
-	#if WITHMDMAHW && LCDMODE_LTDC
-
-		display_fillrect_main(& framebuff [0] [0], DIM_X, DIM_Y, x, y, w, h, fgcolor, bgcolor, hpattern);
-
-	#elif WITHDMA2DHW && LCDMODE_LTDC && ! LCDMODE_LTDC_L8
-
-		hwaccel_fillrect_RGB565(& framebuff [0] [0], DIM_X, DIM_Y, x, y, w, h, fgcolor);
-
-	#else /* WITHDMA2DHW && LCDMODE_LTDC && ! LCDMODE_LTDC_L8 */
-
-		display_fillrect_main(& framebuff [0] [0], DIM_X, DIM_Y, x, y, w, h, fgcolor, bgcolor, hpattern);
-
-	#endif /* WITHDMA2DHW && LCDMODE_LTDC && ! LCDMODE_LTDC_L8 */
-#endif
 }
 
-// Рисуем на основном экране цветной прямоугольник.
-// x2, y2 - координаты второго угла (не входящие в закрашиваемый прямоугольник)
-void display_solidbar(uint_fast16_t x, uint_fast16_t y, uint_fast16_t x2, uint_fast16_t y2, COLOR_T color)
+/* заполнение прямоугольника на основном экране произвольным цветом
+*/
+void
+display_fillrect(
+	uint_fast16_t x, uint_fast16_t y, 	// координаты в пикселях
+	uint_fast16_t w, uint_fast16_t h, 	// размеры в пикселях
+	COLOR_T color
+	)
 {
-	if (x2 < x)
-	{
-		const uint_fast16_t t = x;
-		x = x2, x2 = t;
-	}
-	if (y2 < y)
-	{
-		const uint_fast16_t t = y;
-		y = y2, y2 = t;
-	}
-	bitblt_fill(x, y, x2 - x, y2 - y, color, color, 0xFF);
+	display_fillrect_pattern(x, y, w, h, color, color, 0xFF);
 }
 
 #endif /* LCDMODE_LTDC */
@@ -1855,7 +1684,7 @@ smallfont_decode(uint_fast8_t c)
 // для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
 
 // функции работы с colorbuffer не занимаются выталкиванеим кэш-памяти
-static void RAMFUNC ltdc565_horizontal_pixels(
+static void RAMFUNC ltdcpip_horizontal_pixels(
 	volatile PACKEDCOLORPIP_T * tgr,		// target raster
 	const FLASHMEM uint8_t * raster,
 	uint_fast16_t width	// number of bits (start from LSB first byte in raster)
@@ -1954,7 +1783,7 @@ static void RAMFUNC_NONILINE ltdc_horizontal_put_char_small(char cc)
 }
 
 // возвращаем на сколько пикселей вправо занимет отрисованный символ
-static uint_fast16_t RAMFUNC_NONILINE ltdc565_horizontal_put_char_small(
+static uint_fast16_t RAMFUNC_NONILINE ltdcpip_horizontal_put_char_small(
 	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy,
@@ -1969,14 +1798,14 @@ static uint_fast16_t RAMFUNC_NONILINE ltdc565_horizontal_put_char_small(
 	for (cgrow = 0; cgrow < SMALLCHARH; ++ cgrow)
 	{
 		volatile PACKEDCOLORPIP_T * const tgr = & buffer [(y + cgrow) * dx + x];
-		ltdc565_horizontal_pixels(tgr, S1D13781_smallfont_LTDC [c] [cgrow], width);
+		ltdcpip_horizontal_pixels(tgr, S1D13781_smallfont_LTDC [c] [cgrow], width);
 	}
 	return width;
 }
 
 // возвращаем на сколько пикселей вправо занимет отрисованный символ
 // Фон не трогаем
-static uint_fast16_t RAMFUNC_NONILINE ltdc565_horizontal_put_char_small_tbg(
+static uint_fast16_t RAMFUNC_NONILINE ltdcpip_horizontal_put_char_small_tbg(
 	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy,
@@ -1999,7 +1828,7 @@ static uint_fast16_t RAMFUNC_NONILINE ltdc565_horizontal_put_char_small_tbg(
 
 // возвращаем на сколько пикселей вправо занимет отрисованный символ
 // Фон не трогаем
-static uint_fast16_t RAMFUNC_NONILINE ltdc565_horizontal_put_char_small2_tbg(
+static uint_fast16_t RAMFUNC_NONILINE ltdcpip_horizontal_put_char_small2_tbg(
 	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy,
@@ -2022,7 +1851,7 @@ static uint_fast16_t RAMFUNC_NONILINE ltdc565_horizontal_put_char_small2_tbg(
 
 // возвращаем на сколько пикселей вправо занимет отрисованный символ
 // Фон не трогаем
-static uint_fast16_t RAMFUNC_NONILINE ltdc565_horizontal_put_char_small3_tbg(
+static uint_fast16_t RAMFUNC_NONILINE ltdcpip_horizontal_put_char_small3_tbg(
 	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy,
@@ -2130,7 +1959,7 @@ display_colorbuff_string_tbg(
 
 	while((c = * s ++) != '\0')
 	{
-		x += ltdc565_horizontal_put_char_small_tbg(buffer, dx, dy, x, y, c, fg);
+		x += ltdcpip_horizontal_put_char_small_tbg(buffer, dx, dy, x, y, c, fg);
 	}
 }
 
@@ -2151,7 +1980,7 @@ display_colorbuff_string2_tbg(
 
 	while((c = * s ++) != '\0')
 	{
-		x += ltdc565_horizontal_put_char_small2_tbg(buffer, dx, dy, x, y, c, fg);
+		x += ltdcpip_horizontal_put_char_small2_tbg(buffer, dx, dy, x, y, c, fg);
 	}
 }
 
@@ -2172,7 +2001,7 @@ display_colorbuff_string3_tbg(
 
 	while((c = * s ++) != '\0')
 	{
-		x += ltdc565_horizontal_put_char_small3_tbg(buffer, dx, dy, x, y, c, fg);
+		x += ltdcpip_horizontal_put_char_small3_tbg(buffer, dx, dy, x, y, c, fg);
 	}
 }
 
@@ -2224,7 +2053,7 @@ display_scroll_down(
 		0;
 	/* формат пикселя */
 	DMA2D->FGPFCCR = (DMA2D->FGPFCCR & ~ (DMA2D_FGPFCCR_CM)) |
-		DMA2D_FGPFCCR_CM_VALUE |	/* Color mode - framebuffer pixel format */
+		DMA2D_FGPFCCR_CM_VALUE_MAIN |	/* Color mode - framebuffer pixel format */
 		0;
 
 	/* set AXI master timer */
@@ -2281,7 +2110,7 @@ display_scroll_up(
 		0;
 	/* формат пикселя */
 	DMA2D->FGPFCCR = (DMA2D->FGPFCCR & ~ (DMA2D_FGPFCCR_CM)) |
-		DMA2D_FGPFCCR_CM_VALUE |	/* Color mode - framebuffer pixel format */
+		DMA2D_FGPFCCR_CM_VALUE_MAIN |	/* Color mode - framebuffer pixel format */
 		0;
 
 	/* set AXI master timer */
@@ -2310,12 +2139,7 @@ display_scroll_up(
 void display_clear(void)
 {
 	const COLOR_T bg = display_getbgcolor();
-
-#if LCDMODE_LTDC_L8
-	hwacc_fillrect_u8(& framebuff [0] [0], DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, bg);
-#elif LCDMODE_LTDC
-	hwacc_fillrect_u16(& framebuff [0] [0], DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, bg);
-#endif
+	display_fillrect(0, 0, DIM_X, DIM_Y, bg);
 }
 
 static uint_fast8_t stored_xgrid, stored_ygrid;	// используется в display_dispbar
@@ -2438,10 +2262,10 @@ void display_dispbar(
 	const uint_fast16_t wmark = (uint_fast32_t) wfull * tracevalue / topvalue;
 	const uint_fast8_t hpattern = 0x33;
 
-	bitblt_fill(x, y, wpart, h, ltdc_fg, ltdc_bg, hpattern);
-	bitblt_fill(x + wpart, y, wfull - wpart, h, ltdc_bg, ltdc_bg, 0x00);
+	display_fillrect_pattern(x, y, wpart, h, ltdc_fg, ltdc_bg, hpattern);
+	display_fillrect_pattern(x + wpart, y, wfull - wpart, h, ltdc_bg, ltdc_bg, 0x00);
 	if (wmark < wfull && wmark >= wpart)
-		bitblt_fill(x + wmark, y, 1, h, ltdc_fg, ltdc_bg, 0xFF);
+		display_fillrect_pattern(x + wmark, y, 1, h, ltdc_fg, ltdc_bg, 0xFF);
 }
 
 #endif /* LCDMODE_HORFILL */
