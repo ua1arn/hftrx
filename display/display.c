@@ -86,15 +86,19 @@ mdma_tlen(uint_fast32_t nb, uint_fast8_t ds)
 // DBURST value must be programmed as to ensure that the burst size is lower than the
 // Transfer Length. If this is not ensured, the result is unpredictable.
 
-// И еще несколько условий.. лучше в 0 оставить.
+// И еще несколько условий..
 
 static uint_fast8_t
 mdma_getburst(uint_fast16_t tlen, uint_fast8_t bus, uint_fast8_t xinc)
 {
+	if (bus == 0 && xinc == 0)
+		return 0;
 	if (xinc == 0)
 		return 0;
+
 	if (bus != 0)
 		return 0;
+
 	if (tlen >= 128)
 		return 7;
 	if (tlen >= 64)
