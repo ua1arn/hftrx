@@ -667,23 +667,11 @@ void display_pixelbuffer_clear(
 
 // начальная инициализация буфера
 // Формат RGB565
+// Эта функция используется только в тесте
 void display_colorbuffer_fill(
 	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy,
-	COLORPIP_T color
-	);
-
-// Формат RGB565
-void 
-dma2d_fillrect2_RGB565(
-	PACKEDCOLORPIP_T * buffer,
-	uint_fast16_t dx,	// размеры буфера
-	uint_fast16_t dy,
-	uint_fast16_t x,	// позиция окна в буфере
-	uint_fast16_t y,
-	uint_fast16_t w,	// размер окна
-	uint_fast16_t h,
 	COLORPIP_T color
 	);
 
@@ -730,7 +718,6 @@ void display_colorbuffer_pip(
 	);
 
 // Поставить цветную точку.
-// Формат RGB565
 void display_colorbuffer_set(
 	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,	
@@ -740,8 +727,7 @@ void display_colorbuffer_set(
 	COLORPIP_T color
 	);
 
-// Поставить цветную точку.
-// Формат RGB565
+// поставить цветную точку (модификация с сохранением старого изоьражения).
 void display_colorbuffer_xor(
 	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,	
