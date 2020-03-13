@@ -1064,7 +1064,20 @@ static void hwaccel_copy_main(
 		;
 
 #else
-	// програмная реализация
+	// программная реализация
+	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
+/*
+	const size_t len = dx * sizeof * buffer;
+	while (dy --)
+	{
+		volatile PACKEDCOLOR_T * const p = & framebuff [ltdc_first] [ltdc_second];
+		memcpy((void *) p, src, len);
+		arm_hardware_flush((uintptr_t) p, len);
+		src += dx;
+		++ ltdc_first;
+	}
+*/
+
 
 #endif
 }
@@ -1080,6 +1093,7 @@ static void hwaccel_copy_RGB565(
 {
 	if (w == 0 || h == 0)
 		return;
+
 #if WITHMDMAHW
 	MDMA_CH->CCR &= ~ MDMA_CCR_EN_Msk;
 	MDMA_CH->CDAR = (uintptr_t) dst;
@@ -1174,7 +1188,19 @@ static void hwaccel_copy_RGB565(
 	while ((DMA2D->CR & DMA2D_CR_START) != 0)
 		;
 #else
-	// програмная реализация
+	// программная реализация
+	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
+/*
+	const size_t len = dx * sizeof * buffer;
+	while (dy --)
+	{
+		volatile PACKEDCOLOR_T * const p = & framebuff [ltdc_first] [ltdc_second];
+		memcpy((void *) p, src, len);
+		arm_hardware_flush((uintptr_t) p, len);
+		src += dx;
+		++ ltdc_first;
+	}
+*/
 
 #endif
 }
