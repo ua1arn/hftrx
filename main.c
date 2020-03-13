@@ -7091,6 +7091,13 @@ getactualdownpower(void)
 	return reqautotune || hardware_get_tune();
 }
 
+/* Возвращает WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
+static uint_fast8_t
+getactualpower(void)
+{
+	return getactualdownpower() ? gtunepower : gnormalpower.value;
+}
+
 // вызывается из user mode - признак передачи в режиме данных
 static uint_fast8_t
 getcattxdata(void)
@@ -7983,7 +7990,7 @@ updateboard(
 
 			#if WITHPOWERTRIM
 				/* установить выходную мощность передатчика WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
-				board_set_opowerlevel(getactualdownpower() ? gtunepower : gnormalpower.value);
+				board_set_opowerlevel(getactualpower());
 			#elif WITHPOWERLPHP
 				/* установить выходную мощность передатчика WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
 				board_set_opowerlevel(getactualdownpower() ? pwrmodes [gpwratunei].code : pwrmodes [gpwri].code);
@@ -8197,7 +8204,7 @@ updateboard(
 			board_set_nfmdeviation100(75);
 		#if WITHOUTTXCADCONTROL
 			/* мощность регулируется умножнением выходных значений в потоке к FPGA / IF CODEC */
-			board_set_dacscale(gdacscale * (unsigned long) (getactualdownpower() ? gtunepower : gnormalpower.value) / (WITHPOWERTRIMMAX - WITHPOWERTRIMMIN) + WITHPOWERTRIMMIN);
+			board_set_dacscale(gdacscale * (unsigned long) (getactualpower() - WITHPOWERTRIMMIN) / (WITHPOWERTRIMMAX - WITHPOWERTRIMMIN));
 		#else /* CPUDAC */
 			/* мощность регулируется постоянны напряжением на ЦАП */
 			board_set_dacscale(gdacscale);
