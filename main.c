@@ -3410,7 +3410,7 @@ enum
 	#endif /* WITHVOX */
 
 	#if WITHMUTEALL
-		static uint_fast8_t gmuteall;/* Отключить микрофон всегда. */
+		static uint_fast8_t gmuteall;	/* Отключить микрофон всегда. */
 	#else /* WITHMUTEALL */
 		enum { gmuteall = 0 };
 	#endif /* WITHMUTEALL */
@@ -7085,6 +7085,7 @@ getactualtune(void)
 }
 
 // вызывается из user mode
+// Возвращает поизнак необходимости сбросить мощность сейчас (например, запрос от автотюнера)
 static uint_fast8_t
 getactualdownpower(void)
 {
@@ -7095,7 +7096,12 @@ getactualdownpower(void)
 static uint_fast8_t
 getactualpower(void)
 {
+#if WITHPOWERTRIM
 	return getactualdownpower() ? gtunepower : gnormalpower.value;
+#elif WITHPOWERLPHP
+	/* установить выходную мощность передатчика WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
+	return ? pwrmodes [gpwratunei].code : pwrmodes [gpwri].code);
+#endif /* WITHPOWERLPHP */
 }
 
 // вызывается из user mode - признак передачи в режиме данных
@@ -7987,14 +7993,8 @@ updateboard(
 			#endif /* WITHVOX */
 			board_set_mikemute(gmuteall || getactualtune() || getmodetempl(txsubmode)->mute);	/* отключить микрофонный усилитель */
 			seq_set_txgate_P(pamodetempl->txgfva, pamodetempl->sdtnva);		/* как должен переключаться тракт на передачу */
+			board_set_opowerlevel(getactualpower());	/* WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
 
-			#if WITHPOWERTRIM
-				/* установить выходную мощность передатчика WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
-				board_set_opowerlevel(getactualpower());
-			#elif WITHPOWERLPHP
-				/* установить выходную мощность передатчика WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
-				board_set_opowerlevel(getactualdownpower() ? pwrmodes [gpwratunei].code : pwrmodes [gpwri].code);
-			#endif /* WITHPOWERLPHP */
 		#if WITHPABIASTRIM
 			board_set_pabias(gpabias);	// Подстройка тока оконечного каскада передатчика
 		#endif /* WITHPABIASTRIM */

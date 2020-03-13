@@ -52,7 +52,7 @@ static uint_fast8_t dds3_profile;		/* информация о последнем
 // board specific functions
 
 uint_fast8_t 	glob_agc;
-uint_fast8_t 	glob_opowerlevel;
+uint_fast8_t 	glob_opowerlevel = WITHPOWERTRIMMIN;	/* WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
 uint_fast8_t	glob_loudspeaker_off;
 
 static uint_fast8_t 	glob_tx;			// находимся в режиме передачи
