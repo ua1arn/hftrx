@@ -1269,6 +1269,32 @@ void display_colorbuffer_line_set(
    }
 }
 
+// Нарисовать закрашенный или пустой прямоугольник
+void display_draw_rectangle_colorbuffer(
+		PACKEDCOLORPIP_T * buffer,
+		uint_fast16_t dx,
+		uint_fast16_t dy,
+		uint_fast16_t x1,
+		uint_fast16_t y1,
+		uint_fast16_t x2,
+		uint_fast16_t y2,
+		PACKEDCOLOR565_T color,
+		uint8_t fill
+		)
+{
+	if (fill)
+	{
+		for (uint_fast16_t i = y1; i <= y2; i++)
+			display_colorbuffer_line_set(buffer, dx, dy, x1, i, x2, i, color);
+	} else
+	{
+		display_colorbuffer_line_set(buffer, dx, dy, x1, y1, x2, y1, color);
+		display_colorbuffer_line_set(buffer, dx, dy, x1, y1, x1, y2, color);
+		display_colorbuffer_line_set(buffer, dx, dy, x1, y2, x2, y2, color);
+		display_colorbuffer_line_set(buffer, dx, dy, x2, y1, x2, y2, color);
+	}
+}
+
 #undef SWAP
 
 // погасить точку

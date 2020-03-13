@@ -708,6 +708,18 @@ void display_colorbuffer_line_set(
 	COLORPIP_T color
 	);
 
+// Нарисовать закрашенный или пустой прямоугольник
+void display_draw_rectangle_colorbuffer(
+		PACKEDCOLORPIP_T * buffer,
+		uint_fast16_t dx,
+		uint_fast16_t dy,
+		uint_fast16_t x1,
+		uint_fast16_t y1,
+		uint_fast16_t x2,
+		uint_fast16_t y2,
+		PACKEDCOLOR565_T color,
+		uint8_t fill);
+
 // установить данный буфер как область для PIP
 // Формат RGB565
 void display_colorbuffer_pip(
@@ -979,6 +991,10 @@ void pip_transparency_rect(
 	uint_fast16_t x2, uint_fast16_t y2,
 	uint_fast8_t alpha	// на сколько затемнять цвета (0 - чёрный, 255 - без изменений)
 	);
+
+void display2_getpipparams(pipparams_t * p);
+PACKEDCOLORPIP_T * getscratchpip(void);
+int_fast32_t display_zoomedbw(void);
 
 #ifdef __cplusplus
 }
