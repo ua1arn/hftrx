@@ -146,25 +146,25 @@ stm32f4xx_rtc_lsXstart(void)
 		//		0x3: HSE clock divided by RTCDIV value is used as RTC clock
 
 		const uint_fast32_t bcdrrtcsrc =
-			1 * RCC_BDCR_RTCSRC_0 |		/* 01: LSE oscillator clock used as the RTC clock */
+			(0x01 << RCC_BDCR_RTCSRC_Pos) |		/* 01: LSE oscillator clock used as the RTC clock */
 			0;
 
-		if ((RCC->BDCR & RCC_BDCR_RTCSRC) != bcdrrtcsrc)
+		if ((RCC->BDCR & RCC_BDCR_RTCSRC_Msk) != bcdrrtcsrc)
 		{
-			// TODO: implemening
+			// TODO: implementing
 //			RCC->BDCR |= RCC_BDCR_BDRST;
 //			RCC->BDCR &= ~ RCC_BDCR_BDRST;
 
-			RCC->BDCR = (RCC->BDCR & ~ (RCC_BDCR_RTCSRC)) |
+			RCC->BDCR = (RCC->BDCR & ~ (RCC_BDCR_RTCSRC_Msk)) |
 				bcdrrtcsrc |
 				0;
 
 			RCC->BDCR = (RCC->BDCR & ~ (RCC_BDCR_LSEDRV | RCC_BDCR_LSEBYP)) |
-				3 * RCC_BDCR_LSEDRV_0 |
-				1 * RCC_BDCR_LSEON |
+				(0x03 << RCC_BDCR_LSEDRV_Pos) |
+				RCC_BDCR_LSEON_Msk |
 				0;
 
-			while ((RCC->BDCR & RCC_BDCR_LSERDY) == 0)
+			while ((RCC->BDCR & RCC_BDCR_LSERDY_Msk) == 0)
 				;
 
 		}
