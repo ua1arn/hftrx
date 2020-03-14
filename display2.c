@@ -1579,6 +1579,7 @@ static void display_amfmhighcut4(
 	} while (lowhalf --);
 #endif /* WITHAMHIGHKBDADJ */
 }
+
 // dd.d - 4 places
 // текущее значение верхней частоты среза НЧ фильтра АМ/ЧМ
 static void display_amfmhighcut5(
