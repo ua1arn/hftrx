@@ -19,9 +19,6 @@
 	#include "gui.h"
 	#include "keyboard.h"
 	#include "list.h"
-	#include "./display/fonts/S1D13781_font_small3_LTDC.h"
-	#include "./display/fonts/S1D13781_font_small2_LTDC.h"
-	#include "./display/fonts/S1D13781_font_small_LTDC.h"
 
 void button1_handler(void);
 	void button2_handler(void);
@@ -324,9 +321,9 @@ void button1_handler(void);
 			else if (p->type == TYPE_LABEL)
 			{
 				p->x1 = labels[p->id].x;
-				p->x2 = labels[p->id].x + strlen(labels[p->id].text) * SMALLCHARW;
+				p->x2 = labels[p->id].x + display_colorbuff_string_width(NULL, 0, 0, labels[p->id].text);
 				p->y1 = labels[p->id].y - 8;
-				p->y2 = labels[p->id].y + SMALLCHARH + 8;
+				p->y2 = labels[p->id].y + display_colorbuff_string_height(NULL, 0, 0, labels[p->id].text) + 8;
 				p->state = labels[p->id].state;
 				p->visible = labels[p->id].visible;
 				p->is_trackable = labels[p->id].is_trackable;
