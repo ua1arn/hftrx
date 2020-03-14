@@ -16799,6 +16799,14 @@ processkeyboard(uint_fast8_t kbch)
 	return 0;	// не требуется обновления индикатора
 }
 
+#else /* WITHKEYBOARD */
+
+static uint_fast8_t
+processkeyboard(uint_fast8_t kbch)
+{
+	return 0;
+}
+
 #endif /* WITHKEYBOARD */
 
 

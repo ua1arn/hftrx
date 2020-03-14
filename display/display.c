@@ -652,15 +652,20 @@ static COLORPIP_T getshadedcolor(
 
 #elif LCDMODE_LTDC_PIP16
 	if (dot == COLORPIP_BLACK)
-		return TFTRGB565(alpha, alpha, alpha); // back gray
-	else // RRRR.RGGG.GGGB.BBBB
 	{
-		const uint_fast8_t r = scalecolor((dot >> 11)  & 0x001f, 31, alpha);
-		const uint_fast8_t g = scalecolor((dot >> 5) & 0x003f, 63, alpha);
-		const uint_fast8_t b = scalecolor(dot & 0x001f, 31, alpha);
-
-		return (r << 11) | (g << 5) | b; //TFTRGB565(r, g, b);
+		return TFTRGB565(alpha, alpha, alpha); // back gray
 	}
+	else
+	{
+		// RRRR.RGGG.GGGB.BBBB
+		const uint_fast8_t r = scalecolor(((dot >> 11) & 0x001f) * 1, 31, alpha);
+		const uint_fast8_t g = scalecolor(((dot >> 5) & 0x003f) * 1, 63, alpha);
+		const uint_fast8_t b = scalecolor((dot & 0x001f) * 1, 31, alpha);
+
+		return (r << 11) | (g << 5) | b;
+		//return TFTRGB565(r * 8, g * 4, b * 8);	// TODO: test this code
+	}
+
 #else /*  */
 	#warning LCDMODE_LTDC_PIPL8 or LCDMODE_LTDC_PIP16 not defined
 	return dot;

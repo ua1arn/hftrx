@@ -1217,6 +1217,8 @@ void button1_handler(void);
 		PLIST_ENTRY t;
 		static list_template_t * p = NULL;
 
+#if defined (TSC1_TYPE)
+
 		if (board_tsc_is_pressed())
 		{
 			board_tsc_getxy(& tx, & ty);
@@ -1230,6 +1232,7 @@ void button1_handler(void);
 			gui.fix = 1;
 		}
 		else
+#endif /* defined (TSC1_TYPE) */
 		{
 			gui.is_touching_screen = 0;
 			gui.is_after_touch = 0;
