@@ -18,7 +18,7 @@
 #include <string.h>
 #include <math.h>
 #include <assert.h>
-#include "inc/spi.h"
+#include "spi.h"
 
 #define DUALFILTERSPROCESSING 1	// Фильтры НЧ для левого и правого каналов - вынсено в конфигурационный файл
 //#define WITHDOUBLEFIRCOEFS 1

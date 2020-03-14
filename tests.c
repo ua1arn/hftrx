@@ -20,8 +20,8 @@
 
 #include "codecs/tlv320aic23.h"	// константы управления усилением кодека
 #include "codecs/nau8822.h"
-#include "inc/spi.h"
-#include "inc/gpio.h"
+#include "spi.h"
+#include "gpio.h"
 
 #if WITHUSEAUDIOREC
 	#include "fatfs/ff.h"

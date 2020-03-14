@@ -8,8 +8,8 @@
 #include "hardware.h"
 #include "board.h"
 #include "audio.h"
-#include "inc/gpio.h"
-#include "inc/spi.h"
+#include "gpio.h"
+#include "spi.h"
 #include "synthcalcs.h"
 #include "keyboard.h"
 
