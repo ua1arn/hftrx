@@ -19,6 +19,9 @@
 	#include "gui.h"
 	#include "keyboard.h"
 	#include "list.h"
+	#include "./display/fonts/S1D13781_font_small3_LTDC.h"
+	#include "./display/fonts/S1D13781_font_small2_LTDC.h"
+	#include "./display/fonts/S1D13781_font_small_LTDC.h"
 
 void button1_handler(void);
 	void button2_handler(void);
@@ -139,9 +142,6 @@ void button1_handler(void);
 	typedef struct {
 		uint_fast16_t x;
 		uint_fast16_t y;
-		uint_fast16_t touch_x2;
-		uint_fast16_t touch_y1;
-		uint_fast16_t touch_y2;
 		uint_fast8_t parent;
 		uint_fast8_t state;				// ! DISABLED =
 		uint_fast8_t is_trackable;
@@ -155,27 +155,27 @@ void button1_handler(void);
 	static label_t labels[] = {
 	//     x,   y,  x2, y2,     parent,      state,     visible,     name,   Text,  color
 		{ },
-		{ 250, 120, 0, 0, 0, WINDOW_BP,   DISABLED, 0, NON_VISIBLE, "lbl_low",  "", COLORPIP_YELLOW, },
-		{ 490, 120, 0, 0, 0, WINDOW_BP,   DISABLED, 0, NON_VISIBLE, "lbl_high", "", COLORPIP_YELLOW, },
-		{ 100,  50, 0, 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_group", "", COLORPIP_WHITE, labels_menu_handler,},
-		{ 100,  85, 0, 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_group", "", COLORPIP_WHITE, labels_menu_handler,},
-		{ 100, 120, 0, 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_group", "", COLORPIP_WHITE, labels_menu_handler,},
-		{ 100, 155, 0, 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_group", "", COLORPIP_WHITE, labels_menu_handler,},
-		{ 100, 190, 0, 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_group", "", COLORPIP_WHITE, labels_menu_handler,},
-		{ 300,  50, 0, 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_params", "", COLORPIP_WHITE, labels_menu_handler},
-		{ 300,  85, 0, 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_params", "", COLORPIP_WHITE, labels_menu_handler},
-		{ 300, 120, 0, 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_params", "", COLORPIP_WHITE, labels_menu_handler},
-		{ 300, 155, 0, 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_params", "", COLORPIP_WHITE, labels_menu_handler},
-		{ 300, 190, 0, 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_params", "", COLORPIP_WHITE, labels_menu_handler},
-		{ 520,  50, 0, 0, 0, WINDOW_MENU, DISABLED, 0, NON_VISIBLE, "lbl_vals", "", COLORPIP_WHITE, },
-		{ 520,  85, 0, 0, 0, WINDOW_MENU, DISABLED, 0, NON_VISIBLE, "lbl_vals", "", COLORPIP_WHITE, },
-		{ 520, 120, 0, 0, 0, WINDOW_MENU, DISABLED, 0, NON_VISIBLE, "lbl_vals", "", COLORPIP_WHITE, },
-		{ 520, 155, 0, 0, 0, WINDOW_MENU, DISABLED, 0, NON_VISIBLE, "lbl_vals", "", COLORPIP_WHITE, },
-		{ 520, 190, 0, 0, 0, WINDOW_MENU, DISABLED, 0, NON_VISIBLE, "lbl_vals", "", COLORPIP_WHITE, },
-		{ 580,  60, 0, 0, 0, WINDOW_ENC2, DISABLED, 0, NON_VISIBLE, "lbl_enc2_param", "", COLORPIP_WHITE, },
-		{ 580,  90, 0, 0, 0, WINDOW_ENC2, DISABLED, 0, NON_VISIBLE, "lbl_enc2_val", "", COLORPIP_WHITE, },
-		{ 260,  80, 0, 0, 0, WINDOW_TEST_TRACKING, CANCELLED, 0, NON_VISIBLE, "lbl_touch1", "Touch1", COLORPIP_WHITE, labels_test_handler, },
-		{ 420,  80, 0, 0, 0, WINDOW_TEST_TRACKING, CANCELLED, 0, NON_VISIBLE, "lbl_touch2", "Touch2", COLORPIP_WHITE, labels_test_handler, },
+		{ 250, 120, WINDOW_BP,   DISABLED, 0, NON_VISIBLE, "lbl_low",  "", COLORPIP_YELLOW, },
+		{ 490, 120, WINDOW_BP,   DISABLED, 0, NON_VISIBLE, "lbl_high", "", COLORPIP_YELLOW, },
+		{ 100,  50, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_group", "", COLORPIP_WHITE, labels_menu_handler, },
+		{ 100,  85, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_group", "", COLORPIP_WHITE, labels_menu_handler, },
+		{ 100, 120, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_group", "", COLORPIP_WHITE, labels_menu_handler, },
+		{ 100, 155, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_group", "", COLORPIP_WHITE, labels_menu_handler, },
+		{ 100, 190, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_group", "", COLORPIP_WHITE, labels_menu_handler, },
+		{ 300,  50, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_params", "", COLORPIP_WHITE, labels_menu_handler, },
+		{ 300,  85, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_params", "", COLORPIP_WHITE, labels_menu_handler, },
+		{ 300, 120, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_params", "", COLORPIP_WHITE, labels_menu_handler, },
+		{ 300, 155, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_params", "", COLORPIP_WHITE, labels_menu_handler, },
+		{ 300, 190, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_params", "", COLORPIP_WHITE, labels_menu_handler, },
+		{ 520,  50, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", "", COLORPIP_WHITE, labels_menu_handler, },
+		{ 520,  85, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", "", COLORPIP_WHITE, labels_menu_handler, },
+		{ 520, 120, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", "", COLORPIP_WHITE, labels_menu_handler, },
+		{ 520, 155, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", "", COLORPIP_WHITE, labels_menu_handler, },
+		{ 520, 190, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", "", COLORPIP_WHITE, labels_menu_handler, },
+		{ 580,  60, WINDOW_ENC2, DISABLED, 0, NON_VISIBLE, "lbl_enc2_param", "", COLORPIP_WHITE, },
+		{ 580,  90, WINDOW_ENC2, DISABLED, 0, NON_VISIBLE, "lbl_enc2_val", "", COLORPIP_WHITE, },
+		{ 260,  80, WINDOW_TEST_TRACKING, CANCELLED, 0, NON_VISIBLE, "lbl_touch1", "Touch1", COLORPIP_WHITE, labels_test_handler, },
+		{ 420,  80, WINDOW_TEST_TRACKING, CANCELLED, 0, NON_VISIBLE, "lbl_touch2", "Touch2", COLORPIP_WHITE, labels_test_handler, },
 	};
 	enum { labels_count = sizeof labels / sizeof labels[0] };
 
@@ -313,13 +313,23 @@ void button1_handler(void);
 			p = CONTAINING_RECORD(t, list_template_t, item);
 			if (p->type == TYPE_BUTTON)
 			{
+				p->x1 = button_handlers[p->id].x1;
+				p->x2 = button_handlers[p->id].x2;
+				p->y1 = button_handlers[p->id].y1;
+				p->y2 = button_handlers[p->id].y2;
 				p->state = button_handlers[p->id].state;
 				p->visible = button_handlers[p->id].visible;
+				p->is_trackable = button_handlers[p->id].is_trackable;
 			}
 			else if (p->type == TYPE_LABEL)
 			{
+				p->x1 = labels[p->id].x;
+				p->x2 = labels[p->id].x + strlen(labels[p->id].text) * SMALLCHARW;
+				p->y1 = labels[p->id].y - 8;
+				p->y2 = labels[p->id].y + SMALLCHARH + 8;
 				p->state = labels[p->id].state;
 				p->visible = labels[p->id].visible;
+				p->is_trackable = labels[p->id].is_trackable;
 			}
 		}
 	}
@@ -399,14 +409,7 @@ void button1_handler(void);
 				button_handlers[i].is_locked = 0;
 				if (button_handlers[i].visible)
 				{
-					touch_elements[touch_list_count].x1 = button_handlers[i].x1;
-					touch_elements[touch_list_count].x2 = button_handlers[i].x2;
-					touch_elements[touch_list_count].y1 = button_handlers[i].y1;
-					touch_elements[touch_list_count].y2 = button_handlers[i].y2;
-					touch_elements[touch_list_count].state = button_handlers[i].state;
-					touch_elements[touch_list_count].visible = button_handlers[i].visible;
 					touch_elements[touch_list_count].id = i;
-					touch_elements[touch_list_count].is_trackable = button_handlers[i].is_trackable;
 					touch_elements[touch_list_count].type = TYPE_BUTTON;
 					InsertHeadList(& touch_list, & touch_elements[touch_list_count].item);
 					touch_list_count++;
@@ -425,18 +428,7 @@ void button1_handler(void);
 				labels[i].visible = value ? VISIBLE : NON_VISIBLE;
 				if (labels[i].visible && labels[i].onClickHandler)
 				{
-					labels[i].touch_y1 = labels[i].y - 8;
-					labels[i].touch_y2 = labels[i].y + 8;
-					labels[i].touch_x2 = labels[i].x + strlen(labels[i].text) * 16;
-
-					touch_elements[touch_list_count].x1 = labels[i].x;
-					touch_elements[touch_list_count].x2 = labels[i].touch_x2;
-					touch_elements[touch_list_count].y1 = labels[i].touch_y1;
-					touch_elements[touch_list_count].y2 = labels[i].touch_y2;
-					touch_elements[touch_list_count].state = labels[i].state;
-					touch_elements[touch_list_count].visible = labels[i].visible;
 					touch_elements[touch_list_count].id = i;
-					touch_elements[touch_list_count].is_trackable = labels[i].is_trackable;
 					touch_elements[touch_list_count].type = TYPE_LABEL;
 					InsertHeadList(& touch_list, & touch_elements[touch_list_count].item);
 					touch_list_count++;
@@ -605,9 +597,18 @@ void button1_handler(void);
 			menu_label_touched = 1;
 			menu_level = MENU_PARAMS;
 		}
+		else if (gui.last_pressed_x > labels[menu[MENU_VALS].first_id].x
+				&& gui.last_pressed_x < labels[menu[MENU_VALS].first_id].x + 100)
+		{
+			menu[MENU_PARAMS].selected_label = abs((gui.last_pressed_y - first_str) / str_step);
+			menu[MENU_PARAMS].selected_label = menu[MENU_PARAMS].selected_label > menu[MENU_PARAMS].num_rows ?
+					menu[MENU_PARAMS].num_rows : menu[MENU_PARAMS].selected_label;
 
+			menu[MENU_VALS].selected_label = menu[MENU_PARAMS].selected_label;
 
-		PRINTF("%d %d %d\n", first_str, str_step, menu[menu_level].selected_label);
+			menu_label_touched = 1;
+			menu_level = MENU_VALS;
+		}
 	}
 
 	void window_menu_process(void)
@@ -1094,8 +1095,6 @@ void button1_handler(void);
 		char * text2 = NULL;
 		uint_fast8_t str_len = 0;
 
-		update_touch_list();
-
 		// вывод на PIP служебной информации
 	#if WITHTHERMOLEVEL
 		if (hamradio_get_tx())
@@ -1227,6 +1226,7 @@ void button1_handler(void);
 				gui.last_pressed_x = tx;
 				gui.last_pressed_y = ty - gui.pip_y;
 				gui.is_touching_screen = 1;
+				update_touch_list();
 				debug_printf_P(PSTR("pip x: %d, pip y: %d\n"), gui.last_pressed_x, gui.last_pressed_y);
 			}
 			gui.fix = 1;
