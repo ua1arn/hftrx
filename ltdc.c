@@ -1760,6 +1760,7 @@ arm_hardware_ltdc_initialize(void)
 	/*
 	 * Interconnect update : select master using the port 1.
 	 * LTDC = AXI_M9.
+	 * MDMA = AXI_M7.
 	 */
 	SYSCFG->ICNR |= SYSCFG_ICNR_AXI_M9;
 	(void) SYSCFG->ICNR;

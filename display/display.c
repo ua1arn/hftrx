@@ -440,6 +440,17 @@ void arm_hardware_mdma_initialize(void)
 	//RCC->MP_TZAHB6ENSETR |= RCC_MP_TZAHB6ENSETR_MDMAEN;
 	//(void) RCC->MP_TZAHB6ENSETR;
 
+	/* SYSCFG clock enable */
+	RCC->MP_APB3ENSETR = RCC_MC_APB3ENSETR_SYSCFGEN;
+	(void) RCC->MP_APB3ENSETR;
+	/*
+	 * Interconnect update : select master using the port 1.
+	 * LTDC = AXI_M9.
+	 * MDMA = AXI_M7.
+	 */
+	//SYSCFG->ICNR |= SYSCFG_ICNR_AXI_M7;
+	//(void) SYSCFG->ICNR;
+
 #elif CPUSTYLE_STM32H7XX
 	/* Enable the DMA2D Clock */
 	RCC->AHB3ENR |= RCC_AHB3ENR_MDMAEN_Msk;	/* MDMA clock enable */
