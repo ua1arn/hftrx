@@ -29,23 +29,31 @@
 #define DMA2D_AMTCR_DT_ENABLE 1	/* 0..1 */
 
 #define MDMA_CH	MDMA_Channel0
-#define MDMA_CTCR_xSIZE_RGB565	0x01	// 2 byte
 #define MDMA_CCR_PL_VALUE 0	// PL: prioruty 0..3: min..max
 
 #if LCDMODE_LTDC_L24
 	#define DMA2D_FGPFCCR_CM_VALUE_MAIN	(1 * DMA2D_FGPFCCR_CM_0)	/* 0001: RGB888 */
 	//#define DMA2D_OPFCCR_CM_VALUE	(1 * DMA2D_OPFCCR_CM_0)	/* 001: RGB888 */
+
 #elif LCDMODE_LTDC_L8
 	#define DMA2D_FGPFCCR_CM_VALUE_MAIN	(5 * DMA2D_FGPFCCR_CM_0)	/* 0101: L8 */
 	#define MDMA_CTCR_xSIZE_MAIN			0x00	// 1 byte
-	#define MDMA_CTCR_xSIZE_U8				0x00	// 1 byte
 	////#define DMA2D_OPFCCR_CM_VALUE	(x * DMA2D_OPFCCR_CM_0)	/* not supported */
+
 #else /* LCDMODE_LTDC_L8 */
 	#define DMA2D_FGPFCCR_CM_VALUE_MAIN	(2 * DMA2D_FGPFCCR_CM_0)	/* 0010: RGB565 */
 	//#define DMA2D_OPFCCR_CM_VALUE	(2 * DMA2D_OPFCCR_CM_0)	/* 010: RGB565 */
 	#define MDMA_CTCR_xSIZE_MAIN			0x01	// 2 byte
-	#define MDMA_CTCR_xSIZE_U16			0x01	// 2 byte
+
 #endif /* LCDMODE_LTDC_L8 */
+
+#define DMA2D_FGPFCCR_CM_VALUE_L24	(1 * DMA2D_FGPFCCR_CM_0)	/* 0001: RGB888 */
+#define DMA2D_FGPFCCR_CM_VALUE_L16	(2 * DMA2D_FGPFCCR_CM_0)	/* 0010: RGB565 */
+#define DMA2D_FGPFCCR_CM_VALUE_L8	(5 * DMA2D_FGPFCCR_CM_0)	/* 0101: L8 */
+
+#define MDMA_CTCR_xSIZE_U16			0x01	// 2 byte
+#define MDMA_CTCR_xSIZE_U8			0x00	// 1 byte
+#define MDMA_CTCR_xSIZE_RGB565		0x01	// 2 byte
 
 static void
 ltdc_horizontal_pixels(
