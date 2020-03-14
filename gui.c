@@ -458,11 +458,10 @@ void button1_handler(void);
 	void update_touch_list(void)
 	{
 		PLIST_ENTRY t;
-		list_template_t * p = NULL;
 
 		for (t = touch_list.Blink; t != & touch_list; t = t->Blink)
 		{
-			p = CONTAINING_RECORD(t, list_template_t, item);
+			list_template_t * p = CONTAINING_RECORD(t, list_template_t, item);
 			if (p->type == TYPE_BUTTON)
 			{
 				p->x1 = button_handlers[p->id].x1;
@@ -1338,7 +1337,6 @@ void button1_handler(void);
 	{
 		uint_fast16_t tx, ty;
 		static uint_fast16_t x_old = 0, y_old = 0;
-		PLIST_ENTRY t;
 		static list_template_t * p = NULL;
 
 #if defined (TSC1_TYPE)
@@ -1366,6 +1364,7 @@ void button1_handler(void);
 
 		if (gui.state == CANCELLED && gui.is_touching_screen && ! gui.is_after_touch)
 		{
+			PLIST_ENTRY t;
 			for (t = touch_list.Blink; t != & touch_list; t = t->Blink)
 			{
 				p = CONTAINING_RECORD(t, list_template_t, item);
@@ -1390,6 +1389,7 @@ void button1_handler(void);
 
 		if (gui.state == PRESSED)
 		{
+			ASSERT(p != NULL);
 			if (p->is_trackable && gui.is_touching_screen)
 			{
 				gui.vector_move_x = x_old ? gui.vector_move_x + gui.last_pressed_x - x_old : 0; // т.к. process_gui и display_pip_update
