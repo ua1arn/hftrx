@@ -1574,8 +1574,29 @@ static void display_amfmhighcut4(
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	do
 	{
-		display_gotoxy(x, y + lowhalf);	
+		display_gotoxy(x, y + lowhalf);
 		display_value_small(v, 3, 2, 255, 0, lowhalf);
+	} while (lowhalf --);
+#endif /* WITHAMHIGHKBDADJ */
+}
+// dd.d - 4 places
+// текущее значение верхней частоты среза НЧ фильтра АМ/ЧМ
+static void display_amfmhighcut5(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	void * pv
+	)
+{
+#if WITHAMHIGHKBDADJ
+	uint_fast8_t flag;
+	const uint_fast8_t v = hamradio_get_amfm_highcut10_value(& flag);	// текущее значение верхней частоты среза НЧ фильтра АМ/ЧМ (в десятках герц)
+
+	display_setcolors(colorsfg_2state [flag], colorsbg_2state [flag]);
+	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
+	do
+	{
+		display_gotoxy(x, y + lowhalf);	
+		display_value_small(v, 4, 2, 255, 0, lowhalf);
 	} while (lowhalf --);
 #endif /* WITHAMHIGHKBDADJ */
 }
@@ -4225,7 +4246,7 @@ enum
 	#endif
 		{	25, 51,	display_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
 	#if WITHAMHIGHKBDADJ
-		{	25, 51,	display_amfmhighcut4,REDRM_MODE, PGALL, },	// 3.70
+		{	25, 51,	display_amfmhighcut5,REDRM_MODE, PGALL, },	// 13.70
 	#endif /* WITHAMHIGHKBDADJ */
 
 		// sleep mode display
