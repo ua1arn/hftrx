@@ -787,6 +787,7 @@ enum messagetypes
 {
 	MSGT_EMPTY,
 	MSGT_1SEC,
+	MSGT_UPDATEBOARD,	// updateboard(full, mute): buff [0]: full, buff [1]: mute
 	MSGT_KEYB,	// 1 byte - key code
 	MSGT_CAT,	// 12 bytes as parameter
 	//
