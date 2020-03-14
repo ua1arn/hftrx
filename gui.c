@@ -14,9 +14,159 @@
 
 #include <string.h>
 #include <math.h>
+#include "gui.h"
+
+void display_radius(int xc, int yc, unsigned gs, unsigned r1, unsigned r2, COLOR_T color);
+void display_segm(int xc, int yc, unsigned gs, unsigned ge, unsigned r, int step, COLOR_T color);
+
+static uint_fast16_t normalize(uint_fast16_t raw, uint_fast16_t rawmin,	uint_fast16_t rawmax, uint_fast16_t range)
+	{
+		if (rawmin < rawmax)
+		{
+			// Normal direction
+			const uint_fast16_t distance = rawmax - rawmin;
+			if (raw < rawmin)
+				return 0;
+			raw = raw - rawmin;
+			if (raw > distance)
+				return range;
+			return (uint_fast32_t) raw * range / distance;
+		}
+		else
+		{
+			// reverse direction
+			const uint_fast16_t distance = rawmin - rawmax;
+			if (raw >= rawmin)
+				return 0;
+			raw = rawmin - raw;
+			if (raw > distance)
+				return range;
+			return (uint_fast32_t) raw * range / distance;
+		}
+	}
+
+	void
+	display_smeter2(
+			uint_fast8_t x,
+			uint_fast8_t y,
+			void * pv
+			)
+	{
+		enum { ADDRCELLHEIGHT = 15 };
+		int i;
+		enum { halfsect = 30 };
+		enum { gm = 270 };
+		enum { gs = gm - halfsect };
+		int ge = gm + halfsect;
+		int stripewidth = 12; //16;
+		int r1 = 7 * ADDRCELLHEIGHT - 8;	//350;
+		int r2 = r1 - stripewidth;
+		int yc = y * ADDRCELLHEIGHT;	//560;
+		int xc = x * ADDRCELLHEIGHT;	//120;
+		COLOR_T ct;
+
+		uint_fast8_t tracemax;
+		static int gv, gv_trace;;
+		static int gv_old = gs, gv_trace_old = gs;
+		if (hamradio_get_tx())														// угол поворота стрелки; 246 минимум, 270 середина, 294 максимум
+		{																			// добавить учет калибровок
+			gv = gs + normalize(board_getpwrmeter(& tracemax), 0, 200, ge - gs);
+			gv_trace = gs + normalize(tracemax, 0, 200, ge - gs);
+		}
+		else
+		{
+			gv = gs + normalize(board_getsmeter(& tracemax, 0, UINT8_MAX, 0), 120, 250, ge - gs); //270 + 24;
+			gv_trace = gs + normalize(tracemax, 120, 250, ge - gs);
+		}
+
+		int rv1 = 8 * ADDRCELLHEIGHT;	//350;
+		int rv2 = rv1 - 5 * ADDRCELLHEIGHT;
+		enum { step1 = 3 };		// шаг для оцифровки S
+		enum { step2 = 4 };		// шаг для оцифровки плюсов
+		static const int markers [] =
+		{
+			//gs + 0 * step1,
+			gs + 2 * step1,		// S1
+			gs + 4 * step1,		// S3
+			gs + 6 * step1,		// S5
+			gs + 8 * step1,		// S7
+			gs + 10 * step1,	// S9
+		};
+		static const int markersR [] =
+		{
+			gm + 2 * step2,	//
+			gm + 4 * step2,
+			gm + 6 * step2,
+		};
+		static const int markers2 [] =
+		{
+			//gs + 1 * step1,
+			gs + 3 * step1,		// S2
+			gs + 5 * step1,		// S4
+			gs + 7 * step1,		// S6
+			gs + 9 * step1,		// S8
+		};
+		static const int markers2R [] =
+		{
+			gm + 1 * step2,
+			gm + 3 * step2,
+			gm + 5 * step2,
+		};
+
+		const COLOR_T smeter = COLOR_WHITE;
+		const COLOR_T smeterplus = COLOR_DARKRED;
+
+		display_segm(xc, yc, gs, gm, r1, 1, smeter);
+		display_segm(xc, yc, gm, ge, r1, 1, smeterplus);
+
+		display_segm(xc, yc, gs, ge, r2, 1, COLOR_WHITE);		// POWER
+		//display_radius(xc, yc, gs, r1, r2, COLOR_RED);
+		//display_radius(xc, yc, ge, r1, r2, COLOR_RED);
+
+		for (i = 0; i < sizeof markers / sizeof markers [0]; ++ i)
+		{
+			display_radius(xc, yc, markers [i], r1, r1 + 8, smeter);
+		}
+		for (i = 0; i < sizeof markers2 / sizeof markers2 [0]; ++ i)
+		{
+			display_radius(xc, yc, markers2 [i], r1, r1 + 4, smeter);
+		}
+		for (i = 0; i < sizeof markersR / sizeof markersR [0]; ++ i)
+		{
+			display_radius(xc, yc, markersR [i], r1, r1 + 8, smeterplus);
+		}
+		for (i = 0; i < sizeof markers2R / sizeof markers2R [0]; ++ i)
+		{
+			display_radius(xc, yc, markers2R [i], r1, r1 + 4, smeterplus);
+		}
+
+	//		display_segm(xc, yc, gs, ge, rv1, 1, COLORMAIN_BLUE);	// показывает зоны перемещения стрелки
+	//		display_segm(xc, yc, gs, ge, rv2, 1, COLORMAIN_BLUE);	// показывает зоны перемещения стрелки
+
+		display_radius(xc - 1, yc, gv_trace_old, r1 - 1, r2 + 1, COLORMAIN_BLACK);
+		display_radius(xc, yc, gv_trace_old, r1 - 1, r2 + 1, COLORMAIN_BLACK);
+		display_radius(xc + 1, yc, gv_trace_old, r1 - 1, r2 + 1, COLORMAIN_BLACK);
+
+		ct = gv_trace > gm ? COLORMAIN_RED : COLORMAIN_GREEN;
+		display_radius(xc - 1, yc, gv_trace, r1 - 1, r2 + 1, ct);
+		display_radius(xc, yc, gv_trace, r1 - 1, r2 + 1, ct);
+		display_radius(xc + 1, yc, gv_trace, r1 - 1, r2 + 1, ct);
+
+		display_radius(xc - 1, yc, gv_old, rv1, rv2, COLORMAIN_BLACK);
+		display_radius(xc, yc, gv_old, rv1, rv2, COLORMAIN_BLACK);
+		display_radius(xc + 1, yc, gv_old, rv1, rv2, COLORMAIN_BLACK);
+
+		ct = gv > gm ? COLORMAIN_RED : COLORMAIN_GREEN;
+		display_radius(xc - 1, yc, gv, rv1, rv2, ct);
+		display_radius(xc, yc, gv, rv1, rv2, ct);
+		display_radius(xc + 1, yc, gv, rv1, rv2, ct);
+
+		gv_old = gv;
+		gv_trace_old = gv_trace;
+		(void) pv;
+	}
 
 #if WITHTOUCHGUI
-	#include "gui.h"
 	#include "keyboard.h"
 	#include "list.h"
 
@@ -331,32 +481,6 @@ void button1_handler(void);
 		}
 	}
 
-	static uint_fast16_t normalize(uint_fast16_t raw, uint_fast16_t rawmin,	uint_fast16_t rawmax, uint_fast16_t range)
-	{
-		if (rawmin < rawmax)
-		{
-			// Normal direction
-			const uint_fast16_t distance = rawmax - rawmin;
-			if (raw < rawmin)
-				return 0;
-			raw = raw - rawmin;
-			if (raw > distance)
-				return range;
-			return (uint_fast32_t) raw * range / distance;
-		}
-		else
-		{
-			// reverse direction
-			const uint_fast16_t distance = rawmin - rawmax;
-			if (raw >= rawmin)
-				return 0;
-			raw = rawmin - raw;
-			if (raw > distance)
-				return range;
-			return (uint_fast32_t) raw * range / distance;
-		}
-	}
-
 	uint_fast8_t find_button (uint_fast8_t id_window, const char * val)				// возврат id кнопки окна по ее названию
 	{
 		for (uint_fast8_t i = 1; i < button_handlers_count; i++)
@@ -481,7 +605,7 @@ void button1_handler(void);
 				local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), val_low * 10);
 				strcpy (labels[id_lbl_low].text, buf);
 				x_l = normalize(val_low, 0, 500, 290) + 290;
-				labels[id_lbl_low].x = x_l - strlen(buf) * 16;
+				labels[id_lbl_low].x = x_l - strlen(buf) * SMALLCHARW;
 			}
 			else			// BWSET_NARROW
 			{
@@ -503,7 +627,7 @@ void button1_handler(void);
 				strcpy (labels[id_lbl_high].text, buf);
 				local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("P %d"), val_c * 10);
 				strcpy (labels[id_lbl_low].text, buf);
-				labels[id_lbl_low].x = 550 - strlen(buf) * 16;
+				labels[id_lbl_low].x = 550 - strlen(buf) * SMALLCHARW;
 			}
 		}
 
@@ -528,7 +652,7 @@ void button1_handler(void);
 					local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), val_low * 10);
 					strcpy (labels[id_lbl_low].text, buf);
 					x_l = normalize(val_low / 10, 0, 50, 290) + 290;
-					labels[id_lbl_low].x = x_l - strlen(buf) * 16;
+					labels[id_lbl_low].x = x_l - strlen(buf) * SMALLCHARW;
 				}
 			}
 			else				// BWSET_NARROW
@@ -549,11 +673,11 @@ void button1_handler(void);
 				x_h = normalize(190 + val_w , 0, 500, 290) + 290;
 
 				local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), val_w * 20);
-				labels[id_lbl_high].x = x_c - strlen(buf) * 8;
+				labels[id_lbl_high].x = x_c - strlen(buf) * SMALLCHARW / 2;
 				strcpy (labels[id_lbl_high].text, buf);
 				local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("P %d"), val_c * 10);
 				strcpy (labels[id_lbl_low].text, buf);
-				labels[id_lbl_low].x = 550 - strlen(buf) * 16;
+				labels[id_lbl_low].x = 550 - strlen(buf) * SMALLCHARW;
 			}
 		}
 
@@ -858,8 +982,8 @@ void button1_handler(void);
 			PRINTF("%d\n", strlen(labels[id_lbl_param].text));
 			strcpy(labels[id_lbl_val].text, enc2_menu->val);
 			labels[id_lbl_val].color = enc2_menu->state == 2 ? COLORPIP_YELLOW : COLORPIP_WHITE;
-			labels[id_lbl_val].x = windows[WINDOW_ENC2].x1 + ((windows[WINDOW_ENC2].x2 - windows[WINDOW_ENC2].x1) - (strlen (labels[id_lbl_val].text) * 16)) / 2;
-			labels[id_lbl_param].x = windows[WINDOW_ENC2].x1 + ((windows[WINDOW_ENC2].x2 - windows[WINDOW_ENC2].x1) - (strlen (labels[id_lbl_param].text) * 16)) / 2;
+			labels[id_lbl_val].x = windows[WINDOW_ENC2].x1 + ((windows[WINDOW_ENC2].x2 - windows[WINDOW_ENC2].x1) - (strlen (labels[id_lbl_val].text) * SMALLCHARW)) / 2;
+			labels[id_lbl_param].x = windows[WINDOW_ENC2].x1 + ((windows[WINDOW_ENC2].x2 - windows[WINDOW_ENC2].x1) - (strlen (labels[id_lbl_param].text) * SMALLCHARW)) / 2;
 		} else
 			footer_buttons_state(CANCELLED, "");
 	}
@@ -1119,8 +1243,7 @@ void button1_handler(void);
 				(int) ((display_zoomedbw() + 0) / 1000));
 	#endif /* WITHIF4DSP */
 		xt = gui.pip_width - 10 - str_len * 10;
-		pip_transparency_rect(colorpip, gui.pip_width, gui.pip_height,
-				xt - 5, 225, gui.pip_width - 5, 248, alpha);
+		pip_transparency_rect(colorpip, gui.pip_width, gui.pip_height, xt - 5, 225, gui.pip_width - 5, 248, alpha);
 		display_colorbuff_string2_tbg(colorpip, gui.pip_width, gui.pip_height, xt, 230, buff, COLORPIP_YELLOW);
 
 	#if defined (RTC1_TYPE)				// текущее время
@@ -1167,18 +1290,18 @@ void button1_handler(void);
 				if (strchr(button_handlers[i].text, ' ') == NULL)
 				{
 					display_colorbuff_string2_tbg(colorpip, gui.pip_width, gui.pip_height, button_handlers[i].x1 +
-							((button_handlers[i].x2 - button_handlers[i].x1) - (strlen (button_handlers[i].text) * 10)) / 2,
+							((button_handlers[i].x2 - button_handlers[i].x1) - (strlen (button_handlers[i].text) * SMALLCHARW2)) / 2,
 							button_handlers[i].y1 + 17, button_handlers[i].text, COLORPIP_BLACK);
 				} else
 				{
 					strcpy (buff, button_handlers[i].text);
 					text2 = strtok(buff, " ");
 					display_colorbuff_string2_tbg(colorpip, gui.pip_width, gui.pip_height, button_handlers[i].x1 +
-							((button_handlers[i].x2 - button_handlers[i].x1) - (strlen (text2) * 10)) / 2,
+							((button_handlers[i].x2 - button_handlers[i].x1) - (strlen (text2) * SMALLCHARW2)) / 2,
 							button_handlers[i].y1 + 10, text2, COLORPIP_BLACK);
 					text2 = strtok(NULL, '\0');
 					display_colorbuff_string2_tbg(colorpip, gui.pip_width, gui.pip_height, button_handlers[i].x1 +
-							((button_handlers[i].x2 - button_handlers[i].x1) - (strlen (text2) * 10)) / 2,
+							((button_handlers[i].x2 - button_handlers[i].x1) - (strlen (text2) * SMALLCHARW2)) / 2,
 							button_handlers[i].y1 + 25, text2, COLORPIP_BLACK);
 				}
 			}

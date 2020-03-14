@@ -4532,19 +4532,23 @@ enum
 		{	14,	0,	display_preovf3,	REDRM_BARS, PGALL, },
 		{	18,	0,	display_genham1,	REDRM_BARS, PGALL, },	// Отображение режима General Coverage / HAM bands
 		{	21,	0,	display_lockstate4, REDRM_MODE, PGALL, },	// LOCK
+		{	28, 0,	display_notch5,		REDRM_MODE, PGALL, },	// NOTCH on/off
+		{	26, 5,	display_voxtune3,	REDRM_MODE, PGALL, },	// VOX
+		{	30, 5,	display_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
+		{   44, 9,  display_smeter2, 	REDRM_BARS, PGSWR, },
 
 	#if WITHENCODER2
-		{	41, 0,	display_fnlabel9,	REDRM_MODE, PGALL, },	// FUNC item label
-		{	41,	4,	display_fnvalue9,	REDRM_MODE, PGALL, },	// FUNC item value
-		{	45, 15,	display_notch5,		REDRM_MODE, PGALL, },	// NOTCH on/off
+//		{	41, 0,	display_fnlabel9,	REDRM_MODE, PGALL, },	// FUNC item label
+//		{	41,	4,	display_fnvalue9,	REDRM_MODE, PGALL, },	// FUNC item value
+//		{	45, 15,	display_notch5,		REDRM_MODE, PGALL, },	// NOTCH on/off
 	#else /* WITHENCODER2 */
 		{	45, 0,	display_notch5,		REDRM_MODE, PGALL, },	// FUNC item label
 		{	45,	4,	display_notchfreq5,	REDRM_BARS, PGALL, },	// FUNC item value
 	#endif /* WITHENCODER2 */
 
-		{	46, 20,	display_agc3,		REDRM_MODE, PGALL, },	// AGC mode
-		{	46, 25,	display_voxtune3,	REDRM_MODE, PGALL, },	// VOX
-		{	46, 30,	display_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
+//		{	46, 20,	display_agc3,		REDRM_MODE, PGALL, },	// AGC mode
+//		{	46, 25,	display_voxtune3,	REDRM_MODE, PGALL, },	// VOX
+//		{	46, 30,	display_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
 //		{	46, 35,	display_nr3,		REDRM_MODE, PGALL, },	// NR
 		{	46, 40,	display_atu3,		REDRM_MODE, PGALL, },	// TUNER state (optional)
 		{	46, 45,	display_byp3,		REDRM_MODE, PGALL, },	// TUNER BYPASS state (optional)
@@ -4566,7 +4570,7 @@ enum
 		//{	0,	35,	display2_legend_tx,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы PWR & SWR-метра
 		//{	0,	40,	display2_bars_tx,	REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
 		{	31,	30, display_siglevel4, 	REDRM_BARS, PGSWR, },	// signal level dBm
-		{	36, 30,	display_freqdelta8, REDRM_BARS, PGSWR, },	// выход ЧМ демодулятора
+//		{	36, 30,	display_freqdelta8, REDRM_BARS, PGSWR, },	// выход ЧМ демодулятора
 	#if WITHSPECTRUMWF
 		{	0,	DLES,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 		{	0,	DLES,	display2_spectrum,	REDRM_BARS, PGSPE, },// подготовка изображения спектра

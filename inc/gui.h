@@ -196,6 +196,8 @@
 
 #endif /* COLORSTYLE_RED */
 
+void display_smeter2(uint_fast8_t x, uint_fast8_t y, void * pv);
+
 #if WITHTOUCHGUI
 
 	void button9_handler(void);
