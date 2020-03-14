@@ -5158,7 +5158,7 @@ static void sdtick(void)
  * серединой расстояния между ближайшими Y-узлами сетки.
  */
 
-static void display_line(int xn, int yn, int xk, int yk, COLOR_T color)
+void display_line(int xn, int yn, int xk, int yk, COLOR_T color)
 {
 	int  dx, dy, s, sx, sy, kl, incr1, incr2;
 	char swap;
@@ -5212,7 +5212,7 @@ static void display_line(int xn, int yn, int xk, int yk, COLOR_T color)
 }  /* V_Bre */
 
 
-static const int sin90 [91] =
+const int sin90 [91] =
 {
 	0, 175, 349, 523, 698, 872,1045,1219,1392,   /*  0..8        */
 	1564,1736,1908,2079,2250,2419,2588,2756,2924,   /*  9..17       */
@@ -5228,7 +5228,7 @@ static const int sin90 [91] =
 };
 
 
-static int muldiv(int a, int b, unsigned c)
+int muldiv(int a, int b, unsigned c)
 {
 	return  (unsigned) ((a * (long) b + 5000) / c);
 }
@@ -5255,7 +5255,7 @@ static  int icos(unsigned alpha, unsigned r)
 
 
 // Рисование радиусов
-static void
+void
 display_radius(int xc, int yc, unsigned gs, unsigned r1, unsigned r2, COLOR_T color)
 {
 	int     x, y;
@@ -5272,7 +5272,7 @@ display_radius(int xc, int yc, unsigned gs, unsigned r1, unsigned r2, COLOR_T co
 
 // круговой интерполятор
 // нач.-x, нач.-y, градус начала, градус конуа, радиус, шаг приращения угла
-static void
+void
 display_segm(int xc, int yc, unsigned gs, unsigned ge, unsigned r, int step, COLOR_T color)
 {
 	int     x, y;
