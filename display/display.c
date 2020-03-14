@@ -702,6 +702,18 @@ void pip_transparency_rect(
 	uint_fast8_t alpha	// на сколько затемнять цвета (0 - чёрный, 255 - без изменений)
 	)
 {
+#if 1
+	uint_fast16_t y;
+
+	for (y = y1; y <= y2; y ++)
+	{
+		const uint_fast16_t yt = dx * y;
+		for (uint_fast16_t x = x1; x <= x2; x ++)
+		{
+			buffer [yt + x] = getshadedcolor(buffer [yt + x], alpha);
+		}
+	}
+#else
 	uint_fast16_t y;
 
 	for (y = y1; y <= y2; y ++)
@@ -712,6 +724,7 @@ void pip_transparency_rect(
 			* p = getshadedcolor(* p, alpha);
 		}
 	}
+#endif
 }
 
 
