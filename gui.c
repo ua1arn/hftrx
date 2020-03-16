@@ -118,13 +118,13 @@ static uint_fast16_t normalize(uint_fast16_t raw, uint_fast16_t rawmin,	uint_fas
 			gm + 5 * step2,
 		};
 
-		const COLOR_T smeter = COLOR_WHITE;
-		const COLOR_T smeterplus = COLOR_DARKRED;
+		const COLOR_T smeter = COLORMAIN_WHITE;
+		const COLOR_T smeterplus = COLORMAIN_DARKRED;
 
 		display_segm(xc, yc, gs, gm, r1, 1, smeter);
 		display_segm(xc, yc, gm, ge, r1, 1, smeterplus);
 
-		display_segm(xc, yc, gs, ge, r2, 1, COLOR_WHITE);		// POWER
+		display_segm(xc, yc, gs, ge, r2, 1, COLORMAIN_WHITE);		// POWER
 		//display_radius(xc, yc, gs, r1, r2, COLOR_RED);
 		//display_radius(xc, yc, ge, r1, r2, COLOR_RED);
 
