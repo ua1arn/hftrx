@@ -84,8 +84,8 @@ static uint_fast16_t normalize(uint_fast16_t raw, uint_fast16_t rawmin,	uint_fas
 			gv_trace = gs + normalize(tracemax, 120, 250, ge - gs);
 		}
 
-		int rv1 = 8 * ADDRCELLHEIGHT;	//350;
-		int rv2 = rv1 - 5 * ADDRCELLHEIGHT;
+		int rv1 = 7 * ADDRCELLHEIGHT;	//350;
+		int rv2 = rv1 - 3 * ADDRCELLHEIGHT;
 		enum { step1 = 3 };		// шаг для оцифровки S
 		enum { step2 = 4 };		// шаг для оцифровки плюсов
 		static const int markers [] =
@@ -728,9 +728,7 @@ void button1_handler(void);
 			menu[MENU_PARAMS].selected_label = abs((gui.last_pressed_y - first_str) / str_step);
 			menu[MENU_PARAMS].selected_label = menu[MENU_PARAMS].selected_label > menu[MENU_PARAMS].num_rows ?
 					menu[MENU_PARAMS].num_rows : menu[MENU_PARAMS].selected_label;
-
 			menu[MENU_VALS].selected_label = menu[MENU_PARAMS].selected_label;
-
 			menu_label_touched = 1;
 			menu_level = MENU_VALS;
 		}
@@ -834,11 +832,14 @@ void button1_handler(void);
 
 			// при переходе на следующий уровень пункт меню подсвечивается
 			if (menu_level == MENU_VALS)
+			{
 				for (uint8_t i = 0; i <= menu[MENU_GROUPS].num_rows; i++)
 				{
 					labels[i + menu[MENU_PARAMS].first_id].color = i == menu[MENU_PARAMS].selected_label ? COLORPIP_YELLOW : COLORPIP_DARKGRAY;
 					labels[i + menu[MENU_VALS].first_id].color = i == menu[MENU_PARAMS].selected_label ? COLORPIP_YELLOW : COLORPIP_DARKGRAY;
 				}
+				menu_label_touched = 0;
+			}
 			if (menu_level == MENU_PARAMS)
 			{
 				for (uint8_t i = 0; i <= menu[MENU_GROUPS].num_rows; i++)
@@ -849,13 +850,18 @@ void button1_handler(void);
 				}
 			}
 			if (menu_level == MENU_GROUPS)
+			{
 				for (uint8_t i = 0; i <= menu[MENU_GROUPS].num_rows; i++)
+				{
 					labels[i + menu[MENU_GROUPS].first_id].color = COLORPIP_WHITE;
+					labels[i + menu[MENU_PARAMS].first_id].color = COLORPIP_WHITE;
+					labels[i + menu[MENU_VALS].first_id].color = COLORPIP_WHITE;
+				}
+			}
 
 			encoder2.press = 0;
 			encoder2.hold = 0;
 			encoder2.press_done = 1;
-			PRINTF("menu level %d\n", menu_level);
 		}
 
 		if (menu_level == MENU_OFF)
@@ -867,25 +873,25 @@ void button1_handler(void);
 			return;
 		}
 
-		if ((menu_label_touched || encoder2.rotate != 0) && menu_level == MENU_VALS)
+		if (encoder2.rotate != 0 && menu_level == MENU_VALS)
 		{
 			encoder2.rotate_done = 1;
-			menu_label_touched = 0;
-			strcpy(labels[menu[MENU_VALS].first_id + menu[MENU_PARAMS].selected_label].text, gui_edit_menu_item(menu[MENU_PARAMS].menu_block[menu[MENU_PARAMS].selected_str].index, encoder2.rotate));
+			menu[MENU_PARAMS].selected_str = menu[MENU_PARAMS].selected_label + menu[MENU_PARAMS].add_id;
+			strcpy(labels[menu[MENU_VALS].first_id + menu[MENU_PARAMS].selected_label].text,
+					gui_edit_menu_item(menu[MENU_PARAMS].menu_block[menu[MENU_PARAMS].selected_str].index, encoder2.rotate));
 		}
 
-		if ((menu_label_touched || encoder2.rotate != 0) && menu_level != MENU_VALS)
+		if ((menu_label_touched || encoder2.rotate != 0) || menu_level != MENU_VALS)
 		{
 			encoder2.rotate_done = 1;
-
-			if (menu_label_touched)
-				menu[menu_level].selected_str = menu[menu_level].selected_label + menu[menu_level].add_id;
 
 			if (encoder2.rotate != 0)
 			{
 				menu[menu_level].selected_str = (menu[menu_level].selected_str + encoder2.rotate) <= 0 ? 0 : menu[menu_level].selected_str + encoder2.rotate;
 				menu[menu_level].selected_str = menu[menu_level].selected_str > menu[menu_level].count ? menu[menu_level].count : menu[menu_level].selected_str;
 			}
+			else if (menu_label_touched)
+				menu[menu_level].selected_str = menu[menu_level].selected_label + menu[menu_level].add_id;
 
 			menu[MENU_PARAMS].count = get_multilinemenu_block_params(menu[MENU_PARAMS].menu_block, menu[MENU_GROUPS].menu_block[menu[MENU_GROUPS].selected_str].index) - 1;
 
@@ -913,8 +919,7 @@ void button1_handler(void);
 					strcpy(labels[menu[MENU_GROUPS].first_id + i].text, menu[MENU_GROUPS].menu_block[i + menu[MENU_GROUPS].add_id].name);
 
 			menu[MENU_VALS].count = menu[MENU_PARAMS].count < menu[MENU_VALS].num_rows ? menu[MENU_PARAMS].count : menu[MENU_VALS].num_rows;
-			get_multilinemenu_block_vals(menu[MENU_VALS].menu_block,  menu[MENU_PARAMS].menu_block[menu[MENU_PARAMS].add_id].index,
-										 menu[MENU_VALS].count);
+			get_multilinemenu_block_vals(menu[MENU_VALS].menu_block,  menu[MENU_PARAMS].menu_block[menu[MENU_PARAMS].add_id].index, menu[MENU_VALS].count);
 
 			for(uint_fast8_t i = 0; i <= menu[MENU_PARAMS].num_rows; i++)
 			{
@@ -928,7 +933,7 @@ void button1_handler(void);
 				labels[menu[MENU_VALS].first_id + i].visible = VISIBLE;
 			}
 			menu_label_touched = 0;
-			PRINTF("%d %s %d\n", menu[menu_level].selected_str, menu[menu_level].menu_block[menu[menu_level].selected_str].name, menu[menu_level].add_id);
+//			PRINTF("%d %s %d\n", menu[menu_level].selected_str, menu[menu_level].menu_block[menu[menu_level].selected_str].name, menu[menu_level].add_id);
 		}
 		if (menu_level != MENU_VALS)
 			display_colorbuff_string_tbg(colorpip, gui.pip_width, gui.pip_height, labels[menu[menu_level].selected_label + menu[menu_level].first_id].x - 16,
