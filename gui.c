@@ -706,31 +706,27 @@ void button1_handler(void);
 		uint_fast8_t first_str =  labels[menu[MENU_GROUPS].first_id].y - windows[WINDOW_MENU].y1;
 		uint_fast8_t str_step = labels[menu[MENU_GROUPS].first_id + 1].y - windows[WINDOW_MENU].y1 - first_str;
 
-		if(gui.last_pressed_x > labels[menu[MENU_GROUPS].first_id].x
-				&& gui.last_pressed_x < labels[menu[MENU_PARAMS].first_id].x)
+		if (gui.selected_type == TYPE_LABEL)
 		{
-			menu[MENU_GROUPS].selected_label = abs((gui.last_pressed_y - first_str) / str_step);
-			menu_label_touched = 1;
-			menu_level = MENU_GROUPS;
-		}
-		else if (gui.last_pressed_x > labels[menu[MENU_PARAMS].first_id].x
-				&& gui.last_pressed_x < labels[menu[MENU_VALS].first_id].x)
-		{
-			menu[MENU_PARAMS].selected_label = abs((gui.last_pressed_y - first_str) / str_step);
-			menu[MENU_PARAMS].selected_label = menu[MENU_PARAMS].selected_label > menu[MENU_PARAMS].num_rows ?
-					menu[MENU_PARAMS].num_rows : menu[MENU_PARAMS].selected_label;
-			menu_label_touched = 1;
-			menu_level = MENU_PARAMS;
-		}
-		else if (gui.last_pressed_x > labels[menu[MENU_VALS].first_id].x
-				&& gui.last_pressed_x < labels[menu[MENU_VALS].first_id].x + 100)
-		{
-			menu[MENU_PARAMS].selected_label = abs((gui.last_pressed_y - first_str) / str_step);
-			menu[MENU_PARAMS].selected_label = menu[MENU_PARAMS].selected_label > menu[MENU_PARAMS].num_rows ?
-					menu[MENU_PARAMS].num_rows : menu[MENU_PARAMS].selected_label;
-			menu[MENU_VALS].selected_label = menu[MENU_PARAMS].selected_label;
-			menu_label_touched = 1;
-			menu_level = MENU_VALS;
+			if(strcmp(labels[gui.selected_id].name, "lbl_group") == 0)
+			{
+				menu[MENU_GROUPS].selected_label = gui.selected_id - menu[MENU_GROUPS].first_id;
+				menu_label_touched = 1;
+				menu_level = MENU_GROUPS;
+			}
+			else if(strcmp(labels[gui.selected_id].name, "lbl_params") == 0)
+			{
+				menu[MENU_PARAMS].selected_label = gui.selected_id - menu[MENU_PARAMS].first_id;
+				menu_label_touched = 1;
+				menu_level = MENU_PARAMS;
+			}
+			else if(strcmp(labels[gui.selected_id].name, "lbl_vals") == 0)
+			{
+				menu[MENU_VALS].selected_label = gui.selected_id - menu[MENU_VALS].first_id;
+				menu[MENU_PARAMS].selected_label = menu[MENU_VALS].selected_label;
+				menu_label_touched = 1;
+				menu_level = MENU_VALS;
+			}
 		}
 	}
 
@@ -925,13 +921,17 @@ void button1_handler(void);
 			for(uint_fast8_t i = 0; i <= menu[MENU_PARAMS].num_rows; i++)
 			{
 				labels[menu[MENU_PARAMS].first_id + i].visible = NON_VISIBLE;
+				labels[menu[MENU_PARAMS].first_id + i].state = DISABLED;
 				labels[menu[MENU_VALS].first_id + i].visible = NON_VISIBLE;
+				labels[menu[MENU_VALS].first_id + i].state = DISABLED;
 				if (i > menu[MENU_PARAMS].count)
 					continue;
 				strcpy(labels[menu[MENU_PARAMS].first_id + i].text, menu[MENU_PARAMS].menu_block[i + menu[MENU_PARAMS].add_id].name);
 				strcpy(labels[menu[MENU_VALS].first_id + i].text,   menu[MENU_VALS].menu_block[i].name);
 				labels[menu[MENU_PARAMS].first_id + i].visible = VISIBLE;
+				labels[menu[MENU_PARAMS].first_id + i].state = CANCELLED;
 				labels[menu[MENU_VALS].first_id + i].visible = VISIBLE;
+				labels[menu[MENU_VALS].first_id + i].state = CANCELLED;
 			}
 			menu_label_touched = 0;
 //			PRINTF("%d %s %d\n", menu[menu_level].selected_str, menu[menu_level].menu_block[menu[menu_level].selected_str].name, menu[menu_level].add_id);
