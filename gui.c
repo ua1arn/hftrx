@@ -309,16 +309,16 @@ void button1_handler(void);
 		{ },
 		{ 250, 120, WINDOW_BP,   DISABLED, 0, NON_VISIBLE, "lbl_low",  "", COLORPIP_YELLOW, },
 		{ 490, 120, WINDOW_BP,   DISABLED, 0, NON_VISIBLE, "lbl_high", "", COLORPIP_YELLOW, },
-		{ 100,  50, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_group", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 100,  85, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_group", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 100, 120, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_group", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 100, 155, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_group", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 100, 190, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_group", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 300,  50, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_params", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 300,  85, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_params", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 300, 120, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_params", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 300, 155, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_params", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 300, 190, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_params", "", COLORPIP_WHITE, labels_menu_handler, },
+		{ 100,  50, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", "", COLORPIP_WHITE, labels_menu_handler, },
+		{ 100,  85, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", "", COLORPIP_WHITE, labels_menu_handler, },
+		{ 100, 120, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", "", COLORPIP_WHITE, labels_menu_handler, },
+		{ 100, 155, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", "", COLORPIP_WHITE, labels_menu_handler, },
+		{ 100, 190, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", "", COLORPIP_WHITE, labels_menu_handler, },
+		{ 300,  50, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", COLORPIP_WHITE, labels_menu_handler, },
+		{ 300,  85, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", COLORPIP_WHITE, labels_menu_handler, },
+		{ 300, 120, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", COLORPIP_WHITE, labels_menu_handler, },
+		{ 300, 155, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", COLORPIP_WHITE, labels_menu_handler, },
+		{ 300, 190, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", COLORPIP_WHITE, labels_menu_handler, },
 		{ 520,  50, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", "", COLORPIP_WHITE, labels_menu_handler, },
 		{ 520,  85, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", "", COLORPIP_WHITE, labels_menu_handler, },
 		{ 520, 120, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", "", COLORPIP_WHITE, labels_menu_handler, },
@@ -405,6 +405,7 @@ void button1_handler(void);
 		int_fast8_t selected_str;
 		int_fast8_t selected_label;
 		uint_fast8_t add_id;
+		int_fast8_t scroll_id;
 		menu_names_t menu_block[30];
 	} menu_t;
 
@@ -703,9 +704,6 @@ void button1_handler(void);
 
 	void labels_menu_handler (void)
 	{
-		uint_fast8_t first_str =  labels[menu[MENU_GROUPS].first_id].y - windows[WINDOW_MENU].y1;
-		uint_fast8_t str_step = labels[menu[MENU_GROUPS].first_id + 1].y - windows[WINDOW_MENU].y1 - first_str;
-
 		if (gui.selected_type == TYPE_LABEL)
 		{
 			if(strcmp(labels[gui.selected_id].name, "lbl_group") == 0)
@@ -733,6 +731,7 @@ void button1_handler(void);
 	void window_menu_process(void)
 	{
 		PACKEDCOLORPIP_T * const colorpip = getscratchpip();
+		static uint_fast8_t str_step = 0, menu_is_scrolling = 0, start_str_group = 0, start_str_params = 0;
 
 		if (windows[WINDOW_MENU].first_call == 1)
 		{
@@ -799,7 +798,55 @@ void button1_handler(void);
 				strcpy(labels[menu[MENU_VALS].first_id + i].text, menu[MENU_VALS].menu_block[i + menu[MENU_VALS].add_id].name);
 				labels[menu[MENU_VALS].first_id + i].visible = VISIBLE;
 			};
+			str_step = labels[menu[MENU_GROUPS].first_id + 1].y - labels[menu[MENU_GROUPS].first_id].y;
 			menu_level = MENU_GROUPS;
+		}
+
+		if(gui.is_tracking && gui.selected_type == TYPE_LABEL && gui.vector_move_y != 0)
+		{
+			if (! menu_is_scrolling)
+			{
+				start_str_group = menu[MENU_GROUPS].add_id;
+				start_str_params = menu[MENU_PARAMS].add_id;
+			}
+			ldiv_t r = ldiv(gui.vector_move_y, str_step);
+			if(strcmp(labels[gui.selected_id].name, "lbl_group") == 0)
+			{
+				int_fast8_t q = start_str_group - r.quot;
+				menu[MENU_GROUPS].add_id = q <= 0 ? 0 : q;
+				menu[MENU_GROUPS].add_id = (menu[MENU_GROUPS].add_id + menu[MENU_GROUPS].num_rows) > menu[MENU_GROUPS].count ?
+						(menu[MENU_GROUPS].count - menu[MENU_GROUPS].num_rows) : menu[MENU_GROUPS].add_id;
+				menu[MENU_GROUPS].selected_str = menu[MENU_GROUPS].selected_label + menu[MENU_GROUPS].add_id;
+				menu_level = MENU_GROUPS;
+				menu[MENU_PARAMS].add_id = 0;
+				menu[MENU_PARAMS].selected_str = 0;
+				menu[MENU_PARAMS].selected_label = 0;
+				menu[MENU_VALS].add_id = 0;
+				menu[MENU_VALS].selected_str = 0;
+				menu[MENU_VALS].selected_label = 0;
+			}
+			else if(strcmp(labels[gui.selected_id].name, "lbl_params") == 0 &&
+					menu[MENU_PARAMS].count > menu[MENU_PARAMS].num_rows)
+			{
+				int_fast8_t q = start_str_params - r.quot;
+				menu[MENU_PARAMS].add_id = q <= 0 ? 0 : q;
+				menu[MENU_PARAMS].add_id = (menu[MENU_PARAMS].add_id + menu[MENU_PARAMS].num_rows) > menu[MENU_PARAMS].count ?
+						(menu[MENU_PARAMS].count - menu[MENU_PARAMS].num_rows) : menu[MENU_PARAMS].add_id;
+				menu[MENU_PARAMS].selected_str = menu[MENU_PARAMS].selected_label + menu[MENU_PARAMS].add_id;
+				menu[MENU_VALS].add_id = menu[MENU_PARAMS].add_id;
+				menu[MENU_VALS].selected_str = menu[MENU_PARAMS].selected_str;
+				menu[MENU_VALS].selected_label = menu[MENU_PARAMS].selected_label;
+				menu_level = MENU_PARAMS;
+			}
+
+			menu_is_scrolling = 1;
+		}
+
+		if(! gui.is_tracking && menu_is_scrolling)
+		{
+			menu_is_scrolling = 0;
+			gui.vector_move_y = 0;
+			gui.vector_move_x = 0;
 		}
 
 		if (! encoder2.press_done || menu_label_touched)
@@ -878,7 +925,7 @@ void button1_handler(void);
 					gui_edit_menu_item(menu[MENU_PARAMS].menu_block[menu[MENU_PARAMS].selected_str].index, encoder2.rotate));
 		}
 
-		if ((menu_label_touched || encoder2.rotate != 0) || menu_level != MENU_VALS)
+		if ((menu_label_touched || menu_is_scrolling || encoder2.rotate != 0) && menu_level != MENU_VALS)
 		{
 			encoder2.rotate_done = 1;
 
@@ -934,7 +981,7 @@ void button1_handler(void);
 				labels[menu[MENU_VALS].first_id + i].state = CANCELLED;
 			}
 			menu_label_touched = 0;
-//			PRINTF("%d %s %d\n", menu[menu_level].selected_str, menu[menu_level].menu_block[menu[menu_level].selected_str].name, menu[menu_level].add_id);
+			PRINTF("%d %s %d\n", menu[menu_level].selected_str, menu[menu_level].menu_block[menu[menu_level].selected_str].name, menu[menu_level].selected_label);
 		}
 		if (menu_level != MENU_VALS)
 			display_colorbuff_string_tbg(colorpip, gui.pip_width, gui.pip_height, labels[menu[menu_level].selected_label + menu[menu_level].first_id].x - 16,
@@ -1356,7 +1403,7 @@ void button1_handler(void);
 				gui.last_pressed_y = ty - gui.pip_y;
 				gui.is_touching_screen = 1;
 				update_touch_list();
-				debug_printf_P(PSTR("pip x: %d, pip y: %d\n"), gui.last_pressed_x, gui.last_pressed_y);
+//				debug_printf_P(PSTR("pip x: %d, pip y: %d\n"), gui.last_pressed_x, gui.last_pressed_y);
 			}
 			gui.fix = 1;
 		}
@@ -1405,7 +1452,7 @@ void button1_handler(void);
 				if (gui.vector_move_x != 0 || gui.vector_move_y != 0)
 				{
 					gui.is_tracking = 1;
-					debug_printf_P(PSTR("move x: %d, move y: %d\n"), gui.vector_move_x, gui.vector_move_y);
+//					debug_printf_P(PSTR("move x: %d, move y: %d\n"), gui.vector_move_x, gui.vector_move_y);
 				}
 				x_old = gui.last_pressed_x;
 				y_old = gui.last_pressed_y;
