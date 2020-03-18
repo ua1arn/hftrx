@@ -7744,7 +7744,7 @@ stm32f4xx_pllsai_initialize(void)
 	}
 
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround_saifreq(LTDC_DOTCLK), STM32F_LTDC_DIV_WIDTH, STM32F_LTDC_DIV_TAPS, & value, 0);
+	const uint_fast8_t prei = calcdivider(calcdivround_saifreq(display_getdotclock()), STM32F_LTDC_DIV_WIDTH, STM32F_LTDC_DIV_TAPS, & value, 0);
 	ASSERT(value >= 2);
 	debug_printf_P(PSTR("stm32f4xx_pllsai_initialize: value=%u, prei=%u\n"), value, prei);
 	// Настройка PLLSAI
@@ -7778,7 +7778,7 @@ void hardware_set_dotclock(unsigned long dotfreq)
 	}
 
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround_saifreq(LTDC_DOTCLK), STM32F_LTDC_DIV_WIDTH, STM32F_LTDC_DIV_TAPS, & value, 0);
+	const uint_fast8_t prei = calcdivider(calcdivround_saifreq(display_getdotclock()), STM32F_LTDC_DIV_WIDTH, STM32F_LTDC_DIV_TAPS, & value, 0);
 	ASSERT(value >= 2);
 	// Настройка PLLSAI
 	// Частота сравнения та же самая, что и в основной PLL
@@ -7974,7 +7974,7 @@ stm32f7xx_pllsai_initialize(void)
 #if defined (RCC_PLLSAICFGR_PLLSAIR)
 
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround_saifreq(LTDC_DOTCLK), STM32F_LTDC_DIV_WIDTH, STM32F_LTDC_DIV_TAPS, & value, 0);
+	const uint_fast8_t prei = calcdivider(calcdivround_saifreq(display_getdotclock()), STM32F_LTDC_DIV_WIDTH, STM32F_LTDC_DIV_TAPS, & value, 0);
 	ASSERT(value >= 2);
 	debug_printf_P(PSTR("stm32f7xx_pllsai_initialize: value=%u, prei=%u\n"), value, prei);
 
@@ -8017,7 +8017,7 @@ void hardware_set_dotclock(unsigned long dotfreq)
 	}
 
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround_saifreq(LTDC_DOTCLK), STM32F_LTDC_DIV_WIDTH, STM32F_LTDC_DIV_TAPS, & value, 0);
+	const uint_fast8_t prei = calcdivider(calcdivround_saifreq(display_getdotclock()), STM32F_LTDC_DIV_WIDTH, STM32F_LTDC_DIV_TAPS, & value, 0);
 	ASSERT(value >= 2);
 	debug_printf_P(PSTR("stm32f7xx_pllsai_initialize: value=%u, prei=%u\n"), value, prei);
 }
@@ -8206,13 +8206,13 @@ stm32h7xx_pll_initialize(void)
 	#error WITHUSEPLL3 should be defined if LCDMODE_LTDC used.
 #endif /* LCDMODE_LTDC && ! WITHUSEPLL3 */
 
-#if WITHUSEPLL3 && defined (LTDC_DOTCLK)
+#if WITHUSEPLL3
 
 	RCC->PLLCKSELR = (RCC->PLLCKSELR & ~ RCC_PLLCKSELR_DIVM3) | 
 		((REF3_DIV << RCC_PLLCKSELR_DIVM3_Pos) & RCC_PLLCKSELR_DIVM3) |	// Reference divider - не требуется корректировань число
 		0;
 	// 
-	const uint32_t ltdc_divr = calcdivround2(PLL3_FREQ, LTDC_DOTCLK);
+	const uint32_t ltdc_divr = calcdivround2(PLL3_FREQ, display_getdotclock());
 	RCC->PLL3DIVR = (RCC->PLL3DIVR & ~ (RCC_PLL3DIVR_N3 | RCC_PLL3DIVR_R3)) |
 		(((REF3_MUL - 1) << RCC_PLL3DIVR_N3_Pos) & RCC_PLL3DIVR_N3) |
 		(((ltdc_divr - 1) << RCC_PLL3DIVR_R3_Pos) & RCC_PLL3DIVR_R3) |	// нужно для нормального переключения SPI clock USB clock
@@ -8233,7 +8233,7 @@ stm32h7xx_pll_initialize(void)
 	while ((RCC->CR & RCC_CR_PLL3RDY) == 0)	// пока заработает PLL
 		;
 
-#endif /* WITHUSEPLL3 && defined (LTDC_DOTCLK) */
+#endif /* WITHUSEPLL3 */
 
 	const portholder_t flash_acr_latency = HARDWARE_FLASH_LATENCY; // Задержка для работы с памятью 5 WS for 168 MHz at 3.3 volt
 	/* Блок настройки ФЛЭШ */
@@ -8345,7 +8345,7 @@ static void stm32h7xx_pllsai_initialize(void)
 	}
 
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround_saifreq(LTDC_DOTCLK), STM32F_LTDC_DIV_WIDTH, STM32F_LTDC_DIV_TAPS, & value, 0);
+	const uint_fast8_t prei = calcdivider(calcdivround_saifreq(display_getdotclock()), STM32F_LTDC_DIV_WIDTH, STM32F_LTDC_DIV_TAPS, & value, 0);
 	ASSERT(value >= 2);
 	debug_printf_P(PSTR("stm32h7xx_pllsai_initialize: value=%u, prei=%u\n"), value, prei);
 
@@ -9815,7 +9815,7 @@ void stm32mp1_pll_initialize(void)
 		((PLL4DIVM - 1) << RCC_PLL4CFGR1_DIVM4_Pos) |
 		0;
 
-	//const uint32_t pll4divq = calcdivround2(PLL4_FREQ, LTDC_DOTCLK);
+	//const uint32_t pll4divq = calcdivround2(PLL4_FREQ, display_getdotclock());
 	RCC->PLL4CFGR2 = (RCC->PLL4CFGR2 & ~ (RCC_PLL4CFGR2_DIVP_Msk | /* RCC_PLL4CFGR2_DIVQ_Msk | */ RCC_PLL4CFGR2_DIVR_Msk)) |
 		((PLL4DIVP - 1) << RCC_PLL4CFGR2_DIVP_Pos) |	// pll4_p_ck - xxxxx (1..128 -> 0x00..0x7f)
 		//((pll4divq - 1) << RCC_PLL4CFGR2_DIVQ_Pos) |	// LTDC clock (1..128 -> 0x00..0x7f)

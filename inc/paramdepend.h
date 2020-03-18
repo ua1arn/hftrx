@@ -1093,7 +1093,6 @@ extern "C" {
 	#define DIM_Y 272
 	#define LCDMODE_COLORED	1
 	#define LCDMODE_HORFILL	1
-	#define LTDC_DOTCLK	9000000uL	// частота пикселей при работе с интерфейсом RGB
 #endif /* LCDMODE_S1D13781 */
 
 #if LCDMODE_AT070TN90	/* AT070TN90 panel (800*480) - 7" display */
@@ -1102,7 +1101,6 @@ extern "C" {
 	#define DIM_Y 480
 	#define LCDMODE_COLORED	1
 	#define LCDMODE_HORFILL	1
-	#define LTDC_DOTCLK	30000000uL	// частота пикселей при работе с интерфейсом RGB
 #endif /* LCDMODE_AT070TN90 */
 
 #if LCDMODE_AT070TNA2	/* AT070TNA2 panel (1024*600) - 7" display */
@@ -1111,7 +1109,6 @@ extern "C" {
 	#define DIM_Y 600
 	#define LCDMODE_COLORED	1
 	#define LCDMODE_HORFILL	1
-	#define LTDC_DOTCLK	51200000uL	// частота пикселей при работе с интерфейсом RGB 40.8..67.2
 #endif /* LCDMODE_AT070TNA2 */
 
 #if LCDMODE_S1D13781		/* PSP-1000 with S1D113780 */
@@ -1229,7 +1226,6 @@ extern "C" {
 	#define DIM_X 320
 	#define DIM_Y 240
 	#define LCDMODE_COLORED	1
-	#define LTDC_DOTCLK	3000000uL	// частота пикселей при работе с интерфейсом RGB
 	#define LCDMODE_RGB565 1
 #endif
 
@@ -1240,7 +1236,6 @@ extern "C" {
 	#define DIM_Y 240
 	#define LCDMODE_COLORED	1
 	#define LCDMODE_HORFILL	1
-	#define LTDC_DOTCLK	24000000uL	// частота пикселей при работе с интерфейсом RGB (в результате оказалось 7.2 МГц)
 #endif
 
 #if LCDMODE_ILI9163			/* этот контроллер обслуживается в основном совпадающим с ST7735 кодом */
@@ -1419,7 +1414,6 @@ extern "C" {
 	#define DIM_Y 272
 	#define LCDMODE_COLORED	1
 	#define LCDMODE_HORFILL	1
-	#define LTDC_DOTCLK	9000000uL	// частота пикселей при работе с интерфейсом RGB
 
 	#define HALFCOUNT_FREQA 1
 	#define HALFCOUNT_SMALL 1

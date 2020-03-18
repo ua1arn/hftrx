@@ -26,7 +26,6 @@
 	#define WITHUSEPLL4		1	/* PLL4 - для LTDC & USBPHY	*/
 	//#define WITHUSESAIPLL	1	/* SAI PLL	*/
 	//#define WITHUSESAII2S	1	/* I2S PLL	*/
-	//#define LTDC_DOTCLK	9000000UL	// частота пикселей при работе с интерфейсом RGB
 
 	// Варианты конфигурации тактирования
 	// ref1_ck, ref2_ck - 8..16 MHz

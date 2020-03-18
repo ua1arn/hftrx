@@ -855,4 +855,6 @@ void hardware_set_dotclock(unsigned long dotfreq);
 
 #define AUDIORECBUFFSIZE16 (16384)	// размер данных должен быть не меньше размера кластера на SD карте
 
+uint_fast32_t display_getdotclock(void);
+
 #endif // HARDWARE_H_INCLUDED
