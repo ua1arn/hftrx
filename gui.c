@@ -16,9 +16,45 @@
 #include <math.h>
 #include "gui.h"
 
-#include "./display/fonts/S1D13781_font_small3_LTDC.h"
-#include "./display/fonts/S1D13781_font_small2_LTDC.h"
-#include "./display/fonts/S1D13781_font_small_LTDC.h"
+
+#if LCDMODE_LTDC
+
+#if DSTYLE_G_X320_Y240
+	// в знакогенераторе изображения символов "по вертикалти"
+	// Для дисплеев 320 * 240
+	#include "./display/fonts/ILI9341_font_small.h"
+	#include "./display/fonts/ILI9341_font_half.h"
+	#include "./display/fonts/ILI9341_font_big.h"
+
+	#define	ls020_smallfont	ILI9341_smallfont
+	#define	ls020_halffont	ILI9341_halffont
+	#define	ls020_bigfont	ILI9341_bigfont
+
+#elif DSTYLE_G_X480_Y272
+	// в знакогенераторе изображения символов "по горизонтали"
+	#include "./display/fonts/S1D13781_font_small3_LTDC.h"
+	#include "./display/fonts/S1D13781_font_small2_LTDC.h"
+	#include "./display/fonts/S1D13781_font_small_LTDC.h"
+	#include "./display/fonts/S1D13781_font_half_LTDC.h"
+	#include "./display/fonts/S1D13781_font_big_LTDC.h"
+
+#elif DSTYLE_G_X800_Y480
+	// в знакогенераторе изображения символов "по горизонтали"
+	#include "./display/fonts/S1D13781_font_small3_LTDC.h"
+	#include "./display/fonts/S1D13781_font_small2_LTDC.h"
+	#include "./display/fonts/S1D13781_font_small_LTDC.h"
+	#include "./fonts/S1D13781_font_half_LTDC.h"
+	#include "./display/fonts/S1D13781_font_big_LTDC.h"
+
+#else /*  */
+	// в знакогенераторе изображения символов "по вертикалти"
+	//#error Undefined display layout
+
+	#include "./display/fonts/ls020_font_small.h"
+	#include "./display/fonts/ls020_font_half.h"
+	#include "./display/fonts/ls020_font_big.h"
+#endif /* DSTYLE_G_X320_Y240 */
+
 
 void display_radius(int xc, int yc, unsigned gs, unsigned r1, unsigned r2, COLOR_T color);
 void display_segm(int xc, int yc, unsigned gs, unsigned ge, unsigned r, int step, COLOR_T color);
@@ -1488,3 +1524,5 @@ void button1_handler(void);
 		}
 	}
 #endif /* WITHTOUCHGUI */
+
+#endif /* LCDMODE_LTDC */
