@@ -141,7 +141,7 @@ rgb565_fb(void)
 		DENEG = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
 		BOARD_DEMODE = 0		/* 0: static signal, 1: DE controlled */
 	};
-#define LTDC_DOTCLK	51200000uL	// частота пикселей при работе с интерфейсом RGB 40.8..67.2
+	#define LTDC_DOTCLK	51200000uL	// частота пикселей при работе с интерфейсом RGB 40.8..67.2
 
 #elif LCDMODE_ILI8961
 	// HHT270C-8961-6A6 (320*240)
@@ -1754,7 +1754,7 @@ arm_hardware_ltdc_initialize(void)
 
 	/* Initialize the LCD */
 
-	hardware_set_dotclock(LTDC_DOTCLK);
+	hardware_set_dotclock(display_getdotclock());
 
 #if CPUSTYLE_STM32H7XX
 	/* Enable the LTDC Clock */
