@@ -25,34 +25,8 @@
 // LCDMODE_ST7781 - 320*240
 
 #include "ili9225.h"
-
-#if DSTYLE_G_X320_Y240
-	// 320 * 240
-
-	// Для дисплеев 320 * 240
-
-	#include "./fonts/ILI9341_font_small.h"
-	#include "./fonts/ILI9341_font_half.h"
-	#include "./fonts/ILI9341_font_big.h"
-
-	#define	ls020_smallfont	ILI9341_smallfont
-	#define	ILI9225_halffont	ILI9341_halffont
-	#define	ILI9225_bigfont		ILI9341_bigfont
-
-#elif DSTYLE_G_X220_Y176
-	// Индикатор 220*176 SF-TC220H-9223A-N_IC_ILI9225C_2011-01-15 с контроллером ILI9225С
-
-	//#include "./fonts/ILI9225_font_small.c"
-	#include "./fonts/ls020_font_small.c"
-	#include "./fonts/ILI9225_font_half.c"
-	#include "./fonts/ILI9225_font_big.c"
-
-#else /*  */
-	#error Undefined display layout
-	#include "./fonts/ls020_font_small.c"
-	#include "./fonts/ILI9225_font_half.c"
-	#include "./fonts/ILI9225_font_big.c"
-#endif /*  */
+/* растровые шрифты */
+#include "fontmaps.h"
 
 #define ILI9225_CMND() do { board_lcd_rs(0); } while (0)	/* RS: Low: command */
 #define ILI9225_DATA() do { board_lcd_rs(1); } while (0)	/* RS: High: data */

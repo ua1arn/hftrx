@@ -21,16 +21,8 @@
 
 #include "uc1601s.h"
 
-
 /* растровые шрифты */
-#include "./fonts/uc1601s_font_small.h"
-#if FONTSTYLE_ITALIC
-	#include "./fonts/uc1601s_ifont_half.h"
-	#include "./fonts/uc1601s_ifont_big.h"
-#else /* FONTSTYLE_ITALIC */
-	#include "./fonts/uc1601s_font_half.h"
-	#include "./fonts/uc1601s_font_big.h"
-#endif /* FONTSTYLE_ITALIC */
+#include "fontmaps.h"
 
 
 #define LCD_ADDR_W 0x70	// destination address
