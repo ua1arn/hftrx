@@ -59,11 +59,34 @@
 		#include "./fonts/uc1608_sphm_font_big.h"
 	#endif
 
-#elif DSTYLE_G_X220_Y176
+#elif LCDMODE_ST7735 || LCDMODE_ILI9163 || LCDMODE_ILI9341
+
+	#if DSTYLE_G_X320_Y240
+		// LCDMODE_ILI9341
+
+		// Для дисплеев 320 * 240
+		#include "./fonts/ILI9341_font_small.h"
+		#include "./fonts/ILI9341_font_half.h"
+		#include "./fonts/ILI9341_font_big.h"
+
+		#define    ls020_smallfont    ILI9341_smallfont
+		#define    ls020_halffont    ILI9341_halffont
+		#define    ls020_bigfont    ILI9341_bigfont
+
+
+	#else /* DSTYLE_G_X320_Y240 */
+		// LCDMODE_ST7735 - 160 * 128
+		// LCDMODE_ILI9163 - 176 * 132
+
+		#include "./fonts/ls020_font_small.h"
+		#include "./fonts/ls020_font_half.h"
+		#include "./fonts/ls020_font_big.h"
+
+	#endif /* DSTYLE_G_X320_Y240 */
+#elif DSTYLE_G_X220_Y176 || DSTYLE_G_X160_Y128
 	// Индикатор 220*176 SF-TC220H-9223A-N_IC_ILI9225C_2011-01-15 с контроллером ILI9225С
 
-	//#include "./fonts/ILI9225_font_small.c"
-	#include "./fonts/ls020_font_small.c"
+	#include "./fonts/ILI9225_font_small.c"
 	#include "./fonts/ILI9225_font_half.c"
 	#include "./fonts/ILI9225_font_big.c"
 
