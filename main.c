@@ -7101,6 +7101,8 @@ getactualpower(void)
 #elif WITHPOWERLPHP
 	/* установить выходную мощность передатчика WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
 	return ? pwrmodes [gpwratunei].code : pwrmodes [gpwri].code);
+#else
+	return WITHPOWERTRIMMAX;
 #endif /* WITHPOWERLPHP */
 }
 
