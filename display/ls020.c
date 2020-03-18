@@ -17,15 +17,13 @@
 #include "display.h"
 #include <stdint.h>
 
-#include "../inc/spi.h"
+#include "spi.h"
 
 #if LCDMODE_LS020
 
 #include "ls020.h"
-
-#include "./fonts/ls020_font_small.h"
-#include "./fonts/ls020_font_half.h"
-#include "./fonts/ls020_font_big.h"
+/* растровые шрифты */
+#include "fontmaps.h"
 
 #define LS020_SPIMODE SPIC_MODE3
 

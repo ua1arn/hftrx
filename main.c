@@ -3700,7 +3700,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 	static uint_fast8_t gamdepth = 30;		/* Глубина модуляции в АМ - 0..100% */
 
 	/*  Использование амплитуды сигнала с ЦАП передатчика - 0..100% */
-	static uint_fast8_t gdacscale = 64;	/* настраивается под прегруз драйвера. */
+	static uint_fast8_t gdacscale = 72;	/* настраивается под прегруз драйвера. */
 #endif /* WITHTX */
 
 
@@ -3751,7 +3751,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 		(- 230) + FSADCPOWEROFFSET10,	// с конвертором
 	};
 #endif /* CTLSTYLE_OLEG4Z_V1 */
-	static uint_fast8_t gmoniflag = 1;		/* разрешение самопрослушивания */
+	static uint_fast8_t gmoniflag;		/* разрешение самопрослушивания */
 
 	static uint_fast8_t gvad605 = 180; //UINT8_MAX;	/* напряжение на AD605 (управление усилением тракта ПЧ */
 	#if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */
@@ -12360,6 +12360,10 @@ processmessages(uint_fast8_t * kbch, uint_fast8_t * kbready, uint_fast8_t inmenu
 		}
 		break;
 
+	case MSGT_UPDATEBOARD:
+		updateboard(buff [0], buff [1]);
+		break;
+
 	default:
 		break;
 	}
@@ -12454,22 +12458,26 @@ display_menu_digit(
 	{
 		const uint_fast8_t iwidth = width & WWIDTHFLAG;	// ширина поля
 		const uint_fast32_t ca = ipow10(comma);
-		if (ca == 1)
-		{
-			local_snprintf_P(menuw, sizeof menuw / sizeof menuw[0], PSTR("%ld"), value);
-		}
-		else if (value < 0)
-		{
-			ldiv_t d;
-			d = ldiv(- value, ca);
-			local_snprintf_P(menuw, sizeof menuw / sizeof menuw[0], PSTR("-%ld.%0#ld"), d.quot, (int) ca, d.rem);
-		}
-		else
-		{
-			ldiv_t d;
-			d = ldiv(value, ca);
-			local_snprintf_P(menuw, sizeof menuw / sizeof menuw[0], PSTR("%ld.%0#ld"), d.quot, (int) ca, d.rem);
-		}
+
+		ca == 1 ? local_snprintf_P(menuw, sizeof menuw / sizeof menuw[0], "%d", value) : value < 0 ? local_snprintf_P(menuw, sizeof menuw / sizeof menuw[0], "-%d.%d",
+				abs(value) / ca, abs(value) % ca) : local_snprintf_P(menuw, sizeof menuw / sizeof menuw[0], "%d.%d", value / ca, value % ca);
+
+//		if (ca == 1)
+//		{
+//			local_snprintf_P(menuw, sizeof menuw / sizeof menuw[0], PSTR("%ld"), value);
+//		}
+//		else if (value < 0)
+//		{
+//			ldiv_t d;
+//			d = ldiv(- value, ca);
+//			local_snprintf_P(menuw, sizeof menuw / sizeof menuw[0], PSTR("-%ld.%0#ld"), d.quot, (int) ca, d.rem);
+//		}
+//		else
+//		{
+//			ldiv_t d;
+//			d = ldiv(value, ca);
+//			local_snprintf_P(menuw, sizeof menuw / sizeof menuw[0], PSTR("%ld.%0#ld"), d.quot, (int) ca, d.rem);
+//		}
 		return;
 	}
 #endif /* WITHTOUCHGUI */
@@ -16797,6 +16805,14 @@ processkeyboard(uint_fast8_t kbch)
 	if (process_key_menuset_common(kbch))
 			return 1;	/* клавиша уже обработана */
 	return 0;	// не требуется обновления индикатора
+}
+
+#else /* WITHKEYBOARD */
+
+static uint_fast8_t
+processkeyboard(uint_fast8_t kbch)
+{
+	return 0;
 }
 
 #endif /* WITHKEYBOARD */

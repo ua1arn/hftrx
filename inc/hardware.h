@@ -787,6 +787,7 @@ enum messagetypes
 {
 	MSGT_EMPTY,
 	MSGT_1SEC,
+	MSGT_UPDATEBOARD,	// updateboard(full, mute): buff [0]: full, buff [1]: mute
 	MSGT_KEYB,	// 1 byte - key code
 	MSGT_CAT,	// 12 bytes as parameter
 	//
@@ -853,5 +854,7 @@ void hardware_set_dotclock(unsigned long dotfreq);
 
 
 #define AUDIORECBUFFSIZE16 (16384)	// размер данных должен быть не меньше размера кластера на SD карте
+
+uint_fast32_t display_getdotclock(void);
 
 #endif // HARDWARE_H_INCLUDED

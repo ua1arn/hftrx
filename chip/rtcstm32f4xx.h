@@ -214,7 +214,7 @@ static uint_fast8_t board_rtc_get_inits(void)
 #if CPUSTYLE_STM32MP1
 	//	0: Calendar has not been initialized
 	//	1: Calendar has been initialized
-	const uint_fast8_t inits = (RTC->ICSR & RTC_ISR_INITS) == 0;	// if year is zero
+	const uint_fast8_t inits = (RTC->ICSR & RTC_ICSR_INITS) == 0;	// if year is zero
 	return inits;
 
 #else /* CPUSTYLE_STM32MP1 */
@@ -230,14 +230,14 @@ static void board_rtc_initmode(uint_fast8_t on)
 	if (on != 0)
 	{
 		/* INIT mode ON */
-		RTC->ICSR |= RTC_ISR_INIT;
-		while ((RTC->ICSR & RTC_ISR_INITF) == 0)
+		RTC->ICSR |= RTC_ICSR_INIT;
+		while ((RTC->ICSR & RTC_ICSR_INITF) == 0)
 			;
 	}
 	else
 	{
 		// INIT mode OFF
-		RTC->ICSR &= ~ RTC_ISR_INIT;
+		RTC->ICSR &= ~ RTC_ICSR_INIT;
 	}
 
 #else /* CPUSTYLE_STM32MP1 */

@@ -66,6 +66,7 @@ rgb565_fb(void)
 	/* SONY PSP-1000 display (4.3") required. */
 	/* Используется при BOARD_DEMODE = 0 */
 	#define BOARD_DERESET 1		/* требуется формирование сигнала RESET для панели по этому выводу после начала формирования синхронизации */
+	#define LTDC_DOTCLK	9000000uL	// частота пикселей при работе с интерфейсом RGB
 
 #elif LCDMODE_AT070TN90
 
@@ -102,6 +103,7 @@ rgb565_fb(void)
 		DENEG = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
 		BOARD_DEMODE = 0		/* 0: static signal, 1: DE controlled */
 	};
+	#define LTDC_DOTCLK	30000000uL	// частота пикселей при работе с интерфейсом RGB
 
 #elif LCDMODE_AT070TNA2
 
@@ -139,6 +141,7 @@ rgb565_fb(void)
 		DENEG = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
 		BOARD_DEMODE = 0		/* 0: static signal, 1: DE controlled */
 	};
+	#define LTDC_DOTCLK	51200000uL	// частота пикселей при работе с интерфейсом RGB 40.8..67.2
 
 #elif LCDMODE_ILI8961
 	// HHT270C-8961-6A6 (320*240)
@@ -170,6 +173,8 @@ rgb565_fb(void)
 		DENEG = 0,				/* DE polarity: (normal: DE is 0 while sync) */
 		BOARD_DEMODE = 0		/* 0: static signal, 1: DE controlled */
 	};
+	#define LTDC_DOTCLK	24000000uL	// частота пикселей при работе с интерфейсом RGB
+
 #elif LCDMODE_ILI9341
 	// SF-TC240T-9370-T (320*240)
 	enum
@@ -201,8 +206,12 @@ rgb565_fb(void)
 		DENEG = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
 		BOARD_DEMODE = 0		/* 0: static signal, 1: DE controlled */
 	};
+	#define LTDC_DOTCLK	3000000uL	// частота пикселей при работе с интерфейсом RGB
+
 #else
 	#error Unsupported LCDMODE_xxx
+	#define LTDC_DOTCLK	3000000uL	// частота пикселей при работе с интерфейсом RGB
+
 #endif
 
 #if CPUSTYLE_R7S721
@@ -301,7 +310,7 @@ static void vdc5fb_init_syscnt(struct st_vdc5 * vdc)
 	// I/O Clock Frequency (MHz) = 60 MHz
 	SETREG32_CK(& vdc->SYSCNT_PANEL_CLK, 1, 8, 0);	/* PANEL_ICKEN */
 	SETREG32_CK(& vdc->SYSCNT_PANEL_CLK, 2, 12, 0x03);	/* Divided Clock Source Select: 3: Peripheral clock 1 */
-	SETREG32_CK(& vdc->SYSCNT_PANEL_CLK, 6, 0, calcdivround2(P1CLOCK_FREQ, LTDC_DOTCLK));	/* Clock Frequency Division Ratio Note: Settings other than those in Table 35.5 are prohibited. */
+	SETREG32_CK(& vdc->SYSCNT_PANEL_CLK, 6, 0, calcdivround2(P1CLOCK_FREQ, display_getdotclock()));	/* Clock Frequency Division Ratio Note: Settings other than those in Table 35.5 are prohibited. */
 	SETREG32_CK(& vdc->SYSCNT_PANEL_CLK, 1, 8, 1);	/* PANEL_ICKEN */
 
 }
@@ -1745,7 +1754,7 @@ arm_hardware_ltdc_initialize(void)
 
 	/* Initialize the LCD */
 
-	hardware_set_dotclock(LTDC_DOTCLK);
+	hardware_set_dotclock(display_getdotclock());
 
 #if CPUSTYLE_STM32H7XX
 	/* Enable the LTDC Clock */
@@ -1760,6 +1769,7 @@ arm_hardware_ltdc_initialize(void)
 	/*
 	 * Interconnect update : select master using the port 1.
 	 * LTDC = AXI_M9.
+	 * MDMA = AXI_M7.
 	 */
 	SYSCFG->ICNR |= SYSCFG_ICNR_AXI_M9;
 	(void) SYSCFG->ICNR;
@@ -1931,5 +1941,17 @@ void arm_hardware_ltdc_pip_off(void)	// set PIP framebuffer address
 #endif /* LCDMODE_LTDC_PIP16 */
 
 #endif /* CPUSTYLE_STM32F */
+
+uint_fast32_t display_getdotclock(void)
+{
+	return LTDC_DOTCLK;
+}
+
+#else /* WITHLTDCHW */
+
+uint_fast32_t display_getdotclock(void)
+{
+	return 1000000uL;
+}
 
 #endif /* WITHLTDCHW */

@@ -24,7 +24,6 @@
 	#define WITHUSEPLL3		1	/* PLL3 - для LTDC на STM32H743xx	*/
 	//#define WITHUSESAIPLL	1	/* SAI PLL	*/
 	//#define WITHUSESAII2S	1	/* I2S PLL	*/
-	//#define LTDC_DOTCLK	9000000UL	// частота пикселей при работе с интерфейсом RGB
 
 	#if 1
 		// при наличии внешнего кварцевого резонатора

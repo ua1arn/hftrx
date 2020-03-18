@@ -29,23 +29,31 @@
 #define DMA2D_AMTCR_DT_ENABLE 1	/* 0..1 */
 
 #define MDMA_CH	MDMA_Channel0
-#define MDMA_CTCR_xSIZE_RGB565	0x01	// 2 byte
 #define MDMA_CCR_PL_VALUE 0	// PL: prioruty 0..3: min..max
 
 #if LCDMODE_LTDC_L24
 	#define DMA2D_FGPFCCR_CM_VALUE_MAIN	(1 * DMA2D_FGPFCCR_CM_0)	/* 0001: RGB888 */
 	//#define DMA2D_OPFCCR_CM_VALUE	(1 * DMA2D_OPFCCR_CM_0)	/* 001: RGB888 */
+
 #elif LCDMODE_LTDC_L8
 	#define DMA2D_FGPFCCR_CM_VALUE_MAIN	(5 * DMA2D_FGPFCCR_CM_0)	/* 0101: L8 */
 	#define MDMA_CTCR_xSIZE_MAIN			0x00	// 1 byte
-	#define MDMA_CTCR_xSIZE_U8				0x00	// 1 byte
 	////#define DMA2D_OPFCCR_CM_VALUE	(x * DMA2D_OPFCCR_CM_0)	/* not supported */
+
 #else /* LCDMODE_LTDC_L8 */
 	#define DMA2D_FGPFCCR_CM_VALUE_MAIN	(2 * DMA2D_FGPFCCR_CM_0)	/* 0010: RGB565 */
 	//#define DMA2D_OPFCCR_CM_VALUE	(2 * DMA2D_OPFCCR_CM_0)	/* 010: RGB565 */
 	#define MDMA_CTCR_xSIZE_MAIN			0x01	// 2 byte
-	#define MDMA_CTCR_xSIZE_U16			0x01	// 2 byte
+
 #endif /* LCDMODE_LTDC_L8 */
+
+#define DMA2D_FGPFCCR_CM_VALUE_L24	(1 * DMA2D_FGPFCCR_CM_0)	/* 0001: RGB888 */
+#define DMA2D_FGPFCCR_CM_VALUE_L16	(2 * DMA2D_FGPFCCR_CM_0)	/* 0010: RGB565 */
+#define DMA2D_FGPFCCR_CM_VALUE_L8	(5 * DMA2D_FGPFCCR_CM_0)	/* 0101: L8 */
+
+#define MDMA_CTCR_xSIZE_U16			0x01	// 2 byte
+#define MDMA_CTCR_xSIZE_U8			0x00	// 1 byte
+#define MDMA_CTCR_xSIZE_RGB565		0x01	// 2 byte
 
 static void
 ltdc_horizontal_pixels(
@@ -432,6 +440,17 @@ void arm_hardware_mdma_initialize(void)
 	//RCC->MP_TZAHB6ENSETR |= RCC_MP_TZAHB6ENSETR_MDMAEN;
 	//(void) RCC->MP_TZAHB6ENSETR;
 
+	/* SYSCFG clock enable */
+	RCC->MP_APB3ENSETR = RCC_MC_APB3ENSETR_SYSCFGEN;
+	(void) RCC->MP_APB3ENSETR;
+	/*
+	 * Interconnect update : select master using the port 1.
+	 * LTDC = AXI_M9.
+	 * MDMA = AXI_M7.
+	 */
+	//SYSCFG->ICNR |= SYSCFG_ICNR_AXI_M7;
+	//(void) SYSCFG->ICNR;
+
 #elif CPUSTYLE_STM32H7XX
 	/* Enable the DMA2D Clock */
 	RCC->AHB3ENR |= RCC_AHB3ENR_MDMAEN_Msk;	/* MDMA clock enable */
@@ -633,34 +652,39 @@ void display_showbuffer(
 
 
 static uint_fast8_t scalecolor(
-		uint_fast8_t cv,	// color component value
-		uint_fast8_t maxv,	// maximal color component value
-		uint_fast8_t rmaxv	// resulting color component value
-		)
+	uint_fast8_t cv,	// color component value
+	uint_fast8_t maxv,	// maximal color component value
+	uint_fast8_t rmaxv	// resulting color component value
+	)
 {
 	return (cv * rmaxv) / maxv;
 }
 
 // FIXME: доелать модификацию цвета для LCDMODE_LTDC_L8
 static COLORPIP_T getshadedcolor(
-		COLORPIP_T dot, // исходный цвет
-		uint_fast8_t alpha	// на сколько затемнять цвета (0 - чёрный, 255 - без изменений)
-		)
+	COLORPIP_T dot, // исходный цвет
+	uint_fast8_t alpha	// на сколько затемнять цвета (0 - чёрный, 255 - без изменений)
+	)
 {
 #if LCDMODE_LTDC_PIPL8
 	return dot ^ 0x80;	// FIXME: use indexed color
 
 #elif LCDMODE_LTDC_PIP16
 	if (dot == COLORPIP_BLACK)
-		return TFTRGB565(alpha, alpha, alpha); // back gray
-	else // RRRR.RGGG.GGGB.BBBB
 	{
-		const uint_fast8_t r = scalecolor((dot >> 11)  & 0x001f, 31, alpha);
-		const uint_fast8_t g = scalecolor((dot >> 5) & 0x003f, 63, alpha);
-		const uint_fast8_t b = scalecolor(dot & 0x001f, 31, alpha);
-
-		return (r << 11) | (g << 5) | b; //TFTRGB565(r, g, b);
+		return TFTRGB565(alpha, alpha, alpha); // back gray
 	}
+	else
+	{
+		// RRRR.RGGG.GGGB.BBBB
+		const uint_fast8_t r = scalecolor(((dot >> 11) & 0x001f) * 1, 31, alpha);
+		const uint_fast8_t g = scalecolor(((dot >> 5) & 0x003f) * 1, 63, alpha);
+		const uint_fast8_t b = scalecolor((dot & 0x001f) * 1, 31, alpha);
+
+		return (r << 11) | (g << 5) | b;
+		//return TFTRGB565(r * 8, g * 4, b * 8);	// TODO: test this code
+	}
+
 #else /*  */
 	#warning LCDMODE_LTDC_PIPL8 or LCDMODE_LTDC_PIP16 not defined
 	return dot;
@@ -678,6 +702,18 @@ void pip_transparency_rect(
 	uint_fast8_t alpha	// на сколько затемнять цвета (0 - чёрный, 255 - без изменений)
 	)
 {
+#if 1
+	uint_fast16_t y;
+
+	for (y = y1; y <= y2; y ++)
+	{
+		const uint_fast16_t yt = dx * y;
+		for (uint_fast16_t x = x1; x <= x2; x ++)
+		{
+			buffer [yt + x] = getshadedcolor(buffer [yt + x], alpha);
+		}
+	}
+#else
 	uint_fast16_t y;
 
 	for (y = y1; y <= y2; y ++)
@@ -688,6 +724,7 @@ void pip_transparency_rect(
 			* p = getshadedcolor(* p, alpha);
 		}
 	}
+#endif
 }
 
 
@@ -1214,28 +1251,29 @@ void display_colorbuffer_line_set(
 	int xmax = x1;
 	int ymin = y0;
 	int ymax = y1;
-   int Dx = xmax - xmin; 
-   int Dy = ymax - ymin;
-   int steep = (abs(Dy) >= abs(Dx));
-   if (steep) {
-       SWAP(xmin, ymin);
-       SWAP(xmax, ymax);
-       // recompute Dx, Dy after swap
-       Dx = xmax - xmin;
-       Dy = ymax - ymin;
-   }
-   int xstep = 1;
-   if (Dx < 0) {
-       xstep = -1;
-       Dx = -Dx;
-   }
-   int ystep = 1;
-   if (Dy < 0) {
-       ystep = -1;		
-       Dy = -Dy; 
-   }
-   int TwoDy = 2*Dy; 
-   int TwoDyTwoDx = TwoDy - 2*Dx; // 2*Dy - 2*Dx
+	int Dx = xmax - xmin;
+	int Dy = ymax - ymin;
+	int steep = (abs(Dy) >= abs(Dx));
+	if (steep) {
+	   SWAP(xmin, ymin);
+	   SWAP(xmax, ymax);
+	   // recompute Dx, Dy after swap
+	   Dx = xmax - xmin;
+	   Dy = ymax - ymin;
+	}
+	int xstep = 1;
+	if (Dx < 0) {
+	   xstep = -1;
+	   Dx = -Dx;
+	}
+	int ystep = 1;
+	if (Dy < 0) {
+	   ystep = -1;
+	   Dy = -Dy;
+	}
+
+   int TwoDy = 2 * Dy;
+   int TwoDyTwoDx = TwoDy - 2 * Dx; // 2*Dy - 2*Dx
    int E = TwoDy - Dx; //2*Dy - Dx
    int y = ymin;
    int xDraw, yDraw;
@@ -1261,34 +1299,42 @@ void display_colorbuffer_line_set(
    }
 }
 
+#undef SWAP
+
 // Нарисовать закрашенный или пустой прямоугольник
-void display_draw_rectangle_colorbuffer(
-		PACKEDCOLORPIP_T * buffer,
-		uint_fast16_t dx,
-		uint_fast16_t dy,
-		uint_fast16_t x1,
-		uint_fast16_t y1,
-		uint_fast16_t x2,
-		uint_fast16_t y2,
-		PACKEDCOLOR565_T color,
-		uint_fast8_t fill
-		)
+void display_colorbuffer_rect(
+	PACKEDCOLORPIP_T * buffer,
+	uint_fast16_t dx,	// размер буфера
+	uint_fast16_t dy,	// размер буфера
+	uint_fast16_t x1,	// начальная координата
+	uint_fast16_t y1,	// начальная координата
+	uint_fast16_t x2,	// конечная координата (включена в заполняемую облсть)
+	uint_fast16_t y2,	// конечная координата (включена в заполняемую облсть)
+	PACKEDCOLOR565_T color,
+	uint_fast8_t fill
+	)
 {
+	ASSERT(x2 > x1);
+	ASSERT(y2 > y1);
+
+	const uint_fast16_t w = x2 - x1 + 1;	// размер по горизонтали
+	const uint_fast16_t h = y2 - y1 + 1;	// размер по вертикали
+
+	if (w < 3 || h < 3)
+		return;
+
 	if (fill != 0)
 	{
-		display_colorbuffer_fillrect(buffer, dx, dy, x1, y1, x2 - x1 + 1, y2 - y1 + 1, color);
+		display_colorbuffer_fillrect(buffer, dx, dy, x1, y1, w, h, color);
 	}
 	else
 	{
-		display_colorbuffer_line_set(buffer, dx, dy, x1, y1, x2, y1, color);
-		display_colorbuffer_line_set(buffer, dx, dy, x1, y1, x1, y2, color);
-		display_colorbuffer_line_set(buffer, dx, dy, x1, y2, x2, y2, color);
-		display_colorbuffer_line_set(buffer, dx, dy, x2, y1, x2, y2, color);
+		display_colorbuffer_fillrect(buffer, dx, dy, x1, y1, w, 1, color);	// верхняя горизонталь
+		display_colorbuffer_fillrect(buffer, dx, dy, x1, y2, w, 1, color);	// нижняя горизонталь
+		display_colorbuffer_fillrect(buffer, dx, dy, x1, y1 + 1, 1, h - 2, color);	// левая вертикаль
+		display_colorbuffer_fillrect(buffer, dx, dy, x2, y1 + 1, 1, h - 2, color);	// правая вертикаль
 	}
 }
-
-#undef SWAP
-
 
 // погасить точку
 void display_pixelbuffer(
@@ -1511,42 +1557,7 @@ void display_hardware_initialize(void)
 
 #if LCDMODE_LTDC
 
-#if DSTYLE_G_X320_Y240
-	// в знакогенераторе изображения символов "по вертикалти"
-	// Для дисплеев 320 * 240
-	#include "./fonts/ILI9341_font_small.h"
-	#include "./fonts/ILI9341_font_half.h"
-	#include "./fonts/ILI9341_font_big.h"
-
-	#define	ls020_smallfont	ILI9341_smallfont
-	#define	ls020_halffont	ILI9341_halffont
-	#define	ls020_bigfont	ILI9341_bigfont
-
-#elif DSTYLE_G_X480_Y272
-	// в знакогенераторе изображения символов "по горизонтали"
-	#include "./fonts/S1D13781_font_small3_LTDC.h"
-	#include "./fonts/S1D13781_font_small2_LTDC.h"
-	#include "./fonts/S1D13781_font_small_LTDC.h"
-	#include "./fonts/S1D13781_font_half_LTDC.h"
-	#include "./fonts/S1D13781_font_big_LTDC.h"
-
-#elif DSTYLE_G_X800_Y480
-	// в знакогенераторе изображения символов "по горизонтали"
-	#include "./fonts/S1D13781_font_small3_LTDC.h"
-	#include "./fonts/S1D13781_font_small2_LTDC.h"
-	#include "./fonts/S1D13781_font_small_LTDC.h"
-	#include "./fonts/S1D13781_font_half_LTDC.h"
-	#include "./fonts/S1D13781_font_big_LTDC.h"
-
-#else /*  */
-	// в знакогенераторе изображения символов "по вертикалти"
-	//#error Undefined display layout
-
-	#include "./fonts/ls020_font_small.h"
-	#include "./fonts/ls020_font_half.h"
-	#include "./fonts/ls020_font_big.h"
-#endif /* DSTYLE_G_X320_Y240 */
-
+#include "fontmaps.h"
 
 #if ! LCDMODE_LTDC_L24
 #include "./byte2crun.h"
@@ -2020,6 +2031,49 @@ uint_fast16_t display_colorbuff_string3_width(
 	(void) dx;
 	(void) dy;
 	return SMALLCHARW3 * strlen(s);
+}
+
+// Возвращает ширину строки в пикселях
+uint_fast16_t display_colorbuff_string2_width(
+	PACKEDCOLORPIP_T * buffer,
+	uint_fast16_t dx,
+	uint_fast16_t dy,
+	const char * s
+	)
+{
+	(void) buffer;
+	(void) dx;
+	(void) dy;
+	return SMALLCHARW2 * strlen(s);
+}
+
+// Возвращает ширину строки в пикселях
+uint_fast16_t display_colorbuff_string_width(
+	PACKEDCOLORPIP_T * buffer,
+	uint_fast16_t dx,
+	uint_fast16_t dy,
+	const char * s
+	)
+{
+	(void) buffer;
+	(void) dx;
+	(void) dy;
+	return SMALLCHARW * strlen(s);
+}
+
+// Возвращает высоту строки в пикселях
+uint_fast16_t display_colorbuff_string_height(
+	PACKEDCOLORPIP_T * buffer,
+	uint_fast16_t dx,
+	uint_fast16_t dy,
+	const char * s
+	)
+{
+	(void) buffer;
+	(void) dx;
+	(void) dy;
+	(void) s;
+	return SMALLCHARH;
 }
 
 

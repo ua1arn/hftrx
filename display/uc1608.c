@@ -8,30 +8,18 @@
 #include "hardware.h"
 #include "board.h"
 #include "display.h"
-#include <stdint.h>
+#include "formats.h"
+#include "spi.h"
 
-#include "./display.h"
-#include "./formats.h"
-#include "../inc/spi.h"
+#include <stdint.h>
 
 #if LCDMODE_UC1608
 
 #include "uc1608.h"
 
-
 /* растровые шрифты */
+#include "fontmaps.h"
 
-#include "./fonts/uc1601s_font_small.h"	// в одну полосу- small2
-
-#if FONTSTYLE_ITALIC
-	#include "./fonts/uc1608_font_small.h"
-	#include "./fonts/uc1608_font_half.h"
-	#include "./fonts/uc1608_font_big.h"
-#else
-	#include "./fonts/uc1608_sphm_font_small.h"
-	#include "./fonts/uc1608_sphm_font_half.h"
-	#include "./fonts/uc1608_sphm_font_big.h"
-#endif
 
 
 #define UC1608_SPIMODE		SPIC_MODE3
