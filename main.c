@@ -3700,7 +3700,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 	static uint_fast8_t gamdepth = 30;		/* Глубина модуляции в АМ - 0..100% */
 
 	/*  Использование амплитуды сигнала с ЦАП передатчика - 0..100% */
-	static uint_fast8_t gdacscale = 64;	/* настраивается под прегруз драйвера. */
+	static uint_fast8_t gdacscale = 72;	/* настраивается под прегруз драйвера. */
 #endif /* WITHTX */
 
 
@@ -3751,7 +3751,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 		(- 230) + FSADCPOWEROFFSET10,	// с конвертором
 	};
 #endif /* CTLSTYLE_OLEG4Z_V1 */
-	static uint_fast8_t gmoniflag = 1;		/* разрешение самопрослушивания */
+	static uint_fast8_t gmoniflag;		/* разрешение самопрослушивания */
 
 	static uint_fast8_t gvad605 = 180; //UINT8_MAX;	/* напряжение на AD605 (управление усилением тракта ПЧ */
 	#if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */
