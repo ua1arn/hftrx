@@ -20,6 +20,7 @@
 #if LCDMODE_S1D13781
 
 #include "s1d13781.h"
+#include "fontmaps.h"
 
 #define REG00_REV_CODE       0x00     // Revision Code Register [READONLY]
 #define REG02_PROD_CODE      0x02     // Product Code Register [READONLY]
@@ -84,11 +85,6 @@
 #define REGFLAG_OFF_DELAY    0xFD     // LCD Panel Power Off Delay (in ms)
 #define REGFLAG_ON_DELAY     0xFE     // LCD Panel Power On Delay (in ms)
 #define REGFLAG_END_OF_TABLE 0xFF     // End of Registers Marker
-
-
-#include "./fonts/S1D13781_font_small_LTDC.h"
-#include "./fonts/S1D13781_font_half_LTDC.h"
-#include "./fonts/S1D13781_font_big_LTDC.h"
 
 #define S1D13781_SPIMODE SPIC_MODE3		/* допустим только MODE3, MODE2 не работает с этим контроллером */
 #define S1D13781_SPIC_SPEEDSLOW		SPIC_SPEED10M

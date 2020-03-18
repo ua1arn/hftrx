@@ -46,33 +46,7 @@
 // LCDMODE_ILI9163 - 176 * 132
 
 #include "st7735.h"
-
-////#include "./byte2crun.h"
-////static const FLASHMEM PACKEDCOLOR_T (* byte2run) [256][8] = & byte2run_COLOR_WHITE_COLOR_BLACK;
-
-#if DSTYLE_G_X320_Y240
-	// LCDMODE_ILI9341
-
-	// Для дисплеев 320 * 240
-	#include "./fonts/ILI9341_font_small.h"
-	#include "./fonts/ILI9341_font_half.h"
-	#include "./fonts/ILI9341_font_big.h"
-
-	#define	ls020_smallfont	ILI9341_smallfont
-	#define	ls020_halffont	ILI9341_halffont
-	#define	ls020_bigfont	ILI9341_bigfont
-
-
-#else /* DSTYLE_G_X320_Y240 */
-	// LCDMODE_ST7735 - 160 * 128
-	// LCDMODE_ILI9163 - 176 * 132
-
-	#include "./fonts/ls020_font_small.h"
-	#include "./fonts/ls020_font_half.h"
-	#include "./fonts/ls020_font_big.h"
-
-#endif /* DSTYLE_G_X320_Y240 */
-
+#include "fontmaps.h"
 
 #define ST7735_SPIMODE		SPIC_MODE3
 //#define ST7735_SPISPEED		SPIC_SPEED10M	// в описнии контроллера ILI9341 минимальный период указан 100 nS

@@ -22,9 +22,8 @@
 #include "spi.h"
 #include "l2f50.h"
 
-#include "./fonts/ls020_font_small.h"
-#include "./fonts/ls020_font_half.h"
-#include "./fonts/ls020_font_big.h"
+/* растровые шрифты */
+#include "fontmaps.h"
 
 
 

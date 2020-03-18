@@ -11,17 +11,14 @@
 #include "hardware.h"
 #include "board.h"
 #include "display.h"
+#include "spi.h"
 #include <stdint.h>
-
-#include "../inc/spi.h"
 
 #if LCDMODE_LPH88
 
 #include "lph88.h"
-
-#include "./fonts/ls020_font_small.h"
-#include "./fonts/ls020_font_half.h"
-#include "./fonts/ls020_font_big.h"
+* растровые шрифты */
+#include "fontmaps.h"
 
 #define LPH88_SPIMODE SPIC_MODE3	// MODE3 only supported. The input level (SDI) is read on the rising edge of the SCL signal.
 
