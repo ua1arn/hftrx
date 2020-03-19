@@ -1918,6 +1918,11 @@ arm_hardware_ltdc_initialize(void)
 /* set bottom buffer start */
 void arm_hardware_ltdc_pip_set(uintptr_t p)
 {
+#if 0
+	/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
+	while ((LTDC->SRCR & LTDC_SRCR_VBR) != 0)
+		;
+#endif
 	LAYER_PIP->CFBAR = p;
 	LAYER_PIP->CR |= LTDC_LxCR_LEN;
 	LTDC->SRCR = LTDC_SRCR_VBR;	/* Vertical Blanking Reload. */
@@ -1931,7 +1936,7 @@ void arm_hardware_ltdc_pip_off(void)	// set PIP framebuffer address
 
 #endif /* LCDMODE_LTDC_PIP16 */
 
-#endif /* CPUSTYLE_STM32F */
+#endif /* CPUSTYLE_STM32F || CPUSTYLE_STM32MP1 */
 
 uint_fast32_t display_getdotclock(void)
 {
