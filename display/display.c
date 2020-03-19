@@ -686,7 +686,7 @@ static COLORPIP_T getshadedcolor(
 	}
 
 #else /*  */
-	#warning LCDMODE_LTDC_PIPL8 or LCDMODE_LTDC_PIP16 not defined
+	//#warning LCDMODE_LTDC_PIPL8 or LCDMODE_LTDC_PIP16 not defined
 	return dot;
 
 #endif /* LCDMODE_LTDC_PIPL8 */

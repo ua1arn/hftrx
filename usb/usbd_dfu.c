@@ -433,50 +433,60 @@ static USBD_StatusTypeDef  USBD_DFU_EP0_TxSent(USBD_HandleTypeDef *pdev)
     hdfu = & gdfu;
 
 	//PRINTF(PSTR("USBD_DFU_EP0_TxSent\n"));
-
-  if (hdfu->dev_state == DFU_STATE_DNLOAD_BUSY)
-  {
-	 /* Decode the Special Command*/
-    if (hdfu->wblock_num == 0)
+    if (hdfu->dev_state == DFU_STATE_DNLOAD_BUSY)
     {
-      if ((hdfu->buffer.d8 [0] ==  DFU_CMD_GETCOMMANDS) && (hdfu->wlength == 1))
+      /* Decode the Special Command*/
+      if (hdfu->wblock_num == 0U)
       {
-
-      }
-      else if  (( hdfu->buffer.d8 [0] ==  DFU_CMD_SETADDRESSPOINTER ) && (hdfu->wlength == 5))
-      {
-		  hdfu->data_ptr = USBD_peek_u32(& hdfu->buffer.d8 [1]);
-      }
-      else if (( hdfu->buffer.d8 [0] ==  DFU_CMD_ERASE ) && (hdfu->wlength == 5))
-      {
-    	  hdfu->data_ptr = USBD_peek_u32(& hdfu->buffer.d8 [1]);
-
-        if (USBD_DFU_fops_HS.Erase(hdfu->data_ptr) != USBD_OK)
+        if(hdfu->wlength == 1U)
         {
-          return USBD_FAIL;
+          if (hdfu->buffer.d8[0] == DFU_CMD_GETCOMMANDS)
+          {
+            /* nothink to do */
+          }
+        }
+        else if (hdfu->wlength == 5U)
+        {
+          if (hdfu->buffer.d8[0] == DFU_CMD_SETADDRESSPOINTER)
+          {
+    		  hdfu->data_ptr = USBD_peek_u32(& hdfu->buffer.d8 [1]);
+          }
+          else if (hdfu->buffer.d8[0] == DFU_CMD_ERASE)
+          {
+        	  hdfu->data_ptr = USBD_peek_u32(& hdfu->buffer.d8 [1]);
+
+            if (USBD_DFU_fops_HS.Erase(hdfu->data_ptr) != USBD_OK)
+            {
+              return USBD_FAIL;
+            }
+          }
+          else
+          {
+            /* .. */
+          }
+        }
+        else
+        {
+          /* Reset the global length and block number */
+          hdfu->wlength = 0U;
+          hdfu->wblock_num = 0U;
+          /* Call the error management function (command will be nacked) */
+          req.bmRequest = 0U;
+          req.wLength = 1U;
+          USBD_CtlError(pdev, &req);
         }
       }
+      /* Regular Download Command */
       else
       {
-        /* Reset the global length and block number */
-        hdfu->wlength = 0;
-        hdfu->wblock_num = 0;
-        /* Call the error management function (command will be nacked) */
-        req.bmRequest = 0;
-        req.wLength = 1;
-        USBD_CtlError (pdev, &req);
-      }
-    }
-    /* Regular Download Command */
-    else if (hdfu->wblock_num > 1)
-    {
-      /* Decode the required address */
-      addr = ((hdfu->wblock_num - 2) * usbd_dfu_get_xfer_size(altinterfaces [INTERFACE_DFU_CONTROL])) + hdfu->data_ptr;
+        if (hdfu->wblock_num > 1U)
+        {
+          /* Decode the required address */
+          addr = ((hdfu->wblock_num - 2U) * USBD_DFU_XFER_SIZE) + hdfu->data_ptr;
 
-      /* Preform the write operation */
-      if (USBD_DFU_fops_HS.Write(hdfu->buffer.d8, addr, hdfu->wlength) != USBD_OK)
-      {
-          //printhex(addr, hdfu->buffer.d8, hdfu->wlength);
+          /* Preform the write operation */
+          if (USBD_DFU_fops_HS.Write(hdfu->buffer.d8, addr, hdfu->wlength) != USBD_OK)
+          {
 #if 1
 		    /* Reset the global length and block number */
 		    hdfu->wlength = 0;
@@ -491,29 +501,34 @@ static USBD_StatusTypeDef  USBD_DFU_EP0_TxSent(USBD_HandleTypeDef *pdev)
 		    hdfu->dev_status [4] = hdfu->dev_state;
 		    return USBD_OK;
 #endif
-        return USBD_FAIL;
+            return USBD_FAIL;
+          }
+        }
       }
+
+      /* Reset the global length and block number */
+      hdfu->wlength = 0U;
+      hdfu->wblock_num = 0U;
+
+      /* Update the state machine */
+      hdfu->dev_state =  DFU_STATE_DNLOAD_SYNC;
+
+      hdfu->dev_status[1] = 0U;
+      hdfu->dev_status[2] = 0U;
+      hdfu->dev_status[3] = 0U;
+      hdfu->dev_status[4] = hdfu->dev_state;
     }
-    /* Reset the global length and block number */
-    hdfu->wlength = 0;
-    hdfu->wblock_num = 0;
+    else if (hdfu->dev_state == DFU_STATE_MANIFEST)/* Manifestation in progress */
+    {
+      /* Start leaving DFU mode */
+      DFU_Leave(pdev);
+    }
+    else
+    {
+      /* .. */
+    }
 
-    /* Update the state machine */
-    hdfu->dev_state = DFU_STATE_DNLOAD_SYNC;
-
-    hdfu->dev_status [1] = 0;
-    hdfu->dev_status [2] = 0;
-    hdfu->dev_status [3] = 0;
-    hdfu->dev_status [4] = hdfu->dev_state;
     return USBD_OK;
-  }
-  else if (hdfu->dev_state == DFU_STATE_MANIFEST)/* Manifestation in progress*/
-  {
-    /* Start leaving DFU mode */
-    DFU_Leave(pdev);
-  }
-
-  return USBD_OK;
 }
 
 /**
@@ -661,6 +676,10 @@ static USBD_StatusTypeDef USBD_DFU_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 			altinterfaces [interfacev] = LO_BYTE(req->wValue);
 			//PRINTF("USBD_DFU_Setup: USB_REQ_TYPE_STANDARD USB_REQ_SET_INTERFACE DFU interface %d set to %d\n", (int) interfacev, (int) altinterfaces [interfacev]);
 			break;
+
+        case USB_REQ_CLEAR_FEATURE:
+        	// Не должны вызывать ошибок по этому коду
+        	break;
 
        default:
     		//PRINTF(PSTR("1 USBD_DFU_Setup: bmRequest=%04X, bRequest=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
