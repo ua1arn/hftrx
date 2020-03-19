@@ -674,6 +674,20 @@ static void display_nr3(
 #endif /* WITHIF4DSP */
 }
 
+#if WITHELKEY
+static void display_bkin(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	void * pv
+	)
+{
+	const uint_fast8_t state = hamradio_get_bkin_value();
+	display_2states_P(x, y, state, PSTR("BKIN"), text_nul4_P);
+	(void) pv;
+}
+#endif /* WITHELKEY */
+
+
 // Отображение режима NOCH ON/OFF
 static void display_notch5(
 	uint_fast8_t x, 
@@ -4536,7 +4550,9 @@ enum
 		{	26, 5,	display_voxtune3,	REDRM_MODE, PGALL, },	// VOX
 		{	30, 5,	display_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
 		{   44, 9,  display_smeter2, 	REDRM_BARS, PGSWR, },
-
+#if WITHELKEY
+		{   21, 5,  display_bkin,		REDRM_MODE, PGALL, },
+#endif /* WITHELKEY */
 	#if WITHENCODER2
 //		{	41, 0,	display_fnlabel9,	REDRM_MODE, PGALL, },	// FUNC item label
 //		{	41,	4,	display_fnvalue9,	REDRM_MODE, PGALL, },	// FUNC item value

@@ -910,6 +910,7 @@ uint_fast8_t hamradio_get_usbh_active(void);
 uint_fast8_t hamradio_get_datamode(void);	// источник звука для передачи - USB AUDIO
 int_fast16_t hamradio_getleft_bp(uint_fast8_t pathi);	/* получить левый (низкочастотный) скат полосы пропускания для отображения "шторки" на спектранализаторе */
 int_fast16_t hamradio_getright_bp(uint_fast8_t pathi);	/* получить правый (высокочастотный) скат полосы пропускания для отображения "шторки" на спектранализаторе */
+uint_fast8_t hamradio_get_bkin_value(void);
 
 // FUNC item label
 void display_fnlabel9(

@@ -9316,6 +9316,10 @@ const FLASHMEM char * hamradio_get_rxbw_value_P(void)
 
 #endif /* WITHIF4DSP */
 
+uint_fast8_t hamradio_get_bkin_value(void)
+{
+	return bkinenable;
+}
 // RX preamplifier
 const FLASHMEM char * hamradio_get_pre_value_P(void)
 {
@@ -16597,7 +16601,12 @@ process_key_menuset_common(uint_fast8_t kbch)
 		updateboard_tuner();
 		return 1;	// требуется обновление индикатора
 #endif /* WITHAUTOTUNER && KEYB_UA3DKC */
-
+#if WITHELKEY
+	case KBD_CODE_BKIN:
+		bkinenable = bkinenable ? 0 : 1;
+		save_i8(offsetof(struct nvmap, bkinenable), bkinenable);
+		return 1;
+#endif /* WITHELKEY */
 	default:
 		return 0;	/* клавиша не обработана */
 	}
@@ -17781,6 +17790,7 @@ hamradio_main_step(void)
 						text = enc2menu_value(enc2pos);
 						strcpy(enc2_menu.val, text);
 						encoder2_menu(&enc2_menu);
+						display_mode_subset(0);
 				}
 			}
 #else
@@ -17814,7 +17824,11 @@ hamradio_main_step(void)
 				{
 					/* обновление индикатора без сохранения состояния диапазона */
 					encoder_clear();				/* при возможном уменьшении шага исключение случайного накопления */
+#if WITHTOUCHGUI
+					display_mode_subset(0);
+#else
 					display_redrawfreqmodesbars(0);			/* Обновление дисплея - всё, включая частоту */
+#endif /* WITHTOUCHGUI */
 				} // end keyboard processing
 			}
 	#endif /* WITHKEYBOARD */
