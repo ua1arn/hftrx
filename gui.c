@@ -185,9 +185,7 @@ void button1_handler(void);
 	void button7_handler(void);
 	void button8_handler(void);
 	void button9_handler(void);
-	void labels_test_handler(void);
 	void labels_menu_handler (void);
-	void button_move_handler(void);
 	void buttons_mode_handler(void);
 	void buttons_bp_handler(void);
 	void buttons_freq_handler(void);
@@ -195,7 +193,6 @@ void button1_handler(void);
 	void window_bp_process(void);
 	void window_menu_process(void);
 	void window_freq_process(void);
-	void window_tracking_process(void);
 	void encoder2_menu (enc2_menu_t * enc2_menu);
 
 	enum {
@@ -228,8 +225,7 @@ void button1_handler(void);
 		WINDOW_AGC,						// выбор пресетов настроек АРУ для текущего режима модуляции
 		WINDOW_FREQ,
 		WINDOW_MENU,
-		WINDOW_ENC2,
-		WINDOW_TEST_TRACKING
+		WINDOW_ENC2
 	};
 
 	typedef struct {
@@ -287,8 +283,6 @@ void button1_handler(void);
 		{ 173, 134, 223, 184, buttons_freq_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_RECORDTOGGLE, 	"8", },
 		{ 226, 134, 276, 184, buttons_freq_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_LDSPTGL, 		"9", },
 		{ 279, 134, 329, 184, buttons_freq_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_VOXTOGGLE, 	"0", },
-		{ 251, 155, 337, 205, button_move_handler, 	CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_TEST_TRACKING,  NON_VISIBLE, UINTPTR_MAX, 	"Press & move1", },
-		{ 463, 155, 549, 205, button_move_handler, 	CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_TEST_TRACKING,  NON_VISIBLE, UINTPTR_MAX, 	"Press & move2", },
 	};
 	enum { button_handlers_count = sizeof button_handlers / sizeof button_handlers[0] };
 
@@ -296,7 +290,7 @@ void button1_handler(void);
 		uint_fast16_t x;
 		uint_fast16_t y;
 		uint_fast8_t parent;
-		uint_fast8_t state;				// ! DISABLED =
+		uint_fast8_t state;
 		uint_fast8_t is_trackable;
 		uint_fast8_t visible;
 		const char name[20];
@@ -327,8 +321,6 @@ void button1_handler(void);
 		{ 520, 190, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", "", COLORPIP_WHITE, labels_menu_handler, },
 		{ 580,  60, WINDOW_ENC2, DISABLED, 0, NON_VISIBLE, "lbl_enc2_param", "", COLORPIP_WHITE, },
 		{ 580,  90, WINDOW_ENC2, DISABLED, 0, NON_VISIBLE, "lbl_enc2_val", "", COLORPIP_WHITE, },
-		{ 260,  80, WINDOW_TEST_TRACKING, CANCELLED, 0, NON_VISIBLE, "lbl_touch1", "Touch1", COLORPIP_WHITE, labels_test_handler, },
-		{ 420,  80, WINDOW_TEST_TRACKING, CANCELLED, 0, NON_VISIBLE, "lbl_touch2", "Touch2", COLORPIP_WHITE, labels_test_handler, },
 	};
 	enum { labels_count = sizeof labels / sizeof labels[0] };
 
@@ -374,8 +366,6 @@ void button1_handler(void);
 		{ WINDOW_FREQ,  100,  0, 350, 200, "Freq", 		  NON_VISIBLE, 0, window_freq_process, },
 		{ WINDOW_MENU,   50, 10, 699, 220, "Settings",	  NON_VISIBLE, 0, window_menu_process, },
 		{ WINDOW_ENC2, 	550, 15, 735, 120, "Fast menu",   NON_VISIBLE, 0, },
-		{ WINDOW_TEST_TRACKING,   214, 20, 586, 215, "Tracking test", NON_VISIBLE, 0, window_tracking_process, },
-
 	};
 	enum { windows_count = sizeof windows / sizeof windows[0] };
 
@@ -406,7 +396,6 @@ void button1_handler(void);
 		int_fast8_t selected_str;
 		int_fast8_t selected_label;
 		uint_fast8_t add_id;
-		int_fast8_t scroll_id;
 		menu_names_t menu_block[30];
 	} menu_t;
 
@@ -839,7 +828,6 @@ void button1_handler(void);
 				menu[MENU_VALS].selected_label = menu[MENU_PARAMS].selected_label;
 				menu_level = MENU_PARAMS;
 			}
-
 			menu_is_scrolling = 1;
 		}
 
@@ -1189,48 +1177,7 @@ void button1_handler(void);
 
 	void button8_handler(void)
 	{
-		gui.window_to_draw = WINDOW_TEST_TRACKING;
 
-		if (windows[gui.window_to_draw].is_show == NON_VISIBLE)
-		{
-			set_window(gui.window_to_draw, VISIBLE);
-			windows[gui.window_to_draw].first_call = 1;
-			footer_buttons_state(DISABLED, button_handlers[gui.selected_id].text);
-		}
-		else
-		{
-			set_window(gui.window_to_draw, NON_VISIBLE);
-			footer_buttons_state(CANCELLED, "");
-		}
-	}
-
-	void window_tracking_process(void)
-	{
-		if (windows[WINDOW_TEST_TRACKING].first_call)
-		{
-			windows[WINDOW_TEST_TRACKING].first_call = 0;
-		}
-
-		if(gui.is_tracking && gui.selected_type == TYPE_BUTTON)				// добавить проверку границ окна
-		{
-			button_handlers[gui.selected_id].x1 += gui.vector_move_x;
-			button_handlers[gui.selected_id].x2 += gui.vector_move_x;
-			button_handlers[gui.selected_id].y1 += gui.vector_move_y;
-			button_handlers[gui.selected_id].y2 += gui.vector_move_y;
-			gui.vector_move_x = 0;
-			gui.vector_move_y = 0;
-		}
-	}
-
-	void button_move_handler(void)
-	{
-
-	}
-
-	void labels_test_handler(void)
-	{
-		PRINTF("Label touched\n");
-		labels[gui.selected_id].color = labels[gui.selected_id].color == COLORPIP_WHITE ? COLORPIP_YELLOW : COLORPIP_WHITE;
 	}
 
 	void button9_handler(void)
@@ -1253,11 +1200,10 @@ void button1_handler(void);
 		}
 	}
 
-	void draw_button_pip(uint_fast16_t x1, uint_fast16_t y1, uint_fast16_t x2, uint_fast16_t y2,
+	void draw_button_pip(PACKEDCOLORPIP_T * colorpip, uint_fast16_t x1, uint_fast16_t y1, uint_fast16_t x2, uint_fast16_t y2,
 			uint_fast8_t pressed, uint_fast8_t is_locked, uint_fast8_t is_disabled) // pressed = 0
 	{
 		PACKEDCOLOR565_T c1, c2;
-		PACKEDCOLORPIP_T * const colorpip = getscratchpip();
 		c1 = is_disabled ? COLOR_BUTTON_DISABLED : (is_locked ? COLOR_BUTTON_LOCKED : COLOR_BUTTON_NON_LOCKED);
 		c2 = is_disabled ? COLOR_BUTTON_DISABLED : (is_locked ? COLOR_BUTTON_PR_LOCKED : COLOR_BUTTON_PR_NON_LOCKED);
 		display_colorbuffer_rect(colorpip, gui.pip_width, gui.pip_height, x1,	y1, x2, y2, pressed ? c1 : c2, 1);
@@ -1341,7 +1287,7 @@ void button1_handler(void);
 			if ((button_handlers[i].parent == gui.window_to_draw && button_handlers[i].visible == VISIBLE && windows[gui.window_to_draw].is_show)
 					|| button_handlers[i].parent == FOOTER)									// кнопки
 			{
-				draw_button_pip(button_handlers[i].x1, button_handlers[i].y1, button_handlers[i].x2, button_handlers[i].y2,
+				draw_button_pip(colorpip, button_handlers[i].x1, button_handlers[i].y1, button_handlers[i].x2, button_handlers[i].y2,
 						button_handlers[i].state, button_handlers[i].is_locked, button_handlers[i].state == DISABLED ? 1 : 0);
 
 
@@ -1424,7 +1370,8 @@ void button1_handler(void);
 				p = CONTAINING_RECORD(t, list_template_t, item);
 
 				if (p->x1 < gui.last_pressed_x && p->x2 > gui.last_pressed_x
-				 && p->y1 < gui.last_pressed_y && p->y2 > gui.last_pressed_y && p->state != DISABLED)
+				 && p->y1 < gui.last_pressed_y && p->y2 > gui.last_pressed_y
+				 && p->state != DISABLED && p->visible == VISIBLE)
 				{
 					gui.state = PRESSED;
 					break;
