@@ -8391,6 +8391,17 @@ uint_fast8_t hamradio_get_voxvalue(void)
 #endif /* WITHVOX && WITHTX */
 
 
+#if WITHANTSELECT
+
+// antenna
+const FLASHMEM char * hamradio_get_ant5_value_P(void)
+{
+	return antmodes [gantennas [getbankindex_tx(gtx)]].label5;
+}
+
+#endif /* WITHANTSELECT */
+
+
 #if WITHKEYBOARD
 
 // включение режима split (возможо, с расстройко от текущей частоты)
@@ -8723,9 +8734,6 @@ uif_key_click_agcmode(void)
 }
 
 #if WITHANTSELECT
-#endif /* WITHANTSELECT */
-
-#if WITHANTSELECT
 
 /* Antenna switch
 	  */
@@ -8740,12 +8748,6 @@ uif_key_click_antenna(void)
 	gantennas [bi] = calc_next(gantennas [bi], 0, ANTMODE_COUNT - 1);
 	savebandstate(vi, bi);	// запись всех режимов в область памяти диапазона
 	updateboard(1, 0);
-}
-
-// antenna
-const FLASHMEM char * hamradio_get_ant5_value_P(void)
-{
-	return antmodes [gantennas [getbankindex_tx(gtx)]].label5;
 }
 
 #endif /* WITHANTSELECT */

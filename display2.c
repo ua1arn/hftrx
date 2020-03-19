@@ -674,18 +674,19 @@ static void display_nr3(
 #endif /* WITHIF4DSP */
 }
 
-#if WITHELKEY
-static void display_bkin(
+/* Отображение включенного режима CW BREAK-IN */
+static void display_bkin3(
 	uint_fast8_t x,
 	uint_fast8_t y,
 	void * pv
 	)
 {
+#if WITHELKEY
 	const uint_fast8_t state = hamradio_get_bkin_value();
 	display_2states_P(x, y, state, PSTR("BKN"), text_nul3_P);
 	(void) pv;
-}
 #endif /* WITHELKEY */
+}
 
 
 // Отображение режима NOCH ON/OFF
@@ -4550,9 +4551,7 @@ enum
 		{	30, 15,	display_voxtune3,	REDRM_MODE, PGALL, },	// VOX
 		{	30, 5,	display_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
 		{   44, 9,  display_smeter2, 	REDRM_BARS, PGSWR, },
-#if WITHELKEY
-		{   30, 20, display_bkin,		REDRM_MODE, PGALL, },
-#endif /* WITHELKEY */
+		{   30, 20, display_bkin3,		REDRM_MODE, PGALL, },
 	#if WITHENCODER2
 //		{	41, 0,	display_fnlabel9,	REDRM_MODE, PGALL, },	// FUNC item label
 //		{	41,	4,	display_fnvalue9,	REDRM_MODE, PGALL, },	// FUNC item value
@@ -4658,7 +4657,7 @@ enum
 	enum
 	{
 		BDTH_ALLRXBARS = 30,	// ширина зоны для отображение барграфов на индикаторе
-#if 0
+#if 1
 		BDTH_ALLRX = 50,	// ширина зоны для отображение графического окна на индикаторе
 		BDCV_ALLRX = ROWS2GRID(49),	// количество строк, отведенное под S-метр, панораму, иные отображения
 #else
@@ -4746,18 +4745,19 @@ enum
 		{	45,	4,	display_notchfreq5,	REDRM_BARS, PGALL, },	// FUNC item value
 	#endif /* WITHENCODER2 */
 
-		{	46, 20,	display_agc3,		REDRM_MODE, PGALL, },	// AGC mode
-		{	46, 25,	display_voxtune3,	REDRM_MODE, PGALL, },	// VOX
-		{	46, 30,	display_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
-//		{	46, 35,	display_nr3,		REDRM_MODE, PGALL, },	// NR
-		{	46, 40,	display_atu3,		REDRM_MODE, PGALL, },	// TUNER state (optional)
-		{	46, 45,	display_byp3,		REDRM_MODE, PGALL, },	// TUNER BYPASS state (optional)
-		{	46, 50,	display_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
+		{	34, 20,	display_atu3,		REDRM_MODE, PGALL, },	// TUNER state (optional)
+		{	38, 20,	display_byp3,		REDRM_MODE, PGALL, },	// TUNER BYPASS state (optional)
+		{   42, 20, display_bkin3,		REDRM_MODE, PGALL, },
+		{	46, 20,	display_voxtune3,	REDRM_MODE, PGALL, },	// VOX
+
+		{	38, 25,	display_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
+
+		{	38, 30,	display_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
+		{	46, 25,	display_nr3,		REDRM_MODE, PGALL, },	// NR : was: AGC
 
 		{	0,	7,	display_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
 		{	21, 10,	display_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 		{	26, 10,	display_rxbw3,		REDRM_MODE, PGALL, },	// 3.1 / 0,5 / WID / NAR
-		{	30, 10,	display_nr3,		REDRM_MODE, PGALL, },	// NR : was: AGC
 		{	21, 15,	display_mainsub3,	REDRM_MODE, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
 
 		{	26,	15,	display_vfomode3,	REDRM_MODE, PGALL, },	// SPLIT
@@ -4771,6 +4771,7 @@ enum
 		//{	0,	40,	display2_bars_tx,	REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
 		{	31,	30, display_siglevel4, 	REDRM_BARS, PGSWR, },	// signal level dBm
 		{	36, 30,	display_freqdelta8, REDRM_BARS, PGSWR, },	// выход ЧМ демодулятора
+		{	46, 30,	display_agc3,		REDRM_MODE, PGALL, },	// AGC mode
 	#if WITHSPECTRUMWF
 		{	0,	DLES,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 		{	0,	DLES,	display2_spectrum,	REDRM_BARS, PGSPE, },// подготовка изображения спектра
