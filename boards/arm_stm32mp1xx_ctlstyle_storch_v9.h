@@ -363,7 +363,7 @@
 	#endif
 	//#define WITHOUTTXCADCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
 
-	#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
+	//#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
 	//#define WITHTHERMOLEVEL	1	/* отображение температуры */
 
 	#define WITHIFSHIFT	1	/* используется IF SHIFT */
@@ -521,7 +521,7 @@
 	#else
 		// толькло основная плата - 5W усилитель
 
-		#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
+		//#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
 
 		#if WITHCURRLEVEL
 			//PASENSEIX = BOARD_ADCXIN(0),		// MCP3208 CH0 PA current sense - ACS712-30 chip
