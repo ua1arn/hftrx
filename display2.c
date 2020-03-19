@@ -5408,7 +5408,7 @@ enum
 	SPY0 = GRID2Y(BDCO_SPMRX)				// смещение по вертикали в пикселях части отведенной спектру
 };
 
-#if (LCDMODE_LTDC_PIPL8 && LCDMODE_LTDC)
+#if (LCDMODE_LTDC_PIPL8 && LCDMODE_LTDC) || (CPUSTYLE_STM32MP1 && LCDMODE_LTDC)
 
 	// один буфер установлен для отображения, второй еше отображается.
 	// Третий заполняем новым изображением.
