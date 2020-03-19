@@ -9379,9 +9379,8 @@ void arm_hardware_invalidate(uintptr_t base, size_t size)
 	}
 }
 
-#if 0
 /* считать конфигурационные параметры data cache */
-static void ca9_ca7_cache_setup(void)
+static void ca9_ca7_cache_diag(void)
 {
 	uint32_t ccsidr0 [8];	// data cache parameters
 	uint32_t ccsidr1 [8];	// instruction cache parameters
@@ -9402,15 +9401,14 @@ static void ca9_ca7_cache_setup(void)
 		//const uint32_t assoc1 = (ccsidr1 >> 3) & 0x3FF;
 		//const int passoc1 = ilog2(assoc1);
 		//const uint32_t maxsets1 = (ccsidr1 >> 13) & 0x7FFF;
+
+		// Установка размера строки кэша
+		unsigned long xDCACHEROWSIZE = 4uL << (((ccsidr0 [leveli] >> 0) & 0x07) + 2);
+		unsigned long xICACHEROWSIZE = 4uL << (((ccsidr1 [leveli] >> 0) & 0x07) + 2);
+
+		PRINTF("DCACHE[%d] ROWSIZE=%d, ICACHE[%d] ROWSIZE=%d\n", leveli, (int) xDCACHEROWSIZE, leveli, (int) xICACHEROWSIZE);
 	}
-
-	// Установка размера строки кэша
-	DCACHEROWSIZE = 4uL << (((ccsidr0 [0] >> 0) & 0x07) + 2);
-	ICACHEROWSIZE = 4uL << (((ccsidr1 [0] >> 0) & 0x07) + 2);
-
-	PRINTF("DCACHEROWSIZE=%d, ICACHEROWSIZE=%d\n", (int) DCACHEROWSIZE, (int) ICACHEROWSIZE);
 }
-#endif
 
 // используется в startup
 static void 
@@ -9443,7 +9441,7 @@ void arm_hardware_flush(uintptr_t base, size_t size)
 		uintptr_t mva = MK_MVA(base);
 		L1C_CleanDCacheMVA((void *) mva);		// записать буфер, кэш продолжает хранить
 	#if (__L2C_PRESENT == 1)
-		// предполагается, что ращмер строки L2 и L2 cache равны
+		// предполагается, что размер строки L2 и L2 cache равны
 		// Clean cache by physical address
 		L2C_CleanPa((void *) mva);
 	#endif
@@ -9460,7 +9458,7 @@ void arm_hardware_flush_invalidate(uintptr_t base, size_t size)
 		uintptr_t mva = MK_MVA(base);
 		L1C_CleanInvalidateDCacheMVA((void *) mva);	// записать буфер, очистить кэш
 	#if (__L2C_PRESENT == 1)
-		// предполагается, что ращмер строки L2 и L2 cache равны
+		// предполагается, что размер строки L2 и L2 cache равны
 		// Clean cache by physical address
 		L2C_CleanInvPa((void *) mva);
 	#endif
@@ -11435,6 +11433,7 @@ SystemInit(void)
 	sysintt_sdram_initialize();
 	sysinit_vbar_initialize();		// interrupt vectors relocate
 	sysinit_mmu_initialize();
+	//ca9_ca7_cache_diag();	// print
 }
 
 
