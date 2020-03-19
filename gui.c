@@ -1327,14 +1327,16 @@ void button1_handler(void);
 							bh->text, COLORPIP_BLACK);
 				} else
 				{
+					static const char delimeters [] = "|";
+
 					/* Двухстрочная надпись */
 					uint_fast8_t j = (bh->y2 - bh->y1 - SMALLCHARH2 * 2) / 2;
 					strcpy(buff, bh->text);
-					text2 = strtok(buff, "|");
+					text2 = strtok(buff, delimeters);
 					display_colorbuff_string2_tbg(colorpip, gui.pip_width, gui.pip_height, bh->x1 +
 							((bh->x2 - bh->x1) - (strlen (text2) * SMALLCHARW2)) / 2,
 							bh->y1 + j, text2, COLORPIP_BLACK);
-					text2 = strtok(NULL, '\0');
+					text2 = strtok(NULL, delimeters);
 					display_colorbuff_string2_tbg(colorpip, gui.pip_width, gui.pip_height, bh->x1 +
 							((bh->x2 - bh->x1) - (strlen (text2) * SMALLCHARW2)) / 2,
 							bh->y2 - SMALLCHARH2 - j, text2, COLORPIP_BLACK);
