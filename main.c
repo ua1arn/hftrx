@@ -17827,7 +17827,8 @@ hamradio_main_step(void)
 					/* обновление индикатора без сохранения состояния диапазона */
 					encoder_clear();				/* при возможном уменьшении шага исключение случайного накопления */
 #if WITHTOUCHGUI
-					display_mode_subset(0);
+					display_redrawfreqs(1);
+					display_redrawmodes(1);
 #else
 					display_redrawfreqmodesbars(0);			/* Обновление дисплея - всё, включая частоту */
 #endif /* WITHTOUCHGUI */
