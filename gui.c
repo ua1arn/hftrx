@@ -1221,9 +1221,10 @@ void button1_handler(void);
 		}
 	}
 
-	void draw_button_pip(PACKEDCOLORPIP_T * colorpip, uint_fast16_t x1, uint_fast16_t y1, uint_fast16_t x2, uint_fast16_t y2,
+	void draw_button_pip(uint_fast16_t x1, uint_fast16_t y1, uint_fast16_t x2, uint_fast16_t y2,
 			uint_fast8_t pressed, uint_fast8_t is_locked, uint_fast8_t is_disabled) // pressed = 0
 	{
+		PACKEDCOLORPIP_T * const colorpip = getscratchpip();
 		PACKEDCOLOR565_T c1, c2;
 		c1 = is_disabled ? COLOR_BUTTON_DISABLED : (is_locked ? COLOR_BUTTON_LOCKED : COLOR_BUTTON_NON_LOCKED);
 		c2 = is_disabled ? COLOR_BUTTON_DISABLED : (is_locked ? COLOR_BUTTON_PR_LOCKED : COLOR_BUTTON_PR_NON_LOCKED);
@@ -1308,7 +1309,7 @@ void button1_handler(void);
 			if ((button_handlers[i].parent == gui.window_to_draw && button_handlers[i].visible == VISIBLE && windows[gui.window_to_draw].is_show)
 					|| button_handlers[i].parent == FOOTER)									// кнопки
 			{
-				draw_button_pip(colorpip, button_handlers[i].x1, button_handlers[i].y1, button_handlers[i].x2, button_handlers[i].y2,
+				draw_button_pip(button_handlers[i].x1, button_handlers[i].y1, button_handlers[i].x2, button_handlers[i].y2,
 						button_handlers[i].state, button_handlers[i].is_locked, button_handlers[i].state == DISABLED ? 1 : 0);
 
 				if (strchr(button_handlers[i].text, '|') == NULL)

@@ -682,7 +682,7 @@ static void display_bkin(
 	)
 {
 	const uint_fast8_t state = hamradio_get_bkin_value();
-	display_2states_P(x, y, state, PSTR("BKIN"), text_nul4_P);
+	display_2states_P(x, y, state, PSTR("BKN"), text_nul3_P);
 	(void) pv;
 }
 #endif /* WITHELKEY */
@@ -4547,11 +4547,11 @@ enum
 		{	18,	0,	display_genham1,	REDRM_BARS, PGALL, },	// Отображение режима General Coverage / HAM bands
 		{	21,	0,	display_lockstate4, REDRM_MODE, PGALL, },	// LOCK
 		{	28, 0,	display_notch5,		REDRM_MODE, PGALL, },	// NOTCH on/off
-		{	26, 5,	display_voxtune3,	REDRM_MODE, PGALL, },	// VOX
+		{	30, 15,	display_voxtune3,	REDRM_MODE, PGALL, },	// VOX
 		{	30, 5,	display_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
 		{   44, 9,  display_smeter2, 	REDRM_BARS, PGSWR, },
 #if WITHELKEY
-		{   21, 5,  display_bkin,		REDRM_MODE, PGALL, },
+		{   30, 20, display_bkin,		REDRM_MODE, PGALL, },
 #endif /* WITHELKEY */
 	#if WITHENCODER2
 //		{	41, 0,	display_fnlabel9,	REDRM_MODE, PGALL, },	// FUNC item label
