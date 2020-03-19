@@ -14,8 +14,8 @@
 #include "board.h"
 #include "audio.h"
 #include "formats.h"	// for debug prints
-#include "inc/gpio.h"
-#include "inc/spi.h"
+#include "gpio.h"
+#include "spi.h"
 
 
 static unsigned long ulmin(

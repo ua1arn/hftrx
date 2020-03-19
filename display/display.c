@@ -1714,7 +1714,7 @@ static void RAMFUNC ltdcpip_horizontal_pixels(
 	}
 	if (w != 0)
 	{
-		const FLASHMEM PACKEDCOLORPIP_T * const pcl = (* byte2runpip) [* raster ++];
+		const FLASHMEM PACKEDCOLORPIP_T * const pcl = (* byte2runpip) [* raster];
 		memcpy((void *) (tgr + col), pcl, sizeof (* tgr) * w);
 	}
 	// функции работы с colorbuffer не занимаются выталкиванеим кэш-памяти
