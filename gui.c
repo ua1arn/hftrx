@@ -1221,8 +1221,11 @@ void button1_handler(void);
 		}
 	}
 
-	void draw_button_pip(uint_fast16_t x1, uint_fast16_t y1, uint_fast16_t x2, uint_fast16_t y2,
-			uint_fast8_t pressed, uint_fast8_t is_locked, uint_fast8_t is_disabled) // pressed = 0
+	/* Кнопка без надписей */
+	void draw_button_pip(
+		uint_fast16_t x1, uint_fast16_t y1,
+		uint_fast16_t x2, uint_fast16_t y2,
+		uint_fast8_t pressed, uint_fast8_t is_locked, uint_fast8_t is_disabled) // pressed = 0
 	{
 		PACKEDCOLORPIP_T * const colorpip = getscratchpip();
 		PACKEDCOLOR565_T c1, c2;
@@ -1251,7 +1254,7 @@ void button1_handler(void);
 					temp / 10, temp % 10);
 		}
 	#endif /* WITHTHERMOLEVEL */
-	#if WITHCURRLEVEL && WITHCPUADCHW	// ток PA (при передаче)
+	#if WITHCURRLEVEL	// ток PA (при передаче)
 		if (hamradio_get_tx())
 		{
 			int_fast16_t drain = hamradio_get_pacurrent_value();
@@ -1259,11 +1262,11 @@ void button1_handler(void);
 			str_len += local_snprintf_P(&buff[str_len], sizeof buff / sizeof buff [0] - str_len, PSTR("%d.%02dA "),
 					drain / 100, drain % 100);
 		}
-	#endif /* WITHCURRLEVEL && WITHCPUADCHW */
-	#if WITHVOLTLEVEL && WITHCPUADCHW	// напряжение питания
+	#endif /* WITHCURRLEVEL */
+	#if WITHVOLTLEVEL	// напряжение питания
 		str_len += local_snprintf_P(&buff[str_len], sizeof buff / sizeof buff [0] - str_len,
 									PSTR("%d.%1dV "), hamradio_get_volt_value() / 10, hamradio_get_volt_value() % 10);
-	#endif /* WITHVOLTLEVEL && WITHCPUADCHW */
+	#endif /* WITHVOLTLEVEL */
 	#if WITHIF4DSP						// ширина панорамы
 		str_len += local_snprintf_P(&buff[str_len], sizeof buff / sizeof buff [0] - str_len, PSTR("SPAN:%3dk"),
 				(int) ((display_zoomedbw() + 0) / 1000));
@@ -1306,30 +1309,35 @@ void button1_handler(void);
 		}
 		for (uint_fast8_t i = 1; i < button_handlers_count; i++)
 		{
-			if ((button_handlers[i].parent == gui.window_to_draw && button_handlers[i].visible == VISIBLE && windows[gui.window_to_draw].is_show)
-					|| button_handlers[i].parent == FOOTER)									// кнопки
-			{
-				draw_button_pip(button_handlers[i].x1, button_handlers[i].y1, button_handlers[i].x2, button_handlers[i].y2,
-						button_handlers[i].state, button_handlers[i].is_locked, button_handlers[i].state == DISABLED ? 1 : 0);
+			const button_t * const bh = & button_handlers[i];
 
-				if (strchr(button_handlers[i].text, '|') == NULL)
+			if ((bh->parent == gui.window_to_draw && bh->visible == VISIBLE && windows[gui.window_to_draw].is_show)
+					|| bh->parent == FOOTER)									// кнопки
+			{
+				/* Кнопка без надписей (фон для надписей) */
+				draw_button_pip(bh->x1, bh->y1, bh->x2, bh->y2,
+						bh->state, bh->is_locked, bh->state == DISABLED ? 1 : 0);
+
+				if (strchr(bh->text, '|') == NULL)
 				{
+					/* Однострочная надпись */
 					display_colorbuff_string2_tbg(colorpip, gui.pip_width, gui.pip_height,
-							button_handlers[i].x1 + ((button_handlers[i].x2 - button_handlers[i].x1) - (strlen (button_handlers[i].text) * SMALLCHARW2)) / 2,
-							button_handlers[i].y1 + ((button_handlers[i].y2 - button_handlers[i].y1) - SMALLCHARH2) / 2,
-							button_handlers[i].text, COLORPIP_BLACK);
+							bh->x1 + ((bh->x2 - bh->x1) - (strlen (bh->text) * SMALLCHARW2)) / 2,
+							bh->y1 + ((bh->y2 - bh->y1) - SMALLCHARH2) / 2,
+							bh->text, COLORPIP_BLACK);
 				} else
 				{
-					uint_fast8_t j = (button_handlers[i].y2 - button_handlers[i].y1 - SMALLCHARH2 * 2) / 2;
-					strcpy(buff, button_handlers[i].text);
+					/* Двухстрочная надпись */
+					uint_fast8_t j = (bh->y2 - bh->y1 - SMALLCHARH2 * 2) / 2;
+					strcpy(buff, bh->text);
 					text2 = strtok(buff, "|");
-					display_colorbuff_string2_tbg(colorpip, gui.pip_width, gui.pip_height, button_handlers[i].x1 +
-							((button_handlers[i].x2 - button_handlers[i].x1) - (strlen (text2) * SMALLCHARW2)) / 2,
-							button_handlers[i].y1 + j, text2, COLORPIP_BLACK);
+					display_colorbuff_string2_tbg(colorpip, gui.pip_width, gui.pip_height, bh->x1 +
+							((bh->x2 - bh->x1) - (strlen (text2) * SMALLCHARW2)) / 2,
+							bh->y1 + j, text2, COLORPIP_BLACK);
 					text2 = strtok(NULL, '\0');
-					display_colorbuff_string2_tbg(colorpip, gui.pip_width, gui.pip_height, button_handlers[i].x1 +
-							((button_handlers[i].x2 - button_handlers[i].x1) - (strlen (text2) * SMALLCHARW2)) / 2,
-							button_handlers[i].y2 - SMALLCHARH2 - j, text2, COLORPIP_BLACK);
+					display_colorbuff_string2_tbg(colorpip, gui.pip_width, gui.pip_height, bh->x1 +
+							((bh->x2 - bh->x1) - (strlen (text2) * SMALLCHARW2)) / 2,
+							bh->y2 - SMALLCHARH2 - j, text2, COLORPIP_BLACK);
 				}
 			}
 		}
