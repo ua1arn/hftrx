@@ -37,7 +37,8 @@
 #endif /* WITHRFSG */
 
 #if WITHTOUCHGUI
-static uint_fast8_t encoder2busy = 0;		// признак занятости энкодера в обработке gui
+static uint_fast8_t encoder2_busy = 0;		// признак занятости энкодера в обработке gui
+static uint_fast8_t keyboard_disabled = 0;	// признак блокировки клавиатуры
 static uint_fast8_t is_menu_opened = 0;		// открыто gui системное меню
 static char menuw [10];						// буфер для вывода значений системного меню
 static enc2_menu_t enc2_menu;
@@ -16292,10 +16293,10 @@ process_key_menuset_common(uint_fast8_t kbch)
 #if WITHENCODER2
 	#if WITHTOUCHGUI
 		case KBD_ENC2_PRESS:
-			encoder2busy ? set_encoder2_state (KBD_ENC2_PRESS): uif_encoder2_press();
+			encoder2_busy ? set_encoder2_state (KBD_ENC2_PRESS): uif_encoder2_press();
 			return 0;
 		case KBD_ENC2_HOLD:
-			encoder2busy ? set_encoder2_state (KBD_ENC2_HOLD) : uif_encoder2_hold();
+			encoder2_busy ? set_encoder2_state (KBD_ENC2_HOLD) : uif_encoder2_hold();
 			return 0;
 	#else
 		case KBD_ENC2_PRESS:
@@ -17778,7 +17779,7 @@ hamradio_main_step(void)
 				nrotate2 = getRotateHiRes2(& jumpsize2);
 			#endif
 #if WITHTOUCHGUI
-			if (!encoder2busy)
+			if (!encoder2_busy)
 			{
 				if (uif_encoder2_rotate(nrotate2))
 				{
@@ -17822,7 +17823,11 @@ hamradio_main_step(void)
 			}
 	#endif /* WITHDEBUG */
 	#if WITHKEYBOARD
+#if WITHTOUCHGUI
+			if (kbready != 0 && ! keyboard_disabled)
+#else
 			if (kbready != 0)
+#endif
 			{
 				if (processkeyboard(kbch))
 				{
@@ -17894,7 +17899,7 @@ hamradio_main_step(void)
 				}
 			}
 			#if WITHTOUCHGUI
-				encoder2busy = check_encoder2(nrotate2);
+				encoder2_busy = check_encoder2(nrotate2);
 				process_gui();
 			#endif /* WITHTOUCHGUI */
 		}
@@ -17907,6 +17912,16 @@ hamradio_main_step(void)
 }
 
 #if WITHTOUCHGUI
+void disable_keyboard (void)
+{
+	keyboard_disabled = 1;
+}
+
+void enable_keyboard (void)
+{
+	keyboard_disabled = 0;
+}
+
 uint_fast8_t send_key_code (uint_fast8_t code)
 {
 	processkeyboard(code);

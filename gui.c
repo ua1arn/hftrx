@@ -1106,6 +1106,7 @@ void button1_handler(void);
 		{
 			set_window(WINDOW_FREQ, NON_VISIBLE);
 			footer_buttons_state(CANCELLED, "");
+			enable_keyboard();
 		}
 	}
 
@@ -1171,12 +1172,14 @@ void button1_handler(void);
 			set_window(gui.window_to_draw, VISIBLE);
 			windows[gui.window_to_draw].first_call = 1;
 			send_key_code(KBD_CODE_ENTERFREQ);
+			disable_keyboard();
 			footer_buttons_state(DISABLED, button_handlers[gui.selected_id].text);
 		}
 		else
 		{
 			set_window(gui.window_to_draw, NON_VISIBLE);
 			send_key_code(KBD_CODE_ENTERFREQDONE);
+			enable_keyboard();
 			footer_buttons_state(CANCELLED, "");
 		}
 	}
