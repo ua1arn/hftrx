@@ -15,6 +15,7 @@
 #include "formats.h"
 #include "gpio.h"
 #include "spi.h"
+#include "gui.h"
 
 #if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811)
 
@@ -372,11 +373,12 @@ tcsnormalize(
 }
 
 /* top left raw data values */
-static uint_fast16_t xrawmin = 70;
-static uint_fast16_t yrawmin = 3890;
+static uint_fast16_t xrawmin; // = 70;
+static uint_fast16_t yrawmin; // = 3890;
 /* bottom right raw data values */
-static uint_fast16_t xrawmax = 3990;
-static uint_fast16_t yrawmax = 150;
+static uint_fast16_t xrawmax; // = 3990;
+static uint_fast16_t yrawmax; // = 150;
+static uint_fast8_t is_calibrate;
 
 // On AT070TN90 with touch screen attached Y coordinate increments from bottom to top, X from left to right
 uint_fast8_t board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
@@ -392,10 +394,30 @@ uint_fast8_t board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
 	return 0;
 }
 
+uint_fast8_t board_tsc_is_pressed (void) /* Return 1 if touch detection */
+{
+	return (i2cperiph_read8(BOARD_I2C_STMPE811, STMPE811_REG_TSC_CTRL) & STMPE811_TS_CTRL_STATUS) >> STMPE811_TS_CTRL_STATUS_POS;
+}
+
+void display_line(int xn, int yn, int xk, int yk, COLOR_T color);
+
+uint_fast8_t stmpe811_calibrate(void)
+{
+	uint_fast16_t xmin, ymin, xmax, ymax, z;
+	display2_bgreset();
+	display_solidbar(1,1,15,15,COLORMAIN_WHITE);
+
+	PRINTF("calibrate\n");
+	return 1;
+}
+
 void stmpe811_initialize(void)
 {
 	unsigned chip_id;
 	unsigned ver;
+	uint_fast8_t kbch;
+
+	is_calibrate = tsc_read_cal_coeffs(& xrawmin, & yrawmin, & xrawmax, & yrawmax);
 
 	chip_id = i2cperiph_read16(BOARD_I2C_STMPE811, STMPE811_REG_CHP_ID);
 	ver = i2cperiph_read8(BOARD_I2C_STMPE811, STMPE811_REG_ID_VER);
@@ -405,15 +427,11 @@ void stmpe811_initialize(void)
 
 	if (tscpresetnt != 0 && ver == 0x03)
 	{
+		if (kbd_get_ishold(KIF_EXTMENU))
+			stmpe811_calibrate();
 		stmpe811_TS_Start(BOARD_I2C_STMPE811);
 	}
 }
-
-uint_fast8_t board_tsc_is_pressed (void) /* Return 1 if touch detection */
-{
-	return (i2cperiph_read8(BOARD_I2C_STMPE811, STMPE811_REG_TSC_CTRL) & STMPE811_TS_CTRL_STATUS) >> STMPE811_TS_CTRL_STATUS_POS;
-}
-
 #endif /* defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811) */
 
 #if defined (TSC1_TYPE)

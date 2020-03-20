@@ -2865,6 +2865,13 @@ filter_t fi_2p0_455 =
 #if	WITHDIRECTBANDS
 	uint8_t	bandgroup [BANDGROUP_COUNT];	/* последний диапазон в группе, куда был переход по кнопке диапазона (индекс в bands). */
 #endif	/* WITHDIRECTBANDS */
+#if WITHTOUCHGUI && defined (TSC1_TYPE)
+	uint_fast16_t tsc_xrawmin;
+	uint_fast16_t tsc_yrawmin;
+	uint_fast16_t tsc_xrawmax;
+	uint_fast16_t tsc_yrawmax;
+	uint_fast8_t tsc_is_calibrated;
+#endif
 	uint8_t signature [sizeof nvramsign - 1];	/* сигнатура соответствия версии программы и содержимого NVRAM */
 } ATTRPACKED;	// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
 
@@ -2921,6 +2928,11 @@ filter_t fi_2p0_455 =
 //#define RMT_BWPROPSFLTSOFTER_BASE(i) offsetof(struct nvmap, bwpropsfltsofter [(i)])
 #define RMT_BWPROPSAFRESPONCE_BASE(i) offsetof(struct nvmap, bwpropsafresponce [(i)])
 
+#define RMT_TSCXRAWMIN_BASE offsetof(struct nvmap, tsc_xrawmin)
+#define RMT_TSCYRAWMIN_BASE offsetof(struct nvmap, tsc_yrawmin)
+#define RMT_TSCXRAWMAX_BASE offsetof(struct nvmap, tsc_xrawmax)
+#define RMT_TSCYRAWMAX_BASE offsetof(struct nvmap, tsc_yrawmax)
+#define RMT_TSCISCALIBRATED_BASE offsetof(struct nvmap, tsc_is_calibrated)
 
 /* переменные, вынесенные из главной функции - определяют текущий тежим рботы
    и частоту настройки
@@ -17912,6 +17924,16 @@ hamradio_main_step(void)
 }
 
 #if WITHTOUCHGUI
+uint_fast8_t tsc_read_cal_coeffs (uint_fast16_t * xmin, uint_fast16_t * ymin,
+					 	 	 	  uint_fast16_t * xmax, uint_fast16_t * ymax)
+{
+	* xmin = loadvfy16up(RMT_TSCXRAWMIN_BASE, 20, 200, 70);
+	* ymin = loadvfy16up(RMT_TSCYRAWMIN_BASE, 3500, 4500, 3890);
+	* xmax = loadvfy16up(RMT_TSCXRAWMAX_BASE, 3500, 4500, 3990);
+	* ymax = loadvfy16up(RMT_TSCYRAWMAX_BASE, 50, 250, 150);
+	return loadvfy16up(RMT_TSCISCALIBRATED_BASE, 0, 1, 0);
+}
+
 void disable_keyboard (void)
 {
 	keyboard_disabled = 1;
