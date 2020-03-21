@@ -6391,73 +6391,21 @@ static void board_fpga_loader_initialize(void)
 
 #if WITHFPGALOAD_PS
 
-static const FLASHMEMINIT uint16_t rbfimage [] =
+#if ! CPUSTYLE_R7S721
+/* на процессоре renesas образ располагается в памяти, испольщуемой для хранений буферов DSP части */
+static const FLASHMEMINIT uint16_t rbfimage0 [] =
 {
-
-#if (CTLSTYLE_RAVENDSP_V3 && ! WITHUSEDUALWATCH) && (DDS1_CLK_MUL == 10)
-	#include "rbf/rbfimage_v3_pll.h"
-#elif (CTLSTYLE_RAVENDSP_V3 && ! WITHUSEDUALWATCH) && (DDS1_CLK_MUL == 1)
-	#include "rbf/rbfimage_v3.h"
-#elif (CTLSTYLE_RAVENDSP_V4 && ! WITHUSEDUALWATCH) && (DDS1_CLK_MUL == 10)
-	#include "rbf/rbfimage_v4_pll.h"
-#elif (CTLSTYLE_RAVENDSP_V4 && ! WITHUSEDUALWATCH) && (DDS1_CLK_MUL == 1)
-	#include "rbf/rbfimage_v4.h"
-#elif CTLSTYLE_RAVENDSP_V5 && (DDS1_CLK_MUL == 10)
-	#include "rbf/rbfimage_v5_2ch_pll.h"	// CTLSTYLE_RAVENDSP_V5 with 12.288 osc
-#elif CTLSTYLE_RAVENDSP_V5 && (DDS1_CLK_MUL == 1) && WITHOPERA4BEACON
-	#include "rbf/rbfimage_v5_2ch_opera4.h"	// CTLSTYLE_RAVENDSP_V5
-#elif CTLSTYLE_RAVENDSP_V5 && (DDS1_CLK_MUL == 1)
-	#include "rbf/rbfimage_v5_2ch.h"	// CTLSTYLE_RAVENDSP_V5
-#elif CTLSTYLE_RAVENDSP_V6 && (DDS1_CLK_MUL == 1)
-	#include "rbf/rbfimage_v6_2ch.h"	// CTLSTYLE_RAVENDSP_V6
-#elif CTLSTYLE_RAVENDSP_V7 && ! WITHUSEDUALWATCH && (DDS1_CLK_MUL == 1)
-	#include "rbf/rbfimage_v7_1ch.h"	//
-#elif CTLSTYLE_RAVENDSP_V7 && (DDS1_CLK_MUL == 1)
-	#include "rbf/rbfimage_v7a_2ch.h"	// CTLSTYLE_RAVENDSP_V7
-#elif CTLSTYLE_STORCH_V1 && ! WITHUSEDUALWATCH && (DDS1_CLK_MUL == 1)
-	#include "rbf/rbfimage_v7_1ch.h"	//
-#elif CTLSTYLE_STORCH_V1 && (DDS1_CLK_MUL == 1)
-	#include "rbf/rbfimage_v7a_2ch.h"	// same as CTLSTYLE_RAVENDSP_V7
-#elif CTLSTYLE_STORCH_V2 && ! WITHUSEDUALWATCH && (DDS1_CLK_MUL == 1)
-	#include "rbf/rbfimage_v7a_2ch.h"	//
-#elif CTLSTYLE_STORCH_V2 && (DDS1_CLK_MUL == 1)
-	#include "rbf/rbfimage_v7a_2ch.h"	// same as CTLSTYLE_RAVENDSP_V7
-#elif CTLSTYLE_STORCH_V3 && ! WITHUSEDUALWATCH && (DDS1_CLK_MUL == 1)
-	//#include "rbf/rbfimage_v7_1ch.h"	//
-	#include "rbf/rbfimage_v7a_2ch.h"	// same as CTLSTYLE_RAVENDSP_V7
-#elif CTLSTYLE_STORCH_V3 && (DDS1_CLK_MUL == 1)
-	#include "rbf/rbfimage_v7a_2ch.h"	// same as CTLSTYLE_RAVENDSP_V7
-#elif CTLSTYLE_STORCH_V4 && ! WITHUSEDUALWATCH && (DDS1_CLK_MUL == 1)	// modem v2
-	#include "rbf/rbfimage_v7_1ch.h"	//
-//#elif CTLSTYLE_STORCH_V4 && (DDS1_CLK_MUL == 1)	// modem v2
-//	#include "rbf/rbfimage_v7_2ch.h"	// same as CTLSTYLE_RAVENDSP_V7
-#elif CTLSTYLE_STORCH_V5 && ! WITHUSEDUALWATCH && (DDS1_CLK_MUL == 1)		// mini
-	#include "rbf/rbfimage_v7_1ch.h"	//
-#elif CTLSTYLE_STORCH_V5 && (DDS1_CLK_MUL == 1)		// mini
-	#include "rbf/rbfimage_v7a_2ch.h"	// same as CTLSTYLE_RAVENDSP_V7
-#elif CTLSTYLE_STORCH_V6 && ! WITHUSEDUALWATCH && (DDS1_CLK_MUL == 1)		// mini
-	#include "rbf/rbfimage_v7_1ch.h"	//
-#elif CTLSTYLE_STORCH_V6 && (DDS1_CLK_MUL == 1)		// mini
-	#include "rbf/rbfimage_v7a_2ch.h"	// same as CTLSTYLE_RAVENDSP_V7
-#elif CTLSTYLE_STORCH_V7 && ! WITHUSEDUALWATCH && (DDS1_CLK_MUL == 1)		// TFT plug on board
-	#include "rbf/rbfimage_v7_1ch.h"	//
-#elif CTLSTYLE_STORCH_V7 && (DDS1_CLK_MUL == 1)		// TFT plug on board
-	#include "rbf/rbfimage_v7a_2ch.h"	// same as CTLSTYLE_RAVENDSP_V7
-#elif CTLSTYLE_OLEG4Z_V1 && (DDS1_CLK_MUL == 1)
-	#include "rbf/rbfimage_oleg4z.h"	// same as CTLSTYLE_RAVENDSP_V7, 1 RX & WFM
-#elif CTLSTYLE_STORCH_V8 && (DDS1_CLK_MUL == 1) && WITHRTS192	// renesas & TFT panel on CPU
-	#include "rbf/rbfimage_v8t_192k.h"
-#elif CTLSTYLE_STORCH_V8 && (DDS1_CLK_MUL == 1)	// renesas & TFT panel on CPU
-	#include "rbf/rbfimage_v8t_96k.h"
-#elif CTLSTYLE_STORCH_V9 && (DDS1_CLK_MUL == 1) && WITHRTS192	// renesas & TFT panel on CPU
-	#include "rbf/rbfimage_v8t_192k.h"
-#elif CTLSTYLE_STORCH_V9 && (DDS1_CLK_MUL == 1)	// renesas & TFT panel on CPU
-	#include "rbf/rbfimage_v8t_96k.h"
-#else
-	#error Missing FPGA image file
-	0
-#endif
+#include "rbfimages.h"
 };
+
+/* получить расположение в памяти и количество элементов в массиве для загрузки FPGA */
+const uint16_t * getrbfimage(size_t * count)
+{
+	* count = sizeof rbfimage0 / sizeof rbfimage0 [0];
+	return & rbfimage0 [0];
+}
+
+#endif /* ! CPUSTYLE_R7S721 */
 
 /* FPGA загружается процессором с помощью SPI */
 static void board_fpga_loader_PS(void)
@@ -6468,8 +6416,10 @@ restart:
 	;
 	unsigned long w = 1000;
 	do {
+		size_t rbflength;
+		const uint16_t * p = getrbfimage(& rbflength);
+
 		debug_printf_P(PSTR("fpga: board_fpga_loader_PS start\n"));
-		const size_t rbflength = sizeof rbfimage / sizeof rbfimage [0];
 		/* After power up, the Cyclone IV device holds nSTATUS low during POR delay. */
 
 		FPGA_NCONFIG_PORT_S(FPGA_NCONFIG_BIT);
@@ -6502,7 +6452,6 @@ restart:
 		{
 			unsigned wcd = 0;
 			size_t n = rbflength - 1;
-			const uint16_t * p = rbfimage;
 			//
 
 			hardware_spi_connect_b16(SPIC_SPEEDUFAST, SPIC_MODE3);

@@ -4882,12 +4882,38 @@ int dsp_mag2y(
 	return y;
 }
 
-static RAMBIGDTCM union states
+union states
 {
 	float32_t iir_state [FFTZOOM_IIR_STAGES * 4];
 	float32_t fir_state [FFTZOOM_FIR_TAPS + LARGEFFT - 1];
 	float32_t cmplx_sig [NORMALFFT * 2];
-} zoomfft_st;
+	uint16_t rbfimage_dummy [128];	// для предотвращений рунаи компилятора ро приведении типов
+};
+
+
+#if CPUSTYLE_R7S721
+
+static uint16_t rbfimage0 [] =
+{
+#include "rbfimages.h"
+};
+
+/* получить расположение в памяти и количество элементов в массиве для загрузки FPGA */
+const uint16_t * getrbfimage(size_t * count)
+{
+	ASSERT(sizeof rbfimage0 >= sizeof (union states));
+
+	* count = sizeof rbfimage0 / sizeof rbfimage0 [0];
+	return & rbfimage0 [0];
+}
+
+#define zoomfft_st (* (union states *) rbfimage0)
+
+#else /* CPUSTYLE_R7S721 */
+
+static RAMBIGDTCM union states zoomfft_st;
+
+#endif /* CPUSTYLE_R7S721 */
 
 static void fftzoom_filer_decimate(
 	const struct zoom_param * const prm,

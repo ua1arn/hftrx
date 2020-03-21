@@ -332,6 +332,8 @@ uint_fast8_t board_tsc_getxy(uint_fast16_t * x, uint_fast16_t * y);	/* touch scr
 uint_fast8_t board_tsc_is_pressed (void); 	/* Return 1 if touch detection */
 uint_fast8_t tsc_read_cal_coeffs (uint_fast16_t * xmin, uint_fast16_t * ymin, uint_fast16_t * xmax, uint_fast16_t * ymax);
 
+const uint16_t * getrbfimage(size_t * count); /* получить расположение в памяти и количество элементов в массиве для загрузки FPGA */
+
 enum
 {
 	STTE_OK,		// можно переходить к следующему состоянию.
