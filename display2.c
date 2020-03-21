@@ -5440,30 +5440,28 @@ enum
 #elif (! LCDMODE_S1D13781_NHWACCEL && LCDMODE_S1D13781)
 
 	static RAMDTCM ALIGNX_BEGIN PACKEDCOLOR565_T colorpip0 [GXSIZE(ALLDX, 1)] ALIGNX_END;
+	static void nextpip(void)
+	{
+	}
 
 #else /* LCDMODE_LTDC_PIP16 */
 
 	static ALIGNX_BEGIN PACKEDCOLOR565_T colorpip0 [GXSIZE(ALLDX, ALLDY)] ALIGNX_END;
+	static void nextpip(void)
+	{
+	}
 
 #endif /* LCDMODE_LTDC_PIP16 */
 
-#if LCDMODE_LTDC_PIPL8
-	PACKEDCOLORPIP_T * getscratchpip(void)
-	{
-		return colorpips [pipphase];
-	}
+PACKEDCOLORPIP_T * getscratchpip(void)
+{
+#if (LCDMODE_LTDC_PIP16 || LCDMODE_LTDC_PIPL8) && LCDMODE_LTDC
+	return colorpips [pipphase];
+#else /* LCDMODE_LTDC_PIP16 */
+	return colorpip0;
+#endif /* LCDMODE_LTDC_PIP16 */
+}
 
-#else
-	PACKEDCOLORPIP_T * getscratchpip(void)
-	{
-	#if (LCDMODE_LTDC_PIP16 && LCDMODE_LTDC)
-		return colorpips [pipphase];
-	#else /* LCDMODE_LTDC_PIP16 */
-		return colorpip0;
-	#endif /* LCDMODE_LTDC_PIP16 */
-	}
-
-#endif
 // Параметры фильтров данных спектра и водопада
 #define DISPLAY_SPECTRUM_BETA (0.25)
 #define DISPLAY_WATERFALL_BETA (0.5)
@@ -6192,10 +6190,11 @@ static void display2_colorbuff(
 
 	#if ((LCDMODE_LTDC_PIP16 || LCDMODE_LTDC_PIPL8) && LCDMODE_LTDC)
 		display_colorbuffer_pip(colorpip, ALLDX, ALLDY);
-		nextpip();
 	#else /* LCDMODE_LTDC_PIP16 */
 		display_colorbuffer_show(colorpip, ALLDX, ALLDY, GRID2X(x0), GRID2Y(y0));
 	#endif /* LCDMODE_LTDC_PIP16 */
+
+	nextpip();
 
 #endif /* LCDMODE_S1D13781 */
 }
