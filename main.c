@@ -2866,13 +2866,13 @@ filter_t fi_2p0_455 =
 #if	WITHDIRECTBANDS
 	uint8_t	bandgroup [BANDGROUP_COUNT];	/* последний диапазон в группе, куда был переход по кнопке диапазона (индекс в bands). */
 #endif	/* WITHDIRECTBANDS */
-#if WITHTOUCHGUI && defined (TSC1_TYPE)
-	uint_fast16_t tsc_xrawmin;
-	uint_fast16_t tsc_yrawmin;
-	uint_fast16_t tsc_xrawmax;
-	uint_fast16_t tsc_yrawmax;
-	uint_fast8_t tsc_is_calibrated;
-#endif
+#if defined (TSC1_TYPE)
+	uint16_t tsc_xrawmin;
+	uint16_t tsc_yrawmin;
+	uint16_t tsc_xrawmax;
+	uint16_t tsc_yrawmax;
+	uint8_t tsc_is_calibrated;
+#endif /* defined (TSC1_TYPE) */
 	uint8_t signature [sizeof nvramsign - 1];	/* сигнатура соответствия версии программы и содержимого NVRAM */
 } ATTRPACKED;	// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
 
@@ -17935,7 +17935,8 @@ hamradio_main_step(void)
 	return STTE_OK;
 }
 
-#if WITHTOUCHGUI
+#if defined (TSC1_TYPE)
+
 uint_fast8_t tsc_read_cal_coeffs (uint_fast16_t * xmin, uint_fast16_t * ymin,
 					 	 	 	  uint_fast16_t * xmax, uint_fast16_t * ymax)
 {
@@ -17943,9 +17944,11 @@ uint_fast8_t tsc_read_cal_coeffs (uint_fast16_t * xmin, uint_fast16_t * ymin,
 	* ymin = loadvfy16up(RMT_TSCYRAWMIN_BASE, 3500, 4500, 3890);
 	* xmax = loadvfy16up(RMT_TSCXRAWMAX_BASE, 3500, 4500, 3990);
 	* ymax = loadvfy16up(RMT_TSCYRAWMAX_BASE, 50, 250, 150);
-	return loadvfy16up(RMT_TSCISCALIBRATED_BASE, 0, 1, 0);
+	return loadvfy8up(RMT_TSCISCALIBRATED_BASE, 0, 1, 0);
 }
+#endif /* defined (TSC1_TYPE) */
 
+#if WITHTOUCHGUI
 void disable_keyboard (void)
 {
 	keyboard_disabled = 1;
