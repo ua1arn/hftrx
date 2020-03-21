@@ -38,8 +38,8 @@ int main(int argc, char* argv[])
 		fprintf(fpo, "/* $Id: $ */\n");
 		fprintf(fpo, "/* GENERATED FILE - DO NOT EDIT */\n");
 		fprintf(fpo, "/* Source file '%s' */\n", argv [1]);
-		fprintf(fpo, "static const FLASHMEMINIT uint16_t rbfimage [] =\n");
-		fprintf(fpo, "{\n");
+		//fprintf(fpo, "static const FLASHMEMINIT uint16_t rbfimage [] =\n");
+		//fprintf(fpo, "{\n");
 		for (;;)
 		{
 			int c1, c2;
@@ -63,7 +63,7 @@ int main(int argc, char* argv[])
 		}
 		if (pos != 0)
 			fprintf(fpo, "\n");
-		fprintf(fpo, "};\n");
+		//fprintf(fpo, "};\n");
 		fprintf(fpo, "/* %u bytes converted to %u words. */\n", bytes, words);
 		fclose(fpo);
 		//fprintf(stdout, "static const size_t rbflength = sizeof rbfimage / sizeof rbfimage [0]; /* %u 16-bit words (0x%08lx)*/\n", words, words);

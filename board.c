@@ -6391,6 +6391,9 @@ static void board_fpga_loader_initialize(void)
 
 #if WITHFPGALOAD_PS
 
+static const FLASHMEMINIT uint16_t rbfimage [] =
+{
+
 #if (CTLSTYLE_RAVENDSP_V3 && ! WITHUSEDUALWATCH) && (DDS1_CLK_MUL == 10)
 	#include "rbf/rbfimage_v3_pll.h"
 #elif (CTLSTYLE_RAVENDSP_V3 && ! WITHUSEDUALWATCH) && (DDS1_CLK_MUL == 1)
@@ -6452,7 +6455,9 @@ static void board_fpga_loader_initialize(void)
 	#include "rbf/rbfimage_v8t_96k.h"
 #else
 	#error Missing FPGA image file
+	0
 #endif
+};
 
 /* FPGA загружается процессором с помощью SPI */
 static void board_fpga_loader_PS(void)
