@@ -108,6 +108,7 @@ static int_fast16_t glob_gridstep = 10000;	// 10 kHz - шаг сетки
 
 // waterfall/spectrum parameters
 static uint_fast8_t glob_fillspect;	/* заливать заполнением площадь под графиком спектра */
+static uint_fast8_t glob_wfshiftenable;	/* разрешение или запрет сдвига водопада при изменении частоты */
 
 static int_fast16_t glob_topdb = 30;	/* верхний предел FFT */
 static int_fast16_t glob_bottomdb = 130;	/* нижний предел FFT */
@@ -6033,7 +6034,7 @@ static void dsp_latchwaterfall(
 	{
 		// не менялась частота
 	}
-	else if (wffreq > f0)
+	else if (wffreq > f0 && glob_wfshiftenable)
 	{
 		// частота уменьшилась - надо сдвигать картинку вправо
 		const uint_fast32_t delta = wffreq - f0;
@@ -6050,7 +6051,7 @@ static void dsp_latchwaterfall(
 			hclear = 1;
 		}
 	}
-	else
+	else if (wffreq < f0 && glob_wfshiftenable)
 	{
 		// частота увеличилась - надо сдвигать картинку влево
 		const uint_fast32_t delta = f0 - wffreq;
@@ -6513,6 +6514,13 @@ uint_fast8_t display_getfreqformat(
 }
 
 // Установка параметров отображения
+/* разрешение или запрет сдвига водопада при изменении частоты */
+void
+board_set_wfshiftenable(uint_fast8_t v)
+{
+	glob_wfshiftenable = v != 0;
+}
+
 /* заливать заполнением площадь под графиком спектра */
 void
 board_set_fillspect(uint_fast8_t v)

@@ -2489,6 +2489,7 @@ struct nvmap
 	uint8_t gbottomdbwf;	/* верхний предел FFT waterflow */
 	uint8_t gzoomxpow2;
 	uint8_t gwflevelsep;	/* чувствительность водопада регулируется отдельной парой параметров */
+	uint8_t gwfshiftenable; /* разрешение или запрет сдвига водопада при изменении частоты */
 #endif /* WITHSPECTRUMWF */
 #if WITHBCBANDS
 	uint8_t bandsetbcast;	/* Broadcasting radio bands */
@@ -3130,6 +3131,7 @@ static const uint_fast8_t displaymodesfps = DISPLAYMODES_FPS;
 	static uint_fast8_t gbottomdbwf = 130;	/* нижний предел FFT waterflow */
 	static uint_fast8_t gwflevelsep;	/* чувствительность водопада регулируется отдельной парой параметров */
 	static uint_fast8_t gzoomxpow2;		/* степень двойки - состояние растягиваия спектра (уменьшение наблюдаемой полосы частот) */
+	static uint_fast8_t gwfshiftenable = 1; /* разрешение или запрет сдвига водопада при изменении частоты */
 #endif /* WITHSPECTRUMWF */
 #if WITHLCDBACKLIGHT
 	#if WITHISBOOTLOADER 
@@ -8200,6 +8202,7 @@ updateboard(
 			board_set_bottomdbwf(gbottomdbwf);		/* нижний предел FFT для водопада */
 			board_set_zoomxpow2(gzoomxpow2);	/* уменьшение отображаемого участка спектра */
 			board_set_wflevelsep(gwflevelsep);	/* чувствительность водопада регулируется отдельной парой параметров */
+			board_set_wfshiftenable(gwfshiftenable);	/* разрешение или запрет сдвига водопада при изменении частоты */
 		#endif /* WITHSPECTRUMWF */
 	#endif /* WITHIF4DSP */
 
@@ -12801,6 +12804,15 @@ static const FLASHMEM struct menudef menutable [] =
 		offsetof(struct nvmap, gzoomxpow2),
 		NULL,
 		& gzoomxpow2,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		QLABEL("WF shift"), 7, 3, RJ_YES,	ISTEP1,
+		ITEM_VALUE,
+		0, 1,							/* разрешение или запрет сдвига водопада при изменении частоты */
+		offsetof(struct nvmap, gwfshiftenable),
+		NULL,
+		& gwfshiftenable,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #endif /* WITHSPECTRUMWF */
@@ -18167,6 +18179,8 @@ const char * gui_edit_menu_item(uint_fast8_t index, int_least16_t rotate)
 		}
 		display_menu_valxx(0, 0, (void *) mp);
 		updateboard(1, 0);
+		display_redrawfreqs(1);
+		display_redrawmodes(1);
 #if (NVRAM_TYPE != NVRAM_TYPE_CPUEEPROM)
 		savemenuvalue(mp);		/* сохраняем отредактированное значение */
 #endif
@@ -18186,7 +18200,8 @@ void change_submode(uint_fast8_t newsubmode)
 	putmodecol(gmoderows [bi], defcol, bi);	/* внести новое значение в битовую маску */
 	gsubmodechange(getsubmode(bi), bi);
 	updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
-	display_redrawfreqmodesbars(0);
+	display_redrawfreqs(1);
+	display_redrawmodes(1);
 }
 
 #endif /* WITHTOUCHGUI */

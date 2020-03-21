@@ -866,6 +866,7 @@ void button1_handler(void);
 			// при переходе на следующий уровень пункт меню подсвечивается
 			if (menu_level == MENU_VALS)
 			{
+				menu[MENU_VALS].selected_label = menu[MENU_PARAMS].selected_label;
 				uint_fast8_t id_sel_label = menu[MENU_VALS].first_id + menu[MENU_VALS].selected_label;
 
 				button_handlers[id_button_down].visible = VISIBLE;
@@ -1249,7 +1250,7 @@ void button1_handler(void);
 		uint_fast8_t str_len = 0;
 
 		// вывод на PIP служебной информации
-	#if WITHTHERMOLEVEL
+	#if WITHTHERMOLEVEL	// температура выходных транзисторов (при передаче)
 		if (hamradio_get_tx())
 		{
 			int_fast16_t temp = hamradio_get_temperature_value();
@@ -1274,9 +1275,9 @@ void button1_handler(void);
 		str_len += local_snprintf_P(&buff[str_len], sizeof buff / sizeof buff [0] - str_len, PSTR("SPAN:%3dk"),
 				(int) ((display_zoomedbw() + 0) / 1000));
 	#endif /* WITHIF4DSP */
-		xt = gui.pip_width - 10 - str_len * 10;
-		pip_transparency_rect(colorpip, gui.pip_width, gui.pip_height, xt - 5, 225, gui.pip_width - 5, 248, alpha);
-		display_colorbuff_string2_tbg(colorpip, gui.pip_width, gui.pip_height, xt, 230, buff, COLORPIP_YELLOW);
+		xt = gui.pip_width - SMALLCHARW2 - str_len * SMALLCHARW2;
+		pip_transparency_rect(colorpip, gui.pip_width, gui.pip_height, xt - 5, 230, gui.pip_width - 5, 253, alpha);
+		display_colorbuff_string2_tbg(colorpip, gui.pip_width, gui.pip_height, xt, 235, buff, COLORPIP_YELLOW);
 
 	#if defined (RTC1_TYPE)				// текущее время
 		uint_fast16_t year;
@@ -1285,8 +1286,8 @@ void button1_handler(void);
 		board_rtc_getdatetime(& year, & month, & day, & hour, & minute, & secounds);
 		str_len += local_snprintf_P(&buff[str_len], sizeof buff / sizeof buff [0] - str_len,
 				PSTR("%02d.%02d.%04d %02d%c%02d"), day, month, year, hour, ((secounds & 1) ? ' ' : ':'), minute);
-		pip_transparency_rect(colorpip, gui.pip_width, gui.pip_height, 5, 225, str_len * 10 + 15, 248, alpha);
-		display_colorbuff_string2_tbg(colorpip, gui.pip_width, gui.pip_height, 10, 230, buff, COLORPIP_YELLOW);
+		pip_transparency_rect(colorpip, gui.pip_width, gui.pip_height, 5, 230, str_len * SMALLCHARW2 + 15, 253, alpha);
+		display_colorbuff_string2_tbg(colorpip, gui.pip_width, gui.pip_height, 10, 235, buff, COLORPIP_YELLOW);
 	#endif 	/* defined (RTC1_TYPE) */
 
 		if (windows[gui.window_to_draw].is_show)
@@ -1318,8 +1319,7 @@ void button1_handler(void);
 					|| bh->parent == FOOTER)									// кнопки
 			{
 				/* Кнопка без надписей (фон для надписей) */
-				draw_button_pip(bh->x1, bh->y1, bh->x2, bh->y2,
-						bh->state, bh->is_locked, bh->state == DISABLED ? 1 : 0);
+				draw_button_pip(bh->x1, bh->y1, bh->x2, bh->y2, bh->state, bh->is_locked, bh->state == DISABLED ? 1 : 0);
 
 				if (strchr(bh->text, '|') == NULL)
 				{
@@ -1376,8 +1376,7 @@ void button1_handler(void);
 		static uint_fast16_t x_old = 0, y_old = 0;
 		static list_template_t * p = NULL;
 
-#if defined (TSC1_TYPE)
-
+	#if defined (TSC1_TYPE)
 		if (board_tsc_is_pressed())
 		{
 			board_tsc_getxy(& tx, & ty);
@@ -1392,7 +1391,7 @@ void button1_handler(void);
 			gui.fix = 1;
 		}
 		else
-#endif /* defined (TSC1_TYPE) */
+	#endif /* defined (TSC1_TYPE) */
 		{
 			gui.is_touching_screen = 0;
 			gui.is_after_touch = 0;
