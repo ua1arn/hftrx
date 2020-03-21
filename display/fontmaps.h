@@ -1,9 +1,9 @@
-/*
- * fontmaps.h
- *
- *  Created on: Mar 18, 2020
- *      Author: gena
- */
+/* $Id$ */
+//
+// Проект HF Dream Receiver (КВ приёмник мечты)
+// автор Гена Завидовский mgs2001@mail.ru
+// UA1ARN
+//
 
 #ifndef DISPLAY_FONTMAPS_H_INCLUDED
 #define DISPLAY_FONTMAPS_H_INCLUDED
