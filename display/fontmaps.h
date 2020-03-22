@@ -8,7 +8,20 @@
 #ifndef DISPLAY_FONTMAPS_H_INCLUDED
 #define DISPLAY_FONTMAPS_H_INCLUDED
 
-#if DSTYLE_G_X176_Y132
+#if LCDMODE_UC1601
+
+	/* растровые шрифты */
+	#include "./fonts/uc1601s_font_small.h"
+
+	#if FONTSTYLE_ITALIC
+		#include "./fonts/uc1601s_ifont_half.h"
+		#include "./fonts/uc1601s_ifont_big.h"
+	#else /* FONTSTYLE_ITALIC */
+		#include "./fonts/uc1601s_font_half.h"
+		#include "./fonts/uc1601s_font_big.h"
+	#endif /* FONTSTYLE_ITALIC */
+
+#elif DSTYLE_G_X176_Y132
 
 	#include "./fonts/ls020_font_small.h"
 	#include "./fonts/ls020_font_half.h"
@@ -83,6 +96,7 @@
 		#include "./fonts/ls020_font_big.h"
 
 	#endif /* DSTYLE_G_X320_Y240 */
+
 #elif DSTYLE_G_X220_Y176 || DSTYLE_G_X160_Y128
 	// Индикатор 220*176 SF-TC220H-9223A-N_IC_ILI9225C_2011-01-15 с контроллером ILI9225С
 

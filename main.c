@@ -7113,11 +7113,14 @@ getactualpower(void)
 {
 #if WITHPOWERTRIM
 	return getactualdownpower() ? gtunepower : gnormalpower.value;
+
 #elif WITHPOWERLPHP
 	/* установить выходную мощность передатчика WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
-	return ? pwrmodes [gpwratunei].code : pwrmodes [gpwri].code);
+	return getactualdownpower() ? pwrmodes [gpwratunei].code : pwrmodes [gpwri].code;
+
 #else
 	return WITHPOWERTRIMMAX;
+
 #endif /* WITHPOWERLPHP */
 }
 
