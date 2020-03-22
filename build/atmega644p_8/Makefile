@@ -17,7 +17,7 @@ COMMON = -mmcu=$(MCU)
 
 ## Compile options common for all C compilation units.
 CFLAGS = $(COMMON)
-CFLAGS += -Wall -gdwarf-2 -std=gnu99 -flto -DF_CPU=8000000UL -Os -fsigned-char $(MAKE_DEFINES)
+CFLAGS += -Wall -gdwarf-2 -std=gnu99 -flto -DF_CPU=8000000UL -fsigned-char $(MAKE_DEFINES)
 CFLAGS += -MD -MP -MT $(*F).o -MF ./$(@D)/$(@F).d
 
 ## Assembly specific flags
@@ -27,7 +27,7 @@ ASMFLAGS += -x assembler-with-cpp -Wa,-gdwarf2
 
 ## Linker flags
 LDFLAGS = $(COMMON)
-LDFLAGS += -Os  -flto
+LDFLAGS += -Ofast -flto
 
 
 ## Intel Hex file production flags

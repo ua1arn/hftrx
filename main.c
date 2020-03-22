@@ -3247,7 +3247,7 @@ enum
 #if WITHCAT
 
 	static uint_fast8_t catenable = 1;	/* модифицируется через меню. */
-	static uint_fast8_t catbaudrate = 6;	/* 6 is a 57600 */ /* модифицируется через меню. - номер скорости при работе по CAT */
+	static uint_fast8_t catbaudrate = 3;	/* 3 is a 9600 */ /* модифицируется через меню. - номер скорости при работе по CAT */
 	static uint_fast8_t catdtrenable;	/* разрешение манипуляции по DTR CAT */
 	static uint_fast8_t catdtrptt;	/* переда управляется по DTR, а не по RTS */
 
