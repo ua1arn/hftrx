@@ -4887,7 +4887,7 @@ union states
 	float32_t iir_state [FFTZOOM_IIR_STAGES * 4];
 	float32_t fir_state [FFTZOOM_FIR_TAPS + LARGEFFT - 1];
 	float32_t cmplx_sig [NORMALFFT * 2];
-	uint16_t rbfimage_dummy [128];	// для предотвращений рунаи компилятора ро приведении типов
+	uint16_t rbfimage_dummy [1];	// для предотвращения ругнаи компилятора на приведение типов
 };
 
 
