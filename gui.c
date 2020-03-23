@@ -1025,15 +1025,15 @@ void button1_handler(void);
 
 	void remove_end_line_spaces(char * str)
 	{
-		uint_fast8_t i;
-		char c[1];
-		for(i = strlen(str) - 1; i > 0; i--)
+		size_t i = strlen(str);
+		if (i == 0)
+			return;
+		for (; -- i > 0;)
 		{
-			strncpy(c, & str[i], 1);
-			if(strcmp(c, " ") != 0)
+			if (str [i] != ' ')
 				break;
 		}
-		str[i + 1] = 0;
+		str [i + 1] = '\0';
 	}
 
 	void encoder2_menu (enc2_menu_t * enc2_menu)
