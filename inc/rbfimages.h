@@ -5,10 +5,6 @@
 // UA1ARN
 //
 
-#ifndef INC_RBFIMAGES_H_INCLUDED
-#define INC_RBFIMAGES_H_INCLUDED
-
-
 #if (CTLSTYLE_RAVENDSP_V3 && ! WITHUSEDUALWATCH) && (DDS1_CLK_MUL == 10)
 	#include "rbf/rbfimage_v3_pll.h"
 #elif (CTLSTYLE_RAVENDSP_V3 && ! WITHUSEDUALWATCH) && (DDS1_CLK_MUL == 1)
@@ -72,7 +68,3 @@
 	#error Missing FPGA image file
 	0,
 #endif
-
-
-
-#endif /* INC_RBFIMAGES_H_INCLUDED */
