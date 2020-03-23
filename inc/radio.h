@@ -3248,6 +3248,7 @@ void spool_0p128(void);	// OPERA support
 	const char * gui_edit_menu_item (uint_fast8_t index, int_least16_t rotate);
 	void disable_keyboard (void);
 	void enable_keyboard (void);
+	void gui_uif_editmenu(const char * name, uint_fast8_t menupos, uint_fast8_t exitkey);
 #endif /* WITHTOUCHGUI */
 
 #ifdef __cplusplus

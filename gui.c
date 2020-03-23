@@ -190,9 +190,11 @@ void button1_handler(void);
 	void buttons_bp_handler(void);
 	void buttons_freq_handler(void);
 	void buttons_menu_handler(void);
+	void buttons_uif_handler(void);
 	void window_bp_process(void);
 	void window_menu_process(void);
 	void window_freq_process(void);
+	void window_uif_process(void);
 	void encoder2_menu (enc2_menu_t * enc2_menu);
 
 	enum {
@@ -225,7 +227,8 @@ void button1_handler(void);
 		WINDOW_AGC,						// выбор пресетов настроек АРУ для текущего режима модуляции
 		WINDOW_FREQ,
 		WINDOW_MENU,
-		WINDOW_ENC2
+		WINDOW_ENC2,
+		WINDOW_UIF
 	};
 
 	typedef struct {
@@ -253,7 +256,7 @@ void button1_handler(void);
 		{ 356, 260, 442, 304, button5_handler, 	    CANCELLED, BUTTON_NON_LOCKED, 0, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "", },
 		{ 445, 260, 531, 304, button6_handler, 	    CANCELLED, BUTTON_NON_LOCKED, 0, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "", },
 		{ 534, 260, 620, 304, button7_handler, 	    CANCELLED, BUTTON_NON_LOCKED, 0, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "", },
-		{ 623, 260, 709, 304, button8_handler, 	    CANCELLED, BUTTON_NON_LOCKED, 0, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "", },
+		{ 623, 260, 709, 304, button8_handler, 	    CANCELLED, BUTTON_NON_LOCKED, 0, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "uif", },
 		{ 712, 260, 798, 304, button9_handler, 	    CANCELLED, BUTTON_NON_LOCKED, 0, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "System|settings", },
 		{ 234,  55, 314, 105, buttons_mode_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_LSB, "LSB", },
 		{ 319,  55, 399, 105, buttons_mode_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_CW,  "CW", },
@@ -283,8 +286,10 @@ void button1_handler(void);
 		{ 173, 134, 223, 184, buttons_freq_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_RECORDTOGGLE, 	"8", },
 		{ 226, 134, 276, 184, buttons_freq_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_LDSPTGL, 		"9", },
 		{ 279, 134, 329, 184, buttons_freq_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_VOXTOGGLE, 	"0", },
-		{   0, 	 0,   0,   0, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU,  NON_VISIBLE, UINTPTR_MAX, 			"-", } ,
-		{   0, 	 0,   0,   0, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU,  NON_VISIBLE, UINTPTR_MAX, 			"+", } ,
+		{   0, 	 0,   0,   0, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU,  NON_VISIBLE, UINTPTR_MAX, 			"-", },
+		{   0, 	 0,   0,   0, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU,  NON_VISIBLE, UINTPTR_MAX, 			"+", },
+//		{   0, 	 0,   0,   0, buttons_uif_handler, 	CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UIF,   NON_VISIBLE, UINTPTR_MAX, 			"-", },
+//		{   0, 	 0,   0,   0, buttons_uif_handler, 	CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UIF,   NON_VISIBLE, UINTPTR_MAX, 			"+", },
 	};
 	enum { button_handlers_count = sizeof button_handlers / sizeof button_handlers[0] };
 
@@ -302,10 +307,10 @@ void button1_handler(void);
 	} label_t;
 
 	static label_t labels[] = {
-	//     x,   y,  x2, y2,     parent,      state,     visible,     name,   Text,  color
+	//     x,   y,  parent,      state,        visible,     name,   Text,  color
 		{ },
-		{ 250, 120, WINDOW_BP,   DISABLED, 0, NON_VISIBLE, "lbl_low",  "", COLORPIP_YELLOW, },
-		{ 490, 120, WINDOW_BP,   DISABLED, 0, NON_VISIBLE, "lbl_high", "", COLORPIP_YELLOW, },
+		{ 250, 120, WINDOW_BP,   DISABLED,  0, NON_VISIBLE, "lbl_low",  "", COLORPIP_YELLOW, },
+		{ 490, 120, WINDOW_BP,   DISABLED,  0, NON_VISIBLE, "lbl_high", "", COLORPIP_YELLOW, },
 		{ 100,  50, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", "", COLORPIP_WHITE, labels_menu_handler, },
 		{ 100,  85, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", "", COLORPIP_WHITE, labels_menu_handler, },
 		{ 100, 120, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", "", COLORPIP_WHITE, labels_menu_handler, },
@@ -321,9 +326,11 @@ void button1_handler(void);
 		{ 450, 120, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", "", COLORPIP_WHITE, labels_menu_handler, },
 		{ 450, 155, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", "", COLORPIP_WHITE, labels_menu_handler, },
 		{ 450, 190, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 580,  60, WINDOW_ENC2, DISABLED, 0, NON_VISIBLE, "lbl_enc2_param", "", COLORPIP_WHITE, },
-		{ 580,  90, WINDOW_ENC2, DISABLED, 0, NON_VISIBLE, "lbl_enc2_val", "", COLORPIP_WHITE, },
-	};
+		{ 580,  60, WINDOW_ENC2, DISABLED,  0, NON_VISIBLE, "lbl_enc2_param", "", 	COLORPIP_WHITE, },
+		{ 580,  90, WINDOW_ENC2, DISABLED,  0, NON_VISIBLE, "lbl_enc2_val", "", 	COLORPIP_WHITE, },
+		{    0,  0,	WINDOW_UIF,  DISABLED,  0, NON_VISIBLE, "lbl_uif_param", "param", 	COLORPIP_WHITE, },
+		{    0,  0,	WINDOW_UIF,  DISABLED,  0, NON_VISIBLE, "lbl_uif_val", "val", 		COLORPIP_WHITE, },
+};
 	enum { labels_count = sizeof labels / sizeof labels[0] };
 
 	typedef struct {
@@ -368,6 +375,7 @@ void button1_handler(void);
 		{ WINDOW_FREQ,  100,  0, 350, 200, "Freq", 		  NON_VISIBLE, 0, window_freq_process, },
 		{ WINDOW_MENU,   50, 10, 600, 220, "Settings",	  NON_VISIBLE, 0, window_menu_process, },
 		{ WINDOW_ENC2, 	550, 15, 735, 120, "Fast menu",   NON_VISIBLE, 0, },
+		{ WINDOW_UIF, 	310, 15, 490, 120, "",   		  NON_VISIBLE, 0, window_uif_process, },
 	};
 	enum { windows_count = sizeof windows / sizeof windows[0] };
 
@@ -402,6 +410,15 @@ void button1_handler(void);
 	} menu_t;
 
 	menu_t menu[MENU_COUNT];
+
+	typedef struct {
+		const char name [15];
+		uint_fast8_t menupos;
+		uint_fast8_t exitkey;
+		uint_fast8_t state;
+	} menu_by_name_t;
+
+	menu_by_name_t menu_uif;
 
 	typedef struct {
 		uint_fast16_t type;				// тип элемента, поддерживающего реакцию на касания
@@ -710,6 +727,51 @@ void button1_handler(void);
 				menu_level = MENU_VALS;
 			}
 		}
+	}
+
+	void gui_uif_editmenu(const char * name, uint_fast8_t menupos, uint_fast8_t exitkey)
+	{
+		gui.window_to_draw = WINDOW_UIF;
+
+		if (windows[gui.window_to_draw].is_show == NON_VISIBLE)
+		{
+			set_window(gui.window_to_draw, VISIBLE);
+			windows[gui.window_to_draw].first_call = 1;
+			footer_buttons_state(DISABLED, "");
+			strcpy((char *) menu_uif.name, name);
+			menu_uif.menupos = menupos;
+			menu_uif.exitkey = exitkey;
+			menu_uif.state = VISIBLE;
+		}
+		else
+		{
+			set_window(gui.window_to_draw, NON_VISIBLE);
+			footer_buttons_state(CANCELLED, "");
+		}
+	}
+
+	void window_uif_process(void)
+	{
+		static uint_fast8_t window_shift_x = 0;
+		if (windows[WINDOW_UIF].first_call == 1)
+		{
+			windows[WINDOW_UIF].first_call = 0;
+			uint_fast8_t id_lbl_uif_param = find_label(WINDOW_UIF, "lbl_uif_param");
+			uint_fast8_t id_lbl_uif_val = find_label(WINDOW_UIF, "lbl_uif_val");
+			window_shift_x =  windows[WINDOW_UIF].x1 + ((windows[WINDOW_UIF].x2 - windows[WINDOW_UIF].x1) / 2);
+			labels[id_lbl_uif_param].x = window_shift_x - (strlen(labels[id_lbl_uif_param].text) * SMALLCHARW / 2);
+			labels[id_lbl_uif_param].y = windows[WINDOW_UIF].y1 + 10;
+			labels[id_lbl_uif_val].x = window_shift_x - (strlen(labels[id_lbl_uif_val].text) * SMALLCHARW / 2);
+			labels[id_lbl_uif_val].y = windows[WINDOW_UIF].y1 + SMALLCHARH * 4;
+		}
+
+
+
+	}
+
+	void buttons_uif_handler(void)
+	{
+
 	}
 
 	void window_menu_process(void)
