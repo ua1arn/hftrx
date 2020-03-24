@@ -2730,7 +2730,7 @@ filter_t fi_2p0_455 =
 	uint8_t	ggrpcat; // последний посещённый пункт группы
 	uint8_t catenable;	/* удаленное управление разрешено */
 	uint8_t catbaudrate;	/* номер скорости работы по CAT */
-	uint8_t catdtrptt;	/* переда управляется по DTR, а не по RTS */
+	uint8_t catdtrptt;	/* передача управляется по DTR, а не по RTS */
 	uint8_t catrtsenable;	/* разрешение включения передачи по линии RTS CAT */
 	uint8_t catdtrenable;	/* разрешение манипуляции по DTR CAT */
 #endif /* WITHCAT */
@@ -3236,11 +3236,17 @@ enum
 	static uint_fast8_t catenable = 1;	/* модифицируется через меню. */
 	static uint_fast8_t catbaudrate = 3;	/* 3 is a 9600 */ /* модифицируется через меню. - номер скорости при работе по CAT */
 	static uint_fast8_t catdtrenable;	/* разрешение манипуляции по DTR CAT */
-	static uint_fast8_t catdtrptt;	/* переда управляется по DTR, а не по RTS */
 
-	#if WITHTX
+	#if WITHCAT_CDC
+		static uint_fast8_t catdtrptt = 1;	/* передача управляется по DTR, а не по RTS */
+		static uint_fast8_t catrtsenable = 1;	/* разрешение включения передачи по линии RTS CAT */
+
+	#else /* WITHCAT_CDC */
+		static uint_fast8_t catdtrptt;	/* передача управляется по DTR, а не по RTS */
 		static uint_fast8_t catrtsenable;	/* разрешение включения передачи по линии RTS CAT */
-	#endif /* WITHTX */
+
+	#endif /* WITHCAT_CDC */
+
 
 #else /* WITHCAT */
 
@@ -3702,7 +3708,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 	static uint_fast8_t gamdepth = 30;		/* Глубина модуляции в АМ - 0..100% */
 
 	/*  Использование амплитуды сигнала с ЦАП передатчика - 0..100% */
-	static uint_fast8_t gdacscale = 72;	/* настраивается под прегруз драйвера. */
+	static uint_fast8_t gdacscale = 80;	/* настраивается под прегруз драйвера. */
 #endif /* WITHTX */
 
 
