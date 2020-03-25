@@ -103,7 +103,10 @@ PACKEDCOLORPIP_T * getscratchpip(void);
 
 // Параметры отображения спектра и водопада
 
-static int_fast16_t glob_gridstep = 10000;	// 10 kHz - шаг сетки
+static int_fast16_t glob_griddigit = 10000;	// 10 kHz - шаг сетки
+static int glob_gridwc = 2;
+static int_fast16_t glob_gridmod = 100;	// 10 ^ glob_gridwc
+static int_fast16_t glob_gridstep = 10000; //1 * glob_griddigit;	// 10, 20. 50 kHz - шаг сетки
 
 
 // waterfall/spectrum parameters
@@ -5654,8 +5657,7 @@ display_colorgrid_xor(
 			{
 				char buf [4];
 				uint_fast16_t freqw;	// ширина строки со значением частоты
-				//local_snprintf_P(buf, sizeof buf / sizeof buf [0], "%03d", (int) ((f0 + df) / 1000));
-				local_snprintf_P(buf, sizeof buf / sizeof buf [0], "%03d", (int) ((f0 + df) / 1000 % 1000));
+				local_snprintf_P(buf, sizeof buf / sizeof buf [0], ".%0*d", (int) ((f0 + df) / glob_griddigit % glob_gridmod), glob_gridwc);
 				freqw = display_colorbuff_string3_width(buffer, ALLDX, ALLDY, buf);
 				if (xmarker > freqw / 2 && xmarker < (ALLDX - freqw / 2))
 				{
@@ -5699,8 +5701,7 @@ display_colorgrid_set(
 			{
 				char buf [4];
 				uint_fast16_t freqw;	// ширина строки со значением частоты
-				//local_snprintf_P(buf, sizeof buf / sizeof buf [0], "%03d", (int) ((f0 + df) / 1000));
-				local_snprintf_P(buf, sizeof buf / sizeof buf [0], "%03d", (int) ((f0 + df) / 1000 % 1000));
+				local_snprintf_P(buf, sizeof buf / sizeof buf [0], ".%0*d", (int) ((f0 + df) / glob_griddigit % glob_gridmod), glob_gridwc);
 				freqw = display_colorbuff_string3_width(buffer, ALLDX, ALLDY, buf);
 				if (xmarker > freqw / 2 && xmarker < (ALLDX - freqw / 2))
 				{
