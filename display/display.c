@@ -371,12 +371,6 @@ hwacc_fillrect_u16(
 		(2 * DMA2D_FGPFCCR_CM_0) |	/* 010: RGB565 Color mode - framebuffer pixel format */
 		0;
 
-	/* set AXI master timer */
-	DMA2D->AMTCR = (DMA2D->AMTCR & ~ (DMA2D_AMTCR_DT | DMA2D_AMTCR_EN)) |
-		(DMA2D_AMTCR_DT_VALUE << DMA2D_AMTCR_DT_Pos) |
-		DMA2D_AMTCR_DT_ENABLE * DMA2D_AMTCR_EN |
-		0;
-
 	/* запустить операцию */
 	DMA2D->CR = (DMA2D->CR & ~ (DMA2D_CR_MODE)) |
 		3 * DMA2D_CR_MODE_0 |	// 11: Register-to-memory (no FG nor BG, only output stage active)
@@ -423,6 +417,12 @@ void arm_hardware_dma2d_initialize(void)
 	(void) RCC->AHB1ENR;
 
 #endif /* CPUSTYLE_STM32H7XX */
+
+	/* set AXI master timer */
+	DMA2D->AMTCR = (DMA2D->AMTCR & ~ (DMA2D_AMTCR_DT_Msk | DMA2D_AMTCR_EN_Msk)) |
+		(DMA2D_AMTCR_DT_VALUE << DMA2D_AMTCR_DT_Pos) |
+		(DMA2D_AMTCR_DT_ENABLE << DMA2D_AMTCR_EN_Pos) |
+		0;
 }
 
 #endif /* WITHDMA2DHW */
@@ -936,12 +936,6 @@ static void hwaccel_copy_main(
 		DMA2D_FGPFCCR_CM_VALUE_MAIN |	/* Color mode - framebuffer pixel format */
 		0;
 
-	/* set AXI master timer */
-	DMA2D->AMTCR = (DMA2D->AMTCR & ~ (DMA2D_AMTCR_DT | DMA2D_AMTCR_EN)) |
-		(DMA2D_AMTCR_DT_VALUE << DMA2D_AMTCR_DT_Pos) |
-		DMA2D_AMTCR_DT_ENABLE * DMA2D_AMTCR_EN |
-		0;
-
 	/* запустить операцию */
 	DMA2D->CR = (DMA2D->CR & ~ (DMA2D_CR_MODE)) |
 		0 * DMA2D_CR_MODE_0 |	// 00: Memory-to-memory (FG fetch only)
@@ -1059,12 +1053,6 @@ static void hwaccel_copy_RGB565(
 	/* формат пикселя */
 	DMA2D->FGPFCCR = (DMA2D->FGPFCCR & ~ (DMA2D_FGPFCCR_CM)) |
 		DMA2D_FGPFCCR_CM_VALUE_MAIN |	/* Color mode - framebuffer pixel format */
-		0;
-
-	/* set AXI master timer */
-	DMA2D->AMTCR = (DMA2D->AMTCR & ~ (DMA2D_AMTCR_DT | DMA2D_AMTCR_EN)) |
-		(DMA2D_AMTCR_DT_VALUE << DMA2D_AMTCR_DT_Pos) |
-		DMA2D_AMTCR_DT_ENABLE * DMA2D_AMTCR_EN |
 		0;
 
 	/* запустить операцию */
@@ -1196,12 +1184,6 @@ void display_colorbuffer_show(
 		/* формат пикселя */
 		DMA2D->FGPFCCR = (DMA2D->FGPFCCR & ~ (DMA2D_FGPFCCR_CM)) |
 			DMA2D_FGPFCCR_CM_VALUE_MAIN |	/* Color mode - framebuffer pixel format */
-			0;
-
-		/* set AXI master timer */
-		DMA2D->AMTCR = (DMA2D->AMTCR & ~ (DMA2D_AMTCR_DT | DMA2D_AMTCR_EN)) |
-			(DMA2D_AMTCR_DT_VALUE << DMA2D_AMTCR_DT_Pos) |
-			DMA2D_AMTCR_DT_ENABLE * DMA2D_AMTCR_EN |
 			0;
 
 		/* запустить операцию */
@@ -2113,12 +2095,6 @@ display_scroll_down(
 		DMA2D_FGPFCCR_CM_VALUE_MAIN |	/* Color mode - framebuffer pixel format */
 		0;
 
-	/* set AXI master timer */
-	DMA2D->AMTCR = (DMA2D->AMTCR & ~ (DMA2D_AMTCR_DT | DMA2D_AMTCR_EN)) |
-		(DMA2D_AMTCR_DT_VALUE << DMA2D_AMTCR_DT_Pos) |
-		DMA2D_AMTCR_DT_ENABLE * DMA2D_AMTCR_EN |
-		0;
-
 	/* запустить операцию */
 	DMA2D->CR = (DMA2D->CR & ~ (DMA2D_CR_MODE)) |
 		0 * DMA2D_CR_MODE_0 |	// 00: Memory-to-memory (FG fetch only)
@@ -2168,12 +2144,6 @@ display_scroll_up(
 	/* формат пикселя */
 	DMA2D->FGPFCCR = (DMA2D->FGPFCCR & ~ (DMA2D_FGPFCCR_CM)) |
 		DMA2D_FGPFCCR_CM_VALUE_MAIN |	/* Color mode - framebuffer pixel format */
-		0;
-
-	/* set AXI master timer */
-	DMA2D->AMTCR = (DMA2D->AMTCR & ~ (DMA2D_AMTCR_DT | DMA2D_AMTCR_EN)) |
-		(DMA2D_AMTCR_DT_VALUE << DMA2D_AMTCR_DT_Pos) |
-		DMA2D_AMTCR_DT_ENABLE * DMA2D_AMTCR_EN |
 		0;
 
 	/* запустить операцию */
