@@ -26,7 +26,7 @@ static const COLOR_T colorsfg_2rxtx [2] = { COLORMAIN_GREEN, COLORMAIN_RED, };
 static const COLOR_T colorsbg_2rxtx [2] = { COLORMAIN_BLACK, COLORMAIN_BLACK, };
 
 // параметры отображения состояний из трех вариантов
-static const COLOR_T colorsfg_4state [4] = { COLORMAIN_BLACK, COLORMAIN_RED, DESIGNCOLORSTATE, DESIGNCOLORSTATE, };
+static const COLOR_T colorsfg_4state [4] = { COLORMAIN_BLACK, COLORMAIN_WHITE, COLORMAIN_WHITE, COLORMAIN_WHITE, };
 static const COLOR_T colorsbg_4state [4] = { DESIGNCOLORSTATE, DESIGNCOLORDARKSTATE, DESIGNCOLORDARKSTATE, DESIGNCOLORDARKSTATE, };
 
 // параметры отображения состояний из двух вариантов
@@ -6676,35 +6676,10 @@ void display2_xltrgb24(COLOR24_T * xtable)
 
 	for (i = 0; i < 256; ++ i)
 	{
-		COLOR24_T color;
-		switch (i)
-		{
-		case TFTRGB(0, 0, 0)			/*COLOR_BLACK*/:		color = COLOR24(0, 0, 0);			break;	// 0x00 черный
-		case TFTRGB(255, 0, 0)			/*COLOR_RED*/:			color = COLOR24(255, 0, 0);		break; 	// 0xE0 красный
-		case TFTRGB(0, 255, 0)			/*COLOR_GREEN*/:		color = COLOR24(0, 255, 0);		break; 	// 0x1C зеленый
-		case TFTRGB(0, 0, 255)			/*COLOR_BLUE*/:			color = COLOR24(0, 0, 255);		break; 	// 0x03 синий
-		case TFTRGB(128, 0, 0)			/*COLOR_DARKRED*/:		color = COLOR24(128, 0, 0);		break; 	//
-		case TFTRGB(0, 128, 0)			/*COLOR_DARKGREEN*/:	color = COLOR24(0, 128, 0);		break; 	//
-		case TFTRGB(0, 0, 128)			/*COLOR_DARKBLUE*/:		color = COLOR24(0, 0, 128);		break; 	//
-		case TFTRGB(255, 255, 0)		/*COLOR_YELLOW*/:		color = COLOR24(255, 255, 0);		break; 	// 0xFC желтый
-		case TFTRGB(255, 0, 255)		/*COLOR_MAGENTA*/:		color = COLOR24(255, 0, 255);		break; 	// 0x83 пурпурный
-		case TFTRGB(0, 255, 255)		/*COLOR_CYAN*/:			color = COLOR24(0, 255, 255);		break; 	// 0x1F голубой
-		case TFTRGB(255, 255, 255)		/*COLOR_WHITE*/:		color = COLOR24(255, 255, 255);	break;  // 0xff	белый
-		case TFTRGB(128, 128, 128)		/*COLOR_GRAY*/:			color = COLOR24(128, 128, 128);	break; 	// серый
-		case TFTRGB(0xa5, 0x2a, 0x2a)	/*COLOR_BROWN*/:		color = COLOR24(0xa5, 0x2a, 0x2a);	break; 	// 0x64 коричневый
-		case TFTRGB(0xff, 0xd7, 0x00)	/*COLOR_GOLD*/:			color = COLOR24(0xff, 0xd7, 0x00);	break; 	// 0xF4 золото
-		case TFTRGB(0xd1, 0xe2, 0x31)	/*COLOR_PEAR*/:			color = COLOR24(0xd1, 0xe2, 0x31);	break; 	// 0xDC грушевый
-		default:
-			{
-				uint_fast8_t r, g, b;
-				r = ((i & 0xe0) << 0) | ((i & 0x80) ? 0x1f : 0);	// red
-				g = ((i & 0x1c) << 3) | ((i & 0x10) ? 0x1f : 0);	// green
-				b = ((i & 0x03) << 6) | ((i & 0x02) ? 0x3f : 0);	// blue
-				color = COLOR24(r, g, b);
-			}
-			break;
-		}
-		xtable [i] = color;
+		uint_fast8_t r = ((i & 0xe0) << 0) | ((i & 0xe0) >> 3) | ((i & 0xe0) >> 6);		// 3 bit red
+		uint_fast8_t g = ((i & 0x1c) << 3) | ((i & 0x1c) << 0) | ((i & 0x1c) >> 3) ;	// 3 bit green
+		uint_fast8_t b = ((i & 0x03) << 6) | ((i & 0x03) << 4) | ((i & 0x03) << 2) | ((i & 0x03) << 0);	// 2 bit blue
+		xtable [i] = COLOR24(r, g, b);
 	}
 #else
 	#warning Monochrome display without indexing colors
