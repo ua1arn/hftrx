@@ -346,8 +346,8 @@ static void r7s721_usb0_dma1_dmatx_initialize(uint_fast8_t pipe)
     //DMAC12.N1DA_n = (uintptr_t) & USBx->D1FIFO.UINT32;	// Fixed destination address
 
     /* Set Transfer Size */
-    //DMAC12.N0TB_n = DMABUFFSIZE16 * sizeof (int16_t);	// размер в байтах
-    //DMAC12.N1TB_n = DMABUFFSIZE16 * sizeof (int16_t);	// размер в байтах
+    //DMAC12.N0TB_n = DMABUFFSIZE16 * sizeof (aubufv_t);	// размер в байтах
+    //DMAC12.N1TB_n = DMABUFFSIZE16 * sizeof (aubufv_t);	// размер в байтах
 
 	// Values from Table 9.4 On-Chip Peripheral Module Requests
 	// USB0_DMA1 (channel 1 transmit FIFO empty)
@@ -432,8 +432,8 @@ static void r7s721_usb1_dma1_dmatx_initialize(uint_fast8_t pipe)
     //DMAC12.N1DA_n = (uintptr_t) & USBx->D1FIFO.UINT32;	// Fixed destination address
 
     /* Set Transfer Size */
-    //DMAC12.N0TB_n = DMABUFFSIZE16 * sizeof (int16_t);	// размер в байтах
-    //DMAC12.N1TB_n = DMABUFFSIZE16 * sizeof (int16_t);	// размер в байтах
+    //DMAC12.N0TB_n = DMABUFFSIZE16 * sizeof (aubufv_t);	// размер в байтах
+    //DMAC12.N1TB_n = DMABUFFSIZE16 * sizeof (aubufv_t);	// размер в байтах
 
 	// Values from Table 9.4 On-Chip Peripheral Module Requests
 	// USB1_DMA1 (channel 1 transmit FIFO empty)

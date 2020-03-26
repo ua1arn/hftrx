@@ -46,8 +46,8 @@ static void hardware_dummy_enable(void)
 static uintptr_t 
 dma_invalidate16rx(uintptr_t addr)
 {
-	//arm_hardware_invalidate(addr, DMABUFFSIZE16 * sizeof (int16_t));
-	arm_hardware_flush_invalidate(addr, DMABUFFSIZE16 * sizeof (int16_t) + ADDPAD);
+	//arm_hardware_invalidate(addr, DMABUFFSIZE16 * sizeof (aubufv_t));
+	arm_hardware_flush_invalidate(addr, DMABUFFSIZE16 * sizeof (aubufv_t) + ADDPAD);
 	return addr;
 }
 
@@ -56,7 +56,7 @@ dma_invalidate16rx(uintptr_t addr)
 static uintptr_t 
 dma_flush16tx(uintptr_t addr)
 {
-	arm_hardware_flush_invalidate(addr, DMABUFFSIZE16 * sizeof (int16_t) + ADDPAD);
+	arm_hardware_flush_invalidate(addr, DMABUFFSIZE16 * sizeof (aubufv_t) + ADDPAD);
 	return addr;
 }
 
@@ -281,8 +281,8 @@ DMA_I2S2_TX_initialize(void)
 		0 * DMA_SxCR_PBURST_0 |	// 0: single transfer
 		1 * DMA_SxCR_DIR_0 |	// направление - память - периферия
 		1 * DMA_SxCR_MINC |		// инкремент памяти
-		1 * DMA_SxCR_MSIZE_0 |	// длина в памяти - 16р
-		1 * DMA_SxCR_PSIZE_0 |	// длина в SPI_DR- 16р
+		DMA_SxCR_xSIZE * DMA_SxCR_MSIZE_0 |	// длина в памяти - 16b/32b
+		DMA_SxCR_xSIZE * DMA_SxCR_PSIZE_0 |	// длина в SPI_DR- 16р/32b
 		2 * DMA_SxCR_PL_0 |		// Priority level - High
 		0 * DMA_SxCR_CT |		// M0AR selected
 		1 * DMA_SxCR_DBM |		// double buffer mode seelcted
@@ -320,8 +320,8 @@ DMA_I2S2ext_rx_init(void)
 		0 * DMA_SxCR_PBURST_0 |	// 0: single transfer
 		0 * DMA_SxCR_DIR_0 |	// 00: Peripheral-to-memory
 		1 * DMA_SxCR_MINC |		//инкремент памяти
-		1 * DMA_SxCR_MSIZE_0 |	//длина в памяти - 16р
-		1 * DMA_SxCR_PSIZE_0 |	//длина в SPI_DR- 16р
+		DMA_SxCR_xSIZE * DMA_SxCR_MSIZE_0 |	// длина в памяти - 16b/32b
+		DMA_SxCR_xSIZE * DMA_SxCR_PSIZE_0 |	// длина в SPI_DR- 16р/32b
 		2 * DMA_SxCR_PL_0 |		// Priority level - High
 		0 * DMA_SxCR_CT |		// M0AR selected
 		1 * DMA_SxCR_DBM |		// double buffer mode seelcted
@@ -381,8 +381,8 @@ DMA_I2S3_RX_initialize(void)
 		0 * DMA_SxCR_PBURST_0 |	// 0: single transfer
 		0 * DMA_SxCR_DIR_0 |	// 00: Peripheral-to-memory
 		1 * DMA_SxCR_MINC |		//инкремент памяти
-		1 * DMA_SxCR_MSIZE_0 |	//длина в памяти - 16р
-		1 * DMA_SxCR_PSIZE_0 |	//длина в SPI_DR- 16р
+		DMA_SxCR_xSIZE * DMA_SxCR_MSIZE_0 |	// длина в памяти - 16b/32b
+		DMA_SxCR_xSIZE * DMA_SxCR_PSIZE_0 |	// длина в SPI_DR- 16р/32b
 		2 * DMA_SxCR_PL_0 |		// Priority level - High
 		0 * DMA_SxCR_CT |		// M0AR selected
 		1 * DMA_SxCR_DBM |		// double buffer mode seelcted
@@ -455,8 +455,13 @@ hardware_i2s2_master_fullduplex_initialize(void)		/* инициализация 
 	        
 	const portholder_t i2smode = 
 		SPI_I2SCFGR_I2SMOD | 
+#if WITHI2S_32BITPAIR
+		1 * SPI_I2SCFGR_CHLEN |		// 1: 32-bit wide audio channel
+		2 * SPI_I2SCFGR_DATLEN_0 |	// 00: 16-bit data length, 01: 24-bit data length, 10: 32-bit data length
+#else /* WITHI2S_32BITPAIR */
 		0 * SPI_I2SCFGR_CHLEN |		// 0: 16-bit wide audio channel
 		0 * SPI_I2SCFGR_DATLEN_0 |	// 00: 16-bit data length, 01: 24-bit data length, 10: 32-bit data length
+#endif /* WITHI2S_32BITPAIR */
 #if WITHI2S_FORMATI2S_PHILIPS
 		0 * SPI_I2SCFGR_I2SSTD_0 |	// 00: I2S Phillips standard, 01: MSB justified standard (left justified)
 #else /* WITHI2S_FORMATI2S_PHILIPS */
@@ -514,8 +519,13 @@ hardware_i2s2_slave_tx_initialize(void)		/* инициализация I2S2, STM
 	        
 	const portholder_t i2smode = 
 		SPI_I2SCFGR_I2SMOD | 
+#if WITHI2S_32BITPAIR
+		1 * SPI_I2SCFGR_CHLEN |		// 1: 32-bit wide audio channel
+		2 * SPI_I2SCFGR_DATLEN_0 |	// 00: 16-bit data length, 01: 24-bit data length, 10: 32-bit data length
+#else /* WITHI2S_32BITPAIR */
 		0 * SPI_I2SCFGR_CHLEN |		// 0: 16-bit wide audio channel
 		0 * SPI_I2SCFGR_DATLEN_0 |	// 00: 16-bit data length, 01: 24-bit data length, 10: 32-bit data length
+#endif /* WITHI2S_32BITPAIR */
 #if WITHI2S_FORMATI2S_PHILIPS
 		0 * SPI_I2SCFGR_I2SSTD_0 |	// 00: I2S Phillips standard, 01: MSB justified standard (left justified)
 #else /* WITHI2S_FORMATI2S_PHILIPS */
@@ -604,8 +614,13 @@ hardware_i2s2_master_tx_initialize(void)		/* инициализация I2S2, ST
 	        
 	const portholder_t i2smode = 
 		SPI_I2SCFGR_I2SMOD | 
+#if WITHI2S_32BITPAIR
+		1 * SPI_I2SCFGR_CHLEN |		// 1: 32-bit wide audio channel
+		2 * SPI_I2SCFGR_DATLEN_0 |	// 00: 16-bit data length, 01: 24-bit data length, 10: 32-bit data length
+#else /* WITHI2S_32BITPAIR */
 		0 * SPI_I2SCFGR_CHLEN |		// 0: 16-bit wide audio channel
 		0 * SPI_I2SCFGR_DATLEN_0 |	// 00: 16-bit data length, 01: 24-bit data length, 10: 32-bit data length
+#endif /* WITHI2S_32BITPAIR */
 #if WITHI2S_FORMATI2S_PHILIPS
 		0 * SPI_I2SCFGR_I2SSTD_0 |	// 00: I2S Phillips standard, 01: MSB justified standard (left justified)
 #else /* WITHI2S_FORMATI2S_PHILIPS */
@@ -662,8 +677,13 @@ hardware_i2s3_slave_rx_initialize(void)		/* инициализация I2S3 STM3
 	        
 	const portholder_t i2smode = 
 		SPI_I2SCFGR_I2SMOD | 
+#if WITHI2S_32BITPAIR
+		1 * SPI_I2SCFGR_CHLEN |		// 1: 32-bit wide audio channel
+		2 * SPI_I2SCFGR_DATLEN_0 |	// 00: 16-bit data length, 01: 24-bit data length, 10: 32-bit data length
+#else /* WITHI2S_32BITPAIR */
 		0 * SPI_I2SCFGR_CHLEN |		// 0: 16-bit wide audio channel
 		0 * SPI_I2SCFGR_DATLEN_0 |	// 00: 16-bit data length, 01: 24-bit data length, 10: 32-bit data length
+#endif /* WITHI2S_32BITPAIR */
 #if WITHI2S_FORMATI2S_PHILIPS
 		0 * SPI_I2SCFGR_I2SSTD_0 |	// 00: I2S Phillips standard, 01: MSB justified standard (left justified)
 #else /* WITHI2S_FORMATI2S_PHILIPS */
@@ -2298,8 +2318,8 @@ static void r7s721_ssif0_dmarx_initialize(void)
 	DMAC0.N1DA_n = dma_invalidate16rx(allocate_dmabuffer16());
 
     /* Set Transfer Size */
-    DMAC0.N0TB_n = DMABUFFSIZE16 * sizeof (int16_t);	// размер в байтах
-    DMAC0.N1TB_n = DMABUFFSIZE16 * sizeof (int16_t);	// размер в байтах
+    DMAC0.N0TB_n = DMABUFFSIZE16 * sizeof (aubufv_t);	// размер в байтах
+    DMAC0.N1TB_n = DMABUFFSIZE16 * sizeof (aubufv_t);	// размер в байтах
 
 	// Values from Table 9.4 On-Chip Peripheral Module Requests
 	// SSIRXI0 (receive data full)
@@ -2364,8 +2384,8 @@ static void r7s721_ssif0_dmatx_initialize(void)
     DMAC1.N1DA_n = (uintptr_t) & SSIF0.SSIFTDR;	// Fixed destination address
 
     /* Set Transfer Size */
-    DMAC1.N0TB_n = DMABUFFSIZE16 * sizeof (int16_t);	// размер в байтах
-    DMAC1.N1TB_n = DMABUFFSIZE16 * sizeof (int16_t);	// размер в байтах
+    DMAC1.N0TB_n = DMABUFFSIZE16 * sizeof (aubufv_t);	// размер в байтах
+    DMAC1.N1TB_n = DMABUFFSIZE16 * sizeof (aubufv_t);	// размер в байтах
 
 	// Values from Table 9.4 On-Chip Peripheral Module Requests
 	// SSITXI0 (transmit data empty)

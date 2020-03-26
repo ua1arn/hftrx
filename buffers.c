@@ -186,7 +186,7 @@ enum
 	typedef ALIGNX_BEGIN struct voice16_tag
 	{
 		LIST_ENTRY item;
-		ALIGNX_BEGIN int16_t buff [DMABUFFSIZE16] ALIGNX_END;
+		ALIGNX_BEGIN aubufv_t buff [DMABUFFSIZE16] ALIGNX_END;
 	} ALIGNX_END voice16_t;
 
 	// I/Q data to FPGA or IF CODEC
@@ -1255,14 +1255,14 @@ static RAMFUNC unsigned long ulmin(
 
 // возвращает количество полученых сэмплов
 static RAMFUNC unsigned getsamplemsuacout(
-	int16_t * buff,	// текущая позиция в целевом буфере
+	aubufv_t * buff,	// текущая позиция в целевом буфере
 	unsigned size		// количество оставшихся одиночных сэмплов
 	)
 {
 	static voice16_t * RAMDTCM p = NULL;
 	enum { NPARTS = 3 };
 	static RAMDTCM uint_fast8_t part = 0;
-	static int16_t * RAMDTCM datas [NPARTS] = { NULL, NULL };		// начальный адрес пары сэмплов во входном буфере
+	static aubufv_t * RAMDTCM datas [NPARTS] = { NULL, NULL };		// начальный адрес пары сэмплов во входном буфере
 	static RAMDTCM unsigned sizes [NPARTS] = { 0, 0 };			// количество сэмплов во входном буфере
 
 	static unsigned skipsense = SKIPPED;
@@ -1310,11 +1310,11 @@ static RAMFUNC unsigned getsamplemsuacout(
 				datas [part + 1] = & p->buff [0];
 				sizes [part + 1] = DMABUFFSIZE16;
 #else
-				static int16_t addsample [DMABUFSTEP16];
+				static aubufv_t addsample [DMABUFSTEP16];
 				enum { HALF = DMABUFFSIZE16 / 2 };
 				// значения как среднее арифметическое сэмплов, между которыми вставляем дополнительный.
-				addsample [0] = ((int_fast32_t) p->buff [HALF - DMABUFSTEP16 + 0] +  p->buff [HALF + 0]) / 2;	// Left
-				addsample [1] = ((int_fast32_t) p->buff [HALF - DMABUFSTEP16 + 1] +  p->buff [HALF + 1]) / 2;	// Right
+				addsample [0] = ((int_fast64_t) p->buff [HALF - DMABUFSTEP16 + 0] + p->buff [HALF + 0]) / 2;	// Left
+				addsample [1] = ((int_fast64_t) p->buff [HALF - DMABUFSTEP16 + 1] + p->buff [HALF + 1]) / 2;	// Right
 				part = NPARTS - 3;
 				datas [0] = & p->buff [0];		// часть перед вставкой
 				sizes [0] = HALF;

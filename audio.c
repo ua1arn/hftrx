@@ -5296,7 +5296,7 @@ static FLOAT_t mixmonitor(FLOAT_t shape, FLOAT_t sdtn, FLOAT_t moni)
 // перед передачей по DMA в аудиокодек
 //  Здесь ответвляются потоки в USB и для записи на SD CARD
 // realtime level
-void dsp_addsidetone(int16_t * buff)
+void dsp_addsidetone(aubufv_t * buff)
 {
 	enum { L, R };
 	ASSERT(buff != NULL);
@@ -5306,7 +5306,7 @@ void dsp_addsidetone(int16_t * buff)
 	unsigned i;
 	for (i = 0; i < DMABUFFSIZE16; i += DMABUFSTEP16)
 	{
-		int16_t * const b = & buff [i];
+		aubufv_t * const b = & buff [i];
 		const FLOAT_t sdtnshape = shapeSidetoneStep();	// 0..1: 0 - monitor, 1 - sidetone
 		const FLOAT_t sdtnv = get_float_sidetone() * phonefence;	// Здесь значение выборки в диапазоне, допустимом для кодека
 		INT32P_t moni;
@@ -5317,11 +5317,11 @@ void dsp_addsidetone(int16_t * buff)
 			moni.IV = 0;
 			moni.QV = 0;
 		}
-		const int_fast16_t moniL = mixmonitor(sdtnshape, sdtnv, moni.IV);
-		const int_fast16_t moniR = mixmonitor(sdtnshape, sdtnv, moni.QV);
+		const aufastbufv_t moniL = mixmonitor(sdtnshape, sdtnv, moni.IV);
+		const aufastbufv_t moniR = mixmonitor(sdtnshape, sdtnv, moni.QV);
 
-		int_fast16_t left = b [L];
-		int_fast16_t right = b [R];
+		aufastbufv_t left = b [L];
+		aufastbufv_t right = b [R];
 		//
 #if WITHWAVPLAYER
 		{

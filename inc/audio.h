@@ -199,6 +199,20 @@ extern "C" {
 /* если приоритет прерываний USB не выше чем у аудиобработки - она должна длиться не более 1 мс (WITHRTS192 - 0.5 ms) */
 #define DMABUFCLUSTER	19	// Прерывания по приему от IF CODEC или FPGA RX должны происходить не реже 1 раз в милисекунду (чтобы USB работать могло) */
 
+#if WITHI2S_32BITPAIR
+
+	#define DMA_SxCR_xSIZE		0x02	// 32 bit
+	typedef int32_t aubufv_t;
+	typedef int_fast32_t aufastbufv_t;
+
+#else /* WITHI2S_32BITPAIR */
+
+	#define DMA_SxCR_xSIZE		0x01	// 16 bit
+	typedef int16_t aubufv_t;
+	typedef int_fast16_t aufastbufv_t;
+
+#endif /* WITHI2S_32BITPAIR */
+
 #define DMABUFFSIZE16	(DMABUFCLUSTER * DMABUFSTEP16 * 4)		/* AF CODEC */
 #define DMABUFFSIZE32RX (DMABUFCLUSTER * DMABUFSTEP32RX)		/* FPGA RX or IF CODEC RX */
 #define DMABUFFSIZE32TX (DMABUFCLUSTER * DMABUFSTEP32TX * 4)	/* FPGA TX or IF CODEC TX	*/
@@ -481,7 +495,7 @@ uintptr_t getfilled_dmabuffer16phones(void);
 
 void dsp_extbuffer32rx(const int32_t * buff);	// RX
 void dsp_extbuffer32wfm(const int32_t * buff);	// RX
-void dsp_addsidetone(int16_t * buff);			// перед передачей по DMA в аудиокодек
+void dsp_addsidetone(aubufv_t * buff);			// перед передачей по DMA в аудиокодек
 
 void processing_dmabuffer16rx(uintptr_t addr);	// обработать буфер после оцифровки AF ADC
 void processing_dmabuffer16rxuac(uintptr_t addr);	// обработать буфер после приёма пакета с USB AUDIO
