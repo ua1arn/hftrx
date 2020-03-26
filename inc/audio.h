@@ -146,15 +146,15 @@ extern "C" {
 #endif /* CPUSTYLE_R7S721 */
 
 #if WITHUAC2
-	#define WITHUSENOFU_IN48 			0	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
-	#define WITHUSENOFU_INRTS 			0	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
-	#define WITHUSENOFU_IN48_INRTS 		0	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
-	#define WITHUSENOFU_OUT48 			0	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
-#else /* WITHUAC2 */
 	#define WITHUSENOFU_IN48 			1	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
 	#define WITHUSENOFU_INRTS 			1	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
 	#define WITHUSENOFU_IN48_INRTS 		1	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
 	#define WITHUSENOFU_OUT48 			1	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
+#else /* WITHUAC2 */
+	#define WITHUSENOFU_IN48 			0	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
+	#define WITHUSENOFU_INRTS 			0	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
+	#define WITHUSENOFU_IN48_INRTS 		0	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
+	#define WITHUSENOFU_OUT48 			0	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
 #endif /* WITHUAC2 */
 
 // Конфигурация потоков в Input Terminal Descriptor
@@ -201,15 +201,17 @@ extern "C" {
 
 #if WITHI2S_32BITPAIR
 
-	#define DMA_SxCR_xSIZE		0x02	// 32 bit
+	#define DMA_SxCR_xSIZE		0x02	// 10: word (32-bit)
 	typedef int32_t aubufv_t;
 	typedef int_fast32_t aufastbufv_t;
+	#define AUDIO16TOAUB(v) ((aufastbufv_t) ((v) * 65536L))	/* не забывать, аргумент может быть FLOAT */
 
 #else /* WITHI2S_32BITPAIR */
 
-	#define DMA_SxCR_xSIZE		0x01	// 16 bit
+	#define DMA_SxCR_xSIZE		0x01	// 01: half-word (16-bit)
 	typedef int16_t aubufv_t;
 	typedef int_fast16_t aufastbufv_t;
+	#define AUDIO16TOAUB(v) (v)	/* не забывать, аргумент может быть FLOAT */
 
 #endif /* WITHI2S_32BITPAIR */
 
@@ -530,12 +532,12 @@ void savemodemtxbuffer(uint8_t * dest, unsigned size_t);	// Готов буфе�
 void releasemodembuffer(uint8_t * dest);
 void releasemodembuffer_low(uint8_t * dest);
 
-void savesampleout16stereo_user(int_fast32_t ch0, int_fast32_t ch1);
-void savesampleout16stereo(int_fast32_t ch0, int_fast32_t ch1);
+void savesampleout16stereo_user(FLOAT_t ch0, FLOAT_t ch1);
+void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1);
+void savemoni16stereo(FLOAT_t ch0, FLOAT_t ch1);
 void savesampleout32stereo(int_fast32_t ch0, int_fast32_t ch1);
 void savesampleout96stereo(int_fast32_t ch0, int_fast32_t ch1);
 void savesampleout192stereo(int_fast32_t ch0, int_fast32_t ch1);
-void savemoni16stereo(int_fast32_t ch0, int_fast32_t ch1);
 
 #if WITHINTEGRATEDDSP
 	#include "speex\arch.h"
