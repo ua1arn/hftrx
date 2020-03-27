@@ -203,6 +203,8 @@ extern "C" {
 
 	typedef int32_t aubufv_t;
 	typedef int_fast32_t aufastbufv_t;
+	typedef int_fast64_t aufastbufv2x_t;	/* дип для работы ресэмплера при получении среднего арифметического */
+	/* масштабирование сэмплов */
 	#define AUDIO16TOAUB(v) (((v) * 65536L))	/* не забывать, аргумент может быть FLOAT */
 	#define AUBTOAUDIO16(v) ((v) / 65536L)	/* не забывать, аргумент может быть FLOAT */
 
@@ -210,6 +212,8 @@ extern "C" {
 
 	typedef int16_t aubufv_t;
 	typedef int_fast16_t aufastbufv_t;
+	typedef int_fast32_t aufastbufv2x_t;	/* дип для работы ресэмплера при получении среднего арифметического */
+	/* масштабирование сэмплов (заглушки) */
 	#define AUDIO16TOAUB(v) (v)	/* не забывать, аргумент может быть FLOAT */
 	#define AUBTOAUDIO16(v) (v)	/* не забывать, аргумент может быть FLOAT */
 

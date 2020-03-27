@@ -1313,8 +1313,10 @@ static RAMFUNC unsigned getsamplemsuacout(
 				static aubufv_t addsample [DMABUFSTEP16];
 				enum { HALF = DMABUFFSIZE16 / 2 };
 				// значения как среднее арифметическое сэмплов, между которыми вставляем дополнительный.
-				addsample [0] = ((int_fast64_t) p->buff [HALF - DMABUFSTEP16 + 0] + p->buff [HALF + 0]) / 2;	// Left
-				addsample [1] = ((int_fast64_t) p->buff [HALF - DMABUFSTEP16 + 1] + p->buff [HALF + 1]) / 2;	// Right
+				addsample [0] = ((aufastbufv2x_t) p->buff [HALF - DMABUFSTEP16 + 0] + p->buff [HALF + 0]) / 2;	// Left
+		#if DMABUFSTEP16 > 1
+				addsample [1] = ((aufastbufv2x_t) p->buff [HALF - DMABUFSTEP16 + 1] + p->buff [HALF + 1]) / 2;	// Right
+		#endif
 				part = NPARTS - 3;
 				datas [0] = & p->buff [0];		// часть перед вставкой
 				sizes [0] = HALF;
