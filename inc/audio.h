@@ -204,12 +204,14 @@ extern "C" {
 	typedef int32_t aubufv_t;
 	typedef int_fast32_t aufastbufv_t;
 	#define AUDIO16TOAUB(v) (((v) * 65536L))	/* не забывать, аргумент может быть FLOAT */
+	#define AUBTOAUDIO16(v) ((v) / 65536L)	/* не забывать, аргумент может быть FLOAT */
 
 #else /* WITHI2S_32BITPAIR */
 
 	typedef int16_t aubufv_t;
 	typedef int_fast16_t aufastbufv_t;
 	#define AUDIO16TOAUB(v) (v)	/* не забывать, аргумент может быть FLOAT */
+	#define AUBTOAUDIO16(v) (v)	/* не забывать, аргумент может быть FLOAT */
 
 #endif /* WITHI2S_32BITPAIR */
 

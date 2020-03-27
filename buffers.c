@@ -1007,8 +1007,8 @@ RAMFUNC uint_fast8_t getsampmlemike(INT32P_t * v)
 	}
 
 	// Использование данных.
-	v->ivqv [L] = (int16_t) p->buff [pos * DMABUFSTEP16 + L];	// микрофон или левый канал
-	v->ivqv [R] = (int16_t) p->buff [pos * DMABUFSTEP16 + R];	// правый канал
+	v->ivqv [L] = AUBTOAUDIO16(p->buff [pos * DMABUFSTEP16 + L]);	// микрофон или левый канал
+	v->ivqv [R] = AUBTOAUDIO16(p->buff [pos * DMABUFSTEP16 + R]);	// правый канал
 
 	if (++ pos >= CNT)
 	{
@@ -1049,8 +1049,8 @@ RAMFUNC uint_fast8_t getsampmlemoni(INT32P_t * v)
 	}
 
 	// Использование данных.
-	v->ivqv [L] = (int16_t) p->buff [pos * DMABUFSTEP16 + L];	// левый канал
-	v->ivqv [R] = (int16_t) p->buff [pos * DMABUFSTEP16 + R];	// правый канал
+	v->ivqv [L] = AUBTOAUDIO16(p->buff [pos * DMABUFSTEP16 + L]);	// микрофон или левый канал
+	v->ivqv [R] = AUBTOAUDIO16(p->buff [pos * DMABUFSTEP16 + R]);	// правый канал
 
 	if (++ pos >= CNT)
 	{
@@ -2469,7 +2469,7 @@ void uacout_buffer_save_system(const uint8_t * buff, uint_fast16_t size)
 
 	for (;;)
 	{
-		const uint_fast16_t insamples = size / 2;	// количество сэмплов во входном буфере
+		const uint_fast16_t insamples = size / sizeof (int16_t);	// количество сэмплов во входном буфере
 		const uint_fast16_t outsamples = (dmabuffer16size - uacoutbufflevel) / 2 / DMABUFSTEP16;
 		const uint_fast16_t chunksamples = ulmin16(insamples, outsamples);
 		if (chunksamples == 0)
@@ -2508,6 +2508,7 @@ void uacout_buffer_save_system(const uint8_t * buff, uint_fast16_t size)
 			uacoutbufflevel = 0;
 		}
 	}
+
 #else /* WITHUABUACOUTAUDIO48MONO */
 	
 	for (;;)
@@ -2523,6 +2524,7 @@ void uacout_buffer_save_system(const uint8_t * buff, uint_fast16_t size)
 			uacoutbufflevel = 0;
 		}
 #if WITHI2S_32BITPAIR
+		// требуется преобразование формата из 16-бит семплов ко внутреннему формату aubufv_t
 		{
 			/* копирование 16 битсэмплов с расширением */
 			const int16_t * src = (const int16_t *) buff;
