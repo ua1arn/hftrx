@@ -1,3 +1,4 @@
+
 /* $Id$ */
 //
 // Проект HF Dream Receiver (КВ приёмник мечты)
@@ -3705,7 +3706,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 #endif /* WITHMIC1LEVEL */
 #if WITHIF4DSP
 #if WITHTX
-	static uint_fast16_t gdigiscale = 250;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
+	static uint_fast16_t gdigiscale = 150;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 	static uint_fast8_t gamdepth = 30;		/* Глубина модуляции в АМ - 0..100% */
 
 	/*  Использование амплитуды сигнала с ЦАП передатчика - 0..100% */
