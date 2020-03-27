@@ -234,6 +234,40 @@ void RAMFUNC_NONILINE DMA1_Stream4_IRQHandler(void)
 	}
 }
 
+
+#if WITHI2S_32BITPAIR
+
+	#define DMA_SxCR_xSIZE		0x02	// 10: word (32-bit)
+
+#else /* WITHI2S_32BITPAIR */
+
+	#define DMA_SxCR_xSIZE		0x01	// 01: half-word (16-bit)
+
+#endif /* WITHI2S_32BITPAIR */
+
+/* получение битов режима I2S для каналов обммена с кодеком */
+static portholder_t stm32xxx_i2scfgr_afcodec(void)
+{
+	const portholder_t i2scfgr =
+		SPI_I2SCFGR_I2SMOD |
+#if WITHI2S_32BITPAIR
+		1 * SPI_I2SCFGR_CHLEN |		// 1: 32-bit wide audio channel
+		2 * SPI_I2SCFGR_DATLEN_0 |	// 00: 16-bit data length, 01: 24-bit data length, 10: 32-bit data length
+#else /* WITHI2S_32BITPAIR */
+		0 * SPI_I2SCFGR_CHLEN |		// 0: 16-bit wide audio channel
+		0 * SPI_I2SCFGR_DATLEN_0 |	// 00: 16-bit data length, 01: 24-bit data length, 10: 32-bit data length
+#endif /* WITHI2S_32BITPAIR */
+#if WITHI2S_FORMATI2S_PHILIPS
+		0 * SPI_I2SCFGR_I2SSTD_0 |	// 00: I2S Phillips standard
+#else /* WITHI2S_FORMATI2S_PHILIPS */
+		1 * SPI_I2SCFGR_I2SSTD_0 |	// 01: MSB justified standard (left justified)
+#endif /* WITHI2S_FORMATI2S_PHILIPS */
+		//1 * SPI_I2SCFGR_CKPOL |		// не для H7: от этого бита не зависит: данные на выходе меняются по спадающему фронту
+		0;
+
+	return i2scfgr;
+}
+
 // Инициализация DMA по передаче I2S2
 // Use arm_hardware_flush
 static void 
@@ -453,24 +487,9 @@ hardware_i2s2_master_fullduplex_initialize(void)		/* инициализация 
 	__DSB();
 #endif /* CPUSTYLE_STM32H7XX */
 	        
-	const portholder_t i2scfgr =
-		SPI_I2SCFGR_I2SMOD | 
-#if WITHI2S_32BITPAIR
-		1 * SPI_I2SCFGR_CHLEN |		// 1: 32-bit wide audio channel
-		2 * SPI_I2SCFGR_DATLEN_0 |	// 00: 16-bit data length, 01: 24-bit data length, 10: 32-bit data length
-#else /* WITHI2S_32BITPAIR */
-		0 * SPI_I2SCFGR_CHLEN |		// 0: 16-bit wide audio channel
-		0 * SPI_I2SCFGR_DATLEN_0 |	// 00: 16-bit data length, 01: 24-bit data length, 10: 32-bit data length
-#endif /* WITHI2S_32BITPAIR */
-#if WITHI2S_FORMATI2S_PHILIPS
-		0 * SPI_I2SCFGR_I2SSTD_0 |	// 00: I2S Phillips standard, 01: MSB justified standard (left justified)
-#else /* WITHI2S_FORMATI2S_PHILIPS */
-		1 * SPI_I2SCFGR_I2SSTD_0 |	// 00: I2S Phillips standard, 01: MSB justified standard (left justified)
-#endif /* WITHI2S_FORMATI2S_PHILIPS */
-		//1 * SPI_I2SCFGR_CKPOL |		// не для H7: от этого бита не зависит: данные на выходе меняются по спадающему фронту
-		0;
+	const portholder_t i2scfgr = stm32xxx_i2scfgr_afcodec();
 
- 	I2S2ext->I2SCFGR = i2scfgr | 1 * SPI_I2SCFGR_I2SCFG_0;	// 10: Master - transmit, 11: Master - receive, 01: Slave - receive
+	I2S2ext->I2SCFGR = i2scfgr | 1 * SPI_I2SCFGR_I2SCFG_0;	// 10: Master - transmit, 11: Master - receive, 01: Slave - receive
  	SPI2->I2SCFGR = i2scfgr | 2 * SPI_I2SCFGR_I2SCFG_0; // 10: Master - transmit, 11: Master - receive
 #if WITHI2SCLOCKFROMPIN
 	const portholder_t i2sdivider = calcdivround_exti2s(ARMI2SMCLK);
@@ -517,22 +536,7 @@ hardware_i2s2_slave_tx_initialize(void)		/* инициализация I2S2, STM
 	(void) RCC->APB1ENR;
 #endif /* CPUSTYLE_STM32H7XX */
 	        
-	const portholder_t i2scfgr =
-		SPI_I2SCFGR_I2SMOD | 
-#if WITHI2S_32BITPAIR
-		1 * SPI_I2SCFGR_CHLEN |		// 1: 32-bit wide audio channel
-		2 * SPI_I2SCFGR_DATLEN_0 |	// 00: 16-bit data length, 01: 24-bit data length, 10: 32-bit data length
-#else /* WITHI2S_32BITPAIR */
-		0 * SPI_I2SCFGR_CHLEN |		// 0: 16-bit wide audio channel
-		0 * SPI_I2SCFGR_DATLEN_0 |	// 00: 16-bit data length, 01: 24-bit data length, 10: 32-bit data length
-#endif /* WITHI2S_32BITPAIR */
-#if WITHI2S_FORMATI2S_PHILIPS
-		0 * SPI_I2SCFGR_I2SSTD_0 |	// 00: I2S Phillips standard, 01: MSB justified standard (left justified)
-#else /* WITHI2S_FORMATI2S_PHILIPS */
-		1 * SPI_I2SCFGR_I2SSTD_0 |	// 00: I2S Phillips standard, 01: MSB justified standard (left justified)
-#endif /* WITHI2S_FORMATI2S_PHILIPS */
-		//1 * SPI_I2SCFGR_CKPOL |		// не для H7: от этого бита не зависит: данные на выходе меняются по спадающему фронту
-		0;
+	const portholder_t i2scfgr = stm32xxx_i2scfgr_afcodec();
 
  	SPI2->I2SCFGR = i2scfgr | 0 * SPI_I2SCFGR_I2SCFG_0; // 00: Slave - transmit
 #if CPUSTYLE_STM32H7XX
@@ -612,22 +616,7 @@ hardware_i2s2_master_tx_initialize(void)		/* инициализация I2S2, ST
 	__DSB();
 #endif /* CPUSTYLE_STM32H7XX */
 	        
-	const portholder_t i2scfgr =
-		SPI_I2SCFGR_I2SMOD | 
-#if WITHI2S_32BITPAIR
-		1 * SPI_I2SCFGR_CHLEN |		// 1: 32-bit wide audio channel
-		2 * SPI_I2SCFGR_DATLEN_0 |	// 00: 16-bit data length, 01: 24-bit data length, 10: 32-bit data length
-#else /* WITHI2S_32BITPAIR */
-		0 * SPI_I2SCFGR_CHLEN |		// 0: 16-bit wide audio channel
-		0 * SPI_I2SCFGR_DATLEN_0 |	// 00: 16-bit data length, 01: 24-bit data length, 10: 32-bit data length
-#endif /* WITHI2S_32BITPAIR */
-#if WITHI2S_FORMATI2S_PHILIPS
-		0 * SPI_I2SCFGR_I2SSTD_0 |	// 00: I2S Phillips standard, 01: MSB justified standard (left justified)
-#else /* WITHI2S_FORMATI2S_PHILIPS */
-		1 * SPI_I2SCFGR_I2SSTD_0 |	// 00: I2S Phillips standard, 01: MSB justified standard (left justified)
-#endif /* WITHI2S_FORMATI2S_PHILIPS */
-		//1 * SPI_I2SCFGR_CKPOL |		// не для H7: от этого бита не зависит: данные на выходе меняются по спадающему фронту
-		0;
+	const portholder_t i2scfgr = stm32xxx_i2scfgr_afcodec();
 
  	SPI2->I2SCFGR = i2scfgr | 2 * SPI_I2SCFGR_I2SCFG_0; // 10: Master - transmit, 11: Master - receive
 #if WITHI2SCLOCKFROMPIN
@@ -675,22 +664,7 @@ hardware_i2s3_slave_rx_initialize(void)		/* инициализация I2S3 STM3
 	(void) RCC->APB1ENR;
 #endif /* CPUSTYLE_STM32H7XX */
 	        
-	const portholder_t i2scfgr =
-		SPI_I2SCFGR_I2SMOD | 
-#if WITHI2S_32BITPAIR
-		1 * SPI_I2SCFGR_CHLEN |		// 1: 32-bit wide audio channel
-		2 * SPI_I2SCFGR_DATLEN_0 |	// 00: 16-bit data length, 01: 24-bit data length, 10: 32-bit data length
-#else /* WITHI2S_32BITPAIR */
-		0 * SPI_I2SCFGR_CHLEN |		// 0: 16-bit wide audio channel
-		0 * SPI_I2SCFGR_DATLEN_0 |	// 00: 16-bit data length, 01: 24-bit data length, 10: 32-bit data length
-#endif /* WITHI2S_32BITPAIR */
-#if WITHI2S_FORMATI2S_PHILIPS
-		0 * SPI_I2SCFGR_I2SSTD_0 |	// 00: I2S Phillips standard, 01: MSB justified standard (left justified)
-#else /* WITHI2S_FORMATI2S_PHILIPS */
-		1 * SPI_I2SCFGR_I2SSTD_0 |	// 00: I2S Phillips standard, 01: MSB justified standard (left justified)
-#endif /* WITHI2S_FORMATI2S_PHILIPS */
-		//1 * SPI_I2SCFGR_CKPOL |		// не для H7: от этого бита не зависит: данные на выходе меняются по спадающему фронту
-		0;
+	const portholder_t i2scfgr = stm32xxx_i2scfgr_afcodec();
 
  	SPI3->I2SCFGR = i2scfgr | 1 * SPI_I2SCFGR_I2SCFG_0;	// 10: Master - transmit, 11: Master - receive, 01: Slave - receive
 #if CPUSTYLE_STM32H7XX

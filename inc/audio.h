@@ -201,14 +201,12 @@ extern "C" {
 
 #if WITHI2S_32BITPAIR
 
-	#define DMA_SxCR_xSIZE		0x02	// 10: word (32-bit)
 	typedef int32_t aubufv_t;
 	typedef int_fast32_t aufastbufv_t;
 	#define AUDIO16TOAUB(v) ((aufastbufv_t) ((v) * 65536L))	/* не забывать, аргумент может быть FLOAT */
 
 #else /* WITHI2S_32BITPAIR */
 
-	#define DMA_SxCR_xSIZE		0x01	// 01: half-word (16-bit)
 	typedef int16_t aubufv_t;
 	typedef int_fast16_t aufastbufv_t;
 	#define AUDIO16TOAUB(v) (v)	/* не забывать, аргумент может быть FLOAT */
