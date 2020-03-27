@@ -170,6 +170,39 @@ enum
 
 #if WITHI2SHW
 
+#if WITHI2S_32BITPAIR
+
+	#define DMA_SxCR_xSIZE		0x02uL	// 10: word (32-bit)
+
+#else /* WITHI2S_32BITPAIR */
+
+	#define DMA_SxCR_xSIZE		0x01uL	// 01: half-word (16-bit)
+
+#endif /* WITHI2S_32BITPAIR */
+
+/* получение битов режима I2S для каналов обммена с кодеком */
+static portholder_t stm32xxx_i2scfgr_afcodec(void)
+{
+	const portholder_t i2scfgr =
+		SPI_I2SCFGR_I2SMOD |
+#if WITHI2S_32BITPAIR
+		//(1 << SPI_I2SCFGR_CHLEN_Pos) |		// 1: 32-bit wide audio channel
+		(1uL << SPI_I2SCFGR_DATLEN_Pos) |	// 00: 16-bit data length, 01: 24-bit data length, 10: 32-bit data length
+#else /* WITHI2S_32BITPAIR */
+		(0uL << SPI_I2SCFGR_CHLEN_Pos) |		// 0: 16-bit wide audio channel
+		(0uL << SPI_I2SCFGR_DATLEN_Pos) |	// 00: 16-bit data length, 01: 24-bit data length, 10: 32-bit data length
+#endif /* WITHI2S_32BITPAIR */
+#if WITHI2S_FORMATI2S_PHILIPS
+		(0uL << SPI_I2SCFGR_I2SSTD_Pos) |	// 00: I2S Phillips standard
+#else /* WITHI2S_FORMATI2S_PHILIPS */
+		(1uL << SPI_I2SCFGR_I2SSTD_Pos) |	// 01: MSB justified standard (left justified)
+#endif /* WITHI2S_FORMATI2S_PHILIPS */
+		//1 * SPI_I2SCFGR_CKPOL |		// не для H7: от этого бита не зависит: данные на выходе меняются по спадающему фронту
+		0;
+
+	return i2scfgr;
+}
+
 // Обработчик прерывания DMA по приему I2S - I2S2_EXT
 // Use arm_hardware_invalidate
 void RAMFUNC_NONILINE DMA1_Stream3_IRQHandler(void)
@@ -234,40 +267,6 @@ void RAMFUNC_NONILINE DMA1_Stream4_IRQHandler(void)
 	}
 }
 
-
-#if WITHI2S_32BITPAIR
-
-	#define DMA_SxCR_xSIZE		0x02	// 10: word (32-bit)
-
-#else /* WITHI2S_32BITPAIR */
-
-	#define DMA_SxCR_xSIZE		0x01	// 01: half-word (16-bit)
-
-#endif /* WITHI2S_32BITPAIR */
-
-/* получение битов режима I2S для каналов обммена с кодеком */
-static portholder_t stm32xxx_i2scfgr_afcodec(void)
-{
-	const portholder_t i2scfgr =
-		SPI_I2SCFGR_I2SMOD |
-#if WITHI2S_32BITPAIR
-		1 * SPI_I2SCFGR_CHLEN |		// 1: 32-bit wide audio channel
-		2 * SPI_I2SCFGR_DATLEN_0 |	// 00: 16-bit data length, 01: 24-bit data length, 10: 32-bit data length
-#else /* WITHI2S_32BITPAIR */
-		0 * SPI_I2SCFGR_CHLEN |		// 0: 16-bit wide audio channel
-		0 * SPI_I2SCFGR_DATLEN_0 |	// 00: 16-bit data length, 01: 24-bit data length, 10: 32-bit data length
-#endif /* WITHI2S_32BITPAIR */
-#if WITHI2S_FORMATI2S_PHILIPS
-		0 * SPI_I2SCFGR_I2SSTD_0 |	// 00: I2S Phillips standard
-#else /* WITHI2S_FORMATI2S_PHILIPS */
-		1 * SPI_I2SCFGR_I2SSTD_0 |	// 01: MSB justified standard (left justified)
-#endif /* WITHI2S_FORMATI2S_PHILIPS */
-		//1 * SPI_I2SCFGR_CKPOL |		// не для H7: от этого бита не зависит: данные на выходе меняются по спадающему фронту
-		0;
-
-	return i2scfgr;
-}
-
 // Инициализация DMA по передаче I2S2
 // Use arm_hardware_flush
 static void 
@@ -316,7 +315,7 @@ DMA_I2S2_TX_initialize(void)
 		1 * DMA_SxCR_DIR_0 |	// направление - память - периферия
 		1 * DMA_SxCR_MINC |		// инкремент памяти
 		DMA_SxCR_xSIZE * DMA_SxCR_MSIZE_0 |	// длина в памяти - 16b/32b
-		DMA_SxCR_xSIZE * DMA_SxCR_PSIZE_0 |	// длина в SPI_DR- 16р/32b
+		DMA_SxCR_xSIZE * DMA_SxCR_PSIZE_0 |	// длина в SPI_DR- 16b/32b
 		2 * DMA_SxCR_PL_0 |		// Priority level - High
 		0 * DMA_SxCR_CT |		// M0AR selected
 		1 * DMA_SxCR_DBM |		// double buffer mode seelcted
@@ -355,7 +354,7 @@ DMA_I2S2ext_rx_init(void)
 		0 * DMA_SxCR_DIR_0 |	// 00: Peripheral-to-memory
 		1 * DMA_SxCR_MINC |		//инкремент памяти
 		DMA_SxCR_xSIZE * DMA_SxCR_MSIZE_0 |	// длина в памяти - 16b/32b
-		DMA_SxCR_xSIZE * DMA_SxCR_PSIZE_0 |	// длина в SPI_DR- 16р/32b
+		DMA_SxCR_xSIZE * DMA_SxCR_PSIZE_0 |	// длина в SPI_DR- 16b/32b
 		2 * DMA_SxCR_PL_0 |		// Priority level - High
 		0 * DMA_SxCR_CT |		// M0AR selected
 		1 * DMA_SxCR_DBM |		// double buffer mode seelcted
@@ -416,7 +415,7 @@ DMA_I2S3_RX_initialize(void)
 		0 * DMA_SxCR_DIR_0 |	// 00: Peripheral-to-memory
 		1 * DMA_SxCR_MINC |		//инкремент памяти
 		DMA_SxCR_xSIZE * DMA_SxCR_MSIZE_0 |	// длина в памяти - 16b/32b
-		DMA_SxCR_xSIZE * DMA_SxCR_PSIZE_0 |	// длина в SPI_DR- 16р/32b
+		DMA_SxCR_xSIZE * DMA_SxCR_PSIZE_0 |	// длина в SPI_DR- 16b/32b
 		2 * DMA_SxCR_PL_0 |		// Priority level - High
 		0 * DMA_SxCR_CT |		// M0AR selected
 		1 * DMA_SxCR_DBM |		// double buffer mode seelcted
