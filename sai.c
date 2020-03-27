@@ -180,14 +180,17 @@ enum
 
 #endif /* WITHI2S_32BITPAIR */
 
+#define DMA_SxCR_PL_VALUE 2uL		// STM32xxx DMA Priority level - High
+
 /* получение битов режима I2S для каналов обммена с кодеком */
 static portholder_t stm32xxx_i2scfgr_afcodec(void)
 {
 	const portholder_t i2scfgr =
 		SPI_I2SCFGR_I2SMOD |
 #if WITHI2S_32BITPAIR
-		//(1 << SPI_I2SCFGR_CHLEN_Pos) |		// 1: 32-bit wide audio channel
-		(1uL << SPI_I2SCFGR_DATLEN_Pos) |	// 00: 16-bit data length, 01: 24-bit data length, 10: 32-bit data length
+		//(1uL << SPI_I2SCFGR_FIXCH_Pos) |		// 1: the channel length in slave mode is supposed to be 16 or 32 bits (according to CHLEN)
+		(1uL << SPI_I2SCFGR_CHLEN_Pos) |		// 1: 32-bit wide audio channel
+		(2uL << SPI_I2SCFGR_DATLEN_Pos) |	// 00: 16-bit data length, 01: 24-bit data length, 10: 32-bit data length
 #else /* WITHI2S_32BITPAIR */
 		(0uL << SPI_I2SCFGR_CHLEN_Pos) |		// 0: 16-bit wide audio channel
 		(0uL << SPI_I2SCFGR_DATLEN_Pos) |	// 00: 16-bit data length, 01: 24-bit data length, 10: 32-bit data length
@@ -314,9 +317,9 @@ DMA_I2S2_TX_initialize(void)
 		0 * DMA_SxCR_PBURST_0 |	// 0: single transfer
 		1 * DMA_SxCR_DIR_0 |	// направление - память - периферия
 		1 * DMA_SxCR_MINC |		// инкремент памяти
-		DMA_SxCR_xSIZE * DMA_SxCR_MSIZE_0 |	// длина в памяти - 16b/32b
-		DMA_SxCR_xSIZE * DMA_SxCR_PSIZE_0 |	// длина в SPI_DR- 16b/32b
-		2 * DMA_SxCR_PL_0 |		// Priority level - High
+		(DMA_SxCR_xSIZE << DMA_SxCR_MSIZE_Pos) |	// длина в памяти - 16b/32b
+		(DMA_SxCR_xSIZE << DMA_SxCR_PSIZE_Pos) |	// длина в SPI_DR- 16b/32b
+		(DMA_SxCR_PL_VALUE << DMA_SxCR_PL_Pos) |		// Priority level - High
 		0 * DMA_SxCR_CT |		// M0AR selected
 		1 * DMA_SxCR_DBM |		// double buffer mode seelcted
 		0;
@@ -353,9 +356,9 @@ DMA_I2S2ext_rx_init(void)
 		0 * DMA_SxCR_PBURST_0 |	// 0: single transfer
 		0 * DMA_SxCR_DIR_0 |	// 00: Peripheral-to-memory
 		1 * DMA_SxCR_MINC |		//инкремент памяти
-		DMA_SxCR_xSIZE * DMA_SxCR_MSIZE_0 |	// длина в памяти - 16b/32b
-		DMA_SxCR_xSIZE * DMA_SxCR_PSIZE_0 |	// длина в SPI_DR- 16b/32b
-		2 * DMA_SxCR_PL_0 |		// Priority level - High
+		(DMA_SxCR_xSIZE << DMA_SxCR_MSIZE_Pos) |	// длина в памяти - 16b/32b
+		(DMA_SxCR_xSIZE << DMA_SxCR_PSIZE_Pos) |	// длина в SPI_DR- 16b/32b
+		(DMA_SxCR_PL_VALUE << DMA_SxCR_PL_Pos) |		// Priority level - High
 		0 * DMA_SxCR_CT |		// M0AR selected
 		1 * DMA_SxCR_DBM |		// double buffer mode seelcted
 		0;
@@ -414,9 +417,9 @@ DMA_I2S3_RX_initialize(void)
 		0 * DMA_SxCR_PBURST_0 |	// 0: single transfer
 		0 * DMA_SxCR_DIR_0 |	// 00: Peripheral-to-memory
 		1 * DMA_SxCR_MINC |		//инкремент памяти
-		DMA_SxCR_xSIZE * DMA_SxCR_MSIZE_0 |	// длина в памяти - 16b/32b
-		DMA_SxCR_xSIZE * DMA_SxCR_PSIZE_0 |	// длина в SPI_DR- 16b/32b
-		2 * DMA_SxCR_PL_0 |		// Priority level - High
+		(DMA_SxCR_xSIZE << DMA_SxCR_MSIZE_Pos) |	// длина в памяти - 16b/32b
+		(DMA_SxCR_xSIZE << DMA_SxCR_PSIZE_Pos) |	// длина в SPI_DR- 16b/32b
+		(DMA_SxCR_PL_VALUE << DMA_SxCR_PL_Pos) |		// Priority level - High
 		0 * DMA_SxCR_CT |		// M0AR selected
 		1 * DMA_SxCR_DBM |		// double buffer mode seelcted
 		0;
@@ -1148,7 +1151,7 @@ static void DMA_SAI1_A_TX_initialize(void)
 		1 * DMA_SxCR_MINC | //инкремент памяти
 		2 * DMA_SxCR_MSIZE_0 | //длина в памяти - 32 bit
 		2 * DMA_SxCR_PSIZE_0 | //длина в DR - 32 bit
-		2 * DMA_SxCR_PL_0 |		// Priority level - High
+		(DMA_SxCR_PL_VALUE << DMA_SxCR_PL_Pos) |		// Priority level - High
 		0 * DMA_SxCR_CT | // M0AR selected
 		1 * DMA_SxCR_DBM | // double buffer mode seelcted
 		0;
@@ -1214,7 +1217,7 @@ static void DMA_SAI1_B_RX_initialize(void)
 		1 * DMA_SxCR_MINC |		//инкремент памяти
 		2 * DMA_SxCR_MSIZE_0 | //длина в памяти - 32 bit
 		2 * DMA_SxCR_PSIZE_0 | //длина в DR - 32 bit
-		2 * DMA_SxCR_PL_0 |		// Priority level - High
+		(DMA_SxCR_PL_VALUE << DMA_SxCR_PL_Pos) |		// Priority level - High
 		0 * DMA_SxCR_CT |	// M0AR selected
 		1 * DMA_SxCR_DBM |	 // double buffer mode seelcted
 		0;
@@ -1627,7 +1630,7 @@ static void DMA_SAI2_A_TX_initializeXXX(void)
 		1 * DMA_SxCR_MINC | //инкремент памяти
 		2 * DMA_SxCR_MSIZE_0 | //длина в памяти - 32 bit
 		2 * DMA_SxCR_PSIZE_0 | //длина в DR - 32 bit
-		2 * DMA_SxCR_PL_0 |		// Priority level - High
+		(DMA_SxCR_PL_VALUE << DMA_SxCR_PL_Pos) |		// Priority level - High
 		0 * DMA_SxCR_CT | // M0AR selected
 		1 * DMA_SxCR_DBM | // double buffer mode seelcted
 		0;
@@ -1686,7 +1689,7 @@ static void DMA_SAI2_A_TX_initializeAUDIO48(void)
 		1 * DMA_SxCR_MINC | //инкремент памяти
 		2 * DMA_SxCR_MSIZE_0 | //длина в памяти - 32 bit
 		2 * DMA_SxCR_PSIZE_0 | //длина в DR - 32 bit
-		2 * DMA_SxCR_PL_0 |		// Priority level - High
+		(DMA_SxCR_PL_VALUE << DMA_SxCR_PL_Pos) |		// Priority level - High
 		0 * DMA_SxCR_CT | // M0AR selected
 		1 * DMA_SxCR_DBM | // double buffer mode seelcted
 		0;
@@ -1747,7 +1750,7 @@ static void DMA_SAI2_B_RX_initializeRTS96(void)
 		1 * DMA_SxCR_MINC |		//инкремент памяти
 		2 * DMA_SxCR_MSIZE_0 | //длина в памяти - 32 bit
 		2 * DMA_SxCR_PSIZE_0 | //длина в DR - 32 bit
-		2 * DMA_SxCR_PL_0 |		// Priority level - High
+		(DMA_SxCR_PL_VALUE << DMA_SxCR_PL_Pos) |		// Priority level - High
 		0 * DMA_SxCR_CT |	// M0AR selected
 		1 * DMA_SxCR_DBM |	 // double buffer mode seelcted
 		0;
@@ -1808,7 +1811,7 @@ static void DMA_SAI2_B_RX_initializeAUDIO48(void)
 		1 * DMA_SxCR_MINC |		//инкремент памяти
 		2 * DMA_SxCR_MSIZE_0 | //длина в памяти - 32 bit
 		2 * DMA_SxCR_PSIZE_0 | //длина в DR - 32 bit
-		2 * DMA_SxCR_PL_0 |		// Priority level - High
+		(DMA_SxCR_PL_VALUE << DMA_SxCR_PL_Pos) |		// Priority level - High
 		0 * DMA_SxCR_CT |	// M0AR selected
 		1 * DMA_SxCR_DBM |	 // double buffer mode seelcted
 		0;
@@ -2129,7 +2132,7 @@ static void DMA_SAI2_B_RX_initializeWFM(void)
 		1 * DMA_SxCR_MINC |		//инкремент памяти
 		2 * DMA_SxCR_MSIZE_0 | //длина в памяти - 32 bit
 		2 * DMA_SxCR_PSIZE_0 | //длина в DR - 32 bit
-		2 * DMA_SxCR_PL_0 |		// Priority level - High
+		(DMA_SxCR_PL_VALUE << DMA_SxCR_PL_Pos) |		// Priority level - High
 		0 * DMA_SxCR_CT |	// M0AR selected
 		1 * DMA_SxCR_DBM |	 // double buffer mode seelcted
 		0;
