@@ -5272,18 +5272,18 @@ void RAMFUNC dsp_extbuffer32wfm(const int32_t * buff)
 #endif /* WITHDSPEXTDDC */
 
 // Выдача в USB UAC
-static RAMFUNC void recordsampleUAC(int left, int right)
+static RAMFUNC void recordsampleUAC(FLOAT_t left, FLOAT_t right)
 {
 #if WITHUSBUACIN
-	savesamplerecord16uacin(left, right);	// Запись демодулированного сигнала без озвучки клавиш в USB
+	savesamplerecord16uacin(AUBTOAUDIO16(left), AUBTOAUDIO16(right));	// Запись демодулированного сигнала без озвучки клавиш в USB
 #endif /* WITHUSBUACIN */
 }
 
 // Запись на SD CARD
-static RAMFUNC void recordsampleSD(int left, int right)
+static RAMFUNC void recordsampleSD(FLOAT_t left, FLOAT_t right)
 {
 #if WITHUSEAUDIOREC && ! (WITHWAVPLAYER || WITHSENDWAV)
-	savesamplerecord16SD(left, right);	// Запись демодулированного сигнала без озвучки клавиш на SD CARD
+	savesamplerecord16SD(AUBTOAUDIO16(left), AUBTOAUDIO16(right));	// Запись демодулированного сигнала без озвучки клавиш на SD CARD
 #endif /* WITHUSEAUDIOREC && ! (WITHWAVPLAYER || WITHSENDWAV) */
 }
 
@@ -5317,8 +5317,8 @@ void dsp_addsidetone(aubufv_t * buff)
 			moni.IV = 0;
 			moni.QV = 0;
 		}
-		const aufastbufv_t moniL = mixmonitor(sdtnshape, sdtnv, moni.IV);
-		const aufastbufv_t moniR = mixmonitor(sdtnshape, sdtnv, moni.QV);
+		const aufastbufv_t moniL = AUDIO16TOAUB(mixmonitor(sdtnshape, sdtnv, moni.IV));
+		const aufastbufv_t moniR = AUDIO16TOAUB(mixmonitor(sdtnshape, sdtnv, moni.QV));
 
 		aufastbufv_t left = b [L];
 		aufastbufv_t right = b [R];
