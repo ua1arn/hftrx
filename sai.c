@@ -186,21 +186,27 @@ enum
 static portholder_t stm32xxx_i2scfgr_afcodec(void)
 {
 	const portholder_t i2scfgr =
-		SPI_I2SCFGR_I2SMOD |
+		SPI_I2SCFGR_I2SMOD |	// 1: I2S/PCM mode is selected
+
 #if WITHI2S_32BITPAIR
+		//(1uL << SPI_I2SCFGR_DATFMT_Pos) |	// 1: the data inside the SPI2S_RXDR or SPI2S_TXDR are left aligned.
 		//(1uL << SPI_I2SCFGR_FIXCH_Pos) |		// 1: the channel length in slave mode is supposed to be 16 or 32 bits (according to CHLEN)
 		(1uL << SPI_I2SCFGR_CHLEN_Pos) |		// 1: 32-bit wide audio channel
 		(2uL << SPI_I2SCFGR_DATLEN_Pos) |	// 00: 16-bit data length, 01: 24-bit data length, 10: 32-bit data length
+
 #else /* WITHI2S_32BITPAIR */
 		(0uL << SPI_I2SCFGR_CHLEN_Pos) |		// 0: 16-bit wide audio channel
 		(0uL << SPI_I2SCFGR_DATLEN_Pos) |	// 00: 16-bit data length, 01: 24-bit data length, 10: 32-bit data length
+
 #endif /* WITHI2S_32BITPAIR */
+
 #if WITHI2S_FORMATI2S_PHILIPS
-		(0uL << SPI_I2SCFGR_I2SSTD_Pos) |	// 00: I2S Phillips standard
+		(0uL << SPI_I2SCFGR_I2SSTD_Pos) |	// 00: I2S Philips standard
+
 #else /* WITHI2S_FORMATI2S_PHILIPS */
 		(1uL << SPI_I2SCFGR_I2SSTD_Pos) |	// 01: MSB justified standard (left justified)
+
 #endif /* WITHI2S_FORMATI2S_PHILIPS */
-		//1 * SPI_I2SCFGR_CKPOL |		// не для H7: от этого бита не зависит: данные на выходе меняются по спадающему фронту
 		0;
 
 	return i2scfgr;
