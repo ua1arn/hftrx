@@ -38,7 +38,8 @@
 
 #if WITHTOUCHGUI
 static uint_fast8_t encoder2_busy = 0;		// признак занятости энкодера в обработке gui
-static uint_fast8_t keyboard_disabled = 0;	// признак блокировки клавиатуры
+static uint_fast8_t keyboard_redirect = 0;	// перенаправление кодов кнопок в менеджер gui
+static uint_fast8_t gui_editfreqmode = 0;
 static uint_fast8_t is_menu_opened = 0;		// открыто gui системное меню
 static char menuw [10];						// буфер для вывода значений системного меню
 static enc2_menu_t enc2_menu;
@@ -12474,8 +12475,6 @@ display_menu_digit(
 	)
 {
 #if WITHTOUCHGUI
-	if (is_menu_opened)
-	{
 		const uint_fast8_t iwidth = width & WWIDTHFLAG;	// ширина поля
 		const uint_fast32_t ca = ipow10(comma);
 
@@ -12496,7 +12495,6 @@ display_menu_digit(
 			local_snprintf_P(menuw, sizeof menuw / sizeof menuw[0], PSTR("%ld.%0*ld"), d.quot, (int) comma, d.rem);
 		}
 		return;
-	}
 #endif /* WITHTOUCHGUI */
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 
@@ -12526,9 +12524,10 @@ display_menu_string_P(
 		strcpy(menuw, s);
 		return;
 	}
-#endif /* WITHTOUCHGUI */
+#else
 	display_setcolors(MNUVALCOLOR, BGCOLOR);
 	display_at_P(x + width - comma, y, s);
+#endif /* WITHTOUCHGUI */
 }
 
 #if WITHMENU
@@ -16657,6 +16656,14 @@ void playhandler(uint8_t code)
 static uint_fast8_t
 processkeyboard(uint_fast8_t kbch)
 {
+#if WITHTOUCHGUI
+	if (keyboard_redirect && ! gui_editfreqmode)
+	{
+		gui_put_keyb_code (kbch);
+		return 0;
+	}
+	gui_editfreqmode = 0;
+#endif
 	const uint_fast8_t exitkey = getexitkey();	/* эта клавиша совмещена с menu - дополнительный код для выхода. */
 
 #if WITHDIRECTFREQENER
@@ -17847,22 +17854,19 @@ hamradio_main_step(void)
 			}
 	#endif /* WITHDEBUG */
 	#if WITHKEYBOARD
-#if WITHTOUCHGUI
-			if (kbready != 0 && ! keyboard_disabled)
-#else
 			if (kbready != 0)
-#endif
+
 			{
 				if (processkeyboard(kbch))
 				{
 					/* обновление индикатора без сохранения состояния диапазона */
 					encoder_clear();				/* при возможном уменьшении шага исключение случайного накопления */
-#if WITHTOUCHGUI
+	#if WITHTOUCHGUI
 					display_redrawfreqs(1);
 					display_redrawmodes(1);
-#else
+	#else
 					display_redrawfreqmodesbars(0);			/* Обновление дисплея - всё, включая частоту */
-#endif /* WITHTOUCHGUI */
+	#endif /* WITHTOUCHGUI */
 				} // end keyboard processing
 			}
 	#endif /* WITHKEYBOARD */
@@ -17936,18 +17940,19 @@ hamradio_main_step(void)
 }
 
 #if WITHTOUCHGUI
-void disable_keyboard (void)
+void disable_keyboard_redirect (void)
 {
-	keyboard_disabled = 1;
+	keyboard_redirect = 0;
 }
 
-void enable_keyboard (void)
+void enable_keyboard_redirect (void)
 {
-	keyboard_disabled = 0;
+	keyboard_redirect = 1;
 }
 
 uint_fast8_t send_key_code (uint_fast8_t code)
 {
+	gui_editfreqmode = 1;
 	processkeyboard(code);
 	display_redrawfreqs(1);
 	return editfreqmode;
@@ -18167,7 +18172,6 @@ const char * gui_edit_menu_item(uint_fast8_t index, int_least16_t rotate)
 					nextfreq(* pv8, * pv8 + (rotate * step), step, upper + (uint_fast32_t) step);
 			}
 		}
-		display_menu_valxx(0, 0, (void *) mp);
 		updateboard(1, 0);
 		display_redrawfreqs(1);
 		display_redrawmodes(1);
@@ -18175,6 +18179,7 @@ const char * gui_edit_menu_item(uint_fast8_t index, int_least16_t rotate)
 		savemenuvalue(mp);		/* сохраняем отредактированное значение */
 #endif
 		}
+	display_menu_valxx(0, 0, (void *) mp);
 	return menuw;
 }
 

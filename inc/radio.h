@@ -3246,8 +3246,9 @@ void spool_0p128(void);	// OPERA support
 	void get_multilinemenu_block_vals(menu_names_t * vals, uint_fast8_t index, uint_fast8_t cnt);
 	void set_menu_cond (uint_fast8_t m);
 	const char * gui_edit_menu_item (uint_fast8_t index, int_least16_t rotate);
-	void disable_keyboard (void);
-	void enable_keyboard (void);
+	void disable_keyboard_redirect (void);
+	void enable_keyboard_redirect (void);
+	void gui_put_keyb_code (uint_fast8_t kbch);
 	void gui_uif_editmenu(const char * name, uint_fast8_t menupos, uint_fast8_t exitkey);
 #endif /* WITHTOUCHGUI */
 

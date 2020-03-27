@@ -288,8 +288,9 @@ void button1_handler(void);
 		{ 279, 134, 329, 184, buttons_freq_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_VOXTOGGLE, 	"0", },
 		{   0, 	 0,   0,   0, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU,  NON_VISIBLE, UINTPTR_MAX, 			"-", },
 		{   0, 	 0,   0,   0, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU,  NON_VISIBLE, UINTPTR_MAX, 			"+", },
-//		{   0, 	 0,   0,   0, buttons_uif_handler, 	CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UIF,   NON_VISIBLE, UINTPTR_MAX, 			"-", },
-//		{   0, 	 0,   0,   0, buttons_uif_handler, 	CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UIF,   NON_VISIBLE, UINTPTR_MAX, 			"+", },
+		{   0, 	 0,   0,   0, buttons_uif_handler, 	CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UIF,   NON_VISIBLE, UINTPTR_MAX, 			"-", },
+		{   0, 	 0,   0,   0, buttons_uif_handler, 	CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UIF,   NON_VISIBLE, UINTPTR_MAX, 			"+", },
+		{ 375, 120, 425, 150, buttons_uif_handler, 	CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UIF,   NON_VISIBLE, UINTPTR_MAX, 			"OK", },
 	};
 	enum { button_handlers_count = sizeof button_handlers / sizeof button_handlers[0] };
 
@@ -328,14 +329,15 @@ void button1_handler(void);
 		{ 450, 190, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", "", COLORPIP_WHITE, labels_menu_handler, },
 		{ 580,  60, WINDOW_ENC2, DISABLED,  0, NON_VISIBLE, "lbl_enc2_param", "", 	COLORPIP_WHITE, },
 		{ 580,  90, WINDOW_ENC2, DISABLED,  0, NON_VISIBLE, "lbl_enc2_val", "", 	COLORPIP_WHITE, },
-		{    0,  0,	WINDOW_UIF,  DISABLED,  0, NON_VISIBLE, "lbl_uif_param", "param", 	COLORPIP_WHITE, },
-		{    0,  0,	WINDOW_UIF,  DISABLED,  0, NON_VISIBLE, "lbl_uif_val", "val", 		COLORPIP_WHITE, },
+		{    0,  0,	WINDOW_UIF,  DISABLED,  0, NON_VISIBLE, "lbl_uif_param", "", COLORPIP_WHITE, },
+		{    0,  0,	WINDOW_UIF,  DISABLED,  0, NON_VISIBLE, "lbl_uif_val", 	 "", COLORPIP_WHITE, },
 };
 	enum { labels_count = sizeof labels / sizeof labels[0] };
 
 	typedef struct {
 		uint_fast16_t last_pressed_x; 	 // последняя точка касания экрана
 		uint_fast16_t last_pressed_y;
+		uint_fast8_t kbd_code;
 		uint_fast8_t selected_id;		 // индекс последнего выбранного элемента
 		uint_fast8_t selected_type;		 // тип последнего выбранного элемента
 		uint_fast8_t state;				 // последнее состояние
@@ -352,7 +354,7 @@ void button1_handler(void);
 		int_least16_t vector_move_y;
 	} gui_t;
 
-	static gui_t gui = { 0, 0, 0, TYPE_DUMMY, CANCELLED, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, };
+	static gui_t gui = { 0, 0, KBD_CODE_MAX, 0, TYPE_DUMMY, CANCELLED, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, };
 
 	typedef struct {
 		uint_fast8_t window_id;			// в окне будут отображаться элементы с соответствующим полем for_window
@@ -360,7 +362,7 @@ void button1_handler(void);
 		uint_fast16_t y1;
 		uint_fast16_t x2;
 		uint_fast16_t y2;
-		char * title;					// текст, выводимый в заголовке окна
+		char name[20];					// текст, выводимый в заголовке окна
 		uint_fast8_t is_show;			// запрос на отрисовку окна
 		uint_fast8_t first_call;		// признак первого вызова для различных инициализаций
 		void(*onVisibleProcess) (void);
@@ -375,7 +377,7 @@ void button1_handler(void);
 		{ WINDOW_FREQ,  100,  0, 350, 200, "Freq", 		  NON_VISIBLE, 0, window_freq_process, },
 		{ WINDOW_MENU,   50, 10, 600, 220, "Settings",	  NON_VISIBLE, 0, window_menu_process, },
 		{ WINDOW_ENC2, 	550, 15, 735, 120, "Fast menu",   NON_VISIBLE, 0, },
-		{ WINDOW_UIF, 	310, 15, 490, 120, "",   		  NON_VISIBLE, 0, window_uif_process, },
+		{ WINDOW_UIF, 	300, 15, 500, 160, "",   		  NON_VISIBLE, 0, window_uif_process, },
 	};
 	enum { windows_count = sizeof windows / sizeof windows[0] };
 
@@ -415,7 +417,6 @@ void button1_handler(void);
 		const char name [15];
 		uint_fast8_t menupos;
 		uint_fast8_t exitkey;
-		uint_fast8_t state;
 	} menu_by_name_t;
 
 	menu_by_name_t menu_uif;
@@ -741,7 +742,6 @@ void button1_handler(void);
 			strcpy((char *) menu_uif.name, name);
 			menu_uif.menupos = menupos;
 			menu_uif.exitkey = exitkey;
-			menu_uif.state = VISIBLE;
 		}
 		else
 		{
@@ -750,28 +750,88 @@ void button1_handler(void);
 		}
 	}
 
+	void gui_put_keyb_code (uint_fast8_t kbch)
+	{
+		// После обработки события по коду кнопки
+		// сбрасывать gui.kbd_code в KBD_CODE_MAX.
+		gui.kbd_code = gui.kbd_code == KBD_CODE_MAX ? kbch : gui.kbd_code;
+	}
+
 	void window_uif_process(void)
 	{
-		static uint_fast8_t window_shift_x = 0;
+		static uint_fast8_t id_lbl_uif_param, id_lbl_uif_val, window_half_wight;
+		static uint_fast8_t id_button_up = 0, id_button_down = 0;
+		uint_fast8_t button_menu_w = 40, button_menu_h = 40;
+
 		if (windows[WINDOW_UIF].first_call == 1)
 		{
 			windows[WINDOW_UIF].first_call = 0;
-			uint_fast8_t id_lbl_uif_param = find_label(WINDOW_UIF, "lbl_uif_param");
-			uint_fast8_t id_lbl_uif_val = find_label(WINDOW_UIF, "lbl_uif_val");
-			window_shift_x =  windows[WINDOW_UIF].x1 + ((windows[WINDOW_UIF].x2 - windows[WINDOW_UIF].x1) / 2);
-			labels[id_lbl_uif_param].x = window_shift_x - (strlen(labels[id_lbl_uif_param].text) * SMALLCHARW / 2);
-			labels[id_lbl_uif_param].y = windows[WINDOW_UIF].y1 + 10;
-			labels[id_lbl_uif_val].x = window_shift_x - (strlen(labels[id_lbl_uif_val].text) * SMALLCHARW / 2);
+			window_half_wight =  windows[WINDOW_UIF].x1 + ((windows[WINDOW_UIF].x2 - windows[WINDOW_UIF].x1) / 2);
+
+			id_lbl_uif_param = find_label(WINDOW_UIF, "lbl_uif_param");
+			id_lbl_uif_val = find_label(WINDOW_UIF, "lbl_uif_val");
+			strcpy(labels[id_lbl_uif_param].text, menu_uif.name);
+			const char * v = gui_edit_menu_item(menu_uif.menupos, 0);
+			strcpy(labels[id_lbl_uif_val].text, v);
+
+			labels[id_lbl_uif_param].x = window_half_wight - (strlen(labels[id_lbl_uif_param].text) * SMALLCHARW / 2);
+			labels[id_lbl_uif_param].y = windows[WINDOW_UIF].y1 + SMALLCHARH;
+			labels[id_lbl_uif_val].x = window_half_wight - (strlen(labels[id_lbl_uif_val].text) * SMALLCHARW / 2);
 			labels[id_lbl_uif_val].y = windows[WINDOW_UIF].y1 + SMALLCHARH * 4;
+
+			id_button_up = find_button(WINDOW_UIF, "+");
+			id_button_down = find_button(WINDOW_UIF, "-");
+
+			button_handlers[id_button_down].x1 = labels[id_lbl_uif_val].x - button_menu_w - 10;
+			button_handlers[id_button_down].x2 = button_handlers[id_button_down].x1 + button_menu_w;
+			button_handlers[id_button_down].y1 = (labels[id_lbl_uif_val].y + SMALLCHARH / 2) - (button_menu_h / 2);
+			button_handlers[id_button_down].y2 = button_handlers[id_button_down].y1 + button_menu_h;
+
+			button_handlers[id_button_up].x1 = labels[id_lbl_uif_val].x + strlen(labels[id_lbl_uif_val].text) * SMALLCHARW + 10;
+			button_handlers[id_button_up].x2 = button_handlers[id_button_up].x1 + button_menu_w;
+			button_handlers[id_button_up].y1 = button_handlers[id_button_down].y1;
+			button_handlers[id_button_up].y2 = button_handlers[id_button_down].y2;
+
+			enable_keyboard_redirect();
 		}
 
+		if (encoder2.rotate != 0)
+		{
+			const char * v = gui_edit_menu_item(menu_uif.menupos, encoder2.rotate);
+			strcpy(labels[id_lbl_uif_val].text, v);
+			labels[id_lbl_uif_val].x = window_half_wight - (strlen(labels[id_lbl_uif_val].text) * SMALLCHARW / 2);
+			encoder2.rotate_done = 1;
+			button_handlers[id_button_down].x1 = labels[id_lbl_uif_val].x - button_menu_w - 10;
+			button_handlers[id_button_down].x2 = button_handlers[id_button_down].x1 + button_menu_w;
+			button_handlers[id_button_up].x1 = labels[id_lbl_uif_val].x + strlen(labels[id_lbl_uif_val].text) * SMALLCHARW + 10;
+			button_handlers[id_button_up].x2 = button_handlers[id_button_up].x1 + button_menu_w;
 
+		}
 
+		if (gui.kbd_code != KBD_CODE_MAX)
+		{
+			if (gui.kbd_code == menu_uif.exitkey)
+			{
+				disable_keyboard_redirect();
+				set_window(WINDOW_UIF, NON_VISIBLE);
+				footer_buttons_state(CANCELLED, "");
+			}
+			gui.kbd_code = KBD_CODE_MAX;
+		}
 	}
 
 	void buttons_uif_handler(void)
 	{
-
+		if (gui.selected_type == TYPE_BUTTON && gui.selected_id == find_button(WINDOW_UIF, "+"))
+			encoder2.rotate = 1;
+		else if (gui.selected_type == TYPE_BUTTON && gui.selected_id == find_button(WINDOW_UIF, "-"))
+			encoder2.rotate = -1;
+		else if (gui.selected_type == TYPE_BUTTON && gui.selected_id == find_button(WINDOW_UIF, "OK"))
+		{
+			disable_keyboard_redirect();
+			set_window(WINDOW_UIF, NON_VISIBLE);
+			footer_buttons_state(CANCELLED, "");
+		}
 	}
 
 	void window_menu_process(void)
@@ -1051,7 +1111,6 @@ void button1_handler(void);
 				labels[menu[MENU_VALS].first_id + i].state = CANCELLED;
 			}
 			menu_label_touched = 0;
-			PRINTF("%d %s %d\n", menu[menu_level].selected_str, menu[menu_level].menu_block[menu[menu_level].selected_str].name, menu[menu_level].selected_label);
 		}
 		if (menu_level != MENU_VALS)
 			display_colorbuff_string_tbg(colorpip, gui.pip_width, gui.pip_height, labels[menu[menu_level].selected_label + menu[menu_level].first_id].x - 16,
@@ -1109,7 +1168,6 @@ void button1_handler(void);
 			footer_buttons_state(DISABLED, "");
 			strcpy(labels[id_lbl_param].text, enc2_menu->param);
 			remove_end_line_spaces(labels[id_lbl_param].text);
-			PRINTF("%d\n", strlen(labels[id_lbl_param].text));
 			strcpy(labels[id_lbl_val].text, enc2_menu->val);
 			labels[id_lbl_val].color = enc2_menu->state == 2 ? COLORPIP_YELLOW : COLORPIP_WHITE;
 			labels[id_lbl_val].x = windows[WINDOW_ENC2].x1 + ((windows[WINDOW_ENC2].x2 - windows[WINDOW_ENC2].x1) - (strlen (labels[id_lbl_val].text) * SMALLCHARW)) / 2;
@@ -1169,7 +1227,7 @@ void button1_handler(void);
 		{
 			set_window(WINDOW_FREQ, NON_VISIBLE);
 			footer_buttons_state(CANCELLED, "");
-			enable_keyboard();
+			disable_keyboard_redirect();
 		}
 	}
 
@@ -1235,14 +1293,14 @@ void button1_handler(void);
 			set_window(gui.window_to_draw, VISIBLE);
 			windows[gui.window_to_draw].first_call = 1;
 			send_key_code(KBD_CODE_ENTERFREQ);
-			disable_keyboard();
+			enable_keyboard_redirect();
 			footer_buttons_state(DISABLED, button_handlers[gui.selected_id].text);
 		}
 		else
 		{
 			set_window(gui.window_to_draw, NON_VISIBLE);
 			send_key_code(KBD_CODE_ENTERFREQDONE);
-			enable_keyboard();
+			disable_keyboard_redirect();
 			footer_buttons_state(CANCELLED, "");
 		}
 	}
@@ -1363,7 +1421,7 @@ void button1_handler(void);
 
 			// вывод заголовка окна
 			display_colorbuff_string_tbg(colorpip, gui.pip_width, gui.pip_height, windows[gui.window_to_draw].x1 + 20,
-					windows[gui.window_to_draw].y1 + 10, windows[gui.window_to_draw].title, COLORPIP_YELLOW);
+					windows[gui.window_to_draw].y1 + 10, windows[gui.window_to_draw].name, COLORPIP_YELLOW);
 			// отрисовка принадлежащих окну элементов
 
 			for (uint_fast8_t i = 1; i < labels_count; i++)
