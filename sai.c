@@ -453,7 +453,7 @@ hardware_i2s2_master_fullduplex_initialize(void)		/* инициализация 
 	__DSB();
 #endif /* CPUSTYLE_STM32H7XX */
 	        
-	const portholder_t i2smode = 
+	const portholder_t i2scfgr =
 		SPI_I2SCFGR_I2SMOD | 
 #if WITHI2S_32BITPAIR
 		1 * SPI_I2SCFGR_CHLEN |		// 1: 32-bit wide audio channel
@@ -470,8 +470,8 @@ hardware_i2s2_master_fullduplex_initialize(void)		/* инициализация 
 		//1 * SPI_I2SCFGR_CKPOL |		// не для H7: от этого бита не зависит: данные на выходе меняются по спадающему фронту
 		0;
 
- 	I2S2ext->I2SCFGR = i2smode | 1 * SPI_I2SCFGR_I2SCFG_0;	// 10: Master - transmit, 11: Master - receive, 01: Slave - receive
- 	SPI2->I2SCFGR = i2smode | 2 * SPI_I2SCFGR_I2SCFG_0; // 10: Master - transmit, 11: Master - receive
+ 	I2S2ext->I2SCFGR = i2scfgr | 1 * SPI_I2SCFGR_I2SCFG_0;	// 10: Master - transmit, 11: Master - receive, 01: Slave - receive
+ 	SPI2->I2SCFGR = i2scfgr | 2 * SPI_I2SCFGR_I2SCFG_0; // 10: Master - transmit, 11: Master - receive
 #if WITHI2SCLOCKFROMPIN
 	const portholder_t i2sdivider = calcdivround_exti2s(ARMI2SMCLK);
 #else /* WITHI2SCLOCKFROMPIN */
@@ -517,7 +517,7 @@ hardware_i2s2_slave_tx_initialize(void)		/* инициализация I2S2, STM
 	(void) RCC->APB1ENR;
 #endif /* CPUSTYLE_STM32H7XX */
 	        
-	const portholder_t i2smode = 
+	const portholder_t i2scfgr =
 		SPI_I2SCFGR_I2SMOD | 
 #if WITHI2S_32BITPAIR
 		1 * SPI_I2SCFGR_CHLEN |		// 1: 32-bit wide audio channel
@@ -534,7 +534,7 @@ hardware_i2s2_slave_tx_initialize(void)		/* инициализация I2S2, STM
 		//1 * SPI_I2SCFGR_CKPOL |		// не для H7: от этого бита не зависит: данные на выходе меняются по спадающему фронту
 		0;
 
- 	SPI2->I2SCFGR = i2smode | 0 * SPI_I2SCFGR_I2SCFG_0; // 00: Slave - transmit
+ 	SPI2->I2SCFGR = i2scfgr | 0 * SPI_I2SCFGR_I2SCFG_0; // 00: Slave - transmit
 #if CPUSTYLE_STM32H7XX
 	SPI2->CFG2 |= SPI_CFG2_IOSWP;
 #endif /* CPUSTYLE_STM32H7XX */
@@ -612,7 +612,7 @@ hardware_i2s2_master_tx_initialize(void)		/* инициализация I2S2, ST
 	__DSB();
 #endif /* CPUSTYLE_STM32H7XX */
 	        
-	const portholder_t i2smode = 
+	const portholder_t i2scfgr =
 		SPI_I2SCFGR_I2SMOD | 
 #if WITHI2S_32BITPAIR
 		1 * SPI_I2SCFGR_CHLEN |		// 1: 32-bit wide audio channel
@@ -629,7 +629,7 @@ hardware_i2s2_master_tx_initialize(void)		/* инициализация I2S2, ST
 		//1 * SPI_I2SCFGR_CKPOL |		// не для H7: от этого бита не зависит: данные на выходе меняются по спадающему фронту
 		0;
 
- 	SPI2->I2SCFGR = i2smode | 2 * SPI_I2SCFGR_I2SCFG_0; // 10: Master - transmit, 11: Master - receive
+ 	SPI2->I2SCFGR = i2scfgr | 2 * SPI_I2SCFGR_I2SCFG_0; // 10: Master - transmit, 11: Master - receive
 #if WITHI2SCLOCKFROMPIN
 	const portholder_t i2sdivider = calcdivround_exti2s(ARMI2SMCLK);
 #else /* WITHI2SCLOCKFROMPIN */
@@ -675,7 +675,7 @@ hardware_i2s3_slave_rx_initialize(void)		/* инициализация I2S3 STM3
 	(void) RCC->APB1ENR;
 #endif /* CPUSTYLE_STM32H7XX */
 	        
-	const portholder_t i2smode = 
+	const portholder_t i2scfgr =
 		SPI_I2SCFGR_I2SMOD | 
 #if WITHI2S_32BITPAIR
 		1 * SPI_I2SCFGR_CHLEN |		// 1: 32-bit wide audio channel
@@ -692,7 +692,7 @@ hardware_i2s3_slave_rx_initialize(void)		/* инициализация I2S3 STM3
 		//1 * SPI_I2SCFGR_CKPOL |		// не для H7: от этого бита не зависит: данные на выходе меняются по спадающему фронту
 		0;
 
- 	SPI3->I2SCFGR = i2smode | 1 * SPI_I2SCFGR_I2SCFG_0;	// 10: Master - transmit, 11: Master - receive, 01: Slave - receive
+ 	SPI3->I2SCFGR = i2scfgr | 1 * SPI_I2SCFGR_I2SCFG_0;	// 10: Master - transmit, 11: Master - receive, 01: Slave - receive
 #if CPUSTYLE_STM32H7XX
 	//SPI3->CFG2 |= SPI_CFG2_IOSWP;
 #endif /* CPUSTYLE_STM32H7XX */

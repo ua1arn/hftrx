@@ -292,8 +292,8 @@ static void nau8822_initialize_slave_fullduplex(void)
 
 #else /* CODEC_TYPE_NAU8822_USE_8KS */
 
-	nau8822_setreg(NAU8822_CLOCKING, 0x000);	// reg 0x06,
-	nau8822_setreg(NAU8822_ADDITIONAL_CONTROL, 0x000);	// reg 0x07,
+	nau8822_setreg(NAU8822_CLOCKING, 0x000);	// reg 0x06, 000 = divide by 1
+	nau8822_setreg(NAU8822_ADDITIONAL_CONTROL, 0x000);	// reg 0x07, 000 = 48kHz
 
 #endif /* CODEC_TYPE_NAU8822_USE_8KS */
 
