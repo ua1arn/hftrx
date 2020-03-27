@@ -288,9 +288,9 @@ void button1_handler(void);
 		{ 279, 134, 329, 184, buttons_freq_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_VOXTOGGLE, 	"0", },
 		{   0, 	 0,   0,   0, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU,  NON_VISIBLE, UINTPTR_MAX, 			"-", },
 		{   0, 	 0,   0,   0, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU,  NON_VISIBLE, UINTPTR_MAX, 			"+", },
-//		{   0, 	 0,   0,   0, buttons_uif_handler, 	CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UIF,   NON_VISIBLE, UINTPTR_MAX, 			"-", },
-//		{   0, 	 0,   0,   0, buttons_uif_handler, 	CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UIF,   NON_VISIBLE, UINTPTR_MAX, 			"+", },
-//		{   0, 	 0,   0,   0, buttons_uif_handler, 	CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UIF,   NON_VISIBLE, UINTPTR_MAX, 			"OK", },
+		{   0, 	 0,   0,   0, buttons_uif_handler, 	CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UIF,   NON_VISIBLE, UINTPTR_MAX, 			"-", },
+		{   0, 	 0,   0,   0, buttons_uif_handler, 	CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UIF,   NON_VISIBLE, UINTPTR_MAX, 			"+", },
+		{ 375, 120, 425, 150, buttons_uif_handler, 	CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UIF,   NON_VISIBLE, UINTPTR_MAX, 			"OK", },
 	};
 	enum { button_handlers_count = sizeof button_handlers / sizeof button_handlers[0] };
 
@@ -377,7 +377,7 @@ void button1_handler(void);
 		{ WINDOW_FREQ,  100,  0, 350, 200, "Freq", 		  NON_VISIBLE, 0, window_freq_process, },
 		{ WINDOW_MENU,   50, 10, 600, 220, "Settings",	  NON_VISIBLE, 0, window_menu_process, },
 		{ WINDOW_ENC2, 	550, 15, 735, 120, "Fast menu",   NON_VISIBLE, 0, },
-		{ WINDOW_UIF, 	310, 15, 490, 120, "",   		  NON_VISIBLE, 0, window_uif_process, },
+		{ WINDOW_UIF, 	300, 15, 500, 160, "",   		  NON_VISIBLE, 0, window_uif_process, },
 	};
 	enum { windows_count = sizeof windows / sizeof windows[0] };
 
@@ -760,6 +760,9 @@ void button1_handler(void);
 	void window_uif_process(void)
 	{
 		static uint_fast8_t id_lbl_uif_param, id_lbl_uif_val, window_half_wight;
+		static uint_fast8_t id_button_up = 0, id_button_down = 0;
+		uint_fast8_t button_menu_w = 40, button_menu_h = 40;
+
 		if (windows[WINDOW_UIF].first_call == 1)
 		{
 			windows[WINDOW_UIF].first_call = 0;
@@ -776,6 +779,19 @@ void button1_handler(void);
 			labels[id_lbl_uif_val].x = window_half_wight - (strlen(labels[id_lbl_uif_val].text) * SMALLCHARW / 2);
 			labels[id_lbl_uif_val].y = windows[WINDOW_UIF].y1 + SMALLCHARH * 4;
 
+			id_button_up = find_button(WINDOW_UIF, "+");
+			id_button_down = find_button(WINDOW_UIF, "-");
+
+			button_handlers[id_button_down].x1 = labels[id_lbl_uif_val].x - button_menu_w - 10;
+			button_handlers[id_button_down].x2 = button_handlers[id_button_down].x1 + button_menu_w;
+			button_handlers[id_button_down].y1 = (labels[id_lbl_uif_val].y + SMALLCHARH / 2) - (button_menu_h / 2);
+			button_handlers[id_button_down].y2 = button_handlers[id_button_down].y1 + button_menu_h;
+
+			button_handlers[id_button_up].x1 = labels[id_lbl_uif_val].x + strlen(labels[id_lbl_uif_val].text) * SMALLCHARW + 10;
+			button_handlers[id_button_up].x2 = button_handlers[id_button_up].x1 + button_menu_w;
+			button_handlers[id_button_up].y1 = button_handlers[id_button_down].y1;
+			button_handlers[id_button_up].y2 = button_handlers[id_button_down].y2;
+
 			enable_keyboard_redirect();
 		}
 
@@ -785,6 +801,11 @@ void button1_handler(void);
 			strcpy(labels[id_lbl_uif_val].text, v);
 			labels[id_lbl_uif_val].x = window_half_wight - (strlen(labels[id_lbl_uif_val].text) * SMALLCHARW / 2);
 			encoder2.rotate_done = 1;
+			button_handlers[id_button_down].x1 = labels[id_lbl_uif_val].x - button_menu_w - 10;
+			button_handlers[id_button_down].x2 = button_handlers[id_button_down].x1 + button_menu_w;
+			button_handlers[id_button_up].x1 = labels[id_lbl_uif_val].x + strlen(labels[id_lbl_uif_val].text) * SMALLCHARW + 10;
+			button_handlers[id_button_up].x2 = button_handlers[id_button_up].x1 + button_menu_w;
+
 		}
 
 		if (gui.kbd_code != KBD_CODE_MAX)
@@ -801,7 +822,16 @@ void button1_handler(void);
 
 	void buttons_uif_handler(void)
 	{
-
+		if (gui.selected_type == TYPE_BUTTON && gui.selected_id == find_button(WINDOW_UIF, "+"))
+			encoder2.rotate = 1;
+		else if (gui.selected_type == TYPE_BUTTON && gui.selected_id == find_button(WINDOW_UIF, "-"))
+			encoder2.rotate = -1;
+		else if (gui.selected_type == TYPE_BUTTON && gui.selected_id == find_button(WINDOW_UIF, "OK"))
+		{
+			disable_keyboard_redirect();
+			set_window(WINDOW_UIF, NON_VISIBLE);
+			footer_buttons_state(CANCELLED, "");
+		}
 	}
 
 	void window_menu_process(void)
@@ -1081,7 +1111,6 @@ void button1_handler(void);
 				labels[menu[MENU_VALS].first_id + i].state = CANCELLED;
 			}
 			menu_label_touched = 0;
-			PRINTF("%d %s %d\n", menu[menu_level].selected_str, menu[menu_level].menu_block[menu[menu_level].selected_str].name, menu[menu_level].selected_label);
 		}
 		if (menu_level != MENU_VALS)
 			display_colorbuff_string_tbg(colorpip, gui.pip_width, gui.pip_height, labels[menu[menu_level].selected_label + menu[menu_level].first_id].x - 16,
@@ -1139,7 +1168,6 @@ void button1_handler(void);
 			footer_buttons_state(DISABLED, "");
 			strcpy(labels[id_lbl_param].text, enc2_menu->param);
 			remove_end_line_spaces(labels[id_lbl_param].text);
-			PRINTF("%d\n", strlen(labels[id_lbl_param].text));
 			strcpy(labels[id_lbl_val].text, enc2_menu->val);
 			labels[id_lbl_val].color = enc2_menu->state == 2 ? COLORPIP_YELLOW : COLORPIP_WHITE;
 			labels[id_lbl_val].x = windows[WINDOW_ENC2].x1 + ((windows[WINDOW_ENC2].x2 - windows[WINDOW_ENC2].x1) - (strlen (labels[id_lbl_val].text) * SMALLCHARW)) / 2;
