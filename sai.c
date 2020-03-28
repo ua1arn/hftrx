@@ -2234,6 +2234,18 @@ enum
 
 #define R7S721_MASTER 1
 
+#if WITHI2S_32BITPAIR
+	#define R7S721_SSIF_CKDIV_AFCODEC R7S721_SSIF_CKDIV4	// 0010: AUDIOц/4: 12,288 -> 3.072 (48 kS, 32 bit, stereo)
+	#define R7S721_SSIF_SWL_AFCODEC 3	// SWL 3: 32 bit
+	#define R7S721_SSIF_DWL_AFCODEC 6	// DWL 6: 32 bit
+
+#else /* WITHI2S_32BITPAIR */
+	#define R7S721_SSIF_CKDIV_AFCODEC R7S721_SSIF_CKDIV8	// 0011: AUDIOц/8: 12,288 -> 1.536 (48 kS, 16 bit, stereo)
+	#define R7S721_SSIF_SWL_AFCODEC 1	// SWL 1: 16 bit
+	#define R7S721_SSIF_DWL_AFCODEC 1	// DWL 1: 16 bit
+
+#endif /* WITHI2S_32BITPAIR */
+
 #if WITHI2SHW
 
 // audio codec
@@ -2435,8 +2447,8 @@ static void r7s721_ssif0_fullduplex_initialize(void)
 	SSIF0.SSICR = 
 		R7S721_USE_AUDIO_CLK * (1UL << 30) |		// CKS 1: AUDIO_CLK input 0: AUDIO_X1 input
 		0 * (1UL << 22) |		// CHNL		00: Having one channel per system word (I2S complaint)
-		1 * (1UL << 19) |		// DWL		1: 16 bit	
-		1 * (1UL << 16) |		// SWL		1: 16 bit	
+		R7S721_SSIF_DWL_AFCODEC * (1UL << 19) |		// DWL
+		R7S721_SSIF_SWL_AFCODEC * (1UL << 16) |		// SWL
 		master * (1UL << 15) |		// SCKD		1: Serial bit clock is output, master mode.
 		master * (1UL << 14) |		// SWSD		1: Serial word select is output, master mode.
 		0 * (1UL << 13) |		// SCKP		0: Данные на выходе меняются по спадающему фронту (I2S complaint)
@@ -2449,7 +2461,7 @@ static void r7s721_ssif0_fullduplex_initialize(void)
 #else /* WITHI2S_FORMATI2S_PHILIPS */
 		1 * (1UL << 8) |		// DEL	1: No delay between SSIWS and SSIDATA
 #endif /* WITHI2S_FORMATI2S_PHILIPS */
-		master * R7S721_SSIF_CKDIV8 * (1UL << 4) |		// CKDV	0011: AUDIOц/8: 12,288 -> 1.536 (48 kS, 16 bit, stereo)
+		master * R7S721_SSIF_CKDIV_AFCODEC * (1UL << 4) |		// CKDV	0011: AUDIOц/8: 12,288 -> 1.536 (48 kS, 16 bit, stereo)
 		0;
 
 	// FIFO Control Register (SSIFCR)
