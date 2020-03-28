@@ -1007,8 +1007,8 @@ RAMFUNC uint_fast8_t getsampmlemike(INT32P_t * v)
 	}
 
 	// Использование данных.
-	v->ivqv [L] = (int16_t) p->buff [pos * DMABUFSTEP16 + L];	// микрофон или левый канал
-	v->ivqv [R] = (int16_t) p->buff [pos * DMABUFSTEP16 + R];	// правый канал
+	v->ivqv [L] = AUBTOAUDIO16(p->buff [pos * DMABUFSTEP16 + L]);	// микрофон или левый канал
+	v->ivqv [R] = AUBTOAUDIO16(p->buff [pos * DMABUFSTEP16 + R]);	// правый канал
 
 	if (++ pos >= CNT)
 	{
@@ -1049,8 +1049,8 @@ RAMFUNC uint_fast8_t getsampmlemoni(INT32P_t * v)
 	}
 
 	// Использование данных.
-	v->ivqv [L] = (int16_t) p->buff [pos * DMABUFSTEP16 + L];	// левый канал
-	v->ivqv [R] = (int16_t) p->buff [pos * DMABUFSTEP16 + R];	// правый канал
+	v->ivqv [L] = AUBTOAUDIO16(p->buff [pos * DMABUFSTEP16 + L]);	// микрофон или левый канал
+	v->ivqv [R] = AUBTOAUDIO16(p->buff [pos * DMABUFSTEP16 + R]);	// правый канал
 
 	if (++ pos >= CNT)
 	{
@@ -1313,8 +1313,10 @@ static RAMFUNC unsigned getsamplemsuacout(
 				static aubufv_t addsample [DMABUFSTEP16];
 				enum { HALF = DMABUFFSIZE16 / 2 };
 				// значения как среднее арифметическое сэмплов, между которыми вставляем дополнительный.
-				addsample [0] = ((int_fast64_t) p->buff [HALF - DMABUFSTEP16 + 0] + p->buff [HALF + 0]) / 2;	// Left
-				addsample [1] = ((int_fast64_t) p->buff [HALF - DMABUFSTEP16 + 1] + p->buff [HALF + 1]) / 2;	// Right
+				addsample [0] = ((aufastbufv2x_t) p->buff [HALF - DMABUFSTEP16 + 0] + p->buff [HALF + 0]) / 2;	// Left
+		#if DMABUFSTEP16 > 1
+				addsample [1] = ((aufastbufv2x_t) p->buff [HALF - DMABUFSTEP16 + 1] + p->buff [HALF + 1]) / 2;	// Right
+		#endif
 				part = NPARTS - 3;
 				datas [0] = & p->buff [0];		// часть перед вставкой
 				sizes [0] = HALF;
@@ -2461,17 +2463,19 @@ void uacout_buffer_stop(void)
 
 /* вызыватся из не-realtime функции обработчика прерывания */
 // Работает на ARM_SYSTEM_PRIORITY
-void uacout_buffer_save_system(const uint8_t * buff, uint_fast16_t size)
+void uacout_buffer_save_system(const uint8_t * buff, uint_fast16_t size, uint_fast8_t ichannels, uint_fast8_t ibits)
 {
-	const size_t dmabuffer16size = DMABUFFSIZE16 * sizeof (int16_t);	// размер в байтах
-
-#if WITHUABUACOUTAUDIO48MONO
+	const size_t dmabuffer16size = DMABUFFSIZE16 * sizeof (aubufv_t);	// размер в байтах
+	ASSERT(ibits == 16);
 
 	for (;;)
 	{
-		const uint_fast16_t insamples = size / 2;	// количество сэмплов во входном буфере
-		const uint_fast16_t outsamples = (dmabuffer16size - uacoutbufflevel) / 2 / DMABUFSTEP16;
+		const uint_fast16_t insamples = size / sizeof (int16_t) / ichannels;	// количество сэмплов во входном буфере
+		const uint_fast16_t outsamples = (dmabuffer16size - uacoutbufflevel) / sizeof (aubufv_t) / DMABUFSTEP16;
 		const uint_fast16_t chunksamples = ulmin16(insamples, outsamples);
+		const size_t inchunk = chunksamples * sizeof (int16_t) * ichannels;
+		const size_t outchunk = chunksamples * sizeof (aubufv_t) * DMABUFSTEP16;	// разхмер в байтах
+
 		if (chunksamples == 0)
 			break;
 		if (uacoutaddr == 0)
@@ -2481,7 +2485,8 @@ void uacout_buffer_save_system(const uint8_t * buff, uint_fast16_t size)
 			global_enableIRQ();
 			uacoutbufflevel = 0;
 		}
-		//memcpy((uint8_t *) uacoutaddr + uacoutbufflevel, buff, chunk);
+
+		if (ichannels < DMABUFSTEP16)
 		{
 			// копирование нужного количества сэмплов с прербразованием из моно в стерео
 			const int16_t * src = (const int16_t *) buff;
@@ -2494,8 +2499,24 @@ void uacout_buffer_save_system(const uint8_t * buff, uint_fast16_t size)
 				* dst ++ = v;
 			}
 		}
-		const uint_fast16_t inchunk = chunksamples * 2;
-		const uint_fast16_t outchunk = chunksamples * sizeof (aubufv_t) * DMABUFSTEP16;	// разхмер в байтах
+		else if (sizeof (int16_t) != sizeof (aufastbufv_t))
+		// требуется преобразование формата из 16-бит семплов ко внутреннему формату aubufv_t
+		{
+			/* копирование 16 бит сэмплов с расширением */
+			const int16_t * src = (const int16_t *) buff;
+			aubufv_t * dst = (aubufv_t *) ((uint8_t *) uacoutaddr + uacoutbufflevel);
+			uint_fast16_t n = chunksamples * ichannels;
+			while (n --)
+			{
+				const aufastbufv_t v = AUDIO16TOAUB(* src ++);
+				* dst ++ = v;
+			}
+		}
+		else
+		{
+			memcpy((uint8_t *) uacoutaddr + uacoutbufflevel, buff, inchunk);
+		}
+
 		size -= inchunk;	// проход по входому буферу
 		buff += inchunk;	// проход входому буферу
 
@@ -2508,63 +2529,23 @@ void uacout_buffer_save_system(const uint8_t * buff, uint_fast16_t size)
 			uacoutbufflevel = 0;
 		}
 	}
-#else /* WITHUABUACOUTAUDIO48MONO */
-	
-	for (;;)
-	{
-		const uint_fast16_t chunk = ulmin16(size, dmabuffer16size - uacoutbufflevel);
-		if (chunk == 0)
-			break;
-		if (uacoutaddr == 0)
-		{
- 			global_disableIRQ();
-			uacoutaddr = allocate_dmabuffer16();
-			global_enableIRQ();
-			uacoutbufflevel = 0;
-		}
-#if WITHI2S_32BITPAIR
-		{
-			/* копирование 16 битсэмплов с расширением */
-			const int16_t * src = (const int16_t *) buff;
-			aubufv_t * dst = (aubufv_t *) ((uint8_t *) uacoutaddr + uacoutbufflevel);
-			uint_fast16_t n = chunk / sizeof (int16_t);
-			while (n --)
-			{
-				const aufastbufv_t v = AUDIO16TOAUB(* src ++);
-				* dst ++ = v;
-			}
-		}
-#else /* WITHI2S_32BITPAIR */
-		memcpy((uint8_t *) uacoutaddr + uacoutbufflevel, buff, chunk);
-#endif /* WITHI2S_32BITPAIR */
-		size -= chunk;		// проход по входому буферу
-		buff += chunk;		// проход по входому буферу
-
-		if ((uacoutbufflevel += chunk) >= dmabuffer16size)	// проход по вывходому буферу
-		{
-			global_disableIRQ();
-			processing_dmabuffer16rxuac(uacoutaddr);
-			global_enableIRQ();
-			uacoutaddr = 0;
-			uacoutbufflevel = 0;
-		}
-	}
-
-#endif /* WITHUABUACOUTAUDIO48MONO */
 }
+
 /* вызыватся из realtime функции обработчика прерывания */
 // Работает на ARM_REALTIME_PRIORITY
-void uacout_buffer_save_realtime(const uint8_t * buff, uint_fast16_t size)
+void uacout_buffer_save_realtime(const uint8_t * buff, uint_fast16_t size, uint_fast8_t ichannels, uint_fast8_t ibits)
 {
-	const size_t dmabuffer16size = DMABUFFSIZE16 * sizeof (int16_t);	// размер в байтах
-
-#if WITHUABUACOUTAUDIO48MONO
+	const size_t dmabuffer16size = DMABUFFSIZE16 * sizeof (aubufv_t);	// размер в байтах
+	ASSERT(ibits == 16);
 
 	for (;;)
 	{
-		const uint_fast16_t insamples = size / 2;	// количество сэмплов во входном буфере
-		const uint_fast16_t outsamples = (dmabuffer16size - uacoutbufflevel) / 2 / DMABUFSTEP16;
+		const uint_fast16_t insamples = size / sizeof (int16_t) / ichannels;	// количество сэмплов во входном буфере
+		const uint_fast16_t outsamples = (dmabuffer16size - uacoutbufflevel) / sizeof (aubufv_t) / DMABUFSTEP16;
 		const uint_fast16_t chunksamples = ulmin16(insamples, outsamples);
+		const size_t inchunk = chunksamples * sizeof (int16_t) * ichannels;
+		const size_t outchunk = chunksamples * sizeof (aubufv_t) * DMABUFSTEP16;	// разхмер в байтах
+
 		if (chunksamples == 0)
 			break;
 		if (uacoutaddr == 0)
@@ -2574,21 +2555,38 @@ void uacout_buffer_save_realtime(const uint8_t * buff, uint_fast16_t size)
 			//global_enableIRQ();
 			uacoutbufflevel = 0;
 		}
-		//memcpy((uint8_t *) uacoutaddr + uacoutbufflevel, buff, chunk);
+
+		if (ichannels < DMABUFSTEP16)
 		{
 			// копирование нужного количества сэмплов с прербразованием из моно в стерео
-			const uint16_t * src = (const uint16_t *) buff;
-			uint16_t * dst = (uint16_t *) ((uint8_t *) uacoutaddr + uacoutbufflevel);
+			const int16_t * src = (const int16_t *) buff;
+			aubufv_t * dst = (aubufv_t *) ((uint8_t *) uacoutaddr + uacoutbufflevel);
 			uint_fast16_t n = chunksamples;
 			while (n --)
 			{
-				const uint_fast16_t v = * src ++;
+				const aufastbufv_t v = AUDIO16TOAUB(* src ++);
 				* dst ++ = v;
 				* dst ++ = v;
 			}
 		}
-		const uint_fast16_t inchunk = chunksamples * 2;
-		const uint_fast16_t outchunk = chunksamples * 2 * DMABUFSTEP16;	// разхмер в байтах
+		else if (sizeof (int16_t) != sizeof (aufastbufv_t))
+		// требуется преобразование формата из 16-бит семплов ко внутреннему формату aubufv_t
+		{
+			/* копирование 16 бит сэмплов с расширением */
+			const int16_t * src = (const int16_t *) buff;
+			aubufv_t * dst = (aubufv_t *) ((uint8_t *) uacoutaddr + uacoutbufflevel);
+			uint_fast16_t n = chunksamples * ichannels;
+			while (n --)
+			{
+				const aufastbufv_t v = AUDIO16TOAUB(* src ++);
+				* dst ++ = v;
+			}
+		}
+		else
+		{
+			memcpy((uint8_t *) uacoutaddr + uacoutbufflevel, buff, inchunk);
+		}
+
 		size -= inchunk;	// проход по входому буферу
 		buff += inchunk;	// проход входому буферу
 
@@ -2601,35 +2599,6 @@ void uacout_buffer_save_realtime(const uint8_t * buff, uint_fast16_t size)
 			uacoutbufflevel = 0;
 		}
 	}
-#else /* WITHUABUACOUTAUDIO48MONO */
-
-	for (;;)
-	{
-		const uint_fast16_t chunk = ulmin16(size, dmabuffer16size - uacoutbufflevel);
-		if (chunk == 0)
-			break;
-		if (uacoutaddr == 0)
-		{
- 			//global_disableIRQ();
-			uacoutaddr = allocate_dmabuffer16();
-			//global_enableIRQ();
-			uacoutbufflevel = 0;
-		}
-		memcpy((uint8_t *) uacoutaddr + uacoutbufflevel, buff, chunk);
-		size -= chunk;		// проход по входому буферу
-		buff += chunk;		// проход по входому буферу
-
-		if ((uacoutbufflevel += chunk) >= dmabuffer16size)	// проход по вывходому буферу
-		{
-			//global_disableIRQ();
-			processing_dmabuffer16rxuac(uacoutaddr);
-			//global_enableIRQ();
-			uacoutaddr = 0;
-			uacoutbufflevel = 0;
-		}
-	}
-
-#endif /* WITHUABUACOUTAUDIO48MONO */
 }
 /* --- UAC OUT data save */
 

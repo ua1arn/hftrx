@@ -203,13 +203,19 @@ extern "C" {
 
 	typedef int32_t aubufv_t;
 	typedef int_fast32_t aufastbufv_t;
-	#define AUDIO16TOAUB(v) ((aufastbufv_t) ((v) * 65536L))	/* не забывать, аргумент может быть FLOAT */
+	typedef int_fast64_t aufastbufv2x_t;	/* дип для работы ресэмплера при получении среднего арифметического */
+	/* масштабирование сэмплов */
+	#define AUDIO16TOAUB(v) (((v) * 65536L))	/* не забывать, аргумент может быть FLOAT */
+	#define AUBTOAUDIO16(v) ((v) / 65536L)	/* не забывать, аргумент может быть FLOAT */
 
 #else /* WITHI2S_32BITPAIR */
 
 	typedef int16_t aubufv_t;
 	typedef int_fast16_t aufastbufv_t;
+	typedef int_fast32_t aufastbufv2x_t;	/* дип для работы ресэмплера при получении среднего арифметического */
+	/* масштабирование сэмплов (заглушки) */
 	#define AUDIO16TOAUB(v) (v)	/* не забывать, аргумент может быть FLOAT */
+	#define AUBTOAUDIO16(v) (v)	/* не забывать, аргумент может быть FLOAT */
 
 #endif /* WITHI2S_32BITPAIR */
 
@@ -693,8 +699,8 @@ const codec2if_t * board_getfpgacodecif(void);		// получить интерф
 void uacout_buffer_initialize(void);
 void uacout_buffer_start(void);
 void uacout_buffer_stop(void);
-void uacout_buffer_save_system(const uint8_t * buff, uint_fast16_t size);
-void uacout_buffer_save_realtime(const uint8_t * buff, uint_fast16_t size);
+void uacout_buffer_save_system(const uint8_t * buff, uint_fast16_t size, uint_fast8_t ichannels, uint_fast8_t ibits);
+void uacout_buffer_save_realtime(const uint8_t * buff, uint_fast16_t size, uint_fast8_t ichannels, uint_fast8_t ibits);
 
 /* Получение пары (левый и правый) сжмплов для воспроизведения через аудиовыход трансивера.
  * Возврат 0, если нет ничего для воспроизведения.
