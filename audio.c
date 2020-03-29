@@ -5428,8 +5428,8 @@ void RAMFUNC dsp_extbuffer32rx(const int32_t * buff)
 		//savesampleout32stereo(intn_to_tx(dual.IV, 24), intn_to_tx(dual.QV, 24));	// кодек получает 24 бита left justified в 32-х битном числе.
 //		recordsampleUAC(dual.IV >> 8, dual.QV >> 8);	// Запись в UAC демодулированного сигнала без озвучки клавиш
 		recordsampleUAC(
-			(int_fast32_t) buff [i + DMABUF32RXI] >> (32 - HARDWARE_USBD_AUDIO_IN_SAMPLEBITS_AUDIO48),
-			(int_fast32_t) buff [i + DMABUF32RXQ] >> (32 - HARDWARE_USBD_AUDIO_IN_SAMPLEBITS_AUDIO48)
+			(int_fast32_t) buff [i + DMABUF32RXI] >> (32 - UACIN_AUDIO48_SAMPLEBITS),
+			(int_fast32_t) buff [i + DMABUF32RXQ] >> (32 - UACIN_AUDIO48_SAMPLEBITS)
 			);
 
 #elif WITHSUSBSPKONLY

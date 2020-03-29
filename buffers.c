@@ -2665,20 +2665,20 @@ uintptr_t getfilled_dmabufferx(uint_fast16_t * sizep)
 		return 0;
 
 	case UACINALT_AUDIO48:
-		* sizep = UAC_IN48_DATA_SIZE;
+		* sizep = UACIN_IN48_DATA_SIZE;
 		return getfilled_dmabuffer16uacin();
 
 #if ! WITHUSBUACIN2
 
 #if WITHRTS96
 	case UACINALT_RTS96:
-		* sizep = VIRTUAL_AUDIO_PORT_DATA_SIZE_IN_RTS96;
+		* sizep = UACIN_RTS96_DATASIZE;
 		return getfilled_dmabuffer96uacinrts();
 #endif /* WITHRTS192 */
 
 #if WITHRTS192
 	case UACINALT_RTS192:
-		* sizep = VIRTUAL_AUDIO_PORT_DATA_SIZE_IN_RTS192;
+		* sizep = UACIN_RTS192_DATASIZE;
 		return getfilled_dmabuffer192uacinrts();
 #endif /* WITHRTS192 */
 
@@ -2708,13 +2708,13 @@ uintptr_t getfilled_dmabufferxrts(uint_fast16_t * sizep)
 
 #if WITHRTS96
 	case UACINRTSALT_RTS96:
-		* sizep = VIRTUAL_AUDIO_PORT_DATA_SIZE_IN_RTS96;
+		* sizep = UACIN_RTS96_DATASIZE;
 		return getfilled_dmabuffer96uacinrts();
 #endif /* WITHRTS192 */
 
 #if WITHRTS192
 	case UACINRTSALT_RTS192:
-		* sizep = VIRTUAL_AUDIO_PORT_DATA_SIZE_IN_RTS192;
+		* sizep = UACIN_RTS192_DATASIZE;
 		return getfilled_dmabuffer192uacinrts();
 #endif /* WITHRTS192 */
 

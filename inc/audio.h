@@ -176,10 +176,10 @@ extern "C" {
 
 #if WITHUABUACOUTAUDIO48MONO
 	// количество каналов в дескрипторах формата потока
-	#define UACOUT_FMT_CHANNELS_AUDIO48	1
+	#define UACOUT_AUDIO48_FMT_CHANNELS	1
 #else /* WITHUABUACOUTAUDIO48MONO */
 	// количество каналов в дескрипторах формата потока
-	#define UACOUT_FMT_CHANNELS_AUDIO48	2
+	#define UACOUT_AUDIO48_FMT_CHANNELS	2
 #endif /* WITHUABUACOUTAUDIO48MONO */
 
 // коррекция размера с учетом требуемого выравнивания
@@ -237,8 +237,8 @@ extern "C" {
 #if WITHRTS96
 
 	// stereo, 24 bit samples
-	#define HARDWARE_USBD_AUDIO_IN_SAMPLEBITS_RTS96		24
-	#define VIRTUAL_AUDIO_PORT_DATA_SIZE_IN_RTS96		(DMABUFFSIZE96RTS * sizeof (uint8_t))
+	#define UACIN_RTS96_SAMPLEBITS		24
+	#define UACIN_RTS96_DATASIZE		(DMABUFFSIZE96RTS * sizeof (uint8_t))
 
 	#define HSINTERVAL_RTS96 4	// endpoint descriptor parameters
 	#define FSINTERVAL_RTS96 1
@@ -248,8 +248,8 @@ extern "C" {
 
 	// По каналу real-time спектра стерео, 32 бит, 192 кГц - 288*2*4 = 2304 байта
 	// stereo, 32 bit samples
-	#define HARDWARE_USBD_AUDIO_IN_SAMPLEBITS_RTS192	32
-	#define VIRTUAL_AUDIO_PORT_DATA_SIZE_IN_RTS192		(DMABUFFSIZE192RTS * sizeof (int8_t))
+	#define UACIN_RTS192_SAMPLEBITS	32
+	#define UACIN_RTS192_DATASIZE		(DMABUFFSIZE192RTS * sizeof (int8_t))
 
 	#define HSINTERVAL_RTS192 3	// 500 us
 	#define FSINTERVAL_RTS192 1
@@ -259,8 +259,8 @@ extern "C" {
 
 // stereo, 16 bit samples
 // По звуковому каналу передается стерео, 16 бит, 48 кГц - 288 байт размер данных в ендпонтт
-#define HARDWARE_USBD_AUDIO_IN_SAMPLEBITS_AUDIO48	16
-#define UAC_IN48_DATA_SIZE (DMABUFFSIZEUACIN16 * sizeof (uint16_t))
+#define UACIN_AUDIO48_SAMPLEBITS	16
+#define UACIN_IN48_DATA_SIZE (DMABUFFSIZEUACIN16 * sizeof (int16_t))
 
 
 
@@ -289,7 +289,7 @@ extern "C" {
 // буфер приема потока данных от USB к модуоятору
 #define UAC_OUT48_DATA_SIZE	( \
 	MSOUTSAMPLES * \
-	((UACOUT_AUDIO48_SAMPLEBITS * UACOUT_FMT_CHANNELS_AUDIO48 + 7) / 8) \
+	((UACOUT_AUDIO48_SAMPLEBITS * UACOUT_AUDIO48_FMT_CHANNELS + 7) / 8) \
 	)
 
 
