@@ -200,6 +200,7 @@
 	#define CODEC1_TYPE CODEC_TYPE_WM8994		// PH7 & PH8 I2C3
 	//#define CODEC_TYPE_WM8994_USE_SPI	1
 	//#define CODEC_TYPE_WM8994_USE_8KS	1	/* кодек работает с sample rate 8 kHz */
+	#define CODEC_TYPE_WM8994_USE_32BIT 1	/* кодек в формате 32 bit (иначе - 16 bit) */
 
 	//#define CODEC1_TYPE CODEC_TYPE_NAU8822L	// PH7 & PH8 I2C3
 	//#define CODEC_TYPE_NAU8822_USE_SPI	1
