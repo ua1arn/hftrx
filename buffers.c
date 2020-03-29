@@ -2461,19 +2461,35 @@ void uacout_buffer_stop(void)
 	}
 }
 
+static aufastbufv_t fetch_le(const uint8_t * p, size_t usbsz)
+{
+	int32_t v = 0;
+	uint_fast8_t i;
+	for (i = 0; i < usbsz; ++ i)
+	{
+		v = v * 256 + p [usbsz - i - 1];
+	}
+	for (; i < 4; ++ i)
+	{
+		v = v * 256;
+	}
+	/* теперь старший бит полученного с USB сэмпла находится в знаковом бите переменной v */
+	return v >> (8 * (4 - sizeof (aubufv_t)));
+}
+
 /* вызыватся из не-realtime функции обработчика прерывания */
 // Работает на ARM_SYSTEM_PRIORITY
 void uacout_buffer_save_system(const uint8_t * buff, uint_fast16_t size, uint_fast8_t ichannels, uint_fast8_t ibits)
 {
 	const size_t dmabuffer16size = DMABUFFSIZE16 * sizeof (aubufv_t);	// размер в байтах
-	ASSERT(ibits == 16);
+	const size_t usbsz = (ibits + 7) / 8;
 
 	for (;;)
 	{
-		const uint_fast16_t insamples = size / sizeof (int16_t) / ichannels;	// количество сэмплов во входном буфере
+		const uint_fast16_t insamples = size / usbsz / ichannels;	// количество сэмплов во входном буфере
 		const uint_fast16_t outsamples = (dmabuffer16size - uacoutbufflevel) / sizeof (aubufv_t) / DMABUFSTEP16;
 		const uint_fast16_t chunksamples = ulmin16(insamples, outsamples);
-		const size_t inchunk = chunksamples * sizeof (int16_t) * ichannels;
+		const size_t inchunk = chunksamples * usbsz * ichannels;
 		const size_t outchunk = chunksamples * sizeof (aubufv_t) * DMABUFSTEP16;	// разхмер в байтах
 
 		if (chunksamples == 0)
@@ -2489,27 +2505,29 @@ void uacout_buffer_save_system(const uint8_t * buff, uint_fast16_t size, uint_fa
 		if (ichannels < DMABUFSTEP16)
 		{
 			// копирование нужного количества сэмплов с прербразованием из моно в стерео
-			const int16_t * src = (const int16_t *) buff;
+			const uint8_t * src = buff;
 			aubufv_t * dst = (aubufv_t *) ((uint8_t *) uacoutaddr + uacoutbufflevel);
 			uint_fast16_t n = chunksamples;
 			while (n --)
 			{
-				const aufastbufv_t v = AUDIO16TOAUB(* src ++);
+				const aufastbufv_t v = fetch_le(src, usbsz);
 				* dst ++ = v;
 				* dst ++ = v;
+				src += usbsz;
 			}
 		}
-		else if (sizeof (int16_t) != sizeof (aufastbufv_t))
+		else if (usbsz != sizeof (aubufv_t))
 		// требуется преобразование формата из 16-бит семплов ко внутреннему формату aubufv_t
 		{
 			/* копирование 16 бит сэмплов с расширением */
-			const int16_t * src = (const int16_t *) buff;
+			const uint8_t * src = buff;
 			aubufv_t * dst = (aubufv_t *) ((uint8_t *) uacoutaddr + uacoutbufflevel);
 			uint_fast16_t n = chunksamples * ichannels;
 			while (n --)
 			{
-				const aufastbufv_t v = AUDIO16TOAUB(* src ++);
+				const aufastbufv_t v = fetch_le(src, usbsz);
 				* dst ++ = v;
+				src += usbsz;
 			}
 		}
 		else
@@ -2536,14 +2554,14 @@ void uacout_buffer_save_system(const uint8_t * buff, uint_fast16_t size, uint_fa
 void uacout_buffer_save_realtime(const uint8_t * buff, uint_fast16_t size, uint_fast8_t ichannels, uint_fast8_t ibits)
 {
 	const size_t dmabuffer16size = DMABUFFSIZE16 * sizeof (aubufv_t);	// размер в байтах
-	ASSERT(ibits == 16);
+	const size_t usbsz = (ibits + 7) / 8;
 
 	for (;;)
 	{
-		const uint_fast16_t insamples = size / sizeof (int16_t) / ichannels;	// количество сэмплов во входном буфере
+		const uint_fast16_t insamples = size / usbsz / ichannels;	// количество сэмплов во входном буфере
 		const uint_fast16_t outsamples = (dmabuffer16size - uacoutbufflevel) / sizeof (aubufv_t) / DMABUFSTEP16;
 		const uint_fast16_t chunksamples = ulmin16(insamples, outsamples);
-		const size_t inchunk = chunksamples * sizeof (int16_t) * ichannels;
+		const size_t inchunk = chunksamples * usbsz * ichannels;
 		const size_t outchunk = chunksamples * sizeof (aubufv_t) * DMABUFSTEP16;	// разхмер в байтах
 
 		if (chunksamples == 0)
@@ -2559,27 +2577,29 @@ void uacout_buffer_save_realtime(const uint8_t * buff, uint_fast16_t size, uint_
 		if (ichannels < DMABUFSTEP16)
 		{
 			// копирование нужного количества сэмплов с прербразованием из моно в стерео
-			const int16_t * src = (const int16_t *) buff;
+			const uint8_t * src = buff;
 			aubufv_t * dst = (aubufv_t *) ((uint8_t *) uacoutaddr + uacoutbufflevel);
 			uint_fast16_t n = chunksamples;
 			while (n --)
 			{
-				const aufastbufv_t v = AUDIO16TOAUB(* src ++);
+				const aufastbufv_t v = fetch_le(src, usbsz);
 				* dst ++ = v;
 				* dst ++ = v;
+				src += usbsz;
 			}
 		}
-		else if (sizeof (int16_t) != sizeof (aufastbufv_t))
+		else if (usbsz != sizeof (aubufv_t))
 		// требуется преобразование формата из 16-бит семплов ко внутреннему формату aubufv_t
 		{
 			/* копирование 16 бит сэмплов с расширением */
-			const int16_t * src = (const int16_t *) buff;
+			const uint8_t * src = buff;
 			aubufv_t * dst = (aubufv_t *) ((uint8_t *) uacoutaddr + uacoutbufflevel);
 			uint_fast16_t n = chunksamples * ichannels;
 			while (n --)
 			{
-				const aufastbufv_t v = AUDIO16TOAUB(* src ++);
+				const aufastbufv_t v = fetch_le(src, usbsz);
 				* dst ++ = v;
+				src += usbsz;
 			}
 		}
 		else

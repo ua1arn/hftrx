@@ -6253,30 +6253,31 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 	PRINTF(PSTR("usbd_fifo_initialize1: 4*(full4-last4)=%u\n"), 4 * (full4 - last4));
 
 #if WITHUSBUAC
+
+#if WITHUSBUACIN2
+	#if WITHRTS96
+		const int nuacinpackets = 1 * mul2, nuacoutpackets = 1 * mul2;
+	#elif WITHRTS192
+		const int nuacinpackets = 1 * mul2, nuacoutpackets = 1 * mul2;
+	#else /* WITHRTS96 || WITHRTS192 */
+		const int nuacinpackets = 1 * mul2, nuacoutpackets = 1 * mul2;
+	#endif /* WITHRTS96 || WITHRTS192 */
+#else /* WITHUSBUACIN2 */
+	#if WITHRTS96
+		const int nuacinpackets = 1 * mul2, nuacoutpackets = 1 * mul2;
+	#elif WITHRTS192
+		const int nuacinpackets = 1 * mul2, nuacoutpackets = 1 * mul2;
+	#else /* WITHRTS96 || WITHRTS192 */
+		const int nuacinpackets = 2 * mul2, nuacoutpackets = 1 * mul2;
+	#endif /* WITHRTS96 || WITHRTS192 */
+#endif /* WITHUSBUACIN2 */
+
+#if WITHUSBUACIN
 	{
 		/* endpoint передачи звука в компьютер */
 		const uint_fast8_t pipe = (USBD_EP_AUDIO_IN) & 0x7F;
 
-		numoutendpoints += 1;
-#if WITHUSBUACIN2
-		#if WITHRTS96
-			const int nuacinpackets = 1 * mul2, nuacoutpackets = 1 * mul2;
-		#elif WITHRTS192
-			const int nuacinpackets = 1 * mul2, nuacoutpackets = 1 * mul2;
-		#else /* WITHRTS96 || WITHRTS192 */
-			const int nuacinpackets = 1 * mul2, nuacoutpackets = 1 * mul2;
-		#endif /* WITHRTS96 || WITHRTS192 */
-#else /* WITHUSBUACIN2 */
-		#if WITHRTS96
-			const int nuacinpackets = 1 * mul2, nuacoutpackets = 1 * mul2;
-		#elif WITHRTS192
-			const int nuacinpackets = 1 * mul2, nuacoutpackets = 1 * mul2;
-		#else /* WITHRTS96 || WITHRTS192 */
-			const int nuacinpackets = 2 * mul2, nuacoutpackets = 1 * mul2;
-		#endif /* WITHRTS96 || WITHRTS192 */
-#endif /* WITHUSBUACIN2 */
 		const uint_fast16_t uacinmaxpacket = usbd_getuacinmaxpacket();
-		maxoutpacketsize4 = ulmax16(maxoutpacketsize4, nuacoutpackets * size2buff4(UAC_OUT48_DATA_SIZE));
 
 		const uint_fast16_t size4 = nuacinpackets * (size2buff4(uacinmaxpacket) + add3tx);
 		ASSERT(last4 >= size4);
@@ -6299,6 +6300,13 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 		PRINTF(PSTR("usbd_fifo_initialize3 - UAC3 %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
 	}
 #endif /* WITHUSBUACIN2 */
+#endif /* WITHUSBUACIN */
+#if WITHUSBUACOUT
+	{
+		numoutendpoints += 1;
+		maxoutpacketsize4 = ulmax16(maxoutpacketsize4, nuacoutpackets * size2buff4(UAC_OUT48_DATA_SIZE));
+	}
+#endif /* WITHUSBUACOUT */
 #endif /* WITHUSBUAC */
 
 #if WITHUSBCDC
