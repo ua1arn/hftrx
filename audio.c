@@ -3689,12 +3689,12 @@ static unsigned long local_random(unsigned long num)
 
 // return audio sample in range [- txlevelfence.. + txlevelfence]
 static RAMFUNC FLOAT_t preparevi(
-	int vi0,
+	FLOAT_t vi0f,
 	uint_fast8_t dspmode,
 	FLOAT_t ctcss	// субтон, audio sample in range [- txlevelfence.. + txlevelfence]
 	)
 {
-	FLOAT_t vi0f = vi0;
+	//FLOAT_t vi0f = vi0;
 	const FLOAT_t txlevelXXX = (dspmode == DSPCTL_MODE_TX_DIGI) ? txlevelfenceDIGI : txlevelfenceSSB;
 	const int_fast32_t txlevelfenceXXX_INTEGER = (dspmode == DSPCTL_MODE_TX_DIGI) ? txlevelfenceDIGI : txlevelfenceSSB;
 
@@ -3844,7 +3844,7 @@ static RAMFUNC int_fast32_t intn_to_tx(int_fast32_t v, uint_fast8_t bits)
 // обрабатывается 16 битное (WITHAFADCWIDTH) число
 // используется в случае внешнего DUC
 static RAMFUNC void processafadcsampleiq(
-	INT32P_t vi0,	// выборка с микрофона (в vi)
+	FLOAT32P_t vi0,	// выборка с микрофона (в vi)
 	uint_fast8_t dspmode,
 	FLOAT_t shape,	// 0..1 - огибающая
 	FLOAT_t ctcss	// субтон, audio sample in range [- txlevelfence.. + txlevelfence]
@@ -4513,13 +4513,13 @@ static INT32P_t loopbacktestaudio(INT32P_t vi0, uint_fast8_t dspmode, FLOAT_t sh
 #endif /* WITHLOOPBACKTEST */
 
 /* получить очередной оцифрованый сэмпл с микрофона или USB AUDIO канала. 16-bit samples */
-static RAMFUNC INT32P_t getsampmlemike2(void)			
+static RAMFUNC FLOAT32P_t getsampmlemike2(void)
 {
-	INT32P_t v;
+	FLOAT32P_t v;
 #if WITHSENDWAV
 	if (takewavsample(& v, getTxShapeNotComplete()) != 0)
 	{
-		INT32P_t dummy;
+		FLOAT32P_t dummy;
 		getsampmlemike(& dummy);
 	}
 	else
@@ -5309,7 +5309,7 @@ void dsp_addsidetone(aubufv_t * buff)
 		aubufv_t * const b = & buff [i];
 		const FLOAT_t sdtnshape = shapeSidetoneStep();	// 0..1: 0 - monitor, 1 - sidetone
 		const FLOAT_t sdtnv = get_float_sidetone() * phonefence;	// Здесь значение выборки в диапазоне, допустимом для кодека
-		INT32P_t moni;
+		FLOAT32P_t moni;
 		if (getsampmlemoni(& moni) == 0)
 		{
 			// Еще нет сэмплов в канале самоконтроля (самопрослушивание)
@@ -5325,7 +5325,7 @@ void dsp_addsidetone(aubufv_t * buff)
 		//
 #if WITHWAVPLAYER
 		{
-			INT32P_t dual;
+			FLOAT32P_t dual;
 
 			if (takewavsample(& dual, 0) != 0)
 			{
@@ -5408,7 +5408,7 @@ void RAMFUNC dsp_extbuffer32rx(const int32_t * buff)
 	{
 	#if ! WITHTRANSPARENTIQ
 		const FLOAT_t ctcss = get_float_subtone() * txlevelfenceSSB;
-		const INT32P_t vi = getsampmlemike2();	// с микрофона (или 0, если ещё не запустился) */
+		const FLOAT32P_t vi = getsampmlemike2();	// с микрофона (или 0, если ещё не запустился) */
 		const FLOAT_t shape = shapeCWEnvelopStep() * scaleDAC;	// 0..1
 	#endif /* ! WITHTRANSPARENTIQ */
 
@@ -5467,7 +5467,7 @@ void RAMFUNC dsp_extbuffer32rx(const int32_t * buff)
 			(int_fast32_t) buff [i + DMABUF32RX0Q]
 			);
 
-		static INT32P_t vi;
+		static FLOAT32P_t vi;
 		static uint_fast8_t outupsamplecnt;
 		if ((outupsamplecnt ++ & 0x01) == 0)	// в сторону передатчика идут 96 кГц фреймы
 		{
@@ -5518,7 +5518,7 @@ void RAMFUNC dsp_extbuffer32rx(const int32_t * buff)
 
 	#if WITHLOOPBACKTEST
 
-		const INT32P_t dual = loopbacktestaudio(vi, dspmodeA, shape);
+		const FLOAT32P_t dual = loopbacktestaudio(vi, dspmodeA, shape);
 		processafadcsampleiq(dual, dspmodeA, shape, ctcss);	// Передатчик - формирование одного сэмпда (пары I/Q).
 		//
 		// Тестирование источников и потребителей звука

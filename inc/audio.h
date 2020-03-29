@@ -284,7 +284,7 @@ extern "C" {
 #define FSINTERVAL_255MS 255
 
 
-#define UACOUT_AUDIO48_SAMPLEBITS	16
+#define UACOUT_AUDIO48_SAMPLEBITS	24	// may be 24
 
 // буфер приема потока данных от USB к модуоятору
 #define UAC_OUT48_DATA_SIZE	( \
@@ -466,8 +466,8 @@ modem_frames_decode(
 	uint_fast8_t v
 	);
 
-uint_fast8_t getsampmlemike(INT32P_t * v);			/* получить очередной оцифрованый сэмпл с микрофона */
-uint_fast8_t getsampmlemoni(INT32P_t * v);			/* получить очередной сэмпл для самоконтроля */
+uint_fast8_t getsampmlemike(FLOAT32P_t * v);			/* получить очередной оцифрованый сэмпл с микрофона */
+uint_fast8_t getsampmlemoni(FLOAT32P_t * v);			/* получить очередной сэмпл для самоконтроля */
 
 FLOAT_t local_log(FLOAT_t x);
 FLOAT_t local_pow(FLOAT_t x, FLOAT_t y);
@@ -705,7 +705,7 @@ void uacout_buffer_save_realtime(const uint8_t * buff, uint_fast16_t size, uint_
 /* Получение пары (левый и правый) сжмплов для воспроизведения через аудиовыход трансивера.
  * Возврат 0, если нет ничего для воспроизведения.
  */
-uint_fast8_t takewavsample(INT32P_t * rv, uint_fast8_t suspend);
+uint_fast8_t takewavsample(FLOAT32P_t * rv, uint_fast8_t suspend);
 
 #ifdef __cplusplus
 }
