@@ -286,7 +286,7 @@ extern "C" {
 #define FSINTERVAL_255MS 255
 
 
-#define UACOUT_AUDIO48_SAMPLEBITS	24	// may be 24
+#define UACOUT_AUDIO48_SAMPLEBITS	16	// may be 24
 
 // буфер приема потока данных от USB к модулятору
 #define UACOUT_AUDIO48_DATASIZE	( \
