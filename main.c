@@ -14773,7 +14773,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		QLABEL("NFM DEVI"), 7, 0, 0,	ISTEP1,		/* Подстройка глубины модуляции в АМ */
+		QLABEL("NFM DEVI"), 7, 1, 0,	ISTEP1,		/* Подстройка глубины модуляции в АМ */
 		ITEM_VALUE,
 		0, 120,
 		offsetof(struct nvmap, gnfmdeviation),	/* Глубина модуляции в АМ - 0..100% */
