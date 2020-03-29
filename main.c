@@ -1,4 +1,3 @@
-
 /* $Id$ */
 //
 // Проект HF Dream Receiver (КВ приёмник мечты)
@@ -2537,6 +2536,7 @@ struct nvmap
 
 	uint8_t gagcoff;
 	uint8_t gamdepth;		/* Глубина модуляции в АМ - 0..100% */
+	uint8_t gnfmdeviation;	/* Девиация при передаче в NFM - в сотнях герц */
 	uint8_t gdacscale;		/* Использование амплитуды сигнала с ЦАП передатчика - 0..100% */
 	uint16_t gdigiscale;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 	uint8_t	gcwedgetime;			/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
@@ -3708,6 +3708,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 #if WITHTX
 	static uint_fast16_t gdigiscale = 250;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 	static uint_fast8_t gamdepth = 30;		/* Глубина модуляции в АМ - 0..100% */
+	static uint_fast8_t gnfmdeviation = 55;	/* Девиация при передаче в NFM - в сотнях герц */
 
 	/*  Использование амплитуды сигнала с ЦАП передатчика - 0..100% */
 	static uint_fast8_t gdacscale = 80;	/* настраивается под прегруз драйвера. */
@@ -8217,7 +8218,7 @@ updateboard(
 			board_set_aflowcuttx(bwseti_getlow(bwseti));	/* Нижняя частота среза фильтра НЧ по передаче */
 			board_set_afhighcuttx(bwseti_gethigh(bwseti));	/* Верхняя частота среза фильтра НЧ по передаче */
 			board_set_afresponcetx(bwseti_getafresponce(bwseti));	/* коррекция АЧХ НЧ тракта передатчика */
-			board_set_nfmdeviation100(75);
+			board_set_nfmdeviation100(gnfmdeviation);	/* Девиация при передаче в NFM - в сотнях герц */
 		#if WITHOUTTXCADCONTROL
 			/* мощность регулируется умножнением выходных значений в потоке к FPGA / IF CODEC */
 			board_set_dacscale(gdacscale * (unsigned long) (getactualpower() - WITHPOWERTRIMMIN) / (WITHPOWERTRIMMAX - WITHPOWERTRIMMIN));
@@ -14769,6 +14770,15 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		offsetof(struct nvmap, gamdepth),	/* Глубина модуляции в АМ - 0..100% */
 		NULL,
 		& gamdepth,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		QLABEL("NFM DEVI"), 7, 0, 0,	ISTEP1,		/* Подстройка глубины модуляции в АМ */
+		ITEM_VALUE,
+		0, 120,
+		offsetof(struct nvmap, gnfmdeviation),	/* Глубина модуляции в АМ - 0..100% */
+		NULL,
+		& gnfmdeviation,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
