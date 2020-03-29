@@ -46,14 +46,14 @@
 	#include "rbf/rbfimage_v7_1ch.h"	//
 #elif CTLSTYLE_STORCH_V5 && (DDS1_CLK_MUL == 1)		// mini
 	#include "rbf/rbfimage_v7a_2ch.h"	// same as CTLSTYLE_RAVENDSP_V7
-#elif CTLSTYLE_STORCH_V6 && ! WITHUSEDUALWATCH && (DDS1_CLK_MUL == 1)		// mini
-	#include "rbf/rbfimage_v7a_2ch.h"	//
-#elif CTLSTYLE_STORCH_V6 && (DDS1_CLK_MUL == 1)		// mini
-	#include "rbf/rbfimage_v7a_2ch.h"	// same as CTLSTYLE_RAVENDSP_V7
-#elif CTLSTYLE_STORCH_V7 && ! WITHUSEDUALWATCH && (DDS1_CLK_MUL == 1)		// TFT plug on board
-	#include "rbf/rbfimage_v7a_2ch.h"	//
-#elif CTLSTYLE_STORCH_V7 && (DDS1_CLK_MUL == 1)		// TFT plug on board
-	#include "rbf/rbfimage_v7a_2ch.h"	// same as CTLSTYLE_RAVENDSP_V7
+#elif CTLSTYLE_STORCH_V6 && ! WITHUSEDUALWATCH && (DDS1_CLK_MUL == 1)		// mini STM32H7 with TFT plug on board
+	#include "rbf/rbfimage_v7h_2ch.h"	//
+#elif CTLSTYLE_STORCH_V6 && (DDS1_CLK_MUL == 1)		// mini STM32H7 with TFT plug on board
+	#include "rbf/rbfimage_v7h_2ch.h"	// same as CTLSTYLE_RAVENDSP_V7
+#elif CTLSTYLE_STORCH_V7 && ! WITHUSEDUALWATCH && (DDS1_CLK_MUL == 1)		// STM32H7, TFT plug on board
+	#include "rbf/rbfimage_v7h_2ch.h"	//
+#elif CTLSTYLE_STORCH_V7 && (DDS1_CLK_MUL == 1)		// STM32H7, TFT plug on board
+	#include "rbf/rbfimage_v7h_2ch.h"	// same as CTLSTYLE_RAVENDSP_V7
 #elif CTLSTYLE_OLEG4Z_V1 && (DDS1_CLK_MUL == 1)
 	#include "rbf/rbfimage_oleg4z.h"	// same as CTLSTYLE_RAVENDSP_V7, 1 RX & WFM
 #elif CTLSTYLE_STORCH_V8 && (DDS1_CLK_MUL == 1) && WITHRTS192	// renesas & TFT panel on CPU
