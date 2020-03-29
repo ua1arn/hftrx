@@ -16,7 +16,6 @@
 #include <math.h>
 #include "gui.h"
 
-
 #if LCDMODE_LTDC
 
 #include "./display/fontmaps.h"
@@ -24,8 +23,13 @@
 void display_radius(int xc, int yc, unsigned gs, unsigned r1, unsigned r2, COLOR_T color);
 void display_segm(int xc, int yc, unsigned gs, unsigned ge, unsigned r, int step, COLOR_T color);
 
-
-static uint_fast16_t normalize(uint_fast16_t raw, uint_fast16_t rawmin,	uint_fast16_t rawmax, uint_fast16_t range)
+static
+uint_fast16_t normalize(
+		uint_fast16_t raw,
+		uint_fast16_t rawmin,
+		uint_fast16_t rawmax,
+		uint_fast16_t range
+		)
 	{
 		if (rawmin < rawmax)
 		{
@@ -51,126 +55,126 @@ static uint_fast16_t normalize(uint_fast16_t raw, uint_fast16_t rawmin,	uint_fas
 		}
 	}
 
-	void
-	display_smeter2(
-			uint_fast8_t x,
-			uint_fast8_t y,
-			void * pv
-			)
-	{
-		enum { ADDRCELLHEIGHT = 15 };
-		int i;
-		enum { halfsect = 30 };
-		enum { gm = 270 };
-		enum { gs = gm - halfsect };
-		int ge = gm + halfsect;
-		int stripewidth = 12; //16;
-		int r1 = 7 * ADDRCELLHEIGHT - 8;	//350;
-		int r2 = r1 - stripewidth;
-		int yc = y * ADDRCELLHEIGHT;	//560;
-		int xc = x * ADDRCELLHEIGHT;	//120;
-		COLOR_T ct;
+void
+display_smeter2(
+		uint_fast8_t x,
+		uint_fast8_t y,
+		void * pv
+		)
+{
+	enum { ADDRCELLHEIGHT = 15 };
+	int i;
+	enum { halfsect = 30 };
+	enum { gm = 270 };
+	enum { gs = gm - halfsect };
+	int ge = gm + halfsect;
+	int stripewidth = 12; //16;
+	int r1 = 7 * ADDRCELLHEIGHT - 8;	//350;
+	int r2 = r1 - stripewidth;
+	int yc = y * ADDRCELLHEIGHT;	//560;
+	int xc = x * ADDRCELLHEIGHT;	//120;
+	COLOR_T ct;
 
-		uint_fast8_t tracemax;
-		static int gv, gv_trace;;
-		static int gv_old = gs, gv_trace_old = gs;
-		if (hamradio_get_tx())														// угол поворота стрелки; 246 минимум, 270 середина, 294 максимум
-		{																			// добавить учет калибровок
-			gv = gs + normalize(board_getpwrmeter(& tracemax), 0, 200, ge - gs);
-			gv_trace = gs + normalize(tracemax, 0, 200, ge - gs);
-		}
-		else
-		{
-			gv = gs + normalize(board_getsmeter(& tracemax, 0, UINT8_MAX, 0), 120, 250, ge - gs); //270 + 24;
-			gv_trace = gs + normalize(tracemax, 120, 250, ge - gs);
-		}
-
-		int rv1 = 7 * ADDRCELLHEIGHT;	//350;
-		int rv2 = rv1 - 3 * ADDRCELLHEIGHT;
-		enum { step1 = 3 };		// шаг для оцифровки S
-		enum { step2 = 4 };		// шаг для оцифровки плюсов
-		static const int markers [] =
-		{
-			//gs + 0 * step1,
-			gs + 2 * step1,		// S1
-			gs + 4 * step1,		// S3
-			gs + 6 * step1,		// S5
-			gs + 8 * step1,		// S7
-			gs + 10 * step1,	// S9
-		};
-		static const int markersR [] =
-		{
-			gm + 2 * step2,	//
-			gm + 4 * step2,
-			gm + 6 * step2,
-		};
-		static const int markers2 [] =
-		{
-			//gs + 1 * step1,
-			gs + 3 * step1,		// S2
-			gs + 5 * step1,		// S4
-			gs + 7 * step1,		// S6
-			gs + 9 * step1,		// S8
-		};
-		static const int markers2R [] =
-		{
-			gm + 1 * step2,
-			gm + 3 * step2,
-			gm + 5 * step2,
-		};
-
-		const COLOR_T smeter = COLORMAIN_WHITE;
-		const COLOR_T smeterplus = COLORMAIN_DARKRED;
-
-		display_segm(xc, yc, gs, gm, r1, 1, smeter);
-		display_segm(xc, yc, gm, ge, r1, 1, smeterplus);
-
-		display_segm(xc, yc, gs, ge, r2, 1, COLORMAIN_WHITE);		// POWER
-		//display_radius(xc, yc, gs, r1, r2, COLOR_RED);
-		//display_radius(xc, yc, ge, r1, r2, COLOR_RED);
-
-		for (i = 0; i < sizeof markers / sizeof markers [0]; ++ i)
-		{
-			display_radius(xc, yc, markers [i], r1, r1 + 8, smeter);
-		}
-		for (i = 0; i < sizeof markers2 / sizeof markers2 [0]; ++ i)
-		{
-			display_radius(xc, yc, markers2 [i], r1, r1 + 4, smeter);
-		}
-		for (i = 0; i < sizeof markersR / sizeof markersR [0]; ++ i)
-		{
-			display_radius(xc, yc, markersR [i], r1, r1 + 8, smeterplus);
-		}
-		for (i = 0; i < sizeof markers2R / sizeof markers2R [0]; ++ i)
-		{
-			display_radius(xc, yc, markers2R [i], r1, r1 + 4, smeterplus);
-		}
-
-	//		display_segm(xc, yc, gs, ge, rv1, 1, COLORMAIN_BLUE);	// показывает зоны перемещения стрелки
-	//		display_segm(xc, yc, gs, ge, rv2, 1, COLORMAIN_BLUE);	// показывает зоны перемещения стрелки
-
-		display_radius(xc - 1, yc, gv_trace_old, r1 - 1, r2 + 1, COLORMAIN_BLACK);
-		display_radius(xc, yc, gv_trace_old, r1 - 1, r2 + 1, COLORMAIN_BLACK);
-		display_radius(xc + 1, yc, gv_trace_old, r1 - 1, r2 + 1, COLORMAIN_BLACK);
-
-		ct = gv_trace > gm ? COLORMAIN_RED : COLORMAIN_GREEN;
-		display_radius(xc - 1, yc, gv_trace, r1 - 1, r2 + 1, ct);
-		display_radius(xc, yc, gv_trace, r1 - 1, r2 + 1, ct);
-		display_radius(xc + 1, yc, gv_trace, r1 - 1, r2 + 1, ct);
-
-		display_radius(xc - 1, yc, gv_old, rv1, rv2, COLORMAIN_BLACK);
-		display_radius(xc, yc, gv_old, rv1, rv2, COLORMAIN_BLACK);
-		display_radius(xc + 1, yc, gv_old, rv1, rv2, COLORMAIN_BLACK);
-
-		ct = gv > gm ? COLORMAIN_RED : COLORMAIN_GREEN;
-		display_radius(xc - 1, yc, gv, rv1, rv2, ct);
-		display_radius(xc, yc, gv, rv1, rv2, ct);
-		display_radius(xc + 1, yc, gv, rv1, rv2, ct);
-
-		gv_old = gv;
-		gv_trace_old = gv_trace;
-		(void) pv;
+	uint_fast8_t tracemax;
+	static int gv, gv_trace;;
+	static int gv_old = gs, gv_trace_old = gs;
+	if (hamradio_get_tx())														// угол поворота стрелки; 246 минимум, 270 середина, 294 максимум
+	{																			// добавить учет калибровок
+		gv = gs + normalize(board_getpwrmeter(& tracemax), 0, 200, ge - gs);
+		gv_trace = gs + normalize(tracemax, 0, 200, ge - gs);
 	}
+	else
+	{
+		gv = gs + normalize(board_getsmeter(& tracemax, 0, UINT8_MAX, 0), 120, 250, ge - gs); //270 + 24;
+		gv_trace = gs + normalize(tracemax, 120, 250, ge - gs);
+	}
+
+	int rv1 = 7 * ADDRCELLHEIGHT;	//350;
+	int rv2 = rv1 - 3 * ADDRCELLHEIGHT;
+	enum { step1 = 3 };		// шаг для оцифровки S
+	enum { step2 = 4 };		// шаг для оцифровки плюсов
+	static const int markers [] =
+	{
+		//gs + 0 * step1,
+		gs + 2 * step1,		// S1
+		gs + 4 * step1,		// S3
+		gs + 6 * step1,		// S5
+		gs + 8 * step1,		// S7
+		gs + 10 * step1,	// S9
+	};
+	static const int markersR [] =
+	{
+		gm + 2 * step2,	//
+		gm + 4 * step2,
+		gm + 6 * step2,
+	};
+	static const int markers2 [] =
+	{
+		//gs + 1 * step1,
+		gs + 3 * step1,		// S2
+		gs + 5 * step1,		// S4
+		gs + 7 * step1,		// S6
+		gs + 9 * step1,		// S8
+	};
+	static const int markers2R [] =
+	{
+		gm + 1 * step2,
+		gm + 3 * step2,
+		gm + 5 * step2,
+	};
+
+	const COLOR_T smeter = COLORMAIN_WHITE;
+	const COLOR_T smeterplus = COLORMAIN_DARKRED;
+
+	display_segm(xc, yc, gs, gm, r1, 1, smeter);
+	display_segm(xc, yc, gm, ge, r1, 1, smeterplus);
+
+	display_segm(xc, yc, gs, ge, r2, 1, COLORMAIN_WHITE);		// POWER
+	//display_radius(xc, yc, gs, r1, r2, COLOR_RED);
+	//display_radius(xc, yc, ge, r1, r2, COLOR_RED);
+
+	for (i = 0; i < sizeof markers / sizeof markers [0]; ++ i)
+	{
+		display_radius(xc, yc, markers [i], r1, r1 + 8, smeter);
+	}
+	for (i = 0; i < sizeof markers2 / sizeof markers2 [0]; ++ i)
+	{
+		display_radius(xc, yc, markers2 [i], r1, r1 + 4, smeter);
+	}
+	for (i = 0; i < sizeof markersR / sizeof markersR [0]; ++ i)
+	{
+		display_radius(xc, yc, markersR [i], r1, r1 + 8, smeterplus);
+	}
+	for (i = 0; i < sizeof markers2R / sizeof markers2R [0]; ++ i)
+	{
+		display_radius(xc, yc, markers2R [i], r1, r1 + 4, smeterplus);
+	}
+
+//		display_segm(xc, yc, gs, ge, rv1, 1, COLORMAIN_BLUE);	// показывает зоны перемещения стрелки
+//		display_segm(xc, yc, gs, ge, rv2, 1, COLORMAIN_BLUE);	// показывает зоны перемещения стрелки
+
+	display_radius(xc - 1, yc, gv_trace_old, r1 - 1, r2 + 1, COLORMAIN_BLACK);
+	display_radius(xc, yc, gv_trace_old, r1 - 1, r2 + 1, COLORMAIN_BLACK);
+	display_radius(xc + 1, yc, gv_trace_old, r1 - 1, r2 + 1, COLORMAIN_BLACK);
+
+	ct = gv_trace > gm ? COLORMAIN_RED : COLORMAIN_GREEN;
+	display_radius(xc - 1, yc, gv_trace, r1 - 1, r2 + 1, ct);
+	display_radius(xc, yc, gv_trace, r1 - 1, r2 + 1, ct);
+	display_radius(xc + 1, yc, gv_trace, r1 - 1, r2 + 1, ct);
+
+	display_radius(xc - 1, yc, gv_old, rv1, rv2, COLORMAIN_BLACK);
+	display_radius(xc, yc, gv_old, rv1, rv2, COLORMAIN_BLACK);
+	display_radius(xc + 1, yc, gv_old, rv1, rv2, COLORMAIN_BLACK);
+
+	ct = gv > gm ? COLORMAIN_RED : COLORMAIN_GREEN;
+	display_radius(xc - 1, yc, gv, rv1, rv2, ct);
+	display_radius(xc, yc, gv, rv1, rv2, ct);
+	display_radius(xc + 1, yc, gv, rv1, rv2, ct);
+
+	gv_old = gv;
+	gv_trace_old = gv_trace;
+	(void) pv;
+}
 
 #if WITHTOUCHGUI
 	#include "keyboard.h"
@@ -256,7 +260,7 @@ void button1_handler(void);
 		{ 356, 260, 442, 304, button5_handler, 	    CANCELLED, BUTTON_NON_LOCKED, 0, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "", },
 		{ 445, 260, 531, 304, button6_handler, 	    CANCELLED, BUTTON_NON_LOCKED, 0, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "", },
 		{ 534, 260, 620, 304, button7_handler, 	    CANCELLED, BUTTON_NON_LOCKED, 0, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "", },
-		{ 623, 260, 709, 304, button8_handler, 	    CANCELLED, BUTTON_NON_LOCKED, 0, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "uif", },
+		{ 623, 260, 709, 304, button8_handler, 	    CANCELLED, BUTTON_NON_LOCKED, 0, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "", },
 		{ 712, 260, 798, 304, button9_handler, 	    CANCELLED, BUTTON_NON_LOCKED, 0, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "System|settings", },
 		{ 234,  55, 314, 105, buttons_mode_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_LSB, "LSB", },
 		{ 319,  55, 399, 105, buttons_mode_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_CW,  "CW", },
@@ -1345,19 +1349,45 @@ void button1_handler(void);
 		}
 	}
 
-	/* Кнопка без надписей */
+	/* Кнопка */
 	void draw_button_pip(
 		uint_fast16_t x1, uint_fast16_t y1,
 		uint_fast16_t x2, uint_fast16_t y2,
-		uint_fast8_t pressed, uint_fast8_t is_locked, uint_fast8_t is_disabled) // pressed = 0
+		uint_fast8_t pressed, uint_fast8_t is_locked, uint_fast8_t is_disabled,
+		const char * text) // pressed = 0
 	{
 		PACKEDCOLORPIP_T * const colorpip = getscratchpip();
 		PACKEDCOLOR565_T c1, c2;
+		static const char delimeters [] = "|";
 		c1 = is_disabled ? COLOR_BUTTON_DISABLED : (is_locked ? COLOR_BUTTON_LOCKED : COLOR_BUTTON_NON_LOCKED);
 		c2 = is_disabled ? COLOR_BUTTON_DISABLED : (is_locked ? COLOR_BUTTON_PR_LOCKED : COLOR_BUTTON_PR_NON_LOCKED);
 		display_colorbuffer_rect(colorpip, gui.pip_width, gui.pip_height, x1,	y1, x2, y2, pressed ? c1 : c2, 1);
 		display_colorbuffer_rect(colorpip, gui.pip_width, gui.pip_height, x1,	y1, x2, y2, COLORPIP_GRAY, 0);
 		display_colorbuffer_rect(colorpip, gui.pip_width, gui.pip_height, x1 + 2, y1 + 2, x2 - 2, y2 - 2, COLORPIP_BLACK, 0);
+
+		if (strchr(text, delimeters[0]) == NULL)
+		{
+			/* Однострочная надпись */
+			display_colorbuff_string2_tbg(colorpip, gui.pip_width, gui.pip_height,
+					x1 + ((x2 - x1) - (strlen (text) * SMALLCHARW2)) / 2,
+					y1 + ((y2 - y1) - SMALLCHARH2) / 2,
+					text, COLORPIP_BLACK);
+		} else
+		{
+			/* Двухстрочная надпись */
+			uint_fast8_t j = (y2 - y1 - SMALLCHARH2 * 2) / 2;
+			char buff [30];
+			strcpy(buff, text);
+			char * text2 = strtok(buff, delimeters);
+			display_colorbuff_string2_tbg(colorpip, gui.pip_width, gui.pip_height, x1 +
+					((x2 - x1) - (strlen (text2) * SMALLCHARW2)) / 2,
+					y1 + j, text2, COLORPIP_BLACK);
+
+			text2 = strtok(NULL, delimeters);
+			display_colorbuff_string2_tbg(colorpip, gui.pip_width, gui.pip_height, x1 +
+					((x2 - x1) - (strlen (text2) * SMALLCHARW2)) / 2,
+					y2 - SMALLCHARH2 - j, text2, COLORPIP_BLACK);
+		}
 	}
 
 	void display_pip_update(uint_fast8_t x, uint_fast8_t y, void * pv)
@@ -1373,9 +1403,9 @@ void button1_handler(void);
 	#if WITHTHERMOLEVEL	// температура выходных транзисторов (при передаче)
 		if (hamradio_get_tx())
 		{
-			int_fast16_t temp = hamradio_get_temperature_value();
+			ldiv_t t = ldiv(hamradio_get_temperature_value(), 10);
 			str_len += local_snprintf_P(&buff[str_len], sizeof buff / sizeof buff [0] - str_len, PSTR("%d.%dC "),
-					temp / 10, temp % 10);
+					t.quot, t.rem);
 		}
 	#endif /* WITHTHERMOLEVEL */
 	#if WITHCURRLEVEL	// ток PA (при передаче)
@@ -1383,21 +1413,26 @@ void button1_handler(void);
 		{
 			int_fast16_t drain = hamradio_get_pacurrent_value();
 			if (drain < 0) drain = 0;
+			ldiv_t t = ldiv(drain, 100);
 			str_len += local_snprintf_P(&buff[str_len], sizeof buff / sizeof buff [0] - str_len, PSTR("%d.%02dA "),
-					drain / 100, drain % 100);
+					t.quot, t.rem);
 		}
 	#endif /* WITHCURRLEVEL */
 	#if WITHVOLTLEVEL	// напряжение питания
+		ldiv_t t = ldiv(hamradio_get_volt_value(), 10);
 		str_len += local_snprintf_P(&buff[str_len], sizeof buff / sizeof buff [0] - str_len,
-									PSTR("%d.%1dV "), hamradio_get_volt_value() / 10, hamradio_get_volt_value() % 10);
+									PSTR("%d.%1dV "), t.quot, t.rem);
 	#endif /* WITHVOLTLEVEL */
 	#if WITHIF4DSP						// ширина панорамы
 		str_len += local_snprintf_P(&buff[str_len], sizeof buff / sizeof buff [0] - str_len, PSTR("SPAN:%3dk"),
 				(int) ((display_zoomedbw() + 0) / 1000));
 	#endif /* WITHIF4DSP */
-		xt = gui.pip_width - SMALLCHARW2 - str_len * SMALLCHARW2;
-		pip_transparency_rect(colorpip, gui.pip_width, gui.pip_height, xt - 5, 230, gui.pip_width - 5, 253, alpha);
-		display_colorbuff_string2_tbg(colorpip, gui.pip_width, gui.pip_height, xt, 235, buff, COLORPIP_YELLOW);
+		if (str_len > 0)
+		{
+			xt = gui.pip_width - SMALLCHARW2 - str_len * SMALLCHARW2;
+			pip_transparency_rect(colorpip, gui.pip_width, gui.pip_height, xt - 5, 230, gui.pip_width - 5, 253, alpha);
+			display_colorbuff_string2_tbg(colorpip, gui.pip_width, gui.pip_height, xt, 235, buff, COLORPIP_YELLOW);
+		}
 
 	#if defined (RTC1_TYPE)				// текущее время
 		uint_fast16_t year;
@@ -1416,56 +1451,39 @@ void button1_handler(void);
 					windows[gui.window_to_draw].x1, windows[gui.window_to_draw].y1,
 					windows[gui.window_to_draw].x2, windows[gui.window_to_draw].y2, alpha);
 
-			if (windows[gui.window_to_draw].onVisibleProcess != 0)							// запуск процедуры фоновой обработки
-				windows[gui.window_to_draw].onVisibleProcess();								// для окна, если есть
+			if (windows[gui.window_to_draw].onVisibleProcess)							// запуск процедуры фоновой обработки
+				windows[gui.window_to_draw].onVisibleProcess();							// для окна, если есть
 
 			// вывод заголовка окна
 			display_colorbuff_string_tbg(colorpip, gui.pip_width, gui.pip_height, windows[gui.window_to_draw].x1 + 20,
 					windows[gui.window_to_draw].y1 + 10, windows[gui.window_to_draw].name, COLORPIP_YELLOW);
+
 			// отрисовка принадлежащих окну элементов
 
+			// метки
 			for (uint_fast8_t i = 1; i < labels_count; i++)
 			{
-				if (labels[i].parent == gui.window_to_draw && labels[i].visible == VISIBLE)	// метки
-					display_colorbuff_string_tbg(colorpip, gui.pip_width, gui.pip_height, labels[i].x, labels[i].y,
-							labels[i].text, labels[i].color);
+				const label_t * const lh = & labels[i];
+				if (lh->parent == gui.window_to_draw && lh->visible == VISIBLE)
+					display_colorbuff_string_tbg(colorpip, gui.pip_width, gui.pip_height, lh->x, lh->y, lh->text, lh->color);
+			}
+
+			// кнопки
+			for (uint_fast8_t i = 1; i < button_handlers_count; i++)
+			{
+				const button_t * const bh = & button_handlers[i];
+				if (bh->parent == gui.window_to_draw && bh->visible == VISIBLE)
+					draw_button_pip(bh->x1, bh->y1, bh->x2, bh->y2, bh->state, bh->is_locked, bh->state == DISABLED ? 1 : 0, bh->text);
 			}
 		}
+
+		// кнопки in FOOTER
 		for (uint_fast8_t i = 1; i < button_handlers_count; i++)
 		{
-			const button_t * const bh = & button_handlers[i];
-
-			if ((bh->parent == gui.window_to_draw && bh->visible == VISIBLE && windows[gui.window_to_draw].is_show)
-					|| bh->parent == FOOTER)									// кнопки
-			{
-				/* Кнопка без надписей (фон для надписей) */
-				draw_button_pip(bh->x1, bh->y1, bh->x2, bh->y2, bh->state, bh->is_locked, bh->state == DISABLED ? 1 : 0);
-
-				if (strchr(bh->text, '|') == NULL)
-				{
-					/* Однострочная надпись */
-					display_colorbuff_string2_tbg(colorpip, gui.pip_width, gui.pip_height,
-							bh->x1 + ((bh->x2 - bh->x1) - (strlen (bh->text) * SMALLCHARW2)) / 2,
-							bh->y1 + ((bh->y2 - bh->y1) - SMALLCHARH2) / 2,
-							bh->text, COLORPIP_BLACK);
-				} else
-				{
-					/* Двухстрочная надпись */
-					static const char delimeters [] = "|";
-					uint_fast8_t j = (bh->y2 - bh->y1 - SMALLCHARH2 * 2) / 2;
-
-					strcpy(buff, bh->text);
-					text2 = strtok(buff, delimeters);
-					display_colorbuff_string2_tbg(colorpip, gui.pip_width, gui.pip_height, bh->x1 +
-							((bh->x2 - bh->x1) - (strlen (text2) * SMALLCHARW2)) / 2,
-							bh->y1 + j, text2, COLORPIP_BLACK);
-
-					text2 = strtok(NULL, delimeters);
-					display_colorbuff_string2_tbg(colorpip, gui.pip_width, gui.pip_height, bh->x1 +
-							((bh->x2 - bh->x1) - (strlen (text2) * SMALLCHARW2)) / 2,
-							bh->y2 - SMALLCHARH2 - j, text2, COLORPIP_BLACK);
-				}
-			}
+			const button_t * const bhf = & button_handlers[i];
+			if (bhf->parent != FOOTER)
+				break;
+			draw_button_pip(bhf->x1, bhf->y1, bhf->x2, bhf->y2, bhf->state, bhf->is_locked, bhf->state == DISABLED ? 1 : 0, bhf->text);
 		}
 	}
 
