@@ -194,7 +194,10 @@ extern "C" {
 
 #define DMABUFSTEPUACIN16	(UACIN_FMT_CHANNELS_AUDIO48)		// 2 - каждому сэмплу соответствует два числа в  буфере для выдачи по USB в host
 
-#define DMABUFFSIZEUACIN16 (MSINSAMPLES * DMABUFSTEPUACIN16)	/* размер под USB ENDPOINT PACKET SIZE В буфере помещаются пары значений - стерео кодек */
+#define DMABUFFSIZEUACIN16_AJ (MSINSAMPLES * DMABUFSTEPUACIN16)	/* размер под USB ENDPOINT PACKET SIZE В буфере помещаются пары значений - стерео кодек */
+
+#define DMABUFFSIZEUACIN16 DMAHWEPADJUST(DMABUFFSIZEUACIN16_AJ, DMABUFSTEPUACIN16 * HARDWARE_RTSDMABYTES)
+
 
 /* если приоритет прерываний USB не выше чем у аудиобработки - она должна длиться не более 1 мс (WITHRTS192 - 0.5 ms) */
 #define DMABUFCLUSTER	19	// Прерывания по приему от IF CODEC или FPGA RX должны происходить не реже 1 раз в милисекунду (чтобы USB работать могло) */
@@ -222,6 +225,12 @@ extern "C" {
 #define DMABUFFSIZE16	(DMABUFCLUSTER * DMABUFSTEP16 * 4)		/* AF CODEC */
 #define DMABUFFSIZE32RX (DMABUFCLUSTER * DMABUFSTEP32RX)		/* FPGA RX or IF CODEC RX */
 #define DMABUFFSIZE32TX (DMABUFCLUSTER * DMABUFSTEP32TX * 4)	/* FPGA TX or IF CODEC TX	*/
+
+
+// stereo, 16 bit samples
+// По звуковому каналу передается стерео, 16 бит, 48 кГц - 288 байт размер данных в ендпонтт
+#define UACIN_AUDIO48_SAMPLEBITS	16
+#define UACIN_AUDIO48_DATASIZE (DMABUFFSIZEUACIN16 * sizeof (int16_t))
 
 // Параметры для канала передачи Real Time Spectrum - stereo, 32 bit, 192 kS/S
 #define DMABUFSTEP192RTS 8	// 8: стерео по 32 бит, 6: стерео по 24 бит
@@ -257,13 +266,6 @@ extern "C" {
 #endif /* WITHRTS192 */
 
 
-// stereo, 16 bit samples
-// По звуковому каналу передается стерео, 16 бит, 48 кГц - 288 байт размер данных в ендпонтт
-#define UACIN_AUDIO48_SAMPLEBITS	16
-#define UACIN_IN48_DATA_SIZE (DMABUFFSIZEUACIN16 * sizeof (int16_t))
-
-
-
 /*
 	For full-/high-speed isochronous endpoints, this value
 	must be in the range from 1 to 16. The bInterval value
@@ -286,8 +288,8 @@ extern "C" {
 
 #define UACOUT_AUDIO48_SAMPLEBITS	24	// may be 24
 
-// буфер приема потока данных от USB к модуоятору
-#define UAC_OUT48_DATA_SIZE	( \
+// буфер приема потока данных от USB к модулятору
+#define UACOUT_AUDIO48_DATASIZE	( \
 	MSOUTSAMPLES * \
 	((UACOUT_AUDIO48_SAMPLEBITS * UACOUT_AUDIO48_FMT_CHANNELS + 7) / 8) \
 	)

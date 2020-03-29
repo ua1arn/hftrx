@@ -2665,7 +2665,7 @@ uintptr_t getfilled_dmabufferx(uint_fast16_t * sizep)
 		return 0;
 
 	case UACINALT_AUDIO48:
-		* sizep = UACIN_IN48_DATA_SIZE;
+		* sizep = UACIN_AUDIO48_DATASIZE;
 		return getfilled_dmabuffer16uacin();
 
 #if ! WITHUSBUACIN2
