@@ -9340,8 +9340,13 @@ const FLASHMEM char * hamradio_get_rxbw_value_P(void)
 
 uint_fast8_t hamradio_get_bkin_value(void)
 {
+#if WITHELKEY && WITHTX
 	return bkinenable;
+#else /* WITHELKEY && WITHTX */
+	return 0;
+#endif /* WITHELKEY && WITHTX */
 }
+
 // RX preamplifier
 const FLASHMEM char * hamradio_get_pre_value_P(void)
 {
