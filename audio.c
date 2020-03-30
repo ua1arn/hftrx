@@ -111,7 +111,7 @@ static int_fast16_t 	glob_afhighcuttx = 3400;	// Частота высокоча
 static int_fast16_t		glob_fullbw6 [2] = { 1000, 1000 };		/* Частота среза фильтров ПЧ в алгоритме Уивера */
 static int_fast32_t		glob_lo6 [2] = { 0, 0 };
 //static uint_fast8_t		glob_fltsofter [2] = { WITHFILTSOFTMIN, WITHFILTSOFTMIN }; /* WITHFILTSOFTMIN..WITHFILTSOFTMAX Код управления сглаживанием скатов фильтра основной селекции на приёме */
-static uint_fast8_t 	glob_gainnfmrx [2] = { 100, 100 };
+static int_fast16_t 	glob_gainnfmrx [2] = { 100, 100 };
 static uint_fast8_t 	glob_squelch;
 
 static uint_fast8_t 	glob_swapiq = 0;	// поменять местами I и Q сэмплы в потоке RTS96
@@ -6729,7 +6729,7 @@ board_set_digigainmax(uint_fast8_t v)
 }
 
 void
-board_set_gainnfmrx(uint_fast8_t n)	/* дополнительное усиление по НЧ в режиме приёма NFM */
+board_set_gainnfmrx(int_fast16_t n)	/* дополнительное усиление по НЧ в режиме приёма NFM */
 {
 	if (glob_gainnfmrx [glob_trxpath] != n)
 	{
