@@ -790,6 +790,7 @@ enum messagetypes
 	MSGT_UPDATEBOARD,	// updateboard(full, mute): buff [0]: full, buff [1]: mute
 	MSGT_KEYB,	// 1 byte - key code
 	MSGT_CAT,	// 12 bytes as parameter
+	MSGT_DFUDETACH,	// no parameters
 	//
 	MSGT_count
 };
@@ -814,6 +815,7 @@ void ticker_initialize(ticker_t * p, unsigned nticks, void (* cb)(void *), void 
 void bootloader_copyapp(uintptr_t apparea);
 uint_fast8_t bootloader_get_start(uintptr_t apparea, uintptr_t * ip);
 void bootloader_detach(uintptr_t ip);
+void bootloader_deffereddetach(void);
 
 #define HARDWARE_ADCINPUTS	40	/* до 8-ти входов АЦП */
 

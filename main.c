@@ -12390,6 +12390,23 @@ processmessages(uint_fast8_t * kbch, uint_fast8_t * kbready, uint_fast8_t inmenu
 		updateboard(buff [0], buff [1]);
 		break;
 
+#if WITHISBOOTLOADER
+	case MSGT_DFUDETACH:
+		{
+			  uintptr_t ip;
+			  if (bootloader_get_start(BOOTLOADER_APPAREA, & ip) == 0)
+			  {
+					/* Perform an Attach-Detach operation on USB bus */
+	#if WITHUSBHW
+					board_usb_deactivate();
+					board_usb_deinitialize();
+	#endif /* WITHUSBHW */
+					bootloader_detach(ip);
+			  }
+		}
+		break;
+#endif /* WITHISBOOTLOADER */
+
 	default:
 		break;
 	}
@@ -18516,6 +18533,16 @@ void bootloader_detach(uintptr_t ip)
 		;
 }
 
+/* вызыввется из обработчика USB прерываний EP0 */
+void bootloader_deffereddetach(void)
+{
+	uint8_t * buff;
+	if (takemsgbufferfree_low(& buff) != 0)
+	{
+		placesemsgbuffer_low(MSGT_DFUDETACH, buff);
+	}
+}
+
 static void bootloader_mainloop(void)
 {
 	board_set_bglight(WITHLCDBACKLIGHTMIN);
@@ -18529,6 +18556,9 @@ ddd:
 #if WITHUSBHW
 	for (;;)
 	{
+		uint_fast8_t kbch, kbready;
+		processmessages(& kbch, & kbready, 0);
+
 #if WITHDEBUG
 		char c;
 		if (dbg_getchar(& c))
