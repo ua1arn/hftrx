@@ -235,6 +235,12 @@ void button1_handler(void);
 		WINDOW_UIF
 	};
 
+	enum {
+		TEXT_ARRAY_SIZE = 20,
+		MENU_ARRAY_SIZE = 30,
+		LIST_ARRAY_SIZE = 40
+	};
+
 	typedef struct {
 		uint_fast16_t x1;				// координаты от начала PIP
 		uint_fast16_t y1;
@@ -247,8 +253,8 @@ void button1_handler(void);
 		uint_fast8_t parent;			// индекс окна, в котором будет отображаться кнопка
 		uint_fast8_t visible;			// рисовать ли кнопку на экране
 		uintptr_t payload;
-		const char name[20];
-		char text[20];					// текст внутри кнопки, разделитель строк |, не более 2х строк
+		const char name[TEXT_ARRAY_SIZE];
+		char text[TEXT_ARRAY_SIZE];					// текст внутри кнопки, разделитель строк |, не более 2х строк
 	} button_t;
 
 	static button_t button_handlers [] = {
@@ -304,8 +310,8 @@ void button1_handler(void);
 		uint_fast8_t state;
 		uint_fast8_t is_trackable;
 		uint_fast8_t visible;
-		const char name[20];
-		char text[20];
+		const char name[TEXT_ARRAY_SIZE];
+		char text[TEXT_ARRAY_SIZE];
 		PACKEDCOLOR565_T color;
 		void(*onClickHandler) (void);
 	} label_t;
@@ -365,7 +371,7 @@ void button1_handler(void);
 		uint_fast16_t y1;
 		uint_fast16_t x2;
 		uint_fast16_t y2;
-		char name[20];					// текст, выводимый в заголовке окна
+		char name[TEXT_ARRAY_SIZE];		// текст, выводимый в заголовке окна
 		uint_fast8_t is_show;			// запрос на отрисовку окна
 		uint_fast8_t first_call;		// признак первого вызова для различных инициализаций
 		void(*onVisibleProcess) (void);
@@ -411,13 +417,13 @@ void button1_handler(void);
 		int_fast8_t selected_str;		// выбранная строка уровня
 		int_fast8_t selected_label;		// выбранная метка уровня
 		uint_fast8_t add_id;			// номер строки уровня, отображаемой первой
-		menu_names_t menu_block[30];	// массив значений уровня меню
+		menu_names_t menu_block[MENU_ARRAY_SIZE];	// массив значений уровня меню
 	} menu_t;
 
 	menu_t menu[MENU_COUNT];
 
 	typedef struct {
-		const char name [15];
+		const char name [TEXT_ARRAY_SIZE];
 		uint_fast8_t menupos;
 		uint_fast8_t exitkey;
 	} menu_by_name_t;
@@ -438,7 +444,7 @@ void button1_handler(void);
 	} list_template_t;
 
 	LIST_ENTRY touch_list;
-	list_template_t touch_elements[40];
+	list_template_t touch_elements[LIST_ARRAY_SIZE];
 	uint_fast8_t touch_list_count = 0;
 	uint_fast8_t menu_label_touched = 0;
 	uint_fast8_t menu_level;
@@ -581,7 +587,7 @@ void button1_handler(void);
 		PACKEDCOLORPIP_T * const colorpip = getscratchpip();
 		static uint_fast8_t val_high, val_low, val_c, val_w, bw_type;
 		static uint_fast16_t x_h, x_l, x_c;
-		char buf[10];
+		char buf[TEXT_ARRAY_SIZE];
 		static uint_fast8_t id_button_high, id_button_low, id_button_width, id_button_pitch, id_lbl_high, id_lbl_low;
 
 		if (windows[WINDOW_BP].first_call == 1)
@@ -1362,9 +1368,9 @@ void button1_handler(void);
 		{
 			/* Двухстрочная надпись */
 			uint_fast8_t j = (y2 - y1 - SMALLCHARH2 * 2) / 2;
-			char buff [30];
-			strcpy(buff, text);
-			char * text2 = strtok(buff, delimeters);
+			char buf [TEXT_ARRAY_SIZE];
+			strcpy(buf, text);
+			char * text2 = strtok(buf, delimeters);
 			display_colorbuff_string2_tbg(colorpip, gui.pip_width, gui.pip_height, x1 +
 					((x2 - x1) - (strlen (text2) * SMALLCHARW2)) / 2,
 					y1 + j, text2, COLORPIP_BLACK);
@@ -1381,7 +1387,7 @@ void button1_handler(void);
 		PACKEDCOLORPIP_T * const colorpip = getscratchpip();
 		uint_fast16_t yt, xt;
 		uint_fast8_t alpha = 10; // на сколько затемнять цвета
-		char buff [30];
+		char buf [TEXT_ARRAY_SIZE];
 		char * text2 = NULL;
 		uint_fast8_t str_len = 0;
 
@@ -1390,7 +1396,7 @@ void button1_handler(void);
 		if (hamradio_get_tx())
 		{
 			ldiv_t t = ldiv(hamradio_get_temperature_value(), 10);
-			str_len += local_snprintf_P(&buff[str_len], sizeof buff / sizeof buff [0] - str_len, PSTR("%d.%dC "),
+			str_len += local_snprintf_P(&buf[str_len], sizeof buf / sizeof buf [0] - str_len, PSTR("%d.%dC "),
 					t.quot, t.rem);
 		}
 	#endif /* WITHTHERMOLEVEL */
@@ -1400,24 +1406,24 @@ void button1_handler(void);
 			int_fast16_t drain = hamradio_get_pacurrent_value();
 			if (drain < 0) drain = 0;
 			ldiv_t t = ldiv(drain, 100);
-			str_len += local_snprintf_P(&buff[str_len], sizeof buff / sizeof buff [0] - str_len, PSTR("%d.%02dA "),
+			str_len += local_snprintf_P(&buf[str_len], sizeof buf / sizeof buf [0] - str_len, PSTR("%d.%02dA "),
 					t.quot, t.rem);
 		}
 	#endif /* WITHCURRLEVEL */
 	#if WITHVOLTLEVEL	// напряжение питания
 		ldiv_t t = ldiv(hamradio_get_volt_value(), 10);
-		str_len += local_snprintf_P(&buff[str_len], sizeof buff / sizeof buff [0] - str_len,
+		str_len += local_snprintf_P(&buf[str_len], sizeof buf / sizeof buf [0] - str_len,
 									PSTR("%d.%1dV "), t.quot, t.rem);
 	#endif /* WITHVOLTLEVEL */
 	#if WITHIF4DSP						// ширина панорамы
-		str_len += local_snprintf_P(&buff[str_len], sizeof buff / sizeof buff [0] - str_len, PSTR("SPAN:%3dk"),
+		str_len += local_snprintf_P(&buf[str_len], sizeof buf / sizeof buf [0] - str_len, PSTR("SPAN:%3dk"),
 				(int) ((display_zoomedbw() + 0) / 1000));
 	#endif /* WITHIF4DSP */
 		if (str_len > 0)
 		{
 			xt = gui.pip_width - SMALLCHARW2 - str_len * SMALLCHARW2;
 			pip_transparency_rect(colorpip, gui.pip_width, gui.pip_height, xt - 5, 230, gui.pip_width - 5, 253, alpha);
-			display_colorbuff_string2_tbg(colorpip, gui.pip_width, gui.pip_height, xt, 235, buff, COLORPIP_YELLOW);
+			display_colorbuff_string2_tbg(colorpip, gui.pip_width, gui.pip_height, xt, 235, buf, COLORPIP_YELLOW);
 		}
 
 	#if defined (RTC1_TYPE)				// текущее время
@@ -1425,10 +1431,10 @@ void button1_handler(void);
 		uint_fast8_t month, day, hour, minute, secounds;
 		str_len = 0;
 		board_rtc_getdatetime(& year, & month, & day, & hour, & minute, & secounds);
-		str_len += local_snprintf_P(&buff[str_len], sizeof buff / sizeof buff [0] - str_len,
+		str_len += local_snprintf_P(&buf[str_len], sizeof buf / sizeof buf [0] - str_len,
 				PSTR("%02d.%02d.%04d %02d%c%02d"), day, month, year, hour, ((secounds & 1) ? ' ' : ':'), minute);
 		pip_transparency_rect(colorpip, gui.pip_width, gui.pip_height, 5, 230, str_len * SMALLCHARW2 + 15, 253, alpha);
-		display_colorbuff_string2_tbg(colorpip, gui.pip_width, gui.pip_height, 10, 235, buff, COLORPIP_YELLOW);
+		display_colorbuff_string2_tbg(colorpip, gui.pip_width, gui.pip_height, 10, 235, buf, COLORPIP_YELLOW);
 	#endif 	/* defined (RTC1_TYPE) */
 
 		if (windows[gui.window_to_draw].is_show)
