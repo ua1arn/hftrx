@@ -89,10 +89,12 @@ Free:
 	#define WITHUSBHW_DEVICE	USB_OTG_HS	/* на этом устройстве поддерживается функциональность DEVICE	*/
 
 	#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
+#if WITHRTS96
 	#define WITHUSBUACIN2		1	/* формируются три канала передачи звука */
+#endif /* WITHRTS96 */
 
 	#define WITHUSBCDC		1	/* использовать виртуальный последовательный порт на USB соединении */
-	#define WITHUSBHWCDC_N	2	/* количество виртуальных последовательных портов */
+	#define WITHUSBHWCDC_N	1	/* количество виртуальных последовательных портов */
 	//#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
 	//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
 

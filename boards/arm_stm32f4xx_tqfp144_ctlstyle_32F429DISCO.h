@@ -182,6 +182,10 @@
 	#define WITHAGCMODENONE		1	/* Режимами АРУ не управляем */
 	#define WITHPREAMPATT2_6DB		1	// Управление УВЧ и двухкаскадным аттенюатором с затуханиями 0 - 6 - 12 - 18 dB */
 
+	#define WITHPOWERTRIMMIN	5	// Нижний предел регулировки (показываемый на дисплее)
+	#define WITHPOWERTRIMMAX	100	// Верхний предел регулировки (показываемый на дисплее)
+	#define WITHPOWERTRIMATU	50	// Значение для работы автотюнера
+
 	//#define DSTYLE_UR3LMZMOD	1	// Тестирование - расположение элементов экрана в трансиверах UR3LMZ
 	//#define	FONTSTYLE_ITALIC	1	// Использовать альтернативный шрифт
 
@@ -264,7 +268,7 @@
 	#define WITHDSPEXTDDC 1			/* Квадратуры получаются внешней аппаратурой */
 	//#define WITHDSPEXTFIR 1			/* Фильтрация квадратур осуществляется внешней аппаратурой */
 
-	#if 1
+	#if 0
 		#define WITHTRANSPARENTIQ	1	/* процессор просто поддерживает двунаправленный обмен между USB и FPGA */
 		#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 		#define	WITHBBOXMIKESRC	BOARD_TXAUDIO_USB
