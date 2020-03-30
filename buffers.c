@@ -977,7 +977,7 @@ buffers_savefromuacout(voice16_t * p)
 // в паре значений, возвращаемых данной функцией, vi получает значение от микрофона. vq зарезервированно для работы ISB (две независимых боковых)
 // При отсутствии данных в очереди - возвращаем 0
 // TODO: переделаь на denoise16_t
-RAMFUNC uint_fast8_t getsampmlemike(INT32P_t * v)
+RAMFUNC uint_fast8_t getsampmlemike(FLOAT32P_t * v)
 {
 	enum { L, R };
 	static voice16_t * RAMDTCM p = NULL;
@@ -1019,7 +1019,7 @@ RAMFUNC uint_fast8_t getsampmlemike(INT32P_t * v)
 }
 
 // 16 bit, signed
-RAMFUNC uint_fast8_t getsampmlemoni(INT32P_t * v)
+RAMFUNC uint_fast8_t getsampmlemoni(FLOAT32P_t * v)
 {
 	enum { L, R };
 	static voice16_t * RAMDTCM p = NULL;
@@ -1537,7 +1537,7 @@ void releaserecordbuffer(void * dest)
  * или для переачи
  * Возврат 0, если нет ничего для воспроизведения.
  */
-uint_fast8_t takewavsample(INT32P_t * rv, uint_fast8_t suspend)
+uint_fast8_t takewavsample(FLOAT32P_t * rv, uint_fast8_t suspend)
 {
 	static records16_t * p = NULL;
 	static unsigned n;
@@ -2665,20 +2665,20 @@ uintptr_t getfilled_dmabufferx(uint_fast16_t * sizep)
 		return 0;
 
 	case UACINALT_AUDIO48:
-		* sizep = UAC_IN48_DATA_SIZE;
+		* sizep = UACIN_AUDIO48_DATASIZE;
 		return getfilled_dmabuffer16uacin();
 
 #if ! WITHUSBUACIN2
 
 #if WITHRTS96
 	case UACINALT_RTS96:
-		* sizep = VIRTUAL_AUDIO_PORT_DATA_SIZE_IN_RTS96;
+		* sizep = UACIN_RTS96_DATASIZE;
 		return getfilled_dmabuffer96uacinrts();
 #endif /* WITHRTS192 */
 
 #if WITHRTS192
 	case UACINALT_RTS192:
-		* sizep = VIRTUAL_AUDIO_PORT_DATA_SIZE_IN_RTS192;
+		* sizep = UACIN_RTS192_DATASIZE;
 		return getfilled_dmabuffer192uacinrts();
 #endif /* WITHRTS192 */
 
@@ -2708,13 +2708,13 @@ uintptr_t getfilled_dmabufferxrts(uint_fast16_t * sizep)
 
 #if WITHRTS96
 	case UACINRTSALT_RTS96:
-		* sizep = VIRTUAL_AUDIO_PORT_DATA_SIZE_IN_RTS96;
+		* sizep = UACIN_RTS96_DATASIZE;
 		return getfilled_dmabuffer96uacinrts();
 #endif /* WITHRTS192 */
 
 #if WITHRTS192
 	case UACINRTSALT_RTS192:
-		* sizep = VIRTUAL_AUDIO_PORT_DATA_SIZE_IN_RTS192;
+		* sizep = UACIN_RTS192_DATASIZE;
 		return getfilled_dmabuffer192uacinrts();
 #endif /* WITHRTS192 */
 
