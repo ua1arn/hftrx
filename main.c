@@ -12407,10 +12407,6 @@ processmessages(uint_fast8_t * kbch, uint_fast8_t * kbready, uint_fast8_t inmenu
 		}
 		break;
 
-	case MSGT_UPDATEBOARD:
-		updateboard(buff [0], buff [1]);
-		break;
-
 	case MSGT_DPC:
 		// Выполнение отложенного вызова user-mode функций
 		{

@@ -786,10 +786,9 @@ calcdivround2(
 enum messagetypes
 {
 	MSGT_EMPTY,
-	MSGT_UPDATEBOARD,	// updateboard(full, mute): buff [0]: full, buff [1]: mute
 	MSGT_KEYB,	// 1 byte - key code
 	MSGT_CAT,	// 12 bytes as parameter
-	MSGT_DPC,	// 4 bytes - func address, 4 bytes - parameter
+	MSGT_DPC,	// 4 bytes - function address, 4 bytes - parameter
 	//
 	MSGT_count
 };
