@@ -12410,12 +12410,27 @@ processmessages(uint_fast8_t * kbch, uint_fast8_t * kbready, uint_fast8_t inmenu
 	case MSGT_DPC:
 		// Выполнение отложенного вызова user-mode функций
 		{
-			udpcfn_t func;
-			void * arg;
+			uintptr_t func;
+			void * arg1;
+			void * arg2;
+			void * arg3;
 
-			func = (udpcfn_t) peek_u32(buff + 0);
-			arg = (void *) peek_u32(buff + 4);
-			func(arg);
+			func = (uintptr_t) peek_u32(buff + 1);
+			arg1 = (void *) peek_u32(buff + 5);
+			arg2 = (void *) peek_u32(buff + 9);
+			arg3 = (void *) peek_u32(buff + 13);
+			switch (buff [0])
+			{
+			case 1:
+				((udpcfn_t) func)(arg1);
+				break;
+			case 2:
+				((udpcfn2_t) func)(arg1, arg2);
+				break;
+			case 3:
+				((udpcfn3_t) func)(arg1, arg2, arg3);
+				break;
+			}
 		}
 		break;
 
@@ -12426,13 +12441,47 @@ processmessages(uint_fast8_t * kbch, uint_fast8_t * kbready, uint_fast8_t inmenu
 }
 
 // Запрос отложенного вызова user-mode функций
-uint_fast8_t board_dpc(void (* func)(void *), void * arg)
+uint_fast8_t board_dpc(udpcfn_t func, void * arg)
 {
 	uint8_t * buff;
 	if (takemsgbufferfree_low(& buff) != 0)
 	{
-		poke_u32(buff + 0, (uint32_t) func);
-		poke_u32(buff + 4, (uint32_t) arg);
+		buff [0] = 1;
+		poke_u32(buff + 1, (uint32_t) func);
+		poke_u32(buff + 5, (uint32_t) arg);
+		placesemsgbuffer_low(MSGT_DPC, buff);
+		return 1;
+	}
+	return 0;
+}
+
+// Запрос отложенного вызова user-mode функций
+uint_fast8_t board_dpc2(udpcfn2_t func, void * arg1, void * arg2)
+{
+	uint8_t * buff;
+	if (takemsgbufferfree_low(& buff) != 0)
+	{
+		buff [0] = 2;
+		poke_u32(buff + 1, (uint32_t) func);
+		poke_u32(buff + 5, (uint32_t) arg1);
+		poke_u32(buff + 9, (uint32_t) arg2);
+		placesemsgbuffer_low(MSGT_DPC, buff);
+		return 1;
+	}
+	return 0;
+}
+
+// Запрос отложенного вызова user-mode функций
+uint_fast8_t board_dpc3(udpcfn3_t func, void * arg1, void * arg2, void * arg3)
+{
+	uint8_t * buff;
+	if (takemsgbufferfree_low(& buff) != 0)
+	{
+		buff [0] = 3;
+		poke_u32(buff + 1, (uint32_t) func);
+		poke_u32(buff + 5, (uint32_t) arg1);
+		poke_u32(buff + 9, (uint32_t) arg2);
+		poke_u32(buff + 13, (uint32_t) arg3);
 		placesemsgbuffer_low(MSGT_DPC, buff);
 		return 1;
 	}
