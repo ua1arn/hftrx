@@ -414,6 +414,21 @@ uint_fast8_t board_tsc_is_pressed (void) /* Return 1 if touch detection */
 	return (i2cperiph_read8(BOARD_I2C_STMPE811, STMPE811_REG_TSC_CTRL) & STMPE811_TS_CTRL_STATUS) >> STMPE811_TS_CTRL_STATUS_POS;
 }
 
+static void
+stmpe811_handler(void)
+{
+	TP();
+}
+
+/* Назначить обработчик прерывания по единичному уровню для выхода прерываний от ST STMPE811 */
+static void
+stmpe811_sethandler(void)
+{
+	const portholder_t INMASK = 1uL << 1;	// JP0_1
+	arm_hardware_jpio0_inputs(INMASK);
+	arm_hardware_piojp0_onchangeinterrupt(INMASK, 0, ARM_SYSTEM_PRIORITY, stmpe811_handler);	// JP0_1 interrupt, level-sensitive
+}
+
 #endif /* defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811) */
 
 #if defined (TSC1_TYPE)
@@ -422,6 +437,9 @@ void board_tsc_initialize(void)
 {
 #if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811)
 	stmpe811_initialize();
+	#if WITHTOUCHGUI
+		stmpe811_sethandler();
+	#endif /* WITHTOUCHGUI */
 #endif /* defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811) */
 }
 #endif /* defined (TSC1_TYPE) */
