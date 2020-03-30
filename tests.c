@@ -5270,6 +5270,12 @@ display_radius(int xc, int yc, unsigned gs, unsigned r1, unsigned r2, COLOR_T co
 
 }
 
+void polar_to_dek(uint_fast16_t xc, uint_fast16_t yc, uint_fast16_t gs, uint_fast16_t r, uint_fast16_t * x, uint_fast16_t * y)
+{
+	* x = xc + icos(gs, r);
+	* y = yc + isin(gs, r);
+}
+
 // круговой интерполятор
 // нач.-x, нач.-y, градус начала, градус конуа, радиус, шаг приращения угла
 void

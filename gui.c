@@ -22,6 +22,7 @@
 
 void display_radius(int xc, int yc, unsigned gs, unsigned r1, unsigned r2, COLOR_T color);
 void display_segm(int xc, int yc, unsigned gs, unsigned ge, unsigned r, int step, COLOR_T color);
+void polar_to_dek(uint_fast16_t xc, uint_fast16_t yc, uint_fast16_t gs, uint_fast16_t r, uint_fast16_t * x, uint_fast16_t * y);
 
 static
 uint_fast16_t normalize(
@@ -74,7 +75,10 @@ display_smeter2(
 	int yc = y * ADDRCELLHEIGHT;	//560;
 	int xc = x * ADDRCELLHEIGHT;	//120;
 	COLOR_T ct;
+	uint_fast16_t xx, yy;
+	char buf[10];
 
+//	display_string3_at_xy(580, 20, "123", COLORMAIN_YELLOW, COLORMAIN_BLACK);
 	uint_fast8_t tracemax;
 	static int gv, gv_trace;;
 	static int gv_old = gs, gv_trace_old = gs;
@@ -133,17 +137,28 @@ display_smeter2(
 	//display_radius(xc, yc, gs, r1, r2, COLOR_RED);
 	//display_radius(xc, yc, ge, r1, r2, COLOR_RED);
 
+	uint_fast8_t p = 1;
 	for (i = 0; i < sizeof markers / sizeof markers [0]; ++ i)
 	{
 		display_radius(xc, yc, markers [i], r1, r1 + 8, smeter);
+		polar_to_dek(xc, yc, markers [i], r1 + 8, & xx, & yy);
+		local_snprintf_P(&buf[0], sizeof buf / sizeof buf [0], PSTR("%d"), p);
+		p += 2;
+		display_string3_at_xy(xx - SMALLCHARW3 / 2, yy - SMALLCHARH3 * 2, buf, COLORMAIN_YELLOW, COLORMAIN_BLACK);
 	}
 	for (i = 0; i < sizeof markers2 / sizeof markers2 [0]; ++ i)
 	{
 		display_radius(xc, yc, markers2 [i], r1, r1 + 4, smeter);
 	}
+
+	p = 20;
 	for (i = 0; i < sizeof markersR / sizeof markersR [0]; ++ i)
 	{
 		display_radius(xc, yc, markersR [i], r1, r1 + 8, smeterplus);
+		polar_to_dek(xc, yc, markersR [i], r1 + 8, & xx, & yy);
+		local_snprintf_P(&buf[0], sizeof buf / sizeof buf [0], PSTR("+%d"), p);
+		p += 20;
+		display_string3_at_xy(xx - strlen(buf) * SMALLCHARW3 / 2, yy - SMALLCHARH3 * 2, buf, COLORMAIN_RED, COLORMAIN_BLACK);
 	}
 	for (i = 0; i < sizeof markers2R / sizeof markers2R [0]; ++ i)
 	{
@@ -1055,6 +1070,10 @@ void button1_handler(void);
 			menu[MENU_PARAMS].selected_str = menu[MENU_PARAMS].selected_label + menu[MENU_PARAMS].add_id;
 			strcpy(labels[menu[MENU_VALS].first_id + menu[MENU_PARAMS].selected_label].text,
 					gui_edit_menu_item(menu[MENU_PARAMS].menu_block[menu[MENU_PARAMS].selected_str].index, encoder2.rotate));
+
+			uint_fast8_t id_sel_label = menu[MENU_VALS].first_id + menu[MENU_VALS].selected_label;
+			button_handlers[id_button_up].x1 = labels[id_sel_label].x + strlen(labels[id_sel_label].text) * SMALLCHARW + 10;
+			button_handlers[id_button_up].x2 = button_handlers[id_button_up].x1 + button_menu_w;
 		}
 
 		if ((menu_label_touched || menu_is_scrolling || encoder2.rotate != 0) && menu_level != MENU_VALS)
@@ -1063,7 +1082,7 @@ void button1_handler(void);
 
 			if (encoder2.rotate != 0)
 			{
-				menu[menu_level].selected_str = (menu[menu_level].selected_str + encoder2.rotate) <= 0 ? 0 : menu[menu_level].selected_str + encoder2.rotate;
+				menu[menu_level].selected_str = (menu[menu_level].selected_str + encoder2.rotate) <= 0 ? 0 : (menu[menu_level].selected_str + encoder2.rotate);
 				menu[menu_level].selected_str = menu[menu_level].selected_str > menu[menu_level].count ? menu[menu_level].count : menu[menu_level].selected_str;
 			}
 			else if (menu_label_touched)

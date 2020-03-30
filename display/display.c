@@ -2421,15 +2421,40 @@ void display_discharge(void)
 }
 
 #if WITHTOUCHGUI
-void display_at_xy(uint_fast16_t x, uint_fast16_t y, const char * s)
+static void
+RAMFUNC_NONILINE ltdc_horizontal_put_char_small3(char cc)
+{
+	const uint_fast8_t width = SMALLCHARW3;
+	const uint_fast8_t c = smallfont_decode((unsigned char) cc);
+	uint_fast8_t cgrow;
+	for (cgrow = 0; cgrow < SMALLCHARH3; ++ cgrow)
+	{
+		volatile PACKEDCOLOR_T * const tgr = & framebuff [ltdc_first + cgrow] [ltdc_second];
+		ltdc_horizontal_pixels(tgr, & S1D13781_smallfont3_LTDC [c] [cgrow], width);
+	}
+	ltdc_second += width;
+}
+
+void
+display_string3(const char * s)
+{
+	char c;
+	ltdc_secondoffs = 0;
+	ltdc_h = SMALLCHARH3;
+	while((c = * s ++) != '\0')
+		ltdc_horizontal_put_char_small3(c);
+}
+
+void
+display_string3_at_xy(uint_fast16_t x, uint_fast16_t y, const char * s, COLOR_T fg, COLOR_T bg)
 {
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
+	display_setcolors(fg, bg);
 	do
 	{
 		ltdc_second = x;
 		ltdc_first = y + lowhalf;
-		display_string(s, lowhalf);
-
+		display_string3(s);
 	} while (lowhalf --);
 }
 #endif /* WITHTOUCHGUI */
