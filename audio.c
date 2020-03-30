@@ -111,7 +111,7 @@ static int_fast16_t 	glob_afhighcuttx = 3400;	// Частота высокоча
 static int_fast16_t		glob_fullbw6 [2] = { 1000, 1000 };		/* Частота среза фильтров ПЧ в алгоритме Уивера */
 static int_fast32_t		glob_lo6 [2] = { 0, 0 };
 //static uint_fast8_t		glob_fltsofter [2] = { WITHFILTSOFTMIN, WITHFILTSOFTMIN }; /* WITHFILTSOFTMIN..WITHFILTSOFTMAX Код управления сглаживанием скатов фильтра основной селекции на приёме */
-
+static uint_fast8_t 	glob_gainnfmrx [2] = { 100, 100 };
 static uint_fast8_t 	glob_squelch;
 
 static uint_fast8_t 	glob_swapiq = 0;	// поменять местами I и Q сэмплы в потоке RTS96
@@ -1275,8 +1275,9 @@ static void correctspectrumcomplex(int_fast8_t targetdb)
 	//arm_cmplx_mag_squared_f32(sg, MagArr, MagLen);
 }
 
+#define GAIN_1 1
 // Формирование наклона АЧХ звукового тракта приемника
-static void fir_design_adjust_rx(FLOAT_t *dCoeff, const FLOAT_t *dWindow, int iCoefNum, uint_fast8_t usewindow)
+static void fir_design_adjust_rx(FLOAT_t * dCoeff, const FLOAT_t * dWindow, int iCoefNum, uint_fast8_t usewindow, FLOAT_t gain)
 {
 	if (glob_afresponcerx != 0)
 	{
@@ -1290,7 +1291,7 @@ static void fir_design_adjust_rx(FLOAT_t *dCoeff, const FLOAT_t *dWindow, int iC
 
 	imp_response(dCoeff, iCoefNum);	// Получение АЧХ из коэффициентов симмметричного FIR для последующего масштабирования коэффициентов
 	const FLOAT_t resp = getmaxresponce();
-	scalecoeffs(dCoeff, iCoefNum, 1 / resp);	// нормалтизация к. передаци к заданному значению (1)
+	scalecoeffs(dCoeff, iCoefNum, gain / resp);	// нормализация к. передаци к заданному значению (1)
 }
 
 // Формирование наклона АЧХ звукового тракта передатчика
@@ -1305,7 +1306,7 @@ static void fir_design_adjust_tx(FLOAT_t *dCoeff, const FLOAT_t *dWindow, int iC
 	fir_design_applaywindow(dCoeff, dWindow, iCoefNum);
 	imp_response(dCoeff, iCoefNum);	// Получение АЧХ из коэффициентов симмметричного FIR для последующего масштабирования коэффициентов
 	const FLOAT_t resp = getmaxresponce();
-	scalecoeffs(dCoeff, iCoefNum, 1 / resp);	// нормалтизация к. передаци к заданному значению (1)
+	scalecoeffs(dCoeff, iCoefNum, 1 / resp);	// нормализация к. передаци к заданному значению (1)
 }
 
 // Расчёт коэффициента для работы в дискретном времени системы АРУ.
@@ -2708,7 +2709,7 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 					int iCoefNum = Ntap_rx_SSB_IQ;
 					fir_design_lowpass(dCoeff, iCoefNum, fir_design_normfreq(cutfreq));
 					if (dspmode == DSPCTL_MODE_RX_AM)
-						fir_design_adjust_rx(FIRCoef_rx_SSB_IQ [spf], FIRCwnd_rx_SSB_IQ, Ntap_rx_SSB_IQ, 0);	// Формирование наклона АЧХ
+						fir_design_adjust_rx(FIRCoef_rx_SSB_IQ [spf], FIRCwnd_rx_SSB_IQ, Ntap_rx_SSB_IQ, 0, GAIN_1);	// Формирование наклона АЧХ
 					fir_design_applaywindow(dCoeff, FIRCwnd_rx_SSB_IQ, iCoefNum);
 					fir_design_scale(dCoeff, iCoefNum, dGain / testgain_float_DC(dCoeff, iCoefNum));
 				}
@@ -2752,7 +2753,7 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 			{
 				fir_design_lowpass(dCoeff, iCoefNum, fir_design_normfreq(cutfreq));
 				if (dspmode == DSPCTL_MODE_RX_AM)
-					fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 0);	// Формирование наклона АЧХ
+					fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 0, GAIN_1);	// Формирование наклона АЧХ
 				fir_design_applaywindow(dCoeff, dWindow, iCoefNum);
 				fir_design_scale(dCoeff, iCoefNum, 1 / testgain_float_DC(dCoeff, iCoefNum));
 			}
@@ -2963,14 +2964,14 @@ void dsp_recalceq_coeffs(uint_fast8_t pathi, float * dCoeff, int iCoefNum)
 		//fir_design_passtrough(dCoeff, iCoefNum, 1);
 		// ФНЧ
 		fir_design_lowpass_freq(dCoeff, iCoefNum, cutfreqhigh);
-		fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 1);	// Формирование наклона АЧХ
+		fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 1, GAIN_1);	// Формирование наклона АЧХ
 		break;
 
 	case DSPCTL_MODE_RX_SAM:
 		// ФНЧ
 		//fir_design_lowpass_freq(dCoeff, iCoefNum, cutfreqhigh);
 		fir_design_bandpass_freq(dCoeff, iCoefNum, cutfreqlow, cutfreqhigh);
-		fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 1);	// Формирование наклона АЧХ
+		fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 1, GAIN_1);	// Формирование наклона АЧХ
 		break;
 
 	case DSPCTL_MODE_RX_WFM:
@@ -2992,7 +2993,7 @@ void dsp_recalceq_coeffs(uint_fast8_t pathi, float * dCoeff, int iCoefNum)
 				// Расчитывается Notch
 				fir_design_bandstop(dCoeff, iCoefNum, fir_design_normfreq(fcutL), fir_design_normfreq(fcutH));
 				fir_design_scale(dCoeff, iCoefNum, 1 / testgain_float_DC(dCoeff, iCoefNum));	// Масштабирование для несимметричного фильтра
-				fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 0);	// Формирование наклона АЧХ, без применения оконной функции
+				fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 0, GAIN_1);	// Формирование наклона АЧХ, без применения оконной функции
 			}
 			else
 			{
@@ -3004,13 +3005,13 @@ void dsp_recalceq_coeffs(uint_fast8_t pathi, float * dCoeff, int iCoefNum)
 				// суммирование эоэффициентов
 				for (i = 0; i < NtapCoeffs(iCoefNum); ++ i)
 					dCoeff [i] += dC2 [i];
-				fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 0);	// Формирование наклона АЧХ, без применения оконной функции
+				fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 0, GAIN_1);	// Формирование наклона АЧХ, без применения оконной функции
 			}
 		}
 		else
 		{
 			fir_design_bandpass_freq(dCoeff, iCoefNum, cutfreqlow, cutfreqhigh);
-			fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 1);	// Формирование наклона АЧХ
+			fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 1, GAIN_1);	// Формирование наклона АЧХ
 		}
 		break;
 
@@ -3018,7 +3019,7 @@ void dsp_recalceq_coeffs(uint_fast8_t pathi, float * dCoeff, int iCoefNum)
 	case DSPCTL_MODE_RX_FREEDV:
 		// audio
 		fir_design_bandpass_freq(dCoeff, iCoefNum, cutfreqlow, cutfreqhigh);
-		fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 1);	// Формирование наклона АЧХ
+		fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 1, GAIN_1);	// Формирование наклона АЧХ
 		break;
 
 	case DSPCTL_MODE_RX_DRM:
@@ -3031,7 +3032,7 @@ void dsp_recalceq_coeffs(uint_fast8_t pathi, float * dCoeff, int iCoefNum)
 	case DSPCTL_MODE_RX_NFM:
 		// audio
 		fir_design_bandpass_freq(dCoeff, iCoefNum, cutfreqlow, cutfreqhigh);
-		fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 1);	// Формирование наклона АЧХ
+		fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 1, (int) glob_gainnfmrx [pathi] / (FLOAT_t) 100);	// Формирование наклона АЧХ
 		break;
 
 	// в режиме передачи
@@ -6724,6 +6725,16 @@ board_set_digigainmax(uint_fast8_t v)
 	{
 		glob_digigainmax = v;
 		board_dsp1regchanged();
+	}
+}
+
+void
+board_set_gainnfmrx(uint_fast8_t n)	/* дополнительное усиление по НЧ в режиме приёма NFM */
+{
+	if (glob_gainnfmrx [glob_trxpath] != n)
+	{
+		glob_gainnfmrx [glob_trxpath] = n;
+		board_flt1regchanged();	// параметры этой функции используются в audio_update();
 	}
 }
 

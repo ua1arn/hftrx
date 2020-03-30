@@ -145,6 +145,7 @@ void prog_dac1_b_value(uint_fast8_t v);
 void board_set_affilter(uint_fast8_t v);
 void board_set_loudspeaker(uint_fast8_t v);
 void board_set_digigainmax(uint_fast8_t v);		/* диапазон ручной регулировки цифрового усиления - максимальное значение */
+void board_set_gainnfmrx(uint_fast8_t n);	/* дополнительное усиление по НЧ в режиме приёма NFM */
 void board_set_gvad605(uint_fast8_t v);		/* напряжение на AD605 (управление усилением тракта ПЧ */
 void board_set_fsadcpower10(int_fast16_t v);		/*	Мощность, соответствующая full scale от IF ADC */
 uint_fast32_t board_get_fqmeter(void);			/* получить значение измеренной частоты */

@@ -59,7 +59,7 @@ prog_lm7001_divider(
 	RBVAL(016, arg_T1T0, 2);	/* T1.T0	*/
 	if (arg_S != 0)
 	{
-		// в редиме FM до 16383
+		// в режиме FM до 16383
 		RBVAL(010, v >> 8, 6);		/* D8..D13 - divider */
 		RBVAL(020, v >> 0, 8);		/* D0..D7 - divider */
 	}

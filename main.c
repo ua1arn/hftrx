@@ -132,6 +132,7 @@ static uint_fast8_t gtx;	/* текущее состояние прием или 
 static uint_fast8_t gcwpitch10 = 700 / CWPITCHSCALE;	/* тон при приеме телеграфа или самоконтроль (в десятках герц) */
 #if WITHIF4DSP
 static dualctl8_t gsquelch = { 0, 0 };	/* squelch level */
+static uint_fast8_t ggainnfmrx = 100;
 #endif /* WITHIF4DSP */
 #if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */
 
@@ -2536,6 +2537,7 @@ struct nvmap
 
 	uint8_t gagcoff;
 	uint8_t gamdepth;		/* Глубина модуляции в АМ - 0..100% */
+	uint8_t ggainnfmrx;		/* дополнительное усиление по НЧ в режиме приёма NFM 100..250% */
 	uint8_t gnfmdeviation;	/* Девиация при передаче в NFM - в сотнях герц */
 	uint8_t gdacscale;		/* Использование амплитуды сигнала с ЦАП передатчика - 0..100% */
 	uint16_t gdigiscale;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
@@ -6989,7 +6991,7 @@ getlo6(
 // Выходные частоты устройства (для SSB - частота подавленной несущей).
 // Для классических структутр приёмо-передатчиков передача телеграфа делается разбалансом
 // формирователя SSB или иным способом из сигнала гетеродина - это указывается
-// возвратом "0" в редиме CW на передаче.
+// возвратом "0" в режиме CW на передаче.
 // Для IF DSP и DDC/DUC структур нулевая частота при передаче означает подачу на DUC постоянной составляющей в baseband.
 
 static  int_fast32_t
@@ -7964,6 +7966,7 @@ updateboard(
 				board_set_agc_thung(gagc [agcseti].thung10);	// hold time (hung time) in 0.1 sec
 				board_set_squelch(gsquelch.value);
 			#endif /* WITHIF4DSP */
+				board_set_gainnfmrx(ggainnfmrx);	/* дополнительное усиление по НЧ в режиме приёма NFM 100..250% */
 			} /* tx == 0 */
 
 		#if WITHIF4DSP
@@ -14761,8 +14764,17 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #endif /* WITHPABIASTRIM && WITHTX */
 #endif /* WITHTX */
+#if WITHIF4DSP
+	{
+		QLABEL("NFM GAIN"), 7, 0, 0,	ISTEP1,		/* дополнительное усиление по НЧ в режиме приёма NFM 100..250% */
+		ITEM_VALUE,
+		100, 250,
+		offsetof(struct nvmap, ggainnfmrx),	/* дополнительное усиление по НЧ в режиме приёма NFM 100..250% */
+		NULL,
+		& ggainnfmrx,
+		getzerobase, /* складывается со смещением и отображается */
+	},
 #if WITHTX
-#if WITHIF4DSP && WITHTX
 	{
 		QLABEL("AM DEPTH"), 7, 0, 0,	ISTEP1,		/* Подстройка глубины модуляции в АМ */
 		ITEM_VALUE,
@@ -14782,15 +14794,6 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		QLABEL("DACSCALE"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
-		ITEM_VALUE,
-		0, 100, 
-		offsetof(struct nvmap, gdacscale),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		NULL,
-		& gdacscale,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
 		QLABEL("FT8BOOST"),	7, 2, 0,	ISTEP1,		/* Увеличение усиления при передаче в цифровых режимах 90..300% */
 		ITEM_VALUE,
 		90, 300,
@@ -14799,8 +14802,17 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
 	},
-#endif /* WITHIF4DSP && WITHTX */
+	{
+		QLABEL("DACSCALE"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		ITEM_VALUE,
+		0, 100,
+		offsetof(struct nvmap, gdacscale),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		NULL,
+		& gdacscale,
+		getzerobase, /* складывается со смещением и отображается */
+	},
 #endif /* WITHTX */
+#endif /* WITHIF4DSP */
 #if defined(REFERENCE_FREQ)
 #if defined (DAC1_TYPE)
 	{
