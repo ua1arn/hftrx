@@ -7965,8 +7965,8 @@ updateboard(
 				board_set_agc_t4(gagc [agcseti].t4);			// время разряда быстрой цепи АРУ
 				board_set_agc_thung(gagc [agcseti].thung10);	// hold time (hung time) in 0.1 sec
 				board_set_squelch(gsquelch.value);
-			#endif /* WITHIF4DSP */
 				board_set_gainnfmrx(ggainnfmrx10 * 10);	/* дополнительное усиление по НЧ в режиме приёма NFM 100..1000% */
+			#endif /* WITHIF4DSP */
 			} /* tx == 0 */
 
 		#if WITHIF4DSP
