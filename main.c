@@ -12220,77 +12220,8 @@ uint_fast8_t elkey_getnextcw(void)
 
 #endif /* WITHELKEY */
 
-/* обработка сообщений от уровня обработчиков прерываний к user-level функциям. */
-static void 
-//NOINLINEAT
-processmessages(uint_fast8_t * kbch, uint_fast8_t * kbready, uint_fast8_t inmenu)
+static void dpc_1stimer(void * arg)
 {
-	if (hardware_getshutdown())	// признак провала питания
-	{
-		display_discharge();	// выключаем дисплей
-		gtx = 0;
-		updateboard(1, 1);	// переходим на приём
-		for (;;)				// вешаемся...
-			;
-	}
-
-
-	uint8_t * buff;
-
-	* kbready = 0;
-	* kbch = KBD_CODE_MAX;
-
-	switch (takemsgready_user(& buff))
-	{
-	case MSGT_EMPTY:
-#if WITHINTEGRATEDDSP
-		audioproc_spool_user();
-#endif /* WITHINTEGRATEDDSP */
-#if WITHUSEAUDIOREC
-		sdcardbgprocess();
-#endif /* WITHUSEAUDIOREC */
-#if WITHWAVPLAYER || WITHSENDWAV
-		spoolplayfile();
-#endif /* WITHWAVPLAYER || WITHSENDWAV */
-		display2_bgprocess();			/* выполнение шагов state machine отображения дисплея */
-		directctlupdate(inmenu);		/* управление скоростью передачи (и другими параметрами) через потенциометр */
-#if WITHLCDBACKLIGHT || WITHKBDBACKLIGHT
-		// обработать запрос на обновление состояния аппаратуры из user mode программы
-		if (dimmflagch != 0)
-		{
-			dimmflagch = 0;
-			display2_bgreset();
-			display_redrawfreqmodesbars(0);			/* Обновление дисплея - всё, включая частоту */
-			updateboard(1, 0);
-		}
-#endif /* WITHLCDBACKLIGHT || WITHKBDBACKLIGHT */
-#if WITHFANTIMER
-		// обработать запрос на обновление состояния аппаратуры из user mode программы
-		if (fanpaflagch != 0)
-		{
-			fanpaflagch = 0;
-			updateboard(1, 0);
-		}
-#endif /* WITHFANTIMER */
-#if WITHSLEEPTIMER
-		// обработать запрос на обновление состояния аппаратуры из user mode программы
-		if (sleepflagch != 0)
-		{
-			sleepflagch = 0;
-			display2_bgreset();
-			display_redrawfreqmodesbars(0);			/* Обновление дисплея - всё, включая частоту */
-			updateboard(1, 0);
-		}
-#endif /* WITHSLEEPTIMER */
-#if WITHCAT
-		if (cat_getstateout() == CATSTATEO_SENDREADY)
-		{
-			cat_answer_forming();
-		}
-#endif /* WITHCAT */
-		return;
-	
-	case MSGT_1SEC:
 #if WITHWAVPLAYER || WITHSENDWAV
 		if (gloopmsg > 0)
 		{
@@ -12360,7 +12291,97 @@ processmessages(uint_fast8_t * kbch, uint_fast8_t * kbready, uint_fast8_t inmenu
 			}
 		}
 #endif /* WITHSLEEPTIMER */
-		break;
+
+}
+
+static void
+poke_u32(uint8_t * p, uint_fast32_t v)
+{
+	p [0] = (v >> 0) & 0xFF;
+	p [1] = (v >> 8) & 0xFF;
+	p [2] = (v >> 16) & 0xFF;
+	p [3] = (v >> 24) & 0xFF;
+}
+
+static uint_fast32_t
+peek_u32(const uint8_t * p)
+{
+	return
+		((uint_fast32_t) p [0] << 0) +
+		((uint_fast32_t) p [1] << 8) +
+		((uint_fast32_t) p [2] << 16) +
+		((uint_fast32_t) p [3] << 24);
+}
+
+/* обработка сообщений от уровня обработчиков прерываний к user-level функциям. */
+static void
+//NOINLINEAT
+processmessages(uint_fast8_t * kbch, uint_fast8_t * kbready, uint_fast8_t inmenu)
+{
+	if (hardware_getshutdown())	// признак провала питания
+	{
+		display_discharge();	// выключаем дисплей
+		gtx = 0;
+		updateboard(1, 1);	// переходим на приём
+		for (;;)				// вешаемся...
+			;
+	}
+
+
+	uint8_t * buff;
+
+	* kbready = 0;
+	* kbch = KBD_CODE_MAX;
+
+	switch (takemsgready_user(& buff))
+	{
+	case MSGT_EMPTY:
+#if WITHINTEGRATEDDSP
+		audioproc_spool_user();
+#endif /* WITHINTEGRATEDDSP */
+#if WITHUSEAUDIOREC
+		sdcardbgprocess();
+#endif /* WITHUSEAUDIOREC */
+#if WITHWAVPLAYER || WITHSENDWAV
+		spoolplayfile();
+#endif /* WITHWAVPLAYER || WITHSENDWAV */
+		display2_bgprocess();			/* выполнение шагов state machine отображения дисплея */
+		directctlupdate(inmenu);		/* управление скоростью передачи (и другими параметрами) через потенциометр */
+#if WITHLCDBACKLIGHT || WITHKBDBACKLIGHT
+		// обработать запрос на обновление состояния аппаратуры из user mode программы
+		if (dimmflagch != 0)
+		{
+			dimmflagch = 0;
+			display2_bgreset();
+			display_redrawfreqmodesbars(0);			/* Обновление дисплея - всё, включая частоту */
+			updateboard(1, 0);
+		}
+#endif /* WITHLCDBACKLIGHT || WITHKBDBACKLIGHT */
+#if WITHFANTIMER
+		// обработать запрос на обновление состояния аппаратуры из user mode программы
+		if (fanpaflagch != 0)
+		{
+			fanpaflagch = 0;
+			updateboard(1, 0);
+		}
+#endif /* WITHFANTIMER */
+#if WITHSLEEPTIMER
+		// обработать запрос на обновление состояния аппаратуры из user mode программы
+		if (sleepflagch != 0)
+		{
+			sleepflagch = 0;
+			display2_bgreset();
+			display_redrawfreqmodesbars(0);			/* Обновление дисплея - всё, включая частоту */
+			updateboard(1, 0);
+		}
+#endif /* WITHSLEEPTIMER */
+#if WITHCAT
+		if (cat_getstateout() == CATSTATEO_SENDREADY)
+		{
+			cat_answer_forming();
+		}
+#endif /* WITHCAT */
+		return;
 
 	case MSGT_CAT:
 		board_wakeup();
@@ -12390,22 +12411,17 @@ processmessages(uint_fast8_t * kbch, uint_fast8_t * kbready, uint_fast8_t inmenu
 		updateboard(buff [0], buff [1]);
 		break;
 
-#if WITHISBOOTLOADER
-	case MSGT_DFUDETACH:
+	case MSGT_DPC:
+		// Выполнение отложенного вызова user-mode функций
 		{
-			  uintptr_t ip;
-			  if (bootloader_get_start(BOOTLOADER_APPAREA, & ip) == 0)
-			  {
-					/* Perform an Attach-Detach operation on USB bus */
-	#if WITHUSBHW
-					board_usb_deactivate();
-					board_usb_deinitialize();
-	#endif /* WITHUSBHW */
-					bootloader_detach(ip);
-			  }
+			udpcfn_t func;
+			void * arg;
+
+			func = (udpcfn_t) peek_u32(buff + 0);
+			arg = (void *) peek_u32(buff + 4);
+			func(arg);
 		}
 		break;
-#endif /* WITHISBOOTLOADER */
 
 	default:
 		break;
@@ -12413,16 +12429,25 @@ processmessages(uint_fast8_t * kbch, uint_fast8_t * kbready, uint_fast8_t inmenu
 	releasemsgbuffer_user(buff);
 }
 
-/* Вызывается из обработчика прерываний раз в секунду */
-void spool_secound(void)
+// Запрос отложенного вызова user-mode функций
+uint_fast8_t board_dpc(void (* func)(void *), void * arg)
 {
 	uint8_t * buff;
 	if (takemsgbufferfree_low(& buff) != 0)
 	{
-		placesemsgbuffer_low(MSGT_1SEC, buff);
+		poke_u32(buff + 0, (uint32_t) func);
+		poke_u32(buff + 4, (uint32_t) arg);
+		placesemsgbuffer_low(MSGT_DPC, buff);
+		return 1;
 	}
+	return 0;
 }
 
+/* Вызывается из обработчика прерываний раз в секунду */
+void spool_secound(void)
+{
+	board_dpc(dpc_1stimer, NULL);
+}
 
 /* Установка сиквенсору запроса на передачу.	*/
 static void
@@ -18533,14 +18558,19 @@ void bootloader_detach(uintptr_t ip)
 		;
 }
 
-/* вызыввется из обработчика USB прерываний EP0 */
-void bootloader_deffereddetach(void)
+/* Вызов заказан вызывется из обработчика USB прерываний EP0 */
+void bootloader_deffereddetach(void * arg)
 {
-	uint8_t * buff;
-	if (takemsgbufferfree_low(& buff) != 0)
-	{
-		placesemsgbuffer_low(MSGT_DFUDETACH, buff);
-	}
+	  uintptr_t ip;
+	  if (bootloader_get_start(BOOTLOADER_APPAREA, & ip) == 0)
+	  {
+			/* Perform an Attach-Detach operation on USB bus */
+#if WITHUSBHW
+			board_usb_deactivate();
+			board_usb_deinitialize();
+#endif /* WITHUSBHW */
+			bootloader_detach(ip);
+	  }
 }
 
 static void bootloader_mainloop(void)

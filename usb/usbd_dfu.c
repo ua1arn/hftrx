@@ -749,7 +749,7 @@ static void DFU_Detach(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req
 	  uintptr_t ip;
 	  if (bootloader_get_start(BOOTLOADER_APPAREA, & ip) == 0)
 	  {
-		  bootloader_deffereddetach();
+		  board_dpc(bootloader_deffereddetach, NULL);
 	  }
 #endif /* WITHISBOOTLOADER */
   }

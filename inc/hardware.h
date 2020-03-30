@@ -786,11 +786,10 @@ calcdivround2(
 enum messagetypes
 {
 	MSGT_EMPTY,
-	MSGT_1SEC,
 	MSGT_UPDATEBOARD,	// updateboard(full, mute): buff [0]: full, buff [1]: mute
 	MSGT_KEYB,	// 1 byte - key code
 	MSGT_CAT,	// 12 bytes as parameter
-	MSGT_DFUDETACH,	// no parameters
+	MSGT_DPC,	// 4 bytes - func address, 4 bytes - parameter
 	//
 	MSGT_count
 };
@@ -799,6 +798,9 @@ uint_fast8_t takemsgready_user(uint8_t * * dest);	// Буферы с приня�
 void releasemsgbuffer_user(uint8_t * dest);	// Освобождение обработанного буфера сообщения
 size_t takemsgbufferfree_low(uint8_t * * dest);	// Буфер для формирования сообщения
 void placesemsgbuffer_low(uint_fast8_t type, uint8_t * dest);	// поместить сообщение в очередь к исполнению
+
+typedef void (* udpcfn_t)(void *);
+uint_fast8_t board_dpc(udpcfn_t func, void * arg); // Запрос отложенного вызова user-mode функций
 
 #include "list.h"
 
@@ -815,7 +817,7 @@ void ticker_initialize(ticker_t * p, unsigned nticks, void (* cb)(void *), void 
 void bootloader_copyapp(uintptr_t apparea);
 uint_fast8_t bootloader_get_start(uintptr_t apparea, uintptr_t * ip);
 void bootloader_detach(uintptr_t ip);
-void bootloader_deffereddetach(void);
+void bootloader_deffereddetach(void * arg);
 
 #define HARDWARE_ADCINPUTS	40	/* до 8-ти входов АЦП */
 
