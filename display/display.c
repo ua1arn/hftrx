@@ -140,18 +140,7 @@ volatile uint8_t * hwacc_getbufaddr_u8(
 	return & buffer [y * dx + x];
 }
 
-// получение адреса в видобуфере
-volatile uint16_t * hwacc_getbufaddr_u16(
-	volatile uint16_t * buffer,
-	uint_fast16_t dx,	// ширина буфера
-	uint_fast16_t dy,	// высота буфера
-	uint_fast16_t x,	// начальная координата
-	uint_fast16_t y		// начальная координата
-	)
-{
-	return & buffer [y * dx + x];
-}
-
+// Функция получает координаты и работает нал буфером в горищонталтной ориентации.
 void
 hwacc_fillrect_u8(
 	volatile uint8_t * buffer,
@@ -257,6 +246,7 @@ hwacc_fillrect_u8(
 #endif
 }
 
+// Функция получает координаты и работает нал буфером в горищонталтной ориентации.
 void
 hwacc_fillrect_u16(
 	volatile uint16_t * buffer,
@@ -368,7 +358,7 @@ hwacc_fillrect_u16(
 		0;
 
 	DMA2D->OPFCCR = (DMA2D->OPFCCR & ~ (DMA2D_OPFCCR_CM)) |
-		(2 * DMA2D_FGPFCCR_CM_0) |	/* 010: RGB565 Color mode - framebuffer pixel format */
+		(2 * DMA2D_OPFCCR_CM_0) |	/* 010: RGB565 Color mode - framebuffer pixel format */
 		0;
 
 	/* запустить операцию */
@@ -400,6 +390,152 @@ hwacc_fillrect_u16(
 
 #endif
 }
+
+// Функция получает координаты и работает нал буфером в горищонталтной ориентации.
+void
+hwacc_fillrect_u24(
+	volatile PACKEDCOLOR_T * buffer,
+	uint_fast16_t dx,	// ширина буфера
+	uint_fast16_t dy,	// высота буфера
+	uint_fast16_t col,	// начальная координата
+	uint_fast16_t row,	// начальная координата
+	uint_fast16_t w,	// ширниа
+	uint_fast16_t h,	// высота
+	uint_fast32_t color	// цвет
+	)
+{
+	if (w == 0 || h == 0)
+		return;
+	enum { PIXEL_SIZE = sizeof * buffer };
+	//enum { PIXEL_SIZE_CODE = 1 };
+	//ALIGNX_BEGIN volatile uint16_t tgcolor ALIGNX_END;	/* значение цвета для заполнения области памяти */
+
+	ASSERT(sizeof (* buffer) == 3);
+#if 0//WITHMDMAHW
+	// MDMA implementation
+	#error MDMA implementation need
+	tgcolor = color;
+
+	arm_hardware_flush((uintptr_t) & tgcolor, sizeof tgcolor);
+	arm_hardware_flush((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
+
+	MDMA_CH->CCR &= ~ MDMA_CCR_EN_Msk;
+	//while ((MDMA_CH->CCR & MDMA_CCR_EN_Msk) != 0)
+	//	;
+	MDMA_CH->CDAR = (uintptr_t) & buffer [row * dx + col];
+	MDMA_CH->CSAR = (uintptr_t) & tgcolor;
+	const uint_fast32_t tlen = mdma_tlen(w * PIXEL_SIZE, PIXEL_SIZE);
+	const uint_fast32_t sbus = mdma_getbus(MDMA_CH->CSAR);
+	const uint_fast32_t dbus = mdma_getbus(MDMA_CH->CDAR);
+	const uint_fast32_t sinc = 0x00; // Source increment mode: 00: Source address pointer is fixed
+	const uint_fast32_t dinc = 0x02; // Destination increment mode: 10: Destination address pointer is incremented
+	const uint_fast32_t sburst = mdma_getburst(tlen, sbus, sinc);
+	const uint_fast32_t dburst = mdma_getburst(tlen, dbus, dinc);
+	MDMA_CH->CTCR =
+		(sinc << MDMA_CTCR_SINC_Pos) | 	// Source increment mode: 00: Source address pointer is fixed
+		(PIXEL_SIZE_CODE << MDMA_CTCR_SSIZE_Pos) |
+		(PIXEL_SIZE_CODE << MDMA_CTCR_SINCOS_Pos) |
+		(sburst << MDMA_CTCR_SBURST_Pos) |
+		(dinc << MDMA_CTCR_DINC_Pos) |	// Destination increment mode: 10: Destination address pointer is incremented
+		(PIXEL_SIZE_CODE << MDMA_CTCR_DSIZE_Pos) |
+		(PIXEL_SIZE_CODE << MDMA_CTCR_DINCOS_Pos) |
+		(dburst << MDMA_CTCR_DBURST_Pos) |	// Destination burst transfer configuration
+		((tlen - 1) << MDMA_CTCR_TLEN_Pos) |		// buffer Transfer Length (number of bytes - 1)
+		(0x00 << MDMA_CTCR_PKE_Pos) |
+		(0x00 << MDMA_CTCR_PAM_Pos) |
+		(0x02 << MDMA_CTCR_TRGM_Pos) |		// Trigger Mode: 10: Each MDMA request (software or hardware) triggers a repeated block transfer (if the block repeat is 0, a single block is transferred)
+		(0x01 << MDMA_CTCR_SWRM_Pos) |		// 1: hardware request are ignored. Transfer is triggered by software writing 1 to the SWRQ bit
+		(0x01 << MDMA_CTCR_BWM_Pos) |
+		0;
+	MDMA_CH->CBNDTR =
+		((PIXEL_SIZE * (w)) << MDMA_CBNDTR_BNDT_Pos) |	// Block Number of data bytes to transfer
+		(0x00 << MDMA_CBNDTR_BRSUM_Pos) |	// Block Repeat Source address Update Mode: 0 - increment
+		(0x00 << MDMA_CBNDTR_BRDUM_Pos) |	// Block Repeat Destination address Update Mode: 0 - increment
+		((h - 1) << MDMA_CBNDTR_BRC_Pos) |		// Block Repeat Count
+		0;
+	MDMA_CH->CBRUR =
+		((PIXEL_SIZE * (0)) << MDMA_CBRUR_SUV_Pos) |				// Source address Update Value
+		((PIXEL_SIZE * (dx - w)) << MDMA_CBRUR_DUV_Pos) |		// Destination address Update Value
+		0;
+
+	MDMA_CH->CTBR = (MDMA_CH->CTBR & ~ (MDMA_CTBR_SBUS_Msk | MDMA_CTBR_DBUS_Msk)) |
+		(sbus << MDMA_CTBR_SBUS_Pos) |
+		(dbus << MDMA_CTBR_DBUS_Pos) |
+		0;
+
+	MDMA_CH->CIFCR = MDMA_CIFCR_CLTCIF_Msk | MDMA_CIFCR_CBTIF_Msk |
+					MDMA_CIFCR_CBRTIF_Msk | MDMA_CIFCR_CCTCIF_Msk | MDMA_CIFCR_CTEIF_Msk;
+	// Set priority
+	MDMA_CH->CCR = (MDMA_CH->CCR & ~ (MDMA_CCR_PL_Msk)) |
+			(MDMA_CCR_PL_VALUE < MDMA_CCR_PL_Pos) |
+			0;
+	MDMA_CH->CCR |= MDMA_CCR_EN_Msk;
+	/* start transfer */
+	MDMA_CH->CCR |= MDMA_CCR_SWRQ_Msk;
+	/* wait for complete */
+	while ((MDMA_CH->CISR & MDMA_CISR_CTCIF_Msk) == 0)	// Channel x Channel Transfer Complete interrupt flag
+		; // PRINTF("MDMA_CH->CISR=%08lX ", MDMA_CH->CISR)
+	//local_delay_ms(1250);
+	//TP();
+
+#elif WITHDMA2DHW
+	// DMA2D implementation
+
+	// just writes the color defined in the DMA2D_OCOLR register
+	// to the area located at the address pointed by the DMA2D_OMAR
+	// and defined in the DMA2D_NLR and DMA2D_OOR.
+
+	arm_hardware_flush((uintptr_t) buffer, sizeof (* buffer) * GXSIZE(dx, dy));
+
+	/* целевой растр */
+	DMA2D->OMAR = (uintptr_t) & buffer [row * dx + col];
+	DMA2D->OOR = (DMA2D->OOR & ~ (DMA2D_OOR_LO)) |
+		((dx - w) << DMA2D_OOR_LO_Pos) |
+		0;
+
+	DMA2D->NLR = (DMA2D->NLR & ~ (DMA2D_NLR_NL | DMA2D_NLR_PL)) |
+		(h << DMA2D_NLR_NL_Pos) |
+		(w << DMA2D_NLR_PL_Pos) |
+		0;
+
+	DMA2D->OCOLR =
+		color |
+		0;
+
+	DMA2D->OPFCCR = (DMA2D->OPFCCR & ~ (DMA2D_OPFCCR_CM)) |
+		(1 * DMA2D_OPFCCR_CM_0) |	/* 001: RGB888 Color mode - framebuffer pixel format */
+		0;
+
+	/* запустить операцию */
+	DMA2D->CR = (DMA2D->CR & ~ (DMA2D_CR_MODE)) |
+		3 * DMA2D_CR_MODE_0 |	// 11: Register-to-memory (no FG nor BG, only output stage active)
+		1 * DMA2D_CR_START |
+		0;
+
+	/* ожидаем выполнения операции */
+	while ((DMA2D->CR & DMA2D_CR_START) != 0)
+		;
+
+
+#else
+	// программная реализация
+
+	const unsigned t = dx - w;
+	buffer += (dx * row) + col;
+	while (h --)
+	{
+		volatile PACKEDCOLOR_T * const startmem = buffer;
+
+		unsigned n = w;
+		while (n --)
+			* buffer ++ = color;
+		buffer += t;
+		arm_hardware_flush((uintptr_t) startmem, PIXEL_SIZE * w);
+	}
+
+#endif
+}
+
 
 
 #if WITHDMA2DHW
@@ -1463,9 +1599,23 @@ void display_putpixel(
 #if LCDMODE_HORFILL
 	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
 	// индекс младшей размерности перебирает горизонтальную координату дисплея
-	framebuff [y] [x] = color;
+	#if LCDMODE_LTDC_L24
+		framebuff [y] [x].r = color >> 16;
+		framebuff [y] [x].g = color >> 8;
+		framebuff [y] [x].b = color >> 0;
+	#else /* LCDMODE_LTDC_L24 */
+		framebuff [y] [x] = color;
+	#endif /* LCDMODE_LTDC_L24 */
+
 #else /* LCDMODE_HORFILL */
-	framebuff [x] [y] = color;
+	#if LCDMODE_LTDC_L24
+		framebuff [x] [y].r = color >> 16;
+		framebuff [x] [y].g = color >> 8;
+		framebuff [x] [y].b = color >> 0;
+	#else /* LCDMODE_LTDC_L24 */
+		framebuff [x] [y] = color;
+	#endif /* LCDMODE_LTDC_L24 */
+
 #endif /* LCDMODE_HORFILL */
 }
 
@@ -1478,12 +1628,29 @@ display_fillrect_pattern(
 	uint_fast8_t hpattern	// horizontal pattern (LSB - left)
 	)
 {
+#if LCDMODE_HORFILL
+
 	// TODO: bgcolor и hpattern пока игнорируются
-#if LCDMODE_LTDC_L8 && LCDMODE_LTDC
-	hwacc_fillrect_u8(& framebuff [0] [0], DIM_X, DIM_Y, x, y, w, h, fgcolor);
-#elif LCDMODE_LTDC
-	hwacc_fillrect_u16(& framebuff [0] [0], DIM_X, DIM_Y, x, y, w, h, fgcolor);
-#endif
+	#if LCDMODE_LTDC_L8 && LCDMODE_LTDC
+		hwacc_fillrect_u8(& framebuff [0] [0], DIM_X, DIM_Y, x, y, w, h, fgcolor);
+	#elif LCDMODE_LTDC_L24 && LCDMODE_LTDC
+		hwacc_fillrect_u24(& framebuff [0] [0], DIM_X, DIM_Y, x, y, w, h, fgcolor);
+	#elif LCDMODE_LTDC
+		hwacc_fillrect_u16(& framebuff [0] [0], DIM_X, DIM_Y, x, y, w, h, fgcolor);
+	#endif
+
+#else /* LCDMODE_HORFILL */
+
+	// TODO: bgcolor и hpattern пока игнорируются
+	#if LCDMODE_LTDC_L8 && LCDMODE_LTDC
+		hwacc_fillrect_u8(& framebuff [0] [0], DIM_Y, DIM_X, y, x, h, w, fgcolor);
+	#elif LCDMODE_LTDC_L24 && LCDMODE_LTDC
+		hwacc_fillrect_u24(& framebuff [0] [0], DIM_Y, DIM_X, y, x, h, w, fgcolor);
+	#elif LCDMODE_LTDC
+		hwacc_fillrect_u16(& framebuff [0] [0], DIM_Y, DIM_X, y, x, h, w, fgcolor);
+	#endif
+
+#endif /* LCDMODE_HORFILL */
 }
 
 /* заполнение прямоугольника на основном экране произвольным цветом

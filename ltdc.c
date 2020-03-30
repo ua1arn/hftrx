@@ -1395,7 +1395,7 @@ typedef struct
                                                  must range from LTDC_AccumulatedActiveH to 0x7FF. */
             
 
-  PACKEDCOLOR_T LTDC_BackgroundColor;         /*!< configures the background  */
+  uint32_t LTDC_BackgroundColor;         /*!< configures the background  */
 
 } LTDC_InitTypeDef;
 
@@ -1423,7 +1423,7 @@ typedef struct
   uint32_t LTDC_ConstantAlpha;              /*!< Specifies the constant alpha used for blending.
                                                  This parameter must range from 0x00 to 0xFF. */
 
-  PACKEDCOLOR_T LTDC_DefaultColor;           /*!< Configures the default color value.. */
+  uint32_t LTDC_DefaultColor;           /*!< Configures the default color value.. */
 
 
   uint32_t LTDC_BlendingFactor_1;           /*!< Select the blending factor 1. This parameter 
@@ -1907,9 +1907,9 @@ arm_hardware_ltdc_initialize(void)
 	HARDWARE_LTDC_SET_MODE(BOARD_MODEVALUE);
 #endif
 
-#if LCDMODE_LTDC_PIP16
+#if LCDMODE_LTDC_PIP16 || LCDMODE_LTDC_PIPL8
 	arm_hardware_ltdc_pip_off();
-#endif /* LCDMODE_LTDC_PIP16 */
+#endif /* LCDMODE_LTDC_PIP16 || LCDMODE_LTDC_PIPL8 */
 	debug_printf_P(PSTR("arm_hardware_ltdc_initialize done\n"));
 }
 
