@@ -437,9 +437,9 @@ void board_tsc_initialize(void)
 {
 #if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811)
 	stmpe811_initialize();
-	#if WITHTOUCHGUI
-		stmpe811_sethandler();
-	#endif /* WITHTOUCHGUI */
+//	#if WITHTOUCHGUI
+//		stmpe811_sethandler();
+//	#endif /* WITHTOUCHGUI */
 #endif /* defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811) */
 }
 #endif /* defined (TSC1_TYPE) */
