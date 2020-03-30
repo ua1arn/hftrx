@@ -5474,7 +5474,7 @@ void RAMFUNC dsp_extbuffer32rx(const int32_t * buff)
 		{
 			vi = getsampmlemike2();	// с микрофона (или 0, если ещё не запустился) */
 		}
-		savesampleout32stereo(vi.IV << 16, vi.QV << 16);
+		savesampleout32stereo(vi.IV * 655356L, vi.QV * 655356L);
 
 #elif WITHDTMFPROCESSING
 		// тестирование распозначания DTMF

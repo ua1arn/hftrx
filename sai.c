@@ -88,6 +88,8 @@ static uintptr_t dma_flush32tx(uintptr_t addr)
 
 #if CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
 
+#define DMA_SxCR_PL_VALUE 2uL		// STM32xxx DMA Priority level - High
+
 enum
 {
 #if WITHSAI1HW
@@ -179,8 +181,6 @@ enum
 	#define DMA_SxCR_xSIZE		0x01uL	// 01: half-word (16-bit)
 
 #endif /* WITHI2S_32BITPAIR */
-
-#define DMA_SxCR_PL_VALUE 2uL		// STM32xxx DMA Priority level - High
 
 /* получение битов режима I2S для каналов обммена с кодеком */
 static portholder_t stm32xxx_i2scfgr_afcodec(void)

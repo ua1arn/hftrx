@@ -1068,9 +1068,7 @@ void display_colorbuffer_fillrect(
 void display2_getpipparams(pipparams_t * p);
 PACKEDCOLORPIP_T * getscratchpip(void);
 int_fast32_t display_zoomedbw(void);
-#if WITHTOUCHGUI
 void display_string3_at_xy(uint_fast16_t x, uint_fast16_t y, const char * s, COLOR_T fg, COLOR_T bg);
-#endif
 
 #ifdef __cplusplus
 }

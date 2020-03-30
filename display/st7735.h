@@ -69,8 +69,8 @@
 
 #endif /* LCDMODE_LTDC */
 
-typedef PACKEDCOLOR_T PACKEDCOLORPIP_T;
-typedef COLOR_T COLORPIP_T;
+//typedef PACKEDCOLOR_T PACKEDCOLORPIP_T;
+//typedef COLOR_T COLORPIP_T;
 
 // some flags for initR() :(
 #define INITR_GREENTAB 0x0

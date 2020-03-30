@@ -1896,47 +1896,7 @@ static void RAMFUNC_NONILINE ltdc_horizontal_put_char_half(char cc)
 	ltdc_second += width;
 }
 
-#else /* LCDMODE_HORFILL */
 
-// Вызов этой функции только внутри display_wrdata_begin() и 	display_wrdata_end();
-static void RAMFUNC_NONILINE ltdc_vertical_put_char_small(char cc)
-{
-	uint_fast8_t i = 0;
-	const uint_fast8_t c = smallfont_decode((unsigned char) cc);
-	enum { NBYTES = (sizeof ls020_smallfont [0] / sizeof ls020_smallfont [0] [0]) };
-	const FLASHMEM uint8_t * const p = & ls020_smallfont [c] [0];
-	
-	for (; i < NBYTES; ++ i)
-		ltdc_vertical_pixN(p [i], 8);	// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
-}
-
-// Вызов этой функции только внутри display_wrdatabig_begin() и display_wrdatabig_end();
-static void RAMFUNC_NONILINE ltdc_vertical_put_char_big(char cc)
-{
-	// '#' - узкий пробел
-	enum { NBV = (BIGCHARH / 8) }; // сколько байтов в одной вертикали
-	uint_fast8_t i = NBV * ((cc == '.' || cc == '#') ? 12 : 0);	// начальная колонка знакогенератора, откуда начинать.
-    const uint_fast8_t c = bigfont_decode((unsigned char) cc);
-	enum { NBYTES = (sizeof ls020_bigfont [0] / sizeof ls020_bigfont [0] [0]) };
-	const FLASHMEM uint8_t * const p = & ls020_bigfont [c] [0];
-	
-	for (; i < NBYTES; ++ i)
-		ltdc_vertical_pixN(p [i], 8);	// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
-}
-
-// Вызов этой функции только внутри display_wrdatabig_begin() и display_wrdatabig_end();
-static void RAMFUNC_NONILINE ltdc_vertical_put_char_half(char cc)
-{
-	uint_fast8_t i = 0;
-    const uint_fast8_t c = bigfont_decode((unsigned char) cc);
-	enum { NBYTES = (sizeof ls020_halffont [0] / sizeof ls020_halffont [0] [0]) };
-	const FLASHMEM uint8_t * const p = & ls020_halffont [c] [0];
-	
-	for (; i < NBYTES; ++ i)
-		ltdc_vertical_pixN(p [i], 8);	// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
-}
-
-#endif /* LCDMODE_HORFILL */
 
 // Используется при выводе на графический индикатор,
 // transparent background - не меняем цвет фона.
@@ -2029,6 +1989,8 @@ uint_fast16_t display_colorbuff_string2_width(
 	return SMALLCHARW2 * strlen(s);
 }
 
+
+
 // Возвращает ширину строки в пикселях
 uint_fast16_t display_colorbuff_string_width(
 	PACKEDCOLORPIP_T * buffer,
@@ -2058,6 +2020,48 @@ uint_fast16_t display_colorbuff_string_height(
 	return SMALLCHARH;
 }
 
+#else /* LCDMODE_HORFILL */
+
+// Вызов этой функции только внутри display_wrdata_begin() и 	display_wrdata_end();
+static void RAMFUNC_NONILINE ltdc_vertical_put_char_small(char cc)
+{
+	uint_fast8_t i = 0;
+	const uint_fast8_t c = smallfont_decode((unsigned char) cc);
+	enum { NBYTES = (sizeof ls020_smallfont [0] / sizeof ls020_smallfont [0] [0]) };
+	const FLASHMEM uint8_t * const p = & ls020_smallfont [c] [0];
+
+	for (; i < NBYTES; ++ i)
+		ltdc_vertical_pixN(p [i], 8);	// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
+}
+
+// Вызов этой функции только внутри display_wrdatabig_begin() и display_wrdatabig_end();
+static void RAMFUNC_NONILINE ltdc_vertical_put_char_big(char cc)
+{
+	// '#' - узкий пробел
+	enum { NBV = (BIGCHARH / 8) }; // сколько байтов в одной вертикали
+	uint_fast8_t i = NBV * ((cc == '.' || cc == '#') ? 12 : 0);	// начальная колонка знакогенератора, откуда начинать.
+    const uint_fast8_t c = bigfont_decode((unsigned char) cc);
+	enum { NBYTES = (sizeof ls020_bigfont [0] / sizeof ls020_bigfont [0] [0]) };
+	const FLASHMEM uint8_t * const p = & ls020_bigfont [c] [0];
+
+	for (; i < NBYTES; ++ i)
+		ltdc_vertical_pixN(p [i], 8);	// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
+}
+
+// Вызов этой функции только внутри display_wrdatabig_begin() и display_wrdatabig_end();
+static void RAMFUNC_NONILINE ltdc_vertical_put_char_half(char cc)
+{
+	uint_fast8_t i = 0;
+    const uint_fast8_t c = bigfont_decode((unsigned char) cc);
+	enum { NBYTES = (sizeof ls020_halffont [0] / sizeof ls020_halffont [0] [0]) };
+	const FLASHMEM uint8_t * const p = & ls020_halffont [c] [0];
+
+	for (; i < NBYTES; ++ i)
+		ltdc_vertical_pixN(p [i], 8);	// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
+}
+
+
+#endif /* LCDMODE_HORFILL */
 
 /* копирование содержимого окна с перекрытием для водопада */
 void
