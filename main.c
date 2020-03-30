@@ -132,7 +132,7 @@ static uint_fast8_t gtx;	/* текущее состояние прием или 
 static uint_fast8_t gcwpitch10 = 700 / CWPITCHSCALE;	/* тон при приеме телеграфа или самоконтроль (в десятках герц) */
 #if WITHIF4DSP
 static dualctl8_t gsquelch = { 0, 0 };	/* squelch level */
-static uint_fast16_t ggainnfmrx = 300;	/* дополнительное усиление по НЧ в режиме приёма NFM 100..1000% */
+static uint_fast8_t ggainnfmrx10 = 30;	/* дополнительное усиление по НЧ в режиме приёма NFM 100..1000% */
 #endif /* WITHIF4DSP */
 #if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */
 
@@ -2537,7 +2537,7 @@ struct nvmap
 
 	uint8_t gagcoff;
 	uint8_t gamdepth;		/* Глубина модуляции в АМ - 0..100% */
-	uint16_t ggainnfmrx;		/* дополнительное усиление по НЧ в режиме приёма NFM 100..1000% */
+	uint8_t ggainnfmrx10;		/* дополнительное усиление по НЧ в режиме приёма NFM 100..1000% */
 	uint8_t gnfmdeviation;	/* Девиация при передаче в NFM - в сотнях герц */
 	uint8_t gdacscale;		/* Использование амплитуды сигнала с ЦАП передатчика - 0..100% */
 	uint16_t ggainndigitx;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
@@ -7966,7 +7966,7 @@ updateboard(
 				board_set_agc_thung(gagc [agcseti].thung10);	// hold time (hung time) in 0.1 sec
 				board_set_squelch(gsquelch.value);
 			#endif /* WITHIF4DSP */
-				board_set_gainnfmrx(ggainnfmrx);	/* дополнительное усиление по НЧ в режиме приёма NFM 100..1000% */
+				board_set_gainnfmrx(ggainnfmrx10 * 10);	/* дополнительное усиление по НЧ в режиме приёма NFM 100..1000% */
 			} /* tx == 0 */
 
 		#if WITHIF4DSP
@@ -14766,12 +14766,12 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #endif /* WITHTX */
 #if WITHIF4DSP
 	{
-		QLABEL("NFM GAIN"), 7, 0, 0,	ISTEP10,		/* дополнительное усиление по НЧ в режиме приёма NFM 100..1000% */
+		QLABEL("NFM GAIN"), 7, 1, 0,	ISTEP1,		/* дополнительное усиление по НЧ в режиме приёма NFM 100..1000% */
 		ITEM_VALUE,
-		100, 1000,
-		offsetof(struct nvmap, ggainnfmrx),	/* дополнительное усиление по НЧ в режиме приёма NFM 100..1000% */
-		& ggainnfmrx,
+		10, 100,
+		offsetof(struct nvmap, ggainnfmrx10),	/* дополнительное усиление по НЧ в режиме приёма NFM 100..1000% */
 		NULL,
+		& ggainnfmrx10,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #if WITHTX
