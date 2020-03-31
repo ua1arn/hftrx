@@ -18055,6 +18055,16 @@ hamradio_main_step(void)
 }
 
 #if WITHTOUCHGUI
+uint_fast16_t get_minforward(void)
+{
+	return minforward;
+}
+
+uint_fast8_t get_swrcalibr(void)
+{
+	return swrcalibr;
+}
+
 void disable_keyboard_redirect (void)
 {
 	keyboard_redirect = 0;

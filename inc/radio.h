@@ -3250,6 +3250,8 @@ void spool_0p128(void);	// OPERA support
 	void enable_keyboard_redirect (void);
 	void gui_put_keyb_code (uint_fast8_t kbch);
 	void gui_uif_editmenu(const char * name, uint_fast8_t menupos, uint_fast8_t exitkey);
+	uint_fast8_t get_swrcalibr(void);
+	uint_fast16_t get_minforward(void);
 #endif /* WITHTOUCHGUI */
 
 #ifdef __cplusplus
