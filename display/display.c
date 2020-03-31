@@ -2591,6 +2591,22 @@ void display_discharge(void)
 {
 }
 
+/* заливка замкнутого контура */
+void floodFill_framebuffer(uint_fast16_t x, uint_fast16_t y, PACKEDCOLOR_T newColor, PACKEDCOLOR_T oldColor)
+{
+	ASSERT(y < DIM_FIRST);
+	ASSERT(x < DIM_SECOND);
+	volatile PACKEDCOLOR_T * const tgr = & framebuff [y] [x];
+	if(* tgr == oldColor && * tgr != newColor)
+	{
+		* tgr = newColor;
+		floodFill_framebuffer(x + 1, y, newColor, oldColor);
+		floodFill_framebuffer(x - 1, y, newColor, oldColor);
+		floodFill_framebuffer(x, y + 1, newColor, oldColor);
+		floodFill_framebuffer(x, y - 1, newColor, oldColor);
+	}
+}
+
 #if WITHTOUCHGUI
 static void
 RAMFUNC_NONILINE ltdc_horizontal_put_char_small3(char cc)
