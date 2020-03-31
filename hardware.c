@@ -8064,10 +8064,10 @@ stm32h7xx_pll_initialize(void)
 	PWR->CR3 = PWR_CR3_LDOEN | PWR_CR3_SCUEN;
 	PWR->D3CR = (PWR->D3CR & ~ (PWR_D3CR_VOS)) |
 		PWR_D3CR_VOS_value |
-		//PWR_D3CR_VOS_0 * 3 |		// Rev Y: SCALE 1 1.218 mV VOS0
-		//PWR_D3CR_VOS_0 * 2 |		// Rev Y: SCALE x 1.130 mV VOS1
-		//PWR_D3CR_VOS_0 * 1 |		// Rev Y: SCALE x 1.064 mV VOS2
-		//PWR_D3CR_VOS_0 * 0 |		// Rev Y: SCALE x 1.064 mV VOS3
+		//PWR_D3CR_VOS_0 * 3 |		// Rev Y: SCALE 0 1.218 mV VOS0
+		//PWR_D3CR_VOS_0 * 2 |		// Rev Y: SCALE 1 1.130 mV VOS1
+		//PWR_D3CR_VOS_0 * 1 |		// Rev Y: SCALE 2 1.064 mV VOS2
+		//PWR_D3CR_VOS_0 * 0 |		// Rev Y: SCALE 3 1.064 mV VOS3
 		0;
 	(void) PWR->D3CR;
 	//Wait for LDO ready
