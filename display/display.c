@@ -1781,17 +1781,15 @@ void display_setcolors3(COLORMAIN_T fg, COLORMAIN_T bg, COLORMAIN_T fgbg)
 // Выдать один цветной пиксель
 static void 
 ltdc_pix1color(
-	uint_fast16_t xpix,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t ypix,	// вертикальная координата пикселя (0..dy-1) сверху вниз
-	uint_fast8_t cgcol,		// смещение в пикселях относительно координат, поставленных display_gotoxy
-	uint_fast8_t cgrow,
+	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
 	PACKEDCOLORMAIN_T color
 	)
 {
 	PACKEDCOLORMAIN_T * const buffer = colmain_fb();
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
-	volatile PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, xpix + cgcol, ypix + cgrow);
+	volatile PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, x, y);
 	* tgr = color;
 	//arm_hardware_flush((uintptr_t) tgr, sizeof * tgr);
 }
@@ -1800,23 +1798,21 @@ ltdc_pix1color(
 // Выдать один цветной пиксель (фон/символ)
 static void 
 ltdc_pixel(
-	uint_fast16_t xpix,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t ypix,	// вертикальная координата пикселя (0..dy-1) сверху вниз
-	uint_fast8_t cgcol,		// смещение в пикселях относительно координат, поставленных display_gotoxy
-	uint_fast8_t cgrow,
+	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
 	uint_fast8_t v			// 0 - цвет background, иначе - foreground
 	)
 {
-	ltdc_pix1color(xpix, ypix, cgcol, cgrow, v ? ltdc_fg : ltdc_bg);
+	ltdc_pix1color(x, y, v ? ltdc_fg : ltdc_bg);
 }
 
 
 // Выдать восемь цветных пикселей, младший бит - самый верхний в растре
 static void
 ltdc_vertical_pixN(
-	uint_fast16_t xpix,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t ypix,	// вертикальная координата пикселя (0..dy-1) сверху вниз
-	uint_fast8_t v,		// pattern
+	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	uint_fast8_t pattern,		// pattern
 	uint_fast8_t w		// number of lower bits used in pattern
 	)
 {
@@ -1824,14 +1820,14 @@ ltdc_vertical_pixN(
 #if LCDMODE_LTDC_L24 || LCDMODE_HORFILL
 
 	// TODO: для паттернов шире чем восемь бит, повторить нужное число раз.
-	ltdc_pixel(xpix, ypix, 0, 0, v & 0x01);
-	ltdc_pixel(xpix, ypix, 0, 1, v & 0x02);
-	ltdc_pixel(xpix, ypix, 0, 2, v & 0x04);
-	ltdc_pixel(xpix, ypix, 0, 3, v & 0x08);
-	ltdc_pixel(xpix, ypix, 0, 4, v & 0x10);
-	ltdc_pixel(xpix, ypix, 0, 5, v & 0x20);
-	ltdc_pixel(xpix, ypix, 0, 6, v & 0x40);
-	ltdc_pixel(xpix, ypix, 0, 7, v & 0x80);
+	ltdc_pixel(x, y + 0, pattern & 0x01);
+	ltdc_pixel(x, y + 1, pattern & 0x02);
+	ltdc_pixel(x, y + 2, pattern & 0x04);
+	ltdc_pixel(x, y + 3, pattern & 0x08);
+	ltdc_pixel(x, y + 4, pattern & 0x10);
+	ltdc_pixel(x, y + 5, pattern & 0x20);
+	ltdc_pixel(x, y + 6, pattern & 0x40);
+	ltdc_pixel(x, y + 7, pattern & 0x80);
 
 	// сместить по вертикали?
 	//ltdc_secondoffs ++;
@@ -2830,7 +2826,7 @@ RAMFUNC_NONILINE ltdc_horizontal_put_char_small3(uint_fast16_t x, uint_fast16_t 
 	uint_fast8_t cgrow;
 	for (cgrow = 0; cgrow < SMALLCHARH3; ++ cgrow)
 	{
-		PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, x , y + cgrow);
+		PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, x, y + cgrow);
 		ltdc_horizontal_pixels(tgr, & S1D13781_smallfont3_LTDC [c] [cgrow], width);
 	}
 	return x + width;
