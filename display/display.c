@@ -1763,7 +1763,10 @@ ltdc_pix1color(
 	PACKEDCOLORMAIN_T color
 	)
 {
-	volatile PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(colmain_fb(), DIM_X, DIM_Y, stored_xpix + ltdc_secondoffs, stored_ypix + cgrow);
+	PACKEDCOLORMAIN_T * const buffer = colmain_fb();
+	const uint_fast16_t dx = DIM_X;
+	const uint_fast16_t dy = DIM_Y;
+	volatile PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, stored_xpix + ltdc_secondoffs, stored_ypix + cgrow);
 	//volatile PACKEDCOLORPIP_T * const tgr = colpip_mem_at(buffer, dx, dy, stored_xpix, stored_ypix + cgrow);
 	//volatile PACKEDCOLORMAIN_T * const tgr = & framebuff [ltdc_first + cgrow] [ltdc_second + ltdc_secondoffs + cgcol];
 	// размещаем пиксели по горизонтали
@@ -1935,12 +1938,15 @@ static void RAMFUNC ltdc_horizontal_pixels(
 // Вызов этой функции только внутри display_wrdata_begin() и 	display_wrdata_end();
 static uint_fast16_t RAMFUNC_NONILINE ltdc_horizontal_put_char_small(uint_fast16_t x, uint_fast16_t y, char cc)
 {
+	PACKEDCOLORMAIN_T * const buffer = colmain_fb();
+	const uint_fast16_t dx = DIM_X;
+	const uint_fast16_t dy = DIM_Y;
 	const uint_fast8_t width = SMALLCHARW;
 	const uint_fast8_t c = smallfont_decode((unsigned char) cc);
 	uint_fast8_t cgrow;
 	for (cgrow = 0; cgrow < SMALLCHARH; ++ cgrow)
 	{
-		volatile PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(colmain_fb(), DIM_X, DIM_Y, x, y + cgrow);
+		volatile PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, x, y + cgrow);
 		ltdc_horizontal_pixels(tgr, S1D13781_smallfont_LTDC [c] [cgrow], width);
 	}
 	return x + width;
@@ -2043,12 +2049,15 @@ static uint_fast16_t RAMFUNC_NONILINE ltdcpip_horizontal_put_char_small3_tbg(
 // return new x coordinate
 static uint_fast16_t RAMFUNC_NONILINE ltdc_horizontal_put_char_big(uint_fast16_t x, uint_fast16_t y, char cc)
 {
+	PACKEDCOLORMAIN_T * const buffer = colmain_fb();
+	const uint_fast16_t dx = DIM_X;
+	const uint_fast16_t dy = DIM_Y;
 	const uint_fast8_t width = ((cc == '.' || cc == '#') ? BIGCHARW_NARROW  : BIGCHARW);	// полнаяширина символа в пикселях
     const uint_fast8_t c = bigfont_decode((unsigned char) cc);
 	uint_fast8_t cgrow;
 	for (cgrow = 0; cgrow < BIGCHARH; ++ cgrow)
 	{
-		volatile PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(colmain_fb(), DIM_X, DIM_Y, x, y + cgrow);
+		volatile PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, x, y + cgrow);
 		ltdc_horizontal_pixels(tgr, S1D13781_bigfont_LTDC [c] [cgrow], width);
 	}
 	return x + width;
@@ -2058,12 +2067,15 @@ static uint_fast16_t RAMFUNC_NONILINE ltdc_horizontal_put_char_big(uint_fast16_t
 // return new x coordinate
 static uint_fast16_t RAMFUNC_NONILINE ltdc_horizontal_put_char_half(uint_fast16_t x, uint_fast16_t y, char cc)
 {
+	PACKEDCOLORMAIN_T * const buffer = colmain_fb();
+	const uint_fast16_t dx = DIM_X;
+	const uint_fast16_t dy = DIM_Y;
 	const uint_fast8_t width = HALFCHARW;
     const uint_fast8_t c = bigfont_decode((unsigned char) cc);
 	uint_fast8_t cgrow;
 	for (cgrow = 0; cgrow < HALFCHARH; ++ cgrow)
 	{
-		volatile PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(colmain_fb(), DIM_X, DIM_Y, x, y + cgrow);
+		volatile PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, x, y + cgrow);
 		ltdc_horizontal_pixels(tgr, S1D13781_halffont_LTDC [c] [cgrow], width);
 	}
 	return x + width;
@@ -2247,18 +2259,21 @@ display_scroll_down(
 	int_fast16_t hshift	// количество пиксеелей для сдвига влево (отрицательное число) или вправо (положительное).
 	)
 {
+	PACKEDCOLORMAIN_T * const buffer = colmain_fb();
+	const uint_fast16_t dx = DIM_X;
+	const uint_fast16_t dy = DIM_Y;
 #if WITHDMA2DHW && LCDMODE_LTDC
 
 #if LCDMODE_HORFILL
 	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
 	/* TODO: В DMA2D нет средств управления направлением пересылки, потому данный код копирует сам на себя данные (размножает) */
 	/* исходный растр */
-	DMA2D->FGMAR = (uintptr_t) colmain_mem_at(colmain_fb(), DIM_X, DIM_Y, y0 + 0, x0);
+	DMA2D->FGMAR = (uintptr_t) colmain_mem_at(buffer, dx, dy, y0 + 0, x0);
 	DMA2D->FGOR = (DMA2D->FGOR & ~ (DMA2D_FGOR_LO)) |
 		((DIM_X - w) << DMA2D_FGOR_LO_Pos) |
 		0;
 	/* целевой растр */
-	DMA2D->OMAR = (uintptr_t) colmain_mem_at(colmain_fb(), DIM_X, DIM_Y, y0 + n, x0);
+	DMA2D->OMAR = (uintptr_t) colmain_mem_at(buffer, dx, dy, y0 + n, x0);
 	DMA2D->OOR = (DMA2D->OOR & ~ (DMA2D_OOR_LO)) |
 		((DIM_X - w) << DMA2D_OOR_LO_Pos) |
 		0;
@@ -2299,17 +2314,21 @@ display_scroll_up(
 	int_fast16_t hshift	// количество пиксеелей для сдвига влево (отрицательное число) или вправо (положительное).
 	)
 {
+	PACKEDCOLORMAIN_T * const buffer = colmain_fb();
+	const uint_fast16_t dx = DIM_X;
+	const uint_fast16_t dy = DIM_Y;
+
 #if WITHDMA2DHW && LCDMODE_LTDC
 #if LCDMODE_HORFILL
 	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
 
 	/* исходный растр */
-	DMA2D->FGMAR = (uintptr_t) colmain_mem_at(colmain_fb(), DIM_X, DIM_Y, y0 + n, x0);
+	DMA2D->FGMAR = (uintptr_t) colmain_mem_at(buffer, dx, dy, y0 + n, x0);
 	DMA2D->FGOR = (DMA2D->FGOR & ~ (DMA2D_FGOR_LO)) |
 		((DIM_X - w) << DMA2D_FGOR_LO_Pos) |
 		0;
 	/* целевой растр */
-	DMA2D->OMAR = (uintptr_t) colmain_mem_at(colmain_fb(), DIM_X, DIM_Y, y0 + 0, x0);
+	DMA2D->OMAR = (uintptr_t) colmain_mem_at(buffer, dx, dy, y0 + 0, x0);
 	DMA2D->OOR = (DMA2D->OOR & ~ (DMA2D_OOR_LO)) |
 		((DIM_X - w) << DMA2D_OOR_LO_Pos) |
 		0;
@@ -2382,11 +2401,14 @@ void display_plot(
 	uint_fast16_t dy
 	)
 {
+	PACKEDCOLORMAIN_T * const tbuffer = colmain_fb();
+	const uint_fast16_t tdx = DIM_X;
+	const uint_fast16_t tdy = DIM_Y;
 #if LCDMODE_HORFILL
 
 	#if WITHMDMAHW || (WITHDMA2DHW && ! LCDMODE_LTDC_L8)
 		arm_hardware_flush((uintptr_t) buffer, sizeof (* buffer) * dx * dy);
-		hwaccel_copy_main(buffer, colmain_mem_at(colmain_fb(), DIM_X, DIM_Y, stored_xpix, stored_ypix), dx, DIM_SECOND - dx, dy);
+		hwaccel_copy_main(buffer, colmain_mem_at(tbuffer, tdx, tdy, stored_xpix, stored_ypix), dx, DIM_SECOND - dx, dy);
 		//ltdc_first += dy;
 
 	#else /* WITHMDMAHW || (WITHLTDCHW && ! LCDMODE_LTDC_L8) */
@@ -2395,8 +2417,8 @@ void display_plot(
 		uint_fast16_t yoffs = 0;
 		while (dy --)
 		{
-			volatile PACKEDCOLORMAIN_T * const p = colmain_mem_at(colmain_fb(), DIM_X, DIM_Y, stored_xpix, stored_ypix + yoffs);
-			memcpy((void *) p, buffer, len);
+			PACKEDCOLORMAIN_T * const p = colmain_mem_at(tbuffer, tdx, tdy, stored_xpix, stored_ypix + yoffs);
+			memcpy(p, buffer, len);
 			arm_hardware_flush((uintptr_t) p, len);
 			buffer += dx;
 			++ yoffs;
@@ -2414,8 +2436,8 @@ void display_plot(
 		const size_t len = dy * sizeof * buffer;
 		while (dx --)
 		{
-			volatile PACKEDCOLORMAIN_T * const p = & framebuff [ltdc_first] [ltdc_second];
-			memcpy((void *) p, buffer, len);
+			PACKEDCOLORMAIN_T * const p = & framebuff [ltdc_first] [ltdc_second];
+			memcpy(p, buffer, len);
 			arm_hardware_flush((uintptr_t) p, len);
 			buffer += dy;
 			++ ltdc_first;
@@ -2757,12 +2779,15 @@ void floodFill_framebuffer(uint_fast16_t x, uint_fast16_t y, PACKEDCOLORMAIN_T n
 static uint_fast16_t
 RAMFUNC_NONILINE ltdc_horizontal_put_char_small3(uint_fast16_t x, uint_fast16_t y, char cc)
 {
+	PACKEDCOLORMAIN_T * const buffer = colmain_fb();
+	const uint_fast16_t dx = DIM_X;
+	const uint_fast16_t dy = DIM_Y;
 	const uint_fast8_t width = SMALLCHARW3;
 	const uint_fast8_t c = smallfont_decode((unsigned char) cc);
 	uint_fast8_t cgrow;
 	for (cgrow = 0; cgrow < SMALLCHARH3; ++ cgrow)
 	{
-		volatile PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(colmain_fb(), DIM_X, DIM_Y, x , y + cgrow);
+		volatile PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, x , y + cgrow);
 		ltdc_horizontal_pixels(tgr, & S1D13781_smallfont3_LTDC [c] [cgrow], width);
 	}
 	return x + width;
