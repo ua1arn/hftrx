@@ -142,7 +142,7 @@ pcf8535_reset(void)
 
 /*
  Функция установки курсора в позицию x,y
- X - координата по горизонтали в пределах 0-132, 
+ X - координата по горизонтали в пределах 0-132,
  Y - координата по вертикали (строка, Page) в пределах 0-7
 */ 
 static void pcf8535_set_addr_column(uint_fast8_t x, uint_fast8_t y)		// 
@@ -624,7 +624,7 @@ void display_plotfrom(uint_fast16_t x, uint_fast16_t y)
 }
 
 void display_plotstart(
-	uint_fast16_t height	// Высота окна в пикселях
+	uint_fast16_t dy	// Высота окна в пикселях
 	)
 {
 

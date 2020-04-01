@@ -591,13 +591,15 @@ void display_set_contrast(uint_fast8_t v);
 void display_clear(void);
 void display_setcolors(COLORMAIN_T fg, COLORMAIN_T bg);
 void display_setcolors3(COLORMAIN_T fg, COLORMAIN_T bg, COLORMAIN_T bgfg);	// bgfg - цвет для отрисовки антиалиасинга
-void display_gotoxy(uint_fast8_t x, uint_fast8_t y);
+//void display_gotoxy(uint_fast8_t x, uint_fast8_t y);
 
+#if 1
 /* работа с цветным буфером */
 void display_plotfrom(uint_fast16_t x, uint_fast16_t y);	// Координаты в пикселях
-void display_plotstart(uint_fast16_t height);	// Высота окна в пикселях
+void display_plotstart(uint_fast16_t dy);	// Высота окна источника в пикселях
 void display_plot(const PACKEDCOLORMAIN_T * buffer, uint_fast16_t dx, uint_fast16_t dy);	// Размеры окна в пикселях
 void display_plotstop(void);
+#endif
 
 // самый маленький шрифт
 uint_fast16_t display_wrdata2_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp);

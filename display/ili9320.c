@@ -677,10 +677,10 @@ void display_plotfrom(uint_fast16_t x, uint_fast16_t y)
 }
 
 void display_plotstart(
-	uint_fast16_t height	// Высота окна в пикселях
+	uint_fast16_t dy	// Высота окна в пикселях
 	)
 {
-	ili9320_set_windowh(height);
+	ili9320_set_windowh(dy);
 	ili9320_put_char_begin();
 }
 

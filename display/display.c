@@ -57,9 +57,20 @@
 
 static void
 ltdc_horizontal_pixels(
-	volatile PACKEDCOLORMAIN_T * tgr,		// target raster
+	PACKEDCOLORMAIN_T * tgr,		// target raster
 	const FLASHMEM uint8_t * raster,
 	uint_fast16_t width	// number of bits (start from LSB first byte in raster)
+	);
+
+void colmain_plot(
+	PACKEDCOLORMAIN_T * tbuffer,	// получатель
+	uint_fast16_t tdx,	// получатель
+	uint_fast16_t tdy,	// получатель
+	uint_fast16_t x,	// получатель
+	uint_fast16_t y,	// получатель
+	const PACKEDCOLORMAIN_T * buffer, 	// источник
+	uint_fast16_t dx,	// источник Размеры окна в пикселях
+	uint_fast16_t dy	// источник
 	);
 
 #if WITHMDMAHW
@@ -1334,6 +1345,15 @@ void colpip_to_main(
 		#warning To be implemented
 	#endif /* LCDMODE_HORFILL */
 
+#elif LCDMODE_LTDC
+
+	#if LCDMODE_COLORED
+		PACKEDCOLORMAIN_T * const tbuffer = colmain_fb();
+		const uint_fast16_t tdx = DIM_X;
+		const uint_fast16_t tdy = DIM_Y;
+		colmain_plot(tbuffer, tdx, tdy, col, row, buffer, dx, dy);
+	#endif
+
 #else /* WITHDMA2DHW && LCDMODE_LTDC */
 
 	#if LCDMODE_COLORED
@@ -1919,7 +1939,7 @@ static void RAMFUNC ltdcpip_horizontal_pixels_tbg(
 
 // для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
 static void RAMFUNC ltdc_horizontal_pixels(
-	volatile PACKEDCOLORMAIN_T * tgr,		// target raster
+	PACKEDCOLORMAIN_T * tgr,		// target raster
 	const FLASHMEM uint8_t * raster,
 	uint_fast16_t width	// number of bits (start from LSB first byte in raster)
 	)
@@ -1930,7 +1950,7 @@ static void RAMFUNC ltdc_horizontal_pixels(
 	for (col = 0; w >= 8; col += 8, w -= 8)
 	{
 		const FLASHMEM PACKEDCOLORMAIN_T * const pcl = (* byte2runmain) [* raster ++];
-		memcpy((void *) (tgr + col), pcl, sizeof (* tgr) * 8);
+		memcpy((tgr + col), pcl, sizeof (* tgr) * 8);
 	}
 	if (w != 0)
 	{
@@ -1954,7 +1974,7 @@ ltdc_horizontal_put_char_small(uint_fast16_t x, uint_fast16_t y, char cc)
 	uint_fast8_t cgrow;
 	for (cgrow = 0; cgrow < SMALLCHARH; ++ cgrow)
 	{
-		volatile PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, x, y + cgrow);
+		PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, x, y + cgrow);
 		ltdc_horizontal_pixels(tgr, S1D13781_smallfont_LTDC [c] [cgrow], width);
 	}
 	return x + width;
@@ -2067,7 +2087,7 @@ static uint_fast16_t RAMFUNC_NONILINE ltdc_horizontal_put_char_big(uint_fast16_t
 	uint_fast8_t cgrow;
 	for (cgrow = 0; cgrow < BIGCHARH; ++ cgrow)
 	{
-		volatile PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, x, y + cgrow);
+		PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, x, y + cgrow);
 		ltdc_horizontal_pixels(tgr, S1D13781_bigfont_LTDC [c] [cgrow], width);
 	}
 	return x + width;
@@ -2085,7 +2105,7 @@ static uint_fast16_t RAMFUNC_NONILINE ltdc_horizontal_put_char_half(uint_fast16_
 	uint_fast8_t cgrow;
 	for (cgrow = 0; cgrow < HALFCHARH; ++ cgrow)
 	{
-		volatile PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, x, y + cgrow);
+		PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, x, y + cgrow);
 		ltdc_horizontal_pixels(tgr, S1D13781_halffont_LTDC [c] [cgrow], width);
 	}
 	return x + width;
@@ -2401,27 +2421,28 @@ void display_plotfrom(uint_fast16_t x, uint_fast16_t y)
 #endif
 
 void display_plotstart(
-	uint_fast16_t height	// Высота окна в пикселях
+	uint_fast16_t dy	// Высота окна источника в пикселях
 	)
 {
 
 }
 
-void display_plot(
-	const PACKEDCOLORMAIN_T * buffer, 
-	uint_fast16_t dx,	// Размеры окна в пикселях
-	uint_fast16_t dy
+void colmain_plot(
+	PACKEDCOLORMAIN_T * tbuffer,	// получатель
+	uint_fast16_t tdx,	// получатель
+	uint_fast16_t tdy,	// получатель
+	uint_fast16_t x,	// получатель
+	uint_fast16_t y,	// получатель
+	const PACKEDCOLORMAIN_T * buffer, 	// источник
+	uint_fast16_t dx,	// источник Размеры окна в пикселях
+	uint_fast16_t dy	// источник
 	)
 {
-#if 0
-	PACKEDCOLORMAIN_T * const tbuffer = colmain_fb();
-	const uint_fast16_t tdx = DIM_X;
-	const uint_fast16_t tdy = DIM_Y;
 #if LCDMODE_HORFILL
 
 	#if WITHMDMAHW || (WITHDMA2DHW && ! LCDMODE_LTDC_L8)
 		arm_hardware_flush((uintptr_t) buffer, sizeof (* buffer) * dx * dy);
-		hwaccel_copy_main(buffer, colmain_mem_at(tbuffer, tdx, tdy, xpix, ypix), dx, DIM_SECOND - dx, dy);
+		hwaccel_copy_main(buffer, colmain_mem_at(tbuffer, tdx, tdy, x, y), dx, DIM_SECOND - dx, dy);
 		//ltdc_first += dy;
 
 	#else /* WITHMDMAHW || (WITHLTDCHW && ! LCDMODE_LTDC_L8) */
@@ -2430,7 +2451,7 @@ void display_plot(
 		uint_fast16_t yoffs = 0;
 		while (dy --)
 		{
-			PACKEDCOLORMAIN_T * const p = colmain_mem_at(tbuffer, tdx, tdy, xpix, ypix + yoffs);
+			PACKEDCOLORMAIN_T * const p = colmain_mem_at(tbuffer, tdx, tdy, x, y + yoffs);
 			memcpy(p, buffer, len);
 			arm_hardware_flush((uintptr_t) p, len);
 			buffer += dx;
@@ -2458,7 +2479,6 @@ void display_plot(
 
 	#endif /* WITHMDMAHW || (WITHLTDCHW && ! LCDMODE_LTDC_L8) */
 #endif /* LCDMODE_HORFILL */
-#endif
 }
 
 void display_plotstop(void)
@@ -2810,18 +2830,18 @@ RAMFUNC_NONILINE ltdc_horizontal_put_char_small3(uint_fast16_t x, uint_fast16_t 
 	uint_fast8_t cgrow;
 	for (cgrow = 0; cgrow < SMALLCHARH3; ++ cgrow)
 	{
-		volatile PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, x , y + cgrow);
+		PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, x , y + cgrow);
 		ltdc_horizontal_pixels(tgr, & S1D13781_smallfont3_LTDC [c] [cgrow], width);
 	}
 	return x + width;
 }
 
-void
-display_string3(uint_fast16_t x, uint_fast16_t y, const char * s)
+static void
+display_string3(uint_fast16_t x, uint_fast16_t y, const char * s, uint_fast8_t lowhalf)
 {
 	char c;
-	ltdc_secondoffs = 0;
-	ltdc_h = SMALLCHARH3;
+//	ltdc_secondoffs = 0;
+//	ltdc_h = SMALLCHARH3;
 	while((c = * s ++) != '\0')
 		x = ltdc_horizontal_put_char_small3(x, y, c);
 }
@@ -2833,7 +2853,7 @@ display_string3_at_xy(uint_fast16_t x, uint_fast16_t y, const char * s, COLORMAI
 	display_setcolors(fg, bg);
 	do
 	{
-		display_string3(x, y + lowhalf, s);
+		display_string3(x, y + lowhalf, s, lowhalf);
 	} while (lowhalf --);
 }
 

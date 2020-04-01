@@ -1868,7 +1868,7 @@ void display_plotfrom(
 
 
 void display_plotstart(
-	uint_fast16_t height	// Высота окна в пикселях
+	uint_fast16_t dy	// Высота окна в пикселях
 	)
 {
 	// дождаться выполнения предидущей команды BitBlt engine.

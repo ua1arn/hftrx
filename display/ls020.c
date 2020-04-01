@@ -557,10 +557,10 @@ void display_plotfrom(uint_fast16_t x, uint_fast16_t y)
 }
 
 void display_plotstart(
-	uint_fast16_t height	// Высота окна в пикселях
+	uint_fast16_t dy	// Высота окна в пикселях
 	)
 {
-	ls020_set_windowh(height);
+	ls020_set_windowh(dy);
 	ls020_put_char_begin();
 }
 
