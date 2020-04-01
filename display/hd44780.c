@@ -670,13 +670,13 @@ display_clear(void)
 
 void
 //NOINLINEAT
-display_setcolors(COLOR_T fg, COLOR_T bg)
+display_setcolors(COLORMAIN_T fg, COLORMAIN_T bg)
 {
 	(void) fg;
 	(void) bg;
 }
 
-void display_setcolors3(COLOR_T fg, COLOR_T bg, COLOR_T fgbg)
+void display_setcolors3(COLORMAIN_T fg, COLORMAIN_T bg, COLORMAIN_T fgbg)
 {
 	display_setcolors(fg, bg);
 }
@@ -804,7 +804,7 @@ void display_plotstart(
 }
 
 void display_plot(
-	const PACKEDCOLOR_T * buffer, 
+	const PACKEDCOLORMAIM_T * buffer, 
 	uint_fast16_t dx,	// Размеры окна в пикселях
 	uint_fast16_t dy
 	)

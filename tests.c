@@ -5158,7 +5158,7 @@ static void sdtick(void)
  * серединой расстояния между ближайшими Y-узлами сетки.
  */
 
-void display_line(int xn, int yn, int xk, int yk, COLOR_T color)
+void display_line(int xn, int yn, int xk, int yk, COLORMAIN_T color)
 {
 	int  dx, dy, s, sx, sy, kl, incr1, incr2;
 	char swap;
@@ -5256,7 +5256,7 @@ static  int icos(unsigned alpha, unsigned r)
 
 // Рисование радиусов
 void
-display_radius(int xc, int yc, unsigned gs, unsigned r1, unsigned r2, COLOR_T color)
+display_radius(int xc, int yc, unsigned gs, unsigned r1, unsigned r2, COLORMAIN_T color)
 {
 	int     x, y;
 	int     x2, y2;
@@ -5279,7 +5279,7 @@ void polar_to_dek(uint_fast16_t xc, uint_fast16_t yc, uint_fast16_t gs, uint_fas
 // круговой интерполятор
 // нач.-x, нач.-y, градус начала, градус конуа, радиус, шаг приращения угла
 void
-display_segm(int xc, int yc, unsigned gs, unsigned ge, unsigned r, int step, COLOR_T color)
+display_segm(int xc, int yc, unsigned gs, unsigned ge, unsigned r, int step, COLORMAIN_T color)
 {
 	int     x, y;
 	int     xo, yo;
@@ -5387,8 +5387,8 @@ display_limb(void)
 		gm + 5 * step2,
 	};
 
-	const COLOR_T smeter = COLORMAIN_WHITE;
-	const COLOR_T smeterplus = COLORMAIN_GRAY;
+	const COLORMAIN_T smeter = COLORMAIN_WHITE;
+	const COLORMAIN_T smeterplus = COLORMAIN_GRAY;
 
 	//if (bitblt_waitbusy())	// перед рисованием прямым доступом к видеопамяти дождаться конца работы BitBlt
 	{
@@ -5456,7 +5456,7 @@ static void BarTest(void)
 		const int g = local_randomgr(256);
 		const int b = local_randomgr(256);
 
-		const COLOR_T color = TFTRGB(r, g, b);
+		const COLORMAIN_T color = TFTRGB(r, g, b);
 
 		int x = local_randomgr(DIM_X);
 		int y = local_randomgr(DIM_Y);
@@ -6026,8 +6026,8 @@ void hightests(void)
 
 		static ALIGNX_BEGIN volatile PACKEDCOLOR565_T scr [GXSIZE(dx, dy)] ALIGNX_END;
 
-		display_colorbuffer_fill(scr, dx, dy, COLOR_WHITE);
-		display_colorbuffer_show(scr, dx, dy, 0, GRID2Y(topreserved));
+		display_colorbuf_fill(scr, dx, dy, COLOR_WHITE);
+		display_colorbuf_show(scr, dx, dy, 0, GRID2Y(topreserved));
 		//for (;;)
 		//	;
 		int phase = 0;
@@ -6040,18 +6040,18 @@ void hightests(void)
 			// рисование линии
 			unsigned i;
 			for (i = 0; i < bufY; ++ i)
-				display_colorbuffer_set(scr, dx, dy, i + loop, i, COLOR_BLUE);		// поставить точку
+				display_colorbuf_set(scr, dx, dy, i + loop, i, COLOR_BLUE);		// поставить точку
 
-			display_colorbuffer_show(scr, dx, dy, 0, GRID2Y(topreserved));
+			display_colorbuf_show(scr, dx, dy, 0, GRID2Y(topreserved));
 			//local_delay_ms(25);
 			if (++ count > top)
 			{
 				count = 0;
 				phase = ! phase;
 				if (phase)
-					display_colorbuffer_fill(scr, dx, dy, COLOR_YELLOW);
+					display_colorbuf_fill(scr, dx, dy, COLOR_YELLOW);
 				else
-					display_colorbuffer_fill(scr, dx, dy, COLOR_RED);
+					display_colorbuf_fill(scr, dx, dy, COLOR_RED);
 			}
 			
 		}
@@ -6752,7 +6752,7 @@ void hightests(void)
 
 	/* буфер размером x=64, y=112 точек */
 	enum { bufY = DIM_Y - 8, dx = DIM_X, dy = /*24 */ bufY, DBX_0 = 0, DBY_1 = 1};
-	static FATFSALIGN_BEGIN PACKEDCOLOR_T scr [GXSIZE(dx, dy)] FATFSALIGN_END;
+	static FATFSALIGN_BEGIN PACKEDCOLORMAIM_T scr [GXSIZE(dx, dy)] FATFSALIGN_END;
 
 
 	/* отображение надписей самым маленьким шрифтом (8 точек) */
@@ -6998,7 +6998,7 @@ void hightests(void)
 	{
 		char b [32];
 		int c;
-		// COLOR_T bg
+		// COLORMAIN_T bg
 		for (c = 0; c < 256; ++ c)
 		{
 			display_setbgcolor(TFTRGB(c, c, c));

@@ -456,7 +456,7 @@ static void s1d13781_wrcmd32_pair(uint_fast8_t reg, uint_fast16_t high, uint_fas
 	s1d13781_unselect();
 }
 
-static void s1d13781_wrcmdcolor(uint_fast8_t reg, COLOR_T val)
+static void s1d13781_wrcmdcolor(uint_fast8_t reg, COLORMAIN_T val)
 {
 #if S1D_DISPLAY_BPP == 24
 	s1d13781_wrcmd32(reg, val);
@@ -589,7 +589,7 @@ void
 display_fillrect(
 	uint_fast16_t x, uint_fast16_t y, 	// координаты в пикселях
 	uint_fast16_t w, uint_fast16_t h, 	// размеры в пикселях
-	COLOR_T color
+	COLORMAIN_T color
 	)
 {
 	// дождаться выполнения предидущей команды BitBlt engine.
@@ -615,9 +615,9 @@ display_fillrect(
 
 }
 
-static COLOR_T stored_fgcolor, stored_bgcolor;
+static COLORMAIN_T stored_fgcolor, stored_bgcolor;
 
-static void s1d13781_setcolor(COLOR_T fgcolor, COLOR_T bgcolor)
+static void s1d13781_setcolor(COLORMAIN_T fgcolor, COLORMAIN_T bgcolor)
 {
 	stored_fgcolor = fgcolor;
 	stored_bgcolor = bgcolor;
@@ -705,7 +705,7 @@ display_scroll_down(
 	int_fast16_t hshift	// количество пиксеелей для сдвига влево (отрицательное число) или вправо (положительное).
 	)
 {
-	const COLOR_T fillnewcolor = COLOR_BLACK;	// цвет, которым заполняется свободное место при сдвиге старого изобажения
+	const COLORMAIN_T fillnewcolor = COLOR_BLACK;	// цвет, которым заполняется свободное место при сдвиге старого изобажения
 	enum { WC = (S1D_DISPLAY_BPP / 8) };		// количество байтов на пиксель
 	const int_fast16_t adjw = hshift < 0 ?
 				w + hshift 	// сдвиг окна влево
@@ -777,7 +777,7 @@ display_scroll_up(
 	int_fast16_t hshift	// количество пиксеелей для сдвига влево (отрицательное число) или вправо (положительное).
 	)
 {
-	const COLOR_T fillnewcolor = COLOR_BLACK;	// цвет, которым заполняется свободное место при сдвиге старого изобажения
+	const COLORMAIN_T fillnewcolor = COLOR_BLACK;	// цвет, которым заполняется свободное место при сдвиге старого изобажения
 	enum { WC = (S1D_DISPLAY_BPP / 8) };		// количество байтов на пиксель
 	const int_fast16_t adjw = hshift < 0 ?
 				w + hshift 	// сдвиг окна влево
@@ -1298,8 +1298,8 @@ static void rectangle(
 	uint_fast16_t y,
 	uint_fast16_t w,
 	uint_fast16_t h,
-	COLOR_T color1,
-	COLOR_T color2
+	COLORMAIN_T color1,
+	COLORMAIN_T color2
 	)
 {
 	enum { thickness = 1 };
@@ -1317,8 +1317,8 @@ static void rectangle3d(
 	uint_fast16_t y,
 	uint_fast16_t w,
 	uint_fast16_t h,
-	COLOR_T color1,
-	COLOR_T color2
+	COLORMAIN_T color1,
+	COLORMAIN_T color2
 	)
 {
 	enum { thickness = 2 };
@@ -1349,7 +1349,7 @@ static void rectangle3d(
 void display_putpixel(
 	uint_fast16_t x,
 	uint_fast16_t y,
-	COLOR_T color
+	COLORMAIN_T color
 	)
 {
 	// вычисление начального адреса в видеопамяти
@@ -1394,7 +1394,7 @@ void display_putpixel(
 }
 
 static void display_putpixel_1(
-	PACKEDCOLOR_T color
+	PACKEDCOLORMAIM_T color
 	)
 {
 #if S1D_DISPLAY_BPP == 24
@@ -1425,7 +1425,7 @@ static void display_putpixel_1(
 }
 
 static void display_putpixel_2(
-	PACKEDCOLOR_T color
+	PACKEDCOLORMAIM_T color
 	)
 {
 #if S1D_DISPLAY_BPP == 24
@@ -1482,7 +1482,7 @@ static void display_putpixel_complete(void)
 
 
 
-static void s1d13781_clear(COLOR_T bg)
+static void s1d13781_clear(COLORMAIN_T bg)
 {
 	display_fillrect(0, 0, S1D_DISPLAY_WIDTH, S1D_DISPLAY_HEIGHT, bg);
 	s1d13781_setcolor(COLOR_WHITE, bg);
@@ -1658,19 +1658,19 @@ void display_set_contrast(uint_fast8_t v)
 void 
 display_clear(void)
 {
-	const COLOR_T bg = display_getbgcolor();
+	const COLORMAIN_T bg = display_getbgcolor();
 
 	s1d13781_clear(bg);
 }
 
 void
 //NOINLINEAT
-display_setcolors(COLOR_T fg, COLOR_T bg)
+display_setcolors(COLORMAIN_T fg, COLORMAIN_T bg)
 {
 	s1d13781_setcolor(fg, bg);
 }
 
-void display_setcolors3(COLOR_T fg, COLOR_T bg, COLOR_T fgbg)
+void display_setcolors3(COLORMAIN_T fg, COLORMAIN_T bg, COLORMAIN_T fgbg)
 {
 	display_setcolors(fg, bg);
 }
@@ -1878,7 +1878,7 @@ void display_plotstart(
 }
 
 void display_plot(
-	const PACKEDCOLOR_T * buffer, 
+	const PACKEDCOLORMAIM_T * buffer, 
 	const uint_fast16_t dx,	// Размеры окна в пикселях
 	uint_fast16_t dy
 	)

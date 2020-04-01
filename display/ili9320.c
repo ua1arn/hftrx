@@ -171,7 +171,7 @@ static void ili9320_put_char_end(void)
 
 static void
 ili9320_put_pixel_p1(	
-	COLOR_T color
+	COLORMAIN_T color
 	)
 {
 	spi_progval8_p1(targetlcd, color >> 8);	// смотреть бит TRI а регистре 03
@@ -179,7 +179,7 @@ ili9320_put_pixel_p1(
 }
 static void
 ili9320_put_pixel_p2(	
-	COLOR_T color
+	COLORMAIN_T color
 	)
 {
 	spi_progval8_p2(targetlcd, color >> 8);	// смотреть бит TRI а регистре 03
@@ -187,7 +187,7 @@ ili9320_put_pixel_p2(
 }
 static void
 ili9320_put_pixel_p3(	
-	COLOR_T color
+	COLORMAIN_T color
 	)
 {
 	spi_progval8_p2(targetlcd, color >> 8);	// смотреть бит TRI а регистре 03
@@ -196,9 +196,9 @@ ili9320_put_pixel_p3(
 }
 
 
-static COLOR_T color, bkcolor;
+static COLORMAIN_T color, bkcolor;
 
-static void ili9320_setcolor(COLOR_T acolor, COLOR_T abkcolor)
+static void ili9320_setcolor(COLORMAIN_T acolor, COLORMAIN_T abkcolor)
 {
 	color = acolor;
 	bkcolor = abkcolor;
@@ -208,7 +208,7 @@ static void ili9320_pixel_p1(
 	uint_fast8_t fg
 	)
 {
-	const COLOR_T cl = fg ? color : bkcolor;
+	const COLORMAIN_T cl = fg ? color : bkcolor;
 	ili9320_put_pixel_p1(cl);
 }
 
@@ -216,7 +216,7 @@ static void ili9320_pixel_p2(
 	uint_fast8_t fg
 	)
 {
-	const COLOR_T cl = fg ? color : bkcolor;
+	const COLORMAIN_T cl = fg ? color : bkcolor;
 	ili9320_put_pixel_p2(cl);
 }
 
@@ -224,7 +224,7 @@ static void ili9320_pixel_p3(
 	uint_fast8_t fg
 	)
 {
-	const COLOR_T cl = fg ? color : bkcolor;
+	const COLORMAIN_T cl = fg ? color : bkcolor;
 	ili9320_put_pixel_p3(cl);
 }
 
@@ -358,7 +358,7 @@ static void ili9320_set_graddr(uint_fast16_t x)
 }
 
 
-static void ili9320_clear(COLOR_T bg)
+static void ili9320_clear(COLORMAIN_T bg)
 {
 	unsigned long i;
 
@@ -566,19 +566,19 @@ void display_set_contrast(uint_fast8_t v)
 void 
 display_clear(void)
 {
-	const COLOR_T bg = display_getbgcolor();
+	const COLORMAIN_T bg = display_getbgcolor();
 
 	ili9320_clear(bg);
 }
 
 void
 //NOINLINEAT
-display_setcolors(COLOR_T fg, COLOR_T bg)
+display_setcolors(COLORMAIN_T fg, COLORMAIN_T bg)
 {
 	ili9320_setcolor(fg, bg);
 }
 
-void display_setcolors3(COLOR_T fg, COLOR_T bg, COLOR_T fgbg)
+void display_setcolors3(COLORMAIN_T fg, COLORMAIN_T bg, COLORMAIN_T fgbg)
 {
 	display_setcolors(fg, bg);
 }
@@ -696,7 +696,7 @@ void display_plotstop(void)
 }
 
 void display_plot(
-	const PACKEDCOLOR_T * buffer, 
+	const PACKEDCOLORMAIM_T * buffer, 
 	uint_fast16_t dx,	// Размеры окна в пикселях
 	uint_fast16_t dy
 	)

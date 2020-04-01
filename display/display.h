@@ -223,7 +223,8 @@ typedef uint_fast32_t COLOR24_T;
 
 #elif LCDMODE_DUMMY
 	/* При использовании frame buffer цвета восьмибитные */
-	typedef uint_fast8_t COLOR_T;
+	typedef uint_fast8_t COLORMAIN_T;
+	typedef uint8_t PACKEDCOLORMAIN_T;
 	typedef uint_fast8_t COLORPIP_T;
 	typedef uint8_t PACKEDCOLORPIP_T;
 
@@ -246,13 +247,13 @@ typedef uint_fast32_t COLOR24_T;
 
 	#if LCDMODE_LTDC_L24
 
-		typedef uint_fast32_t COLOR_T;
+		typedef uint_fast32_t COLORMAIN_T;
 		struct rgb_24b
 		{
 			uint8_t r, g, b;
 		} ATTRPACKED;// аттрибут GCC, исключает "дыры" в структуре.
 
-		typedef struct rgb_24b PACKEDCOLOR_T;	// 3 байта для последовательной выдачи как RGB для LCDMODE_ILI8961
+		typedef struct rgb_24b PACKEDCOLORMAIM_T;	// 3 байта для последовательной выдачи как RGB для LCDMODE_ILI8961
 
 		// RRRRRRR.GGGGGGGG.BBBBBBBB
 		#define TFTRGB(red, green, blue) \
@@ -267,8 +268,8 @@ typedef uint_fast32_t COLOR24_T;
 	#elif LCDMODE_LTDC_L8
 
 		/* При использовании frame buffer цвета восьмибитные */
-		typedef uint_fast8_t COLOR_T;
-		typedef uint8_t PACKEDCOLOR_T;
+		typedef uint_fast8_t COLORMAIN_T;
+		typedef uint8_t PACKEDCOLORMAIM_T;
 
 		// RRRGGGBB
 		#define TFTRGB(red, green, blue) \
@@ -294,8 +295,8 @@ typedef uint_fast32_t COLOR24_T;
 	#else /* LCDMODE_LTDC_L8 */
 
 		//#define LCDMODE_RGB565 1
-		typedef uint_fast16_t COLOR_T;
-		typedef uint16_t PACKEDCOLOR_T;
+		typedef uint_fast16_t COLORMAIN_T;
+		typedef uint16_t PACKEDCOLORMAIM_T;
 
 		// RRRR.RGGG.GGGB.BBBB
 		#define TFTRGB(red, green, blue) \
@@ -313,7 +314,7 @@ typedef uint_fast32_t COLOR24_T;
 	#endif /* LCDMODE_LTDC_L8 */
 
 	#if LCDMODE_LTDC_PIPL8
-			typedef PACKEDCOLOR_T PACKEDCOLORPIP_T;
+			typedef PACKEDCOLORMAIM_T PACKEDCOLORPIP_T;
 			typedef uint_fast8_t COLORPIP_T;
 	#else /* LCDMODE_LTDC_PIP16 */
 			typedef uint16_t PACKEDCOLORPIP_T;
@@ -574,8 +575,8 @@ void display_pwrmeter_amvo(
 #define WMINUSFLAG 0x40	// отображается пробел или минус в зависимости от знака значения
 #define WWIDTHFLAG 0x3F	// оставшиеся биты под ширину поля
 
-COLOR_T display_getbgcolor(void);
-void display_setbgcolor(COLOR_T c);
+COLORMAIN_T display_getbgcolor(void);
+void display_setbgcolor(COLORMAIN_T c);
 
 void display_string(const char * s, uint_fast8_t lowhalf);
 void display_string_P(const FLASHMEM char * s, uint_fast8_t lowhalf);
@@ -591,14 +592,14 @@ void display_set_contrast(uint_fast8_t v);
 
 /* индивидуальные функции драйвера дисплея - реализованы в соответствующем из файлов */
 void display_clear(void);
-void display_setcolors(COLOR_T fg, COLOR_T bg);
-void display_setcolors3(COLOR_T fg, COLOR_T bg, COLOR_T bgfg);	// bgfg - цвет для отрисовки антиалиасинга
+void display_setcolors(COLORMAIN_T fg, COLORMAIN_T bg);
+void display_setcolors3(COLORMAIN_T fg, COLORMAIN_T bg, COLORMAIN_T bgfg);	// bgfg - цвет для отрисовки антиалиасинга
 void display_gotoxy(uint_fast8_t x, uint_fast8_t y);
 
 /* работа с цветным буфером */
 void display_plotfrom(uint_fast16_t x, uint_fast16_t y);	// Координаты в пикселях
 void display_plotstart(uint_fast16_t height);	// Высота окна в пикселях
-void display_plot(const PACKEDCOLOR_T * buffer, uint_fast16_t dx, uint_fast16_t dy);	// Размеры окна в пикселях
+void display_plot(const PACKEDCOLORMAIM_T * buffer, uint_fast16_t dx, uint_fast16_t dy);	// Размеры окна в пикселях
 void display_plotstop(void);
 
 // самый маленький шрифт
@@ -670,7 +671,7 @@ void display_pixelbuffer_clear(
 // начальная инициализация буфера
 // Формат RGB565
 // Эта функция используется только в тесте
-void display_colorbuffer_fill(
+void display_colorbuf_fill(
 	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy,
@@ -679,7 +680,7 @@ void display_colorbuffer_fill(
 
 // Выдать цветной буфер на дисплей
 // Формат RGB565
-void display_colorbuffer_show(
+void display_colorbuf_show(
 	const PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy,
@@ -688,7 +689,7 @@ void display_colorbuffer_show(
 	);
 
 // Нарисовать линию указанным цветом
-void display_colorbuffer_line_set(
+void display_colorbuf_line_set(
 	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy,
@@ -700,7 +701,7 @@ void display_colorbuffer_line_set(
 	);
 
 // Нарисовать закрашенный или пустой прямоугольник
-void display_colorbuffer_rect(
+void display_colorbuf_rect(
 	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,	// размер буфера
 	uint_fast16_t dy,	// размер буфера
@@ -714,14 +715,14 @@ void display_colorbuffer_rect(
 
 // установить данный буфер как область для PIP
 // Формат RGB565
-void display_colorbuffer_pip(
+void display_colorbuf_pip(
 	const PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy
 	);
 
 // Поставить цветную точку.
-void display_colorbuffer_set(
+void display_colorbuf_set(
 	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy,
@@ -731,7 +732,7 @@ void display_colorbuffer_set(
 	);
 
 // поставить цветную точку (модификация с сохранением старого изоьражения).
-void display_colorbuffer_xor(
+void display_colorbuf_xor(
 	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy,
@@ -965,7 +966,7 @@ void display_1state(
 		#define DIM_SECOND DIM_Y
 	#endif
 
-	typedef PACKEDCOLOR_T FRAMEBUFF_T [DIM_FIRST][DIM_SECOND];
+	typedef PACKEDCOLORMAIM_T FRAMEBUFF_T [DIM_FIRST][DIM_SECOND];
 
 	#if defined (SDRAM_BANK_ADDR) && LCDMODE_LTDCSDRAMBUFF && LCDMODE_LTDC
 		#define framebuff (* (volatile FRAMEBUFF_T *) SDRAM_BANK_ADDR)
@@ -982,17 +983,17 @@ void
 display_fillrect(
 	uint_fast16_t x, uint_fast16_t y, 	// координаты в пикселях
 	uint_fast16_t w, uint_fast16_t h, 	// размеры в пикселях
-	COLOR_T color
+	COLORMAIN_T color
 	);
 
 // Рисуем на основном экране цветной прямоугольник.
 // x2, y2 - координаты второго угла (не входящие в закрашиваемый прямоугольник)
-void display_solidbar(uint_fast16_t x, uint_fast16_t y, uint_fast16_t x2, uint_fast16_t y2, COLOR_T color);
+void display_solidbar(uint_fast16_t x, uint_fast16_t y, uint_fast16_t x2, uint_fast16_t y2, COLORMAIN_T color);
 
 /// Нарисовать вертикальную цветную полосу
 // Формат RGB565
 void
-display_colorbuffer_xor_vline(
+display_colorbuf_xor_vline(
 	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
@@ -1005,7 +1006,7 @@ display_colorbuffer_xor_vline(
 // Нарисовать вертикальную цветную полосу
 // Формат RGB565
 void
-display_colorbuffer_set_vline(
+display_colorbuf_set_vline(
 	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
@@ -1017,7 +1018,7 @@ display_colorbuffer_set_vline(
 
 // получить адрес требуемой позиции в буфере
 PACKEDCOLORPIP_T *
-display_colorbuffer_at(
+display_colorbuf_at(
 	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
@@ -1028,7 +1029,7 @@ display_colorbuffer_at(
 void display_putpixel(
 		uint_fast16_t dx,	// ширина буфера
 		uint_fast16_t dy,	// высота буфера
-	COLOR_T color
+	COLORMAIN_T color
 	);
 void display_at_xy(uint_fast16_t x, uint_fast16_t y, const char * s);
 
@@ -1041,7 +1042,7 @@ void board_set_fillspect(uint_fast8_t v); /* заливать заполнени
 void board_set_wflevelsep(uint_fast8_t v); /* чувствительность водопада регулируется отдельной парой параметров */
 void board_set_wfshiftenable(uint_fast8_t v);	   /* разрешение или запрет сдвига водопада при изменении частоты */
 
-PACKEDCOLOR_T * rgb565_fb(void);
+PACKEDCOLORMAIM_T * rgb565_fb(void);
 void display2_xltrgb24(COLOR24_T * xtable);
 // Установить прозрачность для прямоугольника
 void pip_transparency_rect(
@@ -1054,7 +1055,7 @@ void pip_transparency_rect(
 	);
 
 // заполнение прямоугольной области в видеобуфере
-void display_colorbuffer_fillrect(
+void display_colorbuf_fillrect(
 	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
@@ -1068,7 +1069,7 @@ void display_colorbuffer_fillrect(
 void display2_getpipparams(pipparams_t * p);
 PACKEDCOLORPIP_T * getscratchpip(void);
 int_fast32_t display_zoomedbw(void);
-void display_string3_at_xy(uint_fast16_t x, uint_fast16_t y, const char * s, COLOR_T fg, COLOR_T bg);
+void display_string3_at_xy(uint_fast16_t x, uint_fast16_t y, const char * s, COLORMAIN_T fg, COLORMAIN_T bg);
 
 #ifdef __cplusplus
 }
