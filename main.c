@@ -12597,8 +12597,7 @@ display_menu_digit(
 	display_setcolors(MNUVALCOLOR, BGCOLOR);
 	do
 	{
-		display_gotoxy(x, y + lowhalf);		// курсор в начало первой строки
-		display_menu_value(value, width, comma, rj, lowhalf);
+		display_menu_value(x, y + lowhalf, value, width, comma, rj, lowhalf);
 	} while (lowhalf --);
 }
 

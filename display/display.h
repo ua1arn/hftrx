@@ -600,21 +600,21 @@ void display_plot(const PACKEDCOLORMAIN_T * buffer, uint_fast16_t dx, uint_fast1
 void display_plotstop(void);
 
 // самый маленький шрифт
-void display_wrdata2_begin(void);
+void display_wrdata2_begin(uint_fast8_t xcell, uint_fast8_t ycell);
 void display_wrdata2_end(void);
-void display_put_char_small2(uint_fast8_t c, uint_fast8_t lowhalf);
+uint_fast16_t display_put_char_small2(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf);
 // полоса индикатора
-void display_wrdatabar_begin(void);
+void display_wrdatabar_begin(uint_fast8_t xcell, uint_fast8_t ycell);
 void display_barcolumn(uint_fast8_t pattern);	// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
 void display_wrdatabar_end(void);
 // большие и средние цифры (частота)
-void display_wrdatabig_begin(void);
-void display_put_char_big(uint_fast8_t c, uint_fast8_t lowhalf);
-void display_put_char_half(uint_fast8_t c, uint_fast8_t lowhalf);
+void display_wrdatabig_begin(uint_fast8_t xcell, uint_fast8_t ycell);
+uint_fast16_t display_put_char_big(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf);
+uint_fast16_t display_put_char_half(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf);
 void display_wrdatabig_end(void);
 // обычный шрифт
-void display_wrdata_begin(void);
-void display_put_char_small(uint_fast8_t c, uint_fast8_t lowhalf);
+void display_wrdata_begin(uint_fast8_t xcell, uint_fast8_t ycell);
+uint_fast16_t display_put_char_small(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf);
 void display_wrdata_end(void);
 
 /* выдать на дисплей монохромный буфер с размерами dx * dy битов */
@@ -848,6 +848,8 @@ display_panel(
 
 void
 display_menu_value(
+	uint_fast8_t x,
+	uint_fast8_t y,
 	int_fast32_t value,
 	uint_fast8_t width,	// full width (if >= 128 - display with sign)
 	uint_fast8_t comma,		// comma position (from right, inside width)
@@ -970,10 +972,10 @@ void display_1state(
 	typedef PACKEDCOLORMAIN_T FRAMEBUFF_T [DIM_FIRST][DIM_SECOND];
 
 	#if defined (SDRAM_BANK_ADDR) && LCDMODE_LTDCSDRAMBUFF && LCDMODE_LTDC
-		#define framebuff (* (volatile FRAMEBUFF_T *) SDRAM_BANK_ADDR)
+		#define framebuff (* (FRAMEBUFF_T *) SDRAM_BANK_ADDR)
 	#else /* defined (SDRAM_BANK_ADDR) && LCDMODE_LTDCSDRAMBUFF && LCDMODE_LTDC */
 		#define framebuff (framebuff0)
-		extern volatile FRAMEBUFF_T framebuff0;	//L8 (8-bit Luminance or CLUT)
+		extern FRAMEBUFF_T framebuff0;	//L8 (8-bit Luminance or CLUT)
 	#endif /* defined (SDRAM_BANK_ADDR) && LCDMODE_LTDCSDRAMBUFF && LCDMODE_LTDC */
 
 #endif /* LCDMODE_LTDC */
@@ -1027,6 +1029,16 @@ colpip_mem_at(
 	uint_fast16_t y	// вертикальная координата пикселя (0..dy-1) сверху вниз
 	);
 
+// получить адрес требуемой позиции в буфере
+PACKEDCOLORPIP_T *
+colmain_mem_at(
+	PACKEDCOLORMAIN_T * buffer,
+	uint_fast16_t dx,	// ширина буфера
+	uint_fast16_t dy,	// высота буфера
+	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t y	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	);
+
 void display_putpixel(
 		uint_fast16_t dx,	// ширина буфера
 		uint_fast16_t dy,	// высота буфера
@@ -1043,7 +1055,7 @@ void board_set_fillspect(uint_fast8_t v); /* заливать заполнени
 void board_set_wflevelsep(uint_fast8_t v); /* чувствительность водопада регулируется отдельной парой параметров */
 void board_set_wfshiftenable(uint_fast8_t v);	   /* разрешение или запрет сдвига водопада при изменении частоты */
 
-PACKEDCOLORMAIN_T * rgb565_fb(void);
+PACKEDCOLORMAIN_T * colmain_fb(void);
 void display2_xltrgb24(COLOR24_T * xtable);
 // Установить прозрачность для прямоугольника
 void colpip_transparency(
@@ -1071,6 +1083,34 @@ void display2_getpipparams(pipparams_t * p);
 PACKEDCOLORPIP_T * getscratchpip(void);
 int_fast32_t display_zoomedbw(void);
 void display_string3_at_xy(uint_fast16_t x, uint_fast16_t y, const char * s, COLORMAIN_T fg, COLORMAIN_T bg);
+
+// Отображение цифр в поле "больших цифр" - индикатор основной частоты настройки аппарата.
+void
+display_value_big(
+	uint_fast8_t xcell,	// x координата начала вывода значения
+	uint_fast8_t ycell,	// y координата начала вывода значения
+	uint_fast32_t freq,
+	uint_fast8_t width, // = 8;	// full width
+	uint_fast8_t comma, // = 2;	// comma position (from right, inside width)
+	uint_fast8_t comma2,	// = comma + 3;		// comma position (from right, inside width)
+	uint_fast8_t rj,	// = 1;		// right truncated
+	uint_fast8_t blinkpos,		// позиция, где символ заменён пробелом
+	uint_fast8_t blinkstate,	// 0 - пробел, 1 - курсор
+	uint_fast8_t withhalf,		// 0 - только большие цифры
+	uint_fast8_t lowhalf		// lower half
+	);
+
+void
+display_value_small(
+	uint_fast8_t xcell,	// x координата начала вывода значения
+	uint_fast8_t ycell,	// y координата начала вывода значения
+	int_fast32_t freq,
+	uint_fast8_t width,	// full width (if >= 128 - display with sign)
+	uint_fast8_t comma,		// comma position (from right, inside width)
+	uint_fast8_t comma2,
+	uint_fast8_t rj,		// right truncated
+	uint_fast8_t lowhalf
+	);
 
 #ifdef __cplusplus
 }

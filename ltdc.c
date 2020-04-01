@@ -21,7 +21,7 @@
 #if WITHLTDCHW
 
 PACKEDCOLORMAIN_T *
-rgb565_fb(void)
+colmain_fb(void)
 {
 	return (PACKEDCOLORMAIN_T *) & framebuff [0] [0];
 }
