@@ -1394,7 +1394,7 @@ void display_putpixel(
 }
 
 static void display_putpixel_1(
-	PACKEDCOLORMAIM_T color
+	PACKEDCOLORMAIN_T color
 	)
 {
 #if S1D_DISPLAY_BPP == 24
@@ -1425,7 +1425,7 @@ static void display_putpixel_1(
 }
 
 static void display_putpixel_2(
-	PACKEDCOLORMAIM_T color
+	PACKEDCOLORMAIN_T color
 	)
 {
 #if S1D_DISPLAY_BPP == 24
@@ -1878,7 +1878,7 @@ void display_plotstart(
 }
 
 void display_plot(
-	const PACKEDCOLORMAIM_T * buffer, 
+	const PACKEDCOLORMAIN_T * buffer, 
 	const uint_fast16_t dx,	// Размеры окна в пикселях
 	uint_fast16_t dy
 	)

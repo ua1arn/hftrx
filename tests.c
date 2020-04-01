@@ -6752,7 +6752,7 @@ void hightests(void)
 
 	/* буфер размером x=64, y=112 точек */
 	enum { bufY = DIM_Y - 8, dx = DIM_X, dy = /*24 */ bufY, DBX_0 = 0, DBY_1 = 1};
-	static FATFSALIGN_BEGIN PACKEDCOLORMAIM_T scr [GXSIZE(dx, dy)] FATFSALIGN_END;
+	static FATFSALIGN_BEGIN PACKEDCOLORMAIN_T scr [GXSIZE(dx, dy)] FATFSALIGN_END;
 
 
 	/* отображение надписей самым маленьким шрифтом (8 точек) */

@@ -18,7 +18,7 @@
 
 	#if LCDMODE_LTDC
 
-		// Определения COLORMAIN_T, PACKEDCOLORMAIM_T и TFTRGB используются из diaplay.h - данный контроллер работает только в ржиме LCDMODE_LTDC
+		// Определения COLORMAIN_T, PACKEDCOLORMAIN_T и TFTRGB используются из diaplay.h - данный контроллер работает только в ржиме LCDMODE_LTDC
 
 	#else /* LCDMODE_LTDC */
 

@@ -1408,7 +1408,7 @@ extern "C" {
 
 #elif LCDMODE_DUMMY
 
-	#define DSTYLE_G_DUMMY	1	// пустой список лтображения
+	#define DSTYLE_G_DUMMY	1	// пустой список отображения
 
 	#define DIM_X 480
 	#define DIM_Y 272
@@ -1430,11 +1430,6 @@ extern "C" {
 	#define DISPLAYMODES_FPS 5	/* количество обновлений отображения режимов работы */
 	#define DISPLAY_FPS	10	/* обновление показаний частоты за секунду */
 	#define DISPLAYSWR_FPS 5	/* количество обновлений SWR за секунду */
-
-	// Цветное изображение не поддерживается на этом дисплее (заглушка).
-	#define TFTRGB(r, g, b)	(0)
-	typedef uint_fast16_t COLORMAIN_T;	/* цвета не поддерживаются - заглушка */
-	typedef uint16_t PACKEDCOLORMAIM_T;
 
 	#define DISPLAY_BUS_INITIALIZE() do {} while (0)
 

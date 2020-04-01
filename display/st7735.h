@@ -27,13 +27,13 @@
 
 #if LCDMODE_LTDC
 
-	// Определения COLORMAIN_T, PACKEDCOLORMAIM_T и TFTRGB используются из diaplay.h
+	// Определения COLORMAIN_T, PACKEDCOLORMAIN_T и TFTRGB используются из diaplay.h
 
 #elif LCDMODE_ILI9163 || LCDMODE_BGR565
 	//#define LCDMODE_BGR565 1
 
 	typedef uint_fast16_t COLORMAIN_T;
-	typedef uint16_t PACKEDCOLORMAIM_T;
+	typedef uint16_t PACKEDCOLORMAIN_T;
 
 	// BBBB.BGGG.GGGR.RRRR
 	#define TFTRGB(red, green, blue) \
@@ -52,7 +52,7 @@
 	//#define LCDMODE_RGB565 1
 
 	typedef uint_fast16_t COLORMAIN_T;
-	typedef uint16_t PACKEDCOLORMAIM_T;
+	typedef uint16_t PACKEDCOLORMAIN_T;
 
 	// RRRR.RGGG.GGGB.BBBB
 	#define TFTRGB(red, green, blue) \
@@ -69,7 +69,7 @@
 
 #endif /* LCDMODE_LTDC */
 
-//typedef PACKEDCOLORMAIM_T PACKEDCOLORPIP_T;
+//typedef PACKEDCOLORMAIN_T PACKEDCOLORPIP_T;
 //typedef COLORMAIN_T COLORPIP_T;
 
 // some flags for initR() :(

@@ -232,6 +232,8 @@ typedef uint_fast32_t COLOR24_T;
 	// RRRR.RGGG.GGGB.BBBB
 	#define TFTRGB565(red, green, blue) 0
 
+	#define TFTRGB(red, green, blue) 0
+
 #else
 	#error Undefined display type
 #endif
@@ -253,7 +255,7 @@ typedef uint_fast32_t COLOR24_T;
 			uint8_t r, g, b;
 		} ATTRPACKED;// аттрибут GCC, исключает "дыры" в структуре.
 
-		typedef struct rgb_24b PACKEDCOLORMAIM_T;	// 3 байта для последовательной выдачи как RGB для LCDMODE_ILI8961
+		typedef struct rgb_24b PACKEDCOLORMAIN_T;	// 3 байта для последовательной выдачи как RGB для LCDMODE_ILI8961
 
 		// RRRRRRR.GGGGGGGG.BBBBBBBB
 		#define TFTRGB(red, green, blue) \
@@ -269,7 +271,7 @@ typedef uint_fast32_t COLOR24_T;
 
 		/* При использовании frame buffer цвета восьмибитные */
 		typedef uint_fast8_t COLORMAIN_T;
-		typedef uint8_t PACKEDCOLORMAIM_T;
+		typedef uint8_t PACKEDCOLORMAIN_T;
 
 		// RRRGGGBB
 		#define TFTRGB(red, green, blue) \
@@ -296,7 +298,7 @@ typedef uint_fast32_t COLOR24_T;
 
 		//#define LCDMODE_RGB565 1
 		typedef uint_fast16_t COLORMAIN_T;
-		typedef uint16_t PACKEDCOLORMAIM_T;
+		typedef uint16_t PACKEDCOLORMAIN_T;
 
 		// RRRR.RGGG.GGGB.BBBB
 		#define TFTRGB(red, green, blue) \
@@ -314,7 +316,7 @@ typedef uint_fast32_t COLOR24_T;
 	#endif /* LCDMODE_LTDC_L8 */
 
 	#if LCDMODE_LTDC_PIPL8
-			typedef PACKEDCOLORMAIM_T PACKEDCOLORPIP_T;
+			typedef PACKEDCOLORMAIN_T PACKEDCOLORPIP_T;
 			typedef uint_fast8_t COLORPIP_T;
 	#else /* LCDMODE_LTDC_PIP16 */
 			typedef uint16_t PACKEDCOLORPIP_T;
@@ -599,7 +601,7 @@ void display_gotoxy(uint_fast8_t x, uint_fast8_t y);
 /* работа с цветным буфером */
 void display_plotfrom(uint_fast16_t x, uint_fast16_t y);	// Координаты в пикселях
 void display_plotstart(uint_fast16_t height);	// Высота окна в пикселях
-void display_plot(const PACKEDCOLORMAIM_T * buffer, uint_fast16_t dx, uint_fast16_t dy);	// Размеры окна в пикселях
+void display_plot(const PACKEDCOLORMAIN_T * buffer, uint_fast16_t dx, uint_fast16_t dy);	// Размеры окна в пикселях
 void display_plotstop(void);
 
 // самый маленький шрифт
@@ -966,7 +968,7 @@ void display_1state(
 		#define DIM_SECOND DIM_Y
 	#endif
 
-	typedef PACKEDCOLORMAIM_T FRAMEBUFF_T [DIM_FIRST][DIM_SECOND];
+	typedef PACKEDCOLORMAIN_T FRAMEBUFF_T [DIM_FIRST][DIM_SECOND];
 
 	#if defined (SDRAM_BANK_ADDR) && LCDMODE_LTDCSDRAMBUFF && LCDMODE_LTDC
 		#define framebuff (* (volatile FRAMEBUFF_T *) SDRAM_BANK_ADDR)
@@ -1042,7 +1044,7 @@ void board_set_fillspect(uint_fast8_t v); /* заливать заполнени
 void board_set_wflevelsep(uint_fast8_t v); /* чувствительность водопада регулируется отдельной парой параметров */
 void board_set_wfshiftenable(uint_fast8_t v);	   /* разрешение или запрет сдвига водопада при изменении частоты */
 
-PACKEDCOLORMAIM_T * rgb565_fb(void);
+PACKEDCOLORMAIN_T * rgb565_fb(void);
 void display2_xltrgb24(COLOR24_T * xtable);
 // Установить прозрачность для прямоугольника
 void pip_transparency_rect(
