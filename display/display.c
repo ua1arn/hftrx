@@ -891,7 +891,7 @@ colpip_mem_at(
 
 
 // получить адрес требуемой позиции в буфере
-PACKEDCOLORPIP_T *
+PACKEDCOLORMAIN_T *
 colmain_mem_at(
 	PACKEDCOLORMAIN_T * buffer,
 	uint_fast16_t dx,	// ширина буфера
@@ -2009,7 +2009,7 @@ static uint_fast16_t RAMFUNC_NONILINE ltdcpip_horizontal_put_char_small2_tbg(
 	uint_fast8_t cgrow;
 	for (cgrow = 0; cgrow < SMALLCHARH2; ++ cgrow)
 	{
-		volatile PACKEDCOLORPIP_T * const tgr = colpip_mem_at(colmain_fb(), DIM_X, DIM_Y, x, y + cgrow);
+		volatile PACKEDCOLORPIP_T * const tgr = colpip_mem_at(buffer, dx, dy, x, y + cgrow);
 		ltdcpip_horizontal_pixels_tbg(tgr, S1D13781_smallfont2_LTDC [c] [cgrow], width, fg);
 	}
 	return x + width;
@@ -2392,13 +2392,14 @@ void display_plot(
 	#else /* WITHMDMAHW || (WITHLTDCHW && ! LCDMODE_LTDC_L8) */
 		// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
 		const size_t len = dx * sizeof * buffer;
+		uint_fast16_t yoffs = 0;
 		while (dy --)
 		{
-			volatile PACKEDCOLORMAIN_T * const p = & framebuff [ltdc_first] [ltdc_second];
+			volatile PACKEDCOLORMAIN_T * const p = colmain_mem_at(colmain_fb(), DIM_X, DIM_Y, stored_xpix, stored_ypix + yoffs);
 			memcpy((void *) p, buffer, len);
 			arm_hardware_flush((uintptr_t) p, len);
 			buffer += dx;
-			++ ltdc_first;
+			++ yoffs;
 		}
 
 	#endif /* WITHMDMAHW || (WITHLTDCHW && ! LCDMODE_LTDC_L8) */
@@ -2737,8 +2738,8 @@ void display_discharge(void)
 /* заливка замкнутого контура */
 void floodFill_framebuffer(uint_fast16_t x, uint_fast16_t y, PACKEDCOLORMAIN_T newColor, PACKEDCOLORMAIN_T oldColor)
 {
-	ASSERT(y < DIM_FIRST);
-	ASSERT(x < DIM_SECOND);
+	ASSERT(y < DIM_Y);
+	ASSERT(x < DIM_X);
 	// colmain_mem_at
 	volatile PACKEDCOLORMAIN_T * const tgr = & framebuff [y] [x];
 	if(* tgr == oldColor && * tgr != newColor)
@@ -2752,28 +2753,29 @@ void floodFill_framebuffer(uint_fast16_t x, uint_fast16_t y, PACKEDCOLORMAIN_T n
 }
 
 #if WITHTOUCHGUI
-static uint_fast8_t
-RAMFUNC_NONILINE ltdc_horizontal_put_char_small3(uint_fast8_t xcell, uint_fast8_t ycell, char cc)
+
+static uint_fast16_t
+RAMFUNC_NONILINE ltdc_horizontal_put_char_small3(uint_fast16_t x, uint_fast16_t y, char cc)
 {
 	const uint_fast8_t width = SMALLCHARW3;
 	const uint_fast8_t c = smallfont_decode((unsigned char) cc);
 	uint_fast8_t cgrow;
 	for (cgrow = 0; cgrow < SMALLCHARH3; ++ cgrow)
 	{
-		volatile PACKEDCOLORMAIN_T * const tgr = & framebuff [ltdc_first + cgrow] [ltdc_second];
+		volatile PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(colmain_fb(), DIM_X, DIM_Y, x , y + cgrow);
 		ltdc_horizontal_pixels(tgr, & S1D13781_smallfont3_LTDC [c] [cgrow], width);
 	}
-	ltdc_second += width;
+	return x + width;
 }
 
 void
-display_string3(const char * s)
+display_string3(uint_fast16_t x, uint_fast16_t y, const char * s)
 {
 	char c;
 	ltdc_secondoffs = 0;
 	ltdc_h = SMALLCHARH3;
 	while((c = * s ++) != '\0')
-		ltdc_horizontal_put_char_small3(c);
+		x = ltdc_horizontal_put_char_small3(x, y, c);
 }
 
 void
@@ -2783,11 +2785,10 @@ display_string3_at_xy(uint_fast16_t x, uint_fast16_t y, const char * s, COLORMAI
 	display_setcolors(fg, bg);
 	do
 	{
-		ltdc_second = x;
-		ltdc_first = y + lowhalf;
-		display_string3(s);
+		display_string3(x, y + lowhalf, s);
 	} while (lowhalf --);
 }
+
 #endif /* WITHTOUCHGUI */
 
 #endif /* LCDMODE_LQ043T3DX02K */

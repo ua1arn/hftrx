@@ -1030,7 +1030,7 @@ colpip_mem_at(
 	);
 
 // получить адрес требуемой позиции в буфере
-PACKEDCOLORPIP_T *
+PACKEDCOLORMAIN_T *
 colmain_mem_at(
 	PACKEDCOLORMAIN_T * buffer,
 	uint_fast16_t dx,	// ширина буфера
