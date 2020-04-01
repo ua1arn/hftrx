@@ -519,8 +519,7 @@ static void ili9320_initialize(void)
 				n,
 				n2
 			 );
-		display_gotoxy(0, 0);
-		display_string(buff, 0);
+		display_at(0, 0, buff);
 	}
 #endif
 

@@ -5962,16 +5962,13 @@ void hightests(void)
 #if 0
 	{
 		display_setcolors(COLOR_GREEN, COLOR_BLACK);
-		display_gotoxy(5, 0);
-		display_string_P(PSTR("PT-Electronics 2015"), 0);
+		display_at_P(5, 0, PSTR("PT-Electronics 2015"), 0);
 
 		display_setcolors(COLOR_RED, COLOR_BLACK);
-		display_gotoxy(7, 3);
-		display_string_P(PSTR("RENESAS"), 0);
+		display_at_P(7, 3, PSTR("RENESAS"), 0);
 
 		display_setcolors(COLOR_WHITE, COLOR_BLACK);
-		display_gotoxy(9, 6);
-		display_string_P(PSTR("2.7 inch TFT"), 0);
+		display_at_P(9, 6, PSTR("2.7 inch TFT"), 0);
 		
 		for (;;)
 			;
@@ -7231,7 +7228,6 @@ void hightests(void)
 			//display_debug_digit(speed * 100UL / ENCODER_NORMALIZED_RESOLUTION, 7, 2, 0);
 			//enum { lowhalf = 0 };
 			//display_gotoxy(0, 1 + lowhalf);		// курсор в начало второй строки
-			//display_string_P(PSTR(" RPS"), lowhalf);
 		}
 	}
 #endif
@@ -7246,7 +7242,6 @@ void hightests(void)
 			(void) nrotate;
 			//display_gotoxy(0, 1);		// курсор в начало второй строки
 			display_debug_digit(jumpsize, 7, 0, 0);
-			//display_string_P(PSTR(" SCALE"));
 		}
 	}
 #endif
