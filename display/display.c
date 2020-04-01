@@ -607,7 +607,7 @@ void arm_hardware_mdma_initialize(void)
 #endif /* WITHMDMAHW */
 
 
-static uint_fast8_t stored_xcell, stored_ycell;	// используется в display_dispbar
+static uint_fast8_t stored_xcell, stored_ycell;	// используется в colmain_bar
 
 static uint_fast16_t stored_xpix, stored_ypix;	// в пикселях
 static uint_fast16_t ltdc_h;						// высота символа (полосы) в пикселях
@@ -643,8 +643,8 @@ static void
 display_string2(uint_fast8_t xcell, uint_fast8_t ycell, const char * s, uint_fast8_t lowhalf)
 {
 	char c;
-
-	display_wrdata2_begin(xcell, ycell);
+	uint_fast16_t ypix;
+	uint_fast16_t xpix = display_wrdata2_begin(xcell, ycell, & ypix);
 	while((c = * s ++) != '\0') 
 		stored_xpix = display_put_char_small2(stored_xpix, stored_ypix, c, lowhalf);
 	display_wrdata2_end();
@@ -659,7 +659,8 @@ display_string2_P(uint_fast8_t xcell, uint_fast8_t ycell, const FLASHMEM  char *
 {
 	char c;
 
-	display_wrdata2_begin(xcell, ycell);
+	uint_fast16_t ypix;
+	uint_fast16_t xpix = display_wrdata2_begin(xcell, ycell, & ypix);
 	while((c = * s ++) != '\0') 
 		stored_xpix = display_put_char_small2(stored_xpix, stored_xpix, c, lowhalf);
 	display_wrdata2_end();
@@ -673,7 +674,8 @@ display_string(uint_fast8_t xcell, uint_fast8_t ycell,const char * s, uint_fast8
 {
 	char c;
 
-	display_wrdata_begin(xcell, ycell);
+	uint_fast16_t ypix;
+	uint_fast16_t xpix = display_wrdata_begin(xcell, ycell, & ypix);
 	while((c = * s ++) != '\0') 
 		stored_xpix = display_put_char_small(stored_xpix, stored_ypix, c, lowhalf);
 	display_wrdata_end();
@@ -698,7 +700,8 @@ display_string_P(uint_fast8_t xcell, uint_fast8_t ycell, const FLASHMEM  char * 
 {
 	char c;
 
-	display_wrdata_begin(xcell, ycell);
+	uint_fast16_t ypix;
+	uint_fast16_t xpix = display_wrdata_begin(xcell, ycell, & ypix);
 	while((c = * s ++) != '\0')
 		stored_xpix = display_put_char_small(stored_xpix, stored_ypix, c, lowhalf);
 	display_wrdata_end();
@@ -748,7 +751,8 @@ void display_showbuffer(
 		//debug_printf_P(PSTR("display_showbuffer: col=%d, row=%d, lowhalf=%d\n"), col, row, lowhalf);
 		display_plotfrom(GRID2X(col), GRID2Y(row) + lowhalf * 8);		// курсор в начало первой строки
 		// выдача горизонтальной полосы
-		display_wrdatabar_begin(stored_xcell, stored_ycell);
+		uint_fast16_t ypix;
+		uint_fast16_t xpix = display_wrdatabar_begin(stored_xcell, stored_ycell, & ypix);
 	#if WITHSPIHWDMA && (0)
 		// на LCDMODE_S1D13781 почему-то DMA сбивает контроллер
 		// на LCDMODE_UC1608 портит мохранене теузей частоты и режима работы (STM32F746xx)
@@ -2379,8 +2383,8 @@ void display_clear(void)
 
 void display_gotoxy(uint_fast8_t x, uint_fast8_t y)
 {
-	stored_xcell = x;	// используется в display_dispbar
-	stored_ycell = y;	// используется в display_dispbar
+	stored_xcell = x;	// используется в colmain_bar
+	stored_ycell = y;	// используется в colmain_bar
 
 	stored_xpix = GRID2X(x);
 	stored_ypix = GRID2Y(y);
@@ -2464,7 +2468,12 @@ void display_plotstop(void)
 
 // Вызовы этой функции (или группу вызовов) требуется "обрамить" парой вызовов
 // display_wrdatabar_begin() и display_wrdatabar_end().
-void display_dispbar(
+void colmain_bar(
+	PACKEDCOLORMAIN_T * buffer,
+	uint_fast16_t dx,
+	uint_fast16_t dy,
+	uint_fast16_t xpix,
+	uint_fast16_t ypix,
 	uint_fast8_t width,	/* количество знакомест, занимаемых индикатором */
 	uint_fast8_t value,		/* значение, которое надо отобразить */
 	uint_fast8_t tracevalue,		/* значение маркера, которое надо отобразить */
@@ -2474,9 +2483,6 @@ void display_dispbar(
 	uint_fast8_t emptyp			/* паттерн для заполнения между штрихами */
 	)
 {
-	PACKEDCOLORMAIN_T * const buffer = colmain_fb();
-	const uint_fast16_t dx = DIM_X;
-	const uint_fast16_t dy = DIM_Y;
 	ASSERT(value <= topvalue);
 	ASSERT(tracevalue <= topvalue);
 	const uint_fast16_t wfull = GRID2X(width);
@@ -2494,7 +2500,7 @@ void display_dispbar(
 }
 
 // самый маленький шрифт
-void display_wrdata2_begin(uint_fast8_t x, uint_fast8_t y)
+uint_fast16_t display_wrdata2_begin(uint_fast8_t x, uint_fast8_t y, uint_fast16_t * yp)
 {
 	ltdc_secondoffs = 0;
 	ltdc_h = SMALLCHARH;
@@ -2516,7 +2522,7 @@ uint_fast16_t display_put_char_small2(uint_fast16_t x, uint_fast16_t y, uint_fas
 }
 
 // полоса индикатора
-void display_wrdatabar_begin(uint_fast8_t x, uint_fast8_t y)
+uint_fast16_t display_wrdatabar_begin(uint_fast8_t x, uint_fast8_t y, uint_fast16_t * yp)
 {
 	ltdc_secondoffs = 0;
 	ltdc_h = 8;
@@ -2534,7 +2540,7 @@ void display_wrdatabar_end(void)
 }
 
 // большие и средние цифры (частота)
-void display_wrdatabig_begin(uint_fast8_t x, uint_fast8_t y)
+uint_fast16_t display_wrdatabig_begin(uint_fast8_t x, uint_fast8_t y, uint_fast16_t * yp)
 {
 	ltdc_secondoffs = 0;
 	ltdc_h = BIGCHARH;
@@ -2566,7 +2572,7 @@ void display_wrdatabig_end(void)
 }
 
 // обычный шрифт
-void display_wrdata_begin(uint_fast8_t x, uint_fast8_t y)
+uint_fast16_t display_wrdata_begin(uint_fast8_t x, uint_fast8_t y, uint_fast16_t * yp)
 {
 	ltdc_secondoffs = 0;
 	ltdc_h = SMALLCHARH;
@@ -2625,7 +2631,8 @@ display_value_big(
 	uint_fast8_t z = 1;	// only zeroes
 	uint_fast8_t half = 0;	// отображаем после второй запатой - маленьким шрифтом
 
-	display_wrdatabig_begin(x, y);
+	uint_fast16_t ypix;
+	uint_fast16_t xpix = display_wrdatabig_begin(x, y, & ypix);
 	for (; i < j; ++ i)
 	{
 		const ldiv_t res = ldiv(freq, vals10 [i]);
@@ -2674,8 +2681,8 @@ display_value_big(
 void
 NOINLINEAT
 display_value_small(
-	uint_fast8_t xcell,	// x координата начала вывода значения
-	uint_fast8_t ycell,	// y координата начала вывода значения
+	uint_fast8_t x,	// x координата начала вывода значения
+	uint_fast8_t y,	// y координата начала вывода значения
 	int_fast32_t freq,
 	uint_fast8_t width,	// full width (if >= 128 - display with sign)
 	uint_fast8_t comma,		// comma position (from right, inside width)
@@ -2690,7 +2697,8 @@ display_value_small(
 	uint_fast8_t i = j - (width & WWIDTHFLAG);	// Номер цифры по порядку
 	uint_fast8_t z = 1;	// only zeroes
 
-	display_wrdata_begin(xcell, ycell);
+	uint_fast16_t ypix;
+	uint_fast16_t xpix = display_wrdata_begin(x, y, & ypix);
 	if (wsign || wminus)
 	{
 		// отображение со знаком.

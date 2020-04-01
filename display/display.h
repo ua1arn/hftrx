@@ -600,20 +600,20 @@ void display_plot(const PACKEDCOLORMAIN_T * buffer, uint_fast16_t dx, uint_fast1
 void display_plotstop(void);
 
 // самый маленький шрифт
-void display_wrdata2_begin(uint_fast8_t xcell, uint_fast8_t ycell);
+uint_fast16_t display_wrdata2_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp);
 void display_wrdata2_end(void);
 uint_fast16_t display_put_char_small2(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf);
 // полоса индикатора
-void display_wrdatabar_begin(uint_fast8_t xcell, uint_fast8_t ycell);
+uint_fast16_t display_wrdatabar_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp);
 void display_barcolumn(uint_fast8_t pattern);	// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
 void display_wrdatabar_end(void);
 // большие и средние цифры (частота)
-void display_wrdatabig_begin(uint_fast8_t xcell, uint_fast8_t ycell);
+uint_fast16_t display_wrdatabig_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp);
 uint_fast16_t display_put_char_big(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf);
 uint_fast16_t display_put_char_half(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf);
 void display_wrdatabig_end(void);
 // обычный шрифт
-void display_wrdata_begin(uint_fast8_t xcell, uint_fast8_t ycell);
+uint_fast16_t display_wrdata_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp);
 uint_fast16_t display_put_char_small(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf);
 void display_wrdata_end(void);
 
@@ -859,7 +859,12 @@ display_menu_value(
 
 // Вызовы этой функции (или группу вызовов) требуется "обрамить" парой вызовов
 // display_wrdatabar_begin() и display_wrdatabar_end().
-void display_dispbar(
+void colmain_bar(
+	PACKEDCOLORMAIN_T * tbuffer,
+	uint_fast16_t tdx,
+	uint_fast16_t tdy,
+	uint_fast16_t xpix,
+	uint_fast16_t ypix,
 	uint_fast8_t width,	/* количество знакомест, занимаемых индикатором */
 	uint_fast8_t value,		/* значение, которое надо отобразить */
 	uint_fast8_t tracevalue,		/* значение маркера, которое надо отобразить */

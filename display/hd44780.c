@@ -478,7 +478,7 @@ static void hd44780_bar_column(uint_fast8_t pattern)
 // Вокруг этой функции вызывать hd44780_put_char_begin() и hd44780_put_char_end().
 
 void
-display_dispbar(
+colmain_bar(
 	uint_fast8_t width,	/* количество знакомест, занимаемых индикатором */
 	/* was: unsigned int */ uint_fast8_t value,		/* значение, которое надо отобразить */
 	uint_fast8_t tracevalue,		/* значение маркера, которое надо отобразить */
