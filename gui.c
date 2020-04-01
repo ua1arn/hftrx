@@ -85,7 +85,7 @@ display_smeter2(
 	uint_fast8_t tracemax;
 	uint_fast8_t is_tx = hamradio_get_tx();
 	static int gv, gv_trace, gswr, old_tx = 0, first_run = 1;
-	static int gv_old = gs, gv_trace_old = gs, gswr_old = gs;
+	static int gv_old = gs, gv_smooth = gs, gv_trace_old = gs, gswr_smooth = gs;
 	adcvalholder_t forward, reflected;
 	uint_fast16_t swr10; 														// swr10 = 0..30 for swr 1..4
 
@@ -104,15 +104,17 @@ display_smeter2(
 			swr10 = (forward + reflected) * SWRMIN / (forward - reflected) - SWRMIN;
 		gswr = gs + normalize(swr10, 0, 30, ge - gs);
 
+		if (gv > gs)
+			gv_smooth = gv;
+
+		if (gv == gs)
+			gv = (gv_smooth -= 3) > gs ? gv_smooth : gs;
+
 		if (gswr > gs)
-			gswr_old = gswr;
+			gswr_smooth = gswr;
 
 		if (gswr == gs)
-		{
-			gswr_old -= 4;
-			gswr_old = gswr_old > gs ? gswr_old : gs;
-			gswr = gswr_old;
-		}
+			gswr = (gswr_smooth -= 3) > gs ? gswr_smooth : gs;
 	}
 	else
 	{
@@ -198,8 +200,8 @@ display_smeter2(
 		gv_trace_old -= 1; // для перерисовки шкалы при смене режима
 	}
 
-//	if (gv_old != gv || gv_trace_old != gv_trace || gswr_old != gswr)
-//	{
+	if (gv_old != gv || gv_trace_old != gv_trace || gswr_smooth != gs)
+	{
 		if (gv_old != gv)
 		{
 			display_radius(xc - 1, yc, gv_old, rv1, rv2, COLORMAIN_BLACK);
@@ -293,7 +295,7 @@ display_smeter2(
 		gv_old = gv;
 		gv_trace_old = gv_trace;
 		old_tx = is_tx;
-//	}
+	}
 	(void) pv;
 }
 
