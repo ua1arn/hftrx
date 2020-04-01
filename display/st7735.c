@@ -659,7 +659,7 @@ static void st7735_clear(COLORMAIN_T bg)
 	}
 	for (i = 0; i < DIM_Y; i += LNBURST)
 	{
-		display_colorbuf_show(colorbuf, DIM_X, LNBURST, 0, i);
+		colpip_to_main(colorbuf, DIM_X, LNBURST, 0, i);
 	#if WITHINTEGRATEDDSP
 		audioproc_spool_user();		// решение проблем с прерыванием звука при стирании экрана
 	#endif /* WITHINTEGRATEDDSP */

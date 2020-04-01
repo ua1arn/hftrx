@@ -6026,8 +6026,8 @@ void hightests(void)
 
 		static ALIGNX_BEGIN volatile PACKEDCOLOR565_T scr [GXSIZE(dx, dy)] ALIGNX_END;
 
-		display_colorbuf_fill(scr, dx, dy, COLOR_WHITE);
-		display_colorbuf_show(scr, dx, dy, 0, GRID2Y(topreserved));
+		colpip_fill(scr, dx, dy, COLOR_WHITE);
+		colpip_to_main(scr, dx, dy, 0, GRID2Y(topreserved));
 		//for (;;)
 		//	;
 		int phase = 0;
@@ -6040,18 +6040,18 @@ void hightests(void)
 			// рисование линии
 			unsigned i;
 			for (i = 0; i < bufY; ++ i)
-				display_colorbuf_set(scr, dx, dy, i + loop, i, COLOR_BLUE);		// поставить точку
+				colpip_point(scr, dx, dy, i + loop, i, COLOR_BLUE);		// поставить точку
 
-			display_colorbuf_show(scr, dx, dy, 0, GRID2Y(topreserved));
+			colpip_to_main(scr, dx, dy, 0, GRID2Y(topreserved));
 			//local_delay_ms(25);
 			if (++ count > top)
 			{
 				count = 0;
 				phase = ! phase;
 				if (phase)
-					display_colorbuf_fill(scr, dx, dy, COLOR_YELLOW);
+					colpip_fill(scr, dx, dy, COLOR_YELLOW);
 				else
-					display_colorbuf_fill(scr, dx, dy, COLOR_RED);
+					colpip_fill(scr, dx, dy, COLOR_RED);
 			}
 			
 		}
