@@ -519,8 +519,7 @@ static void ili9320_initialize(void)
 				n,
 				n2
 			 );
-		display_gotoxy(0, 0);
-		display_string(buff, 0);
+		display_at(0, 0, buff);
 	}
 #endif
 
@@ -539,23 +538,18 @@ void display_initialize(void)
 	// Печать параметров на экране
 	for (;;)
 	{
-		uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
-		do
-		{
-			//static unsigned  count;
-			//count ++;
-			char buff [22];
-			const unsigned long n = LCD_Read_ILI9320(0x0000);	// 0x9320 expected
-			//const unsigned long n2 = LCD_Status_ILI9320();
+		//static unsigned  count;
+		//count ++;
+		char buff [22];
+		const unsigned long n = LCD_Read_ILI9320(0x0000);	// 0x9320 expected
+		//const unsigned long n2 = LCD_Status_ILI9320();
 
-			local_snprintf_P(buff, sizeof buff / sizeof buff [0], 
-				PSTR("%04lX"),
-					n
-				 );
-			display_gotoxy(0, 0 + lowhalf);
-			display_string(buff, lowhalf);
-		}
-	} while (lowhalf --);
+		local_snprintf_P(buff, sizeof buff / sizeof buff [0],
+			PSTR("%04lX"),
+				n
+			 );
+		display_at(0, 0, buff);
+	}
 #endif
 }
 

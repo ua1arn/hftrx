@@ -125,147 +125,6 @@ static uint_fast8_t glob_zoomxpow2;	/* уменьшение отображаем
 
 //#define WIDEFREQ (TUNE_TOP > 100000000L)
 
-static const FLASHMEM int32_t vals10 [] =
-{
-	1000000000UL,
-	100000000UL,
-	10000000UL,
-	1000000UL,
-	100000UL,
-	10000UL,
-	1000UL,
-	100UL,
-	10UL,
-	1UL,
-};
-
-// Отображение цифр в поле "больших цифр" - индикатор основной частоты настройки аппарата.
-static void 
-NOINLINEAT
-display_value_big(
-	uint_fast32_t freq,
-	uint_fast8_t width, // = 8;	// full width
-	uint_fast8_t comma, // = 2;	// comma position (from right, inside width)
-	uint_fast8_t comma2,	// = comma + 3;		// comma position (from right, inside width)
-	uint_fast8_t rj,	// = 1;		// right truncated
-	uint_fast8_t blinkpos,		// позиция, где символ заменён пробелом
-	uint_fast8_t blinkstate,	// 0 - пробел, 1 - курсор
-	uint_fast8_t withhalf,		// 0 - только большие цифры
-	uint_fast8_t lowhalf		// lower half
-	)
-{
-	//const uint_fast8_t comma2 = comma + 3;		// comma position (from right, inside width)
-	const uint_fast8_t j = (sizeof vals10 /sizeof vals10 [0]) - rj;
-	uint_fast8_t i = (j - width);
-	uint_fast8_t z = 1;	// only zeroes
-	uint_fast8_t half = 0;	// отображаем после второй запатой - маленьким шрифтом
-
-	display_wrdatabig_begin();
-	for (; i < j; ++ i)
-	{
-		const ldiv_t res = ldiv(freq, vals10 [i]);
-		const uint_fast8_t g = (j - i);		// десятичная степень текущего разряда на отображении
-
-		// разделитель десятков мегагерц
-		if (comma2 == g)
-		{
-			display_put_char_big((z == 0) ? '.' : '#', lowhalf);	// '#' - узкий пробел. Точка всегда узкая
-		}
-		else if (comma == g)
-		{
-			z = 0;
-			half = withhalf;
-			display_put_char_big('.', lowhalf);
-		}
-
-		if (blinkpos == g)
-		{
-			const uint_fast8_t bc = blinkstate ? '_' : ' ';
-			// эта позиция редактирования частоты. Справа от неё включаем все нули
-			z = 0;
-			if (half)
-				display_put_char_half(bc, lowhalf);
-
-			else
-				display_put_char_big(bc, lowhalf);
-		}
-		else if (z == 1 && (i + 1) < j && res.quot == 0)
-			display_put_char_big(' ', lowhalf);	// supress zero
-		else
-		{
-			z = 0;
-			if (half)
-				display_put_char_half('0' + res.quot, lowhalf);
-
-			else
-				display_put_char_big('0' + res.quot, lowhalf);
-		}
-		freq = res.rem;
-	}
-	display_wrdatabig_end();
-}
-
-
-static void
-NOINLINEAT
-display_value_small(
-	int_fast32_t freq,
-	uint_fast8_t width,	// full width (if >= 128 - display with sign)
-	uint_fast8_t comma,		// comma position (from right, inside width)
-	uint_fast8_t comma2,
-	uint_fast8_t rj,		// right truncated
-	uint_fast8_t lowhalf
-	)
-{
-	const uint_fast8_t wsign = (width & WSIGNFLAG) != 0;
-	const uint_fast8_t wminus = (width & WMINUSFLAG) != 0;
-	const uint_fast8_t j = (sizeof vals10 /sizeof vals10 [0]) - rj;
-	uint_fast8_t i = j - (width & WWIDTHFLAG);	// Номер цифры по порядку
-	uint_fast8_t z = 1;	// only zeroes
-
-	display_wrdata_begin();
-	if (wsign || wminus)
-	{
-		// отображение со знаком.
-		z = 0;
-		if (freq < 0)
-		{
-			display_put_char_small('-', lowhalf);
-			freq = - freq;
-		}
-		else if (wsign)
-			display_put_char_small('+', lowhalf);
-		else
-			display_put_char_small(' ', lowhalf);
-	}
-	for (; i < j; ++ i)
-	{
-		const ldiv_t res = ldiv(freq, vals10 [i]);
-		const uint_fast8_t g = (j - i);
-		// разделитель десятков мегагерц
-		if (comma2 == g)
-		{
-			display_put_char_small((z == 0) ? '.' : ' ', lowhalf);
-		}
-		else if (comma == g)
-		{
-			z = 0;
-			display_put_char_small('.', lowhalf);
-		}
-
-		if (z == 1 && (i + 1) < j && res.quot == 0)
-			display_put_char_small(' ', lowhalf);	// supress zero
-		else
-		{
-			z = 0;
-			display_put_char_small('0' + res.quot, lowhalf);
-		}
-		freq = res.rem;
-	}
-	display_wrdata_end();
-}
-
-
 // Отображение частоты. Герцы так же большим шрифтом.
 static void display_freqXbig_a(
 	uint_fast8_t x, 
@@ -287,8 +146,7 @@ static void display_freqXbig_a(
 		uint_fast8_t lowhalf = HALFCOUNT_FREQA - 1;
 		do
 		{
-			display_gotoxy(x, y + lowhalf);
-			display_value_big(efp->freq, fullwidth, comma, comma + 3, rj, efp->blinkpos, efp->blinkstate, 0, lowhalf);	// отрисовываем верхнюю часть строки
+			display_value_big(x, y + lowhalf, efp->freq, fullwidth, comma, comma + 3, rj, efp->blinkpos, efp->blinkstate, 0, lowhalf);	// отрисовываем верхнюю часть строки
 		} while (lowhalf --);
 #endif /* WITHDIRECTFREQENER */
 	}
@@ -301,8 +159,7 @@ static void display_freqXbig_a(
 		uint_fast8_t lowhalf = HALFCOUNT_FREQA - 1;
 		do
 		{
-			display_gotoxy(x, y + lowhalf);
-			display_value_big(freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 0, lowhalf);	// отрисовываем верхнюю часть строки
+			display_value_big(x, y + lowhalf, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 0, lowhalf);	// отрисовываем верхнюю часть строки
 		} while (lowhalf --);
 	}
 }
@@ -327,8 +184,7 @@ static void display_freqX_a(
 		uint_fast8_t lowhalf = HALFCOUNT_FREQA - 1;
 		do
 		{
-			display_gotoxy(x, y + lowhalf);
-			display_value_big(efp->freq, fullwidth, comma, comma + 3, rj, efp->blinkpos, efp->blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
+			display_value_big(x, y + lowhalf, efp->freq, fullwidth, comma, comma + 3, rj, efp->blinkpos, efp->blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
 		} while (lowhalf --);
 #endif /* WITHDIRECTFREQENER */
 	}
@@ -341,8 +197,7 @@ static void display_freqX_a(
 		uint_fast8_t lowhalf = HALFCOUNT_FREQA - 1;
 		do
 		{
-			display_gotoxy(x, y + lowhalf);
-			display_value_big(freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
+			display_value_big(x, y + lowhalf, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
 		} while (lowhalf --);
 	}
 }
@@ -368,8 +223,7 @@ static void display_freqchr_a(
 		uint_fast8_t lowhalf = HALFCOUNT_FREQA - 1;
 		do
 		{
-			display_gotoxy(x, y + lowhalf);
-			display_value_big(efp->freq, fullwidth, comma, 255, rj, efp->blinkpos, efp->blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
+			display_value_big(x, y + lowhalf, efp->freq, fullwidth, comma, 255, rj, efp->blinkpos, efp->blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
 		} while (lowhalf --);
 #endif /* WITHDIRECTFREQENER */
 	}
@@ -382,8 +236,7 @@ static void display_freqchr_a(
 		uint_fast8_t lowhalf = HALFCOUNT_FREQA - 1;
 		do
 		{
-			display_gotoxy(x, y + lowhalf);
-			display_value_big(freq, fullwidth, comma, 255, rj, blinkpos, blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
+			display_value_big(x, y + lowhalf, freq, fullwidth, comma, 255, rj, blinkpos, blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
 		} while (lowhalf --);
 	}
 }
@@ -425,8 +278,7 @@ static void display_freqchr_b(
 		uint_fast8_t lowhalf = HALFCOUNT_FREQA - 1;
 		do
 		{
-			display_gotoxy(x, y + lowhalf);
-			display_value_big(freq, fullwidth, comma, 255, 1, blinkpos, blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
+			display_value_big(x, y + lowhalf, freq, fullwidth, comma, 255, 1, blinkpos, blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
 		} while (lowhalf --);
 	}
 }
@@ -447,8 +299,7 @@ static void display_freqX_b(
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	do
 	{
-		display_gotoxy(x, y + lowhalf);
-		display_value_small(freq, fullwidth, comma, comma + 3, rj, lowhalf);
+		display_value_small(x, y + lowhalf, freq, fullwidth, comma, comma + 3, rj, lowhalf);
 	} while (lowhalf --);
 }
 
@@ -1225,9 +1076,8 @@ static void display_vfomode1(
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	do
 	{
-		display_gotoxy(x, y + lowhalf);
-		display_wrdata_begin();
-		display_put_char_small(label [0], lowhalf);
+		display_wrdata_begin(x, y);
+		display_put_char_small(x, y, label [0], lowhalf);
 		display_wrdata_end();
 	} while (lowhalf --);
 }
@@ -1269,11 +1119,9 @@ static void display_voltlevelV5(
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	do
 	{
-		display_gotoxy(x + CHARS2GRID(0), y + lowhalf);	
-		display_value_small(volt, 3, 1, 255, 0, lowhalf);
-		display_gotoxy(x + CHARS2GRID(4), y + lowhalf);	
-		display_string_P(PSTR("V"), lowhalf);
+		display_value_small(x + CHARS2GRID(0), y + lowhalf, volt, 3, 1, 255, 0, lowhalf);
 	} while (lowhalf --);
+	display_at_P(x + CHARS2GRID(4), y, PSTR("V"));
 #endif /* WITHVOLTLEVEL && WITHCPUADCHW */
 }
 
@@ -1291,8 +1139,7 @@ static void display_voltlevel4(
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	do
 	{
-		display_gotoxy(x, y + lowhalf);	
-		display_value_small(volt, 3, 1, 255, 0, lowhalf);
+		display_value_small(x, y + lowhalf, volt, 3, 1, 255, 0, lowhalf);
 	} while (lowhalf --);
 #endif /* WITHVOLTLEVEL && WITHCPUADCHW */
 }
@@ -1311,8 +1158,7 @@ static void display_thermo4(
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	do
 	{
-		display_gotoxy(x + CHARS2GRID(0), y + lowhalf);	
-		display_value_small(tempv, 3 | WSIGNFLAG, 0, 255, 0, lowhalf);
+		display_value_small(x + CHARS2GRID(0), y + lowhalf, tempv, 3 | WSIGNFLAG, 0, 255, 0, lowhalf);
 		//display_gotoxy(x + CHARS2GRID(4), y + lowhalf);	
 		//display_string_P(PSTR("С"), lowhalf);
 	} while (lowhalf --);
@@ -1334,11 +1180,9 @@ static void display_currlevelA6(
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	do
 	{
-		display_gotoxy(x + CHARS2GRID(0), y + lowhalf);	
-		display_value_small(drain, 3 | WMINUSFLAG, 2, 255, 0, lowhalf);
-		display_gotoxy(x + CHARS2GRID(5), y + lowhalf);	
-		display_string_P(PSTR("A"), lowhalf);
+		display_value_small(x + CHARS2GRID(0), y + lowhalf, drain, 3 | WMINUSFLAG, 2, 255, 0, lowhalf);
 	} while (lowhalf --);
+	display_at_P(x + CHARS2GRID(5), y, PSTR("A"));
 #endif /* WITHCURRLEVEL && WITHCPUADCHW */
 }
 
@@ -1356,8 +1200,7 @@ static void display_currlevel5(
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	do
 	{
-		display_gotoxy(x + CHARS2GRID(0), y + lowhalf);
-		display_value_small(drain, 3 | WMINUSFLAG, 1, 255, 0, lowhalf);
+		display_value_small(x + CHARS2GRID(0), y + lowhalf, drain, 3 | WMINUSFLAG, 1, 255, 0, lowhalf);
 		//display_gotoxy(x + CHARS2GRID(4), y + lowhalf);
 		//display_string_P(PSTR("A"), lowhalf);
 	} while (lowhalf --);
@@ -1368,8 +1211,7 @@ static void display_currlevel5(
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	do
 	{
-		display_gotoxy(x + CHARS2GRID(0), y + lowhalf);	
-		display_value_small(drain, 3 | WMINUSFLAG, 2, 255, 0, lowhalf);
+		display_value_small(x + CHARS2GRID(0), y + lowhalf, drain, 3 | WMINUSFLAG, 2, 255, 0, lowhalf);
 		//display_gotoxy(x + CHARS2GRID(4), y + lowhalf);	
 		//display_string_P(PSTR("A"), lowhalf);
 	} while (lowhalf --);
@@ -1389,8 +1231,7 @@ static void display_currlevel5alt(
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	do
 	{
-		display_gotoxy(x + CHARS2GRID(0), y + lowhalf);	
-		display_value_small(drain, 3 | WMINUSFLAG, 1, 255, 1, lowhalf);
+		display_value_small(x + CHARS2GRID(0), y + lowhalf, drain, 3 | WMINUSFLAG, 1, 255, 1, lowhalf);
 		//display_gotoxy(x + CHARS2GRID(4), y + lowhalf);	
 		//display_string_P(PSTR("A"), lowhalf);
 	} while (lowhalf --);
@@ -1538,8 +1379,7 @@ static void display_freqdelta8(
 		uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 		do
 		{
-			display_gotoxy(x, y + lowhalf);	
-			display_value_small(deltaf, 6 | WSIGNFLAG, 1, 255, 0, lowhalf);
+			display_value_small(x, y + lowhalf, deltaf, 6 | WSIGNFLAG, 1, 255, 0, lowhalf);
 		} while (lowhalf --);
 	}
 	else
@@ -1566,8 +1406,7 @@ static void display_samfreqdelta8(
 		uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 		do
 		{
-			display_gotoxy(x, y + lowhalf);	
-			display_value_small(deltaf, 6 | WSIGNFLAG, 1, 255, 0, lowhalf);
+			display_value_small(x, y + lowhalf, deltaf, 6 | WSIGNFLAG, 1, 255, 0, lowhalf);
 		} while (lowhalf --);
 	}
 	else
@@ -4935,6 +4774,8 @@ static const FLASHMEM struct dzone dzones [] =
 void
 //NOINLINEAT
 display_menu_value(
+	uint_fast8_t x,
+	uint_fast8_t y,
 	int_fast32_t value,
 	uint_fast8_t width,	// full width (if >= 128 - display with sign)
 	uint_fast8_t comma,		// comma position (from right, inside width)
@@ -4942,7 +4783,7 @@ display_menu_value(
 	uint_fast8_t lowhalf
 	)
 {
-	display_value_small(value, width, comma, 255, rj, lowhalf);
+	display_value_small(x, y, value, width, comma, 255, rj, lowhalf);
 }
 
 //+++ bars
@@ -5039,39 +4880,36 @@ display_dispbar(
 #endif /* WITHBARS */
 
 // Адресация для s-meter
-static void
-display_bars_address_rx(
+static uint_fast8_t
+display_bars_x_rx(
 	uint_fast8_t x, 
-	uint_fast8_t y, 
 	uint_fast8_t xoffs	// grid
 	)
 {
-	display_gotoxy(x + xoffs, y);
+	return x + xoffs;
 }
 
 // Адресация для swr-meter
-static void
-display_bars_address_swr(
+static uint_fast8_t
+display_bars_x_swr(
 	uint_fast8_t x, 
-	uint_fast8_t y, 
 	uint_fast8_t xoffs	// grid
 	)
 {
-	display_bars_address_rx(x, y, xoffs);
+	return display_bars_x_rx(x, xoffs);
 }
 
 // Адресация для pwr-meter
-static void
-display_bars_address_pwr(
+static uint_fast8_t
+display_bars_x_pwr(
 	uint_fast8_t x, 
-	uint_fast8_t y, 
 	uint_fast8_t xoffs	// grid
 	)
 {
 #if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
-	display_bars_address_rx(x, y, xoffs + CHARS2GRID(BDTH_ALLSWR + BDTH_SPACESWR));
+	return display_bars_x_rx(x, xoffs + CHARS2GRID(BDTH_ALLSWR + BDTH_SPACESWR));
 #else
-	display_bars_address_rx(x, y, xoffs);
+	return display_bars_x_rx(x, xoffs);
 #endif
 }
 
@@ -5101,25 +4939,25 @@ void display_swrmeter(
 
 	//debug_printf_P(PSTR("swr10=%d, mapleftval=%d, fs=%d\n"), swr10, mapleftval, display_getmaxswrlimb());
 
-	display_bars_address_swr(x, y, CHARS2GRID(0));
-
 	display_setcolors(SWRCOLOR, BGCOLOR);
 
-	display_wrdatabar_begin();
+	display_wrdatabar_begin(display_bars_x_swr(x, CHARS2GRID(0)), y);
 	display_dispbar(BDTH_ALLSWR, mapleftval, fullscale, fullscale, PATTERN_BAR_FULL, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYFULL);
 	display_wrdatabar_end();
 
 	if (BDTH_SPACESWR != 0)
 	{
 		// заполняем пустое место за индикаторм КСВ
-		display_bars_address_swr(x, y, CHARS2GRID(BDTH_ALLSWR));
-		display_wrdatabar_begin();
+		display_wrdatabar_begin(display_bars_x_swr(x, CHARS2GRID(BDTH_ALLSWR)), y);
 		display_dispbar(BDTH_SPACESWR, 0, 1, 1, PATTERN_SPACE, PATTERN_SPACE, PATTERN_SPACE);
 		display_wrdatabar_end();
 	}
 
 #endif /* WITHBARS */
 }
+
+#if CTLSTYLE_RA4YBO_AM0
+
 
 // Вызывается из display2_bars_amv0 (версия для CTLSTYLE_RA4YBO_AM0)
 // координаьы для общего блока PWR & SWR
@@ -5137,21 +4975,18 @@ void display_modulationmeter_amv0(
 	//debug_printf_P(PSTR("swr10=%d, mapleftval=%d, fs=%d\n"), swr10, mapleftval, display_getmaxswrlimb());
 
 	display_setcolors(SWRCOLOR, BGCOLOR);
-	display_bars_address_swr(x - 1, y, CHARS2GRID(0));
-	display_string_P(PSTR("M"), 0);
-
-	display_bars_address_swr(x, y, CHARS2GRID(0));
+	display_at_P(display_bars_x_swr(x - 1, CHARS2GRID(0)), y, PSTR("M"));
 
 	display_setcolors(SWRCOLOR, BGCOLOR);
 
-	display_wrdatabar_begin();
+	display_wrdatabar_begin(display_bars_x_swr(x, CHARS2GRID(0)), y);
 	display_dispbar(BDTH_ALLSWR, mapleftval, fullscale, fullscale, PATTERN_BAR_FULL, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYFULL);
 	display_wrdatabar_end();
 
 	if (BDTH_SPACESWR != 0)
 	{
 		// заполняем пустое место за индикаторм КСВ
-		display_bars_address_swr(x, y, CHARS2GRID(BDTH_ALLSWR));
+		display_bars_x_swr(x, y, CHARS2GRID(BDTH_ALLSWR));
 		display_wrdatabar_begin();
 		display_dispbar(BDTH_SPACESWR, 0, 1, 1, PATTERN_SPACE, PATTERN_SPACE, PATTERN_SPACE);
 		display_wrdatabar_end();
@@ -5182,10 +5017,10 @@ void display_pwrmeter_amv0(
 	const uint_fast8_t mapleftmax = display_mapbar(t, 0, fullscale, fullscale, t, fullscale); // fullscale - invisible
 
 	display_setcolors(PWRCOLOR, BGCOLOR);
-	display_bars_address_pwr(x - 1, y, CHARS2GRID(0));
+	display_bars_x_pwr(x - 1, y, CHARS2GRID(0));
 	display_string_P(PSTR("P"), 0);
 
-	display_bars_address_pwr(x, y, CHARS2GRID(0));
+	display_bars_x_pwr(x, y, CHARS2GRID(0));
 
 	display_setcolors(PWRCOLOR, BGCOLOR);
 
@@ -5196,7 +5031,7 @@ void display_pwrmeter_amv0(
 	if (BDTH_SPACEPWR != 0)
 	{
 		// заполняем пустое место за индикаторм мощности
-		display_bars_address_pwr(x, y, CHARS2GRID(BDTH_ALLPWR));
+		display_bars_x_pwr(x, y, CHARS2GRID(BDTH_ALLPWR));
 		display_wrdatabar_begin();
 		display_dispbar(BDTH_SPACEPWR, 0, 1, 1, PATTERN_SPACE, PATTERN_SPACE, PATTERN_SPACE);
 		display_wrdatabar_end();
@@ -5225,16 +5060,16 @@ void display_smeter_amv0(
 	const uint_fast8_t maprightmax = display_mapbar(tracemax, level9, level9 + delta2, delta2, tracemax - level9, delta2); // delta2 - invisible
 
 	display_setcolors(LCOLOR, BGCOLOR);
-	display_bars_address_rx(x - 1, y, CHARS2GRID(0));
+	display_bars_x_rx(x - 1, y, CHARS2GRID(0));
 	display_string_P(PSTR("S"), 0);
 
-	display_bars_address_rx(x, y, CHARS2GRID(0));
+	display_bars_x_rx(x, y, CHARS2GRID(0));
 	display_setcolors(LCOLOR, BGCOLOR);
 	display_wrdatabar_begin();
 	display_dispbar(BDTH_LEFTRX, mapleftval, mapleftmax, delta1, PATTERN_BAR_HALF, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYHALF);		//ниже 9 баллов ничего
 	display_wrdatabar_end();
 	//
-	display_bars_address_rx(x, y, CHARS2GRID(BDTH_LEFTRX));
+	display_bars_x_rx(x, y, CHARS2GRID(BDTH_LEFTRX));
 	display_setcolors(RCOLOR, BGCOLOR);
 	display_wrdatabar_begin();
 	display_dispbar(BDTH_RIGHTRX, maprightval, maprightmax, delta2, PATTERN_BAR_FULL, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYFULL);		// выше 9 баллов ничего нет.
@@ -5242,7 +5077,7 @@ void display_smeter_amv0(
 
 	if (BDTH_SPACERX != 0)
 	{
-		display_bars_address_pwr(x, y, CHARS2GRID(BDTH_ALLRX));
+		display_bars_x_pwr(x, y, CHARS2GRID(BDTH_ALLRX));
 		display_wrdatabar_begin();
 		display_dispbar(BDTH_SPACERX, 0, 1, 1, PATTERN_SPACE, PATTERN_SPACE, PATTERN_SPACE);
 		display_wrdatabar_end();
@@ -5250,6 +5085,7 @@ void display_smeter_amv0(
 
 #endif /* WITHBARS */
 }
+#endif /* CTLSTYLE_RA4YBO_AM0 */
 
 // координаьы для общего блока PWR & SWR
 void display_pwrmeter(  
@@ -5272,19 +5108,16 @@ void display_pwrmeter(
 	const uint_fast8_t mapleftval = display_mapbar(v, 0, fullscale, 0, v, fullscale);
 	const uint_fast8_t mapleftmax = display_mapbar(t, 0, fullscale, fullscale, t, fullscale); // fullscale - invisible
 
-	display_bars_address_pwr(x, y, CHARS2GRID(0));
-
 	display_setcolors(PWRCOLOR, BGCOLOR);
 
-	display_wrdatabar_begin();
+	display_wrdatabar_begin(display_bars_x_pwr(x, CHARS2GRID(0)), y);
 	display_dispbar(BDTH_ALLPWR, mapleftval, mapleftmax, fullscale, PATTERN_BAR_HALF, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYHALF);
 	display_wrdatabar_end();
 
 	if (BDTH_SPACEPWR != 0)
 	{
 		// заполняем пустое место за индикаторм мощности
-		display_bars_address_pwr(x, y, CHARS2GRID(BDTH_ALLPWR));
-		display_wrdatabar_begin();
+		display_wrdatabar_begin(display_bars_x_pwr(x, CHARS2GRID(BDTH_ALLPWR)), y);
 		display_dispbar(BDTH_SPACEPWR, 0, 1, 1, PATTERN_SPACE, PATTERN_SPACE, PATTERN_SPACE);
 		display_wrdatabar_end();
 	}
@@ -5311,22 +5144,19 @@ void display_smeter(
 	const uint_fast8_t maprightval = display_mapbar(value, level9, level9 + delta2, 0, value - level9, delta2);
 	const uint_fast8_t maprightmax = display_mapbar(tracemax, level9, level9 + delta2, delta2, tracemax - level9, delta2); // delta2 - invisible
 
-	display_bars_address_rx(x, y, CHARS2GRID(0));
 	display_setcolors(LCOLOR, BGCOLOR);
-	display_wrdatabar_begin();
+	display_wrdatabar_begin(display_bars_x_rx(x, CHARS2GRID(0)), y);
 	display_dispbar(BDTH_LEFTRX, mapleftval, mapleftmax, delta1, PATTERN_BAR_HALF, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYHALF);		//ниже 9 баллов ничего
 	display_wrdatabar_end();
 	//
-	display_bars_address_rx(x, y, CHARS2GRID(BDTH_LEFTRX));
 	display_setcolors(RCOLOR, BGCOLOR);
-	display_wrdatabar_begin();
+	display_wrdatabar_begin(display_bars_x_rx(x, CHARS2GRID(BDTH_LEFTRX)), y);
 	display_dispbar(BDTH_RIGHTRX, maprightval, maprightmax, delta2, PATTERN_BAR_FULL, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYFULL);		// выше 9 баллов ничего нет.
 	display_wrdatabar_end();
 
 	if (BDTH_SPACERX != 0)
 	{
-		display_bars_address_pwr(x, y, CHARS2GRID(BDTH_ALLRX));
-		display_wrdatabar_begin();
+		display_wrdatabar_begin(display_bars_x_pwr(x, CHARS2GRID(BDTH_ALLRX)), y);
 		display_dispbar(BDTH_SPACERX, 0, 1, 1, PATTERN_SPACE, PATTERN_SPACE, PATTERN_SPACE);
 		display_wrdatabar_end();
 	}
@@ -5344,13 +5174,7 @@ static void display2_legend_rx(
 {
 #if defined(SMETERMAP)
 	display_setcolors(MODECOLOR, BGCOLOR);
-	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
-	do
-	{
-		display_gotoxy(x, y + lowhalf);
-		display_string_P(PSTR(SMETERMAP), lowhalf);
-
-	} while (lowhalf --);
+	display_at_P(x, y, PSTR(SMETERMAP));
 #endif /* defined(SMETERMAP) */
 }
 
@@ -5363,25 +5187,20 @@ static void display2_legend_tx(
 {
 #if defined(SWRPWRMAP) && WITHTX && (WITHSWRMTR || WITHSHOWSWRPWR)
 	display_setcolors(MODECOLOR, BGCOLOR);
-	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
-	do
-	{
-		display_gotoxy(x, y + lowhalf);
-		#if WITHSWRMTR
-			#if WITHSHOWSWRPWR /* на дисплее одновременно отображаются SWR-meter и PWR-meter */
-					display_string_P(PSTR(SWRPWRMAP), lowhalf);
-			#else
-					if (swrmode) 	// Если TUNE то показываем шкалу КСВ
-						display_string_P(PSTR(SWRMAP), lowhalf);
-					else
-						display_string_P(PSTR(POWERMAP), lowhalf);
-			#endif
-		#elif WITHPWRMTR
-					display_string_P(PSTR(POWERMAP), lowhalf);
+	#if WITHSWRMTR
+		#if WITHSHOWSWRPWR /* на дисплее одновременно отображаются SWR-meter и PWR-meter */
+				display_at_P(x, y, PSTR(SWRPWRMAP));
 		#else
-			#warning No TX indication
+				if (swrmode) 	// Если TUNE то показываем шкалу КСВ
+					display_string_P(x, y, PSTR(SWRMAP));
+				else
+					display_string_P(x, y, PSTR(POWERMAP));
 		#endif
-	} while (lowhalf --);
+	#elif WITHPWRMTR
+				display_string_P(x, y, PSTR(POWERMAP));
+	#else
+		#warning No TX indication
+	#endif
 
 #endif /* defined(SWRPWRMAP) && WITHTX && (WITHSWRMTR || WITHSHOWSWRPWR) */
 }

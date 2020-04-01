@@ -46,7 +46,7 @@ static void showpos(uint_fast8_t pos)
 		PSTR("POS %2u"), (unsigned) pos
 		 );
 	display_gotoxy(0, 0);
-	display_string(buff, 0);
+	display_at(buff, 0);
 }
 
 #endif
@@ -5083,12 +5083,12 @@ static void showstate(
 
 	local_snprintf_P(buff, 32, PSTR(" ON: %4u0 mS"), ontime);
 	display_gotoxy(0, 0);
-	display_string(buff, 0);
+	display_at(buff, 0);
 
 
 	local_snprintf_P(buff, 32, PSTR("OFF: %4u0 mS"), offtime);
 	display_gotoxy(0, 1);
-	display_string(buff, 0);
+	display_at(buff, 0);
 
 }
 
@@ -5962,16 +5962,13 @@ void hightests(void)
 #if 0
 	{
 		display_setcolors(COLOR_GREEN, COLOR_BLACK);
-		display_gotoxy(5, 0);
-		display_string_P(PSTR("PT-Electronics 2015"), 0);
+		display_at_P(5, 0, PSTR("PT-Electronics 2015"));
 
 		display_setcolors(COLOR_RED, COLOR_BLACK);
-		display_gotoxy(7, 3);
-		display_string_P(PSTR("RENESAS"), 0);
+		display_at_P(7, 3, PSTR("RENESAS"));
 
 		display_setcolors(COLOR_WHITE, COLOR_BLACK);
-		display_gotoxy(9, 6);
-		display_string_P(PSTR("2.7 inch TFT"), 0);
+		display_at_P(9, 6, PSTR("2.7 inch TFT"));
 		
 		for (;;)
 			;
@@ -6009,17 +6006,11 @@ void hightests(void)
 	#if 1
 		/* отображение надписей маленьким шрифтом (16 точек) */
 		display_setcolors(COLOR_GREEN, COLOR_BLACK);
-		uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
-		do
-		{
 		
-			display_gotoxy(CHARS2GRID(0), ROWS2GRID(1) + lowhalf);
-			display_string_P(PSTR("Start "), lowhalf);
+		display_at_P(CHARS2GRID(0), ROWS2GRID(1), PSTR("Start "));
 
-			display_gotoxy(CHARS2GRID(0), ROWS2GRID(2) + lowhalf);
-			display_string_P(PSTR("Stop "), lowhalf);
+		display_at_P(CHARS2GRID(0), ROWS2GRID(2), PSTR("Stop "));
 
-		} while (lowhalf --);
 	#endif
 
 	#if 0//LCDMODE_COLORED
@@ -6553,7 +6544,7 @@ void hightests(void)
 
 				display_gotoxy(0, 0 + lowhalf);
 				display_setcolors(COLOR_WHITE, COLOR_BLACK);
-				display_string(buff, lowhalf);
+				display_at(buff, lowhalf);
 			} while (lowhalf --);
 			debug_printf_P(PSTR("CNT=%08lX\n"), i);
 		}
@@ -6585,7 +6576,7 @@ void hightests(void)
 			{
 				display_gotoxy(0, 0 + lowhalf);
 
-				display_string(buff, lowhalf);
+				display_at(buff, lowhalf);
 			} while (lowhalf --);
 		}
 	}
@@ -6756,31 +6747,13 @@ void hightests(void)
 
 
 	/* отображение надписей самым маленьким шрифтом (8 точек) */
-	uint_fast8_t lowhalf2 = HALFCOUNT_SMALL2 - 1;
-	do
-	{
-	
-		display_gotoxy(0, 0 + lowhalf2);
-		display_string2_P(PSTR("PT-Electronics 2014"), lowhalf2);
-
-		//display_gotoxy(0, 1 + lowhalf2);
-		//display_string2_P(PSTR("PT-Electronics 2014"), lowhalf2);
-
-	} while (lowhalf2 --);
+	display_at_P(CHARS2GRID(0), ROWS2GRID(0), PSTR("PT-Electronics 2014"));
 
 #if 0
 	/* отображение надписей маленьким шрифтом (16 точек) */
-	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
-	do
-	{
-	
-		display_gotoxy(0, 2 + lowhalf);
-		display_string_P(PSTR("Start "), lowhalf);
+	display_at_P(CHARS2GRID(0), ROWS2GRID(2), PSTR("Start "));
 
-		display_gotoxy(0, 4 + lowhalf);
-		display_string_P(PSTR("Stop "), lowhalf);
-
-	} while (lowhalf --);
+	display_at_P(CHARS2GRID(0), ROWS2GRID(3), PSTR("Stop "));
 #endif
 
 	display_setcolors(COLOR_WHITE, COLOR_BLACK);
@@ -6835,7 +6808,7 @@ void hightests(void)
 					PSTR("vox2=%3d"), vox2
 					 );
 				display_gotoxy(0, 0 + lowhalf);
-				display_string(buff, lowhalf);
+				display_at(buff, lowhalf);
 
 				//////////////////////////
 				// VOX2 level
@@ -6844,7 +6817,7 @@ void hightests(void)
 					PSTR("vox1=%5d"), vox1
 					 );
 				display_gotoxy(0, 1 + lowhalf);
-				display_string(buff, lowhalf);
+				display_at(buff, lowhalf);
 				*/
 				//////////////////////////
 				// A-VOX level
@@ -6852,7 +6825,7 @@ void hightests(void)
 					PSTR("avox=%3d"), avox
 					 );
 				display_gotoxy(11, 0 + lowhalf);
-				display_string(buff, lowhalf);
+				display_at(buff, lowhalf);
 
 			} while (lowhalf --);
 		}
@@ -6895,13 +6868,13 @@ void hightests(void)
 				PSTR("af= %4d"), potaf
 				 );
 			display_gotoxy(0, 0 * HALFCOUNT_SMALL + lowhalf);
-			display_string(buff, lowhalf);
+			display_at(buff, lowhalf);
 			// AF gain raw
 			local_snprintf_P(buff, sizeof buff / sizeof buff [0], 
 				PSTR("aft=%4d"), potaft
 				 );
 			display_gotoxy(0, 1 * HALFCOUNT_SMALL + lowhalf);
-			display_string(buff, lowhalf);
+			display_at(buff, lowhalf);
 			continue;
 #else
 			// IF gain
@@ -6909,27 +6882,27 @@ void hightests(void)
 				PSTR("rf= %4d"), potrf
 				 );
 			display_gotoxy(0, 0 + lowhalf);
-			display_string(buff, lowhalf);
+			display_at(buff, lowhalf);
 			// AF gain
 			local_snprintf_P(buff, sizeof buff / sizeof buff [0], 
 				PSTR("af= %4d"), potaf
 				 );
 			display_gotoxy(7, 0 + lowhalf);
-			display_string(buff, lowhalf);
+			display_at(buff, lowhalf);
 
 			// AUX1
 			local_snprintf_P(buff, sizeof buff / sizeof buff [0], 
 				PSTR("A1= %4d"), aux1
 				 );
 			display_gotoxy(14, 0 + lowhalf);
-			display_string(buff, lowhalf);
+			display_at(buff, lowhalf);
 
 			// AUX2
 			local_snprintf_P(buff, sizeof buff / sizeof buff [0], 
 				PSTR("A2= %4d"), aux2
 				 );
 			display_gotoxy(0, 1 + lowhalf);
-			display_string(buff, lowhalf);
+			display_at(buff, lowhalf);
 
 			// AUX3
 			/*
@@ -6937,7 +6910,7 @@ void hightests(void)
 				PSTR("A3=%3d"), aux3
 				 );
 			display_gotoxy(7, 1 + lowhalf);
-			display_string(buff, lowhalf);
+			display_at(buff, lowhalf);
 			*/
 #if WITHPOTWPM
 			// WPM
@@ -6945,7 +6918,7 @@ void hightests(void)
 				PSTR("cw=%3d"), wpm
 				 );
 			display_gotoxy(14, 1 + lowhalf);
-			display_string(buff, lowhalf);
+			display_at(buff, lowhalf);
 #endif /* WITHPOTWPM */
 
 			// IF gain raw
@@ -6953,13 +6926,13 @@ void hightests(void)
 				PSTR("rft=%4d"), potrft
 				 );
 			display_gotoxy(0, 2 + lowhalf);
-			display_string(buff, lowhalf);
+			display_at(buff, lowhalf);
 			// AF gain raw
 			local_snprintf_P(buff, sizeof buff / sizeof buff [0], 
 				PSTR("aft=%4d"), potaft
 				 );
 			display_gotoxy(10, 2 + lowhalf);
-			display_string(buff, lowhalf);
+			display_at(buff, lowhalf);
 #endif
 
 		} while (lowhalf --);
@@ -6987,7 +6960,7 @@ void hightests(void)
 
 				display_gotoxy(0, 0 + lowhalf);
 				display_setcolors(COLOR_WHITE, COLOR_BLACK);
-				display_string(buff, lowhalf);
+				display_at(buff, lowhalf);
 			} while (lowhalf --);
 		}
 	}
@@ -7079,7 +7052,7 @@ void hightests(void)
 				//unsigned char v1, v2;
 				display_gotoxy(0, 4);
 				local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("%10lu"), freq );
-				display_string(buff, 0);
+				display_at(buff, 0);
 				ITM_SendChar('a' + (cd ++) % 16);
 				//SWO_PrintChar('a' + (cd ++) % 16);
 
@@ -7102,13 +7075,13 @@ void hightests(void)
 		//v1 = si570_get_status();
 		display_gotoxy(0, 6);
 		local_snprintf_P(buff, 22, PSTR("he %08lX:%08lX"), 0x1726354aul, -7ul);
-		display_string(buff, 0);
+		display_at(buff, 0);
 
 		display_gotoxy(0, 7);
 		//unsigned long l1 = (unsigned long) (rftw >> 32);
 		//unsigned long l2 = (unsigned long) rftw;
 		local_snprintf_P(buff, 22, PSTR("he %08lx"), -4000000l);
-		display_string(buff, 0);
+		display_at(buff, 0);
 		for (;;)
 			;
 	}
@@ -7196,16 +7169,16 @@ void hightests(void)
 			display_gotoxy(0, 0);		// курсор в начало первой строки
 
 
-			display_string(ptt1 != 0 ? "ptt " : "    ", 0);
-			display_string(ptt2 != 0 ? "cptt " : "     ", 0);
-			display_string(ckey != 0 ? "ckey " : "     ", 0);
+			display_at(ptt1 != 0 ? "ptt " : "    ", 0);
+			display_at(ptt2 != 0 ? "cptt " : "     ", 0);
+			display_at(ckey != 0 ? "ckey " : "     ", 0);
 
 			display_gotoxy(0, 2);		// курсор в начало второй строки
-			display_string((elkey & ELKEY_PADDLE_DIT) != 0 ? "dit " : "     ", 0);
+			display_at((elkey & ELKEY_PADDLE_DIT) != 0 ? "dit " : "     ", 0);
 			display_gotoxy(0, 4);		// курсор в начало второй строки
-			display_string((elkey & ELKEY_PADDLE_DASH) != 0 ? "dash" : "      ", 0);
+			display_at((elkey & ELKEY_PADDLE_DASH) != 0 ? "dash" : "      ", 0);
 			display_gotoxy(0, 6);		// курсор в начало второй строки
-			display_string((phase = ! phase) ? " test1" : " test2", 0);
+			display_at((phase = ! phase) ? " test1" : " test2", 0);
 
 		}
 	}
@@ -7231,7 +7204,6 @@ void hightests(void)
 			//display_debug_digit(speed * 100UL / ENCODER_NORMALIZED_RESOLUTION, 7, 2, 0);
 			//enum { lowhalf = 0 };
 			//display_gotoxy(0, 1 + lowhalf);		// курсор в начало второй строки
-			//display_string_P(PSTR(" RPS"), lowhalf);
 		}
 	}
 #endif
@@ -7246,7 +7218,6 @@ void hightests(void)
 			(void) nrotate;
 			//display_gotoxy(0, 1);		// курсор в начало второй строки
 			display_debug_digit(jumpsize, 7, 0, 0);
-			//display_string_P(PSTR(" SCALE"));
 		}
 	}
 #endif
@@ -7284,7 +7255,7 @@ void hightests(void)
 			do
 			{
 				display_gotoxy(0, row * HALFCOUNT_SMALL + lowhalf);		// курсор в начало второй строки
-				display_string("ADCx=", lowhalf);
+				display_at("ADCx=", lowhalf);
 				display_gotoxy(5, row * HALFCOUNT_SMALL + lowhalf);		// курсор в начало второй строки
 				display_menu_value(v0, 5, 255, 0, lowhalf);
 			} while (lowhalf --);
@@ -7483,7 +7454,7 @@ void hightests(void)
 				local_snprintf_P(buff, 17, fmt_1, v1);
 
 				display_gotoxy((i % 8) * 3, (i / 8) * 2);
-				display_string(buff, 0);
+				display_at(buff, 0);
 			}
 		}
 	#endif
@@ -7504,7 +7475,7 @@ void hightests(void)
 		char buff [17];
 		local_snprintf_P(buff, 17, fmt_1, v1);
 		display_gotoxy(0, 0);
-		display_string(buff, 0);
+		display_at(buff, 0);
 		local_delay_ms(100);
 	}
 
@@ -7534,7 +7505,7 @@ void hightests(void)
 		char buff [17];
 		local_snprintf_P(buff, 17, fmt_1, v);
 		display_gotoxy(0, 0);
-		display_string(buff);
+		display_at(buff);
 		local_delay_ms(100);
 	}
 #endif
@@ -7600,7 +7571,7 @@ void hightests(void)
 
 			local_snprintf_P(buff, 17, fmt_1, v ++);
 			display_gotoxy(0, 0);
-			display_string(buff, 0);
+			display_at(buff, 0);
 			
 		}
 	}

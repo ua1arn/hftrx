@@ -383,16 +383,15 @@ void uc1601s_initialize(void)
 	i2c_read(& v1, I2C_READ_ACK_1);
 	i2c_read(& v2, I2C_READ_NACK);
 
-	//display_string("status = ", 0);
+	//display_at(0, 0, "status = ");
 	// expected: 0x88, 0x60	- RDX0077
 	// expected: 0xa8, 0x60
 	// expected: 0xc8, 0x60
 	debug_printf_P(PSTR("UC1601s status=%02" PRIXFAST8 ":%02" PRIXFAST8 "\n"), v1, v2);
 	//
 	char buff [8];
-	display_gotoxy(0, 0);
 	local_snprintf_P(buff, 8, PSTR("%02X:%02X"), v1, v2);
-	display_string(buff, 0);
+	display_at(0, 0, buff);
 	local_delay_ms(300);
 	//for (;;)
 	//	;

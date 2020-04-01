@@ -231,14 +231,7 @@ static pllhint_t si5351a_get_hint(
 			goto found;
 	}
 #if 0
-	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
-
-	do
-	{
-		display_gotoxy(0, 0 + lowhalf);
-		display_string_P(PSTR("[si5351a Err]"), lowhalf);
-		return 0;		/* требуемую частоту невозожно получить */
-	} while (lowhalf --);
+	display_at_P(0, 0, PSTR("[si5351a Err]"));
 #endif
 
 found: 

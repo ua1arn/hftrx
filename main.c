@@ -4767,8 +4767,7 @@ verifyband(const vindex_t b)
 	if (b == ((uint_fast8_t) - 1))
 	{
 		TP();
-		display_gotoxy(0, 1);
-		display_string("band not found", 1);
+		display_at(0, 1, "band not found");
 		for (;;)
 			;
 	}
@@ -12598,8 +12597,7 @@ display_menu_digit(
 	display_setcolors(MNUVALCOLOR, BGCOLOR);
 	do
 	{
-		display_gotoxy(x, y + lowhalf);		// курсор в начало первой строки
-		display_menu_value(value, width, comma, rj, lowhalf);
+		display_menu_value(x, y + lowhalf, value, width, comma, rj, lowhalf);
 	} while (lowhalf --);
 }
 
