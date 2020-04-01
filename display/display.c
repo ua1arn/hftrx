@@ -1622,7 +1622,10 @@ void display_putpixel(
 }
 
 static void
-display_fillrect_pattern(
+colmain_fillrect_pattern(
+	PACKEDCOLORMAIN_T * buffer,
+	uint_fast16_t dx,
+	uint_fast16_t dy,
 	uint_fast16_t x, uint_fast16_t y, 	// координаты в пикселях
 	uint_fast16_t w, uint_fast16_t h, 	// размеры в пикселях
 	COLORMAIN_T fgcolor,
@@ -1630,26 +1633,27 @@ display_fillrect_pattern(
 	uint_fast8_t hpattern	// horizontal pattern (LSB - left)
 	)
 {
+
 #if LCDMODE_HORFILL
 
 	// TODO: bgcolor и hpattern пока игнорируются
 	#if LCDMODE_LTDC_L8 && LCDMODE_LTDC
-		hwacc_fillrect_u8(colmain_fb(), DIM_X, DIM_Y, x, y, w, h, fgcolor);
+		hwacc_fillrect_u8(buffer, dx, dy, x, y, w, h, fgcolor);
 	#elif LCDMODE_LTDC_L24 && LCDMODE_LTDC
-		hwacc_fillrect_u24(colmain_fb(), DIM_X, DIM_Y, x, y, w, h, fgcolor);
+		hwacc_fillrect_u24(buffer, dx, dy, x, y, w, h, fgcolor);
 	#elif LCDMODE_LTDC
-		hwacc_fillrect_u16(colmain_fb(), DIM_X, DIM_Y, x, y, w, h, fgcolor);
+		hwacc_fillrect_u16(buffer, dx, dy, x, y, w, h, fgcolor);
 	#endif
 
 #else /* LCDMODE_HORFILL */
 
 	// TODO: bgcolor и hpattern пока игнорируются
 	#if LCDMODE_LTDC_L8 && LCDMODE_LTDC
-		hwacc_fillrect_u8(colmain_fb(), DIM_Y, DIM_X, y, x, h, w, fgcolor);
+		hwacc_fillrect_u8(buffer, dy, dx, y, x, h, w, fgcolor);
 	#elif LCDMODE_LTDC_L24 && LCDMODE_LTDC
-		hwacc_fillrect_u24(colmain_fb(), DIM_Y, DIM_X, y, x, h, w, fgcolor);
+		hwacc_fillrect_u24(buffer, dy, dx, y, x, h, w, fgcolor);
 	#elif LCDMODE_LTDC
-		hwacc_fillrect_u16(colmain_fb(), DIM_Y, DIM_X, y, x, h, w, fgcolor);
+		hwacc_fillrect_u16(buffer, dy, dx, y, x, h, w, fgcolor);
 	#endif
 
 #endif /* LCDMODE_HORFILL */
@@ -1664,7 +1668,10 @@ display_fillrect(
 	COLORMAIN_T color
 	)
 {
-	display_fillrect_pattern(x, y, w, h, color, color, 0xFF);
+	PACKEDCOLORMAIN_T * const buffer = colmain_fb();
+	const uint_fast16_t dx = DIM_X;
+	const uint_fast16_t dy = DIM_Y;
+	colmain_fillrect_pattern(buffer, dx, dy, x, y, w, h, color, color, 0xFF);
 }
 
 #endif /* LCDMODE_LTDC */
@@ -1935,8 +1942,11 @@ static void RAMFUNC ltdc_horizontal_pixels(
 	arm_hardware_flush((uintptr_t) tgr, sizeof (* tgr) * width);
 }
 
-// Вызов этой функции только внутри display_wrdata_begin() и 	display_wrdata_end();
-static uint_fast16_t RAMFUNC_NONILINE ltdc_horizontal_put_char_small(uint_fast16_t x, uint_fast16_t y, char cc)
+// Вызов этой функции только внутри display_wrdata_begin() и display_wrdata_end();
+// return new x
+static uint_fast16_t
+RAMFUNC_NONILINE
+ltdc_horizontal_put_char_small(uint_fast16_t x, uint_fast16_t y, char cc)
 {
 	PACKEDCOLORMAIN_T * const buffer = colmain_fb();
 	const uint_fast16_t dx = DIM_X;
@@ -1952,8 +1962,10 @@ static uint_fast16_t RAMFUNC_NONILINE ltdc_horizontal_put_char_small(uint_fast16
 	return x + width;
 }
 
-// возвращаем на сколько пикселей вправо занимет отрисованный символ
-static uint_fast16_t RAMFUNC_NONILINE ltdcpip_horizontal_put_char_small(
+// return new x coordinate
+static uint_fast16_t
+RAMFUNC_NONILINE
+ltdcpip_horizontal_put_char_small(
 	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy,
@@ -1970,7 +1982,7 @@ static uint_fast16_t RAMFUNC_NONILINE ltdcpip_horizontal_put_char_small(
 		volatile PACKEDCOLORPIP_T * const tgr = colpip_mem_at(buffer, dx, dy, x, y + cgrow);
 		ltdcpip_horizontal_pixels(tgr, S1D13781_smallfont_LTDC [c] [cgrow], width);
 	}
-	return width;
+	return x + width;
 }
 
 // возвращаем на сколько пикселей вправо занимет отрисованный символ
@@ -2373,7 +2385,6 @@ void display_gotoxy(uint_fast8_t x, uint_fast8_t y)
 	stored_xpix = GRID2X(x);
 	stored_ypix = GRID2Y(y);
 
-	//debug_printf_P(PSTR("display_gotoxy: CHAR_H=%d, CHAR_W=%d, x=%d, y=%d, ltdc_first=%d, ltdc_second=%d\n"), CHAR_H, CHAR_W, x, y, ltdc_first, ltdc_second);
 	ASSERT(stored_xpix < DIM_X);
 	ASSERT(stored_ypix < DIM_Y);
 }
@@ -2383,7 +2394,6 @@ void display_plotfrom(uint_fast16_t x, uint_fast16_t y)
 {
 	stored_xpix = x;
 	stored_ypix = y;
-	//debug_printf_P(PSTR("display_gotoxy: CHAR_H=%d, CHAR_W=%d, x=%d, y=%d, ltdc_first=%d, ltdc_second=%d\n"), CHAR_H, CHAR_W, x, y, ltdc_first, ltdc_second);
 	ASSERT(stored_xpix < DIM_X);
 	ASSERT(stored_ypix < DIM_Y);
 }
@@ -2452,8 +2462,6 @@ void display_plotstop(void)
 
 }
 
-#if LCDMODE_HORFILL
-
 // Вызовы этой функции (или группу вызовов) требуется "обрамить" парой вызовов
 // display_wrdatabar_begin() и display_wrdatabar_end().
 void display_dispbar(
@@ -2466,6 +2474,9 @@ void display_dispbar(
 	uint_fast8_t emptyp			/* паттерн для заполнения между штрихами */
 	)
 {
+	PACKEDCOLORMAIN_T * const buffer = colmain_fb();
+	const uint_fast16_t dx = DIM_X;
+	const uint_fast16_t dy = DIM_Y;
 	ASSERT(value <= topvalue);
 	ASSERT(tracevalue <= topvalue);
 	const uint_fast16_t wfull = GRID2X(width);
@@ -2476,13 +2487,11 @@ void display_dispbar(
 	const uint_fast16_t wmark = (uint_fast32_t) wfull * tracevalue / topvalue;
 	const uint_fast8_t hpattern = 0x33;
 
-	display_fillrect_pattern(x, y, wpart, h, ltdc_fg, ltdc_bg, hpattern);
-	display_fillrect_pattern(x + wpart, y, wfull - wpart, h, ltdc_bg, ltdc_bg, 0x00);
+	colmain_fillrect_pattern(buffer, dx, dy, x, y, wpart, h, ltdc_fg, ltdc_bg, hpattern);
+	colmain_fillrect_pattern(buffer, dx, dy, x + wpart, y, wfull - wpart, h, ltdc_bg, ltdc_bg, 0x00);
 	if (wmark < wfull && wmark >= wpart)
-		display_fillrect_pattern(x + wmark, y, 1, h, ltdc_fg, ltdc_bg, 0xFF);
+		colmain_fillrect_pattern(buffer, dx, dy, x + wmark, y, 1, h, ltdc_fg, ltdc_bg, 0xFF);
 }
-
-#endif /* LCDMODE_HORFILL */
 
 // самый маленький шрифт
 void display_wrdata2_begin(uint_fast8_t x, uint_fast8_t y)
