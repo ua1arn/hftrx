@@ -629,31 +629,6 @@ display_getbgcolor(void)
 }
 
 
-
-// Используется при выводе на графический индикатор,
-static void
-display_string(const char * s, uint_fast8_t lowhalf)
-{
-	char c;
-
-	display_wrdata_begin();
-	while((c = * s ++) != '\0') 
-		display_put_char_small(c, lowhalf);
-	display_wrdata_end();
-}
-
-// Используется при выводе на графический индикатор,
-static void
-display_string_P(const FLASHMEM  char * s, uint_fast8_t lowhalf)
-{
-	char c;
-
-	display_wrdata_begin();
-	while((c = * s ++) != '\0') 
-		display_put_char_small(c, lowhalf);
-	display_wrdata_end();
-}
-
 // Используется при выводе на графический индикатор,
 // самый маленький шрифт
 static void
@@ -683,6 +658,19 @@ display_string2_P(const FLASHMEM  char * s, uint_fast8_t lowhalf)
 }
 
 
+
+// Используется при выводе на графический индикатор,
+static void
+display_string(const char * s, uint_fast8_t lowhalf)
+{
+	char c;
+
+	display_wrdata_begin();
+	while((c = * s ++) != '\0') 
+		display_put_char_small(c, lowhalf);
+	display_wrdata_end();
+}
+
 // Выдача строки из ОЗУ в указанное место экрана.
 void 
 //NOINLINEAT
@@ -696,6 +684,18 @@ display_at(uint_fast8_t x, uint_fast8_t y, const char * s)
 		display_string(s, lowhalf);
 
 	} while (lowhalf --);
+}
+
+// Используется при выводе на графический индикатор,
+static void
+display_string_P(const FLASHMEM  char * s, uint_fast8_t lowhalf)
+{
+	char c;
+
+	display_wrdata_begin();
+	while((c = * s ++) != '\0')
+		display_put_char_small(c, lowhalf);
+	display_wrdata_end();
 }
 
 // Выдача строки из ПЗУ в указанное место экрана.
