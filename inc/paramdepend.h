@@ -1433,8 +1433,8 @@ extern "C" {
 
 	// Цветное изображение не поддерживается на этом дисплее (заглушка).
 	#define TFTRGB(r, g, b)	(0)
-	typedef uint_fast16_t COLOR_T;	/* цвета не поддерживаются - заглушка */
-	typedef uint16_t PACKEDCOLOR_T;
+	typedef uint_fast16_t COLORMAIN_T;	/* цвета не поддерживаются - заглушка */
+	typedef uint16_t PACKEDCOLORMAIM_T;
 
 	#define DISPLAY_BUS_INITIALIZE() do {} while (0)
 

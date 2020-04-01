@@ -20,10 +20,10 @@
 
 #if WITHLTDCHW
 
-PACKEDCOLOR_T *
+PACKEDCOLORMAIM_T *
 rgb565_fb(void)
 {
-	return (PACKEDCOLOR_T *) & framebuff [0] [0];
+	return (PACKEDCOLORMAIM_T *) & framebuff [0] [0];
 }
 
 #if LCDMODE_LQ043T3DX02K
@@ -1744,7 +1744,7 @@ arm_hardware_ltdc_initialize(void)
 	debug_printf_P(PSTR("arm_hardware_ltdc_initialize start, WIDTH=%d, HEIGHT=%d\n"), WIDTH, HEIGHT);
 
 	//const unsigned ROWSIZE = sizeof framebuff [0];	// размер одной строки в байтах
-	//const unsigned rowsize2 = (sizeof (PACKEDCOLOR_T) * DIM_SECOND);
+	//const unsigned rowsize2 = (sizeof (PACKEDCOLORMAIM_T) * DIM_SECOND);
 	//ASSERT(ROWSIZE == rowsize2);
 	debug_printf_P(PSTR("arm_hardware_ltdc_initialize: framebuff=%p\n"), framebuff);
 
@@ -1847,15 +1847,15 @@ arm_hardware_ltdc_initialize(void)
 	// Bottom layer - LTDC_Layer1
 #if LCDMODE_LTDC_L24
 
-	LCD_LayerInit(LAYER_MAIN, LEFTMARGIN, TOPMARGIN, & mainwnd, LTDC_Pixelformat_L8, 3, sizeof (PACKEDCOLOR_T));
+	LCD_LayerInit(LAYER_MAIN, LEFTMARGIN, TOPMARGIN, & mainwnd, LTDC_Pixelformat_L8, 3, sizeof (PACKEDCOLORMAIM_T));
 
 #elif LCDMODE_LTDC_L8
 
-	LCD_LayerInit(LAYER_MAIN, LEFTMARGIN, TOPMARGIN, & mainwnd, LTDC_Pixelformat_L8, 1, sizeof (PACKEDCOLOR_T));
+	LCD_LayerInit(LAYER_MAIN, LEFTMARGIN, TOPMARGIN, & mainwnd, LTDC_Pixelformat_L8, 1, sizeof (PACKEDCOLORMAIM_T));
 
 #else
 	/* Без палитры */
-	LCD_LayerInit(LAYER_MAIN, LEFTMARGIN, TOPMARGIN, & mainwnd, LTDC_Pixelformat_RGB565, 1, sizeof (PACKEDCOLOR_T));
+	LCD_LayerInit(LAYER_MAIN, LEFTMARGIN, TOPMARGIN, & mainwnd, LTDC_Pixelformat_RGB565, 1, sizeof (PACKEDCOLORMAIM_T));
 
 #endif /* LCDMODE_LTDC_L8 */
 

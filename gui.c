@@ -18,12 +18,17 @@
 
 #if LCDMODE_LTDC
 
+
+#if WITHTOUCHGUI
+	#include "keyboard.h"
+	#include "list.h"
+
 #include "./display/fontmaps.h"
 
-void display_radius(int xc, int yc, unsigned gs, unsigned r1, unsigned r2, COLOR_T color);
-void display_segm(int xc, int yc, unsigned gs, unsigned ge, unsigned r, int step, COLOR_T color);
+void display_radius(int xc, int yc, unsigned gs, unsigned r1, unsigned r2, COLORMAIN_T color);
+void display_segm(int xc, int yc, unsigned gs, unsigned ge, unsigned r, int step, COLORMAIN_T color);
 void polar_to_dek(uint_fast16_t xc, uint_fast16_t yc, uint_fast16_t gs, uint_fast16_t r, uint_fast16_t * x, uint_fast16_t * y);
-void floodFill_framebuffer(uint_fast16_t x, uint_fast16_t y, PACKEDCOLOR_T newColor, PACKEDCOLOR_T oldColor);
+void floodFill_framebuffer(uint_fast16_t x, uint_fast16_t y, PACKEDCOLORMAIM_T newColor, PACKEDCOLORMAIM_T oldColor);
 
 static
 uint_fast16_t normalize(
@@ -74,7 +79,7 @@ display_smeter2(
 	int r2 = r1 - stripewidth;
 	int yc = y * ADDRCELLHEIGHT;	//560;
 	int xc = x * ADDRCELLHEIGHT;	//120;
-	COLOR_T ct;
+	COLORMAIN_T ct;
 	uint_fast16_t xx, yy, i;
 	static uint_fast16_t x1, x2, y1, y2, old_swr10 = 0;
 	char buf[10];
@@ -162,8 +167,8 @@ display_smeter2(
 		gm + 5 * step2,
 	};
 
-	const COLOR_T smeter = COLORMAIN_WHITE;
-	const COLOR_T smeterplus = COLORMAIN_DARKRED;
+	const COLORMAIN_T smeter = COLORMAIN_WHITE;
+	const COLORMAIN_T smeterplus = COLORMAIN_DARKRED;
 
 	if (first_run) // определение координат области отрисовки шкалы
 	{
@@ -306,10 +311,6 @@ display_smeter2(
 //	}
 	(void) pv;
 }
-
-#if WITHTOUCHGUI
-	#include "keyboard.h"
-	#include "list.h"
 
 void button1_handler(void);
 	void button2_handler(void);
@@ -821,11 +822,11 @@ void button1_handler(void);
 			}
 		}
 
-		display_colorbuffer_line_set(colorpip, gui.pip_width, gui.pip_height, 251, 110, 549, 110, COLORPIP_GRAY);
-		display_colorbuffer_line_set(colorpip, gui.pip_width, gui.pip_height, 290, 70, 290, 120, COLORPIP_GRAY);
-		display_colorbuffer_rect(colorpip, gui.pip_width, gui.pip_height, x_l, 70, x_h, 108, COLORPIP_YELLOW, 1);
+		display_colorbuf_line_set(colorpip, gui.pip_width, gui.pip_height, 251, 110, 549, 110, COLORPIP_GRAY);
+		display_colorbuf_line_set(colorpip, gui.pip_width, gui.pip_height, 290, 70, 290, 120, COLORPIP_GRAY);
+		display_colorbuf_rect(colorpip, gui.pip_width, gui.pip_height, x_l, 70, x_h, 108, COLORPIP_YELLOW, 1);
 		if (! bw_type)
-			display_colorbuffer_line_set(colorpip, gui.pip_width, gui.pip_height, x_c, 60, x_c, 120, COLORPIP_RED);
+			display_colorbuf_line_set(colorpip, gui.pip_width, gui.pip_height, x_c, 60, x_c, 120, COLORPIP_RED);
 }
 
 	void window_freq_process (void)
@@ -1488,9 +1489,9 @@ void button1_handler(void);
 		static const char delimeters [] = "|";
 		c1 = is_disabled ? COLOR_BUTTON_DISABLED : (is_locked ? COLOR_BUTTON_LOCKED : COLOR_BUTTON_NON_LOCKED);
 		c2 = is_disabled ? COLOR_BUTTON_DISABLED : (is_locked ? COLOR_BUTTON_PR_LOCKED : COLOR_BUTTON_PR_NON_LOCKED);
-		display_colorbuffer_rect(colorpip, gui.pip_width, gui.pip_height, x1,	y1, x2, y2, pressed ? c1 : c2, 1);
-		display_colorbuffer_rect(colorpip, gui.pip_width, gui.pip_height, x1,	y1, x2, y2, COLORPIP_GRAY, 0);
-		display_colorbuffer_rect(colorpip, gui.pip_width, gui.pip_height, x1 + 2, y1 + 2, x2 - 2, y2 - 2, COLORPIP_BLACK, 0);
+		display_colorbuf_rect(colorpip, gui.pip_width, gui.pip_height, x1,	y1, x2, y2, pressed ? c1 : c2, 1);
+		display_colorbuf_rect(colorpip, gui.pip_width, gui.pip_height, x1,	y1, x2, y2, COLORPIP_GRAY, 0);
+		display_colorbuf_rect(colorpip, gui.pip_width, gui.pip_height, x1 + 2, y1 + 2, x2 - 2, y2 - 2, COLORPIP_BLACK, 0);
 
 		if (strchr(text, delimeters[0]) == NULL)
 		{

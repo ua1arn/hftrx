@@ -102,12 +102,12 @@ static void st7735_put_char_end(void)
 
 
 #if WITHSPIEXT16
-	static COLOR_T fgcolor, bkcolor, halfcolor;
+	static COLORMAIN_T fgcolor, bkcolor, halfcolor;
 #else /* WITHSPIEXT16 */
 	static struct { uint_fast8_t first, second; } fgcolor, bkcolor, halfcolor;
 #endif
 
-static void st7735_setcolor(COLOR_T fg, COLOR_T bg, COLOR_T transient)
+static void st7735_setcolor(COLORMAIN_T fg, COLORMAIN_T bg, COLORMAIN_T transient)
 {
 #if WITHSPIEXT16
 	fgcolor = fg;
@@ -228,7 +228,7 @@ st7735_pixel_p3(
 static void 
 //NOINLINEAT
 st7735_colorpixel_p1(
-	COLOR_T color
+	COLORMAIN_T color
 	)
 {
 #if WITHSPIEXT16
@@ -246,7 +246,7 @@ st7735_colorpixel_p1(
 static void 
 //NOINLINEAT
 st7735_colorpixel_p2(
-	COLOR_T color
+	COLORMAIN_T color
 	)
 {
 #if WITHSPIEXT16
@@ -264,7 +264,7 @@ st7735_colorpixel_p2(
 static void 
 //NOINLINEAT
 st7735_colorpixel_p3(
-	COLOR_T color
+	COLORMAIN_T color
 	)
 {
 #if WITHSPIEXT16
@@ -643,7 +643,7 @@ st7735_set_addr_column(
 #endif /* WITHSPIEXT16 */
 }
 
-static void st7735_clear(COLOR_T bg)
+static void st7735_clear(COLORMAIN_T bg)
 {
 	unsigned long i;
 	
@@ -659,7 +659,7 @@ static void st7735_clear(COLOR_T bg)
 	}
 	for (i = 0; i < DIM_Y; i += LNBURST)
 	{
-		display_colorbuffer_show(colorbuf, DIM_X, LNBURST, 0, i);
+		display_colorbuf_show(colorbuf, DIM_X, LNBURST, 0, i);
 	#if WITHINTEGRATEDDSP
 		audioproc_spool_user();		// решение проблем с прерыванием звука при стирании экрана
 	#endif /* WITHINTEGRATEDDSP */
@@ -1177,18 +1177,18 @@ void display_set_contrast(uint_fast8_t v)
 void 
 display_clear(void)
 {
-	const COLOR_T bg = display_getbgcolor();
+	const COLORMAIN_T bg = display_getbgcolor();
 
 	st7735_clear(bg);
 }
 
 void
-display_setcolors(COLOR_T fg, COLOR_T bg)
+display_setcolors(COLORMAIN_T fg, COLORMAIN_T bg)
 {
 	st7735_setcolor(fg, bg, bg);
 }
 
-void display_setcolors3(COLOR_T fg, COLOR_T bg, COLOR_T fgbg)
+void display_setcolors3(COLORMAIN_T fg, COLORMAIN_T bg, COLORMAIN_T fgbg)
 {
 	st7735_setcolor(fg, bg, fgbg);
 }
@@ -1312,7 +1312,7 @@ void display_plotstop(void)
 }
 
 void display_plot(
-	const PACKEDCOLOR_T * buffer, 
+	const PACKEDCOLORMAIM_T * buffer, 
 	uint_fast16_t dx,	// Размеры окна в пикселях
 	uint_fast16_t dy
 	)

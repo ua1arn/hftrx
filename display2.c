@@ -22,24 +22,24 @@
 // todo: учесть LCDMODE_COLORED
 
 // параметры отображения состояния прием/пеердача
-static const COLOR_T colorsfg_2rxtx [2] = { COLORMAIN_GREEN, COLORMAIN_RED, };
-static const COLOR_T colorsbg_2rxtx [2] = { COLORMAIN_BLACK, COLORMAIN_BLACK, };
+static const COLORMAIN_T colorsfg_2rxtx [2] = { COLORMAIN_GREEN, COLORMAIN_RED, };
+static const COLORMAIN_T colorsbg_2rxtx [2] = { COLORMAIN_BLACK, COLORMAIN_BLACK, };
 
 // параметры отображения состояний из трех вариантов
-static const COLOR_T colorsfg_4state [4] = { COLORMAIN_BLACK, COLORMAIN_WHITE, COLORMAIN_WHITE, COLORMAIN_WHITE, };
-static const COLOR_T colorsbg_4state [4] = { DESIGNCOLORSTATE, DESIGNCOLORDARKSTATE, DESIGNCOLORDARKSTATE, DESIGNCOLORDARKSTATE, };
+static const COLORMAIN_T colorsfg_4state [4] = { COLORMAIN_BLACK, COLORMAIN_WHITE, COLORMAIN_WHITE, COLORMAIN_WHITE, };
+static const COLORMAIN_T colorsbg_4state [4] = { DESIGNCOLORSTATE, DESIGNCOLORDARKSTATE, DESIGNCOLORDARKSTATE, DESIGNCOLORDARKSTATE, };
 
 // параметры отображения состояний из двух вариантов
-static const COLOR_T colorsfg_2state [2] = { COLORMAIN_BLACK, COLORMAIN_WHITE, };
-static const COLOR_T colorsbg_2state [2] = { DESIGNCOLORSTATE, DESIGNCOLORDARKSTATE, };	// COLORMAIN_GREEN	COLOR_DARKGREEN
+static const COLORMAIN_T colorsfg_2state [2] = { COLORMAIN_BLACK, COLORMAIN_WHITE, };
+static const COLORMAIN_T colorsbg_2state [2] = { DESIGNCOLORSTATE, DESIGNCOLORDARKSTATE, };	// COLORMAIN_GREEN	COLOR_DARKGREEN
 
 // параметры отображения текстов без вариантов
-static const COLOR_T colorsfg_1state [1] = { DESIGNCOLORSTATE, };
-static const COLOR_T colorsbg_1state [1] = { COLORMAIN_BLACK, };	// устанавливается в цвет фона из палитры
+static const COLORMAIN_T colorsfg_1state [1] = { DESIGNCOLORSTATE, };
+static const COLORMAIN_T colorsbg_1state [1] = { COLORMAIN_BLACK, };	// устанавливается в цвет фона из палитры
 
 // параметры отображения текстов без вариантов
-static const COLOR_T colorsfg_1freq [1] = { DESIGNBIGCOLOR, };
-static const COLOR_T colorsbg_1freq [1] = { COLORMAIN_BLACK, };	// устанавливается в цвет фона из палитры
+static const COLORMAIN_T colorsfg_1freq [1] = { DESIGNBIGCOLOR, };
+static const COLORMAIN_T colorsbg_1freq [1] = { COLORMAIN_BLACK, };	// устанавливается в цвет фона из палитры
 
 // todo: switch off -Wunused-function
 
@@ -476,8 +476,8 @@ display2_text_P(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	const FLASHMEM char * const * labels,	// массив указателей на текст
-	const COLOR_T * colorsfg,			// массив цветов face
-	const COLOR_T * colorsbg,			// массив цветов background
+	const COLORMAIN_T * colorsfg,			// массив цветов face
+	const COLORMAIN_T * colorsbg,			// массив цветов background
 	uint_fast8_t state
 	)
 {
@@ -496,8 +496,8 @@ display2_text(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	const char * const * labels,	// массив указателей на текст
-	const COLOR_T * colorsfg,			// массив цветов face
-	const COLOR_T * colorsbg,			// массив цветов background
+	const COLORMAIN_T * colorsfg,			// массив цветов face
+	const COLORMAIN_T * colorsbg,			// массив цветов background
 	uint_fast8_t state
 	)
 {
@@ -5662,14 +5662,14 @@ display_colorgrid_xor(
 				if (xmarker > freqw / 2 && xmarker < (ALLDX - freqw / 2))
 				{
 					display_colorbuff_string3_tbg(buffer, ALLDX, ALLDY, xmarker - freqw / 2, row0, buf, COLORPIP_YELLOW);
-					display_colorbuffer_xor_vline(buffer, ALLDX, ALLDY, xmarker, row0 + MARKERH, h - MARKERH, color);
+					display_colorbuf_xor_vline(buffer, ALLDX, ALLDY, xmarker, row0 + MARKERH, h - MARKERH, color);
 				}
 				else
-					display_colorbuffer_xor_vline(buffer, ALLDX, ALLDY, xmarker, row0, h, color);
+					display_colorbuf_xor_vline(buffer, ALLDX, ALLDY, xmarker, row0, h, color);
 			}
 		}
 	}
-	display_colorbuffer_xor_vline(buffer, ALLDX, ALLDY, ALLDX / 2, row0, h, color0);	// center frequency marker
+	display_colorbuf_xor_vline(buffer, ALLDX, ALLDY, ALLDX / 2, row0, h, color0);	// center frequency marker
 }
 
 // отрисовка маркеров частот
@@ -5706,14 +5706,14 @@ display_colorgrid_set(
 				if (xmarker > freqw / 2 && xmarker < (ALLDX - freqw / 2))
 				{
 					display_colorbuff_string3_tbg(buffer, ALLDX, ALLDY, xmarker - freqw / 2, row0, buf, COLORPIP_YELLOW);
-					display_colorbuffer_set_vline(buffer, ALLDX, ALLDY, xmarker, row0 + MARKERH, h - MARKERH, color);
+					display_colorbuf_set_vline(buffer, ALLDX, ALLDY, xmarker, row0 + MARKERH, h - MARKERH, color);
 				}
 				else
-					display_colorbuffer_set_vline(buffer, ALLDX, ALLDY, xmarker, row0, h, color);
+					display_colorbuf_set_vline(buffer, ALLDX, ALLDY, xmarker, row0, h, color);
 			}
 		}
 	}
-	display_colorbuffer_set_vline(buffer, ALLDX, ALLDY, ALLDX / 2, row0, h, color0);	// center frequency marker
+	display_colorbuf_set_vline(buffer, ALLDX, ALLDY, ALLDX / 2, row0, h, color0);	// center frequency marker
 }
 
 // Спектр на монохромных дисплеях
@@ -5828,7 +5828,7 @@ static void display2_spectrum(
 			{
 				const uint_fast8_t inband = (x >= xleft && x <= xright);	// в полосе пропускания приемника = "шторка"
 				// формирование фона растра
-				display_colorbuffer_set_vline(colorpip, ALLDX, ALLDY, x, SPY0, SPDY, inband ? COLORPIP_SPECTRUMBG2 : COLORPIP_SPECTRUMBG);
+				display_colorbuf_set_vline(colorpip, ALLDX, ALLDY, x, SPY0, SPDY, inband ? COLORPIP_SPECTRUMBG2 : COLORPIP_SPECTRUMBG);
 			}
 			display_colorgrid_set(colorpip, SPY0, SPDY, f0, bw);	// отрисовка маркеров частот
 			for (x = 0; x < ALLDX; ++ x)
@@ -5836,7 +5836,7 @@ static void display2_spectrum(
 				// ломанная
 				uint_fast16_t ynew = SPDY - 1 - dsp_mag2y(filter_spectrum(x), SPDY - 1, glob_topdb, glob_bottomdb);
 				if (x != 0)
-					display_colorbuffer_line_set(colorpip, ALLDX, ALLDY, x - 1, ylast, x, ynew, COLORPIP_SPECTRUMLINE);
+					display_colorbuf_line_set(colorpip, ALLDX, ALLDY, x - 1, ylast, x, ynew, COLORPIP_SPECTRUMLINE);
 				ylast = ynew;
 			}
 		}
@@ -5854,18 +5854,18 @@ static void display2_spectrum(
 
 				// формирование фона растра - верхняя часть графика (Шторка)
 				//debug_printf_P(PSTR("xl=%d xr=%d\n"), xleft, xright);
-				display_colorbuffer_set_vline(colorpip, ALLDX, ALLDY, x, SPY0, yv, inband ? COLORPIP_SPECTRUMBG2 : COLORPIP_SPECTRUMBG);
+				display_colorbuf_set_vline(colorpip, ALLDX, ALLDY, x, SPY0, yv, inband ? COLORPIP_SPECTRUMBG2 : COLORPIP_SPECTRUMBG);
 
 				// точку на границе
 				if (yv < SPDY)
 				{
-					display_colorbuffer_set(colorpip, ALLDX, ALLDY, x, yv + SPY0, COLORPIP_SPECTRUMFENCE);
+					display_colorbuf_set(colorpip, ALLDX, ALLDY, x, yv + SPY0, COLORPIP_SPECTRUMFENCE);
 
 					// Нижняя часть экрана
 					const int yb = yv + 1;
 					if (yb < SPDY)
 					{
-						display_colorbuffer_set_vline(colorpip, ALLDX, ALLDY, x, yb + SPY0, SPDY - yb, COLORPIP_SPECTRUMFG);
+						display_colorbuf_set_vline(colorpip, ALLDX, ALLDY, x, yb + SPY0, SPDY - yb, COLORPIP_SPECTRUMFG);
 					}
 				}
 			}
@@ -5973,7 +5973,7 @@ static void wfsetupnew(void)
 // отрисовка вновь появившихся данных на водопаде (в случае использования аппаратного scroll видеопамяти).
 static void display_wfputrow(uint_fast16_t x, uint_fast16_t y, const PACKEDCOLORPIP_T * p)
 {
-	display_colorbuffer_show(p, ALLDX, 1, x, y);
+	display_colorbuf_show(p, ALLDX, 1, x, y);
 }
 
 // формирование данных спектра для последующего отображения
@@ -6146,9 +6146,9 @@ static void display2_waterfall(
 
 	/* перенос растра. Организация предполагается LCDMODE_HORFILL */
 
-	memcpy(display_colorbuffer_at(colorpip, ALLDX, ALLDY, 0, p1y), (const void *) & wfarray [wfrow] [0], p1h * sizeof (PACKEDCOLORPIP_T) * ALLDX);
+	memcpy(display_colorbuf_at(colorpip, ALLDX, ALLDY, 0, p1y), (const void *) & wfarray [wfrow] [0], p1h * sizeof (PACKEDCOLORPIP_T) * ALLDX);
 	if (p2h != 0)
-		memcpy(display_colorbuffer_at(colorpip, ALLDX, ALLDY, 0, p2y), (const void *) & wfarray [0] [0], p2h * sizeof (PACKEDCOLORPIP_T) * ALLDX);
+		memcpy(display_colorbuf_at(colorpip, ALLDX, ALLDY, 0, p2y), (const void *) & wfarray [0] [0], p2h * sizeof (PACKEDCOLORPIP_T) * ALLDX);
 
 #else /* */
 
@@ -6165,7 +6165,7 @@ static void display2_waterfall(
 	{
 		for (x = 0; x < ALLDX; ++ x)
 		{
-			display_colorbuffer_set(colorpip, ALLDX, ALLDY, x, y + WFY0, wfpalette [wfarray [(wfrow + y) % WFDY] [x]]);
+			display_colorbuf_set(colorpip, ALLDX, ALLDY, x, y + WFY0, wfpalette [wfarray [(wfrow + y) % WFDY] [x]]);
 		}
 	}
 
@@ -6190,9 +6190,9 @@ static void display2_colorbuff(
 	PACKEDCOLORPIP_T * const colorpip = getscratchpip();
 
 	#if ((LCDMODE_LTDC_PIP16 || LCDMODE_LTDC_PIPL8) && LCDMODE_LTDC)
-		display_colorbuffer_pip(colorpip, ALLDX, ALLDY);
+		display_colorbuf_pip(colorpip, ALLDX, ALLDY);
 	#else /* LCDMODE_LTDC_PIP16 */
-		display_colorbuffer_show(colorpip, ALLDX, ALLDY, GRID2X(x0), GRID2Y(y0));
+		display_colorbuf_show(colorpip, ALLDX, ALLDY, GRID2X(x0), GRID2Y(y0));
 	#endif /* LCDMODE_LTDC_PIP16 */
 
 	nextpip();
@@ -6263,7 +6263,7 @@ display2_pip_off(
 
 // Рисуем на основном экране цветной прямоугольник.
 // x2, y2 - координаты второго угла (не входящие в закрашиваемый прямоугольник)
-void display_solidbar(uint_fast16_t x, uint_fast16_t y, uint_fast16_t x2, uint_fast16_t y2, COLOR_T color)
+void display_solidbar(uint_fast16_t x, uint_fast16_t y, uint_fast16_t x2, uint_fast16_t y2, COLORMAIN_T color)
 {
 	if (x2 < x)
 	{
