@@ -606,14 +606,6 @@ void arm_hardware_mdma_initialize(void)
 
 #endif /* WITHMDMAHW */
 
-
-static uint_fast8_t stored_xcell, stored_ycell;	// используется в colmain_bar
-
-static uint_fast16_t stored_xpix, stored_ypix;	// в пикселях
-static uint_fast16_t ltdc_h;						// высота символа (полосы) в пикселях
-
-static uint_fast16_t ltdc_secondoffs;			// в пикселях
-
 #if LCDMODE_COLORED
 static COLORMAIN_T bgcolor;
 #endif /* LCDMODE_COLORED */
@@ -646,7 +638,7 @@ display_string2(uint_fast8_t xcell, uint_fast8_t ycell, const char * s, uint_fas
 	uint_fast16_t ypix;
 	uint_fast16_t xpix = display_wrdata2_begin(xcell, ycell, & ypix);
 	while((c = * s ++) != '\0') 
-		stored_xpix = display_put_char_small2(stored_xpix, stored_ypix, c, lowhalf);
+		xpix = display_put_char_small2(xpix, ypix, c, lowhalf);
 	display_wrdata2_end();
 }
 
@@ -662,7 +654,7 @@ display_string2_P(uint_fast8_t xcell, uint_fast8_t ycell, const FLASHMEM  char *
 	uint_fast16_t ypix;
 	uint_fast16_t xpix = display_wrdata2_begin(xcell, ycell, & ypix);
 	while((c = * s ++) != '\0') 
-		stored_xpix = display_put_char_small2(stored_xpix, stored_xpix, c, lowhalf);
+		xpix = display_put_char_small2(xpix, xpix, c, lowhalf);
 	display_wrdata2_end();
 }
 
@@ -677,7 +669,7 @@ display_string(uint_fast8_t xcell, uint_fast8_t ycell,const char * s, uint_fast8
 	uint_fast16_t ypix;
 	uint_fast16_t xpix = display_wrdata_begin(xcell, ycell, & ypix);
 	while((c = * s ++) != '\0') 
-		stored_xpix = display_put_char_small(stored_xpix, stored_ypix, c, lowhalf);
+		xpix = display_put_char_small(xpix, ypix, c, lowhalf);
 	display_wrdata_end();
 }
 
@@ -703,7 +695,7 @@ display_string_P(uint_fast8_t xcell, uint_fast8_t ycell, const FLASHMEM  char * 
 	uint_fast16_t ypix;
 	uint_fast16_t xpix = display_wrdata_begin(xcell, ycell, & ypix);
 	while((c = * s ++) != '\0')
-		stored_xpix = display_put_char_small(stored_xpix, stored_ypix, c, lowhalf);
+		xpix = display_put_char_small(xpix, ypix, c, lowhalf);
 	display_wrdata_end();
 }
 
@@ -752,14 +744,14 @@ void display_showbuffer(
 		display_plotfrom(GRID2X(col), GRID2Y(row) + lowhalf * 8);		// курсор в начало первой строки
 		// выдача горизонтальной полосы
 		uint_fast16_t ypix;
-		uint_fast16_t xpix = display_wrdatabar_begin(stored_xcell, stored_ycell, & ypix);
+		uint_fast16_t xpix = display_wrdatabar_begin(xcell, ycell, & ypix);
 	#if WITHSPIHWDMA && (0)
 		// на LCDMODE_S1D13781 почему-то DMA сбивает контроллер
 		// на LCDMODE_UC1608 портит мохранене теузей частоты и режима работы (STM32F746xx)
 		hardware_spi_master_send_frame(p, dx);
 	#else
 		for (pos = 0; pos < dx; ++ pos)
-			stored_xpix = display_barcolumn(stored_xpix, stored_ypix, p [pos]);	// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
+			xpix = display_barcolumn(xpix, ypix, p [pos]);	// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
 	#endif
 		display_wrdatabar_end();
 	} while (lowhalf --);
@@ -1769,6 +1761,8 @@ void display_setcolors3(COLORMAIN_T fg, COLORMAIN_T bg, COLORMAIN_T fgbg)
 // Выдать один цветной пиксель
 static void 
 ltdc_pix1color(
+	uint_fast16_t xpix,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t ypix,	// вертикальная координата пикселя (0..dy-1) сверху вниз
 	uint_fast8_t cgcol,		// смещение в пикселях относительно координат, поставленных display_gotoxy
 	uint_fast8_t cgrow,
 	PACKEDCOLORMAIN_T color
@@ -1777,11 +1771,7 @@ ltdc_pix1color(
 	PACKEDCOLORMAIN_T * const buffer = colmain_fb();
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
-	volatile PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, stored_xpix + ltdc_secondoffs, stored_ypix + cgrow);
-	//volatile PACKEDCOLORPIP_T * const tgr = colpip_mem_at(buffer, dx, dy, stored_xpix, stored_ypix + cgrow);
-	//volatile PACKEDCOLORMAIN_T * const tgr = & framebuff [ltdc_first + cgrow] [ltdc_second + ltdc_secondoffs + cgcol];
-	// размещаем пиксели по горизонтали
-	//debug_printf_P(PSTR("framebuff=%p, ltdc_first=%d, cgrow=%d, ltdc_second=%d, ltdc_secondoffs=%d, cgcol=%d\n"), framebuff, ltdc_first, cgrow, ltdc_second, ltdc_secondoffs, cgcol);
+	volatile PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, xpix + cgcol, ypix + cgrow);
 	* tgr = color;
 	//arm_hardware_flush((uintptr_t) tgr, sizeof * tgr);
 }
@@ -1790,18 +1780,22 @@ ltdc_pix1color(
 // Выдать один цветной пиксель (фон/символ)
 static void 
 ltdc_pixel(
+	uint_fast16_t xpix,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t ypix,	// вертикальная координата пикселя (0..dy-1) сверху вниз
 	uint_fast8_t cgcol,		// смещение в пикселях относительно координат, поставленных display_gotoxy
 	uint_fast8_t cgrow,
 	uint_fast8_t v			// 0 - цвет background, иначе - foreground
 	)
 {
-	ltdc_pix1color(cgcol, cgrow, v ? ltdc_fg : ltdc_bg);
+	ltdc_pix1color(xpix, ypix, cgcol, cgrow, v ? ltdc_fg : ltdc_bg);
 }
 
 
 // Выдать восемь цветных пикселей, младший бит - самый верхний в растре
 static void
 ltdc_vertical_pixN(
+	uint_fast16_t xpix,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t ypix,	// вертикальная координата пикселя (0..dy-1) сверху вниз
 	uint_fast8_t v,		// pattern
 	uint_fast8_t w		// number of lower bits used in pattern
 	)
@@ -1810,17 +1804,17 @@ ltdc_vertical_pixN(
 #if LCDMODE_LTDC_L24 || LCDMODE_HORFILL
 
 	// TODO: для паттернов шире чем восемь бит, повторить нужное число раз.
-	ltdc_pixel(0, 0, v & 0x01);
-	ltdc_pixel(0, 1, v & 0x02);
-	ltdc_pixel(0, 2, v & 0x04);
-	ltdc_pixel(0, 3, v & 0x08);
-	ltdc_pixel(0, 4, v & 0x10);
-	ltdc_pixel(0, 5, v & 0x20);
-	ltdc_pixel(0, 6, v & 0x40);
-	ltdc_pixel(0, 7, v & 0x80);
+	ltdc_pixel(xpix, ypix, 0, 0, v & 0x01);
+	ltdc_pixel(xpix, ypix, 0, 1, v & 0x02);
+	ltdc_pixel(xpix, ypix, 0, 2, v & 0x04);
+	ltdc_pixel(xpix, ypix, 0, 3, v & 0x08);
+	ltdc_pixel(xpix, ypix, 0, 4, v & 0x10);
+	ltdc_pixel(xpix, ypix, 0, 5, v & 0x20);
+	ltdc_pixel(xpix, ypix, 0, 6, v & 0x40);
+	ltdc_pixel(xpix, ypix, 0, 7, v & 0x80);
 
 	// сместить по вертикали?
-	ltdc_secondoffs ++;
+	//ltdc_secondoffs ++;
 
 #else /* LCDMODE_LTDC_L24 */
 	// размещаем пиксели по горизонтали
@@ -2381,26 +2375,30 @@ void display_clear(void)
 	display_fillrect(0, 0, DIM_X, DIM_Y, bg);
 }
 
+#if 0
+
 void display_gotoxy(uint_fast8_t x, uint_fast8_t y)
 {
-	stored_xcell = x;	// используется в colmain_bar
-	stored_ycell = y;	// используется в colmain_bar
-
-	stored_xpix = GRID2X(x);
-	stored_ypix = GRID2Y(y);
-
-	ASSERT(stored_xpix < DIM_X);
-	ASSERT(stored_ypix < DIM_Y);
+//	xcell = x;	// используется в colmain_bar
+//	ycell = y;	// используется в colmain_bar
+//
+//	xpix = GRID2X(x);
+//	ypix = GRID2Y(y);
+//
+//	ASSERT(xpix < DIM_X);
+//	ASSERT(ypix < DIM_Y);
 }
 
 // Координаты в пикселях
 void display_plotfrom(uint_fast16_t x, uint_fast16_t y)
 {
-	stored_xpix = x;
-	stored_ypix = y;
-	ASSERT(stored_xpix < DIM_X);
-	ASSERT(stored_ypix < DIM_Y);
+//	xpix = x;
+//	ypix = y;
+//	ASSERT(xpix < DIM_X);
+//	ASSERT(ypix < DIM_Y);
 }
+
+#endif
 
 void display_plotstart(
 	uint_fast16_t height	// Высота окна в пикселях
@@ -2415,6 +2413,7 @@ void display_plot(
 	uint_fast16_t dy
 	)
 {
+#if 0
 	PACKEDCOLORMAIN_T * const tbuffer = colmain_fb();
 	const uint_fast16_t tdx = DIM_X;
 	const uint_fast16_t tdy = DIM_Y;
@@ -2422,7 +2421,7 @@ void display_plot(
 
 	#if WITHMDMAHW || (WITHDMA2DHW && ! LCDMODE_LTDC_L8)
 		arm_hardware_flush((uintptr_t) buffer, sizeof (* buffer) * dx * dy);
-		hwaccel_copy_main(buffer, colmain_mem_at(tbuffer, tdx, tdy, stored_xpix, stored_ypix), dx, DIM_SECOND - dx, dy);
+		hwaccel_copy_main(buffer, colmain_mem_at(tbuffer, tdx, tdy, xpix, ypix), dx, DIM_SECOND - dx, dy);
 		//ltdc_first += dy;
 
 	#else /* WITHMDMAHW || (WITHLTDCHW && ! LCDMODE_LTDC_L8) */
@@ -2431,7 +2430,7 @@ void display_plot(
 		uint_fast16_t yoffs = 0;
 		while (dy --)
 		{
-			PACKEDCOLORMAIN_T * const p = colmain_mem_at(tbuffer, tdx, tdy, stored_xpix, stored_ypix + yoffs);
+			PACKEDCOLORMAIN_T * const p = colmain_mem_at(tbuffer, tdx, tdy, xpix, ypix + yoffs);
 			memcpy(p, buffer, len);
 			arm_hardware_flush((uintptr_t) p, len);
 			buffer += dx;
@@ -2459,6 +2458,7 @@ void display_plot(
 
 	#endif /* WITHMDMAHW || (WITHLTDCHW && ! LCDMODE_LTDC_L8) */
 #endif /* LCDMODE_HORFILL */
+#endif
 }
 
 void display_plotstop(void)
@@ -2472,8 +2472,8 @@ void colmain_bar(
 	PACKEDCOLORMAIN_T * buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy,
-	uint_fast16_t xpix,
-	uint_fast16_t ypix,
+	uint_fast16_t x,
+	uint_fast16_t y,
 	uint_fast8_t width,	/* количество знакомест, занимаемых индикатором */
 	uint_fast8_t value,		/* значение, которое надо отобразить */
 	uint_fast8_t tracevalue,		/* значение маркера, которое надо отобразить */
@@ -2487,8 +2487,6 @@ void colmain_bar(
 	ASSERT(tracevalue <= topvalue);
 	const uint_fast16_t wfull = GRID2X(width);
 	const uint_fast16_t h = SMALLCHARH; //GRID2Y(1);
-	const uint_fast16_t x = GRID2X(stored_xcell);
-	const uint_fast16_t y = GRID2Y(stored_ycell);
 	const uint_fast16_t wpart = (uint_fast32_t) wfull * value / topvalue;
 	const uint_fast16_t wmark = (uint_fast32_t) wfull * tracevalue / topvalue;
 	const uint_fast8_t hpattern = 0x33;
@@ -2502,9 +2500,11 @@ void colmain_bar(
 // самый маленький шрифт
 uint_fast16_t display_wrdata2_begin(uint_fast8_t x, uint_fast8_t y, uint_fast16_t * yp)
 {
-	ltdc_secondoffs = 0;
-	ltdc_h = SMALLCHARH;
-	display_gotoxy(x, y);
+	//ltdc_secondoffs = 0;
+	//ltdc_h = SMALLCHARH;
+
+	* yp = GRID2Y(y);
+	return GRID2X(x);
 }
 
 void display_wrdata2_end(void)
@@ -2524,15 +2524,17 @@ uint_fast16_t display_put_char_small2(uint_fast16_t x, uint_fast16_t y, uint_fas
 // полоса индикатора
 uint_fast16_t display_wrdatabar_begin(uint_fast8_t x, uint_fast8_t y, uint_fast16_t * yp)
 {
-	ltdc_secondoffs = 0;
-	ltdc_h = 8;
-	display_gotoxy(x, y);
+//	ltdc_secondoffs = 0;
+//	ltdc_h = 8;
+
+	* yp = GRID2Y(y);
+	return GRID2X(x);
 }
 
 // Выдать восемь цветных пикселей, младший бит - самый верхний в растре
 void display_barcolumn(uint_fast8_t pattern)
 {
-	ltdc_vertical_pixN(pattern, 8);	// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
+//	ltdc_vertical_pixN(pattern, 8);	// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
 }
 
 void display_wrdatabar_end(void)
@@ -2542,9 +2544,11 @@ void display_wrdatabar_end(void)
 // большие и средние цифры (частота)
 uint_fast16_t display_wrdatabig_begin(uint_fast8_t x, uint_fast8_t y, uint_fast16_t * yp)
 {
-	ltdc_secondoffs = 0;
-	ltdc_h = BIGCHARH;
-	display_gotoxy(x, y);
+	//ltdc_secondoffs = 0;
+	//ltdc_h = BIGCHARH;
+
+	* yp = GRID2Y(y);
+	return GRID2X(x);
 }
 
 uint_fast16_t display_put_char_big(uint_fast16_t x, uint_fast16_t y, uint_fast8_t c, uint_fast8_t lowhalf)
@@ -2574,9 +2578,11 @@ void display_wrdatabig_end(void)
 // обычный шрифт
 uint_fast16_t display_wrdata_begin(uint_fast8_t x, uint_fast8_t y, uint_fast16_t * yp)
 {
-	ltdc_secondoffs = 0;
-	ltdc_h = SMALLCHARH;
-	display_gotoxy(x, y);
+//	ltdc_secondoffs = 0;
+//	ltdc_h = SMALLCHARH;
+
+	* yp = GRID2Y(y);
+	return GRID2X(x);
 }
 
 uint_fast16_t display_put_char_small(uint_fast16_t x, uint_fast16_t y, uint_fast8_t c, uint_fast8_t lowhalf)
@@ -2641,13 +2647,13 @@ display_value_big(
 		// разделитель десятков мегагерц
 		if (comma2 == g)
 		{
-			stored_xpix = display_put_char_big(stored_xpix, stored_ypix, (z == 0) ? '.' : '#', lowhalf);	// '#' - узкий пробел. Точка всегда узкая
+			xpix = display_put_char_big(xpix, ypix, (z == 0) ? '.' : '#', lowhalf);	// '#' - узкий пробел. Точка всегда узкая
 		}
 		else if (comma == g)
 		{
 			z = 0;
 			half = withhalf;
-			stored_xpix = display_put_char_big(stored_xpix, stored_ypix, '.', lowhalf);
+			xpix = display_put_char_big(xpix, ypix, '.', lowhalf);
 		}
 
 		if (blinkpos == g)
@@ -2656,21 +2662,21 @@ display_value_big(
 			// эта позиция редактирования частоты. Справа от неё включаем все нули
 			z = 0;
 			if (half)
-				stored_xpix = display_put_char_half(stored_xpix, stored_ypix, bc, lowhalf);
+				xpix = display_put_char_half(xpix, ypix, bc, lowhalf);
 
 			else
-				stored_xpix = display_put_char_big(stored_xpix, stored_ypix, bc, lowhalf);
+				xpix = display_put_char_big(xpix, ypix, bc, lowhalf);
 		}
 		else if (z == 1 && (i + 1) < j && res.quot == 0)
-			stored_xpix = display_put_char_big(stored_xpix, stored_ypix, ' ', lowhalf);	// supress zero
+			xpix = display_put_char_big(xpix, ypix, ' ', lowhalf);	// supress zero
 		else
 		{
 			z = 0;
 			if (half)
-				stored_xpix = display_put_char_half(stored_xpix, stored_ypix, '0' + res.quot, lowhalf);
+				xpix = display_put_char_half(xpix, ypix, '0' + res.quot, lowhalf);
 
 			else
-				stored_xpix = display_put_char_big(stored_xpix, stored_ypix, '0' + res.quot, lowhalf);
+				xpix = display_put_char_big(xpix, ypix, '0' + res.quot, lowhalf);
 		}
 		freq = res.rem;
 	}
@@ -2705,13 +2711,13 @@ display_value_small(
 		z = 0;
 		if (freq < 0)
 		{
-			stored_xpix = display_put_char_small(stored_xpix, stored_ypix, '-', lowhalf);
+			xpix = display_put_char_small(xpix, ypix, '-', lowhalf);
 			freq = - freq;
 		}
 		else if (wsign)
-			stored_xpix = display_put_char_small(stored_xpix, stored_ypix, '+', lowhalf);
+			xpix = display_put_char_small(xpix, ypix, '+', lowhalf);
 		else
-			stored_xpix = display_put_char_small(stored_xpix, stored_ypix, ' ', lowhalf);
+			xpix = display_put_char_small(xpix, ypix, ' ', lowhalf);
 	}
 	for (; i < j; ++ i)
 	{
@@ -2720,20 +2726,20 @@ display_value_small(
 		// разделитель десятков мегагерц
 		if (comma2 == g)
 		{
-			stored_xpix = display_put_char_small(stored_xpix, stored_ypix, (z == 0) ? '.' : ' ', lowhalf);
+			xpix = display_put_char_small(xpix, ypix, (z == 0) ? '.' : ' ', lowhalf);
 		}
 		else if (comma == g)
 		{
 			z = 0;
-			stored_xpix = display_put_char_small(stored_xpix, stored_ypix, '.', lowhalf);
+			xpix = display_put_char_small(xpix, ypix, '.', lowhalf);
 		}
 
 		if (z == 1 && (i + 1) < j && res.quot == 0)
-			stored_xpix = display_put_char_small(stored_xpix, stored_ypix, ' ', lowhalf);	// supress zero
+			xpix = display_put_char_small(xpix, ypix, ' ', lowhalf);	// supress zero
 		else
 		{
 			z = 0;
-			stored_xpix = display_put_char_small(stored_xpix, stored_ypix, '0' + res.quot, lowhalf);
+			xpix = display_put_char_small(xpix, ypix, '0' + res.quot, lowhalf);
 		}
 		freq = res.rem;
 	}
