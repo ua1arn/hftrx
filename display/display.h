@@ -589,8 +589,8 @@ void display_set_contrast(uint_fast8_t v);
 
 /* индивидуальные функции драйвера дисплея - реализованы в соответствующем из файлов */
 void display_clear(void);
-void display_setcolors(COLORMAIN_T fg, COLORMAIN_T bg);
-void display_setcolors3(COLORMAIN_T fg, COLORMAIN_T bg, COLORMAIN_T bgfg);	// bgfg - цвет для отрисовки антиалиасинга
+void colmain_setcolors(COLORMAIN_T fg, COLORMAIN_T bg);
+void colmain_setcolors3(COLORMAIN_T fg, COLORMAIN_T bg, COLORMAIN_T bgfg);	// bgfg - цвет для отрисовки антиалиасинга
 //void display_gotoxy(uint_fast8_t x, uint_fast8_t y);
 
 #if 1
@@ -1018,6 +1018,16 @@ void colmain_plot(
 	const PACKEDCOLORMAIN_T * buffer, 	// источник
 	uint_fast16_t dx,	// источник Размеры окна в пикселях
 	uint_fast16_t dy	// источник
+	);
+
+void
+colmain_string3_at_xy(
+	PACKEDCOLORMAIN_T * const buffer,
+	const uint_fast16_t dx,
+	const uint_fast16_t dy,
+	uint_fast16_t x,
+	uint_fast16_t y,
+	const char * s
 	);
 
 // Рисуем на основном экране цветной прямоугольник.

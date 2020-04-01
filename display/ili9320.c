@@ -362,7 +362,7 @@ static void ili9320_clear(COLORMAIN_T bg)
 {
 	unsigned long i;
 
-	display_setcolors(COLOR_WHITE, bg);
+	colmain_setcolors(COLOR_WHITE, bg);
 	display_gotoxy(0, 0);
 
 	ili9320_set_windowh(DIM_Y);
@@ -567,14 +567,14 @@ display_clear(void)
 
 void
 //NOINLINEAT
-display_setcolors(COLORMAIN_T fg, COLORMAIN_T bg)
+colmain_setcolors(COLORMAIN_T fg, COLORMAIN_T bg)
 {
 	ili9320_setcolor(fg, bg);
 }
 
-void display_setcolors3(COLORMAIN_T fg, COLORMAIN_T bg, COLORMAIN_T fgbg)
+void colmain_setcolors3(COLORMAIN_T fg, COLORMAIN_T bg, COLORMAIN_T fgbg)
 {
-	display_setcolors(fg, bg);
+	colmain_setcolors(fg, bg);
 }
 
 void

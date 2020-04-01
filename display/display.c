@@ -1750,7 +1750,7 @@ static const FLASHMEM PACKEDCOLORMAIN_T (* byte2runmain) [256][8] = & byte2runma
 static const FLASHMEM PACKEDCOLORPIP_T (* byte2runpip) [256][8] = & byte2runpip_COLORPIP_WHITE_COLORPIP_BLACK;
 #endif /* ! LCDMODE_LTDC_L24 */
 
-void display_setcolors(COLORMAIN_T fg, COLORMAIN_T bg)
+void colmain_setcolors(COLORMAIN_T fg, COLORMAIN_T bg)
 {
 
 #if ! LCDMODE_LTDC_L24
@@ -1777,9 +1777,9 @@ void display_setcolors(COLORMAIN_T fg, COLORMAIN_T bg)
 
 }
 
-void display_setcolors3(COLORMAIN_T fg, COLORMAIN_T bg, COLORMAIN_T fgbg)
+void colmain_setcolors3(COLORMAIN_T fg, COLORMAIN_T bg, COLORMAIN_T fgbg)
 {
-	display_setcolors(fg, bg);
+	colmain_setcolors(fg, bg);
 }
 
 // Выдать один цветной пиксель
@@ -2821,11 +2821,14 @@ void floodFill_framebuffer(uint_fast16_t x, uint_fast16_t y, PACKEDCOLORMAIN_T n
 #if WITHTOUCHGUI
 
 static uint_fast16_t
-RAMFUNC_NONILINE ltdc_horizontal_put_char_small3(uint_fast16_t x, uint_fast16_t y, char cc)
+RAMFUNC_NONILINE ltdc_horizontal_put_char_small3(
+	PACKEDCOLORMAIN_T * const buffer,
+	const uint_fast16_t dx,
+	const uint_fast16_t dy,
+	uint_fast16_t x, uint_fast16_t y,
+	char cc
+	)
 {
-	PACKEDCOLORMAIN_T * const buffer = colmain_fb();
-	const uint_fast16_t dx = DIM_X;
-	const uint_fast16_t dy = DIM_Y;
 	const uint_fast8_t width = SMALLCHARW3;
 	const uint_fast8_t c = smallfont_decode((unsigned char) cc);
 	uint_fast8_t cgrow;
@@ -2840,18 +2843,38 @@ RAMFUNC_NONILINE ltdc_horizontal_put_char_small3(uint_fast16_t x, uint_fast16_t 
 static void
 display_string3(uint_fast16_t x, uint_fast16_t y, const char * s, uint_fast8_t lowhalf)
 {
+	PACKEDCOLORMAIN_T * const buffer = colmain_fb();
+	const uint_fast16_t dx = DIM_X;
+	const uint_fast16_t dy = DIM_Y;
 	char c;
 //	ltdc_secondoffs = 0;
 //	ltdc_h = SMALLCHARH3;
 	while((c = * s ++) != '\0')
-		x = ltdc_horizontal_put_char_small3(x, y, c);
+		x = ltdc_horizontal_put_char_small3(buffer, dx, dy, x, y, c);
+}
+
+void
+colmain_string3_at_xy(
+	PACKEDCOLORMAIN_T * const buffer,
+	const uint_fast16_t dx,
+	const uint_fast16_t dy,
+	uint_fast16_t x,
+	uint_fast16_t y,
+	const char * s
+	)
+{
+	char c;
+//	ltdc_secondoffs = 0;
+//	ltdc_h = SMALLCHARH3;
+	while((c = * s ++) != '\0')
+		x = ltdc_horizontal_put_char_small3(buffer, dx, dy, x, y, c);
 }
 
 void
 display_string3_at_xy(uint_fast16_t x, uint_fast16_t y, const char * s, COLORMAIN_T fg, COLORMAIN_T bg)
 {
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
-	display_setcolors(fg, bg);
+	colmain_setcolors(fg, bg);
 	do
 	{
 		display_string3(x, y + lowhalf, s, lowhalf);

@@ -65,17 +65,18 @@ display_smeter2(
 		)
 {
 #if 1
-	// размеры формируемого изображения
-	enum { tdx = 3 * 16, tdy = 3 * 16 };
 
-	static PACKEDCOLORMAIN_T tb [tdx * tdy];	// буфер длф формирования изображения
+	enum { TDX = 3 * 16, TDY = 3 * 16 };	// размеры формируемого изображения
+	static PACKEDCOLORMAIN_T tb [TDX * TDY];	// буфер длф формирования изображения
 
 	// создание невидимого изображения
-	colmain_fillrect(tb, tdx, tdy, 0, 0, tdx, tdy, COLORMAIN_BLUE);
-	colmain_fillrect(tb, tdx, tdy, 16, 16, 16, 16, COLORMAIN_RED);
+	colmain_fillrect(tb, TDX, TDY, 0, 0, TDX, TDY, COLORMAIN_BLUE);
+	colmain_fillrect(tb, TDX, TDY, 16, 16, 16, 16, COLORMAIN_RED);
+	colmain_setcolors(COLORMAIN_BLACK, COLORMAIN_GREEN);
+	colmain_string3_at_xy(tb, TDX, TDY, 0, 0, "Test");
 
 	// Копируем в видимый framebuffer
-	colmain_plot(colmain_fb(), DIM_X, DIM_Y, GRID2X(x), GRID2Y(y), tb, tdx, tdy);
+	colmain_plot(colmain_fb(), DIM_X, DIM_Y, GRID2X(x), GRID2Y(y), tb, TDX, TDY);
 	return;
 
 //	display_at(x, y, "S-met");

@@ -12594,7 +12594,7 @@ display_menu_digit(
 #endif /* WITHTOUCHGUI */
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 
-	display_setcolors(MNUVALCOLOR, BGCOLOR);
+	colmain_setcolors(MNUVALCOLOR, BGCOLOR);
 	do
 	{
 		display_menu_value(x, y + lowhalf, value, width, comma, rj, lowhalf);
@@ -12620,7 +12620,7 @@ display_menu_string_P(
 		return;
 	}
 #else
-	display_setcolors(MNUVALCOLOR, BGCOLOR);
+	colmain_setcolors(MNUVALCOLOR, BGCOLOR);
 	display_at_P(x + width - comma, y, s);
 #endif /* WITHTOUCHGUI */
 }
@@ -15484,7 +15484,7 @@ void display_multilinemenu_block_groups(uint_fast8_t x, uint_fast8_t y, void * p
 				continue;
 			if (el == selected_group_left_margin) //подсвечиваем выбранный элемент
 			{
-				display_setcolors(MENUSELCOLOR, BGCOLOR);
+				colmain_setcolors(MENUSELCOLOR, BGCOLOR);
 				display_at_P(x - 1, y_position_groups, PSTR(">"));
 			}
 			display_menu_group(x, y_position_groups, (void *) mv); // название группы
@@ -15556,7 +15556,7 @@ void display_multilinemenu_block_params(uint_fast8_t x, uint_fast8_t y, void * p
 				continue;
 			if (el == index) //подсвечиваем выбранный элемент
 			{
-				display_setcolors(MENUSELCOLOR, BGCOLOR);
+				colmain_setcolors(MENUSELCOLOR, BGCOLOR);
 				display_at_P(x - 1, y_position_params, PSTR(">"));
 			}
 			display_menu_lblng(x, y_position_params, (void *) mv); // название редактируемого параметра
@@ -15646,14 +15646,14 @@ void display_menu_lblc3(
 	const uint_fast8_t index = (int) (mp - menutable);
 	if (ismenukind(mp, ITEM_GROUP))
 	{
-		display_setcolors(MENUCOLOR, BGCOLOR);
+		colmain_setcolors(MENUCOLOR, BGCOLOR);
 		display_at_P(x, y, PSTR("---"));
 		return;
 	}
 
 	local_snprintf_P(buff, sizeof buff / sizeof buff [0], index >= 100 ? PSTR("%03d") : PSTR("F%02d"), index);
 
-	display_setcolors(MENUCOLOR, BGCOLOR);
+	colmain_setcolors(MENUCOLOR, BGCOLOR);
 	display_at(x + 0, y, buff);
 }
 
@@ -15669,7 +15669,7 @@ void display_menu_lblng(
 	const FLASHMEM struct menudef * const mp = (const FLASHMEM struct menudef *) pv;
 	if (ismenukind(mp, ITEM_VALUE) == 0)
 		return;
-	display_setcolors(MENUCOLOR, BGCOLOR);
+	colmain_setcolors(MENUCOLOR, BGCOLOR);
 	display_at_P(x, y, mp->qlabel);
 }
 
@@ -15682,7 +15682,7 @@ void display_menu_lblst(
 	)
 {
 	const FLASHMEM struct menudef * const mp = (const FLASHMEM struct menudef *) pv;
-	display_setcolors(MENUCOLOR, BGCOLOR);
+	colmain_setcolors(MENUCOLOR, BGCOLOR);
 	display_at_P(x, y, mp->qlabel);
 }
 
@@ -15698,7 +15698,7 @@ void display_menu_group(
 
 	while (ismenukind(mp, ITEM_GROUP) == 0)
 		-- mp;
-	display_setcolors(MENUGROUPCOLOR, BGCOLOR);
+	colmain_setcolors(MENUGROUPCOLOR, BGCOLOR);
 	display_at_P(x, y, mp->qlabel);
 }
 

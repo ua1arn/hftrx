@@ -730,15 +730,15 @@ display_clear(void)
 }
 
 void
-display_setcolors(COLORMAIN_T fg, COLORMAIN_T bg)
+colmain_setcolors(COLORMAIN_T fg, COLORMAIN_T bg)
 {
 	ili9225_setcolor(fg, bg);
 }
 
 
-void display_setcolors3(COLORMAIN_T fg, COLORMAIN_T bg, COLORMAIN_T fgbg)
+void colmain_setcolors3(COLORMAIN_T fg, COLORMAIN_T bg, COLORMAIN_T fgbg)
 {
-	display_setcolors(fg, bg);
+	colmain_setcolors(fg, bg);
 }
 
 
