@@ -4767,8 +4767,7 @@ verifyband(const vindex_t b)
 	if (b == ((uint_fast8_t) - 1))
 	{
 		TP();
-		display_gotoxy(0, 1);
-		display_string("band not found", 1);
+		display_at(0, 1, "band not found");
 		for (;;)
 			;
 	}

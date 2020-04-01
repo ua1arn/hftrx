@@ -1271,9 +1271,8 @@ static void display_voltlevelV5(
 	{
 		display_gotoxy(x + CHARS2GRID(0), y + lowhalf);	
 		display_value_small(volt, 3, 1, 255, 0, lowhalf);
-		display_gotoxy(x + CHARS2GRID(4), y + lowhalf);	
-		display_string_P(PSTR("V"), lowhalf);
 	} while (lowhalf --);
+	display_at_P(x + CHARS2GRID(4), y, PSTR("V"));
 #endif /* WITHVOLTLEVEL && WITHCPUADCHW */
 }
 
@@ -1336,9 +1335,8 @@ static void display_currlevelA6(
 	{
 		display_gotoxy(x + CHARS2GRID(0), y + lowhalf);	
 		display_value_small(drain, 3 | WMINUSFLAG, 2, 255, 0, lowhalf);
-		display_gotoxy(x + CHARS2GRID(5), y + lowhalf);	
-		display_string_P(PSTR("A"), lowhalf);
 	} while (lowhalf --);
+	display_at_P(x + CHARS2GRID(5), y, PSTR("A"));
 #endif /* WITHCURRLEVEL && WITHCPUADCHW */
 }
 
@@ -5121,6 +5119,9 @@ void display_swrmeter(
 #endif /* WITHBARS */
 }
 
+#if CTLSTYLE_RA4YBO_AM0
+
+
 // Вызывается из display2_bars_amv0 (версия для CTLSTYLE_RA4YBO_AM0)
 // координаьы для общего блока PWR & SWR
 // используется место для SWR
@@ -5250,6 +5251,7 @@ void display_smeter_amv0(
 
 #endif /* WITHBARS */
 }
+#endif /* CTLSTYLE_RA4YBO_AM0 */
 
 // координаьы для общего блока PWR & SWR
 void display_pwrmeter(  
@@ -5344,13 +5346,7 @@ static void display2_legend_rx(
 {
 #if defined(SMETERMAP)
 	display_setcolors(MODECOLOR, BGCOLOR);
-	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
-	do
-	{
-		display_gotoxy(x, y + lowhalf);
-		display_string_P(PSTR(SMETERMAP), lowhalf);
-
-	} while (lowhalf --);
+	display_at_P(x, y, PSTR(SMETERMAP));
 #endif /* defined(SMETERMAP) */
 }
 
@@ -5363,25 +5359,20 @@ static void display2_legend_tx(
 {
 #if defined(SWRPWRMAP) && WITHTX && (WITHSWRMTR || WITHSHOWSWRPWR)
 	display_setcolors(MODECOLOR, BGCOLOR);
-	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
-	do
-	{
-		display_gotoxy(x, y + lowhalf);
-		#if WITHSWRMTR
-			#if WITHSHOWSWRPWR /* на дисплее одновременно отображаются SWR-meter и PWR-meter */
-					display_string_P(PSTR(SWRPWRMAP), lowhalf);
-			#else
-					if (swrmode) 	// Если TUNE то показываем шкалу КСВ
-						display_string_P(PSTR(SWRMAP), lowhalf);
-					else
-						display_string_P(PSTR(POWERMAP), lowhalf);
-			#endif
-		#elif WITHPWRMTR
-					display_string_P(PSTR(POWERMAP), lowhalf);
+	#if WITHSWRMTR
+		#if WITHSHOWSWRPWR /* на дисплее одновременно отображаются SWR-meter и PWR-meter */
+				display_at_P(x, y, PSTR(SWRPWRMAP));
 		#else
-			#warning No TX indication
+				if (swrmode) 	// Если TUNE то показываем шкалу КСВ
+					display_string_P(x, y, PSTR(SWRMAP));
+				else
+					display_string_P(x, y, PSTR(POWERMAP));
 		#endif
-	} while (lowhalf --);
+	#elif WITHPWRMTR
+				display_string_P(x, y, PSTR(POWERMAP));
+	#else
+		#warning No TX indication
+	#endif
 
 #endif /* defined(SWRPWRMAP) && WITHTX && (WITHSWRMTR || WITHSHOWSWRPWR) */
 }

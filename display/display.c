@@ -631,7 +631,7 @@ display_getbgcolor(void)
 
 
 // Используется при выводе на графический индикатор,
-void
+static void
 display_string(const char * s, uint_fast8_t lowhalf)
 {
 	char c;
@@ -643,7 +643,7 @@ display_string(const char * s, uint_fast8_t lowhalf)
 }
 
 // Используется при выводе на графический индикатор,
-void
+static void
 display_string_P(const FLASHMEM  char * s, uint_fast8_t lowhalf)
 {
 	char c;
@@ -656,7 +656,7 @@ display_string_P(const FLASHMEM  char * s, uint_fast8_t lowhalf)
 
 // Используется при выводе на графический индикатор,
 // самый маленький шрифт
-void
+static void
 display_string2(const char * s, uint_fast8_t lowhalf)
 {
 	char c;
@@ -671,7 +671,7 @@ display_string2(const char * s, uint_fast8_t lowhalf)
 
 // Используется при выводе на графический индикатор,
 // самый маленький шрифт
-void
+static void
 display_string2_P(const FLASHMEM  char * s, uint_fast8_t lowhalf)
 {
 	char c;

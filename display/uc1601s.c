@@ -383,7 +383,7 @@ void uc1601s_initialize(void)
 	i2c_read(& v1, I2C_READ_ACK_1);
 	i2c_read(& v2, I2C_READ_NACK);
 
-	//display_string("status = ", 0);
+	//display_at(0, 0, "status = ");
 	// expected: 0x88, 0x60	- RDX0077
 	// expected: 0xa8, 0x60
 	// expected: 0xc8, 0x60

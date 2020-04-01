@@ -246,8 +246,7 @@ si570_initialize(void)
 		//char buff [21];
 		//local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("%02X%02X%02X%02X%02X%02X"), v0, v1, v2, v3, v4, v5);
 		//local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("%02X%02X%02X%02X%02X%02X"), v[0], v[1], v[2], v[3], v[4], v[5]);
-		//display_gotoxy(0, 1);
-		//display_string(buff, 0);
+		//display_at(0, 1, buff);
 		//for (;;)
 		//	;
 		
@@ -301,29 +300,23 @@ allDone:
 		char buff [22];
 		//const unsigned hs_code = (v0 >> 5) & 0x07;
 		//const unsigned n = ((v0 & 0x1f) * 4 + (v1 & 0xc0) / 64) + 1;
-		uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
-		do
-		{
-			local_snprintf_P(buff, sizeof buff / sizeof buff [0], 
-				//PSTR("%02X:%08lX,%u*%u"),
-				PSTR("%02X%08lX"),
-				 (unsigned) (anchorftw >> 32), 
-				 (unsigned long) anchorftw//,
-					//si570_hs_decode(hs_code), 
-					//n
-				 );
-			display_setcolors(COLOR_WHITE, COLOR_BLACK);
-			display_gotoxy(0, 0 + lowhalf);
-			display_string(buff, lowhalf);
+		local_snprintf_P(buff, sizeof buff / sizeof buff [0],
+			//PSTR("%02X:%08lX,%u*%u"),
+			PSTR("%02X%08lX"),
+			 (unsigned) (anchorftw >> 32),
+			 (unsigned long) anchorftw//,
+				//si570_hs_decode(hs_code),
+				//n
+			 );
+		display_setcolors(COLOR_WHITE, COLOR_BLACK);
+		display_at(0, 0, buff);
 
-			local_snprintf_P(buff, sizeof buff / sizeof buff [0], 
-				PSTR("[%lu]"),
-				 (unsigned long) (si570_xtall_base + si570_xtall_offset)
-				 );
-			display_setcolors(COLOR_WHITE, COLOR_BLACK);
-			display_gotoxy(0, 2 + lowhalf);
-			display_string(buff, lowhalf);
-		} while (lowhalf --);
+		local_snprintf_P(buff, sizeof buff / sizeof buff [0],
+			PSTR("[%lu]"),
+			 (unsigned long) (si570_xtall_base + si570_xtall_offset)
+			 );
+		display_setcolors(COLOR_WHITE, COLOR_BLACK);
+		display_at(0, 2, buff);
 	}
 	for (;;)
 		;
@@ -584,9 +577,8 @@ void si570_n(
 		count ++;
 		char buff [22];
 		//unsigned char v1, v2;
-		display_gotoxy(0, 1);
 		local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("swi: [%u]"), count );
-		display_string(buff, 0);
+		display_at(0, 1, buff);
 	}
 #endif
 

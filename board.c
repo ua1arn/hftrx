@@ -6075,8 +6075,7 @@ uint_fast8_t board_pll1_set_n(
 			local_snprintf_P(buff, sizeof buff / sizeof buff [0], 
 				PSTR("%02x"), (unsigned) count
 				 );
-			display_gotoxy(0, 1);
-			display_string(buff, 0);
+			display_at(0, 1, buff);
 		}
 #endif
 

@@ -580,11 +580,6 @@ void display_pwrmeter_amvo(
 COLORMAIN_T display_getbgcolor(void);
 void display_setbgcolor(COLORMAIN_T c);
 
-void display_string(const char * s, uint_fast8_t lowhalf);
-void display_string_P(const FLASHMEM char * s, uint_fast8_t lowhalf);
-void display_string2(const char * s, uint_fast8_t lowhalf);		// самый маленький шрифт
-void display_string2_P(const FLASHMEM char * s, uint_fast8_t lowhalf);	// самый маленький шрифт
-
 // Интерфейсные функции, специфические для драйвера дисплея - зависящие от типа микросхемы контроллера.
 void display_hardware_initialize(void);	/* вызывается при запрещённых прерываниях. */
 void display_reset(void);				/* вызывается при разрешённых прерываниях. */
