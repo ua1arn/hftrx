@@ -254,10 +254,12 @@ display_smeter2(
 
 		if (is_tx)
 		{
-			for (i = r2 + 2; i <= r1 - 2; i++)
+			for (i = r2 + 3; i <= r1 - 2; i++)
 			{
 				display_segm(xc, yc, gs, svr_trace, i, 1, COLORMAIN_YELLOW);
+				display_segm(xc, yc + 1, gs, svr_trace, i, 1, COLORMAIN_YELLOW);
 				display_segm(xc, yc, svr_trace + 1, ge, i, 1, COLORMAIN_BLACK);
+				display_segm(xc, yc + 1, svr_trace + 1, ge, i, 1, COLORMAIN_BLACK);
 			}
 
 //			uint_fast16_t gg = svr_trace; // > svr_trace_old ? svr_trace : svr_trace_old;
