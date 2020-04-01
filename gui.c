@@ -103,6 +103,16 @@ display_smeter2(
 		else
 			swr10 = (forward + reflected) * SWRMIN / (forward - reflected) - SWRMIN;
 		gswr = gs + normalize(swr10, 0, 30, ge - gs);
+
+		if (gswr > gs)
+			gswr_old = gswr;
+
+		if (gswr == gs)
+		{
+			gswr_old -= 4;
+			gswr_old = gswr_old > gs ? gswr_old : gs;
+			gswr = gswr_old;
+		}
 	}
 	else
 	{
@@ -188,11 +198,14 @@ display_smeter2(
 		gv_trace_old -= 1; // для перерисовки шкалы при смене режима
 	}
 
-	if (gv_old != gv || gv_trace_old != gv_trace || gswr_old != gswr)
-	{
-		display_radius(xc - 1, yc, gv_old, rv1, rv2, COLORMAIN_BLACK);
-		display_radius(xc, yc, gv_old, rv1, rv2, COLORMAIN_BLACK);
-		display_radius(xc + 1, yc, gv_old, rv1, rv2, COLORMAIN_BLACK);
+//	if (gv_old != gv || gv_trace_old != gv_trace || gswr_old != gswr)
+//	{
+		if (gv_old != gv)
+		{
+			display_radius(xc - 1, yc, gv_old, rv1, rv2, COLORMAIN_BLACK);
+			display_radius(xc, yc, gv_old, rv1, rv2, COLORMAIN_BLACK);
+			display_radius(xc + 1, yc, gv_old, rv1, rv2, COLORMAIN_BLACK);
+		}
 
 		if (is_tx)																	// шкала при передаче
 		{
@@ -259,7 +272,6 @@ display_smeter2(
 				display_segm(xc, yc + 1, gs, gswr, i, 1, COLORMAIN_YELLOW);
 				display_segm(xc, yc, gswr, ge, i, 1, COLORMAIN_BLACK);
 				display_segm(xc, yc + 1, gswr, ge, i, 1, COLORMAIN_BLACK);
-				gswr_old = gswr;
 			}
 		} else
 		{
@@ -281,7 +293,7 @@ display_smeter2(
 		gv_old = gv;
 		gv_trace_old = gv_trace;
 		old_tx = is_tx;
-	}
+//	}
 	(void) pv;
 }
 
