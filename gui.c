@@ -28,7 +28,7 @@
 void display_radius(int xc, int yc, unsigned gs, unsigned r1, unsigned r2, COLORMAIN_T color);
 void display_segm(int xc, int yc, unsigned gs, unsigned ge, unsigned r, int step, COLORMAIN_T color);
 void polar_to_dek(uint_fast16_t xc, uint_fast16_t yc, uint_fast16_t gs, uint_fast16_t r, uint_fast16_t * x, uint_fast16_t * y);
-void floodFill_framebuffer(uint_fast16_t x, uint_fast16_t y, PACKEDCOLORMAIM_T newColor, PACKEDCOLORMAIM_T oldColor);
+void floodFill_framebuffer(uint_fast16_t x, uint_fast16_t y, PACKEDCOLORMAIN_T newColor, PACKEDCOLORMAIN_T oldColor);
 
 static
 uint_fast16_t normalize(

@@ -1,23 +1,14 @@
-/*
- * dummy.c
- *
- *  Created on: Oct 25, 2019
- *      Author: gena
- */
-
-
-
 /* $Id$ */
 //
 // Проект HF Dream Receiver (КВ приёмник мечты)
 // автор Гена Завидовский mgs2001@mail.ru
 // UA1ARN
 //
-// Siemens S65 Display Control
-/* Индикатор 176*132 с контроллером Epson L2F50126 */
+// Без вывода изображения
 
 #include "hardware.h"
 #include "board.h"
+#include "display.h"
 
 #if LCDMODE_DUMMY
 
@@ -113,7 +104,7 @@ void display_plotstop(void)
 }
 
 void display_plot(
-	const PACKEDCOLORMAIM_T * buffer,
+	const PACKEDCOLORMAIN_T * buffer,
 	uint_fast16_t dx,	// Размеры окна в пикселях
 	uint_fast16_t dy
 	)

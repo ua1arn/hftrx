@@ -37,10 +37,10 @@
 // Цветное изображение не поддерживается на этом дисплее (заглушка).
 #define TFTRGB(r, g, b)	(0)
 typedef uint_fast8_t COLORMAIN_T;	/* цвета не поддерживаются - заглушка */
-typedef uint8_t PACKEDCOLORMAIM_T;
+typedef uint8_t PACKEDCOLORMAIN_T;
 
 
-typedef PACKEDCOLORMAIM_T PACKEDCOLORPIP_T;
+typedef PACKEDCOLORMAIN_T PACKEDCOLORPIP_T;
 typedef COLORMAIN_T COLORPIP_T;
 
 // начальные коды символов для отображения псевдографики

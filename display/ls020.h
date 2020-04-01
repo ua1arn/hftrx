@@ -28,7 +28,7 @@
 */
 
 typedef uint_fast8_t COLORMAIN_T;
-typedef uint8_t PACKEDCOLORMAIM_T;
+typedef uint8_t PACKEDCOLORMAIN_T;
 
 
 // RRRGGGBB
@@ -41,7 +41,7 @@ typedef uint8_t PACKEDCOLORMAIM_T;
 		) \
 	)
 
-typedef PACKEDCOLORMAIM_T PACKEDCOLORPIP_T;
+typedef PACKEDCOLORMAIN_T PACKEDCOLORPIP_T;
 typedef COLORMAIN_T COLORPIP_T;
 
 #define LCDMODE_COLORED	1
