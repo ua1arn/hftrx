@@ -5658,10 +5658,10 @@ display_colorgrid_xor(
 				char buf [4];
 				uint_fast16_t freqw;	// ширина строки со значением частоты
 				local_snprintf_P(buf, sizeof buf / sizeof buf [0], ".%0*d", glob_gridwc, (int) ((f0 + df) / glob_griddigit % glob_gridmod));
-				freqw = display_colorbuff_string3_width(buffer, ALLDX, ALLDY, buf);
+				freqw = colpip_string3_width(buffer, ALLDX, ALLDY, buf);
 				if (xmarker > freqw / 2 && xmarker < (ALLDX - freqw / 2))
 				{
-					display_colorbuff_string3_tbg(buffer, ALLDX, ALLDY, xmarker - freqw / 2, row0, buf, COLORPIP_YELLOW);
+					colpip_string3_tbg(buffer, ALLDX, ALLDY, xmarker - freqw / 2, row0, buf, COLORPIP_YELLOW);
 					display_colorbuf_xor_vline(buffer, ALLDX, ALLDY, xmarker, row0 + MARKERH, h - MARKERH, color);
 				}
 				else
@@ -5702,10 +5702,10 @@ display_colorgrid_set(
 				char buf [4];
 				uint_fast16_t freqw;	// ширина строки со значением частоты
 				local_snprintf_P(buf, sizeof buf / sizeof buf [0], ".%0*d", glob_gridwc, (int) ((f0 + df) / glob_griddigit % glob_gridmod));
-				freqw = display_colorbuff_string3_width(buffer, ALLDX, ALLDY, buf);
+				freqw = colpip_string3_width(buffer, ALLDX, ALLDY, buf);
 				if (xmarker > freqw / 2 && xmarker < (ALLDX - freqw / 2))
 				{
-					display_colorbuff_string3_tbg(buffer, ALLDX, ALLDY, xmarker - freqw / 2, row0, buf, COLORPIP_YELLOW);
+					colpip_string3_tbg(buffer, ALLDX, ALLDY, xmarker - freqw / 2, row0, buf, COLORPIP_YELLOW);
 					display_colorbuf_set_vline(buffer, ALLDX, ALLDY, xmarker, row0 + MARKERH, h - MARKERH, color);
 				}
 				else
@@ -5836,7 +5836,7 @@ static void display2_spectrum(
 				// ломанная
 				uint_fast16_t ynew = SPDY - 1 - dsp_mag2y(filter_spectrum(x), SPDY - 1, glob_topdb, glob_bottomdb);
 				if (x != 0)
-					display_colorbuf_line_set(colorpip, ALLDX, ALLDY, x - 1, ylast, x, ynew, COLORPIP_SPECTRUMLINE);
+					colpip_line(colorpip, ALLDX, ALLDY, x - 1, ylast, x, ynew, COLORPIP_SPECTRUMLINE);
 				ylast = ynew;
 			}
 		}
@@ -5859,7 +5859,7 @@ static void display2_spectrum(
 				// точку на границе
 				if (yv < SPDY)
 				{
-					display_colorbuf_set(colorpip, ALLDX, ALLDY, x, yv + SPY0, COLORPIP_SPECTRUMFENCE);
+					colpip_point(colorpip, ALLDX, ALLDY, x, yv + SPY0, COLORPIP_SPECTRUMFENCE);
 
 					// Нижняя часть экрана
 					const int yb = yv + 1;
@@ -5973,7 +5973,7 @@ static void wfsetupnew(void)
 // отрисовка вновь появившихся данных на водопаде (в случае использования аппаратного scroll видеопамяти).
 static void display_wfputrow(uint_fast16_t x, uint_fast16_t y, const PACKEDCOLORPIP_T * p)
 {
-	display_colorbuf_show(p, ALLDX, 1, x, y);
+	colpip_to_main(p, ALLDX, 1, x, y);
 }
 
 // формирование данных спектра для последующего отображения
@@ -6146,9 +6146,9 @@ static void display2_waterfall(
 
 	/* перенос растра. Организация предполагается LCDMODE_HORFILL */
 
-	memcpy(display_colorbuf_at(colorpip, ALLDX, ALLDY, 0, p1y), (const void *) & wfarray [wfrow] [0], p1h * sizeof (PACKEDCOLORPIP_T) * ALLDX);
+	memcpy(colpip_mem_at(colorpip, ALLDX, ALLDY, 0, p1y), (const void *) & wfarray [wfrow] [0], p1h * sizeof (PACKEDCOLORPIP_T) * ALLDX);
 	if (p2h != 0)
-		memcpy(display_colorbuf_at(colorpip, ALLDX, ALLDY, 0, p2y), (const void *) & wfarray [0] [0], p2h * sizeof (PACKEDCOLORPIP_T) * ALLDX);
+		memcpy(colpip_mem_at(colorpip, ALLDX, ALLDY, 0, p2y), (const void *) & wfarray [0] [0], p2h * sizeof (PACKEDCOLORPIP_T) * ALLDX);
 
 #else /* */
 
@@ -6165,7 +6165,7 @@ static void display2_waterfall(
 	{
 		for (x = 0; x < ALLDX; ++ x)
 		{
-			display_colorbuf_set(colorpip, ALLDX, ALLDY, x, y + WFY0, wfpalette [wfarray [(wfrow + y) % WFDY] [x]]);
+			colpip_point(colorpip, ALLDX, ALLDY, x, y + WFY0, wfpalette [wfarray [(wfrow + y) % WFDY] [x]]);
 		}
 	}
 
@@ -6190,9 +6190,12 @@ static void display2_colorbuff(
 	PACKEDCOLORPIP_T * const colorpip = getscratchpip();
 
 	#if ((LCDMODE_LTDC_PIP16 || LCDMODE_LTDC_PIPL8) && LCDMODE_LTDC)
-		display_colorbuf_pip(colorpip, ALLDX, ALLDY);
+		arm_hardware_flush((uintptr_t) colorpip, (uint_fast32_t) ALLDX * ALLDY * sizeof * colorpip);
+		arm_hardware_ltdc_pip_set((uintptr_t) colorpip);
+
 	#else /* LCDMODE_LTDC_PIP16 */
-		display_colorbuf_show(colorpip, ALLDX, ALLDY, GRID2X(x0), GRID2Y(y0));
+		colpip_to_main(colorpip, ALLDX, ALLDY, GRID2X(x0), GRID2Y(y0));
+
 	#endif /* LCDMODE_LTDC_PIP16 */
 
 	nextpip();

@@ -528,7 +528,7 @@ void button1_handler(void);
 	menu_t menu[MENU_COUNT];
 
 	typedef struct {
-		const char name [TEXT_ARRAY_SIZE];
+		char name [TEXT_ARRAY_SIZE];
 		uint_fast8_t menupos;
 		uint_fast8_t exitkey;
 	} menu_by_name_t;
@@ -592,9 +592,9 @@ void button1_handler(void);
 			else if (p->type == TYPE_LABEL)
 			{
 				p->x1 = labels[p->id].x;
-				p->x2 = labels[p->id].x + display_colorbuff_string_width(NULL, gui.pip_width, gui.pip_height, labels[p->id].text);
+				p->x2 = labels[p->id].x + colpip_string_width(NULL, gui.pip_width, gui.pip_height, labels[p->id].text);
 				p->y1 = labels[p->id].y - 8;
-				p->y2 = labels[p->id].y + display_colorbuff_string_height(NULL, gui.pip_width, gui.pip_height, labels[p->id].text) + 8;
+				p->y2 = labels[p->id].y + colpip_string_height(NULL, gui.pip_width, gui.pip_height, labels[p->id].text) + 8;
 				p->state = labels[p->id].state;
 				p->visible = labels[p->id].visible;
 				p->is_trackable = labels[p->id].is_trackable;
@@ -707,27 +707,27 @@ void button1_handler(void);
 			bw_type = get_bp_type();
 			if (bw_type)	// BWSET_WIDE
 			{
-				strcpy((char *)button_handlers[id_button_high].text, "High|cut");
-				strcpy((char *)button_handlers[id_button_low].text, "Low|cut");
+				strcpy(button_handlers[id_button_high].text, "High|cut");
+				strcpy(button_handlers[id_button_low].text, "Low|cut");
 				button_handlers[id_button_high].is_locked = 1;
 
 				val_high = get_high_bp(0);
 				val_low = get_low_bp(0);
 
 				local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), val_high * 100);
-				strcpy (labels[id_lbl_high].text, buf);
+				strcpy(labels[id_lbl_high].text, buf);
 				x_h = normalize(val_high, 0, 50, 290) + 290;
 				labels[id_lbl_high].x = x_h + 64 > 550 ? 486 : x_h;
 
 				local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), val_low * 10);
-				strcpy (labels[id_lbl_low].text, buf);
+				strcpy(labels[id_lbl_low].text, buf);
 				x_l = normalize(val_low, 0, 500, 290) + 290;
 				labels[id_lbl_low].x = x_l - strlen(buf) * SMALLCHARW;
 			}
 			else			// BWSET_NARROW
 			{
-				strcpy((char *)button_handlers[id_button_high].text, "Pitch");
-				strcpy((char *)button_handlers[id_button_low].text, "Width");
+				strcpy(button_handlers[id_button_high].text, "Pitch");
+				strcpy(button_handlers[id_button_low].text, "Width");
 				button_handlers[id_button_low].is_locked = 1;
 
 				val_c = get_high_bp(0);
@@ -738,9 +738,9 @@ void button1_handler(void);
 
 				local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), val_w * 20);
 				labels[id_lbl_high].x = x_c - strlen(buf) * 8;
-				strcpy (labels[id_lbl_high].text, buf);
+				strcpy(labels[id_lbl_high].text, buf);
 				local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("P %d"), val_c * 10);
-				strcpy (labels[id_lbl_low].text, buf);
+				strcpy(labels[id_lbl_low].text, buf);
 				labels[id_lbl_low].x = 550 - strlen(buf) * SMALLCHARW;
 			}
 		}
@@ -755,7 +755,7 @@ void button1_handler(void);
 					val_high = get_high_bp(encoder2.rotate);
 					encoder2.rotate_done = 1;
 					local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), val_high * 100);
-					strcpy (labels[id_lbl_high].text, buf);
+					strcpy(labels[id_lbl_high].text, buf);
 					x_h = normalize(val_high, 0, 50, 290) + 290;
 					labels[id_lbl_high].x = x_h + 64 > 550 ? 486 : x_h;
 				}
@@ -764,7 +764,7 @@ void button1_handler(void);
 					val_low = get_low_bp(encoder2.rotate * 10);
 					encoder2.rotate_done = 1;
 					local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), val_low * 10);
-					strcpy (labels[id_lbl_low].text, buf);
+					strcpy(labels[id_lbl_low].text, buf);
 					x_l = normalize(val_low / 10, 0, 50, 290) + 290;
 					labels[id_lbl_low].x = x_l - strlen(buf) * SMALLCHARW;
 				}
@@ -788,18 +788,18 @@ void button1_handler(void);
 
 				local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), val_w * 20);
 				labels[id_lbl_high].x = x_c - strlen(buf) * SMALLCHARW / 2;
-				strcpy (labels[id_lbl_high].text, buf);
+				strcpy(labels[id_lbl_high].text, buf);
 				local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("P %d"), val_c * 10);
-				strcpy (labels[id_lbl_low].text, buf);
+				strcpy(labels[id_lbl_low].text, buf);
 				labels[id_lbl_low].x = 550 - strlen(buf) * SMALLCHARW;
 			}
 		}
 
-		display_colorbuf_line_set(colorpip, gui.pip_width, gui.pip_height, 251, 110, 549, 110, COLORPIP_GRAY);
-		display_colorbuf_line_set(colorpip, gui.pip_width, gui.pip_height, 290, 70, 290, 120, COLORPIP_GRAY);
-		display_colorbuf_rect(colorpip, gui.pip_width, gui.pip_height, x_l, 70, x_h, 108, COLORPIP_YELLOW, 1);
+		colpip_line(colorpip, gui.pip_width, gui.pip_height, 251, 110, 549, 110, COLORPIP_GRAY);
+		colpip_line(colorpip, gui.pip_width, gui.pip_height, 290, 70, 290, 120, COLORPIP_GRAY);
+		colpip_rect(colorpip, gui.pip_width, gui.pip_height, x_l, 70, x_h, 108, COLORPIP_YELLOW, 1);
 		if (! bw_type)
-			display_colorbuf_line_set(colorpip, gui.pip_width, gui.pip_height, x_c, 60, x_c, 120, COLORPIP_RED);
+			colpip_line(colorpip, gui.pip_width, gui.pip_height, x_c, 60, x_c, 120, COLORPIP_RED);
 }
 
 	void window_freq_process (void)
@@ -846,7 +846,7 @@ void button1_handler(void);
 			set_window(gui.window_to_draw, VISIBLE);
 			windows[gui.window_to_draw].first_call = 1;
 			footer_buttons_state(DISABLED, "");
-			strcpy((char *) menu_uif.name, name);
+			strcpy(menu_uif.name, name);
 			menu_uif.menupos = menupos;
 			menu_uif.exitkey = exitkey;
 		}
@@ -1224,7 +1224,7 @@ void button1_handler(void);
 			menu_label_touched = 0;
 		}
 		if (menu_level != MENU_VALS)
-			display_colorbuff_string_tbg(colorpip, gui.pip_width, gui.pip_height, labels[menu[menu_level].selected_label + menu[menu_level].first_id].x - 16,
+			colpip_string_tbg(colorpip, gui.pip_width, gui.pip_height, labels[menu[menu_level].selected_label + menu[menu_level].first_id].x - 16,
 										 labels[menu[menu_level].selected_label + menu[menu_level].first_id].y, ">", COLORPIP_GREEN);
 	}
 
@@ -1462,14 +1462,14 @@ void button1_handler(void);
 		static const char delimeters [] = "|";
 		c1 = is_disabled ? COLOR_BUTTON_DISABLED : (is_locked ? COLOR_BUTTON_LOCKED : COLOR_BUTTON_NON_LOCKED);
 		c2 = is_disabled ? COLOR_BUTTON_DISABLED : (is_locked ? COLOR_BUTTON_PR_LOCKED : COLOR_BUTTON_PR_NON_LOCKED);
-		display_colorbuf_rect(colorpip, gui.pip_width, gui.pip_height, x1,	y1, x2, y2, pressed ? c1 : c2, 1);
-		display_colorbuf_rect(colorpip, gui.pip_width, gui.pip_height, x1,	y1, x2, y2, COLORPIP_GRAY, 0);
-		display_colorbuf_rect(colorpip, gui.pip_width, gui.pip_height, x1 + 2, y1 + 2, x2 - 2, y2 - 2, COLORPIP_BLACK, 0);
+		colpip_rect(colorpip, gui.pip_width, gui.pip_height, x1,	y1, x2, y2, pressed ? c1 : c2, 1);
+		colpip_rect(colorpip, gui.pip_width, gui.pip_height, x1,	y1, x2, y2, COLORPIP_GRAY, 0);
+		colpip_rect(colorpip, gui.pip_width, gui.pip_height, x1 + 2, y1 + 2, x2 - 2, y2 - 2, COLORPIP_BLACK, 0);
 
 		if (strchr(text, delimeters[0]) == NULL)
 		{
 			/* Однострочная надпись */
-			display_colorbuff_string2_tbg(colorpip, gui.pip_width, gui.pip_height,
+			colpip_string2_tbg(colorpip, gui.pip_width, gui.pip_height,
 					x1 + ((x2 - x1) - (strlen (text) * SMALLCHARW2)) / 2,
 					y1 + ((y2 - y1) - SMALLCHARH2) / 2,
 					text, COLORPIP_BLACK);
@@ -1480,12 +1480,12 @@ void button1_handler(void);
 			char buf [TEXT_ARRAY_SIZE];
 			strcpy(buf, text);
 			char * text2 = strtok(buf, delimeters);
-			display_colorbuff_string2_tbg(colorpip, gui.pip_width, gui.pip_height, x1 +
+			colpip_string2_tbg(colorpip, gui.pip_width, gui.pip_height, x1 +
 					((x2 - x1) - (strlen (text2) * SMALLCHARW2)) / 2,
 					y1 + j, text2, COLORPIP_BLACK);
 
 			text2 = strtok(NULL, delimeters);
-			display_colorbuff_string2_tbg(colorpip, gui.pip_width, gui.pip_height, x1 +
+			colpip_string2_tbg(colorpip, gui.pip_width, gui.pip_height, x1 +
 					((x2 - x1) - (strlen (text2) * SMALLCHARW2)) / 2,
 					y2 - SMALLCHARH2 - j, text2, COLORPIP_BLACK);
 		}
@@ -1531,8 +1531,8 @@ void button1_handler(void);
 		if (str_len > 0)
 		{
 			xt = gui.pip_width - SMALLCHARW2 - str_len * SMALLCHARW2;
-			pip_transparency_rect(colorpip, gui.pip_width, gui.pip_height, xt - 5, 230, gui.pip_width - 5, 253, alpha);
-			display_colorbuff_string2_tbg(colorpip, gui.pip_width, gui.pip_height, xt, 235, buf, COLORPIP_YELLOW);
+			colpip_transparency(colorpip, gui.pip_width, gui.pip_height, xt - 5, 230, gui.pip_width - 5, 253, alpha);
+			colpip_string2_tbg(colorpip, gui.pip_width, gui.pip_height, xt, 235, buf, COLORPIP_YELLOW);
 		}
 
 	#if defined (RTC1_TYPE)				// текущее время
@@ -1542,13 +1542,13 @@ void button1_handler(void);
 		board_rtc_getdatetime(& year, & month, & day, & hour, & minute, & secounds);
 		str_len += local_snprintf_P(&buf[str_len], sizeof buf / sizeof buf [0] - str_len,
 				PSTR("%02d.%02d.%04d %02d%c%02d"), day, month, year, hour, ((secounds & 1) ? ' ' : ':'), minute);
-		pip_transparency_rect(colorpip, gui.pip_width, gui.pip_height, 5, 230, str_len * SMALLCHARW2 + 15, 253, alpha);
-		display_colorbuff_string2_tbg(colorpip, gui.pip_width, gui.pip_height, 10, 235, buf, COLORPIP_YELLOW);
+		colpip_transparency(colorpip, gui.pip_width, gui.pip_height, 5, 230, str_len * SMALLCHARW2 + 15, 253, alpha);
+		colpip_string2_tbg(colorpip, gui.pip_width, gui.pip_height, 10, 235, buf, COLORPIP_YELLOW);
 	#endif 	/* defined (RTC1_TYPE) */
 
 		if (windows[gui.window_to_draw].is_show)
 		{
-			pip_transparency_rect(colorpip, gui.pip_width, gui.pip_height,
+			colpip_transparency(colorpip, gui.pip_width, gui.pip_height,
 					windows[gui.window_to_draw].x1, windows[gui.window_to_draw].y1,
 					windows[gui.window_to_draw].x2, windows[gui.window_to_draw].y2, alpha);
 
@@ -1556,7 +1556,7 @@ void button1_handler(void);
 				windows[gui.window_to_draw].onVisibleProcess();							// для окна, если есть
 
 			// вывод заголовка окна
-			display_colorbuff_string_tbg(colorpip, gui.pip_width, gui.pip_height, windows[gui.window_to_draw].x1 + 20,
+			colpip_string_tbg(colorpip, gui.pip_width, gui.pip_height, windows[gui.window_to_draw].x1 + 20,
 					windows[gui.window_to_draw].y1 + 10, windows[gui.window_to_draw].name, COLORPIP_YELLOW);
 
 			// отрисовка принадлежащих окну элементов
@@ -1566,7 +1566,7 @@ void button1_handler(void);
 			{
 				const label_t * const lh = & labels[i];
 				if (lh->parent == gui.window_to_draw && lh->visible == VISIBLE)
-					display_colorbuff_string_tbg(colorpip, gui.pip_width, gui.pip_height, lh->x, lh->y, lh->text, lh->color);
+					colpip_string_tbg(colorpip, gui.pip_width, gui.pip_height, lh->x, lh->y, lh->text, lh->color);
 			}
 
 			// кнопки

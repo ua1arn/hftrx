@@ -673,7 +673,7 @@ void display_pixelbuffer_clear(
 // начальная инициализация буфера
 // Формат RGB565
 // Эта функция используется только в тесте
-void display_colorbuf_fill(
+void colpip_fill(
 	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy,
@@ -682,7 +682,7 @@ void display_colorbuf_fill(
 
 // Выдать цветной буфер на дисплей
 // Формат RGB565
-void display_colorbuf_show(
+void colpip_to_main(
 	const PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy,
@@ -691,7 +691,7 @@ void display_colorbuf_show(
 	);
 
 // Нарисовать линию указанным цветом
-void display_colorbuf_line_set(
+void colpip_line(
 	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy,
@@ -703,7 +703,7 @@ void display_colorbuf_line_set(
 	);
 
 // Нарисовать закрашенный или пустой прямоугольник
-void display_colorbuf_rect(
+void colpip_rect(
 	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,	// размер буфера
 	uint_fast16_t dy,	// размер буфера
@@ -715,16 +715,8 @@ void display_colorbuf_rect(
 	uint_fast8_t fill
 	);
 
-// установить данный буфер как область для PIP
-// Формат RGB565
-void display_colorbuf_pip(
-	const PACKEDCOLORPIP_T * buffer,
-	uint_fast16_t dx,	
-	uint_fast16_t dy
-	);
-
 // Поставить цветную точку.
-void display_colorbuf_set(
+void colpip_point(
 	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy,
@@ -734,7 +726,7 @@ void display_colorbuf_set(
 	);
 
 // поставить цветную точку (модификация с сохранением старого изоьражения).
-void display_colorbuf_xor(
+void colpip_point_xor(
 	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy,
@@ -743,9 +735,21 @@ void display_colorbuf_xor(
 	COLORPIP_T color
 	);
 
-void
-display_colorbuff_string(
+/* возвращает новую позицию по x */
+uint_fast16_t
+colpip_string(
 	PACKEDCOLORPIP_T * buffer,
+	uint_fast16_t dx,	// размеры буфера
+	uint_fast16_t dy,
+	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	const char * s
+	);
+
+/* возвращает новую позицию по x */
+uint_fast16_t
+colmain_string(
+	PACKEDCOLORMAIN_T * buffer,
 	uint_fast16_t dx,	// размеры буфера
 	uint_fast16_t dy,
 	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
@@ -755,7 +759,7 @@ display_colorbuff_string(
 // Используется при выводе на графический индикатор,
 // transparent background - не меняем цвет фона.
 void
-display_colorbuff_string_tbg(
+colpip_string_tbg(
 	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy,
@@ -767,7 +771,7 @@ display_colorbuff_string_tbg(
 // Используется при выводе на графический индикатор,
 // transparent background - не меняем цвет фона.
 void
-display_colorbuff_string2_tbg(
+colpip_string2_tbg(
 	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy,
@@ -778,7 +782,7 @@ display_colorbuff_string2_tbg(
 	);
 // Используется при выводе на графический индикатор,
 // transparent background - не меняем цвет фона.
-void display_colorbuff_string3_tbg(
+void colpip_string3_tbg(
 	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy,
@@ -789,28 +793,28 @@ void display_colorbuff_string3_tbg(
 	);
 // Используется при выводе на графический индикатор,
 // Возвращает ширину строки в пикселях
-uint_fast16_t display_colorbuff_string3_width(
+uint_fast16_t colpip_string3_width(
 	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy,
 	const char * s
 	);
 // Возвращает ширину строки в пикселях
-uint_fast16_t display_colorbuff_string2_width(
+uint_fast16_t colpip_string2_width(
 	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy,
 	const char * s
 	);
 // Возвращает ширину строки в пикселях
-uint_fast16_t display_colorbuff_string_width(
+uint_fast16_t colpip_string_width(
 	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy,
 	const char * s
 	);
 // Возвращает высоту строки в пикселях
-uint_fast16_t display_colorbuff_string_height(
+uint_fast16_t colpip_string_height(
 	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy,
@@ -1020,7 +1024,7 @@ display_colorbuf_set_vline(
 
 // получить адрес требуемой позиции в буфере
 PACKEDCOLORPIP_T *
-display_colorbuf_at(
+colpip_mem_at(
 	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
@@ -1047,7 +1051,7 @@ void board_set_wfshiftenable(uint_fast8_t v);	   /* разрешение или 
 PACKEDCOLORMAIN_T * rgb565_fb(void);
 void display2_xltrgb24(COLOR24_T * xtable);
 // Установить прозрачность для прямоугольника
-void pip_transparency_rect(
+void colpip_transparency(
 	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy,
@@ -1057,7 +1061,7 @@ void pip_transparency_rect(
 	);
 
 // заполнение прямоугольной области в видеобуфере
-void display_colorbuf_fillrect(
+void colpip_fillrect(
 	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
