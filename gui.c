@@ -28,7 +28,6 @@
 void display_radius(int xc, int yc, unsigned gs, unsigned r1, unsigned r2, COLORMAIN_T color);
 void display_segm(int xc, int yc, unsigned gs, unsigned ge, unsigned r, int step, COLORMAIN_T color);
 void polar_to_dek(uint_fast16_t xc, uint_fast16_t yc, uint_fast16_t gs, uint_fast16_t r, uint_fast16_t * x, uint_fast16_t * y);
-void floodFill_framebuffer(uint_fast16_t x, uint_fast16_t y, PACKEDCOLORMAIM_T newColor, PACKEDCOLORMAIM_T oldColor);
 
 static
 uint_fast16_t normalize(
@@ -85,8 +84,8 @@ display_smeter2(
 	char buf[10];
 	uint_fast8_t tracemax;
 	uint_fast8_t is_tx = hamradio_get_tx();
-	static int gv, gv_trace, svr_trace, old_tx = 0, first_run = 1;
-	static int gv_old = gs, gv_trace_old = gs, svr_trace_old = gs;
+	static int gv, gv_trace, gswr, old_tx = 0, first_run = 1;
+	static int gv_old = gs, gv_trace_old = gs, gswr_old = gs;
 	adcvalholder_t forward, reflected;
 	uint_fast16_t swr10; 														// swr10 = 0..30 for swr 1..4
 
@@ -103,7 +102,7 @@ display_smeter2(
 			swr10 = fullscale;		// SWR is infinite
 		else
 			swr10 = (forward + reflected) * SWRMIN / (forward - reflected) - SWRMIN;
-		svr_trace = gs + normalize(swr10, 0, 30, ge - gs);
+		gswr = gs + normalize(swr10, 0, 30, ge - gs);
 	}
 	else
 	{
@@ -186,13 +185,15 @@ display_smeter2(
 	if (is_tx != old_tx)
 	{
 		display_solidbar(x1, y1, x2, y2, COLORMAIN_BLACK);
-		gv_trace_old -= 1;
+		gv_trace_old -= 1; // для перерисовки шкалы при смене режима
 	}
 
-	//display_radius(xc, yc, gs, r1, r2, COLOR_RED);
-	//display_radius(xc, yc, ge, r1, r2, COLOR_RED);
-//	if (gv_old != gv || gv_trace_old != gv_trace)
-//	{
+	if (gv_old != gv || gv_trace_old != gv_trace || gswr_old != gswr)
+	{
+		display_radius(xc - 1, yc, gv_old, rv1, rv2, COLORMAIN_BLACK);
+		display_radius(xc, yc, gv_old, rv1, rv2, COLORMAIN_BLACK);
+		display_radius(xc + 1, yc, gv_old, rv1, rv2, COLORMAIN_BLACK);
+
 		if (is_tx)																	// шкала при передаче
 		{
 			uint_fast8_t p = 0;
@@ -246,13 +247,6 @@ display_smeter2(
 			}
 		}
 
-//		display_segm(xc, yc, gs, ge, rv1, 1, COLORMAIN_BLUE);	// показывает зоны перемещения стрелки
-//		display_segm(xc, yc, gs, ge, rv2, 1, COLORMAIN_BLUE);	// показывает зоны перемещения стрелки
-
-		display_radius(xc - 1, yc, gv_old, rv1, rv2, COLORMAIN_BLACK);
-		display_radius(xc, yc, gv_old, rv1, rv2, COLORMAIN_BLACK);
-		display_radius(xc + 1, yc, gv_old, rv1, rv2, COLORMAIN_BLACK);
-
 		display_segm(xc, yc, gs, gm, r1, 1, smeter);
 		display_segm(xc, yc, gm, ge, r1, 1, is_tx ? smeter : smeterplus);
 		display_segm(xc, yc, gs, ge, r2, 1, COLORMAIN_WHITE);
@@ -261,33 +255,12 @@ display_smeter2(
 		{
 			for (i = r2 + 3; i <= r1 - 2; i++)
 			{
-				display_segm(xc, yc, gs, svr_trace, i, 1, COLORMAIN_YELLOW);
-				display_segm(xc, yc + 1, gs, svr_trace, i, 1, COLORMAIN_YELLOW);
-				display_segm(xc, yc, svr_trace + 1, ge, i, 1, COLORMAIN_BLACK);
-				display_segm(xc, yc + 1, svr_trace + 1, ge, i, 1, COLORMAIN_BLACK);
+				display_segm(xc, yc, gs, gswr, i, 1, COLORMAIN_YELLOW);
+				display_segm(xc, yc + 1, gs, gswr, i, 1, COLORMAIN_YELLOW);
+				display_segm(xc, yc, gswr, ge, i, 1, COLORMAIN_BLACK);
+				display_segm(xc, yc + 1, gswr, ge, i, 1, COLORMAIN_BLACK);
+				gswr_old = gswr;
 			}
-
-//			uint_fast16_t gg = svr_trace; // > svr_trace_old ? svr_trace : svr_trace_old;
-//			if (gg > gs)
-//			{
-//				display_segm(xc, yc, gs, gg, r2 + 2, 1, COLORMAIN_YELLOW);
-//				display_segm(xc, yc, gs, gg, r1 - 2, 1, COLORMAIN_YELLOW);
-//				display_radius(xc, yc, gs, r1 - 2, r2 + 2, COLORMAIN_YELLOW);
-//				display_radius(xc, yc, gg, r1 - 2, r2 + 2, COLORMAIN_YELLOW);
-//				polar_to_dek(xc, yc, gg - 1, r1 - 4, & xx, & yy);
-//				floodFill_framebuffer(xx, yy, COLORMAIN_YELLOW, COLORMAIN_BLACK);
-//			}
-//
-//			for (i = r2 + 2; i <= r1 - 2; i++)
-//				display_segm(xc, yc, svr_trace + 1, ge, i, 1, COLORMAIN_BLACK);
-
-//				if (svr_trace_old > svr_trace)
-//				{
-//					display_radius(xc, yc, svr_trace_old, r1 - 2, r2 + 2, COLORMAIN_BLACK);
-//					polar_to_dek(xc, yc, svr_trace_old + 1, r1 - 4, & xx, & yy);
-//					floodFill_framebuffer(xx, yy, COLORMAIN_BLACK, COLORMAIN_YELLOW);
-//				}
-//			svr_trace_old = svr_trace;
 		} else
 		{
 			display_radius(xc - 1, yc, gv_trace_old, r1 - 2, r2 + 2, COLORMAIN_BLACK);
@@ -308,7 +281,7 @@ display_smeter2(
 		gv_old = gv;
 		gv_trace_old = gv_trace;
 		old_tx = is_tx;
-//	}
+	}
 	(void) pv;
 }
 
