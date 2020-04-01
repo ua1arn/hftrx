@@ -996,9 +996,38 @@ display_fillrect(
 	COLORMAIN_T color
 	);
 
+/* заполнение прямоугольника в буфере произвольным цветом
+*/
+void
+colmain_fillrect(
+	PACKEDCOLORMAIN_T * buffer,
+	uint_fast16_t dx,
+	uint_fast16_t dy,
+	uint_fast16_t x, uint_fast16_t y, 	// координаты в пикселях
+	uint_fast16_t w, uint_fast16_t h, 	// размеры в пикселях
+	COLORMAIN_T color
+	);
+
+// скоприовать прямоугольник с типом пикселей соответствующим основному экрану
+void colmain_plot(
+	PACKEDCOLORMAIN_T * tbuffer,	// получатель
+	uint_fast16_t tdx,	// получатель
+	uint_fast16_t tdy,	// получатель
+	uint_fast16_t x,	// получатель
+	uint_fast16_t y,	// получатель
+	const PACKEDCOLORMAIN_T * buffer, 	// источник
+	uint_fast16_t dx,	// источник Размеры окна в пикселях
+	uint_fast16_t dy	// источник
+	);
+
 // Рисуем на основном экране цветной прямоугольник.
 // x2, y2 - координаты второго угла (не входящие в закрашиваемый прямоугольник)
 void display_solidbar(uint_fast16_t x, uint_fast16_t y, uint_fast16_t x2, uint_fast16_t y2, COLORMAIN_T color);
+
+
+void display_radius(int xc, int yc, unsigned gs, unsigned r1, unsigned r2, COLORMAIN_T color);
+void display_segm(int xc, int yc, unsigned gs, unsigned ge, unsigned r, int step, COLORMAIN_T color);
+void polar_to_dek(uint_fast16_t xc, uint_fast16_t yc, uint_fast16_t gs, uint_fast16_t r, uint_fast16_t * x, uint_fast16_t * y);
 
 /// Нарисовать вертикальную цветную полосу
 // Формат RGB565

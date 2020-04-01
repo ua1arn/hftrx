@@ -25,41 +25,37 @@
 
 #include "./display/fontmaps.h"
 
-void display_radius(int xc, int yc, unsigned gs, unsigned r1, unsigned r2, COLORMAIN_T color);
-void display_segm(int xc, int yc, unsigned gs, unsigned ge, unsigned r, int step, COLORMAIN_T color);
-void polar_to_dek(uint_fast16_t xc, uint_fast16_t yc, uint_fast16_t gs, uint_fast16_t r, uint_fast16_t * x, uint_fast16_t * y);
-
 static
 uint_fast16_t normalize(
-		uint_fast16_t raw,
-		uint_fast16_t rawmin,
-		uint_fast16_t rawmax,
-		uint_fast16_t range
-		)
+	uint_fast16_t raw,
+	uint_fast16_t rawmin,
+	uint_fast16_t rawmax,
+	uint_fast16_t range
+	)
+{
+	if (rawmin < rawmax)
 	{
-		if (rawmin < rawmax)
-		{
-			// Normal direction
-			const uint_fast16_t distance = rawmax - rawmin;
-			if (raw < rawmin)
-				return 0;
-			raw = raw - rawmin;
-			if (raw > distance)
-				return range;
-			return (uint_fast32_t) raw * range / distance;
-		}
-		else
-		{
-			// reverse direction
-			const uint_fast16_t distance = rawmin - rawmax;
-			if (raw >= rawmin)
-				return 0;
-			raw = rawmin - raw;
-			if (raw > distance)
-				return range;
-			return (uint_fast32_t) raw * range / distance;
-		}
+		// Normal direction
+		const uint_fast16_t distance = rawmax - rawmin;
+		if (raw < rawmin)
+			return 0;
+		raw = raw - rawmin;
+		if (raw > distance)
+			return range;
+		return (uint_fast32_t) raw * range / distance;
 	}
+	else
+	{
+		// reverse direction
+		const uint_fast16_t distance = rawmin - rawmax;
+		if (raw >= rawmin)
+			return 0;
+		raw = rawmin - raw;
+		if (raw > distance)
+			return range;
+		return (uint_fast32_t) raw * range / distance;
+	}
+}
 
 void
 display_smeter2(
@@ -68,6 +64,25 @@ display_smeter2(
 		void * pv
 		)
 {
+#if 1
+	// размеры формируемого изображения
+	enum { tdx = 3 * 16, tdy = 3 * 16 };
+
+	static PACKEDCOLORMAIN_T tb [tdx * tdy];	// буфер длф формирования изображения
+
+	// создание невидимого изображения
+	colmain_fillrect(tb, tdx, tdy, 0, 0, tdx, tdy, COLORMAIN_BLUE);
+	colmain_fillrect(tb, tdx, tdy, 16, 16, 16, 16, COLORMAIN_RED);
+
+	// Копируем в видимый framebuffer
+	colmain_plot(colmain_fb(), DIM_X, DIM_Y, GRID2X(x), GRID2Y(y), tb, tdx, tdy);
+	return;
+
+//	display_at(x, y, "S-met");
+//	return;
+
+#endif
+
 	enum { ADDRCELLHEIGHT = 15 };
 	enum { halfsect = 30 };
 	enum { gm = 270 };

@@ -62,17 +62,6 @@ ltdc_horizontal_pixels(
 	uint_fast16_t width	// number of bits (start from LSB first byte in raster)
 	);
 
-void colmain_plot(
-	PACKEDCOLORMAIN_T * tbuffer,	// получатель
-	uint_fast16_t tdx,	// получатель
-	uint_fast16_t tdy,	// получатель
-	uint_fast16_t x,	// получатель
-	uint_fast16_t y,	// получатель
-	const PACKEDCOLORMAIN_T * buffer, 	// источник
-	uint_fast16_t dx,	// источник Размеры окна в пикселях
-	uint_fast16_t dy	// источник
-	);
-
 #if WITHMDMAHW
 
 static uint_fast8_t
@@ -1690,6 +1679,21 @@ display_fillrect(
 	colmain_fillrect_pattern(buffer, dx, dy, x, y, w, h, color, color, 0xFF);
 }
 
+/* заполнение прямоугольника в буфере произвольным цветом
+*/
+void
+colmain_fillrect(
+	PACKEDCOLORMAIN_T * buffer,
+	uint_fast16_t dx,
+	uint_fast16_t dy,
+	uint_fast16_t x, uint_fast16_t y, 	// координаты в пикселях
+	uint_fast16_t w, uint_fast16_t h, 	// размеры в пикселях
+	COLORMAIN_T color
+	)
+{
+	colmain_fillrect_pattern(buffer, dx, dy, x, y, w, h, color, color, 0xFF);
+}
+
 #endif /* LCDMODE_LTDC */
 
 /*
@@ -2423,6 +2427,7 @@ void display_plotstart(
 
 }
 
+// скоприовать прямоугольник с типом пикселей соответствующим основному экрану
 void colmain_plot(
 	PACKEDCOLORMAIN_T * tbuffer,	// получатель
 	uint_fast16_t tdx,	// получатель
