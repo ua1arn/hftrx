@@ -700,8 +700,9 @@ uint32_t hardware_get_random(void);
 void arm_hardware_ltdc_initialize(void);	// LCD-TFT Controller (LTDC) with framebuffer
 void arm_hardware_dma2d_initialize(void);	// Graphic engine
 void arm_hardware_sdram_initialize(void);	// External memory region(s)
-void arm_hardware_ltdc_pip_set(uintptr_t addr);	// set PIP framebuffer address
-void arm_hardware_ltdc_pip_off(void);	// set PIP framebuffer address
+void arm_hardware_ltdc_main_set(uintptr_t addr);	// Set MAIN frame buffer address.
+void arm_hardware_ltdc_pip_set(uintptr_t addr);	// Set PIP frame buffer address.
+void arm_hardware_ltdc_pip_off(void);	// Turn PIP off (main layer only).
 
 uint_fast8_t usbd_cdc_getrts(void);
 uint_fast8_t usbd_cdc_getdtr(void);

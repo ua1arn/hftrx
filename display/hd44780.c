@@ -478,7 +478,7 @@ static void hd44780_bar_column(uint_fast8_t pattern)
 // Вокруг этой функции вызывать hd44780_put_char_begin() и hd44780_put_char_end().
 
 void
-display_dispbar(
+colmain_bar(
 	uint_fast8_t width,	/* количество знакомест, занимаемых индикатором */
 	/* was: unsigned int */ uint_fast8_t value,		/* значение, которое надо отобразить */
 	uint_fast8_t tracevalue,		/* значение маркера, которое надо отобразить */
@@ -670,15 +670,15 @@ display_clear(void)
 
 void
 //NOINLINEAT
-display_setcolors(COLORMAIN_T fg, COLORMAIN_T bg)
+colmain_setcolors(COLORMAIN_T fg, COLORMAIN_T bg)
 {
 	(void) fg;
 	(void) bg;
 }
 
-void display_setcolors3(COLORMAIN_T fg, COLORMAIN_T bg, COLORMAIN_T fgbg)
+void colmain_setcolors3(COLORMAIN_T fg, COLORMAIN_T bg, COLORMAIN_T fgbg)
 {
-	display_setcolors(fg, bg);
+	colmain_setcolors(fg, bg);
 }
 
 
@@ -797,7 +797,7 @@ void display_plotfrom(uint_fast16_t x, uint_fast16_t y)
 }
 
 void display_plotstart(
-	uint_fast16_t height	// Высота окна в пикселях
+	uint_fast16_t dy	// Высота окна источника в пикселях
 	)
 {
 

@@ -523,14 +523,14 @@ display_clear(void)
 
 void
 //NOINLINEAT
-display_setcolors(COLORMAIN_T fg, COLORMAIN_T bg)
+colmain_setcolors(COLORMAIN_T fg, COLORMAIN_T bg)
 {
 	l2f50_setcolor(fg, bg);
 }
 
-void display_setcolors3(COLORMAIN_T fg, COLORMAIN_T bg, COLORMAIN_T fgbg)
+void colmain_setcolors3(COLORMAIN_T fg, COLORMAIN_T bg, COLORMAIN_T fgbg)
 {
-	display_setcolors(fg, bg);
+	colmain_setcolors(fg, bg);
 }
 
 void
@@ -635,10 +635,10 @@ void display_plotfrom(uint_fast16_t x, uint_fast16_t y)
 }
 
 void display_plotstart(
-	uint_fast16_t height	// Высота окна в пикселях
+	uint_fast16_t dy	// Высота окна в пикселях
 	)
 {
-	l2f50_set_windowh(height);
+	l2f50_set_windowh(dy);
 	l2f50_put_char_begin();
 }
 

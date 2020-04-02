@@ -136,7 +136,7 @@ static void display_freqXbig_a(
 	uint_fast8_t fullwidth = display_getfreqformat(& rj);
 	const uint_fast8_t comma = 3 - rj;
 
-	display_setcolors3(colorsfg_1freq [0], colorsbg_1freq [0], colorsfg_1freq [0]);
+	colmain_setcolors3(colorsfg_1freq [0], colorsbg_1freq [0], colorsfg_1freq [0]);
 	if (pv != NULL)
 	{
 #if WITHDIRECTFREQENER
@@ -175,7 +175,7 @@ static void display_freqX_a(
 	uint_fast8_t fullwidth = display_getfreqformat(& rj);
 	const uint_fast8_t comma = 3 - rj;
 
-	display_setcolors3(colorsfg_1freq [0], colorsbg_1freq [0], colorsfg_1freq [0]);
+	colmain_setcolors3(colorsfg_1freq [0], colorsbg_1freq [0], colorsfg_1freq [0]);
 	if (pv != NULL)
 	{
 #if WITHDIRECTFREQENER
@@ -214,7 +214,7 @@ static void display_freqchr_a(
 	uint_fast8_t fullwidth = display_getfreqformat(& rj);
 	const uint_fast8_t comma = 3 - rj;
 
-	display_setcolors3(colorsfg_1freq [0], colorsbg_1freq [0], colorsfg_1freq [0]);
+	colmain_setcolors3(colorsfg_1freq [0], colorsbg_1freq [0], colorsfg_1freq [0]);
 	if (pv != NULL)
 	{
 #if WITHDIRECTFREQENER
@@ -253,7 +253,7 @@ static void display_freqchr_b(
 	uint_fast8_t fullwidth = display_getfreqformat(& rj);
 	const uint_fast8_t comma = 3 - rj;
 
-	display_setcolors3(colorsfg_1freq [0], colorsbg_1freq [0], colorsfg_1freq [0]);
+	colmain_setcolors3(colorsfg_1freq [0], colorsbg_1freq [0], colorsfg_1freq [0]);
 #if 0
 	if (pv != NULL)
 	{
@@ -295,7 +295,7 @@ static void display_freqX_b(
 
 	const uint_fast32_t freq = hamradio_get_freq_b();
 
-	display_setcolors(colorsfg_1freq [0], colorsbg_1freq [0]);
+	colmain_setcolors(colorsfg_1freq [0], colorsbg_1freq [0]);
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	do
 	{
@@ -314,7 +314,7 @@ static void display_freqmeter10(
 	char buffer [32];
 	local_snprintf_P(buffer, sizeof buffer / sizeof buffer [0], PSTR("%10lu"), board_get_fqmeter());
 
-	display_setcolors(colorsfg_1freq [0], colorsbg_1freq [0]);
+	colmain_setcolors(colorsfg_1freq [0], colorsbg_1freq [0]);
 	display_at(x, y, buffer);
 #endif /* WITHFQMETER */
 }
@@ -336,7 +336,7 @@ display2_text_P(
 	#else /* LCDMODE_COLORED */
 	#endif /* LCDMODE_COLORED */
 
-	display_setcolors(colorsfg [state], colorsbg [state]);
+	colmain_setcolors(colorsfg [state], colorsbg [state]);
 	display_at_P(x, y, labels [state]);
 }
 
@@ -356,7 +356,7 @@ display2_text(
 	#else /* LCDMODE_COLORED */
 	#endif /* LCDMODE_COLORED */
 
-	display_setcolors(colorsfg [state], colorsbg [state]);
+	colmain_setcolors(colorsfg [state], colorsbg [state]);
 	display_at(x, y, labels [state]);
 }
 
@@ -369,7 +369,7 @@ static void display_txrxstatecompact(
 {
 #if WITHTX
 	const uint_fast8_t tx = hamradio_get_tx();
-	display_setcolors(TXRXMODECOLOR, tx ? MODECOLORBG_TX : MODECOLORBG_RX);
+	colmain_setcolors(TXRXMODECOLOR, tx ? MODECOLORBG_TX : MODECOLORBG_RX);
 	display_at_P(x, y, tx ? PSTR("T") : PSTR(" "));
 #endif /* WITHTX */
 }
@@ -410,7 +410,7 @@ static void display_recstatus(
 		(int) hamradio_get_recdbuffered()
 		);
 		
-	display_setcolors(MODECOLOR, BGCOLOR);
+	colmain_setcolors(MODECOLOR, BGCOLOR);
 	display_at(x, y, buffer);
 
 #endif /* WITHUSEAUDIOREC */
@@ -445,7 +445,7 @@ static void display_usb3(
 #if defined (WITHUSBHW_HOST)
 	const uint_fast8_t active = hamradio_get_usbh_active();
 	#if LCDMODE_COLORED
-		display_setcolors(TXRXMODECOLOR, active ? MODECOLORBG_TX : MODECOLORBG_RX);
+		colmain_setcolors(TXRXMODECOLOR, active ? MODECOLORBG_TX : MODECOLORBG_RX);
 		display_at_P(x, y, PSTR("USB"));
 	#else /* LCDMODE_COLORED */
 		display_at_P(x, y, active ? PSTR("USB") : PSTR("   "));
@@ -873,7 +873,7 @@ static void display_lockstate1(
 	void * pv
 	)
 {
-	display_setcolors(LOCKCOLOR, BGCOLOR);
+	colmain_setcolors(LOCKCOLOR, BGCOLOR);
 	display_at_P(x, y, hamradio_get_lockvalue() ? PSTR("*") : PSTR(" "));
 }
 
@@ -887,7 +887,7 @@ static void display_pbt(
 #if WITHPBT
 	const int_fast32_t pbt = hamradio_get_pbtvalue();
 
-	//display_setcolors(LOCKCOLOR, BGCOLOR);
+	//colmain_setcolors(LOCKCOLOR, BGCOLOR);
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	do
 	{
@@ -951,17 +951,17 @@ static void display_ovf3(
 
 	if (boad_fpga_adcoverflow() != 0)
 	{
-		display_setcolors(BGCOLOR, OVFCOLOR);
+		colmain_setcolors(BGCOLOR, OVFCOLOR);
 		display_at_P(x, y, PSTR("OVF"));
 	}
 	else if (boad_mike_adcoverflow() != 0)
 	{
-		display_setcolors(BGCOLOR, OVFCOLOR);
+		colmain_setcolors(BGCOLOR, OVFCOLOR);
 		display_at_P(x, y, PSTR("MIK"));
 	}
 	else
 	{
-		display_setcolors(BGCOLOR, BGCOLOR);
+		colmain_setcolors(BGCOLOR, BGCOLOR);
 		display_at_P(x, y, PSTR("   "));
 	}
 #endif /* WITHDSPEXTDDC */
@@ -976,17 +976,17 @@ static void display_preovf3(
 {
 	if (boad_fpga_adcoverflow() != 0)
 	{
-		display_setcolors(OVFCOLOR, BGCOLOR);
+		colmain_setcolors(OVFCOLOR, BGCOLOR);
 		display_at_P(x, y, PSTR("OVF"));
 	}
 	else if (boad_mike_adcoverflow() != 0)
 	{
-		display_setcolors(BGCOLOR, OVFCOLOR);
+		colmain_setcolors(BGCOLOR, OVFCOLOR);
 		display_at_P(x, y, PSTR("MIK"));
 	}
 	else
 	{
-		display_setcolors(MODECOLOR, BGCOLOR);
+		colmain_setcolors(MODECOLOR, BGCOLOR);
 		display_at_P(x, y, hamradio_get_pre_value_P());
 	}
 }
@@ -1038,7 +1038,7 @@ static void display_att_tx3(
 	const uint_fast8_t tx = hamradio_get_tx();
 	const FLASHMEM char * text = tx ? PSTR("TX  ") : hamradio_get_att_value_P();
 
-	display_setcolors(MODECOLOR, BGCOLOR);
+	colmain_setcolors(MODECOLOR, BGCOLOR);
 	display_at_P(x, y, text);
 }
 
@@ -1072,13 +1072,13 @@ static void display_vfomode1(
 	uint_fast8_t state;
 	const char * const label = hamradio_get_vfomode3_value(& state);
 
-	display_setcolors(MODECOLOR, BGCOLOR);
+	colmain_setcolors(MODECOLOR, BGCOLOR);
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	do
 	{
-		display_wrdata_begin(x, y);
-		display_put_char_small(x, y, label [0], lowhalf);
-		display_wrdata_end();
+		//display_wrdata_begin(x, y);
+		//display_put_char_small(x, y, label [0], lowhalf);
+		//display_wrdata_end();
 	} while (lowhalf --);
 }
 
@@ -1115,7 +1115,7 @@ static void display_voltlevelV5(
 #if WITHVOLTLEVEL && WITHCPUADCHW
 	uint_fast8_t volt = hamradio_get_volt_value();	// Напряжение в сотнях милливольт т.е. 151 = 15.1 вольта
 
-	display_setcolors(colorsfg_1state [0], colorsbg_1state [0]);
+	colmain_setcolors(colorsfg_1state [0], colorsbg_1state [0]);
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	do
 	{
@@ -1135,7 +1135,7 @@ static void display_voltlevel4(
 #if WITHVOLTLEVEL && WITHCPUADCHW
 	const uint_fast8_t volt = hamradio_get_volt_value();	// Напряжение в сотнях милливольт т.е. 151 = 15.1 вольта
 
-	display_setcolors(colorsfg_1state [0], colorsbg_1state [0]);
+	colmain_setcolors(colorsfg_1state [0], colorsbg_1state [0]);
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	do
 	{
@@ -1154,7 +1154,7 @@ static void display_thermo4(
 #if WITHTHERMOLEVEL
 	int_fast16_t tempv = hamradio_get_temperature_value() / 10;	// Градусы в десятых долях в целые градусы
 
-	display_setcolors(colorsfg_1state [0], colorsbg_1state [0]);
+	colmain_setcolors(colorsfg_1state [0], colorsbg_1state [0]);
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	do
 	{
@@ -1176,7 +1176,7 @@ static void display_currlevelA6(
 #if WITHCURRLEVEL && WITHCPUADCHW
 	int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
 
-	display_setcolors(colorsfg_1state [0], colorsbg_1state [0]);
+	colmain_setcolors(colorsfg_1state [0], colorsbg_1state [0]);
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	do
 	{
@@ -1196,7 +1196,7 @@ static void display_currlevel5(
 #if WITHCURRLEVEL2 && WITHCPUADCHW
 	int_fast16_t drain = hamradio_get_pacurrent2_value();	// Ток в сотнях милиампер (до 25.5 ампера), может быть отрицательным
 
-	display_setcolors(colorsfg_1state [0], colorsbg_1state [0]);
+	colmain_setcolors(colorsfg_1state [0], colorsbg_1state [0]);
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	do
 	{
@@ -1207,7 +1207,7 @@ static void display_currlevel5(
 #elif WITHCURRLEVEL && WITHCPUADCHW
 	int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
 
-	display_setcolors(colorsfg_1state [0], colorsbg_1state [0]);
+	colmain_setcolors(colorsfg_1state [0], colorsbg_1state [0]);
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	do
 	{
@@ -1227,7 +1227,7 @@ static void display_currlevel5alt(
 #if WITHCURRLEVEL && WITHCPUADCHW
 	int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
 
-	display_setcolors(colorsfg_1state [0], colorsbg_1state [0]);
+	colmain_setcolors(colorsfg_1state [0], colorsbg_1state [0]);
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	do
 	{
@@ -1373,7 +1373,7 @@ static void display_freqdelta8(
 	int_fast32_t deltaf;
 	const uint_fast8_t f = dsp_getfreqdelta10(& deltaf, 0);		/* Получить значение отклонения частоты с точностью 0.1 герца для приемника A */
 	deltaf = - deltaf;	// ошибка по частоте преобразуется в расстройку
-	display_setcolors(colorsfg_1state [0], colorsbg_1state [0]);
+	colmain_setcolors(colorsfg_1state [0], colorsbg_1state [0]);
 	if (f != 0)
 	{
 		uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
@@ -1400,7 +1400,7 @@ static void display_samfreqdelta8(
 	int_fast32_t deltaf;
 	const uint_fast8_t f = hamradio_get_samdelta10(& deltaf, 0);		/* Получить значение отклонения частоты с точностью 0.1 герца для приемника A */
 	deltaf = - deltaf;	// ошибка по частоте преобразуется в расстройку
-	display_setcolors(colorsfg_1state [0], colorsbg_1state [0]);
+	colmain_setcolors(colorsfg_1state [0], colorsbg_1state [0]);
 	if (f != 0)
 	{
 		uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
@@ -1428,7 +1428,7 @@ static void display_amfmhighcut4(
 	uint_fast8_t flag;
 	const uint_fast8_t v = hamradio_get_amfm_highcut10_value(& flag);	// текущее значение верхней частоты среза НЧ фильтра АМ/ЧМ (в десятках герц)
 
-	display_setcolors(colorsfg_2state [flag], colorsbg_2state [flag]);
+	colmain_setcolors(colorsfg_2state [flag], colorsbg_2state [flag]);
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	do
 	{
@@ -1450,7 +1450,7 @@ static void display_amfmhighcut5(
 	uint_fast8_t flag;
 	const uint_fast8_t v = hamradio_get_amfm_highcut10_value(& flag);	// текущее значение верхней частоты среза НЧ фильтра АМ/ЧМ (в десятках герц)
 
-	display_setcolors(colorsfg_2state [flag], colorsbg_2state [flag]);
+	colmain_setcolors(colorsfg_2state [flag], colorsbg_2state [flag]);
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	do
 	{
@@ -1551,11 +1551,11 @@ static void display_datetime12(
 
 struct dzone
 {
-	uint_fast8_t x; // левый верхний угол
-	uint_fast8_t y;
+	uint8_t x; // левый верхний угол
+	uint8_t y;
 	void (* redraw)(uint_fast8_t x, uint_fast8_t y, void * pv);	// функция отображения элемента
-	uint_fast8_t key;		// при каких обновлениях перерисовывается этот элемент
-	uint_fast8_t subset;
+	uint8_t key;		// при каких обновлениях перерисовывается этот элемент
+	uint8_t subset;
 };
 
 /* struct dzone subset field values */
@@ -3726,7 +3726,7 @@ enum
 		p->y = GRID2Y(18);	// позиция верхнего левого угла в пикселях
 		p->w = GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
 		p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
-		p->frame = (uintptr_t) getscratchpip();
+		//p->frame = (uintptr_t) getscratchpip();
 	}
 
 	#if WITHMENU
@@ -3948,7 +3948,7 @@ enum
 			p->y = GRID2Y(18);	// позиция верхнего левого угла в пикселях
 			p->w = GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
 			p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
-			p->frame = (uintptr_t) getscratchpip();
+			//p->frame = (uintptr_t) getscratchpip();
 		}
 
 	#if WITHMENU
@@ -4140,7 +4140,7 @@ enum
 		p->y = GRID2Y(28);	// позиция верхнего левого угла в пикселях
 		p->w = GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
 		p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
-		p->frame = (uintptr_t) getscratchpip();
+		//p->frame = (uintptr_t) getscratchpip();
 	}
 
 #elif DSTYLE_G_X480_Y272
@@ -4297,7 +4297,7 @@ enum
 		p->y = GRID2Y(30);	// позиция верхнего левого угла в пикселях
 		p->w = GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
 		p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
-		p->frame = (uintptr_t) getscratchpip();
+		//p->frame = (uintptr_t) getscratchpip();
 	}
 
 #elif DSTYLE_G_X800_Y480 && WITHTOUCHGUI //&& WITHSPECTRUMWF
@@ -4480,7 +4480,7 @@ enum
 		p->y = GRID2Y(DLES);	// позиция верхнего левого угла в пикселях
 		p->w = GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
 		p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
-		p->frame = (uintptr_t) getscratchpip();
+		//p->frame = (uintptr_t) getscratchpip();
 	}
 
 #elif DSTYLE_G_X800_Y480 //&& WITHSPECTRUMWF
@@ -4673,7 +4673,7 @@ enum
 		p->y = GRID2Y(DLES);	// позиция верхнего левого угла в пикселях
 		p->w = GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
 		p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
-		p->frame = (uintptr_t) getscratchpip();
+		//p->frame = (uintptr_t) getscratchpip();
 	}
 
 #elif DSTYLE_G_DUMMY
@@ -4764,7 +4764,7 @@ static const FLASHMEM struct dzone dzones [] =
 		p->y = GRID2Y(DLES);	// позиция верхнего левого угла в пикселях
 		p->w = GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
 		p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
-		p->frame = (uintptr_t) 0;
+		//p->frame = (uintptr_t) 0;
 	}
 
 #else
@@ -4825,7 +4825,12 @@ static uint_fast16_t display_getpwrfullwidth(void)
 //
 void 
 //NOINLINEAT
-display_dispbar(
+colmain_bar(
+	PACKEDCOLORMAIN_T * tbuffer,
+	uint_fast16_t tdx,
+	uint_fast16_t tdy,
+	uint_fast16_t xpix,
+	uint_fast16_t ypix,
 	uint_fast8_t width,	/* количество знакомест, занимаемых индикатором */
 	uint_fast8_t value,		/* значение, которое надо отобразить */
 	uint_fast8_t tracevalue,		/* значение маркера, которое надо отобразить */
@@ -4923,6 +4928,10 @@ void display_swrmeter(
 	)
 {
 #if WITHBARS
+	PACKEDCOLORMAIN_T * const tbuffer = colmain_fb_draw();
+	const uint_fast16_t tdx = DIM_X;
+	const uint_fast16_t tdy = DIM_Y;
+
 	// SWRMIN - значение 10 - соответствует SWR = 1.0, точность = 0.1
 	// SWRMAX - какая цифра стоит в конце шкалы SWR-метра (30 = КСВ 3.0)
 	const uint_fast16_t fullscale = SWRMAX - SWRMIN;
@@ -4939,17 +4948,19 @@ void display_swrmeter(
 
 	//debug_printf_P(PSTR("swr10=%d, mapleftval=%d, fs=%d\n"), swr10, mapleftval, display_getmaxswrlimb());
 
-	display_setcolors(SWRCOLOR, BGCOLOR);
+	colmain_setcolors(SWRCOLOR, BGCOLOR);
 
-	display_wrdatabar_begin(display_bars_x_swr(x, CHARS2GRID(0)), y);
-	display_dispbar(BDTH_ALLSWR, mapleftval, fullscale, fullscale, PATTERN_BAR_FULL, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYFULL);
+	uint_fast16_t ypix;
+	uint_fast16_t xpix = display_wrdatabar_begin(display_bars_x_swr(x, CHARS2GRID(0)), y, & ypix);
+	colmain_bar(tbuffer, tdx, tdy, xpix, ypix, BDTH_ALLSWR, mapleftval, fullscale, fullscale, PATTERN_BAR_FULL, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYFULL);
 	display_wrdatabar_end();
 
 	if (BDTH_SPACESWR != 0)
 	{
 		// заполняем пустое место за индикаторм КСВ
-		display_wrdatabar_begin(display_bars_x_swr(x, CHARS2GRID(BDTH_ALLSWR)), y);
-		display_dispbar(BDTH_SPACESWR, 0, 1, 1, PATTERN_SPACE, PATTERN_SPACE, PATTERN_SPACE);
+		uint_fast16_t ypix;
+		uint_fast16_t xpix = display_wrdatabar_begin(display_bars_x_swr(x, CHARS2GRID(BDTH_ALLSWR)), y, & ypix);
+		colmain_bar(tbuffer, tdx, tdy, xpix, ypix, BDTH_SPACESWR, 0, 1, 1, PATTERN_SPACE, PATTERN_SPACE, PATTERN_SPACE);
 		display_wrdatabar_end();
 	}
 
@@ -4974,21 +4985,25 @@ void display_modulationmeter_amv0(
 
 	//debug_printf_P(PSTR("swr10=%d, mapleftval=%d, fs=%d\n"), swr10, mapleftval, display_getmaxswrlimb());
 
-	display_setcolors(SWRCOLOR, BGCOLOR);
+	colmain_setcolors(SWRCOLOR, BGCOLOR);
 	display_at_P(display_bars_x_swr(x - 1, CHARS2GRID(0)), y, PSTR("M"));
 
-	display_setcolors(SWRCOLOR, BGCOLOR);
+	colmain_setcolors(SWRCOLOR, BGCOLOR);
 
+	uint_fast16_t ypix;
+	uint_fast16_t xpix = display_wrdatabar_begin(stored_xcell, stored_ycell, & ypix);
 	display_wrdatabar_begin(display_bars_x_swr(x, CHARS2GRID(0)), y);
-	display_dispbar(BDTH_ALLSWR, mapleftval, fullscale, fullscale, PATTERN_BAR_FULL, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYFULL);
+	colmain_bar(tbuffer, tdx, tdy, BDTH_ALLSWR, mapleftval, fullscale, fullscale, PATTERN_BAR_FULL, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYFULL);
 	display_wrdatabar_end();
 
 	if (BDTH_SPACESWR != 0)
 	{
 		// заполняем пустое место за индикаторм КСВ
 		display_bars_x_swr(x, y, CHARS2GRID(BDTH_ALLSWR));
+		uint_fast16_t ypix;
+		uint_fast16_t xpix = display_wrdatabar_begin(stored_xcell, stored_ycell, & ypix);
 		display_wrdatabar_begin();
-		display_dispbar(BDTH_SPACESWR, 0, 1, 1, PATTERN_SPACE, PATTERN_SPACE, PATTERN_SPACE);
+		colmain_bar(tbuffer, tdx, tdy, BDTH_SPACESWR, 0, 1, 1, PATTERN_SPACE, PATTERN_SPACE, PATTERN_SPACE);
 		display_wrdatabar_end();
 	}
 
@@ -5016,24 +5031,28 @@ void display_pwrmeter_amv0(
 	const uint_fast8_t mapleftval = display_mapbar(v, 0, fullscale, 0, v, fullscale);
 	const uint_fast8_t mapleftmax = display_mapbar(t, 0, fullscale, fullscale, t, fullscale); // fullscale - invisible
 
-	display_setcolors(PWRCOLOR, BGCOLOR);
+	colmain_setcolors(PWRCOLOR, BGCOLOR);
 	display_bars_x_pwr(x - 1, y, CHARS2GRID(0));
 	display_string_P(PSTR("P"), 0);
 
 	display_bars_x_pwr(x, y, CHARS2GRID(0));
 
-	display_setcolors(PWRCOLOR, BGCOLOR);
+	colmain_setcolors(PWRCOLOR, BGCOLOR);
 
+	uint_fast16_t ypix;
+	uint_fast16_t xpix = display_wrdatabar_begin(stored_xcell, stored_ycell, & ypix);
 	display_wrdatabar_begin();
-	display_dispbar(BDTH_ALLPWR, mapleftval, mapleftmax, fullscale, PATTERN_BAR_HALF, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYHALF);
+	colmain_bar(tbuffer, tdx, tdy, BDTH_ALLPWR, mapleftval, mapleftmax, fullscale, PATTERN_BAR_HALF, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYHALF);
 	display_wrdatabar_end();
 
 	if (BDTH_SPACEPWR != 0)
 	{
 		// заполняем пустое место за индикаторм мощности
 		display_bars_x_pwr(x, y, CHARS2GRID(BDTH_ALLPWR));
+		uint_fast16_t ypix;
+		uint_fast16_t xpix = display_wrdatabar_begin(stored_xcell, stored_ycell, & ypix);
 		display_wrdatabar_begin();
-		display_dispbar(BDTH_SPACEPWR, 0, 1, 1, PATTERN_SPACE, PATTERN_SPACE, PATTERN_SPACE);
+		colmain_bar(tbuffer, tdx, tdy, BDTH_SPACEPWR, 0, 1, 1, PATTERN_SPACE, PATTERN_SPACE, PATTERN_SPACE);
 		display_wrdatabar_end();
 	}
 
@@ -5059,27 +5078,33 @@ void display_smeter_amv0(
 	const uint_fast8_t maprightval = display_mapbar(value, level9, level9 + delta2, 0, value - level9, delta2);
 	const uint_fast8_t maprightmax = display_mapbar(tracemax, level9, level9 + delta2, delta2, tracemax - level9, delta2); // delta2 - invisible
 
-	display_setcolors(LCOLOR, BGCOLOR);
+	colmain_setcolors(LCOLOR, BGCOLOR);
 	display_bars_x_rx(x - 1, y, CHARS2GRID(0));
 	display_string_P(PSTR("S"), 0);
 
 	display_bars_x_rx(x, y, CHARS2GRID(0));
-	display_setcolors(LCOLOR, BGCOLOR);
+	colmain_setcolors(LCOLOR, BGCOLOR);
+	uint_fast16_t ypix;
+	uint_fast16_t xpix = display_wrdatabar_begin(stored_xcell, stored_ycell, & ypix);
 	display_wrdatabar_begin();
-	display_dispbar(BDTH_LEFTRX, mapleftval, mapleftmax, delta1, PATTERN_BAR_HALF, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYHALF);		//ниже 9 баллов ничего
+	colmain_bar(tbuffer, tdx, tdy, BDTH_LEFTRX, mapleftval, mapleftmax, delta1, PATTERN_BAR_HALF, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYHALF);		//ниже 9 баллов ничего
 	display_wrdatabar_end();
 	//
 	display_bars_x_rx(x, y, CHARS2GRID(BDTH_LEFTRX));
-	display_setcolors(RCOLOR, BGCOLOR);
+	colmain_setcolors(RCOLOR, BGCOLOR);
+	uint_fast16_t ypix;
+	uint_fast16_t xpix = display_wrdatabar_begin(stored_xcell, stored_ycell, & ypix);
 	display_wrdatabar_begin();
-	display_dispbar(BDTH_RIGHTRX, maprightval, maprightmax, delta2, PATTERN_BAR_FULL, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYFULL);		// выше 9 баллов ничего нет.
+	colmain_bar(tbuffer, tdx, tdy, BDTH_RIGHTRX, maprightval, maprightmax, delta2, PATTERN_BAR_FULL, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYFULL);		// выше 9 баллов ничего нет.
 	display_wrdatabar_end();
 
 	if (BDTH_SPACERX != 0)
 	{
 		display_bars_x_pwr(x, y, CHARS2GRID(BDTH_ALLRX));
+		uint_fast16_t ypix;
+		uint_fast16_t xpix = display_wrdatabar_begin(stored_xcell, stored_ycell, & ypix);
 		display_wrdatabar_begin();
-		display_dispbar(BDTH_SPACERX, 0, 1, 1, PATTERN_SPACE, PATTERN_SPACE, PATTERN_SPACE);
+		colmain_bar(tbuffer, tdx, tdy, BDTH_SPACERX, 0, 1, 1, PATTERN_SPACE, PATTERN_SPACE, PATTERN_SPACE);
 		display_wrdatabar_end();
 	}
 
@@ -5097,6 +5122,9 @@ void display_pwrmeter(
 	)
 {
 #if WITHBARS
+	PACKEDCOLORMAIN_T * const tbuffer = colmain_fb_draw();
+	const uint_fast16_t tdx = DIM_X;
+	const uint_fast16_t tdy = DIM_Y;
 	const uint_fast16_t fullscale = display_getpwrfullwidth();	// количество точек в отображении мощности на диспле
 #if WITHPWRLIN
 	uint_fast8_t v = (uint_fast32_t) value * fullscale / ((uint_fast32_t) maxpwrcali);
@@ -5108,17 +5136,19 @@ void display_pwrmeter(
 	const uint_fast8_t mapleftval = display_mapbar(v, 0, fullscale, 0, v, fullscale);
 	const uint_fast8_t mapleftmax = display_mapbar(t, 0, fullscale, fullscale, t, fullscale); // fullscale - invisible
 
-	display_setcolors(PWRCOLOR, BGCOLOR);
+	colmain_setcolors(PWRCOLOR, BGCOLOR);
 
-	display_wrdatabar_begin(display_bars_x_pwr(x, CHARS2GRID(0)), y);
-	display_dispbar(BDTH_ALLPWR, mapleftval, mapleftmax, fullscale, PATTERN_BAR_HALF, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYHALF);
+	uint_fast16_t ypix;
+	uint_fast16_t xpix = display_wrdatabar_begin(display_bars_x_pwr(x, CHARS2GRID(0)), y, & ypix);
+	colmain_bar(tbuffer, tdx, tdy, xpix, ypix, BDTH_ALLPWR, mapleftval, mapleftmax, fullscale, PATTERN_BAR_HALF, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYHALF);
 	display_wrdatabar_end();
 
 	if (BDTH_SPACEPWR != 0)
 	{
 		// заполняем пустое место за индикаторм мощности
-		display_wrdatabar_begin(display_bars_x_pwr(x, CHARS2GRID(BDTH_ALLPWR)), y);
-		display_dispbar(BDTH_SPACEPWR, 0, 1, 1, PATTERN_SPACE, PATTERN_SPACE, PATTERN_SPACE);
+		uint_fast16_t ypix;
+		uint_fast16_t xpix = display_wrdatabar_begin(display_bars_x_pwr(x, CHARS2GRID(BDTH_ALLPWR)), y, & ypix);
+		colmain_bar(tbuffer, tdx, tdy, xpix, ypix, BDTH_SPACEPWR, 0, 1, 1, PATTERN_SPACE, PATTERN_SPACE, PATTERN_SPACE);
 		display_wrdatabar_end();
 	}
 
@@ -5135,6 +5165,9 @@ void display_smeter(
 	uint_fast8_t delta2)	// s9+50 - s9 delta
 {
 #if WITHBARS
+	PACKEDCOLORMAIN_T * const tbuffer = colmain_fb_draw();
+	const uint_fast16_t tdx = DIM_X;
+	const uint_fast16_t tdy = DIM_Y;
 	tracemax = value > tracemax ? value : tracemax;	// защита от рассогласования значений
 	//delta1 = delta1 > level9 ? level9 : delta1;
 	
@@ -5144,20 +5177,23 @@ void display_smeter(
 	const uint_fast8_t maprightval = display_mapbar(value, level9, level9 + delta2, 0, value - level9, delta2);
 	const uint_fast8_t maprightmax = display_mapbar(tracemax, level9, level9 + delta2, delta2, tracemax - level9, delta2); // delta2 - invisible
 
-	display_setcolors(LCOLOR, BGCOLOR);
-	display_wrdatabar_begin(display_bars_x_rx(x, CHARS2GRID(0)), y);
-	display_dispbar(BDTH_LEFTRX, mapleftval, mapleftmax, delta1, PATTERN_BAR_HALF, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYHALF);		//ниже 9 баллов ничего
+	colmain_setcolors(LCOLOR, BGCOLOR);
+	uint_fast16_t ypix;
+	uint_fast16_t xpix = display_wrdatabar_begin(display_bars_x_rx(x, CHARS2GRID(0)), y, & ypix);
+	colmain_bar(tbuffer, tdx, tdy, xpix, ypix, BDTH_LEFTRX, mapleftval, mapleftmax, delta1, PATTERN_BAR_HALF, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYHALF);		//ниже 9 баллов ничего
 	display_wrdatabar_end();
 	//
-	display_setcolors(RCOLOR, BGCOLOR);
-	display_wrdatabar_begin(display_bars_x_rx(x, CHARS2GRID(BDTH_LEFTRX)), y);
-	display_dispbar(BDTH_RIGHTRX, maprightval, maprightmax, delta2, PATTERN_BAR_FULL, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYFULL);		// выше 9 баллов ничего нет.
+	colmain_setcolors(RCOLOR, BGCOLOR);
+	uint_fast16_t ypix2;
+	uint_fast16_t xpix2 = display_wrdatabar_begin(display_bars_x_rx(x, CHARS2GRID(BDTH_LEFTRX)), y, & ypix2);
+	colmain_bar(tbuffer, tdx, tdy, xpix2, ypix2, BDTH_RIGHTRX, maprightval, maprightmax, delta2, PATTERN_BAR_FULL, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYFULL);		// выше 9 баллов ничего нет.
 	display_wrdatabar_end();
 
 	if (BDTH_SPACERX != 0)
 	{
-		display_wrdatabar_begin(display_bars_x_pwr(x, CHARS2GRID(BDTH_ALLRX)), y);
-		display_dispbar(BDTH_SPACERX, 0, 1, 1, PATTERN_SPACE, PATTERN_SPACE, PATTERN_SPACE);
+		uint_fast16_t ypix;
+		uint_fast16_t xpix = display_wrdatabar_begin(display_bars_x_pwr(x, CHARS2GRID(BDTH_ALLRX)), y, & ypix);
+		colmain_bar(tbuffer, tdx, tdy, xpix, ypix, BDTH_SPACERX, 0, 1, 1, PATTERN_SPACE, PATTERN_SPACE, PATTERN_SPACE);
 		display_wrdatabar_end();
 	}
 
@@ -5173,7 +5209,7 @@ static void display2_legend_rx(
 	)
 {
 #if defined(SMETERMAP)
-	display_setcolors(MODECOLOR, BGCOLOR);
+	colmain_setcolors(MODECOLOR, BGCOLOR);
 	display_at_P(x, y, PSTR(SMETERMAP));
 #endif /* defined(SMETERMAP) */
 }
@@ -5186,7 +5222,7 @@ static void display2_legend_tx(
 	)
 {
 #if defined(SWRPWRMAP) && WITHTX && (WITHSWRMTR || WITHSHOWSWRPWR)
-	display_setcolors(MODECOLOR, BGCOLOR);
+	colmain_setcolors(MODECOLOR, BGCOLOR);
 	#if WITHSWRMTR
 		#if WITHSHOWSWRPWR /* на дисплее одновременно отображаются SWR-meter и PWR-meter */
 				display_at_P(x, y, PSTR(SWRPWRMAP));
@@ -5615,7 +5651,7 @@ static void display2_spectrum(
 	{
 		display_pixelbuffer_clear(spectmonoscr, ALLDX, SPDY);
 	}
-	display_setcolors(COLORPIP_SPECTRUMBG, COLORPIP_SPECTRUMFG);
+	colmain_setcolors(COLORPIP_SPECTRUMBG, COLORPIP_SPECTRUMFG);
 
 #else /* */
 	PACKEDCOLORPIP_T * const colorpip = getscratchpip();

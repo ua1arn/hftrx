@@ -20,12 +20,6 @@
 
 #if WITHLTDCHW
 
-PACKEDCOLORMAIN_T *
-colmain_fb(void)
-{
-	return (PACKEDCOLORMAIN_T *) & framebuff [0] [0];
-}
-
 #if LCDMODE_LQ043T3DX02K
 	// Sony PSP-1000 display panel
 	// LQ043T3DX02K panel (272*480)
@@ -565,51 +559,9 @@ static void vdc5fb_init_scalers(struct st_vdc5 * const vdc)
 #endif
 }
 
-#if LCDMODE_LTDC_PIPL8 || LCDMODE_LTDC_PIP16
-
-/* set bottom buffer start */
-void arm_hardware_ltdc_pip_set(uintptr_t p)
-{
-	struct st_vdc5 * const vdc = & VDC50;
-
-	SETREG32_CK(& vdc->GR3_FLM_RD, 1, 0, 1);			// GR3_R_ENB Frame Buffer Read Enable 1: Frame buffer reading is enabled.
-	SETREG32_CK(& vdc->GR3_FLM2, 32, 0, p);			// GR3_BASE
-	SETREG32_CK(& vdc->GR3_AB1, 2, 0,	0x03);			// GR3_DISP_SEL 3: Blended display of lower-layer graphics and current graphics
-
-	// GR3_IBUS_VEN in GR3_UPDATE is 1.
-	// GR3_IBUS_VEN and GR3_P_VEN in GR3_UPDATE are 1.
-	// GR3_P_VEN in GR3_UPDATE is 1.
-
-	//vdc5_update(& vdc->GR3_UPDATE, "GR3_UPDATE",
-		vdc->GR3_UPDATE = (
-		//	(1 << 8) |	// GR3_UPDATE Frame Buffer Read Control Register Update
-			(1 << 4) |	// GR3_P_VEN Graphics Display Register Update
-			(1 << 0) |	// GR3_IBUS_VEN Frame Buffer Read Control Register Update
-			0
-		);
-}
-
-void arm_hardware_ltdc_pip_off(void)	// set PIP framebuffer address
-{
-	struct st_vdc5 * const vdc = & VDC50;
-
-	SETREG32_CK(& vdc->GR3_FLM_RD, 1, 0, 0);			// GR3_R_ENB Frame Buffer Read Enable 0: Frame buffer reading is disabled.
-	SETREG32_CK(& vdc->GR3_AB1, 2, 0,	0x01);			// GR3_DISP_SEL 1: Lower-layer graphics display
-
-	//vdc5_update(& vdc->GR3_UPDATE, "GR3_UPDATE",
-		vdc->GR3_UPDATE = (
-		//	(1 << 8) |	// GR3_UPDATE Frame Buffer Read Control Register Update
-			(1 << 4) |	// GR3_P_VEN Graphics Display Register Update
-			(1 << 0) |	// GR3_IBUS_VEN Frame Buffer Read Control Register Update
-			0
-		);
-}
-
-#endif /* LCDMODE_LTDC_PIPL8 || LCDMODE_LTDC_PIP16 */
-
 static void vdc5fb_init_graphics(struct st_vdc5 * const vdc)
 {
-	const unsigned MAINROWSIZE = sizeof framebuff [0];	// размер одной строки в байтах
+	const unsigned MAINROWSIZE = WIDTH * sizeof (PACKEDCOLORMAIN_T);	// размер одной строки в байтах
 	// Таблица используемой при отображении палитры
 	COLOR24_T xltrgb24 [256];
 	display2_xltrgb24(xltrgb24);
@@ -634,7 +586,7 @@ static void vdc5fb_init_graphics(struct st_vdc5 * const vdc)
 	// GR0
 	SETREG32_CK(& vdc->GR0_FLM_RD, 1, 0, 0);	// GR0_R_ENB Frame Buffer Read Enable
 	SETREG32_CK(& vdc->GR0_FLM1, 2, 8, 0x01);	// GR0_FLM_SEL 1: Selects GR0_FLM_NUM.
-	SETREG32_CK(& vdc->GR0_FLM2, 32, 0, (uintptr_t) & framebuff);	// GR0_BASE
+	//SETREG32_CK(& vdc->GR0_FLM2, 32, 0, (uintptr_t) & framebuff);	// GR0_BASE
 	SETREG32_CK(& vdc->GR0_FLM3, 15, 16, MAINROWSIZE);	// GR0_LN_OFF
 	SETREG32_CK(& vdc->GR0_FLM3, 10, 0, 0x00);	// GR0_FLM_NUM
 	SETREG32_CK(& vdc->GR0_FLM4, 23, 0, MAINROWSIZE * HEIGHT);	// GR0_FLM_OFF
@@ -653,9 +605,9 @@ static void vdc5fb_init_graphics(struct st_vdc5 * const vdc)
 	////////////////////////////////////////////////////////////////
 	// GR2 - main screen
 
-	SETREG32_CK(& vdc->GR2_FLM_RD, 1, 0, 1);	// GR2_R_ENB Frame Buffer Read Enable
+	SETREG32_CK(& vdc->GR2_FLM_RD, 1, 0, 0);	// GR2_R_ENB Frame Buffer Read Enable
 	SETREG32_CK(& vdc->GR2_FLM1, 2, 8, 0x01);	// GR2_FLM_SEL 1: Selects GR2_FLM_NUM.
-	SETREG32_CK(& vdc->GR2_FLM2, 32, 0, (uintptr_t) & framebuff);	// GR2_BASE
+	//SETREG32_CK(& vdc->GR2_FLM2, 32, 0, (uintptr_t) & framebuff);	// GR2_BASE
 	SETREG32_CK(& vdc->GR2_FLM3, 15, 16, MAINROWSIZE);	// GR2_LN_OFF
 	SETREG32_CK(& vdc->GR2_FLM3, 10, 0, 0x00);	// GR0_FLM_NUM
 	SETREG32_CK(& vdc->GR2_FLM4, 23, 0, MAINROWSIZE * HEIGHT);	// GR2_FLM_OFF
@@ -694,9 +646,9 @@ static void vdc5fb_init_graphics(struct st_vdc5 * const vdc)
 	////////////////////////////////////////////////////////////////
 	// GR3 - PIP screen
 
-	SETREG32_CK(& vdc->GR3_FLM_RD, 1, 0, 0);			// GR3_R_ENB Frame Buffer Read Enable
+	SETREG32_CK(& vdc->GR3_FLM_RD, 1, 0, 0);			// GR3_R_ENB Frame Buffer Read Disable
 	SETREG32_CK(& vdc->GR3_FLM1, 2, 8, 0x01);			// GR3_FLM_SEL 1: Selects GR3_FLM_NUM.
-	SETREG32_CK(& vdc->GR3_FLM2, 32, 0, (uintptr_t) & framebuff);	// GR3_BASE
+	//SETREG32_CK(& vdc->GR3_FLM2, 32, 0, (uintptr_t) & framebuff);	// GR3_BASE
 	SETREG32_CK(& vdc->GR3_FLM3, 15, 16, MAINROWSIZE);		// GR3_LN_OFF
 	SETREG32_CK(& vdc->GR3_FLM3, 10, 0, 0x00);			// GR3_FLM_NUM
 	SETREG32_CK(& vdc->GR3_FLM4, 23, 0, MAINROWSIZE * HEIGHT);	// GR0_FLM_OFF
@@ -1216,7 +1168,7 @@ arm_hardware_ltdc_initialize(void)
 	struct st_vdc5 * const vdc = & VDC50;
 
 	debug_printf_P(PSTR("arm_hardware_ltdc_initialize start, WIDTH=%d, HEIGHT=%d\n"), WIDTH, HEIGHT);
-	const unsigned ROWSIZE = sizeof framebuff [0];	// размер одной строки в байтах
+	//const unsigned ROWSIZE = sizeof framebuff [0];	// размер одной строки в байтах
 
 
 	/* ---- Supply clock to the video display controller 5  ---- */
@@ -1250,12 +1202,77 @@ arm_hardware_ltdc_initialize(void)
 	HARDWARE_LTDC_SET_MODE(BOARD_MODEVALUE);
 #endif
 
-#if LCDMODE_LTDC_PIP16 || LCDMODE_LTDC_PIPL8
-	arm_hardware_ltdc_pip_off();
-#endif /* LCDMODE_LTDC_PIP16 || LCDMODE_LTDC_PIPL8 */
-
 	debug_printf_P(PSTR("arm_hardware_ltdc_initialize done\n"));
 }
+
+#if LCDMODE_LTDC_PIPL8 || LCDMODE_LTDC_PIP16
+
+/* Set PIP frame buffer address. */
+void arm_hardware_ltdc_pip_set(uintptr_t p)
+{
+	struct st_vdc5 * const vdc = & VDC50;
+
+	SETREG32_CK(& vdc->GR3_FLM2, 32, 0, p);			// GR3_BASE
+	SETREG32_CK(& vdc->GR3_FLM_RD, 1, 0, 1);		// GR3_R_ENB Frame Buffer Read Enable 1: Frame buffer reading is enabled.
+	SETREG32_CK(& vdc->GR3_AB1, 2, 0,	0x03);		// GR3_DISP_SEL 3: Blended display of lower-layer graphics and current graphics
+
+	// GR3_IBUS_VEN in GR3_UPDATE is 1.
+	// GR3_IBUS_VEN and GR3_P_VEN in GR3_UPDATE are 1.
+	// GR3_P_VEN in GR3_UPDATE is 1.
+
+	//vdc5_update(& vdc->GR3_UPDATE, "GR3_UPDATE",
+		vdc->GR3_UPDATE = (
+		//	(1 << 8) |	// GR3_UPDATE Frame Buffer Read Control Register Update
+			(1 << 4) |	// GR3_P_VEN Graphics Display Register Update
+			(1 << 0) |	// GR3_IBUS_VEN Frame Buffer Read Control Register Update
+			0
+		);
+}
+
+/* Turn PIP off (main layer only). */
+void arm_hardware_ltdc_pip_off(void)
+{
+	struct st_vdc5 * const vdc = & VDC50;
+
+	SETREG32_CK(& vdc->GR3_FLM_RD, 1, 0, 0);			// GR3_R_ENB Frame Buffer Read Enable 0: Frame buffer reading is disabled.
+	SETREG32_CK(& vdc->GR3_AB1, 2, 0,	0x01);			// GR3_DISP_SEL 1: Lower-layer graphics display
+
+	//vdc5_update(& vdc->GR3_UPDATE, "GR3_UPDATE",
+	vdc->GR3_UPDATE = (
+	//	(1 << 8) |	// GR3_UPDATE Frame Buffer Read Control Register Update
+		(1 << 4) |	// GR3_P_VEN Graphics Display Register Update
+		(1 << 0) |	// GR3_IBUS_VEN Frame Buffer Read Control Register Update
+		0
+	);
+}
+
+/* Set MAIN frame buffer address. */
+void arm_hardware_ltdc_main_set(uintptr_t p)
+{
+	struct st_vdc5 * const vdc = & VDC50;
+
+	SETREG32_CK(& vdc->GR2_FLM2, 32, 0, p);		// GR2_BASE
+	SETREG32_CK(& vdc->GR2_FLM_RD, 1, 0, 1);	// GR2_R_ENB Frame Buffer Read Enable
+	SETREG32_CK(& vdc->GR2_AB1, 2, 0,	0x02);	// GR2_DISP_SEL 2: Current graphics display
+
+	SETREG32_CK(& vdc->GR3_FLM_RD, 1, 0, 1);			// GR3_R_ENB Frame Buffer Read Enable 1: Frame buffer reading is enabled.
+	SETREG32_CK(& vdc->GR3_FLM2, 32, 0, p);			// GR3_BASE
+	SETREG32_CK(& vdc->GR3_AB1, 2, 0,	0x03);			// GR3_DISP_SEL 3: Blended display of lower-layer graphics and current graphics
+
+	// GR3_IBUS_VEN in GR3_UPDATE is 1.
+	// GR3_IBUS_VEN and GR3_P_VEN in GR3_UPDATE are 1.
+	// GR3_P_VEN in GR3_UPDATE is 1.
+
+	//vdc5_update(& vdc->GR3_UPDATE, "GR3_UPDATE",
+	vdc->GR2_UPDATE = (
+	//	(1 << 8) |	// GR3_UPDATE Frame Buffer Read Control Register Update
+		(1 << 4) |	// GR3_P_VEN Graphics Display Register Update
+		(1 << 0) |	// GR3_IBUS_VEN Frame Buffer Read Control Register Update
+		0
+	);
+}
+
+#endif /* LCDMODE_LTDC_PIPL8 || LCDMODE_LTDC_PIP16 */
 
 #elif CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
 
@@ -1432,7 +1449,7 @@ typedef struct
   uint32_t LTDC_BlendingFactor_2;           /*!< Select the blending factor 2. This parameter 
                                                  can be one of value of @ref LTDC_BlendingFactor2 */
             
-  uint32_t LTDC_CFBStartAdress;             /*!< Configures the color frame buffer address */
+  //uint32_t LTDC_CFBStartAdress;             /*!< Configures the color frame buffer address */
 
   uint32_t LTDC_CFBLineLength;              /*!< Configures the color frame buffer line length. 
                                                  This parameter must range from 0x0000 to 0x1FFF. */
@@ -1546,8 +1563,8 @@ LTDC_LayerInit(LTDC_Layer_TypeDef* LTDC_Layerx, const LTDC_Layer_InitTypeDef* LT
 	LTDC_Layerx->BFCR |= (LTDC_Layer_InitStruct->LTDC_BlendingFactor_1 | LTDC_Layer_InitStruct->LTDC_BlendingFactor_2);
 
 	/* Configures the color frame buffer start address */
-	LTDC_Layerx->CFBAR &= ~(LTDC_LxCFBAR_CFBADD);
-	LTDC_Layerx->CFBAR |= (LTDC_Layer_InitStruct->LTDC_CFBStartAdress);
+//	LTDC_Layerx->CFBAR &= ~(LTDC_LxCFBAR_CFBADD);
+//	LTDC_Layerx->CFBAR |= (LTDC_Layer_InitStruct->LTDC_CFBStartAdress);
 
 	/* Configures the color frame buffer pitch in byte */
 	cfbp = (LTDC_Layer_InitStruct->LTDC_CFBPitch << LTDC_LxCFBLR_CFBP_Pos);
@@ -1660,7 +1677,7 @@ static void LCD_LayerInit(
 	LTDC_Layer_InitStruct.LTDC_CFBLineNumber = wnd->h;
 
 	/* Start Address configuration : the LCD Frame buffer is defined on SDRAM */    
-	LTDC_Layer_InitStruct.LTDC_CFBStartAdress = wnd->frame;
+	//LTDC_Layer_InitStruct.LTDC_CFBStartAdress = wnd->frame;
 	//LTDC_Layer1->CFBAR = (uint32_t) & framebuff;
 
 	/* Initialize LTDC layer 1 */
@@ -1670,7 +1687,7 @@ static void LCD_LayerInit(
 	//LTDC_LayerCmd(LTDC_Layer1, ENABLE); 
 	//LTDC_LayerCmd(LTDC_Layer2, ENABLE);
 	/* Enable LTDC_Layer by setting LEN bit */
-	LTDC_Layerx->CR |= LTDC_LxCR_LEN;
+	////LTDC_Layerx->CR |= LTDC_LxCR_LEN;
 
 	/* LTDC configuration reload */  
 }
@@ -1746,7 +1763,7 @@ arm_hardware_ltdc_initialize(void)
 	//const unsigned ROWSIZE = sizeof framebuff [0];	// размер одной строки в байтах
 	//const unsigned rowsize2 = (sizeof (PACKEDCOLORMAIN_T) * DIM_SECOND);
 	//ASSERT(ROWSIZE == rowsize2);
-	debug_printf_P(PSTR("arm_hardware_ltdc_initialize: framebuff=%p\n"), framebuff);
+	//debug_printf_P(PSTR("arm_hardware_ltdc_initialize: framebuff=%p\n"), framebuff);
 
 	/* Initialize the LCD */
 
@@ -1793,7 +1810,7 @@ arm_hardware_ltdc_initialize(void)
 	/* LTDC Initialization -------------------------------------------------------*/
 	LTDC_InitTypeDef LTDC_InitStruct;
 
-	pipparams_t mainwnd = { 0, 0, DIM_SECOND, DIM_FIRST, (uintptr_t) & framebuff };
+	pipparams_t mainwnd = { 0, 0, DIM_SECOND, DIM_FIRST };
 
 #if LCDMODE_LTDC_PIP16 || LCDMODE_LTDC_PIPL8
 	pipparams_t pipwnd;
@@ -1907,15 +1924,12 @@ arm_hardware_ltdc_initialize(void)
 	HARDWARE_LTDC_SET_MODE(BOARD_MODEVALUE);
 #endif
 
-#if LCDMODE_LTDC_PIP16 || LCDMODE_LTDC_PIPL8
-	arm_hardware_ltdc_pip_off();
-#endif /* LCDMODE_LTDC_PIP16 || LCDMODE_LTDC_PIPL8 */
 	debug_printf_P(PSTR("arm_hardware_ltdc_initialize done\n"));
 }
 
 #if LCDMODE_LTDC_PIPL8 || LCDMODE_LTDC_PIP16
 
-/* set bottom buffer start */
+/* Set PIP frame buffer address. */
 void arm_hardware_ltdc_pip_set(uintptr_t p)
 {
 #if 0
@@ -1928,9 +1942,23 @@ void arm_hardware_ltdc_pip_set(uintptr_t p)
 	LTDC->SRCR = LTDC_SRCR_VBR;	/* Vertical Blanking Reload. */
 }
 
-void arm_hardware_ltdc_pip_off(void)	// set PIP framebuffer address
+/* Turn PIP off (main layer only). */
+void arm_hardware_ltdc_pip_off(void)
 {
 	LAYER_PIP->CR &= ~ LTDC_LxCR_LEN;
+	LTDC->SRCR = LTDC_SRCR_VBR;	/* Vertical Blanking Reload. */
+}
+
+/* Set MAIN frame buffer address. */
+void arm_hardware_ltdc_main_set(uintptr_t p)
+{
+#if 0
+	/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
+	while ((LTDC->SRCR & LTDC_SRCR_VBR) != 0)
+		;
+#endif
+	LAYER_MAIN->CFBAR = p;
+	LAYER_MAIN->CR |= LTDC_LxCR_LEN;
 	LTDC->SRCR = LTDC_SRCR_VBR;	/* Vertical Blanking Reload. */
 }
 

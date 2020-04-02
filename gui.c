@@ -25,41 +25,37 @@
 
 #include "./display/fontmaps.h"
 
-void display_radius(int xc, int yc, unsigned gs, unsigned r1, unsigned r2, COLORMAIN_T color);
-void display_segm(int xc, int yc, unsigned gs, unsigned ge, unsigned r, int step, COLORMAIN_T color);
-void polar_to_dek(uint_fast16_t xc, uint_fast16_t yc, uint_fast16_t gs, uint_fast16_t r, uint_fast16_t * x, uint_fast16_t * y);
-
 static
 uint_fast16_t normalize(
-		uint_fast16_t raw,
-		uint_fast16_t rawmin,
-		uint_fast16_t rawmax,
-		uint_fast16_t range
-		)
+	uint_fast16_t raw,
+	uint_fast16_t rawmin,
+	uint_fast16_t rawmax,
+	uint_fast16_t range
+	)
+{
+	if (rawmin < rawmax)
 	{
-		if (rawmin < rawmax)
-		{
-			// Normal direction
-			const uint_fast16_t distance = rawmax - rawmin;
-			if (raw < rawmin)
-				return 0;
-			raw = raw - rawmin;
-			if (raw > distance)
-				return range;
-			return (uint_fast32_t) raw * range / distance;
-		}
-		else
-		{
-			// reverse direction
-			const uint_fast16_t distance = rawmin - rawmax;
-			if (raw >= rawmin)
-				return 0;
-			raw = rawmin - raw;
-			if (raw > distance)
-				return range;
-			return (uint_fast32_t) raw * range / distance;
-		}
+		// Normal direction
+		const uint_fast16_t distance = rawmax - rawmin;
+		if (raw < rawmin)
+			return 0;
+		raw = raw - rawmin;
+		if (raw > distance)
+			return range;
+		return (uint_fast32_t) raw * range / distance;
 	}
+	else
+	{
+		// reverse direction
+		const uint_fast16_t distance = rawmin - rawmax;
+		if (raw >= rawmin)
+			return 0;
+		raw = rawmin - raw;
+		if (raw > distance)
+			return range;
+		return (uint_fast32_t) raw * range / distance;
+	}
+}
 
 void
 display_smeter2(
@@ -68,6 +64,26 @@ display_smeter2(
 		void * pv
 		)
 {
+#if 0
+
+	enum { TDX = 3 * 16, TDY = 3 * 16 };	// размеры формируемого изображения
+	static PACKEDCOLORMAIN_T tb [TDX * TDY];	// буфер длф формирования изображения
+
+	// создание невидимого изображения
+	colmain_fillrect(tb, TDX, TDY, 0, 0, TDX, TDY, COLORMAIN_BLUE);
+	colmain_fillrect(tb, TDX, TDY, 16, 16, 16, 16, COLORMAIN_RED);
+	colmain_setcolors(COLORMAIN_BLACK, COLORMAIN_GREEN);
+	colmain_string3_at_xy(tb, TDX, TDY, 0, 0, "Test");
+
+	// Копируем в видимый framebuffer
+	colmain_plot(colmain_fb_draw(), DIM_X, DIM_Y, GRID2X(x), GRID2Y(y), tb, TDX, TDY);
+	return;
+
+//	display_at(x, y, "S-met");
+//	return;
+
+#endif
+
 	enum { ADDRCELLHEIGHT = 15 };
 	enum { halfsect = 30 };
 	enum { gm = 270 };
@@ -361,19 +377,19 @@ void button1_handler(void);
 	};
 
 	typedef struct {
-		uint_fast16_t x1;				// координаты от начала PIP
-		uint_fast16_t y1;
-		uint_fast16_t x2;
-		uint_fast16_t y2;
+		uint16_t x1;				// координаты от начала PIP
+		uint16_t y1;
+		uint16_t x2;
+		uint16_t y2;
 		void(*onClickHandler) (void);	// обработчик события RELEASED
-		uint_fast8_t state;				// текущее состояние кнопки
-		uint_fast8_t is_locked;			// признак фиксации кнопки
-		uint_fast8_t is_trackable;		// получение относительных координат точки перемещения нажатия, нужно ли для кнопок?
-		uint_fast8_t parent;			// индекс окна, в котором будет отображаться кнопка
-		uint_fast8_t visible;			// рисовать ли кнопку на экране
+		uint8_t state;				// текущее состояние кнопки
+		uint8_t is_locked;			// признак фиксации кнопки
+		uint8_t is_trackable;		// получение относительных координат точки перемещения нажатия, нужно ли для кнопок?
+		uint8_t parent;			// индекс окна, в котором будет отображаться кнопка
+		uint8_t visible;			// рисовать ли кнопку на экране
 		uintptr_t payload;
-		const char name[TEXT_ARRAY_SIZE];
-		char text[TEXT_ARRAY_SIZE];					// текст внутри кнопки, разделитель строк |, не более 2х строк
+		char name [TEXT_ARRAY_SIZE];
+		char text [TEXT_ARRAY_SIZE];					// текст внутри кнопки, разделитель строк |, не более 2х строк
 	} button_t;
 
 	static button_t button_handlers [] = {
@@ -423,16 +439,16 @@ void button1_handler(void);
 	enum { button_handlers_count = sizeof button_handlers / sizeof button_handlers[0] };
 
 	typedef struct {
-		uint_fast16_t x;
-		uint_fast16_t y;
-		uint_fast8_t parent;
-		uint_fast8_t state;
-		uint_fast8_t is_trackable;
-		uint_fast8_t visible;
-		const char name[TEXT_ARRAY_SIZE];
-		char text[TEXT_ARRAY_SIZE];
-		PACKEDCOLOR565_T color;
-		void(*onClickHandler) (void);
+		uint16_t x;
+		uint16_t y;
+		uint8_t parent;
+		uint8_t state;
+		uint8_t is_trackable;
+		uint8_t visible;
+		char name [TEXT_ARRAY_SIZE];
+		char text [TEXT_ARRAY_SIZE];
+		PACKEDCOLORPIP_T color;
+		void (*onClickHandler) (void);
 	} label_t;
 
 	static label_t labels[] = {
@@ -463,37 +479,37 @@ void button1_handler(void);
 	enum { labels_count = sizeof labels / sizeof labels[0] };
 
 	typedef struct {
-		uint_fast16_t last_pressed_x; 	 // последняя точка касания экрана
-		uint_fast16_t last_pressed_y;
-		uint_fast8_t kbd_code;
-		uint_fast8_t selected_id;		 // индекс последнего выбранного элемента
-		uint_fast8_t selected_type;		 // тип последнего выбранного элемента
-		uint_fast8_t state;				 // последнее состояние
-		uint_fast8_t is_touching_screen; // есть ли касание экрана в данный момент
-		uint_fast8_t is_after_touch; 	 // есть ли касание экрана после выхода точки касания из элемента (при is_tracking == 0)
-		uint_fast8_t fix;				 // первые координаты после нажатия от контролера тачскрина приходят старые, пропускаем
-		uint_fast8_t window_to_draw;	 // индекс записи с описанием запрошенного к отображению окна
-		uint_fast16_t pip_width;		 // параметры pip
-		uint_fast16_t pip_height;
-		uint_fast16_t pip_x;
-		uint_fast16_t pip_y;
-		uint_fast8_t is_tracking;		 // получение относительных координат точки перемещения нажатия
-		int_least16_t vector_move_x;	 // в т.ч. и за границами элемента, при state == PRESSED
-		int_least16_t vector_move_y;
+		uint16_t last_pressed_x; 	 // последняя точка касания экрана
+		uint16_t last_pressed_y;
+		uint8_t kbd_code;
+		uint8_t selected_id;		 // индекс последнего выбранного элемента
+		uint8_t selected_type;		 // тип последнего выбранного элемента
+		uint8_t state;				 // последнее состояние
+		uint8_t is_touching_screen; // есть ли касание экрана в данный момент
+		uint8_t is_after_touch; 	 // есть ли касание экрана после выхода точки касания из элемента (при is_tracking == 0)
+		uint8_t fix;				 // первые координаты после нажатия от контролера тачскрина приходят старые, пропускаем
+		uint8_t window_to_draw;	 // индекс записи с описанием запрошенного к отображению окна
+		uint16_t pip_width;		 // параметры pip
+		uint16_t pip_height;
+		uint16_t pip_x;
+		uint16_t pip_y;
+		uint8_t is_tracking;		 // получение относительных координат точки перемещения нажатия
+		int16_t vector_move_x;	 // в т.ч. и за границами элемента, при state == PRESSED
+		int16_t vector_move_y;
 	} gui_t;
 
 	static gui_t gui = { 0, 0, KBD_CODE_MAX, 0, TYPE_DUMMY, CANCELLED, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, };
 
 	typedef struct {
-		uint_fast8_t window_id;			// в окне будут отображаться элементы с соответствующим полем for_window
-		uint_fast16_t x1;
-		uint_fast16_t y1;
-		uint_fast16_t x2;
-		uint_fast16_t y2;
+		uint8_t window_id;			// в окне будут отображаться элементы с соответствующим полем for_window
+		uint16_t x1;
+		uint16_t y1;
+		uint16_t x2;
+		uint16_t y2;
 		char name[TEXT_ARRAY_SIZE];		// текст, выводимый в заголовке окна
-		uint_fast8_t is_show;			// запрос на отрисовку окна
-		uint_fast8_t first_call;		// признак первого вызова для различных инициализаций
-		void(*onVisibleProcess) (void);
+		uint8_t is_show;			// запрос на отрисовку окна
+		uint8_t first_call;		// признак первого вызова для различных инициализаций
+		void (*onVisibleProcess) (void);
 	} windowpip_t;
 
 	static windowpip_t windows[] = {
@@ -510,12 +526,12 @@ void button1_handler(void);
 	enum { windows_count = sizeof windows / sizeof windows[0] };
 
 	typedef struct {
-		int_least16_t rotate;		// признак поворота второго энкодера
-		uint_fast8_t press;			// короткое нажание
-		uint_fast8_t hold;			// длинное нажатие
-		uint_fast8_t busy;			// второй энкодер выделен для обработки данных окна
-		uint_fast8_t rotate_done;	// событие поворота от энкодера обработано, можно получать новые данные
-		uint_fast8_t press_done;	// событие нажатия от энкодера обработано, можно получать новые данные
+		int16_t rotate;			// признак поворота второго энкодера
+		uint8_t press;			// короткое нажание
+		uint8_t hold;			// длинное нажатие
+		uint8_t busy;			// второй энкодер выделен для обработки данных окна
+		uint8_t rotate_done;	// событие поворота от энкодера обработано, можно получать новые данные
+		uint8_t press_done;		// событие нажатия от энкодера обработано, можно получать новые данные
 	} enc2_t;
 
 	static enc2_t encoder2 = { 0, 0, 0, 0, 1, 1, };
@@ -529,36 +545,36 @@ void button1_handler(void);
 	};
 
 	typedef struct {
-		uint_fast8_t first_id;			// первое вхождение номера метки уровня
-		uint_fast8_t last_id;			// последнее вхождение номера метки уровня
-		uint_fast8_t num_rows;			// число меток уровня
-		uint_fast8_t count;				// число значений уровня
-		int_fast8_t selected_str;		// выбранная строка уровня
-		int_fast8_t selected_label;		// выбранная метка уровня
-		uint_fast8_t add_id;			// номер строки уровня, отображаемой первой
-		menu_names_t menu_block[MENU_ARRAY_SIZE];	// массив значений уровня меню
+		uint8_t first_id;			// первое вхождение номера метки уровня
+		uint8_t last_id;			// последнее вхождение номера метки уровня
+		uint8_t num_rows;			// число меток уровня
+		uint8_t count;				// число значений уровня
+		int8_t selected_str;		// выбранная строка уровня
+		int8_t selected_label;		// выбранная метка уровня
+		uint8_t add_id;			// номер строки уровня, отображаемой первой
+		menu_names_t menu_block [MENU_ARRAY_SIZE];	// массив значений уровня меню
 	} menu_t;
 
 	menu_t menu[MENU_COUNT];
 
 	typedef struct {
 		char name [TEXT_ARRAY_SIZE];
-		uint_fast8_t menupos;
-		uint_fast8_t exitkey;
+		uint8_t menupos;
+		uint8_t exitkey;
 	} menu_by_name_t;
 
 	menu_by_name_t menu_uif;
 
 	typedef struct {
 		uint_fast16_t type;				// тип элемента, поддерживающего реакцию на касания
-		uint_fast8_t state;				// текущее состояние элемента
-		uint_fast8_t visible;			// текущая видимость элемента
-		uint_fast8_t id;				// номер элемента из структуры описания
-		uint_fast8_t is_trackable;		// поддерживает ли элемент возврат относительных координат перемещения точки нажатия
-		uint_fast16_t x1;
-		uint_fast16_t y1;
-		uint_fast16_t x2;
-		uint_fast16_t y2;
+		uint8_t state;				// текущее состояние элемента
+		uint8_t visible;			// текущая видимость элемента
+		uint8_t id;				// номер элемента из структуры описания
+		uint8_t is_trackable;		// поддерживает ли элемент возврат относительных координат перемещения точки нажатия
+		uint16_t x1;
+		uint16_t y1;
+		uint16_t x2;
+		uint16_t y2;
 		LIST_ENTRY item;
 	} list_template_t;
 

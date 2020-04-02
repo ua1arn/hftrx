@@ -1665,14 +1665,14 @@ display_clear(void)
 
 void
 //NOINLINEAT
-display_setcolors(COLORMAIN_T fg, COLORMAIN_T bg)
+colmain_setcolors(COLORMAIN_T fg, COLORMAIN_T bg)
 {
 	s1d13781_setcolor(fg, bg);
 }
 
-void display_setcolors3(COLORMAIN_T fg, COLORMAIN_T bg, COLORMAIN_T fgbg)
+void colmain_setcolors3(COLORMAIN_T fg, COLORMAIN_T bg, COLORMAIN_T fgbg)
 {
-	display_setcolors(fg, bg);
+	colmain_setcolors(fg, bg);
 }
 
 void
@@ -1846,13 +1846,13 @@ display_put_char_small2(uint_fast8_t c, uint_fast8_t lowhalf)
 	s1d13781_put_char_small(c);
 }
 
-static uint_fast8_t stored_xgrid, stored_ygrid;	// используется в display_dispbar
+static uint_fast8_t stored_xgrid, stored_ygrid;	// используется в colmain_bar
 
 void
 display_gotoxy(uint_fast8_t x, uint_fast8_t y)
 {
-	stored_xgrid = x;	// используется в display_dispbar
-	stored_ygrid = y;	// используется в display_dispbar
+	stored_xgrid = x;	// используется в colmain_bar
+	stored_ygrid = y;	// используется в colmain_bar
 
 	s1d13781_gotoxy(GRID2X(x), GRID2Y(y));		// устанавливаем позицию в символьных координатах
 }
@@ -1868,7 +1868,7 @@ void display_plotfrom(
 
 
 void display_plotstart(
-	uint_fast16_t height	// Высота окна в пикселях
+	uint_fast16_t dy	// Высота окна в пикселях
 	)
 {
 	// дождаться выполнения предидущей команды BitBlt engine.
@@ -1944,7 +1944,7 @@ void display_plotstop(void)
 
 // Вызовы этой функции (или группу вызовов) требуется "обрамить" парой вызовов
 // display_wrdatabar_begin() и display_wrdatabar_end().
-void display_dispbar(
+void colmain_bar(
 	uint_fast8_t width,	/* количество знакомест, занимаемых индикатором */
 	uint_fast8_t value,		/* значение, которое надо отобразить */
 	uint_fast8_t tracevalue,		/* значение маркера, которое надо отобразить */

@@ -350,14 +350,14 @@ uint_fast8_t display_getfreqformat(uint_fast8_t * prjv);	// получить п�
 // Параметры окна меню
 typedef struct gridparams_tag
 {
-	uint_fast16_t gy2, gx2;	// в ячейках сетки разметки
+	uint16_t gy2, gx2;	// в ячейках сетки разметки
 
 } gridparams_t;
 
 typedef struct pipparams_tag
 {
-	uint_fast16_t x, y, w, h;	// в пикселях
-	uintptr_t frame;	// default framebufer
+	uint16_t x, y, w, h;	// в пикселях
+	//uintptr_t frame;	// default framebufer
 
 } pipparams_t;
 
@@ -589,31 +589,33 @@ void display_set_contrast(uint_fast8_t v);
 
 /* индивидуальные функции драйвера дисплея - реализованы в соответствующем из файлов */
 void display_clear(void);
-void display_setcolors(COLORMAIN_T fg, COLORMAIN_T bg);
-void display_setcolors3(COLORMAIN_T fg, COLORMAIN_T bg, COLORMAIN_T bgfg);	// bgfg - цвет для отрисовки антиалиасинга
-void display_gotoxy(uint_fast8_t x, uint_fast8_t y);
+void colmain_setcolors(COLORMAIN_T fg, COLORMAIN_T bg);
+void colmain_setcolors3(COLORMAIN_T fg, COLORMAIN_T bg, COLORMAIN_T bgfg);	// bgfg - цвет для отрисовки антиалиасинга
+//void display_gotoxy(uint_fast8_t x, uint_fast8_t y);
 
+#if 1
 /* работа с цветным буфером */
 void display_plotfrom(uint_fast16_t x, uint_fast16_t y);	// Координаты в пикселях
-void display_plotstart(uint_fast16_t height);	// Высота окна в пикселях
+void display_plotstart(uint_fast16_t dy);	// Высота окна источника в пикселях
 void display_plot(const PACKEDCOLORMAIN_T * buffer, uint_fast16_t dx, uint_fast16_t dy);	// Размеры окна в пикселях
 void display_plotstop(void);
+#endif
 
 // самый маленький шрифт
-void display_wrdata2_begin(uint_fast8_t xcell, uint_fast8_t ycell);
+uint_fast16_t display_wrdata2_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp);
 void display_wrdata2_end(void);
 uint_fast16_t display_put_char_small2(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf);
 // полоса индикатора
-void display_wrdatabar_begin(uint_fast8_t xcell, uint_fast8_t ycell);
+uint_fast16_t display_wrdatabar_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp);
 void display_barcolumn(uint_fast8_t pattern);	// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
 void display_wrdatabar_end(void);
 // большие и средние цифры (частота)
-void display_wrdatabig_begin(uint_fast8_t xcell, uint_fast8_t ycell);
+uint_fast16_t display_wrdatabig_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp);
 uint_fast16_t display_put_char_big(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf);
 uint_fast16_t display_put_char_half(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf);
 void display_wrdatabig_end(void);
 // обычный шрифт
-void display_wrdata_begin(uint_fast8_t xcell, uint_fast8_t ycell);
+uint_fast16_t display_wrdata_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp);
 uint_fast16_t display_put_char_small(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf);
 void display_wrdata_end(void);
 
@@ -859,7 +861,12 @@ display_menu_value(
 
 // Вызовы этой функции (или группу вызовов) требуется "обрамить" парой вызовов
 // display_wrdatabar_begin() и display_wrdatabar_end().
-void display_dispbar(
+void colmain_bar(
+	PACKEDCOLORMAIN_T * tbuffer,
+	uint_fast16_t tdx,
+	uint_fast16_t tdy,
+	uint_fast16_t xpix,
+	uint_fast16_t ypix,
 	uint_fast8_t width,	/* количество знакомест, занимаемых индикатором */
 	uint_fast8_t value,		/* значение, которое надо отобразить */
 	uint_fast8_t tracevalue,		/* значение маркера, которое надо отобразить */
@@ -989,9 +996,48 @@ display_fillrect(
 	COLORMAIN_T color
 	);
 
+/* заполнение прямоугольника в буфере произвольным цветом
+*/
+void
+colmain_fillrect(
+	PACKEDCOLORMAIN_T * buffer,
+	uint_fast16_t dx,
+	uint_fast16_t dy,
+	uint_fast16_t x, uint_fast16_t y, 	// координаты в пикселях
+	uint_fast16_t w, uint_fast16_t h, 	// размеры в пикселях
+	COLORMAIN_T color
+	);
+
+// скоприовать прямоугольник с типом пикселей соответствующим основному экрану
+void colmain_plot(
+	PACKEDCOLORMAIN_T * tbuffer,	// получатель
+	uint_fast16_t tdx,	// получатель
+	uint_fast16_t tdy,	// получатель
+	uint_fast16_t x,	// получатель
+	uint_fast16_t y,	// получатель
+	const PACKEDCOLORMAIN_T * buffer, 	// источник
+	uint_fast16_t dx,	// источник Размеры окна в пикселях
+	uint_fast16_t dy	// источник
+	);
+
+void
+colmain_string3_at_xy(
+	PACKEDCOLORMAIN_T * const buffer,
+	const uint_fast16_t dx,
+	const uint_fast16_t dy,
+	uint_fast16_t x,
+	uint_fast16_t y,
+	const char * s
+	);
+
 // Рисуем на основном экране цветной прямоугольник.
 // x2, y2 - координаты второго угла (не входящие в закрашиваемый прямоугольник)
 void display_solidbar(uint_fast16_t x, uint_fast16_t y, uint_fast16_t x2, uint_fast16_t y2, COLORMAIN_T color);
+
+
+void display_radius(int xc, int yc, unsigned gs, unsigned r1, unsigned r2, COLORMAIN_T color);
+void display_segm(int xc, int yc, unsigned gs, unsigned ge, unsigned r, int step, COLORMAIN_T color);
+void polar_to_dek(uint_fast16_t xc, uint_fast16_t yc, uint_fast16_t gs, uint_fast16_t r, uint_fast16_t * x, uint_fast16_t * y);
 
 /// Нарисовать вертикальную цветную полосу
 // Формат RGB565
@@ -1055,7 +1101,8 @@ void board_set_fillspect(uint_fast8_t v); /* заливать заполнени
 void board_set_wflevelsep(uint_fast8_t v); /* чувствительность водопада регулируется отдельной парой параметров */
 void board_set_wfshiftenable(uint_fast8_t v);	   /* разрешение или запрет сдвига водопада при изменении частоты */
 
-PACKEDCOLORMAIN_T * colmain_fb(void);
+PACKEDCOLORMAIN_T * colmain_fb_draw(void);
+PACKEDCOLORMAIN_T * colmain_fb_show(void);
 void display2_xltrgb24(COLOR24_T * xtable);
 // Установить прозрачность для прямоугольника
 void colpip_transparency(

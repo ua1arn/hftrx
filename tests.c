@@ -3786,14 +3786,14 @@ static void fb_print(const struct fb * p, int x, int y, int selected)
 	const char * fn = fb_getname(p);
 	if (p->fno.fattrib & AM_DIR)
 	{
-		display_setcolors(COLOR_GOLD, selected ? COLOR_BLUE: COLOR_BLACK);
+		colmain_setcolors(COLOR_GOLD, selected ? COLOR_BLUE: COLOR_BLACK);
 		local_snprintf_P(buff, sizeof buff / sizeof buff [0], "%c   <dir>  %s", selected ? 'X' : ' ',
 			fn);
 		debug_printf_P(PSTR("   <dir>  %s\n"), p->fno.fname);
 	}
 	else
 	{
-		display_setcolors(COLOR_GREEN, selected ? COLOR_BLUE: COLOR_BLACK);
+		colmain_setcolors(COLOR_GREEN, selected ? COLOR_BLUE: COLOR_BLACK);
 		local_snprintf_P(
 			buff,						// куда форматировать строку
 			sizeof buff / sizeof buff [0],	// размер буфера
@@ -4845,7 +4845,7 @@ display_debug_digit(
 	enum { col = 0, row = 0 };
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 
-	display_setcolors(MNUVALCOLOR, BGCOLOR);
+	colmain_setcolors(MNUVALCOLOR, BGCOLOR);
 	do
 	{
 		display_gotoxy(col, row + lowhalf);		// курсор в начало первой строки
@@ -5961,13 +5961,13 @@ void hightests(void)
 #endif /* 1 && CTLSTYLE_V1V */
 #if 0
 	{
-		display_setcolors(COLOR_GREEN, COLOR_BLACK);
+		colmain_setcolors(COLOR_GREEN, COLOR_BLACK);
 		display_at_P(5, 0, PSTR("PT-Electronics 2015"));
 
-		display_setcolors(COLOR_RED, COLOR_BLACK);
+		colmain_setcolors(COLOR_RED, COLOR_BLACK);
 		display_at_P(7, 3, PSTR("RENESAS"));
 
-		display_setcolors(COLOR_WHITE, COLOR_BLACK);
+		colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
 		display_at_P(9, 6, PSTR("2.7 inch TFT"));
 		
 		for (;;)
@@ -5990,7 +5990,7 @@ void hightests(void)
 
 
 		/* отображение надписей самым маленьким шрифтом (8 точек) */
-		display_setcolors(COLOR_GREEN, COLOR_BLACK);
+		colmain_setcolors(COLOR_GREEN, COLOR_BLACK);
 		uint_fast8_t lowhalf2 = HALFCOUNT_SMALL2 - 1;
 		do
 		{
@@ -6005,7 +6005,7 @@ void hightests(void)
 		} while (lowhalf2 --);
 	#if 1
 		/* отображение надписей маленьким шрифтом (16 точек) */
-		display_setcolors(COLOR_GREEN, COLOR_BLACK);
+		colmain_setcolors(COLOR_GREEN, COLOR_BLACK);
 		
 		display_at_P(CHARS2GRID(0), ROWS2GRID(1), PSTR("Start "));
 
@@ -6050,7 +6050,7 @@ void hightests(void)
 
 		static FATFSALIGN_BEGIN GX_t scr [MGSIZE(dx, dy)] FATFSALIGN_END;
 
-		display_setcolors(COLOR_WHITE, COLOR_BLACK);
+		colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
 		
 		memset(scr, 0xFF, sizeof scr);
 		display_showbuffer(scr, dx, dy, DBX_0, DBY_1);
@@ -6073,9 +6073,9 @@ void hightests(void)
 				count = 0;
 				phase = ! phase;
 				if (phase)
-					display_setcolors(COLOR_YELLOW, COLOR_BLACK);
+					colmain_setcolors(COLOR_YELLOW, COLOR_BLACK);
 				else
-					display_setcolors(COLOR_RED, COLOR_BLACK);
+					colmain_setcolors(COLOR_RED, COLOR_BLACK);
 				memset(scr, 0xFF, sizeof scr);
 			}
 			
@@ -6501,7 +6501,7 @@ void hightests(void)
 
 		display2_bgreset();
 		display_solidbar(markerx, markery, markerx + gridx, markery + gridy, COLOR_WHITE);
-		display_setcolors(COLOR_WHITE,COLOR_BLACK);
+		colmain_setcolors(COLOR_WHITE,COLOR_BLACK);
 
 			// touch screen test
 			for (;;)
@@ -6528,7 +6528,7 @@ void hightests(void)
 	{
 		//int n = TIM6_DAC_IRQn;
 		unsigned long i = 0;
-		display_setcolors(COLOR_WHITE, COLOR_BLACK);
+		colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
 		for (;;)
 		{
 			++ i;
@@ -6543,7 +6543,7 @@ void hightests(void)
 					 );
 
 				display_gotoxy(0, 0 + lowhalf);
-				display_setcolors(COLOR_WHITE, COLOR_BLACK);
+				colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
 				display_at(buff, lowhalf);
 			} while (lowhalf --);
 			debug_printf_P(PSTR("CNT=%08lX\n"), i);
@@ -6756,7 +6756,7 @@ void hightests(void)
 	display_at_P(CHARS2GRID(0), ROWS2GRID(3), PSTR("Stop "));
 #endif
 
-	display_setcolors(COLOR_WHITE, COLOR_BLACK);
+	colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
 	unsigned loop;
 	for (loop = 0; ;loop = loop < (DIM_X - bufY) ? loop + 1 : 0)
 	{
@@ -6944,7 +6944,7 @@ void hightests(void)
 	// тест дисплея - вывод меняющихся цифр
 	{
 		unsigned long i = 0;
-		display_setcolors(COLOR_WHITE, COLOR_BLACK);
+		colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
 		for (;;)
 		{
 			++ i;
@@ -6959,7 +6959,7 @@ void hightests(void)
 					 );
 
 				display_gotoxy(0, 0 + lowhalf);
-				display_setcolors(COLOR_WHITE, COLOR_BLACK);
+				colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
 				display_at(buff, lowhalf);
 			} while (lowhalf --);
 		}
@@ -6977,7 +6977,7 @@ void hightests(void)
 			display_setbgcolor(TFTRGB(c, c, c));
 			display2_bgreset();
 			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("WHITE %-3d"), c);
-			display_setcolors(COLOR_WHITE, COLOR_BLACK);
+			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
 			display_at(0, 0, b);
 			local_delay_ms(50);
 		}
@@ -6991,7 +6991,7 @@ void hightests(void)
 			display_setbgcolor(TFTRGB(c, 0, 0));
 			display2_bgreset();
 			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("RED %-3d"), c);
-			display_setcolors(COLOR_WHITE, COLOR_BLACK);
+			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
 			display_at(0, 0, b);
 			local_delay_ms(50);
 		}
@@ -7005,7 +7005,7 @@ void hightests(void)
 			display_setbgcolor(TFTRGB(0, c, 0));
 			display2_bgreset();
 			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("GREEN %-3d"), c);
-			display_setcolors(COLOR_WHITE, COLOR_BLACK);
+			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
 			display_at(0, 0, b);
 			local_delay_ms(50);
 		}
@@ -7019,7 +7019,7 @@ void hightests(void)
 			display_setbgcolor(TFTRGB(0, 0, c));
 			display2_bgreset();
 			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("BLUE %-3d"), c);
-			display_setcolors(COLOR_WHITE, COLOR_BLACK);
+			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
 			display_at(0, 0, b);
 			local_delay_ms(50);
 		}
