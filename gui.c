@@ -95,13 +95,12 @@ display_smeter2(
 	int yc = y * ADDRCELLHEIGHT;	//560;
 	int xc = x * ADDRCELLHEIGHT;	//120;
 	COLORMAIN_T ct;
-	uint_fast16_t xx, yy, i;
 	static uint_fast16_t x1, x2, y1, y2, old_swr10 = 0;
 	char buf[10];
 	uint_fast8_t tracemax;
 	uint_fast8_t is_tx = hamradio_get_tx();
-	static int gv, gv_trace, gswr, old_tx = 0, first_run = 1;
-	static int gv_old = gs - 1, gv_smooth = gs, gv_trace_old = gs, gswr_smooth = gs;
+	int gv, gv_trace, gswr, first_run = 1;
+	int gv_old = gs - 1, gv_smooth = gs, gswr_smooth = gs;
 	adcvalholder_t forward, reflected;
 	uint_fast16_t swr10; 														// swr10 = 0..30 for swr 1..4
 
@@ -199,6 +198,7 @@ display_smeter2(
 
 	if (first_run) // определение координат области отрисовки шкалы
 	{
+		uint_fast16_t xx, yy;
 		first_run = 0;
 		polar_to_dek(xc, yc, gm, rv1 + 8 + SMALLCHARH3, & xx, & yy);
 		y1 = yy;
@@ -212,8 +212,8 @@ display_smeter2(
 
 	//if (is_tx != old_tx)
 	{
-		display_solidbar(x1, y1, x2, y2, COLORMAIN_BLACK);
-		gv_trace_old -= 1; // для перерисовки шкалы при смене режима
+		//display_solidbar(x1, y1, x2, y2, COLORMAIN_BLACK); // уже стирается весь экран
+		//gv_trace_old -= 1; // для перерисовки шкалы при смене режима
 	}
 
 	//if (gv_old != gv || gv_trace_old != gv_trace || gswr_smooth != gs)
@@ -227,9 +227,11 @@ display_smeter2(
 
 		if (is_tx)																	// шкала при передаче
 		{
+			uint_fast16_t i;
 			uint_fast8_t p = 0;
 			for (i = 0; i < sizeof markersTX_pwr / sizeof markersTX_pwr [0]; ++ i)
 			{
+				uint_fast16_t xx, yy;
 				display_radius(xc, yc, markersTX_pwr [i], r1, r1 + 8, smeter);
 				polar_to_dek(xc, yc, markersTX_pwr [i], r1 + 8, & xx, & yy);
 				local_snprintf_P(& buf[0], sizeof buf / sizeof buf [0], PSTR("%d"), p);
@@ -240,6 +242,7 @@ display_smeter2(
 			p = 1;
 			for (i = 0; i < sizeof markersTX_swr / sizeof markersTX_swr [0]; ++ i)
 			{
+				uint_fast16_t xx, yy;
 				display_radius(xc, yc, markersTX_swr [i], r2, r2 - 8, smeter);
 				polar_to_dek(xc, yc, markersTX_swr [i], r2 - 16, & xx, & yy);
 				local_snprintf_P(& buf[0], sizeof buf / sizeof buf [0], PSTR("%d"), p);
@@ -249,9 +252,11 @@ display_smeter2(
 		}
 		else																		// шкала при приеме
 		{
+			uint_fast16_t i;
 			uint_fast8_t p = 1;
 			for (i = 0; i < sizeof markers / sizeof markers [0]; ++ i)
 			{
+				uint_fast16_t xx, yy;
 				display_radius(xc, yc, markers [i], r1, r1 + 8, smeter);
 				polar_to_dek(xc, yc, markers [i], r1 + 8, & xx, & yy);
 				local_snprintf_P(& buf[0], sizeof buf / sizeof buf [0], PSTR("%d"), p);
@@ -266,6 +271,7 @@ display_smeter2(
 			p = 20;
 			for (i = 0; i < sizeof markersR / sizeof markersR [0]; ++ i)
 			{
+				uint_fast16_t xx, yy;
 				display_radius(xc, yc, markersR [i], r1, r1 + 8, smeterplus);
 				polar_to_dek(xc, yc, markersR [i], r1 + 8, & xx, & yy);
 				local_snprintf_P(& buf[0], sizeof buf / sizeof buf [0], PSTR("+%d"), p);
@@ -284,6 +290,7 @@ display_smeter2(
 
 		if (is_tx)
 		{
+			uint_fast16_t i;
 			for (i = r2 + 3; i <= r1 - 2; i++)
 			{
 				display_segm(xc, yc, gs, gswr, i, 1, COLORMAIN_YELLOW);
@@ -293,9 +300,9 @@ display_smeter2(
 			}
 		} else
 		{
-			display_radius(xc - 1, yc, gv_trace_old, r1 - 2, r2 + 2, COLORMAIN_BLACK);
-			display_radius(xc, yc, gv_trace_old, r1 - 2, r2 + 2, COLORMAIN_BLACK);
-			display_radius(xc + 1, yc, gv_trace_old, r1 - 2, r2 + 2, COLORMAIN_BLACK);
+//			display_radius(xc - 1, yc, gv_trace_old, r1 - 2, r2 + 2, COLORMAIN_BLACK);
+//			display_radius(xc, yc, gv_trace_old, r1 - 2, r2 + 2, COLORMAIN_BLACK);
+//			display_radius(xc + 1, yc, gv_trace_old, r1 - 2, r2 + 2, COLORMAIN_BLACK);
 
 			ct = gv_trace > gm ? COLORMAIN_RED : COLORMAIN_YELLOW;
 			display_radius(xc - 1, yc, gv_trace, r1 - 2, r2 + 2, ct);
@@ -309,8 +316,8 @@ display_smeter2(
 		display_radius(xc + 1, yc, gv, rv1, rv2, ct);
 
 		gv_old = gv;
-		gv_trace_old = gv_trace;
-		old_tx = is_tx;
+//		gv_trace_old = gv_trace;
+//		old_tx = is_tx;
 	}
 	(void) pv;
 }
