@@ -94,7 +94,7 @@
 	#define LCDMODE_LTDC		1	/* Use VDC5 peripherial block */
 	#define LCDMODE_LTDC_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит. */
 	//#define LCDMODE_LTDC_PIP16	1	/* используется PIP с форматом 16 бит - RGB565 */
-	#define LCDMODE_LTDC_PIPL8	1	/* используется PIP с форматом 8 бит - индексные цвета */
+	//#define LCDMODE_LTDC_PIPL8	1	/* используется PIP с форматом 8 бит - индексные цвета */
 
 	//#define LCDMODE_LTDC_L24	1	/* 32-bit на пиксель в памяти (3 байта) */
 	//#define WITHFLATLINK 1	/* Работа с TFT панелью через SN75LVDS83B	*/
@@ -118,7 +118,7 @@
 	#define LCDMODE_LTDC		1	/* Use VDC5 peripherial block */
 	#define LCDMODE_LTDC_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит. */
 	//#define LCDMODE_LTDC_PIP16	1	/* используется PIP с форматом 16 бит - RGB565 */
-	#define LCDMODE_LTDC_PIPL8	1	/* используется PIP с форматом 8 бит - индексные цвета */
+	//#define LCDMODE_LTDC_PIPL8	1	/* используется PIP с форматом 8 бит - индексные цвета */
 
 	//#define LCDMODE_LTDC_L24	1	/* 32-bit на пиксель в памяти (3 байта) */
 	#define WITHFLATLINK 1	/* Работа с TFT панелью через SN75LVDS83B	*/
