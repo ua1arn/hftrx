@@ -708,7 +708,7 @@ void colpip_rect(
 	uint_fast16_t y1,	// начальная координата
 	uint_fast16_t x2,	// конечная координата (включена в заполняемую облсть)
 	uint_fast16_t y2,	// конечная координата (включена в заполняемую облсть)
-	PACKEDCOLOR565_T color,
+	COLORPIP_T color,
 	uint_fast8_t fill
 	);
 
@@ -1077,8 +1077,8 @@ colmain_mem_at(
 	);
 
 void display_putpixel(
-		uint_fast16_t dx,	// ширина буфера
-		uint_fast16_t dy,	// высота буфера
+	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
 	COLORMAIN_T color
 	);
 void display_at_xy(uint_fast16_t x, uint_fast16_t y, const char * s);
@@ -1092,8 +1092,10 @@ void board_set_fillspect(uint_fast8_t v); /* заливать заполнени
 void board_set_wflevelsep(uint_fast8_t v); /* чувствительность водопада регулируется отдельной парой параметров */
 void board_set_wfshiftenable(uint_fast8_t v);	   /* разрешение или запрет сдвига водопада при изменении частоты */
 
-PACKEDCOLORMAIN_T * colmain_fb_draw(void);
-PACKEDCOLORMAIN_T * colmain_fb_show(void);
+PACKEDCOLORMAIN_T * colmain_fb_draw(void);	// буфер для построения изображения
+PACKEDCOLORMAIN_T * colmain_fb_show(void);	// буфер для отображения
+void colmain_fb_next(void);		// прерключиться на использование следующего фреймбуфера.
+
 void display2_xltrgb24(COLOR24_T * xtable);
 // Установить прозрачность для прямоугольника
 void colpip_transparency(

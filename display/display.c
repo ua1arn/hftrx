@@ -1469,7 +1469,7 @@ void colpip_rect(
 	uint_fast16_t y1,	// начальная координата
 	uint_fast16_t x2,	// конечная координата (включена в заполняемую облсть)
 	uint_fast16_t y2,	// конечная координата (включена в заполняемую облсть)
-	PACKEDCOLOR565_T color,
+	COLORPIP_T color,
 	uint_fast8_t fill
 	)
 {
@@ -1632,8 +1632,8 @@ void display_pixelbuffer_line(
 #if LCDMODE_LTDC
 
 void display_putpixel(
-	uint_fast16_t x,
-	uint_fast16_t y,
+	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
 	COLORMAIN_T color
 	)
 {
