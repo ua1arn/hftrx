@@ -12073,7 +12073,7 @@ void __gxx_personality_v0(void)
 }
 #endif /* __cplusplus */
 
-#if 0
+#if 1
 
 /*
  *
@@ -12184,7 +12184,7 @@ caddr_t __attribute__((used)) (_sbrk)(int incr)
 		heap = (char *) &__HeapBase;
 	}
 
-	debug_printf_P("_sbrk: incr=%d, & __HeapBase=%p, & __HeapLimit=%p\n", incr, & __HeapBase, & __HeapLimit);
+	//debug_printf_P("_sbrk: incr=%d, & __HeapBase=%p, & __HeapLimit=%p\n", incr, & __HeapBase, & __HeapLimit);
 
 	prev_heap = heap;
 
