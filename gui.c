@@ -64,7 +64,7 @@ display_smeter2(
 		void * pv
 		)
 {
-#if 1
+#if 0
 
 	enum { TDX = 3 * 16, TDY = 3 * 16 };	// размеры формируемого изображения
 	static PACKEDCOLORMAIN_T tb [TDX * TDY];	// буфер длф формирования изображения
