@@ -6454,7 +6454,7 @@ board_set_wflevelsep(uint_fast8_t v)
 
 void display2_xltrgb24(COLOR24_T * xtable)
 {
-#if LCDMODE_LTDC_L8 && LCDMODE_LTDC_PIPL8
+#if LCDMODE_LTDC_L8 || LCDMODE_LTDC_PIPL8
 	// часть цветов с 0-го индекса используется в отображении водопада
 	// остальные в дизайне
 	// PALETTESIZE == 240

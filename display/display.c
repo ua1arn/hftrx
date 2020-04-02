@@ -18,7 +18,7 @@
 
 #if LCDMODE_LTDC
 
-	#define NFRAMRRB 2
+	#define NFRAMRRB 3
 
 	typedef PACKEDCOLORMAIN_T FRAMEBUFF_T [DIM_FIRST][DIM_SECOND];
 
@@ -1663,7 +1663,7 @@ void display_putpixel(
 	COLORMAIN_T color
 	)
 {
-	volatile PACKEDCOLORPIP_T * const tgr = colpip_mem_at(colmain_fb_draw(), DIM_X, DIM_Y, x, y);
+	volatile PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(colmain_fb_draw(), DIM_X, DIM_Y, x, y);
 	#if LCDMODE_LTDC_L24
 		tgr->r = color >> 16;
 		tgr->g = color >> 8;
@@ -2851,13 +2851,14 @@ void display_discharge(void)
 {
 }
 
+#if 0
 /* заливка замкнутого контура */
 void floodFill_framebuffer(uint_fast16_t x, uint_fast16_t y, PACKEDCOLORMAIN_T newColor, PACKEDCOLORMAIN_T oldColor)
 {
 	ASSERT(y < DIM_Y);
 	ASSERT(x < DIM_X);
 	// colmain_mem_at
-	PACKEDCOLORPIP_T * const tgr = colpip_mem_at(colmain_fb_draw(), DIM_X, DIM_Y, x, y);
+	PACKEDCOLORPIP_T * const tgr = colpipx_mem_at(colpipx_fb_draw(), DIM_X, DIM_Y, x, y);
 	if (* tgr == oldColor && * tgr != newColor)
 	{
 		* tgr = newColor;
@@ -2867,6 +2868,7 @@ void floodFill_framebuffer(uint_fast16_t x, uint_fast16_t y, PACKEDCOLORMAIN_T n
 		floodFill_framebuffer(x, y - 1, newColor, oldColor);
 	}
 }
+#endif
 
 #if WITHTOUCHGUI
 
