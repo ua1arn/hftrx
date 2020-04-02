@@ -12167,9 +12167,18 @@ int __attribute__((used)) (_write)(int fd, char * ptr, int len)
 	static RAMHEAP uint8_t sipexbuff [SPEEXALLOCSIZE];
 #endif /* SPEEXALLOCSIZE */
 
+#if SPEEXALLOCSIZE
+	//static uint8_t sipexbuff [NTRX * 149176 /* + 24716 */];
+	static RAMHEAP uint8_t sipexbuff [SPEEXALLOCSIZE];
+#endif /* SPEEXALLOCSIZE */
+
 #endif /* ! WITHNOSPEEX */
 
 static RAMHEAP uint8_t heapplace [8 * 1024uL];
+
+#if WITHTOUCHGUI
+	static RAMHEAP uint8_t goibuff [256];
+#endif /* SPEEXALLOCSIZE */
 
 extern int __HeapBase;
 extern int __HeapLimit;

@@ -6180,13 +6180,29 @@ void display2_clear_menu_bk(uint_fast16_t x, uint_fast16_t y, uint_fast16_t x2, 
 	display_solidbar(GRID2X(x), GRID2Y(y), GRID2X(x2), GRID2Y(y2), display_getbgcolor());
 }
 
-#if WITHTOUCHGUI
-	//#define STMD 1
-#else /* WITHTOUCHGUI */
-	//#define STMD 1
-#endif /* WITHTOUCHGUI */
+#define STMD 1
 
 #if STMD
+
+static uint_fast8_t
+validforredraw(
+	const FLASHMEM struct dzone * const p,
+	uint_fast8_t key,
+	uint_fast8_t subset
+	)
+{
+#if LCDMODE_LTDC_NMAINFRAMES > 1
+	/* про off-screen composition отрисовываем все элементы вне
+	 * зависимости от группы обновления, но для подходящей страницы.
+	 */
+	if (/*(p->key != key) || */(p->subset & subset) == 0)
+		return 0;
+#else /* LCDMODE_LTDC_NMAINFRAMES > 1 */
+	if ((p->key != key) || (p->subset & subset) == 0)
+		return 0;
+#endif /* LCDMODE_LTDC_NMAINFRAMES > 1 */
+	return 1;
+}
 
 // параметры state machine отображения
 static RAMDTCM uint8_t reqs [REDRM_count];		// запросы на отображение
@@ -6220,8 +6236,7 @@ display_walktrough(
 	{
 		const FLASHMEM struct dzone * const p = & dzones [i];
 
-		//if ((p->key != key) || (p->subset & subset) == 0)
-		if (/*(p->key != key) || */(p->subset & subset) == 0)
+		if (validforredraw(p, key, subset) == 0)
 			continue;
 		(* p->redraw)(p->x, p->y, pv);
 	#if WITHINTEGRATEDDSP
@@ -6229,9 +6244,11 @@ display_walktrough(
 	#endif /* WITHINTEGRATEDDSP */
 	}
 
+#if LCDMODE_LTDC_NMAINFRAMES > 1
 	colmain_fb_next();
 	arm_hardware_flush((uintptr_t) colmain_fb_show(), (uint_fast32_t) DIM_X * DIM_Y * sizeof (PACKEDCOLORMAIN_T));
 	arm_hardware_ltdc_main_set((uintptr_t) colmain_fb_show());
+#endif /* LCDMODE_LTDC_NMAINFRAMES > 1 */
 }
 
 
@@ -6242,6 +6259,10 @@ display_walktroughsteps(
 	uint_fast8_t subset
 	)
 {
+#if LCDMODE_LTDC_NMAINFRAMES > 1
+	key = 0;
+#endif /* LCDMODE_LTDC_NMAINFRAMES > 1 */
+
 #if STMD
 	reqs [key] = 1;
 	subsets [key] = subset;
@@ -6275,7 +6296,7 @@ void display2_bgprocess(void)
 	{
 		const FLASHMEM struct dzone * const p = & dzones [walkis [keyi]];
 
-		if ((p->key != keyi) || (p->subset & subsets [keyi]) == 0)
+		if (validforredraw(p, keyi, subsets [keyi]) == 0)
 			continue;
 		(* p->redraw)(p->x, p->y, NULL);
 		walkis [keyi] += 1;
@@ -6285,7 +6306,14 @@ void display2_bgprocess(void)
 	{
 		reqs [keyi] = 0;	// снять запрос на отображение данного типа элементов
 		keyi = (keyi == (REDRM_count - 1)) ? 0 : (keyi + 1);
+
+#if LCDMODE_LTDC_NMAINFRAMES > 1
+		colmain_fb_next();
+		arm_hardware_flush((uintptr_t) colmain_fb_show(), (uint_fast32_t) DIM_X * DIM_Y * sizeof (PACKEDCOLORMAIN_T));
+		arm_hardware_ltdc_main_set((uintptr_t) colmain_fb_show());
+#endif /* LCDMODE_LTDC_NMAINFRAMES > 1 */
 	}
+
 #endif /* STMD */
 }
 
