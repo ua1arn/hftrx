@@ -51,7 +51,7 @@ colmain_fb_draw(void)
 PACKEDCOLORMAIN_T *
 colmain_fb_show(void)
 {
-	return (PACKEDCOLORMAIN_T *) & framebuff0 [!! mainphase] [0] [0];
+	return (PACKEDCOLORMAIN_T *) & framebuff0 [! mainphase] [0] [0];
 }
 
 /*

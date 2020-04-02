@@ -6190,6 +6190,10 @@ display_walktrough(
 		audioproc_spool_user();		// решение проблем с прерыванием звука при стирании экрана
 	#endif /* WITHINTEGRATEDDSP */
 	}
+
+	colmain_fb_next();
+	arm_hardware_flush((uintptr_t) colmain_fb_show(), (uint_fast32_t) DIM_X * DIM_Y * sizeof (PACKEDCOLORMAIN_T));
+	arm_hardware_ltdc_main_set((uintptr_t) colmain_fb_show());
 }
 
 
