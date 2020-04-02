@@ -18,6 +18,8 @@
 
 #if LCDMODE_LTDC
 
+	#define NFRAMRRB 2
+
 	typedef PACKEDCOLORMAIN_T FRAMEBUFF_T [DIM_FIRST][DIM_SECOND];
 
 	#if defined (SDRAM_BANK_ADDR) && LCDMODE_LTDCSDRAMBUFF && LCDMODE_LTDC
@@ -31,27 +33,27 @@
 
 #if LCDMODE_LTDC && ! defined (SDRAM_BANK_ADDR)
 	// буфер экрана
-	RAMFRAMEBUFF ALIGNX_BEGIN FRAMEBUFF_T framebuff0 [2] ALIGNX_END;
+	RAMFRAMEBUFF ALIGNX_BEGIN FRAMEBUFF_T framebuff0 [NFRAMRRB] ALIGNX_END;
 #endif /* LCDMODE_LTDC */
 
 static uint_fast8_t mainphase;
 
 void colmain_fb_next(void)
 {
-	mainphase = ! mainphase;
+	mainphase = (mainphase + 1) % NFRAMRRB;
 }
 
 PACKEDCOLORMAIN_T *
 colmain_fb_draw(void)
 {
-	return (PACKEDCOLORMAIN_T *) & framebuff0 [mainphase] [0] [0];
+	return (PACKEDCOLORMAIN_T *) & framebuff0 [(mainphase + 1) % NFRAMRRB] [0] [0];
 }
 
 
 PACKEDCOLORMAIN_T *
 colmain_fb_show(void)
 {
-	return (PACKEDCOLORMAIN_T *) & framebuff0 [! mainphase] [0] [0];
+	return (PACKEDCOLORMAIN_T *) & framebuff0 [mainphase] [0] [0];
 }
 
 /*
@@ -986,11 +988,25 @@ void colpip_fillrect(
 	COLORPIP_T color	// цвет
 	)
 {
-#if LCDMODE_LTDC_PIP16
-	hwacc_fillrect_u16(buffer, dx, dy, x, y, w, h, color);
-#elif LCDMODE_LTDC_PIPL8
-	hwacc_fillrect_u8(buffer, dx, dy, x, y, w, h, color);
-#endif
+#if LCDMODE_HORFILL
+
+	if (sizeof * buffer == 2)
+		hwacc_fillrect_u16((void *) buffer, dx, dy, x, y, w, h, color);
+	else if (sizeof * buffer == 1)
+		hwacc_fillrect_u8((void *) buffer, dx, dy, x, y, w, h, color);
+	else if (sizeof * buffer == 3)
+		hwacc_fillrect_u24((void *) buffer, dx, dy, x, y, w, h, color);
+
+#else /* LCDMODE_HORFILL */
+
+	if (sizeof * buffer == 2)
+		hwacc_fillrect_u16((void *) buffer, dy, dx, y, x, h, w, color);
+	else if (sizeof * buffer == 1)
+		hwacc_fillrect_u8((void *) buffer, dy, dx, y, x, h, w, color);
+	else if (sizeof * buffer == 3)
+		hwacc_fillrect_u24((void *) buffer, dy, dx, y, x, h, w, color);
+
+#endif /* LCDMODE_HORFILL */
 }
 
 
@@ -1003,11 +1019,21 @@ void colpip_fill(
 	COLORPIP_T color
 	)
 {
-#if LCDMODE_LTDC_PIP16
-	hwacc_fillrect_u16(buffer, dx, dy, 0, 0, dx, dy, color);
-#elif LCDMODE_LTDC_PIPL8
-	hwacc_fillrect_u8(buffer, dx, dy, 0, 0, dx, dy, color);
-#endif
+#if LCDMODE_HORFILL
+	if (sizeof * buffer == 2)
+		hwacc_fillrect_u16((void *) buffer, dx, dy, 0, 0, dx, dy, color);
+	else if (sizeof * buffer == 1)
+		hwacc_fillrect_u8((void *) buffer, dx, dy, 0, 0, dx, dy, color);
+	else if (sizeof * buffer == 3)
+		hwacc_fillrect_u24((void *) buffer, dx, dy, 0, 0, dx, dy, color);
+#else /* LCDMODE_HORFILL */
+	if (sizeof * buffer == 2)
+		hwacc_fillrect_u16((void *) buffer, dy, dx, 0, 0, dy, dx, color);
+	else if (sizeof * buffer == 1)
+		hwacc_fillrect_u8((void *) buffer, dy, dx, 0, 0, dy, dx, color);
+	else if (sizeof * buffer == 3)
+		hwacc_fillrect_u24((void *) buffer, dy, dx, 0, 0, dy, dx, color);
+#endif /* LCDMODE_HORFILL */
 }
 
 // поставить цветную точку.
