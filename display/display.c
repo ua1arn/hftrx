@@ -1347,9 +1347,9 @@ void colpip_to_main(
 	arm_hardware_flush((uintptr_t) buffer, sizeof (* buffer) * GXSIZE(dx, dy));
 
 	#if LCDMODE_HORFILL
-		hwaccel_copy_RGB565(buffer, & framebuff [row] [col], dx, DIM_SECOND - dx, dy);
+		hwaccel_copy_RGB565(buffer, colmain_mem_at(colmain_fb_draw(), DIM_X, DIM_Y, col, row), dx, DIM_SECOND - dx, dy);
 	#else /* LCDMODE_HORFILL */
-		hwaccel_copy_RGB565(buffer, & framebuff [col] [row], dy, DIM_FIRST - dy, dx);
+		hwaccel_copy_RGB565(buffer, colmain_mem_at(colmain_fb_draw(), DIM_X, DIM_Y, col, row), dy, DIM_FIRST - dy, dx);
 	#endif /* LCDMODE_HORFILL */
 
 #elif WITHDMA2DHW && LCDMODE_LTDC

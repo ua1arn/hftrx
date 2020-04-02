@@ -598,7 +598,7 @@ void buffers_initialize(void)
 
 #if WITHINTEGRATEDDSP
 
-	static RAMBIG voice16_t voicesarray16 [192];
+	static RAMBIG voice16_t voicesarray16 [228];
 
 	InitializeListHead3(& resample16, RESAMPLE16NORMAL);	// буферы от USB для синхронизации
 	InitializeListHead3(& voicesmike16, VOICESMIKE16NORMAL);	// список оцифрованных с АЦП

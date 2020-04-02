@@ -5281,7 +5281,7 @@ enum
 	SPY0 = GRID2Y(BDCO_SPMRX)				// смещение по вертикали в пикселях части отведенной спектру
 };
 
-#if (LCDMODE_LTDC_PIPL8 && LCDMODE_LTDC) || (CPUSTYLE_STM32MP1 && LCDMODE_LTDC)
+#if (LCDMODE_LTDC_PIPL8 && LCDMODE_LTDC) || (CPUSTYLE_STM32MP1 && LCDMODE_LTDC && LCDMODE_LTDC_PIP16)
 
 	// один буфер установлен для отображения, второй еше отображается.
 	// Третий заполняем новым изображением.
@@ -5324,7 +5324,6 @@ enum
 	}
 
 #else /* LCDMODE_LTDC_PIP16 */
-
 	static ALIGNX_BEGIN PACKEDCOLOR565_T colorpip0 [GXSIZE(ALLDX, ALLDY)] ALIGNX_END;
 	static void nextpip(void)
 	{
@@ -5406,7 +5405,7 @@ static FLOAT_t filter_spectrum(
 #elif LCDMODE_LTDC_PIPL8
 #else
 
-	static RAMBIG uint8_t wfarray [WFDY] [ALLDX];	// массив "водопада"
+	static RAMBIGDTCM uint8_t wfarray [WFDY] [ALLDX];	// массив "водопада"
 	static uint_fast16_t wfrow;		// строка, в которую последней занесены данные
 
 	enum { PALETTESIZE = 256 };
