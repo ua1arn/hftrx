@@ -17,8 +17,16 @@
 
 #if LCDMODE_LTDC && ! defined (SDRAM_BANK_ADDR)
 	// буфер экрана
-	RAMFRAMEBUFF ALIGNX_BEGIN FRAMEBUFF_T framebuff0 ALIGNX_END;	//L8 (8-bit Luminance or CLUT)
+	RAMFRAMEBUFF ALIGNX_BEGIN FRAMEBUFF_T framebuff0 ALIGNX_END;
+	//volatile RAMFRAMEBUFF ALIGNX_BEGIN FRAMEBUFF_T framebuff1 ALIGNX_END;
 #endif /* LCDMODE_LTDC */
+
+
+PACKEDCOLORMAIN_T *
+colmain_fb(void)
+{
+	return (PACKEDCOLORMAIN_T *) & framebuff [0] [0];
+}
 
 /*
 	Dead time value in the AXI clock cycle inserted between two consecutive accesses on
