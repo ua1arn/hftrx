@@ -6164,7 +6164,7 @@ void display2_clear_menu_bk(uint_fast16_t x, uint_fast16_t y, uint_fast16_t x2, 
 #if WITHTOUCHGUI
 	//#define STMD 1
 #else /* WITHTOUCHGUI */
-	#define STMD 1
+	//#define STMD 1
 #endif /* WITHTOUCHGUI */
 
 #if STMD
