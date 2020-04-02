@@ -1551,11 +1551,11 @@ static void display_datetime12(
 
 struct dzone
 {
-	uint_fast8_t x; // левый верхний угол
-	uint_fast8_t y;
+	uint8_t x; // левый верхний угол
+	uint8_t y;
 	void (* redraw)(uint_fast8_t x, uint_fast8_t y, void * pv);	// функция отображения элемента
-	uint_fast8_t key;		// при каких обновлениях перерисовывается этот элемент
-	uint_fast8_t subset;
+	uint8_t key;		// при каких обновлениях перерисовывается этот элемент
+	uint8_t subset;
 };
 
 /* struct dzone subset field values */
