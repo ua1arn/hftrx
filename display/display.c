@@ -15,24 +15,43 @@
 #include <string.h>
 #include "spi.h"	// hardware_spi_master_send_frame
 
-#if LCDMODE_LTDC && ! defined (SDRAM_BANK_ADDR)
-	// буфер экрана
-	RAMFRAMEBUFF ALIGNX_BEGIN FRAMEBUFF_T framebuff0 ALIGNX_END;
-	//volatile RAMFRAMEBUFF ALIGNX_BEGIN FRAMEBUFF_T framebuff1 ALIGNX_END;
+
+#if LCDMODE_LTDC
+
+	typedef PACKEDCOLORMAIN_T FRAMEBUFF_T [DIM_FIRST][DIM_SECOND];
+
+	#if defined (SDRAM_BANK_ADDR) && LCDMODE_LTDCSDRAMBUFF && LCDMODE_LTDC
+		#define framebuff (* (FRAMEBUFF_T *) SDRAM_BANK_ADDR)
+	#else /* defined (SDRAM_BANK_ADDR) && LCDMODE_LTDCSDRAMBUFF && LCDMODE_LTDC */
+		//#define framebuff (framebuff0)
+		//extern FRAMEBUFF_T framebuff0;	//L8 (8-bit Luminance or CLUT)
+	#endif /* defined (SDRAM_BANK_ADDR) && LCDMODE_LTDCSDRAMBUFF && LCDMODE_LTDC */
+
 #endif /* LCDMODE_LTDC */
 
+#if LCDMODE_LTDC && ! defined (SDRAM_BANK_ADDR)
+	// буфер экрана
+	RAMFRAMEBUFF ALIGNX_BEGIN FRAMEBUFF_T framebuff0 [2] ALIGNX_END;
+#endif /* LCDMODE_LTDC */
+
+static uint_fast8_t mainphase;
+
+void colmain_fb_next(void)
+{
+	mainphase = ! mainphase;
+}
 
 PACKEDCOLORMAIN_T *
 colmain_fb_draw(void)
 {
-	return (PACKEDCOLORMAIN_T *) & framebuff [0] [0];
+	return (PACKEDCOLORMAIN_T *) & framebuff0 [mainphase] [0] [0];
 }
 
 
 PACKEDCOLORMAIN_T *
 colmain_fb_show(void)
 {
-	return (PACKEDCOLORMAIN_T *) & framebuff [0] [0];
+	return (PACKEDCOLORMAIN_T *) & framebuff0 [!! mainphase] [0] [0];
 }
 
 /*
@@ -1618,27 +1637,14 @@ void display_putpixel(
 	COLORMAIN_T color
 	)
 {
-#if LCDMODE_HORFILL
-	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
-	// индекс младшей размерности перебирает горизонтальную координату дисплея
+	volatile PACKEDCOLORPIP_T * const tgr = colpip_mem_at(colmain_fb_draw(), DIM_X, DIM_Y, x, y);
 	#if LCDMODE_LTDC_L24
-		framebuff [y] [x].r = color >> 16;
-		framebuff [y] [x].g = color >> 8;
-		framebuff [y] [x].b = color >> 0;
+		tgr->r = color >> 16;
+		tgr->g = color >> 8;
+		tgr->b = color >> 0;
 	#else /* LCDMODE_LTDC_L24 */
-		framebuff [y] [x] = color;
+		* tgr = color;
 	#endif /* LCDMODE_LTDC_L24 */
-
-#else /* LCDMODE_HORFILL */
-	#if LCDMODE_LTDC_L24
-		framebuff [x] [y].r = color >> 16;
-		framebuff [x] [y].g = color >> 8;
-		framebuff [x] [y].b = color >> 0;
-	#else /* LCDMODE_LTDC_L24 */
-		framebuff [x] [y] = color;
-	#endif /* LCDMODE_LTDC_L24 */
-
-#endif /* LCDMODE_HORFILL */
 }
 
 static void
@@ -2825,8 +2831,8 @@ void floodFill_framebuffer(uint_fast16_t x, uint_fast16_t y, PACKEDCOLORMAIN_T n
 	ASSERT(y < DIM_Y);
 	ASSERT(x < DIM_X);
 	// colmain_mem_at
-	volatile PACKEDCOLORMAIN_T * const tgr = & framebuff [y] [x];
-	if(* tgr == oldColor && * tgr != newColor)
+	PACKEDCOLORPIP_T * const tgr = colpip_mem_at(colmain_fb_draw(), DIM_X, DIM_Y, x, y);
+	if (* tgr == oldColor && * tgr != newColor)
 	{
 		* tgr = newColor;
 		floodFill_framebuffer(x + 1, y, newColor, oldColor);

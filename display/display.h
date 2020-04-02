@@ -976,15 +976,6 @@ void display_1state(
 		#define DIM_SECOND DIM_Y
 	#endif
 
-	typedef PACKEDCOLORMAIN_T FRAMEBUFF_T [DIM_FIRST][DIM_SECOND];
-
-	#if defined (SDRAM_BANK_ADDR) && LCDMODE_LTDCSDRAMBUFF && LCDMODE_LTDC
-		#define framebuff (* (FRAMEBUFF_T *) SDRAM_BANK_ADDR)
-	#else /* defined (SDRAM_BANK_ADDR) && LCDMODE_LTDCSDRAMBUFF && LCDMODE_LTDC */
-		#define framebuff (framebuff0)
-		extern FRAMEBUFF_T framebuff0;	//L8 (8-bit Luminance or CLUT)
-	#endif /* defined (SDRAM_BANK_ADDR) && LCDMODE_LTDCSDRAMBUFF && LCDMODE_LTDC */
-
 #endif /* LCDMODE_LTDC */
 
 /* заполнение прямоугольника на основном экране произвольным цветом
