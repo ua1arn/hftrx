@@ -5317,7 +5317,7 @@ enum
 
 #else /* LCDMODE_LTDC_PIP16 */
 
-	static ALIGNX_BEGIN PACKEDCOLOR565_T colorpip0 [GXSIZE(ALLDX, ALLDY)] ALIGNX_END;
+	//static ALIGNX_BEGIN PACKEDCOLOR565_T colorpip0 [GXSIZE(ALLDX, ALLDY)] ALIGNX_END;
 	static void nextpip(void)
 	{
 	}
@@ -5326,7 +5326,12 @@ enum
 
 PACKEDCOLORPIP_T * getscratchpip(void)
 {
-#if (LCDMODE_LTDC_PIP16 || LCDMODE_LTDC_PIPL8) && LCDMODE_LTDC
+#if 1
+	pipparams_t pip;
+	display2_getpipparams(& pip);
+	return colmain_mem_at(colmain_fb_draw(), DIM_X, DIM_Y, pip.x, pip.y);
+
+#elif (LCDMODE_LTDC_PIP16 || LCDMODE_LTDC_PIPL8) && LCDMODE_LTDC
 	return colorpips [pipphase];
 #else /* LCDMODE_LTDC_PIP16 */
 	return colorpip0;

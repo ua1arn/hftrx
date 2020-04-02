@@ -18,7 +18,6 @@
 
 #if LCDMODE_LTDC
 
-
 #if WITHTOUCHGUI
 	#include "keyboard.h"
 	#include "list.h"
@@ -95,7 +94,7 @@ display_smeter2(
 	int yc = y * ADDRCELLHEIGHT;	//560;
 	int xc = x * ADDRCELLHEIGHT;	//120;
 	COLORMAIN_T ct;
-	static uint_fast16_t x1, x2, y1, y2, old_swr10 = 0;
+	//static uint_fast16_t x1, x2, y1, y2;
 	char buf[10];
 	uint_fast8_t tracemax;
 	uint_fast8_t is_tx = hamradio_get_tx();
@@ -196,6 +195,7 @@ display_smeter2(
 	const COLORMAIN_T smeter = COLORMAIN_WHITE;
 	const COLORMAIN_T smeterplus = COLORMAIN_DARKRED;
 
+/*
 	if (first_run) // определение координат области отрисовки шкалы
 	{
 		uint_fast16_t xx, yy;
@@ -209,6 +209,7 @@ display_smeter2(
 		polar_to_dek(xc, yc, ge, r1 + 8 + SMALLCHARW3 * 2, & xx, & yy);
 		x2 = xx;
 	}
+*/
 
 	//if (is_tx != old_tx)
 	{

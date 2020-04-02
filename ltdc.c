@@ -1246,6 +1246,8 @@ void arm_hardware_ltdc_pip_off(void)
 	);
 }
 
+#endif /* LCDMODE_LTDC_PIPL8 || LCDMODE_LTDC_PIP16 */
+
 /* Set MAIN frame buffer address. */
 void arm_hardware_ltdc_main_set(uintptr_t p)
 {
@@ -1271,8 +1273,6 @@ void arm_hardware_ltdc_main_set(uintptr_t p)
 		0
 	);
 }
-
-#endif /* LCDMODE_LTDC_PIPL8 || LCDMODE_LTDC_PIP16 */
 
 #elif CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
 
@@ -1949,6 +1949,8 @@ void arm_hardware_ltdc_pip_off(void)
 	LTDC->SRCR = LTDC_SRCR_VBR;	/* Vertical Blanking Reload. */
 }
 
+#endif /* LCDMODE_LTDC_PIP16 */
+
 /* Set MAIN frame buffer address. */
 void arm_hardware_ltdc_main_set(uintptr_t p)
 {
@@ -1961,8 +1963,6 @@ void arm_hardware_ltdc_main_set(uintptr_t p)
 	LAYER_MAIN->CR |= LTDC_LxCR_LEN;
 	LTDC->SRCR = LTDC_SRCR_VBR;	/* Vertical Blanking Reload. */
 }
-
-#endif /* LCDMODE_LTDC_PIP16 */
 
 #endif /* CPUSTYLE_STM32F || CPUSTYLE_STM32MP1 */
 
