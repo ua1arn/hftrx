@@ -210,15 +210,15 @@ display_smeter2(
 		x2 = xx;
 	}
 
-	if (is_tx != old_tx)
+	//if (is_tx != old_tx)
 	{
 		display_solidbar(x1, y1, x2, y2, COLORMAIN_BLACK);
 		gv_trace_old -= 1; // для перерисовки шкалы при смене режима
 	}
 
-	if (gv_old != gv || gv_trace_old != gv_trace || gswr_smooth != gs)
+	//if (gv_old != gv || gv_trace_old != gv_trace || gswr_smooth != gs)
 	{
-		if (gv_old != gv)
+		//if (gv_old != gv)
 		{
 			display_radius(xc - 1, yc, gv_old, rv1, rv2, COLORMAIN_BLACK);
 			display_radius(xc, yc, gv_old, rv1, rv2, COLORMAIN_BLACK);
