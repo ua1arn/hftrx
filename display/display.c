@@ -23,7 +23,14 @@
 
 
 PACKEDCOLORMAIN_T *
-colmain_fb(void)
+colmain_fb_draw(void)
+{
+	return (PACKEDCOLORMAIN_T *) & framebuff [0] [0];
+}
+
+
+PACKEDCOLORMAIN_T *
+colmain_fb_show(void)
 {
 	return (PACKEDCOLORMAIN_T *) & framebuff [0] [0];
 }
@@ -1345,7 +1352,7 @@ void colpip_to_main(
 #elif LCDMODE_LTDC
 
 	#if LCDMODE_COLORED
-		PACKEDCOLORMAIN_T * const tbuffer = colmain_fb();
+		PACKEDCOLORMAIN_T * const tbuffer = colmain_fb_draw();
 		const uint_fast16_t tdx = DIM_X;
 		const uint_fast16_t tdy = DIM_Y;
 		colmain_plot(tbuffer, tdx, tdy, col, row, buffer, dx, dy);
@@ -1681,7 +1688,7 @@ display_fillrect(
 	COLORMAIN_T color
 	)
 {
-	PACKEDCOLORMAIN_T * const buffer = colmain_fb();
+	PACKEDCOLORMAIN_T * const buffer = colmain_fb_draw();
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
 	colmain_fillrect_pattern(buffer, dx, dy, x, y, w, h, color, color, 0xFF);
@@ -1726,6 +1733,9 @@ void display_hardware_initialize(void)
 	// STM32xxx LCD-TFT Controller (LTDC)
 	// RENESAS Video Display Controller 5
 	arm_hardware_ltdc_initialize();
+
+	arm_hardware_ltdc_main_set((uintptr_t) colmain_fb_show());
+
 #endif /* WITHLTDCHW */
 
 #if LCDMODE_HARD_SPI
@@ -1798,7 +1808,7 @@ ltdc_pix1color(
 	PACKEDCOLORMAIN_T color
 	)
 {
-	PACKEDCOLORMAIN_T * const buffer = colmain_fb();
+	PACKEDCOLORMAIN_T * const buffer = colmain_fb_draw();
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
 	volatile PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, x, y);
@@ -1974,7 +1984,7 @@ static uint_fast16_t
 RAMFUNC_NONILINE
 ltdc_horizontal_put_char_small(uint_fast16_t x, uint_fast16_t y, char cc)
 {
-	PACKEDCOLORMAIN_T * const buffer = colmain_fb();
+	PACKEDCOLORMAIN_T * const buffer = colmain_fb_draw();
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
 	const uint_fast8_t width = SMALLCHARW;
@@ -2087,7 +2097,7 @@ static uint_fast16_t RAMFUNC_NONILINE ltdcpip_horizontal_put_char_small3_tbg(
 // return new x coordinate
 static uint_fast16_t RAMFUNC_NONILINE ltdc_horizontal_put_char_big(uint_fast16_t x, uint_fast16_t y, char cc)
 {
-	PACKEDCOLORMAIN_T * const buffer = colmain_fb();
+	PACKEDCOLORMAIN_T * const buffer = colmain_fb_draw();
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
 	const uint_fast8_t width = ((cc == '.' || cc == '#') ? BIGCHARW_NARROW  : BIGCHARW);	// полнаяширина символа в пикселях
@@ -2105,7 +2115,7 @@ static uint_fast16_t RAMFUNC_NONILINE ltdc_horizontal_put_char_big(uint_fast16_t
 // return new x coordinate
 static uint_fast16_t RAMFUNC_NONILINE ltdc_horizontal_put_char_half(uint_fast16_t x, uint_fast16_t y, char cc)
 {
-	PACKEDCOLORMAIN_T * const buffer = colmain_fb();
+	PACKEDCOLORMAIN_T * const buffer = colmain_fb_draw();
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
 	const uint_fast8_t width = HALFCHARW;
@@ -2297,7 +2307,7 @@ display_scroll_down(
 	int_fast16_t hshift	// количество пиксеелей для сдвига влево (отрицательное число) или вправо (положительное).
 	)
 {
-	PACKEDCOLORMAIN_T * const buffer = colmain_fb();
+	PACKEDCOLORMAIN_T * const buffer = colmain_fb_draw();
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
 #if WITHDMA2DHW && LCDMODE_LTDC
@@ -2352,7 +2362,7 @@ display_scroll_up(
 	int_fast16_t hshift	// количество пиксеелей для сдвига влево (отрицательное число) или вправо (положительное).
 	)
 {
-	PACKEDCOLORMAIN_T * const buffer = colmain_fb();
+	PACKEDCOLORMAIN_T * const buffer = colmain_fb_draw();
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
 
@@ -2851,7 +2861,7 @@ RAMFUNC_NONILINE ltdc_horizontal_put_char_small3(
 static void
 display_string3(uint_fast16_t x, uint_fast16_t y, const char * s, uint_fast8_t lowhalf)
 {
-	PACKEDCOLORMAIN_T * const buffer = colmain_fb();
+	PACKEDCOLORMAIN_T * const buffer = colmain_fb_draw();
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
 	char c;

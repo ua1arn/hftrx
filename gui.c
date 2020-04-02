@@ -76,7 +76,7 @@ display_smeter2(
 	colmain_string3_at_xy(tb, TDX, TDY, 0, 0, "Test");
 
 	// Копируем в видимый framebuffer
-	colmain_plot(colmain_fb(), DIM_X, DIM_Y, GRID2X(x), GRID2Y(y), tb, TDX, TDY);
+	colmain_plot(colmain_fb_draw(), DIM_X, DIM_Y, GRID2X(x), GRID2Y(y), tb, TDX, TDY);
 	return;
 
 //	display_at(x, y, "S-met");

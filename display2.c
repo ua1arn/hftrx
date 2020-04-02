@@ -3726,7 +3726,7 @@ enum
 		p->y = GRID2Y(18);	// позиция верхнего левого угла в пикселях
 		p->w = GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
 		p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
-		p->frame = (uintptr_t) getscratchpip();
+		//p->frame = (uintptr_t) getscratchpip();
 	}
 
 	#if WITHMENU
@@ -3948,7 +3948,7 @@ enum
 			p->y = GRID2Y(18);	// позиция верхнего левого угла в пикселях
 			p->w = GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
 			p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
-			p->frame = (uintptr_t) getscratchpip();
+			//p->frame = (uintptr_t) getscratchpip();
 		}
 
 	#if WITHMENU
@@ -4140,7 +4140,7 @@ enum
 		p->y = GRID2Y(28);	// позиция верхнего левого угла в пикселях
 		p->w = GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
 		p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
-		p->frame = (uintptr_t) getscratchpip();
+		//p->frame = (uintptr_t) getscratchpip();
 	}
 
 #elif DSTYLE_G_X480_Y272
@@ -4297,7 +4297,7 @@ enum
 		p->y = GRID2Y(30);	// позиция верхнего левого угла в пикселях
 		p->w = GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
 		p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
-		p->frame = (uintptr_t) getscratchpip();
+		//p->frame = (uintptr_t) getscratchpip();
 	}
 
 #elif DSTYLE_G_X800_Y480 && WITHTOUCHGUI //&& WITHSPECTRUMWF
@@ -4480,7 +4480,7 @@ enum
 		p->y = GRID2Y(DLES);	// позиция верхнего левого угла в пикселях
 		p->w = GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
 		p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
-		p->frame = (uintptr_t) getscratchpip();
+		//p->frame = (uintptr_t) getscratchpip();
 	}
 
 #elif DSTYLE_G_X800_Y480 //&& WITHSPECTRUMWF
@@ -4673,7 +4673,7 @@ enum
 		p->y = GRID2Y(DLES);	// позиция верхнего левого угла в пикселях
 		p->w = GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
 		p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
-		p->frame = (uintptr_t) getscratchpip();
+		//p->frame = (uintptr_t) getscratchpip();
 	}
 
 #elif DSTYLE_G_DUMMY
@@ -4764,7 +4764,7 @@ static const FLASHMEM struct dzone dzones [] =
 		p->y = GRID2Y(DLES);	// позиция верхнего левого угла в пикселях
 		p->w = GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
 		p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
-		p->frame = (uintptr_t) 0;
+		//p->frame = (uintptr_t) 0;
 	}
 
 #else
@@ -4928,7 +4928,7 @@ void display_swrmeter(
 	)
 {
 #if WITHBARS
-	PACKEDCOLORMAIN_T * const tbuffer = colmain_fb();
+	PACKEDCOLORMAIN_T * const tbuffer = colmain_fb_draw();
 	const uint_fast16_t tdx = DIM_X;
 	const uint_fast16_t tdy = DIM_Y;
 
@@ -5122,7 +5122,7 @@ void display_pwrmeter(
 	)
 {
 #if WITHBARS
-	PACKEDCOLORMAIN_T * const tbuffer = colmain_fb();
+	PACKEDCOLORMAIN_T * const tbuffer = colmain_fb_draw();
 	const uint_fast16_t tdx = DIM_X;
 	const uint_fast16_t tdy = DIM_Y;
 	const uint_fast16_t fullscale = display_getpwrfullwidth();	// количество точек в отображении мощности на диспле
@@ -5165,7 +5165,7 @@ void display_smeter(
 	uint_fast8_t delta2)	// s9+50 - s9 delta
 {
 #if WITHBARS
-	PACKEDCOLORMAIN_T * const tbuffer = colmain_fb();
+	PACKEDCOLORMAIN_T * const tbuffer = colmain_fb_draw();
 	const uint_fast16_t tdx = DIM_X;
 	const uint_fast16_t tdy = DIM_Y;
 	tracemax = value > tracemax ? value : tracemax;	// защита от рассогласования значений

@@ -646,7 +646,7 @@ static void vdc5fb_init_graphics(struct st_vdc5 * const vdc)
 	////////////////////////////////////////////////////////////////
 	// GR3 - PIP screen
 
-	SETREG32_CK(& vdc->GR3_FLM_RD, 1, 0, 0);			// GR3_R_ENB Frame Buffer Read Enable
+	SETREG32_CK(& vdc->GR3_FLM_RD, 1, 0, 0);			// GR3_R_ENB Frame Buffer Read Disable
 	SETREG32_CK(& vdc->GR3_FLM1, 2, 8, 0x01);			// GR3_FLM_SEL 1: Selects GR3_FLM_NUM.
 	//SETREG32_CK(& vdc->GR3_FLM2, 32, 0, (uintptr_t) & framebuff);	// GR3_BASE
 	SETREG32_CK(& vdc->GR3_FLM3, 15, 16, MAINROWSIZE);		// GR3_LN_OFF
@@ -1202,11 +1202,6 @@ arm_hardware_ltdc_initialize(void)
 	HARDWARE_LTDC_SET_MODE(BOARD_MODEVALUE);
 #endif
 
-#if LCDMODE_LTDC_PIP16 || LCDMODE_LTDC_PIPL8
-	arm_hardware_ltdc_pip_off();
-#endif /* LCDMODE_LTDC_PIP16 || LCDMODE_LTDC_PIPL8 */
-	arm_hardware_ltdc_main_set((uintptr_t) colmain_fb());
-
 	debug_printf_P(PSTR("arm_hardware_ltdc_initialize done\n"));
 }
 
@@ -1454,7 +1449,7 @@ typedef struct
   uint32_t LTDC_BlendingFactor_2;           /*!< Select the blending factor 2. This parameter 
                                                  can be one of value of @ref LTDC_BlendingFactor2 */
             
-  uint32_t LTDC_CFBStartAdress;             /*!< Configures the color frame buffer address */
+  //uint32_t LTDC_CFBStartAdress;             /*!< Configures the color frame buffer address */
 
   uint32_t LTDC_CFBLineLength;              /*!< Configures the color frame buffer line length. 
                                                  This parameter must range from 0x0000 to 0x1FFF. */
@@ -1568,8 +1563,8 @@ LTDC_LayerInit(LTDC_Layer_TypeDef* LTDC_Layerx, const LTDC_Layer_InitTypeDef* LT
 	LTDC_Layerx->BFCR |= (LTDC_Layer_InitStruct->LTDC_BlendingFactor_1 | LTDC_Layer_InitStruct->LTDC_BlendingFactor_2);
 
 	/* Configures the color frame buffer start address */
-	LTDC_Layerx->CFBAR &= ~(LTDC_LxCFBAR_CFBADD);
-	LTDC_Layerx->CFBAR |= (LTDC_Layer_InitStruct->LTDC_CFBStartAdress);
+//	LTDC_Layerx->CFBAR &= ~(LTDC_LxCFBAR_CFBADD);
+//	LTDC_Layerx->CFBAR |= (LTDC_Layer_InitStruct->LTDC_CFBStartAdress);
 
 	/* Configures the color frame buffer pitch in byte */
 	cfbp = (LTDC_Layer_InitStruct->LTDC_CFBPitch << LTDC_LxCFBLR_CFBP_Pos);
@@ -1682,7 +1677,7 @@ static void LCD_LayerInit(
 	LTDC_Layer_InitStruct.LTDC_CFBLineNumber = wnd->h;
 
 	/* Start Address configuration : the LCD Frame buffer is defined on SDRAM */    
-	LTDC_Layer_InitStruct.LTDC_CFBStartAdress = wnd->frame;
+	//LTDC_Layer_InitStruct.LTDC_CFBStartAdress = wnd->frame;
 	//LTDC_Layer1->CFBAR = (uint32_t) & framebuff;
 
 	/* Initialize LTDC layer 1 */
@@ -1815,7 +1810,7 @@ arm_hardware_ltdc_initialize(void)
 	/* LTDC Initialization -------------------------------------------------------*/
 	LTDC_InitTypeDef LTDC_InitStruct;
 
-	pipparams_t mainwnd = { 0, 0, DIM_SECOND, DIM_FIRST, (uintptr_t) colmain_fb() };
+	pipparams_t mainwnd = { 0, 0, DIM_SECOND, DIM_FIRST };
 
 #if LCDMODE_LTDC_PIP16 || LCDMODE_LTDC_PIPL8
 	pipparams_t pipwnd;
@@ -1928,11 +1923,6 @@ arm_hardware_ltdc_initialize(void)
 #if defined (BOARD_MODEVALUE)
 	HARDWARE_LTDC_SET_MODE(BOARD_MODEVALUE);
 #endif
-
-#if LCDMODE_LTDC_PIP16 || LCDMODE_LTDC_PIPL8
-	arm_hardware_ltdc_pip_off();
-#endif /* LCDMODE_LTDC_PIP16 || LCDMODE_LTDC_PIPL8 */
-	arm_hardware_ltdc_main_set((uintptr_t) colmain_fb());
 
 	debug_printf_P(PSTR("arm_hardware_ltdc_initialize done\n"));
 }

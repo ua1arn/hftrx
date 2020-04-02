@@ -350,14 +350,14 @@ uint_fast8_t display_getfreqformat(uint_fast8_t * prjv);	// получить п�
 // Параметры окна меню
 typedef struct gridparams_tag
 {
-	uint_fast16_t gy2, gx2;	// в ячейках сетки разметки
+	uint16_t gy2, gx2;	// в ячейках сетки разметки
 
 } gridparams_t;
 
 typedef struct pipparams_tag
 {
-	uint_fast16_t x, y, w, h;	// в пикселях
-	uintptr_t frame;	// default framebufer
+	uint16_t x, y, w, h;	// в пикселях
+	//uintptr_t frame;	// default framebufer
 
 } pipparams_t;
 
@@ -1101,7 +1101,8 @@ void board_set_fillspect(uint_fast8_t v); /* заливать заполнени
 void board_set_wflevelsep(uint_fast8_t v); /* чувствительность водопада регулируется отдельной парой параметров */
 void board_set_wfshiftenable(uint_fast8_t v);	   /* разрешение или запрет сдвига водопада при изменении частоты */
 
-PACKEDCOLORMAIN_T * colmain_fb(void);
+PACKEDCOLORMAIN_T * colmain_fb_draw(void);
+PACKEDCOLORMAIN_T * colmain_fb_show(void);
 void display2_xltrgb24(COLOR24_T * xtable);
 // Установить прозрачность для прямоугольника
 void colpip_transparency(
