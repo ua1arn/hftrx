@@ -18,8 +18,6 @@
 
 #if LCDMODE_LTDC
 
-	#define NFRAMRRB 3
-
 	typedef PACKEDCOLORMAIN_T FRAMEBUFF_T [DIM_FIRST][DIM_SECOND];
 
 	#if defined (SDRAM_BANK_ADDR) && LCDMODE_LTDCSDRAMBUFF && LCDMODE_LTDC
@@ -33,20 +31,20 @@
 
 #if LCDMODE_LTDC && ! defined (SDRAM_BANK_ADDR)
 	// буфер экрана
-	RAMFRAMEBUFF ALIGNX_BEGIN FRAMEBUFF_T framebuff0 [NFRAMRRB] ALIGNX_END;
+	RAMFRAMEBUFF ALIGNX_BEGIN FRAMEBUFF_T framebuff0 [LCDMODE_LTDC_NMAINFRAMES] ALIGNX_END;
 #endif /* LCDMODE_LTDC */
 
 static uint_fast8_t mainphase;
 
 void colmain_fb_next(void)
 {
-	mainphase = (mainphase + 1) % NFRAMRRB;
+	mainphase = (mainphase + 1) % LCDMODE_LTDC_NMAINFRAMES;
 }
 
 PACKEDCOLORMAIN_T *
 colmain_fb_draw(void)
 {
-	return (PACKEDCOLORMAIN_T *) & framebuff0 [(mainphase + 1) % NFRAMRRB] [0] [0];
+	return (PACKEDCOLORMAIN_T *) & framebuff0 [(mainphase + 1) % LCDMODE_LTDC_NMAINFRAMES] [0] [0];
 }
 
 

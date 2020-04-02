@@ -5315,9 +5315,17 @@ enum
 	{
 	}
 
-#else /* LCDMODE_LTDC_PIP16 */
+#elif LCDMODE_LTDC_NMAINFRAMES > 1
+	/* не копируем - работаем прямо в памяти дисплея */
 
 	//static ALIGNX_BEGIN PACKEDCOLOR565_T colorpip0 [GXSIZE(ALLDX, ALLDY)] ALIGNX_END;
+	static void nextpip(void)
+	{
+	}
+
+#else /* LCDMODE_LTDC_PIP16 */
+
+	static ALIGNX_BEGIN PACKEDCOLOR565_T colorpip0 [GXSIZE(ALLDX, ALLDY)] ALIGNX_END;
 	static void nextpip(void)
 	{
 	}
@@ -6065,6 +6073,9 @@ static void display2_colorbuff(
 	#if ((LCDMODE_LTDC_PIP16 || LCDMODE_LTDC_PIPL8) && LCDMODE_LTDC)
 		arm_hardware_flush((uintptr_t) colorpip, (uint_fast32_t) ALLDX * ALLDY * sizeof * colorpip);
 		arm_hardware_ltdc_pip_set((uintptr_t) colorpip);
+
+	#elif LCDMODE_LTDC_NMAINFRAMES > 1
+		/* не копируем - работаем прямо в памяти дисплея */
 
 	#else /* LCDMODE_LTDC_PIP16 */
 		colpip_to_main(colorpip, ALLDX, ALLDY, GRID2X(x0), GRID2Y(y0));
