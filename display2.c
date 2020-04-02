@@ -125,6 +125,17 @@ static uint_fast8_t glob_zoomxpow2;	/* уменьшение отображаем
 
 //#define WIDEFREQ (TUNE_TOP > 100000000L)
 
+// очистка фона
+static void
+display2_clearbg(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	void * pv
+	)
+{
+	display_fillrect(GRID2X(0), GRID2X(0), DIM_X, DIM_Y, display_getbgcolor());
+}
+
 // Отображение частоты. Герцы так же большим шрифтом.
 static void display_freqXbig_a(
 	uint_fast8_t x, 
@@ -4383,6 +4394,7 @@ enum
 	//#define SMALLCHARW 16 /* Font width */
 	static const FLASHMEM struct dzone dzones [] =
 	{
+		{	0,	0,	display2_clearbg, 	REDRM_MODE, PGALL, },
 		{	0,	0,	display2_pip_off,	REDRM_MODE,	PGSLP | REDRSUBSET_MENU },	// Выключить PIP если на данной странице не требуется
 		{	0,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
 		{	3,	0,	display_ant5,		REDRM_MODE, PGALL, },
@@ -4571,6 +4583,7 @@ enum
 	//#define SMALLCHARW 16 /* Font width */
 	static const FLASHMEM struct dzone dzones [] =
 	{
+		{	0,	0,	display2_clearbg, 	REDRM_MODE, PGALL, },
 		{	0,	0,	display2_pip_off,	REDRM_MODE,	PGSLP | REDRSUBSET_MENU },	// Выключить PIP если на данной странице не требуется
 		{	0,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
 		{	3,	0,	display_ant5,		REDRM_MODE, PGALL, },
@@ -6183,7 +6196,8 @@ display_walktrough(
 	{
 		const FLASHMEM struct dzone * const p = & dzones [i];
 
-		if ((p->key != key) || (p->subset & subset) == 0)
+		//if ((p->key != key) || (p->subset & subset) == 0)
+		if (/*(p->key != key) || */(p->subset & subset) == 0)
 			continue;
 		(* p->redraw)(p->x, p->y, pv);
 	#if WITHINTEGRATEDDSP
