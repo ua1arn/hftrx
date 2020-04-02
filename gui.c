@@ -85,7 +85,7 @@ display_smeter2(
 	uint_fast8_t tracemax;
 	uint_fast8_t is_tx = hamradio_get_tx();
 	static int gv, gv_trace, gswr, old_tx = 0, first_run = 1;
-	static int gv_old = gs, gv_smooth = gs, gv_trace_old = gs, gswr_smooth = gs;
+	static int gv_old = gs - 1, gv_smooth = gs, gv_trace_old = gs, gswr_smooth = gs;
 	adcvalholder_t forward, reflected;
 	uint_fast16_t swr10; 														// swr10 = 0..30 for swr 1..4
 
