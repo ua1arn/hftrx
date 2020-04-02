@@ -133,7 +133,11 @@ display2_clearbg(
 	void * pv
 	)
 {
+#if LCDMODE_LTDC && ! (LCDMODE_LTDC_PIP16 || LCDMODE_LTDC_PIPL8)
+
 	display_fillrect(GRID2X(0), GRID2X(0), DIM_X, DIM_Y, display_getbgcolor());
+
+#endif /* LCDMODE_LTDC && ! (LCDMODE_LTDC_PIP16 || LCDMODE_LTDC_PIPL8) */
 }
 
 // Отображение частоты. Герцы так же большим шрифтом.
@@ -3676,6 +3680,7 @@ enum
 	#define DISPLC_RJ		1	// количество скрытых справа цифр в отображении частоты
 	static const FLASHMEM struct dzone dzones [] =
 	{
+		{	0,	0,	display2_clearbg, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },
 		{	0,	0,	display2_pip_off,	REDRM_MODE,	PG0 | REDRSUBSET_MENU },	// Выключить PIP если на данной странице не требуется
 		{	0,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
 		{	3,	0,	display_voxtune3,	REDRM_MODE, PGALL, },
@@ -3799,6 +3804,7 @@ enum
 		#define DISPLC_RJ		1	// количество скрытых справа цифр в отображении частоты
 		static const FLASHMEM struct dzone dzones [] =
 		{
+			{	0,	0,	display2_clearbg, 	REDRM_MODE, REDRSUBSET(DPAGE0) | REDRSUBSET_MENU | REDRSUBSET_SLEEP, },
 			{	0, 0,	display2_pip_off,	REDRM_MODE,	REDRSUBSET(DPAGE0) | REDRSUBSET_MENU },	// Выключить PIP если на данной странице не требуется
 			{	0, 0,	display_txrxstate2, REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	3, 0,	display_voxtune3,	REDRM_MODE, REDRSUBSET(DPAGE0), },
@@ -4058,6 +4064,7 @@ enum
 	// Main frequency indicator 56 lines height = 12 cells
 	static const FLASHMEM struct dzone dzones [] =
 	{
+		{	0,	0,	display2_clearbg, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },
 		{	0,	0,	display2_pip_off,	REDRM_MODE,	PGSLP | REDRSUBSET_MENU },	// Выключить PIP если на данной странице не требуется
 		{	0,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
 		{	3,	0,	display_ant5,		REDRM_MODE, PGALL, },
@@ -4228,6 +4235,7 @@ enum
 
 	static const FLASHMEM struct dzone dzones [] =
 	{
+		{	0,	0,	display2_clearbg, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },
 		{	0,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
 		{	3,	0,	display_ant5,		REDRM_MODE, PGALL, },
 		{	9,	0,	display_att4,		REDRM_MODE, PGALL, },
@@ -4394,7 +4402,7 @@ enum
 	//#define SMALLCHARW 16 /* Font width */
 	static const FLASHMEM struct dzone dzones [] =
 	{
-		{	0,	0,	display2_clearbg, 	REDRM_MODE, PGALL, },
+		{	0,	0,	display2_clearbg, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },
 		{	0,	0,	display2_pip_off,	REDRM_MODE,	PGSLP | REDRSUBSET_MENU },	// Выключить PIP если на данной странице не требуется
 		{	0,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
 		{	3,	0,	display_ant5,		REDRM_MODE, PGALL, },
@@ -4583,7 +4591,7 @@ enum
 	//#define SMALLCHARW 16 /* Font width */
 	static const FLASHMEM struct dzone dzones [] =
 	{
-		{	0,	0,	display2_clearbg, 	REDRM_MODE, PGALL, },
+		{	0,	0,	display2_clearbg, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },
 		{	0,	0,	display2_pip_off,	REDRM_MODE,	PGSLP | REDRSUBSET_MENU },	// Выключить PIP если на данной странице не требуется
 		{	0,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
 		{	3,	0,	display_ant5,		REDRM_MODE, PGALL, },
