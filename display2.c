@@ -6259,15 +6259,43 @@ display_walktroughsteps(
 	uint_fast8_t subset
 	)
 {
-#if LCDMODE_LTDC_NMAINFRAMES > 1
-	key = 0;
-#endif /* LCDMODE_LTDC_NMAINFRAMES > 1 */
-
 #if STMD
-	reqs [key] = 1;
-	subsets [key] = subset;
-	walkis [key] = 0;
+
+	#if LCDMODE_LTDC_NMAINFRAMES > 1
+
+		key = 0;
+		if (reqs [key] != 0)
+		{
+			// уже идет отрисовка
+			if ((subsets [key] & subset) == 0)
+			{
+				// начинаем снова - другой subset
+				reqs [key] = 1;
+				subsets [key] = subset;
+				walkis [key] = 0;
+			}
+		}
+		else
+		{
+			// начинаем снова
+			reqs [key] = 1;
+			subsets [key] = subset;
+			walkis [key] = 0;
+		}
+
+	#else /* LCDMODE_LTDC_NMAINFRAMES > 1 */
+
+		reqs [key] = 1;
+		subsets [key] = subset;
+		walkis [key] = 0;
+
+	#endif /* LCDMODE_LTDC_NMAINFRAMES > 1 */
+
 #else /* STMD */
+
+	#if LCDMODE_LTDC_NMAINFRAMES > 1
+		key = 0;
+	#endif /* LCDMODE_LTDC_NMAINFRAMES > 1 */
 
 	display_walktrough(key, subset, NULL);
 
