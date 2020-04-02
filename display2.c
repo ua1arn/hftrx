@@ -5379,7 +5379,7 @@ static FLOAT_t filter_spectrum(
 	return Y;
 }
 
-#if LCDMODE_LTDC_PIPL8
+#if LCDMODE_LTDC_PIPL8 || (! LCDMODE_LTDC_PIPL8 && LCDMODE_LTDC_L8)
 
 	enum { PALETTESIZE = COLORPIP_BASE };
 	static RAMBIG PACKEDCOLORPIP_T wfarray [WFDY] [ALLDX];	// массив "водопада"
@@ -5422,7 +5422,8 @@ static uint_fast8_t wfclear;			// стирание всей областии о�
 // Код взят из проекта Malamute
 static void wfpalette_initialize(void)
 {
-#if LCDMODE_LTDC_PIPL8
+#if LCDMODE_LTDC_PIPL8 || (! LCDMODE_LTDC_PIPL8 && LCDMODE_LTDC_L8)
+	// indexed colors used
 #else /* LCDMODE_LTDC_PIP16 */
 	// PALETTESIZE == 256
 	int a = 0;
@@ -5884,7 +5885,7 @@ static void dsp_latchwaterfall(
 		// для водопада
 		const int val = dsp_mag2y(filter_waterfall(x), PALETTESIZE - 1, glob_wflevelsep ? glob_topdbwf : glob_topdb, glob_wflevelsep ? glob_bottomdbwf : glob_bottomdb); // возвращает значения от 0 до dy включительно
 
-#if LCDMODE_LTDC_PIPL8
+#if LCDMODE_LTDC_PIPL8 || (! LCDMODE_LTDC_PIPL8 && LCDMODE_LTDC_L8)
 		wfarray [wfrow] [x] = val;	// запись в буфер водопада индекса палитры
 #elif WITHFASTWATERFLOW
 		wfarray [wfrow] [x] = wfpalette [val];	// запись в буфер водопада цветовой точки
@@ -6007,7 +6008,7 @@ static void display2_waterfall(
 	(void) y0;
 	(void) pv;
 
-#elif WITHFASTWATERFLOW || LCDMODE_LTDC_PIPL8
+#elif WITHFASTWATERFLOW || LCDMODE_LTDC_PIPL8 || (! LCDMODE_LTDC_PIPL8 && LCDMODE_LTDC_L8)
 	// следы спектра ("водопад") на цветных дисплеях
 	/* быстрое отображение водопада (но требует больше памяти) */
 
@@ -6465,11 +6466,19 @@ board_set_wflevelsep(uint_fast8_t v)
 void display2_xltrgb24(COLOR24_T * xtable)
 {
 #if LCDMODE_LTDC_L8 || LCDMODE_LTDC_PIPL8
+	int i;
+
+	PRINTF("display2_xltrgb24: init idexing colos\n");
+
+	for (i = 0; i < 256; ++ i)
+	{
+		xtable [i] = COLOR24(255, 0, 0);
+	}
+
 	// часть цветов с 0-го индекса используется в отображении водопада
 	// остальные в дизайне
 	// PALETTESIZE == 240
 	int a = 0;
-	int i;
 	// a = 0
 	for (i = 0; i < 60; ++ i)
 	{
@@ -6477,31 +6486,31 @@ void display2_xltrgb24(COLOR24_T * xtable)
 		xtable [a + i] = COLOR24(0, 0, (int) (powf((float) 0.0625 * i, 4)));	// проверить результат перед попыткой применить целочисленные вычисления!
 	}
 	a += i;
-	// a = 64
+	// a = 60
 	for (i = 0; i < 30; ++ i)
 	{
 		xtable [a + i] = COLOR24(0, i * 8, 255);
 	}
 	a += i;
-	// a = 96
+	// a = 90
 	for (i = 0; i < 30; ++ i)
 	{
 		xtable [a + i] = COLOR24(0, 255, 255 - i * 8);
 	}
 	a += i;
-	// a = 128
+	// a = 120
 	for (i = 0; i < 30; ++ i)
 	{
 		xtable [a + i] = COLOR24(i * 8, 255, 0);
 	}
 	a += i;
-	// a = 160
+	// a = 150
 	for (i = 0; i < 60; ++ i)
 	{
 		xtable [a + i] = COLOR24(255, 255 - i * 4, 0);
 	}
 	a += i;
-	// a = 224
+	// a = 210
 	for (i = 0; i < 30; ++ i)
 	{
 		xtable [a + i] = COLOR24(255, 0, i * 8);
@@ -6562,6 +6571,7 @@ void display2_xltrgb24(COLOR24_T * xtable)
 #endif /* COLORSTYLE_ATS52 */
 
 #elif LCDMODE_COLORED && ! LCDMODE_DUMMY	/* LCDMODE_LTDC_L8 && LCDMODE_LTDC_PIPL8 */
+	PRINTF("display2_xltrgb24: init RRRGGGBB colos\n");
 	// Обычная таблица - все цвета могут быть использованы как индекс
 	// Водопад отображается без использования инлдексов цветов
 	int i;
