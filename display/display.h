@@ -1151,6 +1151,13 @@ display_value_small(
 	uint_fast8_t lowhalf
 	);
 
+void floodFill_framebuffer(
+	uint_fast16_t x,	// начальная координата
+	uint_fast16_t y,	// начальная координата
+	PACKEDCOLORMAIN_T newColor,
+	PACKEDCOLORMAIN_T oldColor
+	);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

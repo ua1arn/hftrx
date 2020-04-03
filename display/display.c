@@ -570,6 +570,24 @@ hwacc_fillrect_u24(
 #endif
 }
 
+/* заливка замкнутого контура */
+void floodFill_framebuffer(
+	uint_fast16_t x,	// начальная координата
+	uint_fast16_t y,	// начальная координата
+	PACKEDCOLORMAIN_T newColor,
+	PACKEDCOLORMAIN_T oldColor
+	)
+{
+	PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(colmain_fb_draw(), DIM_X, DIM_Y, x, y);
+	if (* tgr == oldColor && * tgr != newColor)
+	{
+		* tgr = newColor;
+		floodFill_framebuffer(x + 1, y, newColor, oldColor);
+		floodFill_framebuffer(x - 1, y, newColor, oldColor);
+		floodFill_framebuffer(x, y + 1, newColor, oldColor);
+		floodFill_framebuffer(x, y - 1, newColor, oldColor);
+	}
+}
 
 
 #if WITHDMA2DHW
@@ -2830,25 +2848,6 @@ void display_set_contrast(uint_fast8_t v)
 void display_discharge(void)
 {
 }
-
-#if 1
-/* заливка замкнутого контура */
-void floodFill_framebuffer(uint_fast16_t x, uint_fast16_t y, PACKEDCOLORMAIN_T newColor, PACKEDCOLORMAIN_T oldColor)
-{
-	ASSERT(y < DIM_Y);
-	ASSERT(x < DIM_X);
-	// colmain_mem_at
-	PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(colmain_fb_draw(), DIM_X, DIM_Y, x, y);
-	if (* tgr == oldColor && * tgr != newColor)
-	{
-		* tgr = newColor;
-		floodFill_framebuffer(x + 1, y, newColor, oldColor);
-		floodFill_framebuffer(x - 1, y, newColor, oldColor);
-		floodFill_framebuffer(x, y + 1, newColor, oldColor);
-		floodFill_framebuffer(x, y - 1, newColor, oldColor);
-	}
-}
-#endif
 
 #if WITHTOUCHGUI
 
