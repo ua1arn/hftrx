@@ -6012,9 +6012,6 @@ static void display2_waterfall(
 	// или на цветных, где есть возможность раскраски растровой картинки.
 
 	// следы спектра ("водопад") на монохромных дисплеях
-	(void) x0;
-	(void) y0;
-	(void) pv;
 
 #elif WITHFASTWATERFLOW || LCDMODE_LTDC_PIPL8 || (! LCDMODE_LTDC_PIPL8 && LCDMODE_LTDC_L8)
 	// следы спектра ("водопад") на цветных дисплеях
@@ -6029,29 +6026,27 @@ static void display2_waterfall(
 	const uint_fast16_t p2h = wfrow;		// высота нижней части в результируюшем изображении
 	const uint_fast16_t p1y = WFY0;
 	const uint_fast16_t p2y = WFY0 + p1h;
-	(void) x0;
-	(void) y0;
-	(void) pv;
 
-	/* перенос растра. Организация предполагается LCDMODE_HORFILL */
-
-	memcpy(colpip_mem_at(colorpip, ALLDX, ALLDY, 0, p1y), (const void *) & wfarray [wfrow] [0], p1h * sizeof (PACKEDCOLORPIP_T) * ALLDX);
+	/* перенос растра */
+	colmain_plot(colorpip, ALLDX, ALLDY, 0, p1y,
+			colpip_mem_at(& wfarray [0][0], ALLDX, ALLDY, 0, wfrow),	// начальный алрес источника
+			ALLDX, p1h);	// размеры источника
 	if (p2h != 0)
-		memcpy(colpip_mem_at(colorpip, ALLDX, ALLDY, 0, p2y), (const void *) & wfarray [0] [0], p2h * sizeof (PACKEDCOLORPIP_T) * ALLDX);
+		colmain_plot(colorpip, ALLDX, ALLDY, 0, p2y,
+				colpip_mem_at(& wfarray [0][0], ALLDX, ALLDY, 0, 0),	// начальный алрес источника
+				ALLDX, p2h);	// размеры истояника
 
 #else /* */
 
 	// следы спектра ("водопад") на цветных дисплеях
 	PACKEDCOLORPIP_T * const colorpip = getscratchpip();
-	uint_fast16_t x, y;
-	(void) x0;
-	(void) y0;
-	(void) pv;
+	uint_fast16_t x;
 
 	// формирование растра
 	// следы спектра ("водопад")
 	for (y = 0; y < WFDY; ++ y)
 	{
+		uint_fast16_t y;
 		for (x = 0; x < ALLDX; ++ x)
 		{
 			colpip_point(colorpip, ALLDX, ALLDY, x, y + WFY0, wfpalette [wfarray [(wfrow + y) % WFDY] [x]]);
@@ -6059,6 +6054,9 @@ static void display2_waterfall(
 	}
 
 #endif /*  */
+	(void) x0;
+	(void) y0;
+	(void) pv;
 }
 
 // отображение ранее подготовленного буфера
