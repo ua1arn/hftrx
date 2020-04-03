@@ -5364,7 +5364,7 @@ enum
 
 PACKEDCOLORPIP_T * getscratchpip(void)
 {
-#if 1
+#if LCDMODE_LTDC_NMAINFRAMES > 1
 	pipparams_t pip;
 	display2_getpipparams(& pip);
 	return colmain_mem_at(colmain_fb_draw(), DIM_X, DIM_Y, pip.x, pip.y);
@@ -6051,11 +6051,11 @@ static void display2_waterfall(
 	const uint_fast16_t p2y = WFY0 + p1h;
 
 	/* перенос растра */
-	colmain_plot(colorpip, ALLDX, ALLDY, 0, p1y,
+	colpip_plot(colorpip, ALLDX, ALLDY, 0, p1y,
 			colpip_mem_at(& wfarray [0][0], ALLDX, ALLDY, 0, wfrow),	// начальный алрес источника
 			ALLDX, p1h);	// размеры источника
 	if (p2h != 0)
-		colmain_plot(colorpip, ALLDX, ALLDY, 0, p2y,
+		colpip_plot(colorpip, ALLDX, ALLDY, 0, p2y,
 				colpip_mem_at(& wfarray [0][0], ALLDX, ALLDY, 0, 0),	// начальный алрес источника
 				ALLDX, p2h);	// размеры истояника
 
@@ -6243,6 +6243,7 @@ getsubset(
 }
 
 // выполнение отрисовки всех элементов за раз.
+// Например при работе в меню
 static void 
 display_walktrough(
 	uint_fast8_t key,
@@ -6437,6 +6438,9 @@ void display_menuitemlabel(
 	uint_fast8_t byname			/* был выполнен прямой вход в меню */
 	)
 {
+#if LCDMODE_LTDC_NMAINFRAMES > 1
+	display_walktrough(0, REDRSUBSET_MENU, pv);
+#else /* LCDMODE_LTDC_NMAINFRAMES > 1 */
 	display_walktrough(REDRM_FREQ, REDRSUBSET_MENU, NULL);
 	display_walktrough(REDRM_FRQB, REDRSUBSET_MENU, NULL);
 	display_walktrough(REDRM_MODE, REDRSUBSET_MENU, NULL);
@@ -6446,6 +6450,7 @@ void display_menuitemlabel(
 	}
 	display_walktrough(REDRM_MLBL, REDRSUBSET_MENU, pv);
 	display_walktrough(REDRM_MVAL, REDRSUBSET_MENU, pv);
+#endif /* LCDMODE_LTDC_NMAINFRAMES > 1 */
 }
 
 // отображение значения параметра

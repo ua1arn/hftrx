@@ -67,7 +67,7 @@ colmain_fb_show(void)
 
 #if LCDMODE_LTDC_L24
 	#define DMA2D_FGPFCCR_CM_VALUE_MAIN	(1 * DMA2D_FGPFCCR_CM_0)	/* 0001: RGB888 */
-	//#define DMA2D_OPFCCR_CM_VALUE	(1 * DMA2D_OPFCCR_CM_0)	/* 001: RGB888 */
+	//#define DMA2D_OPFCCR_CM_VALUE_MAIN	(1 * DMA2D_OPFCCR_CM_0)	/* 001: RGB888 */
 
 #elif LCDMODE_LTDC_L8
 	#define DMA2D_FGPFCCR_CM_VALUE_MAIN	(5 * DMA2D_FGPFCCR_CM_0)	/* 0101: L8 */
@@ -76,8 +76,25 @@ colmain_fb_show(void)
 
 #else /* LCDMODE_LTDC_L8 */
 	#define DMA2D_FGPFCCR_CM_VALUE_MAIN	(2 * DMA2D_FGPFCCR_CM_0)	/* 0010: RGB565 */
-	//#define DMA2D_OPFCCR_CM_VALUE	(2 * DMA2D_OPFCCR_CM_0)	/* 010: RGB565 */
+	//#define DMA2D_OPFCCR_CM_VALUE_MAIN	(2 * DMA2D_OPFCCR_CM_0)	/* 010: RGB565 */
 	#define MDMA_CTCR_xSIZE_MAIN			0x01	// 2 byte
+
+#endif /* LCDMODE_LTDC_L8 */
+
+#if LCDMODE_LTDC_PIPL8
+	#define DMA2D_FGPFCCR_CM_VALUE_PIP	(5 * DMA2D_FGPFCCR_CM_0)	/* 0101: L8 */
+	#define MDMA_CTCR_xSIZE_PIP			0x00	// 1 byte
+	////#define DMA2D_OPFCCR_CM_VALUE_MAIN	(x * DMA2D_OPFCCR_CM_0)	/* not supported */
+
+#elif LCDMODE_LTDC_PIP16
+	#define DMA2D_FGPFCCR_CM_VALUE_PIP	(2 * DMA2D_FGPFCCR_CM_0)	/* 0010: RGB565 */
+	//#define DMA2D_OPFCCR_CM_VALUE_PIP	(2 * DMA2D_OPFCCR_CM_0)	/* 010: RGB565 */
+	#define MDMA_CTCR_xSIZE_PIP			0x01	// 2 byte
+
+#else /* LCDMODE_LTDC_L8 */
+	#define DMA2D_FGPFCCR_CM_VALUE_PIP	DMA2D_FGPFCCR_CM_VALUE_MAIN
+	//#define DMA2D_OPFCCR_CM_VALUE_PIP	DMA2D_OPFCCR_CM_VALUE_MAIN
+	#define MDMA_CTCR_xSIZE_PIP			MDMA_CTCR_xSIZE_MAIN
 
 #endif /* LCDMODE_LTDC_L8 */
 
@@ -1227,9 +1244,11 @@ void colpip_point_xor(
 
 // копирование в большее или равное окно
 // размер пикселя - определяется конфигурацией.
+// MDMA, DMA2D или программа
+// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
 static void hwaccel_copy_main(
+	PACKEDCOLORMAIN_T * dst,
 	const PACKEDCOLORMAIN_T * src,
-	volatile PACKEDCOLORMAIN_T * dst,
 	unsigned w,
 	unsigned t,	// разница в размере строки получателя от источника
 	unsigned h
@@ -1239,6 +1258,8 @@ static void hwaccel_copy_main(
 		return;
 
 #if WITHMDMAHW
+	arm_hardware_flush_invalidate((uintptr_t) src, sizeof (* src) * w * h);
+
 	MDMA_CH->CCR &= ~ MDMA_CCR_EN_Msk;
 	MDMA_CH->CDAR = (uintptr_t) dst;
 	MDMA_CH->CSAR = (uintptr_t) src;
@@ -1296,6 +1317,8 @@ static void hwaccel_copy_main(
 	//TP();
 
 #elif WITHDMA2DHW
+	arm_hardware_flush_invalidate((uintptr_t) src, sizeof (* src) * w * h);
+
 	/* исходный растр */
 	DMA2D->FGMAR = (uintptr_t) src;
 	DMA2D->FGOR = (DMA2D->FGOR & ~ (DMA2D_FGOR_LO)) |
@@ -1353,7 +1376,142 @@ static void hwaccel_copy_main(
 }
 
 // копирование в большее или равное окно
-static void hwaccel_copy_RGB565(
+// размер пикселя - определяется конфигурацией.
+// MDMA, DMA2D или программа
+// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
+static void hwaccel_copy_pip(
+	PACKEDCOLORPIP_T * dst,
+	const PACKEDCOLORPIP_T * src,
+	unsigned w,
+	unsigned t,	// разница в размере строки получателя от источника
+	unsigned h
+	)
+{
+	if (w == 0 || h == 0)
+		return;
+
+#if WITHMDMAHW
+	arm_hardware_flush_invalidate((uintptr_t) src, sizeof (* src) * w * h);
+
+	MDMA_CH->CCR &= ~ MDMA_CCR_EN_Msk;
+	MDMA_CH->CDAR = (uintptr_t) dst;
+	MDMA_CH->CSAR = (uintptr_t) src;
+	const uint_fast32_t tlen = mdma_tlen(w * sizeof (PACKEDCOLORPIP_T), sizeof (PACKEDCOLORPIP_T));
+	const uint_fast32_t sbus = mdma_getbus(MDMA_CH->CSAR);
+	const uint_fast32_t dbus = mdma_getbus(MDMA_CH->CDAR);
+	const uint_fast32_t sinc = 0x02; // Source increment mode: 10: address pointer is incremented
+	const uint_fast32_t dinc = 0x02; // Destination increment mode: 10: Destination address pointer is incremented
+	const uint_fast32_t sburst = mdma_getburst(tlen, sbus, sinc);
+	const uint_fast32_t dburst = mdma_getburst(tlen, dbus, dinc);
+	MDMA_CH->CTCR =
+		(sinc << MDMA_CTCR_SINC_Pos) | 	// Source increment mode: 10: address pointer is incremented
+		(MDMA_CTCR_xSIZE_PIP << MDMA_CTCR_SSIZE_Pos) |
+		(MDMA_CTCR_xSIZE_PIP << MDMA_CTCR_SINCOS_Pos) |
+		(sburst << MDMA_CTCR_SBURST_Pos) |
+		(dinc << MDMA_CTCR_DINC_Pos) |	// Destination increment mode: 10: Destination address pointer is incremented
+		(MDMA_CTCR_xSIZE_PIP << MDMA_CTCR_DSIZE_Pos) |
+		(MDMA_CTCR_xSIZE_PIP << MDMA_CTCR_DINCOS_Pos) |
+		(dburst << MDMA_CTCR_DBURST_Pos) |	// Destination burst transfer configuration
+		((tlen - 1) << MDMA_CTCR_TLEN_Pos) |		// buffer Transfer Length (number of bytes - 1)
+		(0x00 << MDMA_CTCR_PKE_Pos) |
+		(0x00 << MDMA_CTCR_PAM_Pos) |
+		(0x02 << MDMA_CTCR_TRGM_Pos) |		// Trigger Mode: 10: Each MDMA request (software or hardware) triggers a repeated block transfer (if the block repeat is 0, a single block is transferred)
+		(0x01 << MDMA_CTCR_SWRM_Pos) |		// 1: hardware request are ignored. Transfer is triggered by software writing 1 to the SWRQ bit
+		(0x01 << MDMA_CTCR_BWM_Pos) |
+		0;
+	MDMA_CH->CBNDTR =
+		((sizeof (PACKEDCOLORPIP_T) * (w)) << MDMA_CBNDTR_BNDT_Pos) |	// Block Number of data bytes to transfer
+		(0x00 << MDMA_CBNDTR_BRSUM_Pos) |	// Block Repeat Source address Update Mode: 0 - increment
+		(0x00 << MDMA_CBNDTR_BRDUM_Pos) |	// Block Repeat Destination address Update Mode: 0 - increment
+		((h - 1) << MDMA_CBNDTR_BRC_Pos) |		// Block Repeat Count
+		0;
+	MDMA_CH->CBRUR =
+		((sizeof (PACKEDCOLORPIP_T) * (0)) << MDMA_CBRUR_SUV_Pos) |		// Source address Update Value
+		((sizeof (PACKEDCOLORPIP_T) * (t)) << MDMA_CBRUR_DUV_Pos) |		// Destination address Update Value
+		0;
+
+	MDMA_CH->CTBR = (MDMA_CH->CTBR & ~ (MDMA_CTBR_SBUS_Msk | MDMA_CTBR_DBUS_Msk)) |
+		(sbus << MDMA_CTBR_SBUS_Pos) |
+		(dbus << MDMA_CTBR_DBUS_Pos) |
+		0;
+
+	MDMA_CH->CIFCR = MDMA_CIFCR_CLTCIF_Msk | MDMA_CIFCR_CBTIF_Msk |
+					MDMA_CIFCR_CBRTIF_Msk | MDMA_CIFCR_CCTCIF_Msk | MDMA_CIFCR_CTEIF_Msk;
+	// Set priority
+	MDMA_CH->CCR = (MDMA_CH->CCR & ~ (MDMA_CCR_PL_Msk)) |
+			(MDMA_CCR_PL_VALUE < MDMA_CCR_PL_Pos) |
+			0;
+	MDMA_CH->CCR |= MDMA_CCR_EN_Msk;
+	/* start transfer */
+	MDMA_CH->CCR |= MDMA_CCR_SWRQ_Msk;
+	/* wait for complete */
+	while ((MDMA_CH->CISR & MDMA_CISR_CTCIF_Msk) == 0)	// Channel x Channel Transfer Complete interrupt flag
+		;
+	//TP();
+
+#elif WITHDMA2DHW
+	arm_hardware_flush_invalidate((uintptr_t) src, sizeof (* src) * w * h);
+
+	/* исходный растр */
+	DMA2D->FGMAR = (uintptr_t) src;
+	DMA2D->FGOR = (DMA2D->FGOR & ~ (DMA2D_FGOR_LO)) |
+		(0 << DMA2D_FGOR_LO_Pos) |
+		0;
+	/* целевой растр */
+	DMA2D->OMAR = (uintptr_t) dst;
+	DMA2D->OOR = (DMA2D->OOR & ~ (DMA2D_OOR_LO)) |
+		((t) << DMA2D_OOR_LO_Pos) |
+		0;
+	/* размер пересылаемого растра */
+	DMA2D->NLR = (DMA2D->NLR & ~ (DMA2D_NLR_NL | DMA2D_NLR_PL)) |
+		((h) << DMA2D_NLR_NL_Pos) |
+		((w) << DMA2D_NLR_PL_Pos) |
+		0;
+	/* формат пикселя */
+	DMA2D->FGPFCCR = (DMA2D->FGPFCCR & ~ (DMA2D_FGPFCCR_CM)) |
+		DMA2D_FGPFCCR_CM_VALUE_PIP |	/* Color mode - framebuffer pixel format */
+		0;
+
+	/* запустить операцию */
+	DMA2D->CR = (DMA2D->CR & ~ (DMA2D_CR_MODE)) |
+		0 * DMA2D_CR_MODE_0 |	// 00: Memory-to-memory (FG fetch only)
+		1 * DMA2D_CR_START |
+		0;
+
+	/* ожидаем выполнения операции */
+	while ((DMA2D->CR & DMA2D_CR_START) != 0)
+		;
+
+#else
+	// программная реализация
+	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
+
+	if (t == 0)
+	{
+		const size_t len = (size_t) w * h * sizeof * src;
+		// ширина строки одинаковая в получателе и источнике
+		memcpy((void *) dst, src, len);
+		arm_hardware_flush((uintptr_t) dst, len);
+	}
+	else
+	{
+		const size_t len = w * sizeof * src;
+		while (h --)
+		{
+			memcpy((void *) dst, src, len);
+			arm_hardware_flush((uintptr_t) dst, len);
+			src += w;
+			dst += w + t;
+		}
+	}
+
+#endif
+}
+
+// копирование в большее или равное окно
+// MDMA, DMA2D или программный
+// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
+static void hwaccel_copy_u16(
 	const PACKEDCOLOR565_T * src,
 	volatile PACKEDCOLOR565_T * dst,
 	unsigned w,
@@ -1518,9 +1676,9 @@ void colpip_to_main(
 	arm_hardware_flush((uintptr_t) buffer, sizeof (* buffer) * GXSIZE(dx, dy));
 
 	#if LCDMODE_HORFILL
-		hwaccel_copy_RGB565(buffer, colmain_mem_at(colmain_fb_draw(), DIM_X, DIM_Y, col, row), dx, DIM_SECOND - dx, dy);
+		hwaccel_copy_u16(buffer, colmain_mem_at(colmain_fb_draw(), DIM_X, DIM_Y, col, row), dx, DIM_SECOND - dx, dy);
 	#else /* LCDMODE_HORFILL */
-		hwaccel_copy_RGB565(buffer, colmain_mem_at(colmain_fb_draw(), DIM_X, DIM_Y, col, row), dy, DIM_FIRST - dy, dx);
+		hwaccel_copy_u16(buffer, colmain_mem_at(colmain_fb_draw(), DIM_X, DIM_Y, col, row), dy, DIM_FIRST - dy, dx);
 	#endif /* LCDMODE_HORFILL */
 
 #elif WITHDMA2DHW && LCDMODE_LTDC
@@ -2592,7 +2750,6 @@ display_scroll_up(
 #endif /* WITHDMA2DHW && LCDMODE_LTDC */
 }
 
-
 /* индивидуальные функции драйвера дисплея - реализованы в соответствующем из файлов */
 void display_clear(void)
 {
@@ -2634,66 +2791,39 @@ void display_plotstart(
 
 // скоприовать прямоугольник с типом пикселей соответствующим основному экрану
 void colmain_plot(
-	PACKEDCOLORMAIN_T * tbuffer,	// получатель
+	PACKEDCOLORMAIN_T * dst,	// получатель
 	uint_fast16_t tdx,	// получатель
 	uint_fast16_t tdy,	// получатель
 	uint_fast16_t x,	// получатель
 	uint_fast16_t y,	// получатель
-	const PACKEDCOLORMAIN_T * buffer, 	// источник
+	const PACKEDCOLORMAIN_T * src, 	// источник
 	uint_fast16_t dx,	// источник Размеры окна в пикселях
 	uint_fast16_t dy	// источник
 	)
 {
 #if LCDMODE_HORFILL
-
-	#if WITHMDMAHW || (WITHDMA2DHW && ! LCDMODE_LTDC_L8)
-		arm_hardware_flush_invalidate((uintptr_t) buffer, sizeof (* buffer) * dx * dy);
-		hwaccel_copy_main(buffer, colmain_mem_at(tbuffer, tdx, tdy, x, y), dx, DIM_SECOND - dx, dy);
-		//ltdc_first += dy;
-
-	#else /* WITHMDMAHW || (WITHLTDCHW && ! LCDMODE_LTDC_L8) */
-		// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
-		if (tdx == dx)
-		{
-			// горизонтальные размеры одинаковы
-			const size_t len = (size_t) dy * dx * sizeof * buffer;
-			memcpy(tbuffer, buffer, len);
-			arm_hardware_flush_invalidate((uintptr_t) tbuffer, len);
-		}
-		else
-		{
-			const size_t len = dx * sizeof * buffer;
-			uint_fast16_t yoffs = 0;
-			while (dy --)
-			{
-				PACKEDCOLORMAIN_T * const p = colmain_mem_at(tbuffer, tdx, tdy, x, y + yoffs);
-				memcpy(p, buffer, len);
-				arm_hardware_flush_invalidate((uintptr_t) p, len);
-				buffer += dx;
-				++ yoffs;
-			}
-		}
-
-	#endif /* WITHMDMAHW || (WITHLTDCHW && ! LCDMODE_LTDC_L8) */
+	hwaccel_copy_main(colmain_mem_at(dst, tdx, tdy, x, y), src, dx, tdx - dx, dy);
 #else /* LCDMODE_HORFILL */
-	#if WITHMDMAHW || (WITHDMA2DHW && ! LCDMODE_LTDC_L8)
+	hwaccel_copy_main(colmain_mem_at(dst, tdx, tdy, x, y), src, dy, tdy - dy, dx);
+#endif /* LCDMODE_HORFILL */
+}
 
-		arm_hardware_flush_invalidate((uintptr_t) buffer, sizeof (* buffer) * dx * dy);
-		hwaccel_copy_main(buffer, & framebuff [ltdc_first] [ltdc_second], dy, DIM_FIRST - dy, dx);
-		ltdc_first += dx;
-
-	#else /* WITHMDMAHW || (WITHLTDCHW && ! LCDMODE_LTDC_L8) */
-		const size_t len = dy * sizeof * buffer;
-		while (dx --)
-		{
-			PACKEDCOLORMAIN_T * const p = & framebuff [ltdc_first] [ltdc_second];
-			memcpy(p, buffer, len);
-			arm_hardware_flush_invalidate((uintptr_t) p, len);
-			buffer += dy;
-			++ ltdc_first;
-		}
-
-	#endif /* WITHMDMAHW || (WITHLTDCHW && ! LCDMODE_LTDC_L8) */
+// скоприовать прямоугольник с типом пикселей соответствующим pip
+void colpip_plot(
+	PACKEDCOLORPIP_T * dst,	// получатель
+	uint_fast16_t tdx,	// получатель
+	uint_fast16_t tdy,	// получатель
+	uint_fast16_t x,	// получатель
+	uint_fast16_t y,	// получатель
+	const PACKEDCOLORPIP_T * src, 	// источник
+	uint_fast16_t dx,	// источник Размеры окна в пикселях
+	uint_fast16_t dy	// источник
+	)
+{
+#if LCDMODE_HORFILL
+	hwaccel_copy_pip(colpip_mem_at(dst, tdx, tdy, x, y), src, dx, tdx - dx, dy);
+#else /* LCDMODE_HORFILL */
+	hwaccel_copy_pip(colpip_mem_at(dst, tdx, tdy, x, y), src, dy, tdy - dy, dx);
 #endif /* LCDMODE_HORFILL */
 }
 

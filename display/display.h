@@ -1010,6 +1010,18 @@ void colmain_plot(
 	uint_fast16_t dy	// источник
 	);
 
+// скоприовать прямоугольник с типом пикселей соответствующим pip
+void colpip_plot(
+	PACKEDCOLORPIP_T * tbuffer,	// получатель
+	uint_fast16_t tdx,	// получатель
+	uint_fast16_t tdy,	// получатель
+	uint_fast16_t x,	// получатель
+	uint_fast16_t y,	// получатель
+	const PACKEDCOLORPIP_T * buffer, 	// источник
+	uint_fast16_t dx,	// источник Размеры окна в пикселях
+	uint_fast16_t dy	// источник
+	);
+
 void
 colmain_string3_at_xy(
 	PACKEDCOLORMAIN_T * const buffer,
