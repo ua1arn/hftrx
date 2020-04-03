@@ -140,6 +140,23 @@ display2_clearbg(
 #endif /* LCDMODE_LTDC && ! (LCDMODE_LTDC_PIP16 || LCDMODE_LTDC_PIPL8) */
 }
 
+// Завершение отрисовки, переключение на следующий фреймбуфер
+static void
+display2_nextfb(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	void * pv
+	)
+{
+#if LCDMODE_LTDC && ! (LCDMODE_LTDC_PIP16 || LCDMODE_LTDC_PIPL8)
+
+	colmain_fb_next();
+	arm_hardware_flush((uintptr_t) colmain_fb_show(), (uint_fast32_t) DIM_X * DIM_Y * sizeof (PACKEDCOLORMAIN_T));
+	arm_hardware_ltdc_main_set((uintptr_t) colmain_fb_show());
+
+#endif /* LCDMODE_LTDC && ! (LCDMODE_LTDC_PIP16 || LCDMODE_LTDC_PIPL8) */
+}
+
 // Отображение частоты. Герцы так же большим шрифтом.
 static void display_freqXbig_a(
 	uint_fast8_t x, 
@@ -3733,6 +3750,7 @@ enum
 		{	1 + LABELW * 1 + 1,	18,	display_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
 		{	1 + LABELW * 2 + 2,	18,	display_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
 	#endif /* WITHMENU */
+		{	0,	0,	display2_nextfb, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },
 	};
 
 	/* получить координаты окна с панорамой и/или водопадом. */
@@ -3830,6 +3848,7 @@ enum
 			{	1 + LABELW * 1 + 1,	18,	display_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
 			{	1 + LABELW * 2 + 2,	18,	display_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
 		#endif /* WITHMENU */
+			{	0,	0,	display2_nextfb, 	REDRM_MODE, REDRSUBSET(DPAGE0) | REDRSUBSET_MENU | REDRSUBSET_SLEEP, },
 		};
 
 	#if WITHMENU
@@ -4135,6 +4154,7 @@ enum
 		{	LABELW + 3,	25,	display_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
 		{	LABELW*2 + 3,	25,	display_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
 	#endif /* WITHMENU */
+		{	0,	0,	display2_nextfb, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },
 	};
 
 #if WITHMENU
@@ -4292,6 +4312,7 @@ enum
 		{	LABELW + 3,	25,	display_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
 		{	LABELW*2 + 3,	25,	display_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
 	#endif /* WITHMENU */
+		{	0,	0,	display2_nextfb, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },
 	};
 
 #if WITHMENU
@@ -4476,6 +4497,7 @@ enum
 		// sleep mode display
 		{	5,	25,	display_datetime12,	REDRM_BARS, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40
 		{	20, 25,	display_voltlevelV5, REDRM_VOLT, PGSLP, },	// voltmeter with "V"
+		{	0,	0,	display2_nextfb, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },
 	};
 
 #if WITHMENU
@@ -4670,6 +4692,7 @@ enum
 		// sleep mode display
 		{	5,	25,	display_datetime12,	REDRM_BARS, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40
 		{	20, 25,	display_voltlevelV5, REDRM_VOLT, PGSLP, },	// voltmeter with "V"
+		{	0,	0,	display2_nextfb, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },
 	};
 
 #if WITHMENU
@@ -6241,12 +6264,6 @@ display_walktrough(
 		audioproc_spool_user();		// решение проблем с прерыванием звука при стирании экрана
 	#endif /* WITHINTEGRATEDDSP */
 	}
-
-#if LCDMODE_LTDC_NMAINFRAMES > 1
-	colmain_fb_next();
-	arm_hardware_flush((uintptr_t) colmain_fb_show(), (uint_fast32_t) DIM_X * DIM_Y * sizeof (PACKEDCOLORMAIN_T));
-	arm_hardware_ltdc_main_set((uintptr_t) colmain_fb_show());
-#endif /* LCDMODE_LTDC_NMAINFRAMES > 1 */
 }
 
 
@@ -6332,12 +6349,6 @@ void display2_bgprocess(void)
 	{
 		reqs [keyi] = 0;	// снять запрос на отображение данного типа элементов
 		keyi = (keyi == (REDRM_count - 1)) ? 0 : (keyi + 1);
-
-#if LCDMODE_LTDC_NMAINFRAMES > 1
-		colmain_fb_next();
-		arm_hardware_flush((uintptr_t) colmain_fb_show(), (uint_fast32_t) DIM_X * DIM_Y * sizeof (PACKEDCOLORMAIN_T));
-		arm_hardware_ltdc_main_set((uintptr_t) colmain_fb_show());
-#endif /* LCDMODE_LTDC_NMAINFRAMES > 1 */
 	}
 
 #endif /* STMD */
