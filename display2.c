@@ -5410,7 +5410,16 @@ static FLOAT_t filter_spectrum(
 	return Y;
 }
 
-#if LCDMODE_LTDC_PIPL8 || (! LCDMODE_LTDC_PIPL8 && LCDMODE_LTDC_L8)
+#if WITHFASTWATERFLOW && LCDMODE_LTDC_PIP16
+
+	/* быстрое отображение водопада (но требует больше памяти) */
+	static RAMBIG PACKEDCOLORPIP_T wfarray [WFDY] [ALLDX];	// массив "водопада"
+
+	enum { PALETTESIZE = 256 };
+	static PACKEDCOLORPIP_T wfpalette [PALETTESIZE];
+	static uint_fast16_t wfrow;		// строка, в которую последней занесены данные
+
+#elif LCDMODE_LTDC_PIPL8 || (! LCDMODE_LTDC_PIPL8 && LCDMODE_LTDC_L8)
 
 	enum { PALETTESIZE = COLORPIP_BASE };
 	static RAMBIG PACKEDCOLORPIP_T wfarray [WFDY] [ALLDX];	// массив "водопада"
@@ -5434,6 +5443,7 @@ static FLOAT_t filter_spectrum(
 	static PACKEDCOLOR565_T wfpalette [PALETTESIZE];
 
 #elif LCDMODE_LTDC_PIPL8
+
 #else
 
 	static RAMBIGDTCM uint8_t wfarray [WFDY] [ALLDX];	// массив "водопада"
@@ -5453,9 +5463,10 @@ static uint_fast8_t wfclear;			// стирание всей областии о�
 // Код взят из проекта Malamute
 static void wfpalette_initialize(void)
 {
-#if LCDMODE_LTDC_PIPL8 || (! LCDMODE_LTDC_PIPL8 && LCDMODE_LTDC_L8)
-	// indexed colors used
-#else /* LCDMODE_LTDC_PIP16 */
+	if (PALETTESIZE != 256)
+		return;
+	// Init 256 colors palette
+	ASSERT(PALETTESIZE == 256);
 	// PALETTESIZE == 256
 	int a = 0;
 	int i;
@@ -5497,7 +5508,6 @@ static void wfpalette_initialize(void)
 	}
 	a += i;
 	// a = 256
-#endif /* LCDMODE_LTDC_PIPL8 */
 }
 
 // получить горизонтальную позицию для заданного отклонения в герцах
@@ -5916,15 +5926,10 @@ static void dsp_latchwaterfall(
 		// для водопада
 		const int val = dsp_mag2y(filter_waterfall(x), PALETTESIZE - 1, glob_wflevelsep ? glob_topdbwf : glob_topdb, glob_wflevelsep ? glob_bottomdbwf : glob_bottomdb); // возвращает значения от 0 до dy включительно
 
-#if LCDMODE_LTDC_PIPL8 || (! LCDMODE_LTDC_PIPL8 && LCDMODE_LTDC_L8)
-		wfarray [wfrow] [x] = val;	// запись в буфер водопада индекса палитры
-#elif WITHFASTWATERFLOW
-		wfarray [wfrow] [x] = wfpalette [val];	// запись в буфер водопада цветовой точки
-#elif (! LCDMODE_S1D13781_NHWACCEL && LCDMODE_S1D13781)
-		wfarray [wfrow] [x] = wfpalette [val];	// запись в буфер водопада цветовой точки
-#else /*  */
-		wfarray [wfrow] [x] = val;	// запись в буфер водопада индекса палитры
-#endif /*  */
+		if (sizeof (PACKEDCOLORPIP_T) > 1)
+			wfarray [wfrow] [x] = wfpalette [val];	// запись в буфер водопада цветовой точки
+		else
+			wfarray [wfrow] [x] = val;	// запись в буфер водопада индекса палитры
 	}
 
 	// Сдвиг изображения при необходимости (перестройка/переклбчение диапащонов или масштаба).

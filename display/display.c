@@ -1507,7 +1507,26 @@ static void hwaccel_copy_pip(
 #endif
 }
 
-#if LCDMODE_LTDC
+#if LCDMODE_LTDC && (LCDMODE_LTDC_L8 && LCDMODE_LTDC_PIP16) || (! LCDMODE_LTDC_L8 && LCDMODE_LTDC_PIPL8)
+
+	// Выдать буфер на дисплей
+	// В случае фреймбуфеных дисплеев - формат цвета и там и там одинаковый
+	// если разный - то заглушка
+
+	//#warning colpip_to_main is dummy for this LCDMODE_LTDC combination
+
+	void colpip_to_main(
+		const PACKEDCOLORPIP_T * buffer,
+		uint_fast16_t dx,
+		uint_fast16_t dy,
+		uint_fast16_t col,	// горизонтальная координата левого верхнего угла на экране (0..dx-1) слева направо
+		uint_fast16_t row	// вертикальная координата левого верхнего угла на экране (0..dy-1) сверху вниз
+		)
+	{
+		ASSERT(0);
+	}
+
+#elif LCDMODE_LTDC
 
 	// Выдать буфер на дисплей. Функции бывают только для не L8 режимов
 	// В случае фреймбуфеных дисплеев - формат цвета и там и там одинаковый
@@ -1530,24 +1549,6 @@ static void hwaccel_copy_pip(
 			src,
 			dy, DIM_Y - dy, dx);	// w, t, h
 	#endif /* LCDMODE_HORFILL */
-	}
-
-#elif LCDMODE_LTDC && (LCDMODE_LTDC_L8 && LCDMODE_LTDC_PIP16) || (! LCDMODE_LTDC_L8 && LCDMODE_LTDC_PIPL8)
-
-// Выдать буфер на дисплей
-// В случае фреймбуфеных дисплеев - формат цвета и там и там одинаковый
-// если разный - то заглушка
-
-	#warinig colpip_to_main is dummy for this LCDMODE_LTDC combination
-
-	void colpip_to_main(
-		const PACKEDCOLORPIP_T * buffer,
-		uint_fast16_t dx,
-		uint_fast16_t dy,
-		uint_fast16_t col,	// горизонтальная координата левого верхнего угла на экране (0..dx-1) слева направо
-		uint_fast16_t row	// вертикальная координата левого верхнего угла на экране (0..dy-1) сверху вниз
-		)
-	{
 	}
 
 #else

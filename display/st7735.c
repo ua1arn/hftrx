@@ -652,7 +652,7 @@ static void st7735_clear(COLORMAIN_T bg)
 
 #if WITHSPIEXT16 && WITHSPIHWDMA
 	enum { LNBURST = 1 };
-	static ALIGNX_BEGIN PACKEDCOLOR565_T colorbuf [GXSIZE(DIM_X, LNBURST)] ALIGNX_END;
+	static ALIGNX_BEGIN PACKEDCOLORPIP_T colorbuf [GXSIZE(DIM_X, LNBURST)] ALIGNX_END;
 	for (i = 0; i < sizeof colorbuf / sizeof colorbuf [0]; ++ i)
 	{
 		colorbuf [i] = bg;
