@@ -801,31 +801,19 @@ void colpip_string3_tbg(
 	);
 // Используется при выводе на графический индикатор,
 // Возвращает ширину строки в пикселях
-uint_fast16_t colpip_string3_width(
-	PACKEDCOLORPIP_T * buffer,
-	uint_fast16_t dx,
-	uint_fast16_t dy,
+uint_fast16_t strwidth3(
 	const char * s
 	);
 // Возвращает ширину строки в пикселях
-uint_fast16_t colpip_string2_width(
-	PACKEDCOLORPIP_T * buffer,
-	uint_fast16_t dx,
-	uint_fast16_t dy,
+uint_fast16_t strwidth2(
 	const char * s
 	);
 // Возвращает ширину строки в пикселях
-uint_fast16_t colpip_string_width(
-	PACKEDCOLORPIP_T * buffer,
-	uint_fast16_t dx,
-	uint_fast16_t dy,
+uint_fast16_t strwidth(
 	const char * s
 	);
 // Возвращает высоту строки в пикселях
-uint_fast16_t colpip_string_height(
-	PACKEDCOLORPIP_T * buffer,
-	uint_fast16_t dx,
-	uint_fast16_t dy,
+uint_fast16_t strheight(
 	const char * s
 	);
 

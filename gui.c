@@ -207,7 +207,7 @@ display_smeter2(
 			polar_to_dek(xc, yc, markersTX_pwr [i], r1 + 8, & xx, & yy);
 			local_snprintf_P(& buf[0], sizeof buf / sizeof buf [0], PSTR("%d"), p);
 			p += 10;
-			display_string3_at_xy(xx - strlen(buf) * SMALLCHARW3 / 2, yy - SMALLCHARH3 * 2, buf, COLORMAIN_YELLOW, COLORMAIN_BLACK);
+			display_string3_at_xy(xx - strwidth3(buf) / 2, yy - SMALLCHARH3 * 2, buf, COLORMAIN_YELLOW, COLORMAIN_BLACK);
 		}
 
 		p = 1;
@@ -247,7 +247,7 @@ display_smeter2(
 			polar_to_dek(xc, yc, markersR [i], r1 + 8, & xx, & yy);
 			local_snprintf_P(& buf[0], sizeof buf / sizeof buf [0], PSTR("+%d"), p);
 			p += 20;
-			display_string3_at_xy(xx - strlen(buf) * SMALLCHARW3 / 2, yy - SMALLCHARH3 * 2, buf, COLORMAIN_RED, COLORMAIN_BLACK);
+			display_string3_at_xy(xx - strwidth3(buf) / 2, yy - SMALLCHARH3 * 2, buf, COLORMAIN_RED, COLORMAIN_BLACK);
 		}
 		for (i = 0; i < sizeof markers2R / sizeof markers2R [0]; ++ i)
 		{
@@ -344,6 +344,7 @@ void button1_handler(void);
 	};
 
 	enum {
+		NAME_ARRAY_SIZE = 20,
 		TEXT_ARRAY_SIZE = 20,
 		MENU_ARRAY_SIZE = 30,
 		LIST_ARRAY_SIZE = 40
@@ -361,7 +362,7 @@ void button1_handler(void);
 		uint8_t parent;			// индекс окна, в котором будет отображаться кнопка
 		uint8_t visible;			// рисовать ли кнопку на экране
 		uintptr_t payload;
-		char name [TEXT_ARRAY_SIZE];
+		char name [NAME_ARRAY_SIZE];
 		char text [TEXT_ARRAY_SIZE];					// текст внутри кнопки, разделитель строк |, не более 2х строк
 	} button_t;
 
@@ -418,7 +419,7 @@ void button1_handler(void);
 		uint8_t state;
 		uint8_t is_trackable;
 		uint8_t visible;
-		char name [TEXT_ARRAY_SIZE];
+		char name [NAME_ARRAY_SIZE];
 		char text [TEXT_ARRAY_SIZE];
 		PACKEDCOLORPIP_T color;
 		void (*onClickHandler) (void);
@@ -479,7 +480,7 @@ void button1_handler(void);
 		uint16_t y1;
 		uint16_t x2;
 		uint16_t y2;
-		char name[TEXT_ARRAY_SIZE];		// текст, выводимый в заголовке окна
+		char name[NAME_ARRAY_SIZE];		// текст, выводимый в заголовке окна
 		uint8_t is_show;			// запрос на отрисовку окна
 		uint8_t first_call;		// признак первого вызова для различных инициализаций
 		void (*onVisibleProcess) (void);
@@ -595,9 +596,9 @@ void button1_handler(void);
 			else if (p->type == TYPE_LABEL)
 			{
 				p->x1 = labels[p->id].x;
-				p->x2 = labels[p->id].x + colpip_string_width(NULL, gui.pip_width, gui.pip_height, labels[p->id].text);
+				p->x2 = labels[p->id].x + strwidth(labels[p->id].text);
 				p->y1 = labels[p->id].y - 8;
-				p->y2 = labels[p->id].y + colpip_string_height(NULL, gui.pip_width, gui.pip_height, labels[p->id].text) + 8;
+				p->y2 = labels[p->id].y + strwidth(labels[p->id].text) + 8;
 				p->state = labels[p->id].state;
 				p->visible = labels[p->id].visible;
 				p->is_trackable = labels[p->id].is_trackable;
@@ -725,7 +726,7 @@ void button1_handler(void);
 				local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), val_low * 10);
 				strcpy(labels[id_lbl_low].text, buf);
 				x_l = normalize(val_low, 0, 500, 290) + 290;
-				labels[id_lbl_low].x = x_l - strlen(buf) * SMALLCHARW;
+				labels[id_lbl_low].x = x_l - strwidth(buf);
 			}
 			else			// BWSET_NARROW
 			{
@@ -740,11 +741,11 @@ void button1_handler(void);
 				x_h = normalize(190 + val_w , 0, 500, 290) + 290;
 
 				local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), val_w * 20);
-				labels[id_lbl_high].x = x_c - strlen(buf) * 8;
+				labels[id_lbl_high].x = x_c - strwidth(buf);
 				strcpy(labels[id_lbl_high].text, buf);
 				local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("P %d"), val_c * 10);
 				strcpy(labels[id_lbl_low].text, buf);
-				labels[id_lbl_low].x = 550 - strlen(buf) * SMALLCHARW;
+				labels[id_lbl_low].x = 550 - strwidth(buf);
 			}
 		}
 
@@ -769,7 +770,7 @@ void button1_handler(void);
 					local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), val_low * 10);
 					strcpy(labels[id_lbl_low].text, buf);
 					x_l = normalize(val_low / 10, 0, 50, 290) + 290;
-					labels[id_lbl_low].x = x_l - strlen(buf) * SMALLCHARW;
+					labels[id_lbl_low].x = x_l - strwidth(buf);
 				}
 			}
 			else				// BWSET_NARROW
@@ -790,11 +791,11 @@ void button1_handler(void);
 				x_h = normalize(190 + val_w , 0, 500, 290) + 290;
 
 				local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), val_w * 20);
-				labels[id_lbl_high].x = x_c - strlen(buf) * SMALLCHARW / 2;
+				labels[id_lbl_high].x = x_c - strwidth(buf) / 2;
 				strcpy(labels[id_lbl_high].text, buf);
 				local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("P %d"), val_c * 10);
 				strcpy(labels[id_lbl_low].text, buf);
-				labels[id_lbl_low].x = 550 - strlen(buf) * SMALLCHARW;
+				labels[id_lbl_low].x = 550 - strwidth(buf);
 			}
 		}
 
@@ -884,9 +885,9 @@ void button1_handler(void);
 			const char * v = gui_edit_menu_item(menu_uif.menupos, 0);
 			strcpy(labels[id_lbl_uif_val].text, v);
 
-			labels[id_lbl_uif_param].x = window_half_wight - (strlen(labels[id_lbl_uif_param].text) * SMALLCHARW / 2);
+			labels[id_lbl_uif_param].x = window_half_wight - (strwidth(labels[id_lbl_uif_param].text) / 2);
 			labels[id_lbl_uif_param].y = windows[WINDOW_UIF].y1 + SMALLCHARH;
-			labels[id_lbl_uif_val].x = window_half_wight - (strlen(labels[id_lbl_uif_val].text) * SMALLCHARW / 2);
+			labels[id_lbl_uif_val].x = window_half_wight - (strwidth(labels[id_lbl_uif_val].text) / 2);
 			labels[id_lbl_uif_val].y = windows[WINDOW_UIF].y1 + SMALLCHARH * 4;
 
 			id_button_up = find_button(WINDOW_UIF, "btnUIF+");
@@ -897,7 +898,7 @@ void button1_handler(void);
 			button_handlers[id_button_down].y1 = (labels[id_lbl_uif_val].y + SMALLCHARH / 2) - (button_menu_h / 2);
 			button_handlers[id_button_down].y2 = button_handlers[id_button_down].y1 + button_menu_h;
 
-			button_handlers[id_button_up].x1 = labels[id_lbl_uif_val].x + strlen(labels[id_lbl_uif_val].text) * SMALLCHARW + 10;
+			button_handlers[id_button_up].x1 = labels[id_lbl_uif_val].x + strwidth(labels[id_lbl_uif_val].text) + 10;
 			button_handlers[id_button_up].x2 = button_handlers[id_button_up].x1 + button_menu_w;
 			button_handlers[id_button_up].y1 = button_handlers[id_button_down].y1;
 			button_handlers[id_button_up].y2 = button_handlers[id_button_down].y2;
@@ -909,11 +910,11 @@ void button1_handler(void);
 		{
 			const char * v = gui_edit_menu_item(menu_uif.menupos, encoder2.rotate);
 			strcpy(labels[id_lbl_uif_val].text, v);
-			labels[id_lbl_uif_val].x = window_half_wight - (strlen(labels[id_lbl_uif_val].text) * SMALLCHARW / 2);
+			labels[id_lbl_uif_val].x = window_half_wight - (strwidth(labels[id_lbl_uif_val].text) / 2);
 			encoder2.rotate_done = 1;
 			button_handlers[id_button_down].x1 = labels[id_lbl_uif_val].x - button_menu_w - 10;
 			button_handlers[id_button_down].x2 = button_handlers[id_button_down].x1 + button_menu_w;
-			button_handlers[id_button_up].x1 = labels[id_lbl_uif_val].x + strlen(labels[id_lbl_uif_val].text) * SMALLCHARW + 10;
+			button_handlers[id_button_up].x1 = labels[id_lbl_uif_val].x + strwidth(labels[id_lbl_uif_val].text) + 10;
 			button_handlers[id_button_up].x2 = button_handlers[id_button_up].x1 + button_menu_w;
 
 		}
@@ -1108,7 +1109,7 @@ void button1_handler(void);
 				button_handlers[id_button_down].y2 = button_handlers[id_button_down].y1 + button_menu_h;
 
 				button_handlers[id_button_up].visible = VISIBLE;
-				button_handlers[id_button_up].x1 = labels[id_sel_label].x + strlen(labels[id_sel_label].text) * SMALLCHARW + 10;
+				button_handlers[id_button_up].x1 = labels[id_sel_label].x + strwidth(labels[id_sel_label].text) + 10;
 				button_handlers[id_button_up].x2 = button_handlers[id_button_up].x1 + button_menu_w;
 				button_handlers[id_button_up].y1 = button_handlers[id_button_down].y1;
 				button_handlers[id_button_up].y2 = button_handlers[id_button_down].y2;
@@ -1165,7 +1166,7 @@ void button1_handler(void);
 					gui_edit_menu_item(menu[MENU_PARAMS].menu_block[menu[MENU_PARAMS].selected_str].index, encoder2.rotate));
 
 			uint_fast8_t id_sel_label = menu[MENU_VALS].first_id + menu[MENU_VALS].selected_label;
-			button_handlers[id_button_up].x1 = labels[id_sel_label].x + strlen(labels[id_sel_label].text) * SMALLCHARW + 10;
+			button_handlers[id_button_up].x1 = labels[id_sel_label].x + strwidth(labels[id_sel_label].text) + 10;
 			button_handlers[id_button_up].x2 = button_handlers[id_button_up].x1 + button_menu_w;
 		}
 
@@ -1284,8 +1285,8 @@ void button1_handler(void);
 			remove_end_line_spaces(labels[id_lbl_param].text);
 			strcpy(labels[id_lbl_val].text, enc2_menu->val);
 			labels[id_lbl_val].color = enc2_menu->state == 2 ? COLORPIP_YELLOW : COLORPIP_WHITE;
-			labels[id_lbl_val].x = windows[WINDOW_ENC2].x1 + ((windows[WINDOW_ENC2].x2 - windows[WINDOW_ENC2].x1) - (strlen (labels[id_lbl_val].text) * SMALLCHARW)) / 2;
-			labels[id_lbl_param].x = windows[WINDOW_ENC2].x1 + ((windows[WINDOW_ENC2].x2 - windows[WINDOW_ENC2].x1) - (strlen (labels[id_lbl_param].text) * SMALLCHARW)) / 2;
+			labels[id_lbl_val].x = windows[WINDOW_ENC2].x1 + ((windows[WINDOW_ENC2].x2 - windows[WINDOW_ENC2].x1) - (strwidth(labels[id_lbl_val].text))) / 2;
+			labels[id_lbl_param].x = windows[WINDOW_ENC2].x1 + ((windows[WINDOW_ENC2].x2 - windows[WINDOW_ENC2].x1) - (strwidth(labels[id_lbl_param].text))) / 2;
 		} else
 			footer_buttons_state(CANCELLED, "");
 	}
@@ -1473,7 +1474,7 @@ void button1_handler(void);
 		{
 			/* Однострочная надпись */
 			colpip_string2_tbg(colorpip, gui.pip_width, gui.pip_height,
-					x1 + ((x2 - x1) - (strlen (text) * SMALLCHARW2)) / 2,
+					x1 + ((x2 - x1) - (strwidth2(text))) / 2,
 					y1 + ((y2 - y1) - SMALLCHARH2) / 2,
 					text, COLORPIP_BLACK);
 		} else
@@ -1484,12 +1485,12 @@ void button1_handler(void);
 			strcpy(buf, text);
 			char * text2 = strtok(buf, delimeters);
 			colpip_string2_tbg(colorpip, gui.pip_width, gui.pip_height, x1 +
-					((x2 - x1) - (strlen (text2) * SMALLCHARW2)) / 2,
+					((x2 - x1) - (strwidth2(text2))) / 2,
 					y1 + j, text2, COLORPIP_BLACK);
 
 			text2 = strtok(NULL, delimeters);
 			colpip_string2_tbg(colorpip, gui.pip_width, gui.pip_height, x1 +
-					((x2 - x1) - (strlen (text2) * SMALLCHARW2)) / 2,
+					((x2 - x1) - (strwidth2(text2))) / 2,
 					y2 - SMALLCHARH2 - j, text2, COLORPIP_BLACK);
 		}
 	}

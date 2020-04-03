@@ -2225,46 +2225,28 @@ colpip_string3_tbg(
 }
 
 // Возвращает ширину строки в пикселях
-uint_fast16_t colpip_string3_width(
-	PACKEDCOLORPIP_T * buffer,
-	uint_fast16_t dx,
-	uint_fast16_t dy,
+uint_fast16_t strwidth3(
 	const char * s
 	)
 {
-	(void) buffer;
-	(void) dx;
-	(void) dy;
 	return SMALLCHARW3 * strlen(s);
 }
 
 // Возвращает ширину строки в пикселях
-uint_fast16_t colpip_string2_width(
-	PACKEDCOLORPIP_T * buffer,
-	uint_fast16_t dx,
-	uint_fast16_t dy,
+uint_fast16_t strwidth2(
 	const char * s
 	)
 {
-	(void) buffer;
-	(void) dx;
-	(void) dy;
 	return SMALLCHARW2 * strlen(s);
 }
 
 
 
 // Возвращает ширину строки в пикселях
-uint_fast16_t colpip_string_width(
-	PACKEDCOLORPIP_T * buffer,
-	uint_fast16_t dx,
-	uint_fast16_t dy,
+uint_fast16_t strwidth(
 	const char * s
 	)
 {
-	(void) buffer;
-	(void) dx;
-	(void) dy;
 	return SMALLCHARW * strlen(s);
 }
 

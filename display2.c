@@ -5547,7 +5547,7 @@ display_colorgrid_xor(
 				char buf [4];
 				uint_fast16_t freqw;	// ширина строки со значением частоты
 				local_snprintf_P(buf, sizeof buf / sizeof buf [0], ".%0*d", glob_gridwc, (int) ((f0 + df) / glob_griddigit % glob_gridmod));
-				freqw = colpip_string3_width(buffer, ALLDX, ALLDY, buf);
+				freqw = strwidth3(buf);
 				if (xmarker > freqw / 2 && xmarker < (ALLDX - freqw / 2))
 				{
 					colpip_string3_tbg(buffer, ALLDX, ALLDY, xmarker - freqw / 2, row0, buf, COLORPIP_YELLOW);
@@ -5591,7 +5591,7 @@ display_colorgrid_set(
 				char buf [4];
 				uint_fast16_t freqw;	// ширина строки со значением частоты
 				local_snprintf_P(buf, sizeof buf / sizeof buf [0], ".%0*d", glob_gridwc, (int) ((f0 + df) / glob_griddigit % glob_gridmod));
-				freqw = colpip_string3_width(buffer, ALLDX, ALLDY, buf);
+				freqw = strwidth3(buf);
 				if (xmarker > freqw / 2 && xmarker < (ALLDX - freqw / 2))
 				{
 					colpip_string3_tbg(buffer, ALLDX, ALLDY, xmarker - freqw / 2, row0, buf, COLORPIP_YELLOW);
