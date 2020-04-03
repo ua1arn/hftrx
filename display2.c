@@ -5415,8 +5415,8 @@ static FLOAT_t filter_spectrum(
 	/* быстрое отображение водопада (но требует больше памяти) */
 	static RAMBIG PACKEDCOLORPIP_T wfarray [WFDY] [ALLDX];	// массив "водопада"
 
-	enum { PALETTESIZE = 1 };
-	static PACKEDCOLORPIP_T wfpalette [PALETTESIZE];
+	enum { PALETTESIZE = COLORPIP_SHADED };
+	static PACKEDCOLORPIP_T wfpalette [1];
 	static uint_fast16_t wfrow;		// строка, в которую последней занесены данные
 
 #elif WITHFASTWATERFLOW && LCDMODE_LTDC_PIP16
