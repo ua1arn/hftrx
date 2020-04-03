@@ -2849,14 +2849,14 @@ void display_discharge(void)
 {
 }
 
-#if 0
+#if 1
 /* заливка замкнутого контура */
 void floodFill_framebuffer(uint_fast16_t x, uint_fast16_t y, PACKEDCOLORMAIN_T newColor, PACKEDCOLORMAIN_T oldColor)
 {
 	ASSERT(y < DIM_Y);
 	ASSERT(x < DIM_X);
 	// colmain_mem_at
-	PACKEDCOLORPIP_T * const tgr = colpipx_mem_at(colpipx_fb_draw(), DIM_X, DIM_Y, x, y);
+	PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(colmain_fb_draw(), DIM_X, DIM_Y, x, y);
 	if (* tgr == oldColor && * tgr != newColor)
 	{
 		* tgr = newColor;
