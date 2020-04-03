@@ -1352,7 +1352,6 @@ static void hwaccel_copy_main(
 #else
 	// программная реализация
 	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
-
 	if (t == 0)
 	{
 		const size_t len = (size_t) w * h * sizeof * src;
@@ -1512,8 +1511,8 @@ static void hwaccel_copy_pip(
 // MDMA, DMA2D или программный
 // для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
 static void hwaccel_copy_u16(
+	PACKEDCOLOR565_T * dst,
 	const PACKEDCOLOR565_T * src,
-	volatile PACKEDCOLOR565_T * dst,
 	unsigned w,
 	unsigned t,	// разница в размере строки получателя от источника
 	unsigned h
@@ -1523,6 +1522,8 @@ static void hwaccel_copy_u16(
 		return;
 
 #if WITHMDMAHW
+	arm_hardware_flush((uintptr_t) src, sizeof (* src) * GXSIZE(w, h));
+
 	MDMA_CH->CCR &= ~ MDMA_CCR_EN_Msk;
 	MDMA_CH->CDAR = (uintptr_t) dst;
 	MDMA_CH->CSAR = (uintptr_t) src;
@@ -1580,6 +1581,8 @@ static void hwaccel_copy_u16(
 	//TP();
 
 #elif WITHDMA2DHW
+	arm_hardware_flush((uintptr_t) src, sizeof (* src) * GXSIZE(w, h));
+
 	/* исходный растр */
 	DMA2D->FGMAR = (uintptr_t) src;
 	DMA2D->FGOR = (DMA2D->FGOR & ~ (DMA2D_FGOR_LO)) |
@@ -1597,7 +1600,7 @@ static void hwaccel_copy_u16(
 		0;
 	/* формат пикселя */
 	DMA2D->FGPFCCR = (DMA2D->FGPFCCR & ~ (DMA2D_FGPFCCR_CM)) |
-		DMA2D_FGPFCCR_CM_VALUE_MAIN |	/* Color mode - framebuffer pixel format */
+		DMA2D_FGPFCCR_CM_VALUE_L16 |	/* 0010: RGB565 Color mode - framebuffer pixel format */
 		0;
 
 	/* запустить операцию */
@@ -1612,17 +1615,23 @@ static void hwaccel_copy_u16(
 #else
 	// программная реализация
 	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
-/*
-	const size_t len = dx * sizeof * buffer;
-	while (dy --)
+	if (t == 0)
 	{
-		volatile PACKEDCOLORMAIN_T * const p = & framebuff [ltdc_first] [ltdc_second];
-		memcpy((void *) p, src, len);
-		arm_hardware_flush((uintptr_t) p, len);
-		src += dx;
-		++ ltdc_first;
+		const size_t len = (size_t) dy * dx * sizeof * buffer;
+		memcpy((void *) dst, src, len);
+		arm_hardware_flush((uintptr_t) dst, len);
 	}
-*/
+	else
+	{
+		const size_t len = dx * sizeof * buffer;
+		while (dy --)
+		{
+			memcpy((void *) dst, src, len);
+			arm_hardware_flush((uintptr_t) dst, len);
+			src += dx;
+			dst += w + t;
+		}
+	}
 
 #endif
 }
@@ -1673,12 +1682,10 @@ void colpip_to_main(
 {
 #if WITHMDMAHW && LCDMODE_LTDC
 
-	arm_hardware_flush((uintptr_t) buffer, sizeof (* buffer) * GXSIZE(dx, dy));
-
 	#if LCDMODE_HORFILL
-		hwaccel_copy_u16(buffer, colmain_mem_at(colmain_fb_draw(), DIM_X, DIM_Y, col, row), dx, DIM_SECOND - dx, dy);
+		hwaccel_copy_u16(colmain_mem_at(colmain_fb_draw(), buffer, DIM_X, DIM_Y, col, row), dx, DIM_SECOND - dx, dy);
 	#else /* LCDMODE_HORFILL */
-		hwaccel_copy_u16(buffer, colmain_mem_at(colmain_fb_draw(), DIM_X, DIM_Y, col, row), dy, DIM_FIRST - dy, dx);
+		hwaccel_copy_u16(colmain_mem_at(colmain_fb_draw(), buffer, DIM_X, DIM_Y, col, row), dy, DIM_FIRST - dy, dx);
 	#endif /* LCDMODE_HORFILL */
 
 #elif WITHDMA2DHW && LCDMODE_LTDC
