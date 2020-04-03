@@ -96,7 +96,6 @@ display_smeter2(
 	int yc = y * ADDRCELLHEIGHT;	//560;
 	int xc = x * ADDRCELLHEIGHT;	//120;
 	PACKEDCOLORMAIN_T ct;
-	char buf[10];
 	uint_fast8_t tracemax;
 	uint_fast8_t is_tx = hamradio_get_tx();
 	int gv, gv_trace, gswr;
@@ -202,6 +201,7 @@ display_smeter2(
 		uint_fast8_t p = 0;
 		for (i = 0; i < sizeof markersTX_pwr / sizeof markersTX_pwr [0]; ++ i)
 		{
+			char buf[10];
 			uint_fast16_t xx, yy;
 			display_radius(xc, yc, markersTX_pwr [i], r1, r1 + 8, smeter);
 			polar_to_dek(xc, yc, markersTX_pwr [i], r1 + 8, & xx, & yy);
@@ -213,6 +213,7 @@ display_smeter2(
 		p = 1;
 		for (i = 0; i < sizeof markersTX_swr / sizeof markersTX_swr [0]; ++ i)
 		{
+			char buf[10];
 			uint_fast16_t xx, yy;
 			display_radius(xc, yc, markersTX_swr [i], r2, r2 - 8, smeter);
 			polar_to_dek(xc, yc, markersTX_swr [i], r2 - 16, & xx, & yy);
@@ -227,6 +228,7 @@ display_smeter2(
 		uint_fast8_t p = 1;
 		for (i = 0; i < sizeof markers / sizeof markers [0]; ++ i)
 		{
+			char buf[10];
 			uint_fast16_t xx, yy;
 			display_radius(xc, yc, markers [i], r1, r1 + 8, smeter);
 			polar_to_dek(xc, yc, markers [i], r1 + 8, & xx, & yy);
@@ -242,6 +244,7 @@ display_smeter2(
 		p = 20;
 		for (i = 0; i < sizeof markersR / sizeof markersR [0]; ++ i)
 		{
+			char buf[10];
 			uint_fast16_t xx, yy;
 			display_radius(xc, yc, markersR [i], r1, r1 + 8, smeterplus);
 			polar_to_dek(xc, yc, markersR [i], r1 + 8, & xx, & yy);
@@ -718,13 +721,11 @@ void button1_handler(void);
 				val_high = get_high_bp(0);
 				val_low = get_low_bp(0);
 
-				local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), val_high * 100);
-				strcpy(labels[id_lbl_high].text, buf);
+				local_snprintf_P(labels[id_lbl_high].text, TEXT_ARRAY_SIZE, PSTR("%d"), val_high * 100);
 				x_h = normalize(val_high, 0, 50, 290) + 290;
 				labels[id_lbl_high].x = x_h + 64 > 550 ? 486 : x_h;
 
-				local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), val_low * 10);
-				strcpy(labels[id_lbl_low].text, buf);
+				local_snprintf_P(labels[id_lbl_low].text, TEXT_ARRAY_SIZE, PSTR("%d"), val_low * 10);
 				x_l = normalize(val_low, 0, 500, 290) + 290;
 				labels[id_lbl_low].x = x_l - strwidth(buf);
 			}
@@ -740,12 +741,10 @@ void button1_handler(void);
 				x_l = normalize(190 - val_w , 0, 500, 290) + 290;
 				x_h = normalize(190 + val_w , 0, 500, 290) + 290;
 
-				local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), val_w * 20);
-				labels[id_lbl_high].x = x_c - strwidth(buf);
-				strcpy(labels[id_lbl_high].text, buf);
-				local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("P %d"), val_c * 10);
-				strcpy(labels[id_lbl_low].text, buf);
-				labels[id_lbl_low].x = 550 - strwidth(buf);
+				local_snprintf_P(labels[id_lbl_high].text, TEXT_ARRAY_SIZE, PSTR("%d"), val_w * 20);
+
+				local_snprintf_P(labels[id_lbl_low].text, sizeof buf / sizeof buf[0], PSTR("P %d"), val_c * 10);
+				labels[id_lbl_low].x = 550 - strwidth(labels[id_lbl_low].text);
 			}
 		}
 
@@ -758,8 +757,7 @@ void button1_handler(void);
 				{
 					val_high = get_high_bp(encoder2.rotate);
 					encoder2.rotate_done = 1;
-					local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), val_high * 100);
-					strcpy(labels[id_lbl_high].text, buf);
+					local_snprintf_P(labels[id_lbl_high].text, TEXT_ARRAY_SIZE, PSTR("%d"), val_high * 100);
 					x_h = normalize(val_high, 0, 50, 290) + 290;
 					labels[id_lbl_high].x = x_h + 64 > 550 ? 486 : x_h;
 				}
@@ -767,10 +765,9 @@ void button1_handler(void);
 				{
 					val_low = get_low_bp(encoder2.rotate * 10);
 					encoder2.rotate_done = 1;
-					local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), val_low * 10);
-					strcpy(labels[id_lbl_low].text, buf);
+					local_snprintf_P(labels[id_lbl_low].text, TEXT_ARRAY_SIZE, PSTR("%d"), val_low * 10);
 					x_l = normalize(val_low / 10, 0, 50, 290) + 290;
-					labels[id_lbl_low].x = x_l - strwidth(buf);
+					labels[id_lbl_low].x = x_l - strwidth(labels[id_lbl_low].text);
 				}
 			}
 			else				// BWSET_NARROW
@@ -790,12 +787,11 @@ void button1_handler(void);
 				x_l = normalize(190 - val_w , 0, 500, 290) + 290;
 				x_h = normalize(190 + val_w , 0, 500, 290) + 290;
 
-				local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), val_w * 20);
-				labels[id_lbl_high].x = x_c - strwidth(buf) / 2;
-				strcpy(labels[id_lbl_high].text, buf);
-				local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("P %d"), val_c * 10);
-				strcpy(labels[id_lbl_low].text, buf);
-				labels[id_lbl_low].x = 550 - strwidth(buf);
+				local_snprintf_P(labels[id_lbl_high].text, TEXT_ARRAY_SIZE, PSTR("%d"), val_w * 20);
+				labels[id_lbl_high].x = x_c - strwidth(labels[id_lbl_high].text) / 2;
+
+				local_snprintf_P(labels[id_lbl_low].text, TEXT_ARRAY_SIZE, PSTR("P %d"), val_c * 10);
+				labels[id_lbl_low].x = 550 - strwidth(labels[id_lbl_low].text);
 			}
 		}
 
