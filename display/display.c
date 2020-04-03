@@ -1183,18 +1183,25 @@ static void hwaccel_copy_main(
 #else
 	// программная реализация
 	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
-/*
-	const size_t len = dx * sizeof * buffer;
-	while (dy --)
-	{
-		volatile PACKEDCOLORMAIN_T * const p = & framebuff [ltdc_first] [ltdc_second];
-		memcpy((void *) p, src, len);
-		arm_hardware_flush((uintptr_t) p, len);
-		src += dx;
-		++ ltdc_first;
-	}
-*/
 
+	if (t == 0)
+	{
+		const size_t len = (size_t) w * h * sizeof * src;
+		// ширина строки одинаковая в получателе и источнике
+		memcpy((void *) dst, src, len);
+		arm_hardware_flush((uintptr_t) dst, len);
+	}
+	else
+	{
+		const size_t len = w * sizeof * src;
+		while (h --)
+		{
+			memcpy((void *) dst, src, len);
+			arm_hardware_flush((uintptr_t) dst, len);
+			src += w;
+			dst += w + t;
+		}
+	}
 
 #endif
 }
@@ -2494,28 +2501,38 @@ void colmain_plot(
 #if LCDMODE_HORFILL
 
 	#if WITHMDMAHW || (WITHDMA2DHW && ! LCDMODE_LTDC_L8)
-		arm_hardware_flush((uintptr_t) buffer, sizeof (* buffer) * dx * dy);
+		arm_hardware_flush_invalidate((uintptr_t) buffer, sizeof (* buffer) * dx * dy);
 		hwaccel_copy_main(buffer, colmain_mem_at(tbuffer, tdx, tdy, x, y), dx, DIM_SECOND - dx, dy);
 		//ltdc_first += dy;
 
 	#else /* WITHMDMAHW || (WITHLTDCHW && ! LCDMODE_LTDC_L8) */
 		// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
-		const size_t len = dx * sizeof * buffer;
-		uint_fast16_t yoffs = 0;
-		while (dy --)
+		if (tdx == dx)
 		{
-			PACKEDCOLORMAIN_T * const p = colmain_mem_at(tbuffer, tdx, tdy, x, y + yoffs);
-			memcpy(p, buffer, len);
-			arm_hardware_flush((uintptr_t) p, len);
-			buffer += dx;
-			++ yoffs;
+			// горизонтальные размеры одинаковы
+			const size_t len = (size_t) dy * dx * sizeof * buffer;
+			memcpy(tbuffer, buffer, len);
+			arm_hardware_flush_invalidate((uintptr_t) tbuffer, len);
+		}
+		else
+		{
+			const size_t len = dx * sizeof * buffer;
+			uint_fast16_t yoffs = 0;
+			while (dy --)
+			{
+				PACKEDCOLORMAIN_T * const p = colmain_mem_at(tbuffer, tdx, tdy, x, y + yoffs);
+				memcpy(p, buffer, len);
+				arm_hardware_flush_invalidate((uintptr_t) p, len);
+				buffer += dx;
+				++ yoffs;
+			}
 		}
 
 	#endif /* WITHMDMAHW || (WITHLTDCHW && ! LCDMODE_LTDC_L8) */
 #else /* LCDMODE_HORFILL */
 	#if WITHMDMAHW || (WITHDMA2DHW && ! LCDMODE_LTDC_L8)
 
-		arm_hardware_flush((uintptr_t) buffer, sizeof (* buffer) * dx * dy);
+		arm_hardware_flush_invalidate((uintptr_t) buffer, sizeof (* buffer) * dx * dy);
 		hwaccel_copy_main(buffer, & framebuff [ltdc_first] [ltdc_second], dy, DIM_FIRST - dy, dx);
 		ltdc_first += dx;
 
@@ -2525,7 +2542,7 @@ void colmain_plot(
 		{
 			PACKEDCOLORMAIN_T * const p = & framebuff [ltdc_first] [ltdc_second];
 			memcpy(p, buffer, len);
-			arm_hardware_flush((uintptr_t) p, len);
+			arm_hardware_flush_invalidate((uintptr_t) p, len);
 			buffer += dy;
 			++ ltdc_first;
 		}
