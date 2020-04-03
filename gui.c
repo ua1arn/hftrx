@@ -1482,7 +1482,7 @@ void button1_handler(void);
 	{
 		PACKEDCOLORPIP_T * const colorpip = getscratchpip();
 		uint_fast16_t yt, xt;
-		uint_fast8_t alpha = 10; // на сколько затемнять цвета
+		uint_fast8_t alpha = DEFAULT_ALPHA; // на сколько затемнять цвета
 		char buf [TEXT_ARRAY_SIZE];
 		char * text2 = NULL;
 		uint_fast8_t str_len = 0;

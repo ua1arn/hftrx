@@ -844,20 +844,35 @@ void display_showbuffer(
 static uint_fast8_t scalecolor(
 	uint_fast8_t cv,	// color component value
 	uint_fast8_t maxv,	// maximal color component value
-	uint_fast8_t rmaxv	// resulting color component value
+	uint_fast8_t rmaxv	// resulting maximal color component value
 	)
 {
 	return (cv * rmaxv) / maxv;
 }
 
-// FIXME: доелать модификацию цвета для LCDMODE_LTDC_L8
+/* модифицировать цветв RGB24 */
+COLOR24_T color24_shaded(
+	COLOR24_T dot,
+	uint_fast8_t alpha	// на сколько затемнять цвета (0 - чёрный, 255 - без изменений)
+	)
+{
+	//return dot;	// test
+	if (dot == 0)
+		return COLOR24(alpha, alpha, alpha);
+	const uint_fast8_t r = scalecolor((dot >> 16) & 0xFF, 255, alpha);
+	const uint_fast8_t g = scalecolor((dot >> 8) & 0xFF, 255, alpha);
+	const uint_fast8_t b = scalecolor((dot >> 0) & 0xFF, 255, alpha);
+	return COLOR24(r, g, b);
+}
+
+/* модифицировать цвет */
 static COLORPIP_T getshadedcolor(
 	COLORPIP_T dot, // исходный цвет
 	uint_fast8_t alpha	// на сколько затемнять цвета (0 - чёрный, 255 - без изменений)
 	)
 {
-#if LCDMODE_LTDC_PIPL8
-	return dot ^ 0x80;	// FIXME: use indexed color
+#if LCDMODE_LTDC_PIPL8 || (! LCDMODE_LTDC_PIPL8 && LCDMODE_LTDC_L8)
+	return dot |= COLORPIP_SHADED;
 
 #elif LCDMODE_LTDC_PIP16
 	if (dot == COLORPIP_BLACK)
@@ -866,13 +881,12 @@ static COLORPIP_T getshadedcolor(
 	}
 	else
 	{
-		// RRRR.RGGG.GGGB.BBBB
-		const uint_fast8_t r = scalecolor(((dot >> 11) & 0x001f) * 1, 31, alpha);
-		const uint_fast8_t g = scalecolor(((dot >> 5) & 0x003f) * 1, 63, alpha);
-		const uint_fast8_t b = scalecolor((dot & 0x001f) * 1, 31, alpha);
+		const uint_fast8_t r = (dot >> 11) & 0x001f) * 8;	// result in 0..255
+		const uint_fast8_t g = (dot >> 5) & 0x003f) * 4;	// result in 0..255
+		const uint_fast8_t b = ((dot & 0x001f) * 8;	// result in 0..255
 
-		return (r << 11) | (g << 5) | b;
-		//return TFTRGB565(r * 8, g * 4, b * 8);	// TODO: test this code
+		const COLOR24_T c = color24_shaded(COLOR24(r, g, b));
+		return TFTRGB565((c >> 16) & 0xFF, (c >> 8) & 0xFF, (c >> 0) & 0xFF);
 	}
 
 #else /*  */

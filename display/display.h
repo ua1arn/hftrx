@@ -1095,7 +1095,13 @@ PACKEDCOLORMAIN_T * colmain_fb_draw(void);	// буфер для построен
 PACKEDCOLORMAIN_T * colmain_fb_show(void);	// буфер для отображения
 void colmain_fb_next(void);		// прерключиться на использование следующего фреймбуфера.
 
+#define DEFAULT_ALPHA 100
 void display2_xltrgb24(COLOR24_T * xtable);
+/* модифицировать цвет */
+COLOR24_T color24_shaded(
+	COLOR24_T dot,
+	uint_fast8_t alpha	// на сколько затемнять цвета (0 - чёрный, 255 - без изменений)
+	);
 // Установить прозрачность для прямоугольника
 void colpip_transparency(
 	PACKEDCOLORPIP_T * buffer,
