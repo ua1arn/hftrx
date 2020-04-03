@@ -2632,9 +2632,15 @@ void colmain_plot(
 	)
 {
 #if LCDMODE_HORFILL
-	hwaccel_copy_main(colmain_mem_at(dst, tdx, tdy, x, y), src, dx, tdx - dx, dy);
+	hwaccel_copy_main(
+		colmain_mem_at(dst, tdx, tdy, x, y),
+		src,
+		dx, tdx - dx, dy);	// w, t, h
 #else /* LCDMODE_HORFILL */
-	hwaccel_copy_main(colmain_mem_at(dst, tdx, tdy, x, y), src, dy, tdy - dy, dx);
+	hwaccel_copy_main(
+		colmain_mem_at(dst, tdx, tdy, x, y),
+		src,
+		dy, tdy - dy, dx);	// w, t, h
 #endif /* LCDMODE_HORFILL */
 }
 
@@ -2651,9 +2657,15 @@ void colpip_plot(
 	)
 {
 #if LCDMODE_HORFILL
-	hwaccel_copy_pip(colpip_mem_at(dst, tdx, tdy, x, y), src, dx, tdx - dx, dy);
+	hwaccel_copy_pip(
+		colpip_mem_at(dst, tdx, tdy, x, y),
+		src,
+		dx, tdx - dx, dy);	// w, t, h
 #else /* LCDMODE_HORFILL */
-	hwaccel_copy_pip(colpip_mem_at(dst, tdx, tdy, x, y), src, dy, tdy - dy, dx);
+	hwaccel_copy_pip(
+		colpip_mem_at(dst, tdx, tdy, x, y),
+		src,
+		dy, tdy - dy, dx);	// w, t, h
 #endif /* LCDMODE_HORFILL */
 }
 
