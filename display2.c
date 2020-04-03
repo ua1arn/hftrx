@@ -5410,7 +5410,16 @@ static FLOAT_t filter_spectrum(
 	return Y;
 }
 
-#if WITHFASTWATERFLOW && LCDMODE_LTDC_PIP16
+#if defined (COLORPIP_SHADED)
+
+	/* быстрое отображение водопада (но требует больше памяти) */
+	static RAMBIG PACKEDCOLORPIP_T wfarray [WFDY] [ALLDX];	// массив "водопада"
+
+	enum { PALETTESIZE = 1 };
+	static PACKEDCOLORPIP_T wfpalette [PALETTESIZE];
+	static uint_fast16_t wfrow;		// строка, в которую последней занесены данные
+
+#elif WITHFASTWATERFLOW && LCDMODE_LTDC_PIP16
 
 	/* быстрое отображение водопада (но требует больше памяти) */
 	static RAMBIG PACKEDCOLORPIP_T wfarray [WFDY] [ALLDX];	// массив "водопада"
@@ -5466,6 +5475,7 @@ static void wfpalette_initialize(void)
 	PRINTF("wfpalette_initialize: main=%d, pip=%d, PALETTESIZE=%d, LCDMODE_LTDC_NMAINFRAMES=%d\n", sizeof (PACKEDCOLORMAIN_T), sizeof (PACKEDCOLORPIP_T), PALETTESIZE, LCDMODE_LTDC_NMAINFRAMES);
 	if (PALETTESIZE != 256)
 		return;
+#if ! defined (COLORPIP_SHADED)
 	// Init 256 colors palette
 	ASSERT(PALETTESIZE == 256);
 	// PALETTESIZE == 256
@@ -5509,6 +5519,7 @@ static void wfpalette_initialize(void)
 	}
 	a += i;
 	// a = 256
+#endif /* !  defined (COLORPIP_SHADED) */
 }
 
 // получить горизонтальную позицию для заданного отклонения в герцах
