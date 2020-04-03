@@ -3,14 +3,13 @@
 
 #include "hardware.h"
 
-#if LCDMODE_LTDC_PIPL8 || LCDMODE_LTDC_L8
+#if defined (COLORPIP_SHADED)
 
 	// цвета
 	// от 0..COLORPIP_BASE - 1 - волопад
 	// от COLORPIP_BASE..127 - yflgbcb надписи и элементы дизайна
 	// то же с колом больше на 128 - затененные цвета для имитации полупрозрачности
 	#define COLORPIP_BASE 112	// should be match to PALETTESIZE
-	#define COLORPIP_SHADED 128
 	// Заполнение палитры производится в display2_xltrgb24()
 
 	#define COLORPIP_YELLOW      (COLORPIP_BASE + 0) // TFTRGB(0xFF, 0xFF, 0x00)

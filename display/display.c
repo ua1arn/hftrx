@@ -889,21 +889,23 @@ static COLORPIP_T getshadedcolor(
 	uint_fast8_t alpha	// на сколько затемнять цвета (0 - чёрный, 255 - без изменений)
 	)
 {
-#if LCDMODE_LTDC_PIPL8 || (! LCDMODE_LTDC_PIPL8 && LCDMODE_LTDC_L8)
+#if defined (COLORPIP_SHADED)
+
 	return dot |= COLORPIP_SHADED;
 
 #elif LCDMODE_LTDC_PIP16
+
 	if (dot == COLORPIP_BLACK)
 	{
 		return TFTRGB565(alpha, alpha, alpha); // back gray
 	}
 	else
 	{
-		const uint_fast8_t r = (dot >> 11) & 0x001f) * 8;	// result in 0..255
-		const uint_fast8_t g = (dot >> 5) & 0x003f) * 4;	// result in 0..255
-		const uint_fast8_t b = (((dot >> 0) & 0x001f) * 8;	// result in 0..255
+		const uint_fast8_t r = ((dot >> 11) & 0x001f) * 8;	// result in 0..255
+		const uint_fast8_t g = ((dot >> 5) & 0x003f) * 4;	// result in 0..255
+		const uint_fast8_t b = ((dot >> 0) & 0x001f) * 8;	// result in 0..255
 
-		const COLOR24_T c = color24_shaded(COLOR24(r, g, b));
+		const COLOR24_T c = color24_shaded(COLOR24(r, g, b), alpha);
 		return TFTRGB565((c >> 16) & 0xFF, (c >> 8) & 0xFF, (c >> 0) & 0xFF);
 	}
 
@@ -949,17 +951,18 @@ void colpip_transparency(
 #endif
 }
 
-
+#if defined (COLORPIP_SHADED)
 static void fillpair_xltrgb24(COLOR24_T * xltable, unsigned i, COLOR24_T c)
 {
 	ASSERT(i < 128);
 	xltable [i] = c;
 	xltable [i | COLORPIP_SHADED] = color24_shaded(c, DEFAULT_ALPHA);
 }
+#endif /* defined (COLORPIP_SHADED) */
 
 void display2_xltrgb24(COLOR24_T * xltable)
 {
-#if LCDMODE_LTDC_L8 || LCDMODE_LTDC_PIPL8
+#if defined (COLORPIP_SHADED)
 	int i;
 
 	PRINTF("display2_xltrgb24: init idexing colos\n");
