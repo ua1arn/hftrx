@@ -1507,247 +1507,70 @@ static void hwaccel_copy_pip(
 #endif
 }
 
-// копирование в большее или равное окно
-// MDMA, DMA2D или программный
-// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
-static void hwaccel_copy_u16(
-	PACKEDCOLOR565_T * dst,
-	const PACKEDCOLOR565_T * src,
-	unsigned w,
-	unsigned t,	// разница в размере строки получателя от источника
-	unsigned h
-	)
-{
-	if (w == 0 || h == 0)
-		return;
+#if LCDMODE_LTDC
 
-#if WITHMDMAHW
-	arm_hardware_flush((uintptr_t) src, sizeof (* src) * GXSIZE(w, h));
-
-	MDMA_CH->CCR &= ~ MDMA_CCR_EN_Msk;
-	MDMA_CH->CDAR = (uintptr_t) dst;
-	MDMA_CH->CSAR = (uintptr_t) src;
-	const uint_fast32_t tlen = mdma_tlen(w * sizeof (PACKEDCOLOR565_T), sizeof (PACKEDCOLOR565_T));
-	const uint_fast32_t sbus = mdma_getbus(MDMA_CH->CSAR);
-	const uint_fast32_t dbus = mdma_getbus(MDMA_CH->CDAR);
-	const uint_fast32_t sinc = 0x02; // Source increment mode: 10: address pointer is incremented
-	const uint_fast32_t dinc = 0x02; // Destination increment mode: 10: Destination address pointer is incremented
-	const uint_fast32_t sburst = mdma_getburst(tlen, sbus, sinc);
-	const uint_fast32_t dburst = mdma_getburst(tlen, dbus, dinc);
-	MDMA_CH->CTCR =
-		(sinc << MDMA_CTCR_SINC_Pos) | 	// Source increment mode: 10: address pointer is incremented
-		(MDMA_CTCR_xSIZE_RGB565 << MDMA_CTCR_SSIZE_Pos) |
-		(MDMA_CTCR_xSIZE_RGB565 << MDMA_CTCR_SINCOS_Pos) |
-		(sburst << MDMA_CTCR_SBURST_Pos) |
-		(dinc << MDMA_CTCR_DINC_Pos) |	// Destination increment mode: 10: Destination address pointer is incremented
-		(MDMA_CTCR_xSIZE_RGB565 << MDMA_CTCR_DSIZE_Pos) |
-		(MDMA_CTCR_xSIZE_RGB565 << MDMA_CTCR_DINCOS_Pos) |
-		(dburst << MDMA_CTCR_DBURST_Pos) |	// Destination burst transfer configuration
-		((tlen - 1) << MDMA_CTCR_TLEN_Pos) |		// buffer Transfer Length (number of bytes - 1)
-		(0x00 << MDMA_CTCR_PKE_Pos) |
-		(0x00 << MDMA_CTCR_PAM_Pos) |
-		(0x02 << MDMA_CTCR_TRGM_Pos) |		// Trigger Mode: 10: Each MDMA request (software or hardware) triggers a repeated block transfer (if the block repeat is 0, a single block is transferred)
-		(0x01 << MDMA_CTCR_SWRM_Pos) |		// 1: hardware request are ignored. Transfer is triggered by software writing 1 to the SWRQ bit
-		(0x01 << MDMA_CTCR_BWM_Pos) |
-		0;
-	MDMA_CH->CBNDTR =
-		((sizeof (PACKEDCOLOR565_T) * (w)) << MDMA_CBNDTR_BNDT_Pos) |	// Block Number of data bytes to transfer
-		(0x00 << MDMA_CBNDTR_BRSUM_Pos) |	// Block Repeat Source address Update Mode: 0 - increment
-		(0x00 << MDMA_CBNDTR_BRDUM_Pos) |	// Block Repeat Destination address Update Mode: 0 - increment
-		((h - 1) << MDMA_CBNDTR_BRC_Pos) |		// Block Repeat Count
-		0;
-	MDMA_CH->CBRUR =
-		((sizeof (PACKEDCOLOR565_T) * (0)) << MDMA_CBRUR_SUV_Pos) |		// Source address Update Value
-		((sizeof (PACKEDCOLOR565_T) * (t)) << MDMA_CBRUR_DUV_Pos) |		// Destination address Update Value
-		0;
-
-	MDMA_CH->CTBR = (MDMA_CH->CTBR & ~ (MDMA_CTBR_SBUS_Msk | MDMA_CTBR_DBUS_Msk)) |
-		(sbus << MDMA_CTBR_SBUS_Pos) |
-		(dbus << MDMA_CTBR_DBUS_Pos) |
-		0;
-
-	MDMA_CH->CIFCR = MDMA_CIFCR_CLTCIF_Msk | MDMA_CIFCR_CBTIF_Msk |
-					MDMA_CIFCR_CBRTIF_Msk | MDMA_CIFCR_CCTCIF_Msk | MDMA_CIFCR_CTEIF_Msk;
-	// Set priority
-	MDMA_CH->CCR = (MDMA_CH->CCR & ~ (MDMA_CCR_PL_Msk)) |
-			(MDMA_CCR_PL_VALUE < MDMA_CCR_PL_Pos) |
-			0;
-	MDMA_CH->CCR |= MDMA_CCR_EN_Msk;
-	/* start transfer */
-	MDMA_CH->CCR |= MDMA_CCR_SWRQ_Msk;
-	/* wait for complete */
-	while ((MDMA_CH->CISR & MDMA_CISR_CTCIF_Msk) == 0)	// Channel x Channel Transfer Complete interrupt flag
-		;
-	//TP();
-
-#elif WITHDMA2DHW
-	arm_hardware_flush((uintptr_t) src, sizeof (* src) * GXSIZE(w, h));
-
-	/* исходный растр */
-	DMA2D->FGMAR = (uintptr_t) src;
-	DMA2D->FGOR = (DMA2D->FGOR & ~ (DMA2D_FGOR_LO)) |
-		(0 << DMA2D_FGOR_LO_Pos) |
-		0;
-	/* целевой растр */
-	DMA2D->OMAR = (uintptr_t) dst;
-	DMA2D->OOR = (DMA2D->OOR & ~ (DMA2D_OOR_LO)) |
-		((t) << DMA2D_OOR_LO_Pos) |
-		0;
-	/* размер пересылаемого растра */
-	DMA2D->NLR = (DMA2D->NLR & ~ (DMA2D_NLR_NL | DMA2D_NLR_PL)) |
-		((h) << DMA2D_NLR_NL_Pos) |
-		((w) << DMA2D_NLR_PL_Pos) |
-		0;
-	/* формат пикселя */
-	DMA2D->FGPFCCR = (DMA2D->FGPFCCR & ~ (DMA2D_FGPFCCR_CM)) |
-		DMA2D_FGPFCCR_CM_VALUE_L16 |	/* 0010: RGB565 Color mode - framebuffer pixel format */
-		0;
-
-	/* запустить операцию */
-	DMA2D->CR = (DMA2D->CR & ~ (DMA2D_CR_MODE)) |
-		0 * DMA2D_CR_MODE_0 |	// 00: Memory-to-memory (FG fetch only)
-		1 * DMA2D_CR_START |
-		0;
-
-	/* ожидаем выполнения операции */
-	while ((DMA2D->CR & DMA2D_CR_START) != 0)
-		;
-#else
-	// программная реализация
-	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
-	if (t == 0)
+	// Выдать буфер на дисплей. Функции бывают только для не L8 режимов
+	// В случае фреймбуфеных дисплеев - формат цвета и там и там одинаковый
+	void colpip_to_main(
+		const PACKEDCOLORPIP_T * src,
+		uint_fast16_t dx,
+		uint_fast16_t dy,
+		uint_fast16_t col,	// горизонтальная координата левого верхнего угла на экране (0..dx-1) слева направо
+		uint_fast16_t row	// вертикальная координата левого верхнего угла на экране (0..dy-1) сверху вниз
+		)
 	{
-		const size_t len = (size_t) dy * dx * sizeof * buffer;
-		memcpy((void *) dst, src, len);
-		arm_hardware_flush((uintptr_t) dst, len);
-	}
-	else
-	{
-		const size_t len = dx * sizeof * buffer;
-		while (dy --)
-		{
-			memcpy((void *) dst, src, len);
-			arm_hardware_flush((uintptr_t) dst, len);
-			src += dx;
-			dst += w + t;
-		}
+	#if LCDMODE_HORFILL
+		hwaccel_copy_pip(
+			colmain_mem_at(colmain_fb_draw(), DIM_X, DIM_Y, col, row),
+			src,
+			dx, DIM_X - dx, dy);	// w, t, h
+	#else /* LCDMODE_HORFILL */
+		hwaccel_copy_pip(
+			colmain_mem_at(colmain_fb_draw(), DIM_X, DIM_Y, col, row),
+			src,
+			dy, DIM_Y - dy, dx);	// w, t, h
+	#endif /* LCDMODE_HORFILL */
 	}
 
-#endif
-}
-
-#if LCDMODE_LTDC_PIPL8
-
-#elif LCDMODE_LTDC_PIP16
+#elif LCDMODE_LTDC && (LCDMODE_LTDC_L8 && LCDMODE_LTDC_PIP16) || (! LCDMODE_LTDC_L8 && LCDMODE_LTDC_PIPL8)
 
 // Выдать буфер на дисплей
-void colpip_to_main(
-	const PACKEDCOLORPIP_T * buffer,
-	uint_fast16_t dx,	
-	uint_fast16_t dy,
-	uint_fast16_t col,	// горизонтальная координата левого верхнего угла на экране (0..dx-1) слева направо
-	uint_fast16_t row	// вертикальная координата левого верхнего угла на экране (0..dy-1) сверху вниз
-	)
-{
-}
+// В случае фреймбуфеных дисплеев - формат цвета и там и там одинаковый
+// если разный - то заглушка
 
-#elif LCDMODE_LTDC_L8
+	#warinig colpip_to_main is dummy for this LCDMODE_LTDC combination
 
-// Для L8 основного дисплея копирование в него RGB565 не очень простая задача...
-// Выдать буфер на дисплей. Функции бывают только для не L8 режимов
-void colpip_to_main(
-	const PACKEDCOLORPIP_T * buffer,
-	uint_fast16_t dx,
-	uint_fast16_t dy,
-	uint_fast16_t col,	// горизонтальная координата левого верхнего угла на экране (0..dx-1) слева направо
-	uint_fast16_t row	// вертикальная координата левого верхнего угла на экране (0..dy-1) сверху вниз
-	)
-{
-}
-
-#elif LCDMODE_LTDC_L24
-
-// Для L24 RGB888 основного дисплея копирование в него RGB565 еще надо сделать... С этим справится DMA2D
+	void colpip_to_main(
+		const PACKEDCOLORPIP_T * buffer,
+		uint_fast16_t dx,
+		uint_fast16_t dy,
+		uint_fast16_t col,	// горизонтальная координата левого верхнего угла на экране (0..dx-1) слева направо
+		uint_fast16_t row	// вертикальная координата левого верхнего угла на экране (0..dy-1) сверху вниз
+		)
+	{
+	}
 
 #else
 
-// Выдать буфер на дисплей. Функции бывают только для не L8 режимов
-void colpip_to_main(
-	const PACKEDCOLORPIP_T * buffer,
-	uint_fast16_t dx,	
-	uint_fast16_t dy,
-	uint_fast16_t col,	// горизонтальная координата левого верхнего угла на экране (0..dx-1) слева направо
-	uint_fast16_t row	// вертикальная координата левого верхнего угла на экране (0..dy-1) сверху вниз
-	)
-{
-#if WITHMDMAHW && LCDMODE_LTDC
-
-	#if LCDMODE_HORFILL
-		hwaccel_copy_u16(colmain_mem_at(colmain_fb_draw(), buffer, DIM_X, DIM_Y, col, row), dx, DIM_SECOND - dx, dy);
-	#else /* LCDMODE_HORFILL */
-		hwaccel_copy_u16(colmain_mem_at(colmain_fb_draw(), buffer, DIM_X, DIM_Y, col, row), dy, DIM_FIRST - dy, dx);
-	#endif /* LCDMODE_HORFILL */
-
-#elif WITHDMA2DHW && LCDMODE_LTDC
-
-	arm_hardware_flush((uintptr_t) buffer, sizeof (* buffer) * GXSIZE(dx, dy));
-
-	#if LCDMODE_HORFILL
-
-		/* исходный растр */
-		DMA2D->FGMAR = (uintptr_t) buffer;
-		DMA2D->FGOR = (DMA2D->FGOR & ~ (DMA2D_FGOR_LO)) |
-			(0 << DMA2D_FGOR_LO_Pos) |
-			0;
-		/* целевой растр */
-		DMA2D->OMAR = (uintptr_t) & framebuff [row] [col];
-		DMA2D->OOR = (DMA2D->OOR & ~ (DMA2D_OOR_LO)) |
-			((DIM_X - dx) << DMA2D_OOR_LO_Pos) |
-			0;
-		/* размер пересылаемого растра */
-		DMA2D->NLR = (DMA2D->NLR & ~ (DMA2D_NLR_NL | DMA2D_NLR_PL)) |
-			(dy << DMA2D_NLR_NL_Pos) |
-			(dx << DMA2D_NLR_PL_Pos) |
-			0;
-		/* формат пикселя */
-		DMA2D->FGPFCCR = (DMA2D->FGPFCCR & ~ (DMA2D_FGPFCCR_CM)) |
-			DMA2D_FGPFCCR_CM_VALUE_MAIN |	/* Color mode - framebuffer pixel format */
-			0;
-
-		/* запустить операцию */
-		DMA2D->CR = (DMA2D->CR & ~ (DMA2D_CR_MODE)) |
-			0 * DMA2D_CR_MODE_0 |	// 00: Memory-to-memory (FG fetch only)
-			1 * DMA2D_CR_START |
-			0;
-
-		/* ожидаем выполнения операции */
-		while ((DMA2D->CR & DMA2D_CR_START) != 0)
-			;
-
-	#else /* LCDMODE_HORFILL */
-		#warning To be implemented
-	#endif /* LCDMODE_HORFILL */
-
-#elif LCDMODE_LTDC
-
-	#if LCDMODE_COLORED
-		PACKEDCOLORMAIN_T * const tbuffer = colmain_fb_draw();
-		const uint_fast16_t tdx = DIM_X;
-		const uint_fast16_t tdy = DIM_Y;
-		colmain_plot(tbuffer, tdx, tdy, col, row, buffer, dx, dy);
-	#endif
-
-#else /* WITHDMA2DHW && LCDMODE_LTDC */
-
+	// Выдать буфер на дисплей. Функции бывают только для не L8 режимов
+	// В случае фреймбуфеных дисплеев - формат цвета и там и там одинаковый
+	void colpip_to_main(
+		const PACKEDCOLORPIP_T * buffer,
+		uint_fast16_t dx,
+		uint_fast16_t dy,
+		uint_fast16_t col,	// горизонтальная координата левого верхнего угла на экране (0..dx-1) слева направо
+		uint_fast16_t row	// вертикальная координата левого верхнего угла на экране (0..dy-1) сверху вниз
+		)
+	{
 	#if LCDMODE_COLORED
 		display_plotfrom(col, row);
 		display_plotstart(dy);
 		display_plot(buffer, dx, dy);
 		display_plotstop();
 	#endif
-#endif /* WITHDMA2DHW && LCDMODE_LTDC */
-}
-#endif /* LCDMODE_LTDC_PIP16 */
+	}
+
+#endif /*  */
 
 // Routine to draw a line in the RGB565 color to the LCD.
 // The line is drawn from (xmin,ymin) to (xmax,ymax).

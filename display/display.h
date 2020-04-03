@@ -689,7 +689,7 @@ void colpip_fill(
 	);
 
 // Выдать цветной буфер на дисплей
-// Формат RGB565
+// В случае фреймбуфеных дисплеев - формат цвета и там и там одинаковый
 void colpip_to_main(
 	const PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,	
