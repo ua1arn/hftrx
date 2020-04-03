@@ -58,24 +58,22 @@ uint_fast16_t normalize(
 
 void
 display_smeter2(
-	uint_fast8_t x,
-	uint_fast8_t y,
+	uint_fast8_t xgrid,
+	uint_fast8_t ygrid,
 	void * pv
 	)
 {
+	const int xc = GRID2X(xgrid);
+	const int yc = GRID2Y(ygrid);
 
-	enum { ADDRCELLHEIGHT = 15 };
 	enum { halfsect = 30 };
 	enum { gm = 270 };
 	enum { gs = gm - halfsect };
 	const int ge = gm + halfsect;
 	const int stripewidth = 12; //16;
-	const int r1 = 7 * ADDRCELLHEIGHT - 8;	//350;
+	const int r1 = 7 * GRID2Y(3) - 8;	//350;
 	const int r2 = r1 - stripewidth;
-	const int yc = y * ADDRCELLHEIGHT;	//560;
-	const int xc = x * ADDRCELLHEIGHT;	//120;
-	//const int yc = GRID2Y(y); //y * ADDRCELLHEIGHT;	//560;
-	//const int xc = GRID2X(x); //x * ADDRCELLHEIGHT;	//120;
+
 	const uint_fast8_t is_tx = hamradio_get_tx();
 
 	int gv, gv_trace, gswr;
@@ -124,8 +122,8 @@ display_smeter2(
 		gv_trace = gs + normalize(tracemax, 120, 250, ge - gs);
 	}
 
-	int rv1 = 7 * ADDRCELLHEIGHT;	//350;
-	int rv2 = rv1 - 3 * ADDRCELLHEIGHT;
+	int rv1 = 7 * GRID2Y(3);	//350;
+	int rv2 = rv1 - 3 * GRID2Y(3);
 	enum { step1 = 3 };		// шаг для оцифровки S
 	enum { step2 = 4 };		// шаг для оцифровки плюсов
 	enum { step3 = 20 };	// swr

@@ -1782,7 +1782,11 @@ void display_hardware_initialize(void)
 	// RENESAS Video Display Controller 5
 	arm_hardware_ltdc_initialize();
 
+#if LCDMODE_LTDC_NMAINFRAMES > 1
+	// адрес отображения остановися после обновления
+#else
 	arm_hardware_ltdc_main_set((uintptr_t) colmain_fb_show());
+#endif /* LCDMODE_LTDC_NMAINFRAMES > 1 */
 
 #endif /* WITHLTDCHW */
 
