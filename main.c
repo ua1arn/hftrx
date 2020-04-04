@@ -7280,7 +7280,7 @@ typedef struct lmsnrstate_tag
 
 static lmsnrstate_t lmsnrstates [NTRX];
 
-#if 1 && ! WITHNOSPEEX
+#if WITHUSEMALLOC && ! WITHNOSPEEX
 
 void * speex_allocXX(int size)
 {

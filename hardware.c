@@ -12073,7 +12073,7 @@ void __gxx_personality_v0(void)
 }
 #endif /* __cplusplus */
 
-#if 1
+#if WITHUSEMALLOC
 
 /*
  *

@@ -264,8 +264,8 @@
 	#define WITHSAI1_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
 	//#define WITHSAI2_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
 	#define WITHI2S_FORMATI2S_PHILIPS 1	// Возможно использование при передаче данных в кодек, подключенный к наушникам и микрофону
-	#define WITHI2S_32BITPAIR 1	// 2*32bit при передаче данных в кодек, подключенный к наушникам и микрофону
-	#define CODEC_TYPE_NAU8822_USE_32BIT 1	// программирование кодека в формате 32 бит стерео
+	//#define WITHI2S_32BITPAIR 1	// 2*32bit при передаче данных в кодек, подключенный к наушникам и микрофону
+	//#define CODEC_TYPE_NAU8822_USE_32BIT 1	// программирование кодека в формате 32 бит стерео
 	#define WITHI2SHWRXSLAVE	1		// Приёмный канал I2S (микрофон) используюся в SLAVE MODE
 	#define WITHI2SHWTXSLAVE	1		// Передающий канал I2S (наушники) используюся в SLAVE MODE
 	//#define WITHSAI1HWTXRXMASTER	1		// SAI1 work in MASTER mode
@@ -290,9 +290,10 @@
 	//#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
 	#define BOARD_FFTZOOM_POW2MAX 1	// Возможные масштабы FFT x1, x2, x4, x8
 	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
-	//#define WITHUSEDUALWATCH	1	// Второй приемник
+	#define WITHUSEDUALWATCH	1	// Второй приемник
 	//#define WITHLOOPBACKTEST	1	/* прослушивание микрофонного входа, генераторов */
 	//#define WITHMODEMIQLOOPBACK	1	/* модем получает собственные передаваемые квадратуры */
+	//#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 
 	// выбор накопителя
 	//#define WITHUSESDCARD		1	// Включение поддержки SD CARD
