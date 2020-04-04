@@ -6424,7 +6424,10 @@ void display_menuitemlabel(
 
 	PACKEDCOLORPIP_T * getscratchpip(void)
 	{
-		return colmain_mem_at(colmain_fb_draw(), DIM_X, DIM_Y, 0, SPDY);
+		pipparams_t pip;
+
+		display2_getpipparams(& pip);
+		return colmain_mem_at(colmain_fb_draw(), DIM_X, DIM_Y, pip.x, pip.y);
 	}
 
 #endif /* LCDMODE_PIP_PAGES != 0 */
