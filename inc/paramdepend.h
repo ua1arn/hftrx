@@ -2116,28 +2116,25 @@ extern "C" {
 
 /* Зависимости для поределения конфигурации видеосистемы */
 
-//#define LCDMODE_V0	1	/* Обычная конфигурация бещ PIP с L8 на основном экране */
+//#define LCDMODE_V0	1	/* Обычная конфигурация без PIP с L8 на основном экране */
 //#define LCDMODE_V1	1	/* Обычная конфигурация с PIP на часть экрана */
 //#define LCDMODE_V1A	1	/* Обычная конфигурация с PIP на часть экрана (но главный экран 16 бит) */
 //#define LCDMODE_V2	1	/* только главный экран, без PIP */
 //#define LCDMODE_V2A	1	/* только главный экран, без PIP (но главный экран 16 бит) */
 
 #if LCDMODE_V0
-	/* Обычная конфигурация бещ PIP с L8 на основном экране */
+	/* Обычная конфигурация без PIP с L8 на основном экране */
 	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
-	#define LCDMODE_MAIN_L8	1
+#define LCDMODE_MAIN_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит - RGB565. */
 	//#define LCDMODE_MAIN_RGB565	1
 	#define LCDMODE_MAIN_PAGES	1
 
-	//#define LCDMODE_PIP_L8	1
-	//#define LCDMODE_PIP_RGB565	1
-	//#define LCDMODE_PIP_PAGES	3
-
-	#define LCDMODE_MAIN_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит - RGB565. */
 	//#define LCDMODE_PIP_RGB565	1	/* используется PIP с форматом 16 бит - RGB565 */
 	//#define LCDMODE_PIP_L8	1	/* используется PIP с форматом 8 бит - индексные цвета */
+	//#define LCDMODE_PIP_PAGES	3
 
 	#define WITHFASTWATERFLOW 1
+	#define COLORPIP_SHADED 128
 
 #elif LCDMODE_V1
 	/* Обычная конфигурация L8 с PIP16 на часть экрана */
