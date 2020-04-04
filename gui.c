@@ -1603,9 +1603,8 @@ void button1_handler(void);
 		static list_template_t * p = NULL;
 
 	#if defined (TSC1_TYPE)
-		if (board_tsc_is_pressed())
+		if (board_tsc_is_pressed() && board_tsc_getxy(& tx, & ty))
 		{
-			board_tsc_getxy(& tx, & ty);
 			if (gui.fix && ty > gui.pip_y)			// первые координаты после нажатия от контролера тачскрина приходят старые, пропускаем
 			{
 				gui.last_pressed_x = tx;
