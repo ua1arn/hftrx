@@ -280,7 +280,6 @@
 	//#define WITHMODEMIQLOOPBACK	1	/* модем получает собственные передаваемые квадратуры */
 	#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 	#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
-	//#define WITHOPERA4BEACON	1	/* работа маяком в OPERA */
 
 	//#define	WITHBBOXMIKESRC	BOARD_TXAUDIO_USB
 	#define	WITHBBOXPABIAS	235

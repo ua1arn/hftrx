@@ -15,8 +15,6 @@
 	#include "rbf/rbfimage_v4.h"
 #elif CTLSTYLE_RAVENDSP_V5 && (DDS1_CLK_MUL == 10)
 	#include "rbf/rbfimage_v5_2ch_pll.h"	// CTLSTYLE_RAVENDSP_V5 with 12.288 osc
-#elif CTLSTYLE_RAVENDSP_V5 && (DDS1_CLK_MUL == 1) && WITHOPERA4BEACON
-	#include "rbf/rbfimage_v5_2ch_opera4.h"	// CTLSTYLE_RAVENDSP_V5
 #elif CTLSTYLE_RAVENDSP_V5 && (DDS1_CLK_MUL == 1)
 	#include "rbf/rbfimage_v5_2ch.h"	// CTLSTYLE_RAVENDSP_V5
 #elif CTLSTYLE_RAVENDSP_V6 && (DDS1_CLK_MUL == 1)

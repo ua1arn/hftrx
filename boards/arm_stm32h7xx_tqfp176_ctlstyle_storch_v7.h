@@ -185,8 +185,9 @@
 	//#define LCDMODE_HARD_SPI	1	/* LCD over SPI line */
 	//#define LCDMODE_DUMMY	1
 	//#define LCDMODE_V0	1	/* Обычная конфигурация без PIP с L8 на основном экране */
-	#define LCDMODE_V1	1	/* Обычная конфигурация с PIP на часть экрана */
-	//#define LCDMODE_V1A	1	/* Обычная конфигурация с PIP на часть экрана (но главный экран 16 бит) */
+	//#define LCDMODE_V1	1	/* Обычная конфигурация с PIP на часть экрана, MAIN=L8, PIP=RGB565 */
+	#define LCDMODE_V1B	1	/* Обычная конфигурация с PIP на часть экрана, MAIN=L8, PIP=L8 */
+	//#define LCDMODE_V1A	1	/* Обычная конфигурация с PIP на часть экрана, MAIN=RGB565, PIP=RGB565 */
 	//#define LCDMODE_V2	1	/* только главный экран, без PIP */
 	//#define LCDMODE_V2A	1	/* только главный экран, без PIP (но главный экран 16 бит) */
 
@@ -287,24 +288,23 @@
 	#define	WITHFPGALOAD_PS	1	/* FPGA загружается процессором с помощью SPI */
 
 	//#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
-	#define BOARD_FFTZOOM_POW2MAX 2	// Возможные масштабы FFT x1, x2, x4, x8
+	#define BOARD_FFTZOOM_POW2MAX 1	// Возможные масштабы FFT x1, x2, x4, x8
 	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
-	#define WITHUSEDUALWATCH	1	// Второй приемник
+	//#define WITHUSEDUALWATCH	1	// Второй приемник
 	//#define WITHLOOPBACKTEST	1	/* прослушивание микрофонного входа, генераторов */
 	//#define WITHMODEMIQLOOPBACK	1	/* модем получает собственные передаваемые квадратуры */
 
 	// выбор накопителя
 	//#define WITHUSESDCARD		1	// Включение поддержки SD CARD
-	#define WITHUSEUSBFLASH		1	// Включение поддержки USB memory stick
+	//#define WITHUSEUSBFLASH		1	// Включение поддержки USB memory stick
 
 	// выбор функциональности
-	#define WITHUSEAUDIOREC		1	// Запись звука
+	//#define WITHUSEAUDIOREC		1	// Запись звука
 	//#define WITHUSEAUDIOREC2CH	1	// Запись звука в стерео формате
 	//#define WITHUSEAUDIORECCLASSIC	1	// стандартный формат записи, без "дыр"
 
 	#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 	#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
-	//#define WITHOPERA4BEACON	1	/* работа маяком в OPERA */
 
 	#if 0
 		#define WITHWAVPLAYER 1	/* трансивер работает проигрывателем файлов с USB/SD накопителя */

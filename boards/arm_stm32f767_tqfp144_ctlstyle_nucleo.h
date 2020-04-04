@@ -303,7 +303,6 @@
 	//#define WITHMODEMIQLOOPBACK	1	/* модем получает собственные передаваемые квадратуры */
 	//#define WITHRTS96 1		/* вместо выходного аудиосигнала передача квадратур по USB */
 	//#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
-	//#define WITHOPERA4BEACON	1	/* работа маяком в OPERA */
 
 	#if 1
 		#define WITHUSBAUDIOSAI1	1	/* 48000 USB audio on SAI1 */
