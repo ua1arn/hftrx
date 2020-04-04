@@ -99,8 +99,6 @@ static void display2_legend_tx(
 	void * pv
 	);
 
-PACKEDCOLORPIP_T * getscratchpip(void);
-
 // Параметры отображения спектра и водопада
 
 static int_fast16_t glob_griddigit = 10000;	// 10 kHz - шаг сетки
@@ -133,11 +131,11 @@ display2_clearbg(
 	void * pv
 	)
 {
-#if LCDMODE_LTDC && ! (LCDMODE_LTDC_PIP16 || LCDMODE_LTDC_PIPL8)
+#if LCDMODE_LTDC && ! (LCDMODE_PIP_RGB565 || LCDMODE_PIP_L8)
 
 	display_fillrect(GRID2X(0), GRID2X(0), DIM_X, DIM_Y, display_getbgcolor());
 
-#endif /* LCDMODE_LTDC && ! (LCDMODE_LTDC_PIP16 || LCDMODE_LTDC_PIPL8) */
+#endif /* LCDMODE_LTDC && ! (LCDMODE_PIP_RGB565 || LCDMODE_PIP_L8) */
 }
 
 // Завершение отрисовки, переключение на следующий фреймбуфер
@@ -148,13 +146,13 @@ display2_nextfb(
 	void * pv
 	)
 {
-#if LCDMODE_LTDC && ! (LCDMODE_LTDC_PIP16 || LCDMODE_LTDC_PIPL8)
+#if LCDMODE_LTDC && ! (LCDMODE_PIP_RGB565 || LCDMODE_PIP_L8)
 
 	colmain_fb_next();
 	arm_hardware_flush((uintptr_t) colmain_fb_show(), (uint_fast32_t) DIM_X * DIM_Y * sizeof (PACKEDCOLORMAIN_T));
 	arm_hardware_ltdc_main_set((uintptr_t) colmain_fb_show());
 
-#endif /* LCDMODE_LTDC && ! (LCDMODE_LTDC_PIP16 || LCDMODE_LTDC_PIPL8) */
+#endif /* LCDMODE_LTDC && ! (LCDMODE_PIP_RGB565 || LCDMODE_PIP_L8) */
 }
 
 // Отображение частоты. Герцы так же большим шрифтом.
@@ -3760,7 +3758,6 @@ enum
 		p->y = GRID2Y(18);	// позиция верхнего левого угла в пикселях
 		p->w = GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
 		p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
-		//p->frame = (uintptr_t) getscratchpip();
 	}
 
 	#if WITHMENU
@@ -3984,7 +3981,6 @@ enum
 			p->y = GRID2Y(18);	// позиция верхнего левого угла в пикселях
 			p->w = GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
 			p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
-			//p->frame = (uintptr_t) getscratchpip();
 		}
 
 	#if WITHMENU
@@ -4178,7 +4174,6 @@ enum
 		p->y = GRID2Y(28);	// позиция верхнего левого угла в пикселях
 		p->w = GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
 		p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
-		//p->frame = (uintptr_t) getscratchpip();
 	}
 
 #elif DSTYLE_G_X480_Y272
@@ -4337,7 +4332,6 @@ enum
 		p->y = GRID2Y(30);	// позиция верхнего левого угла в пикселях
 		p->w = GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
 		p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
-		//p->frame = (uintptr_t) getscratchpip();
 	}
 
 #elif DSTYLE_G_X800_Y480 && WITHTOUCHGUI //&& WITHSPECTRUMWF
@@ -4522,7 +4516,6 @@ enum
 		p->y = GRID2Y(DLES);	// позиция верхнего левого угла в пикселях
 		p->w = GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
 		p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
-		//p->frame = (uintptr_t) getscratchpip();
 	}
 
 #elif DSTYLE_G_X800_Y480 //&& WITHSPECTRUMWF
@@ -5312,70 +5305,6 @@ enum
 	SPY0 = GRID2Y(BDCO_SPMRX)				// смещение по вертикали в пикселях части отведенной спектру
 };
 
-#if (LCDMODE_LTDC_PIPL8 && LCDMODE_LTDC) || (CPUSTYLE_STM32MP1 && LCDMODE_LTDC && LCDMODE_LTDC_PIP16)
-
-	// один буфер установлен для отображения, второй еше отображается.
-	// Третий заполняем новым изображением.
-	enum { NPIPS = 3 };
-	static RAMFRAMEBUFF ALIGNX_BEGIN PACKEDCOLORPIP_T colorpips [NPIPS] [GXSIZE(ALLDX, ALLDY)] ALIGNX_END;
-	static int pipphase;
-
-	static void nextpip(void)
-	{
-		pipphase = (pipphase + 1) % NPIPS;
-	}
-
-
-#elif (LCDMODE_LTDC_PIP16 && LCDMODE_LTDC)
-
-	// один буфер установлен для отображения, второй еше отображается.
-	// Третий заполняем новым изображением.
-	enum { NPIPS = 2 };
-	static RAMFRAMEBUFF ALIGNX_BEGIN PACKEDCOLORPIP_T colorpips [NPIPS] [GXSIZE(ALLDX, ALLDY)] ALIGNX_END;
-	static int pipphase;
-
-	static void nextpip(void)
-	{
-		pipphase = (pipphase + 1) % NPIPS;
-	}
-
-#elif (! LCDMODE_S1D13781_NHWACCEL && LCDMODE_S1D13781)
-
-	static RAMDTCM ALIGNX_BEGIN PACKEDCOLOR565_T colorpip0 [GXSIZE(ALLDX, 1)] ALIGNX_END;
-	static void nextpip(void)
-	{
-	}
-
-#elif LCDMODE_LTDC_NMAINFRAMES > 1
-	/* не копируем - работаем прямо в памяти дисплея */
-
-	//static ALIGNX_BEGIN PACKEDCOLOR565_T colorpip0 [GXSIZE(ALLDX, ALLDY)] ALIGNX_END;
-	static void nextpip(void)
-	{
-	}
-
-#else /* LCDMODE_LTDC_PIP16 */
-	static ALIGNX_BEGIN PACKEDCOLOR565_T colorpip0 [GXSIZE(ALLDX, ALLDY)] ALIGNX_END;
-	static void nextpip(void)
-	{
-	}
-
-#endif /* LCDMODE_LTDC_PIP16 */
-
-PACKEDCOLORPIP_T * getscratchpip(void)
-{
-#if LCDMODE_LTDC_NMAINFRAMES > 1
-	pipparams_t pip;
-	display2_getpipparams(& pip);
-	return colmain_mem_at(colmain_fb_draw(), DIM_X, DIM_Y, pip.x, pip.y);
-
-#elif (LCDMODE_LTDC_PIP16 || LCDMODE_LTDC_PIPL8) && LCDMODE_LTDC
-	return colorpips [pipphase];
-#else /* LCDMODE_LTDC_PIP16 */
-	return colorpip0;
-#endif /* LCDMODE_LTDC_PIP16 */
-}
-
 // Параметры фильтров данных спектра и водопада
 #define DISPLAY_SPECTRUM_BETA (0.25)
 #define DISPLAY_WATERFALL_BETA (0.5)
@@ -5413,31 +5342,31 @@ static FLOAT_t filter_spectrum(
 #if defined (COLORPIP_SHADED)
 
 	/* быстрое отображение водопада (но требует больше памяти) */
-	static RAMBIG PACKEDCOLORPIP_T wfarray [WFDY] [ALLDX];	// массив "водопада"
+	static /*RAMBIG */ PACKEDCOLORPIP_T wfarray [WFDY] [ALLDX];	// массив "водопада"
 
 	enum { PALETTESIZE = COLORPIP_BASE };
 	static PACKEDCOLORPIP_T wfpalette [1];
 	static uint_fast16_t wfrow;		// строка, в которую последней занесены данные
 
-#elif WITHFASTWATERFLOW && LCDMODE_LTDC_PIP16
+#elif WITHFASTWATERFLOW && LCDMODE_PIP_RGB565
 
 	/* быстрое отображение водопада (но требует больше памяти) */
-	static RAMBIG PACKEDCOLORPIP_T wfarray [WFDY] [ALLDX];	// массив "водопада"
+	static /*RAMBIG */ PACKEDCOLORPIP_T wfarray [WFDY] [ALLDX];	// массив "водопада"
 
 	enum { PALETTESIZE = 256 };
 	static PACKEDCOLORPIP_T wfpalette [PALETTESIZE];
 	static uint_fast16_t wfrow;		// строка, в которую последней занесены данные
 
-#elif LCDMODE_LTDC_PIPL8 || (! LCDMODE_LTDC_PIPL8 && LCDMODE_LTDC_L8)
+#elif LCDMODE_PIP_L8 || (! LCDMODE_PIP_L8 && LCDMODE_MAIN_L8)
 
 	enum { PALETTESIZE = COLORPIP_BASE };
-	static RAMBIG PACKEDCOLORPIP_T wfarray [WFDY] [ALLDX];	// массив "водопада"
+	static /*RAMBIG */ PACKEDCOLORPIP_T wfarray [WFDY] [ALLDX];	// массив "водопада"
 	static uint_fast16_t wfrow;		// строка, в которую последней занесены данные
 
 #elif WITHFASTWATERFLOW
 
 	/* быстрое отображение водопада (но требует больше памяти) */
-	static RAMBIG PACKEDCOLORPIP_T wfarray [WFDY] [ALLDX];	// массив "водопада"
+	static /*RAMBIG */ PACKEDCOLORPIP_T wfarray [WFDY] [ALLDX];	// массив "водопада"
 
 	enum { PALETTESIZE = 256 };
 	static PACKEDCOLORPIP_T wfpalette [PALETTESIZE];
@@ -5445,13 +5374,13 @@ static FLOAT_t filter_spectrum(
 
 #elif (! LCDMODE_S1D13781_NHWACCEL && LCDMODE_S1D13781)
 
-	static RAMBIG PACKEDCOLOR565_T wfarray [1] [ALLDX];	// массив "водопада"
+	static /*RAMBIG */ PACKEDCOLOR565_T wfarray [1] [ALLDX];	// массив "водопада"
 	enum { wfrow = 0 };				// строка, в которую последней занесены данные
 
 	enum { PALETTESIZE = 256 };
 	static PACKEDCOLOR565_T wfpalette [PALETTESIZE];
 
-#elif LCDMODE_LTDC_PIPL8
+#elif LCDMODE_PIP_L8
 
 #else
 
@@ -5472,7 +5401,7 @@ static uint_fast8_t wfclear;			// стирание всей областии о�
 // Код взят из проекта Malamute
 static void wfpalette_initialize(void)
 {
-	PRINTF("wfpalette_initialize: main=%d, pip=%d, PALETTESIZE=%d, LCDMODE_LTDC_NMAINFRAMES=%d\n", sizeof (PACKEDCOLORMAIN_T), sizeof (PACKEDCOLORPIP_T), PALETTESIZE, LCDMODE_LTDC_NMAINFRAMES);
+	PRINTF("wfpalette_initialize: main=%d, pip=%d, PALETTESIZE=%d, LCDMODE_MAIN_PAGES=%d\n", sizeof (PACKEDCOLORMAIN_T), sizeof (PACKEDCOLORPIP_T), PALETTESIZE, LCDMODE_MAIN_PAGES);
 	if (PALETTESIZE != 256)
 		return;
 #if ! defined (COLORPIP_SHADED)
@@ -6053,7 +5982,7 @@ static void display2_waterfall(
 
 	// следы спектра ("водопад") на монохромных дисплеях
 
-#elif WITHFASTWATERFLOW || LCDMODE_LTDC_PIPL8 || (! LCDMODE_LTDC_PIPL8 && LCDMODE_LTDC_L8)
+#elif WITHFASTWATERFLOW || LCDMODE_PIP_L8 || (! LCDMODE_PIP_L8 && LCDMODE_MAIN_L8)
 	// следы спектра ("водопад") на цветных дисплеях
 	/* быстрое отображение водопада (но требует больше памяти) */
 
@@ -6116,19 +6045,19 @@ static void display2_colorbuff(
 
 	PACKEDCOLORPIP_T * const colorpip = getscratchpip();
 
-	#if ((LCDMODE_LTDC_PIP16 || LCDMODE_LTDC_PIPL8) && LCDMODE_LTDC)
+	#if ((LCDMODE_PIP_RGB565 || LCDMODE_PIP_L8) && LCDMODE_LTDC)
 		arm_hardware_flush((uintptr_t) colorpip, (uint_fast32_t) ALLDX * ALLDY * sizeof * colorpip);
 		arm_hardware_ltdc_pip_set((uintptr_t) colorpip);
 
-	#elif LCDMODE_LTDC_NMAINFRAMES > 1
+	#elif LCDMODE_MAIN_PAGES > 1
 		/* не копируем - работаем прямо в памяти дисплея */
 
-	#else /* LCDMODE_LTDC_PIP16 */
+	#else /* LCDMODE_PIP_RGB565 */
 		colpip_to_main(colorpip, ALLDX, ALLDY, GRID2X(x0), GRID2Y(y0));
 
-	#endif /* LCDMODE_LTDC_PIP16 */
+	#endif /* LCDMODE_PIP_RGB565 */
 
-	nextpip();
+	colpip_fb_next();
 
 #endif /* LCDMODE_S1D13781 */
 }
@@ -6141,9 +6070,9 @@ display2_pip_off(
 	void * pv
 	)
 {
-#if ((LCDMODE_LTDC_PIP16 || LCDMODE_LTDC_PIPL8) && LCDMODE_LTDC)
+#if ((LCDMODE_PIP_RGB565 || LCDMODE_PIP_L8) && LCDMODE_LTDC)
 	arm_hardware_ltdc_pip_off();
-#endif /* LCDMODE_LTDC_PIP16 */
+#endif /* LCDMODE_PIP_RGB565 */
 }
 
 #else /* WITHSPECTRUMWF */
@@ -6229,16 +6158,16 @@ validforredraw(
 	uint_fast8_t subset
 	)
 {
-#if LCDMODE_LTDC_NMAINFRAMES > 1
+#if LCDMODE_MAIN_PAGES > 1
 	/* про off-screen composition отрисовываем все элементы вне
 	 * зависимости от группы обновления, но для подходящей страницы.
 	 */
 	if (/*(p->key != key) || */(p->subset & subset) == 0)
 		return 0;
-#else /* LCDMODE_LTDC_NMAINFRAMES > 1 */
+#else /* LCDMODE_MAIN_PAGES > 1 */
 	if ((p->key != key) || (p->subset & subset) == 0)
 		return 0;
-#endif /* LCDMODE_LTDC_NMAINFRAMES > 1 */
+#endif /* LCDMODE_MAIN_PAGES > 1 */
 	return 1;
 }
 
@@ -6294,7 +6223,7 @@ display_walktroughsteps(
 {
 #if STMD
 
-	#if LCDMODE_LTDC_NMAINFRAMES > 1
+	#if LCDMODE_MAIN_PAGES > 1
 
 		key = 0;
 		if (reqs [key] != 0)
@@ -6316,19 +6245,19 @@ display_walktroughsteps(
 			walkis [key] = 0;
 		}
 
-	#else /* LCDMODE_LTDC_NMAINFRAMES > 1 */
+	#else /* LCDMODE_MAIN_PAGES > 1 */
 
 		reqs [key] = 1;
 		subsets [key] = subset;
 		walkis [key] = 0;
 
-	#endif /* LCDMODE_LTDC_NMAINFRAMES > 1 */
+	#endif /* LCDMODE_MAIN_PAGES > 1 */
 
 #else /* STMD */
 
-	#if LCDMODE_LTDC_NMAINFRAMES > 1
+	#if LCDMODE_MAIN_PAGES > 1
 		key = 0;
-	#endif /* LCDMODE_LTDC_NMAINFRAMES > 1 */
+	#endif /* LCDMODE_MAIN_PAGES > 1 */
 
 	display_walktrough(key, subset, NULL);
 
@@ -6455,9 +6384,9 @@ void display_menuitemlabel(
 	uint_fast8_t byname			/* был выполнен прямой вход в меню */
 	)
 {
-#if LCDMODE_LTDC_NMAINFRAMES > 1
+#if LCDMODE_MAIN_PAGES > 1
 	display_walktrough(0, REDRSUBSET_MENU, pv);
-#else /* LCDMODE_LTDC_NMAINFRAMES > 1 */
+#else /* LCDMODE_MAIN_PAGES > 1 */
 	display_walktrough(REDRM_FREQ, REDRSUBSET_MENU, NULL);
 	display_walktrough(REDRM_FRQB, REDRSUBSET_MENU, NULL);
 	display_walktrough(REDRM_MODE, REDRSUBSET_MENU, NULL);
@@ -6467,8 +6396,38 @@ void display_menuitemlabel(
 	}
 	display_walktrough(REDRM_MLBL, REDRSUBSET_MENU, pv);
 	display_walktrough(REDRM_MVAL, REDRSUBSET_MENU, pv);
-#endif /* LCDMODE_LTDC_NMAINFRAMES > 1 */
+#endif /* LCDMODE_MAIN_PAGES > 1 */
 }
+
+#if LCDMODE_PIP_PAGES != 0
+
+	// один буфер установлен для отображения, второй еше отображается.
+	// Третий заполняем новым изображением.
+	static RAMFRAMEBUFF ALIGNX_BEGIN PACKEDCOLORPIP_T colorpips [LCDMODE_PIP_PAGES] [GXSIZE(ALLDX, ALLDY)] ALIGNX_END;
+	static int pipphase;
+
+	void colpip_fb_next(void)
+	{
+		pipphase = (pipphase + 1) % LCDMODE_PIP_PAGES;
+	}
+
+	PACKEDCOLORPIP_T * getscratchpip(void)
+	{
+		return colorpips [pipphase];
+	}
+
+#else /* LCDMODE_PIP_PAGES != 0 */
+
+	void colpip_fb_next(void)
+	{
+	}
+
+	PACKEDCOLORPIP_T * getscratchpip(void)
+	{
+		return colmain_mem_at(colmain_fb_draw(), DIM_X, DIM_Y, ALLDX, ALLDY);
+	}
+
+#endif /* LCDMODE_PIP_PAGES != 0 */
 
 // отображение значения параметра
 void display_menuitemvalue(

@@ -7,7 +7,7 @@
 //
 // Плата Воробей-2 (с местом под кодек)
 //
-// Для компиляции скопировать данный файл под расширением .h 
+// Для компиляции скопировать данный файл под расширением .h
 
 #ifndef ARM_STM32FXXX_TQFP64_CTLSTYLE_V8B_H_INCLUDED
 #define ARM_STM32FXXX_TQFP64_CTLSTYLE_V8B_H_INCLUDED 1
@@ -83,10 +83,10 @@
 
 	#define CTLREGMODE24_V2	1		/* управляющий регистр 24 бита - "Воробей-2" с кодеком */
 
-	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея 
+	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея
 	#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываемый на дисплее)
 	#define WITHLCDBACKLIGHTMAX	3	// Верхний предел регулировки (показываемый на дисплее)
-	#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры 
+	#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
 	/* коды входов коммутатора источников сигнала для УНЧ приёмника */
 	#define BOARD_DETECTOR_MUTE 	(0x02)
 	#define BOARD_DETECTOR_SSB 	(0x00)
@@ -148,7 +148,6 @@
 	//#define LCDMODE_ST7565S	1	/* Индикатор WO12864C2-TFH# 128*64 с контроллером Sitronix ST7565S */
 	//#define LCDMODE_ST7565S_TOPDOWN	1	/* LCDMODE_ST7565S - перевернуть изображение (для выводов сверху) */
 	//#define LCDMODE_ILI9320	1	/* Индикатор 248*320 с контроллером ILI9320 */
-	//#define LCDMODE_LTDC	1	/* Use STM32F4xxx with LCD-TFT Controller (LTDC) */
 	//#define LCDMODE_ILI9341	1	/* 320*240 SF-TC240T-9370-T с контроллером ILI9341 */
 	//#define LCDMODE_ILI9341_TOPDOWN	1	/* LCDMODE_ILI9341 - перевернуть изображение (для выводов справа) */
 	// --- Одна из этих строк определяет тип дисплея, для которого компилируется прошивка

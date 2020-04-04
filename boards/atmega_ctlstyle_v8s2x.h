@@ -7,7 +7,7 @@
 //
 // Плата Воробей
 //
-// Для компиляции скопировать данный файл под расширением .h 
+// Для компиляции скопировать данный файл под расширением .h
 
 #ifndef ATMEGA_CTLSTYLE_8S2X_H_INCLUDED
 #define ATMEGA_CTLSTYLE_8S2X_H_INCLUDED 1
@@ -69,8 +69,6 @@
 
 	// +++ Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
 	//#define LCDMODE_HARD_SPI	1	/* LCD over SPI line */
-	//#define LCDMODE_LTDC	1		/* Use STM32F4xxx with LCD-TFT Controller (LTDC) */
-	//#define LCDMODE_LTDC_L8	1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит. */
 	//#define LCDMODE_WH2002	1	/* тип применяемого индикатора 20*2, возможно вместе с LCDMODE_HARD_SPI */
 	#define LCDMODE_WH1602	1	/* тип применяемого индикатора 16*2 */
 	//#define LCDMODE_WH2004	1	/* тип применяемого индикатора 20*4 */

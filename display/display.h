@@ -267,7 +267,7 @@ typedef uint_fast32_t COLOR24_T;
 				) \
 			)
 
-	#elif LCDMODE_LTDC_L8
+	#elif LCDMODE_MAIN_L8
 
 		/* При использовании frame buffer цвета восьмибитные */
 		typedef uint_fast8_t COLORMAIN_T;
@@ -294,7 +294,7 @@ typedef uint_fast32_t COLOR24_T;
 				) \
 			)
 
-	#else /* LCDMODE_LTDC_L8 */
+	#else /* LCDMODE_MAIN_L8 */
 
 		//#define LCDMODE_RGB565 1
 		typedef uint_fast16_t COLORMAIN_T;
@@ -313,26 +313,22 @@ typedef uint_fast32_t COLOR24_T;
 		// для формирования растра с изображением водопада и спектра
 		#define TFTRGB565 TFTRGB
 
-	#endif /* LCDMODE_LTDC_L8 */
+	#endif /* LCDMODE_MAIN_L8 */
 
-	#if LCDMODE_LTDC_PIPL8
+	#if LCDMODE_PIP_L8
 		typedef uint8_t PACKEDCOLORPIP_T;
 		typedef uint_fast8_t COLORPIP_T;
-		#define LCDMODE_LTDC_NMAINFRAMES 1
 
-	#elif LCDMODE_LTDC_PIP16
+	#elif LCDMODE_PIP_RGB565
 		typedef uint16_t PACKEDCOLORPIP_T;
 		typedef uint_fast16_t COLORPIP_T;
-		#define LCDMODE_LTDC_NMAINFRAMES 1
 
-	#else /* LCDMODE_LTDC_PIP16 */
+	#else /* LCDMODE_PIP_RGB565 */
 		/* если только MAIN - тип PIP соответствует */
 		typedef PACKEDCOLORMAIN_T PACKEDCOLORPIP_T;
 		typedef COLORMAIN_T COLORPIP_T;
-		#define LCDMODE_LTDC_NMAINFRAMES 3
-		#define COLORPIP_SHADED 128
 
-	#endif /* LCDMODE_LTDC_PIPL8 */
+	#endif /* LCDMODE_PIP_L8 */
 
 
 #endif /* LCDMODE_LTDC */
@@ -966,18 +962,6 @@ void display_1state(
 
 #define SWRMIN 10	// минимум - соответствует SWR = 1.0, точность = 0.1
 
-#if LCDMODE_LTDC
-
-	#if LCDMODE_ILI8961 || LCDMODE_LQ043T3DX02K || LCDMODE_AT070TN90 || LCDMODE_AT070TNA2
-		#define DIM_FIRST DIM_Y
-		#define DIM_SECOND DIM_X
-	#else
-		#define DIM_FIRST DIM_X
-		#define DIM_SECOND DIM_Y
-	#endif
-
-#endif /* LCDMODE_LTDC */
-
 /* заполнение прямоугольника на основном экране произвольным цветом
 */
 void
@@ -1108,6 +1092,11 @@ PACKEDCOLORMAIN_T * colmain_fb_draw(void);	// буфер для построен
 PACKEDCOLORMAIN_T * colmain_fb_show(void);	// буфер для отображения
 void colmain_fb_next(void);		// прерключиться на использование следующего фреймбуфера.
 
+//PACKEDCOLORPIP_T * colpip_fb_draw(void);	// буфер для построения изображения
+//PACKEDCOLORPIP_T * colpip_fb_show(void);	// буфер для отображения
+void colpip_fb_next(void);		// прерключиться на использование следующего фреймбуфера.
+PACKEDCOLORPIP_T * getscratchpip(void);
+
 #define DEFAULT_ALPHA 100
 void display2_xltrgb24(COLOR24_T * xtable);
 // Установить прозрачность для прямоугольника
@@ -1133,7 +1122,6 @@ void colpip_fillrect(
 	);
 
 void display2_getpipparams(pipparams_t * p);
-PACKEDCOLORPIP_T * getscratchpip(void);
 int_fast32_t display_zoomedbw(void);
 void display_string3_at_xy(uint_fast16_t x, uint_fast16_t y, const char * s, COLORMAIN_T fg, COLORMAIN_T bg);
 

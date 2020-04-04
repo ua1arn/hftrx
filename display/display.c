@@ -12,13 +12,11 @@
 #include "display.h"
 #include "gui.h"
 #include "formats.h"
-#include <string.h>
 #include "spi.h"	// hardware_spi_master_send_frame
-
+#include <string.h>
 
 #if LCDMODE_LTDC
-
-	typedef PACKEDCOLORMAIN_T FRAMEBUFF_T [DIM_FIRST][DIM_SECOND];
+	typedef PACKEDCOLORMAIN_T FRAMEBUFF_T [LCDMODE_MAIN_PAGES][DIM_FIRST][DIM_SECOND];
 
 	#if defined (SDRAM_BANK_ADDR) && LCDMODE_LTDCSDRAMBUFF && LCDMODE_LTDC
 		#define framebuff (* (FRAMEBUFF_T *) SDRAM_BANK_ADDR)
@@ -31,20 +29,20 @@
 
 #if LCDMODE_LTDC && ! defined (SDRAM_BANK_ADDR)
 	// буфер экрана
-	RAMFRAMEBUFF ALIGNX_BEGIN FRAMEBUFF_T framebuff0 [LCDMODE_LTDC_NMAINFRAMES] ALIGNX_END;
+	RAMFRAMEBUFF ALIGNX_BEGIN FRAMEBUFF_T framebuff0 ALIGNX_END;
 #endif /* LCDMODE_LTDC */
 
 static uint_fast8_t mainphase;
 
 void colmain_fb_next(void)
 {
-	mainphase = (mainphase + 1) % LCDMODE_LTDC_NMAINFRAMES;
+	mainphase = (mainphase + 1) % LCDMODE_MAIN_PAGES;
 }
 
 PACKEDCOLORMAIN_T *
 colmain_fb_draw(void)
 {
-	return (PACKEDCOLORMAIN_T *) & framebuff0 [(mainphase + 1) % LCDMODE_LTDC_NMAINFRAMES] [0] [0];
+	return (PACKEDCOLORMAIN_T *) & framebuff0 [(mainphase + 1) % LCDMODE_MAIN_PAGES] [0] [0];
 }
 
 
@@ -69,34 +67,34 @@ colmain_fb_show(void)
 	#define DMA2D_FGPFCCR_CM_VALUE_MAIN	(1 * DMA2D_FGPFCCR_CM_0)	/* 0001: RGB888 */
 	//#define DMA2D_OPFCCR_CM_VALUE_MAIN	(1 * DMA2D_OPFCCR_CM_0)	/* 001: RGB888 */
 
-#elif LCDMODE_LTDC_L8
+#elif LCDMODE_MAIN_L8
 	#define DMA2D_FGPFCCR_CM_VALUE_MAIN	(5 * DMA2D_FGPFCCR_CM_0)	/* 0101: L8 */
 	#define MDMA_CTCR_xSIZE_MAIN			0x00	// 1 byte
 	////#define DMA2D_OPFCCR_CM_VALUE	(x * DMA2D_OPFCCR_CM_0)	/* not supported */
 
-#else /* LCDMODE_LTDC_L8 */
+#else /* LCDMODE_MAIN_L8 */
 	#define DMA2D_FGPFCCR_CM_VALUE_MAIN	(2 * DMA2D_FGPFCCR_CM_0)	/* 0010: RGB565 */
 	//#define DMA2D_OPFCCR_CM_VALUE_MAIN	(2 * DMA2D_OPFCCR_CM_0)	/* 010: RGB565 */
 	#define MDMA_CTCR_xSIZE_MAIN			0x01	// 2 byte
 
-#endif /* LCDMODE_LTDC_L8 */
+#endif /* LCDMODE_MAIN_L8 */
 
-#if LCDMODE_LTDC_PIPL8
+#if LCDMODE_PIP_L8
 	#define DMA2D_FGPFCCR_CM_VALUE_PIP	(5 * DMA2D_FGPFCCR_CM_0)	/* 0101: L8 */
 	#define MDMA_CTCR_xSIZE_PIP			0x00	// 1 byte
 	////#define DMA2D_OPFCCR_CM_VALUE_MAIN	(x * DMA2D_OPFCCR_CM_0)	/* not supported */
 
-#elif LCDMODE_LTDC_PIP16
+#elif LCDMODE_PIP_RGB565
 	#define DMA2D_FGPFCCR_CM_VALUE_PIP	(2 * DMA2D_FGPFCCR_CM_0)	/* 0010: RGB565 */
 	//#define DMA2D_OPFCCR_CM_VALUE_PIP	(2 * DMA2D_OPFCCR_CM_0)	/* 010: RGB565 */
 	#define MDMA_CTCR_xSIZE_PIP			0x01	// 2 byte
 
-#else /* LCDMODE_LTDC_L8 */
+#else /* LCDMODE_MAIN_L8 */
 	#define DMA2D_FGPFCCR_CM_VALUE_PIP	DMA2D_FGPFCCR_CM_VALUE_MAIN
 	//#define DMA2D_OPFCCR_CM_VALUE_PIP	DMA2D_OPFCCR_CM_VALUE_MAIN
 	#define MDMA_CTCR_xSIZE_PIP			MDMA_CTCR_xSIZE_MAIN
 
-#endif /* LCDMODE_LTDC_L8 */
+#endif /* LCDMODE_MAIN_L8 */
 
 #define DMA2D_FGPFCCR_CM_VALUE_L24	(1 * DMA2D_FGPFCCR_CM_0)	/* 0001: RGB888 */
 #define DMA2D_FGPFCCR_CM_VALUE_L16	(2 * DMA2D_FGPFCCR_CM_0)	/* 0010: RGB565 */
@@ -893,7 +891,7 @@ static COLORPIP_T getshadedcolor(
 
 	return dot |= COLORPIP_SHADED;
 
-#elif LCDMODE_LTDC_PIP16
+#elif LCDMODE_PIP_RGB565
 
 	if (dot == COLORPIP_BLACK)
 	{
@@ -910,10 +908,10 @@ static COLORPIP_T getshadedcolor(
 	}
 
 #else /*  */
-	//#warning LCDMODE_LTDC_PIPL8 or LCDMODE_LTDC_PIP16 not defined
+	//#warning LCDMODE_PIP_L8 or LCDMODE_PIP_RGB565 not defined
 	return dot;
 
-#endif /* LCDMODE_LTDC_PIPL8 */
+#endif /* LCDMODE_PIP_L8 */
 }
 
 // Установить прозрачность для прямоугольника
@@ -1066,7 +1064,7 @@ void display2_xltrgb24(COLOR24_T * xltable)
 	fillpair_xltrgb24(xltable, COLORPIP_SPECTRUMFENCE	, COLOR24(255, 255, 255));	//COLOR_WHITE
 #endif /* COLORSTYLE_ATS52 */
 
-#elif LCDMODE_COLORED && ! LCDMODE_DUMMY	/* LCDMODE_LTDC_L8 && LCDMODE_LTDC_PIPL8 */
+#elif LCDMODE_COLORED && ! LCDMODE_DUMMY	/* LCDMODE_MAIN_L8 && LCDMODE_PIP_L8 */
 	PRINTF("display2_xltrgb24: init RRRGGGBB colos\n");
 	// Обычная таблица - все цвета могут быть использованы как индекс
 	// Водопад отображается без использования инлдексов цветов
@@ -1081,7 +1079,7 @@ void display2_xltrgb24(COLOR24_T * xltable)
 	}
 #else
 	#warning Monochrome display without indexing colors
-#endif /* LCDMODE_LTDC_L8 && LCDMODE_LTDC_PIPL8 */
+#endif /* LCDMODE_MAIN_L8 && LCDMODE_PIP_L8 */
 }
 
 // получить адрес требуемой позиции в буфере
@@ -1510,7 +1508,7 @@ static void hwaccel_copy_pip(
 #endif
 }
 
-#if LCDMODE_LTDC && (LCDMODE_LTDC_L8 && LCDMODE_LTDC_PIP16) || (! LCDMODE_LTDC_L8 && LCDMODE_LTDC_PIPL8)
+#if LCDMODE_LTDC && (LCDMODE_MAIN_L8 && LCDMODE_PIP_RGB565) || (! LCDMODE_MAIN_L8 && LCDMODE_PIP_L8)
 
 	// Выдать буфер на дисплей
 	// В случае фреймбуфеных дисплеев - формат цвета и там и там одинаковый
@@ -1850,7 +1848,7 @@ colmain_fillrect_pattern(
 #if LCDMODE_HORFILL
 
 	// TODO: bgcolor и hpattern пока игнорируются
-	#if LCDMODE_LTDC_L8 && LCDMODE_LTDC
+	#if LCDMODE_MAIN_L8 && LCDMODE_LTDC
 		hwacc_fillrect_u8(buffer, dx, dy, x, y, w, h, fgcolor);
 	#elif LCDMODE_LTDC_L24 && LCDMODE_LTDC
 		hwacc_fillrect_u24(buffer, dx, dy, x, y, w, h, fgcolor);
@@ -1861,7 +1859,7 @@ colmain_fillrect_pattern(
 #else /* LCDMODE_HORFILL */
 
 	// TODO: bgcolor и hpattern пока игнорируются
-	#if LCDMODE_LTDC_L8 && LCDMODE_LTDC
+	#if LCDMODE_MAIN_L8 && LCDMODE_LTDC
 		hwacc_fillrect_u8(buffer, dy, dx, y, x, h, w, fgcolor);
 	#elif LCDMODE_LTDC_L24 && LCDMODE_LTDC
 		hwacc_fillrect_u24(buffer, dy, dx, y, x, h, w, fgcolor);
@@ -1927,11 +1925,11 @@ void display_hardware_initialize(void)
 	// RENESAS Video Display Controller 5
 	arm_hardware_ltdc_initialize();
 
-#if LCDMODE_LTDC_NMAINFRAMES > 1
+#if LCDMODE_MAIN_PAGES > 1
 	// адрес отображения остановися после обновления
 #else
 	arm_hardware_ltdc_main_set((uintptr_t) colmain_fb_show());
-#endif /* LCDMODE_LTDC_NMAINFRAMES > 1 */
+#endif /* LCDMODE_MAIN_PAGES > 1 */
 
 #endif /* WITHLTDCHW */
 
