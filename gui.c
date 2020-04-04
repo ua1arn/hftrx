@@ -1610,8 +1610,8 @@ void button1_handler(void);
 				gui.last_pressed_x = tx;
 				gui.last_pressed_y = ty - gui.pip_y;
 				gui.is_touching_screen = 1;
-				update_touch_list();
 				debug_printf_P(PSTR("pip x: %d, pip y: %d\n"), gui.last_pressed_x, gui.last_pressed_y);
+				update_touch_list();
 			}
 			gui.fix = 1;
 		}
