@@ -2232,6 +2232,12 @@ extern "C" {
 	#endif /* LCDMODE_HORFILL */
 #endif /* LCDMODE_LTDC */
 
+#if WITHTOUCHGUI
+	#if ! LCDMODE_V2A && ! LCDMODE_V2
+		#error LCDMODE_V2A or LCDMODE_V2 required with WITHTOUCHGUI
+	#endif /* ! LCDMODE_V2A && ! LCDMODE_V2A */
+#endif /* WITHTOUCHGUI */
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
