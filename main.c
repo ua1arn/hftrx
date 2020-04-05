@@ -4050,7 +4050,7 @@ static void auto_tune(void)
 	tunercap = statuses [cshindex].tunercap;
 	updateboard_tuner();
 	//debug_printf_P(PSTR("auto_tune stop\n"));
-NoMoreTune:
+////NoMoreTune:
 
 	save_i8(offsetof(struct nvmap, bands[b].tunercap), tunercap);
 	save_i8(offsetof(struct nvmap, bands[b].tunerind), tunerind);
