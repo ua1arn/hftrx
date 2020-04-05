@@ -278,7 +278,6 @@ hwacc_fillrect_u8(
 #else
 
 	memset(buffer, color, (size_t) PIXEL_SIZE * GXSIZE(dx, dy));
-	arm_hardware_flush((uintptr_t) buffer, (size_t) PIXEL_SIZE * GXSIZE(dx, dy));
 
 #endif
 }
@@ -423,7 +422,6 @@ hwacc_fillrect_u16(
 			* buffer ++ = color;
 		buffer += t;
 	}
-	arm_hardware_flush((uintptr_t) buffer, (size_t) PIXEL_SIZE * GXSIZE(dx, dy));
 
 #endif
 }
@@ -568,7 +566,6 @@ hwacc_fillrect_u24(
 			* buffer ++ = color;
 		buffer += t;
 	}
-	arm_hardware_flush((uintptr_t) buffer, (size_t) PIXEL_SIZE * GXSIZE(dx, dy));
 
 #endif
 }
