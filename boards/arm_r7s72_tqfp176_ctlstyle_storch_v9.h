@@ -105,7 +105,7 @@
 	//#define LCDMODE_V1	1	/* Обычная конфигурация с PIP на часть экрана, MAIN=L8, PIP=RGB565 */
 	#define LCDMODE_V1B	1	/* Обычная конфигурация с PIP на часть экрана, MAIN=L8, PIP=L8 */
 	//#define LCDMODE_V1A	1	/* Обычная конфигурация с PIP на часть экрана, MAIN=RGB565, PIP=RGB565 */
-	//#define LCDMODE_V2	1	/* только главный экран, без PIP */
+	//#define LCDMODE_V2	1	/* только главный экран с тремя видеобуферами L8, без PIP */
 	//#define LCDMODE_V2A	1	/* только главный экран, без PIP (но главный экран 16 бит) */
 
 	//#define WITHFLATLINK 1	/* Работа с TFT панелью через SN75LVDS83B	*/
