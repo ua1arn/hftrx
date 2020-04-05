@@ -451,7 +451,6 @@ void button1_handler(void);
 		uint8_t state;				 // последнее состояние
 		uint8_t is_touching_screen; // есть ли касание экрана в данный момент
 		uint8_t is_after_touch; 	 // есть ли касание экрана после выхода точки касания из элемента (при is_tracking == 0)
-		uint8_t fix;				 // первые координаты после нажатия от контролера тачскрина приходят старые, пропускаем
 		uint8_t window_to_draw;	 // индекс записи с описанием запрошенного к отображению окна
 		uint16_t pip_width;		 // параметры pip
 		uint16_t pip_height;
@@ -462,7 +461,7 @@ void button1_handler(void);
 		int16_t vector_move_y;
 	} gui_t;
 
-	static gui_t gui = { 0, 0, KBD_CODE_MAX, 0, TYPE_DUMMY, CANCELLED, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, };
+	static gui_t gui = { 0, 0, KBD_CODE_MAX, 0, TYPE_DUMMY, CANCELLED, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, };
 
 	typedef struct {
 		uint8_t window_id;			// в окне будут отображаться элементы с соответствующим полем for_window
@@ -708,11 +707,13 @@ void button1_handler(void);
 				val_high = get_high_bp(0);
 				val_low = get_low_bp(0);
 
-				local_snprintf_P(labels[id_lbl_high].text, TEXT_ARRAY_SIZE, PSTR("%d"), val_high * 100);
+				local_snprintf_P(buf, TEXT_ARRAY_SIZE, PSTR("%d"), val_high * 100);
+				strcpy(labels[id_lbl_high].text, buf);
 				x_h = normalize(val_high, 0, 50, 290) + 290;
 				labels[id_lbl_high].x = x_h + 64 > 550 ? 486 : x_h;
 
-				local_snprintf_P(labels[id_lbl_low].text, TEXT_ARRAY_SIZE, PSTR("%d"), val_low * 10);
+				local_snprintf_P(buf, TEXT_ARRAY_SIZE, PSTR("%d"), val_low * 10);
+				strcpy(labels[id_lbl_low].text, buf);
 				x_l = normalize(val_low, 0, 500, 290) + 290;
 				labels[id_lbl_low].x = x_l - strwidth(buf);
 			}
@@ -728,9 +729,12 @@ void button1_handler(void);
 				x_l = normalize(190 - val_w , 0, 500, 290) + 290;
 				x_h = normalize(190 + val_w , 0, 500, 290) + 290;
 
-				local_snprintf_P(labels[id_lbl_high].text, TEXT_ARRAY_SIZE, PSTR("%d"), val_w * 20);
+				local_snprintf_P(buf, TEXT_ARRAY_SIZE, PSTR("%d"), val_w * 20);
+				strcpy(labels[id_lbl_high].text, buf);
+				labels[id_lbl_high].x = x_c - strwidth(labels[id_lbl_high].text) / 2;
 
-				local_snprintf_P(labels[id_lbl_low].text, sizeof buf / sizeof buf[0], PSTR("P %d"), val_c * 10);
+				local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("P %d"), val_c * 10);
+				strcpy(labels[id_lbl_low].text, buf);
 				labels[id_lbl_low].x = 550 - strwidth(labels[id_lbl_low].text);
 			}
 		}
@@ -744,7 +748,8 @@ void button1_handler(void);
 				{
 					val_high = get_high_bp(encoder2.rotate);
 					encoder2.rotate_done = 1;
-					local_snprintf_P(labels[id_lbl_high].text, TEXT_ARRAY_SIZE, PSTR("%d"), val_high * 100);
+					local_snprintf_P(buf, TEXT_ARRAY_SIZE, PSTR("%d"), val_high * 100);
+					strcpy(labels[id_lbl_high].text, buf);
 					x_h = normalize(val_high, 0, 50, 290) + 290;
 					labels[id_lbl_high].x = x_h + 64 > 550 ? 486 : x_h;
 				}
@@ -752,7 +757,8 @@ void button1_handler(void);
 				{
 					val_low = get_low_bp(encoder2.rotate * 10);
 					encoder2.rotate_done = 1;
-					local_snprintf_P(labels[id_lbl_low].text, TEXT_ARRAY_SIZE, PSTR("%d"), val_low * 10);
+					local_snprintf_P(buf, TEXT_ARRAY_SIZE, PSTR("%d"), val_low * 10);
+					strcpy(labels[id_lbl_low].text, buf);
 					x_l = normalize(val_low / 10, 0, 50, 290) + 290;
 					labels[id_lbl_low].x = x_l - strwidth(labels[id_lbl_low].text);
 				}
@@ -774,10 +780,12 @@ void button1_handler(void);
 				x_l = normalize(190 - val_w , 0, 500, 290) + 290;
 				x_h = normalize(190 + val_w , 0, 500, 290) + 290;
 
-				local_snprintf_P(labels[id_lbl_high].text, TEXT_ARRAY_SIZE, PSTR("%d"), val_w * 20);
+				local_snprintf_P(buf, TEXT_ARRAY_SIZE, PSTR("%d"), val_w * 20);
+				strcpy(labels[id_lbl_high].text, buf);
 				labels[id_lbl_high].x = x_c - strwidth(labels[id_lbl_high].text) / 2;
 
-				local_snprintf_P(labels[id_lbl_low].text, TEXT_ARRAY_SIZE, PSTR("P %d"), val_c * 10);
+				local_snprintf_P(buf, TEXT_ARRAY_SIZE, PSTR("P %d"), val_c * 10);
+				strcpy(labels[id_lbl_low].text, buf);
 				labels[id_lbl_low].x = 550 - strwidth(labels[id_lbl_low].text);
 			}
 		}
@@ -1445,7 +1453,7 @@ void button1_handler(void);
 		const char * text) // pressed = 0
 	{
 		PACKEDCOLORPIP_T * const colorpip = getscratchpip();
-		PACKEDCOLOR565_T c1, c2;
+		COLORPIP_T c1, c2;
 		static const char delimeters [] = "|";
 		c1 = is_disabled ? COLOR_BUTTON_DISABLED : (is_locked ? COLOR_BUTTON_LOCKED : COLOR_BUTTON_NON_LOCKED);
 		c2 = is_disabled ? COLOR_BUTTON_DISABLED : (is_locked ? COLOR_BUTTON_PR_LOCKED : COLOR_BUTTON_PR_NON_LOCKED);
@@ -1478,6 +1486,126 @@ void button1_handler(void);
 		}
 	}
 
+	void set_state_record(list_template_t * val)
+	{
+		gui.selected_id = val->id;								// добавить везде проверку на gui.selected_type
+		switch (val->type)
+		{
+			case TYPE_BUTTON:
+				gui.selected_type = TYPE_BUTTON;
+				button_handlers[val->id].state = val->state;
+				if (button_handlers[val->id].onClickHandler && button_handlers[val->id].state == RELEASED)
+					button_handlers[val->id].onClickHandler();
+				break;
+
+			case TYPE_LABEL:
+				gui.selected_type = TYPE_LABEL;
+				labels[val->id].state = val->state;
+				if (labels[val->id].onClickHandler && labels[val->id].state == RELEASED)
+					labels[val->id].onClickHandler();
+				break;
+		}
+	}
+
+	void process_gui(void)
+	{
+		uint_fast16_t tx, ty;
+		static uint_fast16_t x_old = 0, y_old = 0;
+		static list_template_t * p = NULL;
+
+	#if defined (TSC1_TYPE)
+		if (board_tsc_getxy(& tx, & ty))
+		{
+			if (ty >= gui.pip_y)
+			{
+				gui.last_pressed_x = tx;
+				gui.last_pressed_y = ty - gui.pip_y;
+				gui.is_touching_screen = 1;
+				debug_printf_P(PSTR("pip x: %d, pip y: %d\n"), gui.last_pressed_x, gui.last_pressed_y);
+				update_touch_list();
+			}
+		}
+		else
+	#endif /* defined (TSC1_TYPE) */
+		{
+			gui.is_touching_screen = 0;
+			gui.is_after_touch = 0;
+		}
+
+		if (gui.state == CANCELLED && gui.is_touching_screen && ! gui.is_after_touch)
+		{
+			PLIST_ENTRY t;
+			for (t = touch_list.Blink; t != & touch_list; t = t->Blink)
+			{
+				p = CONTAINING_RECORD(t, list_template_t, item);
+
+				if (p->x1 < gui.last_pressed_x && p->x2 > gui.last_pressed_x
+				 && p->y1 < gui.last_pressed_y && p->y2 > gui.last_pressed_y
+				 && p->state != DISABLED && p->visible == VISIBLE)
+				{
+					gui.state = PRESSED;
+					break;
+				}
+			}
+		}
+
+		if (gui.is_tracking && ! gui.is_touching_screen)
+		{
+			gui.is_tracking = 0;
+			gui.vector_move_x = 0;
+			gui.vector_move_y = 0;
+			x_old = 0;
+			y_old = 0;
+		}
+
+		if (gui.state == PRESSED)
+		{
+			ASSERT(p != NULL);
+			if (p->is_trackable && gui.is_touching_screen)
+			{
+				gui.vector_move_x = x_old ? gui.vector_move_x + gui.last_pressed_x - x_old : 0; // т.к. process_gui и display_pip_update
+				gui.vector_move_y = y_old ? gui.vector_move_y + gui.last_pressed_y - y_old : 0; // вызываются с разной частотой, необходимо
+				p->state = PRESSED;																// накопление вектора перемещения точки
+				set_state_record(p);
+				if (gui.vector_move_x != 0 || gui.vector_move_y != 0)
+				{
+					gui.is_tracking = 1;
+//					debug_printf_P(PSTR("move x: %d, move y: %d\n"), gui.vector_move_x, gui.vector_move_y);
+				}
+				x_old = gui.last_pressed_x;
+				y_old = gui.last_pressed_y;
+			}
+			else if (p->x1 < gui.last_pressed_x && p->x2 > gui.last_pressed_x
+			 && p->y1 < gui.last_pressed_y && p->y2 > gui.last_pressed_y && ! gui.is_after_touch)
+			{
+				if (gui.is_touching_screen)
+				{
+					p->state = PRESSED;
+					set_state_record(p);
+				}
+				else
+					gui.state = RELEASED;
+			}
+			else
+			{
+				gui.state = CANCELLED;
+				p->state = CANCELLED;
+				set_state_record(p);
+				gui.is_after_touch = 1; 	// точка непрерывного нажатия вышла за пределы выбранного элемента, не поддерживающего tracking
+			}
+		}
+		if (gui.state == RELEASED)
+		{
+			p->state = RELEASED;			// для запуска обработчика нажатия
+			set_state_record(p);
+			p->state = CANCELLED;
+			set_state_record(p);
+			gui.is_after_touch = 0;
+			gui.state = CANCELLED;
+			gui.is_tracking = 0;
+		}
+	}
+
 	void display_pip_update(uint_fast8_t x, uint_fast8_t y, void * pv)
 	{
 		PACKEDCOLORPIP_T * const colorpip = getscratchpip();
@@ -1486,6 +1614,8 @@ void button1_handler(void);
 		char buf [TEXT_ARRAY_SIZE];
 		char * text2 = NULL;
 		uint_fast8_t str_len = 0;
+
+		process_gui();
 
 		// вывод на PIP служебной информации
 	#if WITHTHERMOLEVEL	// температура выходных транзисторов (при передаче)
@@ -1572,128 +1702,6 @@ void button1_handler(void);
 			if (bhf->parent != FOOTER)
 				break;
 			draw_button_pip(bhf->x1, bhf->y1, bhf->x2, bhf->y2, bhf->state, bhf->is_locked, bhf->state == DISABLED ? 1 : 0, bhf->text);
-		}
-	}
-
-	void set_state_record(list_template_t * val)
-	{
-		gui.selected_id = val->id;								// добавить везде проверку на gui.selected_type
-		switch (val->type)
-		{
-			case TYPE_BUTTON:
-				gui.selected_type = TYPE_BUTTON;
-				button_handlers[val->id].state = val->state;
-				if (button_handlers[val->id].onClickHandler && button_handlers[val->id].state == RELEASED)
-					button_handlers[val->id].onClickHandler();
-				break;
-
-			case TYPE_LABEL:
-				gui.selected_type = TYPE_LABEL;
-				labels[val->id].state = val->state;
-				if (labels[val->id].onClickHandler && labels[val->id].state == RELEASED)
-					labels[val->id].onClickHandler();
-				break;
-		}
-	}
-
-	void process_gui(void)
-	{
-		uint_fast16_t tx, ty;
-		static uint_fast16_t x_old = 0, y_old = 0;
-		static list_template_t * p = NULL;
-
-	#if defined (TSC1_TYPE)
-		if (board_tsc_is_pressed() && board_tsc_getxy(& tx, & ty))
-		{
-			if (gui.fix && ty >= gui.pip_y)			// первые координаты после нажатия от контролера тачскрина приходят старые, пропускаем
-			{
-				gui.last_pressed_x = tx;
-				gui.last_pressed_y = ty - gui.pip_y;
-				gui.is_touching_screen = 1;
-				debug_printf_P(PSTR("pip x: %d, pip y: %d\n"), gui.last_pressed_x, gui.last_pressed_y);
-				update_touch_list();
-			}
-			gui.fix = 1;
-		}
-		else
-	#endif /* defined (TSC1_TYPE) */
-		{
-			gui.is_touching_screen = 0;
-			gui.is_after_touch = 0;
-			gui.fix = 0;
-		}
-
-		if (gui.state == CANCELLED && gui.is_touching_screen && ! gui.is_after_touch)
-		{
-			PLIST_ENTRY t;
-			for (t = touch_list.Blink; t != & touch_list; t = t->Blink)
-			{
-				p = CONTAINING_RECORD(t, list_template_t, item);
-
-				if (p->x1 < gui.last_pressed_x && p->x2 > gui.last_pressed_x
-				 && p->y1 < gui.last_pressed_y && p->y2 > gui.last_pressed_y
-				 && p->state != DISABLED && p->visible == VISIBLE)
-				{
-					gui.state = PRESSED;
-					break;
-				}
-			}
-		}
-
-		if (gui.is_tracking && ! gui.is_touching_screen)
-		{
-			gui.is_tracking = 0;
-			gui.vector_move_x = 0;
-			gui.vector_move_y = 0;
-			x_old = 0;
-			y_old = 0;
-		}
-
-		if (gui.state == PRESSED)
-		{
-			ASSERT(p != NULL);
-			if (p->is_trackable && gui.is_touching_screen)
-			{
-				gui.vector_move_x = x_old ? gui.vector_move_x + gui.last_pressed_x - x_old : 0; // т.к. process_gui и display_pip_update
-				gui.vector_move_y = y_old ? gui.vector_move_y + gui.last_pressed_y - y_old : 0; // вызываются с разной частотой, необходимо
-				p->state = PRESSED;																// накопление вектора перемещения точки
-				set_state_record(p);
-				if (gui.vector_move_x != 0 || gui.vector_move_y != 0)
-				{
-					gui.is_tracking = 1;
-//					debug_printf_P(PSTR("move x: %d, move y: %d\n"), gui.vector_move_x, gui.vector_move_y);
-				}
-				x_old = gui.last_pressed_x;
-				y_old = gui.last_pressed_y;
-			}
-			else if (p->x1 < gui.last_pressed_x && p->x2 > gui.last_pressed_x
-			 && p->y1 < gui.last_pressed_y && p->y2 > gui.last_pressed_y && ! gui.is_after_touch)
-			{
-				if (gui.is_touching_screen)
-				{
-					p->state = PRESSED;
-					set_state_record(p);
-				}
-				else
-					gui.state = RELEASED;
-			}
-			else
-			{
-				gui.state = CANCELLED;
-				p->state = CANCELLED;
-				set_state_record(p);
-				gui.is_after_touch = 1; 	// точка непрерывного нажатия вышла за пределы выбранного элемента, не поддерживающего tracking
-			}
-		}
-		if (gui.state == RELEASED)
-		{
-			p->state = RELEASED;			// для запуска обработчика нажатия
-			set_state_record(p);
-			p->state = CANCELLED;
-			set_state_record(p);
-			gui.is_after_touch = 0;
-			gui.state = CANCELLED;
-			gui.is_tracking = 0;
 		}
 	}
 #endif /* WITHTOUCHGUI */

@@ -874,7 +874,7 @@ color24_shaded(
 {
 	//return dot;	// test
 	if (dot == 0)
-		return COLOR24(alpha, alpha, alpha);
+		return COLOR24(alpha / 10, alpha / 10, alpha / 10);
 	const uint_fast8_t r = scalecolor((dot >> 16) & 0xFF, 255, alpha);
 	const uint_fast8_t g = scalecolor((dot >> 8) & 0xFF, 255, alpha);
 	const uint_fast8_t b = scalecolor((dot >> 0) & 0xFF, 255, alpha);
@@ -1039,7 +1039,7 @@ void display2_xltrgb24(COLOR24_T * xltable)
 	fillpair_xltrgb24(xltable, COLORPIP_BLACK     , COLOR24(0x00, 0x00, 0x00));
 	fillpair_xltrgb24(xltable, COLORPIP_WHITE     , COLOR24(0xFF, 0xFF, 0xFF));
 	fillpair_xltrgb24(xltable, COLORPIP_GRAY      , COLOR24(0x80, 0x80, 0x80));
-	fillpair_xltrgb24(xltable, COLORPIP_DARKGREEN , COLOR24(0x00, 0x64, 0x00));
+	fillpair_xltrgb24(xltable, COLORPIP_DARKGREEN , COLOR24(0x00, 0x40, 0x00));
 	fillpair_xltrgb24(xltable, COLORPIP_BLUE      , COLOR24(0x00, 0x00, 0xFF));
 	fillpair_xltrgb24(xltable, COLORPIP_GREEN     , COLOR24(0x00, 0xFF, 0x00));
 	fillpair_xltrgb24(xltable, COLORPIP_RED       , COLOR24(0xFF, 0x00, 0x00));

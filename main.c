@@ -18041,7 +18041,6 @@ hamradio_main_step(void)
 			}
 			#if WITHTOUCHGUI
 				encoder2_busy = check_encoder2(nrotate2);
-				process_gui();
 			#endif /* WITHTOUCHGUI */
 		}
 		break;
