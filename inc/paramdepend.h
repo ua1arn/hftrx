@@ -2184,7 +2184,7 @@ extern "C" {
 	#define WITHFASTWATERFLOW 1
 
 #elif LCDMODE_V2
-	/* только главный экран с тремя видеобуферами, без PIP */
+	/* только главный экран с тремя видеобуферами L8, без PIP */
 	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
 	#define LCDMODE_MAIN_L8	1
 	//#define LCDMODE_MAIN_RGB565	1

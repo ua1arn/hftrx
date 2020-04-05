@@ -464,8 +464,10 @@ static void vdc5fb_init_graphics(struct st_vdc5 * const vdc)
 
 	////////////////////////////////////////////////////////////////
 	// GR3 - PIP screen
+	pipparams_t pipwnd;
+	display2_getpipparams(& pipwnd);
 
-	SETREG32_CK(& vdc->GR3_FLM_RD, 1, 0, 0);			// GR3_R_ENB Frame Buffer Read Enable
+	SETREG32_CK(& vdc->GR3_FLM_RD, 1, 0, 0);			// GR3_R_ENB Frame Buffer Read Disable
 	SETREG32_CK(& vdc->GR3_FLM1, 2, 8, 0x01);			// GR3_FLM_SEL 1: Selects GR3_FLM_NUM.
 	//SETREG32_CK(& vdc->GR3_FLM2, 32, 0, (uintptr_t) & framebuff);	// GR3_BASE
 	SETREG32_CK(& vdc->GR3_FLM3, 15, 16, MAINROWSIZE);		// GR3_LN_OFF
@@ -487,12 +489,8 @@ static void vdc5fb_init_graphics(struct st_vdc5 * const vdc)
 
 	/* Adjust GR3 parameters for PIP mode (GR2 - mani window, GR3 - PIP) */
 
-	//pipparams_t mainwnd = { 0, 0, DIM_SECOND, DIM_FIRST, (uintptr_t) & framebuff };
-	pipparams_t pipwnd;
-	display2_getpipparams(& pipwnd);
-
 	SETREG32_CK(& vdc->GR3_FLM_RD, 1, 0, 0);			// GR3_R_ENB Frame Buffer Read Enable
-	SETREG32_CK(& vdc->GR3_AB1, 2, 0,	0x02);			// GR3_DISP_SEL 2: Current graphics display
+	SETREG32_CK(& vdc->GR3_AB1, 2, 0,	0x01);			// GR3_DISP_SEL 1: Lower-layer graphics display
 	SETREG32_CK(& vdc->GR3_FLM3, 15, 16, pipwnd.w * sizeof (PACKEDCOLORPIP_T));		// GR3_LN_OFF
 	SETREG32_CK(& vdc->GR3_FLM3, 10, 0, 0x00);			// GR3_FLM_NUM
 	SETREG32_CK(& vdc->GR3_FLM4, 23, 0, pipwnd.w * pipwnd.h * sizeof (PACKEDCOLORPIP_T));	// GR3_FLM_OFF
@@ -854,8 +852,8 @@ void arm_hardware_ltdc_pip_set(uintptr_t p)
 {
 	struct st_vdc5 * const vdc = & VDC50;
 
-	SETREG32_CK(& vdc->GR3_FLM_RD, 1, 0, 1);		// GR3_R_ENB Frame Buffer Read Enable 1: Frame buffer reading is enabled.
 	SETREG32_CK(& vdc->GR3_FLM2, 32, 0, p);			// GR3_BASE
+	SETREG32_CK(& vdc->GR3_FLM_RD, 1, 0, 1);		// GR3_R_ENB Frame Buffer Read Enable 1: Frame buffer reading is enabled.
 	SETREG32_CK(& vdc->GR3_AB1, 2, 0,	0x03);		// GR3_DISP_SEL 3: Blended display of lower-layer graphics and current graphics
 
 	// GR3_IBUS_VEN in GR3_UPDATE is 1.
