@@ -380,7 +380,7 @@ static void vdc5fb_init_scalers(struct st_vdc5 * const vdc)
 
 static void vdc5fb_init_graphics(struct st_vdc5 * const vdc)
 {
-	const unsigned MAINROWSIZE = WIDTH * sizeof (PACKEDCOLORMAIN_T);	// размер одной строки в байтах
+	const unsigned MAINROWSIZE = sizeof (PACKEDCOLORMAIN_T) * DIM_SECOND;	// размер одной строки в байтах
 	// Таблица используемой при отображении палитры
 	COLOR24_T xltrgb24 [256];
 	display2_xltrgb24(xltrgb24);
@@ -424,7 +424,7 @@ static void vdc5fb_init_graphics(struct st_vdc5 * const vdc)
 	////////////////////////////////////////////////////////////////
 	// GR2 - main screen
 
-	SETREG32_CK(& vdc->GR2_FLM_RD, 1, 0, 0);	// GR2_R_ENB Frame Buffer Read Enable
+	SETREG32_CK(& vdc->GR2_FLM_RD, 1, 0, 0);	// GR2_R_ENB 0: Frame buffer reading is disabled.
 	SETREG32_CK(& vdc->GR2_FLM1, 2, 8, 0x01);	// GR2_FLM_SEL 1: Selects GR2_FLM_NUM.
 	//SETREG32_CK(& vdc->GR2_FLM2, 32, 0, (uintptr_t) & framebuff);	// GR2_BASE
 	SETREG32_CK(& vdc->GR2_FLM3, 15, 16, MAINROWSIZE);	// GR2_LN_OFF
@@ -436,7 +436,7 @@ static void vdc5fb_init_graphics(struct st_vdc5 * const vdc)
 	SETREG32_CK(& vdc->GR2_FLM6, 4, 28, grx_format_MAIN);	// GR2_FORMAT 0: RGB565
 	SETREG32_CK(& vdc->GR2_FLM6, 3, 10, grx_rdswa_MAIN);	// GR2_RDSWA 110: (7) (8) (5) (6) (3) (4) (1) (2) [32-bit swap + 16-bit swap]
 	SETREG32_CK(& vdc->GR2_AB1, 2, 0,	0x00);			// GR2_DISP_SEL 0: Background color display
-	SETREG32_CK(& vdc->GR2_BASE, 24, 0, 0x0000FF00);	// BLUE GR2_BASE GBR Background Color B,Gb & R Signal
+	SETREG32_CK(& vdc->GR2_BASE, 24, 0, 0x00000000);	// BLUE GR2_BASE GBR Background Color B,Gb & R Signal
 	SETREG32_CK(& vdc->GR2_AB2, 11, 16, TOPMARGIN);	// GR2_GRC_VS
 	SETREG32_CK(& vdc->GR2_AB2, 11, 0, HEIGHT);		// GR2_GRC_VW
 	SETREG32_CK(& vdc->GR2_AB3, 11, 16, LEFTMARGIN);	// GR2_GRC_HS
@@ -465,7 +465,7 @@ static void vdc5fb_init_graphics(struct st_vdc5 * const vdc)
 	////////////////////////////////////////////////////////////////
 	// GR3 - PIP screen
 
-	SETREG32_CK(& vdc->GR3_FLM_RD, 1, 0, 0);			// GR3_R_ENB Frame Buffer Read Disable
+	SETREG32_CK(& vdc->GR3_FLM_RD, 1, 0, 0);			// GR3_R_ENB Frame Buffer Read Enable
 	SETREG32_CK(& vdc->GR3_FLM1, 2, 8, 0x01);			// GR3_FLM_SEL 1: Selects GR3_FLM_NUM.
 	//SETREG32_CK(& vdc->GR3_FLM2, 32, 0, (uintptr_t) & framebuff);	// GR3_BASE
 	SETREG32_CK(& vdc->GR3_FLM3, 15, 16, MAINROWSIZE);		// GR3_LN_OFF
@@ -563,6 +563,127 @@ static void vdc5fb_init_tcon(struct st_vdc5 * const vdc)
 	SETREG32_CK(& vdc->TCON_TIM_STVA2, 1, 4, VSYNCNEG * 0x01);		// TCON_STVA_INV
 	// DE polarity
 	SETREG32_CK(& vdc->TCON_TIM_DE, 1, 0, DENEG * 0x01);			// TCON_DE_INV
+
+#if 0
+	static const unsigned char tcon_sel[LCD_MAX_TCON]
+		= { 0, 1, 2, 7, 4, 5, 6, };
+	struct fb_videomode *mode = priv->videomode;
+	struct vdc5fb_pdata *pdata = priv_to_pdata(priv);
+	uint32_t vs_s, vs_w, ve_s, ve_w;
+	uint32_t hs_s, hs_w, he_s, he_w;
+	uint32_t tmp1, tmp2;
+
+	tmp1 = TCON_OFFSET(0);
+	tmp1 |= TCON_HALF(priv->res_fh / 2);
+	vdc5fb_write(priv, TCON_TIM, tmp1);
+	tmp2 = 0;
+#if 0
+	tmp2 = TCON_DE_INV;
+#endif
+	vdc5fb_write(priv, TCON_TIM_DE, tmp2);
+
+	vs_s = (2 * 0);
+	vs_w = (2 * mode->vsync_len);
+	ve_s = (2 * (mode->vsync_len + mode->upper_margin));
+	ve_w = (2 * priv->panel_pixel_yres);
+
+	tmp1 = TCON_VW(vs_w);
+	tmp1 |= TCON_VS(vs_s);
+	vdc5fb_write(priv, TCON_TIM_STVA1, tmp1);
+	if (pdata->tcon_sel[LCD_TCON0] == TCON_SEL_UNUSED)
+		tmp2 = TCON_SEL(tcon_sel[LCD_TCON0]);
+	else
+		tmp2 = TCON_SEL(pdata->tcon_sel[LCD_TCON0]);
+	if (!(mode->sync & FB_SYNC_VERT_HIGH_ACT))
+		tmp2 |= TCON_INV;
+	vdc5fb_write(priv, TCON_TIM_STVA2, tmp2);
+
+	tmp1 = TCON_VW(ve_w);
+	tmp1 |= TCON_VS(ve_s);
+	vdc5fb_write(priv, TCON_TIM_STVB1, tmp1);
+	if (pdata->tcon_sel[LCD_TCON1] == TCON_SEL_UNUSED)
+		tmp2 = TCON_SEL(tcon_sel[LCD_TCON1]);
+	else
+		tmp2 = TCON_SEL(pdata->tcon_sel[LCD_TCON1]);
+#if 0
+	tmp2 |= TCON_INV;
+#endif
+	vdc5fb_write(priv, TCON_TIM_STVB2, tmp2);
+
+	hs_s = 0;
+	hs_w = mode->hsync_len;
+	he_s = (mode->hsync_len + mode->left_margin);
+	he_w = priv->panel_pixel_xres;
+
+	tmp1 = TCON_HW(hs_w);
+	tmp1 |= TCON_HS(hs_s);
+	vdc5fb_write(priv, TCON_TIM_STH1, tmp1);
+	if (pdata->tcon_sel[LCD_TCON2] == TCON_SEL_UNUSED)
+		tmp2 = TCON_SEL(tcon_sel[LCD_TCON2]);
+	else
+		tmp2 = TCON_SEL(pdata->tcon_sel[LCD_TCON2]);
+	if (!(mode->sync & FB_SYNC_HOR_HIGH_ACT))
+		tmp2 |= TCON_INV;
+#if 0
+	tmp2 |= TCON_HS_SEL;
+#endif
+	vdc5fb_write(priv, TCON_TIM_STH2, tmp2);
+
+	tmp1 = TCON_HW(he_w);
+	tmp1 |= TCON_HS(he_s);
+	vdc5fb_write(priv, TCON_TIM_STB1, tmp1);
+	if (pdata->tcon_sel[LCD_TCON3] == TCON_SEL_UNUSED)
+		tmp2 = TCON_SEL(tcon_sel[LCD_TCON3]);
+	else
+		tmp2 = TCON_SEL(pdata->tcon_sel[LCD_TCON3]);
+#if 0
+	tmp2 |= TCON_INV;
+	tmp2 |= TCON_HS_SEL;
+#endif
+	vdc5fb_write(priv, TCON_TIM_STB2, tmp2);
+
+	tmp1 = TCON_HW(hs_w);
+	tmp1 |= TCON_HS(hs_s);
+	vdc5fb_write(priv, TCON_TIM_CPV1, tmp1);
+	if (pdata->tcon_sel[LCD_TCON4] == TCON_SEL_UNUSED)
+		tmp2 = TCON_SEL(tcon_sel[LCD_TCON4]);
+	else
+		tmp2 = TCON_SEL(pdata->tcon_sel[LCD_TCON4]);
+#if 0
+	tmp2 |= TCON_INV;
+	tmp2 |= TCON_HS_SEL;
+#endif
+	vdc5fb_write(priv, TCON_TIM_CPV2, tmp2);
+
+	tmp1 = TCON_HW(he_w);
+	tmp1 |= TCON_HS(he_s);
+	vdc5fb_write(priv, TCON_TIM_POLA1, tmp1);
+	if (pdata->tcon_sel[LCD_TCON5] == TCON_SEL_UNUSED)
+		tmp2 = TCON_SEL(tcon_sel[LCD_TCON5]);
+	else
+		tmp2 = TCON_SEL(pdata->tcon_sel[LCD_TCON5]);
+#if 0
+	tmp2 |= TCON_HS_SEL;
+	tmp2 |= TCON_INV;
+	tmp2 |= TCON_MD;
+#endif
+	vdc5fb_write(priv, TCON_TIM_POLA2, tmp2);
+
+	tmp1 = TCON_HW(he_w);
+	tmp1 |= TCON_HS(he_s);
+	vdc5fb_write(priv, TCON_TIM_POLB1, tmp1);
+	if (pdata->tcon_sel[LCD_TCON6] == TCON_SEL_UNUSED)
+		tmp2 = TCON_SEL(tcon_sel[LCD_TCON6]);
+	else
+		tmp2 = TCON_SEL(pdata->tcon_sel[LCD_TCON6]);
+#if 0
+	tmp2 |= TCON_INV;
+	tmp2 |= TCON_HS_SEL;
+	tmp2 |= TCON_MD;
+#endif
+	vdc5fb_write(priv, TCON_TIM_POLB2, tmp2);
+
+#endif
 }
 
 static void vdc5fb_update_all(struct st_vdc5 * const vdc)
@@ -629,6 +750,56 @@ static void vdc5fb_update_all(struct st_vdc5 * const vdc)
 			(1 << 0) |	// TCON_VEN
 			0
 		);
+
+#if 0
+	uint32_t tmp;
+
+	tmp = IMGCNT_VEN;
+	vdc5fb_update_regs(priv, IMGCNT_UPDATE, tmp, 1);
+
+	tmp = (SC_SCL0_VEN_A | SC_SCL0_VEN_B | SC_SCL0_UPDATE
+		| SC_SCL0_VEN_C | SC_SCL0_VEN_D);
+	vdc5fb_update_regs(priv, SC0_SCL0_UPDATE, tmp, 1);
+
+	tmp = (SC_SCL1_VEN_A | SC_SCL1_VEN_B | SC_SCL1_UPDATE_A
+		| SC_SCL1_UPDATE_B);
+	vdc5fb_update_regs(priv, SC0_SCL1_UPDATE, tmp, 1);
+
+	tmp = (GR_IBUS_VEN | GR_P_VEN | GR_UPDATE);
+	vdc5fb_update_regs(priv, GR0_UPDATE, tmp, 1);
+	vdc5fb_update_regs(priv, GR1_UPDATE, tmp, 1);
+
+	tmp = ADJ_VEN;
+	vdc5fb_write(priv, ADJ0_UPDATE, tmp);
+	vdc5fb_write(priv, ADJ1_UPDATE, tmp);
+
+	tmp = (GR_IBUS_VEN | GR_P_VEN | GR_UPDATE);
+	vdc5fb_update_regs(priv, GR2_UPDATE, tmp, 1);
+	vdc5fb_update_regs(priv, GR3_UPDATE, tmp, 1);
+
+	tmp = (GR_P_VEN | GR_UPDATE);
+	vdc5fb_update_regs(priv, GR_VIN_UPDATE, tmp, 1);
+
+#ifdef OUTPUT_IMAGE_GENERATOR
+	tmp = (SC_SCL_VEN_A | SC_SCL_VEN_B | SC_SCL_UPDATE
+		| SC_SCL_VEN_C | SC_SCL_VEN_D);
+	vdc5fb_update_regs(priv, OIR_SCL0_UPDATE, tmp, 1);
+	vdc5fb_update_regs(priv, OIR_SCL1_UPDATE, tmp, 1);
+
+	tmp = (GR_IBUS_VEN | GR_P_VEN | GR_UPDATE);
+	vdc5fb_update_regs(priv, GR_OIR_UPDATE, tmp, 1);
+#endif
+
+	tmp = OUTCNT_VEN;
+	vdc5fb_update_regs(priv, OUT_UPDATE, tmp, 1);
+	tmp = GAM_VEN;
+	vdc5fb_update_regs(priv, GAM_G_UPDATE, tmp, 1);
+	vdc5fb_update_regs(priv, GAM_B_UPDATE, tmp, 1);
+	vdc5fb_update_regs(priv, GAM_R_UPDATE, tmp, 1);
+	tmp = TCON_VEN;
+	vdc5fb_update_regs(priv, TCON_UPDATE, tmp, 1);
+
+#endif
 }
 
 void
@@ -671,18 +842,20 @@ arm_hardware_ltdc_initialize(void)
 	HARDWARE_LTDC_SET_MODE(BOARD_MODEVALUE);
 #endif
 
+#if LCDMODE_PIP_RGB565 || LCDMODE_PIP_L8
+	arm_hardware_ltdc_pip_off();
+#endif /* LCDMODE_PIP_RGB565 || LCDMODE_PIP_L8 */
+
 	debug_printf_P(PSTR("arm_hardware_ltdc_initialize done\n"));
 }
 
-//#if LCDMODE_PIP_L8 || LCDMODE_PIP_RGB565
-
-/* Set PIP frame buffer address. */
+/* set bottom buffer start */
 void arm_hardware_ltdc_pip_set(uintptr_t p)
 {
 	struct st_vdc5 * const vdc = & VDC50;
 
-	SETREG32_CK(& vdc->GR3_FLM2, 32, 0, p);			// GR3_BASE
 	SETREG32_CK(& vdc->GR3_FLM_RD, 1, 0, 1);		// GR3_R_ENB Frame Buffer Read Enable 1: Frame buffer reading is enabled.
+	SETREG32_CK(& vdc->GR3_FLM2, 32, 0, p);			// GR3_BASE
 	SETREG32_CK(& vdc->GR3_AB1, 2, 0,	0x03);		// GR3_DISP_SEL 3: Blended display of lower-layer graphics and current graphics
 
 	// GR3_IBUS_VEN in GR3_UPDATE is 1.
@@ -691,15 +864,14 @@ void arm_hardware_ltdc_pip_set(uintptr_t p)
 
 	//vdc5_update(& vdc->GR3_UPDATE, "GR3_UPDATE",
 		vdc->GR3_UPDATE = (
-		//	(1 << 8) |	// GR3_UPDATE Frame Buffer Read Control Register Update
+			(1 << 8) |	// GR3_UPDATE Frame Buffer Read Control Register Update
 			(1 << 4) |	// GR3_P_VEN Graphics Display Register Update
 			(1 << 0) |	// GR3_IBUS_VEN Frame Buffer Read Control Register Update
 			0
 		);
 }
 
-/* Turn PIP off (main layer only). */
-void arm_hardware_ltdc_pip_off(void)
+void arm_hardware_ltdc_pip_off(void)	// set PIP framebuffer address
 {
 	struct st_vdc5 * const vdc = & VDC50;
 
@@ -707,36 +879,33 @@ void arm_hardware_ltdc_pip_off(void)
 	SETREG32_CK(& vdc->GR3_AB1, 2, 0,	0x01);			// GR3_DISP_SEL 1: Lower-layer graphics display
 
 	//vdc5_update(& vdc->GR3_UPDATE, "GR3_UPDATE",
-	vdc->GR3_UPDATE = (
-	//	(1 << 8) |	// GR3_UPDATE Frame Buffer Read Control Register Update
-		(1 << 4) |	// GR3_P_VEN Graphics Display Register Update
-		(1 << 0) |	// GR3_IBUS_VEN Frame Buffer Read Control Register Update
-		0
-	);
+		vdc->GR3_UPDATE = (
+			(1 << 8) |	// GR3_UPDATE Frame Buffer Read Control Register Update
+			(1 << 4) |	// GR3_P_VEN Graphics Display Register Update
+			(1 << 0) |	// GR3_IBUS_VEN Frame Buffer Read Control Register Update
+			0
+		);
 }
-
-//#endif /* LCDMODE_PIP_L8 || LCDMODE_PIP_RGB565 */
-
-/* Set MAIN frame buffer address. */
+/* set bottom buffer start */
 void arm_hardware_ltdc_main_set(uintptr_t p)
 {
 	struct st_vdc5 * const vdc = & VDC50;
 
-	SETREG32_CK(& vdc->GR2_FLM2, 32, 0, p);		// GR2_BASE
-	SETREG32_CK(& vdc->GR2_FLM_RD, 1, 0, 1);	// GR2_R_ENB Frame Buffer Read Enable
-	SETREG32_CK(& vdc->GR2_AB1, 2, 0,	0x02);	// GR2_DISP_SEL 2: Current graphics display
+	SETREG32_CK(& vdc->GR2_FLM_RD, 1, 0, 1);		// GR2_R_ENB Frame Buffer Read Enable 1: Frame buffer reading is enabled.
+	SETREG32_CK(& vdc->GR2_FLM2, 32, 0, p);			// GR2_BASE
+	SETREG32_CK(& vdc->GR2_AB1, 2, 0,	0x02);		// GR2_DISP_SEL 2: Current graphics display
 
-	// GR3_IBUS_VEN in GR3_UPDATE is 1.
-	// GR3_IBUS_VEN and GR3_P_VEN in GR3_UPDATE are 1.
-	// GR3_P_VEN in GR3_UPDATE is 1.
+	// GR2_IBUS_VEN in GR2_UPDATE is 1.
+	// GR2_IBUS_VEN and GR2_P_VEN in GR2_UPDATE are 1.
+	// GR2_P_VEN in GR2_UPDATE is 1.
 
 	//vdc5_update(& vdc->GR3_UPDATE, "GR3_UPDATE",
-	vdc->GR2_UPDATE = (
-	//	(1 << 8) |	// GR3_UPDATE Frame Buffer Read Control Register Update
-		(1 << 4) |	// GR3_P_VEN Graphics Display Register Update
-		(1 << 0) |	// GR3_IBUS_VEN Frame Buffer Read Control Register Update
-		0
-	);
+		vdc->GR2_UPDATE = (
+			(1 << 8) |	// GR2_UPDATE Frame Buffer Read Control Register Update
+			(1 << 4) |	// GR2_P_VEN Graphics Display Register Update
+			(1 << 0) |	// GR2_IBUS_VEN Frame Buffer Read Control Register Update
+			0
+		);
 }
 
 #elif CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
@@ -877,7 +1046,7 @@ typedef struct
                                                  must range from LTDC_AccumulatedActiveH to 0x7FF. */
             
 
-  uint32_t LTDC_BackgroundColor;         /*!< configures the background  */
+  PACKEDCOLOR_T LTDC_BackgroundColor;         /*!< configures the background  */
 
 } LTDC_InitTypeDef;
 
@@ -905,7 +1074,7 @@ typedef struct
   uint32_t LTDC_ConstantAlpha;              /*!< Specifies the constant alpha used for blending.
                                                  This parameter must range from 0x00 to 0xFF. */
 
-  uint32_t LTDC_DefaultColor;           /*!< Configures the default color value.. */
+  PACKEDCOLOR_T LTDC_DefaultColor;           /*!< Configures the default color value.. */
 
 
   uint32_t LTDC_BlendingFactor_1;           /*!< Select the blending factor 1. This parameter 
@@ -914,7 +1083,7 @@ typedef struct
   uint32_t LTDC_BlendingFactor_2;           /*!< Select the blending factor 2. This parameter 
                                                  can be one of value of @ref LTDC_BlendingFactor2 */
             
-  //uint32_t LTDC_CFBStartAdress;             /*!< Configures the color frame buffer address */
+  uint32_t LTDC_CFBStartAdress;             /*!< Configures the color frame buffer address */
 
   uint32_t LTDC_CFBLineLength;              /*!< Configures the color frame buffer line length. 
                                                  This parameter must range from 0x0000 to 0x1FFF. */
@@ -926,7 +1095,7 @@ typedef struct
                                                  This parameter must range from 0x000 to 0x7FF. */
 } LTDC_Layer_InitTypeDef;
 
-#if LCDMODE_LTDC_L24
+#if LCDMODE_MAIN_L24
 
 
 // Создаём палитру выполняющую просто трансляцию значения
@@ -1226,7 +1395,7 @@ arm_hardware_ltdc_initialize(void)
 	debug_printf_P(PSTR("arm_hardware_ltdc_initialize start, WIDTH=%d, HEIGHT=%d\n"), WIDTH, HEIGHT);
 
 	//const unsigned ROWSIZE = sizeof framebuff [0];	// размер одной строки в байтах
-	//const unsigned rowsize2 = (sizeof (PACKEDCOLORMAIN_T) * DIM_SECOND);
+	//const unsigned rowsize2 = (sizeof (PACKEDCOLOR_T) * DIM_SECOND);
 	//ASSERT(ROWSIZE == rowsize2);
 	//debug_printf_P(PSTR("arm_hardware_ltdc_initialize: framebuff=%p\n"), framebuff);
 
@@ -1327,17 +1496,17 @@ arm_hardware_ltdc_initialize(void)
 
 	// Top layer - LTDC_Layer2
 	// Bottom layer - LTDC_Layer1
-#if LCDMODE_LTDC_L24
+#if LCDMODE_MAIN_L24
 
-	LCD_LayerInit(LAYER_MAIN, LEFTMARGIN, TOPMARGIN, & mainwnd, LTDC_Pixelformat_L8, 3, sizeof (PACKEDCOLORMAIN_T));
+	LCD_LayerInit(LAYER_MAIN, LEFTMARGIN, TOPMARGIN, & mainwnd, LTDC_Pixelformat_L8, 3, sizeof (PACKEDCOLOR_T));
 
 #elif LCDMODE_MAIN_L8
 
-	LCD_LayerInit(LAYER_MAIN, LEFTMARGIN, TOPMARGIN, & mainwnd, LTDC_Pixelformat_L8, 1, sizeof (PACKEDCOLORMAIN_T));
+	LCD_LayerInit(LAYER_MAIN, LEFTMARGIN, TOPMARGIN, & mainwnd, LTDC_Pixelformat_L8, 1, sizeof (PACKEDCOLOR_T));
 
 #else
 	/* Без палитры */
-	LCD_LayerInit(LAYER_MAIN, LEFTMARGIN, TOPMARGIN, & mainwnd, LTDC_Pixelformat_RGB565, 1, sizeof (PACKEDCOLORMAIN_T));
+	LCD_LayerInit(LAYER_MAIN, LEFTMARGIN, TOPMARGIN, & mainwnd, LTDC_Pixelformat_RGB565, 1, sizeof (PACKEDCOLOR_T));
 
 #endif /* LCDMODE_MAIN_L8 */
 
@@ -1364,7 +1533,7 @@ arm_hardware_ltdc_initialize(void)
 	/* Enable the LTDC */
 	LTDC->GCR |= LTDC_GCR_LTDCEN;
 
-#if LCDMODE_LTDC_L24
+#if LCDMODE_MAIN_L24
 	fillLUT_L24(LAYER_MAIN);	// прямая трансляция всех ьайтов из памяти на выход. загрузка палитры - имеет смысл до Reload
 #elif LCDMODE_MAIN_L8
 	fillLUT_L8(LAYER_MAIN, xltrgb24);	// загрузка палитры - имеет смысл до Reload
@@ -1388,12 +1557,10 @@ arm_hardware_ltdc_initialize(void)
 #if defined (BOARD_MODEVALUE)
 	HARDWARE_LTDC_SET_MODE(BOARD_MODEVALUE);
 #endif
-
 	debug_printf_P(PSTR("arm_hardware_ltdc_initialize done\n"));
 }
 
-//#if LCDMODE_PIP_L8 || LCDMODE_PIP_RGB565
-
+/* set bottom buffer start */
 /* Set PIP frame buffer address. */
 void arm_hardware_ltdc_pip_set(uintptr_t p)
 {
@@ -1414,7 +1581,7 @@ void arm_hardware_ltdc_pip_off(void)
 	LTDC->SRCR = LTDC_SRCR_VBR;	/* Vertical Blanking Reload. */
 }
 
-//#endif /* LCDMODE_PIP_RGB565 */
+//
 
 /* Set MAIN frame buffer address. */
 void arm_hardware_ltdc_main_set(uintptr_t p)
