@@ -1203,17 +1203,36 @@ static void display_currlevelA6(
 	void * pv
 	)
 {
-#if WITHCURRLEVEL && WITHCPUADCHW
-	int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
+#if WITHCURRLEVEL_ACS712_30A
 
-	colmain_setcolors(colorsfg_1state [0], colorsbg_1state [0]);
-	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
-	do
-	{
-		display_value_small(x + CHARS2GRID(0), y + lowhalf, drain, 3 | WMINUSFLAG, 2, 255, 0, lowhalf);
-	} while (lowhalf --);
-	display_at_P(x + CHARS2GRID(5), y, PSTR("A"));
-#endif /* WITHCURRLEVEL && WITHCPUADCHW */
+	#if WITHCURRLEVEL && WITHCPUADCHW
+		int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
+
+		colmain_setcolors(colorsfg_1state [0], colorsbg_1state [0]);
+		uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
+		do
+		{
+			display_value_small(x + CHARS2GRID(0), y + lowhalf, drain, 3 | WMINUSFLAG, 1, 255, 1, lowhalf);
+			//display_gotoxy(x + CHARS2GRID(4), y + lowhalf);
+			//display_string_P(PSTR("A"), lowhalf);
+		} while (lowhalf --);
+	#endif /* WITHCURRLEVEL && WITHCPUADCHW */
+
+#else /* WITHCURRLEVEL_ACS712_30A */
+	// dd.d - 5 places (without "A")
+	#if WITHCURRLEVEL && WITHCPUADCHW
+		int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
+
+		colmain_setcolors(colorsfg_1state [0], colorsbg_1state [0]);
+		uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
+		do
+		{
+			display_value_small(x + CHARS2GRID(0), y + lowhalf, drain, 3 | WMINUSFLAG, 2, 255, 0, lowhalf);
+		} while (lowhalf --);
+		display_at_P(x + CHARS2GRID(5), y, PSTR("A"));
+	#endif /* WITHCURRLEVEL && WITHCPUADCHW */
+
+#endif /* WITHCURRLEVEL_ACS712_30A */
 }
 
 // d.dd - 5 places (without "A")
@@ -1223,29 +1242,51 @@ static void display_currlevel5(
 	void * pv
 	)
 {
-#if WITHCURRLEVEL2 && WITHCPUADCHW
-	int_fast16_t drain = hamradio_get_pacurrent2_value();	// Ток в сотнях милиампер (до 25.5 ампера), может быть отрицательным
+#if WITHCURRLEVEL_ACS712_30A
 
-	colmain_setcolors(colorsfg_1state [0], colorsbg_1state [0]);
-	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
-	do
-	{
-		display_value_small(x + CHARS2GRID(0), y + lowhalf, drain, 3 | WMINUSFLAG, 1, 255, 0, lowhalf);
-		//display_gotoxy(x + CHARS2GRID(4), y + lowhalf);
-		//display_string_P(PSTR("A"), lowhalf);
-	} while (lowhalf --);
-#elif WITHCURRLEVEL && WITHCPUADCHW
-	int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
+	#if WITHCURRLEVEL && WITHCPUADCHW
+		int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
 
-	colmain_setcolors(colorsfg_1state [0], colorsbg_1state [0]);
-	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
-	do
-	{
-		display_value_small(x + CHARS2GRID(0), y + lowhalf, drain, 3 | WMINUSFLAG, 2, 255, 0, lowhalf);
-		//display_gotoxy(x + CHARS2GRID(4), y + lowhalf);	
-		//display_string_P(PSTR("A"), lowhalf);
-	} while (lowhalf --);
-#endif /* WITHCURRLEVEL && WITHCPUADCHW */
+		colmain_setcolors(colorsfg_1state [0], colorsbg_1state [0]);
+		uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
+		do
+		{
+			display_value_small(x + CHARS2GRID(0), y + lowhalf, drain, 3 | WMINUSFLAG, 1, 255, 1, lowhalf);
+			//display_gotoxy(x + CHARS2GRID(4), y + lowhalf);
+			//display_string_P(PSTR("A"), lowhalf);
+		} while (lowhalf --);
+	#endif /* WITHCURRLEVEL && WITHCPUADCHW */
+
+#else / *WITHCURRLEVEL_ACS712_30A */
+
+	#if WITHCURRLEVEL2 && WITHCPUADCHW
+
+		int_fast16_t drain = hamradio_get_pacurrent2_value();	// Ток в сотнях милиампер (до 25.5 ампера), может быть отрицательным
+
+		colmain_setcolors(colorsfg_1state [0], colorsbg_1state [0]);
+		uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
+		do
+		{
+			display_value_small(x + CHARS2GRID(0), y + lowhalf, drain, 3 | WMINUSFLAG, 1, 255, 0, lowhalf);
+			//display_gotoxy(x + CHARS2GRID(4), y + lowhalf);
+			//display_string_P(PSTR("A"), lowhalf);
+		} while (lowhalf --);
+
+	#elif WITHCURRLEVEL && WITHCPUADCHW
+
+		int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
+
+		colmain_setcolors(colorsfg_1state [0], colorsbg_1state [0]);
+		uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
+		do
+		{
+			display_value_small(x + CHARS2GRID(0), y + lowhalf, drain, 3 | WMINUSFLAG, 2, 255, 0, lowhalf);
+			//display_gotoxy(x + CHARS2GRID(4), y + lowhalf);
+			//display_string_P(PSTR("A"), lowhalf);
+		} while (lowhalf --);
+	#endif /* WITHCURRLEVEL && WITHCPUADCHW */
+
+#endif /* WITHCURRLEVEL_ACS712_30A */
 }
 // dd.d - 5 places (without "A")
 static void display_currlevel5alt(

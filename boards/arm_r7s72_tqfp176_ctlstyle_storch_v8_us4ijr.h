@@ -5,6 +5,8 @@
 // автор Гена Завидовский mgs2001@mail.ru
 // UA1ARN
 //
+// US4IJR Alex home config
+//
 // rmainunit_v5km2.pcb rmainunit_v5km3
 // R7S721020VCFP, TFT 4.3" or 7", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N, AD9246BCPZ-125
 
@@ -483,15 +485,18 @@
 	// Назначения входов АЦП процессора.
 	enum 
 	{ 
+	WPM_POTIX = BOARD_ADCXIN(2),			// MCP3208 CH2 потенциометр управления скоростью передачи в телеграфе
+	IFGAIN_IXI = BOARD_ADCXIN(0),			// MCP3208 CH0 IF GAIN
+	AFGAIN_IXI = BOARD_ADCXIN(1),			// MCP3208 CH1 AF GAIN
+
 	#if WITHPOTIFGAIN
-		POTIFGAIN = BOARD_ADCXIN(0),		// MCP3208 CH0 IF GAIN
+		POTIFGAIN = IFGAIN_IXI,
 	#endif /* WITHPOTIFGAIN */
 	#if WITHPOTAFGAIN
-		//POTAFGAIN = BOARD_ADCXIN(2),		// MCP3208 CH2 потенциометр управления скоростью передачи в телеграфе
-		POTAFGAIN = BOARD_ADCXIN(1),		// MCP3208 CH1 AF GAIN
+		POTAFGAIN = AFGAIN_IXI,
 	#endif /* WITHPOTAFGAIN */
 	#if WITHPOTWPM
-		POTWPM = BOARD_ADCXIN(2),			// MCP3208 CH2 потенциометр управления скоростью передачи в телеграфе
+		POTWPM = WPM_POTIX,
 	#endif /* WITHPOTWPM */
 	#if WITHTHERMOLEVEL
 		XTHERMOIX = BOARD_ADCXIN(6),		// MCP3208 CH6 Exernal thermo sensor ST LM235Z
@@ -505,9 +510,16 @@
 		FWD = 0, REF = 1,	// PB0	SWR-meter
 	#endif /* WITHSWRMTR */
 
-	#if WITHCURRLEVEL
-		PASENSEIX = 2,		// PA1 PA current sense - ACS712-05 chip
-	#endif /* WITHCURRLEVEL */
+	#if WITHAUTOTUNER_AVBELNN
+		#define WITHCURRLEVEL_ACS712_30A 1	// PA current sense - ACS712ELCTR-30B-T chip
+		#if WITHCURRLEVEL
+			PASENSEIX = WPM_POTIX,		// PA1 PA current sense - ACS712-05 chip
+		#endif /* WITHCURRLEVEL */
+	#else /* WITHAUTOTUNER_AVBELNN */
+		#if WITHCURRLEVEL
+			PASENSEIX = 2,		// PA1 PA current sense - ACS712-05 chip
+		#endif /* WITHCURRLEVEL */
+	#endif /* WITHAUTOTUNER_AVBELNN */
 
 		KI0 = 3, KI1 = 4, KI2 = 5, KI3 = 6, KI4 = 7		// клавиатура
 	};
