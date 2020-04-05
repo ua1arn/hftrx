@@ -1046,7 +1046,7 @@ typedef struct
                                                  must range from LTDC_AccumulatedActiveH to 0x7FF. */
             
 
-  PACKEDCOLOR_T LTDC_BackgroundColor;         /*!< configures the background  */
+  uint32_t LTDC_BackgroundColor;         /*!< configures the background  */
 
 } LTDC_InitTypeDef;
 
@@ -1074,7 +1074,7 @@ typedef struct
   uint32_t LTDC_ConstantAlpha;              /*!< Specifies the constant alpha used for blending.
                                                  This parameter must range from 0x00 to 0xFF. */
 
-  PACKEDCOLOR_T LTDC_DefaultColor;           /*!< Configures the default color value.. */
+  uint32_t LTDC_DefaultColor;           /*!< Configures the default color value.. */
 
 
   uint32_t LTDC_BlendingFactor_1;           /*!< Select the blending factor 1. This parameter 
@@ -1498,15 +1498,15 @@ arm_hardware_ltdc_initialize(void)
 	// Bottom layer - LTDC_Layer1
 #if LCDMODE_MAIN_L24
 
-	LCD_LayerInit(LAYER_MAIN, LEFTMARGIN, TOPMARGIN, & mainwnd, LTDC_Pixelformat_L8, 3, sizeof (PACKEDCOLOR_T));
+	LCD_LayerInit(LAYER_MAIN, LEFTMARGIN, TOPMARGIN, & mainwnd, LTDC_Pixelformat_L8, 3, sizeof (PACKEDCOLORMAIN_T));
 
 #elif LCDMODE_MAIN_L8
 
-	LCD_LayerInit(LAYER_MAIN, LEFTMARGIN, TOPMARGIN, & mainwnd, LTDC_Pixelformat_L8, 1, sizeof (PACKEDCOLOR_T));
+	LCD_LayerInit(LAYER_MAIN, LEFTMARGIN, TOPMARGIN, & mainwnd, LTDC_Pixelformat_L8, 1, sizeof (PACKEDCOLORMAIN_T));
 
 #else
 	/* Без палитры */
-	LCD_LayerInit(LAYER_MAIN, LEFTMARGIN, TOPMARGIN, & mainwnd, LTDC_Pixelformat_RGB565, 1, sizeof (PACKEDCOLOR_T));
+	LCD_LayerInit(LAYER_MAIN, LEFTMARGIN, TOPMARGIN, & mainwnd, LTDC_Pixelformat_RGB565, 1, sizeof (PACKEDCOLORMAIN_T));
 
 #endif /* LCDMODE_MAIN_L8 */
 
