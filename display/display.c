@@ -192,7 +192,7 @@ volatile uint8_t * hwacc_getbufaddr_u8(
 // Функция получает координаты и работает нал буфером в горищонталтной ориентации.
 void
 hwacc_fillrect_u8(
-	volatile uint8_t * buffer,
+	uint8_t * buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
 	uint_fast16_t col,	// начальная координата
@@ -277,7 +277,19 @@ hwacc_fillrect_u8(
 
 #else
 
-	memset(buffer, color, (size_t) PIXEL_SIZE * GXSIZE(dx, dy));
+	// программная реализация
+
+	const unsigned t = dx - w;
+	buffer += (dx * row) + col;
+	while (h --)
+	{
+		uint8_t * const startmem = buffer;
+
+		unsigned n = w;
+		while (n --)
+			* buffer ++ = color;
+		buffer += t;
+	}
 
 #endif
 }
@@ -285,7 +297,7 @@ hwacc_fillrect_u8(
 // Функция получает координаты и работает нал буфером в горищонталтной ориентации.
 void
 hwacc_fillrect_u16(
-	volatile uint16_t * buffer,
+	uint16_t * buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
 	uint_fast16_t col,	// начальная координата
@@ -415,7 +427,7 @@ hwacc_fillrect_u16(
 	buffer += (dx * row) + col;
 	while (h --)
 	{
-		volatile uint16_t * const startmem = buffer;
+		uint16_t * const startmem = buffer;
 
 		unsigned n = w;
 		while (n --)
@@ -429,7 +441,7 @@ hwacc_fillrect_u16(
 // Функция получает координаты и работает нал буфером в горищонталтной ориентации.
 void
 hwacc_fillrect_u24(
-	volatile PACKEDCOLORMAIN_T * buffer,
+	PACKEDCOLORMAIN_T * buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
 	uint_fast16_t col,	// начальная координата
@@ -559,7 +571,7 @@ hwacc_fillrect_u24(
 	buffer += (dx * row) + col;
 	while (h --)
 	{
-		volatile PACKEDCOLORMAIN_T * const startmem = buffer;
+		PACKEDCOLORMAIN_T * const startmem = buffer;
 
 		unsigned n = w;
 		while (n --)
@@ -1871,7 +1883,15 @@ display_fillrect(
 	PACKEDCOLORMAIN_T * const buffer = colmain_fb_draw();
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
-	colmain_fillrect_pattern(buffer, dx, dy, x, y, w, h, color, color, 0xFF);
+
+	if (sizeof (COLORMAIN_T) == 1 && x == 0 && y == 0 && w == dx && h == dy)
+	{
+		memset(buffer, color, GXSIZE(dx, dy));
+	}
+	else
+	{
+		colmain_fillrect_pattern(buffer, dx, dy, x, y, w, h, color, color, 0xFF);
+	}
 }
 
 /* заполнение прямоугольника в буфере произвольным цветом
