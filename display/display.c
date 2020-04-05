@@ -926,9 +926,12 @@ void colpip_transparency(
 
 	for (y = y1; y <= y2; y ++)
 	{
-		const uint_fast16_t yt = dx * y;
-		for (uint_fast16_t x = x1; x <= x2; x ++)
+		uint_fast16_t x;
+		const uint_fast32_t yt = (uint_fast32_t) dx * y;
+		ASSERT(y < dy);
+		for (x = x1; x <= x2; x ++)
 		{
+			ASSERT(x < dx);
 			buffer [yt + x] = getshadedcolor(buffer [yt + x], alpha);
 		}
 	}
