@@ -1257,7 +1257,7 @@ static void display_currlevel5(
 		} while (lowhalf --);
 	#endif /* WITHCURRLEVEL && WITHCPUADCHW */
 
-#else / *WITHCURRLEVEL_ACS712_30A */
+#else /* WITHCURRLEVEL_ACS712_30A */
 
 	#if WITHCURRLEVEL2 && WITHCPUADCHW
 
