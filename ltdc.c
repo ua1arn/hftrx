@@ -435,7 +435,7 @@ static void vdc5fb_init_graphics(struct st_vdc5 * const vdc)
 	SETREG32_CK(& vdc->GR2_FLM6, 11, 16, WIDTH - 1);	// GR2_HW Sets the width of the horizontal valid period.
 	SETREG32_CK(& vdc->GR2_FLM6, 4, 28, grx_format_MAIN);	// GR2_FORMAT 0: RGB565
 	SETREG32_CK(& vdc->GR2_FLM6, 3, 10, grx_rdswa_MAIN);	// GR2_RDSWA 110: (7) (8) (5) (6) (3) (4) (1) (2) [32-bit swap + 16-bit swap]
-	SETREG32_CK(& vdc->GR2_AB1, 2, 0,	0x02);			// GR2_DISP_SEL 2: Current graphics display
+	SETREG32_CK(& vdc->GR2_AB1, 2, 0,	0x00);			// GR2_DISP_SEL 0: Background color display
 	SETREG32_CK(& vdc->GR2_BASE, 24, 0, 0x0000FF00);	// BLUE GR2_BASE GBR Background Color B,Gb & R Signal
 	SETREG32_CK(& vdc->GR2_AB2, 11, 16, TOPMARGIN);	// GR2_GRC_VS
 	SETREG32_CK(& vdc->GR2_AB2, 11, 0, HEIGHT);		// GR2_GRC_VW
@@ -725,10 +725,6 @@ void arm_hardware_ltdc_main_set(uintptr_t p)
 	SETREG32_CK(& vdc->GR2_FLM2, 32, 0, p);		// GR2_BASE
 	SETREG32_CK(& vdc->GR2_FLM_RD, 1, 0, 1);	// GR2_R_ENB Frame Buffer Read Enable
 	SETREG32_CK(& vdc->GR2_AB1, 2, 0,	0x02);	// GR2_DISP_SEL 2: Current graphics display
-
-	SETREG32_CK(& vdc->GR3_FLM_RD, 1, 0, 1);			// GR3_R_ENB Frame Buffer Read Enable 1: Frame buffer reading is enabled.
-	SETREG32_CK(& vdc->GR3_FLM2, 32, 0, p);			// GR3_BASE
-	SETREG32_CK(& vdc->GR3_AB1, 2, 0,	0x03);			// GR3_DISP_SEL 3: Blended display of lower-layer graphics and current graphics
 
 	// GR3_IBUS_VEN in GR3_UPDATE is 1.
 	// GR3_IBUS_VEN and GR3_P_VEN in GR3_UPDATE are 1.
