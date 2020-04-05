@@ -1084,14 +1084,18 @@ void display2_xltrgb24(COLOR24_T * xltable)
 
 // получить адрес требуемой позиции в буфере
 PACKEDCOLORPIP_T *
-colpip_mem_at(
+(colpip_mem_at)(
 	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
 	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t y	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	const char * file,
+	int line
 	)
 {
+	if (x >= dx || y >= dy)
+		PRINTF("colpip_mem_at: x/y=%u/%u dx/dy=%u/%u from %s %d\n", x, y, dx, dy, file, line);
 	ASSERT(x < dx);
 	ASSERT(y < dy);
 #if LCDMODE_HORFILL

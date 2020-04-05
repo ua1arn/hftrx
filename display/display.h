@@ -1054,13 +1054,16 @@ display_colorbuf_set_vline(
 
 // получить адрес требуемой позиции в буфере
 PACKEDCOLORPIP_T *
-colpip_mem_at(
+(colpip_mem_at)(
 	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
 	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t y	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	const char * file,
+	int line
 	);
+#define colpip_mem_at(a,b,c,d,e) (colpip_mem_at)((a), (b), (c), (d), (e), __FILE__,__LINE__)
 
 // получить адрес требуемой позиции в буфере
 PACKEDCOLORMAIN_T *
