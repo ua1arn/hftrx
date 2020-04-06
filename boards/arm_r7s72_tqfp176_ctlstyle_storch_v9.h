@@ -370,6 +370,7 @@
 	#define WITHBARS		1	/* отображение S-метра и SWR-метра */
 
 	#define WITHVOLTLEVEL	1	/* отображение напряжения питания */
+	#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
 	////#define WITHTHERMOLEVEL	1	/* отображение температуры */
 
 	//#define WITHSWLMODE	1	/* поддержка запоминания множества частот в swl-mode */

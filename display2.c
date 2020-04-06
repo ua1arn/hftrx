@@ -1203,7 +1203,7 @@ static void display_currlevelA6(
 	void * pv
 	)
 {
-#if WITHCURRLEVEL_ACS712_30A
+#if (WITHCURRLEVEL_ACS712_30A || WITHCURRLEVEL_ACS712_20A)
 
 	#if WITHCURRLEVEL && WITHCPUADCHW
 		int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
@@ -1242,7 +1242,7 @@ static void display_currlevel5(
 	void * pv
 	)
 {
-#if WITHCURRLEVEL_ACS712_30A
+#if (WITHCURRLEVEL_ACS712_30A || WITHCURRLEVEL_ACS712_20A)
 
 	#if WITHCURRLEVEL && WITHCPUADCHW
 		int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
@@ -1295,7 +1295,7 @@ static void display_currlevel5alt(
 	void * pv
 	)
 {
-#if WITHCURRLEVEL && WITHCPUADCHW
+#if WITHCURRLEVEL && WITHCPUADCHW && (WITHCURRLEVEL_ACS712_30A || WITHCURRLEVEL_ACS712_20A)
 	int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
 
 	colmain_setcolors(colorsfg_1state [0], colorsbg_1state [0]);
@@ -4172,7 +4172,7 @@ enum
 		{	6, 	51,	display_atu3,		REDRM_MODE, PGALL, },	// TUNER state (optional)
 		{	10, 51,	display_byp3,		REDRM_MODE, PGALL, },	// TUNER BYPASS state (optional)
 		{	14, 51,	display_thermo4,	REDRM_VOLT, PGALL, },	// thermo sensor
-	#if CTLSTYLE_RA4YBO || CTLSTYLE_RA4YBO_V3
+	#if (WITHCURRLEVEL_ACS712_30A || WITHCURRLEVEL_ACS712_20A)
 		{	19, 51,	display_currlevel5alt, REDRM_VOLT, PGALL, },	// PA drain current dd.d without "A"
 	#else
 		{	19, 51,	display_currlevel5, REDRM_VOLT, PGALL, },	// PA drain current d.dd without "A"
@@ -4710,7 +4710,11 @@ enum
 		{	23, DLE1,	display_thermo4,	REDRM_VOLT, PGALL, },	// thermo sensor
 		{	28, DLE1,	display_usb3,		REDRM_BARS, PGALL, },	// USB host status
 
+	#if (WITHCURRLEVEL_ACS712_30A || WITHCURRLEVEL_ACS712_20A)
+		{	39, DLE1,	display_currlevel5alt, REDRM_VOLT, PGALL, },	// PA drain current dd.d without "A"
+	#else
 		{	39, DLE1,	display_currlevel5, REDRM_VOLT, PGALL, },	// PA drain current d.dd without "A"
+	#endif
 		{	45, DLE1,	display_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
 	#if WITHAMHIGHKBDADJ
 		//{	XX, DLE1,	display_amfmhighcut4,REDRM_MODE, PGALL, },	// 3.70
