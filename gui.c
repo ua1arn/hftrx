@@ -587,7 +587,7 @@ void button1_handler(void);
 				p->x1 = labels[p->id].x;
 				p->x2 = labels[p->id].x + strwidth(labels[p->id].text);
 				p->y1 = labels[p->id].y - 8;
-				p->y2 = labels[p->id].y + strwidth(labels[p->id].text) + 8;
+				p->y2 = labels[p->id].y + SMALLCHARH + 8;
 				p->state = labels[p->id].state;
 				p->visible = labels[p->id].visible;
 				p->is_trackable = labels[p->id].is_trackable;
@@ -829,6 +829,7 @@ void button1_handler(void);
 				menu_label_touched = 1;
 				menu_level = MENU_VALS;
 			}
+			PRINTF("%d\n", gui.selected_id);
 		}
 	}
 
@@ -1106,9 +1107,9 @@ void button1_handler(void);
 				button_handlers[id_button_up].y2 = button_handlers[id_button_down].y2;
 				for (uint8_t i = 0; i <= menu[MENU_GROUPS].num_rows; i++)
 				{
-					labels[i + menu[MENU_GROUPS].first_id].color = i == menu[MENU_GROUPS].selected_label ? COLORPIP_YELLOW : COLORPIP_DARKGRAY;
-					labels[i + menu[MENU_PARAMS].first_id].color = i == menu[MENU_PARAMS].selected_label ? COLORPIP_YELLOW : COLORPIP_DARKGRAY;
-					labels[i + menu[MENU_VALS].first_id].color = i == menu[MENU_PARAMS].selected_label ? COLORPIP_YELLOW : COLORPIP_DARKGRAY;
+					labels[i + menu[MENU_GROUPS].first_id].color = i == menu[MENU_GROUPS].selected_label ? COLORPIP_YELLOW : COLORPIP_GRAY;
+					labels[i + menu[MENU_PARAMS].first_id].color = i == menu[MENU_PARAMS].selected_label ? COLORPIP_YELLOW : COLORPIP_GRAY;
+					labels[i + menu[MENU_VALS].first_id].color = i == menu[MENU_PARAMS].selected_label ? COLORPIP_YELLOW : COLORPIP_GRAY;
 				}
 				menu_label_touched = 0;
 			}
@@ -1118,7 +1119,7 @@ void button1_handler(void);
 				button_handlers[id_button_up].visible = NON_VISIBLE;
 				for (uint8_t i = 0; i <= menu[MENU_GROUPS].num_rows; i++)
 				{
-					labels[i + menu[MENU_GROUPS].first_id].color = i == menu[MENU_GROUPS].selected_label ? COLORPIP_YELLOW : COLORPIP_DARKGRAY;
+					labels[i + menu[MENU_GROUPS].first_id].color = i == menu[MENU_GROUPS].selected_label ? COLORPIP_YELLOW : COLORPIP_GRAY;
 					labels[i + menu[MENU_PARAMS].first_id].color = COLORPIP_WHITE;
 					labels[i + menu[MENU_VALS].first_id].color = COLORPIP_WHITE;
 				}

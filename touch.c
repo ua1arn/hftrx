@@ -254,7 +254,7 @@ static uint_fast8_t stmpe811_TS_GetXYZ(
 	* X = (vdataXY >> 12) & 0x00000FFF;
 	* Y = (vdataXY >> 0) & 0x00000FFF;
 	* Z = dataXYZ [3];
-#if 0
+#if 1
 	/* Reset FIFO */
 	i2cperiph_write8(DeviceAddr, STMPE811_REG_FIFO_STA, 0x01);
 	/* Enable the FIFO again */
