@@ -367,7 +367,7 @@
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
 		#define SHORTSET7	1
 	#endif
-	//#define WITHOUTTXCADCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
+	//#define WITHNOTXDACCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
 
 	#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
 	//#define WITHTHERMOLEVEL	1	/* отображение температуры */

@@ -5891,11 +5891,11 @@ txparam_update(uint_fast8_t profile)
 	subtonevolume = (glob_subtonelevel / (FLOAT_t) 100);
 	mainvolumetx = 1 - subtonevolume;
 
-#if WITHCPUDACHW && WITHPOWERTRIM && ! WITHOUTTXCADCONTROL
+#if WITHCPUDACHW && WITHPOWERTRIM && ! WITHNOTXDACCONTROL
 	// ALC
 	// регулировка напряжения на REFERENCE INPUT TXDAC AD9744
 	HARDWARE_DAC_ALC((glob_opowerlevel - WITHPOWERTRIMMIN) * dac_dacfs_coderange / (WITHPOWERTRIMMAX - WITHPOWERTRIMMIN) + dac_dacfs_lowcode);
-#endif /* WITHCPUDACHW && WITHPOWERTRIM && ! WITHOUTTXCADCONTROL */
+#endif /* WITHCPUDACHW && WITHPOWERTRIM && ! WITHNOTXDACCONTROL */
 	// Девиация в NFM
 	gnfmdeviationftw = FTWAF((int) glob_nfmdeviation100 * 100L);
 

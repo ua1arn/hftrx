@@ -88,11 +88,6 @@ display_put_char_small(uint_fast16_t x, uint_fast16_t y, uint_fast8_t c, uint_fa
 	return x;
 }
 
-void
-display_gotoxy(uint_fast8_t x, uint_fast8_t y)
-{
-}
-
 // Координаты в пикселях
 void display_plotfrom(uint_fast16_t x, uint_fast16_t y)
 {

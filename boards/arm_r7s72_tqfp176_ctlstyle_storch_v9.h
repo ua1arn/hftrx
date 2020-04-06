@@ -370,8 +370,6 @@
 
 	#define WITHBARS		1	/* отображение S-метра и SWR-метра */
 
-	#define WITHVOLTLEVEL	1	/* отображение напряжения питания */
-	#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
 	////#define WITHTHERMOLEVEL	1	/* отображение температуры */
 
 	//#define WITHSWLMODE	1	/* поддержка запоминания множества частот в swl-mode */
@@ -385,7 +383,7 @@
 	#define WITHPOTAFGAIN		1	/* регуляторы усиления НЧ на потенциометрах */
 
 	#define WITHMENU 	1	/* функциональность меню может быть отключена - если настраивать нечего */
-	#define WITHOUTTXCADCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
+	#define WITHNOTXDACCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
 	#define WITHPOWERTRIM		1	// Имеется управление мощностью
 
 	//#define WITHONLYBANDS 1		/* Перестройка может быть ограничена любительскими диапазонами */
@@ -497,48 +495,73 @@
 	// Назначения входов АЦП процессора.
 	enum 
 	{ 
-		WPM_POTIX = BOARD_ADCXIN(2),			// MCP3208 CH2 потенциометр управления скоростью передачи в телеграфе
-		IFGAIN_IXI = BOARD_ADCXIN(0),			// MCP3208 CH0 IF GAIN
-		AFGAIN_IXI = BOARD_ADCXIN(1),			// MCP3208 CH1 AF GAIN
+		WPM_POTIX = BOARD_ADCX1IN(2),			// MCP3208 CH2 потенциометр управления скоростью передачи в телеграфе
+		IFGAIN_IXI = BOARD_ADCX1IN(0),			// MCP3208 CH0 IF GAIN
+		AFGAIN_IXI = BOARD_ADCX1IN(1),			// MCP3208 CH1 AF GAIN
 
-		#if WITHPOTIFGAIN
-			POTIFGAIN = IFGAIN_IXI,
-		#endif /* WITHPOTIFGAIN */
-		#if WITHPOTAFGAIN
-			POTAFGAIN = AFGAIN_IXI,
-		#endif /* WITHPOTAFGAIN */
-		#if WITHPOTWPM
-			POTWPM = WPM_POTIX,
-		#endif /* WITHPOTWPM */
-		#if WITHTHERMOLEVEL
-			XTHERMOIX = BOARD_ADCXIN(6),		// MCP3208 CH6 Exernal thermo sensor ST LM235Z
-		#endif /* WITHTHERMOLEVEL */
-		#if WITHVOLTLEVEL
-			VOLTSOURCE = BOARD_ADCXIN(7),		// MCP3208 CH7 Средняя точка делителя напряжения, для АКБ
-		#endif /* WITHVOLTLEVEL */
+	#if WITHPOTIFGAIN
+		POTIFGAIN = IFGAIN_IXI,
+	#endif /* WITHPOTIFGAIN */
+	#if WITHPOTAFGAIN
+		POTAFGAIN = AFGAIN_IXI,
+	#endif /* WITHPOTAFGAIN */
 
-		#if WITHSWRMTR
-			PWRI = 0,			// PB1
-			FWD = 0, REF = 1,	// PB0	SWR-meter
-		#endif /* WITHSWRMTR */
+		XTHERMOIX = BOARD_ADCX1IN(6),		// MCP3208 CH6 Exernal thermo sensor ST LM235Z
 
-		#if WITHAUTOTUNER_AVBELNN
-			#define WITHCURRLEVEL_ACS712_30A 1	// PA current sense - ACS712ELCTR-30B-T chip
-			//#define WITHCURRLEVEL_ACS712_20A 1	// PA current sense - ACS712ELCTR-20B-T chip
-			#if WITHCURRLEVEL
-				PASENSEIX = WPM_POTIX,		// PA1 PA current sense - ACS712-05 chip
-			#endif /* WITHCURRLEVEL */
-		#else /* WITHAUTOTUNER_AVBELNN */
-			#if WITHCURRLEVEL
-				PASENSEIX = 2,		// PA1 PA current sense - ACS712-05 chip
-			#endif /* WITHCURRLEVEL */
-		#endif /* WITHAUTOTUNER_AVBELNN */
+	#if WITHAUTOTUNER_AVBELNN
+
+		#define WITHVOLTLEVEL	1	/* отображение напряжения питания */
+		#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
+
+		#define WITHCURRLEVEL_ACS712_30A 1	// PA current sense - ACS712ELCTR-30B-T chip
+		//#define WITHCURRLEVEL_ACS712_20A 1	// PA current sense - ACS712ELCTR-20B-T chip
+		PASENSEIX = WPM_POTIX,		// PA1 PA current sense - ACS712-05 chip
+		FWD = 0, REF = 1,	// PB0	SWR-meter
+		PWRI = FWD,			// PB1
+		VOLTSOURCE = BOARD_ADCX1IN(7),		// MCP3208 CH7 Средняя точка делителя напряжения, для АКБ
+
+		#define VOLTLEVEL_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика напряжения
+		#define VOLTLEVEL_LOWER		10	// 1.0 kOhm - нижний резистор
+
+
+	#elif 1
+		// UA1CEI PA board: MCP3208 at targetext2 - P2_0 external SPI device (PA BOARD ADC)
+
+		#define WITHVOLTLEVEL	1	/* отображение напряжения питания */
+		//#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
+		#define WITHCURRLEVEL2	1	/* отображение тока оконечного каскада */
+
+		VOLTSOURCE = BOARD_ADCX2IN(4),		// MCP3208 CH7 Средняя точка делителя напряжения, для АКБ
+
+		#define VOLTLEVEL_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика напряжения
+		#define VOLTLEVEL_LOWER		10	// 1.0 kOhm - нижний резистор
+
+
+		FWD = BOARD_ADCX2IN(2),
+		REF = BOARD_ADCX2IN(3),
+		PWRI = FWD,
+
+		PASENSEIX2 = BOARD_ADCX2IN(0),	// DRAIN
+		PAREFERIX2 = BOARD_ADCX2IN(1),	// reference (1/2 питания ACS712ELCTR-30B-T).
+
+	#else /* WITHAUTOTUNER_AVBELNN */
+		// QRP вариант - только 5 ватт на плате
+
+		#define WITHVOLTLEVEL	1	/* отображение напряжения питания */
+		#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
+
+		#define VOLTLEVEL_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика напряжения
+		#define VOLTLEVEL_LOWER		10	// 1.0 kOhm - нижний резистор
+
+		POTWPM = WPM_POTIX,
+		PASENSEIX = 2,		// PA1 PA current sense - ACS712-05 chip
+		FWD = 0, REF = 1,	// PB0	SWR-meter
+		PWRI = FWD,			// PB1
+		VOLTSOURCE = BOARD_ADCX1IN(7),		// MCP3208 CH7 Средняя точка делителя напряжения, для АКБ
+	#endif /* WITHAUTOTUNER_AVBELNN */
 
 		KI0 = 3, KI1 = 4, KI2 = 5, KI3 = 6, KI4 = 7		// клавиатура
 	};
-
-	#define VOLTLEVEL_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика напряжения
-	#define VOLTLEVEL_LOWER		10	// 1.0 kOhm - нижний резистор
 	// ST LM235Z
 	#define THERMOSENSOR_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика температуры
 	#define THERMOSENSOR_LOWER		10	// 1 kOhm - нижний резистор

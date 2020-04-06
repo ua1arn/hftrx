@@ -8221,7 +8221,7 @@ updateboard(
 			board_set_afhighcuttx(bwseti_gethigh(bwseti));	/* Верхняя частота среза фильтра НЧ по передаче */
 			board_set_afresponcetx(bwseti_getafresponce(bwseti));	/* коррекция АЧХ НЧ тракта передатчика */
 			board_set_nfmdeviation100(gnfmdeviation);	/* Девиация при передаче в NFM - в сотнях герц */
-		#if WITHOUTTXCADCONTROL
+		#if WITHNOTXDACCONTROL
 			/* мощность регулируется умножнением выходных значений в потоке к FPGA / IF CODEC */
 			board_set_dacscale(gdacscale * (unsigned long) (getactualpower() - WITHPOWERTRIMMIN) / (WITHPOWERTRIMMAX - WITHPOWERTRIMMIN));
 		#else /* CPUDAC */

@@ -352,7 +352,7 @@
 	//#define WITHPOTPOWER	1	/* регулятор мощности на потенциометре */
 	//#define WITHANTSELECT	1	// Управление переключением антенн
 	#define WITHSLEEPTIMER	1	/* выключить индикатор и вывод звука по истечениии указанного времени */
-	#define WITHOUTTXCADCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
+	#define WITHNOTXDACCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
 	#define WITHPOWERTRIM		1	// Имеется управление мощностью
 	#define WITHPOWERTRIMMIN	5	// Нижний предел регулировки (показываемый на дисплее)
 	#define WITHPOWERTRIMMAX	100	// Верхний предел регулировки (показываемый на дисплее)

@@ -349,7 +349,7 @@
 	//#define WITHPOTWPM		1	/* используется регулировка скорости передачи в телеграфе потенциометром */
 	#define WITHPOTIFGAIN		1	/* регуляторы усиления ПЧ на потенциометрах */
 	#define WITHPOTAFGAIN		1	/* регуляторы усиления НЧ на потенциометрах */
-	#define WITHOUTTXCADCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
+	#define WITHNOTXDACCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
 	#define WITHPOWERTRIM		1	// Имеется управление мощностью
 
 	#define WITHMENU 	1	/* функциональность меню может быть отключена - если настраивать нечего */
@@ -478,6 +478,7 @@
 	#endif /* WITHTHERMOLEVEL */
 
 	#if 0
+
 		// main moard - 5W
 		#if WITHVOLTLEVEL
 			VOLTSOURCE = BOARD_ADCX1IN(7),		// MCP3208 CH7 Средняя точка делителя напряжения, для АКБ
@@ -492,7 +493,9 @@
 		#if WITHCURRLEVEL
 			PASENSEIX = 2,		// PA1 PA current sense - ACS712-05 chip
 		#endif /* WITHCURRLEVEL */
+
 	#else
+
 		// UA1CEI PA board: MCP3208 at targetext2 - P2_0 external SPI device (PA BOARD ADC)
 		VOLTSOURCE = BOARD_ADCX2IN(4),		// MCP3208 CH7 Средняя точка делителя напряжения, для АКБ
 
@@ -503,6 +506,7 @@
 		#define WITHCURRLEVEL2	1	/* отображение тока оконечного каскада */
 		PASENSEIX2 = BOARD_ADCX2IN(0),	// DRAIN
 		PAREFERIX2 = BOARD_ADCX2IN(1),	// reference (1/2 питания ACS712ELCTR-30B-T).
+
 	#endif
 
 		KI0 = 3, KI1 = 4, KI2 = 5, KI3 = 6, KI4 = 7		// клавиатура
