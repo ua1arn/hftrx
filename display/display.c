@@ -16,6 +16,7 @@
 #include <string.h>
 
 #if LCDMODE_LTDC
+
 	typedef PACKEDCOLORMAIN_T FRAMEBUFF_T [LCDMODE_MAIN_PAGES][DIM_FIRST][DIM_SECOND];
 
 	#if defined (SDRAM_BANK_ADDR) && LCDMODE_LTDCSDRAMBUFF && LCDMODE_LTDC
@@ -25,32 +26,32 @@
 		//extern FRAMEBUFF_T framebuff0;	//L8 (8-bit Luminance or CLUT)
 	#endif /* defined (SDRAM_BANK_ADDR) && LCDMODE_LTDCSDRAMBUFF && LCDMODE_LTDC */
 
+	#if ! defined (SDRAM_BANK_ADDR)
+		// буфер экрана
+		RAMFRAMEBUFF ALIGNX_BEGIN FRAMEBUFF_T framebuff0 ALIGNX_END;
+	#endif /* LCDMODE_LTDC */
+
+	static uint_fast8_t mainphase;
+
+	void colmain_fb_next(void)
+	{
+		mainphase = (mainphase + 1) % LCDMODE_MAIN_PAGES;
+	}
+
+	PACKEDCOLORMAIN_T *
+	colmain_fb_draw(void)
+	{
+		return (PACKEDCOLORMAIN_T *) & framebuff0 [(mainphase + 1) % LCDMODE_MAIN_PAGES] [0] [0];
+	}
+
+
+	PACKEDCOLORMAIN_T *
+	colmain_fb_show(void)
+	{
+		return (PACKEDCOLORMAIN_T *) & framebuff0 [mainphase] [0] [0];
+	}
+
 #endif /* LCDMODE_LTDC */
-
-#if LCDMODE_LTDC && ! defined (SDRAM_BANK_ADDR)
-	// буфер экрана
-	RAMFRAMEBUFF ALIGNX_BEGIN FRAMEBUFF_T framebuff0 ALIGNX_END;
-#endif /* LCDMODE_LTDC */
-
-static uint_fast8_t mainphase;
-
-void colmain_fb_next(void)
-{
-	mainphase = (mainphase + 1) % LCDMODE_MAIN_PAGES;
-}
-
-PACKEDCOLORMAIN_T *
-colmain_fb_draw(void)
-{
-	return (PACKEDCOLORMAIN_T *) & framebuff0 [(mainphase + 1) % LCDMODE_MAIN_PAGES] [0] [0];
-}
-
-
-PACKEDCOLORMAIN_T *
-colmain_fb_show(void)
-{
-	return (PACKEDCOLORMAIN_T *) & framebuff0 [mainphase] [0] [0];
-}
 
 /*
 	Dead time value in the AXI clock cycle inserted between two consecutive accesses on

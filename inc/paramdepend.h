@@ -2219,6 +2219,17 @@ extern "C" {
 
 	#define WITHFASTWATERFLOW 1
 
+#elif LCDMODE_DUMMY
+
+	#define LCDMODE_MAIN_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит - RGB565. */
+	//#define LCDMODE_MAIN_RGB565	1
+	#define LCDMODE_MAIN_PAGES	0
+
+	#define LCDMODE_PIP_L8	1
+	#define LCDMODE_PIP_PAGES	0
+	//#define COLORPIP_SHADED 128
+
+
 #endif
 
 #if LCDMODE_LTDC
