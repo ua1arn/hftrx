@@ -184,12 +184,9 @@
 	// +++ Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
 	//#define LCDMODE_HARD_SPI	1	/* LCD over SPI line */
 	//#define LCDMODE_DUMMY	1
-	#define LCDMODE_V1B	1	/* Обычная конфигурация с PIP на часть экрана, MAIN=L8, PIP=L8 */
-	//#define LCDMODE_V2	1	/* только главный экран с тремя видеобуферами L8, без PIP */
 	//#define LCDMODE_V0	1	/* Обычная конфигурация без PIP с L8 на основном экране */
 	//#define LCDMODE_V1	1	/* Обычная конфигурация с PIP на часть экрана, MAIN=L8, PIP=RGB565 */
-	//#define LCDMODE_V1A	1	/* Обычная конфигурация с PIP на часть экрана, MAIN=RGB565, PIP=RGB565 */
-	//#define LCDMODE_V2A	1	/* только главный экран, без PIP (но главный экран 16 бит) */
+	#define LCDMODE_V1B	1	/* Обычная конфигурация с PIP на часть экрана, MAIN=L8, PIP=L8 */
 
 	//#define LCDMODE_WH2002	1	/* тип применяемого индикатора 20*2, возможно вместе с LCDMODE_HARD_SPI */
 	//#define LCDMODE_WH1602	1	/* тип применяемого индикатора 16*2 */
@@ -354,6 +351,12 @@
 	//#define WITHRFSG	1	/* включено управление ВЧ сигнал-генератором. */
 	#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
 	#if 1
+		/* TUNER & PA board us4ijr@gmail.com */
+		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
+		#define SHORTSET8	1
+		#define WITHAUTOTUNER_AVBELNN	1	/* Плата управления LPF и тюнером от avbelnn */
+		#define WITHANTSELECT	1	/* Управление переключением антенн */
+	#elif 0
 		/* TUNER & PA board 2*RD16 by avbelnn@yandex.ru */
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
 		#define SHORTSET8	1
@@ -499,7 +502,28 @@
 		XTHERMOIX = 9,		// PB1 Exernal thermo sensor ST LM235Z
 	#endif /* WITHTHERMOLEVEL */
 
-	#if 0
+	#if WITHAUTOTUNER_AVBELNN
+		/* TUNER & PA board us4ijr@gmail.com */
+
+		#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
+
+		#define WITHCURRLEVEL_ACS712_30A 1	// PA current sense - ACS712ELCTR-30B-T chip
+		//#define WITHCURRLEVEL_ACS712_20A 1	// PA current sense - ACS712ELCTR-30B-T chip
+		#if WITHCURRLEVEL
+			//PASENSEIX = BOARD_ADCXIN(0),		// MCP3208 CH0 PA current sense - ACS712-30 chip
+			PASENSEIX = 6,			// PA6 потенциометр управления скоростью передачи в телеграфе
+		#endif /* WITHCURRLEVEL */
+		#if WITHVOLTLEVEL
+			VOLTSOURCE = 8,		// PB0 Средняя точка делителя напряжения, для АКБ
+		#endif /* WITHVOLTLEVEL */
+
+		#if WITHSWRMTR
+			//FWD = BOARD_ADCXIN(2), REF = BOARD_ADCXIN(3),		// MCP3208 CH2, CH3 Детектор прямой, отраженной волны
+			FWD = 14, REF = 15,	// PC5	SWR-meter
+			PWRI = FWD,			// PC4
+		#endif /* WITHSWRMTR */
+
+	#elif 0
 		// UA1CEI PA board: MCP3208 at targetext2 - P2_0 external SPI device (PA BOARD ADC)
 		VOLTSOURCE = BOARD_ADCX2IN(4),		// MCP3208 CH7 Средняя точка делителя напряжения, для АКБ
 
