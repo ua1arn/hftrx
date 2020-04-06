@@ -16797,6 +16797,7 @@ processkeyboard(uint_fast8_t kbch)
 		{
 			editfreqmode = 0;
 			display_set_directfreq_mode(editfreqmode);
+			uif_key_lockencoder();
 			return 1;
 		}
 		if (c == '#' && blinkpos < DISPLAY_LEFTBLINKPOS)
@@ -16823,6 +16824,7 @@ processkeyboard(uint_fast8_t kbch)
 				gfreqs [bi] = editfreq;
 				editfreqmode = 0;
 				display_set_directfreq_mode(editfreqmode);
+				uif_key_lockencoder();
 				savebandfreq(vi, bi);		/* сохранение частоты в текущем VFO */
 				updateboard(1, 0);
 			}
@@ -16845,6 +16847,7 @@ processkeyboard(uint_fast8_t kbch)
 		display_set_directfreq_mode(editfreqmode);
 		editfreq = gfreqs [getbankindex_tx(gtx)];
 		display_set_directfreq_data(editfreq, blinkpos, blinkstate);
+		uif_key_lockencoder();
 		return 1;
 	}
 #endif /* WITHDIRECTFREQENER */
@@ -18009,7 +18012,7 @@ hamradio_main_step(void)
 			//debug_printf_P(PSTR("M0:@%p %02x %08lx!\n"), & marker, INTC.ICCRPR, __get_CPSR());
 
 		
-			if (lockmode == 0 && ! editfreqmode)
+			if (lockmode == 0)
 			{
 				uint_fast8_t freqchanged = 0;
 
