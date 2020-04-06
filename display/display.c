@@ -591,6 +591,8 @@ void floodFill_framebuffer(
 	PACKEDCOLORMAIN_T oldColor
 	)
 {
+	ASSERT(x < DIM_X);
+	ASSERT(y < DIM_Y);
 	PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(colmain_fb_draw(), DIM_X, DIM_Y, x, y);
 	if (* tgr == oldColor && * tgr != newColor)
 	{

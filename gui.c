@@ -63,6 +63,7 @@ display_smeter2(
 	void * pv
 	)
 {
+#if LCDMODE_V2A || LCDMODE_V2
 	const int xc = GRID2X(xgrid);
 	const int yc = GRID2Y(ygrid);
 
@@ -190,10 +191,15 @@ display_smeter2(
 		{
 			char buf [10];
 			uint_fast16_t xx, yy;
-			display_radius(xc, yc, markersTX_pwr [i], r1, r1 + 8, smeter);
-			polar_to_dek(xc, yc, markersTX_pwr [i], r1 + 8, & xx, & yy);
-			local_snprintf_P(buf, sizeof buf / sizeof buf [0], PSTR("%u"), p);
-			display_string3_at_xy(xx - strwidth3(buf) / 2, yy - pad2w3, buf, COLORMAIN_YELLOW, COLORMAIN_BLACK);
+			if (i % 2 == 0)
+			{
+				display_radius(xc, yc, markersTX_pwr [i], r1, r1 + 8, smeter);
+				polar_to_dek(xc, yc, markersTX_pwr [i], r1 + 8, & xx, & yy);
+				local_snprintf_P(buf, sizeof buf / sizeof buf [0], PSTR("%u"), p);
+				display_string3_at_xy(xx - strwidth3(buf) / 2, yy - pad2w3, buf, COLORMAIN_YELLOW, COLORMAIN_BLACK);
+			}
+			else
+				display_radius(xc, yc, markersTX_pwr [i], r1, r1 + 4, smeter);
 		}
 
 		for (p = 1, i = 0; i < sizeof markersTX_swr / sizeof markersTX_swr [0]; ++ i, p += 1)
@@ -276,6 +282,7 @@ display_smeter2(
 	}
 
 	(void) pv;
+#endif
 }
 
 void button1_handler(void);
