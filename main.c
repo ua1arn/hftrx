@@ -16796,11 +16796,13 @@ processkeyboard(uint_fast8_t kbch)
 		if (kbch == KBD_CODE_ENTERFREQDONE)
 		{
 			editfreqmode = 0;
+			display_set_directfreq_mode(editfreqmode);
 			return 1;
 		}
 		if (c == '#' && blinkpos < DISPLAY_LEFTBLINKPOS)
 		{
 			blinkpos += 1;	/* перемещаемся на одну позицию левее */
+			display_set_directfreq_data(editfreq, blinkpos, blinkstate);
 			updateboard(1, 0);
 			return 1;
 		}
@@ -16810,13 +16812,17 @@ processkeyboard(uint_fast8_t kbch)
 			const int_fast32_t m10 = m * 10;
 			editfreq = editfreq / m10 * m10 + (c - '0') * m;
 			if (blinkpos != 0)
+			{
 				-- blinkpos;	/* перемещаемся на одну позицию правее */
+				display_set_directfreq_data(editfreq, blinkpos, blinkstate);
+			}
 			else if (freqvalid(editfreq, gtx))
 			{
 				const uint_fast8_t bi = getbankindex_tx(gtx);
 				vindex_t vi = getvfoindex(bi);
 				gfreqs [bi] = editfreq;
 				editfreqmode = 0;
+				display_set_directfreq_mode(editfreqmode);
 				savebandfreq(vi, bi);		/* сохранение частоты в текущем VFO */
 				updateboard(1, 0);
 			}
@@ -16825,7 +16831,9 @@ processkeyboard(uint_fast8_t kbch)
 				/* опять к начальному состоянию */
 				blinkpos = DISPLAY_LEFTBLINKPOS;		/* позиция курсора */
 				editfreqmode = 1;
+				display_set_directfreq_mode(editfreqmode);
 				editfreq = gfreqs [getbankindex_tx(gtx)];
+				display_set_directfreq_data(editfreq, blinkpos, blinkstate);
 			}
 			return 1;
 		}
@@ -16834,7 +16842,9 @@ processkeyboard(uint_fast8_t kbch)
 	{
 		blinkpos = DISPLAY_LEFTBLINKPOS;		/* позиция курсора */
 		editfreqmode = 1;
+		display_set_directfreq_mode(editfreqmode);
 		editfreq = gfreqs [getbankindex_tx(gtx)];
+		display_set_directfreq_data(editfreq, blinkpos, blinkstate);
 		return 1;
 	}
 #endif /* WITHDIRECTFREQENER */
@@ -17999,7 +18009,7 @@ hamradio_main_step(void)
 			//debug_printf_P(PSTR("M0:@%p %02x %08lx!\n"), & marker, INTC.ICCRPR, __get_CPSR());
 
 		
-			if (lockmode == 0)
+			if (lockmode == 0 && ! editfreqmode)
 			{
 				uint_fast8_t freqchanged = 0;
 
@@ -18057,7 +18067,6 @@ hamradio_main_step(void)
 	return STTE_OK;
 }
 
-#if WITHTOUCHGUI
 uint_fast16_t get_minforward(void)
 {
 	return minforward;
@@ -18068,6 +18077,7 @@ uint_fast8_t get_swrcalibr(void)
 	return swrcalibr;
 }
 
+#if WITHTOUCHGUI
 void disable_keyboard_redirect (void)
 {
 	keyboard_redirect = 0;
@@ -18082,10 +18092,11 @@ uint_fast8_t send_key_code (uint_fast8_t code)
 {
 	gui_editfreqmode = 1;
 	processkeyboard(code);
+#if ! LCDMODE_V2A && ! LCDMODE_V2
 	display_redrawfreqs(1);
+#endif /* ! LCDMODE_V2A && ! LCDMODE_V2 */
 	return editfreqmode;
 }
-
 
 void set_agc_off(void)
 {

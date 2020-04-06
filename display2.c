@@ -194,6 +194,21 @@ static void display_freqXbig_a(
 	}
 }
 
+static struct editfreq ef;
+static uint_fast8_t gdirectfreq = 0;
+
+void display_set_directfreq_mode(uint_fast8_t f)
+{
+	gdirectfreq = f != 0;
+}
+
+void display_set_directfreq_data(uint_fast32_t freq, uint_fast8_t blinkpos, uint_fast8_t blinkstate)
+{
+	ef.freq = freq;
+	ef.blinkpos = blinkpos + 1;
+	ef.blinkstate = blinkstate;
+}
+
 // Отображение частоты. Герцы маленьким шрифтом.
 static void display_freqX_a(
 	uint_fast8_t x, 
@@ -206,11 +221,14 @@ static void display_freqX_a(
 	const uint_fast8_t comma = 3 - rj;
 
 	colmain_setcolors3(colorsfg_1freq [0], colorsbg_1freq [0], colorsfg_1freq [0]);
-	if (pv != NULL)
+	if (pv != NULL || gdirectfreq)
 	{
 #if WITHDIRECTFREQENER
+#if LCDMODE_V2A || LCDMODE_V2
+		const struct editfreq * const efp = (const struct editfreq *) & ef;
+#else
 		const struct editfreq * const efp = (const struct editfreq *) pv;
-
+#endif /* LCDMODE_V2A || LCDMODE_V2 */
 		uint_fast8_t lowhalf = HALFCOUNT_FREQA - 1;
 		do
 		{
@@ -6399,7 +6417,7 @@ void display_dispfreq_a2(
 	)
 {
 #if WITHDIRECTFREQENER
-	struct editfreq ef;
+//	struct editfreq ef;
 
 	ef.freq = freq;
 	ef.blinkpos = blinkpos;
