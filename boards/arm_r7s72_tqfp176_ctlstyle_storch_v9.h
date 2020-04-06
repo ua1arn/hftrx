@@ -495,24 +495,24 @@
 	// Назначения входов АЦП процессора.
 	enum 
 	{ 
-	#if WITHPOTIFGAIN
-		POTIFGAIN = BOARD_ADCXIN(0),		// MCP3208 CH0 IF GAIN
-	#endif /* WITHPOTIFGAIN */
-	#if WITHPOTAFGAIN
-		//POTAFGAIN = BOARD_ADCXIN(2),		// MCP3208 CH2 потенциометр управления скоростью передачи в телеграфе
-		POTAFGAIN = BOARD_ADCXIN(1),		// MCP3208 CH1 AF GAIN
-	#endif /* WITHPOTAFGAIN */
-	#if WITHPOTWPM
-		POTWPM = BOARD_ADCXIN(2),			// MCP3208 CH2 потенциометр управления скоростью передачи в телеграфе
-	#endif /* WITHPOTWPM */
-	#if WITHTHERMOLEVEL
-		XTHERMOIX = BOARD_ADCXIN(6),		// MCP3208 CH6 Exernal thermo sensor ST LM235Z
-	#endif /* WITHTHERMOLEVEL */
+		WPM_POTIX = BOARD_ADCXIN(2),			// MCP3208 CH2 потенциометр управления скоростью передачи в телеграфе
+		IFGAIN_IXI = BOARD_ADCXIN(0),			// MCP3208 CH0 IF GAIN
+		AFGAIN_IXI = BOARD_ADCXIN(1),			// MCP3208 CH1 AF GAIN
 
-	#if 1
-		// main board - 5W
+		#if WITHPOTIFGAIN
+			POTIFGAIN = IFGAIN_IXI,
+		#endif /* WITHPOTIFGAIN */
+		#if WITHPOTAFGAIN
+			POTAFGAIN = AFGAIN_IXI,
+		#endif /* WITHPOTAFGAIN */
+		#if WITHPOTWPM
+			POTWPM = WPM_POTIX,
+		#endif /* WITHPOTWPM */
+		#if WITHTHERMOLEVEL
+			XTHERMOIX = BOARD_ADCXIN(6),		// MCP3208 CH6 Exernal thermo sensor ST LM235Z
+		#endif /* WITHTHERMOLEVEL */
 		#if WITHVOLTLEVEL
-			VOLTSOURCE = BOARD_ADCX1IN(7),		// MCP3208 CH7 Средняя точка делителя напряжения, для АКБ
+			VOLTSOURCE = BOARD_ADCXIN(7),		// MCP3208 CH7 Средняя точка делителя напряжения, для АКБ
 		#endif /* WITHVOLTLEVEL */
 
 		#if WITHSWRMTR
@@ -520,22 +520,17 @@
 			FWD = 0, REF = 1,	// PB0	SWR-meter
 		#endif /* WITHSWRMTR */
 
-		#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
-		#if WITHCURRLEVEL
-			PASENSEIX = 2,		// PA1 PA current sense - ACS712-05 chip
-		#endif /* WITHCURRLEVEL */
-	#else
-		// UA1CEI PA board: MCP3208 at targetext2 - P2_0 external SPI device (PA BOARD ADC)
-		VOLTSOURCE = BOARD_ADCX2IN(4),		// MCP3208 CH7 Средняя точка делителя напряжения, для АКБ
-
-		FWD = BOARD_ADCX2IN(2),
-		REF = BOARD_ADCX2IN(3),
-		PWRI = FWD,
-
-		#define WITHCURRLEVEL2	1	/* отображение тока оконечного каскада */
-		PASENSEIX2 = BOARD_ADCX2IN(0),	// DRAIN
-		PAREFERIX2 = BOARD_ADCX2IN(1),	// reference (1/2 напряжения питания ACS712ELCTR-30B-T).
-	#endif
+		#if WITHAUTOTUNER_AVBELNN
+			#define WITHCURRLEVEL_ACS712_30A 1	// PA current sense - ACS712ELCTR-30B-T chip
+			//#define WITHCURRLEVEL_ACS712_20A 1	// PA current sense - ACS712ELCTR-20B-T chip
+			#if WITHCURRLEVEL
+				PASENSEIX = WPM_POTIX,		// PA1 PA current sense - ACS712-05 chip
+			#endif /* WITHCURRLEVEL */
+		#else /* WITHAUTOTUNER_AVBELNN */
+			#if WITHCURRLEVEL
+				PASENSEIX = 2,		// PA1 PA current sense - ACS712-05 chip
+			#endif /* WITHCURRLEVEL */
+		#endif /* WITHAUTOTUNER_AVBELNN */
 
 		KI0 = 3, KI1 = 4, KI2 = 5, KI3 = 6, KI4 = 7		// клавиатура
 	};

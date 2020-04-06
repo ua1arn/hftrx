@@ -9190,13 +9190,19 @@ int_fast16_t hamradio_get_pacurrent_value(void)
 	// x20A - 0.100 V/A
 	// x30A - 0.066 V/A
 
-	#if WITHCURRLEVEL_ACS712_30A || CTLSTYLE_RA4YBO_V3
-		// x30A - 0.066 V/A
+	#if WITHCURRLEVEL_ACS712_30A
+	// x30A - 0.066 V/A
+	enum {
+		sens = 66,			// millivolts / ampher
+		scale = 100			// результат - в десятых долях ампера
+	};
+	#elif WITHCURRLEVEL_ACS712_20A
+		//  x20A - 0.100 V/A
 		enum {
-			sens = 66,			// millivolts / ampher
+			sens = 100,			// millivolts / ampher
 			scale = 100			// результат - в десятых долях ампера
 		};
-	#else /* CTLSTYLE_RA4YBO_V3 */
+	#else /* WITHCURRLEVEL_ACS712_30A */
 		// x05B - 0.185 V/A
 		enum {
 			sens = 185,			// millivolts / ampher
