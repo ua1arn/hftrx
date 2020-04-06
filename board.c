@@ -893,14 +893,8 @@ pll1_getoutdivider(
 			goto found;
 	}
 #if 0
-	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
-
-	do
-	{
-		display_gotoxy(0, 0 + lowhalf);
-		display_string_P(PSTR("[Si570 Err]"), lowhalf);
-		return 0;		/* требуемую частоту невозожно получить */
-	} while (lowhalf --);
+	display_at_P(PSTR(0, 0, "[pll1_getoutdivider Err]"));
+	return 0;		/* требуемую частоту невозожно получить */
 #endif
 
 found: 

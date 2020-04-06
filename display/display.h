@@ -599,7 +599,6 @@ void display_set_contrast(uint_fast8_t v);
 void display_clear(void);
 void colmain_setcolors(COLORMAIN_T fg, COLORMAIN_T bg);
 void colmain_setcolors3(COLORMAIN_T fg, COLORMAIN_T bg, COLORMAIN_T bgfg);	// bgfg - цвет для отрисовки антиалиасинга
-//void display_gotoxy(uint_fast8_t x, uint_fast8_t y);
 
 #if 1
 /* работа с цветным буфером */

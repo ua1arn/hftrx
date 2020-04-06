@@ -12124,11 +12124,11 @@ processcatmsg(
 		// нераспознанная команда - ожидание следующей.
 #if 0
 		// печать информации о принятой команде
-		display_gotoxy(0, 1);		// курсор в начало первой строки
-
-		display_wrdata_begin();
-		display_wrdata_fast(catcommand1 & 0x7f);
-		display_wrdata_fast(catcommand2 & 0x7f);
+		uint_fast16_t y;
+		uint_fast16_t x;
+		x = display_wrdata_begin(0, 1, & y);
+		x = display_wrdata_fast(x, y, catcommand1 & 0x7f);
+		x = display_wrdata_fast(x, y, catcommand2 & 0x7f);
 		display_wrdata_end();
 
 		if (cathasparam)

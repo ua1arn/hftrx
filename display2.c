@@ -302,7 +302,6 @@ static void display_freqchr_b(
 	const uint_fast8_t comma = 3 - rj;
 
 	colmain_setcolors3(colorsfg_1freq [0], colorsbg_1freq [0], colorsfg_1freq [0]);
-#if 0
 	if (pv != NULL)
 	{
 #if WITHDIRECTFREQENER
@@ -311,13 +310,11 @@ static void display_freqchr_b(
 		uint_fast8_t lowhalf = HALFCOUNT_FREQA - 1;
 		do
 		{
-			display_gotoxy(x, y + lowhalf);
-			display_value_big(efp->freq, fullwidth, comma, 255, rj, efp->blinkpos, efp->blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
+			display_value_big(x, y + lowhalf, efp->freq, fullwidth, comma, 255, rj, efp->blinkpos, efp->blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
 		} while (lowhalf --);
 #endif /* WITHDIRECTFREQENER */
 	}
 	else
-#endif
 	{
 		enum { blinkpos = 255, blinkstate = 0 };
 
@@ -934,15 +931,13 @@ static void display_pbt(
 {
 #if WITHPBT
 	const int_fast32_t pbt = hamradio_get_pbtvalue();
+	display_at_P(x, y, PSTR("PBT "), lowhalf);
 
 	//colmain_setcolors(LOCKCOLOR, BGCOLOR);
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	do
 	{
-		display_gotoxy(x + 0, y + lowhalf);		
-		display_string_P(PSTR("PBT "), lowhalf);
-		display_gotoxy(x + 4, y + lowhalf);		
-		display_menu_value(pbt, 4 | WSIGNFLAG, 2, 1, lowhalf);
+		display_menu_value(x + 4, y + lowhalf, pbt, 4 | WSIGNFLAG, 2, 1, lowhalf);
 	} while (lowhalf --);
 #endif /* WITHPBT */
 }
@@ -1521,8 +1516,7 @@ static void display_amfmhighcut4(
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	do
 	{
-		display_gotoxy(x, y + lowhalf);
-		display_value_small(v, 3, 2, 255, 0, lowhalf);
+		display_value_small(x, y, v, 3, 2, 255, 0, lowhalf);
 	} while (lowhalf --);
 #endif /* WITHAMHIGHKBDADJ */
 }
@@ -1543,8 +1537,7 @@ static void display_amfmhighcut5(
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	do
 	{
-		display_gotoxy(x, y + lowhalf);	
-		display_value_small(v, 4, 2, 255, 0, lowhalf);
+		display_value_small(x, y, v, 4, 2, 255, 0, lowhalf);
 	} while (lowhalf --);
 #endif /* WITHAMHIGHKBDADJ */
 }

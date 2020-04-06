@@ -166,14 +166,8 @@ prog_hmc830_get_hint(
 			goto found;
 	}
 #if 0
-	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
-
-	do
-	{
-		display_gotoxy(0, 0 + lowhalf);
-		display_string_P(PSTR("[HMC830 Err]"), lowhalf);
-		return 0;		/* требуемую частоту невозожно получить */
-	} while (lowhalf --);
+	display_at_P(0, 0, PSTR("[HMC830 Err]"));
+	return 0;		/* требуемую частоту невозожно получить */
 #endif
 
 found: 
@@ -201,7 +195,7 @@ static void df2(
 }
 
 /* 
-	Для случая PLL с дробным делителем передается полное значение, 
+	Для случая PLL с дробным делителем передается полное значение,
 	которое перед выдачей разделяется на целую и дробную часть.
 */
 static void 
