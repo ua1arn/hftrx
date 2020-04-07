@@ -2684,6 +2684,8 @@ void colmain_plot(
 	uint_fast16_t dy	// источник
 	)
 {
+	ASSERT(src != NULL);
+	ASSERT(dst != NULL);
 #if LCDMODE_HORFILL
 	hwaccel_copy_main(
 		colmain_mem_at(dst, tdx, tdy, x, y),
@@ -2709,6 +2711,8 @@ void colpip_plot(
 	uint_fast16_t dy	// источник
 	)
 {
+	ASSERT(src != NULL);
+	ASSERT(dst != NULL);
 #if LCDMODE_HORFILL
 	hwaccel_copy_pip(
 		colpip_mem_at(dst, tdx, tdy, x, y),
