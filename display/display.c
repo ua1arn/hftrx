@@ -1185,6 +1185,14 @@ void colpip_fillrect(
 
 	#elif LCDMODE_PIP_L24
 		hwacc_fillrect_u24(buffer, dx, dy, x, y, w, h, color);
+	#elif LCDMODE_MAIN_L8
+		hwacc_fillrect_u8(buffer, dx, dy, x, y, w, h, color);
+
+	#elif LCDMODE_MAIN_RGB565
+		hwacc_fillrect_u16(buffer, dx, dy, x, y, w, h, color);
+
+	#elif LCDMODE_MAIN_L24
+		hwacc_fillrect_u24(buffer, dx, dy, x, y, w, h, color);
 
 	#endif
 
@@ -1197,6 +1205,15 @@ void colpip_fillrect(
 		hwacc_fillrect_u16(buffer, dy, dx, y, x, h, w, color);
 
 	#elif LCDMODE_PIP_L24
+		hwacc_fillrect_u24((buffer, dy, dx, y, x, h, w, color);
+
+	#elif LCDMODE_MAIN_L8
+		hwacc_fillrect_u8(buffer, dy, dx, y, x, h, w, color);
+
+	#elif LCDMODE_MAIN_RGB565
+		hwacc_fillrect_u16(buffer, dy, dx, y, x, h, w, color);
+
+	#elif LCDMODE_MAIN_L24
 		hwacc_fillrect_u24((buffer, dy, dx, y, x, h, w, color);
 
 	#endif
@@ -1225,6 +1242,15 @@ void colpip_fill(
 	#elif LCDMODE_PIP_L24
 		hwacc_fillrect_u24(buffer, dx, dy, 0, 0, dx, dy, color);
 
+	#elif LCDMODE_MAIN_L8
+		hwacc_fillrect_u8(buffer, dx, dy, 0, 0, dx, dy, color);
+
+	#elif LCDMODE_MAIN_RGB565
+		hwacc_fillrect_u16(buffer, dx, dy, 0, 0, dx, dy, color);
+
+	#elif LCDMODE_MAIN_L24
+		hwacc_fillrect_u24(buffer, dx, dy, 0, 0, dx, dy, color);
+
 	#endif
 
 #else /* LCDMODE_HORFILL */
@@ -1236,6 +1262,15 @@ void colpip_fill(
 		hwacc_fillrect_u16(buffer, dy, dx, 0, 0, dy, dx, color);
 
 	#elif LCDMODE_PIP_L24
+		hwacc_fillrect_u24(buffer, dy, dx, 0, 0, dy, dx, color);
+
+	#elif LCDMODE_MAIN_L8
+		hwacc_fillrect_u8(buffer, dy, dx, 0, 0, dy, dx, color);
+
+	#elif LCDMODE_MAIN_RGB565
+		hwacc_fillrect_u16(buffer, dy, dx, 0, 0, dy, dx, color);
+
+	#elif LCDMODE_MAIN_L24
 		hwacc_fillrect_u24(buffer, dy, dx, 0, 0, dy, dx, color);
 
 	#endif
