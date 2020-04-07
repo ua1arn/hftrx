@@ -282,7 +282,7 @@ display_smeter2(
 	}
 
 	(void) pv;
-#endif
+#endif /* LCDMODE_V2A || LCDMODE_V2 */
 }
 
 void button1_handler(void);

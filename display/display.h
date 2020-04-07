@@ -1008,7 +1008,7 @@ void colpip_plot(
 
 void
 colmain_string3_at_xy(
-	PACKEDCOLORMAIN_T * const buffer,
+	PACKEDCOLORMAIN_T * buffer,
 	const uint_fast16_t dx,
 	const uint_fast16_t dy,
 	uint_fast16_t x,
@@ -1025,8 +1025,7 @@ void display_radius(int xc, int yc, unsigned gs, unsigned r1, unsigned r2, COLOR
 void display_segm(int xc, int yc, unsigned gs, unsigned ge, unsigned r, int step, COLORMAIN_T color);
 void polar_to_dek(uint_fast16_t xc, uint_fast16_t yc, uint_fast16_t gs, uint_fast16_t r, uint_fast16_t * x, uint_fast16_t * y);
 
-/// Нарисовать вертикальную цветную полосу
-// Формат RGB565
+// Нарисовать вертикальную цветную полосу
 void
 display_colorbuf_xor_vline(
 	PACKEDCOLORPIP_T * buffer,
@@ -1158,8 +1157,8 @@ display_value_small(
 void floodFill_framebuffer(
 	uint_fast16_t x,	// начальная координата
 	uint_fast16_t y,	// начальная координата
-	PACKEDCOLORMAIN_T newColor,
-	PACKEDCOLORMAIN_T oldColor
+	COLORMAIN_T newColor,
+	COLORMAIN_T oldColor
 	);
 
 #ifdef __cplusplus

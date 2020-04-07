@@ -587,8 +587,8 @@ hwacc_fillrect_u24(
 void floodFill_framebuffer(
 	uint_fast16_t x,	// начальная координата
 	uint_fast16_t y,	// начальная координата
-	PACKEDCOLORMAIN_T newColor,
-	PACKEDCOLORMAIN_T oldColor
+	COLORMAIN_T newColor,
+	COLORMAIN_T oldColor
 	)
 {
 	ASSERT(x < DIM_X);
@@ -1177,21 +1177,29 @@ void colpip_fillrect(
 {
 #if LCDMODE_HORFILL
 
-	if (sizeof * buffer == 2)
-		hwacc_fillrect_u16((void *) buffer, dx, dy, x, y, w, h, color);
-	else if (sizeof * buffer == 1)
-		hwacc_fillrect_u8((void *) buffer, dx, dy, x, y, w, h, color);
-	else if (sizeof * buffer == 3)
-		hwacc_fillrect_u24((void *) buffer, dx, dy, x, y, w, h, color);
+	#if LCDMODE_PIP_L8
+		hwacc_fillrect_u8(buffer, dx, dy, x, y, w, h, color);
+
+	#elif LCDMODE_PIP_RGB565
+		hwacc_fillrect_u16(buffer, dx, dy, x, y, w, h, color);
+
+	#elif LCDMODE_PIP_L24
+		hwacc_fillrect_u24(buffer, dx, dy, x, y, w, h, color);
+
+	#endif
 
 #else /* LCDMODE_HORFILL */
 
-	if (sizeof * buffer == 2)
-		hwacc_fillrect_u16((void *) buffer, dy, dx, y, x, h, w, color);
-	else if (sizeof * buffer == 1)
-		hwacc_fillrect_u8((void *) buffer, dy, dx, y, x, h, w, color);
-	else if (sizeof * buffer == 3)
-		hwacc_fillrect_u24((void *) buffer, dy, dx, y, x, h, w, color);
+	#if LCDMODE_PIP_L8
+		hwacc_fillrect_u8(buffer, dy, dx, y, x, h, w, color);
+
+	#elif LCDMODE_PIP_RGB565
+		hwacc_fillrect_u16(buffer, dy, dx, y, x, h, w, color);
+
+	#elif LCDMODE_PIP_L24
+		hwacc_fillrect_u24((buffer, dy, dx, y, x, h, w, color);
+
+	#endif
 
 #endif /* LCDMODE_HORFILL */
 }
@@ -1207,19 +1215,31 @@ void colpip_fill(
 	)
 {
 #if LCDMODE_HORFILL
-	if (sizeof * buffer == 2)
-		hwacc_fillrect_u16((void *) buffer, dx, dy, 0, 0, dx, dy, color);
-	else if (sizeof * buffer == 1)
-		hwacc_fillrect_u8((void *) buffer, dx, dy, 0, 0, dx, dy, color);
-	else if (sizeof * buffer == 3)
-		hwacc_fillrect_u24((void *) buffer, dx, dy, 0, 0, dx, dy, color);
+
+	#if LCDMODE_PIP_L8
+		hwacc_fillrect_u8(buffer, dx, dy, 0, 0, dx, dy, color);
+
+	#elif LCDMODE_PIP_RGB565
+		hwacc_fillrect_u16(buffer, dx, dy, 0, 0, dx, dy, color);
+
+	#elif LCDMODE_PIP_L24
+		hwacc_fillrect_u24(buffer, dx, dy, 0, 0, dx, dy, color);
+
+	#endif
+
 #else /* LCDMODE_HORFILL */
-	if (sizeof * buffer == 2)
-		hwacc_fillrect_u16((void *) buffer, dy, dx, 0, 0, dy, dx, color);
-	else if (sizeof * buffer == 1)
-		hwacc_fillrect_u8((void *) buffer, dy, dx, 0, 0, dy, dx, color);
-	else if (sizeof * buffer == 3)
-		hwacc_fillrect_u24((void *) buffer, dy, dx, 0, 0, dy, dx, color);
+
+	#if LCDMODE_PIP_L8
+		hwacc_fillrect_u8(buffer, dy, dx, 0, 0, dy, dx, color);
+
+	#elif LCDMODE_PIP_RGB565
+		hwacc_fillrect_u16(buffer, dy, dx, 0, 0, dy, dx, color);
+
+	#elif LCDMODE_PIP_L24
+		hwacc_fillrect_u24(buffer, dy, dx, 0, 0, dy, dx, color);
+
+	#endif
+
 #endif /* LCDMODE_HORFILL */
 }
 
