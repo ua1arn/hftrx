@@ -368,11 +368,11 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 	};
 
 	enum {
-		btn_buf_w = 100,
-		btn_buf_h = 55
+		BTN_BUF_W = 100,
+		BTN_BUF_H = 55
 	};
 
-	typedef PACKEDCOLORPIP_T bg_t [btn_buf_w][btn_buf_h];
+	typedef PACKEDCOLORPIP_T bg_t [BTN_BUF_W][BTN_BUF_H];
 
 	typedef struct {
 		uint8_t w;
@@ -389,65 +389,63 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 	static btn_bg_t btnbg_40_40 = { 40, 40, };
 
 	typedef struct {
-		uint16_t x1;				// координаты от начала PIP
+		uint16_t x1;				// координаты от начала экрана
 		uint16_t y1;
-		uint16_t x2;
-		uint16_t y2;
 		void(*onClickHandler) (void);	// обработчик события RELEASED
 		btn_bg_t * bg;
 		uint8_t state;				// текущее состояние кнопки
 		uint8_t is_locked;			// признак фиксации кнопки
 		uint8_t is_trackable;		// получение относительных координат точки перемещения нажатия, нужно ли для кнопок?
-		uint8_t parent;			// индекс окна, в котором будет отображаться кнопка
+		uint8_t parent;				// индекс окна, в котором будет отображаться кнопка
 		uint8_t visible;			// рисовать ли кнопку на экране
 		uintptr_t payload;
 		char name [NAME_ARRAY_SIZE];
-		char text [TEXT_ARRAY_SIZE];					// текст внутри кнопки, разделитель строк |, не более 2х строк
+		char text [TEXT_ARRAY_SIZE]; // текст внутри кнопки, разделитель строк |, не более 2х строк
 	} button_t;
 
 	static button_t button_handlers [] = {
-	//   x1,   y1,  x2,  y2,  onClickHandler,        state,   is_locked, is_trackable,	parent,    visible,      payload,	 name, 		text
+	//   x1,   y1,  onClickHandler,        bg,             state,   is_locked, is_trackable, parent,    visible,      payload,	              name, 		text
 		{ },
-		{   0, 260,  86, 304, button1_handler, 	    & btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "btnMode", "Mode", },
-		{  89, 260, 175, 304, button2_handler, 	    & btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "btnAF", "AF|filter", },
-		{ 178, 260, 264, 304, button3_handler, 	    & btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "btnAGC", "AGC", },
-		{ 267, 260, 353, 304, button4_handler, 	    & btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "btn4", "Freq", },
-		{ 356, 260, 442, 304, button5_handler, 	    & btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "btn5", "", },
-		{ 445, 260, 531, 304, button6_handler, 	    & btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "btn6", "", },
-		{ 534, 260, 620, 304, button7_handler, 	    & btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "btn7", "", },
-		{ 623, 260, 709, 304, button8_handler, 	    & btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "btn8", "", },
-		{ 712, 260, 798, 304, button9_handler, 	    & btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "btnSysMenu", "System|settings", },
-		{ 234,  55, 314, 99, buttons_mode_handler,  & btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_LSB, "btnModeLSB", "LSB", },
-		{ 319,  55, 399, 99, buttons_mode_handler,  & btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_CW,  "btnModeCW", "CW", },
-		{ 404,  55, 484, 99, buttons_mode_handler,  & btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_AM,  "btnModeAM", "AM", },
-		{ 489,  55, 569, 99, buttons_mode_handler,  & btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_DGL, "btnModeDGL", "DGL", },
-		{ 234, 110, 314, 154, buttons_mode_handler, & btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_USB, "btnModeUSB", "USB", },
-		{ 319, 110, 399, 154, buttons_mode_handler, & btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_CWR, "btnModeCWR", "CWR", },
-		{ 404, 110, 484, 154, buttons_mode_handler, & btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_NFM, "btnModeNFM", "NFM", },
-		{ 489, 110, 569, 154, buttons_mode_handler, & btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_DGU, "btnModeDGU", "DGU", },
-		{ 251, 155, 337, 199, buttons_bp_handler,	& btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_BP,    NON_VISIBLE, UINTPTR_MAX, "btnAF_1", "", },
-		{ 357, 155, 443, 199, buttons_bp_handler, 	& btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_BP,    NON_VISIBLE, UINTPTR_MAX, "btnAF_OK", "OK", },
-		{ 463, 155, 549, 199, buttons_bp_handler, 	& btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_BP,    NON_VISIBLE, UINTPTR_MAX, "btnAF_2", "", },
-		{ 251,  70, 337, 114, set_agc_off, 			& btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AGC,   NON_VISIBLE, UINTPTR_MAX, "btnAGCoff", "AGC|off", },
-		{ 357,  70, 443, 114, set_agc_slow, 		& btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AGC,   NON_VISIBLE, UINTPTR_MAX, "btnAGCslow", "AGC|slow", },
-		{ 463,  70, 549, 114, set_agc_fast, 		& btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AGC,   NON_VISIBLE, UINTPTR_MAX, "btnAGCfast", "AGC|fast", },
-		{ 120,  28, 170,  78, buttons_freq_handler, & btnbg_50_50, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_SPLIT, 		"btnFreq1", "1", },
-		{ 173,  28, 223,  78, buttons_freq_handler, & btnbg_50_50, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_A_EQ_B, 		"btnFreq2", "2", },
-		{ 226,  28, 276,  78, buttons_freq_handler, & btnbg_50_50, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_A_EX_B, 		"btnFreq3", "3", },
-		{ 279,  28, 329,  78, buttons_freq_handler, & btnbg_50_50, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_BKIN, 			"btnFreqBK", "<-", },
-		{ 120,  81, 170, 131, buttons_freq_handler, & btnbg_50_50, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_ATUBYPASS, 	"btnFreq4", "4", },
-		{ 173,  81, 223, 131, buttons_freq_handler, & btnbg_50_50, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_ANTENNA, 		"btnFreq5", "5", },
-		{ 226,  81, 276, 131, buttons_freq_handler, & btnbg_50_50, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_ATT, 			"btnFreq6", "6", },
-		{ 279,  81, 329, 131, buttons_freq_handler, & btnbg_50_50, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_ENTERFREQDONE, "btnFreqOK", "OK", },
-		{ 120, 134, 170, 184, buttons_freq_handler, & btnbg_50_50, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_MOX, 			"btnFreq7", "7", },
-		{ 173, 134, 223, 184, buttons_freq_handler, & btnbg_50_50, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_RECORDTOGGLE, 	"btnFreq8", "8", },
-		{ 226, 134, 276, 184, buttons_freq_handler, & btnbg_50_50, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_LDSPTGL, 		"btnFreq9", "9", },
-		{ 279, 134, 329, 184, buttons_freq_handler, & btnbg_50_50, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_VOXTOGGLE, 	"btnFreq0", "0", },
-		{   0, 	 0,   0,   0, buttons_menu_handler, & btnbg_40_40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU,  NON_VISIBLE, UINTPTR_MAX, 			"btnSysMenu-", "-", },
-		{   0, 	 0,   0,   0, buttons_menu_handler, & btnbg_40_40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU,  NON_VISIBLE, UINTPTR_MAX, 			"btnSysMenu+", "+", },
-		{   0, 	 0,   0,   0, buttons_uif_handler, 	& btnbg_40_40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UIF,   NON_VISIBLE, UINTPTR_MAX, 			"btnUIF-", "-", },
-		{   0, 	 0,   0,   0, buttons_uif_handler, 	& btnbg_40_40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UIF,   NON_VISIBLE, UINTPTR_MAX, 			"btnUIF+", "+", },
-//		{ 375, 120, 425, 150, buttons_uif_handler, 	NULL, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UIF,   NON_VISIBLE, UINTPTR_MAX, 			"btnUIF_OK", "OK", },
+		{   0, 436, button1_handler, 	  & btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, FOOTER, 	  	VISIBLE,     UINTPTR_MAX, 			 "btnMode", 	"Mode", },
+		{  89, 436, button2_handler, 	  & btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, FOOTER, 	  	VISIBLE,     UINTPTR_MAX, 			 "btnAF", 		"AF|filter", },
+		{ 178, 436, button3_handler, 	  & btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, FOOTER, 	  	VISIBLE,     UINTPTR_MAX, 			 "btnAGC", 		"AGC", },
+		{ 267, 436, button4_handler, 	  & btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, FOOTER, 	  	VISIBLE,     UINTPTR_MAX, 			 "btn4", 		"Freq", },
+		{ 356, 436, button5_handler, 	  & btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, FOOTER, 	 	VISIBLE,     UINTPTR_MAX, 			 "btn5", 		"", },
+		{ 445, 436, button6_handler, 	  & btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, FOOTER, 	  	VISIBLE,     UINTPTR_MAX, 			 "btn6", 		"", },
+		{ 534, 436, button7_handler, 	  & btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, FOOTER, 	  	VISIBLE,     UINTPTR_MAX, 			 "btn7", 		"", },
+		{ 623, 436, button8_handler, 	  & btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, FOOTER, 	  	VISIBLE,     UINTPTR_MAX, 			 "btn8", 		"", },
+		{ 712, 436, button9_handler, 	  & btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, FOOTER, 	  	VISIBLE,     UINTPTR_MAX, 			 "btnSysMenu", 	"System|settings", },
+		{ 228, 230, buttons_mode_handler, & btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_LSB, 			 "btnModeLSB", 	"LSB", },
+		{ 316, 230, buttons_mode_handler, & btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_CW,  			 "btnModeCW", 	"CW", },
+		{ 404, 230, buttons_mode_handler, & btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_AM,  			 "btnModeAM", 	"AM", },
+		{ 492, 230, buttons_mode_handler, & btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_DGL, 			 "btnModeDGL", 	"DGL", },
+		{ 228, 285, buttons_mode_handler, & btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_USB, 			 "btnModeUSB", 	"USB", },
+		{ 316, 285, buttons_mode_handler, & btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_CWR, 			 "btnModeCWR", 	"CWR", },
+		{ 404, 285, buttons_mode_handler, & btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_NFM, 			 "btnModeNFM", 	"NFM", },
+		{ 492, 285, buttons_mode_handler, & btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_DGU, 			 "btnModeDGU", 	"DGU", },
+		{ 251, 330, buttons_bp_handler,	  & btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_BP,    NON_VISIBLE, UINTPTR_MAX, 			 "btnAF_1", 	"", },
+		{ 357, 330, buttons_bp_handler,   & btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_BP,    NON_VISIBLE, UINTPTR_MAX, 			 "btnAF_OK", 	"OK", },
+		{ 463, 330, buttons_bp_handler,   & btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_BP,    NON_VISIBLE, UINTPTR_MAX, 			 "btnAF_2", 	"", },
+		{ 251, 245, set_agc_off, 		  & btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AGC,   NON_VISIBLE, UINTPTR_MAX, 			 "btnAGCoff", 	"AGC|off", },
+		{ 357, 245, set_agc_slow, 		  & btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AGC,   NON_VISIBLE, UINTPTR_MAX, 			 "btnAGCslow", 	"AGC|slow", },
+		{ 463, 245, set_agc_fast, 		  & btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AGC,   NON_VISIBLE, UINTPTR_MAX, 			 "btnAGCfast", 	"AGC|fast", },
+		{ 120, 203, buttons_freq_handler, & btnbg_50_50, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_SPLIT, 		 "btnFreq1", 	"1", },
+		{ 173, 203, buttons_freq_handler, & btnbg_50_50, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_A_EQ_B, 		 "btnFreq2", 	"2", },
+		{ 226, 203, buttons_freq_handler, & btnbg_50_50, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_A_EX_B, 		 "btnFreq3", 	"3", },
+		{ 279, 203, buttons_freq_handler, & btnbg_50_50, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_BKIN, 		 "btnFreqBK", 	"<-", },
+		{ 120, 256, buttons_freq_handler, & btnbg_50_50, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_ATUBYPASS, 	 "btnFreq4", 	"4", },
+		{ 173, 256, buttons_freq_handler, & btnbg_50_50, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_ANTENNA, 		 "btnFreq5", 	"5", },
+		{ 226, 256, buttons_freq_handler, & btnbg_50_50, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_ATT, 			 "btnFreq6", 	"6", },
+		{ 279, 256, buttons_freq_handler, & btnbg_50_50, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_ENTERFREQDONE, "btnFreqOK", 	"OK", },
+		{ 120, 309, buttons_freq_handler, & btnbg_50_50, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_MOX, 			 "btnFreq7", 	"7", },
+		{ 173, 309, buttons_freq_handler, & btnbg_50_50, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_RECORDTOGGLE,  "btnFreq8", 	"8", },
+		{ 226, 309, buttons_freq_handler, & btnbg_50_50, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_LDSPTGL, 		 "btnFreq9", 	"9", },
+		{ 279, 309, buttons_freq_handler, & btnbg_50_50, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_VOXTOGGLE, 	 "btnFreq0", 	"0", },
+		{   0, 	 0, buttons_menu_handler, & btnbg_40_40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU,  NON_VISIBLE, UINTPTR_MAX, 			 "btnSysMenu-",	"-", },
+		{   0, 	 0, buttons_menu_handler, & btnbg_40_40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU,  NON_VISIBLE, UINTPTR_MAX, 			 "btnSysMenu+",	"+", },
+		{   0, 	 0, buttons_uif_handler,  & btnbg_40_40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UIF,   NON_VISIBLE, UINTPTR_MAX, 			 "btnUIF-", 	"-", },
+		{   0, 	 0, buttons_uif_handler,  & btnbg_40_40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UIF,   NON_VISIBLE, UINTPTR_MAX, 			 "btnUIF+", 	"+", },
+//		{ 375, 120, buttons_uif_handler, 	NULL, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UIF,   NON_VISIBLE, UINTPTR_MAX, 			"btnUIF_OK", "OK", },
 	};
 	enum { BUTTON_HANDLERS_COUNT = sizeof button_handlers / sizeof button_handlers[0] };
 
@@ -467,25 +465,25 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 	static label_t labels[] = {
 	//     x,   y,  parent,      state,        visible,     name,   Text,  color
 		{ },
-		{ 250, 120, WINDOW_BP,   DISABLED,  0, NON_VISIBLE, "lbl_low",  "", COLORPIP_YELLOW, },
-		{ 490, 120, WINDOW_BP,   DISABLED,  0, NON_VISIBLE, "lbl_high", "", COLORPIP_YELLOW, },
-		{ 100,  50, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 100,  85, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 100, 120, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 100, 155, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 100, 190, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 250,  50, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 250,  85, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 250, 120, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 250, 155, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 250, 190, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 450,  50, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 450,  85, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 450, 120, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 450, 155, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 450, 190, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 580,  60, WINDOW_ENC2, DISABLED,  0, NON_VISIBLE, "lbl_enc2_param", "", 	COLORPIP_WHITE, },
-		{ 580,  90, WINDOW_ENC2, DISABLED,  0, NON_VISIBLE, "lbl_enc2_val", "", 	COLORPIP_WHITE, },
+		{ 250, 295, WINDOW_BP,   DISABLED,  0, NON_VISIBLE, "lbl_low",  "", COLORPIP_YELLOW, },
+		{ 490, 295, WINDOW_BP,   DISABLED,  0, NON_VISIBLE, "lbl_high", "", COLORPIP_YELLOW, },
+		{ 100, 225, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", "", COLORPIP_WHITE, labels_menu_handler, },
+		{ 100, 260, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", "", COLORPIP_WHITE, labels_menu_handler, },
+		{ 100, 295, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", "", COLORPIP_WHITE, labels_menu_handler, },
+		{ 100, 330, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", "", COLORPIP_WHITE, labels_menu_handler, },
+		{ 100, 365, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", "", COLORPIP_WHITE, labels_menu_handler, },
+		{ 250, 225, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", COLORPIP_WHITE, labels_menu_handler, },
+		{ 250, 260, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", COLORPIP_WHITE, labels_menu_handler, },
+		{ 250, 295, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", COLORPIP_WHITE, labels_menu_handler, },
+		{ 250, 330, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", COLORPIP_WHITE, labels_menu_handler, },
+		{ 250, 365, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", COLORPIP_WHITE, labels_menu_handler, },
+		{ 450, 225, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", "", COLORPIP_WHITE, labels_menu_handler, },
+		{ 450, 260, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", "", COLORPIP_WHITE, labels_menu_handler, },
+		{ 450, 295, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", "", COLORPIP_WHITE, labels_menu_handler, },
+		{ 450, 330, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", "", COLORPIP_WHITE, labels_menu_handler, },
+		{ 450, 365, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", "", COLORPIP_WHITE, labels_menu_handler, },
+		{ 580, 235, WINDOW_ENC2, DISABLED,  0, NON_VISIBLE, "lbl_enc2_param", "", 	COLORPIP_WHITE, },
+		{ 580, 265, WINDOW_ENC2, DISABLED,  0, NON_VISIBLE, "lbl_enc2_val", "", 	COLORPIP_WHITE, },
 		{    0,  0,	WINDOW_UIF,  DISABLED,  0, NON_VISIBLE, "lbl_uif_param", "", COLORPIP_WHITE, },
 		{    0,  0,	WINDOW_UIF,  DISABLED,  0, NON_VISIBLE, "lbl_uif_val", 	 "", COLORPIP_WHITE, },
 };
@@ -501,23 +499,19 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 		uint8_t is_touching_screen; // есть ли касание экрана в данный момент
 		uint8_t is_after_touch; 	 // есть ли касание экрана после выхода точки касания из элемента (при is_tracking == 0)
 		uint8_t window_to_draw;	 // индекс записи с описанием запрошенного к отображению окна
-		uint16_t pip_width;		 // параметры pip
-		uint16_t pip_height;
-		uint16_t pip_x;
-		uint16_t pip_y;
 		uint8_t is_tracking;		 // получение относительных координат точки перемещения нажатия
 		int16_t vector_move_x;	 // в т.ч. и за границами элемента, при state == PRESSED
 		int16_t vector_move_y;
 	} gui_t;
 
-	static gui_t gui = { 0, 0, KBD_CODE_MAX, 0, TYPE_DUMMY, CANCELLED, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, };
+	static gui_t gui = { 0, 0, KBD_CODE_MAX, 0, TYPE_DUMMY, CANCELLED, 0, 0, 0, 0, 0, 0, };
 
 	typedef struct {
 		uint8_t window_id;			// в окне будут отображаться элементы с соответствующим полем for_window
 		uint16_t x1;
 		uint16_t y1;
-		uint16_t x2;
-		uint16_t y2;
+		uint16_t w;
+		uint16_t h;
 		char name[NAME_ARRAY_SIZE];		// текст, выводимый в заголовке окна
 		uint8_t is_show;			// запрос на отрисовку окна
 		uint8_t first_call;		// признак первого вызова для различных инициализаций
@@ -525,15 +519,15 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 	} windowpip_t;
 
 	static windowpip_t windows[] = {
-	//     window_id,   x1,  y1, x2,  y2,  title,         is_show, first_call, onVisibleProcess
+	//     window_id,   x1,  y1, w,  h,  title,         is_show, first_call, onVisibleProcess
 		{ },
-		{ WINDOW_MODES, 214, 20, 586, 175, "Select mode", NON_VISIBLE, 0, },
-		{ WINDOW_BP,    214, 20, 586, 225, "Bandpass",    NON_VISIBLE, 0, window_bp_process, },
-		{ WINDOW_AGC,   214, 20, 586, 140, "AGC control", NON_VISIBLE, 0, },
-		{ WINDOW_FREQ,  100,  0, 350, 200, "Freq", 		  NON_VISIBLE, 0, window_freq_process, },
-		{ WINDOW_MENU,   50, 10, 600, 220, "Settings",	  NON_VISIBLE, 0, window_menu_process, },
-		{ WINDOW_ENC2, 	550, 15, 735, 120, "Fast menu",   NON_VISIBLE, 0, },
-		{ WINDOW_UIF, 	300, 15, 500, 160, "",   		  NON_VISIBLE, 0, window_uif_process, },
+		{ WINDOW_MODES, 214, 195, 372, 155, "Select mode", NON_VISIBLE, 0, },
+		{ WINDOW_BP,    214, 195, 372, 205, "Bandpass",    NON_VISIBLE, 0, window_bp_process, },
+		{ WINDOW_AGC,   214, 195, 372, 120, "AGC control", NON_VISIBLE, 0, },
+		{ WINDOW_FREQ,  100, 175, 250, 200, "Freq", 		  NON_VISIBLE, 0, window_freq_process, },
+		{ WINDOW_MENU,   50, 185, 550, 210, "Settings",	  NON_VISIBLE, 0, window_menu_process, },
+		{ WINDOW_ENC2, 	550, 190, 185, 105, "Fast menu",   NON_VISIBLE, 0, },
+		{ WINDOW_UIF, 	300, 190, 200, 145, "",   		  NON_VISIBLE, 0, window_uif_process, },
 	};
 	enum { windows_count = sizeof windows / sizeof windows[0] };
 
@@ -645,11 +639,6 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 			InsertHeadList(& touch_list, & touch_elements[touch_list_count].item);
 			touch_list_count++;
 		} while (button_handlers[++i].parent == FOOTER);
-		display2_getpipparams(& pip);
-		gui.pip_width = pip.w;
-		gui.pip_height = pip.h;
-		gui.pip_x = pip.x;
-		gui.pip_y = pip.y;
 
 		fill_button_bg_buf(& btnbg_86_44);
 		fill_button_bg_buf(& btnbg_50_50);
@@ -665,23 +654,25 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 			list_template_t * p = CONTAINING_RECORD(t, list_template_t, item);
 			if (p->type == TYPE_BUTTON)
 			{
-				p->x1 = button_handlers[p->id].x1;
-				p->x2 = button_handlers[p->id].x2;
-				p->y1 = button_handlers[p->id].y1;
-				p->y2 = button_handlers[p->id].y2;
-				p->state = button_handlers[p->id].state;
-				p->visible = button_handlers[p->id].visible;
-				p->is_trackable = button_handlers[p->id].is_trackable;
+				const button_t * const bh = & button_handlers[p->id];
+				p->x1 = bh->x1;
+				p->x2 = bh->x1 + bh->bg->w;
+				p->y1 = bh->y1;
+				p->y2 = bh->y1 + bh->bg->h;;
+				p->state = bh->state;
+				p->visible = bh->visible;
+				p->is_trackable = bh->is_trackable;
 			}
 			else if (p->type == TYPE_LABEL)
 			{
-				p->x1 = labels[p->id].x;
-				p->x2 = labels[p->id].x + strwidth(labels[p->id].text);
-				p->y1 = labels[p->id].y - 8;
-				p->y2 = labels[p->id].y + SMALLCHARH + 8;
-				p->state = labels[p->id].state;
-				p->visible = labels[p->id].visible;
-				p->is_trackable = labels[p->id].is_trackable;
+				const label_t * const lh = & labels[p->id];
+				p->x1 = lh->x;
+				p->x2 = lh->x + strwidth(lh->text);
+				p->y1 = lh->y - 8;
+				p->y2 = lh->y + SMALLCHARH + 8;
+				p->state = lh->state;
+				p->visible = lh->visible;
+				p->is_trackable = lh->is_trackable;
 			}
 		}
 	}
@@ -773,7 +764,6 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 
 	static void window_bp_process (void)
 	{
-		PACKEDCOLORPIP_T * const colorpip = getscratchpip();
 		static uint_fast8_t val_high, val_low, val_c, val_w, bw_type;
 		static uint_fast16_t x_h, x_l, x_c;
 		static uint_fast8_t id_button_high, id_button_low, id_button_width, id_button_pitch, id_lbl_high, id_lbl_low;
@@ -889,11 +879,11 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 			}
 		}
 
-		colpip_line(colorpip, gui.pip_width, gui.pip_height, 251, 110, 549, 110, COLORPIP_GRAY);
-		colpip_line(colorpip, gui.pip_width, gui.pip_height, 290, 70, 290, 120, COLORPIP_GRAY);
-		colpip_rect(colorpip, gui.pip_width, gui.pip_height, x_l, 70, x_h, 108, COLORPIP_YELLOW, 1);
+		colpip_line(colmain_fb_draw(), DIM_X, DIM_Y, 251, 285, 549, 285, COLORPIP_WHITE);
+		colpip_line(colmain_fb_draw(), DIM_X, DIM_Y, 290, 245, 290, 295, COLORPIP_WHITE);
+		colpip_rect(colmain_fb_draw(), DIM_X, DIM_Y, x_l, 245, x_h, 283, COLORPIP_YELLOW, 1);
 		if (! bw_type)
-			colpip_line(colorpip, gui.pip_width, gui.pip_height, x_c, 60, x_c, 120, COLORPIP_RED);
+			colpip_line(colmain_fb_draw(), DIM_X, DIM_Y, x_c, 235, x_c, 295, COLORPIP_RED);
 }
 
 	static void window_freq_process (void)
@@ -968,7 +958,7 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 		if (windows[WINDOW_UIF].first_call == 1)
 		{
 			windows[WINDOW_UIF].first_call = 0;
-			window_half_wight =  windows[WINDOW_UIF].x1 + ((windows[WINDOW_UIF].x2 - windows[WINDOW_UIF].x1) / 2);
+			window_half_wight =  windows[WINDOW_UIF].x1 + windows[WINDOW_UIF].w / 2;
 
 			id_lbl_uif_param = find_label(WINDOW_UIF, "lbl_uif_param");
 			id_lbl_uif_val = find_label(WINDOW_UIF, "lbl_uif_val");
@@ -985,14 +975,9 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 			id_button_down = find_button(WINDOW_UIF, "btnUIF-");
 
 			button_handlers[id_button_down].x1 = labels[id_lbl_uif_val].x - button_menu_w - 10;
-			button_handlers[id_button_down].x2 = button_handlers[id_button_down].x1 + button_menu_w;
 			button_handlers[id_button_down].y1 = (labels[id_lbl_uif_val].y + SMALLCHARH / 2) - (button_menu_h / 2);
-			button_handlers[id_button_down].y2 = button_handlers[id_button_down].y1 + button_menu_h;
-
 			button_handlers[id_button_up].x1 = labels[id_lbl_uif_val].x + strwidth(labels[id_lbl_uif_val].text) + 10;
-			button_handlers[id_button_up].x2 = button_handlers[id_button_up].x1 + button_menu_w;
 			button_handlers[id_button_up].y1 = button_handlers[id_button_down].y1;
-			button_handlers[id_button_up].y2 = button_handlers[id_button_down].y2;
 
 			enable_keyboard_redirect();
 		}
@@ -1003,11 +988,9 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 			strcpy(labels[id_lbl_uif_val].text, v);
 			labels[id_lbl_uif_val].x = window_half_wight - (strwidth(labels[id_lbl_uif_val].text) / 2);
 			encoder2.rotate_done = 1;
-			button_handlers[id_button_down].x1 = labels[id_lbl_uif_val].x - button_menu_w - 10;
-			button_handlers[id_button_down].x2 = button_handlers[id_button_down].x1 + button_menu_w;
-			button_handlers[id_button_up].x1 = labels[id_lbl_uif_val].x + strwidth(labels[id_lbl_uif_val].text) + 10;
-			button_handlers[id_button_up].x2 = button_handlers[id_button_up].x1 + button_menu_w;
 
+			button_handlers[id_button_down].x1 = labels[id_lbl_uif_val].x - button_menu_w - 10;
+			button_handlers[id_button_up].x1 = labels[id_lbl_uif_val].x + strwidth(labels[id_lbl_uif_val].text) + 10;
 		}
 
 		if (gui.kbd_code != KBD_CODE_MAX)
@@ -1038,10 +1021,9 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 
 	static void window_menu_process(void)
 	{
-		PACKEDCOLORPIP_T * const colorpip = getscratchpip();
 		static uint_fast8_t str_step = 0, menu_is_scrolling = 0, start_str_group = 0, start_str_params = 0;
 		static uint_fast8_t id_button_up = 0, id_button_down = 0, button_pressed = 0;
-		uint_fast8_t button_menu_w = 40, button_menu_h = 40;
+		static uint_fast8_t button_menu_w = 0, button_menu_h = 0;
 
 		if (windows[WINDOW_MENU].first_call == 1)
 		{
@@ -1052,6 +1034,9 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 			id_button_down = find_button(WINDOW_MENU, "btnSysMenu-");
 			button_handlers[id_button_up].visible = NON_VISIBLE;
 			button_handlers[id_button_down].visible = NON_VISIBLE;
+
+			button_menu_w = button_handlers[id_button_up].bg->w;
+			button_menu_h = button_handlers[id_button_up].bg->h;
 
 			menu[MENU_GROUPS].add_id = 0;
 			menu[MENU_GROUPS].selected_str = 0;
@@ -1197,15 +1182,11 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 
 				button_handlers[id_button_down].visible = VISIBLE;
 				button_handlers[id_button_down].x1 = labels[id_sel_label].x - button_menu_w - 10;
-				button_handlers[id_button_down].x2 = button_handlers[id_button_down].x1 + button_menu_w;
 				button_handlers[id_button_down].y1 = (labels[id_sel_label].y + SMALLCHARH / 2) - (button_menu_h / 2);
-				button_handlers[id_button_down].y2 = button_handlers[id_button_down].y1 + button_menu_h;
 
 				button_handlers[id_button_up].visible = VISIBLE;
 				button_handlers[id_button_up].x1 = labels[id_sel_label].x + strwidth(labels[id_sel_label].text) + 10;
-				button_handlers[id_button_up].x2 = button_handlers[id_button_up].x1 + button_menu_w;
 				button_handlers[id_button_up].y1 = button_handlers[id_button_down].y1;
-				button_handlers[id_button_up].y2 = button_handlers[id_button_down].y2;
 				for (uint8_t i = 0; i <= menu[MENU_GROUPS].num_rows; i++)
 				{
 					labels[i + menu[MENU_GROUPS].first_id].color = i == menu[MENU_GROUPS].selected_label ? COLORPIP_YELLOW : COLORPIP_GRAY;
@@ -1260,7 +1241,7 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 
 			uint_fast8_t id_sel_label = menu[MENU_VALS].first_id + menu[MENU_VALS].selected_label;
 			button_handlers[id_button_up].x1 = labels[id_sel_label].x + strwidth(labels[id_sel_label].text) + 10;
-			button_handlers[id_button_up].x2 = button_handlers[id_button_up].x1 + button_menu_w;
+//			button_handlers[id_button_up].x2 = button_handlers[id_button_up].x1 + button_menu_w;
 		}
 
 		if ((menu_label_touched || menu_is_scrolling || encoder2.rotate != 0) && menu_level != MENU_VALS)
@@ -1321,8 +1302,8 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 			menu_label_touched = 0;
 		}
 		if (menu_level != MENU_VALS)
-			colpip_string_tbg(colorpip, gui.pip_width, gui.pip_height, labels[menu[menu_level].selected_label + menu[menu_level].first_id].x - 16,
-										 labels[menu[menu_level].selected_label + menu[menu_level].first_id].y, ">", COLORPIP_GREEN);
+			colpip_string_tbg(colmain_fb_draw(), DIM_X, DIM_Y, labels[menu[menu_level].selected_label + menu[menu_level].first_id].x - SMALLCHARW,
+					labels[menu[menu_level].selected_label + menu[menu_level].first_id].y, ">", COLORPIP_YELLOW);
 	}
 
 	static void buttons_menu_handler(void)
@@ -1378,8 +1359,8 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 			remove_end_line_spaces(labels[id_lbl_param].text);
 			strcpy(labels[id_lbl_val].text, enc2_menu->val);
 			labels[id_lbl_val].color = enc2_menu->state == 2 ? COLORPIP_YELLOW : COLORPIP_WHITE;
-			labels[id_lbl_val].x = windows[WINDOW_ENC2].x1 + ((windows[WINDOW_ENC2].x2 - windows[WINDOW_ENC2].x1) - (strwidth(labels[id_lbl_val].text))) / 2;
-			labels[id_lbl_param].x = windows[WINDOW_ENC2].x1 + ((windows[WINDOW_ENC2].x2 - windows[WINDOW_ENC2].x1) - (strwidth(labels[id_lbl_param].text))) / 2;
+			labels[id_lbl_val].x = windows[WINDOW_ENC2].x1 + (windows[WINDOW_ENC2].w - (strwidth(labels[id_lbl_val].text))) / 2;
+			labels[id_lbl_param].x = windows[WINDOW_ENC2].x1 + (windows[WINDOW_ENC2].w - (strwidth(labels[id_lbl_param].text))) / 2;
 		} else
 			footer_buttons_state(CANCELLED, "");
 	}
@@ -1548,59 +1529,43 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 	}
 
 	/* Кнопка */
-	void draw_button_pip(
-		uint_fast16_t x1, uint_fast16_t y1,
-		uint_fast16_t x2, uint_fast16_t y2,
-		uint_fast8_t pressed, uint_fast8_t is_locked, uint_fast8_t is_disabled,
-		const char * text, uint_fast8_t id) // pressed = 0
+	void draw_button_pip(uint_fast8_t id)
 	{
-		PACKEDCOLORPIP_T * const colorpip = getscratchpip();
 		PACKEDCOLORPIP_T * bg = NULL;
-//		COLORPIP_T c1, c2;
 		static const char delimeters [] = "|";
-//		c1 = is_disabled ? COLOR_BUTTON_DISABLED : (is_locked ? COLOR_BUTTON_LOCKED : COLOR_BUTTON_NON_LOCKED);
-//		c2 = is_disabled ? COLOR_BUTTON_DISABLED : (is_locked ? COLOR_BUTTON_PR_LOCKED : COLOR_BUTTON_PR_NON_LOCKED);
+		const button_t * const bh = & button_handlers[id];
 
+		if (bh->state == DISABLED)
+			bg = * bh->bg->bg_disabled;
+		else if (bh->is_locked && bh->state == PRESSED)
+			bg = * bh->bg->bg_locked_pressed;
+		else if (bh->is_locked && bh->state != PRESSED)
+			bg = * bh->bg->bg_locked;
+		else if (! bh->is_locked && bh->state == PRESSED)
+			bg = * bh->bg->bg_pressed;
+		else if (! bh->is_locked && bh->state != PRESSED)
+			bg = * bh->bg->bg_non_pressed;
 
-//		colpip_rect(colorpip, gui.pip_width, gui.pip_height, x1,	y1, x2, y2, pressed ? c1 : c2, 1);
-//		colpip_rect(colorpip, gui.pip_width, gui.pip_height, x1,	y1, x2, y2, COLORPIP_GRAY, 0);
-//		colpip_rect(colorpip, gui.pip_width, gui.pip_height, x1 + 2, y1 + 2, x2 - 2, y2 - 2, COLORPIP_BLACK, 0);
+		colpip_plot(colmain_fb_draw(), DIM_X, DIM_Y, bh->x1, bh->y1, bg, bh->bg->w, bh->bg->h);
 
-		if (is_disabled)
-			bg = * button_handlers[id].bg->bg_disabled;
-		else if (is_locked && ! pressed)
-			bg = * button_handlers[id].bg->bg_locked_pressed;
-		else if (is_locked && pressed)
-			bg = * button_handlers[id].bg->bg_locked;
-		else if (! is_locked && ! pressed)
-			bg = * button_handlers[id].bg->bg_pressed;
-		else if (! is_locked && pressed)
-			bg = * button_handlers[id].bg->bg_non_pressed;
-
-		colpip_plot(colmain_fb_draw(), DIM_X, DIM_Y, x1, y1 + gui.pip_y, bg, button_handlers[id].bg->w, button_handlers[id].bg->h);
-
-		if (strchr(text, delimeters[0]) == NULL)
+		if (strchr(bh->text, delimeters[0]) == NULL)
 		{
 			/* Однострочная надпись */
-			colpip_string2_tbg(colorpip, gui.pip_width, gui.pip_height,
-					x1 + ((x2 - x1) - (strwidth2(text))) / 2,
-					y1 + ((y2 - y1) - SMALLCHARH2) / 2,
-					text, COLORPIP_BLACK);
+			colpip_string2_tbg(colmain_fb_draw(), DIM_X, DIM_Y, bh->x1 + (bh->bg->w - (strwidth2(bh->text))) / 2,
+					bh->y1 + (bh->bg->h - SMALLCHARH2) / 2, bh->text, COLORPIP_BLACK);
 		} else
 		{
 			/* Двухстрочная надпись */
-			uint_fast8_t j = (y2 - y1 - SMALLCHARH2 * 2) / 2;
+			uint_fast8_t j = (bh->bg->h - SMALLCHARH2 * 2) / 2;
 			char buf [TEXT_ARRAY_SIZE];
-			strcpy(buf, text);
+			strcpy(buf, bh->text);
 			char * text2 = strtok(buf, delimeters);
-			colpip_string2_tbg(colorpip, gui.pip_width, gui.pip_height, x1 +
-					((x2 - x1) - (strwidth2(text2))) / 2,
-					y1 + j, text2, COLORPIP_BLACK);
+			colpip_string2_tbg(colmain_fb_draw(), DIM_X, DIM_Y, bh->x1 + (bh->bg->w - (strwidth2(text2))) / 2,
+					bh->y1 + j, text2, COLORPIP_BLACK);
 
 			text2 = strtok(NULL, delimeters);
-			colpip_string2_tbg(colorpip, gui.pip_width, gui.pip_height, x1 +
-					((x2 - x1) - (strwidth2(text2))) / 2,
-					y2 - SMALLCHARH2 - j, text2, COLORPIP_BLACK);
+			colpip_string2_tbg(colmain_fb_draw(), DIM_X, DIM_Y, bh->x1 + (bh->bg->w - (strwidth2(text2))) / 2,
+					bh->bg->h + bh->y1 - SMALLCHARH2 - j, text2, COLORPIP_BLACK);
 		}
 	}
 
@@ -1640,14 +1605,11 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 	#if defined (TSC1_TYPE)
 		if (board_tsc_getxy(& tx, & ty))
 		{
-			if (ty >= gui.pip_y)
-			{
-				gui.last_pressed_x = tx;
-				gui.last_pressed_y = ty - gui.pip_y;
-				gui.is_touching_screen = 1;
-				debug_printf_P(PSTR("pip x: %d, pip y: %d\n"), gui.last_pressed_x, gui.last_pressed_y);
-				update_touch_list();
-			}
+			gui.last_pressed_x = tx;
+			gui.last_pressed_y = ty;
+			gui.is_touching_screen = 1;
+			debug_printf_P(PSTR("pip x: %d, pip y: %d\n"), gui.last_pressed_x, gui.last_pressed_y);
+			update_touch_list();
 		}
 		else
 	#endif /* defined (TSC1_TYPE) */
@@ -1687,9 +1649,9 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 			ASSERT(p != NULL);
 			if (p->is_trackable && gui.is_touching_screen)
 			{
-				gui.vector_move_x = x_old ? gui.vector_move_x + gui.last_pressed_x - x_old : 0; // т.к. process_gui и display_pip_update
-				gui.vector_move_y = y_old ? gui.vector_move_y + gui.last_pressed_y - y_old : 0; // вызываются с разной частотой, необходимо
-				p->state = PRESSED;																// накопление вектора перемещения точки
+				gui.vector_move_x = x_old ? gui.vector_move_x + gui.last_pressed_x - x_old : 0; // проверить, нужно ли оставить накопление
+				gui.vector_move_y = y_old ? gui.vector_move_y + gui.last_pressed_y - y_old : 0;
+				p->state = PRESSED;
 				set_state_record(p);
 				if (gui.vector_move_x != 0 || gui.vector_move_y != 0)
 				{
@@ -1732,7 +1694,6 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 
 	void display_pip_update(uint_fast8_t x, uint_fast8_t y, void * pv)
 	{
-		PACKEDCOLORPIP_T * const colorpip = getscratchpip();
 		uint_fast16_t yt, xt;
 		uint_fast8_t alpha = DEFAULT_ALPHA; // на сколько затемнять цвета
 		char buf [TEXT_ARRAY_SIZE];
@@ -1771,9 +1732,9 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 	#endif /* WITHIF4DSP */
 		if (str_len > 0)
 		{
-			xt = gui.pip_width - SMALLCHARW2 - str_len * SMALLCHARW2;
-			colpip_transparency(colorpip, gui.pip_width, gui.pip_height, xt - 5, 230, gui.pip_width - 5, 253, alpha);
-			colpip_string2_tbg(colorpip, gui.pip_width, gui.pip_height, xt, 235, buf, COLORPIP_YELLOW);
+			xt = DIM_X - SMALLCHARW2 - str_len * SMALLCHARW2;
+			colpip_transparency(colmain_fb_draw(), DIM_X, DIM_Y, xt - 5, 405, DIM_X - 5, 428, alpha);
+			colpip_string2_tbg(colmain_fb_draw(), DIM_X, DIM_Y, xt, 410, buf, COLORPIP_YELLOW);
 		}
 
 	#if defined (RTC1_TYPE)				// текущее время
@@ -1783,21 +1744,22 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 		board_rtc_getdatetime(& year, & month, & day, & hour, & minute, & secounds);
 		str_len += local_snprintf_P(&buf[str_len], sizeof buf / sizeof buf [0] - str_len,
 				PSTR("%02d.%02d.%04d %02d%c%02d"), day, month, year, hour, ((secounds & 1) ? ' ' : ':'), minute);
-		colpip_transparency(colorpip, gui.pip_width, gui.pip_height, 5, 230, str_len * SMALLCHARW2 + 15, 253, alpha);
-		colpip_string2_tbg(colorpip, gui.pip_width, gui.pip_height, 10, 235, buf, COLORPIP_YELLOW);
+		colpip_transparency(colmain_fb_draw(), DIM_X, DIM_Y, 5, 405, str_len * SMALLCHARW2 + 15, 428, alpha);
+		colpip_string2_tbg(colmain_fb_draw(), DIM_X, DIM_Y, 10, 410, buf, COLORPIP_YELLOW);
 	#endif 	/* defined (RTC1_TYPE) */
 
 		if (windows[gui.window_to_draw].is_show)
 		{
-			colpip_transparency(colorpip, gui.pip_width, gui.pip_height,
+			colpip_transparency(colmain_fb_draw(), DIM_X, DIM_Y,
 					windows[gui.window_to_draw].x1, windows[gui.window_to_draw].y1,
-					windows[gui.window_to_draw].x2, windows[gui.window_to_draw].y2, alpha);
+					windows[gui.window_to_draw].x1 + windows[gui.window_to_draw].w,
+					windows[gui.window_to_draw].y1 + windows[gui.window_to_draw].h, alpha);
 
 			if (windows[gui.window_to_draw].onVisibleProcess)							// запуск процедуры фоновой обработки
 				windows[gui.window_to_draw].onVisibleProcess();							// для окна, если есть
 
 			// вывод заголовка окна
-			colpip_string_tbg(colorpip, gui.pip_width, gui.pip_height, windows[gui.window_to_draw].x1 + 20,
+			colpip_string_tbg(colmain_fb_draw(), DIM_X, DIM_Y, windows[gui.window_to_draw].x1 + 20,
 					windows[gui.window_to_draw].y1 + 10, windows[gui.window_to_draw].name, COLORPIP_YELLOW);
 
 			// отрисовка принадлежащих окну элементов
@@ -1807,7 +1769,7 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 			{
 				const label_t * const lh = & labels[i];
 				if (lh->parent == gui.window_to_draw && lh->visible == VISIBLE)
-					colpip_string_tbg(colorpip, gui.pip_width, gui.pip_height, lh->x, lh->y, lh->text, lh->color);
+					colpip_string_tbg(colmain_fb_draw(), DIM_X, DIM_Y, lh->x, lh->y, lh->text, lh->color);
 			}
 
 			// кнопки
@@ -1815,7 +1777,7 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 			{
 				const button_t * const bh = & button_handlers[i];
 				if (bh->parent == gui.window_to_draw && bh->visible == VISIBLE)
-					draw_button_pip(bh->x1, bh->y1, bh->x2, bh->y2, bh->state, bh->is_locked, bh->state == DISABLED ? 1 : 0, bh->text, i);
+					draw_button_pip(i);
 			}
 		}
 
@@ -1825,7 +1787,7 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 			const button_t * const bhf = & button_handlers[i];
 			if (bhf->parent != FOOTER)
 				break;
-			draw_button_pip(bhf->x1, bhf->y1, bhf->x2, bhf->y2, bhf->state, bhf->is_locked, bhf->state == DISABLED ? 1 : 0, bhf->text, i);
+			draw_button_pip(i);
 		}
 	}
 #endif /* WITHTOUCHGUI */
