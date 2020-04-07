@@ -66,7 +66,6 @@ display_smeter2(
 #if LCDMODE_V2A || LCDMODE_V2
 	const int xc = GRID2X(xgrid);
 	const int yc = GRID2Y(ygrid);
-
 	enum { halfsect = 30 };
 	enum { gm = 270 };
 	enum { gs = gm - halfsect };
@@ -77,7 +76,7 @@ display_smeter2(
 
 	const uint_fast8_t is_tx = hamradio_get_tx();
 
-	int gv, gv_trace, gswr;
+	int gv, gv_trace = gs, gswr = gs;
 	uint_fast16_t swr10; 														// swr10 = 0..30 for swr 1..4
 
 	if (is_tx)																	// угол поворота стрелки; 246 минимум, 270 середина, 294 максимум
@@ -182,6 +181,27 @@ display_smeter2(
 	const COLORMAIN_T smeter = COLORMAIN_WHITE;
 	const COLORMAIN_T smeterplus = COLORMAIN_DARKRED;
 	const uint_fast16_t pad2w3 = strwidth3("ZZ");
+
+//	static uint_fast8_t first_run = 1;
+//	static uint_fast16_t x1, y1, x2, y2;
+//
+//	if(first_run)
+//	{
+//		uint_fast16_t xx, yy;
+//		first_run = 0;
+//		polar_to_dek(xc, yc, gm, rv1 + 8 + SMALLCHARH3, & xx, & yy);
+//		y1 = yy;
+//		polar_to_dek(xc, yc, gs, rv2, & xx, & yy);
+//		y2 = yy;
+//		polar_to_dek(xc, yc, gs, r1 + 8 + SMALLCHARW3 * 2, & xx, & yy);
+//		x1 = xx;
+//		polar_to_dek(xc, yc, ge, r1 + 8 + SMALLCHARW3 * 2, & xx, & yy);
+//		x2 = xx;
+//		PRINTF("xc/yc - %d/%d\n", xc, yc);
+//		PRINTF("x1/y1 - %d/%d\n", x1, y1);
+//		PRINTF("x2/y2 - %d/%d\n", x2, y2);
+//	}
+//	colpip_rect(colmain_fb_draw(), DIM_X, DIM_Y, x1, y1, x2, y2, COLORPIP_WHITE, 0);
 
 	if (is_tx)																	// шкала при передаче
 	{
@@ -347,12 +367,34 @@ void button1_handler(void);
 		LIST_ARRAY_SIZE = 40
 	};
 
+	enum {
+		btn_buf_w = 100,
+		btn_buf_h = 55
+	};
+
+	typedef PACKEDCOLORPIP_T bg_t [btn_buf_w][btn_buf_h];
+
+	typedef struct {
+		uint8_t w;
+		uint8_t h;
+		bg_t bg_non_pressed;
+		bg_t bg_pressed;
+		bg_t bg_locked;
+		bg_t bg_locked_pressed;
+		bg_t bg_disabled;
+	} btn_bg_t;
+
+	static btn_bg_t btnbg_86_44 = { 86, 44, };
+	static btn_bg_t btnbg_50_50 = { 50, 50, };
+	static btn_bg_t btnbg_40_40 = { 40, 40, };
+
 	typedef struct {
 		uint16_t x1;				// координаты от начала PIP
 		uint16_t y1;
 		uint16_t x2;
 		uint16_t y2;
 		void(*onClickHandler) (void);	// обработчик события RELEASED
+		btn_bg_t * bg;
 		uint8_t state;				// текущее состояние кнопки
 		uint8_t is_locked;			// признак фиксации кнопки
 		uint8_t is_trackable;		// получение относительных координат точки перемещения нажатия, нужно ли для кнопок?
@@ -364,48 +406,48 @@ void button1_handler(void);
 	} button_t;
 
 	static button_t button_handlers [] = {
-	//   x1,   y1,  x2,  y2,  onClickHandler,         state,   is_locked, is_trackable,	parent,    visible,      payload,	 name, 		text
+	//   x1,   y1,  x2,  y2,  onClickHandler,        state,   is_locked, is_trackable,	parent,    visible,      payload,	 name, 		text
 		{ },
-		{   0, 260,  86, 304, button1_handler, 	    CANCELLED, BUTTON_NON_LOCKED, 0, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "btnMode", "Mode", },
-		{  89, 260, 175, 304, button2_handler, 	    CANCELLED, BUTTON_NON_LOCKED, 0, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "btnAF", "AF|filter", },
-		{ 178, 260, 264, 304, button3_handler, 	    CANCELLED, BUTTON_NON_LOCKED, 0, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "btnAGC", "AGC", },
-		{ 267, 260, 353, 304, button4_handler, 	    CANCELLED, BUTTON_NON_LOCKED, 0, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "btn4", "Freq", },
-		{ 356, 260, 442, 304, button5_handler, 	    CANCELLED, BUTTON_NON_LOCKED, 0, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "btn5", "", },
-		{ 445, 260, 531, 304, button6_handler, 	    CANCELLED, BUTTON_NON_LOCKED, 0, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "btn6", "", },
-		{ 534, 260, 620, 304, button7_handler, 	    CANCELLED, BUTTON_NON_LOCKED, 0, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "btn7", "", },
-		{ 623, 260, 709, 304, button8_handler, 	    CANCELLED, BUTTON_NON_LOCKED, 0, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "btn8", "", },
-		{ 712, 260, 798, 304, button9_handler, 	    CANCELLED, BUTTON_NON_LOCKED, 0, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "btnSysMenu", "System|settings", },
-		{ 234,  55, 314, 105, buttons_mode_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_LSB, "btnModeLSB", "LSB", },
-		{ 319,  55, 399, 105, buttons_mode_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_CW,  "btnModeCW", "CW", },
-		{ 404,  55, 484, 105, buttons_mode_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_AM,  "btnModeAM", "AM", },
-		{ 489,  55, 569, 105, buttons_mode_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_DGL, "btnModeDGL", "DGL", },
-		{ 234, 110, 314, 160, buttons_mode_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_USB, "btnModeUSB", "USB", },
-		{ 319, 110, 399, 160, buttons_mode_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_CWR, "btnModeCWR", "CWR", },
-		{ 404, 110, 484, 160, buttons_mode_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_NFM, "btnModeNFM", "NFM", },
-		{ 489, 110, 569, 160, buttons_mode_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_DGU, "btnModeDGU", "DGU", },
-		{ 251, 155, 337, 195, buttons_bp_handler,	CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_BP,    NON_VISIBLE, UINTPTR_MAX, "btnAF_1", "", },
-		{ 357, 155, 443, 195, buttons_bp_handler, 	CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_BP,    NON_VISIBLE, UINTPTR_MAX, "btnAF_OK", "OK", },
-		{ 463, 155, 549, 195, buttons_bp_handler, 	CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_BP,    NON_VISIBLE, UINTPTR_MAX, "btnAF_2", "", },
-		{ 251,  70, 337, 110, set_agc_off, 			CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AGC,   NON_VISIBLE, UINTPTR_MAX, "btnAGCoff", "AGC|off", },
-		{ 357,  70, 443, 110, set_agc_slow, 		CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AGC,   NON_VISIBLE, UINTPTR_MAX, "btnAGCslow", "AGC|slow", },
-		{ 463,  70, 549, 110, set_agc_fast, 		CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AGC,   NON_VISIBLE, UINTPTR_MAX, "btnAGCfast", "AGC|fast", },
-		{ 120,  28, 170,  78, buttons_freq_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_SPLIT, 		"btnFreq1", "1", },
-		{ 173,  28, 223,  78, buttons_freq_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_A_EQ_B, 		"btnFreq2", "2", },
-		{ 226,  28, 276,  78, buttons_freq_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_A_EX_B, 		"btnFreq3", "3", },
-		{ 279,  28, 329,  78, buttons_freq_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_BKIN, 			"btnFreqBK", "<-", },
-		{ 120,  81, 170, 131, buttons_freq_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_ATUBYPASS, 	"btnFreq4", "4", },
-		{ 173,  81, 223, 131, buttons_freq_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_ANTENNA, 		"btnFreq5", "5", },
-		{ 226,  81, 276, 131, buttons_freq_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_ATT, 			"btnFreq6", "6", },
-		{ 279,  81, 329, 131, buttons_freq_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_ENTERFREQDONE, "btnFreqOK", "OK", },
-		{ 120, 134, 170, 184, buttons_freq_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_MOX, 			"btnFreq7", "7", },
-		{ 173, 134, 223, 184, buttons_freq_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_RECORDTOGGLE, 	"btnFreq8", "8", },
-		{ 226, 134, 276, 184, buttons_freq_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_LDSPTGL, 		"btnFreq9", "9", },
-		{ 279, 134, 329, 184, buttons_freq_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_VOXTOGGLE, 	"btnFreq0", "0", },
-		{   0, 	 0,   0,   0, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU,  NON_VISIBLE, UINTPTR_MAX, 			"btnSysMenu-", "-", },
-		{   0, 	 0,   0,   0, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU,  NON_VISIBLE, UINTPTR_MAX, 			"btnSysMenu+", "+", },
-		{   0, 	 0,   0,   0, buttons_uif_handler, 	CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UIF,   NON_VISIBLE, UINTPTR_MAX, 			"btnUIF-", "-", },
-		{   0, 	 0,   0,   0, buttons_uif_handler, 	CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UIF,   NON_VISIBLE, UINTPTR_MAX, 			"btnUIF+", "+", },
-		{ 375, 120, 425, 150, buttons_uif_handler, 	CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UIF,   NON_VISIBLE, UINTPTR_MAX, 			"btnUIF_OK", "OK", },
+		{   0, 260,  86, 304, button1_handler, 	    & btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "btnMode", "Mode", },
+		{  89, 260, 175, 304, button2_handler, 	    & btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "btnAF", "AF|filter", },
+		{ 178, 260, 264, 304, button3_handler, 	    & btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "btnAGC", "AGC", },
+		{ 267, 260, 353, 304, button4_handler, 	    & btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "btn4", "Freq", },
+		{ 356, 260, 442, 304, button5_handler, 	    & btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "btn5", "", },
+		{ 445, 260, 531, 304, button6_handler, 	    & btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "btn6", "", },
+		{ 534, 260, 620, 304, button7_handler, 	    & btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "btn7", "", },
+		{ 623, 260, 709, 304, button8_handler, 	    & btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "btn8", "", },
+		{ 712, 260, 798, 304, button9_handler, 	    & btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, FOOTER, 	   VISIBLE,     UINTPTR_MAX, "btnSysMenu", "System|settings", },
+		{ 234,  55, 314, 99, buttons_mode_handler,  & btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_LSB, "btnModeLSB", "LSB", },
+		{ 319,  55, 399, 99, buttons_mode_handler,  & btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_CW,  "btnModeCW", "CW", },
+		{ 404,  55, 484, 99, buttons_mode_handler,  & btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_AM,  "btnModeAM", "AM", },
+		{ 489,  55, 569, 99, buttons_mode_handler,  & btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_DGL, "btnModeDGL", "DGL", },
+		{ 234, 110, 314, 154, buttons_mode_handler, & btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_USB, "btnModeUSB", "USB", },
+		{ 319, 110, 399, 154, buttons_mode_handler, & btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_CWR, "btnModeCWR", "CWR", },
+		{ 404, 110, 484, 154, buttons_mode_handler, & btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_NFM, "btnModeNFM", "NFM", },
+		{ 489, 110, 569, 154, buttons_mode_handler, & btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_DGU, "btnModeDGU", "DGU", },
+		{ 251, 155, 337, 199, buttons_bp_handler,	& btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_BP,    NON_VISIBLE, UINTPTR_MAX, "btnAF_1", "", },
+		{ 357, 155, 443, 199, buttons_bp_handler, 	& btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_BP,    NON_VISIBLE, UINTPTR_MAX, "btnAF_OK", "OK", },
+		{ 463, 155, 549, 199, buttons_bp_handler, 	& btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_BP,    NON_VISIBLE, UINTPTR_MAX, "btnAF_2", "", },
+		{ 251,  70, 337, 114, set_agc_off, 			& btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AGC,   NON_VISIBLE, UINTPTR_MAX, "btnAGCoff", "AGC|off", },
+		{ 357,  70, 443, 114, set_agc_slow, 		& btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AGC,   NON_VISIBLE, UINTPTR_MAX, "btnAGCslow", "AGC|slow", },
+		{ 463,  70, 549, 114, set_agc_fast, 		& btnbg_86_44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AGC,   NON_VISIBLE, UINTPTR_MAX, "btnAGCfast", "AGC|fast", },
+		{ 120,  28, 170,  78, buttons_freq_handler, & btnbg_50_50, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_SPLIT, 		"btnFreq1", "1", },
+		{ 173,  28, 223,  78, buttons_freq_handler, & btnbg_50_50, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_A_EQ_B, 		"btnFreq2", "2", },
+		{ 226,  28, 276,  78, buttons_freq_handler, & btnbg_50_50, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_A_EX_B, 		"btnFreq3", "3", },
+		{ 279,  28, 329,  78, buttons_freq_handler, & btnbg_50_50, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_BKIN, 			"btnFreqBK", "<-", },
+		{ 120,  81, 170, 131, buttons_freq_handler, & btnbg_50_50, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_ATUBYPASS, 	"btnFreq4", "4", },
+		{ 173,  81, 223, 131, buttons_freq_handler, & btnbg_50_50, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_ANTENNA, 		"btnFreq5", "5", },
+		{ 226,  81, 276, 131, buttons_freq_handler, & btnbg_50_50, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_ATT, 			"btnFreq6", "6", },
+		{ 279,  81, 329, 131, buttons_freq_handler, & btnbg_50_50, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_ENTERFREQDONE, "btnFreqOK", "OK", },
+		{ 120, 134, 170, 184, buttons_freq_handler, & btnbg_50_50, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_MOX, 			"btnFreq7", "7", },
+		{ 173, 134, 223, 184, buttons_freq_handler, & btnbg_50_50, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_RECORDTOGGLE, 	"btnFreq8", "8", },
+		{ 226, 134, 276, 184, buttons_freq_handler, & btnbg_50_50, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_LDSPTGL, 		"btnFreq9", "9", },
+		{ 279, 134, 329, 184, buttons_freq_handler, & btnbg_50_50, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, KBD_CODE_VOXTOGGLE, 	"btnFreq0", "0", },
+		{   0, 	 0,   0,   0, buttons_menu_handler, & btnbg_40_40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU,  NON_VISIBLE, UINTPTR_MAX, 			"btnSysMenu-", "-", },
+		{   0, 	 0,   0,   0, buttons_menu_handler, & btnbg_40_40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU,  NON_VISIBLE, UINTPTR_MAX, 			"btnSysMenu+", "+", },
+		{   0, 	 0,   0,   0, buttons_uif_handler, 	& btnbg_40_40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UIF,   NON_VISIBLE, UINTPTR_MAX, 			"btnUIF-", "-", },
+		{   0, 	 0,   0,   0, buttons_uif_handler, 	& btnbg_40_40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UIF,   NON_VISIBLE, UINTPTR_MAX, 			"btnUIF+", "+", },
+//		{ 375, 120, 425, 150, buttons_uif_handler, 	NULL, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UIF,   NON_VISIBLE, UINTPTR_MAX, 			"btnUIF_OK", "OK", },
 	};
 	enum { button_handlers_count = sizeof button_handlers / sizeof button_handlers[0] };
 
@@ -554,10 +596,48 @@ void button1_handler(void);
 	uint_fast8_t menu_label_touched = 0;
 	uint_fast8_t menu_level;
 
+	void fill_button_bg_buf(btn_bg_t * v)
+	{
+		PACKEDCOLORPIP_T * buf;
+		uint_fast8_t w, h;
+
+		w = v->w;
+		h = v->h;
+
+		buf = * v->bg_non_pressed;
+		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLOR_BUTTON_NON_LOCKED, 1);
+		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORPIP_GRAY, 0);
+		colpip_rect(buf, w, h, 2, 2, w - 3, h - 3, COLORPIP_BLACK, 0);
+
+		buf = * v->bg_pressed;
+		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLOR_BUTTON_PR_NON_LOCKED, 1);
+		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORPIP_GRAY, 0);
+		colpip_rect(buf, w, h, 2, 2, w - 3, h - 3, COLORPIP_BLACK, 0);
+
+		buf = * v->bg_locked;
+		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLOR_BUTTON_LOCKED, 1);
+		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORPIP_GRAY, 0);
+		colpip_rect(buf, w, h, 2, 2, w - 3, h - 3, COLORPIP_BLACK, 0);
+
+		buf = * v->bg_locked_pressed;
+		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLOR_BUTTON_PR_LOCKED, 1);
+		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORPIP_GRAY, 0);
+		colpip_rect(buf, w, h, 2, 2, w - 3, h - 3, COLORPIP_BLACK, 0);
+
+		buf = * v->bg_disabled;
+		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLOR_BUTTON_DISABLED, 1);
+		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORPIP_GRAY, 0);
+		colpip_rect(buf, w, h, 2, 2, w - 3, h - 3, COLORPIP_BLACK, 0);
+
+		PRINTF("%d %d\n", w, h);
+
+	}
+
 	void gui_initialize (void)
 	{
 		pipparams_t pip;
 		uint_fast8_t i = 1;
+
 		InitializeListHead(& touch_list);
 		do {
 			touch_elements[touch_list_count].id = i;
@@ -570,6 +650,10 @@ void button1_handler(void);
 		gui.pip_height = pip.h;
 		gui.pip_x = pip.x;
 		gui.pip_y = pip.y;
+
+		fill_button_bg_buf(& btnbg_86_44);
+		fill_button_bg_buf(& btnbg_50_50);
+		fill_button_bg_buf(& btnbg_40_40);
 	}
 
 	void update_touch_list(void)
@@ -1458,16 +1542,32 @@ void button1_handler(void);
 		uint_fast16_t x1, uint_fast16_t y1,
 		uint_fast16_t x2, uint_fast16_t y2,
 		uint_fast8_t pressed, uint_fast8_t is_locked, uint_fast8_t is_disabled,
-		const char * text) // pressed = 0
+		const char * text, uint_fast8_t id) // pressed = 0
 	{
 		PACKEDCOLORPIP_T * const colorpip = getscratchpip();
-		COLORPIP_T c1, c2;
+		PACKEDCOLORPIP_T * bg = NULL;
+//		COLORPIP_T c1, c2;
 		static const char delimeters [] = "|";
-		c1 = is_disabled ? COLOR_BUTTON_DISABLED : (is_locked ? COLOR_BUTTON_LOCKED : COLOR_BUTTON_NON_LOCKED);
-		c2 = is_disabled ? COLOR_BUTTON_DISABLED : (is_locked ? COLOR_BUTTON_PR_LOCKED : COLOR_BUTTON_PR_NON_LOCKED);
-		colpip_rect(colorpip, gui.pip_width, gui.pip_height, x1,	y1, x2, y2, pressed ? c1 : c2, 1);
-		colpip_rect(colorpip, gui.pip_width, gui.pip_height, x1,	y1, x2, y2, COLORPIP_GRAY, 0);
-		colpip_rect(colorpip, gui.pip_width, gui.pip_height, x1 + 2, y1 + 2, x2 - 2, y2 - 2, COLORPIP_BLACK, 0);
+//		c1 = is_disabled ? COLOR_BUTTON_DISABLED : (is_locked ? COLOR_BUTTON_LOCKED : COLOR_BUTTON_NON_LOCKED);
+//		c2 = is_disabled ? COLOR_BUTTON_DISABLED : (is_locked ? COLOR_BUTTON_PR_LOCKED : COLOR_BUTTON_PR_NON_LOCKED);
+
+
+//		colpip_rect(colorpip, gui.pip_width, gui.pip_height, x1,	y1, x2, y2, pressed ? c1 : c2, 1);
+//		colpip_rect(colorpip, gui.pip_width, gui.pip_height, x1,	y1, x2, y2, COLORPIP_GRAY, 0);
+//		colpip_rect(colorpip, gui.pip_width, gui.pip_height, x1 + 2, y1 + 2, x2 - 2, y2 - 2, COLORPIP_BLACK, 0);
+
+		if (is_disabled)
+			bg = * button_handlers[id].bg->bg_disabled;
+		else if (is_locked && ! pressed)
+			bg = * button_handlers[id].bg->bg_locked_pressed;
+		else if (is_locked && pressed)
+			bg = * button_handlers[id].bg->bg_locked;
+		else if (! is_locked && ! pressed)
+			bg = * button_handlers[id].bg->bg_pressed;
+		else if (! is_locked && pressed)
+			bg = * button_handlers[id].bg->bg_non_pressed;
+
+		colpip_plot(colmain_fb_draw(), DIM_X, DIM_Y, x1, y1 + gui.pip_y, bg, button_handlers[id].bg->w, button_handlers[id].bg->h);
 
 		if (strchr(text, delimeters[0]) == NULL)
 		{
@@ -1699,7 +1799,7 @@ void button1_handler(void);
 			{
 				const button_t * const bh = & button_handlers[i];
 				if (bh->parent == gui.window_to_draw && bh->visible == VISIBLE)
-					draw_button_pip(bh->x1, bh->y1, bh->x2, bh->y2, bh->state, bh->is_locked, bh->state == DISABLED ? 1 : 0, bh->text);
+					draw_button_pip(bh->x1, bh->y1, bh->x2, bh->y2, bh->state, bh->is_locked, bh->state == DISABLED ? 1 : 0, bh->text, i);
 			}
 		}
 
@@ -1709,7 +1809,7 @@ void button1_handler(void);
 			const button_t * const bhf = & button_handlers[i];
 			if (bhf->parent != FOOTER)
 				break;
-			draw_button_pip(bhf->x1, bhf->y1, bhf->x2, bhf->y2, bhf->state, bhf->is_locked, bhf->state == DISABLED ? 1 : 0, bhf->text);
+			draw_button_pip(bhf->x1, bhf->y1, bhf->x2, bhf->y2, bhf->state, bhf->is_locked, bhf->state == DISABLED ? 1 : 0, bhf->text, i);
 		}
 	}
 #endif /* WITHTOUCHGUI */
