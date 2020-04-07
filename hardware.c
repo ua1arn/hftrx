@@ -10928,15 +10928,17 @@ M_SIZE_IO_2     EQU     2550            ; [Area11] I/O area 2
 
 //; setting for Strongly-ordered memory
 //#define	TTB_PARA_STRGLY             0b_0000_0000_1101_1110_0010
-#define	TTB_PARA_STRGLY             0b00000000110111100010UL	// 0x00DE2
+#define	TTB_PARA_STRGLY             0x00DE2
 
 //; setting for Outer and inner not cache normal memory
 //#define	TTB_PARA_NORMAL_NOT_CACHE   0b_0000_0001_1101_1110_0010
-#define	TTB_PARA_NORMAL_NOT_CACHE   0b00000001110111100010UL	// 0x01DE2
+#define	TTB_PARA_NORMAL_NOT_CACHE   0x0x01DE2
 
 //; setting for Outer and inner write back, write allocate normal memory (Cacheable)
 //#define	TTB_PARA_NORMAL_CACHE       0b_0000_0001_1101_1110_1110
-#define	TTB_PARA_NORMAL_CACHE       0b00000001110111101110UL	// 01DEE
+#define	TTB_PARA_NORMAL_CACHE       0x01DEEuL
+
+#define	TTB_PARA_NO_ACCESS       	0 //0x01DEEuL
 
 static uint32_t
 FLASHMEMINITFUNC
@@ -10956,7 +10958,7 @@ ttb_accessbits(uintptr_t a)
 #elif CPUSTYLE_STM32MP1
 
 	if (a >= 0x00000000uL && a < 0x10000000uL)			// BOOT
-		return addrbase | TTB_PARA_NORMAL_CACHE;
+		return addrbase | TTB_PARA_NO_ACCESS;
 	if (a >= 0x10000000uL && a < 0x20000000uL)			// SRAMs ??????
 		return addrbase | TTB_PARA_NORMAL_CACHE;
 	if (a >= 0x20000000uL && a < 0x30000000uL)			// SYSRAM
