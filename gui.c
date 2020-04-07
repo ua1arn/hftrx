@@ -285,26 +285,26 @@ display_smeter2(
 #endif /* LCDMODE_V2A || LCDMODE_V2 */
 }
 
-void button1_handler(void);
-	void button2_handler(void);
-	void button3_handler(void);
-	void button4_handler(void);
-	void button5_handler(void);
-	void button6_handler(void);
-	void button7_handler(void);
-	void button8_handler(void);
-	void button9_handler(void);
-	void labels_menu_handler (void);
-	void buttons_mode_handler(void);
-	void buttons_bp_handler(void);
-	void buttons_freq_handler(void);
-	void buttons_menu_handler(void);
-	void buttons_uif_handler(void);
-	void window_bp_process(void);
-	void window_menu_process(void);
-	void window_freq_process(void);
-	void window_uif_process(void);
-	void encoder2_menu (enc2_menu_t * enc2_menu);
+static void button1_handler(void);
+static void button2_handler(void);
+static void button3_handler(void);
+static void button4_handler(void);
+static void button5_handler(void);
+static void button6_handler(void);
+static void button7_handler(void);
+static void button8_handler(void);
+void button9_handler(void);
+static void labels_menu_handler (void);
+static void buttons_mode_handler(void);
+static void buttons_bp_handler(void);
+static void buttons_freq_handler(void);
+static void buttons_menu_handler(void);
+static void buttons_uif_handler(void);
+static void window_bp_process(void);
+static void window_menu_process(void);
+static void window_freq_process(void);
+static void window_uif_process(void);
+void encoder2_menu (enc2_menu_t * enc2_menu);
 
 	enum {
 		TYPE_DUMMY,
@@ -525,7 +525,7 @@ void button1_handler(void);
 		menu_names_t menu_block [MENU_ARRAY_SIZE];	// массив значений уровня меню
 	} menu_t;
 
-	menu_t menu[MENU_COUNT];
+	static menu_t menu[MENU_COUNT];
 
 	typedef struct {
 		char name [TEXT_ARRAY_SIZE];
@@ -548,11 +548,11 @@ void button1_handler(void);
 		LIST_ENTRY item;
 	} list_template_t;
 
-	LIST_ENTRY touch_list;
-	list_template_t touch_elements[LIST_ARRAY_SIZE];
-	uint_fast8_t touch_list_count = 0;
-	uint_fast8_t menu_label_touched = 0;
-	uint_fast8_t menu_level;
+	static LIST_ENTRY touch_list;
+	static list_template_t touch_elements[LIST_ARRAY_SIZE];
+	static uint_fast8_t touch_list_count = 0;
+	static uint_fast8_t menu_label_touched = 0;
+	static uint_fast8_t menu_level;
 
 	void gui_initialize (void)
 	{
@@ -572,7 +572,7 @@ void button1_handler(void);
 		gui.pip_y = pip.y;
 	}
 
-	void update_touch_list(void)
+	static void update_touch_list(void)
 	{
 		PLIST_ENTRY t;
 
@@ -602,7 +602,7 @@ void button1_handler(void);
 		}
 	}
 
-	uint_fast8_t find_button (uint_fast8_t id_window, const char * name)				// возврат id кнопки окна по ее названию
+	static uint_fast8_t find_button (uint_fast8_t id_window, const char * name)				// возврат id кнопки окна по ее названию
 	{
 		for (uint_fast8_t i = 1; i < button_handlers_count; i++)
 		{
@@ -612,7 +612,7 @@ void button1_handler(void);
 		return 0;
 	}
 
-	uint_fast8_t find_label (uint_fast8_t id_window, const char * name)				// возврат id метки окна по ее названию
+	static uint_fast8_t find_label (uint_fast8_t id_window, const char * name)				// возврат id метки окна по ее названию
 	{
 		for (uint_fast8_t i = 1; i < labels_count; i++)
 		{
@@ -622,7 +622,7 @@ void button1_handler(void);
 		return 0;
 	}
 
-	void footer_buttons_state (uint_fast8_t state, const char * name)					// блокируются все, кроме name == text
+	static void footer_buttons_state (uint_fast8_t state, const char * name)					// блокируются все, кроме name == text
 	{
 		static uint_fast8_t id = 0;
 		if (state == DISABLED)
@@ -640,7 +640,7 @@ void button1_handler(void);
 		}
 	}
 
-	void set_window(uint_fast8_t parent, uint_fast8_t value)
+	static void set_window(uint_fast8_t parent, uint_fast8_t value)
 	{
 		PLIST_ENTRY p;
 		for (uint_fast8_t i = 1; i < button_handlers_count; i++)
@@ -687,7 +687,7 @@ void button1_handler(void);
 		(void) p;
 	}
 
-	void window_bp_process (void)
+	static void window_bp_process (void)
 	{
 		PACKEDCOLORPIP_T * const colorpip = getscratchpip();
 		static uint_fast8_t val_high, val_low, val_c, val_w, bw_type;
@@ -804,7 +804,7 @@ void button1_handler(void);
 			colpip_line(colorpip, gui.pip_width, gui.pip_height, x_c, 60, x_c, 120, COLORPIP_RED);
 }
 
-	void window_freq_process (void)
+	static void window_freq_process (void)
 	{
 		if (windows[WINDOW_FREQ].first_call == 1)
 		{
@@ -813,7 +813,7 @@ void button1_handler(void);
 		}
 	}
 
-	void labels_menu_handler (void)
+	static void labels_menu_handler (void)
 	{
 		if (gui.selected_type == TYPE_LABEL)
 		{
@@ -867,7 +867,7 @@ void button1_handler(void);
 		gui.kbd_code = gui.kbd_code == KBD_CODE_MAX ? kbch : gui.kbd_code;
 	}
 
-	void window_uif_process(void)
+	static void window_uif_process(void)
 	{
 		static uint_fast8_t id_lbl_uif_param, id_lbl_uif_val, window_half_wight;
 		static uint_fast8_t id_button_up = 0, id_button_down = 0;
@@ -930,7 +930,7 @@ void button1_handler(void);
 		}
 	}
 
-	void buttons_uif_handler(void)
+	static void buttons_uif_handler(void)
 	{
 		if (gui.selected_type == TYPE_BUTTON && gui.selected_id == find_button(WINDOW_UIF, "btnUIF+"))
 			encoder2.rotate = 1;
@@ -944,7 +944,7 @@ void button1_handler(void);
 		}
 	}
 
-	void window_menu_process(void)
+	static void window_menu_process(void)
 	{
 		PACKEDCOLORPIP_T * const colorpip = getscratchpip();
 		static uint_fast8_t str_step = 0, menu_is_scrolling = 0, start_str_group = 0, start_str_params = 0;
@@ -1231,7 +1231,7 @@ void button1_handler(void);
 										 labels[menu[menu_level].selected_label + menu[menu_level].first_id].y, ">", COLORPIP_GREEN);
 	}
 
-	void buttons_menu_handler(void)
+	static void buttons_menu_handler(void)
 	{
 		if (gui.selected_type == TYPE_BUTTON && gui.selected_id == find_button(WINDOW_MENU, "btnSysMenu+"))
 			encoder2.rotate = 1;
@@ -1258,7 +1258,7 @@ void button1_handler(void);
 		encoder2.press_done = 0;
 	}
 
-	void remove_end_line_spaces(char * str)
+	static void remove_end_line_spaces(char * str)
 	{
 		size_t i = strlen(str);
 		if (i == 0)
@@ -1290,7 +1290,7 @@ void button1_handler(void);
 			footer_buttons_state(CANCELLED, "");
 	}
 
-	void buttons_mode_handler(void)
+	static void buttons_mode_handler(void)
 	{
 		if (windows[WINDOW_MODES].is_show && button_handlers[gui.selected_id].parent == WINDOW_MODES)
 		{
@@ -1302,7 +1302,7 @@ void button1_handler(void);
 		}
 	}
 
-	void buttons_bp_handler (void)
+	static void buttons_bp_handler (void)
 	{
 		uint_fast8_t id_button_high = find_button(WINDOW_BP, "btnAF_2");
 		uint_fast8_t id_button_low = find_button(WINDOW_BP, "btnAF_1");
@@ -1326,7 +1326,7 @@ void button1_handler(void);
 		}
 	}
 
-	void buttons_freq_handler (void)
+	static void buttons_freq_handler (void)
 	{
 		uint_fast8_t editfreqmode = 0;
 		if (gui.window_to_draw == WINDOW_FREQ)
@@ -1339,7 +1339,7 @@ void button1_handler(void);
 		}
 	}
 
-	void button1_handler(void)
+	static void button1_handler(void)
 	{
 		gui.window_to_draw = WINDOW_MODES;
 
@@ -1356,7 +1356,7 @@ void button1_handler(void);
 		}
 	}
 
-	void button2_handler(void)
+	static void button2_handler(void)
 	{
 		gui.window_to_draw = WINDOW_BP;
 
@@ -1375,7 +1375,7 @@ void button1_handler(void);
 		}
 	}
 
-	void button3_handler(void)
+	static void button3_handler(void)
 	{
 		gui.window_to_draw = WINDOW_AGC;
 
@@ -1392,7 +1392,7 @@ void button1_handler(void);
 		}
 	}
 
-	void button4_handler(void)
+	static void button4_handler(void)
 	{
 		gui.window_to_draw = WINDOW_FREQ;
 
@@ -1413,22 +1413,22 @@ void button1_handler(void);
 		}
 	}
 
-	void button5_handler(void)
+	static void button5_handler(void)
 	{
 
 	}
 
-	void button6_handler(void)
+	static void button6_handler(void)
 	{
 
 	}
 
-	void button7_handler(void)
+	static void button7_handler(void)
 	{
 
 	}
 
-	void button8_handler(void)
+	static void button8_handler(void)
 	{
 
 	}
