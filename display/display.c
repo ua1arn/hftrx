@@ -2411,6 +2411,7 @@ colpip_string_tbg(
 {
 	char c;
 
+	ASSERT(s != NULL);
 	while((c = * s ++) != '\0')
 	{
 		x = ltdcpip_horizontal_put_char_small_tbg(buffer, dx, dy, x, y, c, fg);
@@ -2431,7 +2432,7 @@ colpip_string2_tbg(
 	)
 {
 	char c;
-
+	ASSERT(s != NULL);
 	while((c = * s ++) != '\0')
 	{
 		x = ltdcpip_horizontal_put_char_small2_tbg(buffer, dx, dy, x, y, c, fg);
@@ -2453,6 +2454,7 @@ colpip_string3_tbg(
 {
 	char c;
 
+	ASSERT(s != NULL);
 	while((c = * s ++) != '\0')
 	{
 		x = ltdcpip_horizontal_put_char_small3_tbg(buffer, dx, dy, x, y, c, fg);
@@ -2464,6 +2466,7 @@ uint_fast16_t strwidth3(
 	const char * s
 	)
 {
+	ASSERT(s != NULL);
 	return SMALLCHARW3 * strlen(s);
 }
 
@@ -2472,6 +2475,7 @@ uint_fast16_t strwidth2(
 	const char * s
 	)
 {
+	ASSERT(s != NULL);
 	return SMALLCHARW2 * strlen(s);
 }
 
@@ -2482,6 +2486,7 @@ uint_fast16_t strwidth(
 	const char * s
 	)
 {
+	ASSERT(s != NULL);
 	return SMALLCHARW * strlen(s);
 }
 
@@ -2493,6 +2498,7 @@ uint_fast16_t colpip_string_height(
 	const char * s
 	)
 {
+	ASSERT(s != NULL);
 	(void) buffer;
 	(void) dx;
 	(void) dy;
