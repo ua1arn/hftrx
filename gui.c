@@ -302,29 +302,29 @@ display_smeter2(
 	}
 
 	(void) pv;
-#endif
+#endif /* LCDMODE_V2A || LCDMODE_V2 */
 }
 
-void button1_handler(void);
-	void button2_handler(void);
-	void button3_handler(void);
-	void button4_handler(void);
-	void button5_handler(void);
-	void button6_handler(void);
-	void button7_handler(void);
-	void button8_handler(void);
-	void button9_handler(void);
-	void labels_menu_handler (void);
-	void buttons_mode_handler(void);
-	void buttons_bp_handler(void);
-	void buttons_freq_handler(void);
-	void buttons_menu_handler(void);
-	void buttons_uif_handler(void);
-	void window_bp_process(void);
-	void window_menu_process(void);
-	void window_freq_process(void);
-	void window_uif_process(void);
-	void encoder2_menu (enc2_menu_t * enc2_menu);
+static void button1_handler(void);
+static void button2_handler(void);
+static void button3_handler(void);
+static void button4_handler(void);
+static void button5_handler(void);
+static void button6_handler(void);
+static void button7_handler(void);
+static void button8_handler(void);
+void button9_handler(void);
+static void labels_menu_handler (void);
+static void buttons_mode_handler(void);
+static void buttons_bp_handler(void);
+static void buttons_freq_handler(void);
+static void buttons_menu_handler(void);
+static void buttons_uif_handler(void);
+static void window_bp_process(void);
+static void window_menu_process(void);
+static void window_freq_process(void);
+static void window_uif_process(void);
+void encoder2_menu (enc2_menu_t * enc2_menu);
 
 	enum {
 		TYPE_DUMMY,
@@ -449,7 +449,7 @@ void button1_handler(void);
 		{   0, 	 0,   0,   0, buttons_uif_handler, 	& btnbg_40_40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UIF,   NON_VISIBLE, UINTPTR_MAX, 			"btnUIF+", "+", },
 //		{ 375, 120, 425, 150, buttons_uif_handler, 	NULL, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UIF,   NON_VISIBLE, UINTPTR_MAX, 			"btnUIF_OK", "OK", },
 	};
-	enum { button_handlers_count = sizeof button_handlers / sizeof button_handlers[0] };
+	enum { BUTTON_HANDLERS_COUNT = sizeof button_handlers / sizeof button_handlers[0] };
 
 	typedef struct {
 		uint16_t x;
@@ -489,7 +489,7 @@ void button1_handler(void);
 		{    0,  0,	WINDOW_UIF,  DISABLED,  0, NON_VISIBLE, "lbl_uif_param", "", COLORPIP_WHITE, },
 		{    0,  0,	WINDOW_UIF,  DISABLED,  0, NON_VISIBLE, "lbl_uif_val", 	 "", COLORPIP_WHITE, },
 };
-	enum { labels_count = sizeof labels / sizeof labels[0] };
+	enum { LABELS_COUNT = sizeof labels / sizeof labels[0] };
 
 	typedef struct {
 		uint16_t last_pressed_x; 	 // последняя точка касания экрана
@@ -567,7 +567,7 @@ void button1_handler(void);
 		menu_names_t menu_block [MENU_ARRAY_SIZE];	// массив значений уровня меню
 	} menu_t;
 
-	menu_t menu[MENU_COUNT];
+	static menu_t menu[MENU_COUNT];
 
 	typedef struct {
 		char name [TEXT_ARRAY_SIZE];
@@ -590,11 +590,11 @@ void button1_handler(void);
 		LIST_ENTRY item;
 	} list_template_t;
 
-	LIST_ENTRY touch_list;
-	list_template_t touch_elements[LIST_ARRAY_SIZE];
-	uint_fast8_t touch_list_count = 0;
-	uint_fast8_t menu_label_touched = 0;
-	uint_fast8_t menu_level;
+	static LIST_ENTRY touch_list;
+	static list_template_t touch_elements[LIST_ARRAY_SIZE];
+	static uint_fast8_t touch_list_count = 0;
+	static uint_fast8_t menu_label_touched = 0;
+	static uint_fast8_t menu_level;
 
 	void fill_button_bg_buf(btn_bg_t * v)
 	{
@@ -656,7 +656,7 @@ void button1_handler(void);
 		fill_button_bg_buf(& btnbg_40_40);
 	}
 
-	void update_touch_list(void)
+	static void update_touch_list(void)
 	{
 		PLIST_ENTRY t;
 
@@ -686,9 +686,9 @@ void button1_handler(void);
 		}
 	}
 
-	uint_fast8_t find_button (uint_fast8_t id_window, const char * name)				// возврат id кнопки окна по ее названию
+	static uint_fast8_t find_button (uint_fast8_t id_window, const char * name)				// возврат id кнопки окна по ее названию
 	{
-		for (uint_fast8_t i = 1; i < button_handlers_count; i++)
+		for (uint_fast8_t i = 1; i < BUTTON_HANDLERS_COUNT; i++)
 		{
 			if (button_handlers[i].parent == id_window && strcmp(button_handlers[i].name, name) == 0)
 				return i;
@@ -696,9 +696,9 @@ void button1_handler(void);
 		return 0;
 	}
 
-	uint_fast8_t find_label (uint_fast8_t id_window, const char * name)				// возврат id метки окна по ее названию
+	static uint_fast8_t find_label (uint_fast8_t id_window, const char * name)				// возврат id метки окна по ее названию
 	{
-		for (uint_fast8_t i = 1; i < labels_count; i++)
+		for (uint_fast8_t i = 1; i < LABELS_COUNT; i++)
 		{
 			if (labels[i].parent == id_window && strcmp(labels[i].name, name) == 0)
 				return i;
@@ -706,7 +706,7 @@ void button1_handler(void);
 		return 0;
 	}
 
-	void footer_buttons_state (uint_fast8_t state, const char * name)					// блокируются все, кроме name == text
+	static void footer_buttons_state (uint_fast8_t state, const char * name)					// блокируются все, кроме name == text
 	{
 		static uint_fast8_t id = 0;
 		if (state == DISABLED)
@@ -716,7 +716,7 @@ void button1_handler(void);
 		} else
 			button_handlers[id].is_locked = BUTTON_NON_LOCKED;
 
-		for (uint_fast8_t i = 1; i < button_handlers_count; i++)
+		for (uint_fast8_t i = 1; i < BUTTON_HANDLERS_COUNT; i++)
 		{
 			if (button_handlers[i].parent != FOOTER)
 				break;
@@ -724,10 +724,10 @@ void button1_handler(void);
 		}
 	}
 
-	void set_window(uint_fast8_t parent, uint_fast8_t value)
+	static void set_window(uint_fast8_t parent, uint_fast8_t value)
 	{
 		PLIST_ENTRY p;
-		for (uint_fast8_t i = 1; i < button_handlers_count; i++)
+		for (uint_fast8_t i = 1; i < BUTTON_HANDLERS_COUNT; i++)
 		{
 			if (button_handlers[i].parent == parent)
 			{
@@ -747,7 +747,7 @@ void button1_handler(void);
 				}
 			}
 		}
-		for (uint_fast8_t i = 1; i < labels_count; i++)
+		for (uint_fast8_t i = 1; i < LABELS_COUNT; i++)
 		{
 			if (labels[i].parent == parent)
 			{
@@ -771,12 +771,11 @@ void button1_handler(void);
 		(void) p;
 	}
 
-	void window_bp_process (void)
+	static void window_bp_process (void)
 	{
 		PACKEDCOLORPIP_T * const colorpip = getscratchpip();
 		static uint_fast8_t val_high, val_low, val_c, val_w, bw_type;
 		static uint_fast16_t x_h, x_l, x_c;
-		char buf[TEXT_ARRAY_SIZE];
 		static uint_fast8_t id_button_high, id_button_low, id_button_width, id_button_pitch, id_lbl_high, id_lbl_low;
 
 		if (windows[WINDOW_BP].first_call == 1)
@@ -791,6 +790,8 @@ void button1_handler(void);
 			bw_type = get_bp_type();
 			if (bw_type)	// BWSET_WIDE
 			{
+				char buf[TEXT_ARRAY_SIZE];
+
 				strcpy(button_handlers[id_button_high].text, "High|cut");
 				strcpy(button_handlers[id_button_low].text, "Low|cut");
 				button_handlers[id_button_high].is_locked = 1;
@@ -798,18 +799,20 @@ void button1_handler(void);
 				val_high = get_high_bp(0);
 				val_low = get_low_bp(0);
 
-				local_snprintf_P(buf, TEXT_ARRAY_SIZE, PSTR("%d"), val_high * 100);
+				local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), val_high * 100);
 				strcpy(labels[id_lbl_high].text, buf);
 				x_h = normalize(val_high, 0, 50, 290) + 290;
 				labels[id_lbl_high].x = x_h + 64 > 550 ? 486 : x_h;
 
-				local_snprintf_P(buf, TEXT_ARRAY_SIZE, PSTR("%d"), val_low * 10);
+				local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), val_low * 10);
 				strcpy(labels[id_lbl_low].text, buf);
 				x_l = normalize(val_low, 0, 500, 290) + 290;
 				labels[id_lbl_low].x = x_l - strwidth(buf);
 			}
 			else			// BWSET_NARROW
 			{
+				char buf[TEXT_ARRAY_SIZE];
+
 				strcpy(button_handlers[id_button_high].text, "Pitch");
 				strcpy(button_handlers[id_button_low].text, "Width");
 				button_handlers[id_button_low].is_locked = 1;
@@ -820,7 +823,7 @@ void button1_handler(void);
 				x_l = normalize(190 - val_w , 0, 500, 290) + 290;
 				x_h = normalize(190 + val_w , 0, 500, 290) + 290;
 
-				local_snprintf_P(buf, TEXT_ARRAY_SIZE, PSTR("%d"), val_w * 20);
+				local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), val_w * 20);
 				strcpy(labels[id_lbl_high].text, buf);
 				labels[id_lbl_high].x = x_c - strwidth(labels[id_lbl_high].text) / 2;
 
@@ -837,18 +840,21 @@ void button1_handler(void);
 			{
 				if (button_handlers[id_button_high].is_locked == 1)
 				{
+					char buf[TEXT_ARRAY_SIZE];
+
 					val_high = get_high_bp(encoder2.rotate);
 					encoder2.rotate_done = 1;
-					local_snprintf_P(buf, TEXT_ARRAY_SIZE, PSTR("%d"), val_high * 100);
+					local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), val_high * 100);
 					strcpy(labels[id_lbl_high].text, buf);
 					x_h = normalize(val_high, 0, 50, 290) + 290;
 					labels[id_lbl_high].x = x_h + 64 > 550 ? 486 : x_h;
 				}
 				else if (button_handlers[id_button_low].is_locked == 1)
 				{
+					char buf[TEXT_ARRAY_SIZE];
 					val_low = get_low_bp(encoder2.rotate * 10);
 					encoder2.rotate_done = 1;
-					local_snprintf_P(buf, TEXT_ARRAY_SIZE, PSTR("%d"), val_low * 10);
+					local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), val_low * 10);
 					strcpy(labels[id_lbl_low].text, buf);
 					x_l = normalize(val_low / 10, 0, 50, 290) + 290;
 					labels[id_lbl_low].x = x_l - strwidth(labels[id_lbl_low].text);
@@ -856,6 +862,8 @@ void button1_handler(void);
 			}
 			else				// BWSET_NARROW
 			{
+				char buf[TEXT_ARRAY_SIZE];
+
 				if (button_handlers[id_button_high].is_locked == 1)
 				{
 					val_c = get_high_bp(encoder2.rotate);
@@ -871,11 +879,11 @@ void button1_handler(void);
 				x_l = normalize(190 - val_w , 0, 500, 290) + 290;
 				x_h = normalize(190 + val_w , 0, 500, 290) + 290;
 
-				local_snprintf_P(buf, TEXT_ARRAY_SIZE, PSTR("%d"), val_w * 20);
+				local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), val_w * 20);
 				strcpy(labels[id_lbl_high].text, buf);
 				labels[id_lbl_high].x = x_c - strwidth(labels[id_lbl_high].text) / 2;
 
-				local_snprintf_P(buf, TEXT_ARRAY_SIZE, PSTR("P %d"), val_c * 10);
+				local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("P %d"), val_c * 10);
 				strcpy(labels[id_lbl_low].text, buf);
 				labels[id_lbl_low].x = 550 - strwidth(labels[id_lbl_low].text);
 			}
@@ -888,7 +896,7 @@ void button1_handler(void);
 			colpip_line(colorpip, gui.pip_width, gui.pip_height, x_c, 60, x_c, 120, COLORPIP_RED);
 }
 
-	void window_freq_process (void)
+	static void window_freq_process (void)
 	{
 		if (windows[WINDOW_FREQ].first_call == 1)
 		{
@@ -897,7 +905,7 @@ void button1_handler(void);
 		}
 	}
 
-	void labels_menu_handler (void)
+	static void labels_menu_handler (void)
 	{
 		if (gui.selected_type == TYPE_LABEL)
 		{
@@ -951,7 +959,7 @@ void button1_handler(void);
 		gui.kbd_code = gui.kbd_code == KBD_CODE_MAX ? kbch : gui.kbd_code;
 	}
 
-	void window_uif_process(void)
+	static void window_uif_process(void)
 	{
 		static uint_fast8_t id_lbl_uif_param, id_lbl_uif_val, window_half_wight;
 		static uint_fast8_t id_button_up = 0, id_button_down = 0;
@@ -1014,7 +1022,7 @@ void button1_handler(void);
 		}
 	}
 
-	void buttons_uif_handler(void)
+	static void buttons_uif_handler(void)
 	{
 		if (gui.selected_type == TYPE_BUTTON && gui.selected_id == find_button(WINDOW_UIF, "btnUIF+"))
 			encoder2.rotate = 1;
@@ -1028,7 +1036,7 @@ void button1_handler(void);
 		}
 	}
 
-	void window_menu_process(void)
+	static void window_menu_process(void)
 	{
 		PACKEDCOLORPIP_T * const colorpip = getscratchpip();
 		static uint_fast8_t str_step = 0, menu_is_scrolling = 0, start_str_group = 0, start_str_params = 0;
@@ -1064,13 +1072,15 @@ void button1_handler(void);
 
 			menu[MENU_PARAMS].first_id = menu[MENU_GROUPS].last_id + 1;						// первое вхождение метки params
 			menu[MENU_PARAMS].last_id = menu[MENU_PARAMS].first_id;
-			while (strcmp(labels[++menu[MENU_PARAMS].last_id].name, "lbl_params") == 0);
+			while (strcmp(labels[++menu[MENU_PARAMS].last_id].name, "lbl_params") == 0)
+				;
 			menu[MENU_PARAMS].last_id--;													// последнее вхождение метки params
 			menu[MENU_PARAMS].num_rows = menu[MENU_PARAMS].last_id - menu[MENU_PARAMS].first_id;
 
 			menu[MENU_VALS].first_id = menu[MENU_PARAMS].last_id + 1;						// первое вхождение метки vals
 			menu[MENU_VALS].last_id = menu[MENU_VALS].first_id;
-			while (strcmp(labels[++menu[MENU_VALS].last_id].name, "lbl_vals") == 0);
+			while (strcmp(labels[++menu[MENU_VALS].last_id].name, "lbl_vals") == 0)
+				;
 			menu[MENU_VALS].last_id--;														// последнее вхождение метки vals
 			menu[MENU_VALS].num_rows = menu[MENU_VALS].last_id - menu[MENU_VALS].first_id;
 
@@ -1315,7 +1325,7 @@ void button1_handler(void);
 										 labels[menu[menu_level].selected_label + menu[menu_level].first_id].y, ">", COLORPIP_GREEN);
 	}
 
-	void buttons_menu_handler(void)
+	static void buttons_menu_handler(void)
 	{
 		if (gui.selected_type == TYPE_BUTTON && gui.selected_id == find_button(WINDOW_MENU, "btnSysMenu+"))
 			encoder2.rotate = 1;
@@ -1342,7 +1352,7 @@ void button1_handler(void);
 		encoder2.press_done = 0;
 	}
 
-	void remove_end_line_spaces(char * str)
+	static void remove_end_line_spaces(char * str)
 	{
 		size_t i = strlen(str);
 		if (i == 0)
@@ -1374,7 +1384,7 @@ void button1_handler(void);
 			footer_buttons_state(CANCELLED, "");
 	}
 
-	void buttons_mode_handler(void)
+	static void buttons_mode_handler(void)
 	{
 		if (windows[WINDOW_MODES].is_show && button_handlers[gui.selected_id].parent == WINDOW_MODES)
 		{
@@ -1386,7 +1396,7 @@ void button1_handler(void);
 		}
 	}
 
-	void buttons_bp_handler (void)
+	static void buttons_bp_handler (void)
 	{
 		uint_fast8_t id_button_high = find_button(WINDOW_BP, "btnAF_2");
 		uint_fast8_t id_button_low = find_button(WINDOW_BP, "btnAF_1");
@@ -1410,7 +1420,7 @@ void button1_handler(void);
 		}
 	}
 
-	void buttons_freq_handler (void)
+	static void buttons_freq_handler (void)
 	{
 		uint_fast8_t editfreqmode = 0;
 		if (gui.window_to_draw == WINDOW_FREQ)
@@ -1423,7 +1433,7 @@ void button1_handler(void);
 		}
 	}
 
-	void button1_handler(void)
+	static void button1_handler(void)
 	{
 		gui.window_to_draw = WINDOW_MODES;
 
@@ -1440,7 +1450,7 @@ void button1_handler(void);
 		}
 	}
 
-	void button2_handler(void)
+	static void button2_handler(void)
 	{
 		gui.window_to_draw = WINDOW_BP;
 
@@ -1459,7 +1469,7 @@ void button1_handler(void);
 		}
 	}
 
-	void button3_handler(void)
+	static void button3_handler(void)
 	{
 		gui.window_to_draw = WINDOW_AGC;
 
@@ -1476,7 +1486,7 @@ void button1_handler(void);
 		}
 	}
 
-	void button4_handler(void)
+	static void button4_handler(void)
 	{
 		gui.window_to_draw = WINDOW_FREQ;
 
@@ -1497,22 +1507,22 @@ void button1_handler(void);
 		}
 	}
 
-	void button5_handler(void)
+	static void button5_handler(void)
 	{
 
 	}
 
-	void button6_handler(void)
+	static void button6_handler(void)
 	{
 
 	}
 
-	void button7_handler(void)
+	static void button7_handler(void)
 	{
 
 	}
 
-	void button8_handler(void)
+	static void button8_handler(void)
 	{
 
 	}
@@ -1594,12 +1604,14 @@ void button1_handler(void);
 		}
 	}
 
-	void set_state_record(list_template_t * val)
+	static void set_state_record(list_template_t * val)
 	{
+		ASSERT(val != NULL);
 		gui.selected_id = val->id;								// добавить везде проверку на gui.selected_type
 		switch (val->type)
 		{
 			case TYPE_BUTTON:
+				ASSERT(val->id < BUTTON_HANDLERS_COUNT);
 				gui.selected_type = TYPE_BUTTON;
 				button_handlers[val->id].state = val->state;
 				if (button_handlers[val->id].onClickHandler && button_handlers[val->id].state == RELEASED)
@@ -1607,10 +1619,14 @@ void button1_handler(void);
 				break;
 
 			case TYPE_LABEL:
+				ASSERT(val->id < LABELS_COUNT);
 				gui.selected_type = TYPE_LABEL;
 				labels[val->id].state = val->state;
 				if (labels[val->id].onClickHandler && labels[val->id].state == RELEASED)
 					labels[val->id].onClickHandler();
+				break;
+			default:
+				ASSERT(0);
 				break;
 		}
 	}
@@ -1787,7 +1803,7 @@ void button1_handler(void);
 			// отрисовка принадлежащих окну элементов
 
 			// метки
-			for (uint_fast8_t i = 1; i < labels_count; i++)
+			for (uint_fast8_t i = 1; i < LABELS_COUNT; i++)
 			{
 				const label_t * const lh = & labels[i];
 				if (lh->parent == gui.window_to_draw && lh->visible == VISIBLE)
@@ -1795,7 +1811,7 @@ void button1_handler(void);
 			}
 
 			// кнопки
-			for (uint_fast8_t i = 1; i < button_handlers_count; i++)
+			for (uint_fast8_t i = 1; i < BUTTON_HANDLERS_COUNT; i++)
 			{
 				const button_t * const bh = & button_handlers[i];
 				if (bh->parent == gui.window_to_draw && bh->visible == VISIBLE)
@@ -1804,7 +1820,7 @@ void button1_handler(void);
 		}
 
 		// кнопки in FOOTER
-		for (uint_fast8_t i = 1; i < button_handlers_count; i++)
+		for (uint_fast8_t i = 1; i < BUTTON_HANDLERS_COUNT; i++)
 		{
 			const button_t * const bhf = & button_handlers[i];
 			if (bhf->parent != FOOTER)
