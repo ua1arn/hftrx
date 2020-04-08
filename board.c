@@ -3934,7 +3934,9 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0003, lcdblcode & 0x02);		/* D3	- LCD backlight  - removed in LVDS version*/
 		RBBIT(0002, lcdblcode & 0x02);		/* D2	- LCD backlight  - removed in LVDS version*/
 		RBBIT(0001, lcdblcode & 0x01);		/* D2:D1 - LCD backlight  - removed in LVDS version*/
+#if WITHKBDBACKLIGHT
 		RBBIT(0000, glob_kblight);			/* D0: keyboard backlight */
+#endif /* WITHKBDBACKLIGHT */
 
 		spi_select(target, CTLREG_SPIMODE);
 		prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);

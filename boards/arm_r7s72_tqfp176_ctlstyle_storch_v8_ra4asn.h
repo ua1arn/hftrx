@@ -189,8 +189,8 @@
 #if LCDMODE_LQ043T3DX02K || LCDMODE_AT070TN90|| LCDMODE_AT070TNA2
 	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея
 	#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываемый на дисплее)
-	#define WITHLCDBACKLIGHTMAX	4	// Верхний предел регулировки (показываемый на дисплее)
-	#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
+	#define WITHLCDBACKLIGHTMAX	3	// Верхний предел регулировки (показываемый на дисплее)
+//	#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
 #else
 	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея
 	#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываемый на дисплее)
@@ -369,7 +369,7 @@
 
 	#define WITHBARS		1	/* отображение S-метра и SWR-метра */
 	#define WITHDISPLAY_FPS		15
-	#define WITHDISPLAYSWR_FPS	40
+	#define WITHDISPLAYSWR_FPS	30
 
 	#define WITHMAXPWRCALI		138
 	#define WITHSWRCALI			50

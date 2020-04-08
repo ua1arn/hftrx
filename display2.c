@@ -4470,18 +4470,17 @@ enum
 	static const FLASHMEM struct dzone dzones [] =
 	{
 		{	0,	0,	display2_clearbg, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },
-		{	0,	0,	display2_pip_off,	REDRM_MODE,	PGSLP | REDRSUBSET_MENU },	// Выключить PIP если на данной странице не требуется
-		{	0,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
-		{	3,	0,	display_ant5,		REDRM_MODE, PGALL, },
-		{	9,	0,	display_att4,		REDRM_MODE, PGALL, },
-		{	14,	0,	display_preovf3,	REDRM_BARS, PGALL, },
-		{	18,	0,	display_genham1,	REDRM_BARS, PGALL, },	// Отображение режима General Coverage / HAM bands
-		{	21,	0,	display_lockstate4, REDRM_MODE, PGALL, },	// LOCK
-		{	28, 0,	display_notch5,		REDRM_MODE, PGALL, },	// NOTCH on/off
-		{	30, 15,	display_voxtune3,	REDRM_MODE, PGALL, },	// VOX
-		{	30, 5,	display_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
-		{   42, 27, display_smeter2, 	REDRM_BARS, PGSWR, },	// Изображение стрелочного прибора
-		{   30, 20, display_bkin3,		REDRM_MODE, PGALL, },
+		{	17,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
+		{	20,	0,	display_ant5,		REDRM_MODE, PGALL, },
+		{	26,	0,	display_att4,		REDRM_MODE, PGALL, },
+		{	31,	0,	display_preovf3,	REDRM_BARS, PGALL, },
+		{	35,	0,	display_genham1,	REDRM_BARS, PGALL, },	// Отображение режима General Coverage / HAM bands
+		{	38,	0,	display_lockstate4, REDRM_MODE, PGALL, },	// LOCK
+		{	45, 0,	display_notch5,		REDRM_MODE, PGALL, },	// NOTCH on/off
+		{	47, 15,	display_voxtune3,	REDRM_MODE, PGALL, },	// VOX
+		{	47, 5,	display_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
+		{   8, 32,  display_smeter2, 	REDRM_BARS, PGALL, },	// Изображение стрелочного прибора
+		{   47, 20, display_bkin3,		REDRM_MODE, PGALL, },
 	#if WITHENCODER2
 //		{	41, 0,	display_fnlabel9,	REDRM_MODE, PGALL, },	// FUNC item label
 //		{	41,	4,	display_fnvalue9,	REDRM_MODE, PGALL, },	// FUNC item value
@@ -4499,22 +4498,21 @@ enum
 		//{	46, 45,	display_byp3,		REDRM_MODE, PGALL, },	// TUNER BYPASS state (optional)
 		//{	46, 50,	display_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
 		
-		{	0,	7,	display_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
-		{	21, 10,	display_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
-		{	26, 10,	display_rxbw3,		REDRM_MODE, PGALL, },	// 3.1 / 0,5 / WID / NAR
-		{	30, 10,	display_nr3,		REDRM_MODE, PGALL, },	// NR : was: AGC
-		{	21, 15,	display_mainsub3,	REDRM_MODE, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
+		{	17,	7,	display_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
+		{	38, 10,	display_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
+		{	43, 10,	display_rxbw3,		REDRM_MODE, PGALL, },	// 3.1 / 0,5 / WID / NAR
+		{	47, 10,	display_nr3,		REDRM_MODE, PGALL, },	// NR : was: AGC
+		{	38, 15,	display_mainsub3,	REDRM_MODE, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
 
-		{	26,	15,	display_vfomode3,	REDRM_MODE, PGALL, },	// SPLIT
-		{	9,	20,	display_freqX_b,	REDRM_FRQB, PGALL, },	// SUB FREQ
-		{	21, 20,	display_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
+		{	43,	15,	display_vfomode3,	REDRM_MODE, PGALL, },	// SPLIT
+		{	26,	20,	display_freqX_b,	REDRM_FRQB, PGALL, },	// SUB FREQ
+		{	38, 20,	display_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 
 #if 1
-		{	0,	25,	display2_legend,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы S-метра
-		{	0,	30,	display2_bars,		REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
-		//{	0,	35,	display2_legend_tx,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы PWR & SWR-метра
-		//{	0,	40,	display2_bars_tx,	REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
-		{	31,	30, display_siglevel4, 	REDRM_BARS, PGSWR, },	// signal level dBm
+		// на освободившеемя место добавить статусную строку с различной информацией
+//		{	0,	25,	display2_legend,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы S-метра
+//		{	0,	30,	display2_bars,		REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
+		{	0,	0, display_siglevel4, 	REDRM_BARS, PGSWR, },	// signal level dBm
 //		{	36, 30,	display_freqdelta8, REDRM_BARS, PGSWR, },	// выход ЧМ демодулятора
 	#if WITHSPECTRUMWF
 		{	0,	DLES,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
@@ -4527,19 +4525,10 @@ enum
 		{	0,	0,	display2_pip_off,	REDRM_MODE,	PGSWR },	// Выключить PIP если на данной странице не требуется
 		{	0,	25,	display2_adctest,	REDRM_BARS, PGSWR, },	// ADC raw data print
 #endif
-
-
 	#if WITHAMHIGHKBDADJ
 		//{	XX, DLE1,	display_amfmhighcut4,REDRM_MODE, PGALL, },	// 3.70
 	#endif /* WITHAMHIGHKBDADJ */
 		//{	XX,	DLE1,	display_samfreqdelta8, REDRM_BARS, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
-
-//	#if WITHMENU
-//		{	3,				30,	display_multilinemenu_block_groups,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
-//		{	LABELW + 5,		30,	display_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
-//		{	LABELW*2 + 6,	30,	display_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
-//	#endif /* WITHMENU */
-
 		// sleep mode display
 		{	5,	25,	display_datetime12,	REDRM_BARS, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40
 		{	20, 25,	display_voltlevelV5, REDRM_VOLT, PGSLP, },	// voltmeter with "V"

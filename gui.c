@@ -467,21 +467,24 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 		{ },
 		{ 250, 295, WINDOW_BP,   DISABLED,  0, NON_VISIBLE, "lbl_low",  "", COLORPIP_YELLOW, },
 		{ 490, 295, WINDOW_BP,   DISABLED,  0, NON_VISIBLE, "lbl_high", "", COLORPIP_YELLOW, },
-		{ 100, 225, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 100, 260, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 100, 295, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 100, 330, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 100, 365, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 250, 225, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 250, 260, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 250, 295, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 250, 330, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 250, 365, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 450, 225, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 450, 260, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 450, 295, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 450, 330, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 450, 365, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", "", COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", "", COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", "", COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", "", COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", "", COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", "", COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", "", COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", "", COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", "", COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", "", COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", "", COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", "", COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", "", COLORPIP_WHITE, labels_menu_handler, },
 		{ 580, 235, WINDOW_ENC2, DISABLED,  0, NON_VISIBLE, "lbl_enc2_param", "", 	COLORPIP_WHITE, },
 		{ 580, 265, WINDOW_ENC2, DISABLED,  0, NON_VISIBLE, "lbl_enc2_val", "", 	COLORPIP_WHITE, },
 		{    0,  0,	WINDOW_UIF,  DISABLED,  0, NON_VISIBLE, "lbl_uif_param", "", COLORPIP_WHITE, },
@@ -525,7 +528,7 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 		{ WINDOW_BP,    214, 195, 372, 205, "Bandpass",    NON_VISIBLE, 0, window_bp_process, },
 		{ WINDOW_AGC,   214, 195, 372, 120, "AGC control", NON_VISIBLE, 0, },
 		{ WINDOW_FREQ,  100, 175, 250, 200, "Freq", 		  NON_VISIBLE, 0, window_freq_process, },
-		{ WINDOW_MENU,   50, 185, 550, 210, "Settings",	  NON_VISIBLE, 0, window_menu_process, },
+		{ WINDOW_MENU,  125, 150, 550, 240, "Settings",	  NON_VISIBLE, 0, window_menu_process, },
 		{ WINDOW_ENC2, 	550, 190, 185, 105, "Fast menu",   NON_VISIBLE, 0, },
 		{ WINDOW_UIF, 	300, 190, 200, 145, "",   		  NON_VISIBLE, 0, window_uif_process, },
 	};
@@ -589,93 +592,6 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 	static uint_fast8_t touch_list_count = 0;
 	static uint_fast8_t menu_label_touched = 0;
 	static uint_fast8_t menu_level;
-
-	void fill_button_bg_buf(btn_bg_t * v)
-	{
-		PACKEDCOLORPIP_T * buf;
-		uint_fast8_t w, h;
-
-		w = v->w;
-		h = v->h;
-
-		buf = * v->bg_non_pressed;
-		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLOR_BUTTON_NON_LOCKED, 1);
-		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORPIP_GRAY, 0);
-		colpip_rect(buf, w, h, 2, 2, w - 3, h - 3, COLORPIP_BLACK, 0);
-
-		buf = * v->bg_pressed;
-		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLOR_BUTTON_PR_NON_LOCKED, 1);
-		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORPIP_GRAY, 0);
-		colpip_rect(buf, w, h, 2, 2, w - 3, h - 3, COLORPIP_BLACK, 0);
-
-		buf = * v->bg_locked;
-		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLOR_BUTTON_LOCKED, 1);
-		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORPIP_GRAY, 0);
-		colpip_rect(buf, w, h, 2, 2, w - 3, h - 3, COLORPIP_BLACK, 0);
-
-		buf = * v->bg_locked_pressed;
-		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLOR_BUTTON_PR_LOCKED, 1);
-		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORPIP_GRAY, 0);
-		colpip_rect(buf, w, h, 2, 2, w - 3, h - 3, COLORPIP_BLACK, 0);
-
-		buf = * v->bg_disabled;
-		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLOR_BUTTON_DISABLED, 1);
-		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORPIP_GRAY, 0);
-		colpip_rect(buf, w, h, 2, 2, w - 3, h - 3, COLORPIP_BLACK, 0);
-
-		PRINTF("%d %d\n", w, h);
-
-	}
-
-	void gui_initialize (void)
-	{
-		pipparams_t pip;
-		uint_fast8_t i = 1;
-
-		InitializeListHead(& touch_list);
-		do {
-			touch_elements[touch_list_count].id = i;
-			touch_elements[touch_list_count].type = TYPE_BUTTON;
-			InsertHeadList(& touch_list, & touch_elements[touch_list_count].item);
-			touch_list_count++;
-		} while (button_handlers[++i].parent == FOOTER);
-
-		fill_button_bg_buf(& btnbg_86_44);
-		fill_button_bg_buf(& btnbg_50_50);
-		fill_button_bg_buf(& btnbg_40_40);
-	}
-
-	static void update_touch_list(void)
-	{
-		PLIST_ENTRY t;
-
-		for (t = touch_list.Blink; t != & touch_list; t = t->Blink)
-		{
-			list_template_t * p = CONTAINING_RECORD(t, list_template_t, item);
-			if (p->type == TYPE_BUTTON)
-			{
-				const button_t * const bh = & button_handlers[p->id];
-				p->x1 = bh->x1;
-				p->x2 = bh->x1 + bh->bg->w;
-				p->y1 = bh->y1;
-				p->y2 = bh->y1 + bh->bg->h;;
-				p->state = bh->state;
-				p->visible = bh->visible;
-				p->is_trackable = bh->is_trackable;
-			}
-			else if (p->type == TYPE_LABEL)
-			{
-				const label_t * const lh = & labels[p->id];
-				p->x1 = lh->x;
-				p->x2 = lh->x + strwidth(lh->text);
-				p->y1 = lh->y - 8;
-				p->y2 = lh->y + SMALLCHARH + 8;
-				p->state = lh->state;
-				p->visible = lh->visible;
-				p->is_trackable = lh->is_trackable;
-			}
-		}
-	}
 
 	static uint_fast8_t find_button (uint_fast8_t id_window, const char * name)				// возврат id кнопки окна по ее названию
 	{
@@ -760,6 +676,33 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 		windows[parent].is_show = value ? VISIBLE : NON_VISIBLE;
 		gui.window_to_draw = value ? parent : 0;
 		(void) p;
+	}
+
+	static void buttons_bp_handler (void)
+	{
+		if(gui.selected_type == TYPE_BUTTON)
+		{
+			uint_fast8_t id_button_high = find_button(WINDOW_BP, "btnAF_2");
+			uint_fast8_t id_button_low = find_button(WINDOW_BP, "btnAF_1");
+			uint_fast8_t id_button_OK = find_button(WINDOW_BP, "btnAF_OK");
+
+			if (gui.selected_id == id_button_low)
+			{
+				button_handlers[id_button_high].is_locked = 0;
+				button_handlers[id_button_low].is_locked = 1;
+			}
+			else if (gui.selected_id == id_button_high)
+			{
+				button_handlers[id_button_high].is_locked = 1;
+				button_handlers[id_button_low].is_locked = 0;
+			}
+			else if (gui.selected_id == id_button_OK)
+			{
+				set_window(WINDOW_BP, NON_VISIBLE);
+				encoder2.busy = 0;
+				footer_buttons_state(CANCELLED, "");
+			}
+		}
 	}
 
 	static void window_bp_process (void)
@@ -884,7 +827,20 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 		colpip_rect(colmain_fb_draw(), DIM_X, DIM_Y, x_l, 245, x_h, 283, COLORPIP_YELLOW, 1);
 		if (! bw_type)
 			colpip_line(colmain_fb_draw(), DIM_X, DIM_Y, x_c, 235, x_c, 295, COLORPIP_RED);
-}
+	}
+
+	static void buttons_freq_handler (void)
+	{
+		uint_fast8_t editfreqmode = 0;
+		if (gui.window_to_draw == WINDOW_FREQ)
+			editfreqmode = send_key_code(button_handlers[gui.selected_id].payload);
+		if (editfreqmode == 0)
+		{
+			set_window(WINDOW_FREQ, NON_VISIBLE);
+			footer_buttons_state(CANCELLED, "");
+			disable_keyboard_redirect();
+		}
+	}
 
 	static void window_freq_process (void)
 	{
@@ -892,33 +848,6 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 		{
 			windows[WINDOW_FREQ].first_call = 0;
 			button_handlers[find_button(WINDOW_FREQ, "btnFreqOK")].is_locked = BUTTON_LOCKED;
-		}
-	}
-
-	static void labels_menu_handler (void)
-	{
-		if (gui.selected_type == TYPE_LABEL)
-		{
-			if(strcmp(labels[gui.selected_id].name, "lbl_group") == 0)
-			{
-				menu[MENU_GROUPS].selected_label = gui.selected_id - menu[MENU_GROUPS].first_id;
-				menu_label_touched = 1;
-				menu_level = MENU_GROUPS;
-			}
-			else if(strcmp(labels[gui.selected_id].name, "lbl_params") == 0)
-			{
-				menu[MENU_PARAMS].selected_label = gui.selected_id - menu[MENU_PARAMS].first_id;
-				menu_label_touched = 1;
-				menu_level = MENU_PARAMS;
-			}
-			else if(strcmp(labels[gui.selected_id].name, "lbl_vals") == 0)
-			{
-				menu[MENU_VALS].selected_label = gui.selected_id - menu[MENU_VALS].first_id;
-				menu[MENU_PARAMS].selected_label = menu[MENU_VALS].selected_label;
-				menu_label_touched = 1;
-				menu_level = MENU_VALS;
-			}
-			PRINTF("%d\n", gui.selected_id);
 		}
 	}
 
@@ -947,6 +876,20 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 		// После обработки события по коду кнопки
 		// сбрасывать gui.kbd_code в KBD_CODE_MAX.
 		gui.kbd_code = gui.kbd_code == KBD_CODE_MAX ? kbch : gui.kbd_code;
+	}
+
+	static void buttons_uif_handler(void)
+	{
+		if (gui.selected_type == TYPE_BUTTON && gui.selected_id == find_button(WINDOW_UIF, "btnUIF+"))
+			encoder2.rotate = 1;
+		else if (gui.selected_type == TYPE_BUTTON && gui.selected_id == find_button(WINDOW_UIF, "btnUIF-"))
+			encoder2.rotate = -1;
+		else if (gui.selected_type == TYPE_BUTTON && gui.selected_id == find_button(WINDOW_UIF, "btnUIF_OK"))
+		{
+			disable_keyboard_redirect();
+			set_window(WINDOW_UIF, NON_VISIBLE);
+			footer_buttons_state(CANCELLED, "");
+		}
 	}
 
 	static void window_uif_process(void)
@@ -1005,18 +948,38 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 		}
 	}
 
-	static void buttons_uif_handler(void)
+	static void labels_menu_handler (void)
 	{
-		if (gui.selected_type == TYPE_BUTTON && gui.selected_id == find_button(WINDOW_UIF, "btnUIF+"))
-			encoder2.rotate = 1;
-		else if (gui.selected_type == TYPE_BUTTON && gui.selected_id == find_button(WINDOW_UIF, "btnUIF-"))
-			encoder2.rotate = -1;
-		else if (gui.selected_type == TYPE_BUTTON && gui.selected_id == find_button(WINDOW_UIF, "btnUIF_OK"))
+		if (gui.selected_type == TYPE_LABEL)
 		{
-			disable_keyboard_redirect();
-			set_window(WINDOW_UIF, NON_VISIBLE);
-			footer_buttons_state(CANCELLED, "");
+			if(strcmp(labels[gui.selected_id].name, "lbl_group") == 0)
+			{
+				menu[MENU_GROUPS].selected_label = gui.selected_id - menu[MENU_GROUPS].first_id;
+				menu_label_touched = 1;
+				menu_level = MENU_GROUPS;
+			}
+			else if(strcmp(labels[gui.selected_id].name, "lbl_params") == 0)
+			{
+				menu[MENU_PARAMS].selected_label = gui.selected_id - menu[MENU_PARAMS].first_id;
+				menu_label_touched = 1;
+				menu_level = MENU_PARAMS;
+			}
+			else if(strcmp(labels[gui.selected_id].name, "lbl_vals") == 0)
+			{
+				menu[MENU_VALS].selected_label = gui.selected_id - menu[MENU_VALS].first_id;
+				menu[MENU_PARAMS].selected_label = menu[MENU_VALS].selected_label;
+				menu_label_touched = 1;
+				menu_level = MENU_VALS;
+			}
 		}
+	}
+
+	static void buttons_menu_handler(void)
+	{
+		if (gui.selected_type == TYPE_BUTTON && gui.selected_id == find_button(WINDOW_MENU, "btnSysMenu+"))
+			encoder2.rotate = 1;
+		else if (gui.selected_type == TYPE_BUTTON && gui.selected_id == find_button(WINDOW_MENU, "btnSysMenu-"))
+			encoder2.rotate = -1;
 	}
 
 	static void window_menu_process(void)
@@ -1029,6 +992,11 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 		{
 			windows[WINDOW_MENU].first_call = 0;
 			set_menu_cond(VISIBLE);
+
+			uint_fast8_t int_cols = 200, int_rows = 35;
+			uint_fast8_t col1_int = 50, row1_int = 40;
+			uint_fast8_t xn, yn;
+
 
 			id_button_up = find_button(WINDOW_MENU, "btnSysMenu+");
 			id_button_down = find_button(WINDOW_MENU, "btnSysMenu-");
@@ -1070,16 +1038,26 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 			menu[MENU_VALS].num_rows = menu[MENU_VALS].last_id - menu[MENU_VALS].first_id;
 
 			menu[MENU_GROUPS].count = get_multilinemenu_block_groups(menu[MENU_GROUPS].menu_block) - 1;
+			xn = windows[WINDOW_MENU].x1 + col1_int;
+			yn = windows[WINDOW_MENU].y1 + row1_int;
 			for(uint_fast8_t i = 0; i <= menu[MENU_GROUPS].num_rows; i++)
 			{
 				strcpy(labels[menu[MENU_GROUPS].first_id + i].text, menu[MENU_GROUPS].menu_block[i + menu[MENU_GROUPS].add_id].name);
 				labels[menu[MENU_GROUPS].first_id + i].visible = VISIBLE;
 				labels[menu[MENU_GROUPS].first_id + i].color = COLORPIP_WHITE;
+				labels[menu[MENU_GROUPS].first_id + i].x = xn;
+				labels[menu[MENU_GROUPS].first_id + i].y = yn;
+				yn += int_rows;
 			}
 
 			menu[MENU_PARAMS].count = get_multilinemenu_block_params(menu[MENU_PARAMS].menu_block, menu[MENU_GROUPS].menu_block[menu[MENU_GROUPS].selected_str].index) - 1;
+			xn += int_cols;
+			yn = windows[WINDOW_MENU].y1 + row1_int;
 			for(uint_fast8_t i = 0; i <= menu[MENU_PARAMS].num_rows; i++)
 			{
+				labels[menu[MENU_PARAMS].first_id + i].x = xn;
+				labels[menu[MENU_PARAMS].first_id + i].y = yn;
+				yn += int_rows;
 				labels[menu[MENU_PARAMS].first_id + i].visible = NON_VISIBLE;
 				labels[menu[MENU_PARAMS].first_id + i].color = COLORPIP_WHITE;
 				if (menu[MENU_PARAMS].count < i)
@@ -1091,8 +1069,13 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 			menu[MENU_PARAMS].selected_str = 0;
 			menu[MENU_VALS].count = menu[MENU_PARAMS].count < menu[MENU_VALS].num_rows ? menu[MENU_PARAMS].count :  menu[MENU_VALS].num_rows;
 			get_multilinemenu_block_vals(menu[MENU_VALS].menu_block, menu[MENU_PARAMS].menu_block[menu[MENU_PARAMS].selected_str].index, menu[MENU_VALS].count);
+			xn += int_cols;
+			yn = windows[WINDOW_MENU].y1 + row1_int;
 			for(uint_fast8_t i = 0; i <= menu[MENU_VALS].num_rows; i++)
 			{
+				labels[menu[MENU_VALS].first_id + i].x = xn;
+				labels[menu[MENU_VALS].first_id + i].y = yn;
+				yn += int_rows;
 				labels[menu[MENU_VALS].first_id + i].visible = NON_VISIBLE;
 				labels[menu[MENU_VALS].first_id + i].color = COLORPIP_WHITE;
 				if (menu[MENU_VALS].count < i)
@@ -1241,7 +1224,6 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 
 			uint_fast8_t id_sel_label = menu[MENU_VALS].first_id + menu[MENU_VALS].selected_label;
 			button_handlers[id_button_up].x1 = labels[id_sel_label].x + strwidth(labels[id_sel_label].text) + 10;
-//			button_handlers[id_button_up].x2 = button_handlers[id_button_up].x1 + button_menu_w;
 		}
 
 		if ((menu_label_touched || menu_is_scrolling || encoder2.rotate != 0) && menu_level != MENU_VALS)
@@ -1306,14 +1288,6 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 					labels[menu[menu_level].selected_label + menu[menu_level].first_id].y, ">", COLORPIP_YELLOW);
 	}
 
-	static void buttons_menu_handler(void)
-	{
-		if (gui.selected_type == TYPE_BUTTON && gui.selected_id == find_button(WINDOW_MENU, "btnSysMenu+"))
-			encoder2.rotate = 1;
-		else if (gui.selected_type == TYPE_BUTTON && gui.selected_id == find_button(WINDOW_MENU, "btnSysMenu-"))
-			encoder2.rotate = -1;
-	}
-
 	uint_fast8_t check_encoder2 (int_least16_t rotate)
 	{
 		if (encoder2.rotate_done || encoder2.rotate == 0)
@@ -1367,164 +1341,159 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 
 	static void buttons_mode_handler(void)
 	{
-		if (windows[WINDOW_MODES].is_show && button_handlers[gui.selected_id].parent == WINDOW_MODES)
+		if(gui.selected_type == TYPE_BUTTON)
 		{
-			if (button_handlers[gui.selected_id].payload != UINTPTR_MAX)
-				change_submode(button_handlers[gui.selected_id].payload);
+			if (windows[WINDOW_MODES].is_show && button_handlers[gui.selected_id].parent == WINDOW_MODES)
+			{
+				if (button_handlers[gui.selected_id].payload != UINTPTR_MAX)
+					change_submode(button_handlers[gui.selected_id].payload);
 
-			set_window(WINDOW_MODES, NON_VISIBLE);
-			footer_buttons_state(CANCELLED, "");
-		}
-	}
-
-	static void buttons_bp_handler (void)
-	{
-		uint_fast8_t id_button_high = find_button(WINDOW_BP, "btnAF_2");
-		uint_fast8_t id_button_low = find_button(WINDOW_BP, "btnAF_1");
-		uint_fast8_t id_button_OK = find_button(WINDOW_BP, "btnAF_OK");
-
-		if (gui.selected_id == id_button_low)
-		{
-			button_handlers[id_button_high].is_locked = 0;
-			button_handlers[id_button_low].is_locked = 1;
-		}
-		else if (gui.selected_id == id_button_high)
-		{
-			button_handlers[id_button_high].is_locked = 1;
-			button_handlers[id_button_low].is_locked = 0;
-		}
-		else if (gui.selected_id == id_button_OK)
-		{
-			set_window(WINDOW_BP, NON_VISIBLE);
-			encoder2.busy = 0;
-			footer_buttons_state(CANCELLED, "");
-		}
-	}
-
-	static void buttons_freq_handler (void)
-	{
-		uint_fast8_t editfreqmode = 0;
-		if (gui.window_to_draw == WINDOW_FREQ)
-			editfreqmode = send_key_code(button_handlers[gui.selected_id].payload);
-		if (editfreqmode == 0)
-		{
-			set_window(WINDOW_FREQ, NON_VISIBLE);
-			footer_buttons_state(CANCELLED, "");
-			disable_keyboard_redirect();
+				set_window(WINDOW_MODES, NON_VISIBLE);
+				footer_buttons_state(CANCELLED, "");
+			}
 		}
 	}
 
 	static void button1_handler(void)
 	{
-		gui.window_to_draw = WINDOW_MODES;
+		if(gui.selected_type == TYPE_BUTTON)
+		{
+			gui.window_to_draw = WINDOW_MODES;
 
-		if (windows[gui.window_to_draw].is_show == NON_VISIBLE)
-		{
-			set_window(gui.window_to_draw, VISIBLE);
-			windows[gui.window_to_draw].first_call = 1;
-			footer_buttons_state(DISABLED, button_handlers[gui.selected_id].name);
-		}
-		else
-		{
-			set_window(gui.window_to_draw, NON_VISIBLE);
-			footer_buttons_state(CANCELLED, "");
+			if (windows[gui.window_to_draw].is_show == NON_VISIBLE)
+			{
+				set_window(gui.window_to_draw, VISIBLE);
+				windows[gui.window_to_draw].first_call = 1;
+				footer_buttons_state(DISABLED, button_handlers[gui.selected_id].name);
+			}
+			else
+			{
+				set_window(gui.window_to_draw, NON_VISIBLE);
+				footer_buttons_state(CANCELLED, "");
+			}
 		}
 	}
 
 	static void button2_handler(void)
 	{
-		gui.window_to_draw = WINDOW_BP;
+		if(gui.selected_type == TYPE_BUTTON)
+		{
+			gui.window_to_draw = WINDOW_BP;
 
-		if (windows[gui.window_to_draw].is_show == NON_VISIBLE)
-		{
-			encoder2.busy = 1;
-			set_window(gui.window_to_draw, VISIBLE);
-			windows[gui.window_to_draw].first_call = 1;
-			footer_buttons_state(DISABLED, button_handlers[gui.selected_id].name);
-		}
-		else
-		{
-			set_window(gui.window_to_draw, NON_VISIBLE);
-			encoder2.busy = 0;
-			footer_buttons_state(CANCELLED, "");
+			if (windows[gui.window_to_draw].is_show == NON_VISIBLE)
+			{
+				encoder2.busy = 1;
+				set_window(gui.window_to_draw, VISIBLE);
+				windows[gui.window_to_draw].first_call = 1;
+				footer_buttons_state(DISABLED, button_handlers[gui.selected_id].name);
+			}
+			else
+			{
+				set_window(gui.window_to_draw, NON_VISIBLE);
+				encoder2.busy = 0;
+				footer_buttons_state(CANCELLED, "");
+			}
 		}
 	}
 
 	static void button3_handler(void)
 	{
-		gui.window_to_draw = WINDOW_AGC;
+		if(gui.selected_type == TYPE_BUTTON)
+		{
+			gui.window_to_draw = WINDOW_AGC;
 
-		if (windows[gui.window_to_draw].is_show == NON_VISIBLE)
-		{
-			set_window(gui.window_to_draw, VISIBLE);
-			windows[gui.window_to_draw].first_call = 1;
-			footer_buttons_state(DISABLED, button_handlers[gui.selected_id].name);
-		}
-		else
-		{
-			set_window(gui.window_to_draw, NON_VISIBLE);
-			footer_buttons_state(CANCELLED, "");
+			if (windows[gui.window_to_draw].is_show == NON_VISIBLE)
+			{
+				set_window(gui.window_to_draw, VISIBLE);
+				windows[gui.window_to_draw].first_call = 1;
+				footer_buttons_state(DISABLED, button_handlers[gui.selected_id].name);
+			}
+			else
+			{
+				set_window(gui.window_to_draw, NON_VISIBLE);
+				footer_buttons_state(CANCELLED, "");
+			}
 		}
 	}
 
 	static void button4_handler(void)
 	{
-		gui.window_to_draw = WINDOW_FREQ;
+		if(gui.selected_type == TYPE_BUTTON)
+		{
+			gui.window_to_draw = WINDOW_FREQ;
 
-		if (windows[gui.window_to_draw].is_show == NON_VISIBLE)
-		{
-			set_window(gui.window_to_draw, VISIBLE);
-			windows[gui.window_to_draw].first_call = 1;
-			send_key_code(KBD_CODE_ENTERFREQ);
-			enable_keyboard_redirect();
-			footer_buttons_state(DISABLED, button_handlers[gui.selected_id].name);
-		}
-		else
-		{
-			set_window(gui.window_to_draw, NON_VISIBLE);
-			send_key_code(KBD_CODE_ENTERFREQDONE);
-			disable_keyboard_redirect();
-			footer_buttons_state(CANCELLED, "");
+			if (windows[gui.window_to_draw].is_show == NON_VISIBLE)
+			{
+				set_window(gui.window_to_draw, VISIBLE);
+				windows[gui.window_to_draw].first_call = 1;
+				send_key_code(KBD_CODE_ENTERFREQ);
+				enable_keyboard_redirect();
+				footer_buttons_state(DISABLED, button_handlers[gui.selected_id].name);
+			}
+			else
+			{
+				set_window(gui.window_to_draw, NON_VISIBLE);
+				send_key_code(KBD_CODE_ENTERFREQDONE);
+				disable_keyboard_redirect();
+				footer_buttons_state(CANCELLED, "");
+			}
 		}
 	}
 
 	static void button5_handler(void)
 	{
+		if(gui.selected_type == TYPE_BUTTON)
+		{
+
+		}
 
 	}
 
 	static void button6_handler(void)
 	{
+		if(gui.selected_type == TYPE_BUTTON)
+		{
+
+		}
 
 	}
 
 	static void button7_handler(void)
 	{
+		if(gui.selected_type == TYPE_BUTTON)
+		{
 
+		}
 	}
 
 	static void button8_handler(void)
 	{
+		if(gui.selected_type == TYPE_BUTTON)
+		{
 
+		}
 	}
 
 	void button9_handler(void)
 	{
-		gui.window_to_draw = WINDOW_MENU;
+		if(gui.selected_type == TYPE_BUTTON)
+		{
+			gui.window_to_draw = WINDOW_MENU;
 
-		if (windows[gui.window_to_draw].is_show == NON_VISIBLE)
-		{
-			set_window(gui.window_to_draw, VISIBLE);
-			windows[gui.window_to_draw].first_call = 1;
-			footer_buttons_state(DISABLED, button_handlers[gui.selected_id].name);
-			encoder2.busy = 1;
-		}
-		else
-		{
-			set_window(gui.window_to_draw, NON_VISIBLE);
-			footer_buttons_state(CANCELLED, "");
-			encoder2.busy = 0;
-			set_menu_cond(NON_VISIBLE);
+			if (windows[gui.window_to_draw].is_show == NON_VISIBLE)
+			{
+				set_window(gui.window_to_draw, VISIBLE);
+				windows[gui.window_to_draw].first_call = 1;
+				footer_buttons_state(DISABLED, button_handlers[gui.selected_id].name);
+				encoder2.busy = 1;
+			}
+			else
+			{
+				set_window(gui.window_to_draw, NON_VISIBLE);
+				footer_buttons_state(CANCELLED, "");
+				encoder2.busy = 0;
+				set_menu_cond(NON_VISIBLE);
+			}
 		}
 	}
 
@@ -1566,6 +1535,93 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 			text2 = strtok(NULL, delimeters);
 			colpip_string2_tbg(colmain_fb_draw(), DIM_X, DIM_Y, bh->x1 + (bh->bg->w - (strwidth2(text2))) / 2,
 					bh->bg->h + bh->y1 - SMALLCHARH2 - j, text2, COLORPIP_BLACK);
+		}
+	}
+
+	void fill_button_bg_buf(btn_bg_t * v)
+	{
+		PACKEDCOLORPIP_T * buf;
+		uint_fast8_t w, h;
+
+		w = v->w;
+		h = v->h;
+
+		buf = * v->bg_non_pressed;
+		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLOR_BUTTON_NON_LOCKED, 1);
+		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORPIP_GRAY, 0);
+		colpip_rect(buf, w, h, 2, 2, w - 3, h - 3, COLORPIP_BLACK, 0);
+
+		buf = * v->bg_pressed;
+		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLOR_BUTTON_PR_NON_LOCKED, 1);
+		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORPIP_GRAY, 0);
+		colpip_rect(buf, w, h, 2, 2, w - 3, h - 3, COLORPIP_BLACK, 0);
+
+		buf = * v->bg_locked;
+		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLOR_BUTTON_LOCKED, 1);
+		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORPIP_GRAY, 0);
+		colpip_rect(buf, w, h, 2, 2, w - 3, h - 3, COLORPIP_BLACK, 0);
+
+		buf = * v->bg_locked_pressed;
+		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLOR_BUTTON_PR_LOCKED, 1);
+		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORPIP_GRAY, 0);
+		colpip_rect(buf, w, h, 2, 2, w - 3, h - 3, COLORPIP_BLACK, 0);
+
+		buf = * v->bg_disabled;
+		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLOR_BUTTON_DISABLED, 1);
+		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORPIP_GRAY, 0);
+		colpip_rect(buf, w, h, 2, 2, w - 3, h - 3, COLORPIP_BLACK, 0);
+
+		PRINTF("%d %d\n", w, h);
+
+	}
+
+	void gui_initialize (void)
+	{
+		pipparams_t pip;
+		uint_fast8_t i = 1;
+
+		InitializeListHead(& touch_list);
+		do {
+			touch_elements[touch_list_count].id = i;
+			touch_elements[touch_list_count].type = TYPE_BUTTON;
+			InsertHeadList(& touch_list, & touch_elements[touch_list_count].item);
+			touch_list_count++;
+		} while (button_handlers[++i].parent == FOOTER);
+
+		fill_button_bg_buf(& btnbg_86_44);
+		fill_button_bg_buf(& btnbg_50_50);
+		fill_button_bg_buf(& btnbg_40_40);
+	}
+
+	static void update_touch_list(void)
+	{
+		PLIST_ENTRY t;
+
+		for (t = touch_list.Blink; t != & touch_list; t = t->Blink)
+		{
+			list_template_t * p = CONTAINING_RECORD(t, list_template_t, item);
+			if (p->type == TYPE_BUTTON)
+			{
+				const button_t * const bh = & button_handlers[p->id];
+				p->x1 = bh->x1;
+				p->x2 = bh->x1 + bh->bg->w;
+				p->y1 = bh->y1;
+				p->y2 = bh->y1 + bh->bg->h;;
+				p->state = bh->state;
+				p->visible = bh->visible;
+				p->is_trackable = bh->is_trackable;
+			}
+			else if (p->type == TYPE_LABEL)
+			{
+				const label_t * const lh = & labels[p->id];
+				p->x1 = lh->x;
+				p->x2 = lh->x + strwidth(lh->text);
+				p->y1 = lh->y - 8;
+				p->y2 = lh->y + SMALLCHARH + 8;
+				p->state = lh->state;
+				p->visible = lh->visible;
+				p->is_trackable = lh->is_trackable;
+			}
 		}
 	}
 
