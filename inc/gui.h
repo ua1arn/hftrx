@@ -6,9 +6,9 @@
 #if defined (COLORPIP_SHADED)
 
 	// цвета
-	// от 0..COLORPIP_BASE - 1 - волопад
-	// от COLORPIP_BASE..127 - yflgbcb надписи и элементы дизайна
-	// то же с колом больше на 128 - затененные цвета для имитации полупрозрачности
+	// 0..COLORPIP_BASE-1 - волопад
+	// COLORPIP_BASE..127 - надписи и элементы дизайна
+	// то же с кодом больше на 128 - затененные цвета для получения полупрозрачности
 	#define COLORPIP_BASE 112	// should be match to PALETTESIZE
 	// Заполнение палитры производится в display2_xltrgb24()
 
