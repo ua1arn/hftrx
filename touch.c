@@ -409,7 +409,7 @@ void stmpe811_initialize(void)
 
 	chip_id = i2cperiph_read16(BOARD_I2C_STMPE811, STMPE811_REG_CHP_ID);
 	ver = i2cperiph_read8(BOARD_I2C_STMPE811, STMPE811_REG_ID_VER);
-	debug_printf_P(PSTR("stmpe811_initialize: chip_id=%04X, expected %04X, ver=%02x\r\n"), chip_id, STMPE811_ID, ver);
+	debug_printf_P(PSTR("stmpe811_initialize: chip_id=%04X, expected %04X, ver=%02x\n"), chip_id, STMPE811_ID, ver);
 
 	tscpresetnt = chip_id == STMPE811_ID;
 
@@ -419,9 +419,10 @@ void stmpe811_initialize(void)
 	}
 }
 
-uint_fast8_t board_tsc_is_pressed (void) /* Return 1 if touch detection */
+uint_fast8_t board_tsc_is_pressed(void) /* Return 1 if touch detection */
 {
-	return (i2cperiph_read8(BOARD_I2C_STMPE811, STMPE811_REG_TSC_CTRL) & STMPE811_TS_CTRL_STATUS) >> STMPE811_TS_CTRL_STATUS_POS;
+	return tscpresetnt &&
+			((i2cperiph_read8(BOARD_I2C_STMPE811, STMPE811_REG_TSC_CTRL) & STMPE811_TS_CTRL_STATUS) >> STMPE811_TS_CTRL_STATUS_POS) != 0;
 }
 
 static void
