@@ -18072,6 +18072,8 @@ hamradio_main_step(void)
 	return STTE_OK;
 }
 
+#if WITHBARS && WITHTX
+
 uint_fast16_t get_minforward(void)
 {
 	return minforward;
@@ -18081,6 +18083,8 @@ uint_fast8_t get_swrcalibr(void)
 {
 	return swrcalibr;
 }
+
+#endif /* WITHBARS && WITHTX */
 
 #if WITHTOUCHGUI
 void disable_keyboard_redirect (void)

@@ -43,14 +43,12 @@ static const COLORMAIN_T colorsbg_1freq [1] = { COLORMAIN_BLACK, };	// уста�
 
 // todo: switch off -Wunused-function
 
-#if WITHDIRECTFREQENER
-struct editfreq
+struct editfreq_tag
 {
 	uint_fast32_t freq;
 	uint_fast8_t blinkpos;		// позиция (степень 10) редактируесого символа
 	uint_fast8_t blinkstate;	// в месте редактируемого символа отображается подчёркивание (0 - пробел)
 };
-#endif /* WITHDIRECTFREQENER */
 
 // формирование данных спектра для последующего отображения
 // спектра или водопада
@@ -170,7 +168,7 @@ static void display_freqXbig_a(
 	if (pv != NULL)
 	{
 #if WITHDIRECTFREQENER
-		const struct editfreq * const efp = (const struct editfreq *) pv;
+		const struct editfreq_tag * const efp = (const struct editfreq_tag *) pv;
 
 
 		uint_fast8_t lowhalf = HALFCOUNT_FREQA - 1;
@@ -194,7 +192,7 @@ static void display_freqXbig_a(
 	}
 }
 
-static struct editfreq ef;
+static struct editfreq_tag ef;
 static uint_fast8_t gdirectfreq = 0;
 
 void display_set_directfreq_mode(uint_fast8_t f)
@@ -225,9 +223,9 @@ static void display_freqX_a(
 	{
 #if WITHDIRECTFREQENER
 #if LCDMODE_V2A || LCDMODE_V2
-		const struct editfreq * const efp = (const struct editfreq *) & ef;
+		const struct editfreq_tag * const efp = (const struct editfreq_tag *) & ef;
 #else
-		const struct editfreq * const efp = (const struct editfreq *) pv;
+		const struct editfreq_tag * const efp = (const struct editfreq_tag *) pv;
 #endif /* LCDMODE_V2A || LCDMODE_V2 */
 		uint_fast8_t lowhalf = HALFCOUNT_FREQA - 1;
 		do
@@ -266,7 +264,7 @@ static void display_freqchr_a(
 	if (pv != NULL)
 	{
 #if WITHDIRECTFREQENER
-		const struct editfreq * const efp = (const struct editfreq *) pv;
+		const struct editfreq_tag * const efp = (const struct editfreq_tag *) pv;
 
 		uint_fast8_t lowhalf = HALFCOUNT_FREQA - 1;
 		do
@@ -305,7 +303,7 @@ static void display_freqchr_b(
 	if (pv != NULL)
 	{
 #if WITHDIRECTFREQENER
-		const struct editfreq * const efp = (const struct editfreq *) pv;
+		const struct editfreq_tag * const efp = (const struct editfreq_tag *) pv;
 
 		uint_fast8_t lowhalf = HALFCOUNT_FREQA - 1;
 		do
@@ -6403,7 +6401,7 @@ void display_dispfreq_a2(
 	)
 {
 #if WITHDIRECTFREQENER
-//	struct editfreq ef;
+//	struct editfreq_tag ef;
 
 	ef.freq = freq;
 	ef.blinkpos = blinkpos;
