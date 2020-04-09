@@ -3227,6 +3227,7 @@ void spool_0p128(void);	// OPERA support
 		char param[20];
 		char val[20];
 		uint_fast8_t state;
+		uint_fast8_t updated;
 	} enc2_menu_t;
 
 	void change_submode(uint_fast8_t newsubmode);

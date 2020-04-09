@@ -5895,6 +5895,7 @@ uif_encoder2_press(void)
 		strcpy(enc2_menu.param, text);
 		text = enc2menu_value(enc2pos);
 		strcpy(enc2_menu.val, text);
+		enc2_menu.updated = 1;
 		encoder2_menu(&enc2_menu);
 	}
 #endif /* ! WITHTOUCHGUI */
@@ -17957,6 +17958,7 @@ hamradio_main_step(void)
 						strcpy(enc2_menu.param, text);
 						text = enc2menu_value(enc2pos);
 						strcpy(enc2_menu.val, text);
+						enc2_menu.updated = 1;
 						encoder2_menu(&enc2_menu);
 						display_mode_subset(0);
 				}
