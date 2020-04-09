@@ -1724,7 +1724,6 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 
 	void gui_initialize (void)
 	{
-		pipparams_t pip;
 		uint_fast8_t i = 1, x = 0;
 		uint_fast8_t w = button_handlers[i].bg->w;
 		uint_fast8_t h = button_handlers[i].bg->h;
@@ -1816,7 +1815,7 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 			gui.last_pressed_x = tx;
 			gui.last_pressed_y = ty;
 			gui.is_touching_screen = 1;
-			debug_printf_P(PSTR("pip x: %d, pip y: %d\n"), gui.last_pressed_x, gui.last_pressed_y);
+			debug_printf_P(PSTR("last x/y=%d/%d\n"), gui.last_pressed_x, gui.last_pressed_y);
 			update_touch_list();
 		}
 		else
