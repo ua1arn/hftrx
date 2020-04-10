@@ -513,9 +513,10 @@
 		#define WITHVOLTLEVEL	1	/* отображение напряжения питания */
 		#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
 
-		#define WITHCURRLEVEL_ACS712_30A 1	// PA current sense - ACS712ELCTR-30B-T chip
+		//#define WITHCURRLEVEL_ACS712_30A 1	// PA current sense - ACS712ELCTR-30B-T chip
 		//#define WITHCURRLEVEL_ACS712_20A 1	// PA current sense - ACS712ELCTR-20B-T chip
-		PASENSEIX = WPM_POTIX,		// PA1 PA current sense - ACS712-05 chip
+		//PASENSEIX = WPM_POTIX,		// PA1 PA current sense - ACS712-05 chip
+		PASENSEIX = 2,		// PA1 PA current sense - ACS712-05 chip
 		FWD = 0, REF = 1,	// PB0	SWR-meter
 		PWRI = FWD,			// PB1
 		VOLTSOURCE = BOARD_ADCX1IN(7),		// MCP3208 CH7 Средняя точка делителя напряжения, для АКБ
