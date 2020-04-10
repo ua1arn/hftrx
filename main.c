@@ -54,6 +54,22 @@ static uint_fast32_t
 prevfreq(uint_fast32_t oldfreq, uint_fast32_t freq, 
 							   uint_fast32_t step, uint_fast32_t bottom);
 
+
+static unsigned long ulmin(
+	unsigned long a,
+	unsigned long b)
+{
+	return a < b ? a : b;
+}
+
+static unsigned long ulmax(
+	unsigned long a,
+	unsigned long b)
+{
+	return a > b ? a : b;
+}
+
+
 extern volatile uint_fast8_t spool_lfm_enable;
 extern volatile uint_fast8_t spool_lfm_flag;
 
@@ -132,6 +148,7 @@ static uint_fast8_t gtx;	/* текущее состояние прием или 
 static uint_fast8_t gcwpitch10 = 700 / CWPITCHSCALE;	/* тон при приеме телеграфа или самоконтроль (в десятках герц) */
 #if WITHIF4DSP
 static dualctl8_t gsquelch = { 0, 0 };	/* squelch level */
+static uint_fast8_t gsquelchNFM;	/* squelch level for NFM */
 static uint_fast8_t ggainnfmrx10 = 30;	/* дополнительное усиление по НЧ в режиме приёма NFM 100..1000% */
 #endif /* WITHIF4DSP */
 #if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */
@@ -2548,6 +2565,7 @@ struct nvmap
 	uint8_t gloopmsg, gloopsec;
 	uint8_t gdigigainmax;	/* диапазон ручной регулировки цифрового усиления - максимальное значение */
 	uint8_t gsquelch;		/* уровень открытия шумоподавителя */
+	uint8_t gsquelchNFM;	/* sуровень открытия шумоподавителя для NFM */
 	uint8_t gvad605;		/* напряжение на AD605 (управление усилением тракта ПЧ */
 	uint16_t gfsadcpower10 [2];	/*	Мощность, соответствующая full scale от IF ADC (с тояностью 0.1 дБмВт */
 	#if ! WITHPOTAFGAIN
@@ -5705,13 +5723,13 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		enc2menu_adjust,	/* функция для изменения значения параметра */
 	},
 	{
-		"SQUELCH  ", 
+		"SQUELCHFM",
 		RJ_UNSIGNED,		// rj
 		ISTEP1,		/* squelch level */
 		0, SQUELCHMAX, 
-		offsetof(struct nvmap, gsquelch),	/* уровень сигнала болше которого открывается шумодав */
+		offsetof(struct nvmap, gsquelchNFM),	/* уровень сигнала болше которого открывается шумодав */
 		NULL,
-		& gsquelch.value,
+		& gsquelchNFM,
 		getzerobase, /* складывается со смещением и отображается */
 		enc2menu_adjust,	/* функция для изменения значения параметра */
 	},
@@ -7964,7 +7982,7 @@ updateboard(
 				board_set_agc_t2(gagc [agcseti].release10);		// время разряда медленной цепи АРУ
 				board_set_agc_t4(gagc [agcseti].t4);			// время разряда быстрой цепи АРУ
 				board_set_agc_thung(gagc [agcseti].thung10);	// hold time (hung time) in 0.1 sec
-				board_set_squelch(gsquelch.value);
+				board_set_squelch(pamodetempl->dspmode [gtx] == DSPCTL_MODE_RX_NFM ? ulmax(gsquelch.value, gsquelchNFM) : gsquelch.value);
 				board_set_gainnfmrx(ggainnfmrx10 * 10);	/* дополнительное усиление по НЧ в режиме приёма NFM 100..1000% */
 			#endif /* WITHIF4DSP */
 			} /* tx == 0 */
@@ -14152,6 +14170,15 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		offsetof(struct nvmap, gsquelch),	/* уровень сигнала болше которого открывается шумодав */
 		NULL,
 		& gsquelch.value,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		QLABEL("SQUELNFM"), 7, 0, 0,	ISTEP1,		/* squelch level */
+		ITEM_VALUE,
+		0, SQUELCHMAX,
+		offsetof(struct nvmap, gsquelchNFM),	/* уровень сигнала болше которого открывается шумодав */
+		NULL,
+		& gsquelchNFM,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
