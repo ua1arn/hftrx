@@ -19,7 +19,8 @@
 //#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
 //#define WITHMDMAHW		1	/* Использование MDMA для формирования изображений */
-#define WIHSPIDFHW	1	/* обслуживание DATA FLASH */
+#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
+//#define WIHSPIDFHW	1	/* аппараьное обслуживание DATA FLASH */
 
 //#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 #define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
@@ -831,7 +832,7 @@
 	#define USBD_DFU_FLASH_XFER_SIZE 256	// match to (Q)SPI FLASH MEMORY page size
 	#define USBD_DFU_FLASHNAME "W25Q32FV"
 
-	#if WIHSPIDFHW
+	#if WIHSPIDFSW || WIHSPIDFHW
 
 		//	QUADSPI_CLK 	PF10	AS pin 01	U13-38 (traced to PA7)
 		//	QUADSPI_BK1_NCS PB6 	AS pin 08	U12-21 (traced to PB12)
@@ -845,41 +846,77 @@
 		#define SPDIF_D2_BIT (1u << 7)	// PF7
 		#define SPDIF_D3_BIT (1u << 6)	// PF6
 
-		#define SPIDF_MISO() ((GPIOF->IDR & SPDIF_MISO_BIT) != 0)
-		#define SPIDF_MOSI(v) do { if (v) GPIOF->BSRR = BSRR_S(SPDIF_MOSI_BIT); else GPIOF->BSRR = BSRR_C(SPDIF_MOSI_BIT); } while (0)
-		#define SPIDF_SCLK(v) do { if (v) GPIOF->BSRR = BSRR_S(SPDIF_SCLK_BIT); else GPIOF->BSRR = BSRR_C(SPDIF_SCLK_BIT); } while (0)
-		#define SPIDF_INITIALIZE() do { \
-				arm_hardware_piof_outputs(SPDIF_D2_BIT, SPDIF_D2_BIT); /* D2 tie-up */ \
-				arm_hardware_piof_outputs(SPDIF_D3_BIT, SPDIF_D3_BIT); /* D3 tie-up */ \
-				arm_hardware_piob_outputs(SPDIF_NCS_BIT, SPDIF_NCS_BIT); \
-				arm_hardware_piof_outputs(SPDIF_SCLK_BIT, SPDIF_SCLK_BIT); \
-				arm_hardware_piof_outputs(SPDIF_MOSI_BIT, SPDIF_MOSI_BIT); \
-				arm_hardware_piof_inputs(SPDIF_MISO_BIT); \
-			} while (0)
-		#define SPIDF_HANGOFF() do { \
-				arm_hardware_piob_inputs(SPDIF_NCS_BIT); \
-				arm_hardware_piof_inputs(SPDIF_SCLK_BIT); \
-				arm_hardware_piof_inputs(SPDIF_MOSI_BIT); \
-				arm_hardware_piof_inputs(SPDIF_MISO_BIT); \
-			} while (0)
-		#define SPIDF_SELECT() do { \
-				arm_hardware_piob_outputs(SPDIF_NCS_BIT, SPDIF_NCS_BIT); \
-				arm_hardware_piof_outputs(SPDIF_SCLK_BIT, SPDIF_SCLK_BIT); \
-				arm_hardware_piof_outputs(SPDIF_MOSI_BIT, SPDIF_MOSI_BIT); \
-				arm_hardware_piof_inputs(SPDIF_MISO_BIT); \
-				GPIOB->BSRR = BSRR_C(SPDIF_NCS_BIT); \
-				__DSB(); \
-			} while (0)
-		#define SPIDF_UNSELECT() do { \
-				GPIOB->BSRR = BSRR_S(SPDIF_NCS_BIT); \
-				arm_hardware_piob_inputs(SPDIF_NCS_BIT); \
-				arm_hardware_piof_inputs(SPDIF_SCLK_BIT); \
-				arm_hardware_piof_inputs(SPDIF_MOSI_BIT); \
-				arm_hardware_piof_inputs(SPDIF_MISO_BIT); \
-				__DSB(); \
-			} while (0)
+		#if WIHSPIDFHW
+			#define SPIDF_INITIALIZE() do { \
+					arm_hardware_piof_altfn50(SPDIF_D2_BIT, AF_QUADSPI_AF9); /* PF7 D2 tie-up */ \
+					arm_hardware_piof_altfn50(SPDIF_D3_BIT, AF_QUADSPI_AF9); /* PF6 D3 tie-up */ \
+					arm_hardware_piob_altfn50(SPDIF_NCS_BIT, AF_QUADSPI_AF10); /* PB6 */ \
+					arm_hardware_piof_altfn50(SPDIF_SCLK_BIT, AF_QUADSPI_AF9); /* PF10 */ \
+					arm_hardware_piof_altfn50(SPDIF_MOSI_BIT, AF_QUADSPI_AF10); /* PF8 */ \
+					arm_hardware_piof_altfn50(SPDIF_MISO_BIT, AF_QUADSPI_AF10); /* PF9 */ \
+				} while (0)
+			#define SPIDF_HANGOFF() do { \
+					arm_hardware_piob_inputs(SPDIF_NCS_BIT); \
+					arm_hardware_piof_inputs(SPDIF_SCLK_BIT); \
+					arm_hardware_piof_inputs(SPDIF_MOSI_BIT); \
+					arm_hardware_piof_inputs(SPDIF_MISO_BIT); \
+				} while (0)
+			#define SPIDF_SELECT() do { \
+					arm_hardware_piob_altfn50(SPDIF_NCS_BIT, AF_QUADSPI_AF10); \
+					arm_hardware_piof_altfn50(SPDIF_SCLK_BIT, AF_QUADSPI_AF9); \
+					arm_hardware_piof_altfn50(SPDIF_MOSI_BIT, AF_QUADSPI_AF10); \
+					arm_hardware_piof_altfn50(SPDIF_MISO_BIT, AF_QUADSPI_AF10); \
+					GPIOB->BSRR = BSRR_C(SPDIF_NCS_BIT); \
+					__DSB(); \
+				} while (0)
+			#define SPIDF_UNSELECT() do { \
+					GPIOB->BSRR = BSRR_S(SPDIF_NCS_BIT); \
+					arm_hardware_piob_inputs(SPDIF_NCS_BIT); \
+					arm_hardware_piof_inputs(SPDIF_SCLK_BIT); \
+					arm_hardware_piof_inputs(SPDIF_MOSI_BIT); \
+					arm_hardware_piof_inputs(SPDIF_MISO_BIT); \
+					__DSB(); \
+				} while (0)
 
-	#endif /* WIHSPIDFHW */
+		#else /* WIHSPIDFHW */
+
+			#define SPIDF_MISO() ((GPIOF->IDR & SPDIF_MISO_BIT) != 0)
+			#define SPIDF_MOSI(v) do { if (v) GPIOF->BSRR = BSRR_S(SPDIF_MOSI_BIT); else GPIOF->BSRR = BSRR_C(SPDIF_MOSI_BIT); } while (0)
+			#define SPIDF_SCLK(v) do { if (v) GPIOF->BSRR = BSRR_S(SPDIF_SCLK_BIT); else GPIOF->BSRR = BSRR_C(SPDIF_SCLK_BIT); } while (0)
+			#define SPIDF_INITIALIZE() do { \
+					arm_hardware_piof_outputs(SPDIF_D2_BIT, SPDIF_D2_BIT); /* D2 tie-up */ \
+					arm_hardware_piof_outputs(SPDIF_D3_BIT, SPDIF_D3_BIT); /* D3 tie-up */ \
+					arm_hardware_piob_outputs(SPDIF_NCS_BIT, SPDIF_NCS_BIT); \
+					arm_hardware_piof_outputs(SPDIF_SCLK_BIT, SPDIF_SCLK_BIT); \
+					arm_hardware_piof_outputs(SPDIF_MOSI_BIT, SPDIF_MOSI_BIT); \
+					arm_hardware_piof_inputs(SPDIF_MISO_BIT); \
+				} while (0)
+			#define SPIDF_HANGOFF() do { \
+					arm_hardware_piob_inputs(SPDIF_NCS_BIT); \
+					arm_hardware_piof_inputs(SPDIF_SCLK_BIT); \
+					arm_hardware_piof_inputs(SPDIF_MOSI_BIT); \
+					arm_hardware_piof_inputs(SPDIF_MISO_BIT); \
+				} while (0)
+			#define SPIDF_SELECT() do { \
+					arm_hardware_piob_outputs(SPDIF_NCS_BIT, SPDIF_NCS_BIT); \
+					arm_hardware_piof_outputs(SPDIF_SCLK_BIT, SPDIF_SCLK_BIT); \
+					arm_hardware_piof_outputs(SPDIF_MOSI_BIT, SPDIF_MOSI_BIT); \
+					arm_hardware_piof_inputs(SPDIF_MISO_BIT); \
+					GPIOB->BSRR = BSRR_C(SPDIF_NCS_BIT); \
+					__DSB(); \
+				} while (0)
+			#define SPIDF_UNSELECT() do { \
+					GPIOB->BSRR = BSRR_S(SPDIF_NCS_BIT); \
+					arm_hardware_piob_inputs(SPDIF_NCS_BIT); \
+					arm_hardware_piof_inputs(SPDIF_SCLK_BIT); \
+					arm_hardware_piof_inputs(SPDIF_MOSI_BIT); \
+					arm_hardware_piof_inputs(SPDIF_MISO_BIT); \
+					__DSB(); \
+				} while (0)
+
+		#endif /* WIHSPIDFHW */
+
+	#endif /* WIHSPIDFSW || WIHSPIDFHW */
 
 	//#define BOARD_BLINK_BITS (1uL << 14)	// PA14 - GREEN LED LD5 on DK1/DK2 MB1272.pdf
 	#define BOARD_BLINK_BITS (1uL << 14)	// PD14 - LED on small board

@@ -26,7 +26,8 @@
 
 #if WITHISBOOTLOADER
 
-	#define WIHSPIDFHW	1	/* обслуживание DATA FLASH */
+	#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
+	//#define WIHSPIDFHW	1	/* аппараьное обслуживание DATA FLASH */
 	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	*/
 
@@ -56,7 +57,8 @@
 
 #else /* WITHISBOOTLOADER */
 
-	#define WIHSPIDFHW	1	/* обслуживание DATA FLASH */
+	#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
+	//#define WIHSPIDFHW	1	/* аппараьное обслуживание DATA FLASH */
 	#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	*/
 	//#define WITHCPUDACHW	1	/* использование DAC - в renesas R7S72 нету */
@@ -845,7 +847,7 @@
 	#define USBD_DFU_FLASHNAME "M25P16"
 
 
-	#if WIHSPIDFHW
+	#if WIHSPIDFSW
 		// P4_2: SPBIO20_0 WP#
 		// P4_3: SPBIO30_0 HOLD#
 		// P4_4: SPBCLK_0 SCLK
@@ -880,6 +882,6 @@
 				arm_hardware_pio4_inputs(0x7C); \
 			} while (0)
 
-	#endif /* WIHSPIDFHW */
+	#endif /* WIHSPIDFSW */
 
 #endif /* ARM_R7S72_TQFP176_CPUSTYLE_STORCH_V9_H_INCLUDED */

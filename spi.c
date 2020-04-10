@@ -610,7 +610,7 @@ void spi_initialize(void)
 
 #endif /* WITHSPIHW || WITHSPISW */
 
-#if WIHSPIDFHW
+#if WIHSPIDFSW
 
 
 /////////
@@ -1252,4 +1252,4 @@ void bootloader_readimage(unsigned long flashoffset, uint8_t * dest, unsigned Le
 }
 
 
-#endif /* WIHSPIDFHW */
+#endif /* WIHSPIDFSW */
