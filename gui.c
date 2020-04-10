@@ -16,12 +16,9 @@
 #include <math.h>
 #include "gui.h"
 
-#if LCDMODE_LTDC
+#if LCDMODE_LTDC && WITHTOUCHGUI
 
-#if WITHTOUCHGUI
-	#include "keyboard.h"
-	#include "list.h"
-
+#include "keyboard.h"
 #include "./display/fontmaps.h"
 
 static
@@ -367,7 +364,7 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 		NAME_ARRAY_SIZE = 20,
 		TEXT_ARRAY_SIZE = 20,
 		MENU_ARRAY_SIZE = 30,
-		LIST_ARRAY_SIZE = 40
+		TOUCH_ARRAY_SIZE = 40
 	};
 
 	enum {
@@ -586,21 +583,19 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 	menu_by_name_t menu_uif;
 
 	typedef struct {
-		uint_fast16_t type;				// тип элемента, поддерживающего реакцию на касания
+		uint_fast16_t type;			// тип элемента, поддерживающего реакцию на касания
 		uint8_t state;				// текущее состояние элемента
 		uint8_t visible;			// текущая видимость элемента
-		uint8_t id;				// номер элемента из структуры описания
+		uint8_t id;					// номер элемента из структуры описания
 		uint8_t is_trackable;		// поддерживает ли элемент возврат относительных координат перемещения точки нажатия
-		uint16_t x1;
+		uint16_t x1;				// координаты окна
 		uint16_t y1;
 		uint16_t x2;
 		uint16_t y2;
-		LIST_ENTRY item;
-	} list_template_t;
+	} touch_t;
 
-	static LIST_ENTRY touch_list;
-	static list_template_t touch_elements[LIST_ARRAY_SIZE];
-	static uint_fast8_t touch_list_count = 0;
+	static touch_t touch_elements[TOUCH_ARRAY_SIZE];
+	static uint_fast8_t touch_count = 0;
 	static uint_fast8_t menu_label_touched = 0;
 	static uint_fast8_t menu_level;
 	static enc2_menu_t * gui_enc2_menu;
@@ -645,7 +640,6 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 
 	static void set_window(uint_fast8_t parent, uint_fast8_t value)
 	{
-		PLIST_ENTRY p;
 		for (uint_fast8_t i = 1; i < BUTTON_HANDLERS_COUNT; i++)
 		{
 			if (button_handlers[i].parent == parent)
@@ -654,16 +648,12 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 				button_handlers[i].is_locked = 0;
 				if (button_handlers[i].visible)
 				{
-					touch_elements[touch_list_count].id = i;
-					touch_elements[touch_list_count].type = TYPE_BUTTON;
-					InsertHeadList(& touch_list, & touch_elements[touch_list_count].item);
-					touch_list_count++;
+					touch_elements[touch_count].id = i;
+					touch_elements[touch_count].type = TYPE_BUTTON;
+					touch_count++;
 				}
 				else
-				{
-					p = RemoveHeadList(& touch_list);
-					touch_list_count--;
-				}
+					touch_count--;
 			}
 		}
 		for (uint_fast8_t i = 1; i < LABELS_COUNT; i++)
@@ -673,21 +663,16 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 				labels[i].visible = value ? VISIBLE : NON_VISIBLE;
 				if (labels[i].visible && labels[i].onClickHandler)
 				{
-					touch_elements[touch_list_count].id = i;
-					touch_elements[touch_list_count].type = TYPE_LABEL;
-					InsertHeadList(& touch_list, & touch_elements[touch_list_count].item);
-					touch_list_count++;
+					touch_elements[touch_count].id = i;
+					touch_elements[touch_count].type = TYPE_LABEL;
+					touch_count++;
 				}
 				if(! labels[i].visible && labels[i].onClickHandler)
-				{
-					p = RemoveHeadList(& touch_list);
-					touch_list_count--;
-				}
+					touch_count--;
 			}
 		}
 		windows[parent].is_show = value ? VISIBLE : NON_VISIBLE;
 		gui.window_to_draw = value ? parent : 0;
-		(void) p;
 	}
 
 	static void calculate_window_position(uint_fast8_t window_id)
@@ -1717,9 +1702,6 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLOR_BUTTON_DISABLED, 1);
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORPIP_GRAY, 0);
 		colpip_rect(buf, w, h, 2, 2, w - 3, h - 3, COLORPIP_BLACK, 0);
-
-		PRINTF("%d %d\n", w, h);
-
 	}
 
 	void gui_initialize (void)
@@ -1728,12 +1710,10 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 		uint_fast8_t w = button_handlers[i].bg->w;
 		uint_fast8_t h = button_handlers[i].bg->h;
 
-		InitializeListHead(& touch_list);
 		do {
-			touch_elements[touch_list_count].id = i;
-			touch_elements[touch_list_count].type = TYPE_BUTTON;
-			InsertHeadList(& touch_list, & touch_elements[touch_list_count].item);
-			touch_list_count++;
+			touch_elements[touch_count].id = i;
+			touch_elements[touch_count].type = TYPE_BUTTON;
+			touch_count++;
 			button_handlers[i].x1 = x;
 			button_handlers[i].y1 = DIM_Y - h;
 			x = x + w + 3;
@@ -1744,13 +1724,11 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 		fill_button_bg_buf(& btnbg_40_40);
 	}
 
-	static void update_touch_list(void)
+	static void update_touch(void)
 	{
-		PLIST_ENTRY t;
-
-		for (t = touch_list.Blink; t != & touch_list; t = t->Blink)
+		for (uint_fast8_t i = 0; i < touch_count; i++)
 		{
-			list_template_t * p = CONTAINING_RECORD(t, list_template_t, item);
+			touch_t * p = & touch_elements[i];
 			if (p->type == TYPE_BUTTON)
 			{
 				const button_t * const bh = & button_handlers[p->id];
@@ -1776,7 +1754,7 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 		}
 	}
 
-	static void set_state_record(list_template_t * val)
+	static void set_state_record(touch_t * val)
 	{
 		ASSERT(val != NULL);
 		gui.selected_id = val->id;								// добавить везде проверку на gui.selected_type
@@ -1807,7 +1785,7 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 	{
 		uint_fast16_t tx, ty;
 		static uint_fast16_t x_old = 0, y_old = 0;
-		static list_template_t * p = NULL;
+		static touch_t * p = NULL;
 
 	#if defined (TSC1_TYPE)
 		if (board_tsc_getxy(& tx, & ty))
@@ -1816,7 +1794,7 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 			gui.last_pressed_y = ty;
 			gui.is_touching_screen = 1;
 			debug_printf_P(PSTR("last x/y=%d/%d\n"), gui.last_pressed_x, gui.last_pressed_y);
-			update_touch_list();
+			update_touch();
 		}
 		else
 	#endif /* defined (TSC1_TYPE) */
@@ -1827,10 +1805,9 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 
 		if (gui.state == CANCELLED && gui.is_touching_screen && ! gui.is_after_touch)
 		{
-			PLIST_ENTRY t;
-			for (t = touch_list.Blink; t != & touch_list; t = t->Blink)
+			for (uint_fast8_t i = 0; i < touch_count; i++)
 			{
-				p = CONTAINING_RECORD(t, list_template_t, item);
+				p = & touch_elements[i];
 
 				if (p->x1 < gui.last_pressed_x && p->x2 > gui.last_pressed_x
 				 && p->y1 < gui.last_pressed_y && p->y2 > gui.last_pressed_y
@@ -2004,6 +1981,4 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 			draw_button_pip(i);
 		}
 	}
-#endif /* WITHTOUCHGUI */
-
-#endif /* LCDMODE_LTDC */
+#endif /* LCDMODE_LTDC && WITHTOUCHGUI */
