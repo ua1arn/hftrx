@@ -20,6 +20,10 @@
 
 #if LCDMODE_LTDC
 	static struct menudef * md;
+
+	static PACKEDCOLORMAIN_T * getscratchwnd(void);
+
+
 #endif /* LCDMODE_LTDC */
 
 // todo: учесть LCDMODE_COLORED
@@ -68,17 +72,6 @@ static void display2_spectrum(
 static void display2_waterfall(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
-	);
-static void display2_colorbuff(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
-	void * pv
-	);
-// Вызывается если страница не требует отображения графических элементов
-static void display2_pip_off(
-	uint_fast8_t x,
-	uint_fast8_t y,
 	void * pv
 	);
 // Отображение шкалы S-метра и других измерителей
@@ -3485,7 +3478,7 @@ enum
 			/* ---------------------------------- */
 			{	0,	9,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 			{	0,	9,	display2_spectrum,	REDRM_BARS, PG1, },// подготовка изображения спектра
-			{	0,	9,	display2_colorbuff,	REDRM_BARS,	PG1, },// Отображение водопада и/или спектра
+			//{	0,	9,	display2_colorbuff,	REDRM_BARS,	PG1, },// Отображение водопада и/или спектра
 			/* ---------------------------------- */
 			{	0,	14,	display_time5,		REDRM_BARS, PG0, },	// TIME
 		#if WITHVOLTLEVEL
@@ -3630,7 +3623,7 @@ enum
 
 			{	0,	9,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 			{	0,	9,	display2_spectrum,	REDRM_BARS, PG1, },// подготовка изображения спектра
-			{	0,	9,	display2_colorbuff,	REDRM_BARS,	PG1, },// Отображение водопада и/или спектра
+			//{	0,	9,	display2_colorbuff,	REDRM_BARS,	PG1, },// Отображение водопада и/или спектра
 		#else /* WITHDSPEXTDDC */
 			{	27, 12,	display_atu3,		REDRM_MODE, PGALL, },	// ATU
 			{	27, 14,	display_byp3,		REDRM_MODE, PGALL, },	// BYP
@@ -3749,7 +3742,7 @@ enum
 	static const FLASHMEM struct dzone dzones [] =
 	{
 		{	0,	0,	display2_clearbg, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },
-		{	0,	0,	display2_pip_off,	REDRM_MODE,	PG0 | REDRSUBSET_MENU },	// Выключить PIP если на данной странице не требуется
+		//{	0,	0,	display2_pip_off,	REDRM_MODE,	PG0 | REDRSUBSET_MENU },	// Выключить PIP если на данной странице не требуется
 		{	0,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
 		{	3,	0,	display_voxtune3,	REDRM_MODE, PGALL, },
 		{	7,	0,	display_att4,		REDRM_MODE, PGALL, },
@@ -3779,7 +3772,7 @@ enum
 		{	0,	18,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 		{	0,	18,	display2_spectrum,	REDRM_BARS, PG0, },// подготовка изображения спектра
 		{	0,	18,	display2_waterfall,	REDRM_BARS, PG0, },// подготовка изображения водопада
-		{	0,	18,	display2_colorbuff,	REDRM_BARS,	PG0, },// Отображение водопада и/или спектра
+		//{	0,	18,	display2_colorbuff,	REDRM_BARS,	PG0, },// Отображение водопада и/или спектра
 
 		//---
 		//{	22, 25,	display_samfreqdelta8, REDRM_BARS, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
@@ -3807,9 +3800,9 @@ enum
 	/* получить координаты окна с панорамой и/или водопадом. */
 	void display2_getpipparams(pipparams_t * p)
 	{
-		p->x = GRID2X(0);	// позиция верхнего левого угла в пикселях
+		p->x = 0; //GRID2X(0);	// позиция верхнего левого угла в пикселях
 		p->y = GRID2Y(18);	// позиция верхнего левого угла в пикселях
-		p->w = GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
+		p->w = DIM_X; //GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
 		p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
 	}
 
@@ -3873,7 +3866,7 @@ enum
 		static const FLASHMEM struct dzone dzones [] =
 		{
 			{	0,	0,	display2_clearbg, 	REDRM_MODE, REDRSUBSET(DPAGE0) | REDRSUBSET_MENU | REDRSUBSET_SLEEP, },
-			{	0, 0,	display2_pip_off,	REDRM_MODE,	REDRSUBSET(DPAGE0) | REDRSUBSET_MENU },	// Выключить PIP если на данной странице не требуется
+			//{	0, 0,	display2_pip_off,	REDRM_MODE,	REDRSUBSET(DPAGE0) | REDRSUBSET_MENU },	// Выключить PIP если на данной странице не требуется
 			{	0, 0,	display_txrxstate2, REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	3, 0,	display_voxtune3,	REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	7, 0,	display_att4,		REDRM_MODE, REDRSUBSET(DPAGE0), },
@@ -3974,7 +3967,7 @@ enum
 		#define DISPLC_RJ		1	// количество скрытых справа цифр в отображении частоты
 		static const FLASHMEM struct dzone dzones [] =
 		{
-			{	0,	0,	display2_pip_off,	REDRM_MODE,	PG0 | REDRSUBSET_MENU },	// Выключить PIP если на данной странице не требуется
+			//{	0,	0,	display2_pip_off,	REDRM_MODE,	PG0 | REDRSUBSET_MENU },	// Выключить PIP если на данной странице не требуется
 			{	0,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
 			{	3,	0,	display_voxtune3,	REDRM_MODE, PGALL, },
 			{	7,	0,	display_att4,		REDRM_MODE, PGALL, },
@@ -4001,7 +3994,7 @@ enum
 			{	0,	18,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 			{	0,	18,	display2_spectrum,	REDRM_BARS, PG1, },// подготовка изображения спектра
 			{	0,	18,	display2_waterfall,	REDRM_BARS, PG1, },// подготовка изображения водопада
-			{	0,	18,	display2_colorbuff,	REDRM_BARS,	PG1, },// Отображение водопада и/или спектра
+			//{	0,	18,	display2_colorbuff,	REDRM_BARS,	PG1, },// Отображение водопада и/или спектра
 
 			{	27, 18,	display_smeter5,	REDRM_BARS, PGNOMEMU, },	// signal level
 		#endif /* WITHIF4DSP */
@@ -4030,9 +4023,9 @@ enum
 		/* получить координаты окна с панорамой и/или водопадом. */
 		void display2_getpipparams(pipparams_t * p)
 		{
-			p->x = GRID2X(0);	// позиция верхнего левого угла в пикселях
+			p->x = 0; //GRID2X(0);	// позиция верхнего левого угла в пикселях
 			p->y = GRID2Y(18);	// позиция верхнего левого угла в пикселях
-			p->w = GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
+			p->w = DIM_X; //GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
 			p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
 		}
 
@@ -4133,7 +4126,7 @@ enum
 	static const FLASHMEM struct dzone dzones [] =
 	{
 		{	0,	0,	display2_clearbg, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },
-		{	0,	0,	display2_pip_off,	REDRM_MODE,	PGSLP | REDRSUBSET_MENU },	// Выключить PIP если на данной странице не требуется
+		//{	0,	0,	display2_pip_off,	REDRM_MODE,	PGSLP | REDRSUBSET_MENU },	// Выключить PIP если на данной странице не требуется
 		{	0,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
 		{	3,	0,	display_ant5,		REDRM_MODE, PGALL, },
 		{	9,	0,	display_att4,		REDRM_MODE, PGALL, },
@@ -4173,9 +4166,9 @@ enum
 		{	0,	28,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 		{	0,	28,	display2_spectrum,	REDRM_BARS, PGSPE, },// подготовка изображения спектра
 		{	0,	28,	display2_waterfall,	REDRM_BARS, PGWFL, },// подготовка изображения водопада
-		{	0,	28,	display2_colorbuff,	REDRM_BARS,	PGWFL | PGSPE, },// Отображение водопада и/или спектра
+		//{	0,	28,	display2_colorbuff,	REDRM_BARS,	PGWFL | PGSPE, },// Отображение водопада и/или спектра
 #else
-		{	0,	0,	display2_pip_off,	REDRM_MODE,	PGALL },	// Выключить PIP если на данной странице не требуется
+		//{	0,	0,	display2_pip_off,	REDRM_MODE,	PGALL },	// Выключить PIP если на данной странице не требуется
 		{	0,	20,	display2_adctest,	REDRM_BARS, PGSWR, },	// ADC raw data print
 #endif
 	
@@ -4223,9 +4216,9 @@ enum
 	/* получить координаты окна с панорамой и/или водопадом. */
 	void display2_getpipparams(pipparams_t * p)
 	{
-		p->x = GRID2X(0);	// позиция верхнего левого угла в пикселях
+		p->x = 0; //GRID2X(0);	// позиция верхнего левого угла в пикселях
 		p->y = GRID2Y(28);	// позиция верхнего левого угла в пикселях
-		p->w = GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
+		p->w = DIM_X; //GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
 		p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
 	}
 
@@ -4381,9 +4374,9 @@ enum
 	/* получить координаты окна с панорамой и/или водопадом. */
 	void display2_getpipparams(pipparams_t * p)
 	{
-		p->x = GRID2X(0);	// позиция верхнего левого угла в пикселях
+		p->x = 0; //GRID2X(0);	// позиция верхнего левого угла в пикселях
 		p->y = GRID2Y(30);	// позиция верхнего левого угла в пикселях
-		p->w = GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
+		p->w = DIM_X; //GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
 		p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
 	}
 
@@ -4520,10 +4513,10 @@ enum
 		{	0,	DLES,	display2_spectrum,	REDRM_BARS, PGSPE, },// подготовка изображения спектра
 		{	0,	DLES,	display2_waterfall,	REDRM_BARS, PGWFL, },// подготовка изображения водопада
 		{	0,	DLES,	display_pip_update, REDRM_BARS, PGSPE, },
-		{	0,	DLES,	display2_colorbuff,	REDRM_BARS,	PGWFL | PGSPE, },// Отображение водопада и/или спектра
+		//{	0,	DLES,	display2_colorbuff,	REDRM_BARS,	PGWFL | PGSPE, },// Отображение водопада и/или спектра
 	#endif /* WITHSPECTRUMWF */
 #else
-		{	0,	0,	display2_pip_off,	REDRM_MODE,	PGSWR },	// Выключить PIP если на данной странице не требуется
+		//{	0,	0,	display2_pip_off,	REDRM_MODE,	PGSWR },	// Выключить PIP если на данной странице не требуется
 		{	0,	25,	display2_adctest,	REDRM_BARS, PGSWR, },	// ADC raw data print
 #endif
 	#if WITHAMHIGHKBDADJ
@@ -4554,9 +4547,9 @@ enum
 	/* получить координаты окна с панорамой и/или водопадом. */
 	void display2_getpipparams(pipparams_t * p)
 	{
-		p->x = GRID2X(0);	// позиция верхнего левого угла в пикселях
+		p->x = 0; //GRID2X(0);	// позиция верхнего левого угла в пикселях
 		p->y = GRID2Y(DLES);	// позиция верхнего левого угла в пикселях
-		p->w = GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
+		p->w = DIM_X; //GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
 		p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
 	}
 
@@ -4649,7 +4642,7 @@ enum
 	static const FLASHMEM struct dzone dzones [] =
 	{
 		{	0,	0,	display2_clearbg, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },
-		{	0,	0,	display2_pip_off,	REDRM_MODE,	PGSLP | REDRSUBSET_MENU },	// Выключить PIP если на данной странице не требуется
+		//{	0,	0,	display2_pip_off,	REDRM_MODE,	PGSLP | REDRSUBSET_MENU },	// Выключить PIP если на данной странице не требуется
 		{	0,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
 		{	3,	0,	display_ant5,		REDRM_MODE, PGALL, },
 		{	9,	0,	display_att4,		REDRM_MODE, PGALL, },
@@ -4697,10 +4690,10 @@ enum
 		{	0,	DLES,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 		{	0,	DLES,	display2_spectrum,	REDRM_BARS, PGSPE, },// подготовка изображения спектра
 		{	0,	DLES,	display2_waterfall,	REDRM_BARS, PGWFL, },// подготовка изображения водопада
-		{	0,	DLES,	display2_colorbuff,	REDRM_BARS,	PGWFL | PGSPE, },// Отображение водопада и/или спектра
+		//{	0,	DLES,	display2_colorbuff,	REDRM_BARS,	PGWFL | PGSPE, },// Отображение водопада и/или спектра
 	#endif /* WITHSPECTRUMWF */
 #else
-		{	0,	0,	display2_pip_off,	REDRM_MODE,	PGSWR },	// Выключить PIP если на данной странице не требуется
+		//{	0,	0,	display2_pip_off,	REDRM_MODE,	PGSWR },	// Выключить PIP если на данной странице не требуется
 		{	0,	25,	display2_adctest,	REDRM_BARS, PGSWR, },	// ADC raw data print
 #endif
 
@@ -4752,11 +4745,10 @@ enum
 	/* получить координаты окна с панорамой и/или водопадом. */
 	void display2_getpipparams(pipparams_t * p)
 	{
-		p->x = GRID2X(0);	// позиция верхнего левого угла в пикселях
+		p->x = 0; //GRID2X(0);	// позиция верхнего левого угла в пикселях
 		p->y = GRID2Y(DLES);	// позиция верхнего левого угла в пикселях
-		p->w = GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
+		p->w = DIM_X; //GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
 		p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
-		//p->frame = (uintptr_t) getscratchpip();
 	}
 
 #elif DSTYLE_G_DUMMY
@@ -4820,6 +4812,15 @@ enum
 #endif
 #define DISPLC_RJ		0	// количество скрытых справа цифр в отображении частоты
 
+
+static void display2_dummy(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	void * pv
+	)
+{
+
+}
 // 480/5 = 96, 800/16=50
 // 272/5 = 54, 480/16=30 (old)
 //#define GRID2X(cellsx) ((cellsx) * 16)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
@@ -4828,7 +4829,7 @@ enum
 //#define SMALLCHARW 16 /* Font width */
 static const FLASHMEM struct dzone dzones [] =
 {
-	{	0,	0,	display2_pip_off,	REDRM_MODE,	REDRSUBSET_SLEEP | REDRSUBSET_MENU },	// Выключить PIP если на данной странице не требуется
+	{	0,	0,	display2_dummy,	REDRM_MODE,	REDRSUBSET_SLEEP | REDRSUBSET_MENU },	// Выключить PIP если на данной странице не требуется
 };
 
 #if WITHMENU
@@ -4843,9 +4844,9 @@ static const FLASHMEM struct dzone dzones [] =
 	/* получить координаты окна с панорамой и/или водопадом. */
 	void display2_getpipparams(pipparams_t * p)
 	{
-		p->x = GRID2X(0);	// позиция верхнего левого угла в пикселях
+		p->x = 0; //GRID2X(0);	// позиция верхнего левого угла в пикселях
 		p->y = GRID2Y(DLES);	// позиция верхнего левого угла в пикселях
-		p->w = GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
+		p->w = DIM_X; //GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
 		p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
 		//p->frame = (uintptr_t) 0;
 	}
@@ -5388,34 +5389,34 @@ static FLOAT_t filter_spectrum(
 #if defined (COLORPIP_SHADED)
 
 	/* быстрое отображение водопада (но требует больше памяти) */
-	static /*RAMBIG */ PACKEDCOLORPIP_T wfarray [WFDY] [ALLDX];	// массив "водопада"
+	static /*RAMBIG */ PACKEDCOLORMAIN_T wfarray [WFDY] [ALLDX];	// массив "водопада"
 
 	enum { PALETTESIZE = COLORPIP_BASE };
-	static PACKEDCOLORPIP_T wfpalette [1];
+	static PACKEDCOLORMAIN_T wfpalette [1];
 	static uint_fast16_t wfrow;		// строка, в которую последней занесены данные
 
 #elif WITHFASTWATERFLOW && LCDMODE_PIP_RGB565
 
 	/* быстрое отображение водопада (но требует больше памяти) */
-	static /*RAMBIG */ PACKEDCOLORPIP_T wfarray [WFDY] [ALLDX];	// массив "водопада"
+	static /*RAMBIG */ PACKEDCOLORMAIN_T wfarray [WFDY] [ALLDX];	// массив "водопада"
 
 	enum { PALETTESIZE = 256 };
-	static PACKEDCOLORPIP_T wfpalette [PALETTESIZE];
+	static PACKEDCOLORMAIN_T wfpalette [PALETTESIZE];
 	static uint_fast16_t wfrow;		// строка, в которую последней занесены данные
 
 #elif LCDMODE_PIP_L8 || (! LCDMODE_PIP_L8 && LCDMODE_MAIN_L8)
 
 	enum { PALETTESIZE = COLORPIP_BASE };
-	static /*RAMBIG */ PACKEDCOLORPIP_T wfarray [WFDY] [ALLDX];	// массив "водопада"
+	static /*RAMBIG */ PACKEDCOLORMAIN_T wfarray [WFDY] [ALLDX];	// массив "водопада"
 	static uint_fast16_t wfrow;		// строка, в которую последней занесены данные
 
 #elif WITHFASTWATERFLOW
 
 	/* быстрое отображение водопада (но требует больше памяти) */
-	static /*RAMBIG */ PACKEDCOLORPIP_T wfarray [WFDY] [ALLDX];	// массив "водопада"
+	static /*RAMBIG */ PACKEDCOLORMAIN_T wfarray [WFDY] [ALLDX];	// массив "водопада"
 
 	enum { PALETTESIZE = 256 };
-	static PACKEDCOLORPIP_T wfpalette [PALETTESIZE];
+	static PACKEDCOLORMAIN_T wfpalette [PALETTESIZE];
 	static uint_fast16_t wfrow;		// строка, в которую последней занесены данные
 
 #elif (! LCDMODE_S1D13781_NHWACCEL && LCDMODE_S1D13781)
@@ -5447,7 +5448,7 @@ static uint_fast8_t wfclear;			// стирание всей областии о�
 // Код взят из проекта Malamute
 static void wfpalette_initialize(void)
 {
-	PRINTF("wfpalette_initialize: main=%d, pip=%d, PALETTESIZE=%d, LCDMODE_MAIN_PAGES=%d\n", sizeof (PACKEDCOLORMAIN_T), sizeof (PACKEDCOLORPIP_T), PALETTESIZE, LCDMODE_MAIN_PAGES);
+	PRINTF("wfpalette_initialize: main=%d, pip=%d, PALETTESIZE=%d, LCDMODE_MAIN_PAGES=%d\n", sizeof (PACKEDCOLORMAIN_T), sizeof (PACKEDCOLORMAIN_T), PALETTESIZE, LCDMODE_MAIN_PAGES);
 	if (PALETTESIZE != 256)
 		return;
 #if ! defined (COLORPIP_SHADED)
@@ -5541,7 +5542,7 @@ deltafreq2x_abs(
 static
 void
 display_colorgrid_xor(
-	PACKEDCOLORPIP_T * buffer,
+	PACKEDCOLORMAIN_T * buffer,
 	uint_fast16_t row0,	// вертикальная координата начала занимаемой области (0..dy-1) сверху вниз
 	uint_fast16_t h,	// высота
 	int_fast32_t f0,	// center frequency
@@ -5585,7 +5586,7 @@ display_colorgrid_xor(
 static
 void
 display_colorgrid_set(
-	PACKEDCOLORPIP_T * buffer,
+	PACKEDCOLORMAIN_T * buffer,
 	uint_fast16_t row0,	// вертикальная координата начала занимаемой области (0..dy-1) сверху вниз
 	uint_fast16_t h,	// высота
 	int_fast32_t f0,	// center frequency
@@ -5708,7 +5709,7 @@ static void display2_spectrum(
 	colmain_setcolors(COLORPIP_SPECTRUMBG, COLORPIP_SPECTRUMFG);
 
 #else /* */
-	PACKEDCOLORPIP_T * const colorpip = getscratchpip();
+	PACKEDCOLORMAIN_T * const colorpip = getscratchwnd();
 	(void) x0;
 	(void) y0;
 	(void) pv;
@@ -5880,7 +5881,7 @@ static void wfsetupnew(void)
 }
 
 // отрисовка вновь появившихся данных на водопаде (в случае использования аппаратного scroll видеопамяти).
-static void display_wfputrow(uint_fast16_t x, uint_fast16_t y, const PACKEDCOLORPIP_T * p)
+static void display_wfputrow(uint_fast16_t x, uint_fast16_t y, const PACKEDCOLORMAIN_T * p)
 {
 	colpip_to_main(p, ALLDX, 1, x, y);
 }
@@ -5912,11 +5913,11 @@ static void dsp_latchwaterfall(
 	{
 		// для водопада
 		const int val = dsp_mag2y(filter_waterfall(x), PALETTESIZE - 1, glob_wflevelsep ? glob_topdbwf : glob_topdb, glob_wflevelsep ? glob_bottomdbwf : glob_bottomdb); // возвращает значения от 0 до dy включительно
-
-		if (sizeof (PACKEDCOLORPIP_T) > 1)
-			wfarray [wfrow] [x] = wfpalette [val];	// запись в буфер водопада цветовой точки
-		else
-			wfarray [wfrow] [x] = val;	// запись в буфер водопада индекса палитры
+	#if LCDMODE_MAIN_L8
+		wfarray [wfrow] [x] = val;	// запись в буфер водопада индекса палитры
+	#else /* LCDMODE_MAIN_L8 */
+		wfarray [wfrow] [x] = wfpalette [val];	// запись в буфер водопада цветовой точки
+	#endif /* LCDMODE_MAIN_L8 */
 	}
 
 	// Сдвиг изображения при необходимости (перестройка/переклбчение диапащонов или масштаба).
@@ -6036,7 +6037,7 @@ static void display2_waterfall(
 		#error LCDMODE_HORFILL must be defined
 	#endif /* ! LCDMODE_HORFILL */
 
-	PACKEDCOLORPIP_T * const colorpip = getscratchpip();
+	PACKEDCOLORMAIN_T * const colorpip = getscratchwnd();
 	const uint_fast16_t p1h = WFDY - wfrow;	// высота верхней части в результируюшем изображении
 	const uint_fast16_t p2h = wfrow;		// высота нижней части в результируюшем изображении
 	const uint_fast16_t p1y = WFY0;
@@ -6054,7 +6055,7 @@ static void display2_waterfall(
 #else /* */
 
 	// следы спектра ("водопад") на цветных дисплеях
-	PACKEDCOLORPIP_T * const colorpip = getscratchpip();
+	PACKEDCOLORMAIN_T * const colorpip = getscratchwnd();
 	uint_fast16_t x;
 
 	// формирование растра
@@ -6074,52 +6075,15 @@ static void display2_waterfall(
 	(void) pv;
 }
 
-// отображение ранее подготовленного буфера
-// Отображение водопада и/или спектра
-static void display2_colorbuff(
-	uint_fast8_t x0, 
-	uint_fast8_t y0, 
-	void * pv
-	)
+static
+PACKEDCOLORMAIN_T * getscratchwnd(void)
 {
-#if HHWMG
-	// Спектр на монохромных дисплеях
-	// или на цветных, где есть возможность раскраски растровой картинки.
-	display_showbuffer(spectmonoscr, ALLDX, SPDY, x0, y0);
+    pipparams_t pip;
 
-#else /* */
-
-	PACKEDCOLORPIP_T * const colorpip = getscratchpip();
-
-	#if ((LCDMODE_PIP_RGB565 || LCDMODE_PIP_L8) && LCDMODE_LTDC)
-		arm_hardware_flush((uintptr_t) colorpip, (uint_fast32_t) ALLDX * ALLDY * sizeof * colorpip);
-		arm_hardware_ltdc_pip_set((uintptr_t) colorpip);
-
-	#elif LCDMODE_MAIN_PAGES > 1
-		/* не копируем - работаем прямо в памяти дисплея */
-
-	#else /* LCDMODE_PIP_RGB565 */
-		colpip_to_main(colorpip, ALLDX, ALLDY, GRID2X(x0), GRID2Y(y0));
-
-	#endif /* LCDMODE_PIP_RGB565 */
-
-	colpip_fb_next();
-
-#endif /* LCDMODE_S1D13781 */
+    display2_getpipparams(& pip);
+    return colmain_mem_at(colmain_fb_draw(), DIM_X, DIM_Y, pip.x, pip.y);
 }
 
-// если страница не требует отображения графических элементов
-static void
-display2_pip_off(
-	uint_fast8_t x,
-	uint_fast8_t y,
-	void * pv
-	)
-{
-#if ((LCDMODE_PIP_RGB565 || LCDMODE_PIP_L8) && LCDMODE_LTDC)
-	arm_hardware_ltdc_pip_off();
-#endif /* LCDMODE_PIP_RGB565 */
-}
 
 #else /* WITHSPECTRUMWF */
 
@@ -6142,25 +6106,6 @@ static void display2_spectrum(
 static void display2_waterfall(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
-	)
-{
-}
-
-// отображение ранее подготовленного буфера
-static void display2_colorbuff(
-	uint_fast8_t x0, 
-	uint_fast8_t y0, 
-	void * pv
-	)
-{
-}
-
-// если страница не требует отображения графических элементов
-static void
-display2_pip_off(
-	uint_fast8_t x,
-	uint_fast8_t y,
 	void * pv
 	)
 {
@@ -6453,39 +6398,6 @@ void display_menuitemlabel(
 	display_walktrough(REDRM_MVAL, REDRSUBSET_MENU, pv);
 #endif /* LCDMODE_MAIN_PAGES > 1 */
 }
-
-#if LCDMODE_PIP_PAGES != 0
-
-	// один буфер установлен для отображения, второй еше отображается.
-	// Третий заполняем новым изображением.
-	static RAMFRAMEBUFF ALIGNX_BEGIN PACKEDCOLORPIP_T colorpips [LCDMODE_PIP_PAGES] [GXSIZE(ALLDX, ALLDY)] ALIGNX_END;
-	static int pipphase;
-
-	void colpip_fb_next(void)
-	{
-		pipphase = (pipphase + 1) % LCDMODE_PIP_PAGES;
-	}
-
-	PACKEDCOLORPIP_T * getscratchpip(void)
-	{
-		return colorpips [pipphase];
-	}
-
-#else /* LCDMODE_PIP_PAGES != 0 */
-
-	void colpip_fb_next(void)
-	{
-	}
-
-	PACKEDCOLORPIP_T * getscratchpip(void)
-	{
-		pipparams_t pip;
-
-		display2_getpipparams(& pip);
-		return colmain_mem_at(colmain_fb_draw(), DIM_X, DIM_Y, pip.x, pip.y);
-	}
-
-#endif /* LCDMODE_PIP_PAGES != 0 */
 
 // отображение значения параметра
 void display_menuitemvalue(

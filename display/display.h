@@ -1093,11 +1093,6 @@ PACKEDCOLORMAIN_T * colmain_fb_draw(void);	// буфер для построен
 PACKEDCOLORMAIN_T * colmain_fb_show(void);	// буфер для отображения
 void colmain_fb_next(void);		// прерключиться на использование следующего фреймбуфера.
 
-//PACKEDCOLORPIP_T * colpip_fb_draw(void);	// буфер для построения изображения
-//PACKEDCOLORPIP_T * colpip_fb_show(void);	// буфер для отображения
-void colpip_fb_next(void);		// прерключиться на использование следующего фреймбуфера.
-PACKEDCOLORPIP_T * getscratchpip(void);
-
 #define DEFAULT_ALPHA 100
 void display2_xltrgb24(COLOR24_T * xtable);
 // Установить прозрачность для прямоугольника
@@ -1122,7 +1117,6 @@ void colpip_fillrect(
 	COLORPIP_T color	// цвет
 	);
 
-void display2_getpipparams(pipparams_t * p);
 int_fast32_t display_zoomedbw(void);
 void display_string3_at_xy(uint_fast16_t x, uint_fast16_t y, const char * s, COLORMAIN_T fg, COLORMAIN_T bg);
 
