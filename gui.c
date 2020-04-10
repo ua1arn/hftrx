@@ -60,7 +60,6 @@ display_smeter2(
 	void * pv
 	)
 {
-#if LCDMODE_V2A || LCDMODE_V2
 	const int xc = GRID2X(xgrid);
 	const int yc = GRID2Y(ygrid);
 	enum { halfsect = 30 };
@@ -278,7 +277,7 @@ display_smeter2(
 			display_radius(xc, yc, gs, r1 - 2, r2 + 2, COLORMAIN_YELLOW);
 			display_radius(xc, yc, gswr, r1 - 2, r2 + 2, COLORMAIN_YELLOW);
 			polar_to_dek(xc, yc, gswr - 1, r1 - 4, & xx, & yy);
-			floodFill_framebuffer(xx, yy, COLORMAIN_YELLOW, COLORMAIN_BLACK);
+			display_floodfill(xx, yy, COLORMAIN_YELLOW, COLORMAIN_BLACK);
 		}
 
 	}
@@ -299,7 +298,6 @@ display_smeter2(
 	}
 
 	(void) pv;
-#endif /* LCDMODE_V2A || LCDMODE_V2 */
 }
 
 static void button1_handler(void);
@@ -368,13 +366,13 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 	};
 
 	enum {
-		BTN_BUF_W = 100,
-		BTN_BUF_H = 55
+		BTN_BUF_W = 96,
+		BTN_BUF_H = 64
 	};
 
-	typedef PACKEDCOLORPIP_T bg_t [BTN_BUF_W][BTN_BUF_H];
+	typedef ALIGNX_BEGIN PACKEDCOLORPIP_T bg_t [BTN_BUF_W][BTN_BUF_H] ALIGNX_END;
 
-	typedef struct {
+	typedef ALIGNX_BEGIN struct {
 		uint8_t w;
 		uint8_t h;
 		bg_t bg_non_pressed;
@@ -382,7 +380,7 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 		bg_t bg_locked;
 		bg_t bg_locked_pressed;
 		bg_t bg_disabled;
-	} btn_bg_t;
+	} ALIGNX_END btn_bg_t;
 
 	static btn_bg_t btnbg_86_44 = { 86, 44, };
 	static btn_bg_t btnbg_50_50 = { 50, 50, };
@@ -1917,7 +1915,7 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 		if (str_len > 0)
 		{
 			xt = DIM_X - SMALLCHARW2 - str_len * SMALLCHARW2;
-			colpip_transparency(colmain_fb_draw(), DIM_X, DIM_Y, xt - 5, 405, DIM_X - 5, 428, alpha);
+			display_transparency(xt - 5, 405, DIM_X - 5, 428, alpha);
 			colpip_string2_tbg(colmain_fb_draw(), DIM_X, DIM_Y, xt, 410, buf, COLORPIP_YELLOW);
 		}
 
@@ -1928,7 +1926,7 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 		board_rtc_getdatetime(& year, & month, & day, & hour, & minute, & secounds);
 		str_len += local_snprintf_P(&buf[str_len], sizeof buf / sizeof buf [0] - str_len,
 				PSTR("%02d.%02d.%04d %02d%c%02d"), day, month, year, hour, ((secounds & 1) ? ' ' : ':'), minute);
-		colpip_transparency(colmain_fb_draw(), DIM_X, DIM_Y, 5, 405, str_len * SMALLCHARW2 + 15, 428, alpha);
+		display_transparency(5, 405, str_len * SMALLCHARW2 + 15, 428, alpha);
 		colpip_string2_tbg(colmain_fb_draw(), DIM_X, DIM_Y, 10, 410, buf, COLORPIP_YELLOW);
 	#endif 	/* defined (RTC1_TYPE) */
 
@@ -1937,7 +1935,7 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 			// при открытии окна рассчитываются экранные координаты самого окна и его child элементов
 			if (windows[gui.window_to_draw].first_call == 0)
 			{
-				colpip_transparency(colmain_fb_draw(), DIM_X, DIM_Y,
+				display_transparency(
 						windows[gui.window_to_draw].x1, windows[gui.window_to_draw].y1,
 						windows[gui.window_to_draw].x1 + windows[gui.window_to_draw].w,
 						windows[gui.window_to_draw].y1 + windows[gui.window_to_draw].h, alpha);
