@@ -20,7 +20,7 @@
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
 //#define WITHMDMAHW		1	/* Использование MDMA для формирования изображений */
 #define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
-//#define WIHSPIDFHW	1	/* аппараьное обслуживание DATA FLASH */
+//#define WIHSPIDFHW	1	/* аппаратное обслуживание DATA FLASH */
 
 //#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 #define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
@@ -847,7 +847,7 @@
 		#define SPDIF_D3_BIT (1u << 6)	// PF6
 
 		#if WIHSPIDFHW
-			#define SPIDF_INITIALIZE() do { \
+			#define SPIDF_HARDINITIALIZE() do { \
 					arm_hardware_piof_altfn50(SPDIF_D2_BIT, AF_QUADSPI_AF9); /* PF7 D2 tie-up */ \
 					arm_hardware_piof_altfn50(SPDIF_D3_BIT, AF_QUADSPI_AF9); /* PF6 D3 tie-up */ \
 					arm_hardware_piob_altfn50(SPDIF_NCS_BIT, AF_QUADSPI_AF10); /* PB6 */ \
@@ -883,7 +883,7 @@
 			#define SPIDF_MISO() ((GPIOF->IDR & SPDIF_MISO_BIT) != 0)
 			#define SPIDF_MOSI(v) do { if (v) GPIOF->BSRR = BSRR_S(SPDIF_MOSI_BIT); else GPIOF->BSRR = BSRR_C(SPDIF_MOSI_BIT); } while (0)
 			#define SPIDF_SCLK(v) do { if (v) GPIOF->BSRR = BSRR_S(SPDIF_SCLK_BIT); else GPIOF->BSRR = BSRR_C(SPDIF_SCLK_BIT); } while (0)
-			#define SPIDF_INITIALIZE() do { \
+			#define SPIDF_SOFTINITIALIZE() do { \
 					arm_hardware_piof_outputs(SPDIF_D2_BIT, SPDIF_D2_BIT); /* D2 tie-up */ \
 					arm_hardware_piof_outputs(SPDIF_D3_BIT, SPDIF_D3_BIT); /* D3 tie-up */ \
 					arm_hardware_piob_outputs(SPDIF_NCS_BIT, SPDIF_NCS_BIT); \

@@ -27,7 +27,7 @@
 #if WITHISBOOTLOADER
 
 	#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
-	//#define WIHSPIDFHW	1	/* аппараьное обслуживание DATA FLASH */
+	//#define WIHSPIDFHW	1	/* аппаратное обслуживание DATA FLASH */
 	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	*/
 
@@ -856,7 +856,7 @@
 		#define SPIDF_MISO() ((R7S721_INPUT_PORT(4) & (1U << 7)) != 0)
 		#define SPIDF_MOSI(v) do { if (v) R7S721_TARGET_PORT_S(4, (1U << 6)); else R7S721_TARGET_PORT_C(4, (1U << 6)); } while (0)
 		#define SPIDF_SCLK(v) do { if (v) R7S721_TARGET_PORT_S(4, (1U << 4)); else R7S721_TARGET_PORT_C(4, (1U << 4)); } while (0)
-		#define SPIDF_INITIALIZE() do { \
+		#define SPIDF_SOFTINITIALIZE() do { \
 				arm_hardware_pio4_outputs(1U << 2, 1U << 2);				/* P4_2 WP / SPBIO20_0 */ \
 				arm_hardware_pio4_outputs(1U << 3, 1U << 3);				/* P4_3 NC / SPBIO30_0 */ \
 				/* arm_hardware_pio4_alternative(1U << 4, R7S721_PIOALT_4);	*/ /* P4_4 SCLK / SPBCLK_0 */ \

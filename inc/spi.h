@@ -497,15 +497,16 @@ void hardware_spi_master_send_frame_16b(const uint16_t * pBuffer, uint_fast32_t 
 // Serial flash (boot memory) interface
 void spidf_initialize(void);
 void spidf_uninitialize(void);
-void spidf_select(spitarget_t target, uint_fast8_t mode);
-void spidf_unselect(spitarget_t target);
-void spidf_to_read(spitarget_t target);
-void spidf_to_write(spitarget_t target);
-void spidf_progval8_p1(spitarget_t target, uint_fast8_t sendval);
-void spidf_progval8_p2(spitarget_t target, uint_fast8_t sendval);
-uint_fast8_t spidf_complete(spitarget_t target);
-uint_fast8_t spidf_progval8(spitarget_t target, uint_fast8_t sendval);
-uint_fast8_t spidf_read_byte(spitarget_t target, uint_fast8_t sendval);
+
+//void spidf_select(spitarget_t target, uint_fast8_t mode);
+//void spidf_unselect(spitarget_t target);
+//void spidf_to_read(spitarget_t target);
+//void spidf_to_write(spitarget_t target);
+//void spidf_progval8_p1(spitarget_t target, uint_fast8_t sendval);
+//void spidf_progval8_p2(spitarget_t target, uint_fast8_t sendval);
+//uint_fast8_t spidf_complete(spitarget_t target);
+//uint_fast8_t spidf_progval8(spitarget_t target, uint_fast8_t sendval);
+//uint_fast8_t spidf_read_byte(spitarget_t target, uint_fast8_t sendval);
 
 unsigned char dataflash_read_status(
 	spitarget_t target	/* addressing to chip */

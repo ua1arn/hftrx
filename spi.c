@@ -623,6 +623,127 @@ void spi_initialize(void)
 
 void spidf_initialize(void)
 {
+	// Connect I/O pins
+	SPIDF_SOFTINITIALIZE();
+}
+
+static uint_fast8_t spidf_rbit(uint_fast8_t v)
+{
+	uint_fast8_t r;
+	SPIDF_MOSI(v);
+	SPIDF_SCLK(0);
+	r = SPIDF_MISO();
+	SPIDF_SCLK(1);
+	return r;
+}
+
+static void spidf_wbit(uint_fast8_t v)
+{
+	SPIDF_MOSI(v);
+	SPIDF_SCLK(0);
+	SPIDF_SCLK(1);
+}
+
+
+uint_fast8_t spidf_read_byte(spitarget_t target, uint_fast8_t v)
+{
+	uint_fast8_t r = 0;
+
+	r = r * 2 + spidf_rbit(v & 0x80);
+	r = r * 2 + spidf_rbit(v & 0x40);
+	r = r * 2 + spidf_rbit(v & 0x20);
+	r = r * 2 + spidf_rbit(v & 0x10);
+	r = r * 2 + spidf_rbit(v & 0x08);
+	r = r * 2 + spidf_rbit(v & 0x04);
+	r = r * 2 + spidf_rbit(v & 0x02);
+	r = r * 2 + spidf_rbit(v & 0x01);
+
+	return r;
+}
+
+static void spidf_write_byte(spitarget_t target, uint_fast8_t v)
+{
+	spidf_wbit(v & 0x80);
+	spidf_wbit(v & 0x40);
+	spidf_wbit(v & 0x20);
+	spidf_wbit(v & 0x10);
+	spidf_wbit(v & 0x08);
+	spidf_wbit(v & 0x04);
+	spidf_wbit(v & 0x02);
+	spidf_wbit(v & 0x01);
+}
+
+void spidf_uninitialize(void)
+{
+	//arm_hardware_pio4_inputs(0xFC);		// Отключить процессор от SERIAL FLASH
+#if 0
+	// spi multi-io hang off
+	CPG.STBCR9 |= CPG_STBCR9_BIT_MSTP93;	// Module Stop 93	- 1: Clock supply to channel 0 of the SPI multi I/O bus controller is halted.
+	(void) CPG.STBCR9;			/* Dummy read */
+#endif
+}
+
+// Connrect I/O pins
+static void spidf_select(spitarget_t target, uint_fast8_t mode)
+{
+	SPIDF_SELECT();
+}
+
+static void spidf_unselect(spitarget_t target)
+{
+	SPIDF_UNSELECT();
+}
+
+static void spidf_to_read(spitarget_t target)
+{
+}
+
+static void spidf_to_write(spitarget_t target)
+{
+}
+
+static void spidf_progval8_p1(spitarget_t target, uint_fast8_t sendval)
+{
+	spidf_write_byte(target, sendval);
+}
+
+static void spidf_progval8_p2(spitarget_t target, uint_fast8_t sendval)
+{
+	spidf_write_byte(target, sendval);
+}
+
+static uint_fast8_t spidf_complete(spitarget_t target)
+{
+	return 0;
+}
+
+static uint_fast8_t spidf_progval8(spitarget_t target, uint_fast8_t sendval)
+{
+	return spidf_read_byte(target, sendval);
+}
+
+#elif WIHSPIDFHW
+
+
+/////////
+// https://github.com/renesas-rz/rza1_qspi_flash/blob/master/qspi_flash.c
+
+
+// Use block SPIBSC0
+// 17. SPI Multi I/O Bus Controller
+//
+
+void spidf_initialize(void)
+{
+#if CPUSTYLE_STM32MP1
+
+	RCC->MP_AHB6ENSETR = RCC_MC_AHB6ENSETR_QSPIEN;
+	(void) RCC->MP_AHB6ENSETR;
+	RCC->MP_AHB6LPENSETR = RCC_MC_AHB6LPENSETR_QSPILPEN;
+	(void) RCC->MP_AHB6LPENSETR;
+
+#elif CPUSTYLE_R7S721
+
 #if 0
 	// spi multi-io hang on
 	CPG.STBCR9 &= ~ CPG_STBCR9_BIT_MSTP93;	// Module Stop 93	- 0: Clock supply to channel 0 of the SPI multi I/O bus controller is runnuing.
@@ -713,105 +834,14 @@ void spidf_initialize(void)
 		0;
 #endif
 
-	// Connect I/O pins
-	SPIDF_INITIALIZE();
-}
-
-static uint_fast8_t spidf_rbit(uint_fast8_t v)
-{
-	uint_fast8_t r;
-	SPIDF_MOSI(v);
-	SPIDF_SCLK(0);
-	r = SPIDF_MISO();
-	SPIDF_SCLK(1);
-	return r;
-}
-
-static void spidf_wbit(uint_fast8_t v)
-{
-	SPIDF_MOSI(v);
-	SPIDF_SCLK(0);
-	SPIDF_SCLK(1);
-}
-
-
-uint_fast8_t spidf_read_byte(spitarget_t target, uint_fast8_t v)
-{
-	uint_fast8_t r = 0;
-
-	r = r * 2 + spidf_rbit(v & 0x80);
-	r = r * 2 + spidf_rbit(v & 0x40);
-	r = r * 2 + spidf_rbit(v & 0x20);
-	r = r * 2 + spidf_rbit(v & 0x10);
-	r = r * 2 + spidf_rbit(v & 0x08);
-	r = r * 2 + spidf_rbit(v & 0x04);
-	r = r * 2 + spidf_rbit(v & 0x02);
-	r = r * 2 + spidf_rbit(v & 0x01);
-
-	return r;
-}
-
-static void spidf_write_byte(spitarget_t target, uint_fast8_t v)
-{
-	spidf_wbit(v & 0x80);
-	spidf_wbit(v & 0x40);
-	spidf_wbit(v & 0x20);
-	spidf_wbit(v & 0x10);
-	spidf_wbit(v & 0x08);
-	spidf_wbit(v & 0x04);
-	spidf_wbit(v & 0x02);
-	spidf_wbit(v & 0x01);
-}
-
-void spidf_uninitialize(void)
-{
-	//arm_hardware_pio4_inputs(0xFC);		// Отключить процессор от SERIAL FLASH
-#if 0
-	// spi multi-io hang off
-	CPG.STBCR9 |= CPG_STBCR9_BIT_MSTP93;	// Module Stop 93	- 1: Clock supply to channel 0 of the SPI multi I/O bus controller is halted.
-	(void) CPG.STBCR9;			/* Dummy read */
 #endif
+	// Connect I/O pins
+	SPIDF_HARDINITIALIZE();
 }
 
-// Connrect I/O pins
-void spidf_select(spitarget_t target, uint_fast8_t mode)
-{
-	SPIDF_SELECT();
-}
+#endif /* WIHSPIDFHW */
 
-void spidf_unselect(spitarget_t target)
-{
-	SPIDF_UNSELECT();
-}
-
-void spidf_to_read(spitarget_t target)
-{
-}
-
-void spidf_to_write(spitarget_t target)
-{
-}
-
-void spidf_progval8_p1(spitarget_t target, uint_fast8_t sendval)
-{
-	spidf_write_byte(target, sendval);
-}
-
-void spidf_progval8_p2(spitarget_t target, uint_fast8_t sendval)
-{
-	spidf_write_byte(target, sendval);
-}
-
-uint_fast8_t spidf_complete(spitarget_t target)
-{
-	return 0;
-}
-
-uint_fast8_t spidf_progval8(spitarget_t target, uint_fast8_t sendval)
-{
-	return spidf_read_byte(target, sendval);
-}
-
+#if WIHSPIDFHW || WIHSPIDFSW
 
 /* получить 32-бит значение */
 static uint_fast32_t
@@ -1252,4 +1282,4 @@ void bootloader_readimage(unsigned long flashoffset, uint8_t * dest, unsigned Le
 }
 
 
-#endif /* WIHSPIDFSW */
+#endif /* WIHSPIDFHW || WIHSPIDFSW */
