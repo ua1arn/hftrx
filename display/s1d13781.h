@@ -66,7 +66,7 @@
 
 #endif
 
-#if (S1D_DISPLAY_BPP == 8) || LCDMODE_LTDC_L8
+#if (S1D_DISPLAY_BPP == 8) || LCDMODE_MAIN_L8
 
 
 	typedef uint_fast8_t COLORMAIN_T;
@@ -86,7 +86,7 @@
 	typedef PACKEDCOLORMAIN_T PACKEDCOLORPIP_T;
 	typedef COLORMAIN_T COLORPIP_T;
 
-#elif S1D_DISPLAY_BPP == 16 || ! LCDMODE_LTDC_L8
+#elif S1D_DISPLAY_BPP == 16 || ! LCDMODE_MAIN_L8
 
 	//#define LCDMODE_RGB565 1
 	typedef uint_fast16_t COLORMAIN_T;

@@ -893,14 +893,8 @@ pll1_getoutdivider(
 			goto found;
 	}
 #if 0
-	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
-
-	do
-	{
-		display_gotoxy(0, 0 + lowhalf);
-		display_string_P(PSTR("[Si570 Err]"), lowhalf);
-		return 0;		/* требуемую частоту невозожно получить */
-	} while (lowhalf --);
+	display_at_P(PSTR(0, 0, "[pll1_getoutdivider Err]"));
+	return 0;		/* требуемую частоту невозожно получить */
 #endif
 
 found: 
@@ -3940,7 +3934,9 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0003, lcdblcode & 0x02);		/* D3	- LCD backlight  - removed in LVDS version*/
 		RBBIT(0002, lcdblcode & 0x02);		/* D2	- LCD backlight  - removed in LVDS version*/
 		RBBIT(0001, lcdblcode & 0x01);		/* D2:D1 - LCD backlight  - removed in LVDS version*/
+#if WITHKBDBACKLIGHT
 		RBBIT(0000, glob_kblight);			/* D0: keyboard backlight */
+#endif /* WITHKBDBACKLIGHT */
 
 		spi_select(target, CTLREG_SPIMODE);
 		prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);

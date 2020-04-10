@@ -7,7 +7,7 @@
 //
 // Плата Воробей
 //
-// Для компиляции скопировать данный файл под расширением .h 
+// Для компиляции скопировать данный файл под расширением .h
 
 #ifndef ATMEGA644_CTLSTYLE_RK4CI_H_INCLUDED
 #define ATMEGA644_CTLSTYLE_RK4CI_H_INCLUDED 1
@@ -107,13 +107,13 @@
 	// --- вариации прошивки, специфические для разных плат
 
 
-	//#define CTLREGMODE24_RK4CI	1	/* Вариант для RK4CI - управляющий регистр 24 бита - "Воробей" и "Колибри" */	
+	//#define CTLREGMODE24_RK4CI	1	/* Вариант для RK4CI - управляющий регистр 24 бита - "Воробей" и "Колибри" */
 	#define CTLREGMODE24_RK4CI_V1	1		/* управляющий регистр - "Воробей-3" с 3*ULN2003 */
 
-	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея 
+	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея
 	#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываемый на дисплее)
 	#define WITHLCDBACKLIGHTMAX	3	// Верхний предел регулировки (показываемый на дисплее)
-	#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры 
+	#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
 	#define WITHPREAMPATT2_10DB		1	// Управление УВЧ и двухкаскадным аттенюатором
 	/* коды входов коммутатора источников сигнала для УНЧ приёмника */
 	#define BOARD_DETECTOR_MUTE 	(0x00)
@@ -169,8 +169,6 @@
 
 	// +++ Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
 	//#define LCDMODE_HARD_SPI	1	/* LCD over SPI line */
-	//#define LCDMODE_LTDC	1		/* Use STM32F4xxx with LCD-TFT Controller (LTDC) */
-	//#define LCDMODE_LTDC_L8	1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит. */
 	//#define LCDMODE_WH2002	1	/* тип применяемого индикатора 20*2, возможно вместе с LCDMODE_HARD_SPI */
 	//#define LCDMODE_WH1602	1	/* тип применяемого индикатора 16*2 */
 	//#define LCDMODE_WH1604	1	/* тип применяемого индикатора 16*4 */

@@ -381,14 +381,24 @@ static uint_fast16_t yrawmax = 150;
 // On AT070TN90 with touch screen attached Y coordinate increments from bottom to top, X from left to right
 uint_fast8_t board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
 {
-	uint_fast16_t x, y;
+	static uint_fast16_t x = 0, y = 0;
 	uint_fast8_t z;
-	if (tscpresetnt && stmpe811_TS_GetXYZ(& x, & y, & z))
+	if (board_tsc_is_pressed())
 	{
-		* xr = tcsnormalize(x, xrawmin, xrawmax, DIM_X - 1);
-		* yr = tcsnormalize(y, yrawmin, yrawmax, DIM_Y - 1);
+		if (tscpresetnt && stmpe811_TS_GetXYZ(& x, & y, & z))
+		{
+			x = tcsnormalize(x, xrawmin, xrawmax, DIM_X - 1);
+			y = tcsnormalize(y, yrawmin, yrawmax, DIM_Y - 1);
+			* xr = x;
+			* yr = y;
+			return 1;
+		}
+		* xr = x;
+		* yr = y;
 		return 1;
 	}
+	* xr = x;
+	* yr = y;
 	return 0;
 }
 
@@ -399,7 +409,7 @@ void stmpe811_initialize(void)
 
 	chip_id = i2cperiph_read16(BOARD_I2C_STMPE811, STMPE811_REG_CHP_ID);
 	ver = i2cperiph_read8(BOARD_I2C_STMPE811, STMPE811_REG_ID_VER);
-	debug_printf_P(PSTR("stmpe811_initialize: chip_id=%04X, expected %04X, ver=%02x\r\n"), chip_id, STMPE811_ID, ver);
+	debug_printf_P(PSTR("stmpe811_initialize: chip_id=%04X, expected %04X, ver=%02x\n"), chip_id, STMPE811_ID, ver);
 
 	tscpresetnt = chip_id == STMPE811_ID;
 
@@ -409,9 +419,10 @@ void stmpe811_initialize(void)
 	}
 }
 
-uint_fast8_t board_tsc_is_pressed (void) /* Return 1 if touch detection */
+uint_fast8_t board_tsc_is_pressed(void) /* Return 1 if touch detection */
 {
-	return (i2cperiph_read8(BOARD_I2C_STMPE811, STMPE811_REG_TSC_CTRL) & STMPE811_TS_CTRL_STATUS) >> STMPE811_TS_CTRL_STATUS_POS;
+	return tscpresetnt &&
+			((i2cperiph_read8(BOARD_I2C_STMPE811, STMPE811_REG_TSC_CTRL) & STMPE811_TS_CTRL_STATUS) >> STMPE811_TS_CTRL_STATUS_POS) != 0;
 }
 
 static void

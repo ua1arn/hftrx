@@ -2114,6 +2114,141 @@ extern "C" {
 /* Сброс мощности при запросе TUNE от автотюнера или извне */
 #define WITHLOWPOWEREXTTUNE	(defined (HARDWARE_GET_TUNE) || WITHAUTOTUNER)
 
+/* Зависимости для поределения конфигурации видеосистемы */
+
+//#define LCDMODE_V0	1	/* Обычная конфигурация без PIP с L8 на основном экране */
+//#define LCDMODE_V1	1	/* Обычная конфигурация с PIP на часть экрана */
+//#define LCDMODE_V1A	1	/* Обычная конфигурация с PIP на часть экрана (но главный экран 16 бит) */
+//#define LCDMODE_V2	1	/* только главный экран, без PIP */
+//#define LCDMODE_V2A	1	/* только главный экран, без PIP (но главный экран 16 бит) */
+
+#if LCDMODE_V0
+	/* Обычная конфигурация без PIP с L8 на основном экране */
+	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
+	#define LCDMODE_MAIN_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит - RGB565. */
+	//#define LCDMODE_MAIN_RGB565	1
+	#define LCDMODE_MAIN_PAGES	1
+
+	//#define LCDMODE_PIP_RGB565	1	/* используется PIP с форматом 16 бит - RGB565 */
+	//#define LCDMODE_PIP_L8	1	/* используется PIP с форматом 8 бит - индексные цвета */
+	//#define LCDMODE_PIP_PAGES	3
+
+	#define WITHFASTWATERFLOW 1
+	#define COLORPIP_SHADED 128
+
+#elif LCDMODE_V1
+	#error Use LCDMODE_V2 instedd of LCDMODE_V1
+
+	/* Обычная конфигурация L8 с PIP16 на часть экрана */
+	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
+	#define LCDMODE_MAIN_L8	1
+	//#define LCDMODE_MAIN_RGB565	1
+	#define LCDMODE_MAIN_PAGES	1
+
+	//#define LCDMODE_PIP_L8	1
+	#define LCDMODE_PIP_RGB565	1
+	#define LCDMODE_PIP_PAGES	3
+	//#define COLORPIP_SHADED 128
+
+	#define LCDMODE_MAIN_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит - RGB565. */
+	#define LCDMODE_PIP_RGB565	1	/* используется PIP с форматом 16 бит - RGB565 */
+	//#define LCDMODE_PIP_L8	1	/* используется PIP с форматом 8 бит - индексные цвета */
+
+	#define WITHFASTWATERFLOW 1
+
+#elif LCDMODE_V1A
+	#error Use LCDMODE_V2 instedd of LCDMODE_V1A
+
+	/* Обычная конфигурация RGB565 с PIP16 на часть экрана (но главный экран 16 бит) */
+	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
+	//#define LCDMODE_MAIN_L8	1
+	#define LCDMODE_MAIN_RGB565	1
+	#define LCDMODE_MAIN_PAGES	1
+
+	//#define LCDMODE_PIP_L8	1
+	#define LCDMODE_PIP_RGB565	1
+	#define LCDMODE_PIP_PAGES	3
+	//#define COLORPIP_SHADED 128
+	//#define LCDMODE_MAIN_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит - RGB565. */
+	#define LCDMODE_PIP_RGB565	1	/* используется PIP с форматом 16 бит - RGB565 */
+	//#define LCDMODE_PIP_L8	1	/* используется PIP с форматом 8 бит - индексные цвета */
+
+	#define WITHFASTWATERFLOW 1
+
+#elif LCDMODE_V1B
+	#error Use LCDMODE_V2 instedd of LCDMODE_V1B
+	/* Обычная конфигурация с PIP на часть экрана, MAIN=L8, PIP=L8 */
+	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
+	#define LCDMODE_MAIN_L8		1	/* используется 8 бит на пиксель представление экрана */
+	#define LCDMODE_MAIN_PAGES	1
+
+	#define LCDMODE_PIP_L8	1	/* используется PIP с форматом 8 бит - индексные цвета */
+	#define LCDMODE_PIP_PAGES	3
+	#define COLORPIP_SHADED 128
+
+	#define WITHFASTWATERFLOW 1
+
+#elif LCDMODE_V2
+	/* только главный экран с тремя видеобуферами L8, без PIP */
+	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
+	#define LCDMODE_MAIN_L8	1
+	//#define LCDMODE_MAIN_RGB565	1
+	#define LCDMODE_MAIN_PAGES	3
+
+	//#define LCDMODE_PIP_L8	1
+	//#define LCDMODE_PIP_RGB565	1
+	//#define LCDMODE_PIP_PAGES	3
+	#define COLORPIP_SHADED 128
+
+	#define LCDMODE_MAIN_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит - RGB565. */
+	//#define LCDMODE_PIP_RGB565	1	/* используется PIP с форматом 16 бит - RGB565 */
+	//#define LCDMODE_PIP_L8	1	/* используется PIP с форматом 8 бит - индексные цвета */
+
+	#define WITHFASTWATERFLOW 1
+
+#elif LCDMODE_V2A
+	/* только главный экран 16 бит (три страницы), без PIP */
+	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
+	//#define LCDMODE_MAIN_L8	1
+	#define LCDMODE_MAIN_RGB565	1
+	#define LCDMODE_MAIN_PAGES	3
+
+	//#define LCDMODE_PIP_L8	1
+	//#define LCDMODE_PIP_RGB565	1
+	//#define LCDMODE_PIP_PAGES	3
+	//#define COLORPIP_SHADED 128
+
+	//#define LCDMODE_MAIN_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит - RGB565. */
+	//#define LCDMODE_PIP_RGB565	1	/* используется PIP с форматом 16 бит - RGB565 */
+	//#define LCDMODE_PIP_L8	1	/* используется PIP с форматом 8 бит - индексные цвета */
+
+	#define WITHFASTWATERFLOW 1
+
+#elif LCDMODE_DUMMY
+
+	#define LCDMODE_MAIN_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит - RGB565. */
+	//#define LCDMODE_MAIN_RGB565	1
+	#define LCDMODE_MAIN_PAGES	0
+
+	#define LCDMODE_PIP_L8	1
+	#define LCDMODE_PIP_PAGES	0
+	//#define COLORPIP_SHADED 128
+
+
+#endif
+
+#if LCDMODE_LTDC
+
+	#if LCDMODE_HORFILL
+		#define DIM_FIRST DIM_Y
+		#define DIM_SECOND DIM_X
+	#else /* LCDMODE_HORFILL */
+		#define DIM_FIRST DIM_X
+		#define DIM_SECOND DIM_Y
+	#endif /* LCDMODE_HORFILL */
+
+#endif /* LCDMODE_LTDC */
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

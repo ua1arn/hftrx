@@ -590,14 +590,13 @@ void si570_n(
 		count ++;
 		char buff [22];
 		//unsigned char v1, v2;
-		display_gotoxy(0, 6);
 		local_snprintf_P(buff, sizeof buff / sizeof buff [0], 
 			PSTR("%2u,%3u,[%lu]"),
 			 si570_hs_decode(freqs [hint].hsdiv_code), 
 			 freqs [hint].n1, 
 			 voofreqK
 			 );
-		display_string(buff, 0);
+		display_at(0, 6, buff);
 
 		local_snprintf_P(buff, sizeof buff / sizeof buff [0], 
 			PSTR("[%lu],%u "),
@@ -605,8 +604,7 @@ void si570_n(
 			count
 			);
 
-		display_gotoxy(0, 1);
-		display_string(buff, 0);
+		display_at(0, 1, buff);
 	}
 #endif
 }

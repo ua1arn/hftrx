@@ -35,9 +35,10 @@ void colmain_setcolors3(COLORMAIN_T fg, COLORMAIN_T bg, COLORMAIN_T fgbg)
 {
 }
 
-void
-display_wrdata_begin(void)
+uint_fast16_t display_wrdata_begin(uint_fast8_t x, uint_fast8_t y, uint_fast16_t * yp)
 {
+	* yp = GRID2Y(y);
+	return GRID2X(x);
 }
 
 void
@@ -45,9 +46,10 @@ display_wrdata_end(void)
 {
 }
 
-void
-display_wrdatabar_begin(void)
+uint_fast16_t display_wrdatabar_begin(uint_fast8_t x, uint_fast8_t y, uint_fast16_t * yp)
 {
+	* yp = GRID2Y(y);
+	return GRID2X(x);
 }
 
 void
@@ -64,28 +66,26 @@ display_barcolumn(uint_fast8_t pattern)
 }
 
 /* вызывается между вызовами display_wrdatabig_begin() и display_wrdatabig_end() */
-void
-display_put_char_big(uint_fast8_t c, uint_fast8_t lowhalf)
+uint_fast16_t
+display_put_char_big(uint_fast16_t x, uint_fast16_t y, uint_fast8_t c, uint_fast8_t lowhalf)
 {
+	return x;
 }
 
 /* вызывается между вызовами display_wrdatabig_begin() и display_wrdatabig_end() */
-void
-display_put_char_half(uint_fast8_t c, uint_fast8_t lowhalf)
+uint_fast16_t
+display_put_char_half(uint_fast16_t x, uint_fast16_t y, uint_fast8_t c, uint_fast8_t lowhalf)
 {
+	return x;
 }
 
 
 // Вызов этой функции только внутри display_wrdata_begin() и display_wrdata_end();
 // Используется при выводе на графический ндикатор, если ТРЕБУЕТСЯ переключать полосы отображения
-void
-display_put_char_small(uint_fast8_t c, uint_fast8_t lowhalf)
+uint_fast16_t
+display_put_char_small(uint_fast16_t x, uint_fast16_t y, uint_fast8_t c, uint_fast8_t lowhalf)
 {
-}
-
-void
-display_gotoxy(uint_fast8_t x, uint_fast8_t y)
-{
+	return x;
 }
 
 // Координаты в пикселях
@@ -126,19 +126,17 @@ void display_discharge(void)
 }
 
 void
-display_wrdata2_begin(void)
-{
-}
-
-void
 display_wrdata2_end(void)
 {
 }
 
 
-void
-display_wrdatabig_begin(void)
+// большие и средние цифры (частота)
+// большие и средние цифры (частота)
+uint_fast16_t display_wrdatabig_begin(uint_fast8_t x, uint_fast8_t y, uint_fast16_t * yp)
 {
+	* yp = GRID2Y(y);
+	return GRID2X(x);
 }
 
 
@@ -149,11 +147,12 @@ display_wrdatabig_end(void)
 
 // Вызов этой функции только внутри display_wrdata_begin() и display_wrdata_end();
 // Используется при выводе на графический ндикатор, если ТРЕБУЕТСЯ переключать полосы отображения
-void
-display_put_char_small2(uint_fast8_t c, uint_fast8_t lowhalf)
+uint_fast16_t
+display_put_char_small2(uint_fast16_t x, uint_fast16_t y, uint_fast8_t c, uint_fast8_t lowhalf)
 {
 	(void) lowhalf;
 	(void) c;
+	return x;
 }
 
 #endif /* LCDMODE_DUMMY */

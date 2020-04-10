@@ -598,7 +598,7 @@ void buffers_initialize(void)
 
 #if WITHINTEGRATEDDSP
 
-	static RAMBIG voice16_t voicesarray16 [192];
+	static RAMBIG voice16_t voicesarray16 [228];
 
 	InitializeListHead3(& resample16, RESAMPLE16NORMAL);	// буферы от USB для синхронизации
 	InitializeListHead3(& voicesmike16, VOICESMIKE16NORMAL);	// список оцифрованных с АЦП
@@ -631,7 +631,7 @@ void buffers_initialize(void)
 
 	#if WITHRTS192
 
-		RAMNOINIT_D1 static voice192rts_t voicesarray192rts [4];
+		RAMBIG static voice192rts_t voicesarray192rts [4];
 
 		ASSERT(offsetof(uacin16_t, item) == offsetof(voice96rts_t, item));
 		ASSERT(offsetof(uacin16_t, buff) == offsetof(voice96rts_t, buff));
@@ -650,7 +650,7 @@ void buffers_initialize(void)
 
 	#if WITHRTS96
 
-		RAMNOINIT_D1 static voice96rts_t voicesarray96rts [4];
+		RAMBIG static voice96rts_t voicesarray96rts [4];
 
 		ASSERT(offsetof(uacin16_t, item) == offsetof(voice96rts_t, item));
 		ASSERT(offsetof(uacin16_t, buff) == offsetof(voice96rts_t, buff));
@@ -669,7 +669,7 @@ void buffers_initialize(void)
 
 #endif /* WITHUSBUAC */
 
-	static voice32tx_t voicesarray32tx [(DMABUFFSIZE32RX / DMABUFSTEP32RX) / (DMABUFFSIZE32TX / DMABUFSTEP32TX) + 4];
+	static RAMBIG voice32tx_t voicesarray32tx [(DMABUFFSIZE32RX / DMABUFSTEP32RX) / (DMABUFFSIZE32TX / DMABUFSTEP32TX) + 4];
 
 	InitializeListHead2(& voicesready32tx);	// список для выдачи на ЦАП
 	InitializeListHead2(& voicesfree32tx);	// Незаполненные
@@ -679,7 +679,7 @@ void buffers_initialize(void)
 		InsertHeadList2(& voicesfree32tx, & p->item);
 	}
 
-	static voice32rx_t voicesarray32rx [6];	// без WFM надо 2
+	static RAMBIG voice32rx_t voicesarray32rx [6];	// без WFM надо 2
 
 	InitializeListHead2(& voicesfree32rx);	// Незаполненные
 	for (i = 0; i < (sizeof voicesarray32rx / sizeof voicesarray32rx [0]); ++ i)

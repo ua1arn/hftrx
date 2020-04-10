@@ -309,7 +309,7 @@ static RAMDTCM FLOAT_t FIRCoef_tx_MIKE [NPROF] [NtapCoeffs(Ntap_tx_MIKE)];
 static RAMDTCM FLOAT_t FIRCwnd_tx_MIKE [NtapCoeffs(Ntap_tx_MIKE)];			// подготовленные значения функции окна
 
 static RAMDTCM FLOAT_t FIRCoef_rx_AUDIO [NPROF] [2 /* эта размерность номер тракта */] [Ntap_rx_AUDIO];
-static RAMBIG FLOAT_t FIRCwnd_rx_AUDIO [NtapCoeffs(Ntap_rx_AUDIO)];			// подготовленные значения функции окна
+static RAMBIGDTCM FLOAT_t FIRCwnd_rx_AUDIO [NtapCoeffs(Ntap_rx_AUDIO)];			// подготовленные значения функции окна
 
 //static void * fft_lookup;
 
@@ -5891,11 +5891,11 @@ txparam_update(uint_fast8_t profile)
 	subtonevolume = (glob_subtonelevel / (FLOAT_t) 100);
 	mainvolumetx = 1 - subtonevolume;
 
-#if WITHCPUDACHW && WITHPOWERTRIM && ! WITHOUTTXCADCONTROL
+#if WITHCPUDACHW && WITHPOWERTRIM && ! WITHNOTXDACCONTROL
 	// ALC
 	// регулировка напряжения на REFERENCE INPUT TXDAC AD9744
 	HARDWARE_DAC_ALC((glob_opowerlevel - WITHPOWERTRIMMIN) * dac_dacfs_coderange / (WITHPOWERTRIMMAX - WITHPOWERTRIMMIN) + dac_dacfs_lowcode);
-#endif /* WITHCPUDACHW && WITHPOWERTRIM && ! WITHOUTTXCADCONTROL */
+#endif /* WITHCPUDACHW && WITHPOWERTRIM && ! WITHNOTXDACCONTROL */
 	// Девиация в NFM
 	gnfmdeviationftw = FTWAF((int) glob_nfmdeviation100 * 100L);
 

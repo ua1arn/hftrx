@@ -5,6 +5,8 @@
 // автор Гена Завидовский mgs2001@mail.ru
 // UA1ARN
 //
+// US4IJR Alex home config
+//
 // rmainunit_v5km2.pcb rmainunit_v5km3
 // R7S721020VCFP, TFT 4.3" or 7", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N, AD9246BCPZ-125
 
@@ -89,36 +91,24 @@
 
 	#define LCDMODE_LQ043T3DX02K 1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 display */
 
-	#define LCDMODE_LTDC		1	/* Use VDC5 peripherial block */
-	#define LCDMODE_LTDC_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит. */
-	//#define LCDMODE_LTDC_PIP16	1	/* используется PIP с форматом 16 бит - RGB565 */
-	#define LCDMODE_LTDC_PIPL8	1	/* используется PIP с форматом 8 бит - индексные цвета */
+	#define LCDMODE_V2	1	/* только главный экран с тремя видеобуферами, без PIP */
 
-	//#define LCDMODE_LTDC_L24	1	/* 32-bit на пиксель в памяти (3 байта) */
 	//#define WITHFLATLINK 1	/* Работа с TFT панелью через SN75LVDS83B	*/
 
 #elif 1
 
 	#define LCDMODE_AT070TN90 1	/* AT070TN90 panel (800*480) - 7" display */
 
-	#define LCDMODE_LTDC		1	/* Use VDC5 peripherial block */
-	#define LCDMODE_LTDC_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит. */
-	//#define LCDMODE_LTDC_PIP16	1	/* используется PIP с форматом 16 бит - RGB565 */
-	#define LCDMODE_LTDC_PIPL8	1	/* используется PIP с форматом 8 бит - индексные цвета */
+	#define LCDMODE_V2	1	/* только главный экран с тремя видеобуферами, без PIP */
 
-	//#define LCDMODE_LTDC_L24	1	/* 32-bit на пиксель в памяти (3 байта) */
 	//#define WITHFLATLINK 1	/* Работа с TFT панелью через SN75LVDS83B	*/
 
 #elif 1
 
 	#define LCDMODE_AT070TNA2 1	/* AT070TNA2 panel (1024*600) - 7" display */
 
-	#define LCDMODE_LTDC		1	/* Use VDC5 peripherial block */
-	#define LCDMODE_LTDC_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит. */
-	//#define LCDMODE_LTDC_PIP16	1	/* используется PIP с форматом 16 бит - RGB565 */
-	#define LCDMODE_LTDC_PIPL8	1	/* используется PIP с форматом 8 бит - индексные цвета */
+	#define LCDMODE_V2	1	/* только главный экран с тремя видеобуферами, без PIP */
 
-	//#define LCDMODE_LTDC_L24	1	/* 32-bit на пиксель в памяти (3 байта) */
 	#define WITHFLATLINK 1	/* Работа с TFT панелью через SN75LVDS83B	*/
 
 #elif 0
@@ -133,10 +123,8 @@
 
 	// not tested
 	#define LCDMODE_ILI8961	1	/* 320 * 240 HHT270C-8961-6A6, RGB, ILI8961, use LCDMODE_LTDC_L24 */
-	#define LCDMODE_LTDC		1	/* Use VDC5 peripherial block */
-	#define LCDMODE_LTDC_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит. */
-	//#define LCDMODE_LTDC_PIP16	1	/* используется PIP с форматом 16 бит - RGB565 */
-	//#define LCDMODE_LTDC_PIPL8	1	/* используется PIP с форматом 8 бит - индексные цвета */
+	#define LCDMODE_V0	1	/* Обычная конфигурация без PIP с L8 на основном экране */
+	//#define LCDMODE_V1	1	/* Обычная конфигурация с PIP на часть экрана */
 
 	//#define LCDMODE_LQ043T3DX02K 1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 display */
 	//#define LCDMODE_LTDC_L24	1	/* 32-bit на пиксель в памяти (3 байта) */
@@ -282,7 +270,6 @@
 	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
 	#define WITHUSEDUALWATCH	1	// Второй приемник
 	#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
-	#define WITHFASTWATERFLOW	1	/* быстрое отображение водопада (но требует больше памяти) */
 	// FPGA section
 	//#define	WITHFPGAWAIT_AS	1	/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
 	#define	WITHFPGALOAD_PS	1	/* FPGA загружается процессором с помощью SPI */
@@ -365,7 +352,7 @@
 	#define WITHPOTAFGAIN		1	/* регуляторы усиления НЧ на потенциометрах */
 
 	#define WITHMENU 	1	/* функциональность меню может быть отключена - если настраивать нечего */
-	#define WITHOUTTXCADCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
+	#define WITHNOTXDACCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
 	#define WITHPOWERTRIM		1	// Имеется управление мощностью
 
 	//#define WITHONLYBANDS 1		/* Перестройка может быть ограничена любительскими диапазонами */
@@ -480,15 +467,18 @@
 	// Назначения входов АЦП процессора.
 	enum 
 	{ 
+	WPM_POTIX = BOARD_ADCXIN(2),			// MCP3208 CH2 потенциометр управления скоростью передачи в телеграфе
+	IFGAIN_IXI = BOARD_ADCXIN(0),			// MCP3208 CH0 IF GAIN
+	AFGAIN_IXI = BOARD_ADCXIN(1),			// MCP3208 CH1 AF GAIN
+
 	#if WITHPOTIFGAIN
-		POTIFGAIN = BOARD_ADCXIN(0),		// MCP3208 CH0 IF GAIN
+		POTIFGAIN = IFGAIN_IXI,
 	#endif /* WITHPOTIFGAIN */
 	#if WITHPOTAFGAIN
-		//POTAFGAIN = BOARD_ADCXIN(2),		// MCP3208 CH2 потенциометр управления скоростью передачи в телеграфе
-		POTAFGAIN = BOARD_ADCXIN(1),		// MCP3208 CH1 AF GAIN
+		POTAFGAIN = AFGAIN_IXI,
 	#endif /* WITHPOTAFGAIN */
 	#if WITHPOTWPM
-		POTWPM = BOARD_ADCXIN(2),			// MCP3208 CH2 потенциометр управления скоростью передачи в телеграфе
+		POTWPM = WPM_POTIX,
 	#endif /* WITHPOTWPM */
 	#if WITHTHERMOLEVEL
 		XTHERMOIX = BOARD_ADCXIN(6),		// MCP3208 CH6 Exernal thermo sensor ST LM235Z
@@ -502,9 +492,16 @@
 		FWD = 0, REF = 1,	// PB0	SWR-meter
 	#endif /* WITHSWRMTR */
 
-	#if WITHCURRLEVEL
-		PASENSEIX = 2,		// PA1 PA current sense - ACS712-05 chip
-	#endif /* WITHCURRLEVEL */
+	#if WITHAUTOTUNER_AVBELNN
+		#define WITHCURRLEVEL_ACS712_30A 1	// PA current sense - ACS712ELCTR-30B-T chip
+		#if WITHCURRLEVEL
+			PASENSEIX = WPM_POTIX,		// PA1 PA current sense - ACS712-05 chip
+		#endif /* WITHCURRLEVEL */
+	#else /* WITHAUTOTUNER_AVBELNN */
+		#if WITHCURRLEVEL
+			PASENSEIX = 2,		// PA1 PA current sense - ACS712-05 chip
+		#endif /* WITHCURRLEVEL */
+	#endif /* WITHAUTOTUNER_AVBELNN */
 
 		KI0 = 3, KI1 = 4, KI2 = 5, KI3 = 6, KI4 = 7		// клавиатура
 	};

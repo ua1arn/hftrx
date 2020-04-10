@@ -3227,6 +3227,7 @@ void spool_0p128(void);	// OPERA support
 		char param[20];
 		char val[20];
 		uint_fast8_t state;
+		uint_fast8_t updated;
 	} enc2_menu_t;
 
 	void change_submode(uint_fast8_t newsubmode);
@@ -3250,9 +3251,12 @@ void spool_0p128(void);	// OPERA support
 	void enable_keyboard_redirect (void);
 	void gui_put_keyb_code (uint_fast8_t kbch);
 	void gui_uif_editmenu(const char * name, uint_fast8_t menupos, uint_fast8_t exitkey);
-	uint_fast8_t get_swrcalibr(void);
-	uint_fast16_t get_minforward(void);
 #endif /* WITHTOUCHGUI */
+
+uint_fast8_t get_swrcalibr(void);
+uint_fast16_t get_minforward(void);
+void display_set_directfreq_mode(uint_fast8_t f);
+void display_set_directfreq_data(uint_fast32_t freq, uint_fast8_t blinkpos, uint_fast8_t blinkstate);
 
 #ifdef __cplusplus
 }

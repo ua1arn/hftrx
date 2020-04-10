@@ -54,6 +54,22 @@ static uint_fast32_t
 prevfreq(uint_fast32_t oldfreq, uint_fast32_t freq, 
 							   uint_fast32_t step, uint_fast32_t bottom);
 
+
+static unsigned long ulmin(
+	unsigned long a,
+	unsigned long b)
+{
+	return a < b ? a : b;
+}
+
+static unsigned long ulmax(
+	unsigned long a,
+	unsigned long b)
+{
+	return a > b ? a : b;
+}
+
+
 extern volatile uint_fast8_t spool_lfm_enable;
 extern volatile uint_fast8_t spool_lfm_flag;
 
@@ -132,6 +148,7 @@ static uint_fast8_t gtx;	/* текущее состояние прием или 
 static uint_fast8_t gcwpitch10 = 700 / CWPITCHSCALE;	/* тон при приеме телеграфа или самоконтроль (в десятках герц) */
 #if WITHIF4DSP
 static dualctl8_t gsquelch = { 0, 0 };	/* squelch level */
+static uint_fast8_t gsquelchNFM;	/* squelch level for NFM */
 static uint_fast8_t ggainnfmrx10 = 30;	/* дополнительное усиление по НЧ в режиме приёма NFM 100..1000% */
 #endif /* WITHIF4DSP */
 #if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */
@@ -2548,6 +2565,7 @@ struct nvmap
 	uint8_t gloopmsg, gloopsec;
 	uint8_t gdigigainmax;	/* диапазон ручной регулировки цифрового усиления - максимальное значение */
 	uint8_t gsquelch;		/* уровень открытия шумоподавителя */
+	uint8_t gsquelchNFM;	/* sуровень открытия шумоподавителя для NFM */
 	uint8_t gvad605;		/* напряжение на AD605 (управление усилением тракта ПЧ */
 	uint16_t gfsadcpower10 [2];	/*	Мощность, соответствующая full scale от IF ADC (с тояностью 0.1 дБмВт */
 	#if ! WITHPOTAFGAIN
@@ -4050,7 +4068,7 @@ static void auto_tune(void)
 	tunercap = statuses [cshindex].tunercap;
 	updateboard_tuner();
 	//debug_printf_P(PSTR("auto_tune stop\n"));
-NoMoreTune:
+////NoMoreTune:
 
 	save_i8(offsetof(struct nvmap, bands[b].tunercap), tunercap);
 	save_i8(offsetof(struct nvmap, bands[b].tunerind), tunerind);
@@ -5705,13 +5723,13 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		enc2menu_adjust,	/* функция для изменения значения параметра */
 	},
 	{
-		"SQUELCH  ", 
+		"SQUELCHFM",
 		RJ_UNSIGNED,		// rj
 		ISTEP1,		/* squelch level */
 		0, SQUELCHMAX, 
-		offsetof(struct nvmap, gsquelch),	/* уровень сигнала болше которого открывается шумодав */
+		offsetof(struct nvmap, gsquelchNFM),	/* уровень сигнала болше которого открывается шумодав */
 		NULL,
-		& gsquelch.value,
+		& gsquelchNFM,
 		getzerobase, /* складывается со смещением и отображается */
 		enc2menu_adjust,	/* функция для изменения значения параметра */
 	},
@@ -5895,6 +5913,7 @@ uif_encoder2_press(void)
 		strcpy(enc2_menu.param, text);
 		text = enc2menu_value(enc2pos);
 		strcpy(enc2_menu.val, text);
+		enc2_menu.updated = 1;
 		encoder2_menu(&enc2_menu);
 	}
 #endif /* ! WITHTOUCHGUI */
@@ -7280,7 +7299,7 @@ typedef struct lmsnrstate_tag
 
 static lmsnrstate_t lmsnrstates [NTRX];
 
-#if 0 && ! WITHNOSPEEX
+#if WITHUSEMALLOC && ! WITHNOSPEEX
 
 void * speex_allocXX(int size)
 {
@@ -7963,7 +7982,7 @@ updateboard(
 				board_set_agc_t2(gagc [agcseti].release10);		// время разряда медленной цепи АРУ
 				board_set_agc_t4(gagc [agcseti].t4);			// время разряда быстрой цепи АРУ
 				board_set_agc_thung(gagc [agcseti].thung10);	// hold time (hung time) in 0.1 sec
-				board_set_squelch(gsquelch.value);
+				board_set_squelch(pamodetempl->dspmode [gtx] == DSPCTL_MODE_RX_NFM ? ulmax(gsquelch.value, gsquelchNFM) : gsquelch.value);
 				board_set_gainnfmrx(ggainnfmrx10 * 10);	/* дополнительное усиление по НЧ в режиме приёма NFM 100..1000% */
 			#endif /* WITHIF4DSP */
 			} /* tx == 0 */
@@ -8221,7 +8240,7 @@ updateboard(
 			board_set_afhighcuttx(bwseti_gethigh(bwseti));	/* Верхняя частота среза фильтра НЧ по передаче */
 			board_set_afresponcetx(bwseti_getafresponce(bwseti));	/* коррекция АЧХ НЧ тракта передатчика */
 			board_set_nfmdeviation100(gnfmdeviation);	/* Девиация при передаче в NFM - в сотнях герц */
-		#if WITHOUTTXCADCONTROL
+		#if WITHNOTXDACCONTROL
 			/* мощность регулируется умножнением выходных значений в потоке к FPGA / IF CODEC */
 			board_set_dacscale(gdacscale * (unsigned long) (getactualpower() - WITHPOWERTRIMMIN) / (WITHPOWERTRIMMAX - WITHPOWERTRIMMIN));
 		#else /* CPUDAC */
@@ -9190,13 +9209,19 @@ int_fast16_t hamradio_get_pacurrent_value(void)
 	// x20A - 0.100 V/A
 	// x30A - 0.066 V/A
 
-	#if CTLSTYLE_RA4YBO_V3
-		// x30A - 0.066 V/A
+	#if WITHCURRLEVEL_ACS712_30A
+	// x30A - 0.066 V/A
+	enum {
+		sens = 66,			// millivolts / ampher
+		scale = 100			// результат - в десятых долях ампера
+	};
+	#elif WITHCURRLEVEL_ACS712_20A
+		//  x20A - 0.100 V/A
 		enum {
-			sens = 66,			// millivolts / ampher
+			sens = 100,			// millivolts / ampher
 			scale = 100			// результат - в десятых долях ампера
 		};
-	#else /* CTLSTYLE_RA4YBO_V3 */
+	#else /* WITHCURRLEVEL_ACS712_30A */
 		// x05B - 0.185 V/A
 		enum {
 			sens = 185,			// millivolts / ampher
@@ -12118,11 +12143,11 @@ processcatmsg(
 		// нераспознанная команда - ожидание следующей.
 #if 0
 		// печать информации о принятой команде
-		display_gotoxy(0, 1);		// курсор в начало первой строки
-
-		display_wrdata_begin();
-		display_wrdata_fast(catcommand1 & 0x7f);
-		display_wrdata_fast(catcommand2 & 0x7f);
+		uint_fast16_t y;
+		uint_fast16_t x;
+		x = display_wrdata_begin(0, 1, & y);
+		x = display_wrdata_fast(x, y, catcommand1 & 0x7f);
+		x = display_wrdata_fast(x, y, catcommand2 & 0x7f);
 		display_wrdata_end();
 
 		if (cathasparam)
@@ -14145,6 +14170,15 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		offsetof(struct nvmap, gsquelch),	/* уровень сигнала болше которого открывается шумодав */
 		NULL,
 		& gsquelch.value,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		QLABEL("SQUELNFM"), 7, 0, 0,	ISTEP1,		/* squelch level */
+		ITEM_VALUE,
+		0, SQUELCHMAX,
+		offsetof(struct nvmap, gsquelchNFM),	/* уровень сигнала болше которого открывается шумодав */
+		NULL,
+		& gsquelchNFM,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
@@ -16790,11 +16824,14 @@ processkeyboard(uint_fast8_t kbch)
 		if (kbch == KBD_CODE_ENTERFREQDONE)
 		{
 			editfreqmode = 0;
+			display_set_directfreq_mode(editfreqmode);
+			uif_key_lockencoder();
 			return 1;
 		}
 		if (c == '#' && blinkpos < DISPLAY_LEFTBLINKPOS)
 		{
 			blinkpos += 1;	/* перемещаемся на одну позицию левее */
+			display_set_directfreq_data(editfreq, blinkpos, blinkstate);
 			updateboard(1, 0);
 			return 1;
 		}
@@ -16804,13 +16841,18 @@ processkeyboard(uint_fast8_t kbch)
 			const int_fast32_t m10 = m * 10;
 			editfreq = editfreq / m10 * m10 + (c - '0') * m;
 			if (blinkpos != 0)
+			{
 				-- blinkpos;	/* перемещаемся на одну позицию правее */
+				display_set_directfreq_data(editfreq, blinkpos, blinkstate);
+			}
 			else if (freqvalid(editfreq, gtx))
 			{
 				const uint_fast8_t bi = getbankindex_tx(gtx);
 				vindex_t vi = getvfoindex(bi);
 				gfreqs [bi] = editfreq;
 				editfreqmode = 0;
+				display_set_directfreq_mode(editfreqmode);
+				uif_key_lockencoder();
 				savebandfreq(vi, bi);		/* сохранение частоты в текущем VFO */
 				updateboard(1, 0);
 			}
@@ -16819,7 +16861,9 @@ processkeyboard(uint_fast8_t kbch)
 				/* опять к начальному состоянию */
 				blinkpos = DISPLAY_LEFTBLINKPOS;		/* позиция курсора */
 				editfreqmode = 1;
+				display_set_directfreq_mode(editfreqmode);
 				editfreq = gfreqs [getbankindex_tx(gtx)];
+				display_set_directfreq_data(editfreq, blinkpos, blinkstate);
 			}
 			return 1;
 		}
@@ -16828,7 +16872,10 @@ processkeyboard(uint_fast8_t kbch)
 	{
 		blinkpos = DISPLAY_LEFTBLINKPOS;		/* позиция курсора */
 		editfreqmode = 1;
+		display_set_directfreq_mode(editfreqmode);
 		editfreq = gfreqs [getbankindex_tx(gtx)];
+		display_set_directfreq_data(editfreq, blinkpos, blinkstate);
+		uif_key_lockencoder();
 		return 1;
 	}
 #endif /* WITHDIRECTFREQENER */
@@ -17938,6 +17985,7 @@ hamradio_main_step(void)
 						strcpy(enc2_menu.param, text);
 						text = enc2menu_value(enc2pos);
 						strcpy(enc2_menu.val, text);
+						enc2_menu.updated = 1;
 						encoder2_menu(&enc2_menu);
 						display_mode_subset(0);
 				}
@@ -18041,7 +18089,6 @@ hamradio_main_step(void)
 			}
 			#if WITHTOUCHGUI
 				encoder2_busy = check_encoder2(nrotate2);
-				process_gui();
 			#endif /* WITHTOUCHGUI */
 		}
 		break;
@@ -18052,7 +18099,8 @@ hamradio_main_step(void)
 	return STTE_OK;
 }
 
-#if WITHTOUCHGUI
+#if WITHBARS && WITHTX
+
 uint_fast16_t get_minforward(void)
 {
 	return minforward;
@@ -18063,6 +18111,9 @@ uint_fast8_t get_swrcalibr(void)
 	return swrcalibr;
 }
 
+#endif /* WITHBARS && WITHTX */
+
+#if WITHTOUCHGUI
 void disable_keyboard_redirect (void)
 {
 	keyboard_redirect = 0;
@@ -18077,10 +18128,11 @@ uint_fast8_t send_key_code (uint_fast8_t code)
 {
 	gui_editfreqmode = 1;
 	processkeyboard(code);
+#if ! LCDMODE_V2A && ! LCDMODE_V2
 	display_redrawfreqs(1);
+#endif /* ! LCDMODE_V2A && ! LCDMODE_V2 */
 	return editfreqmode;
 }
-
 
 void set_agc_off(void)
 {
