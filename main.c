@@ -12324,7 +12324,7 @@ static void dpc_1stimer(void * arg)
 }
 
 static void
-poke_u32(uint8_t * p, uint_fast32_t v)
+poke_u32(uint8_t * p, uintptr_t v)
 {
 	p [0] = (v >> 0) & 0xFF;
 	p [1] = (v >> 8) & 0xFF;
@@ -12332,7 +12332,7 @@ poke_u32(uint8_t * p, uint_fast32_t v)
 	p [3] = (v >> 24) & 0xFF;
 }
 
-static uint_fast32_t
+static uintptr_t
 peek_u32(const uint8_t * p)
 {
 	return
@@ -12476,8 +12476,8 @@ uint_fast8_t board_dpc(udpcfn_t func, void * arg)
 	if (takemsgbufferfree_low(& buff) != 0)
 	{
 		buff [0] = 1;
-		poke_u32(buff + 1, (uint32_t) func);
-		poke_u32(buff + 5, (uint32_t) arg);
+		poke_u32(buff + 1, (uintptr_t) func);
+		poke_u32(buff + 5, (uintptr_t) arg);
 		placesemsgbuffer_low(MSGT_DPC, buff);
 		return 1;
 	}
@@ -12491,9 +12491,9 @@ uint_fast8_t board_dpc2(udpcfn2_t func, void * arg1, void * arg2)
 	if (takemsgbufferfree_low(& buff) != 0)
 	{
 		buff [0] = 2;
-		poke_u32(buff + 1, (uint32_t) func);
-		poke_u32(buff + 5, (uint32_t) arg1);
-		poke_u32(buff + 9, (uint32_t) arg2);
+		poke_u32(buff + 1, (uintptr_t) func);
+		poke_u32(buff + 5, (uintptr_t) arg1);
+		poke_u32(buff + 9, (uintptr_t) arg2);
 		placesemsgbuffer_low(MSGT_DPC, buff);
 		return 1;
 	}
@@ -12507,10 +12507,10 @@ uint_fast8_t board_dpc3(udpcfn3_t func, void * arg1, void * arg2, void * arg3)
 	if (takemsgbufferfree_low(& buff) != 0)
 	{
 		buff [0] = 3;
-		poke_u32(buff + 1, (uint32_t) func);
-		poke_u32(buff + 5, (uint32_t) arg1);
-		poke_u32(buff + 9, (uint32_t) arg2);
-		poke_u32(buff + 13, (uint32_t) arg3);
+		poke_u32(buff + 1, (uintptr_t) func);
+		poke_u32(buff + 5, (uintptr_t) arg1);
+		poke_u32(buff + 9, (uintptr_t) arg2);
+		poke_u32(buff + 13, (uintptr_t) arg3);
 		placesemsgbuffer_low(MSGT_DPC, buff);
 		return 1;
 	}
