@@ -584,7 +584,7 @@ hwacc_fillrect_u24(
 }
 
 /* заливка замкнутого контура */
-void floodFill_framebuffer(
+void display_floodfill(
 	uint_fast16_t x,	// начальная координата
 	uint_fast16_t y,	// начальная координата
 	COLORMAIN_T newColor,
@@ -597,10 +597,10 @@ void floodFill_framebuffer(
 	if (* tgr == oldColor && * tgr != newColor)
 	{
 		* tgr = newColor;
-		floodFill_framebuffer(x + 1, y, newColor, oldColor);
-		floodFill_framebuffer(x - 1, y, newColor, oldColor);
-		floodFill_framebuffer(x, y + 1, newColor, oldColor);
-		floodFill_framebuffer(x, y - 1, newColor, oldColor);
+		display_floodfill(x + 1, y, newColor, oldColor);
+		display_floodfill(x - 1, y, newColor, oldColor);
+		display_floodfill(x, y + 1, newColor, oldColor);
+		display_floodfill(x, y - 1, newColor, oldColor);
 	}
 }
 
@@ -915,15 +915,15 @@ static COLORPIP_T getshadedcolor(
 }
 
 // Установить прозрачность для прямоугольника
-void colpip_transparency(
-	PACKEDCOLORPIP_T * buffer,
-	uint_fast16_t dx,	// ширина буфера
-	uint_fast16_t dy,	// высота буфера
+void display_transparency(
 	uint_fast16_t x1, uint_fast16_t y1,
 	uint_fast16_t x2, uint_fast16_t y2,
 	uint_fast8_t alpha	// на сколько затемнять цвета (0 - чёрный, 255 - без изменений)
 	)
 {
+	PACKEDCOLORMAIN_T * const buffer = colmain_fb_draw();
+	const uint_fast16_t dx = DIM_X;
+	const uint_fast16_t dy = DIM_Y;
 #if 1
 	uint_fast16_t y;
 
@@ -945,7 +945,7 @@ void colpip_transparency(
 	{
 		for (uint_fast16_t x = x1; x <= x2; x ++)
 		{
-			PACKEDCOLORPIP_T * const p = colpip_mem_at(buffer, dx, dy, x, y);
+			PACKEDCOLORMAIN_T * const p = colmain_mem_at(buffer, dx, dy, x, y);
 			* p = getshadedcolor(* p, alpha);
 		}
 	}
@@ -1084,30 +1084,6 @@ void display2_xltrgb24(COLOR24_T * xltable)
 	#warning Monochrome display without indexing colors
 #endif /* LCDMODE_MAIN_L8 && LCDMODE_PIP_L8 */
 }
-
-// получить адрес требуемой позиции в буфере
-PACKEDCOLORPIP_T *
-(colpip_mem_at)(
-	PACKEDCOLORPIP_T * buffer,
-	uint_fast16_t dx,	// ширина буфера
-	uint_fast16_t dy,	// высота буфера
-	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
-	const char * file,
-	int line
-	)
-{
-	if (x >= dx || y >= dy)
-		PRINTF("colpip_mem_at: x/y=%u/%u dx/dy=%u/%u from %s %d\n", x, y, dx, dy, file, line);
-	ASSERT(x < dx);
-	ASSERT(y < dy);
-#if LCDMODE_HORFILL
-	return & buffer [y * dx + x];
-#else /* LCDMODE_HORFILL */
-	return & buffer [y * dx + x];
-#endif /* LCDMODE_HORFILL */
-}
-
 
 // получить адрес требуемой позиции в буфере
 PACKEDCOLORMAIN_T *
@@ -1288,7 +1264,7 @@ void colpip_point(
 	COLORPIP_T color
 	)
 {
-	* colpip_mem_at(buffer, dx, dy, col, row) = color;
+	* colmain_mem_at(buffer, dx, dy, col, row) = color;
 }
 
 // поставить цветную точку (модификация с сохранением старого изоьражения).
@@ -1301,7 +1277,7 @@ void colpip_point_xor(
 	COLORPIP_T color
 	)
 {
-	* colpip_mem_at(buffer, dx, dy, col, row) ^= color;
+	* colmain_mem_at(buffer, dx, dy, col, row) ^= color;
 }
 
 
@@ -2030,7 +2006,7 @@ static PACKEDCOLORMAIN_T ltdc_fg, ltdc_bg;
 
 #if ! LCDMODE_LTDC_L24
 static const FLASHMEM PACKEDCOLORMAIN_T (* byte2runmain) [256][8] = & byte2runmain_COLORMAIN_WHITE_COLORMAIN_BLACK;
-static const FLASHMEM PACKEDCOLORPIP_T (* byte2runpip) [256][8] = & byte2runpip_COLORPIP_WHITE_COLORPIP_BLACK;
+//static const FLASHMEM PACKEDCOLORPIP_T (* byte2runpip) [256][8] = & byte2runpip_COLORPIP_WHITE_COLORPIP_BLACK;
 #endif /* ! LCDMODE_LTDC_L24 */
 
 void colmain_setcolors(COLORMAIN_T fg, COLORMAIN_T bg)
@@ -2056,7 +2032,7 @@ void colmain_setcolors(COLORMAIN_T fg, COLORMAIN_T bg)
 
 #endif /* ! LCDMODE_LTDC_L24 */
 
-	COLORPIP_SELECTOR(byte2runpip);
+	//COLORPIP_SELECTOR(byte2runpip);
 
 }
 
@@ -2157,7 +2133,7 @@ smallfont_decode(uint_fast8_t c)
 
 #if LCDMODE_HORFILL
 // для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
-
+#if 0
 // функции работы с colorbuffer не занимаются выталкиванеим кэш-памяти
 static void RAMFUNC ltdcpip_horizontal_pixels(
 	volatile PACKEDCOLORPIP_T * tgr,		// target raster
@@ -2181,11 +2157,12 @@ static void RAMFUNC ltdcpip_horizontal_pixels(
 	// функции работы с colorbuffer не занимаются выталкиванеим кэш-памяти
 	//arm_hardware_flush((uintptr_t) tgr, sizeof (* tgr) * width);
 }
+#endif
 
 // функции работы с colorbuffer не занимаются выталкиванеим кэш-памяти
 // Фон не трогаем
-static void RAMFUNC ltdcpip_horizontal_pixels_tbg(
-	volatile PACKEDCOLORPIP_T * tgr,		// target raster
+static void RAMFUNC ltdcmain_horizontal_pixels_tbg(
+	volatile PACKEDCOLORMAIN_T * tgr,		// target raster
 	const FLASHMEM uint8_t * raster,
 	uint_fast16_t width,	// number of bits (start from LSB first byte in raster)
 	COLORPIP_T fg
@@ -2263,6 +2240,7 @@ ltdc_horizontal_put_char_small(uint_fast16_t x, uint_fast16_t y, char cc)
 	return x + width;
 }
 
+#if 0
 // return new x coordinate
 static uint_fast16_t
 RAMFUNC_NONILINE
@@ -2285,6 +2263,7 @@ ltdcpip_horizontal_put_char_small(
 	}
 	return x + width;
 }
+#endif
 
 // возвращаем на сколько пикселей вправо занимет отрисованный символ
 // Фон не трогаем
@@ -2304,8 +2283,8 @@ static uint_fast16_t RAMFUNC_NONILINE ltdcpip_horizontal_put_char_small_tbg(
 	uint_fast8_t cgrow;
 	for (cgrow = 0; cgrow < SMALLCHARH; ++ cgrow)
 	{
-		volatile PACKEDCOLORPIP_T * const tgr = colpip_mem_at(buffer, dx, dy, x, y + cgrow);
-		ltdcpip_horizontal_pixels_tbg(tgr, S1D13781_smallfont_LTDC [c] [cgrow], width, fg);
+		volatile PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, x, y + cgrow);
+		ltdcmain_horizontal_pixels_tbg(tgr, S1D13781_smallfont_LTDC [c] [cgrow], width, fg);
 	}
 	return x + width;
 }
@@ -2328,8 +2307,8 @@ static uint_fast16_t RAMFUNC_NONILINE ltdcpip_horizontal_put_char_small2_tbg(
 	uint_fast8_t cgrow;
 	for (cgrow = 0; cgrow < SMALLCHARH2; ++ cgrow)
 	{
-		volatile PACKEDCOLORPIP_T * const tgr = colpip_mem_at(buffer, dx, dy, x, y + cgrow);
-		ltdcpip_horizontal_pixels_tbg(tgr, S1D13781_smallfont2_LTDC [c] [cgrow], width, fg);
+		volatile PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, x, y + cgrow);
+		ltdcmain_horizontal_pixels_tbg(tgr, S1D13781_smallfont2_LTDC [c] [cgrow], width, fg);
 	}
 	return x + width;
 }
@@ -2352,8 +2331,8 @@ static uint_fast16_t RAMFUNC_NONILINE ltdcpip_horizontal_put_char_small3_tbg(
 	uint_fast8_t cgrow;
 	for (cgrow = 0; cgrow < SMALLCHARH3; ++ cgrow)
 	{
-		volatile PACKEDCOLORPIP_T * const tgr = colpip_mem_at(buffer, dx, dy, x, y + cgrow);
-		ltdcpip_horizontal_pixels_tbg(tgr, & S1D13781_smallfont3_LTDC [c] [cgrow], width, fg);
+		volatile PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, x, y + cgrow);
+		ltdcmain_horizontal_pixels_tbg(tgr, & S1D13781_smallfont3_LTDC [c] [cgrow], width, fg);
 	}
 	return x + width;
 }
@@ -2715,12 +2694,12 @@ void colpip_plot(
 	ASSERT(dst != NULL);
 #if LCDMODE_HORFILL
 	hwaccel_copy_pip(
-		colpip_mem_at(dst, tdx, tdy, x, y),
+		colmain_mem_at(dst, tdx, tdy, x, y),
 		src,
 		dx, tdx - dx, dy);	// w, t, h
 #else /* LCDMODE_HORFILL */
 	hwaccel_copy_pip(
-		colpip_mem_at(dst, tdx, tdy, x, y),
+		colmain_mem_at(dst, tdx, tdy, x, y),
 		src,
 		dy, tdy - dy, dx);	// w, t, h
 #endif /* LCDMODE_HORFILL */
@@ -2733,10 +2712,7 @@ void display_plotstop(void)
 
 // Вызовы этой функции (или группу вызовов) требуется "обрамить" парой вызовов
 // display_wrdatabar_begin() и display_wrdatabar_end().
-void colmain_bar(
-	PACKEDCOLORMAIN_T * buffer,
-	uint_fast16_t dx,
-	uint_fast16_t dy,
+void display_bar(
 	uint_fast16_t x,
 	uint_fast16_t y,
 	uint_fast8_t width,	/* количество знакомест, занимаемых индикатором */
@@ -2748,6 +2724,9 @@ void colmain_bar(
 	uint_fast8_t emptyp			/* паттерн для заполнения между штрихами */
 	)
 {
+	PACKEDCOLORMAIN_T * const buffer = colmain_fb_draw();
+	const uint_fast16_t dx = DIM_X;
+	const uint_fast16_t dy = DIM_Y;
 	ASSERT(value <= topvalue);
 	ASSERT(tracevalue <= topvalue);
 	const uint_fast16_t wfull = GRID2X(width);
@@ -2863,6 +2842,108 @@ uint_fast16_t display_put_char_small(uint_fast16_t x, uint_fast16_t y, uint_fast
 void display_wrdata_end(void)
 {
 }
+
+
+#if LCDMODE_LQ043T3DX02K || LCDMODE_AT070TN90 || LCDMODE_AT070TNA2
+
+// заглушки
+
+/* аппаратный сброс дисплея - перед инициализаций */
+/* вызывается при разрешённых прерываниях. */
+void
+display_reset(void)
+{
+	board_lcd_reset(1); 	// Pull RST pin up
+	board_update();
+	local_delay_ms(1); // Delay 1ms
+	board_lcd_reset(0); 	// Pull RST pin down
+	board_update();
+	local_delay_ms(10); // Delay 10ms
+	board_lcd_reset(1); 	// Pull RST pin up
+	board_update();
+	local_delay_ms(50); // Delay 50 ms
+}
+/* вызывается при разрешённых прерываниях. */
+void display_initialize(void)
+{
+}
+
+void display_set_contrast(uint_fast8_t v)
+{
+}
+
+/* Разряжаем конденсаторы питания */
+void display_discharge(void)
+{
+}
+
+#if WITHTOUCHGUI
+
+static uint_fast16_t
+RAMFUNC_NONILINE ltdc_horizontal_put_char_small3(
+	PACKEDCOLORMAIN_T * const buffer,
+	const uint_fast16_t dx,
+	const uint_fast16_t dy,
+	uint_fast16_t x, uint_fast16_t y,
+	char cc
+	)
+{
+	const uint_fast8_t width = SMALLCHARW3;
+	const uint_fast8_t c = smallfont_decode((unsigned char) cc);
+	uint_fast8_t cgrow;
+	for (cgrow = 0; cgrow < SMALLCHARH3; ++ cgrow)
+	{
+		PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, x, y + cgrow);
+		ltdc_horizontal_pixels(tgr, & S1D13781_smallfont3_LTDC [c] [cgrow], width);
+	}
+	return x + width;
+}
+
+static void
+display_string3(uint_fast16_t x, uint_fast16_t y, const char * s, uint_fast8_t lowhalf)
+{
+	PACKEDCOLORMAIN_T * const buffer = colmain_fb_draw();
+	const uint_fast16_t dx = DIM_X;
+	const uint_fast16_t dy = DIM_Y;
+	char c;
+//	ltdc_secondoffs = 0;
+//	ltdc_h = SMALLCHARH3;
+	while((c = * s ++) != '\0')
+		x = ltdc_horizontal_put_char_small3(buffer, dx, dy, x, y, c);
+}
+
+void
+colmain_string3_at_xy(
+	PACKEDCOLORMAIN_T * const buffer,
+	const uint_fast16_t dx,
+	const uint_fast16_t dy,
+	uint_fast16_t x,
+	uint_fast16_t y,
+	const char * s
+	)
+{
+	char c;
+//	ltdc_secondoffs = 0;
+//	ltdc_h = SMALLCHARH3;
+	while((c = * s ++) != '\0')
+		x = ltdc_horizontal_put_char_small3(buffer, dx, dy, x, y, c);
+}
+
+void
+display_string3_at_xy(uint_fast16_t x, uint_fast16_t y, const char * s, COLORMAIN_T fg, COLORMAIN_T bg)
+{
+	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
+	colmain_setcolors(fg, bg);
+	do
+	{
+		display_string3(x, y + lowhalf, s, lowhalf);
+	} while (lowhalf --);
+}
+
+#endif /* WITHTOUCHGUI */
+
+#endif /* LCDMODE_LQ043T3DX02K */
+#endif /* LCDMODE_LTDC */
 
 
 static const FLASHMEM int32_t vals10 [] =
@@ -3012,103 +3093,3 @@ display_value_small(
 }
 
 
-#if LCDMODE_LQ043T3DX02K || LCDMODE_AT070TN90 || LCDMODE_AT070TNA2
-
-// заглушки
-
-/* аппаратный сброс дисплея - перед инициализаций */
-/* вызывается при разрешённых прерываниях. */
-void
-display_reset(void)
-{
-	board_lcd_reset(1); 	// Pull RST pin up
-	board_update();
-	local_delay_ms(1); // Delay 1ms
-	board_lcd_reset(0); 	// Pull RST pin down
-	board_update();
-	local_delay_ms(10); // Delay 10ms
-	board_lcd_reset(1); 	// Pull RST pin up
-	board_update();
-	local_delay_ms(50); // Delay 50 ms
-}
-/* вызывается при разрешённых прерываниях. */
-void display_initialize(void)
-{
-}
-
-void display_set_contrast(uint_fast8_t v)
-{
-}
-
-/* Разряжаем конденсаторы питания */
-void display_discharge(void)
-{
-}
-
-#if WITHTOUCHGUI
-
-static uint_fast16_t
-RAMFUNC_NONILINE ltdc_horizontal_put_char_small3(
-	PACKEDCOLORMAIN_T * const buffer,
-	const uint_fast16_t dx,
-	const uint_fast16_t dy,
-	uint_fast16_t x, uint_fast16_t y,
-	char cc
-	)
-{
-	const uint_fast8_t width = SMALLCHARW3;
-	const uint_fast8_t c = smallfont_decode((unsigned char) cc);
-	uint_fast8_t cgrow;
-	for (cgrow = 0; cgrow < SMALLCHARH3; ++ cgrow)
-	{
-		PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, x, y + cgrow);
-		ltdc_horizontal_pixels(tgr, & S1D13781_smallfont3_LTDC [c] [cgrow], width);
-	}
-	return x + width;
-}
-
-static void
-display_string3(uint_fast16_t x, uint_fast16_t y, const char * s, uint_fast8_t lowhalf)
-{
-	PACKEDCOLORMAIN_T * const buffer = colmain_fb_draw();
-	const uint_fast16_t dx = DIM_X;
-	const uint_fast16_t dy = DIM_Y;
-	char c;
-//	ltdc_secondoffs = 0;
-//	ltdc_h = SMALLCHARH3;
-	while((c = * s ++) != '\0')
-		x = ltdc_horizontal_put_char_small3(buffer, dx, dy, x, y, c);
-}
-
-void
-colmain_string3_at_xy(
-	PACKEDCOLORMAIN_T * const buffer,
-	const uint_fast16_t dx,
-	const uint_fast16_t dy,
-	uint_fast16_t x,
-	uint_fast16_t y,
-	const char * s
-	)
-{
-	char c;
-//	ltdc_secondoffs = 0;
-//	ltdc_h = SMALLCHARH3;
-	while((c = * s ++) != '\0')
-		x = ltdc_horizontal_put_char_small3(buffer, dx, dy, x, y, c);
-}
-
-void
-display_string3_at_xy(uint_fast16_t x, uint_fast16_t y, const char * s, COLORMAIN_T fg, COLORMAIN_T bg)
-{
-	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
-	colmain_setcolors(fg, bg);
-	do
-	{
-		display_string3(x, y + lowhalf, s, lowhalf);
-	} while (lowhalf --);
-}
-
-#endif /* WITHTOUCHGUI */
-
-#endif /* LCDMODE_LQ043T3DX02K */
-#endif /* LCDMODE_LTDC */

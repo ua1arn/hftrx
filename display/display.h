@@ -1048,19 +1048,6 @@ display_colorbuf_set_vline(
 	);
 
 // получить адрес требуемой позиции в буфере
-PACKEDCOLORPIP_T *
-(colpip_mem_at)(
-	PACKEDCOLORPIP_T * buffer,
-	uint_fast16_t dx,	// ширина буфера
-	uint_fast16_t dy,	// высота буфера
-	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
-	const char * file,
-	int line
-	);
-#define colpip_mem_at(a,b,c,d,e) (colpip_mem_at)((a), (b), (c), (d), (e), __FILE__,__LINE__)
-
-// получить адрес требуемой позиции в буфере
 PACKEDCOLORMAIN_T *
 colmain_mem_at(
 	PACKEDCOLORMAIN_T * buffer,
@@ -1092,11 +1079,9 @@ void colmain_fb_next(void);		// прерключиться на использо
 
 #define DEFAULT_ALPHA 100
 void display2_xltrgb24(COLOR24_T * xtable);
+
 // Установить прозрачность для прямоугольника
-void colpip_transparency(
-	PACKEDCOLORPIP_T * buffer,
-	uint_fast16_t dx,
-	uint_fast16_t dy,
+void display_transparency(
 	uint_fast16_t x1, uint_fast16_t y1,
 	uint_fast16_t x2, uint_fast16_t y2,
 	uint_fast8_t alpha	// на сколько затемнять цвета (0 - чёрный, 255 - без изменений)
@@ -1145,7 +1130,7 @@ display_value_small(
 	uint_fast8_t lowhalf
 	);
 
-void floodFill_framebuffer(
+void display_floodfill(
 	uint_fast16_t x,	// начальная координата
 	uint_fast16_t y,	// начальная координата
 	COLORMAIN_T newColor,
