@@ -5420,6 +5420,9 @@ static FLOAT_t filter_spectrum(
 
 #endif
 
+	enum { BUFDIM_X = DIM_X, BUFDIM_Y = DIM_Y };
+	//enum { BUFDIM_X = ALLDX, BUFDIM_Y = ALLDY };
+
 static uint_fast32_t wffreq;			// частота центра спектра, для которой в последной раз отрисовали.
 static uint_fast8_t wfzoompow2;				// масштаб, с которым выводили спектр
 static int_fast16_t wfhorshift;			// сдвиг по шоризонтали (отрицаельный - влево) для водопада.
@@ -5552,15 +5555,15 @@ display_colorgrid_xor(
 				freqw = strwidth3(buf);
 				if (xmarker > freqw / 2 && xmarker < (ALLDX - freqw / 2))
 				{
-					colpip_string3_tbg(buffer, DIM_X, DIM_Y, xmarker - freqw / 2, row0, buf, COLORPIP_YELLOW);
-					display_colorbuf_xor_vline(buffer, DIM_X, DIM_Y, xmarker, row0 + MARKERH, h - MARKERH, color);
+					colpip_string3_tbg(buffer, BUFDIM_X, BUFDIM_Y, xmarker - freqw / 2, row0, buf, COLORPIP_YELLOW);
+					display_colorbuf_xor_vline(buffer, BUFDIM_X, BUFDIM_Y, xmarker, row0 + MARKERH, h - MARKERH, color);
 				}
 				else
-					display_colorbuf_xor_vline(buffer, ALLDX, ALLDY, xmarker, row0, h, color);
+					display_colorbuf_xor_vline(buffer, BUFDIM_X, BUFDIM_Y, xmarker, row0, h, color);
 			}
 		}
 	}
-	display_colorbuf_xor_vline(buffer, DIM_X, DIM_Y, ALLDX / 2, row0, h, color0);	// center frequency marker
+	display_colorbuf_xor_vline(buffer, BUFDIM_X, BUFDIM_Y, ALLDX / 2, row0, h, color0);	// center frequency marker
 }
 
 // отрисовка маркеров частот
@@ -5596,15 +5599,15 @@ display_colorgrid_set(
 				freqw = strwidth3(buf);
 				if (xmarker > freqw / 2 && xmarker < (ALLDX - freqw / 2))
 				{
-					colpip_string3_tbg(buffer, DIM_X, DIM_Y, xmarker - freqw / 2, row0, buf, COLORPIP_YELLOW);
-					display_colorbuf_set_vline(buffer, DIM_X, DIM_Y, xmarker, row0 + MARKERH, h - MARKERH, color);
+					colpip_string3_tbg(buffer, BUFDIM_X, BUFDIM_Y, xmarker - freqw / 2, row0, buf, COLORPIP_YELLOW);
+					display_colorbuf_set_vline(buffer, BUFDIM_X, BUFDIM_Y, xmarker, row0 + MARKERH, h - MARKERH, color);
 				}
 				else
-					display_colorbuf_set_vline(buffer, DIM_X, DIM_Y, xmarker, row0, h, color);
+					display_colorbuf_set_vline(buffer, BUFDIM_X, BUFDIM_Y, xmarker, row0, h, color);
 			}
 		}
 	}
-	display_colorbuf_set_vline(buffer, DIM_X, DIM_Y, ALLDX / 2, row0, h, color0);	// center frequency marker
+	display_colorbuf_set_vline(buffer, BUFDIM_X, BUFDIM_Y, ALLDX / 2, row0, h, color0);	// center frequency marker
 }
 
 // Спектр на монохромных дисплеях
@@ -5719,7 +5722,7 @@ static void display2_spectrum(
 			{
 				const uint_fast8_t inband = (x >= xleft && x <= xright);	// в полосе пропускания приемника = "шторка"
 				// формирование фона растра
-				display_colorbuf_set_vline(colorpip, DIM_X, DIM_Y, x, SPY0, SPDY, inband ? COLORPIP_SPECTRUMBG2 : COLORPIP_SPECTRUMBG);
+				display_colorbuf_set_vline(colorpip, BUFDIM_X, BUFDIM_Y, x, SPY0, SPDY, inband ? COLORPIP_SPECTRUMBG2 : COLORPIP_SPECTRUMBG);
 			}
 			display_colorgrid_set(colorpip, SPY0, SPDY, f0, bw);	// отрисовка маркеров частот
 			for (x = 0; x < ALLDX; ++ x)
@@ -5727,7 +5730,7 @@ static void display2_spectrum(
 				// ломанная
 				uint_fast16_t ynew = SPDY - 1 - dsp_mag2y(filter_spectrum(x), SPDY - 1, glob_topdb, glob_bottomdb);
 				if (x != 0)
-					colpip_line(colorpip, ALLDX, ALLDY, x - 1, ylast, x, ynew, COLORPIP_SPECTRUMLINE);
+					colpip_line(colorpip, BUFDIM_X, BUFDIM_Y, x - 1, ylast, x, ynew, COLORPIP_SPECTRUMLINE);
 				ylast = ynew;
 			}
 		}
@@ -5745,18 +5748,18 @@ static void display2_spectrum(
 
 				// формирование фона растра - верхняя часть графика (Шторка)
 				//debug_printf_P(PSTR("xl=%d xr=%d\n"), xleft, xright);
-				display_colorbuf_set_vline(colorpip, DIM_X, DIM_Y, x, SPY0, yv, inband ? COLORPIP_SPECTRUMBG2 : COLORPIP_SPECTRUMBG);
+				display_colorbuf_set_vline(colorpip, BUFDIM_X, BUFDIM_Y, x, SPY0, yv, inband ? COLORPIP_SPECTRUMBG2 : COLORPIP_SPECTRUMBG);
 
 				// точку на границе
 				if (yv < SPDY)
 				{
-					colpip_point(colorpip, DIM_X, DIM_Y, x, yv + SPY0, COLORPIP_SPECTRUMFENCE);
+					colpip_point(colorpip, BUFDIM_X, BUFDIM_Y, x, yv + SPY0, COLORPIP_SPECTRUMFENCE);
 
 					// Нижняя часть экрана
 					const int yb = yv + 1;
 					if (yb < SPDY)
 					{
-						display_colorbuf_set_vline(colorpip, DIM_X, DIM_Y, x, yb + SPY0, SPDY - yb, COLORPIP_SPECTRUMFG);
+						display_colorbuf_set_vline(colorpip, BUFDIM_X, BUFDIM_Y, x, yb + SPY0, SPDY - yb, COLORPIP_SPECTRUMFG);
 					}
 				}
 			}
@@ -6025,11 +6028,11 @@ static void display2_waterfall(
 	const uint_fast16_t p2y = WFY0 + p1h;
 
 	/* перенос растра */
-	colpip_plot(colorpip, DIM_X, DIM_Y, 0, p1y,
+	colpip_plot(colorpip, BUFDIM_X, BUFDIM_Y, 0, p1y,
 			colmain_mem_at(& wfarray [0][0], ALLDX, ALLDY, 0, wfrow),	// начальный алрес источника
 			ALLDX, p1h);	// размеры источника
 	if (p2h != 0)
-		colpip_plot(colorpip, DIM_X, DIM_Y, 0, p2y,
+		colpip_plot(colorpip, BUFDIM_X, BUFDIM_Y, 0, p2y,
 				colmain_mem_at(& wfarray [0][0], ALLDX, ALLDY, 0, 0),	// начальный алрес источника
 				ALLDX, p2h);	// размеры истояника
 
@@ -6046,7 +6049,7 @@ static void display2_waterfall(
 		uint_fast16_t y;
 		for (x = 0; x < ALLDX; ++ x)
 		{
-			colpip_point(colorpip, DIM_X, DIM_Y, x, y + WFY0, wfpalette [wfarray [(wfrow + y) % WFDY] [x]]);
+			colpip_point(colorpip, BUFDIM_X, BUFDIM_Y, x, y + WFY0, wfpalette [wfarray [(wfrow + y) % WFDY] [x]]);
 		}
 	}
 
@@ -6067,6 +6070,16 @@ PACKEDCOLORMAIN_T * getscratchwnd(void)
 
 
 #else /* WITHSPECTRUMWF */
+
+
+
+static
+PACKEDCOLORMAIN_T * getscratchwnd(void)
+{
+	static PACKEDCOLORMAIN_T tbuff0 [GXSIZE(BUFDIM_X, BUFDIM_X)];
+
+	return tbuff0;
+}
 
 static void dsp_latchwaterfall(
 	uint_fast8_t x0, 
