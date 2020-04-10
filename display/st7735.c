@@ -61,6 +61,12 @@
 
 static uint_fast8_t colstart, rowstart, tabcolor; // May be overridden in init func
 
+// Тип для хранения горизонтальной координаты
+#if DIM_X > 254
+	typedef uint_fast16_t xholder_t;
+#else
+	typedef uint_fast8_t xholder_t;
+#endif
 
 // в режим передачи данных переводим сразу по окончании команд.
 static void st7735_put_char_begin(void)
@@ -465,7 +471,8 @@ smallfont_decode(uint_fast8_t c)
 }
 
 // Вызов этой функции только внутри display_wrdata_begin() и 	display_wrdata_end();
-static uint_fast16_t st7735_put_char_small(uint_fast16_t xpix, char cc)
+static xholder_t
+st7735_put_char_small(xholder_t xpix, char cc)
 {
 	uint_fast8_t i = 0;
 	const uint_fast8_t c = smallfont_decode((unsigned char) cc);
@@ -480,7 +487,8 @@ static uint_fast16_t st7735_put_char_small(uint_fast16_t xpix, char cc)
 
 
 // Вызов этой функции только внутри display_wrdatabig_begin() и display_wrdatabig_end();
-static uint_fast16_t st7735_put_char_big(uint_fast16_t xpix, char cc)
+static xholder_t
+st7735_put_char_big(xholder_t xpix, char cc)
 {
 	// '#' - узкий пробел
 	enum { NBV = (BIGCHARH / 8) }; // сколько байтов в одной вертикали
@@ -508,7 +516,8 @@ static uint_fast16_t st7735_put_char_big(uint_fast16_t xpix, char cc)
 
 
 // Вызов этой функции только внутри display_wrdatabig_begin() и display_wrdatabig_end();
-static uint_fast16_t st7735_put_char_half(uint_fast16_t xpix, char cc)
+static xholder_t
+st7735_put_char_half(xholder_t xpix, char cc)
 {
 	enum { NBV = (BIGCHARH / 8) }; // сколько байтов в одной вертикали
 	uint_fast8_t i = 0;
@@ -533,14 +542,14 @@ static uint_fast16_t st7735_put_char_half(uint_fast16_t xpix, char cc)
 	return xpix;
 }
 
-static uint_fast8_t st7735_y;	/* в пикселях */
+static uint_fast16_t st7735_y;	/* в пикселях */
 
 // открыть для записи полосу высотой с символ и шириной до правого края
 static void
 st7735_set_strype(uint_fast8_t height)
 {
-	const uint_fast8_t xs = st7735_y + colstart;
-	const uint_fast8_t xe = st7735_y + height - 1 + colstart;
+	const uint_fast16_t xs = st7735_y + colstart;
+	const uint_fast16_t xe = st7735_y + height - 1 + colstart;
 
 #if WITHSPIEXT16
 
@@ -573,22 +582,16 @@ st7735_set_strype(uint_fast8_t height)
 		spi_progval8_p1(targetlcd, xs);     // XSTART
 		spi_progval8_p2(targetlcd, xe);     // XEND
 	#else
-		spi_progval8_p1(targetlcd, 0x00);				// xs15:xs8
-		spi_progval8_p2(targetlcd, xs);     // XSTART
-		spi_progval8_p2(targetlcd, 0x00);				// xe7:xe0
-		spi_progval8_p2(targetlcd, xe);     // XEND
+		spi_progval8_p1(targetlcd, xs >> 8);				// xs15:xs8
+		spi_progval8_p2(targetlcd, xs >> 0);     // XSTART
+		spi_progval8_p2(targetlcd, xe >> 8);				// xe7:xe0
+		spi_progval8_p2(targetlcd, xe >> 0);     // XEND
 	#endif
 	spi_complete(targetlcd);
 	spi_unselect(targetlcd);	/* Disable SPI */
 
 #endif /* WITHSPIEXT16 */
 }
-// Тип для хранения горизонтальной координаты
-#if DIM_X > 254
-	typedef uint_fast16_t xholder_t;
-#else
-	typedef uint_fast8_t xholder_t;
-#endif
 
 /*
  Функция установки курсора в позицию x,y
