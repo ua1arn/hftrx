@@ -137,9 +137,9 @@ smallfont_decode(uint_fast8_t c)
 // Вызовы этой функции (или группу вызовов) требуется "обрамить" парой вызовов
 // uc1601s_put_char_begin() и uc1601s_put_char_end().
 //
-static uint_fast16_t
+static uint_fast8_t
 //NOINLINEAT
-uc1601s_put_char_small(uint_fast16_t xpix, uint_fast16_t ypix, char cc)
+uc1601s_put_char_small(uint_fast8_t xpix, char cc)
 {
 	uint_fast8_t i = 0;
     const uint_fast8_t c = smallfont_decode((unsigned char) cc);
@@ -158,9 +158,9 @@ uc1601s_put_char_small(uint_fast16_t xpix, uint_fast16_t ypix, char cc)
 // Вызовы этой функции (или группу вызовов) требуется "обрамить" парой вызовов
 // uc1601s_put_char_begin() и uc1601s_put_char_end().
 //
-static uint_fast16_t
+static uint_fast8_t
 //NOINLINEAT
-uc1601s_put_char_big(uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf)
+uc1601s_put_char_big(uint_fast8_t xpix, char cc, uint_fast8_t lowhalf)
 {
 	// '#' - узкий пробел
 	enum { NBV = (BIGCHARH / 8) }; // сколько байтов в одной вертикали
@@ -181,9 +181,9 @@ uc1601s_put_char_big(uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8
 // Вызовы этой функции (или группу вызовов) требуется "обрамить" парой вызовов
 // uc1601s_put_char_begin() и uc1601s_put_char_end().
 //
-static uint_fast16_t
+static uint_fast8_t
 //NOINLINEAT
-uc1601s_put_char_half(uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf)
+uc1601s_put_char_half(uint_fast8_t xpix, char cc, uint_fast8_t lowhalf)
 {
 	uint_fast8_t i = 0;
     const uint_fast8_t c = bigfont_decode((unsigned char) cc);
@@ -511,13 +511,13 @@ display_barcolumn(uint_fast8_t pattern)
 uint_fast16_t
 display_put_char_big(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf)
 {
-	return uc1601s_put_char_big(xpix, ypix, c, lowhalf);
+	return uc1601s_put_char_big(xpix, c, lowhalf);
 }
 
 uint_fast16_t
 display_put_char_half(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf)
 {
-	return uc1601s_put_char_half(xpix, ypix, c, lowhalf);
+	return uc1601s_put_char_half(xpix, c, lowhalf);
 }
 
 
@@ -527,7 +527,7 @@ uint_fast16_t
 display_put_char_small(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf)
 {
 	(void) lowhalf;
-	return uc1601s_put_char_small(xpix, ypix, c);
+	return uc1601s_put_char_small(xpix, c);
 }
 
 // самый маленький шрифт

@@ -465,7 +465,7 @@ smallfont_decode(uint_fast8_t c)
 }
 
 // Вызов этой функции только внутри display_wrdata_begin() и 	display_wrdata_end();
-static void st7735_put_char_small(char cc)
+static uint_fast16_t st7735_put_char_small(uint_fast16_t xpix, char cc)
 {
 	uint_fast8_t i = 0;
 	const uint_fast8_t c = smallfont_decode((unsigned char) cc);
@@ -474,11 +474,13 @@ static void st7735_put_char_small(char cc)
 	
 	for (; i < NBYTES; ++ i)
 		st7735_pix8(p [i]);	// Выдать восемь цветных пикселей
+
+	return xpix + NBYTES;
 }
 
 
 // Вызов этой функции только внутри display_wrdatabig_begin() и display_wrdatabig_end();
-static void st7735_put_char_big(char cc)
+static uint_fast16_t st7735_put_char_big(uint_fast16_t xpix, char cc)
 {
 	// '#' - узкий пробел
 	enum { NBV = (BIGCHARH / 8) }; // сколько байтов в одной вертикали
@@ -489,7 +491,7 @@ static void st7735_put_char_big(char cc)
 	
 #if WITHFONTSMOOTHING
 	uint_fast8_t col;
-	for (col = i / NBV; col < NBYTES / NBV; ++ col)
+	for (col = i / NBV; col < NBYTES / NBV; ++ col, ++ xpix)
 	{
 		uint_fast8_t last = 0;	// Фон
 		uint_fast8_t row;
@@ -498,14 +500,15 @@ static void st7735_put_char_big(char cc)
 
 	}
 #else /* WITHFONTSMOOTHING */
-	for (; i < NBYTES; ++ i)
+	for (; i < NBYTES; ++ i, ++ xpix)
 		st7735_pix8(p [i]);	// Выдать восемь цветных пикселей
 #endif /* WITHFONTSMOOTHING */
+	return xpix;
 }
 
 
 // Вызов этой функции только внутри display_wrdatabig_begin() и display_wrdatabig_end();
-static void st7735_put_char_half(char cc)
+static uint_fast16_t st7735_put_char_half(uint_fast16_t xpix, char cc)
 {
 	enum { NBV = (BIGCHARH / 8) }; // сколько байтов в одной вертикали
 	uint_fast8_t i = 0;
@@ -515,7 +518,7 @@ static void st7735_put_char_half(char cc)
 	
 #if WITHFONTSMOOTHING
 	uint_fast8_t col;
-	for (col = 0; col < NBYTES / NBV; ++ col)
+	for (col = 0; col < NBYTES / NBV; ++ col, ++ xpix)
 	{
 		uint_fast8_t last = 0;	// Фон
 		uint_fast8_t row;
@@ -524,9 +527,10 @@ static void st7735_put_char_half(char cc)
 
 	}
 #else /* WITHFONTSMOOTHING */
-	for (; i < NBYTES; ++ i)
+	for (; i < NBYTES; ++ i, ++ xpix)
 		st7735_pix8(p [i]);	// Выдать восемь цветных пикселей
 #endif /* WITHFONTSMOOTHING */
+	return xpix;
 }
 
 static uint_fast8_t st7735_y;	/* в пикселях */
@@ -643,11 +647,40 @@ st7735_set_addr_column(
 #endif /* WITHSPIEXT16 */
 }
 
+
+static void
+st7735_gotoxy(uint_fast8_t x, uint_fast8_t y)
+{
+	st7735_y = y * CHAR_H;		/* переход от символьных координат к экранным */
+	st7735_set_addr_column(x * CHAR_W);
+}
+
+// Координаты в пикселях
+void display_plotfrom(uint_fast16_t x, uint_fast16_t y)
+{
+	st7735_y = y;		/* переход от символьных координат к экранным */
+	st7735_set_addr_column(x);
+}
+
+void display_plotstart(
+	uint_fast16_t dy	// Высота окна в пикселях
+	)
+{
+	st7735_set_strype(dy);
+	st7735_put_char_begin();
+}
+
+void display_plotstop(void)
+{
+	st7735_put_char_end();
+}
+
+
 static void st7735_clear(COLORMAIN_T bg)
 {
 	unsigned long i;
 	
-	display_gotoxy(0, 0);
+	st7735_gotoxy(0, 0);
 	st7735_setcolor(COLORMAIN_WHITE, bg, bg);
 
 #if WITHSPIEXT16 && WITHSPIHWDMA
@@ -1173,7 +1206,6 @@ void display_set_contrast(uint_fast8_t v)
 }
 
 #if ! LCDMODE_LTDC
-
 void 
 display_clear(void)
 {
@@ -1193,11 +1225,14 @@ void colmain_setcolors3(COLORMAIN_T fg, COLORMAIN_T bg, COLORMAIN_T fgbg)
 	st7735_setcolor(fg, bg, fgbg);
 }
 
-void
-display_wrdata_begin(void)
+uint_fast16_t
+display_wrdata_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
 {
+	st7735_gotoxy(xcell, ycell);
 	st7735_set_strype(SMALLCHARH);
 	st7735_put_char_begin();
+	* yp = GRID2Y(ycell);
+	return GRID2X(xcell);
 }
 
 void
@@ -1206,11 +1241,14 @@ display_wrdata_end(void)
 	st7735_put_char_end();
 }
 
-void
-display_wrdata2_begin(void)
+uint_fast16_t
+display_wrdata2_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
 {
+	st7735_gotoxy(xcell, ycell);
 	st7735_set_strype(SMALLCHARH);
 	st7735_put_char_begin();
+	* yp = GRID2Y(ycell);
+	return GRID2X(xcell);
 }
 
 void
@@ -1219,11 +1257,14 @@ display_wrdata2_end(void)
 	st7735_put_char_end();
 }
 
-void
-display_wrdatabig_begin(void)
+uint_fast16_t
+display_wrdatabig_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
 {
+	st7735_gotoxy(xcell, ycell);
 	st7735_set_strype(BIGCHARH);	// same as HALFCHARH
 	st7735_put_char_begin();
+	* yp = GRID2Y(ycell);
+	return GRID2X(xcell);
 }
 
 
@@ -1242,11 +1283,14 @@ display_barcolumn(uint_fast8_t pattern)
 	st7735_pix8(pattern);
 }
 
-void
-display_wrdatabar_begin(void)
+uint_fast16_t
+display_wrdatabar_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
 {
+	st7735_gotoxy(xcell, ycell);
 	st7735_set_strype(CHAR_H);
 	st7735_put_char_begin();
+	* yp = GRID2Y(ycell);
+	return GRID2X(xcell);
 }
 
 void
@@ -1255,60 +1299,33 @@ display_wrdatabar_end(void)
 	st7735_put_char_end();
 }
 
-void
-display_put_char_big(uint_fast8_t c, uint_fast8_t lowhalf)
+uint_fast16_t
+display_put_char_big(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf)
 {
-	st7735_put_char_big(c);
+	return st7735_put_char_big(xpix, c);
 }
 
-void
-display_put_char_half(uint_fast8_t c, uint_fast8_t lowhalf)
+uint_fast16_t
+display_put_char_half(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf)
 {
-	st7735_put_char_half(c);
+	return st7735_put_char_half(xpix, c);
 }
 
 
 // Вызов этой функции только внутри display_wrdata_begin() и display_wrdata_end();
 // Используется при выводе на графический ндикатор, если ТРЕБУЕТСЯ переключать полосы отображения
-void
-display_put_char_small(uint_fast8_t c, uint_fast8_t lowhalf)
+uint_fast16_t
+display_put_char_small(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf)
 {
-	st7735_put_char_small(c);
+	return st7735_put_char_small(xpix, c);
 }
 
 // Вызов этой функции только внутри display_wrdata2_begin() и display_wrdata2_end();
 // Используется при выводе на графический ндикатор, если ТРЕБУЕТСЯ переключать полосы отображения
-void
-display_put_char_small2(uint_fast8_t c, uint_fast8_t lowhalf)
+uint_fast16_t
+display_put_char_small2(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf)
 {
-	st7735_put_char_small(c);
-}
-
-void
-display_gotoxy(uint_fast8_t x, uint_fast8_t y)
-{
-	st7735_y = y * CHAR_H;		/* переход от символьных координат к экранным */
-	st7735_set_addr_column(x * CHAR_W);
-}
-
-// Координаты в пикселях
-void display_plotfrom(uint_fast16_t x, uint_fast16_t y)
-{
-	st7735_y = y;		/* переход от символьных координат к экранным */
-	st7735_set_addr_column(x);
-}
-
-void display_plotstart(
-	uint_fast16_t dy	// Высота окна в пикселях
-	)
-{
-	st7735_set_strype(dy);
-	st7735_put_char_begin();
-}
-
-void display_plotstop(void)
-{
-	st7735_put_char_end();
+	return st7735_put_char_small(xpix, c);
 }
 
 void display_plot(

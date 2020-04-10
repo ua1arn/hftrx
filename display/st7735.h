@@ -67,6 +67,9 @@
 	// для формирования растра с изображением водопада и спектра
 	#define TFTRGB565 TFTRGB
 
+	typedef PACKEDCOLORMAIN_T PACKEDCOLORPIP_T;
+	typedef COLORMAIN_T COLORPIP_T;
+
 #endif /* LCDMODE_LTDC */
 
 //typedef PACKEDCOLORMAIN_T PACKEDCOLORPIP_T;
