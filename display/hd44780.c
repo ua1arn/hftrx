@@ -478,7 +478,7 @@ static void hd44780_bar_column(uint_fast8_t pattern)
 // Вокруг этой функции вызывать hd44780_put_char_begin() и hd44780_put_char_end().
 
 void
-colmain_bar(
+display_bar(
 	uint_fast16_t xpix,
 	uint_fast16_t ypix,
 	uint_fast8_t width,	/* количество знакомест, занимаемых индикатором */

@@ -1846,13 +1846,13 @@ display_put_char_small2(uint_fast8_t c, uint_fast8_t lowhalf)
 	s1d13781_put_char_small(c);
 }
 
-static uint_fast8_t stored_xgrid, stored_ygrid;	// используется в colmain_bar
+static uint_fast8_t stored_xgrid, stored_ygrid;	// используется в display_bar
 
 void
 display_gotoxy(uint_fast8_t x, uint_fast8_t y)
 {
-	stored_xgrid = x;	// используется в colmain_bar
-	stored_ygrid = y;	// используется в colmain_bar
+	stored_xgrid = x;	// используется в display_bar
+	stored_ygrid = y;	// используется в display_bar
 
 	s1d13781_gotoxy(GRID2X(x), GRID2Y(y));		// устанавливаем позицию в символьных координатах
 }
@@ -1944,7 +1944,7 @@ void display_plotstop(void)
 
 // Вызовы этой функции (или группу вызовов) требуется "обрамить" парой вызовов
 // display_wrdatabar_begin() и display_wrdatabar_end().
-void colmain_bar(
+void display_bar(
 	uint_fast16_t xpix,
 	uint_fast16_t ypix,
 	uint_fast8_t width,	/* количество знакомест, занимаемых индикатором */
