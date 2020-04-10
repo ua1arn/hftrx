@@ -168,7 +168,7 @@ static void display_freqXbig_a(
 	const uint_fast8_t comma = 3 - rj;
 
 	colmain_setcolors3(colorsfg_1freq [0], colorsbg_1freq [0], colorsfg_1freq [0]);
-	if (pv != NULL)
+	if (0) //if (pv != NULL)
 	{
 #if WITHDIRECTFREQENER
 		const struct editfreq_tag * const efp = (const struct editfreq_tag *) pv;
@@ -222,7 +222,7 @@ static void display_freqX_a(
 	const uint_fast8_t comma = 3 - rj;
 
 	colmain_setcolors3(colorsfg_1freq [0], colorsbg_1freq [0], colorsfg_1freq [0]);
-	if (pv != NULL || gdirectfreq)
+	if (0) //if (pv != NULL || gdirectfreq)
 	{
 #if WITHDIRECTFREQENER
 #if LCDMODE_V2A || LCDMODE_V2
@@ -264,7 +264,7 @@ static void display_freqchr_a(
 	const uint_fast8_t comma = 3 - rj;
 
 	colmain_setcolors3(colorsfg_1freq [0], colorsbg_1freq [0], colorsfg_1freq [0]);
-	if (pv != NULL)
+	if (0) //if (pv != NULL)
 	{
 #if WITHDIRECTFREQENER
 		const struct editfreq_tag * const efp = (const struct editfreq_tag *) pv;
@@ -303,7 +303,7 @@ static void display_freqchr_b(
 	const uint_fast8_t comma = 3 - rj;
 
 	colmain_setcolors3(colorsfg_1freq [0], colorsbg_1freq [0], colorsfg_1freq [0]);
-	if (pv != NULL)
+	if (0) //if (pv != NULL)
 	{
 #if WITHDIRECTFREQENER
 		const struct editfreq_tag * const efp = (const struct editfreq_tag *) pv;
@@ -6396,8 +6396,12 @@ void display_dispfreq_ab(
 	uint_fast8_t menuset	/* индекс режима отображения (0..DISPLC_MODCOUNT - 1) */
 	)
 {
+#if LCDMODE_MAIN_PAGES > 1
+	display_walktroughsteps(0, getsubset(menuset, 0));
+#else /* LCDMODE_MAIN_PAGES > 1 */
 	display_walktroughsteps(REDRM_FREQ, getsubset(menuset, 0));
 	display_walktroughsteps(REDRM_FRQB, getsubset(menuset, 0));
+#endif /* LCDMODE_MAIN_PAGES > 1 */
 }
 
 void display_dispfreq_a2(
