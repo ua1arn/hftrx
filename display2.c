@@ -18,6 +18,9 @@
 
 #define WITHPLACEHOLDERS 1	//  отображение макета с еще незанятыми полями
 
+#if LCDMODE_LTDC
+	static struct menudef * md;
+#endif /* LCDMODE_LTDC */
 
 // todo: учесть LCDMODE_COLORED
 
@@ -6331,7 +6334,11 @@ void display2_bgprocess(void)
 
 		if (validforredraw(p, keyi, subsets [keyi]) == 0)
 			continue;
+#if LCDMODE_LTDC
+		(* p->redraw)(p->x, p->y, p->subset == REDRSUBSET_MENU ? md : NULL);
+#else
 		(* p->redraw)(p->x, p->y, NULL);
+#endif /* LCDMODE_LTDC */
 		walkis [keyi] += 1;
 		break;
 	}
@@ -6429,6 +6436,7 @@ void display_menuitemlabel(
 {
 #if LCDMODE_MAIN_PAGES > 1
 	display_walktrough(0, REDRSUBSET_MENU, pv);
+	md = pv;
 #else /* LCDMODE_MAIN_PAGES > 1 */
 	display_walktrough(REDRM_FREQ, REDRSUBSET_MENU, NULL);
 	display_walktrough(REDRM_FRQB, REDRSUBSET_MENU, NULL);
