@@ -479,6 +479,8 @@ static void hd44780_bar_column(uint_fast8_t pattern)
 
 void
 colmain_bar(
+	uint_fast16_t xpix,
+	uint_fast16_t ypix,
 	uint_fast8_t width,	/* количество знакомест, занимаемых индикатором */
 	/* was: unsigned int */ uint_fast8_t value,		/* значение, которое надо отобразить */
 	uint_fast8_t tracevalue,		/* значение маркера, которое надо отобразить */

@@ -857,9 +857,6 @@ display_menu_value(
 // Вызовы этой функции (или группу вызовов) требуется "обрамить" парой вызовов
 // display_wrdatabar_begin() и display_wrdatabar_end().
 void colmain_bar(
-	PACKEDCOLORMAIN_T * tbuffer,
-	uint_fast16_t tdx,
-	uint_fast16_t tdy,
 	uint_fast16_t xpix,
 	uint_fast16_t ypix,
 	uint_fast8_t width,	/* количество знакомест, занимаемых индикатором */
