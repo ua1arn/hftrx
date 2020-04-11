@@ -972,6 +972,8 @@ extern "C" {
 #define	NVRAM_TYPE_BKPSRAM			59	/* Backup SRAM */
 #define	NVRAM_TYPE_NOTHING			60	/* вообще отсутствует */
 
+#define TSC_TYPE_GT911		61	// Capasitive touch screen controller Goodix GT911     <- возможна ли перенумерация дефайнов?
+
 #define IF3_TYPE_DCRX	1
 #define IF3_TYPE_128	2
 #define IF3_TYPE_200	3

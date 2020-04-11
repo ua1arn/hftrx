@@ -16,9 +16,9 @@
 #include "gpio.h"
 #include "spi.h"
 
-#if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811)
-
 static uint_fast8_t tscpresetnt;
+
+#if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811)
 
 #if TSC_TYPE_STMPE811_USE_SPI
 #else /* TSC_TYPE_STMPE811_USE_SPI */
@@ -442,10 +442,38 @@ stmpe811_sethandler(void)
 
 #endif /* defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811) */
 
+#if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_GT911)
+#include <touch/gt911.h>
+
+uint_fast8_t
+board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
+{
+	static uint_fast16_t x = 0, y = 0;
+
+	if (gt911_getXY(& x, & y))
+	{
+		* xr = x;
+		* yr = y;
+		return 1;
+	}
+	* xr = x;
+	* yr = y;
+	return 0;
+}
+#endif /* defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_GT911) */
+
 #if defined (TSC1_TYPE)
 
 void board_tsc_initialize(void)
 {
+#if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_GT911)
+	tscpresetnt = gt911_initialize(GOODIX_I2C_ADDR_BA);
+	if (tscpresetnt)
+		PRINTF("gt911 initialization succefful\n");
+	else
+		PRINTF("gt911 initialization error\n");
+#endif /* defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_GT911) */
+
 #if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811)
 	stmpe811_initialize();
 //	#if WITHTOUCHGUI
