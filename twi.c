@@ -203,7 +203,7 @@ i2c_quit:
 //#define I2C_READ_NACK 0		// ack_type - last parameterr in read block
 
 // tested
-void i2c_read(uint_fast8_t *data, uint_fast8_t ack_type) 
+void i2c_read(uint8_t *data, uint_fast8_t ack_type)
 { 
 	uint_fast8_t twi_status; 
 	//char r_val = -1; 
@@ -305,7 +305,7 @@ void i2c_stop(void)
 	
 }
 
-void i2c_read(uint_fast8_t *data, uint_fast8_t ack_type) 
+void i2c_read(uint8_t *data, uint_fast8_t ack_type)
 {
 	switch (ack_type)
 	{
@@ -567,7 +567,7 @@ b:
 	//TP();
 }
 
-void i2c_read(uint_fast8_t *data, uint_fast8_t ack_type) 
+void i2c_read(uint8_t *data, uint_fast8_t ack_type)
 {
 	//debug_printf_P(PSTR("i2c_read trapped\n"));
 	//for (;;)
@@ -931,7 +931,7 @@ static void i2cmakestop(void)
 	I2C1->ICR = I2C_ICR_STOPCF;
 }
 
-void i2c_read(uint_fast8_t *data, uint_fast8_t ack_type) 
+void i2c_read(uint8_t *data, uint_fast8_t ack_type)
 {
 	//debug_printf_P(PSTR("i2c_read: ack_type=%08lX\n"), ack_type);
 	switch (ack_type)
@@ -1060,7 +1060,7 @@ void i2c_stop(void)
 		local_delay_us(1);
 }
 
-void i2c_read(uint_fast8_t *data, uint_fast8_t ack_type) 
+void i2c_read(uint8_t *data, uint_fast8_t ack_type)
 {
 	switch (ack_type)
 	{
@@ -1211,7 +1211,7 @@ void i2c_stop(void)
 	i2c_waitsend();
 }
 	
-void i2c_read(uint_fast8_t *data, uint_fast8_t ack_type) 
+void i2c_read(uint8_t *data, uint_fast8_t ack_type)
 {
 	switch (ack_type)
 	{
@@ -1353,7 +1353,7 @@ void i2c_stop(void)
 	TARGET_TWI.MASTER.CTRLC = TWI_MASTER_CMD_REPSTART_gc; 	// next command - i2c_start
 }
 	
-void i2c_read(uint_fast8_t *data, uint_fast8_t ack_type) 
+void i2c_read(uint8_t *data, uint_fast8_t ack_type)
 {
 	unsigned w = 255;
 	while (w -- && (TARGET_TWI.MASTER.STATUS & TWI_MASTER_RIF_bm) == 0)
@@ -1477,7 +1477,7 @@ void i2c_stop(void)
 
 }
 
-void i2c_read(uint_fast8_t *data, uint_fast8_t ack_type) 
+void i2c_read(uint8_t *data, uint_fast8_t ack_type)
 { 
 	volatile int n;
 	char x, d=0;

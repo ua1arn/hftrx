@@ -7,10 +7,9 @@
 #include <touch/gt911.h>
 
 static uint_fast8_t gt911_addr = 0;
-static GTPoint points[5]; //points buffer
 
-GTConfig config;
-GTInfo info;
+//static GTConfig config;
+//static GTInfo info;
 
 void gt911_set_reg(uint_fast16_t reg)
 {
@@ -19,7 +18,7 @@ void gt911_set_reg(uint_fast16_t reg)
 	i2c_write(reg & 0xFF);
 }
 
-void gt911_read(uint_fast16_t reg, uint_fast8_t *buf, size_t len)
+void gt911_read(uint_fast16_t reg, uint8_t *buf, size_t len)
 {
 	uint_fast8_t k = 0;
 
@@ -52,8 +51,8 @@ uint16_t gt911_readInput(GTPoint * point)
 	uint_fast8_t touch_num;
 	uint_fast8_t error;
 
-	uint_fast8_t regState[1];
-	uint_fast8_t buf[1];
+	uint8_t regState[1];
+	uint8_t buf[1];
 
 	gt911_read(GOODIX_READ_COORD_ADDR, regState, 1);
 
@@ -78,15 +77,15 @@ uint16_t gt911_readInput(GTPoint * point)
   return touch_num;
 }
 
-uint_fast8_t gt911_calcChecksum(uint_fast8_t* buf, uint_fast8_t len)
+uint_fast8_t gt911_calcChecksum(uint8_t* buf, uint_fast8_t len)
 {
 	uint_fast8_t ccsum = 0;
 	for (uint_fast8_t i = 0; i < len; i++) {
-	ccsum += buf[i];
+		ccsum += buf[i];
 	}
 	//ccsum %= 256;
 	ccsum = (~ccsum) + 1;
-	return ccsum;
+	return ccsum & 0xFF;
 }
 
 uint_fast8_t gt911_readChecksum(void)
@@ -94,22 +93,22 @@ uint_fast8_t gt911_readChecksum(void)
 	uint_fast16_t aStart = GT_REG_CFG;
 	uint_fast16_t aStop = 0x80FE;
 	uint_fast8_t len = aStop - aStart + 1;
-	uint_fast8_t buf[len];
+	uint8_t buf[len];
 
 	gt911_read(aStart, buf, len);
 	return gt911_calcChecksum(buf, len);
 }
 
-void gt911_readConfig(uint_fast8_t * config)
+void gt911_readConfig(uint8_t * config)
 {
-	gt911_read(GT_REG_CFG, (uint_fast8_t *) config, GOODIX_CONFIG_911_LENGTH);
+	gt911_read(GT_REG_CFG, config, GOODIX_CONFIG_911_LENGTH);
 }
 
 void gt911_fwResolution(uint_fast16_t maxX, uint_fast16_t maxY)
 {
 	uint_fast8_t len = GOODIX_CONFIG_911_LENGTH;
 	uint16_t pos = 0;
-	uint_fast8_t cfg[len];
+	uint8_t cfg[len];
 	gt911_readConfig(cfg);
 
 	cfg[1] = (maxX & 0xff);
@@ -128,7 +127,7 @@ void gt911_fwResolution(uint_fast16_t maxX, uint_fast16_t maxY)
 
 uint_fast16_t gt911_productID(void) {
 	uint_fast8_t res;
-	uint_fast8_t buf[4];
+	uint8_t buf[4];
 
 	gt911_read(GOODIX_REG_ID, buf, 4);
 	res = buf[3] | (buf[2] << 8) | (buf[1] << 16) | (buf[0] << 24);
@@ -159,6 +158,7 @@ void handleTouch(int8_t contacts, GTPoint *points) {
 
 uint_fast8_t gt911_getXY(uint_fast16_t * xt, uint_fast16_t * yt)
 {
+	GTPoint points[5]; //points buffer
 	int8_t contacts;
 	contacts = gt911_readInput(points);
 

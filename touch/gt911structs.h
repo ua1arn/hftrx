@@ -10,7 +10,7 @@ typedef struct {
   uint16_t xResolution;
   uint16_t yResolution;
   uint8_t vendorId;
-} GTInfo;
+} ATTRPACKED GTInfo;
 
 typedef struct {
   // 0x814F-0x8156, ... 0x8176 (5 points) 
@@ -19,12 +19,12 @@ typedef struct {
   uint16_t y;
   uint16_t area;
   uint8_t reserved;
-} GTPoint;
+} ATTRPACKED GTPoint;
 
 typedef struct {
   uint8_t touch; // Threshold of touch grow out of nothing
   uint8_t leave; // Threshold of touch decrease to nothing
-} GTLevelConfig;
+} ATTRPACKED GTLevelConfig;
 
 typedef struct {
   uint8_t txGain;
@@ -32,12 +32,12 @@ typedef struct {
   uint8_t dumpShift;
   GTLevelConfig level;
   uint8_t control;     //Pen mode escape time out period (Unit: Sec)
-} GTStylusConfig;
+} ATTRPACKED GTStylusConfig;
 
 typedef struct {
   uint16_t hoppingBitFreq;
   uint8_t hoppingFactor;
-} GTFreqHoppingConfig;
+} ATTRPACKED GTFreqHoppingConfig;
 
 typedef struct {
   // Key position: 0-255 valid 
@@ -51,7 +51,7 @@ typedef struct {
   uint8_t sens12;
   uint8_t sens34;
   uint8_t restrain;
-} GTKeyConfig;
+} ATTRPACKED GTKeyConfig;
 
 typedef struct {
   // start at 0x8047
@@ -118,5 +118,6 @@ typedef struct {
   // 0x8091
   uint8_t NC_5[2];
   GTKeyConfig keys;
-} GTConfig;
+}  ATTRPACKED GTConfig;
+
 #endif /* GT911STRUCTS_H_INCLUDED */

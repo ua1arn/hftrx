@@ -682,7 +682,7 @@ int dbg_getchar(char * r);
 void i2c_initialize(void);
 void i2c_start(uint_fast8_t address);
 
-void i2c_read(uint_fast8_t * pdata, uint_fast8_t acknak);
+void i2c_read(uint8_t * pdata, uint_fast8_t acknak);
 
 #define I2C_READ_ACK 0  // i2c_read parameter
 #define I2C_READ_ACK_1 1  // i2c_read parameter
