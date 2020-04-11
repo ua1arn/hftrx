@@ -2397,6 +2397,8 @@ colpip_string_tbg(
 	}
 }
 
+#if SMALLCHARW2
+
 // Используется при выводе на графический индикатор,
 // transparent background - не меняем цвет фона.
 void
@@ -2418,6 +2420,18 @@ colpip_string2_tbg(
 	}
 }
 
+// Возвращает ширину строки в пикселях
+uint_fast16_t strwidth2(
+	const char * s
+	)
+{
+	ASSERT(s != NULL);
+	return SMALLCHARW2 * strlen(s);
+}
+
+#endif /* SMALLCHARW2 */
+
+#if SMALLCHARW3
 // Используется при выводе на графический индикатор,
 // transparent background - не меняем цвет фона.
 void
@@ -2449,14 +2463,7 @@ uint_fast16_t strwidth3(
 	return SMALLCHARW3 * strlen(s);
 }
 
-// Возвращает ширину строки в пикселях
-uint_fast16_t strwidth2(
-	const char * s
-	)
-{
-	ASSERT(s != NULL);
-	return SMALLCHARW2 * strlen(s);
-}
+#endif /* SMALLCHARW3 */
 
 
 
@@ -2877,7 +2884,11 @@ void display_discharge(void)
 {
 }
 
-#if WITHTOUCHGUI
+#endif /* LCDMODE_LQ043T3DX02K */
+#endif /* LCDMODE_LTDC */
+
+
+#if SMALLCHARH3
 
 static uint_fast16_t
 RAMFUNC_NONILINE ltdc_horizontal_put_char_small3(
@@ -2940,11 +2951,7 @@ display_string3_at_xy(uint_fast16_t x, uint_fast16_t y, const char * s, COLORMAI
 	} while (lowhalf --);
 }
 
-#endif /* WITHTOUCHGUI */
-
-#endif /* LCDMODE_LQ043T3DX02K */
-#endif /* LCDMODE_LTDC */
-
+#endif /* SMALLCHARH3 */
 
 static const FLASHMEM int32_t vals10 [] =
 {
