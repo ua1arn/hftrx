@@ -675,12 +675,6 @@ static void spidf_write_byte(spitarget_t target, uint_fast8_t v)
 
 void spidf_uninitialize(void)
 {
-	//arm_hardware_pio4_inputs(0xFC);		// Отключить процессор от SERIAL FLASH
-#if 0
-	// spi multi-io hang off
-	CPG.STBCR9 |= CPG_STBCR9_BIT_MSTP93;	// Module Stop 93	- 1: Clock supply to channel 0 of the SPI multi I/O bus controller is halted.
-	(void) CPG.STBCR9;			/* Dummy read */
-#endif
 }
 
 // Connrect I/O pins
@@ -837,6 +831,65 @@ void spidf_initialize(void)
 #endif
 	// Connect I/O pins
 	SPIDF_HARDINITIALIZE();
+}
+
+void spidf_uninitialize(void)
+{
+	//arm_hardware_pio4_inputs(0xFC);		// Отключить процессор от SERIAL FLASH
+#if 0
+	// spi multi-io hang off
+	CPG.STBCR9 |= CPG_STBCR9_BIT_MSTP93;	// Module Stop 93	- 1: Clock supply to channel 0 of the SPI multi I/O bus controller is halted.
+	(void) CPG.STBCR9;			/* Dummy read */
+#endif
+}
+
+static void spidf_to_read(spitarget_t target)
+{
+}
+
+static void spidf_to_write(spitarget_t target)
+{
+}
+
+uint_fast8_t spidf_read_byte(spitarget_t target, uint_fast8_t v)
+{
+	return 0xFF;
+}
+
+// Connrect I/O pins
+static void spidf_select(spitarget_t target, uint_fast8_t mode)
+{
+	SPIDF_SELECT();
+}
+
+static void spidf_unselect(spitarget_t target)
+{
+	SPIDF_UNSELECT();
+}
+
+static void spidf_write_byte(spitarget_t target, uint_fast8_t v)
+{
+}
+
+
+static void spidf_progval8_p1(spitarget_t target, uint_fast8_t sendval)
+{
+	spidf_write_byte(target, sendval);
+}
+
+static void spidf_progval8_p2(spitarget_t target, uint_fast8_t sendval)
+{
+	spidf_write_byte(target, sendval);
+}
+
+static uint_fast8_t spidf_complete(spitarget_t target)
+{
+	return 0;
+}
+
+static uint_fast8_t spidf_progval8(spitarget_t target, uint_fast8_t sendval)
+{
+	return spidf_read_byte(target, sendval);
 }
 
 #endif /* WIHSPIDFHW */
