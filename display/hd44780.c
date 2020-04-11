@@ -292,6 +292,8 @@ hd44780_wait_ready(void)
 }
 
 
+void display_gotoxy(uint_fast8_t x, uint_fast8_t y); /* deprecated */
+
 /* дождаться готовности индикатора, подготовится к записи данных. */
 void 
 hd44780_put_char_begin(void)	/* Выдать CSB при использовании SPI интерфейса */

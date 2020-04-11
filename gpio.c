@@ -1310,6 +1310,8 @@ arm_hardware_piob_inputs(unsigned long ipins)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOB, ipins, STM32MP1_GPIO_MODE_INPIUT, 1, 1, 0);	/* mode, speed, pupdr, typer */
 
+#elif CPUSTYLE_AT91SAM7S
+
 #else
 	#error Undefined CPUSTYLE_XXX
 #endif
@@ -1368,6 +1370,9 @@ arm_hardware_pioc_inputs(unsigned long ipins)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOC, ipins, STM32MP1_GPIO_MODE_INPIUT, 1, 1, 0);	/* mode, speed, pupdr, typer */
 
+#elif CPUSTYLE_AT91SAM7S
+
+
 #else
 	#error Undefined CPUSTYLE_XXX
 #endif
@@ -1418,6 +1423,9 @@ arm_hardware_piod_inputs(unsigned long ipins)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOD, ipins, STM32MP1_GPIO_MODE_INPIUT, 1, 1, 0);	/* mode, speed, pupdr, typer */
 
+#elif CPUSTYLE_AT91SAM7S
+
+
 #else
 	#error Undefined CPUSTYLE_XXX
 #endif
@@ -1460,6 +1468,9 @@ arm_hardware_pioe_inputs(unsigned long ipins)
 	(void) RCC->MP_AHB4ENSETR;
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOE, ipins, STM32MP1_GPIO_MODE_INPIUT, 1, 1, 0);	/* mode, speed, pupdr, typer */
+
+#elif CPUSTYLE_AT91SAM7S
+
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -1602,6 +1613,9 @@ arm_hardware_pioa_analoginput(unsigned long ipins)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOA, ipins, STM32MP1_GPIO_MODE_ANALOG, 1, 0, 0);	/* mode, speed, pupdr, typer */
 
+#elif CPUSTYLE_AT91SAM7S
+
+
 #else
 	#error Undefined CPUSTYLE_XXX
 #endif
@@ -1652,6 +1666,9 @@ arm_hardware_piob_analoginput(unsigned long ipins)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOB, ipins, STM32MP1_GPIO_MODE_ANALOG, 1, 0, 0);	/* mode, speed, pupdr, typer */
 
+#elif CPUSTYLE_AT91SAM7S
+
+
 #else
 	#error Undefined CPUSTYLE_XXX
 #endif
@@ -1701,6 +1718,9 @@ arm_hardware_pioc_analoginput(unsigned long ipins)
 	(void) RCC->MP_AHB4ENSETR;
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOC, ipins, STM32MP1_GPIO_MODE_ANALOG, 1, 0, 0);	/* mode, speed, pupdr, typer */
+
+#elif CPUSTYLE_AT91SAM7S
+
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -2282,6 +2302,9 @@ arm_hardware_pioc_outputs(unsigned long opins, unsigned long initialstate)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOC, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
+#elif CPUSTYLE_AT91SAM7S
+
+
 #else
 	#error Undefined CPUSTYLE_XXX
 #endif
@@ -2344,6 +2367,9 @@ arm_hardware_pioa_outputs2m(unsigned long opins, unsigned long initialstate)
 	arm_stm32f4xx_hardware_pio_setstate(GPIOA, opins, initialstate);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOA, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
+
+#elif CPUSTYLE_AT91SAM7S
+
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -2408,6 +2434,9 @@ arm_hardware_piob_outputs2m(unsigned long opins, unsigned long initialstate)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOB, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
+#elif CPUSTYLE_AT91SAM7S
+
+
 #else
 	#error Undefined CPUSTYLE_XXX
 #endif
@@ -2470,6 +2499,9 @@ arm_hardware_pioc_outputs2m(unsigned long opins, unsigned long initialstate)
 	arm_stm32f4xx_hardware_pio_setstate(GPIOC, opins, initialstate);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOC, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
+
+#elif CPUSTYLE_AT91SAM7S
+
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -2534,6 +2566,9 @@ arm_hardware_piod_outputs2m(unsigned long opins, unsigned long initialstate)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOD, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
+#elif CPUSTYLE_AT91SAM7S
+
+
 #else
 	#error Undefined CPUSTYLE_XXX
 #endif
@@ -2587,6 +2622,9 @@ arm_hardware_piod_outputs(unsigned long opins, unsigned long initialstate)
 	arm_stm32f4xx_hardware_pio_setstate(GPIOD, opins, initialstate);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOD, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
+
+#elif CPUSTYLE_AT91SAM7S
+
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -2642,6 +2680,9 @@ arm_hardware_pioe_outputs(unsigned long opins, unsigned long initialstate)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOE, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
+#elif CPUSTYLE_AT91SAM7S
+
+
 #else
 	#error Undefined CPUSTYLE_XXX
 #endif
@@ -2695,6 +2736,9 @@ arm_hardware_pioe_outputs2m(unsigned long opins, unsigned long initialstate)
 	arm_stm32f4xx_hardware_pio_setstate(GPIOE, opins, initialstate);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOE, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
+
+#elif CPUSTYLE_AT91SAM7S
+
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -3477,6 +3521,9 @@ arm_hardware_piob_opendrain(unsigned long opins, unsigned long initialstate)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOB, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_2M, 0, 1);	/* mode, speed, pupdr, typer */
 
+#elif CPUSTYLE_AT91SAM7S
+
+
 #else
 	#error Undefined CPUSTYLE_XXX
 
@@ -3539,6 +3586,9 @@ arm_hardware_pioc_opendrain(unsigned long opins, unsigned long initialstate)
 	arm_stm32f4xx_hardware_pio_setstate(GPIOC, opins, initialstate);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOC, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_2M, 0, 1);	/* mode, speed, pupdr, typer */
+
+#elif CPUSTYLE_AT91SAM7S
+
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -3603,6 +3653,9 @@ arm_hardware_piod_opendrain(unsigned long opins, unsigned long initialstate)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOD, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_2M, 0, 1);	/* mode, speed, pupdr, typer */
 
+#elif CPUSTYLE_AT91SAM7S
+
+
 #else
 	#error Undefined CPUSTYLE_XXX
 
@@ -3656,6 +3709,9 @@ arm_hardware_pioe_opendrain(unsigned long opins, unsigned long initialstate)
 	arm_stm32f4xx_hardware_pio_setstate(GPIOE, opins, initialstate);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOE, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_2M, 0, 1);	/* mode, speed, pupdr, typer */
+
+#elif CPUSTYLE_AT91SAM7S
+
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -4041,6 +4097,9 @@ arm_hardware_pioa_altfn50(unsigned long opins, unsigned af)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOA, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
+#elif CPUSTYLE_AT91SAM7S
+
+
 #else
 	#error Undefined CPUSTYLE_XXX
 
@@ -4098,6 +4157,9 @@ arm_hardware_piob_altfn50(unsigned long opins, unsigned af)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOB, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
+#elif CPUSTYLE_AT91SAM7S
+
+
 #else
 	#error Undefined CPUSTYLE_XXX
 
@@ -4146,6 +4208,9 @@ arm_hardware_pioc_altfn50(unsigned long opins, unsigned af)
 	stm32mp1_pioX_altfn(GPIOC, opins, af);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOC, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
+
+#elif CPUSTYLE_AT91SAM7S
+
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -4197,6 +4262,9 @@ arm_hardware_piod_altfn20(unsigned long opins, unsigned af)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOD, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
+#elif CPUSTYLE_AT91SAM7S
+
+
 #else
 	#error Undefined CPUSTYLE_XXX
 
@@ -4246,6 +4314,9 @@ arm_hardware_piod_altfn50(unsigned long opins, unsigned af)
 	stm32mp1_pioX_altfn(GPIOD, opins, af);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOD, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
+
+#elif CPUSTYLE_AT91SAM7S
+
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -4305,6 +4376,9 @@ arm_hardware_pioa_altfn2(unsigned long opins, unsigned af)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOA, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
+#elif CPUSTYLE_AT91SAM7S
+
+
 #else
 	#error Undefined CPUSTYLE_XXX
 
@@ -4362,6 +4436,9 @@ arm_hardware_pioa_altfn20(unsigned long opins, unsigned af)
 	stm32mp1_pioX_altfn(GPIOA, opins, af);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOA, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
+
+#elif CPUSTYLE_AT91SAM7S
+
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -4421,6 +4498,9 @@ arm_hardware_piob_altfn2(unsigned long opins, unsigned af)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOB, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
+#elif CPUSTYLE_AT91SAM7S
+
+
 #else
 	#error Undefined CPUSTYLE_XXX
 
@@ -4478,6 +4558,9 @@ arm_hardware_piob_altfn20(unsigned long opins, unsigned af)
 	stm32mp1_pioX_altfn(GPIOB, opins, af);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOB, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
+
+#elif CPUSTYLE_AT91SAM7S
+
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -4537,6 +4620,9 @@ arm_hardware_pioc_altfn2(unsigned long opins, unsigned af)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOC, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
+#elif CPUSTYLE_AT91SAM7S
+
+
 #else
 	#error Undefined CPUSTYLE_XXX
 
@@ -4595,6 +4681,9 @@ arm_hardware_pioc_altfn20(unsigned long opins, unsigned af)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOC, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
+#elif CPUSTYLE_AT91SAM7S
+
+
 #else
 	#error Undefined CPUSTYLE_XXX
 
@@ -4644,6 +4733,9 @@ arm_hardware_piod_altfn2(unsigned long opins, unsigned af)
 	stm32mp1_pioX_altfn(GPIOD, opins, af);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOD, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
+
+#elif CPUSTYLE_AT91SAM7S
+
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -5975,6 +6067,9 @@ void arm_hardware_pioa_periphopendrain_altfn2(unsigned long opins, unsigned af)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOA, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_2M, 1, STM32MP1_GPIO_OT_OD);	/* mode, speed, pupdr, typer */
 
+#elif CPUSTYLE_AT91SAM7S
+
+
 #else
 	#error Undefined CPUSTYLE_XXX
 
@@ -6031,6 +6126,9 @@ void arm_hardware_piob_periphopendrain_altfn2(unsigned long opins, unsigned af)
 	stm32mp1_pioX_altfn(GPIOB, opins, af);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOB, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_2M, 1, STM32MP1_GPIO_OT_OD);	/* mode, speed, pupdr, typer */
+
+#elif CPUSTYLE_AT91SAM7S
+
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -6090,6 +6188,9 @@ void arm_hardware_pioc_periphopendrain_altfn2(unsigned long opins, unsigned af)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOC, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_2M, 1, STM32MP1_GPIO_OT_OD);	/* mode, speed, pupdr, typer */
 
+#elif CPUSTYLE_AT91SAM7S
+
+
 #else
 	#error Undefined CPUSTYLE_XXX
 
@@ -6148,6 +6249,9 @@ void arm_hardware_piod_periphopendrain_altfn2(unsigned long opins, unsigned af)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOD, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_2M, 1, STM32MP1_GPIO_OT_OD);	/* mode, speed, pupdr, typer */
 
+#elif CPUSTYLE_AT91SAM7S
+
+
 #else
 	#error Undefined CPUSTYLE_XXX
 
@@ -6197,6 +6301,9 @@ void arm_hardware_pioe_periphopendrain_altfn2(unsigned long opins, unsigned af)
 	stm32mp1_pioX_altfn(GPIOE, opins, af);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOE, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_2M, 1, STM32MP1_GPIO_OT_OD);	/* mode, speed, pupdr, typer */
+
+#elif CPUSTYLE_AT91SAM7S
+
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -6318,6 +6425,9 @@ arm_hardware_pioa_updown(unsigned long up, unsigned long down)
 
 	tm32mp1_pioX_pupdr(GPIOA, up, down);
 
+#elif CPUSTYLE_AT91SAM7S
+
+
 #else
 	#error Undefined CPUSTYLE_XXX
 #endif
@@ -6335,6 +6445,9 @@ arm_hardware_piob_updown(unsigned long up, unsigned long down)
 #elif CPUSTYLE_STM32MP1
 
 	tm32mp1_pioX_pupdr(GPIOB, up, down);
+
+#elif CPUSTYLE_AT91SAM7S
+
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -6354,6 +6467,9 @@ arm_hardware_pioc_updown(unsigned long up, unsigned long down)
 
 	tm32mp1_pioX_pupdr(GPIOC, up, down);
 
+#elif CPUSTYLE_AT91SAM7S
+
+
 #else
 	#error Undefined CPUSTYLE_XXX
 #endif
@@ -6372,6 +6488,9 @@ arm_hardware_piod_updown(unsigned long up, unsigned long down)
 
 	tm32mp1_pioX_pupdr(GPIOD, up, down);
 
+#elif CPUSTYLE_AT91SAM7S
+
+
 #else
 	#error Undefined CPUSTYLE_XXX
 #endif
@@ -6389,6 +6508,9 @@ arm_hardware_pioe_updown(unsigned long up, unsigned long down)
 #elif CPUSTYLE_STM32MP1
 
 	tm32mp1_pioX_pupdr(GPIOE, up, down);
+
+#elif CPUSTYLE_AT91SAM7S
+
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -6540,6 +6662,9 @@ arm_hardware_pioa_updownoff(unsigned long ipins)
 
 	arm_stm32mp1_hardware_pio_pupoff(GPIOA, ipins);
 
+#elif CPUSTYLE_AT91SAM7S
+
+
 #else
 	#error Undefined CPUSTYLE_XXX
 #endif
@@ -6557,6 +6682,9 @@ arm_hardware_piob_updownoff(unsigned long ipins)
 #elif CPUSTYLE_STM32MP1
 
 	arm_stm32mp1_hardware_pio_pupoff(GPIOB, ipins);
+
+#elif CPUSTYLE_AT91SAM7S
+
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -6576,6 +6704,9 @@ arm_hardware_pioc_updownoff(unsigned long ipins)
 
 	arm_stm32mp1_hardware_pio_pupoff(GPIOC, ipins);
 
+#elif CPUSTYLE_AT91SAM7S
+
+
 #else
 	#error Undefined CPUSTYLE_XXX
 #endif
@@ -6594,6 +6725,9 @@ arm_hardware_piod_updownoff(unsigned long ipins)
 
 	arm_stm32mp1_hardware_pio_pupoff(GPIOD, ipins);
 
+#elif CPUSTYLE_AT91SAM7S
+
+
 #else
 	#error Undefined CPUSTYLE_XXX
 #endif
@@ -6611,6 +6745,9 @@ arm_hardware_pioe_updownoff(unsigned long ipins)
 #elif CPUSTYLE_STM32MP1
 
 	arm_stm32mp1_hardware_pio_pupoff(GPIOE, ipins);
+
+#elif CPUSTYLE_AT91SAM7S
+
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -6827,6 +6964,9 @@ arm_hardware_piob_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 
 	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PB, priority);	// PORT B
 
+#elif CPUSTYLE_AT91SAM7S
+
+
 #else
 	#error Undefined CPUSTYLE_XXX
 
@@ -6859,6 +6999,9 @@ arm_hardware_pioc_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 #elif CPUSTYLE_STM32MP1
 
 	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PC, priority);	// PORT C
+
+#elif CPUSTYLE_AT91SAM7S
+
 
 #else
 	#error Undefined CPUSTYLE_XXX
