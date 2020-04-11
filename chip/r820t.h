@@ -9,7 +9,7 @@
 #ifndef R820T_H_INCLUDED
 #define R820T_H_INCLUDED
 
-// взято с 
+// взято с
 // https://github.com/airspy/airspyone_firmware/blob/master/common/r820t.c
 //
 /*
@@ -414,7 +414,7 @@ void airspy_r820t_write_init(const uint8_t* data)
     i2c_write(REG_SHADOW_START); /* Start reg */
 
     for (i = 0; i < R820T_INIT_NB_REGS; i++)
-      i2c_write(data[i]);
+      i2c_write(data [i]);
 
     i2c_write(0); /* Set last reg to 0 (errata r820t) */
 
@@ -438,9 +438,9 @@ static uint8_t r82xx_bitrev(uint8_t byte)
 void airspy_r820t_read(r820t_priv_t *priv, uint8_t* const data, const uint8_t data_count)
 {
   int i;
-  uint_fast8_t val;
+  uint8_t val;
 
-  if(r820t_is_power_enabled())
+  if (r820t_is_power_enabled())
   {
     /* read the value */
     //i2c1_tx_start();
@@ -1066,7 +1066,7 @@ r820t_setfreq(
 static void 
 r820t_initialize(void)
 {
-	uint_fast8_t val;
+	uint8_t val;
 
     i2c_start(R820T_I2C_ADDR | I2C_READ);
 	i2c_read(& val, I2C_READ_ACK_NACK);	/* чтение первого и единственного байта ответа */
