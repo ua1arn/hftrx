@@ -23,6 +23,9 @@
 
 	static PACKEDCOLORMAIN_T * getscratchwnd(void);
 
+#elif WITHSPECTRUMWF
+
+	static PACKEDCOLORMAIN_T * getscratchwnd(void);
 
 #endif /* LCDMODE_LTDC */
 
@@ -6045,13 +6048,13 @@ static void display2_waterfall(
 
 	// следы спектра ("водопад") на цветных дисплеях
 	PACKEDCOLORMAIN_T * const colorpip = getscratchwnd();
-	uint_fast16_t x;
+	uint_fast16_t y;
 
 	// формирование растра
 	// следы спектра ("водопад")
 	for (y = 0; y < WFDY; ++ y)
 	{
-		uint_fast16_t y;
+		uint_fast16_t x;
 		for (x = 0; x < ALLDX; ++ x)
 		{
 			colpip_point(colorpip, BUFDIM_X, BUFDIM_Y, x, y + WFY0, wfpalette [wfarray [(wfrow + y) % WFDY] [x]]);
@@ -6065,8 +6068,8 @@ static void display2_waterfall(
 }
 
 static void display2_colorbuff(
-	uint_fast8_t x,
-	uint_fast8_t y,
+	uint_fast8_t x0,
+	uint_fast8_t y0,
 	void * pv
 	)
 {
@@ -6080,7 +6083,7 @@ static void display2_colorbuff(
 	#if (LCDMODE_LTDC)
 
 	#else /* LCDMODE_LTDC */
-		display_colorbuffer_show(getscratchwnd(), BUFDIM_X, BUFDIM_Y, GRID2X(x0), GRID2Y(y0));
+	colpip_to_main(getscratchwnd(), BUFDIM_X, BUFDIM_Y, GRID2X(x0), GRID2Y(y0));
 	#endif /* LCDMODE_LTDC */
 
 #endif /* LCDMODE_S1D13781 */
