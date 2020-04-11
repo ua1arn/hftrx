@@ -3894,7 +3894,7 @@ static RAMFUNC void processafadcsampleiq(
 // ПЕРЕДАЧА
 // обрабатывается 16 битное (WITHAFADCWIDTH) число
 static RAMFUNC void processafadcsample(
-	INT32P_t vi0,	// выборка с микрофона (в vi)
+	FLOAT32P_t vi0,	// выборка с микрофона (в vi)
 	uint_fast8_t dspmode,
 	FLOAT_t shape,	// 0..1 - огибающая
 	FLOAT_t ctcss	// субтон, audio sample in range [- txlevelfence.. + txlevelfence]
