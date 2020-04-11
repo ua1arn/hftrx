@@ -5326,7 +5326,7 @@ static void display2_legend(
 }
 
 
-#if WITHSPECTRUMWF && ! LCDMODE_HD44780
+#if WITHSPECTRUMWF && ! LCDMODE_HD44780 && ! LCDMODE_DUMMY
 
 enum 
 {
@@ -6114,11 +6114,12 @@ PACKEDCOLORMAIN_T * getscratchwnd(void)
 }
 
 
-#else /* WITHSPECTRUMWF */
+#else /* WITHSPECTRUMWF && ! LCDMODE_HD44780 && ! LCDMODE_DUMMY */
 
 static
 PACKEDCOLORMAIN_T * getscratchwnd(void)
 {
+	return NULL;
 }
 
 // Stub
@@ -6158,7 +6159,7 @@ static void display2_colorbuff(
 
 }
 
-#endif /* WITHSPECTRUMWF */
+#endif /* WITHSPECTRUMWF && ! LCDMODE_HD44780 && ! LCDMODE_DUMMY */
 
 
 // Рисуем на основном экране цветной прямоугольник.
@@ -6362,10 +6363,10 @@ void display2_bgreset(void)
 	keyi = 0;
 #endif /* STMD */
 
-#if WITHSPECTRUMWF && ! LCDMODE_HD44780
+#if WITHSPECTRUMWF && ! LCDMODE_HD44780 && ! LCDMODE_DUMMY
 	// инициализация палитры волопада
 	wfpalette_initialize();
-#endif /* WITHSPECTRUMWF */
+#endif /* WITHSPECTRUMWF && ! LCDMODE_HD44780 && ! LCDMODE_DUMMY */
 }
 
 // Interface functions
