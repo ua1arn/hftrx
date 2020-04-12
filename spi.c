@@ -730,6 +730,7 @@ static uint_fast8_t spidf_progval8(spitarget_t target, uint_fast8_t sendval)
 static void spidf_iotest(
 	uint_fast8_t direction,	// 0: dataflash-to-memory, 1: Memory-to-dataflash
 	uint_fast8_t cmd,
+	uint_fast8_t ndummy,	// number of dummy bytes
 	uint_fast32_t length,
 	uint_fast8_t hasaddress,
 	uint_fast32_t address
@@ -757,7 +758,7 @@ static void spidf_iotest(
 		((direction ? 0x00 : 0x01) << QUADSPI_CCR_FMODE_Pos) |	// 01: Indirect read mode, 00: Indirect write mode
 		//(0x00 << QUADSPI_CCR_FMODE_Pos) |	//
 		(length != 0) * (0x01 << QUADSPI_CCR_DMODE_Pos) |	// 01: Data on a single line
-		//(0x01 << QUADSPI_CCR_DCYC_Pos) |	// This field defines the duration of the dummy phase.
+		((8 * ndummy)  << QUADSPI_CCR_DCYC_Pos) |	// This field defines the duration of the dummy phase (0..15).
 		//(0 << QUADSPI_CCR_ABSIZE_Pos) |	// 00: 8-bit alternate byte
 		(0 << QUADSPI_CCR_ABMODE_Pos) |	// 00: No alternate bytes
 		(0x02 << QUADSPI_CCR_ADSIZE_Pos) |	// 010: 24-bit address
@@ -770,13 +771,6 @@ static void spidf_iotest(
 	{
 		// Initiate operation
 		QUADSPI->AR = address;
-	}
-	TP();
-	while (length -- != 0)
-	{
-		if ((QUADSPI->SR & QUADSPI_SR_FLEVEL_Msk) == 0)
-			continue;
-		PRINTF("QUADSPI->DR=%02x\n", * (volatile uint8_t *) & QUADSPI->DR);
 	}
 }
 
@@ -821,17 +815,20 @@ void spidf_initialize(void)
 		0;
 	QUADSPI->CR |= QUADSPI_CR_EN_Msk;
 
-	spidf_iotest(0, 0x03, 8, 1, 0x00000000);
-	//spidf_read(NULL, 8);
+	spidf_iotest(0, 0x03, 0, 8, 1, 0x00000000);
+	spidf_read(NULL, 8);
 
-	spidf_iotest(0, 0x9F, 4, 0, 0x00000000);
-	//spidf_read(NULL, 4);
+	spidf_iotest(0, 0x9F, 0, 4, 0, 0x00000000);
+	spidf_read(NULL, 4);
 
-	spidf_iotest(0, 0x03, 8, 1, 0x00000000);
-	//spidf_read(NULL, 8);
+	spidf_iotest(0, 0x03, 0, 8, 1, 0x00000000);
+	spidf_read(NULL, 8);
 
-	spidf_iotest(0, 0x9F, 4, 0, 0x00000000);
-	//spidf_read(NULL, 4);
+	spidf_iotest(0, 0x9F, 0, 4, 0, 0x00000000);
+	spidf_read(NULL, 4);
+
+	spidf_iotest(0, 0x5A, 1, 8, 1, 0x00000000);	// READ SFDP (with dummy bytes)
+	spidf_read(NULL, 8);
 
 	SPIDF_HANGOFF();
 
