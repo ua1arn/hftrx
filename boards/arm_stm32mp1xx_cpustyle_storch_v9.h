@@ -19,8 +19,8 @@
 //#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
 //#define WITHMDMAHW		1	/* Использование MDMA для формирования изображений */
-#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
-//#define WIHSPIDFHW	1	/* аппаратное обслуживание DATA FLASH */
+//#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
+#define WIHSPIDFHW	1	/* аппаратное обслуживание DATA FLASH */
 
 //#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 #define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
@@ -852,20 +852,16 @@
 					/*arm_hardware_piof_altfn50(SPDIF_D3_BIT, AF_QUADSPI_AF9); */ /* PF6 D3 tie-up */ \
 					/*arm_hardware_piof_outputs(SPDIF_D2_BIT, SPDIF_D2_BIT); */ /* PF7 D2 tie-up */ \
 					/*arm_hardware_piof_outputs(SPDIF_D3_BIT, SPDIF_D3_BIT); */ /* PF6 D3 tie-up */ \
-					arm_hardware_piob_altfn50(SPDIF_NCS_BIT, AF_QUADSPI_AF10); /* PB6 CS */ \
 					arm_hardware_piof_altfn50(SPDIF_SCLK_BIT, AF_QUADSPI_AF9); /* PF10 SCLK */ \
 					arm_hardware_piof_altfn50(SPDIF_MOSI_BIT, AF_QUADSPI_AF10); /* PF8 MOSI */ \
 					arm_hardware_piof_altfn50(SPDIF_MISO_BIT, AF_QUADSPI_AF10); /* PF9 MISO */ \
+					arm_hardware_piob_altfn50(SPDIF_NCS_BIT, AF_QUADSPI_AF10); /* PB6 CS */ \
 				} while (0)
 			#define SPIDF_HANGOFF() do { \
 					arm_hardware_piob_inputs(SPDIF_NCS_BIT); \
 					arm_hardware_piof_inputs(SPDIF_SCLK_BIT); \
 					arm_hardware_piof_inputs(SPDIF_MOSI_BIT); \
 					arm_hardware_piof_inputs(SPDIF_MISO_BIT); \
-				} while (0)
-			#define SPIDF_SELECT() do { \
-				} while (0)
-			#define SPIDF_UNSELECT() do { \
 				} while (0)
 
 		#else /* WIHSPIDFHW */
