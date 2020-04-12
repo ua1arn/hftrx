@@ -610,6 +610,7 @@ void spi_initialize(void)
 
 #endif /* WITHSPIHW || WITHSPISW */
 
+
 #if WIHSPIDFSW
 
 
@@ -718,6 +719,8 @@ static uint_fast8_t spidf_progval8(spitarget_t target, uint_fast8_t sendval)
 }
 
 
+
+enum { SPDIFIO_READ, SPDIFIO_WRITE };	// в случае пеердачи только команды используем write */
 
 static void spidf_iostart(
 	uint_fast8_t direction,	// 0: dataflash-to-memory, 1: Memory-to-dataflash
@@ -1068,10 +1071,18 @@ static unsigned long ulmin(
 }
 
 /* снять защиту записи для следующей команды */
-static void dfwe(void)
+static void writeEnableDATAFLASH(void)
 {
 	spidf_iostart(SPDIFIO_WRITE, 0x06, 0, 0, 0, 0);	/* 0x06: write enable */
 	spidf_unselect();	/* done sending data to target chip */
+}
+
+static int writeDisableDATAFLASH(void)
+{
+	spidf_iostart(SPDIFIO_WRITE, 0x04, 0, 0, 0, 0);	/* 0x04: write disable */
+	spidf_unselect();	/* done sending data to target chip */
+
+	return 0;
 }
 
 uint_fast8_t dataflash_read_status(void)
@@ -1219,34 +1230,6 @@ int testchipDATAFLASH(void)
 	return 0;
 }
 
-#if 0
-int eraseDATAFLASH(void)
-{
-	spitarget_t target = targetdataflash;	/* addressing to chip */
-
-	spidf_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
-	spidf_progval8(target, 0x06);		/* write enable */
-	spidf_unselect(target);	/* done sending data to target chip */
-
-	if (timed_dataflash_read_status(target))
-		return 1;
-
-	spidf_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
-	spidf_progval8(target, 0x60);		/* chip erase */
-	spidf_unselect(target);	/* done sending data to target chip */
-
-	if (largetimed_dataflash_read_status(target))
-		return 1;
-
-	if ((dataflash_read_status(target) & (0x01 << 5)) != 0)	// write error
-	{
-		PRINTF(PSTR("Erase error\n"));
-		return 1;
-	}
-	return 0;
-}
-#endif
-
 int prepareDATAFLASH(void)
 {
 	const uint_fast8_t status = dataflash_read_status();
@@ -1256,41 +1239,18 @@ int prepareDATAFLASH(void)
 		if (timed_dataflash_read_status())
 			return 1;
 		PRINTF(PSTR("prepareDATAFLASH: Clear write protect bits\n"));
-		dfwe();		/* write enable */
+		writeEnableDATAFLASH();		/* write enable */
 
 		uint8_t v = 0x00;	/* status register data */
 		// Write Status Register
 		spidf_iostart(SPDIFIO_WRITE, 0x01, 0, 1, 0, 0);	/* Write Status Register */
 		spidf_write(& v, 1);
 		spidf_unselect();	/* done sending data to target chip */
+		TP();
 	}
 
 	return timed_dataflash_read_status();
 }
-
-#if 0
-static int writeEnableDATAFLASH(void)
-{
-	spitarget_t target = targetdataflash;	/* addressing to chip */
-
-	spidf_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
-	spidf_progval8(target, 0x06);		/* write enable */
-	spidf_unselect(target);	/* done sending data to target chip */
-
-	return 0;
-}
-
-static int writeDisableDATAFLASH(void)
-{
-	spitarget_t target = targetdataflash;	/* addressing to chip */
-
-	spidf_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
-	spidf_progval8(target, 0x04);		/* write disable */
-	spidf_unselect(target);	/* done sending data to target chip */
-
-	return 0;
-}
-#endif
 
 int sectoreraseDATAFLASH(unsigned long flashoffset)
 {
@@ -1299,7 +1259,7 @@ int sectoreraseDATAFLASH(unsigned long flashoffset)
 	if (timed_dataflash_read_status())
 		return 1;
 	TP();
-	dfwe();		/* write enable */
+	writeEnableDATAFLASH();		/* write enable */
 	TP();
 
 	// start byte programm
@@ -1318,7 +1278,7 @@ int writesinglepageDATAFLASH(unsigned long flashoffset, const unsigned char * da
 	if (timed_dataflash_read_status())
 		return 1;
 
-	dfwe();		/* write enable */
+	writeEnableDATAFLASH();		/* write enable */
 
 	// start byte programm
 
