@@ -730,7 +730,7 @@ static void spidf_iostart(
 	spitarget_t target = targetdataflash;	/* addressing to chip */
 
 	spidf_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
-	spidf_progval8_p1(target, 0x5A);		/* The Read SFDP instruction code is 0x5A */
+	spidf_progval8_p1(target, cmd);		/* The Read SFDP instruction code is 0x5A */
 
 	if (hasaddress)
 	{
@@ -740,6 +740,7 @@ static void spidf_iostart(
 	}
 	while (ndummy --)
 		spidf_progval8_p2(target, 0x00);	// dummy byte
+
 	spidf_complete(target);	/* done sending data to target chip */
 }
 
@@ -751,6 +752,18 @@ static void spidf_read(uint8_t * buff, uint32_t size)
 	while (size --)
 		* buff ++ = spidf_read_byte(target, 0xff);
 	spidf_to_write(target);
+}
+
+
+static uint_fast8_t spidf_verify(const uint8_t * buff, uint32_t size)
+{
+	uint_fast8_t err = 0;
+	spitarget_t target = targetdataflash;	/* addressing to chip */
+	spidf_to_read(target);
+	while (size --)
+		err |= * buff ++ != spidf_read_byte(target, 0xff);
+	spidf_to_write(target);
+	return err;
 }
 
 

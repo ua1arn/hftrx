@@ -864,20 +864,8 @@
 					arm_hardware_piof_inputs(SPDIF_MISO_BIT); \
 				} while (0)
 			#define SPIDF_SELECT() do { \
-					arm_hardware_piob_altfn50(SPDIF_NCS_BIT, AF_QUADSPI_AF10); \
-					arm_hardware_piof_altfn50(SPDIF_SCLK_BIT, AF_QUADSPI_AF9); \
-					arm_hardware_piof_altfn50(SPDIF_MOSI_BIT, AF_QUADSPI_AF10); \
-					arm_hardware_piof_altfn50(SPDIF_MISO_BIT, AF_QUADSPI_AF10); \
-					GPIOB->BSRR = BSRR_C(SPDIF_NCS_BIT); \
-					__DSB(); \
 				} while (0)
 			#define SPIDF_UNSELECT() do { \
-					GPIOB->BSRR = BSRR_S(SPDIF_NCS_BIT); \
-					arm_hardware_piob_inputs(SPDIF_NCS_BIT); \
-					arm_hardware_piof_inputs(SPDIF_SCLK_BIT); \
-					arm_hardware_piof_inputs(SPDIF_MOSI_BIT); \
-					arm_hardware_piof_inputs(SPDIF_MISO_BIT); \
-					__DSB(); \
 				} while (0)
 
 		#else /* WIHSPIDFHW */
