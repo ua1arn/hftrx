@@ -727,14 +727,23 @@ static uint_fast8_t spidf_progval8(spitarget_t target, uint_fast8_t sendval)
 // 17. SPI Multi I/O Bus Controller
 //
 
-static void spidf_iotest(void)
+static void spidf_iotest(
+	uint_fast8_t direction,	// 0: dataflash-to-memory, 1: Memory-to-dataflash
+	uint_fast8_t cmd,
+	uint_fast32_t length,
+	uint_fast8_t hasaddress,
+	uint_fast32_t address
+	)
 {
 	//const uint_fast8_t cmd = 0x9f;	// read id command
-	const uint_fast8_t cmd = 0x03;		/* sequential read block */
-	const uint_fast32_t address = 0x0000000uL;
-	const uint_fast32_t length = 8;
+//	const uint_fast8_t cmd = 0x03;		/* sequential read block */
+//	const uint_fast32_t address = 0x0000000uL;
+//	const uint_fast32_t length = 8;
 
-	QUADSPI->AR = address;
+	while ((QUADSPI->SR & QUADSPI_SR_BUSY_Msk) != 0)
+		;
+
+	//QUADSPI->AR = address;
 	QUADSPI->DLR = (length - 1);
 
 	//PRINTF("QUADSPI->DR=%08x\n", QUADSPI->DR);
@@ -745,14 +754,14 @@ static void spidf_iotest(void)
 		//(0 << QUADSPI_CCR_DHHC_Pos) |	// 0: Delay the data output using analog delay
 		//(0 << QUADSPI_CCR_FRCM_Pos) |	// 0: Normal mode
 		//(0 << QUADSPI_CCR_SIOO_Pos) |	// 0: Send instruction on every transaction
-		(0x01 << QUADSPI_CCR_FMODE_Pos) |	// 01: Indirect read mode
-		//(0x00 << QUADSPI_CCR_FMODE_Pos) |	// 00: Indirect write mode
-		(0x01 << QUADSPI_CCR_DMODE_Pos) |	// 01: Data on a single line
+		((direction ? 0x00 : 0x01) << QUADSPI_CCR_FMODE_Pos) |	// 01: Indirect read mode, 00: Indirect write mode
+		//(0x00 << QUADSPI_CCR_FMODE_Pos) |	//
+		(length != 0) * (0x01 << QUADSPI_CCR_DMODE_Pos) |	// 01: Data on a single line
 		//(0x01 << QUADSPI_CCR_DCYC_Pos) |	// This field defines the duration of the dummy phase.
 		//(0 << QUADSPI_CCR_ABSIZE_Pos) |	// 00: 8-bit alternate byte
 		(0 << QUADSPI_CCR_ABMODE_Pos) |	// 00: No alternate bytes
 		(0x02 << QUADSPI_CCR_ADSIZE_Pos) |	// 010: 24-bit address
-		(0x01 << QUADSPI_CCR_ADMODE_Pos) |	// 01: Address on a single line
+		(hasaddress != 0) * (0x01 << QUADSPI_CCR_ADMODE_Pos) |	// 01: Address on a single line
 		(0x01 << QUADSPI_CCR_IMODE_Pos) |	// 01: Instruction on a single line
 		(cmd << QUADSPI_CCR_INSTRUCTION_Pos) |	// Instruction to be send to the external SPI device.
 		0;
@@ -762,25 +771,23 @@ static void spidf_iotest(void)
 		// Initiate operation
 		QUADSPI->AR = address;
 	}
-
-	unsigned long tp;
-//QUADSPI_SR_BUSY_Msk
-//QUADSPI_SR_TCF_Msk
-
-//	tp = 0x007FFFFF;
-//	while (-- tp && (QUADSPI->SR & QUADSPI_SR_BUSY_Msk) != 0)
-//		;
 	TP();
-	//PRINTF("tp=%08x, QUADSPI->DR=%08x\n", tp, QUADSPI->DR);
-
-	tp = 0x007FFFFF;
-	int n = length;
-	while (-- tp && n != 0)
+	while (length -- != 0)
 	{
 		if ((QUADSPI->SR & QUADSPI_SR_FLEVEL_Msk) == 0)
 			continue;
-		PRINTF("tp=%08x, QUADSPI->DR=%02x\n", tp, * (volatile uint8_t *) & QUADSPI->DR);
-		-- n;
+		PRINTF("QUADSPI->DR=%02x\n", * (volatile uint8_t *) & QUADSPI->DR);
+	}
+}
+
+static void spidf_read(uint8_t * buffer, uint32_t length)
+{
+	TP();
+	while (length -- != 0)
+	{
+		if ((QUADSPI->SR & QUADSPI_SR_FLEVEL_Msk) == 0)
+			continue;
+		PRINTF("QUADSPI->DR=%02x\n", * (volatile uint8_t *) & QUADSPI->DR);
 	}
 }
 
@@ -814,8 +821,17 @@ void spidf_initialize(void)
 		0;
 	QUADSPI->CR |= QUADSPI_CR_EN_Msk;
 
-	spidf_iotest();
-	spidf_iotest();
+	spidf_iotest(0, 0x03, 8, 1, 0x00000000);
+	//spidf_read(NULL, 8);
+
+	spidf_iotest(0, 0x9F, 4, 0, 0x00000000);
+	//spidf_read(NULL, 4);
+
+	spidf_iotest(0, 0x03, 8, 1, 0x00000000);
+	//spidf_read(NULL, 8);
+
+	spidf_iotest(0, 0x9F, 4, 0, 0x00000000);
+	//spidf_read(NULL, 4);
 
 	SPIDF_HANGOFF();
 
