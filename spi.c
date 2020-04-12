@@ -778,7 +778,7 @@ static void spidf_write(const uint8_t * buff, uint32_t size)
 		 spidf_read_byte(target, * buff ++);
 }
 
-#elif WIHSPIDFHW
+#elif WIHSPIDFHW && CPUSTYLE_STM32MP1
 
 
 // вычитываем все заказанное количество
@@ -821,17 +821,6 @@ static void spidf_unselect(void)
 	while ((QUADSPI->SR & QUADSPI_SR_BUSY_Msk) != 0)
 		;
 	SPIDF_HANGOFF();
-}
-
-// вычитываем все заказанное количество
-static void spidf_dump(uint32_t size)
-{
-	while (size --)
-	{
-		while ((QUADSPI->SR & QUADSPI_SR_FLEVEL_Msk) == 0)
-			;
-		PRINTF("data = %02X\n", * (volatile uint8_t *) & QUADSPI->DR);
-	}
 }
 
 enum { SPDIFIO_READ, SPDIFIO_WRITE };	// в случае пеердачи только команды используем write */
@@ -886,8 +875,6 @@ static void spidf_iostart(
 
 void spidf_initialize(void)
 {
-#if CPUSTYLE_STM32MP1
-
 	RCC->MP_AHB6ENSETR = RCC_MC_AHB6ENSETR_QSPIEN;
 	(void) RCC->MP_AHB6ENSETR;
 	RCC->MP_AHB6LPENSETR = RCC_MC_AHB6LPENSETR_QSPILPEN;
@@ -912,17 +899,68 @@ void spidf_initialize(void)
 		(0x00 << QUADSPI_CR_PRESCALER_Pos) | // 1: FCLK = Fquadspi_ker_ck/2
 		0;
 	QUADSPI->CR |= QUADSPI_CR_EN_Msk;
+}
 
-#elif CPUSTYLE_R7S721
+void spidf_uninitialize(void)
+{
+	while ((QUADSPI->SR & QUADSPI_SR_BUSY_Msk) != 0)
+		;
+	SPIDF_HANGOFF();
+}
+
+#elif WIHSPIDFHW && CPUSTYLE_R7S721
+
+// вычитываем все заказанное количество
+static void spidf_read(uint8_t * buff, uint32_t size)
+{
+	while (size --)
+	{
+//		while ((QUADSPI->SR & QUADSPI_SR_FLEVEL_Msk) == 0)
+//			;
+//		* buff ++ = * (volatile uint8_t *) & QUADSPI->DR;
+	}
+}
+
+// передаем все заказанное количество
+static void spidf_write(const uint8_t * buff, uint32_t size)
+{
+	while (size --)
+	{
+//		while ((QUADSPI->SR & QUADSPI_SR_FLEVEL_Msk) == QUADSPI_SR_FLEVEL_Msk)
+//			;
+//		* (volatile uint8_t *) & QUADSPI->DR = * buff ++;
+	}
+}
+
+// вычитываем все заказанное количество
+static uint_fast8_t spidf_verify(const uint8_t * buff, uint32_t size)
+{
+	uint_fast8_t err = 0;
+	while (size --)
+	{
+//		while ((QUADSPI->SR & QUADSPI_SR_FLEVEL_Msk) == 0)
+//			;
+//		err |= * buff ++ != * (volatile uint8_t *) & QUADSPI->DR;
+	}
+	return err;
+}
+
+static void spidf_unselect(void)
+{
+//	while ((QUADSPI->SR & QUADSPI_SR_BUSY_Msk) != 0)
+//		;
+	SPIDF_HANGOFF();
+}
+
+void spidf_initialize(void)
+{
 
 	// Connect I/O pins
 	SPIDF_HARDINITIALIZE();
 
-#if 0
 	// spi multi-io hang on
 	CPG.STBCR9 &= ~ CPG_STBCR9_BIT_MSTP93;	// Module Stop 93	- 0: Clock supply to channel 0 of the SPI multi I/O bus controller is runnuing.
 	(void) CPG.STBCR9;			/* Dummy read */
-#endif
 
 #if 0
 	SPIBSC0.CMNCR |= SPIBSC_CMNCR_MD;	// SPI mode.
@@ -933,11 +971,6 @@ void spidf_initialize(void)
 		(0 << SPIBSC_SPBCR_BRDV_SHIFT) |	// 0..3
 		(2 << SPIBSC_SPBCR_SPBR_SHIFT) |	// 0..255
 		0;
-
-	arm_hardware_pio4_alternative(1U << 4, R7S721_PIOALT_4);	/* P4_4 SCLK / SPBCLK_0 */
-	arm_hardware_pio4_alternative(1U << 5, R7S721_PIOALT_4);	/* P4_5 CS# / SPBSSL_0 */
-	arm_hardware_pio4_alternative(1U << 6, R7S721_PIOALT_4);	/* P4_6 MOSI / SPBIO00_0 */
-	arm_hardware_pio4_alternative(1U << 7, R7S721_PIOALT_4);	/* P4_7 MISO / SPBIO10_0 */
 
 	/*
 		The transfer format is determined based on the following registers.
@@ -1007,31 +1040,25 @@ void spidf_initialize(void)
 		SPIBSC_SMCR_SPIWE |
 		0;
 #endif
-
-#endif
 }
 
 void spidf_uninitialize(void)
 {
-#if CPUSTYLE_STM32MP1
-
-	while ((QUADSPI->SR & QUADSPI_SR_BUSY_Msk) != 0)
-		;
-	SPIDF_HANGOFF();
-
-#elif CPUSTYLE_R7S721
-
 
 	SPIDF_HANGOFF();
+}
 
+enum { SPDIFIO_READ, SPDIFIO_WRITE };	// в случае пеердачи только команды используем write */
 
-	//arm_hardware_pio4_inputs(0xFC);		// Отключить процессор от SERIAL FLASH
-#if 0
-	// spi multi-io hang off
-	CPG.STBCR9 |= CPG_STBCR9_BIT_MSTP93;	// Module Stop 93	- 1: Clock supply to channel 0 of the SPI multi I/O bus controller is halted.
-	(void) CPG.STBCR9;			/* Dummy read */
-#endif
-#endif
+static void spidf_iostart(
+	uint_fast8_t direction,	// 0: dataflash-to-memory, 1: Memory-to-dataflash
+	uint_fast8_t cmd,
+	uint_fast8_t ndummy,	// number of dummy bytes
+	uint_fast32_t size,
+	uint_fast8_t hasaddress,
+	uint_fast32_t address
+	)
+{
 }
 
 #endif /* WIHSPIDFHW */
