@@ -727,6 +727,63 @@ static uint_fast8_t spidf_progval8(spitarget_t target, uint_fast8_t sendval)
 // 17. SPI Multi I/O Bus Controller
 //
 
+static void spidf_iotest(void)
+{
+	//const uint_fast8_t cmd = 0x9f;	// read id command
+	const uint_fast8_t cmd = 0x03;		/* sequential read block */
+	const uint_fast32_t address = 0x0000000uL;
+	const uint_fast32_t length = 8;
+
+	QUADSPI->AR = address;
+	QUADSPI->DLR = (length - 1);
+
+	//PRINTF("QUADSPI->DR=%08x\n", QUADSPI->DR);
+	QUADSPI->FCR = QUADSPI_FCR_CTCF_Msk;	// сброс флага готовновти
+
+	QUADSPI->CCR =
+		//(0 << QUADSPI_CCR_DDRM_Pos) |	// 0: DDR Mode disabled
+		//(0 << QUADSPI_CCR_DHHC_Pos) |	// 0: Delay the data output using analog delay
+		//(0 << QUADSPI_CCR_FRCM_Pos) |	// 0: Normal mode
+		//(0 << QUADSPI_CCR_SIOO_Pos) |	// 0: Send instruction on every transaction
+		(0x01 << QUADSPI_CCR_FMODE_Pos) |	// 01: Indirect read mode
+		//(0x00 << QUADSPI_CCR_FMODE_Pos) |	// 00: Indirect write mode
+		(0x01 << QUADSPI_CCR_DMODE_Pos) |	// 01: Data on a single line
+		//(0x01 << QUADSPI_CCR_DCYC_Pos) |	// This field defines the duration of the dummy phase.
+		//(0 << QUADSPI_CCR_ABSIZE_Pos) |	// 00: 8-bit alternate byte
+		(0 << QUADSPI_CCR_ABMODE_Pos) |	// 00: No alternate bytes
+		(0x02 << QUADSPI_CCR_ADSIZE_Pos) |	// 010: 24-bit address
+		(0x01 << QUADSPI_CCR_ADMODE_Pos) |	// 01: Address on a single line
+		(0x01 << QUADSPI_CCR_IMODE_Pos) |	// 01: Instruction on a single line
+		(cmd << QUADSPI_CCR_INSTRUCTION_Pos) |	// Instruction to be send to the external SPI device.
+		0;
+
+	if ((QUADSPI->CCR & QUADSPI_CCR_ADMODE_Msk) != 0)
+	{
+		// Initiate operation
+		QUADSPI->AR = address;
+	}
+
+	unsigned long tp;
+//QUADSPI_SR_BUSY_Msk
+//QUADSPI_SR_TCF_Msk
+
+//	tp = 0x007FFFFF;
+//	while (-- tp && (QUADSPI->SR & QUADSPI_SR_BUSY_Msk) != 0)
+//		;
+	TP();
+	//PRINTF("tp=%08x, QUADSPI->DR=%08x\n", tp, QUADSPI->DR);
+
+	tp = 0x007FFFFF;
+	int n = length;
+	while (-- tp && n != 0)
+	{
+		if ((QUADSPI->SR & QUADSPI_SR_FLEVEL_Msk) == 0)
+			continue;
+		PRINTF("tp=%08x, QUADSPI->DR=%02x\n", tp, * (volatile uint8_t *) & QUADSPI->DR);
+		-- n;
+	}
+}
+
 void spidf_initialize(void)
 {
 #if CPUSTYLE_STM32MP1
@@ -743,6 +800,7 @@ void spidf_initialize(void)
 	//PRINTF("QUADSPI->DR=%08x\n", QUADSPI->DR);
 
 	QUADSPI->CR &= ~ QUADSPI_CR_EN_Msk;
+	QUADSPI->CCR = 0;
 
 	QUADSPI->DCR = ((QUADSPI->DCR & ~ (QUADSPI_DCR_FSIZE_Msk | QUADSPI_DCR_CSHT_Msk | QUADSPI_DCR_CKMODE_Msk))) |
 		(23 << QUADSPI_DCR_FSIZE_Pos) |	// FSIZE+1 is effectively the number of address bits required to address the Flash memory.
@@ -754,61 +812,11 @@ void spidf_initialize(void)
 	QUADSPI->CR = ((QUADSPI->CR & ~ (QUADSPI_CR_PRESCALER_Msk))) |
 		(3 << QUADSPI_CR_PRESCALER_Pos) | // 3: FCLK = Fquadspi_ker_ck/4
 		0;
-
-	const uint_fast8_t cmd = 0x9f;	// read id command
-	//const uint_fast8_t cmd = 0x03;		/* sequential read block */
-	const uint_fast32_t address = 0x0000000uL;
-	const uint_fast32_t length = 11;
-
-	QUADSPI->CCR = 0;
-	QUADSPI->AR = address;
-	QUADSPI->DLR = (length - 1);
-
-	//PRINTF("QUADSPI->DR=%08x\n", QUADSPI->DR);
-	QUADSPI->FCR = QUADSPI_FCR_CTCF_Msk;	// сброс флага готовновти
 	QUADSPI->CR |= QUADSPI_CR_EN_Msk;
 
-	QUADSPI->CCR =
-		//(0 << QUADSPI_CCR_DDRM_Pos) |	// 0: DDR Mode disabled
-		//(0 << QUADSPI_CCR_DHHC_Pos) |	// 0: Delay the data output using analog delay
-		//(0 << QUADSPI_CCR_FRCM_Pos) |	// 0: Normal mode
-		//(0 << QUADSPI_CCR_SIOO_Pos) |	// 0: Send instruction on every transaction
-		(0x01 << QUADSPI_CCR_FMODE_Pos) |	// 01: Indirect read mode
-		//(0x00 << QUADSPI_CCR_FMODE_Pos) |	// 00: Indirect write mode
-		(0x01 << QUADSPI_CCR_DMODE_Pos) |	// 01: Data on a single line
-		//(0x01 << QUADSPI_CCR_DCYC_Pos) |	// This field defines the duration of the dummy phase.
-		//(0 << QUADSPI_CCR_ABSIZE_Pos) |	// 00: 8-bit alternate byte
-		(0 << QUADSPI_CCR_ABMODE_Pos) |	// 00: No alternate bytes
-		(0x02 << QUADSPI_CCR_ADSIZE_Pos) |	// 010: 24-bit address
-		//(0x01 << QUADSPI_CCR_ADMODE_Pos) |	// 01: Address on a single line
-		(0x01 << QUADSPI_CCR_IMODE_Pos) |	// 01: Instruction on a single line
-		(cmd << QUADSPI_CCR_INSTRUCTION_Pos) |	// Instruction to be send to the external SPI device.
-		0;
+	spidf_iotest();
+	spidf_iotest();
 
-	//QUADSPI->AR = address;
-
-	TP();
-	unsigned long tp;
-//QUADSPI_SR_BUSY_Msk
-//QUADSPI_SR_TCF_Msk
-
-//	tp = 0x007FFFFF;
-//	while (-- tp && (QUADSPI->SR & QUADSPI_SR_BUSY_Msk) != 0)
-//		;
-//	TP();
-	//PRINTF("tp=%08x, QUADSPI->DR=%08x\n", tp, QUADSPI->DR);
-
-	tp = 0x007FFFFF;
-	int n = 16;
-	while (-- tp && n != 0)
-	{
-		if ((QUADSPI->SR & QUADSPI_SR_FLEVEL_Msk) == 0)
-			continue;
-		PRINTF("tp=%08x, QUADSPI->DR=%02x\n", tp, * (volatile uint8_t *) & QUADSPI->DR);
-		-- n;
-	}
-	TP();
-	QUADSPI->CR &= ~ QUADSPI_CR_EN_Msk;
 	SPIDF_HANGOFF();
 
 #elif CPUSTYLE_R7S721
