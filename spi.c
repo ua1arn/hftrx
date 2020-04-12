@@ -740,32 +740,31 @@ void spidf_initialize(void)
 	SPIDF_HARDINITIALIZE();
 
 	PRINTF("QUADSPI->IPIDR=%08x\n", QUADSPI->IPIDR);
-	PRINTF("QUADSPI->DR=%08x\n", QUADSPI->DR);
+	//PRINTF("QUADSPI->DR=%08x\n", QUADSPI->DR);
 
 	QUADSPI->CR &= ~ QUADSPI_CR_EN_Msk;
-	PRINTF("QUADSPI->DR=%08x\n", QUADSPI->DR);
 
 	QUADSPI->DCR = ((QUADSPI->DCR & ~ (QUADSPI_DCR_FSIZE_Msk | QUADSPI_DCR_CSHT_Msk | QUADSPI_DCR_CKMODE_Msk))) |
 		(23 << QUADSPI_DCR_FSIZE_Pos) |	// FSIZE+1 is effectively the number of address bits required to address the Flash memory.
 		(0 << QUADSPI_DCR_CSHT_Pos) |	// 0: nCS stays high for at least 1 cycle between Flash memory commands
 		(0 << QUADSPI_DCR_CKMODE_Pos) |	// 0: CLK must stay low while nCS is high (chip select released). This is referred to as mode 0.
+		//(1 << QUADSPI_DCR_CKMODE_Pos) |	// 1: CLK must stay high while nCS is high (chip select released). This is referred to as mode 3.
 		0;
 
 	QUADSPI->CR = ((QUADSPI->CR & ~ (QUADSPI_CR_PRESCALER_Msk))) |
 		(3 << QUADSPI_CR_PRESCALER_Pos) | // 3: FCLK = Fquadspi_ker_ck/4
 		0;
 
-	PRINTF("QUADSPI->DR=%08x\n", QUADSPI->DR);
 	const uint_fast8_t cmd = 0x9f;	// read id command
 	//const uint_fast8_t cmd = 0x03;		/* sequential read block */
 	const uint_fast32_t address = 0x0000000uL;
-	const uint_fast32_t length = 4;
+	const uint_fast32_t length = 11;
 
 	QUADSPI->CCR = 0;
 	QUADSPI->AR = address;
 	QUADSPI->DLR = (length - 1);
 
-	PRINTF("QUADSPI->DR=%08x\n", QUADSPI->DR);
+	//PRINTF("QUADSPI->DR=%08x\n", QUADSPI->DR);
 	QUADSPI->FCR = QUADSPI_FCR_CTCF_Msk;	// сброс флага готовновти
 	QUADSPI->CR |= QUADSPI_CR_EN_Msk;
 
@@ -782,6 +781,7 @@ void spidf_initialize(void)
 		(0 << QUADSPI_CCR_ABMODE_Pos) |	// 00: No alternate bytes
 		(0x02 << QUADSPI_CCR_ADSIZE_Pos) |	// 010: 24-bit address
 		//(0x01 << QUADSPI_CCR_ADMODE_Pos) |	// 01: Address on a single line
+		(0x01 << QUADSPI_CCR_IMODE_Pos) |	// 01: Instruction on a single line
 		(cmd << QUADSPI_CCR_INSTRUCTION_Pos) |	// Instruction to be send to the external SPI device.
 		0;
 
@@ -795,16 +795,20 @@ void spidf_initialize(void)
 //	tp = 0x007FFFFF;
 //	while (-- tp && (QUADSPI->SR & QUADSPI_SR_BUSY_Msk) != 0)
 //		;
-//	PRINTF("tp=%08x, QUADSPI->DR=%08x\n", tp, QUADSPI->DR);
+//	TP();
+	//PRINTF("tp=%08x, QUADSPI->DR=%08x\n", tp, QUADSPI->DR);
 
 	tp = 0x007FFFFF;
-	while (-- tp && (QUADSPI->SR & QUADSPI_SR_TCF_Msk) == 0)
-		;
-	PRINTF("tp=%08x, QUADSPI->DR=%08x\n", tp, QUADSPI->DR);
-
+	int n = 16;
+	while (-- tp && n != 0)
+	{
+		if ((QUADSPI->SR & QUADSPI_SR_FLEVEL_Msk) == 0)
+			continue;
+		PRINTF("tp=%08x, QUADSPI->DR=%02x\n", tp, * (volatile uint8_t *) & QUADSPI->DR);
+		-- n;
+	}
+	TP();
 	QUADSPI->CR &= ~ QUADSPI_CR_EN_Msk;
-
-	PRINTF("QUADSPI->DR=%08x\n", QUADSPI->DR);
 	SPIDF_HANGOFF();
 
 #elif CPUSTYLE_R7S721
@@ -931,6 +935,9 @@ static void spidf_to_write(spitarget_t target)
 uint_fast8_t spidf_read_byte(spitarget_t target, uint_fast8_t v)
 {
 	return 0xFF;
+	while ((QUADSPI->SR & QUADSPI_SR_FLEVEL_Msk) == 0)
+		;
+	return * (volatile uint8_t *) & QUADSPI->DR;
 }
 
 // Connrect I/O pins

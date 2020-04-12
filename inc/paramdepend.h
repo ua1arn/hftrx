@@ -599,7 +599,7 @@ extern "C" {
 		AF_TIM14 = 9,	//!< AF9 - TIM12/13/14
 		AF_QUADSPI_AF9 = 9,	//!< AF9 - AF_QUADSPI
 		AF_OTGFS,		//!< AF10 - OTGFS
-		AF_QUADSPI_AF10 = 10,	//!< AF9 - AF_QUADSPI
+		AF_QUADSPI_AF10 = 10,	//!< AF10 - AF_QUADSPI
 		AF_OTGHS = 10,	//!< AF10 - OTGHS
 		AF_SAI2 = 10,	//!< AF10 - SAI2
 		AF_ETH,			//!< AF11 - ETH
