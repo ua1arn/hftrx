@@ -740,8 +740,10 @@ void spidf_initialize(void)
 	SPIDF_HARDINITIALIZE();
 
 	PRINTF("QUADSPI->IPIDR=%08x\n", QUADSPI->IPIDR);
+	PRINTF("QUADSPI->DR=%08x\n", QUADSPI->DR);
 
 	QUADSPI->CR &= ~ QUADSPI_CR_EN_Msk;
+	PRINTF("QUADSPI->DR=%08x\n", QUADSPI->DR);
 
 	QUADSPI->DCR = ((QUADSPI->DCR & ~ (QUADSPI_DCR_FSIZE_Msk | QUADSPI_DCR_CSHT_Msk | QUADSPI_DCR_CKMODE_Msk))) |
 		(23 << QUADSPI_DCR_FSIZE_Pos) |	// FSIZE+1 is effectively the number of address bits required to address the Flash memory.
@@ -753,13 +755,17 @@ void spidf_initialize(void)
 		(3 << QUADSPI_CR_PRESCALER_Pos) | // 3: FCLK = Fquadspi_ker_ck/4
 		0;
 
+	PRINTF("QUADSPI->DR=%08x\n", QUADSPI->DR);
 	const uint_fast8_t cmd = 0x9f;	// read id command
+	//const uint_fast8_t cmd = 0x03;		/* sequential read block */
 	const uint_fast32_t address = 0x0000000uL;
+	const uint_fast32_t length = 4;
 
 	QUADSPI->CCR = 0;
 	QUADSPI->AR = address;
-	QUADSPI->DLR = 4;
+	QUADSPI->DLR = (length - 1);
 
+	PRINTF("QUADSPI->DR=%08x\n", QUADSPI->DR);
 	QUADSPI->FCR = QUADSPI_FCR_CTCF_Msk;	// сброс флага готовновти
 	QUADSPI->CR |= QUADSPI_CR_EN_Msk;
 
@@ -774,21 +780,31 @@ void spidf_initialize(void)
 		//(0x01 << QUADSPI_CCR_DCYC_Pos) |	// This field defines the duration of the dummy phase.
 		//(0 << QUADSPI_CCR_ABSIZE_Pos) |	// 00: 8-bit alternate byte
 		(0 << QUADSPI_CCR_ABMODE_Pos) |	// 00: No alternate bytes
-		//(0x02 << QUADSPI_CCR_ADSIZE_Pos) |	// 010: 24-bit address
-		(0x01 << QUADSPI_CCR_ADMODE_Pos) |	// 01: Address on a single line
-		(cmd << QUADSPI_CCR_INSTRUCTION_Pos) |	// 01: Address on a single line
+		(0x02 << QUADSPI_CCR_ADSIZE_Pos) |	// 010: 24-bit address
+		//(0x01 << QUADSPI_CCR_ADMODE_Pos) |	// 01: Address on a single line
+		(cmd << QUADSPI_CCR_INSTRUCTION_Pos) |	// Instruction to be send to the external SPI device.
 		0;
 
+	//QUADSPI->AR = address;
+
 	TP();
-	unsigned long tp = 0x007FFFFF;
+	unsigned long tp;
 //QUADSPI_SR_BUSY_Msk
 //QUADSPI_SR_TCF_Msk
-	while (-- tp && (QUADSPI->SR & QUADSPI_SR_BUSY_Msk) != 0)
+
+//	tp = 0x007FFFFF;
+//	while (-- tp && (QUADSPI->SR & QUADSPI_SR_BUSY_Msk) != 0)
+//		;
+//	PRINTF("tp=%08x, QUADSPI->DR=%08x\n", tp, QUADSPI->DR);
+
+	tp = 0x007FFFFF;
+	while (-- tp && (QUADSPI->SR & QUADSPI_SR_TCF_Msk) == 0)
 		;
-	PRINTF("tp=%lu, QUADSPI->DR=%08x\n", tp, QUADSPI->DR);
+	PRINTF("tp=%08x, QUADSPI->DR=%08x\n", tp, QUADSPI->DR);
 
 	QUADSPI->CR &= ~ QUADSPI_CR_EN_Msk;
 
+	PRINTF("QUADSPI->DR=%08x\n", QUADSPI->DR);
 	SPIDF_HANGOFF();
 
 #elif CPUSTYLE_R7S721
