@@ -2386,7 +2386,7 @@ HAL_StatusTypeDef USB_EP0StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDe
 		}
 		else
 		{
-			if(ep->xfer_len > ep->maxpacket)
+			if (ep->xfer_len > ep->maxpacket)
 			{
 				ep->xfer_len = ep->maxpacket;
 			}

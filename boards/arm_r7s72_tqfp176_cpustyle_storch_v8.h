@@ -877,7 +877,27 @@
 			} while (0)
 		#define SPIDF_UNSELECT() do { \
 				R7S721_TARGET_PORT_S(4, (1U << 5)); \
-				arm_hardware_pio4_inputs(0x7C); \
+				arm_hardware_pio4_inputs(0xFC); /* Отключить процессор от SERIAL FLASH */ \
+			} while (0)
+
+	#elif WIHSPIDFHW
+			// P4_2: SPBIO20_0 WP#
+			// P4_3: SPBIO30_0 HOLD#
+			// P4_4: SPBCLK_0 SCLK
+			// P4_5: SPBSSL_0 CS#
+			// P4_6: SPBIO00_0 MOSI
+			// P4_7: SPBIO10_0 MISO
+
+		#define SPIDF_HARDINITIALIZE() do { \
+				arm_hardware_pio4_outputs(1U << 2, 1U << 2);				/* P4_2 WP / SPBIO20_0 */ \
+				arm_hardware_pio4_outputs(1U << 3, 1U << 3);				/* P4_3 NC / SPBIO30_0 */ \
+				arm_hardware_pio4_alternative(1U << 4, R7S721_PIOALT_4);	/* P4_4 SCLK / SPBCLK_0 */ \
+				arm_hardware_pio4_alternative(1U << 6, R7S721_PIOALT_4);	/* P4_6 MOSI / SPBIO00_0 */ \
+				arm_hardware_pio4_alternative(1U << 7, R7S721_PIOALT_4);	/* P4_7 MISO / SPBIO10_0 */ \
+				arm_hardware_pio4_alternative(1U << 5, R7S721_PIOALT_4);	/* P4_5 CS# / SPBSSL_0 */ \
+			} while (0)
+		#define SPIDF_HANGOFF() do { \
+				arm_hardware_pio4_inputs(0xFC); /* Отключить процессор от SERIAL FLASH */ \
 			} while (0)
 
 	#endif /* WIHSPIDFSW */
