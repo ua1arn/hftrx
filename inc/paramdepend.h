@@ -2258,6 +2258,10 @@ extern "C" {
 
 #endif /* LCDMODE_LTDC */
 
+#if WIHSPIDFSW && WIHSPIDFHW
+	#error WIHSPIDFSW and WIHSPIDFHW can not be used in same time
+#endif /* WIHSPIDFSW && WIHSPIDFHW */
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
