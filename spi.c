@@ -1254,19 +1254,15 @@ int prepareDATAFLASH(void)
 
 int sectoreraseDATAFLASH(unsigned long flashoffset)
 {
-	PRINTF(PSTR(" Erase sector at address %08lX\n"), flashoffset);
+	//PRINTF(PSTR(" Erase sector at address %08lX\n"), flashoffset);
 
 	if (timed_dataflash_read_status())
 		return 1;
-	TP();
 	writeEnableDATAFLASH();		/* write enable */
-	TP();
 
 	// start byte programm
 	spidf_iostart(SPDIFIO_WRITE, 0xD8, 0, 0, 1, flashoffset);		/* 64KB SECTOR ERASE */
-	TP();
 	spidf_unselect();	/* done sending data to target chip */
-	TP();
 	//timed_dataflash_read_status(target);
 	return 0;
 }
@@ -1293,7 +1289,7 @@ int writesinglepageDATAFLASH(unsigned long flashoffset, const unsigned char * da
 
 int writeDATAFLASH(unsigned long flashoffset, const uint8_t * data, unsigned long len)
 {
-	PRINTF(PSTR("Write to address %08lX %02X\n"), flashoffset, len);
+	//PRINTF(PSTR("Write to address %08lX %02X\n"), flashoffset, len);
 	while (len != 0)
 	{
 		unsigned long offset = flashoffset & 0xFF;
@@ -1306,7 +1302,7 @@ int writeDATAFLASH(unsigned long flashoffset, const uint8_t * data, unsigned lon
 		flashoffset += part;
 		data += part;
 	}
-	PRINTF(PSTR("Write to address %08lX %02X done\n"), flashoffset, len);
+	//PRINTF(PSTR("Write to address %08lX %02X done\n"), flashoffset, len);
 	return 0;
 }
 
