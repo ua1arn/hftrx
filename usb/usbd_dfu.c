@@ -330,11 +330,10 @@ static uint8_t *MEM_If_Read_HS(uint32_t src, uint8_t *dest, uint32_t Len)
 	*/
 
 	/* Return a valid address to avoid HardFault */
-	spitarget_t target = targetdataflash;	/* addressing to chip */
-	if (timed_dataflash_read_status(target))
+	if (timed_dataflash_read_status())
 	{
 		//TP();
-		return dest;	// todo: error handling need
+		return 0; //dest;	// todo: error handling need
 	}
 	readDATAFLASH(src, dest, Len);
 	return dest;
@@ -350,8 +349,7 @@ static uint8_t *MEM_If_Read_HS(uint32_t src, uint8_t *dest, uint32_t Len)
 static USBD_StatusTypeDef MEM_If_GetStatus_HS(uint32_t Add, uint8_t Cmd, uint8_t *buffer)
 {
 	/* USER CODE BEGIN 11 */
-	spitarget_t target = targetdataflash;	/* addressing to chip */
-	uint_fast8_t st = dataflash_read_status(target);
+	uint_fast8_t st = dataflash_read_status();
 
 	const unsigned FLASH_PROGRAM_TIME = (st & 0x01) ? 5 : 0;
 	const unsigned FLASH_ERASE_TIME = (st & 0x01) ? 5 : 0;
@@ -881,10 +879,17 @@ static void DFU_Upload(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req
         /* Return the physical address where data are stored */
         phaddr = USBD_DFU_fops_HS.Read(addr, hdfu->buffer.d8, hdfu->wlength);
 
-        /* Send the status data over EP0 */
-        USBD_CtlSendData(pdev,
-                          phaddr,
-                          hdfu->wlength);
+        if (phaddr == 0)
+        {
+            USBD_CtlError (pdev, req);
+        }
+        else
+        {
+			/* Send the status data over EP0 */
+			USBD_CtlSendData(pdev,
+							  phaddr,
+							  hdfu->wlength);
+        }
       }
       else  /* unsupported hdfu->wblock_num */
       {

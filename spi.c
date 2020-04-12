@@ -683,8 +683,9 @@ static void spidf_select(spitarget_t target, uint_fast8_t mode)
 	SPIDF_SELECT();
 }
 
-static void spidf_unselect(spitarget_t target)
+static void spidf_unselect(void)
 {
+	spitarget_t target = targetdataflash;	/* addressing to chip */
 	SPIDF_UNSELECT();
 }
 
@@ -796,7 +797,7 @@ void spidf_initialize(void)
 
 	QUADSPI->DCR = ((QUADSPI->DCR & ~ (QUADSPI_DCR_FSIZE_Msk | QUADSPI_DCR_CSHT_Msk | QUADSPI_DCR_CKMODE_Msk))) |
 		(23 << QUADSPI_DCR_FSIZE_Pos) |	// FSIZE+1 is effectively the number of address bits required to address the Flash memory.
-		(0 << QUADSPI_DCR_CSHT_Pos) |	// 0: nCS stays high for at least 1 cycle between Flash memory commands
+		(7 << QUADSPI_DCR_CSHT_Pos) |	// 0: nCS stays high for at least 1 cycle between Flash memory commands
 		(0 << QUADSPI_DCR_CKMODE_Pos) |	// 0: CLK must stay low while nCS is high (chip select released). This is referred to as mode 0.
 		//(1 << QUADSPI_DCR_CKMODE_Pos) |	// 1: CLK must stay high while nCS is high (chip select released). This is referred to as mode 3.
 		0;
@@ -1006,7 +1007,7 @@ static uint_fast8_t spidf_verify(const uint8_t * buff, uint32_t size)
 	return err;
 }
 
-static void spidf_unselect(spitarget_t target)
+static void spidf_unselect(void)
 {
 	while ((QUADSPI->SR & QUADSPI_SR_BUSY_Msk) != 0)
 		;
@@ -1049,41 +1050,36 @@ static unsigned long ulmin(
 	return a < b ? a : b;
 }
 
-unsigned char dataflash_read_status(
-	spitarget_t target	/* addressing to chip */
-	)
+uint_fast8_t dataflash_read_status(void)
 {
 	uint8_t v;
+	enum { SPDIF_IOSIZE = sizeof v };
 
-	spidf_iostart(0, 0x05, 0, 1, 0, 0x00000000);	/* read status register */
-	spidf_read(& v, 1);
-	spidf_unselect(target);	/* done sending data to target chip */
+	spidf_iostart(0, 0x05, 0, SPDIF_IOSIZE, 0, 0x00000000);	/* read status register */
+	spidf_read(& v, SPDIF_IOSIZE);
+	spidf_unselect();	/* done sending data to target chip */
 
 	return v;
 }
 
-int timed_dataflash_read_status(
-	spitarget_t target
-	)
+int timed_dataflash_read_status(void)
 {
 	unsigned long w = 40000;
 	while (w --)
 	{
-		if ((dataflash_read_status(target) & 0x01) == 0)
+		if ((dataflash_read_status() & 0x01) == 0)
 			return 0;
 	}
 	PRINTF(PSTR("DATAFLASH timeout error\n"));
 	return 1;
 }
 
-static int largetimed_dataflash_read_status(
-	spitarget_t target
-	)
+static int largetimed_dataflash_read_status(void)
 {
 	unsigned long w = 40000000;
 	while (w --)
 	{
-		if ((dataflash_read_status(target) & 0x01) == 0)
+		if ((dataflash_read_status() & 0x01) == 0)
 			return 0;
 	}
 	PRINTF(PSTR("DATAFLASH erase timeout error\n"));
@@ -1098,7 +1094,7 @@ static void readSFDPDATAFLASH(spitarget_t target, unsigned long flashoffset, uin
 	// Read SFDP
 	spidf_iostart(0, 0x5A, 1, size, 1, flashoffset);	// READ SFDP (with dummy bytes)
 	spidf_read(buff, size);
-	spidf_unselect(target);	/* done sending data to target chip */
+	spidf_unselect();	/* done sending data to target chip */
 }
 
 static int seekparamSFDPDATAFLASH(spitarget_t target, unsigned long * paramoffset, uint_fast8_t * paramlength, uint_fast8_t id, uint_fast8_t lastnum)
@@ -1138,21 +1134,22 @@ int testchipDATAFLASH(void)
 	/* Ожидание бита ~RDY в слове состояния. Для FRAM не имеет смысла.
 	Вставлено для возможности использования DATAFLASH */
 
-	if (timed_dataflash_read_status(target))
+	if (timed_dataflash_read_status())
 		return 1;
 
 #if WITHDEBUG
 
-	spidf_iostart(0, 0x9F, 0, 4, 0, 0x00000000);	/* read id register */
-	spidf_read(mfa, 4);
-	//prog_spidf_to_read();
+	enum { SPDIF_IOSIZE = sizeof mfa };
+	spidf_iostart(0, 0x9F, 0, SPDIF_IOSIZE, 0, 0x00000000);	/* read id register */
+	spidf_read(mfa, SPDIF_IOSIZE);
+	spidf_unselect();	/* done sending data to target chip */
+
 	mf_id = mfa [0];
 	mf_devid1 = mfa [1];
 	mf_devid2 = mfa [02];
 	mf_dlen = mfa [3];
 #endif /* WITHDEBUG */
 
-	spidf_unselect(target);	/* done sending data to target chip */
 
 	PRINTF(PSTR("spidf: ID = 0x%02X devId = 0x%02X%02X, mf_dlen=0x%02X\n"), mf_id, mf_devid1, mf_devid2, mf_dlen);
 
@@ -1231,27 +1228,22 @@ int eraseDATAFLASH(void)
 
 static void dfwe(void)
 {
-	spitarget_t target = targetdataflash;	/* addressing to chip */
-
 //	spidf_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
 //	spidf_progval8(target, 0x06);		/* write enable */
 //	spidf_unselect(target);	/* done sending data to target chip */
 
 	spidf_iostart(0, 0x06, 0, 0, 0, 0);	/* write enable */
-	spidf_unselect(target);	/* done sending data to target chip */
+	spidf_unselect();	/* done sending data to target chip */
 
 }
 
 int prepareDATAFLASH(void)
 {
-	spitarget_t target = targetdataflash;	/* addressing to chip */
-
-
-	const uint_fast8_t status = dataflash_read_status(target);
+	const uint_fast8_t status = dataflash_read_status();
 
 	if ((status & 0x1C) != 0)
 	{
-		if (timed_dataflash_read_status(target))
+		if (timed_dataflash_read_status())
 			return 1;
 		PRINTF(PSTR("Clear write protect bits\n"));
 		dfwe();		/* write enable */
@@ -1260,10 +1252,10 @@ int prepareDATAFLASH(void)
 		// Write Status Register
 		spidf_iostart(1, 0x01, 0, 1, 0, 0);	/* Write Status Register */
 		spidf_write(& v, 1);
-		spidf_unselect(target);	/* done sending data to target chip */
+		spidf_unselect();	/* done sending data to target chip */
 	}
 
-	return timed_dataflash_read_status(target);
+	return timed_dataflash_read_status();
 }
 
 #if 0
@@ -1290,28 +1282,28 @@ static int writeDisableDATAFLASH(void)
 }
 #endif
 
-void sectoreraseDATAFLASH(unsigned long flashoffset)
+int sectoreraseDATAFLASH(unsigned long flashoffset)
 {
-	spitarget_t target = targetdataflash;	/* addressing to chip */
-
 	//PRINTF(PSTR(" Erase sector at address %08lX\n"), flashoffset);
 
-	timed_dataflash_read_status(target);
+	if (timed_dataflash_read_status())
+		return 1;
 
 	dfwe();		/* write enable */
 
 	// start byte programm
 	spidf_iostart(0, 0xD8, 0, 0, 1, flashoffset);		/* 64KB SECTOR ERASE */
-	spidf_unselect(target);	/* done sending data to target chip */
+	spidf_unselect();	/* done sending data to target chip */
 	//timed_dataflash_read_status(target);
+	return 0;
 }
 
-static void writesinglepageDATAFLASH(unsigned long flashoffset, const unsigned char * data, unsigned long len)
+int writesinglepageDATAFLASH(unsigned long flashoffset, const unsigned char * data, unsigned long len)
 {
-	spitarget_t target = targetdataflash;	/* addressing to chip */
+	PRINTF(PSTR(" Prog to address %08lX %02X\n"), flashoffset, len);
 
-	timed_dataflash_read_status(target);
-	//PRINTF(PSTR(" Prog to address %08lX %02X\n"), flashoffset, len);
+	if (timed_dataflash_read_status())
+		return 1;
 
 	dfwe();		/* write enable */
 
@@ -1319,42 +1311,45 @@ static void writesinglepageDATAFLASH(unsigned long flashoffset, const unsigned c
 
 	spidf_iostart(1, 0x02, 0, len, 1, flashoffset);		/* Page Program */
 	spidf_write(data, len);
-	spidf_unselect(target);	/* done sending data to target chip */
+	spidf_unselect();	/* done sending data to target chip */
 
+	PRINTF(PSTR(" Prog to address %08lX %02X done\n"), flashoffset, len);
 	//timed_dataflash_read_status(target);
+	return 0;
 }
 
-int writeDATAFLASH(unsigned long flashoffset, const unsigned char * data, unsigned long len)
+int writeDATAFLASH(unsigned long flashoffset, const uint8_t * data, unsigned long len)
 {
-	//PRINTF(PSTR("Write to address %08lX %02X\n"), flashoffset, len);
+	PRINTF(PSTR("Write to address %08lX %02X\n"), flashoffset, len);
 	while (len != 0)
 	{
 		unsigned long offset = flashoffset & 0xFF;
 		unsigned long part = ulmin(len, ulmin(256, 256 - offset));
 
-		writesinglepageDATAFLASH(flashoffset, data, part);
+		if (writesinglepageDATAFLASH(flashoffset, data, part))
+			return 1;
 
 		len -= part;
 		flashoffset += part;
 		data += part;
 	}
+	PRINTF(PSTR("Write to address %08lX %02X done\n"), flashoffset, len);
 	return 0;
 }
 
-int verifyDATAFLASH(unsigned long flashoffset, const unsigned char * data, unsigned long len)
+int verifyDATAFLASH(unsigned long flashoffset, const uint8_t * data, unsigned long len)
 {
 	unsigned long count;
 	unsigned long err = 0;
 	unsigned char v;
-	spitarget_t target = targetdataflash;	/* addressing to chip */
 
 	//PRINTF(PSTR("Compare from address %08lX\n"), flashoffset);
 
-	timed_dataflash_read_status(target);
+	timed_dataflash_read_status();
 
 	spidf_iostart(0, 0x03, 0, len, 1, flashoffset);	/* sequential read block */
 	err = spidf_verify(data, len);
-	spidf_unselect(target);	/* done sending data to target chip */
+	spidf_unselect();	/* done sending data to target chip */
 
 	if (err)
 		PRINTF(PSTR("Done compare, have errors\n"));
@@ -1362,21 +1357,28 @@ int verifyDATAFLASH(unsigned long flashoffset, const unsigned char * data, unsig
 	return err;
 }
 
-void readDATAFLASH(unsigned long flashoffset, unsigned char * data, unsigned long len)
+int readDATAFLASH(unsigned long flashoffset, uint8_t * data, unsigned long len)
 {
-	spitarget_t target = targetdataflash;	/* addressing to chip */
-
-	timed_dataflash_read_status(target);
+	PRINTF("readDATAFLASH start\n");
+	if (timed_dataflash_read_status())
+	{
+		PRINTF("readDATAFLASH failure\n");
+		return 1;
+	}
+	PRINTF("readDATAFLASH start2\n");
 
 	spidf_iostart(0, 0x03, 0, len, 1, flashoffset);	/* sequential read block */
+	TP();
 	spidf_read(data, len);
-	spidf_unselect(target);	/* done sending data to target chip */
+	TP();
+	spidf_unselect();	/* done sending data to target chip */
+	PRINTF("readDATAFLASH done\n");
+	return 0;
 }
 
 
 void bootloader_readimage(unsigned long flashoffset, uint8_t * dest, unsigned Len)
 {
-	spitarget_t target = targetdataflash;	/* addressing to chip */
 	spidf_initialize();
 	readDATAFLASH(flashoffset, dest, Len);
 	spidf_uninitialize();
