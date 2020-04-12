@@ -15,6 +15,7 @@
 
 #define CTLREG_SPIMODE	SPIC_MODE3	
 
+#include "touch/touch.h"
 #include "display/display.h"
 #include "formats.h"
 #include <math.h>

@@ -328,10 +328,6 @@ adcvalholder_t board_getadc_fsval(uint_fast8_t i);	/* получить макс�
 //void hardware_set_adc_filterLPF(uint_fast8_t i, uint_fast8_t k);	/* Установить способ фильтрации LPF и частоту среза - параметр 1.0..0.0, умноженное на BOARD_ADCFILTER_LPF_DENOM */
 #define BOARD_ADCFILTER_LPF_DENOM	128		/* положение фиксированной точки при фильтрации BOARD_ADCFILTER_LPF */
 
-void board_tsc_initialize(void);
-uint_fast8_t board_tsc_getxy(uint_fast16_t * x, uint_fast16_t * y);	/* touch screen interface */
-uint_fast8_t board_tsc_is_pressed (void); 	/* Return 1 if touch detection */
-
 const uint16_t * getrbfimage(size_t * count); /* получить расположение в памяти и количество элементов в массиве для загрузки FPGA */
 
 enum

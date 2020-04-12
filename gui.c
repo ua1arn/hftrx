@@ -15,6 +15,7 @@
 #include <string.h>
 #include <math.h>
 #include "gui.h"
+#include "touch/touch.h"
 
 #if LCDMODE_LTDC && WITHTOUCHGUI
 

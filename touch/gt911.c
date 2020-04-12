@@ -7,9 +7,7 @@
 #include <touch/gt911.h>
 
 static uint_fast8_t gt911_addr = 0;
-
-//static GTConfig config;
-//static GTInfo info;
+static uint_fast8_t tscpresetnt;
 
 void gt911_set_reg(uint_fast16_t reg)
 {
@@ -43,8 +41,6 @@ void gt911_read(uint_fast16_t reg, uint8_t *buf, size_t len)
 		i2c_read(buf ++, I2C_READ_NACK);	/* чтение последнего байта ответа */
 	}
 }
-
-#define EAGAIN 100 // Try again error
 
 uint16_t gt911_readInput(GTPoint * point)
 {
@@ -138,15 +134,15 @@ uint_fast8_t gt911_initialize(uint_fast8_t addr)
 {
 	gt911_addr = addr;
 	uint_fast16_t id;
-
+	tscpresetnt = 0;
 	id = gt911_productID();
-	if (id != 0x39313100)		// "911"
+	if (id != GT911_ID)
 		return 0;
 
 	gt911_fwResolution(DIM_X, DIM_Y);
 	gt911_set_reg(GOODIX_READ_COORD_ADDR);
 	i2c_write(0);
-
+	tscpresetnt = 1;
 	return 1;
 }
 
@@ -158,6 +154,9 @@ void handleTouch(int8_t contacts, GTPoint *points) {
 
 uint_fast8_t gt911_getXY(uint_fast16_t * xt, uint_fast16_t * yt)
 {
+	if (! tscpresetnt)
+		return 0;
+
 	GTPoint points[5]; //points buffer
 	int8_t contacts;
 	contacts = gt911_readInput(points);
