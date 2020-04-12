@@ -736,7 +736,65 @@ void spidf_initialize(void)
 	RCC->MP_AHB6LPENSETR = RCC_MC_AHB6LPENSETR_QSPILPEN;
 	(void) RCC->MP_AHB6LPENSETR;
 
+	// Connect I/O pins
+	SPIDF_HARDINITIALIZE();
+
+	PRINTF("QUADSPI->IPIDR=%08x\n", QUADSPI->IPIDR);
+
+	QUADSPI->CR &= ~ QUADSPI_CR_EN_Msk;
+
+	QUADSPI->DCR = ((QUADSPI->DCR & ~ (QUADSPI_DCR_FSIZE_Msk | QUADSPI_DCR_CSHT_Msk | QUADSPI_DCR_CKMODE_Msk))) |
+		(23 << QUADSPI_DCR_FSIZE_Pos) |	// FSIZE+1 is effectively the number of address bits required to address the Flash memory.
+		(0 << QUADSPI_DCR_CSHT_Pos) |	// 0: nCS stays high for at least 1 cycle between Flash memory commands
+		(0 << QUADSPI_DCR_CKMODE_Pos) |	// 0: CLK must stay low while nCS is high (chip select released). This is referred to as mode 0.
+		0;
+
+	QUADSPI->CR = ((QUADSPI->CR & ~ (QUADSPI_CR_PRESCALER_Msk))) |
+		(3 << QUADSPI_CR_PRESCALER_Pos) | // 3: FCLK = Fquadspi_ker_ck/4
+		0;
+
+	const uint_fast8_t cmd = 0x9f;	// read id command
+	const uint_fast32_t address = 0x0000000uL;
+
+	QUADSPI->CCR = 0;
+	QUADSPI->AR = address;
+	QUADSPI->DLR = 4;
+
+	QUADSPI->FCR = QUADSPI_FCR_CTCF_Msk;	// сброс флага готовновти
+	QUADSPI->CR |= QUADSPI_CR_EN_Msk;
+
+	QUADSPI->CCR =
+		//(0 << QUADSPI_CCR_DDRM_Pos) |	// 0: DDR Mode disabled
+		//(0 << QUADSPI_CCR_DHHC_Pos) |	// 0: Delay the data output using analog delay
+		//(0 << QUADSPI_CCR_FRCM_Pos) |	// 0: Normal mode
+		//(0 << QUADSPI_CCR_SIOO_Pos) |	// 0: Send instruction on every transaction
+		(0x01 << QUADSPI_CCR_FMODE_Pos) |	// 01: Indirect read mode
+		//(0x00 << QUADSPI_CCR_FMODE_Pos) |	// 00: Indirect write mode
+		(0x01 << QUADSPI_CCR_DMODE_Pos) |	// 01: Data on a single line
+		//(0x01 << QUADSPI_CCR_DCYC_Pos) |	// This field defines the duration of the dummy phase.
+		//(0 << QUADSPI_CCR_ABSIZE_Pos) |	// 00: 8-bit alternate byte
+		(0 << QUADSPI_CCR_ABMODE_Pos) |	// 00: No alternate bytes
+		//(0x02 << QUADSPI_CCR_ADSIZE_Pos) |	// 010: 24-bit address
+		(0x01 << QUADSPI_CCR_ADMODE_Pos) |	// 01: Address on a single line
+		(cmd << QUADSPI_CCR_INSTRUCTION_Pos) |	// 01: Address on a single line
+		0;
+
+	TP();
+	unsigned long tp = 0x007FFFFF;
+//QUADSPI_SR_BUSY_Msk
+//QUADSPI_SR_TCF_Msk
+	while (-- tp && (QUADSPI->SR & QUADSPI_SR_BUSY_Msk) != 0)
+		;
+	PRINTF("tp=%lu, QUADSPI->DR=%08x\n", tp, QUADSPI->DR);
+
+	QUADSPI->CR &= ~ QUADSPI_CR_EN_Msk;
+
+	SPIDF_HANGOFF();
+
 #elif CPUSTYLE_R7S721
+
+	// Connect I/O pins
+	SPIDF_HARDINITIALIZE();
 
 #if 0
 	// spi multi-io hang on
@@ -829,17 +887,20 @@ void spidf_initialize(void)
 #endif
 
 #endif
-	// Connect I/O pins
-	SPIDF_HARDINITIALIZE();
 }
 
 void spidf_uninitialize(void)
 {
+#if CPUSTYLE_STM32MP1
+
+#elif CPUSTYLE_R7S721
+
 	//arm_hardware_pio4_inputs(0xFC);		// Отключить процессор от SERIAL FLASH
 #if 0
 	// spi multi-io hang off
 	CPG.STBCR9 |= CPG_STBCR9_BIT_MSTP93;	// Module Stop 93	- 1: Clock supply to channel 0 of the SPI multi I/O bus controller is halted.
 	(void) CPG.STBCR9;			/* Dummy read */
+#endif
 #endif
 }
 

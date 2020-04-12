@@ -9772,6 +9772,17 @@ void stm32mp1_pll_initialize(void)
 	(void) RCC->SPI2S1CKSELR;
 #endif /* WITHSPIHW */
 
+#if WIHSPIDFHW
+	//0x0: aclk clock selected as kernel peripheral clock (default after reset)
+	//0x1: pll3_r_ck clock selected as kernel peripheral clock
+	//0x2: pll4_p_ck clock selected as kernel peripheral clock
+	//0x3: per_ck clock selected as kernel peripheral clock
+	RCC->QSPICKSELR = (RCC->QSPICKSELR & ~ (RCC_QSPICKSELR_QSPISRC_Msk)) |
+	(0x03 << RCC_QSPICKSELR_QSPISRC_Pos) |	// per_ck
+		0;
+	(void) RCC->QSPICKSELR;
+#endif /* WIHSPIDFHW */
+
 	// prescaler value of timers located into APB1 domain
 	// TIM2, TIM3, TIM4, TIM5, TIM6, TIM7, TIM12, TIM13 and TIM14.s
 	RCC->TIMG1PRER = (RCC->TIMG1PRER & ~ (RCC_TIMG1PRER_TIMG1PRE_Msk)) |
