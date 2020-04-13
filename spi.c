@@ -821,6 +821,7 @@ static void spidf_unselect(void)
 {
 	while ((QUADSPI->SR & QUADSPI_SR_BUSY_Msk) != 0)
 		;
+	// Disconnect I/O pins
 	SPIDF_HANGOFF();
 }
 
@@ -903,6 +904,7 @@ void spidf_uninitialize(void)
 {
 	while ((QUADSPI->SR & QUADSPI_SR_BUSY_Msk) != 0)
 		;
+	// Disconnect I/O pins
 	SPIDF_HANGOFF();
 }
 
@@ -929,11 +931,8 @@ static void spidf_write(const uint8_t * buff, uint_fast32_t size)
 			;
 		SPIBSC0.SMWDR0.UINT8 [R_IO_LL] = * buff ++;
 		/* подготовка к следующему шагу */
-		if (size != 0)
-		{
-			// продолжение обмена без передачи команды, адреса...
-			SPIBSC0.SMENR &= ~ (SPIBSC_SMENR_ADE | SPIBSC_SMENR_CDE | SPIBSC_SMENR_DME | SPIBSC_SMENR_OPDE);
-		}
+		// продолжение обмена без передачи команды, адреса...
+		SPIBSC0.SMENR &= ~ (SPIBSC_SMENR_ADE | SPIBSC_SMENR_CDE | SPIBSC_SMENR_DME | SPIBSC_SMENR_OPDE);
 	}
 }
 
@@ -959,11 +958,8 @@ static uint_fast8_t spidf_verify(const uint8_t * buff, uint_fast32_t size)
 			;
 		err |= * buff ++ != SPIBSC0.SMRDR0.UINT8 [R_IO_LL];
 		/* подготовка к следующему шагу */
-		if (size != 0)
-		{
-			// продолжение обмена без передачи команды, адреса...
-			SPIBSC0.SMENR &= ~ (SPIBSC_SMENR_ADE | SPIBSC_SMENR_CDE | SPIBSC_SMENR_DME | SPIBSC_SMENR_OPDE);
-		}
+		// продолжение обмена без передачи команды, адреса...
+		SPIBSC0.SMENR &= ~ (SPIBSC_SMENR_ADE | SPIBSC_SMENR_CDE | SPIBSC_SMENR_DME | SPIBSC_SMENR_OPDE);
 	}
 	return err;
 }
@@ -989,18 +985,18 @@ static void spidf_read(uint8_t * buff, uint_fast32_t size)
 			;
 		* buff ++ = SPIBSC0.SMRDR0.UINT8 [R_IO_LL];
 		/* подготовка к следующему шагу */
-		if (size != 0)
-		{
-			// продолжение обмена без передачи команды, адреса...
-			SPIBSC0.SMENR &= ~ (SPIBSC_SMENR_ADE | SPIBSC_SMENR_CDE | SPIBSC_SMENR_DME | SPIBSC_SMENR_OPDE);
-		}
+		// продолжение обмена без передачи команды, адреса...
+		SPIBSC0.SMENR &= ~ (SPIBSC_SMENR_ADE | SPIBSC_SMENR_CDE | SPIBSC_SMENR_DME | SPIBSC_SMENR_OPDE);
 	}
 }
 
 static void spidf_unselect(void)
 {
+//	while ((SPIBSC0.CMNSR & SPIBSC_CMNSR_TEND) == 0)
+//		;
 	while ((SPIBSC0.CMNSR & SPIBSC_CMNSR_SSLF) != 0)
 		;
+	// Disconnect I/O pins
 	SPIDF_HANGOFF();
 }
 
@@ -1055,6 +1051,9 @@ void spidf_initialize(void)
 		0;
 
 
+//	for (;;)
+//		writeEnableDATAFLASH();		/* write enable */
+
 	//PRINTF("SPIBSC0.SMDMCR=%08lX\n", SPIBSC0.SMDMCR);
 	//PRINTF("SPIBSC0.SPBCR=%08lX\n", SPIBSC0.SPBCR);
 	//PRINTF("SPIBSC0.CMNCR=%08lX\n", SPIBSC0.CMNCR);
@@ -1063,7 +1062,10 @@ void spidf_initialize(void)
 
 void spidf_uninitialize(void)
 {
-
+//	while ((SPIBSC0.CMNSR & SPIBSC_CMNSR_TEND) == 0)
+//		;
+	while ((SPIBSC0.CMNSR & SPIBSC_CMNSR_SSLF) != 0)
+		;
 	// Disconnect I/O pins
 	SPIDF_HANGOFF();
 }
@@ -1117,13 +1119,11 @@ static void spidf_iostart(
 
 	SPIBSC0.SMADR = address;
 
-//    SPIBSC0.SMCR = 0;
     SPIBSC0.SMCR =
 		((direction) ? SPIBSC_SMCR_SPIWE : SPIBSC_SMCR_SPIRE) |
 		((size > 1) * SPIBSC_SMCR_SSLKP) | // 0: SPBSSL signal is negated at the end of transfer.
 		((size == 0) * SPIBSC_SMCR_SPIE) |	// запускаем если не будет обмена данными
 		0;
-//    SPIBSC0.SMCR = SPIBSC_SMCR_SPIWE | SPIBSC_SMCR_SPIRE;
 }
 
 #endif /* WIHSPIDFHW */
@@ -1161,18 +1161,16 @@ static unsigned long ulmin(
 }
 
 /* снять защиту записи для следующей команды */
-static void writeEnableDATAFLASH(void)
+void writeEnableDATAFLASH(void)
 {
 	spidf_iostart(SPDIFIO_WRITE, 0x06, 0, 0, 0, 0);	/* 0x06: write enable */
 	spidf_unselect();	/* done sending data to target chip */
 }
 
-static int writeDisableDATAFLASH(void)
+void writeDisableDATAFLASH(void)
 {
 	spidf_iostart(SPDIFIO_WRITE, 0x04, 0, 0, 0, 0);	/* 0x04: write disable */
 	spidf_unselect();	/* done sending data to target chip */
-
-	return 0;
 }
 
 uint_fast8_t dataflash_read_status(void)
@@ -1251,7 +1249,10 @@ int testchipDATAFLASH(void)
 	Вставлено для возможности использования DATAFLASH */
 
 	if (timed_dataflash_read_status())
+	{
+		PRINTF(PSTR("testchipDATAFLASH: timeout\n"));
 		return 1;
+	}
 
 #if WITHDEBUG
 	{
@@ -1327,7 +1328,11 @@ int prepareDATAFLASH(void)
 	if ((status & 0x1C) != 0)
 	{
 		if (timed_dataflash_read_status())
+		{
+			PRINTF(PSTR("prepareDATAFLASH: timeout\n"));
 			return 1;
+		}
+
 		PRINTF(PSTR("prepareDATAFLASH: Clear write protect bits\n"));
 		writeEnableDATAFLASH();		/* write enable */
 
@@ -1344,10 +1349,14 @@ int prepareDATAFLASH(void)
 
 int sectoreraseDATAFLASH(unsigned long flashoffset)
 {
-	//PRINTF(PSTR(" Erase sector at address %08lX\n"), flashoffset);
+	PRINTF(PSTR(" Erase sector at address %08lX\n"), flashoffset);
 
 	if (timed_dataflash_read_status())
+	{
+		PRINTF(PSTR("sectoreraseDATAFLASH: timeout\n"));
 		return 1;
+	}
+
 	writeEnableDATAFLASH();		/* write enable */
 
 	// start byte programm
@@ -1362,7 +1371,10 @@ int writesinglepageDATAFLASH(unsigned long flashoffset, const unsigned char * da
 	//PRINTF(PSTR(" Prog to address %08lX %02X\n"), flashoffset, len);
 
 	if (timed_dataflash_read_status())
+	{
+		PRINTF(PSTR("writesinglepageDATAFLASH: timeout\n"));
 		return 1;
+	}
 
 	writeEnableDATAFLASH();		/* write enable */
 
@@ -1379,7 +1391,7 @@ int writesinglepageDATAFLASH(unsigned long flashoffset, const unsigned char * da
 
 int writeDATAFLASH(unsigned long flashoffset, const uint8_t * data, unsigned long len)
 {
-	//PRINTF(PSTR("Write to address %08lX %02X\n"), flashoffset, len);
+	PRINTF(PSTR("Write to address %08lX %02X\n"), flashoffset, len);
 	while (len != 0)
 	{
 		unsigned long offset = flashoffset & 0xFF;
@@ -1392,26 +1404,28 @@ int writeDATAFLASH(unsigned long flashoffset, const uint8_t * data, unsigned lon
 		flashoffset += part;
 		data += part;
 	}
-	//PRINTF(PSTR("Write to address %08lX %02X done\n"), flashoffset, len);
+	PRINTF(PSTR("Write to address %08lX %02X done\n"), flashoffset, len);
 	return 0;
 }
 
 int verifyDATAFLASH(unsigned long flashoffset, const uint8_t * data, unsigned long len)
 {
-	unsigned long count;
 	unsigned long err = 0;
-	unsigned char v;
 
-	//PRINTF(PSTR("Compare from address %08lX\n"), flashoffset);
+	PRINTF(PSTR("Compare from address %08lX\n"), flashoffset);
 
-	timed_dataflash_read_status();
+	if (timed_dataflash_read_status())
+	{
+		PRINTF(PSTR("verifyDATAFLASH: timeout\n"));
+		return 1;
+	}
 
 	spidf_iostart(SPDIFIO_READ, 0x03, 0, len, 1, flashoffset);	/* 0x03: sequential read block */
 	err = spidf_verify(data, len);
 	spidf_unselect();	/* done sending data to target chip */
 
 	if (err)
-		PRINTF(PSTR("Done compare, have errors\n"));
+		PRINTF(PSTR("verifyDATAFLASH: Done compare, have errors\n"));
 
 	return err;
 }
@@ -1421,7 +1435,7 @@ int readDATAFLASH(unsigned long flashoffset, uint8_t * data, unsigned long len)
 	//PRINTF("readDATAFLASH start, data=%p, len=%lu\n", data, len);
 	if (timed_dataflash_read_status())
 	{
-		PRINTF("readDATAFLASH failure\n");
+		PRINTF("readDATAFLASH: timeout\n");
 		return 1;
 	}
 	//PRINTF("readDATAFLASH start2\n");

@@ -506,6 +506,8 @@ int sectoreraseDATAFLASH(unsigned long flashoffset);
 int writeDATAFLASH(unsigned long flashoffset, const uint8_t * data, unsigned long len);
 int verifyDATAFLASH(unsigned long flashoffset, const uint8_t * data, unsigned long len);
 int readDATAFLASH(unsigned long flashoffset, uint8_t * data, unsigned long len);
+void writeEnableDATAFLASH(void);
+void writeDisableDATAFLASH(void);
 
 void bootloader_readimage(unsigned long flashoffset, uint8_t * dest, unsigned Len);
 
