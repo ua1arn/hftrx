@@ -750,7 +750,7 @@ static void spidf_iostart(
 }
 
 
-static void spidf_read(uint8_t * buff, uint32_t size)
+static void spidf_read(uint8_t * buff, uint_fast32_t size)
 {
 	spitarget_t target = targetdataflash;	/* addressing to chip */
 	spidf_to_read(target);
@@ -760,7 +760,7 @@ static void spidf_read(uint8_t * buff, uint32_t size)
 }
 
 
-static uint_fast8_t spidf_verify(const uint8_t * buff, uint32_t size)
+static uint_fast8_t spidf_verify(const uint8_t * buff, uint_fast32_t size)
 {
 	uint_fast8_t err = 0;
 	spitarget_t target = targetdataflash;	/* addressing to chip */
@@ -772,7 +772,7 @@ static uint_fast8_t spidf_verify(const uint8_t * buff, uint32_t size)
 }
 
 
-static void spidf_write(const uint8_t * buff, uint32_t size)
+static void spidf_write(const uint8_t * buff, uint_fast32_t size)
 {
 	spitarget_t target = targetdataflash;	/* addressing to chip */
 	while (size --)
@@ -783,7 +783,7 @@ static void spidf_write(const uint8_t * buff, uint32_t size)
 
 
 // вычитываем все заказанное количество
-static void spidf_read(uint8_t * buff, uint32_t size)
+static void spidf_read(uint8_t * buff, uint_fast32_t size)
 {
 	while (size --)
 	{
@@ -794,7 +794,7 @@ static void spidf_read(uint8_t * buff, uint32_t size)
 }
 
 // передаем все заказанное количество
-static void spidf_write(const uint8_t * buff, uint32_t size)
+static void spidf_write(const uint8_t * buff, uint_fast32_t size)
 {
 	while (size --)
 	{
@@ -805,7 +805,7 @@ static void spidf_write(const uint8_t * buff, uint32_t size)
 }
 
 // вычитываем все заказанное количество
-static uint_fast8_t spidf_verify(const uint8_t * buff, uint32_t size)
+static uint_fast8_t spidf_verify(const uint8_t * buff, uint_fast32_t size)
 {
 	uint_fast8_t err = 0;
 	while (size --)
@@ -909,47 +909,83 @@ void spidf_uninitialize(void)
 #elif WIHSPIDFHW && CPUSTYLE_R7S721
 
 // передаем все заказанное количество
-static void spidf_write(const uint8_t * buff, uint32_t size)
+static void spidf_write(const uint8_t * buff, uint_fast32_t size)
 {
 	while (size --)
 	{
+		if (size == 0)
+		{
+			// 0: SPBSSL signal is negated at the end of transfer.
+			SPIBSC0.SMCR &= ~ (SPIBSC_SMCR_SSLKP);
+		}
 		SPIBSC0.SMCR |= SPIBSC_SMCR_SPIE;
+
 		while ((SPIBSC0.CMNSR & SPIBSC_CMNSR_TEND) == 0)
 			;
 		SPIBSC0.SMWDR0.UINT8 [R_IO_LL] = * buff ++;
+		/* подготовка к следующему шагу */
+		if (size != 0)
+		{
+			// продолжение обмена без передачи команды, адреса...
+			SPIBSC0.SMENR &= ~ (SPIBSC_SMENR_ADE | SPIBSC_SMENR_CDE | SPIBSC_SMENR_DME);
+		}
 	}
 }
 
 // вычитываем все заказанное количество
-static uint_fast8_t spidf_verify(const uint8_t * buff, uint32_t size)
+static uint_fast8_t spidf_verify(const uint8_t * buff, uint_fast32_t size)
 {
 	uint_fast8_t err = 0;
 	while (size --)
 	{
+		if (size == 0)
+		{
+			// 0: SPBSSL signal is negated at the end of transfer.
+			SPIBSC0.SMCR &= ~ (SPIBSC_SMCR_SSLKP);
+		}
 		SPIBSC0.SMCR |= SPIBSC_SMCR_SPIE;
+
 		while ((SPIBSC0.CMNSR & SPIBSC_CMNSR_TEND) == 0)
 			;
 		err |= * buff ++ != SPIBSC0.SMRDR0.UINT8 [R_IO_LL];
+		/* подготовка к следующему шагу */
+		if (size != 0)
+		{
+			// продолжение обмена без передачи команды, адреса...
+			SPIBSC0.SMENR &= ~ (SPIBSC_SMENR_ADE | SPIBSC_SMENR_CDE | SPIBSC_SMENR_DME);
+		}
 	}
 	return err;
 }
 
 // вычитываем все заказанное количество
-static void spidf_read(uint8_t * buff, uint32_t size)
+static void spidf_read(uint8_t * buff, uint_fast32_t size)
 {
 	while (size --)
 	{
+		if (size == 0)
+		{
+			// 0: SPBSSL signal is negated at the end of transfer.
+			SPIBSC0.SMCR &= ~ (SPIBSC_SMCR_SSLKP);
+		}
 		SPIBSC0.SMCR |= SPIBSC_SMCR_SPIE;
+
 		while ((SPIBSC0.CMNSR & SPIBSC_CMNSR_TEND) == 0)
 			;
 		* buff ++ = SPIBSC0.SMRDR0.UINT8 [R_IO_LL];
+		/* подготовка к следующему шагу */
+		if (size != 0)
+		{
+			// продолжение обмена без передачи команды, адреса...
+			SPIBSC0.SMENR &= ~ (SPIBSC_SMENR_ADE | SPIBSC_SMENR_CDE | SPIBSC_SMENR_DME);
+		}
 	}
 }
 
 static void spidf_unselect(void)
 {
-//	while ((QUADSPI->SR & QUADSPI_SR_BUSY_Msk) != 0)
-//		;
+	while ((SPIBSC0.CMNSR & SPIBSC_CMNSR_SSLF) != 0)
+		;
 	SPIDF_HANGOFF();
 }
 
@@ -958,7 +994,8 @@ void spidf_initialize(void)
 
 	//PRINTF("SPIBSC0.SMDMCR=%08lX\n", SPIBSC0.SMDMCR);
 	//PRINTF("SPIBSC0.SPBCR=%08lX\n", SPIBSC0.SPBCR);
-	//PRINTF("SPIBSC0.CMNCR=%08lX\n", SPIBSC0.CMNCR);
+	PRINTF("SPIBSC0.DRENR=%08lX\n", SPIBSC0.DRENR);
+	PRINTF("SPIBSC0.CMNCR=%08lX\n", SPIBSC0.CMNCR);
 	//PRINTF("SPIBSC0.SSLDR=%08lX\n", SPIBSC0.SSLDR);
 
 	// spi multi-io hang on
@@ -973,6 +1010,7 @@ void spidf_initialize(void)
 		(0x07uL << SPIBSC_SSLDR_SLNDL_SHIFT) |
 		(0x07uL << SPIBSC_SSLDR_SCKDL_SHIFT) |
 		0;
+
 	// 17.4.1 Common Control Register (CMNCR)
 	SPIBSC0.CMNCR =
 		SPIBSC_CMNCR_MD |	// spi mode
@@ -1064,8 +1102,12 @@ static void spidf_iostart(
 
 	SPIBSC0.SMADR = address;
 
-    SPIBSC0.SMCR = 0;
-    SPIBSC0.SMCR = (direction) ? SPIBSC_SMCR_SPIWE : SPIBSC_SMCR_SPIRE;
+//    SPIBSC0.SMCR = 0;
+    SPIBSC0.SMCR =
+		((direction) ? SPIBSC_SMCR_SPIWE : SPIBSC_SMCR_SPIRE) |
+		((size > 1) * SPIBSC_SMCR_SSLKP) | // 0: SPBSSL signal is negated at the end of transfer.
+		0;
+//    SPIBSC0.SMCR = SPIBSC_SMCR_SPIWE | SPIBSC_SMCR_SPIRE;
 }
 
 #endif /* WIHSPIDFHW */
