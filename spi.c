@@ -926,9 +926,9 @@ static void spidf_write(const uint8_t * buff, uint32_t size)
 {
 	while (size --)
 	{
-//		while ((QUADSPI->SR & QUADSPI_SR_FLEVEL_Msk) == QUADSPI_SR_FLEVEL_Msk)
-//			;
-//		* (volatile uint8_t *) & QUADSPI->DR = * buff ++;
+		while ((SPIBSC0.CMNSR & SPIBSC_CMNSR_TEND) == 0)
+			;
+		SPIBSC0.SMWDR0.UINT8 [R_IO_LL] = * buff ++;
 	}
 }
 
@@ -938,9 +938,9 @@ static uint_fast8_t spidf_verify(const uint8_t * buff, uint32_t size)
 	uint_fast8_t err = 0;
 	while (size --)
 	{
-//		while ((QUADSPI->SR & QUADSPI_SR_FLEVEL_Msk) == 0)
-//			;
-//		err |= * buff ++ != * (volatile uint8_t *) & QUADSPI->DR;
+		while ((SPIBSC0.CMNSR & SPIBSC_CMNSR_TEND) == 0)
+			;
+		err |= * buff ++ != SPIBSC0.SMWDR0.UINT8 [R_IO_LL];
 	}
 	return err;
 }
@@ -1054,12 +1054,14 @@ static void spidf_iostart(
 		(cmd << SPIBSC_SMCMR_CMD_SHIFT) | /* command byte */
 		(0x00uL << SPIBSC_SMCMR_OCMD_SHIFT) | /* xxxx */
 		0;
-	SPIBSC0.SMADR = address & 0x00FFFFFF;
+	SPIBSC0.SMADR = address; // & 0x00FFFFFF;
 
+	SPIBSC0.SMCR = 0;
+	SPIBSC0.SMCR = SPIBSC_SMCR_SSLKP;
 	if (direction)
-		SPIBSC0.SMCR = SPIBSC_SMCR_SPIWE;
+		SPIBSC0.SMCR |= SPIBSC_SMCR_SPIWE;
 	else
-		SPIBSC0.SMCR = SPIBSC_SMCR_SPIRE;
+		SPIBSC0.SMCR |= SPIBSC_SMCR_SPIRE;
 
 	SPIBSC0.SMCR |= SPIBSC_SMCR_SPIE;
 
