@@ -836,6 +836,7 @@ static void spidf_iostart(
 	while ((QUADSPI->SR & QUADSPI_SR_BUSY_Msk) != 0)
 		;
 
+	// Connect I/O pins
 	SPIDF_HARDINITIALIZE();
 
 	//QUADSPI->AR = address;
@@ -878,7 +879,7 @@ void spidf_initialize(void)
 	(void) RCC->MP_AHB6LPENSETR;
 
 	// Connect I/O pins
-	SPIDF_HARDINITIALIZE();
+	//SPIDF_HARDINITIALIZE();
 
 	//PRINTF("QUADSPI->IPIDR=%08x\n", QUADSPI->IPIDR);
 
@@ -938,11 +939,9 @@ static void spidf_read(uint8_t * buff, uint32_t size)
 {
 	while (size --)
 	{
-		//TP();
 		SPIBSC0.SMCR |= SPIBSC_SMCR_SPIE;
 		while ((SPIBSC0.CMNSR & SPIBSC_CMNSR_TEND) == 0)
 			;
-		//PRINTF("SPIBSC0.SMRDR0=%08lX\n", SPIBSC0.SMRDR0.UINT32);
 		* buff ++ = SPIBSC0.SMRDR0.UINT8 [R_IO_LL];
 	}
 }
@@ -978,13 +977,13 @@ void spidf_initialize(void)
 	SPIBSC0.CMNCR =
 		SPIBSC_CMNCR_MD |	// spi mode
 		(1uL << SPIBSC_CMNCR_SFDE_SHIFT) |	// after reset: 1
-		(2uL << SPIBSC_CMNCR_MOIIO3_SHIFT) |	// after reset: 2
-		(2uL << SPIBSC_CMNCR_MOIIO2_SHIFT) |	// after reset: 2
-		(2uL << SPIBSC_CMNCR_MOIIO1_SHIFT) |	// after reset: 2
-		(2uL << SPIBSC_CMNCR_MOIIO0_SHIFT) |	// after reset: 2
+		(1uL << SPIBSC_CMNCR_MOIIO3_SHIFT) |	// after reset: 2
+		(1uL << SPIBSC_CMNCR_MOIIO2_SHIFT) |	// after reset: 2
+		(1uL << SPIBSC_CMNCR_MOIIO1_SHIFT) |	// after reset: 2
+		(1uL << SPIBSC_CMNCR_MOIIO0_SHIFT) |	// after reset: 2
 		(1uL << SPIBSC_CMNCR_IO3FV_SHIFT) |	// after reset: 1
-		(0uL << SPIBSC_CMNCR_IO2FV_SHIFT) |	// after reset: 0
-		(0uL << SPIBSC_CMNCR_IO0FV_SHIFT) |	// after reset: 0
+		(1uL << SPIBSC_CMNCR_IO2FV_SHIFT) |	// after reset: 0
+		(1uL << SPIBSC_CMNCR_IO0FV_SHIFT) |	// after reset: 0
 		0uL * SPIBSC_CMNCR_CPHAR |	// after reset: 0
 		0uL * SPIBSC_CMNCR_CPHAT |	// after reset: 0
 		0uL * SPIBSC_CMNCR_SSLP |	// after reset: 0
@@ -1007,15 +1006,12 @@ void spidf_initialize(void)
 	//PRINTF("SPIBSC0.SPBCR=%08lX\n", SPIBSC0.SPBCR);
 	//PRINTF("SPIBSC0.CMNCR=%08lX\n", SPIBSC0.CMNCR);
 	//PRINTF("SPIBSC0.SSLDR=%08lX\n", SPIBSC0.SSLDR);
-
-	// Connect I/O pins
-	SPIDF_HARDINITIALIZE();
-
 }
 
 void spidf_uninitialize(void)
 {
 
+	// Disconnect I/O pins
 	SPIDF_HANGOFF();
 }
 
@@ -1028,6 +1024,8 @@ static void spidf_iostart(
 	uint_fast32_t address
 	)
 {
+	// Connect I/O pins
+	SPIDF_HARDINITIALIZE();
 	/*
 		The transfer format is determined based on the following registers.
 		- Common control register (CMNCR)
@@ -1061,18 +1059,13 @@ static void spidf_iostart(
 	// 17.4.10 SPI Mode Command Setting Register (SMCMR)
 	SPIBSC0.SMCMR =
 		(cmd << SPIBSC_SMCMR_CMD_SHIFT) | /* command byte */
-		(0x00uL << SPIBSC_SMCMR_OCMD_SHIFT) | /* xxxx */
+		(0x00uL << SPIBSC_SMCMR_OCMD_SHIFT) | /* optional command */
 		0;
 
-	SPIBSC0.SMADR = address; // & 0x00FFFFFF;
+	SPIBSC0.SMADR = address;
 
-	SPIBSC0.SMCR = 0;
-	//SPIBSC0.SMCR = SPIBSC_SMCR_SSLKP;
-	if (direction)
-		SPIBSC0.SMCR |= SPIBSC_SMCR_SPIWE;
-	else
-		SPIBSC0.SMCR |= SPIBSC_SMCR_SPIRE;
-
+    SPIBSC0.SMCR = 0;
+    SPIBSC0.SMCR = (direction) ? SPIBSC_SMCR_SPIWE : SPIBSC_SMCR_SPIRE;
 }
 
 #endif /* WIHSPIDFHW */
