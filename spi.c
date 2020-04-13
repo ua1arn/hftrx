@@ -915,10 +915,15 @@ static void spidf_write(const uint8_t * buff, uint_fast32_t size)
 	{
 		if (size == 0)
 		{
-			// 0: SPBSSL signal is negated at the end of transfer.
-			SPIBSC0.SMCR &= ~ (SPIBSC_SMCR_SSLKP);
+			// последний обмен
+			// SSLKP 0: SPBSSL signal is negated at the end of transfer.
+			SPIBSC0.SMCR = SPIBSC_SMCR_SPIWE | SPIBSC_SMCR_SPIE;
 		}
-		SPIBSC0.SMCR |= SPIBSC_SMCR_SPIE;
+		else
+		{
+			// не последний обмен - удерживаем CS в нуле
+			SPIBSC0.SMCR = SPIBSC_SMCR_SPIWE | SPIBSC_SMCR_SPIE | SPIBSC_SMCR_SSLKP;
+		}
 
 		while ((SPIBSC0.CMNSR & SPIBSC_CMNSR_TEND) == 0)
 			;
@@ -927,7 +932,7 @@ static void spidf_write(const uint8_t * buff, uint_fast32_t size)
 		if (size != 0)
 		{
 			// продолжение обмена без передачи команды, адреса...
-			SPIBSC0.SMENR &= ~ (SPIBSC_SMENR_ADE | SPIBSC_SMENR_CDE | SPIBSC_SMENR_DME);
+			SPIBSC0.SMENR &= ~ (SPIBSC_SMENR_ADE | SPIBSC_SMENR_CDE | SPIBSC_SMENR_DME | SPIBSC_SMENR_OPDE);
 		}
 	}
 }
@@ -940,10 +945,15 @@ static uint_fast8_t spidf_verify(const uint8_t * buff, uint_fast32_t size)
 	{
 		if (size == 0)
 		{
-			// 0: SPBSSL signal is negated at the end of transfer.
-			SPIBSC0.SMCR &= ~ (SPIBSC_SMCR_SSLKP);
+			// последний обмен
+			// SSLKP 0: SPBSSL signal is negated at the end of transfer.
+			SPIBSC0.SMCR = SPIBSC_SMCR_SPIRE | SPIBSC_SMCR_SPIE;
 		}
-		SPIBSC0.SMCR |= SPIBSC_SMCR_SPIE;
+		else
+		{
+			// не последний обмен - удерживаем CS в нуле
+			SPIBSC0.SMCR = SPIBSC_SMCR_SPIRE | SPIBSC_SMCR_SPIE | SPIBSC_SMCR_SSLKP;
+		}
 
 		while ((SPIBSC0.CMNSR & SPIBSC_CMNSR_TEND) == 0)
 			;
@@ -952,7 +962,7 @@ static uint_fast8_t spidf_verify(const uint8_t * buff, uint_fast32_t size)
 		if (size != 0)
 		{
 			// продолжение обмена без передачи команды, адреса...
-			SPIBSC0.SMENR &= ~ (SPIBSC_SMENR_ADE | SPIBSC_SMENR_CDE | SPIBSC_SMENR_DME);
+			SPIBSC0.SMENR &= ~ (SPIBSC_SMENR_ADE | SPIBSC_SMENR_CDE | SPIBSC_SMENR_DME | SPIBSC_SMENR_OPDE);
 		}
 	}
 	return err;
@@ -965,10 +975,15 @@ static void spidf_read(uint8_t * buff, uint_fast32_t size)
 	{
 		if (size == 0)
 		{
-			// 0: SPBSSL signal is negated at the end of transfer.
-			SPIBSC0.SMCR &= ~ (SPIBSC_SMCR_SSLKP);
+			// последний обмен
+			// SSLKP 0: SPBSSL signal is negated at the end of transfer.
+			SPIBSC0.SMCR = SPIBSC_SMCR_SPIRE | SPIBSC_SMCR_SPIE;
 		}
-		SPIBSC0.SMCR |= SPIBSC_SMCR_SPIE;
+		else
+		{
+			// не последний обмен - удерживаем CS в нуле
+			SPIBSC0.SMCR = SPIBSC_SMCR_SPIRE | SPIBSC_SMCR_SPIE | SPIBSC_SMCR_SSLKP;
+		}
 
 		while ((SPIBSC0.CMNSR & SPIBSC_CMNSR_TEND) == 0)
 			;
@@ -977,7 +992,7 @@ static void spidf_read(uint8_t * buff, uint_fast32_t size)
 		if (size != 0)
 		{
 			// продолжение обмена без передачи команды, адреса...
-			SPIBSC0.SMENR &= ~ (SPIBSC_SMENR_ADE | SPIBSC_SMENR_CDE | SPIBSC_SMENR_DME);
+			SPIBSC0.SMENR &= ~ (SPIBSC_SMENR_ADE | SPIBSC_SMENR_CDE | SPIBSC_SMENR_DME | SPIBSC_SMENR_OPDE);
 		}
 	}
 }
@@ -1106,6 +1121,7 @@ static void spidf_iostart(
     SPIBSC0.SMCR =
 		((direction) ? SPIBSC_SMCR_SPIWE : SPIBSC_SMCR_SPIRE) |
 		((size > 1) * SPIBSC_SMCR_SSLKP) | // 0: SPBSSL signal is negated at the end of transfer.
+		((size == 0) * SPIBSC_SMCR_SPIE) |	// запускаем если не будет обмена данными
 		0;
 //    SPIBSC0.SMCR = SPIBSC_SMCR_SPIWE | SPIBSC_SMCR_SPIRE;
 }
