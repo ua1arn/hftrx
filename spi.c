@@ -915,9 +915,9 @@ static void spidf_read(uint8_t * buff, uint32_t size)
 {
 	while (size --)
 	{
-//		while ((QUADSPI->SR & QUADSPI_SR_FLEVEL_Msk) == 0)
-//			;
-//		* buff ++ = * (volatile uint8_t *) & QUADSPI->DR;
+		while ((SPIBSC0.CMNSR & SPIBSC_CMNSR_TEND) == 0)
+			;
+		* buff ++ = SPIBSC0.SMWDR0.UINT8 [R_IO_LL];
 	}
 }
 
@@ -962,10 +962,27 @@ void spidf_initialize(void)
 	CPG.STBCR9 &= ~ CPG_STBCR9_BIT_MSTP93;	// Module Stop 93	- 0: Clock supply to channel 0 of the SPI multi I/O bus controller is runnuing.
 	(void) CPG.STBCR9;			/* Dummy read */
 
-#if 0
-	SPIBSC0.CMNCR |= SPIBSC_CMNCR_MD;	// SPI mode.
-	(void) SPIBSC0.CMNCR;
-	ASSERT(SPIBSC0.CMNCR & SPIBSC_CMNCR_MD);
+	SPIBSC0.SPBCR = 0x200;	// baud rate
+	SPIBSC0.SSLDR = 0x00;	// delay
+	SPIBSC0.DRCR = 0x0000;
+
+	SPIBSC0.CMNCR =
+		SPIBSC_CMNCR_MD |	// spi mode
+		(0x03 << SPIBSC_CMNCR_MOIIO3_SHIFT) |
+		(0x03 << SPIBSC_CMNCR_MOIIO2_SHIFT) |
+		(0x03 << SPIBSC_CMNCR_MOIIO1_SHIFT) |
+		(0x03 << SPIBSC_CMNCR_MOIIO0_SHIFT) |
+		(0x03 << SPIBSC_CMNCR_IO3FV_SHIFT) |
+		(0x03 << SPIBSC_CMNCR_IO2FV_SHIFT) |
+		(0x03 << SPIBSC_CMNCR_IO0FV_SHIFT) |
+		0 * SPIBSC_CMNCR_CPHAR |
+		0 * SPIBSC_CMNCR_CPHAT |
+		0 * SPIBSC_CMNCR_SSLP |
+		0 * SPIBSC_CMNCR_BSZ |
+		0;
+
+	SPIBSC0.SMENR =
+		0;
 
 	SPIBSC0.SPBCR = (SPIBSC0.SPBCR & ~ (SPIBSC_SPBCR_BRDV | SPIBSC_SPBCR_SPBR)) |
 		(0 << SPIBSC_SPBCR_BRDV_SHIFT) |	// 0..3
@@ -999,47 +1016,6 @@ void spidf_initialize(void)
 
 	SPIBSC0.SMCR = SPIBSC_SMCR_SPIE | SPIBSC_SMCR_SPIRE | SPIBSC_SMCR_SPIWE;
 
-	SPIBSC0.SMWDR0.UINT32 = 0xFFFFFFFF;
-	TP();
-	while ((SPIBSC0.CMNSR & SPIBSC_CMNSR_TEND) == 0)
-		;
-	debug_printf_P(PSTR("SMRDR0=%08lX\n"), SPIBSC0.SMRDR0.UINT32);
-	TP();
-	SPIBSC0.SMWDR0.UINT32 = 0xFFFFFFFF;
-	TP();
-	while ((SPIBSC0.CMNSR & SPIBSC_CMNSR_TEND) == 0)
-		;
-	debug_printf_P(PSTR("SMRDR0=%08lX\n"), SPIBSC0.SMRDR0.UINT32);
-
-#endif
-
-#if 0
-	SPIBSC0.SPBCR = 0x200;	// baud rate
-	SPIBSC0.SSLDR = 0x00;	// delay
-	SPIBSC0.DRCR = 0x0000;
-
-	SPIBSC0.CMNCR =
-		SPIBSC_CMNCR_MD |	// spi mode
-		(0x03 << SPIBSC_CMNCR_MOIIO3_SHIFT) |
-		(0x03 << SPIBSC_CMNCR_MOIIO2_SHIFT) |
-		(0x03 << SPIBSC_CMNCR_MOIIO1_SHIFT) |
-		(0x03 << SPIBSC_CMNCR_MOIIO0_SHIFT) |
-		(0x03 << SPIBSC_CMNCR_IO3FV_SHIFT) |
-		(0x03 << SPIBSC_CMNCR_IO2FV_SHIFT) |
-		(0x03 << SPIBSC_CMNCR_IO0FV_SHIFT) |
-		1 * SPIBSC_CMNCR_CPHAR |
-		1 * SPIBSC_CMNCR_CPHAT |
-		0;
-
-	SPIBSC0.SMENR =
-		0;
-
-	SPIBSC0.SMCR =
-		SPIBSC_SMCR_SPIE |
-		SPIBSC_SMCR_SPIRE |
-		SPIBSC_SMCR_SPIWE |
-		0;
-#endif
 }
 
 void spidf_uninitialize(void)
@@ -1059,6 +1035,39 @@ static void spidf_iostart(
 	uint_fast32_t address
 	)
 {
+	/*
+		The transfer format is determined based on the following registers.
+		- Common control register (CMNCR)
+		- SSL delay register (SSLDR)
+		- Bit rate setting register (SPBCR)
+		- SPI mode control register (SMCR)
+		- SPI mode command setting register (SMCMR)
+		- SPI mode address setting register (SMADR)
+		- SPI mode option setting register (SMOPR)
+		- SPI mode enable setting register (SMENR)
+		- SPI mode read data register (SMRDR)
+		- SPI mode write data register (SMWDR)
+		- SPI mode dummy cycle setting register (SMDMCR)
+		- SPI mode DDR enable register (SMDRENR)*
+	*/
+	SPIBSC0.SMENR = (SPIBSC0.SMENR & ~ (SPIBSC_SMENR_ADE | SPIBSC_SMENR_SPIDE | SPIBSC_SMENR_DME)) |
+		((hasaddress ? 0x07 : 0x00) << SPIBSC_SMENR_ADE_SHIFT) | /* No address send */
+		((ndummy != 0) << SPIBSC_SMENR_DME_SHIFT) |
+		(0x08 << SPIBSC_SMENR_SPIDE_SHIFT) | /* 8 bits transferred (enables data at address 0 of the SPI mode read/write data registers 0) */
+		0;
+
+	SPIBSC0.SMCMR =
+		(cmd << SPIBSC_SMCMR_CMD_SHIFT) | /* 0x9f read id register */
+		(0x00 << SPIBSC_SMCMR_OCMD_SHIFT) | /* xxxx */
+		0;
+	SPIBSC0.SMADR = address;
+
+	SPIBSC0.SMCR =
+		//SPIBSC_SMCR_SPIE |
+		SPIBSC_SMCR_SPIRE |
+		//SPIBSC_SMCR_SPIWE |
+		0;
+
 }
 
 #endif /* WIHSPIDFHW */
