@@ -278,7 +278,7 @@
 	#define	WITHFPGALOAD_PS	1	/* FPGA загружается процессором с помощью SPI */
 
 	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
-	//#define WITHUSEDUALWATCH	1	// Второй приемник
+	#define WITHUSEDUALWATCH	1	// Второй приемник
 	//#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
 	//#define BOARD_FFTZOOM_POW2MAX 1	// Возможные масштабы FFT x1, x2
 	//#define BOARD_FFTZOOM_POW2MAX 2	// Возможные масштабы FFT x1, x2, x4
@@ -521,6 +521,8 @@
 		#if WITHCURRLEVEL
 			#define WITHCURRLEVEL_ACS712_20A 1	// PA current sense - ACS712ELCTR-20B-T chip
 			PASENSEIX = BOARD_ADCMRRIN(3),		// PA2 PA current sense - ACS712-05 chip
+			#define CURRLEVE_UPPER		1	// 1 kOhm - верхний резистор делителя датчика тока
+			#define CURRLEVE_LOWER		1	// 1 kOhm - нижний резистор
 		#endif /* WITHCURRLEVEL */
 
 		#if WITHSWRMTR

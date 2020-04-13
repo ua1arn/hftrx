@@ -828,6 +828,9 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 	RCC->APB2ENR |= RCC_APB2ENR_USART1EN; // Включение тактирования USART1.
 	(void) RCC->APB2ENR;
 
+#if WITHUARTFIFO
+	USART1->CR1 |= USART_CR1_FIFOEN_Msk;
+#endif /* WITHUARTFIFO */
 	USART1->CR1 |= (USART_CR1_RE | USART_CR1_TE); // Transmitter Enable & Receiver Enables
 
 	HARDWARE_USART1_INITIALIZE();	/* Присоединить периферию к выводам */
@@ -1042,6 +1045,10 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 	RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_USART1EN; // Включение тактирования USART1.
 	(void) RCC->MP_APB5ENSETR;
 
+
+#if WITHUARTFIFO
+	USART1->CR1 |= USART_CR1_FIFOEN_Msk;
+#endif /* WITHUARTFIFO */
 	USART1->CR1 |= (USART_CR1_RE | USART_CR1_TE); // Transmitter Enable & Receiver Enables
 
 	HARDWARE_USART1_INITIALIZE();	/* Присоединить периферию к выводам */
@@ -1885,13 +1892,13 @@ void hardware_uart2_initialize(uint_fast8_t debug)
 #elif CPUSTYLE_STM32F1XX
 
 	RCC->APB1ENR |= RCC_APB1ENR_USART2EN; // Включение тактирования USART2.
-	__DSB();
+	(void) RCC->APB1ENR;
 
 	USART2->CR1 |= (USART_CR1_RE | USART_CR1_TE); // Transmitter Enable & Receiver Enables
 
 
 	RCC->APB2ENR |= RCC_APB2ENR_AFIOEN;     //включить тактирование альтернативных функций
-	__DSB();
+	(void) RCC->APB2ENR;
 
 	HARDWARE_USART2_INITIALIZE();	/* Присоединить периферию к выводам */
 
@@ -1907,8 +1914,11 @@ void hardware_uart2_initialize(uint_fast8_t debug)
 #elif CPUSTYLE_STM32H7XX
 
 	RCC->APB1LENR |= RCC_APB1LENR_USART2EN; // Включение тактирования USART2.
-	__DSB();
+	(void) RCC->APB1LENR;
 
+#if WITHUARTFIFO
+	USART2->CR1 |= USART_CR1_FIFOEN_Msk;
+#endif /* WITHUARTFIFO */
 	USART2->CR1 |= (USART_CR1_RE | USART_CR1_TE); // Transmitter Enable & Receiver Enables
 
 	HARDWARE_USART2_INITIALIZE();	/* Присоединить периферию к выводам */
@@ -2130,6 +2140,10 @@ xxxx!;
 	RCC->MP_APB1ENSETR = RCC_MC_APB1ENSETR_USART2EN; // Включение тактирования USART2.
 	(void) RCC->MP_APB1ENSETR;
 
+
+#if WITHUARTFIFO
+	USART2->CR1 |= USART_CR1_FIFOEN_Msk;
+#endif /* WITHUARTFIFO */
 	USART2->CR1 |= (USART_CR1_RE | USART_CR1_TE); // Transmitter Enable & Receiver Enables
 
 	HARDWARE_USART2_INITIALIZE();	/* Присоединить периферию к выводам */

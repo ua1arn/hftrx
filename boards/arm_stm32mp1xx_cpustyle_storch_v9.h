@@ -38,6 +38,8 @@
 
 //#define WITHUART1HW	1	/* PA9, PA10 Используется периферийный контроллер последовательного порта #1 */
 #define WITHUART2HW	1	/* PA2, PA3 Используется периферийный контроллер последовательного порта #2 */
+#define WITHUARTFIFO	1	/* испольование FIFO */
+
 //#define WITHCAT_USART1		1
 #define WITHDEBUG_USART2	1
 #define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
