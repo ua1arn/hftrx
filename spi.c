@@ -985,9 +985,6 @@ void spidf_initialize(void)
 		0uL * SPIBSC_CMNCR_BSZ |
 		0;
 
-	SPIBSC0.SMENR =
-		0;
-
 	SPIBSC0.SPBCR = (SPIBSC0.SPBCR & ~ (SPIBSC_SPBCR_BRDV | SPIBSC_SPBCR_SPBR)) |
 		(0 << SPIBSC_SPBCR_BRDV_SHIFT) |	// 0..3
 		(2 << SPIBSC_SPBCR_SPBR_SHIFT) |	// 0..255
@@ -1039,7 +1036,7 @@ static void spidf_iostart(
 		(0x01uL << SPIBSC_SMENR_CDE_SHIFT) | /* 1: Command output enabled */
 		(0x00uL << SPIBSC_SMENR_OCDE_SHIFT) | /* 0: Optional command output disabled */
 		(0x00uL << SPIBSC_SMENR_OPDE_SHIFT) | /* Option Data Enable 0000: Output disabled */
-		((hasaddress ? 0x07 : 0x00) << SPIBSC_SMENR_ADE_SHIFT) | /* No address send */
+		((hasaddress ? 0x07 : 0x00) << SPIBSC_SMENR_ADE_SHIFT) | /* No address send or 0111: ADR[23:0] */
 		((ndummy != 0) << SPIBSC_SMENR_DME_SHIFT) |
 		(0x08uL << SPIBSC_SMENR_SPIDE_SHIFT) | /* 8 bits transferred (enables data at address 0 of the SPI mode read/write data registers 0) */
 		0;
@@ -1049,6 +1046,7 @@ static void spidf_iostart(
 		(cmd << SPIBSC_SMCMR_CMD_SHIFT) | /* command byte */
 		(0x00uL << SPIBSC_SMCMR_OCMD_SHIFT) | /* xxxx */
 		0;
+
 	SPIBSC0.SMADR = address; // & 0x00FFFFFF;
 
 	SPIBSC0.SMCR = 0;
