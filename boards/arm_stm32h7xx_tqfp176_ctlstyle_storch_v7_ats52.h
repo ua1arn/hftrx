@@ -509,6 +509,7 @@
 		#if WITHTHERMOLEVEL
 			XTHERMOIX = BOARD_ADCXIN(6),		// MCP3208 CH6 Exernal thermo sensor ST LM235Z
 		#endif /* WITHTHERMOLEVEL */
+
 	#else
 		// толькло основная плата - 5W усилитель
 

@@ -254,8 +254,8 @@
 	#define WITHSAI1_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
 	//#define WITHSAI2_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
 	#define WITHI2S_FORMATI2S_PHILIPS 1	// Возможно использование при передаче данных в кодек, подключенный к наушникам и микрофону
-	#define WITHI2S_32BITPAIR 1	// 2*32bit при передаче данных в кодек, подключенный к наушникам и микрофону
-	#define CODEC_TYPE_NAU8822_USE_32BIT 1	// программирование кодека в формате 32 бит стерео
+	//#define WITHI2S_32BITPAIR 1	// 2*32bit при передаче данных в кодек, подключенный к наушникам и микрофону
+	//#define CODEC_TYPE_NAU8822_USE_32BIT 1	// программирование кодека в формате 32 бит стерео
 	#define WITHI2SHWRXSLAVE	1		// Приёмный канал I2S (микрофон) используюся в SLAVE MODE
 	#define WITHI2SHWTXSLAVE	1		// Передающий канал I2S (наушники) используюся в SLAVE MODE
 	//#define WITHSAI1HWTXRXMASTER	1		// SAI1 work in MASTER mode
@@ -355,8 +355,8 @@
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
 		#define FULLSET8	1
 		//#define SHORTSET8	1
-		//#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
-		//#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
+		#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
+		#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
 		//#define WITHTHERMOLEVEL	1	/* отображение температуры */
 
 		#define WITHENCODER2	1		/* есть второй валкодер */
@@ -477,9 +477,6 @@
 	#define WITHKEYBOARD 1	/* в данном устройстве есть клавиатура */
 	#define KEYBOARD_USE_ADC	1	/* на одной линии установлено  четыре  клавиши. на vref - 6.8K, далее 2.2К, 4.7К и 13K. */
 
-	#define VOLTLEVEL_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика напряжения
-	#define VOLTLEVEL_LOWER		10	// 1 kOhm - нижний резистор
-
 	// ST LM235Z
 	#define THERMOSENSOR_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика температуры
 	#define THERMOSENSOR_LOWER		10	// 1 kOhm - нижний резистор
@@ -490,42 +487,96 @@
 	// Назначения входов АЦП процессора.
 	enum 
 	{ 
-	#if WITHREFSENSOR
-		VREFIX = 17,		// Reference voltage
-	#endif /* WITHREFSENSOR */
-	#if WITHTEMPSENSOR
-		TEMPIX = 16,
-	#endif /* WITHTEMPSENSOR */
-	#if WITHVOLTLEVEL 
-		VOLTSOURCE = 8,		// PB0 Средняя точка делителя напряжения, для АКБ
-	#endif /* WITHVOLTLEVEL */
+	#if WITHAUTOTUNER_UA1CEI
 
-	#if WITHPOTIFGAIN
-		POTIFGAIN = 3,		// PA2 IF GAIN
-	#endif /* WITHPOTIFGAIN */
-	#if WITHPOTAFGAIN
-		POTAFGAIN = 7,		// PA7 AF GAIN
-	#endif /* WITHPOTAFGAIN */
 
-	#if WITHPOTWPM
-		POTWPM = 6,			// PA6 потенциометр управления скоростью передачи в телеграфе
-	#endif /* WITHPOTWPM */
-	#if WITHPOTPOWER
-		POTPOWER = 6,			// регулировка мощности
-	#endif /* WITHPOTPOWER */
+		#if WITHREFSENSOR
+			VREFIX = 17,		// Reference voltage
+		#endif /* WITHREFSENSOR */
+		#if WITHTEMPSENSOR
+			TEMPIX = 16,
+		#endif /* WITHTEMPSENSOR */
+		#if WITHVOLTLEVEL
+			VOLTSOURCE = BOARD_ADCMRRIN(2),		// PB0 Средняя точка делителя напряжения, для АКБ
+		#endif /* WITHVOLTLEVEL */
 
-	#if WITHTHERMOLEVEL
-		XTHERMOIX = 9,		// PB1 Exernal thermo sensor ST LM235Z
-	#endif /* WITHTHERMOLEVEL */
+		#if WITHPOTIFGAIN
+			POTIFGAIN = 3,		// PA2 IF GAIN
+		#endif /* WITHPOTIFGAIN */
+		#if WITHPOTAFGAIN
+			POTAFGAIN = 7,		// PA7 AF GAIN
+		#endif /* WITHPOTAFGAIN */
 
-	#if WITHCURRLEVEL
-		PASENSEIX = 2,		// PA2 PA current sense - ACS712-05 chip
-	#endif /* WITHCURRLEVEL */
+		#if WITHPOTWPM
+			POTWPM = 6,			// PA6 потенциометр управления скоростью передачи в телеграфе
+		#endif /* WITHPOTWPM */
+		#if WITHPOTPOWER
+			POTPOWER = 6,			// регулировка мощности
+		#endif /* WITHPOTPOWER */
 
-	#if WITHSWRMTR
-		PWRI = 14,			// PC4
-		FWD = 14, REF = 15,	// PC5	SWR-meter
-	#endif /* WITHSWRMTR */
+		#if WITHTHERMOLEVEL
+			XTHERMOIX = 9,		// PB1 Exernal thermo sensor ST LM235Z
+		#endif /* WITHTHERMOLEVEL */
+
+		#if WITHCURRLEVEL
+			#define WITHCURRLEVEL_ACS712_20A 1	// PA current sense - ACS712ELCTR-20B-T chip
+			PASENSEIX = BOARD_ADCMRRIN(3),		// PA2 PA current sense - ACS712-05 chip
+		#endif /* WITHCURRLEVEL */
+
+		#if WITHSWRMTR
+			FWD = BOARD_ADCMRRIN(0), REF = BOARD_ADCMRRIN(1),	// PC5	SWR-meter
+			PWRI = FWD,
+		#endif /* WITHSWRMTR */
+
+		#define VOLTLEVEL_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика напряжения
+		#define VOLTLEVEL_LOWER		10	// 1 kOhm - нижний резистор
+
+	#else
+
+
+
+		#if WITHREFSENSOR
+			VREFIX = 17,		// Reference voltage
+		#endif /* WITHREFSENSOR */
+		#if WITHTEMPSENSOR
+			TEMPIX = 16,
+		#endif /* WITHTEMPSENSOR */
+		#if WITHVOLTLEVEL
+			VOLTSOURCE = 8,		// PB0 Средняя точка делителя напряжения, для АКБ
+		#endif /* WITHVOLTLEVEL */
+
+		#if WITHPOTIFGAIN
+			POTIFGAIN = 3,		// PA2 IF GAIN
+		#endif /* WITHPOTIFGAIN */
+		#if WITHPOTAFGAIN
+			POTAFGAIN = 7,		// PA7 AF GAIN
+		#endif /* WITHPOTAFGAIN */
+
+		#if WITHPOTWPM
+			POTWPM = 6,			// PA6 потенциометр управления скоростью передачи в телеграфе
+		#endif /* WITHPOTWPM */
+		#if WITHPOTPOWER
+			POTPOWER = 6,			// регулировка мощности
+		#endif /* WITHPOTPOWER */
+
+		#if WITHTHERMOLEVEL
+			XTHERMOIX = 9,		// PB1 Exernal thermo sensor ST LM235Z
+		#endif /* WITHTHERMOLEVEL */
+
+		#if WITHCURRLEVEL
+			PASENSEIX = 2,		// PA2 PA current sense - ACS712-05 chip
+		#endif /* WITHCURRLEVEL */
+
+		#if WITHSWRMTR
+			PWRI = 14,			// PC4
+			FWD = 14, REF = 15,	// PC5	SWR-meter
+		#endif /* WITHSWRMTR */
+
+		#define VOLTLEVEL_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика напряжения
+		#define VOLTLEVEL_LOWER		10	// 1 kOhm - нижний резистор
+
+
+	#endif
 		KI0 = 10, KI1 = 11, KI2 = 12, KI3 = 0, KI4 = 1	// клавиатура
 	};
 

@@ -2033,7 +2033,7 @@ static uint_fast8_t adc_input;
 static uint_fast8_t
 isadchw(uint_fast8_t adci)
 {
-	return (adci < BOARD_ADCX0BASE && adci < BOARD_ADCX1BASE);
+	return adci < BOARD_ADCX0BASE;
 }
 
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S

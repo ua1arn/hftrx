@@ -408,10 +408,27 @@ static uint_fast8_t nmeaparser_chsval;
 static uint_fast8_t nmeaparser_param;		// номер принимаемого параметра в строке
 static uint_fast8_t nmeaparser_chars;		// количество символов, помещённых в буфер
 
-#define NMEA_PARAMS			5
+//#define NMEA_PARAMS			5
 #define NMEA_CHARSSMALL		16
 #define NMEA_CHARSBIG		257
-#define NMEA_BIGFIELD		3	// номер большого поля
+#define NMEA_BIGFIELD		255	// номер большого поля
+
+enum
+{
+	//	ответ:
+	NMF_CODE, //	$ANSW,
+	NMF_STATE, //	state, //состояние устройства (пока = 0)
+	NMF_FWD, //	V_FWD, //ADC датчик апрямой волны
+	NMF_REF, //	V_REF, //ADC датчика отраженной волны
+	NMF_T_SENS, //	T_SENS, //ADC датчика температуры LM235
+	NMF_C_SENS, //	C_SENS, //ADC датчика тока ACS712
+	NMF_12V_SENS, //	U_SENS, //ADC входного напряжения питания 12V
+	NMF_3V3_SENS, //	SENS_3V3, //ADC напряжения питания 3.3V
+	NMF_5V_SENS, //	SENS_5V, //ADC напряжения питания 5V
+	NMF_VREF, //	VREF //ADC измерения опорного напряжения
+
+	NMEA_PARAMS
+};
 
 static char nmeaparser_buffsmall [NMEA_PARAMS] [NMEA_CHARSSMALL];
 static char nmeaparser_buffbig [NMEA_CHARSBIG];
@@ -451,11 +468,11 @@ static uint_fast8_t calcxorv(
 
 static uint_fast8_t hex2int(uint_fast8_t c)
 {
-	if (isdigit(c))
+	if (isdigit((unsigned char) c))
 		return c - '0';
-	if (isupper(c))
+	if (isupper((unsigned char) c))
 		return c - 'A' + 10;
-	if (islower(c))
+	if (islower((unsigned char) c))
 		return c - 'a' + 10;
 	return 0;
 }
@@ -511,103 +528,20 @@ void nmea_parsechar(uint_fast8_t c)
 	case NMEAST_CHSLO:
 		//debugstate();
 		nmeaparser_state = NMEAST_INITIALIZED;
-		////if (nmeaparser_checksum == (nmeaparser_chsval + hex2int(c)))	// для тесто проверка контрольной суммы отключена
-#if 0
+		if (nmeaparser_checksum == (nmeaparser_chsval + hex2int(c)))	// для тесто проверка контрольной суммы отключена
 		{
-			if (nmeaparser_param >= 2 && strcmp(nmeaparser_get_buff(0), "GPMDS") == 0)
+			if (strcmp(nmeaparser_get_buff(NMF_CODE), "ANSW") == 0)
 			{
-				const unsigned code = strtoul(nmeaparser_get_buff(1) , NULL, 10);
-				if (nmeaparser_param >= 4)
-				{
-					const unsigned page = strtoul(nmeaparser_get_buff(2) , NULL, 10);
-					switch (code)
-					{
-					case 1:
-						// заполняем буфер
-						{
+				//
+				const adcvalholder_t EXTFS = 0x0FFF;
+				// board_adc_store_data
+				adcvalholder_t FS = board_getadc_fsval(FWD);
 
-							char * const buff = nmeaparser_get_buff(3);
-							const size_t j = strlen(buff);
-							unsigned i;
-							for (i = 0; (i + 1) < j; i += 2)
-							{
-								unsigned v = hex2int(buff [i + 0]);
-								v = v * 16 + hex2int(buff [i + 1]);
-								modem_placenextchartosend(page, v);
-							}
-						}
-						break;
-					case 2:
-						// Ранее накопленные данные передать с указанием адреса получателя
-						{
-							char * const buff = nmeaparser_get_buff(3);
-							const size_t j = strlen(buff);
-							unsigned i;
-							for (i = 0; (i + 1) < j && i < (MODEMBINADDRESSSIZE * 2); i += 2)
-							{
-								unsigned v = hex2int(buff [i + 0]);
-								v = v * 16 + hex2int(buff [i + 1]);
-								modem_placenextchartosend(page, v);
-							}
-							modem_flushsend(page);
-						}
-						break;
-
-					}
-				}
-				else if (nmeaparser_param >= 3)
-				{
-					const unsigned p2 = strtoul(nmeaparser_get_buff(2) , NULL, 10);
-					switch (code)
-					{
-					case 2:
-						// Ранее накопленные данные передать к мастеру (без указания адреса олучателя)
-						{
-							modem_flushsend(p2);
-						}
-						break;
-
-					case 3:
-						modem_cancelsending(p2);
-						// Сбросить ранее накопленные данные (не передавать)
-						break;
-					case 4:
-						// Установить рабочую частоту
-						// Частота в герцах
-						{
-							modemfreq = p2;
-							paramschangedfreq = 1;
-
-						}
-						break;
-					case 5:
-						// Установить скорость передачи в эфире
-						// Baud rate (в сотых долях бода)
-						{
-							modemspeed100 = p2;
-							paramschangedspeed = 1;
-						}
-						break;
-					case 6:
-						// Установить тип модуляции
-						// 0 – BPSK, 1 - QPSK
-						{
-							modemmode = p2;
-							paramschangedmode = 1;
-						}
-						break;
-					case 7:
-						// Установить режтм арбты себя в режиме мастер (1) или слэйв (0) - 0 по включению питания
-						// 0 – slave, 1 - master
-						{
-							mastermode = p2;
-						}
-						break;
-					}
-				}
+				board_adc_store_data(VOLTSOURCE, strtoul(nmeaparser_get_buff(NMF_12V_SENS) , NULL, 10) * FS / EXTFS);
+				board_adc_store_data(FWD, strtoul(nmeaparser_get_buff(NMF_FWD) , NULL, 10) * FS / EXTFS);
+				board_adc_store_data(REF, strtoul(nmeaparser_get_buff(NMF_REF) , NULL, 10) * FS / EXTFS);
 			}
 		}
-#endif
 		break;
 
 	default:
@@ -8036,6 +7970,12 @@ adcvalholder_t board_getadc_unfiltered_truevalue(uint_fast8_t adci)
 			{	6, 0, },
 			{	7, 0, },
 	};
+
+	if (adci >= BOARD_ADCMRRBASE)
+	{
+		// mirror - значения АЦП устанавливабтся выходами программных компонентов, без считывания с аппаратуры.
+		return adc_data_raw [adci];
+	}
 	if (adci >= BOARD_ADCX1BASE)
 	{
 		// external SPI device (PA BOARD ADC)

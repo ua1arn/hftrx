@@ -312,7 +312,7 @@ extern "C" {
 	#define ADCVREF_CPU	33		// 3.3 volt
 	#define DACVREF_CPU	33		// 3.3 volt
 	#define HARDWARE_DACBITS 12	/* ЦАП работает с 12-битными значениями */
-	#define HARDWARE_ADCINPUTS	40	/* до 32-ти входов АЦП */
+	//#define HARDWARE_ADCINPUTS	40	/* до 32-ти входов АЦП */
 	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast16_t adcvalholder_t;	
 	#if CPUSTYLE_STM32H7XX
