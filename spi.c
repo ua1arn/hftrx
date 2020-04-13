@@ -1057,7 +1057,7 @@ static void spidf_iostart(
 	SPIBSC0.SMADR = address; // & 0x00FFFFFF;
 
 	SPIBSC0.SMCR = 0;
-	SPIBSC0.SMCR = SPIBSC_SMCR_SSLKP;
+	//SPIBSC0.SMCR = SPIBSC_SMCR_SSLKP;
 	if (direction)
 		SPIBSC0.SMCR |= SPIBSC_SMCR_SPIWE;
 	else
