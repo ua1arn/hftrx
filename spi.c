@@ -952,6 +952,11 @@ static void spidf_unselect(void)
 void spidf_initialize(void)
 {
 
+	//PRINTF("SPIBSC0.SMDMCR=%08lX\n", SPIBSC0.SMDMCR);
+	//PRINTF("SPIBSC0.SPBCR=%08lX\n", SPIBSC0.SPBCR);
+	PRINTF("SPIBSC0.CMNCR=%08lX\n", SPIBSC0.CMNCR);
+	//PRINTF("SPIBSC0.SSLDR=%08lX\n", SPIBSC0.SSLDR);
+
 	// Connect I/O pins
 	SPIDF_HARDINITIALIZE();
 
@@ -967,34 +972,40 @@ void spidf_initialize(void)
 		(0x07uL << SPIBSC_SSLDR_SLNDL_SHIFT) |
 		(0x07uL << SPIBSC_SSLDR_SCKDL_SHIFT) |
 		0;
-
 	// 17.4.1 Common Control Register (CMNCR)
 	SPIBSC0.CMNCR =
 		SPIBSC_CMNCR_MD |	// spi mode
-		(0x00uL << SPIBSC_CMNCR_SFDE_SHIFT) |	// 0: Swapping is not performed.
-		(0x03uL << SPIBSC_CMNCR_MOIIO3_SHIFT) |
-		(0x03uL << SPIBSC_CMNCR_MOIIO2_SHIFT) |
-		(0x03uL << SPIBSC_CMNCR_MOIIO1_SHIFT) |
-		(0x03uL << SPIBSC_CMNCR_MOIIO0_SHIFT) |
-		(0x03uL << SPIBSC_CMNCR_IO3FV_SHIFT) |
-		(0x03uL << SPIBSC_CMNCR_IO2FV_SHIFT) |
-		(0x03uL << SPIBSC_CMNCR_IO0FV_SHIFT) |
-		0uL * SPIBSC_CMNCR_CPHAR |
-		0uL * SPIBSC_CMNCR_CPHAT |
-		0uL * SPIBSC_CMNCR_SSLP |
-		0uL * SPIBSC_CMNCR_BSZ |
+		(0x01uL << SPIBSC_CMNCR_SFDE_SHIFT) |	// after reset: 1
+		(0x02uL << SPIBSC_CMNCR_MOIIO3_SHIFT) |	// after reset: 2
+		(0x02uL << SPIBSC_CMNCR_MOIIO2_SHIFT) |	// after reset: 2
+		(0x02uL << SPIBSC_CMNCR_MOIIO1_SHIFT) |	// after reset: 2
+		(0x02uL << SPIBSC_CMNCR_MOIIO0_SHIFT) |	// after reset: 2
+		(0x01uL << SPIBSC_CMNCR_IO3FV_SHIFT) |	// after reset: 1
+		(0x00uL << SPIBSC_CMNCR_IO2FV_SHIFT) |	// after reset: 0
+		(0x00uL << SPIBSC_CMNCR_IO0FV_SHIFT) |	// after reset: 0
+		0uL * SPIBSC_CMNCR_CPHAR |	// after reset: 0
+		0uL * SPIBSC_CMNCR_CPHAT |	// after reset: 0
+		0uL * SPIBSC_CMNCR_SSLP |	// after reset: 0
+		0uL * SPIBSC_CMNCR_BSZ |	// after reset: 0
 		0;
 
 	// Baud rate
 	SPIBSC0.SPBCR = (SPIBSC0.SPBCR & ~ (SPIBSC_SPBCR_BRDV | SPIBSC_SPBCR_SPBR)) |
-		(3 << SPIBSC_SPBCR_BRDV_SHIFT) |	// 0..3
+		(0 << SPIBSC_SPBCR_BRDV_SHIFT) |	// 0..3
 		(2 << SPIBSC_SPBCR_SPBR_SHIFT) |	// 0..255
 		0;
 
 	SPIBSC0.SMDMCR =
 		(0 << SPIBSC_SMDMCR_DMDB_SHIFT) |	// 1 bit dummy bytes
-		(0x07uL << SPIBSC_SMDMCR_DMCYC_SHIFT) |	// 8 dummy bits
+		//(0x07uL << SPIBSC_SMDMCR_DMCYC_SHIFT) |	// 8 dummy bits
 		0;
+
+
+	//PRINTF("SPIBSC0.SMDMCR=%08lX\n", SPIBSC0.SMDMCR);
+	//PRINTF("SPIBSC0.SPBCR=%08lX\n", SPIBSC0.SPBCR);
+	PRINTF("SPIBSC0.CMNCR=%08lX\n", SPIBSC0.CMNCR);
+	//PRINTF("SPIBSC0.SSLDR=%08lX\n", SPIBSC0.SSLDR);
+
 }
 
 void spidf_uninitialize(void)
@@ -1014,17 +1025,17 @@ static void spidf_iostart(
 {
 	/*
 		The transfer format is determined based on the following registers.
-		- Common control register (CMNCR)!
-		- SSL delay register (SSLDR)!
-		- Bit rate setting register (SPBCR)!
-		- SPI mode control register (SMCR)!
-		- SPI mode command setting register (SMCMR)!
-		- SPI mode address setting register (SMADR)!
-		- SPI mode option setting register (SMOPR)!
-		- SPI mode enable setting register (SMENR)!
+		- Common control register (CMNCR)
+		- SSL delay register (SSLDR)
+		- Bit rate setting register (SPBCR)
+		- SPI mode control register (SMCR)
+		- SPI mode command setting register (SMCMR)
+		- SPI mode address setting register (SMADR)
+		- SPI mode option setting register (SMOPR)
+		- SPI mode enable setting register (SMENR)
 		- SPI mode read data register (SMRDR)
 		- SPI mode write data register (SMWDR)
-		- SPI mode dummy cycle setting register (SMDMCR)!
+		- SPI mode dummy cycle setting register (SMDMCR)
 		- SPI mode DDR enable register (SMDRENR)*
 	*/
 	// 17.4.13 SPI Mode Enable Setting Register (SMENR)
