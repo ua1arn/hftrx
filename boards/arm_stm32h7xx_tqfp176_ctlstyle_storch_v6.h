@@ -409,7 +409,6 @@
 	//#define WITHLO1LEVELADJ		1	/* включено управление уровнем (амплитудой) LO1 */
 	//#define WITHLFM		1	/* LFM MODE */
 	//#define WITHTEMPSENSOR	1	/* отображение данных с датчика температуры */
-	#define WITHREFSENSOR	1		/* измерение по выделенному каналу АЦП опорного напряжения */
 	#define WITHDIRECTBANDS 1	/* Прямой переход к диапазонам по нажатиям на клавиатуре */
 	// --- Эти строки можно отключать, уменьшая функциональность готового изделия
 
@@ -489,6 +488,7 @@
 	{ 
 	#if WITHAUTOTUNER_UA1CEI
 
+		#define WITHREFSENSOR	1		/* измерение по выделенному каналу АЦП опорного напряжения */
 
 		#if WITHREFSENSOR
 			VREFIX = 17,		// Reference voltage
@@ -521,8 +521,8 @@
 		#if WITHCURRLEVEL
 			#define WITHCURRLEVEL_ACS712_20A 1	// PA current sense - ACS712ELCTR-20B-T chip
 			PASENSEIX = BOARD_ADCMRRIN(3),		// PA2 PA current sense - ACS712-05 chip
-			#define CURRLEVE_UPPER		1	// 1 kOhm - верхний резистор делителя датчика тока
-			#define CURRLEVE_LOWER		1	// 1 kOhm - нижний резистор
+			//#define CURRLEVE_UPPER		1	// 1 kOhm - верхний резистор делителя датчика тока
+			//#define CURRLEVE_LOWER		1	// 1 kOhm - нижний резистор
 		#endif /* WITHCURRLEVEL */
 
 		#if WITHSWRMTR
@@ -535,6 +535,8 @@
 
 	#else
 
+
+		#define WITHREFSENSOR	1		/* измерение по выделенному каналу АЦП опорного напряжения */
 
 
 		#if WITHREFSENSOR

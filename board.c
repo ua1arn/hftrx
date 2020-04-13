@@ -533,14 +533,14 @@ void nmea_parsechar(uint_fast8_t c)
 			if (strcmp(nmeaparser_get_buff(NMF_CODE), "ANSW") == 0)
 			{
 				//
-				const adcvalholder_t EXTFS = 0x0FFF;
+				const adcvalholder_t EXTFS = 0x0FFF;	// в тюнере стоит 12-бит АЦП
 				// board_adc_store_data
-				adcvalholder_t FS = board_getadc_fsval(FWD);
+				const adcvalholder_t FS = board_getadc_fsval(FWD);
 
-				board_adc_store_data(VOLTSOURCE, strtoul(nmeaparser_get_buff(NMF_12V_SENS) , NULL, 10) * FS / EXTFS);
-				board_adc_store_data(FWD, strtoul(nmeaparser_get_buff(NMF_FWD) , NULL, 10) * FS / EXTFS);
-				board_adc_store_data(REF, strtoul(nmeaparser_get_buff(NMF_REF) , NULL, 10) * FS / EXTFS);
-				board_adc_store_data(PASENSEIX, strtoul(nmeaparser_get_buff(NMF_C_SENS) , NULL, 10) * FS / EXTFS);
+				board_adc_store_data(VOLTSOURCE, strtoul(nmeaparser_get_buff(NMF_12V_SENS), NULL, 10) * FS / EXTFS);
+				board_adc_store_data(FWD, strtoul(nmeaparser_get_buff(NMF_FWD), NULL, 10) * FS / EXTFS);
+				board_adc_store_data(REF, strtoul(nmeaparser_get_buff(NMF_REF), NULL, 10) * FS / EXTFS);
+				board_adc_store_data(PASENSEIX, strtoul(nmeaparser_get_buff(NMF_C_SENS), NULL, 10) * FS / EXTFS);
 			}
 		}
 		break;
