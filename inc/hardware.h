@@ -823,13 +823,17 @@ uint_fast8_t bootloader_get_start(uintptr_t apparea, uintptr_t * ip);
 void bootloader_detach(uintptr_t ip);
 void bootloader_deffereddetach(void * arg);
 
-#define HARDWARE_ADCINPUTS	40	/* до 8-ти входов АЦП */
 
 #define BOARD_ADCX0BASE 24	// on-board ADC base index
 #define BOARD_ADCX1BASE 32	// PA board ADC base index
+#define BOARD_ADCMRRBASE 40	// mirror - значения АЦП устанавливабтся выходами программных компонентов, без считывания с аппаратуры.
+
+#define HARDWARE_ADCINPUTS	48	/* до 8-ти входов АЦП на каждый тип источников */
+
 #define BOARD_ADCXIN(ch) (BOARD_ADCX0BASE + (ch))
 #define BOARD_ADCX1IN(ch) (BOARD_ADCX0BASE + (ch))
 #define BOARD_ADCX2IN(ch) (BOARD_ADCX1BASE + (ch))
+#define BOARD_ADCMRRIN(ch) (BOARD_ADCMRRBASE + (ch))
 
 // Cortex-A7/A9 handlers
 void Undef_Handler(void);
