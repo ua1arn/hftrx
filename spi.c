@@ -912,6 +912,7 @@ static void spidf_write(const uint8_t * buff, uint32_t size)
 {
 	while (size --)
 	{
+		SPIBSC0.SMCR |= SPIBSC_SMCR_SPIE;
 		while ((SPIBSC0.CMNSR & SPIBSC_CMNSR_TEND) == 0)
 			;
 		SPIBSC0.SMWDR0.UINT8 [R_IO_LL] = * buff ++;
@@ -924,6 +925,7 @@ static uint_fast8_t spidf_verify(const uint8_t * buff, uint32_t size)
 	uint_fast8_t err = 0;
 	while (size --)
 	{
+		SPIBSC0.SMCR |= SPIBSC_SMCR_SPIE;
 		while ((SPIBSC0.CMNSR & SPIBSC_CMNSR_TEND) == 0)
 			;
 		err |= * buff ++ != SPIBSC0.SMRDR0.UINT8 [R_IO_LL];
@@ -936,8 +938,11 @@ static void spidf_read(uint8_t * buff, uint32_t size)
 {
 	while (size --)
 	{
+		//TP();
+		SPIBSC0.SMCR |= SPIBSC_SMCR_SPIE;
 		while ((SPIBSC0.CMNSR & SPIBSC_CMNSR_TEND) == 0)
 			;
+		//PRINTF("SPIBSC0.SMRDR0=%08lX\n", SPIBSC0.SMRDR0.UINT32);
 		* buff ++ = SPIBSC0.SMRDR0.UINT8 [R_IO_LL];
 	}
 }
@@ -954,11 +959,8 @@ void spidf_initialize(void)
 
 	//PRINTF("SPIBSC0.SMDMCR=%08lX\n", SPIBSC0.SMDMCR);
 	//PRINTF("SPIBSC0.SPBCR=%08lX\n", SPIBSC0.SPBCR);
-	PRINTF("SPIBSC0.CMNCR=%08lX\n", SPIBSC0.CMNCR);
+	//PRINTF("SPIBSC0.CMNCR=%08lX\n", SPIBSC0.CMNCR);
 	//PRINTF("SPIBSC0.SSLDR=%08lX\n", SPIBSC0.SSLDR);
-
-	// Connect I/O pins
-	SPIDF_HARDINITIALIZE();
 
 	// spi multi-io hang on
 	CPG.STBCR9 &= ~ CPG_STBCR9_BIT_MSTP93;	// Module Stop 93	- 0: Clock supply to channel 0 of the SPI multi I/O bus controller is runnuing.
@@ -975,14 +977,14 @@ void spidf_initialize(void)
 	// 17.4.1 Common Control Register (CMNCR)
 	SPIBSC0.CMNCR =
 		SPIBSC_CMNCR_MD |	// spi mode
-		(0x01uL << SPIBSC_CMNCR_SFDE_SHIFT) |	// after reset: 1
-		(0x02uL << SPIBSC_CMNCR_MOIIO3_SHIFT) |	// after reset: 2
-		(0x02uL << SPIBSC_CMNCR_MOIIO2_SHIFT) |	// after reset: 2
-		(0x02uL << SPIBSC_CMNCR_MOIIO1_SHIFT) |	// after reset: 2
-		(0x02uL << SPIBSC_CMNCR_MOIIO0_SHIFT) |	// after reset: 2
-		(0x01uL << SPIBSC_CMNCR_IO3FV_SHIFT) |	// after reset: 1
-		(0x00uL << SPIBSC_CMNCR_IO2FV_SHIFT) |	// after reset: 0
-		(0x00uL << SPIBSC_CMNCR_IO0FV_SHIFT) |	// after reset: 0
+		(1uL << SPIBSC_CMNCR_SFDE_SHIFT) |	// after reset: 1
+		(2uL << SPIBSC_CMNCR_MOIIO3_SHIFT) |	// after reset: 2
+		(2uL << SPIBSC_CMNCR_MOIIO2_SHIFT) |	// after reset: 2
+		(2uL << SPIBSC_CMNCR_MOIIO1_SHIFT) |	// after reset: 2
+		(2uL << SPIBSC_CMNCR_MOIIO0_SHIFT) |	// after reset: 2
+		(1uL << SPIBSC_CMNCR_IO3FV_SHIFT) |	// after reset: 1
+		(0uL << SPIBSC_CMNCR_IO2FV_SHIFT) |	// after reset: 0
+		(0uL << SPIBSC_CMNCR_IO0FV_SHIFT) |	// after reset: 0
 		0uL * SPIBSC_CMNCR_CPHAR |	// after reset: 0
 		0uL * SPIBSC_CMNCR_CPHAT |	// after reset: 0
 		0uL * SPIBSC_CMNCR_SSLP |	// after reset: 0
@@ -1003,8 +1005,11 @@ void spidf_initialize(void)
 
 	//PRINTF("SPIBSC0.SMDMCR=%08lX\n", SPIBSC0.SMDMCR);
 	//PRINTF("SPIBSC0.SPBCR=%08lX\n", SPIBSC0.SPBCR);
-	PRINTF("SPIBSC0.CMNCR=%08lX\n", SPIBSC0.CMNCR);
+	//PRINTF("SPIBSC0.CMNCR=%08lX\n", SPIBSC0.CMNCR);
 	//PRINTF("SPIBSC0.SSLDR=%08lX\n", SPIBSC0.SSLDR);
+
+	// Connect I/O pins
+	SPIDF_HARDINITIALIZE();
 
 }
 
@@ -1067,8 +1072,6 @@ static void spidf_iostart(
 		SPIBSC0.SMCR |= SPIBSC_SMCR_SPIWE;
 	else
 		SPIBSC0.SMCR |= SPIBSC_SMCR_SPIRE;
-
-	SPIBSC0.SMCR |= SPIBSC_SMCR_SPIE;
 
 }
 
