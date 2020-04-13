@@ -959,6 +959,8 @@ void spidf_initialize(void)
 	CPG.STBCR9 &= ~ CPG_STBCR9_BIT_MSTP93;	// Module Stop 93	- 0: Clock supply to channel 0 of the SPI multi I/O bus controller is runnuing.
 	(void) CPG.STBCR9;			/* Dummy read */
 
+	SPIBSC0.SMCR = 0;
+
 	SPIBSC0.SPBCR = 0x200;	// baud rate
 
 	// 17.4.2 SSL Delay Register (SSLDR)
@@ -1038,7 +1040,7 @@ static void spidf_iostart(
 		(0x00uL << SPIBSC_SMENR_OPDE_SHIFT) | /* Option Data Enable 0000: Output disabled */
 		((hasaddress ? 0x07 : 0x00) << SPIBSC_SMENR_ADE_SHIFT) | /* No address send or 0111: ADR[23:0] */
 		((ndummy != 0) << SPIBSC_SMENR_DME_SHIFT) |
-		(0x08uL << SPIBSC_SMENR_SPIDE_SHIFT) | /* 8 bits transferred (enables data at address 0 of the SPI mode read/write data registers 0) */
+		((size ? 0x08uL : 0) << SPIBSC_SMENR_SPIDE_SHIFT) | /* 8 bits transferred (enables data at address 0 of the SPI mode read/write data registers 0) */
 		0;
 
 	// 17.4.10 SPI Mode Command Setting Register (SMCMR)
