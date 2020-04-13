@@ -926,7 +926,7 @@ static uint_fast8_t spidf_verify(const uint8_t * buff, uint32_t size)
 	{
 		while ((SPIBSC0.CMNSR & SPIBSC_CMNSR_TEND) == 0)
 			;
-		err |= * buff ++ != SPIBSC0.SMWDR0.UINT8 [R_IO_LL];
+		err |= * buff ++ != SPIBSC0.SMRDR0.UINT8 [R_IO_LL];
 	}
 	return err;
 }
@@ -938,7 +938,7 @@ static void spidf_read(uint8_t * buff, uint32_t size)
 	{
 		while ((SPIBSC0.CMNSR & SPIBSC_CMNSR_TEND) == 0)
 			;
-		* buff ++ = SPIBSC0.SMWDR0.UINT8 [R_IO_LL];
+		* buff ++ = SPIBSC0.SMRDR0.UINT8 [R_IO_LL];
 	}
 }
 
@@ -960,8 +960,6 @@ void spidf_initialize(void)
 	(void) CPG.STBCR9;			/* Dummy read */
 
 	SPIBSC0.SMCR = 0;
-
-	SPIBSC0.SPBCR = 0x200;	// baud rate
 
 	// 17.4.2 SSL Delay Register (SSLDR)
 	SPIBSC0.SSLDR =
@@ -987,8 +985,9 @@ void spidf_initialize(void)
 		0uL * SPIBSC_CMNCR_BSZ |
 		0;
 
+	// Baud rate
 	SPIBSC0.SPBCR = (SPIBSC0.SPBCR & ~ (SPIBSC_SPBCR_BRDV | SPIBSC_SPBCR_SPBR)) |
-		(0 << SPIBSC_SPBCR_BRDV_SHIFT) |	// 0..3
+		(3 << SPIBSC_SPBCR_BRDV_SHIFT) |	// 0..3
 		(2 << SPIBSC_SPBCR_SPBR_SHIFT) |	// 0..255
 		0;
 
@@ -1015,17 +1014,17 @@ static void spidf_iostart(
 {
 	/*
 		The transfer format is determined based on the following registers.
-		- Common control register (CMNCR)
-		- SSL delay register (SSLDR)
-		- Bit rate setting register (SPBCR)
-		- SPI mode control register (SMCR)
-		- SPI mode command setting register (SMCMR)
-		- SPI mode address setting register (SMADR)
-		- SPI mode option setting register (SMOPR)
-		- SPI mode enable setting register (SMENR)
+		- Common control register (CMNCR)!
+		- SSL delay register (SSLDR)!
+		- Bit rate setting register (SPBCR)!
+		- SPI mode control register (SMCR)!
+		- SPI mode command setting register (SMCMR)!
+		- SPI mode address setting register (SMADR)!
+		- SPI mode option setting register (SMOPR)!
+		- SPI mode enable setting register (SMENR)!
 		- SPI mode read data register (SMRDR)
 		- SPI mode write data register (SMWDR)
-		- SPI mode dummy cycle setting register (SMDMCR)
+		- SPI mode dummy cycle setting register (SMDMCR)!
 		- SPI mode DDR enable register (SMDRENR)*
 	*/
 	// 17.4.13 SPI Mode Enable Setting Register (SMENR)
