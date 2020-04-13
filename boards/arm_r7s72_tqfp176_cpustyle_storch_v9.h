@@ -24,8 +24,8 @@
 //#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
 //#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 
-#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
-//#define WIHSPIDFHW	1	/* аппаратное обслуживание DATA FLASH */
+//#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
+#define WIHSPIDFHW	1	/* аппаратное обслуживание DATA FLASH */
 
 #if WITHISBOOTLOADER
 

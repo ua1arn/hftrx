@@ -915,6 +915,15 @@ static void spidf_write(const uint8_t * buff, uint_fast32_t size)
 {
 	while (size --)
 	{
+
+		while ((SPIBSC0.CMNSR & SPIBSC_CMNSR_TEND) == 0)
+			;
+		SPIBSC0.SMWDR0.UINT8 [R_IO_LL] = * buff ++;
+		/* подготовка к следующему шагу */
+		// продолжение обмена без передачи команды, адреса...
+		SPIBSC0.SMENR &= ~ (SPIBSC_SMENR_ADE | SPIBSC_SMENR_CDE | SPIBSC_SMENR_DME | SPIBSC_SMENR_OPDE);
+		SPIBSC0.SMENR |= 0x08uL << SPIBSC_SMENR_SPIDE_SHIFT;
+
 		if (size == 0)
 		{
 			// последний обмен
@@ -926,13 +935,6 @@ static void spidf_write(const uint8_t * buff, uint_fast32_t size)
 			// не последний обмен - удерживаем CS в нуле
 			SPIBSC0.SMCR = SPIBSC_SMCR_SPIWE | SPIBSC_SMCR_SPIE | SPIBSC_SMCR_SSLKP;
 		}
-
-		while ((SPIBSC0.CMNSR & SPIBSC_CMNSR_TEND) == 0)
-			;
-		SPIBSC0.SMWDR0.UINT8 [R_IO_LL] = * buff ++;
-		/* подготовка к следующему шагу */
-		// продолжение обмена без передачи команды, адреса...
-		SPIBSC0.SMENR &= ~ (SPIBSC_SMENR_ADE | SPIBSC_SMENR_CDE | SPIBSC_SMENR_DME | SPIBSC_SMENR_OPDE);
 	}
 }
 
@@ -1108,9 +1110,8 @@ static void spidf_iostart(
 		(0x00uL << SPIBSC_SMENR_OPDE_SHIFT) | /* Option Data Enable 0000: Output disabled */
 		((hasaddress ? 0x07 : 0x00) << SPIBSC_SMENR_ADE_SHIFT) | /* No address send or 0111: ADR[23:0] */
 		((ndummy != 0) << SPIBSC_SMENR_DME_SHIFT) |
-		((size ? 0x08uL : 0) << SPIBSC_SMENR_SPIDE_SHIFT) | /* 8 bits transferred (enables data at address 0 of the SPI mode read/write data registers 0) */
+		((size && ! direction ? 0x08uL : 0) << SPIBSC_SMENR_SPIDE_SHIFT) | /* 8 bits transferred (enables data at address 0 of the SPI mode read/write data registers 0) */
 		0;
-
 	// 17.4.10 SPI Mode Command Setting Register (SMCMR)
 	SPIBSC0.SMCMR =
 		(cmd << SPIBSC_SMCMR_CMD_SHIFT) | /* command byte */
@@ -1122,8 +1123,10 @@ static void spidf_iostart(
     SPIBSC0.SMCR =
 		((direction) ? SPIBSC_SMCR_SPIWE : SPIBSC_SMCR_SPIRE) |
 		((size > 1) * SPIBSC_SMCR_SSLKP) | // 0: SPBSSL signal is negated at the end of transfer.
-		((size == 0) * SPIBSC_SMCR_SPIE) |	// запускаем если не будет обмена данными
+		((size == 0 || direction) * SPIBSC_SMCR_SPIE) |	// запускаем если не будет обмена данными
 		0;
+
+	// при передаче формируется только команла и адрес при необходимости
 }
 
 #endif /* WIHSPIDFHW */
@@ -1349,7 +1352,7 @@ int prepareDATAFLASH(void)
 
 int sectoreraseDATAFLASH(unsigned long flashoffset)
 {
-	PRINTF(PSTR(" Erase sector at address %08lX\n"), flashoffset);
+	//PRINTF(PSTR(" Erase sector at address %08lX\n"), flashoffset);
 
 	if (timed_dataflash_read_status())
 	{
@@ -1391,7 +1394,7 @@ int writesinglepageDATAFLASH(unsigned long flashoffset, const unsigned char * da
 
 int writeDATAFLASH(unsigned long flashoffset, const uint8_t * data, unsigned long len)
 {
-	PRINTF(PSTR("Write to address %08lX %02X\n"), flashoffset, len);
+	//PRINTF(PSTR("Write to address %08lX %02X\n"), flashoffset, len);
 	while (len != 0)
 	{
 		unsigned long offset = flashoffset & 0xFF;
@@ -1404,7 +1407,7 @@ int writeDATAFLASH(unsigned long flashoffset, const uint8_t * data, unsigned lon
 		flashoffset += part;
 		data += part;
 	}
-	PRINTF(PSTR("Write to address %08lX %02X done\n"), flashoffset, len);
+	//PRINTF(PSTR("Write to address %08lX %02X done\n"), flashoffset, len);
 	return 0;
 }
 
@@ -1412,7 +1415,7 @@ int verifyDATAFLASH(unsigned long flashoffset, const uint8_t * data, unsigned lo
 {
 	unsigned long err = 0;
 
-	PRINTF(PSTR("Compare from address %08lX\n"), flashoffset);
+	//PRINTF(PSTR("Compare from address %08lX\n"), flashoffset);
 
 	if (timed_dataflash_read_status())
 	{
