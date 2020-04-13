@@ -611,6 +611,11 @@ void spi_initialize(void)
 #endif /* WITHSPIHW || WITHSPISW */
 
 
+
+#if WIHSPIDFHW || WIHSPIDFSW
+
+enum { SPDIFIO_READ, SPDIFIO_WRITE };	// в случае пеердачи только команды используем write */
+
 #if WIHSPIDFSW
 
 
@@ -718,10 +723,6 @@ static uint_fast8_t spidf_progval8(spitarget_t target, uint_fast8_t sendval)
 	return spidf_read_byte(target, sendval);
 }
 
-
-
-enum { SPDIFIO_READ, SPDIFIO_WRITE };	// в случае пеердачи только команды используем write */
-
 static void spidf_iostart(
 	uint_fast8_t direction,	// 0: dataflash-to-memory, 1: Memory-to-dataflash
 	uint_fast8_t cmd,
@@ -823,8 +824,6 @@ static void spidf_unselect(void)
 	SPIDF_HANGOFF();
 }
 
-enum { SPDIFIO_READ, SPDIFIO_WRITE };	// в случае пеердачи только команды используем write */
-
 static void spidf_iostart(
 	uint_fast8_t direction,	// 0: dataflash-to-cpu, 1: cpu-to-dataflash
 	uint_fast8_t cmd,
@@ -836,8 +835,6 @@ static void spidf_iostart(
 {
 	while ((QUADSPI->SR & QUADSPI_SR_BUSY_Msk) != 0)
 		;
-
-	address &= 0x00FFFFFF;	// В indirect режимах адрес должен быть в допустимых для указанного при ините размера памяти
 
 	SPIDF_HARDINITIALIZE();
 
@@ -868,7 +865,7 @@ static void spidf_iostart(
 	if ((QUADSPI->CCR & QUADSPI_CCR_ADMODE_Msk) != 0)
 	{
 		// Initiate operation
-		QUADSPI->AR = address;
+		QUADSPI->AR = address & 0x00FFFFFF;	// В indirect режимах адрес должен быть в допустимых для указанного при ините размера памяти
 		//PRINTF("spidf_iostart QUADSPI->AR=%08lX, QUADSPI->SR=%08lX\n", QUADSPI->AR, QUADSPI->SR);
 	}
 }
@@ -910,17 +907,6 @@ void spidf_uninitialize(void)
 
 #elif WIHSPIDFHW && CPUSTYLE_R7S721
 
-// вычитываем все заказанное количество
-static void spidf_read(uint8_t * buff, uint32_t size)
-{
-	while (size --)
-	{
-		while ((SPIBSC0.CMNSR & SPIBSC_CMNSR_TEND) == 0)
-			;
-		* buff ++ = SPIBSC0.SMWDR0.UINT8 [R_IO_LL];
-	}
-}
-
 // передаем все заказанное количество
 static void spidf_write(const uint8_t * buff, uint32_t size)
 {
@@ -943,6 +929,17 @@ static uint_fast8_t spidf_verify(const uint8_t * buff, uint32_t size)
 		err |= * buff ++ != SPIBSC0.SMWDR0.UINT8 [R_IO_LL];
 	}
 	return err;
+}
+
+// вычитываем все заказанное количество
+static void spidf_read(uint8_t * buff, uint32_t size)
+{
+	while (size --)
+	{
+		while ((SPIBSC0.CMNSR & SPIBSC_CMNSR_TEND) == 0)
+			;
+		* buff ++ = SPIBSC0.SMWDR0.UINT8 [R_IO_LL];
+	}
 }
 
 static void spidf_unselect(void)
@@ -1008,8 +1005,6 @@ void spidf_uninitialize(void)
 	SPIDF_HANGOFF();
 }
 
-enum { SPDIFIO_READ, SPDIFIO_WRITE };	// в случае пеердачи только команды используем write */
-
 static void spidf_iostart(
 	uint_fast8_t direction,	// 0: dataflash-to-CPU, 1: CPU-to-dataflash
 	uint_fast8_t cmd,
@@ -1068,8 +1063,6 @@ static void spidf_iostart(
 }
 
 #endif /* WIHSPIDFHW */
-
-#if WIHSPIDFHW || WIHSPIDFSW
 
 /* получить 32-бит значение */
 static uint_fast32_t
