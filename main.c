@@ -10105,7 +10105,6 @@ display_redrawbars(
 	if (immed || display_refreshenabled_voltage())
 	{
 		/* медленно меняющиеся значения с редким опорсом */
-		TP();
 		/* +++ переписываем значения из возможно внешних АЦП в кеш значений */
 	#if WITHTHERMOLEVEL
 		board_adc_store_data(XTHERMOMRRIX, board_getadc_unfiltered_truevalue(XTHERMOIX));
