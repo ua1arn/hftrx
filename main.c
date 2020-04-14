@@ -9140,7 +9140,7 @@ uint_fast8_t hamradio_get_volt_value(void)
 		//const unsigned Vref_mV = ADCVREF_CPU * 100;
 		const unsigned Vref_mV = (uint_fast32_t) board_getadc_fsval(vrefi) * WITHREFSENSORVAL / ref;
 		const unsigned voltcalibr_mV = (Vref_mV * (VOLTLEVEL_UPPER + VOLTLEVEL_LOWER) + VOLTLEVEL_LOWER / 2) / VOLTLEVEL_LOWER;		// Напряжение fullscale - что показать при ADCVREF_CPU вольт на входе АЦП
-		const uint_fast16_t mv = board_getadc_unfiltered_u16(VOLTSOURCE, 0, voltcalibr_mV);
+		const uint_fast16_t mv = board_getadc_unfiltered_u16(VOLTMRRIX, 0, voltcalibr_mV);
 		//debug_printf_P(PSTR("hamradio_get_volt_value: ref=%u, VrefmV=%u, v=%u, out=%u\n"), ref, Vref_mV, mv, (mv + 50) / 100);
 		return (mv + 50) / 100;	// Приводим к десятым долям вольта
 	}
@@ -9151,8 +9151,8 @@ uint_fast8_t hamradio_get_volt_value(void)
 	}
 #else /* WITHREFSENSOR */
 
-	//debug_printf_P(PSTR("hamradio_get_volt_value: VOLTSOURCE=%u, voltcalibr=%u\n"), board_getadc_unfiltered_truevalue(VOLTSOURCE), voltcalibr);
-	return board_getadc_unfiltered_u8(VOLTSOURCE, 0, voltcalibr);
+	//debug_printf_P(PSTR("hamradio_get_volt_value: VOLTMRRIX=%u, voltcalibr=%u\n"), board_getadc_unfiltered_truevalue(VOLTSOURCE), voltcalibr);
+	return board_getadc_unfiltered_u8(VOLTMRRIX, 0, voltcalibr);
 
 #endif /* WITHREFSENSOR */
 }
@@ -9179,7 +9179,7 @@ int_fast16_t hamradio_get_temperature_value(void)
 	if (ref != 0)
 	{
 		const unsigned Vref_mV = (uint_fast32_t) board_getadc_fsval(vrefi) * WITHREFSENSORVAL / ref;
-		const int_fast32_t mv = (int32_t) board_getadc_unfiltered_u32(XTHERMOIX, 0, (uint_fast64_t) Vref_mV * (THERMOSENSOR_UPPER + THERMOSENSOR_LOWER) / THERMOSENSOR_LOWER) + thermo_offset;
+		const int_fast32_t mv = (int32_t) board_getadc_unfiltered_u32(XTHERMOMRRIX, 0, (uint_fast64_t) Vref_mV * (THERMOSENSOR_UPPER + THERMOSENSOR_LOWER) / THERMOSENSOR_LOWER) + thermo_offset;
 		return mv + offset_LM235;	// Приводим к десятым долям градуса
 	}
 	else
@@ -9189,8 +9189,8 @@ int_fast16_t hamradio_get_temperature_value(void)
 	}
 #else /* WITHREFSENSOR */
 	const unsigned Vref_mV = ADCVREF_CPU * 100;
-	//debug_printf_P(PSTR("hamradio_get_temperature_value: XTHERMOIX=%u\n"), board_getadc_filtered_u16(XTHERMOIX, 0, Vref_mV));
-	return (int32_t) board_getadc_unfiltered_u32(XTHERMOIX, 0, (uint_fast64_t) Vref_mV * (THERMOSENSOR_UPPER + THERMOSENSOR_LOWER) / THERMOSENSOR_LOWER) + thermo_offset;
+	//debug_printf_P(PSTR("hamradio_get_temperature_value: XTHERMOMRRIX=%u\n"), board_getadc_filtered_u16(XTHERMOIX, 0, Vref_mV));
+	return (int32_t) board_getadc_unfiltered_u32(XTHERMOMRRIX, 0, (uint_fast64_t) Vref_mV * (THERMOSENSOR_UPPER + THERMOSENSOR_LOWER) / THERMOSENSOR_LOWER) + thermo_offset;
 #endif /* WITHREFSENSOR */
 }
 
@@ -9229,7 +9229,7 @@ int_fast16_t hamradio_get_pacurrent_value(void)
 		};
 	#endif /* CTLSTYLE_RA4YBO_V3 */
 
-	const uint_fast8_t adci = PASENSEIX;
+	const uint_fast8_t adci = PASENSEMRRIX;
 
 #elif WITHCURRLEVEL2
 	// Чувствительность датчиков:
@@ -10082,7 +10082,18 @@ display_redrawbars(
 {
 	if (immed || display_refresenabled_bars())
 	{
+		/* быстро меняющиеся значения с частым опорсом */
 		looptests();		// Периодически вызывается в главном цикле - тесты
+		/* +++ переписываем значения из возможно внешних АЦП в кеш значений */
+	#if WITHSWRMTR
+		board_adc_store_data(PWRMRRIX, board_getadc_unfiltered_truevalue(PWRI));
+		board_adc_store_data(FWDMRRIX, board_getadc_unfiltered_truevalue(FWD));
+		board_adc_store_data(REFMRRIX, board_getadc_unfiltered_truevalue(REF));
+	#endif /* WITHSWRMTR */
+	#if WITHCURRLEVEL
+		board_adc_store_data(PASENSEMRRIX, board_getadc_unfiltered_truevalue(PASENSEIX));
+	#endif /* WITHCURRLEVEL */
+		/* --- переписываем значения из возможно внешних АЦП в кеш значений */
 
 		/* отрисовка элементов, общих для всех режимов отображения */
 		/* отрисовка элементов, специфических для данного режима отображения */
@@ -10093,6 +10104,20 @@ display_redrawbars(
 
 	if (immed || display_refreshenabled_voltage())
 	{
+		/* медленно меняющиеся значения с редким опорсом */
+		TP();
+		/* +++ переписываем значения из возможно внешних АЦП в кеш значений */
+	#if WITHTHERMOLEVEL
+		board_adc_store_data(XTHERMOMRRIX, board_getadc_unfiltered_truevalue(XTHERMOIX));
+	#endif /* WITHTHERMOLEVEL */
+	#if WITHVOLTLEVEL
+		board_adc_store_data(VOLTMRRIX, board_getadc_unfiltered_truevalue(VOLTSOURCE));
+	#endif /* WITHVOLTLEVEL */
+	#if WITHCURRLEVEL
+		board_adc_store_data(PASENSEMRRIX, board_getadc_unfiltered_truevalue(PASENSEIX));
+	#endif /* WITHCURRLEVEL */
+		/* --- переписываем значения из возможно внешних АЦП в кеш значений */
+
 		display_volts(amenuset(), extra);
 		display_refreshperformed_voltage();
 	}
@@ -10188,6 +10213,7 @@ directctlupdate(uint_fast8_t inmenu)
 		changed |= flagne_u8(& guser3, kbd_get_ishold(KIF_USER3));
 	#endif /* CTLSTYLE_RA4YBO_V3 */
 		// --- конец получения состояния органов управления */
+
 		// подтверждаем, что обновление выполнено
 		display_refreshperformed_wpm();
 	}

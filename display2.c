@@ -6394,9 +6394,11 @@ void display_dispfreq_ab(
 {
 #if LCDMODE_MAIN_PAGES > 1
 	display_walktroughsteps(0, getsubset(menuset, 0));
+
 #else /* LCDMODE_MAIN_PAGES > 1 */
 	display_walktroughsteps(REDRM_FREQ, getsubset(menuset, 0));
 	display_walktroughsteps(REDRM_FRQB, getsubset(menuset, 0));
+
 #endif /* LCDMODE_MAIN_PAGES > 1 */
 }
 
@@ -6417,6 +6419,7 @@ void display_dispfreq_a2(
 	display_walktrough(REDRM_FREQ,  getsubset(menuset, 0), & ef);
 #else	/* WITHDIRECTFREQENER */
 	display_walktroughsteps(REDRM_FREQ,  getsubset(menuset, 0));
+
 #endif /* WITHDIRECTFREQENER */
 }
 
@@ -6425,7 +6428,11 @@ void display_volts(
 	uint_fast8_t extra		/* находимся в режиме отображения настроек */
 	)
 {
+#if LCDMODE_MAIN_PAGES > 1
+
+#else /* LCDMODE_MAIN_PAGES > 1 */
 	display_walktroughsteps(REDRM_VOLT, getsubset(menuset, extra));
+#endif /* LCDMODE_MAIN_PAGES > 1 */
 }
 
 // отображения названия параметра или группы
@@ -6437,6 +6444,7 @@ void display_menuitemlabel(
 #if LCDMODE_MAIN_PAGES > 1
 	display_walktrough(0, REDRSUBSET_MENU, pv);
 	md = pv;
+
 #else /* LCDMODE_MAIN_PAGES > 1 */
 	display_walktrough(REDRM_FREQ, REDRSUBSET_MENU, NULL);
 	display_walktrough(REDRM_FRQB, REDRSUBSET_MENU, NULL);
@@ -6447,6 +6455,7 @@ void display_menuitemlabel(
 	}
 	display_walktrough(REDRM_MLBL, REDRSUBSET_MENU, pv);
 	display_walktrough(REDRM_MVAL, REDRSUBSET_MENU, pv);
+
 #endif /* LCDMODE_MAIN_PAGES > 1 */
 }
 

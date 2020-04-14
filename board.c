@@ -4089,6 +4089,7 @@ prog_ctrlreg(uint_fast8_t plane)
 #if defined(DDS1_TYPE)
 	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
 #endif
+
 #if WITHAUTOTUNER_UA1CEI
 	//управление устройством
 	/*
@@ -4103,7 +4104,6 @@ prog_ctrlreg(uint_fast8_t plane)
 	SEL_CTUN,         //перебор емкости конденсатора тюнера  0 - 255
 	SEL_LTUN,          //перебор ендуктивностей тюнера  0 - 255
 	*CS<CR><LF>
-
 
 	  ответ:
 	  $ANSW,
@@ -7486,15 +7486,15 @@ adcvalholder_t board_getswrmeter(
 	// 1000 & 333 = swr=2, 1000 & 250 = swr=1,66, 1000 & 500 = swr=3
 	//* reflected = 333;	
 	//return 1000;
-	* reflected = board_getadc_unfiltered_truevalue(REF) * (unsigned long) swrcalibr / 100;		// калибровка - умножение на 0.8...1.2 с точностью в 0.01;
-	return board_getadc_unfiltered_truevalue(FWD);
+	* reflected = board_getadc_unfiltered_truevalue(REFMRRIX) * (unsigned long) swrcalibr / 100;		// калибровка - умножение на 0.8...1.2 с точностью в 0.01;
+	return board_getadc_unfiltered_truevalue(FWDMRRIX);
 }
 
 uint_fast8_t board_getpwrmeter(
 	uint_fast8_t * toptrace	// peak hold
 	)
 {
-	const uint_fast8_t f = board_getadc_unfiltered_u8(PWRI, 0, UINT8_MAX);
+	const uint_fast8_t f = board_getadc_unfiltered_u8(PWRMRRIX, 0, UINT8_MAX);
 	* toptrace = f;
 	return f;
 }
@@ -7505,7 +7505,7 @@ uint_fast8_t board_getpwrmeter(
 	uint_fast8_t * toptrace		// peak hold
 	)
 {
-	const uint_fast8_t f = board_getadc_unfiltered_u8(PWRI, 0, UINT8_MAX);
+	const uint_fast8_t f = board_getadc_unfiltered_u8(PWRMRRIX, 0, UINT8_MAX);
 	* toptrace = f;
 	return f;
 }

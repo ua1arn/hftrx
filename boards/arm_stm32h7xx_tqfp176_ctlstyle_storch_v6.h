@@ -351,6 +351,9 @@
 	#if 1
 		/* TUNER & PA board 2*RD16 by avbelnn@yandex.ru */
 		#define WITHAUTOTUNER_UA1CEI	1	/* Плата управления LPF и тюнером от UA1CEI - по компорту */
+		#if defined(WITHDEBUG)
+			#error Please off WITHDEBUG
+		#endif /* defined(WITHDEBUG) */
 		#define WITHNMEA		1	/* используется NMEA parser */
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
 		#define FULLSET8	1
@@ -497,7 +500,8 @@
 			TEMPIX = 16,
 		#endif /* WITHTEMPSENSOR */
 		#if WITHVOLTLEVEL
-			VOLTSOURCE = BOARD_ADCMRRIN(2),		// PB0 Средняя точка делителя напряжения, для АКБ
+			VOLTSOURCE = BOARD_ADCMRRIN(0),		// PB0 Средняя точка делителя напряжения, для АКБ
+			VOLTMRRIX = BOARD_ADCMRRIN(1),	// кеш - индекc не должен повторяться в конфигурации
 		#endif /* WITHVOLTLEVEL */
 
 		#if WITHPOTIFGAIN
@@ -516,18 +520,21 @@
 
 		#if WITHTHERMOLEVEL
 			XTHERMOIX = 9,		// PB1 Exernal thermo sensor ST LM235Z
+			XTHERMOMRRIX = BOARD_ADCMRRIN(x),	// кеш - индекc не должен повторяться в конфигурации
 		#endif /* WITHTHERMOLEVEL */
 
 		#if WITHCURRLEVEL
 			#define WITHCURRLEVEL_ACS712_20A 1	// PA current sense - ACS712ELCTR-20B-T chip
-			PASENSEIX = BOARD_ADCMRRIN(3),		// PA2 PA current sense - ACS712-05 chip
-			//#define CURRLEVE_UPPER		1	// 1 kOhm - верхний резистор делителя датчика тока
-			//#define CURRLEVE_LOWER		1	// 1 kOhm - нижний резистор
+			PASENSEIX = BOARD_ADCMRRIN(2),		// PA2 PA current sense - ACS712-05 chip
+			PASENSEMRRIX = BOARD_ADCMRRIN(3),	// кеш - индекc не должен повторяться в конфигурации
 		#endif /* WITHCURRLEVEL */
 
 		#if WITHSWRMTR
-			FWD = BOARD_ADCMRRIN(0), REF = BOARD_ADCMRRIN(1),	// PC5	SWR-meter
+			FWD = BOARD_ADCMRRIN(4), REF = BOARD_ADCMRRIN(5),	// PC5	SWR-meter
 			PWRI = FWD,
+			REFMRRIX = BOARD_ADCMRRIN(6),
+			FWDMRRIX = BOARD_ADCMRRIN(7),
+			PWRMRRIX = FWDMRRIX,
 		#endif /* WITHSWRMTR */
 
 		#define VOLTLEVEL_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика напряжения
@@ -569,11 +576,15 @@
 
 		#if WITHCURRLEVEL
 			PASENSEIX = 2,		// PA2 PA current sense - ACS712-05 chip
+			VOLTMRRIX = BOARD_ADCMRRIN(1),	// кеш - индекc не должен повторяться в конфигурации
 		#endif /* WITHCURRLEVEL */
 
 		#if WITHSWRMTR
 			PWRI = 14,			// PC4
 			FWD = 14, REF = 15,	// PC5	SWR-meter
+			REFMRRIX = BOARD_ADCMRRIN(2),
+			FWDMRRIX = BOARD_ADCMRRIN(3),
+			PWRMRRIX = BOARD_ADCMRRIN(4),
 		#endif /* WITHSWRMTR */
 
 		#define VOLTLEVEL_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика напряжения
