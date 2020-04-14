@@ -4135,10 +4135,11 @@ prog_ctrlreg(uint_fast8_t plane)
 			glob_fanflag,
 			glob_antenna,
 			glob_tuner_type,
-			glob_tuner_C,
-			glob_tuner_L
+			glob_tuner_bypass ? 0 : glob_tuner_C,
+			glob_tuner_bypass ? 0 : glob_tuner_L
 		);
-#endif
+#endif /* WITHAUTOTUNER_UA1CEI */
+
 	// registers chain control register
 	{
 		const uint_fast8_t lcdblcode = (glob_bglight - WITHLCDBACKLIGHTMIN);
