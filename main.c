@@ -9268,7 +9268,7 @@ int_fast16_t hamradio_get_pacurrent_value(void)
 	const unsigned Vref_mV = ADCVREF_CPU * 100;
 #endif /* WITHREFSENSOR */
 
-	const long vsense = board_getadc_unfiltered_u32(adci, 0, (uint_fast32_t) Vref_mV * scale);
+	const long vsense = board_getadc_filtered_u32(adci, 0, (uint_fast32_t) Vref_mV * scale);
 #if CTLSTYLE_RAVENDSP_V5
 	const long midpoint = (gtx ? 2472uL : 2442uL) * scale; // tx=247200, rx=244200
 #else

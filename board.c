@@ -8023,6 +8023,15 @@ uint_fast16_t board_getadc_filtered_u16(uint_fast8_t adci, uint_fast16_t lower, 
 	return v;
 }
 
+/* получить отфильтрованное значение от АЦП в диапазоне lower..upper (включая границы) */
+uint_fast32_t board_getadc_filtered_u32(uint_fast8_t adci, uint_fast32_t lower, uint_fast32_t upper)
+{
+	const adcvalholder_t t = board_getadc_filtered_truevalue(adci);	// текущее отфильтрованное значение данного АЦП
+	const uint_fast32_t v = lower + ((uint_fast64_t) t * (upper - lower) / board_getadc_fsval(adci));	// нормируем к требуемому диапазону
+	ASSERT(v >= lower && v <= upper);
+	return v;
+}
+
 static adcvalholder_t hysts [BOARD_ADCX0BASE + 16];
 
 /* получить отфильтрованное значение от АЦП в диапазоне lower..upper (включая границы) */
@@ -8255,6 +8264,13 @@ adcfilters_initialize(void)
 		hardware_set_adc_filter(PWRI, BOARD_ADCFILTER_AVERAGEPWR);	// Включить фильтр
 		//hardware_set_adc_filter(PWRI, BOARD_ADCFILTER_DIRECT);		// Отключить фильтр
 	#endif /* WITHTX && (WITHSWRMTR || WITHPWRMTR) */
+	#if WITHCURRLEVEL
+		hardware_set_adc_filterLPF(PASENSEMRRIX, 3 * BOARD_ADCFILTER_LPF_DENOM / 100);	// Включить фильтр с параметром 0.03
+	#endif /* WITHCURRLEVEL */
+	#if WITHTHERMOLEVEL
+		hardware_set_adc_filterLPF(XTHERMOMRRIX, 3 * BOARD_ADCFILTER_LPF_DENOM / 100);	// Включить фильтр с параметром 0.03
+	#endif /* WITHTHERMOLEVEL */
+
 }
 
 
