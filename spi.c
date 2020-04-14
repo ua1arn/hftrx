@@ -913,16 +913,20 @@ void spidf_uninitialize(void)
 // передаем все заказанное количество
 static void spidf_write(const uint8_t * buff, uint_fast32_t size)
 {
+	while ((SPIBSC0.CMNSR & SPIBSC_CMNSR_TEND) == 0)
+		;
+	/* подготовка к следующему шагу */
+	// продолжение обмена без передачи команды, адреса... но с передаяей данных.
+	SPIBSC0.SMENR =
+			(SPIBSC0.SMENR & ~ (SPIBSC_SMENR_ADE | SPIBSC_SMENR_CDE | SPIBSC_SMENR_DME | SPIBSC_SMENR_OPDE | SPIBSC_SMENR_SPIDE)) |
+			(0x08uL << SPIBSC_SMENR_SPIDE_SHIFT) |
+			0;
+
 	while (size --)
 	{
-
 		while ((SPIBSC0.CMNSR & SPIBSC_CMNSR_TEND) == 0)
 			;
 		SPIBSC0.SMWDR0.UINT8 [R_IO_LL] = * buff ++;
-		/* подготовка к следующему шагу */
-		// продолжение обмена без передачи команды, адреса...
-		SPIBSC0.SMENR &= ~ (SPIBSC_SMENR_ADE | SPIBSC_SMENR_CDE | SPIBSC_SMENR_DME | SPIBSC_SMENR_OPDE);
-		SPIBSC0.SMENR |= 0x08uL << SPIBSC_SMENR_SPIDE_SHIFT;
 
 		if (size == 0)
 		{
