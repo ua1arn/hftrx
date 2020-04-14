@@ -6346,7 +6346,7 @@ void display2_mode_subset(
 	uint_fast8_t menuset	/* индекс режима отображения (0..DISPLC_MODCOUNT - 1) */
 	)
 {
-	TP();
+	//TP();
 	display_walktroughsteps(REDRM_MODE, getsubset(menuset, 0));
 }
 
@@ -6358,7 +6358,7 @@ void display2_barmeters_subset(
 #if LCDMODE_MAIN_PAGES > 1
 	if (extra)
 		return;
-	TP();
+	//TP();
 	display_walktroughsteps(0, getsubset(menuset, extra));
 #else /* LCDMODE_MAIN_PAGES > 1 */
 	display_walktroughsteps(REDRM_BARS, getsubset(menuset, extra));
@@ -6373,7 +6373,7 @@ void display2_volts(
 #if LCDMODE_MAIN_PAGES > 1
 	if (extra)
 		return;
-	TP();
+	//TP();
 	display_walktroughsteps(0, getsubset(menuset, extra));
 #else /* LCDMODE_MAIN_PAGES > 1 */
 	display_walktroughsteps(REDRM_VOLT, getsubset(menuset, extra));
@@ -6384,7 +6384,7 @@ void display2_dispfreq_ab(
 	uint_fast8_t menuset	/* индекс режима отображения (0..DISPLC_MODCOUNT - 1) */
 	)
 {
-	TP();
+	//TP();
 #if LCDMODE_MAIN_PAGES > 1
 	display_walktroughsteps(0, getsubset(menuset, 0));
 
@@ -6402,7 +6402,7 @@ void display2_dispfreq_a2(
 	uint_fast8_t menuset	/* индекс режима отображения (0..DISPLC_MODCOUNT - 1) */
 	)
 {
-	TP();
+	//TP();
 #if WITHDIRECTFREQENER
 
 	editfreq_t ef;
@@ -6437,7 +6437,7 @@ void display2_menu(
 	uint_fast8_t byname			/* был выполнен прямой вход в меню */
 	)
 {
-	PRINTF("display2_menu: mp=%p\n", mp);
+	//PRINTF("display2_menu: mp=%p\n", mp);
 
 	dctx_t dctx;
 	dctx.type = DCTX_MENU;
