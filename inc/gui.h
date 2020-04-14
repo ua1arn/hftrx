@@ -330,16 +330,6 @@ uint_fast8_t display_getpagesmax(void);	// количество разных в�
 uint_fast8_t display_getpagesleep(void);	// номер варианта отображения для "сна"
 uint_fast8_t display_getfreqformat(uint_fast8_t * prjv);	// получить параметры отображения частоты (для функции прямого ввода)
 
-// Параметры окна меню
-typedef struct gridparams_tag
-{
-	uint16_t gy2, gx2;	// в ячейках сетки разметки
-
-} gridparams_t;
-
-void display2_getgridparams (gridparams_t * p);
-
-
 void display2_bgprocess(void);	// выполнение шагов state machine отображения дисплея
 void display2_bgreset(void);	// сброс state machine отображения дисплея
 
@@ -418,10 +408,11 @@ display2_bars_amv0(
 // Параметры отображения многострочного меню для больших экранов
 typedef struct multimenuwnd_tag
 {
-	uint_fast8_t multilinemenu_max_rows;
-	uint_fast8_t menurow_count;
-	uint_fast8_t ystep;
-	uint_fast8_t reverse;	// 0/1
+	uint8_t multilinemenu_max_rows;
+	uint8_t menurow_count;
+	uint8_t ystep;
+	uint8_t reverse;	// 0/1
+	uint8_t valuew;	/* количество текстовых символов занимаемых полем вывола значения в меню. */
 } multimenuwnd_t;
 
 #define LABELW 8

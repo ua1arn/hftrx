@@ -12661,7 +12661,7 @@ display_menu_string_P(
 	uint_fast8_t y, 
 	const FLASHMEM  char * s,
 	uint_fast8_t width,
-	uint_fast8_t comma
+	uint_fast8_t maxwidth		// ширина, которую займет выводимый текст
 	)
 {
 #if WITHTOUCHGUI
@@ -12672,11 +12672,13 @@ display_menu_string_P(
 	}
 #else
 	colmain_setcolors(MNUVALCOLOR, BGCOLOR);
-	display_at_P(x + width - comma, y, s);
+	display_at_P(x + width - maxwidth, y, s);
 #endif /* WITHTOUCHGUI */
 }
 
 #if WITHMENU
+
+// WSIGNFLAG
 
 #define ITEM_VALUE	0x01	/* пункт меню для редактирования параметра */
 #define ITEM_GROUP	0x02	/* пункт меню без изменяемого значения - связан с подменю */
@@ -15496,7 +15498,7 @@ void display2_multilinemenu_block_groups(uint_fast8_t x, uint_fast8_t y, dctx_t 
 {
 	if (pctx == NULL || pctx->type != DCTX_MENU)
 		return;
-	const FLASHMEM struct menudef * const mp = (const FLASHMEM struct menudef *) pctx->pv;
+	const FLASHMEM struct menudef * const mp = pctx->pv;
 	const uint_fast16_t index = (int) (mp - menutable);
 	uint_fast16_t y_position_groups = y;
 	uint_fast16_t index_groups = 0;
@@ -15559,7 +15561,7 @@ void display2_multilinemenu_block_params(uint_fast8_t x, uint_fast8_t y, dctx_t 
 {
 	if (pctx == NULL || pctx->type != DCTX_MENU)
 		return;
-	const FLASHMEM struct menudef * const mp = (const FLASHMEM struct menudef *) pctx->pv;
+	const FLASHMEM struct menudef * const mp = pctx->pv;
 	const uint_fast16_t index = (int) (mp - menutable);
 	uint_fast16_t y_position_params = y;
 	uint_fast16_t index_params = 0;
@@ -15634,7 +15636,7 @@ void display_multilinemenu_block_vals(uint_fast8_t x, uint_fast8_t y, dctx_t * p
 {
 	if (pctx == NULL || pctx->type != DCTX_MENU)
 		return;
-	const FLASHMEM struct menudef * const mp = (const FLASHMEM struct menudef *) pctx->pv;
+	const FLASHMEM struct menudef * const mp = pctx->pv;
 	const uint_fast16_t index = (int) (mp - menutable);
 	uint_fast16_t y_position_params = y;
 	uint_fast16_t index_params = 0;
@@ -15707,7 +15709,7 @@ void display_menu_lblc3(
 {
 	if (pctx == NULL || pctx->type != DCTX_MENU)
 		return;
-	const FLASHMEM struct menudef * const mp = (const FLASHMEM struct menudef *) pctx->pv;
+	const FLASHMEM struct menudef * const mp = pctx->pv;
 	char buff [4];
 	const uint_fast8_t index = (int) (mp - menutable);
 	if (ismenukind(mp, ITEM_GROUP))
@@ -15734,7 +15736,7 @@ void display2_menu_lblng(
 {
 	if (pctx == NULL || pctx->type != DCTX_MENU)
 		return;
-	const FLASHMEM struct menudef * const mp = (const FLASHMEM struct menudef *) pctx->pv;
+	const FLASHMEM struct menudef * const mp = pctx->pv;
 	if (ismenukind(mp, ITEM_VALUE) == 0)
 		return;
 	colmain_setcolors(MENUCOLOR, BGCOLOR);
@@ -15751,7 +15753,7 @@ void display_menu_lblst(
 {
 	if (pctx == NULL || pctx->type != DCTX_MENU)
 		return;
-	const FLASHMEM struct menudef * const mp = (const FLASHMEM struct menudef *) pctx->pv;
+	const FLASHMEM struct menudef * const mp = pctx->pv;
 	colmain_setcolors(MENUCOLOR, BGCOLOR);
 	display_at_P(x, y, mp->qlabel);
 }
@@ -15766,7 +15768,7 @@ void display2_menu_group(
 {
 	if (pctx == NULL || pctx->type != DCTX_MENU)
 		return;
-	const FLASHMEM struct menudef * mp = (const FLASHMEM struct menudef *) pctx->pv;
+	const FLASHMEM struct menudef * mp = pctx->pv;
 
 	while (ismenukind(mp, ITEM_GROUP) == 0)
 		-- mp;
@@ -15785,11 +15787,18 @@ void display_menu_valxx(
 {
 	if (pctx == NULL || pctx->type != DCTX_MENU)
 		return;
-	const FLASHMEM struct menudef * const mp = (const FLASHMEM struct menudef *) pctx->pv;
+	const FLASHMEM struct menudef * const mp = pctx->pv;
+	multimenuwnd_t window;
+
+	display2_getmultimenu(& window);
+
+	/* параметры полей вывода значений в меню */
+	const uint_fast8_t VALUEW = window.valuew;
+
 	int_fast32_t value;
 	const uint_fast8_t rj = mp->qrj;
-	const uint_fast8_t width = mp->qwidth;
-	const uint_fast8_t comma = mp->qcomma;
+	uint_fast8_t width = mp->qwidth;
+	uint_fast8_t comma = mp->qcomma;
 	const uint_fast16_t * const pv16 = mp->qpval16;
 	const uint_fast8_t * const pv8 = mp->qpval8;
 
@@ -15840,6 +15849,7 @@ void display_menu_valxx(
 				"MUTE ",	// BOARD_TXAUDIO_MUTE
 			};
 
+			width = VALUEW;
 			display_menu_string_P(x, y, msg [value], width, comma);
 		}
 		break;
@@ -15848,6 +15858,7 @@ void display_menu_valxx(
 #if WITHMODEM
 
 	case RJ_MDMSPEED:
+		width = VALUEW;
 		display_menu_digit(x, y, modembr2int100 [value], width, comma, 0);
 		break;
 
@@ -15859,6 +15870,8 @@ void display_menu_valxx(
 				"QPSK",
 			};
 
+			width = VALUEW;
+			comma = 4;
 			display_menu_string_P(x, y, msg [value], width, comma);
 		}
 		break;
@@ -15884,6 +15897,8 @@ void display_menu_valxx(
 				"DEC",
 			};
 
+			width = VALUEW;
+			comma = 3;
 			display_menu_string_P(x, y, months [value - mp->qbottom], width, comma);
 		}
 		break;
@@ -15892,38 +15907,46 @@ void display_menu_valxx(
 	case RJ_YES:
 		{
 			static const FLASHMEM char msg_yes [] = "Yes";
-			static const FLASHMEM char msg_no  [] = "No ";
+			static const FLASHMEM char msg_no  [] = " No";
 
+			width = VALUEW;
+			comma = 3;
 			display_menu_string_P(x, y, value ? msg_yes : msg_no, width, comma);
 		}
 		break;
 
 	case RJ_ON:
 		{
-			static const FLASHMEM char msg_on  [] = "On ";
+			static const FLASHMEM char msg_on  [] = " On";
 			static const FLASHMEM char msg_off [] = "Off";
 
+			width = VALUEW;
+			comma = 3;
 			display_menu_string_P(x, y, value ? msg_on : msg_off, width, comma);
 		}
 		break;
 
 	case RJ_ENCRES:
+		width = comma ? VALUEW - 1 : VALUEW;
 		display_menu_digit(x, y, encresols [value] * ENCRESSCALE, width, comma, 0);
 		break;
 
 #if WITHCAT
 	case RJ_CATSPEED:
+		width = comma ? VALUEW - 1 : VALUEW;
 		display_menu_digit(x, y, catbr2int [value] * BRSCALE, width, comma, 0);
 		break;
 #endif /* WITHCAT */
 
 #if WITHSUBTONES && WITHTX
 	case RJ_SUBTONE:
+		width = comma ? VALUEW - 1 : VALUEW;
 		display_menu_digit(x, y, gsubtones [value], width, comma, 0);
 		break;
 #endif /* WITHSUBTONES && WITHTX */
 
 	case RJ_POW2:
+		width = comma ? VALUEW - 1 : VALUEW;
 		display_menu_digit(x, y, 1UL << value, width, comma, 0);
 		break;
 
@@ -15939,17 +15962,29 @@ void display_menu_valxx(
 				"BUG",
 			};
 
+			width = VALUEW;
+			comma = 3;
 			display_menu_string_P(x, y, msg [value], width, comma);
 		}
 		break;
 #endif /* WITHELKEY */
 #if WITHPOWERLPHP
 	case RJ_POWER:	/* отображние мощности HP/LP */
+		width = VALUEW;
+		comma = 2;
 			display_menu_string_P(x, y, pwrmodes [value].label, width, comma);
 		break;
 #endif /* WITHPOWERLPHP */
 
 	default:
+		if (width & WSIGNFLAG)
+			width = (VALUEW - 1) | WSIGNFLAG;
+		else
+			width = VALUEW;
+
+		if (comma)
+			width = width - 1;
+
 		display_menu_digit(x, y, value, width, comma, rj);
 		break;
 

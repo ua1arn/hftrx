@@ -1736,6 +1736,7 @@ enum
 			p->multilinemenu_max_rows = 1;
 			p->ystep = 1;	// количество ячеек разметки на одну строку меню
 			p->reverse = 0;
+			p->valuew = 8;	/* количество текстовых символов занимаемых полем вывола значения в меню. */
 		}
 	#endif /* WITHMENU */
 
@@ -1860,6 +1861,7 @@ enum
 		p->multilinemenu_max_rows = 1;
 		p->ystep = 1;	// количество ячеек разметки на одну строку меню
 		p->reverse = 0;
+		p->valuew = 8;	/* количество текстовых символов занимаемых полем вывола значения в меню. */
 	}
 #endif /* WITHMENU */
 
@@ -1902,6 +1904,7 @@ enum
 		p->multilinemenu_max_rows = 1;
 		p->ystep = 1;	// количество ячеек разметки на одну строку меню
 		p->reverse = 0;
+		p->valuew = 8;	/* количество текстовых символов занимаемых полем вывола значения в меню. */
 	}
 #endif /* WITHMENU */
 
@@ -2061,6 +2064,7 @@ enum
 		p->multilinemenu_max_rows = 1;
 		p->ystep = 1;	// количество ячеек разметки на одну строку меню
 		p->reverse = 0;
+		p->valuew = 8;	/* количество текстовых символов занимаемых полем вывола значения в меню. */
 	}
 #endif /* WITHMENU */
 
@@ -2132,6 +2136,7 @@ enum
 		p->multilinemenu_max_rows = 1;
 		p->ystep = 1;	// количество ячеек разметки на одну строку меню
 		p->reverse = 0;
+		p->valuew = 8;	/* количество текстовых символов занимаемых полем вывола значения в меню. */
 	}
 #endif /* WITHMENU */
 
@@ -2196,6 +2201,7 @@ enum
 		p->multilinemenu_max_rows = 1;
 		p->ystep = 1;	// количество ячеек разметки на одну строку меню
 		p->reverse = 0;
+		p->valuew = 8;	/* количество текстовых символов занимаемых полем вывола значения в меню. */
 	}
 #endif /* WITHMENU */
 
@@ -2294,6 +2300,7 @@ enum
 			p->multilinemenu_max_rows = 1;
 			p->ystep = 1;	// количество ячеек разметки на одну строку меню
 			p->reverse = 0;
+			p->valuew = 8;	/* количество текстовых символов занимаемых полем вывола значения в меню. */
 		}
 	#endif /* WITHMENU */
 
@@ -2363,6 +2370,7 @@ enum
 			p->multilinemenu_max_rows = 1;
 			p->ystep = 1;	// количество ячеек разметки на одну строку меню
 			p->reverse = 0;
+			p->valuew = 8;	/* количество текстовых символов занимаемых полем вывола значения в меню. */
 		}
 	#endif /* WITHMENU */
 
@@ -2469,6 +2477,7 @@ enum
 			p->multilinemenu_max_rows = 1;
 			p->ystep = 1;	// количество ячеек разметки на одну строку меню
 			p->reverse = 0;
+			p->valuew = 8;	/* количество текстовых символов занимаемых полем вывола значения в меню. */
 		}
 	#endif /* WITHMENU */
 
@@ -2555,6 +2564,7 @@ enum
 			p->multilinemenu_max_rows = 1;
 			p->ystep = 1;	// количество ячеек разметки на одну строку меню
 			p->reverse = 0;
+			p->valuew = 8;	/* количество текстовых символов занимаемых полем вывола значения в меню. */
 		}
 	#endif /* WITHMENU */
 
@@ -2661,6 +2671,7 @@ enum
 		p->multilinemenu_max_rows = 1;
 		p->ystep = 1;	// количество ячеек разметки на одну строку меню
 		p->reverse = 0;
+		p->valuew = 8;	/* количество текстовых символов занимаемых полем вывола значения в меню. */
 	}
 #endif /* WITHMENU */
 
@@ -2739,6 +2750,7 @@ enum
 		p->multilinemenu_max_rows = 1;
 		p->ystep = 1;	// количество ячеек разметки на одну строку меню
 		p->reverse = 0;
+		p->valuew = 8;	/* количество текстовых символов занимаемых полем вывола значения в меню. */
 	}
 #endif /* WITHMENU */
 
@@ -2830,6 +2842,7 @@ enum
 		p->multilinemenu_max_rows = 1;
 		p->ystep = 1;	// количество ячеек разметки на одну строку меню
 		p->reverse = 0;
+		p->valuew = 8;	/* количество текстовых символов занимаемых полем вывола значения в меню. */
 	}
 #endif /* WITHMENU */
 
@@ -2919,6 +2932,7 @@ enum
 			p->multilinemenu_max_rows = 1;
 			p->ystep = 1;	// количество ячеек разметки на одну строку меню
 			p->reverse = 0;
+			p->valuew = 8;	/* количество текстовых символов занимаемых полем вывола значения в меню. */
 		}
 	#endif /* WITHMENU */
 
@@ -2994,6 +3008,7 @@ enum
 			p->multilinemenu_max_rows = 1;
 			p->ystep = 1;	// количество ячеек разметки на одну строку меню
 			p->reverse = 0;
+			p->valuew = 8;	/* количество текстовых символов занимаемых полем вывола значения в меню. */
 		}
 	#endif /* WITHMENU */
 
@@ -3090,6 +3105,7 @@ enum
 			p->multilinemenu_max_rows = 1;
 			p->ystep = 1;	// количество ячеек разметки на одну строку меню
 			p->reverse = 0;
+			p->valuew = 8;	/* количество текстовых символов занимаемых полем вывола значения в меню. */
 		}
 	#endif /* WITHMENU */
 
@@ -3178,6 +3194,7 @@ enum
 			p->multilinemenu_max_rows = 1;
 			p->ystep = 1;	// количество ячеек разметки на одну строку меню
 			p->reverse = 0;
+			p->valuew = 8;	/* количество текстовых символов занимаемых полем вывола значения в меню. */
 		}
 	#endif /* WITHMENU */
 
@@ -3253,6 +3270,7 @@ enum
 			p->multilinemenu_max_rows = 1;
 			p->ystep = 1;	// количество ячеек разметки на одну строку меню
 			p->reverse = 0;
+			p->valuew = 8;	/* количество текстовых символов занимаемых полем вывола значения в меню. */
 		}
 	#endif /* WITHMENU */
 
@@ -3369,6 +3387,7 @@ enum
 			p->multilinemenu_max_rows = 8;
 			p->ystep = 2;	// количество ячеек разметки на одну строку меню
 			p->reverse = 1;
+			p->valuew = 8;	/* количество текстовых символов занимаемых полем вывола значения в меню. */
 		}
 	#endif /* WITHMENU */
 
@@ -3500,6 +3519,7 @@ enum
 			p->multilinemenu_max_rows = 3;
 			p->ystep = 2;	// количество ячеек разметки на одну строку меню
 			p->reverse = 1;
+			p->valuew = 8;	/* количество текстовых символов занимаемых полем вывола значения в меню. */
 		}
 	#endif /* WITHMENU */
 
@@ -3650,6 +3670,7 @@ enum
 			p->multilinemenu_max_rows = 1;
 			p->ystep = 2;	// количество ячеек разметки на одну строку меню
 			p->reverse = 0;
+			p->valuew = 8;	/* количество текстовых символов занимаемых полем вывола значения в меню. */
 		}
 	#endif /* WITHMENU */
 
@@ -3800,6 +3821,7 @@ enum
 			p->multilinemenu_max_rows = 5;
 			p->ystep = 2;	// количество ячеек разметки на одну строку меню
 			p->reverse = 1;
+			p->valuew = 8;	/* количество текстовых символов занимаемых полем вывола значения в меню. */
 		}
 	#endif /* WITHMENU */
 
@@ -3888,6 +3910,7 @@ enum
 			p->multilinemenu_max_rows = 5;
 			p->ystep = 3;	// количество ячеек разметки на одну строку меню
 			p->reverse = 1;
+			p->valuew = 8;	/* количество текстовых символов занимаемых полем вывола значения в меню. */
 		}
 	#endif /* WITHMENU */
 
@@ -4023,6 +4046,7 @@ enum
 			p->multilinemenu_max_rows = 5;
 			p->ystep = 2;	// количество ячеек разметки на одну строку меню
 			p->reverse = 1;
+			p->valuew = 8;	/* количество текстовых символов занимаемых полем вывола значения в меню. */
 		}
 	#endif /* WITHMENU */
 
@@ -4182,22 +4206,18 @@ enum
 	#if WITHMENU
 		{	1,	25,	display2_multilinemenu_block_groups,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
 		{	LABELW + 3,	25,	display2_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
-		{	LABELW*2 + 3,	25,	display_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
+		{	LABELW * 2 + 4,	25,	display_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
 	#endif /* WITHMENU */
 		{	0,	0,	display2_nextfb, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },
 	};
 
 #if WITHMENU
-	void display2_getgridparams(gridparams_t * p)
-	{
-		p->gy2 = 51;	// Первая строка (grid) за меню.
-		p->gx2 = CHARS2GRID(DIM_X / 16);	// Правый край за областью меню
-	}
 	void display2_getmultimenu(multimenuwnd_t * p)
 	{
 		p->multilinemenu_max_rows = 6;
 		p->ystep = 4;	// количество ячеек разметки на одну строку меню
 		p->reverse = 1;
+		p->valuew = 10;	/* количество текстовых символов занимаемых полем вывола значения в меню. */
 	}
 #endif /* WITHMENU */
 
@@ -4345,17 +4365,12 @@ enum
 	};
 
 #if WITHMENU
-	void display2_getgridparams(gridparams_t * p)
-	{
-		p->gy2 = 51;	// Первая строка (grid) за меню.
-		p->gx2 = CHARS2GRID(DIM_X / 16);	// Правый край за областью меню
-	}
-
 	void display2_getmultimenu(multimenuwnd_t * p)
 	{
 		p->multilinemenu_max_rows = 6;
 		p->ystep = 4;	// количество ячеек разметки на одну строку меню
 		p->reverse = 1;
+		p->valuew = 10;	/* количество текстовых символов занимаемых полем вывола значения в меню. */
 	}
 #endif /* WITHMENU */
 
@@ -4518,17 +4533,12 @@ enum
 	};
 
 #if WITHMENU
-	void display2_getgridparams(gridparams_t * p)
-	{
-		p->gy2 = DLE1;	// Первая строка (grid) за меню.
-		p->gx2 = CHARS2GRID(DIM_X / 16);	// Правый край за областью меню
-	}
-
 	void display2_getmultimenu(multimenuwnd_t * p)
 	{
 		p->multilinemenu_max_rows = 15;
 		p->ystep = 4;	// количество ячеек разметки на одну строку меню
 		p->reverse = 1;
+		p->valuew = 8;	/* количество текстовых символов занимаемых полем вывола значения в меню. */
 	}
 #endif /* WITHMENU */
 
@@ -4716,17 +4726,12 @@ enum
 	};
 
 #if WITHMENU
-	void display2_getgridparams(gridparams_t * p)
-	{
-		p->gy2 = DLE1;	// Первая строка (grid) за меню.
-		p->gx2 = CHARS2GRID(DIM_X / 16);	// Правый край за областью меню
-	}
-
 	void display2_getmultimenu(multimenuwnd_t * p)
 	{
 		p->multilinemenu_max_rows = 15;
 		p->ystep = 4;	// количество ячеек разметки на одну строку меню
 		p->reverse = 1;
+		p->valuew = 8;	/* количество текстовых символов занимаемых полем вывола значения в меню. */
 	}
 #endif /* WITHMENU */
 
@@ -4826,6 +4831,7 @@ static const FLASHMEM struct dzone dzones [] =
 		p->multilinemenu_max_rows = 15;
 		p->ystep = 4;	// количество ячеек разметки на одну строку меню
 		p->reverse = 1;
+		p->valuew = 8;	/* количество текстовых символов занимаемых полем вывола значения в меню. */
 	}
 #endif /* WITHMENU */
 
