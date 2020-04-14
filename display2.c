@@ -223,7 +223,7 @@ static void display_freqX_a(
 	const uint_fast8_t comma = 3 - rj;
 
 	colmain_setcolors3(colorsfg_1freq [0], colorsbg_1freq [0], colorsfg_1freq [0]);
-	if (0) //if (pv != NULL || gdirectfreq)
+	if (pv != NULL || gdirectfreq)
 	{
 #if WITHDIRECTFREQENER
 #if LCDMODE_V2A || LCDMODE_V2
@@ -4674,7 +4674,7 @@ enum
 
 		{	38, 25,	display_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
 
-		{	38, 30,	display_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
+		{	42, 25,	display_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
 		{	46, 25,	display_nr3,		REDRM_MODE, PGALL, },	// NR : was: AGC
 
 		{	0,	7,	display_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
@@ -6248,7 +6248,7 @@ display_walktrough(
 
 		if (validforredraw(p, key, subset) == 0)
 			continue;
-		(* p->redraw)(p->x, p->y, pv);
+		(* p->redraw)(p->x, p->y, p->key == REDRM_FREQ ? NULL : pv);
 	#if WITHINTEGRATEDDSP
 		audioproc_spool_user();		// решение проблем с прерыванием звука при стирании экрана
 	#endif /* WITHINTEGRATEDDSP */
@@ -6410,7 +6410,6 @@ void display_dispfreq_a2(
 	)
 {
 #if WITHDIRECTFREQENER
-//	struct editfreq_tag ef;
 
 	ef.freq = freq;
 	ef.blinkpos = blinkpos;
