@@ -3215,48 +3215,16 @@ void spool_0p128(void);	// OPERA support
 
 #endif /* HYBRID_DDS_ATTINY2313 */
 
-#define LABELW 8
-
-#if WITHTOUCHGUI
-	typedef struct {
-		char name[15];
-		uint_fast8_t index;
-	} menu_names_t;
-
-	typedef struct {
-		char param[20];
-		char val[20];
-		uint_fast8_t state;
-		uint_fast8_t updated;
-	} enc2_menu_t;
-
-	void change_submode(uint_fast8_t newsubmode);
-	uint_fast8_t get_low_bp (int_least16_t rotate);
-	uint_fast8_t get_high_bp (int_least16_t rotate);
-	uint_fast8_t get_bp_type (void);
-	void gui_initialize (void);
-	void process_gui(void);
-	uint_fast8_t check_encoder2 (int_least16_t rotate);
-	void set_encoder2_state (uint_fast8_t code);
-	void set_agc_off(void);
-	void set_agc_slow(void);
-	void set_agc_fast(void);
-	uint_fast8_t send_key_code (uint_fast8_t code);
-	uint_fast8_t get_multilinemenu_block_groups(menu_names_t * vals);
-	uint_fast8_t get_multilinemenu_block_params(menu_names_t * vals, uint_fast8_t index);
-	void get_multilinemenu_block_vals(menu_names_t * vals, uint_fast8_t index, uint_fast8_t cnt);
-	void set_menu_cond (uint_fast8_t m);
-	const char * gui_edit_menu_item (uint_fast8_t index, int_least16_t rotate);
-	void disable_keyboard_redirect (void);
-	void enable_keyboard_redirect (void);
-	void gui_put_keyb_code (uint_fast8_t kbch);
-	void gui_uif_editmenu(const char * name, uint_fast8_t menupos, uint_fast8_t exitkey);
-#endif /* WITHTOUCHGUI */
+void display_swrmeter(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	adcvalholder_t forward,
+	adcvalholder_t reflected, // скорректированное
+	uint_fast16_t minforward
+	);
 
 uint_fast8_t get_swrcalibr(void);
 uint_fast16_t get_minforward(void);
-void display_set_directfreq_mode(uint_fast8_t f);
-void display_set_directfreq_data(uint_fast32_t freq, uint_fast8_t blinkpos, uint_fast8_t blinkstate);
 
 #ifdef __cplusplus
 }

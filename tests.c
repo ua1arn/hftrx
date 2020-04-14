@@ -7291,10 +7291,10 @@ void hightests(void)
 			continue;
 
 			if (scancode != KEYBOARD_NOKEY)
-				display_dispfreq_a2(scancode * 1000UL + v, 255, 0, menuset);
+				display2_dispfreq_a2(scancode * 1000UL + v, 255, 0, menuset);
 			else
 			{
-				display_dispfreq_a2(v * 1000UL, 255, 0, menuset);
+				display2_dispfreq_a2(v * 1000UL, 255, 0, menuset);
 				v = (v + 1) % 1000;
 			}
 		}
@@ -7316,7 +7316,7 @@ void hightests(void)
 			{
 				debug_printf_P(PSTR("kbch = %02x\n"), (unsigned) kbch);
 				continue;
-				display_dispfreq_a2(kbch * 1000UL + v, 255, 0, menuset);
+				display2_dispfreq_a2(kbch * 1000UL + v, 255, 0, menuset);
 				v = (v + 10) % 1000;
 			}
 		}

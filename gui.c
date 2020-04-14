@@ -580,7 +580,7 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 
 	typedef struct {
 		char name [TEXT_ARRAY_SIZE];
-		uint8_t menupos;
+		uint16_t menupos;
 		uint8_t exitkey;
 	} menu_by_name_t;
 
@@ -901,7 +901,7 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 		}
 	}
 
-	void gui_uif_editmenu(const char * name, uint_fast8_t menupos, uint_fast8_t exitkey)
+	void gui_uif_editmenu(const char * name, uint_fast16_t menupos, uint_fast8_t exitkey)
 	{
 		gui.window_to_draw = WINDOW_UIF;
 

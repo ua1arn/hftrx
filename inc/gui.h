@@ -205,13 +205,276 @@
 
 #endif /* COLORSTYLE_RED */
 
-void display_smeter2(uint_fast8_t x, uint_fast8_t y, void * pv);
+typedef struct dctx_tag
+{
+	enum { DCTX_FREQ, DCTX_MENU } type;
+	const void * pv;
+} dctx_t;
 
-#if WITHTOUCHGUI
+void display_smeter2(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx);
 
-	void button9_handler(void);
-	void encoder2_menu (enc2_menu_t * enc2_menu);
-	void display_pip_update(uint_fast8_t x, uint_fast8_t y, void * pv);
+// FUNC item label
+void display_fnlabel9(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	);
+// FUNC item value
+void display_fnvalue9(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	);
 
-#endif /* #if WITHTOUCHGUI */
+
+// Вызывается из display2.c
+//Отображение многострочного меню для больших экранов (группы)
+void display2_multilinemenu_block_groups(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	);
+//Отображение многострочного меню для больших экранов (параметры)
+void display2_multilinemenu_block_params(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	);
+//Отображение многострочного меню для больших экранов (значения)
+void display_multilinemenu_block_vals(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	);
+// Вызывается из display2.c
+// группа, в которой находится редактируемый параметр
+void display2_menu_group(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	);
+
+// Вызывается из display2.c
+// значение параметра
+void display_menu_valxx(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	);
+
+// Вызывается из display2.c
+// название редактируемого параметра или группы
+void display_menu_lblst(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	);
+
+// Вызывается из display2.c
+// название редактируемого параметра
+// если группа - ничего не отображаем
+void display2_menu_lblng(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	);
+
+// Вызывается из display2.c
+// код редактируемого параметра
+void display_menu_lblc3(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	);
+
+typedef struct {
+	char name[15];
+	uint_fast8_t index;
+} menu_names_t;
+
+typedef struct {
+	char param[20];
+	char val[20];
+	uint_fast8_t state;
+	uint_fast8_t updated;
+} enc2_menu_t;
+
+void change_submode(uint_fast8_t newsubmode);
+uint_fast8_t get_low_bp(int_least16_t rotate);
+uint_fast8_t get_high_bp(int_least16_t rotate);
+uint_fast8_t get_bp_type(void);
+void gui_initialize(void);
+void process_gui(void);
+uint_fast8_t check_encoder2(int_least16_t rotate);
+void set_encoder2_state(uint_fast8_t code);
+void set_agc_off(void);
+void set_agc_slow(void);
+void set_agc_fast(void);
+uint_fast8_t send_key_code(uint_fast8_t code);
+uint_fast8_t get_multilinemenu_block_groups(menu_names_t * vals);
+uint_fast8_t get_multilinemenu_block_params(menu_names_t * vals, uint_fast8_t index);
+void get_multilinemenu_block_vals(menu_names_t * vals, uint_fast8_t index, uint_fast8_t cnt);
+void set_menu_cond(uint_fast8_t m);
+const char * gui_edit_menu_item(uint_fast8_t index, int_least16_t rotate);
+void disable_keyboard_redirect(void);
+void enable_keyboard_redirect(void);
+void gui_put_keyb_code(uint_fast8_t kbch);
+void gui_uif_editmenu(const char * name, uint_fast16_t menupos, uint_fast8_t exitkey);
+
+void button9_handler(void);
+void encoder2_menu(enc2_menu_t * enc2_menu);
+void display_pip_update(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx);
+
+
+uint_fast8_t display_getpagesmax(void);	// количество разных вариантов отображения (menuset)
+uint_fast8_t display_getpagesleep(void);	// номер варианта отображения для "сна"
+uint_fast8_t display_getfreqformat(uint_fast8_t * prjv);	// получить параметры отображения частоты (для функции прямого ввода)
+
+// Параметры окна меню
+typedef struct gridparams_tag
+{
+	uint16_t gy2, gx2;	// в ячейках сетки разметки
+
+} gridparams_t;
+
+void display2_getgridparams (gridparams_t * p);
+
+
+void display2_bgprocess(void);	// выполнение шагов state machine отображения дисплея
+void display2_bgreset(void);	// сброс state machine отображения дисплея
+
+void display2_dispfreq_a2(
+	uint_fast32_t freq,
+	uint_fast8_t blinkpos,		// позиция (степень 10) редактируесого символа
+	uint_fast8_t blinkstate,	// в месте редактируемого символа отображается подчёркивание (0 - пробел)
+	uint_fast8_t menuset	/* индекс режима отображения (0..3) */
+	);
+
+void display2_dispfreq_ab(
+	uint_fast8_t menuset	/* индекс режима отображения (0..3) */
+	);
+void display2_volts(
+	uint_fast8_t menuset,	/* индекс режима отображения (0..3) */
+	uint_fast8_t extra		/* находимся в режиме отображения настроек */
+	);
+
+// Статическая часть отображения режима работы
+void display2_mode_subset(
+	uint_fast8_t menuset	/* индекс режима отображения (0..3) */
+	);
+
+// S-meter, SWR-meter, voltmeter
+void display2_barmeters_subset(
+	uint_fast8_t menuset,	/* индекс режима отображения (0..3) */
+	uint_fast8_t extra		/* находимся в режиме отображения настроек */
+	);
+
+struct menudef;
+
+
+// Обновление изоражения экрана при нахождении в режиме меню
+void display2_menu(
+	const FLASHMEM struct menudef * mp,
+	uint_fast8_t byname			/* был выполнен прямой вход в меню */
+	);
+
+// Вызывается из display2.c
+void
+display2_bars(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	);
+// Вызывается из display2.c
+void
+display2_bars_rx(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	);
+// Вызывается из display2.c
+void
+display2_bars_tx(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	);
+// Вызывается из display2.c
+void
+display2_adctest(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	);
+
+// Вызывается из display2.c (версия для CTLSTYLE_RA4YBO_AM0)
+void
+display2_bars_amv0(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	);
+
+// Параметры отображения многострочного меню для больших экранов
+typedef struct multimenuwnd_tag
+{
+	uint_fast8_t multilinemenu_max_rows;
+	uint_fast8_t menurow_count;
+	uint_fast8_t ystep;
+	uint_fast8_t reverse;	// 0/1
+} multimenuwnd_t;
+
+#define LABELW 8
+
+void display2_getmultimenu(multimenuwnd_t * p); /* получение параметров окна для меню */
+
+void display_smeter(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	uint_fast8_t value,
+	uint_fast8_t tracemax,
+	uint_fast8_t level9,	// s9 level
+	uint_fast8_t delta1,	// s9 - s0 delta
+	uint_fast8_t delta2		// s9+50 - s9 delta
+	);
+
+void display_smeter_amv0(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	uint_fast8_t value,
+	uint_fast8_t tracemax,
+	uint_fast8_t level9,	// s9 level
+	uint_fast8_t delta1,	// s9 - s0 delta
+	uint_fast8_t delta2		// s9+50 - s9 delta
+	);
+
+// Вызывается из display2_bars_amv0 (версия для CTLSTYLE_RA4YBO_AM0)
+void display_modulationmeter_amv0(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	uint_fast8_t value,
+	uint_fast8_t maxvalue
+	);
+
+void display_pwrmeter(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	uint_fast8_t pwr,
+	uint_fast8_t tracemax,
+	uint_fast8_t maxpwrcali		// значение для отклонения на всю шкалу
+	);
+
+void display_pwrmeter_amvo(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	uint_fast8_t pwr,
+	uint_fast8_t tracemax,
+	uint_fast8_t maxpwrcali		// значение для отклонения на всю шкалу
+	);
+
+#define WSIGNFLAG 0x80	// отображается плюс или минус в зависимости от знака значения
+#define WMINUSFLAG 0x40	// отображается пробел или минус в зависимости от знака значения
+#define WWIDTHFLAG 0x3F	// оставшиеся биты под ширину поля
+
+
 #endif /* GUI_H_INCLUDED */

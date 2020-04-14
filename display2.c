@@ -19,7 +19,6 @@
 #define WITHPLACEHOLDERS 1	//  отображение макета с еще незанятыми полями
 
 #if LCDMODE_LTDC
-	static struct menudef * md;
 
 	static PACKEDCOLORMAIN_T * getscratchwnd(void);
 
@@ -28,6 +27,13 @@
 	static PACKEDCOLORMAIN_T * getscratchwnd(void);
 
 #endif /* LCDMODE_LTDC */
+
+typedef struct editfreq_tag
+{
+	uint_fast32_t freq;
+	uint_fast8_t blinkpos;		// позиция (степень 10) редактируесого символа
+	uint_fast8_t blinkstate;	// в месте редактируемого символа отображается подчёркивание (0 - пробел)
+} editfreq_t;
 
 // todo: учесть LCDMODE_COLORED
 
@@ -53,52 +59,45 @@ static const COLORMAIN_T colorsbg_1freq [1] = { COLORMAIN_BLACK, };	// уста�
 
 // todo: switch off -Wunused-function
 
-struct editfreq_tag
-{
-	uint_fast32_t freq;
-	uint_fast8_t blinkpos;		// позиция (степень 10) редактируесого символа
-	uint_fast8_t blinkstate;	// в месте редактируемого символа отображается подчёркивание (0 - пробел)
-};
-
 // формирование данных спектра для последующего отображения
 // спектра или водопада
 static void dsp_latchwaterfall(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	);
 static void display2_spectrum(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	);
 static void display2_waterfall(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	);
 static void display2_colorbuff(
 	uint_fast8_t x,
 	uint_fast8_t y,
-	void * pv
+	dctx_t * pctx
 	);
 // Отображение шкалы S-метра и других измерителей
 static void display2_legend(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	);
 // Отображение шкалы S-метра
 static void display2_legend_rx(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	);
 // Отображение шкалы SWR-метра и других измерителе
 static void display2_legend_tx(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	);
 
 // Параметры отображения спектра и водопада
@@ -130,7 +129,7 @@ static void
 display2_clearbg(
 	uint_fast8_t x,
 	uint_fast8_t y,
-	void * pv
+	dctx_t * pctx
 	)
 {
 #if LCDMODE_LTDC && ! (LCDMODE_PIP_RGB565 || LCDMODE_PIP_L8)
@@ -145,7 +144,7 @@ static void
 display2_nextfb(
 	uint_fast8_t x,
 	uint_fast8_t y,
-	void * pv
+	dctx_t * pctx
 	)
 {
 #if LCDMODE_LTDC && ! (LCDMODE_PIP_RGB565 || LCDMODE_PIP_L8)
@@ -161,7 +160,7 @@ display2_nextfb(
 static void display_freqXbig_a(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 	uint_fast8_t rj;
@@ -169,10 +168,10 @@ static void display_freqXbig_a(
 	const uint_fast8_t comma = 3 - rj;
 
 	colmain_setcolors3(colorsfg_1freq [0], colorsbg_1freq [0], colorsfg_1freq [0]);
-	if (0) //if (pv != NULL)
+	if (pctx != NULL && pctx->type == DCTX_FREQ)
 	{
 #if WITHDIRECTFREQENER
-		const struct editfreq_tag * const efp = (const struct editfreq_tag *) pv;
+		const struct editfreq_tag * const efp = (const struct editfreq_tag *) pctx->pv;
 
 
 		uint_fast8_t lowhalf = HALFCOUNT_FREQA - 1;
@@ -196,26 +195,11 @@ static void display_freqXbig_a(
 	}
 }
 
-static struct editfreq_tag ef;
-static uint_fast8_t gdirectfreq = 0;
-
-void display_set_directfreq_mode(uint_fast8_t f)
-{
-	gdirectfreq = f != 0;
-}
-
-void display_set_directfreq_data(uint_fast32_t freq, uint_fast8_t blinkpos, uint_fast8_t blinkstate)
-{
-	ef.freq = freq;
-	ef.blinkpos = blinkpos + 1;
-	ef.blinkstate = blinkstate;
-}
-
 // Отображение частоты. Герцы маленьким шрифтом.
 static void display_freqX_a(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 	uint_fast8_t rj;
@@ -223,14 +207,10 @@ static void display_freqX_a(
 	const uint_fast8_t comma = 3 - rj;
 
 	colmain_setcolors3(colorsfg_1freq [0], colorsbg_1freq [0], colorsfg_1freq [0]);
-	if (pv != NULL || gdirectfreq)
+	if (pctx != NULL && pctx->type == DCTX_FREQ)
 	{
 #if WITHDIRECTFREQENER
-#if LCDMODE_V2A || LCDMODE_V2
-		const struct editfreq_tag * const efp = (const struct editfreq_tag *) & ef;
-#else
-		const struct editfreq_tag * const efp = (const struct editfreq_tag *) pv;
-#endif /* LCDMODE_V2A || LCDMODE_V2 */
+		const struct editfreq_tag * const efp = (const struct editfreq_tag *) pctx->pv;
 		uint_fast8_t lowhalf = HALFCOUNT_FREQA - 1;
 		do
 		{
@@ -257,7 +237,7 @@ static void display_freqX_a(
 static void display_freqchr_a(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 	uint_fast8_t rj;
@@ -265,10 +245,10 @@ static void display_freqchr_a(
 	const uint_fast8_t comma = 3 - rj;
 
 	colmain_setcolors3(colorsfg_1freq [0], colorsbg_1freq [0], colorsfg_1freq [0]);
-	if (0) //if (pv != NULL)
+	if (pctx != NULL && pctx->type == DCTX_FREQ)
 	{
 #if WITHDIRECTFREQENER
-		const struct editfreq_tag * const efp = (const struct editfreq_tag *) pv;
+		const struct editfreq_tag * const efp = (const struct editfreq_tag *) pctx->pv;
 
 		uint_fast8_t lowhalf = HALFCOUNT_FREQA - 1;
 		do
@@ -296,7 +276,7 @@ static void display_freqchr_a(
 static void display_freqchr_b(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 	uint_fast8_t rj;
@@ -304,10 +284,10 @@ static void display_freqchr_b(
 	const uint_fast8_t comma = 3 - rj;
 
 	colmain_setcolors3(colorsfg_1freq [0], colorsbg_1freq [0], colorsfg_1freq [0]);
-	if (0) //if (pv != NULL)
+	if (pctx != NULL && pctx->type == DCTX_FREQ)
 	{
 #if WITHDIRECTFREQENER
-		const struct editfreq_tag * const efp = (const struct editfreq_tag *) pv;
+		const struct editfreq_tag * const efp = (const struct editfreq_tag *) pctx->pv;
 
 		uint_fast8_t lowhalf = HALFCOUNT_FREQA - 1;
 		do
@@ -333,7 +313,7 @@ static void display_freqchr_b(
 static void display_freqX_b(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 	uint_fast8_t rj;
@@ -354,7 +334,7 @@ static void display_freqX_b(
 static void display_freqmeter10(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 #if WITHFQMETER
@@ -411,7 +391,7 @@ display2_text(
 static void display_txrxstatecompact(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 #if WITHTX
@@ -425,7 +405,7 @@ static void display_txrxstatecompact(
 static void display_txrxstate2(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 #if WITHTX
@@ -441,7 +421,7 @@ static void display_txrxstate2(
 static void display_recstatus(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 #if WITHUSEAUDIOREC
@@ -467,7 +447,7 @@ static void display_recstatus(
 static void display_rec3(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 #if WITHUSEAUDIOREC
@@ -486,7 +466,7 @@ static void display_rec3(
 static void display_usb3(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 #if defined (WITHUSBHW_HOST)
@@ -566,7 +546,7 @@ static const char text_nul5 [] = "     ";
 static void display_nr3(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 #if WITHIF4DSP
@@ -580,13 +560,13 @@ static void display_nr3(
 static void display_bkin3(
 	uint_fast8_t x,
 	uint_fast8_t y,
-	void * pv
+	dctx_t * pctx
 	)
 {
 #if WITHELKEY
 	const uint_fast8_t state = hamradio_get_bkin_value();
 	display_2states_P(x, y, state, PSTR("BKN"), text_nul3_P);
-	(void) pv;
+	(void) pctx;
 #endif /* WITHELKEY */
 }
 
@@ -595,7 +575,7 @@ static void display_bkin3(
 static void display_notch5(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 #if WITHNOTCHONOFF || WITHNOTCHFREQ
@@ -609,7 +589,7 @@ static void display_notch5(
 static void display_notchfreq5(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 #if WITHNOTCHONOFF || WITHNOTCHFREQ
@@ -625,7 +605,7 @@ static void display_notchfreq5(
 static void display_notch3(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 #if WITHNOTCHONOFF || WITHNOTCHFREQ
@@ -641,7 +621,7 @@ static void display_notch3(
 static void display_vfomode3(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 	uint_fast8_t state;
@@ -654,7 +634,7 @@ static void display_vfomode3(
 static void display_vfomode5(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 	uint_fast8_t state;
@@ -665,7 +645,7 @@ static void display_vfomode5(
 static void display_XXXXX3(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 #if WITHPLACEHOLDERS
@@ -677,7 +657,7 @@ static void display_XXXXX3(
 static void display_XXXXX5(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 #if WITHPLACEHOLDERS
@@ -690,7 +670,7 @@ static void display_XXXXX5(
 static void display_datamode4(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 #if WITHTX
@@ -705,7 +685,7 @@ static void display_datamode4(
 static void display_datamode3(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 #if WITHTX
@@ -720,7 +700,7 @@ static void display_datamode3(
 static void display_atu3(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 #if WITHTX
@@ -736,7 +716,7 @@ static void display_atu3(
 static void display_genham1(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 #if WITHBCBANDS
@@ -752,7 +732,7 @@ static void display_genham1(
 static void display_byp3(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 #if WITHTX
@@ -767,7 +747,7 @@ static void display_byp3(
 static void display_vox3(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 #if WITHTX
@@ -783,7 +763,7 @@ static void display_vox3(
 static void display_voxtune3(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 #if WITHTX
@@ -821,7 +801,7 @@ static void display_voxtune3(
 static void display_voxtune4(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 #if WITHTX
@@ -849,7 +829,7 @@ static void display_voxtune4(
 static void display_voxtune1(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 #if WITHTX
@@ -876,7 +856,7 @@ static void display_voxtune1(
 static void display_lockstate3(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 	const uint_fast8_t lockv = hamradio_get_lockvalue();
@@ -896,7 +876,7 @@ static void display_lockstate3(
 static void display_lockstate4(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 	const uint_fast8_t lockv = hamradio_get_lockvalue();
@@ -917,7 +897,7 @@ static void display_lockstate4(
 static void display_lockstate1(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 	colmain_setcolors(LOCKCOLOR, BGCOLOR);
@@ -928,7 +908,7 @@ static void display_lockstate1(
 static void display_pbt(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 #if WITHPBT
@@ -948,7 +928,7 @@ static void display_pbt(
 static void display_rxbw3(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 	const char FLASHMEM * const labels [1] = { hamradio_get_rxbw_value_P(), };
@@ -960,7 +940,7 @@ static void display_rxbw3(
 static void display_mainsub3(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 #if WITHUSEDUALWATCH
@@ -976,7 +956,7 @@ static void display_mainsub3(
 static void display_pre3(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 	const char FLASHMEM * const labels [1] = { hamradio_get_pre_value_P(), };
@@ -987,7 +967,7 @@ static void display_pre3(
 static void display_ovf3(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 #if WITHDSPEXTDDC
@@ -1016,7 +996,7 @@ static void display_ovf3(
 static void display_preovf3(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 	if (boad_fpga_adcoverflow() != 0)
@@ -1040,7 +1020,7 @@ static void display_preovf3(
 static void display_ant5(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 #if WITHANTSELECT
@@ -1053,7 +1033,7 @@ static void display_ant5(
 static void display_att4(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 	const char FLASHMEM * const labels [1] = { hamradio_get_att_value_P(), };
@@ -1064,7 +1044,7 @@ static void display_att4(
 static void display_hplp2(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 #if WITHPOWERLPHP
@@ -1077,7 +1057,7 @@ static void display_hplp2(
 static void display_att_tx3(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 	const uint_fast8_t tx = hamradio_get_tx();
@@ -1091,7 +1071,7 @@ static void display_att_tx3(
 static void display_agc3(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 	display_1state_P(x, y, hamradio_get_agc3_value_P());
@@ -1101,7 +1081,7 @@ static void display_agc3(
 static void display_agc4(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 	display_1state_P(x, y, hamradio_get_agc4_value_P());
@@ -1111,7 +1091,7 @@ static void display_agc4(
 static void display_vfomode1(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 	uint_fast8_t state;
@@ -1131,7 +1111,7 @@ static void display_vfomode1(
 static void display_mode3_a(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 	const char FLASHMEM * const labels [1] = { hamradio_get_mode_a_value_P(), };
@@ -1143,7 +1123,7 @@ static void display_mode3_a(
 static void display_mode3_b(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 	const char FLASHMEM * const labels [1] = { hamradio_get_mode_b_value_P(), };
@@ -1154,7 +1134,7 @@ static void display_mode3_b(
 static void display_voltlevelV5(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 #if WITHVOLTLEVEL && WITHCPUADCHW
@@ -1174,7 +1154,7 @@ static void display_voltlevelV5(
 static void display_voltlevel4(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 #if WITHVOLTLEVEL && WITHCPUADCHW
@@ -1193,7 +1173,7 @@ static void display_voltlevel4(
 static void display_thermo4(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 #if WITHTHERMOLEVEL
@@ -1215,7 +1195,7 @@ static void display_thermo4(
 static void display_currlevelA6(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 #if (WITHCURRLEVEL_ACS712_30A || WITHCURRLEVEL_ACS712_20A)
@@ -1254,7 +1234,7 @@ static void display_currlevelA6(
 static void display_currlevel5(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 #if (WITHCURRLEVEL_ACS712_30A || WITHCURRLEVEL_ACS712_20A)
@@ -1307,7 +1287,7 @@ static void display_currlevel5(
 static void display_currlevel5alt(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 #if WITHCURRLEVEL && WITHCPUADCHW && (WITHCURRLEVEL_ACS712_30A || WITHCURRLEVEL_ACS712_20A)
@@ -1328,7 +1308,7 @@ static void display_currlevel5alt(
 static void display_siglevel7(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 #if WITHIF4DSP
@@ -1347,7 +1327,7 @@ static void display_siglevel7(
 static void display_siglevel4(
 	uint_fast8_t x,
 	uint_fast8_t y,
-	void * pv
+	dctx_t * pctx
 	)
 {
 #if WITHIF4DSP
@@ -1373,7 +1353,7 @@ int_fast32_t display_zoomedbw(void)
 static void display_span9(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 #if WITHIF4DSP
@@ -1391,7 +1371,7 @@ static void display_span9(
 static void display_smeter5(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 #if WITHIF4DSP
@@ -1452,7 +1432,7 @@ static void display_smeter5(
 static void display_freqdelta8(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 #if WITHINTEGRATEDDSP
@@ -1479,7 +1459,7 @@ static void display_freqdelta8(
 static void display_samfreqdelta8(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 #if WITHINTEGRATEDDSP
@@ -1507,7 +1487,7 @@ static void display_samfreqdelta8(
 static void display_amfmhighcut4(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 #if WITHAMHIGHKBDADJ
@@ -1528,7 +1508,7 @@ static void display_amfmhighcut4(
 static void display_amfmhighcut5(
 	uint_fast8_t x,
 	uint_fast8_t y,
-	void * pv
+	dctx_t * pctx
 	)
 {
 #if WITHAMHIGHKBDADJ
@@ -1548,7 +1528,7 @@ static void display_amfmhighcut5(
 static void display_time8(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 #if defined (RTC1_TYPE)
@@ -1569,7 +1549,7 @@ static void display_time8(
 static void display_time5(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 #if defined (RTC1_TYPE)
@@ -1593,7 +1573,7 @@ static void display_time5(
 static void display_datetime12(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 #if defined (RTC1_TYPE)
@@ -1637,7 +1617,7 @@ struct dzone
 {
 	uint8_t x; // левый верхний угол
 	uint8_t y;
-	void (* redraw)(uint_fast8_t x, uint_fast8_t y, void * pv);	// функция отображения элемента
+	void (* redraw)(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx);	// функция отображения элемента
 	uint8_t key;		// при каких обновлениях перерисовывается этот элемент
 	uint8_t subset;
 };
@@ -2667,9 +2647,9 @@ enum
 			{	0, 14,	display2_legend,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// Отображение оцифровки шкалы S-метра
 
 		#if WITHMENU
-			{	4, 0,	display_menu_group,	REDRM_MLBL, REDRSUBSET_MENU, },	// название группы
+			{	4, 0,	display2_menu_group,	REDRM_MLBL, REDRSUBSET_MENU, },	// название группы
 			{	0, 2,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
-			{	4, 2,	display_menu_lblng,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
+			{	4, 2,	display2_menu_lblng,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
 			{	0, 4,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
 			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
 		#endif /* WITHMENU */
@@ -2746,9 +2726,9 @@ enum
 
 			{	0, 14,	display2_bars,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// S-METER, SWR-METER, POWER-METER
 		#if WITHMENU
-			{	4, 0,	display_menu_group,	REDRM_MLBL, REDRSUBSET_MENU, },	// название группы
+			{	4, 0,	display2_menu_group,	REDRM_MLBL, REDRSUBSET_MENU, },	// название группы
 			{	0, 2,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
-			{	4, 2,	display_menu_lblng,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
+			{	4, 2,	display2_menu_lblng,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
 			{	0, 4,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
 			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
 		#endif /* WITHMENU */
@@ -3374,8 +3354,8 @@ enum
 		#endif /* WITHNOTCHONOFF || WITHNOTCHFREQ */
 		/* ---------------------------------- */
 	#if WITHMENU
-			{	1,	0,	display_multilinemenu_block_groups,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
-			{	LABELW + 2,	0,	display_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
+			{	1,	0,	display2_multilinemenu_block_groups,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
+			{	LABELW + 2,	0,	display2_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
 			{	LABELW*2 + 3,	0,	display_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
 		#if WITHVOLTLEVEL && WITHCURRLEVEL
 			{	0,	9,	display_voltlevelV5, REDRM_VOLT, REDRSUBSET_MENU, },	// voltmeter with "V"
@@ -3505,8 +3485,8 @@ enum
 		#endif /* WITHNOTCHONOFF || WITHNOTCHFREQ */
 		/* ---------------------------------- */
 	#if WITHMENU
-			{	1,	9,	display_multilinemenu_block_groups,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
-			{	LABELW + 2,	9,	display_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
+			{	1,	9,	display2_multilinemenu_block_groups,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
+			{	LABELW + 2,	9,	display2_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
 			{	LABELW*2 + 3,	9,	display_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
 		#if WITHVOLTLEVEL && WITHCURRLEVEL
 			//{	0,	9,	display_voltlevelV5, REDRM_VOLT, REDRSUBSET_MENU, },	// voltmeter with "V"
@@ -3798,8 +3778,8 @@ enum
 		{	25, 28,	display_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
 	#endif /* WITHUSEAUDIOREC */
 	#if WITHMENU
-		{	1 + LABELW * 0 + 0,	18,	display_multilinemenu_block_groups,	REDRM_MLBL, 	REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
-		{	1 + LABELW * 1 + 1,	18,	display_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
+		{	1 + LABELW * 0 + 0,	18,	display2_multilinemenu_block_groups,	REDRM_MLBL, 	REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
+		{	1 + LABELW * 1 + 1,	18,	display2_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
 		{	1 + LABELW * 2 + 2,	18,	display_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
 	#endif /* WITHMENU */
 		{	0,	0,	display2_nextfb, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },
@@ -3895,8 +3875,8 @@ enum
 		#endif /* defined (RTC1_TYPE) */
 			{	18, 28,	display_agc3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 		#if WITHMENU
-			{	1 + LABELW * 0 + 0,	18,	display_multilinemenu_block_groups,	REDRM_MLBL, sREDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
-			{	1 + LABELW * 1 + 1,	18,	display_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
+			{	1 + LABELW * 0 + 0,	18,	display2_multilinemenu_block_groups,	REDRM_MLBL, sREDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
+			{	1 + LABELW * 1 + 1,	18,	display2_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
 			{	1 + LABELW * 2 + 2,	18,	display_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
 		#endif /* WITHMENU */
 			{	0,	0,	display2_nextfb, 	REDRM_MODE, REDRSUBSET(DPAGE0) | REDRSUBSET_MENU | REDRSUBSET_SLEEP, },
@@ -4022,8 +4002,8 @@ enum
 			{	25, 28,	display_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
 		#endif /* WITHUSEAUDIOREC */
 		#if WITHMENU
-			{	1 + LABELW * 0 + 0,	18,	display_multilinemenu_block_groups,	REDRM_MLBL, 	REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
-			{	1 + LABELW * 1 + 1,	18,	display_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
+			{	1 + LABELW * 0 + 0,	18,	display2_multilinemenu_block_groups,	REDRM_MLBL, 	REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
+			{	1 + LABELW * 1 + 1,	18,	display2_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
 			{	1 + LABELW * 2 + 2,	18,	display_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
 		#endif /* WITHMENU */
 		};
@@ -4200,8 +4180,8 @@ enum
 		{	20, 24,	display_voltlevelV5, REDRM_VOLT, PGSLP, },	// voltmeter with "V"
 
 	#if WITHMENU
-		{	1,	25,	display_multilinemenu_block_groups,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
-		{	LABELW + 3,	25,	display_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
+		{	1,	25,	display2_multilinemenu_block_groups,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
+		{	LABELW + 3,	25,	display2_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
 		{	LABELW*2 + 3,	25,	display_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
 	#endif /* WITHMENU */
 		{	0,	0,	display2_nextfb, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },
@@ -4357,8 +4337,8 @@ enum
 		{	20, 24,	display_voltlevelV5, REDRM_VOLT, PGSLP, },	// voltmeter with "V"
 
 	#if WITHMENU
-		{	1,	25,	display_multilinemenu_block_groups,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
-		{	LABELW + 3,	25,	display_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
+		{	1,	25,	display2_multilinemenu_block_groups,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
+		{	LABELW + 3,	25,	display2_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
 		{	LABELW*2 + 3,	25,	display_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
 	#endif /* WITHMENU */
 		{	0,	0,	display2_nextfb, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },
@@ -4724,8 +4704,8 @@ enum
 		//{	XX,	DLE1,	display_samfreqdelta8, REDRM_BARS, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
 
 	#if WITHMENU
-		{	3,				30,	display_multilinemenu_block_groups,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
-		{	LABELW + 5,		30,	display_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
+		{	3,				30,	display2_multilinemenu_block_groups,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
+		{	LABELW + 5,		30,	display2_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
 		{	LABELW*2 + 6,	30,	display_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
 	#endif /* WITHMENU */
 
@@ -4824,7 +4804,7 @@ enum
 static void display2_dummy(
 	uint_fast8_t x,
 	uint_fast8_t y,
-	void * pv
+	dctx_t * pctx
 	)
 {
 
@@ -5278,7 +5258,7 @@ void display_smeter(
 static void display2_legend_rx(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 #if defined(SMETERMAP)
@@ -5291,7 +5271,7 @@ static void display2_legend_rx(
 static void display2_legend_tx(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 #if defined(SWRPWRMAP) && WITHTX && (WITHSWRMTR || WITHSHOWSWRPWR)
@@ -5319,13 +5299,13 @@ static void display2_legend_tx(
 static void display2_legend(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 	if (hamradio_get_tx())
-		display2_legend_tx(x, y, pv);
+		display2_legend_tx(x, y, pctx);
 	else
-		display2_legend_rx(x, y, pv);
+		display2_legend_rx(x, y, pctx);
 }
 
 
@@ -5630,7 +5610,7 @@ static ALIGNX_BEGIN GX_t spectmonoscr [MGSIZE(ALLDX, SPDY)] ALIGNX_END;
 static void display2_spectrum(
 	uint_fast8_t x0, 
 	uint_fast8_t y0, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 #if HHWMG
@@ -5704,7 +5684,7 @@ static void display2_spectrum(
 	PACKEDCOLORMAIN_T * const colorpip = getscratchwnd();
 	(void) x0;
 	(void) y0;
-	(void) pv;
+	(void) pctx;
 	// Спектр на цветных дисплеях, не поддерживающих ускоренного
 	// построения изображения по bitmap с раскрашиванием
 	if (1 || hamradio_get_tx() == 0)
@@ -5883,13 +5863,13 @@ static void display_wfputrow(uint_fast16_t x, uint_fast16_t y, const PACKEDCOLOR
 static void dsp_latchwaterfall(
 	uint_fast8_t x0,
 	uint_fast8_t y0,
-	void * pv
+	dctx_t * pctx
 	)
 {
 	uint_fast16_t x, y;
 	(void) x0;
 	(void) y0;
-	(void) pv;
+	(void) pctx;
 
 	// запоминание информации спектра для спектрограммы
 	if (! dsp_getspectrumrow(spavgarray, ALLDX, glob_zoomxpow2))
@@ -5975,7 +5955,7 @@ static void dsp_latchwaterfall(
 static void display2_waterfall(
 	uint_fast8_t x0, 
 	uint_fast8_t y0, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 #if (! LCDMODE_S1D13781_NHWACCEL && LCDMODE_S1D13781)
@@ -6064,13 +6044,13 @@ static void display2_waterfall(
 #endif /*  */
 	(void) x0;
 	(void) y0;
-	(void) pv;
+	(void) pctx;
 }
 
 static void display2_colorbuff(
 	uint_fast8_t x0,
 	uint_fast8_t y0,
-	void * pv
+	dctx_t * pctx
 	)
 {
 #if HHWMG
@@ -6129,7 +6109,7 @@ PACKEDCOLORMAIN_T * getscratchwnd(void)
 static void dsp_latchwaterfall(
 	uint_fast8_t x0, 
 	uint_fast8_t y0, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 }
@@ -6138,7 +6118,7 @@ static void dsp_latchwaterfall(
 static void display2_spectrum(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 }
@@ -6147,7 +6127,7 @@ static void display2_spectrum(
 static void display2_waterfall(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 }
@@ -6156,7 +6136,7 @@ static void display2_waterfall(
 static void display2_colorbuff(
 	uint_fast8_t x,
 	uint_fast8_t y,
-	void * pv
+	dctx_t * pctx
 	)
 {
 
@@ -6180,13 +6160,6 @@ void display_solidbar(uint_fast16_t x, uint_fast16_t y, uint_fast16_t x2, uint_f
 		y = y2, y2 = t;
 	}
 	display_fillrect(x, y, x2 - x, y2 - y, color);
-}
-
-// Рисуем на основном экране цветной прямоугольник цветом фона.
-// x2, y2 - текстовые координаты второго угла (не входящие в закрашиваемый прямоугольник)
-void display2_clear_menu_bk(uint_fast16_t x, uint_fast16_t y, uint_fast16_t x2, uint_fast16_t y2)
-{
-	display_solidbar(GRID2X(x), GRID2Y(y), GRID2X(x2), GRID2Y(y2), display_getbgcolor());
 }
 
 #define STMD 1
@@ -6236,7 +6209,7 @@ static void
 display_walktrough(
 	uint_fast8_t key,
 	uint_fast8_t subset,
-	void * pv
+	dctx_t * pctx
 	)
 {
 	enum { WALKCOUNT = sizeof dzones / sizeof dzones [0] };
@@ -6248,7 +6221,7 @@ display_walktrough(
 
 		if (validforredraw(p, key, subset) == 0)
 			continue;
-		(* p->redraw)(p->x, p->y, p->key == REDRM_FREQ ? NULL : pv);
+		(* p->redraw)(p->x, p->y, pctx);
 	#if WITHINTEGRATEDDSP
 		audioproc_spool_user();		// решение проблем с прерыванием звука при стирании экрана
 	#endif /* WITHINTEGRATEDDSP */
@@ -6330,11 +6303,7 @@ void display2_bgprocess(void)
 
 		if (validforredraw(p, keyi, subsets [keyi]) == 0)
 			continue;
-#if LCDMODE_LTDC
-		(* p->redraw)(p->x, p->y, p->subset == REDRSUBSET_MENU ? md : NULL);
-#else
 		(* p->redraw)(p->x, p->y, NULL);
-#endif /* LCDMODE_LTDC */
 		walkis [keyi] += 1;
 		break;
 	}
@@ -6373,25 +6342,49 @@ void display2_bgreset(void)
 }
 
 // Interface functions
-void display_mode_subset(
+void display2_mode_subset(
 	uint_fast8_t menuset	/* индекс режима отображения (0..DISPLC_MODCOUNT - 1) */
 	)
 {
+	TP();
 	display_walktroughsteps(REDRM_MODE, getsubset(menuset, 0));
 }
 
-void display_barmeters_subset(
+void display2_barmeters_subset(
 	uint_fast8_t menuset,	/* индекс режима отображения (0..3) */
 	uint_fast8_t extra		/* находимся в режиме отображения настроек */
 	)
 {
+#if LCDMODE_MAIN_PAGES > 1
+	if (extra)
+		return;
+	TP();
+	display_walktroughsteps(0, getsubset(menuset, extra));
+#else /* LCDMODE_MAIN_PAGES > 1 */
 	display_walktroughsteps(REDRM_BARS, getsubset(menuset, extra));
+#endif /* LCDMODE_MAIN_PAGES > 1 */
 }
 
-void display_dispfreq_ab(
+void display2_volts(
+	uint_fast8_t menuset,	/* индекс режима отображения (0..DISPLC_MODCOUNT - 1) */
+	uint_fast8_t extra		/* находимся в режиме отображения настроек */
+	)
+{
+#if LCDMODE_MAIN_PAGES > 1
+	if (extra)
+		return;
+	TP();
+	display_walktroughsteps(0, getsubset(menuset, extra));
+#else /* LCDMODE_MAIN_PAGES > 1 */
+	display_walktroughsteps(REDRM_VOLT, getsubset(menuset, extra));
+#endif /* LCDMODE_MAIN_PAGES > 1 */
+}
+
+void display2_dispfreq_ab(
 	uint_fast8_t menuset	/* индекс режима отображения (0..DISPLC_MODCOUNT - 1) */
 	)
 {
+	TP();
 #if LCDMODE_MAIN_PAGES > 1
 	display_walktroughsteps(0, getsubset(menuset, 0));
 
@@ -6402,70 +6395,72 @@ void display_dispfreq_ab(
 #endif /* LCDMODE_MAIN_PAGES > 1 */
 }
 
-void display_dispfreq_a2(
+void display2_dispfreq_a2(
 	uint_fast32_t freq,
 	uint_fast8_t blinkpos,		// позиция (степень 10) редактируесого символа
 	uint_fast8_t blinkstate,	// в месте редактируемого символа отображается подчёркивание (0 - пробел)
 	uint_fast8_t menuset	/* индекс режима отображения (0..DISPLC_MODCOUNT - 1) */
 	)
 {
+	TP();
 #if WITHDIRECTFREQENER
+
+	editfreq_t ef;
+	dctx_t ctx;
 
 	ef.freq = freq;
 	ef.blinkpos = blinkpos;
 	ef.blinkstate = blinkstate;
 
-	display_walktrough(REDRM_FREQ,  getsubset(menuset, 0), & ef);
+	ctx.type = DCTX_FREQ;
+	ctx.pv = & ef;
+
+	display_walktrough(REDRM_FREQ,  getsubset(menuset, 0), & ctx);
+
 #else	/* WITHDIRECTFREQENER */
+
 	display_walktroughsteps(REDRM_FREQ,  getsubset(menuset, 0));
 
 #endif /* WITHDIRECTFREQENER */
 }
 
-void display_volts(
-	uint_fast8_t menuset,	/* индекс режима отображения (0..DISPLC_MODCOUNT - 1) */
-	uint_fast8_t extra		/* находимся в режиме отображения настроек */
-	)
-{
-#if LCDMODE_MAIN_PAGES > 1
-
-#else /* LCDMODE_MAIN_PAGES > 1 */
-	display_walktroughsteps(REDRM_VOLT, getsubset(menuset, extra));
-#endif /* LCDMODE_MAIN_PAGES > 1 */
-}
-
-// отображения названия параметра или группы
-void display_menuitemlabel(
-	void * pv,
+// Обновление изоражения экрана при нахождении в режиме меню
+// Замена группы вызовов следующих трех функций:
+//	display2_menuitemlabel(mp, byname);
+//	display2_menuitemvalue(mp);
+//	display2_redrawbars(1, 1);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+//
+// Если указывает на элемент value - на обычных дисплеях жквивалентна вызову display2_menuitemvalue
+//
+void display2_menu(
+	const FLASHMEM struct menudef * mp,
 	uint_fast8_t byname			/* был выполнен прямой вход в меню */
 	)
 {
+	PRINTF("display2_menu: mp=%p\n", mp);
+
+	dctx_t dctx;
+	dctx.type = DCTX_MENU;
+	dctx.pv = mp;
+
 #if LCDMODE_MAIN_PAGES > 1
-	display_walktrough(0, REDRSUBSET_MENU, pv);
-	md = pv;
+
+	display_walktrough(0, REDRSUBSET_MENU, & dctx);
 
 #else /* LCDMODE_MAIN_PAGES > 1 */
+
 	display_walktrough(REDRM_FREQ, REDRSUBSET_MENU, NULL);
 	display_walktrough(REDRM_FRQB, REDRSUBSET_MENU, NULL);
 	display_walktrough(REDRM_MODE, REDRSUBSET_MENU, NULL);
 	if (byname == 0)
 	{
-		display_walktrough(REDRM_MFXX, REDRSUBSET_MENU, pv);
+		display_walktrough(REDRM_MFXX, REDRSUBSET_MENU, & dctx);
 	}
-	display_walktrough(REDRM_MLBL, REDRSUBSET_MENU, pv);
-	display_walktrough(REDRM_MVAL, REDRSUBSET_MENU, pv);
+	display_walktrough(REDRM_MLBL, REDRSUBSET_MENU, & dctx);
+	display_walktrough(REDRM_MVAL, REDRSUBSET_MENU, & dctx);
 
 #endif /* LCDMODE_MAIN_PAGES > 1 */
 }
-
-// отображение значения параметра
-void display_menuitemvalue(
-	void * pv
-	)
-{
-	display_walktrough(REDRM_MVAL, REDRSUBSET_MENU, pv);
-}
-
 
 // последний номер варианта отображения (menuset)
 uint_fast8_t display_getpagesmax(void)

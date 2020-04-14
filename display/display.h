@@ -350,241 +350,6 @@ typedef uint_fast32_t COLOR24_T;
 	#define MGSIZE(dx, dy)	((dx) * (((unsigned long) (dy) + 7) / 8))	// размер буфера для монохромного растра
 	#define GXSIZE(dx, dy)	((unsigned long) (dx) * (dy))	// размер буфера для цветного растра
 #endif	/* */
-
-uint_fast8_t display_getpagesmax(void);	// количество разных вариантов отображения (menuset)
-uint_fast8_t display_getpagesleep(void);	// номер варианта отображения для "сна"
-uint_fast8_t display_getfreqformat(uint_fast8_t * prjv);	// получить параметры отображения частоты (для функции прямого ввода)
-
-// Параметры окна меню
-typedef struct gridparams_tag
-{
-	uint16_t gy2, gx2;	// в ячейках сетки разметки
-
-} gridparams_t;
-
-typedef struct pipparams_tag
-{
-	uint16_t x, y, w, h;	// в пикселях
-	//uintptr_t frame;	// default framebufer
-
-} pipparams_t;
-
-void display2_getgridparams (gridparams_t * p);
-void display2_getpipparams(pipparams_t * p);	/* получить координаты окна с панорамой и/или водопадом. */
-
-
-void display2_bgprocess(void);	// выполнение шагов state machine отображения дисплея
-void display2_bgreset(void);	// сброс state machine отображения дисплея
-
-void display_dispfreq_a2(
-	uint_fast32_t freq,
-	uint_fast8_t blinkpos,		// позиция (степень 10) редактируесого символа
-	uint_fast8_t blinkstate,	// в месте редактируемого символа отображается подчёркивание (0 - пробел)
-	uint_fast8_t menuset	/* индекс режима отображения (0..3) */
-	);
-
-void display_dispfreq_ab(
-	uint_fast8_t menuset	/* индекс режима отображения (0..3) */
-	);
-void display_volts(
-	uint_fast8_t menuset,	/* индекс режима отображения (0..3) */
-	uint_fast8_t extra		/* находимся в режиме отображения настроек */
-	);
-
-void display_mode_lock(
-	uint_fast8_t menuset	/* индекс режима отображения (0..3) */
-	);
-
-// Статическая часть отображения режима работы
-void display_mode_subset(
-	uint_fast8_t menuset	/* индекс режима отображения (0..3) */
-	);
-
-// S-meter, SWR-meter, voltmeter
-void display_barmeters_subset(
-	uint_fast8_t menuset,	/* индекс режима отображения (0..3) */
-	uint_fast8_t extra		/* находимся в режиме отображения настроек */
-	);
-
-// отображения названия параметра или группы - не в режиме редактирования
-void display_menuitemlabel(
-	void * pv,
-	uint_fast8_t byname			/* был выполнен прямой вход в меню */
-	);
-
-// отображение значения параметра
-void display_menuitemvalue(
-	void * pv
-	);
-
-// Рисуем на основном экране цветной прямоугольник цветом фона.
-// x2, y2 - текстовые координаты второго угла (не входящие в закрашиваемый прямоугольник)
-void display2_clear_menu_bk(uint_fast16_t x, uint_fast16_t y, uint_fast16_t x2, uint_fast16_t y2);
-
-// Вызывается из display2.c
-void 
-display2_bars(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
-	void * pv
-	);
-// Вызывается из display2.c
-void 
-display2_bars_rx(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
-	void * pv
-	);
-// Вызывается из display2.c
-void 
-display2_bars_tx(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
-	void * pv
-	);
-// Вызывается из display2.c
-void 
-display2_adctest(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
-	void * pv
-	);
-
-// Вызывается из display2.c (версия для CTLSTYLE_RA4YBO_AM0)
-void 
-display2_bars_amv0(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
-	void * pv
-	);
-
-// Параметры отображения многострочного меню для больших экранов
-typedef struct multimenuwnd_tag
-{
-	uint_fast8_t multilinemenu_max_rows;
-	uint_fast8_t menurow_count;
-	uint_fast8_t ystep;
-	uint_fast8_t reverse;	// 0/1
-} multimenuwnd_t;
-
-void display2_getmultimenu(multimenuwnd_t * p); /* получение параметров окна для меню */
-
-// Вызывается из display2.c
-//Отображение многострочного меню для больших экранов (группы)
-void display_multilinemenu_block_groups(
-	uint_fast8_t x,
-	uint_fast8_t y,
-	void * pv
-	);
-//Отображение многострочного меню для больших экранов (параметры)
-void display_multilinemenu_block_params(
-	uint_fast8_t x,
-	uint_fast8_t y,
-	void * pv
-	);
-//Отображение многострочного меню для больших экранов (значения)
-void display_multilinemenu_block_vals(
-	uint_fast8_t x,
-	uint_fast8_t y,
-	void * pv
-	);
-// Вызывается из display2.c
-// группа, в которой находится редактируемый параметр
-void display_menu_group(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
-	void * pv
-	);
-
-// Вызывается из display2.c
-// значение параметра
-void display_menu_valxx(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
-	void * pv
-	);
-
-// Вызывается из display2.c
-// название редактируемого параметра или группы
-void display_menu_lblst(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
-	void * pv
-	);
-
-// Вызывается из display2.c
-// название редактируемого параметра
-// если группа - ничего не отображаем
-void display_menu_lblng(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
-	void * pv
-	);
-
-// Вызывается из display2.c
-// код редактируемого параметра
-void display_menu_lblc3(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
-	void * pv
-	);
-
-void display_smeter(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
-	uint_fast8_t value,
-	uint_fast8_t tracemax,
-	uint_fast8_t level9,	// s9 level
-	uint_fast8_t delta1,	// s9 - s0 delta
-	uint_fast8_t delta2		// s9+50 - s9 delta
-	);
-
-void display_smeter_amv0(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
-	uint_fast8_t value,
-	uint_fast8_t tracemax,
-	uint_fast8_t level9,	// s9 level
-	uint_fast8_t delta1,	// s9 - s0 delta
-	uint_fast8_t delta2		// s9+50 - s9 delta
-	);
-
-void display_swrmeter(  
-	uint_fast8_t x, 
-	uint_fast8_t y, 
-	adcvalholder_t forward, 
-	adcvalholder_t reflected, // скорректированное
-	uint_fast16_t minforward
-	);
-
-// Вызывается из display2_bars_amv0 (версия для CTLSTYLE_RA4YBO_AM0)
-void display_modulationmeter_amv0(  
-	uint_fast8_t x, 
-	uint_fast8_t y, 
-	uint_fast8_t value,
-	uint_fast8_t maxvalue
-	);
-
-void display_pwrmeter(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
-	uint_fast8_t pwr, 
-	uint_fast8_t tracemax, 
-	uint_fast8_t maxpwrcali		// значение для отклонения на всю шкалу
-	);
-
-void display_pwrmeter_amvo(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
-	uint_fast8_t pwr, 
-	uint_fast8_t tracemax, 
-	uint_fast8_t maxpwrcali		// значение для отклонения на всю шкалу
-	);
-
-#define WSIGNFLAG 0x80	// отображается плюс или минус в зависимости от знака значения
-#define WMINUSFLAG 0x40	// отображается пробел или минус в зависимости от знака значения
-#define WWIDTHFLAG 0x3F	// оставшиеся биты под ширину поля
-
 COLORMAIN_T display_getbgcolor(void);
 void display_setbgcolor(COLORMAIN_T c);
 
@@ -625,6 +390,15 @@ void display_wrdatabig_end(void);
 uint_fast16_t display_wrdata_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp);
 uint_fast16_t display_put_char_small(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf);
 void display_wrdata_end(void);
+
+typedef struct pipparams_tag
+{
+	uint16_t x, y, w, h;	// в пикселях
+	//uintptr_t frame;	// default framebufer
+
+} pipparams_t;
+
+void display2_getpipparams(pipparams_t * p);	/* получить координаты окна с панорамой и/или водопадом. */
 
 /* выдать на дисплей монохромный буфер с размерами dx * dy битов */
 void display_showbuffer(
@@ -914,19 +688,6 @@ uint_fast8_t hamradio_get_datamode(void);	// источник звука для 
 int_fast16_t hamradio_getleft_bp(uint_fast8_t pathi);	/* получить левый (низкочастотный) скат полосы пропускания для отображения "шторки" на спектранализаторе */
 int_fast16_t hamradio_getright_bp(uint_fast8_t pathi);	/* получить правый (высокочастотный) скат полосы пропускания для отображения "шторки" на спектранализаторе */
 uint_fast8_t hamradio_get_bkin_value(void);
-
-// FUNC item label
-void display_fnlabel9(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
-	void * pv
-	);
-// FUNC item value
-void display_fnvalue9(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
-	void * pv
-	);
 
 void display_2states_P(
 	uint_fast8_t x, 

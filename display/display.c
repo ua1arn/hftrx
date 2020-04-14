@@ -48,7 +48,7 @@
 	PACKEDCOLORMAIN_T *
 	colmain_fb_show(void)
 	{
-		return (PACKEDCOLORMAIN_T *) & framebuff0 [mainphase] [0] [0];
+		return (PACKEDCOLORMAIN_T *) & framebuff0 [(mainphase + 0) % LCDMODE_MAIN_PAGES] [0] [0];
 	}
 
 #endif /* LCDMODE_LTDC */
@@ -215,7 +215,7 @@ hwacc_fillrect_u8(
 	tgcolor = color;
 
 	arm_hardware_flush((uintptr_t) & tgcolor, sizeof tgcolor);
-	arm_hardware_flush((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
+	arm_hardware_flush_invalidate((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
 
 	MDMA_CH->CCR &= ~ MDMA_CCR_EN_Msk;
 	//while ((MDMA_CH->CCR & MDMA_CCR_EN_Msk) != 0)
@@ -321,7 +321,7 @@ hwacc_fillrect_u16(
 	tgcolor = color;
 
 	arm_hardware_flush((uintptr_t) & tgcolor, sizeof tgcolor);
-	arm_hardware_flush((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
+	arm_hardware_flush_invalidate((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
 
 	MDMA_CH->CCR &= ~ MDMA_CCR_EN_Msk;
 	//while ((MDMA_CH->CCR & MDMA_CCR_EN_Msk) != 0)
@@ -389,7 +389,7 @@ hwacc_fillrect_u16(
 	// to the area located at the address pointed by the DMA2D_OMAR
 	// and defined in the DMA2D_NLR and DMA2D_OOR.
 
-	arm_hardware_flush((uintptr_t) buffer, sizeof (* buffer) * GXSIZE(dx, dy));
+	arm_hardware_flush_invalidate((uintptr_t) buffer, sizeof (* buffer) * GXSIZE(dx, dy));
 
 	/* целевой растр */
 	DMA2D->OMAR = (uintptr_t) & buffer [row * dx + col];
@@ -465,7 +465,7 @@ hwacc_fillrect_u24(
 	tgcolor = color;
 
 	arm_hardware_flush((uintptr_t) & tgcolor, sizeof tgcolor);
-	arm_hardware_flush((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
+	arm_hardware_flush_invalidate((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
 
 	MDMA_CH->CCR &= ~ MDMA_CCR_EN_Msk;
 	//while ((MDMA_CH->CCR & MDMA_CCR_EN_Msk) != 0)
@@ -533,7 +533,7 @@ hwacc_fillrect_u24(
 	// to the area located at the address pointed by the DMA2D_OMAR
 	// and defined in the DMA2D_NLR and DMA2D_OOR.
 
-	arm_hardware_flush((uintptr_t) buffer, sizeof (* buffer) * GXSIZE(dx, dy));
+	arm_hardware_flush_invalidate((uintptr_t) buffer, sizeof (* buffer) * GXSIZE(dx, dy));
 
 	/* целевой растр */
 	DMA2D->OMAR = (uintptr_t) & buffer [row * dx + col];

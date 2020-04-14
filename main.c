@@ -128,10 +128,11 @@ getstablev16(volatile uint_fast16_t * p)
 }
 
 static void 
-display_redrawbars(
+display2_redrawbars(
 	uint_fast8_t immed,	// Безусловная перерисовка изображения
 	uint_fast8_t extra		/* находимся в режиме отображения настроек */
 	);
+
 static void 
 display_redrawmodes(
 	uint_fast8_t immed	// Безусловная перерисовка изображения
@@ -3882,7 +3883,7 @@ static void updateboard_tuner(void)
 	//debug_printf_P(PSTR("tuner: CAP=%-3d, IND=%-3d, TYP=%d\n"), tunercap, tunerind, tunertype);
 	board_set_tuner_group();
 	board_update();		/* вывести забуферированные изменения в регистры */
-	//display_redrawbars(0, 0);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+	//display2_redrawbars(0, 0);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 }
 
 // ожидание требуемого времени после выдачи параметров на тюнер.
@@ -3913,7 +3914,7 @@ static uint_fast8_t tuneabort(void)
 {
 	uint_fast8_t kbch, kbready;
 
-	display_redrawbars(0, 0);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+	display2_redrawbars(0, 0);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 
 	processmessages(& kbch, & kbready, 0);
 	if (kbready != 0)
@@ -6007,7 +6008,7 @@ uif_encoder2_rotate(
 void display_fnlabel9(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 #if WITHENCODER2 && ! WITHTOUCHGUI
@@ -6031,7 +6032,7 @@ void display_fnlabel9(
 void display_fnvalue9(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 #if WITHENCODER2 && ! WITHTOUCHGUI
@@ -9854,16 +9855,16 @@ display_freqpair(void)
 
 	if (editfreqmode)
 	{
-		display_dispfreq_a2(editfreq, blinkpos + 1, blinkstate, amenuset());
+		display2_dispfreq_a2(editfreq, blinkpos + 1, blinkstate, amenuset());
 	}
 	else
 	{
-		display_dispfreq_ab(amenuset());	/* отображение всех индикаторов частоты */
+		display2_dispfreq_ab(amenuset());	/* отображение всех индикаторов частоты */
 	}
 
 #else /* WITHDIRECTFREQENER */
 
-	display_dispfreq_ab(amenuset());		/* отображение всех индикаторов частоты */
+	display2_dispfreq_ab(amenuset());		/* отображение всех индикаторов частоты */
 
 #endif /* WITHDIRECTFREQENER */
 }
@@ -9892,7 +9893,7 @@ void
 display2_adctest(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 #if defined (targetxad2)
@@ -9958,7 +9959,7 @@ void
 display2_bars_rx(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 #if WITHBARS
@@ -9975,7 +9976,7 @@ void
 display2_bars_tx(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 #if WITHBARS
@@ -10011,7 +10012,7 @@ void
 display2_bars(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 #if WITHBARS
@@ -10020,11 +10021,11 @@ display2_bars(
 	}
 	else if (gtx)
 	{
-		display2_bars_tx(x, y, pv);
+		display2_bars_tx(x, y, pctx);
 	}
 	else
 	{
-		display2_bars_rx(x, y, pv);
+		display2_bars_rx(x, y, pctx);
 	}
 #endif /* WITHBARS */
 }
@@ -10038,7 +10039,7 @@ void
 display2_bars_amv0(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 #if WITHBARS
@@ -10075,7 +10076,7 @@ display2_bars_amv0(
 /* обновление динамической части отображения - S-метра или SWR-метра и volt-метра. */
 static void 
 //NOINLINEAT
-display_redrawbars(
+display2_redrawbars(
 	uint_fast8_t immed,	// Безусловная перерисовка изображения
 	uint_fast8_t extra		/* находимся в режиме отображения настроек */
 	)
@@ -10097,7 +10098,7 @@ display_redrawbars(
 
 		/* отрисовка элементов, общих для всех режимов отображения */
 		/* отрисовка элементов, специфических для данного режима отображения */
-		display_barmeters_subset(amenuset(), extra);
+		display2_barmeters_subset(amenuset(), extra);
 		// подтверждение отрисовки
 		display_refreshperformed_bars();
 	}
@@ -10117,7 +10118,7 @@ display_redrawbars(
 	#endif /* WITHCURRLEVEL */
 		/* --- переписываем значения из возможно внешних АЦП в кеш значений */
 
-		display_volts(amenuset(), extra);
+		display2_volts(amenuset(), extra);
 		display_refreshperformed_voltage();
 	}
 }
@@ -10147,7 +10148,7 @@ display_redrawmodes(
 	{
 		/* отрисовка элементов, общих для всех режимов отображения */
 		/* отрисовка элементов, специфических для данного режима отображения */
-		display_mode_subset(amenuset());
+		display2_mode_subset(amenuset());
 		// подтверждение отрисовки
 		display_refreshperformed_modes();
 	}
@@ -10164,11 +10165,11 @@ display_redrawfreqmodesbars(
 	{
 		display_redrawfreqs(1);	/* безусловное обновление показания частоты */
 		display_redrawmodes(1);
-		display_redrawbars(1, extra);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+		display2_redrawbars(1, extra);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 	}
 	else
 	{
-		display_redrawbars(1, extra);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+		display2_redrawbars(1, extra);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 	}
 }
 
@@ -12692,6 +12693,7 @@ display_menu_string_P(
 	#define QLABEL(s) (s), (s)
 	#define QLABEL2(s1, s2) (s1), (s2)
 #endif /* CPUSTYLE_ATMEGA */
+
 struct menudef
 {
 #if CPUSTYLE_ATMEGA
@@ -15490,9 +15492,11 @@ defaultsettings(void)
 #if ! WITHFLATMENU
 // Вызывается из display2.c
 // Отображение многострочного меню для больших экранов (группы)
-void display_multilinemenu_block_groups(uint_fast8_t x, uint_fast8_t y, void * pv)
+void display2_multilinemenu_block_groups(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
 {
-	const FLASHMEM struct menudef * const mp = (const FLASHMEM struct menudef *) pv;
+	if (pctx == NULL || pctx->type != DCTX_MENU)
+		return;
+	const FLASHMEM struct menudef * const mp = (const FLASHMEM struct menudef *) pctx->pv;
 	const uint_fast16_t index = (int) (mp - menutable);
 	uint_fast16_t y_position_groups = y;
 	uint_fast16_t index_groups = 0;
@@ -15524,12 +15528,6 @@ void display_multilinemenu_block_groups(uint_fast8_t x, uint_fast8_t y, void * p
 	index_groups = 0;
 	const uint_fast16_t menu_block_scroll_offset_groups = window.multilinemenu_max_rows * (selected_group_index / window.multilinemenu_max_rows);
 
-#if DSTYLE_G_X800_Y480
-	gridparams_t z;
-	display2_getgridparams(& z);
-	display2_clear_menu_bk(x - 1, y, x, z.gy2);
-#endif
-
 	// выводим на экран блок с параметрами
 	for (el = 0; el < MENUROW_COUNT; el ++)
 	{
@@ -15546,15 +15544,22 @@ void display_multilinemenu_block_groups(uint_fast8_t x, uint_fast8_t y, void * p
 				colmain_setcolors(MENUSELCOLOR, BGCOLOR);
 				display_at_P(x - 1, y_position_groups, PSTR(">"));
 			}
-			display_menu_group(x, y_position_groups, (void *) mv); // название группы
+
+			dctx_t dctx;
+			dctx.type = DCTX_MENU;
+			dctx.pv = mv;
+			display2_menu_group(x, y_position_groups, & dctx); // название группы
+
 			y_position_groups += window.ystep;
 		}
 	}
 }
 // Отображение многострочного меню для больших экранов (параметры)
-void display_multilinemenu_block_params(uint_fast8_t x, uint_fast8_t y, void * pv)
+void display2_multilinemenu_block_params(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
 {
-	const FLASHMEM struct menudef * const mp = (const FLASHMEM struct menudef *) pv;
+	if (pctx == NULL || pctx->type != DCTX_MENU)
+		return;
+	const FLASHMEM struct menudef * const mp = (const FLASHMEM struct menudef *) pctx->pv;
 	const uint_fast16_t index = (int) (mp - menutable);
 	uint_fast16_t y_position_params = y;
 	uint_fast16_t index_params = 0;
@@ -15592,12 +15597,6 @@ void display_multilinemenu_block_params(uint_fast8_t x, uint_fast8_t y, void * p
 	index_params = 0;
 	const uint_fast16_t menu_block_scroll_offset_params = window.multilinemenu_max_rows * (selected_params_index / window.multilinemenu_max_rows);
 
-#if DSTYLE_G_X800_Y480
-	gridparams_t z;
-	display2_getgridparams(& z);
-	display2_clear_menu_bk(x - 1, y, x, z.gy2);
-#endif
-
 	// выводим на экран блок с параметрами
 	for (el = 0; el < MENUROW_COUNT; el ++)
 	{
@@ -15618,21 +15617,24 @@ void display_multilinemenu_block_params(uint_fast8_t x, uint_fast8_t y, void * p
 				colmain_setcolors(MENUSELCOLOR, BGCOLOR);
 				display_at_P(x - 1, y_position_params, PSTR(">"));
 			}
-			display_menu_lblng(x, y_position_params, (void *) mv); // название редактируемого параметра
+			dctx_t dctx;
+			dctx.type = DCTX_MENU;
+			dctx.pv = mv;
+			display2_menu_lblng(x, y_position_params, & dctx); // название редактируемого параметра
 #if DSTYLE_G_X800_Y480
-			display_at(x + 8, y_position_params, "           ");
+			//display_at(x + 8, y_position_params, "           ");
 #endif
 			y_position_params += window.ystep;
 		}
 	}
-#if DSTYLE_G_X800_Y480
-	display2_clear_menu_bk(x, y_position_params, z.gx2, z.gy2);
-#endif
 }
+
 // Отображение многострочного меню для больших экранов (значения)
-void display_multilinemenu_block_vals(uint_fast8_t x, uint_fast8_t y, void * pv)
+void display_multilinemenu_block_vals(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
 {
-	const FLASHMEM struct menudef * const mp = (const FLASHMEM struct menudef *) pv;
+	if (pctx == NULL || pctx->type != DCTX_MENU)
+		return;
+	const FLASHMEM struct menudef * const mp = (const FLASHMEM struct menudef *) pctx->pv;
 	const uint_fast16_t index = (int) (mp - menutable);
 	uint_fast16_t y_position_params = y;
 	uint_fast16_t index_params = 0;
@@ -15685,7 +15687,10 @@ void display_multilinemenu_block_vals(uint_fast8_t x, uint_fast8_t y, void * pv)
 				continue; //пропускаем пункты для скролла
 			if ((index_params - menu_block_scroll_offset_params) > window.multilinemenu_max_rows)
 				continue;
-			display_menu_valxx(x, y_position_params, (void *) mv); // значение параметра
+            dctx_t dctx;
+            dctx.type = DCTX_MENU;
+            dctx.pv = mv;
+            display_menu_valxx(x, y_position_params, & dctx); // значение параметра
 			y_position_params += window.ystep;
 		}
 	}
@@ -15697,10 +15702,12 @@ void display_multilinemenu_block_vals(uint_fast8_t x, uint_fast8_t y, void * pv)
 void display_menu_lblc3(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
-	const FLASHMEM struct menudef * const mp = (const FLASHMEM struct menudef *) pv;
+	if (pctx == NULL || pctx->type != DCTX_MENU)
+		return;
+	const FLASHMEM struct menudef * const mp = (const FLASHMEM struct menudef *) pctx->pv;
 	char buff [4];
 	const uint_fast8_t index = (int) (mp - menutable);
 	if (ismenukind(mp, ITEM_GROUP))
@@ -15719,13 +15726,15 @@ void display_menu_lblc3(
 // Вызывается из display2.c
 // название редактируемого параметра
 // если группа - ничего не отображаем
-void display_menu_lblng(
+void display2_menu_lblng(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
-	const FLASHMEM struct menudef * const mp = (const FLASHMEM struct menudef *) pv;
+	if (pctx == NULL || pctx->type != DCTX_MENU)
+		return;
+	const FLASHMEM struct menudef * const mp = (const FLASHMEM struct menudef *) pctx->pv;
 	if (ismenukind(mp, ITEM_VALUE) == 0)
 		return;
 	colmain_setcolors(MENUCOLOR, BGCOLOR);
@@ -15737,23 +15746,27 @@ void display_menu_lblng(
 void display_menu_lblst(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
-	const FLASHMEM struct menudef * const mp = (const FLASHMEM struct menudef *) pv;
+	if (pctx == NULL || pctx->type != DCTX_MENU)
+		return;
+	const FLASHMEM struct menudef * const mp = (const FLASHMEM struct menudef *) pctx->pv;
 	colmain_setcolors(MENUCOLOR, BGCOLOR);
 	display_at_P(x, y, mp->qlabel);
 }
 
 // Вызывается из display2.c
 // группа, в которой находится редактируемый параметр
-void display_menu_group(
+void display2_menu_group(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
-	const FLASHMEM struct menudef * mp = (const FLASHMEM struct menudef *) pv;
+	if (pctx == NULL || pctx->type != DCTX_MENU)
+		return;
+	const FLASHMEM struct menudef * mp = (const FLASHMEM struct menudef *) pctx->pv;
 
 	while (ismenukind(mp, ITEM_GROUP) == 0)
 		-- mp;
@@ -15767,10 +15780,12 @@ void display_menu_group(
 void display_menu_valxx(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
-	const FLASHMEM struct menudef * const mp = (const FLASHMEM struct menudef *) pv;
+	if (pctx == NULL || pctx->type != DCTX_MENU)
+		return;
+	const FLASHMEM struct menudef * const mp = (const FLASHMEM struct menudef *) pctx->pv;
 	int_fast32_t value;
 	const uint_fast8_t rj = mp->qrj;
 	const uint_fast8_t width = mp->qwidth;
@@ -15943,7 +15958,7 @@ void display_menu_valxx(
 
 // --- menu support
 
-static uint_fast8_t menulooklast(uint_fast8_t menupos)
+static uint_fast16_t menulooklast(uint_fast16_t menupos)
 {
 	const FLASHMEM struct menudef * mp;
 	do
@@ -15956,14 +15971,14 @@ static uint_fast8_t menulooklast(uint_fast8_t menupos)
 /* работа с параметрами настройки. */
 static void 
 modifysettings(
-	uint_fast8_t firstitem, uint_fast8_t lastitem,	/* диапазон от какого и до какого пункта меню работает */
+	uint_fast16_t firstitem, uint_fast16_t lastitem,	/* диапазон от какого и до какого пункта меню работает */
 	uint_fast8_t itemmask,		/* по какому типу пунктов меню проходим */
 	nvramaddress_t posnvram,	/* где сохранена текущая позиция */
 	uint_fast8_t exitkey,		/* дополнительная клавиша, по которой происходит выход из меню на уровень выше (или KBD_CODE_MAX) */
 	uint_fast8_t byname			/* был выполнен прямой вход в меню */
 	)
 {
-	uint_fast8_t menupos = loadvfy8up(posnvram, firstitem, lastitem, firstitem);	/* начальное значение позиции */
+	uint_fast16_t menupos = loadvfy8up(posnvram, firstitem, lastitem, firstitem);	/* начальное значение позиции */
 	const FLASHMEM struct menudef * mp = & menutable [menupos];
 	multimenuwnd_t window;
 
@@ -15978,9 +15993,7 @@ modifysettings(
 #if WITHDEBUG
 	debug_printf_P(PSTR("menu: ")); debug_printf_P(mp->qlabel); debug_printf_P(PSTR("\n")); 
 #endif /* WITHDEBUG */
-	display_menuitemlabel((void *) mp, byname);
-	display_menuitemvalue((void *) mp);
-	display_redrawbars(1, 1);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+	display2_menu(mp, byname);
 	encoder_clear();
 
 	for (;;)
@@ -15991,7 +16004,6 @@ modifysettings(
 		processmodem();
 		processmessages(& kbch, & kbready, 1);
 		processtxrequest();	/* Установка сиквенсору запроса на передачу.	*/
-		display_redrawbars(0, 1);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 
 #if WITHKEYBOARD
 		int_least16_t nr2;
@@ -16021,8 +16033,8 @@ modifysettings(
 				if (ismenukind(mp, ITEM_GROUP))
 				{
 					/* вход в подменю */
-					const uint_fast8_t first = menupos + 1;	/* следующий за текущим пунктом */
-					const uint_fast8_t last = menulooklast(first);
+					const uint_fast16_t first = menupos + 1;	/* следующий за текущим пунктом */
+					const uint_fast16_t last = menulooklast(first);
 
 					if (ismenukind(& menutable [first], ITEM_VALUE))
 					{
@@ -16030,15 +16042,13 @@ modifysettings(
 						getstamprtc();
 					#endif /* defined (RTC1_TYPE) */
 #if !DSTYLE_G_X800_Y480
-						display2_bgreset();		/* возможно уже с новой цветовой схемой */
+						//display2_bgreset();		/* возможно уже с новой цветовой схемой */
 #endif
 						modifysettings(first, last, ITEM_VALUE, mp->qnvram, exitkey, byname);
 #if !DSTYLE_G_X800_Y480
-						display2_bgreset();		/* возможно уже с новой цветовой схемой */
+						//display2_bgreset();		/* возможно уже с новой цветовой схемой */
 #endif
-						display_menuitemlabel((void *) mp, byname);
-						display_menuitemvalue((void *) mp);
-						display_redrawbars(1, 1);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+						display2_menu(mp, byname);
 					}
 				}
 				continue;	// требуется обновление индикатора
@@ -16048,7 +16058,7 @@ modifysettings(
 				/* блокировка валкодера
 					 - не вызывает сохранение состояния диапазона */
 				uif_key_lockencoder();
-				display_menuitemlabel((void *) mp, byname);
+				display2_menu(mp, byname);
 				continue;	// требуется обновление индикатора
 
 			case KBD_CODE_BAND_DOWN:
@@ -16081,14 +16091,12 @@ modifysettings(
 #endif /* (NVRAM_TYPE != NVRAM_TYPE_CPUEEPROM) */
 
 #if !DSTYLE_G_X800_Y480
-				display2_bgreset();		/* возможно уже с новой цветовой схемой */
+				//display2_bgreset();		/* возможно уже с новой цветовой схемой */
 #endif
 #if WITHDEBUG
 				debug_printf_P(PSTR("menu: ")); debug_printf_P(mp->qlabel); debug_printf_P(PSTR("\n")); 
 #endif /* WITHDEBUG */
-				display_menuitemlabel((void *) mp, byname);
-				display_menuitemvalue((void *) mp);
-				display_redrawbars(1, 1);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+				display2_menu(mp, byname);
 				break;
 			}
 		}
@@ -16140,11 +16148,16 @@ modifysettings(
 			/* обновление отображения пункта */
 			board_wakeup();
 			updateboard(1, 0);
-			display_menuitemvalue((void *) mp);
+			display2_menu(mp, byname);	// на дисплее без offscreen composition обновляем только индикацию значения
 
 #if (NVRAM_TYPE != NVRAM_TYPE_CPUEEPROM)
 			savemenuvalue(mp);		/* сохраняем отредактированное значение */
 #endif
+		}
+		else
+		{
+			display2_redrawbars(0, 1);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+			display2_menu(mp, byname);	// на дисплее без offscreen composition обновляем только индикацию значения
 		}
 #endif /* WITHENCODER */
 	}
@@ -16159,7 +16172,7 @@ uif_key_click_menubyname(const char * name, uint_fast8_t exitkey)
 		return;
 #endif /* WITHAUTOTUNER */
 
-	uint_fast8_t menupos;
+	uint_fast16_t menupos;
 
 	for (menupos = 0; menupos < MENUROW_COUNT; ++ menupos)
 	{
@@ -16238,7 +16251,7 @@ static void vfoallignment(void)
 		uint_fast8_t kbch, kbready;
 
 		processmessages(& kbch, & kbready, 1);
-		//display_redrawbars(0, 1);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+		//display2_redrawbars(0, 1);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 
 		if (kbready != 0)
 		{
@@ -16849,14 +16862,11 @@ processkeyboard(uint_fast8_t kbch)
 		if (kbch == KBD_CODE_ENTERFREQDONE)
 		{
 			editfreqmode = 0;
-			display_set_directfreq_mode(editfreqmode);
-			uif_key_lockencoder();
 			return 1;
 		}
 		if (c == '#' && blinkpos < DISPLAY_LEFTBLINKPOS)
 		{
 			blinkpos += 1;	/* перемещаемся на одну позицию левее */
-			display_set_directfreq_data(editfreq, blinkpos, blinkstate);
 			updateboard(1, 0);
 			return 1;
 		}
@@ -16866,18 +16876,13 @@ processkeyboard(uint_fast8_t kbch)
 			const int_fast32_t m10 = m * 10;
 			editfreq = editfreq / m10 * m10 + (c - '0') * m;
 			if (blinkpos != 0)
-			{
 				-- blinkpos;	/* перемещаемся на одну позицию правее */
-				display_set_directfreq_data(editfreq, blinkpos, blinkstate);
-			}
 			else if (freqvalid(editfreq, gtx))
 			{
 				const uint_fast8_t bi = getbankindex_tx(gtx);
 				vindex_t vi = getvfoindex(bi);
 				gfreqs [bi] = editfreq;
 				editfreqmode = 0;
-				display_set_directfreq_mode(editfreqmode);
-				uif_key_lockencoder();
 				savebandfreq(vi, bi);		/* сохранение частоты в текущем VFO */
 				updateboard(1, 0);
 			}
@@ -16886,9 +16891,7 @@ processkeyboard(uint_fast8_t kbch)
 				/* опять к начальному состоянию */
 				blinkpos = DISPLAY_LEFTBLINKPOS;		/* позиция курсора */
 				editfreqmode = 1;
-				display_set_directfreq_mode(editfreqmode);
 				editfreq = gfreqs [getbankindex_tx(gtx)];
-				display_set_directfreq_data(editfreq, blinkpos, blinkstate);
 			}
 			return 1;
 		}
@@ -16897,10 +16900,7 @@ processkeyboard(uint_fast8_t kbch)
 	{
 		blinkpos = DISPLAY_LEFTBLINKPOS;		/* позиция курсора */
 		editfreqmode = 1;
-		display_set_directfreq_mode(editfreqmode);
 		editfreq = gfreqs [getbankindex_tx(gtx)];
-		display_set_directfreq_data(editfreq, blinkpos, blinkstate);
-		uif_key_lockencoder();
 		return 1;
 	}
 #endif /* WITHDIRECTFREQENER */
@@ -17953,7 +17953,7 @@ hamradio_main_step(void)
 			}
 			#endif /* WITHAUTOTUNER */
 
-			display_redrawbars(0, 0);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+			display2_redrawbars(0, 0);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 
 	#if WITHLFM && defined (LO1MODE_DIRECT)
 			if (lfmmode && spool_lfm_enable)
@@ -18012,7 +18012,7 @@ hamradio_main_step(void)
 						strcpy(enc2_menu.val, text);
 						enc2_menu.updated = 1;
 						encoder2_menu(&enc2_menu);
-						display_mode_subset(0);
+						display2_mode_subset(0);
 				}
 			}
 #else
@@ -18324,7 +18324,10 @@ void get_multilinemenu_block_vals(menu_names_t * vals, uint_fast8_t index, uint_
 		if (ismenukind(mv, ITEM_VALUE))
 		{
 			menu_names_t * const v = & vals [count];
-			display_menu_valxx(0, 0, (void *) mv);
+			dctx_t dctx;
+			dctx.type = DCTX_MENU;
+			dctx.pv = mv;
+			display_menu_valxx(0, 0, & dctx);
 			strcpy (v->name, menuw);
 			v->index = el;
 			count++;
@@ -18379,7 +18382,10 @@ const char * gui_edit_menu_item(uint_fast8_t index, int_least16_t rotate)
 		savemenuvalue(mp);		/* сохраняем отредактированное значение */
 #endif
 		}
-	display_menu_valxx(0, 0, (void *) mp);
+	dctx_t dctx;
+	dctx.type = DCTX_MENU;
+	dctx.pv = mp;
+	display_menu_valxx(0, 0, & dctx);
 	return menuw;
 }
 
