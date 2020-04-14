@@ -7784,7 +7784,7 @@ void board_beep_initialize(void)
 
 
 // ADC intgerface functions
-#if WITHCPUADCHW
+#if 1//WITHCPUADCHW
 
 
 // Для поддержки случаев, когда входы АЦП используются не подряд

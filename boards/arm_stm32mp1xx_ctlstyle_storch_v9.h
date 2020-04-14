@@ -507,23 +507,24 @@
 
 	#if WITHTHERMOLEVEL
 		XTHERMOIX = 9,		// PB1 Exernal thermo sensor ST LM235Z
+		XTHERMOMRRIX = BOARD_ADCMRRIN(x),	// кеш - индекc не должен повторяться в конфигурации
 	#endif /* WITHTHERMOLEVEL */
 
 	#if 0
 		// UA1CEI PA board: MCP3208 at targetext2 - P2_0 external SPI device (PA BOARD ADC)
 		VOLTSOURCE = BOARD_ADCX2IN(4),		// MCP3208 CH7 Средняя точка делителя напряжения, для АКБ
+		VOLTMRRIX = BOARD_ADCMRRIN(1),	// кеш - индекc не должен повторяться в конфигурации
 
 		FWD = BOARD_ADCX2IN(3),
 		REF = BOARD_ADCX2IN(2),
 		PWRI = FWD,
+		REFMRRIX = BOARD_ADCMRRIN(x),
+		FWDMRRIX = BOARD_ADCMRRIN(x),
+		PWRMRRIX = BOARD_ADCMRRIN(x),
 
 		#define WITHCURRLEVEL2	1	/* отображение тока оконечного каскада */
 		PASENSEIX2 = BOARD_ADCX2IN(0),	// DRAIN
 		PAREFERIX2 = BOARD_ADCX2IN(1),	// reference (1/2 питания ACS712ELCTR-30B-T).
-
-		#if WITHTHERMOLEVEL
-			XTHERMOIX = BOARD_ADCXIN(6),		// MCP3208 CH6 Exernal thermo sensor ST LM235Z
-		#endif /* WITHTHERMOLEVEL */
 	#else
 		// толькло основная плата - 5W усилитель
 
@@ -532,15 +533,20 @@
 		#if WITHCURRLEVEL
 			//PASENSEIX = BOARD_ADCXIN(0),		// MCP3208 CH0 PA current sense - ACS712-30 chip
 			PASENSEIX = 2,		// PA2 PA current sense - ACS712-05 chip
+			PASENSEMRRIX = BOARD_ADCMRRIN(x),	// кеш - индекc не должен повторяться в конфигурации
 		#endif /* WITHCURRLEVEL */
 		#if WITHVOLTLEVEL
 			VOLTSOURCE = 8,		// PB0 Средняя точка делителя напряжения, для АКБ
+			VOLTMRRIX = BOARD_ADCMRRIN(1),	// кеш - индекc не должен повторяться в конфигурации
 		#endif /* WITHVOLTLEVEL */
 
 		#if WITHSWRMTR
 			//FWD = BOARD_ADCXIN(2), REF = BOARD_ADCXIN(3),		// MCP3208 CH2, CH3 Детектор прямой, отраженной волны
 			FWD = 14, REF = 15,	// PC5	SWR-meter
 			PWRI = FWD,			// PC4
+			REFMRRIX = BOARD_ADCMRRIN(2),
+			FWDMRRIX = BOARD_ADCMRRIN(3),
+			PWRMRRIX = BOARD_ADCMRRIN(4),
 		#endif /* WITHSWRMTR */
 	#endif
 		KI0 = 10, KI1 = 11, KI2 = 12, KI3 = 0, KI4 = 1	// клавиатура
