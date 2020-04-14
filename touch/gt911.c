@@ -55,7 +55,7 @@ uint16_t gt911_readInput(GTPoint * point)
 
 	touch_num = buf & 0x7f;
 	if (touch_num > 0)
-	{
+	{ 										/* получение координат первой точки касания */
 		gt911_read(0x8150, & buf, 1);
 		point->x = buf;
 		gt911_read(0x8151, & buf, 1);
