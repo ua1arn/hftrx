@@ -5440,7 +5440,7 @@ static uint_fast8_t wfclear;			// стирание всей областии о�
 // Код взят из проекта Malamute
 static void wfpalette_initialize(void)
 {
-	PRINTF("wfpalette_initialize: main=%d, pip=%d, PALETTESIZE=%d, LCDMODE_MAIN_PAGES=%d\n", sizeof (PACKEDCOLORMAIN_T), sizeof (PACKEDCOLORMAIN_T), PALETTESIZE, LCDMODE_MAIN_PAGES);
+	//PRINTF("wfpalette_initialize: main=%d, pip=%d, PALETTESIZE=%d, LCDMODE_MAIN_PAGES=%d\n", sizeof (PACKEDCOLORMAIN_T), sizeof (PACKEDCOLORMAIN_T), PALETTESIZE, LCDMODE_MAIN_PAGES);
 	if (PALETTESIZE != 256)
 		return;
 #if ! defined (COLORPIP_SHADED)
