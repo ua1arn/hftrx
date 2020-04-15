@@ -310,7 +310,6 @@ void set_encoder2_state(uint_fast8_t code);
 void set_agc_off(void);
 void set_agc_slow(void);
 void set_agc_fast(void);
-uint_fast8_t send_key_code(uint_fast8_t code);
 uint_fast8_t get_multilinemenu_block_groups(menu_names_t * vals);
 uint_fast8_t get_multilinemenu_block_params(menu_names_t * vals, uint_fast8_t index);
 void get_multilinemenu_block_vals(menu_names_t * vals, uint_fast8_t index, uint_fast8_t cnt);
@@ -320,6 +319,8 @@ void disable_keyboard_redirect(void);
 void enable_keyboard_redirect(void);
 void gui_put_keyb_code(uint_fast8_t kbch);
 void gui_uif_editmenu(const char * name, uint_fast16_t menupos, uint_fast8_t exitkey);
+uint_fast8_t gui_set_freq (uint_fast32_t freq);
+void gui_set_lockmode (uint_fast8_t lock);
 
 void button9_handler(void);
 void encoder2_menu(enc2_menu_t * enc2_menu);

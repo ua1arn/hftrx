@@ -39,7 +39,6 @@
 #if WITHTOUCHGUI
 static uint_fast8_t encoder2_busy = 0;		// признак занятости энкодера в обработке gui
 static uint_fast8_t keyboard_redirect = 0;	// перенаправление кодов кнопок в менеджер gui
-static uint_fast8_t gui_editfreqmode = 0;
 static uint_fast8_t is_menu_opened = 0;		// открыто gui системное меню
 static char menuw [10];						// буфер для вывода значений системного меню
 static enc2_menu_t enc2_menu;
@@ -16916,12 +16915,11 @@ static uint_fast8_t
 processkeyboard(uint_fast8_t kbch)
 {
 #if WITHTOUCHGUI
-	if (keyboard_redirect && ! gui_editfreqmode)
+	if (keyboard_redirect)
 	{
-		gui_put_keyb_code (kbch);
+		gui_put_keyb_code(kbch);
 		return 0;
 	}
-	gui_editfreqmode = 0;
 #endif
 	const uint_fast8_t exitkey = getexitkey();	/* эта клавиша совмещена с menu - дополнительный код для выхода. */
 
@@ -18198,6 +18196,25 @@ hamradio_main_step(void)
 	return STTE_OK;
 }
 
+void gui_set_lockmode(uint_fast8_t lock)
+{
+	lockmode = lock != 0;
+}
+
+uint_fast8_t gui_set_freq(uint_fast32_t freq)
+{
+	if (freqvalid(freq, gtx))
+	{
+		const uint_fast8_t bi = getbankindex_tx(gtx);
+		vindex_t vi = getvfoindex(bi);
+		gfreqs [bi] = freq;
+		savebandfreq(vi, bi);
+		updateboard(1, 0);
+		return 1;
+	}
+	return 0;
+}
+
 #if WITHBARS && WITHTX
 
 uint_fast16_t get_minforward(void)
@@ -18221,16 +18238,6 @@ void disable_keyboard_redirect (void)
 void enable_keyboard_redirect (void)
 {
 	keyboard_redirect = 1;
-}
-
-uint_fast8_t send_key_code(uint_fast8_t code)
-{
-	gui_editfreqmode = 1;
-	processkeyboard(code);
-#if LCDMODE_MAIN_PAGES == 1
-	display_redrawfreqstimed(1);
-#endif /*  LCDMODE_MAIN_PAGES == 1 */
-	return editfreqmode;
 }
 
 void set_agc_off(void)
