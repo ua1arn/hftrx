@@ -7545,6 +7545,15 @@ FLOAT_t local_log(FLOAT_t x)
 
 #endif /* WITHIF4DSP */
 
+/* функция вызывается при ожидании опросом разного рода событий связанных с аппаартурой,
+ * в том числе раступление следующего кадра.
+ * Выводить на экран строго нельзя
+ * */
+void hardware_nonguiyield(void)
+{
+
+}
+
 // Печать частоты в формате dddddd.ddd
 static void printfreq(int_fast32_t freq)
 {
@@ -18184,13 +18193,13 @@ void enable_keyboard_redirect (void)
 	keyboard_redirect = 1;
 }
 
-uint_fast8_t send_key_code (uint_fast8_t code)
+uint_fast8_t send_key_code(uint_fast8_t code)
 {
 	gui_editfreqmode = 1;
 	processkeyboard(code);
-#if ! LCDMODE_V2A && ! LCDMODE_V2
+#if LCDMODE_MAIN_PAGES == 1
 	display_redrawfreqs(1);
-#endif /* ! LCDMODE_V2A && ! LCDMODE_V2 */
+#endif /*  LCDMODE_MAIN_PAGES == 1 */
 	return editfreqmode;
 }
 
