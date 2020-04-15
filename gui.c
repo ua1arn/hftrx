@@ -61,8 +61,8 @@ display_smeter2(
 	dctx_t * pctx
 	)
 {
-	const int xc = GRID2X(xgrid);
-	const int yc = GRID2Y(ygrid);
+	const int xc = GRID2X(xgrid) + 120;
+	const int yc = GRID2Y(ygrid) + 120;
 	enum { halfsect = 30 };
 	enum { gm = 270 };
 	enum { gs = gm - halfsect };

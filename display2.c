@@ -4476,7 +4476,7 @@ enum
 		{	45, 0,	display_notch5,		REDRM_MODE, PGALL, },	// NOTCH on/off
 		{	47, 15,	display_voxtune3,	REDRM_MODE, PGALL, },	// VOX
 		{	47, 5,	display_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
-		{   8, 32,  display_smeter2, 	REDRM_BARS, PGALL, },	// Изображение стрелочного прибора
+		{    0, 6,  display_smeter2, 	REDRM_BARS, PGALL, },	// Изображение стрелочного прибора
 		{   47, 20, display_bkin3,		REDRM_MODE, PGALL, },
 	#if WITHENCODER2
 //		{	41, 0,	display_fnlabel9,	REDRM_MODE, PGALL, },	// FUNC item label
