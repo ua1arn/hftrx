@@ -4836,7 +4836,7 @@ static void buildsigwnd(void)
 
 #else
 
-static FLOAT_t wnd256 [NORMALFFT];
+static RAMBIGDTCM FLOAT_t wnd256 [NORMALFFT];
 
 static void buildsigwnd(void)
 {

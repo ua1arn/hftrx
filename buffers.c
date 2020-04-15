@@ -598,7 +598,7 @@ void buffers_initialize(void)
 
 #if WITHINTEGRATEDDSP
 
-	static RAMBIG voice16_t voicesarray16 [228];
+	static RAM_D2 voice16_t voicesarray16 [228];
 
 	InitializeListHead3(& resample16, RESAMPLE16NORMAL);	// буферы от USB для синхронизации
 	InitializeListHead3(& voicesmike16, VOICESMIKE16NORMAL);	// список оцифрованных с АЦП
@@ -669,7 +669,7 @@ void buffers_initialize(void)
 
 #endif /* WITHUSBUAC */
 
-	static RAMBIG voice32tx_t voicesarray32tx [(DMABUFFSIZE32RX / DMABUFSTEP32RX) / (DMABUFFSIZE32TX / DMABUFSTEP32TX) + 4];
+	static RAM_D2 voice32tx_t voicesarray32tx [(DMABUFFSIZE32RX / DMABUFSTEP32RX) / (DMABUFFSIZE32TX / DMABUFSTEP32TX) + 4];
 
 	InitializeListHead2(& voicesready32tx);	// список для выдачи на ЦАП
 	InitializeListHead2(& voicesfree32tx);	// Незаполненные
@@ -679,7 +679,7 @@ void buffers_initialize(void)
 		InsertHeadList2(& voicesfree32tx, & p->item);
 	}
 
-	static RAMBIG voice32rx_t voicesarray32rx [6];	// без WFM надо 2
+	static RAM_D2 voice32rx_t voicesarray32rx [6];	// без WFM надо 2
 
 	InitializeListHead2(& voicesfree32rx);	// Незаполненные
 	for (i = 0; i < (sizeof voicesarray32rx / sizeof voicesarray32rx [0]); ++ i)
@@ -699,7 +699,7 @@ void buffers_initialize(void)
 	#elif defined (STM32F429xx)
 		RAMNOINIT_D1 static records16_t recordsarray16 [8];
 	#elif defined (STM32H743xx)
-		RAMNOINIT_D1 static records16_t recordsarray16 [6];
+		RAM_D2 static records16_t recordsarray16 [6];
 	#else
 		RAMNOINIT_D1 static records16_t recordsarray16 [8];
 	#endif
