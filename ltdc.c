@@ -1562,7 +1562,7 @@ arm_hardware_ltdc_initialize(void)
 /* Set PIP frame buffer address. */
 void arm_hardware_ltdc_pip_set(uintptr_t p)
 {
-#if 1
+#if 0
 	/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
 	while ((LTDC->SRCR & LTDC_SRCR_VBR) != 0)
 		hardware_nonguiyield();
@@ -1584,7 +1584,7 @@ void arm_hardware_ltdc_pip_off(void)
 /* Set MAIN frame buffer address. */
 void arm_hardware_ltdc_main_set(uintptr_t p)
 {
-#if 1
+#if 0
 	/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
 	while ((LTDC->SRCR & LTDC_SRCR_VBR) != 0)
 		hardware_nonguiyield();

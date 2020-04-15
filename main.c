@@ -128,13 +128,14 @@ getstablev16(volatile uint_fast16_t * p)
 }
 
 static void 
-display2_redrawbars(
+display2_redrawbarstimed(
 	uint_fast8_t immed,	// Безусловная перерисовка изображения
-	uint_fast8_t extra		/* находимся в режиме отображения настроек */
+	uint_fast8_t extra,		/* находимся в режиме отображения настроек */
+	const FLASHMEM struct menudef * mp
 	);
 
 static void 
-display_redrawmodes(
+display_redrawmodestimed(
 	uint_fast8_t immed	// Безусловная перерисовка изображения
 	);
 
@@ -160,7 +161,16 @@ static uint_fast8_t ggainnfmrx10 = 30;	/* дополнительное усил�
 
 static void processtxrequest(void);	/* Установка сиквенсору запроса на передачу.	*/
 
-static void processmessages(uint_fast8_t * kbch, uint_fast8_t * kbready, uint_fast8_t menu);
+struct menudef;
+
+static void
+//NOINLINEAT
+processmessages(
+	uint_fast8_t * kbch,
+	uint_fast8_t * kbready,
+	uint_fast8_t inmenu,
+	const FLASHMEM struct menudef * mp
+	);
 
 static uint_fast8_t getbankindex_raw(uint_fast8_t pathi);
 static uint_fast8_t getbankindex_ab(uint_fast8_t ab);
@@ -3883,7 +3893,7 @@ static void updateboard_tuner(void)
 	//debug_printf_P(PSTR("tuner: CAP=%-3d, IND=%-3d, TYP=%d\n"), tunercap, tunerind, tunertype);
 	board_set_tuner_group();
 	board_update();		/* вывести забуферированные изменения в регистры */
-	//display2_redrawbars(0, 0);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+	//display2_redrawbarstimed(0, 0, NULL);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 }
 
 // ожидание требуемого времени после выдачи параметров на тюнер.
@@ -3914,7 +3924,7 @@ static uint_fast8_t tuneabort(void)
 {
 	uint_fast8_t kbch, kbready;
 
-	display2_redrawbars(0, 0);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+	display2_redrawbarstimed(0, 0, NULL);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 
 	processmessages(& kbch, & kbready, 0);
 	if (kbready != 0)
@@ -5905,7 +5915,7 @@ uif_encoder2_press(void)
 	}
 	save_i8(RMT_ENC2STATE_BASE, enc2state);
 #if ! WITHTOUCHGUI
-	display_redrawmodes(1);
+	display_redrawmodestimed(1);
 #else
 	enc2_menu.state = enc2state;
 	if (enc2state != ENC2STATE_INITIALIZE)
@@ -5938,7 +5948,7 @@ uif_encoder2_hold(void)
 	}
 	save_i8(RMT_ENC2STATE_BASE, enc2state);
 #if ! WITHTOUCHGUI
-	display_redrawmodes(1);
+	display_redrawmodestimed(1);
 #else
 	enc2_menu.state = enc2state;
 	if (enc2state == ENC2STATE_INITIALIZE)
@@ -10086,9 +10096,10 @@ display2_bars_amv0(
 /* обновление динамической части отображения - S-метра или SWR-метра и volt-метра. */
 static void 
 //NOINLINEAT
-display2_redrawbars(
+display2_redrawbarstimed(
 	uint_fast8_t immed,	// Безусловная перерисовка изображения
-	uint_fast8_t extra		/* находимся в режиме отображения настроек */
+	uint_fast8_t extra,		/* находимся в режиме отображения настроек */
+	const FLASHMEM struct menudef * mp
 	)
 {
 	if (immed || display_refresenabled_bars())
@@ -10129,6 +10140,10 @@ display2_redrawbars(
 		/* --- переписываем значения из возможно внешних АЦП в кеш значений */
 
 		display2_volts(amenuset(), extra);
+		if (extra)
+		{
+			display2_menu(mp, 0);	// на дисплее без offscreen composition обновляем только индикацию значения
+		}
 		display_refreshperformed_voltage();
 	}
 }
@@ -10136,7 +10151,7 @@ display2_redrawbars(
 // обновимть изображение частоты на дисплее
 static void 
 //NOINLINEAT
-display_redrawfreqs(
+display_redrawfreqstimed(
 	uint_fast8_t immed	// Безусловная перерисовка изображения
 	)
 {
@@ -10150,7 +10165,7 @@ display_redrawfreqs(
 // обновимть изображение режимов работы на дисплее
 static void 
 //NOINLINEAT
-display_redrawmodes(
+display_redrawmodestimed(
 	uint_fast8_t immed	// Безусловная перерисовка изображения
 	)
 {
@@ -10167,24 +10182,28 @@ display_redrawmodes(
 // Обновление дисплея - всё, включая частоту
 static void
 //NOINLINEAT
-display_redrawfreqmodesbars(
-	uint_fast8_t extra		/* находимся в режиме отображения настроек */
+display_redrawfreqmodesbarsnow(
+	uint_fast8_t extra,		/* находимся в режиме отображения настроек */
+	const FLASHMEM struct menudef * mp
 	)
 {
 	if (extra == 0)
 	{
-		display_redrawfreqs(1);	/* безусловное обновление показания частоты */
-		display_redrawmodes(1);
-		display2_redrawbars(1, extra);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+		display_redrawfreqstimed(1);	/* безусловное обновление показания частоты */
+		display_redrawmodestimed(1);
+		display2_redrawbarstimed(1, extra, mp);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 	}
 	else
 	{
-		display2_redrawbars(1, extra);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+		display2_redrawbarstimed(1, extra, mp);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 	}
 }
 
 static void 
-directctlupdate(uint_fast8_t inmenu)
+directctlupdate(
+	uint_fast8_t inmenu,
+	const FLASHMEM struct menudef * mp
+	)
 {
 	uint_fast8_t changed = 0;
 	uint_fast8_t changedtx = 0;
@@ -10231,7 +10250,7 @@ directctlupdate(uint_fast8_t inmenu)
 	{
 		updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
 		seq_ask_txstate(gtx);
-		display_redrawfreqmodesbars(inmenu);	// Обновление дисплея - всё, включая частоту
+		display_redrawfreqmodesbarsnow(inmenu, mp);	// Обновление дисплея - всё, включая частоту
 	}
 	else if (changed != 0)
 		updateboard(1, 0);	/* полная перенастройка (как после смены режима) */
@@ -12381,7 +12400,12 @@ peek_u32(const uint8_t * p)
 /* обработка сообщений от уровня обработчиков прерываний к user-level функциям. */
 static void
 //NOINLINEAT
-processmessages(uint_fast8_t * kbch, uint_fast8_t * kbready, uint_fast8_t inmenu)
+processmessages(
+	uint_fast8_t * kbch,
+	uint_fast8_t * kbready,
+	uint_fast8_t inmenu,
+	const FLASHMEM struct menudef * mp
+	)
 {
 	if (hardware_getshutdown())	// признак провала питания
 	{
@@ -12411,14 +12435,14 @@ processmessages(uint_fast8_t * kbch, uint_fast8_t * kbready, uint_fast8_t inmenu
 		spoolplayfile();
 #endif /* WITHWAVPLAYER || WITHSENDWAV */
 		display2_bgprocess();			/* выполнение шагов state machine отображения дисплея */
-		directctlupdate(inmenu);		/* управление скоростью передачи (и другими параметрами) через потенциометр */
+		directctlupdate(inmenu, mp);		/* управление скоростью передачи (и другими параметрами) через потенциометр */
 #if WITHLCDBACKLIGHT || WITHKBDBACKLIGHT
 		// обработать запрос на обновление состояния аппаратуры из user mode программы
 		if (dimmflagch != 0)
 		{
 			dimmflagch = 0;
 			display2_bgreset();
-			display_redrawfreqmodesbars(0);			/* Обновление дисплея - всё, включая частоту */
+			display_redrawfreqmodesbarsnow(inmenu, mp);			/* Обновление дисплея - всё, включая частоту */
 			updateboard(1, 0);
 		}
 #endif /* WITHLCDBACKLIGHT || WITHKBDBACKLIGHT */
@@ -12436,7 +12460,7 @@ processmessages(uint_fast8_t * kbch, uint_fast8_t * kbready, uint_fast8_t inmenu
 		{
 			sleepflagch = 0;
 			display2_bgreset();
-			display_redrawfreqmodesbars(0);			/* Обновление дисплея - всё, включая частоту */
+			display_redrawfreqmodesbarsnow(0, NULL);			/* Обновление дисплея - всё, включая частоту */
 			updateboard(1, 0);
 		}
 #endif /* WITHSLEEPTIMER */
@@ -12456,7 +12480,7 @@ processmessages(uint_fast8_t * kbch, uint_fast8_t * kbready, uint_fast8_t inmenu
 			// 12 bytes as parameter
 			//debug_printf_P(PSTR("processmessages: MSGT_CAT\n"));
 			if (processcatmsg(buff [0], buff [1], buff [2], buff [8], buff + 9))
-				display_redrawfreqmodesbars(inmenu);			/* Обновление дисплея - всё, включая частоту */
+				display_redrawfreqmodesbarsnow(inmenu, mp);			/* Обновление дисплея - всё, включая частоту */
 		}
 #endif /* WITHCAT */
 		break;
@@ -16038,7 +16062,8 @@ modifysettings(
 #if WITHDEBUG
 	debug_printf_P(PSTR("menu: ")); debug_printf_P(mp->qlabel); debug_printf_P(PSTR("\n")); 
 #endif /* WITHDEBUG */
-	display2_menu(mp, byname);
+	display2_redrawbarstimed(1, 1, mp);
+	//display2_menu(mp, byname);
 	encoder_clear();
 
 	for (;;)
@@ -16047,7 +16072,7 @@ modifysettings(
 		uint_fast8_t kbch, kbready;
 
 		processmodem();
-		processmessages(& kbch, & kbready, 1);
+		processmessages(& kbch, & kbready, 1, mp);
 		processtxrequest();	/* Установка сиквенсору запроса на передачу.	*/
 
 #if WITHKEYBOARD
@@ -16093,7 +16118,8 @@ modifysettings(
 #if !DSTYLE_G_X800_Y480
 						//display2_bgreset();		/* возможно уже с новой цветовой схемой */
 #endif
-						display2_menu(mp, byname);
+						display2_redrawbarstimed(1, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+						//display2_menu(mp, byname);
 					}
 				}
 				continue;	// требуется обновление индикатора
@@ -16103,7 +16129,8 @@ modifysettings(
 				/* блокировка валкодера
 					 - не вызывает сохранение состояния диапазона */
 				uif_key_lockencoder();
-				display2_menu(mp, byname);
+				display2_redrawbarstimed(1, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+				//display2_menu(mp, byname);
 				continue;	// требуется обновление индикатора
 
 			case KBD_CODE_BAND_DOWN:
@@ -16141,7 +16168,8 @@ modifysettings(
 #if WITHDEBUG
 				debug_printf_P(PSTR("menu: ")); debug_printf_P(mp->qlabel); debug_printf_P(PSTR("\n")); 
 #endif /* WITHDEBUG */
-				display2_menu(mp, byname);
+				display2_redrawbarstimed(1, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+				//display2_menu(mp, byname);
 				break;
 			}
 		}
@@ -16193,7 +16221,8 @@ modifysettings(
 			/* обновление отображения пункта */
 			board_wakeup();
 			updateboard(1, 0);
-			display2_menu(mp, byname);	// на дисплее без offscreen composition обновляем только индикацию значения
+			display2_redrawbarstimed(0, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+			//display2_menu(mp, byname);	// на дисплее без offscreen composition обновляем только индикацию значения
 
 #if (NVRAM_TYPE != NVRAM_TYPE_CPUEEPROM)
 			savemenuvalue(mp);		/* сохраняем отредактированное значение */
@@ -16201,8 +16230,8 @@ modifysettings(
 		}
 		else
 		{
-			display2_redrawbars(0, 1);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
-			display2_menu(mp, byname);	// на дисплее без offscreen composition обновляем только индикацию значения
+			display2_redrawbarstimed(0, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+			//display2_menu(mp, byname);	// на дисплее без offscreen composition обновляем только индикацию значения
 		}
 #endif /* WITHENCODER */
 	}
@@ -16295,8 +16324,8 @@ static void vfoallignment(void)
 	{	
 		uint_fast8_t kbch, kbready;
 
-		processmessages(& kbch, & kbready, 1);
-		//display2_redrawbars(0, 1);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+		processmessages(& kbch, & kbready, 1, mp);
+		//display2_redrawbarstimed(0, 1, mp);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 
 		if (kbready != 0)
 		{
@@ -16780,7 +16809,7 @@ process_key_menuset_common(uint_fast8_t kbch)
 			dimmmode = calc_next(dimmmode, 0, 1);
 			save_i8(RMT_DIMMMODE_BASE, dimmmode);
 			display2_bgreset();
-			display_redrawfreqmodesbars(0);			/* Обновление дисплея - всё, включая частоту */
+			display_redrawfreqmodesbarsnow(0, NULL);			/* Обновление дисплея - всё, включая частоту */
 			updateboard(1, 0);
 		}
 #endif /* WITHLCDBACKLIGHT */
@@ -17879,7 +17908,7 @@ static void hamradio_main_initialize(void)
 #if WITHUSEAUDIOREC
 	sdcardbgprocess();
 #endif /* WITHUSEAUDIOREC */
-	directctlupdate(0);		/* управление скоростью передачи (и другими параметрами) через потенциометр */
+	directctlupdate(0, NULL);		/* управление скоростью передачи (и другими параметрами) через потенциометр */
 	updateboard(1, 1);	/* полная перенастройка (как после смены режима) - режим приема */
 	updateboard2();			/* настройки валкодера и цветовой схемы дисплея. */
 	display2_bgreset();
@@ -17911,7 +17940,7 @@ static void hamradio_main_initialize(void)
 		for (;;)
 			prog_cmx992_print(target);
 
-		display_redrawfreqmodesbars(0);	// Обновление дисплея - всё, включая частоту
+		display_redrawfreqmodesbarsnow(0);	// Обновление дисплея - всё, включая частоту
 
 		//prog_pll1_init();
 		synth_lo1_setfreq((434085900UL - 10700000UL) / 3. getlo1div(gtx));
@@ -17924,7 +17953,7 @@ static void hamradio_main_initialize(void)
 	encoder_clear();
 
 	/* начальное отображение */
-	display_redrawfreqmodesbars(0);	// Обновление дисплея - всё, включая частоту
+	display_redrawfreqmodesbarsnow(0, NULL);	// Обновление дисплея - всё, включая частоту
 
 }
 
@@ -17936,7 +17965,7 @@ hamradio_main_step(void)
 	//r820t_spool();
 	uint_fast8_t kbch, kbready;
 
-	processmessages(& kbch, & kbready, 0);
+	processmessages(& kbch, & kbready, 0, NULL);
 
 	switch (sthrl)
 	{
@@ -17998,7 +18027,7 @@ hamradio_main_step(void)
 			}
 			#endif /* WITHAUTOTUNER */
 
-			display2_redrawbars(0, 0);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+			display2_redrawbarstimed(0, 0, NULL);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 
 	#if WITHLFM && defined (LO1MODE_DIRECT)
 			if (lfmmode && spool_lfm_enable)
@@ -18013,7 +18042,7 @@ hamradio_main_step(void)
 				display2_bgreset();
 				vfoallignment();
 				display2_bgreset();
-				display_redrawfreqmodesbars(0);			/* Обновление дисплея - всё, включая частоту */
+				display_redrawfreqmodesbarsnow(0);			/* Обновление дисплея - всё, включая частоту */
 				updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
 	#endif // MULTIVFO
 				alignmode = 0;	// в nvram осталась не-0
@@ -18061,7 +18090,7 @@ hamradio_main_step(void)
 				}
 			}
 #else
-				display_redrawfreqmodesbars(0);			/* Обновление дисплея - всё, включая частоту */
+				display_redrawfreqmodesbarsnow(0, NULL);			/* Обновление дисплея - всё, включая частоту */
 			}
 #endif /* WITHTOUCHGUI */
 	#if WITHDEBUG
@@ -18093,10 +18122,10 @@ hamradio_main_step(void)
 					/* обновление индикатора без сохранения состояния диапазона */
 					encoder_clear();				/* при возможном уменьшении шага исключение случайного накопления */
 	#if WITHTOUCHGUI
-					display_redrawfreqs(1);
-					display_redrawmodes(1);
+					display_redrawfreqstimed(1);
+					display_redrawmodestimed(1);
 	#else
-					display_redrawfreqmodesbars(0);			/* Обновление дисплея - всё, включая частоту */
+					display_redrawfreqmodesbarsnow(0, NULL);			/* Обновление дисплея - всё, включая частоту */
 	#endif /* WITHTOUCHGUI */
 				} // end keyboard processing
 			}
@@ -18104,7 +18133,7 @@ hamradio_main_step(void)
 			if (processmodem())
 			{
 				/* обновление индикатора без сохранения состояния диапазона */
-				display_redrawfreqmodesbars(0);			/* Обновление дисплея - всё, включая частоту */
+				display_redrawfreqmodesbarsnow(0, NULL);			/* Обновление дисплея - всё, включая частоту */
 			} // end keyboard processing
 
 			//auto int marker;
@@ -18199,7 +18228,7 @@ uint_fast8_t send_key_code(uint_fast8_t code)
 	gui_editfreqmode = 1;
 	processkeyboard(code);
 #if LCDMODE_MAIN_PAGES == 1
-	display_redrawfreqs(1);
+	display_redrawfreqstimed(1);
 #endif /*  LCDMODE_MAIN_PAGES == 1 */
 	return editfreqmode;
 }
@@ -18421,8 +18450,8 @@ const char * gui_edit_menu_item(uint_fast8_t index, int_least16_t rotate)
 			}
 		}
 		updateboard(1, 0);
-		display_redrawfreqs(1);
-		display_redrawmodes(1);
+		display_redrawfreqstimed(1);
+		display_redrawmodestimed(1);
 #if (NVRAM_TYPE != NVRAM_TYPE_CPUEEPROM)
 		savemenuvalue(mp);		/* сохраняем отредактированное значение */
 #endif
@@ -18446,8 +18475,8 @@ void change_submode(uint_fast8_t newsubmode)
 	putmodecol(gmoderows [bi], defcol, bi);	/* внести новое значение в битовую маску */
 	gsubmodechange(getsubmode(bi), bi);
 	updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
-	display_redrawfreqs(1);
-	display_redrawmodes(1);
+	display_redrawfreqstimed(1);
+	display_redrawmodestimed(1);
 }
 
 #endif /* WITHTOUCHGUI */
@@ -18773,7 +18802,7 @@ ddd:
 	for (;;)
 	{
 		uint_fast8_t kbch, kbready;
-		processmessages(& kbch, & kbready, 0);
+		processmessages(& kbch, & kbready, 0, NULL);
 
 #if WITHDEBUG
 		char c;
