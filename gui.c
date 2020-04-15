@@ -910,14 +910,12 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 			lbl_id = find_label(WINDOW_FREQ, "lbl_freq_val");
 			labels[lbl_id].x = win->x1 + strwidth(win->name) + strwidth(" ") + 20;
 			labels[lbl_id].y = win->y1 + 10;
-			strcpy(labels[lbl_id].text, "000000 k");
+			strcpy(labels[lbl_id].text, "     0 k");
 			labels[lbl_id].color = COLORPIP_YELLOW;
 
 			editfreq.val = 0;
 			editfreq.num = 0;
 			editfreq.key = BUTTON_CODE_DONE;
-
-			gui_set_lockmode(1);
 
 			return;
 		}
@@ -942,6 +940,7 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 					set_window(WINDOW_FREQ, NON_VISIBLE);
 					footer_buttons_state(CANCELLED, "");
 					gui_set_lockmode(0);
+					disable_keyboard_redirect();
 				} else
 					labels[lbl_id].color = COLORPIP_RED;
 				break;
@@ -956,7 +955,7 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 				}
 			}
 			editfreq.key = BUTTON_CODE_DONE;
-			local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%06d k"), editfreq.val);
+			local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%6d k"), editfreq.val);
 			strcpy(labels[lbl_id].text, buf);
 		}
 	}
