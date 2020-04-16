@@ -541,6 +541,7 @@ void nmea_parsechar(uint_fast8_t c)
 				board_adc_store_data(FWD, strtoul(nmeaparser_get_buff(NMF_FWD), NULL, 10) * FS / EXTFS);
 				board_adc_store_data(REF, strtoul(nmeaparser_get_buff(NMF_REF), NULL, 10) * FS / EXTFS);
 				board_adc_store_data(PASENSEIX, strtoul(nmeaparser_get_buff(NMF_C_SENS), NULL, 10) * FS / EXTFS);
+				board_adc_store_data(XTHERMOIX, strtoul(nmeaparser_get_buff(NMF_T_SENS), NULL, 10) * FS / EXTFS);
 			}
 		}
 		break;

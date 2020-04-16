@@ -356,11 +356,8 @@
 		#endif /* defined(WITHDEBUG) */
 		#define WITHNMEA		1	/* используется NMEA parser */
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
-		#define FULLSET8	1
-		//#define SHORTSET8	1
-		#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
-		#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
-		#define WITHTHERMOLEVEL	1	/* отображение температуры */
+		//#define FULLSET8	1
+		#define SHORTSET8	1
 
 		#define WITHENCODER2	1		/* есть второй валкодер */
 		#define BOARD_ENCODER2_DIVIDE 2		/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
@@ -491,6 +488,9 @@
 	{ 
 	#if WITHAUTOTUNER_UA1CEI
 
+		#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
+		#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
+		#define WITHTHERMOLEVEL	1	/* отображение температуры */
 		#define WITHREFSENSOR	1		/* измерение по выделенному каналу АЦП опорного напряжения */
 
 		#if WITHREFSENSOR
@@ -500,8 +500,8 @@
 			TEMPIX = 16,
 		#endif /* WITHTEMPSENSOR */
 		#if WITHVOLTLEVEL
-			VOLTSOURCE = BOARD_ADCMRRIN(0),		// PB0 Средняя точка делителя напряжения, для АКБ
-			VOLTMRRIX = BOARD_ADCMRRIN(1),	// кеш - индекc не должен повторяться в конфигурации
+			VOLTSOURCE = BOARD_ADCMRRIN(0),		// NMEA ch
+			VOLTMRRIX = VOLTSOURCE,	// кеш - индекc не должен повторяться в конфигурации
 		#endif /* WITHVOLTLEVEL */
 
 		#if WITHPOTIFGAIN
@@ -519,22 +519,22 @@
 		#endif /* WITHPOTPOWER */
 
 		#if WITHTHERMOLEVEL
-			XTHERMOIX = 9,		// PB1 Exernal thermo sensor ST LM235Z
-			XTHERMOMRRIX = BOARD_ADCMRRIN(2),	// кеш - индекc не должен повторяться в конфигурации
+			XTHERMOIX = BOARD_ADCMRRIN(1),		// NMEA ch
+			XTHERMOMRRIX = XTHERMOIX,			// кеш - индекc не должен повторяться в конфигурации
 		#endif /* WITHTHERMOLEVEL */
 
 		#if WITHCURRLEVEL
 			#define WITHCURRLEVEL_ACS712_20A 1	// PA current sense - ACS712ELCTR-20B-T chip
-			PASENSEIX = BOARD_ADCMRRIN(3),		// PA2 PA current sense - ACS712-05 chip
-			PASENSEMRRIX = BOARD_ADCMRRIN(4),	// кеш - индекc не должен повторяться в конфигурации
+			PASENSEIX = BOARD_ADCMRRIN(2),		// NMEA ch
+			PASENSEMRRIX = PASENSEIX,			// кеш - индекc не должен повторяться в конфигурации
 		#endif /* WITHCURRLEVEL */
 
 		#if WITHSWRMTR
-			FWD = BOARD_ADCMRRIN(4), REF = BOARD_ADCMRRIN(5),	// PC5	SWR-meter
+			FWD = BOARD_ADCMRRIN(3), REF = BOARD_ADCMRRIN(4),	// PC5	SWR-meter
 			PWRI = FWD,
-			REFMRRIX = BOARD_ADCMRRIN(6),
-			FWDMRRIX = BOARD_ADCMRRIN(7),
-			PWRMRRIX = FWDMRRIX,
+			REFMRRIX = REF,	// NMEA ch
+			FWDMRRIX = FWD,	// NMEA ch
+			PWRMRRIX = FWD,
 		#endif /* WITHSWRMTR */
 
 		#define VOLTLEVEL_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика напряжения
