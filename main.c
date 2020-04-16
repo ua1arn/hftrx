@@ -16467,8 +16467,6 @@ process_key_menuset0(uint_fast8_t kbch)
 }
 #endif /* WITHKEYBOARD */
 
-#if WITHDIRECTFREQENER
-
 
 static int_fast32_t
 getpower10(uint_fast8_t pos)
@@ -16487,17 +16485,8 @@ freqvalid(
 	uint_fast8_t tx
 	)
 {
-#if LO1FDIV_ADJ
-	const int_fast32_t f = freq << lo1powmap [tx]; /* коэфф. деления в тракте первого гетеродина */
-#else
-	const int_fast32_t f = freq << LO1_POWER2; /* коэфф. деления в тракте первого гетеродина */
-#endif
-	if (f < freq)
-		return 0;	/* произошло переполнение при умножении */
-	return (f >= TUNE_BOTTOM && f < TUNE_TOP);	/* частота внутри допустимого диапазона */
+	return (freq >= TUNE_BOTTOM && freq < TUNE_TOP);	/* частота внутри допустимого диапазона */
 }
-
-#endif /* WITHDIRECTFREQENER */
 
 #if WITHPWBUTTON
 static void
