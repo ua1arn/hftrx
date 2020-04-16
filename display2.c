@@ -1179,7 +1179,16 @@ static void display_thermo4(
 #if WITHTHERMOLEVEL
 	int_fast16_t tempv = hamradio_get_temperature_value() / 10;	// Градусы в десятых долях в целые градусы
 
-	colmain_setcolors(colorsfg_1state [0], colorsbg_1state [0]);
+	// 50+ - красный
+	// 30+ - желтый
+	// ниже 30 щеленый
+	if (tempv >= 500)
+		colmain_setcolors(COLORMAIN_RED, display_getbgcolor());
+	else if (tempv >= 300)
+		colmain_setcolors(COLORMAIN_YELLOW, display_getbgcolor());
+	else
+		colmain_setcolors(COLORMAIN_GREEN, display_getbgcolor());
+
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	do
 	{
