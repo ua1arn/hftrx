@@ -2765,11 +2765,16 @@ filter_t fi_2p0_455 =
 	uint8_t cat1txdtr;	/* передача управляется по DTR, а не по RTS */
 	uint8_t cat1rtsenable;	/* разрешение включения передачи по линии RTS CAT */
 	uint8_t cat1dtrenable;	/* разрешение манипуляции по DTR CAT */
+
 	#if WITHUSBHW && WITHUSBCDC && WITHUSBHWCDC_N > 1
 		uint8_t cat2txdtr;	/* передача управляется по DTR, а не по RTS */
 		uint8_t cat2rtsenable;	/* разрешение включения передачи по линии RTS CAT */
 		uint8_t cat2dtrenable;	/* разрешение манипуляции по DTR CAT */
-	#endif /*  */
+
+	#else /* WITHUSBHW && WITHUSBCDC && WITHUSBHWCDC_N > 1 */
+		enum { cat2txdtr = 0, cat2dtrenable = 0, cat2dtrenable = 0 };
+
+	#endif /* WITHUSBHW && WITHUSBCDC && WITHUSBHWCDC_N > 1 */
 #endif /* WITHCAT */
 
 #if WITHAUTOTUNER
@@ -14169,6 +14174,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, 
 	},
 	#endif /* WITHTX */
+#if WITHUSBHW && WITHUSBCDC && WITHUSBHWCDC_N > 1
 	{
 		QLABEL("CAT2 DTR"), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
@@ -14198,6 +14204,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, 
 	},
 	#endif /* WITHTX */
+#endif /* WITHUSBHW && WITHUSBCDC && WITHUSBHWCDC_N > 1 */
 #endif /* WITHCAT */
 
 #if WITHSUBTONES && WITHTX
