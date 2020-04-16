@@ -5981,7 +5981,7 @@ static void display2_waterfall(
 		uint_fast16_t x, y;
 		const uint_fast16_t xm = deltafreq2x(f0, 0, bw, ALLDX);
 		int_fast16_t hscroll = wfclear ? ALLDX : wfhorshift;
-		(void) pv;
+		(void) pctx;
 
 	#if 1
 		// следы спектра ("водопад")

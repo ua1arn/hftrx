@@ -1232,7 +1232,7 @@ static void s1d13781_put_charbig_begin(void)
 }
 
 // Вызов этой функции только внутри s1d13781_put_char_begin() и s1d13781_put_char_end();
-static void s1d13781_put_char_small(char cc)
+static uint_fast16_t s1d13781_put_char_small(uint_fast16_t x, uint_fast16_t y, char cc)
 {
 	// дождаться выполнения предидущей команды BitBlt engine.
 	if (bitblt_waitbusy() != 0)
@@ -1244,7 +1244,7 @@ static void s1d13781_put_char_small(char cc)
 }
 
 // Вызов этой функции только внутри s1d13781_put_char_begin() и s1d13781_put_char_end();
-static void s1d13781_put_char_small2(char cc)
+static uint_fast16_t s1d13781_put_char_small2(uint_fast16_t x, uint_fast16_t y, char cc)
 {
 	// дождаться выполнения предидущей команды BitBlt engine.
 	if (bitblt_waitbusy() != 0)
@@ -1258,7 +1258,7 @@ static void s1d13781_put_char_small2(char cc)
 
 // Вызов этой функции только внутри display_wrdata_begin() и 	display_wrdata_end();
 
-static void s1d13781_put_char_big(char cc)
+static uint_fast16_t s1d13781_put_char_big(uint_fast16_t x, uint_fast16_t y, char cc)
 {
 	// дождаться выполнения предидущей команды BitBlt engine.
 	if (bitblt_waitbusy() != 0)
@@ -1812,44 +1812,44 @@ void s1d13781_showbuffer(
 
 
 /*****************/
-void
-display_put_char_big(uint_fast8_t c, uint_fast8_t lowhalf)
+uint_fast16_t
+display_put_char_big(uint_fast16_t x, uint_fast16_t y, uint_fast8_t c, uint_fast8_t lowhalf)
 {
 	(void) lowhalf;
-	s1d13781_put_char_big(c);
+	return s1d13781_put_char_big(x, y, c);
 }
 
-void
-display_put_char_half(uint_fast8_t c, uint_fast8_t lowhalf)
+uint_fast16_t
+display_put_char_half(uint_fast16_t x, uint_fast16_t y, uint_fast8_t c, uint_fast8_t lowhalf)
 {
 	(void) lowhalf;
-	s1d13781_put_char_half(c);
-}
-
-
-// Вызов этой функции только внутри display_wrdata_begin() и display_wrdata_end();
-// Используется при выводе на графический ндикатор, если ТРЕБУЕТСЯ переключать полосы отображения
-void
-display_put_char_small(uint_fast8_t c, uint_fast8_t lowhalf)
-{
-	(void) lowhalf;
-	s1d13781_put_char_small(c);
+	return s1d13781_put_char_half(x, y, c);
 }
 
 
 // Вызов этой функции только внутри display_wrdata_begin() и display_wrdata_end();
 // Используется при выводе на графический ндикатор, если ТРЕБУЕТСЯ переключать полосы отображения
-void
-display_put_char_small2(uint_fast8_t c, uint_fast8_t lowhalf)
+uint_fast16_t
+display_put_char_small(uint_fast16_t x, uint_fast16_t y, uint_fast8_t c, uint_fast8_t lowhalf)
 {
 	(void) lowhalf;
-	s1d13781_put_char_small(c);
+	return s1d13781_put_char_small(x, y, c);
+}
+
+
+// Вызов этой функции только внутри display_wrdata_begin() и display_wrdata_end();
+// Используется при выводе на графический ндикатор, если ТРЕБУЕТСЯ переключать полосы отображения
+uint_fast16_t
+display_put_char_small2(uint_fast16_t x, uint_fast16_t y, uint_fast8_t c, uint_fast8_t lowhalf)
+{
+	(void) lowhalf;
+	return s1d13781_put_char_small(x, y, c);
 }
 
 static uint_fast8_t stored_xgrid, stored_ygrid;	// используется в display_bar
 
 void
-display_gotoxy(uint_fast8_t x, uint_fast8_t y)
+displayX_gotoxy(uint_fast8_t x, uint_fast8_t y)
 {
 	stored_xgrid = x;	// используется в display_bar
 	stored_ygrid = y;	// используется в display_bar

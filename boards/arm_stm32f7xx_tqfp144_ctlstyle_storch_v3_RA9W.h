@@ -450,6 +450,7 @@
 	#endif /* WITHTEMPSENSOR */
 	#if WITHVOLTLEVEL 
 		VOLTSOURCE = 8,		// PB0 Средняя точка делителя напряжения, для АКБ
+		VOLTMRRIX = BOARD_ADCMRRIN(0),	// кеш - индекc не должен повторяться в конфигурации
 	#endif /* WITHVOLTLEVEL */
 
 	#if WITHPOTGAIN
@@ -468,11 +469,15 @@
 
 	#if WITHCURRLEVEL
 		PASENSEIX = 2,		// PA2 PA current sense - ACS712-05 chip
+		PASENSEMRRIX = BOARD_ADCMRRIN(1),	// кеш - индекc не должен повторяться в конфигурации
 	#endif /* WITHCURRLEVEL */
 
 	#if WITHSWRMTR
 		PWRI = 14,			// PC4
 		FWD = 14, REF = 15,	// PC5	SWR-meter
+		PWRMRRIX = BOARD_ADCMRRIN(2),	// кеш - индекc не должен повторяться в конфигурации
+		REFMRRIX = BOARD_ADCMRRIN(3),	// кеш - индекc не должен повторяться в конфигурации
+		FWDMRRIX = BOARD_ADCMRRIN(4),	// кеш - индекc не должен повторяться в конфигурации
 	#endif /* WITHSWRMTR */
 		KI0 = 10, KI1 = 11, KI2 = 12, KI3 = 0, KI4 = 1	// клавиатура
 	};
