@@ -9227,7 +9227,7 @@ uint_fast8_t hamradio_get_volt_value(void)
 #if WITHTHERMOLEVEL
 
 // Градусы в десятых долях
-// Read from thermo sensor ST LM235Z (1 kOhm to +3.3)
+// Read from thermo sensor ST LM235Z (1 kOhm to +12)
 int_fast16_t hamradio_get_temperature_value(void)
 {
 	const int_fast16_t thermo_offset = THERMOSENSOR_OFFSET; 	// -480 При 0 °С на выходе 480 мВ. Шкала 10 mV / °С
@@ -9239,7 +9239,7 @@ int_fast16_t hamradio_get_temperature_value(void)
 	if (ref != 0)
 	{
 		const unsigned Vref_mV = (uint_fast32_t) board_getadc_fsval(vrefi) * WITHREFSENSORVAL / ref;
-		const int_fast32_t mv = (int32_t) board_getadc_unfiltered_u32(XTHERMOMRRIX, 0, (uint_fast64_t) Vref_mV * (THERMOSENSOR_UPPER + THERMOSENSOR_LOWER) / THERMOSENSOR_LOWER);
+		const int_fast32_t mv = (int32_t) board_getadc_filtered_u32(XTHERMOMRRIX, 0, (uint_fast64_t) Vref_mV * (THERMOSENSOR_UPPER + THERMOSENSOR_LOWER) / THERMOSENSOR_LOWER);
 		// Градусы в десятых долях
 		return (mv + thermo_offset) / THERMOSENSOR_DENOM;	// Приводим к десятым долям градуса
 	}
@@ -9252,7 +9252,7 @@ int_fast16_t hamradio_get_temperature_value(void)
 #else /* WITHREFSENSOR */
 	const unsigned Vref_mV = ADCVREF_CPU * 100;
 	//debug_printf_P(PSTR("hamradio_get_temperature_value: XTHERMOMRRIX=%u\n"), board_getadc_filtered_u16(XTHERMOIX, 0, Vref_mV));
-	const int_fast32_t mv = (int32_t) board_getadc_unfiltered_u32(XTHERMOMRRIX, 0, (uint_fast64_t) Vref_mV * (THERMOSENSOR_UPPER + THERMOSENSOR_LOWER) / THERMOSENSOR_LOWER);
+	const int_fast32_t mv = (int32_t) board_getadc_filtered_u32(XTHERMOMRRIX, 0, (uint_fast64_t) Vref_mV * (THERMOSENSOR_UPPER + THERMOSENSOR_LOWER) / THERMOSENSOR_LOWER);
 	// Градусы в десятых долях
 	return (mv + thermo_offset) / THERMOSENSOR_DENOM;	// Приводим к десятым долям градуса
 #endif /* WITHREFSENSOR */

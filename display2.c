@@ -1182,9 +1182,9 @@ static void display_thermo4(
 	// 50+ - красный
 	// 30+ - желтый
 	// ниже 30 щеленый
-	if (tempv >= 500)
+	if (tempv >= 50)
 		colmain_setcolors(COLORMAIN_RED, display_getbgcolor());
-	else if (tempv >= 300)
+	else if (tempv >= 30)
 		colmain_setcolors(COLORMAIN_YELLOW, display_getbgcolor());
 	else
 		colmain_setcolors(COLORMAIN_GREEN, display_getbgcolor());
@@ -1193,8 +1193,6 @@ static void display_thermo4(
 	do
 	{
 		display_value_small(x + CHARS2GRID(0), y + lowhalf, tempv, 3 | WSIGNFLAG, 0, 255, 0, lowhalf);
-		//display_gotoxy(x + CHARS2GRID(4), y + lowhalf);	
-		//display_string_P(PSTR("С"), lowhalf);
 	} while (lowhalf --);
 #endif /* WITHTHERMOLEVEL */
 }
