@@ -16158,7 +16158,6 @@ modifysettings(
 	debug_printf_P(PSTR("menu: ")); debug_printf_P(mp->qlabel); debug_printf_P(PSTR("\n")); 
 #endif /* WITHDEBUG */
 	display2_redrawbarstimed(1, 1, mp);
-	//display2_menu(mp, byname);
 	encoder_clear();
 
 	for (;;)
@@ -16206,15 +16205,8 @@ modifysettings(
 					#if defined (RTC1_TYPE)
 						getstamprtc();
 					#endif /* defined (RTC1_TYPE) */
-#if !DSTYLE_G_X800_Y480
-						//display2_bgreset();		/* возможно уже с новой цветовой схемой */
-#endif
 						modifysettings(first, last, ITEM_VALUE, mp->qnvram, exitkey, byname);
-#if !DSTYLE_G_X800_Y480
-						//display2_bgreset();		/* возможно уже с новой цветовой схемой */
-#endif
 						display2_redrawbarstimed(1, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
-						//display2_menu(mp, byname);
 					}
 				}
 				continue;	// требуется обновление индикатора
@@ -16225,7 +16217,6 @@ modifysettings(
 					 - не вызывает сохранение состояния диапазона */
 				uif_key_lockencoder();
 				display2_redrawbarstimed(1, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
-				//display2_menu(mp, byname);
 				continue;	// требуется обновление индикатора
 
 			case KBD_CODE_BAND_DOWN:
@@ -16264,7 +16255,6 @@ modifysettings(
 				debug_printf_P(PSTR("menu: ")); debug_printf_P(mp->qlabel); debug_printf_P(PSTR("\n")); 
 #endif /* WITHDEBUG */
 				display2_redrawbarstimed(1, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
-				//display2_menu(mp, byname);
 				break;
 			}
 		}
@@ -16316,8 +16306,7 @@ modifysettings(
 			/* обновление отображения пункта */
 			board_wakeup();
 			updateboard(1, 0);
-			display2_redrawbarstimed(0, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
-			//display2_menu(mp, byname);	// на дисплее без offscreen composition обновляем только индикацию значения
+			display2_redrawbarstimed(1, 1, mp);		/* немедленное обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 
 #if (NVRAM_TYPE != NVRAM_TYPE_CPUEEPROM)
 			savemenuvalue(mp);		/* сохраняем отредактированное значение */
@@ -16326,7 +16315,6 @@ modifysettings(
 		else
 		{
 			display2_redrawbarstimed(0, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
-			//display2_menu(mp, byname);	// на дисплее без offscreen composition обновляем только индикацию значения
 		}
 #endif /* WITHENCODER */
 	}
