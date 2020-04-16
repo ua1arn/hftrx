@@ -883,10 +883,35 @@ static void hardware_sai1_sai2_clock_selection(void)
 			0;
 		*/
 	#elif CPUSTYLE_STM32H7XX
-		#warning TODO: implement for CPUSTYLE_STM32H7XX
+		// clock sources:
+		//	000: pll1_q_ck clock selected as SAI1 and DFSDM1 Aclk kernel clock (default after reset)
+		//	001: pll2_p_ck clock selected as SAI1 and DFSDM1 Aclk kernel clock
+		//	010: pll3_p_ck clock selected as SAI1 and DFSDM1 Aclk kernel clock
+		//	011: I2S_CKIN clock selected as SAI1 and DFSDM1 Aclk kernel clock
+		//	100: per_ck clock selected as SAI1 and DFSDM1 Aclk kernel clock
+		//	others: reserved, the kernel clock is disabled
+		//	Note: I2S_CKIN is an external clock taken from a pin.
+		RCC->D2CCIP1R = (RCC->D2CCIP1R & ~ (RCC_D2CCIP1R_SAI1SEL_Msk | RCC_D2CCIP1R_SAI23SEL_Msk)) |
+			(3uL << RCC_D2CCIP1R_SAI1SEL_Pos) |		// SAI1 clock source selection
+			(3uL << RCC_D2CCIP1R_SAI23SEL_Pos) |	// SAI2, SAI3 clock source selection
+			0;
+		(void) RCC->D2CCIP1R;
 
 	#elif CPUSTYLE_STM32MP1
 		#warning TODO: implement for CPUSTYLE_STM32MP1
+		// clock sources:
+		//	000: pll1_q_ck clock selected as SAI1 and DFSDM1 Aclk kernel clock (default after reset)
+		//	001: pll2_p_ck clock selected as SAI1 and DFSDM1 Aclk kernel clock
+		//	010: pll3_p_ck clock selected as SAI1 and DFSDM1 Aclk kernel clock
+		//	011: I2S_CKIN clock selected as SAI1 and DFSDM1 Aclk kernel clock
+		//	100: per_ck clock selected as SAI1 and DFSDM1 Aclk kernel clock
+		//	others: reserved, the kernel clock is disabled
+		//	Note: I2S_CKIN is an external clock taken from a pin.
+		RCC->D2CCIP1R = (RCC->D2CCIP1R & ~ (RCC_D2CCIP1R_SAI1SEL_Msk | RCC_D2CCIP1R_SAI23SEL_Msk)) |
+			(3uL << RCC_D2CCIP1R_SAI1SEL_Pos) |		// SAI1 clock source selection
+			(3uL << RCC_D2CCIP1R_SAI23SEL_Pos) |	// SAI2, SAI3 clock source selection
+			0;
+		(void) RCC->D2CCIP1R;
 
 	#else /* defined (STM32F446xx) */
 		// clock sources:
@@ -945,10 +970,32 @@ static void hardware_sai1_sai2_clock_selection(void)
 			0;
 
 	#elif CPUSTYLE_STM32H7XX
-
+		// clock sources:
+		//	000: pll1_q_ck clock selected as SAI1 and DFSDM1 Aclk kernel clock (default after reset)
+		//	001: pll2_p_ck clock selected as SAI1 and DFSDM1 Aclk kernel clock
+		//	010: pll3_p_ck clock selected as SAI1 and DFSDM1 Aclk kernel clock
+		//	011: I2S_CKIN clock selected as SAI1 and DFSDM1 Aclk kernel clock
+		//	100: per_ck clock selected as SAI1 and DFSDM1 Aclk kernel clock
+		//	others: reserved, the kernel clock is disabled
+		//	Note: I2S_CKIN is an external clock taken from a pin.
 		RCC->D2CCIP1R = (RCC->D2CCIP1R & ~ (RCC_D2CCIP1R_SAI1SEL | RCC_D2CCIP1R_SAI23SEL)) |
-			(0x01 << RCC_D2CCIP1R_SAI1SEL_Pos) |	// PLL2 Q
-			(0x01 << RCC_D2CCIP1R_SAI23SEL_Pos) |	// I2S APB2 clock source selection
+			(0x01uL << RCC_D2CCIP1R_SAI1SEL_Pos) |	// PLL2 Q
+			(0x01uL << RCC_D2CCIP1R_SAI23SEL_Pos) |
+			0;
+
+	#elif CPUSTYLE_STM32MP1
+		#warning TODO: implement for CPUSTYLE_STM32MP1
+		// clock sources:
+		//	000: pll1_q_ck clock selected as SAI1 and DFSDM1 Aclk kernel clock (default after reset)
+		//	001: pll2_p_ck clock selected as SAI1 and DFSDM1 Aclk kernel clock
+		//	010: pll3_p_ck clock selected as SAI1 and DFSDM1 Aclk kernel clock
+		//	011: I2S_CKIN clock selected as SAI1 and DFSDM1 Aclk kernel clock
+		//	100: per_ck clock selected as SAI1 and DFSDM1 Aclk kernel clock
+		//	others: reserved, the kernel clock is disabled
+		//	Note: I2S_CKIN is an external clock taken from a pin.
+		RCC->D2CCIP1R = (RCC->D2CCIP1R & ~ (RCC_D2CCIP1R_SAI1SEL | RCC_D2CCIP1R_SAI23SEL)) |
+			(0x01uL << RCC_D2CCIP1R_SAI1SEL_Pos) |	// PLL2 Q
+			(0x01uL << RCC_D2CCIP1R_SAI23SEL_Pos) |
 			0;
 
 	#else /* defined (STM32F446xx) */

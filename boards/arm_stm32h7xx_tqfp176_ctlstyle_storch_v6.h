@@ -479,7 +479,7 @@
 	// ST LM235Z
 	#define THERMOSENSOR_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика температуры
 	#define THERMOSENSOR_LOWER		10	// 1 kOhm - нижний резистор
-	#define THERMOSENSOR_OFFSET (- 2731)	// температура при 0 вольт с датчика. MCP9700 parameter // При 0 °С на выходе 500 мВ. Шкала 10 mV / °С
+	#define THERMOSENSOR_OFFSET 	(- 480)		// 2.98 volt = 25 Celsius
 
 	//#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания и/или подсветки дисплея
 
@@ -501,7 +501,7 @@
 		#endif /* WITHTEMPSENSOR */
 		#if WITHVOLTLEVEL
 			VOLTSOURCE = BOARD_ADCMRRIN(0),		// NMEA ch
-			VOLTMRRIX = VOLTSOURCE,	// кеш - индекc не должен повторяться в конфигурации
+			VOLTMRRIX = BOARD_ADCMRRIN(1),	// кеш - индекc не должен повторяться в конфигурации
 		#endif /* WITHVOLTLEVEL */
 
 		#if WITHPOTIFGAIN
@@ -519,22 +519,23 @@
 		#endif /* WITHPOTPOWER */
 
 		#if WITHTHERMOLEVEL
-			XTHERMOIX = BOARD_ADCMRRIN(1),		// NMEA ch
-			XTHERMOMRRIX = XTHERMOIX,			// кеш - индекc не должен повторяться в конфигурации
+			XTHERMOIX = BOARD_ADCMRRIN(2),		// NMEA ch
+			XTHERMOMRRIX = BOARD_ADCMRRIN(3),			// кеш - индекc не должен повторяться в конфигурации
 		#endif /* WITHTHERMOLEVEL */
 
 		#if WITHCURRLEVEL
 			#define WITHCURRLEVEL_ACS712_20A 1	// PA current sense - ACS712ELCTR-20B-T chip
-			PASENSEIX = BOARD_ADCMRRIN(2),		// NMEA ch
-			PASENSEMRRIX = PASENSEIX,			// кеш - индекc не должен повторяться в конфигурации
+			PASENSEIX = BOARD_ADCMRRIN(4),		// NMEA ch
+			PASENSEMRRIX = BOARD_ADCMRRIN(5),			// кеш - индекc не должен повторяться в конфигурации
 		#endif /* WITHCURRLEVEL */
 
 		#if WITHSWRMTR
-			FWD = BOARD_ADCMRRIN(3), REF = BOARD_ADCMRRIN(4),	// PC5	SWR-meter
+			FWD = BOARD_ADCMRRIN(6), REF = BOARD_ADCMRRIN(7),	// PC5	SWR-meter
 			PWRI = FWD,
-			REFMRRIX = REF,	// NMEA ch
-			FWDMRRIX = FWD,	// NMEA ch
-			PWRMRRIX = FWD,
+
+			REFMRRIX = BOARD_ADCMRRIN(8),	// кеш
+			FWDMRRIX = BOARD_ADCMRRIN(9),	// кеш
+			PWRMRRIX = BOARD_ADCMRRIN(10),	// кеш
 		#endif /* WITHSWRMTR */
 
 		#define VOLTLEVEL_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика напряжения

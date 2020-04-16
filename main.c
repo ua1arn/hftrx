@@ -9190,13 +9190,8 @@ uint_fast8_t hamradio_get_volt_value(void)
 // Read from thermo sensor ST LM235Z (1 kOhm to +3.3)
 int_fast16_t hamradio_get_temperature_value(void)
 {
-#if defined(THERMOSENSOR_OFFSET)
-	const int_fast16_t thermo_offset = THERMOSENSOR_OFFSET; 	// При 0 °С на выходе 500 мВ. Шкала 10 mV / °С
-#else /* defined(THERMOSENSOR_OFFSET) */
-	#warning WITHTHERMOLEVEL should be defined with full list of sensor parameters - THERMOSENSOR_OFFSET, THERMOSENSOR_UPPER and THERMOSENSOR_LOWER
-	// ST LM235Z
-	const int_fast16_t thermo_offset = - 2731;	// -273.15 approximation of temperature at 0 volt. Slope = 10 mV / celsius
-#endif /* defined(THERMOSENSOR_OFFSET) */
+	const int_fast16_t thermo_offset = THERMOSENSOR_OFFSET; 	// -480 При 0 °С на выходе 480 мВ. Шкала 10 mV / °С
+
 #if WITHREFSENSOR
 	// Измерение опрного напряжения
 	const uint_fast8_t vrefi = VREFIX;
@@ -9204,7 +9199,7 @@ int_fast16_t hamradio_get_temperature_value(void)
 	if (ref != 0)
 	{
 		const unsigned Vref_mV = (uint_fast32_t) board_getadc_fsval(vrefi) * WITHREFSENSORVAL / ref;
-		const int_fast32_t mv = (int32_t) board_getadc_unfiltered_u32(XTHERMOMRRIX, 0, (uint_fast64_t) Vref_mV * (THERMOSENSOR_UPPER + THERMOSENSOR_LOWER) / THERMOSENSOR_LOWER) + thermo_offset;
+		const int_fast32_t mv = (int32_t) board_getadc_unfiltered_u32(XTHERMOMRRIX, 0, (uint_fast64_t) Vref_mV * (THERMOSENSOR_UPPER + THERMOSENSOR_LOWER) / THERMOSENSOR_LOWER);
 		return mv + thermo_offset;	// Приводим к десятым долям градуса
 	}
 	else

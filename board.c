@@ -8268,9 +8268,13 @@ adcfilters_initialize(void)
 	#if WITHCURRLEVEL
 		hardware_set_adc_filterLPF(PASENSEMRRIX, 3 * BOARD_ADCFILTER_LPF_DENOM / 100);	// Включить фильтр с параметром 0.03
 	#endif /* WITHCURRLEVEL */
-	#if WITHTHERMOLEVEL
-		hardware_set_adc_filterLPF(XTHERMOMRRIX, 3 * BOARD_ADCFILTER_LPF_DENOM / 100);	// Включить фильтр с параметром 0.03
-	#endif /* WITHTHERMOLEVEL */
+#if WITHTHERMOLEVEL
+	hardware_set_adc_filterLPF(XTHERMOMRRIX, 3 * BOARD_ADCFILTER_LPF_DENOM / 100);	// Включить фильтр с параметром 0.03
+#endif /* WITHTHERMOLEVEL */
+#if WITHTHERMOLEVEL
+	hardware_set_adc_filterLPF(XTHERMOMRRIX, 3 * BOARD_ADCFILTER_LPF_DENOM / 100);	// Включить фильтр с параметром 0.03
+	hardware_set_adc_filterLPF(XTHERMOMRRIX, 3 * BOARD_ADCFILTER_LPF_DENOM / 100);	// Включить фильтр с параметром 0.03
+#endif /* WITHTHERMOLEVEL */
 
 }
 

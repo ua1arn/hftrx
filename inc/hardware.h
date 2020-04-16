@@ -835,7 +835,7 @@ void bootloader_deffereddetach(void * arg);
 #define BOARD_ADCX1BASE 32	// PA board ADC base index
 #define BOARD_ADCMRRBASE 40	// mirror - значения АЦП устанавливабтся выходами программных компонентов, без считывания с аппаратуры.
 
-#define HARDWARE_ADCINPUTS	48	/* до 8-ти входов АЦП на каждый тип источников */
+#define HARDWARE_ADCINPUTS	56	/* до 16-ти входов АЦП на каждый тип источников */
 
 #define BOARD_ADCXIN(ch) (BOARD_ADCX0BASE + (ch))
 #define BOARD_ADCX1IN(ch) (BOARD_ADCX0BASE + (ch))
