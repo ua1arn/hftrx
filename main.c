@@ -18340,7 +18340,7 @@ uint_fast8_t get_high_bp(int_least16_t rotate)
 	switch (p->type)
 	{
 	case BWSET_WIDE:
-		if (rotate != 0 && (p->right100 + rotate) * 10 > p->left10_width10 && (p->right100 + rotate) < 45)
+		if (rotate != 0 && (p->right100 + rotate) * 10 > p->left10_width10 && (p->right100 + rotate) < 50)
 		{
 			p->right100 += rotate;
 			updateboard (1, 0);
