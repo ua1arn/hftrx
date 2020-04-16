@@ -374,7 +374,8 @@
 	#define WITHTHERMOLEVEL	1	/* отображение температуры */
 	#define THERMOSENSOR_UPPER		0	// 0 Ohm - верхний резистор делителя датчика температуры
 	#define THERMOSENSOR_LOWER		10	// 1.0 kOhm - нижний резистор
-	#define THERMOSENSOR_OFFSET (- 500)	// температура при 0 вольт с датчика. MCP9700 parameter // При 0 °С на выходе 500 мВ. Шкала 10 mV / °С
+	#define THERMOSENSOR_OFFSET 	(- 500)	// температура при 0 вольт с датчика. MCP9700 parameter // При 0 °С на выходе 500 мВ. Шкала 10 mV / °С
+	#define THERMOSENSOR_DENOM	 	10			// миливольты к десятым долям градуса 2.98 volt = 25 Celsius
 
 	//#define WITHSWLMODE	1	/* поддержка запоминания множества частот в swl-mode */
 	#define WITHVIBROPLEX	1	/* возможность эмуляции передачи виброплексом */
