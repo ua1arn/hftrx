@@ -742,6 +742,7 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 				set_window(WINDOW_BP, NON_VISIBLE);
 				encoder2.busy = 0;
 				footer_buttons_state(CANCELLED, "");
+				disable_keyboard_redirect();
 			}
 		}
 	}
@@ -1572,12 +1573,14 @@ void encoder2_menu (enc2_menu_t * enc2_menu);
 				set_window(gui.window_to_draw, VISIBLE);
 				windows[gui.window_to_draw].first_call = 1;
 				footer_buttons_state(DISABLED, button_handlers[gui.selected_id].name);
+				enable_keyboard_redirect();
 			}
 			else
 			{
 				set_window(gui.window_to_draw, NON_VISIBLE);
 				encoder2.busy = 0;
 				footer_buttons_state(CANCELLED, "");
+				disable_keyboard_redirect();
 			}
 		}
 	}
