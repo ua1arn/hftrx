@@ -299,33 +299,31 @@ typedef struct {
 	uint_fast8_t updated;
 } enc2_menu_t;
 
-void change_submode(uint_fast8_t newsubmode);
-uint_fast8_t get_low_bp(int_least16_t rotate);
-uint_fast8_t get_high_bp(int_least16_t rotate);
-uint_fast8_t get_bp_type(void);
+void hamradio_change_submode(uint_fast8_t newsubmode);
+uint_fast8_t hamradio_get_low_bp(int_least16_t rotate);
+uint_fast8_t hamradio_get_high_bp(int_least16_t rotate);
+uint_fast8_t hamradio_get_bp_type(void);
+void hamradio_set_agc_off(void);
+void hamradio_set_agc_slow(void);
+void hamradio_set_agc_fast(void);
+uint_fast8_t hamradio_get_multilinemenu_block_groups(menu_names_t * vals);
+uint_fast8_t hamradio_get_multilinemenu_block_params(menu_names_t * vals, uint_fast8_t index);
+void hamradio_get_multilinemenu_block_vals(menu_names_t * vals, uint_fast8_t index, uint_fast8_t cnt);
+void hamradio_set_menu_cond(uint_fast8_t m);
+const char * hamradio_gui_edit_menu_item(uint_fast8_t index, int_least16_t rotate);
+void hamradio_disable_keyboard_redirect(void);
+void hamradio_enable_keyboard_redirect(void);
+uint_fast8_t hamradio_set_freq (uint_fast32_t freq);
+void hamradio_set_lockmode (uint_fast8_t lock);
+
+void gui_encoder2_menu(enc2_menu_t * enc2_menu);
+void gui_update(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx);
 void gui_initialize(void);
-void process_gui(void);
-uint_fast8_t check_encoder2(int_least16_t rotate);
-void set_encoder2_state(uint_fast8_t code);
-void set_agc_off(void);
-void set_agc_slow(void);
-void set_agc_fast(void);
-uint_fast8_t get_multilinemenu_block_groups(menu_names_t * vals);
-uint_fast8_t get_multilinemenu_block_params(menu_names_t * vals, uint_fast8_t index);
-void get_multilinemenu_block_vals(menu_names_t * vals, uint_fast8_t index, uint_fast8_t cnt);
-void set_menu_cond(uint_fast8_t m);
-const char * gui_edit_menu_item(uint_fast8_t index, int_least16_t rotate);
-void disable_keyboard_redirect(void);
-void enable_keyboard_redirect(void);
+uint_fast8_t gui_check_encoder2(int_least16_t rotate);
+void gui_set_encoder2_state(uint_fast8_t code);
 void gui_put_keyb_code(uint_fast8_t kbch);
 void gui_uif_editmenu(const char * name, uint_fast16_t menupos, uint_fast8_t exitkey);
-uint_fast8_t gui_set_freq (uint_fast32_t freq);
-void gui_set_lockmode (uint_fast8_t lock);
-
-void button9_handler(void);
-void encoder2_menu(enc2_menu_t * enc2_menu);
-void display_pip_update(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx);
-
+void gui_open_sys_menu(void);
 
 uint_fast8_t display_getpagesmax(void);	// количество разных вариантов отображения (menuset)
 uint_fast8_t display_getpagesleep(void);	// номер варианта отображения для "сна"
