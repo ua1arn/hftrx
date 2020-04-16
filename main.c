@@ -9191,7 +9191,7 @@ uint_fast8_t hamradio_get_tunemodevalue(void)
 	return getactualtune();
 }
 
-#if WITHVOLTLEVEL && WITHCPUADCHW
+#if WITHVOLTLEVEL
 
 // Вольты в десятых долях
 uint_fast8_t hamradio_get_volt_value(void)
@@ -9222,7 +9222,7 @@ uint_fast8_t hamradio_get_volt_value(void)
 #endif /* WITHREFSENSOR */
 }
 
-#endif /* WITHVOLTLEVEL && WITHCPUADCHW */
+#endif /* WITHVOLTLEVEL */
 
 #if WITHTHERMOLEVEL
 
@@ -9260,7 +9260,7 @@ int_fast16_t hamradio_get_temperature_value(void)
 
 #endif /* WITHTHERMOLEVEL */
 
-#if (WITHCURRLEVEL || WITHCURRLEVEL2) && WITHCPUADCHW
+#if (WITHCURRLEVEL || WITHCURRLEVEL2)
 
 // Ток в десятках милиампер (может быть отрицательным)
 // PA current sense - ACS712ELCTR-05B-T chip
@@ -9397,7 +9397,7 @@ int_fast16_t hamradio_get_pacurrent2_value(void)
 #endif /* WITHCURRLEVEL2 */
 }
 
-#endif /* WITHCURRLEVEL && WITHCPUADCHW */
+#endif /* WITHCURRLEVEL */
 
 uint_fast8_t hamradio_get_tx(void)
 {
@@ -10255,7 +10255,6 @@ directctlupdate(
 	if (display_refreshenabled_wpm())
 	{
 		// +++ получение состояния органов управления */
-#if WITHCPUADCHW
 	#if WITHPOTPOWER
 		changed |= FLAGNE_U8_CAT(& gnormalpower, board_getpot_filtered_u8(POTPOWER, WITHPOWERTRIMMIN, WITHPOWERTRIMMAX), CAT_PC_INDEX);	// регулировка мощности
 	#endif /* WITHPOTPOWER */
@@ -10279,7 +10278,7 @@ directctlupdate(
 	#if WITHPOTNOTCH && WITHNOTCHFREQ
 		changed |= flagne_u16(& gnotchfreq.value, board_getpot_filtered_u16(POTNOTCH, WITHNOTCHFREQMIN, WITHNOTCHFREQMAX) / 50 * 50);	// регулировка частоты NOTCH фильтра
 	#endif /* WITHPOTNOTCH && WITHNOTCHFREQ */
-#endif /* WITHCPUADCHW */
+
 	#if CTLSTYLE_RA4YBO_V3
 		changed |= flagne_u8(& guser2, kbd_get_ishold(KIF_USER2));
 		changed |= flagne_u8(& guser3, kbd_get_ishold(KIF_USER3));

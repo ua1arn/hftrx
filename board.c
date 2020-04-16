@@ -7475,7 +7475,7 @@ uint_fast8_t board_getavox(void)	/* получить значение от де�
 #endif /* WITHTX && WITHVOX */
 }
 
-#if WITHTX && WITHSWRMTR && WITHCPUADCHW
+#if WITHTX && WITHSWRMTR
 
 // возврат считанных с АЦП значений forward и reflected
 // коррекция неодинаковости детекторов
@@ -7501,7 +7501,7 @@ uint_fast8_t board_getpwrmeter(
 	return f;
 }
 
-#elif WITHTX && WITHPWRMTR && WITHCPUADCHW
+#elif WITHTX && WITHPWRMTR
 
 uint_fast8_t board_getpwrmeter(
 	uint_fast8_t * toptrace		// peak hold

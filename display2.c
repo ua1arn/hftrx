@@ -1137,7 +1137,7 @@ static void display_voltlevelV5(
 	dctx_t * pctx
 	)
 {
-#if WITHVOLTLEVEL && WITHCPUADCHW
+#if WITHVOLTLEVEL
 	uint_fast8_t volt = hamradio_get_volt_value();	// Напряжение в сотнях милливольт т.е. 151 = 15.1 вольта
 
 	colmain_setcolors(colorsfg_1state [0], colorsbg_1state [0]);
@@ -1147,7 +1147,7 @@ static void display_voltlevelV5(
 		display_value_small(x + CHARS2GRID(0), y + lowhalf, volt, 3, 1, 255, 0, lowhalf);
 	} while (lowhalf --);
 	display_at_P(x + CHARS2GRID(4), y, PSTR("V"));
-#endif /* WITHVOLTLEVEL && WITHCPUADCHW */
+#endif /* WITHVOLTLEVEL */
 }
 
 // dd.d - 4 places
@@ -1157,7 +1157,7 @@ static void display_voltlevel4(
 	dctx_t * pctx
 	)
 {
-#if WITHVOLTLEVEL && WITHCPUADCHW
+#if WITHVOLTLEVEL
 	const uint_fast8_t volt = hamradio_get_volt_value();	// Напряжение в сотнях милливольт т.е. 151 = 15.1 вольта
 
 	colmain_setcolors(colorsfg_1state [0], colorsbg_1state [0]);
@@ -1166,7 +1166,7 @@ static void display_voltlevel4(
 	{
 		display_value_small(x, y + lowhalf, volt, 3, 1, 255, 0, lowhalf);
 	} while (lowhalf --);
-#endif /* WITHVOLTLEVEL && WITHCPUADCHW */
+#endif /* WITHVOLTLEVEL */
 }
 
 // отображение целых градусов
@@ -1207,7 +1207,7 @@ static void display_currlevelA6(
 {
 #if (WITHCURRLEVEL_ACS712_30A || WITHCURRLEVEL_ACS712_20A)
 
-	#if WITHCURRLEVEL && WITHCPUADCHW
+	#if WITHCURRLEVEL
 		int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
 
 		colmain_setcolors(colorsfg_1state [0], colorsbg_1state [0]);
@@ -1218,11 +1218,11 @@ static void display_currlevelA6(
 			//display_gotoxy(x + CHARS2GRID(4), y + lowhalf);
 			//display_string_P(PSTR("A"), lowhalf);
 		} while (lowhalf --);
-	#endif /* WITHCURRLEVEL && WITHCPUADCHW */
+	#endif /* WITHCURRLEVEL */
 
 #else /* WITHCURRLEVEL_ACS712_30A */
 	// dd.d - 5 places (without "A")
-	#if WITHCURRLEVEL && WITHCPUADCHW
+	#if WITHCURRLEVEL
 		int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
 
 		colmain_setcolors(colorsfg_1state [0], colorsbg_1state [0]);
@@ -1232,7 +1232,7 @@ static void display_currlevelA6(
 			display_value_small(x + CHARS2GRID(0), y + lowhalf, drain, 3 | WMINUSFLAG, 2, 255, 0, lowhalf);
 		} while (lowhalf --);
 		display_at_P(x + CHARS2GRID(5), y, PSTR("A"));
-	#endif /* WITHCURRLEVEL && WITHCPUADCHW */
+	#endif /* WITHCURRLEVEL */
 
 #endif /* WITHCURRLEVEL_ACS712_30A */
 }
@@ -1246,7 +1246,7 @@ static void display_currlevel5(
 {
 #if (WITHCURRLEVEL_ACS712_30A || WITHCURRLEVEL_ACS712_20A)
 
-	#if WITHCURRLEVEL && WITHCPUADCHW
+	#if WITHCURRLEVEL
 		int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
 
 		colmain_setcolors(colorsfg_1state [0], colorsbg_1state [0]);
@@ -1257,11 +1257,11 @@ static void display_currlevel5(
 			//display_gotoxy(x + CHARS2GRID(4), y + lowhalf);
 			//display_string_P(PSTR("A"), lowhalf);
 		} while (lowhalf --);
-	#endif /* WITHCURRLEVEL && WITHCPUADCHW */
+	#endif /* WITHCURRLEVEL */
 
 #else /* WITHCURRLEVEL_ACS712_30A */
 
-	#if WITHCURRLEVEL2 && WITHCPUADCHW
+	#if WITHCURRLEVEL2
 
 		int_fast16_t drain = hamradio_get_pacurrent2_value();	// Ток в сотнях милиампер (до 25.5 ампера), может быть отрицательным
 
@@ -1274,7 +1274,7 @@ static void display_currlevel5(
 			//display_string_P(PSTR("A"), lowhalf);
 		} while (lowhalf --);
 
-	#elif WITHCURRLEVEL && WITHCPUADCHW
+	#elif WITHCURRLEVEL
 
 		int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
 
@@ -1286,7 +1286,7 @@ static void display_currlevel5(
 			//display_gotoxy(x + CHARS2GRID(4), y + lowhalf);
 			//display_string_P(PSTR("A"), lowhalf);
 		} while (lowhalf --);
-	#endif /* WITHCURRLEVEL && WITHCPUADCHW */
+	#endif /* WITHCURRLEVEL */
 
 #endif /* WITHCURRLEVEL_ACS712_30A */
 }
@@ -1297,7 +1297,7 @@ static void display_currlevel5alt(
 	dctx_t * pctx
 	)
 {
-#if WITHCURRLEVEL && WITHCPUADCHW && (WITHCURRLEVEL_ACS712_30A || WITHCURRLEVEL_ACS712_20A)
+#if WITHCURRLEVEL && (WITHCURRLEVEL_ACS712_30A || WITHCURRLEVEL_ACS712_20A)
 	int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
 
 	colmain_setcolors(colorsfg_1state [0], colorsbg_1state [0]);
@@ -1308,7 +1308,7 @@ static void display_currlevel5alt(
 		//display_gotoxy(x + CHARS2GRID(4), y + lowhalf);	
 		//display_string_P(PSTR("A"), lowhalf);
 	} while (lowhalf --);
-#endif /* WITHCURRLEVEL && WITHCPUADCHW */
+#endif /* WITHCURRLEVEL && (WITHCURRLEVEL_ACS712_30A || WITHCURRLEVEL_ACS712_20A) */
 }
 
 // Отображение уровня сигнала в dBm
