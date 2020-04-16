@@ -3336,7 +3336,12 @@ enum
 	static uint_fast16_t tunerind;// = (LMAX - LMIN) / 2 + LMIN;
 	static uint_fast8_t tunertype;
 	static uint_fast8_t tunerwork;	/* начинаем работу с выключенным тюнером */
+#if WITHAUTOTUNER_UA1CEI
+	static uint_fast8_t tunerdelay = 80;
+#else /* WITHAUTOTUNER_UA1CEI */
 	static uint_fast8_t tunerdelay = 35;
+#endif /* WITHAUTOTUNER_UA1CEI */
+
 #endif /* WITHAUTOTUNER */
 
 #if WITHTX
@@ -3925,7 +3930,7 @@ static uint_fast8_t tuneabort(void)
 
 	display2_redrawbarstimed(0, 0, NULL);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 
-	processmessages(& kbch, & kbready, 0);
+	processmessages(& kbch, & kbready, 0, NULL);
 	if (kbready != 0)
 	{
 		switch (kbch)
@@ -9200,7 +9205,7 @@ int_fast16_t hamradio_get_temperature_value(void)
 	{
 		const unsigned Vref_mV = (uint_fast32_t) board_getadc_fsval(vrefi) * WITHREFSENSORVAL / ref;
 		const int_fast32_t mv = (int32_t) board_getadc_unfiltered_u32(XTHERMOMRRIX, 0, (uint_fast64_t) Vref_mV * (THERMOSENSOR_UPPER + THERMOSENSOR_LOWER) / THERMOSENSOR_LOWER) + thermo_offset;
-		return mv + offset_LM235;	// Приводим к десятым долям градуса
+		return mv + thermo_offset;	// Приводим к десятым долям градуса
 	}
 	else
 	{
@@ -12793,7 +12798,7 @@ static const FLASHMEM struct menudef menutable [] =
 	{
 		QLABEL("TUNER WT"), 7, 0, 0,	ISTEP5,	// задержка перед измерением после переключения реле
 		ITEM_VALUE, 
-		10, 80, 
+		10, 150,
 		offsetof(struct nvmap, tunerdelay),
 		NULL,
 		& tunerdelay,
@@ -17195,19 +17200,32 @@ lowinitialize(void)
 #endif /* WITHDEBUG */
 
 #if WITHCAT
+
 	HARDWARE_CAT_INITIALIZE();
+
 #endif /* WITHCAT */
 
-#if WITHNMEA
+
+#if WITHNMEA && WITHAUTOTUNER_UA1CEI
+
+	HARDWARE_NMEA_INITIALIZE();
+	HARDWARE_NMEA_SET_SPEED(256000L);
+	HARDWARE_NMEA_ENABLERX(1);
+
+#elif WITHNMEA
+
 	HARDWARE_NMEA_INITIALIZE();
 	HARDWARE_NMEA_SET_SPEED(115200L);
 	HARDWARE_NMEA_ENABLERX(1);
+
 #endif /* WITHNMEA */
 
 #if WITHMODEM
+
 	HARDWARE_MODEM_INITIALIZE();
 	HARDWARE_MODEM_SET_SPEED(19200L);
 	HARDWARE_MODEM_ENABLERX(1);
+
 #endif /* WITHMODEM */
 
 	board_init_io();		/* инициализация чипселектов и SPI, I2C, загрузка FPGA */

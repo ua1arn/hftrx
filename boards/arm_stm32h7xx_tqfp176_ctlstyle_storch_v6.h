@@ -360,7 +360,7 @@
 		//#define SHORTSET8	1
 		#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
 		#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
-		//#define WITHTHERMOLEVEL	1	/* отображение температуры */
+		#define WITHTHERMOLEVEL	1	/* отображение температуры */
 
 		#define WITHENCODER2	1		/* есть второй валкодер */
 		#define BOARD_ENCODER2_DIVIDE 2		/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
@@ -520,20 +520,20 @@
 
 		#if WITHTHERMOLEVEL
 			XTHERMOIX = 9,		// PB1 Exernal thermo sensor ST LM235Z
-			XTHERMOMRRIX = BOARD_ADCMRRIN(x),	// кеш - индекc не должен повторяться в конфигурации
+			XTHERMOMRRIX = BOARD_ADCMRRIN(2),	// кеш - индекc не должен повторяться в конфигурации
 		#endif /* WITHTHERMOLEVEL */
 
 		#if WITHCURRLEVEL
 			#define WITHCURRLEVEL_ACS712_20A 1	// PA current sense - ACS712ELCTR-20B-T chip
-			PASENSEIX = BOARD_ADCMRRIN(2),		// PA2 PA current sense - ACS712-05 chip
-			PASENSEMRRIX = BOARD_ADCMRRIN(3),	// кеш - индекc не должен повторяться в конфигурации
+			PASENSEIX = BOARD_ADCMRRIN(3),		// PA2 PA current sense - ACS712-05 chip
+			PASENSEMRRIX = BOARD_ADCMRRIN(4),	// кеш - индекc не должен повторяться в конфигурации
 		#endif /* WITHCURRLEVEL */
 
 		#if WITHSWRMTR
 			FWD = BOARD_ADCMRRIN(4), REF = BOARD_ADCMRRIN(5),	// PC5	SWR-meter
 			PWRI = FWD,
-			REFMRRIX = BOARD_ADCMRRIN(6),
-			FWDMRRIX = BOARD_ADCMRRIN(7),
+			REFMRRIX = BOARD_ADCMRRIN(5),
+			FWDMRRIX = BOARD_ADCMRRIN(6),
 			PWRMRRIX = FWDMRRIX,
 		#endif /* WITHSWRMTR */
 
