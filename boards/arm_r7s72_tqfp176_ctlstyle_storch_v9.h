@@ -494,24 +494,33 @@
 		POTAFGAIN = AFGAIN_IXI,
 	#endif /* WITHPOTAFGAIN */
 
-		XTHERMOIX = BOARD_ADCX1IN(6),		// MCP3208 CH6 Exernal thermo sensor ST LM235Z
-
 	#if WITHAUTOTUNER_AVBELNN
+
+		XTHERMOIX = BOARD_ADCX1IN(6),		// MCP3208 CH6 Exernal thermo sensor ST LM235Z
 
 		#define WITHVOLTLEVEL	1	/* отображение напряжения питания */
 		#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
 
-		//#define WITHCURRLEVEL_ACS712_30A 1	// PA current sense - ACS712ELCTR-30B-T chip
+		#define WITHCURRLEVEL_ACS712_30A 1	// PA current sense - ACS712ELCTR-30B-T chip
 		//#define WITHCURRLEVEL_ACS712_20A 1	// PA current sense - ACS712ELCTR-20B-T chip
-		//PASENSEIX = WPM_POTIX,		// PA1 PA current sense - ACS712-05 chip
-		PASENSEIX = 2,		// PA1 PA current sense - ACS712-05 chip
+		PASENSEIX = WPM_POTIX,		// PA1 PA current sense - ACS712-05 chip
+		//PASENSEIX = 2,		// PA1 PA current sense - ACS712-05 chip
+
 		FWD = 0, REF = 1,	// PB0	SWR-meter
 		PWRI = FWD,			// PB1
+
+
 		VOLTSOURCE = BOARD_ADCX1IN(7),		// MCP3208 CH7 Средняя точка делителя напряжения, для АКБ
 
 		#define VOLTLEVEL_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика напряжения
 		#define VOLTLEVEL_LOWER		10	// 1.0 kOhm - нижний резистор
 
+		XTHERMOMRRIX = BOARD_ADCMRRIN(0),	// кеш - индекc не должен повторяться в конфигурации
+		PASENSEMRRIX = BOARD_ADCMRRIN(1),	// кеш - индекc не должен повторяться в конфигурации
+		REFMRRIX = BOARD_ADCMRRIN(2),
+		FWDMRRIX = BOARD_ADCMRRIN(3),
+		PWRMRRIX = FWDMRRIX,
+		VOLTMRRIX = BOARD_ADCMRRIN(4),	// кеш - индекc не должен повторяться в конфигурации
 
 	#elif 1
 		// UA1CEI PA board: MCP3208 at targetext2 - P2_0 external SPI device (PA BOARD ADC)
