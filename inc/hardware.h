@@ -711,8 +711,11 @@ void arm_hardware_ltdc_main_set(uintptr_t addr);	// Set MAIN frame buffer addres
 void arm_hardware_ltdc_pip_set(uintptr_t addr);	// Set PIP frame buffer address.
 void arm_hardware_ltdc_pip_off(void);	// Turn PIP off (main layer only).
 
-uint_fast8_t usbd_cdc_getrts(void);
-uint_fast8_t usbd_cdc_getdtr(void);
+uint_fast8_t usbd_cdc1_getrts(void);
+uint_fast8_t usbd_cdc1_getdtr(void);
+
+uint_fast8_t usbd_cdc2_getrts(void);
+uint_fast8_t usbd_cdc2_getdtr(void);
 
 void AT91F_PIOA_IRQHandler(void);
 

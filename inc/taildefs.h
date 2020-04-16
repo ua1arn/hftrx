@@ -300,6 +300,10 @@ typedef enum
 		#define HARDWARE_CAT_GET_DTR() (0)
 	#endif /* FROMCAT_BIT_DTR != 0 */
 
+	/* заглушка для второго канала CAT */
+	#define HARDWARE_CAT2_GET_RTS() (0)
+	#define HARDWARE_CAT2_GET_DTR() (0)
+
 	// вызывается из обработчика прерываний UART1
 	// с принятым символом
 	#define HARDWARE_UART1_ONRXCHAR(c) do { \
@@ -396,9 +400,13 @@ typedef enum
 			usbd_cdc_tx((ctx), (c)); \
 		} while (0)
 	// вызывается из обработчика перерываний (или из user-mode программы) для получения состояния RTS
-	#define HARDWARE_CAT_GET_RTS() (usbd_cdc_getrts())
+	#define HARDWARE_CAT_GET_RTS() (usbd_cdc1_getrts())
 	// вызывается из обработчика перерываний (или из user-mode программы) для получения состояния DTR
-	#define HARDWARE_CAT_GET_DTR() (usbd_cdc_getdtr())
+	#define HARDWARE_CAT_GET_DTR() (usbd_cdc1_getdtr())
+	// вызывается из обработчика перерываний (или из user-mode программы) для получения состояния RTS
+	#define HARDWARE_CAT2_GET_RTS() (usbd_cdc2_getrts())
+	// вызывается из обработчика перерываний (или из user-mode программы) для получения состояния DTR
+	#define HARDWARE_CAT2_GET_DTR() (usbd_cdc2_getdtr())
 
 	// вызывается из обработчика прерываний CDC
 	// с принятым символом

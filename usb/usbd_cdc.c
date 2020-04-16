@@ -143,10 +143,25 @@ static RAMDTCM uint_fast32_t dwDTERate [INTERFACE_count];
 /* Биты: RTS = 0x02, DTR = 0x01 */
 
 // Обычно используется для переключения на передачу (PTT)
-uint_fast8_t usbd_cdc_getrts(void)
+uint_fast8_t usbd_cdc1_getrts(void)
 {
 	return
 		((usb_cdc_control_state [INTERFACE_CDC_CONTROL_3a] & CDC_ACTIVATE_CARRIER) != 0) ||
+		0;
+}
+
+// Обычно используется для телеграфной манипуляции (KEYDOWN)
+uint_fast8_t usbd_cdc1_getdtr(void)
+{
+	return
+		((usb_cdc_control_state [INTERFACE_CDC_CONTROL_3a] & CDC_DTE_PRESENT) != 0) ||
+		0;
+}
+
+// Обычно используется для переключения на передачу (PTT)
+uint_fast8_t usbd_cdc2_getrts(void)
+{
+	return
 #if WITHUSBHWCDC_N > 1
 		((usb_cdc_control_state [INTERFACE_CDC_CONTROL_3b] & CDC_ACTIVATE_CARRIER) != 0) ||
 #endif
@@ -154,10 +169,9 @@ uint_fast8_t usbd_cdc_getrts(void)
 }
 
 // Обычно используется для телеграфной манипуляции (KEYDOWN)
-uint_fast8_t usbd_cdc_getdtr(void)
+uint_fast8_t usbd_cdc2_getdtr(void)
 {
 	return
-		((usb_cdc_control_state [INTERFACE_CDC_CONTROL_3a] & CDC_DTE_PRESENT) != 0) ||
 #if WITHUSBHWCDC_N > 1
 		((usb_cdc_control_state [INTERFACE_CDC_CONTROL_3b] & CDC_DTE_PRESENT) != 0) ||
 #endif
