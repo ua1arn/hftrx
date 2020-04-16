@@ -648,47 +648,6 @@ void display_at_P(uint_fast8_t x, uint_fast8_t y, const FLASHMEM char * s); // �
 
 #define BGCOLOR (display_getbgcolor())
 
-uint_fast8_t hamradio_get_tx(void);
-int_fast32_t hamradio_get_pbtvalue(void);	// Для отображения на дисплее
-uint_fast8_t hamradio_get_atuvalue(void);
-uint_fast8_t hamradio_get_genham_value(void);
-uint_fast8_t hamradio_get_bypvalue(void);
-uint_fast8_t hamradio_get_lockvalue(void);	// текущее состояние LOCK
-uint_fast8_t hamradio_get_usefastvalue(void);	// текущее состояние FAST
-uint_fast8_t hamradio_get_voxvalue(void);	// текущее состояние VOX
-uint_fast8_t hamradio_get_tunemodevalue(void);	// текущее состояние TUNE
-uint_fast32_t hamradio_get_freq_pathi(uint_fast8_t pathi);		// Частота VFO A/B для отображения на дисплее
-uint_fast32_t hamradio_get_freq_a(void);		// Частота VFO A для отображения на дисплее
-uint_fast32_t hamradio_get_freq_b(void);		// Частота VFO B для отображения на дисплее
-uint_fast32_t hamradio_get_freq_rx(void);		// Частота VFO A для маркировки файлов
-uint_fast32_t hamradio_get_modem_baudrate100(void);	// скорость передачи BPSK * 100
-uint_fast8_t hamradio_get_notchvalue(int_fast32_t * p);		// Notch filter ON/OFF
-uint_fast8_t hamradio_get_nrvalue(int_fast32_t * p);		// NR ON/OFF
-const FLASHMEM char * hamradio_get_mode_a_value_P(void);	// SSB/CW/AM/FM/..
-const FLASHMEM char * hamradio_get_mode_b_value_P(void);	// SSB/CW/AM/FM/..
-const FLASHMEM char * hamradio_get_rxbw_value_P(void);	// RX bandwidth
-const FLASHMEM char * hamradio_get_pre_value_P(void);	// RX preamplifier
-const FLASHMEM char * hamradio_get_att_value_P(void);	// RX attenuator
-const FLASHMEM char * hamradio_get_agc3_value_P(void);	// RX agc time - 3-х буквенные абревиатуры
-const FLASHMEM char * hamradio_get_agc4_value_P(void);	// RX agc time - 4-х буквенные абревиатуры
-const FLASHMEM char * hamradio_get_ant5_value_P(void);	// antenna
-const FLASHMEM char * hamradio_get_mainsubrxmode3_value_P(void);	// текущее состояние DUAL WATCH
-const char * hamradio_get_vfomode3_value(uint_fast8_t * flag);	// VFO mode
-const char * hamradio_get_vfomode5_value(uint_fast8_t * flag);	// VFO mode
-uint_fast8_t hamradio_get_volt_value(void);	// Вольты в десятых долях
-int_fast16_t hamradio_get_temperature_value(void);	// Градусы в десятых долях
-int_fast16_t hamradio_get_pacurrent_value(void);	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
-int_fast16_t hamradio_get_pacurrent2_value(void);	// Ток в сотнях милиампер, (до 25.5 ампера) может быть отрицательным
-const FLASHMEM char * hamradio_get_hplp_value_P(void);	// HP/LP
-uint_fast8_t hamradio_get_rec_value(void);	// AUDIO recording state
-uint_fast8_t hamradio_get_amfm_highcut10_value(uint_fast8_t * flag);	// текущее значение верхней частоты среза НЧ фильтра АМ/ЧМ (в десятках герц)
-uint_fast8_t hamradio_get_samdelta10(int_fast32_t * p, uint_fast8_t pathi);		/* Получить значение отклонения частоты с точностью 0.1 герца */
-uint_fast8_t hamradio_get_usbh_active(void);
-uint_fast8_t hamradio_get_datamode(void);	// источник звука для передачи - USB AUDIO
-int_fast16_t hamradio_getleft_bp(uint_fast8_t pathi);	/* получить левый (низкочастотный) скат полосы пропускания для отображения "шторки" на спектранализаторе */
-int_fast16_t hamradio_getright_bp(uint_fast8_t pathi);	/* получить правый (высокочастотный) скат полосы пропускания для отображения "шторки" на спектранализаторе */
-uint_fast8_t hamradio_get_bkin_value(void);
-
 void display_2states_P(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
