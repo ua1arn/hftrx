@@ -9240,21 +9240,20 @@ int_fast16_t hamradio_get_temperature_value(void)
 	{
 		const unsigned Vref_mV = (uint_fast32_t) board_getadc_fsval(vrefi) * WITHREFSENSORVAL / ref;
 		const int_fast32_t mv = (int32_t) board_getadc_filtered_u32(XTHERMOMRRIX, 0, (uint_fast64_t) Vref_mV * (THERMOSENSOR_UPPER + THERMOSENSOR_LOWER) / THERMOSENSOR_LOWER);
-		// Градусы в десятых долях
 		return (mv + thermo_offset) / THERMOSENSOR_DENOM;	// Приводим к десятым долям градуса
 	}
 	else
 	{
 		debug_printf_P(PSTR("hamradio_get_temperature_value: ref=%u\n"), ref);
-		// Градусы в десятых долях
 		return 999;
 	}
+
 #else /* WITHREFSENSOR */
+
 	const unsigned Vref_mV = ADCVREF_CPU * 100;
-	//debug_printf_P(PSTR("hamradio_get_temperature_value: XTHERMOMRRIX=%u\n"), board_getadc_filtered_u16(XTHERMOIX, 0, Vref_mV));
 	const int_fast32_t mv = (int32_t) board_getadc_filtered_u32(XTHERMOMRRIX, 0, (uint_fast64_t) Vref_mV * (THERMOSENSOR_UPPER + THERMOSENSOR_LOWER) / THERMOSENSOR_LOWER);
-	// Градусы в десятых долях
 	return (mv + thermo_offset) / THERMOSENSOR_DENOM;	// Приводим к десятым долям градуса
+
 #endif /* WITHREFSENSOR */
 }
 
@@ -9315,7 +9314,7 @@ int_fast16_t hamradio_get_pacurrent_value(void)
 		};
 	#endif /*  */
 
-	const uint_fast8_t adci = PASENSEIX2;
+	const uint_fast8_t adci = PASENSEMRRIX2;
 
 #endif
 
@@ -10172,14 +10171,17 @@ display2_redrawbarstimed(
 		/* медленно меняющиеся значения с редким опорсом */
 		/* +++ переписываем значения из возможно внешних АЦП в кеш значений */
 	#if WITHTHERMOLEVEL
+		// ST LM235Z test values:
+		// 2.98 V @ 25C
+		// 2.98 / 5.7 = 0.5223V at ADC input
+		// 0.5223V * 4095 / 3.3 = 648.75
+		// test value = 649, expected temperature approx 25C
+
 		board_adc_store_data(XTHERMOMRRIX, board_getadc_unfiltered_truevalue(XTHERMOIX));
 	#endif /* WITHTHERMOLEVEL */
 	#if WITHVOLTLEVEL
 		board_adc_store_data(VOLTMRRIX, board_getadc_unfiltered_truevalue(VOLTSOURCE));
 	#endif /* WITHVOLTLEVEL */
-	#if WITHCURRLEVEL
-		board_adc_store_data(PASENSEMRRIX, board_getadc_unfiltered_truevalue(PASENSEIX));
-	#endif /* WITHCURRLEVEL */
 		/* --- переписываем значения из возможно внешних АЦП в кеш значений */
 
 		display2_volts(amenuset(), extra);
