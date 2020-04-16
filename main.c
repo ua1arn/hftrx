@@ -5948,7 +5948,7 @@ uif_encoder2_press(void)
 		text = enc2menu_value(enc2pos);
 		strcpy(enc2_menu.val, text);
 		enc2_menu.updated = 1;
-		encoder2_menu(&enc2_menu);
+		gui_encoder2_menu(&enc2_menu);
 	}
 #endif /* ! WITHTOUCHGUI */
 }
@@ -5975,7 +5975,7 @@ uif_encoder2_hold(void)
 #else
 	enc2_menu.state = enc2state;
 	if (enc2state == ENC2STATE_INITIALIZE)
-		encoder2_menu(&enc2_menu);
+		gui_encoder2_menu(&enc2_menu);
 #endif /* ! WITHTOUCHGUI */
 }
 
@@ -16633,10 +16633,10 @@ process_key_menuset_common(uint_fast8_t kbch)
 #if WITHENCODER2
 	#if WITHTOUCHGUI
 		case KBD_ENC2_PRESS:
-			encoder2_busy ? set_encoder2_state (KBD_ENC2_PRESS): uif_encoder2_press();
+			encoder2_busy ? gui_set_encoder2_state (KBD_ENC2_PRESS): uif_encoder2_press();
 			return 0;
 		case KBD_ENC2_HOLD:
-			encoder2_busy ? set_encoder2_state (KBD_ENC2_HOLD) : uif_encoder2_hold();
+			encoder2_busy ? gui_set_encoder2_state (KBD_ENC2_HOLD) : uif_encoder2_hold();
 			return 0;
 	#else
 		case KBD_ENC2_PRESS:
@@ -17060,7 +17060,7 @@ processkeyboard(uint_fast8_t kbch)
 		display2_bgreset();		/* возможно уже с новой цветовой схемой */
 		return 1;	// требуется обновление индикатора
 #else
-		button9_handler();
+		gui_open_sys_menu();
 		return 0;
 #endif //WITHMENU && ! WITHTOUCHGUI
 	case KBD_CODE_DISPMODE:
@@ -18155,7 +18155,7 @@ hamradio_main_step(void)
 						text = enc2menu_value(enc2pos);
 						strcpy(enc2_menu.val, text);
 						enc2_menu.updated = 1;
-						encoder2_menu(&enc2_menu);
+						gui_encoder2_menu(&enc2_menu);
 						display2_mode_subset(0);
 				}
 			}
@@ -18257,7 +18257,7 @@ hamradio_main_step(void)
 				}
 			}
 			#if WITHTOUCHGUI
-				encoder2_busy = check_encoder2(nrotate2);
+				encoder2_busy = gui_check_encoder2(nrotate2);
 			#endif /* WITHTOUCHGUI */
 		}
 		break;
@@ -18268,12 +18268,12 @@ hamradio_main_step(void)
 	return STTE_OK;
 }
 
-void gui_set_lockmode(uint_fast8_t lock)
+void hamradio_set_lockmode(uint_fast8_t lock)
 {
 	lockmode = lock != 0;
 }
 
-uint_fast8_t gui_set_freq(uint_fast32_t freq)
+uint_fast8_t hamradio_set_freq(uint_fast32_t freq)
 {
 	if (freqvalid(freq, gtx))
 	{
@@ -18302,24 +18302,24 @@ uint_fast8_t get_swrcalibr(void)
 #endif /* WITHBARS && WITHTX */
 
 #if WITHTOUCHGUI
-void disable_keyboard_redirect (void)
+void hamradio_disable_keyboard_redirect (void)
 {
 	keyboard_redirect = 0;
 }
 
-void enable_keyboard_redirect (void)
+void hamradio_enable_keyboard_redirect (void)
 {
 	keyboard_redirect = 1;
 }
 
-void set_agc_off(void)
+void hamradio_set_agc_off(void)
 {
 	gagcoff = 1;
 	board_set_agc(BOARD_AGCCODE_OFF);
 	updateboard (1, 0);
 }
 
-void set_agc_fast(void)
+void hamradio_set_agc_fast(void)
 {
 	gagcoff = 0;
 	board_set_agc(BOARD_AGCCODE_ON);
@@ -18334,7 +18334,7 @@ void set_agc_fast(void)
 	updateboard (1, 0);
 }
 
-void set_agc_slow(void)
+void hamradio_set_agc_slow(void)
 {
 	gagcoff = 0;
 	board_set_agc(BOARD_AGCCODE_ON);
@@ -18349,7 +18349,7 @@ void set_agc_slow(void)
 	updateboard (1, 0);
 }
 
-uint_fast8_t get_bp_type(void)
+uint_fast8_t hamradio_get_bp_type(void)
 {
 	const uint_fast8_t tx = hamradio_get_tx();
 	const uint_fast8_t asubmode = getasubmode(0);
@@ -18359,7 +18359,7 @@ uint_fast8_t get_bp_type(void)
 	return bwsetsc [bwseti].prop [pos]->type;
 }
 
-uint_fast8_t get_low_bp(int_least16_t rotate)
+uint_fast8_t hamradio_get_low_bp(int_least16_t rotate)
 {
 	const uint_fast8_t tx = hamradio_get_tx();
 	const uint_fast8_t asubmode = getasubmode(0);
@@ -18392,7 +18392,7 @@ uint_fast8_t get_low_bp(int_least16_t rotate)
 	return low;
 }
 
-uint_fast8_t get_high_bp(int_least16_t rotate)
+uint_fast8_t hamradio_get_high_bp(int_least16_t rotate)
 {
 	const uint_fast8_t tx = hamradio_get_tx();
 	const uint_fast8_t asubmode = getasubmode(0);
@@ -18425,7 +18425,7 @@ uint_fast8_t get_high_bp(int_least16_t rotate)
 	return high;
 }
 
-uint_fast8_t get_multilinemenu_block_groups(menu_names_t * vals)
+uint_fast8_t hamradio_get_multilinemenu_block_groups(menu_names_t * vals)
 {
 	uint_fast16_t el;
 	uint_fast8_t count = 0;
@@ -18445,7 +18445,7 @@ uint_fast8_t get_multilinemenu_block_groups(menu_names_t * vals)
 	return count;
 }
 
-uint_fast8_t get_multilinemenu_block_params(menu_names_t * vals, uint_fast8_t index)
+uint_fast8_t hamradio_get_multilinemenu_block_params(menu_names_t * vals, uint_fast8_t index)
 {
 	uint_fast16_t el;
 	uint_fast8_t count = 0;
@@ -18466,7 +18466,7 @@ uint_fast8_t get_multilinemenu_block_params(menu_names_t * vals, uint_fast8_t in
 	return count;
 }
 
-void get_multilinemenu_block_vals(menu_names_t * vals, uint_fast8_t index, uint_fast8_t cnt)
+void hamradio_get_multilinemenu_block_vals(menu_names_t * vals, uint_fast8_t index, uint_fast8_t cnt)
 {
 	uint_fast16_t el;
 	uint_fast8_t count = 0;
@@ -18488,7 +18488,7 @@ void get_multilinemenu_block_vals(menu_names_t * vals, uint_fast8_t index, uint_
 	}
 }
 
-const char * gui_edit_menu_item(uint_fast8_t index, int_least16_t rotate)
+const char * hamradio_gui_edit_menu_item(uint_fast8_t index, int_least16_t rotate)
 {
 	const FLASHMEM struct menudef * const mp = & menutable [index];
 	if (rotate != 0 && ismenukind(mp, ITEM_VALUE))
@@ -18542,12 +18542,12 @@ const char * gui_edit_menu_item(uint_fast8_t index, int_least16_t rotate)
 	return menuw;
 }
 
-void set_menu_cond (uint_fast8_t m)
+void hamradio_set_menu_cond (uint_fast8_t m)
 {
 	is_menu_opened = m;
 }
 
-void change_submode(uint_fast8_t newsubmode)
+void hamradio_change_submode(uint_fast8_t newsubmode)
 {
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* VFO bank index */
 	const uint_fast8_t defcol = locatesubmode(newsubmode, & gmoderows [bi]);	/* строка/колонка для SSB. Что делать, если не нашли? */
