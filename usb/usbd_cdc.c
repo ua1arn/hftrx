@@ -139,6 +139,7 @@ static USBALIGN_BEGIN uint8_t cdc_epXdatabuffout [USB_OTG_MAX_EP0_SIZE] USBALIGN
 
 static RAMDTCM uint_fast32_t dwDTERate [INTERFACE_count];
 
+/* управление по DTR происходит сразу, RTS только вместе со следующим DTR */
 /* хранимое значение после получения CDC_SET_CONTROL_LINE_STATE */
 /* Биты: RTS = 0x02, DTR = 0x01 */
 

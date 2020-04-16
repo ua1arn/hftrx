@@ -2762,11 +2762,11 @@ filter_t fi_2p0_455 =
 	uint8_t	ggrpcat; // последний посещённый пункт группы
 	uint8_t catenable;	/* удаленное управление разрешено */
 	uint8_t catbaudrate;	/* номер скорости работы по CAT */
-	uint8_t cat1dtrptt;	/* передача управляется по DTR, а не по RTS */
+	uint8_t cat1txdtr;	/* передача управляется по DTR, а не по RTS */
 	uint8_t cat1rtsenable;	/* разрешение включения передачи по линии RTS CAT */
 	uint8_t cat1dtrenable;	/* разрешение манипуляции по DTR CAT */
 	#if WITHUSBHW && WITHUSBCDC && WITHUSBHWCDC_N > 1
-		uint8_t cat2dtrptt;	/* передача управляется по DTR, а не по RTS */
+		uint8_t cat2txdtr;	/* передача управляется по DTR, а не по RTS */
 		uint8_t cat2rtsenable;	/* разрешение включения передачи по линии RTS CAT */
 		uint8_t cat2dtrenable;	/* разрешение манипуляции по DTR CAT */
 	#endif /*  */
@@ -3274,19 +3274,35 @@ enum
 	static uint_fast8_t catbaudrate = 3;	/* 3 is a 9600 */ /* модифицируется через меню. - номер скорости при работе по CAT */
 
 	#if WITHCAT_CDC
-		static uint_fast8_t cat1dtrenable;	/* разрешение манипуляции по DTR CAT */
-		static uint_fast8_t cat1dtrptt = 1;	/* 1: передача управляется по DTR, а не по RTS */
-		static uint_fast8_t cat1rtsenable = 1;	/* разрешение включения передачи по линии RTS CAT */
+		#if LCDMODE_DUMMY || ! WITHKEYBOARD
+			enum { noctl = 1 };		// устройство без органов управления и индикации
+		#else /* LCDMODE_DUMMY || ! WITHKEYBOARD */
+			enum { noctl = 0 };
+		#endif /* LCDMODE_DUMMY || ! WITHKEYBOARD */
+
+		/* управление по DTR происходит сразу, RTS только вместе со следующим DTR */
+
+		// Основной порт предназначен для управление PTT через DTR
+		// При запуске ARCP-590 отрабатывает "нажатие" - установлено RTS
+		static uint_fast8_t cat1dtrenable = noctl;	/* разрешение DTR */
+		static uint_fast8_t cat1rtsenable = 0;	/* разрешение RTS */
+		/* 1: передача управляется по DTR, манипуляция по RTS */
+		/* 0: передача управляется по RTS, манипуляция по DTR */
+		static uint_fast8_t cat1txdtr = 1;
 
 		#if WITHUSBHWCDC_N > 1
-			static uint_fast8_t cat2dtrenable;	/* разрешение манипуляции по DTR CAT */
-			static uint_fast8_t cat2dtrptt = 0;	/* 1: передача управляется по DTR, а не по RTS */
-			static uint_fast8_t cat2rtsenable = 1;	/* разрешение включения передачи по линии RTS CAT */
+		// Основной порт предназначен для управление манипуляцией через DTR
+			static uint_fast8_t cat2dtrenable = noctl;	/* разрешение DTR */
+			static uint_fast8_t cat2rtsenable = 0;	/* разрешение RTS */
+			/* 1: передача управляется по DTR, манипуляция по RTS */
+			/* 0: передача управляется по RTS, манипуляция по DTR */
+			static uint_fast8_t cat2txdtr = 1;
+
 		#endif
 
 	#else /* WITHCAT_CDC */
 		static uint_fast8_t cat1dtrenable;	/* разрешение манипуляции по DTR CAT */
-		static uint_fast8_t cat1dtrptt;	/* 1: передача управляется по DTR, а не по RTS */
+		static uint_fast8_t cat1txdtr;	/* 1: передача управляется по DTR, а не по RTS */
 		static uint_fast8_t cat1rtsenable;	/* разрешение включения передачи по линии RTS CAT */
 
 	#endif /* WITHCAT_CDC */
@@ -11297,8 +11313,8 @@ cat_get_ptt(void)
 		const uint_fast8_t dtr2 = HARDWARE_CAT2_GET_DTR() && cat2dtrenable;
 		const uint_fast8_t rts2 = HARDWARE_CAT2_GET_RTS() && cat2rtsenable;
 		const uint_fast8_t r =
-			(cat1dtrptt ? dtr1 : rts1) ||
-			(cat2dtrptt ? dtr2 : rts2) ||
+			(cat1txdtr ? dtr1 : rts1) ||
+			(cat2txdtr ? dtr2 : rts2) ||
 			(catstatetx != 0) ||	// catstatetx - это по текстовым командам
 			0;
 		return r;
@@ -11321,8 +11337,8 @@ uint_fast8_t cat_get_keydown(void)
 		const uint_fast8_t dtr2 = HARDWARE_CAT2_GET_DTR() && cat2dtrenable;
 		const uint_fast8_t rts2 = HARDWARE_CAT2_GET_RTS() && cat2rtsenable;
 		const uint_fast8_t r =
-			(! cat1dtrptt ? dtr1 : rts1) ||
-			(! cat2dtrptt ? dtr2 : rts2) ||
+			(! cat1txdtr ? dtr1 : rts1) ||
+			(! cat2txdtr ? dtr2 : rts2) ||
 			0;
 		return r;
 	}
@@ -14147,9 +14163,9 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		QLABEL("CAT TX  "), 7, 3, RJ_CATTXDTR,	ISTEP1,	/* Передача управляется по DTR, а не по RTS */
 		ITEM_VALUE,
 		0, 1,
-		offsetof(struct nvmap, cat1dtrptt),
+		offsetof(struct nvmap, cat1txdtr),
 		NULL,
-		& cat1dtrptt,
+		& cat1txdtr,
 		getzerobase, 
 	},
 	#endif /* WITHTX */
@@ -14176,9 +14192,9 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		QLABEL("CAT2 TX "), 7, 3, RJ_CATTXDTR,	ISTEP1,	/* Передача управляется по DTR, а не по RTS */
 		ITEM_VALUE,
 		0, 1, 
-		offsetof(struct nvmap, cat2dtrptt),
+		offsetof(struct nvmap, cat2txdtr),
 		NULL,
-		& cat2dtrptt,
+		& cat2txdtr,
 		getzerobase, 
 	},
 	#endif /* WITHTX */
