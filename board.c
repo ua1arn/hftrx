@@ -8244,7 +8244,12 @@ void board_adc_filtering(void)
 				adc_data_filtered [i] = 
 					((int_fast32_t) (BOARD_ADCFILTER_LPF_DENOM - k) * adc_data_filtered [i] + 
 					(int_fast32_t) k * raw) / BOARD_ADCFILTER_LPF_DENOM;
+				adc_data_filtered [i] = raw;
 			}
+			break;
+
+		default:
+			adc_data_filtered [i] = raw;
 			break;
 		}
 	}
