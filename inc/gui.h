@@ -326,6 +326,9 @@ void gui_uif_editmenu(const char * name, uint_fast16_t menupos, uint_fast8_t exi
 void gui_open_sys_menu(void);
 void gui_timer_update (void * arg);
 
+#define GUIMINX	800		// минимальное разрешение для touch GUI
+#define GUIMINY	480
+
 uint_fast8_t display_getpagesmax(void);	// количество разных вариантов отображения (menuset)
 uint_fast8_t display_getpagesleep(void);	// номер варианта отображения для "сна"
 uint_fast8_t display_getfreqformat(uint_fast8_t * prjv);	// получить параметры отображения частоты (для функции прямого ввода)

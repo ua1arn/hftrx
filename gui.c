@@ -17,7 +17,11 @@
 #include "gui.h"
 #include "touch/touch.h"
 
-#if LCDMODE_LTDC && WITHTOUCHGUI
+#if (DIM_X < GUIMINX || DIM_Y < GUIMINY) && WITHTOUCHGUI
+#undef WITHTOUCHGUI
+#endif
+
+#if LCDMODE_LTDC
 
 #include "keyboard.h"
 #include "./display/fontmaps.h"
@@ -298,6 +302,28 @@ display_smeter2(
 	}
 }
 
+#endif /* LCDMODE_LTDC */
+
+#ifndef WITHGUIMAXX
+#define WITHGUIMAXX		DIM_X
+#endif
+
+#ifndef WITHGUIMAXY
+#define WITHGUIMAXY		DIM_Y
+#endif
+
+#if WITHGUIMAXX < GUIMINX
+#undef WITHGUIMAXX
+#define WITHGUIMAXX GUIMINX
+#endif
+
+#if WITHGUIMAXY < GUIMINY
+#undef WITHGUIMAXY
+#define WITHGUIMAXY GUIMINY
+#endif
+
+#if WITHTOUCHGUI
+
 static void button1_handler(void);
 static void button2_handler(void);
 static void button3_handler(void);
@@ -518,8 +544,8 @@ static void gui_main_process(void);
 	static gui_t gui = { 0, 0, KBD_CODE_MAX, 0, TYPE_DUMMY, CANCELLED, 0, 0, 0, 0, 0, 1, };
 
 	enum align_t {
-		ALIGN_LEFT_X 	= DIM_X >> 2,						// вертикальное выравнивание по центру левой половины экрана
-		ALIGN_CENTER_X 	= DIM_X >> 1,						// вертикальное выравнивание по центру экрана
+		ALIGN_LEFT_X 	= WITHGUIMAXX >> 2,					// вертикальное выравнивание по центру левой половины экрана
+		ALIGN_CENTER_X 	= WITHGUIMAXX >> 1,					// вертикальное выравнивание по центру экрана
 		ALIGN_RIGHT_X 	= ALIGN_LEFT_X + ALIGN_CENTER_X,	// вертикальное выравнивание по центру правой половины экрана
 		ALIGN_Y 		= WITHGUIMAXY >> 1					// горизонтальное выравнивание всегда по центру экрана
 	};
@@ -713,8 +739,8 @@ static void gui_main_process(void);
 			break;
 
 		case ALIGN_RIGHT_X:
-			if (ALIGN_RIGHT_X + win->w / 2 > DIM_X)
-				win->x1 = DIM_X - win->w;
+			if (ALIGN_RIGHT_X + win->w / 2 > WITHGUIMAXX)
+				win->x1 = WITHGUIMAXX - win->w;
 			else
 				win->x1 = ALIGN_RIGHT_X - win->w / 2;
 			break;
@@ -1722,10 +1748,10 @@ static void gui_main_process(void);
 
 		// напряжение питания
 	#if WITHVOLTLEVEL
-		static ldiv_t t;
+		static ldiv_t v;
 		if(gui.timer_1sec_updated)
-			t = ldiv(hamradio_get_volt_value(), 10);
-		local_snprintf_P(buf, sizeof buf / sizeof buf [0], PSTR("%d.%1dV "), t.quot, t.rem);
+			v = ldiv(hamradio_get_volt_value(), 10);
+		local_snprintf_P(buf, sizeof buf / sizeof buf [0], PSTR("%d.%1dV "), v.quot, v.rem);
 		colpip_string2_tbg(fr, DIM_X, DIM_Y, 75, 125, buf, COLORPIP_WHITE);
 	#endif /* WITHVOLTLEVEL */
 
@@ -1742,22 +1768,23 @@ static void gui_main_process(void);
 			colpip_string2_tbg(fr, DIM_X, DIM_Y, 75, 145, buf, COLORPIP_WHITE);
 		}
 	#endif /* WITHCURRLEVEL */
-//	#if WITHTHERMOLEVEL	// температура выходных транзисторов (при передаче)
-//		if (hamradio_get_tx())
-//		{
-//			ldiv_t t = ldiv(hamradio_get_temperature_value(), 10);
-//			str_len += local_snprintf_P(&buf[str_len], sizeof buf / sizeof buf [0] - str_len, PSTR("%d.%dC "),
-//					t.quot, t.rem);
-//		}
-//	#endif /* WITHTHERMOLEVEL */
+	#if WITHTHERMOLEVEL	// температура выходных транзисторов (при передаче)
+		static ldiv_t t;
+		if (hamradio_get_tx() && gui.timer_1sec_updated)
+		{
+			t = ldiv(hamradio_get_temperature_value(), 10);
+			local_snprintf_P(buf, sizeof buf / sizeof buf [0], PSTR("%d.%dC "), t.quot, t.rem);
+			PRINTF("%s\n", buf);		// пока вывод в консоль
+		}
+	#endif /* WITHTHERMOLEVEL */
 		// ширина панорамы
 	#if WITHIF4DSP
 		static int_fast32_t z;
 		if(gui.timer_1sec_updated)
 			z = display_zoomedbw();
 		local_snprintf_P(buf, sizeof buf / sizeof buf [0], PSTR("SPAN:%3dk"), (int) z / 1000);
-		xt = DIM_X - SMALLCHARW2 - strlen(buf) * SMALLCHARW2;
-		display_transparency(xt - 5, 405, DIM_X - 5, 428, DEFAULT_ALPHA);
+		xt = WITHGUIMAXX - SMALLCHARW2 - strlen(buf) * SMALLCHARW2;
+		display_transparency(xt - 5, 405, WITHGUIMAXX - 5, 428, DEFAULT_ALPHA);
 		colpip_string2_tbg(fr, DIM_X, DIM_Y, xt, 410, buf, COLORPIP_YELLOW);
 	#endif /* WITHIF4DSP */
 		gui.timer_1sec_updated = 0;
@@ -2076,4 +2103,4 @@ static void gui_main_process(void);
 			}
 		}
 	}
-#endif /* LCDMODE_LTDC && WITHTOUCHGUI */
+#endif /* WITHTOUCHGUI */
