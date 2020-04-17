@@ -521,7 +521,7 @@ static void gui_main_process(void);
 		ALIGN_LEFT_X 	= DIM_X >> 2,						// вертикальное выравнивание по центру левой половины экрана
 		ALIGN_CENTER_X 	= DIM_X >> 1,						// вертикальное выравнивание по центру экрана
 		ALIGN_RIGHT_X 	= ALIGN_LEFT_X + ALIGN_CENTER_X,	// вертикальное выравнивание по центру правой половины экрана
-		ALIGN_Y 		= DIM_Y >> 1						// горизонтальное выравнивание всегда по центру экрана
+		ALIGN_Y 		= WITHGUIMAXY >> 1					// горизонтальное выравнивание всегда по центру экрана
 	};
 
 	typedef struct {
@@ -616,7 +616,7 @@ static void gui_main_process(void);
 	static uint_fast8_t menu_level;
 	static enc2_menu_t * gui_enc2_menu;
 
-	void gui_timer_update (void)
+	void gui_timer_update (void * arg)
 	{
 		gui.timer_1sec_updated = 1;
 	}
@@ -1702,12 +1702,11 @@ static void gui_main_process(void);
 			do {
 				bh = & button_handlers[id];
 				bh->x1 = x;
-				bh->y1 = DIM_Y - bh->h;
+				bh->y1 = WITHGUIMAXY - bh->h;
 				x = x + interval + bh->w;
 				id ++;
 			} while (bh->parent == WINDOW_MAIN);
 		}
-
 
 		// текущее время
 	#if defined (RTC1_TYPE)

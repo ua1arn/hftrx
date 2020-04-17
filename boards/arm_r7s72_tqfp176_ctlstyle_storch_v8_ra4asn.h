@@ -365,6 +365,7 @@
 	#define WITHSWRCALI			50
 
 	#define WITHTOUCHGUI	1
+	#define WITHGUIMAXY		DIM_Y
 
 	#define WITHVOLTLEVEL	1	/* отображение напряжения питания */
 	#define VOLTLEVEL_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика напряжения

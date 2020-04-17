@@ -12637,7 +12637,7 @@ void spool_secound(void)
 {
 	board_dpc(dpc_1stimer, NULL);
 #if WITHTOUCHGUI
-	gui_timer_update();
+	board_dpc(gui_timer_update, NULL);
 #endif /*WITHTOUCHGUI */
 }
 
