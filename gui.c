@@ -507,14 +507,15 @@ static void gui_main_process(void);
 		uint8_t selected_id;		 // индекс последнего выбранного элемента
 		uint8_t selected_type;		 // тип последнего выбранного элемента
 		uint8_t state;				 // последнее состояние
-		uint8_t is_touching_screen; // есть ли касание экрана в данный момент
+		uint8_t is_touching_screen;  // есть ли касание экрана в данный момент
 		uint8_t is_after_touch; 	 // есть ли касание экрана после выхода точки касания из элемента (при is_tracking == 0)
 		uint8_t is_tracking;		 // получение относительных координат точки перемещения нажатия
-		int16_t vector_move_x;	 // в т.ч. и за границами элемента, при state == PRESSED
+		int16_t vector_move_x;	 	 // в т.ч. и за границами элемента, при state == PRESSED
 		int16_t vector_move_y;
+		uint8_t timer_1sec_updated;	 // для периодических обновлений состояния
 	} gui_t;
 
-	static gui_t gui = { 0, 0, KBD_CODE_MAX, 0, TYPE_DUMMY, CANCELLED, 0, 0, 0, 0, 0, };
+	static gui_t gui = { 0, 0, KBD_CODE_MAX, 0, TYPE_DUMMY, CANCELLED, 0, 0, 0, 0, 0, 1, };
 
 	enum align_t {
 		ALIGN_LEFT_X 	= DIM_X >> 2,						// вертикальное выравнивание по центру левой половины экрана
@@ -614,6 +615,11 @@ static void gui_main_process(void);
 	static uint_fast8_t menu_label_touched = 0;
 	static uint_fast8_t menu_level;
 	static enc2_menu_t * gui_enc2_menu;
+
+	void gui_timer_update (void)
+	{
+		gui.timer_1sec_updated = 1;
+	}
 
 	static uint_fast8_t find_button (uint_fast8_t id_window, const char * name)				// возврат id кнопки окна по ее названию
 	{
@@ -1702,11 +1708,13 @@ static void gui_main_process(void);
 			} while (bh->parent == WINDOW_MAIN);
 		}
 
+
 		// текущее время
 	#if defined (RTC1_TYPE)
-		uint_fast16_t year;
-		uint_fast8_t month, day, hour, minute, secounds;
-		board_rtc_getdatetime(& year, & month, & day, & hour, & minute, & secounds);
+		static uint_fast16_t year;
+		static uint_fast8_t month, day, hour, minute, secounds;
+		if(gui.timer_1sec_updated)
+			board_rtc_getdatetime(& year, & month, & day, & hour, & minute, & secounds);
 		local_snprintf_P(buf, sizeof buf / sizeof buf [0], PSTR("%02d.%02d"), day, month);
 		colpip_string2_tbg(fr, DIM_X, DIM_Y, 5, 125, buf, COLORPIP_WHITE);
 		local_snprintf_P(buf, sizeof buf / sizeof buf [0], PSTR("%02d%c%02d"), hour, ((secounds & 1) ? ' ' : ':'), minute);
@@ -1715,7 +1723,9 @@ static void gui_main_process(void);
 
 		// напряжение питания
 	#if WITHVOLTLEVEL
-		ldiv_t t = ldiv(hamradio_get_volt_value(), 10);
+		static ldiv_t t;
+		if(gui.timer_1sec_updated)
+			t = ldiv(hamradio_get_volt_value(), 10);
 		local_snprintf_P(buf, sizeof buf / sizeof buf [0], PSTR("%d.%1dV "), t.quot, t.rem);
 		colpip_string2_tbg(fr, DIM_X, DIM_Y, 75, 125, buf, COLORPIP_WHITE);
 	#endif /* WITHVOLTLEVEL */
@@ -1724,7 +1734,9 @@ static void gui_main_process(void);
 	#if WITHCURRLEVEL
 		if (hamradio_get_tx())
 		{
-			int_fast16_t drain = hamradio_get_pacurrent_value();
+			static int_fast16_t drain;
+			if(gui.timer_1sec_updated)
+				drain = hamradio_get_pacurrent_value();
 			if (drain < 0) drain = 0;
 			ldiv_t t = ldiv(drain, 100);
 			local_snprintf_P(buf, sizeof buf / sizeof buf [0], PSTR("%d.%02dA "), t.quot, t.rem);
@@ -1741,12 +1753,15 @@ static void gui_main_process(void);
 //	#endif /* WITHTHERMOLEVEL */
 		// ширина панорамы
 	#if WITHIF4DSP
-		local_snprintf_P(buf, sizeof buf / sizeof buf [0], PSTR("SPAN:%3dk"),
-				(int) ((display_zoomedbw() + 0) / 1000));
+		static int_fast32_t z;
+		if(gui.timer_1sec_updated)
+			z = display_zoomedbw();
+		local_snprintf_P(buf, sizeof buf / sizeof buf [0], PSTR("SPAN:%3dk"), (int) z / 1000);
 		xt = DIM_X - SMALLCHARW2 - strlen(buf) * SMALLCHARW2;
 		display_transparency(xt - 5, 405, DIM_X - 5, 428, DEFAULT_ALPHA);
 		colpip_string2_tbg(fr, DIM_X, DIM_Y, xt, 410, buf, COLORPIP_YELLOW);
 	#endif /* WITHIF4DSP */
+		gui.timer_1sec_updated = 0;
 	}
 
 	/* Кнопка */

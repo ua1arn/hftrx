@@ -324,6 +324,7 @@ void gui_set_encoder2_state(uint_fast8_t code);
 void gui_put_keyb_code(uint_fast8_t kbch);
 void gui_uif_editmenu(const char * name, uint_fast16_t menupos, uint_fast8_t exitkey);
 void gui_open_sys_menu(void);
+void gui_timer_update (void);
 
 uint_fast8_t display_getpagesmax(void);	// количество разных вариантов отображения (menuset)
 uint_fast8_t display_getpagesleep(void);	// номер варианта отображения для "сна"

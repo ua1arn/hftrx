@@ -12636,6 +12636,9 @@ uint_fast8_t board_dpc3(udpcfn3_t func, void * arg1, void * arg2, void * arg3)
 void spool_secound(void)
 {
 	board_dpc(dpc_1stimer, NULL);
+#if WITHTOUCHGUI
+	gui_timer_update();
+#endif /*WITHTOUCHGUI */
 }
 
 /* Установка сиквенсору запроса на передачу.	*/
