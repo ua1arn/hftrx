@@ -369,8 +369,6 @@
 	#endif
 	//#define WITHNOTXDACCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
 
-	//#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
-	//#define WITHTHERMOLEVEL	1	/* отображение температуры */
 
 	#define WITHIFSHIFT	1	/* используется IF SHIFT */
 	//#define WITHIFSHIFTOFFSET	(-250)	/* Начальное занчение IF SHIFT */
@@ -413,7 +411,7 @@
 	// --- Эти строки можно отключать, уменьшая функциональность готового изделия
 
 	#if LCDMODE_AT070TNA2 || LCDMODE_AT070TN90
-		#define WITHTOUCHGUI	1	/* тестирование работы с сенсорным экраном */
+		//#define WITHTOUCHGUI	1	/* тестирование работы с сенсорным экраном */
 		#define WITHGUIMAXX		800	//DIM_X
 		#define WITHGUIMAXY		480	//DIM_Y
 	#endif /* LCDMODE_AT070TNA2 || LCDMODE_AT070TN90 */
@@ -534,17 +532,24 @@
 	#else
 		// толькло основная плата - 5W усилитель
 
-		//#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
+		#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
+		#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
+		//#define WITHTHERMOLEVEL	1	/* отображение температуры */
 
 		#if WITHCURRLEVEL
 			//PASENSEIX = BOARD_ADCXIN(0),		// MCP3208 CH0 PA current sense - ACS712-30 chip
 			PASENSEIX = 2,		// PA2 PA current sense - ACS712-05 chip
-			PASENSEMRRIX = BOARD_ADCMRRIN(x),	// кеш - индекc не должен повторяться в конфигурации
+			PASENSEMRRIX = BOARD_ADCMRRIN(0),	// кеш - индекc не должен повторяться в конфигурации
 		#endif /* WITHCURRLEVEL */
 		#if WITHVOLTLEVEL
 			VOLTSOURCE = 8,		// PB0 Средняя точка делителя напряжения, для АКБ
 			VOLTMRRIX = BOARD_ADCMRRIN(1),	// кеш - индекc не должен повторяться в конфигурации
 		#endif /* WITHVOLTLEVEL */
+
+		#if WITHTHERMOLEVEL
+			XTHERMOIX = 9,		// PB1 Exernal thermo sensor ST LM235Z
+			XTHERMOMRRIX = BOARD_ADCMRRIN(x),	// кеш - индекc не должен повторяться в конфигурации
+		#endif /* WITHTHERMOLEVEL */
 
 		#if WITHSWRMTR
 			//FWD = BOARD_ADCXIN(2), REF = BOARD_ADCXIN(3),		// MCP3208 CH2, CH3 Детектор прямой, отраженной волны
