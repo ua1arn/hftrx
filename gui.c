@@ -17,7 +17,7 @@
 #include "gui.h"
 #include "touch/touch.h"
 
-#if LCDMODE_LTDC && WITHTOUCHGUI
+#if LCDMODE_LTDC
 
 #include "keyboard.h"
 #include "./display/fontmaps.h"
@@ -297,6 +297,10 @@ display_smeter2(
 		display_radius(xc + 1, yc, gv, rv1, rv2, ct);
 	}
 }
+
+#endif /* LCDMODE_LTDC */
+
+#if WITHTOUCHGUI
 
 static void button1_handler(void);
 static void button2_handler(void);
@@ -2076,4 +2080,5 @@ static void gui_main_process(void);
 			}
 		}
 	}
-#endif /* LCDMODE_LTDC && WITHTOUCHGUI */
+
+#endif /* WITHTOUCHGUI */
