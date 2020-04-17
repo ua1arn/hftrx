@@ -338,7 +338,7 @@ static void display_freqmeter10(
 	)
 {
 #if WITHFQMETER
-	char buffer [32];
+	char buffer [11];
 	local_snprintf_P(buffer, sizeof buffer / sizeof buffer [0], PSTR("%10lu"), board_get_fqmeter());
 
 	colmain_setcolors(colorsfg_1freq [0], colorsbg_1freq [0]);
@@ -4707,7 +4707,8 @@ enum
 		{	0,	DLE1,	display_datetime12,	REDRM_BARS, PGALL,	},	// DATE&TIME Jan-01 13:40
 		{	13,	DLE1,	display_span9,		REDRM_MODE, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
 		{	23, DLE1,	display_thermo4,	REDRM_VOLT, PGALL, },	// thermo sensor
-		{	28, DLE1,	display_usb3,		REDRM_BARS, PGALL, },	// USB host status
+		//{	28, DLE1,	display_usb3,		REDRM_BARS, PGALL, },	// USB host status
+		//{	28, DLE1,	display_freqmeter10, REDRM_BARS, PGALL, },	// измеренная частота опоры
 
 	#if (WITHCURRLEVEL_ACS712_30A || WITHCURRLEVEL_ACS712_20A)
 		{	39, DLE1,	display_currlevel5alt, REDRM_VOLT, PGALL, },	// PA drain current dd.d without "A"
