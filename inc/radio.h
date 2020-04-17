@@ -44,6 +44,15 @@ typedef uint_least64_t phase_t;
 #define	WITHNOTCHFREQMIN	300
 #define WITHNOTCHFREQMAX	5000
 
+/* параметры отображения панорамы */
+#define WITHTOPDBMIN 0
+#define WITHTOPDBMAX 60
+#define WITHTOPDBDEFAULT 30
+
+#define WITHBOTTOMDBMIN 80
+#define WITHBOTTOMDBMAX 160
+#define WITHBOTTOMDBDEFAULT 130
+
 enum
 {
 	BOARD_WTYPE_BLACKMAN_HARRIS,

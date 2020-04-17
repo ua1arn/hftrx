@@ -10,7 +10,6 @@
 #include "board.h"
 #include "keyboard.h"
 #include "encoder.h"
-#include "list.h"
 
 #include "display/display.h"
 #include "gui.h"
@@ -20,7 +19,6 @@
 
 #include "codecs/tlv320aic23.h"	// константы управления усилением кодека
 #include "codecs/nau8822.h"
-#include "spi.h"
 
 #if WITHUSEAUDIOREC || WITHUSESDCARD
 	#include "sdcard.h"
@@ -52,7 +50,6 @@ static uint_fast32_t
 //NOINLINEAT
 prevfreq(uint_fast32_t oldfreq, uint_fast32_t freq, 
 							   uint_fast32_t step, uint_fast32_t bottom);
-
 
 static unsigned long ulmin(
 	unsigned long a,
@@ -2410,6 +2407,13 @@ struct bandinfo
 	uint8_t tunerind;
 	uint8_t tunertype;
 #endif /* WITHAUTOTUNER */
+#if WITHSPECTRUMWF
+	uint8_t gzoomxpow2;	/* уменьшение отображаемого участка спектра */
+	uint8_t gtopdb;		/* нижний предел FFT */
+	uint8_t gbottomdb;	/* верхний предел FFT */
+	uint8_t gtopdbwf;		/* нижний предел FFT waterflow */
+	uint8_t gbottomdbwf;	/* верхний предел FFT waterflow */
+#endif /* WITHSPECTRUMWF */
 } ATTRPACKED;// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
 
 /* структура - расположение байтов в конфигурационном ОЗУ.
@@ -2512,11 +2516,6 @@ struct nvmap
 	uint8_t displaybarsfps;	/* скорость обновления S-метра */
 #if WITHSPECTRUMWF
 	uint8_t gfillspect;
-	uint8_t gtopdb;		/* нижний предел FFT */
-	uint8_t gbottomdb;	/* верхний предел FFT */
-	uint8_t gtopdbwf;		/* нижний предел FFT waterflow */
-	uint8_t gbottomdbwf;	/* верхний предел FFT waterflow */
-	uint8_t gzoomxpow2;
 	uint8_t gwflevelsep;	/* чувствительность водопада регулируется отдельной парой параметров */
 	uint8_t gwfshiftenable; /* разрешение или запрет сдвига водопада при изменении частоты */
 #endif /* WITHSPECTRUMWF */
@@ -3154,10 +3153,10 @@ static const uint_fast8_t displaymodesfps = DISPLAYMODES_FPS;
 #endif /* WITHDISPLAYSWR_FPS */
 #if WITHSPECTRUMWF
 	static uint_fast8_t gfillspect;
-	static uint_fast8_t gtopdb = 30;	/* верхний предел FFT */
-	static uint_fast8_t gbottomdb = 130;	/* нижний предел FFT */
-	static uint_fast8_t gtopdbwf = 30;	/* верхний предел FFT waterflow*/
-	static uint_fast8_t gbottomdbwf = 130;	/* нижний предел FFT waterflow */
+	static uint_fast8_t gtopdb = WITHTOPDBDEFAULT;	/* верхний предел FFT */
+	static uint_fast8_t gbottomdb = WITHBOTTOMDBDEFAULT;	/* нижний предел FFT */
+	static uint_fast8_t gtopdbwf = WITHTOPDBDEFAULT;	/* верхний предел FFT waterflow*/
+	static uint_fast8_t gbottomdbwf = WITHBOTTOMDBDEFAULT;	/* нижний предел FFT waterflow */
 	static uint_fast8_t gwflevelsep;	/* чувствительность водопада регулируется отдельной парой параметров */
 	static uint_fast8_t gzoomxpow2;		/* степень двойки - состояние растягиваия спектра (уменьшение наблюдаемой полосы частот) */
 	static uint_fast8_t gwfshiftenable = 1; /* разрешение или запрет сдвига водопада при изменении частоты */
@@ -5354,6 +5353,13 @@ savebandstate(const vindex_t b, const uint_fast8_t bi)
 	save_i8(offsetof(struct nvmap, bands[b].tunerind), tunerind);
 	save_i8(offsetof(struct nvmap, bands[b].tunertype), tunertype);
 #endif /* WITHAUTOTUNER */
+#if WITHSPECTRUMWF
+	save_i8(offsetof(struct nvmap, bands[b].gzoomxpow2), gzoomxpow2);	/* уменьшение отображаемого участка спектра */
+	save_i8(offsetof(struct nvmap, bands[b].gtopdb), gtopdb);	/* нижний предел FFT */
+	save_i8(offsetof(struct nvmap, bands[b].gbottomdb), gbottomdb);	/* верхний предел FFT */
+	save_i8(offsetof(struct nvmap, bands[b].gtopdbwf), gtopdbwf);	/* нижний предел FFT waterflow */
+	save_i8(offsetof(struct nvmap, bands[b].gbottomdbwf), gbottomdbwf);	/* верхний предел FFT waterflow */
+#endif /* WITHSPECTRUMWF */
 }
 
 static void savebandgroup(uint_fast8_t b)
@@ -5788,7 +5794,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		RJ_UNSIGNED,		// rj
 		ISTEP1,		/* spectrum range */
 		80, 160,
-		offsetof(struct nvmap, gbottomdb),	/* диапазон отображаемых значений */
+		MENUNONVRAM,	/* диапазон отображаемых значений */
 		NULL,
 		& gbottomdb,
 		getzerobase, /* складывается со смещением и отображается */
@@ -5799,7 +5805,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		RJ_POW2,		// rj
 		ISTEP1,		/* spectrum range */
 		0, BOARD_FFTZOOM_POW2MAX,
-		offsetof(struct nvmap, gzoomxpow2),	/* диапазон отображаемых значений */
+		MENUNONVRAM,	/* масштаб панорамы */
 		NULL,
 		& gzoomxpow2,
 		getzerobase, /* складывается со смещением и отображается */
@@ -6242,6 +6248,13 @@ loadnewband(
 	tunerind = loadvfy8up(offsetof(struct nvmap, bands[b].tunerind), CMIN, CMAX, tunerind);
 	tunertype = loadvfy8up(offsetof(struct nvmap, bands[b].tunertype), 0, KSCH_COUNT - 1, tunertype);
 #endif /* WITHAUTOTUNER */
+#if WITHSPECTRUMWF
+	gzoomxpow2 = loadvfy8up(offsetof(struct nvmap, bands[b].gzoomxpow2), 0, BOARD_FFTZOOM_POW2MAX, 0);	/* масштаб панорамы */
+	gtopdb = loadvfy8up(offsetof(struct nvmap, bands[b].gtopdb), WITHTOPDBMIN, WITHTOPDBMAX, WITHTOPDBDEFAULT);		/* нижний предел FFT */
+	gbottomdb = loadvfy8up(offsetof(struct nvmap, bands[b].gbottomdb), WITHBOTTOMDBMIN, WITHBOTTOMDBMAX, WITHBOTTOMDBDEFAULT);	/* верхний предел FFT */
+	gtopdbwf = loadvfy8up(offsetof(struct nvmap, bands[b].gtopdbwf), WITHTOPDBMIN, WITHTOPDBMAX, WITHTOPDBDEFAULT);		/* нижний предел FFT waterflow */
+	gbottomdbwf = loadvfy8up(offsetof(struct nvmap, bands[b].gbottomdbwf), WITHBOTTOMDBMIN, WITHBOTTOMDBMAX, WITHBOTTOMDBDEFAULT);	/* верхний предел FFT waterflow */
+#endif /* WITHSPECTRUMWF */
 }
 
 /* Получить текущий submode для указанного банка
@@ -12991,8 +13004,8 @@ static const FLASHMEM struct menudef menutable [] =
 	{
 		QLABEL("TOP DB  "), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
-		0, 60,							/* сколько не показывать сверху */
-		offsetof(struct nvmap, gtopdb),
+		WITHTOPDBMIN, WITHTOPDBMAX,							/* сколько не показывать сверху */
+		MENUNONVRAM,
 		NULL,
 		& gtopdb,
 		getzerobase, /* складывается со смещением и отображается */
@@ -13000,8 +13013,8 @@ static const FLASHMEM struct menudef menutable [] =
 	{
 		QLABEL("BOTTM DB"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
-		80, 160,							/* диапазон отображаемых значений */
-		offsetof(struct nvmap, gbottomdb),
+		WITHBOTTOMDBMIN, WITHBOTTOMDBMAX,							/* диапазон отображаемых значений */
+		MENUNONVRAM,
 		NULL,
 		& gbottomdb,
 		getzerobase, /* складывается со смещением и отображается */
@@ -13018,8 +13031,8 @@ static const FLASHMEM struct menudef menutable [] =
 	{
 		QLABEL("TOP WF  "), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
-		0, 60,							/* сколько не показывать сверху */
-		offsetof(struct nvmap, gtopdbwf),
+		WITHTOPDBMIN, WITHTOPDBMAX,							/* сколько не показывать сверху */
+		MENUNONVRAM,
 		NULL,
 		& gtopdbwf,
 		getzerobase, /* складывается со смещением и отображается */
@@ -13027,8 +13040,8 @@ static const FLASHMEM struct menudef menutable [] =
 	{
 		QLABEL("BOTTM WF"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
-		80, 160,							/* диапазон отображаемых значений */
-		offsetof(struct nvmap, gbottomdbwf),
+		WITHBOTTOMDBMIN, WITHBOTTOMDBMAX,							/* диапазон отображаемых значений */
+		MENUNONVRAM,
 		NULL,
 		& gbottomdbwf,
 		getzerobase, /* складывается со смещением и отображается */
@@ -13037,7 +13050,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("ZOOM PAN"), 7, 0, RJ_POW2,	ISTEP1,
 		ITEM_VALUE,
 		0, BOARD_FFTZOOM_POW2MAX,							/* уменьшение отображаемого участка спектра */
-		offsetof(struct nvmap, gzoomxpow2),
+		MENUNONVRAM,
 		NULL,
 		& gzoomxpow2,
 		getzerobase, /* складывается со смещением и отображается */
