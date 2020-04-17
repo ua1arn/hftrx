@@ -58,14 +58,15 @@ uint_fast16_t normalize(
 	}
 }
 
+// ширина занимаемого места - 15 ячеек (240/16 = 15)
 void
-display_smeter2(
+display2_smeter15(
 	uint_fast8_t xgrid,
 	uint_fast8_t ygrid,
 	dctx_t * pctx
 	)
 {
-	const int xc = GRID2X(xgrid) + 120;
+	const int xc = GRID2X(xgrid) + GRID2X(15) / 2;
 	const int yc = GRID2Y(ygrid) + 120;
 	enum { halfsect = 30 };
 	enum { gm = 270 };
