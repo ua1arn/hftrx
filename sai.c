@@ -898,20 +898,43 @@ static void hardware_sai1_sai2_clock_selection(void)
 		(void) RCC->D2CCIP1R;
 
 	#elif CPUSTYLE_STM32MP1
-		#warning TODO: implement for CPUSTYLE_STM32MP1
 		// clock sources:
-		//	000: pll1_q_ck clock selected as SAI1 and DFSDM1 Aclk kernel clock (default after reset)
-		//	001: pll2_p_ck clock selected as SAI1 and DFSDM1 Aclk kernel clock
-		//	010: pll3_p_ck clock selected as SAI1 and DFSDM1 Aclk kernel clock
-		//	011: I2S_CKIN clock selected as SAI1 and DFSDM1 Aclk kernel clock
-		//	100: per_ck clock selected as SAI1 and DFSDM1 Aclk kernel clock
+		//	0x0: pll4_q_ck clock selected as kernel peripheral clock (default after reset)
+		//	0x1: pll3_q_ck clock selected as kernel peripheral clock
+		//	0x2: I2S_CKIN clock selected as kernel peripheral clock
+		//	0x3: per_ck clock selected as kernel peripheral clock
+		//	0x4: pll3_r_ck clock selected as kernel peripheral clock
 		//	others: reserved, the kernel clock is disabled
-		//	Note: I2S_CKIN is an external clock taken from a pin.
-		RCC->D2CCIP1R = (RCC->D2CCIP1R & ~ (RCC_D2CCIP1R_SAI1SEL_Msk | RCC_D2CCIP1R_SAI23SEL_Msk)) |
-			(3uL << RCC_D2CCIP1R_SAI1SEL_Pos) |		// SAI1 clock source selection
-			(3uL << RCC_D2CCIP1R_SAI23SEL_Pos) |	// SAI2, SAI3 clock source selection
-			0;
-		(void) RCC->D2CCIP1R;
+
+		RCC->SAI1CKSELR = (RCC->SAI1CKSELR & ~ (RCC_SAI1CKSELR_SAI1SRC_Msk)) |
+				(2uL << RCC_SAI1CKSELR_SAI1SRC_Pos) |
+				0;
+		(void) RCC->SAI1CKSELR;
+
+		//	0x0: pll4_q_ck clock selected as kernel peripheral clock (default after reset)
+		//	0x1: pll3_q_ck clock selected as kernel peripheral clock
+		//	0x2: I2S_CKIN clock selected as kernel peripheral clock
+		//	0x3: per_ck clock selected as kernel peripheral clock
+		//	0x4: spdif_ck_symb clock from SPDIFRX selected as kernel peripheral clock
+		//	0x5: pll3_r_ck clock selected as kernel peripheral clock
+		//	others: reserved, the kernel clock is disabled
+
+		RCC->SAI2CKSELR = (RCC->SAI2CKSELR & ~ (RCC_SAI2CKSELR_SAI2SRC_Msk)) |
+				(2uL << RCC_SAI2CKSELR_SAI2SRC_Pos) |
+				0;
+		(void) RCC->SAI2CKSELR;
+
+		//	0x0: pll4_q_ck clock selected as kernel peripheral clock (default after reset)
+		//	0x1: pll3_q_ck clock selected as kernel peripheral clock
+		//	0x2: I2S_CKIN clock selected as kernel peripheral clock
+		//	0x3: per_ck clock selected as kernel peripheral clock
+		//	0x4: pll3_r_ck clock selected as kernel peripheral clock
+		//	others: reserved, the kernel clock is disabled
+
+		RCC->SAI3CKSELR = (RCC->SAI3CKSELR & ~ (RCC_SAI3CKSELR_SAI3SRC_Msk)) |
+				(2uL << RCC_SAI3CKSELR_SAI3SRC_Pos) |
+				0;
+		(void) RCC->SAI3CKSELR;
 
 	#else /* defined (STM32F446xx) */
 		// clock sources:
@@ -986,17 +1009,42 @@ static void hardware_sai1_sai2_clock_selection(void)
 	#elif CPUSTYLE_STM32MP1
 		#warning TODO: implement for CPUSTYLE_STM32MP1
 		// clock sources:
-		//	000: pll1_q_ck clock selected as SAI1 and DFSDM1 Aclk kernel clock (default after reset)
-		//	001: pll2_p_ck clock selected as SAI1 and DFSDM1 Aclk kernel clock
-		//	010: pll3_p_ck clock selected as SAI1 and DFSDM1 Aclk kernel clock
-		//	011: I2S_CKIN clock selected as SAI1 and DFSDM1 Aclk kernel clock
-		//	100: per_ck clock selected as SAI1 and DFSDM1 Aclk kernel clock
+		//	0x0: pll4_q_ck clock selected as kernel peripheral clock (default after reset)
+		//	0x1: pll3_q_ck clock selected as kernel peripheral clock
+		//	0x2: I2S_CKIN clock selected as kernel peripheral clock
+		//	0x3: per_ck clock selected as kernel peripheral clock
+		//	0x4: pll3_r_ck clock selected as kernel peripheral clock
 		//	others: reserved, the kernel clock is disabled
-		//	Note: I2S_CKIN is an external clock taken from a pin.
-		RCC->D2CCIP1R = (RCC->D2CCIP1R & ~ (RCC_D2CCIP1R_SAI1SEL | RCC_D2CCIP1R_SAI23SEL)) |
-			(0x01uL << RCC_D2CCIP1R_SAI1SEL_Pos) |	// PLL2 Q
-			(0x01uL << RCC_D2CCIP1R_SAI23SEL_Pos) |
-			0;
+
+		RCC->SAI1CKSELR = (RCC->SAI1CKSELR & ~ (RCC_SAI1CKSELR_SAI1SRC_Msk)) |
+				(XuL << RCC_SAI1CKSELR_SAI1SRC_Pos) |
+				0;
+		(void) RCC->SAI1CKSELR;
+
+		//	0x0: pll4_q_ck clock selected as kernel peripheral clock (default after reset)
+		//	0x1: pll3_q_ck clock selected as kernel peripheral clock
+		//	0x2: I2S_CKIN clock selected as kernel peripheral clock
+		//	0x3: per_ck clock selected as kernel peripheral clock
+		//	0x4: spdif_ck_symb clock from SPDIFRX selected as kernel peripheral clock
+		//	0x5: pll3_r_ck clock selected as kernel peripheral clock
+		//	others: reserved, the kernel clock is disabled
+
+		RCC->SAI2CKSELR = (RCC->SAI2CKSELR & ~ (RCC_SAI2CKSELR_SAI2SRC_Msk)) |
+				(XuL << RCC_SAI2CKSELR_SAI2SRC_Pos) |
+				0;
+		(void) RCC->SAI2CKSELR;
+
+		//	0x0: pll4_q_ck clock selected as kernel peripheral clock (default after reset)
+		//	0x1: pll3_q_ck clock selected as kernel peripheral clock
+		//	0x2: I2S_CKIN clock selected as kernel peripheral clock
+		//	0x3: per_ck clock selected as kernel peripheral clock
+		//	0x4: pll3_r_ck clock selected as kernel peripheral clock
+		//	others: reserved, the kernel clock is disabled
+
+		RCC->SAI3CKSELR = (RCC->SAI3CKSELR & ~ (RCC_SAI3CKSELR_SAI3SRC_Msk)) |
+				(XuL << RCC_SAI3CKSELR_SAI3SRC_Pos) |
+				0;
+		(void) RCC->SAI3CKSELR;
 
 	#else /* defined (STM32F446xx) */
 		RCC->PLLI2SCFGR = 
