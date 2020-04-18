@@ -974,38 +974,6 @@ static void gui_main_process(void);
 	static uint_fast8_t menu_level;
 	static enc2_menu_t * gui_enc2_menu;
 
-	static
-	uint_fast16_t normalize(
-		uint_fast16_t raw,
-		uint_fast16_t rawmin,
-		uint_fast16_t rawmax,
-		uint_fast16_t range
-		)
-	{
-		if (rawmin < rawmax)
-		{
-			// Normal direction
-			const uint_fast16_t distance = rawmax - rawmin;
-			if (raw < rawmin)
-				return 0;
-			raw = raw - rawmin;
-			if (raw > distance)
-				return range;
-			return (uint_fast32_t) raw * range / distance;
-		}
-		else
-		{
-			// reverse direction
-			const uint_fast16_t distance = rawmin - rawmax;
-			if (raw >= rawmin)
-				return 0;
-			raw = rawmin - raw;
-			if (raw > distance)
-				return range;
-			return (uint_fast32_t) raw * range / distance;
-		}
-	}
-
 	void gui_timer_update (void * arg)
 	{
 		gui.timer_1sec_updated = 1;
