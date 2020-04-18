@@ -361,12 +361,10 @@
 	#define WITHDISPLAY_FPS		15
 	#define WITHDISPLAYSWR_FPS	30
 
-	#define WITHMAXPWRCALI		138
-	#define WITHSWRCALI			50
+	#define WITHMAXPWRCALI		77
+	#define WITHSWRCALI			118
 
 	#define WITHTOUCHGUI	1
-	#define WITHGUIMAXX		DIM_X
-	#define WITHGUIMAXY		DIM_Y
 
 	#define WITHVOLTLEVEL	1	/* отображение напряжения питания */
 	#define VOLTLEVEL_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика напряжения
