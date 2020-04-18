@@ -13,6 +13,7 @@
 
 #include "display/display.h"
 #include "gui.h"
+#include "spi.h"	// bootloader_readimage definition
 #include "formats.h"
 
 #include "audio.h"
@@ -3518,7 +3519,6 @@ enum
 
 #else /* WITHTX */
 	static const uint_fast8_t bkinenable = 0;	/* модифицируется через меню - автоматическое управление передатчиком (от телеграфного манипулятора) */
-	static const uint_fast8_t swrmode = 1;
 	static const uint_fast8_t gvoxenable = 0;	/* модифицируется через меню - автоматическое управление передатчиком (от голоса) */
 	static const uint_fast8_t bkindelay = 80;	/* в десятках mS. модифицируется через меню - задержка отпускания BREAK-IN */
 #endif /* WITHTX */
