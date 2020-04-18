@@ -6292,7 +6292,10 @@ static void display2_colorbuff(
 
 #endif /* WITHSPECTRUMWF && ! LCDMODE_HD44780 && ! LCDMODE_DUMMY */
 
-
+uint_fast8_t display2_getswrmax(void)
+{
+	return SWRMAX;
+}
 // Рисуем на основном экране цветной прямоугольник.
 // x2, y2 - координаты второго угла (не входящие в закрашиваемый прямоугольник)
 void display_solidbar(uint_fast16_t x, uint_fast16_t y, uint_fast16_t x2, uint_fast16_t y2, COLORMAIN_T color)

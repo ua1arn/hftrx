@@ -127,7 +127,7 @@ static int muldiv(int a, int b, unsigned c)
 	return  (unsigned) ((a * (long) b + (c / 2)) / c);
 }
 
-static  int isin(unsigned alpha, unsigned r)
+static int isin(unsigned alpha, unsigned r)
 {
 	while (alpha >= 360)
 		alpha -= 360;
@@ -292,7 +292,7 @@ display2_smeter15(
 	int gv, gv_trace = gs, gswr = gs;
 	uint_fast16_t swr10; 														// swr10 = 0..30 for swr 1..4
 
-	//colpip_rect(colmain_fb_draw(), DIM_X, DIM_Y, x0, y0, x0 + width - 1, y0 + height - 1, DESIGNCOLORDARKSTATE, 0);
+	//colpip_rect(colmain_fb_draw(), DIM_X, DIM_Y, x0, y0 - 8, x0 + width - 1, y0 + height - 1 + 15, DESIGNCOLORSTATE, 0);
 
 	if (is_tx)																	// угол поворота стрелки; 246 минимум, 270 середина, 294 максимум
 	{																			// добавить учет калибровок
