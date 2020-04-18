@@ -17,17 +17,14 @@
 #include "gui.h"
 #include "touch/touch.h"
 
-#if (DIM_X < GUIMINX || DIM_Y < GUIMINY) && WITHTOUCHGUI
-#undef WITHTOUCHGUI
+#if (DIM_X < GUIMINX || DIM_Y < GUIMINY) && WITHTOUCHGUI	// не соблюдены минимальные требования к разрешению экрана
+#undef WITHTOUCHGUI											// для функционирования touch GUI
 #endif
 
 #if LCDMODE_LTDC
 
 #include "keyboard.h"
 #include "./display/fontmaps.h"
-
-
-
 
 /*-----------------------------------------------------  V_Bre
  * void V_Bre (int xn, int yn, int xk, int yk)
@@ -321,10 +318,12 @@ display2_smeter15(
 		static uint_fast16_t gv_smooth = gs;
 		static uint_fast16_t gswr_smooth = gs;
 
-		uint_fast8_t tracemax;
+		uint_fast8_t power, tracemax;
 		adcvalholder_t forward, reflected;
 
-		gv = gs + normalize(board_getpwrmeter(& tracemax), 0, 200, ge - gs);
+		power = board_getpwrmeter(& tracemax);
+		power = power * power * (ge - gs) / (maxpwrcali * maxpwrcali);
+		gv = gs + normalize(power, 0, 200, ge - gs);
 
 		forward = board_getswrmeter(& reflected, swrcalibr);
 		const uint_fast16_t fullscale = (SWRMIN * 40 / 10) - SWRMIN;
@@ -646,12 +645,12 @@ display2_bars_amv0(
 
 #if WITHGUIMAXX < GUIMINX
 #undef WITHGUIMAXX
-#define WITHGUIMAXX GUIMINX
+#define WITHGUIMAXX 	GUIMINX
 #endif
 
 #if WITHGUIMAXY < GUIMINY
 #undef WITHGUIMAXY
-#define WITHGUIMAXY GUIMINY
+#define WITHGUIMAXY 	GUIMINY
 #endif
 
 #if WITHTOUCHGUI
