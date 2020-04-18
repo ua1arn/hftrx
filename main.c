@@ -9224,7 +9224,7 @@ uint_fast8_t hamradio_get_volt_value(void)
 	}
 	else
 	{
-		debug_printf_P(PSTR("hamradio_get_volt_value: ref=%u\n"), ref);
+		//debug_printf_P(PSTR("hamradio_get_volt_value: ref=%u\n"), ref);
 		return 3333;
 	}
 #else /* WITHREFSENSOR */
