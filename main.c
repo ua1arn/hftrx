@@ -3504,46 +3504,6 @@ enum
 #endif
 
 
-#if WITHBARS
-	#if (WITHSWRMTR || WITHSHOWSWRPWR)
-		static uint_fast16_t minforward = (1U << HARDWARE_ADCBITS) / 8;
-		#if WITHSWRCALI
-			static uint_fast8_t swrcalibr = WITHSWRCALI;	/* калибровочный параметр SWR-метра */
-		#else /* WITHSWRCALI */
-			static uint_fast8_t swrcalibr = 100;	/* калибровочный параметр SWR-метра */
-		#endif /* WITHSWRCALI */
-	#endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
-	#if WITHPWRMTR || WITHSWRMTR
-		#if WITHMAXPWRCALI
-			static uint_fast8_t maxpwrcali = WITHMAXPWRCALI;	/* калибровочный параметр PWR-метра */
-		#elif CTLSTYLE_SW2013RDX
-			static uint_fast8_t maxpwrcali = 216;	/* калибровочный параметр PWR-метра */
-		#elif CTLSTYLE_SW2015
-			static uint_fast8_t maxpwrcali = 216;	/* калибровочный параметр PWR-метра */
-		#elif CTLSTYLE_SW2018XVR
-			static uint_fast8_t maxpwrcali = 216;	/* калибровочный параметр PWR-метра */
-		#elif CTLSTYLE_SW2016 || CTLSTYLE_SW2016VHF
-			static uint_fast8_t maxpwrcali = 216;	/* калибровочный параметр PWR-метра */
-		#elif CTLSTYLE_SW2016MINI
-			static uint_fast8_t maxpwrcali = 100;	/* калибровочный параметр PWR-метра */
-		#else
-			static uint_fast8_t maxpwrcali = 255;	/* калибровочный параметр PWR-метра */
-		#endif
-	#else
-		static uint_fast8_t maxpwrcali = 255;	/* калибровочный параметр PWR-метра */
-	#endif /* WITHPWRMTR || WITHSWRMTR */
-
-	#if WITHSWRMTR && ! WITHSHOWSWRPWR
-		static uint_fast8_t swrmode = 1;
-	#elif WITHPWRMTR
-		static const uint_fast8_t swrmode = 0;
-	#else
-		//static const uint_fast8_t swrmode = 0;
-	#endif
-#else /* WITHBARS */
-	static const uint_fast8_t swrmode = 0;
-#endif /* WITHBARS */
-
 	#if (CTLSTYLE_SW2016MINI)
 		static uint_fast8_t rxtxdelay = 45;	/* в единицах mS. модифицируется через меню - задержка перехода прём-передача */
 		static uint_fast8_t txrxdelay = 15;	/* в единицах mS. модифицируется через меню - задержка перехода передача-прём */
@@ -3562,16 +3522,6 @@ enum
 	static const uint_fast8_t gvoxenable = 0;	/* модифицируется через меню - автоматическое управление передатчиком (от голоса) */
 	static const uint_fast8_t bkindelay = 80;	/* в десятках mS. модифицируется через меню - задержка отпускания BREAK-IN */
 #endif /* WITHTX */
-
-#if WITHVOLTLEVEL && ! WITHREFSENSOR 
-
-	// Напряжение fullscale = VREF * 5.3 = 3.3 * 5.3 = 17.5 вольта: сверху 4.3 килоом, синзу 1.0 килоом
-	// в схеме датчика делитель: сверху 4.3 килоома, снизу 1 килоом.
-	// ADCVREF_CPU - в сотнях милливольт.
-
-	static uint_fast8_t voltcalibr = (ADCVREF_CPU * (VOLTLEVEL_UPPER + VOLTLEVEL_LOWER) + VOLTLEVEL_LOWER / 2) / VOLTLEVEL_LOWER;		// Напряжение fullscale - что показать при ADCVREF_CPU вольт на входе АЦП
-
-#endif /* WITHVOLTLEVEL && ! WITHREFSENSOR */
 
 #if WITHELKEY
 
@@ -3666,7 +3616,55 @@ static uint_fast8_t dctxmodecw;	/* при передаче предполага�
 		static uint_fast8_t s9_60_delta = 45;	
 	#endif
 
-#endif
+	#if (WITHSWRMTR || WITHSHOWSWRPWR)
+		static uint_fast16_t minforward = (1U << HARDWARE_ADCBITS) / 8;
+		#if WITHSWRCALI
+			static uint_fast8_t swrcalibr = WITHSWRCALI;	/* калибровочный параметр SWR-метра */
+		#else /* WITHSWRCALI */
+			static uint_fast8_t swrcalibr = 100;	/* калибровочный параметр SWR-метра */
+		#endif /* WITHSWRCALI */
+	#endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
+
+	#if WITHPWRMTR || WITHSWRMTR
+		#if WITHMAXPWRCALI
+			static uint_fast8_t maxpwrcali = WITHMAXPWRCALI;	/* калибровочный параметр PWR-метра */
+		#elif CTLSTYLE_SW2013RDX
+			static uint_fast8_t maxpwrcali = 216;	/* калибровочный параметр PWR-метра */
+		#elif CTLSTYLE_SW2015
+			static uint_fast8_t maxpwrcali = 216;	/* калибровочный параметр PWR-метра */
+		#elif CTLSTYLE_SW2018XVR
+			static uint_fast8_t maxpwrcali = 216;	/* калибровочный параметр PWR-метра */
+		#elif CTLSTYLE_SW2016 || CTLSTYLE_SW2016VHF
+			static uint_fast8_t maxpwrcali = 216;	/* калибровочный параметр PWR-метра */
+		#elif CTLSTYLE_SW2016MINI
+			static uint_fast8_t maxpwrcali = 100;	/* калибровочный параметр PWR-метра */
+		#else
+			static uint_fast8_t maxpwrcali = 255;	/* калибровочный параметр PWR-метра */
+		#endif
+	#else
+		static uint_fast8_t maxpwrcali = 255;	/* калибровочный параметр PWR-метра */
+	#endif /* WITHPWRMTR || WITHSWRMTR */
+
+	#if WITHSWRMTR && ! WITHSHOWSWRPWR
+		static uint_fast8_t swrmode = 1;
+	#elif WITHPWRMTR
+		static const uint_fast8_t swrmode = 0;
+	#else
+		//static const uint_fast8_t swrmode = 0;
+	#endif
+#else /* WITHBARS */
+	static const uint_fast8_t swrmode = 0;
+#endif /* WITHBARS */
+
+#if WITHVOLTLEVEL && ! WITHREFSENSOR
+
+	// Напряжение fullscale = VREF * 5.3 = 3.3 * 5.3 = 17.5 вольта: сверху 4.3 килоом, синзу 1.0 килоом
+	// в схеме датчика делитель: сверху 4.3 килоома, снизу 1 килоом.
+	// ADCVREF_CPU - в сотнях милливольт.
+
+	static uint_fast8_t voltcalibr = (ADCVREF_CPU * (VOLTLEVEL_UPPER + VOLTLEVEL_LOWER) + VOLTLEVEL_LOWER / 2) / VOLTLEVEL_LOWER;		// Напряжение fullscale - что показать при ADCVREF_CPU вольт на входе АЦП
+
+#endif /* WITHVOLTLEVEL && ! WITHREFSENSOR */
 
 #if WITHDIRECTFREQENER
 	static uint_fast8_t editfreqmode;		/* Режим прямого ввода частоты */
