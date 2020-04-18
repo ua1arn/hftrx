@@ -7785,8 +7785,6 @@ void board_beep_initialize(void)
 
 
 // ADC intgerface functions
-#if 1//WITHCPUADCHW
-
 
 // Для поддержки случаев, когда входы АЦП используются не подряд
 // Готовые значения для выдачи в регистр ADCMUX
@@ -8304,11 +8302,14 @@ void board_adc_initialize(void)
 		}
 	}
 #endif /* WITHDEBUG */
+
+#if WITHCPUADCHW
+
 	hardware_adc_initialize();
-	adcfilters_initialize();
-}
 
 #endif /* WITHCPUADCHW */
+	adcfilters_initialize();
+}
 
 
 #if WITHKEYBOARD
