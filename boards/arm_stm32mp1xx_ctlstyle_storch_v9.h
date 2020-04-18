@@ -411,7 +411,10 @@
 	// --- Эти строки можно отключать, уменьшая функциональность готового изделия
 
 	#if LCDMODE_AT070TNA2 || LCDMODE_AT070TN90
-		//#define WITHTOUCHGUI	1	/* тестирование работы с сенсорным экраном */
+		#if 1
+			#define WITHTOUCHGUI	1	/* тестирование работы с сенсорным экраном */
+			#define WITHENCODER2NOFREQ	1	/* второй валкодер не перестраивает частоту */
+		#endif
 		#define WITHGUIMAXX		800	//DIM_X
 		#define WITHGUIMAXY		480	//DIM_Y
 	#endif /* LCDMODE_AT070TNA2 || LCDMODE_AT070TN90 */

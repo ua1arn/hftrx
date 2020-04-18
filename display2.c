@@ -4647,6 +4647,7 @@ enum
 	//#define SMALLCHARW 16 /* Font width */
 	static const FLASHMEM struct dzone dzones [] =
 	{
+		/* общий для всех режимов элемент */
 		{	0,	0,	display2_clearbg, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },
 
 		{	0,	0,	display_datetime12,	REDRM_BARS, PGALL,	},	// DATE&TIME Jan-01 13:40
@@ -4713,9 +4714,9 @@ enum
 		//{	28, DLE1,	display_freqmeter10, REDRM_BARS, PGALL, },	// измеренная частота опоры
 
 	#if WITHMENU
-		{	3,				30,	display2_multilinemenu_block_groups,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
-		{	LABELW + 5,		30,	display2_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
-		{	LABELW*2 + 6,	30,	display_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
+		{	3,				DLES,	display2_multilinemenu_block_groups,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
+		{	LABELW + 5,		DLES,	display2_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
+		{	LABELW*2 + 6,	DLES,	display_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
 	#endif /* WITHMENU */
 
 		// sleep mode display
@@ -4729,8 +4730,9 @@ enum
 #if WITHMENU
 	void display2_getmultimenu(multimenuwnd_t * p)
 	{
-		p->multilinemenu_max_rows = 15;
-		p->ystep = 4;	// количество ячеек разметки на одну строку меню
+		enum { YSTEP = 4 };		// количество ячеек разметки на одну строку меню
+		p->multilinemenu_max_rows = (DLE1 - DLES) / YSTEP;
+		p->ystep = YSTEP;	// количество ячеек разметки на одну строку меню
 		p->reverse = 1;
 		p->valuew = 10;	/* количество текстовых символов занимаемых полем вывола значения в меню. */
 	}
@@ -4739,9 +4741,9 @@ enum
 	/* получить координаты окна с панорамой и/или водопадом. */
 	void display2_getpipparams(pipparams_t * p)
 	{
-		p->x = 0; //GRID2X(0);	// позиция верхнего левого угла в пикселях
+		p->x = GRID2X(0);	// позиция верхнего левого угла в пикселях
 		p->y = GRID2Y(DLES);	// позиция верхнего левого угла в пикселях
-		p->w = DIM_X; //GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
+		p->w = GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
 		p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
 	}
 
