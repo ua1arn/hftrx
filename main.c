@@ -10212,9 +10212,9 @@ display2_smeter15(
 		tracemax = value > tracemax ? value : tracemax;	// защита от рассогласования значений
 
 		gv =
-			gs + normalize3(value, 		s9level - s9delta, s9delta, s9level + s9_60_delta, gm - gs, ge - gs);
+			gs + normalize3(value, 		s9level - s9delta, s9level, s9level + s9_60_delta, gm - gs, ge - gs);
 		gv_trace =
-			gs + normalize3(tracemax, 	s9level - s9delta, s9delta, s9level + s9_60_delta, gm - gs, ge - gs);
+			gs + normalize3(tracemax, 	s9level - s9delta, s9level, s9level + s9_60_delta, gm - gs, ge - gs);
 	}
 
 	int rv1 = 7 * GRID2Y(3);	//350;
