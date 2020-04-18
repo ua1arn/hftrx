@@ -4510,7 +4510,7 @@ enum
 		p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
 	}
 
-#elif DSTYLE_G_X800_Y480 && 1	//&& WITHSPECTRUMWF
+#elif DSTYLE_G_X800_Y480 && (LCDMODE_MAIN_PAGES > 1)	//&& WITHSPECTRUMWF
 	// вариант без сенсорного экрана
 	// стрелочный S-метр
 	// TFT панель AT070TN90
