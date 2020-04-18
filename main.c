@@ -10123,20 +10123,20 @@ uint_fast16_t normalize(
 	}
 }
 
-
-static uint_fast8_t display_mapbar(
-	uint_fast8_t val,
-	uint_fast8_t bottom, uint_fast8_t top,
-	uint_fast8_t mapleft,
-	uint_fast8_t mapinside,
-	uint_fast8_t mapright
+static
+uint_fast16_t normalize3(
+	uint_fast16_t raw,
+	uint_fast16_t rawmin,
+	uint_fast16_t rawmid,
+	uint_fast16_t rawmax,
+	uint_fast16_t range1,
+	uint_fast16_t range2
 	)
 {
-	if (val < bottom)
-		return mapleft;
-	if (val < top)
-		return mapinside;
-	return mapright;
+	if (raw < rawmid)
+		return normalize(raw, rawmin, rawmid, range1);
+	else
+		return normalize(raw - rawmid, 0, rawmax - rawmid, range2 - range1) + range1;
 }
 
 // ширина занимаемого места - 15 ячеек (240/16 = 15)
@@ -10210,16 +10210,11 @@ display2_smeter15(
 		uint_fast8_t tracemax;
 		uint_fast8_t value = board_getsmeter(& tracemax, 0, UINT8_MAX, 0);
 		tracemax = value > tracemax ? value : tracemax;	// защита от рассогласования значений
-		//s9delta = s9delta > s9level ? s9level : s9delta;
 
-		const uint_fast8_t leftmin = s9level - s9delta;
-		const uint_fast8_t mapleftval = display_mapbar(value, leftmin, s9level, 0, value - leftmin, s9delta);
-		const uint_fast8_t mapleftmax = display_mapbar(tracemax, leftmin, s9level, s9delta, tracemax - leftmin, s9delta); // s9delta - invisible
-		const uint_fast8_t maprightval = display_mapbar(value, s9level, s9level + s9_60_delta, 0, value - s9level, s9_60_delta);
-		const uint_fast8_t maprightmax = display_mapbar(tracemax, s9level, s9level + s9_60_delta, s9_60_delta, tracemax - s9level, s9_60_delta); // s9_60_delta - invisible
-
-		gv = gs + normalize(value, 120, 250, ge - gs); //270 + 24;
-		gv_trace = gs + normalize(tracemax, 120, 250, ge - gs);
+		gv =
+			gs + normalize3(value, 		s9level - s9delta, s9delta, s9level + s9_60_delta, gm - gs, ge - gs);
+		gv_trace =
+			gs + normalize3(tracemax, 	s9level - s9delta, s9delta, s9level + s9_60_delta, gm - gs, ge - gs);
 	}
 
 	int rv1 = 7 * GRID2Y(3);	//350;
