@@ -5341,6 +5341,10 @@ static void RAMFUNC_NONILINE cplxmlasave(cplxf *d, int len) {
 
 void hightests(void)
 {
+#if LCDMODE_LTDC
+	arm_hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
+#endif /* LCDMODE_LTDC */
+
 #if 0 && WITHDEBUG
 	{
 		// FPU speed test

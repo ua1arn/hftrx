@@ -190,7 +190,7 @@ volatile uint8_t * hwacc_getbufaddr_u8(
 	return & buffer [y * dx + x];
 }
 
-// Функция получает координаты и работает нал буфером в горищонталтной ориентации.
+// Функция получает координаты и работает над буфером в горищонталтной ориентации.
 void
 hwacc_fillrect_u8(
 	uint8_t * buffer,
@@ -272,7 +272,7 @@ hwacc_fillrect_u8(
 	MDMA_CH->CCR |= MDMA_CCR_SWRQ_Msk;
 	/* wait for complete */
 	while ((MDMA_CH->CISR & MDMA_CISR_CTCIF_Msk) == 0)	// Channel x Channel Transfer Complete interrupt flag
-		; // PRINTF("MDMA_CH->CISR=%08lX ", MDMA_CH->CISR)
+		hardware_nonguiyield();
 	//local_delay_ms(1250);
 	//TP();
 
@@ -295,7 +295,7 @@ hwacc_fillrect_u8(
 #endif
 }
 
-// Функция получает координаты и работает нал буфером в горищонталтной ориентации.
+// Функция получает координаты и работает над буфером в горищонталтной ориентации.
 void
 hwacc_fillrect_u16(
 	uint16_t * buffer,
@@ -378,7 +378,7 @@ hwacc_fillrect_u16(
 	MDMA_CH->CCR |= MDMA_CCR_SWRQ_Msk;
 	/* wait for complete */
 	while ((MDMA_CH->CISR & MDMA_CISR_CTCIF_Msk) == 0)	// Channel x Channel Transfer Complete interrupt flag
-		; // PRINTF("MDMA_CH->CISR=%08lX ", MDMA_CH->CISR)
+		hardware_nonguiyield();
 	//local_delay_ms(1250);
 	//TP();
 
@@ -418,7 +418,7 @@ hwacc_fillrect_u16(
 
 	/* ожидаем выполнения операции */
 	while ((DMA2D->CR & DMA2D_CR_START) != 0)
-		;
+		hardware_nonguiyield();
 
 
 #else
@@ -439,7 +439,7 @@ hwacc_fillrect_u16(
 #endif
 }
 
-// Функция получает координаты и работает нал буфером в горищонталтной ориентации.
+// Функция получает координаты и работает над буфером в горищонталтной ориентации.
 void
 hwacc_fillrect_u24(
 	PACKEDCOLORMAIN_T * buffer,
@@ -522,7 +522,7 @@ hwacc_fillrect_u24(
 	MDMA_CH->CCR |= MDMA_CCR_SWRQ_Msk;
 	/* wait for complete */
 	while ((MDMA_CH->CISR & MDMA_CISR_CTCIF_Msk) == 0)	// Channel x Channel Transfer Complete interrupt flag
-		; // PRINTF("MDMA_CH->CISR=%08lX ", MDMA_CH->CISR)
+		hardware_nonguiyield();
 	//local_delay_ms(1250);
 	//TP();
 
@@ -562,7 +562,7 @@ hwacc_fillrect_u24(
 
 	/* ожидаем выполнения операции */
 	while ((DMA2D->CR & DMA2D_CR_START) != 0)
-		;
+		hardware_nonguiyield();
 
 
 #else
@@ -1355,7 +1355,7 @@ static void hwaccel_copy(
 	MDMA_CH->CCR |= MDMA_CCR_SWRQ_Msk;
 	/* wait for complete */
 	while ((MDMA_CH->CISR & MDMA_CISR_CTCIF_Msk) == 0)	// Channel x Channel Transfer Complete interrupt flag
-		;
+		hardware_nonguiyield();
 	//TP();
 
 #elif WITHDMA2DHW
@@ -1390,7 +1390,7 @@ static void hwaccel_copy(
 
 	/* ожидаем выполнения операции */
 	while ((DMA2D->CR & DMA2D_CR_START) != 0)
-		;
+		hardware_nonguiyield();
 
 #else
 	// программная реализация
@@ -1849,7 +1849,7 @@ void display_hardware_initialize(void)
 #if LCDMODE_MAIN_PAGES > 1
 	// адрес отображения остановися после обновления
 #else
-	arm_hardware_ltdc_main_set((uintptr_t) colmain_fb_show());
+	arm_hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
 #endif /* LCDMODE_MAIN_PAGES > 1 */
 
 #endif /* WITHLTDCHW */
@@ -2457,7 +2457,7 @@ display_scroll_down(
 
 	/* ожидаем выполнения операции */
 	while ((DMA2D->CR & DMA2D_CR_START) != 0)
-		;
+		hardware_nonguiyield();
 
 #else /* LCDMODE_HORFILL */
 #endif /* LCDMODE_HORFILL */
@@ -2512,7 +2512,7 @@ display_scroll_up(
 
 	/* ожидаем выполнения операции */
 	while ((DMA2D->CR & DMA2D_CR_START) != 0)
-		;
+		hardware_nonguiyield();
 
 #else /* LCDMODE_HORFILL */
 #endif /* LCDMODE_HORFILL */
@@ -2981,5 +2981,3 @@ display_value_small(
 	}
 	display_wrdata_end();
 }
-
-
