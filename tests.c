@@ -5039,7 +5039,7 @@ void looptests(void)
 #if 0 && WITHCURRLEVEL
 	{
 		// Тестирование датчика тока
-		(void) hamradio_get_pacurrent_value(0);
+		(void) hamradio_get_pacurrent_value();
 	}
 #endif
 #if 0 && WITHVOLTLEVEL

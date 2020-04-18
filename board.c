@@ -8263,23 +8263,27 @@ void board_adc_filtering(void)
 static void
 adcfilters_initialize(void)
 {
+	const uint_fast8_t k = 3 * BOARD_ADCFILTER_LPF_DENOM / 100;
+
 	#if WITHBARS && ! WITHINTEGRATEDDSP
 		hardware_set_adc_filter(SMETERIX, BOARD_ADCFILTER_TRACETOP3S);
 	#endif /* WITHBARS && ! WITHINTEGRATEDDSP */
+
 	#if WITHTX && (WITHSWRMTR || WITHPWRMTR)
 		hardware_set_adc_filter(PWRI, BOARD_ADCFILTER_AVERAGEPWR);	// Включить фильтр
 		//hardware_set_adc_filter(PWRI, BOARD_ADCFILTER_DIRECT);		// Отключить фильтр
 	#endif /* WITHTX && (WITHSWRMTR || WITHPWRMTR) */
-	#if WITHCURRLEVEL
-		hardware_set_adc_filterLPF(PASENSEMRRIX, 3 * BOARD_ADCFILTER_LPF_DENOM / 100);	// Включить фильтр с параметром 0.03
+
+	#if WITHCURRLEVEL2
+		hardware_set_adc_filterLPF(PASENSEMRRIX2, k);	// Включить фильтр с параметром 0.03
+		hardware_set_adc_filterLPF(PAREFERMRRIX2, k);	// Включить фильтр с параметром 0.03
+	#elif WITHCURRLEVEL
+		hardware_set_adc_filterLPF(PASENSEMRRIX, k);	// Включить фильтр с параметром 0.03
 	#endif /* WITHCURRLEVEL */
-#if WITHTHERMOLEVEL
-	hardware_set_adc_filterLPF(XTHERMOMRRIX, 3 * BOARD_ADCFILTER_LPF_DENOM / 100);	// Включить фильтр с параметром 0.03
-#endif /* WITHTHERMOLEVEL */
-#if WITHTHERMOLEVEL
-	hardware_set_adc_filterLPF(XTHERMOMRRIX, 3 * BOARD_ADCFILTER_LPF_DENOM / 100);	// Включить фильтр с параметром 0.03
-	hardware_set_adc_filterLPF(XTHERMOMRRIX, 3 * BOARD_ADCFILTER_LPF_DENOM / 100);	// Включить фильтр с параметром 0.03
-#endif /* WITHTHERMOLEVEL */
+
+	#if WITHTHERMOLEVEL
+		hardware_set_adc_filterLPF(XTHERMOMRRIX, k);	// Включить фильтр с параметром 0.03
+	#endif /* WITHTHERMOLEVEL */
 
 }
 

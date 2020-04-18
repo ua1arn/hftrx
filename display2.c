@@ -61,7 +61,7 @@ static const COLORMAIN_T colorsbg_1freq [1] = { COLORMAIN_BLACK, };	// уста�
 
 // формирование данных спектра для последующего отображения
 // спектра или водопада
-static void dsp_latchwaterfall(
+static void display2_latchwaterfall(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	dctx_t * pctx
@@ -1175,7 +1175,7 @@ static void display_voltlevel4(
 }
 
 // отображение целых градусов
-static void display_thermo4(
+static void display2_thermo4(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	dctx_t * pctx
@@ -1202,17 +1202,17 @@ static void display_thermo4(
 #endif /* WITHTHERMOLEVEL */
 }
 
-// +d.ddA - 6 places (with "A")
-// amphermeter with "A"
-static void display_currlevelA6(
+// +d.ddA - 5 places (with "A")
+// +dd.dA - 5 places (with "A")
+static void display2_currlevelA6(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	dctx_t * pctx
 	)
 {
-#if (WITHCURRLEVEL_ACS712_30A || WITHCURRLEVEL_ACS712_20A)
+#if WITHCURRLEVEL
+	#if (WITHCURRLEVEL_ACS712_30A || WITHCURRLEVEL_ACS712_20A)
 
-	#if WITHCURRLEVEL
 		int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
 
 		colmain_setcolors(colorsfg_1state [0], colorsbg_1state [0]);
@@ -1220,14 +1220,11 @@ static void display_currlevelA6(
 		do
 		{
 			display_value_small(x + CHARS2GRID(0), y + lowhalf, drain, 3 | WMINUSFLAG, 1, 255, 1, lowhalf);
-			//display_gotoxy(x + CHARS2GRID(4), y + lowhalf);
-			//display_string_P(PSTR("A"), lowhalf);
 		} while (lowhalf --);
-	#endif /* WITHCURRLEVEL */
+		display_at_P(x + CHARS2GRID(5), y, PSTR("A"));
 
-#else /* WITHCURRLEVEL_ACS712_30A */
-	// dd.d - 5 places (without "A")
-	#if WITHCURRLEVEL
+	#else /* WITHCURRLEVEL_ACS712_30A */
+		// dd.d - 5 places (without "A")
 		int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
 
 		colmain_setcolors(colorsfg_1state [0], colorsbg_1state [0]);
@@ -1237,21 +1234,22 @@ static void display_currlevelA6(
 			display_value_small(x + CHARS2GRID(0), y + lowhalf, drain, 3 | WMINUSFLAG, 2, 255, 0, lowhalf);
 		} while (lowhalf --);
 		display_at_P(x + CHARS2GRID(5), y, PSTR("A"));
-	#endif /* WITHCURRLEVEL */
 
-#endif /* WITHCURRLEVEL_ACS712_30A */
+	#endif /* WITHCURRLEVEL_ACS712_30A */
+#endif /* WITHCURRLEVEL */
 }
 
-// d.dd - 5 places (without "A")
-static void display_currlevel5(
+// +d.dd - 5 places (without "A")
+// +dd.d - 5 places (without "A")
+static void display2_currlevel5(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	dctx_t * pctx
 	)
 {
-#if (WITHCURRLEVEL_ACS712_30A || WITHCURRLEVEL_ACS712_20A)
+#if WITHCURRLEVEL
+	#if (WITHCURRLEVEL_ACS712_30A || WITHCURRLEVEL_ACS712_20A)
 
-	#if WITHCURRLEVEL
 		int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
 
 		colmain_setcolors(colorsfg_1state [0], colorsbg_1state [0]);
@@ -1259,28 +1257,11 @@ static void display_currlevel5(
 		do
 		{
 			display_value_small(x + CHARS2GRID(0), y + lowhalf, drain, 3 | WMINUSFLAG, 1, 255, 1, lowhalf);
-			//display_gotoxy(x + CHARS2GRID(4), y + lowhalf);
-			//display_string_P(PSTR("A"), lowhalf);
 		} while (lowhalf --);
-	#endif /* WITHCURRLEVEL */
+		//display_at_P(x + CHARS2GRID(5), y, PSTR("A"));
 
-#else /* WITHCURRLEVEL_ACS712_30A */
-
-	#if WITHCURRLEVEL2
-
-		int_fast16_t drain = hamradio_get_pacurrent2_value();	// Ток в сотнях милиампер (до 25.5 ампера), может быть отрицательным
-
-		colmain_setcolors(colorsfg_1state [0], colorsbg_1state [0]);
-		uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
-		do
-		{
-			display_value_small(x + CHARS2GRID(0), y + lowhalf, drain, 3 | WMINUSFLAG, 1, 255, 0, lowhalf);
-			//display_gotoxy(x + CHARS2GRID(4), y + lowhalf);
-			//display_string_P(PSTR("A"), lowhalf);
-		} while (lowhalf --);
-
-	#elif WITHCURRLEVEL
-
+	#else /* WITHCURRLEVEL_ACS712_30A */
+		// dd.d - 5 places (without "A")
 		int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
 
 		colmain_setcolors(colorsfg_1state [0], colorsbg_1state [0]);
@@ -1288,32 +1269,11 @@ static void display_currlevel5(
 		do
 		{
 			display_value_small(x + CHARS2GRID(0), y + lowhalf, drain, 3 | WMINUSFLAG, 2, 255, 0, lowhalf);
-			//display_gotoxy(x + CHARS2GRID(4), y + lowhalf);
-			//display_string_P(PSTR("A"), lowhalf);
 		} while (lowhalf --);
-	#endif /* WITHCURRLEVEL */
+		//display_at_P(x + CHARS2GRID(5), y, PSTR("A"));
 
-#endif /* WITHCURRLEVEL_ACS712_30A */
-}
-// dd.d - 5 places (without "A")
-static void display_currlevel5alt(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
-	dctx_t * pctx
-	)
-{
-#if WITHCURRLEVEL && (WITHCURRLEVEL_ACS712_30A || WITHCURRLEVEL_ACS712_20A)
-	int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
-
-	colmain_setcolors(colorsfg_1state [0], colorsbg_1state [0]);
-	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
-	do
-	{
-		display_value_small(x + CHARS2GRID(0), y + lowhalf, drain, 3 | WMINUSFLAG, 1, 255, 1, lowhalf);
-		//display_gotoxy(x + CHARS2GRID(4), y + lowhalf);	
-		//display_string_P(PSTR("A"), lowhalf);
-	} while (lowhalf --);
-#endif /* WITHCURRLEVEL && (WITHCURRLEVEL_ACS712_30A || WITHCURRLEVEL_ACS712_20A) */
+	#endif /* WITHCURRLEVEL_ACS712_30A */
+#endif /* WITHCURRLEVEL */
 }
 
 // Отображение уровня сигнала в dBm
@@ -1362,7 +1322,7 @@ int_fast32_t display_zoomedbw(void)
 }
 #endif /* WITHIF4DSP */
 
-static void display_span9(
+static void display2_span9(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	dctx_t * pctx
@@ -1582,7 +1542,7 @@ static void display_time5(
 
 // Печать времени - только часы и минуты, без секунд
 // Jan-01 13:40
-static void display_datetime12(
+static void display2_datetime12(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	dctx_t * pctx
@@ -1726,7 +1686,7 @@ enum
 
 	#if WITHVOLTLEVEL && WITHCURRLEVEL
 		{	0, 3,	display_voltlevel4, REDRM_VOLT, DPAGEEXT, },	// voltmeter with "V"
-		{	5, 3,	display_currlevel5, REDRM_VOLT, DPAGEEXT, },	// without "A"
+		{	5, 3,	display2_currlevel5, REDRM_VOLT, DPAGEEXT, },	// without "A"
 	#endif /* WITHVOLTLEVEL && WITHCURRLEVEL */
 #if WITHIF4DSP
 	#if WITHUSEAUDIOREC
@@ -2034,7 +1994,7 @@ enum
 
 	#if WITHVOLTLEVEL && WITHCURRLEVEL
 		{	0, 1,	display_voltlevelV5, REDRM_VOLT, REDRSUBSET(DPAGE_VOLTS), },	// voltmeter with "V"
-		{	6, 1,	display_currlevelA6, REDRM_VOLT, REDRSUBSET(DPAGE_VOLTS), },	// amphermeter with "A"
+		{	6, 1,	display2_currlevelA6, REDRM_VOLT, REDRSUBSET(DPAGE_VOLTS), },	// amphermeter with "A"
 	#endif /* WITHVOLTLEVEL && WITHCURRLEVEL */
 	#if WITHMODEM
 		{	0, 1,	display_freqdelta8, REDRM_BARS, REDRSUBSET(DPAGE_BPSK), },	// выход ЧМ демодулятора
@@ -2542,7 +2502,7 @@ enum
 			{	19, 3,	display_mode3_a,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 
 			{	0, 5,	display_voltlevel4, REDRM_VOLT, REDRSUBSET(DPAGE0), },	// voltmeter without "V"
-			{	0, 6,	display_currlevelA6, REDRM_VOLT, REDRSUBSET(DPAGE0), },	// amphermeter with "A"
+			{	0, 6,	display2_currlevelA6, REDRM_VOLT, REDRSUBSET(DPAGE0), },	// amphermeter with "A"
 			{	13, 5,	display_vfomode3,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// SPLIT
 			{	16, 5,	display_freqX_b,	REDRM_FRQB, REDRSUBSET(DPAGE0), },	// x=9 then !WIDEFREQ
 			{	19, 5,	display_mode3_b,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
@@ -3186,7 +3146,7 @@ enum
 			{	0, 14,	display2_bars,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// S-METER, SWR-METER, POWER-METER
 			{	0, 16,	display2_legend,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// Отображение оцифровки шкалы S-метра
 
-			{	0, 18,	display_datetime12,	REDRM_BARS, REDRSUBSET(DPAGE0), },	// DATE&TIME Jan-01 13:40
+			{	0, 18,	display2_datetime12,	REDRM_BARS, REDRSUBSET(DPAGE0), },	// DATE&TIME Jan-01 13:40
 			//{	0, 18,	display_time5,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// TIME HH:MM
 			{	0, 20,	display_lockstate4, REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	9, 20,	display_voxtune4,	REDRM_MODE, REDRSUBSET(DPAGE0), },
@@ -3377,7 +3337,7 @@ enum
 	#endif /* WITHVOLTLEVEL  */
 	#if defined (RTC1_TYPE)
 			//{	18,	14,	display_time8,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// TIME
-			{	18,	14,	display_datetime12,	REDRM_BARS, REDRSUBSET(DPAGE0), },	// DATE&TIME Jan-01 13:40
+			{	18,	14,	display2_datetime12,	REDRM_BARS, REDRSUBSET(DPAGE0), },	// DATE&TIME Jan-01 13:40
 	#endif /* defined (RTC1_TYPE) */
 		#if WITHNOTCHONOFF || WITHNOTCHFREQ
 			{	27, 14,	display_notch3, REDRM_MODE, REDRSUBSET(DPAGE0), },	// 3.7
@@ -3389,7 +3349,7 @@ enum
 			{	LABELW*2 + 3,	0,	display_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
 		#if WITHVOLTLEVEL && WITHCURRLEVEL
 			{	0,	9,	display_voltlevelV5, REDRM_VOLT, REDRSUBSET_MENU, },	// voltmeter with "V"
-			{	6,	9,	display_currlevelA6, REDRM_VOLT, REDRSUBSET_MENU, },	// amphermeter with "A"
+			{	6,	9,	display2_currlevelA6, REDRM_VOLT, REDRSUBSET_MENU, },	// amphermeter with "A"
 		#endif /* WITHVOLTLEVEL && WITHCURRLEVEL */
 	#endif /* WITHMENU */
 		};
@@ -3495,7 +3455,7 @@ enum
 			{	0,	9,	display2_bars,		REDRM_BARS, PG0, },	// S-METER, SWR-METER, POWER-METER
 			{	0,	10,	display2_legend,	REDRM_MODE, PG0, },	// Отображение оцифровки шкалы S-метра
 			/* ---------------------------------- */
-			{	0,	9,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
+			{	0,	9,	display2_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 			{	0,	9,	display2_spectrum,	REDRM_BARS, PG1, },// подготовка изображения спектра
 			{	0,	9,	display2_colorbuff,	REDRM_BARS,	PG1, },// Отображение водопада и/или спектра
 			/* ---------------------------------- */
@@ -3504,7 +3464,7 @@ enum
 			{	6,	14,	display_voltlevelV5, REDRM_VOLT, PG0, },	// voltmeter with "V"
 		#endif /* WITHVOLTLEVEL  */
 		#if WITHCURRLEVEL
-			{	11, 14,	display_currlevelA6, REDRM_VOLT, PG0, },	// amphermeter with "A"
+			{	11, 14,	display2_currlevelA6, REDRM_VOLT, PG0, },	// amphermeter with "A"
 		#endif /*  WITHCURRLEVEL */
 		#if WITHAMHIGHKBDADJ
 			{	6, 14,	display_amfmhighcut4,REDRM_MODE, PG0, },	// 3.70
@@ -3521,7 +3481,7 @@ enum
 			{	LABELW*2 + 3,	9,	display_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
 		#if WITHVOLTLEVEL && WITHCURRLEVEL
 			//{	0,	9,	display_voltlevelV5, REDRM_VOLT, REDRSUBSET_MENU, },	// voltmeter with "V"
-			//{	6,	9,	display_currlevelA6, REDRM_VOLT, REDRSUBSET_MENU, },	// amphermeter with "A"
+			//{	6,	9,	display2_currlevelA6, REDRM_VOLT, REDRSUBSET_MENU, },	// amphermeter with "A"
 		#endif /* WITHVOLTLEVEL && WITHCURRLEVEL */
 	#endif /* WITHMENU */
 		};
@@ -3641,7 +3601,7 @@ enum
 			/* ---------------------------------- */
 		#if WITHDSPEXTDDC
 
-			{	0,	9,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
+			{	0,	9,	display2_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 			{	0,	9,	display2_spectrum,	REDRM_BARS, PG1, },// подготовка изображения спектра
 			{	0,	9,	display2_colorbuff,	REDRM_BARS,	PG1, },// Отображение водопада и/или спектра
 		#else /* WITHDSPEXTDDC */
@@ -3654,7 +3614,7 @@ enum
 			{	6,	14,	display_voltlevelV5, REDRM_VOLT, PG0, },	// voltmeter with "V"
 		#endif /* WITHVOLTLEVEL  */
 		#if WITHCURRLEVEL
-			{	11, 14,	display_currlevelA6, REDRM_VOLT, PG0, },	// amphermeter with "A"
+			{	11, 14,	display2_currlevelA6, REDRM_VOLT, PG0, },	// amphermeter with "A"
 		#endif /*  WITHCURRLEVEL */
 		#if WITHAMHIGHKBDADJ
 			{	6, 14,	display_amfmhighcut4,REDRM_MODE, PG0, },	// 3.70
@@ -3671,7 +3631,7 @@ enum
 			//{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
 		#if WITHVOLTLEVEL && WITHCURRLEVEL
 			//{	0,	14,	display_voltlevelV5, REDRM_VOLT, REDRSUBSET_MENU, },	// voltmeter with "V"
-			//{	6,	14,	display_currlevelA6, REDRM_VOLT, REDRSUBSET_MENU, },	// amphermeter with "A"
+			//{	6,	14,	display2_currlevelA6, REDRM_VOLT, REDRSUBSET_MENU, },	// amphermeter with "A"
 		#endif /* WITHVOLTLEVEL && WITHCURRLEVEL */
 	#endif /* WITHMENU */
 		};
@@ -3789,7 +3749,7 @@ enum
 		{	0,	15,	display2_bars,		REDRM_BARS, PG0, },	// S-METER, SWR-METER, POWER-METER
 		{	27, 15,	display_smeter5,	REDRM_BARS, PG0, },	// signal level
 
-		{	0,	18,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
+		{	0,	18,	display2_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 		{	0,	18,	display2_spectrum,	REDRM_BARS, PG0, },// подготовка изображения спектра
 		{	0,	18,	display2_waterfall,	REDRM_BARS, PG0, },// подготовка изображения водопада
 		{	0,	18,	display2_colorbuff,	REDRM_BARS,	PG0, },// Отображение водопада и/или спектра
@@ -3801,7 +3761,7 @@ enum
 		{	0, 28,	display_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
 	#endif /* WITHVOLTLEVEL */
 	#if WITHCURRLEVEL
-		{	6, 28,	display_currlevelA6, REDRM_VOLT, PGALL, },	// amphermeter with "A"
+		{	6, 28,	display2_currlevelA6, REDRM_VOLT, PGALL, },	// amphermeter with "A"
 	#endif /* WITHCURRLEVEL */
 	#if defined (RTC1_TYPE)
 		{	13, 28,	display_time8,		REDRM_BARS, PGALL, },	// TIME
@@ -4011,7 +3971,7 @@ enum
 			//---
 			{	0,	18,	display2_bars,		REDRM_BARS, PG0, },	// S-METER, SWR-METER, POWER-METER
 		#if WITHIF4DSP
-			{	0,	18,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
+			{	0,	18,	display2_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 			{	0,	18,	display2_spectrum,	REDRM_BARS, PG1, },// подготовка изображения спектра
 			{	0,	18,	display2_waterfall,	REDRM_BARS, PG1, },// подготовка изображения водопада
 			{	0,	18,	display2_colorbuff,	REDRM_BARS,	PG1, },// Отображение водопада и/или спектра
@@ -4025,7 +3985,7 @@ enum
 			{	0, 28,	display_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
 		#endif /* WITHVOLTLEVEL */
 		#if WITHCURRLEVEL
-			{	6, 28,	display_currlevelA6, REDRM_VOLT, PGALL, },	// amphermeter with "A"
+			{	6, 28,	display2_currlevelA6, REDRM_VOLT, PGALL, },	// amphermeter with "A"
 		#endif /* WITHCURRLEVEL */
 		#if defined (RTC1_TYPE)
 			{	13, 28,	display_time8,		REDRM_BARS, PGALL, },	// TIME
@@ -4183,7 +4143,7 @@ enum
 		{	0,	24,	display2_bars,		REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
 		{	25, 24, display_siglevel4, REDRM_BARS, PGSWR, },	// уровень сигнала
 		//{	25, 24, display_smeter5, 	REDRM_BARS, PGSWR, },	// уровень сигнала в баллах S
-		{	0,	28,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
+		{	0,	28,	display2_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 		{	0,	28,	display2_spectrum,	REDRM_BARS, PGSPE, },// подготовка изображения спектра
 		{	0,	28,	display2_waterfall,	REDRM_BARS, PGWFL, },// подготовка изображения водопада
 		{	0,	28,	display2_colorbuff,	REDRM_BARS,	PGWFL | PGSPE, },// Отображение водопада и/или спектра
@@ -4195,19 +4155,15 @@ enum
 		{	0,	51,	display_time5,		REDRM_BARS, PGALL,	},	// TIME
 		{	6, 	51,	display_atu3,		REDRM_MODE, PGALL, },	// TUNER state (optional)
 		{	10, 51,	display_byp3,		REDRM_MODE, PGALL, },	// TUNER BYPASS state (optional)
-		{	14, 51,	display_thermo4,	REDRM_VOLT, PGALL, },	// thermo sensor
-	#if (WITHCURRLEVEL_ACS712_30A || WITHCURRLEVEL_ACS712_20A)
-		{	19, 51,	display_currlevel5alt, REDRM_VOLT, PGALL, },	// PA drain current dd.d without "A"
-	#else
-		{	19, 51,	display_currlevel5, REDRM_VOLT, PGALL, },	// PA drain current d.dd without "A"
-	#endif
+		{	14, 51,	display2_thermo4,	REDRM_VOLT, PGALL, },	// thermo sensor
+		{	19, 51,	display2_currlevel5, REDRM_VOLT, PGALL, },	// PA drain current d.dd without "A"
 		{	25, 51,	display_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
 	#if WITHAMHIGHKBDADJ
 		{	25, 51,	display_amfmhighcut5,REDRM_MODE, PGALL, },	// 13.70
 	#endif /* WITHAMHIGHKBDADJ */
 
 		// sleep mode display
-		{	5,	24,	display_datetime12,	REDRM_BARS, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40
+		{	5,	24,	display2_datetime12,	REDRM_BARS, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40
 		{	20, 24,	display_voltlevelV5, REDRM_VOLT, PGSLP, },	// voltmeter with "V"
 
 	#if WITHMENU
@@ -4351,16 +4307,12 @@ enum
 		//{	0,	51,	display_samfreqdelta8, REDRM_BARS, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
 		{	0,	51,	display_time8,		REDRM_BARS, PGALL,	},	// TIME
 		{	9,	51,	display_smeter5,	REDRM_BARS, PGALL, },	// signal level in S points
-		{	15, 51,	display_thermo4,	REDRM_VOLT, PGALL, },	// thermo sensor
-	#if CTLSTYLE_RA4YBO || CTLSTYLE_RA4YBO_V3
-		{	19, 51,	display_currlevel5alt, REDRM_VOLT, PGALL, },	// PA drain current dd.d without "A"
-	#else
-		{	19, 51,	display_currlevel5, REDRM_VOLT, PGALL, },	// PA drain current d.dd without "A"
-	#endif
+		{	15, 51,	display2_thermo4,	REDRM_VOLT, PGALL, },	// thermo sensor
+		{	19, 51,	display2_currlevel5, REDRM_VOLT, PGALL, },	// PA drain current d.dd without "A"
 		{	25, 51,	display_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
 
 		// sleep mode display
-		{	5,	24,	display_datetime12,	REDRM_BARS, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40
+		{	5,	24,	display2_datetime12,	REDRM_BARS, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40
 		{	20, 24,	display_voltlevelV5, REDRM_VOLT, PGSLP, },	// voltmeter with "V"
 
 	#if WITHMENU
@@ -4519,7 +4471,7 @@ enum
 		{	0,	0, display_siglevel4, 	REDRM_BARS, PGSWR, },	// signal level dBm
 //		{	36, 30,	display_freqdelta8, REDRM_BARS, PGSWR, },	// выход ЧМ демодулятора
 	#if WITHSPECTRUMWF
-		{	0,	DLES,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
+		{	0,	DLES,	display2_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 		{	0,	DLES,	display2_spectrum,	REDRM_BARS, PGSPE, },// подготовка изображения спектра
 		{	0,	DLES,	display2_waterfall,	REDRM_BARS, PGWFL, },// подготовка изображения водопада
 		{	0,	DLES,	gui_update, 		REDRM_BARS, PGSPE, },
@@ -4533,7 +4485,7 @@ enum
 	#endif /* WITHAMHIGHKBDADJ */
 		//{	XX,	DLE1,	display_samfreqdelta8, REDRM_BARS, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
 		// sleep mode display
-		{	5,	25,	display_datetime12,	REDRM_BARS, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40
+		{	5,	25,	display2_datetime12,	REDRM_BARS, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40
 		{	20, 25,	display_voltlevelV5, REDRM_VOLT, PGSLP, },	// voltmeter with "V"
 
 		{	0,	0,	display2_nextfb, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },
@@ -4650,7 +4602,7 @@ enum
 		/* общий для всех режимов элемент */
 		{	0,	0,	display2_clearbg, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },
 
-		{	0,	0,	display_datetime12,	REDRM_BARS, PGALL,	},	// DATE&TIME Jan-01 13:40
+		{	0,	0,	display2_datetime12,	REDRM_BARS, PGALL,	},	// DATE&TIME Jan-01 13:40
 		{	16,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
 		{	19,	0,	display_ant5,		REDRM_MODE, PGALL, },
 		{	25,	0,	display_att4,		REDRM_MODE, PGALL, },
@@ -4667,11 +4619,7 @@ enum
 	#endif /* WITHENCODER2 */
 
 
-	#if (WITHCURRLEVEL_ACS712_30A || WITHCURRLEVEL_ACS712_20A)
-		{	0, 25,	display_currlevel5alt, REDRM_VOLT, PGALL, },	// PA drain current dd.d without "A"
-	#else
-		{	0, 25,	display_currlevel5, REDRM_VOLT, PGALL, },	// PA drain current d.dd without "A"
-	#endif
+		{	0, 25,	display2_currlevel5, REDRM_VOLT, PGALL, },	// PA drain current d.dd without "A"
 		{	8, 25,	display_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
 	#if WITHAMHIGHKBDADJ
 		//{	XX, DLE1,	display_amfmhighcut4,REDRM_MODE, PGALL, },	// 3.70
@@ -4698,18 +4646,18 @@ enum
 		{	37, 20,	display_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 
 		{	0,	30, display_siglevel4, 	REDRM_BARS, PGALL, },	// signal level dBm
-		{	5,	30,	display_span9,		REDRM_MODE, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
+		{	5,	30,	display2_span9,		REDRM_MODE, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
 		{	15, 30,	display_freqdelta8, REDRM_BARS, PGALL, },	// выход ЧМ демодулятора
 		//{	46, 30,	display_agc3,		REDRM_MODE, PGALL, },	// AGC mode
 
 	#if WITHSPECTRUMWF
-		{	0,	DLES,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
+		{	0,	DLES,	display2_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 		{	0,	DLES,	display2_spectrum,	REDRM_BARS, PGSPE, },// подготовка изображения спектра
 		{	0,	DLES,	display2_waterfall,	REDRM_BARS, PGWFL, },// подготовка изображения водопада
 		{	0,	DLES,	display2_colorbuff,	REDRM_BARS,	PGWFL | PGSPE, },// Отображение водопада и/или спектра
 	#endif /* WITHSPECTRUMWF */
 
-		{	23, DLE1,	display_thermo4,	REDRM_VOLT, PGALL, },	// thermo sensor
+		{	23, DLE1,	display2_thermo4,	REDRM_VOLT, PGALL, },	// thermo sensor
 		//{	28, DLE1,	display_usb3,		REDRM_BARS, PGALL, },	// USB host status
 		//{	28, DLE1,	display_freqmeter10, REDRM_BARS, PGALL, },	// измеренная частота опоры
 
@@ -4720,7 +4668,7 @@ enum
 	#endif /* WITHMENU */
 
 		// sleep mode display
-		{	5,	25,	display_datetime12,	REDRM_BARS, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40
+		{	5,	25,	display2_datetime12,	REDRM_BARS, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40
 		{	20, 25,	display_voltlevelV5, REDRM_VOLT, PGSLP, },	// voltmeter with "V"
 
 		/* общий для всех режимов элемент */
@@ -4881,7 +4829,7 @@ enum
 		{	36, 30,	display_freqdelta8, REDRM_BARS, PGSWR, },	// выход ЧМ демодулятора
 		{	46, 30,	display_agc3,		REDRM_MODE, PGALL, },	// AGC mode
 	#if WITHSPECTRUMWF
-		{	0,	DLES,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
+		{	0,	DLES,	display2_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 		{	0,	DLES,	display2_spectrum,	REDRM_BARS, PGSPE, },// подготовка изображения спектра
 		{	0,	DLES,	display2_waterfall,	REDRM_BARS, PGWFL, },// подготовка изображения водопада
 		{	0,	DLES,	display2_colorbuff,	REDRM_BARS,	PGWFL | PGSPE, },// Отображение водопада и/или спектра
@@ -4892,17 +4840,13 @@ enum
 
 
 
-		{	0,	DLE1,	display_datetime12,	REDRM_BARS, PGALL,	},	// DATE&TIME Jan-01 13:40
-		{	13,	DLE1,	display_span9,		REDRM_MODE, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
-		{	23, DLE1,	display_thermo4,	REDRM_VOLT, PGALL, },	// thermo sensor
+		{	0,	DLE1,	display2_datetime12,	REDRM_BARS, PGALL,	},	// DATE&TIME Jan-01 13:40
+		{	13,	DLE1,	display2_span9,		REDRM_MODE, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
+		{	23, DLE1,	display2_thermo4,	REDRM_VOLT, PGALL, },	// thermo sensor
 		//{	28, DLE1,	display_usb3,		REDRM_BARS, PGALL, },	// USB host status
 		//{	28, DLE1,	display_freqmeter10, REDRM_BARS, PGALL, },	// измеренная частота опоры
 
-	#if (WITHCURRLEVEL_ACS712_30A || WITHCURRLEVEL_ACS712_20A)
-		{	39, DLE1,	display_currlevel5alt, REDRM_VOLT, PGALL, },	// PA drain current dd.d without "A"
-	#else
-		{	39, DLE1,	display_currlevel5, REDRM_VOLT, PGALL, },	// PA drain current d.dd without "A"
-	#endif
+		{	39, DLE1,	display2_currlevel5, REDRM_VOLT, PGALL, },	// PA drain current d.dd without "A"
 		{	45, DLE1,	display_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
 	#if WITHAMHIGHKBDADJ
 		//{	XX, DLE1,	display_amfmhighcut4,REDRM_MODE, PGALL, },	// 3.70
@@ -4916,7 +4860,7 @@ enum
 	#endif /* WITHMENU */
 
 		// sleep mode display
-		{	5,	25,	display_datetime12,	REDRM_BARS, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40
+		{	5,	25,	display2_datetime12,	REDRM_BARS, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40
 		{	20, 25,	display_voltlevelV5, REDRM_VOLT, PGSLP, },	// voltmeter with "V"
 
 		/* общий для всех режимов элемент */
@@ -6064,7 +6008,7 @@ static void display_wfputrow(uint_fast16_t x, uint_fast16_t y, const PACKEDCOLOR
 
 // формирование данных спектра для последующего отображения
 // спектра или водопада
-static void dsp_latchwaterfall(
+static void display2_latchwaterfall(
 	uint_fast8_t x0,
 	uint_fast8_t y0,
 	dctx_t * pctx
@@ -6310,7 +6254,7 @@ PACKEDCOLORMAIN_T * getscratchwnd(void)
 }
 
 // Stub
-static void dsp_latchwaterfall(
+static void display2_latchwaterfall(
 	uint_fast8_t x0, 
 	uint_fast8_t y0, 
 	dctx_t * pctx

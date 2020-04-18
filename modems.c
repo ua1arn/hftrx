@@ -717,7 +717,7 @@ static void modem_spool(void * ctx)
 		// $GPMDR,2,160550000,30000,13.4,+1.55,75,003E003A3234510D37343138,NN*HH
 		const uint32_t * const uidbase = (const uint32_t *) UID_BASE;
 		const uint_fast8_t volt = hamradio_get_volt_value();	// Напряжение в сотнях милливольт т.е. 151 = 15.1 вольта
-		const int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
+		const int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер, может быть отрицательным
 		const size_t len = local_snprintf_P(buff, sizeof buff / sizeof buff [0], 
 			PSTR("$GPMDR,"
 			"%ld,"	// type of information

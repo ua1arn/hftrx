@@ -1761,11 +1761,27 @@ static void gui_main_process(void);
 		if (hamradio_get_tx())
 		{
 			static int_fast16_t drain;
-			if(gui.timer_1sec_updated)
-				drain = hamradio_get_pacurrent_value();
-			if (drain < 0) drain = 0;
+			if (gui.timer_1sec_updated)
+			{
+				drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (может быть отрицательным)
+				if (drain < 0)
+				{
+					drain = 0;	// FIXME: без калибровки нуля (как у нас сейчас) могут быть ошибки установки тока
+				}
+			}
+
+		#if (WITHCURRLEVEL_ACS712_30A || WITHCURRLEVEL_ACS712_20A)
+			// для больших токов (более 9 ампер)
+			ldiv_t t = ldiv(drain / 10, 10);
+			local_snprintf_P(buf, sizeof buf / sizeof buf [0], PSTR("%2d.%01dA "), t.quot, t.rem);
+
+		#else /* (WITHCURRLEVEL_ACS712_30A || WITHCURRLEVEL_ACS712_20A) */
+			// Датчик тока до 5 ампер
 			ldiv_t t = ldiv(drain, 100);
 			local_snprintf_P(buf, sizeof buf / sizeof buf [0], PSTR("%d.%02dA "), t.quot, t.rem);
+
+		#endif /* (WITHCURRLEVEL_ACS712_30A || WITHCURRLEVEL_ACS712_20A) */
+
 			colpip_string2_tbg(fr, DIM_X, DIM_Y, 75, 145, buf, COLORPIP_WHITE);
 		}
 	#endif /* WITHCURRLEVEL */

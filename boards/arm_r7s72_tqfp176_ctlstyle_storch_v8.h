@@ -516,6 +516,7 @@
 	#else
 		// UA1CEI PA board: MCP3208 at targetext2 - P2_0 external SPI device (PA BOARD ADC)
 		VOLTSOURCE = BOARD_ADCX2IN(4),		// MCP3208 CH7 Средняя точка делителя напряжения, для АКБ
+		VOLTMRRIX = BOARD_ADCMRRIN(0),		// кеш - индекc не должен повторяться в конфигурации
 
 		FWD = BOARD_ADCX2IN(2),
 		REF = BOARD_ADCX2IN(3),
@@ -524,9 +525,13 @@
 		FWDMRRIX = BOARD_ADCMRRIN(3),
 		PWRMRRIX = BOARD_ADCMRRIN(4),
 
+		#define WITHCURRLEVEL_ACS712_30A 1	// PA current sense - ACS712ELCTR-30B-T chip
+		//#define WITHCURRLEVEL_ACS712_20A 1	// PA current sense - ACS712ELCTR-20B-T chip
 		#define WITHCURRLEVEL2	1	/* отображение тока оконечного каскада */
 		PASENSEIX2 = BOARD_ADCX2IN(0),	// DRAIN
 		PAREFERIX2 = BOARD_ADCX2IN(1),	// reference (1/2 напряжения питания ACS712ELCTR-30B-T).
+		PASENSEMRRIX2 = BOARD_ADCMRRIN(5),		// кеш - индекc не должен повторяться в конфигурации
+		PAREFERMRRIX2 = BOARD_ADCMRRIN(6),		// кеш - индекc не должен повторяться в конфигурации
 	#endif
 
 		KI0 = 3, KI1 = 4, KI2 = 5, KI3 = 6, KI4 = 7		// клавиатура

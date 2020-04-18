@@ -9279,55 +9279,36 @@ int_fast16_t hamradio_get_temperature_value(void)
 // PA current sense - ACS712ELCTR-30B-T chip
 int_fast16_t hamradio_get_pacurrent_value(void)
 {
-#if WITHCURRLEVEL
 	// Чувствительность датчиков:
 	// x05B - 0.185 V/A
 	// x20A - 0.100 V/A
 	// x30A - 0.066 V/A
 
-	#if WITHCURRLEVEL_ACS712_30A
+#if WITHCURRLEVEL_ACS712_30A
 	// x30A - 0.066 V/A
 	enum {
 		sens = 66,			// millivolts / ampher
-		scale = 100			// результат - в десятых долях ампера
+		scale = 100			// результат - в сотых долях ампера
 	};
-	#elif WITHCURRLEVEL_ACS712_20A
-		//  x20A - 0.100 V/A
-		enum {
-			sens = 100,			// millivolts / ampher
-			scale = 100			// результат - в десятых долях ампера
-		};
-	#else /* WITHCURRLEVEL_ACS712_30A */
-		// x05B - 0.185 V/A
-		enum {
-			sens = 185,			// millivolts / ampher
-			scale = 100			// результат - в сотых долях ампера
-		};
-	#endif /* CTLSTYLE_RA4YBO_V3 */
+#elif WITHCURRLEVEL_ACS712_20A
+	//  x20A - 0.100 V/A
+	enum {
+		sens = 100,			// millivolts / ampher
+		scale = 100			// результат - в сотых долях ампера
+	};
+#else /* WITHCURRLEVEL_ACS712_30A */
+	// x05B - 0.185 V/A
+	enum {
+		sens = 185,			// millivolts / ampher
+		scale = 100			// результат - в сотых долях ампера
+	};
+#endif /* CTLSTYLE_RA4YBO_V3 */
+
+#if WITHCURRLEVEL
 
 	const uint_fast8_t adci = PASENSEMRRIX;
 
 #elif WITHCURRLEVEL2
-	// Чувствительность датчиков:
-	// x05B - 0.185 V/A
-	// x20A - 0.100 V/A
-	// x30A - 0.066 V/A
-
-	#if 1
-		// x30A - 0.066 V/A
-		enum {
-			sens = 66,			// millivolts / ampher
-			scale = 100			// результат - в десятых долях ампера
-		};
-	#else /*  */
-		// x05B - 0.185 V/A
-		enum {
-			sens = 185,			// millivolts / ampher
-			scale = 100			// результат - в сотых долях ампера
-		};
-	#endif /*  */
-
-	const uint_fast8_t adci = PASENSEMRRIX2;
 
 #endif
 
@@ -9344,7 +9325,17 @@ int_fast16_t hamradio_get_pacurrent_value(void)
 	const unsigned Vref_mV = ADCVREF_CPU * 100;
 #endif /* WITHREFSENSOR */
 
-	const long vsense = board_getadc_filtered_u32(adci, 0, (uint_fast32_t) Vref_mV * scale);
+#if WITHCURRLEVEL2
+
+	const adcvalholder_t midp = board_getadc_unfiltered_truevalue(PAREFERIX2);
+	const adcvalholder_t sense = board_getadc_unfiltered_truevalue(PASENSEIX2);
+
+	const long curr10 = ((long) midp - (long) sense) * (int_fast64_t) Vref_mV * scale / ((long) sens * board_getadc_fsval(PAREFERIX2));
+
+#else /* WITHCURRLEVEL2 */
+
+	const long vsense = board_getadc_filtered_u32(PASENSEMRRIX, 0, (uint_fast32_t) Vref_mV * scale);
+
 #if CTLSTYLE_RAVENDSP_V5
 	const long midpoint = (gtx ? 2472uL : 2442uL) * scale; // tx=247200, rx=244200
 #else
@@ -9353,60 +9344,9 @@ int_fast16_t hamradio_get_pacurrent_value(void)
 
 	int curr10 = ((long) midpoint - (long) vsense + sens / 2) / sens;
 
-	//debug_printf_P(PSTR("voltage vsense=%lu, midpoint=%lu, delta=%d mV, current=%d * 10 mA\n"), vsense, midpoint, v / scale, curr10);
+#endif /* WITHCURRLEVEL2 */
 
 	return curr10;
-}
-
-// Ток в сонтях милиампер (может быть отрицательным)
-// PA current sense - ACS712ELCTR-30B-T chip
-int_fast16_t hamradio_get_pacurrent2_value(void)
-{
-#if WITHCURRLEVEL2
-	// Чувствительность датчиков:
-	// x05B - 0.185 V/A
-	// x20A - 0.100 V/A
-	// x30A - 0.066 V/A
-
-	// x30A - 0.066 V/A
-	enum {
-		sens = 660,			// millivolts / ampher
-		scale = 100			// результат - в десятых долях ампера
-	};
-
-
-#if WITHREFSENSOR
-	// Измерение опрного напряжения
-	const uint_fast8_t vrefi = VREFIX;
-	const adcvalholder_t ref = board_getadc_unfiltered_truevalue(vrefi);	// текущее значение данного АЦП
-	if (ref == 0)
-		return 0;
-	//const unsigned Vref_mV = ADCVREF_CPU * 100;
-	const unsigned Vref_mV = (uint_fast32_t) board_getadc_fsval(vrefi) * WITHREFSENSORVAL / ref;
-#else /* WITHREFSENSOR */
-	// опорное напряжение известно из конфигурации процессора.
-	const unsigned Vref_mV = ADCVREF_CPU * 100;
-#endif /* WITHREFSENSOR */
-
-#if 1
-	const adcvalholder_t midp = board_getadc_unfiltered_truevalue(PAREFERIX2);
-	const adcvalholder_t sense = board_getadc_unfiltered_truevalue(PASENSEIX2);
-
-	const long curr100 = ((long) midp - (long) sense) * (int_fast64_t) Vref_mV * scale / ((long) sens * board_getadc_fsval(PAREFERIX2));
-
-#else
-	const long midpoint = board_getadc_unfiltered_u32(PAREFERIX2, 0, (uint_fast32_t) Vref_mV * scale);
-	const long vsense = board_getadc_unfiltered_u32(PASENSEIX2, 0, (uint_fast32_t) Vref_mV * scale);
-
-	int curr100 = ((long) midpoint - (long) vsense + sens / 2) / sens;
-
-	//debug_printf_P(PSTR("voltage vsense=%lu, midpoint=%lu, delta=%d mV, current=%d * 10 mA\n"), vsense, midpoint, v / scale, curr10);
-#endif
-
-	return curr100;
-#else /* WITHCURRLEVEL2 */
-	return  0;
-#endif /* WITHCURRLEVEL2 */
 }
 
 #endif /* WITHCURRLEVEL */
@@ -10167,9 +10107,15 @@ display2_redrawbarstimed(
 		board_adc_store_data(FWDMRRIX, board_getadc_unfiltered_truevalue(FWD));
 		board_adc_store_data(REFMRRIX, board_getadc_unfiltered_truevalue(REF));
 	#endif /* WITHSWRMTR */
-	#if WITHCURRLEVEL
+	#if WITHCURRLEVEL2
+		board_adc_store_data(PASENSEMRRIX2, board_getadc_unfiltered_truevalue(PASENSEIX2));
+		board_adc_store_data(PAREFERMRRIX2, board_getadc_unfiltered_truevalue(PAREFERIX2));
+	#elif WITHCURRLEVEL
 		board_adc_store_data(PASENSEMRRIX, board_getadc_unfiltered_truevalue(PASENSEIX));
 	#endif /* WITHCURRLEVEL */
+	#if WITHTHERMOLEVEL
+		board_adc_store_data(XTHERMOMRRIX, board_getadc_unfiltered_truevalue(XTHERMOIX));
+	#endif /* WITHTHERMOLEVEL */
 		/* --- переписываем значения из возможно внешних АЦП в кеш значений */
 
 		/* отрисовка элементов, общих для всех режимов отображения */
