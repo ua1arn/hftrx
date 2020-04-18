@@ -3852,7 +3852,6 @@ void displfiles_buff(const char* path)
 			{
                 //printf("%s/%s\n", path, fn);
  				debug_printf_P(PSTR("displfiles_buff: %9lu '%s'\n"), (unsigned long) pfno->fsize,  fn);
-				//strcpy(
 			}
         }
         //f_closedir(&dir);
@@ -5130,7 +5129,7 @@ static void sdtick(void)
 }
 #endif
 
-#if LCDMODE_COLORED
+#if LCDMODE_COLORED && ! DSTYLE_G_DUMMY
 
 // Получение псевдослучайныз чисел.
 // 0 .. num-1
@@ -5239,7 +5238,7 @@ GrideTest(void)
 
 }
 
-#endif /* LCDMODE_COLORED */
+#endif /* LCDMODE_COLORED && ! DSTYLE_G_DUMMY */
 
 #if 0
 static int
@@ -6194,7 +6193,7 @@ void hightests(void)
 		}
 	}
 #endif
-#if 0 && LCDMODE_COLORED
+#if 0 && LCDMODE_COLORED && ! DSTYLE_G_DUMMY
 	{
 		display2_bgreset();
 		//GrideTest();
