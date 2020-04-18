@@ -820,7 +820,10 @@ void colpip_fillrect(
 	);
 
 int_fast32_t display_zoomedbw(void);
+
 void display_string3_at_xy(uint_fast16_t x, uint_fast16_t y, const char * s, COLORMAIN_T fg, COLORMAIN_T bg);
+
+void display_line(int xs, int ys, int xe, int ye, COLORMAIN_T color);
 
 // Отображение цифр в поле "больших цифр" - индикатор основной частоты настройки аппарата.
 void

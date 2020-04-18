@@ -26,6 +26,211 @@
 #include "keyboard.h"
 #include "./display/fontmaps.h"
 
+
+
+
+/*-----------------------------------------------------  V_Bre
+ * void V_Bre (int xn, int yn, int xk, int yk)
+ *
+ * Подпрограмма иллюстрирующая построение вектора из точки
+ * (xn,yn) в точку (xk, yk) методом Брезенхема.
+ *
+ * Построение ведется от точки с меньшими  координатами
+ * к точке с большими координатами с единичным шагом по
+ * координате с большим приращением.
+ *
+ * В общем случае исходный вектор проходит не через вершины
+ * растровой сетки, а пересекает ее стороны.
+ * Пусть приращение по X больше приращения по Y и оба они > 0.
+ * Для очередного значения X нужно выбрать одну двух ближайших
+ * координат сетки по Y.
+ * Для этого проверяется как проходит  исходный  вектор - выше
+ * или ниже середины расстояния между ближайшими значениями Y.
+ * Если выше середины,  то Y-координату  надо  увеличить на 1,
+ * иначе оставить прежней.
+ * Для этой проверки анализируется знак переменной s,
+ * соответствующей разности между истинным положением и
+ * серединой расстояния между ближайшими Y-узлами сетки.
+ */
+
+void display_line(int xn, int yn, int xk, int yk, COLORMAIN_T color)
+{
+	int  dx, dy, s, sx, sy, kl, incr1, incr2;
+	char swap;
+
+	/* Вычисление приращений и шагов */
+	sx = 0;
+	if ((dx= xk-xn) < 0)
+	{
+		dx = - dx;
+		-- sx;
+	}
+	else if (dx > 0)
+		++ sx;
+	sy = 0;
+
+	if ((dy= yk-yn) < 0)
+	{
+		dy = - dy;
+		-- sy;
+	}
+	else if (dy>0)
+		++ sy;
+	/* Учет наклона */
+	swap = 0;
+	if ((kl= dx) < (s= dy))
+	{
+		dx= s;  dy= kl;  kl= s; ++swap;
+	}
+	s = (incr1= 2 * dy) - dx; /* incr1 - констан. перевычисления */
+	/* разности если текущее s < 0  и  */
+	/* s - начальное значение разности */
+	incr2 = 2 * dx;         /* Константа для перевычисления    */
+	/* разности если текущее s >= 0    */
+	display_putpixel(xn, yn, color); /* Первый  пиксел вектора       */
+
+	while (--kl >= 0)
+	{
+		if (s >= 0)
+		{
+			if (swap) xn+= sx;
+			else yn+= sy;
+			s-= incr2;
+		}
+		if (swap)
+			yn+= sy;
+		else
+			xn+= sx;
+		s += incr1;
+		display_putpixel(xn, yn, color); /* Текущая  точка  вектора   */
+	}
+}  /* V_Bre */
+
+const int sin90 [91] =
+{
+	0, 175, 349, 523, 698, 872,1045,1219,1392,   /*  0..8        */
+	1564,1736,1908,2079,2250,2419,2588,2756,2924,   /*  9..17       */
+	3090,3256,3420,3584,3746,3907,4067,4226,4384,   /* 18..26       */
+	4540,4695,4848,5000,5150,5299,5446,5592,5736,
+	5878,6018,6157,6293,6428,6561,6691,6820,6947,
+	7071,7193,7314,7431,7547,7660,7771,7880,7986,
+	8090,8192,8290,8387,8480,8572,8660,8746,8829,
+	8910,8988,9063,9135,9205,9272,9336,9397,9455,
+	9511,9563,9613,9659,9703,9744,9781,9816,9848,
+	9877,9903,9925,9945,9962,9976,9986,9994,9998,   /* 81..89       */
+	10000                                           /* 90           */
+};
+
+
+static int muldiv(int a, int b, unsigned c)
+{
+	return  (unsigned) ((a * (long) b + (c / 2)) / c);
+}
+
+static  int isin(unsigned alpha, unsigned r)
+{
+	while (alpha >= 360)
+		alpha -= 360;
+
+	if (alpha < 90)         /* 0..3 hours   */
+		return muldiv(sin90 [ alpha ], r, 10000);
+	if (alpha < 180)        /* 9..0 hours   */
+		return muldiv(sin90 [ 180 - alpha ], r, 10000);
+	if (alpha < 270)        /* 6..9 hours   */
+		return - muldiv(sin90 [ alpha - 180], r, 10000);
+				/* 3..6 hours   */
+	return - muldiv(sin90 [ 360 - alpha ], r, 10000);
+}
+
+static  int icos(unsigned alpha, unsigned r)
+{
+	return isin(alpha + 90, r * 20 / 10);
+}
+
+
+// Рисование радиусов
+void
+display_radius(int xc, int yc, unsigned gs, unsigned r1, unsigned r2, COLORMAIN_T color)
+{
+	int     x, y;
+	int     x2, y2;
+
+	x = xc + icos(gs, r1);
+	y = yc + isin(gs, r1);
+	x2 = xc + icos(gs, r2);
+	y2 = yc + isin(gs, r2);
+
+	display_line(x, y, x2, y2, color);
+
+}
+
+void polar_to_dek(uint_fast16_t xc, uint_fast16_t yc, uint_fast16_t gs, uint_fast16_t r, uint_fast16_t * x, uint_fast16_t * y)
+{
+	* x = xc + icos(gs, r);
+	* y = yc + isin(gs, r);
+}
+
+// круговой интерполятор
+// нач.-x, нач.-y, градус начала, градус конуа, радиус, шаг приращения угла
+void
+display_segm(int xc, int yc, unsigned gs, unsigned ge, unsigned r, int step, COLORMAIN_T color)
+{
+	int     x, y;
+	int     xo, yo;
+	char     first;
+	int     vcos, vsin;
+
+	if (gs == ge)   return;
+	first = 1;
+	while (gs != ge)
+	{
+		vsin = isin(gs, r);
+		vcos = icos(gs, r);
+		x = xc + vcos;
+		y = yc + vsin;
+
+		if (first != 0) // 1-я точка
+		{
+			// переместить к началу рисования
+			xo = x, yo = y;
+			first = 0;
+		}
+		else
+		{  // рисовать элемент окружности
+			display_line(xo, yo, x, y, color);
+			xo = x, yo = y;
+		}
+		if (ge == 360)
+			ge = 0;
+		if (step < 0)
+		{
+			gs += step;
+			if (gs >= 360)
+				gs += 360;
+		}
+		else
+		{
+			gs += step;
+			if (gs >= 360)
+				gs -= 360;
+		}
+	}
+
+	if (first == 0)
+	{
+		// завершение окружности
+		vsin = isin(ge, r);
+		vcos = icos(ge, r);
+		x = xc + vcos;
+		y = yc + vsin;
+
+		display_line(xo, yo, x, y, color); // рисовать линию
+	}
+
+}
+
+
+
 static
 uint_fast16_t normalize(
 	uint_fast16_t raw,
@@ -66,8 +271,14 @@ display2_smeter15(
 	dctx_t * pctx
 	)
 {
-	const int xc = GRID2X(xgrid) + GRID2X(15) / 2;
-	const int yc = GRID2Y(ygrid) + 120;
+	/* получение координат прямоугольника с изображением */
+	const uint_fast16_t width = GRID2X(15);
+	const uint_fast16_t height = GRID2Y(14);
+	const uint_fast16_t x0 = GRID2X(xgrid);
+	const uint_fast16_t y0 = GRID2Y(ygrid);
+	const int xc = x0 + width / 2;
+	const int yc = y0 + 120;
+
 	enum { halfsect = 30 };
 	enum { gm = 270 };
 	enum { gs = gm - halfsect };
@@ -80,6 +291,8 @@ display2_smeter15(
 
 	int gv, gv_trace = gs, gswr = gs;
 	uint_fast16_t swr10; 														// swr10 = 0..30 for swr 1..4
+
+	//colpip_rect(colmain_fb_draw(), DIM_X, DIM_Y, x0, y0, x0 + width - 1, y0 + height - 1, DESIGNCOLORDARKSTATE, 0);
 
 	if (is_tx)																	// угол поворота стрелки; 246 минимум, 270 середина, 294 максимум
 	{																			// добавить учет калибровок
