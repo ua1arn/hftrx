@@ -3232,10 +3232,6 @@ void display_swrmeter(
 	uint_fast16_t minforward
 	);
 
-uint_fast8_t get_swrcalibr(void);
-uint_fast16_t get_minforward(void);
-
-
 uint_fast8_t hamradio_get_tx(void);
 int_fast32_t hamradio_get_pbtvalue(void);	// Для отображения на дисплее
 uint_fast8_t hamradio_get_atuvalue(void);
