@@ -231,6 +231,411 @@ display_segm(int xc, int yc, unsigned gs, unsigned ge, unsigned r, int step, COL
 
 #endif /* LCDMODE_LTDC */
 
+#if LCDMODE_LTDC
+
+#include "./display/fontmaps.h"
+
+static
+uint_fast16_t normalize(
+	uint_fast16_t raw,
+	uint_fast16_t rawmin,
+	uint_fast16_t rawmax,
+	uint_fast16_t range
+	)
+{
+	if (rawmin < rawmax)
+	{
+		// Normal direction
+		const uint_fast16_t distance = rawmax - rawmin;
+		if (raw < rawmin)
+			return 0;
+		raw = raw - rawmin;
+		if (raw > distance)
+			return range;
+		return (uint_fast32_t) raw * range / distance;
+	}
+	else
+	{
+		// reverse direction
+		const uint_fast16_t distance = rawmin - rawmax;
+		if (raw >= rawmin)
+			return 0;
+		raw = rawmin - raw;
+		if (raw > distance)
+			return range;
+		return (uint_fast32_t) raw * range / distance;
+	}
+}
+
+static
+uint_fast16_t normalize3(
+	uint_fast16_t raw,
+	uint_fast16_t rawmin,
+	uint_fast16_t rawmid,
+	uint_fast16_t rawmax,
+	uint_fast16_t range1,
+	uint_fast16_t range2
+	)
+{
+	if (raw < rawmid)
+		return normalize(raw, rawmin, rawmid, range1);
+	else
+		return normalize(raw - rawmid, 0, rawmax - rawmid, range2 - range1) + range1;
+}
+
+// ширина занимаемого места - 15 ячеек (240/16 = 15)
+void
+display2_smeter15(
+	uint_fast8_t xgrid,
+	uint_fast8_t ygrid,
+	dctx_t * pctx
+	)
+{
+	/* получение координат прямоугольника с изображением */
+	const uint_fast16_t width = GRID2X(15);
+	const uint_fast16_t height = GRID2Y(14);
+	const uint_fast16_t x0 = GRID2X(xgrid);
+	const uint_fast16_t y0 = GRID2Y(ygrid);
+	const int xc = x0 + width / 2;
+	const int yc = y0 + 120;
+
+	enum { halfsect = 30 };
+	enum { gm = 270 };
+	enum { gs = gm - halfsect };
+	const int ge = gm + halfsect;
+	const int stripewidth = 12; //16;
+	const int r1 = 7 * GRID2Y(3) - 8;	//350;
+	const int r2 = r1 - stripewidth;
+
+	const uint_fast8_t is_tx = hamradio_get_tx();
+
+	int gv, gv_trace = gs, gswr = gs;
+	uint_fast16_t swr10; 														// swr10 = 0..30 for swr 1..4
+
+	//colpip_rect(colmain_fb_draw(), DIM_X, DIM_Y, x0, y0 - 8, x0 + width - 1, y0 + height - 1 + 15, DESIGNCOLORSTATE, 0);
+
+	if (is_tx)																	// угол поворота стрелки; 246 минимум, 270 середина, 294 максимум
+	{																			// добавить учет калибровок
+		enum { gx_hyst = 3 };		// гистерезис в градусах
+		/* фильтрация - (в градусах) */
+		static uint_fast16_t gv_smooth = gs;
+		static uint_fast16_t gswr_smooth = gs;
+
+		uint_fast8_t tracemax;
+		adcvalholder_t forward, reflected;
+
+		gv = gs + normalize(board_getpwrmeter(& tracemax), 0, 200, ge - gs);
+
+		forward = board_getswrmeter(& reflected, swrcalibr);
+		const uint_fast16_t fullscale = (SWRMIN * 40 / 10) - SWRMIN;
+									// рассчитанное  значение
+		if (forward < minforward)
+			swr10 = 0;				// SWR=1
+		else if (forward <= reflected)
+			swr10 = fullscale;		// SWR is infinite
+		else
+			swr10 = (forward + reflected) * SWRMIN / (forward - reflected) - SWRMIN;
+		gswr = gs + normalize(swr10, 0, 30, ge - gs);
+
+		if (gv > gs)
+			gv_smooth = gv;
+
+		if (gv == gs && gv_smooth > gs)
+			gv = (gv_smooth -= gx_hyst) > gs ? gv_smooth : gs;
+
+		if (gswr > gs)
+			gswr_smooth = gswr;
+
+		if (gswr == gs && gswr_smooth > gs)
+			gswr = (gswr_smooth -= gx_hyst) > gs ? gswr_smooth : gs;
+	}
+	else
+	{
+		uint_fast8_t tracemax;
+		uint_fast8_t value = board_getsmeter(& tracemax, 0, UINT8_MAX, 0);
+		tracemax = value > tracemax ? value : tracemax;	// защита от рассогласования значений
+
+		gv =
+			gs + normalize3(value, 		s9level - s9delta, s9level, s9level + s9_60_delta, gm - gs, ge - gs);
+		gv_trace =
+			gs + normalize3(tracemax, 	s9level - s9delta, s9level, s9level + s9_60_delta, gm - gs, ge - gs);
+	}
+
+	int rv1 = 7 * GRID2Y(3);	//350;
+	int rv2 = rv1 - 3 * GRID2Y(3);
+	enum { step1 = 3 };		// шаг для оцифровки S
+	enum { step2 = 4 };		// шаг для оцифровки плюсов
+	enum { step3 = 20 };	// swr
+	static const int markersTX_pwr [] =
+	{
+		gs,
+		gs + 2 * step1,
+		gs + 4 * step1,
+		gs + 6 * step1,
+		gs + 8 * step1,
+		gs + 10 * step1,
+		gs + 12 * step1,
+		gs + 14 * step1,
+		gs + 16 * step1,
+		gs + 18 * step1,
+		gs + 20 * step1,
+	};
+	static const int markersTX_swr [] =
+	{
+		gs,
+		gs + step3,
+		gs + 2 * step3,
+		gs + 3 * step3,
+	};
+	static const int markers [] =
+	{
+		//gs + 0 * step1,
+		gs + 2 * step1,		// S1
+		gs + 4 * step1,		// S3
+		gs + 6 * step1,		// S5
+		gs + 8 * step1,		// S7
+		gs + 10 * step1,	// S9
+	};
+	static const int markersR [] =
+	{
+		gm + 2 * step2,	//
+		gm + 4 * step2,
+		gm + 6 * step2,
+	};
+	static const int markers2 [] =
+	{
+		//gs + 1 * step1,
+		gs + 3 * step1,		// S2
+		gs + 5 * step1,		// S4
+		gs + 7 * step1,		// S6
+		gs + 9 * step1,		// S8
+	};
+	static const int markers2R [] =
+	{
+		gm + 1 * step2,
+		gm + 3 * step2,
+		gm + 5 * step2,
+	};
+
+	const COLORMAIN_T smeter = COLORMAIN_WHITE;
+	const COLORMAIN_T smeterplus = COLORMAIN_DARKRED;
+	const uint_fast16_t pad2w3 = strwidth3("ZZ");
+
+//	static uint_fast8_t first_run = 1;
+//	static uint_fast16_t x1, y1, x2, y2;
+//
+//	if(first_run)
+//	{
+//		uint_fast16_t xx, yy;
+//		first_run = 0;
+//		polar_to_dek(xc, yc, gm, rv1 + 8 + SMALLCHARH3, & xx, & yy);
+//		y1 = yy;
+//		polar_to_dek(xc, yc, gs, rv2, & xx, & yy);
+//		y2 = yy;
+//		polar_to_dek(xc, yc, gs, r1 + 8 + SMALLCHARW3 * 2, & xx, & yy);
+//		x1 = xx;
+//		polar_to_dek(xc, yc, ge, r1 + 8 + SMALLCHARW3 * 2, & xx, & yy);
+//		x2 = xx;
+//		PRINTF("xc/yc - %d/%d\n", xc, yc);
+//		PRINTF("x1/y1 - %d/%d\n", x1, y1);
+//		PRINTF("x2/y2 - %d/%d\n", x2, y2);
+//	}
+//	colpip_rect(colmain_fb_draw(), DIM_X, DIM_Y, x1, y1, x2, y2, COLORPIP_WHITE, 0);
+
+	if (is_tx)																	// шкала при передаче
+	{
+		unsigned p;
+		unsigned i;
+		for (p = 0, i = 0; i < sizeof markersTX_pwr / sizeof markersTX_pwr [0]; ++ i, p += 10)
+		{
+			char buf [10];
+			uint_fast16_t xx, yy;
+			if (i % 2 == 0)
+			{
+				display_radius(xc, yc, markersTX_pwr [i], r1, r1 + 8, smeter);
+				polar_to_dek(xc, yc, markersTX_pwr [i], r1 + 8, & xx, & yy);
+				local_snprintf_P(buf, sizeof buf / sizeof buf [0], PSTR("%u"), p);
+				display_string3_at_xy(xx - strwidth3(buf) / 2, yy - pad2w3, buf, COLORMAIN_YELLOW, COLORMAIN_BLACK);
+			}
+			else
+				display_radius(xc, yc, markersTX_pwr [i], r1, r1 + 4, smeter);
+		}
+
+		for (p = 1, i = 0; i < sizeof markersTX_swr / sizeof markersTX_swr [0]; ++ i, p += 1)
+		{
+			char buf [10];
+			uint_fast16_t xx, yy;
+			display_radius(xc, yc, markersTX_swr [i], r2, r2 - 8, smeter);
+			polar_to_dek(xc, yc, markersTX_swr [i], r2 - 16, & xx, & yy);
+			local_snprintf_P(buf, sizeof buf / sizeof buf [0], PSTR("%u"), p);
+			display_string3_at_xy(xx - SMALLCHARW3 / 2, yy - SMALLCHARW3 / 2, buf, COLORMAIN_YELLOW, COLORMAIN_BLACK);
+		}
+	}
+	else																		// шкала при приеме
+	{
+		unsigned p;
+		unsigned i;
+		for (p = 1, i = 0; i < sizeof markers / sizeof markers [0]; ++ i, p += 2)
+		{
+			char buf [10];
+			uint_fast16_t xx, yy;
+			display_radius(xc, yc, markers [i], r1, r1 + 8, smeter);
+			polar_to_dek(xc, yc, markers [i], r1 + 8, & xx, & yy);
+			local_snprintf_P(buf, sizeof buf / sizeof buf [0], PSTR("%u"), p);
+			display_string3_at_xy(xx - SMALLCHARW3 / 2, yy - pad2w3, buf, COLORMAIN_YELLOW, COLORMAIN_BLACK);
+		}
+		for (i = 0; i < sizeof markers2 / sizeof markers2 [0]; ++ i)
+		{
+			display_radius(xc, yc, markers2 [i], r1, r1 + 4, smeter);
+		}
+
+		for (p = 20, i = 0; i < sizeof markersR / sizeof markersR [0]; ++ i, p += 20)
+		{
+			char buf [10];
+			uint_fast16_t xx, yy;
+			display_radius(xc, yc, markersR [i], r1, r1 + 8, smeterplus);
+			polar_to_dek(xc, yc, markersR [i], r1 + 8, & xx, & yy);
+			local_snprintf_P(buf, sizeof buf / sizeof buf [0], PSTR("+%u"), p);
+			display_string3_at_xy(xx - strwidth3(buf) / 2, yy - pad2w3, buf, COLORMAIN_RED, COLORMAIN_BLACK);
+		}
+		for (i = 0; i < sizeof markers2R / sizeof markers2R [0]; ++ i)
+		{
+			display_radius(xc, yc, markers2R [i], r1, r1 + 4, smeterplus);
+		}
+	}
+
+	display_segm(xc, yc, gs, gm, r1, 1, smeter);
+	display_segm(xc, yc, gm, ge, r1, 1, is_tx ? smeter : smeterplus);
+	display_segm(xc, yc, gs, ge, r2, 1, COLORMAIN_WHITE);
+
+	if (is_tx)
+	{
+		// TX state
+		if (gswr > gs)
+		{
+			uint_fast16_t xx, yy;
+			display_segm(xc, yc, gs, gswr, r2 + 2, 1, COLORMAIN_YELLOW);
+			display_segm(xc, yc, gs, gswr, r1 - 2, 1, COLORMAIN_YELLOW);
+			display_radius(xc, yc, gs, r1 - 2, r2 + 2, COLORMAIN_YELLOW);
+			display_radius(xc, yc, gswr, r1 - 2, r2 + 2, COLORMAIN_YELLOW);
+			polar_to_dek(xc, yc, gswr - 1, r1 - 4, & xx, & yy);
+			display_floodfill(xx, yy, COLORMAIN_YELLOW, COLORMAIN_BLACK);
+		}
+
+	}
+	else
+	{
+		// RX state
+		const COLORMAIN_T ct = gv_trace > gm ? COLORMAIN_RED : COLORMAIN_YELLOW;
+		display_radius(xc - 1, yc, gv_trace, r1 - 2, r2 + 2, ct);
+		display_radius(xc, yc, gv_trace, r1 - 2, r2 + 2, ct);
+		display_radius(xc + 1, yc, gv_trace, r1 - 2, r2 + 2, ct);
+	}
+
+	{
+		const COLORMAIN_T ct = gv > gm ? COLORMAIN_RED : COLORMAIN_GREEN;
+		display_radius(xc - 1, yc, gv, rv1, rv2, ct);
+		display_radius(xc, yc, gv, rv1, rv2, ct);
+		display_radius(xc + 1, yc, gv, rv1, rv2, ct);
+	}
+}
+
+#endif /* LCDMODE_LTDC */
+
+// S-METER
+/* отображение S-метра на приёме или передаче */
+// Функция вызывается из display2.c
+void
+display2_bars_rx(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+#if WITHBARS
+	uint_fast8_t tracemax;
+	uint_fast8_t v = board_getsmeter(& tracemax, 0, UINT8_MAX, 0);
+	display_smeter(x, y, v, tracemax, s9level, s9delta, s9_60_delta);
+#endif /* WITHBARS */
+}
+
+// SWR-METER, POWER-METER
+/* отображение P-метра и SWR-метра на приёме или передаче */
+// Функция вызывается из display2.c
+void
+display2_bars_tx(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+#if WITHBARS
+#if WITHTX
+	#if (WITHSWRMTR || WITHSHOWSWRPWR)
+		uint_fast8_t pwrtrace;
+		const uint_fast8_t pwr = board_getpwrmeter(& pwrtrace);
+		adcvalholder_t reflected;
+		const adcvalholder_t forward = board_getswrmeter(& reflected, swrcalibr);
+		#if WITHSHOWSWRPWR
+			display_swrmeter(x, y, forward, reflected, minforward);
+			display_pwrmeter(x, y, pwr, pwrtrace, maxpwrcali);
+		#else
+			if (swrmode || getactualtune())
+				display_swrmeter(x, y, forward, reflected, minforward);
+			else
+				display_pwrmeter(x, y, pwr, pwrtrace, maxpwrcali);
+		#endif
+	#elif WITHPWRMTR
+		uint_fast8_t pwrtrace;
+		const uint_fast8_t pwr = board_getpwrmeter(& pwrtrace);
+		display_pwrmeter(x, y, pwr, pwrtrace, maxpwrcali);
+	#endif
+
+#endif /* WITHTX */
+#endif /* WITHBARS */
+}
+
+#if CTLSTYLE_RA4YBO_AM0
+
+// S-METER, SWR-METER, POWER-METER
+/* отображение S-метра или SWR-метра на приёме или передаче */
+// Вызывается из display2.c (версия для CTLSTYLE_RA4YBO_AM0)
+void
+display2_bars_amv0(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+#if WITHBARS
+	if (gtx)
+	{
+#if WITHTX
+	#if (WITHSWRMTR || WITHSHOWSWRPWR)
+		uint_fast8_t pwrtrace;
+		const uint_fast8_t pwr = board_getpwrmeter(& pwrtrace);
+		const uint_fast8_t modulaton = board_getadc_filtered_u8(REF, 0, UINT8_MAX);
+		display_modulationmeter_amv0(x, y, modulaton, UINT8_MAX);
+		display_pwrmeter_amv0(x, y, pwr, pwrtrace, maxpwrcali);
+	#elif WITHPWRMTR
+		uint_fast8_t pwrtrace;
+		const uint_fast8_t pwr = board_getpwrmeter(& pwrtrace);
+		display_pwrmeter_amv0(x, y, pwr, pwrtrace, maxpwrcali);
+	#endif
+
+#endif
+	}
+	else
+	{
+		uint_fast8_t tracemax;
+		uint_fast8_t v = board_getsmeter(& tracemax, 0, UINT8_MAX, 0);
+		display_smeter_amv0(x, y, v, tracemax, s9level, s9delta, s9_60_delta);
+	}
+#endif /* WITHBARS */
+}
+
+#endif /* CTLSTYLE_RA4YBO_AM0 */
+
 #ifndef WITHGUIMAXX
 #define WITHGUIMAXX		DIM_X
 #endif

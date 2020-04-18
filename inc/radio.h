@@ -3224,6 +3224,15 @@ void spool_0p128(void);	// OPERA support
 
 #endif /* HYBRID_DDS_ATTINY2313 */
 
+
+extern uint_fast8_t s9level;		/* уровни калибровки S-метра */
+extern uint_fast8_t s9delta;		// 9 баллов - 8 интервалов - по 6 децибел каждый
+extern uint_fast8_t s9_60_delta;		// 60 dB
+extern uint_fast16_t minforward;
+extern uint_fast8_t swrcalibr;
+extern uint_fast8_t maxpwrcali;
+extern uint_fast8_t swrmode;
+
 void display_swrmeter(
 	uint_fast8_t x,
 	uint_fast8_t y,
