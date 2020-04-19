@@ -181,13 +181,13 @@
 
 	// Выводы подключения енкодера #1
 	#define ENCODER_INPUT_PORT	(GPIOH->IDR) 
-	#define ENCODER_BITA		(1u << 4)		// PH4
-	#define ENCODER_BITB		(1u << 5)		// PH5
+	#define ENCODER_BITA		0//(1u << 4)		// PH4
+	#define ENCODER_BITB		0//(1u << 5)		// PH5
 
 	// Выводы подключения енкодера #2
 	#define ENCODER2_INPUT_PORT	(GPIOH->IDR) 
-	#define ENCODER2_BITA		(1u << 2)		// PH2
-	#define ENCODER2_BITB		(1u << 3)		// PH3
+	#define ENCODER2_BITA		0//(1u << 2)		// PH2
+	#define ENCODER2_BITB		0//(1u << 3)		// PH3
 
 
 	#define ENCODER_BITS		(ENCODER_BITA | ENCODER_BITB)

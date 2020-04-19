@@ -234,6 +234,7 @@
 	#define HARDWARE_IGNORENONVRAM	1		// отладка на платах где нет никакого NVRAM
 
 	#define DDS1_CLK_DIV	1		/* Делитель опорной частоты перед подачей в DDS1 */
+	#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
 
 #else /* WITHISBOOTLOADER */
 
@@ -373,8 +374,7 @@
 	#define WITHIFSHIFT	1	/* используется IF SHIFT */
 	//#define WITHIFSHIFTOFFSET	(-250)	/* Начальное занчение IF SHIFT */
 	//#define WITHPBT		1	/* используется PBT (если LO3 есть) */
-	//#define WITHCAT		1	/* используется CAT */
-	//#define WITHDEBUG		1	/* Отладочная печать через COM-порт. Без CAT (WITHCAT) */
+	#define WITHCAT		1	/* используется CAT */
 	//#define WITHMODEM		1	/* Устройство работает как радиомодем с последовательным интерфейсом */
 	//#define WITHFREEDV	1	/* поддержка режима FreeDV - http://freedv.org/ */
 	//#define WITHNMEA		1	/* используется NMEA parser */
@@ -411,7 +411,7 @@
 	// --- Эти строки можно отключать, уменьшая функциональность готового изделия
 
 	#if LCDMODE_AT070TNA2 || LCDMODE_AT070TN90
-		#if 0
+		#if 1
 			#define WITHTOUCHGUI	1	/* тестирование работы с сенсорным экраном */
 			#define WITHENCODER2NOFREQ	1	/* второй валкодер не перестраивает частоту */
 		#endif
