@@ -7,7 +7,7 @@
 
 #include "hardware.h"
 
-#if WITHINTEGRATEDDSP
+#if WITHINTEGRATEDDSP && 0
 
 	#include "BasicMathFunctions/BasicMathFunctions.c"
 	#include "CommonTables/CommonTables.c"
