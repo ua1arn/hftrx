@@ -186,6 +186,7 @@ clean:
 	-rm -fR $(OBJDIR)
 	-rm -f $(PROJECT)_rom.elf $(PROJECT)_rom.map $(PROJECT)_rom.hex $(PROJECT)_rom.bin
 	-rm -f $(PROJECT)_ram.elf $(PROJECT)_ram.map $(PROJECT)_ram.hex $(PROJECT)_ram.bin
+	$(CC) --version
 
 # 
 # Include the dependency files, should be the last of the makefile

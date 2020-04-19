@@ -204,13 +204,8 @@ clean:
 	-rm -fR $(OBJDIR)
 	-rm -f $(PROJECT)_boot.elf $(PROJECT)_boot.map
 	-rm -f $(PROJECT)_app.elf $(PROJECT)_app.map
+	$(CC) --version
 	
-clean2:
-	-rm -fR $(OBJDIR)
-	-rm -f $(PROJECT)_boot.elf $(PROJECT)_boot.map $(PROJECT)_boot.hex $(PROJECT)_boot.bin
-	-rm -f $(PROJECT)_app.elf $(PROJECT)_app.map $(PROJECT)_app.hex $(PROJECT)_app.bin
-
-
 # 
 # Include the dependency files, should be the last of the makefile
 #
