@@ -880,4 +880,6 @@ void hardware_nonguiyield(void);
 
 uint_fast32_t display_getdotclock(void);
 
+#define  ARRAY_SIZE(a)  (sizeof(a)/sizeof(a[0]))
+
 #endif // HARDWARE_H_INCLUDED

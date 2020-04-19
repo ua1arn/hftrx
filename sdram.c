@@ -2901,9 +2901,6 @@ void arm_hardware_sdram_initialize(void)
 #define INTMAX_C(x)  x ## LL
 #define UINTMAX_C(x) x ## ULL
 */
-/* Compute the number of elements in the given array */
-#define ARRAY_SIZE(a)				\
-	(sizeof(a) / sizeof((a)[0]))
 
 #define IS_POWER_OF_TWO(x)			\
 	(((x) & ((x) - 1)) == 0)
