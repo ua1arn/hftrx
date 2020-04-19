@@ -19,6 +19,7 @@ uint_fast8_t local_snprintf_P( char *buffer, uint_fast8_t count, const FLASHMEM 
 // Отладочная печать
 void debug_printf_P(const FLASHMEM char *format, ... );
 
+char * safestrcpy(char * dst, size_t blen, const char * src);
 
 #ifdef __cplusplus
 }

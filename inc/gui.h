@@ -288,7 +288,7 @@ void display_menu_lblc3(
 	);
 
 typedef struct {
-	char name[15];
+	char name[20];
 	uint_fast8_t index;
 } menu_names_t;
 

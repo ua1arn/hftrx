@@ -29,8 +29,6 @@
 #include <ctype.h>
 #include <math.h>
 
-#define  ARRAY_SIZE(a)  (sizeof(a)/sizeof(a[0]))
-
 #if WITHRFSG
 	#error WITHRFSG now not supported
 #endif /* WITHRFSG */
@@ -39,7 +37,7 @@
 static uint_fast8_t encoder2_busy = 0;		// признак занятости энкодера в обработке gui
 static uint_fast8_t keyboard_redirect = 0;	// перенаправление кодов кнопок в менеджер gui
 static uint_fast8_t is_menu_opened = 0;		// открыто gui системное меню
-static char menuw [10];						// буфер для вывода значений системного меню
+static char menuw [20];						// буфер для вывода значений системного меню
 static enc2_menu_t enc2_menu;
 #endif /* WITHTOUCHGUI */
 
@@ -5969,9 +5967,9 @@ uif_encoder2_press(void)
 	if (enc2state != ENC2STATE_INITIALIZE)
 	{
 		const char FLASHMEM * text = enc2menu_label_P(enc2pos);
-		strcpy(enc2_menu.param, text);
+		safestrcpy(enc2_menu.param, ARRAY_SIZE(enc2_menu.param), text);
 		text = enc2menu_value(enc2pos);
-		strcpy(enc2_menu.val, text);
+		safestrcpy(enc2_menu.val, ARRAY_SIZE(enc2_menu.val), text);
 		enc2_menu.updated = 1;
 		gui_encoder2_menu(&enc2_menu);
 	}
@@ -12554,7 +12552,7 @@ display_menu_string_P(
 #if WITHTOUCHGUI
 	if (is_menu_opened)
 	{
-		strcpy(menuw, s);
+		safestrcpy(menuw, ARRAY_SIZE(menuw), s);
 		return;
 	}
 #else
@@ -17965,9 +17963,9 @@ hamradio_main_step(void)
 //
 #if WITHTOUCHGUI
 						const char FLASHMEM * text = enc2menu_label_P(enc2pos);
-						strcpy(enc2_menu.param, text);
+						safestrcpy(enc2_menu.param, ARRAY_SIZE(enc2_menu.param), text);
 						text = enc2menu_value(enc2pos);
-						strcpy(enc2_menu.val, text);
+						safestrcpy(enc2_menu.val, ARRAY_SIZE(enc2_menu.val), text);
 						enc2_menu.updated = 1;
 						gui_encoder2_menu(&enc2_menu);
 						display2_mode_subset(0);
@@ -18239,7 +18237,7 @@ uint_fast8_t hamradio_get_multilinemenu_block_groups(menu_names_t * vals)
 		if (ismenukind(mv, ITEM_GROUP))
 		{
 			menu_names_t * const v = & vals[count];
-			strcpy (v->name, mv->label);
+			safestrcpy(v->name, ARRAY_SIZE(v->name), mv->label);
 			v->index = el;
 			count++;
 		}
@@ -18260,7 +18258,7 @@ uint_fast8_t hamradio_get_multilinemenu_block_params(menu_names_t * vals, uint_f
 		if (ismenukind(mv, ITEM_VALUE))
 		{
 			menu_names_t * const v = & vals[count];
-			strcpy (v->name, mv->label);
+			safestrcpy (v->name, ARRAY_SIZE(v->name), mv->label);
 			v->index = el;
 			count++;
 		}
@@ -18283,7 +18281,7 @@ void hamradio_get_multilinemenu_block_vals(menu_names_t * vals, uint_fast8_t ind
 			dctx.type = DCTX_MENU;
 			dctx.pv = mv;
 			display_menu_valxx(0, 0, & dctx);
-			strcpy (v->name, menuw);
+			safestrcpy (v->name, ARRAY_SIZE(v->name), menuw);
 			v->index = el;
 			count++;
 		}

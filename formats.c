@@ -314,6 +314,15 @@ uint_fast8_t local_snprintf_P( char *buffer, uint_fast8_t count, const FLASHMEM 
 	return n == -1 ? count - 1 : n;	// изменено от стандартного поведения = всегда длинну возвращаем.
 }
 
+char *
+safestrcpy(char * dst, size_t blen, const char * src)
+{
+	ASSERT(dst != NULL);
+	ASSERT(src != NULL);
+	ASSERT(strlen(src) < blen);
+	return strcpy(dst, src);
+}
+
 #if WITHDEBUG
 
 #if FORMATFROMLIBRARY
