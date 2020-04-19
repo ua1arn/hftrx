@@ -5,7 +5,7 @@
 ## General Flags
 PROJECT = tc1
 MCU = atmega644pa
-TARGET = tc1_atmega644_10.elf
+TARGET = tc1_atmega644_8.elf
 CC = avr-gcc
 SIZE = avr-size
 OBJDIR = ./obj
@@ -17,7 +17,7 @@ COMMON = -mmcu=$(MCU)
 
 ## Compile options common for all C compilation units.
 CFLAGS = $(COMMON)
-CFLAGS += -Wall -gdwarf-2 -std=gnu99 -flto -DF_CPU=10000000UL -Os -fsigned-char $(MAKE_DEFINES)
+CFLAGS += -Wall -gdwarf-2 -std=gnu99 -flto -DF_CPU=10000000UL -fsigned-char $(MAKE_DEFINES)
 CFLAGS += -MD -MP -MT $(*F).o -MF ./$(@D)/$(@F).d
 
 ## Assembly specific flags
@@ -27,7 +27,7 @@ ASMFLAGS += -x assembler-with-cpp -Wa,-gdwarf2
 
 ## Linker flags
 LDFLAGS = $(COMMON)
-LDFLAGS += -Os  -flto
+LDFLAGS += -Ofast -flto
 
 
 ## Intel Hex file production flags
@@ -60,7 +60,7 @@ CPFLAGS = $(CFLAGS) $(LDFLAGS)
 LINKONLYOBJECTS = 
 
 ## Build
-all: $(OBJS) $(TARGET) tc1_atmega644_10.hex tc1_atmega644_10.eep size
+all: $(OBJS) $(TARGET) tc1_atmega644_8.hex tc1_atmega644_8.eep size
 
 $(OBJDIR)/%.o: %.c
 	@mkdir -p $(@D)
@@ -89,7 +89,7 @@ size: ${TARGET}
 ## Clean target
 .PHONY: clean
 clean:
-	-rm -rf $(OBJS) tc1_atmega644_10.elf ./*.d tc1_atmega644_10.hex tc1_atmega644_10.eep
+	-rm -rf $(OBJS) tc1_atmega644_8.elf ./*.d tc1_atmega644_8.hex tc1_atmega644_8.eep
 	-rm -fR $(OBJDIR)
 	-rm -f $(PROJECT)_rom.elf $(PROJECT)_rom.map $(PROJECT)_rom.hex $(PROJECT)_rom.bin
 	-rm -f $(PROJECT)_boot.elf $(PROJECT)_boot.map $(PROJECT)_boot.hex $(PROJECT)_boot.bin

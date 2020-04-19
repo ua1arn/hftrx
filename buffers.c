@@ -186,7 +186,7 @@ enum
 	typedef ALIGNX_BEGIN struct voice16_tag
 	{
 		LIST_ENTRY item;
-		ALIGNX_BEGIN int16_t buff [DMABUFFSIZE16] ALIGNX_END;
+		ALIGNX_BEGIN aubufv_t buff [DMABUFFSIZE16] ALIGNX_END;
 	} ALIGNX_END voice16_t;
 
 	// I/Q data to FPGA or IF CODEC
@@ -598,7 +598,7 @@ void buffers_initialize(void)
 
 #if WITHINTEGRATEDDSP
 
-	static voice16_t voicesarray16 [192];
+	static RAM_D2 voice16_t voicesarray16 [228];
 
 	InitializeListHead3(& resample16, RESAMPLE16NORMAL);	// буферы от USB для синхронизации
 	InitializeListHead3(& voicesmike16, VOICESMIKE16NORMAL);	// список оцифрованных с АЦП
@@ -631,7 +631,7 @@ void buffers_initialize(void)
 
 	#if WITHRTS192
 
-		RAMNOINIT_D1 static voice192rts_t voicesarray192rts [4];
+		RAMBIG static voice192rts_t voicesarray192rts [4];
 
 		ASSERT(offsetof(uacin16_t, item) == offsetof(voice96rts_t, item));
 		ASSERT(offsetof(uacin16_t, buff) == offsetof(voice96rts_t, buff));
@@ -650,7 +650,7 @@ void buffers_initialize(void)
 
 	#if WITHRTS96
 
-		RAMNOINIT_D1 static voice96rts_t voicesarray96rts [4];
+		RAMBIG static voice96rts_t voicesarray96rts [4];
 
 		ASSERT(offsetof(uacin16_t, item) == offsetof(voice96rts_t, item));
 		ASSERT(offsetof(uacin16_t, buff) == offsetof(voice96rts_t, buff));
@@ -669,7 +669,7 @@ void buffers_initialize(void)
 
 #endif /* WITHUSBUAC */
 
-	static voice32tx_t voicesarray32tx [(DMABUFFSIZE32RX / DMABUFSTEP32RX) / (DMABUFFSIZE32TX / DMABUFSTEP32TX) + 4];
+	static RAM_D2 voice32tx_t voicesarray32tx [(DMABUFFSIZE32RX / DMABUFSTEP32RX) / (DMABUFFSIZE32TX / DMABUFSTEP32TX) + 4];
 
 	InitializeListHead2(& voicesready32tx);	// список для выдачи на ЦАП
 	InitializeListHead2(& voicesfree32tx);	// Незаполненные
@@ -679,7 +679,7 @@ void buffers_initialize(void)
 		InsertHeadList2(& voicesfree32tx, & p->item);
 	}
 
-	static voice32rx_t voicesarray32rx [6];	// без WFM надо 2
+	static RAM_D2 voice32rx_t voicesarray32rx [6];	// без WFM надо 2
 
 	InitializeListHead2(& voicesfree32rx);	// Незаполненные
 	for (i = 0; i < (sizeof voicesarray32rx / sizeof voicesarray32rx [0]); ++ i)
@@ -699,7 +699,7 @@ void buffers_initialize(void)
 	#elif defined (STM32F429xx)
 		RAMNOINIT_D1 static records16_t recordsarray16 [8];
 	#elif defined (STM32H743xx)
-		RAMNOINIT_D1 static records16_t recordsarray16 [6];
+		RAM_D2 static records16_t recordsarray16 [6];
 	#else
 		RAMNOINIT_D1 static records16_t recordsarray16 [8];
 	#endif
@@ -977,7 +977,7 @@ buffers_savefromuacout(voice16_t * p)
 // в паре значений, возвращаемых данной функцией, vi получает значение от микрофона. vq зарезервированно для работы ISB (две независимых боковых)
 // При отсутствии данных в очереди - возвращаем 0
 // TODO: переделаь на denoise16_t
-RAMFUNC uint_fast8_t getsampmlemike(INT32P_t * v)
+RAMFUNC uint_fast8_t getsampmlemike(FLOAT32P_t * v)
 {
 	enum { L, R };
 	static voice16_t * RAMDTCM p = NULL;
@@ -1007,8 +1007,8 @@ RAMFUNC uint_fast8_t getsampmlemike(INT32P_t * v)
 	}
 
 	// Использование данных.
-	v->ivqv [L] = (int16_t) p->buff [pos * DMABUFSTEP16 + L];	// микрофон или левый канал
-	v->ivqv [R] = (int16_t) p->buff [pos * DMABUFSTEP16 + R];	// правый канал
+	v->ivqv [L] = AUBTOAUDIO16(p->buff [pos * DMABUFSTEP16 + L]);	// микрофон или левый канал
+	v->ivqv [R] = AUBTOAUDIO16(p->buff [pos * DMABUFSTEP16 + R]);	// правый канал
 
 	if (++ pos >= CNT)
 	{
@@ -1019,7 +1019,7 @@ RAMFUNC uint_fast8_t getsampmlemike(INT32P_t * v)
 }
 
 // 16 bit, signed
-RAMFUNC uint_fast8_t getsampmlemoni(INT32P_t * v)
+RAMFUNC uint_fast8_t getsampmlemoni(FLOAT32P_t * v)
 {
 	enum { L, R };
 	static voice16_t * RAMDTCM p = NULL;
@@ -1049,8 +1049,8 @@ RAMFUNC uint_fast8_t getsampmlemoni(INT32P_t * v)
 	}
 
 	// Использование данных.
-	v->ivqv [L] = (int16_t) p->buff [pos * DMABUFSTEP16 + L];	// левый канал
-	v->ivqv [R] = (int16_t) p->buff [pos * DMABUFSTEP16 + R];	// правый канал
+	v->ivqv [L] = AUBTOAUDIO16(p->buff [pos * DMABUFSTEP16 + L]);	// микрофон или левый канал
+	v->ivqv [R] = AUBTOAUDIO16(p->buff [pos * DMABUFSTEP16 + R]);	// правый канал
 
 	if (++ pos >= CNT)
 	{
@@ -1061,7 +1061,7 @@ RAMFUNC uint_fast8_t getsampmlemoni(INT32P_t * v)
 }
 
 // звук для самоконтроля
-void savemoni16stereo(int_fast32_t ch0, int_fast32_t ch1)
+void savemoni16stereo(FLOAT_t ch0, FLOAT_t ch1)
 {
 	// если есть инициализированный канал для выдачи звука
 	static voice16_t * p = NULL;
@@ -1074,9 +1074,9 @@ void savemoni16stereo(int_fast32_t ch0, int_fast32_t ch1)
 		n = 0;
 	}
 
-	p->buff [n + 0] = ch0;		// sample value
+	p->buff [n + 0] = AUDIO16TOAUB(ch0);		// sample value
 #if DMABUFSTEP16 > 1
-	p->buff [n + 1] = ch1;	// sample value
+	p->buff [n + 1] = AUDIO16TOAUB(ch1);	// sample value
 #endif
 	n += DMABUFSTEP16;
 
@@ -1255,14 +1255,14 @@ static RAMFUNC unsigned long ulmin(
 
 // возвращает количество полученых сэмплов
 static RAMFUNC unsigned getsamplemsuacout(
-	int16_t * buff,	// текущая позиция в целевом буфере
+	aubufv_t * buff,	// текущая позиция в целевом буфере
 	unsigned size		// количество оставшихся одиночных сэмплов
 	)
 {
 	static voice16_t * RAMDTCM p = NULL;
 	enum { NPARTS = 3 };
 	static RAMDTCM uint_fast8_t part = 0;
-	static int16_t * RAMDTCM datas [NPARTS] = { NULL, NULL };		// начальный адрес пары сэмплов во входном буфере
+	static aubufv_t * RAMDTCM datas [NPARTS] = { NULL, NULL };		// начальный адрес пары сэмплов во входном буфере
 	static RAMDTCM unsigned sizes [NPARTS] = { 0, 0 };			// количество сэмплов во входном буфере
 
 	static unsigned skipsense = SKIPPED;
@@ -1310,11 +1310,13 @@ static RAMFUNC unsigned getsamplemsuacout(
 				datas [part + 1] = & p->buff [0];
 				sizes [part + 1] = DMABUFFSIZE16;
 #else
-				static int16_t addsample [DMABUFSTEP16];
+				static aubufv_t addsample [DMABUFSTEP16];
 				enum { HALF = DMABUFFSIZE16 / 2 };
 				// значения как среднее арифметическое сэмплов, между которыми вставляем дополнительный.
-				addsample [0] = ((int_fast32_t) p->buff [HALF - DMABUFSTEP16 + 0] +  p->buff [HALF + 0]) / 2;	// Left
-				addsample [1] = ((int_fast32_t) p->buff [HALF - DMABUFSTEP16 + 1] +  p->buff [HALF + 1]) / 2;	// Right
+				addsample [0] = ((aufastbufv2x_t) p->buff [HALF - DMABUFSTEP16 + 0] + p->buff [HALF + 0]) / 2;	// Left
+		#if DMABUFSTEP16 > 1
+				addsample [1] = ((aufastbufv2x_t) p->buff [HALF - DMABUFSTEP16 + 1] + p->buff [HALF + 1]) / 2;	// Right
+		#endif
 				part = NPARTS - 3;
 				datas [0] = & p->buff [0];		// часть перед вставкой
 				sizes [0] = HALF;
@@ -1535,7 +1537,7 @@ void releaserecordbuffer(void * dest)
  * или для переачи
  * Возврат 0, если нет ничего для воспроизведения.
  */
-uint_fast8_t takewavsample(INT32P_t * rv, uint_fast8_t suspend)
+uint_fast8_t takewavsample(FLOAT32P_t * rv, uint_fast8_t suspend)
 {
 	static records16_t * p = NULL;
 	static unsigned n;
@@ -1988,7 +1990,7 @@ void savesampleout32stereo(int_fast32_t ch0, int_fast32_t ch1)
 //////////////////////////////////////////
 // Поэлементное заполнение буфера AF DAC
 
-void savesampleout16stereo_user(int_fast32_t ch0, int_fast32_t ch1)
+void savesampleout16stereo_user(FLOAT_t ch0, FLOAT_t ch1)
 {
 	// если есть инициализированный канал для выдачи звука
 	static voice16_t * p = NULL;
@@ -2003,9 +2005,9 @@ void savesampleout16stereo_user(int_fast32_t ch0, int_fast32_t ch1)
 		n = 0;
 	}
 
-	p->buff [n + 0] = ch0;		// sample value
+	p->buff [n + 0] = AUDIO16TOAUB(ch0);		// sample value
 #if DMABUFSTEP16 > 1
-	p->buff [n + 1] = ch1;	// sample value
+	p->buff [n + 1] = AUDIO16TOAUB(ch1);	// sample value
 #endif
 	n += DMABUFSTEP16;
 
@@ -2018,7 +2020,7 @@ void savesampleout16stereo_user(int_fast32_t ch0, int_fast32_t ch1)
 	}
 }
 
-void savesampleout16stereo(int_fast32_t ch0, int_fast32_t ch1)
+void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 {
 	// если есть инициализированный канал для выдачи звука
 	static voice16_t * p = NULL;
@@ -2031,9 +2033,9 @@ void savesampleout16stereo(int_fast32_t ch0, int_fast32_t ch1)
 		n = 0;
 	}
 
-	p->buff [n + 0] = ch0;		// sample value
+	p->buff [n + 0] = AUDIO16TOAUB(ch0);		// sample value
 #if DMABUFSTEP16 > 1
-	p->buff [n + 1] = ch1;	// sample value
+	p->buff [n + 1] = AUDIO16TOAUB(ch1);	// sample value
 #endif
 	n += DMABUFSTEP16;
 
@@ -2459,19 +2461,37 @@ void uacout_buffer_stop(void)
 	}
 }
 
+static aufastbufv_t fetch_le(const uint8_t * p, size_t usbsz)
+{
+	int32_t v = 0;
+	uint_fast8_t i;
+	for (i = 0; i < usbsz; ++ i)
+	{
+		v = v * 256 + p [usbsz - i - 1];
+	}
+	for (; i < 4; ++ i)
+	{
+		v = v * 256;
+	}
+	/* теперь старший бит полученного с USB сэмпла находится в знаковом бите переменной v */
+	return v >> (8 * (4 - sizeof (aubufv_t)));
+}
+
 /* вызыватся из не-realtime функции обработчика прерывания */
 // Работает на ARM_SYSTEM_PRIORITY
-void uacout_buffer_save_system(const uint8_t * buff, uint_fast16_t size)
+void uacout_buffer_save_system(const uint8_t * buff, uint_fast16_t size, uint_fast8_t ichannels, uint_fast8_t ibits)
 {
-	const size_t dmabuffer16size = DMABUFFSIZE16 * sizeof (int16_t);	// размер в байтах
-
-#if WITHUABUACOUTAUDIO48MONO
+	const size_t dmabuffer16size = DMABUFFSIZE16 * sizeof (aubufv_t);	// размер в байтах
+	const size_t usbsz = (ibits + 7) / 8;
 
 	for (;;)
 	{
-		const uint_fast16_t insamples = size / 2;	// количество сэмплов во входном буфере
-		const uint_fast16_t outsamples = (dmabuffer16size - uacoutbufflevel) / 2 / DMABUFSTEP16;
+		const uint_fast16_t insamples = size / usbsz / ichannels;	// количество сэмплов во входном буфере
+		const uint_fast16_t outsamples = (dmabuffer16size - uacoutbufflevel) / sizeof (aubufv_t) / DMABUFSTEP16;
 		const uint_fast16_t chunksamples = ulmin16(insamples, outsamples);
+		const size_t inchunk = chunksamples * usbsz * ichannels;
+		const size_t outchunk = chunksamples * sizeof (aubufv_t) * DMABUFSTEP16;	// разхмер в байтах
+
 		if (chunksamples == 0)
 			break;
 		if (uacoutaddr == 0)
@@ -2481,21 +2501,40 @@ void uacout_buffer_save_system(const uint8_t * buff, uint_fast16_t size)
 			global_enableIRQ();
 			uacoutbufflevel = 0;
 		}
-		//memcpy((uint8_t *) uacoutaddr + uacoutbufflevel, buff, chunk);
+
+		if (ichannels < DMABUFSTEP16)
 		{
 			// копирование нужного количества сэмплов с прербразованием из моно в стерео
-			const uint16_t * src = (const uint16_t *) buff;
-			uint16_t * dst = (uint16_t *) ((uint8_t *) uacoutaddr + uacoutbufflevel);
+			const uint8_t * src = buff;
+			aubufv_t * dst = (aubufv_t *) ((uint8_t *) uacoutaddr + uacoutbufflevel);
 			uint_fast16_t n = chunksamples;
 			while (n --)
 			{
-				const uint_fast16_t v = * src ++;
+				const aufastbufv_t v = fetch_le(src, usbsz);
 				* dst ++ = v;
 				* dst ++ = v;
+				src += usbsz;
 			}
 		}
-		const uint_fast16_t inchunk = chunksamples * 2;
-		const uint_fast16_t outchunk = chunksamples * 2 * DMABUFSTEP16;	// разхмер в байтах
+		else if (usbsz != sizeof (aubufv_t))
+		// требуется преобразование формата из 16-бит семплов ко внутреннему формату aubufv_t
+		{
+			/* копирование 16 бит сэмплов с расширением */
+			const uint8_t * src = buff;
+			aubufv_t * dst = (aubufv_t *) ((uint8_t *) uacoutaddr + uacoutbufflevel);
+			uint_fast16_t n = chunksamples * ichannels;
+			while (n --)
+			{
+				const aufastbufv_t v = fetch_le(src, usbsz);
+				* dst ++ = v;
+				src += usbsz;
+			}
+		}
+		else
+		{
+			memcpy((uint8_t *) uacoutaddr + uacoutbufflevel, buff, inchunk);
+		}
+
 		size -= inchunk;	// проход по входому буферу
 		buff += inchunk;	// проход входому буферу
 
@@ -2508,49 +2547,23 @@ void uacout_buffer_save_system(const uint8_t * buff, uint_fast16_t size)
 			uacoutbufflevel = 0;
 		}
 	}
-#else /* WITHUABUACOUTAUDIO48MONO */
-	
-	for (;;)
-	{
-		const uint_fast16_t chunk = ulmin16(size, dmabuffer16size - uacoutbufflevel);
-		if (chunk == 0)
-			break;
-		if (uacoutaddr == 0)
-		{
- 			global_disableIRQ();
-			uacoutaddr = allocate_dmabuffer16();
-			global_enableIRQ();
-			uacoutbufflevel = 0;
-		}
-		memcpy((uint8_t *) uacoutaddr + uacoutbufflevel, buff, chunk);
-		size -= chunk;		// проход по входому буферу
-		buff += chunk;		// проход по входому буферу
-
-		if ((uacoutbufflevel += chunk) >= dmabuffer16size)	// проход по вывходому буферу
-		{
-			global_disableIRQ();
-			processing_dmabuffer16rxuac(uacoutaddr);
-			global_enableIRQ();
-			uacoutaddr = 0;
-			uacoutbufflevel = 0;
-		}
-	}
-
-#endif /* WITHUABUACOUTAUDIO48MONO */
 }
+
 /* вызыватся из realtime функции обработчика прерывания */
 // Работает на ARM_REALTIME_PRIORITY
-void uacout_buffer_save_realtime(const uint8_t * buff, uint_fast16_t size)
+void uacout_buffer_save_realtime(const uint8_t * buff, uint_fast16_t size, uint_fast8_t ichannels, uint_fast8_t ibits)
 {
-	const size_t dmabuffer16size = DMABUFFSIZE16 * sizeof (int16_t);	// размер в байтах
-
-#if WITHUABUACOUTAUDIO48MONO
+	const size_t dmabuffer16size = DMABUFFSIZE16 * sizeof (aubufv_t);	// размер в байтах
+	const size_t usbsz = (ibits + 7) / 8;
 
 	for (;;)
 	{
-		const uint_fast16_t insamples = size / 2;	// количество сэмплов во входном буфере
-		const uint_fast16_t outsamples = (dmabuffer16size - uacoutbufflevel) / 2 / DMABUFSTEP16;
+		const uint_fast16_t insamples = size / usbsz / ichannels;	// количество сэмплов во входном буфере
+		const uint_fast16_t outsamples = (dmabuffer16size - uacoutbufflevel) / sizeof (aubufv_t) / DMABUFSTEP16;
 		const uint_fast16_t chunksamples = ulmin16(insamples, outsamples);
+		const size_t inchunk = chunksamples * usbsz * ichannels;
+		const size_t outchunk = chunksamples * sizeof (aubufv_t) * DMABUFSTEP16;	// разхмер в байтах
+
 		if (chunksamples == 0)
 			break;
 		if (uacoutaddr == 0)
@@ -2560,21 +2573,40 @@ void uacout_buffer_save_realtime(const uint8_t * buff, uint_fast16_t size)
 			//global_enableIRQ();
 			uacoutbufflevel = 0;
 		}
-		//memcpy((uint8_t *) uacoutaddr + uacoutbufflevel, buff, chunk);
+
+		if (ichannels < DMABUFSTEP16)
 		{
 			// копирование нужного количества сэмплов с прербразованием из моно в стерео
-			const uint16_t * src = (const uint16_t *) buff;
-			uint16_t * dst = (uint16_t *) ((uint8_t *) uacoutaddr + uacoutbufflevel);
+			const uint8_t * src = buff;
+			aubufv_t * dst = (aubufv_t *) ((uint8_t *) uacoutaddr + uacoutbufflevel);
 			uint_fast16_t n = chunksamples;
 			while (n --)
 			{
-				const uint_fast16_t v = * src ++;
+				const aufastbufv_t v = fetch_le(src, usbsz);
 				* dst ++ = v;
 				* dst ++ = v;
+				src += usbsz;
 			}
 		}
-		const uint_fast16_t inchunk = chunksamples * 2;
-		const uint_fast16_t outchunk = chunksamples * 2 * DMABUFSTEP16;	// разхмер в байтах
+		else if (usbsz != sizeof (aubufv_t))
+		// требуется преобразование формата из 16-бит семплов ко внутреннему формату aubufv_t
+		{
+			/* копирование 16 бит сэмплов с расширением */
+			const uint8_t * src = buff;
+			aubufv_t * dst = (aubufv_t *) ((uint8_t *) uacoutaddr + uacoutbufflevel);
+			uint_fast16_t n = chunksamples * ichannels;
+			while (n --)
+			{
+				const aufastbufv_t v = fetch_le(src, usbsz);
+				* dst ++ = v;
+				src += usbsz;
+			}
+		}
+		else
+		{
+			memcpy((uint8_t *) uacoutaddr + uacoutbufflevel, buff, inchunk);
+		}
+
 		size -= inchunk;	// проход по входому буферу
 		buff += inchunk;	// проход входому буферу
 
@@ -2587,35 +2619,6 @@ void uacout_buffer_save_realtime(const uint8_t * buff, uint_fast16_t size)
 			uacoutbufflevel = 0;
 		}
 	}
-#else /* WITHUABUACOUTAUDIO48MONO */
-
-	for (;;)
-	{
-		const uint_fast16_t chunk = ulmin16(size, dmabuffer16size - uacoutbufflevel);
-		if (chunk == 0)
-			break;
-		if (uacoutaddr == 0)
-		{
- 			//global_disableIRQ();
-			uacoutaddr = allocate_dmabuffer16();
-			//global_enableIRQ();
-			uacoutbufflevel = 0;
-		}
-		memcpy((uint8_t *) uacoutaddr + uacoutbufflevel, buff, chunk);
-		size -= chunk;		// проход по входому буферу
-		buff += chunk;		// проход по входому буферу
-
-		if ((uacoutbufflevel += chunk) >= dmabuffer16size)	// проход по вывходому буферу
-		{
-			//global_disableIRQ();
-			processing_dmabuffer16rxuac(uacoutaddr);
-			//global_enableIRQ();
-			uacoutaddr = 0;
-			uacoutbufflevel = 0;
-		}
-	}
-
-#endif /* WITHUABUACOUTAUDIO48MONO */
 }
 /* --- UAC OUT data save */
 
@@ -2662,20 +2665,20 @@ uintptr_t getfilled_dmabufferx(uint_fast16_t * sizep)
 		return 0;
 
 	case UACINALT_AUDIO48:
-		* sizep = UAC_IN48_DATA_SIZE;
+		* sizep = UACIN_AUDIO48_DATASIZE;
 		return getfilled_dmabuffer16uacin();
 
 #if ! WITHUSBUACIN2
 
 #if WITHRTS96
 	case UACINALT_RTS96:
-		* sizep = VIRTUAL_AUDIO_PORT_DATA_SIZE_IN_RTS96;
+		* sizep = UACIN_RTS96_DATASIZE;
 		return getfilled_dmabuffer96uacinrts();
 #endif /* WITHRTS192 */
 
 #if WITHRTS192
 	case UACINALT_RTS192:
-		* sizep = VIRTUAL_AUDIO_PORT_DATA_SIZE_IN_RTS192;
+		* sizep = UACIN_RTS192_DATASIZE;
 		return getfilled_dmabuffer192uacinrts();
 #endif /* WITHRTS192 */
 
@@ -2705,13 +2708,13 @@ uintptr_t getfilled_dmabufferxrts(uint_fast16_t * sizep)
 
 #if WITHRTS96
 	case UACINRTSALT_RTS96:
-		* sizep = VIRTUAL_AUDIO_PORT_DATA_SIZE_IN_RTS96;
+		* sizep = UACIN_RTS96_DATASIZE;
 		return getfilled_dmabuffer96uacinrts();
 #endif /* WITHRTS192 */
 
 #if WITHRTS192
 	case UACINRTSALT_RTS192:
-		* sizep = VIRTUAL_AUDIO_PORT_DATA_SIZE_IN_RTS192;
+		* sizep = UACIN_RTS192_DATASIZE;
 		return getfilled_dmabuffer192uacinrts();
 #endif /* WITHRTS192 */
 

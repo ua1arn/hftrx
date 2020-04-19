@@ -46,8 +46,8 @@ static void hardware_dummy_enable(void)
 static uintptr_t 
 dma_invalidate16rx(uintptr_t addr)
 {
-	//arm_hardware_invalidate(addr, DMABUFFSIZE16 * sizeof (int16_t));
-	arm_hardware_flush_invalidate(addr, DMABUFFSIZE16 * sizeof (int16_t) + ADDPAD);
+	//arm_hardware_invalidate(addr, DMABUFFSIZE16 * sizeof (aubufv_t));
+	arm_hardware_flush_invalidate(addr, DMABUFFSIZE16 * sizeof (aubufv_t) + ADDPAD);
 	return addr;
 }
 
@@ -56,7 +56,7 @@ dma_invalidate16rx(uintptr_t addr)
 static uintptr_t 
 dma_flush16tx(uintptr_t addr)
 {
-	arm_hardware_flush_invalidate(addr, DMABUFFSIZE16 * sizeof (int16_t) + ADDPAD);
+	arm_hardware_flush_invalidate(addr, DMABUFFSIZE16 * sizeof (aubufv_t) + ADDPAD);
 	return addr;
 }
 
@@ -87,6 +87,8 @@ static uintptr_t dma_flush32tx(uintptr_t addr)
 }
 
 #if CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
+
+#define DMA_SxCR_PL_VALUE 2uL		// STM32xxx DMA Priority level - High
 
 enum
 {
@@ -169,6 +171,46 @@ enum
 #endif /* WITHI2SCLOCKFROMPIN */
 
 #if WITHI2SHW
+
+#if WITHI2S_32BITPAIR
+
+	#define DMA_SxCR_xSIZE		0x02uL	// 10: word (32-bit)
+
+#else /* WITHI2S_32BITPAIR */
+
+	#define DMA_SxCR_xSIZE		0x01uL	// 01: half-word (16-bit)
+
+#endif /* WITHI2S_32BITPAIR */
+
+/* получение битов режима I2S для каналов обммена с кодеком */
+static portholder_t stm32xxx_i2scfgr_afcodec(void)
+{
+	const portholder_t i2scfgr =
+		SPI_I2SCFGR_I2SMOD |	// 1: I2S/PCM mode is selected
+
+#if WITHI2S_32BITPAIR
+		//(1uL << SPI_I2SCFGR_DATFMT_Pos) |	// 1: the data inside the SPI2S_RXDR or SPI2S_TXDR are left aligned.
+		(1uL << SPI_I2SCFGR_FIXCH_Pos) |		// 1: the channel length in slave mode is supposed to be 16 or 32 bits (according to CHLEN)
+		(1uL << SPI_I2SCFGR_CHLEN_Pos) |		// 1: 32-bit wide audio channel
+		(2uL << SPI_I2SCFGR_DATLEN_Pos) |	// 00: 16-bit data length, 01: 24-bit data length, 10: 32-bit data length
+
+#else /* WITHI2S_32BITPAIR */
+		(0uL << SPI_I2SCFGR_CHLEN_Pos) |		// 0: 16-bit wide audio channel
+		(0uL << SPI_I2SCFGR_DATLEN_Pos) |	// 00: 16-bit data length, 01: 24-bit data length, 10: 32-bit data length
+
+#endif /* WITHI2S_32BITPAIR */
+
+#if WITHI2S_FORMATI2S_PHILIPS
+		(0uL << SPI_I2SCFGR_I2SSTD_Pos) |	// 00: I2S Philips standard
+
+#else /* WITHI2S_FORMATI2S_PHILIPS */
+		(1uL << SPI_I2SCFGR_I2SSTD_Pos) |	// 01: MSB justified standard (left justified)
+
+#endif /* WITHI2S_FORMATI2S_PHILIPS */
+		0;
+
+	return i2scfgr;
+}
 
 // Обработчик прерывания DMA по приему I2S - I2S2_EXT
 // Use arm_hardware_invalidate
@@ -281,9 +323,9 @@ DMA_I2S2_TX_initialize(void)
 		0 * DMA_SxCR_PBURST_0 |	// 0: single transfer
 		1 * DMA_SxCR_DIR_0 |	// направление - память - периферия
 		1 * DMA_SxCR_MINC |		// инкремент памяти
-		1 * DMA_SxCR_MSIZE_0 |	// длина в памяти - 16р
-		1 * DMA_SxCR_PSIZE_0 |	// длина в SPI_DR- 16р
-		2 * DMA_SxCR_PL_0 |		// Priority level - High
+		(DMA_SxCR_xSIZE << DMA_SxCR_MSIZE_Pos) |	// длина в памяти - 16b/32b
+		(DMA_SxCR_xSIZE << DMA_SxCR_PSIZE_Pos) |	// длина в SPI_DR- 16b/32b
+		(DMA_SxCR_PL_VALUE << DMA_SxCR_PL_Pos) |		// Priority level - High
 		0 * DMA_SxCR_CT |		// M0AR selected
 		1 * DMA_SxCR_DBM |		// double buffer mode seelcted
 		0;
@@ -320,9 +362,9 @@ DMA_I2S2ext_rx_init(void)
 		0 * DMA_SxCR_PBURST_0 |	// 0: single transfer
 		0 * DMA_SxCR_DIR_0 |	// 00: Peripheral-to-memory
 		1 * DMA_SxCR_MINC |		//инкремент памяти
-		1 * DMA_SxCR_MSIZE_0 |	//длина в памяти - 16р
-		1 * DMA_SxCR_PSIZE_0 |	//длина в SPI_DR- 16р
-		2 * DMA_SxCR_PL_0 |		// Priority level - High
+		(DMA_SxCR_xSIZE << DMA_SxCR_MSIZE_Pos) |	// длина в памяти - 16b/32b
+		(DMA_SxCR_xSIZE << DMA_SxCR_PSIZE_Pos) |	// длина в SPI_DR- 16b/32b
+		(DMA_SxCR_PL_VALUE << DMA_SxCR_PL_Pos) |		// Priority level - High
 		0 * DMA_SxCR_CT |		// M0AR selected
 		1 * DMA_SxCR_DBM |		// double buffer mode seelcted
 		0;
@@ -381,9 +423,9 @@ DMA_I2S3_RX_initialize(void)
 		0 * DMA_SxCR_PBURST_0 |	// 0: single transfer
 		0 * DMA_SxCR_DIR_0 |	// 00: Peripheral-to-memory
 		1 * DMA_SxCR_MINC |		//инкремент памяти
-		1 * DMA_SxCR_MSIZE_0 |	//длина в памяти - 16р
-		1 * DMA_SxCR_PSIZE_0 |	//длина в SPI_DR- 16р
-		2 * DMA_SxCR_PL_0 |		// Priority level - High
+		(DMA_SxCR_xSIZE << DMA_SxCR_MSIZE_Pos) |	// длина в памяти - 16b/32b
+		(DMA_SxCR_xSIZE << DMA_SxCR_PSIZE_Pos) |	// длина в SPI_DR- 16b/32b
+		(DMA_SxCR_PL_VALUE << DMA_SxCR_PL_Pos) |		// Priority level - High
 		0 * DMA_SxCR_CT |		// M0AR selected
 		1 * DMA_SxCR_DBM |		// double buffer mode seelcted
 		0;
@@ -453,20 +495,10 @@ hardware_i2s2_master_fullduplex_initialize(void)		/* инициализация 
 	__DSB();
 #endif /* CPUSTYLE_STM32H7XX */
 	        
-	const portholder_t i2smode = 
-		SPI_I2SCFGR_I2SMOD | 
-		0 * SPI_I2SCFGR_CHLEN |		// 0: 16-bit wide audio channel
-		0 * SPI_I2SCFGR_DATLEN_0 |	// 00: 16-bit data length, 01: 24-bit data length, 10: 32-bit data length
-#if WITHI2S_FORMATI2S_PHILIPS
-		0 * SPI_I2SCFGR_I2SSTD_0 |	// 00: I2S Phillips standard, 01: MSB justified standard (left justified)
-#else /* WITHI2S_FORMATI2S_PHILIPS */
-		1 * SPI_I2SCFGR_I2SSTD_0 |	// 00: I2S Phillips standard, 01: MSB justified standard (left justified)
-#endif /* WITHI2S_FORMATI2S_PHILIPS */
-		//1 * SPI_I2SCFGR_CKPOL |		// не для H7: от этого бита не зависит: данные на выходе меняются по спадающему фронту
-		0;
+	const portholder_t i2scfgr = stm32xxx_i2scfgr_afcodec();
 
- 	I2S2ext->I2SCFGR = i2smode | 1 * SPI_I2SCFGR_I2SCFG_0;	// 10: Master - transmit, 11: Master - receive, 01: Slave - receive
- 	SPI2->I2SCFGR = i2smode | 2 * SPI_I2SCFGR_I2SCFG_0; // 10: Master - transmit, 11: Master - receive
+	I2S2ext->I2SCFGR = i2scfgr | 1 * SPI_I2SCFGR_I2SCFG_0;	// 10: Master - transmit, 11: Master - receive, 01: Slave - receive
+ 	SPI2->I2SCFGR = i2scfgr | 2 * SPI_I2SCFGR_I2SCFG_0; // 10: Master - transmit, 11: Master - receive
 #if WITHI2SCLOCKFROMPIN
 	const portholder_t i2sdivider = calcdivround_exti2s(ARMI2SMCLK);
 #else /* WITHI2SCLOCKFROMPIN */
@@ -512,19 +544,9 @@ hardware_i2s2_slave_tx_initialize(void)		/* инициализация I2S2, STM
 	(void) RCC->APB1ENR;
 #endif /* CPUSTYLE_STM32H7XX */
 	        
-	const portholder_t i2smode = 
-		SPI_I2SCFGR_I2SMOD | 
-		0 * SPI_I2SCFGR_CHLEN |		// 0: 16-bit wide audio channel
-		0 * SPI_I2SCFGR_DATLEN_0 |	// 00: 16-bit data length, 01: 24-bit data length, 10: 32-bit data length
-#if WITHI2S_FORMATI2S_PHILIPS
-		0 * SPI_I2SCFGR_I2SSTD_0 |	// 00: I2S Phillips standard, 01: MSB justified standard (left justified)
-#else /* WITHI2S_FORMATI2S_PHILIPS */
-		1 * SPI_I2SCFGR_I2SSTD_0 |	// 00: I2S Phillips standard, 01: MSB justified standard (left justified)
-#endif /* WITHI2S_FORMATI2S_PHILIPS */
-		//1 * SPI_I2SCFGR_CKPOL |		// не для H7: от этого бита не зависит: данные на выходе меняются по спадающему фронту
-		0;
+	const portholder_t i2scfgr = stm32xxx_i2scfgr_afcodec();
 
- 	SPI2->I2SCFGR = i2smode | 0 * SPI_I2SCFGR_I2SCFG_0; // 00: Slave - transmit
+ 	SPI2->I2SCFGR = i2scfgr | 0 * SPI_I2SCFGR_I2SCFG_0; // 00: Slave - transmit
 #if CPUSTYLE_STM32H7XX
 	SPI2->CFG2 |= SPI_CFG2_IOSWP;
 #endif /* CPUSTYLE_STM32H7XX */
@@ -602,19 +624,9 @@ hardware_i2s2_master_tx_initialize(void)		/* инициализация I2S2, ST
 	__DSB();
 #endif /* CPUSTYLE_STM32H7XX */
 	        
-	const portholder_t i2smode = 
-		SPI_I2SCFGR_I2SMOD | 
-		0 * SPI_I2SCFGR_CHLEN |		// 0: 16-bit wide audio channel
-		0 * SPI_I2SCFGR_DATLEN_0 |	// 00: 16-bit data length, 01: 24-bit data length, 10: 32-bit data length
-#if WITHI2S_FORMATI2S_PHILIPS
-		0 * SPI_I2SCFGR_I2SSTD_0 |	// 00: I2S Phillips standard, 01: MSB justified standard (left justified)
-#else /* WITHI2S_FORMATI2S_PHILIPS */
-		1 * SPI_I2SCFGR_I2SSTD_0 |	// 00: I2S Phillips standard, 01: MSB justified standard (left justified)
-#endif /* WITHI2S_FORMATI2S_PHILIPS */
-		//1 * SPI_I2SCFGR_CKPOL |		// не для H7: от этого бита не зависит: данные на выходе меняются по спадающему фронту
-		0;
+	const portholder_t i2scfgr = stm32xxx_i2scfgr_afcodec();
 
- 	SPI2->I2SCFGR = i2smode | 2 * SPI_I2SCFGR_I2SCFG_0; // 10: Master - transmit, 11: Master - receive
+ 	SPI2->I2SCFGR = i2scfgr | 2 * SPI_I2SCFGR_I2SCFG_0; // 10: Master - transmit, 11: Master - receive
 #if WITHI2SCLOCKFROMPIN
 	const portholder_t i2sdivider = calcdivround_exti2s(ARMI2SMCLK);
 #else /* WITHI2SCLOCKFROMPIN */
@@ -660,19 +672,9 @@ hardware_i2s3_slave_rx_initialize(void)		/* инициализация I2S3 STM3
 	(void) RCC->APB1ENR;
 #endif /* CPUSTYLE_STM32H7XX */
 	        
-	const portholder_t i2smode = 
-		SPI_I2SCFGR_I2SMOD | 
-		0 * SPI_I2SCFGR_CHLEN |		// 0: 16-bit wide audio channel
-		0 * SPI_I2SCFGR_DATLEN_0 |	// 00: 16-bit data length, 01: 24-bit data length, 10: 32-bit data length
-#if WITHI2S_FORMATI2S_PHILIPS
-		0 * SPI_I2SCFGR_I2SSTD_0 |	// 00: I2S Phillips standard, 01: MSB justified standard (left justified)
-#else /* WITHI2S_FORMATI2S_PHILIPS */
-		1 * SPI_I2SCFGR_I2SSTD_0 |	// 00: I2S Phillips standard, 01: MSB justified standard (left justified)
-#endif /* WITHI2S_FORMATI2S_PHILIPS */
-		//1 * SPI_I2SCFGR_CKPOL |		// не для H7: от этого бита не зависит: данные на выходе меняются по спадающему фронту
-		0;
+	const portholder_t i2scfgr = stm32xxx_i2scfgr_afcodec();
 
- 	SPI3->I2SCFGR = i2smode | 1 * SPI_I2SCFGR_I2SCFG_0;	// 10: Master - transmit, 11: Master - receive, 01: Slave - receive
+ 	SPI3->I2SCFGR = i2scfgr | 1 * SPI_I2SCFGR_I2SCFG_0;	// 10: Master - transmit, 11: Master - receive, 01: Slave - receive
 #if CPUSTYLE_STM32H7XX
 	//SPI3->CFG2 |= SPI_CFG2_IOSWP;
 #endif /* CPUSTYLE_STM32H7XX */
@@ -881,10 +883,58 @@ static void hardware_sai1_sai2_clock_selection(void)
 			0;
 		*/
 	#elif CPUSTYLE_STM32H7XX
-		#warning TODO: implement for CPUSTYLE_STM32H7XX
+		// clock sources:
+		//	000: pll1_q_ck clock selected as SAI1 and DFSDM1 Aclk kernel clock (default after reset)
+		//	001: pll2_p_ck clock selected as SAI1 and DFSDM1 Aclk kernel clock
+		//	010: pll3_p_ck clock selected as SAI1 and DFSDM1 Aclk kernel clock
+		//	011: I2S_CKIN clock selected as SAI1 and DFSDM1 Aclk kernel clock
+		//	100: per_ck clock selected as SAI1 and DFSDM1 Aclk kernel clock
+		//	others: reserved, the kernel clock is disabled
+		//	Note: I2S_CKIN is an external clock taken from a pin.
+		RCC->D2CCIP1R = (RCC->D2CCIP1R & ~ (RCC_D2CCIP1R_SAI1SEL_Msk | RCC_D2CCIP1R_SAI23SEL_Msk)) |
+			(3uL << RCC_D2CCIP1R_SAI1SEL_Pos) |		// SAI1 clock source selection
+			(3uL << RCC_D2CCIP1R_SAI23SEL_Pos) |	// SAI2, SAI3 clock source selection
+			0;
+		(void) RCC->D2CCIP1R;
 
 	#elif CPUSTYLE_STM32MP1
-		#warning TODO: implement for CPUSTYLE_STM32MP1
+		// clock sources:
+		//	0x0: pll4_q_ck clock selected as kernel peripheral clock (default after reset)
+		//	0x1: pll3_q_ck clock selected as kernel peripheral clock
+		//	0x2: I2S_CKIN clock selected as kernel peripheral clock
+		//	0x3: per_ck clock selected as kernel peripheral clock
+		//	0x4: pll3_r_ck clock selected as kernel peripheral clock
+		//	others: reserved, the kernel clock is disabled
+
+		RCC->SAI1CKSELR = (RCC->SAI1CKSELR & ~ (RCC_SAI1CKSELR_SAI1SRC_Msk)) |
+				(2uL << RCC_SAI1CKSELR_SAI1SRC_Pos) |
+				0;
+		(void) RCC->SAI1CKSELR;
+
+		//	0x0: pll4_q_ck clock selected as kernel peripheral clock (default after reset)
+		//	0x1: pll3_q_ck clock selected as kernel peripheral clock
+		//	0x2: I2S_CKIN clock selected as kernel peripheral clock
+		//	0x3: per_ck clock selected as kernel peripheral clock
+		//	0x4: spdif_ck_symb clock from SPDIFRX selected as kernel peripheral clock
+		//	0x5: pll3_r_ck clock selected as kernel peripheral clock
+		//	others: reserved, the kernel clock is disabled
+
+		RCC->SAI2CKSELR = (RCC->SAI2CKSELR & ~ (RCC_SAI2CKSELR_SAI2SRC_Msk)) |
+				(2uL << RCC_SAI2CKSELR_SAI2SRC_Pos) |
+				0;
+		(void) RCC->SAI2CKSELR;
+
+		//	0x0: pll4_q_ck clock selected as kernel peripheral clock (default after reset)
+		//	0x1: pll3_q_ck clock selected as kernel peripheral clock
+		//	0x2: I2S_CKIN clock selected as kernel peripheral clock
+		//	0x3: per_ck clock selected as kernel peripheral clock
+		//	0x4: pll3_r_ck clock selected as kernel peripheral clock
+		//	others: reserved, the kernel clock is disabled
+
+		RCC->SAI3CKSELR = (RCC->SAI3CKSELR & ~ (RCC_SAI3CKSELR_SAI3SRC_Msk)) |
+				(2uL << RCC_SAI3CKSELR_SAI3SRC_Pos) |
+				0;
+		(void) RCC->SAI3CKSELR;
 
 	#else /* defined (STM32F446xx) */
 		// clock sources:
@@ -943,11 +993,58 @@ static void hardware_sai1_sai2_clock_selection(void)
 			0;
 
 	#elif CPUSTYLE_STM32H7XX
-
+		// clock sources:
+		//	000: pll1_q_ck clock selected as SAI1 and DFSDM1 Aclk kernel clock (default after reset)
+		//	001: pll2_p_ck clock selected as SAI1 and DFSDM1 Aclk kernel clock
+		//	010: pll3_p_ck clock selected as SAI1 and DFSDM1 Aclk kernel clock
+		//	011: I2S_CKIN clock selected as SAI1 and DFSDM1 Aclk kernel clock
+		//	100: per_ck clock selected as SAI1 and DFSDM1 Aclk kernel clock
+		//	others: reserved, the kernel clock is disabled
+		//	Note: I2S_CKIN is an external clock taken from a pin.
 		RCC->D2CCIP1R = (RCC->D2CCIP1R & ~ (RCC_D2CCIP1R_SAI1SEL | RCC_D2CCIP1R_SAI23SEL)) |
-			(0x01 << RCC_D2CCIP1R_SAI1SEL_Pos) |	// PLL2 Q
-			(0x01 << RCC_D2CCIP1R_SAI23SEL_Pos) |	// I2S APB2 clock source selection
+			(0x01uL << RCC_D2CCIP1R_SAI1SEL_Pos) |	// PLL2 Q
+			(0x01uL << RCC_D2CCIP1R_SAI23SEL_Pos) |
 			0;
+
+	#elif CPUSTYLE_STM32MP1
+		#warning TODO: implement for CPUSTYLE_STM32MP1
+		// clock sources:
+		//	0x0: pll4_q_ck clock selected as kernel peripheral clock (default after reset)
+		//	0x1: pll3_q_ck clock selected as kernel peripheral clock
+		//	0x2: I2S_CKIN clock selected as kernel peripheral clock
+		//	0x3: per_ck clock selected as kernel peripheral clock
+		//	0x4: pll3_r_ck clock selected as kernel peripheral clock
+		//	others: reserved, the kernel clock is disabled
+
+		RCC->SAI1CKSELR = (RCC->SAI1CKSELR & ~ (RCC_SAI1CKSELR_SAI1SRC_Msk)) |
+				(XuL << RCC_SAI1CKSELR_SAI1SRC_Pos) |
+				0;
+		(void) RCC->SAI1CKSELR;
+
+		//	0x0: pll4_q_ck clock selected as kernel peripheral clock (default after reset)
+		//	0x1: pll3_q_ck clock selected as kernel peripheral clock
+		//	0x2: I2S_CKIN clock selected as kernel peripheral clock
+		//	0x3: per_ck clock selected as kernel peripheral clock
+		//	0x4: spdif_ck_symb clock from SPDIFRX selected as kernel peripheral clock
+		//	0x5: pll3_r_ck clock selected as kernel peripheral clock
+		//	others: reserved, the kernel clock is disabled
+
+		RCC->SAI2CKSELR = (RCC->SAI2CKSELR & ~ (RCC_SAI2CKSELR_SAI2SRC_Msk)) |
+				(XuL << RCC_SAI2CKSELR_SAI2SRC_Pos) |
+				0;
+		(void) RCC->SAI2CKSELR;
+
+		//	0x0: pll4_q_ck clock selected as kernel peripheral clock (default after reset)
+		//	0x1: pll3_q_ck clock selected as kernel peripheral clock
+		//	0x2: I2S_CKIN clock selected as kernel peripheral clock
+		//	0x3: per_ck clock selected as kernel peripheral clock
+		//	0x4: pll3_r_ck clock selected as kernel peripheral clock
+		//	others: reserved, the kernel clock is disabled
+
+		RCC->SAI3CKSELR = (RCC->SAI3CKSELR & ~ (RCC_SAI3CKSELR_SAI3SRC_Msk)) |
+				(XuL << RCC_SAI3CKSELR_SAI3SRC_Pos) |
+				0;
+		(void) RCC->SAI3CKSELR;
 
 	#else /* defined (STM32F446xx) */
 		RCC->PLLI2SCFGR = 
@@ -1155,7 +1252,7 @@ static void DMA_SAI1_A_TX_initialize(void)
 		1 * DMA_SxCR_MINC | //инкремент памяти
 		2 * DMA_SxCR_MSIZE_0 | //длина в памяти - 32 bit
 		2 * DMA_SxCR_PSIZE_0 | //длина в DR - 32 bit
-		2 * DMA_SxCR_PL_0 |		// Priority level - High
+		(DMA_SxCR_PL_VALUE << DMA_SxCR_PL_Pos) |		// Priority level - High
 		0 * DMA_SxCR_CT | // M0AR selected
 		1 * DMA_SxCR_DBM | // double buffer mode seelcted
 		0;
@@ -1221,7 +1318,7 @@ static void DMA_SAI1_B_RX_initialize(void)
 		1 * DMA_SxCR_MINC |		//инкремент памяти
 		2 * DMA_SxCR_MSIZE_0 | //длина в памяти - 32 bit
 		2 * DMA_SxCR_PSIZE_0 | //длина в DR - 32 bit
-		2 * DMA_SxCR_PL_0 |		// Priority level - High
+		(DMA_SxCR_PL_VALUE << DMA_SxCR_PL_Pos) |		// Priority level - High
 		0 * DMA_SxCR_CT |	// M0AR selected
 		1 * DMA_SxCR_DBM |	 // double buffer mode seelcted
 		0;
@@ -1634,7 +1731,7 @@ static void DMA_SAI2_A_TX_initializeXXX(void)
 		1 * DMA_SxCR_MINC | //инкремент памяти
 		2 * DMA_SxCR_MSIZE_0 | //длина в памяти - 32 bit
 		2 * DMA_SxCR_PSIZE_0 | //длина в DR - 32 bit
-		2 * DMA_SxCR_PL_0 |		// Priority level - High
+		(DMA_SxCR_PL_VALUE << DMA_SxCR_PL_Pos) |		// Priority level - High
 		0 * DMA_SxCR_CT | // M0AR selected
 		1 * DMA_SxCR_DBM | // double buffer mode seelcted
 		0;
@@ -1693,7 +1790,7 @@ static void DMA_SAI2_A_TX_initializeAUDIO48(void)
 		1 * DMA_SxCR_MINC | //инкремент памяти
 		2 * DMA_SxCR_MSIZE_0 | //длина в памяти - 32 bit
 		2 * DMA_SxCR_PSIZE_0 | //длина в DR - 32 bit
-		2 * DMA_SxCR_PL_0 |		// Priority level - High
+		(DMA_SxCR_PL_VALUE << DMA_SxCR_PL_Pos) |		// Priority level - High
 		0 * DMA_SxCR_CT | // M0AR selected
 		1 * DMA_SxCR_DBM | // double buffer mode seelcted
 		0;
@@ -1754,7 +1851,7 @@ static void DMA_SAI2_B_RX_initializeRTS96(void)
 		1 * DMA_SxCR_MINC |		//инкремент памяти
 		2 * DMA_SxCR_MSIZE_0 | //длина в памяти - 32 bit
 		2 * DMA_SxCR_PSIZE_0 | //длина в DR - 32 bit
-		2 * DMA_SxCR_PL_0 |		// Priority level - High
+		(DMA_SxCR_PL_VALUE << DMA_SxCR_PL_Pos) |		// Priority level - High
 		0 * DMA_SxCR_CT |	// M0AR selected
 		1 * DMA_SxCR_DBM |	 // double buffer mode seelcted
 		0;
@@ -1815,7 +1912,7 @@ static void DMA_SAI2_B_RX_initializeAUDIO48(void)
 		1 * DMA_SxCR_MINC |		//инкремент памяти
 		2 * DMA_SxCR_MSIZE_0 | //длина в памяти - 32 bit
 		2 * DMA_SxCR_PSIZE_0 | //длина в DR - 32 bit
-		2 * DMA_SxCR_PL_0 |		// Priority level - High
+		(DMA_SxCR_PL_VALUE << DMA_SxCR_PL_Pos) |		// Priority level - High
 		0 * DMA_SxCR_CT |	// M0AR selected
 		1 * DMA_SxCR_DBM |	 // double buffer mode seelcted
 		0;
@@ -2136,7 +2233,7 @@ static void DMA_SAI2_B_RX_initializeWFM(void)
 		1 * DMA_SxCR_MINC |		//инкремент памяти
 		2 * DMA_SxCR_MSIZE_0 | //длина в памяти - 32 bit
 		2 * DMA_SxCR_PSIZE_0 | //длина в DR - 32 bit
-		2 * DMA_SxCR_PL_0 |		// Priority level - High
+		(DMA_SxCR_PL_VALUE << DMA_SxCR_PL_Pos) |		// Priority level - High
 		0 * DMA_SxCR_CT |	// M0AR selected
 		1 * DMA_SxCR_DBM |	 // double buffer mode seelcted
 		0;
@@ -2232,6 +2329,18 @@ enum
 
 #define R7S721_MASTER 1
 
+#if WITHI2S_32BITPAIR
+	#define R7S721_SSIF_CKDIV_AFCODEC R7S721_SSIF_CKDIV4	// 0010: AUDIOц/4: 12,288 -> 3.072 (48 kS, 32 bit, stereo)
+	#define R7S721_SSIF_SWL_AFCODEC 3	// SWL 3: 32 bit
+	#define R7S721_SSIF_DWL_AFCODEC 6	// DWL 6: 32 bit
+
+#else /* WITHI2S_32BITPAIR */
+	#define R7S721_SSIF_CKDIV_AFCODEC R7S721_SSIF_CKDIV8	// 0011: AUDIOц/8: 12,288 -> 1.536 (48 kS, 16 bit, stereo)
+	#define R7S721_SSIF_SWL_AFCODEC 1	// SWL 1: 16 bit
+	#define R7S721_SSIF_DWL_AFCODEC 1	// DWL 1: 16 bit
+
+#endif /* WITHI2S_32BITPAIR */
+
 #if WITHI2SHW
 
 // audio codec
@@ -2298,8 +2407,8 @@ static void r7s721_ssif0_dmarx_initialize(void)
 	DMAC0.N1DA_n = dma_invalidate16rx(allocate_dmabuffer16());
 
     /* Set Transfer Size */
-    DMAC0.N0TB_n = DMABUFFSIZE16 * sizeof (int16_t);	// размер в байтах
-    DMAC0.N1TB_n = DMABUFFSIZE16 * sizeof (int16_t);	// размер в байтах
+    DMAC0.N0TB_n = DMABUFFSIZE16 * sizeof (aubufv_t);	// размер в байтах
+    DMAC0.N1TB_n = DMABUFFSIZE16 * sizeof (aubufv_t);	// размер в байтах
 
 	// Values from Table 9.4 On-Chip Peripheral Module Requests
 	// SSIRXI0 (receive data full)
@@ -2364,8 +2473,8 @@ static void r7s721_ssif0_dmatx_initialize(void)
     DMAC1.N1DA_n = (uintptr_t) & SSIF0.SSIFTDR;	// Fixed destination address
 
     /* Set Transfer Size */
-    DMAC1.N0TB_n = DMABUFFSIZE16 * sizeof (int16_t);	// размер в байтах
-    DMAC1.N1TB_n = DMABUFFSIZE16 * sizeof (int16_t);	// размер в байтах
+    DMAC1.N0TB_n = DMABUFFSIZE16 * sizeof (aubufv_t);	// размер в байтах
+    DMAC1.N1TB_n = DMABUFFSIZE16 * sizeof (aubufv_t);	// размер в байтах
 
 	// Values from Table 9.4 On-Chip Peripheral Module Requests
 	// SSITXI0 (transmit data empty)
@@ -2433,8 +2542,8 @@ static void r7s721_ssif0_fullduplex_initialize(void)
 	SSIF0.SSICR = 
 		R7S721_USE_AUDIO_CLK * (1UL << 30) |		// CKS 1: AUDIO_CLK input 0: AUDIO_X1 input
 		0 * (1UL << 22) |		// CHNL		00: Having one channel per system word (I2S complaint)
-		1 * (1UL << 19) |		// DWL		1: 16 bit	
-		1 * (1UL << 16) |		// SWL		1: 16 bit	
+		R7S721_SSIF_DWL_AFCODEC * (1UL << 19) |		// DWL
+		R7S721_SSIF_SWL_AFCODEC * (1UL << 16) |		// SWL
 		master * (1UL << 15) |		// SCKD		1: Serial bit clock is output, master mode.
 		master * (1UL << 14) |		// SWSD		1: Serial word select is output, master mode.
 		0 * (1UL << 13) |		// SCKP		0: Данные на выходе меняются по спадающему фронту (I2S complaint)
@@ -2447,7 +2556,7 @@ static void r7s721_ssif0_fullduplex_initialize(void)
 #else /* WITHI2S_FORMATI2S_PHILIPS */
 		1 * (1UL << 8) |		// DEL	1: No delay between SSIWS and SSIDATA
 #endif /* WITHI2S_FORMATI2S_PHILIPS */
-		master * R7S721_SSIF_CKDIV8 * (1UL << 4) |		// CKDV	0011: AUDIOц/8: 12,288 -> 1.536 (48 kS, 16 bit, stereo)
+		master * R7S721_SSIF_CKDIV_AFCODEC * (1UL << 4) |		// CKDV	0011: AUDIOц/8: 12,288 -> 1.536 (48 kS, 16 bit, stereo)
 		0;
 
 	// FIFO Control Register (SSIFCR)

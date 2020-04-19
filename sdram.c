@@ -2901,9 +2901,6 @@ void arm_hardware_sdram_initialize(void)
 #define INTMAX_C(x)  x ## LL
 #define UINTMAX_C(x) x ## ULL
 */
-/* Compute the number of elements in the given array */
-#define ARRAY_SIZE(a)				\
-	(sizeof(a) / sizeof((a)[0]))
 
 #define IS_POWER_OF_TWO(x)			\
 	(((x) & ((x) - 1)) == 0)
@@ -5194,7 +5191,7 @@ static int stpmic1_regulator_voltage_get(const char *name)
 
 static int stpmic1_register_read(uint8_t register_id,  uint8_t *value)
 {
-	uint_fast8_t v;
+	uint8_t v;
 
 	i2c_start(pmic_i2c_addr | 0x00);
 	i2c_write_withrestart(register_id);

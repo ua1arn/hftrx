@@ -456,7 +456,7 @@ static void s1d13781_wrcmd32_pair(uint_fast8_t reg, uint_fast16_t high, uint_fas
 	s1d13781_unselect();
 }
 
-static void s1d13781_wrcmdcolor(uint_fast8_t reg, COLOR_T val)
+static void s1d13781_wrcmdcolor(uint_fast8_t reg, COLORMAIN_T val)
 {
 #if S1D_DISPLAY_BPP == 24
 	s1d13781_wrcmd32(reg, val);
@@ -589,7 +589,7 @@ void
 display_fillrect(
 	uint_fast16_t x, uint_fast16_t y, 	// координаты в пикселях
 	uint_fast16_t w, uint_fast16_t h, 	// размеры в пикселях
-	COLOR_T color
+	COLORMAIN_T color
 	)
 {
 	// дождаться выполнения предидущей команды BitBlt engine.
@@ -615,9 +615,9 @@ display_fillrect(
 
 }
 
-static COLOR_T stored_fgcolor, stored_bgcolor;
+static COLORMAIN_T stored_fgcolor, stored_bgcolor;
 
-static void s1d13781_setcolor(COLOR_T fgcolor, COLOR_T bgcolor)
+static void s1d13781_setcolor(COLORMAIN_T fgcolor, COLORMAIN_T bgcolor)
 {
 	stored_fgcolor = fgcolor;
 	stored_bgcolor = bgcolor;
@@ -705,7 +705,7 @@ display_scroll_down(
 	int_fast16_t hshift	// количество пиксеелей для сдвига влево (отрицательное число) или вправо (положительное).
 	)
 {
-	const COLOR_T fillnewcolor = COLOR_BLACK;	// цвет, которым заполняется свободное место при сдвиге старого изобажения
+	const COLORMAIN_T fillnewcolor = COLOR_BLACK;	// цвет, которым заполняется свободное место при сдвиге старого изобажения
 	enum { WC = (S1D_DISPLAY_BPP / 8) };		// количество байтов на пиксель
 	const int_fast16_t adjw = hshift < 0 ?
 				w + hshift 	// сдвиг окна влево
@@ -777,7 +777,7 @@ display_scroll_up(
 	int_fast16_t hshift	// количество пиксеелей для сдвига влево (отрицательное число) или вправо (положительное).
 	)
 {
-	const COLOR_T fillnewcolor = COLOR_BLACK;	// цвет, которым заполняется свободное место при сдвиге старого изобажения
+	const COLORMAIN_T fillnewcolor = COLOR_BLACK;	// цвет, которым заполняется свободное место при сдвиге старого изобажения
 	enum { WC = (S1D_DISPLAY_BPP / 8) };		// количество байтов на пиксель
 	const int_fast16_t adjw = hshift < 0 ?
 				w + hshift 	// сдвиг окна влево
@@ -1232,7 +1232,7 @@ static void s1d13781_put_charbig_begin(void)
 }
 
 // Вызов этой функции только внутри s1d13781_put_char_begin() и s1d13781_put_char_end();
-static void s1d13781_put_char_small(char cc)
+static uint_fast16_t s1d13781_put_char_small(uint_fast16_t x, uint_fast16_t y, char cc)
 {
 	// дождаться выполнения предидущей команды BitBlt engine.
 	if (bitblt_waitbusy() != 0)
@@ -1244,7 +1244,7 @@ static void s1d13781_put_char_small(char cc)
 }
 
 // Вызов этой функции только внутри s1d13781_put_char_begin() и s1d13781_put_char_end();
-static void s1d13781_put_char_small2(char cc)
+static uint_fast16_t s1d13781_put_char_small2(uint_fast16_t x, uint_fast16_t y, char cc)
 {
 	// дождаться выполнения предидущей команды BitBlt engine.
 	if (bitblt_waitbusy() != 0)
@@ -1258,7 +1258,7 @@ static void s1d13781_put_char_small2(char cc)
 
 // Вызов этой функции только внутри display_wrdata_begin() и 	display_wrdata_end();
 
-static void s1d13781_put_char_big(char cc)
+static uint_fast16_t s1d13781_put_char_big(uint_fast16_t x, uint_fast16_t y, char cc)
 {
 	// дождаться выполнения предидущей команды BitBlt engine.
 	if (bitblt_waitbusy() != 0)
@@ -1298,8 +1298,8 @@ static void rectangle(
 	uint_fast16_t y,
 	uint_fast16_t w,
 	uint_fast16_t h,
-	COLOR_T color1,
-	COLOR_T color2
+	COLORMAIN_T color1,
+	COLORMAIN_T color2
 	)
 {
 	enum { thickness = 1 };
@@ -1317,8 +1317,8 @@ static void rectangle3d(
 	uint_fast16_t y,
 	uint_fast16_t w,
 	uint_fast16_t h,
-	COLOR_T color1,
-	COLOR_T color2
+	COLORMAIN_T color1,
+	COLORMAIN_T color2
 	)
 {
 	enum { thickness = 2 };
@@ -1349,7 +1349,7 @@ static void rectangle3d(
 void display_putpixel(
 	uint_fast16_t x,
 	uint_fast16_t y,
-	COLOR_T color
+	COLORMAIN_T color
 	)
 {
 	// вычисление начального адреса в видеопамяти
@@ -1394,7 +1394,7 @@ void display_putpixel(
 }
 
 static void display_putpixel_1(
-	PACKEDCOLOR_T color
+	PACKEDCOLORMAIN_T color
 	)
 {
 #if S1D_DISPLAY_BPP == 24
@@ -1425,7 +1425,7 @@ static void display_putpixel_1(
 }
 
 static void display_putpixel_2(
-	PACKEDCOLOR_T color
+	PACKEDCOLORMAIN_T color
 	)
 {
 #if S1D_DISPLAY_BPP == 24
@@ -1482,7 +1482,7 @@ static void display_putpixel_complete(void)
 
 
 
-static void s1d13781_clear(COLOR_T bg)
+static void s1d13781_clear(COLORMAIN_T bg)
 {
 	display_fillrect(0, 0, S1D_DISPLAY_WIDTH, S1D_DISPLAY_HEIGHT, bg);
 	s1d13781_setcolor(COLOR_WHITE, bg);
@@ -1658,21 +1658,21 @@ void display_set_contrast(uint_fast8_t v)
 void 
 display_clear(void)
 {
-	const COLOR_T bg = display_getbgcolor();
+	const COLORMAIN_T bg = display_getbgcolor();
 
 	s1d13781_clear(bg);
 }
 
 void
 //NOINLINEAT
-display_setcolors(COLOR_T fg, COLOR_T bg)
+colmain_setcolors(COLORMAIN_T fg, COLORMAIN_T bg)
 {
 	s1d13781_setcolor(fg, bg);
 }
 
-void display_setcolors3(COLOR_T fg, COLOR_T bg, COLOR_T fgbg)
+void colmain_setcolors3(COLORMAIN_T fg, COLORMAIN_T bg, COLORMAIN_T fgbg)
 {
-	display_setcolors(fg, bg);
+	colmain_setcolors(fg, bg);
 }
 
 void
@@ -1812,47 +1812,47 @@ void s1d13781_showbuffer(
 
 
 /*****************/
-void
-display_put_char_big(uint_fast8_t c, uint_fast8_t lowhalf)
+uint_fast16_t
+display_put_char_big(uint_fast16_t x, uint_fast16_t y, uint_fast8_t c, uint_fast8_t lowhalf)
 {
 	(void) lowhalf;
-	s1d13781_put_char_big(c);
+	return s1d13781_put_char_big(x, y, c);
 }
 
-void
-display_put_char_half(uint_fast8_t c, uint_fast8_t lowhalf)
+uint_fast16_t
+display_put_char_half(uint_fast16_t x, uint_fast16_t y, uint_fast8_t c, uint_fast8_t lowhalf)
 {
 	(void) lowhalf;
-	s1d13781_put_char_half(c);
-}
-
-
-// Вызов этой функции только внутри display_wrdata_begin() и display_wrdata_end();
-// Используется при выводе на графический ндикатор, если ТРЕБУЕТСЯ переключать полосы отображения
-void
-display_put_char_small(uint_fast8_t c, uint_fast8_t lowhalf)
-{
-	(void) lowhalf;
-	s1d13781_put_char_small(c);
+	return s1d13781_put_char_half(x, y, c);
 }
 
 
 // Вызов этой функции только внутри display_wrdata_begin() и display_wrdata_end();
 // Используется при выводе на графический ндикатор, если ТРЕБУЕТСЯ переключать полосы отображения
-void
-display_put_char_small2(uint_fast8_t c, uint_fast8_t lowhalf)
+uint_fast16_t
+display_put_char_small(uint_fast16_t x, uint_fast16_t y, uint_fast8_t c, uint_fast8_t lowhalf)
 {
 	(void) lowhalf;
-	s1d13781_put_char_small(c);
+	return s1d13781_put_char_small(x, y, c);
 }
 
-static uint_fast8_t stored_xgrid, stored_ygrid;	// используется в display_dispbar
+
+// Вызов этой функции только внутри display_wrdata_begin() и display_wrdata_end();
+// Используется при выводе на графический ндикатор, если ТРЕБУЕТСЯ переключать полосы отображения
+uint_fast16_t
+display_put_char_small2(uint_fast16_t x, uint_fast16_t y, uint_fast8_t c, uint_fast8_t lowhalf)
+{
+	(void) lowhalf;
+	return s1d13781_put_char_small(x, y, c);
+}
+
+static uint_fast8_t stored_xgrid, stored_ygrid;	// используется в display_bar
 
 void
-display_gotoxy(uint_fast8_t x, uint_fast8_t y)
+displayX_gotoxy(uint_fast8_t x, uint_fast8_t y)
 {
-	stored_xgrid = x;	// используется в display_dispbar
-	stored_ygrid = y;	// используется в display_dispbar
+	stored_xgrid = x;	// используется в display_bar
+	stored_ygrid = y;	// используется в display_bar
 
 	s1d13781_gotoxy(GRID2X(x), GRID2Y(y));		// устанавливаем позицию в символьных координатах
 }
@@ -1868,7 +1868,7 @@ void display_plotfrom(
 
 
 void display_plotstart(
-	uint_fast16_t height	// Высота окна в пикселях
+	uint_fast16_t dy	// Высота окна в пикселях
 	)
 {
 	// дождаться выполнения предидущей команды BitBlt engine.
@@ -1878,7 +1878,7 @@ void display_plotstart(
 }
 
 void display_plot(
-	const PACKEDCOLOR_T * buffer, 
+	const PACKEDCOLORMAIN_T * buffer, 
 	const uint_fast16_t dx,	// Размеры окна в пикселях
 	uint_fast16_t dy
 	)
@@ -1944,7 +1944,9 @@ void display_plotstop(void)
 
 // Вызовы этой функции (или группу вызовов) требуется "обрамить" парой вызовов
 // display_wrdatabar_begin() и display_wrdatabar_end().
-void display_dispbar(
+void display_bar(
+	uint_fast16_t xpix,
+	uint_fast16_t ypix,
 	uint_fast8_t width,	/* количество знакомест, занимаемых индикатором */
 	uint_fast8_t value,		/* значение, которое надо отобразить */
 	uint_fast8_t tracevalue,		/* значение маркера, которое надо отобразить */

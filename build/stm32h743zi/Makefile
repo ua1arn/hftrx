@@ -45,13 +45,18 @@ DDEFS =
 # List all default ASM defines here, like -D_DEBUG=1
 DADEFS = -D__ASSEMBLY__=1
 # List all default directories to look for include files here
-DINCDIR = $(CMSISDIR)/Core/Include $(CMSISDIR)/DSP/Include
+DINCDIR = \
+	$(CMSISDIR)/Core/Include \
+	$(CMSISDIR)/DSP/Include \
+	$(CMSISDIR)/DSP/Source \
+	$(CMSISDIR)/DSP/PrivateInclude
 
 # List the default directory to look for the libraries here
-DLIBDIR = $(CMSISDIR)/DSP/Lib/GCC
+#DLIBDIR = $(CMSISDIR)/DSP/Lib/GCC
 
 # List all default libraries here
-DLIBS = -lm -larm_cortexM7lfdp_math
+DLIBS = -lm
+#DLIBS = -lm -larm_cortexM7lfdp_math
 
 #
 # End of default section
@@ -181,6 +186,7 @@ clean:
 	-rm -fR $(OBJDIR)
 	-rm -f $(PROJECT)_rom.elf $(PROJECT)_rom.map $(PROJECT)_rom.hex $(PROJECT)_rom.bin
 	-rm -f $(PROJECT)_ram.elf $(PROJECT)_ram.map $(PROJECT)_ram.hex $(PROJECT)_ram.bin
+	$(CC) --version
 
 # 
 # Include the dependency files, should be the last of the makefile

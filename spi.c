@@ -610,7 +610,13 @@ void spi_initialize(void)
 
 #endif /* WITHSPIHW || WITHSPISW */
 
-#if WIHSPIDFHW
+
+
+#if WIHSPIDFHW || WIHSPIDFSW
+
+enum { SPDIFIO_READ, SPDIFIO_WRITE };	// в случае пеердачи только команды используем write */
+
+#if WIHSPIDFSW
 
 
 /////////
@@ -623,98 +629,8 @@ void spi_initialize(void)
 
 void spidf_initialize(void)
 {
-#if 0
-	// spi multi-io hang on
-	CPG.STBCR9 &= ~ CPG_STBCR9_BIT_MSTP93;	// Module Stop 93	- 0: Clock supply to channel 0 of the SPI multi I/O bus controller is runnuing.
-	(void) CPG.STBCR9;			/* Dummy read */
-#endif
-
-#if 0
-	SPIBSC0.CMNCR |= SPIBSC_CMNCR_MD;	// SPI mode.
-	(void) SPIBSC0.CMNCR;
-	ASSERT(SPIBSC0.CMNCR & SPIBSC_CMNCR_MD);
-
-	SPIBSC0.SPBCR = (SPIBSC0.SPBCR & ~ (SPIBSC_SPBCR_BRDV | SPIBSC_SPBCR_SPBR)) |
-		(0 << SPIBSC_SPBCR_BRDV_SHIFT) |	// 0..3
-		(2 << SPIBSC_SPBCR_SPBR_SHIFT) |	// 0..255
-		0;
-
-	arm_hardware_pio4_alternative(1U << 4, R7S721_PIOALT_4);	/* P4_4 SCLK / SPBCLK_0 */
-	arm_hardware_pio4_alternative(1U << 5, R7S721_PIOALT_4);	/* P4_5 CS# / SPBSSL_0 */
-	arm_hardware_pio4_alternative(1U << 6, R7S721_PIOALT_4);	/* P4_6 MOSI / SPBIO00_0 */
-	arm_hardware_pio4_alternative(1U << 7, R7S721_PIOALT_4);	/* P4_7 MISO / SPBIO10_0 */
-
-	/*
-		The transfer format is determined based on the following registers.
-		- Common control register (CMNCR)
-		- SSL delay register (SSLDR)
-		- Bit rate setting register (SPBCR)
-		- SPI mode control register (SMCR)
-		- SPI mode command setting register (SMCMR)
-		- SPI mode address setting register (SMADR)
-		- SPI mode option setting register (SMOPR)
-		- SPI mode enable setting register (SMENR)
-		- SPI mode read data register (SMRDR)
-		- SPI mode write data register (SMWDR)
-		- SPI mode dummy cycle setting register (SMDMCR)
-		- SPI mode DDR enable register (SMDRENR)*
-	*/
-	SPIBSC0.SMENR = (SPIBSC0.SMENR & ~ (SPIBSC_SMENR_ADE | SPIBSC_SMENR_SPIDE)) |
-		(0x00 << SPIBSC_SMENR_ADE_SHIFT) | /* No address send */
-		(0x08 << SPIBSC_SMENR_SPIDE_SHIFT) | /* 8 bits transferred (enables data at address 0 of the SPI mode read/write data registers 0) */
-		0;
-
-	SPIBSC0.SMCMR =
-		(0x9F << SPIBSC_SMCMR_CMD_SHIFT) | /* 0x9f read id register */
-		(0x00 << SPIBSC_SMCMR_OCMD_SHIFT) | /* xxxx */
-		0;
-
-	SPIBSC0.SMCR = SPIBSC_SMCR_SPIE | SPIBSC_SMCR_SPIRE | SPIBSC_SMCR_SPIWE;
-
-	SPIBSC0.SMWDR0.UINT32 = 0xFFFFFFFF;
-	TP();
-	while ((SPIBSC0.CMNSR & SPIBSC_CMNSR_TEND) == 0)
-		;
-	debug_printf_P(PSTR("SMRDR0=%08lX\n"), SPIBSC0.SMRDR0.UINT32);
-	TP();
-	SPIBSC0.SMWDR0.UINT32 = 0xFFFFFFFF;
-	TP();
-	while ((SPIBSC0.CMNSR & SPIBSC_CMNSR_TEND) == 0)
-		;
-	debug_printf_P(PSTR("SMRDR0=%08lX\n"), SPIBSC0.SMRDR0.UINT32);
-
-#endif
-
-#if 0
-	SPIBSC0.SPBCR = 0x200;	// baud rate
-	SPIBSC0.SSLDR = 0x00;	// delay
-	SPIBSC0.DRCR = 0x0000;
-
-	SPIBSC0.CMNCR =
-		SPIBSC_CMNCR_MD |	// spi mode
-		(0x03 << SPIBSC_CMNCR_MOIIO3_SHIFT) |
-		(0x03 << SPIBSC_CMNCR_MOIIO2_SHIFT) |
-		(0x03 << SPIBSC_CMNCR_MOIIO1_SHIFT) |
-		(0x03 << SPIBSC_CMNCR_MOIIO0_SHIFT) |
-		(0x03 << SPIBSC_CMNCR_IO3FV_SHIFT) |
-		(0x03 << SPIBSC_CMNCR_IO2FV_SHIFT) |
-		(0x03 << SPIBSC_CMNCR_IO0FV_SHIFT) |
-		1 * SPIBSC_CMNCR_CPHAR |
-		1 * SPIBSC_CMNCR_CPHAT |
-		0;
-
-	SPIBSC0.SMENR =
-		0;
-
-	SPIBSC0.SMCR =
-		SPIBSC_SMCR_SPIE |
-		SPIBSC_SMCR_SPIRE |
-		SPIBSC_SMCR_SPIWE |
-		0;
-#endif
-
 	// Connect I/O pins
-	SPIDF_INITIALIZE();
+	SPIDF_SOFTINITIALIZE();
 }
 
 static uint_fast8_t spidf_rbit(uint_fast8_t v)
@@ -765,53 +681,459 @@ static void spidf_write_byte(spitarget_t target, uint_fast8_t v)
 
 void spidf_uninitialize(void)
 {
-	//arm_hardware_pio4_inputs(0xFC);		// Отключить процессор от SERIAL FLASH
-#if 0
-	// spi multi-io hang off
-	CPG.STBCR9 |= CPG_STBCR9_BIT_MSTP93;	// Module Stop 93	- 1: Clock supply to channel 0 of the SPI multi I/O bus controller is halted.
-	(void) CPG.STBCR9;			/* Dummy read */
-#endif
 }
 
 // Connrect I/O pins
-void spidf_select(spitarget_t target, uint_fast8_t mode)
+static void spidf_select(spitarget_t target, uint_fast8_t mode)
 {
 	SPIDF_SELECT();
 }
 
-void spidf_unselect(spitarget_t target)
+static void spidf_unselect(void)
 {
+	spitarget_t target = targetdataflash;	/* addressing to chip */
 	SPIDF_UNSELECT();
 }
 
-void spidf_to_read(spitarget_t target)
+static void spidf_to_read(spitarget_t target)
 {
 }
 
-void spidf_to_write(spitarget_t target)
+static void spidf_to_write(spitarget_t target)
 {
 }
 
-void spidf_progval8_p1(spitarget_t target, uint_fast8_t sendval)
-{
-	spidf_write_byte(target, sendval);
-}
-
-void spidf_progval8_p2(spitarget_t target, uint_fast8_t sendval)
+static void spidf_progval8_p1(spitarget_t target, uint_fast8_t sendval)
 {
 	spidf_write_byte(target, sendval);
 }
 
-uint_fast8_t spidf_complete(spitarget_t target)
+static void spidf_progval8_p2(spitarget_t target, uint_fast8_t sendval)
+{
+	spidf_write_byte(target, sendval);
+}
+
+static uint_fast8_t spidf_complete(spitarget_t target)
 {
 	return 0;
 }
 
-uint_fast8_t spidf_progval8(spitarget_t target, uint_fast8_t sendval)
+static uint_fast8_t spidf_progval8(spitarget_t target, uint_fast8_t sendval)
 {
 	return spidf_read_byte(target, sendval);
 }
 
+static void spidf_iostart(
+	uint_fast8_t direction,	// 0: dataflash-to-memory, 1: Memory-to-dataflash
+	uint_fast8_t cmd,
+	uint_fast8_t ndummy,	// number of dummy bytes
+	uint_fast32_t size,
+	uint_fast8_t hasaddress,
+	uint_fast32_t address
+	)
+{
+	spitarget_t target = targetdataflash;	/* addressing to chip */
+
+	spidf_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
+	spidf_progval8_p1(target, cmd);		/* The Read SFDP instruction code is 0x5A */
+
+	if (hasaddress)
+	{
+		spidf_progval8_p2(target, address >> 16);
+		spidf_progval8_p2(target, address >> 8);
+		spidf_progval8_p2(target, address >> 0);
+	}
+	while (ndummy --)
+		spidf_progval8_p2(target, 0x00);	// dummy byte
+
+	spidf_complete(target);	/* done sending data to target chip */
+}
+
+
+static void spidf_read(uint8_t * buff, uint_fast32_t size)
+{
+	spitarget_t target = targetdataflash;	/* addressing to chip */
+	spidf_to_read(target);
+	while (size --)
+		* buff ++ = spidf_read_byte(target, 0xff);
+	spidf_to_write(target);
+}
+
+
+static uint_fast8_t spidf_verify(const uint8_t * buff, uint_fast32_t size)
+{
+	uint_fast8_t err = 0;
+	spitarget_t target = targetdataflash;	/* addressing to chip */
+	spidf_to_read(target);
+	while (size --)
+		err |= * buff ++ != spidf_read_byte(target, 0xff);
+	spidf_to_write(target);
+	return err;
+}
+
+
+static void spidf_write(const uint8_t * buff, uint_fast32_t size)
+{
+	spitarget_t target = targetdataflash;	/* addressing to chip */
+	while (size --)
+		 spidf_read_byte(target, * buff ++);
+}
+
+#elif WIHSPIDFHW && CPUSTYLE_STM32MP1
+
+
+// вычитываем все заказанное количество
+static void spidf_read(uint8_t * buff, uint_fast32_t size)
+{
+	while (size --)
+	{
+		while ((QUADSPI->SR & QUADSPI_SR_FLEVEL_Msk) == 0)
+			;
+		* buff ++ = * (volatile uint8_t *) & QUADSPI->DR;
+	}
+}
+
+// передаем все заказанное количество
+static void spidf_write(const uint8_t * buff, uint_fast32_t size)
+{
+	while (size --)
+	{
+		while ((QUADSPI->SR & QUADSPI_SR_FLEVEL_Msk) == QUADSPI_SR_FLEVEL_Msk)
+			;
+		* (volatile uint8_t *) & QUADSPI->DR = * buff ++;
+	}
+}
+
+// вычитываем все заказанное количество
+static uint_fast8_t spidf_verify(const uint8_t * buff, uint_fast32_t size)
+{
+	uint_fast8_t err = 0;
+	while (size --)
+	{
+		while ((QUADSPI->SR & QUADSPI_SR_FLEVEL_Msk) == 0)
+			;
+		err |= * buff ++ != * (volatile uint8_t *) & QUADSPI->DR;
+	}
+	return err;
+}
+
+static void spidf_unselect(void)
+{
+	while ((QUADSPI->SR & QUADSPI_SR_BUSY_Msk) != 0)
+		;
+	// Disconnect I/O pins
+	SPIDF_HANGOFF();
+}
+
+static void spidf_iostart(
+	uint_fast8_t direction,	// 0: dataflash-to-cpu, 1: cpu-to-dataflash
+	uint_fast8_t cmd,
+	uint_fast8_t ndummy,	// number of dummy bytes
+	uint_fast32_t size,
+	uint_fast8_t hasaddress,
+	uint_fast32_t address
+	)
+{
+	while ((QUADSPI->SR & QUADSPI_SR_BUSY_Msk) != 0)
+		;
+
+	// Connect I/O pins
+	SPIDF_HARDINITIALIZE();
+
+	//QUADSPI->AR = address;
+	QUADSPI->DLR = size ? (size - 1) : 0;
+
+	//PRINTF("QUADSPI->DR=%08x\n", QUADSPI->DR);
+	QUADSPI->FCR = QUADSPI_FCR_CTCF_Msk;	// Clear Transfer Complete Flag
+	QUADSPI->FCR = QUADSPI_FCR_CTEF_Msk;	// Clear Transfer Error Flag
+
+	QUADSPI->CCR =
+		//(0 << QUADSPI_CCR_DDRM_Pos) |	// 0: DDR Mode disabled
+		//(0 << QUADSPI_CCR_DHHC_Pos) |	// 0: Delay the data output using analog delay
+		//(0 << QUADSPI_CCR_FRCM_Pos) |	// 0: Normal mode
+		//(0 << QUADSPI_CCR_SIOO_Pos) |	// 0: Send instruction on every transaction
+		((direction ? 0x00 : 0x01) << QUADSPI_CCR_FMODE_Pos) |	// 01: Indirect read mode, 00: Indirect write mode
+		//(0x00 << QUADSPI_CCR_FMODE_Pos) |	//
+		(size != 0) * (0x01 << QUADSPI_CCR_DMODE_Pos) |	// 01: Data on a single line
+		((8 * ndummy)  << QUADSPI_CCR_DCYC_Pos) |	// This field defines the duration of the dummy phase (0..15).
+		//(0 << QUADSPI_CCR_ABSIZE_Pos) |	// 00: 8-bit alternate byte
+		(0 << QUADSPI_CCR_ABMODE_Pos) |	// 00: No alternate bytes
+		(0x02 << QUADSPI_CCR_ADSIZE_Pos) |	// 010: 24-bit address
+		(hasaddress != 0) * (0x01 << QUADSPI_CCR_ADMODE_Pos) |	// 01: Address on a single line
+		(0x01 << QUADSPI_CCR_IMODE_Pos) |	// 01: Instruction on a single line
+		(cmd << QUADSPI_CCR_INSTRUCTION_Pos) |	// Instruction to be send to the external SPI device.
+		0;
+
+	if ((QUADSPI->CCR & QUADSPI_CCR_ADMODE_Msk) != 0)
+	{
+		// Initiate operation
+		QUADSPI->AR = address & 0x00FFFFFF;	// В indirect режимах адрес должен быть в допустимых для указанного при ините размера памяти
+		//PRINTF("spidf_iostart QUADSPI->AR=%08lX, QUADSPI->SR=%08lX\n", QUADSPI->AR, QUADSPI->SR);
+	}
+}
+
+void spidf_initialize(void)
+{
+	RCC->MP_AHB6ENSETR = RCC_MC_AHB6ENSETR_QSPIEN;
+	(void) RCC->MP_AHB6ENSETR;
+	RCC->MP_AHB6LPENSETR = RCC_MC_AHB6LPENSETR_QSPILPEN;
+	(void) RCC->MP_AHB6LPENSETR;
+
+	// Connect I/O pins
+	//SPIDF_HARDINITIALIZE();
+
+	//PRINTF("QUADSPI->IPIDR=%08x\n", QUADSPI->IPIDR);
+
+	QUADSPI->CR &= ~ QUADSPI_CR_EN_Msk;
+	QUADSPI->CCR = 0;
+
+	QUADSPI->DCR = ((QUADSPI->DCR & ~ (QUADSPI_DCR_FSIZE_Msk | QUADSPI_DCR_CSHT_Msk | QUADSPI_DCR_CKMODE_Msk))) |
+		(23 << QUADSPI_DCR_FSIZE_Pos) |	// FSIZE+1 is effectively the number of address bits required to address the Flash memory.
+		(7 << QUADSPI_DCR_CSHT_Pos) |	// 0: nCS stays high for at least 1 cycle between Flash memory commands
+		(0 << QUADSPI_DCR_CKMODE_Pos) |	// 0: CLK must stay low while nCS is high (chip select released). This is referred to as mode 0.
+		//(1 << QUADSPI_DCR_CKMODE_Pos) |	// 1: CLK must stay high while nCS is high (chip select released). This is referred to as mode 3.
+		0;
+
+	QUADSPI->CR = ((QUADSPI->CR & ~ (QUADSPI_CR_PRESCALER_Msk))) |
+		(0x00 << QUADSPI_CR_PRESCALER_Pos) | // 1: FCLK = Fquadspi_ker_ck/2
+		0;
+	QUADSPI->CR |= QUADSPI_CR_EN_Msk;
+}
+
+void spidf_uninitialize(void)
+{
+	while ((QUADSPI->SR & QUADSPI_SR_BUSY_Msk) != 0)
+		;
+	// Disconnect I/O pins
+	SPIDF_HANGOFF();
+}
+
+#elif WIHSPIDFHW && CPUSTYLE_R7S721
+
+// передаем все заказанное количество
+static void spidf_write(const uint8_t * buff, uint_fast32_t size)
+{
+	while ((SPIBSC0.CMNSR & SPIBSC_CMNSR_TEND) == 0)
+		;
+	/* подготовка к следующему шагу */
+	// продолжение обмена без передачи команды, адреса... но с передаяей данных.
+	SPIBSC0.SMENR =
+			(SPIBSC0.SMENR & ~ (SPIBSC_SMENR_ADE | SPIBSC_SMENR_CDE | SPIBSC_SMENR_DME | SPIBSC_SMENR_OPDE | SPIBSC_SMENR_SPIDE)) |
+			(0x08uL << SPIBSC_SMENR_SPIDE_SHIFT) |
+			0;
+
+	while (size --)
+	{
+		while ((SPIBSC0.CMNSR & SPIBSC_CMNSR_TEND) == 0)
+			;
+		SPIBSC0.SMWDR0.UINT8 [R_IO_LL] = * buff ++;
+
+		if (size == 0)
+		{
+			// последний обмен
+			// SSLKP 0: SPBSSL signal is negated at the end of transfer.
+			SPIBSC0.SMCR = SPIBSC_SMCR_SPIWE | SPIBSC_SMCR_SPIE;
+		}
+		else
+		{
+			// не последний обмен - удерживаем CS в нуле
+			SPIBSC0.SMCR = SPIBSC_SMCR_SPIWE | SPIBSC_SMCR_SPIE | SPIBSC_SMCR_SSLKP;
+		}
+	}
+}
+
+// вычитываем все заказанное количество
+static uint_fast8_t spidf_verify(const uint8_t * buff, uint_fast32_t size)
+{
+	uint_fast8_t err = 0;
+	while (size --)
+	{
+		if (size == 0)
+		{
+			// последний обмен
+			// SSLKP 0: SPBSSL signal is negated at the end of transfer.
+			SPIBSC0.SMCR = SPIBSC_SMCR_SPIRE | SPIBSC_SMCR_SPIE;
+		}
+		else
+		{
+			// не последний обмен - удерживаем CS в нуле
+			SPIBSC0.SMCR = SPIBSC_SMCR_SPIRE | SPIBSC_SMCR_SPIE | SPIBSC_SMCR_SSLKP;
+		}
+
+		while ((SPIBSC0.CMNSR & SPIBSC_CMNSR_TEND) == 0)
+			;
+		err |= * buff ++ != SPIBSC0.SMRDR0.UINT8 [R_IO_LL];
+		/* подготовка к следующему шагу */
+		// продолжение обмена без передачи команды, адреса...
+		SPIBSC0.SMENR &= ~ (SPIBSC_SMENR_ADE | SPIBSC_SMENR_CDE | SPIBSC_SMENR_DME | SPIBSC_SMENR_OPDE);
+	}
+	return err;
+}
+
+// вычитываем все заказанное количество
+static void spidf_read(uint8_t * buff, uint_fast32_t size)
+{
+	while (size --)
+	{
+		if (size == 0)
+		{
+			// последний обмен
+			// SSLKP 0: SPBSSL signal is negated at the end of transfer.
+			SPIBSC0.SMCR = SPIBSC_SMCR_SPIRE | SPIBSC_SMCR_SPIE;
+		}
+		else
+		{
+			// не последний обмен - удерживаем CS в нуле
+			SPIBSC0.SMCR = SPIBSC_SMCR_SPIRE | SPIBSC_SMCR_SPIE | SPIBSC_SMCR_SSLKP;
+		}
+
+		while ((SPIBSC0.CMNSR & SPIBSC_CMNSR_TEND) == 0)
+			;
+		* buff ++ = SPIBSC0.SMRDR0.UINT8 [R_IO_LL];
+		/* подготовка к следующему шагу */
+		// продолжение обмена без передачи команды, адреса...
+		SPIBSC0.SMENR &= ~ (SPIBSC_SMENR_ADE | SPIBSC_SMENR_CDE | SPIBSC_SMENR_DME | SPIBSC_SMENR_OPDE);
+	}
+}
+
+static void spidf_unselect(void)
+{
+//	while ((SPIBSC0.CMNSR & SPIBSC_CMNSR_TEND) == 0)
+//		;
+	while ((SPIBSC0.CMNSR & SPIBSC_CMNSR_SSLF) != 0)
+		;
+	// Disconnect I/O pins
+	SPIDF_HANGOFF();
+}
+
+void spidf_initialize(void)
+{
+
+	//PRINTF("SPIBSC0.SMDMCR=%08lX\n", SPIBSC0.SMDMCR);
+	//PRINTF("SPIBSC0.SPBCR=%08lX\n", SPIBSC0.SPBCR);
+	//PRINTF("SPIBSC0.DRENR=%08lX\n", SPIBSC0.DRENR);
+	//PRINTF("SPIBSC0.CMNCR=%08lX\n", SPIBSC0.CMNCR);
+	//PRINTF("SPIBSC0.SSLDR=%08lX\n", SPIBSC0.SSLDR);
+
+	// spi multi-io hang on
+	CPG.STBCR9 &= ~ CPG_STBCR9_BIT_MSTP93;	// Module Stop 93	- 0: Clock supply to channel 0 of the SPI multi I/O bus controller is runnuing.
+	(void) CPG.STBCR9;			/* Dummy read */
+
+	SPIBSC0.SMCR = 0;
+
+	// 17.4.2 SSL Delay Register (SSLDR)
+	SPIBSC0.SSLDR =
+		(0x07uL << SPIBSC_SSLDR_SPNDL_SHIFT) |
+		(0x07uL << SPIBSC_SSLDR_SLNDL_SHIFT) |
+		(0x07uL << SPIBSC_SSLDR_SCKDL_SHIFT) |
+		0;
+
+	// 17.4.1 Common Control Register (CMNCR)
+	SPIBSC0.CMNCR =
+		SPIBSC_CMNCR_MD |	// spi mode
+		(1uL << SPIBSC_CMNCR_SFDE_SHIFT) |	// after reset: 1
+		(1uL << SPIBSC_CMNCR_MOIIO3_SHIFT) |	// after reset: 2
+		(1uL << SPIBSC_CMNCR_MOIIO2_SHIFT) |	// after reset: 2
+		(1uL << SPIBSC_CMNCR_MOIIO1_SHIFT) |	// after reset: 2
+		(1uL << SPIBSC_CMNCR_MOIIO0_SHIFT) |	// after reset: 2
+		(1uL << SPIBSC_CMNCR_IO3FV_SHIFT) |	// after reset: 1
+		(1uL << SPIBSC_CMNCR_IO2FV_SHIFT) |	// after reset: 0
+		(1uL << SPIBSC_CMNCR_IO0FV_SHIFT) |	// after reset: 0
+		0uL * SPIBSC_CMNCR_CPHAR |	// after reset: 0
+		0uL * SPIBSC_CMNCR_CPHAT |	// after reset: 0
+		0uL * SPIBSC_CMNCR_SSLP |	// after reset: 0
+		0uL * SPIBSC_CMNCR_BSZ |	// after reset: 0
+		0;
+
+	// Baud rate
+	SPIBSC0.SPBCR = (SPIBSC0.SPBCR & ~ (SPIBSC_SPBCR_BRDV | SPIBSC_SPBCR_SPBR)) |
+		(0 << SPIBSC_SPBCR_BRDV_SHIFT) |	// 0..3
+		(2 << SPIBSC_SPBCR_SPBR_SHIFT) |	// 0..255
+		0;
+
+	SPIBSC0.SMDMCR =
+		(0 << SPIBSC_SMDMCR_DMDB_SHIFT) |	// 1 bit dummy bytes
+		//(0x07uL << SPIBSC_SMDMCR_DMCYC_SHIFT) |	// 8 dummy bits
+		0;
+
+
+//	for (;;)
+//		writeEnableDATAFLASH();		/* write enable */
+
+	//PRINTF("SPIBSC0.SMDMCR=%08lX\n", SPIBSC0.SMDMCR);
+	//PRINTF("SPIBSC0.SPBCR=%08lX\n", SPIBSC0.SPBCR);
+	//PRINTF("SPIBSC0.CMNCR=%08lX\n", SPIBSC0.CMNCR);
+	//PRINTF("SPIBSC0.SSLDR=%08lX\n", SPIBSC0.SSLDR);
+}
+
+void spidf_uninitialize(void)
+{
+//	while ((SPIBSC0.CMNSR & SPIBSC_CMNSR_TEND) == 0)
+//		;
+	while ((SPIBSC0.CMNSR & SPIBSC_CMNSR_SSLF) != 0)
+		;
+	// Disconnect I/O pins
+	SPIDF_HANGOFF();
+}
+
+static void spidf_iostart(
+	uint_fast8_t direction,	// 0: dataflash-to-CPU, 1: CPU-to-dataflash
+	uint_fast8_t cmd,
+	uint_fast8_t ndummy,	// number of dummy bytes
+	uint_fast32_t size,
+	uint_fast8_t hasaddress,
+	uint_fast32_t address
+	)
+{
+	// Connect I/O pins
+	SPIDF_HARDINITIALIZE();
+	/*
+		The transfer format is determined based on the following registers.
+		- Common control register (CMNCR)
+		- SSL delay register (SSLDR)
+		- Bit rate setting register (SPBCR)
+		- SPI mode control register (SMCR)
+		- SPI mode command setting register (SMCMR)
+		- SPI mode address setting register (SMADR)
+		- SPI mode option setting register (SMOPR)
+		- SPI mode enable setting register (SMENR)
+		- SPI mode read data register (SMRDR)
+		- SPI mode write data register (SMWDR)
+		- SPI mode dummy cycle setting register (SMDMCR)
+		- SPI mode DDR enable register (SMDRENR)*
+	*/
+	// 17.4.13 SPI Mode Enable Setting Register (SMENR)
+	SPIBSC0.SMENR =
+		(0x00uL << SPIBSC_SMENR_CDB_SHIFT) | /* 1 data bit */
+		(0x00uL << SPIBSC_SMENR_OCDB_SHIFT) | /* 1 optional command bit */
+		(0x00uL << SPIBSC_SMENR_ADB_SHIFT) | /* 1 address bit */
+		(0x00uL << SPIBSC_SMENR_OPDB_SHIFT) | /* 1 optional data bit */
+		(0x00uL << SPIBSC_SMENR_SPIDB_SHIFT) | /* Transfer Data Bit Size */
+		(0x01uL << SPIBSC_SMENR_CDE_SHIFT) | /* 1: Command output enabled */
+		(0x00uL << SPIBSC_SMENR_OCDE_SHIFT) | /* 0: Optional command output disabled */
+		(0x00uL << SPIBSC_SMENR_OPDE_SHIFT) | /* Option Data Enable 0000: Output disabled */
+		((hasaddress ? 0x07 : 0x00) << SPIBSC_SMENR_ADE_SHIFT) | /* No address send or 0111: ADR[23:0] */
+		((ndummy != 0) << SPIBSC_SMENR_DME_SHIFT) |
+		((size && ! direction ? 0x08uL : 0) << SPIBSC_SMENR_SPIDE_SHIFT) | /* 8 bits transferred (enables data at address 0 of the SPI mode read/write data registers 0) */
+		0;
+	// 17.4.10 SPI Mode Command Setting Register (SMCMR)
+	SPIBSC0.SMCMR =
+		(cmd << SPIBSC_SMCMR_CMD_SHIFT) | /* command byte */
+		(0x00uL << SPIBSC_SMCMR_OCMD_SHIFT) | /* optional command */
+		0;
+
+	SPIBSC0.SMADR = address;
+
+    SPIBSC0.SMCR =
+		((direction) ? SPIBSC_SMCR_SPIWE : SPIBSC_SMCR_SPIRE) |
+		((size > 1) * SPIBSC_SMCR_SSLKP) | // 0: SPBSSL signal is negated at the end of transfer.
+		((size == 0 || direction) * SPIBSC_SMCR_SPIE) |	// запускаем если не будет обмена данными
+		0;
+
+	// при передаче формируется только команла и адрес при необходимости
+}
+
+#endif /* WIHSPIDFHW */
 
 /* получить 32-бит значение */
 static uint_fast32_t
@@ -845,46 +1167,49 @@ static unsigned long ulmin(
 	return a < b ? a : b;
 }
 
-unsigned char dataflash_read_status(
-	spitarget_t target	/* addressing to chip */
-	)
+/* снять защиту записи для следующей команды */
+void writeEnableDATAFLASH(void)
 {
-	unsigned char v;
+	spidf_iostart(SPDIFIO_WRITE, 0x06, 0, 0, 0, 0);	/* 0x06: write enable */
+	spidf_unselect();	/* done sending data to target chip */
+}
 
-	spidf_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
-	spidf_progval8(target, 0x05);		/* read status register */
+void writeDisableDATAFLASH(void)
+{
+	spidf_iostart(SPDIFIO_WRITE, 0x04, 0, 0, 0, 0);	/* 0x04: write disable */
+	spidf_unselect();	/* done sending data to target chip */
+}
 
-	spidf_to_read(target);
-	v = spidf_read_byte(target, 0xff);
-	spidf_to_write(target);
+uint_fast8_t dataflash_read_status(void)
+{
+	uint8_t v;
+	enum { SPDIF_IOSIZE = sizeof v };
 
-	spidf_unselect(target);	/* done sending data to target chip */
+	spidf_iostart(SPDIFIO_READ, 0x05, 0, SPDIF_IOSIZE, 0, 0x00000000);	/* read status register */
+	spidf_read(& v, SPDIF_IOSIZE);
+	spidf_unselect();	/* done sending data to target chip */
 
 	return v;
 }
 
-int timed_dataflash_read_status(
-	spitarget_t target
-	)
+int timed_dataflash_read_status(void)
 {
 	unsigned long w = 40000;
 	while (w --)
 	{
-		if ((dataflash_read_status(target) & 0x01) == 0)
+		if ((dataflash_read_status() & 0x01) == 0)
 			return 0;
 	}
 	PRINTF(PSTR("DATAFLASH timeout error\n"));
 	return 1;
 }
 
-static int largetimed_dataflash_read_status(
-	spitarget_t target
-	)
+static int largetimed_dataflash_read_status(void)
 {
 	unsigned long w = 40000000;
 	while (w --)
 	{
-		if ((dataflash_read_status(target) & 0x01) == 0)
+		if ((dataflash_read_status() & 0x01) == 0)
 			return 0;
 	}
 	PRINTF(PSTR("DATAFLASH erase timeout error\n"));
@@ -897,25 +1222,9 @@ static int largetimed_dataflash_read_status(
 static void readSFDPDATAFLASH(spitarget_t target, unsigned long flashoffset, uint8_t * buff, unsigned size)
 {
 	// Read SFDP
-	spidf_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
-	spidf_progval8_p1(target, 0x5A);		/* The Read SFDP instruction code is 0x5A */
-
-	spidf_progval8_p2(target, flashoffset >> 16);
-	spidf_progval8_p2(target, flashoffset >> 8);
-	spidf_progval8_p2(target, flashoffset >> 0);
-	spidf_progval8_p2(target, 0x00);	// dummy byte
-	spidf_complete(target);	/* done sending data to target chip */
-
-	spidf_to_read(target);
-
-	//while (skip --)
-	//	(void) spidf_read_byte(target, 0xff);
-	while (size --)
-		* buff ++ = spidf_read_byte(target, 0xff);
-
-	spidf_to_write(target);
-
-	spidf_unselect(target);	/* done sending data to target chip */
+	spidf_iostart(SPDIFIO_READ, 0x5A, 1, size, 1, flashoffset);	// READ SFDP (with dummy bytes)
+	spidf_read(buff, size);
+	spidf_unselect();	/* done sending data to target chip */
 }
 
 static int seekparamSFDPDATAFLASH(spitarget_t target, unsigned long * paramoffset, uint_fast8_t * paramlength, uint_fast8_t id, uint_fast8_t lastnum)
@@ -943,37 +1252,37 @@ int testchipDATAFLASH(void)
 {
 	spitarget_t target = targetdataflash;	/* addressing to chip */
 
-#if WITHDEBUG
-	unsigned char mf_id;	// Manufacturer ID
-	unsigned char mf_devid1;	// device ID (part 1)
-	unsigned char mf_devid2;	// device ID (part 2)
-	unsigned char mf_dlen;	// Extended Device Information String Length
-#endif /* WITHDEBUG */
-
 	/* Ожидание бита ~RDY в слове состояния. Для FRAM не имеет смысла.
 	Вставлено для возможности использования DATAFLASH */
 
-	if (timed_dataflash_read_status(target))
+	if (timed_dataflash_read_status())
+	{
+		PRINTF(PSTR("testchipDATAFLASH: timeout\n"));
 		return 1;
-
-	spidf_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
-	spidf_progval8(target, 0x9f);		/* read id register */
-
-	spidf_to_read(target);
+	}
 
 #if WITHDEBUG
-	//prog_spidf_to_read();
-	mf_id = spidf_read_byte(target, 0xff);
-	mf_devid1 = spidf_read_byte(target, 0xff);
-	mf_devid2 = spidf_read_byte(target, 0xff);
-	mf_dlen = spidf_read_byte(target, 0xff);
+	{
+		unsigned char mf_id;	// Manufacturer ID
+		unsigned char mf_devid1;	// device ID (part 1)
+		unsigned char mf_devid2;	// device ID (part 2)
+		unsigned char mf_dlen;	// Extended Device Information String Length
+
+		uint8_t mfa [4];
+
+		enum { SPDIF_IOSIZE = sizeof mfa };
+		spidf_iostart(SPDIFIO_READ, 0x9F, 0, SPDIF_IOSIZE, 0, 0x00000000);	/* read id register */
+		spidf_read(mfa, SPDIF_IOSIZE);
+		spidf_unselect();	/* done sending data to target chip */
+
+		mf_id = mfa [0];
+		mf_devid1 = mfa [1];
+		mf_devid2 = mfa [02];
+		mf_dlen = mfa [3];
+
+		PRINTF(PSTR("spidf: ID = 0x%02X devId = 0x%02X%02X, mf_dlen=0x%02X\n"), mf_id, mf_devid1, mf_devid2, mf_dlen);
+	}
 #endif /* WITHDEBUG */
-
-	spidf_to_write(target);
-
-	spidf_unselect(target);	/* done sending data to target chip */
-
-	PRINTF(PSTR("spidf: ID = 0x%02X devId = 0x%02X%02X, mf_dlen=0x%02X\n"), mf_id, mf_devid1, mf_devid2, mf_dlen);
 
 	// Read root SFDP
 	uint8_t buff8 [8];
@@ -1016,145 +1325,78 @@ int testchipDATAFLASH(void)
 			PRINTF("SFDP: density=%08lX (%u Mbi)\n", dword2, 1uL << ((dword2 & 0x7FFFFFFF) - 10));
 		//PRINTF("SFDP: Sector Type 1 Size=%08lX, Sector Type 1 Opcode=%02lX\n", 1uL << ((dword8 >> 0) & 0xFF), (dword8 >> 8) & 0xFF);
 	}
-
 	return 0;
 }
-
-#if 0
-int eraseDATAFLASH(void)
-{
-	spitarget_t target = targetdataflash;	/* addressing to chip */
-
-	spidf_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
-	spidf_progval8(target, 0x06);		/* write enable */
-	spidf_unselect(target);	/* done sending data to target chip */
-
-	if (timed_dataflash_read_status(target))
-		return 1;
-
-	spidf_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
-	spidf_progval8(target, 0x60);		/* chip erase */
-	spidf_unselect(target);	/* done sending data to target chip */
-
-	if (largetimed_dataflash_read_status(target))
-		return 1;
-
-	if ((dataflash_read_status(target) & (0x01 << 5)) != 0)	// write error
-	{
-		PRINTF(PSTR("Erase error\n"));
-		return 1;
-	}
-	return 0;
-}
-#endif
 
 int prepareDATAFLASH(void)
 {
-	spitarget_t target = targetdataflash;	/* addressing to chip */
-
-
-	const uint_fast8_t status = dataflash_read_status(target);
+	const uint_fast8_t status = dataflash_read_status();
 
 	if ((status & 0x1C) != 0)
 	{
-		if (timed_dataflash_read_status(target))
+		if (timed_dataflash_read_status())
+		{
+			PRINTF(PSTR("prepareDATAFLASH: timeout\n"));
 			return 1;
-		PRINTF(PSTR("Clear write protect bits\n"));
-		spidf_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
-		spidf_progval8(target, 0x06);		/* write enable */
-		spidf_unselect(target);	/* done sending data to target chip */
+		}
 
+		PRINTF(PSTR("prepareDATAFLASH: Clear write protect bits\n"));
+		writeEnableDATAFLASH();		/* write enable */
+
+		uint8_t v = 0x00;	/* status register data */
 		// Write Status Register
-		spidf_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
-		spidf_progval8(target, 0x01);		/* write status register ccommand */
-		spidf_progval8(target, 0x00);		/* status register data */
-		spidf_unselect(target);	/* done sending data to target chip */
+		spidf_iostart(SPDIFIO_WRITE, 0x01, 0, 1, 0, 0);	/* Write Status Register */
+		spidf_write(& v, 1);
+		spidf_unselect();	/* done sending data to target chip */
+		TP();
 	}
 
-	return timed_dataflash_read_status(target);
+	return timed_dataflash_read_status();
 }
 
-#if 0
-static int writeEnableDATAFLASH(void)
+int sectoreraseDATAFLASH(unsigned long flashoffset)
 {
-	spitarget_t target = targetdataflash;	/* addressing to chip */
-
-	spidf_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
-	spidf_progval8(target, 0x06);		/* write enable */
-	spidf_unselect(target);	/* done sending data to target chip */
-
-	return 0;
-}
-
-static int writeDisableDATAFLASH(void)
-{
-	spitarget_t target = targetdataflash;	/* addressing to chip */
-
-	spidf_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
-	spidf_progval8(target, 0x04);		/* write disable */
-	spidf_unselect(target);	/* done sending data to target chip */
-
-	return 0;
-}
-#endif
-
-void sectoreraseDATAFLASH(unsigned long flashoffset)
-{
-	spitarget_t target = targetdataflash;	/* addressing to chip */
-
 	//PRINTF(PSTR(" Erase sector at address %08lX\n"), flashoffset);
 
-	timed_dataflash_read_status(target);
+	if (timed_dataflash_read_status())
+	{
+		PRINTF(PSTR("sectoreraseDATAFLASH: timeout\n"));
+		return 1;
+	}
 
-	spidf_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
-	spidf_progval8(target, 0x06);		/* write enable */
-	spidf_unselect(target);	/* done sending data to target chip */
+	writeEnableDATAFLASH();		/* write enable */
 
 	// start byte programm
-	spidf_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
-	spidf_progval8_p1(target, 0xD8);				/* 64KB SECTOR ERASE */
-
-	spidf_progval8_p2(target, flashoffset >> 16);
-	spidf_progval8_p2(target, flashoffset >> 8);
-	spidf_progval8_p2(target, flashoffset >> 0);
-
-	spidf_complete(target);	/* done sending data to target chip */
-
-	spidf_unselect(target);	/* done sending data to target chip */
-
+	spidf_iostart(SPDIFIO_WRITE, 0xD8, 0, 0, 1, flashoffset);		/* 64KB SECTOR ERASE */
+	spidf_unselect();	/* done sending data to target chip */
 	//timed_dataflash_read_status(target);
+	return 0;
 }
 
-static void writesinglepageDATAFLASH(unsigned long flashoffset, const unsigned char * data, unsigned long len)
+int writesinglepageDATAFLASH(unsigned long flashoffset, const unsigned char * data, unsigned long len)
 {
-	spitarget_t target = targetdataflash;	/* addressing to chip */
-
-	timed_dataflash_read_status(target);
 	//PRINTF(PSTR(" Prog to address %08lX %02X\n"), flashoffset, len);
 
-	spidf_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
-	spidf_progval8(target, 0x06);		/* write enable */
-	spidf_unselect(target);	/* done sending data to target chip */
+	if (timed_dataflash_read_status())
+	{
+		PRINTF(PSTR("writesinglepageDATAFLASH: timeout\n"));
+		return 1;
+	}
+
+	writeEnableDATAFLASH();		/* write enable */
 
 	// start byte programm
-	spidf_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
-	spidf_progval8_p1(target, 0x02);				/* Page Program */
 
-	spidf_progval8_p2(target, flashoffset >> 16);
-	spidf_progval8_p2(target, flashoffset >> 8);
-	spidf_progval8_p2(target, flashoffset >> 0);
+	spidf_iostart(SPDIFIO_WRITE, 0x02, 0, len, 1, flashoffset);		/* Page Program */
+	spidf_write(data, len);
+	spidf_unselect();	/* done sending data to target chip */
 
-	while (len --)
-		spidf_progval8_p2(target, (unsigned char) * data ++);	// data
-
-	spidf_complete(target);	/* done sending data to target chip */
-
-	spidf_unselect(target);	/* done sending data to target chip */
-
+	//PRINTF(PSTR( Prog to address %08lX %02X done\n"), flashoffset, len);
 	//timed_dataflash_read_status(target);
+	return 0;
 }
 
-int writeDATAFLASH(unsigned long flashoffset, const unsigned char * data, unsigned long len)
+int writeDATAFLASH(unsigned long flashoffset, const uint8_t * data, unsigned long len)
 {
 	//PRINTF(PSTR("Write to address %08lX %02X\n"), flashoffset, len);
 	while (len != 0)
@@ -1162,94 +1404,63 @@ int writeDATAFLASH(unsigned long flashoffset, const unsigned char * data, unsign
 		unsigned long offset = flashoffset & 0xFF;
 		unsigned long part = ulmin(len, ulmin(256, 256 - offset));
 
-		writesinglepageDATAFLASH(flashoffset, data, part);
+		if (writesinglepageDATAFLASH(flashoffset, data, part))
+			return 1;
 
 		len -= part;
 		flashoffset += part;
 		data += part;
 	}
+	//PRINTF(PSTR("Write to address %08lX %02X done\n"), flashoffset, len);
 	return 0;
 }
 
-int verifyDATAFLASH(unsigned long flashoffset, const unsigned char * data, unsigned long len)
+int verifyDATAFLASH(unsigned long flashoffset, const uint8_t * data, unsigned long len)
 {
-	unsigned long count;
 	unsigned long err = 0;
-	unsigned char v;
-	spitarget_t target = targetdataflash;	/* addressing to chip */
-
-	timed_dataflash_read_status(target);
 
 	//PRINTF(PSTR("Compare from address %08lX\n"), flashoffset);
 
-	spidf_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
-	spidf_progval8(target, 0x03);		/* sequential read block */
-
-	spidf_progval8(target, flashoffset >> 16);
-	spidf_progval8(target, flashoffset >> 8);
-	spidf_progval8(target, flashoffset >> 0);
-
-	spidf_to_read(target);
-
-	for (count = 0; count < len; ++ count)
+	if (timed_dataflash_read_status())
 	{
-		v = spidf_read_byte(target, 0xff);
-		if (v != data [count])
-		{
-			PRINTF(PSTR("Data mismatch at %08lx: read=%02x, expected=%02x\n"), flashoffset + count, v, data [count]);
-			err = 1;
-			break;
-		}
+		PRINTF(PSTR("verifyDATAFLASH: timeout\n"));
+		return 1;
 	}
 
-	spidf_to_write(target);
-
-	spidf_unselect(target);	/* done sending data to target chip */
+	spidf_iostart(SPDIFIO_READ, 0x03, 0, len, 1, flashoffset);	/* 0x03: sequential read block */
+	err = spidf_verify(data, len);
+	spidf_unselect();	/* done sending data to target chip */
 
 	if (err)
-		PRINTF(PSTR("Done compare, have errors\n"));
+		PRINTF(PSTR("verifyDATAFLASH: Done compare, have errors\n"));
 
 	return err;
 }
 
-void readDATAFLASH(unsigned long flashoffset, unsigned char * data, unsigned long len)
+int readDATAFLASH(unsigned long flashoffset, uint8_t * data, unsigned long len)
 {
-	unsigned long count;
-	unsigned long err = 0;
-	unsigned char v;
-	spitarget_t target = targetdataflash;	/* addressing to chip */
-
-	timed_dataflash_read_status(target);
-
-	//PRINTF(PSTR("Compare from address %08lX\n"), flashoffset);
-
-	spidf_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
-	spidf_progval8(target, 0x03);		/* sequential read block */
-
-	spidf_progval8(target, flashoffset >> 16);
-	spidf_progval8(target, flashoffset >> 8);
-	spidf_progval8(target, flashoffset >> 0);
-
-	spidf_to_read(target);
-
-	for (count = 0; count < len; ++ count)
+	//PRINTF("readDATAFLASH start, data=%p, len=%lu\n", data, len);
+	if (timed_dataflash_read_status())
 	{
-		 data [count] = spidf_read_byte(target, 0xff);
+		PRINTF("readDATAFLASH: timeout\n");
+		return 1;
 	}
+	//PRINTF("readDATAFLASH start2\n");
 
-	spidf_to_write(target);
-
-	spidf_unselect(target);	/* done sending data to target chip */
+	spidf_iostart(SPDIFIO_READ, 0x03, 0, len, 1, flashoffset);	/* 0x03: sequential read block */
+	spidf_read(data, len);
+	spidf_unselect();	/* done sending data to target chip */
+	//PRINTF("readDATAFLASH done\n");
+	return 0;
 }
 
 
 void bootloader_readimage(unsigned long flashoffset, uint8_t * dest, unsigned Len)
 {
-	spitarget_t target = targetdataflash;	/* addressing to chip */
 	spidf_initialize();
 	readDATAFLASH(flashoffset, dest, Len);
 	spidf_uninitialize();
 }
 
 
-#endif /* WIHSPIDFHW */
+#endif /* WIHSPIDFHW || WIHSPIDFSW */

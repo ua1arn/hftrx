@@ -50,8 +50,11 @@
 
 // так как на приёме используется 32-битный фрейм, можно использовать только
 // формат left justified - так как кодек "не знает" когда закончится фрейм.
-enum { USE_I2S = 1 };	// 0 = left justified, 1 = phillips I2S
+enum { USE_I2S = 1 };	// 0 = left justified, 1 = Philips I2S
 
+//CODEC_TYPE_CS4272_USE_32BIT
+//enum { USE_32BIT = 1 };	// 0 = 16 bit stereo, 1 = 32 bit stereo
+// NOT USED AT ALL
 
 static void cs4272_setreg(
 	uint_fast8_t tg,

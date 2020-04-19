@@ -91,10 +91,7 @@
 
 	#define LCDMODE_LQ043T3DX02K 1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 display */
 
-	#define LCDMODE_LTDC		1	/* Use VDC5 peripherial block */
-	#define LCDMODE_LTDC_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит. */
-	//#define LCDMODE_LTDC_PIP16	1	/* используется PIP с форматом 16 бит - RGB565 */
-	#define LCDMODE_LTDC_PIPL8	1	/* используется PIP с форматом 8 бит - индексные цвета */
+	#define LCDMODE_V2	1	/* только главный экран с тремя видеобуферами, без PIP */
 
 	//#define LCDMODE_LTDC_L24	1	/* 32-bit на пиксель в памяти (3 байта) */
 	//#define WITHFLATLINK 1	/* Работа с TFT панелью через SN75LVDS83B	*/
@@ -103,24 +100,16 @@
 
 	#define LCDMODE_AT070TN90 1	/* AT070TN90 panel (800*480) - 7" display */
 
-	#define LCDMODE_LTDC		1	/* Use VDC5 peripheral block */
-	#define LCDMODE_LTDC_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит. */
-	#define LCDMODE_LTDC_PIP16	1	/* используется PIP с форматом 16 бит - RGB565 */
-	//#define LCDMODE_LTDC_PIPL8	1	/* используется PIP с форматом 8 бит - индексные цвета */
+	#define LCDMODE_V2	1	/* только главный экран с тремя видеобуферами, без PIP */
 
-	//#define LCDMODE_LTDC_L24	1	/* 32-bit на пиксель в памяти (3 байта) */
 	//#define WITHFLATLINK 1	/* Работа с TFT панелью через SN75LVDS83B	*/
 
 #elif 1
 
 	#define LCDMODE_AT070TNA2 1	/* AT070TNA2 panel (1024*600) - 7" display */
 
-	#define LCDMODE_LTDC		1	/* Use VDC5 peripherial block */
-	#define LCDMODE_LTDC_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит. */
-	//#define LCDMODE_LTDC_PIP16	1	/* используется PIP с форматом 16 бит - RGB565 */
-	#define LCDMODE_LTDC_PIPL8	1	/* используется PIP с форматом 8 бит - индексные цвета */
+	#define LCDMODE_V2	1	/* только главный экран с тремя видеобуферами, без PIP */
 
-	//#define LCDMODE_LTDC_L24	1	/* 32-bit на пиксель в памяти (3 байта) */
 	#define WITHFLATLINK 1	/* Работа с TFT панелью через SN75LVDS83B	*/
 
 #elif 0
@@ -135,13 +124,16 @@
 
 	// not tested
 	#define LCDMODE_ILI8961	1	/* 320 * 240 HHT270C-8961-6A6, RGB, ILI8961, use LCDMODE_LTDC_L24 */
-	#define LCDMODE_LTDC		1	/* Use VDC5 peripherial block */
-	#define LCDMODE_LTDC_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит. */
-	//#define LCDMODE_LTDC_PIP16	1	/* используется PIP с форматом 16 бит - RGB565 */
-	//#define LCDMODE_LTDC_PIPL8	1	/* используется PIP с форматом 8 бит - индексные цвета */
+
+	#define LCDMODE_V0	1	/* Обычная конфигурация без PIP с L8 на основном экране */
+	//#define LCDMODE_V1	1	/* Обычная конфигурация с PIP на часть экрана, MAIN=L8, PIP=RGB565 */
+	//#define LCDMODE_V1B	1	/* Обычная конфигурация с PIP на часть экрана, MAIN=L8, PIP=L8 */
+	//#define LCDMODE_V1A	1	/* Обычная конфигурация с PIP на часть экрана, MAIN=RGB565, PIP=RGB565 */
+	//#define LCDMODE_V2	1	/* только главный экран, без PIP */
+	//#define LCDMODE_V2A	1	/* только главный экран, без PIP (но главный экран 16 бит) */
+
 
 	//#define LCDMODE_LQ043T3DX02K 1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 display */
-	//#define LCDMODE_LTDC_L24	1	/* 32-bit на пиксель в памяти (3 байта) */
 	//#define LCDMODE_ILI8961_TOPDOWN	1
 
 #elif 0
@@ -286,7 +278,7 @@
 	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
 	#define WITHUSEDUALWATCH	1	// Второй приемник
 	#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
-	#define WITHFASTWATERFLOW	1	/* быстрое отображение водопада (но требует больше памяти) */
+
 	// FPGA section
 	//#define	WITHFPGAWAIT_AS	1	/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
 	#define	WITHFPGALOAD_PS	1	/* FPGA загружается процессором с помощью SPI */
@@ -331,6 +323,8 @@
 	#define CODEC2_TYPE	CODEC_TYPE_FPGAV1	/* квадратуры получаем от FPGA */
 
 	#define WITHI2S_FORMATI2S_PHILIPS 1	// Возможно использование при передаче данных в кодек, подключенный к наушникам и микрофону
+	#define WITHI2S_32BITPAIR 1	// 2*32bit при передаче данных в кодек, подключенный к наушникам и микрофону
+	#define CODEC_TYPE_NAU8822_USE_32BIT 1	// программирование кодека в формате 32 бит стерео
 
 	#define WITHSAI1_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
 	#define WITHSAI1_FRAMEBITS 256	// Полный размер фрейма для двух квадратур - канал трансивера
@@ -364,7 +358,6 @@
 
 	#define WITHBARS		1	/* отображение S-метра и SWR-метра */
 
-	#define WITHVOLTLEVEL	1	/* отображение напряжения питания */
 	////#define WITHTHERMOLEVEL	1	/* отображение температуры */
 
 	//#define WITHSWLMODE	1	/* поддержка запоминания множества частот в swl-mode */
@@ -378,11 +371,8 @@
 	#define WITHPOTAFGAIN		1	/* регуляторы усиления НЧ на потенциометрах */
 
 	#define WITHMENU 	1	/* функциональность меню может быть отключена - если настраивать нечего */
-	#define WITHOUTTXCADCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
+	#define WITHNOTXDACCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
 	#define WITHPOWERTRIM		1	// Имеется управление мощностью
-	#define WITHPOWERTRIMMIN	5	// Нижний предел регулировки (показываемый на дисплее)
-	#define WITHPOWERTRIMMAX	100	// Верхний предел регулировки (показываемый на дисплее)
-	#define WITHPOWERTRIMATU	50	// Значение для работы автотюнера
 
 	//#define WITHONLYBANDS 1		/* Перестройка может быть ограничена любительскими диапазонами */
 	//#define WITHBCBANDS	1		/* в таблице диапазонов присутствуют вещательные диапазоны */
@@ -394,7 +384,11 @@
 	#define WITHDATAMODE	1	/* управление с клавиатуры передачей с USB AUDIO канала */
 	#define WITHSLEEPTIMER	1	/* выключить индикатор и вывод звука по истечениии указанного времени */
 	#define WITHFANTIMER	1	/* выключающийся по таймеру вентилятор в усилителе мощности */
-	//#define WITHTOUCHGUI	1	/* тестирование работы с сенсорным экраном */
+
+	#if 0
+		#define WITHTOUCHGUI	1	/* тестирование работы с сенсорным экраном */
+		#define WITHENCODER2NOFREQ	1	/* второй валкодер не перестраивает частоту */
+	#endif
 	// --- Эти строки можно отключать, уменьшая функциональность готового изделия
 
 	#define WITHMODESETFULLNFM 1
@@ -438,6 +432,9 @@
 
 #endif /* WITHISBOOTLOADER */
 
+	#define WITHPOWERTRIMMIN	5	// Нижний предел регулировки (показываемый на дисплее)
+	#define WITHPOWERTRIMMAX	100	// Верхний предел регулировки (показываемый на дисплее)
+	#define WITHPOWERTRIMATU	50	// Значение для работы автотюнера
 
 	#if 0
 		#define WITHUSBHEADSET 1	/* трансивер работает USB гарнитурой для компьютера - режим тестирования */
@@ -490,57 +487,88 @@
 	// Назначения входов АЦП процессора.
 	enum 
 	{ 
+		WPM_POTIX = BOARD_ADCX1IN(2),			// MCP3208 CH2 потенциометр управления скоростью передачи в телеграфе
+		IFGAIN_IXI = BOARD_ADCX1IN(0),			// MCP3208 CH0 IF GAIN
+		AFGAIN_IXI = BOARD_ADCX1IN(1),			// MCP3208 CH1 AF GAIN
+
 	#if WITHPOTIFGAIN
-		POTIFGAIN = BOARD_ADCXIN(0),		// MCP3208 CH0 IF GAIN
+		POTIFGAIN = IFGAIN_IXI,
 	#endif /* WITHPOTIFGAIN */
 	#if WITHPOTAFGAIN
-		//POTAFGAIN = BOARD_ADCXIN(2),		// MCP3208 CH2 потенциометр управления скоростью передачи в телеграфе
-		POTAFGAIN = BOARD_ADCXIN(1),		// MCP3208 CH1 AF GAIN
+		POTAFGAIN = AFGAIN_IXI,
 	#endif /* WITHPOTAFGAIN */
-	#if WITHPOTWPM
-		POTWPM = BOARD_ADCXIN(2),			// MCP3208 CH2 потенциометр управления скоростью передачи в телеграфе
-	#endif /* WITHPOTWPM */
-	#if WITHTHERMOLEVEL
-		XTHERMOIX = BOARD_ADCXIN(6),		// MCP3208 CH6 Exernal thermo sensor ST LM235Z
-	#endif /* WITHTHERMOLEVEL */
 
-	#if 1
-		// main board - 5W
-		#if WITHVOLTLEVEL
-			VOLTSOURCE = BOARD_ADCX1IN(7),		// MCP3208 CH7 Средняя точка делителя напряжения, для АКБ
-		#endif /* WITHVOLTLEVEL */
+	#if WITHAUTOTUNER_AVBELNN
 
-		#if WITHSWRMTR
-			PWRI = 0,			// PB1
-			FWD = 0, REF = 1,	// PB0	SWR-meter
-		#endif /* WITHSWRMTR */
+		XTHERMOIX = BOARD_ADCX1IN(6),		// MCP3208 CH6 Exernal thermo sensor ST LM235Z
 
+		#define WITHVOLTLEVEL	1	/* отображение напряжения питания */
 		#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
-		#if WITHCURRLEVEL
-			PASENSEIX = 2,		// PA1 PA current sense - ACS712-05 chip
-		#endif /* WITHCURRLEVEL */
-	#else
+
+		#define WITHCURRLEVEL_ACS712_30A 1	// PA current sense - ACS712ELCTR-30B-T chip
+		//#define WITHCURRLEVEL_ACS712_20A 1	// PA current sense - ACS712ELCTR-20B-T chip
+		PASENSEIX = WPM_POTIX,		// PA1 PA current sense - ACS712-05 chip
+		//PASENSEIX = 2,		// PA1 PA current sense - ACS712-05 chip
+
+		FWD = 0, REF = 1,	// PB0	SWR-meter
+		PWRI = FWD,			// PB1
+
+
+		VOLTSOURCE = BOARD_ADCX1IN(7),		// MCP3208 CH7 Средняя точка делителя напряжения, для АКБ
+
+		#define VOLTLEVEL_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика напряжения
+		#define VOLTLEVEL_LOWER		10	// 1.0 kOhm - нижний резистор
+
+		XTHERMOMRRIX = BOARD_ADCMRRIN(0),	// кеш - индекc не должен повторяться в конфигурации
+		PASENSEMRRIX = BOARD_ADCMRRIN(1),	// кеш - индекc не должен повторяться в конфигурации
+		REFMRRIX = BOARD_ADCMRRIN(2),
+		FWDMRRIX = BOARD_ADCMRRIN(3),
+		PWRMRRIX = FWDMRRIX,
+		VOLTMRRIX = BOARD_ADCMRRIN(4),	// кеш - индекc не должен повторяться в конфигурации
+
+	#elif 1
 		// UA1CEI PA board: MCP3208 at targetext2 - P2_0 external SPI device (PA BOARD ADC)
+
+		#define WITHVOLTLEVEL	1	/* отображение напряжения питания */
+		//#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
+		#define WITHCURRLEVEL2	1	/* отображение тока оконечного каскада */
+
 		VOLTSOURCE = BOARD_ADCX2IN(4),		// MCP3208 CH7 Средняя точка делителя напряжения, для АКБ
+
+		#define VOLTLEVEL_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика напряжения
+		#define VOLTLEVEL_LOWER		10	// 1.0 kOhm - нижний резистор
+
 
 		FWD = BOARD_ADCX2IN(2),
 		REF = BOARD_ADCX2IN(3),
 		PWRI = FWD,
 
-		#define WITHCURRLEVEL2	1	/* отображение тока оконечного каскада */
 		PASENSEIX2 = BOARD_ADCX2IN(0),	// DRAIN
-		PAREFERIX2 = BOARD_ADCX2IN(1),	// reference (1/2 напряжения питания ACS712ELCTR-30B-T).
-	#endif
+		PAREFERIX2 = BOARD_ADCX2IN(1),	// reference (1/2 питания ACS712ELCTR-30B-T).
+
+	#else /* WITHAUTOTUNER_AVBELNN */
+		// QRP вариант - только 5 ватт на плате
+
+		#define WITHVOLTLEVEL	1	/* отображение напряжения питания */
+		#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
+
+		#define VOLTLEVEL_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика напряжения
+		#define VOLTLEVEL_LOWER		10	// 1.0 kOhm - нижний резистор
+
+		POTWPM = WPM_POTIX,
+		PASENSEIX = 2,		// PA1 PA current sense - ACS712-05 chip
+		FWD = 0, REF = 1,	// PB0	SWR-meter
+		PWRI = FWD,			// PB1
+		VOLTSOURCE = BOARD_ADCX1IN(7),		// MCP3208 CH7 Средняя точка делителя напряжения, для АКБ
+	#endif /* WITHAUTOTUNER_AVBELNN */
 
 		KI0 = 3, KI1 = 4, KI2 = 5, KI3 = 6, KI4 = 7		// клавиатура
 	};
-
-	#define VOLTLEVEL_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика напряжения
-	#define VOLTLEVEL_LOWER		10	// 1.0 kOhm - нижний резистор
 	// ST LM235Z
 	#define THERMOSENSOR_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика температуры
 	#define THERMOSENSOR_LOWER		10	// 1 kOhm - нижний резистор
-	#define THERMOSENSOR_OFFSET (- 2731)	// температура при 0 вольт с датчика. MCP9700 parameter // При 0 °С на выходе 500 мВ. Шкала 10 mV / °С
+	#define THERMOSENSOR_OFFSET 	(- 480)		// 2.98 volt = 25 Celsius
+	#define THERMOSENSOR_DENOM	 	10			// миливольты к десятым долям градуса 2.98 volt = 25 Celsius
 
 	#define KI_COUNT 5	// количество используемых под клавиатуру входов АЦП
 	#define KI_LIST	KI4, KI3, KI2, KI1, KI0,	// инициализаторы для функции перекодировки

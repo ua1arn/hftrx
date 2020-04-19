@@ -330,11 +330,10 @@ static uint8_t *MEM_If_Read_HS(uint32_t src, uint8_t *dest, uint32_t Len)
 	*/
 
 	/* Return a valid address to avoid HardFault */
-	spitarget_t target = targetdataflash;	/* addressing to chip */
-	if (timed_dataflash_read_status(target))
+	if (timed_dataflash_read_status())
 	{
 		//TP();
-		return dest;	// todo: error handling need
+		return 0; //dest;	// todo: error handling need
 	}
 	readDATAFLASH(src, dest, Len);
 	return dest;
@@ -350,8 +349,7 @@ static uint8_t *MEM_If_Read_HS(uint32_t src, uint8_t *dest, uint32_t Len)
 static USBD_StatusTypeDef MEM_If_GetStatus_HS(uint32_t Add, uint8_t Cmd, uint8_t *buffer)
 {
 	/* USER CODE BEGIN 11 */
-	spitarget_t target = targetdataflash;	/* addressing to chip */
-	uint_fast8_t st = dataflash_read_status(target);
+	uint_fast8_t st = dataflash_read_status();
 
 	const unsigned FLASH_PROGRAM_TIME = (st & 0x01) ? 5 : 0;
 	const unsigned FLASH_ERASE_TIME = (st & 0x01) ? 5 : 0;
@@ -433,50 +431,60 @@ static USBD_StatusTypeDef  USBD_DFU_EP0_TxSent(USBD_HandleTypeDef *pdev)
     hdfu = & gdfu;
 
 	//PRINTF(PSTR("USBD_DFU_EP0_TxSent\n"));
-
-  if (hdfu->dev_state == DFU_STATE_DNLOAD_BUSY)
-  {
-	 /* Decode the Special Command*/
-    if (hdfu->wblock_num == 0)
+    if (hdfu->dev_state == DFU_STATE_DNLOAD_BUSY)
     {
-      if ((hdfu->buffer.d8 [0] ==  DFU_CMD_GETCOMMANDS) && (hdfu->wlength == 1))
+      /* Decode the Special Command*/
+      if (hdfu->wblock_num == 0U)
       {
-
-      }
-      else if  (( hdfu->buffer.d8 [0] ==  DFU_CMD_SETADDRESSPOINTER ) && (hdfu->wlength == 5))
-      {
-		  hdfu->data_ptr = USBD_peek_u32(& hdfu->buffer.d8 [1]);
-      }
-      else if (( hdfu->buffer.d8 [0] ==  DFU_CMD_ERASE ) && (hdfu->wlength == 5))
-      {
-    	  hdfu->data_ptr = USBD_peek_u32(& hdfu->buffer.d8 [1]);
-
-        if (USBD_DFU_fops_HS.Erase(hdfu->data_ptr) != USBD_OK)
+        if(hdfu->wlength == 1U)
         {
-          return USBD_FAIL;
+          if (hdfu->buffer.d8[0] == DFU_CMD_GETCOMMANDS)
+          {
+            /* nothink to do */
+          }
+        }
+        else if (hdfu->wlength == 5U)
+        {
+          if (hdfu->buffer.d8[0] == DFU_CMD_SETADDRESSPOINTER)
+          {
+    		  hdfu->data_ptr = USBD_peek_u32(& hdfu->buffer.d8 [1]);
+          }
+          else if (hdfu->buffer.d8[0] == DFU_CMD_ERASE)
+          {
+        	  hdfu->data_ptr = USBD_peek_u32(& hdfu->buffer.d8 [1]);
+
+            if (USBD_DFU_fops_HS.Erase(hdfu->data_ptr) != USBD_OK)
+            {
+              return USBD_FAIL;
+            }
+          }
+          else
+          {
+            /* .. */
+          }
+        }
+        else
+        {
+          /* Reset the global length and block number */
+          hdfu->wlength = 0U;
+          hdfu->wblock_num = 0U;
+          /* Call the error management function (command will be nacked) */
+          req.bmRequest = 0U;
+          req.wLength = 1U;
+          USBD_CtlError(pdev, &req);
         }
       }
+      /* Regular Download Command */
       else
       {
-        /* Reset the global length and block number */
-        hdfu->wlength = 0;
-        hdfu->wblock_num = 0;
-        /* Call the error management function (command will be nacked) */
-        req.bmRequest = 0;
-        req.wLength = 1;
-        USBD_CtlError (pdev, &req);
-      }
-    }
-    /* Regular Download Command */
-    else if (hdfu->wblock_num > 1)
-    {
-      /* Decode the required address */
-      addr = ((hdfu->wblock_num - 2) * usbd_dfu_get_xfer_size(altinterfaces [INTERFACE_DFU_CONTROL])) + hdfu->data_ptr;
+        if (hdfu->wblock_num > 1U)
+        {
+          /* Decode the required address */
+          addr = ((hdfu->wblock_num - 2U) * USBD_DFU_XFER_SIZE) + hdfu->data_ptr;
 
-      /* Preform the write operation */
-      if (USBD_DFU_fops_HS.Write(hdfu->buffer.d8, addr, hdfu->wlength) != USBD_OK)
-      {
-          //printhex(addr, hdfu->buffer.d8, hdfu->wlength);
+          /* Preform the write operation */
+          if (USBD_DFU_fops_HS.Write(hdfu->buffer.d8, addr, hdfu->wlength) != USBD_OK)
+          {
 #if 1
 		    /* Reset the global length and block number */
 		    hdfu->wlength = 0;
@@ -491,29 +499,34 @@ static USBD_StatusTypeDef  USBD_DFU_EP0_TxSent(USBD_HandleTypeDef *pdev)
 		    hdfu->dev_status [4] = hdfu->dev_state;
 		    return USBD_OK;
 #endif
-        return USBD_FAIL;
+            return USBD_FAIL;
+          }
+        }
       }
+
+      /* Reset the global length and block number */
+      hdfu->wlength = 0U;
+      hdfu->wblock_num = 0U;
+
+      /* Update the state machine */
+      hdfu->dev_state =  DFU_STATE_DNLOAD_SYNC;
+
+      hdfu->dev_status[1] = 0U;
+      hdfu->dev_status[2] = 0U;
+      hdfu->dev_status[3] = 0U;
+      hdfu->dev_status[4] = hdfu->dev_state;
     }
-    /* Reset the global length and block number */
-    hdfu->wlength = 0;
-    hdfu->wblock_num = 0;
+    else if (hdfu->dev_state == DFU_STATE_MANIFEST)/* Manifestation in progress */
+    {
+      /* Start leaving DFU mode */
+      DFU_Leave(pdev);
+    }
+    else
+    {
+      /* .. */
+    }
 
-    /* Update the state machine */
-    hdfu->dev_state = DFU_STATE_DNLOAD_SYNC;
-
-    hdfu->dev_status [1] = 0;
-    hdfu->dev_status [2] = 0;
-    hdfu->dev_status [3] = 0;
-    hdfu->dev_status [4] = hdfu->dev_state;
     return USBD_OK;
-  }
-  else if (hdfu->dev_state == DFU_STATE_MANIFEST)/* Manifestation in progress*/
-  {
-    /* Start leaving DFU mode */
-    DFU_Leave(pdev);
-  }
-
-  return USBD_OK;
 }
 
 /**
@@ -662,6 +675,10 @@ static USBD_StatusTypeDef USBD_DFU_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 			//PRINTF("USBD_DFU_Setup: USB_REQ_TYPE_STANDARD USB_REQ_SET_INTERFACE DFU interface %d set to %d\n", (int) interfacev, (int) altinterfaces [interfacev]);
 			break;
 
+        case USB_REQ_CLEAR_FEATURE:
+        	// Не должны вызывать ошибок по этому коду
+        	break;
+
        default:
     		//PRINTF(PSTR("1 USBD_DFU_Setup: bmRequest=%04X, bRequest=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
         break;
@@ -730,10 +747,7 @@ static void DFU_Detach(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req
 	  uintptr_t ip;
 	  if (bootloader_get_start(BOOTLOADER_APPAREA, & ip) == 0)
 	  {
-			/* Perform an Attach-Detach operation on USB bus */
-			USBD_Stop (pdev);
-			bootloader_detach(ip);
-			USBD_Start (pdev);
+		  board_dpc(bootloader_deffereddetach, NULL);
 	  }
 #endif /* WITHISBOOTLOADER */
   }
@@ -865,10 +879,17 @@ static void DFU_Upload(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req
         /* Return the physical address where data are stored */
         phaddr = USBD_DFU_fops_HS.Read(addr, hdfu->buffer.d8, hdfu->wlength);
 
-        /* Send the status data over EP0 */
-        USBD_CtlSendData(pdev,
-                          phaddr,
-                          hdfu->wlength);
+        if (phaddr == 0)
+        {
+            USBD_CtlError (pdev, req);
+        }
+        else
+        {
+			/* Send the status data over EP0 */
+			USBD_CtlSendData(pdev,
+							  phaddr,
+							  hdfu->wlength);
+        }
       }
       else  /* unsupported hdfu->wblock_num */
       {

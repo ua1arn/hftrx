@@ -34,10 +34,20 @@
 			// normal operation frequency
 			#define REF1_MUL 216		// 2*216.000 MHz (192 <= PLLN <= 432)
 			#define HARDWARE_FLASH_LATENCY FLASH_ACR_LATENCY_6WS	// overvlocking
+		#elif CPUSTYLE_STM32H7XX && 0
+			// high  operation frequency - revision V
+			#define REF1_MUL 480		// 2*480.000 MHz (192 <= PLLN <= 432)
+			#define REF3_MUL 135		// 2*135.000 MHz (192 <= PLLN <= 432)
+			#define PWR_D3CR_VOS_value (PWR_D3CR_VOS_0 * 3)
+			#define HARDWARE_FLASH_LATENCY FLASH_ACR_LATENCY_4WS
+			#define PLL2_DIVP 4
 		#elif CPUSTYLE_STM32H7XX
-			// normal operation frequency
+			// normal operation frequency - revision Y
 			#define REF1_MUL 384		// 2*384.000 MHz (192 <= PLLN <= 432)
-			#define HARDWARE_FLASH_LATENCY FLASH_ACR_LATENCY_7WS	// overvlocking
+			#define REF3_MUL 135		// 2*135.000 MHz (192 <= PLLN <= 432)
+			#define PWR_D3CR_VOS_value (PWR_D3CR_VOS_0 * 3)
+			#define HARDWARE_FLASH_LATENCY FLASH_ACR_LATENCY_2WS
+			#define PLL2_DIVP 4
 		#elif CPUSTYLE_STM32F7XX
 			// normal operation frequency
 			#define REF1_MUL 216		// 2*216.000 MHz (192 <= PLLN <= 432)
@@ -188,8 +198,6 @@
 
 	// +++ Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
 	//#define LCDMODE_HARD_SPI	1	/* LCD over SPI line */
-	//#define LCDMODE_LTDC	1		/* Use STM32F4xxx with LCD-TFT Controller (LTDC), also need LCDMODE_ILI9341 */
-	//#define LCDMODE_LTDC_L8	1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит. */
 	//#define LCDMODE_WH2002	1	/* тип применяемого индикатора 20*2, возможно вместе с LCDMODE_HARD_SPI */
 	//#define LCDMODE_WH1602	1	/* тип применяемого индикатора 16*2 */
 	//#define LCDMODE_WH1604	1	/* тип применяемого индикатора 16*4 */
@@ -358,7 +366,7 @@
 	//#define WITHPOTPOWER	1	/* регулятор мощности на потенциометре */
 	//#define WITHANTSELECT	1	// Управление переключением антенн
 	#define WITHSLEEPTIMER	1	/* выключить индикатор и вывод звука по истечениии указанного времени */
-	#define WITHOUTTXCADCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
+	#define WITHNOTXDACCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
 	#define WITHPOWERTRIM		1	// Имеется управление мощностью
 	#define WITHPOWERTRIMMIN	5	// Нижний предел регулировки (показываемый на дисплее)
 	#define WITHPOWERTRIMMAX	100	// Верхний предел регулировки (показываемый на дисплее)

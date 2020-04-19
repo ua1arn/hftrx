@@ -15,6 +15,7 @@
 
 #define CTLREG_SPIMODE	SPIC_MODE3	
 
+#include "touch/touch.h"
 #include "display/display.h"
 #include "formats.h"
 #include <math.h>
@@ -407,10 +408,27 @@ static uint_fast8_t nmeaparser_chsval;
 static uint_fast8_t nmeaparser_param;		// номер принимаемого параметра в строке
 static uint_fast8_t nmeaparser_chars;		// количество символов, помещённых в буфер
 
-#define NMEA_PARAMS			5
+//#define NMEA_PARAMS			5
 #define NMEA_CHARSSMALL		16
 #define NMEA_CHARSBIG		257
-#define NMEA_BIGFIELD		3	// номер большого поля
+#define NMEA_BIGFIELD		255	// номер большого поля
+
+enum
+{
+	//	ответ:
+	NMF_CODE, //	$ANSW,
+	NMF_STATE, //	state, //состояние устройства (пока = 0)
+	NMF_FWD, //	V_FWD, //ADC датчик апрямой волны
+	NMF_REF, //	V_REF, //ADC датчика отраженной волны
+	NMF_T_SENS, //	T_SENS, //ADC датчика температуры LM235
+	NMF_C_SENS, //	C_SENS, //ADC датчика тока ACS712
+	NMF_12V_SENS, //	U_SENS, //ADC входного напряжения питания 12V
+	NMF_3V3_SENS, //	SENS_3V3, //ADC напряжения питания 3.3V
+	NMF_5V_SENS, //	SENS_5V, //ADC напряжения питания 5V
+	NMF_VREF, //	VREF //ADC измерения опорного напряжения
+
+	NMEA_PARAMS
+};
 
 static char nmeaparser_buffsmall [NMEA_PARAMS] [NMEA_CHARSSMALL];
 static char nmeaparser_buffbig [NMEA_CHARSBIG];
@@ -450,11 +468,11 @@ static uint_fast8_t calcxorv(
 
 static uint_fast8_t hex2int(uint_fast8_t c)
 {
-	if (isdigit(c))
+	if (isdigit((unsigned char) c))
 		return c - '0';
-	if (isupper(c))
+	if (isupper((unsigned char) c))
 		return c - 'A' + 10;
-	if (islower(c))
+	if (islower((unsigned char) c))
 		return c - 'a' + 10;
 	return 0;
 }
@@ -510,103 +528,22 @@ void nmea_parsechar(uint_fast8_t c)
 	case NMEAST_CHSLO:
 		//debugstate();
 		nmeaparser_state = NMEAST_INITIALIZED;
-		////if (nmeaparser_checksum == (nmeaparser_chsval + hex2int(c)))	// для тесто проверка контрольной суммы отключена
-#if 0
+		if (nmeaparser_checksum == (nmeaparser_chsval + hex2int(c)))	// для тесто проверка контрольной суммы отключена
 		{
-			if (nmeaparser_param >= 2 && strcmp(nmeaparser_get_buff(0), "GPMDS") == 0)
+			if (strcmp(nmeaparser_get_buff(NMF_CODE), "ANSW") == 0)
 			{
-				const unsigned code = strtoul(nmeaparser_get_buff(1) , NULL, 10);
-				if (nmeaparser_param >= 4)
-				{
-					const unsigned page = strtoul(nmeaparser_get_buff(2) , NULL, 10);
-					switch (code)
-					{
-					case 1:
-						// заполняем буфер
-						{
+				//
+				const adcvalholder_t EXTFS = 0x0FFF;	// в тюнере стоит 12-бит АЦП
+				// board_adc_store_data
+				const adcvalholder_t FS = board_getadc_fsval(FWD);
 
-							char * const buff = nmeaparser_get_buff(3);
-							const size_t j = strlen(buff);
-							unsigned i;
-							for (i = 0; (i + 1) < j; i += 2)
-							{
-								unsigned v = hex2int(buff [i + 0]);
-								v = v * 16 + hex2int(buff [i + 1]);
-								modem_placenextchartosend(page, v);
-							}
-						}
-						break;
-					case 2:
-						// Ранее накопленные данные передать с указанием адреса получателя
-						{
-							char * const buff = nmeaparser_get_buff(3);
-							const size_t j = strlen(buff);
-							unsigned i;
-							for (i = 0; (i + 1) < j && i < (MODEMBINADDRESSSIZE * 2); i += 2)
-							{
-								unsigned v = hex2int(buff [i + 0]);
-								v = v * 16 + hex2int(buff [i + 1]);
-								modem_placenextchartosend(page, v);
-							}
-							modem_flushsend(page);
-						}
-						break;
-
-					}
-				}
-				else if (nmeaparser_param >= 3)
-				{
-					const unsigned p2 = strtoul(nmeaparser_get_buff(2) , NULL, 10);
-					switch (code)
-					{
-					case 2:
-						// Ранее накопленные данные передать к мастеру (без указания адреса олучателя)
-						{
-							modem_flushsend(p2);
-						}
-						break;
-
-					case 3:
-						modem_cancelsending(p2);
-						// Сбросить ранее накопленные данные (не передавать)
-						break;
-					case 4:
-						// Установить рабочую частоту
-						// Частота в герцах
-						{
-							modemfreq = p2;
-							paramschangedfreq = 1;
-
-						}
-						break;
-					case 5:
-						// Установить скорость передачи в эфире
-						// Baud rate (в сотых долях бода)
-						{
-							modemspeed100 = p2;
-							paramschangedspeed = 1;
-						}
-						break;
-					case 6:
-						// Установить тип модуляции
-						// 0 – BPSK, 1 - QPSK
-						{
-							modemmode = p2;
-							paramschangedmode = 1;
-						}
-						break;
-					case 7:
-						// Установить режтм арбты себя в режиме мастер (1) или слэйв (0) - 0 по включению питания
-						// 0 – slave, 1 - master
-						{
-							mastermode = p2;
-						}
-						break;
-					}
-				}
+				board_adc_store_data(VOLTSOURCE, strtoul(nmeaparser_get_buff(NMF_12V_SENS), NULL, 10) * FS / EXTFS);
+				board_adc_store_data(FWD, strtoul(nmeaparser_get_buff(NMF_FWD), NULL, 10) * FS / EXTFS);
+				board_adc_store_data(REF, strtoul(nmeaparser_get_buff(NMF_REF), NULL, 10) * FS / EXTFS);
+				board_adc_store_data(PASENSEIX, strtoul(nmeaparser_get_buff(NMF_C_SENS), NULL, 10) * FS / EXTFS);
+				board_adc_store_data(XTHERMOIX, strtoul(nmeaparser_get_buff(NMF_T_SENS), NULL, 10) * FS / EXTFS);
 			}
 		}
-#endif
 		break;
 
 	default:
@@ -893,14 +830,8 @@ pll1_getoutdivider(
 			goto found;
 	}
 #if 0
-	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
-
-	do
-	{
-		display_gotoxy(0, 0 + lowhalf);
-		display_string_P(PSTR("[Si570 Err]"), lowhalf);
-		return 0;		/* требуемую частоту невозожно получить */
-	} while (lowhalf --);
+	display_at_P(PSTR(0, 0, "[pll1_getoutdivider Err]"));
+	return 0;		/* требуемую частоту невозожно получить */
 #endif
 
 found: 
@@ -3940,7 +3871,9 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0003, lcdblcode & 0x02);		/* D3	- LCD backlight  - removed in LVDS version*/
 		RBBIT(0002, lcdblcode & 0x02);		/* D2	- LCD backlight  - removed in LVDS version*/
 		RBBIT(0001, lcdblcode & 0x01);		/* D2:D1 - LCD backlight  - removed in LVDS version*/
+#if WITHKBDBACKLIGHT
 		RBBIT(0000, glob_kblight);			/* D0: keyboard backlight */
+#endif /* WITHKBDBACKLIGHT */
 
 		spi_select(target, CTLREG_SPIMODE);
 		prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
@@ -4157,6 +4090,7 @@ prog_ctrlreg(uint_fast8_t plane)
 #if defined(DDS1_TYPE)
 	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
 #endif
+
 #if WITHAUTOTUNER_UA1CEI
 	//управление устройством
 	/*
@@ -4171,7 +4105,6 @@ prog_ctrlreg(uint_fast8_t plane)
 	SEL_CTUN,         //перебор емкости конденсатора тюнера  0 - 255
 	SEL_LTUN,          //перебор ендуктивностей тюнера  0 - 255
 	*CS<CR><LF>
-
 
 	  ответ:
 	  $ANSW,
@@ -4203,10 +4136,11 @@ prog_ctrlreg(uint_fast8_t plane)
 			glob_fanflag,
 			glob_antenna,
 			glob_tuner_type,
-			glob_tuner_C,
-			glob_tuner_L
+			glob_tuner_bypass ? 0 : glob_tuner_C,
+			glob_tuner_bypass ? 0 : glob_tuner_L
 		);
-#endif
+#endif /* WITHAUTOTUNER_UA1CEI */
+
 	// registers chain control register
 	{
 		const uint_fast8_t lcdblcode = (glob_bglight - WITHLCDBACKLIGHTMIN);
@@ -6075,8 +6009,7 @@ uint_fast8_t board_pll1_set_n(
 			local_snprintf_P(buff, sizeof buff / sizeof buff [0], 
 				PSTR("%02x"), (unsigned) count
 				 );
-			display_gotoxy(0, 1);
-			display_string(buff, 0);
+			display_at(0, 1, buff);
 		}
 #endif
 
@@ -6391,68 +6324,21 @@ static void board_fpga_loader_initialize(void)
 
 #if WITHFPGALOAD_PS
 
-#if (CTLSTYLE_RAVENDSP_V3 && ! WITHUSEDUALWATCH) && (DDS1_CLK_MUL == 10)
-	#include "rbf/rbfimage_v3_pll.h"
-#elif (CTLSTYLE_RAVENDSP_V3 && ! WITHUSEDUALWATCH) && (DDS1_CLK_MUL == 1)
-	#include "rbf/rbfimage_v3.h"
-#elif (CTLSTYLE_RAVENDSP_V4 && ! WITHUSEDUALWATCH) && (DDS1_CLK_MUL == 10)
-	#include "rbf/rbfimage_v4_pll.h"
-#elif (CTLSTYLE_RAVENDSP_V4 && ! WITHUSEDUALWATCH) && (DDS1_CLK_MUL == 1)
-	#include "rbf/rbfimage_v4.h"
-#elif CTLSTYLE_RAVENDSP_V5 && (DDS1_CLK_MUL == 10)
-	#include "rbf/rbfimage_v5_2ch_pll.h"	// CTLSTYLE_RAVENDSP_V5 with 12.288 osc
-#elif CTLSTYLE_RAVENDSP_V5 && (DDS1_CLK_MUL == 1) && WITHOPERA4BEACON
-	#include "rbf/rbfimage_v5_2ch_opera4.h"	// CTLSTYLE_RAVENDSP_V5
-#elif CTLSTYLE_RAVENDSP_V5 && (DDS1_CLK_MUL == 1)
-	#include "rbf/rbfimage_v5_2ch.h"	// CTLSTYLE_RAVENDSP_V5
-#elif CTLSTYLE_RAVENDSP_V6 && (DDS1_CLK_MUL == 1)
-	#include "rbf/rbfimage_v6_2ch.h"	// CTLSTYLE_RAVENDSP_V6
-#elif CTLSTYLE_RAVENDSP_V7 && ! WITHUSEDUALWATCH && (DDS1_CLK_MUL == 1)
-	#include "rbf/rbfimage_v7_1ch.h"	//
-#elif CTLSTYLE_RAVENDSP_V7 && (DDS1_CLK_MUL == 1)
-	#include "rbf/rbfimage_v7a_2ch.h"	// CTLSTYLE_RAVENDSP_V7
-#elif CTLSTYLE_STORCH_V1 && ! WITHUSEDUALWATCH && (DDS1_CLK_MUL == 1)
-	#include "rbf/rbfimage_v7_1ch.h"	//
-#elif CTLSTYLE_STORCH_V1 && (DDS1_CLK_MUL == 1)
-	#include "rbf/rbfimage_v7a_2ch.h"	// same as CTLSTYLE_RAVENDSP_V7
-#elif CTLSTYLE_STORCH_V2 && ! WITHUSEDUALWATCH && (DDS1_CLK_MUL == 1)
-	#include "rbf/rbfimage_v7a_2ch.h"	//
-#elif CTLSTYLE_STORCH_V2 && (DDS1_CLK_MUL == 1)
-	#include "rbf/rbfimage_v7a_2ch.h"	// same as CTLSTYLE_RAVENDSP_V7
-#elif CTLSTYLE_STORCH_V3 && ! WITHUSEDUALWATCH && (DDS1_CLK_MUL == 1)
-	//#include "rbf/rbfimage_v7_1ch.h"	//
-	#include "rbf/rbfimage_v7a_2ch.h"	// same as CTLSTYLE_RAVENDSP_V7
-#elif CTLSTYLE_STORCH_V3 && (DDS1_CLK_MUL == 1)
-	#include "rbf/rbfimage_v7a_2ch.h"	// same as CTLSTYLE_RAVENDSP_V7
-#elif CTLSTYLE_STORCH_V4 && ! WITHUSEDUALWATCH && (DDS1_CLK_MUL == 1)	// modem v2
-	#include "rbf/rbfimage_v7_1ch.h"	//
-//#elif CTLSTYLE_STORCH_V4 && (DDS1_CLK_MUL == 1)	// modem v2
-//	#include "rbf/rbfimage_v7_2ch.h"	// same as CTLSTYLE_RAVENDSP_V7
-#elif CTLSTYLE_STORCH_V5 && ! WITHUSEDUALWATCH && (DDS1_CLK_MUL == 1)		// mini
-	#include "rbf/rbfimage_v7_1ch.h"	//
-#elif CTLSTYLE_STORCH_V5 && (DDS1_CLK_MUL == 1)		// mini
-	#include "rbf/rbfimage_v7a_2ch.h"	// same as CTLSTYLE_RAVENDSP_V7
-#elif CTLSTYLE_STORCH_V6 && ! WITHUSEDUALWATCH && (DDS1_CLK_MUL == 1)		// mini
-	#include "rbf/rbfimage_v7_1ch.h"	//
-#elif CTLSTYLE_STORCH_V6 && (DDS1_CLK_MUL == 1)		// mini
-	#include "rbf/rbfimage_v7a_2ch.h"	// same as CTLSTYLE_RAVENDSP_V7
-#elif CTLSTYLE_STORCH_V7 && ! WITHUSEDUALWATCH && (DDS1_CLK_MUL == 1)		// TFT plug on board
-	#include "rbf/rbfimage_v7_1ch.h"	//
-#elif CTLSTYLE_STORCH_V7 && (DDS1_CLK_MUL == 1)		// TFT plug on board
-	#include "rbf/rbfimage_v7a_2ch.h"	// same as CTLSTYLE_RAVENDSP_V7
-#elif CTLSTYLE_OLEG4Z_V1 && (DDS1_CLK_MUL == 1)
-	#include "rbf/rbfimage_oleg4z.h"	// same as CTLSTYLE_RAVENDSP_V7, 1 RX & WFM
-#elif CTLSTYLE_STORCH_V8 && (DDS1_CLK_MUL == 1) && WITHRTS192	// renesas & TFT panel on CPU
-	#include "rbf/rbfimage_v8t_192k.h"
-#elif CTLSTYLE_STORCH_V8 && (DDS1_CLK_MUL == 1)	// renesas & TFT panel on CPU
-	#include "rbf/rbfimage_v8t_96k.h"
-#elif CTLSTYLE_STORCH_V9 && (DDS1_CLK_MUL == 1) && WITHRTS192	// renesas & TFT panel on CPU
-	#include "rbf/rbfimage_v8t_192k.h"
-#elif CTLSTYLE_STORCH_V9 && (DDS1_CLK_MUL == 1)	// renesas & TFT panel on CPU
-	#include "rbf/rbfimage_v8t_96k.h"
-#else
-	#error Missing FPGA image file
-#endif
+#if ! CPUSTYLE_R7S721
+/* на процессоре renesas образ располагается в памяти, испольщуемой для хранений буферов DSP части */
+static const FLASHMEMINIT uint16_t rbfimage0 [] =
+{
+#include "rbfimages.h"
+};
+
+/* получить расположение в памяти и количество элементов в массиве для загрузки FPGA */
+const uint16_t * getrbfimage(size_t * count)
+{
+	* count = sizeof rbfimage0 / sizeof rbfimage0 [0];
+	return & rbfimage0 [0];
+}
+
+#endif /* ! CPUSTYLE_R7S721 */
 
 /* FPGA загружается процессором с помощью SPI */
 static void board_fpga_loader_PS(void)
@@ -6463,8 +6349,10 @@ restart:
 	;
 	unsigned long w = 1000;
 	do {
+		size_t rbflength;
+		const uint16_t * p = getrbfimage(& rbflength);
+
 		debug_printf_P(PSTR("fpga: board_fpga_loader_PS start\n"));
-		const size_t rbflength = sizeof rbfimage / sizeof rbfimage [0];
 		/* After power up, the Cyclone IV device holds nSTATUS low during POR delay. */
 
 		FPGA_NCONFIG_PORT_S(FPGA_NCONFIG_BIT);
@@ -6497,7 +6385,6 @@ restart:
 		{
 			unsigned wcd = 0;
 			size_t n = rbflength - 1;
-			const uint16_t * p = rbfimage;
 			//
 
 			hardware_spi_connect_b16(SPIC_SPEEDUFAST, SPIC_MODE3);
@@ -7588,7 +7475,7 @@ uint_fast8_t board_getavox(void)	/* получить значение от де�
 #endif /* WITHTX && WITHVOX */
 }
 
-#if WITHTX && WITHSWRMTR && WITHCPUADCHW
+#if WITHTX && WITHSWRMTR
 
 // возврат считанных с АЦП значений forward и reflected
 // коррекция неодинаковости детекторов
@@ -7609,18 +7496,18 @@ uint_fast8_t board_getpwrmeter(
 	uint_fast8_t * toptrace	// peak hold
 	)
 {
-	const uint_fast8_t f = board_getadc_unfiltered_u8(PWRI, 0, UINT8_MAX);
+	const uint_fast8_t f = board_getadc_unfiltered_u8(PWRMRRIX, 0, UINT8_MAX);
 	* toptrace = f;
 	return f;
 }
 
-#elif WITHTX && WITHPWRMTR && WITHCPUADCHW
+#elif WITHTX && WITHPWRMTR
 
 uint_fast8_t board_getpwrmeter(
 	uint_fast8_t * toptrace		// peak hold
 	)
 {
-	const uint_fast8_t f = board_getadc_unfiltered_u8(PWRI, 0, UINT8_MAX);
+	const uint_fast8_t f = board_getadc_unfiltered_u8(PWRMRRIX, 0, UINT8_MAX);
 	* toptrace = f;
 	return f;
 }
@@ -7898,8 +7785,6 @@ void board_beep_initialize(void)
 
 
 // ADC intgerface functions
-#if WITHCPUADCHW
-
 
 // Для поддержки случаев, когда входы АЦП используются не подряд
 // Готовые значения для выдачи в регистр ADCMUX
@@ -8086,6 +7971,12 @@ adcvalholder_t board_getadc_unfiltered_truevalue(uint_fast8_t adci)
 			{	6, 0, },
 			{	7, 0, },
 	};
+
+	if (adci >= BOARD_ADCMRRBASE)
+	{
+		// mirror - значения АЦП устанавливабтся выходами программных компонентов, без считывания с аппаратуры.
+		return adc_data_raw [adci];
+	}
 	if (adci >= BOARD_ADCX1BASE)
 	{
 		// external SPI device (PA BOARD ADC)
@@ -8127,6 +8018,15 @@ uint_fast16_t board_getadc_filtered_u16(uint_fast8_t adci, uint_fast16_t lower, 
 {
 	const adcvalholder_t t = board_getadc_filtered_truevalue(adci);	// текущее отфильтрованное значение данного АЦП
 	const uint_fast16_t v = lower + ((uint_fast32_t) t * (upper - lower) / board_getadc_fsval(adci));	// нормируем к требуемому диапазону
+	ASSERT(v >= lower && v <= upper);
+	return v;
+}
+
+/* получить отфильтрованное значение от АЦП в диапазоне lower..upper (включая границы) */
+uint_fast32_t board_getadc_filtered_u32(uint_fast8_t adci, uint_fast32_t lower, uint_fast32_t upper)
+{
+	const adcvalholder_t t = board_getadc_filtered_truevalue(adci);	// текущее отфильтрованное значение данного АЦП
+	const uint_fast32_t v = lower + ((uint_fast64_t) t * (upper - lower) / board_getadc_fsval(adci));	// нормируем к требуемому диапазону
 	ASSERT(v >= lower && v <= upper);
 	return v;
 }
@@ -8342,7 +8242,12 @@ void board_adc_filtering(void)
 				adc_data_filtered [i] = 
 					((int_fast32_t) (BOARD_ADCFILTER_LPF_DENOM - k) * adc_data_filtered [i] + 
 					(int_fast32_t) k * raw) / BOARD_ADCFILTER_LPF_DENOM;
+				adc_data_filtered [i] = raw;
 			}
+			break;
+
+		default:
+			adc_data_filtered [i] = raw;
 			break;
 		}
 	}
@@ -8356,13 +8261,28 @@ void board_adc_filtering(void)
 static void
 adcfilters_initialize(void)
 {
+	const uint_fast8_t k = 3 * BOARD_ADCFILTER_LPF_DENOM / 100;
+
 	#if WITHBARS && ! WITHINTEGRATEDDSP
 		hardware_set_adc_filter(SMETERIX, BOARD_ADCFILTER_TRACETOP3S);
 	#endif /* WITHBARS && ! WITHINTEGRATEDDSP */
+
 	#if WITHTX && (WITHSWRMTR || WITHPWRMTR)
 		hardware_set_adc_filter(PWRI, BOARD_ADCFILTER_AVERAGEPWR);	// Включить фильтр
 		//hardware_set_adc_filter(PWRI, BOARD_ADCFILTER_DIRECT);		// Отключить фильтр
 	#endif /* WITHTX && (WITHSWRMTR || WITHPWRMTR) */
+
+	#if WITHCURRLEVEL2
+		hardware_set_adc_filterLPF(PASENSEMRRIX2, k);	// Включить фильтр с параметром 0.03
+		hardware_set_adc_filterLPF(PAREFERMRRIX2, k);	// Включить фильтр с параметром 0.03
+	#elif WITHCURRLEVEL
+		hardware_set_adc_filterLPF(PASENSEMRRIX, k);	// Включить фильтр с параметром 0.03
+	#endif /* WITHCURRLEVEL */
+
+	#if WITHTHERMOLEVEL
+		hardware_set_adc_filterLPF(XTHERMOMRRIX, k);	// Включить фильтр с параметром 0.03
+	#endif /* WITHTHERMOLEVEL */
+
 }
 
 
@@ -8382,11 +8302,14 @@ void board_adc_initialize(void)
 		}
 	}
 #endif /* WITHDEBUG */
+
+#if WITHCPUADCHW
+
 	hardware_adc_initialize();
-	adcfilters_initialize();
-}
 
 #endif /* WITHCPUADCHW */
+	adcfilters_initialize();
+}
 
 
 #if WITHKEYBOARD

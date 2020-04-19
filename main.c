@@ -10,17 +10,16 @@
 #include "board.h"
 #include "keyboard.h"
 #include "encoder.h"
-#include "list.h"
 
 #include "display/display.h"
 #include "gui.h"
+#include "spi.h"	// bootloader_readimage definition
 #include "formats.h"
 
 #include "audio.h"
 
 #include "codecs/tlv320aic23.h"	// константы управления усилением кодека
 #include "codecs/nau8822.h"
-#include "spi.h"
 
 #if WITHUSEAUDIOREC || WITHUSESDCARD
 	#include "sdcard.h"
@@ -30,16 +29,15 @@
 #include <ctype.h>
 #include <math.h>
 
-#define  ARRAY_SIZE(a)  (sizeof(a)/sizeof(a[0]))
-
 #if WITHRFSG
 	#error WITHRFSG now not supported
 #endif /* WITHRFSG */
 
 #if WITHTOUCHGUI
-static uint_fast8_t encoder2busy = 0;		// признак занятости энкодера в обработке gui
+static uint_fast8_t encoder2_busy = 0;		// признак занятости энкодера в обработке gui
+static uint_fast8_t keyboard_redirect = 0;	// перенаправление кодов кнопок в менеджер gui
 static uint_fast8_t is_menu_opened = 0;		// открыто gui системное меню
-static char menuw [10];						// буфер для вывода значений системного меню
+static char menuw [20];						// буфер для вывода значений системного меню
 static enc2_menu_t enc2_menu;
 #endif /* WITHTOUCHGUI */
 
@@ -51,6 +49,21 @@ static uint_fast32_t
 //NOINLINEAT
 prevfreq(uint_fast32_t oldfreq, uint_fast32_t freq, 
 							   uint_fast32_t step, uint_fast32_t bottom);
+
+static unsigned long ulmin(
+	unsigned long a,
+	unsigned long b)
+{
+	return a < b ? a : b;
+}
+
+static unsigned long ulmax(
+	unsigned long a,
+	unsigned long b)
+{
+	return a > b ? a : b;
+}
+
 
 extern volatile uint_fast8_t spool_lfm_enable;
 extern volatile uint_fast8_t spool_lfm_flag;
@@ -110,12 +123,14 @@ getstablev16(volatile uint_fast16_t * p)
 }
 
 static void 
-display_redrawbars(
+display2_redrawbarstimed(
 	uint_fast8_t immed,	// Безусловная перерисовка изображения
-	uint_fast8_t extra		/* находимся в режиме отображения настроек */
+	uint_fast8_t extra,		/* находимся в режиме отображения настроек */
+	const FLASHMEM struct menudef * mp
 	);
+
 static void 
-display_redrawmodes(
+display_redrawmodestimed(
 	uint_fast8_t immed	// Безусловная перерисовка изображения
 	);
 
@@ -130,6 +145,8 @@ static uint_fast8_t gtx;	/* текущее состояние прием или 
 static uint_fast8_t gcwpitch10 = 700 / CWPITCHSCALE;	/* тон при приеме телеграфа или самоконтроль (в десятках герц) */
 #if WITHIF4DSP
 static dualctl8_t gsquelch = { 0, 0 };	/* squelch level */
+static uint_fast8_t gsquelchNFM;	/* squelch level for NFM */
+static uint_fast8_t ggainnfmrx10 = 30;	/* дополнительное усиление по НЧ в режиме приёма NFM 100..1000% */
 #endif /* WITHIF4DSP */
 #if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */
 
@@ -139,7 +156,16 @@ static dualctl8_t gsquelch = { 0, 0 };	/* squelch level */
 
 static void processtxrequest(void);	/* Установка сиквенсору запроса на передачу.	*/
 
-static void processmessages(uint_fast8_t * kbch, uint_fast8_t * kbready, uint_fast8_t menu);
+struct menudef;
+
+static void
+//NOINLINEAT
+processmessages(
+	uint_fast8_t * kbch,
+	uint_fast8_t * kbready,
+	uint_fast8_t inmenu,
+	const FLASHMEM struct menudef * mp
+	);
 
 static uint_fast8_t getbankindex_raw(uint_fast8_t pathi);
 static uint_fast8_t getbankindex_ab(uint_fast8_t ab);
@@ -2380,6 +2406,13 @@ struct bandinfo
 	uint8_t tunerind;
 	uint8_t tunertype;
 #endif /* WITHAUTOTUNER */
+#if WITHSPECTRUMWF
+	uint8_t gzoomxpow2;	/* уменьшение отображаемого участка спектра */
+	uint8_t gtopdb;		/* нижний предел FFT */
+	uint8_t gbottomdb;	/* верхний предел FFT */
+	uint8_t gtopdbwf;		/* нижний предел FFT waterflow */
+	uint8_t gbottomdbwf;	/* верхний предел FFT waterflow */
+#endif /* WITHSPECTRUMWF */
 } ATTRPACKED;// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
 
 /* структура - расположение байтов в конфигурационном ОЗУ.
@@ -2482,12 +2515,8 @@ struct nvmap
 	uint8_t displaybarsfps;	/* скорость обновления S-метра */
 #if WITHSPECTRUMWF
 	uint8_t gfillspect;
-	uint8_t gtopdb;		/* нижний предел FFT */
-	uint8_t gbottomdb;	/* верхний предел FFT */
-	uint8_t gtopdbwf;		/* нижний предел FFT waterflow */
-	uint8_t gbottomdbwf;	/* верхний предел FFT waterflow */
-	uint8_t gzoomxpow2;
 	uint8_t gwflevelsep;	/* чувствительность водопада регулируется отдельной парой параметров */
+	uint8_t gwfshiftenable; /* разрешение или запрет сдвига водопада при изменении частоты */
 #endif /* WITHSPECTRUMWF */
 #if WITHBCBANDS
 	uint8_t bandsetbcast;	/* Broadcasting radio bands */
@@ -2533,8 +2562,10 @@ struct nvmap
 
 	uint8_t gagcoff;
 	uint8_t gamdepth;		/* Глубина модуляции в АМ - 0..100% */
+	uint8_t ggainnfmrx10;		/* дополнительное усиление по НЧ в режиме приёма NFM 100..1000% */
+	uint8_t gnfmdeviation;	/* Девиация при передаче в NFM - в сотнях герц */
 	uint8_t gdacscale;		/* Использование амплитуды сигнала с ЦАП передатчика - 0..100% */
-	uint16_t gdigiscale;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
+	uint16_t ggainndigitx;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 	uint8_t	gcwedgetime;			/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
 	uint8_t	gsidetonelevel;	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
 	uint8_t gmoniflag;		/* разрешение самопрослушивания */
@@ -2542,6 +2573,7 @@ struct nvmap
 	uint8_t gloopmsg, gloopsec;
 	uint8_t gdigigainmax;	/* диапазон ручной регулировки цифрового усиления - максимальное значение */
 	uint8_t gsquelch;		/* уровень открытия шумоподавителя */
+	uint8_t gsquelchNFM;	/* sуровень открытия шумоподавителя для NFM */
 	uint8_t gvad605;		/* напряжение на AD605 (управление усилением тракта ПЧ */
 	uint16_t gfsadcpower10 [2];	/*	Мощность, соответствующая full scale от IF ADC (с тояностью 0.1 дБмВт */
 	#if ! WITHPOTAFGAIN
@@ -2728,9 +2760,19 @@ filter_t fi_2p0_455 =
 	uint8_t	ggrpcat; // последний посещённый пункт группы
 	uint8_t catenable;	/* удаленное управление разрешено */
 	uint8_t catbaudrate;	/* номер скорости работы по CAT */
-	uint8_t catdtrptt;	/* переда управляется по DTR, а не по RTS */
-	uint8_t catrtsenable;	/* разрешение включения передачи по линии RTS CAT */
-	uint8_t catdtrenable;	/* разрешение манипуляции по DTR CAT */
+	uint8_t cat1txdtr;	/* передача управляется по DTR, а не по RTS */
+	uint8_t cat1rtsenable;	/* разрешение включения передачи по линии RTS CAT */
+	uint8_t cat1dtrenable;	/* разрешение манипуляции по DTR CAT */
+
+	#if WITHUSBHW && WITHUSBCDC && WITHUSBHWCDC_N > 1
+		uint8_t cat2txdtr;	/* передача управляется по DTR, а не по RTS */
+		uint8_t cat2rtsenable;	/* разрешение включения передачи по линии RTS CAT */
+		uint8_t cat2dtrenable;	/* разрешение манипуляции по DTR CAT */
+
+	#else /* WITHUSBHW && WITHUSBCDC && WITHUSBHWCDC_N > 1 */
+		enum { cat2txdtr = 0, cat2dtrenable = 0, cat2dtrenable = 0 };
+
+	#endif /* WITHUSBHW && WITHUSBCDC && WITHUSBHWCDC_N > 1 */
 #endif /* WITHCAT */
 
 #if WITHAUTOTUNER
@@ -2919,7 +2961,6 @@ filter_t fi_2p0_455 =
 #define RMT_BWPROPSRIGHT_BASE(i) offsetof(struct nvmap, bwpropsright [(i)])
 //#define RMT_BWPROPSFLTSOFTER_BASE(i) offsetof(struct nvmap, bwpropsfltsofter [(i)])
 #define RMT_BWPROPSAFRESPONCE_BASE(i) offsetof(struct nvmap, bwpropsafresponce [(i)])
-
 
 /* переменные, вынесенные из главной функции - определяют текущий тежим рботы
    и частоту настройки
@@ -3111,12 +3152,13 @@ static const uint_fast8_t displaymodesfps = DISPLAYMODES_FPS;
 #endif /* WITHDISPLAYSWR_FPS */
 #if WITHSPECTRUMWF
 	static uint_fast8_t gfillspect;
-	static uint_fast8_t gtopdb = 30;	/* верхний предел FFT */
-	static uint_fast8_t gbottomdb = 130;	/* нижний предел FFT */
-	static uint_fast8_t gtopdbwf = 30;	/* верхний предел FFT waterflow*/
-	static uint_fast8_t gbottomdbwf = 130;	/* нижний предел FFT waterflow */
+	static uint_fast8_t gtopdb = WITHTOPDBDEFAULT;	/* верхний предел FFT */
+	static uint_fast8_t gbottomdb = WITHBOTTOMDBDEFAULT;	/* нижний предел FFT */
+	static uint_fast8_t gtopdbwf = WITHTOPDBDEFAULT;	/* верхний предел FFT waterflow*/
+	static uint_fast8_t gbottomdbwf = WITHBOTTOMDBDEFAULT;	/* нижний предел FFT waterflow */
 	static uint_fast8_t gwflevelsep;	/* чувствительность водопада регулируется отдельной парой параметров */
 	static uint_fast8_t gzoomxpow2;		/* степень двойки - состояние растягиваия спектра (уменьшение наблюдаемой полосы частот) */
+	static uint_fast8_t gwfshiftenable = 1; /* разрешение или запрет сдвига водопада при изменении частоты */
 #endif /* WITHSPECTRUMWF */
 #if WITHLCDBACKLIGHT
 	#if WITHISBOOTLOADER 
@@ -3232,13 +3274,42 @@ enum
 #if WITHCAT
 
 	static uint_fast8_t catenable = 1;	/* модифицируется через меню. */
-	static uint_fast8_t catbaudrate = 6;	/* 6 is a 57600 */ /* модифицируется через меню. - номер скорости при работе по CAT */
-	static uint_fast8_t catdtrenable;	/* разрешение манипуляции по DTR CAT */
-	static uint_fast8_t catdtrptt;	/* переда управляется по DTR, а не по RTS */
+	static uint_fast8_t catbaudrate = 3;	/* 3 is a 9600 */ /* модифицируется через меню. - номер скорости при работе по CAT */
 
-	#if WITHTX
-		static uint_fast8_t catrtsenable;	/* разрешение включения передачи по линии RTS CAT */
-	#endif /* WITHTX */
+	#if WITHCAT_CDC
+		#if LCDMODE_DUMMY || ! WITHKEYBOARD
+			enum { noctl = 1 };		// устройство без органов управления и индикации
+		#else /* LCDMODE_DUMMY || ! WITHKEYBOARD */
+			enum { noctl = 0 };
+		#endif /* LCDMODE_DUMMY || ! WITHKEYBOARD */
+
+		/* управление по DTR происходит сразу, RTS только вместе со следующим DTR */
+
+		// Основной порт предназначен для управление PTT через DTR
+		// При запуске ARCP-590 отрабатывает "нажатие" - установлено RTS
+		static uint_fast8_t cat1dtrenable = noctl;	/* разрешение DTR */
+		static uint_fast8_t cat1rtsenable = 0;	/* разрешение RTS */
+		/* 1: передача управляется по DTR, манипуляция по RTS */
+		/* 0: передача управляется по RTS, манипуляция по DTR */
+		static uint_fast8_t cat1txdtr = 1;
+
+		#if WITHUSBHWCDC_N > 1
+		// Основной порт предназначен для управление манипуляцией через DTR
+			static uint_fast8_t cat2dtrenable = noctl;	/* разрешение DTR */
+			static uint_fast8_t cat2rtsenable = 0;	/* разрешение RTS */
+			/* 1: передача управляется по DTR, манипуляция по RTS */
+			/* 0: передача управляется по RTS, манипуляция по DTR */
+			static uint_fast8_t cat2txdtr = 1;
+
+		#endif
+
+	#else /* WITHCAT_CDC */
+		static uint_fast8_t cat1dtrenable;	/* разрешение манипуляции по DTR CAT */
+		static uint_fast8_t cat1txdtr;	/* 1: передача управляется по DTR, а не по RTS */
+		static uint_fast8_t cat1rtsenable;	/* разрешение включения передачи по линии RTS CAT */
+
+	#endif /* WITHCAT_CDC */
+
 
 #else /* WITHCAT */
 
@@ -3296,7 +3367,12 @@ enum
 	static uint_fast16_t tunerind;// = (LMAX - LMIN) / 2 + LMIN;
 	static uint_fast8_t tunertype;
 	static uint_fast8_t tunerwork;	/* начинаем работу с выключенным тюнером */
+#if WITHAUTOTUNER_UA1CEI
+	static uint_fast8_t tunerdelay = 80;
+#else /* WITHAUTOTUNER_UA1CEI */
 	static uint_fast8_t tunerdelay = 35;
+#endif /* WITHAUTOTUNER_UA1CEI */
+
 #endif /* WITHAUTOTUNER */
 
 #if WITHTX
@@ -3427,46 +3503,6 @@ enum
 #endif
 
 
-#if WITHBARS
-	#if (WITHSWRMTR || WITHSHOWSWRPWR)
-		static uint_fast16_t minforward = (1U << HARDWARE_ADCBITS) / 8;
-		#if WITHSWRCALI
-			static uint_fast8_t swrcalibr = WITHSWRCALI;	/* калибровочный параметр SWR-метра */
-		#else /* WITHSWRCALI */
-			static uint_fast8_t swrcalibr = 100;	/* калибровочный параметр SWR-метра */
-		#endif /* WITHSWRCALI */
-	#endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
-	#if WITHPWRMTR || WITHSWRMTR
-		#if WITHMAXPWRCALI
-			static uint_fast8_t maxpwrcali = WITHMAXPWRCALI;	/* калибровочный параметр PWR-метра */
-		#elif CTLSTYLE_SW2013RDX
-			static uint_fast8_t maxpwrcali = 216;	/* калибровочный параметр PWR-метра */
-		#elif CTLSTYLE_SW2015
-			static uint_fast8_t maxpwrcali = 216;	/* калибровочный параметр PWR-метра */
-		#elif CTLSTYLE_SW2018XVR
-			static uint_fast8_t maxpwrcali = 216;	/* калибровочный параметр PWR-метра */
-		#elif CTLSTYLE_SW2016 || CTLSTYLE_SW2016VHF
-			static uint_fast8_t maxpwrcali = 216;	/* калибровочный параметр PWR-метра */
-		#elif CTLSTYLE_SW2016MINI
-			static uint_fast8_t maxpwrcali = 100;	/* калибровочный параметр PWR-метра */
-		#else
-			static uint_fast8_t maxpwrcali = 255;	/* калибровочный параметр PWR-метра */
-		#endif
-	#else
-		static uint_fast8_t maxpwrcali = 255;	/* калибровочный параметр PWR-метра */
-	#endif /* WITHPWRMTR || WITHSWRMTR */
-
-	#if WITHSWRMTR && ! WITHSHOWSWRPWR
-		static uint_fast8_t swrmode = 1;
-	#elif WITHPWRMTR
-		static const uint_fast8_t swrmode = 0;
-	#else
-		//static const uint_fast8_t swrmode = 0;
-	#endif
-#else /* WITHBARS */
-	static const uint_fast8_t swrmode = 0;
-#endif /* WITHBARS */
-
 	#if (CTLSTYLE_SW2016MINI)
 		static uint_fast8_t rxtxdelay = 45;	/* в единицах mS. модифицируется через меню - задержка перехода прём-передача */
 		static uint_fast8_t txrxdelay = 15;	/* в единицах mS. модифицируется через меню - задержка перехода передача-прём */
@@ -3481,20 +3517,9 @@ enum
 
 #else /* WITHTX */
 	static const uint_fast8_t bkinenable = 0;	/* модифицируется через меню - автоматическое управление передатчиком (от телеграфного манипулятора) */
-	static const uint_fast8_t swrmode = 1;
 	static const uint_fast8_t gvoxenable = 0;	/* модифицируется через меню - автоматическое управление передатчиком (от голоса) */
 	static const uint_fast8_t bkindelay = 80;	/* в десятках mS. модифицируется через меню - задержка отпускания BREAK-IN */
 #endif /* WITHTX */
-
-#if WITHVOLTLEVEL && ! WITHREFSENSOR 
-
-	// Напряжение fullscale = VREF * 5.3 = 3.3 * 5.3 = 17.5 вольта: сверху 4.3 килоом, синзу 1.0 килоом
-	// в схеме датчика делитель: сверху 4.3 килоома, снизу 1 килоом.
-	// ADCVREF_CPU - в сотнях милливольт.
-
-	static uint_fast8_t voltcalibr = (ADCVREF_CPU * (VOLTLEVEL_UPPER + VOLTLEVEL_LOWER) + VOLTLEVEL_LOWER / 2) / VOLTLEVEL_LOWER;		// Напряжение fullscale - что показать при ADCVREF_CPU вольт на входе АЦП
-
-#endif /* WITHVOLTLEVEL && ! WITHREFSENSOR */
 
 #if WITHELKEY
 
@@ -3560,36 +3585,84 @@ static uint_fast8_t dctxmodecw;	/* при передаче предполага�
 
 	#if WITHINTEGRATEDDSP
 		enum { S9FENCE = - 73 };	// -73.01dBm == 50 uV rms == S9
-		static uint_fast8_t s9level = UINT8_MAX + S9FENCE;					/* уровни калибровки S-метра */
-		static uint_fast8_t s9delta = (6 * 8);		// 9 баллов - 8 интервалов - по 6 децибел каждый
-		static uint_fast8_t s9_60_delta = 60;		// 60 dB
+		uint_fast8_t s9level = UINT8_MAX + S9FENCE;					/* уровни калибровки S-метра */
+		uint_fast8_t s9delta = (6 * 8);		// 9 баллов - 8 интервалов - по 6 децибел каждый
+		uint_fast8_t s9_60_delta = 60;		// 60 dB
 	#elif (CTLSTYLE_SW2016MINI)
-		static uint_fast8_t s9level = 110;			/* уровни калибровки S-метра */
-		static uint_fast8_t s9delta = 70;		
-		static uint_fast8_t s9_60_delta = 50;	
+		uint_fast8_t s9level = 110;			/* уровни калибровки S-метра */
+		uint_fast8_t s9delta = 70;
+		uint_fast8_t s9_60_delta = 50;
 	#elif CTLSTYLE_SW2012CN || CTLSTYLE_SW2013SF || CTLSTYLE_SW2013RDX || CTLSTYLE_SW2012CN5 || CTLSTYLE_SW2015
-		static uint_fast8_t s9level = 110;			/* уровни калибровки S-метра */
-		static uint_fast8_t s9delta = 70;			
-		static uint_fast8_t s9_60_delta = 50;		
+		uint_fast8_t s9level = 110;			/* уровни калибровки S-метра */
+		uint_fast8_t s9delta = 70;
+		uint_fast8_t s9_60_delta = 50;
 	#elif CTLSTYLE_SW2016 || CTLSTYLE_SW2016VHF || CTLSTYLE_SW2018XVR
-		static uint_fast8_t s9level = 110;			/* уровни калибровки S-метра */
-		static uint_fast8_t s9delta = 70;			
-		static uint_fast8_t s9_60_delta = 50;		
+		uint_fast8_t s9level = 110;			/* уровни калибровки S-метра */
+		uint_fast8_t s9delta = 70;
+		uint_fast8_t s9_60_delta = 50;
 	#elif (CTLSTYLE_SW2011 || CTLSTYLE_SW2012_MINI)
-		static uint_fast8_t s9level = 120;			/* уровни калибровки S-метра */
-		static uint_fast8_t s9delta = 120;			
-		static uint_fast8_t s9_60_delta = 120;	
+		uint_fast8_t s9level = 120;			/* уровни калибровки S-метра */
+		uint_fast8_t s9delta = 120;
+		uint_fast8_t s9_60_delta = 120;
 	#elif CTLSTYLE_RA4YBO_V3
-		static uint_fast8_t s9level = 73;			/* уровни калибровки S-метра */
-		static uint_fast8_t s9delta = 15;		
-		static uint_fast8_t s9_60_delta = 50;	
+		uint_fast8_t s9level = 73;			/* уровни калибровки S-метра */
+		uint_fast8_t s9delta = 15;
+		uint_fast8_t s9_60_delta = 50;
 	#else
-		static uint_fast8_t s9level = 88;			/* уровни калибровки S-метра */
-		static uint_fast8_t s9delta = 34;		
-		static uint_fast8_t s9_60_delta = 45;	
+		uint_fast8_t s9level = 88;			/* уровни калибровки S-метра */
+		uint_fast8_t s9delta = 34;
+		uint_fast8_t s9_60_delta = 45;
 	#endif
 
-#endif
+	#if (WITHSWRMTR || WITHSHOWSWRPWR)
+		uint_fast16_t minforward = (1U << HARDWARE_ADCBITS) / 8;
+		#if WITHSWRCALI
+			uint_fast8_t swrcalibr = WITHSWRCALI;	/* калибровочный параметр SWR-метра */
+		#else /* WITHSWRCALI */
+			uint_fast8_t swrcalibr = 100;	/* калибровочный параметр SWR-метра */
+		#endif /* WITHSWRCALI */
+	#endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
+
+	#if WITHPWRMTR || WITHSWRMTR
+		#if WITHMAXPWRCALI
+			uint_fast8_t maxpwrcali = WITHMAXPWRCALI;	/* калибровочный параметр PWR-метра */
+		#elif CTLSTYLE_SW2013RDX
+			uint_fast8_t maxpwrcali = 216;	/* калибровочный параметр PWR-метра */
+		#elif CTLSTYLE_SW2015
+			uint_fast8_t maxpwrcali = 216;	/* калибровочный параметр PWR-метра */
+		#elif CTLSTYLE_SW2018XVR
+			uint_fast8_t maxpwrcali = 216;	/* калибровочный параметр PWR-метра */
+		#elif CTLSTYLE_SW2016 || CTLSTYLE_SW2016VHF
+			uint_fast8_t maxpwrcali = 216;	/* калибровочный параметр PWR-метра */
+		#elif CTLSTYLE_SW2016MINI
+			uint_fast8_t maxpwrcali = 100;	/* калибровочный параметр PWR-метра */
+		#else
+			uint_fast8_t maxpwrcali = 255;	/* калибровочный параметр PWR-метра */
+		#endif
+	#else
+		uint_fast8_t maxpwrcali = 255;	/* калибровочный параметр PWR-метра */
+	#endif /* WITHPWRMTR || WITHSWRMTR */
+
+	#if WITHSWRMTR && ! WITHSHOWSWRPWR
+		uint_fast8_t swrmode = 1;
+	#elif WITHPWRMTR
+		uint_fast8_t swrmode = 0;
+	#else
+		//static const uint_fast8_t swrmode = 0;
+	#endif
+#else /* WITHBARS */
+	uint_fast8_t swrmode = 0;
+#endif /* WITHBARS */
+
+#if WITHVOLTLEVEL && ! WITHREFSENSOR
+
+	// Напряжение fullscale = VREF * 5.3 = 3.3 * 5.3 = 17.5 вольта: сверху 4.3 килоом, синзу 1.0 килоом
+	// в схеме датчика делитель: сверху 4.3 килоома, снизу 1 килоом.
+	// ADCVREF_CPU - в сотнях милливольт.
+
+	uint_fast8_t voltcalibr = (ADCVREF_CPU * (VOLTLEVEL_UPPER + VOLTLEVEL_LOWER) + VOLTLEVEL_LOWER / 2) / VOLTLEVEL_LOWER;		// Напряжение fullscale - что показать при ADCVREF_CPU вольт на входе АЦП
+
+#endif /* WITHVOLTLEVEL && ! WITHREFSENSOR */
 
 #if WITHDIRECTFREQENER
 	static uint_fast8_t editfreqmode;		/* Режим прямого ввода частоты */
@@ -3696,11 +3769,12 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 #endif /* WITHMIC1LEVEL */
 #if WITHIF4DSP
 #if WITHTX
-	static uint_fast16_t gdigiscale = 250;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
+	static uint_fast16_t ggainndigitx = 250;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 	static uint_fast8_t gamdepth = 30;		/* Глубина модуляции в АМ - 0..100% */
+	static uint_fast8_t gnfmdeviation = 55;	/* Девиация при передаче в NFM - в сотнях герц */
 
 	/*  Использование амплитуды сигнала с ЦАП передатчика - 0..100% */
-	static uint_fast8_t gdacscale = 72;	/* настраивается под прегруз драйвера. */
+	static uint_fast8_t gdacscale = 80;	/* настраивается под прегруз драйвера. */
 #endif /* WITHTX */
 
 
@@ -3851,7 +3925,7 @@ static void updateboard_tuner(void)
 	//debug_printf_P(PSTR("tuner: CAP=%-3d, IND=%-3d, TYP=%d\n"), tunercap, tunerind, tunertype);
 	board_set_tuner_group();
 	board_update();		/* вывести забуферированные изменения в регистры */
-	//display_redrawbars(0, 0);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+	//display2_redrawbarstimed(0, 0, NULL);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 }
 
 // ожидание требуемого времени после выдачи параметров на тюнер.
@@ -3882,9 +3956,9 @@ static uint_fast8_t tuneabort(void)
 {
 	uint_fast8_t kbch, kbready;
 
-	display_redrawbars(0, 0);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+	display2_redrawbarstimed(0, 0, NULL);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 
-	processmessages(& kbch, & kbready, 0);
+	processmessages(& kbch, & kbready, 0, NULL);
 	if (kbready != 0)
 	{
 		switch (kbch)
@@ -4037,7 +4111,7 @@ static void auto_tune(void)
 	tunercap = statuses [cshindex].tunercap;
 	updateboard_tuner();
 	//debug_printf_P(PSTR("auto_tune stop\n"));
-NoMoreTune:
+////NoMoreTune:
 
 	save_i8(offsetof(struct nvmap, bands[b].tunercap), tunercap);
 	save_i8(offsetof(struct nvmap, bands[b].tunerind), tunerind);
@@ -4754,8 +4828,7 @@ verifyband(const vindex_t b)
 	if (b == ((uint_fast8_t) - 1))
 	{
 		TP();
-		display_gotoxy(0, 1);
-		display_string("band not found", 1);
+		display_at(0, 1, "band not found");
 		for (;;)
 			;
 	}
@@ -5276,6 +5349,13 @@ savebandstate(const vindex_t b, const uint_fast8_t bi)
 	save_i8(offsetof(struct nvmap, bands[b].tunerind), tunerind);
 	save_i8(offsetof(struct nvmap, bands[b].tunertype), tunertype);
 #endif /* WITHAUTOTUNER */
+#if WITHSPECTRUMWF
+	save_i8(offsetof(struct nvmap, bands[b].gzoomxpow2), gzoomxpow2);	/* уменьшение отображаемого участка спектра */
+	save_i8(offsetof(struct nvmap, bands[b].gtopdb), gtopdb);	/* нижний предел FFT */
+	save_i8(offsetof(struct nvmap, bands[b].gbottomdb), gbottomdb);	/* верхний предел FFT */
+	save_i8(offsetof(struct nvmap, bands[b].gtopdbwf), gtopdbwf);	/* нижний предел FFT waterflow */
+	save_i8(offsetof(struct nvmap, bands[b].gbottomdbwf), gbottomdbwf);	/* верхний предел FFT waterflow */
+#endif /* WITHSPECTRUMWF */
 }
 
 static void savebandgroup(uint_fast8_t b)
@@ -5463,7 +5543,8 @@ enum
 {
 	RJ_YES = 128,	/* значение в поле rj, при котором отображаем как Yes/No */
 	RJ_ON,			/* значение в поле rj, при котором отображаем как On/Off */
-	RJ_CATSPEED	,	/* отображение скорости CAT */
+	RJ_CATSPEED,	/* отображение скорости CAT */
+	RJ_CATTXDTR,	/* переход на передачу по DTR */
 	RJ_ELKEYMODE,	/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key */
 	RJ_POW2,		/* параметр - степень двойки. Отображается результат */
 	RJ_ENCRES,		/* параметр - индекс в таблице разрешений валкодера */
@@ -5693,13 +5774,13 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		enc2menu_adjust,	/* функция для изменения значения параметра */
 	},
 	{
-		"SQUELCH  ", 
+		"SQUELCHFM",
 		RJ_UNSIGNED,		// rj
 		ISTEP1,		/* squelch level */
 		0, SQUELCHMAX, 
-		offsetof(struct nvmap, gsquelch),	/* уровень сигнала болше которого открывается шумодав */
+		offsetof(struct nvmap, gsquelchNFM),	/* уровень сигнала болше которого открывается шумодав */
 		NULL,
-		& gsquelch.value,
+		& gsquelchNFM,
 		getzerobase, /* складывается со смещением и отображается */
 		enc2menu_adjust,	/* функция для изменения значения параметра */
 	},
@@ -5709,7 +5790,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		RJ_UNSIGNED,		// rj
 		ISTEP1,		/* spectrum range */
 		80, 160,
-		offsetof(struct nvmap, gbottomdb),	/* диапазон отображаемых значений */
+		MENUNONVRAM,	/* диапазон отображаемых значений */
 		NULL,
 		& gbottomdb,
 		getzerobase, /* складывается со смещением и отображается */
@@ -5720,7 +5801,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		RJ_POW2,		// rj
 		ISTEP1,		/* spectrum range */
 		0, BOARD_FFTZOOM_POW2MAX,
-		offsetof(struct nvmap, gzoomxpow2),	/* диапазон отображаемых значений */
+		MENUNONVRAM,	/* масштаб панорамы */
 		NULL,
 		& gzoomxpow2,
 		getzerobase, /* складывается со смещением и отображается */
@@ -5794,6 +5875,9 @@ enc2menu_value(
 	case RJ_YES:
 		local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%s"), value ? "YES" : "NO");
 		break;
+	case RJ_CATTXDTR:
+		local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%s"), value ? "DTR" : "RTS");
+		break;
 	case RJ_ON:
 		local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%s"), value ? "ON" : "OFF");
 		break;
@@ -5818,6 +5902,9 @@ enc2menu_value(
 	#endif /* WITHSUBTONES && WITHTX */
 		case RJ_YES:
 			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%*s"), WDTH, value ? "YES" : "NO");
+			break;
+		case RJ_CATTXDTR:
+			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%*s"), WDTH, value ? "DTR" : "RTS");
 			break;
 		case RJ_ON:
 			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%*s"), WDTH, value ? "ON" : "OFF");
@@ -5874,16 +5961,17 @@ uif_encoder2_press(void)
 	}
 	save_i8(RMT_ENC2STATE_BASE, enc2state);
 #if ! WITHTOUCHGUI
-	display_redrawmodes(1);
+	display_redrawmodestimed(1);
 #else
 	enc2_menu.state = enc2state;
 	if (enc2state != ENC2STATE_INITIALIZE)
 	{
 		const char FLASHMEM * text = enc2menu_label_P(enc2pos);
-		strcpy(enc2_menu.param, text);
+		safestrcpy(enc2_menu.param, ARRAY_SIZE(enc2_menu.param), text);
 		text = enc2menu_value(enc2pos);
-		strcpy(enc2_menu.val, text);
-		encoder2_menu(&enc2_menu);
+		safestrcpy(enc2_menu.val, ARRAY_SIZE(enc2_menu.val), text);
+		enc2_menu.updated = 1;
+		gui_encoder2_menu(&enc2_menu);
 	}
 #endif /* ! WITHTOUCHGUI */
 }
@@ -5906,11 +5994,11 @@ uif_encoder2_hold(void)
 	}
 	save_i8(RMT_ENC2STATE_BASE, enc2state);
 #if ! WITHTOUCHGUI
-	display_redrawmodes(1);
+	display_redrawmodestimed(1);
 #else
 	enc2_menu.state = enc2state;
 	if (enc2state == ENC2STATE_INITIALIZE)
-		encoder2_menu(&enc2_menu);
+		gui_encoder2_menu(&enc2_menu);
 #endif /* ! WITHTOUCHGUI */
 }
 
@@ -5976,7 +6064,7 @@ uif_encoder2_rotate(
 void display_fnlabel9(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 #if WITHENCODER2 && ! WITHTOUCHGUI
@@ -6000,7 +6088,7 @@ void display_fnlabel9(
 void display_fnvalue9(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
 #if WITHENCODER2 && ! WITHTOUCHGUI
@@ -6156,6 +6244,13 @@ loadnewband(
 	tunerind = loadvfy8up(offsetof(struct nvmap, bands[b].tunerind), CMIN, CMAX, tunerind);
 	tunertype = loadvfy8up(offsetof(struct nvmap, bands[b].tunertype), 0, KSCH_COUNT - 1, tunertype);
 #endif /* WITHAUTOTUNER */
+#if WITHSPECTRUMWF
+	gzoomxpow2 = loadvfy8up(offsetof(struct nvmap, bands[b].gzoomxpow2), 0, BOARD_FFTZOOM_POW2MAX, 0);	/* масштаб панорамы */
+	gtopdb = loadvfy8up(offsetof(struct nvmap, bands[b].gtopdb), WITHTOPDBMIN, WITHTOPDBMAX, WITHTOPDBDEFAULT);		/* нижний предел FFT */
+	gbottomdb = loadvfy8up(offsetof(struct nvmap, bands[b].gbottomdb), WITHBOTTOMDBMIN, WITHBOTTOMDBMAX, WITHBOTTOMDBDEFAULT);	/* верхний предел FFT */
+	gtopdbwf = loadvfy8up(offsetof(struct nvmap, bands[b].gtopdbwf), WITHTOPDBMIN, WITHTOPDBMAX, WITHTOPDBDEFAULT);		/* нижний предел FFT waterflow */
+	gbottomdbwf = loadvfy8up(offsetof(struct nvmap, bands[b].gbottomdbwf), WITHBOTTOMDBMIN, WITHBOTTOMDBMAX, WITHBOTTOMDBDEFAULT);	/* верхний предел FFT waterflow */
+#endif /* WITHSPECTRUMWF */
 }
 
 /* Получить текущий submode для указанного банка
@@ -6978,7 +7073,7 @@ getlo6(
 // Выходные частоты устройства (для SSB - частота подавленной несущей).
 // Для классических структутр приёмо-передатчиков передача телеграфа делается разбалансом
 // формирователя SSB или иным способом из сигнала гетеродина - это указывается
-// возвратом "0" в редиме CW на передаче.
+// возвратом "0" в режиме CW на передаче.
 // Для IF DSP и DDC/DUC структур нулевая частота при передаче означает подачу на DUC постоянной составляющей в baseband.
 
 static  int_fast32_t
@@ -7098,11 +7193,14 @@ getactualpower(void)
 {
 #if WITHPOWERTRIM
 	return getactualdownpower() ? gtunepower : gnormalpower.value;
+
 #elif WITHPOWERLPHP
 	/* установить выходную мощность передатчика WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
-	return ? pwrmodes [gpwratunei].code : pwrmodes [gpwri].code);
+	return getactualdownpower() ? pwrmodes [gpwratunei].code : pwrmodes [gpwri].code;
+
 #else
 	return WITHPOWERTRIMMAX;
+
 #endif /* WITHPOWERLPHP */
 }
 
@@ -7265,7 +7363,7 @@ typedef struct lmsnrstate_tag
 
 static lmsnrstate_t lmsnrstates [NTRX];
 
-#if 0 && ! WITHNOSPEEX
+#if WITHUSEMALLOC && ! WITHNOSPEEX
 
 void * speex_allocXX(int size)
 {
@@ -7509,6 +7607,16 @@ FLOAT_t local_log(FLOAT_t x)
 }
 
 #endif /* WITHIF4DSP */
+
+/* функция вызывается при ожидании опросом разного рода событий связанных с аппаартурой,
+ * в том числе наступление следующего кадра.
+ * Выводить на экран строго нельзя. Отладочная печать нвозможна.
+ * Вызывается в контексте USER.
+ * */
+void hardware_nonguiyield(void)
+{
+
+}
 
 // Печать частоты в формате dddddd.ddd
 static void printfreq(int_fast32_t freq)
@@ -7948,7 +8056,8 @@ updateboard(
 				board_set_agc_t2(gagc [agcseti].release10);		// время разряда медленной цепи АРУ
 				board_set_agc_t4(gagc [agcseti].t4);			// время разряда быстрой цепи АРУ
 				board_set_agc_thung(gagc [agcseti].thung10);	// hold time (hung time) in 0.1 sec
-				board_set_squelch(gsquelch.value);
+				board_set_squelch(pamodetempl->dspmode [gtx] == DSPCTL_MODE_RX_NFM ? ulmax(gsquelch.value, gsquelchNFM) : gsquelch.value);
+				board_set_gainnfmrx(ggainnfmrx10 * 10);	/* дополнительное усиление по НЧ в режиме приёма NFM 100..1000% */
 			#endif /* WITHIF4DSP */
 			} /* tx == 0 */
 
@@ -8187,6 +8296,7 @@ updateboard(
 			board_set_bottomdbwf(gbottomdbwf);		/* нижний предел FFT для водопада */
 			board_set_zoomxpow2(gzoomxpow2);	/* уменьшение отображаемого участка спектра */
 			board_set_wflevelsep(gwflevelsep);	/* чувствительность водопада регулируется отдельной парой параметров */
+			board_set_wfshiftenable(gwfshiftenable);	/* разрешение или запрет сдвига водопада при изменении частоты */
 		#endif /* WITHSPECTRUMWF */
 	#endif /* WITHIF4DSP */
 
@@ -8203,15 +8313,15 @@ updateboard(
 			board_set_aflowcuttx(bwseti_getlow(bwseti));	/* Нижняя частота среза фильтра НЧ по передаче */
 			board_set_afhighcuttx(bwseti_gethigh(bwseti));	/* Верхняя частота среза фильтра НЧ по передаче */
 			board_set_afresponcetx(bwseti_getafresponce(bwseti));	/* коррекция АЧХ НЧ тракта передатчика */
-			board_set_nfmdeviation100(75);
-		#if WITHOUTTXCADCONTROL
+			board_set_nfmdeviation100(gnfmdeviation);	/* Девиация при передаче в NFM - в сотнях герц */
+		#if WITHNOTXDACCONTROL
 			/* мощность регулируется умножнением выходных значений в потоке к FPGA / IF CODEC */
 			board_set_dacscale(gdacscale * (unsigned long) (getactualpower() - WITHPOWERTRIMMIN) / (WITHPOWERTRIMMAX - WITHPOWERTRIMMIN));
 		#else /* CPUDAC */
 			/* мощность регулируется постоянны напряжением на ЦАП */
 			board_set_dacscale(gdacscale);
 		#endif /* CPUDAC */
-			board_set_gdigiscale(gdigiscale);	/* Увеличение усиления при передаче в цифровых режимах 100..300% */
+			board_set_gdigiscale(ggainndigitx);	/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 			board_set_amdepth(gamdepth);	/* Глубина модуляции в АМ - 0..100% */
 		}
 		#endif /* WITHIF4DSP */
@@ -8389,6 +8499,17 @@ uint_fast8_t hamradio_get_voxvalue(void)
 }
 
 #endif /* WITHVOX && WITHTX */
+
+
+#if WITHANTSELECT
+
+// antenna
+const FLASHMEM char * hamradio_get_ant5_value_P(void)
+{
+	return antmodes [gantennas [getbankindex_tx(gtx)]].label5;
+}
+
+#endif /* WITHANTSELECT */
 
 
 #if WITHKEYBOARD
@@ -8723,9 +8844,6 @@ uif_key_click_agcmode(void)
 }
 
 #if WITHANTSELECT
-#endif /* WITHANTSELECT */
-
-#if WITHANTSELECT
 
 /* Antenna switch
 	  */
@@ -8740,12 +8858,6 @@ uif_key_click_antenna(void)
 	gantennas [bi] = calc_next(gantennas [bi], 0, ANTMODE_COUNT - 1);
 	savebandstate(vi, bi);	// запись всех режимов в область памяти диапазона
 	updateboard(1, 0);
-}
-
-// antenna
-const FLASHMEM char * hamradio_get_ant5_value_P(void)
-{
-	return antmodes [gantennas [getbankindex_tx(gtx)]].label5;
 }
 
 #endif /* WITHANTSELECT */
@@ -9088,7 +9200,7 @@ uint_fast8_t hamradio_get_tunemodevalue(void)
 	return getactualtune();
 }
 
-#if WITHVOLTLEVEL && WITHCPUADCHW
+#if WITHVOLTLEVEL
 
 // Вольты в десятых долях
 uint_fast8_t hamradio_get_volt_value(void)
@@ -9102,38 +9214,33 @@ uint_fast8_t hamradio_get_volt_value(void)
 		//const unsigned Vref_mV = ADCVREF_CPU * 100;
 		const unsigned Vref_mV = (uint_fast32_t) board_getadc_fsval(vrefi) * WITHREFSENSORVAL / ref;
 		const unsigned voltcalibr_mV = (Vref_mV * (VOLTLEVEL_UPPER + VOLTLEVEL_LOWER) + VOLTLEVEL_LOWER / 2) / VOLTLEVEL_LOWER;		// Напряжение fullscale - что показать при ADCVREF_CPU вольт на входе АЦП
-		const uint_fast16_t mv = board_getadc_unfiltered_u16(VOLTSOURCE, 0, voltcalibr_mV);
+		const uint_fast16_t mv = board_getadc_unfiltered_u16(VOLTMRRIX, 0, voltcalibr_mV);
 		//debug_printf_P(PSTR("hamradio_get_volt_value: ref=%u, VrefmV=%u, v=%u, out=%u\n"), ref, Vref_mV, mv, (mv + 50) / 100);
 		return (mv + 50) / 100;	// Приводим к десятым долям вольта
 	}
 	else
 	{
-		debug_printf_P(PSTR("hamradio_get_volt_value: ref=%u\n"), ref);
+		//debug_printf_P(PSTR("hamradio_get_volt_value: ref=%u\n"), ref);
 		return 3333;
 	}
 #else /* WITHREFSENSOR */
 
-	//debug_printf_P(PSTR("hamradio_get_volt_value: VOLTSOURCE=%u, voltcalibr=%u\n"), board_getadc_unfiltered_truevalue(VOLTSOURCE), voltcalibr);
-	return board_getadc_unfiltered_u8(VOLTSOURCE, 0, voltcalibr);
+	//debug_printf_P(PSTR("hamradio_get_volt_value: VOLTMRRIX=%u, voltcalibr=%u\n"), board_getadc_unfiltered_truevalue(VOLTSOURCE), voltcalibr);
+	return board_getadc_unfiltered_u8(VOLTMRRIX, 0, voltcalibr);
 
 #endif /* WITHREFSENSOR */
 }
 
-#endif /* WITHVOLTLEVEL && WITHCPUADCHW */
+#endif /* WITHVOLTLEVEL */
 
 #if WITHTHERMOLEVEL
 
 // Градусы в десятых долях
-// Read from thermo sensor ST LM235Z (1 kOhm to +3.3)
+// Read from thermo sensor ST LM235Z (1 kOhm to +12)
 int_fast16_t hamradio_get_temperature_value(void)
 {
-#if defined(THERMOSENSOR_OFFSET)
-	const int_fast16_t thermo_offset = THERMOSENSOR_OFFSET; 	// При 0 °С на выходе 500 мВ. Шкала 10 mV / °С
-#else /* defined(THERMOSENSOR_OFFSET) */
-	#warning WITHTHERMOLEVEL should be defined with full list of sensor parameters - THERMOSENSOR_OFFSET, THERMOSENSOR_UPPER and THERMOSENSOR_LOWER
-	// ST LM235Z
-	const int_fast16_t thermo_offset = - 2731;	// -273.15 approximation of temperature at 0 volt. Slope = 10 mV / celsius
-#endif /* defined(THERMOSENSOR_OFFSET) */
+	const int_fast16_t thermo_offset = THERMOSENSOR_OFFSET; 	// -480 При 0 °С на выходе 480 мВ. Шкала 10 mV / °С
+
 #if WITHREFSENSOR
 	// Измерение опрного напряжения
 	const uint_fast8_t vrefi = VREFIX;
@@ -9141,73 +9248,63 @@ int_fast16_t hamradio_get_temperature_value(void)
 	if (ref != 0)
 	{
 		const unsigned Vref_mV = (uint_fast32_t) board_getadc_fsval(vrefi) * WITHREFSENSORVAL / ref;
-		const int_fast32_t mv = (int32_t) board_getadc_unfiltered_u32(XTHERMOIX, 0, (uint_fast64_t) Vref_mV * (THERMOSENSOR_UPPER + THERMOSENSOR_LOWER) / THERMOSENSOR_LOWER) + thermo_offset;
-		return mv + offset_LM235;	// Приводим к десятым долям градуса
+		const int_fast32_t mv = (int32_t) board_getadc_filtered_u32(XTHERMOMRRIX, 0, (uint_fast64_t) Vref_mV * (THERMOSENSOR_UPPER + THERMOSENSOR_LOWER) / THERMOSENSOR_LOWER);
+		return (mv + thermo_offset) / THERMOSENSOR_DENOM;	// Приводим к десятым долям градуса
 	}
 	else
 	{
 		debug_printf_P(PSTR("hamradio_get_temperature_value: ref=%u\n"), ref);
 		return 999;
 	}
+
 #else /* WITHREFSENSOR */
+
 	const unsigned Vref_mV = ADCVREF_CPU * 100;
-	//debug_printf_P(PSTR("hamradio_get_temperature_value: XTHERMOIX=%u\n"), board_getadc_filtered_u16(XTHERMOIX, 0, Vref_mV));
-	return (int32_t) board_getadc_unfiltered_u32(XTHERMOIX, 0, (uint_fast64_t) Vref_mV * (THERMOSENSOR_UPPER + THERMOSENSOR_LOWER) / THERMOSENSOR_LOWER) + thermo_offset;
+	const int_fast32_t mv = (int32_t) board_getadc_filtered_u32(XTHERMOMRRIX, 0, (uint_fast64_t) Vref_mV * (THERMOSENSOR_UPPER + THERMOSENSOR_LOWER) / THERMOSENSOR_LOWER);
+	return (mv + thermo_offset) / THERMOSENSOR_DENOM;	// Приводим к десятым долям градуса
+
 #endif /* WITHREFSENSOR */
 }
 
 #endif /* WITHTHERMOLEVEL */
 
-#if (WITHCURRLEVEL || WITHCURRLEVEL2) && WITHCPUADCHW
+#if (WITHCURRLEVEL || WITHCURRLEVEL2)
 
 // Ток в десятках милиампер (может быть отрицательным)
 // PA current sense - ACS712ELCTR-05B-T chip
 // PA current sense - ACS712ELCTR-30B-T chip
 int_fast16_t hamradio_get_pacurrent_value(void)
 {
-#if WITHCURRLEVEL
 	// Чувствительность датчиков:
 	// x05B - 0.185 V/A
 	// x20A - 0.100 V/A
 	// x30A - 0.066 V/A
 
-	#if CTLSTYLE_RA4YBO_V3
-		// x30A - 0.066 V/A
-		enum {
-			sens = 66,			// millivolts / ampher
-			scale = 100			// результат - в десятых долях ампера
-		};
-	#else /* CTLSTYLE_RA4YBO_V3 */
-		// x05B - 0.185 V/A
-		enum {
-			sens = 185,			// millivolts / ampher
-			scale = 100			// результат - в сотых долях ампера
-		};
-	#endif /* CTLSTYLE_RA4YBO_V3 */
+#if WITHCURRLEVEL_ACS712_30A
+	// x30A - 0.066 V/A
+	enum {
+		sens = 66,			// millivolts / ampher
+		scale = 100			// результат - в сотых долях ампера
+	};
+#elif WITHCURRLEVEL_ACS712_20A
+	//  x20A - 0.100 V/A
+	enum {
+		sens = 100,			// millivolts / ampher
+		scale = 100			// результат - в сотых долях ампера
+	};
+#else /* WITHCURRLEVEL_ACS712_30A */
+	// x05B - 0.185 V/A
+	enum {
+		sens = 185,			// millivolts / ampher
+		scale = 100			// результат - в сотых долях ампера
+	};
+#endif /* CTLSTYLE_RA4YBO_V3 */
 
-	const uint_fast8_t adci = PASENSEIX;
+#if WITHCURRLEVEL
+
+	const uint_fast8_t adci = PASENSEMRRIX;
 
 #elif WITHCURRLEVEL2
-	// Чувствительность датчиков:
-	// x05B - 0.185 V/A
-	// x20A - 0.100 V/A
-	// x30A - 0.066 V/A
-
-	#if 1
-		// x30A - 0.066 V/A
-		enum {
-			sens = 66,			// millivolts / ampher
-			scale = 100			// результат - в десятых долях ампера
-		};
-	#else /*  */
-		// x05B - 0.185 V/A
-		enum {
-			sens = 185,			// millivolts / ampher
-			scale = 100			// результат - в сотых долях ампера
-		};
-	#endif /*  */
-
-	const uint_fast8_t adci = PASENSEIX2;
 
 #endif
 
@@ -9224,7 +9321,17 @@ int_fast16_t hamradio_get_pacurrent_value(void)
 	const unsigned Vref_mV = ADCVREF_CPU * 100;
 #endif /* WITHREFSENSOR */
 
-	const long vsense = board_getadc_unfiltered_u32(adci, 0, (uint_fast32_t) Vref_mV * scale);
+#if WITHCURRLEVEL2
+
+	const adcvalholder_t midp = board_getadc_unfiltered_truevalue(PAREFERIX2);
+	const adcvalholder_t sense = board_getadc_unfiltered_truevalue(PASENSEIX2);
+
+	const long curr10 = ((long) midp - (long) sense) * (int_fast64_t) Vref_mV * scale / ((long) sens * board_getadc_fsval(PAREFERIX2));
+
+#else /* WITHCURRLEVEL2 */
+
+	const long vsense = board_getadc_filtered_u32(PASENSEMRRIX, 0, (uint_fast32_t) Vref_mV * scale);
+
 #if CTLSTYLE_RAVENDSP_V5
 	const long midpoint = (gtx ? 2472uL : 2442uL) * scale; // tx=247200, rx=244200
 #else
@@ -9233,63 +9340,12 @@ int_fast16_t hamradio_get_pacurrent_value(void)
 
 	int curr10 = ((long) midpoint - (long) vsense + sens / 2) / sens;
 
-	//debug_printf_P(PSTR("voltage vsense=%lu, midpoint=%lu, delta=%d mV, current=%d * 10 mA\n"), vsense, midpoint, v / scale, curr10);
+#endif /* WITHCURRLEVEL2 */
 
 	return curr10;
 }
 
-// Ток в сонтях милиампер (может быть отрицательным)
-// PA current sense - ACS712ELCTR-30B-T chip
-int_fast16_t hamradio_get_pacurrent2_value(void)
-{
-#if WITHCURRLEVEL2
-	// Чувствительность датчиков:
-	// x05B - 0.185 V/A
-	// x20A - 0.100 V/A
-	// x30A - 0.066 V/A
-
-	// x30A - 0.066 V/A
-	enum {
-		sens = 660,			// millivolts / ampher
-		scale = 100			// результат - в десятых долях ампера
-	};
-
-
-#if WITHREFSENSOR
-	// Измерение опрного напряжения
-	const uint_fast8_t vrefi = VREFIX;
-	const adcvalholder_t ref = board_getadc_unfiltered_truevalue(vrefi);	// текущее значение данного АЦП
-	if (ref == 0)
-		return 0;
-	//const unsigned Vref_mV = ADCVREF_CPU * 100;
-	const unsigned Vref_mV = (uint_fast32_t) board_getadc_fsval(vrefi) * WITHREFSENSORVAL / ref;
-#else /* WITHREFSENSOR */
-	// опорное напряжение известно из конфигурации процессора.
-	const unsigned Vref_mV = ADCVREF_CPU * 100;
-#endif /* WITHREFSENSOR */
-
-#if 1
-	const adcvalholder_t midp = board_getadc_unfiltered_truevalue(PAREFERIX2);
-	const adcvalholder_t sense = board_getadc_unfiltered_truevalue(PASENSEIX2);
-
-	const long curr100 = ((long) midp - (long) sense) * (int_fast64_t) Vref_mV * scale / ((long) sens * board_getadc_fsval(PAREFERIX2));
-
-#else
-	const long midpoint = board_getadc_unfiltered_u32(PAREFERIX2, 0, (uint_fast32_t) Vref_mV * scale);
-	const long vsense = board_getadc_unfiltered_u32(PASENSEIX2, 0, (uint_fast32_t) Vref_mV * scale);
-
-	int curr100 = ((long) midpoint - (long) vsense + sens / 2) / sens;
-
-	//debug_printf_P(PSTR("voltage vsense=%lu, midpoint=%lu, delta=%d mV, current=%d * 10 mA\n"), vsense, midpoint, v / scale, curr10);
-#endif
-
-	return curr100;
-#else /* WITHCURRLEVEL2 */
-	return  0;
-#endif /* WITHCURRLEVEL2 */
-}
-
-#endif /* WITHCURRLEVEL && WITHCPUADCHW */
+#endif /* WITHCURRLEVEL */
 
 uint_fast8_t hamradio_get_tx(void)
 {
@@ -9317,6 +9373,15 @@ const FLASHMEM char * hamradio_get_rxbw_value_P(void)
 }
 
 #endif /* WITHIF4DSP */
+
+uint_fast8_t hamradio_get_bkin_value(void)
+{
+#if WITHELKEY && WITHTX
+	return bkinenable;
+#else /* WITHELKEY && WITHTX */
+	return 0;
+#endif /* WITHELKEY && WITHTX */
+}
 
 // RX preamplifier
 const FLASHMEM char * hamradio_get_pre_value_P(void)
@@ -9645,6 +9710,31 @@ void nmea_sendchar(void * ctx)
 }
 #endif /* WITHNMEA */
 
+// S-METER, SWR-METER, POWER-METER
+/* отображение S-метра или SWR-метра на приёме или передаче */
+// Функция вызывается из display2.c
+void
+display2_bars(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+#if WITHBARS
+	if (userfsg)
+	{
+	}
+	else if (gtx)
+	{
+		display2_bars_tx(x, y, pctx);
+	}
+	else
+	{
+		display2_bars_rx(x, y, pctx);
+	}
+#endif /* WITHBARS */
+}
+
 static volatile uint_fast8_t counterupdatedfreqs;
 static volatile uint_fast8_t counterupdatedmodes;
 static volatile uint_fast16_t counterupdatedvoltage; // счетчик для обновления вольтажа АКБ
@@ -9794,27 +9884,26 @@ display_refreshperformed_modes(void)
 
 
 /* отображение частоты (частот) настройки */
-static void 
+static void
 display_freqpair(void)
 {
 #if WITHDIRECTFREQENER
 
 	if (editfreqmode)
 	{
-		display_dispfreq_a2(editfreq, blinkpos + 1, blinkstate, amenuset());
+		display2_dispfreq_a2(editfreq, blinkpos + 1, blinkstate, amenuset());
 	}
 	else
 	{
-		display_dispfreq_ab(amenuset());	/* отображение всех индикаторов частоты */
+		display2_dispfreq_ab(amenuset());	/* отображение всех индикаторов частоты */
 	}
 
 #else /* WITHDIRECTFREQENER */
 
-	display_dispfreq_ab(amenuset());		/* отображение всех индикаторов частоты */
+	display2_dispfreq_ab(amenuset());		/* отображение всех индикаторов частоты */
 
 #endif /* WITHDIRECTFREQENER */
 }
-
 
 // Проверка разрешения обновления дисплея (индикация SWR/S-метр).
 static uint_fast8_t
@@ -9833,214 +9922,66 @@ display_refreshperformed_bars(void)
 	enableIRQ();
 }
 
-#if WITHCURRLEVEL2
-
-void 
-display2_adctest(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
-	void * pv
-	)
-{
-#if defined (targetxad2)
-	enum { WDTH = 16 };	// ширина поля для отображения
-	const uint_fast16_t vref_mV = 3300;
-	static FLASHMEM const struct
-	{
-		spitarget_t target;
-		char label [64];
-		uint_fast8_t adci;
-		uint_fast8_t diff;
-		uint_fast16_t mul10;
-	} adcis [] =
-	{
-		// UA1CEI 100W PA board 2xRD100HHF1 
-		// ADC inputs configuration
-		{	targetxad2,	"REFER",	PAREFERIX2 & 0x07,	0,	10, },	// DRAIN (MCP3208, negative from midpoint at CH1: ch0=in-, ch1=in+)
-		{	targetxad2,	"DRAIN",	PASENSEIX2 & 0x07,	0,	10, },	// DRAIN (MCP3208, negative from midpoint at CH1)
-		//{	targetxad2,	"DRAIN",	1,	1,	10, },	// DRAIN (MCP3208, negative from midpoint at CH1: ch0=in-, ch1=in+)
-		//{	targetxad2,	"DRAIN",	0,	1,	10, },	// DRAIN (MCP3208, negative from midpoint at CH1)
-		//{	targetxad2,	"REFER",	1,	0,	10, },	// reference (2.5 volt)
-		{	targetxad2,	"REFL ",	REF & 0x07,	0,	10, },	// REFLECTED
-		{	targetxad2,	"FWD  ",	FWD & 0x07,	0,	10, },	// FORWARD
-		//{	targetxad2,	"Vcc  ",	4,	0,	57,	},	// VDD 4.7k + 1k
-		//{	targetxad2,	"3.3  ",	5,	0,	10,	},	// VDD 4.7k + 1k
-		//{	targetxad2,	"gnd  ",	7,	0,	10,	},	// VDD 4.7k + 1k
-		//{	targetadc2,	"BVcc ",	7,	0,	57,	},	// VDD 4.7k + 1k
-		//{	targetadc2,	"ZERO ",	4,	0,	57,	},	// 4..6 channels all zero
-		//{	targetadc2,	"ZERO ",	5,	0,	57,	},	// 4..6 channels all zero
-		//{	targetxad2,	"ch0  ",	0,	1,	57,	},	// ch0
-		//{	targetxad2,	"ch1  ",	1,	1,	57,	},	// ch1
-		//{	targetxad2,	"ch2  ",	2,	1,	57,	},	// ch2
-		//{	targetxad2,	"ch3  ",	3,	1,	57,	},	// ch3
-		//{	targetxad2,	"ch4  ",	4,	1,	57,	},	// ch4
-		//{	targetxad2,	"ch5  ",	5,	1,	57,	},	// ch5
-		//{	targetxad2,	"ch6  ",	6,	1,	57,	},	// ch6
-		//{	targetxad2,	"ch7  ",	7,	1,	57,	},	// ch7
-	};
-
-	uint_fast8_t row;
-	for (row = 0; row < (sizeof adcis / sizeof adcis [0]); ++ row)
-	{
-		uint_fast16_t value;
-		char b [WDTH + 1];
-		uint_fast8_t valid;
-
-		value = mcp3208_read(adcis [row].target, adcis [row].diff, adcis [row].adci & 0x07, & valid) * (uint64_t) adcis [row].mul10 * vref_mV / 4095 / 10;
-		//value = board_getadc_unfiltered_truevalue(adcis [row].adci) * (uint64_t) adcis [row].mul10 * vref_mV / board_getadc_fsval(adcis [row].adci) / 10;
-
-		local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%*u"), WDTH, (unsigned) value);
-		display_2states_P(x + (0), y + GRID2Y(row), valid, adcis [row].label, adcis [row].label);
-		display_2states(x + (5), y + GRID2Y(row), valid, b, b);
-	}
-
-#endif /* targetxad2 */
-}
-
-#endif /* WITHCURRLEVEL2 */
-// S-METER
-/* отображение S-метра на приёме или передаче */
-// Функция вызывается из display2.c
-void 
-display2_bars_rx(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
-	void * pv
-	)
-{
-#if WITHBARS
-	uint_fast8_t tracemax;
-	uint_fast8_t v = board_getsmeter(& tracemax, 0, UINT8_MAX, 0);
-	display_smeter(x, y, v, tracemax, s9level, s9delta, s9_60_delta);
-#endif /* WITHBARS */
-}
-
-// SWR-METER, POWER-METER
-/* отображение P-метра и SWR-метра на приёме или передаче */
-// Функция вызывается из display2.c
-void 
-display2_bars_tx(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
-	void * pv
-	)
-{
-#if WITHBARS
-#if WITHTX
-	#if (WITHSWRMTR || WITHSHOWSWRPWR)
-		uint_fast8_t pwrtrace;
-		const uint_fast8_t pwr = board_getpwrmeter(& pwrtrace);
-		adcvalholder_t reflected;
-		const adcvalholder_t forward = board_getswrmeter(& reflected, swrcalibr);
-		#if WITHSHOWSWRPWR
-			display_swrmeter(x, y, forward, reflected, minforward);
-			display_pwrmeter(x, y, pwr, pwrtrace, maxpwrcali);
-		#else
-			if (swrmode || getactualtune())
-				display_swrmeter(x, y, forward, reflected, minforward);
-			else
-				display_pwrmeter(x, y, pwr, pwrtrace, maxpwrcali);
-		#endif
-	#elif WITHPWRMTR
-		uint_fast8_t pwrtrace;
-		const uint_fast8_t pwr = board_getpwrmeter(& pwrtrace);
-		display_pwrmeter(x, y, pwr, pwrtrace, maxpwrcali);
-	#endif
-
-#endif /* WITHTX */
-#endif /* WITHBARS */
-}
-
-// S-METER, SWR-METER, POWER-METER
-/* отображение S-метра или SWR-метра на приёме или передаче */
-// Функция вызывается из display2.c
-void 
-display2_bars(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
-	void * pv
-	)
-{
-#if WITHBARS
-	if (userfsg)
-	{
-	}
-	else if (gtx)
-	{
-		display2_bars_tx(x, y, pv);
-	}
-	else
-	{
-		display2_bars_rx(x, y, pv);
-	}
-#endif /* WITHBARS */
-}
-
-#if CTLSTYLE_RA4YBO_AM0
-
-// S-METER, SWR-METER, POWER-METER
-/* отображение S-метра или SWR-метра на приёме или передаче */
-// Вызывается из display2.c (версия для CTLSTYLE_RA4YBO_AM0)
-void 
-display2_bars_amv0(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
-	void * pv
-	)
-{
-#if WITHBARS
-	if (gtx)
-	{
-#if WITHTX
-	#if (WITHSWRMTR || WITHSHOWSWRPWR)
-		uint_fast8_t pwrtrace;
-		const uint_fast8_t pwr = board_getpwrmeter(& pwrtrace);
-		const uint_fast8_t modulaton = board_getadc_filtered_u8(REF, 0, UINT8_MAX);
-		display_modulationmeter_amv0(x, y, modulaton, UINT8_MAX);
-		display_pwrmeter_amv0(x, y, pwr, pwrtrace, maxpwrcali);
-	#elif WITHPWRMTR
-		uint_fast8_t pwrtrace;
-		const uint_fast8_t pwr = board_getpwrmeter(& pwrtrace);
-		display_pwrmeter_amv0(x, y, pwr, pwrtrace, maxpwrcali);
-	#endif
-
-#endif
-	}
-	else
-	{
-		uint_fast8_t tracemax;
-		uint_fast8_t v = board_getsmeter(& tracemax, 0, UINT8_MAX, 0);
-		display_smeter_amv0(x, y, v, tracemax, s9level, s9delta, s9_60_delta);
-	}
-#endif /* WITHBARS */
-}
-
-#endif /* CTLSTYLE_RA4YBO_AM0 */
-
-// --- display2.c stuff
-
 /* обновление динамической части отображения - S-метра или SWR-метра и volt-метра. */
 static void 
 //NOINLINEAT
-display_redrawbars(
+display2_redrawbarstimed(
 	uint_fast8_t immed,	// Безусловная перерисовка изображения
-	uint_fast8_t extra		/* находимся в режиме отображения настроек */
+	uint_fast8_t extra,		/* находимся в режиме отображения настроек */
+	const FLASHMEM struct menudef * mp
 	)
 {
 	if (immed || display_refresenabled_bars())
 	{
+		/* быстро меняющиеся значения с частым опорсом */
 		looptests();		// Периодически вызывается в главном цикле - тесты
+		/* +++ переписываем значения из возможно внешних АЦП в кеш значений */
+	#if WITHSWRMTR
+		board_adc_store_data(PWRMRRIX, board_getadc_unfiltered_truevalue(PWRI));
+		board_adc_store_data(FWDMRRIX, board_getadc_unfiltered_truevalue(FWD));
+		board_adc_store_data(REFMRRIX, board_getadc_unfiltered_truevalue(REF));
+	#endif /* WITHSWRMTR */
+	#if WITHCURRLEVEL2
+		board_adc_store_data(PASENSEMRRIX2, board_getadc_unfiltered_truevalue(PASENSEIX2));
+		board_adc_store_data(PAREFERMRRIX2, board_getadc_unfiltered_truevalue(PAREFERIX2));
+	#elif WITHCURRLEVEL
+		board_adc_store_data(PASENSEMRRIX, board_getadc_unfiltered_truevalue(PASENSEIX));
+	#endif /* WITHCURRLEVEL */
+	#if WITHTHERMOLEVEL
+		board_adc_store_data(XTHERMOMRRIX, board_getadc_unfiltered_truevalue(XTHERMOIX));
+	#endif /* WITHTHERMOLEVEL */
+		/* --- переписываем значения из возможно внешних АЦП в кеш значений */
 
 		/* отрисовка элементов, общих для всех режимов отображения */
 		/* отрисовка элементов, специфических для данного режима отображения */
-		display_barmeters_subset(amenuset(), extra);
+		display2_barmeters_subset(amenuset(), extra);
 		// подтверждение отрисовки
 		display_refreshperformed_bars();
 	}
 
 	if (immed || display_refreshenabled_voltage())
 	{
-		display_volts(amenuset(), extra);
+		/* медленно меняющиеся значения с редким опорсом */
+		/* +++ переписываем значения из возможно внешних АЦП в кеш значений */
+	#if WITHTHERMOLEVEL
+		// ST LM235Z test values:
+		// 2.98 V @ 25C
+		// 2.98 / 5.7 = 0.5223V at ADC input
+		// 0.5223V * 4095 / 3.3 = 648.75
+		// test value = 649, expected temperature approx 25C
+
+		board_adc_store_data(XTHERMOMRRIX, board_getadc_unfiltered_truevalue(XTHERMOIX));
+	#endif /* WITHTHERMOLEVEL */
+	#if WITHVOLTLEVEL
+		board_adc_store_data(VOLTMRRIX, board_getadc_unfiltered_truevalue(VOLTSOURCE));
+	#endif /* WITHVOLTLEVEL */
+		/* --- переписываем значения из возможно внешних АЦП в кеш значений */
+
+		display2_volts(amenuset(), extra);
+		if (extra)
+		{
+			display2_menu(mp, 0);	// на дисплее без offscreen composition обновляем только индикацию значения
+		}
 		display_refreshperformed_voltage();
 	}
 }
@@ -10048,7 +9989,7 @@ display_redrawbars(
 // обновимть изображение частоты на дисплее
 static void 
 //NOINLINEAT
-display_redrawfreqs(
+display_redrawfreqstimed(
 	uint_fast8_t immed	// Безусловная перерисовка изображения
 	)
 {
@@ -10062,7 +10003,7 @@ display_redrawfreqs(
 // обновимть изображение режимов работы на дисплее
 static void 
 //NOINLINEAT
-display_redrawmodes(
+display_redrawmodestimed(
 	uint_fast8_t immed	// Безусловная перерисовка изображения
 	)
 {
@@ -10070,7 +10011,7 @@ display_redrawmodes(
 	{
 		/* отрисовка элементов, общих для всех режимов отображения */
 		/* отрисовка элементов, специфических для данного режима отображения */
-		display_mode_subset(amenuset());
+		display2_mode_subset(amenuset());
 		// подтверждение отрисовки
 		display_refreshperformed_modes();
 	}
@@ -10079,24 +10020,28 @@ display_redrawmodes(
 // Обновление дисплея - всё, включая частоту
 static void
 //NOINLINEAT
-display_redrawfreqmodesbars(
-	uint_fast8_t extra		/* находимся в режиме отображения настроек */
+display_redrawfreqmodesbarsnow(
+	uint_fast8_t extra,		/* находимся в режиме отображения настроек */
+	const FLASHMEM struct menudef * mp
 	)
 {
 	if (extra == 0)
 	{
-		display_redrawfreqs(1);	/* безусловное обновление показания частоты */
-		display_redrawmodes(1);
-		display_redrawbars(1, extra);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+		display_redrawfreqstimed(1);	/* безусловное обновление показания частоты */
+		display_redrawmodestimed(1);
+		display2_redrawbarstimed(1, extra, mp);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 	}
 	else
 	{
-		display_redrawbars(1, extra);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+		display2_redrawbarstimed(1, extra, mp);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 	}
 }
 
 static void 
-directctlupdate(uint_fast8_t inmenu)
+directctlupdate(
+	uint_fast8_t inmenu,
+	const FLASHMEM struct menudef * mp
+	)
 {
 	uint_fast8_t changed = 0;
 	uint_fast8_t changedtx = 0;
@@ -10105,7 +10050,6 @@ directctlupdate(uint_fast8_t inmenu)
 	if (display_refreshenabled_wpm())
 	{
 		// +++ получение состояния органов управления */
-#if WITHCPUADCHW
 	#if WITHPOTPOWER
 		changed |= FLAGNE_U8_CAT(& gnormalpower, board_getpot_filtered_u8(POTPOWER, WITHPOWERTRIMMIN, WITHPOWERTRIMMAX), CAT_PC_INDEX);	// регулировка мощности
 	#endif /* WITHPOTPOWER */
@@ -10129,12 +10073,13 @@ directctlupdate(uint_fast8_t inmenu)
 	#if WITHPOTNOTCH && WITHNOTCHFREQ
 		changed |= flagne_u16(& gnotchfreq.value, board_getpot_filtered_u16(POTNOTCH, WITHNOTCHFREQMIN, WITHNOTCHFREQMAX) / 50 * 50);	// регулировка частоты NOTCH фильтра
 	#endif /* WITHPOTNOTCH && WITHNOTCHFREQ */
-#endif /* WITHCPUADCHW */
+
 	#if CTLSTYLE_RA4YBO_V3
 		changed |= flagne_u8(& guser2, kbd_get_ishold(KIF_USER2));
 		changed |= flagne_u8(& guser3, kbd_get_ishold(KIF_USER3));
 	#endif /* CTLSTYLE_RA4YBO_V3 */
 		// --- конец получения состояния органов управления */
+
 		// подтверждаем, что обновление выполнено
 		display_refreshperformed_wpm();
 	}
@@ -10142,7 +10087,7 @@ directctlupdate(uint_fast8_t inmenu)
 	{
 		updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
 		seq_ask_txstate(gtx);
-		display_redrawfreqmodesbars(inmenu);	// Обновление дисплея - всё, включая частоту
+		display_redrawfreqmodesbarsnow(inmenu, mp);	// Обновление дисплея - всё, включая частоту
 	}
 	else if (changed != 0)
 		updateboard(1, 0);	/* полная перенастройка (как после смены режима) */
@@ -11166,10 +11111,16 @@ cat_get_ptt(void)
 {
 	if (catprocenable != 0)
 	{
-		const uint_fast8_t dtr = HARDWARE_CAT_GET_DTR();
-		const uint_fast8_t rts = HARDWARE_CAT_GET_RTS();
-		const uint_fast8_t r = (catrtsenable != 0) && (catdtrptt ? dtr : rts);	// порт управления
-		return r || (catstatetx != 0);	// catstatetx - это по текстовым командам
+		const uint_fast8_t dtr1 = HARDWARE_CAT_GET_DTR() && cat1dtrenable;
+		const uint_fast8_t rts1 = HARDWARE_CAT_GET_RTS() && cat1rtsenable;
+		const uint_fast8_t dtr2 = HARDWARE_CAT2_GET_DTR() && cat2dtrenable;
+		const uint_fast8_t rts2 = HARDWARE_CAT2_GET_RTS() && cat2rtsenable;
+		const uint_fast8_t r =
+			(cat1txdtr ? dtr1 : rts1) ||
+			(cat2txdtr ? dtr2 : rts2) ||
+			(catstatetx != 0) ||	// catstatetx - это по текстовым командам
+			0;
+		return r;
 	}
 	return 0;
 }
@@ -11184,9 +11135,14 @@ uint_fast8_t cat_get_keydown(void)
 #if WITHELKEY
 	if (catprocenable != 0)
 	{
-		const uint_fast8_t dtr = HARDWARE_CAT_GET_DTR();
-		const uint_fast8_t rts = HARDWARE_CAT_GET_RTS();
-		const uint_fast8_t r = (catdtrenable != 0) && (! catdtrptt ? dtr : rts);	// порт управления
+		const uint_fast8_t dtr1 = HARDWARE_CAT_GET_DTR() && cat1dtrenable;
+		const uint_fast8_t rts1 = HARDWARE_CAT_GET_RTS() && cat1rtsenable;
+		const uint_fast8_t dtr2 = HARDWARE_CAT2_GET_DTR() && cat2dtrenable;
+		const uint_fast8_t rts2 = HARDWARE_CAT2_GET_RTS() && cat2rtsenable;
+		const uint_fast8_t r =
+			(! cat1txdtr ? dtr1 : rts1) ||
+			(! cat2txdtr ? dtr2 : rts2) ||
+			0;
 		return r;
 	}
 #endif /* WITHELKEY */
@@ -12090,11 +12046,11 @@ processcatmsg(
 		// нераспознанная команда - ожидание следующей.
 #if 0
 		// печать информации о принятой команде
-		display_gotoxy(0, 1);		// курсор в начало первой строки
-
-		display_wrdata_begin();
-		display_wrdata_fast(catcommand1 & 0x7f);
-		display_wrdata_fast(catcommand2 & 0x7f);
+		uint_fast16_t y;
+		uint_fast16_t x;
+		x = display_wrdata_begin(0, 1, & y);
+		x = display_wrdata_fast(x, y, catcommand1 & 0x7f);
+		x = display_wrdata_fast(x, y, catcommand2 & 0x7f);
 		display_wrdata_end();
 
 		if (cathasparam)
@@ -12196,77 +12152,8 @@ uint_fast8_t elkey_getnextcw(void)
 
 #endif /* WITHELKEY */
 
-/* обработка сообщений от уровня обработчиков прерываний к user-level функциям. */
-static void 
-//NOINLINEAT
-processmessages(uint_fast8_t * kbch, uint_fast8_t * kbready, uint_fast8_t inmenu)
+static void dpc_1stimer(void * arg)
 {
-	if (hardware_getshutdown())	// признак провала питания
-	{
-		display_discharge();	// выключаем дисплей
-		gtx = 0;
-		updateboard(1, 1);	// переходим на приём
-		for (;;)				// вешаемся...
-			;
-	}
-
-
-	uint8_t * buff;
-
-	* kbready = 0;
-	* kbch = KBD_CODE_MAX;
-
-	switch (takemsgready_user(& buff))
-	{
-	case MSGT_EMPTY:
-#if WITHINTEGRATEDDSP
-		audioproc_spool_user();
-#endif /* WITHINTEGRATEDDSP */
-#if WITHUSEAUDIOREC
-		sdcardbgprocess();
-#endif /* WITHUSEAUDIOREC */
-#if WITHWAVPLAYER || WITHSENDWAV
-		spoolplayfile();
-#endif /* WITHWAVPLAYER || WITHSENDWAV */
-		display2_bgprocess();			/* выполнение шагов state machine отображения дисплея */
-		directctlupdate(inmenu);		/* управление скоростью передачи (и другими параметрами) через потенциометр */
-#if WITHLCDBACKLIGHT || WITHKBDBACKLIGHT
-		// обработать запрос на обновление состояния аппаратуры из user mode программы
-		if (dimmflagch != 0)
-		{
-			dimmflagch = 0;
-			display2_bgreset();
-			display_redrawfreqmodesbars(0);			/* Обновление дисплея - всё, включая частоту */
-			updateboard(1, 0);
-		}
-#endif /* WITHLCDBACKLIGHT || WITHKBDBACKLIGHT */
-#if WITHFANTIMER
-		// обработать запрос на обновление состояния аппаратуры из user mode программы
-		if (fanpaflagch != 0)
-		{
-			fanpaflagch = 0;
-			updateboard(1, 0);
-		}
-#endif /* WITHFANTIMER */
-#if WITHSLEEPTIMER
-		// обработать запрос на обновление состояния аппаратуры из user mode программы
-		if (sleepflagch != 0)
-		{
-			sleepflagch = 0;
-			display2_bgreset();
-			display_redrawfreqmodesbars(0);			/* Обновление дисплея - всё, включая частоту */
-			updateboard(1, 0);
-		}
-#endif /* WITHSLEEPTIMER */
-#if WITHCAT
-		if (cat_getstateout() == CATSTATEO_SENDREADY)
-		{
-			cat_answer_forming();
-		}
-#endif /* WITHCAT */
-		return;
-	
-	case MSGT_1SEC:
 #if WITHWAVPLAYER || WITHSENDWAV
 		if (gloopmsg > 0)
 		{
@@ -12336,7 +12223,102 @@ processmessages(uint_fast8_t * kbch, uint_fast8_t * kbready, uint_fast8_t inmenu
 			}
 		}
 #endif /* WITHSLEEPTIMER */
-		break;
+
+}
+
+static void
+poke_u32(uint8_t * p, uintptr_t v)
+{
+	p [0] = (v >> 0) & 0xFF;
+	p [1] = (v >> 8) & 0xFF;
+	p [2] = (v >> 16) & 0xFF;
+	p [3] = (v >> 24) & 0xFF;
+}
+
+static uintptr_t
+peek_u32(const uint8_t * p)
+{
+	return
+		((uint_fast32_t) p [0] << 0) +
+		((uint_fast32_t) p [1] << 8) +
+		((uint_fast32_t) p [2] << 16) +
+		((uint_fast32_t) p [3] << 24);
+}
+
+/* обработка сообщений от уровня обработчиков прерываний к user-level функциям. */
+static void
+//NOINLINEAT
+processmessages(
+	uint_fast8_t * kbch,
+	uint_fast8_t * kbready,
+	uint_fast8_t inmenu,
+	const FLASHMEM struct menudef * mp
+	)
+{
+	if (hardware_getshutdown())	// признак провала питания
+	{
+		display_discharge();	// выключаем дисплей
+		gtx = 0;
+		updateboard(1, 1);	// переходим на приём
+		for (;;)				// вешаемся...
+			;
+	}
+
+
+	uint8_t * buff;
+
+	* kbready = 0;
+	* kbch = KBD_CODE_MAX;
+
+	switch (takemsgready_user(& buff))
+	{
+	case MSGT_EMPTY:
+#if WITHINTEGRATEDDSP
+		audioproc_spool_user();
+#endif /* WITHINTEGRATEDDSP */
+#if WITHUSEAUDIOREC
+		sdcardbgprocess();
+#endif /* WITHUSEAUDIOREC */
+#if WITHWAVPLAYER || WITHSENDWAV
+		spoolplayfile();
+#endif /* WITHWAVPLAYER || WITHSENDWAV */
+		display2_bgprocess();			/* выполнение шагов state machine отображения дисплея */
+		directctlupdate(inmenu, mp);		/* управление скоростью передачи (и другими параметрами) через потенциометр */
+#if WITHLCDBACKLIGHT || WITHKBDBACKLIGHT
+		// обработать запрос на обновление состояния аппаратуры из user mode программы
+		if (dimmflagch != 0)
+		{
+			dimmflagch = 0;
+			display2_bgreset();
+			display_redrawfreqmodesbarsnow(inmenu, mp);			/* Обновление дисплея - всё, включая частоту */
+			updateboard(1, 0);
+		}
+#endif /* WITHLCDBACKLIGHT || WITHKBDBACKLIGHT */
+#if WITHFANTIMER
+		// обработать запрос на обновление состояния аппаратуры из user mode программы
+		if (fanpaflagch != 0)
+		{
+			fanpaflagch = 0;
+			updateboard(1, 0);
+		}
+#endif /* WITHFANTIMER */
+#if WITHSLEEPTIMER
+		// обработать запрос на обновление состояния аппаратуры из user mode программы
+		if (sleepflagch != 0)
+		{
+			sleepflagch = 0;
+			display2_bgreset();
+			display_redrawfreqmodesbarsnow(0, NULL);			/* Обновление дисплея - всё, включая частоту */
+			updateboard(1, 0);
+		}
+#endif /* WITHSLEEPTIMER */
+#if WITHCAT
+		if (cat_getstateout() == CATSTATEO_SENDREADY)
+		{
+			cat_answer_forming();
+		}
+#endif /* WITHCAT */
+		return;
 
 	case MSGT_CAT:
 		board_wakeup();
@@ -12346,7 +12328,7 @@ processmessages(uint_fast8_t * kbch, uint_fast8_t * kbready, uint_fast8_t inmenu
 			// 12 bytes as parameter
 			//debug_printf_P(PSTR("processmessages: MSGT_CAT\n"));
 			if (processcatmsg(buff [0], buff [1], buff [2], buff [8], buff + 9))
-				display_redrawfreqmodesbars(inmenu);			/* Обновление дисплея - всё, включая частоту */
+				display_redrawfreqmodesbarsnow(inmenu, mp);			/* Обновление дисплея - всё, включая частоту */
 		}
 #endif /* WITHCAT */
 		break;
@@ -12362,8 +12344,31 @@ processmessages(uint_fast8_t * kbch, uint_fast8_t * kbready, uint_fast8_t inmenu
 		}
 		break;
 
-	case MSGT_UPDATEBOARD:
-		updateboard(buff [0], buff [1]);
+	case MSGT_DPC:
+		// Выполнение отложенного вызова user-mode функций
+		{
+			uintptr_t func;
+			void * arg1;
+			void * arg2;
+			void * arg3;
+
+			func = (uintptr_t) peek_u32(buff + 1);
+			arg1 = (void *) peek_u32(buff + 5);
+			arg2 = (void *) peek_u32(buff + 9);
+			arg3 = (void *) peek_u32(buff + 13);
+			switch (buff [0])
+			{
+			case 1:
+				((udpcfn_t) func)(arg1);
+				break;
+			case 2:
+				((udpcfn2_t) func)(arg1, arg2);
+				break;
+			case 3:
+				((udpcfn3_t) func)(arg1, arg2, arg3);
+				break;
+			}
+		}
 		break;
 
 	default:
@@ -12372,16 +12377,62 @@ processmessages(uint_fast8_t * kbch, uint_fast8_t * kbready, uint_fast8_t inmenu
 	releasemsgbuffer_user(buff);
 }
 
-/* Вызывается из обработчика прерываний раз в секунду */
-void spool_secound(void)
+// Запрос отложенного вызова user-mode функций
+uint_fast8_t board_dpc(udpcfn_t func, void * arg)
 {
 	uint8_t * buff;
 	if (takemsgbufferfree_low(& buff) != 0)
 	{
-		placesemsgbuffer_low(MSGT_1SEC, buff);
+		buff [0] = 1;
+		poke_u32(buff + 1, (uintptr_t) func);
+		poke_u32(buff + 5, (uintptr_t) arg);
+		placesemsgbuffer_low(MSGT_DPC, buff);
+		return 1;
 	}
+	return 0;
 }
 
+// Запрос отложенного вызова user-mode функций
+uint_fast8_t board_dpc2(udpcfn2_t func, void * arg1, void * arg2)
+{
+	uint8_t * buff;
+	if (takemsgbufferfree_low(& buff) != 0)
+	{
+		buff [0] = 2;
+		poke_u32(buff + 1, (uintptr_t) func);
+		poke_u32(buff + 5, (uintptr_t) arg1);
+		poke_u32(buff + 9, (uintptr_t) arg2);
+		placesemsgbuffer_low(MSGT_DPC, buff);
+		return 1;
+	}
+	return 0;
+}
+
+// Запрос отложенного вызова user-mode функций
+uint_fast8_t board_dpc3(udpcfn3_t func, void * arg1, void * arg2, void * arg3)
+{
+	uint8_t * buff;
+	if (takemsgbufferfree_low(& buff) != 0)
+	{
+		buff [0] = 3;
+		poke_u32(buff + 1, (uintptr_t) func);
+		poke_u32(buff + 5, (uintptr_t) arg1);
+		poke_u32(buff + 9, (uintptr_t) arg2);
+		poke_u32(buff + 13, (uintptr_t) arg3);
+		placesemsgbuffer_low(MSGT_DPC, buff);
+		return 1;
+	}
+	return 0;
+}
+
+/* Вызывается из обработчика прерываний раз в секунду */
+void spool_secound(void)
+{
+	board_dpc(dpc_1stimer, NULL);
+#if WITHTOUCHGUI
+	board_dpc(gui_timer_update, NULL);
+#endif /*WITHTOUCHGUI */
+}
 
 /* Установка сиквенсору запроса на передачу.	*/
 static void
@@ -12456,40 +12507,33 @@ display_menu_digit(
 	)
 {
 #if WITHTOUCHGUI
-	if (is_menu_opened)
-	{
 		const uint_fast8_t iwidth = width & WWIDTHFLAG;	// ширина поля
 		const uint_fast32_t ca = ipow10(comma);
 
-		ca == 1 ? local_snprintf_P(menuw, sizeof menuw / sizeof menuw[0], "%d", value) : value < 0 ? local_snprintf_P(menuw, sizeof menuw / sizeof menuw[0], "-%d.%d",
-				abs(value) / ca, abs(value) % ca) : local_snprintf_P(menuw, sizeof menuw / sizeof menuw[0], "%d.%d", value / ca, value % ca);
-
-//		if (ca == 1)
-//		{
-//			local_snprintf_P(menuw, sizeof menuw / sizeof menuw[0], PSTR("%ld"), value);
-//		}
-//		else if (value < 0)
-//		{
-//			ldiv_t d;
-//			d = ldiv(- value, ca);
-//			local_snprintf_P(menuw, sizeof menuw / sizeof menuw[0], PSTR("-%ld.%0#ld"), d.quot, (int) ca, d.rem);
-//		}
-//		else
-//		{
-//			ldiv_t d;
-//			d = ldiv(value, ca);
-//			local_snprintf_P(menuw, sizeof menuw / sizeof menuw[0], PSTR("%ld.%0#ld"), d.quot, (int) ca, d.rem);
-//		}
+		if (ca == 1)
+		{
+			local_snprintf_P(menuw, sizeof menuw / sizeof menuw[0], PSTR("%ld"), value);
+		}
+		else if (value < 0)
+		{
+			ldiv_t d;
+			d = ldiv(- value, ca);
+			local_snprintf_P(menuw, sizeof menuw / sizeof menuw[0], PSTR("-%ld.%0*ld"), d.quot, (int) comma, d.rem);
+		}
+		else
+		{
+			ldiv_t d;
+			d = ldiv(value, ca);
+			local_snprintf_P(menuw, sizeof menuw / sizeof menuw[0], PSTR("%ld.%0*ld"), d.quot, (int) comma, d.rem);
+		}
 		return;
-	}
 #endif /* WITHTOUCHGUI */
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 
-	display_setcolors(MNUVALCOLOR, BGCOLOR);
+	colmain_setcolors(MNUVALCOLOR, BGCOLOR);
 	do
 	{
-		display_gotoxy(x, y + lowhalf);		// курсор в начало первой строки
-		display_menu_value(value, width, comma, rj, lowhalf);
+		display_menu_value(x, y + lowhalf, value, width, comma, rj, lowhalf);
 	} while (lowhalf --);
 }
 
@@ -12502,21 +12546,24 @@ display_menu_string_P(
 	uint_fast8_t y, 
 	const FLASHMEM  char * s,
 	uint_fast8_t width,
-	uint_fast8_t comma
+	uint_fast8_t maxwidth		// ширина, которую займет выводимый текст
 	)
 {
 #if WITHTOUCHGUI
 	if (is_menu_opened)
 	{
-		strcpy(menuw, s);
+		safestrcpy(menuw, ARRAY_SIZE(menuw), s);
 		return;
 	}
+#else
+	colmain_setcolors(MNUVALCOLOR, BGCOLOR);
+	display_at_P(x + width - maxwidth, y, s);
 #endif /* WITHTOUCHGUI */
-	display_setcolors(MNUVALCOLOR, BGCOLOR);
-	display_at_P(x + width - comma, y, s);
 }
 
 #if WITHMENU
+
+// WSIGNFLAG
 
 #define ITEM_VALUE	0x01	/* пункт меню для редактирования параметра */
 #define ITEM_GROUP	0x02	/* пункт меню без изменяемого значения - связан с подменю */
@@ -12533,6 +12580,7 @@ display_menu_string_P(
 	#define QLABEL(s) (s), (s)
 	#define QLABEL2(s1, s2) (s1), (s2)
 #endif /* CPUSTYLE_ATMEGA */
+
 struct menudef
 {
 #if CPUSTYLE_ATMEGA
@@ -12597,7 +12645,7 @@ static const FLASHMEM struct menudef menutable [] =
 	{
 		QLABEL("TUNER WT"), 7, 0, 0,	ISTEP5,	// задержка перед измерением после переключения реле
 		ITEM_VALUE, 
-		10, 80, 
+		10, 150,
 		offsetof(struct nvmap, tunerdelay),
 		NULL,
 		& tunerdelay,
@@ -12736,8 +12784,8 @@ static const FLASHMEM struct menudef menutable [] =
 	{
 		QLABEL("TOP DB  "), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
-		0, 60,							/* сколько не показывать сверху */
-		offsetof(struct nvmap, gtopdb),
+		WITHTOPDBMIN, WITHTOPDBMAX,							/* сколько не показывать сверху */
+		MENUNONVRAM,
 		NULL,
 		& gtopdb,
 		getzerobase, /* складывается со смещением и отображается */
@@ -12745,8 +12793,8 @@ static const FLASHMEM struct menudef menutable [] =
 	{
 		QLABEL("BOTTM DB"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
-		80, 160,							/* диапазон отображаемых значений */
-		offsetof(struct nvmap, gbottomdb),
+		WITHBOTTOMDBMIN, WITHBOTTOMDBMAX,							/* диапазон отображаемых значений */
+		MENUNONVRAM,
 		NULL,
 		& gbottomdb,
 		getzerobase, /* складывается со смещением и отображается */
@@ -12763,8 +12811,8 @@ static const FLASHMEM struct menudef menutable [] =
 	{
 		QLABEL("TOP WF  "), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
-		0, 60,							/* сколько не показывать сверху */
-		offsetof(struct nvmap, gtopdbwf),
+		WITHTOPDBMIN, WITHTOPDBMAX,							/* сколько не показывать сверху */
+		MENUNONVRAM,
 		NULL,
 		& gtopdbwf,
 		getzerobase, /* складывается со смещением и отображается */
@@ -12772,8 +12820,8 @@ static const FLASHMEM struct menudef menutable [] =
 	{
 		QLABEL("BOTTM WF"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
-		80, 160,							/* диапазон отображаемых значений */
-		offsetof(struct nvmap, gbottomdbwf),
+		WITHBOTTOMDBMIN, WITHBOTTOMDBMAX,							/* диапазон отображаемых значений */
+		MENUNONVRAM,
 		NULL,
 		& gbottomdbwf,
 		getzerobase, /* складывается со смещением и отображается */
@@ -12782,9 +12830,18 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("ZOOM PAN"), 7, 0, RJ_POW2,	ISTEP1,
 		ITEM_VALUE,
 		0, BOARD_FFTZOOM_POW2MAX,							/* уменьшение отображаемого участка спектра */
-		offsetof(struct nvmap, gzoomxpow2),
+		MENUNONVRAM,
 		NULL,
 		& gzoomxpow2,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		QLABEL("WF shift"), 7, 3, RJ_YES,	ISTEP1,
+		ITEM_VALUE,
+		0, 1,							/* разрешение или запрет сдвига водопада при изменении частоты */
+		offsetof(struct nvmap, gwfshiftenable),
+		NULL,
+		& gwfshiftenable,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #endif /* WITHSPECTRUMWF */
@@ -13876,48 +13933,79 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		offsetof(struct nvmap, catenable),
 		NULL,
 		& catenable,
-		getzerobase, 
+		getzerobase,
 	},
 	#if WITHUSBCDC == 0
 	{
 		QLABEL("CAT SPD "), 7, 0, RJ_CATSPEED,	ISTEP1,
 		ITEM_VALUE,
-		0, (sizeof catbr2int / sizeof catbr2int [0]) - 1, 
+		0, (sizeof catbr2int / sizeof catbr2int [0]) - 1,
 		offsetof(struct nvmap, catbaudrate),
 		NULL,
 		& catbaudrate,
-		getzerobase, 
+		getzerobase,
 	},
 	#endif /* WITHUSBCDC == 0 */
 	{
 		QLABEL("CAT DTR "), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
-		0, 1, 
-		offsetof(struct nvmap, catdtrenable),
+		0, 1,
+		offsetof(struct nvmap, cat1dtrenable),
 		NULL,
-		& catdtrenable,
-		getzerobase, 
+		& cat1dtrenable,
+		getzerobase,
 	},
 	#if WITHTX
 	{
 		QLABEL("CAT RTS "), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
-		0, 1, 
-		offsetof(struct nvmap, catrtsenable),
+		0, 1,
+		offsetof(struct nvmap, cat1rtsenable),
 		NULL,
-		& catrtsenable,
+		& cat1rtsenable,
 		getzerobase, 
 	},
 	{
-		QLABEL("CATTXDTR"), 7, 3, RJ_YES,	ISTEP1,	/* Передача управляется по DTR, а не по RTS */
+		QLABEL("CAT TX  "), 7, 3, RJ_CATTXDTR,	ISTEP1,	/* Передача управляется по DTR, а не по RTS */
 		ITEM_VALUE,
-		0, 1, 
-		offsetof(struct nvmap, catdtrptt),	
+		0, 1,
+		offsetof(struct nvmap, cat1txdtr),
 		NULL,
-		& catdtrptt,
+		& cat1txdtr,
 		getzerobase, 
 	},
 	#endif /* WITHTX */
+#if WITHUSBHW && WITHUSBCDC && WITHUSBHWCDC_N > 1
+	{
+		QLABEL("CAT2 DTR"), 7, 3, RJ_YES,	ISTEP1,
+		ITEM_VALUE,
+		0, 1, 
+		offsetof(struct nvmap, cat2dtrenable),
+		NULL,
+		& cat2dtrenable,
+		getzerobase, 
+	},
+	#if WITHTX
+	{
+		QLABEL("CAT2 RTS"), 7, 3, RJ_YES,	ISTEP1,
+		ITEM_VALUE,
+		0, 1, 
+		offsetof(struct nvmap, cat2rtsenable),
+		NULL,
+		& cat2rtsenable,
+		getzerobase, 
+	},
+	{
+		QLABEL("CAT2 TX "), 7, 3, RJ_CATTXDTR,	ISTEP1,	/* Передача управляется по DTR, а не по RTS */
+		ITEM_VALUE,
+		0, 1, 
+		offsetof(struct nvmap, cat2txdtr),
+		NULL,
+		& cat2txdtr,
+		getzerobase, 
+	},
+	#endif /* WITHTX */
+#endif /* WITHUSBHW && WITHUSBCDC && WITHUSBHWCDC_N > 1 */
 #endif /* WITHCAT */
 
 #if WITHSUBTONES && WITHTX
@@ -14027,6 +14115,15 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		offsetof(struct nvmap, gsquelch),	/* уровень сигнала болше которого открывается шумодав */
 		NULL,
 		& gsquelch.value,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		QLABEL("SQUELNFM"), 7, 0, 0,	ISTEP1,		/* squelch level */
+		ITEM_VALUE,
+		0, SQUELCHMAX,
+		offsetof(struct nvmap, gsquelchNFM),	/* уровень сигнала болше которого открывается шумодав */
+		NULL,
+		& gsquelchNFM,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
@@ -14736,8 +14833,17 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #endif /* WITHPABIASTRIM && WITHTX */
 #endif /* WITHTX */
+#if WITHIF4DSP
+	{
+		QLABEL("NFM GAIN"), 7, 1, 0,	ISTEP1,		/* дополнительное усиление по НЧ в режиме приёма NFM 100..1000% */
+		ITEM_VALUE,
+		10, 100,
+		offsetof(struct nvmap, ggainnfmrx10),	/* дополнительное усиление по НЧ в режиме приёма NFM 100..1000% */
+		NULL,
+		& ggainnfmrx10,
+		getzerobase, /* складывается со смещением и отображается */
+	},
 #if WITHTX
-#if WITHIF4DSP && WITHTX
 	{
 		QLABEL("AM DEPTH"), 7, 0, 0,	ISTEP1,		/* Подстройка глубины модуляции в АМ */
 		ITEM_VALUE,
@@ -14748,25 +14854,34 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		QLABEL("DACSCALE"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("NFM DEVI"), 7, 1, 0,	ISTEP1,		/* Подстройка девиации на передачу */
 		ITEM_VALUE,
-		0, 100, 
-		offsetof(struct nvmap, gdacscale),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		0, 120,
+		offsetof(struct nvmap, gnfmdeviation),	/* девиация в сотнях герц */
 		NULL,
-		& gdacscale,
+		& gnfmdeviation,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
 		QLABEL("FT8BOOST"),	7, 2, 0,	ISTEP1,		/* Увеличение усиления при передаче в цифровых режимах 90..300% */
 		ITEM_VALUE,
 		90, 300,
-		offsetof(struct nvmap, gdigiscale),
-		& gdigiscale,
+		offsetof(struct nvmap, ggainndigitx),
+		& ggainndigitx,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
 	},
-#endif /* WITHIF4DSP && WITHTX */
+	{
+		QLABEL("DACSCALE"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		ITEM_VALUE,
+		0, 100,
+		offsetof(struct nvmap, gdacscale),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		NULL,
+		& gdacscale,
+		getzerobase, /* складывается со смещением и отображается */
+	},
 #endif /* WITHTX */
+#endif /* WITHIF4DSP */
 #if defined(REFERENCE_FREQ)
 #if defined (DAC1_TYPE)
 	{
@@ -15295,9 +15410,11 @@ defaultsettings(void)
 #if ! WITHFLATMENU
 // Вызывается из display2.c
 // Отображение многострочного меню для больших экранов (группы)
-void display_multilinemenu_block_groups(uint_fast8_t x, uint_fast8_t y, void * pv)
+void display2_multilinemenu_block_groups(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
 {
-	const FLASHMEM struct menudef * const mp = (const FLASHMEM struct menudef *) pv;
+	if (pctx == NULL || pctx->type != DCTX_MENU)
+		return;
+	const FLASHMEM struct menudef * const mp = pctx->pv;
 	const uint_fast16_t index = (int) (mp - menutable);
 	uint_fast16_t y_position_groups = y;
 	uint_fast16_t index_groups = 0;
@@ -15329,12 +15446,6 @@ void display_multilinemenu_block_groups(uint_fast8_t x, uint_fast8_t y, void * p
 	index_groups = 0;
 	const uint_fast16_t menu_block_scroll_offset_groups = window.multilinemenu_max_rows * (selected_group_index / window.multilinemenu_max_rows);
 
-#if DSTYLE_G_X800_Y480
-	gridparams_t z;
-	display2_getgridparams(& z);
-	display2_clear_menu_bk(x - 1, y, x, z.gy2);
-#endif
-
 	// выводим на экран блок с параметрами
 	for (el = 0; el < MENUROW_COUNT; el ++)
 	{
@@ -15348,18 +15459,25 @@ void display_multilinemenu_block_groups(uint_fast8_t x, uint_fast8_t y, void * p
 				continue;
 			if (el == selected_group_left_margin) //подсвечиваем выбранный элемент
 			{
-				display_setcolors(MENUSELCOLOR, BGCOLOR);
+				colmain_setcolors(MENUSELCOLOR, BGCOLOR);
 				display_at_P(x - 1, y_position_groups, PSTR(">"));
 			}
-			display_menu_group(x, y_position_groups, (void *) mv); // название группы
+
+			dctx_t dctx;
+			dctx.type = DCTX_MENU;
+			dctx.pv = mv;
+			display2_menu_group(x, y_position_groups, & dctx); // название группы
+
 			y_position_groups += window.ystep;
 		}
 	}
 }
 // Отображение многострочного меню для больших экранов (параметры)
-void display_multilinemenu_block_params(uint_fast8_t x, uint_fast8_t y, void * pv)
+void display2_multilinemenu_block_params(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
 {
-	const FLASHMEM struct menudef * const mp = (const FLASHMEM struct menudef *) pv;
+	if (pctx == NULL || pctx->type != DCTX_MENU)
+		return;
+	const FLASHMEM struct menudef * const mp = pctx->pv;
 	const uint_fast16_t index = (int) (mp - menutable);
 	uint_fast16_t y_position_params = y;
 	uint_fast16_t index_params = 0;
@@ -15397,12 +15515,6 @@ void display_multilinemenu_block_params(uint_fast8_t x, uint_fast8_t y, void * p
 	index_params = 0;
 	const uint_fast16_t menu_block_scroll_offset_params = window.multilinemenu_max_rows * (selected_params_index / window.multilinemenu_max_rows);
 
-#if DSTYLE_G_X800_Y480
-	gridparams_t z;
-	display2_getgridparams(& z);
-	display2_clear_menu_bk(x - 1, y, x, z.gy2);
-#endif
-
 	// выводим на экран блок с параметрами
 	for (el = 0; el < MENUROW_COUNT; el ++)
 	{
@@ -15420,24 +15532,27 @@ void display_multilinemenu_block_params(uint_fast8_t x, uint_fast8_t y, void * p
 				continue;
 			if (el == index) //подсвечиваем выбранный элемент
 			{
-				display_setcolors(MENUSELCOLOR, BGCOLOR);
+				colmain_setcolors(MENUSELCOLOR, BGCOLOR);
 				display_at_P(x - 1, y_position_params, PSTR(">"));
 			}
-			display_menu_lblng(x, y_position_params, (void *) mv); // название редактируемого параметра
+			dctx_t dctx;
+			dctx.type = DCTX_MENU;
+			dctx.pv = mv;
+			display2_menu_lblng(x, y_position_params, & dctx); // название редактируемого параметра
 #if DSTYLE_G_X800_Y480
-			display_at(x + 8, y_position_params, "           ");
+			//display_at(x + 8, y_position_params, "           ");
 #endif
 			y_position_params += window.ystep;
 		}
 	}
-#if DSTYLE_G_X800_Y480
-	display2_clear_menu_bk(x, y_position_params, z.gx2, z.gy2);
-#endif
 }
+
 // Отображение многострочного меню для больших экранов (значения)
-void display_multilinemenu_block_vals(uint_fast8_t x, uint_fast8_t y, void * pv)
+void display_multilinemenu_block_vals(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
 {
-	const FLASHMEM struct menudef * const mp = (const FLASHMEM struct menudef *) pv;
+	if (pctx == NULL || pctx->type != DCTX_MENU)
+		return;
+	const FLASHMEM struct menudef * const mp = pctx->pv;
 	const uint_fast16_t index = (int) (mp - menutable);
 	uint_fast16_t y_position_params = y;
 	uint_fast16_t index_params = 0;
@@ -15490,7 +15605,10 @@ void display_multilinemenu_block_vals(uint_fast8_t x, uint_fast8_t y, void * pv)
 				continue; //пропускаем пункты для скролла
 			if ((index_params - menu_block_scroll_offset_params) > window.multilinemenu_max_rows)
 				continue;
-			display_menu_valxx(x, y_position_params, (void *) mv); // значение параметра
+            dctx_t dctx;
+            dctx.type = DCTX_MENU;
+            dctx.pv = mv;
+            display_menu_valxx(x, y_position_params, & dctx); // значение параметра
 			y_position_params += window.ystep;
 		}
 	}
@@ -15502,38 +15620,42 @@ void display_multilinemenu_block_vals(uint_fast8_t x, uint_fast8_t y, void * pv)
 void display_menu_lblc3(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
-	const FLASHMEM struct menudef * const mp = (const FLASHMEM struct menudef *) pv;
+	if (pctx == NULL || pctx->type != DCTX_MENU)
+		return;
+	const FLASHMEM struct menudef * const mp = pctx->pv;
 	char buff [4];
 	const uint_fast8_t index = (int) (mp - menutable);
 	if (ismenukind(mp, ITEM_GROUP))
 	{
-		display_setcolors(MENUCOLOR, BGCOLOR);
+		colmain_setcolors(MENUCOLOR, BGCOLOR);
 		display_at_P(x, y, PSTR("---"));
 		return;
 	}
 
 	local_snprintf_P(buff, sizeof buff / sizeof buff [0], index >= 100 ? PSTR("%03d") : PSTR("F%02d"), index);
 
-	display_setcolors(MENUCOLOR, BGCOLOR);
+	colmain_setcolors(MENUCOLOR, BGCOLOR);
 	display_at(x + 0, y, buff);
 }
 
 // Вызывается из display2.c
 // название редактируемого параметра
 // если группа - ничего не отображаем
-void display_menu_lblng(
+void display2_menu_lblng(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
-	const FLASHMEM struct menudef * const mp = (const FLASHMEM struct menudef *) pv;
+	if (pctx == NULL || pctx->type != DCTX_MENU)
+		return;
+	const FLASHMEM struct menudef * const mp = pctx->pv;
 	if (ismenukind(mp, ITEM_VALUE) == 0)
 		return;
-	display_setcolors(MENUCOLOR, BGCOLOR);
+	colmain_setcolors(MENUCOLOR, BGCOLOR);
 	display_at_P(x, y, mp->qlabel);
 }
 
@@ -15542,27 +15664,31 @@ void display_menu_lblng(
 void display_menu_lblst(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
-	const FLASHMEM struct menudef * const mp = (const FLASHMEM struct menudef *) pv;
-	display_setcolors(MENUCOLOR, BGCOLOR);
+	if (pctx == NULL || pctx->type != DCTX_MENU)
+		return;
+	const FLASHMEM struct menudef * const mp = pctx->pv;
+	colmain_setcolors(MENUCOLOR, BGCOLOR);
 	display_at_P(x, y, mp->qlabel);
 }
 
 // Вызывается из display2.c
 // группа, в которой находится редактируемый параметр
-void display_menu_group(
+void display2_menu_group(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
-	const FLASHMEM struct menudef * mp = (const FLASHMEM struct menudef *) pv;
+	if (pctx == NULL || pctx->type != DCTX_MENU)
+		return;
+	const FLASHMEM struct menudef * mp = pctx->pv;
 
 	while (ismenukind(mp, ITEM_GROUP) == 0)
 		-- mp;
-	display_setcolors(MENUGROUPCOLOR, BGCOLOR);
+	colmain_setcolors(MENUGROUPCOLOR, BGCOLOR);
 	display_at_P(x, y, mp->qlabel);
 }
 
@@ -15572,14 +15698,23 @@ void display_menu_group(
 void display_menu_valxx(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	dctx_t * pctx
 	)
 {
-	const FLASHMEM struct menudef * const mp = (const FLASHMEM struct menudef *) pv;
+	if (pctx == NULL || pctx->type != DCTX_MENU)
+		return;
+	const FLASHMEM struct menudef * const mp = pctx->pv;
+	multimenuwnd_t window;
+
+	display2_getmultimenu(& window);
+
+	/* параметры полей вывода значений в меню */
+	const uint_fast8_t VALUEW = window.valuew;
+
 	int_fast32_t value;
 	const uint_fast8_t rj = mp->qrj;
-	const uint_fast8_t width = mp->qwidth;
-	const uint_fast8_t comma = mp->qcomma;
+	uint_fast8_t width = mp->qwidth;
+	uint_fast8_t comma = mp->qcomma;
 	const uint_fast16_t * const pv16 = mp->qpval16;
 	const uint_fast8_t * const pv8 = mp->qpval8;
 
@@ -15630,6 +15765,7 @@ void display_menu_valxx(
 				"MUTE ",	// BOARD_TXAUDIO_MUTE
 			};
 
+			width = VALUEW;
 			display_menu_string_P(x, y, msg [value], width, comma);
 		}
 		break;
@@ -15638,6 +15774,7 @@ void display_menu_valxx(
 #if WITHMODEM
 
 	case RJ_MDMSPEED:
+		width = VALUEW;
 		display_menu_digit(x, y, modembr2int100 [value], width, comma, 0);
 		break;
 
@@ -15649,6 +15786,8 @@ void display_menu_valxx(
 				"QPSK",
 			};
 
+			width = VALUEW;
+			comma = 4;
 			display_menu_string_P(x, y, msg [value], width, comma);
 		}
 		break;
@@ -15674,6 +15813,8 @@ void display_menu_valxx(
 				"DEC",
 			};
 
+			width = VALUEW;
+			comma = 3;
 			display_menu_string_P(x, y, months [value - mp->qbottom], width, comma);
 		}
 		break;
@@ -15682,38 +15823,57 @@ void display_menu_valxx(
 	case RJ_YES:
 		{
 			static const FLASHMEM char msg_yes [] = "Yes";
-			static const FLASHMEM char msg_no  [] = "No ";
+			static const FLASHMEM char msg_no  [] = " No";
 
+			width = VALUEW;
+			comma = 3;
 			display_menu_string_P(x, y, value ? msg_yes : msg_no, width, comma);
 		}
 		break;
 
 	case RJ_ON:
 		{
-			static const FLASHMEM char msg_on  [] = "On ";
+			static const FLASHMEM char msg_on  [] = " On";
 			static const FLASHMEM char msg_off [] = "Off";
 
+			width = VALUEW;
+			comma = 3;
 			display_menu_string_P(x, y, value ? msg_on : msg_off, width, comma);
 		}
 		break;
 
 	case RJ_ENCRES:
+		width = comma ? VALUEW - 1 : VALUEW;
 		display_menu_digit(x, y, encresols [value] * ENCRESSCALE, width, comma, 0);
 		break;
 
 #if WITHCAT
 	case RJ_CATSPEED:
+		width = comma ? VALUEW - 1 : VALUEW;
 		display_menu_digit(x, y, catbr2int [value] * BRSCALE, width, comma, 0);
+		break;
+
+	case RJ_CATTXDTR:
+		{
+			static const FLASHMEM char msg_dtr [] = "DTR";
+			static const FLASHMEM char msg_rts [] = "RTS";
+
+			width = VALUEW;
+			comma = 3;
+			display_menu_string_P(x, y, value ? msg_dtr : msg_rts, width, comma);
+		}
 		break;
 #endif /* WITHCAT */
 
 #if WITHSUBTONES && WITHTX
 	case RJ_SUBTONE:
+		width = comma ? VALUEW - 1 : VALUEW;
 		display_menu_digit(x, y, gsubtones [value], width, comma, 0);
 		break;
 #endif /* WITHSUBTONES && WITHTX */
 
 	case RJ_POW2:
+		width = comma ? VALUEW - 1 : VALUEW;
 		display_menu_digit(x, y, 1UL << value, width, comma, 0);
 		break;
 
@@ -15729,17 +15889,29 @@ void display_menu_valxx(
 				"BUG",
 			};
 
+			width = VALUEW;
+			comma = 3;
 			display_menu_string_P(x, y, msg [value], width, comma);
 		}
 		break;
 #endif /* WITHELKEY */
 #if WITHPOWERLPHP
 	case RJ_POWER:	/* отображние мощности HP/LP */
+		width = VALUEW;
+		comma = 2;
 			display_menu_string_P(x, y, pwrmodes [value].label, width, comma);
 		break;
 #endif /* WITHPOWERLPHP */
 
 	default:
+		if (width & WSIGNFLAG)
+			width = (VALUEW - 1) | WSIGNFLAG;
+		else
+			width = VALUEW;
+
+		if (comma)
+			width = width - 1;
+
 		display_menu_digit(x, y, value, width, comma, rj);
 		break;
 
@@ -15748,7 +15920,7 @@ void display_menu_valxx(
 
 // --- menu support
 
-static uint_fast8_t menulooklast(uint_fast8_t menupos)
+static uint_fast16_t menulooklast(uint_fast16_t menupos)
 {
 	const FLASHMEM struct menudef * mp;
 	do
@@ -15761,14 +15933,14 @@ static uint_fast8_t menulooklast(uint_fast8_t menupos)
 /* работа с параметрами настройки. */
 static void 
 modifysettings(
-	uint_fast8_t firstitem, uint_fast8_t lastitem,	/* диапазон от какого и до какого пункта меню работает */
+	uint_fast16_t firstitem, uint_fast16_t lastitem,	/* диапазон от какого и до какого пункта меню работает */
 	uint_fast8_t itemmask,		/* по какому типу пунктов меню проходим */
 	nvramaddress_t posnvram,	/* где сохранена текущая позиция */
 	uint_fast8_t exitkey,		/* дополнительная клавиша, по которой происходит выход из меню на уровень выше (или KBD_CODE_MAX) */
 	uint_fast8_t byname			/* был выполнен прямой вход в меню */
 	)
 {
-	uint_fast8_t menupos = loadvfy8up(posnvram, firstitem, lastitem, firstitem);	/* начальное значение позиции */
+	uint_fast16_t menupos = loadvfy8up(posnvram, firstitem, lastitem, firstitem);	/* начальное значение позиции */
 	const FLASHMEM struct menudef * mp = & menutable [menupos];
 	multimenuwnd_t window;
 
@@ -15783,9 +15955,7 @@ modifysettings(
 #if WITHDEBUG
 	debug_printf_P(PSTR("menu: ")); debug_printf_P(mp->qlabel); debug_printf_P(PSTR("\n")); 
 #endif /* WITHDEBUG */
-	display_menuitemlabel((void *) mp, byname);
-	display_menuitemvalue((void *) mp);
-	display_redrawbars(1, 1);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+	display2_redrawbarstimed(1, 1, mp);
 	encoder_clear();
 
 	for (;;)
@@ -15794,9 +15964,8 @@ modifysettings(
 		uint_fast8_t kbch, kbready;
 
 		processmodem();
-		processmessages(& kbch, & kbready, 1);
+		processmessages(& kbch, & kbready, 1, mp);
 		processtxrequest();	/* Установка сиквенсору запроса на передачу.	*/
-		display_redrawbars(0, 1);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 
 #if WITHKEYBOARD
 		int_least16_t nr2;
@@ -15826,24 +15995,16 @@ modifysettings(
 				if (ismenukind(mp, ITEM_GROUP))
 				{
 					/* вход в подменю */
-					const uint_fast8_t first = menupos + 1;	/* следующий за текущим пунктом */
-					const uint_fast8_t last = menulooklast(first);
+					const uint_fast16_t first = menupos + 1;	/* следующий за текущим пунктом */
+					const uint_fast16_t last = menulooklast(first);
 
 					if (ismenukind(& menutable [first], ITEM_VALUE))
 					{
 					#if defined (RTC1_TYPE)
 						getstamprtc();
 					#endif /* defined (RTC1_TYPE) */
-#if !DSTYLE_G_X800_Y480
-						display2_bgreset();		/* возможно уже с новой цветовой схемой */
-#endif
 						modifysettings(first, last, ITEM_VALUE, mp->qnvram, exitkey, byname);
-#if !DSTYLE_G_X800_Y480
-						display2_bgreset();		/* возможно уже с новой цветовой схемой */
-#endif
-						display_menuitemlabel((void *) mp, byname);
-						display_menuitemvalue((void *) mp);
-						display_redrawbars(1, 1);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+						display2_redrawbarstimed(1, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 					}
 				}
 				continue;	// требуется обновление индикатора
@@ -15853,7 +16014,7 @@ modifysettings(
 				/* блокировка валкодера
 					 - не вызывает сохранение состояния диапазона */
 				uif_key_lockencoder();
-				display_menuitemlabel((void *) mp, byname);
+				display2_redrawbarstimed(1, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 				continue;	// требуется обновление индикатора
 
 			case KBD_CODE_BAND_DOWN:
@@ -15886,14 +16047,12 @@ modifysettings(
 #endif /* (NVRAM_TYPE != NVRAM_TYPE_CPUEEPROM) */
 
 #if !DSTYLE_G_X800_Y480
-				display2_bgreset();		/* возможно уже с новой цветовой схемой */
+				//display2_bgreset();		/* возможно уже с новой цветовой схемой */
 #endif
 #if WITHDEBUG
 				debug_printf_P(PSTR("menu: ")); debug_printf_P(mp->qlabel); debug_printf_P(PSTR("\n")); 
 #endif /* WITHDEBUG */
-				display_menuitemlabel((void *) mp, byname);
-				display_menuitemvalue((void *) mp);
-				display_redrawbars(1, 1);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+				display2_redrawbarstimed(1, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 				break;
 			}
 		}
@@ -15945,11 +16104,15 @@ modifysettings(
 			/* обновление отображения пункта */
 			board_wakeup();
 			updateboard(1, 0);
-			display_menuitemvalue((void *) mp);
+			display2_redrawbarstimed(1, 1, mp);		/* немедленное обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 
 #if (NVRAM_TYPE != NVRAM_TYPE_CPUEEPROM)
 			savemenuvalue(mp);		/* сохраняем отредактированное значение */
 #endif
+		}
+		else
+		{
+			display2_redrawbarstimed(0, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 		}
 #endif /* WITHENCODER */
 	}
@@ -15964,7 +16127,7 @@ uif_key_click_menubyname(const char * name, uint_fast8_t exitkey)
 		return;
 #endif /* WITHAUTOTUNER */
 
-	uint_fast8_t menupos;
+	uint_fast16_t menupos;
 
 	for (menupos = 0; menupos < MENUROW_COUNT; ++ menupos)
 	{
@@ -15985,6 +16148,9 @@ uif_key_click_menubyname(const char * name, uint_fast8_t exitkey)
 		// Не нашли такой пункт
 		return;
 	}
+#if WITHTOUCHGUI
+	gui_uif_editmenu(name, menupos, exitkey);
+#else
 	display2_bgreset();
 
 	modifysettings(menupos, menupos, ITEM_VALUE, MENUNONVRAM, exitkey, 1);
@@ -15992,6 +16158,7 @@ uif_key_click_menubyname(const char * name, uint_fast8_t exitkey)
 	updateboard(1, 0);
 	updateboard2();			/* настройки валкодера и цветовой схемы дисплея. */
 	display2_bgreset();		/* возможно уже с новой цветовой схемой */
+#endif /* WITHTOUCHGUI */
 }
 
 #else // WITHMENU
@@ -16038,8 +16205,8 @@ static void vfoallignment(void)
 	{	
 		uint_fast8_t kbch, kbready;
 
-		processmessages(& kbch, & kbready, 1);
-		//display_redrawbars(0, 1);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+		processmessages(& kbch, & kbready, 1, mp);
+		//display2_redrawbarstimed(0, 1, mp);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 
 		if (kbready != 0)
 		{
@@ -16182,8 +16349,6 @@ process_key_menuset0(uint_fast8_t kbch)
 }
 #endif /* WITHKEYBOARD */
 
-#if WITHDIRECTFREQENER
-
 
 static int_fast32_t
 getpower10(uint_fast8_t pos)
@@ -16202,17 +16367,8 @@ freqvalid(
 	uint_fast8_t tx
 	)
 {
-#if LO1FDIV_ADJ
-	const int_fast32_t f = freq << lo1powmap [tx]; /* коэфф. деления в тракте первого гетеродина */
-#else
-	const int_fast32_t f = freq << LO1_POWER2; /* коэфф. деления в тракте первого гетеродина */
-#endif
-	if (f < freq)
-		return 0;	/* произошло переполнение при умножении */
-	return (f >= TUNE_BOTTOM && f < TUNE_TOP);	/* частота внутри допустимого диапазона */
+	return (freq >= TUNE_BOTTOM && freq < TUNE_TOP);	/* частота внутри допустимого диапазона */
 }
-
-#endif /* WITHDIRECTFREQENER */
 
 #if WITHPWBUTTON
 static void
@@ -16289,10 +16445,10 @@ process_key_menuset_common(uint_fast8_t kbch)
 #if WITHENCODER2
 	#if WITHTOUCHGUI
 		case KBD_ENC2_PRESS:
-			encoder2busy ? set_encoder2_state (KBD_ENC2_PRESS): uif_encoder2_press();
+			encoder2_busy ? gui_set_encoder2_state (KBD_ENC2_PRESS): uif_encoder2_press();
 			return 0;
 		case KBD_ENC2_HOLD:
-			encoder2busy ? set_encoder2_state (KBD_ENC2_HOLD) : uif_encoder2_hold();
+			encoder2_busy ? gui_set_encoder2_state (KBD_ENC2_HOLD) : uif_encoder2_hold();
 			return 0;
 	#else
 		case KBD_ENC2_PRESS:
@@ -16523,7 +16679,7 @@ process_key_menuset_common(uint_fast8_t kbch)
 			dimmmode = calc_next(dimmmode, 0, 1);
 			save_i8(RMT_DIMMMODE_BASE, dimmmode);
 			display2_bgreset();
-			display_redrawfreqmodesbars(0);			/* Обновление дисплея - всё, включая частоту */
+			display_redrawfreqmodesbarsnow(0, NULL);			/* Обновление дисплея - всё, включая частоту */
 			updateboard(1, 0);
 		}
 #endif /* WITHLCDBACKLIGHT */
@@ -16602,7 +16758,12 @@ process_key_menuset_common(uint_fast8_t kbch)
 		updateboard_tuner();
 		return 1;	// требуется обновление индикатора
 #endif /* WITHAUTOTUNER && KEYB_UA3DKC */
-
+#if WITHELKEY
+	case KBD_CODE_BKIN:
+		bkinenable = bkinenable ? 0 : 1;
+		save_i8(offsetof(struct nvmap, bkinenable), bkinenable);
+		return 1;
+#endif /* WITHELKEY */
 	default:
 		return 0;	/* клавиша не обработана */
 	}
@@ -16624,6 +16785,13 @@ void playhandler(uint8_t code)
 static uint_fast8_t
 processkeyboard(uint_fast8_t kbch)
 {
+#if WITHTOUCHGUI
+	if (keyboard_redirect)
+	{
+		gui_put_keyb_code(kbch);
+		return 0;
+	}
+#endif
 	const uint_fast8_t exitkey = getexitkey();	/* эта клавиша совмещена с menu - дополнительный код для выхода. */
 
 #if WITHDIRECTFREQENER
@@ -16704,7 +16872,7 @@ processkeyboard(uint_fast8_t kbch)
 		display2_bgreset();		/* возможно уже с новой цветовой схемой */
 		return 1;	// требуется обновление индикатора
 #else
-		button9_handler();
+		gui_open_sys_menu();
 		return 0;
 #endif //WITHMENU && ! WITHTOUCHGUI
 	case KBD_CODE_DISPMODE:
@@ -16909,19 +17077,32 @@ lowinitialize(void)
 #endif /* WITHDEBUG */
 
 #if WITHCAT
+
 	HARDWARE_CAT_INITIALIZE();
+
 #endif /* WITHCAT */
 
-#if WITHNMEA
+
+#if WITHNMEA && WITHAUTOTUNER_UA1CEI
+
+	HARDWARE_NMEA_INITIALIZE();
+	HARDWARE_NMEA_SET_SPEED(256000L);
+	HARDWARE_NMEA_ENABLERX(1);
+
+#elif WITHNMEA
+
 	HARDWARE_NMEA_INITIALIZE();
 	HARDWARE_NMEA_SET_SPEED(115200L);
 	HARDWARE_NMEA_ENABLERX(1);
+
 #endif /* WITHNMEA */
 
 #if WITHMODEM
+
 	HARDWARE_MODEM_INITIALIZE();
 	HARDWARE_MODEM_SET_SPEED(19200L);
 	HARDWARE_MODEM_ENABLERX(1);
+
 #endif /* WITHMODEM */
 
 	board_init_io();		/* инициализация чипселектов и SPI, I2C, загрузка FPGA */
@@ -17609,7 +17790,7 @@ static void hamradio_main_initialize(void)
 #if WITHUSEAUDIOREC
 	sdcardbgprocess();
 #endif /* WITHUSEAUDIOREC */
-	directctlupdate(0);		/* управление скоростью передачи (и другими параметрами) через потенциометр */
+	directctlupdate(0, NULL);		/* управление скоростью передачи (и другими параметрами) через потенциометр */
 	updateboard(1, 1);	/* полная перенастройка (как после смены режима) - режим приема */
 	updateboard2();			/* настройки валкодера и цветовой схемы дисплея. */
 	display2_bgreset();
@@ -17641,7 +17822,7 @@ static void hamradio_main_initialize(void)
 		for (;;)
 			prog_cmx992_print(target);
 
-		display_redrawfreqmodesbars(0);	// Обновление дисплея - всё, включая частоту
+		display_redrawfreqmodesbarsnow(0);	// Обновление дисплея - всё, включая частоту
 
 		//prog_pll1_init();
 		synth_lo1_setfreq((434085900UL - 10700000UL) / 3. getlo1div(gtx));
@@ -17654,7 +17835,7 @@ static void hamradio_main_initialize(void)
 	encoder_clear();
 
 	/* начальное отображение */
-	display_redrawfreqmodesbars(0);	// Обновление дисплея - всё, включая частоту
+	display_redrawfreqmodesbarsnow(0, NULL);	// Обновление дисплея - всё, включая частоту
 
 }
 
@@ -17666,7 +17847,7 @@ hamradio_main_step(void)
 	//r820t_spool();
 	uint_fast8_t kbch, kbready;
 
-	processmessages(& kbch, & kbready, 0);
+	processmessages(& kbch, & kbready, 0, NULL);
 
 	switch (sthrl)
 	{
@@ -17728,7 +17909,7 @@ hamradio_main_step(void)
 			}
 			#endif /* WITHAUTOTUNER */
 
-			display_redrawbars(0, 0);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+			display2_redrawbarstimed(0, 0, NULL);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 
 	#if WITHLFM && defined (LO1MODE_DIRECT)
 			if (lfmmode && spool_lfm_enable)
@@ -17743,7 +17924,7 @@ hamradio_main_step(void)
 				display2_bgreset();
 				vfoallignment();
 				display2_bgreset();
-				display_redrawfreqmodesbars(0);			/* Обновление дисплея - всё, включая частоту */
+				display_redrawfreqmodesbarsnow(0);			/* Обновление дисплея - всё, включая частоту */
 				updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
 	#endif // MULTIVFO
 				alignmode = 0;	// в nvram осталась не-0
@@ -17770,7 +17951,7 @@ hamradio_main_step(void)
 				nrotate2 = getRotateHiRes2(& jumpsize2);
 			#endif
 #if WITHTOUCHGUI
-			if (!encoder2busy)
+			if (!encoder2_busy)
 			{
 				if (uif_encoder2_rotate(nrotate2))
 				{
@@ -17782,14 +17963,16 @@ hamradio_main_step(void)
 //
 #if WITHTOUCHGUI
 						const char FLASHMEM * text = enc2menu_label_P(enc2pos);
-						strcpy(enc2_menu.param, text);
+						safestrcpy(enc2_menu.param, ARRAY_SIZE(enc2_menu.param), text);
 						text = enc2menu_value(enc2pos);
-						strcpy(enc2_menu.val, text);
-						encoder2_menu(&enc2_menu);
+						safestrcpy(enc2_menu.val, ARRAY_SIZE(enc2_menu.val), text);
+						enc2_menu.updated = 1;
+						gui_encoder2_menu(&enc2_menu);
+						display2_mode_subset(0);
 				}
 			}
 #else
-				display_redrawfreqmodesbars(0);			/* Обновление дисплея - всё, включая частоту */
+				display_redrawfreqmodesbarsnow(0, NULL);			/* Обновление дисплея - всё, включая частоту */
 			}
 #endif /* WITHTOUCHGUI */
 	#if WITHDEBUG
@@ -17814,19 +17997,25 @@ hamradio_main_step(void)
 	#endif /* WITHDEBUG */
 	#if WITHKEYBOARD
 			if (kbready != 0)
+
 			{
 				if (processkeyboard(kbch))
 				{
 					/* обновление индикатора без сохранения состояния диапазона */
 					encoder_clear();				/* при возможном уменьшении шага исключение случайного накопления */
-					display_redrawfreqmodesbars(0);			/* Обновление дисплея - всё, включая частоту */
+	#if WITHTOUCHGUI
+					display_redrawfreqstimed(1);
+					display_redrawmodestimed(1);
+	#else
+					display_redrawfreqmodesbarsnow(0, NULL);			/* Обновление дисплея - всё, включая частоту */
+	#endif /* WITHTOUCHGUI */
 				} // end keyboard processing
 			}
 	#endif /* WITHKEYBOARD */
 			if (processmodem())
 			{
 				/* обновление индикатора без сохранения состояния диапазона */
-				display_redrawfreqmodesbars(0);			/* Обновление дисплея - всё, включая частоту */
+				display_redrawfreqmodesbarsnow(0, NULL);			/* Обновление дисплея - всё, включая частоту */
 			} // end keyboard processing
 
 			//auto int marker;
@@ -17880,8 +18069,7 @@ hamradio_main_step(void)
 				}
 			}
 			#if WITHTOUCHGUI
-				encoder2busy = check_encoder2(nrotate2);
-				process_gui();
+				encoder2_busy = gui_check_encoder2(nrotate2);
 			#endif /* WITHTOUCHGUI */
 		}
 		break;
@@ -17892,23 +18080,46 @@ hamradio_main_step(void)
 	return STTE_OK;
 }
 
-#if WITHTOUCHGUI
-uint_fast8_t send_key_code (uint_fast8_t code)
+void hamradio_set_lockmode(uint_fast8_t lock)
 {
-	processkeyboard(code);
-	display_redrawfreqs(1);
-	return editfreqmode;
+	lockmode = lock != 0;
+}
+
+uint_fast8_t hamradio_set_freq(uint_fast32_t freq)
+{
+	if (freqvalid(freq, gtx))
+	{
+		const uint_fast8_t bi = getbankindex_tx(gtx);
+		vindex_t vi = getvfoindex(bi);
+		gfreqs [bi] = freq;
+		savebandfreq(vi, bi);
+		updateboard(1, 0);
+		return 1;
+	}
+	return 0;
 }
 
 
-void set_agc_off(void)
+#if WITHTOUCHGUI
+
+void hamradio_disable_keyboard_redirect (void)
+{
+	keyboard_redirect = 0;
+}
+
+void hamradio_enable_keyboard_redirect (void)
+{
+	keyboard_redirect = 1;
+}
+
+void hamradio_set_agc_off(void)
 {
 	gagcoff = 1;
 	board_set_agc(BOARD_AGCCODE_OFF);
 	updateboard (1, 0);
 }
 
-void set_agc_fast(void)
+void hamradio_set_agc_fast(void)
 {
 	gagcoff = 0;
 	board_set_agc(BOARD_AGCCODE_ON);
@@ -17923,7 +18134,7 @@ void set_agc_fast(void)
 	updateboard (1, 0);
 }
 
-void set_agc_slow(void)
+void hamradio_set_agc_slow(void)
 {
 	gagcoff = 0;
 	board_set_agc(BOARD_AGCCODE_ON);
@@ -17938,7 +18149,7 @@ void set_agc_slow(void)
 	updateboard (1, 0);
 }
 
-uint_fast8_t get_bp_type(void)
+uint_fast8_t hamradio_get_bp_type(void)
 {
 	const uint_fast8_t tx = hamradio_get_tx();
 	const uint_fast8_t asubmode = getasubmode(0);
@@ -17948,7 +18159,7 @@ uint_fast8_t get_bp_type(void)
 	return bwsetsc [bwseti].prop [pos]->type;
 }
 
-uint_fast8_t get_low_bp(int_least16_t rotate)
+uint_fast8_t hamradio_get_low_bp(int_least16_t rotate)
 {
 	const uint_fast8_t tx = hamradio_get_tx();
 	const uint_fast8_t asubmode = getasubmode(0);
@@ -17981,7 +18192,7 @@ uint_fast8_t get_low_bp(int_least16_t rotate)
 	return low;
 }
 
-uint_fast8_t get_high_bp(int_least16_t rotate)
+uint_fast8_t hamradio_get_high_bp(int_least16_t rotate)
 {
 	const uint_fast8_t tx = hamradio_get_tx();
 	const uint_fast8_t asubmode = getasubmode(0);
@@ -17994,7 +18205,7 @@ uint_fast8_t get_high_bp(int_least16_t rotate)
 	switch (p->type)
 	{
 	case BWSET_WIDE:
-		if (rotate != 0 && (p->right100 + rotate) * 10 > p->left10_width10 && (p->right100 + rotate) < 45)
+		if (rotate != 0 && (p->right100 + rotate) * 10 > p->left10_width10 && (p->right100 + rotate) < 50)
 		{
 			p->right100 += rotate;
 			updateboard (1, 0);
@@ -18014,7 +18225,7 @@ uint_fast8_t get_high_bp(int_least16_t rotate)
 	return high;
 }
 
-uint_fast8_t get_multilinemenu_block_groups(menu_names_t * vals)
+uint_fast8_t hamradio_get_multilinemenu_block_groups(menu_names_t * vals)
 {
 	uint_fast16_t el;
 	uint_fast8_t count = 0;
@@ -18026,7 +18237,7 @@ uint_fast8_t get_multilinemenu_block_groups(menu_names_t * vals)
 		if (ismenukind(mv, ITEM_GROUP))
 		{
 			menu_names_t * const v = & vals[count];
-			strcpy (v->name, mv->label);
+			safestrcpy(v->name, ARRAY_SIZE(v->name), mv->label);
 			v->index = el;
 			count++;
 		}
@@ -18034,7 +18245,7 @@ uint_fast8_t get_multilinemenu_block_groups(menu_names_t * vals)
 	return count;
 }
 
-uint_fast8_t get_multilinemenu_block_params(menu_names_t * vals, uint_fast8_t index)
+uint_fast8_t hamradio_get_multilinemenu_block_params(menu_names_t * vals, uint_fast8_t index)
 {
 	uint_fast16_t el;
 	uint_fast8_t count = 0;
@@ -18047,7 +18258,7 @@ uint_fast8_t get_multilinemenu_block_params(menu_names_t * vals, uint_fast8_t in
 		if (ismenukind(mv, ITEM_VALUE))
 		{
 			menu_names_t * const v = & vals[count];
-			strcpy (v->name, mv->label);
+			safestrcpy (v->name, ARRAY_SIZE(v->name), mv->label);
 			v->index = el;
 			count++;
 		}
@@ -18055,7 +18266,7 @@ uint_fast8_t get_multilinemenu_block_params(menu_names_t * vals, uint_fast8_t in
 	return count;
 }
 
-void get_multilinemenu_block_vals(menu_names_t * vals, uint_fast8_t index, uint_fast8_t cnt)
+void hamradio_get_multilinemenu_block_vals(menu_names_t * vals, uint_fast8_t index, uint_fast8_t cnt)
 {
 	uint_fast16_t el;
 	uint_fast8_t count = 0;
@@ -18066,15 +18277,18 @@ void get_multilinemenu_block_vals(menu_names_t * vals, uint_fast8_t index, uint_
 		if (ismenukind(mv, ITEM_VALUE))
 		{
 			menu_names_t * const v = & vals [count];
-			display_menu_valxx(0, 0, (void *) mv);
-			strcpy (v->name, menuw);
+			dctx_t dctx;
+			dctx.type = DCTX_MENU;
+			dctx.pv = mv;
+			display_menu_valxx(0, 0, & dctx);
+			safestrcpy (v->name, ARRAY_SIZE(v->name), menuw);
 			v->index = el;
 			count++;
 		}
 	}
 }
 
-const char * gui_edit_menu_item(uint_fast8_t index, int_least16_t rotate)
+const char * hamradio_gui_edit_menu_item(uint_fast8_t index, int_least16_t rotate)
 {
 	const FLASHMEM struct menudef * const mp = & menutable [index];
 	if (rotate != 0 && ismenukind(mp, ITEM_VALUE))
@@ -18114,28 +18328,34 @@ const char * gui_edit_menu_item(uint_fast8_t index, int_least16_t rotate)
 					nextfreq(* pv8, * pv8 + (rotate * step), step, upper + (uint_fast32_t) step);
 			}
 		}
-		display_menu_valxx(0, 0, (void *) mp);
 		updateboard(1, 0);
+		display_redrawfreqstimed(1);
+		display_redrawmodestimed(1);
 #if (NVRAM_TYPE != NVRAM_TYPE_CPUEEPROM)
 		savemenuvalue(mp);		/* сохраняем отредактированное значение */
 #endif
 		}
+	dctx_t dctx;
+	dctx.type = DCTX_MENU;
+	dctx.pv = mp;
+	display_menu_valxx(0, 0, & dctx);
 	return menuw;
 }
 
-void set_menu_cond (uint_fast8_t m)
+void hamradio_set_menu_cond (uint_fast8_t m)
 {
 	is_menu_opened = m;
 }
 
-void change_submode(uint_fast8_t newsubmode)
+void hamradio_change_submode(uint_fast8_t newsubmode)
 {
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* VFO bank index */
 	const uint_fast8_t defcol = locatesubmode(newsubmode, & gmoderows [bi]);	/* строка/колонка для SSB. Что делать, если не нашли? */
 	putmodecol(gmoderows [bi], defcol, bi);	/* внести новое значение в битовую маску */
 	gsubmodechange(getsubmode(bi), bi);
 	updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
-	display_redrawfreqmodesbars(0);
+	display_redrawfreqstimed(1);
+	display_redrawmodestimed(1);
 }
 
 #endif /* WITHTOUCHGUI */
@@ -18432,6 +18652,21 @@ void bootloader_detach(uintptr_t ip)
 		;
 }
 
+/* Вызов заказан вызывется из обработчика USB прерываний EP0 */
+void bootloader_deffereddetach(void * arg)
+{
+	  uintptr_t ip;
+	  if (bootloader_get_start(BOOTLOADER_APPAREA, & ip) == 0)
+	  {
+			/* Perform an Attach-Detach operation on USB bus */
+#if WITHUSBHW
+			board_usb_deactivate();
+			board_usb_deinitialize();
+#endif /* WITHUSBHW */
+			bootloader_detach(ip);
+	  }
+}
+
 static void bootloader_mainloop(void)
 {
 	board_set_bglight(WITHLCDBACKLIGHTMIN);
@@ -18445,6 +18680,9 @@ ddd:
 #if WITHUSBHW
 	for (;;)
 	{
+		uint_fast8_t kbch, kbready;
+		processmessages(& kbch, & kbready, 0, NULL);
+
 #if WITHDEBUG
 		char c;
 		if (dbg_getchar(& c))

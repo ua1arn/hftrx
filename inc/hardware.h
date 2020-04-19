@@ -433,6 +433,7 @@ void hardware_adc_initialize(void);
 		#define RAMFUNC_NONILINE // __attribute__((__section__(".ramfunc"), noinline))
 		#define RAMFUNC			 // __attribute__((__section__(".ramfunc")))
 		#define RAMNOINIT_D1	__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
+		#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
 		#define RAMFRAMEBUFF	__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
 		#define RAMDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 		#define RAMBIGDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
@@ -445,6 +446,7 @@ void hardware_adc_initialize(void);
 		#define RAMFUNC_NONILINE __attribute__((__section__(".itcm"), noinline))
 		#define RAMFUNC			 __attribute__((__section__(".itcm")))
 		#define RAMNOINIT_D1	__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
+		#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
 		#define RAMFRAMEBUFF	__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
 		#define RAMDTCM			__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 		#define RAMBIGDTCM		__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
@@ -452,11 +454,12 @@ void hardware_adc_initialize(void);
 		#define RAMHEAP __attribute__((used, section(".heap"), aligned(64))) // memory used as heap zone
 	#elif (CPUSTYLE_STM32H7XX)
 		#define VTRATTR	__attribute__ ((section("vtable"), used, aligned(256 * 4)))
-		#define FLASHMEMINIT	//__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
-		#define FLASHMEMINITFUNC	//__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
+		#define FLASHMEMINIT	__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
+		#define FLASHMEMINITFUNC	__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 		#define RAMFUNC_NONILINE __attribute__((noinline,__section__(".itcm")))  // удаление управления noinline добавило 2-3 процента быстродействия __attribute__((__section__(".ramfunc"), noinline))
 		#define RAMFUNC			 __attribute__((__section__(".itcm")))
 		#define RAMNOINIT_D1	__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
+		#define RAM_D2			__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
 		#define RAMFRAMEBUFF	__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
 		#define RAMDTCM			__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 		#define RAMBIGDTCM		__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
@@ -469,6 +472,7 @@ void hardware_adc_initialize(void);
 		#define RAMFUNC_NONILINE __attribute__((noinline,__section__(".itcm")))  // удаление управления noinline добавило 2-3 процента быстродействия __attribute__((__section__(".ramfunc"), noinline))
 		#define RAMFUNC			 __attribute__((__section__(".itcm")))
 		#define RAMNOINIT_D1	//__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
+		#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
 		#define RAMFRAMEBUFF	//__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
 		#define RAMDTCM			__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 		#define RAMBIGDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
@@ -481,6 +485,7 @@ void hardware_adc_initialize(void);
 		#define RAMFUNC_NONILINE  //__attribute__((__section__(".itcm"), noinline))
 		#define RAMFUNC			 // __attribute__((__section__(".itcm")))
 		#define RAMNOINIT_D1	//__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
+		#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
 		#define RAMFRAMEBUFF	//__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
 		#define RAMDTCM			__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 		#define RAMBIGDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
@@ -493,6 +498,7 @@ void hardware_adc_initialize(void);
 		#define RAMFUNC_NONILINE // __attribute__((__section__(".ramfunc"), noinline))  
 		#define RAMFUNC			 // __attribute__((__section__(".ramfunc")))  
 		#define RAMNOINIT_D1	//__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
+		#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
 		#define RAMFRAMEBUFF	//__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
 		#define RAMDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 		#define RAMBIGDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
@@ -505,6 +511,7 @@ void hardware_adc_initialize(void);
 		#define RAMFUNC_NONILINE __attribute__((noinline,__section__(".itcm")))  // удаление управления noinline добавило 2-3 процента быстродействия __attribute__((__section__(".ramfunc"), noinline))
 		#define RAMFUNC			 __attribute__((__section__(".itcm")))
 		#define RAMNOINIT_D1	//__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
+		#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
 		#define RAMFRAMEBUFF	//__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
 		#define RAMDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 		#define RAMBIGDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
@@ -682,7 +689,7 @@ int dbg_getchar(char * r);
 void i2c_initialize(void);
 void i2c_start(uint_fast8_t address);
 
-void i2c_read(uint_fast8_t * pdata, uint_fast8_t acknak);
+void i2c_read(uint8_t * pdata, uint_fast8_t acknak);
 
 #define I2C_READ_ACK 0  // i2c_read parameter
 #define I2C_READ_ACK_1 1  // i2c_read parameter
@@ -700,11 +707,15 @@ uint32_t hardware_get_random(void);
 void arm_hardware_ltdc_initialize(void);	// LCD-TFT Controller (LTDC) with framebuffer
 void arm_hardware_dma2d_initialize(void);	// Graphic engine
 void arm_hardware_sdram_initialize(void);	// External memory region(s)
-void arm_hardware_ltdc_pip_set(uintptr_t addr);	// set PIP framebuffer address
-void arm_hardware_ltdc_pip_off(void);	// set PIP framebuffer address
+void arm_hardware_ltdc_main_set(uintptr_t addr);	// Set MAIN frame buffer address.
+void arm_hardware_ltdc_pip_set(uintptr_t addr);	// Set PIP frame buffer address.
+void arm_hardware_ltdc_pip_off(void);	// Turn PIP off (main layer only).
 
-uint_fast8_t usbd_cdc_getrts(void);
-uint_fast8_t usbd_cdc_getdtr(void);
+uint_fast8_t usbd_cdc1_getrts(void);
+uint_fast8_t usbd_cdc1_getdtr(void);
+
+uint_fast8_t usbd_cdc2_getrts(void);
+uint_fast8_t usbd_cdc2_getdtr(void);
 
 void AT91F_PIOA_IRQHandler(void);
 
@@ -786,10 +797,9 @@ calcdivround2(
 enum messagetypes
 {
 	MSGT_EMPTY,
-	MSGT_1SEC,
-	MSGT_UPDATEBOARD,	// updateboard(full, mute): buff [0]: full, buff [1]: mute
 	MSGT_KEYB,	// 1 byte - key code
 	MSGT_CAT,	// 12 bytes as parameter
+	MSGT_DPC,	// 4 bytes - function address, 4 bytes - parameter
 	//
 	MSGT_count
 };
@@ -798,6 +808,13 @@ uint_fast8_t takemsgready_user(uint8_t * * dest);	// Буферы с приня�
 void releasemsgbuffer_user(uint8_t * dest);	// Освобождение обработанного буфера сообщения
 size_t takemsgbufferfree_low(uint8_t * * dest);	// Буфер для формирования сообщения
 void placesemsgbuffer_low(uint_fast8_t type, uint8_t * dest);	// поместить сообщение в очередь к исполнению
+
+typedef void (* udpcfn_t)(void *);
+typedef void (* udpcfn2_t)(void *, void *);
+typedef void (* udpcfn3_t)(void *, void *, void *);
+uint_fast8_t board_dpc(udpcfn_t func, void * arg); // Запрос отложенного вызова user-mode функций
+uint_fast8_t board_dpc2(udpcfn2_t func, void * arg1, void * arg2); // Запрос отложенного вызова user-mode функций
+uint_fast8_t board_dpc3(udpcfn3_t func, void * arg1, void * arg2, void * arg3); // Запрос отложенного вызова user-mode функций
 
 #include "list.h"
 
@@ -814,14 +831,19 @@ void ticker_initialize(ticker_t * p, unsigned nticks, void (* cb)(void *), void 
 void bootloader_copyapp(uintptr_t apparea);
 uint_fast8_t bootloader_get_start(uintptr_t apparea, uintptr_t * ip);
 void bootloader_detach(uintptr_t ip);
+void bootloader_deffereddetach(void * arg);
 
-#define HARDWARE_ADCINPUTS	40	/* до 8-ти входов АЦП */
 
 #define BOARD_ADCX0BASE 24	// on-board ADC base index
 #define BOARD_ADCX1BASE 32	// PA board ADC base index
+#define BOARD_ADCMRRBASE 40	// mirror - значения АЦП устанавливабтся выходами программных компонентов, без считывания с аппаратуры.
+
+#define HARDWARE_ADCINPUTS	56	/* до 16-ти входов АЦП на каждый тип источников */
+
 #define BOARD_ADCXIN(ch) (BOARD_ADCX0BASE + (ch))
 #define BOARD_ADCX1IN(ch) (BOARD_ADCX0BASE + (ch))
 #define BOARD_ADCX2IN(ch) (BOARD_ADCX1BASE + (ch))
+#define BOARD_ADCMRRIN(ch) (BOARD_ADCMRRBASE + (ch))
 
 // Cortex-A7/A9 handlers
 void Undef_Handler(void);
@@ -840,6 +862,7 @@ void arm_hardware_set_handler_system(uint_fast16_t int_id, void (* handler)(void
 void audioproc_spool_user(void);	// вызывать при выполнении длительных операций
 
 void hardware_set_dotclock(unsigned long dotfreq);
+void hardware_nonguiyield(void);
 
 #ifdef __cplusplus
 }
@@ -856,5 +879,7 @@ void hardware_set_dotclock(unsigned long dotfreq);
 #define AUDIORECBUFFSIZE16 (16384)	// размер данных должен быть не меньше размера кластера на SD карте
 
 uint_fast32_t display_getdotclock(void);
+
+#define  ARRAY_SIZE(a)  (sizeof(a)/sizeof(a[0]))
 
 #endif // HARDWARE_H_INCLUDED

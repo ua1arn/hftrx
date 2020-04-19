@@ -346,8 +346,8 @@ static void r7s721_usb0_dma1_dmatx_initialize(uint_fast8_t pipe)
     //DMAC12.N1DA_n = (uintptr_t) & USBx->D1FIFO.UINT32;	// Fixed destination address
 
     /* Set Transfer Size */
-    //DMAC12.N0TB_n = DMABUFFSIZE16 * sizeof (int16_t);	// размер в байтах
-    //DMAC12.N1TB_n = DMABUFFSIZE16 * sizeof (int16_t);	// размер в байтах
+    //DMAC12.N0TB_n = DMABUFFSIZE16 * sizeof (aubufv_t);	// размер в байтах
+    //DMAC12.N1TB_n = DMABUFFSIZE16 * sizeof (aubufv_t);	// размер в байтах
 
 	// Values from Table 9.4 On-Chip Peripheral Module Requests
 	// USB0_DMA1 (channel 1 transmit FIFO empty)
@@ -432,8 +432,8 @@ static void r7s721_usb1_dma1_dmatx_initialize(uint_fast8_t pipe)
     //DMAC12.N1DA_n = (uintptr_t) & USBx->D1FIFO.UINT32;	// Fixed destination address
 
     /* Set Transfer Size */
-    //DMAC12.N0TB_n = DMABUFFSIZE16 * sizeof (int16_t);	// размер в байтах
-    //DMAC12.N1TB_n = DMABUFFSIZE16 * sizeof (int16_t);	// размер в байтах
+    //DMAC12.N0TB_n = DMABUFFSIZE16 * sizeof (aubufv_t);	// размер в байтах
+    //DMAC12.N1TB_n = DMABUFFSIZE16 * sizeof (aubufv_t);	// размер в байтах
 
 	// Values from Table 9.4 On-Chip Peripheral Module Requests
 	// USB1_DMA1 (channel 1 transmit FIFO empty)
@@ -525,8 +525,8 @@ void refreshDMA_uacin(void)
 
 #if WITHDMAHW_UACOUT
 
-static USBALIGN_BEGIN uint8_t uacoutbuff0 [UAC_OUT48_DATA_SIZE] USBALIGN_END;
-static USBALIGN_BEGIN uint8_t uacoutbuff1 [UAC_OUT48_DATA_SIZE] USBALIGN_END;
+static USBALIGN_BEGIN uint8_t uacoutbuff0 [UACOUT_AUDIO48_DATASIZE] USBALIGN_END;
+static USBALIGN_BEGIN uint8_t uacoutbuff1 [UACOUT_AUDIO48_DATASIZE] USBALIGN_END;
 
 // USB AUDIO
 // DMA по приему USB0 DMA0 - обработчик прерывания
@@ -545,13 +545,13 @@ static RAMFUNC_NONILINE void r7s721_usbX_dma0_dmarx_handler(void)
 	// Прием с автопереключением больше нигде не подтвержден.
 	if (b == 0)
 	{
-		uacout_buffer_save_realtime(uacoutbuff0, UAC_OUT48_DATA_SIZE);
-		arm_hardware_flush_invalidate((uintptr_t) uacoutbuff0, UAC_OUT48_DATA_SIZE);
+		uacout_buffer_save_realtime(uacoutbuff0, UACOUT_AUDIO48_DATASIZE, UACOUT_AUDIO48_FMT_CHANNELS, UACOUT_AUDIO48_SAMPLEBITS);
+		arm_hardware_flush_invalidate((uintptr_t) uacoutbuff0, UACOUT_AUDIO48_DATASIZE);
 	}
 	else
 	{
-		uacout_buffer_save_realtime(uacoutbuff1, UAC_OUT48_DATA_SIZE);
-		arm_hardware_flush_invalidate((uintptr_t) uacoutbuff1, UAC_OUT48_DATA_SIZE);
+		uacout_buffer_save_realtime(uacoutbuff1, UACOUT_AUDIO48_DATASIZE, UACOUT_AUDIO48_FMT_CHANNELS, UACOUT_AUDIO48_SAMPLEBITS);
+		arm_hardware_flush_invalidate((uintptr_t) uacoutbuff1, UACOUT_AUDIO48_DATASIZE);
 	}
 }
 
@@ -562,8 +562,8 @@ static void r7s721_usb0_dma0_dmarx_initialize(uint_fast8_t pipe)
 {
 	USB_OTG_GlobalTypeDef * const USBx = & USB200;
 
-	arm_hardware_flush_invalidate((uintptr_t) uacoutbuff0, UAC_OUT48_DATA_SIZE);
-	arm_hardware_flush_invalidate((uintptr_t) uacoutbuff1, UAC_OUT48_DATA_SIZE);
+	arm_hardware_flush_invalidate((uintptr_t) uacoutbuff0, UACOUT_AUDIO48_DATASIZE);
+	arm_hardware_flush_invalidate((uintptr_t) uacoutbuff1, UACOUT_AUDIO48_DATASIZE);
 
 	enum { id = 13 };	// 13: DMAC13
 	// DMAC13
@@ -577,8 +577,8 @@ static void r7s721_usb0_dma0_dmarx_initialize(uint_fast8_t pipe)
 	DMAC13.N1DA_n = (uintptr_t) uacoutbuff1;
 
     /* Set Transfer Size */
-    DMAC13.N0TB_n = UAC_OUT48_DATA_SIZE;	// размер в байтах
-    DMAC13.N1TB_n = UAC_OUT48_DATA_SIZE;	// размер в байтах
+    DMAC13.N0TB_n = UACOUT_AUDIO48_DATASIZE;	// размер в байтах
+    DMAC13.N1TB_n = UACOUT_AUDIO48_DATASIZE;	// размер в байтах
 
 	// Values from Table 9.4 On-Chip Peripheral Module Requests
 	// USB0_DMA0 (channel 0 receive FIFO full)
@@ -652,8 +652,8 @@ static void r7s721_usb1_dma0_dmarx_initialize(uint_fast8_t pipe)
 {
 	USB_OTG_GlobalTypeDef * const USBx = & USB201;
 
-	arm_hardware_flush_invalidate((uintptr_t) uacoutbuff0, UAC_OUT48_DATA_SIZE);
-	arm_hardware_flush_invalidate((uintptr_t) uacoutbuff1, UAC_OUT48_DATA_SIZE);
+	arm_hardware_flush_invalidate((uintptr_t) uacoutbuff0, UACOUT_AUDIO48_DATASIZE);
+	arm_hardware_flush_invalidate((uintptr_t) uacoutbuff1, UACOUT_AUDIO48_DATASIZE);
 
 	enum { id = 13 };	// 13: DMAC13
 	// DMAC13
@@ -667,8 +667,8 @@ static void r7s721_usb1_dma0_dmarx_initialize(uint_fast8_t pipe)
 	DMAC13.N1DA_n = (uintptr_t) uacoutbuff1;
 
     /* Set Transfer Size */
-    DMAC13.N0TB_n = UAC_OUT48_DATA_SIZE;	// размер в байтах
-    DMAC13.N1TB_n = UAC_OUT48_DATA_SIZE;	// размер в байтах
+    DMAC13.N0TB_n = UACOUT_AUDIO48_DATASIZE;	// размер в байтах
+    DMAC13.N1TB_n = UACOUT_AUDIO48_DATASIZE;	// размер в байтах
 
 	// Values from Table 9.4 On-Chip Peripheral Module Requests
 	// USB1_DMA0 (channel 0 receive FIFO full)
@@ -1423,7 +1423,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 		const uint_fast8_t pipe = HARDWARE_USBD_PIPE_ISOC_OUT;	// PIPE1
 		const uint_fast8_t epnum = USBD_EP_AUDIO_OUT;
 		const uint_fast8_t dir = 0;
-		const uint_fast16_t maxpacket = UAC_OUT48_DATA_SIZE;
+		const uint_fast16_t maxpacket = UACOUT_AUDIO48_DATASIZE;
 		const uint_fast8_t dblb = 1;
 		//PRINTF(PSTR("usbd_pipe_initialize: pipe=%u endpoint=%02X\n"), pipe, epnum);
 
@@ -2386,7 +2386,7 @@ HAL_StatusTypeDef USB_EP0StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDe
 		}
 		else
 		{
-			if(ep->xfer_len > ep->maxpacket)
+			if (ep->xfer_len > ep->maxpacket)
 			{
 				ep->xfer_len = ep->maxpacket;
 			}
@@ -6253,30 +6253,31 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 	PRINTF(PSTR("usbd_fifo_initialize1: 4*(full4-last4)=%u\n"), 4 * (full4 - last4));
 
 #if WITHUSBUAC
+
+#if WITHUSBUACIN2
+	#if WITHRTS96
+		const int nuacinpackets = 1 * mul2, nuacoutpackets = 1 * mul2;
+	#elif WITHRTS192
+		const int nuacinpackets = 1 * mul2, nuacoutpackets = 1 * mul2;
+	#else /* WITHRTS96 || WITHRTS192 */
+		const int nuacinpackets = 1 * mul2, nuacoutpackets = 1 * mul2;
+	#endif /* WITHRTS96 || WITHRTS192 */
+#else /* WITHUSBUACIN2 */
+	#if WITHRTS96
+		const int nuacinpackets = 1 * mul2, nuacoutpackets = 1 * mul2;
+	#elif WITHRTS192
+		const int nuacinpackets = 1 * mul2, nuacoutpackets = 1 * mul2;
+	#else /* WITHRTS96 || WITHRTS192 */
+		const int nuacinpackets = 2 * mul2, nuacoutpackets = 1 * mul2;
+	#endif /* WITHRTS96 || WITHRTS192 */
+#endif /* WITHUSBUACIN2 */
+
+#if WITHUSBUACIN
 	{
 		/* endpoint передачи звука в компьютер */
 		const uint_fast8_t pipe = (USBD_EP_AUDIO_IN) & 0x7F;
 
-		numoutendpoints += 1;
-#if WITHUSBUACIN2
-		#if WITHRTS96
-			const int nuacinpackets = 1 * mul2, nuacoutpackets = 1 * mul2;
-		#elif WITHRTS192
-			const int nuacinpackets = 1 * mul2, nuacoutpackets = 1 * mul2;
-		#else /* WITHRTS96 || WITHRTS192 */
-			const int nuacinpackets = 1 * mul2, nuacoutpackets = 1 * mul2;
-		#endif /* WITHRTS96 || WITHRTS192 */
-#else /* WITHUSBUACIN2 */
-		#if WITHRTS96
-			const int nuacinpackets = 1 * mul2, nuacoutpackets = 1 * mul2;
-		#elif WITHRTS192
-			const int nuacinpackets = 1 * mul2, nuacoutpackets = 1 * mul2;
-		#else /* WITHRTS96 || WITHRTS192 */
-			const int nuacinpackets = 2 * mul2, nuacoutpackets = 1 * mul2;
-		#endif /* WITHRTS96 || WITHRTS192 */
-#endif /* WITHUSBUACIN2 */
 		const uint_fast16_t uacinmaxpacket = usbd_getuacinmaxpacket();
-		maxoutpacketsize4 = ulmax16(maxoutpacketsize4, nuacoutpackets * size2buff4(UAC_OUT48_DATA_SIZE));
 
 		const uint_fast16_t size4 = nuacinpackets * (size2buff4(uacinmaxpacket) + add3tx);
 		ASSERT(last4 >= size4);
@@ -6299,6 +6300,13 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 		PRINTF(PSTR("usbd_fifo_initialize3 - UAC3 %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
 	}
 #endif /* WITHUSBUACIN2 */
+#endif /* WITHUSBUACIN */
+#if WITHUSBUACOUT
+	{
+		numoutendpoints += 1;
+		maxoutpacketsize4 = ulmax16(maxoutpacketsize4, nuacoutpackets * size2buff4(UACOUT_AUDIO48_DATASIZE));
+	}
+#endif /* WITHUSBUACOUT */
 #endif /* WITHUSBUAC */
 
 #if WITHUSBCDC
@@ -6394,7 +6402,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 		char b [64];
 		PRINTF(PSTR("usbd_fifo_initialize error: base4=%u, last4=%u, fullsize=%u\n"), (base4 * 4), (last4 * 4), fullsize);
 		local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("used=%u"), (base4 * 4) + (fullsize - last4 * 4));
-		display_setcolors(COLORMAIN_RED, BGCOLOR);
+		colmain_setcolors(COLORMAIN_RED, BGCOLOR);
 		display_at(0, 0, b);
 		for (;;)
 			;
@@ -6407,7 +6415,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 		char b [64];
 
 		local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("used=%u"), (base4 * 4) + (fullsize - last4 * 4));
-		display_setcolors(COLORMAIN_GREEN, BGCOLOR);
+		colmain_setcolors(COLORMAIN_GREEN, BGCOLOR);
 		display_at(0, 0, b);
 		HARDWARE_DELAY_MS(2000);
 #endif

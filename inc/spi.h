@@ -497,26 +497,17 @@ void hardware_spi_master_send_frame_16b(const uint16_t * pBuffer, uint_fast32_t 
 // Serial flash (boot memory) interface
 void spidf_initialize(void);
 void spidf_uninitialize(void);
-void spidf_select(spitarget_t target, uint_fast8_t mode);
-void spidf_unselect(spitarget_t target);
-void spidf_to_read(spitarget_t target);
-void spidf_to_write(spitarget_t target);
-void spidf_progval8_p1(spitarget_t target, uint_fast8_t sendval);
-void spidf_progval8_p2(spitarget_t target, uint_fast8_t sendval);
-uint_fast8_t spidf_complete(spitarget_t target);
-uint_fast8_t spidf_progval8(spitarget_t target, uint_fast8_t sendval);
-uint_fast8_t spidf_read_byte(spitarget_t target, uint_fast8_t sendval);
 
-unsigned char dataflash_read_status(
-	spitarget_t target	/* addressing to chip */
-	);
-int timed_dataflash_read_status(spitarget_t target);
+uint_fast8_t dataflash_read_status(void);
+int timed_dataflash_read_status(void);
 int testchipDATAFLASH(void);
 int prepareDATAFLASH(void);
-void sectoreraseDATAFLASH(unsigned long flashoffset);
-int writeDATAFLASH(unsigned long flashoffset, const unsigned char * data, unsigned long len);
-int verifyDATAFLASH(unsigned long flashoffset, const unsigned char * data, unsigned long len);
-void readDATAFLASH(unsigned long flashoffset, unsigned char * data, unsigned long len);
+int sectoreraseDATAFLASH(unsigned long flashoffset);
+int writeDATAFLASH(unsigned long flashoffset, const uint8_t * data, unsigned long len);
+int verifyDATAFLASH(unsigned long flashoffset, const uint8_t * data, unsigned long len);
+int readDATAFLASH(unsigned long flashoffset, uint8_t * data, unsigned long len);
+void writeEnableDATAFLASH(void);
+void writeDisableDATAFLASH(void);
 
 void bootloader_readimage(unsigned long flashoffset, uint8_t * dest, unsigned Len);
 

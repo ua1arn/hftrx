@@ -72,18 +72,18 @@ static const FLASHMEM uint_fast8_t elkeyout [ELKEY_STATE_MAX] =
 
 typedef struct elkey_tag
 {
-	uint_fast8_t state;
-	uint_fast16_t morse;	// текущий передаваемый знак
-	uint_fast8_t ticks;
-	uint_fast8_t maxticks;
-	uint_fast8_t ignore_dit;	/* задержка восстановления чувствительности к нажатиям манипулятора после окончания формирования элемента знака. */
-	uint_fast8_t ignore_dash;	/* задержка восстановления чувствительности к нажатиям манипулятора после окончания формирования элемента знака. */
+	uint8_t state;
+	uint16_t morse;	// текущий передаваемый знак
+	uint8_t ticks;
+	uint8_t maxticks;
+	uint8_t ignore_dit;	/* задержка восстановления чувствительности к нажатиям манипулятора после окончания формирования элемента знака. */
+	uint8_t ignore_dash;	/* задержка восстановления чувствительности к нажатиям манипулятора после окончания формирования элемента знака. */
 
 #if WITHVIBROPLEX
-	uint_fast8_t vibroplex_slope /* = 0 */;		// скорость уменьшения длительности точки и паузы
-	uint_fast8_t vibroplex_grade;		// Накопитель (целая и дробная часть) "уменьшителя"
+	uint8_t vibroplex_slope /* = 0 */;		// скорость уменьшения длительности точки и паузы
+	uint8_t vibroplex_grade;		// Накопитель (целая и дробная часть) "уменьшителя"
 #endif /* WITHVIBROPLEX */
-	uint_fast8_t vibroplex_derate;		// целочисленная часть "уменьшителя" длительности
+	uint8_t vibroplex_derate;		// целочисленная часть "уменьшителя" длительности
 } elkey_t;
 
 

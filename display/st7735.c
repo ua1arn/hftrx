@@ -61,6 +61,12 @@
 
 static uint_fast8_t colstart, rowstart, tabcolor; // May be overridden in init func
 
+// Тип для хранения горизонтальной координаты
+#if DIM_X > 254
+	typedef uint_fast16_t xholder_t;
+#else
+	typedef uint_fast8_t xholder_t;
+#endif
 
 // в режим передачи данных переводим сразу по окончании команд.
 static void st7735_put_char_begin(void)
@@ -102,12 +108,12 @@ static void st7735_put_char_end(void)
 
 
 #if WITHSPIEXT16
-	static COLOR_T fgcolor, bkcolor, halfcolor;
+	static COLORMAIN_T fgcolor, bkcolor, halfcolor;
 #else /* WITHSPIEXT16 */
 	static struct { uint_fast8_t first, second; } fgcolor, bkcolor, halfcolor;
 #endif
 
-static void st7735_setcolor(COLOR_T fg, COLOR_T bg, COLOR_T transient)
+static void st7735_setcolor(COLORMAIN_T fg, COLORMAIN_T bg, COLORMAIN_T transient)
 {
 #if WITHSPIEXT16
 	fgcolor = fg;
@@ -228,7 +234,7 @@ st7735_pixel_p3(
 static void 
 //NOINLINEAT
 st7735_colorpixel_p1(
-	COLOR_T color
+	COLORMAIN_T color
 	)
 {
 #if WITHSPIEXT16
@@ -246,7 +252,7 @@ st7735_colorpixel_p1(
 static void 
 //NOINLINEAT
 st7735_colorpixel_p2(
-	COLOR_T color
+	COLORMAIN_T color
 	)
 {
 #if WITHSPIEXT16
@@ -264,7 +270,7 @@ st7735_colorpixel_p2(
 static void 
 //NOINLINEAT
 st7735_colorpixel_p3(
-	COLOR_T color
+	COLORMAIN_T color
 	)
 {
 #if WITHSPIEXT16
@@ -465,7 +471,8 @@ smallfont_decode(uint_fast8_t c)
 }
 
 // Вызов этой функции только внутри display_wrdata_begin() и 	display_wrdata_end();
-static void st7735_put_char_small(char cc)
+static xholder_t
+st7735_put_char_small(xholder_t xpix, char cc)
 {
 	uint_fast8_t i = 0;
 	const uint_fast8_t c = smallfont_decode((unsigned char) cc);
@@ -474,11 +481,14 @@ static void st7735_put_char_small(char cc)
 	
 	for (; i < NBYTES; ++ i)
 		st7735_pix8(p [i]);	// Выдать восемь цветных пикселей
+
+	return xpix + NBYTES;
 }
 
 
 // Вызов этой функции только внутри display_wrdatabig_begin() и display_wrdatabig_end();
-static void st7735_put_char_big(char cc)
+static xholder_t
+st7735_put_char_big(xholder_t xpix, char cc)
 {
 	// '#' - узкий пробел
 	enum { NBV = (BIGCHARH / 8) }; // сколько байтов в одной вертикали
@@ -489,7 +499,7 @@ static void st7735_put_char_big(char cc)
 	
 #if WITHFONTSMOOTHING
 	uint_fast8_t col;
-	for (col = i / NBV; col < NBYTES / NBV; ++ col)
+	for (col = i / NBV; col < NBYTES / NBV; ++ col, ++ xpix)
 	{
 		uint_fast8_t last = 0;	// Фон
 		uint_fast8_t row;
@@ -498,14 +508,16 @@ static void st7735_put_char_big(char cc)
 
 	}
 #else /* WITHFONTSMOOTHING */
-	for (; i < NBYTES; ++ i)
+	for (; i < NBYTES; ++ i, ++ xpix)
 		st7735_pix8(p [i]);	// Выдать восемь цветных пикселей
 #endif /* WITHFONTSMOOTHING */
+	return xpix;
 }
 
 
 // Вызов этой функции только внутри display_wrdatabig_begin() и display_wrdatabig_end();
-static void st7735_put_char_half(char cc)
+static xholder_t
+st7735_put_char_half(xholder_t xpix, char cc)
 {
 	enum { NBV = (BIGCHARH / 8) }; // сколько байтов в одной вертикали
 	uint_fast8_t i = 0;
@@ -515,7 +527,7 @@ static void st7735_put_char_half(char cc)
 	
 #if WITHFONTSMOOTHING
 	uint_fast8_t col;
-	for (col = 0; col < NBYTES / NBV; ++ col)
+	for (col = 0; col < NBYTES / NBV; ++ col, ++ xpix)
 	{
 		uint_fast8_t last = 0;	// Фон
 		uint_fast8_t row;
@@ -524,19 +536,20 @@ static void st7735_put_char_half(char cc)
 
 	}
 #else /* WITHFONTSMOOTHING */
-	for (; i < NBYTES; ++ i)
+	for (; i < NBYTES; ++ i, ++ xpix)
 		st7735_pix8(p [i]);	// Выдать восемь цветных пикселей
 #endif /* WITHFONTSMOOTHING */
+	return xpix;
 }
 
-static uint_fast8_t st7735_y;	/* в пикселях */
+static uint_fast16_t st7735_y;	/* в пикселях */
 
 // открыть для записи полосу высотой с символ и шириной до правого края
 static void
 st7735_set_strype(uint_fast8_t height)
 {
-	const uint_fast8_t xs = st7735_y + colstart;
-	const uint_fast8_t xe = st7735_y + height - 1 + colstart;
+	const uint_fast16_t xs = st7735_y + colstart;
+	const uint_fast16_t xe = st7735_y + height - 1 + colstart;
 
 #if WITHSPIEXT16
 
@@ -569,22 +582,16 @@ st7735_set_strype(uint_fast8_t height)
 		spi_progval8_p1(targetlcd, xs);     // XSTART
 		spi_progval8_p2(targetlcd, xe);     // XEND
 	#else
-		spi_progval8_p1(targetlcd, 0x00);				// xs15:xs8
-		spi_progval8_p2(targetlcd, xs);     // XSTART
-		spi_progval8_p2(targetlcd, 0x00);				// xe7:xe0
-		spi_progval8_p2(targetlcd, xe);     // XEND
+		spi_progval8_p1(targetlcd, xs >> 8);				// xs15:xs8
+		spi_progval8_p2(targetlcd, xs >> 0);     // XSTART
+		spi_progval8_p2(targetlcd, xe >> 8);				// xe7:xe0
+		spi_progval8_p2(targetlcd, xe >> 0);     // XEND
 	#endif
 	spi_complete(targetlcd);
 	spi_unselect(targetlcd);	/* Disable SPI */
 
 #endif /* WITHSPIEXT16 */
 }
-// Тип для хранения горизонтальной координаты
-#if DIM_X > 254
-	typedef uint_fast16_t xholder_t;
-#else
-	typedef uint_fast8_t xholder_t;
-#endif
 
 /*
  Функция установки курсора в позицию x,y
@@ -643,23 +650,52 @@ st7735_set_addr_column(
 #endif /* WITHSPIEXT16 */
 }
 
-static void st7735_clear(COLOR_T bg)
+
+static void
+st7735_gotoxy(uint_fast8_t x, uint_fast8_t y)
+{
+	st7735_y = y * CHAR_H;		/* переход от символьных координат к экранным */
+	st7735_set_addr_column(x * CHAR_W);
+}
+
+// Координаты в пикселях
+void display_plotfrom(uint_fast16_t x, uint_fast16_t y)
+{
+	st7735_y = y;		/* переход от символьных координат к экранным */
+	st7735_set_addr_column(x);
+}
+
+void display_plotstart(
+	uint_fast16_t dy	// Высота окна в пикселях
+	)
+{
+	st7735_set_strype(dy);
+	st7735_put_char_begin();
+}
+
+void display_plotstop(void)
+{
+	st7735_put_char_end();
+}
+
+
+static void st7735_clear(COLORMAIN_T bg)
 {
 	unsigned long i;
 	
-	display_gotoxy(0, 0);
+	st7735_gotoxy(0, 0);
 	st7735_setcolor(COLORMAIN_WHITE, bg, bg);
 
 #if WITHSPIEXT16 && WITHSPIHWDMA
 	enum { LNBURST = 1 };
-	static ALIGNX_BEGIN PACKEDCOLOR565_T colorbuf [GXSIZE(DIM_X, LNBURST)] ALIGNX_END;
+	static ALIGNX_BEGIN PACKEDCOLORPIP_T colorbuf [GXSIZE(DIM_X, LNBURST)] ALIGNX_END;
 	for (i = 0; i < sizeof colorbuf / sizeof colorbuf [0]; ++ i)
 	{
 		colorbuf [i] = bg;
 	}
 	for (i = 0; i < DIM_Y; i += LNBURST)
 	{
-		display_colorbuffer_show(colorbuf, DIM_X, LNBURST, 0, i);
+		colpip_to_main(colorbuf, DIM_X, LNBURST, 0, i);
 	#if WITHINTEGRATEDDSP
 		audioproc_spool_user();		// решение проблем с прерыванием звука при стирании экрана
 	#endif /* WITHINTEGRATEDDSP */
@@ -1173,31 +1209,33 @@ void display_set_contrast(uint_fast8_t v)
 }
 
 #if ! LCDMODE_LTDC
-
 void 
 display_clear(void)
 {
-	const COLOR_T bg = display_getbgcolor();
+	const COLORMAIN_T bg = display_getbgcolor();
 
 	st7735_clear(bg);
 }
 
 void
-display_setcolors(COLOR_T fg, COLOR_T bg)
+colmain_setcolors(COLORMAIN_T fg, COLORMAIN_T bg)
 {
 	st7735_setcolor(fg, bg, bg);
 }
 
-void display_setcolors3(COLOR_T fg, COLOR_T bg, COLOR_T fgbg)
+void colmain_setcolors3(COLORMAIN_T fg, COLORMAIN_T bg, COLORMAIN_T fgbg)
 {
 	st7735_setcolor(fg, bg, fgbg);
 }
 
-void
-display_wrdata_begin(void)
+uint_fast16_t
+display_wrdata_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
 {
+	st7735_gotoxy(xcell, ycell);
 	st7735_set_strype(SMALLCHARH);
 	st7735_put_char_begin();
+	* yp = GRID2Y(ycell);
+	return GRID2X(xcell);
 }
 
 void
@@ -1206,11 +1244,14 @@ display_wrdata_end(void)
 	st7735_put_char_end();
 }
 
-void
-display_wrdata2_begin(void)
+uint_fast16_t
+display_wrdata2_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
 {
+	st7735_gotoxy(xcell, ycell);
 	st7735_set_strype(SMALLCHARH);
 	st7735_put_char_begin();
+	* yp = GRID2Y(ycell);
+	return GRID2X(xcell);
 }
 
 void
@@ -1219,11 +1260,14 @@ display_wrdata2_end(void)
 	st7735_put_char_end();
 }
 
-void
-display_wrdatabig_begin(void)
+uint_fast16_t
+display_wrdatabig_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
 {
+	st7735_gotoxy(xcell, ycell);
 	st7735_set_strype(BIGCHARH);	// same as HALFCHARH
 	st7735_put_char_begin();
+	* yp = GRID2Y(ycell);
+	return GRID2X(xcell);
 }
 
 
@@ -1242,11 +1286,14 @@ display_barcolumn(uint_fast8_t pattern)
 	st7735_pix8(pattern);
 }
 
-void
-display_wrdatabar_begin(void)
+uint_fast16_t
+display_wrdatabar_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
 {
+	st7735_gotoxy(xcell, ycell);
 	st7735_set_strype(CHAR_H);
 	st7735_put_char_begin();
+	* yp = GRID2Y(ycell);
+	return GRID2X(xcell);
 }
 
 void
@@ -1255,64 +1302,37 @@ display_wrdatabar_end(void)
 	st7735_put_char_end();
 }
 
-void
-display_put_char_big(uint_fast8_t c, uint_fast8_t lowhalf)
+uint_fast16_t
+display_put_char_big(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf)
 {
-	st7735_put_char_big(c);
+	return st7735_put_char_big(xpix, c);
 }
 
-void
-display_put_char_half(uint_fast8_t c, uint_fast8_t lowhalf)
+uint_fast16_t
+display_put_char_half(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf)
 {
-	st7735_put_char_half(c);
+	return st7735_put_char_half(xpix, c);
 }
 
 
 // Вызов этой функции только внутри display_wrdata_begin() и display_wrdata_end();
 // Используется при выводе на графический ндикатор, если ТРЕБУЕТСЯ переключать полосы отображения
-void
-display_put_char_small(uint_fast8_t c, uint_fast8_t lowhalf)
+uint_fast16_t
+display_put_char_small(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf)
 {
-	st7735_put_char_small(c);
+	return st7735_put_char_small(xpix, c);
 }
 
 // Вызов этой функции только внутри display_wrdata2_begin() и display_wrdata2_end();
 // Используется при выводе на графический ндикатор, если ТРЕБУЕТСЯ переключать полосы отображения
-void
-display_put_char_small2(uint_fast8_t c, uint_fast8_t lowhalf)
+uint_fast16_t
+display_put_char_small2(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf)
 {
-	st7735_put_char_small(c);
-}
-
-void
-display_gotoxy(uint_fast8_t x, uint_fast8_t y)
-{
-	st7735_y = y * CHAR_H;		/* переход от символьных координат к экранным */
-	st7735_set_addr_column(x * CHAR_W);
-}
-
-// Координаты в пикселях
-void display_plotfrom(uint_fast16_t x, uint_fast16_t y)
-{
-	st7735_y = y;		/* переход от символьных координат к экранным */
-	st7735_set_addr_column(x);
-}
-
-void display_plotstart(
-	uint_fast16_t height	// Высота окна в пикселях
-	)
-{
-	st7735_set_strype(height);
-	st7735_put_char_begin();
-}
-
-void display_plotstop(void)
-{
-	st7735_put_char_end();
+	return st7735_put_char_small(xpix, c);
 }
 
 void display_plot(
-	const PACKEDCOLOR_T * buffer, 
+	const PACKEDCOLORMAIN_T * buffer, 
 	uint_fast16_t dx,	// Размеры окна в пикселях
 	uint_fast16_t dy
 	)

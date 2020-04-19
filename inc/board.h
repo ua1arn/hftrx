@@ -145,6 +145,7 @@ void prog_dac1_b_value(uint_fast8_t v);
 void board_set_affilter(uint_fast8_t v);
 void board_set_loudspeaker(uint_fast8_t v);
 void board_set_digigainmax(uint_fast8_t v);		/* диапазон ручной регулировки цифрового усиления - максимальное значение */
+void board_set_gainnfmrx(int_fast16_t n);	/* дополнительное усиление по НЧ в режиме приёма NFM */
 void board_set_gvad605(uint_fast8_t v);		/* напряжение на AD605 (управление усилением тракта ПЧ */
 void board_set_fsadcpower10(int_fast16_t v);		/*	Мощность, соответствующая full scale от IF ADC */
 uint_fast32_t board_get_fqmeter(void);			/* получить значение измеренной частоты */
@@ -316,6 +317,7 @@ uint_fast8_t board_getadc_filtered_u8(uint_fast8_t i, uint_fast8_t lower, uint_f
 uint_fast8_t board_getpot_filtered_u8(uint_fast8_t i, uint_fast8_t lower, uint_fast8_t upper);	/* получить значение от АЦП в диапазоне lower..upper (включая границы) */
 uint_fast16_t board_getadc_filtered_u16(uint_fast8_t i, uint_fast16_t lower, uint_fast16_t upper);	/* получить значение от АЦП в диапазоне lower..upper (включая границы) */
 uint_fast16_t board_getpot_filtered_u16(uint_fast8_t i, uint_fast16_t lower, uint_fast16_t upper);	/* получить значение от АЦП в диапазоне lower..upper (включая границы) */
+uint_fast32_t board_getadc_filtered_u32(uint_fast8_t adci, uint_fast32_t lower, uint_fast32_t upper);	/* получить значение от АЦП в диапазоне lower..upper (включая границы) */
 uint_fast8_t board_getadc_smoothed_u8(uint_fast8_t i, uint_fast8_t lower, uint_fast8_t upper);	/* при изменении отфильтрованного значения этого АЦП возвращаемое значение на каждом вызове приближается к нему на 1 */
 uint_fast8_t board_getadc_unfiltered_u8(uint_fast8_t i, uint_fast8_t lower, uint_fast8_t upper);	/* получить значение от АЦП в диапазоне lower..upper (включая границы) */
 uint_fast16_t board_getadc_unfiltered_u16(uint_fast8_t i, uint_fast16_t lower, uint_fast16_t upper);	/* получить значение от АЦП в диапазоне lower..upper (включая границы) */
@@ -327,9 +329,7 @@ adcvalholder_t board_getadc_fsval(uint_fast8_t i);	/* получить макс�
 //void hardware_set_adc_filterLPF(uint_fast8_t i, uint_fast8_t k);	/* Установить способ фильтрации LPF и частоту среза - параметр 1.0..0.0, умноженное на BOARD_ADCFILTER_LPF_DENOM */
 #define BOARD_ADCFILTER_LPF_DENOM	128		/* положение фиксированной точки при фильтрации BOARD_ADCFILTER_LPF */
 
-void board_tsc_initialize(void);
-uint_fast8_t board_tsc_getxy(uint_fast16_t * x, uint_fast16_t * y);	/* touch screen interface */
-uint_fast8_t board_tsc_is_pressed (void); 	/* Return 1 if touch detection */
+const uint16_t * getrbfimage(size_t * count); /* получить расположение в памяти и количество элементов в массиве для загрузки FPGA */
 
 enum
 {

@@ -99,17 +99,14 @@ uc1601s_clear(void)
 	for (cnt_y = 0; cnt_y < ((DIM_Y + 7) / 8); ++ cnt_y)
 	{
 	    uint_fast8_t cnt_x;
-
-		display_gotoxy(0, cnt_y);
-
-		i2c_start(LCD_ADDR_W | 0x02);
+	    uint_fast16_t ypix;
+	    uint_fast16_t xpix = display_wrdatabar_begin(0, cnt_y, & ypix);
 
 	    for (cnt_x = 0; cnt_x < DIM_X; ++ cnt_x)
 		{
-			i2c_write(0x00);
+		    display_barcolumn(0x00);
 		}
-		i2c_waitsend();
-	    i2c_stop();
+	    display_wrdatabar_end();
 	}
 }
 
@@ -140,17 +137,19 @@ smallfont_decode(uint_fast8_t c)
 // Вызовы этой функции (или группу вызовов) требуется "обрамить" парой вызовов
 // uc1601s_put_char_begin() и uc1601s_put_char_end().
 //
-static void 
+static uint_fast8_t
 //NOINLINEAT
-uc1601s_put_char_small(char cc)
+uc1601s_put_char_small(uint_fast8_t xpix, char cc)
 {
 	uint_fast8_t i = 0;
     const uint_fast8_t c = smallfont_decode((unsigned char) cc);
 	enum { NCOLS = (sizeof uc1601s_font[0] / sizeof uc1601s_font[0][0]) };
 	const FLASHMEM uint8_t * const p = & uc1601s_font[c][0];
 
-	for (; i < NCOLS; ++ i)
+	for (; i < NCOLS; ++ i, ++ xpix)
     	i2c_write(p [i]);
+
+	return xpix;
 }
 
 // многополосный вывод символов - за несколько горизонтальных проходов.
@@ -159,9 +158,9 @@ uc1601s_put_char_small(char cc)
 // Вызовы этой функции (или группу вызовов) требуется "обрамить" парой вызовов
 // uc1601s_put_char_begin() и uc1601s_put_char_end().
 //
-static void 
+static uint_fast8_t
 //NOINLINEAT
-uc1601s_put_char_big(char cc, uint_fast8_t lowhalf)
+uc1601s_put_char_big(uint_fast8_t xpix, char cc, uint_fast8_t lowhalf)
 {
 	// '#' - узкий пробел
 	enum { NBV = (BIGCHARH / 8) }; // сколько байтов в одной вертикали
@@ -170,8 +169,10 @@ uc1601s_put_char_big(char cc, uint_fast8_t lowhalf)
 	enum { NCOLS = (sizeof uc1601s_bigfont [0][0] / sizeof uc1601s_bigfont [0][0][0]) };
 	const FLASHMEM uint8_t * const p = & uc1601s_bigfont [c][lowhalf][0];
 
-	for (; i < NCOLS; ++ i)
+	for (; i < NCOLS; ++ i, ++ xpix)
     	i2c_write(p [i]);
+
+	return xpix;
 }
 
 // многополосный вывод символов - за несколько горизонтальных проходов.
@@ -180,18 +181,19 @@ uc1601s_put_char_big(char cc, uint_fast8_t lowhalf)
 // Вызовы этой функции (или группу вызовов) требуется "обрамить" парой вызовов
 // uc1601s_put_char_begin() и uc1601s_put_char_end().
 //
-static void 
+static uint_fast8_t
 //NOINLINEAT
-uc1601s_put_char_half(char cc, uint_fast8_t lowhalf)
+uc1601s_put_char_half(uint_fast8_t xpix, char cc, uint_fast8_t lowhalf)
 {
 	uint_fast8_t i = 0;
     const uint_fast8_t c = bigfont_decode((unsigned char) cc);
 	enum { NCOLS = (sizeof uc1601s_halffont [c][lowhalf] / sizeof uc1601s_halffont [c][lowhalf] [0]) };
 	const FLASHMEM uint8_t * const p = & uc1601s_halffont [c][lowhalf][0];
 
-	for (; i < NCOLS; ++ i)
+	for (; i < NCOLS; ++ i, ++ xpix)
     	i2c_write(p [i]);
 
+	return xpix;
 }
 
 /* вызывается между вызовами display_wrdatabar_begin() и display_wrdatabar_end() */
@@ -383,16 +385,15 @@ void uc1601s_initialize(void)
 	i2c_read(& v1, I2C_READ_ACK_1);
 	i2c_read(& v2, I2C_READ_NACK);
 
-	//display_string("status = ", 0);
+	//display_at(0, 0, "status = ");
 	// expected: 0x88, 0x60	- RDX0077
 	// expected: 0xa8, 0x60
 	// expected: 0xc8, 0x60
 	debug_printf_P(PSTR("UC1601s status=%02" PRIXFAST8 ":%02" PRIXFAST8 "\n"), v1, v2);
 	//
 	char buff [8];
-	display_gotoxy(0, 0);
 	local_snprintf_P(buff, 8, PSTR("%02X:%02X"), v1, v2);
-	display_string(buff, 0);
+	display_at(0, 0, buff);
 	local_delay_ms(300);
 	//for (;;)
 	//	;
@@ -418,105 +419,20 @@ display_clear(void)
 }
 
 void
-display_setcolors(COLOR_T fg, COLOR_T bg)
+colmain_setcolors(COLORMAIN_T fg, COLORMAIN_T bg)
 {
 	(void) fg;
 	(void) bg;
 }
 
-void display_setcolors3(COLOR_T fg, COLOR_T bg, COLOR_T fgbg)
+void colmain_setcolors3(COLORMAIN_T fg, COLORMAIN_T bg, COLORMAIN_T fgbg)
 {
-	display_setcolors(fg, bg);
-}
-
-void
-display_wrdata_begin(void)
-{
-	uc1601s_put_char_begin();
-}
-
-void
-display_wrdata_end(void)
-{
-	uc1601s_put_char_end();
-}
-
-void
-display_wrdatabar_begin(void)
-{
-	uc1601s_put_char_begin();
-}
-
-void
-display_wrdatabar_end(void)
-{
-	uc1601s_put_char_end();
+	colmain_setcolors(fg, bg);
 }
 
 
-void
-display_wrdatabig_begin(void)
-{
-	uc1601s_put_char_begin();
-}
-
-
-void
-display_wrdatabig_end(void)
-{
-	uc1601s_put_char_end();
-}
-
-/* отображение одной вертикальной полосы на графическом индикаторе */
-/* старшие биты соответствуют верхним пикселям изображения */
-/* вызывается между вызовами display_wrdatabar_begin() и display_wrdatabar_end() */
-void 
-display_barcolumn(uint_fast8_t pattern)
-{
-	uc1601s_bar_column(pattern);
-}
-
-void
-display_put_char_big(uint_fast8_t c, uint_fast8_t lowhalf)
-{
-	uc1601s_put_char_big(c, lowhalf);
-}
-
-void
-display_put_char_half(uint_fast8_t c, uint_fast8_t lowhalf)
-{
-	uc1601s_put_char_half(c, lowhalf);
-}
-
-
-// Вызов этой функции только внутри display_wrdata_begin() и display_wrdata_end();
-// Используется при выводе на графический ндикатор, если ТРЕБУЕТСЯ переключать полосы отображения
-void
-display_put_char_small(uint_fast8_t c, uint_fast8_t lowhalf)
-{
-	(void) lowhalf;
-	uc1601s_put_char_small(c);
-}
-
-// самый маленький шрифт
-// stub function
-void display_wrdata2_begin(void)
-{
-	display_wrdata_begin();
-}
-// stub function
-void display_wrdata2_end(void)
-{
-	display_wrdata_end();
-}
-// stub function
-void display_put_char_small2(uint_fast8_t c, uint_fast8_t lowhalf)
-{
-	display_put_char_small(c, lowhalf);
-}
-
-void
-display_gotoxy(uint_fast8_t x, uint_fast8_t y)
+static void
+uc1601_gotoxy(uint_fast8_t x, uint_fast8_t y)
 {
 #if LCDMODE_UC1601S_TOPDOWN || LCDMODE_RDT065
 	uc1601s_set_addr_column(x * CHAR_W + (132 - DIM_X), DIM_Y / CHAR_H - 1 - y);
@@ -536,15 +452,112 @@ void display_plotfrom(uint_fast16_t x, uint_fast16_t y)
 }
 
 
+uint_fast16_t
+display_wrdata_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
+{
+	uc1601_gotoxy(xcell, ycell);
+	uc1601s_put_char_begin();
+	* yp = GRID2Y(ycell);
+	return GRID2X(xcell);
+}
+
+void
+display_wrdata_end(void)
+{
+	uc1601s_put_char_end();
+}
+
+uint_fast16_t
+display_wrdatabar_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
+{
+	uc1601_gotoxy(xcell, ycell);
+	uc1601s_put_char_begin();
+	* yp = GRID2Y(ycell);
+	return GRID2X(xcell);
+}
+
+void
+display_wrdatabar_end(void)
+{
+	uc1601s_put_char_end();
+}
+
+
+uint_fast16_t
+display_wrdatabig_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
+{
+	uc1601_gotoxy(xcell, ycell);
+	uc1601s_put_char_begin();
+	* yp = GRID2Y(ycell);
+	return GRID2X(xcell);
+}
+
+
+void
+display_wrdatabig_end(void)
+{
+	uc1601s_put_char_end();
+}
+
+/* отображение одной вертикальной полосы на графическом индикаторе */
+/* старшие биты соответствуют верхним пикселям изображения */
+/* вызывается между вызовами display_wrdatabar_begin() и display_wrdatabar_end() */
+void 
+display_barcolumn(uint_fast8_t pattern)
+{
+	uc1601s_bar_column(pattern);
+}
+
+uint_fast16_t
+display_put_char_big(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf)
+{
+	return uc1601s_put_char_big(xpix, c, lowhalf);
+}
+
+uint_fast16_t
+display_put_char_half(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf)
+{
+	return uc1601s_put_char_half(xpix, c, lowhalf);
+}
+
+
+// Вызов этой функции только внутри display_wrdata_begin() и display_wrdata_end();
+// Используется при выводе на графический ндикатор, если ТРЕБУЕТСЯ переключать полосы отображения
+uint_fast16_t
+display_put_char_small(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf)
+{
+	(void) lowhalf;
+	return uc1601s_put_char_small(xpix, c);
+}
+
+// самый маленький шрифт
+// stub function
+uint_fast16_t
+display_wrdata2_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
+{
+	return display_wrdata_begin(xcell, ycell, yp);
+}
+// stub function
+void display_wrdata2_end(void)
+{
+	display_wrdata_end();
+}
+
+// stub function
+uint_fast16_t display_put_char_small2(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf)
+{
+	return display_put_char_small(xpix, ypix, c, lowhalf);
+}
+
 void display_plotstart(
-	uint_fast16_t height	// Высота окна в пикселях
+	uint_fast16_t dy	// Высота окна в пикселях
 	)
 {
 
 }
 
 void display_plot(
-	const PACKEDCOLOR_T * buffer, 
+	const PACKEDCOLORMAIN_T * buffer, 
 	uint_fast16_t dx,	// Размеры окна в пикселях
 	uint_fast16_t dy
 	)

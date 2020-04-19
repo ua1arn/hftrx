@@ -446,8 +446,13 @@ static void wm8994_initialize_slave_fullduplex(void)
     /* AIF1 Sample Rate = 96 (KHz), ratio=256 */ 
     //wm8994_setreg(WM8994_AIF1_RATE, 0x00A3);
 #endif /* CODEC_TYPE_WM8994_USE_8KS */
+#if CODEC_TYPE_WM8994_USE_32BIT
+	/* AIF1 Word Length = 32-bits, AIF1 Format = I2S (Default Register Value) */
+	wm8994_setreg(WM8994_AIF1_CONTROL_1, 0x4010 | 0x0060);
+#else /* CODEC_TYPE_WM8994_USE_32BIT */
 	/* AIF1 Word Length = 16-bits, AIF1 Format = I2S (Default Register Value) */
-	wm8994_setreg(WM8994_AIF1_CONTROL_1, 0x4010);
+	wm8994_setreg(WM8994_AIF1_CONTROL_1, 0x4010 | 0x0000);
+#endif /* CODEC_TYPE_WM8994_USE_32BIT */
 
 	/* slave mode */
 	wm8994_setreg(WM8994_AIF1_MASTER_SLAVE, 0x0000);

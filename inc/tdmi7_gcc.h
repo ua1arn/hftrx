@@ -15,4 +15,6 @@ __attribute__( ( always_inline ) ) static __INLINE void __NOP(void)
 	__ASM volatile ("nop");
 }
 
+#define __NO_RETURN
+
 #endif /* TDMI7_GCC_H_INCLUDED */

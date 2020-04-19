@@ -260,11 +260,21 @@ static void nau8822_initialize_slave_fullduplex(void)
 	nau8822_setreg(NAU8822_POWER_MANAGEMENT_3, 0x1ef); // was: 0x1ff - reserved=0
 
 #if WITHI2S_FORMATI2S_PHILIPS
-		// I2S mode
-	nau8822_setreg(NAU8822_AUDIO_INTERFACE, 0x010);	// reg 0x04, I2S, 16 bit
+	// I2S mode
+	#if CODEC_TYPE_NAU8822_USE_32BIT
+		nau8822_setreg(NAU8822_AUDIO_INTERFACE, 0x010 | 0x060);	// reg 0x04, I2S, 32 bit
+	#else /* CODEC_TYPE_NAU8822_USE_32BIT */
+		nau8822_setreg(NAU8822_AUDIO_INTERFACE, 0x010 | 0x000);	// reg 0x04, I2S, 16 bit
+	#endif /* CODEC_TYPE_NAU8822_USE_32BIT */
+
 #else /* WITHI2S_FORMATI2S_PHILIPS */
-		// LJ mode
-	nau8822_setreg(NAU8822_AUDIO_INTERFACE, 0x008);	// reg 0x04, LJ, 16 bit
+	// LJ mode
+	#if CODEC_TYPE_NAU8822_USE_32BIT
+		nau8822_setreg(NAU8822_AUDIO_INTERFACE, 0x008 | 0x060);	// reg 0x04, LJ, 32 bit
+	#else /* CODEC_TYPE_NAU8822_USE_32BIT */
+		nau8822_setreg(NAU8822_AUDIO_INTERFACE, 0x008 | 0x000);	// reg 0x04, LJ, 16 bit
+	#endif /* CODEC_TYPE_NAU8822_USE_32BIT */
+
 #endif /* WITHI2S_FORMATI2S_PHILIPS */
 
 	//nau8822_setreg(NAU8822_COMPANDING_CONTROL, 0x000);	// reg 0x05 = 0 reset state
@@ -282,8 +292,8 @@ static void nau8822_initialize_slave_fullduplex(void)
 
 #else /* CODEC_TYPE_NAU8822_USE_8KS */
 
-	nau8822_setreg(NAU8822_CLOCKING, 0x000);	// reg 0x06,
-	nau8822_setreg(NAU8822_ADDITIONAL_CONTROL, 0x000);	// reg 0x07,
+	nau8822_setreg(NAU8822_CLOCKING, 0x000);	// reg 0x06, 000 = divide by 1
+	nau8822_setreg(NAU8822_ADDITIONAL_CONTROL, 0x000);	// reg 0x07, 000 = 48kHz
 
 #endif /* CODEC_TYPE_NAU8822_USE_8KS */
 

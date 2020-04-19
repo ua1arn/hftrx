@@ -66,8 +66,8 @@
 
 	// +++ Особые варианты расположения кнопок на клавиатуре
 	#define KEYBSTYLE_SW2016RDX	1	// 8-ми кнопочная клавиатура
-	//#define KEYBSTYLE_SW2013RDX_LTIYUR	1		// 12-ти кнопочная клавиатура LTIYUR (check KI_COUNT) 
-	//#define KEYBSTYLE_SW2013RDX_UT7LC	1	// 12-ти кнопочная клавиатура UT7LC (check KI_COUNT) 
+	//#define KEYBSTYLE_SW2013RDX_LTIYUR	1		// 12-ти кнопочная клавиатура LTIYUR (check KI_COUNT)
+	//#define KEYBSTYLE_SW2013RDX_UT7LC	1	// 12-ти кнопочная клавиатура UT7LC (check KI_COUNT)
 	//#define KEYB_VERTICAL_REV	1	/* расположение кнопок для плат "Воробей" и "Колибри" */
 	// --- Особые варианты расположения кнопок на клавиатуре
 

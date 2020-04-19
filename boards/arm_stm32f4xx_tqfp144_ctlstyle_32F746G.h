@@ -151,8 +151,7 @@
 
 	// +++ Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
 	//#define LCDMODE_HARD_SPI	1	/* LCD over SPI line */
-	#define LCDMODE_LTDC	1		/* Use STM32F4xxx with LCD-TFT Controller (LTDC), also need LCDMODE_ILI9341 */
-	#define LCDMODE_LTDC_L8	1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит. */
+	#define LCDMODE_V0	1	/* Обычная конфигурация без PIP с L8 на основном экране */
 	//#define LCDMODE_WH2002	1	/* тип применяемого индикатора 20*2, возможно вместе с LCDMODE_HARD_SPI */
 	//#define LCDMODE_WH1602	1	/* тип применяемого индикатора 16*2 */
 	//#define LCDMODE_WH1604	1	/* тип применяемого индикатора 16*4 */
@@ -200,6 +199,7 @@
 	#define CODEC1_TYPE CODEC_TYPE_WM8994		// PH7 & PH8 I2C3
 	//#define CODEC_TYPE_WM8994_USE_SPI	1
 	//#define CODEC_TYPE_WM8994_USE_8KS	1	/* кодек работает с sample rate 8 kHz */
+	#define CODEC_TYPE_WM8994_USE_32BIT 1	/* кодек в формате 32 bit (иначе - 16 bit) */
 
 	//#define CODEC1_TYPE CODEC_TYPE_NAU8822L	// PH7 & PH8 I2C3
 	//#define CODEC_TYPE_NAU8822_USE_SPI	1

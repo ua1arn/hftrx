@@ -403,6 +403,8 @@ void SDIO_IRQHandler(void)
 	#error Wrong CPUSTYLE_xxx
 #endif
 
+#define DMA_SxCR_PL_VALUE 2uL		// STM32xxx DMA Priority level - High
+
 
 /* DMA для обмена с SD CARD  - установка параметров следующего обмена */
 //	RX	SAI2_B	DMA2	Stream6	Channel 4	
@@ -604,7 +606,7 @@ static void DMA_SDIO_setparams(
 			2 * DMA_SxCR_MSIZE_0 | //длина в памяти - 32 bit
 			2 * DMA_SxCR_PSIZE_0 | //длина в DR - 32 bit
 			//1 * DMA_SxCR_CIRC | //циклический режим не требуется при DBM
-			2 * DMA_SxCR_PL_0 |		// Priority level - High
+			(DMA_SxCR_PL_VALUE << DMA_SxCR_PL_Pos) |		// Priority level - High
 			0 * DMA_SxCR_CT |	// M0AR selected
 			//0 * DMA_SxCR_DBM |	 // double buffer mode seelcted
 			0;
@@ -629,10 +631,10 @@ static void DMA_SDIO_setparams(
 			1 * DMA_SxCR_PBURST_0 |	// 01: INCR4 (incremental burst of 4 beats)
 			//0 * DMA_SxCR_DIR_0 |	// 00: Peripheral-to-memory
 			1 * DMA_SxCR_MINC |		//инкремент памяти
-			0 * DMA_SxCR_MSIZE_0 | //длина в памяти - 8 bit (changed from read !)
+			0 * DMA_SxCR_MSIZE_0 | //длина в памяти - 8 bit (changed from read !) In direct mode, MSIZE is forced by hardware to the same value as PSIZE as soon as EN = 1.
 			2 * DMA_SxCR_PSIZE_0 | //длина в DR - 32 bit
 			//1 * DMA_SxCR_CIRC | //циклический режим не требуется при DBM
-			2 * DMA_SxCR_PL_0 |		// Priority level - High
+			(DMA_SxCR_PL_VALUE << DMA_SxCR_PL_Pos) |		// Priority level - High
 			0 * DMA_SxCR_CT |	// M0AR selected
 			//0 * DMA_SxCR_DBM |	 // double buffer mode seelcted
 			0;

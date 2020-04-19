@@ -146,15 +146,15 @@ extern "C" {
 #endif /* CPUSTYLE_R7S721 */
 
 #if WITHUAC2
-	#define WITHUSENOFU_IN48 			0	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
-	#define WITHUSENOFU_INRTS 			0	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
-	#define WITHUSENOFU_IN48_INRTS 		0	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
-	#define WITHUSENOFU_OUT48 			0	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
-#else /* WITHUAC2 */
 	#define WITHUSENOFU_IN48 			1	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
 	#define WITHUSENOFU_INRTS 			1	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
 	#define WITHUSENOFU_IN48_INRTS 		1	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
 	#define WITHUSENOFU_OUT48 			1	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
+#else /* WITHUAC2 */
+	#define WITHUSENOFU_IN48 			0	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
+	#define WITHUSENOFU_INRTS 			0	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
+	#define WITHUSENOFU_IN48_INRTS 		0	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
+	#define WITHUSENOFU_OUT48 			0	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
 #endif /* WITHUAC2 */
 
 // Конфигурация потоков в Input Terminal Descriptor
@@ -176,10 +176,10 @@ extern "C" {
 
 #if WITHUABUACOUTAUDIO48MONO
 	// количество каналов в дескрипторах формата потока
-	#define UACOUT_FMT_CHANNELS_AUDIO48	1
+	#define UACOUT_AUDIO48_FMT_CHANNELS	1
 #else /* WITHUABUACOUTAUDIO48MONO */
 	// количество каналов в дескрипторах формата потока
-	#define UACOUT_FMT_CHANNELS_AUDIO48	2
+	#define UACOUT_AUDIO48_FMT_CHANNELS	2
 #endif /* WITHUABUACOUTAUDIO48MONO */
 
 // коррекция размера с учетом требуемого выравнивания
@@ -194,14 +194,43 @@ extern "C" {
 
 #define DMABUFSTEPUACIN16	(UACIN_FMT_CHANNELS_AUDIO48)		// 2 - каждому сэмплу соответствует два числа в  буфере для выдачи по USB в host
 
-#define DMABUFFSIZEUACIN16 (MSINSAMPLES * DMABUFSTEPUACIN16)	/* размер под USB ENDPOINT PACKET SIZE В буфере помещаются пары значений - стерео кодек */
+#define DMABUFFSIZEUACIN16_AJ (MSINSAMPLES * DMABUFSTEPUACIN16)	/* размер под USB ENDPOINT PACKET SIZE В буфере помещаются пары значений - стерео кодек */
+
+#define DMABUFFSIZEUACIN16 DMAHWEPADJUST(DMABUFFSIZEUACIN16_AJ, DMABUFSTEPUACIN16 * HARDWARE_RTSDMABYTES)
+
 
 /* если приоритет прерываний USB не выше чем у аудиобработки - она должна длиться не более 1 мс (WITHRTS192 - 0.5 ms) */
 #define DMABUFCLUSTER	19	// Прерывания по приему от IF CODEC или FPGA RX должны происходить не реже 1 раз в милисекунду (чтобы USB работать могло) */
 
+#if WITHI2S_32BITPAIR
+
+	typedef int32_t aubufv_t;
+	typedef int_fast32_t aufastbufv_t;
+	typedef int_fast64_t aufastbufv2x_t;	/* тип для работы ресэмплера при получении среднего арифметического */
+	/* масштабирование сэмплов */
+	#define AUDIO16TOAUB(v) (((v) * 65536L))	/* не забывать, аргумент может быть FLOAT */
+	#define AUBTOAUDIO16(v) ((v) / 65536L)	/* не забывать, аргумент может быть FLOAT */
+
+#else /* WITHI2S_32BITPAIR */
+
+	typedef int16_t aubufv_t;
+	typedef int_fast16_t aufastbufv_t;
+	typedef int_fast32_t aufastbufv2x_t;	/* тип для работы ресэмплера при получении среднего арифметического */
+	/* масштабирование сэмплов (заглушки) */
+	#define AUDIO16TOAUB(v) (v)	/* не забывать, аргумент может быть FLOAT */
+	#define AUBTOAUDIO16(v) (v)	/* не забывать, аргумент может быть FLOAT */
+
+#endif /* WITHI2S_32BITPAIR */
+
 #define DMABUFFSIZE16	(DMABUFCLUSTER * DMABUFSTEP16 * 4)		/* AF CODEC */
 #define DMABUFFSIZE32RX (DMABUFCLUSTER * DMABUFSTEP32RX)		/* FPGA RX or IF CODEC RX */
 #define DMABUFFSIZE32TX (DMABUFCLUSTER * DMABUFSTEP32TX * 4)	/* FPGA TX or IF CODEC TX	*/
+
+
+// stereo, 16 bit samples
+// По звуковому каналу передается стерео, 16 бит, 48 кГц - 288 байт размер данных в ендпонтт
+#define UACIN_AUDIO48_SAMPLEBITS	16
+#define UACIN_AUDIO48_DATASIZE (DMABUFFSIZEUACIN16 * sizeof (int16_t))
 
 // Параметры для канала передачи Real Time Spectrum - stereo, 32 bit, 192 kS/S
 #define DMABUFSTEP192RTS 8	// 8: стерео по 32 бит, 6: стерео по 24 бит
@@ -217,8 +246,8 @@ extern "C" {
 #if WITHRTS96
 
 	// stereo, 24 bit samples
-	#define HARDWARE_USBD_AUDIO_IN_SAMPLEBITS_RTS96		24
-	#define VIRTUAL_AUDIO_PORT_DATA_SIZE_IN_RTS96		(DMABUFFSIZE96RTS * sizeof (uint8_t))
+	#define UACIN_RTS96_SAMPLEBITS		24
+	#define UACIN_RTS96_DATASIZE		(DMABUFFSIZE96RTS * sizeof (uint8_t))
 
 	#define HSINTERVAL_RTS96 4	// endpoint descriptor parameters
 	#define FSINTERVAL_RTS96 1
@@ -228,20 +257,13 @@ extern "C" {
 
 	// По каналу real-time спектра стерео, 32 бит, 192 кГц - 288*2*4 = 2304 байта
 	// stereo, 32 bit samples
-	#define HARDWARE_USBD_AUDIO_IN_SAMPLEBITS_RTS192	32
-	#define VIRTUAL_AUDIO_PORT_DATA_SIZE_IN_RTS192		(DMABUFFSIZE192RTS * sizeof (int8_t))
+	#define UACIN_RTS192_SAMPLEBITS	32
+	#define UACIN_RTS192_DATASIZE		(DMABUFFSIZE192RTS * sizeof (int8_t))
 
 	#define HSINTERVAL_RTS192 3	// 500 us
 	#define FSINTERVAL_RTS192 1
 
 #endif /* WITHRTS192 */
-
-
-// stereo, 16 bit samples
-// По звуковому каналу передается стерео, 16 бит, 48 кГц - 288 байт размер данных в ендпонтт
-#define HARDWARE_USBD_AUDIO_IN_SAMPLEBITS_AUDIO48	16
-#define UAC_IN48_DATA_SIZE (DMABUFFSIZEUACIN16 * sizeof (uint16_t))
-
 
 
 /*
@@ -264,12 +286,12 @@ extern "C" {
 #define FSINTERVAL_255MS 255
 
 
-#define UACOUT_AUDIO48_SAMPLEBITS	16
+#define UACOUT_AUDIO48_SAMPLEBITS	16	// may be 24
 
-// буфер приема потока данных от USB к модуоятору
-#define UAC_OUT48_DATA_SIZE	( \
+// буфер приема потока данных от USB к модулятору
+#define UACOUT_AUDIO48_DATASIZE	( \
 	MSOUTSAMPLES * \
-	((UACOUT_AUDIO48_SAMPLEBITS * UACOUT_FMT_CHANNELS_AUDIO48 + 7) / 8) \
+	((UACOUT_AUDIO48_SAMPLEBITS * UACOUT_AUDIO48_FMT_CHANNELS + 7) / 8) \
 	)
 
 
@@ -446,8 +468,8 @@ modem_frames_decode(
 	uint_fast8_t v
 	);
 
-uint_fast8_t getsampmlemike(INT32P_t * v);			/* получить очередной оцифрованый сэмпл с микрофона */
-uint_fast8_t getsampmlemoni(INT32P_t * v);			/* получить очередной сэмпл для самоконтроля */
+uint_fast8_t getsampmlemike(FLOAT32P_t * v);			/* получить очередной оцифрованый сэмпл с микрофона */
+uint_fast8_t getsampmlemoni(FLOAT32P_t * v);			/* получить очередной сэмпл для самоконтроля */
 
 FLOAT_t local_log(FLOAT_t x);
 FLOAT_t local_pow(FLOAT_t x, FLOAT_t y);
@@ -481,7 +503,7 @@ uintptr_t getfilled_dmabuffer16phones(void);
 
 void dsp_extbuffer32rx(const int32_t * buff);	// RX
 void dsp_extbuffer32wfm(const int32_t * buff);	// RX
-void dsp_addsidetone(int16_t * buff);			// перед передачей по DMA в аудиокодек
+void dsp_addsidetone(aubufv_t * buff);			// перед передачей по DMA в аудиокодек
 
 void processing_dmabuffer16rx(uintptr_t addr);	// обработать буфер после оцифровки AF ADC
 void processing_dmabuffer16rxuac(uintptr_t addr);	// обработать буфер после приёма пакета с USB AUDIO
@@ -516,12 +538,12 @@ void savemodemtxbuffer(uint8_t * dest, unsigned size_t);	// Готов буфе�
 void releasemodembuffer(uint8_t * dest);
 void releasemodembuffer_low(uint8_t * dest);
 
-void savesampleout16stereo_user(int_fast32_t ch0, int_fast32_t ch1);
-void savesampleout16stereo(int_fast32_t ch0, int_fast32_t ch1);
+void savesampleout16stereo_user(FLOAT_t ch0, FLOAT_t ch1);
+void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1);
+void savemoni16stereo(FLOAT_t ch0, FLOAT_t ch1);
 void savesampleout32stereo(int_fast32_t ch0, int_fast32_t ch1);
 void savesampleout96stereo(int_fast32_t ch0, int_fast32_t ch1);
 void savesampleout192stereo(int_fast32_t ch0, int_fast32_t ch1);
-void savemoni16stereo(int_fast32_t ch0, int_fast32_t ch1);
 
 #if WITHINTEGRATEDDSP
 	#include "speex\arch.h"
@@ -679,13 +701,13 @@ const codec2if_t * board_getfpgacodecif(void);		// получить интерф
 void uacout_buffer_initialize(void);
 void uacout_buffer_start(void);
 void uacout_buffer_stop(void);
-void uacout_buffer_save_system(const uint8_t * buff, uint_fast16_t size);
-void uacout_buffer_save_realtime(const uint8_t * buff, uint_fast16_t size);
+void uacout_buffer_save_system(const uint8_t * buff, uint_fast16_t size, uint_fast8_t ichannels, uint_fast8_t ibits);
+void uacout_buffer_save_realtime(const uint8_t * buff, uint_fast16_t size, uint_fast8_t ichannels, uint_fast8_t ibits);
 
 /* Получение пары (левый и правый) сжмплов для воспроизведения через аудиовыход трансивера.
  * Возврат 0, если нет ничего для воспроизведения.
  */
-uint_fast8_t takewavsample(INT32P_t * rv, uint_fast8_t suspend);
+uint_fast8_t takewavsample(FLOAT32P_t * rv, uint_fast8_t suspend);
 
 #ifdef __cplusplus
 }

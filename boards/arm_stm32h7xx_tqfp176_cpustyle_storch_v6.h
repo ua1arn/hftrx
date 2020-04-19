@@ -19,7 +19,9 @@
 //#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	*/
 #define WITHMDMAHW		1	/* Использование MDMA для формирования изображений */
-#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
+#if LCDMODE_LTDC
+	#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
+#endif /* LCDMODE_LTDC */
 
 //#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 //#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
@@ -50,6 +52,7 @@
 
 //#define WITHUART1HW	1	/* PA9, PA10 Используется периферийный контроллер последовательного порта #1 */
 #define WITHUART2HW	1	/* PD5, PD6 Используется периферийный контроллер последовательного порта #2 */
+#define WITHUARTFIFO	1	/* испольование FIFO */
 
 #define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 #define WITHMODEM_CDC	1
@@ -59,7 +62,9 @@
 
 //#define WITHUAC2		1	/* UAC2 support */
 #define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
-#define WITHUSBUACIN2		1	/* формируются три канала передачи звука */
+#if WITHRTS96
+	#define WITHUSBUACIN2		1	/* формируются три канала передачи звука */
+#endif /* WITHRTS96 */
 //#define WITHUABUACOUTAUDIO48MONO	1	/* для уменьшения размера буферов в endpoints */
 
 #define WITHUSBCDC		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
@@ -703,21 +708,12 @@
 		} while (0)
 #endif /* WITHUSBHW */
 
+#if LCDMODE_LTDC
 	#define	HARDWARE_BL_INITIALIZE() do { \
 		/* step-up backlight converter */ \
 		arm_hardware_pioe_outputs((1U << 0), 1 * (1U << 0));		/* PE0 - enable backlight */ \
 		arm_hardware_piob_opendrain((1U << 9) | (1U << 8), 0 * (1U << 9) | 0 * (1U << 8));	/* PB9:PB8 - backlight current adjust */ \
 		} while (0)
-
-#if WITHDCDCFREQCTL
-	#define	HARDWARE_DCDC_INITIALIZE() do { \
-		arm_hardware_piof_altfn2((1U << 6), AF_TIM1); /* TIM16_CH1 - PF6 */ \
-		hardware_blfreq_initialize(); \
-		} while (0)
-#else /* WITHDCDCFREQCTL */
-	#define	HARDWARE_DCDC_INITIALIZE() do { \
-		} while (0)
-#endif /* WITHDCDCFREQCTL */
 
 	/* установка яркости и включение/выключение преобразователя подсветки */
 	#define HARDWARE_BL_SET(en, level) do { \
@@ -731,6 +727,29 @@
 			0; \
 		__DSB(); \
 	} while (0)
+
+#else /* LCDMODE_LTDC */
+	/* без TFT индикатора - запретить работу dc-dc преобразователя подсветки */
+	#define	HARDWARE_BL_INITIALIZE() do { \
+		/* step-up backlight converter */ \
+		arm_hardware_pioe_outputs((1U << 0), 0 * (1U << 0));		/* PE0 - enable backlight */ \
+		arm_hardware_piob_opendrain((1U << 9) | (1U << 8), 0 * (1U << 9) | 0 * (1U << 8));	/* PB9:PB8 - backlight current adjust */ \
+		} while (0)
+
+	/* установка яркости и включение/выключение преобразователя подсветки */
+	#define HARDWARE_BL_SET(en, level) do { \
+	} while (0)
+#endif /* LCDMODE_LTDC */
+
+#if WITHDCDCFREQCTL
+	#define	HARDWARE_DCDC_INITIALIZE() do { \
+		arm_hardware_piof_altfn2((1U << 6), AF_TIM1); /* TIM16_CH1 - PF6 */ \
+		hardware_blfreq_initialize(); \
+		} while (0)
+#else /* WITHDCDCFREQCTL */
+	#define	HARDWARE_DCDC_INITIALIZE() do { \
+		} while (0)
+#endif /* WITHDCDCFREQCTL */
 
 #if LCDMODE_LTDC
 	enum

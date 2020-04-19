@@ -27,8 +27,8 @@
 	Controller: 12 o’clock of the display module
 */
 
-typedef uint_fast8_t COLOR_T;
-typedef uint8_t PACKEDCOLOR_T;
+typedef uint_fast8_t COLORMAIN_T;
+typedef uint8_t PACKEDCOLORMAIN_T;
 
 
 // RRRGGGBB
@@ -41,8 +41,8 @@ typedef uint8_t PACKEDCOLOR_T;
 		) \
 	)
 
-typedef PACKEDCOLOR_T PACKEDCOLORPIP_T;
-typedef COLOR_T COLORPIP_T;
+typedef PACKEDCOLORMAIN_T PACKEDCOLORPIP_T;
+typedef COLORMAIN_T COLORPIP_T;
 
 #define LCDMODE_COLORED	1
 

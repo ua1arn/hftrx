@@ -31,6 +31,8 @@
 
 		#define FQMODEL_45_IF6000_UHF144	1
 		//#define FQMODEL_45_IF8868_UHF144	1
+		//#define FQMODEL_45_IF6000	1	// up to 32 MHz
+		//#define FQMODEL_45_IF8868	1	// up to 32 MHz
 		// Пользовательские варианты конфигурации.
 		#define BANDSELSTYLERE_SW20XX_UHF 1
 		//#define BANDSELSTYLERE_RX3QSP 1	/* Специальный вариант диапазонных фильтров по запросу RX3QSP */
@@ -69,8 +71,8 @@
 	// +++ Особые варианты расположения кнопок на клавиатуре
 	//#define KEYBSTYLE_SW2013RDX	1	// 8-ми кнопочная клавиатура
 	#define KEYBSTYLE_SW2016RDX	1	// 8-ми кнопочная клавиатура
-	//#define KEYBSTYLE_SW2013RDX_LTIYUR	1		// 12-ти кнопочная клавиатура LTIYUR (check KI_COUNT) 
-	//#define KEYBSTYLE_SW2013RDX_UT7LC	1	// 12-ти кнопочная клавиатура UT7LC (check KI_COUNT) 
+	//#define KEYBSTYLE_SW2013RDX_LTIYUR	1		// 12-ти кнопочная клавиатура LTIYUR (check KI_COUNT)
+	//#define KEYBSTYLE_SW2013RDX_UT7LC	1	// 12-ти кнопочная клавиатура UT7LC (check KI_COUNT)
 	// --- Особые варианты расположения кнопок на клавиатуре
 
 	// +++ Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
@@ -206,11 +208,12 @@
 	#define BOARD_FILTER_15P0_NFM BOARD_FILTER_2P7
 
 	#define WITHMODESETMIXONLY3NFM 1	/* К режимам работы только смесительного детектора добавляется NFM */
+	//#define WITHMODESETMIXONLY3 1
 	#define WITHDEDICATEDNFM 1		/* Для NFM отдельный тракт со своим фильтром */
 
-	#define IF3_FMASK (IF3_FMASK_2P7 | IF3_FMASK_0P5 | IF3_FMASK_15P0)
-	#define IF3_FMASKTX (IF3_FMASK_2P7 | IF3_FMASK_15P0)
-	#define IF3_FHAVE (IF3_FMASK_2P7 | IF3_FMASK_0P5 | IF3_FMASK_15P0)
+	#define IF3_FMASK (IF3_FMASK_2P7 | IF3_FMASK_0P5 | IF3_FMASK_15P0 * WITHDEDICATEDNFM)
+	#define IF3_FMASKTX (IF3_FMASK_2P7 | IF3_FMASK_15P0 * WITHDEDICATEDNFM)
+	#define IF3_FHAVE (IF3_FMASK_2P7 | IF3_FMASK_0P5 | IF3_FMASK_15P0 * WITHDEDICATEDNFM)
 
 	#define WITHSPLIT	1	/* управление режимами расстройки одной кнопкой */
 	//#define WITHSPLITEX	1	/* Трехкнопочное управление режимами расстройки */

@@ -180,8 +180,6 @@
 
 	// +++ Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
 	//#define LCDMODE_HARD_SPI	1	/* LCD over SPI line */
-	//#define LCDMODE_LTDC	1		/* Use STM32F4xxx with LCD-TFT Controller (LTDC), also need LCDMODE_ILI9341 */
-	//#define LCDMODE_LTDC_L8	1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит. */
 	//#define LCDMODE_WH2002	1	/* тип применяемого индикатора 20*2, возможно вместе с LCDMODE_HARD_SPI */
 	//#define LCDMODE_WH1602	1	/* тип применяемого индикатора 16*2 */
 	//#define LCDMODE_WH1604	1	/* тип применяемого индикатора 16*4 */
@@ -452,6 +450,7 @@
 	#endif /* WITHTEMPSENSOR */
 	#if WITHVOLTLEVEL 
 		VOLTSOURCE = 8,		// PB0 Средняя точка делителя напряжения, для АКБ
+		VOLTMRRIX = BOARD_ADCMRRIN(0),	// кеш - индекc не должен повторяться в конфигурации
 	#endif /* WITHVOLTLEVEL */
 
 	#if WITHPOTGAIN
@@ -470,11 +469,15 @@
 
 	#if WITHCURRLEVEL
 		PASENSEIX = 2,		// PA2 PA current sense - ACS712-05 chip
+		PASENSEMRRIX = BOARD_ADCMRRIN(1),	// кеш - индекc не должен повторяться в конфигурации
 	#endif /* WITHCURRLEVEL */
 
 	#if WITHSWRMTR
 		PWRI = 14,			// PC4
 		FWD = 14, REF = 15,	// PC5	SWR-meter
+		PWRMRRIX = BOARD_ADCMRRIN(2),	// кеш - индекc не должен повторяться в конфигурации
+		REFMRRIX = BOARD_ADCMRRIN(3),	// кеш - индекc не должен повторяться в конфигурации
+		FWDMRRIX = BOARD_ADCMRRIN(4),	// кеш - индекc не должен повторяться в конфигурации
 	#endif /* WITHSWRMTR */
 		KI0 = 10, KI1 = 11, KI2 = 12, KI3 = 0, KI4 = 1	// клавиатура
 	};

@@ -46,7 +46,7 @@ static void showpos(uint_fast8_t pos)
 		PSTR("POS %2u"), (unsigned) pos
 		 );
 	display_gotoxy(0, 0);
-	display_string(buff, 0);
+	display_at(buff, 0);
 }
 
 #endif
@@ -3786,14 +3786,14 @@ static void fb_print(const struct fb * p, int x, int y, int selected)
 	const char * fn = fb_getname(p);
 	if (p->fno.fattrib & AM_DIR)
 	{
-		display_setcolors(COLOR_GOLD, selected ? COLOR_BLUE: COLOR_BLACK);
+		colmain_setcolors(COLOR_GOLD, selected ? COLOR_BLUE: COLOR_BLACK);
 		local_snprintf_P(buff, sizeof buff / sizeof buff [0], "%c   <dir>  %s", selected ? 'X' : ' ',
 			fn);
 		debug_printf_P(PSTR("   <dir>  %s\n"), p->fno.fname);
 	}
 	else
 	{
-		display_setcolors(COLOR_GREEN, selected ? COLOR_BLUE: COLOR_BLACK);
+		colmain_setcolors(COLOR_GREEN, selected ? COLOR_BLUE: COLOR_BLACK);
 		local_snprintf_P(
 			buff,						// куда форматировать строку
 			sizeof buff / sizeof buff [0],	// размер буфера
@@ -3852,7 +3852,6 @@ void displfiles_buff(const char* path)
 			{
                 //printf("%s/%s\n", path, fn);
  				debug_printf_P(PSTR("displfiles_buff: %9lu '%s'\n"), (unsigned long) pfno->fsize,  fn);
-				//strcpy(
 			}
         }
         //f_closedir(&dir);
@@ -4845,7 +4844,7 @@ display_debug_digit(
 	enum { col = 0, row = 0 };
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 
-	display_setcolors(MNUVALCOLOR, BGCOLOR);
+	colmain_setcolors(MNUVALCOLOR, BGCOLOR);
 	do
 	{
 		display_gotoxy(col, row + lowhalf);		// курсор в начало первой строки
@@ -5039,7 +5038,7 @@ void looptests(void)
 #if 0 && WITHCURRLEVEL
 	{
 		// Тестирование датчика тока
-		(void) hamradio_get_pacurrent_value(0);
+		(void) hamradio_get_pacurrent_value();
 	}
 #endif
 #if 0 && WITHVOLTLEVEL
@@ -5083,12 +5082,12 @@ static void showstate(
 
 	local_snprintf_P(buff, 32, PSTR(" ON: %4u0 mS"), ontime);
 	display_gotoxy(0, 0);
-	display_string(buff, 0);
+	display_at(buff, 0);
 
 
 	local_snprintf_P(buff, 32, PSTR("OFF: %4u0 mS"), offtime);
 	display_gotoxy(0, 1);
-	display_string(buff, 0);
+	display_at(buff, 0);
 
 }
 
@@ -5130,296 +5129,7 @@ static void sdtick(void)
 }
 #endif
 
-#if LCDMODE_COLORED
-
-
-
-/*-----------------------------------------------------  V_Bre
- * void V_Bre (int xn, int yn, int xk, int yk)
- *
- * Подпрограмма иллюстрирующая построение вектора из точки
- * (xn,yn) в точку (xk, yk) методом Брезенхема.
- *
- * Построение ведется от точки с меньшими  координатами
- * к точке с большими координатами с единичным шагом по
- * координате с большим приращением.
- *
- * В общем случае исходный вектор проходит не через вершины
- * растровой сетки, а пересекает ее стороны.
- * Пусть приращение по X больше приращения по Y и оба они > 0.
- * Для очередного значения X нужно выбрать одну двух ближайших
- * координат сетки по Y.
- * Для этого проверяется как проходит  исходный  вектор - выше
- * или ниже середины расстояния между ближайшими значениями Y.
- * Если выше середины,  то Y-координату  надо  увеличить на 1,
- * иначе оставить прежней.
- * Для этой проверки анализируется знак переменной s,
- * соответствующей разности между истинным положением и
- * серединой расстояния между ближайшими Y-узлами сетки.
- */
-
-void display_line(int xn, int yn, int xk, int yk, COLOR_T color)
-{
-	int  dx, dy, s, sx, sy, kl, incr1, incr2;
-	char swap;
-
-	/* Вычисление приращений и шагов */
-	sx = 0;
-	if ((dx= xk-xn) < 0)
-	{
-		dx = - dx;
-		-- sx;
-	}
-	else if (dx > 0)
-		++ sx;
-	sy = 0;
-
-	if ((dy= yk-yn) < 0)
-	{
-		dy = - dy;
-		-- sy;
-	}
-	else if (dy>0)
-		++ sy;
-	/* Учет наклона */
-	swap = 0;
-	if ((kl= dx) < (s= dy))
-	{
-		dx= s;  dy= kl;  kl= s; ++swap;
-	}
-	s = (incr1= 2 * dy) - dx; /* incr1 - констан. перевычисления */
-	/* разности если текущее s < 0  и  */
-	/* s - начальное значение разности */
-	incr2 = 2 * dx;         /* Константа для перевычисления    */
-	/* разности если текущее s >= 0    */
-	display_putpixel(xn, yn, color); /* Первый  пиксел вектора       */
-
-	while (--kl >= 0)
-	{
-		if (s >= 0)
-		{
-			if (swap) xn+= sx;
-			else yn+= sy;
-			s-= incr2;
-		}
-		if (swap)
-			yn+= sy;
-		else
-			xn+= sx;
-		s += incr1;
-		display_putpixel(xn, yn, color); /* Текущая  точка  вектора   */
-	}
-}  /* V_Bre */
-
-
-const int sin90 [91] =
-{
-	0, 175, 349, 523, 698, 872,1045,1219,1392,   /*  0..8        */
-	1564,1736,1908,2079,2250,2419,2588,2756,2924,   /*  9..17       */
-	3090,3256,3420,3584,3746,3907,4067,4226,4384,   /* 18..26       */
-	4540,4695,4848,5000,5150,5299,5446,5592,5736,
-	5878,6018,6157,6293,6428,6561,6691,6820,6947,
-	7071,7193,7314,7431,7547,7660,7771,7880,7986,
-	8090,8192,8290,8387,8480,8572,8660,8746,8829,
-	8910,8988,9063,9135,9205,9272,9336,9397,9455,
-	9511,9563,9613,9659,9703,9744,9781,9816,9848,
-	9877,9903,9925,9945,9962,9976,9986,9994,9998,   /* 81..89       */
-	10000                                           /* 90           */
-};
-
-
-int muldiv(int a, int b, unsigned c)
-{
-	return  (unsigned) ((a * (long) b + 5000) / c);
-}
-
-static  int isin(unsigned alpha, unsigned r)
-{
-	while (alpha >= 360)
-		alpha -= 360;
-
-	if (alpha < 90)         /* 0..3 hours   */
-		return muldiv(sin90 [ alpha ], r, 10000);
-	if (alpha < 180)        /* 9..0 hours   */
-		return muldiv(sin90 [ 180 - alpha ], r, 10000);
-	if (alpha < 270)        /* 6..9 hours   */
-		return - muldiv(sin90 [ alpha - 180], r, 10000);
-				/* 3..6 hours   */
-	return - muldiv(sin90 [ 360 - alpha ], r, 10000);
-}
-
-static  int icos(unsigned alpha, unsigned r)
-{
-	return isin(alpha + 90, r * 20 / 10);
-}
-
-
-// Рисование радиусов
-void
-display_radius(int xc, int yc, unsigned gs, unsigned r1, unsigned r2, COLOR_T color)
-{
-	int     x, y;
-	int     x2, y2;
-
-	x = xc + icos(gs, r1);
-	y = yc + isin(gs, r1);
-	x2 = xc + icos(gs, r2);
-	y2 = yc + isin(gs, r2);
-
-	display_line(x, y, x2, y2, color);
-
-}
-
-// круговой интерполятор
-// нач.-x, нач.-y, градус начала, градус конуа, радиус, шаг приращения угла
-void
-display_segm(int xc, int yc, unsigned gs, unsigned ge, unsigned r, int step, COLOR_T color)
-{
-	int     x, y;
-	int     xo, yo;
-	char     first;
-	int     vcos, vsin;
-
-	if (gs == ge)   return;
-	first = 1;
-	while (gs != ge)
-	{
-		vsin = isin(gs, r);
-		vcos = icos(gs, r);
-		x = xc + vcos;
-		y = yc + vsin;
-
-		if (first != 0) // 1-я точка
-		{
-			// переместить к началу рисования
-			xo = x, yo = y;
-			first = 0;
-		}
-		else
-		{  // рисовать элемент окружности
-			display_line(xo, yo, x, y, color);
-			xo = x, yo = y;
-		}
-		if (ge == 360)
-			ge = 0;
-		if (step < 0)
-		{
-			gs += step;
-			if (gs >= 360)
-				gs += 360;
-		}
-		else
-		{
-			gs += step;
-			if (gs >= 360)
-				gs -= 360;
-		}
-	}
-
-	if (first == 0)
-	{
-		// завершение окружности
-		vsin = isin(ge, r);
-		vcos = icos(ge, r);
-		x = xc + vcos;
-		y = yc + vsin;
-
-		display_line(xo, yo, x, y, color); // рисовать линию
-	}
-
-}
-
-
-
-static void
-display_limb(void)
-{
-	enum { ADDRCELLHEIGHT = 15 };
-	int i;
-	enum { halfsect = 30 };
-	enum { gm = 270 };
-	enum { gs = gm - halfsect };
-	int ge = gm + halfsect;
-	int stripewidth = 12; //16;
-	int r1 = 7 * ADDRCELLHEIGHT - 8;	//350;
-	int r2 = r1 - stripewidth;
-	int yc = 9 * ADDRCELLHEIGHT;	//560;
-	int xc = 9 * ADDRCELLHEIGHT;	//120;
-
-	int gv = 270 - 20;		// угол поворота стрелки
-	int rv1 = 8 * ADDRCELLHEIGHT;	//350;
-	int rv2 = rv1 - 5 * ADDRCELLHEIGHT;
-	enum { step1 = 3 };		// шаг для оцифровки S
-	enum { step2 = 4 };		// шаг для оцифровки плюсов
-	static const int markers [] =
-	{
-		//gs + 0 * step1,
-		gs + 2 * step1,		// S1
-		gs + 4 * step1,		// S3
-		gs + 6 * step1,		// S5
-		gs + 8 * step1,		// S7
-		gs + 10 * step1,	// S9
-	};
-	static const int markersR [] =
-	{
-		gm + 2 * step2,	//
-		gm + 4 * step2,
-		gm + 6 * step2,
-	};
-	static const int markers2 [] =
-	{
-		//gs + 1 * step1,
-		gs + 3 * step1,		// S2
-		gs + 5 * step1,		// S4
-		gs + 7 * step1,		// S6
-		gs + 9 * step1,		// S8
-	};
-	static const int markers2R [] =
-	{
-		gm + 1 * step2,
-		gm + 3 * step2,
-		gm + 5 * step2,
-	};
-
-	const COLOR_T smeter = COLORMAIN_WHITE;
-	const COLOR_T smeterplus = COLORMAIN_GRAY;
-
-	//if (bitblt_waitbusy())	// перед рисованием прямым доступом к видеопамяти дождаться конца работы BitBlt
-	{
-		//s1d13781_wrcmd8(REG80_BLT_CTRL_0, 0x80);	// BitBlt reset
-
-		display_segm(xc, yc, gs, gm, r1, 1, smeter);
-		display_segm(xc, yc, gm, ge, r1, 1, smeterplus);
-
-		display_segm(xc, yc, gs, ge, r2, 1, COLORMAIN_WHITE);		// POWER
-		//display_radius(xc, yc, gs, r1, r2, COLOR_RED);
-		//display_radius(xc, yc, ge, r1, r2, COLOR_RED);
-		for (i = 0; i < sizeof markers / sizeof markers [0]; ++ i)
-		{
-			display_radius(xc, yc, markers [i], r1, r1 + 8, smeter);
-		}
-		for (i = 0; i < sizeof markers2 / sizeof markers2 [0]; ++ i)
-		{
-			display_radius(xc, yc, markers2 [i], r1, r1 + 4, smeter);
-		}
-		for (i = 0; i < sizeof markersR / sizeof markersR [0]; ++ i)
-		{
-			display_radius(xc, yc, markersR [i], r1, r1 + 8, smeterplus);
-		}
-		for (i = 0; i < sizeof markers2R / sizeof markers2R [0]; ++ i)
-		{
-			display_radius(xc, yc, markers2R [i], r1, r1 + 4, smeterplus);
-		}
-
-		//display_segm(xc, yc, gs, ge, rv1, 1, BLUE);	// показывает зоны перемещения стрелки
-		//display_segm(xc, yc, gs, ge, rv2, 1, BLUE);	// показывает зоны перемещения стрелки
-		display_radius(xc - 2, yc, gv, rv1, rv2, COLORMAIN_RED);
-		display_radius(xc - 1, yc, gv, rv1, rv2, COLORMAIN_RED);
-		display_radius(xc, yc, gv, rv1, rv2, COLORMAIN_RED);
-		display_radius(xc + 1, yc, gv, rv1, rv2, COLORMAIN_RED);
-		display_radius(xc + 2, yc, gv, rv1, rv2, COLORMAIN_RED);
-	}
-}
+#if LCDMODE_COLORED && ! DSTYLE_G_DUMMY
 
 // Получение псевдослучайныз чисел.
 // 0 .. num-1
@@ -5450,7 +5160,7 @@ static void BarTest(void)
 		const int g = local_randomgr(256);
 		const int b = local_randomgr(256);
 
-		const COLOR_T color = TFTRGB(r, g, b);
+		const COLORMAIN_T color = TFTRGB(r, g, b);
 
 		int x = local_randomgr(DIM_X);
 		int y = local_randomgr(DIM_Y);
@@ -5528,7 +5238,7 @@ GrideTest(void)
 
 }
 
-#endif /* LCDMODE_COLORED */
+#endif /* LCDMODE_COLORED && ! DSTYLE_G_DUMMY */
 
 #if 0
 static int
@@ -5630,6 +5340,10 @@ static void RAMFUNC_NONILINE cplxmlasave(cplxf *d, int len) {
 
 void hightests(void)
 {
+#if LCDMODE_LTDC
+	arm_hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
+#endif /* LCDMODE_LTDC */
+
 #if 0 && WITHDEBUG
 	{
 		// FPU speed test
@@ -5955,17 +5669,14 @@ void hightests(void)
 #endif /* 1 && CTLSTYLE_V1V */
 #if 0
 	{
-		display_setcolors(COLOR_GREEN, COLOR_BLACK);
-		display_gotoxy(5, 0);
-		display_string_P(PSTR("PT-Electronics 2015"), 0);
+		colmain_setcolors(COLOR_GREEN, COLOR_BLACK);
+		display_at_P(5, 0, PSTR("PT-Electronics 2015"));
 
-		display_setcolors(COLOR_RED, COLOR_BLACK);
-		display_gotoxy(7, 3);
-		display_string_P(PSTR("RENESAS"), 0);
+		colmain_setcolors(COLOR_RED, COLOR_BLACK);
+		display_at_P(7, 3, PSTR("RENESAS"));
 
-		display_setcolors(COLOR_WHITE, COLOR_BLACK);
-		display_gotoxy(9, 6);
-		display_string_P(PSTR("2.7 inch TFT"), 0);
+		colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
+		display_at_P(9, 6, PSTR("2.7 inch TFT"));
 		
 		for (;;)
 			;
@@ -5987,7 +5698,7 @@ void hightests(void)
 
 
 		/* отображение надписей самым маленьким шрифтом (8 точек) */
-		display_setcolors(COLOR_GREEN, COLOR_BLACK);
+		colmain_setcolors(COLOR_GREEN, COLOR_BLACK);
 		uint_fast8_t lowhalf2 = HALFCOUNT_SMALL2 - 1;
 		do
 		{
@@ -6002,26 +5713,20 @@ void hightests(void)
 		} while (lowhalf2 --);
 	#if 1
 		/* отображение надписей маленьким шрифтом (16 точек) */
-		display_setcolors(COLOR_GREEN, COLOR_BLACK);
-		uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
-		do
-		{
+		colmain_setcolors(COLOR_GREEN, COLOR_BLACK);
 		
-			display_gotoxy(CHARS2GRID(0), ROWS2GRID(1) + lowhalf);
-			display_string_P(PSTR("Start "), lowhalf);
+		display_at_P(CHARS2GRID(0), ROWS2GRID(1), PSTR("Start "));
 
-			display_gotoxy(CHARS2GRID(0), ROWS2GRID(2) + lowhalf);
-			display_string_P(PSTR("Stop "), lowhalf);
+		display_at_P(CHARS2GRID(0), ROWS2GRID(2), PSTR("Stop "));
 
-		} while (lowhalf --);
 	#endif
 
 	#if 0//LCDMODE_COLORED
 
 		static ALIGNX_BEGIN volatile PACKEDCOLOR565_T scr [GXSIZE(dx, dy)] ALIGNX_END;
 
-		display_colorbuffer_fill(scr, dx, dy, COLOR_WHITE);
-		display_colorbuffer_show(scr, dx, dy, 0, GRID2Y(topreserved));
+		colpip_fill(scr, dx, dy, COLOR_WHITE);
+		colpip_to_main(scr, dx, dy, 0, GRID2Y(topreserved));
 		//for (;;)
 		//	;
 		int phase = 0;
@@ -6034,18 +5739,18 @@ void hightests(void)
 			// рисование линии
 			unsigned i;
 			for (i = 0; i < bufY; ++ i)
-				display_colorbuffer_set(scr, dx, dy, i + loop, i, COLOR_BLUE);		// поставить точку
+				colpip_point(scr, dx, dy, i + loop, i, COLOR_BLUE);		// поставить точку
 
-			display_colorbuffer_show(scr, dx, dy, 0, GRID2Y(topreserved));
+			colpip_to_main(scr, dx, dy, 0, GRID2Y(topreserved));
 			//local_delay_ms(25);
 			if (++ count > top)
 			{
 				count = 0;
 				phase = ! phase;
 				if (phase)
-					display_colorbuffer_fill(scr, dx, dy, COLOR_YELLOW);
+					colpip_fill(scr, dx, dy, COLOR_YELLOW);
 				else
-					display_colorbuffer_fill(scr, dx, dy, COLOR_RED);
+					colpip_fill(scr, dx, dy, COLOR_RED);
 			}
 			
 		}
@@ -6053,7 +5758,7 @@ void hightests(void)
 
 		static FATFSALIGN_BEGIN GX_t scr [MGSIZE(dx, dy)] FATFSALIGN_END;
 
-		display_setcolors(COLOR_WHITE, COLOR_BLACK);
+		colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
 		
 		memset(scr, 0xFF, sizeof scr);
 		display_showbuffer(scr, dx, dy, DBX_0, DBY_1);
@@ -6076,9 +5781,9 @@ void hightests(void)
 				count = 0;
 				phase = ! phase;
 				if (phase)
-					display_setcolors(COLOR_YELLOW, COLOR_BLACK);
+					colmain_setcolors(COLOR_YELLOW, COLOR_BLACK);
 				else
-					display_setcolors(COLOR_RED, COLOR_BLACK);
+					colmain_setcolors(COLOR_RED, COLOR_BLACK);
 				memset(scr, 0xFF, sizeof scr);
 			}
 			
@@ -6488,7 +6193,7 @@ void hightests(void)
 		}
 	}
 #endif
-#if 0 && LCDMODE_COLORED
+#if 0 && LCDMODE_COLORED && ! DSTYLE_G_DUMMY
 	{
 		display2_bgreset();
 		//GrideTest();
@@ -6504,7 +6209,7 @@ void hightests(void)
 
 		display2_bgreset();
 		display_solidbar(markerx, markery, markerx + gridx, markery + gridy, COLOR_WHITE);
-		display_setcolors(COLOR_WHITE,COLOR_BLACK);
+		colmain_setcolors(COLOR_WHITE,COLOR_BLACK);
 
 			// touch screen test
 			for (;;)
@@ -6531,7 +6236,7 @@ void hightests(void)
 	{
 		//int n = TIM6_DAC_IRQn;
 		unsigned long i = 0;
-		display_setcolors(COLOR_WHITE, COLOR_BLACK);
+		colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
 		for (;;)
 		{
 			++ i;
@@ -6546,8 +6251,8 @@ void hightests(void)
 					 );
 
 				display_gotoxy(0, 0 + lowhalf);
-				display_setcolors(COLOR_WHITE, COLOR_BLACK);
-				display_string(buff, lowhalf);
+				colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
+				display_at(buff, lowhalf);
 			} while (lowhalf --);
 			debug_printf_P(PSTR("CNT=%08lX\n"), i);
 		}
@@ -6579,7 +6284,7 @@ void hightests(void)
 			{
 				display_gotoxy(0, 0 + lowhalf);
 
-				display_string(buff, lowhalf);
+				display_at(buff, lowhalf);
 			} while (lowhalf --);
 		}
 	}
@@ -6654,66 +6359,6 @@ void hightests(void)
 	}
 #endif
 #if 0 && WITHDEBUG
-	/* SWR meter test on screen*/
-	{
-		int auto display_getmaxswrlimb(void)
-		{
-			return 31;
-		}
-		unsigned long cnt = 0;
-		for (;; ++ cnt)
-		{
-			enum { DISPWRMETER_MIN = 10, minforward = 40 };
-			uint_fast8_t swrcalibr = 100;
-			adcvalholder_t r;
-			adcvalholder_t f = board_getswrmeter(& r, swrcalibr);
-
-			const uint_fast16_t fullscale = display_getmaxswrlimb() - DISPWRMETER_MIN;
-			uint_fast16_t swr10;		// рассчитанное  значение
-			if (f < minforward)
-				swr10 = 0;	// SWR=1
-			else if (f <= r)
-				swr10 = fullscale;		// SWR is infinite
-			else
-				swr10 = (f + r) * DISPWRMETER_MIN / (f - r) - DISPWRMETER_MIN;
-
-			uint_fast8_t i = 0;
-			//for (i = 0; i < NADC; ++ i)
-			{
-				char buff [32];
-
-				local_snprintf_P(buff, sizeof buff / sizeof buff [0],
-					PSTR("SWR=%4d.%d"), (swr10 + DISPWRMETER_MIN) / 10, (swr10 + DISPWRMETER_MIN) % 10); 
-
-				display_at(0, i, buff);
-			}
-			i = 1;
-			{
-				char buff [32];
-
-				local_snprintf_P(buff, sizeof buff / sizeof buff [0],
-					PSTR("FWD=%4d"), f); 
-				display_at(0, i, buff);
-			}
-			i = 2;
-			{
-				char buff [32];
-
-				local_snprintf_P(buff, sizeof buff / sizeof buff [0],
-					PSTR("REF=%4d"), r); 
-				display_at(0, i, buff);
-			}
-			i = 3;
-			{
-				char buff [32];
-				local_snprintf_P(buff, sizeof buff / sizeof buff [0],
-					PSTR("CNT=%08lX"), cnt); 
-				display_at(0, i, buff);
-			}
-		}
-	}
-#endif
-#if 0 && WITHDEBUG
 	/* ADC test on screen*/
 	{
 		// see HARDWARE_ADCINPUTS 
@@ -6746,38 +6391,20 @@ void hightests(void)
 
 	/* буфер размером x=64, y=112 точек */
 	enum { bufY = DIM_Y - 8, dx = DIM_X, dy = /*24 */ bufY, DBX_0 = 0, DBY_1 = 1};
-	static FATFSALIGN_BEGIN PACKEDCOLOR_T scr [GXSIZE(dx, dy)] FATFSALIGN_END;
+	static FATFSALIGN_BEGIN PACKEDCOLORMAIN_T scr [GXSIZE(dx, dy)] FATFSALIGN_END;
 
 
 	/* отображение надписей самым маленьким шрифтом (8 точек) */
-	uint_fast8_t lowhalf2 = HALFCOUNT_SMALL2 - 1;
-	do
-	{
-	
-		display_gotoxy(0, 0 + lowhalf2);
-		display_string2_P(PSTR("PT-Electronics 2014"), lowhalf2);
-
-		//display_gotoxy(0, 1 + lowhalf2);
-		//display_string2_P(PSTR("PT-Electronics 2014"), lowhalf2);
-
-	} while (lowhalf2 --);
+	display_at_P(CHARS2GRID(0), ROWS2GRID(0), PSTR("PT-Electronics 2014"));
 
 #if 0
 	/* отображение надписей маленьким шрифтом (16 точек) */
-	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
-	do
-	{
-	
-		display_gotoxy(0, 2 + lowhalf);
-		display_string_P(PSTR("Start "), lowhalf);
+	display_at_P(CHARS2GRID(0), ROWS2GRID(2), PSTR("Start "));
 
-		display_gotoxy(0, 4 + lowhalf);
-		display_string_P(PSTR("Stop "), lowhalf);
-
-	} while (lowhalf --);
+	display_at_P(CHARS2GRID(0), ROWS2GRID(3), PSTR("Stop "));
 #endif
 
-	display_setcolors(COLOR_WHITE, COLOR_BLACK);
+	colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
 	unsigned loop;
 	for (loop = 0; ;loop = loop < (DIM_X - bufY) ? loop + 1 : 0)
 	{
@@ -6829,7 +6456,7 @@ void hightests(void)
 					PSTR("vox2=%3d"), vox2
 					 );
 				display_gotoxy(0, 0 + lowhalf);
-				display_string(buff, lowhalf);
+				display_at(buff, lowhalf);
 
 				//////////////////////////
 				// VOX2 level
@@ -6838,7 +6465,7 @@ void hightests(void)
 					PSTR("vox1=%5d"), vox1
 					 );
 				display_gotoxy(0, 1 + lowhalf);
-				display_string(buff, lowhalf);
+				display_at(buff, lowhalf);
 				*/
 				//////////////////////////
 				// A-VOX level
@@ -6846,7 +6473,7 @@ void hightests(void)
 					PSTR("avox=%3d"), avox
 					 );
 				display_gotoxy(11, 0 + lowhalf);
-				display_string(buff, lowhalf);
+				display_at(buff, lowhalf);
 
 			} while (lowhalf --);
 		}
@@ -6889,13 +6516,13 @@ void hightests(void)
 				PSTR("af= %4d"), potaf
 				 );
 			display_gotoxy(0, 0 * HALFCOUNT_SMALL + lowhalf);
-			display_string(buff, lowhalf);
+			display_at(buff, lowhalf);
 			// AF gain raw
 			local_snprintf_P(buff, sizeof buff / sizeof buff [0], 
 				PSTR("aft=%4d"), potaft
 				 );
 			display_gotoxy(0, 1 * HALFCOUNT_SMALL + lowhalf);
-			display_string(buff, lowhalf);
+			display_at(buff, lowhalf);
 			continue;
 #else
 			// IF gain
@@ -6903,27 +6530,27 @@ void hightests(void)
 				PSTR("rf= %4d"), potrf
 				 );
 			display_gotoxy(0, 0 + lowhalf);
-			display_string(buff, lowhalf);
+			display_at(buff, lowhalf);
 			// AF gain
 			local_snprintf_P(buff, sizeof buff / sizeof buff [0], 
 				PSTR("af= %4d"), potaf
 				 );
 			display_gotoxy(7, 0 + lowhalf);
-			display_string(buff, lowhalf);
+			display_at(buff, lowhalf);
 
 			// AUX1
 			local_snprintf_P(buff, sizeof buff / sizeof buff [0], 
 				PSTR("A1= %4d"), aux1
 				 );
 			display_gotoxy(14, 0 + lowhalf);
-			display_string(buff, lowhalf);
+			display_at(buff, lowhalf);
 
 			// AUX2
 			local_snprintf_P(buff, sizeof buff / sizeof buff [0], 
 				PSTR("A2= %4d"), aux2
 				 );
 			display_gotoxy(0, 1 + lowhalf);
-			display_string(buff, lowhalf);
+			display_at(buff, lowhalf);
 
 			// AUX3
 			/*
@@ -6931,7 +6558,7 @@ void hightests(void)
 				PSTR("A3=%3d"), aux3
 				 );
 			display_gotoxy(7, 1 + lowhalf);
-			display_string(buff, lowhalf);
+			display_at(buff, lowhalf);
 			*/
 #if WITHPOTWPM
 			// WPM
@@ -6939,7 +6566,7 @@ void hightests(void)
 				PSTR("cw=%3d"), wpm
 				 );
 			display_gotoxy(14, 1 + lowhalf);
-			display_string(buff, lowhalf);
+			display_at(buff, lowhalf);
 #endif /* WITHPOTWPM */
 
 			// IF gain raw
@@ -6947,13 +6574,13 @@ void hightests(void)
 				PSTR("rft=%4d"), potrft
 				 );
 			display_gotoxy(0, 2 + lowhalf);
-			display_string(buff, lowhalf);
+			display_at(buff, lowhalf);
 			// AF gain raw
 			local_snprintf_P(buff, sizeof buff / sizeof buff [0], 
 				PSTR("aft=%4d"), potaft
 				 );
 			display_gotoxy(10, 2 + lowhalf);
-			display_string(buff, lowhalf);
+			display_at(buff, lowhalf);
 #endif
 
 		} while (lowhalf --);
@@ -6965,7 +6592,7 @@ void hightests(void)
 	// тест дисплея - вывод меняющихся цифр
 	{
 		unsigned long i = 0;
-		display_setcolors(COLOR_WHITE, COLOR_BLACK);
+		colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
 		for (;;)
 		{
 			++ i;
@@ -6980,8 +6607,8 @@ void hightests(void)
 					 );
 
 				display_gotoxy(0, 0 + lowhalf);
-				display_setcolors(COLOR_WHITE, COLOR_BLACK);
-				display_string(buff, lowhalf);
+				colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
+				display_at(buff, lowhalf);
 			} while (lowhalf --);
 		}
 	}
@@ -6992,13 +6619,13 @@ void hightests(void)
 	{
 		char b [32];
 		int c;
-		// COLOR_T bg
+		// COLORMAIN_T bg
 		for (c = 0; c < 256; ++ c)
 		{
 			display_setbgcolor(TFTRGB(c, c, c));
 			display2_bgreset();
 			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("WHITE %-3d"), c);
-			display_setcolors(COLOR_WHITE, COLOR_BLACK);
+			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
 			display_at(0, 0, b);
 			local_delay_ms(50);
 		}
@@ -7012,7 +6639,7 @@ void hightests(void)
 			display_setbgcolor(TFTRGB(c, 0, 0));
 			display2_bgreset();
 			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("RED %-3d"), c);
-			display_setcolors(COLOR_WHITE, COLOR_BLACK);
+			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
 			display_at(0, 0, b);
 			local_delay_ms(50);
 		}
@@ -7026,7 +6653,7 @@ void hightests(void)
 			display_setbgcolor(TFTRGB(0, c, 0));
 			display2_bgreset();
 			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("GREEN %-3d"), c);
-			display_setcolors(COLOR_WHITE, COLOR_BLACK);
+			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
 			display_at(0, 0, b);
 			local_delay_ms(50);
 		}
@@ -7040,7 +6667,7 @@ void hightests(void)
 			display_setbgcolor(TFTRGB(0, 0, c));
 			display2_bgreset();
 			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("BLUE %-3d"), c);
-			display_setcolors(COLOR_WHITE, COLOR_BLACK);
+			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
 			display_at(0, 0, b);
 			local_delay_ms(50);
 		}
@@ -7073,7 +6700,7 @@ void hightests(void)
 				//unsigned char v1, v2;
 				display_gotoxy(0, 4);
 				local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("%10lu"), freq );
-				display_string(buff, 0);
+				display_at(buff, 0);
 				ITM_SendChar('a' + (cd ++) % 16);
 				//SWO_PrintChar('a' + (cd ++) % 16);
 
@@ -7096,13 +6723,13 @@ void hightests(void)
 		//v1 = si570_get_status();
 		display_gotoxy(0, 6);
 		local_snprintf_P(buff, 22, PSTR("he %08lX:%08lX"), 0x1726354aul, -7ul);
-		display_string(buff, 0);
+		display_at(buff, 0);
 
 		display_gotoxy(0, 7);
 		//unsigned long l1 = (unsigned long) (rftw >> 32);
 		//unsigned long l2 = (unsigned long) rftw;
 		local_snprintf_P(buff, 22, PSTR("he %08lx"), -4000000l);
-		display_string(buff, 0);
+		display_at(buff, 0);
 		for (;;)
 			;
 	}
@@ -7190,16 +6817,16 @@ void hightests(void)
 			display_gotoxy(0, 0);		// курсор в начало первой строки
 
 
-			display_string(ptt1 != 0 ? "ptt " : "    ", 0);
-			display_string(ptt2 != 0 ? "cptt " : "     ", 0);
-			display_string(ckey != 0 ? "ckey " : "     ", 0);
+			display_at(ptt1 != 0 ? "ptt " : "    ", 0);
+			display_at(ptt2 != 0 ? "cptt " : "     ", 0);
+			display_at(ckey != 0 ? "ckey " : "     ", 0);
 
 			display_gotoxy(0, 2);		// курсор в начало второй строки
-			display_string((elkey & ELKEY_PADDLE_DIT) != 0 ? "dit " : "     ", 0);
+			display_at((elkey & ELKEY_PADDLE_DIT) != 0 ? "dit " : "     ", 0);
 			display_gotoxy(0, 4);		// курсор в начало второй строки
-			display_string((elkey & ELKEY_PADDLE_DASH) != 0 ? "dash" : "      ", 0);
+			display_at((elkey & ELKEY_PADDLE_DASH) != 0 ? "dash" : "      ", 0);
 			display_gotoxy(0, 6);		// курсор в начало второй строки
-			display_string((phase = ! phase) ? " test1" : " test2", 0);
+			display_at((phase = ! phase) ? " test1" : " test2", 0);
 
 		}
 	}
@@ -7225,7 +6852,6 @@ void hightests(void)
 			//display_debug_digit(speed * 100UL / ENCODER_NORMALIZED_RESOLUTION, 7, 2, 0);
 			//enum { lowhalf = 0 };
 			//display_gotoxy(0, 1 + lowhalf);		// курсор в начало второй строки
-			//display_string_P(PSTR(" RPS"), lowhalf);
 		}
 	}
 #endif
@@ -7240,7 +6866,6 @@ void hightests(void)
 			(void) nrotate;
 			//display_gotoxy(0, 1);		// курсор в начало второй строки
 			display_debug_digit(jumpsize, 7, 0, 0);
-			//display_string_P(PSTR(" SCALE"));
 		}
 	}
 #endif
@@ -7278,7 +6903,7 @@ void hightests(void)
 			do
 			{
 				display_gotoxy(0, row * HALFCOUNT_SMALL + lowhalf);		// курсор в начало второй строки
-				display_string("ADCx=", lowhalf);
+				display_at("ADCx=", lowhalf);
 				display_gotoxy(5, row * HALFCOUNT_SMALL + lowhalf);		// курсор в начало второй строки
 				display_menu_value(v0, 5, 255, 0, lowhalf);
 			} while (lowhalf --);
@@ -7314,10 +6939,10 @@ void hightests(void)
 			continue;
 
 			if (scancode != KEYBOARD_NOKEY)
-				display_dispfreq_a2(scancode * 1000UL + v, 255, 0, menuset);
+				display2_dispfreq_a2(scancode * 1000UL + v, 255, 0, menuset);
 			else
 			{
-				display_dispfreq_a2(v * 1000UL, 255, 0, menuset);
+				display2_dispfreq_a2(v * 1000UL, 255, 0, menuset);
 				v = (v + 1) % 1000;
 			}
 		}
@@ -7339,7 +6964,7 @@ void hightests(void)
 			{
 				debug_printf_P(PSTR("kbch = %02x\n"), (unsigned) kbch);
 				continue;
-				display_dispfreq_a2(kbch * 1000UL + v, 255, 0, menuset);
+				display2_dispfreq_a2(kbch * 1000UL + v, 255, 0, menuset);
 				v = (v + 10) % 1000;
 			}
 		}
@@ -7477,7 +7102,7 @@ void hightests(void)
 				local_snprintf_P(buff, 17, fmt_1, v1);
 
 				display_gotoxy((i % 8) * 3, (i / 8) * 2);
-				display_string(buff, 0);
+				display_at(buff, 0);
 			}
 		}
 	#endif
@@ -7498,7 +7123,7 @@ void hightests(void)
 		char buff [17];
 		local_snprintf_P(buff, 17, fmt_1, v1);
 		display_gotoxy(0, 0);
-		display_string(buff, 0);
+		display_at(buff, 0);
 		local_delay_ms(100);
 	}
 
@@ -7528,7 +7153,7 @@ void hightests(void)
 		char buff [17];
 		local_snprintf_P(buff, 17, fmt_1, v);
 		display_gotoxy(0, 0);
-		display_string(buff);
+		display_at(buff);
 		local_delay_ms(100);
 	}
 #endif
@@ -7594,7 +7219,7 @@ void hightests(void)
 
 			local_snprintf_P(buff, 17, fmt_1, v ++);
 			display_gotoxy(0, 0);
-			display_string(buff, 0);
+			display_at(buff, 0);
 			
 		}
 	}

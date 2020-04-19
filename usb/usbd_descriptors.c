@@ -1149,7 +1149,7 @@ static unsigned UAC2_fill_14_OUT48(uint_fast8_t fill, uint8_t * buff, unsigned m
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(UAC_OUT48_DATA_SIZE);
+		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(UACOUT_AUDIO48_DATASIZE);
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE;         /* bDescriptorType */
@@ -1203,8 +1203,8 @@ static unsigned UAC2_FormatTypeDescroptor_IN48(uint_fast8_t fill, uint8_t * buff
 		* buff ++ = AUDIO_INTERFACE_DESCRIPTOR_TYPE;		/* bDescriptorType */
 		* buff ++ = AUDIO_STREAMING_FORMAT_TYPE;			/* bDescriptorSubtype */
 		* buff ++ = AUDIO_FORMAT_TYPE_I;							/* bFormatType */
-		* buff ++ = (HARDWARE_USBD_AUDIO_IN_SAMPLEBITS_AUDIO48 + 7) / 8;	//bSubslotSize
-		* buff ++ = HARDWARE_USBD_AUDIO_IN_SAMPLEBITS_AUDIO48;	//bBitResolution   (32 bits per sample)
+		* buff ++ = (UACIN_AUDIO48_SAMPLEBITS + 7) / 8;	//bSubslotSize
+		* buff ++ = UACIN_AUDIO48_SAMPLEBITS;	//bBitResolution   (32 bits per sample)
 		/* 6 byte*/
 	}
 	return length;
@@ -1220,7 +1220,7 @@ static unsigned UAC2_fill_27_IN48(uint_fast8_t fill, uint8_t * buff, unsigned ma
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(UAC_IN48_DATA_SIZE); // was: 0x300
+		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(UACIN_AUDIO48_DATASIZE); // was: 0x300
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;							/* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE;	// bDescriptorType
@@ -1250,8 +1250,8 @@ static unsigned UAC2_FormatTypeDescroptor_RTS96(uint_fast8_t fill, uint8_t * buf
 		* buff ++ = AUDIO_INTERFACE_DESCRIPTOR_TYPE;		/* bDescriptorType */
 		* buff ++ = AUDIO_STREAMING_FORMAT_TYPE;			/* bDescriptorSubtype */
 		* buff ++ = AUDIO_FORMAT_TYPE_I;							/* bFormatType */
-		* buff ++ = (HARDWARE_USBD_AUDIO_IN_SAMPLEBITS_RTS96 + 7) / 8;	//bSubslotSize
-		* buff ++ = HARDWARE_USBD_AUDIO_IN_SAMPLEBITS_RTS96;	//bBitResolution   (32 bits per sample)
+		* buff ++ = (UACIN_RTS96_SAMPLEBITS + 7) / 8;	//bSubslotSize
+		* buff ++ = UACIN_RTS96_SAMPLEBITS;	//bBitResolution   (32 bits per sample)
 		/* 6 byte*/
 	}
 	return length;
@@ -1267,7 +1267,7 @@ static unsigned UAC2_fill_27_RTS96(uint_fast8_t fill, uint8_t * buff, unsigned m
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(VIRTUAL_AUDIO_PORT_DATA_SIZE_IN_RTS96); // was: 0x300
+		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(UACIN_RTS96_DATASIZE); // was: 0x300
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;							/* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE;	// bDescriptorType
@@ -1299,8 +1299,8 @@ static unsigned UAC2_FormatTypeDescroptor_RTS192(uint_fast8_t fill, uint8_t * bu
 		* buff ++ = AUDIO_INTERFACE_DESCRIPTOR_TYPE;		/* bDescriptorType */
 		* buff ++ = AUDIO_STREAMING_FORMAT_TYPE;			/* bDescriptorSubtype */
 		* buff ++ = AUDIO_FORMAT_TYPE_I;							/* bFormatType */
-		* buff ++ = (HARDWARE_USBD_AUDIO_IN_SAMPLEBITS_RTS192 + 7) / 8;	//bSubslotSize
-		* buff ++ = HARDWARE_USBD_AUDIO_IN_SAMPLEBITS_RTS192;	//bBitResolution   (32 bits per sample)
+		* buff ++ = (UACIN_RTS192_SAMPLEBITS + 7) / 8;	//bSubslotSize
+		* buff ++ = UACIN_RTS192_SAMPLEBITS;	//bBitResolution   (32 bits per sample)
 		/* 6 byte*/
 	}
 	return length;
@@ -1316,7 +1316,7 @@ static unsigned UAC2_fill_27_RTS192(uint_fast8_t fill, uint8_t * buff, unsigned 
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(VIRTUAL_AUDIO_PORT_DATA_SIZE_IN_RTS192); // was: 0x300
+		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(UACIN_RTS192_DATASIZE); // was: 0x300
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;							/* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE;	// bDescriptorType
@@ -1372,8 +1372,8 @@ static unsigned UAC1_FormatTypeDescroptor_IN48(uint_fast8_t fill, uint8_t * buff
 		* buff ++ = AUDIO_STREAMING_FORMAT_TYPE;   // FORMAT_TYPE subtype. (bDescriptorSubtype) 0x02
 		* buff ++ = AUDIO_FORMAT_TYPE_I;							/* bFormatType */
 		* buff ++ = UACIN_FMT_CHANNELS_AUDIO48;		/* bNrChannels */
-		* buff ++ = (HARDWARE_USBD_AUDIO_IN_SAMPLEBITS_AUDIO48 + 7) / 8; /* bSubFrameSize :  2 Bytes per frame (16bits) */
-		* buff ++ = HARDWARE_USBD_AUDIO_IN_SAMPLEBITS_AUDIO48;		/* bBitResolution (16-bits per sample) */
+		* buff ++ = (UACIN_AUDIO48_SAMPLEBITS + 7) / 8; /* bSubFrameSize :  2 Bytes per frame (16bits) */
+		* buff ++ = UACIN_AUDIO48_SAMPLEBITS;		/* bBitResolution (16-bits per sample) */
 		* buff ++ = 1;										/* bSamFreqType only one frequency supported */
 		* buff ++ = LO_BYTE(samplefreq1);	/* Audio sampling frequency coded on 3 bytes */
 		* buff ++ = HI_BYTE(samplefreq1);
@@ -1392,7 +1392,7 @@ static unsigned UAC1_fill_27_IN48(uint_fast8_t fill, uint8_t * buff, unsigned ma
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(UAC_IN48_DATA_SIZE); // was: 0x300
+		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(UACIN_AUDIO48_DATASIZE); // was: 0x300
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;							/* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE;	// bDescriptorType
@@ -1426,8 +1426,8 @@ static unsigned UAC1_FormatTypeDescroptor_RTS96(uint_fast8_t fill, uint8_t * buf
 		* buff ++ = AUDIO_STREAMING_FORMAT_TYPE;   // FORMAT_TYPE subtype. (bDescriptorSubtype) 0x02
 		* buff ++ = AUDIO_FORMAT_TYPE_I;							/* bFormatType */
 		* buff ++ = UACIN_FMT_CHANNELS_RTS;		/* bNrChannels */
-		* buff ++ = (HARDWARE_USBD_AUDIO_IN_SAMPLEBITS_RTS96 + 7) / 8; /* bSubFrameSize :  2 Bytes per frame (16bits) */
-		* buff ++ = HARDWARE_USBD_AUDIO_IN_SAMPLEBITS_RTS96;		/* bBitResolution (16-bits per sample) */
+		* buff ++ = (UACIN_RTS96_SAMPLEBITS + 7) / 8; /* bSubFrameSize :  2 Bytes per frame (16bits) */
+		* buff ++ = UACIN_RTS96_SAMPLEBITS;		/* bBitResolution (16-bits per sample) */
 		* buff ++ = 1;										/* bSamFreqType only one frequency supported */
 		* buff ++ = LO_BYTE(samplefreq1);	/* Audio sampling frequency coded on 3 bytes */
 		* buff ++ = HI_BYTE(samplefreq1);
@@ -1446,7 +1446,7 @@ static unsigned UAC1_fill_27_RTS96(uint_fast8_t fill, uint8_t * buff, unsigned m
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(VIRTUAL_AUDIO_PORT_DATA_SIZE_IN_RTS96); // was: 0x300
+		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(UACIN_RTS96_DATASIZE); // was: 0x300
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;							/* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE;	// bDescriptorType
@@ -1482,8 +1482,8 @@ static unsigned UAC1_FormatTypeDescroptor_RTS192(uint_fast8_t fill, uint8_t * bu
 		* buff ++ = AUDIO_STREAMING_FORMAT_TYPE;   // FORMAT_TYPE subtype. (bDescriptorSubtype) 0x02
 		* buff ++ = AUDIO_FORMAT_TYPE_I;							/* bFormatType */
 		* buff ++ = UACIN_FMT_CHANNELS_RTS;		/* bNrChannels */
-		* buff ++ = (HARDWARE_USBD_AUDIO_IN_SAMPLEBITS_RTS192 + 7) / 8; /* bSubFrameSize :  2 Bytes per frame (16bits) */
-		* buff ++ = HARDWARE_USBD_AUDIO_IN_SAMPLEBITS_RTS192;		/* bBitResolution (16-bits per sample) */
+		* buff ++ = (UACIN_RTS192_SAMPLEBITS + 7) / 8; /* bSubFrameSize :  2 Bytes per frame (16bits) */
+		* buff ++ = UACIN_RTS192_SAMPLEBITS;		/* bBitResolution (16-bits per sample) */
 		* buff ++ = 1;										/* bSamFreqType only one frequency supported */
 		* buff ++ = LO_BYTE(samplefreq1);	/* Audio sampling frequency coded on 3 bytes */
 		* buff ++ = HI_BYTE(samplefreq1);
@@ -1502,7 +1502,7 @@ static unsigned UAC1_fill_27_RTS192(uint_fast8_t fill, uint8_t * buff, unsigned 
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(VIRTUAL_AUDIO_PORT_DATA_SIZE_IN_RTS192); // was: 0x300
+		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(UACIN_RTS192_DATASIZE); // was: 0x300
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;							/* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE;	// bDescriptorType
@@ -2230,7 +2230,7 @@ static unsigned UAC1_FormatTypeDescroptor_OUT48(uint_fast8_t fill, uint8_t * buf
 		* buff ++ = AUDIO_INTERFACE_DESCRIPTOR_TYPE;		/* bDescriptorType */
 		* buff ++ = AUDIO_STREAMING_FORMAT_TYPE;			/* bDescriptorSubtype */
 		* buff ++ = AUDIO_FORMAT_TYPE_I;							/* bFormatType */
-		* buff ++ = UACOUT_FMT_CHANNELS_AUDIO48;		/* bNrChannels */
+		* buff ++ = UACOUT_AUDIO48_FMT_CHANNELS;		/* bNrChannels */
 		* buff ++ = (UACOUT_AUDIO48_SAMPLEBITS + 7) / 8; /* bSubFrameSize :  2 Bytes per frame (16bits) */
 		* buff ++ = UACOUT_AUDIO48_SAMPLEBITS;		/* bBitResolution (16-bits per sample) */
 		* buff ++ = 1;										/* bSamFreqType only one frequency supported */
@@ -2252,7 +2252,7 @@ static unsigned UAC1_fill_14_OUT48(uint_fast8_t fill, uint8_t * buff, unsigned m
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(UAC_OUT48_DATA_SIZE);
+		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(UACOUT_AUDIO48_DATASIZE);
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE;         /* bDescriptorType */

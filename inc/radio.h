@@ -44,6 +44,15 @@ typedef uint_least64_t phase_t;
 #define	WITHNOTCHFREQMIN	300
 #define WITHNOTCHFREQMAX	5000
 
+/* параметры отображения панорамы */
+#define WITHTOPDBMIN 0
+#define WITHTOPDBMAX 60
+#define WITHTOPDBDEFAULT 30
+
+#define WITHBOTTOMDBMIN 80
+#define WITHBOTTOMDBMAX 160
+#define WITHBOTTOMDBDEFAULT 130
+
 enum
 {
 	BOARD_WTYPE_BLACKMAN_HARRIS,
@@ -3215,38 +3224,62 @@ void spool_0p128(void);	// OPERA support
 
 #endif /* HYBRID_DDS_ATTINY2313 */
 
-#define LABELW 8
 
-#if WITHTOUCHGUI
-	typedef struct {
-		char name[15];
-		uint_fast8_t index;
-	} menu_names_t;
+extern uint_fast8_t s9level;		/* уровни калибровки S-метра */
+extern uint_fast8_t s9delta;		// 9 баллов - 8 интервалов - по 6 децибел каждый
+extern uint_fast8_t s9_60_delta;		// 60 dB
+extern uint_fast16_t minforward;
+extern uint_fast8_t swrcalibr;
+extern uint_fast8_t maxpwrcali;
+extern uint_fast8_t swrmode;
 
-	typedef struct {
-		char param[20];
-		char val[20];
-		uint_fast8_t state;
-	} enc2_menu_t;
+void display_swrmeter(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	adcvalholder_t forward,
+	adcvalholder_t reflected, // скорректированное
+	uint_fast16_t minforward
+	);
 
-	void change_submode(uint_fast8_t newsubmode);
-	uint_fast8_t get_low_bp (int_least16_t rotate);
-	uint_fast8_t get_high_bp (int_least16_t rotate);
-	uint_fast8_t get_bp_type (void);
-	void gui_initialize (void);
-	void process_gui(void);
-	uint_fast8_t check_encoder2 (int_least16_t rotate);
-	void set_encoder2_state (uint_fast8_t code);
-	void set_agc_off(void);
-	void set_agc_slow(void);
-	void set_agc_fast(void);
-	uint_fast8_t send_key_code (uint_fast8_t code);
-	uint_fast8_t get_multilinemenu_block_groups(menu_names_t * vals);
-	uint_fast8_t get_multilinemenu_block_params(menu_names_t * vals, uint_fast8_t index);
-	void get_multilinemenu_block_vals(menu_names_t * vals, uint_fast8_t index, uint_fast8_t cnt);
-	void set_menu_cond (uint_fast8_t m);
-	const char * gui_edit_menu_item (uint_fast8_t index, int_least16_t rotate);
-#endif /* WITHTOUCHGUI */
+uint_fast8_t hamradio_get_tx(void);
+int_fast32_t hamradio_get_pbtvalue(void);	// Для отображения на дисплее
+uint_fast8_t hamradio_get_atuvalue(void);
+uint_fast8_t hamradio_get_genham_value(void);
+uint_fast8_t hamradio_get_bypvalue(void);
+uint_fast8_t hamradio_get_lockvalue(void);	// текущее состояние LOCK
+uint_fast8_t hamradio_get_usefastvalue(void);	// текущее состояние FAST
+uint_fast8_t hamradio_get_voxvalue(void);	// текущее состояние VOX
+uint_fast8_t hamradio_get_tunemodevalue(void);	// текущее состояние TUNE
+uint_fast32_t hamradio_get_freq_pathi(uint_fast8_t pathi);		// Частота VFO A/B для отображения на дисплее
+uint_fast32_t hamradio_get_freq_a(void);		// Частота VFO A для отображения на дисплее
+uint_fast32_t hamradio_get_freq_b(void);		// Частота VFO B для отображения на дисплее
+uint_fast32_t hamradio_get_freq_rx(void);		// Частота VFO A для маркировки файлов
+uint_fast32_t hamradio_get_modem_baudrate100(void);	// скорость передачи BPSK * 100
+uint_fast8_t hamradio_get_notchvalue(int_fast32_t * p);		// Notch filter ON/OFF
+uint_fast8_t hamradio_get_nrvalue(int_fast32_t * p);		// NR ON/OFF
+const FLASHMEM char * hamradio_get_mode_a_value_P(void);	// SSB/CW/AM/FM/..
+const FLASHMEM char * hamradio_get_mode_b_value_P(void);	// SSB/CW/AM/FM/..
+const FLASHMEM char * hamradio_get_rxbw_value_P(void);	// RX bandwidth
+const FLASHMEM char * hamradio_get_pre_value_P(void);	// RX preamplifier
+const FLASHMEM char * hamradio_get_att_value_P(void);	// RX attenuator
+const FLASHMEM char * hamradio_get_agc3_value_P(void);	// RX agc time - 3-х буквенные абревиатуры
+const FLASHMEM char * hamradio_get_agc4_value_P(void);	// RX agc time - 4-х буквенные абревиатуры
+const FLASHMEM char * hamradio_get_ant5_value_P(void);	// antenna
+const FLASHMEM char * hamradio_get_mainsubrxmode3_value_P(void);	// текущее состояние DUAL WATCH
+const char * hamradio_get_vfomode3_value(uint_fast8_t * flag);	// VFO mode
+const char * hamradio_get_vfomode5_value(uint_fast8_t * flag);	// VFO mode
+uint_fast8_t hamradio_get_volt_value(void);	// Вольты в десятых долях
+int_fast16_t hamradio_get_temperature_value(void);	// Градусы в десятых долях
+int_fast16_t hamradio_get_pacurrent_value(void);	// Ток в десятках милиампер, может быть отрицательным
+const FLASHMEM char * hamradio_get_hplp_value_P(void);	// HP/LP
+uint_fast8_t hamradio_get_rec_value(void);	// AUDIO recording state
+uint_fast8_t hamradio_get_amfm_highcut10_value(uint_fast8_t * flag);	// текущее значение верхней частоты среза НЧ фильтра АМ/ЧМ (в десятках герц)
+uint_fast8_t hamradio_get_samdelta10(int_fast32_t * p, uint_fast8_t pathi);		/* Получить значение отклонения частоты с точностью 0.1 герца */
+uint_fast8_t hamradio_get_usbh_active(void);
+uint_fast8_t hamradio_get_datamode(void);	// источник звука для передачи - USB AUDIO
+int_fast16_t hamradio_getleft_bp(uint_fast8_t pathi);	/* получить левый (низкочастотный) скат полосы пропускания для отображения "шторки" на спектранализаторе */
+int_fast16_t hamradio_getright_bp(uint_fast8_t pathi);	/* получить правый (высокочастотный) скат полосы пропускания для отображения "шторки" на спектранализаторе */
+uint_fast8_t hamradio_get_bkin_value(void);
 
 #ifdef __cplusplus
 }

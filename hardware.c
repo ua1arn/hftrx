@@ -14,8 +14,8 @@
 #include "board.h"
 #include "audio.h"
 #include "formats.h"	// for debug prints
-#include "inc/gpio.h"
-#include "inc/spi.h"
+#include "gpio.h"
+#include "spi.h"
 
 
 static unsigned long ulmin(
@@ -2033,7 +2033,7 @@ static uint_fast8_t adc_input;
 static uint_fast8_t
 isadchw(uint_fast8_t adci)
 {
-	return (adci < BOARD_ADCX0BASE && adci < BOARD_ADCX1BASE);
+	return adci < BOARD_ADCX0BASE;
 }
 
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
@@ -4291,8 +4291,8 @@ void hardware_spi_master_initialize(void)
 		DMAC15.N0DA_n = (uint32_t) & HW_SPIUSED->SPDR.UINT16 [R_IO_L];	// Fixed destination address for 16-bit transfers
 
 		/* Set Transfer Size */
-		//DMAC15.N0TB_n = DMABUFFSIZE16 * sizeof (int16_t);	// размер в байтах
-		//DMAC15.N1TB_n = DMABUFFSIZE16 * sizeof (int16_t);	// размер в байтах
+		//DMAC15.N0TB_n = DMABUFFSIZE16 * sizeof (aubufv_t);	// размер в байтах
+		//DMAC15.N1TB_n = DMABUFFSIZE16 * sizeof (aubufv_t);	// размер в байтах
 
 		// Values from Table 9.4 On-Chip Peripheral Module Requests
 		// SPTI0 (transmit data empty)
@@ -8063,9 +8063,13 @@ stm32h7xx_pll_initialize(void)
 	//Set the highest core voltage (Scale 1)
 	PWR->CR3 = PWR_CR3_LDOEN | PWR_CR3_SCUEN;
 	PWR->D3CR = (PWR->D3CR & ~ (PWR_D3CR_VOS)) |
-		PWR_D3CR_VOS_0 * 3 |		// SCALE 1
+		PWR_D3CR_VOS_value |
+		//PWR_D3CR_VOS_0 * 3 |		// Rev Y: SCALE 0 1.218 mV VOS0
+		//PWR_D3CR_VOS_0 * 2 |		// Rev Y: SCALE 1 1.130 mV VOS1
+		//PWR_D3CR_VOS_0 * 1 |		// Rev Y: SCALE 2 1.064 mV VOS2
+		//PWR_D3CR_VOS_0 * 0 |		// Rev Y: SCALE 3 1.064 mV VOS3
 		0;
-	__DSB();
+	(void) PWR->D3CR;
 	//Wait for LDO ready
 	while ((PWR->D3CR & PWR_D3CR_VOSRDY) == 0)
 		;
@@ -9379,9 +9383,8 @@ void arm_hardware_invalidate(uintptr_t base, size_t size)
 	}
 }
 
-#if 0
 /* считать конфигурационные параметры data cache */
-static void ca9_ca7_cache_setup(void)
+static void ca9_ca7_cache_diag(void)
 {
 	uint32_t ccsidr0 [8];	// data cache parameters
 	uint32_t ccsidr1 [8];	// instruction cache parameters
@@ -9402,15 +9405,14 @@ static void ca9_ca7_cache_setup(void)
 		//const uint32_t assoc1 = (ccsidr1 >> 3) & 0x3FF;
 		//const int passoc1 = ilog2(assoc1);
 		//const uint32_t maxsets1 = (ccsidr1 >> 13) & 0x7FFF;
+
+		// Установка размера строки кэша
+		unsigned long xDCACHEROWSIZE = 4uL << (((ccsidr0 [leveli] >> 0) & 0x07) + 2);
+		unsigned long xICACHEROWSIZE = 4uL << (((ccsidr1 [leveli] >> 0) & 0x07) + 2);
+
+		PRINTF("DCACHE[%d] ROWSIZE=%d, ICACHE[%d] ROWSIZE=%d\n", leveli, (int) xDCACHEROWSIZE, leveli, (int) xICACHEROWSIZE);
 	}
-
-	// Установка размера строки кэша
-	DCACHEROWSIZE = 4uL << (((ccsidr0 [0] >> 0) & 0x07) + 2);
-	ICACHEROWSIZE = 4uL << (((ccsidr1 [0] >> 0) & 0x07) + 2);
-
-	PRINTF("DCACHEROWSIZE=%d, ICACHEROWSIZE=%d\n", (int) DCACHEROWSIZE, (int) ICACHEROWSIZE);
 }
-#endif
 
 // используется в startup
 static void 
@@ -9443,7 +9445,7 @@ void arm_hardware_flush(uintptr_t base, size_t size)
 		uintptr_t mva = MK_MVA(base);
 		L1C_CleanDCacheMVA((void *) mva);		// записать буфер, кэш продолжает хранить
 	#if (__L2C_PRESENT == 1)
-		// предполагается, что ращмер строки L2 и L2 cache равны
+		// предполагается, что размер строки L2 и L2 cache равны
 		// Clean cache by physical address
 		L2C_CleanPa((void *) mva);
 	#endif
@@ -9460,7 +9462,7 @@ void arm_hardware_flush_invalidate(uintptr_t base, size_t size)
 		uintptr_t mva = MK_MVA(base);
 		L1C_CleanInvalidateDCacheMVA((void *) mva);	// записать буфер, очистить кэш
 	#if (__L2C_PRESENT == 1)
-		// предполагается, что ращмер строки L2 и L2 cache равны
+		// предполагается, что размер строки L2 и L2 cache равны
 		// Clean cache by physical address
 		L2C_CleanInvPa((void *) mva);
 	#endif
@@ -9769,6 +9771,17 @@ void stm32mp1_pll_initialize(void)
 		0;
 	(void) RCC->SPI2S1CKSELR;
 #endif /* WITHSPIHW */
+
+#if WIHSPIDFHW
+	//0x0: aclk clock selected as kernel peripheral clock (default after reset)
+	//0x1: pll3_r_ck clock selected as kernel peripheral clock
+	//0x2: pll4_p_ck clock selected as kernel peripheral clock
+	//0x3: per_ck clock selected as kernel peripheral clock
+	RCC->QSPICKSELR = (RCC->QSPICKSELR & ~ (RCC_QSPICKSELR_QSPISRC_Msk)) |
+	(0x03 << RCC_QSPICKSELR_QSPISRC_Pos) |	// per_ck
+		0;
+	(void) RCC->QSPICKSELR;
+#endif /* WIHSPIDFHW */
 
 	// prescaler value of timers located into APB1 domain
 	// TIM2, TIM3, TIM4, TIM5, TIM6, TIM7, TIM12, TIM13 and TIM14.s
@@ -10926,15 +10939,17 @@ M_SIZE_IO_2     EQU     2550            ; [Area11] I/O area 2
 
 //; setting for Strongly-ordered memory
 //#define	TTB_PARA_STRGLY             0b_0000_0000_1101_1110_0010
-#define	TTB_PARA_STRGLY             0b00000000110111100010UL	// 0x00DE2
+#define	TTB_PARA_STRGLY             0x00DE2
 
 //; setting for Outer and inner not cache normal memory
 //#define	TTB_PARA_NORMAL_NOT_CACHE   0b_0000_0001_1101_1110_0010
-#define	TTB_PARA_NORMAL_NOT_CACHE   0b00000001110111100010UL	// 0x01DE2
+#define	TTB_PARA_NORMAL_NOT_CACHE   0x0x01DE2
 
 //; setting for Outer and inner write back, write allocate normal memory (Cacheable)
 //#define	TTB_PARA_NORMAL_CACHE       0b_0000_0001_1101_1110_1110
-#define	TTB_PARA_NORMAL_CACHE       0b00000001110111101110UL	// 01DEE
+#define	TTB_PARA_NORMAL_CACHE       0x01DEEuL
+
+#define	TTB_PARA_NO_ACCESS       	0 //0x01DEEuL
 
 static uint32_t
 FLASHMEMINITFUNC
@@ -10943,6 +10958,9 @@ ttb_accessbits(uintptr_t a)
 	const uint32_t addrbase = a & 0xFFF00000uL;
 
 #if CPUSTYLE_R7S721020
+
+	if (a == 0x00000000uL)
+		return addrbase | TTB_PARA_NO_ACCESS;		// NULL pointers access trap
 
 	if (a >= 0x18000000uL && a < 0x20000000uL)			//
 		return addrbase | TTB_PARA_NORMAL_CACHE;
@@ -10954,7 +10972,8 @@ ttb_accessbits(uintptr_t a)
 #elif CPUSTYLE_STM32MP1
 
 	if (a >= 0x00000000uL && a < 0x10000000uL)			// BOOT
-		return addrbase | TTB_PARA_NORMAL_CACHE;
+		return addrbase | TTB_PARA_NO_ACCESS;			// NULL pointers access trap
+
 	if (a >= 0x10000000uL && a < 0x20000000uL)			// SRAMs ??????
 		return addrbase | TTB_PARA_NORMAL_CACHE;
 	if (a >= 0x20000000uL && a < 0x30000000uL)			// SYSRAM
@@ -11435,6 +11454,7 @@ SystemInit(void)
 	sysintt_sdram_initialize();
 	sysinit_vbar_initialize();		// interrupt vectors relocate
 	sysinit_mmu_initialize();
+	//ca9_ca7_cache_diag();	// print
 }
 
 
@@ -12070,7 +12090,7 @@ void __gxx_personality_v0(void)
 }
 #endif /* __cplusplus */
 
-#if 0
+#if WITHUSEMALLOC
 
 /*
  *
@@ -12164,9 +12184,18 @@ int __attribute__((used)) (_write)(int fd, char * ptr, int len)
 	static RAMHEAP uint8_t sipexbuff [SPEEXALLOCSIZE];
 #endif /* SPEEXALLOCSIZE */
 
+#if SPEEXALLOCSIZE
+	//static uint8_t sipexbuff [NTRX * 149176 /* + 24716 */];
+	static RAMHEAP uint8_t sipexbuff [SPEEXALLOCSIZE];
+#endif /* SPEEXALLOCSIZE */
+
 #endif /* ! WITHNOSPEEX */
 
 static RAMHEAP uint8_t heapplace [8 * 1024uL];
+
+#if WITHTOUCHGUI
+	static RAMHEAP uint8_t goibuff [256];
+#endif /* SPEEXALLOCSIZE */
 
 extern int __HeapBase;
 extern int __HeapLimit;
@@ -12181,7 +12210,7 @@ caddr_t __attribute__((used)) (_sbrk)(int incr)
 		heap = (char *) &__HeapBase;
 	}
 
-	debug_printf_P("_sbrk: incr=%d, & __HeapBase=%p, & __HeapLimit=%p\n", incr, & __HeapBase, & __HeapLimit);
+	//debug_printf_P("_sbrk: incr=%d, & __HeapBase=%p, & __HeapLimit=%p\n", incr, & __HeapBase, & __HeapLimit);
 
 	prev_heap = heap;
 

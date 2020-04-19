@@ -24,15 +24,17 @@
 //#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
 //#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 
+//#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
+#define WIHSPIDFHW	1	/* аппаратное обслуживание DATA FLASH */
+
 #if WITHISBOOTLOADER
 
-	#define WIHSPIDFHW	1	/* обслуживание DATA FLASH */
 	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	*/
 
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 	#define WITHUSBDEV_VBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
-	#define WITHUSBDEV_HSDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
+	//#define WITHUSBDEV_HSDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
 	#define WITHUSBHW_DEVICE	(& USB200)	/* на этом устройстве поддерживается функциональность DEVICE	*/
 	//#define WITHUSBHW_HOST	(& USB200)	/* на этом устройстве поддерживается функциональность HOST	*/
 
@@ -56,7 +58,6 @@
 
 #else /* WITHISBOOTLOADER */
 
-	#define WIHSPIDFHW	1	/* обслуживание DATA FLASH */
 	#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	*/
 	//#define WITHCPUDACHW	1	/* использование DAC - в renesas R7S72 нету */
@@ -73,7 +74,7 @@
 	// USB device parameters
 	#define WITHUSBHW_DEVICE	(& USB201)	/* на этом устройстве поддерживается функциональность DEVICE	*/
 	#define WITHUSBDEV_VBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
-	#define WITHUSBDEV_HSDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
+	//#define WITHUSBDEV_HSDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
 
 	// USB host parameters
 	//#define WITHUSBHW_HOST	(& USB200)	/* на этом устройстве поддерживается функциональность HOST	*/
@@ -844,7 +845,7 @@
 	#define USBD_DFU_FLASHNAME "M25P16"
 
 
-	#if WIHSPIDFHW
+	#if WIHSPIDFSW
 		// P4_2: SPBIO20_0 WP#
 		// P4_3: SPBIO30_0 HOLD#
 		// P4_4: SPBCLK_0 SCLK
@@ -855,16 +856,16 @@
 		#define SPIDF_MISO() ((R7S721_INPUT_PORT(4) & (1U << 7)) != 0)
 		#define SPIDF_MOSI(v) do { if (v) R7S721_TARGET_PORT_S(4, (1U << 6)); else R7S721_TARGET_PORT_C(4, (1U << 6)); } while (0)
 		#define SPIDF_SCLK(v) do { if (v) R7S721_TARGET_PORT_S(4, (1U << 4)); else R7S721_TARGET_PORT_C(4, (1U << 4)); } while (0)
-		#define SPIDF_INITIALIZE() do { \
+		#define SPIDF_SOFTINITIALIZE() do { \
 				arm_hardware_pio4_outputs(1U << 2, 1U << 2);				/* P4_2 WP / SPBIO20_0 */ \
 				arm_hardware_pio4_outputs(1U << 3, 1U << 3);				/* P4_3 NC / SPBIO30_0 */ \
-				/* arm_hardware_pio4_alternative(1U << 4, R7S721_PIOALT_4);	*/ /* P4_4 SCLK / SPBCLK_0 */ \
+				/* arm_hardware_pio4_alternative(1U << 4, R7S721_PIOALT_2);	*/ /* P4_4 SCLK / SPBCLK_0 */ \
 				arm_hardware_pio4_outputs(1U << 4, 1U << 4);	/* P4_4 SCLK / SPBCLK_0 */ \
-				/* arm_hardware_pio4_alternative(1U << 5, R7S721_PIOALT_4);	*/ /* P4_5 CS# / SPBSSL_0 */ \
+				/* arm_hardware_pio4_alternative(1U << 5, R7S721_PIOALT_2);	*/ /* P4_5 CS# / SPBSSL_0 */ \
 				arm_hardware_pio4_outputs(1U << 5, 1 * (1U << 5));			/* P4_5 CS# / SPBSSL_0 */ \
-				/* arm_hardware_pio4_alternative(1U << 6, R7S721_PIOALT_4);	*/ /* P4_6 MOSI / SPBIO00_0 */ \
+				/* arm_hardware_pio4_alternative(1U << 6, R7S721_PIOALT_2);	*/ /* P4_6 MOSI / SPBIO00_0 */ \
 				arm_hardware_pio4_outputs(1U << 6, 1U << 6);	/* P4_6 MOSI / SPBIO00_0 */ \
-				/* arm_hardware_pio4_alternative(1U << 7, R7S721_PIOALT_4);	*/ /* P4_7 MISO / SPBIO10_0 */ \
+				/* arm_hardware_pio4_alternative(1U << 7, R7S721_PIOALT_2);	*/ /* P4_7 MISO / SPBIO10_0 */ \
 				arm_hardware_pio4_inputs(1U << 7);	/* P4_7 MISO / SPBIO10_0 */ \
 			} while (0)
 		#define SPIDF_HANGOFF() do { \
@@ -876,9 +877,29 @@
 			} while (0)
 		#define SPIDF_UNSELECT() do { \
 				R7S721_TARGET_PORT_S(4, (1U << 5)); \
-				arm_hardware_pio4_inputs(0x7C); \
+				arm_hardware_pio4_inputs(0xFC); /* Отключить процессор от SERIAL FLASH */ \
 			} while (0)
 
-	#endif /* WIHSPIDFHW */
+	#elif WIHSPIDFHW
+		// P4_2: SPBIO20_0 WP#
+		// P4_3: SPBIO30_0 HOLD#
+		// P4_4: SPBCLK_0 SCLK
+		// P4_5: SPBSSL_0 CS#
+		// P4_6: SPBIO00_0 MOSI
+		// P4_7: SPBIO10_0 MISO
+
+		#define SPIDF_HARDINITIALIZE() do { \
+				arm_hardware_pio4_alternative(1U << 2, R7S721_PIOALT_2);	/* P4_2 WP / SPBIO20_0 */ \
+				arm_hardware_pio4_alternative(1U << 3, R7S721_PIOALT_2);	/* P4_3 NC / SPBIO30_0 */ \
+				arm_hardware_pio4_alternative(1U << 4, R7S721_PIOALT_2);	/* P4_4 SCLK / SPBCLK_0 */ \
+				arm_hardware_pio4_alternative(1U << 6, R7S721_PIOALT_2);	/* P4_6 MOSI / SPBIO00_0 */ \
+				arm_hardware_pio4_alternative(1U << 7, R7S721_PIOALT_2);	/* P4_7 MISO / SPBIO10_0 */ \
+				arm_hardware_pio4_alternative(1U << 5, R7S721_PIOALT_2);	/* P4_5 CS# / SPBSSL_0 */ \
+			} while (0)
+		#define SPIDF_HANGOFF() do { \
+				arm_hardware_pio4_inputs(0xFC); /* Отключить процессор от SERIAL FLASH */ \
+			} while (0)
+
+	#endif /* WIHSPIDFSW */
 
 #endif /* ARM_R7S72_TQFP176_CPUSTYLE_STORCH_V8_H_INCLUDED */

@@ -40,14 +40,20 @@
 			// normal operation frequency
 			#define REF1_MUL 216		// 2*216.000 MHz (192 <= PLLN <= 432)
 			#define HARDWARE_FLASH_LATENCY FLASH_ACR_LATENCY_7WS
+		#elif CPUSTYLE_STM32H7XX && 0
+			// high  operation frequency - revision V
+			#define REF1_MUL 480		// 2*480.000 MHz (192 <= PLLN <= 432)
+			#define REF3_MUL 135		// 2*135.000 MHz (192 <= PLLN <= 432)
+			#define PWR_D3CR_VOS_value (PWR_D3CR_VOS_0 * 3)
+			#define HARDWARE_FLASH_LATENCY FLASH_ACR_LATENCY_4WS
+			#define PLL2_DIVP 4
 		#elif CPUSTYLE_STM32H7XX
-			// normal operation frequency
+			// normal operation frequency - revision Y
 			#define REF1_MUL 384		// 2*384.000 MHz (192 <= PLLN <= 432)
 			#define REF3_MUL 135		// 2*135.000 MHz (192 <= PLLN <= 432)
-
-			#define REF2_MUL 384		// 2*384.000 MHz (192 <= PLLN <= 432)
-			#define PLL2_DIVP 4
+			#define PWR_D3CR_VOS_value (PWR_D3CR_VOS_0 * 3)
 			#define HARDWARE_FLASH_LATENCY FLASH_ACR_LATENCY_2WS
+			#define PLL2_DIVP 4
 		#endif
 
 	#else
@@ -175,10 +181,8 @@
 	// +++ Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
 	//#define LCDMODE_DUMMY	1		/* заглушка - без отображения */
 	//#define LCDMODE_HARD_SPI	1	/* LCD over SPI line */
-	#define LCDMODE_LTDC	1		/* Use STM32F4xxx with LCD-TFT Controller (LTDC), also need LCDMODE_ILI9341 */
-	#define LCDMODE_LTDC_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит - RGB565. */
-	//#define LCDMODE_LTDC_PIP16	1	/* используется PIP с форматом 16 бит - RGB565 */
-	#define LCDMODE_LTDC_PIPL8	1	/* используется PIP с форматом 8 бит - индексные цвета */
+	#define LCDMODE_V2	1	/* только главный экран с тремя видеобуферами, без PIP */
+
 	//#define LCDMODE_WH2002	1	/* тип применяемого индикатора 20*2, возможно вместе с LCDMODE_HARD_SPI */
 	//#define LCDMODE_WH1602	1	/* тип применяемого индикатора 16*2 */
 	//#define LCDMODE_WH1604	1	/* тип применяемого индикатора 16*4 */
@@ -250,6 +254,8 @@
 	#define WITHSAI1_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
 	//#define WITHSAI2_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
 	#define WITHI2S_FORMATI2S_PHILIPS 1	// Возможно использование при передаче данных в кодек, подключенный к наушникам и микрофону
+	//#define WITHI2S_32BITPAIR 1	// 2*32bit при передаче данных в кодек, подключенный к наушникам и микрофону
+	//#define CODEC_TYPE_NAU8822_USE_32BIT 1	// программирование кодека в формате 32 бит стерео
 	#define WITHI2SHWRXSLAVE	1		// Приёмный канал I2S (микрофон) используюся в SLAVE MODE
 	#define WITHI2SHWTXSLAVE	1		// Передающий канал I2S (наушники) используюся в SLAVE MODE
 	//#define WITHSAI1HWTXRXMASTER	1		// SAI1 work in MASTER mode
@@ -281,8 +287,6 @@
 	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
 	//#define WITHLOOPBACKTEST	1	/* прослушивание микрофонного входа, генераторов */
 	//#define WITHMODEMIQLOOPBACK	1	/* модем получает собственные передаваемые квадратуры */
-	//#define WITHFASTWATERFLOW	1	/* быстрое отображение водопада (но требует больше памяти) */
-
 
 	// выбор накопителя
 	//#define WITHUSESDCARD		1	// Включение поддержки SD CARD
@@ -295,7 +299,7 @@
 
 	#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 	//#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
-	//#define WITHOPERA4BEACON	1	/* работа маяком в OPERA */
+	//#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 
 	#if 0
 		#define WITHWAVPLAYER 1	/* трансивер работает проигрывателем файлов с USB/SD накопителя */
@@ -347,13 +351,13 @@
 	#if 1
 		/* TUNER & PA board 2*RD16 by avbelnn@yandex.ru */
 		#define WITHAUTOTUNER_UA1CEI	1	/* Плата управления LPF и тюнером от UA1CEI - по компорту */
+		#if defined(WITHDEBUG)
+			#error Please off WITHDEBUG
+		#endif /* defined(WITHDEBUG) */
 		#define WITHNMEA		1	/* используется NMEA parser */
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
-		#define FULLSET8	1
-		//#define SHORTSET8	1
-		//#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
-		//#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
-		//#define WITHTHERMOLEVEL	1	/* отображение температуры */
+		//#define FULLSET8	1
+		#define SHORTSET8	1
 
 		#define WITHENCODER2	1		/* есть второй валкодер */
 		#define BOARD_ENCODER2_DIVIDE 2		/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
@@ -405,7 +409,6 @@
 	//#define WITHLO1LEVELADJ		1	/* включено управление уровнем (амплитудой) LO1 */
 	//#define WITHLFM		1	/* LFM MODE */
 	//#define WITHTEMPSENSOR	1	/* отображение данных с датчика температуры */
-	#define WITHREFSENSOR	1		/* измерение по выделенному каналу АЦП опорного напряжения */
 	#define WITHDIRECTBANDS 1	/* Прямой переход к диапазонам по нажатиям на клавиатуре */
 	// --- Эти строки можно отключать, уменьшая функциональность готового изделия
 
@@ -473,55 +476,125 @@
 	#define WITHKEYBOARD 1	/* в данном устройстве есть клавиатура */
 	#define KEYBOARD_USE_ADC	1	/* на одной линии установлено  четыре  клавиши. на vref - 6.8K, далее 2.2К, 4.7К и 13K. */
 
-	#define VOLTLEVEL_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика напряжения
-	#define VOLTLEVEL_LOWER		10	// 1 kOhm - нижний резистор
-
 	// ST LM235Z
 	#define THERMOSENSOR_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика температуры
 	#define THERMOSENSOR_LOWER		10	// 1 kOhm - нижний резистор
-	#define THERMOSENSOR_OFFSET (- 2731)	// температура при 0 вольт с датчика. MCP9700 parameter // При 0 °С на выходе 500 мВ. Шкала 10 mV / °С
+	#define THERMOSENSOR_OFFSET 	(- 480)		// 2.98 volt = 25 Celsius
+	#define THERMOSENSOR_DENOM	 	10			// миливольты к десятым долям градуса 2.98 volt = 25 Celsius
+
 
 	//#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания и/или подсветки дисплея
 
 	// Назначения входов АЦП процессора.
 	enum 
 	{ 
-	#if WITHREFSENSOR
-		VREFIX = 17,		// Reference voltage
-	#endif /* WITHREFSENSOR */
-	#if WITHTEMPSENSOR
-		TEMPIX = 16,
-	#endif /* WITHTEMPSENSOR */
-	#if WITHVOLTLEVEL 
-		VOLTSOURCE = 8,		// PB0 Средняя точка делителя напряжения, для АКБ
-	#endif /* WITHVOLTLEVEL */
+	#if WITHAUTOTUNER_UA1CEI
 
-	#if WITHPOTIFGAIN
-		POTIFGAIN = 3,		// PA2 IF GAIN
-	#endif /* WITHPOTIFGAIN */
-	#if WITHPOTAFGAIN
-		POTAFGAIN = 7,		// PA7 AF GAIN
-	#endif /* WITHPOTAFGAIN */
+		#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
+		#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
+		#define WITHTHERMOLEVEL	1	/* отображение температуры */
+		#define WITHREFSENSOR	1		/* измерение по выделенному каналу АЦП опорного напряжения */
 
-	#if WITHPOTWPM
-		POTWPM = 6,			// PA6 потенциометр управления скоростью передачи в телеграфе
-	#endif /* WITHPOTWPM */
-	#if WITHPOTPOWER
-		POTPOWER = 6,			// регулировка мощности
-	#endif /* WITHPOTPOWER */
+		#if WITHREFSENSOR
+			VREFIX = 17,		// Reference voltage
+		#endif /* WITHREFSENSOR */
+		#if WITHTEMPSENSOR
+			TEMPIX = 16,
+		#endif /* WITHTEMPSENSOR */
+		#if WITHVOLTLEVEL
+			VOLTSOURCE = BOARD_ADCMRRIN(0),		// NMEA ch
+			VOLTMRRIX = BOARD_ADCMRRIN(1),	// кеш - индекc не должен повторяться в конфигурации
+		#endif /* WITHVOLTLEVEL */
 
-	#if WITHTHERMOLEVEL
-		XTHERMOIX = 9,		// PB1 Exernal thermo sensor ST LM235Z
-	#endif /* WITHTHERMOLEVEL */
+		#if WITHPOTIFGAIN
+			POTIFGAIN = 3,		// PA2 IF GAIN
+		#endif /* WITHPOTIFGAIN */
+		#if WITHPOTAFGAIN
+			POTAFGAIN = 7,		// PA7 AF GAIN
+		#endif /* WITHPOTAFGAIN */
 
-	#if WITHCURRLEVEL
-		PASENSEIX = 2,		// PA2 PA current sense - ACS712-05 chip
-	#endif /* WITHCURRLEVEL */
+		#if WITHPOTWPM
+			POTWPM = 6,			// PA6 потенциометр управления скоростью передачи в телеграфе
+		#endif /* WITHPOTWPM */
+		#if WITHPOTPOWER
+			POTPOWER = 6,			// регулировка мощности
+		#endif /* WITHPOTPOWER */
 
-	#if WITHSWRMTR
-		PWRI = 14,			// PC4
-		FWD = 14, REF = 15,	// PC5	SWR-meter
-	#endif /* WITHSWRMTR */
+		#if WITHTHERMOLEVEL
+			XTHERMOIX = BOARD_ADCMRRIN(2),		// NMEA ch
+			XTHERMOMRRIX = BOARD_ADCMRRIN(3),			// кеш - индекc не должен повторяться в конфигурации
+		#endif /* WITHTHERMOLEVEL */
+
+		#if WITHCURRLEVEL
+			#define WITHCURRLEVEL_ACS712_20A 1	// PA current sense - ACS712ELCTR-20B-T chip
+			PASENSEIX = BOARD_ADCMRRIN(4),		// NMEA ch
+			PASENSEMRRIX = BOARD_ADCMRRIN(5),			// кеш - индекc не должен повторяться в конфигурации
+		#endif /* WITHCURRLEVEL */
+
+		#if WITHSWRMTR
+			FWD = BOARD_ADCMRRIN(6), REF = BOARD_ADCMRRIN(7),	// PC5	SWR-meter
+			PWRI = FWD,
+
+			REFMRRIX = BOARD_ADCMRRIN(8),	// кеш
+			FWDMRRIX = BOARD_ADCMRRIN(9),	// кеш
+			PWRMRRIX = BOARD_ADCMRRIN(10),	// кеш
+		#endif /* WITHSWRMTR */
+
+		#define VOLTLEVEL_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика напряжения
+		#define VOLTLEVEL_LOWER		10	// 1 kOhm - нижний резистор
+
+	#else
+
+
+		#define WITHREFSENSOR	1		/* измерение по выделенному каналу АЦП опорного напряжения */
+
+
+		#if WITHREFSENSOR
+			VREFIX = 17,		// Reference voltage
+		#endif /* WITHREFSENSOR */
+		#if WITHTEMPSENSOR
+			TEMPIX = 16,
+		#endif /* WITHTEMPSENSOR */
+		#if WITHVOLTLEVEL
+			VOLTSOURCE = 8,		// PB0 Средняя точка делителя напряжения, для АКБ
+		#endif /* WITHVOLTLEVEL */
+
+		#if WITHPOTIFGAIN
+			POTIFGAIN = 3,		// PA2 IF GAIN
+		#endif /* WITHPOTIFGAIN */
+		#if WITHPOTAFGAIN
+			POTAFGAIN = 7,		// PA7 AF GAIN
+		#endif /* WITHPOTAFGAIN */
+
+		#if WITHPOTWPM
+			POTWPM = 6,			// PA6 потенциометр управления скоростью передачи в телеграфе
+		#endif /* WITHPOTWPM */
+		#if WITHPOTPOWER
+			POTPOWER = 6,			// регулировка мощности
+		#endif /* WITHPOTPOWER */
+
+		#if WITHTHERMOLEVEL
+			XTHERMOIX = 9,		// PB1 Exernal thermo sensor ST LM235Z
+		#endif /* WITHTHERMOLEVEL */
+
+		#if WITHCURRLEVEL
+			PASENSEIX = 2,		// PA2 PA current sense - ACS712-05 chip
+			VOLTMRRIX = BOARD_ADCMRRIN(1),	// кеш - индекc не должен повторяться в конфигурации
+		#endif /* WITHCURRLEVEL */
+
+		#if WITHSWRMTR
+			PWRI = 14,			// PC4
+			FWD = 14, REF = 15,	// PC5	SWR-meter
+			REFMRRIX = BOARD_ADCMRRIN(2),
+			FWDMRRIX = BOARD_ADCMRRIN(3),
+			PWRMRRIX = BOARD_ADCMRRIN(4),
+		#endif /* WITHSWRMTR */
+
+		#define VOLTLEVEL_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика напряжения
+		#define VOLTLEVEL_LOWER		10	// 1 kOhm - нижний резистор
+
+
+	#endif
 		KI0 = 10, KI1 = 11, KI2 = 12, KI3 = 0, KI4 = 1	// клавиатура
 	};
 

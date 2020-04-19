@@ -11,9 +11,13 @@
 1.3 Утилиты для сборки отсюда: http://www.cygwin.com/ (устанавливаем пакет make, обновляем переменную PATH в системе, указав путь к подпапке bin, например C:\cygwin64\bin) <br>
 1.4 Утилиты для работы с GIT репозиториями https://git-scm.com/downloads
 
-2. Скачиваем дополнительные библиотеки, распаковываем их на уровень выше, чем папка проекта. <br>
-2.1 **ARM:** CMSIS, используем оптимизированный форк, для этого в папке выше проекта вводим команду "git clone https://github.com/XGudron/CMSIS_5" <br>
-2.2 **ATMEL ARM:** В случае использования Atmel ARM (SAM) процессоров, скачать и распаковать в папку "xdk-asf" пакет Advanced Software Framework (ASF) https://www.microchip.com/mplab/avr-support/advanced-software-framework
+2. Скачиваем дополнительные библиотеки, распаковываем их на уровень выше, чем папка проекта.
+2.1 **ARM:** CMSIS, для этого в папке выше проекта вводим команду <br>
+	git clone https://github.com/ARM-software/CMSIS_5.git <br> 
+	cd CMSIS_5 <br>
+	git checkout 5.7.0  <br>
+
+2.2 **ATMEL ARM:** В случае использования Atmel ARM (SAM) процессоров, скачать и распаковать в папку "xdk-asf" пакет Advanced Software Framework (ASF) <https://www.microchip.com/mplab/avr-support/advanced-software-framework
 
 3. Устанавливаем IDE для разработки <br>
 3.1 Скачиваем и устанавливаем Eclipse https://www.eclipse.org/downloads/ <br>
@@ -25,8 +29,16 @@
 4.1 Скачаваем последнюю версию проекта командой "git clone https://github.com/ua1arn/hftrx" <br>
 4.2 Открываем проект через File -> Open projects from File System
 4.3 Копируем файл product.h.prototype в product.h <br>
-4.4 Раскомментируем нужные нам константы с выбранной конфигурацией <br>
-4.5 В меню Eclipse, Project -> Build configurations -> Set active выбираем необходимый процессор (или через выпадающее меню с молотком в ToolBox). Build target выбираем default.
+
+4.4 В свойствах проекта: <br>
+
+1) Linux Tools Path - Prepend string To PATH ставим  <br>
+	C:\Program Files (x86)\GNU Tools Arm Embedded\9 2019-q4-major\bin<br>
+2) C/C++ Build -> Settings -> Toolchains: <br>
+	обеспечить использованее вышепривеленного пути как Toolchain Path
+	
+4.5 Раскомментируем нужные нам константы с выбранной конфигурацией <br>
+4.6 В меню Eclipse, Project -> Build configurations -> Set active выбираем необходимый процессор (или через выпадающее меню с молотком в ToolBox). Build target выбираем default.
 
 5. Прошиваем <br>
 5.1 Скопилированные прошивки находятся в папке /build/<процессор>/ <br>

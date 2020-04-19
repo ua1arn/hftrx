@@ -28,13 +28,14 @@ extern "C" {
 	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
 	#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
 
-	#define ARM_REALTIME_PRIORITY	AT91C_AIC_PRIOR_HIGHEST 
-	#define ARM_SYSTEM_PRIORITY		AT91C_AIC_PRIOR_LOWEST 
+	#define ARM_OVERREALTIME_PRIORITY	AT91C_AIC_PRIOR_HIGHEST
+	#define ARM_REALTIME_PRIORITY		(AT91C_AIC_PRIOR_LOWEST + 1)
+	#define ARM_SYSTEM_PRIORITY			AT91C_AIC_PRIOR_LOWEST
 
 	#define ADCVREF_CPU	33		// 3.3 volt
 	//#define HARDWARE_DACBITS 12	/* ЦАП работает с 12-битными значениями */
 	#define HARDWARE_ADCBITS 8	/* АЦП работает с 8-битными значениями */
-	#define HARDWARE_ADCINPUTS	40	/* до 8-ти входов АЦП */
+	//#define HARDWARE_ADCINPUTS	40	/* до 8-ти входов АЦП */
 	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast16_t adcvalholder_t;		
 
@@ -69,7 +70,7 @@ extern "C" {
 	#define DACVREF_CPU	33		// 3.3 volt
 	#define HARDWARE_DACBITS 12	/* ЦАП работает с 12-битными значениями */
 	#define HARDWARE_ADCBITS 12	/* АЦП работает с 12-битными значениями */
-	#define HARDWARE_ADCINPUTS	40	/* до 32-ти входов АЦП */
+	//#define HARDWARE_ADCINPUTS	40	/* до 32-ти входов АЦП */
 	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast16_t adcvalholder_t;		
 	#define WITHREFSENSORVAL	1210	/* Reference voltage: STM32F746, STM32F429, STM32F446 = 1.21V */
@@ -110,7 +111,7 @@ extern "C" {
 	#define DACVREF_CPU	33		// 3.3 volt
 	#define HARDWARE_DACBITS 12	/* ЦАП работает с 12-битными значениями */
 	#define HARDWARE_ADCBITS 12	/* АЦП работает с 12-битными значениями */
-	#define HARDWARE_ADCINPUTS	40	/* до 32-ти входов АЦП */
+	//#define HARDWARE_ADCINPUTS	40	/* до 32-ти входов АЦП */
 	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast16_t adcvalholder_t;		
 	#define WITHREFSENSORVAL	1224	/* Reference voltage: STM32L031xx = 1.224V */
@@ -147,7 +148,7 @@ extern "C" {
 	#define DACVREF_CPU	33		// 3.3 volt
 	#define HARDWARE_DACBITS 12	/* ЦАП работает с 12-битными значениями */
 	#define HARDWARE_ADCBITS 12	/* АЦП работает с 12-битными значениями */
-	#define HARDWARE_ADCINPUTS	40	/* до 32-ти входов АЦП */
+	//#define HARDWARE_ADCINPUTS	40	/* до 32-ти входов АЦП */
 	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast16_t adcvalholder_t;		
 	#define WITHREFSENSORVAL	1210	/* Reference voltage: STM32F746, STM32F429, STM32F446 = 1.21V */
@@ -311,7 +312,7 @@ extern "C" {
 	#define ADCVREF_CPU	33		// 3.3 volt
 	#define DACVREF_CPU	33		// 3.3 volt
 	#define HARDWARE_DACBITS 12	/* ЦАП работает с 12-битными значениями */
-	#define HARDWARE_ADCINPUTS	40	/* до 32-ти входов АЦП */
+	//#define HARDWARE_ADCINPUTS	40	/* до 32-ти входов АЦП */
 	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast16_t adcvalholder_t;	
 	#if CPUSTYLE_STM32H7XX
@@ -360,7 +361,7 @@ extern "C" {
 	#define ADCVREF_CPU	33		// 3.3 volt
 	//#define HARDWARE_DACBITS 12	/* ЦАП работает с 12-битными значениями */
 	#define HARDWARE_ADCBITS 10	/* АЦП работает с 10-битными значениями */
-	#define HARDWARE_ADCINPUTS	40	/* до 16-ти входов АЦП */
+	//#define HARDWARE_ADCINPUTS	40	/* до 16-ти входов АЦП */
 	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast16_t adcvalholder_t;		
 
@@ -389,7 +390,7 @@ extern "C" {
 	#define ADCVREF_CPU	33		// 3.3 volt
 	//#define HARDWARE_DACBITS 12	/* ЦАП работает с 12-битными значениями */
 	#define HARDWARE_ADCBITS 10	/* АЦП работает с 10-битными значениями */
-	#define HARDWARE_ADCINPUTS	40	/* до 16-ти входов АЦП */
+	//#define HARDWARE_ADCINPUTS	40	/* до 16-ти входов АЦП */
 	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast16_t adcvalholder_t;		
 
@@ -412,7 +413,7 @@ extern "C" {
 	#define ADCVREF_CPU	33		// 3.3 volt
 	//#define HARDWARE_DACBITS 12	/* ЦАП работает с 12-битными значениями */
 	#define HARDWARE_ADCBITS 12	/* АЦП работает с 12-битными значениями */
-	#define HARDWARE_ADCINPUTS	40	/* до 8-ти входов АЦП */
+	//#define HARDWARE_ADCINPUTS	40	/* до 8-ти входов АЦП */
 	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast16_t adcvalholder_t;		
 
@@ -430,7 +431,7 @@ extern "C" {
 	#define ADCVREF_CPU	33		// 3.3 volt
 	//#define HARDWARE_DACBITS 12	/* ЦАП работает с 12-битными значениями */
 	#define HARDWARE_ADCBITS 10	/* АЦП работает с 10-битными значениями */
-	#define HARDWARE_ADCINPUTS	40	/* до 16-ти входов АЦП */
+	//#define HARDWARE_ADCINPUTS	40	/* до 16-ти входов АЦП */
 
 	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast16_t adcvalholder_t;		
@@ -461,7 +462,7 @@ extern "C" {
 	//#define HARDWARE_ADCBITS 8	/* АЦП работает с 8-битными значениями */
 	#define HARDWARE_ADCBITS 10	/* АЦП работает с 10-битными значениями */
 
-	#define HARDWARE_ADCINPUTS	40	/* до 8-ти входов АЦП */
+	//#define HARDWARE_ADCINPUTS	40	/* до 8-ти входов АЦП */
 
 	#if HARDWARE_ADCBITS == 8
 		/* тип для хранения данных, считанных с АЦП */
@@ -495,7 +496,7 @@ extern "C" {
 	#define ADCVREF_CPU	25		// 2.5 volt
 	#define HARDWARE_ADCBITS 8	/* АЦП работает с 8-битными значениями */
 
-	#define HARDWARE_ADCINPUTS	40	/* до 8-ти входов АЦП */
+	//#define HARDWARE_ADCINPUTS	40	/* до 8-ти входов АЦП */
 	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast8_t adcvalholder_t;		
 
@@ -529,7 +530,7 @@ extern "C" {
 	#define ADCVREF_CPU	33		// 3.3 volt
 	#define HARDWARE_ADCBITS 12	/* АЦП работает с 12-битными значениями */
 
-	#define HARDWARE_ADCINPUTS	40	/* до 8-ти входов АЦП */
+	//#define HARDWARE_ADCINPUTS	40	/* до 8-ти входов АЦП */
 	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast16_t adcvalholder_t;		
 
@@ -596,7 +597,9 @@ extern "C" {
 		AF_TIM12 = 9,	//!< AF9 - TIM12/13/14
 		AF_TIM13 = 9,	//!< AF9 - TIM12/13/14
 		AF_TIM14 = 9,	//!< AF9 - TIM12/13/14
+		AF_QUADSPI_AF9 = 9,	//!< AF9 - AF_QUADSPI
 		AF_OTGFS,		//!< AF10 - OTGFS
+		AF_QUADSPI_AF10 = 10,	//!< AF10 - AF_QUADSPI
 		AF_OTGHS = 10,	//!< AF10 - OTGHS
 		AF_SAI2 = 10,	//!< AF10 - SAI2
 		AF_ETH,			//!< AF11 - ETH
@@ -653,7 +656,7 @@ extern "C" {
 	#define ADCVREF_CPU	33		// 3.3 volt
 	#define DACVREF_CPU	33		// 3.3 volt
 	#define HARDWARE_DACBITS 12	/* ЦАП работает с 12-битными значениями */
-	#define HARDWARE_ADCINPUTS	40	/* до 32-ти входов АЦП */
+	//#define HARDWARE_ADCINPUTS	40	/* до 32-ти входов АЦП */
 	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast16_t adcvalholder_t;
 	//#define HARDWARE_ADCBITS 8	/* АЦП работает с 8-битными значениями */
@@ -667,7 +670,7 @@ extern "C" {
 	#define ADCVREF_CPU	33		// 3.3 volt
 	#define HARDWARE_ADCBITS 12	/* АЦП работает с 12-битными значениями */
 
-	#define HARDWARE_ADCINPUTS	40	/* до 8-ти входов АЦП */
+	//#define HARDWARE_ADCINPUTS	40	/* до 8-ти входов АЦП */
 
 	#define DACVREF_CPU	33		// 3.3 volt
 	#define HARDWARE_DACBITS 12	/* ЦАП работает с 12-битными значениями */
@@ -878,6 +881,10 @@ extern "C" {
 	unsigned RAMFUNC (enableIRQ)(void);
 	unsigned RAMFUNC (disableIRQ)(void);
 
+	#define ASSERT_IRQL_ALL_ENABLED() ASSERT(1)
+	#define ASSERT_IRQL_SYSTEM() ASSERT(1)
+	#define ASSERT_IRQL_USER() ASSERT(1)
+
 #endif /* CPUSTYLE_ARM_CM3 */
 
 /* STM32: In HS mode and when the DMA is used, all variables and data structures dealing
@@ -969,6 +976,8 @@ extern "C" {
 #define NVRAM_TYPE_CPUEEPROM		58	/* EEPROM память процессора */
 #define	NVRAM_TYPE_BKPSRAM			59	/* Backup SRAM */
 #define	NVRAM_TYPE_NOTHING			60	/* вообще отсутствует */
+
+#define TSC_TYPE_GT911		61	// Capasitive touch screen controller Goodix GT911     <- возможна ли перенумерация дефайнов?
 
 #define IF3_TYPE_DCRX	1
 #define IF3_TYPE_128	2
@@ -1408,7 +1417,7 @@ extern "C" {
 
 #elif LCDMODE_DUMMY
 
-	#define DSTYLE_G_DUMMY	1	// пустой список лтображения
+	#define DSTYLE_G_DUMMY	1	// пустой список отображения
 
 	#define DIM_X 480
 	#define DIM_Y 272
@@ -1430,11 +1439,6 @@ extern "C" {
 	#define DISPLAYMODES_FPS 5	/* количество обновлений отображения режимов работы */
 	#define DISPLAY_FPS	10	/* обновление показаний частоты за секунду */
 	#define DISPLAYSWR_FPS 5	/* количество обновлений SWR за секунду */
-
-	// Цветное изображение не поддерживается на этом дисплее (заглушка).
-	#define TFTRGB(r, g, b)	(0)
-	typedef uint_fast16_t COLOR_T;	/* цвета не поддерживаются - заглушка */
-	typedef uint16_t PACKEDCOLOR_T;
 
 	#define DISPLAY_BUS_INITIALIZE() do {} while (0)
 
@@ -2118,6 +2122,145 @@ extern "C" {
 
 /* Сброс мощности при запросе TUNE от автотюнера или извне */
 #define WITHLOWPOWEREXTTUNE	(defined (HARDWARE_GET_TUNE) || WITHAUTOTUNER)
+
+/* Зависимости для поределения конфигурации видеосистемы */
+
+//#define LCDMODE_V0	1	/* Обычная конфигурация без PIP с L8 на основном экране */
+//#define LCDMODE_V1	1	/* Обычная конфигурация с PIP на часть экрана */
+//#define LCDMODE_V1A	1	/* Обычная конфигурация с PIP на часть экрана (но главный экран 16 бит) */
+//#define LCDMODE_V2	1	/* только главный экран, без PIP */
+//#define LCDMODE_V2A	1	/* только главный экран, без PIP (но главный экран 16 бит) */
+
+#if LCDMODE_V0
+	/* Обычная конфигурация без PIP с L8 на основном экране */
+	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
+	#define LCDMODE_MAIN_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит - RGB565. */
+	//#define LCDMODE_MAIN_RGB565	1
+	#define LCDMODE_MAIN_PAGES	1
+
+	//#define LCDMODE_PIP_RGB565	1	/* используется PIP с форматом 16 бит - RGB565 */
+	//#define LCDMODE_PIP_L8	1	/* используется PIP с форматом 8 бит - индексные цвета */
+	//#define LCDMODE_PIP_PAGES	3
+
+	#define WITHFASTWATERFLOW 1
+	#define COLORPIP_SHADED 128
+
+#elif LCDMODE_V1
+	#error Use LCDMODE_V2 instedd of LCDMODE_V1
+
+	/* Обычная конфигурация L8 с PIP16 на часть экрана */
+	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
+	#define LCDMODE_MAIN_L8	1
+	//#define LCDMODE_MAIN_RGB565	1
+	#define LCDMODE_MAIN_PAGES	1
+
+	//#define LCDMODE_PIP_L8	1
+	#define LCDMODE_PIP_RGB565	1
+	#define LCDMODE_PIP_PAGES	3
+	//#define COLORPIP_SHADED 128
+
+	#define LCDMODE_MAIN_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит - RGB565. */
+	#define LCDMODE_PIP_RGB565	1	/* используется PIP с форматом 16 бит - RGB565 */
+	//#define LCDMODE_PIP_L8	1	/* используется PIP с форматом 8 бит - индексные цвета */
+
+	#define WITHFASTWATERFLOW 1
+
+#elif LCDMODE_V1A
+	#error Use LCDMODE_V2 instedd of LCDMODE_V1A
+
+	/* Обычная конфигурация RGB565 с PIP16 на часть экрана (но главный экран 16 бит) */
+	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
+	//#define LCDMODE_MAIN_L8	1
+	#define LCDMODE_MAIN_RGB565	1
+	#define LCDMODE_MAIN_PAGES	1
+
+	//#define LCDMODE_PIP_L8	1
+	#define LCDMODE_PIP_RGB565	1
+	#define LCDMODE_PIP_PAGES	3
+	//#define COLORPIP_SHADED 128
+	//#define LCDMODE_MAIN_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит - RGB565. */
+	#define LCDMODE_PIP_RGB565	1	/* используется PIP с форматом 16 бит - RGB565 */
+	//#define LCDMODE_PIP_L8	1	/* используется PIP с форматом 8 бит - индексные цвета */
+
+	#define WITHFASTWATERFLOW 1
+
+#elif LCDMODE_V1B
+	#error Use LCDMODE_V2 instedd of LCDMODE_V1B
+	/* Обычная конфигурация с PIP на часть экрана, MAIN=L8, PIP=L8 */
+	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
+	#define LCDMODE_MAIN_L8		1	/* используется 8 бит на пиксель представление экрана */
+	#define LCDMODE_MAIN_PAGES	1
+
+	#define LCDMODE_PIP_L8	1	/* используется PIP с форматом 8 бит - индексные цвета */
+	#define LCDMODE_PIP_PAGES	3
+	#define COLORPIP_SHADED 128
+
+	#define WITHFASTWATERFLOW 1
+
+#elif LCDMODE_V2
+	/* только главный экран с тремя видеобуферами L8, без PIP */
+	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
+	#define LCDMODE_MAIN_L8	1
+	//#define LCDMODE_MAIN_RGB565	1
+	#define LCDMODE_MAIN_PAGES	3
+
+	//#define LCDMODE_PIP_L8	1
+	//#define LCDMODE_PIP_RGB565	1
+	//#define LCDMODE_PIP_PAGES	3
+	#define COLORPIP_SHADED 128
+
+	#define LCDMODE_MAIN_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит - RGB565. */
+	//#define LCDMODE_PIP_RGB565	1	/* используется PIP с форматом 16 бит - RGB565 */
+	//#define LCDMODE_PIP_L8	1	/* используется PIP с форматом 8 бит - индексные цвета */
+
+	#define WITHFASTWATERFLOW 1
+
+#elif LCDMODE_V2A
+	/* только главный экран 16 бит (три страницы), без PIP */
+	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
+	//#define LCDMODE_MAIN_L8	1
+	#define LCDMODE_MAIN_RGB565	1
+	#define LCDMODE_MAIN_PAGES	3
+
+	//#define LCDMODE_PIP_L8	1
+	//#define LCDMODE_PIP_RGB565	1
+	//#define LCDMODE_PIP_PAGES	3
+	//#define COLORPIP_SHADED 128
+
+	//#define LCDMODE_MAIN_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит - RGB565. */
+	//#define LCDMODE_PIP_RGB565	1	/* используется PIP с форматом 16 бит - RGB565 */
+	//#define LCDMODE_PIP_L8	1	/* используется PIP с форматом 8 бит - индексные цвета */
+
+	#define WITHFASTWATERFLOW 1
+
+#elif LCDMODE_DUMMY
+
+	#define LCDMODE_MAIN_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит - RGB565. */
+	//#define LCDMODE_MAIN_RGB565	1
+	#define LCDMODE_MAIN_PAGES	0
+
+	#define LCDMODE_PIP_L8	1
+	#define LCDMODE_PIP_PAGES	0
+	//#define COLORPIP_SHADED 128
+
+
+#endif
+
+#if LCDMODE_LTDC
+
+	#if LCDMODE_HORFILL
+		#define DIM_FIRST DIM_Y
+		#define DIM_SECOND DIM_X
+	#else /* LCDMODE_HORFILL */
+		#define DIM_FIRST DIM_X
+		#define DIM_SECOND DIM_Y
+	#endif /* LCDMODE_HORFILL */
+
+#endif /* LCDMODE_LTDC */
+
+#if WIHSPIDFSW && WIHSPIDFHW
+	#error WIHSPIDFSW and WIHSPIDFHW can not be used in same time
+#endif /* WIHSPIDFSW && WIHSPIDFHW */
 
 #ifdef __cplusplus
 }

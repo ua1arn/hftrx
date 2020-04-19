@@ -86,7 +86,11 @@ static void tlv320aic23_initialize_slave_fullduplex(void)
 
 	tlv320aic23_setreg(TLV320AIC23_DIGT_FMT, 
 		0 * TLV320AIC23_MS_MASTER | /* operate in slave mode */
+#if CODEC_TYPE_TLV320AIC23B_USE_32BIT
+		TLV320AIC23_IWL_32 |
+#else /* CODEC_TYPE_TLV320AIC23B_USE_32BIT */
 		TLV320AIC23_IWL_16 |
+#endif /* CODEC_TYPE_TLV320AIC23B_USE_32BIT */
 #if WITHI2S_FORMATI2S_PHILIPS
 		TLV320AIC23_FOR_I2S |
 #else /* WITHI2S_FORMATI2S_PHILIPS */
@@ -95,7 +99,7 @@ static void tlv320aic23_initialize_slave_fullduplex(void)
 		0
 		);
 
-	// Из-за ограничений SPI/I2S контроллера на STM32 возможно 
+	// Из-за ограничений SPI/I2S контроллера на STM32 возможно
 	// использовать только режим с MCLK=256*Fs
 	// Внутренний делитель от MCLK до битовой синхронизации - /8
 	// На MCLK ожидаем 12.288 МГц
