@@ -7,7 +7,10 @@
 
 #include "hardware.h"
 
-#if WITHINTEGRATEDDSP && 0
+#if WITHINTEGRATEDDSP
+
+	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
+	//#define ARM_MATH_NEON 1
 
 	#include "BasicMathFunctions/BasicMathFunctions.c"
 	#include "CommonTables/CommonTables.c"

@@ -57,9 +57,9 @@ DINCDIR = \
 DLIBDIR = $(CMSISDIR)/DSP/Lib/GCC
 
 # List all default libraries here
-#DLIBS = -lm
+DLIBS = -lm
 #DLIBS = -lm -larm_cortexA9lneon_math
-DLIBS = -lm -larm_cortexA9lfdp_math
+#DLIBS = -lm -larm_cortexA9lfdp_math
 
 #
 # End of default section
