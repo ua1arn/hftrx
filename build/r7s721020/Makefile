@@ -27,7 +27,13 @@ SIZE = $(TRGT)size --format=sysv --radix=16
 HEX  = $(CP) -O ihex -R .noinit -R .bss -R .vram -R .heap
 BIN  = $(CP) -O binary -R .noinit -R .bss -R .vram -R .heap
 
+#COMPUTEDIR = ../../../ComputeLibrary
+# Add to includes
+#	$(COMPUTEDIR)/arm_compute/core/NEON
+
+
 CMSISDIR = ../../../CMSIS_5/CMSIS
+
 OBJDIR2 = obj
 OBJDIR = ./$(OBJDIR2)
 
