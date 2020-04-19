@@ -46,15 +46,21 @@ DDEFS =
 # List all default ASM defines here, like -D_DEBUG=1
 DADEFS = -D__ASSEMBLY__=1
 # List all default directories to look for include files here
-DINCDIR = $(CMSISDIR)/Core_A/Include $(CMSISDIR)/DSP/Include
+DINCDIR = \
+	$(CMSISDIR)/Core_A/Include \
+	$(CMSISDIR)/DSP/Include \
+	$(CMSISDIR)/Core_A/Source \
+	$(CMSISDIR)/DSP/Source \
+	$(CMSISDIR)/DSP/PrivateInclude
 
 # List the default directory to look for the libraries here
-DLIBDIR = $(CMSISDIR)/DSP/Lib/GCC
+#DLIBDIR = $(CMSISDIR)/DSP/Lib/GCC
 
 # List all default libraries here
 #DLIBS = -lm -larm_cortexA9lneon_math
-DLIBS = -lm -larm_cortexA9lfdp_math
-
+#DLIBS = -lm -larm_cortexA9lfdp_math
+DLIBS = -lm
+#
 #
 # End of default section
 ##############################################################################################
