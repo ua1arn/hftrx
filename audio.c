@@ -2489,12 +2489,12 @@ static RAMFUNC FLOAT_t filter_fir_compute(const FLOAT_t * const pk0, const FLOAT
     // Calculate the new output
 	// Выборка в середине буфера
 	FLOAT_t v = pk0 [-- n] * * -- xbh;             // sample at middle of buffer
-#if __ARM_NEON_FP && DSP_FLOAT_BITSMANTISSA == 24
+#if __ARM_NEON_FP && DSP_FLOAT_BITSMANTISSA == 24 && 0
 	float32x4_t v4 = vdupq_n_f32(0);
 #endif /* __ARM_NEON_FP */
 	do
 	{	
-#if __ARM_NEON_FP && DSP_FLOAT_BITSMANTISSA == 24
+#if __ARM_NEON_FP && DSP_FLOAT_BITSMANTISSA == 24 && 0
 		// получиь значения из левой половины
 		xbh -= 4;
 		const float32x4_t vh = vld1q_f32(xbh);
@@ -2517,7 +2517,7 @@ static RAMFUNC FLOAT_t filter_fir_compute(const FLOAT_t * const pk0, const FLOAT
 #endif /* defined (FMAF) */
 	}
 	while (n != 0);
-#if __ARM_NEON_FP && DSP_FLOAT_BITSMANTISSA == 24
+#if __ARM_NEON_FP && DSP_FLOAT_BITSMANTISSA == 24 && 0
 	v += vgetq_lane_f32(v4, 0);
 	v += vgetq_lane_f32(v4, 1);
 	v += vgetq_lane_f32(v4, 2);
