@@ -353,7 +353,7 @@ display2_smeter15(
 	const int r2 = r1 - stripewidth;
 
 	const uint_fast8_t is_tx = hamradio_get_tx();
-	PACKEDCOLORMAIN_T * fr = colmain_fb_draw();
+	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
 
 	int gv, gv_trace = gs, gswr = gs;
 	uint_fast16_t swr10; 														// swr10 = 0..30 for swr 1..4
@@ -1263,7 +1263,7 @@ static void gui_main_process(void);
 				lbl_low->x = x_0 + x_size - strwidth(lbl_low->text);
 			}
 		}
-		PACKEDCOLORMAIN_T * fr = colmain_fb_draw();
+		PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
 		colpip_line(fr, DIM_X, DIM_Y, x_0 - 10, y_0, x_0 + x_size, y_0, COLORPIP_WHITE);
 		colpip_line(fr, DIM_X, DIM_Y, x_0, y_0 - 45, x_0, y_0 + 5, COLORPIP_WHITE);
 		colpip_line(fr, DIM_X, DIM_Y, x_l, y_0 - 40, x_l - 4, y_0 - 3, COLORPIP_YELLOW);
@@ -2085,7 +2085,7 @@ static void gui_main_process(void);
 	static void gui_main_process(void)
 	{
 		static window_t * win = & windows[WINDOW_MAIN];
-		PACKEDCOLORMAIN_T * fr = colmain_fb_draw();
+		PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
 		char buf [TEXT_ARRAY_SIZE];
 		uint_fast16_t yt, xt;
 
@@ -2182,7 +2182,7 @@ static void gui_main_process(void);
 	static void draw_button_pip(uint_fast8_t id)
 	{
 		PACKEDCOLORMAIN_T * bg = NULL;
-		PACKEDCOLORMAIN_T * fr = colmain_fb_draw();
+		PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
 		btn_bg_t * b1 = NULL;
 		uint_fast8_t i = 0;
 		static const char delimeters [] = "|";
@@ -2447,7 +2447,7 @@ static void gui_main_process(void);
 		char buf [TEXT_ARRAY_SIZE];
 		char * text2 = NULL;
 		uint_fast8_t str_len = 0;
-		PACKEDCOLORMAIN_T * fr = colmain_fb_draw();
+		PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
 
 		process_gui();
 
