@@ -1405,7 +1405,7 @@ static void hwaccel_copy(
 		{
 			memcpy(dst, src, len);
 			arm_hardware_flush((uintptr_t) dst, len);
-			src += w;
+			src += GXADJ(w);
 			dst += w + t;
 		}
 	}
@@ -1438,7 +1438,7 @@ void colpip_to_main(
 // В случае фреймбуфеных дисплеев - формат цвета и там и там одинаковый
 void colpip_to_main(
 	const PACKEDCOLORPIP_T * src,
-	uint_fast16_t dx,
+	uint_fast16_t dx,	//
 	uint_fast16_t dy,
 	uint_fast16_t col,	// горизонтальная координата левого верхнего угла на экране (0..dx-1) слева направо
 	uint_fast16_t row	// вертикальная координата левого верхнего угла на экране (0..dy-1) сверху вниз
@@ -1451,7 +1451,7 @@ void colpip_to_main(
 		(uintptr_t) colmain_fb_draw(), sizeof (PACKEDCOLORPIP_T) * GXSIZE(DIM_X, DIM_Y),	// target area invalidate parameters
 		colmain_mem_at(colmain_fb_draw(), DIM_X, DIM_Y, col, row),
 		src,
-		dx, GXADJ(DIM_X) - dx, dy);	// w, t, h
+		dx, GXADJ(DIM_X) - GXADJ(dx), dy);	// w, t, h
 #else /* LCDMODE_HORFILL */
 	hwaccel_copy(
 		(uintptr_t) colmain_fb_draw(), sizeof (PACKEDCOLORPIP_T) * GXSIZE(DIM_X, DIM_Y),	// target area invalidate parameters
@@ -2115,7 +2115,7 @@ ltdc_horizontal_put_char_small(uint_fast16_t x, uint_fast16_t y, char cc)
 // return new x coordinate
 static uint_fast16_t
 RAMFUNC_NONILINE
-ltdcpip_horizontal_put_char_small(
+ltdcmain_horizontal_put_char_small(
 	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy,
@@ -2129,7 +2129,7 @@ ltdcpip_horizontal_put_char_small(
 	uint_fast8_t cgrow;
 	for (cgrow = 0; cgrow < SMALLCHARH; ++ cgrow)
 	{
-		volatile PACKEDCOLORPIP_T * const tgr = colpip_mem_at(buffer, dx, dy, x, y + cgrow);
+		volatile PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, x, y + cgrow);
 		ltdcpip_horizontal_pixels(tgr, S1D13781_smallfont_LTDC [c] [cgrow], width);
 	}
 	return x + width;
