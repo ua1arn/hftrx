@@ -585,25 +585,27 @@ hwacc_fillrect_u24(
 
 /* заливка замкнутого контура */
 void display_floodfill(
+	PACKEDCOLORMAIN_T * buffer,
+	uint_fast16_t dx,	// ширина буфера
+	uint_fast16_t dy,	// высота буфера
 	uint_fast16_t x,	// начальная координата
 	uint_fast16_t y,	// начальная координата
 	COLORMAIN_T newColor,
 	COLORMAIN_T oldColor
 	)
 {
-	ASSERT(x < DIM_X);
-	ASSERT(y < DIM_Y);
-	PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(colmain_fb_draw(), DIM_X, DIM_Y, x, y);
+	ASSERT(x < dx);
+	ASSERT(y < dy);
+	PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, x, y);
 	if (* tgr == oldColor && * tgr != newColor)
 	{
 		* tgr = newColor;
-		display_floodfill(x + 1, y, newColor, oldColor);
-		display_floodfill(x - 1, y, newColor, oldColor);
-		display_floodfill(x, y + 1, newColor, oldColor);
-		display_floodfill(x, y - 1, newColor, oldColor);
+		display_floodfill(buffer, dx, dy, x + 1, y, newColor, oldColor);
+		display_floodfill(buffer, dx, dy, x - 1, y, newColor, oldColor);
+		display_floodfill(buffer, dx, dy, x, y + 1, newColor, oldColor);
+		display_floodfill(buffer, dx, dy, x, y - 1, newColor, oldColor);
 	}
 }
-
 
 #if WITHDMA2DHW
 

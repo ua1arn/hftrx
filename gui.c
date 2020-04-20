@@ -558,7 +558,7 @@ display2_smeter15(
 			display_radius_buf(fr, DIM_X, DIM_Y, xc, yc, gs, r1 - 2, r2 + 2, COLORMAIN_YELLOW);
 			display_radius_buf(fr, DIM_X, DIM_Y, xc, yc, gswr, r1 - 2, r2 + 2, COLORMAIN_YELLOW);
 			polar_to_dek(xc, yc, gswr - 1, r1 - 4, & xx, & yy);
-			display_floodfill(xx, yy, COLORMAIN_YELLOW, COLORMAIN_BLACK);
+			display_floodfill(fr, DIM_X, DIM_Y, xx, yy, COLORMAIN_YELLOW, 0); // COLORMAIN_BLACK
 		}
 	}
 	else
@@ -576,7 +576,6 @@ display2_smeter15(
 		display_radius_buf(fr, DIM_X, DIM_Y, xc - 1, yc, gv, rv1, rv2, ct);
 		display_radius_buf(fr, DIM_X, DIM_Y, xc, yc, gv, rv1, rv2, ct);
 		display_radius_buf(fr, DIM_X, DIM_Y, xc + 1, yc, gv, rv1, rv2, ct);
-
 }
 
 #endif /* LCDMODE_LTDC */

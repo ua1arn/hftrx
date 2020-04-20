@@ -854,6 +854,9 @@ display_value_small(
 	);
 
 void display_floodfill(
+	PACKEDCOLORMAIN_T * buffer,
+	uint_fast16_t dx,	// ширина буфера
+	uint_fast16_t dy,	// высота буфера
 	uint_fast16_t x,	// начальная координата
 	uint_fast16_t y,	// начальная координата
 	COLORMAIN_T newColor,
