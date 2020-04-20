@@ -50,7 +50,32 @@
  * серединой расстояния между ближайшими Y-узлами сетки.
  */
 
-void display_line(int xn, int yn, int xk, int yk, COLORMAIN_T color)
+void display_putpixel_buf(
+	PACKEDCOLORPIP_T * buffer,
+	uint_fast16_t bx,	// ширина буфера
+	uint_fast16_t by,	// высота буфера
+	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	COLORMAIN_T color
+	)
+{
+	volatile PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, bx, by, x, y);
+	#if LCDMODE_LTDC_L24
+		tgr->r = color >> 16;
+		tgr->g = color >> 8;
+		tgr->b = color >> 0;
+	#else /* LCDMODE_LTDC_L24 */
+		* tgr = color;
+	#endif /* LCDMODE_LTDC_L24 */
+}
+
+void display_line_buf(
+		PACKEDCOLORPIP_T * buffer,
+		uint_fast16_t bx,	// ширина буфера
+		uint_fast16_t by,	// высота буфера
+		int xn, int yn,
+		int xk, int yk,
+		COLORMAIN_T color)
 {
 	int  dx, dy, s, sx, sy, kl, incr1, incr2;
 	char swap;
@@ -84,7 +109,7 @@ void display_line(int xn, int yn, int xk, int yk, COLORMAIN_T color)
 	/* s - начальное значение разности */
 	incr2 = 2 * dx;         /* Константа для перевычисления    */
 	/* разности если текущее s >= 0    */
-	display_putpixel(xn, yn, color); /* Первый  пиксел вектора       */
+	display_putpixel_buf(buffer, bx, by, xn, yn, color); /* Первый  пиксел вектора       */
 
 	while (--kl >= 0)
 	{
@@ -99,7 +124,7 @@ void display_line(int xn, int yn, int xk, int yk, COLORMAIN_T color)
 		else
 			xn+= sx;
 		s += incr1;
-		display_putpixel(xn, yn, color); /* Текущая  точка  вектора   */
+		display_putpixel_buf(buffer, bx, by, xn, yn, color); /* Текущая  точка  вектора   */
 	}
 }  /* V_Bre */
 
@@ -147,7 +172,14 @@ static  int icos(unsigned alpha, unsigned r)
 
 // Рисование радиусов
 void
-display_radius(int xc, int yc, unsigned gs, unsigned r1, unsigned r2, COLORMAIN_T color)
+display_radius_buf(
+		PACKEDCOLORPIP_T * buffer,
+		uint_fast16_t bx,	// ширина буфера
+		uint_fast16_t by,	// высота буфера
+		int xc, int yc,
+		unsigned gs,
+		unsigned r1, unsigned r2,
+		COLORMAIN_T color)
 {
 	int     x, y;
 	int     x2, y2;
@@ -157,7 +189,7 @@ display_radius(int xc, int yc, unsigned gs, unsigned r1, unsigned r2, COLORMAIN_
 	x2 = xc + icos(gs, r2);
 	y2 = yc + isin(gs, r2);
 
-	display_line(x, y, x2, y2, color);
+	display_line_buf(buffer, bx, by, x, y, x2, y2, color);
 
 }
 
@@ -170,7 +202,14 @@ void polar_to_dek(uint_fast16_t xc, uint_fast16_t yc, uint_fast16_t gs, uint_fas
 // круговой интерполятор
 // нач.-x, нач.-y, градус начала, градус конуа, радиус, шаг приращения угла
 void
-display_segm(int xc, int yc, unsigned gs, unsigned ge, unsigned r, int step, COLORMAIN_T color)
+display_segm_buf(
+		PACKEDCOLORPIP_T * buffer,
+		uint_fast16_t bx,	// ширина буфера
+		uint_fast16_t by,	// высота буфера
+		int xc, int yc,
+		unsigned gs, unsigned ge,
+		unsigned r, int step,
+		COLORMAIN_T color)
 {
 	int     x, y;
 	int     xo, yo;
@@ -194,7 +233,7 @@ display_segm(int xc, int yc, unsigned gs, unsigned ge, unsigned r, int step, COL
 		}
 		else
 		{  // рисовать элемент окружности
-			display_line(xo, yo, x, y, color);
+			display_line_buf(buffer, bx, by, xo, yo, x, y, color);
 			xo = x, yo = y;
 		}
 		if (ge == 360)
@@ -221,7 +260,7 @@ display_segm(int xc, int yc, unsigned gs, unsigned ge, unsigned r, int step, COL
 		x = xc + vcos;
 		y = yc + vsin;
 
-		display_line(xo, yo, x, y, color); // рисовать линию
+		display_line_buf(buffer, bx, by, xo, yo, x, y, color); // рисовать линию
 	}
 
 }
@@ -280,6 +319,15 @@ uint_fast16_t normalize3(
 		return normalize(raw - rawmid, 0, rawmax - rawmid, range2 - range1) + range1;
 }
 
+enum {
+	SM_STATE_RX,
+	SM_STATE_TX,
+	SM_STATE_COUNT
+};
+enum { SM_BG_W = 240, SM_BG_H = 70 };
+typedef ALIGNX_BEGIN PACKEDCOLORPIP_T smeter_bg_t [SM_BG_W][SM_BG_H] ALIGNX_END;
+static smeter_bg_t smeter_bg[SM_STATE_COUNT]; 	// 0 - rx, 1 - tx
+
 // ширина занимаемого места - 15 ячеек (240/16 = 15)
 void
 display2_smeter15(
@@ -305,6 +353,7 @@ display2_smeter15(
 	const int r2 = r1 - stripewidth;
 
 	const uint_fast8_t is_tx = hamradio_get_tx();
+	PACKEDCOLORMAIN_T * fr = colmain_fb_draw();
 
 	int gv, gv_trace = gs, gswr = gs;
 	uint_fast16_t swr10; 														// swr10 = 0..30 for swr 1..4
@@ -419,124 +468,115 @@ display2_smeter15(
 	const COLORMAIN_T smeter = COLORMAIN_WHITE;
 	const COLORMAIN_T smeterplus = COLORMAIN_DARKRED;
 	const uint_fast16_t pad2w3 = strwidth3("ZZ");
+	static uint_fast8_t first_run = 1;
 
-//	static uint_fast8_t first_run = 1;
-//	static uint_fast16_t x1, y1, x2, y2;
-//
-//	if(first_run)
-//	{
-//		uint_fast16_t xx, yy;
-//		first_run = 0;
-//		polar_to_dek(xc, yc, gm, rv1 + 8 + SMALLCHARH3, & xx, & yy);
-//		y1 = yy;
-//		polar_to_dek(xc, yc, gs, rv2, & xx, & yy);
-//		y2 = yy;
-//		polar_to_dek(xc, yc, gs, r1 + 8 + SMALLCHARW3 * 2, & xx, & yy);
-//		x1 = xx;
-//		polar_to_dek(xc, yc, ge, r1 + 8 + SMALLCHARW3 * 2, & xx, & yy);
-//		x2 = xx;
-//		PRINTF("xc/yc - %d/%d\n", xc, yc);
-//		PRINTF("x1/y1 - %d/%d\n", x1, y1);
-//		PRINTF("x2/y2 - %d/%d\n", x2, y2);
-//	}
-//	colpip_rect(colmain_fb_draw(), DIM_X, DIM_Y, x1, y1, x2, y2, COLORPIP_WHITE, 0);
-
-	if (is_tx)																	// шкала при передаче
+	if (first_run)					// заполнение буферов фона для отображения прибора
 	{
+		first_run = 0;
+		PACKEDCOLORPIP_T * bg = (PACKEDCOLORPIP_T *) & smeter_bg[SM_STATE_TX];
+		uint_fast8_t xb = 120, yb = 120;
+
 		unsigned p;
 		unsigned i;
 		for (p = 0, i = 0; i < sizeof markersTX_pwr / sizeof markersTX_pwr [0]; ++ i, p += 10)
 		{
 			char buf [10];
 			uint_fast16_t xx, yy;
+			colmain_setcolors(COLORMAIN_YELLOW, COLORMAIN_BLACK);
 			if (i % 2 == 0)
 			{
-				display_radius(xc, yc, markersTX_pwr [i], r1, r1 + 8, smeter);
-				polar_to_dek(xc, yc, markersTX_pwr [i], r1 + 8, & xx, & yy);
+				display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markersTX_pwr [i], r1, r1 + 8, smeter);
+				polar_to_dek(xb, yb, markersTX_pwr [i], r1 + 8, & xx, & yy);
 				local_snprintf_P(buf, sizeof buf / sizeof buf [0], PSTR("%u"), p);
-				display_string3_at_xy(xx - strwidth3(buf) / 2, yy - pad2w3, buf, COLORMAIN_YELLOW, COLORMAIN_BLACK);
+				colmain_string3_at_xy(bg, SM_BG_W, SM_BG_H, xx - strwidth3(buf) / 2, yy - pad2w3 + 1, buf);
 			}
 			else
-				display_radius(xc, yc, markersTX_pwr [i], r1, r1 + 4, smeter);
+				display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markersTX_pwr [i], r1, r1 + 4, smeter);
 		}
 
+		colmain_setcolors(COLORMAIN_YELLOW, COLORMAIN_BLACK);
 		for (p = 1, i = 0; i < sizeof markersTX_swr / sizeof markersTX_swr [0]; ++ i, p += 1)
 		{
 			char buf [10];
 			uint_fast16_t xx, yy;
-			display_radius(xc, yc, markersTX_swr [i], r2, r2 - 8, smeter);
-			polar_to_dek(xc, yc, markersTX_swr [i], r2 - 16, & xx, & yy);
+			display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markersTX_swr [i], r2, r2 - 8, smeter);
+			polar_to_dek(xb, yb, markersTX_swr [i], r2 - 16, & xx, & yy);
 			local_snprintf_P(buf, sizeof buf / sizeof buf [0], PSTR("%u"), p);
-			display_string3_at_xy(xx - SMALLCHARW3 / 2, yy - SMALLCHARW3 / 2, buf, COLORMAIN_YELLOW, COLORMAIN_BLACK);
+			colmain_string3_at_xy(bg, SM_BG_W, SM_BG_H, xx - SMALLCHARW3 / 2, yy - SMALLCHARW3 / 2 + 1, buf);
 		}
-	}
-	else																		// шкала при приеме
-	{
-		unsigned p;
-		unsigned i;
+
+		display_segm_buf(bg, SM_BG_W, SM_BG_H, xb, yb, gs, gm, r1, 1, smeter);
+		display_segm_buf(bg, SM_BG_W, SM_BG_H, xb, yb, gm, ge, r1, 1, smeter);
+		display_segm_buf(bg, SM_BG_W, SM_BG_H, xb, yb, gs, ge, r2, 1, COLORMAIN_WHITE);
+
+		bg = (PACKEDCOLORPIP_T *) & smeter_bg[SM_STATE_RX];
+
+		colmain_setcolors(COLORMAIN_YELLOW, COLORMAIN_BLACK);
 		for (p = 1, i = 0; i < sizeof markers / sizeof markers [0]; ++ i, p += 2)
 		{
 			char buf [10];
 			uint_fast16_t xx, yy;
-			display_radius(xc, yc, markers [i], r1, r1 + 8, smeter);
-			polar_to_dek(xc, yc, markers [i], r1 + 8, & xx, & yy);
+			display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markers [i], r1, r1 + 8, smeter);
+			polar_to_dek(xb, yb, markers [i], r1 + 8, & xx, & yy);
 			local_snprintf_P(buf, sizeof buf / sizeof buf [0], PSTR("%u"), p);
-			display_string3_at_xy(xx - SMALLCHARW3 / 2, yy - pad2w3, buf, COLORMAIN_YELLOW, COLORMAIN_BLACK);
+			colmain_string3_at_xy(bg, SM_BG_W, SM_BG_H, xx - SMALLCHARW3 / 2, yy - pad2w3 + 1, buf);
 		}
 		for (i = 0; i < sizeof markers2 / sizeof markers2 [0]; ++ i)
 		{
-			display_radius(xc, yc, markers2 [i], r1, r1 + 4, smeter);
+			display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markers2 [i], r1, r1 + 4, smeter);
 		}
 
+		colmain_setcolors(COLORMAIN_RED, COLORMAIN_BLACK);
 		for (p = 20, i = 0; i < sizeof markersR / sizeof markersR [0]; ++ i, p += 20)
 		{
 			char buf [10];
 			uint_fast16_t xx, yy;
-			display_radius(xc, yc, markersR [i], r1, r1 + 8, smeterplus);
-			polar_to_dek(xc, yc, markersR [i], r1 + 8, & xx, & yy);
+			display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markersR [i], r1, r1 + 8, smeterplus);
+			polar_to_dek(xb, yb, markersR [i], r1 + 8, & xx, & yy);
 			local_snprintf_P(buf, sizeof buf / sizeof buf [0], PSTR("+%u"), p);
-			display_string3_at_xy(xx - strwidth3(buf) / 2, yy - pad2w3, buf, COLORMAIN_RED, COLORMAIN_BLACK);
+			colmain_string3_at_xy(bg, SM_BG_W, SM_BG_H, xx - strwidth3(buf) / 2, yy - pad2w3 + 1, buf);
 		}
 		for (i = 0; i < sizeof markers2R / sizeof markers2R [0]; ++ i)
 		{
-			display_radius(xc, yc, markers2R [i], r1, r1 + 4, smeterplus);
+			display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markers2R [i], r1, r1 + 4, smeterplus);
 		}
+		display_segm_buf(bg, SM_BG_W, SM_BG_H, xb, yb, gs, gm, r1, 1, smeter);
+		display_segm_buf(bg, SM_BG_W, SM_BG_H, xb, yb, gm, ge, r1, 1, smeterplus);
+		display_segm_buf(bg, SM_BG_W, SM_BG_H, xb, yb, gs, ge, r2, 1, COLORMAIN_WHITE);
 	}
-
-	display_segm(xc, yc, gs, gm, r1, 1, smeter);
-	display_segm(xc, yc, gm, ge, r1, 1, is_tx ? smeter : smeterplus);
-	display_segm(xc, yc, gs, ge, r2, 1, COLORMAIN_WHITE);
 
 	if (is_tx)
 	{
 		// TX state
+		colpip_plot(fr, DIM_X, DIM_Y, x0, y0, (PACKEDCOLORPIP_T *) & smeter_bg[SM_STATE_TX], SM_BG_W, SM_BG_H);
+
 		if (gswr > gs)
 		{
 			uint_fast16_t xx, yy;
-			display_segm(xc, yc, gs, gswr, r2 + 2, 1, COLORMAIN_YELLOW);
-			display_segm(xc, yc, gs, gswr, r1 - 2, 1, COLORMAIN_YELLOW);
-			display_radius(xc, yc, gs, r1 - 2, r2 + 2, COLORMAIN_YELLOW);
-			display_radius(xc, yc, gswr, r1 - 2, r2 + 2, COLORMAIN_YELLOW);
+			display_segm_buf(fr, DIM_X, DIM_Y, xc, yc, gs, gswr, r2 + 2, 1, COLORMAIN_YELLOW);
+			display_segm_buf(fr, DIM_X, DIM_Y, xc, yc, gs, gswr, r1 - 2, 1, COLORMAIN_YELLOW);
+			display_radius_buf(fr, DIM_X, DIM_Y, xc, yc, gs, r1 - 2, r2 + 2, COLORMAIN_YELLOW);
+			display_radius_buf(fr, DIM_X, DIM_Y, xc, yc, gswr, r1 - 2, r2 + 2, COLORMAIN_YELLOW);
 			polar_to_dek(xc, yc, gswr - 1, r1 - 4, & xx, & yy);
 			display_floodfill(xx, yy, COLORMAIN_YELLOW, COLORMAIN_BLACK);
 		}
-
 	}
 	else
 	{
 		// RX state
-		const COLORMAIN_T ct = gv_trace > gm ? COLORMAIN_RED : COLORMAIN_YELLOW;
-		display_radius(xc - 1, yc, gv_trace, r1 - 2, r2 + 2, ct);
-		display_radius(xc, yc, gv_trace, r1 - 2, r2 + 2, ct);
-		display_radius(xc + 1, yc, gv_trace, r1 - 2, r2 + 2, ct);
+		colpip_plot(fr, DIM_X, DIM_Y, x0, y0, (PACKEDCOLORPIP_T *) & smeter_bg[SM_STATE_RX], SM_BG_W, SM_BG_H);
 	}
 
-	{
-		const COLORMAIN_T ct = gv > gm ? COLORMAIN_RED : COLORMAIN_GREEN;
-		display_radius(xc - 1, yc, gv, rv1, rv2, ct);
-		display_radius(xc, yc, gv, rv1, rv2, ct);
-		display_radius(xc + 1, yc, gv, rv1, rv2, ct);
-	}
+		COLORMAIN_T ct = gv_trace > gm ? COLORMAIN_RED : COLORMAIN_YELLOW;
+		display_radius_buf(fr, DIM_X, DIM_Y, xc - 1, yc, gv_trace, r1 - 2, r2 + 2, ct);
+		display_radius_buf(fr, DIM_X, DIM_Y, xc, yc, gv_trace, r1 - 2, r2 + 2, ct);
+		display_radius_buf(fr, DIM_X, DIM_Y, xc + 1, yc, gv_trace, r1 - 2, r2 + 2, ct);
+
+		ct = gv > gm ? COLORMAIN_RED : COLORMAIN_GREEN;
+		display_radius_buf(fr, DIM_X, DIM_Y, xc - 1, yc, gv, rv1, rv2, ct);
+		display_radius_buf(fr, DIM_X, DIM_Y, xc, yc, gv, rv1, rv2, ct);
+		display_radius_buf(fr, DIM_X, DIM_Y, xc + 1, yc, gv, rv1, rv2, ct);
+
 }
 
 #endif /* LCDMODE_LTDC */
