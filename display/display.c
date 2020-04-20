@@ -1331,8 +1331,8 @@ static void hwaccel_copy(
 		((h - 1) << MDMA_CBNDTR_BRC_Pos) |		// Block Repeat Count
 		0;
 	MDMA_CH->CBRUR =
-		((sizeof (PACKEDCOLORMAIN_T) * (0)) << MDMA_CBRUR_SUV_Pos) |		// Source address Update Value
-		((sizeof (PACKEDCOLORMAIN_T) * (t)) << MDMA_CBRUR_DUV_Pos) |		// Destination address Update Value
+		((sizeof (PACKEDCOLORMAIN_T) * (GXADJ(w) - w)) << MDMA_CBRUR_SUV_Pos) |	// Source address Update Value
+		((sizeof (PACKEDCOLORMAIN_T) * (t)) << MDMA_CBRUR_DUV_Pos) |			// Destination address Update Value
 		0;
 
 	MDMA_CH->CTBR = (MDMA_CH->CTBR & ~ (MDMA_CTBR_SBUS_Msk | MDMA_CTBR_DBUS_Msk)) |
@@ -1361,7 +1361,7 @@ static void hwaccel_copy(
 	/* исходный растр */
 	DMA2D->FGMAR = (uintptr_t) src;
 	DMA2D->FGOR = (DMA2D->FGOR & ~ (DMA2D_FGOR_LO)) |
-		(0 << DMA2D_FGOR_LO_Pos) |
+		((GXADJ(w) - w)) << DMA2D_FGOR_LO_Pos) |
 		0;
 	/* целевой растр */
 	DMA2D->OMAR = (uintptr_t) dst;
@@ -1437,9 +1437,9 @@ void colpip_to_main(
 // Выдать буфер на дисплей. Функции бывают только для не L8 режимов
 // В случае фреймбуфеных дисплеев - формат цвета и там и там одинаковый
 void colpip_to_main(
-	const PACKEDCOLORPIP_T * src,
-	uint_fast16_t dx,	//
-	uint_fast16_t dy,
+	const PACKEDCOLORPIP_T * buffer,	// источник
+	uint_fast16_t dx,	// ширина буфера источника
+	uint_fast16_t dy,	// высота буфера источника
 	uint_fast16_t col,	// горизонтальная координата левого верхнего угла на экране (0..dx-1) слева направо
 	uint_fast16_t row	// вертикальная координата левого верхнего угла на экране (0..dy-1) сверху вниз
 	)
@@ -1450,13 +1450,13 @@ void colpip_to_main(
 	hwaccel_copy(
 		(uintptr_t) colmain_fb_draw(), sizeof (PACKEDCOLORPIP_T) * GXSIZE(DIM_X, DIM_Y),	// target area invalidate parameters
 		colmain_mem_at(colmain_fb_draw(), DIM_X, DIM_Y, col, row),
-		src,
+		buffer,
 		dx, GXADJ(DIM_X) - GXADJ(dx), dy);	// w, t, h
 #else /* LCDMODE_HORFILL */
 	hwaccel_copy(
 		(uintptr_t) colmain_fb_draw(), sizeof (PACKEDCOLORPIP_T) * GXSIZE(DIM_X, DIM_Y),	// target area invalidate parameters
 		colmain_mem_at(colmain_fb_draw(), DIM_X, DIM_Y, col, row),
-		src,
+		buffer,
 		dy, DIM_Y - dy, dx);	// w, t, h
 #endif /* LCDMODE_HORFILL */
 }
@@ -1466,9 +1466,9 @@ void colpip_to_main(
 // Выдать буфер на дисплей. Функции бывают только для не L8 режимов
 // В случае фреймбуфеных дисплеев - формат цвета и там и там одинаковый
 void colpip_to_main(
-	const PACKEDCOLORPIP_T * buffer,
-	uint_fast16_t dx,
-	uint_fast16_t dy,
+	const PACKEDCOLORPIP_T * buffer,	// источник
+	uint_fast16_t dx,	// ширина буфера источника
+	uint_fast16_t dy,	// высота буфера источника
 	uint_fast16_t col,	// горизонтальная координата левого верхнего угла на экране (0..dx-1) слева направо
 	uint_fast16_t row	// вертикальная координата левого верхнего угла на экране (0..dy-1) сверху вниз
 	)
@@ -1663,8 +1663,8 @@ void display_pixelbuffer_clear(
 // Нарисовать линию указанным цветом
 void display_pixelbuffer_line(
 	GX_t * buffer,
-	uint_fast16_t dx,	
-	uint_fast16_t dy,
+	uint_fast16_t dx,	// ширина буфера
+	uint_fast16_t dy,	// высота буфера
 	uint_fast16_t x0,	
 	uint_fast16_t y0,
 	uint_fast16_t x1,	
@@ -1725,13 +1725,17 @@ void display_pixelbuffer_line(
 
 #if LCDMODE_LTDC
 
-void display_putpixel(
+
+void colmain_putpixel(
+	PACKEDCOLORMAIN_T * buffer,
+	uint_fast16_t dx,	// ширина буфера
+	uint_fast16_t dy,	// высота буфера
 	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
 	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
 	COLORMAIN_T color
 	)
 {
-	volatile PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(colmain_fb_draw(), DIM_X, DIM_Y, x, y);
+	PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, x, y);
 	#if LCDMODE_LTDC_L24
 		tgr->r = color >> 16;
 		tgr->g = color >> 8;
@@ -1739,6 +1743,15 @@ void display_putpixel(
 	#else /* LCDMODE_LTDC_L24 */
 		* tgr = color;
 	#endif /* LCDMODE_LTDC_L24 */
+}
+
+void display_putpixel(
+	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	COLORMAIN_T color
+	)
+{
+	colmain_putpixel(colmain_fb_draw(), DIM_X, DIM_Y, x, y, color);
 }
 
 static void

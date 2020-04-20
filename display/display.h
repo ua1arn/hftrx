@@ -425,8 +425,8 @@ void s1d13781_showbuffer(
 /* поставить точку в буфере кадра */
 void display_pixelbuffer(
 	GX_t * buffer,
-	uint_fast16_t dx,	
-	uint_fast16_t dy,
+	uint_fast16_t dx,	// ширина буфера
+	uint_fast16_t dy,	// высота буфера
 	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
 	uint_fast16_t y	// вертикальная координата пикселя (0..dy-1) сверху вниз
 	);
@@ -434,15 +434,15 @@ void display_pixelbuffer(
 /* поставить точку в буфере кадра */
 void display_pixelbuffer_xor(
 	GX_t * buffer,
-	uint_fast16_t dx,	
-	uint_fast16_t dy,
+	uint_fast16_t dx,	// ширина буфера
+	uint_fast16_t dy,	// высота буфера
 	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
 	uint_fast16_t y	// вертикальная координата пикселя (0..dy-1) сверху вниз
 	);
 void display_pixelbuffer_line(
 	GX_t * buffer,
-	uint_fast16_t dx,	
-	uint_fast16_t dy,
+	uint_fast16_t dx,	// ширина буфера
+	uint_fast16_t dy,	// высота буфера
 	uint_fast16_t x0,	
 	uint_fast16_t y0,
 	uint_fast16_t x1,	
@@ -459,17 +459,17 @@ void display_pixelbuffer_clear(
 // Эта функция используется только в тесте
 void colpip_fill(
 	PACKEDCOLORPIP_T * buffer,
-	uint_fast16_t dx,	
-	uint_fast16_t dy,
+	uint_fast16_t dx,	// ширина буфера
+	uint_fast16_t dy,	// высота буфера
 	COLORPIP_T color
 	);
 
 // Выдать цветной буфер на дисплей
 // В случае фреймбуфеных дисплеев - формат цвета и там и там одинаковый
 void colpip_to_main(
-	const PACKEDCOLORPIP_T * buffer,
-	uint_fast16_t dx,	
-	uint_fast16_t dy,
+	const PACKEDCOLORPIP_T * buffer,	// источник
+	uint_fast16_t dx,	// ширина буфера источника
+	uint_fast16_t dy,	// высота буфера источника
 	uint_fast16_t col,	// горизонтальная координата левого верхнего угла на экране (0..dx-1) слева направо
 	uint_fast16_t row	// вертикальная координата левого верхнего угла на экране (0..dy-1) сверху вниз
 	);
@@ -477,8 +477,8 @@ void colpip_to_main(
 // Нарисовать линию указанным цветом
 void colpip_line(
 	PACKEDCOLORPIP_T * buffer,
-	uint_fast16_t dx,	
-	uint_fast16_t dy,
+	uint_fast16_t dx,	// ширина буфера
+	uint_fast16_t dy,	// высота буфера
 	uint_fast16_t x0,	
 	uint_fast16_t y0,
 	uint_fast16_t x1,	
@@ -805,10 +805,10 @@ void display_putpixel(
 	COLORMAIN_T color
 	);
 
-void display_putpixel_buf(
+void colmain_putpixel(
 	PACKEDCOLORMAIN_T * buffer,
-	uint_fast16_t bx,	// ширина буфера
-	uint_fast16_t by,	// высота буфера
+	uint_fast16_t dx,	// ширина буфера
+	uint_fast16_t dy,	// высота буфера
 	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
 	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
 	COLORMAIN_T color
@@ -855,7 +855,7 @@ int_fast32_t display_zoomedbw(void);
 
 void display_string3_at_xy(uint_fast16_t x, uint_fast16_t y, const char * s, COLORMAIN_T fg, COLORMAIN_T bg);
 
-void display_line_buf(
+void colmain_line(
 		PACKEDCOLORMAIN_T * buffer,
 		uint_fast16_t bx,	// ширина буфера
 		uint_fast16_t by,	// высота буфера

@@ -50,81 +50,72 @@
  * серединой расстояния между ближайшими Y-узлами сетки.
  */
 
-void display_putpixel_buf(
+void colmain_line(
 	PACKEDCOLORMAIN_T * buffer,
 	uint_fast16_t bx,	// ширина буфера
 	uint_fast16_t by,	// высота буфера
-	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	int xn, int yn,
+	int xk, int yk,
 	COLORMAIN_T color
 	)
-{
-	volatile PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, bx, by, x, y);
-	#if LCDMODE_LTDC_L24
-		tgr->r = color >> 16;
-		tgr->g = color >> 8;
-		tgr->b = color >> 0;
-	#else /* LCDMODE_LTDC_L24 */
-		* tgr = color;
-	#endif /* LCDMODE_LTDC_L24 */
-}
-
-void display_line_buf(
-		PACKEDCOLORMAIN_T * buffer,
-		uint_fast16_t bx,	// ширина буфера
-		uint_fast16_t by,	// высота буфера
-		int xn, int yn,
-		int xk, int yk,
-		COLORMAIN_T color)
 {
 	int  dx, dy, s, sx, sy, kl, incr1, incr2;
 	char swap;
 
 	/* Вычисление приращений и шагов */
-	sx = 0;
-	if ((dx= xk-xn) < 0)
+	if ((dx = xk - xn) < 0)
 	{
 		dx = - dx;
-		-- sx;
+		sx = - 1;
 	}
 	else if (dx > 0)
-		++ sx;
-	sy = 0;
+		sx = + 1;
+	else
+		sx = 0;
 
-	if ((dy= yk-yn) < 0)
+	if ((dy = yk - yn) < 0)
 	{
 		dy = - dy;
-		-- sy;
+		sy = - 1;
 	}
-	else if (dy>0)
-		++ sy;
+	else if (dy > 0)
+		sy = + 1;
+	else
+		sy = 0;
+
 	/* Учет наклона */
-	swap = 0;
-	if ((kl= dx) < (s= dy))
+	if ((kl = dx) < (s = dy))
 	{
-		dx= s;  dy= kl;  kl= s; ++swap;
+		dx = s;  dy = kl;  kl = s; swap = 1;
 	}
-	s = (incr1= 2 * dy) - dx; /* incr1 - констан. перевычисления */
+	else
+	{
+		swap = 0;
+	}
+
+	s = (incr1 = 2 * dy) - dx; /* incr1 - констан. перевычисления */
 	/* разности если текущее s < 0  и  */
 	/* s - начальное значение разности */
 	incr2 = 2 * dx;         /* Константа для перевычисления    */
 	/* разности если текущее s >= 0    */
-	display_putpixel_buf(buffer, bx, by, xn, yn, color); /* Первый  пиксел вектора       */
+	colmain_putpixel(buffer, bx, by, xn, yn, color); /* Первый  пиксел вектора       */
 
-	while (--kl >= 0)
+	while (-- kl >= 0)
 	{
 		if (s >= 0)
 		{
-			if (swap) xn+= sx;
-			else yn+= sy;
+			if (swap)
+				xn += sx;
+			else
+				yn += sy;
 			s-= incr2;
 		}
 		if (swap)
-			yn+= sy;
+			yn += sy;
 		else
-			xn+= sx;
+			xn += sx;
 		s += incr1;
-		display_putpixel_buf(buffer, bx, by, xn, yn, color); /* Текущая  точка  вектора   */
+		colmain_putpixel(buffer, bx, by, xn, yn, color); /* Текущая  точка  вектора   */
 	}
 }  /* V_Bre */
 
@@ -189,7 +180,7 @@ display_radius_buf(
 	x2 = xc + icos(gs, r2);
 	y2 = yc + isin(gs, r2);
 
-	display_line_buf(buffer, bx, by, x, y, x2, y2, color);
+	colmain_line(buffer, bx, by, x, y, x2, y2, color);
 
 }
 
@@ -233,7 +224,7 @@ display_segm_buf(
 		}
 		else
 		{  // рисовать элемент окружности
-			display_line_buf(buffer, bx, by, xo, yo, x, y, color);
+			colmain_line(buffer, bx, by, xo, yo, x, y, color);
 			xo = x, yo = y;
 		}
 		if (ge == 360)
@@ -260,7 +251,7 @@ display_segm_buf(
 		x = xc + vcos;
 		y = yc + vsin;
 
-		display_line_buf(buffer, bx, by, xo, yo, x, y, color); // рисовать линию
+		colmain_line(buffer, bx, by, xo, yo, x, y, color); // рисовать линию
 	}
 
 }
