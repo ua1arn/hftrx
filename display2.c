@@ -575,6 +575,21 @@ static void display_bkin3(
 #endif /* WITHELKEY */
 }
 
+/* Отображение включенного динамика */
+static void display_spk3(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+#if WITHSPKMUTE
+	static const FLASHMEM char text_spk [] = "SPK";
+	const uint_fast8_t state = hamradio_get_spkon_value();	// не-0: динамик включен
+	display_2states_P(x, y, state, text_spk, text_spk);
+	(void) pctx;
+#endif /* WITHSPKMUTE */
+}
+
 
 // Отображение режима NOCH ON/OFF
 static void display_notch5(
@@ -4603,11 +4618,15 @@ enum
 		{	0,	0,	display2_clearbg, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },
 
 		{	0,	0,	display2_datetime12,	REDRM_BARS, PGALL,	},	// DATE&TIME Jan-01 13:40
-		{	16,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
-		{	19,	0,	display_ant5,		REDRM_MODE, PGALL, },
-		{	25,	0,	display_att4,		REDRM_MODE, PGALL, },
-		{	30,	0,	display_preovf3,	REDRM_BARS, PGALL, },
-		{	34,	0,	display_lockstate4, REDRM_MODE, PGALL, },	// LOCK
+		{	15,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
+		{	18, 0,	display_atu3,		REDRM_MODE, PGALL, },	// TUNER state (optional)
+		{	22, 0,	display_byp3,		REDRM_MODE, PGALL, },	// TUNER BYPASS state (optional)
+		{	26,	0,	display_ant5,		REDRM_MODE, PGALL, },
+		{	32,	0,	display_att4,		REDRM_MODE, PGALL, },
+		{	37,	0,	display_preovf3,	REDRM_BARS, PGALL, },
+
+		{   0, 	6,	display2_smeter15, 	REDRM_BARS, PGALL, },	// Изображение стрелочного прибора
+		{	15,	7,	display_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
 
 	#if WITHENCODER2
 		{	41, 0,	display_fnlabel9,	REDRM_MODE, PGALL, },	// FUNC item label
@@ -4618,32 +4637,30 @@ enum
 		{	45,	4,	display_notchfreq5,	REDRM_BARS, PGALL, },	// FUNC item value
 	#endif /* WITHENCODER2 */
 
-
-		{	0, 25,	display2_currlevel5, REDRM_VOLT, PGALL, },	// PA drain current d.dd without "A"
-		{	8, 25,	display_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
-	#if WITHAMHIGHKBDADJ
-		//{	XX, DLE1,	display_amfmhighcut4,REDRM_MODE, PGALL, },	// 3.70
-	#endif /* WITHAMHIGHKBDADJ */
-
-		{	16, 25,	display_atu3,		REDRM_MODE, PGALL, },	// TUNER state (optional)
-		{	20, 25,	display_byp3,		REDRM_MODE, PGALL, },	// TUNER BYPASS state (optional)
-		{	24, 25,	display_voxtune3,	REDRM_MODE, PGALL, },	// VOX
-		{	28, 25, display_bkin3,		REDRM_MODE, PGALL, },
-
-		{	34, 25,	display_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
-
-		{	42, 25,	display_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
-		{	46, 25,	display_nr3,		REDRM_MODE, PGALL, },	// NR : was: AGC
-
-		{   0, 	6,	display2_smeter15, 	REDRM_BARS, PGALL, },	// Изображение стрелочного прибора
-		{	16,	7,	display_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
 		{	37, 10,	display_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 		{	41, 10,	display_rxbw3,		REDRM_MODE, PGALL, },	// 3.1 / 0,5 / WID / NAR
-		{	37, 15,	display_mainsub3,	REDRM_MODE, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
+		//{	45, 10,
 
-		{	41,	15,	display_vfomode3,	REDRM_MODE, PGALL, },	// SPLIT
+		{	37, 15,	display_nr3,		REDRM_MODE, PGALL, },	// NR : was: AGC
+		{	41, 15,	display_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
+
+		{	15, 20,	display_mainsub3,	REDRM_MODE, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
+		{	19,	20,	display_vfomode3,	REDRM_MODE, PGALL, },	// SPLIT
 		{	25,	20,	display_freqX_b,	REDRM_FRQB, PGALL, },	// SUB FREQ
 		{	37, 20,	display_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
+		//{	41, 20,
+		{	45,	20,	display_lockstate4, REDRM_MODE, PGALL, },	// LOCK
+
+		{	0, 	25,	display2_currlevel5, REDRM_VOLT, PGALL, },	// PA drain current d.dd without "A"
+		{	8, 	25,	display_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
+
+		{	23, 25,	display_voxtune3,	REDRM_MODE, PGALL, },	// VOX
+		{	27, 25, display_bkin3,		REDRM_MODE, PGALL, },
+		{	31, 25,	display_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
+		{	34, 25,	display_spk3,		REDRM_BARS, PGALL, },	// оьображение признака включения динамика
+		//{	38, 25,
+		//{	41, 25,
+		//{	45, 25,
 
 		{	0,	30, display_siglevel4, 	REDRM_BARS, PGALL, },	// signal level dBm
 		{	5,	30,	display2_span9,		REDRM_MODE, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */

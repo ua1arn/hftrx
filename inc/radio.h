@@ -3280,6 +3280,7 @@ uint_fast8_t hamradio_get_datamode(void);	// источник звука для 
 int_fast16_t hamradio_getleft_bp(uint_fast8_t pathi);	/* получить левый (низкочастотный) скат полосы пропускания для отображения "шторки" на спектранализаторе */
 int_fast16_t hamradio_getright_bp(uint_fast8_t pathi);	/* получить правый (высокочастотный) скат полосы пропускания для отображения "шторки" на спектранализаторе */
 uint_fast8_t hamradio_get_bkin_value(void);
+uint_fast8_t hamradio_get_spkon_value(void);	// не-0: динамик включен
 
 #ifdef __cplusplus
 }

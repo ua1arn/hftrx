@@ -8976,6 +8976,12 @@ uif_key_loudsp(void)
 	save_i8(RMT_MUTELOUDSP_BASE, gmutespkr);
 	updateboard(1, 0);
 }
+
+uint_fast8_t hamradio_get_spkon_value(void)
+{
+	return ! gmutespkr;
+}
+
 #endif /* WITHSPKMUTE */
 
 #if CTLSTYLE_RA4YBO
