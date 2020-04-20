@@ -475,6 +475,7 @@ display2_smeter15(
 		first_run = 0;
 		PACKEDCOLORPIP_T * bg = (PACKEDCOLORPIP_T *) & smeter_bg[SM_STATE_TX];
 		uint_fast8_t xb = 120, yb = 120;
+		colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORMAIN_BLACK, 1);
 
 		unsigned p;
 		unsigned i;
@@ -510,6 +511,7 @@ display2_smeter15(
 		display_segm_buf(bg, SM_BG_W, SM_BG_H, xb, yb, gs, ge, r2, 1, COLORMAIN_WHITE);
 
 		bg = (PACKEDCOLORPIP_T *) & smeter_bg[SM_STATE_RX];
+		colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORMAIN_BLACK, 1);
 
 		colmain_setcolors(COLORMAIN_YELLOW, COLORMAIN_BLACK);
 		for (p = 1, i = 0; i < sizeof markers / sizeof markers [0]; ++ i, p += 2)
@@ -558,7 +560,7 @@ display2_smeter15(
 			display_radius_buf(fr, DIM_X, DIM_Y, xc, yc, gs, r1 - 2, r2 + 2, COLORMAIN_YELLOW);
 			display_radius_buf(fr, DIM_X, DIM_Y, xc, yc, gswr, r1 - 2, r2 + 2, COLORMAIN_YELLOW);
 			polar_to_dek(xc, yc, gswr - 1, r1 - 4, & xx, & yy);
-			display_floodfill(fr, DIM_X, DIM_Y, xx, yy, COLORMAIN_YELLOW, 0); // COLORMAIN_BLACK
+			display_floodfill(fr, DIM_X, DIM_Y, xx, yy, COLORMAIN_YELLOW, COLORMAIN_BLACK);
 		}
 	}
 	else
