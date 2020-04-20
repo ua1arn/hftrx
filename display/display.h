@@ -333,22 +333,30 @@ typedef uint_fast32_t COLOR24_T;
 
 #endif /* LCDMODE_LTDC */
 
+#define GXALIGN 1	/* размер каждой сроки видеобуфера кратен этому занчению */
+
+#define GXADJ(w) (((w) + (GXALIGN - 1)) / GXALIGN * GXALIGN)
+#define MGADJ(w) (((w) + (MGALIGN - 1)) / MGALIGN * MGALIGN)
+
 #if LCDMODE_S1D13781
 	// биты слова буфера располагаются на экране горизонтально
 	// старший битт левее
+	#define MGALIGN 16
 	typedef uint16_t GX_t;	/* тип элмента буфера для выдачи монохромного растра */
-	#define MGSIZE(dx, dy)	((dy) * (((unsigned long) (dx) + 15) / 16))	// размер буфера для монохромного растра
-	#define GXSIZE(dx, dy)	((unsigned long) (dx) * (dy))	// размер буфера для цветного растра
+	#define MGSIZE(dx, dy)	((unsigned long) MGADJ(dx) * (dy))	// размер буфера для монохромного растра
+	#define GXSIZE(dx, dy)	((unsigned long) GXADJ(dx) * (dy))	// размер буфера для цветного растра
 #elif LCDMODE_COLORED
 	// биты слова буфера располагаются на экране вертикально
+	#define MGALIGN 8
 	typedef uint8_t GX_t;	/* тип элмента буфера для выдачи монохромного растра */
-	#define MGSIZE(dx, dy)	((dx) * (((unsigned long) (dy) + 7) / 8))	// размер буфера для монохромного растра
-	#define GXSIZE(dx, dy)	((unsigned long) (dx) * (dy))	// размер буфера для цветного растра
+	#define MGSIZE(dx, dy)	((unsigned long) MGADJ(dx) * (dy))	// размер буфера для монохромного растра
+	#define GXSIZE(dx, dy)	((unsigned long) GXADJ(dx) * (dy))	// размер буфера для цветного растра
 #else	/* LCDMODE_S1D13781 */
 	// биты слова буфера располагаются на экране вертикально
+	#define MGALIGN 8
 	typedef uint8_t GX_t;	/* тип элмента буфера для выдачи монохромного растра */
-	#define MGSIZE(dx, dy)	((dx) * (((unsigned long) (dy) + 7) / 8))	// размер буфера для монохромного растра
-	#define GXSIZE(dx, dy)	((unsigned long) (dx) * (dy))	// размер буфера для цветного растра
+	#define MGSIZE(dx, dy)	((unsigned long) MGADJ(dx) * (dy))	// размер буфера для монохромного растра
+	#define GXSIZE(dx, dy)	((unsigned long) GXADJ(dx) * (dy))	// размер буфера для цветного растра
 #endif	/* */
 COLORMAIN_T display_getbgcolor(void);
 void display_setbgcolor(COLORMAIN_T c);

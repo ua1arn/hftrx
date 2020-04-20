@@ -17,7 +17,7 @@
 
 #if LCDMODE_LTDC
 
-	typedef PACKEDCOLORMAIN_T FRAMEBUFF_T [LCDMODE_MAIN_PAGES][DIM_FIRST][DIM_SECOND];
+	typedef PACKEDCOLORMAIN_T FRAMEBUFF_T [LCDMODE_MAIN_PAGES] [GXSIZE(DIM_SECOND, DIM_FIRST)];
 
 	#if defined (SDRAM_BANK_ADDR) && LCDMODE_LTDCSDRAMBUFF && LCDMODE_LTDC
 		#define framebuff (* (FRAMEBUFF_T *) SDRAM_BANK_ADDR)
@@ -41,14 +41,14 @@
 	PACKEDCOLORMAIN_T *
 	colmain_fb_draw(void)
 	{
-		return (PACKEDCOLORMAIN_T *) & framebuff0 [(mainphase + 1) % LCDMODE_MAIN_PAGES] [0] [0];
+		return (PACKEDCOLORMAIN_T *) & framebuff0 [(mainphase + 1) % LCDMODE_MAIN_PAGES] [0];
 	}
 
 
 	PACKEDCOLORMAIN_T *
 	colmain_fb_show(void)
 	{
-		return (PACKEDCOLORMAIN_T *) & framebuff0 [(mainphase + 0) % LCDMODE_MAIN_PAGES] [0] [0];
+		return (PACKEDCOLORMAIN_T *) & framebuff0 [(mainphase + 0) % LCDMODE_MAIN_PAGES] [0];
 	}
 
 #endif /* LCDMODE_LTDC */
@@ -187,7 +187,7 @@ volatile uint8_t * hwacc_getbufaddr_u8(
 	uint_fast16_t y		// начальная координата
 	)
 {
-	return & buffer [y * dx + x];
+	return & buffer [y * GXADJ(dx) + x];
 }
 
 // Функция получает координаты и работает над буфером в горищонталтной ориентации.
@@ -220,7 +220,7 @@ hwacc_fillrect_u8(
 	MDMA_CH->CCR &= ~ MDMA_CCR_EN_Msk;
 	//while ((MDMA_CH->CCR & MDMA_CCR_EN_Msk) != 0)
 	//	;
-	MDMA_CH->CDAR = (uintptr_t) & buffer [row * dx + col];
+	MDMA_CH->CDAR = (uintptr_t) & buffer [row * GXADJ(dx) + col];
 	MDMA_CH->CSAR = (uintptr_t) & tgcolor;
 	const uint_fast32_t tlen = mdma_tlen(w * PIXEL_SIZE, PIXEL_SIZE);
 	const uint_fast32_t sbus = mdma_getbus(MDMA_CH->CSAR);
@@ -253,7 +253,7 @@ hwacc_fillrect_u8(
 		0;
 	MDMA_CH->CBRUR =
 		((PIXEL_SIZE * (0)) << MDMA_CBRUR_SUV_Pos) |				// Source address Update Value
-		((PIXEL_SIZE * (dx - w)) << MDMA_CBRUR_DUV_Pos) |		// Destination address Update Value
+		((PIXEL_SIZE * (GXADJ(dx) - w)) << MDMA_CBRUR_DUV_Pos) |		// Destination address Update Value
 		0;
 
 	MDMA_CH->CTBR = (MDMA_CH->CTBR & ~ (MDMA_CTBR_SBUS_Msk | MDMA_CTBR_DBUS_Msk)) |
@@ -273,15 +273,13 @@ hwacc_fillrect_u8(
 	/* wait for complete */
 	while ((MDMA_CH->CISR & MDMA_CISR_CTCIF_Msk) == 0)	// Channel x Channel Transfer Complete interrupt flag
 		hardware_nonguiyield();
-	//local_delay_ms(1250);
-	//TP();
 
 #else
 
 	// программная реализация
 
-	const unsigned t = dx - w;
-	buffer += (dx * row) + col;
+	const unsigned t = GXADJ(dx) - w;
+	buffer += (GXADJ(dx) * row) + col;
 	while (h --)
 	{
 		uint8_t * const startmem = buffer;
@@ -326,7 +324,7 @@ hwacc_fillrect_u16(
 	MDMA_CH->CCR &= ~ MDMA_CCR_EN_Msk;
 	//while ((MDMA_CH->CCR & MDMA_CCR_EN_Msk) != 0)
 	//	;
-	MDMA_CH->CDAR = (uintptr_t) & buffer [row * dx + col];
+	MDMA_CH->CDAR = (uintptr_t) & buffer [row * GXADJ(dx) + col];
 	MDMA_CH->CSAR = (uintptr_t) & tgcolor;
 	const uint_fast32_t tlen = mdma_tlen(w * PIXEL_SIZE, PIXEL_SIZE);
 	const uint_fast32_t sbus = mdma_getbus(MDMA_CH->CSAR);
@@ -359,7 +357,7 @@ hwacc_fillrect_u16(
 		0;
 	MDMA_CH->CBRUR =
 		((PIXEL_SIZE * (0)) << MDMA_CBRUR_SUV_Pos) |				// Source address Update Value
-		((PIXEL_SIZE * (dx - w)) << MDMA_CBRUR_DUV_Pos) |		// Destination address Update Value
+		((PIXEL_SIZE * (GXADJ(dx) - w)) << MDMA_CBRUR_DUV_Pos) |		// Destination address Update Value
 		0;
 
 	MDMA_CH->CTBR = (MDMA_CH->CTBR & ~ (MDMA_CTBR_SBUS_Msk | MDMA_CTBR_DBUS_Msk)) |
@@ -379,8 +377,6 @@ hwacc_fillrect_u16(
 	/* wait for complete */
 	while ((MDMA_CH->CISR & MDMA_CISR_CTCIF_Msk) == 0)	// Channel x Channel Transfer Complete interrupt flag
 		hardware_nonguiyield();
-	//local_delay_ms(1250);
-	//TP();
 
 #elif WITHDMA2DHW
 	// DMA2D implementation
@@ -392,9 +388,9 @@ hwacc_fillrect_u16(
 	arm_hardware_flush_invalidate((uintptr_t) buffer, sizeof (* buffer) * GXSIZE(dx, dy));
 
 	/* целевой растр */
-	DMA2D->OMAR = (uintptr_t) & buffer [row * dx + col];
+	DMA2D->OMAR = (uintptr_t) & buffer [row * GXADJ(dx) + col];
 	DMA2D->OOR = (DMA2D->OOR & ~ (DMA2D_OOR_LO)) |
-		((dx - w) << DMA2D_OOR_LO_Pos) |
+		((GXADJ(dx) - w) << DMA2D_OOR_LO_Pos) |
 		0;
 
 	DMA2D->NLR = (DMA2D->NLR & ~ (DMA2D_NLR_NL | DMA2D_NLR_PL)) |
@@ -424,8 +420,8 @@ hwacc_fillrect_u16(
 #else
 	// программная реализация
 
-	const unsigned t = dx - w;
-	buffer += (dx * row) + col;
+	const unsigned t = GXADJ(dx) - w;
+	buffer += (GXADJ(dx) * row) + col;
 	while (h --)
 	{
 		uint16_t * const startmem = buffer;
@@ -470,7 +466,7 @@ hwacc_fillrect_u24(
 	MDMA_CH->CCR &= ~ MDMA_CCR_EN_Msk;
 	//while ((MDMA_CH->CCR & MDMA_CCR_EN_Msk) != 0)
 	//	;
-	MDMA_CH->CDAR = (uintptr_t) & buffer [row * dx + col];
+	MDMA_CH->CDAR = (uintptr_t) & buffer [row * GXADJ(dx) + col];
 	MDMA_CH->CSAR = (uintptr_t) & tgcolor;
 	const uint_fast32_t tlen = mdma_tlen(w * PIXEL_SIZE, PIXEL_SIZE);
 	const uint_fast32_t sbus = mdma_getbus(MDMA_CH->CSAR);
@@ -503,7 +499,7 @@ hwacc_fillrect_u24(
 		0;
 	MDMA_CH->CBRUR =
 		((PIXEL_SIZE * (0)) << MDMA_CBRUR_SUV_Pos) |				// Source address Update Value
-		((PIXEL_SIZE * (dx - w)) << MDMA_CBRUR_DUV_Pos) |		// Destination address Update Value
+		((PIXEL_SIZE * (GXADJ(dx) - w)) << MDMA_CBRUR_DUV_Pos) |		// Destination address Update Value
 		0;
 
 	MDMA_CH->CTBR = (MDMA_CH->CTBR & ~ (MDMA_CTBR_SBUS_Msk | MDMA_CTBR_DBUS_Msk)) |
@@ -523,8 +519,6 @@ hwacc_fillrect_u24(
 	/* wait for complete */
 	while ((MDMA_CH->CISR & MDMA_CISR_CTCIF_Msk) == 0)	// Channel x Channel Transfer Complete interrupt flag
 		hardware_nonguiyield();
-	//local_delay_ms(1250);
-	//TP();
 
 #elif WITHDMA2DHW
 	// DMA2D implementation
@@ -536,9 +530,9 @@ hwacc_fillrect_u24(
 	arm_hardware_flush_invalidate((uintptr_t) buffer, sizeof (* buffer) * GXSIZE(dx, dy));
 
 	/* целевой растр */
-	DMA2D->OMAR = (uintptr_t) & buffer [row * dx + col];
+	DMA2D->OMAR = (uintptr_t) & buffer [row * GXADJ(dx) + col];
 	DMA2D->OOR = (DMA2D->OOR & ~ (DMA2D_OOR_LO)) |
-		((dx - w) << DMA2D_OOR_LO_Pos) |
+		((GXADJ(dx) - w) << DMA2D_OOR_LO_Pos) |
 		0;
 
 	DMA2D->NLR = (DMA2D->NLR & ~ (DMA2D_NLR_NL | DMA2D_NLR_PL)) |
@@ -568,8 +562,8 @@ hwacc_fillrect_u24(
 #else
 	// программная реализация
 
-	const unsigned t = dx - w;
-	buffer += (dx * row) + col;
+	const unsigned t = GXADJ(dx) - w;
+	buffer += (GXADJ(dx) * row) + col;
 	while (h --)
 	{
 		PACKEDCOLORMAIN_T * const startmem = buffer;
@@ -808,7 +802,7 @@ void display_showbuffer(
 	do
 	{
 		uint_fast8_t pos;
-		const GX_t * const p = buffer + lowhalf * dx;	// начало данных горизонтальной полосы в памяти
+		const GX_t * const p = buffer + lowhalf * MGADJ(dx);	// начало данных горизонтальной полосы в памяти
 		//debug_printf_P(PSTR("display_showbuffer: col=%d, row=%d, lowhalf=%d\n"), col, row, lowhalf);
 		display_plotfrom(GRID2X(col), GRID2Y(row) + lowhalf * 8);		// курсор в начало первой строки
 		// выдача горизонтальной полосы
@@ -932,7 +926,7 @@ void display_transparency(
 	for (y = y1; y <= y2; y ++)
 	{
 		uint_fast16_t x;
-		const uint_fast32_t yt = (uint_fast32_t) dx * y;
+		const uint_fast32_t yt = (uint_fast32_t) GXADJ(dx) * y;
 		//ASSERT(y < dy);
 		for (x = x1; x <= x2; x ++)
 		{
@@ -1100,9 +1094,9 @@ colmain_mem_at(
 	ASSERT(x < dx);
 	ASSERT(y < dy);
 #if LCDMODE_HORFILL
-	return & buffer [y * dx + x];
+	return & buffer [y * GXADJ(dx) + x];
 #else /* LCDMODE_HORFILL */
-	return & buffer [y * dx + x];
+	return & buffer [y * GXADJ(dx) + x];
 #endif /* LCDMODE_HORFILL */
 }
 
@@ -1302,7 +1296,7 @@ static void hwaccel_copy(
 
 #if WITHMDMAHW
 	arm_hardware_flush_invalidate(dstinvalidateaddr, dstinvalidatesize);
-	arm_hardware_flush((uintptr_t) src, sizeof (* src) * w * h);
+	arm_hardware_flush((uintptr_t) src, sizeof (* src) * GXSIZE(w, h));
 
 	MDMA_CH->CCR &= ~ MDMA_CCR_EN_Msk;
 	MDMA_CH->CDAR = (uintptr_t) dst;
@@ -1362,7 +1356,7 @@ static void hwaccel_copy(
 
 #elif WITHDMA2DHW
 	arm_hardware_flush_invalidate(dstinvalidateaddr, dstinvalidatesize);
-	arm_hardware_flush((uintptr_t) src, sizeof (* src) * w * h);
+	arm_hardware_flush((uintptr_t) src, sizeof (* src) GXSIZR(w, h));
 
 	/* исходный растр */
 	DMA2D->FGMAR = (uintptr_t) src;
@@ -1399,9 +1393,9 @@ static void hwaccel_copy(
 	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
 	if (t == 0)
 	{
-		const size_t len = (size_t) w * h * sizeof * src;
+		const size_t len = (size_t) GXSIZE(w, h) * sizeof * src;
 		// ширина строки одинаковая в получателе и источнике
-		memcpy((void *) dst, src, len);
+		memcpy(dst, src, len);
 		arm_hardware_flush((uintptr_t) dst, len);
 	}
 	else
@@ -1409,7 +1403,7 @@ static void hwaccel_copy(
 		const size_t len = w * sizeof * src;
 		while (h --)
 		{
-			memcpy((void *) dst, src, len);
+			memcpy(dst, src, len);
 			arm_hardware_flush((uintptr_t) dst, len);
 			src += w;
 			dst += w + t;
@@ -1454,13 +1448,13 @@ void colpip_to_main(
 	ASSERT(dy <= DIM_Y);
 #if LCDMODE_HORFILL
 	hwaccel_copy(
-		(uintptr_t) colmain_fb_draw(), sizeof (PACKEDCOLORPIP_T) * DIM_X * DIM_Y,	// target area invalidate parameters
+		(uintptr_t) colmain_fb_draw(), sizeof (PACKEDCOLORPIP_T) * GXSIZE(DIM_X, DIM_Y),	// target area invalidate parameters
 		colmain_mem_at(colmain_fb_draw(), DIM_X, DIM_Y, col, row),
 		src,
-		dx, DIM_X - dx, dy);	// w, t, h
+		dx, GXADJ(DIM_X) - dx, dy);	// w, t, h
 #else /* LCDMODE_HORFILL */
 	hwaccel_copy(
-		(uintptr_t) colmain_fb_draw(), sizeof (PACKEDCOLORPIP_T) * DIM_X * DIM_Y,	// target area invalidate parameters
+		(uintptr_t) colmain_fb_draw(), sizeof (PACKEDCOLORPIP_T) * GXSIZE(DIM_X, DIM_Y),	// target area invalidate parameters
 		colmain_mem_at(colmain_fb_draw(), DIM_X, DIM_Y, col, row),
 		src,
 		dy, DIM_Y - dy, dx);	// w, t, h
@@ -1607,7 +1601,7 @@ void display_pixelbuffer(
 #if LCDMODE_S1D13781
 
 	//row = (dy - 1) - row;		// смена направления
-	GX_t * const rowstart = buffer + row * ((dx + 15) / 16);	// начало данных строки растра в памяти
+	GX_t * const rowstart = buffer + row * MGADJ(dx);	// начало данных строки растра в памяти
 	GX_t * const p = rowstart + col / 16;	
 	//* p |= mapcolumn [col % 16];	// установить точку
 	* p &= ~ mapcolumn [col % 16];	// погасить точку
@@ -1616,7 +1610,7 @@ void display_pixelbuffer(
 #else /* LCDMODE_S1D13781 */
 
 	//row = (dy - 1) - row;		// смена направления
-	GX_t * const p = buffer + (row / 8) * dx + col;	// начало данных горизонтальной полосы в памяти
+	GX_t * const p = buffer + (row / 8) * MGADJ(dx) + col;	// начало данных горизонтальной полосы в памяти
 	//* p |= mapcolumn [row % 8];	// установить точку
 	* p &= ~ mapcolumn [row % 8];	// погасить точку
 	//* p ^= mapcolumn [row % 8];	// инвертировать точку
@@ -1635,7 +1629,7 @@ void display_pixelbuffer_xor(
 {
 #if LCDMODE_S1D13781
 	//row = (dy - 1) - row;		// смена направления
-	GX_t * const rowstart = buffer + row * ((dx + 15) / 16);	// начало данных строки растра в памяти
+	GX_t * const rowstart = buffer + row * MGADJ(dx);	// начало данных строки растра в памяти
 	GX_t * const p = rowstart + col / 16;	
 	//* p |= mapcolumn [col % 16];	// установить точку
 	//* p &= ~ mapcolumn [col % 16];	// погасить точку
@@ -1644,7 +1638,7 @@ void display_pixelbuffer_xor(
 #else /* LCDMODE_S1D13781 */
 
 	//row = (dy - 1) - row;		// смена направления
-	GX_t * const p = buffer + (row / 8) * dx + col;	// начало данных горизонтальной полосы в памяти
+	GX_t * const p = buffer + (row / 8) * MGADJ(dx);	// начало данных горизонтальной полосы в памяти
 	//* p |= mapcolumn [row % 8];	// установить точку
 	//* p &= ~ mapcolumn [row % 8];	// погасить точку
 	* p ^= mapcolumn [row % 8];	// инвертировать точку
@@ -2013,7 +2007,7 @@ smallfont_decode(uint_fast8_t c)
 #if 0
 // функции работы с colorbuffer не занимаются выталкиванеим кэш-памяти
 static void RAMFUNC ltdcpip_horizontal_pixels(
-	volatile PACKEDCOLORPIP_T * tgr,		// target raster
+	PACKEDCOLORPIP_T * tgr,		// target raster
 	const FLASHMEM uint8_t * raster,
 	uint_fast16_t width	// number of bits (start from LSB first byte in raster)
 	)
@@ -2024,12 +2018,12 @@ static void RAMFUNC ltdcpip_horizontal_pixels(
 	for (col = 0; w >= 8; col += 8, w -= 8)
 	{
 		const FLASHMEM PACKEDCOLORPIP_T * const pcl = (* byte2runpip) [* raster ++];
-		memcpy((void *) (tgr + col), pcl, sizeof (* tgr) * 8);
+		memcpy(tgr + col, pcl, sizeof (* tgr) * 8);
 	}
 	if (w != 0)
 	{
 		const FLASHMEM PACKEDCOLORPIP_T * const pcl = (* byte2runpip) [* raster];
-		memcpy((void *) (tgr + col), pcl, sizeof (* tgr) * w);
+		memcpy(tgr + col, pcl, sizeof (* tgr) * w);
 	}
 	// функции работы с colorbuffer не занимаются выталкиванеим кэш-памяти
 	//arm_hardware_flush((uintptr_t) tgr, sizeof (* tgr) * width);
@@ -2087,12 +2081,12 @@ static void RAMFUNC ltdc_horizontal_pixels(
 	for (col = 0; w >= 8; col += 8, w -= 8)
 	{
 		const FLASHMEM PACKEDCOLORMAIN_T * const pcl = (* byte2runmain) [* raster ++];
-		memcpy((tgr + col), pcl, sizeof (* tgr) * 8);
+		memcpy(tgr + col, pcl, sizeof (* tgr) * 8);
 	}
 	if (w != 0)
 	{
 		const FLASHMEM PACKEDCOLORMAIN_T * const pcl = (* byte2runmain) [* raster ++];
-		memcpy((void *) (tgr + col), pcl, sizeof (* tgr) * w);
+		memcpy(tgr + col, pcl, sizeof (* tgr) * w);
 	}
 	arm_hardware_flush((uintptr_t) tgr, sizeof (* tgr) * width);
 }
