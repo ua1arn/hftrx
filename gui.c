@@ -325,7 +325,7 @@ enum {
 	SM_STATE_COUNT
 };
 enum { SM_BG_W = 240, SM_BG_H = 70 };
-typedef ALIGNX_BEGIN PACKEDCOLORPIP_T smeter_bg_t [SM_BG_W][SM_BG_H] ALIGNX_END;
+typedef ALIGNX_BEGIN PACKEDCOLORPIP_T smeter_bg_t [GXSIZE(SM_BG_W, SM_BG_H)] ALIGNX_END;
 static smeter_bg_t smeter_bg[SM_STATE_COUNT]; 	// 0 - rx, 1 - tx
 
 // ширина занимаемого места - 15 ячеек (240/16 = 15)
@@ -473,7 +473,7 @@ display2_smeter15(
 	if (first_run)					// заполнение буферов фона для отображения прибора
 	{
 		first_run = 0;
-		PACKEDCOLORPIP_T * bg = (PACKEDCOLORPIP_T *) & smeter_bg[SM_STATE_TX];
+		PACKEDCOLORPIP_T * bg = smeter_bg [SM_STATE_TX];
 		uint_fast8_t xb = 120, yb = 120;
 		colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORMAIN_BLACK, 1);
 
@@ -510,7 +510,7 @@ display2_smeter15(
 		display_segm_buf(bg, SM_BG_W, SM_BG_H, xb, yb, gm, ge, r1, 1, smeter);
 		display_segm_buf(bg, SM_BG_W, SM_BG_H, xb, yb, gs, ge, r2, 1, COLORMAIN_WHITE);
 
-		bg = (PACKEDCOLORPIP_T *) & smeter_bg[SM_STATE_RX];
+		bg = smeter_bg [SM_STATE_RX];
 		colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORMAIN_BLACK, 1);
 
 		colmain_setcolors(COLORMAIN_YELLOW, COLORMAIN_BLACK);
@@ -550,7 +550,7 @@ display2_smeter15(
 	if (is_tx)
 	{
 		// TX state
-		colpip_plot(fr, DIM_X, DIM_Y, x0, y0, (PACKEDCOLORPIP_T *) & smeter_bg[SM_STATE_TX], SM_BG_W, SM_BG_H);
+		colpip_plot(fr, DIM_X, DIM_Y, x0, y0, smeter_bg [SM_STATE_TX], SM_BG_W, SM_BG_H);
 
 		if (gswr > gs)
 		{
@@ -566,7 +566,7 @@ display2_smeter15(
 	else
 	{
 		// RX state
-		colpip_plot(fr, DIM_X, DIM_Y, x0, y0, (PACKEDCOLORPIP_T *) & smeter_bg[SM_STATE_RX], SM_BG_W, SM_BG_H);
+		colpip_plot(fr, DIM_X, DIM_Y, x0, y0, smeter_bg [SM_STATE_RX], SM_BG_W, SM_BG_H);
 	}
 
 		COLORMAIN_T ct = gv_trace > gm ? COLORMAIN_RED : COLORMAIN_YELLOW;
