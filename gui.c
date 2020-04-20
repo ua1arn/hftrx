@@ -51,7 +51,7 @@
  */
 
 void display_putpixel_buf(
-	PACKEDCOLORPIP_T * buffer,
+	PACKEDCOLORMAIN_T * buffer,
 	uint_fast16_t bx,	// ширина буфера
 	uint_fast16_t by,	// высота буфера
 	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
@@ -70,7 +70,7 @@ void display_putpixel_buf(
 }
 
 void display_line_buf(
-		PACKEDCOLORPIP_T * buffer,
+		PACKEDCOLORMAIN_T * buffer,
 		uint_fast16_t bx,	// ширина буфера
 		uint_fast16_t by,	// высота буфера
 		int xn, int yn,
@@ -173,7 +173,7 @@ static  int icos(unsigned alpha, unsigned r)
 // Рисование радиусов
 void
 display_radius_buf(
-		PACKEDCOLORPIP_T * buffer,
+		PACKEDCOLORMAIN_T * buffer,
 		uint_fast16_t bx,	// ширина буфера
 		uint_fast16_t by,	// высота буфера
 		int xc, int yc,
@@ -203,7 +203,7 @@ void polar_to_dek(uint_fast16_t xc, uint_fast16_t yc, uint_fast16_t gs, uint_fas
 // нач.-x, нач.-y, градус начала, градус конуа, радиус, шаг приращения угла
 void
 display_segm_buf(
-		PACKEDCOLORPIP_T * buffer,
+		PACKEDCOLORMAIN_T * buffer,
 		uint_fast16_t bx,	// ширина буфера
 		uint_fast16_t by,	// высота буфера
 		int xc, int yc,
@@ -325,7 +325,7 @@ enum {
 	SM_STATE_COUNT
 };
 enum { SM_BG_W = 240, SM_BG_H = 70 };
-typedef ALIGNX_BEGIN PACKEDCOLORPIP_T smeter_bg_t [GXSIZE(SM_BG_W, SM_BG_H)] ALIGNX_END;
+typedef ALIGNX_BEGIN PACKEDCOLORMAIN_T smeter_bg_t [GXSIZE(SM_BG_W, SM_BG_H)] ALIGNX_END;
 static smeter_bg_t smeter_bg[SM_STATE_COUNT]; 	// 0 - rx, 1 - tx
 
 // ширина занимаемого места - 15 ячеек (240/16 = 15)
@@ -473,7 +473,7 @@ display2_smeter15(
 	if (first_run)					// заполнение буферов фона для отображения прибора
 	{
 		first_run = 0;
-		PACKEDCOLORPIP_T * bg = smeter_bg [SM_STATE_TX];
+		PACKEDCOLORMAIN_T * bg = smeter_bg [SM_STATE_TX];
 		uint_fast8_t xb = 120, yb = 120;
 		colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORMAIN_BLACK, 1);
 
@@ -772,7 +772,7 @@ static void gui_main_process(void);
 		BTN_BUF_H = 64
 	};
 
-	typedef ALIGNX_BEGIN PACKEDCOLORPIP_T bg_t [BTN_BUF_W][BTN_BUF_H] ALIGNX_END;
+	typedef ALIGNX_BEGIN PACKEDCOLORMAIN_T bg_t [GXSIZE(BTN_BUF_W, BTN_BUF_H)] ALIGNX_END;
 
 	typedef ALIGNX_BEGIN struct {
 		uint8_t w;
@@ -863,7 +863,7 @@ static void gui_main_process(void);
 		uint8_t visible;
 		char name [NAME_ARRAY_SIZE];
 		char text [TEXT_ARRAY_SIZE];
-		PACKEDCOLORPIP_T color;
+		PACKEDCOLORMAIN_T color;
 		void (*onClickHandler) (void);
 	} label_t;
 
@@ -2198,7 +2198,7 @@ static void gui_main_process(void);
 
 		if (b1 == NULL)				// если не найден заполненный буфер фона по размерам, программная отрисовка
 		{
-			PACKEDCOLORPIP_T c1, c2;
+			PACKEDCOLORMAIN_T c1, c2;
 			c1 = bh->state == DISABLED ? COLOR_BUTTON_DISABLED : (bh->is_locked ? COLOR_BUTTON_LOCKED : COLOR_BUTTON_NON_LOCKED);
 			c2 = bh->state == DISABLED ? COLOR_BUTTON_DISABLED : (bh->is_locked ? COLOR_BUTTON_PR_LOCKED : COLOR_BUTTON_PR_NON_LOCKED);
 			colpip_rect(fr, DIM_X, DIM_Y, bh->x1, bh->y1, bh->x1 + bh->w, bh->y1 + bh->h - 2, bh->state == PRESSED ? c2 : c1, 1);
@@ -2208,15 +2208,15 @@ static void gui_main_process(void);
 		else
 		{
 			if (bh->state == DISABLED)
-				bg = (PACKEDCOLORPIP_T *) b1->bg_disabled;
+				bg = b1->bg_disabled;
 			else if (bh->is_locked && bh->state == PRESSED)
-				bg = (PACKEDCOLORPIP_T *) b1->bg_locked_pressed;
+				bg = b1->bg_locked_pressed;
 			else if (bh->is_locked && bh->state != PRESSED)
-				bg = (PACKEDCOLORPIP_T *) b1->bg_locked;
+				bg = b1->bg_locked;
 			else if (! bh->is_locked && bh->state == PRESSED)
-				bg = (PACKEDCOLORPIP_T *) b1->bg_pressed;
+				bg = b1->bg_pressed;
 			else if (! bh->is_locked && bh->state != PRESSED)
-				bg = (PACKEDCOLORPIP_T *) b1->bg_non_pressed;
+				bg = b1->bg_non_pressed;
 
 			colpip_plot(fr, DIM_X, DIM_Y, bh->x1, bh->y1, bg, bh->w, bh->h);
 		}
@@ -2244,7 +2244,7 @@ static void gui_main_process(void);
 
 	static void fill_button_bg_buf(btn_bg_t * v)
 	{
-		PACKEDCOLORPIP_T * buf;
+		PACKEDCOLORMAIN_T * buf;
 		uint_fast8_t w, h;
 
 		w = v->w;
@@ -2252,27 +2252,27 @@ static void gui_main_process(void);
 		ASSERT(w < BTN_BUF_W);
 		ASSERT(h < BTN_BUF_H);
 
-		buf = * v->bg_non_pressed;
+		buf = v->bg_non_pressed;
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLOR_BUTTON_NON_LOCKED, 1);
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORPIP_GRAY, 0);
 		colpip_rect(buf, w, h, 2, 2, w - 3, h - 3, COLORPIP_BLACK, 0);
 
-		buf = * v->bg_pressed;
+		buf = v->bg_pressed;
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLOR_BUTTON_PR_NON_LOCKED, 1);
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORPIP_GRAY, 0);
 		colpip_rect(buf, w, h, 2, 2, w - 3, h - 3, COLORPIP_BLACK, 0);
 
-		buf = * v->bg_locked;
+		buf = v->bg_locked;
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLOR_BUTTON_LOCKED, 1);
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORPIP_GRAY, 0);
 		colpip_rect(buf, w, h, 2, 2, w - 3, h - 3, COLORPIP_BLACK, 0);
 
-		buf = * v->bg_locked_pressed;
+		buf = v->bg_locked_pressed;
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLOR_BUTTON_PR_LOCKED, 1);
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORPIP_GRAY, 0);
 		colpip_rect(buf, w, h, 2, 2, w - 3, h - 3, COLORPIP_BLACK, 0);
 
-		buf = * v->bg_disabled;
+		buf = v->bg_disabled;
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLOR_BUTTON_DISABLED, 1);
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORPIP_GRAY, 0);
 		colpip_rect(buf, w, h, 2, 2, w - 3, h - 3, COLORPIP_BLACK, 0);

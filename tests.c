@@ -5129,7 +5129,7 @@ static void sdtick(void)
 }
 #endif
 
-#if LCDMODE_COLORED && ! DSTYLE_G_DUMMY
+#if LCDMODE_COLORED && ! DSTYLE_G_DUMMY && 0
 
 // Получение псевдослучайныз чисел.
 // 0 .. num-1

@@ -737,10 +737,26 @@ colmain_string3_at_xy(
 // x2, y2 - координаты второго угла (не входящие в закрашиваемый прямоугольник)
 void display_solidbar(uint_fast16_t x, uint_fast16_t y, uint_fast16_t x2, uint_fast16_t y2, COLORMAIN_T color);
 
-
-void display_radius(int xc, int yc, unsigned gs, unsigned r1, unsigned r2, COLORMAIN_T color);
-void display_segm(int xc, int yc, unsigned gs, unsigned ge, unsigned r, int step, COLORMAIN_T color);
 void polar_to_dek(uint_fast16_t xc, uint_fast16_t yc, uint_fast16_t gs, uint_fast16_t r, uint_fast16_t * x, uint_fast16_t * y);
+void
+display_radius_buf(
+		PACKEDCOLORMAIN_T * buffer,
+		uint_fast16_t bx,	// ширина буфера
+		uint_fast16_t by,	// высота буфера
+		int xc, int yc,
+		unsigned gs,
+		unsigned r1, unsigned r2,
+		COLORMAIN_T color);
+
+void
+display_segm_buf(
+		PACKEDCOLORMAIN_T * buffer,
+		uint_fast16_t bx,	// ширина буфера
+		uint_fast16_t by,	// высота буфера
+		int xc, int yc,
+		unsigned gs, unsigned ge,
+		unsigned r, int step,
+		COLORMAIN_T color);
 
 // Нарисовать вертикальную цветную полосу
 void
@@ -782,6 +798,16 @@ void display_putpixel(
 	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
 	COLORMAIN_T color
 	);
+
+void display_putpixel_buf(
+	PACKEDCOLORMAIN_T * buffer,
+	uint_fast16_t bx,	// ширина буфера
+	uint_fast16_t by,	// высота буфера
+	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	COLORMAIN_T color
+	);
+
 void display_at_xy(uint_fast16_t x, uint_fast16_t y, const char * s);
 
 void board_set_topdb(int_fast16_t v);	/* верхний предел FFT */
@@ -823,7 +849,13 @@ int_fast32_t display_zoomedbw(void);
 
 void display_string3_at_xy(uint_fast16_t x, uint_fast16_t y, const char * s, COLORMAIN_T fg, COLORMAIN_T bg);
 
-void display_line(int xs, int ys, int xe, int ye, COLORMAIN_T color);
+void display_line_buf(
+		PACKEDCOLORMAIN_T * buffer,
+		uint_fast16_t bx,	// ширина буфера
+		uint_fast16_t by,	// высота буфера
+		int xn, int yn,
+		int xk, int yk,
+		COLORMAIN_T color);
 
 // Отображение цифр в поле "больших цифр" - индикатор основной частоты настройки аппарата.
 void
