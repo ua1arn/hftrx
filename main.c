@@ -18086,10 +18086,14 @@ hamradio_main_step(void)
 	return STTE_OK;
 }
 
+#if WITHIFSHIFT
+
 int_fast16_t hamradio_get_if_shift(void)
 {
 	return ifshifoffset.value + getifshiftbase();	// Добавить учет признака наличия сдвига
 }
+
+#endif /* WITHIFSHIFT */
 
 void hamradio_set_lockmode(uint_fast8_t lock)
 {
