@@ -17479,7 +17479,9 @@ hamradio_initialize(void)
 
 	board_init_chips2();	// программирование кодеков при подающейся тактовой частоте
 
+#if ! DSTYLE_G_DUMMY && WITHSPECTRUMWF && (LCDMODE_MAIN_PAGES > 1)
 	display2_smeter15_init();
+#endif
 
 #if WITHTOUCHGUI
 	gui_initialize();
