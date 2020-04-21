@@ -1262,7 +1262,7 @@ static void display2_currlevel5(
 	dctx_t * pctx
 	)
 {
-#if WITHCURRLEVEL
+#if WITHCURRLEVEL || WITHCURRLEVEL2
 	#if (WITHCURRLEVEL_ACS712_30A || WITHCURRLEVEL_ACS712_20A)
 
 		int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
@@ -1288,7 +1288,7 @@ static void display2_currlevel5(
 		//display_at_P(x + CHARS2GRID(5), y, PSTR("A"));
 
 	#endif /* WITHCURRLEVEL_ACS712_30A */
-#endif /* WITHCURRLEVEL */
+#endif /* WITHCURRLEVEL || WITHCURRLEVEL2 */
 }
 
 // Отображение уровня сигнала в dBm
@@ -4531,25 +4531,14 @@ enum
 	// TFT панель AT070TN90
 	// 480/5 = 96, 800/16=50
 
-	#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
-		//					"012345678901234567890123456789"
-		#define SWRPWRMAP	"1    2    3    4  0%   |  100%"
-		#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - значение на полной шкале
-	#else
-		#warning Should be defined WITHSHOWSWRPWR
-	#endif
-	//						"012345678901234567890123456789"
-	#define SMETERMAP		"1   3   5   7   9  +20 +40 +60"
+	#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - значение на полной шкале (на этом дизайне нет, просто для того чтобы компилировлось)
+
 	enum
 	{
 		BDTH_ALLRXBARS = 30,	// ширина зоны для отображение барграфов на индикаторе
-#if 1
-		BDTH_ALLRX = 50, //DIM_X / GRID2X(1),	// ширина зоны для отображение графического окна на индикаторе
-		BDCV_ALLRX = ROWS2GRID(49),	// количество строк, отведенное под S-метр, панораму, иные отображения
-#else
-		BDTH_ALLRX = 40,	// ширина зоны для отображение графического окна на индикаторе
-		BDCV_ALLRX = ROWS2GRID(55),	// количество строк, отведенное под S-метр, панораму, иные отображения
-#endif
+
+		BDTH_ALLRX = 50, 		// ширина зоны для отображение графического окна на индикаторе
+		BDCV_ALLRX = ROWS2GRID(50),	// количество строк, отведенное под S-метр, панораму, иные отображения
 
 		BDTH_LEFTRX = 17,	// ширина индикатора баллов (без плюсов)
 		BDTH_RIGHTRX = BDTH_ALLRXBARS - BDTH_LEFTRX,	// ширина индикатора плюсов
@@ -4566,8 +4555,8 @@ enum
 		BDCV_WFLRX = BDCV_ALLRX - BDCV_SPMRX	// вертикальный размер водопада в ячейках
 	};
 	enum {
-		DLES = 35,		// spectrum window upper line
-        DLE1 = 93,		//
+		DLES = 40,		// spectrum window upper line
+        DLE1 = 91,		// 96-5
 		DLE_unused
 	};
 
@@ -4617,7 +4606,7 @@ enum
 		/* общий для всех режимов элемент */
 		{	0,	0,	display2_clearbg, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },
 
-		{	0,	0,	display2_datetime12,	REDRM_BARS, PGALL,	},	// DATE&TIME Jan-01 13:40
+		{	0,	0, display_siglevel4, 	REDRM_BARS, PGALL, },	// signal level dBm
 		{	15,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
 		{	18, 0,	display_atu3,		REDRM_MODE, PGALL, },	// TUNER state (optional)
 		{	22, 0,	display_byp3,		REDRM_MODE, PGALL, },	// TUNER BYPASS state (optional)
@@ -4662,8 +4651,6 @@ enum
 		//{	41, 25,
 		//{	45, 25,
 
-		{	0,	30, display_siglevel4, 	REDRM_BARS, PGALL, },	// signal level dBm
-		{	5,	30,	display2_span9,		REDRM_MODE, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
 		{	15, 30,	display_freqdelta8, REDRM_BARS, PGALL, },	// выход ЧМ демодулятора
 		//{	46, 30,	display_agc3,		REDRM_MODE, PGALL, },	// AGC mode
 
@@ -4674,6 +4661,8 @@ enum
 		{	0,	DLES,	display2_colorbuff,	REDRM_BARS,	PGWFL | PGSPE, },// Отображение водопада и/или спектра
 	#endif /* WITHSPECTRUMWF */
 
+		{	0,	DLE1,	display2_datetime12,	REDRM_BARS, PGALL,	},	// DATE&TIME Jan-01 13:40
+		{	13,	DLE1,	display2_span9,		REDRM_MODE, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
 		{	23, DLE1,	display2_thermo4,	REDRM_VOLT, PGALL, },	// thermo sensor
 		//{	28, DLE1,	display_usb3,		REDRM_BARS, PGALL, },	// USB host status
 		//{	28, DLE1,	display_freqmeter10, REDRM_BARS, PGALL, },	// измеренная частота опоры
