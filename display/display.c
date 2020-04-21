@@ -1147,6 +1147,10 @@ void colpip_fillrect(
 	COLORPIP_T color	// цвет
 	)
 {
+	ASSERT(x < dx);
+	ASSERT((x + w) <= dx);
+	ASSERT(y < dy);
+	ASSERT((y + h) <= dy);
 #if LCDMODE_HORFILL
 
 	#if LCDMODE_PIP_L8
@@ -1569,9 +1573,15 @@ void colpip_rect(
 {
 	ASSERT(x2 > x1);
 	ASSERT(y2 > y1);
+	ASSERT(x2 < dx);
+	ASSERT(y2 < dy);
 
 	const uint_fast16_t w = x2 - x1 + 1;	// размер по горизонтали
 	const uint_fast16_t h = y2 - y1 + 1;	// размер по вертикали
+
+	ASSERT((x1 + w) <= dx);
+	ASSERT((y1 + h) <= dy);
+
 
 	if (w < 3 || h < 3)
 		return;
