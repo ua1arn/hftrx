@@ -1269,6 +1269,7 @@ static void gui_main_process(void);
 				strcpy(lbl_low->text, buf);
 				lbl_low->x = x_0 + x_size - strwidth(lbl_low->text);
 			}
+			gui.timer_1sec_updated = 1;
 		}
 		PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
 		colpip_line(fr, DIM_X, DIM_Y, x_0 - 10, y_0, x_0 + x_size, y_0, COLORPIP_WHITE);
@@ -1448,6 +1449,8 @@ static void gui_main_process(void);
 
 			button_handlers[id_button_down].x1 = labels[id_lbl_uif_val].x - button_menu_w - 10;
 			button_handlers[id_button_up].x1 = labels[id_lbl_uif_val].x + strwidth(labels[id_lbl_uif_val].text) + 10;
+
+			gui.timer_1sec_updated = 1;
 		}
 
 		if (gui.kbd_code != KBD_CODE_MAX)
@@ -1881,6 +1884,7 @@ static void gui_main_process(void);
 			labels[id_lbl_val].x = window_center_x - strwidth(labels[id_lbl_val].text) / 2;
 
 			gui_enc2_menu->updated = 0;
+			gui.timer_1sec_updated = 1;
 		}
 	}
 
@@ -2094,6 +2098,7 @@ static void gui_main_process(void);
 		static window_t * win = & windows[WINDOW_MAIN];
 		PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
 		char buf [TEXT_ARRAY_SIZE];
+		const uint_fast8_t buflen = sizeof buf / sizeof buf [0];
 		uint_fast16_t yt, xt;
 
 		if (win->first_call == 1)
@@ -2113,25 +2118,34 @@ static void gui_main_process(void);
 			} while (bh->parent == WINDOW_MAIN);
 		}
 
+		uint_fast8_t interval = 15, len1 = 0, len2 = 0;
+		uint_fast16_t x = 10, y1 = 125, y2 = 145;			// пока абсолютные, переделать на относительные
+
 		// текущее время
 	#if defined (RTC1_TYPE)
 		static uint_fast16_t year;
 		static uint_fast8_t month, day, hour, minute, secounds;
 		if(gui.timer_1sec_updated)
 			board_rtc_getdatetime(& year, & month, & day, & hour, & minute, & secounds);
-		local_snprintf_P(buf, sizeof buf / sizeof buf [0], PSTR("%02d.%02d"), day, month);
-		colpip_string2_tbg(fr, DIM_X, DIM_Y, 5, 125, buf, COLORPIP_WHITE);
-		local_snprintf_P(buf, sizeof buf / sizeof buf [0], PSTR("%02d%c%02d"), hour, ((secounds & 1) ? ' ' : ':'), minute);
-		colpip_string2_tbg(fr, DIM_X, DIM_Y, 5, 145, buf, COLORPIP_WHITE);
+		local_snprintf_P(buf, buflen, PSTR("%02d.%02d"), day, month);
+		len1 = strwidth2(buf);
+		colpip_string2_tbg(fr, DIM_X, DIM_Y, x, y1, buf, COLORPIP_WHITE);
+		local_snprintf_P(buf, buflen, PSTR("%02d%c%02d"), hour, ((secounds & 1) ? ' ' : ':'), minute);
+		len2 = strwidth2(buf);
+		colpip_string2_tbg(fr, DIM_X, DIM_Y, x, y2, buf, COLORPIP_WHITE);
 	#endif 	/* defined (RTC1_TYPE) */
+
+		x = x + (len1 > len2 ? len1 : len2) + interval;		// при изменении ширины выводимой строки infobar может дергаться, переделать
+		len1 = len2 = 0;									// добавить выравнивание по ячейкам
 
 		// напряжение питания
 	#if WITHVOLTLEVEL
 		static ldiv_t v;
 		if(gui.timer_1sec_updated)
 			v = ldiv(hamradio_get_volt_value(), 10);
-		local_snprintf_P(buf, sizeof buf / sizeof buf [0], PSTR("%d.%1dV "), v.quot, v.rem);
-		colpip_string2_tbg(fr, DIM_X, DIM_Y, 75, 125, buf, COLORPIP_WHITE);
+		local_snprintf_P(buf, buflen, PSTR("%d.%1dV"), v.quot, v.rem);
+		len1 = strwidth2(buf);
+		colpip_string2_tbg(fr, DIM_X, DIM_Y, x, y1, buf, COLORPIP_WHITE);
 	#endif /* WITHVOLTLEVEL */
 
 		// ток PA (при передаче)
@@ -2151,37 +2165,79 @@ static void gui_main_process(void);
 		#if (WITHCURRLEVEL_ACS712_30A || WITHCURRLEVEL_ACS712_20A)
 			// для больших токов (более 9 ампер)
 			ldiv_t t = ldiv(drain / 10, 10);
-			local_snprintf_P(buf, sizeof buf / sizeof buf [0], PSTR("%2d.%01dA "), t.quot, t.rem);
+			local_snprintf_P(buf, buflen, PSTR("%2d.%01dA"), t.quot, t.rem);
 
 		#else /* (WITHCURRLEVEL_ACS712_30A || WITHCURRLEVEL_ACS712_20A) */
 			// Датчик тока до 5 ампер
 			ldiv_t t = ldiv(drain, 100);
-			local_snprintf_P(buf, sizeof buf / sizeof buf [0], PSTR("%d.%02dA "), t.quot, t.rem);
+			local_snprintf_P(buf, buflen, PSTR("%d.%02dA"), t.quot, t.rem);
 
 		#endif /* (WITHCURRLEVEL_ACS712_30A || WITHCURRLEVEL_ACS712_20A) */
 
-			colpip_string2_tbg(fr, DIM_X, DIM_Y, 75, 145, buf, COLORPIP_WHITE);
+			len2 = strwidth2(buf);
+			colpip_string2_tbg(fr, DIM_X, DIM_Y, x, y2, buf, COLORPIP_WHITE);
 		}
 	#endif /* WITHCURRLEVEL */
+
+		x = x + (len1 > len2 ? len1 : len2) + interval;
+		len1 = len2 = 0;
+
+		// ширина панорамы
+	#if WITHIF4DSP
+		static int_fast32_t z;
+		if(gui.timer_1sec_updated)
+			z = display_zoomedbw() / 1000;
+		local_snprintf_P(buf, buflen, PSTR("SPAN"));
+		len1 = strwidth2(buf);
+		colpip_string2_tbg(fr, DIM_X, DIM_Y, x, y1, buf, COLORPIP_WHITE);
+		local_snprintf_P(buf, buflen, PSTR("%dk"), z);
+		len2 = strwidth2(buf);
+		colpip_string2_tbg(fr, DIM_X, DIM_Y, x, y2, buf, COLORPIP_WHITE);
+	#endif /* WITHIF4DSP */
+
+		x = x + (len1 > len2 ? len1 : len2) + interval;
+		len1 = len2 = 0;
+
+		// параметры полосы пропускания фильтра
+		static uint_fast8_t bp_type, bp_low, bp_high;
+		if(gui.timer_1sec_updated)
+		{
+			bp_high = hamradio_get_high_bp(0);
+			bp_low = hamradio_get_low_bp(0) * 10;
+			bp_type = hamradio_get_bp_type();
+			bp_high = bp_type ? bp_high * 100 : bp_high * 10;
+		}
+		local_snprintf_P(buf, buflen, PSTR("AF filter"));
+		len1 = strwidth2(buf);
+		colpip_string2_tbg(fr, DIM_X, DIM_Y, x, y1, buf, COLORPIP_WHITE);
+		local_snprintf_P(buf, buflen, bp_type ? (PSTR("%d..%d")) : (PSTR("W%d P%d")), bp_low, bp_high);
+		len2 = strwidth2(buf);
+		colpip_string2_tbg(fr, DIM_X, DIM_Y, x, y2, buf, COLORPIP_WHITE);
+
+		x = x + (len1 > len2 ? len1 : len2) + interval;
+		len1 = len2 = 0;
+
+		// значение сдвига частоты
+		static int_fast16_t if_shitf;
+		if (gui.timer_1sec_updated)
+			if_shitf = hamradio_get_if_shift();
+		local_snprintf_P(buf, buflen, PSTR("IF shift"));
+		len1 = strwidth2(buf);
+		colpip_string2_tbg(fr, DIM_X, DIM_Y, x, y1, buf, COLORPIP_WHITE);
+		local_snprintf_P(buf, buflen, if_shitf == 0 ? PSTR("%d") : PSTR("%+dk"), if_shitf);
+		len2 = strwidth2(buf);
+		colpip_string2_tbg(fr, DIM_X, DIM_Y, x, y2, buf, COLORPIP_WHITE);
+
 	#if WITHTHERMOLEVEL	// температура выходных транзисторов (при передаче)
 		static ldiv_t t;
 		if (hamradio_get_tx() && gui.timer_1sec_updated)
 		{
 			t = ldiv(hamradio_get_temperature_value(), 10);
-			local_snprintf_P(buf, sizeof buf / sizeof buf [0], PSTR("%d.%dC "), t.quot, t.rem);
+			local_snprintf_P(buf, buflen, PSTR("%d.%dC "), t.quot, t.rem);
 			PRINTF("%s\n", buf);		// пока вывод в консоль
 		}
 	#endif /* WITHTHERMOLEVEL */
-		// ширина панорамы
-	#if WITHIF4DSP
-		static int_fast32_t z;
-		if(gui.timer_1sec_updated)
-			z = display_zoomedbw();
-		local_snprintf_P(buf, sizeof buf / sizeof buf [0], PSTR("SPAN:%3dk"), (int) z / 1000);
-		xt = WITHGUIMAXX - SMALLCHARW2 - strlen(buf) * SMALLCHARW2;
-		display_transparency(xt - 5, 405, WITHGUIMAXX - 5, 428, DEFAULT_ALPHA);
-		colpip_string2_tbg(fr, DIM_X, DIM_Y, xt, 410, buf, COLORPIP_YELLOW);
-	#endif /* WITHIF4DSP */
+
 		gui.timer_1sec_updated = 0;
 	}
 
