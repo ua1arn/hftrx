@@ -4650,13 +4650,13 @@ enum
 		{	41, 15,	display_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
 
 		{	15, 20,	display_mainsub3,	REDRM_MODE, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
-		{	19,	20,	display_vfomode3,	REDRM_MODE, PGALL, },	// SPLIT
-		{	25,	20,	display_freqX_b,	REDRM_FRQB, PGALL, },	// SUB FREQ
+		{	20,	20,	display_vfomode3,	REDRM_MODE, PGALL, },	// SPL
+		{	24,	20,	display_freqX_b,	REDRM_FRQB, PGALL, },	// SUB FREQ
 		{	37, 20,	display_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 		{	41, 20,	display_voxtune3,	REDRM_MODE, PGALL, },	// VOX
 		{	45,	20,	display_lockstate4, REDRM_MODE, PGALL, },	// LOCK
 
-		{	0, 	25,	display2_currlevel5, REDRM_VOLT, PGALL, },	// PA drain current d.dd without "A"
+		{	0, 	25,	display2_currlevelA6, REDRM_VOLT, PGALL, },	// PA drain current d.dd without "A"
 		{	8, 	25,	display_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
 
 		//{	14, 25,
@@ -4668,8 +4668,9 @@ enum
 		{	41, 25, display_bkin3,		REDRM_MODE, PGALL, },	// BREAK-IN
 		{	45,	25,	display_wpm5, 		REDRM_BARS, PGALL, },	// 22WPM
 
-		{	15, 30,	display_freqdelta8, REDRM_BARS, PGALL, },	// выход ЧМ демодулятора
-		//{	46, 30,	display_agc3,		REDRM_MODE, PGALL, },	// AGC mode
+		//{	24, 30,	display_freqmeter10, REDRM_BARS, PGALL, },	// измеренная частота опоры
+		{	37, 30,	display_freqdelta8, REDRM_BARS, PGALL, },	// выход ЧМ демодулятора
+		{	46, 30,	display_agc3,		REDRM_MODE, PGALL, },	// AGC mode
 
 	#if WITHSPECTRUMWF
 		{	0,	DLES,	display2_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
