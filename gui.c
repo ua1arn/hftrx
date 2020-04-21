@@ -466,34 +466,39 @@ display2_smeter15(
 		first_run = 0;
 		PACKEDCOLORMAIN_T * bg = smeter_bg [SM_STATE_TX];
 		uint_fast8_t xb = 120, yb = 120;
-		colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORMAIN_BLACK, 1);
-
 		unsigned p;
 		unsigned i;
+
+		colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORMAIN_BLACK, 1);
+
 		for (p = 0, i = 0; i < sizeof markersTX_pwr / sizeof markersTX_pwr [0]; ++ i, p += 10)
 		{
-			char buf [10];
-			uint_fast16_t xx, yy;
-			colmain_setcolors(COLORMAIN_YELLOW, COLORMAIN_BLACK);
 			if (i % 2 == 0)
 			{
+				char buf [10];
+				uint_fast16_t xx, yy;
+
 				display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markersTX_pwr [i], r1, r1 + 8, smeter);
 				polar_to_dek(xb, yb, markersTX_pwr [i], r1 + 8, & xx, & yy);
 				local_snprintf_P(buf, sizeof buf / sizeof buf [0], PSTR("%u"), p);
+
+				colmain_setcolors(COLORMAIN_YELLOW, COLORMAIN_BLACK);
 				colmain_string3_at_xy(bg, SM_BG_W, SM_BG_H, xx - strwidth3(buf) / 2, yy - pad2w3 + 1, buf);
 			}
 			else
 				display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markersTX_pwr [i], r1, r1 + 4, smeter);
 		}
 
-		colmain_setcolors(COLORMAIN_YELLOW, COLORMAIN_BLACK);
 		for (p = 1, i = 0; i < sizeof markersTX_swr / sizeof markersTX_swr [0]; ++ i, p += 1)
 		{
 			char buf [10];
 			uint_fast16_t xx, yy;
+
 			display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markersTX_swr [i], r2, r2 - 8, smeter);
 			polar_to_dek(xb, yb, markersTX_swr [i], r2 - 16, & xx, & yy);
 			local_snprintf_P(buf, sizeof buf / sizeof buf [0], PSTR("%u"), p);
+
+			colmain_setcolors(COLORMAIN_YELLOW, COLORMAIN_BLACK);
 			colmain_string3_at_xy(bg, SM_BG_W, SM_BG_H, xx - SMALLCHARW3 / 2, yy - SMALLCHARW3 / 2 + 1, buf);
 		}
 
@@ -504,14 +509,16 @@ display2_smeter15(
 		bg = smeter_bg [SM_STATE_RX];
 		colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORMAIN_BLACK, 1);
 
-		colmain_setcolors(COLORMAIN_YELLOW, COLORMAIN_BLACK);
 		for (p = 1, i = 0; i < sizeof markers / sizeof markers [0]; ++ i, p += 2)
 		{
 			char buf [10];
 			uint_fast16_t xx, yy;
+
 			display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markers [i], r1, r1 + 8, smeter);
 			polar_to_dek(xb, yb, markers [i], r1 + 8, & xx, & yy);
 			local_snprintf_P(buf, sizeof buf / sizeof buf [0], PSTR("%u"), p);
+
+			colmain_setcolors(COLORMAIN_YELLOW, COLORMAIN_BLACK);
 			colmain_string3_at_xy(bg, SM_BG_W, SM_BG_H, xx - SMALLCHARW3 / 2, yy - pad2w3 + 1, buf);
 		}
 		for (i = 0; i < sizeof markers2 / sizeof markers2 [0]; ++ i)
@@ -519,14 +526,16 @@ display2_smeter15(
 			display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markers2 [i], r1, r1 + 4, smeter);
 		}
 
-		colmain_setcolors(COLORMAIN_RED, COLORMAIN_BLACK);
 		for (p = 20, i = 0; i < sizeof markersR / sizeof markersR [0]; ++ i, p += 20)
 		{
 			char buf [10];
 			uint_fast16_t xx, yy;
+
 			display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markersR [i], r1, r1 + 8, smeterplus);
 			polar_to_dek(xb, yb, markersR [i], r1 + 8, & xx, & yy);
 			local_snprintf_P(buf, sizeof buf / sizeof buf [0], PSTR("+%u"), p);
+
+			colmain_setcolors(COLORMAIN_RED, COLORMAIN_BLACK);
 			colmain_string3_at_xy(bg, SM_BG_W, SM_BG_H, xx - strwidth3(buf) / 2, yy - pad2w3 + 1, buf);
 		}
 		for (i = 0; i < sizeof markers2R / sizeof markers2R [0]; ++ i)
@@ -546,6 +555,7 @@ display2_smeter15(
 		if (gswr > gs)
 		{
 			uint_fast16_t xx, yy;
+
 			display_segm_buf(fr, DIM_X, DIM_Y, xc, yc, gs, gswr, r2 + 2, 1, COLORMAIN_YELLOW);
 			display_segm_buf(fr, DIM_X, DIM_Y, xc, yc, gs, gswr, r1 - 2, 1, COLORMAIN_YELLOW);
 			display_radius_buf(fr, DIM_X, DIM_Y, xc, yc, gs, r1 - 2, r2 + 2, COLORMAIN_YELLOW);
@@ -560,15 +570,21 @@ display2_smeter15(
 		colpip_plot(fr, DIM_X, DIM_Y, x0, y0, smeter_bg [SM_STATE_RX], SM_BG_W, SM_BG_H);
 	}
 
-		COLORMAIN_T ct = gv_trace > gm ? COLORMAIN_RED : COLORMAIN_YELLOW;
+	{
+		// Рисование стрелки
+		const COLORMAIN_T ct = gv_trace > gm ? COLORMAIN_RED : COLORMAIN_YELLOW;
 		display_radius_buf(fr, DIM_X, DIM_Y, xc - 1, yc, gv_trace, r1 - 2, r2 + 2, ct);
 		display_radius_buf(fr, DIM_X, DIM_Y, xc, yc, gv_trace, r1 - 2, r2 + 2, ct);
 		display_radius_buf(fr, DIM_X, DIM_Y, xc + 1, yc, gv_trace, r1 - 2, r2 + 2, ct);
+	}
 
-		ct = gv > gm ? COLORMAIN_RED : COLORMAIN_GREEN;
-		display_radius_buf(fr, DIM_X, DIM_Y, xc - 1, yc, gv, rv1, rv2, ct);
-		display_radius_buf(fr, DIM_X, DIM_Y, xc, yc, gv, rv1, rv2, ct);
-		display_radius_buf(fr, DIM_X, DIM_Y, xc + 1, yc, gv, rv1, rv2, ct);
+	{
+		// Рисование стрелки (?)
+		const COLORMAIN_T ct2 = gv > gm ? COLORMAIN_RED : COLORMAIN_GREEN;
+		display_radius_buf(fr, DIM_X, DIM_Y, xc - 1, yc, gv, rv1, rv2, ct2);
+		display_radius_buf(fr, DIM_X, DIM_Y, xc, yc, gv, rv1, rv2, ct2);
+		display_radius_buf(fr, DIM_X, DIM_Y, xc + 1, yc, gv, rv1, rv2, ct2);
+	}
 }
 
 #endif /* LCDMODE_LTDC */
