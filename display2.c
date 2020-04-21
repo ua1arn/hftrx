@@ -28,13 +28,6 @@
 
 #endif /* LCDMODE_LTDC */
 
-typedef struct editfreq_tag
-{
-	uint_fast32_t freq;
-	uint_fast8_t blinkpos;		// позиция (степень 10) редактируесого символа
-	uint_fast8_t blinkstate;	// в месте редактируемого символа отображается подчёркивание (0 - пробел)
-} editfreq_t;
-
 // todo: учесть LCDMODE_COLORED
 
 // параметры отображения состояния прием/пеердача
@@ -171,7 +164,7 @@ static void display_freqXbig_a(
 	if (pctx != NULL && pctx->type == DCTX_FREQ)
 	{
 #if WITHDIRECTFREQENER
-		const struct editfreq_tag * const efp = (const struct editfreq_tag *) pctx->pv;
+		const editfreq2_t * const efp = (const editfreq2_t *) pctx->pv;
 
 
 		uint_fast8_t lowhalf = HALFCOUNT_FREQA - 1;
@@ -210,7 +203,7 @@ static void display_freqX_a(
 	if (pctx != NULL && pctx->type == DCTX_FREQ)
 	{
 #if WITHDIRECTFREQENER
-		const struct editfreq_tag * const efp = (const struct editfreq_tag *) pctx->pv;
+		const editfreq2_t * const efp = (const editfreq2_t *) pctx->pv;
 		uint_fast8_t lowhalf = HALFCOUNT_FREQA - 1;
 		do
 		{
@@ -248,7 +241,7 @@ static void display_freqchr_a(
 	if (pctx != NULL && pctx->type == DCTX_FREQ)
 	{
 #if WITHDIRECTFREQENER
-		const struct editfreq_tag * const efp = (const struct editfreq_tag *) pctx->pv;
+		const editfreq2_t * const efp = (const editfreq2_t *) pctx->pv;
 
 		uint_fast8_t lowhalf = HALFCOUNT_FREQA - 1;
 		do
@@ -287,7 +280,7 @@ static void display_freqchr_b(
 	if (pctx != NULL && pctx->type == DCTX_FREQ)
 	{
 #if WITHDIRECTFREQENER
-		const struct editfreq_tag * const efp = (const struct editfreq_tag *) pctx->pv;
+		const editfreq2_t * const efp = (const editfreq2_t *) pctx->pv;
 
 		uint_fast8_t lowhalf = HALFCOUNT_FREQA - 1;
 		do
@@ -6757,7 +6750,7 @@ void display2_dispfreq_a2(
 	//TP();
 #if WITHDIRECTFREQENER
 
-	editfreq_t ef;
+	editfreq2_t ef;
 	dctx_t ctx;
 
 	ef.freq = freq;

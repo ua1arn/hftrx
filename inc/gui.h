@@ -205,6 +205,21 @@
 
 #endif /* COLORSTYLE_RED */
 
+
+typedef struct editfreq_tag
+{
+	uint32_t val;
+	uint8_t num;
+	uint8_t key;
+} editfreq_t;
+
+typedef struct editfreq2_tag
+{
+	uint32_t freq;
+	uint8_t blinkpos;		// позиция (степень 10) редактируесого символа
+	uint8_t blinkstate;	// в месте редактируемого символа отображается подчёркивание (0 - пробел)
+} editfreq2_t;
+
 typedef struct dctx_tag
 {
 	enum { DCTX_FREQ, DCTX_MENU } type;

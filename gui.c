@@ -977,12 +977,6 @@ static void gui_main_process(void);
 
 	static enc2_t encoder2 = { 0, 0, 0, 0, 1, 1, };
 
-	typedef struct {
-		uint32_t val;
-		uint8_t num;
-		uint8_t key;
-	} editfreq_t;
-
 	static editfreq_t editfreq;
 
 	enum {
