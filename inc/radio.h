@@ -3294,6 +3294,8 @@ void hamradio_enable_keyboard_redirect(void);
 uint_fast8_t hamradio_set_freq (uint_fast32_t freq);
 void hamradio_set_lockmode (uint_fast8_t lock);
 int_fast16_t hamradio_get_if_shift(void);
+uint_fast8_t hamradio_get_cw_wpm(void);
+
 
 #ifdef __cplusplus
 }
