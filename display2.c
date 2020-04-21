@@ -4832,8 +4832,9 @@ enum
 		{	41, 20,	display_voxtune3,	REDRM_MODE, PGALL, },	// VOX
 		{	45,	20,	display_lockstate4, REDRM_MODE, PGALL, },	// LOCK
 
-		{	0, 	25,	display2_currlevelA6, REDRM_VOLT, PGALL, },	// PA drain current d.dd with "A"
-		{	8, 	25,	display_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
+		// размещены под S-метром (15 ячеек)
+		{	1, 	25,	display_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
+		{	7, 	25,	display2_currlevelA6, REDRM_VOLT, PGALL, },	// PA drain current d.dd with "A"
 
 		//{	14, 25,
 		//{	19, 25,
