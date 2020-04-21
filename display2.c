@@ -590,6 +590,22 @@ static void display_spk3(
 #endif /* WITHSPKMUTE */
 }
 
+static void display_wpm5(
+		uint_fast8_t x,
+		uint_fast8_t y,
+		dctx_t * pctx
+		)
+{
+#if WITHELKEY
+	const uint_fast8_t value = hamradio_get_cw_wpm();	// не-0: динамик включен
+	char s [6];
+	const char * const labels [1] = { s, };
+
+	local_snprintf_P(s, sizeof s / sizeof s [0], PSTR("%2dwpm"), (int) value);
+	display2_text(x, y, labels, colorsfg_1state, colorsbg_1state, 0);
+	(void) pctx;
+#endif /* WITHELKEY */
+}
 
 // Отображение режима NOCH ON/OFF
 static void display_notch5(
@@ -4637,19 +4653,20 @@ enum
 		{	19,	20,	display_vfomode3,	REDRM_MODE, PGALL, },	// SPLIT
 		{	25,	20,	display_freqX_b,	REDRM_FRQB, PGALL, },	// SUB FREQ
 		{	37, 20,	display_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
-		//{	41, 20,
+		{	41, 20,	display_voxtune3,	REDRM_MODE, PGALL, },	// VOX
 		{	45,	20,	display_lockstate4, REDRM_MODE, PGALL, },	// LOCK
 
 		{	0, 	25,	display2_currlevel5, REDRM_VOLT, PGALL, },	// PA drain current d.dd without "A"
 		{	8, 	25,	display_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
 
-		{	23, 25,	display_voxtune3,	REDRM_MODE, PGALL, },	// VOX
-		{	27, 25, display_bkin3,		REDRM_MODE, PGALL, },
-		{	31, 25,	display_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
-		{	34, 25,	display_spk3,		REDRM_BARS, PGALL, },	// оьображение признака включения динамика
-		//{	38, 25,
-		//{	41, 25,
-		//{	45, 25,
+		//{	14, 25,
+		//{	19, 25,
+		//{	23, 25,
+		//{	27, 25,
+		{	33, 25,	display_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
+		{	37, 25,	display_spk3,		REDRM_MODE, PGALL, },	// оьображение признака включения динамика
+		{	41, 25, display_bkin3,		REDRM_MODE, PGALL, },	// BREAK-IN
+		{	45,	25,	display_wpm5, 		REDRM_BARS, PGALL, },	// 22WPM
 
 		{	15, 30,	display_freqdelta8, REDRM_BARS, PGALL, },	// выход ЧМ демодулятора
 		//{	46, 30,	display_agc3,		REDRM_MODE, PGALL, },	// AGC mode
