@@ -1241,7 +1241,7 @@ static void display2_currlevelA6(
 	dctx_t * pctx
 	)
 {
-#if WITHCURRLEVEL
+#if WITHCURRLEVEL || WITHCURRLEVEL2
 	#if (WITHCURRLEVEL_ACS712_30A || WITHCURRLEVEL_ACS712_20A)
 
 		int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
@@ -1267,7 +1267,7 @@ static void display2_currlevelA6(
 		display_at_P(x + CHARS2GRID(5), y, PSTR("A"));
 
 	#endif /* WITHCURRLEVEL_ACS712_30A */
-#endif /* WITHCURRLEVEL */
+#endif /* WITHCURRLEVEL || WITHCURRLEVEL2 */
 }
 
 // +d.dd - 5 places (without "A")
@@ -3494,9 +3494,9 @@ enum
 		#if WITHVOLTLEVEL
 			{	6,	14,	display_voltlevelV5, REDRM_VOLT, PG0, },	// voltmeter with "V"
 		#endif /* WITHVOLTLEVEL  */
-		#if WITHCURRLEVEL
+		#if WITHCURRLEVEL || WITHCURRLEVEL2
 			{	11, 14,	display2_currlevelA6, REDRM_VOLT, PG0, },	// amphermeter with "A"
-		#endif /*  WITHCURRLEVEL */
+		#endif /*  WITHCURRLEVEL || WITHCURRLEVEL2 */
 		#if WITHAMHIGHKBDADJ
 			{	6, 14,	display_amfmhighcut4,REDRM_MODE, PG0, },	// 3.70
 		#endif /* WITHAMHIGHKBDADJ */
@@ -3644,9 +3644,9 @@ enum
 		#if WITHVOLTLEVEL
 			{	6,	14,	display_voltlevelV5, REDRM_VOLT, PG0, },	// voltmeter with "V"
 		#endif /* WITHVOLTLEVEL  */
-		#if WITHCURRLEVEL
+		#if WITHCURRLEVEL || WITHCURRLEVEL2
 			{	11, 14,	display2_currlevelA6, REDRM_VOLT, PG0, },	// amphermeter with "A"
-		#endif /*  WITHCURRLEVEL */
+		#endif /*  WITHCURRLEVEL || WITHCURRLEVEL2 */
 		#if WITHAMHIGHKBDADJ
 			{	6, 14,	display_amfmhighcut4,REDRM_MODE, PG0, },	// 3.70
 		#endif /* WITHAMHIGHKBDADJ */
@@ -3660,10 +3660,10 @@ enum
 			{	0,	14,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
 			{	4,	14,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
 			//{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
-		#if WITHVOLTLEVEL && WITHCURRLEVEL
+		#if WITHVOLTLEVEL && (WITHCURRLEVEL || WITHCURRLEVEL2)
 			//{	0,	14,	display_voltlevelV5, REDRM_VOLT, REDRSUBSET_MENU, },	// voltmeter with "V"
 			//{	6,	14,	display2_currlevelA6, REDRM_VOLT, REDRSUBSET_MENU, },	// amphermeter with "A"
-		#endif /* WITHVOLTLEVEL && WITHCURRLEVEL */
+		#endif /* WITHVOLTLEVEL && (WITHCURRLEVEL || WITHCURRLEVEL2) */
 	#endif /* WITHMENU */
 		};
 
@@ -3791,9 +3791,9 @@ enum
 	#if WITHVOLTLEVEL
 		{	0, 28,	display_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
 	#endif /* WITHVOLTLEVEL */
-	#if WITHCURRLEVEL
+	#if WITHCURRLEVEL || WITHCURRLEVEL2
 		{	6, 28,	display2_currlevelA6, REDRM_VOLT, PGALL, },	// amphermeter with "A"
-	#endif /* WITHCURRLEVEL */
+	#endif /* WITHCURRLEVEL || WITHCURRLEVEL2 */
 	#if defined (RTC1_TYPE)
 		{	13, 28,	display_time8,		REDRM_BARS, PGALL, },	// TIME
 	#endif /* defined (RTC1_TYPE) */
@@ -4015,9 +4015,9 @@ enum
 		#if WITHVOLTLEVEL
 			{	0, 28,	display_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
 		#endif /* WITHVOLTLEVEL */
-		#if WITHCURRLEVEL
+		#if WITHCURRLEVEL || WITHCURRLEVEL2
 			{	6, 28,	display2_currlevelA6, REDRM_VOLT, PGALL, },	// amphermeter with "A"
-		#endif /* WITHCURRLEVEL */
+		#endif /* WITHCURRLEVEL || WITHCURRLEVEL2 */
 		#if defined (RTC1_TYPE)
 			{	13, 28,	display_time8,		REDRM_BARS, PGALL, },	// TIME
 		#endif /* defined (RTC1_TYPE) */
@@ -4656,7 +4656,7 @@ enum
 		{	41, 20,	display_voxtune3,	REDRM_MODE, PGALL, },	// VOX
 		{	45,	20,	display_lockstate4, REDRM_MODE, PGALL, },	// LOCK
 
-		{	0, 	25,	display2_currlevelA6, REDRM_VOLT, PGALL, },	// PA drain current d.dd without "A"
+		{	0, 	25,	display2_currlevelA6, REDRM_VOLT, PGALL, },	// PA drain current d.dd with "A"
 		{	8, 	25,	display_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
 
 		//{	14, 25,
