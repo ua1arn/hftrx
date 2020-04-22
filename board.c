@@ -53,7 +53,7 @@ static uint_fast8_t dds3_profile;		/* информация о последнем
 // board specific functions
 
 uint_fast8_t 	glob_agc;
-uint_fast8_t 	glob_opowerlevel = WITHPOWERTRIMMIN;	/* WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
+static uint_fast8_t 	glob_opowerlevel = WITHPOWERTRIMMAX;	/* WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
 uint_fast8_t	glob_loudspeaker_off;
 
 static uint_fast8_t 	glob_tx;			// находимся в режиме передачи
@@ -563,6 +563,85 @@ void nmea_disconnect(void)
 
 #endif /* WITHNMEA && WITHAUTOTUNER_UA1CEI */
 
+
+#if WITHCPUDACHW
+
+	//#define HARDWARE_DACBITS 12	/* ЦАП работает с 12-битными значениями */
+
+	// AGC dac constans
+	enum
+	{
+		dacwidth = HARDWARE_DACBITS,
+		dacFScode = (1U << dacwidth) - 1,
+		dacrefvoltage = DACVREF_CPU * 100,		// 3.3 volt - DAC reference voltage
+	};
+
+	enum
+	{
+	#if (CTLSTYLE_RAVENDSP_V1 || CTLSTYLE_DSPV1A)
+
+		dacXagchighvotage = 2950,	// 2.9 volt - AD605 VGN max
+		dacXagclowvoltage = 100,		// 0.1 volt - AD605 VGN min
+
+		dac_agc_highcode = dacFScode * dacXagchighvotage / dacrefvoltage,
+		dac_agc_lowcode = dacFScode * dacXagclowvoltage / dacrefvoltage,
+		dac_agc_coderange = dac_agc_highcode - dac_agc_lowcode,
+
+		// заглушка
+		//dacXagchighvotage = 3300,	// 0.1..1.25 volt - AD9744 REFERENCE INPUT range (after 18k/10k chain).
+		//dacXagclowvoltage = 280,
+
+		dac_dacfs_highcode = dacFScode * dacXagchighvotage / dacrefvoltage,
+		dac_dacfs_lowcode = dacFScode * dacXagclowvoltage / dacrefvoltage,
+		dac_dacfs_coderange = dac_dacfs_highcode - dac_dacfs_lowcode
+
+	#elif \
+		CTLSTYLE_RAVENDSP_V3 || \
+		CTLSTYLE_RAVENDSP_V4 || \
+		CTLSTYLE_RAVENDSP_V5 || \
+		CTLSTYLE_RAVENDSP_V6 || \
+		CTLSTYLE_RAVENDSP_V7 || \
+		CTLSTYLE_RAVENDSP_V8 || \
+		CTLSTYLE_STORCH_V2 || \
+		CTLSTYLE_STORCH_V3 || \
+		CTLSTYLE_STORCH_V4 || \
+		CTLSTYLE_STORCH_V5 || \
+		CTLSTYLE_STORCH_V6 || \
+		CTLSTYLE_STORCH_V7 || \
+		CTLSTYLE_OLEG4Z_V1 || \
+		CTLSTYLE_NUCLEO_V1 || \
+		0
+
+		dacXagchighvotage = 3300,	// 0.1..1.25 volt - AD9744 REFERENCE INPUT range (after 18k/10k chain).
+		dacXagclowvoltage = 280,
+
+		dac_dacfs_highcode = dacFScode * dacXagchighvotage / dacrefvoltage,
+		dac_dacfs_lowcode = dacFScode * dacXagclowvoltage / dacrefvoltage,
+		dac_dacfs_coderange = dac_dacfs_highcode - dac_dacfs_lowcode
+
+	#endif
+
+	};
+#endif /* WITHCPUDACHW */
+
+#if 0 && WITHDACOUTDSPAGC
+
+static void setagcattenuation(long code, uint_fast8_t tx)	// в кодах ЦАП
+{
+	if (tx != 0)
+		HARDWARE_DAC_AGC(0);
+	else
+		HARDWARE_DAC_AGC(dac_agc_highcode - ((code > dac_agc_coderange) ? dac_agc_coderange : code));
+}
+
+static void setlevelindicator(long code)	// в кодах ЦАП
+{
+	hardware_dac_ch2_setvalue((dacFScode - 1) > code ? (dacFScode - 1) : code);
+}
+
+
+#endif /* WITHDACOUTDSPAGC */
+
 /* вывод битов через PIO процессора, если они управляются напрямую без SPI */
 static void 
 prog_gpioreg(void)
@@ -612,6 +691,15 @@ prog_gpioreg(void)
 		// яркость подсветки
 		HARDWARE_BL_SET(WITHLCDBACKLIGHTMIN != glob_bglight, glob_bglight - (WITHLCDBACKLIGHTMIN + 1));
 	#endif /* defined (HARDWARE_BL_SET) */
+
+	#if defined (HARDWARE_DAC_ALC)
+	//#if WITHCPUDACHW && WITHPOWERTRIM && ! WITHNOTXDACCONTROL
+		// ALC
+		// регулировка напряжения на REFERENCE INPUT TXDAC AD9744
+		//HARDWARE_DAC_ALC((glob_opowerlevel - WITHPOWERTRIMMIN) * dac_dacfs_coderange / (WITHPOWERTRIMMAX - WITHPOWERTRIMMIN) + dac_dacfs_lowcode);
+		HARDWARE_DAC_ALC((WITHPOWERTRIMMAX - WITHPOWERTRIMMIN) * dac_dacfs_coderange / (WITHPOWERTRIMMAX - WITHPOWERTRIMMIN) + dac_dacfs_lowcode);
+	//#endif /* WITHCPUDACHW && WITHPOWERTRIM && ! WITHNOTXDACCONTROL */
+	#endif /* defined (HARDWARE_DAC_ALC) */
 }
 
 

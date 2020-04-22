@@ -151,7 +151,6 @@ enum
 #endif
 
 extern uint_fast8_t glob_agc;
-extern uint_fast8_t glob_opowerlevel;
 extern uint_fast8_t	glob_loudspeaker_off;
 
 enum
