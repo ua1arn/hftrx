@@ -996,43 +996,43 @@ void display2_xltrgb24(COLOR24_T * xltable)
 	// PALETTESIZE == 96
 	int a = 0;
 	// a = 0
-	for (i = 0; i < 28; ++ i)
+	for (i = 0; i < 12; ++ i)
 	{
-		fillpair_xltrgb24(xltable, a + i, COLOR24(0, 0, (int) (powf((float) 0.125 * i, 4))));	// проверить результат перед попыткой применить целочисленные вычисления!
+		fillpair_xltrgb24(xltable, a + i, COLOR24(0, 0, (int) (powf((float) 0.125 * (i + 16), 4))));	// проверить результат перед попыткой применить целочисленные вычисления!
 	}
 	a += i;
-	// a = 28
+	// a = 12
 	for (i = 0; i < 14; ++ i)
 	{
 		fillpair_xltrgb24(xltable, a + i, COLOR24(0, i * 16, 255));
 	}
 	a += i;
-	// a = 42
+	// a = 26
 	for (i = 0; i < 14; ++ i)
 	{
 		fillpair_xltrgb24(xltable, a + i, COLOR24(0, 255, 255 - i * 16));
 	}
 	a += i;
-	// a = 56
+	// a = 40
 	for (i = 0; i < 14; ++ i)
 	{
 		fillpair_xltrgb24(xltable, a + i, COLOR24(i * 16, 255, 0));
 	}
 	a += i;
-	// a = 70
+	// a = 54
 	for (i = 0; i < 28; ++ i)
 	{
 		fillpair_xltrgb24(xltable, a + i, COLOR24(255, 255 - i * 8, 0));
 	}
 	a += i;
-	// a = 98
+	// a = 82
 	for (i = 0; i < 14; ++ i)
 	{
 		fillpair_xltrgb24(xltable, a + i, COLOR24(255, 0, i * 16));
 	}
 	a += i;
-	// a = 112
-	//ASSERT(a == COLORPIP_BASE);
+	// a = 96
+	ASSERT(a == COLORPIP_BASE);
 
 	// Цвета используемые в дизайне
 
