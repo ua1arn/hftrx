@@ -12747,15 +12747,15 @@ static const FLASHMEM struct menudef menutable [] =
 #endif /* WITHSLEEPTIMER */
 #if LCDMODE_COLORED
 	// Для цветных дисплеев можно менять цвет фона
-	{
-		QLABEL("BLUE BG "), 8, 3, RJ_ON,	ISTEP1,
-		ITEM_VALUE,
-		0, 1, 
-		offsetof(struct nvmap, gbluebgnd),
-		NULL,
-		& gbluebgnd,
-		getzerobase, /* складывается со смещением и отображается */
-	},
+//	{
+//		QLABEL("BLUE BG "), 8, 3, RJ_ON,	ISTEP1,
+//		ITEM_VALUE,
+//		0, 1,
+//		offsetof(struct nvmap, gbluebgnd),
+//		NULL,
+//		& gbluebgnd,
+//		getzerobase, /* складывается со смещением и отображается */
+//	},
 #endif
 	{
 		QLABEL("FREQ FPS"), 7, 0, 0,	ISTEP1,
