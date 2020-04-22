@@ -752,7 +752,8 @@ display_radius_buf(
 		int xc, int yc,
 		unsigned gs,
 		unsigned r1, unsigned r2,
-		COLORMAIN_T color);
+		COLORMAIN_T color,
+		int antialiasing);
 
 void
 display_segm_buf(
@@ -762,7 +763,8 @@ display_segm_buf(
 		int xc, int yc,
 		unsigned gs, unsigned ge,
 		unsigned r, int step,
-		COLORMAIN_T color);
+		COLORMAIN_T color,
+		int antialiasing);
 
 // Нарисовать вертикальную цветную полосу
 void
@@ -861,7 +863,8 @@ void colmain_line(
 		uint_fast16_t by,	// высота буфера
 		int xn, int yn,
 		int xk, int yk,
-		COLORMAIN_T color);
+		COLORMAIN_T color,
+		int antialiasing);
 
 // Отображение цифр в поле "больших цифр" - индикатор основной частоты настройки аппарата.
 void
