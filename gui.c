@@ -130,10 +130,10 @@ void colmain_line(
 				* a = color | COLORPIP_SHADED;
 				a = colmain_mem_at(buffer, bx, by, xold, yn);
 				* a = color | COLORPIP_SHADED;
-				a = colmain_mem_at(buffer, bx, by, xn, yn);
-				* a = color | COLORPIP_SHADED | COLORPIP_ALIASED;
-				a = colmain_mem_at(buffer, bx, by, xold, yold);
-				* a = color | COLORPIP_SHADED | COLORPIP_ALIASED;
+//				a = colmain_mem_at(buffer, bx, by, xn, yn);		// нужны дополнительные цвета для этих 2х точек
+//				* a = color | COLORPIP_SHADED;
+//				a = colmain_mem_at(buffer, bx, by, xold, yold);
+//				* a = color | COLORPIP_SHADED;
 			}
 			xold = xn;
 			yold = yn;
