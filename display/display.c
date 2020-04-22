@@ -1072,7 +1072,7 @@ void display2_xltrgb24(COLOR24_T * xltable)
 	fillfour_xltrgb24(xltable, COLORPIP_GRIDCOLOR		, COLOR24(128, 0, 0));		//COLOR_GRAY - center marker
 	fillfour_xltrgb24(xltable, COLORPIP_GRIDCOLOR2		, COLOR24(96, 96, 96));		//COLOR_DARKRED - other markers
 	fillfour_xltrgb24(xltable, COLORPIP_SPECTRUMBG		, COLOR24(0, 64, 24));			//
-	fillfour_xltrgb24(xltable, COLORPIP_SPECTRUMBG2	, COLOR24(0, 24, 8));		//COLOR_xxx - ïîëîñà ïðîïóñêàíèÿ ïðèåìíèêà
+	fillfour_xltrgb24(xltable, COLORMAIN_SPECTRUMBG2	, COLOR24(0, 24, 8));		//COLOR_xxx - ïîëîñà ïðîïóñêàíèÿ ïðèåìíèêà
 	fillfour_xltrgb24(xltable, COLORPIP_SPECTRUMFG		, COLOR24(0, 255, 0));		//COLOR_GREEN
 	fillfour_xltrgb24(xltable, COLORPIP_SPECTRUMFENCE	, COLOR24(255, 255, 255));	//COLOR_WHITE
 #else /* COLORSTYLE_ATS52 */
@@ -1080,7 +1080,7 @@ void display2_xltrgb24(COLOR24_T * xltable)
 	fillfour_xltrgb24(xltable, COLORPIP_GRIDCOLOR      , COLOR24(128, 128, 0));        //COLOR_GRAY - center marker
 	fillfour_xltrgb24(xltable, COLORPIP_GRIDCOLOR2     , COLOR24(128, 0, 0x00));        //COLOR_DARKRED - other markers
 	fillfour_xltrgb24(xltable, COLORPIP_SPECTRUMBG     , COLOR24(0, 0, 0));            //COLOR_BLACK
-	fillfour_xltrgb24(xltable, COLORPIP_SPECTRUMBG2    , COLOR24(0, 128, 128));        //COLOR_CYAN - ïîëîñà ïðîïóñêàíèÿ ïðèåìíèêà
+	fillfour_xltrgb24(xltable, COLORMAIN_SPECTRUMBG2    , COLOR24(0, 128, 128));        //COLOR_CYAN - ïîëîñà ïðîïóñêàíèÿ ïðèåìíèêà
 	fillfour_xltrgb24(xltable, COLORPIP_SPECTRUMFG		, COLOR24(0, 255, 0));		//COLOR_GREEN
 	fillfour_xltrgb24(xltable, COLORPIP_SPECTRUMFENCE	, COLOR24(255, 255, 255));	//COLOR_WHITE
 #endif /* COLORSTYLE_ATS52 */

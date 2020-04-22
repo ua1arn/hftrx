@@ -6089,7 +6089,7 @@ static void display2_spectrum(
 			{
 				const uint_fast8_t inband = (x >= xleft && x <= xright);	// в полосе пропускания приемника = "шторка"
 				// формирование фона растра
-				display_colorbuf_set_vline(colorpip, BUFDIM_X, BUFDIM_Y, x, SPY0, SPDY, inband ? COLORPIP_SPECTRUMBG2 : COLORPIP_SPECTRUMBG);
+				display_colorbuf_set_vline(colorpip, BUFDIM_X, BUFDIM_Y, x, SPY0, SPDY, inband ? COLORMAIN_SPECTRUMBG2 : COLORPIP_SPECTRUMBG);
 			}
 			display_colorgrid_set(colorpip, SPY0, SPDY, f0, bw);	// отрисовка маркеров частот
 			for (x = 0; x < ALLDX; ++ x)
@@ -6115,7 +6115,7 @@ static void display2_spectrum(
 
 				// формирование фона растра - верхняя часть графика (Шторка)
 				//debug_printf_P(PSTR("xl=%d xr=%d\n"), xleft, xright);
-				display_colorbuf_set_vline(colorpip, BUFDIM_X, BUFDIM_Y, x, SPY0, yv, inband ? COLORPIP_SPECTRUMBG2 : COLORPIP_SPECTRUMBG);
+				display_colorbuf_set_vline(colorpip, BUFDIM_X, BUFDIM_Y, x, SPY0, yv, inband ? COLORMAIN_SPECTRUMBG2 : COLORPIP_SPECTRUMBG);
 
 				// точку на границе
 				if (yv < SPDY)
