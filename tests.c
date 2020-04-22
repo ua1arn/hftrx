@@ -6201,26 +6201,30 @@ void hightests(void)
 	}
 #endif
 #if 0
-	// вывод палитры на экран
-	display2_bgreset();
-	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
-	char buf[10];
-	int u = 3, x = 0, y = 0, w = 8 * 3;
-
-	for(int i = 0; i < 255; i++)
 	{
-		display_solidbar(x, y, x + w, y + w, i);
-		local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), i);
-		colpip_string3_tbg(fr, DIM_X, DIM_Y, x, y, buf, COLORMAIN_WHITE);
-		x = x + w + u;
-		if (i % 20 == 0)
-		{
-			x = 0;
-			y = y + w + u;
-		}
-	}
+		// test: вывод палитры на экран
+		display2_bgreset();
+		PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
+		int u = 3, x = 0, y = 0, wx = 45, wy = 8 * 3;
 
-	while(1);
+		for (int i = 0; i <= 255; i++)
+		{
+			char buf[4];
+
+			display_solidbar(x, y, x + wx, y + wy, i);
+			local_snprintf_P(buf, sizeof buf / sizeof buf [0], PSTR("%d"), i);
+			colpip_string3_tbg(fr, DIM_X, DIM_Y, x, y, buf, COLORMAIN_WHITE);
+
+			x = x + wx + u;
+			if ((i + 1) % 16 == 0)
+			{
+				x = 0;
+				y = y + wy + u;
+			}
+		}
+
+		for (;;);
+	}
 #endif
 #if 0 && defined (TSC1_TYPE)
 	{
