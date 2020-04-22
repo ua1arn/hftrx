@@ -2517,6 +2517,7 @@ struct nvmap
 	uint8_t gfillspect;
 	uint8_t gwflevelsep;	/* чувствительность водопада регулируется отдельной парой параметров */
 	uint8_t gwfshiftenable; /* разрешение или запрет сдвига водопада при изменении частоты */
+	uint8_t gspantialiasing; /* разрешение или запрет антиалиасинга спектра */
 #endif /* WITHSPECTRUMWF */
 #if WITHBCBANDS
 	uint8_t bandsetbcast;	/* Broadcasting radio bands */
@@ -3159,6 +3160,7 @@ static const uint_fast8_t displaymodesfps = DISPLAYMODES_FPS;
 	static uint_fast8_t gwflevelsep;	/* чувствительность водопада регулируется отдельной парой параметров */
 	static uint_fast8_t gzoomxpow2;		/* степень двойки - состояние растягиваия спектра (уменьшение наблюдаемой полосы частот) */
 	static uint_fast8_t gwfshiftenable = 1; /* разрешение или запрет сдвига водопада при изменении частоты */
+	static uint_fast8_t gspantialiasing  = 1; /* разрешение или запрет антиалиасинга спектра */
 #endif /* WITHSPECTRUMWF */
 #if WITHLCDBACKLIGHT
 	#if WITHISBOOTLOADER 
@@ -8297,6 +8299,7 @@ updateboard(
 			board_set_zoomxpow2(gzoomxpow2);	/* уменьшение отображаемого участка спектра */
 			board_set_wflevelsep(gwflevelsep);	/* чувствительность водопада регулируется отдельной парой параметров */
 			board_set_wfshiftenable(gwfshiftenable);	/* разрешение или запрет сдвига водопада при изменении частоты */
+			board_set_spantialiasing(gspantialiasing); /* разрешение или запрет антиалиасинга спектра */
 		#endif /* WITHSPECTRUMWF */
 	#endif /* WITHIF4DSP */
 
@@ -12850,6 +12853,15 @@ static const FLASHMEM struct menudef menutable [] =
 		& gwfshiftenable,
 		getzerobase, /* складывается со смещением и отображается */
 	},
+	{
+		QLABEL2("SPEC AA ", "Spectrum AA"), 7, 3, RJ_YES,	ISTEP1,
+		ITEM_VALUE,
+		0, 1,							/* разрешение или запрет антиалиасинга спектра */
+		offsetof(struct nvmap, gspantialiasing),
+		NULL,
+		& gspantialiasing,
+		getzerobase, /* складывается со смещением и отображается */
+		},
 #endif /* WITHSPECTRUMWF */
 #if defined (RTC1_TYPE)
 #if ! WITHFLATMENU

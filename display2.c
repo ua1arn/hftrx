@@ -109,6 +109,7 @@ static int_fast16_t glob_gridstep = 10000; //1 * glob_griddigit;	// 10, 20. 50 k
 // waterfall/spectrum parameters
 static uint_fast8_t glob_fillspect;	/* заливать заполнением площадь под графиком спектра */
 static uint_fast8_t glob_wfshiftenable;	/* разрешение или запрет сдвига водопада при изменении частоты */
+static uint_fast8_t glob_spantialiasing;	/* разрешение или запрет антиалиасинга спектра */
 
 static int_fast16_t glob_topdb = 30;	/* верхний предел FFT */
 static int_fast16_t glob_bottomdb = 130;	/* нижний предел FFT */
@@ -6092,7 +6093,7 @@ static void display2_spectrum(
 				// ломанная
 				uint_fast16_t ynew = SPDY - 1 - dsp_mag2y(filter_spectrum(x), SPDY - 1, glob_topdb, glob_bottomdb);
 				if (x != 0)
-					colpip_line(colorpip, BUFDIM_X, BUFDIM_Y, x - 1, ylast, x, ynew, COLORPIP_SPECTRUMLINE);
+					colmain_line(colorpip, BUFDIM_X, BUFDIM_Y, x - 1, ylast, x, ynew, COLORPIP_SPECTRUMLINE, glob_spantialiasing);
 				ylast = ynew;
 			}
 		}
@@ -6864,6 +6865,13 @@ void
 board_set_wfshiftenable(uint_fast8_t v)
 {
 	glob_wfshiftenable = v != 0;
+}
+
+/* разрешение или запрет антиалиасинга спектра */
+void
+board_set_spantialiasing(uint_fast8_t v)
+{
+	glob_spantialiasing = v != 0;
 }
 
 /* заливать заполнением площадь под графиком спектра */
