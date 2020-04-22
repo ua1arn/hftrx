@@ -831,7 +831,7 @@ PACKEDCOLORMAIN_T * colmain_fb_draw(void);	// буфер для построен
 PACKEDCOLORMAIN_T * colmain_fb_show(void);	// буфер для отображения
 void colmain_fb_next(void);		// прерключиться на использование следующего фреймбуфера.
 
-#define DEFAULT_ALPHA 100
+#define DEFAULT_ALPHA 128	// 0..255
 void display2_xltrgb24(COLOR24_T * xtable);
 
 // Установить прозрачность для прямоугольника

@@ -883,7 +883,7 @@ color24_aliased(
 	COLOR24_T dot
 	)
 {
-	return dot;	// test
+	return color24_shaded(dot, DEFAULT_ALPHA);	// test
 }
 
 
