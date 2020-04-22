@@ -2207,7 +2207,18 @@ extern "C" {
 	//#define LCDMODE_PIP_L8	1
 	//#define LCDMODE_PIP_RGB565	1
 	//#define LCDMODE_PIP_PAGES	3
+
+	// 0..COLORPIP_BASE-1 - волопад
+	// COLORPIP_BASE..127 - надписи и элементы дизайна
+	// то же с кодом больше на 128 - затененные цвета для получения полупрозрачности
+	// 0..95 - палитра водопада
+	// 96..111 - норм цвета
+	// 112..127 - первая степень AA
+	// Заполнение палитры производится в display2_xltrgb24()
+
 	#define COLORPIP_SHADED 128
+	#define COLORPIP_ALIASED 16
+	#define COLORPIP_BASE 96	// should be match to PALETTESIZE
 
 	#define LCDMODE_MAIN_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит - RGB565. */
 	//#define LCDMODE_PIP_RGB565	1	/* используется PIP с форматом 16 бит - RGB565 */

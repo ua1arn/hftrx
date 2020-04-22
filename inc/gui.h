@@ -9,7 +9,9 @@
 	// 0..COLORPIP_BASE-1 - волопад
 	// COLORPIP_BASE..127 - надписи и элементы дизайна
 	// то же с кодом больше на 128 - затененные цвета для получения полупрозрачности
-	#define COLORPIP_BASE 112	// should be match to PALETTESIZE
+	// 0..95 - палитра водопада
+	// 96..111 - норм цвета
+	// 112..127 - первая степень AA
 	// Заполнение палитры производится в display2_xltrgb24()
 
 	#define COLORPIP_YELLOW      (COLORPIP_BASE + 0) // TFTRGB(0xFF, 0xFF, 0x00)
