@@ -226,7 +226,18 @@ typedef struct dctx_tag
 	const void * pv;
 } dctx_t;
 
-void display2_smeter15(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx);
+void display2_smeter15(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	);
+
+void
+display2_smeter15_init(
+	uint_fast8_t xgrid,
+	uint_fast8_t ygrid,
+	dctx_t * pctx
+	);
 
 // FUNC item label
 void display_fnlabel9(
@@ -319,7 +330,6 @@ uint_fast8_t hamradio_get_multilinemenu_block_params(menu_names_t * vals, uint_f
 void hamradio_get_multilinemenu_block_vals(menu_names_t * vals, uint_fast8_t index, uint_fast8_t cnt);
 const char * hamradio_gui_edit_menu_item(uint_fast8_t index, int_least16_t rotate);
 
-void display2_smeter15_init(void);
 
 void gui_encoder2_menu(enc2_menu_t * enc2_menu);
 void gui_update(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx);

@@ -59,6 +59,11 @@ static void display2_latchwaterfall(
 	uint_fast8_t y, 
 	dctx_t * pctx
 	);
+static void wfpalette_init(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	);
 static void display2_spectrum(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
@@ -1620,6 +1625,7 @@ struct dzone
 
 /* struct dzone subset field values */
 
+#define PAGEINIT 6
 #define PAGESLEEP 7
 
 #define REDRSUBSET(page)		(1U << (page))	// сдвиги соответствуют номеру отображаемого набора элементов
@@ -1629,12 +1635,12 @@ struct dzone
 		REDRSUBSET(1) | \
 		REDRSUBSET(2) | \
 		REDRSUBSET(3) | \
-		REDRSUBSET(4) | \
 		0)
 
-#define REDRSUBSET_MENU		REDRSUBSET(5)
-#define REDRSUBSET_MENU2	REDRSUBSET(6)
+#define REDRSUBSET_MENU		REDRSUBSET(4)
+#define REDRSUBSET_MENU2	REDRSUBSET(5)
 #define REDRSUBSET_SLEEP	REDRSUBSET(PAGESLEEP)
+#define REDRSUBSET_INIT		REDRSUBSET(PAGEINIT)
 
 enum
 {
@@ -1648,6 +1654,7 @@ enum
 	REDRM_MLBL,		// название редактируемого параметра
 	REDRM_MVAL,		// значение параметра меню
 	REDRM_BUTTONS,  // область отображения экранных кнопок
+	REDRM_INIS,  	// инициализирующие процедцры экранных элементоы
 	REDRM_count
 };
 
@@ -3479,6 +3486,8 @@ enum
 			{	0,	9,	display2_bars,		REDRM_BARS, PG0, },	// S-METER, SWR-METER, POWER-METER
 			{	0,	10,	display2_legend,	REDRM_MODE, PG0, },	// Отображение оцифровки шкалы S-метра
 			/* ---------------------------------- */
+			{
+			{	0,	9,	wfpalette_init,	REDRM_INIS,	PGINI, },	// формирование палитры водопада
 			{	0,	9,	display2_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 			{	0,	9,	display2_spectrum,	REDRM_BARS, PG1, },// подготовка изображения спектра
 			{	0,	9,	display2_colorbuff,	REDRM_BARS,	PG1, },// Отображение водопада и/или спектра
@@ -3625,6 +3634,7 @@ enum
 			/* ---------------------------------- */
 		#if WITHDSPEXTDDC
 
+			{	0,	9,	wfpalette_init,	REDRM_INIS,	PGINI, },	// формирование палитры водопада
 			{	0,	9,	display2_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 			{	0,	9,	display2_spectrum,	REDRM_BARS, PG1, },// подготовка изображения спектра
 			{	0,	9,	display2_colorbuff,	REDRM_BARS,	PG1, },// Отображение водопада и/или спектра
@@ -3773,6 +3783,7 @@ enum
 		{	0,	15,	display2_bars,		REDRM_BARS, PG0, },	// S-METER, SWR-METER, POWER-METER
 		{	27, 15,	display_smeter5,	REDRM_BARS, PG0, },	// signal level
 
+		{	0,	18,	wfpalette_init,	REDRM_INIS,	PGINI, },	// формирование палитры водопада
 		{	0,	18,	display2_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 		{	0,	18,	display2_spectrum,	REDRM_BARS, PG0, },// подготовка изображения спектра
 		{	0,	18,	display2_waterfall,	REDRM_BARS, PG0, },// подготовка изображения водопада
@@ -3995,6 +4006,7 @@ enum
 			//---
 			{	0,	18,	display2_bars,		REDRM_BARS, PG0, },	// S-METER, SWR-METER, POWER-METER
 		#if WITHIF4DSP
+			{	0,	18,	wfpalette_init,	REDRM_INIS,	PGINI, },	// формирование палитры водопада
 			{	0,	18,	display2_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 			{	0,	18,	display2_spectrum,	REDRM_BARS, PG1, },// подготовка изображения спектра
 			{	0,	18,	display2_waterfall,	REDRM_BARS, PG1, },// подготовка изображения водопада
@@ -4117,6 +4129,7 @@ enum
 		PGSWR = PG0,	// страница отоюражения S-meter и SWR-meter
 		PGLATCH = PGALL | REDRSUBSET_SLEEP,	// страницы, на которых возможно отображение водопада или панорамы.
 		PGSLP = REDRSUBSET_SLEEP,
+		PGINI = REDRSUBSET_INIT,
 		PGunused
 	};
 
@@ -4151,6 +4164,7 @@ enum
 //		{	26,	16,	display_agc3,		REDRM_MODE, PGALL, },	// AGC mode
 		{	26,	20,	display_voxtune3,	REDRM_MODE, PGALL, },	// VOX
 
+		{   0, 6,  display2_smeter15_init,REDRM_INIS, PGINI, },	// Инициализация стрелочного прибора
 		{   0, 6,  display2_smeter15, 	REDRM_BARS, PGALL, },	// Изображение стрелочного прибора
 
 		{	15,	4,	display_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
@@ -4170,6 +4184,7 @@ enum
 		//{	0,	24,	display2_bars,		REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
 		{	25, 24, display_siglevel4, REDRM_BARS, PGSWR, },	// уровень сигнала
 		//{	25, 24, display_smeter5, 	REDRM_BARS, PGSWR, },	// уровень сигнала в баллах S
+		{	0,	28,	wfpalette_init,	REDRM_INIS,	PGINI, },	// формирование палитры водопада
 		{	0,	28,	display2_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 		{	0,	28,	display2_spectrum,	REDRM_BARS, PGSPE, },// подготовка изображения спектра
 		{	0,	28,	display2_waterfall,	REDRM_BARS, PGWFL, },// подготовка изображения водопада
@@ -4343,6 +4358,7 @@ enum
 		{	0,	24,	display2_bars,		REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
 		{	25, 24, display_siglevel4, REDRM_BARS, PGSWR, },	// уровень сигнала
 		//{	25, 24, display_smeter5, 	REDRM_BARS, PGSWR, },	// уровень сигнала в баллах S
+		{	0,	28,	wfpalette_init,	REDRM_INIS,	PGINI, },	// формирование палитры водопада
 		{	0,	28,	display2_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 		{	0,	28,	display2_spectrum,	REDRM_BARS, PGSPE, },// подготовка изображения спектра
 		{	0,	28,	display2_waterfall,	REDRM_BARS, PGWFL, },// подготовка изображения водопада
@@ -4607,6 +4623,7 @@ enum
 		PGSWR = PG0,	// страница отоюражения S-meter и SWR-meter
 		PGLATCH = PGALL | REDRSUBSET_SLEEP,	// страницы, на которых возможно отображение водопада или панорамы.
 		PGSLP = REDRSUBSET_SLEEP,
+		PGINI = REDRSUBSET_INIT,
 		PGunused
 	};
 
@@ -4635,6 +4652,7 @@ enum
 		{	45, 0,	display_notch5,		REDRM_MODE, PGALL, },	// NOTCH on/off
 		{	47, 15,	display_voxtune3,	REDRM_MODE, PGALL, },	// VOX
 		{	47, 5,	display_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
+		{    0, 6,  display2_smeter15_init,REDRM_INIS, PGINI, },	//  Инициализация стрелочного прибора
 		{    0, 6,  display2_smeter15, 	REDRM_BARS, PGALL, },	// Изображение стрелочного прибора
 		{   47, 20, display_bkin3,		REDRM_MODE, PGALL, },
 	#if WITHENCODER2
@@ -4671,6 +4689,7 @@ enum
 		{	0,	0, display_siglevel4, 	REDRM_BARS, PGSWR, },	// signal level dBm
 //		{	36, 30,	display_freqdelta8, REDRM_BARS, PGSWR, },	// выход ЧМ демодулятора
 	#if WITHSPECTRUMWF
+		{	0,	DLES,	wfpalette_init,	REDRM_INIS,	PGINI, },	// формирование палитры водопада
 		{	0,	DLES,	display2_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 		{	0,	DLES,	display2_spectrum,	REDRM_BARS, PGSPE, },// подготовка изображения спектра
 		{	0,	DLES,	display2_waterfall,	REDRM_BARS, PGWFL, },// подготовка изображения водопада
@@ -4770,6 +4789,7 @@ enum
 		PGSWR = PG0,	// страница отоюражения S-meter и SWR-meter
 		PGLATCH = PGALL | REDRSUBSET_SLEEP,	// страницы, на которых возможно отображение водопада или панорамы.
 		PGSLP = REDRSUBSET_SLEEP,
+		PGINI = REDRSUBSET_INIT,
 		PGunused
 	};
 
@@ -4799,6 +4819,7 @@ enum
 		{	32,	0,	display_att4,		REDRM_MODE, PGALL, },
 		{	37,	0,	display_preovf3,	REDRM_BARS, PGALL, },
 
+		{   0, 	6,  display2_smeter15_init,REDRM_INIS, PGINI, },	//  Инициализация стрелочного прибора
 		{   0, 	6,	display2_smeter15, 	REDRM_BARS, PGALL, },	// Изображение стрелочного прибора
 		{	15,	7,	display_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
 
@@ -4843,6 +4864,7 @@ enum
 		{	46, 30,	display_agc3,		REDRM_MODE, PGALL, },	// AGC mode
 
 	#if WITHSPECTRUMWF
+		{	0,	DLES,	wfpalette_init,	REDRM_INIS,	PGINI, },	// формирование палитры водопада
 		{	0,	DLES,	display2_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 		{	0,	DLES,	display2_spectrum,	REDRM_BARS, PGSPE, },// подготовка изображения спектра
 		{	0,	DLES,	display2_waterfall,	REDRM_BARS, PGWFL, },// подготовка изображения водопада
@@ -5023,6 +5045,7 @@ enum
 		{	36, 30,	display_freqdelta8, REDRM_BARS, PGSWR, },	// выход ЧМ демодулятора
 		{	46, 30,	display_agc3,		REDRM_MODE, PGALL, },	// AGC mode
 	#if WITHSPECTRUMWF
+		{	0,	DLES,	wfpalette_init,	REDRM_INIS,	PGINI, },	// формирование палитры водопада
 		{	0,	DLES,	display2_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 		{	0,	DLES,	display2_spectrum,	REDRM_BARS, PGSPE, },// подготовка изображения спектра
 		{	0,	DLES,	display2_waterfall,	REDRM_BARS, PGWFL, },// подготовка изображения водопада
@@ -5760,7 +5783,12 @@ static uint_fast16_t wfscroll;			// сдвиг по вертикали (в ра�
 static uint_fast8_t wfclear;			// стирание всей областии отображение водопада.
 
 // Код взят из проекта Malamute
-static void wfpalette_initialize(void)
+void
+wfpalette_init(
+	uint_fast8_t xgrid,
+	uint_fast8_t ygrid,
+	dctx_t * pctx
+	)
 {
 	//PRINTF("wfpalette_initialize: main=%d, pip=%d, PALETTESIZE=%d, LCDMODE_MAIN_PAGES=%d\n", sizeof (PACKEDCOLORMAIN_T), sizeof (PACKEDCOLORMAIN_T), PALETTESIZE, LCDMODE_MAIN_PAGES);
 	if (PALETTESIZE != 256)
@@ -6680,10 +6708,8 @@ void display2_bgreset(void)
 	keyi = 0;
 #endif /* STMD */
 
-#if WITHSPECTRUMWF && ! LCDMODE_HD44780 && ! LCDMODE_DUMMY
-	// инициализация палитры волопада
-	wfpalette_initialize();
-#endif /* WITHSPECTRUMWF && ! LCDMODE_HD44780 && ! LCDMODE_DUMMY */
+	// параметр key игнорируеся обычно, но для сдучая старых дисплеев выделен особенный
+	display_walktrough(REDRM_INIS, REDRSUBSET_INIT, NULL);
 }
 
 // Interface functions

@@ -354,7 +354,12 @@ typedef struct {
 } smeter_params_t;
 static smeter_params_t smeter_params;
 
-void display2_smeter15_init(void)
+void
+display2_smeter15_init(
+	uint_fast8_t xgrid,
+	uint_fast8_t ygrid,
+	dctx_t * pctx
+	)
 {
 	const uint_fast8_t halfsect = 30;
 
