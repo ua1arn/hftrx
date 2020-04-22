@@ -4830,16 +4830,10 @@ enum
 
 		{   0, 	6,  display2_smeter15_init,REDRM_INIS, PGINI, },	//  Инициализация стрелочного прибора
 		{   0, 	6,	display2_smeter15, 	REDRM_BARS, PGALL, },	// Изображение стрелочного прибора
-		{	15,	7,	display_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
+		{	15,	6,	display_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
 
-	#if WITHENCODER2
 		{	41, 0,	display_fnlabel9,	REDRM_MODE, PGALL, },	// FUNC item label
 		{	41,	4,	display_fnvalue9,	REDRM_MODE, PGALL, },	// FUNC item value
-		{	45, 15,	display_notch5,		REDRM_MODE, PGALL, },	// NOTCH on/off
-	#else /* WITHENCODER2 */
-		{	45, 0,	display_notch5,		REDRM_MODE, PGALL, },	// FUNC item label
-		{	45,	4,	display_notchfreq5,	REDRM_BARS, PGALL, },	// FUNC item value
-	#endif /* WITHENCODER2 */
 
 		{	37, 10,	display_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 		{	41, 10,	display_rxbw3,		REDRM_MODE, PGALL, },	// 3.1 / 0,5 / WID / NAR
@@ -4847,6 +4841,7 @@ enum
 
 		{	37, 15,	display_nr3,		REDRM_MODE, PGALL, },	// NR : was: AGC
 		{	41, 15,	display_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
+		{	45, 15,	display_notch5,		REDRM_MODE, PGALL, },	// NOTCH on/off
 
 		{	15, 20,	display_mainsub3,	REDRM_MODE, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
 		{	20,	20,	display_vfomode3,	REDRM_MODE, PGALL, },	// SPL
@@ -4872,13 +4867,11 @@ enum
 		{	37, 30,	display_freqdelta8, REDRM_BARS, PGALL, },	// выход ЧМ демодулятора
 		{	46, 30,	display_agc3,		REDRM_MODE, PGALL, },	// AGC mode
 
-	#if WITHSPECTRUMWF
 		{	0,	DLES,	wfpalette_init,	REDRM_INIS,	PGINI, },	// формирование палитры водопада
 		{	0,	DLES,	display2_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 		{	0,	DLES,	display2_spectrum,	REDRM_BARS, PGSPE, },// подготовка изображения спектра
 		{	0,	DLES,	display2_waterfall,	REDRM_BARS, PGWFL, },// подготовка изображения водопада
 		{	0,	DLES,	display2_colorbuff,	REDRM_BARS,	PGWFL | PGSPE, },// Отображение водопада и/или спектра
-	#endif /* WITHSPECTRUMWF */
 
 		{	0,	DLE1,	display2_datetime12,	REDRM_BARS, PGALL,	},	// DATE&TIME Jan-01 13:40
 		{	13,	DLE1,	display2_span9,		REDRM_MODE, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
@@ -4903,7 +4896,7 @@ enum
 #if WITHMENU
 	void display2_getmultimenu(multimenuwnd_t * p)
 	{
-		enum { YSTEP = 4 };		// количество ячеек разметки на одну строку меню
+		enum { YSTEP = 5 };		// количество ячеек разметки на одну строку меню
 		p->multilinemenu_max_rows = (DLE1 - DLES) / YSTEP;
 		p->ystep = YSTEP;	// количество ячеек разметки на одну строку меню
 		p->reverse = 1;
