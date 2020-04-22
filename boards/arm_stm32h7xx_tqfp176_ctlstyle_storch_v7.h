@@ -348,7 +348,7 @@
 	// +++ Эти строки можно отключать, уменьшая функциональность готового изделия
 	//#define WITHRFSG	1	/* включено управление ВЧ сигнал-генератором. */
 	#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
-	#if 0
+	#if 1
 		/* TUNER & PA board us4ijr@gmail.com */
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
 		#define SHORTSET8	1
@@ -506,24 +506,27 @@
 
 		#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
 
-		#define WITHCURRLEVEL_ACS712_30A 1	// PA current sense - ACS712ELCTR-30B-T chip
-		//#define WITHCURRLEVEL_ACS712_20A 1	// PA current sense - ACS712ELCTR-30B-T chip
+		//#define WITHCURRLEVEL_ACS712_30A 1	// PA current sense - ACS712ELCTR-30B-T chip
+		#define WITHCURRLEVEL_ACS712_20A 1	// PA current sense - ACS712ELCTR-30B-T chip
 		#if WITHCURRLEVEL
 			//PASENSEIX = BOARD_ADCXIN(0),		// MCP3208 CH0 PA current sense - ACS712-30 chip
 			PASENSEIX = 6,			// PA6 потенциометр управления скоростью передачи в телеграфе
-			PASENSEMRRIX = BOARD_ADCMRRIN(0),	// кеш - индекc не должен повторяться в конфигурации
 		#endif /* WITHCURRLEVEL */
 		#if WITHVOLTLEVEL
 			VOLTSOURCE = 8,		// PB0 Средняя точка делителя напряжения, для АКБ
-			VOLTMRRIX = BOARD_ADCMRRIN(1),	// кеш - индекc не должен повторяться в конфигурации
 		#endif /* WITHVOLTLEVEL */
 
 		#if WITHSWRMTR
 			//FWD = BOARD_ADCXIN(2), REF = BOARD_ADCXIN(3),		// MCP3208 CH2, CH3 Детектор прямой, отраженной волны
 			FWD = 14, REF = 15,	// PC5	SWR-meter
 			PWRI = FWD,			// PC4
-			PWRMRRIX = BOARD_ADCMRRIN(2),
 		#endif /* WITHSWRMTR */
+
+		PASENSEMRRIX = BOARD_ADCMRRIN(0),	// кеш - индекc не должен повторяться в конфигурации
+		VOLTMRRIX = BOARD_ADCMRRIN(1),	// кеш - индекc не должен повторяться в конфигурации
+		REFMRRIX = BOARD_ADCMRRIN(2),
+		FWDMRRIX = BOARD_ADCMRRIN(3),
+		PWRMRRIX = BOARD_ADCMRRIN(4),
 
 	#elif 0
 		// UA1CEI PA board: MCP3208 at targetext2 - P2_0 external SPI device (PA BOARD ADC)
