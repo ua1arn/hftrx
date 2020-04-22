@@ -3453,6 +3453,7 @@ enum
 			PG1 = REDRSUBSET(DPAGE1),
 			PGALL = PG0 | PG1 | REDRSUBSET_MENU,
 			PGLATCH = PGALL | REDRSUBSET_SLEEP,
+			PGINI = REDRSUBSET_INIT,
 			PGunused
 		};
 		#define DISPLC_WIDTH	8	// количество цифр в отображении частоты
@@ -3750,6 +3751,7 @@ enum
 		PGALL = PG0 | REDRSUBSET_MENU,
 		PGNOMEMU = PG0,
 		PGLATCH = PGALL | REDRSUBSET_SLEEP,	// страницы, на которых возможно отображение водопада или панорамы.
+		PGINI = REDRSUBSET_INIT,
 		PGunused
 	};
 	#define DISPLC_WIDTH	8	// количество цифр в отображении частоты
@@ -3977,6 +3979,7 @@ enum
 			PGNOMEMU = PG0,
 		#endif /* WITHIF4DSP */
 			PGLATCH = PGALL | REDRSUBSET_SLEEP,	// страницы, на которых возможно отображение водопада или панорамы.
+			PGINI = REDRSUBSET_INIT,
 			PGunused
 		};
 		#define DISPLC_WIDTH	8	// количество цифр в отображении частоты
@@ -4307,6 +4310,7 @@ enum
 		PGSWR = PG0,	// страница отоюражения S-meter и SWR-meter
 		PGLATCH = PGALL | REDRSUBSET_SLEEP,	// страницы, на которых возможно отображение водопада или панорамы.
 		PGSLP = REDRSUBSET_SLEEP,
+		PGINI = REDRSUBSET_INIT,
 		PGunused
 	};
 
