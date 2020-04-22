@@ -46,9 +46,13 @@ static const COLORMAIN_T colorsbg_2state [2] = { DESIGNCOLORSTATE, DESIGNCOLORDA
 static const COLORMAIN_T colorsfg_1state [1] = { DESIGNCOLORSTATE, };
 static const COLORMAIN_T colorsbg_1state [1] = { COLORMAIN_BLACK, };	// устанавливается в цвет фона из палитры
 
-// параметры отображения текстов без вариантов
+// параметры отображения частоты основного приемника
 static const COLORMAIN_T colorsfg_1freq [1] = { DESIGNBIGCOLOR, };
 static const COLORMAIN_T colorsbg_1freq [1] = { COLORMAIN_BLACK, };	// устанавливается в цвет фона из палитры
+
+// параметры отображения частоты дополнительного приемника
+static const COLORMAIN_T colorsfg_1freqB [1] = { DESIGNBIGCOLORB, };
+static const COLORMAIN_T colorsbg_1freqB [1] = { COLORMAIN_BLACK, };	// устанавливается в цвет фона из палитры
 
 // todo: switch off -Wunused-function
 
@@ -281,7 +285,7 @@ static void display_freqchr_b(
 	uint_fast8_t fullwidth = display_getfreqformat(& rj);
 	const uint_fast8_t comma = 3 - rj;
 
-	colmain_setcolors3(colorsfg_1freq [0], colorsbg_1freq [0], colorsfg_1freq [0]);
+	colmain_setcolors3(colorsfg_1freqB [0], colorsbg_1freq [0], colorsfg_1freqB [0]);
 	if (pctx != NULL && pctx->type == DCTX_FREQ)
 	{
 #if WITHDIRECTFREQENER
@@ -320,7 +324,7 @@ static void display_freqX_b(
 
 	const uint_fast32_t freq = hamradio_get_freq_b();
 
-	colmain_setcolors(colorsfg_1freq [0], colorsbg_1freq [0]);
+	colmain_setcolors(colorsfg_1freqB [0], colorsbg_1freqB [0]);
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	do
 	{
