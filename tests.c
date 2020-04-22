@@ -6200,6 +6200,28 @@ void hightests(void)
 		BarTest();
 	}
 #endif
+#if 0
+	// вывод палитры на экран
+	display2_bgreset();
+	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
+	char buf[10];
+	int u = 3, x = 0, y = 0, w = 8 * 3;
+
+	for(int i = 0; i < 255; i++)
+	{
+		display_solidbar(x, y, x + w, y + w, i);
+		local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), i);
+		colpip_string3_tbg(fr, DIM_X, DIM_Y, x, y, buf, COLORMAIN_WHITE);
+		x = x + w + u;
+		if (i % 20 == 0)
+		{
+			x = 0;
+			y = y + w + u;
+		}
+	}
+
+	while(1);
+#endif
 #if 0 && defined (TSC1_TYPE)
 	{
 		uint_fast16_t gridx = 16;
