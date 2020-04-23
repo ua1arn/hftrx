@@ -18266,7 +18266,9 @@ uint_fast8_t hamradio_get_multilinemenu_block_groups(menu_names_t * vals)
 	uint_fast16_t el;
 	uint_fast8_t count = 0;
 
+#if defined (RTC1_TYPE)
 	getstamprtc();
+#endif /* defined (RTC1_TYPE) */
 	for (el = 0; el < MENUROW_COUNT; el ++)
 	{
 		const FLASHMEM struct menudef * const mv = & menutable [el];
