@@ -336,7 +336,7 @@ const char * hamradio_gui_edit_menu_item(uint_fast8_t index, int_least16_t rotat
 
 
 void gui_encoder2_menu(enc2_menu_t * enc2_menu);
-void gui_update(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx);
+void gui_WM_walktrough(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx);
 void gui_initialize(void);
 uint_fast8_t gui_check_encoder2(int_least16_t rotate);
 void gui_set_encoder2_state(uint_fast8_t code);

@@ -18098,6 +18098,37 @@ hamradio_main_step(void)
 	return STTE_OK;
 }
 
+#if WITHAFCODEC1HAVEPROC
+
+uint_fast8_t hamradio_get_gmikeequalizer(void)
+{
+	return gmikeequalizer;
+}
+
+void hamradio_set_gmikeequalizer(uint_fast8_t v)
+{
+	gmikeequalizer = v != 0;
+}
+
+uint_fast8_t hamradio_get_gmikeequalizerparams(uint_fast8_t i)
+{
+	ASSERT(i < HARDWARE_CODEC1_NPROCPARAMS);
+	return gmikeequalizerparams[i];
+}
+
+void hamradio_set_gmikeequalizerparams(uint_fast8_t i, uint_fast8_t v)
+{
+	ASSERT(i < HARDWARE_CODEC1_NPROCPARAMS);
+	gmikeequalizerparams[i] = v;
+}
+
+int_fast32_t hamradio_getequalizerbase(void)
+{
+	return getequalizerbase();
+}
+
+#endif /* WITHAFCODEC1HAVEPROC */
+
 #if WITHIFSHIFT
 
 int_fast16_t hamradio_get_if_shift(void)
@@ -18134,7 +18165,6 @@ uint_fast8_t hamradio_set_freq(uint_fast32_t freq)
 	}
 	return 0;
 }
-
 
 #if WITHTOUCHGUI
 

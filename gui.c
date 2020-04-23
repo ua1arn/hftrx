@@ -765,12 +765,14 @@ static void window_uif_process(void);
 static void window_mode_process(void);
 static void window_agc_process(void);
 static void window_enc2_process(void);
+static void window_test_process(void);
 static void gui_main_process(void);
 
 	enum {
 		TYPE_DUMMY,
 		TYPE_BUTTON,
-		TYPE_LABEL
+		TYPE_LABEL,
+		TYPE_SLIDER
 	};
 
 	enum {
@@ -804,7 +806,8 @@ static void gui_main_process(void);
 		WINDOW_FREQ,
 		WINDOW_MENU,
 		WINDOW_ENC2,
-		WINDOW_UIF
+		WINDOW_UIF,
+		WINDOW_TEST
 	};
 
 	enum {
@@ -855,18 +858,18 @@ static void gui_main_process(void);
 		char text [TEXT_ARRAY_SIZE]; // текст внутри кнопки, разделитель строк |, не более 2х строк
 	} button_t;
 
-	static button_t button_handlers [] = {
+	static button_t buttons [] = {
 	//   x1, y1, w, h,  onClickHandler,        state,   is_locked, is_trackable, parent,    visible,      payload,	              name, 		text
 		{ },
-		{ 0, 0, 86, 44, button1_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, 	  	 VISIBLE,     UINTPTR_MAX, 		"btnMode", 		"Mode", },
-		{ 0, 0, 86, 44, button2_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, 	  	 VISIBLE,     UINTPTR_MAX, 		"btnAF", 		"AF|filter", },
-		{ 0, 0, 86, 44, button3_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, 	  	 VISIBLE,     UINTPTR_MAX, 		"btnAGC", 		"AGC", },
-		{ 0, 0, 86, 44, button4_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, 	  	 VISIBLE,     UINTPTR_MAX, 		"btn4", 		"Freq", },
-		{ 0, 0, 86, 44, button5_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, 	 	 VISIBLE,     UINTPTR_MAX, 		"btn5", 		"", },
-		{ 0, 0, 86, 44, button6_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, 	  	 VISIBLE,     UINTPTR_MAX, 		"btn6", 		"", },
-		{ 0, 0, 86, 44, button7_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, 	  	 VISIBLE,     UINTPTR_MAX, 		"btn7", 		"", },
-		{ 0, 0, 86, 44, button8_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, 	  	 VISIBLE,     UINTPTR_MAX, 		"btn8", 		"", },
-		{ 0, 0, 86, 44, button9_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, 	  	 VISIBLE,     UINTPTR_MAX, 		"btnSysMenu", 	"System|settings", },
+		{ 0, 0, 86, 44, button1_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  VISIBLE,     UINTPTR_MAX, 		"btnMode", 		"Mode", },
+		{ 0, 0, 86, 44, button2_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  VISIBLE,     UINTPTR_MAX, 		"btnAF", 		"AF|filter", },
+		{ 0, 0, 86, 44, button3_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  VISIBLE,     UINTPTR_MAX, 		"btnAGC", 		"AGC", },
+		{ 0, 0, 86, 44, button4_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  VISIBLE,     UINTPTR_MAX, 		"btn4", 		"Freq", },
+		{ 0, 0, 86, 44, button5_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  VISIBLE,     UINTPTR_MAX, 		"btn5", 		"", },
+		{ 0, 0, 86, 44, button6_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  VISIBLE,     UINTPTR_MAX, 		"btn6", 		"", },
+		{ 0, 0, 86, 44, button7_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  VISIBLE,     UINTPTR_MAX, 		"btn7", 		"", },
+		{ 0, 0, 86, 44, button8_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  VISIBLE,     UINTPTR_MAX, 		"btn8", 		"Slider|test", },
+		{ 0, 0, 86, 44, button9_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  VISIBLE,     UINTPTR_MAX, 		"btnSysMenu", 	"System|settings", },
 		{ 0, 0, 86, 44, buttons_mode_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_LSB, 		"btnModeLSB", 	"LSB", },
 		{ 0, 0, 86, 44, buttons_mode_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_CW,  		"btnModeCW", 	"CW", },
 		{ 0, 0, 86, 44, buttons_mode_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_AM,  		"btnModeAM", 	"AM", },
@@ -899,7 +902,7 @@ static void gui_main_process(void);
 		{ 0, 0, 40, 40, buttons_uif_handler,  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UIF,   NON_VISIBLE, UINTPTR_MAX, 		"btnUIF+", 		"+", },
 //		{ 375, 120, buttons_uif_handler, 	NULL, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UIF,   NON_VISIBLE, UINTPTR_MAX, 			"btnUIF_OK", "OK", },
 	};
-	enum { BUTTON_HANDLERS_COUNT = sizeof button_handlers / sizeof button_handlers[0] };
+	enum { BUTTONS_COUNT = sizeof buttons / sizeof buttons[0] };
 
 	typedef struct {
 		uint16_t x;
@@ -942,8 +945,49 @@ static void gui_main_process(void);
 		{ 0, 0,	WINDOW_UIF,  DISABLED,  0, NON_VISIBLE, "lbl_uif_param",  "", COLORPIP_WHITE, },
 		{ 0, 0,	WINDOW_UIF,  DISABLED,  0, NON_VISIBLE, "lbl_uif_val", 	  "", COLORPIP_WHITE, },
 		{ 0, 0,	WINDOW_FREQ, DISABLED,  0, NON_VISIBLE, "lbl_freq_val",   "", COLORPIP_YELLOW, },
-};
+		{ 0, 0,	WINDOW_TEST, DISABLED,  0, NON_VISIBLE, "lbl_test_val",   "", COLORPIP_YELLOW, },
+	};
 	enum { LABELS_COUNT = sizeof labels / sizeof labels[0] };
+
+	typedef enum  {
+		ORIENTATION_VERTICAL,
+		ORIENTATION_HORIZONTAL
+	} orientation_t;
+
+	enum {
+		sliders_width = 8,		// ширина шкалы
+		sliders_w = 18,			// размеры ползунка
+		sliders_h = 12			// от центра (*2)
+	};
+
+	typedef struct {
+		uint16_t x;
+		uint16_t y;
+		uint16_t x1_p;			// координаты ползунка
+		uint16_t y1_p;			// для update_touch_list
+		uint16_t x2_p;
+		uint16_t y2_p;
+		orientation_t orientation;
+		uint8_t parent;
+		char name [NAME_ARRAY_SIZE];
+		uint8_t state;
+		uint8_t visible;
+		uint16_t size;			// длина шкалы в пикселях
+		uint8_t value;			// 0..100 %
+		uint8_t value_old;		// для перерасчетов при изменении значения
+		uint16_t value_p;		// в пикселях от начала шкалы
+		float step;
+	} slider_t;
+
+	static slider_t sliders[] = {
+			{ },
+			{ 0, 0, 0, 0, 0, 0, ORIENTATION_VERTICAL, WINDOW_TEST, "slrMikeEQ.08", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
+			{ 0, 0, 0, 0, 0, 0, ORIENTATION_VERTICAL, WINDOW_TEST, "slrMikeEQ.23", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
+			{ 0, 0, 0, 0, 0, 0, ORIENTATION_VERTICAL, WINDOW_TEST, "slrMikeEQ.65", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
+			{ 0, 0, 0, 0, 0, 0, ORIENTATION_VERTICAL, WINDOW_TEST, "slrMikeEQ1.8", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
+			{ 0, 0, 0, 0, 0, 0, ORIENTATION_VERTICAL, WINDOW_TEST, "slrMikeEQ5.3", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
+	};
+	enum { SLIDERS_COUNT = sizeof sliders / sizeof sliders[0] };
 
 	typedef struct {
 		uint16_t last_pressed_x; 	 // последняя точка касания экрана
@@ -962,16 +1006,16 @@ static void gui_main_process(void);
 
 	static gui_t gui = { 0, 0, KBD_CODE_MAX, 0, TYPE_DUMMY, CANCELLED, 0, 0, 0, 0, 0, 1, };
 
-	enum align_t {
+	typedef enum {
 		ALIGN_LEFT_X 	= WITHGUIMAXX >> 2,					// вертикальное выравнивание по центру левой половины экрана
 		ALIGN_CENTER_X 	= WITHGUIMAXX >> 1,					// вертикальное выравнивание по центру экрана
 		ALIGN_RIGHT_X 	= ALIGN_LEFT_X + ALIGN_CENTER_X,	// вертикальное выравнивание по центру правой половины экрана
 		ALIGN_Y 		= WITHGUIMAXY >> 1					// горизонтальное выравнивание всегда по центру экрана
-	};
+	} align_t;
 
 	typedef struct {
 		uint8_t window_id;			// в окне будут отображаться элементы с соответствующим полем for_window
-		enum align_t align_mode;	// вертикаль выравнивания окна
+		align_t align_mode;			// вертикаль выравнивания окна
 		uint16_t x1;
 		uint16_t y1;
 		uint16_t w;
@@ -992,6 +1036,7 @@ static void gui_main_process(void);
 		{ WINDOW_MENU,  ALIGN_CENTER_X, 0, 0, 550, 240, "Settings",	   NON_VISIBLE, 0, window_menu_process, },
 		{ WINDOW_ENC2, 	ALIGN_RIGHT_X, 	0, 0, 185, 105, "Fast menu",   NON_VISIBLE, 0, window_enc2_process, },
 		{ WINDOW_UIF, 	ALIGN_LEFT_X, 	0, 0, 200, 145, "",   		   NON_VISIBLE, 0, window_uif_process, },
+		{ WINDOW_TEST, 	ALIGN_CENTER_X, 0, 0, 500, 300, "Slider test", NON_VISIBLE, 0, window_test_process, },
 	};
 	enum { windows_count = sizeof windows / sizeof windows[0] };
 
@@ -1060,24 +1105,38 @@ static void gui_main_process(void);
 		gui.timer_1sec_updated = 1;
 	}
 
-	static uint_fast8_t find_button (uint_fast8_t id_window, const char * name)				// возврат id кнопки окна по ее названию
+	static uint_fast8_t find_gui_element (uint_fast8_t type, uint_fast8_t id_window, const char * name)
 	{
-		for (uint_fast8_t i = 1; i < BUTTON_HANDLERS_COUNT; i++)
+		switch (type)
 		{
-			if (button_handlers[i].parent == id_window && strcmp(button_handlers[i].name, name) == 0)
-				return i;
-		}
-		return 0;
-	}
+		case TYPE_BUTTON:
+			for (uint_fast8_t i = 1; i < BUTTONS_COUNT; i++)
+			{
+				if (buttons[i].parent == id_window && strcmp(buttons[i].name, name) == 0)
+					return i;
+			}
+			return 0;
 
-	static uint_fast8_t find_label (uint_fast8_t id_window, const char * name)				// возврат id метки окна по ее названию
-	{
-		for (uint_fast8_t i = 1; i < LABELS_COUNT; i++)
-		{
-			if (labels[i].parent == id_window && strcmp(labels[i].name, name) == 0)
-				return i;
+		case TYPE_LABEL:
+			for (uint_fast8_t i = 1; i < LABELS_COUNT; i++)
+			{
+				if (labels[i].parent == id_window && strcmp(labels[i].name, name) == 0)
+					return i;
+			}
+			return 0;
+
+		case TYPE_SLIDER:
+			for (uint_fast8_t i = 1; i < SLIDERS_COUNT; i++)
+			{
+				if (sliders[i].parent == id_window && strcmp(sliders[i].name, name) == 0)
+					return i;
+			}
+			return 0;
+
+		default:
+			ASSERT(0);
+			return 0;
 		}
-		return 0;
 	}
 
 	static void footer_buttons_state (uint_fast8_t state, const char * name)					// блокируются все, кроме name == text
@@ -1085,16 +1144,16 @@ static void gui_main_process(void);
 		static uint_fast8_t id = 0;
 		if (state == DISABLED)
 		{
-			id = find_button(WINDOW_MAIN, name);
-			button_handlers[id].is_locked = BUTTON_LOCKED;
+			id = find_gui_element(TYPE_BUTTON, WINDOW_MAIN, name);
+			buttons[id].is_locked = BUTTON_LOCKED;
 		} else
-			button_handlers[id].is_locked = BUTTON_NON_LOCKED;
+			buttons[id].is_locked = BUTTON_NON_LOCKED;
 
-		for (uint_fast8_t i = 1; i < BUTTON_HANDLERS_COUNT; i++)
+		for (uint_fast8_t i = 1; i < BUTTONS_COUNT; i++)
 		{
-			if (button_handlers[i].parent != WINDOW_MAIN)
+			if (buttons[i].parent != WINDOW_MAIN)
 				break;
-			button_handlers[i].state = button_handlers[i].name == name ? DISABLED : state;
+			buttons[i].state = buttons[i].name == name ? DISABLED : state;
 		}
 	}
 
@@ -1104,13 +1163,13 @@ static void gui_main_process(void);
 		if (! value)
 			windows[parent].first_call = 1;
 
-		for (uint_fast8_t i = 1; i < BUTTON_HANDLERS_COUNT; i++)
+		for (uint_fast8_t i = 1; i < BUTTONS_COUNT; i++)
 		{
-			if (button_handlers[i].parent == parent)
+			if (buttons[i].parent == parent)
 			{
-				button_handlers[i].visible = value;
-				button_handlers[i].is_locked = 0;
-				if (button_handlers[i].visible)
+				buttons[i].visible = value;
+				buttons[i].is_locked = 0;
+				if (buttons[i].visible)
 				{
 					touch_elements[touch_count].id = i;
 					touch_elements[touch_count].type = TYPE_BUTTON;
@@ -1132,6 +1191,21 @@ static void gui_main_process(void);
 					touch_count++;
 				}
 				if(! labels[i].visible && labels[i].onClickHandler)
+					touch_count--;
+			}
+		}
+		for (uint_fast8_t i = 1; i < SLIDERS_COUNT; i++)
+		{
+			if (sliders[i].parent == parent)
+			{
+				sliders[i].visible = value;
+				if (sliders[i].visible)
+				{
+					touch_elements[touch_count].id = i;
+					touch_elements[touch_count].type = TYPE_SLIDER;
+					touch_count++;
+				}
+				else
 					touch_count--;
 			}
 		}
@@ -1169,19 +1243,19 @@ static void gui_main_process(void);
 	{
 		if(gui.selected_type == TYPE_BUTTON)
 		{
-			uint_fast8_t id_button_high = find_button(WINDOW_BP, "btnAF_2");
-			uint_fast8_t id_button_low = find_button(WINDOW_BP, "btnAF_1");
-			uint_fast8_t id_button_OK = find_button(WINDOW_BP, "btnAF_OK");
+			uint_fast8_t id_button_high = find_gui_element(TYPE_BUTTON, WINDOW_BP, "btnAF_2");
+			uint_fast8_t id_button_low = find_gui_element(TYPE_BUTTON, WINDOW_BP, "btnAF_1");
+			uint_fast8_t id_button_OK = find_gui_element(TYPE_BUTTON, WINDOW_BP, "btnAF_OK");
 
 			if (gui.selected_id == id_button_low)
 			{
-				button_handlers[id_button_high].is_locked = 0;
-				button_handlers[id_button_low].is_locked = 1;
+				buttons[id_button_high].is_locked = 0;
+				buttons[id_button_low].is_locked = 1;
 			}
 			else if (gui.selected_id == id_button_high)
 			{
-				button_handlers[id_button_high].is_locked = 1;
-				button_handlers[id_button_low].is_locked = 0;
+				buttons[id_button_high].is_locked = 1;
+				buttons[id_button_low].is_locked = 0;
 			}
 			else if (gui.selected_id == id_button_OK)
 			{
@@ -1204,32 +1278,32 @@ static void gui_main_process(void);
 
 		if (win->first_call == 1)
 		{
-			uint_fast8_t interval = 20, id = 0, x, y;
-			uint_fast8_t col1_int = 35, row1_int = 20;
+			uint_fast16_t id = 0, x, y;
+			uint_fast8_t interval = 20, col1_int = 35, row1_int = 20;
 			calculate_window_position(WINDOW_BP);
 			x_0 = win->x1 + 50;											// оконные координаты нулевой точки графика
 			y_0 = win->y1 + 90;
 
-			while(button_handlers[++id].parent != WINDOW_BP)			// первое вхождение кнопки WINDOW_BP
+			while(buttons[++id].parent != WINDOW_BP)			// первое вхождение кнопки WINDOW_BP
 				;
 			x = win->x1 + col1_int;
-			y = win->y1 + win->h - button_handlers[id].h - row1_int;
+			y = win->y1 + win->h - buttons[id].h - row1_int;
 			do {
-				button_handlers[id].x1 = x;
-				button_handlers[id].y1 = y;
-				x = x + interval + button_handlers[id].w;
-				if (x + button_handlers[id].w > win->x1 + win->w)
+				buttons[id].x1 = x;
+				buttons[id].y1 = y;
+				x = x + interval + buttons[id].w;
+				if (x + buttons[id].w > win->x1 + win->w)
 				{
 					x = win->x1 + col1_int;
-					y = y + button_handlers[id].h + interval;
+					y = y + buttons[id].h + interval;
 				}
-			} while (button_handlers[++id].parent == WINDOW_BP);
+			} while (buttons[++id].parent == WINDOW_BP);
 
-			button_high = & button_handlers[find_button(WINDOW_BP, "btnAF_2")];
-			button_low = & button_handlers[find_button(WINDOW_BP, "btnAF_1")];
+			button_high = & buttons[find_gui_element(TYPE_BUTTON, WINDOW_BP, "btnAF_2")];
+			button_low = & buttons[find_gui_element(TYPE_BUTTON, WINDOW_BP, "btnAF_1")];
 
-			lbl_low = & labels[find_label(WINDOW_BP, "lbl_low")];
-			lbl_high = & labels[find_label(WINDOW_BP, "lbl_high")];
+			lbl_low = & labels[find_gui_element(TYPE_LABEL, WINDOW_BP, "lbl_low")];
+			lbl_high = & labels[find_gui_element(TYPE_LABEL, WINDOW_BP, "lbl_high")];
 
 			lbl_low->y = y_0 + SMALLCHARH;
 			lbl_high->y = y_0 + SMALLCHARH;
@@ -1316,8 +1390,8 @@ static void gui_main_process(void);
 
 	static void buttons_freq_handler (void)
 	{
-		if (button_handlers[gui.selected_id].parent == WINDOW_FREQ && editfreq.key == BUTTON_CODE_DONE)
-			editfreq.key = button_handlers[gui.selected_id].payload;
+		if (buttons[gui.selected_id].parent == WINDOW_FREQ && editfreq.key == BUTTON_CODE_DONE)
+			editfreq.key = buttons[gui.selected_id].payload;
 	}
 
 	static void window_freq_process (void)
@@ -1327,28 +1401,28 @@ static void gui_main_process(void);
 
 		if (win->first_call == 1)
 		{
-			uint_fast8_t interval = 6, id = 0, x, y;
-			uint_fast8_t col1_int = 20, row1_int = 40;
+			uint_fast16_t x, y;
+			uint_fast8_t interval = 6, id = 0, col1_int = 20, row1_int = 40;
 			win->first_call = 0;
 			calculate_window_position(WINDOW_FREQ);
 
-			while(button_handlers[++id].parent != WINDOW_FREQ)			// первое вхождение кнопки WINDOW_FREQ
+			while(buttons[++id].parent != WINDOW_FREQ)			// первое вхождение кнопки WINDOW_FREQ
 				;
 			x = win->x1 + col1_int;
 			y = win->y1 + row1_int;
 			do {
-				button_handlers[id].x1 = x;
-				button_handlers[id].y1 = y;
-				x = x + interval + button_handlers[id].w;
-				if (x + button_handlers[id].w > win->x1 + win->w)
+				buttons[id].x1 = x;
+				buttons[id].y1 = y;
+				x = x + interval + buttons[id].w;
+				if (x + buttons[id].w > win->x1 + win->w)
 				{
 					x = win->x1 + col1_int;
-					y = y + button_handlers[id].h + interval;
+					y = y + buttons[id].h + interval;
 				}
-			} while (button_handlers[++id].parent == WINDOW_FREQ);
-			button_handlers[find_button(WINDOW_FREQ, "btnFreqOK")].is_locked = BUTTON_LOCKED;
+			} while (buttons[++id].parent == WINDOW_FREQ);
+			buttons[find_gui_element(TYPE_BUTTON, WINDOW_FREQ, "btnFreqOK")].is_locked = BUTTON_LOCKED;
 
-			lbl_id = find_label(WINDOW_FREQ, "lbl_freq_val");
+			lbl_id = find_gui_element(TYPE_LABEL, WINDOW_FREQ, "lbl_freq_val");
 			labels[lbl_id].x = win->x1 + strwidth(win->name) + strwidth(" ") + 20;
 			labels[lbl_id].y = win->y1 + 10;
 			strcpy(labels[lbl_id].text, "     0 k");
@@ -1427,11 +1501,11 @@ static void gui_main_process(void);
 
 	static void buttons_uif_handler(void)
 	{
-		if (gui.selected_type == TYPE_BUTTON && gui.selected_id == find_button(WINDOW_UIF, "btnUIF+"))
+		if (gui.selected_type == TYPE_BUTTON && gui.selected_id == find_gui_element(TYPE_BUTTON, WINDOW_UIF, "btnUIF+"))
 			encoder2.rotate = 1;
-		else if (gui.selected_type == TYPE_BUTTON && gui.selected_id == find_button(WINDOW_UIF, "btnUIF-"))
+		else if (gui.selected_type == TYPE_BUTTON && gui.selected_id == find_gui_element(TYPE_BUTTON, WINDOW_UIF, "btnUIF-"))
 			encoder2.rotate = -1;
-		else if (gui.selected_type == TYPE_BUTTON && gui.selected_id == find_button(WINDOW_UIF, "btnUIF_OK"))
+		else if (gui.selected_type == TYPE_BUTTON && gui.selected_id == find_gui_element(TYPE_BUTTON, WINDOW_UIF, "btnUIF_OK"))
 		{
 			hamradio_disable_keyboard_redirect();
 			set_window(WINDOW_UIF, NON_VISIBLE);
@@ -1451,8 +1525,8 @@ static void gui_main_process(void);
 			calculate_window_position(WINDOW_UIF);
 			window_center_x =  windows[WINDOW_UIF].x1 + windows[WINDOW_UIF].w / 2;
 
-			id_lbl_uif_param = find_label(WINDOW_UIF, "lbl_uif_param");
-			id_lbl_uif_val = find_label(WINDOW_UIF, "lbl_uif_val");
+			id_lbl_uif_param = find_gui_element(TYPE_LABEL, WINDOW_UIF, "lbl_uif_param");
+			id_lbl_uif_val = find_gui_element(TYPE_LABEL, WINDOW_UIF, "lbl_uif_val");
 			strcpy(labels[id_lbl_uif_param].text, menu_uif.name);
 			const char * v = hamradio_gui_edit_menu_item(menu_uif.menupos, 0);
 			strcpy(labels[id_lbl_uif_val].text, v);
@@ -1462,13 +1536,13 @@ static void gui_main_process(void);
 			labels[id_lbl_uif_val].x = window_center_x - (strwidth(labels[id_lbl_uif_val].text) / 2);
 			labels[id_lbl_uif_val].y = windows[WINDOW_UIF].y1 + SMALLCHARH * 4;
 
-			id_button_up = find_button(WINDOW_UIF, "btnUIF+");
-			id_button_down = find_button(WINDOW_UIF, "btnUIF-");
+			id_button_up = find_gui_element(TYPE_BUTTON, WINDOW_UIF, "btnUIF+");
+			id_button_down = find_gui_element(TYPE_BUTTON, WINDOW_UIF, "btnUIF-");
 
-			button_handlers[id_button_down].x1 = labels[id_lbl_uif_val].x - button_menu_w - 10;
-			button_handlers[id_button_down].y1 = (labels[id_lbl_uif_val].y + SMALLCHARH / 2) - (button_menu_h / 2);
-			button_handlers[id_button_up].x1 = labels[id_lbl_uif_val].x + strwidth(labels[id_lbl_uif_val].text) + 10;
-			button_handlers[id_button_up].y1 = button_handlers[id_button_down].y1;
+			buttons[id_button_down].x1 = labels[id_lbl_uif_val].x - button_menu_w - 10;
+			buttons[id_button_down].y1 = (labels[id_lbl_uif_val].y + SMALLCHARH / 2) - (button_menu_h / 2);
+			buttons[id_button_up].x1 = labels[id_lbl_uif_val].x + strwidth(labels[id_lbl_uif_val].text) + 10;
+			buttons[id_button_up].y1 = buttons[id_button_down].y1;
 
 			hamradio_enable_keyboard_redirect();
 			return;
@@ -1481,8 +1555,8 @@ static void gui_main_process(void);
 			labels[id_lbl_uif_val].x = window_center_x - (strwidth(labels[id_lbl_uif_val].text) / 2);
 			encoder2.rotate_done = 1;
 
-			button_handlers[id_button_down].x1 = labels[id_lbl_uif_val].x - button_menu_w - 10;
-			button_handlers[id_button_up].x1 = labels[id_lbl_uif_val].x + strwidth(labels[id_lbl_uif_val].text) + 10;
+			buttons[id_button_down].x1 = labels[id_lbl_uif_val].x - button_menu_w - 10;
+			buttons[id_button_up].x1 = labels[id_lbl_uif_val].x + strwidth(labels[id_lbl_uif_val].text) + 10;
 
 			gui.timer_1sec_updated = 1;
 		}
@@ -1527,9 +1601,9 @@ static void gui_main_process(void);
 
 	static void buttons_menu_handler(void)
 	{
-		if (gui.selected_type == TYPE_BUTTON && gui.selected_id == find_button(WINDOW_MENU, "btnSysMenu+"))
+		if (gui.selected_type == TYPE_BUTTON && gui.selected_id == find_gui_element(TYPE_BUTTON, WINDOW_MENU, "btnSysMenu+"))
 			encoder2.rotate = 1;
-		else if (gui.selected_type == TYPE_BUTTON && gui.selected_id == find_button(WINDOW_MENU, "btnSysMenu-"))
+		else if (gui.selected_type == TYPE_BUTTON && gui.selected_id == find_gui_element(TYPE_BUTTON, WINDOW_MENU, "btnSysMenu-"))
 			encoder2.rotate = -1;
 	}
 
@@ -1549,15 +1623,15 @@ static void gui_main_process(void);
 
 			uint_fast8_t int_cols = 200, int_rows = 35;
 			uint_fast8_t col1_int = 50, row1_int = 40;
-			uint_fast8_t xn, yn;
+			uint_fast16_t xn, yn;
 
-			id_button_up = find_button(WINDOW_MENU, "btnSysMenu+");
-			id_button_down = find_button(WINDOW_MENU, "btnSysMenu-");
-			button_handlers[id_button_up].visible = NON_VISIBLE;
-			button_handlers[id_button_down].visible = NON_VISIBLE;
+			id_button_up = find_gui_element(TYPE_BUTTON, WINDOW_MENU, "btnSysMenu+");
+			id_button_down = find_gui_element(TYPE_BUTTON, WINDOW_MENU, "btnSysMenu-");
+			buttons[id_button_up].visible = NON_VISIBLE;
+			buttons[id_button_down].visible = NON_VISIBLE;
 
-			button_menu_w = button_handlers[id_button_up].w;
-			button_menu_h = button_handlers[id_button_up].h;
+			button_menu_w = buttons[id_button_up].w;
+			button_menu_h = buttons[id_button_up].h;
 
 			menu[MENU_GROUPS].add_id = 0;
 			menu[MENU_GROUPS].selected_str = 0;
@@ -1717,13 +1791,13 @@ static void gui_main_process(void);
 				menu[MENU_VALS].selected_label = menu[MENU_PARAMS].selected_label;
 				uint_fast8_t id_sel_label = menu[MENU_VALS].first_id + menu[MENU_VALS].selected_label;
 
-				button_handlers[id_button_down].visible = VISIBLE;
-				button_handlers[id_button_down].x1 = labels[id_sel_label].x - button_menu_w - 10;
-				button_handlers[id_button_down].y1 = (labels[id_sel_label].y + SMALLCHARH / 2) - (button_menu_h / 2);
+				buttons[id_button_down].visible = VISIBLE;
+				buttons[id_button_down].x1 = labels[id_sel_label].x - button_menu_w - 10;
+				buttons[id_button_down].y1 = (labels[id_sel_label].y + SMALLCHARH / 2) - (button_menu_h / 2);
 
-				button_handlers[id_button_up].visible = VISIBLE;
-				button_handlers[id_button_up].x1 = labels[id_sel_label].x + strwidth(labels[id_sel_label].text) + 10;
-				button_handlers[id_button_up].y1 = button_handlers[id_button_down].y1;
+				buttons[id_button_up].visible = VISIBLE;
+				buttons[id_button_up].x1 = labels[id_sel_label].x + strwidth(labels[id_sel_label].text) + 10;
+				buttons[id_button_up].y1 = buttons[id_button_down].y1;
 				for (uint8_t i = 0; i <= menu[MENU_GROUPS].num_rows; i++)
 				{
 					labels[i + menu[MENU_GROUPS].first_id].color = i == menu[MENU_GROUPS].selected_label ? COLORPIP_YELLOW : COLORPIP_GRAY;
@@ -1734,8 +1808,8 @@ static void gui_main_process(void);
 			}
 			if (menu_level == MENU_PARAMS)
 			{
-				button_handlers[id_button_down].visible = NON_VISIBLE;
-				button_handlers[id_button_up].visible = NON_VISIBLE;
+				buttons[id_button_down].visible = NON_VISIBLE;
+				buttons[id_button_up].visible = NON_VISIBLE;
 				for (uint8_t i = 0; i <= menu[MENU_GROUPS].num_rows; i++)
 				{
 					labels[i + menu[MENU_GROUPS].first_id].color = i == menu[MENU_GROUPS].selected_label ? COLORPIP_YELLOW : COLORPIP_GRAY;
@@ -1745,8 +1819,8 @@ static void gui_main_process(void);
 			}
 			if (menu_level == MENU_GROUPS)
 			{
-				button_handlers[id_button_down].visible = NON_VISIBLE;
-				button_handlers[id_button_up].visible = NON_VISIBLE;
+				buttons[id_button_down].visible = NON_VISIBLE;
+				buttons[id_button_up].visible = NON_VISIBLE;
 				for (uint8_t i = 0; i <= menu[MENU_GROUPS].num_rows; i++)
 				{
 					labels[i + menu[MENU_GROUPS].first_id].color = COLORPIP_WHITE;
@@ -1777,7 +1851,7 @@ static void gui_main_process(void);
 					hamradio_gui_edit_menu_item(menu[MENU_PARAMS].menu_block[menu[MENU_PARAMS].selected_str].index, encoder2.rotate));
 
 			uint_fast8_t id_sel_label = menu[MENU_VALS].first_id + menu[MENU_VALS].selected_label;
-			button_handlers[id_button_up].x1 = labels[id_sel_label].x + strwidth(labels[id_sel_label].text) + 10;
+			buttons[id_button_up].x1 = labels[id_sel_label].x + strwidth(labels[id_sel_label].text) + 10;
 		}
 
 		if ((menu_label_touched || menu_is_scrolling || encoder2.rotate != 0) && menu_level != MENU_VALS)
@@ -1901,8 +1975,8 @@ static void gui_main_process(void);
 			calculate_window_position(WINDOW_ENC2);
 			window_center_x =  windows[WINDOW_ENC2].x1 + windows[WINDOW_ENC2].w / 2;
 			windows[WINDOW_ENC2].first_call = 0;
-			id_lbl_param = find_label(WINDOW_ENC2, "lbl_enc2_param");
-			id_lbl_val = find_label(WINDOW_ENC2, "lbl_enc2_val");
+			id_lbl_param = find_gui_element(TYPE_LABEL, WINDOW_ENC2, "lbl_enc2_param");
+			id_lbl_val = find_gui_element(TYPE_LABEL, WINDOW_ENC2, "lbl_enc2_val");
 			labels[id_lbl_param].y = windows[WINDOW_ENC2].y1 + SMALLCHARH * 3;
 			labels[id_lbl_val].y = labels[id_lbl_param].y + SMALLCHARH * 2;
 			return;
@@ -1926,10 +2000,10 @@ static void gui_main_process(void);
 	{
 		if(gui.selected_type == TYPE_BUTTON)
 		{
-			if (windows[WINDOW_MODES].state && button_handlers[gui.selected_id].parent == WINDOW_MODES)
+			if (windows[WINDOW_MODES].state && buttons[gui.selected_id].parent == WINDOW_MODES)
 			{
-				if (button_handlers[gui.selected_id].payload != UINTPTR_MAX)
-					hamradio_change_submode(button_handlers[gui.selected_id].payload);
+				if (buttons[gui.selected_id].payload != UINTPTR_MAX)
+					hamradio_change_submode(buttons[gui.selected_id].payload);
 
 				set_window(WINDOW_MODES, NON_VISIBLE);
 				footer_buttons_state(CANCELLED, "");
@@ -1941,25 +2015,25 @@ static void gui_main_process(void);
 	{
 		if (windows[WINDOW_MODES].first_call == 1)
 		{
-			uint_fast8_t interval = 6, id = 0, x, y;
-			uint_fast8_t col1_int = 20, row1_int = 40;
+			uint_fast16_t x, y;
+			uint_fast8_t interval = 6, id = 0, col1_int = 20, row1_int = 40;
 			windows[WINDOW_MODES].first_call = 0;
 			calculate_window_position(WINDOW_MODES);
 
-			while(button_handlers[++id].parent != WINDOW_MODES)			// первое вхождение кнопки WINDOW_MODES
+			while(buttons[++id].parent != WINDOW_MODES)			// первое вхождение кнопки WINDOW_MODES
 				;
 			x = windows[WINDOW_MODES].x1 + col1_int;
 			y = windows[WINDOW_MODES].y1 + row1_int;
 			do {
-				button_handlers[id].x1 = x;
-				button_handlers[id].y1 = y;
-				x = x + interval + button_handlers[id].w;
-				if (x + button_handlers[id].w > windows[WINDOW_MODES].x1 + windows[WINDOW_MODES].w)
+				buttons[id].x1 = x;
+				buttons[id].y1 = y;
+				x = x + interval + buttons[id].w;
+				if (x + buttons[id].w > windows[WINDOW_MODES].x1 + windows[WINDOW_MODES].w)
 				{
 					x = windows[WINDOW_MODES].x1 + col1_int;
-					y = windows[WINDOW_MODES].y1 + row1_int + button_handlers[id].h + interval;
+					y = windows[WINDOW_MODES].y1 + row1_int + buttons[id].h + interval;
 				}
-			} while (button_handlers[++id].parent == WINDOW_MODES);
+			} while (buttons[++id].parent == WINDOW_MODES);
 			return;
 		}
 	}
@@ -1973,16 +2047,16 @@ static void gui_main_process(void);
 			windows[WINDOW_AGC].first_call = 0;
 			calculate_window_position(WINDOW_AGC);
 
-			while(button_handlers[++id].parent != WINDOW_AGC)			// первое вхождение кнопки WINDOW_AGC
+			while(buttons[++id].parent != WINDOW_AGC)			// первое вхождение кнопки WINDOW_AGC
 				;
 			x = windows[WINDOW_AGC].x1 + col1_int;
 			y = windows[WINDOW_AGC].y1 + row1_int;
 			do {
-				button_handlers[id].x1 = x;
-				button_handlers[id].y1 = y;
-				x = x + interval + button_handlers[id].w;
+				buttons[id].x1 = x;
+				buttons[id].y1 = y;
+				x = x + interval + buttons[id].w;
 
-			} while (button_handlers[++id].parent == WINDOW_AGC);
+			} while (buttons[++id].parent == WINDOW_AGC);
 			return;
 		}
 	}
@@ -2000,7 +2074,7 @@ static void gui_main_process(void);
 			{
 				set_window(WINDOW_MODES, VISIBLE);
 				windows[WINDOW_MODES].first_call = 1;
-				footer_buttons_state(DISABLED, button_handlers[gui.selected_id].name);
+				footer_buttons_state(DISABLED, buttons[gui.selected_id].name);
 			}
 			else
 			{
@@ -2019,7 +2093,7 @@ static void gui_main_process(void);
 				encoder2.busy = 1;
 				set_window(WINDOW_BP, VISIBLE);
 				windows[WINDOW_BP].first_call = 1;
-				footer_buttons_state(DISABLED, button_handlers[gui.selected_id].name);
+				footer_buttons_state(DISABLED, buttons[gui.selected_id].name);
 				hamradio_enable_keyboard_redirect();
 			}
 			else
@@ -2040,7 +2114,7 @@ static void gui_main_process(void);
 			{
 				set_window(WINDOW_AGC, VISIBLE);
 				windows[WINDOW_AGC].first_call = 1;
-				footer_buttons_state(DISABLED, button_handlers[gui.selected_id].name);
+				footer_buttons_state(DISABLED, buttons[gui.selected_id].name);
 			}
 			else
 			{
@@ -2060,7 +2134,7 @@ static void gui_main_process(void);
 				windows[WINDOW_FREQ].first_call = 1;
 				hamradio_set_lockmode(1);
 				hamradio_enable_keyboard_redirect();
-				footer_buttons_state(DISABLED, button_handlers[gui.selected_id].name);
+				footer_buttons_state(DISABLED, buttons[gui.selected_id].name);
 			}
 			else
 			{
@@ -2102,7 +2176,76 @@ static void gui_main_process(void);
 	{
 		if(gui.selected_type == TYPE_BUTTON)
 		{
+			if (windows[WINDOW_TEST].state == NON_VISIBLE)
+			{
+				set_window(WINDOW_TEST, VISIBLE);
+				windows[WINDOW_TEST].first_call = 1;
+				footer_buttons_state(DISABLED, buttons[gui.selected_id].name);
+			}
+			else
+			{
+				set_window(WINDOW_TEST, NON_VISIBLE);
+				footer_buttons_state(CANCELLED, "");
+				hamradio_set_menu_cond(NON_VISIBLE);
+			}
+		}
+	}
 
+	static void window_test_process(void)
+	{
+		static window_t * win = & windows[WINDOW_TEST];
+		static slider_t * sl;
+		static label_t * lbl;
+		static uint_fast8_t sl_first_id = 0, eq_limit;
+		char buf[10];
+		static int_fast8_t eq_base = 0;
+
+		if (win->first_call == 1)
+		{
+			uint_fast16_t x, y;
+			uint_fast8_t interval = 70, id = 0, col1_int = 70, row1_int = 50;
+			win->first_call = 0;
+			calculate_window_position(WINDOW_TEST);
+
+			eq_base = hamradio_getequalizerbase();
+			eq_limit = abs(eq_base) * 2;
+
+			while(sliders[++id].parent != WINDOW_TEST)
+				;
+			sl_first_id = id;
+			x = win->x1 + col1_int;
+			y = win->y1 + row1_int;
+			do {
+				sliders[id].x = x;
+				sliders[id].y = y;
+				sliders[id].size = 200;
+				sliders[id].step = 2;
+				sliders[id].value = normalize(hamradio_get_gmikeequalizerparams(id - sl_first_id), 0, eq_limit, 100);
+				PRINTF("%d %d\n", id - sl_first_id, sliders[id].value);
+				x = x + interval;
+			} while (sliders[++id].parent == WINDOW_TEST);
+//
+//			lbl = & labels[find_gui_element(TYPE_LABEL, WINDOW_TEST, "lbl_test_val")];
+//			lbl->x = win->x1 + 80;
+//			lbl->y = win->y1 + win->h / 2;
+//			local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), sl->value);
+//			strcpy(lbl->text, buf);
+	}
+
+		if (gui.selected_type == TYPE_SLIDER && gui.is_tracking)
+		{
+			sl = & sliders[gui.selected_id];
+			uint16_t v = sl->value + gui.vector_move_y / sl->step;
+			if (v >= 0 && v <= sl->size / sl->step)
+			{
+				int_fast8_t val = normalize(v, 0, 100, eq_limit);
+				sl->value = v;
+				hamradio_set_gmikeequalizerparams(gui.selected_id - sl_first_id, val);
+//				local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), sl->value);
+//				strcpy(lbl->text, buf);
+			}
+			gui.vector_move_x = 0;
+			gui.vector_move_y = 0;
 		}
 	}
 
@@ -2114,7 +2257,7 @@ static void gui_main_process(void);
 			{
 				set_window(WINDOW_MENU, VISIBLE);
 				windows[WINDOW_MENU].first_call = 1;
-				footer_buttons_state(DISABLED, button_handlers[gui.selected_id].name);
+				footer_buttons_state(DISABLED, buttons[gui.selected_id].name);
 				encoder2.busy = 1;
 			}
 			else
@@ -2137,14 +2280,15 @@ static void gui_main_process(void);
 
 		if (win->first_call == 1)
 		{
-			uint_fast8_t interval = 3, id = 0, x;
+			uint_fast8_t interval = 3, id = 0;
+			uint_fast16_t x;
 			win->first_call = 0;
-			while(button_handlers[++id].parent != WINDOW_MAIN)			// первое вхождение кнопки WINDOW_MAIN
+			while(buttons[++id].parent != WINDOW_MAIN)			// первое вхождение кнопки WINDOW_MAIN
 				;
 			x = win->x1;
-			button_t * bh = & button_handlers[id];
+			button_t * bh = & buttons[id];
 			do {
-				bh = & button_handlers[id];
+				bh = & buttons[id];
 				bh->x1 = x;
 				bh->y1 = WITHGUIMAXY - bh->h;
 				x = x + interval + bh->w;
@@ -2276,14 +2420,14 @@ static void gui_main_process(void);
 	}
 
 	/* Кнопка */
-	static void draw_button_pip(uint_fast8_t id)
+	static void draw_button(uint_fast8_t id)
 	{
 		PACKEDCOLORMAIN_T * bg = NULL;
 		PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
 		btn_bg_t * b1 = NULL;
 		uint_fast8_t i = 0;
 		static const char delimeters [] = "|";
-		const button_t * const bh = & button_handlers[id];
+		const button_t * const bh = & buttons[id];
 
 		do {
 			if (bh->h == btn_bg[i].h && bh->w == btn_bg[i].w)
@@ -2336,6 +2480,34 @@ static void gui_main_process(void);
 			text2 = strtok(NULL, delimeters);
 			colpip_string2_tbg(fr, DIM_X, DIM_Y, bh->x1 + (bh->w - (strwidth2(text2))) / 2,
 					bh->h + bh->y1 - SMALLCHARH2 - j, text2, COLORPIP_BLACK);
+		}
+	}
+
+	static void draw_slider(uint_fast8_t id)
+	{
+		PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
+		slider_t * sl = & sliders[id];
+
+		if (sl->orientation)		// ORIENTATION_HORIZONTAL
+		{
+			colpip_rect(fr, DIM_X, DIM_Y, sl->x, sl->y, sl->x + sl->size, sl->y + sliders_width, COLORMAIN_WHITE, 0);		// в процессе
+		}
+		else						// ORIENTATION_VERTICAL
+		{
+			uint_fast16_t mid_w = sl->x + sliders_width / 2;
+			if (sl->value_old != sl->value)
+			{
+				sl->value_p = sl->y + sl->size * sl->value / 100;
+				sl->x1_p = mid_w - sliders_w;
+				sl->y1_p = sl->value_p - sliders_h;
+				sl->x2_p = mid_w + sliders_w;
+				sl->y2_p = sl->value_p + sliders_h;
+				sl->value_old = sl->value;
+			}
+			colpip_rect(fr, DIM_X, DIM_Y, sl->x + 1, sl->y + 1, sl->x + sliders_width - 1, sl->y + sl->size - 1, 242, 1);
+			colpip_rect(fr, DIM_X, DIM_Y, sl->x, sl->y, sl->x + sliders_width, sl->y + sl->size, COLORMAIN_WHITE, 0);
+			colpip_rect(fr, DIM_X, DIM_Y, sl->x1_p, sl->y1_p, sl->x2_p, sl->y2_p, sl->state == PRESSED ? COLOR_BUTTON_PR_NON_LOCKED : COLOR_BUTTON_NON_LOCKED, 1);
+			colmain_line(fr, DIM_X, DIM_Y,  mid_w - sliders_w, sl->value_p, mid_w + sliders_w, sl->value_p, COLORMAIN_BLACK, 0);
 		}
 	}
 
@@ -2393,7 +2565,7 @@ static void gui_main_process(void);
 			touch_t * p = & touch_elements[i];
 			if (p->type == TYPE_BUTTON)
 			{
-				const button_t * const bh = & button_handlers[p->id];
+				const button_t * const bh = & buttons[p->id];
 				p->x1 = bh->x1;
 				p->x2 = bh->x1 + bh->w;
 				p->y1 = bh->y1;
@@ -2413,6 +2585,17 @@ static void gui_main_process(void);
 				p->visible = lh->visible;
 				p->is_trackable = lh->is_trackable;
 			}
+			else if (p->type == TYPE_SLIDER)
+			{
+				const slider_t * const sh = & sliders[p->id];
+				p->x1 = sh->x1_p;
+				p->x2 = sh->x2_p;
+				p->y1 = sh->y1_p;
+				p->y2 = sh->y2_p;
+				p->state = sh->state;
+				p->visible = sh->visible;
+				p->is_trackable = 1;
+			}
 		}
 	}
 
@@ -2423,11 +2606,11 @@ static void gui_main_process(void);
 		switch (val->type)
 		{
 			case TYPE_BUTTON:
-				ASSERT(val->id < BUTTON_HANDLERS_COUNT);
+				ASSERT(val->id < BUTTONS_COUNT);
 				gui.selected_type = TYPE_BUTTON;
-				button_handlers[val->id].state = val->state;
-				if (button_handlers[val->id].onClickHandler && button_handlers[val->id].state == RELEASED)
-					button_handlers[val->id].onClickHandler();
+				buttons[val->id].state = val->state;
+				if (buttons[val->id].onClickHandler && buttons[val->id].state == RELEASED)
+					buttons[val->id].onClickHandler();
 				break;
 
 			case TYPE_LABEL:
@@ -2437,6 +2620,13 @@ static void gui_main_process(void);
 				if (labels[val->id].onClickHandler && labels[val->id].state == RELEASED)
 					labels[val->id].onClickHandler();
 				break;
+
+			case TYPE_SLIDER:
+				ASSERT(val->id < SLIDERS_COUNT);
+				gui.selected_type = TYPE_SLIDER;
+				sliders[val->id].state = val->state;
+				break;
+
 			default:
 				ASSERT(0);
 				break;
@@ -2455,7 +2645,7 @@ static void gui_main_process(void);
 			gui.last_pressed_x = tx;
 			gui.last_pressed_y = ty;
 			gui.is_touching_screen = 1;
-			debug_printf_P(PSTR("last x/y=%d/%d\n"), gui.last_pressed_x, gui.last_pressed_y);
+//			debug_printf_P(PSTR("last x/y=%d/%d\n"), gui.last_pressed_x, gui.last_pressed_y);
 			update_touch();
 		}
 		else
@@ -2502,7 +2692,7 @@ static void gui_main_process(void);
 				if (gui.vector_move_x != 0 || gui.vector_move_y != 0)
 				{
 					gui.is_tracking = 1;
-//					debug_printf_P(PSTR("move x: %d, move y: %d\n"), gui.vector_move_x, gui.vector_move_y);
+					debug_printf_P(PSTR("move x: %d, move y: %d\n"), gui.vector_move_x, gui.vector_move_y);
 				}
 				x_old = gui.last_pressed_x;
 				y_old = gui.last_pressed_y;
@@ -2538,7 +2728,7 @@ static void gui_main_process(void);
 		}
 	}
 
-	void gui_update(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
+	void gui_WM_walktrough(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
 	{
 		uint_fast8_t alpha = DEFAULT_ALPHA; // на сколько затемнять цвета
 		char buf [TEXT_ARRAY_SIZE];
@@ -2554,7 +2744,7 @@ static void gui_main_process(void);
 			if (win->state == VISIBLE)
 			{
 				// при открытии окна рассчитываются экранные координаты самого окна и его child элементов
-				if (win->first_call == 0)
+				if (! win->first_call)
 				{
 					display_transparency(win->x1, win->y1, win->x1 + win->w, win->y1 + win->h, alpha);
 				}
@@ -2578,12 +2768,21 @@ static void gui_main_process(void);
 					}
 
 					// кнопки
-					for (uint_fast8_t i = 1; i < BUTTON_HANDLERS_COUNT; i++)
+					for (uint_fast8_t i = 1; i < BUTTONS_COUNT; i++)
 					{
-						const button_t * const bh = & button_handlers[i];
+						const button_t * const bh = & buttons[i];
 						if (bh->visible == VISIBLE && bh->parent == win->window_id)
-							draw_button_pip(i);
+							draw_button(i);
 					}
+
+					// слайдеры
+					for (uint_fast8_t i = 1; i < SLIDERS_COUNT; i++)
+					{
+						const slider_t * const sh = & sliders[i];
+						if (sh->visible == VISIBLE && sh->parent == win->window_id)
+							draw_slider(i);
+					}
+
 				}
 			}
 		}
