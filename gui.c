@@ -981,7 +981,11 @@ static void gui_main_process(void);
 
 	static slider_t sliders[] = {
 			{ },
-			{ 0, 0, 0, 0, 0, 0, ORIENTATION_VERTICAL, WINDOW_TEST, "slrTest", CANCELLED, NON_VISIBLE, 0, 80, 0, 0, 0, },
+			{ 0, 0, 0, 0, 0, 0, ORIENTATION_VERTICAL, WINDOW_TEST, "slrMikeEQ.08", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
+			{ 0, 0, 0, 0, 0, 0, ORIENTATION_VERTICAL, WINDOW_TEST, "slrMikeEQ.23", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
+			{ 0, 0, 0, 0, 0, 0, ORIENTATION_VERTICAL, WINDOW_TEST, "slrMikeEQ.65", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
+			{ 0, 0, 0, 0, 0, 0, ORIENTATION_VERTICAL, WINDOW_TEST, "slrMikeEQ1.8", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
+			{ 0, 0, 0, 0, 0, 0, ORIENTATION_VERTICAL, WINDOW_TEST, "slrMikeEQ5.3", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
 	};
 	enum { SLIDERS_COUNT = sizeof sliders / sizeof sliders[0] };
 
@@ -1032,7 +1036,7 @@ static void gui_main_process(void);
 		{ WINDOW_MENU,  ALIGN_CENTER_X, 0, 0, 550, 240, "Settings",	   NON_VISIBLE, 0, window_menu_process, },
 		{ WINDOW_ENC2, 	ALIGN_RIGHT_X, 	0, 0, 185, 105, "Fast menu",   NON_VISIBLE, 0, window_enc2_process, },
 		{ WINDOW_UIF, 	ALIGN_LEFT_X, 	0, 0, 200, 145, "",   		   NON_VISIBLE, 0, window_uif_process, },
-		{ WINDOW_TEST, 	ALIGN_RIGHT_X, 0, 0, 300, 300, "Slider test", NON_VISIBLE, 0, window_test_process, },
+		{ WINDOW_TEST, 	ALIGN_CENTER_X, 0, 0, 500, 300, "Slider test", NON_VISIBLE, 0, window_test_process, },
 	};
 	enum { windows_count = sizeof windows / sizeof windows[0] };
 
@@ -1274,8 +1278,8 @@ static void gui_main_process(void);
 
 		if (win->first_call == 1)
 		{
-			uint_fast8_t interval = 20, id = 0, x, y;
-			uint_fast8_t col1_int = 35, row1_int = 20;
+			uint_fast16_t id = 0, x, y;
+			uint_fast8_t interval = 20, col1_int = 35, row1_int = 20;
 			calculate_window_position(WINDOW_BP);
 			x_0 = win->x1 + 50;											// оконные координаты нулевой точки графика
 			y_0 = win->y1 + 90;
@@ -1397,8 +1401,8 @@ static void gui_main_process(void);
 
 		if (win->first_call == 1)
 		{
-			uint_fast8_t interval = 6, id = 0, x, y;
-			uint_fast8_t col1_int = 20, row1_int = 40;
+			uint_fast16_t x, y;
+			uint_fast8_t interval = 6, id = 0, col1_int = 20, row1_int = 40;
 			win->first_call = 0;
 			calculate_window_position(WINDOW_FREQ);
 
@@ -1619,7 +1623,7 @@ static void gui_main_process(void);
 
 			uint_fast8_t int_cols = 200, int_rows = 35;
 			uint_fast8_t col1_int = 50, row1_int = 40;
-			uint_fast8_t xn, yn;
+			uint_fast16_t xn, yn;
 
 			id_button_up = find_gui_element(TYPE_BUTTON, WINDOW_MENU, "btnSysMenu+");
 			id_button_down = find_gui_element(TYPE_BUTTON, WINDOW_MENU, "btnSysMenu-");
@@ -2011,8 +2015,8 @@ static void gui_main_process(void);
 	{
 		if (windows[WINDOW_MODES].first_call == 1)
 		{
-			uint_fast8_t interval = 6, id = 0, x, y;
-			uint_fast8_t col1_int = 20, row1_int = 40;
+			uint_fast16_t x, y;
+			uint_fast8_t interval = 6, id = 0, col1_int = 20, row1_int = 40;
 			windows[WINDOW_MODES].first_call = 0;
 			calculate_window_position(WINDOW_MODES);
 
@@ -2192,40 +2196,56 @@ static void gui_main_process(void);
 		static window_t * win = & windows[WINDOW_TEST];
 		static slider_t * sl;
 		static label_t * lbl;
-		static uint16_t val;
+		static uint_fast8_t sl_first_id = 0, eq_limit;
 		char buf[10];
+		static int_fast8_t eq_base = 0;
 
 		if (win->first_call == 1)
 		{
+			uint_fast16_t x, y;
+			uint_fast8_t interval = 70, id = 0, col1_int = 70, row1_int = 50;
 			win->first_call = 0;
 			calculate_window_position(WINDOW_TEST);
 
-			sl = & sliders[find_gui_element(TYPE_SLIDER, WINDOW_TEST, "slrTest")];
-			sl->x = win->x1 + 200;
-			sl->y = win->y1 + 50;
-			sl->size = 200;
-			sl->step = sl->size / 100;
-			val = sl->value;
+			eq_base = hamradio_getequalizerbase();
+			eq_limit = abs(eq_base) * 2;
 
-			lbl = & labels[find_gui_element(TYPE_LABEL, WINDOW_TEST, "lbl_test_val")];
-			lbl->x = win->x1 + 80;
-			lbl->y = win->y1 + win->h / 2;
-			local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), sl->value);
-			strcpy(lbl->text, buf);
-		}
-
-		if (! gui.is_tracking)
-			val = sl->value;
+			while(sliders[++id].parent != WINDOW_TEST)
+				;
+			sl_first_id = id;
+			x = win->x1 + col1_int;
+			y = win->y1 + row1_int;
+			do {
+				sliders[id].x = x;
+				sliders[id].y = y;
+				sliders[id].size = 200;
+				sliders[id].step = 2;
+				sliders[id].value = normalize(hamradio_get_gmikeequalizerparams(id - sl_first_id), 0, eq_limit, 100);
+				PRINTF("%d %d\n", id - sl_first_id, sliders[id].value);
+				x = x + interval;
+			} while (sliders[++id].parent == WINDOW_TEST);
+//
+//			lbl = & labels[find_gui_element(TYPE_LABEL, WINDOW_TEST, "lbl_test_val")];
+//			lbl->x = win->x1 + 80;
+//			lbl->y = win->y1 + win->h / 2;
+//			local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), sl->value);
+//			strcpy(lbl->text, buf);
+	}
 
 		if (gui.selected_type == TYPE_SLIDER && gui.is_tracking)
 		{
-			uint16_t v = val + gui.vector_move_y / sl->step;
+			sl = & sliders[gui.selected_id];
+			uint16_t v = sl->value + gui.vector_move_y / sl->step;
 			if (v >= 0 && v <= sl->size / sl->step)
 			{
+				int_fast8_t val = normalize(v, 0, 100, eq_limit);
 				sl->value = v;
-				local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), sl->value);
-				strcpy(lbl->text, buf);
+				hamradio_set_gmikeequalizerparams(gui.selected_id - sl_first_id, val);
+//				local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), sl->value);
+//				strcpy(lbl->text, buf);
 			}
+			gui.vector_move_x = 0;
+			gui.vector_move_y = 0;
 		}
 	}
 
@@ -2260,7 +2280,8 @@ static void gui_main_process(void);
 
 		if (win->first_call == 1)
 		{
-			uint_fast8_t interval = 3, id = 0, x;
+			uint_fast8_t interval = 3, id = 0;
+			uint_fast16_t x;
 			win->first_call = 0;
 			while(buttons[++id].parent != WINDOW_MAIN)			// первое вхождение кнопки WINDOW_MAIN
 				;
@@ -2671,7 +2692,7 @@ static void gui_main_process(void);
 				if (gui.vector_move_x != 0 || gui.vector_move_y != 0)
 				{
 					gui.is_tracking = 1;
-//					debug_printf_P(PSTR("move x: %d, move y: %d\n"), gui.vector_move_x, gui.vector_move_y);
+					debug_printf_P(PSTR("move x: %d, move y: %d\n"), gui.vector_move_x, gui.vector_move_y);
 				}
 				x_old = gui.last_pressed_x;
 				y_old = gui.last_pressed_y;
