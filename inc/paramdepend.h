@@ -2275,6 +2275,10 @@ extern "C" {
 
 #define WITHNOTXDACCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
 
+#if WITHDEBUG && WITHISBOOTLOADER && CPUSTYLE_R7S721
+	#error WITHDEBUG and WITHISBOOTLOADER can not be used in same time for CPUSTYLE_R7S721
+#endif /* WITHDEBUG && WITHISBOOTLOADER && CPUSTYLE_R7S721 */
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
