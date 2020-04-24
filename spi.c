@@ -613,7 +613,7 @@ void spi_initialize(void)
 //#define WIHSPIDFOVERSPI 1	/* В SPI программаторе для работы используется один из обычных каналов SPI */
 //#define targetdataflash targetext1
 
-#if WIHSPIDFHW || WIHSPIDFSW|| WIHSPIDFOVERSPI
+#if WIHSPIDFHW || WIHSPIDFSW || WIHSPIDFOVERSPI
 
 enum { SPDIFIO_READ, SPDIFIO_WRITE };	// в случае пеердачи только команды используем write */
 
@@ -630,9 +630,13 @@ enum { SPDIFIO_READ, SPDIFIO_WRITE };	// в случае пеердачи тол
 
 void spidf_initialize(void)
 {
+#if defined (SPIDF_SOFTINITIALIZE)
 	// Connect I/O pins
 	SPIDF_SOFTINITIALIZE();
+#endif /* defined (SPIDF_SOFTINITIALIZE) */
 }
+
+#if ! WIHSPIDFOVERSPI
 
 static uint_fast8_t spidf_rbit(uint_fast8_t v)
 {
@@ -679,6 +683,7 @@ static void spidf_write_byte(uint_fast8_t v)
 	spidf_wbit(v & 0x02);
 	spidf_wbit(v & 0x01);
 }
+#endif
 
 void spidf_uninitialize(void)
 {
@@ -792,7 +797,7 @@ static void spidf_read(uint8_t * buff, uint_fast32_t size)
 {
 	spidf_to_read();
 	while (size --)
-		* buff ++ = spidf_read_byte(0xff);
+		* buff ++ = spidf_progval8(0xff);
 	spidf_to_write();
 }
 
@@ -802,7 +807,7 @@ static uint_fast8_t spidf_verify(const uint8_t * buff, uint_fast32_t size)
 	uint_fast8_t err = 0;
 	spidf_to_read();
 	while (size --)
-		err |= * buff ++ != spidf_read_byte(0xff);
+		err |= * buff ++ != spidf_progval8(0xff);
 	spidf_to_write();
 	return err;
 }
@@ -811,7 +816,7 @@ static uint_fast8_t spidf_verify(const uint8_t * buff, uint_fast32_t size)
 static void spidf_write(const uint8_t * buff, uint_fast32_t size)
 {
 	while (size --)
-		 spidf_read_byte(* buff ++);
+		spidf_progval8(* buff ++);
 }
 
 #elif WIHSPIDFHW && CPUSTYLE_STM32MP1

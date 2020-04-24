@@ -250,14 +250,20 @@ static USBD_StatusTypeDef MEM_If_DeInit_HS(void)
 static USBD_StatusTypeDef MEM_If_Erase_HS(uint32_t Addr)
 {
 	//PRINTF(PSTR("MEM_If_Erase_HS: addr=%08lX\n"), Addr);
-	if (Addr >= BOOTLOADER_SELFBASE && (Addr + BOOTLOADER_PAGESIZE) <= (BOOTLOADER_SELFBASE + BOOTLOADER_APPFULL))
+#if BOOTLOADER_SELFSIZE
+	if (Addr >= BOOTLOADER_SELFBASE && (Addr + BOOTLOADER_PAGESIZE) <= (BOOTLOADER_SELFBASE + BOOTLOADER_SELFSIZE))
 	{
-#if 1//WITHISBOOTLOADER
 		// физическое выполненеие записи
 		sectoreraseDATAFLASH(Addr);
-#else /* WITHISBOOTLOADER */
-#endif /* WITHISBOOTLOADER */
 	}
+#endif /* BOOTLOADER_SELFSIZE */
+#if BOOTLOADER_APPSIZE
+	if (Addr >= BOOTLOADER_APPBASE && (Addr + BOOTLOADER_PAGESIZE) <= (BOOTLOADER_APPBASE + BOOTLOADER_APPSIZE))
+	{
+		// физическое выполненеие записи
+		sectoreraseDATAFLASH(Addr);
+	}
+#endif /* BOOTLOADER_APPSIZE */
 	return (USBD_OK);
 }
 
@@ -271,32 +277,42 @@ static USBD_StatusTypeDef MEM_If_Erase_HS(uint32_t Addr)
 static USBD_StatusTypeDef MEM_If_Write_HS(uint8_t *src, uint32_t dest, uint32_t Len)
 {
 	//PRINTF(PSTR("MEM_If_Write_HS: addr=%08lX, len=%03lX\n"), dest, Len);
-	if (dest >= BOOTLOADER_SELFBASE && (dest + Len) <= (BOOTLOADER_SELFBASE + BOOTLOADER_APPFULL))
-	{
-#if 1//WITHISBOOTLOADER
-		// физическое выполненеие записи
-		if (writeDATAFLASH(dest, src, Len))
-			return USBD_FAIL;
-		// сравнение после записи
-		if (verifyDATAFLASH(dest, src, Len))
-			return USBD_FAIL;
-#else /* WITHISBOOTLOADER */
-		// сравнение как тест
-		if (verifyDATAFLASH(dest, src, Len))
-			return USBD_FAIL;
-#endif /* WITHISBOOTLOADER */
-	}
-#if WITHISBOOTLOADER
-	if (dest >= BOOTLOADER_APPAREA && (dest + Len) <= (BOOTLOADER_APPAREA + BOOTLOADER_APPFULL))
-		memcpy((void *) dest, src, Len);
-	else if (dest >= BOOTLOADER_APPBASE)
-		memcpy((void *) ((uintptr_t) dest - BOOTLOADER_APPBASE + BOOTLOADER_APPAREA), src, Len);
-	else
-	{
-		/* программируем бутлоадер */
-	}
-#endif /* WITHISBOOTLOADER */
-	return (USBD_OK);
+#if BOOTLOADER_SELFSIZE
+		if (dest >= BOOTLOADER_SELFBASE && (dest + Len) <= (BOOTLOADER_SELFBASE + BOOTLOADER_SELFSIZE))
+		{
+			// физическое выполненеие записи
+			if (writeDATAFLASH(dest, src, Len))
+				return USBD_FAIL;
+			// сравнение после записи
+			if (verifyDATAFLASH(dest, src, Len))
+				return USBD_FAIL;
+			return USBD_OK;
+		}
+#endif /* BOOTLOADER_SELFSIZE */
+
+#if BOOTLOADER_APPSIZE
+		if (dest >= BOOTLOADER_APPBASE && (dest + Len) <= (BOOTLOADER_APPBASE + BOOTLOADER_APPSIZE))
+		{
+			// физическое выполненеие записи
+			if (writeDATAFLASH(dest, src, Len))
+				return USBD_FAIL;
+			// сравнение после записи
+			if (verifyDATAFLASH(dest, src, Len))
+				return USBD_FAIL;
+			// копируем в память для дальнейшего выполнения */
+			memcpy((void *) ((uintptr_t) dest - BOOTLOADER_APPBASE + BOOTLOADER_APPAREA), src, Len);
+			return USBD_OK;
+		}
+#endif /* BOOTLOADER_APPSIZE */
+
+#if WITHISBOOTLOADER && BOOTLOADER_APPFULL
+		if (dest >= BOOTLOADER_APPAREA && (dest + Len) <= (BOOTLOADER_APPAREA + BOOTLOADER_APPFULL))
+		{
+			memcpy((void *) dest, src, Len);
+			return USBD_OK;
+		}
+#endif /* WITHISBOOTLOADER && BOOTLOADER_APPFULL */
+	return USBD_FAIL;
 }
 
 /**
@@ -306,7 +322,7 @@ static USBD_StatusTypeDef MEM_If_Write_HS(uint8_t *src, uint32_t dest, uint32_t 
   * @param  Len: Number of data to be read (in bytes).
   * @retval Pointer to the physical address where data should be read.
   */
-static uint8_t *MEM_If_Read_HS(uint32_t src, uint8_t *dest, uint32_t Len)
+static uint8_t * MEM_If_Read_HS(uint32_t src, uint8_t *dest, uint32_t Len)
 {
 	/*
 	PRINTF(PSTR("MEM_If_Read_HS: src=%08lX, len=%03lX\n"), src, Len);
@@ -348,8 +364,20 @@ static uint8_t *MEM_If_Read_HS(uint32_t src, uint8_t *dest, uint32_t Len)
   */
 static USBD_StatusTypeDef MEM_If_GetStatus_HS(uint32_t Add, uint8_t Cmd, uint8_t *buffer)
 {
-	/* USER CODE BEGIN 11 */
-	uint_fast8_t st = dataflash_read_status();
+	uint32_t Len = 1;
+	uint_fast8_t st = 0;	// вне зон программироыания всегда готово
+#if BOOTLOADER_SELFSIZE
+	if (Add >= BOOTLOADER_SELFBASE && (Add + Len) <= (BOOTLOADER_SELFBASE + BOOTLOADER_SELFSIZE))
+	{
+		st = dataflash_read_status();
+	}
+#endif /* BOOTLOADER_SELFSIZE */
+#if BOOTLOADER_APPSIZE
+	if (Add >= BOOTLOADER_APPBASE && (Add + Len) <= (BOOTLOADER_APPBASE + BOOTLOADER_APPSIZE))
+	{
+		st = dataflash_read_status();
+	}
+#endif /* BOOTLOADER_APPSIZE */
 
 	const unsigned FLASH_PROGRAM_TIME = (st & 0x01) ? 5 : 0;
 	const unsigned FLASH_ERASE_TIME = (st & 0x01) ? 5 : 0;
@@ -365,7 +393,6 @@ static USBD_StatusTypeDef MEM_If_GetStatus_HS(uint32_t Add, uint8_t Cmd, uint8_t
 		break;
 	}
 	return  (USBD_OK);
-	/* USER CODE END 11 */
 }
 
 static USBALIGN_BEGIN USBD_DFU_MediaTypeDef USBD_DFU_fops_HS USBALIGN_END =
@@ -693,15 +720,19 @@ static USBD_StatusTypeDef USBD_DFU_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 uint_fast16_t
 usbd_dfu_get_xfer_size(uint_fast8_t alt)
 {
-	switch (alt)
+
+	static const uint_fast16_t xfersizes [] =
 	{
-	default:
-	case 0: return USBD_DFU_FLASH_XFER_SIZE;
-	case 1: return USBD_DFU_FLASH_XFER_SIZE;
-#if WITHISBOOTLOADER
-	case 2: return USBD_DFU_RAM_XFER_SIZE;
-#endif /* WITHISBOOTLOADER */
-	}
+			USBD_DFU_FLASH_XFER_SIZE,
+	#if BOOTLOADER_SELFSIZE != 0
+			USBD_DFU_FLASH_XFER_SIZE,
+	#endif /* BOOTLOADER_SELFSIZE != 0 */
+	#if BOOTLOADER_APPFULL
+			USBD_DFU_RAM_XFER_SIZE,
+	#endif /* BOOTLOADER_APPFULL */
+	};
+
+	return xfersizes [alt];
 }
 
 /******************************************************************************
@@ -743,13 +774,13 @@ static void DFU_Detach(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req
   /* Check the detach capability in the DFU functional descriptor */
   if (1) //((USBD_DFU_CfgDesc[12 + (9 * USBD_DFU_MAX_ITF_NUM)]) & DFU_DETACH_MASK)
   {
-#if WITHISBOOTLOADER
+#if WITHISBOOTLOADER && (BOOTLOADER_APPFULL != 0)
 	  uintptr_t ip;
 	  if (bootloader_get_start(BOOTLOADER_APPAREA, & ip) == 0)
 	  {
 		  board_dpc(bootloader_deffereddetach, NULL);
 	  }
-#endif /* WITHISBOOTLOADER */
+#endif /* WITHISBOOTLOADER && (BOOTLOADER_APPFULL != 0) */
   }
   else
   {

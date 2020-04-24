@@ -4546,6 +4546,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 #endif /* WITHUSBHID */
 	
 #if WITHUSBDFU
+#if BOOTLOADER_APPSIZE
 	{
 		static const char strFlashDesc_4 [] = "@SPI Flash APPLICATION: %s/0x%08lx/%02u*%03uKg";	// 128 k for bootloader
 		unsigned partlen;
@@ -4563,6 +4564,8 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 		StringDescrTbl [id].data = alldescbuffer + score;
 		score += partlen;
 	}
+#endif /* BOOTLOADER_APPSIZE */
+#if BOOTLOADER_SELFSIZE
 	{
 		// Re-write bootloader parameters
 		static const char strFlashDesc_4 [] = "@SPI Flash BOOTLOADER: %s/0x%08lx/%02u*%03uKg";	// 128 k for bootloader
@@ -4581,7 +4584,8 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 		StringDescrTbl [id].data = alldescbuffer + score;
 		score += partlen;
 	}
-#if WITHISBOOTLOADER
+#endif /* BOOTLOADER_SELFSIZE */
+#if WITHISBOOTLOADER && defined (BOOTLOADER_APPAREA) && BOOTLOADER_APPFULL
 	{
 		// RAM target for debug
 		static const char strFlashDesc_3 [] = "@SRAM APPLICATION/0x%08lx/%02u*%03uKg";	// 128 k for bootloader
@@ -4599,7 +4603,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 		StringDescrTbl [id].data = alldescbuffer + score;
 		score += partlen;
 	}
-#endif /* WITHISBOOTLOADER */
+#endif /* WITHISBOOTLOADER && defined (BOOTLOADER_APPAREA) && BOOTLOADER_APPFULL */
 #endif /* WITHUSBDFU */
 #if WITHUSBCDCECM || WITHUSBCDCEEM
 	{

@@ -7189,6 +7189,8 @@ getactualdownpower(void)
 	return reqautotune || hardware_get_tune();
 }
 
+#if WITHTX
+
 /* Возвращает WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
 static uint_fast8_t
 getactualpower(void)
@@ -7205,6 +7207,8 @@ getactualpower(void)
 
 #endif /* WITHPOWERLPHP */
 }
+
+#endif /* WITHTX */
 
 // вызывается из user mode - признак передачи в режиме данных
 static uint_fast8_t
@@ -8245,10 +8249,10 @@ updateboard(
 			elkey_set_format(dashratio, spaceratio);	/* соотношение тире к точке (в десятках процентов) */
 		#endif
 			elkey_set_mode(elkeymode, elkeyreverse);	/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key */
-		#if WITHTX
+		#if WITHTX && WITHELKEY
 			seq_set_bkin_enable(bkinenable, bkindelay);			/* параметры BREAK-IN */
 			/*seq_rgbeep(0); */								/* формирование roger beep */
-		#endif /* WITHTX */
+		#endif /* WITHTX && WITHELKEY */
 	#endif /* WITHELKEY */
 
 	#if WITHIF4DSP
@@ -18682,7 +18686,7 @@ void bootloader_copyapp(
 		return;
 	memcpy((void *) hdr->load_address, (const void *) (BOOTLOADER_APPBASE + HEADERSIZE), hdr->image_length);
 
-#else /* CPUSTYLE_R7S721 */
+#elif (BOOTLOADER_SELFSIZE != 0)
 
 	bootloader_readimage(BOOTLOADER_SELFSIZE, (void *) apparea, HEADERSIZE);
 	if (hdr->magic_number != HEADER_MAGIC)
@@ -18703,19 +18707,26 @@ void bootloader_detach(uintptr_t ip)
 	L2C_Disable();
 #endif
 
+
+#if (__GIC_PRESENT == 1)
 	GIC_DisableInterface();
 	GIC_DisableDistributor();
 
 	unsigned i;
 	for (i = 0; i < 1020; ++ i)
 		IRQ_Disable(i);
+#endif
+
+#if (__CORTEX_A != 0)
 
 	MMU_Disable();
 	MMU_InvalidateTLB();
-
 	__ISB();
 	__DSB();
 	(* (void (*)(void)) ip)();
+
+#endif
+
 	for (;;)
 		;
 }
@@ -18723,6 +18734,7 @@ void bootloader_detach(uintptr_t ip)
 /* Вызов заказан вызывется из обработчика USB прерываний EP0 */
 void bootloader_deffereddetach(void * arg)
 {
+#if BOOTLOADER_APPAREA
 	  uintptr_t ip;
 	  if (bootloader_get_start(BOOTLOADER_APPAREA, & ip) == 0)
 	  {
@@ -18733,6 +18745,7 @@ void bootloader_deffereddetach(void * arg)
 #endif /* WITHUSBHW */
 			bootloader_detach(ip);
 	  }
+#endif /* BOOTLOADER_APPAREA */
 }
 
 static void bootloader_mainloop(void)
@@ -18760,7 +18773,9 @@ ddd:
 				break;
 			if (c == 'd')
 			{
+#if BOOTLOADER_APPFULL
 				printhex(BOOTLOADER_APPAREA, (void *) BOOTLOADER_APPAREA, 512);
+#endif /* BOOTLOADER_APPFULL */
 				continue;
 			}
 		}
@@ -18772,16 +18787,22 @@ ddd:
 #endif /* WITHDEBUG */
 	}
 #endif /* WITHUSBHW */
+
+#if BOOTLOADER_APPAREA
 	uintptr_t ip;
 	//PRINTF(PSTR("Compare signature of to application\n"));
 	if (bootloader_get_start(BOOTLOADER_APPAREA, & ip) != 0)	/* проверка сигнатуры и получение стартового адреса */
 		goto ddd;
-
+#else /* BOOTLOADER_APPAREA */
+	goto ddd;
+#endif /* BOOTLOADER_APPAREA */
 #if WITHUSBHW
 	board_usb_deactivate();
 	board_usb_deinitialize();
 #endif /* WITHUSBHW */
+#if BOOTLOADER_APPAREA
 	bootloader_detach(ip);
+#endif /* BOOTLOADER_APPAREA */
 }
 
 #endif /* WITHISBOOTLOADER */
