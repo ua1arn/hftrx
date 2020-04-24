@@ -765,7 +765,7 @@ static void window_uif_process(void);
 static void window_mode_process(void);
 static void window_agc_process(void);
 static void window_enc2_process(void);
-static void window_test_process(void);
+static void window_audioparams_process(void);
 static void gui_main_process(void);
 
 	enum {
@@ -807,7 +807,7 @@ static void gui_main_process(void);
 		WINDOW_MENU,
 		WINDOW_ENC2,
 		WINDOW_UIF,
-		WINDOW_TEST
+		WINDOW_AUDIO
 	};
 
 	enum {
@@ -868,7 +868,7 @@ static void gui_main_process(void);
 		{ 0, 0, 86, 44, button5_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  VISIBLE,     UINTPTR_MAX, 		"btn5", 		"", },
 		{ 0, 0, 86, 44, button6_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  VISIBLE,     UINTPTR_MAX, 		"btn6", 		"", },
 		{ 0, 0, 86, 44, button7_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  VISIBLE,     UINTPTR_MAX, 		"btn7", 		"", },
-		{ 0, 0, 86, 44, button8_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  VISIBLE,     UINTPTR_MAX, 		"btn8", 		"Slider|test", },
+		{ 0, 0, 86, 44, button8_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  VISIBLE,     UINTPTR_MAX, 		"btn8", 		"Audio|params", },
 		{ 0, 0, 86, 44, button9_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  VISIBLE,     UINTPTR_MAX, 		"btnSysMenu", 	"System|settings", },
 		{ 0, 0, 86, 44, buttons_mode_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_LSB, 		"btnModeLSB", 	"LSB", },
 		{ 0, 0, 86, 44, buttons_mode_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_CW,  		"btnModeCW", 	"CW", },
@@ -945,7 +945,16 @@ static void gui_main_process(void);
 		{ 0, 0,	WINDOW_UIF,  DISABLED,  0, NON_VISIBLE, "lbl_uif_param",  "", COLORPIP_WHITE, },
 		{ 0, 0,	WINDOW_UIF,  DISABLED,  0, NON_VISIBLE, "lbl_uif_val", 	  "", COLORPIP_WHITE, },
 		{ 0, 0,	WINDOW_FREQ, DISABLED,  0, NON_VISIBLE, "lbl_freq_val",   "", COLORPIP_YELLOW, },
-		{ 0, 0,	WINDOW_TEST, DISABLED,  0, NON_VISIBLE, "lbl_test_val",   "", COLORPIP_YELLOW, },
+		{ 0, 0,	WINDOW_AUDIO, DISABLED,  0, NON_VISIBLE, "eq0.08_val",   "", COLORPIP_YELLOW, },
+		{ 0, 0,	WINDOW_AUDIO, DISABLED,  0, NON_VISIBLE, "eq0.23_val",   "", COLORPIP_YELLOW, },
+		{ 0, 0,	WINDOW_AUDIO, DISABLED,  0, NON_VISIBLE, "eq0.65_val",   "", COLORPIP_YELLOW, },
+		{ 0, 0,	WINDOW_AUDIO, DISABLED,  0, NON_VISIBLE, "eq1.8_val",   "", COLORPIP_YELLOW, },
+		{ 0, 0,	WINDOW_AUDIO, DISABLED,  0, NON_VISIBLE, "eq5.3_val",   "", COLORPIP_YELLOW, },
+		{ 0, 0,	WINDOW_AUDIO, DISABLED,  0, NON_VISIBLE, "eq0.08_name",   "", COLORPIP_WHITE, },
+		{ 0, 0,	WINDOW_AUDIO, DISABLED,  0, NON_VISIBLE, "eq0.23_name",   "", COLORPIP_WHITE, },
+		{ 0, 0,	WINDOW_AUDIO, DISABLED,  0, NON_VISIBLE, "eq0.65_name",   "", COLORPIP_WHITE, },
+		{ 0, 0,	WINDOW_AUDIO, DISABLED,  0, NON_VISIBLE, "eq1.8_name",   "", COLORPIP_WHITE, },
+		{ 0, 0,	WINDOW_AUDIO, DISABLED,  0, NON_VISIBLE, "eq5.3_name",   "", COLORPIP_WHITE, },
 	};
 	enum { LABELS_COUNT = sizeof labels / sizeof labels[0] };
 
@@ -956,8 +965,8 @@ static void gui_main_process(void);
 
 	enum {
 		sliders_width = 8,		// ширина шкалы
-		sliders_w = 18,			// размеры ползунка
-		sliders_h = 12			// от центра (*2)
+		sliders_w = 12,			// размеры ползунка
+		sliders_h = 18			// от центра (*2)
 	};
 
 	typedef struct {
@@ -981,11 +990,11 @@ static void gui_main_process(void);
 
 	static slider_t sliders[] = {
 			{ },
-			{ 0, 0, 0, 0, 0, 0, ORIENTATION_VERTICAL, WINDOW_TEST, "slrMikeEQ.08", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
-			{ 0, 0, 0, 0, 0, 0, ORIENTATION_VERTICAL, WINDOW_TEST, "slrMikeEQ.23", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
-			{ 0, 0, 0, 0, 0, 0, ORIENTATION_VERTICAL, WINDOW_TEST, "slrMikeEQ.65", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
-			{ 0, 0, 0, 0, 0, 0, ORIENTATION_VERTICAL, WINDOW_TEST, "slrMikeEQ1.8", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
-			{ 0, 0, 0, 0, 0, 0, ORIENTATION_VERTICAL, WINDOW_TEST, "slrMikeEQ5.3", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
+			{ 0, 0, 0, 0, 0, 0, ORIENTATION_VERTICAL, WINDOW_AUDIO, "eq0.08", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
+			{ 0, 0, 0, 0, 0, 0, ORIENTATION_VERTICAL, WINDOW_AUDIO, "eq0.23", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
+			{ 0, 0, 0, 0, 0, 0, ORIENTATION_VERTICAL, WINDOW_AUDIO, "eq0.65", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
+			{ 0, 0, 0, 0, 0, 0, ORIENTATION_VERTICAL, WINDOW_AUDIO, "eq1.8", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
+			{ 0, 0, 0, 0, 0, 0, ORIENTATION_VERTICAL, WINDOW_AUDIO, "eq5.3", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
 	};
 	enum { SLIDERS_COUNT = sizeof sliders / sizeof sliders[0] };
 
@@ -1036,7 +1045,7 @@ static void gui_main_process(void);
 		{ WINDOW_MENU,  ALIGN_CENTER_X, 0, 0, 550, 240, "Settings",	   NON_VISIBLE, 0, window_menu_process, },
 		{ WINDOW_ENC2, 	ALIGN_RIGHT_X, 	0, 0, 185, 105, "Fast menu",   NON_VISIBLE, 0, window_enc2_process, },
 		{ WINDOW_UIF, 	ALIGN_LEFT_X, 	0, 0, 200, 145, "",   		   NON_VISIBLE, 0, window_uif_process, },
-		{ WINDOW_TEST, 	ALIGN_CENTER_X, 0, 0, 500, 300, "Slider test", NON_VISIBLE, 0, window_test_process, },
+		{ WINDOW_AUDIO, ALIGN_CENTER_X, 0, 0, 430, 350, "MIC params",  NON_VISIBLE, 0, window_audioparams_process, },
 	};
 	enum { windows_count = sizeof windows / sizeof windows[0] };
 
@@ -2176,76 +2185,124 @@ static void gui_main_process(void);
 	{
 		if(gui.selected_type == TYPE_BUTTON)
 		{
-			if (windows[WINDOW_TEST].state == NON_VISIBLE)
+			if (windows[WINDOW_AUDIO].state == NON_VISIBLE)
 			{
-				set_window(WINDOW_TEST, VISIBLE);
-				windows[WINDOW_TEST].first_call = 1;
+				set_window(WINDOW_AUDIO, VISIBLE);
+				windows[WINDOW_AUDIO].first_call = 1;
 				footer_buttons_state(DISABLED, buttons[gui.selected_id].name);
 			}
 			else
 			{
-				set_window(WINDOW_TEST, NON_VISIBLE);
+				set_window(WINDOW_AUDIO, NON_VISIBLE);
 				footer_buttons_state(CANCELLED, "");
 				hamradio_set_menu_cond(NON_VISIBLE);
 			}
 		}
 	}
 
-	static void window_test_process(void)
+	static void window_audioparams_process(void)
 	{
-		static window_t * win = & windows[WINDOW_TEST];
-		static slider_t * sl;
-		static label_t * lbl;
-		static uint_fast8_t sl_first_id = 0, eq_limit;
-		char buf[10];
-		static int_fast8_t eq_base = 0;
+		PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
+		static window_t * win = & windows[WINDOW_AUDIO];
+		slider_t * sl = NULL;
+		label_t * lbl = NULL;
+		static uint_fast8_t sl_first_id = 0, eq_limit, eq_base = 0;
+		char buf[TEXT_ARRAY_SIZE];
+		static int_fast16_t mid_y = 0, start_y = 0;
+		const char str_val[] = "_val", str_name[] = "_name";
+		uint_fast8_t id = 0;
 
 		if (win->first_call == 1)
 		{
-			uint_fast16_t x, y;
-			uint_fast8_t interval = 70, id = 0, col1_int = 70, row1_int = 50;
+			uint_fast16_t x, y, mid_w;
+			uint_fast8_t interval = 70, col1_int = 70, row1_int = 120;
 			win->first_call = 0;
-			calculate_window_position(WINDOW_TEST);
+			calculate_window_position(WINDOW_AUDIO);
 
 			eq_base = hamradio_getequalizerbase();
 			eq_limit = abs(eq_base) * 2;
 
-			while(sliders[++id].parent != WINDOW_TEST)
+			while(sliders[++id].parent != WINDOW_AUDIO)
 				;
 			sl_first_id = id;
 			x = win->x1 + col1_int;
 			y = win->y1 + row1_int;
-			do {
-				sliders[id].x = x;
-				sliders[id].y = y;
-				sliders[id].size = 200;
-				sliders[id].step = 2;
-				sliders[id].value = normalize(hamradio_get_gmikeequalizerparams(id - sl_first_id), 0, eq_limit, 100);
-				PRINTF("%d %d\n", id - sl_first_id, sliders[id].value);
+
+			for (; id < SLIDERS_COUNT; id++)
+			{
+				sl = & sliders[id];
+				if (sl->parent != WINDOW_AUDIO)
+					break;
+
+				sl->x = x;
+				sl->y = y;
+				sl->size = 200;
+				sl->step = 2;
+				sl->value = normalize(hamradio_get_gmikeequalizerparams(id - sl_first_id), eq_limit, 0, 100);
+
+				mid_w = sl->x + sliders_width / 2;		// центр шкалы слайдера по x
+
+				strcpy(buf, sl->name);
+				strcat(buf, str_name);
+				lbl = & labels[find_gui_element(TYPE_LABEL, WINDOW_AUDIO, buf)];
+				local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%sk"), strchr(sl->name, 'q') + 1);
+				strcpy(lbl->text, buf);
+				lbl->x = mid_w - strwidth2(lbl->text) / 2;
+				lbl->y = sl->y - SMALLCHARH2 * 4;
+
+				strcpy(buf, sl->name);
+				strcat(buf, str_val);
+				lbl = & labels[find_gui_element(TYPE_LABEL, WINDOW_AUDIO, buf)];
+				local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), hamradio_get_gmikeequalizerparams(id - sl_first_id) + eq_base);
+				strcpy(lbl->text, buf);
+				lbl->x = mid_w - strwidth2(lbl->text) / 2;
+				lbl->y = sl->y - SMALLCHARH2 * 3 + SMALLCHARH2 / 2;
+
 				x = x + interval;
-			} while (sliders[++id].parent == WINDOW_TEST);
-//
-//			lbl = & labels[find_gui_element(TYPE_LABEL, WINDOW_TEST, "lbl_test_val")];
-//			lbl->x = win->x1 + 80;
-//			lbl->y = win->y1 + win->h / 2;
-//			local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), sl->value);
-//			strcpy(lbl->text, buf);
-	}
+			}
+			mid_y = sliders[id - 1].y + sliders[id - 1].size / 2;
+			return;
+		}
 
 		if (gui.selected_type == TYPE_SLIDER && gui.is_tracking)
 		{
-			sl = & sliders[gui.selected_id];
+			id = gui.selected_id;
+			sl = & sliders[id];
+
 			uint16_t v = sl->value + gui.vector_move_y / sl->step;
 			if (v >= 0 && v <= sl->size / sl->step)
 			{
-				int_fast8_t val = normalize(v, 0, 100, eq_limit);
 				sl->value = v;
-				hamradio_set_gmikeequalizerparams(gui.selected_id - sl_first_id, val);
-//				local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), sl->value);
-//				strcpy(lbl->text, buf);
+				PRINTF("%s: %d%\n", sl->name, v);
+				uint_fast16_t mid_w = sl->x + sliders_width / 2;
+				strcpy(buf, sl->name);
+				strcat(buf, str_val);
+				lbl = & labels[find_gui_element(TYPE_LABEL, WINDOW_AUDIO, buf)];
+				local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), hamradio_get_gmikeequalizerparams(id - sl_first_id) + eq_base);
+				strcpy(lbl->text, buf);
+				lbl->x = mid_w - strwidth2(lbl->text) / 2;
 			}
-			gui.vector_move_x = 0;
-			gui.vector_move_y = 0;
+
+			if(sl->value != sl->value_old)
+			{
+				gui.vector_move_x = 0;
+				gui.vector_move_y = 0;
+				hamradio_set_gmikeequalizerparams(id - sl_first_id, normalize(v, 100, 0, eq_limit));
+			}
+		}
+
+		for (uint_fast16_t i = 0; i <= abs(eq_base); i += 3)
+		{
+			uint_fast16_t yy = normalize(i, 0, abs(eq_base), 100);
+			colmain_line(fr, DIM_X, DIM_Y, win->x1 + 50, mid_y + yy, win->x1 + win->w - 50, mid_y + yy, 225, 0);
+			local_snprintf_P(buf, sizeof buf / sizeof buf[0], i == 0 ? PSTR("%d") : PSTR("-%d"), i);
+			colpip_string2_tbg(fr, DIM_X, DIM_Y, win->x1 + 50 - strwidth2(buf) - 5, mid_y + yy - SMALLCHARH2 / 2, buf, COLORMAIN_WHITE);
+
+			if (i == 0)
+				continue;
+			colmain_line(fr, DIM_X, DIM_Y, win->x1 + 50, mid_y - yy, win->x1 + win->w - 50, mid_y - yy, 225, 0);
+			local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), i);
+			colpip_string2_tbg(fr, DIM_X, DIM_Y, win->x1 + 50 - strwidth2(buf) - 5, mid_y - yy - SMALLCHARH2 / 2, buf, COLORMAIN_WHITE);
 		}
 	}
 
@@ -2494,9 +2551,9 @@ static void gui_main_process(void);
 		}
 		else						// ORIENTATION_VERTICAL
 		{
-			uint_fast16_t mid_w = sl->x + sliders_width / 2;
 			if (sl->value_old != sl->value)
 			{
+				uint_fast16_t mid_w = sl->x + sliders_width / 2;
 				sl->value_p = sl->y + sl->size * sl->value / 100;
 				sl->x1_p = mid_w - sliders_w;
 				sl->y1_p = sl->value_p - sliders_h;
@@ -2507,7 +2564,7 @@ static void gui_main_process(void);
 			colpip_rect(fr, DIM_X, DIM_Y, sl->x + 1, sl->y + 1, sl->x + sliders_width - 1, sl->y + sl->size - 1, 242, 1);
 			colpip_rect(fr, DIM_X, DIM_Y, sl->x, sl->y, sl->x + sliders_width, sl->y + sl->size, COLORMAIN_WHITE, 0);
 			colpip_rect(fr, DIM_X, DIM_Y, sl->x1_p, sl->y1_p, sl->x2_p, sl->y2_p, sl->state == PRESSED ? COLOR_BUTTON_PR_NON_LOCKED : COLOR_BUTTON_NON_LOCKED, 1);
-			colmain_line(fr, DIM_X, DIM_Y,  mid_w - sliders_w, sl->value_p, mid_w + sliders_w, sl->value_p, COLORMAIN_BLACK, 0);
+			colmain_line(fr, DIM_X, DIM_Y,  sl->x1_p, sl->value_p, sl->x2_p, sl->value_p, COLORMAIN_WHITE, 0);
 		}
 	}
 
@@ -2692,7 +2749,7 @@ static void gui_main_process(void);
 				if (gui.vector_move_x != 0 || gui.vector_move_y != 0)
 				{
 					gui.is_tracking = 1;
-					debug_printf_P(PSTR("move x: %d, move y: %d\n"), gui.vector_move_x, gui.vector_move_y);
+//					debug_printf_P(PSTR("move x: %d, move y: %d\n"), gui.vector_move_x, gui.vector_move_y);
 				}
 				x_old = gui.last_pressed_x;
 				y_old = gui.last_pressed_y;
@@ -2741,10 +2798,11 @@ static void gui_main_process(void);
 		for (uint_fast8_t i = 0; i < windows_count; i ++)
 		{
 			const window_t * const win = & windows[i];
+			uint_fast8_t f = win->first_call;
 			if (win->state == VISIBLE)
 			{
 				// при открытии окна рассчитываются экранные координаты самого окна и его child элементов
-				if (! win->first_call)
+				if (! f)
 				{
 					display_transparency(win->x1, win->y1, win->x1 + win->w, win->y1 + win->h, alpha);
 				}
@@ -2752,7 +2810,7 @@ static void gui_main_process(void);
 				// запуск процедуры фоновой обработки для окна
 				win->onVisibleProcess();
 
-				if (! win->first_call )
+				if (! f)
 				{
 					// вывод заголовка окна
 					colpip_string_tbg(fr, DIM_X, DIM_Y, win->x1 + 20, win->y1 + 10, win->name, COLORPIP_YELLOW);
@@ -2764,7 +2822,7 @@ static void gui_main_process(void);
 					{
 						const label_t * const lh = & labels[i];
 						if (lh->visible == VISIBLE && lh->parent == win->window_id)
-							colpip_string_tbg(fr, DIM_X, DIM_Y, lh->x, lh->y, lh->text, lh->color);
+							colpip_string2_tbg(fr, DIM_X, DIM_Y, lh->x, lh->y, lh->text, lh->color);
 					}
 
 					// кнопки
