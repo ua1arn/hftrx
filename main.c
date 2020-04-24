@@ -18112,6 +18112,7 @@ uint_fast8_t hamradio_get_gmikeequalizer(void)
 void hamradio_set_gmikeequalizer(uint_fast8_t v)
 {
 	gmikeequalizer = v != 0;
+	updateboard(1, 0);
 }
 
 uint_fast8_t hamradio_get_gmikeequalizerparams(uint_fast8_t i)
@@ -18123,7 +18124,9 @@ uint_fast8_t hamradio_get_gmikeequalizerparams(uint_fast8_t i)
 void hamradio_set_gmikeequalizerparams(uint_fast8_t i, uint_fast8_t v)
 {
 	ASSERT(i < HARDWARE_CODEC1_NPROCPARAMS);
+	ASSERT(v <= EQUALIZERBASE * 2);
 	gmikeequalizerparams[i] = v;
+	updateboard(1, 0);
 }
 
 int_fast32_t hamradio_getequalizerbase(void)
