@@ -610,13 +610,14 @@ void spi_initialize(void)
 
 #endif /* WITHSPIHW || WITHSPISW */
 
+//#define WIHSPIDFOVERSPI 1	/* В SPI программаторе для работы используется один из обычных каналов SPI */
+//#define targetdataflash targetext1
 
-
-#if WIHSPIDFHW || WIHSPIDFSW
+#if WIHSPIDFHW || WIHSPIDFSW|| WIHSPIDFOVERSPI
 
 enum { SPDIFIO_READ, SPDIFIO_WRITE };	// в случае пеердачи только команды используем write */
 
-#if WIHSPIDFSW
+#if WIHSPIDFSW || WIHSPIDFOVERSPI
 
 
 /////////
@@ -651,7 +652,7 @@ static void spidf_wbit(uint_fast8_t v)
 }
 
 
-uint_fast8_t spidf_read_byte(spitarget_t target, uint_fast8_t v)
+uint_fast8_t spidf_read_byte(uint_fast8_t v)
 {
 	uint_fast8_t r = 0;
 
@@ -667,7 +668,7 @@ uint_fast8_t spidf_read_byte(spitarget_t target, uint_fast8_t v)
 	return r;
 }
 
-static void spidf_write_byte(spitarget_t target, uint_fast8_t v)
+static void spidf_write_byte(uint_fast8_t v)
 {
 	spidf_wbit(v & 0x80);
 	spidf_wbit(v & 0x40);
@@ -684,43 +685,82 @@ void spidf_uninitialize(void)
 }
 
 // Connrect I/O pins
-static void spidf_select(spitarget_t target, uint_fast8_t mode)
+static void spidf_select(uint_fast8_t mode)
 {
+#if WIHSPIDFOVERSPI
+	spitarget_t target = targetdataflash;	/* addressing to chip */
+	spi_select(target, mode);
+#else /* WIHSPIDFOVERSPI */
 	SPIDF_SELECT();
+#endif /* WIHSPIDFOVERSPI */
 }
 
 static void spidf_unselect(void)
 {
+#if WIHSPIDFOVERSPI
 	spitarget_t target = targetdataflash;	/* addressing to chip */
+	spi_unselect(target);
+#else /* WIHSPIDFOVERSPI */
 	SPIDF_UNSELECT();
+#endif /* WIHSPIDFOVERSPI */
 }
 
-static void spidf_to_read(spitarget_t target)
+static void spidf_to_read(void)
 {
+#if WIHSPIDFOVERSPI
+	spitarget_t target = targetdataflash;	/* addressing to chip */
+	spi_to_read(target);
+#else /* WIHSPIDFOVERSPI */
+#endif /* WIHSPIDFOVERSPI */
 }
 
-static void spidf_to_write(spitarget_t target)
+static void spidf_to_write(void)
 {
+#if WIHSPIDFOVERSPI
+	spitarget_t target = targetdataflash;	/* addressing to chip */
+	spi_to_write(target);
+#else /* WIHSPIDFOVERSPI */
+#endif /* WIHSPIDFOVERSPI */
 }
 
-static void spidf_progval8_p1(spitarget_t target, uint_fast8_t sendval)
+static void spidf_progval8_p1(uint_fast8_t sendval)
 {
-	spidf_write_byte(target, sendval);
+#if WIHSPIDFOVERSPI
+	spitarget_t target = targetdataflash;	/* addressing to chip */
+	spi_progval8_p1(target, sendval);
+#else /* WIHSPIDFOVERSPI */
+	spidf_write_byte(sendval);
+#endif /* WIHSPIDFOVERSPI */
 }
 
-static void spidf_progval8_p2(spitarget_t target, uint_fast8_t sendval)
+static void spidf_progval8_p2(uint_fast8_t sendval)
 {
-	spidf_write_byte(target, sendval);
+#if WIHSPIDFOVERSPI
+	spitarget_t target = targetdataflash;	/* addressing to chip */
+	spi_progval8_p2(target, sendval);
+#else /* WIHSPIDFOVERSPI */
+	spidf_write_byte(sendval);
+#endif /* WIHSPIDFOVERSPI */
 }
 
-static uint_fast8_t spidf_complete(spitarget_t target)
+static uint_fast8_t spidf_complete(void)
 {
+#if WIHSPIDFOVERSPI
+	spitarget_t target = targetdataflash;	/* addressing to chip */
+	spi_complete(target);
+#else /* WIHSPIDFOVERSPI */
+#endif /* WIHSPIDFOVERSPI */
 	return 0;
 }
 
-static uint_fast8_t spidf_progval8(spitarget_t target, uint_fast8_t sendval)
+static uint_fast8_t spidf_progval8(uint_fast8_t sendval)
 {
-	return spidf_read_byte(target, sendval);
+#if WIHSPIDFOVERSPI
+	spitarget_t target = targetdataflash;	/* addressing to chip */
+	return spi_progval8(target, sendval);
+#else /* WIHSPIDFOVERSPI */
+	return spidf_read_byte(sendval);
+#endif /* WIHSPIDFOVERSPI */
 }
 
 static void spidf_iostart(
@@ -732,51 +772,46 @@ static void spidf_iostart(
 	uint_fast32_t address
 	)
 {
-	spitarget_t target = targetdataflash;	/* addressing to chip */
-
-	spidf_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
-	spidf_progval8_p1(target, cmd);		/* The Read SFDP instruction code is 0x5A */
+	spidf_select(SPIMODE_AT26DF081A);	/* start sending data to target chip */
+	spidf_progval8_p1(cmd);		/* The Read SFDP instruction code is 0x5A */
 
 	if (hasaddress)
 	{
-		spidf_progval8_p2(target, address >> 16);
-		spidf_progval8_p2(target, address >> 8);
-		spidf_progval8_p2(target, address >> 0);
+		spidf_progval8_p2(address >> 16);
+		spidf_progval8_p2(address >> 8);
+		spidf_progval8_p2(address >> 0);
 	}
 	while (ndummy --)
-		spidf_progval8_p2(target, 0x00);	// dummy byte
+		spidf_progval8_p2( 0x00);	// dummy byte
 
-	spidf_complete(target);	/* done sending data to target chip */
+	spidf_complete();	/* done sending data to target chip */
 }
 
 
 static void spidf_read(uint8_t * buff, uint_fast32_t size)
 {
-	spitarget_t target = targetdataflash;	/* addressing to chip */
-	spidf_to_read(target);
+	spidf_to_read();
 	while (size --)
-		* buff ++ = spidf_read_byte(target, 0xff);
-	spidf_to_write(target);
+		* buff ++ = spidf_read_byte(0xff);
+	spidf_to_write();
 }
 
 
 static uint_fast8_t spidf_verify(const uint8_t * buff, uint_fast32_t size)
 {
 	uint_fast8_t err = 0;
-	spitarget_t target = targetdataflash;	/* addressing to chip */
-	spidf_to_read(target);
+	spidf_to_read();
 	while (size --)
-		err |= * buff ++ != spidf_read_byte(target, 0xff);
-	spidf_to_write(target);
+		err |= * buff ++ != spidf_read_byte(0xff);
+	spidf_to_write();
 	return err;
 }
 
 
 static void spidf_write(const uint8_t * buff, uint_fast32_t size)
 {
-	spitarget_t target = targetdataflash;	/* addressing to chip */
 	while (size --)
-		 spidf_read_byte(target, * buff ++);
+		 spidf_read_byte(* buff ++);
 }
 
 #elif WIHSPIDFHW && CPUSTYLE_STM32MP1
@@ -1219,7 +1254,7 @@ static int largetimed_dataflash_read_status(void)
 /* чтение параметра с требуемым индексом
  *
  */
-static void readSFDPDATAFLASH(spitarget_t target, unsigned long flashoffset, uint8_t * buff, unsigned size)
+static void readSFDPDATAFLASH(unsigned long flashoffset, uint8_t * buff, unsigned size)
 {
 	// Read SFDP
 	spidf_iostart(SPDIFIO_READ, 0x5A, 1, size, 1, flashoffset);	// READ SFDP (with dummy bytes)
@@ -1227,14 +1262,14 @@ static void readSFDPDATAFLASH(spitarget_t target, unsigned long flashoffset, uin
 	spidf_unselect();	/* done sending data to target chip */
 }
 
-static int seekparamSFDPDATAFLASH(spitarget_t target, unsigned long * paramoffset, uint_fast8_t * paramlength, uint_fast8_t id, uint_fast8_t lastnum)
+static int seekparamSFDPDATAFLASH(unsigned long * paramoffset, uint_fast8_t * paramlength, uint_fast8_t id, uint_fast8_t lastnum)
 {
 	uint8_t buff8 [8];
 	unsigned i;
 
 	for (i = 0; i <= lastnum; ++ i)
 	{
-		readSFDPDATAFLASH(target, (i + 1) * 8uL, buff8, 8);
+		readSFDPDATAFLASH((i + 1) * 8uL, buff8, 8);
 		if (buff8 [0] == id)
 		{
 			* paramlength = buff8 [3];	// in double words
@@ -1250,8 +1285,6 @@ static int seekparamSFDPDATAFLASH(spitarget_t target, unsigned long * paramoffse
 
 int testchipDATAFLASH(void)
 {
-	spitarget_t target = targetdataflash;	/* addressing to chip */
-
 	/* Ожидание бита ~RDY в слове состояния. Для FRAM не имеет смысла.
 	Вставлено для возможности использования DATAFLASH */
 
@@ -1286,7 +1319,7 @@ int testchipDATAFLASH(void)
 
 	// Read root SFDP
 	uint8_t buff8 [8];
-	readSFDPDATAFLASH(target, 0x000000, buff8, 8);
+	readSFDPDATAFLASH(0x000000, buff8, 8);
 
 	uint_fast32_t signature = USBD_peek_u32(& buff8 [0]);
 
@@ -1297,7 +1330,7 @@ int testchipDATAFLASH(void)
 		const uint_fast8_t lastparam = buff8 [6];
 		unsigned long ptp;
 		uint_fast8_t len4;
-		if (seekparamSFDPDATAFLASH(target, & ptp, & len4, 0x00, lastparam))
+		if (seekparamSFDPDATAFLASH(& ptp, & len4, 0x00, lastparam))
 		{
 			PRINTF("SFDP parameter 0x00 not found\n");
 			return 0;
@@ -1307,7 +1340,7 @@ int testchipDATAFLASH(void)
 		if (len4 < 9 || len4 > 16)
 			return 0;
 		uint8_t buff32 [len4 * 4];
-		readSFDPDATAFLASH(target, ptp, buff32, len4 * 4);
+		readSFDPDATAFLASH(ptp, buff32, len4 * 4);
 		const uint_fast32_t dword1 = USBD_peek_u32(buff32 + 4 * 0);
 		const uint_fast32_t dword2 = USBD_peek_u32(buff32 + 4 * 1);
 		const uint_fast32_t dword3 = USBD_peek_u32(buff32 + 4 * 2);
