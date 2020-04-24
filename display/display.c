@@ -1382,12 +1382,12 @@ static void hwaccel_copy(
 
 #elif WITHDMA2DHW
 	arm_hardware_flush_invalidate(dstinvalidateaddr, dstinvalidatesize);
-	arm_hardware_flush((uintptr_t) src, sizeof (* src) GXSIZR(w, h));
+	arm_hardware_flush((uintptr_t) src, sizeof (* src) * GXSIZE(w, h));
 
 	/* исходный растр */
 	DMA2D->FGMAR = (uintptr_t) src;
 	DMA2D->FGOR = (DMA2D->FGOR & ~ (DMA2D_FGOR_LO)) |
-		((GXADJ(w) - w)) << DMA2D_FGOR_LO_Pos) |
+		((GXADJ(w) - w) << DMA2D_FGOR_LO_Pos) |
 		0;
 	/* целевой растр */
 	DMA2D->OMAR = (uintptr_t) dst;
