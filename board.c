@@ -8045,7 +8045,7 @@ uint_fast8_t board_get_adcch(uint_fast8_t i)
 	return adcinputs [i];
 }
 
-#define ADC_LPF_WND	8	// размер окна фильтра LPF
+#define ADC_LPF_WND	20	// размер окна фильтра LPF
 
 typedef struct boardadc_tag
 {
@@ -8258,6 +8258,7 @@ static void hardware_set_adc_filterLPF(uint_fast8_t adci, uint_fast8_t k)
 	boardadc_t * const padcs = & badcst [adci];
 	padcs->adc_filter = BOARD_ADCFILTER_LPF;
 	//padcs->adc_data_k = k;	/* 1.0..0.0, умноженное на BOARD_ADCFILTER_LPF_DENOM */
+	memset(& padcs->queue, 0, sizeof padcs->queue);
 	padcs->qpos = 0;
 	padcs->adc_summ = 0;
 }
@@ -8391,15 +8392,15 @@ void board_adc_filtering(void)
 			{
 /*
 				const uint_fast8_t k = padcs->adc_data_k;
-				//adc_data_filtered [i] = (1 - k) * adc_data_filtered [i] + k * raw;
+				//adc_data_filtered = (1 - k) * adc_data_filtered + k * raw;
 				padcs->adc_data_filtered =
 					((int_fast32_t) (BOARD_ADCFILTER_LPF_DENOM - k) * padcs->adc_data_filtered +
 					(int_fast32_t) k * raw) / BOARD_ADCFILTER_LPF_DENOM;
 
 				padcs->adc_data_filtered = raw;
 */
-				padcs->adc_summ += raw;
-				padcs->adc_summ -= padcs->queue [padcs->qpos];
+				padcs->adc_summ += raw;	// добавить входящее
+				padcs->adc_summ -= padcs->queue [padcs->qpos];	// вычесть выходящее
 				padcs->queue [padcs->qpos] = raw;
 				padcs->qpos = (padcs->qpos + 1) % ADC_LPF_WND;
 				padcs->adc_data_filtered = padcs->adc_summ / ADC_LPF_WND;
@@ -8412,7 +8413,6 @@ void board_adc_filtering(void)
 		}
 	}
 }
-
 
 /*
 	Для некоторых каналов АЦП вклюяаем фильтрацию значений.
