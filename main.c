@@ -3938,10 +3938,10 @@ static void tuner_waitadc(void)
 		local_delay_ms(5);
 }
 
-static uint_fast8_t get_swr(uint_fast8_t fullscale)
+static uint_fast8_t tuner_get_swr(uint_fast8_t fullscale)
 {
 	adcvalholder_t r;
-	const adcvalholder_t f = board_getswrmeter(& r, swrcalibr);
+	const adcvalholder_t f = board_getswrmeter_unfiltered(& r, swrcalibr);
 	const uint_fast8_t fs = fullscale - SWRMIN;
 
 	if (f < minforward)
@@ -3988,7 +3988,7 @@ static uint_fast8_t scanminLk(tus_t * tus, uint_fast8_t addsteps)
 			return 1;
 		updateboard_tuner();
 		tuner_waitadc();
-		const uint_fast8_t swr = get_swr(TUS_SWRMAX);
+		const uint_fast8_t swr = tuner_get_swr(TUS_SWRMAX);
 
 		if ((bestswrvalid == 0) || (tus->swr > swr))
 		{
@@ -4024,7 +4024,7 @@ static uint_fast8_t scanminCk(tus_t * tus, uint_fast8_t addsteps)
 			return 1;
 		updateboard_tuner();
 		tuner_waitadc();
-		const uint_fast8_t swr = get_swr(TUS_SWRMAX);
+		const uint_fast8_t swr = tuner_get_swr(TUS_SWRMAX);
 
 		if ((bestswrvalid == 0) || (tus->swr > swr))
 		{

@@ -7567,6 +7567,21 @@ uint_fast8_t board_getavox(void)	/* получить значение от де�
 
 // возврат считанных с АЦП значений forward и reflected
 // коррекция неодинаковости детекторов
+adcvalholder_t board_getswrmeter_unfiltered(
+	adcvalholder_t * reflected, 	// в знаяениях АЦП
+	uint_fast8_t swrcalibr	// 90..110 - коррекция
+	)
+{
+	// SWR indicator test
+	// 1000 & 333 = swr=2, 1000 & 250 = swr=1,66, 1000 & 500 = swr=3
+	//* reflected = 333;
+	//return 1000;
+	* reflected = board_getadc_unfiltered_truevalue(REF) * (unsigned long) swrcalibr / 100;		// калибровка - умножение на 0.8...1.2 с точностью в 0.01;
+	return board_getadc_unfiltered_truevalue(FWD);
+}
+
+// возврат считанных с АЦП значений forward и reflected
+// коррекция неодинаковости детекторов
 adcvalholder_t board_getswrmeter(
 	adcvalholder_t * reflected, 	// в знаяениях АЦП
 	uint_fast8_t swrcalibr	// 90..110 - коррекция
@@ -7576,8 +7591,8 @@ adcvalholder_t board_getswrmeter(
 	// 1000 & 333 = swr=2, 1000 & 250 = swr=1,66, 1000 & 500 = swr=3
 	//* reflected = 333;	
 	//return 1000;
-	* reflected = board_getadc_unfiltered_truevalue(REF) * (unsigned long) swrcalibr / 100;		// калибровка - умножение на 0.8...1.2 с точностью в 0.01;
-	return board_getadc_unfiltered_truevalue(FWD);
+	* reflected = board_getadc_unfiltered_truevalue(REFMRRIX) * (unsigned long) swrcalibr / 100;		// калибровка - умножение на 0.8...1.2 с точностью в 0.01;
+	return board_getadc_unfiltered_truevalue(FWDMRRIX);
 }
 
 uint_fast8_t board_getpwrmeter(
@@ -7601,6 +7616,18 @@ uint_fast8_t board_getpwrmeter(
 }
 
 #else
+
+// нет такой функции
+// возврат считанных с АЦП значений forward и reflected
+adcvalholder_t board_getswrmeter_unfiltered(
+	adcvalholder_t * reflected, 	// в знаяениях АЦП
+	uint_fast8_t swrcalibr	// 90..110 - коррекция
+	)
+{
+	const adcvalholder_t forward = 100;
+	* reflected = 0;
+	return forward;
+}
 
 // нет такой функции
 // возврат считанных с АЦП значений forward и reflected

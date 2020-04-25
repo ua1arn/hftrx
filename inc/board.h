@@ -253,6 +253,11 @@ uint_fast8_t restore_i8(nvramaddress_t addr); /* выборка по указа�
 adcvalholder_t board_getswrmeter(
 	adcvalholder_t * reflected, 	// в знаяениях АЦП
 	uint_fast8_t swrcalibr	// 90..110 - коррекция
+	);
+/* получить значение forward & reflected ADC - для работы автотюнера */
+adcvalholder_t board_getswrmeter_unfiltered(
+	adcvalholder_t * reflected, 	// в знаяениях АЦП
+	uint_fast8_t swrcalibr	// 90..110 - коррекция
 	);	
 uint_fast8_t board_getpwrmeter(
 	uint_fast8_t * toptrace	// peak hold
