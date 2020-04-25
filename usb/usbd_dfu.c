@@ -226,7 +226,7 @@ static USBD_StatusTypeDef MEM_If_Init_HS(void)
 	spidf_initialize();
 	testchipDATAFLASH();
 	prepareDATAFLASH();	// снятие защиты со страниц при первом програмимровании через SPI интерфейс
-	return (USBD_OK);
+	return USBD_OK;
 }
 
 /**
@@ -238,7 +238,7 @@ static USBD_StatusTypeDef MEM_If_DeInit_HS(void)
 	//PRINTF(PSTR("MEM_If_DeInit_HS\n"));
 	spidf_uninitialize();
 	//PRINTF(PSTR("MEM_If_DeInit_HS 1\n"));
-	return (USBD_OK);
+	return USBD_OK;
 }
 
 /**
@@ -252,13 +252,11 @@ static USBD_StatusTypeDef MEM_If_Erase_HS(uint32_t Addr)
 	//PRINTF(PSTR("MEM_If_Erase_HS: addr=%08lX\n"), Addr);
 	if (Addr >= BOOTLOADER_SELFBASE && (Addr + BOOTLOADER_PAGESIZE) <= (BOOTLOADER_SELFBASE + BOOTLOADER_APPFULL))
 	{
-#if 1//WITHISBOOTLOADER
 		// физическое выполненеие записи
-		sectoreraseDATAFLASH(Addr);
-#else /* WITHISBOOTLOADER */
-#endif /* WITHISBOOTLOADER */
+		if (sectoreraseDATAFLASH(Addr))
+			return USBD_FAIL;
 	}
-	return (USBD_OK);
+	return USBD_OK;
 }
 
 /**
@@ -273,18 +271,12 @@ static USBD_StatusTypeDef MEM_If_Write_HS(uint8_t *src, uint32_t dest, uint32_t 
 	//PRINTF(PSTR("MEM_If_Write_HS: addr=%08lX, len=%03lX\n"), dest, Len);
 	if (dest >= BOOTLOADER_SELFBASE && (dest + Len) <= (BOOTLOADER_SELFBASE + BOOTLOADER_APPFULL))
 	{
-#if 1//WITHISBOOTLOADER
 		// физическое выполненеие записи
 		if (writeDATAFLASH(dest, src, Len))
 			return USBD_FAIL;
 		// сравнение после записи
 		if (verifyDATAFLASH(dest, src, Len))
 			return USBD_FAIL;
-#else /* WITHISBOOTLOADER */
-		// сравнение как тест
-		if (verifyDATAFLASH(dest, src, Len))
-			return USBD_FAIL;
-#endif /* WITHISBOOTLOADER */
 	}
 #if WITHISBOOTLOADER
 	if (dest >= BOOTLOADER_APPAREA && (dest + Len) <= (BOOTLOADER_APPAREA + BOOTLOADER_APPFULL))
@@ -296,7 +288,7 @@ static USBD_StatusTypeDef MEM_If_Write_HS(uint8_t *src, uint32_t dest, uint32_t 
 		/* программируем бутлоадер */
 	}
 #endif /* WITHISBOOTLOADER */
-	return (USBD_OK);
+	return USBD_OK;
 }
 
 /**
@@ -308,34 +300,10 @@ static USBD_StatusTypeDef MEM_If_Write_HS(uint8_t *src, uint32_t dest, uint32_t 
   */
 static uint8_t *MEM_If_Read_HS(uint32_t src, uint8_t *dest, uint32_t Len)
 {
-	/*
-	PRINTF(PSTR("MEM_If_Read_HS: src=%08lX, len=%03lX\n"), src, Len);
-	dest [0] = src >> 24;
-	dest [1] = src >> 16;
-	dest [2] = src >> 8;
-	dest [3] = src >> 0;
-	dest [4] = 'D';
-	dest [5] = 'E';
-	dest [6] = 'A';
-	dest [7] = 'D';
-	dest [8] = 'B';
-	dest [9] = 'E';
-	dest [10] = 'E';
-	dest [11] = 'F';
-	dest [Len - 4] = ~ src >> 24;
-	dest [Len - 3] = ~ src >> 16;
-	dest [Len - 2] = ~ src >> 8;
-	dest [Len - 1] = ~ src >> 0;
-	return dest;
-	*/
-
 	/* Return a valid address to avoid HardFault */
-	if (timed_dataflash_read_status())
-	{
-		//TP();
+	if (readDATAFLASH(src, dest, Len))
 		return 0; //dest;	// todo: error handling need
-	}
-	readDATAFLASH(src, dest, Len);
+
 	return dest;
 }
 
@@ -348,7 +316,6 @@ static uint8_t *MEM_If_Read_HS(uint32_t src, uint8_t *dest, uint32_t Len)
   */
 static USBD_StatusTypeDef MEM_If_GetStatus_HS(uint32_t Add, uint8_t Cmd, uint8_t *buffer)
 {
-	/* USER CODE BEGIN 11 */
 	uint_fast8_t st = dataflash_read_status();
 
 	const unsigned FLASH_PROGRAM_TIME = (st & 0x01) ? 5 : 0;
@@ -364,8 +331,7 @@ static USBD_StatusTypeDef MEM_If_GetStatus_HS(uint32_t Add, uint8_t Cmd, uint8_t
 		USBD_poke_u24(& buffer[1], FLASH_ERASE_TIME);
 		break;
 	}
-	return  (USBD_OK);
-	/* USER CODE END 11 */
+	return  USBD_OK;
 }
 
 static USBALIGN_BEGIN USBD_DFU_MediaTypeDef USBD_DFU_fops_HS USBALIGN_END =
