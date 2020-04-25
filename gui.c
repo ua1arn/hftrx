@@ -904,6 +904,12 @@ static void gui_main_process(void);
 	};
 	enum { BUTTONS_COUNT = sizeof buttons / sizeof buttons[0] };
 
+	typedef enum {
+		FONT_LARGE,		// S1D13781_smallfont_LTDC
+		FONT_MEDIUM,	// S1D13781_smallfont2_LTDC
+		FONT_SMALL		// S1D13781_smallfont3_LTDC
+	} font_size_t;
+
 	typedef struct {
 		uint16_t x;
 		uint16_t y;
@@ -913,48 +919,49 @@ static void gui_main_process(void);
 		uint8_t visible;
 		char name [NAME_ARRAY_SIZE];
 		char text [TEXT_ARRAY_SIZE];
+		font_size_t font_size;
 		PACKEDCOLORMAIN_T color;
 		void (*onClickHandler) (void);
 	} label_t;
 
 	static label_t labels[] = {
-	//     x,   y,  parent,      state,        visible,     name,   Text,  color
+	//    x, y,  parent,     state, is_trackable, visible, name,       Text, font_size, color, onClickHandler
 		{ },
-		{ 0, 0, WINDOW_BP,   DISABLED,  0, NON_VISIBLE, "lbl_low",  "", COLORPIP_YELLOW, },
-		{ 0, 0, WINDOW_BP,   DISABLED,  0, NON_VISIBLE, "lbl_high", "", COLORPIP_YELLOW, },
-		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 0, 0, WINDOW_ENC2, DISABLED,  0, NON_VISIBLE, "lbl_enc2_param", "", COLORPIP_WHITE, },
-		{ 0, 0, WINDOW_ENC2, DISABLED,  0, NON_VISIBLE, "lbl_enc2_val",	  "", COLORPIP_WHITE, },
-		{ 0, 0,	WINDOW_UIF,  DISABLED,  0, NON_VISIBLE, "lbl_uif_param",  "", COLORPIP_WHITE, },
-		{ 0, 0,	WINDOW_UIF,  DISABLED,  0, NON_VISIBLE, "lbl_uif_val", 	  "", COLORPIP_WHITE, },
-		{ 0, 0,	WINDOW_FREQ, DISABLED,  0, NON_VISIBLE, "lbl_freq_val",   "", COLORPIP_YELLOW, },
-		{ 0, 0,	WINDOW_AUDIO, DISABLED,  0, NON_VISIBLE, "eq0.08_val",   "", COLORPIP_YELLOW, },
-		{ 0, 0,	WINDOW_AUDIO, DISABLED,  0, NON_VISIBLE, "eq0.23_val",   "", COLORPIP_YELLOW, },
-		{ 0, 0,	WINDOW_AUDIO, DISABLED,  0, NON_VISIBLE, "eq0.65_val",   "", COLORPIP_YELLOW, },
-		{ 0, 0,	WINDOW_AUDIO, DISABLED,  0, NON_VISIBLE, "eq1.8_val",   "", COLORPIP_YELLOW, },
-		{ 0, 0,	WINDOW_AUDIO, DISABLED,  0, NON_VISIBLE, "eq5.3_val",   "", COLORPIP_YELLOW, },
-		{ 0, 0,	WINDOW_AUDIO, DISABLED,  0, NON_VISIBLE, "eq0.08_name",   "", COLORPIP_WHITE, },
-		{ 0, 0,	WINDOW_AUDIO, DISABLED,  0, NON_VISIBLE, "eq0.23_name",   "", COLORPIP_WHITE, },
-		{ 0, 0,	WINDOW_AUDIO, DISABLED,  0, NON_VISIBLE, "eq0.65_name",   "", COLORPIP_WHITE, },
-		{ 0, 0,	WINDOW_AUDIO, DISABLED,  0, NON_VISIBLE, "eq1.8_name",   "", COLORPIP_WHITE, },
-		{ 0, 0,	WINDOW_AUDIO, DISABLED,  0, NON_VISIBLE, "eq5.3_name",   "", COLORPIP_WHITE, },
+		{ 0, 0, WINDOW_BP,   DISABLED,  0, NON_VISIBLE, "lbl_low",  	  "", FONT_LARGE, COLORPIP_YELLOW, },
+		{ 0, 0, WINDOW_BP,   DISABLED,  0, NON_VISIBLE, "lbl_high", 	  "", FONT_LARGE, COLORPIP_YELLOW, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_ENC2, DISABLED,  0, NON_VISIBLE, "lbl_enc2_param", "", FONT_LARGE, COLORPIP_WHITE, },
+		{ 0, 0, WINDOW_ENC2, DISABLED,  0, NON_VISIBLE, "lbl_enc2_val",	  "", FONT_LARGE, COLORPIP_WHITE, },
+		{ 0, 0,	WINDOW_UIF,  DISABLED,  0, NON_VISIBLE, "lbl_uif_param",  "", FONT_LARGE, COLORPIP_WHITE, },
+		{ 0, 0,	WINDOW_UIF,  DISABLED,  0, NON_VISIBLE, "lbl_uif_val", 	  "", FONT_LARGE, COLORPIP_WHITE, },
+		{ 0, 0,	WINDOW_FREQ, DISABLED,  0, NON_VISIBLE, "lbl_freq_val",   "", FONT_LARGE, COLORPIP_YELLOW, },
+		{ 0, 0,	WINDOW_AUDIO, DISABLED,  0, NON_VISIBLE, "eq0.08_val",    "", FONT_MEDIUM, COLORPIP_YELLOW, },
+		{ 0, 0,	WINDOW_AUDIO, DISABLED,  0, NON_VISIBLE, "eq0.23_val",    "", FONT_MEDIUM, COLORPIP_YELLOW, },
+		{ 0, 0,	WINDOW_AUDIO, DISABLED,  0, NON_VISIBLE, "eq0.65_val",    "", FONT_MEDIUM, COLORPIP_YELLOW, },
+		{ 0, 0,	WINDOW_AUDIO, DISABLED,  0, NON_VISIBLE, "eq1.8_val",     "", FONT_MEDIUM, COLORPIP_YELLOW, },
+		{ 0, 0,	WINDOW_AUDIO, DISABLED,  0, NON_VISIBLE, "eq5.3_val",     "", FONT_MEDIUM, COLORPIP_YELLOW, },
+		{ 0, 0,	WINDOW_AUDIO, DISABLED,  0, NON_VISIBLE, "eq0.08_name",   "", FONT_MEDIUM, COLORPIP_WHITE, },
+		{ 0, 0,	WINDOW_AUDIO, DISABLED,  0, NON_VISIBLE, "eq0.23_name",   "", FONT_MEDIUM, COLORPIP_WHITE, },
+		{ 0, 0,	WINDOW_AUDIO, DISABLED,  0, NON_VISIBLE, "eq0.65_name",   "", FONT_MEDIUM, COLORPIP_WHITE, },
+		{ 0, 0,	WINDOW_AUDIO, DISABLED,  0, NON_VISIBLE, "eq1.8_name",    "", FONT_MEDIUM, COLORPIP_WHITE, },
+		{ 0, 0,	WINDOW_AUDIO, DISABLED,  0, NON_VISIBLE, "eq5.3_name",    "", FONT_MEDIUM, COLORPIP_WHITE, },
 	};
 	enum { LABELS_COUNT = sizeof labels / sizeof labels[0] };
 
@@ -2822,7 +2829,14 @@ static void gui_main_process(void);
 					{
 						const label_t * const lh = & labels[i];
 						if (lh->visible == VISIBLE && lh->parent == win->window_id)
-							colpip_string2_tbg(fr, DIM_X, DIM_Y, lh->x, lh->y, lh->text, lh->color);
+						{
+							if (lh->font_size == FONT_LARGE)
+								colpip_string_tbg(fr, DIM_X, DIM_Y, lh->x, lh->y, lh->text, lh->color);
+							else if (lh->font_size == FONT_MEDIUM)
+								colpip_string2_tbg(fr, DIM_X, DIM_Y, lh->x, lh->y, lh->text, lh->color);
+							else if (lh->font_size == FONT_SMALL)
+								colpip_string3_tbg(fr, DIM_X, DIM_Y, lh->x, lh->y, lh->text, lh->color);
+						}
 					}
 
 					// кнопки
