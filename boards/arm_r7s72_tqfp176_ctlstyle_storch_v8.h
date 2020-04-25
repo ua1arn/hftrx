@@ -478,61 +478,81 @@
 	// Назначения входов АЦП процессора.
 	enum 
 	{ 
+		WPM_POTIX = BOARD_ADCX1IN(2),			// MCP3208 CH2 потенциометр управления скоростью передачи в телеграфе
+		IFGAIN_IXI = BOARD_ADCX1IN(0),			// MCP3208 CH0 IF GAIN
+		AFGAIN_IXI = BOARD_ADCX1IN(1),			// MCP3208 CH1 AF GAIN
+
 	#if WITHPOTIFGAIN
-		POTIFGAIN = BOARD_ADCXIN(0),		// MCP3208 CH0 IF GAIN
+		POTIFGAIN = IFGAIN_IXI,
 	#endif /* WITHPOTIFGAIN */
 	#if WITHPOTAFGAIN
-		//POTAFGAIN = BOARD_ADCXIN(2),		// MCP3208 CH2 потенциометр управления скоростью передачи в телеграфе
-		POTAFGAIN = BOARD_ADCXIN(1),		// MCP3208 CH1 AF GAIN
+		POTAFGAIN = AFGAIN_IXI,
 	#endif /* WITHPOTAFGAIN */
-	#if WITHPOTWPM
-		POTWPM = BOARD_ADCXIN(2),			// MCP3208 CH2 потенциометр управления скоростью передачи в телеграфе
-	#endif /* WITHPOTWPM */
+
 	#if WITHTHERMOLEVEL
 		XTHERMOIX = BOARD_ADCXIN(6),		// MCP3208 CH6 Exernal thermo sensor ST LM235Z
-		XTHERMOMRRIX = BOARD_ADCMRRIN(0),	// кеш - индекc не должен повторяться в конфигурации
 	#endif /* WITHTHERMOLEVEL */
 
-	#if 1
-		// main board - 5W
-		#if WITHVOLTLEVEL
-			VOLTSOURCE = BOARD_ADCX1IN(7),		// MCP3208 CH7 Средняя точка делителя напряжения, для АКБ
-			VOLTMRRIX = BOARD_ADCMRRIN(1),	// кеш - индекc не должен повторяться в конфигурации
-		#endif /* WITHVOLTLEVEL */
+	#if WITHAUTOTUNER_AVBELNN
 
-		#if WITHSWRMTR
-			PWRI = 0,			// PB1
-			FWD = 0, REF = 1,	// PB0	SWR-meter
-			REFMRRIX = BOARD_ADCMRRIN(2),
-			FWDMRRIX = BOARD_ADCMRRIN(3),
-			PWRMRRIX = BOARD_ADCMRRIN(4),
-		#endif /* WITHSWRMTR */
+		XTHERMOIX = BOARD_ADCX1IN(6),		// MCP3208 CH6 Exernal thermo sensor ST LM235Z
 
+		#define WITHVOLTLEVEL	1	/* отображение напряжения питания */
 		#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
-		#if WITHCURRLEVEL
-			PASENSEIX = 2,		// PA1 PA current sense - ACS712-05 chip
-			PASENSEMRRIX = BOARD_ADCMRRIN(5),	// кеш - индекc не должен повторяться в конфигурации
-		#endif /* WITHCURRLEVEL */
-	#else
+
+		#define WITHCURRLEVEL_ACS712_30A 1	// PA current sense - ACS712ELCTR-30B-T chip
+		//#define WITHCURRLEVEL_ACS712_20A 1	// PA current sense - ACS712ELCTR-20B-T chip
+		PASENSEIX = WPM_POTIX,		// PA1 PA current sense - ACS712-05 chip
+		//PASENSEIX = 2,		// PA1 PA current sense - ACS712-05 chip
+
+		FWD = 0, REF = 1,	// PB0	SWR-meter
+		PWRI = FWD,			// PB1
+
+
+		VOLTSOURCE = BOARD_ADCX1IN(7),		// MCP3208 CH7 Средняя точка делителя напряжения, для АКБ
+
+		#define VOLTLEVEL_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика напряжения
+		#define VOLTLEVEL_LOWER		10	// 1.0 kOhm - нижний резистор
+
+
+	#elif 0
 		// UA1CEI PA board: MCP3208 at targetext2 - P2_0 external SPI device (PA BOARD ADC)
 		VOLTSOURCE = BOARD_ADCX2IN(4),		// MCP3208 CH7 Средняя точка делителя напряжения, для АКБ
-		VOLTMRRIX = BOARD_ADCMRRIN(0),		// кеш - индекc не должен повторяться в конфигурации
 
 		FWD = BOARD_ADCX2IN(2),
 		REF = BOARD_ADCX2IN(3),
 		PWRI = FWD,
-		REFMRRIX = BOARD_ADCMRRIN(2),
-		FWDMRRIX = BOARD_ADCMRRIN(3),
-		PWRMRRIX = BOARD_ADCMRRIN(4),
 
 		#define WITHCURRLEVEL_ACS712_30A 1	// PA current sense - ACS712ELCTR-30B-T chip
 		//#define WITHCURRLEVEL_ACS712_20A 1	// PA current sense - ACS712ELCTR-20B-T chip
 		#define WITHCURRLEVEL2	1	/* отображение тока оконечного каскада */
 		PASENSEIX2 = BOARD_ADCX2IN(0),	// DRAIN
 		PAREFERIX2 = BOARD_ADCX2IN(1),	// reference (1/2 напряжения питания ACS712ELCTR-30B-T).
+	#else
+		// main board - 5W
+		#if WITHVOLTLEVEL
+			VOLTSOURCE = BOARD_ADCX1IN(7),		// MCP3208 CH7 Средняя точка делителя напряжения, для АКБ
+		#endif /* WITHVOLTLEVEL */
+
+		#if WITHSWRMTR
+			PWRI = 0,			// PB1
+			FWD = 0, REF = 1,	// PB0	SWR-meter
+		#endif /* WITHSWRMTR */
+
+		#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
+		#if WITHCURRLEVEL
+			PASENSEIX = 2,		// PA1 PA current sense - ACS712-05 chip
+		#endif /* WITHCURRLEVEL */
+	#endif
+
+		XTHERMOMRRIX = BOARD_ADCMRRIN(0),	// кеш - индекc не должен повторяться в конфигурации
+		PASENSEMRRIX = BOARD_ADCMRRIN(1),	// кеш - индекc не должен повторяться в конфигурации
+		REFMRRIX = BOARD_ADCMRRIN(2),
+		FWDMRRIX = BOARD_ADCMRRIN(3),
+		PWRMRRIX = FWDMRRIX,
+		VOLTMRRIX = BOARD_ADCMRRIN(4),	// кеш - индекc не должен повторяться в конфигурации
 		PASENSEMRRIX2 = BOARD_ADCMRRIN(5),		// кеш - индекc не должен повторяться в конфигурации
 		PAREFERMRRIX2 = BOARD_ADCMRRIN(6),		// кеш - индекc не должен повторяться в конфигурации
-	#endif
 
 		KI0 = 3, KI1 = 4, KI2 = 5, KI3 = 6, KI4 = 7		// клавиатура
 	};
