@@ -7591,8 +7591,8 @@ adcvalholder_t board_getswrmeter(
 	// 1000 & 333 = swr=2, 1000 & 250 = swr=1,66, 1000 & 500 = swr=3
 	//* reflected = 333;	
 	//return 1000;
-	* reflected = board_getadc_unfiltered_truevalue(REFMRRIX) * (unsigned long) swrcalibr / 100;		// калибровка - умножение на 0.8...1.2 с точностью в 0.01;
-	return board_getadc_unfiltered_truevalue(FWDMRRIX);
+	* reflected = board_getadc_filtered_truevalue(REFMRRIX) * (unsigned long) swrcalibr / 100;		// калибровка - умножение на 0.8...1.2 с точностью в 0.01;
+	return board_getadc_filtered_truevalue(FWDMRRIX);
 }
 
 uint_fast8_t board_getpwrmeter(
