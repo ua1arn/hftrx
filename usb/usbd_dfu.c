@@ -254,14 +254,16 @@ static USBD_StatusTypeDef MEM_If_Erase_HS(uint32_t Addr)
 	if (Addr >= BOOTLOADER_SELFBASE && (Addr + BOOTLOADER_PAGESIZE) <= (BOOTLOADER_SELFBASE + BOOTLOADER_SELFSIZE))
 	{
 		// физическое выполненеие записи
-		sectoreraseDATAFLASH(Addr);
+		if (sectoreraseDATAFLASH(Addr))
+			return USBD_FAIL;
 	}
 #endif /* BOOTLOADER_SELFSIZE */
 #if BOOTLOADER_APPSIZE
 	if (Addr >= BOOTLOADER_APPBASE && (Addr + BOOTLOADER_PAGESIZE) <= (BOOTLOADER_APPBASE + BOOTLOADER_APPSIZE))
 	{
 		// физическое выполненеие записи
-		sectoreraseDATAFLASH(Addr);
+		if (sectoreraseDATAFLASH(Addr))
+			return USBD_FAIL;
 	}
 #endif /* BOOTLOADER_APPSIZE */
 	return (USBD_OK);
