@@ -540,10 +540,10 @@ display2_smeter15(
 
 	if (is_tx)																	// угол поворота стрелки; 246 минимум, 270 середина, 294 максимум
 	{
-		enum { gx_hyst = 3 };		// гистерезис в градусах
-		/* фильтрация - (в градусах) */
-		static uint_fast16_t gv_smooth;
-		static uint_fast16_t gswr_smooth;
+//		enum { gx_hyst = 3 };		// гистерезис в градусах
+//		/* фильтрация - (в градусах) */
+//		static uint_fast16_t gv_smooth;
+//		static uint_fast16_t gswr_smooth;
 
 		uint_fast8_t power, tracemax;
 		adcvalholder_t forward, reflected;
@@ -563,17 +563,17 @@ display2_smeter15(
 			swr10 = (forward + reflected) * SWRMIN / (forward - reflected) - SWRMIN;
 		gswr = smeter_params.gs + normalize(swr10, 0, 30, smeter_params.ge - smeter_params.gs);
 
-		if (gv > smeter_params.gs)
-			gv_smooth = gv;
-
-		if (gv == smeter_params.gs && gv_smooth > smeter_params.gs)
-			gv = (gv_smooth -= gx_hyst) > smeter_params.gs ? gv_smooth : smeter_params.gs;
-
-		if (gswr > smeter_params.gs)
-			gswr_smooth = gswr;
-
-		if (gswr == smeter_params.gs && gswr_smooth > smeter_params.gs)
-			gswr = (gswr_smooth -= gx_hyst) > smeter_params.gs ? gswr_smooth : smeter_params.gs;
+//		if (gv > smeter_params.gs)
+//			gv_smooth = gv;
+//
+//		if (gv == smeter_params.gs && gv_smooth > smeter_params.gs)
+//			gv = (gv_smooth -= gx_hyst) > smeter_params.gs ? gv_smooth : smeter_params.gs;
+//
+//		if (gswr > smeter_params.gs)
+//			gswr_smooth = gswr;
+//
+//		if (gswr == smeter_params.gs && gswr_smooth > smeter_params.gs)
+//			gswr = (gswr_smooth -= gx_hyst) > smeter_params.gs ? gswr_smooth : smeter_params.gs;
 	}
 	else
 	{
@@ -2472,7 +2472,7 @@ static void gui_main_process(void);
 
 	#if WITHTHERMOLEVEL	// температура выходных транзисторов (при передаче)
 		static ldiv_t t;
-		if (hamradio_get_tx() && gui.timer_1sec_updated)
+		if (hamradio_get_tx())// && gui.timer_1sec_updated)
 		{
 			t = ldiv(hamradio_get_temperature_value(), 10);
 			local_snprintf_P(buf, buflen, PSTR("%d.%dC "), t.quot, t.rem);
