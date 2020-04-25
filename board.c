@@ -8045,15 +8045,28 @@ uint_fast8_t board_get_adcch(uint_fast8_t i)
 	return adcinputs [i];
 }
 
-static volatile adcvalholder_t adc_data_raw [HARDWARE_ADCINPUTS];		// Максимальное количество - бывает на STM32 (с учётом TEMP SENSOR)
-static adcvalholder_t adc_data_filtered [HARDWARE_ADCINPUTS];		// Максимальное количество - бывает на STM32 (с учётом TEMP SENSOR)
-static uint_fast8_t adc_data_smoothed_u8 [HARDWARE_ADCINPUTS];		// Максимальное количество - бывает на STM32 (с учётом TEMP SENSOR)
-static uint_fast8_t adc_filter [HARDWARE_ADCINPUTS];	/* методы фильтрации данных */
-static uint_fast8_t adc_data_k [HARDWARE_ADCINPUTS];	/* параметр (частота среза ФНЧ) */
+#define ADC_LPF_WND	8	// размер окна фильтра LPF
+
+typedef struct boardadc_tag
+{
+
+	volatile adcvalholder_t adc_data_raw;	// Максимальное количество - бывает на STM32 (с учётом TEMP SENSOR)
+	adcvalholder_t adc_data_filtered;		// Максимальное количество - бывает на STM32 (с учётом TEMP SENSOR)
+	uint8_t adc_data_smoothed_u8;		// Максимальное количество - бывает на STM32 (с учётом TEMP SENSOR)
+	uint8_t adc_filter;			/* методы фильтрации данных */
+	//uint8_t adc_data_k;			/* параметр (частота среза ФНЧ) */
+	adcvalholder_t queue [ADC_LPF_WND];
+	uint8_t qpos;
+	uint32_t adc_summ;
+} boardadc_t;
+
+static boardadc_t badcst [HARDWARE_ADCINPUTS];
 
 /* получить максимальное возможное значение от АЦП */
 adcvalholder_t board_getadc_fsval(uint_fast8_t adci)	
 {
+	ASSERT(adci < HARDWARE_ADCINPUTS);
+	boardadc_t * const padcs = & badcst [adci];
 	if (adci >= BOARD_ADCX0BASE || adci >= BOARD_ADCX1BASE)
 	{
 		return 4095;	// MCP3208
@@ -8065,7 +8078,8 @@ adcvalholder_t board_getadc_fsval(uint_fast8_t adci)
 adcvalholder_t board_getadc_filtered_truevalue(uint_fast8_t adci)	
 {
 	ASSERT(adci < HARDWARE_ADCINPUTS);
-	return adc_data_filtered [adci];
+	boardadc_t * const padcs = & badcst [adci];
+	return padcs->adc_data_filtered;
 }
 
 /* получить значение от АЦП */
@@ -8087,10 +8101,13 @@ adcvalholder_t board_getadc_unfiltered_truevalue(uint_fast8_t adci)
 			{	7, 0, },
 	};
 
+	ASSERT(adci < HARDWARE_ADCINPUTS);
+	boardadc_t * const padcs = & badcst [adci];
+
 	if (adci >= BOARD_ADCMRRBASE)
 	{
 		// mirror - значения АЦП устанавливабтся выходами программных компонентов, без считывания с аппаратуры.
-		return adc_data_raw [adci];
+		return padcs->adc_data_raw;
 	}
 	if (adci >= BOARD_ADCX1BASE)
 	{
@@ -8115,13 +8132,15 @@ adcvalholder_t board_getadc_unfiltered_truevalue(uint_fast8_t adci)
 #endif /* defined (targetadc2) */
 	}
 	ASSERT(adci < HARDWARE_ADCINPUTS);
-	return adc_data_raw [adci];
+	return padcs->adc_data_raw;
 }
 
 
 /* получить отфильтрованное значение от АЦП в диапазоне lower..upper (включая границы) */
 uint_fast8_t board_getadc_filtered_u8(uint_fast8_t adci, uint_fast8_t lower, uint_fast8_t upper)
 {
+	ASSERT(adci < HARDWARE_ADCINPUTS);
+	boardadc_t * const padcs = & badcst [adci];
 	const adcvalholder_t t = board_getadc_filtered_truevalue(adci);	// текущее отфильтрованное значение данного АЦП
 	const uint_fast8_t v = lower + ((uint_fast32_t) t * (upper - lower) / board_getadc_fsval(adci));	// нормируем к требуемому диапазону
 	ASSERT(v >= lower && v <= upper);
@@ -8131,6 +8150,8 @@ uint_fast8_t board_getadc_filtered_u8(uint_fast8_t adci, uint_fast8_t lower, uin
 /* получить отфильтрованное значение от АЦП в диапазоне lower..upper (включая границы) */
 uint_fast16_t board_getadc_filtered_u16(uint_fast8_t adci, uint_fast16_t lower, uint_fast16_t upper)
 {
+	ASSERT(adci < HARDWARE_ADCINPUTS);
+	boardadc_t * const padcs = & badcst [adci];
 	const adcvalholder_t t = board_getadc_filtered_truevalue(adci);	// текущее отфильтрованное значение данного АЦП
 	const uint_fast16_t v = lower + ((uint_fast32_t) t * (upper - lower) / board_getadc_fsval(adci));	// нормируем к требуемому диапазону
 	ASSERT(v >= lower && v <= upper);
@@ -8140,6 +8161,8 @@ uint_fast16_t board_getadc_filtered_u16(uint_fast8_t adci, uint_fast16_t lower, 
 /* получить отфильтрованное значение от АЦП в диапазоне lower..upper (включая границы) */
 uint_fast32_t board_getadc_filtered_u32(uint_fast8_t adci, uint_fast32_t lower, uint_fast32_t upper)
 {
+	ASSERT(adci < HARDWARE_ADCINPUTS);
+	boardadc_t * const padcs = & badcst [adci];
 	const adcvalholder_t t = board_getadc_filtered_truevalue(adci);	// текущее отфильтрованное значение данного АЦП
 	const uint_fast32_t v = lower + ((uint_fast64_t) t * (upper - lower) / board_getadc_fsval(adci));	// нормируем к требуемому диапазону
 	ASSERT(v >= lower && v <= upper);
@@ -8152,6 +8175,8 @@ static adcvalholder_t hysts [BOARD_ADCX0BASE + 16];
 /* поскольку используется для получения позиции потенциометра, применяется фильтрация "гистерезис" */
 uint_fast8_t board_getpot_filtered_u8(uint_fast8_t adci, uint_fast8_t lower, uint_fast8_t upper)
 {
+	ASSERT(adci < HARDWARE_ADCINPUTS);
+	boardadc_t * const padcs = & badcst [adci];
 	const adcvalholder_t t = board_getadc_unfiltered_truevalue(adci);	// текущее отфильтрованное значение данного АЦП
 	const uint_fast8_t v = lower + ((uint_fast32_t) filter_hyst(& hysts [adci], t) * (upper - lower) / board_getadc_fsval(adci));	// нормируем к требуемому диапазону
 	ASSERT(v >= lower && v <= upper);
@@ -8162,6 +8187,8 @@ uint_fast8_t board_getpot_filtered_u8(uint_fast8_t adci, uint_fast8_t lower, uin
 /* поскольку используется для получения позиции потенциометра, применяется фильтрация "гистерезис" */
 uint_fast16_t board_getpot_filtered_u16(uint_fast8_t adci, uint_fast16_t lower, uint_fast16_t upper)
 {
+	ASSERT(adci < HARDWARE_ADCINPUTS);
+	boardadc_t * const padcs = & badcst [adci];
 	const adcvalholder_t t = board_getadc_unfiltered_truevalue(adci);	// текущее отфильтрованное значение данного АЦП
 	const uint_fast16_t v = lower + ((uint_fast32_t) filter_hyst(& hysts [adci], t) * (upper - lower) / board_getadc_fsval(adci));	// нормируем к требуемому диапазону
 	ASSERT(v >= lower && v <= upper);
@@ -8174,13 +8201,14 @@ uint_fast16_t board_getpot_filtered_u16(uint_fast8_t adci, uint_fast16_t lower, 
 uint_fast8_t board_getadc_smoothed_u8(uint_fast8_t adci, uint_fast8_t lower, uint_fast8_t upper)
 {
 	ASSERT(adci < HARDWARE_ADCINPUTS);
-	const uint_fast8_t r = adc_data_smoothed_u8 [adci]; // ранее возвращённое значение для данного АЦП
+	boardadc_t * const padcs = & badcst [adci];
+	const uint_fast8_t r = padcs->adc_data_smoothed_u8; // ранее возвращённое значение для данного АЦП
 	const adcvalholder_t t = board_getadc_filtered_truevalue(adci);	// текущее отфильтрованное значение данного АЦП
 	const uint_fast8_t v = lower + ((uint_fast32_t) t * (upper - lower) / board_getadc_fsval(adci));	// нормируем к требуемому диапазону
 	if (r > v)
-		adc_data_smoothed_u8 [adci] -= 1;
+		padcs->adc_data_smoothed_u8 -= 1;
 	else if (r < v)
-		adc_data_smoothed_u8 [adci] += 1;
+		padcs->adc_data_smoothed_u8 += 1;
 	ASSERT(v >= lower && v <= upper);
 	return r;
 }
@@ -8188,6 +8216,7 @@ uint_fast8_t board_getadc_smoothed_u8(uint_fast8_t adci, uint_fast8_t lower, uin
 /* получить значение от АЦП в диапазоне lower..upper (включая границы) */
 uint_fast8_t board_getadc_unfiltered_u8(uint_fast8_t adci, uint_fast8_t lower, uint_fast8_t upper)	/* получить значение от АЦП в диапазоне lower..upper (включая границы) */
 {
+	ASSERT(adci < HARDWARE_ADCINPUTS);
 	const adcvalholder_t t = board_getadc_unfiltered_truevalue(adci);
 	const uint_fast8_t v = lower + (uint_fast8_t) ((uint_fast32_t) t * (upper - lower) / board_getadc_fsval(adci));	// нормируем к требуемому диапазону
 	ASSERT(v >= lower && v <= upper);
@@ -8197,6 +8226,7 @@ uint_fast8_t board_getadc_unfiltered_u8(uint_fast8_t adci, uint_fast8_t lower, u
 /* получить значение от АЦП в диапазоне lower..upper (включая границы) */
 uint_fast16_t board_getadc_unfiltered_u16(uint_fast8_t adci, uint_fast16_t lower, uint_fast16_t upper)	/* получить значение от АЦП в диапазоне lower..upper (включая границы) */
 {
+	ASSERT(adci < HARDWARE_ADCINPUTS);
 	const adcvalholder_t t = board_getadc_unfiltered_truevalue(adci);
 	const uint_fast16_t v = lower + (uint_fast16_t) ((uint_fast32_t) t * (upper - lower) / board_getadc_fsval(adci));	// нормируем к требуемому диапазону
 	ASSERT(v >= lower && v <= upper);
@@ -8206,6 +8236,7 @@ uint_fast16_t board_getadc_unfiltered_u16(uint_fast8_t adci, uint_fast16_t lower
 /* получить значение от АЦП в диапазоне lower..upper (включая границы) */
 uint_fast32_t board_getadc_unfiltered_u32(uint_fast8_t adci, uint_fast32_t lower, uint_fast32_t upper)	/* получить значение от АЦП в диапазоне lower..upper (включая границы) */
 {
+	ASSERT(adci < HARDWARE_ADCINPUTS);
 	const adcvalholder_t t = board_getadc_unfiltered_truevalue(adci);
 	const uint_fast32_t v = lower + (uint_fast32_t) ((uint_fast64_t) t * (upper - lower) / board_getadc_fsval(adci));	// нормируем к требуемому диапазону
 	ASSERT(v >= lower && v <= upper);
@@ -8216,15 +8247,19 @@ uint_fast32_t board_getadc_unfiltered_u32(uint_fast8_t adci, uint_fast32_t lower
 static void hardware_set_adc_filter(uint_fast8_t adci, uint_fast8_t v)
 {
 	ASSERT(adci < HARDWARE_ADCINPUTS);
-	adc_filter [adci] = v;
+	boardadc_t * const padcs = & badcst [adci];
+	padcs->adc_filter = v;
 }
 
 /* Установить способ фильтрации данных LPF и частоту среза - параметр 1.0..0.0, умноженное на BOARD_ADCFILTER_LPF_DENOM */
 static void hardware_set_adc_filterLPF(uint_fast8_t adci, uint_fast8_t k)
 {
 	ASSERT(adci < HARDWARE_ADCINPUTS);
-	adc_filter [adci] = BOARD_ADCFILTER_LPF;
-	adc_data_k [adci] = k;	/* 1.0..0.0, умноженное на BOARD_ADCFILTER_LPF_DENOM */
+	boardadc_t * const padcs = & badcst [adci];
+	padcs->adc_filter = BOARD_ADCFILTER_LPF;
+	//padcs->adc_data_k = k;	/* 1.0..0.0, умноженное на BOARD_ADCFILTER_LPF_DENOM */
+	padcs->qpos = 0;
+	padcs->adc_summ = 0;
 }
 
 // Функция вызывается из обработчика прерывания завершения преобразования
@@ -8232,8 +8267,9 @@ static void hardware_set_adc_filterLPF(uint_fast8_t adci, uint_fast8_t k)
 void board_adc_store_data(uint_fast8_t adci, adcvalholder_t v)
 {
 	ASSERT(adci < HARDWARE_ADCINPUTS);
+	boardadc_t * const padcs = & badcst [adci];
 	ASSERT(v <= board_getadc_fsval(adci));
-	adc_data_raw [adci] = v;
+	padcs->adc_data_raw = v;
 }
 
 
@@ -8327,42 +8363,51 @@ void board_adc_filtering(void)
 {
 	uint_fast8_t i;
 
-	for (i = 0; i < sizeof adc_data_filtered / sizeof adc_data_filtered [0]; ++ i)
+	for (i = 0; i < sizeof badcst / sizeof badcst [0]; ++ i)
 	{
-		const adcvalholder_t raw = adc_data_raw [i];
-		switch (adc_filter [i])
+		boardadc_t * const padcs = & badcst [i];
+		const adcvalholder_t raw = padcs->adc_data_raw;
+		switch (padcs->adc_filter)
 		{
 		case BOARD_ADCFILTER_DIRECT:
 			// Значение просто обновляется
-			adc_data_filtered [i] = raw;
+			padcs->adc_data_filtered = raw;
 			break;
 		case BOARD_ADCFILTER_TRACETOP3S:
 			// Отслеживание максимума с постоянной времени 3 секунды
 			{
 				enum { DELAY3SNUM = 993, DELAY3SDENOM = 1000 };	// todo: сделать расчет в зависимости от частоты системного таймера
-				const adcvalholder_t v0 = adc_data_filtered [i];
-				adc_data_filtered [i] = v0 < raw ? raw : v0 * (uint_fast32_t) DELAY3SNUM / DELAY3SDENOM;	
+				const adcvalholder_t v0 = padcs->adc_data_filtered;
+				padcs->adc_data_filtered = v0 < raw ? raw : v0 * (uint_fast32_t) DELAY3SNUM / DELAY3SDENOM;
 			}
 			break;
 
 #if WITHSWRMTR || WITHPWRMTR
 		case BOARD_ADCFILTER_AVERAGEPWR:
-			adc_data_filtered [i] = board_get_forward_filtered(raw);
+			padcs->adc_data_filtered = board_get_forward_filtered(raw);
 			break;
 #endif /* WITHSWRMTR || WITHPWRMTR */
 		case BOARD_ADCFILTER_LPF:
 			{
-				const uint_fast8_t k = adc_data_k [i];
+/*
+				const uint_fast8_t k = padcs->adc_data_k;
 				//adc_data_filtered [i] = (1 - k) * adc_data_filtered [i] + k * raw;
-				adc_data_filtered [i] = 
-					((int_fast32_t) (BOARD_ADCFILTER_LPF_DENOM - k) * adc_data_filtered [i] + 
+				padcs->adc_data_filtered =
+					((int_fast32_t) (BOARD_ADCFILTER_LPF_DENOM - k) * padcs->adc_data_filtered +
 					(int_fast32_t) k * raw) / BOARD_ADCFILTER_LPF_DENOM;
-				adc_data_filtered [i] = raw;
+
+				padcs->adc_data_filtered = raw;
+*/
+				padcs->adc_summ += raw;
+				padcs->adc_summ -= padcs->queue [padcs->qpos];
+				padcs->queue [padcs->qpos] = raw;
+				padcs->qpos = (padcs->qpos + 1) % ADC_LPF_WND;
+				padcs->adc_data_filtered = padcs->adc_summ / ADC_LPF_WND;
 			}
 			break;
 
 		default:
-			adc_data_filtered [i] = raw;
+			padcs->adc_data_filtered = raw;
 			break;
 		}
 	}
