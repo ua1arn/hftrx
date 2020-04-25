@@ -8443,6 +8443,10 @@ adcfilters_initialize(void)
 		hardware_set_adc_filterLPF(XTHERMOMRRIX, k);	// Включить фильтр с параметром 0.03
 	#endif /* WITHTHERMOLEVEL */
 
+	#if WITHSWRMTR || WITHPWRMTR
+		hardware_set_adc_filterLPF(REFMRRIX, k);	// Включить фильтр с параметром 0.03
+		hardware_set_adc_filterLPF(FWDMRRIX, k);	// Включить фильтр с параметром 0.03
+	#endif /* WITHSWRMTR || WITHPWRMTR */
 }
 
 
