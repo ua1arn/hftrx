@@ -2517,6 +2517,7 @@ struct nvmap
 	uint8_t gfillspect;
 	uint8_t gwflevelsep;	/* чувствительность водопада регулируется отдельной парой параметров */
 	uint8_t gwfshiftenable; /* разрешение или запрет сдвига водопада при изменении частоты */
+	uint8_t gspantialiasing; /* разрешение или запрет антиалиасинга спектра */
 #endif /* WITHSPECTRUMWF */
 #if WITHBCBANDS
 	uint8_t bandsetbcast;	/* Broadcasting radio bands */
@@ -3159,6 +3160,7 @@ static const uint_fast8_t displaymodesfps = DISPLAYMODES_FPS;
 	static uint_fast8_t gwflevelsep;	/* чувствительность водопада регулируется отдельной парой параметров */
 	static uint_fast8_t gzoomxpow2;		/* степень двойки - состояние растягиваия спектра (уменьшение наблюдаемой полосы частот) */
 	static uint_fast8_t gwfshiftenable = 1; /* разрешение или запрет сдвига водопада при изменении частоты */
+	static uint_fast8_t gspantialiasing  = 1; /* разрешение или запрет антиалиасинга спектра */
 #endif /* WITHSPECTRUMWF */
 #if WITHLCDBACKLIGHT
 	#if WITHISBOOTLOADER 
@@ -3936,10 +3938,10 @@ static void tuner_waitadc(void)
 		local_delay_ms(5);
 }
 
-static uint_fast8_t get_swr(uint_fast8_t fullscale)
+static uint_fast8_t tuner_get_swr(uint_fast8_t fullscale)
 {
 	adcvalholder_t r;
-	const adcvalholder_t f = board_getswrmeter(& r, swrcalibr);
+	const adcvalholder_t f = board_getswrmeter_unfiltered(& r, swrcalibr);
 	const uint_fast8_t fs = fullscale - SWRMIN;
 
 	if (f < minforward)
@@ -3986,7 +3988,7 @@ static uint_fast8_t scanminLk(tus_t * tus, uint_fast8_t addsteps)
 			return 1;
 		updateboard_tuner();
 		tuner_waitadc();
-		const uint_fast8_t swr = get_swr(TUS_SWRMAX);
+		const uint_fast8_t swr = tuner_get_swr(TUS_SWRMAX);
 
 		if ((bestswrvalid == 0) || (tus->swr > swr))
 		{
@@ -4022,7 +4024,7 @@ static uint_fast8_t scanminCk(tus_t * tus, uint_fast8_t addsteps)
 			return 1;
 		updateboard_tuner();
 		tuner_waitadc();
-		const uint_fast8_t swr = get_swr(TUS_SWRMAX);
+		const uint_fast8_t swr = tuner_get_swr(TUS_SWRMAX);
 
 		if ((bestswrvalid == 0) || (tus->swr > swr))
 		{
@@ -7187,6 +7189,8 @@ getactualdownpower(void)
 	return reqautotune || hardware_get_tune();
 }
 
+#if WITHTX
+
 /* Возвращает WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
 static uint_fast8_t
 getactualpower(void)
@@ -7203,6 +7207,8 @@ getactualpower(void)
 
 #endif /* WITHPOWERLPHP */
 }
+
+#endif /* WITHTX */
 
 // вызывается из user mode - признак передачи в режиме данных
 static uint_fast8_t
@@ -8243,10 +8249,10 @@ updateboard(
 			elkey_set_format(dashratio, spaceratio);	/* соотношение тире к точке (в десятках процентов) */
 		#endif
 			elkey_set_mode(elkeymode, elkeyreverse);	/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key */
-		#if WITHTX
+		#if WITHTX && WITHELKEY
 			seq_set_bkin_enable(bkinenable, bkindelay);			/* параметры BREAK-IN */
 			/*seq_rgbeep(0); */								/* формирование roger beep */
-		#endif /* WITHTX */
+		#endif /* WITHTX && WITHELKEY */
 	#endif /* WITHELKEY */
 
 	#if WITHIF4DSP
@@ -8297,6 +8303,7 @@ updateboard(
 			board_set_zoomxpow2(gzoomxpow2);	/* уменьшение отображаемого участка спектра */
 			board_set_wflevelsep(gwflevelsep);	/* чувствительность водопада регулируется отдельной парой параметров */
 			board_set_wfshiftenable(gwfshiftenable);	/* разрешение или запрет сдвига водопада при изменении частоты */
+			board_set_spantialiasing(gspantialiasing); /* разрешение или запрет антиалиасинга спектра */
 		#endif /* WITHSPECTRUMWF */
 	#endif /* WITHIF4DSP */
 
@@ -8976,6 +8983,12 @@ uif_key_loudsp(void)
 	save_i8(RMT_MUTELOUDSP_BASE, gmutespkr);
 	updateboard(1, 0);
 }
+
+uint_fast8_t hamradio_get_spkon_value(void)
+{
+	return ! gmutespkr;
+}
+
 #endif /* WITHSPKMUTE */
 
 #if CTLSTYLE_RA4YBO
@@ -9936,11 +9949,11 @@ display2_redrawbarstimed(
 		/* быстро меняющиеся значения с частым опорсом */
 		looptests();		// Периодически вызывается в главном цикле - тесты
 		/* +++ переписываем значения из возможно внешних АЦП в кеш значений */
-	#if WITHSWRMTR
+	#if WITHSWRMTR || WITHPWRMTR
 		board_adc_store_data(PWRMRRIX, board_getadc_unfiltered_truevalue(PWRI));
 		board_adc_store_data(FWDMRRIX, board_getadc_unfiltered_truevalue(FWD));
 		board_adc_store_data(REFMRRIX, board_getadc_unfiltered_truevalue(REF));
-	#endif /* WITHSWRMTR */
+	#endif /* WITHSWRMTR || WITHPWRMTR */
 	#if WITHCURRLEVEL2
 		board_adc_store_data(PASENSEMRRIX2, board_getadc_unfiltered_truevalue(PASENSEIX2));
 		board_adc_store_data(PAREFERMRRIX2, board_getadc_unfiltered_truevalue(PAREFERIX2));
@@ -10051,16 +10064,20 @@ directctlupdate(
 	{
 		// +++ получение состояния органов управления */
 	#if WITHPOTPOWER
-		changed |= FLAGNE_U8_CAT(& gnormalpower, board_getpot_filtered_u8(POTPOWER, WITHPOWERTRIMMIN, WITHPOWERTRIMMAX), CAT_PC_INDEX);	// регулировка мощности
+		static adcvalholder_t powerstate;
+		changed |= FLAGNE_U8_CAT(& gnormalpower, board_getpot_filtered_u8(POTPOWER, WITHPOWERTRIMMIN, WITHPOWERTRIMMAX, & powerstate), CAT_PC_INDEX);	// регулировка мощности
 	#endif /* WITHPOTPOWER */
 	#if WITHPOTWPM
-		changed |= FLAGNE_U8_CAT(& elkeywpm, board_getpot_filtered_u8(POTWPM, CWWPMMIN, CWWPMMAX), CAT_KS_INDEX);
+		static adcvalholder_t wpmstate;
+		changed |= FLAGNE_U8_CAT(& elkeywpm, board_getpot_filtered_u8(POTWPM, CWWPMMIN, CWWPMMAX, & wpmstate), CAT_KS_INDEX);
 	#endif /* WITHPOTWPM */
 	#if WITHPOTIFGAIN
-		changed |= FLAGNE_U16_CAT(& rfgain1, board_getpot_filtered_u16(POTIFGAIN, BOARD_IFGAIN_MIN, BOARD_IFGAIN_MAX), CAT_RG_INDEX);	// Параметр для регулировки усидения ПЧ
+		static adcvalholder_t ifgainstate;
+		changed |= FLAGNE_U16_CAT(& rfgain1, board_getpot_filtered_u16(POTIFGAIN, BOARD_IFGAIN_MIN, BOARD_IFGAIN_MAX, & ifgainstate), CAT_RG_INDEX);	// Параметр для регулировки усидения ПЧ
 	#endif /* WITHPOTIFGAIN */
 	#if WITHPOTAFGAIN
-		changed |= FLAGNE_U16_CAT(& afgain1, board_getpot_filtered_u16(POTAFGAIN, BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX), CAT_AG_INDEX);	// Параметр для регулировки уровня на выходе аудио-ЦАП
+		static adcvalholder_t afgainstate;
+		changed |= FLAGNE_U16_CAT(& afgain1, board_getpot_filtered_u16(POTAFGAIN, BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX, & afgainstate), CAT_AG_INDEX);	// Параметр для регулировки уровня на выходе аудио-ЦАП
 	#endif /* WITHPOTAFGAIN */
 	#if WITHPBT && WITHPOTPBT
 		/* установка gpbtoffset PBTMIN, PBTMAX, midscale = PBTHALF */
@@ -12741,15 +12758,15 @@ static const FLASHMEM struct menudef menutable [] =
 #endif /* WITHSLEEPTIMER */
 #if LCDMODE_COLORED
 	// Для цветных дисплеев можно менять цвет фона
-	{
-		QLABEL("BLUE BG "), 8, 3, RJ_ON,	ISTEP1,
-		ITEM_VALUE,
-		0, 1, 
-		offsetof(struct nvmap, gbluebgnd),
-		NULL,
-		& gbluebgnd,
-		getzerobase, /* складывается со смещением и отображается */
-	},
+//	{
+//		QLABEL("BLUE BG "), 8, 3, RJ_ON,	ISTEP1,
+//		ITEM_VALUE,
+//		0, 1,
+//		offsetof(struct nvmap, gbluebgnd),
+//		NULL,
+//		& gbluebgnd,
+//		getzerobase, /* складывается со смещением и отображается */
+//	},
 #endif
 	{
 		QLABEL("FREQ FPS"), 7, 0, 0,	ISTEP1,
@@ -12844,6 +12861,15 @@ static const FLASHMEM struct menudef menutable [] =
 		& gwfshiftenable,
 		getzerobase, /* складывается со смещением и отображается */
 	},
+	{
+		QLABEL2("SPEC AA ", "Spectrum AA"), 7, 3, RJ_YES,	ISTEP1,
+		ITEM_VALUE,
+		0, 1,							/* разрешение или запрет антиалиасинга спектра */
+		offsetof(struct nvmap, gspantialiasing),
+		NULL,
+		& gspantialiasing,
+		getzerobase, /* складывается со смещением и отображается */
+		},
 #endif /* WITHSPECTRUMWF */
 #if defined (RTC1_TYPE)
 #if ! WITHFLATMENU
@@ -18080,6 +18106,58 @@ hamradio_main_step(void)
 	return STTE_OK;
 }
 
+#if WITHAFCODEC1HAVEPROC
+
+uint_fast8_t hamradio_get_gmikeequalizer(void)
+{
+	return gmikeequalizer;
+}
+
+void hamradio_set_gmikeequalizer(uint_fast8_t v)
+{
+	gmikeequalizer = v != 0;
+	updateboard(1, 0);
+}
+
+uint_fast8_t hamradio_get_gmikeequalizerparams(uint_fast8_t i)
+{
+	ASSERT(i < HARDWARE_CODEC1_NPROCPARAMS);
+	return gmikeequalizerparams[i];
+}
+
+void hamradio_set_gmikeequalizerparams(uint_fast8_t i, uint_fast8_t v)
+{
+	ASSERT(i < HARDWARE_CODEC1_NPROCPARAMS);
+	ASSERT(v <= EQUALIZERBASE * 2);
+	gmikeequalizerparams[i] = v;
+	updateboard(1, 0);
+}
+
+int_fast32_t hamradio_getequalizerbase(void)
+{
+	return getequalizerbase();
+}
+
+#endif /* WITHAFCODEC1HAVEPROC */
+
+#if WITHIFSHIFT
+
+int_fast16_t hamradio_get_if_shift(void)
+{
+	return ifshifoffset.value + getifshiftbase();	// Добавить учет признака наличия сдвига
+}
+
+#endif /* WITHIFSHIFT */
+
+#if WITHELKEY
+
+uint_fast8_t hamradio_get_cw_wpm(void)
+{
+	return elkeywpm.value;
+}
+
+#endif /* WITHELKEY */
+
 void hamradio_set_lockmode(uint_fast8_t lock)
 {
 	lockmode = lock != 0;
@@ -18098,7 +18176,6 @@ uint_fast8_t hamradio_set_freq(uint_fast32_t freq)
 	}
 	return 0;
 }
-
 
 #if WITHTOUCHGUI
 
@@ -18230,7 +18307,9 @@ uint_fast8_t hamradio_get_multilinemenu_block_groups(menu_names_t * vals)
 	uint_fast16_t el;
 	uint_fast8_t count = 0;
 
+#if defined (RTC1_TYPE)
 	getstamprtc();
+#endif /* defined (RTC1_TYPE) */
 	for (el = 0; el < MENUROW_COUNT; el ++)
 	{
 		const FLASHMEM struct menudef * const mv = & menutable [el];
@@ -18614,7 +18693,7 @@ void bootloader_copyapp(
 		return;
 	memcpy((void *) hdr->load_address, (const void *) (BOOTLOADER_APPBASE + HEADERSIZE), hdr->image_length);
 
-#else /* CPUSTYLE_R7S721 */
+#elif (BOOTLOADER_SELFSIZE != 0)
 
 	bootloader_readimage(BOOTLOADER_SELFSIZE, (void *) apparea, HEADERSIZE);
 	if (hdr->magic_number != HEADER_MAGIC)
@@ -18635,19 +18714,26 @@ void bootloader_detach(uintptr_t ip)
 	L2C_Disable();
 #endif
 
+
+#if (__GIC_PRESENT == 1)
 	GIC_DisableInterface();
 	GIC_DisableDistributor();
 
 	unsigned i;
 	for (i = 0; i < 1020; ++ i)
 		IRQ_Disable(i);
+#endif
+
+#if (__CORTEX_A != 0)
 
 	MMU_Disable();
 	MMU_InvalidateTLB();
-
 	__ISB();
 	__DSB();
 	(* (void (*)(void)) ip)();
+
+#endif
+
 	for (;;)
 		;
 }
@@ -18655,6 +18741,7 @@ void bootloader_detach(uintptr_t ip)
 /* Вызов заказан вызывется из обработчика USB прерываний EP0 */
 void bootloader_deffereddetach(void * arg)
 {
+#if BOOTLOADER_APPAREA
 	  uintptr_t ip;
 	  if (bootloader_get_start(BOOTLOADER_APPAREA, & ip) == 0)
 	  {
@@ -18665,6 +18752,7 @@ void bootloader_deffereddetach(void * arg)
 #endif /* WITHUSBHW */
 			bootloader_detach(ip);
 	  }
+#endif /* BOOTLOADER_APPAREA */
 }
 
 static void bootloader_mainloop(void)
@@ -18692,7 +18780,9 @@ ddd:
 				break;
 			if (c == 'd')
 			{
+#if BOOTLOADER_APPFULL
 				printhex(BOOTLOADER_APPAREA, (void *) BOOTLOADER_APPAREA, 512);
+#endif /* BOOTLOADER_APPFULL */
 				continue;
 			}
 		}
@@ -18704,16 +18794,22 @@ ddd:
 #endif /* WITHDEBUG */
 	}
 #endif /* WITHUSBHW */
+
+#if BOOTLOADER_APPAREA
 	uintptr_t ip;
 	//PRINTF(PSTR("Compare signature of to application\n"));
 	if (bootloader_get_start(BOOTLOADER_APPAREA, & ip) != 0)	/* проверка сигнатуры и получение стартового адреса */
 		goto ddd;
-
+#else /* BOOTLOADER_APPAREA */
+	goto ddd;
+#endif /* BOOTLOADER_APPAREA */
 #if WITHUSBHW
 	board_usb_deactivate();
 	board_usb_deinitialize();
 #endif /* WITHUSBHW */
+#if BOOTLOADER_APPAREA
 	bootloader_detach(ip);
+#endif /* BOOTLOADER_APPAREA */
 }
 
 #endif /* WITHISBOOTLOADER */

@@ -9,7 +9,9 @@
 	// 0..COLORPIP_BASE-1 - волопад
 	// COLORPIP_BASE..127 - надписи и элементы дизайна
 	// то же с кодом больше на 128 - затененные цвета для получения полупрозрачности
-	#define COLORPIP_BASE 112	// should be match to PALETTESIZE
+	// 0..95 - палитра водопада
+	// 96..111 - норм цвета
+	// 112..127 - первая степень AA
 	// Заполнение палитры производится в display2_xltrgb24()
 
 	#define COLORPIP_YELLOW      (COLORPIP_BASE + 0) // TFTRGB(0xFF, 0xFF, 0x00)
@@ -27,7 +29,7 @@
 	#define COLORPIP_GRIDCOLOR		(COLORPIP_BASE + 10) // TFTRGB565(128, 0, 0)		//COLOR_GRAY - center marker
 	#define COLORPIP_GRIDCOLOR2		(COLORPIP_BASE + 11) // TFTRGB565(96, 96, 96)		//COLOR_DARKRED - other markers
 	#define COLORPIP_SPECTRUMBG		(COLORPIP_BASE + 12) // TFTRGB565(0, 64, 24)			//
-	#define COLORPIP_SPECTRUMBG2	(COLORPIP_BASE + 13) // TFTRGB565(0, 24, 8)		//COLOR_xxx - полоса пропускания приемника
+	#define COLORMAIN_SPECTRUMBG2	(COLORPIP_BASE + 13) // TFTRGB565(0, 24, 8)		//COLOR_xxx - полоса пропускания приемника
 	#define COLORPIP_SPECTRUMFG		(COLORPIP_BASE + 14) // TFTRGB565(0, 255, 0)		//COLOR_GREEN
 	#define COLORPIP_SPECTRUMFENCE	(COLORPIP_BASE + 15) // TFTRGB565(255, 255, 255)	//COLOR_WHITE
 
@@ -122,7 +124,7 @@
 		#define COLORPIP_GRIDCOLOR		TFTRGB565(128, 0, 0)		//COLOR_GRAY - center marker
 		#define COLORPIP_GRIDCOLOR2		TFTRGB565(96, 96, 96)		//COLOR_DARKRED - other markers
 		#define COLORPIP_SPECTRUMBG		TFTRGB565(0, 64, 24)			//
-		#define COLORPIP_SPECTRUMBG2	TFTRGB565(0, 24, 8)		//COLOR_xxx - полоса пропускания приемника
+		#define COLORMAIN_SPECTRUMBG2	TFTRGB565(0, 24, 8)		//COLOR_xxx - полоса пропускания приемника
 		#define COLORPIP_SPECTRUMFG		TFTRGB565(0, 255, 0)		//COLOR_GREEN
 		#define COLORPIP_SPECTRUMFENCE	TFTRGB565(255, 255, 255)	//COLOR_WHITE
 		#define COLORPIP_SPECTRUMLINE	COLORPIP_YELLOW
@@ -132,7 +134,7 @@
 		#define COLORPIP_GRIDCOLOR      TFTRGB565(128, 128, 0)        //COLOR_GRAY - center marker
 		#define COLORPIP_GRIDCOLOR2     TFTRGB565(128, 0, 0x00)        //COLOR_DARKRED - other markers
 		#define COLORPIP_SPECTRUMBG     TFTRGB565(0, 0, 0)            //COLOR_BLACK
-		#define COLORPIP_SPECTRUMBG2    TFTRGB565(0, 128, 128)        //COLOR_CYAN - полоса пропускания приемника
+		#define COLORMAIN_SPECTRUMBG2    TFTRGB565(0, 128, 128)        //COLOR_CYAN - полоса пропускания приемника
 		#define COLORPIP_SPECTRUMFG		TFTRGB565(0, 255, 0)		//COLOR_GREEN
 		#define COLORPIP_SPECTRUMFENCE	TFTRGB565(255, 255, 255)	//COLOR_WHITE
 		//#define COLORPIP_SPECTRUMLINE	COLORPIP_GREEN
@@ -193,17 +195,34 @@
 #if COLORSTYLE_RED
 	// "All-in-red": FT1000 inspired color scheme
 	#define DESIGNBIGCOLOR COLORMAIN_RED 		// DARK RED
+	#define DESIGNBIGCOLORB COLORMAIN_RED		// цвет частоты дополнительного приемника
 	//#define DESIGNBIGCOLORHALF COLORMAIN_RED 	// DARK RED
 	#define DESIGNCOLORSTATE	COLORMAIN_RED
 	#define DESIGNCOLORDARKSTATE	COLORMAIN_DARKRED
 
 #else /* COLORSTYLE_RED */
-	#define DESIGNBIGCOLOR COLORMAIN_YELLOW 		// GOLD
+	#define DESIGNBIGCOLOR COLORMAIN_YELLOW 	// GOLD
+	#define DESIGNBIGCOLORB COLORMAIN_SPECTRUMBG2		// цвет частоты дополнительного приемника
 	//#define DESIGNBIGCOLORHALF COLORMAIN_YELLOW
 	#define DESIGNCOLORSTATE	COLORMAIN_GREEN
 	#define DESIGNCOLORDARKSTATE	COLORMAIN_DARKGREEN
 
 #endif /* COLORSTYLE_RED */
+
+
+typedef struct editfreq_tag
+{
+	uint32_t val;
+	uint8_t num;
+	uint8_t key;
+} editfreq_t;
+
+typedef struct editfreq2_tag
+{
+	uint32_t freq;
+	uint8_t blinkpos;		// позиция (степень 10) редактируесого символа
+	uint8_t blinkstate;	// в месте редактируемого символа отображается подчёркивание (0 - пробел)
+} editfreq2_t;
 
 typedef struct dctx_tag
 {
@@ -211,7 +230,18 @@ typedef struct dctx_tag
 	const void * pv;
 } dctx_t;
 
-void display2_smeter15(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx);
+void display2_smeter15(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	);
+
+void
+display2_smeter15_init(
+	uint_fast8_t xgrid,
+	uint_fast8_t ygrid,
+	dctx_t * pctx
+	);
 
 // FUNC item label
 void display_fnlabel9(
@@ -299,25 +329,14 @@ typedef struct {
 	uint_fast8_t updated;
 } enc2_menu_t;
 
-void hamradio_change_submode(uint_fast8_t newsubmode);
-uint_fast8_t hamradio_get_low_bp(int_least16_t rotate);
-uint_fast8_t hamradio_get_high_bp(int_least16_t rotate);
-uint_fast8_t hamradio_get_bp_type(void);
-void hamradio_set_agc_off(void);
-void hamradio_set_agc_slow(void);
-void hamradio_set_agc_fast(void);
 uint_fast8_t hamradio_get_multilinemenu_block_groups(menu_names_t * vals);
 uint_fast8_t hamradio_get_multilinemenu_block_params(menu_names_t * vals, uint_fast8_t index);
 void hamradio_get_multilinemenu_block_vals(menu_names_t * vals, uint_fast8_t index, uint_fast8_t cnt);
-void hamradio_set_menu_cond(uint_fast8_t m);
 const char * hamradio_gui_edit_menu_item(uint_fast8_t index, int_least16_t rotate);
-void hamradio_disable_keyboard_redirect(void);
-void hamradio_enable_keyboard_redirect(void);
-uint_fast8_t hamradio_set_freq (uint_fast32_t freq);
-void hamradio_set_lockmode (uint_fast8_t lock);
+
 
 void gui_encoder2_menu(enc2_menu_t * enc2_menu);
-void gui_update(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx);
+void gui_WM_walktrough(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx);
 void gui_initialize(void);
 uint_fast8_t gui_check_encoder2(int_least16_t rotate);
 void gui_set_encoder2_state(uint_fast8_t code);

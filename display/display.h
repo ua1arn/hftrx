@@ -333,23 +333,29 @@ typedef uint_fast32_t COLOR24_T;
 
 #endif /* LCDMODE_LTDC */
 
+#define GXALIGN 8	/* размер каждой строки видеобуфера кратен этому заначению */
+
+#define GXADJ(dx) (((dx) + (GXALIGN - 1)) / GXALIGN * GXALIGN)
+#define MGADJ(dx) (((dx) + (MGALIGN - 1)) / MGALIGN * MGALIGN)
+
 #if LCDMODE_S1D13781
 	// биты слова буфера располагаются на экране горизонтально
 	// старший битт левее
+	#define MGALIGN 16
 	typedef uint16_t GX_t;	/* тип элмента буфера для выдачи монохромного растра */
-	#define MGSIZE(dx, dy)	((dy) * (((unsigned long) (dx) + 15) / 16))	// размер буфера для монохромного растра
-	#define GXSIZE(dx, dy)	((unsigned long) (dx) * (dy))	// размер буфера для цветного растра
 #elif LCDMODE_COLORED
 	// биты слова буфера располагаются на экране вертикально
+	#define MGALIGN 8
 	typedef uint8_t GX_t;	/* тип элмента буфера для выдачи монохромного растра */
-	#define MGSIZE(dx, dy)	((dx) * (((unsigned long) (dy) + 7) / 8))	// размер буфера для монохромного растра
-	#define GXSIZE(dx, dy)	((unsigned long) (dx) * (dy))	// размер буфера для цветного растра
 #else	/* LCDMODE_S1D13781 */
 	// биты слова буфера располагаются на экране вертикально
+	#define MGALIGN 8
 	typedef uint8_t GX_t;	/* тип элмента буфера для выдачи монохромного растра */
-	#define MGSIZE(dx, dy)	((dx) * (((unsigned long) (dy) + 7) / 8))	// размер буфера для монохромного растра
-	#define GXSIZE(dx, dy)	((unsigned long) (dx) * (dy))	// размер буфера для цветного растра
 #endif	/* */
+
+#define MGSIZE(dx, dy)	((unsigned long) MGADJ(dx) * (dy))	// размер буфера для монохромного растра
+#define GXSIZE(dx, dy)	((unsigned long) GXADJ(dx) * (dy))	// размер буфера для цветного растра
+
 COLORMAIN_T display_getbgcolor(void);
 void display_setbgcolor(COLORMAIN_T c);
 
@@ -419,8 +425,8 @@ void s1d13781_showbuffer(
 /* поставить точку в буфере кадра */
 void display_pixelbuffer(
 	GX_t * buffer,
-	uint_fast16_t dx,	
-	uint_fast16_t dy,
+	uint_fast16_t dx,	// ширина буфера
+	uint_fast16_t dy,	// высота буфера
 	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
 	uint_fast16_t y	// вертикальная координата пикселя (0..dy-1) сверху вниз
 	);
@@ -428,15 +434,15 @@ void display_pixelbuffer(
 /* поставить точку в буфере кадра */
 void display_pixelbuffer_xor(
 	GX_t * buffer,
-	uint_fast16_t dx,	
-	uint_fast16_t dy,
+	uint_fast16_t dx,	// ширина буфера
+	uint_fast16_t dy,	// высота буфера
 	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
 	uint_fast16_t y	// вертикальная координата пикселя (0..dy-1) сверху вниз
 	);
 void display_pixelbuffer_line(
 	GX_t * buffer,
-	uint_fast16_t dx,	
-	uint_fast16_t dy,
+	uint_fast16_t dx,	// ширина буфера
+	uint_fast16_t dy,	// высота буфера
 	uint_fast16_t x0,	
 	uint_fast16_t y0,
 	uint_fast16_t x1,	
@@ -453,17 +459,17 @@ void display_pixelbuffer_clear(
 // Эта функция используется только в тесте
 void colpip_fill(
 	PACKEDCOLORPIP_T * buffer,
-	uint_fast16_t dx,	
-	uint_fast16_t dy,
+	uint_fast16_t dx,	// ширина буфера
+	uint_fast16_t dy,	// высота буфера
 	COLORPIP_T color
 	);
 
 // Выдать цветной буфер на дисплей
 // В случае фреймбуфеных дисплеев - формат цвета и там и там одинаковый
 void colpip_to_main(
-	const PACKEDCOLORPIP_T * buffer,
-	uint_fast16_t dx,	
-	uint_fast16_t dy,
+	const PACKEDCOLORPIP_T * buffer,	// источник
+	uint_fast16_t dx,	// ширина буфера источника
+	uint_fast16_t dy,	// высота буфера источника
 	uint_fast16_t col,	// горизонтальная координата левого верхнего угла на экране (0..dx-1) слева направо
 	uint_fast16_t row	// вертикальная координата левого верхнего угла на экране (0..dy-1) сверху вниз
 	);
@@ -471,8 +477,8 @@ void colpip_to_main(
 // Нарисовать линию указанным цветом
 void colpip_line(
 	PACKEDCOLORPIP_T * buffer,
-	uint_fast16_t dx,	
-	uint_fast16_t dy,
+	uint_fast16_t dx,	// ширина буфера
+	uint_fast16_t dy,	// высота буфера
 	uint_fast16_t x0,	
 	uint_fast16_t y0,
 	uint_fast16_t x1,	
@@ -737,10 +743,28 @@ colmain_string3_at_xy(
 // x2, y2 - координаты второго угла (не входящие в закрашиваемый прямоугольник)
 void display_solidbar(uint_fast16_t x, uint_fast16_t y, uint_fast16_t x2, uint_fast16_t y2, COLORMAIN_T color);
 
-
-void display_radius(int xc, int yc, unsigned gs, unsigned r1, unsigned r2, COLORMAIN_T color);
-void display_segm(int xc, int yc, unsigned gs, unsigned ge, unsigned r, int step, COLORMAIN_T color);
 void polar_to_dek(uint_fast16_t xc, uint_fast16_t yc, uint_fast16_t gs, uint_fast16_t r, uint_fast16_t * x, uint_fast16_t * y);
+void
+display_radius_buf(
+		PACKEDCOLORMAIN_T * buffer,
+		uint_fast16_t bx,	// ширина буфера
+		uint_fast16_t by,	// высота буфера
+		int xc, int yc,
+		unsigned gs,
+		unsigned r1, unsigned r2,
+		COLORMAIN_T color,
+		int antialiasing);
+
+void
+display_segm_buf(
+		PACKEDCOLORMAIN_T * buffer,
+		uint_fast16_t bx,	// ширина буфера
+		uint_fast16_t by,	// высота буфера
+		int xc, int yc,
+		unsigned gs, unsigned ge,
+		unsigned r, int step,
+		COLORMAIN_T color,
+		int antialiasing);
 
 // Нарисовать вертикальную цветную полосу
 void
@@ -782,6 +806,16 @@ void display_putpixel(
 	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
 	COLORMAIN_T color
 	);
+
+void colmain_putpixel(
+	PACKEDCOLORMAIN_T * buffer,
+	uint_fast16_t dx,	// ширина буфера
+	uint_fast16_t dy,	// высота буфера
+	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	COLORMAIN_T color
+	);
+
 void display_at_xy(uint_fast16_t x, uint_fast16_t y, const char * s);
 
 void board_set_topdb(int_fast16_t v);	/* верхний предел FFT */
@@ -792,12 +826,18 @@ void board_set_zoomxpow2(uint_fast8_t v);	/* уменьшение отображ
 void board_set_fillspect(uint_fast8_t v); /* заливать заполнением площадь под графиком спектра */
 void board_set_wflevelsep(uint_fast8_t v); /* чувствительность водопада регулируется отдельной парой параметров */
 void board_set_wfshiftenable(uint_fast8_t v);	   /* разрешение или запрет сдвига водопада при изменении частоты */
+void board_set_spantialiasing(uint_fast8_t v); /* разрешение или запрет антиалиасинга спектра */
 
 PACKEDCOLORMAIN_T * colmain_fb_draw(void);	// буфер для построения изображения
 PACKEDCOLORMAIN_T * colmain_fb_show(void);	// буфер для отображения
 void colmain_fb_next(void);		// прерключиться на использование следующего фреймбуфера.
 
-#define DEFAULT_ALPHA 100
+#if WITHALPHA
+#define DEFAULT_ALPHA WITHALPHA
+#else
+#define DEFAULT_ALPHA 128	// 0..255
+#endif
+
 void display2_xltrgb24(COLOR24_T * xtable);
 
 // Установить прозрачность для прямоугольника
@@ -823,7 +863,14 @@ int_fast32_t display_zoomedbw(void);
 
 void display_string3_at_xy(uint_fast16_t x, uint_fast16_t y, const char * s, COLORMAIN_T fg, COLORMAIN_T bg);
 
-void display_line(int xs, int ys, int xe, int ye, COLORMAIN_T color);
+void colmain_line(
+		PACKEDCOLORMAIN_T * buffer,
+		uint_fast16_t bx,	// ширина буфера
+		uint_fast16_t by,	// высота буфера
+		int xn, int yn,
+		int xk, int yk,
+		COLORMAIN_T color,
+		int antialiasing);
 
 // Отображение цифр в поле "больших цифр" - индикатор основной частоты настройки аппарата.
 void
@@ -854,6 +901,9 @@ display_value_small(
 	);
 
 void display_floodfill(
+	PACKEDCOLORMAIN_T * buffer,
+	uint_fast16_t dx,	// ширина буфера
+	uint_fast16_t dy,	// высота буфера
 	uint_fast16_t x,	// начальная координата
 	uint_fast16_t y,	// начальная координата
 	COLORMAIN_T newColor,

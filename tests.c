@@ -5129,7 +5129,7 @@ static void sdtick(void)
 }
 #endif
 
-#if LCDMODE_COLORED && ! DSTYLE_G_DUMMY
+#if LCDMODE_COLORED && ! DSTYLE_G_DUMMY && 0
 
 // Получение псевдослучайныз чисел.
 // 0 .. num-1
@@ -6198,6 +6198,32 @@ void hightests(void)
 		display2_bgreset();
 		//GrideTest();
 		BarTest();
+	}
+#endif
+#if 0 && LCDMODE_COLORED && ! DSTYLE_G_DUMMY
+	{
+		// test: вывод палитры на экран
+		display2_bgreset();
+		PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
+		int u = 3, x = 0, y = 0, wx = 45, wy = 8 * 3;
+
+		for (int i = 0; i <= 255; i++)
+		{
+			char buf[4];
+
+			display_solidbar(x, y, x + wx, y + wy, i);
+			local_snprintf_P(buf, sizeof buf / sizeof buf [0], PSTR("%d"), i);
+			colpip_string3_tbg(fr, DIM_X, DIM_Y, x, y, buf, COLORMAIN_WHITE);
+
+			x = x + wx + u;
+			if ((i + 1) % 16 == 0)
+			{
+				x = 0;
+				y = y + wy + u;
+			}
+		}
+
+		for (;;);
 	}
 #endif
 #if 0 && defined (TSC1_TYPE)

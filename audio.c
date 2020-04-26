@@ -2809,84 +2809,6 @@ static void audio_setup_mike(const uint_fast8_t spf)
 	}
 }
 
-#if WITHCPUDACHW
-
-	//#define HARDWARE_DACBITS 12	/* ЦАП работает с 12-битными значениями */
-
-	// AGC dac constans
-	enum
-	{	
-		dacwidth = HARDWARE_DACBITS,
-		dacFScode = (1U << dacwidth) - 1,
-		dacrefvoltage = DACVREF_CPU * 100,		// 3.3 volt - DAC reference voltage
-	};
-
-	enum
-	{	
-	#if (CTLSTYLE_RAVENDSP_V1 || CTLSTYLE_DSPV1A)
-
-		dacXagchighvotage = 2950,	// 2.9 volt - AD605 VGN max
-		dacXagclowvoltage = 100,		// 0.1 volt - AD605 VGN min
-
-		dac_agc_highcode = dacFScode * dacXagchighvotage / dacrefvoltage,
-		dac_agc_lowcode = dacFScode * dacXagclowvoltage / dacrefvoltage,
-		dac_agc_coderange = dac_agc_highcode - dac_agc_lowcode,
-
-		// заглушка
-		//dacXagchighvotage = 3300,	// 0.1..1.25 volt - AD9744 REFERENCE INPUT range (after 18k/10k chain).
-		//dacXagclowvoltage = 280,
-
-		dac_dacfs_highcode = dacFScode * dacXagchighvotage / dacrefvoltage,
-		dac_dacfs_lowcode = dacFScode * dacXagclowvoltage / dacrefvoltage,
-		dac_dacfs_coderange = dac_dacfs_highcode - dac_dacfs_lowcode
-
-	#elif \
-		CTLSTYLE_RAVENDSP_V3 || \
-		CTLSTYLE_RAVENDSP_V4 || \
-		CTLSTYLE_RAVENDSP_V5 || \
-		CTLSTYLE_RAVENDSP_V6 || \
-		CTLSTYLE_RAVENDSP_V7 || \
-		CTLSTYLE_RAVENDSP_V8 || \
-		CTLSTYLE_STORCH_V2 || \
-		CTLSTYLE_STORCH_V3 || \
-		CTLSTYLE_STORCH_V4 || \
-		CTLSTYLE_STORCH_V5 || \
-		CTLSTYLE_STORCH_V6 || \
-		CTLSTYLE_STORCH_V7 || \
-		CTLSTYLE_OLEG4Z_V1 || \
-		CTLSTYLE_NUCLEO_V1 || \
-		0
-
-		dacXagchighvotage = 3300,	// 0.1..1.25 volt - AD9744 REFERENCE INPUT range (after 18k/10k chain).
-		dacXagclowvoltage = 280,
-
-		dac_dacfs_highcode = dacFScode * dacXagchighvotage / dacrefvoltage,
-		dac_dacfs_lowcode = dacFScode * dacXagclowvoltage / dacrefvoltage,
-		dac_dacfs_coderange = dac_dacfs_highcode - dac_dacfs_lowcode
-
-	#endif
-
-	};
-#endif /* WITHCPUDACHW */
-
-#if 0 && WITHDACOUTDSPAGC
-
-static void setagcattenuation(long code, uint_fast8_t tx)	// в кодах ЦАП
-{
-	if (tx != 0)
-		HARDWARE_DAC_AGC(0);
-	else
-		HARDWARE_DAC_AGC(dac_agc_highcode - ((code > dac_agc_coderange) ? dac_agc_coderange : code));
-}
-
-static void setlevelindicator(long code)	// в кодах ЦАП
-{
-	hardware_dac_ch2_setvalue((dacFScode - 1) > code ? (dacFScode - 1) : code);
-}
-
-
-#endif /* WITHDACOUTDSPAGC */
-
 // Duplicate symmetrical part of coeffs.
 void fir_expand_symmetric(FLOAT_t * dCoeff, int Ntap)
 {
@@ -5891,14 +5813,8 @@ txparam_update(uint_fast8_t profile)
 	subtonevolume = (glob_subtonelevel / (FLOAT_t) 100);
 	mainvolumetx = 1 - subtonevolume;
 
-#if WITHCPUDACHW && WITHPOWERTRIM && ! WITHNOTXDACCONTROL
-	// ALC
-	// регулировка напряжения на REFERENCE INPUT TXDAC AD9744
-	HARDWARE_DAC_ALC((glob_opowerlevel - WITHPOWERTRIMMIN) * dac_dacfs_coderange / (WITHPOWERTRIMMAX - WITHPOWERTRIMMIN) + dac_dacfs_lowcode);
-#endif /* WITHCPUDACHW && WITHPOWERTRIM && ! WITHNOTXDACCONTROL */
 	// Девиация в NFM
 	gnfmdeviationftw = FTWAF((int) glob_nfmdeviation100 * 100L);
-
 }
 
 // Передача параметров в DSP модуль

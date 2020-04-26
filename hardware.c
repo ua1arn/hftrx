@@ -11992,8 +11992,9 @@ void cpu_initialize(void)
 void cpu_initdone(void)
 {
 #if WITHISBOOTLOADER
-	bootloader_copyapp(BOOTLOADER_APPAREA);	/* копирование исполняемого образа (если есть) в требуемое место */
-
+	#if BOOTLOADER_APPFULL
+		bootloader_copyapp(BOOTLOADER_APPAREA);	/* копирование исполняемого образа (если есть) в требуемое место */
+	#endif /* BOOTLOADER_APPFULL */
 #if CPUSTYLE_R7S721
 
 	if ((CPG.STBCR9 & CPG_STBCR9_BIT_MSTP93) == 0)

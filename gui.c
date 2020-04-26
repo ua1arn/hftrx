@@ -50,56 +50,94 @@
  * серединой расстояния между ближайшими Y-узлами сетки.
  */
 
-void display_line(int xn, int yn, int xk, int yk, COLORMAIN_T color)
+void colmain_line(
+	PACKEDCOLORMAIN_T * buffer,
+	uint_fast16_t bx,	// ширина буфера
+	uint_fast16_t by,	// высота буфера
+	int xn, int yn,
+	int xk, int yk,
+	COLORMAIN_T color,
+	int antialiasing
+	)
 {
 	int  dx, dy, s, sx, sy, kl, incr1, incr2;
 	char swap;
 
 	/* Вычисление приращений и шагов */
-	sx = 0;
-	if ((dx= xk-xn) < 0)
+	if ((dx = xk - xn) < 0)
 	{
 		dx = - dx;
-		-- sx;
+		sx = - 1;
 	}
 	else if (dx > 0)
-		++ sx;
-	sy = 0;
+		sx = + 1;
+	else
+		sx = 0;
 
-	if ((dy= yk-yn) < 0)
+	if ((dy = yk - yn) < 0)
 	{
 		dy = - dy;
-		-- sy;
+		sy = - 1;
 	}
-	else if (dy>0)
-		++ sy;
+	else if (dy > 0)
+		sy = + 1;
+	else
+		sy = 0;
+
 	/* Учет наклона */
-	swap = 0;
-	if ((kl= dx) < (s= dy))
+	if ((kl = dx) < (s = dy))
 	{
-		dx= s;  dy= kl;  kl= s; ++swap;
+		dx = s;  dy = kl;  kl = s; swap = 1;
 	}
-	s = (incr1= 2 * dy) - dx; /* incr1 - констан. перевычисления */
+	else
+	{
+		swap = 0;
+	}
+
+	s = (incr1 = 2 * dy) - dx; /* incr1 - констан. перевычисления */
 	/* разности если текущее s < 0  и  */
 	/* s - начальное значение разности */
 	incr2 = 2 * dx;         /* Константа для перевычисления    */
 	/* разности если текущее s >= 0    */
-	display_putpixel(xn, yn, color); /* Первый  пиксел вектора       */
+	colmain_putpixel(buffer, bx, by, xn, yn, color); /* Первый  пиксел вектора       */
 
-	while (--kl >= 0)
+	static uint_fast16_t xold, yold;
+	xold = xn;
+	yold = yn;
+	while (-- kl >= 0)
 	{
 		if (s >= 0)
 		{
-			if (swap) xn+= sx;
-			else yn+= sy;
+			if (swap)
+				xn += sx;
+			else
+				yn += sy;
 			s-= incr2;
 		}
 		if (swap)
-			yn+= sy;
+			yn += sy;
 		else
-			xn+= sx;
+			xn += sx;
 		s += incr1;
-		display_putpixel(xn, yn, color); /* Текущая  точка  вектора   */
+		colmain_putpixel(buffer, bx, by, xn, yn, color); /* Текущая  точка  вектора   */
+
+		if (antialiasing)
+		{
+			if (((xold == xn - 1) || (xold == xn + 1)) && ((yold == yn - 1) || (yold == yn + 1)))
+			{
+				PACKEDCOLORMAIN_T * a;
+				a = colmain_mem_at(buffer, bx, by, xn, yold);
+				* a = color | COLORPIP_SHADED;
+				a = colmain_mem_at(buffer, bx, by, xold, yn);
+				* a = color | COLORPIP_SHADED;
+//				a = colmain_mem_at(buffer, bx, by, xn, yn);		// нужны дополнительные цвета для этих 2х точек
+//				* a = color | COLORPIP_SHADED;
+//				a = colmain_mem_at(buffer, bx, by, xold, yold);
+//				* a = color | COLORPIP_SHADED;
+			}
+			xold = xn;
+			yold = yn;
+		}
 	}
 }  /* V_Bre */
 
@@ -147,7 +185,15 @@ static  int icos(unsigned alpha, unsigned r)
 
 // Рисование радиусов
 void
-display_radius(int xc, int yc, unsigned gs, unsigned r1, unsigned r2, COLORMAIN_T color)
+display_radius_buf(
+		PACKEDCOLORMAIN_T * buffer,
+		uint_fast16_t bx,	// ширина буфера
+		uint_fast16_t by,	// высота буфера
+		int xc, int yc,
+		unsigned gs,
+		unsigned r1, unsigned r2,
+		COLORMAIN_T color,
+		int antialiasing)
 {
 	int     x, y;
 	int     x2, y2;
@@ -157,7 +203,7 @@ display_radius(int xc, int yc, unsigned gs, unsigned r1, unsigned r2, COLORMAIN_
 	x2 = xc + icos(gs, r2);
 	y2 = yc + isin(gs, r2);
 
-	display_line(x, y, x2, y2, color);
+	colmain_line(buffer, bx, by, x, y, x2, y2, color, antialiasing);
 
 }
 
@@ -170,7 +216,15 @@ void polar_to_dek(uint_fast16_t xc, uint_fast16_t yc, uint_fast16_t gs, uint_fas
 // круговой интерполятор
 // нач.-x, нач.-y, градус начала, градус конуа, радиус, шаг приращения угла
 void
-display_segm(int xc, int yc, unsigned gs, unsigned ge, unsigned r, int step, COLORMAIN_T color)
+display_segm_buf(
+		PACKEDCOLORMAIN_T * buffer,
+		uint_fast16_t bx,	// ширина буфера
+		uint_fast16_t by,	// высота буфера
+		int xc, int yc,
+		unsigned gs, unsigned ge,
+		unsigned r, int step,
+		COLORMAIN_T color,
+		int antialiasing)
 {
 	int     x, y;
 	int     xo, yo;
@@ -194,7 +248,7 @@ display_segm(int xc, int yc, unsigned gs, unsigned ge, unsigned r, int step, COL
 		}
 		else
 		{  // рисовать элемент окружности
-			display_line(xo, yo, x, y, color);
+			colmain_line(buffer, bx, by, xo, yo, x, y, color, antialiasing);
 			xo = x, yo = y;
 		}
 		if (ge == 360)
@@ -221,7 +275,7 @@ display_segm(int xc, int yc, unsigned gs, unsigned ge, unsigned r, int step, COL
 		x = xc + vcos;
 		y = yc + vsin;
 
-		display_line(xo, yo, x, y, color); // рисовать линию
+		colmain_line(buffer, bx, by, xo, yo, x, y, color, antialiasing); // рисовать линию
 	}
 
 }
@@ -280,6 +334,186 @@ uint_fast16_t normalize3(
 		return normalize(raw - rawmid, 0, rawmax - rawmid, range2 - range1) + range1;
 }
 
+enum {
+	SM_STATE_RX,
+	SM_STATE_TX,
+	SM_STATE_COUNT
+};
+enum { SM_BG_W = 240, SM_BG_H = 70 };
+typedef ALIGNX_BEGIN PACKEDCOLORMAIN_T smeter_bg_t [GXSIZE(SM_BG_W, SM_BG_H)] ALIGNX_END;
+static smeter_bg_t smeter_bg[SM_STATE_COUNT]; 	// 0 - rx, 1 - tx
+
+typedef struct {
+	uint_fast16_t gs;
+	uint_fast16_t gm;
+	uint_fast16_t ge;
+	uint_fast16_t r1;
+	uint_fast16_t r2;
+	uint_fast16_t rv1;
+	uint_fast16_t rv2;
+} smeter_params_t;
+static smeter_params_t smeter_params;
+
+void
+display2_smeter15_init(
+	uint_fast8_t xgrid,
+	uint_fast8_t ygrid,
+	dctx_t * pctx
+	)
+{
+	const uint_fast8_t halfsect = 30;
+
+	smeter_params.gm = 270;
+	smeter_params.gs = smeter_params.gm - halfsect;
+	smeter_params.ge = smeter_params.gm + halfsect;
+	smeter_params.rv1 = 7 * GRID2Y(3);
+	smeter_params.rv2 = smeter_params.rv1 - 3 * GRID2Y(3);
+
+	const int stripewidth = 12; //16;
+	smeter_params.r1 = 7 * GRID2Y(3) - 8;	//350;
+	smeter_params.r2 = smeter_params.r1 - stripewidth;
+
+	enum { step1 = 3 };		// шаг для оцифровки S
+	enum { step2 = 4 };		// шаг для оцифровки плюсов
+	enum { step3 = 20 };	// swr
+	const int markersTX_pwr [] =
+	{
+		smeter_params.gs,
+		smeter_params.gs + 2 * step1,
+		smeter_params.gs + 4 * step1,
+		smeter_params.gs + 6 * step1,
+		smeter_params.gs + 8 * step1,
+		smeter_params.gs + 10 * step1,
+		smeter_params.gs + 12 * step1,
+		smeter_params.gs + 14 * step1,
+		smeter_params.gs + 16 * step1,
+		smeter_params.gs + 18 * step1,
+		smeter_params.gs + 20 * step1,
+	};
+	const int markersTX_swr [] =
+	{
+		smeter_params.gs,
+		smeter_params.gs + step3,
+		smeter_params.gs + 2 * step3,
+		smeter_params.gs + 3 * step3,
+	};
+	const int markers [] =
+	{
+		//smeter_params.gs + 0 * step1,
+		smeter_params.gs + 2 * step1,		// S1
+		smeter_params.gs + 4 * step1,		// S3
+		smeter_params.gs + 6 * step1,		// S5
+		smeter_params.gs + 8 * step1,		// S7
+		smeter_params.gs + 10 * step1,	// S9
+	};
+	const int markersR [] =
+	{
+		smeter_params.gm + 2 * step2,	//
+		smeter_params.gm + 4 * step2,
+		smeter_params.gm + 6 * step2,
+	};
+	const int markers2 [] =
+	{
+		//smeter_params.gs + 1 * step1,
+		smeter_params.gs + 3 * step1,		// S2
+		smeter_params.gs + 5 * step1,		// S4
+		smeter_params.gs + 7 * step1,		// S6
+		smeter_params.gs + 9 * step1,		// S8
+	};
+	const int markers2R [] =
+	{
+		smeter_params.gm + 1 * step2,
+		smeter_params.gm + 3 * step2,
+		smeter_params.gm + 5 * step2,
+	};
+
+	const COLORMAIN_T smeter = COLORMAIN_WHITE;
+	const COLORMAIN_T smeterplus = COLORMAIN_DARKRED;
+	const uint_fast16_t pad2w3 = strwidth3("ZZ");
+
+	PACKEDCOLORMAIN_T * bg = smeter_bg [SM_STATE_TX];
+	uint_fast8_t xb = 120, yb = 120;
+	unsigned p;
+	unsigned i;
+
+	colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORMAIN_BLACK, 1);
+
+	for (p = 0, i = 0; i < sizeof markersTX_pwr / sizeof markersTX_pwr [0]; ++ i, p += 10)
+	{
+		if (i % 2 == 0)
+		{
+			char buf [10];
+			uint_fast16_t xx, yy;
+
+			display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markersTX_pwr [i], smeter_params.r1, smeter_params.r1 + 8, smeter, 1);
+			polar_to_dek(xb, yb, markersTX_pwr [i], smeter_params.r1 + 8, & xx, & yy);
+			local_snprintf_P(buf, sizeof buf / sizeof buf [0], PSTR("%u"), p);
+
+			colmain_setcolors(COLORMAIN_YELLOW, COLORMAIN_BLACK);
+			colmain_string3_at_xy(bg, SM_BG_W, SM_BG_H, xx - strwidth3(buf) / 2, yy - pad2w3 + 1, buf);
+		}
+		else
+			display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markersTX_pwr [i], smeter_params.r1, smeter_params.r1 + 4, smeter, 1);
+	}
+
+	for (p = 1, i = 0; i < sizeof markersTX_swr / sizeof markersTX_swr [0]; ++ i, p += 1)
+	{
+		char buf [10];
+		uint_fast16_t xx, yy;
+
+		display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markersTX_swr [i], smeter_params.r2, smeter_params.r2 - 8, smeter, 1);
+		polar_to_dek(xb, yb, markersTX_swr [i], smeter_params.r2 - 16, & xx, & yy);
+		local_snprintf_P(buf, sizeof buf / sizeof buf [0], PSTR("%u"), p);
+
+		colmain_setcolors(COLORMAIN_YELLOW, COLORMAIN_BLACK);
+		colmain_string3_at_xy(bg, SM_BG_W, SM_BG_H, xx - SMALLCHARW3 / 2, yy - SMALLCHARW3 / 2 + 1, buf);
+	}
+
+	display_segm_buf(bg, SM_BG_W, SM_BG_H, xb, yb, smeter_params.gs, smeter_params.gm, smeter_params.r1, 1, smeter, 1);
+	display_segm_buf(bg, SM_BG_W, SM_BG_H, xb, yb, smeter_params.gm, smeter_params.ge, smeter_params.r1, 1, smeter, 1);
+	display_segm_buf(bg, SM_BG_W, SM_BG_H, xb, yb, smeter_params.gs, smeter_params.ge, smeter_params.r2, 1, COLORMAIN_WHITE, 1);
+
+	bg = smeter_bg [SM_STATE_RX];
+	colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORMAIN_BLACK, 1);
+
+	for (p = 1, i = 0; i < sizeof markers / sizeof markers [0]; ++ i, p += 2)
+	{
+		char buf [10];
+		uint_fast16_t xx, yy;
+
+		display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markers [i], smeter_params.r1, smeter_params.r1 + 8, smeter, 1);
+		polar_to_dek(xb, yb, markers [i], smeter_params.r1 + 8, & xx, & yy);
+		local_snprintf_P(buf, sizeof buf / sizeof buf [0], PSTR("%u"), p);
+
+		colmain_setcolors(COLORMAIN_YELLOW, COLORMAIN_BLACK);
+		colmain_string3_at_xy(bg, SM_BG_W, SM_BG_H, xx - SMALLCHARW3 / 2, yy - pad2w3 + 1, buf);
+	}
+	for (i = 0; i < sizeof markers2 / sizeof markers2 [0]; ++ i)
+	{
+		display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markers2 [i], smeter_params.r1, smeter_params.r1 + 4, smeter, 1);
+	}
+
+	for (p = 20, i = 0; i < sizeof markersR / sizeof markersR [0]; ++ i, p += 20)
+	{
+		char buf [10];
+		uint_fast16_t xx, yy;
+
+		display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markersR [i], smeter_params.r1, smeter_params.r1 + 8, smeterplus, 1);
+		polar_to_dek(xb, yb, markersR [i], smeter_params.r1 + 8, & xx, & yy);
+		local_snprintf_P(buf, sizeof buf / sizeof buf [0], PSTR("+%u"), p);
+
+		colmain_setcolors(COLORMAIN_RED, COLORMAIN_BLACK);
+		colmain_string3_at_xy(bg, SM_BG_W, SM_BG_H, xx - strwidth3(buf) / 2, yy - pad2w3 + 1, buf);
+	}
+	for (i = 0; i < sizeof markers2R / sizeof markers2R [0]; ++ i)
+	{
+		display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markers2R [i], smeter_params.r1, smeter_params.r1 + 4, smeterplus, 1);
+	}
+	display_segm_buf(bg, SM_BG_W, SM_BG_H, xb, yb, smeter_params.gs, smeter_params.gm, smeter_params.r1, 1, smeter, 1);
+	display_segm_buf(bg, SM_BG_W, SM_BG_H, xb, yb, smeter_params.gm, smeter_params.ge, smeter_params.r1, 1, smeterplus, 1);
+	display_segm_buf(bg, SM_BG_W, SM_BG_H, xb, yb, smeter_params.gs, smeter_params.ge, smeter_params.r2, 1, COLORMAIN_WHITE, 1);
+}
+
 // ширина занимаемого места - 15 ячеек (240/16 = 15)
 void
 display2_smeter15(
@@ -296,34 +530,27 @@ display2_smeter15(
 	const int xc = x0 + width / 2;
 	const int yc = y0 + 120;
 
-	enum { halfsect = 30 };
-	enum { gm = 270 };
-	enum { gs = gm - halfsect };
-	const int ge = gm + halfsect;
-	const int stripewidth = 12; //16;
-	const int r1 = 7 * GRID2Y(3) - 8;	//350;
-	const int r2 = r1 - stripewidth;
-
 	const uint_fast8_t is_tx = hamradio_get_tx();
+	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
 
-	int gv, gv_trace = gs, gswr = gs;
+	int gv, gv_trace = smeter_params.gs, gswr = smeter_params.gs;
 	uint_fast16_t swr10; 														// swr10 = 0..30 for swr 1..4
 
 	//colpip_rect(colmain_fb_draw(), DIM_X, DIM_Y, x0, y0 - 8, x0 + width - 1, y0 + height - 1 + 15, DESIGNCOLORSTATE, 0);
 
 	if (is_tx)																	// угол поворота стрелки; 246 минимум, 270 середина, 294 максимум
-	{																			// добавить учет калибровок
-		enum { gx_hyst = 3 };		// гистерезис в градусах
-		/* фильтрация - (в градусах) */
-		static uint_fast16_t gv_smooth = gs;
-		static uint_fast16_t gswr_smooth = gs;
+	{
+//		enum { gx_hyst = 3 };		// гистерезис в градусах
+//		/* фильтрация - (в градусах) */
+//		static uint_fast16_t gv_smooth;
+//		static uint_fast16_t gswr_smooth;
 
 		uint_fast8_t power, tracemax;
 		adcvalholder_t forward, reflected;
 
 		power = board_getpwrmeter(& tracemax);
-		power = power * power * (ge - gs) / (maxpwrcali * maxpwrcali);
-		gv = gs + normalize(power, 0, 200, ge - gs);
+		power = power * power * (smeter_params.ge - smeter_params.gs) / (maxpwrcali * maxpwrcali);
+		gv = smeter_params.gs + normalize(power, 0, 200, smeter_params.ge - smeter_params.gs);
 
 		forward = board_getswrmeter(& reflected, swrcalibr);
 		const uint_fast16_t fullscale = (SWRMIN * 40 / 10) - SWRMIN;
@@ -334,19 +561,19 @@ display2_smeter15(
 			swr10 = fullscale;		// SWR is infinite
 		else
 			swr10 = (forward + reflected) * SWRMIN / (forward - reflected) - SWRMIN;
-		gswr = gs + normalize(swr10, 0, 30, ge - gs);
+		gswr = smeter_params.gs + normalize(swr10, 0, 30, smeter_params.ge - smeter_params.gs);
 
-		if (gv > gs)
-			gv_smooth = gv;
-
-		if (gv == gs && gv_smooth > gs)
-			gv = (gv_smooth -= gx_hyst) > gs ? gv_smooth : gs;
-
-		if (gswr > gs)
-			gswr_smooth = gswr;
-
-		if (gswr == gs && gswr_smooth > gs)
-			gswr = (gswr_smooth -= gx_hyst) > gs ? gswr_smooth : gs;
+//		if (gv > smeter_params.gs)
+//			gv_smooth = gv;
+//
+//		if (gv == smeter_params.gs && gv_smooth > smeter_params.gs)
+//			gv = (gv_smooth -= gx_hyst) > smeter_params.gs ? gv_smooth : smeter_params.gs;
+//
+//		if (gswr > smeter_params.gs)
+//			gswr_smooth = gswr;
+//
+//		if (gswr == smeter_params.gs && gswr_smooth > smeter_params.gs)
+//			gswr = (gswr_smooth -= gx_hyst) > smeter_params.gs ? gswr_smooth : smeter_params.gs;
 	}
 	else
 	{
@@ -355,187 +582,48 @@ display2_smeter15(
 		tracemax = value > tracemax ? value : tracemax;	// защита от рассогласования значений
 
 		gv =
-			gs + normalize3(value, 		s9level - s9delta, s9level, s9level + s9_60_delta, gm - gs, ge - gs);
+			smeter_params.gs + normalize3(value, 	s9level - s9delta, s9level, s9level + s9_60_delta, smeter_params.gm - smeter_params.gs, smeter_params.ge - smeter_params.gs);
 		gv_trace =
-			gs + normalize3(tracemax, 	s9level - s9delta, s9level, s9level + s9_60_delta, gm - gs, ge - gs);
+			smeter_params.gs + normalize3(tracemax, s9level - s9delta, s9level, s9level + s9_60_delta, smeter_params.gm - smeter_params.gs, smeter_params.ge - smeter_params.gs);
 	}
-
-	int rv1 = 7 * GRID2Y(3);	//350;
-	int rv2 = rv1 - 3 * GRID2Y(3);
-	enum { step1 = 3 };		// шаг для оцифровки S
-	enum { step2 = 4 };		// шаг для оцифровки плюсов
-	enum { step3 = 20 };	// swr
-	static const int markersTX_pwr [] =
-	{
-		gs,
-		gs + 2 * step1,
-		gs + 4 * step1,
-		gs + 6 * step1,
-		gs + 8 * step1,
-		gs + 10 * step1,
-		gs + 12 * step1,
-		gs + 14 * step1,
-		gs + 16 * step1,
-		gs + 18 * step1,
-		gs + 20 * step1,
-	};
-	static const int markersTX_swr [] =
-	{
-		gs,
-		gs + step3,
-		gs + 2 * step3,
-		gs + 3 * step3,
-	};
-	static const int markers [] =
-	{
-		//gs + 0 * step1,
-		gs + 2 * step1,		// S1
-		gs + 4 * step1,		// S3
-		gs + 6 * step1,		// S5
-		gs + 8 * step1,		// S7
-		gs + 10 * step1,	// S9
-	};
-	static const int markersR [] =
-	{
-		gm + 2 * step2,	//
-		gm + 4 * step2,
-		gm + 6 * step2,
-	};
-	static const int markers2 [] =
-	{
-		//gs + 1 * step1,
-		gs + 3 * step1,		// S2
-		gs + 5 * step1,		// S4
-		gs + 7 * step1,		// S6
-		gs + 9 * step1,		// S8
-	};
-	static const int markers2R [] =
-	{
-		gm + 1 * step2,
-		gm + 3 * step2,
-		gm + 5 * step2,
-	};
-
-	const COLORMAIN_T smeter = COLORMAIN_WHITE;
-	const COLORMAIN_T smeterplus = COLORMAIN_DARKRED;
-	const uint_fast16_t pad2w3 = strwidth3("ZZ");
-
-//	static uint_fast8_t first_run = 1;
-//	static uint_fast16_t x1, y1, x2, y2;
-//
-//	if(first_run)
-//	{
-//		uint_fast16_t xx, yy;
-//		first_run = 0;
-//		polar_to_dek(xc, yc, gm, rv1 + 8 + SMALLCHARH3, & xx, & yy);
-//		y1 = yy;
-//		polar_to_dek(xc, yc, gs, rv2, & xx, & yy);
-//		y2 = yy;
-//		polar_to_dek(xc, yc, gs, r1 + 8 + SMALLCHARW3 * 2, & xx, & yy);
-//		x1 = xx;
-//		polar_to_dek(xc, yc, ge, r1 + 8 + SMALLCHARW3 * 2, & xx, & yy);
-//		x2 = xx;
-//		PRINTF("xc/yc - %d/%d\n", xc, yc);
-//		PRINTF("x1/y1 - %d/%d\n", x1, y1);
-//		PRINTF("x2/y2 - %d/%d\n", x2, y2);
-//	}
-//	colpip_rect(colmain_fb_draw(), DIM_X, DIM_Y, x1, y1, x2, y2, COLORPIP_WHITE, 0);
-
-	if (is_tx)																	// шкала при передаче
-	{
-		unsigned p;
-		unsigned i;
-		for (p = 0, i = 0; i < sizeof markersTX_pwr / sizeof markersTX_pwr [0]; ++ i, p += 10)
-		{
-			char buf [10];
-			uint_fast16_t xx, yy;
-			if (i % 2 == 0)
-			{
-				display_radius(xc, yc, markersTX_pwr [i], r1, r1 + 8, smeter);
-				polar_to_dek(xc, yc, markersTX_pwr [i], r1 + 8, & xx, & yy);
-				local_snprintf_P(buf, sizeof buf / sizeof buf [0], PSTR("%u"), p);
-				display_string3_at_xy(xx - strwidth3(buf) / 2, yy - pad2w3, buf, COLORMAIN_YELLOW, COLORMAIN_BLACK);
-			}
-			else
-				display_radius(xc, yc, markersTX_pwr [i], r1, r1 + 4, smeter);
-		}
-
-		for (p = 1, i = 0; i < sizeof markersTX_swr / sizeof markersTX_swr [0]; ++ i, p += 1)
-		{
-			char buf [10];
-			uint_fast16_t xx, yy;
-			display_radius(xc, yc, markersTX_swr [i], r2, r2 - 8, smeter);
-			polar_to_dek(xc, yc, markersTX_swr [i], r2 - 16, & xx, & yy);
-			local_snprintf_P(buf, sizeof buf / sizeof buf [0], PSTR("%u"), p);
-			display_string3_at_xy(xx - SMALLCHARW3 / 2, yy - SMALLCHARW3 / 2, buf, COLORMAIN_YELLOW, COLORMAIN_BLACK);
-		}
-	}
-	else																		// шкала при приеме
-	{
-		unsigned p;
-		unsigned i;
-		for (p = 1, i = 0; i < sizeof markers / sizeof markers [0]; ++ i, p += 2)
-		{
-			char buf [10];
-			uint_fast16_t xx, yy;
-			display_radius(xc, yc, markers [i], r1, r1 + 8, smeter);
-			polar_to_dek(xc, yc, markers [i], r1 + 8, & xx, & yy);
-			local_snprintf_P(buf, sizeof buf / sizeof buf [0], PSTR("%u"), p);
-			display_string3_at_xy(xx - SMALLCHARW3 / 2, yy - pad2w3, buf, COLORMAIN_YELLOW, COLORMAIN_BLACK);
-		}
-		for (i = 0; i < sizeof markers2 / sizeof markers2 [0]; ++ i)
-		{
-			display_radius(xc, yc, markers2 [i], r1, r1 + 4, smeter);
-		}
-
-		for (p = 20, i = 0; i < sizeof markersR / sizeof markersR [0]; ++ i, p += 20)
-		{
-			char buf [10];
-			uint_fast16_t xx, yy;
-			display_radius(xc, yc, markersR [i], r1, r1 + 8, smeterplus);
-			polar_to_dek(xc, yc, markersR [i], r1 + 8, & xx, & yy);
-			local_snprintf_P(buf, sizeof buf / sizeof buf [0], PSTR("+%u"), p);
-			display_string3_at_xy(xx - strwidth3(buf) / 2, yy - pad2w3, buf, COLORMAIN_RED, COLORMAIN_BLACK);
-		}
-		for (i = 0; i < sizeof markers2R / sizeof markers2R [0]; ++ i)
-		{
-			display_radius(xc, yc, markers2R [i], r1, r1 + 4, smeterplus);
-		}
-	}
-
-	display_segm(xc, yc, gs, gm, r1, 1, smeter);
-	display_segm(xc, yc, gm, ge, r1, 1, is_tx ? smeter : smeterplus);
-	display_segm(xc, yc, gs, ge, r2, 1, COLORMAIN_WHITE);
 
 	if (is_tx)
 	{
 		// TX state
-		if (gswr > gs)
+		colpip_plot(fr, DIM_X, DIM_Y, x0, y0, smeter_bg [SM_STATE_TX], SM_BG_W, SM_BG_H);
+
+		if (gswr > smeter_params.gs)
 		{
 			uint_fast16_t xx, yy;
-			display_segm(xc, yc, gs, gswr, r2 + 2, 1, COLORMAIN_YELLOW);
-			display_segm(xc, yc, gs, gswr, r1 - 2, 1, COLORMAIN_YELLOW);
-			display_radius(xc, yc, gs, r1 - 2, r2 + 2, COLORMAIN_YELLOW);
-			display_radius(xc, yc, gswr, r1 - 2, r2 + 2, COLORMAIN_YELLOW);
-			polar_to_dek(xc, yc, gswr - 1, r1 - 4, & xx, & yy);
-			display_floodfill(xx, yy, COLORMAIN_YELLOW, COLORMAIN_BLACK);
-		}
 
+			display_segm_buf(fr, DIM_X, DIM_Y, xc, yc, smeter_params.gs, gswr, smeter_params.r2 + 2, 1, COLORMAIN_YELLOW, 0);
+			display_segm_buf(fr, DIM_X, DIM_Y, xc, yc, smeter_params.gs, gswr, smeter_params.r1 - 2, 1, COLORMAIN_YELLOW, 0);
+			display_radius_buf(fr, DIM_X, DIM_Y, xc, yc, smeter_params.gs, smeter_params.r1 - 2, smeter_params.r2 + 2, COLORMAIN_YELLOW, 0);
+			display_radius_buf(fr, DIM_X, DIM_Y, xc, yc, gswr, smeter_params.r1 - 2, smeter_params.r2 + 2, COLORMAIN_YELLOW, 0);
+			polar_to_dek(xc, yc, gswr - 1, smeter_params.r1 - 4, & xx, & yy);
+			display_floodfill(fr, DIM_X, DIM_Y, xx, yy, COLORMAIN_YELLOW, COLORMAIN_BLACK);
+		}
 	}
 	else
 	{
 		// RX state
-		const COLORMAIN_T ct = gv_trace > gm ? COLORMAIN_RED : COLORMAIN_YELLOW;
-		display_radius(xc - 1, yc, gv_trace, r1 - 2, r2 + 2, ct);
-		display_radius(xc, yc, gv_trace, r1 - 2, r2 + 2, ct);
-		display_radius(xc + 1, yc, gv_trace, r1 - 2, r2 + 2, ct);
+		colpip_plot(fr, DIM_X, DIM_Y, x0, y0, smeter_bg [SM_STATE_RX], SM_BG_W, SM_BG_H);
 	}
 
 	{
-		const COLORMAIN_T ct = gv > gm ? COLORMAIN_RED : COLORMAIN_GREEN;
-		display_radius(xc - 1, yc, gv, rv1, rv2, ct);
-		display_radius(xc, yc, gv, rv1, rv2, ct);
-		display_radius(xc + 1, yc, gv, rv1, rv2, ct);
+		// Рисование стрелки
+		const COLORMAIN_T ct = gv_trace > smeter_params.gm ? COLORMAIN_RED : COLORMAIN_YELLOW;
+		display_radius_buf(fr, DIM_X, DIM_Y, xc - 1, yc, gv_trace, smeter_params.r1 - 2, smeter_params.r2 + 2, ct, 0);
+		display_radius_buf(fr, DIM_X, DIM_Y, xc, yc, gv_trace, smeter_params.r1 - 2, smeter_params.r2 + 2, ct, 0);
+		display_radius_buf(fr, DIM_X, DIM_Y, xc + 1, yc, gv_trace, smeter_params.r1 - 2, smeter_params.r2 + 2, ct, 0);
+	}
+
+	{
+		// Рисование стрелки (?)
+		const COLORMAIN_T ct2 = gv > smeter_params.gm ? COLORMAIN_RED : COLORMAIN_GREEN;
+		display_radius_buf(fr, DIM_X, DIM_Y, xc - 1, yc, gv, smeter_params.rv1, smeter_params.rv2, ct2, 0);
+		display_radius_buf(fr, DIM_X, DIM_Y, xc, yc, gv, smeter_params.rv1, smeter_params.rv2, ct2, 0);
+		display_radius_buf(fr, DIM_X, DIM_Y, xc + 1, yc, gv, smeter_params.rv1, smeter_params.rv2, ct2, 0);
 	}
 }
 
@@ -677,12 +765,14 @@ static void window_uif_process(void);
 static void window_mode_process(void);
 static void window_agc_process(void);
 static void window_enc2_process(void);
+static void window_audioparams_process(void);
 static void gui_main_process(void);
 
 	enum {
 		TYPE_DUMMY,
 		TYPE_BUTTON,
-		TYPE_LABEL
+		TYPE_LABEL,
+		TYPE_SLIDER
 	};
 
 	enum {
@@ -716,7 +806,8 @@ static void gui_main_process(void);
 		WINDOW_FREQ,
 		WINDOW_MENU,
 		WINDOW_ENC2,
-		WINDOW_UIF
+		WINDOW_UIF,
+		WINDOW_AUDIO
 	};
 
 	enum {
@@ -731,7 +822,7 @@ static void gui_main_process(void);
 		BTN_BUF_H = 64
 	};
 
-	typedef ALIGNX_BEGIN PACKEDCOLORPIP_T bg_t [BTN_BUF_W][BTN_BUF_H] ALIGNX_END;
+	typedef ALIGNX_BEGIN PACKEDCOLORMAIN_T bg_t [GXSIZE(BTN_BUF_W, BTN_BUF_H)] ALIGNX_END;
 
 	typedef ALIGNX_BEGIN struct {
 		uint8_t w;
@@ -767,18 +858,18 @@ static void gui_main_process(void);
 		char text [TEXT_ARRAY_SIZE]; // текст внутри кнопки, разделитель строк |, не более 2х строк
 	} button_t;
 
-	static button_t button_handlers [] = {
+	static button_t buttons [] = {
 	//   x1, y1, w, h,  onClickHandler,        state,   is_locked, is_trackable, parent,    visible,      payload,	              name, 		text
 		{ },
-		{ 0, 0, 86, 44, button1_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, 	  	 VISIBLE,     UINTPTR_MAX, 		"btnMode", 		"Mode", },
-		{ 0, 0, 86, 44, button2_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, 	  	 VISIBLE,     UINTPTR_MAX, 		"btnAF", 		"AF|filter", },
-		{ 0, 0, 86, 44, button3_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, 	  	 VISIBLE,     UINTPTR_MAX, 		"btnAGC", 		"AGC", },
-		{ 0, 0, 86, 44, button4_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, 	  	 VISIBLE,     UINTPTR_MAX, 		"btn4", 		"Freq", },
-		{ 0, 0, 86, 44, button5_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, 	 	 VISIBLE,     UINTPTR_MAX, 		"btn5", 		"", },
-		{ 0, 0, 86, 44, button6_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, 	  	 VISIBLE,     UINTPTR_MAX, 		"btn6", 		"", },
-		{ 0, 0, 86, 44, button7_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, 	  	 VISIBLE,     UINTPTR_MAX, 		"btn7", 		"", },
-		{ 0, 0, 86, 44, button8_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, 	  	 VISIBLE,     UINTPTR_MAX, 		"btn8", 		"", },
-		{ 0, 0, 86, 44, button9_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, 	  	 VISIBLE,     UINTPTR_MAX, 		"btnSysMenu", 	"System|settings", },
+		{ 0, 0, 86, 44, button1_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  VISIBLE,     UINTPTR_MAX, 		"btnMode", 		"Mode", },
+		{ 0, 0, 86, 44, button2_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  VISIBLE,     UINTPTR_MAX, 		"btnAF", 		"AF|filter", },
+		{ 0, 0, 86, 44, button3_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  VISIBLE,     UINTPTR_MAX, 		"btnAGC", 		"AGC", },
+		{ 0, 0, 86, 44, button4_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  VISIBLE,     UINTPTR_MAX, 		"btn4", 		"Freq", },
+		{ 0, 0, 86, 44, button5_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  VISIBLE,     UINTPTR_MAX, 		"btn5", 		"", },
+		{ 0, 0, 86, 44, button6_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  VISIBLE,     UINTPTR_MAX, 		"btn6", 		"", },
+		{ 0, 0, 86, 44, button7_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  VISIBLE,     UINTPTR_MAX, 		"btn7", 		"", },
+		{ 0, 0, 86, 44, button8_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  VISIBLE,     UINTPTR_MAX, 		"btn8", 		"Audio|params", },
+		{ 0, 0, 86, 44, button9_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  VISIBLE,     UINTPTR_MAX, 		"btnSysMenu", 	"System|settings", },
 		{ 0, 0, 86, 44, buttons_mode_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_LSB, 		"btnModeLSB", 	"LSB", },
 		{ 0, 0, 86, 44, buttons_mode_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_CW,  		"btnModeCW", 	"CW", },
 		{ 0, 0, 86, 44, buttons_mode_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_AM,  		"btnModeAM", 	"AM", },
@@ -811,7 +902,13 @@ static void gui_main_process(void);
 		{ 0, 0, 40, 40, buttons_uif_handler,  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UIF,   NON_VISIBLE, UINTPTR_MAX, 		"btnUIF+", 		"+", },
 //		{ 375, 120, buttons_uif_handler, 	NULL, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UIF,   NON_VISIBLE, UINTPTR_MAX, 			"btnUIF_OK", "OK", },
 	};
-	enum { BUTTON_HANDLERS_COUNT = sizeof button_handlers / sizeof button_handlers[0] };
+	enum { BUTTONS_COUNT = sizeof buttons / sizeof buttons[0] };
+
+	typedef enum {
+		FONT_LARGE,		// S1D13781_smallfont_LTDC
+		FONT_MEDIUM,	// S1D13781_smallfont2_LTDC
+		FONT_SMALL		// S1D13781_smallfont3_LTDC
+	} font_size_t;
 
 	typedef struct {
 		uint16_t x;
@@ -822,40 +919,91 @@ static void gui_main_process(void);
 		uint8_t visible;
 		char name [NAME_ARRAY_SIZE];
 		char text [TEXT_ARRAY_SIZE];
-		PACKEDCOLORPIP_T color;
+		font_size_t font_size;
+		PACKEDCOLORMAIN_T color;
 		void (*onClickHandler) (void);
 	} label_t;
 
 	static label_t labels[] = {
-	//     x,   y,  parent,      state,        visible,     name,   Text,  color
+	//    x, y,  parent,     state, is_trackable, visible, name,       Text, font_size, color, onClickHandler
 		{ },
-		{ 0, 0, WINDOW_BP,   DISABLED,  0, NON_VISIBLE, "lbl_low",  "", COLORPIP_YELLOW, },
-		{ 0, 0, WINDOW_BP,   DISABLED,  0, NON_VISIBLE, "lbl_high", "", COLORPIP_YELLOW, },
-		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", "", COLORPIP_WHITE, labels_menu_handler, },
-		{ 0, 0, WINDOW_ENC2, DISABLED,  0, NON_VISIBLE, "lbl_enc2_param", "", COLORPIP_WHITE, },
-		{ 0, 0, WINDOW_ENC2, DISABLED,  0, NON_VISIBLE, "lbl_enc2_val",	  "", COLORPIP_WHITE, },
-		{ 0, 0,	WINDOW_UIF,  DISABLED,  0, NON_VISIBLE, "lbl_uif_param",  "", COLORPIP_WHITE, },
-		{ 0, 0,	WINDOW_UIF,  DISABLED,  0, NON_VISIBLE, "lbl_uif_val", 	  "", COLORPIP_WHITE, },
-		{ 0, 0,	WINDOW_FREQ, DISABLED,  0, NON_VISIBLE, "lbl_freq_val",   "", COLORPIP_YELLOW, },
-};
+		{ 0, 0, WINDOW_BP,   DISABLED,  0, NON_VISIBLE, "lbl_low",  	  "", FONT_LARGE, COLORPIP_YELLOW, },
+		{ 0, 0, WINDOW_BP,   DISABLED,  0, NON_VISIBLE, "lbl_high", 	  "", FONT_LARGE, COLORPIP_YELLOW, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_ENC2, DISABLED,  0, NON_VISIBLE, "lbl_enc2_param", "", FONT_LARGE, COLORPIP_WHITE, },
+		{ 0, 0, WINDOW_ENC2, DISABLED,  0, NON_VISIBLE, "lbl_enc2_val",	  "", FONT_LARGE, COLORPIP_WHITE, },
+		{ 0, 0,	WINDOW_UIF,  DISABLED,  0, NON_VISIBLE, "lbl_uif_param",  "", FONT_LARGE, COLORPIP_WHITE, },
+		{ 0, 0,	WINDOW_UIF,  DISABLED,  0, NON_VISIBLE, "lbl_uif_val", 	  "", FONT_LARGE, COLORPIP_WHITE, },
+		{ 0, 0,	WINDOW_FREQ, DISABLED,  0, NON_VISIBLE, "lbl_freq_val",   "", FONT_LARGE, COLORPIP_YELLOW, },
+		{ 0, 0,	WINDOW_AUDIO, DISABLED,  0, NON_VISIBLE, "eq0.08_val",    "", FONT_MEDIUM, COLORPIP_YELLOW, },
+		{ 0, 0,	WINDOW_AUDIO, DISABLED,  0, NON_VISIBLE, "eq0.23_val",    "", FONT_MEDIUM, COLORPIP_YELLOW, },
+		{ 0, 0,	WINDOW_AUDIO, DISABLED,  0, NON_VISIBLE, "eq0.65_val",    "", FONT_MEDIUM, COLORPIP_YELLOW, },
+		{ 0, 0,	WINDOW_AUDIO, DISABLED,  0, NON_VISIBLE, "eq1.8_val",     "", FONT_MEDIUM, COLORPIP_YELLOW, },
+		{ 0, 0,	WINDOW_AUDIO, DISABLED,  0, NON_VISIBLE, "eq5.3_val",     "", FONT_MEDIUM, COLORPIP_YELLOW, },
+		{ 0, 0,	WINDOW_AUDIO, DISABLED,  0, NON_VISIBLE, "eq0.08_name",   "", FONT_MEDIUM, COLORPIP_WHITE, },
+		{ 0, 0,	WINDOW_AUDIO, DISABLED,  0, NON_VISIBLE, "eq0.23_name",   "", FONT_MEDIUM, COLORPIP_WHITE, },
+		{ 0, 0,	WINDOW_AUDIO, DISABLED,  0, NON_VISIBLE, "eq0.65_name",   "", FONT_MEDIUM, COLORPIP_WHITE, },
+		{ 0, 0,	WINDOW_AUDIO, DISABLED,  0, NON_VISIBLE, "eq1.8_name",    "", FONT_MEDIUM, COLORPIP_WHITE, },
+		{ 0, 0,	WINDOW_AUDIO, DISABLED,  0, NON_VISIBLE, "eq5.3_name",    "", FONT_MEDIUM, COLORPIP_WHITE, },
+	};
 	enum { LABELS_COUNT = sizeof labels / sizeof labels[0] };
+
+	typedef enum  {
+		ORIENTATION_VERTICAL,
+		ORIENTATION_HORIZONTAL
+	} orientation_t;
+
+	enum {
+		sliders_width = 8,		// ширина шкалы
+		sliders_w = 12,			// размеры ползунка
+		sliders_h = 18			// от центра (*2)
+	};
+
+	typedef struct {
+		uint16_t x;
+		uint16_t y;
+		uint16_t x1_p;			// координаты ползунка
+		uint16_t y1_p;			// для update_touch_list
+		uint16_t x2_p;
+		uint16_t y2_p;
+		orientation_t orientation;
+		uint8_t parent;
+		char name [NAME_ARRAY_SIZE];
+		uint8_t state;
+		uint8_t visible;
+		uint16_t size;			// длина шкалы в пикселях
+		uint8_t value;			// 0..100 %
+		uint8_t value_old;		// для перерасчетов при изменении значения
+		uint16_t value_p;		// в пикселях от начала шкалы
+		float step;
+	} slider_t;
+
+	static slider_t sliders[] = {
+			{ },
+			{ 0, 0, 0, 0, 0, 0, ORIENTATION_VERTICAL, WINDOW_AUDIO, "eq0.08", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
+			{ 0, 0, 0, 0, 0, 0, ORIENTATION_VERTICAL, WINDOW_AUDIO, "eq0.23", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
+			{ 0, 0, 0, 0, 0, 0, ORIENTATION_VERTICAL, WINDOW_AUDIO, "eq0.65", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
+			{ 0, 0, 0, 0, 0, 0, ORIENTATION_VERTICAL, WINDOW_AUDIO, "eq1.8", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
+			{ 0, 0, 0, 0, 0, 0, ORIENTATION_VERTICAL, WINDOW_AUDIO, "eq5.3", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
+	};
+	enum { SLIDERS_COUNT = sizeof sliders / sizeof sliders[0] };
 
 	typedef struct {
 		uint16_t last_pressed_x; 	 // последняя точка касания экрана
@@ -874,16 +1022,16 @@ static void gui_main_process(void);
 
 	static gui_t gui = { 0, 0, KBD_CODE_MAX, 0, TYPE_DUMMY, CANCELLED, 0, 0, 0, 0, 0, 1, };
 
-	enum align_t {
+	typedef enum {
 		ALIGN_LEFT_X 	= WITHGUIMAXX >> 2,					// вертикальное выравнивание по центру левой половины экрана
 		ALIGN_CENTER_X 	= WITHGUIMAXX >> 1,					// вертикальное выравнивание по центру экрана
 		ALIGN_RIGHT_X 	= ALIGN_LEFT_X + ALIGN_CENTER_X,	// вертикальное выравнивание по центру правой половины экрана
 		ALIGN_Y 		= WITHGUIMAXY >> 1					// горизонтальное выравнивание всегда по центру экрана
-	};
+	} align_t;
 
 	typedef struct {
 		uint8_t window_id;			// в окне будут отображаться элементы с соответствующим полем for_window
-		enum align_t align_mode;	// вертикаль выравнивания окна
+		align_t align_mode;			// вертикаль выравнивания окна
 		uint16_t x1;
 		uint16_t y1;
 		uint16_t w;
@@ -904,6 +1052,7 @@ static void gui_main_process(void);
 		{ WINDOW_MENU,  ALIGN_CENTER_X, 0, 0, 550, 240, "Settings",	   NON_VISIBLE, 0, window_menu_process, },
 		{ WINDOW_ENC2, 	ALIGN_RIGHT_X, 	0, 0, 185, 105, "Fast menu",   NON_VISIBLE, 0, window_enc2_process, },
 		{ WINDOW_UIF, 	ALIGN_LEFT_X, 	0, 0, 200, 145, "",   		   NON_VISIBLE, 0, window_uif_process, },
+		{ WINDOW_AUDIO, ALIGN_CENTER_X, 0, 0, 430, 350, "MIC params",  NON_VISIBLE, 0, window_audioparams_process, },
 	};
 	enum { windows_count = sizeof windows / sizeof windows[0] };
 
@@ -917,12 +1066,6 @@ static void gui_main_process(void);
 	} enc2_t;
 
 	static enc2_t encoder2 = { 0, 0, 0, 0, 1, 1, };
-
-	typedef struct {
-		uint32_t val;
-		uint8_t num;
-		uint8_t key;
-	} editfreq_t;
 
 	static editfreq_t editfreq;
 
@@ -978,24 +1121,38 @@ static void gui_main_process(void);
 		gui.timer_1sec_updated = 1;
 	}
 
-	static uint_fast8_t find_button (uint_fast8_t id_window, const char * name)				// возврат id кнопки окна по ее названию
+	static uint_fast8_t find_gui_element (uint_fast8_t type, uint_fast8_t id_window, const char * name)
 	{
-		for (uint_fast8_t i = 1; i < BUTTON_HANDLERS_COUNT; i++)
+		switch (type)
 		{
-			if (button_handlers[i].parent == id_window && strcmp(button_handlers[i].name, name) == 0)
-				return i;
-		}
-		return 0;
-	}
+		case TYPE_BUTTON:
+			for (uint_fast8_t i = 1; i < BUTTONS_COUNT; i++)
+			{
+				if (buttons[i].parent == id_window && strcmp(buttons[i].name, name) == 0)
+					return i;
+			}
+			return 0;
 
-	static uint_fast8_t find_label (uint_fast8_t id_window, const char * name)				// возврат id метки окна по ее названию
-	{
-		for (uint_fast8_t i = 1; i < LABELS_COUNT; i++)
-		{
-			if (labels[i].parent == id_window && strcmp(labels[i].name, name) == 0)
-				return i;
+		case TYPE_LABEL:
+			for (uint_fast8_t i = 1; i < LABELS_COUNT; i++)
+			{
+				if (labels[i].parent == id_window && strcmp(labels[i].name, name) == 0)
+					return i;
+			}
+			return 0;
+
+		case TYPE_SLIDER:
+			for (uint_fast8_t i = 1; i < SLIDERS_COUNT; i++)
+			{
+				if (sliders[i].parent == id_window && strcmp(sliders[i].name, name) == 0)
+					return i;
+			}
+			return 0;
+
+		default:
+			ASSERT(0);
+			return 0;
 		}
-		return 0;
 	}
 
 	static void footer_buttons_state (uint_fast8_t state, const char * name)					// блокируются все, кроме name == text
@@ -1003,16 +1160,16 @@ static void gui_main_process(void);
 		static uint_fast8_t id = 0;
 		if (state == DISABLED)
 		{
-			id = find_button(WINDOW_MAIN, name);
-			button_handlers[id].is_locked = BUTTON_LOCKED;
+			id = find_gui_element(TYPE_BUTTON, WINDOW_MAIN, name);
+			buttons[id].is_locked = BUTTON_LOCKED;
 		} else
-			button_handlers[id].is_locked = BUTTON_NON_LOCKED;
+			buttons[id].is_locked = BUTTON_NON_LOCKED;
 
-		for (uint_fast8_t i = 1; i < BUTTON_HANDLERS_COUNT; i++)
+		for (uint_fast8_t i = 1; i < BUTTONS_COUNT; i++)
 		{
-			if (button_handlers[i].parent != WINDOW_MAIN)
+			if (buttons[i].parent != WINDOW_MAIN)
 				break;
-			button_handlers[i].state = button_handlers[i].name == name ? DISABLED : state;
+			buttons[i].state = buttons[i].name == name ? DISABLED : state;
 		}
 	}
 
@@ -1022,13 +1179,13 @@ static void gui_main_process(void);
 		if (! value)
 			windows[parent].first_call = 1;
 
-		for (uint_fast8_t i = 1; i < BUTTON_HANDLERS_COUNT; i++)
+		for (uint_fast8_t i = 1; i < BUTTONS_COUNT; i++)
 		{
-			if (button_handlers[i].parent == parent)
+			if (buttons[i].parent == parent)
 			{
-				button_handlers[i].visible = value;
-				button_handlers[i].is_locked = 0;
-				if (button_handlers[i].visible)
+				buttons[i].visible = value;
+				buttons[i].is_locked = 0;
+				if (buttons[i].visible)
 				{
 					touch_elements[touch_count].id = i;
 					touch_elements[touch_count].type = TYPE_BUTTON;
@@ -1050,6 +1207,21 @@ static void gui_main_process(void);
 					touch_count++;
 				}
 				if(! labels[i].visible && labels[i].onClickHandler)
+					touch_count--;
+			}
+		}
+		for (uint_fast8_t i = 1; i < SLIDERS_COUNT; i++)
+		{
+			if (sliders[i].parent == parent)
+			{
+				sliders[i].visible = value;
+				if (sliders[i].visible)
+				{
+					touch_elements[touch_count].id = i;
+					touch_elements[touch_count].type = TYPE_SLIDER;
+					touch_count++;
+				}
+				else
 					touch_count--;
 			}
 		}
@@ -1087,19 +1259,19 @@ static void gui_main_process(void);
 	{
 		if(gui.selected_type == TYPE_BUTTON)
 		{
-			uint_fast8_t id_button_high = find_button(WINDOW_BP, "btnAF_2");
-			uint_fast8_t id_button_low = find_button(WINDOW_BP, "btnAF_1");
-			uint_fast8_t id_button_OK = find_button(WINDOW_BP, "btnAF_OK");
+			uint_fast8_t id_button_high = find_gui_element(TYPE_BUTTON, WINDOW_BP, "btnAF_2");
+			uint_fast8_t id_button_low = find_gui_element(TYPE_BUTTON, WINDOW_BP, "btnAF_1");
+			uint_fast8_t id_button_OK = find_gui_element(TYPE_BUTTON, WINDOW_BP, "btnAF_OK");
 
 			if (gui.selected_id == id_button_low)
 			{
-				button_handlers[id_button_high].is_locked = 0;
-				button_handlers[id_button_low].is_locked = 1;
+				buttons[id_button_high].is_locked = 0;
+				buttons[id_button_low].is_locked = 1;
 			}
 			else if (gui.selected_id == id_button_high)
 			{
-				button_handlers[id_button_high].is_locked = 1;
-				button_handlers[id_button_low].is_locked = 0;
+				buttons[id_button_high].is_locked = 1;
+				buttons[id_button_low].is_locked = 0;
 			}
 			else if (gui.selected_id == id_button_OK)
 			{
@@ -1122,32 +1294,32 @@ static void gui_main_process(void);
 
 		if (win->first_call == 1)
 		{
-			uint_fast8_t interval = 20, id = 0, x, y;
-			uint_fast8_t col1_int = 35, row1_int = 20;
+			uint_fast16_t id = 0, x, y;
+			uint_fast8_t interval = 20, col1_int = 35, row1_int = 20;
 			calculate_window_position(WINDOW_BP);
 			x_0 = win->x1 + 50;											// оконные координаты нулевой точки графика
 			y_0 = win->y1 + 90;
 
-			while(button_handlers[++id].parent != WINDOW_BP)			// первое вхождение кнопки WINDOW_BP
+			while(buttons[++id].parent != WINDOW_BP)			// первое вхождение кнопки WINDOW_BP
 				;
 			x = win->x1 + col1_int;
-			y = win->y1 + win->h - button_handlers[id].h - row1_int;
+			y = win->y1 + win->h - buttons[id].h - row1_int;
 			do {
-				button_handlers[id].x1 = x;
-				button_handlers[id].y1 = y;
-				x = x + interval + button_handlers[id].w;
-				if (x + button_handlers[id].w > win->x1 + win->w)
+				buttons[id].x1 = x;
+				buttons[id].y1 = y;
+				x = x + interval + buttons[id].w;
+				if (x + buttons[id].w > win->x1 + win->w)
 				{
 					x = win->x1 + col1_int;
-					y = y + button_handlers[id].h + interval;
+					y = y + buttons[id].h + interval;
 				}
-			} while (button_handlers[++id].parent == WINDOW_BP);
+			} while (buttons[++id].parent == WINDOW_BP);
 
-			button_high = & button_handlers[find_button(WINDOW_BP, "btnAF_2")];
-			button_low = & button_handlers[find_button(WINDOW_BP, "btnAF_1")];
+			button_high = & buttons[find_gui_element(TYPE_BUTTON, WINDOW_BP, "btnAF_2")];
+			button_low = & buttons[find_gui_element(TYPE_BUTTON, WINDOW_BP, "btnAF_1")];
 
-			lbl_low = & labels[find_label(WINDOW_BP, "lbl_low")];
-			lbl_high = & labels[find_label(WINDOW_BP, "lbl_high")];
+			lbl_low = & labels[find_gui_element(TYPE_LABEL, WINDOW_BP, "lbl_low")];
+			lbl_high = & labels[find_gui_element(TYPE_LABEL, WINDOW_BP, "lbl_high")];
 
 			lbl_low->y = y_0 + SMALLCHARH;
 			lbl_high->y = y_0 + SMALLCHARH;
@@ -1221,8 +1393,9 @@ static void gui_main_process(void);
 				strcpy(lbl_low->text, buf);
 				lbl_low->x = x_0 + x_size - strwidth(lbl_low->text);
 			}
+			gui.timer_1sec_updated = 1;
 		}
-		PACKEDCOLORMAIN_T * fr = colmain_fb_draw();
+		PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
 		colpip_line(fr, DIM_X, DIM_Y, x_0 - 10, y_0, x_0 + x_size, y_0, COLORPIP_WHITE);
 		colpip_line(fr, DIM_X, DIM_Y, x_0, y_0 - 45, x_0, y_0 + 5, COLORPIP_WHITE);
 		colpip_line(fr, DIM_X, DIM_Y, x_l, y_0 - 40, x_l - 4, y_0 - 3, COLORPIP_YELLOW);
@@ -1233,8 +1406,8 @@ static void gui_main_process(void);
 
 	static void buttons_freq_handler (void)
 	{
-		if (button_handlers[gui.selected_id].parent == WINDOW_FREQ && editfreq.key == BUTTON_CODE_DONE)
-			editfreq.key = button_handlers[gui.selected_id].payload;
+		if (buttons[gui.selected_id].parent == WINDOW_FREQ && editfreq.key == BUTTON_CODE_DONE)
+			editfreq.key = buttons[gui.selected_id].payload;
 	}
 
 	static void window_freq_process (void)
@@ -1244,28 +1417,28 @@ static void gui_main_process(void);
 
 		if (win->first_call == 1)
 		{
-			uint_fast8_t interval = 6, id = 0, x, y;
-			uint_fast8_t col1_int = 20, row1_int = 40;
+			uint_fast16_t x, y;
+			uint_fast8_t interval = 6, id = 0, col1_int = 20, row1_int = 40;
 			win->first_call = 0;
 			calculate_window_position(WINDOW_FREQ);
 
-			while(button_handlers[++id].parent != WINDOW_FREQ)			// первое вхождение кнопки WINDOW_FREQ
+			while(buttons[++id].parent != WINDOW_FREQ)			// первое вхождение кнопки WINDOW_FREQ
 				;
 			x = win->x1 + col1_int;
 			y = win->y1 + row1_int;
 			do {
-				button_handlers[id].x1 = x;
-				button_handlers[id].y1 = y;
-				x = x + interval + button_handlers[id].w;
-				if (x + button_handlers[id].w > win->x1 + win->w)
+				buttons[id].x1 = x;
+				buttons[id].y1 = y;
+				x = x + interval + buttons[id].w;
+				if (x + buttons[id].w > win->x1 + win->w)
 				{
 					x = win->x1 + col1_int;
-					y = y + button_handlers[id].h + interval;
+					y = y + buttons[id].h + interval;
 				}
-			} while (button_handlers[++id].parent == WINDOW_FREQ);
-			button_handlers[find_button(WINDOW_FREQ, "btnFreqOK")].is_locked = BUTTON_LOCKED;
+			} while (buttons[++id].parent == WINDOW_FREQ);
+			buttons[find_gui_element(TYPE_BUTTON, WINDOW_FREQ, "btnFreqOK")].is_locked = BUTTON_LOCKED;
 
-			lbl_id = find_label(WINDOW_FREQ, "lbl_freq_val");
+			lbl_id = find_gui_element(TYPE_LABEL, WINDOW_FREQ, "lbl_freq_val");
 			labels[lbl_id].x = win->x1 + strwidth(win->name) + strwidth(" ") + 20;
 			labels[lbl_id].y = win->y1 + 10;
 			strcpy(labels[lbl_id].text, "     0 k");
@@ -1344,11 +1517,11 @@ static void gui_main_process(void);
 
 	static void buttons_uif_handler(void)
 	{
-		if (gui.selected_type == TYPE_BUTTON && gui.selected_id == find_button(WINDOW_UIF, "btnUIF+"))
+		if (gui.selected_type == TYPE_BUTTON && gui.selected_id == find_gui_element(TYPE_BUTTON, WINDOW_UIF, "btnUIF+"))
 			encoder2.rotate = 1;
-		else if (gui.selected_type == TYPE_BUTTON && gui.selected_id == find_button(WINDOW_UIF, "btnUIF-"))
+		else if (gui.selected_type == TYPE_BUTTON && gui.selected_id == find_gui_element(TYPE_BUTTON, WINDOW_UIF, "btnUIF-"))
 			encoder2.rotate = -1;
-		else if (gui.selected_type == TYPE_BUTTON && gui.selected_id == find_button(WINDOW_UIF, "btnUIF_OK"))
+		else if (gui.selected_type == TYPE_BUTTON && gui.selected_id == find_gui_element(TYPE_BUTTON, WINDOW_UIF, "btnUIF_OK"))
 		{
 			hamradio_disable_keyboard_redirect();
 			set_window(WINDOW_UIF, NON_VISIBLE);
@@ -1368,8 +1541,8 @@ static void gui_main_process(void);
 			calculate_window_position(WINDOW_UIF);
 			window_center_x =  windows[WINDOW_UIF].x1 + windows[WINDOW_UIF].w / 2;
 
-			id_lbl_uif_param = find_label(WINDOW_UIF, "lbl_uif_param");
-			id_lbl_uif_val = find_label(WINDOW_UIF, "lbl_uif_val");
+			id_lbl_uif_param = find_gui_element(TYPE_LABEL, WINDOW_UIF, "lbl_uif_param");
+			id_lbl_uif_val = find_gui_element(TYPE_LABEL, WINDOW_UIF, "lbl_uif_val");
 			strcpy(labels[id_lbl_uif_param].text, menu_uif.name);
 			const char * v = hamradio_gui_edit_menu_item(menu_uif.menupos, 0);
 			strcpy(labels[id_lbl_uif_val].text, v);
@@ -1379,13 +1552,13 @@ static void gui_main_process(void);
 			labels[id_lbl_uif_val].x = window_center_x - (strwidth(labels[id_lbl_uif_val].text) / 2);
 			labels[id_lbl_uif_val].y = windows[WINDOW_UIF].y1 + SMALLCHARH * 4;
 
-			id_button_up = find_button(WINDOW_UIF, "btnUIF+");
-			id_button_down = find_button(WINDOW_UIF, "btnUIF-");
+			id_button_up = find_gui_element(TYPE_BUTTON, WINDOW_UIF, "btnUIF+");
+			id_button_down = find_gui_element(TYPE_BUTTON, WINDOW_UIF, "btnUIF-");
 
-			button_handlers[id_button_down].x1 = labels[id_lbl_uif_val].x - button_menu_w - 10;
-			button_handlers[id_button_down].y1 = (labels[id_lbl_uif_val].y + SMALLCHARH / 2) - (button_menu_h / 2);
-			button_handlers[id_button_up].x1 = labels[id_lbl_uif_val].x + strwidth(labels[id_lbl_uif_val].text) + 10;
-			button_handlers[id_button_up].y1 = button_handlers[id_button_down].y1;
+			buttons[id_button_down].x1 = labels[id_lbl_uif_val].x - button_menu_w - 10;
+			buttons[id_button_down].y1 = (labels[id_lbl_uif_val].y + SMALLCHARH / 2) - (button_menu_h / 2);
+			buttons[id_button_up].x1 = labels[id_lbl_uif_val].x + strwidth(labels[id_lbl_uif_val].text) + 10;
+			buttons[id_button_up].y1 = buttons[id_button_down].y1;
 
 			hamradio_enable_keyboard_redirect();
 			return;
@@ -1398,8 +1571,10 @@ static void gui_main_process(void);
 			labels[id_lbl_uif_val].x = window_center_x - (strwidth(labels[id_lbl_uif_val].text) / 2);
 			encoder2.rotate_done = 1;
 
-			button_handlers[id_button_down].x1 = labels[id_lbl_uif_val].x - button_menu_w - 10;
-			button_handlers[id_button_up].x1 = labels[id_lbl_uif_val].x + strwidth(labels[id_lbl_uif_val].text) + 10;
+			buttons[id_button_down].x1 = labels[id_lbl_uif_val].x - button_menu_w - 10;
+			buttons[id_button_up].x1 = labels[id_lbl_uif_val].x + strwidth(labels[id_lbl_uif_val].text) + 10;
+
+			gui.timer_1sec_updated = 1;
 		}
 
 		if (gui.kbd_code != KBD_CODE_MAX)
@@ -1442,9 +1617,9 @@ static void gui_main_process(void);
 
 	static void buttons_menu_handler(void)
 	{
-		if (gui.selected_type == TYPE_BUTTON && gui.selected_id == find_button(WINDOW_MENU, "btnSysMenu+"))
+		if (gui.selected_type == TYPE_BUTTON && gui.selected_id == find_gui_element(TYPE_BUTTON, WINDOW_MENU, "btnSysMenu+"))
 			encoder2.rotate = 1;
-		else if (gui.selected_type == TYPE_BUTTON && gui.selected_id == find_button(WINDOW_MENU, "btnSysMenu-"))
+		else if (gui.selected_type == TYPE_BUTTON && gui.selected_id == find_gui_element(TYPE_BUTTON, WINDOW_MENU, "btnSysMenu-"))
 			encoder2.rotate = -1;
 	}
 
@@ -1464,15 +1639,15 @@ static void gui_main_process(void);
 
 			uint_fast8_t int_cols = 200, int_rows = 35;
 			uint_fast8_t col1_int = 50, row1_int = 40;
-			uint_fast8_t xn, yn;
+			uint_fast16_t xn, yn;
 
-			id_button_up = find_button(WINDOW_MENU, "btnSysMenu+");
-			id_button_down = find_button(WINDOW_MENU, "btnSysMenu-");
-			button_handlers[id_button_up].visible = NON_VISIBLE;
-			button_handlers[id_button_down].visible = NON_VISIBLE;
+			id_button_up = find_gui_element(TYPE_BUTTON, WINDOW_MENU, "btnSysMenu+");
+			id_button_down = find_gui_element(TYPE_BUTTON, WINDOW_MENU, "btnSysMenu-");
+			buttons[id_button_up].visible = NON_VISIBLE;
+			buttons[id_button_down].visible = NON_VISIBLE;
 
-			button_menu_w = button_handlers[id_button_up].w;
-			button_menu_h = button_handlers[id_button_up].h;
+			button_menu_w = buttons[id_button_up].w;
+			button_menu_h = buttons[id_button_up].h;
 
 			menu[MENU_GROUPS].add_id = 0;
 			menu[MENU_GROUPS].selected_str = 0;
@@ -1632,13 +1807,13 @@ static void gui_main_process(void);
 				menu[MENU_VALS].selected_label = menu[MENU_PARAMS].selected_label;
 				uint_fast8_t id_sel_label = menu[MENU_VALS].first_id + menu[MENU_VALS].selected_label;
 
-				button_handlers[id_button_down].visible = VISIBLE;
-				button_handlers[id_button_down].x1 = labels[id_sel_label].x - button_menu_w - 10;
-				button_handlers[id_button_down].y1 = (labels[id_sel_label].y + SMALLCHARH / 2) - (button_menu_h / 2);
+				buttons[id_button_down].visible = VISIBLE;
+				buttons[id_button_down].x1 = labels[id_sel_label].x - button_menu_w - 10;
+				buttons[id_button_down].y1 = (labels[id_sel_label].y + SMALLCHARH / 2) - (button_menu_h / 2);
 
-				button_handlers[id_button_up].visible = VISIBLE;
-				button_handlers[id_button_up].x1 = labels[id_sel_label].x + strwidth(labels[id_sel_label].text) + 10;
-				button_handlers[id_button_up].y1 = button_handlers[id_button_down].y1;
+				buttons[id_button_up].visible = VISIBLE;
+				buttons[id_button_up].x1 = labels[id_sel_label].x + strwidth(labels[id_sel_label].text) + 10;
+				buttons[id_button_up].y1 = buttons[id_button_down].y1;
 				for (uint8_t i = 0; i <= menu[MENU_GROUPS].num_rows; i++)
 				{
 					labels[i + menu[MENU_GROUPS].first_id].color = i == menu[MENU_GROUPS].selected_label ? COLORPIP_YELLOW : COLORPIP_GRAY;
@@ -1649,8 +1824,8 @@ static void gui_main_process(void);
 			}
 			if (menu_level == MENU_PARAMS)
 			{
-				button_handlers[id_button_down].visible = NON_VISIBLE;
-				button_handlers[id_button_up].visible = NON_VISIBLE;
+				buttons[id_button_down].visible = NON_VISIBLE;
+				buttons[id_button_up].visible = NON_VISIBLE;
 				for (uint8_t i = 0; i <= menu[MENU_GROUPS].num_rows; i++)
 				{
 					labels[i + menu[MENU_GROUPS].first_id].color = i == menu[MENU_GROUPS].selected_label ? COLORPIP_YELLOW : COLORPIP_GRAY;
@@ -1660,8 +1835,8 @@ static void gui_main_process(void);
 			}
 			if (menu_level == MENU_GROUPS)
 			{
-				button_handlers[id_button_down].visible = NON_VISIBLE;
-				button_handlers[id_button_up].visible = NON_VISIBLE;
+				buttons[id_button_down].visible = NON_VISIBLE;
+				buttons[id_button_up].visible = NON_VISIBLE;
 				for (uint8_t i = 0; i <= menu[MENU_GROUPS].num_rows; i++)
 				{
 					labels[i + menu[MENU_GROUPS].first_id].color = COLORPIP_WHITE;
@@ -1692,7 +1867,7 @@ static void gui_main_process(void);
 					hamradio_gui_edit_menu_item(menu[MENU_PARAMS].menu_block[menu[MENU_PARAMS].selected_str].index, encoder2.rotate));
 
 			uint_fast8_t id_sel_label = menu[MENU_VALS].first_id + menu[MENU_VALS].selected_label;
-			button_handlers[id_button_up].x1 = labels[id_sel_label].x + strwidth(labels[id_sel_label].text) + 10;
+			buttons[id_button_up].x1 = labels[id_sel_label].x + strwidth(labels[id_sel_label].text) + 10;
 		}
 
 		if ((menu_label_touched || menu_is_scrolling || encoder2.rotate != 0) && menu_level != MENU_VALS)
@@ -1816,8 +1991,8 @@ static void gui_main_process(void);
 			calculate_window_position(WINDOW_ENC2);
 			window_center_x =  windows[WINDOW_ENC2].x1 + windows[WINDOW_ENC2].w / 2;
 			windows[WINDOW_ENC2].first_call = 0;
-			id_lbl_param = find_label(WINDOW_ENC2, "lbl_enc2_param");
-			id_lbl_val = find_label(WINDOW_ENC2, "lbl_enc2_val");
+			id_lbl_param = find_gui_element(TYPE_LABEL, WINDOW_ENC2, "lbl_enc2_param");
+			id_lbl_val = find_gui_element(TYPE_LABEL, WINDOW_ENC2, "lbl_enc2_val");
 			labels[id_lbl_param].y = windows[WINDOW_ENC2].y1 + SMALLCHARH * 3;
 			labels[id_lbl_val].y = labels[id_lbl_param].y + SMALLCHARH * 2;
 			return;
@@ -1833,6 +2008,7 @@ static void gui_main_process(void);
 			labels[id_lbl_val].x = window_center_x - strwidth(labels[id_lbl_val].text) / 2;
 
 			gui_enc2_menu->updated = 0;
+			gui.timer_1sec_updated = 1;
 		}
 	}
 
@@ -1840,10 +2016,10 @@ static void gui_main_process(void);
 	{
 		if(gui.selected_type == TYPE_BUTTON)
 		{
-			if (windows[WINDOW_MODES].state && button_handlers[gui.selected_id].parent == WINDOW_MODES)
+			if (windows[WINDOW_MODES].state && buttons[gui.selected_id].parent == WINDOW_MODES)
 			{
-				if (button_handlers[gui.selected_id].payload != UINTPTR_MAX)
-					hamradio_change_submode(button_handlers[gui.selected_id].payload);
+				if (buttons[gui.selected_id].payload != UINTPTR_MAX)
+					hamradio_change_submode(buttons[gui.selected_id].payload);
 
 				set_window(WINDOW_MODES, NON_VISIBLE);
 				footer_buttons_state(CANCELLED, "");
@@ -1855,25 +2031,25 @@ static void gui_main_process(void);
 	{
 		if (windows[WINDOW_MODES].first_call == 1)
 		{
-			uint_fast8_t interval = 6, id = 0, x, y;
-			uint_fast8_t col1_int = 20, row1_int = 40;
+			uint_fast16_t x, y;
+			uint_fast8_t interval = 6, id = 0, col1_int = 20, row1_int = 40;
 			windows[WINDOW_MODES].first_call = 0;
 			calculate_window_position(WINDOW_MODES);
 
-			while(button_handlers[++id].parent != WINDOW_MODES)			// первое вхождение кнопки WINDOW_MODES
+			while(buttons[++id].parent != WINDOW_MODES)			// первое вхождение кнопки WINDOW_MODES
 				;
 			x = windows[WINDOW_MODES].x1 + col1_int;
 			y = windows[WINDOW_MODES].y1 + row1_int;
 			do {
-				button_handlers[id].x1 = x;
-				button_handlers[id].y1 = y;
-				x = x + interval + button_handlers[id].w;
-				if (x + button_handlers[id].w > windows[WINDOW_MODES].x1 + windows[WINDOW_MODES].w)
+				buttons[id].x1 = x;
+				buttons[id].y1 = y;
+				x = x + interval + buttons[id].w;
+				if (x + buttons[id].w > windows[WINDOW_MODES].x1 + windows[WINDOW_MODES].w)
 				{
 					x = windows[WINDOW_MODES].x1 + col1_int;
-					y = windows[WINDOW_MODES].y1 + row1_int + button_handlers[id].h + interval;
+					y = windows[WINDOW_MODES].y1 + row1_int + buttons[id].h + interval;
 				}
-			} while (button_handlers[++id].parent == WINDOW_MODES);
+			} while (buttons[++id].parent == WINDOW_MODES);
 			return;
 		}
 	}
@@ -1887,16 +2063,16 @@ static void gui_main_process(void);
 			windows[WINDOW_AGC].first_call = 0;
 			calculate_window_position(WINDOW_AGC);
 
-			while(button_handlers[++id].parent != WINDOW_AGC)			// первое вхождение кнопки WINDOW_AGC
+			while(buttons[++id].parent != WINDOW_AGC)			// первое вхождение кнопки WINDOW_AGC
 				;
 			x = windows[WINDOW_AGC].x1 + col1_int;
 			y = windows[WINDOW_AGC].y1 + row1_int;
 			do {
-				button_handlers[id].x1 = x;
-				button_handlers[id].y1 = y;
-				x = x + interval + button_handlers[id].w;
+				buttons[id].x1 = x;
+				buttons[id].y1 = y;
+				x = x + interval + buttons[id].w;
 
-			} while (button_handlers[++id].parent == WINDOW_AGC);
+			} while (buttons[++id].parent == WINDOW_AGC);
 			return;
 		}
 	}
@@ -1914,7 +2090,7 @@ static void gui_main_process(void);
 			{
 				set_window(WINDOW_MODES, VISIBLE);
 				windows[WINDOW_MODES].first_call = 1;
-				footer_buttons_state(DISABLED, button_handlers[gui.selected_id].name);
+				footer_buttons_state(DISABLED, buttons[gui.selected_id].name);
 			}
 			else
 			{
@@ -1933,7 +2109,7 @@ static void gui_main_process(void);
 				encoder2.busy = 1;
 				set_window(WINDOW_BP, VISIBLE);
 				windows[WINDOW_BP].first_call = 1;
-				footer_buttons_state(DISABLED, button_handlers[gui.selected_id].name);
+				footer_buttons_state(DISABLED, buttons[gui.selected_id].name);
 				hamradio_enable_keyboard_redirect();
 			}
 			else
@@ -1954,7 +2130,7 @@ static void gui_main_process(void);
 			{
 				set_window(WINDOW_AGC, VISIBLE);
 				windows[WINDOW_AGC].first_call = 1;
-				footer_buttons_state(DISABLED, button_handlers[gui.selected_id].name);
+				footer_buttons_state(DISABLED, buttons[gui.selected_id].name);
 			}
 			else
 			{
@@ -1974,7 +2150,7 @@ static void gui_main_process(void);
 				windows[WINDOW_FREQ].first_call = 1;
 				hamradio_set_lockmode(1);
 				hamradio_enable_keyboard_redirect();
-				footer_buttons_state(DISABLED, button_handlers[gui.selected_id].name);
+				footer_buttons_state(DISABLED, buttons[gui.selected_id].name);
 			}
 			else
 			{
@@ -2016,7 +2192,124 @@ static void gui_main_process(void);
 	{
 		if(gui.selected_type == TYPE_BUTTON)
 		{
+			if (windows[WINDOW_AUDIO].state == NON_VISIBLE)
+			{
+				set_window(WINDOW_AUDIO, VISIBLE);
+				windows[WINDOW_AUDIO].first_call = 1;
+				footer_buttons_state(DISABLED, buttons[gui.selected_id].name);
+			}
+			else
+			{
+				set_window(WINDOW_AUDIO, NON_VISIBLE);
+				footer_buttons_state(CANCELLED, "");
+				hamradio_set_menu_cond(NON_VISIBLE);
+			}
+		}
+	}
 
+	static void window_audioparams_process(void)
+	{
+		PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
+		static window_t * win = & windows[WINDOW_AUDIO];
+		slider_t * sl = NULL;
+		label_t * lbl = NULL;
+		static uint_fast8_t sl_first_id = 0, eq_limit, eq_base = 0;
+		char buf[TEXT_ARRAY_SIZE];
+		static int_fast16_t mid_y = 0, start_y = 0;
+		const char str_val[] = "_val", str_name[] = "_name";
+		uint_fast8_t id = 0;
+
+		if (win->first_call == 1)
+		{
+			uint_fast16_t x, y, mid_w;
+			uint_fast8_t interval = 70, col1_int = 70, row1_int = 120;
+			win->first_call = 0;
+			calculate_window_position(WINDOW_AUDIO);
+
+			eq_base = hamradio_getequalizerbase();
+			eq_limit = abs(eq_base) * 2;
+
+			while(sliders[++id].parent != WINDOW_AUDIO)
+				;
+			sl_first_id = id;
+			x = win->x1 + col1_int;
+			y = win->y1 + row1_int;
+
+			for (; id < SLIDERS_COUNT; id++)
+			{
+				sl = & sliders[id];
+				if (sl->parent != WINDOW_AUDIO)
+					break;
+
+				sl->x = x;
+				sl->y = y;
+				sl->size = 200;
+				sl->step = 2;
+				sl->value = normalize(hamradio_get_gmikeequalizerparams(id - sl_first_id), eq_limit, 0, 100);
+
+				mid_w = sl->x + sliders_width / 2;		// центр шкалы слайдера по x
+
+				strcpy(buf, sl->name);
+				strcat(buf, str_name);
+				lbl = & labels[find_gui_element(TYPE_LABEL, WINDOW_AUDIO, buf)];
+				local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%sk"), strchr(sl->name, 'q') + 1);
+				strcpy(lbl->text, buf);
+				lbl->x = mid_w - strwidth2(lbl->text) / 2;
+				lbl->y = sl->y - SMALLCHARH2 * 4;
+
+				strcpy(buf, sl->name);
+				strcat(buf, str_val);
+				lbl = & labels[find_gui_element(TYPE_LABEL, WINDOW_AUDIO, buf)];
+				local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), hamradio_get_gmikeequalizerparams(id - sl_first_id) + eq_base);
+				strcpy(lbl->text, buf);
+				lbl->x = mid_w - strwidth2(lbl->text) / 2;
+				lbl->y = sl->y - SMALLCHARH2 * 3 + SMALLCHARH2 / 2;
+
+				x = x + interval;
+			}
+			mid_y = sliders[id - 1].y + sliders[id - 1].size / 2;
+			return;
+		}
+
+		if (gui.selected_type == TYPE_SLIDER && gui.is_tracking)
+		{
+			id = gui.selected_id;
+			sl = & sliders[id];
+
+			uint16_t v = sl->value + gui.vector_move_y / sl->step;
+			if (v >= 0 && v <= sl->size / sl->step)
+			{
+				sl->value = v;
+				PRINTF("%s: %d%\n", sl->name, v);
+				uint_fast16_t mid_w = sl->x + sliders_width / 2;
+				strcpy(buf, sl->name);
+				strcat(buf, str_val);
+				lbl = & labels[find_gui_element(TYPE_LABEL, WINDOW_AUDIO, buf)];
+				local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), hamradio_get_gmikeequalizerparams(id - sl_first_id) + eq_base);
+				strcpy(lbl->text, buf);
+				lbl->x = mid_w - strwidth2(lbl->text) / 2;
+			}
+
+			if(sl->value != sl->value_old)
+			{
+				gui.vector_move_x = 0;
+				gui.vector_move_y = 0;
+				hamradio_set_gmikeequalizerparams(id - sl_first_id, normalize(v, 100, 0, eq_limit));
+			}
+		}
+
+		for (uint_fast16_t i = 0; i <= abs(eq_base); i += 3)
+		{
+			uint_fast16_t yy = normalize(i, 0, abs(eq_base), 100);
+			colmain_line(fr, DIM_X, DIM_Y, win->x1 + 50, mid_y + yy, win->x1 + win->w - 50, mid_y + yy, 225, 0);
+			local_snprintf_P(buf, sizeof buf / sizeof buf[0], i == 0 ? PSTR("%d") : PSTR("-%d"), i);
+			colpip_string2_tbg(fr, DIM_X, DIM_Y, win->x1 + 50 - strwidth2(buf) - 5, mid_y + yy - SMALLCHARH2 / 2, buf, COLORMAIN_WHITE);
+
+			if (i == 0)
+				continue;
+			colmain_line(fr, DIM_X, DIM_Y, win->x1 + 50, mid_y - yy, win->x1 + win->w - 50, mid_y - yy, 225, 0);
+			local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), i);
+			colpip_string2_tbg(fr, DIM_X, DIM_Y, win->x1 + 50 - strwidth2(buf) - 5, mid_y - yy - SMALLCHARH2 / 2, buf, COLORMAIN_WHITE);
 		}
 	}
 
@@ -2028,7 +2321,7 @@ static void gui_main_process(void);
 			{
 				set_window(WINDOW_MENU, VISIBLE);
 				windows[WINDOW_MENU].first_call = 1;
-				footer_buttons_state(DISABLED, button_handlers[gui.selected_id].name);
+				footer_buttons_state(DISABLED, buttons[gui.selected_id].name);
 				encoder2.busy = 1;
 			}
 			else
@@ -2044,20 +2337,22 @@ static void gui_main_process(void);
 	static void gui_main_process(void)
 	{
 		static window_t * win = & windows[WINDOW_MAIN];
-		PACKEDCOLORMAIN_T * fr = colmain_fb_draw();
+		PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
 		char buf [TEXT_ARRAY_SIZE];
+		const uint_fast8_t buflen = sizeof buf / sizeof buf [0];
 		uint_fast16_t yt, xt;
 
 		if (win->first_call == 1)
 		{
-			uint_fast8_t interval = 3, id = 0, x;
+			uint_fast8_t interval = 3, id = 0;
+			uint_fast16_t x;
 			win->first_call = 0;
-			while(button_handlers[++id].parent != WINDOW_MAIN)			// первое вхождение кнопки WINDOW_MAIN
+			while(buttons[++id].parent != WINDOW_MAIN)			// первое вхождение кнопки WINDOW_MAIN
 				;
 			x = win->x1;
-			button_t * bh = & button_handlers[id];
+			button_t * bh = & buttons[id];
 			do {
-				bh = & button_handlers[id];
+				bh = & buttons[id];
 				bh->x1 = x;
 				bh->y1 = WITHGUIMAXY - bh->h;
 				x = x + interval + bh->w;
@@ -2065,25 +2360,34 @@ static void gui_main_process(void);
 			} while (bh->parent == WINDOW_MAIN);
 		}
 
+		uint_fast8_t interval = 15, len1 = 0, len2 = 0;
+		uint_fast16_t x = 10, y1 = 125, y2 = 145;			// пока абсолютные, переделать на относительные
+
 		// текущее время
 	#if defined (RTC1_TYPE)
 		static uint_fast16_t year;
 		static uint_fast8_t month, day, hour, minute, secounds;
 		if(gui.timer_1sec_updated)
 			board_rtc_getdatetime(& year, & month, & day, & hour, & minute, & secounds);
-		local_snprintf_P(buf, sizeof buf / sizeof buf [0], PSTR("%02d.%02d"), day, month);
-		colpip_string2_tbg(fr, DIM_X, DIM_Y, 5, 125, buf, COLORPIP_WHITE);
-		local_snprintf_P(buf, sizeof buf / sizeof buf [0], PSTR("%02d%c%02d"), hour, ((secounds & 1) ? ' ' : ':'), minute);
-		colpip_string2_tbg(fr, DIM_X, DIM_Y, 5, 145, buf, COLORPIP_WHITE);
+		local_snprintf_P(buf, buflen, PSTR("%02d.%02d"), day, month);
+		len1 = strwidth2(buf);
+		colpip_string2_tbg(fr, DIM_X, DIM_Y, x, y1, buf, COLORPIP_WHITE);
+		local_snprintf_P(buf, buflen, PSTR("%02d%c%02d"), hour, ((secounds & 1) ? ' ' : ':'), minute);
+		len2 = strwidth2(buf);
+		colpip_string2_tbg(fr, DIM_X, DIM_Y, x, y2, buf, COLORPIP_WHITE);
 	#endif 	/* defined (RTC1_TYPE) */
+
+		x = x + (len1 > len2 ? len1 : len2) + interval;		// при изменении ширины выводимой строки infobar может дергаться, переделать
+		len1 = len2 = 0;									// добавить выравнивание по ячейкам
 
 		// напряжение питания
 	#if WITHVOLTLEVEL
 		static ldiv_t v;
 		if(gui.timer_1sec_updated)
 			v = ldiv(hamradio_get_volt_value(), 10);
-		local_snprintf_P(buf, sizeof buf / sizeof buf [0], PSTR("%d.%1dV "), v.quot, v.rem);
-		colpip_string2_tbg(fr, DIM_X, DIM_Y, 75, 125, buf, COLORPIP_WHITE);
+		local_snprintf_P(buf, buflen, PSTR("%d.%1dV"), v.quot, v.rem);
+		len1 = strwidth2(buf);
+		colpip_string2_tbg(fr, DIM_X, DIM_Y, x, y1, buf, COLORPIP_WHITE);
 	#endif /* WITHVOLTLEVEL */
 
 		// ток PA (при передаче)
@@ -2103,49 +2407,91 @@ static void gui_main_process(void);
 		#if (WITHCURRLEVEL_ACS712_30A || WITHCURRLEVEL_ACS712_20A)
 			// для больших токов (более 9 ампер)
 			ldiv_t t = ldiv(drain / 10, 10);
-			local_snprintf_P(buf, sizeof buf / sizeof buf [0], PSTR("%2d.%01dA "), t.quot, t.rem);
+			local_snprintf_P(buf, buflen, PSTR("%2d.%01dA"), t.quot, t.rem);
 
 		#else /* (WITHCURRLEVEL_ACS712_30A || WITHCURRLEVEL_ACS712_20A) */
 			// Датчик тока до 5 ампер
 			ldiv_t t = ldiv(drain, 100);
-			local_snprintf_P(buf, sizeof buf / sizeof buf [0], PSTR("%d.%02dA "), t.quot, t.rem);
+			local_snprintf_P(buf, buflen, PSTR("%d.%02dA"), t.quot, t.rem);
 
 		#endif /* (WITHCURRLEVEL_ACS712_30A || WITHCURRLEVEL_ACS712_20A) */
 
-			colpip_string2_tbg(fr, DIM_X, DIM_Y, 75, 145, buf, COLORPIP_WHITE);
+			len2 = strwidth2(buf);
+			colpip_string2_tbg(fr, DIM_X, DIM_Y, x, y2, buf, COLORPIP_WHITE);
 		}
 	#endif /* WITHCURRLEVEL */
-	#if WITHTHERMOLEVEL	// температура выходных транзисторов (при передаче)
-		static ldiv_t t;
-		if (hamradio_get_tx() && gui.timer_1sec_updated)
-		{
-			t = ldiv(hamradio_get_temperature_value(), 10);
-			local_snprintf_P(buf, sizeof buf / sizeof buf [0], PSTR("%d.%dC "), t.quot, t.rem);
-			PRINTF("%s\n", buf);		// пока вывод в консоль
-		}
-	#endif /* WITHTHERMOLEVEL */
+
+		x = x + (len1 > len2 ? len1 : len2) + interval;
+		len1 = len2 = 0;
+
 		// ширина панорамы
 	#if WITHIF4DSP
 		static int_fast32_t z;
 		if(gui.timer_1sec_updated)
-			z = display_zoomedbw();
-		local_snprintf_P(buf, sizeof buf / sizeof buf [0], PSTR("SPAN:%3dk"), (int) z / 1000);
-		xt = WITHGUIMAXX - SMALLCHARW2 - strlen(buf) * SMALLCHARW2;
-		display_transparency(xt - 5, 405, WITHGUIMAXX - 5, 428, DEFAULT_ALPHA);
-		colpip_string2_tbg(fr, DIM_X, DIM_Y, xt, 410, buf, COLORPIP_YELLOW);
+			z = display_zoomedbw() / 1000;
+		local_snprintf_P(buf, buflen, PSTR("SPAN"));
+		len1 = strwidth2(buf);
+		colpip_string2_tbg(fr, DIM_X, DIM_Y, x, y1, buf, COLORPIP_WHITE);
+		local_snprintf_P(buf, buflen, PSTR("%dk"), z);
+		len2 = strwidth2(buf);
+		colpip_string2_tbg(fr, DIM_X, DIM_Y, x, y2, buf, COLORPIP_WHITE);
 	#endif /* WITHIF4DSP */
+
+		x = x + (len1 > len2 ? len1 : len2) + interval;
+		len1 = len2 = 0;
+
+		// параметры полосы пропускания фильтра
+		static uint_fast8_t bp_type, bp_low, bp_high;
+		if(gui.timer_1sec_updated)
+		{
+			bp_high = hamradio_get_high_bp(0);
+			bp_low = hamradio_get_low_bp(0) * 10;
+			bp_type = hamradio_get_bp_type();
+			bp_high = bp_type ? bp_high * 100 : bp_high * 10;
+		}
+		local_snprintf_P(buf, buflen, PSTR("AF filter"));
+		len1 = strwidth2(buf);
+		colpip_string2_tbg(fr, DIM_X, DIM_Y, x, y1, buf, COLORPIP_WHITE);
+		local_snprintf_P(buf, buflen, bp_type ? (PSTR("%d..%d")) : (PSTR("W%d P%d")), bp_low, bp_high);
+		len2 = strwidth2(buf);
+		colpip_string2_tbg(fr, DIM_X, DIM_Y, x, y2, buf, COLORPIP_WHITE);
+
+		x = x + (len1 > len2 ? len1 : len2) + interval;
+		len1 = len2 = 0;
+
+		// значение сдвига частоты
+		static int_fast16_t if_shitf;
+		if (gui.timer_1sec_updated)
+			if_shitf = hamradio_get_if_shift();
+		local_snprintf_P(buf, buflen, PSTR("IF shift"));
+		len1 = strwidth2(buf);
+		colpip_string2_tbg(fr, DIM_X, DIM_Y, x, y1, buf, COLORPIP_WHITE);
+		local_snprintf_P(buf, buflen, if_shitf == 0 ? PSTR("%d") : PSTR("%+dk"), if_shitf);
+		len2 = strwidth2(buf);
+		colpip_string2_tbg(fr, DIM_X, DIM_Y, x, y2, buf, COLORPIP_WHITE);
+
+	#if WITHTHERMOLEVEL	// температура выходных транзисторов (при передаче)
+		static ldiv_t t;
+		if (hamradio_get_tx())// && gui.timer_1sec_updated)
+		{
+			t = ldiv(hamradio_get_temperature_value(), 10);
+			local_snprintf_P(buf, buflen, PSTR("%d.%dC "), t.quot, t.rem);
+			PRINTF("%s\n", buf);		// пока вывод в консоль
+		}
+	#endif /* WITHTHERMOLEVEL */
+
 		gui.timer_1sec_updated = 0;
 	}
 
 	/* Кнопка */
-	static void draw_button_pip(uint_fast8_t id)
+	static void draw_button(uint_fast8_t id)
 	{
 		PACKEDCOLORMAIN_T * bg = NULL;
-		PACKEDCOLORMAIN_T * fr = colmain_fb_draw();
+		PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
 		btn_bg_t * b1 = NULL;
 		uint_fast8_t i = 0;
 		static const char delimeters [] = "|";
-		const button_t * const bh = & button_handlers[id];
+		const button_t * const bh = & buttons[id];
 
 		do {
 			if (bh->h == btn_bg[i].h && bh->w == btn_bg[i].w)
@@ -2157,7 +2503,7 @@ static void gui_main_process(void);
 
 		if (b1 == NULL)				// если не найден заполненный буфер фона по размерам, программная отрисовка
 		{
-			PACKEDCOLORPIP_T c1, c2;
+			PACKEDCOLORMAIN_T c1, c2;
 			c1 = bh->state == DISABLED ? COLOR_BUTTON_DISABLED : (bh->is_locked ? COLOR_BUTTON_LOCKED : COLOR_BUTTON_NON_LOCKED);
 			c2 = bh->state == DISABLED ? COLOR_BUTTON_DISABLED : (bh->is_locked ? COLOR_BUTTON_PR_LOCKED : COLOR_BUTTON_PR_NON_LOCKED);
 			colpip_rect(fr, DIM_X, DIM_Y, bh->x1, bh->y1, bh->x1 + bh->w, bh->y1 + bh->h - 2, bh->state == PRESSED ? c2 : c1, 1);
@@ -2167,15 +2513,15 @@ static void gui_main_process(void);
 		else
 		{
 			if (bh->state == DISABLED)
-				bg = (PACKEDCOLORPIP_T *) b1->bg_disabled;
+				bg = b1->bg_disabled;
 			else if (bh->is_locked && bh->state == PRESSED)
-				bg = (PACKEDCOLORPIP_T *) b1->bg_locked_pressed;
+				bg = b1->bg_locked_pressed;
 			else if (bh->is_locked && bh->state != PRESSED)
-				bg = (PACKEDCOLORPIP_T *) b1->bg_locked;
+				bg = b1->bg_locked;
 			else if (! bh->is_locked && bh->state == PRESSED)
-				bg = (PACKEDCOLORPIP_T *) b1->bg_pressed;
+				bg = b1->bg_pressed;
 			else if (! bh->is_locked && bh->state != PRESSED)
-				bg = (PACKEDCOLORPIP_T *) b1->bg_non_pressed;
+				bg = b1->bg_non_pressed;
 
 			colpip_plot(fr, DIM_X, DIM_Y, bh->x1, bh->y1, bg, bh->w, bh->h);
 		}
@@ -2201,9 +2547,37 @@ static void gui_main_process(void);
 		}
 	}
 
+	static void draw_slider(uint_fast8_t id)
+	{
+		PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
+		slider_t * sl = & sliders[id];
+
+		if (sl->orientation)		// ORIENTATION_HORIZONTAL
+		{
+			colpip_rect(fr, DIM_X, DIM_Y, sl->x, sl->y, sl->x + sl->size, sl->y + sliders_width, COLORMAIN_WHITE, 0);		// в процессе
+		}
+		else						// ORIENTATION_VERTICAL
+		{
+			if (sl->value_old != sl->value)
+			{
+				uint_fast16_t mid_w = sl->x + sliders_width / 2;
+				sl->value_p = sl->y + sl->size * sl->value / 100;
+				sl->x1_p = mid_w - sliders_w;
+				sl->y1_p = sl->value_p - sliders_h;
+				sl->x2_p = mid_w + sliders_w;
+				sl->y2_p = sl->value_p + sliders_h;
+				sl->value_old = sl->value;
+			}
+			colpip_rect(fr, DIM_X, DIM_Y, sl->x + 1, sl->y + 1, sl->x + sliders_width - 1, sl->y + sl->size - 1, 242, 1);
+			colpip_rect(fr, DIM_X, DIM_Y, sl->x, sl->y, sl->x + sliders_width, sl->y + sl->size, COLORMAIN_WHITE, 0);
+			colpip_rect(fr, DIM_X, DIM_Y, sl->x1_p, sl->y1_p, sl->x2_p, sl->y2_p, sl->state == PRESSED ? COLOR_BUTTON_PR_NON_LOCKED : COLOR_BUTTON_NON_LOCKED, 1);
+			colmain_line(fr, DIM_X, DIM_Y,  sl->x1_p, sl->value_p, sl->x2_p, sl->value_p, COLORMAIN_WHITE, 0);
+		}
+	}
+
 	static void fill_button_bg_buf(btn_bg_t * v)
 	{
-		PACKEDCOLORPIP_T * buf;
+		PACKEDCOLORMAIN_T * buf;
 		uint_fast8_t w, h;
 
 		w = v->w;
@@ -2211,27 +2585,27 @@ static void gui_main_process(void);
 		ASSERT(w < BTN_BUF_W);
 		ASSERT(h < BTN_BUF_H);
 
-		buf = * v->bg_non_pressed;
+		buf = v->bg_non_pressed;
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLOR_BUTTON_NON_LOCKED, 1);
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORPIP_GRAY, 0);
 		colpip_rect(buf, w, h, 2, 2, w - 3, h - 3, COLORPIP_BLACK, 0);
 
-		buf = * v->bg_pressed;
+		buf = v->bg_pressed;
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLOR_BUTTON_PR_NON_LOCKED, 1);
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORPIP_GRAY, 0);
 		colpip_rect(buf, w, h, 2, 2, w - 3, h - 3, COLORPIP_BLACK, 0);
 
-		buf = * v->bg_locked;
+		buf = v->bg_locked;
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLOR_BUTTON_LOCKED, 1);
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORPIP_GRAY, 0);
 		colpip_rect(buf, w, h, 2, 2, w - 3, h - 3, COLORPIP_BLACK, 0);
 
-		buf = * v->bg_locked_pressed;
+		buf = v->bg_locked_pressed;
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLOR_BUTTON_PR_LOCKED, 1);
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORPIP_GRAY, 0);
 		colpip_rect(buf, w, h, 2, 2, w - 3, h - 3, COLORPIP_BLACK, 0);
 
-		buf = * v->bg_disabled;
+		buf = v->bg_disabled;
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLOR_BUTTON_DISABLED, 1);
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORPIP_GRAY, 0);
 		colpip_rect(buf, w, h, 2, 2, w - 3, h - 3, COLORPIP_BLACK, 0);
@@ -2255,7 +2629,7 @@ static void gui_main_process(void);
 			touch_t * p = & touch_elements[i];
 			if (p->type == TYPE_BUTTON)
 			{
-				const button_t * const bh = & button_handlers[p->id];
+				const button_t * const bh = & buttons[p->id];
 				p->x1 = bh->x1;
 				p->x2 = bh->x1 + bh->w;
 				p->y1 = bh->y1;
@@ -2275,6 +2649,17 @@ static void gui_main_process(void);
 				p->visible = lh->visible;
 				p->is_trackable = lh->is_trackable;
 			}
+			else if (p->type == TYPE_SLIDER)
+			{
+				const slider_t * const sh = & sliders[p->id];
+				p->x1 = sh->x1_p;
+				p->x2 = sh->x2_p;
+				p->y1 = sh->y1_p;
+				p->y2 = sh->y2_p;
+				p->state = sh->state;
+				p->visible = sh->visible;
+				p->is_trackable = 1;
+			}
 		}
 	}
 
@@ -2285,11 +2670,11 @@ static void gui_main_process(void);
 		switch (val->type)
 		{
 			case TYPE_BUTTON:
-				ASSERT(val->id < BUTTON_HANDLERS_COUNT);
+				ASSERT(val->id < BUTTONS_COUNT);
 				gui.selected_type = TYPE_BUTTON;
-				button_handlers[val->id].state = val->state;
-				if (button_handlers[val->id].onClickHandler && button_handlers[val->id].state == RELEASED)
-					button_handlers[val->id].onClickHandler();
+				buttons[val->id].state = val->state;
+				if (buttons[val->id].onClickHandler && buttons[val->id].state == RELEASED)
+					buttons[val->id].onClickHandler();
 				break;
 
 			case TYPE_LABEL:
@@ -2299,6 +2684,13 @@ static void gui_main_process(void);
 				if (labels[val->id].onClickHandler && labels[val->id].state == RELEASED)
 					labels[val->id].onClickHandler();
 				break;
+
+			case TYPE_SLIDER:
+				ASSERT(val->id < SLIDERS_COUNT);
+				gui.selected_type = TYPE_SLIDER;
+				sliders[val->id].state = val->state;
+				break;
+
 			default:
 				ASSERT(0);
 				break;
@@ -2317,7 +2709,7 @@ static void gui_main_process(void);
 			gui.last_pressed_x = tx;
 			gui.last_pressed_y = ty;
 			gui.is_touching_screen = 1;
-			debug_printf_P(PSTR("last x/y=%d/%d\n"), gui.last_pressed_x, gui.last_pressed_y);
+//			debug_printf_P(PSTR("last x/y=%d/%d\n"), gui.last_pressed_x, gui.last_pressed_y);
 			update_touch();
 		}
 		else
@@ -2400,23 +2792,24 @@ static void gui_main_process(void);
 		}
 	}
 
-	void gui_update(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
+	void gui_WM_walktrough(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
 	{
 		uint_fast8_t alpha = DEFAULT_ALPHA; // на сколько затемнять цвета
 		char buf [TEXT_ARRAY_SIZE];
 		char * text2 = NULL;
 		uint_fast8_t str_len = 0;
-		PACKEDCOLORMAIN_T * fr = colmain_fb_draw();
+		PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
 
 		process_gui();
 
 		for (uint_fast8_t i = 0; i < windows_count; i ++)
 		{
 			const window_t * const win = & windows[i];
+			uint_fast8_t f = win->first_call;
 			if (win->state == VISIBLE)
 			{
 				// при открытии окна рассчитываются экранные координаты самого окна и его child элементов
-				if (win->first_call == 0)
+				if (! f)
 				{
 					display_transparency(win->x1, win->y1, win->x1 + win->w, win->y1 + win->h, alpha);
 				}
@@ -2424,7 +2817,7 @@ static void gui_main_process(void);
 				// запуск процедуры фоновой обработки для окна
 				win->onVisibleProcess();
 
-				if (! win->first_call )
+				if (! f)
 				{
 					// вывод заголовка окна
 					colpip_string_tbg(fr, DIM_X, DIM_Y, win->x1 + 20, win->y1 + 10, win->name, COLORPIP_YELLOW);
@@ -2436,16 +2829,32 @@ static void gui_main_process(void);
 					{
 						const label_t * const lh = & labels[i];
 						if (lh->visible == VISIBLE && lh->parent == win->window_id)
-							colpip_string_tbg(fr, DIM_X, DIM_Y, lh->x, lh->y, lh->text, lh->color);
+						{
+							if (lh->font_size == FONT_LARGE)
+								colpip_string_tbg(fr, DIM_X, DIM_Y, lh->x, lh->y, lh->text, lh->color);
+							else if (lh->font_size == FONT_MEDIUM)
+								colpip_string2_tbg(fr, DIM_X, DIM_Y, lh->x, lh->y, lh->text, lh->color);
+							else if (lh->font_size == FONT_SMALL)
+								colpip_string3_tbg(fr, DIM_X, DIM_Y, lh->x, lh->y, lh->text, lh->color);
+						}
 					}
 
 					// кнопки
-					for (uint_fast8_t i = 1; i < BUTTON_HANDLERS_COUNT; i++)
+					for (uint_fast8_t i = 1; i < BUTTONS_COUNT; i++)
 					{
-						const button_t * const bh = & button_handlers[i];
+						const button_t * const bh = & buttons[i];
 						if (bh->visible == VISIBLE && bh->parent == win->window_id)
-							draw_button_pip(i);
+							draw_button(i);
 					}
+
+					// слайдеры
+					for (uint_fast8_t i = 1; i < SLIDERS_COUNT; i++)
+					{
+						const slider_t * const sh = & sliders[i];
+						if (sh->visible == VISIBLE && sh->parent == win->window_id)
+							draw_slider(i);
+					}
+
 				}
 			}
 		}

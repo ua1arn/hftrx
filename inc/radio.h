@@ -51,7 +51,12 @@ typedef uint_least64_t phase_t;
 
 #define WITHBOTTOMDBMIN 80
 #define WITHBOTTOMDBMAX 160
+
+#if WITHBOTTOMDBVAL
+#define WITHBOTTOMDBDEFAULT WITHBOTTOMDBVAL
+#else
 #define WITHBOTTOMDBDEFAULT 130
+#endif /* WITHBOTTOMDBVAL */
 
 enum
 {
@@ -151,7 +156,6 @@ enum
 #endif
 
 extern uint_fast8_t glob_agc;
-extern uint_fast8_t glob_opowerlevel;
 extern uint_fast8_t	glob_loudspeaker_off;
 
 enum
@@ -3280,6 +3284,26 @@ uint_fast8_t hamradio_get_datamode(void);	// источник звука для 
 int_fast16_t hamradio_getleft_bp(uint_fast8_t pathi);	/* получить левый (низкочастотный) скат полосы пропускания для отображения "шторки" на спектранализаторе */
 int_fast16_t hamradio_getright_bp(uint_fast8_t pathi);	/* получить правый (высокочастотный) скат полосы пропускания для отображения "шторки" на спектранализаторе */
 uint_fast8_t hamradio_get_bkin_value(void);
+uint_fast8_t hamradio_get_spkon_value(void);	// не-0: динамик включен
+void hamradio_change_submode(uint_fast8_t newsubmode);
+uint_fast8_t hamradio_get_low_bp(int_least16_t rotate);
+uint_fast8_t hamradio_get_high_bp(int_least16_t rotate);
+uint_fast8_t hamradio_get_bp_type(void);
+void hamradio_set_agc_off(void);
+void hamradio_set_agc_slow(void);
+void hamradio_set_agc_fast(void);
+void hamradio_set_menu_cond(uint_fast8_t m);
+void hamradio_disable_keyboard_redirect(void);
+void hamradio_enable_keyboard_redirect(void);
+uint_fast8_t hamradio_set_freq (uint_fast32_t freq);
+void hamradio_set_lockmode (uint_fast8_t lock);
+int_fast16_t hamradio_get_if_shift(void);
+uint_fast8_t hamradio_get_cw_wpm(void);
+uint_fast8_t hamradio_get_gmikeequalizer(void);
+void hamradio_set_gmikeequalizer(uint_fast8_t v);
+uint_fast8_t hamradio_get_gmikeequalizerparams(uint_fast8_t i);
+void hamradio_set_gmikeequalizerparams(uint_fast8_t i, uint_fast8_t v);
+int_fast32_t hamradio_getequalizerbase(void);
 
 #ifdef __cplusplus
 }

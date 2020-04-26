@@ -24,6 +24,7 @@ TRGT = arm-none-eabi-
 CC   = $(TRGT)gcc
 CP   = $(TRGT)objcopy
 AS   = $(TRGT)gcc -x assembler-with-cpp
+SIZE = $(TRGT)size
 HEX  = $(CP) -O ihex -R .noinit -R .bss -R .heap
 BIN  = $(CP) -O binary -R .noinit -R .bss -R .heap
 
@@ -31,7 +32,7 @@ CMSISDIR = ../../../CMSIS_5/CMSIS
 OBJDIR = ./obj
 
 # Define optimisation level here
-OPT = -Ofast
+OPT = -Os
 LTO = -flto
 
 # floating-point use hardware of STM32H743ZI CPU (64-bit and 32-bit float)
@@ -170,11 +171,11 @@ $(OBJDIR)/%.o: %.s
 
 %ram.elf: $(OBJS)
 	$(CC) $(OBJS) $(LDFLAGS_RAM) $(LIBS) -o $@
-	$(TRGT)size --format=sysv --radix=16 $@
+	$(SIZE) --format=sysv --radix=16 $@
 
 %rom.elf: $(OBJS)
 	$(CC) $(OBJS) $(LDFLAGS_ROM) $(LIBS) -o $@
-	$(TRGT)size --format=sysv --radix=16 $@
+	$(SIZE) --format=sysv --radix=16 $@
 
 %hex: %elf
 	$(HEX) $< $@
