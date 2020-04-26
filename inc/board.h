@@ -308,20 +308,10 @@ modemchangemode(
 	);
 
 
-enum 
-{
-	BOARD_ADCFILTER_DIRECT,		/* фильтрация не применяется (значение для всех каналов по умолчанию) */
-	BOARD_ADCFILTER_AVERAGEPWR,	/* усреднение для измерителя мощности - только один канал */
-	BOARD_ADCFILTER_TRACETOP3S,	/* Отслеживание максимума с постоянной времени 3 секунды */
-	BOARD_ADCFILTER_LPF,			/* ФНЧ, параметр задается в виде числа с фиксированной точкой */
-	//
-	BOARD_ADCFILTER_TYPECOUNT
-};
-
 uint_fast8_t board_getadc_filtered_u8(uint_fast8_t i, uint_fast8_t lower, uint_fast8_t upper);	/* получить значение от АЦП в диапазоне lower..upper (включая границы) */
-uint_fast8_t board_getpot_filtered_u8(uint_fast8_t i, uint_fast8_t lower, uint_fast8_t upper);	/* получить значение от АЦП в диапазоне lower..upper (включая границы) */
+uint_fast8_t board_getpot_filtered_u8(uint_fast8_t i, uint_fast8_t lower, uint_fast8_t upper, adcvalholder_t * data);	/* получить значение от АЦП в диапазоне lower..upper (включая границы) */
 uint_fast16_t board_getadc_filtered_u16(uint_fast8_t i, uint_fast16_t lower, uint_fast16_t upper);	/* получить значение от АЦП в диапазоне lower..upper (включая границы) */
-uint_fast16_t board_getpot_filtered_u16(uint_fast8_t i, uint_fast16_t lower, uint_fast16_t upper);	/* получить значение от АЦП в диапазоне lower..upper (включая границы) */
+uint_fast16_t board_getpot_filtered_u16(uint_fast8_t i, uint_fast16_t lower, uint_fast16_t upper, adcvalholder_t * data);	/* получить значение от АЦП в диапазоне lower..upper (включая границы) */
 uint_fast32_t board_getadc_filtered_u32(uint_fast8_t adci, uint_fast32_t lower, uint_fast32_t upper);	/* получить значение от АЦП в диапазоне lower..upper (включая границы) */
 uint_fast8_t board_getadc_smoothed_u8(uint_fast8_t i, uint_fast8_t lower, uint_fast8_t upper);	/* при изменении отфильтрованного значения этого АЦП возвращаемое значение на каждом вызове приближается к нему на 1 */
 uint_fast8_t board_getadc_unfiltered_u8(uint_fast8_t i, uint_fast8_t lower, uint_fast8_t upper);	/* получить значение от АЦП в диапазоне lower..upper (включая границы) */
@@ -330,9 +320,6 @@ uint_fast32_t board_getadc_unfiltered_u32(uint_fast8_t i, uint_fast32_t lower, u
 adcvalholder_t board_getadc_filtered_truevalue(uint_fast8_t i);	/* получить значение от АЦП */
 adcvalholder_t board_getadc_unfiltered_truevalue(uint_fast8_t i);	/* получить значение от АЦП */
 adcvalholder_t board_getadc_fsval(uint_fast8_t i);	/* получить максимальное возможное значение от АЦП */
-//void hardware_set_adc_filter(uint_fast8_t i, uint_fast8_t v);	/* установить способ фильтрации данных (в момент выборки их регистра АЦП */
-//void hardware_set_adc_filterLPF(uint_fast8_t i, uint_fast8_t k);	/* Установить способ фильтрации LPF и частоту среза - параметр 1.0..0.0, умноженное на BOARD_ADCFILTER_LPF_DENOM */
-#define BOARD_ADCFILTER_LPF_DENOM	128		/* положение фиксированной точки при фильтрации BOARD_ADCFILTER_LPF */
 
 const uint16_t * getrbfimage(size_t * count); /* получить расположение в памяти и количество элементов в массиве для загрузки FPGA */
 

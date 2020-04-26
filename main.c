@@ -10064,16 +10064,20 @@ directctlupdate(
 	{
 		// +++ получение состояния органов управления */
 	#if WITHPOTPOWER
-		changed |= FLAGNE_U8_CAT(& gnormalpower, board_getpot_filtered_u8(POTPOWER, WITHPOWERTRIMMIN, WITHPOWERTRIMMAX), CAT_PC_INDEX);	// регулировка мощности
+		static adcvalholder_t powerstate;
+		changed |= FLAGNE_U8_CAT(& gnormalpower, board_getpot_filtered_u8(POTPOWER, WITHPOWERTRIMMIN, WITHPOWERTRIMMAX, & powerstate), CAT_PC_INDEX);	// регулировка мощности
 	#endif /* WITHPOTPOWER */
 	#if WITHPOTWPM
-		changed |= FLAGNE_U8_CAT(& elkeywpm, board_getpot_filtered_u8(POTWPM, CWWPMMIN, CWWPMMAX), CAT_KS_INDEX);
+		static adcvalholder_t wpmstate;
+		changed |= FLAGNE_U8_CAT(& elkeywpm, board_getpot_filtered_u8(POTWPM, CWWPMMIN, CWWPMMAX, & wpmstate), CAT_KS_INDEX);
 	#endif /* WITHPOTWPM */
 	#if WITHPOTIFGAIN
-		changed |= FLAGNE_U16_CAT(& rfgain1, board_getpot_filtered_u16(POTIFGAIN, BOARD_IFGAIN_MIN, BOARD_IFGAIN_MAX), CAT_RG_INDEX);	// Параметр для регулировки усидения ПЧ
+		static adcvalholder_t ifgainstate;
+		changed |= FLAGNE_U16_CAT(& rfgain1, board_getpot_filtered_u16(POTIFGAIN, BOARD_IFGAIN_MIN, BOARD_IFGAIN_MAX, & ifgainstate), CAT_RG_INDEX);	// Параметр для регулировки усидения ПЧ
 	#endif /* WITHPOTIFGAIN */
 	#if WITHPOTAFGAIN
-		changed |= FLAGNE_U16_CAT(& afgain1, board_getpot_filtered_u16(POTAFGAIN, BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX), CAT_AG_INDEX);	// Параметр для регулировки уровня на выходе аудио-ЦАП
+		static adcvalholder_t afgainstate;
+		changed |= FLAGNE_U16_CAT(& afgain1, board_getpot_filtered_u16(POTAFGAIN, BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX, & afgainstate), CAT_AG_INDEX);	// Параметр для регулировки уровня на выходе аудио-ЦАП
 	#endif /* WITHPOTAFGAIN */
 	#if WITHPBT && WITHPOTPBT
 		/* установка gpbtoffset PBTMIN, PBTMAX, midscale = PBTHALF */

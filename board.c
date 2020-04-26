@@ -8045,19 +8045,32 @@ uint_fast8_t board_get_adcch(uint_fast8_t i)
 	return adcinputs [i];
 }
 
-#define ADC_LPF_WND	20	// размер окна фильтра LPF
+enum
+{
+	BOARD_ADCFILTER_DIRECT,		/* фильтрация не применяется (значение для всех каналов по умолчанию) */
+	BOARD_ADCFILTER_TRACETOP3S,	/* Отслеживание максимума с постоянной времени 3 секунды */
+	BOARD_ADCFILTER_LPF,			/* ФНЧ, параметр задается в виде числа с фиксированной точкой */
+	//
+	BOARD_ADCFILTER_TYPECOUNT
+};
+
+enum { ADC_LPF_WND = NTICKS(320) };	// длительность окна
+
+typedef struct lpfdata_tag
+{
+	adcvalholder_t queue [ADC_LPF_WND];
+	size_t qpos;	/* индекс в очереди куда будем сейчас писать */
+	uint32_t summ;	/* сумма всех элементов очереди */
+} lpfdata_t;
 
 typedef struct boardadc_tag
 {
 
-	volatile adcvalholder_t adc_data_raw;	// Максимальное количество - бывает на STM32 (с учётом TEMP SENSOR)
-	adcvalholder_t adc_data_filtered;		// Максимальное количество - бывает на STM32 (с учётом TEMP SENSOR)
-	uint8_t adc_data_smoothed_u8;		// Максимальное количество - бывает на STM32 (с учётом TEMP SENSOR)
+	volatile adcvalholder_t adc_data_raw;	// входные данные для фильтра
+	adcvalholder_t adc_data_filtered;		// выход фильтра
+	uint8_t adc_data_smoothed_u8;		// выход фильтра
 	uint8_t adc_filter;			/* методы фильтрации данных */
-	//uint8_t adc_data_k;			/* параметр (частота среза ФНЧ) */
-	adcvalholder_t queue [ADC_LPF_WND];
-	uint8_t qpos;
-	uint32_t adc_summ;
+	void * lpf;
 } boardadc_t;
 
 static boardadc_t badcst [HARDWARE_ADCINPUTS];
@@ -8169,28 +8182,26 @@ uint_fast32_t board_getadc_filtered_u32(uint_fast8_t adci, uint_fast32_t lower, 
 	return v;
 }
 
-static adcvalholder_t hysts [BOARD_ADCX0BASE + 16];
-
 /* получить отфильтрованное значение от АЦП в диапазоне lower..upper (включая границы) */
 /* поскольку используется для получения позиции потенциометра, применяется фильтрация "гистерезис" */
-uint_fast8_t board_getpot_filtered_u8(uint_fast8_t adci, uint_fast8_t lower, uint_fast8_t upper)
+uint_fast8_t board_getpot_filtered_u8(uint_fast8_t adci, uint_fast8_t lower, uint_fast8_t upper, adcvalholder_t * data)
 {
 	ASSERT(adci < HARDWARE_ADCINPUTS);
 	boardadc_t * const padcs = & badcst [adci];
 	const adcvalholder_t t = board_getadc_unfiltered_truevalue(adci);	// текущее отфильтрованное значение данного АЦП
-	const uint_fast8_t v = lower + ((uint_fast32_t) filter_hyst(& hysts [adci], t) * (upper - lower) / board_getadc_fsval(adci));	// нормируем к требуемому диапазону
+	const uint_fast8_t v = lower + ((uint_fast32_t) filter_hyst(data, t) * (upper - lower) / board_getadc_fsval(adci));	// нормируем к требуемому диапазону
 	ASSERT(v >= lower && v <= upper);
 	return v;
 }
 
 /* получить отфильтрованное значение от АЦП в диапазоне lower..upper (включая границы) */
 /* поскольку используется для получения позиции потенциометра, применяется фильтрация "гистерезис" */
-uint_fast16_t board_getpot_filtered_u16(uint_fast8_t adci, uint_fast16_t lower, uint_fast16_t upper)
+uint_fast16_t board_getpot_filtered_u16(uint_fast8_t adci, uint_fast16_t lower, uint_fast16_t upper, adcvalholder_t * data)
 {
 	ASSERT(adci < HARDWARE_ADCINPUTS);
 	boardadc_t * const padcs = & badcst [adci];
 	const adcvalholder_t t = board_getadc_unfiltered_truevalue(adci);	// текущее отфильтрованное значение данного АЦП
-	const uint_fast16_t v = lower + ((uint_fast32_t) filter_hyst(& hysts [adci], t) * (upper - lower) / board_getadc_fsval(adci));	// нормируем к требуемому диапазону
+	const uint_fast16_t v = lower + ((uint_fast32_t) filter_hyst(data, t) * (upper - lower) / board_getadc_fsval(adci));	// нормируем к требуемому диапазону
 	ASSERT(v >= lower && v <= upper);
 	return v;
 }
@@ -8251,16 +8262,39 @@ static void hardware_set_adc_filter(uint_fast8_t adci, uint_fast8_t v)
 	padcs->adc_filter = v;
 }
 
+static void lpf_initialize(lpfdata_t * lpfdata)
+{
+	memset(& lpfdata->queue, 0, sizeof lpfdata->queue);
+	lpfdata->qpos = 0;
+	lpfdata->summ = 0;
+}
+
+static adcvalholder_t
+lpf_filter(lpfdata_t * lpfdata, adcvalholder_t raw)
+{
+	lpfdata->summ += raw;	// добавить входящее
+	lpfdata->summ -= lpfdata->queue [lpfdata->qpos];	// вычесть выходящее
+	lpfdata->queue [lpfdata->qpos] = raw;
+	lpfdata->qpos = (lpfdata->qpos + 1) % ADC_LPF_WND;
+	return lpfdata->summ / ADC_LPF_WND;
+}
+
+static adcvalholder_t
+tracetop3s_filter(adcvalholder_t raw, adcvalholder_t v0)
+{
+	enum { DELAY3SNUM = 993, DELAY3SDENOM = 1000 };	// todo: сделать расчет в зависимости от частоты системного таймера
+	return v0 < raw ? raw : v0 * (uint_fast32_t) DELAY3SNUM / DELAY3SDENOM;
+}
+
 /* Установить способ фильтрации данных LPF и частоту среза - параметр 1.0..0.0, умноженное на BOARD_ADCFILTER_LPF_DENOM */
-static void hardware_set_adc_filterLPF(uint_fast8_t adci, uint_fast8_t k)
+static void
+hardware_set_adc_filterLPF(uint_fast8_t adci, lpfdata_t * lpfdata)
 {
 	ASSERT(adci < HARDWARE_ADCINPUTS);
 	boardadc_t * const padcs = & badcst [adci];
 	padcs->adc_filter = BOARD_ADCFILTER_LPF;
-	//padcs->adc_data_k = k;	/* 1.0..0.0, умноженное на BOARD_ADCFILTER_LPF_DENOM */
-	memset(& padcs->queue, 0, sizeof padcs->queue);
-	padcs->qpos = 0;
-	padcs->adc_summ = 0;
+	padcs->lpf = lpfdata;
+	lpf_initialize(lpfdata);
 }
 
 // Функция вызывается из обработчика прерывания завершения преобразования
@@ -8272,37 +8306,6 @@ void board_adc_store_data(uint_fast8_t adci, adcvalholder_t v)
 	ASSERT(v <= board_getadc_fsval(adci));
 	padcs->adc_data_raw = v;
 }
-
-
-
-#if WITHSWRMTR || WITHPWRMTR
-
-static adcvalholder_t 
-board_get_forward_filtered(adcvalholder_t f)
-{
-
-	enum { ADC_FWD_WINDOW = NTICKS(320) };	// длительность окна
-
-	static adcvalholder_t adc_data_forward [ADC_FWD_WINDOW];
-	static uint_fast8_t adc_data_forward_index;
-
-	// данные для фильтрации.
-	adc_data_forward [adc_data_forward_index] = f;
-
-	//adc_data_forward_index = (adc_data_forward_index == 0) ? (ADC_FWD_WINDOW - 1) : (adc_data_forward_index - 1);
-	if (++ adc_data_forward_index >= ADC_FWD_WINDOW)
-		adc_data_forward_index = 0;
-
-	unsigned long r = 0;
-	// Фильтрация "скользящее окно"
-	uint_fast8_t adci;
-	for (adci = 0; adci < ADC_FWD_WINDOW; ++ adci)
-		r += adc_data_forward [adci];
-	return r / ADC_FWD_WINDOW;
-}
-
-#endif /* WITHSWRMTR || WITHPWRMTR */
-
 
 #if 0
 
@@ -8374,37 +8377,14 @@ void board_adc_filtering(void)
 			// Значение просто обновляется
 			padcs->adc_data_filtered = raw;
 			break;
+
 		case BOARD_ADCFILTER_TRACETOP3S:
 			// Отслеживание максимума с постоянной времени 3 секунды
-			{
-				enum { DELAY3SNUM = 993, DELAY3SDENOM = 1000 };	// todo: сделать расчет в зависимости от частоты системного таймера
-				const adcvalholder_t v0 = padcs->adc_data_filtered;
-				padcs->adc_data_filtered = v0 < raw ? raw : v0 * (uint_fast32_t) DELAY3SNUM / DELAY3SDENOM;
-			}
+			padcs->adc_data_filtered = tracetop3s_filter(raw, padcs->adc_data_filtered);
 			break;
 
-#if WITHSWRMTR || WITHPWRMTR
-		case BOARD_ADCFILTER_AVERAGEPWR:
-			padcs->adc_data_filtered = board_get_forward_filtered(raw);
-			break;
-#endif /* WITHSWRMTR || WITHPWRMTR */
 		case BOARD_ADCFILTER_LPF:
-			{
-/*
-				const uint_fast8_t k = padcs->adc_data_k;
-				//adc_data_filtered = (1 - k) * adc_data_filtered + k * raw;
-				padcs->adc_data_filtered =
-					((int_fast32_t) (BOARD_ADCFILTER_LPF_DENOM - k) * padcs->adc_data_filtered +
-					(int_fast32_t) k * raw) / BOARD_ADCFILTER_LPF_DENOM;
-
-				padcs->adc_data_filtered = raw;
-*/
-				padcs->adc_summ += raw;	// добавить входящее
-				padcs->adc_summ -= padcs->queue [padcs->qpos];	// вычесть выходящее
-				padcs->queue [padcs->qpos] = raw;
-				padcs->qpos = (padcs->qpos + 1) % ADC_LPF_WND;
-				padcs->adc_data_filtered = padcs->adc_summ / ADC_LPF_WND;
-			}
+			padcs->adc_data_filtered = lpf_filter(padcs->lpf, raw);
 			break;
 
 		default:
@@ -8421,31 +8401,51 @@ void board_adc_filtering(void)
 static void
 adcfilters_initialize(void)
 {
-	const uint_fast8_t k = 3 * BOARD_ADCFILTER_LPF_DENOM / 100;
-
 	#if WITHBARS && ! WITHINTEGRATEDDSP
 		hardware_set_adc_filter(SMETERIX, BOARD_ADCFILTER_TRACETOP3S);
 	#endif /* WITHBARS && ! WITHINTEGRATEDDSP */
 
 	#if WITHTX && (WITHSWRMTR || WITHPWRMTR)
-		hardware_set_adc_filter(PWRI, BOARD_ADCFILTER_AVERAGEPWR);	// Включить фильтр
-		//hardware_set_adc_filter(PWRI, BOARD_ADCFILTER_DIRECT);		// Отключить фильтр
+		{
+			static lpfdata_t pwr;
+
+			hardware_set_adc_filterLPF(PWRI, & pwr);	// Включить фильтр
+			//hardware_set_adc_filter(PWRI, BOARD_ADCFILTER_DIRECT);		// Отключить фильтр
+		}
 	#endif /* WITHTX && (WITHSWRMTR || WITHPWRMTR) */
 
 	#if WITHCURRLEVEL2
-		hardware_set_adc_filterLPF(PASENSEMRRIX2, k);	// Включить фильтр с параметром 0.03
-		hardware_set_adc_filterLPF(PAREFERMRRIX2, k);	// Включить фильтр с параметром 0.03
+		{
+			static lpfdata_t pasense2;
+			static lpfdata_t parefer2;
+
+			hardware_set_adc_filterLPF(PASENSEMRRIX2, & pasense2);	// Включить фильтр с параметром 0.03
+			hardware_set_adc_filterLPF(PAREFERMRRIX2, & parefer2);	// Включить фильтр с параметром 0.03
+		}
 	#elif WITHCURRLEVEL
-		hardware_set_adc_filterLPF(PASENSEMRRIX, k);	// Включить фильтр с параметром 0.03
+		{
+			static lpfdata_t pasense;
+
+			hardware_set_adc_filterLPF(PASENSEMRRIX, & pasense);	// Включить фильтр с параметром 0.03
+		}
 	#endif /* WITHCURRLEVEL */
 
 	#if WITHTHERMOLEVEL
-		hardware_set_adc_filterLPF(XTHERMOMRRIX, k);	// Включить фильтр с параметром 0.03
+		{
+			static lpfdata_t temperature;
+
+			hardware_set_adc_filterLPF(XTHERMOMRRIX, & temperature);	// Включить фильтр с параметром 0.03
+		}
 	#endif /* WITHTHERMOLEVEL */
 
 	#if WITHSWRMTR || WITHPWRMTR
-		hardware_set_adc_filterLPF(REFMRRIX, k);	// Включить фильтр с параметром 0.03
-		hardware_set_adc_filterLPF(FWDMRRIX, k);	// Включить фильтр с параметром 0.03
+		{
+			static lpfdata_t fwd;
+			static lpfdata_t ref;
+
+			hardware_set_adc_filterLPF(REFMRRIX, & ref);	// Включить фильтр с параметром 0.03
+			hardware_set_adc_filterLPF(FWDMRRIX, & fwd);	// Включить фильтр с параметром 0.03
+		}
 	#endif /* WITHSWRMTR || WITHPWRMTR */
 }
 
