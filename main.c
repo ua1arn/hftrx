@@ -10064,36 +10064,55 @@ directctlupdate(
 	{
 		// +++ получение состояния органов управления */
 	#if WITHPOTPOWER
-		static adcvalholder_t powerstate;
-		changed |= FLAGNE_U8_CAT(& gnormalpower, board_getpot_filtered_u8(POTPOWER, WITHPOWERTRIMMIN, WITHPOWERTRIMMAX, & powerstate), CAT_PC_INDEX);	// регулировка мощности
+		{
+			static adcvalholder_t powerstate;
+			changed |= FLAGNE_U8_CAT(& gnormalpower, board_getpot_filtered_u8(POTPOWER, WITHPOWERTRIMMIN, WITHPOWERTRIMMAX, & powerstate), CAT_PC_INDEX);	// регулировка мощности
+		}
 	#endif /* WITHPOTPOWER */
 	#if WITHPOTWPM
-		static adcvalholder_t wpmstate;
-		changed |= FLAGNE_U8_CAT(& elkeywpm, board_getpot_filtered_u8(POTWPM, CWWPMMIN, CWWPMMAX, & wpmstate), CAT_KS_INDEX);
+		{
+			static adcvalholder_t wpmstate;
+			changed |= FLAGNE_U8_CAT(& elkeywpm, board_getpot_filtered_u8(POTWPM, CWWPMMIN, CWWPMMAX, & wpmstate), CAT_KS_INDEX);
+		}
 	#endif /* WITHPOTWPM */
 	#if WITHPOTIFGAIN
-		static adcvalholder_t ifgainstate;
-		changed |= FLAGNE_U16_CAT(& rfgain1, board_getpot_filtered_u16(POTIFGAIN, BOARD_IFGAIN_MIN, BOARD_IFGAIN_MAX, & ifgainstate), CAT_RG_INDEX);	// Параметр для регулировки усидения ПЧ
+		{
+			static adcvalholder_t ifgainstate;
+			changed |= FLAGNE_U16_CAT(& rfgain1, board_getpot_filtered_u16(POTIFGAIN, BOARD_IFGAIN_MIN, BOARD_IFGAIN_MAX, & ifgainstate), CAT_RG_INDEX);	// Параметр для регулировки усидения ПЧ
+		}
 	#endif /* WITHPOTIFGAIN */
 	#if WITHPOTAFGAIN
-		static adcvalholder_t afgainstate;
-		changed |= FLAGNE_U16_CAT(& afgain1, board_getpot_filtered_u16(POTAFGAIN, BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX, & afgainstate), CAT_AG_INDEX);	// Параметр для регулировки уровня на выходе аудио-ЦАП
+		{
+			static adcvalholder_t afgainstate;
+			changed |= FLAGNE_U16_CAT(& afgain1, board_getpot_filtered_u16(POTAFGAIN, BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX, & afgainstate), CAT_AG_INDEX);	// Параметр для регулировки уровня на выходе аудио-ЦАП
+		}
 	#endif /* WITHPOTAFGAIN */
 	#if WITHPBT && WITHPOTPBT
-		/* установка gpbtoffset PBTMIN, PBTMAX, midscale = PBTHALF */
-		changed |= flagne_u16(& gpbtoffset, board_getpot_filtered_u16(POTPBT, PBTMIN, PBTMAX) / 10 * 10);
+		{
+			/* установка gpbtoffset PBTMIN, PBTMAX, midscale = PBTHALF */
+			static adcvalholder_t pbtstate;
+			changed |= flagne_u16(& gpbtoffset, board_getpot_filtered_u16(POTPBT, PBTMIN, PBTMAX, & pbtstate) / 10 * 10);
+		}
 	#endif /* WITHPBT && WITHPOTPBT */
 	#if WITHIFSHIFT && WITHPOTIFSHIFT
-		/* установка gifshftoffset IFSHIFTTMIN, IFSHIFTMAX, midscale = IFSHIFTHALF */
-		changed |= flagne_u16(& ifshifoffset.value, board_getpot_filtered_u16(POTIFSHIFT, IFSHIFTTMIN, IFSHIFTMAX) / 10 * 10);
+		{
+			/* установка gifshftoffset IFSHIFTTMIN, IFSHIFTMAX, midscale = IFSHIFTHALF */
+			static adcvalholder_t ifshiftstate;
+			changed |= flagne_u16(& ifshifoffset.value, board_getpot_filtered_u16(POTIFSHIFT, IFSHIFTTMIN, IFSHIFTMAX, & ifshiftstate) / 10 * 10);
+		}
 	#endif /* WITHIFSHIFT && WITHPOTIFSHIFT */
 	#if WITHPOTNOTCH && WITHNOTCHFREQ
-		changed |= flagne_u16(& gnotchfreq.value, board_getpot_filtered_u16(POTNOTCH, WITHNOTCHFREQMIN, WITHNOTCHFREQMAX) / 50 * 50);	// регулировка частоты NOTCH фильтра
+		{
+			static adcvalholder_t notchstate;
+			changed |= flagne_u16(& gnotchfreq.value, board_getpot_filtered_u16(POTNOTCH, WITHNOTCHFREQMIN, WITHNOTCHFREQMAX, & notchstate) / 50 * 50);	// регулировка частоты NOTCH фильтра
+		}
 	#endif /* WITHPOTNOTCH && WITHNOTCHFREQ */
 
 	#if CTLSTYLE_RA4YBO_V3
-		changed |= flagne_u8(& guser2, kbd_get_ishold(KIF_USER2));
-		changed |= flagne_u8(& guser3, kbd_get_ishold(KIF_USER3));
+		{
+			changed |= flagne_u8(& guser2, kbd_get_ishold(KIF_USER2));
+			changed |= flagne_u8(& guser3, kbd_get_ishold(KIF_USER3));
+		}
 	#endif /* CTLSTYLE_RA4YBO_V3 */
 		// --- конец получения состояния органов управления */
 
