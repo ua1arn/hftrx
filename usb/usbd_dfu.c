@@ -250,12 +250,26 @@ static USBD_StatusTypeDef MEM_If_DeInit_HS(void)
 static USBD_StatusTypeDef MEM_If_Erase_HS(uint32_t Addr)
 {
 	//PRINTF(PSTR("MEM_If_Erase_HS: addr=%08lX\n"), Addr);
-	if (Addr >= BOOTLOADER_SELFBASE && (Addr + BOOTLOADER_PAGESIZE) <= (BOOTLOADER_SELFBASE + BOOTLOADER_APPFULL))
+	if (0)
+	{
+
+	}
+#if BOOTLOADER_SELFSIZE
+	else if (Addr >= BOOTLOADER_SELFBASE && (Addr + BOOTLOADER_PAGESIZE) <= (BOOTLOADER_SELFBASE + BOOTLOADER_SELFSIZE))
 	{
 		// физическое выполненеие записи
 		if (sectoreraseDATAFLASH(Addr))
 			return USBD_FAIL;
 	}
+#endif /* BOOTLOADER_SELFSIZE */
+#if BOOTLOADER_APPSIZE
+	else if (Addr >= BOOTLOADER_APPBASE && (Addr + BOOTLOADER_PAGESIZE) <= (BOOTLOADER_APPBASE + BOOTLOADER_APPSIZE))
+	{
+		// физическое выполненеие записи
+		if (sectoreraseDATAFLASH(Addr))
+			return USBD_FAIL;
+	}
+#endif /* BOOTLOADER_APPSIZE */
 	return USBD_OK;
 }
 
@@ -269,7 +283,12 @@ static USBD_StatusTypeDef MEM_If_Erase_HS(uint32_t Addr)
 static USBD_StatusTypeDef MEM_If_Write_HS(uint8_t *src, uint32_t dest, uint32_t Len)
 {
 	//PRINTF(PSTR("MEM_If_Write_HS: addr=%08lX, len=%03lX\n"), dest, Len);
-	if (dest >= BOOTLOADER_SELFBASE && (dest + Len) <= (BOOTLOADER_SELFBASE + BOOTLOADER_APPFULL))
+	if (0)
+	{
+
+	}
+#if BOOTLOADER_SELFSIZE
+	else if (dest >= BOOTLOADER_SELFBASE && (dest + Len) <= (BOOTLOADER_SELFBASE + BOOTLOADER_SELFSIZE))
 	{
 		// физическое выполненеие записи
 		if (writeDATAFLASH(dest, src, Len))
@@ -278,7 +297,22 @@ static USBD_StatusTypeDef MEM_If_Write_HS(uint8_t *src, uint32_t dest, uint32_t 
 		if (verifyDATAFLASH(dest, src, Len))
 			return USBD_FAIL;
 	}
+#endif /* BOOTLOADER_SELFSIZE */
+#if BOOTLOADER_APPSIZE
+	else if (dest >= BOOTLOADER_APPBASE && (dest + Len) <= (BOOTLOADER_APPBASE + BOOTLOADER_APPSIZE))
+	{
+		// физическое выполненеие записи
+		if (writeDATAFLASH(dest, src, Len))
+			return USBD_FAIL;
+		// сравнение после записи
+		if (verifyDATAFLASH(dest, src, Len))
+			return USBD_FAIL;
+	}
+#endif /* BOOTLOADER_APPSIZE */
+
 #if WITHISBOOTLOADER
+
+#if BOOTLOADER_APPFULL
 	if (dest >= BOOTLOADER_APPAREA && (dest + Len) <= (BOOTLOADER_APPAREA + BOOTLOADER_APPFULL))
 		memcpy((void *) dest, src, Len);
 	else if (dest >= BOOTLOADER_APPBASE)
@@ -287,6 +321,8 @@ static USBD_StatusTypeDef MEM_If_Write_HS(uint8_t *src, uint32_t dest, uint32_t 
 	{
 		/* программируем бутлоадер */
 	}
+#endif /* BOOTLOADER_APPFULL */
+
 #endif /* WITHISBOOTLOADER */
 	return USBD_OK;
 }
@@ -314,9 +350,31 @@ static uint8_t *MEM_If_Read_HS(uint32_t src, uint8_t *dest, uint32_t Len)
   * @param  buffer: used for returning the time necessary for a program or an erase operation
   * @retval 0 if operation is successful
   */
-static USBD_StatusTypeDef MEM_If_GetStatus_HS(uint32_t Add, uint8_t Cmd, uint8_t *buffer)
+static USBD_StatusTypeDef MEM_If_GetStatus_HS(uint32_t Addr, uint8_t Cmd, uint8_t *buffer)
 {
-	uint_fast8_t st = dataflash_read_status();
+	//PRINTF(PSTR("MEM_If_GetStatus_HS: Addr=%08lX\n"), Addr);
+	uint_fast8_t st;
+
+	if (0)
+	{
+
+	}
+#if BOOTLOADER_SELFSIZE
+	else if (Addr >= BOOTLOADER_SELFBASE && (Addr + 1) <= (BOOTLOADER_SELFBASE + BOOTLOADER_SELFSIZE))
+	{
+		st = dataflash_read_status();
+	}
+#endif /* BOOTLOADER_SELFSIZE */
+#if BOOTLOADER_APPSIZE
+	else if (Addr >= BOOTLOADER_APPBASE && (Addr + 1) <= (BOOTLOADER_APPBASE + BOOTLOADER_APPSIZE))
+	{
+		st = dataflash_read_status();
+	}
+#endif /* BOOTLOADER_APPSIZE */
+	else
+	{
+		st = 0;	// зона вне FLASH ROM всегда готова
+	}
 
 	const unsigned FLASH_PROGRAM_TIME = (st & 0x01) ? 5 : 0;
 	const unsigned FLASH_ERASE_TIME = (st & 0x01) ? 5 : 0;
