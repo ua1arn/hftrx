@@ -532,28 +532,33 @@ display2_smeter15(
 
 	const uint_fast8_t is_tx = hamradio_get_tx();
 	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
+	static uint_fast8_t first_tx = 0;
 
-	int gv, gv_trace = smeter_params.gs, gswr = smeter_params.gs;
-	uint_fast16_t swr10; 														// swr10 = 0..30 for swr 1..4
+	int gp = smeter_params.gs, gv = smeter_params.gs, gv_trace = smeter_params.gs, gswr = smeter_params.gs;
 
 	//colpip_rect(colmain_fb_draw(), DIM_X, DIM_Y, x0, y0 - 8, x0 + width - 1, y0 + height - 1 + 15, DESIGNCOLORSTATE, 0);
 
-	if (is_tx)																	// угол поворота стрелки; 246 минимум, 270 середина, 294 максимум
+	if (is_tx)
 	{
 		enum { gx_hyst = 3 };		// гистерезис в градусах
 		/* фильтрация - (в градусах) */
-		static uint_fast16_t gv_smooth;
-		static uint_fast16_t gswr_smooth;
+		static uint_fast16_t gp_smooth, gswr_smooth;
 
-		uint_fast8_t power, tracemax;
+		if (first_tx)				// сброс при переходе на передачу
+		{
+			first_tx = 0;
+			gp_smooth = smeter_params.gs;
+			gswr_smooth = smeter_params.gs;
+		}
+
+		uint_fast16_t power, swr10; 		// swr10 = 0..30 for swr 1..4
 		adcvalholder_t forward, reflected;
 
-		power = board_getpwrmeter(& tracemax);
-		power = power * power * (smeter_params.ge - smeter_params.gs) / (maxpwrcali * maxpwrcali);
-		gv = smeter_params.gs + normalize(power, 0, 200, smeter_params.ge - smeter_params.gs);
+		power = board_getadc_filtered_truevalue(PWRI);
+		gp = smeter_params.gs + normalize(power, 0, maxpwrcali << 4, smeter_params.ge - smeter_params.gs);
 
 //		forward = board_getswrmeter(& reflected, swrcalibr);
-		reflected = board_getadc_unfiltered_truevalue(REFMRRIX) * (unsigned long) swrcalibr / 100;		// До появления нормального фильтра
+		reflected = board_getadc_unfiltered_truevalue(REFMRRIX) * (unsigned long) swrcalibr / 100;		// добавить фильтрацию рассчитанного значения
 		forward = board_getadc_unfiltered_truevalue(FWDMRRIX);
 
 		const uint_fast16_t fullscale = (SWRMIN * 40 / 10) - SWRMIN;
@@ -564,13 +569,13 @@ display2_smeter15(
 			swr10 = fullscale;		// SWR is infinite
 		else
 			swr10 = (forward + reflected) * SWRMIN / (forward - reflected) - SWRMIN;
-		gswr = smeter_params.gs + normalize(swr10, 0, 30, smeter_params.ge - smeter_params.gs);
+		gswr = smeter_params.gs + normalize(swr10, 0, fullscale, smeter_params.ge - smeter_params.gs);
 
-		if (gv > smeter_params.gs)
-			gv_smooth = gv;
+		if (gp > smeter_params.gs)
+			gp_smooth = gp;
 
-		if (gv == smeter_params.gs && gv_smooth > smeter_params.gs)
-			gv = (gv_smooth -= gx_hyst) > smeter_params.gs ? gv_smooth : smeter_params.gs;
+		if (gp == smeter_params.gs && gp_smooth > smeter_params.gs)
+			gp = (gp_smooth -= gx_hyst) > smeter_params.gs ? gp_smooth : smeter_params.gs;
 
 		if (gswr > smeter_params.gs)
 			gswr_smooth = gswr;
@@ -588,6 +593,8 @@ display2_smeter15(
 			smeter_params.gs + normalize3(value, 	s9level - s9delta, s9level, s9level + s9_60_delta, smeter_params.gm - smeter_params.gs, smeter_params.ge - smeter_params.gs);
 		gv_trace =
 			smeter_params.gs + normalize3(tracemax, s9level - s9delta, s9level, s9level + s9_60_delta, smeter_params.gm - smeter_params.gs, smeter_params.ge - smeter_params.gs);
+
+		first_tx = 1;
 	}
 
 	if (is_tx)
@@ -606,6 +613,11 @@ display2_smeter15(
 			polar_to_dek(xc, yc, gswr - 1, smeter_params.r1 - 4, & xx, & yy);
 			display_floodfill(fr, DIM_X, DIM_Y, xx, yy, COLORMAIN_YELLOW, COLORMAIN_BLACK);
 		}
+
+		const COLORMAIN_T ct2 = gp > smeter_params.gm ? COLORMAIN_RED : COLORMAIN_GREEN;
+		display_radius_buf(fr, DIM_X, DIM_Y, xc - 1, yc, gp, smeter_params.rv1, smeter_params.rv2, ct2, 0);
+		display_radius_buf(fr, DIM_X, DIM_Y, xc, yc, gp, smeter_params.rv1, smeter_params.rv2, ct2, 0);
+		display_radius_buf(fr, DIM_X, DIM_Y, xc + 1, yc, gp, smeter_params.rv1, smeter_params.rv2, ct2, 0);
 	}
 	else
 	{
