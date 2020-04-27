@@ -2288,28 +2288,26 @@ static void gui_main_process(void);
 
 		if (gui.selected_type == TYPE_SLIDER && gui.is_tracking)
 		{
-			id = gui.selected_id;
-			sl = & sliders[id];
+			id = gui.selected_id - sl_first_id;
+			sl = & sliders[gui.selected_id];
 
-			uint16_t v = sl->value + gui.vector_move_y / sl->step;
+			uint16_t v = sl->value + round(gui.vector_move_y / sl->step);
 			if (v >= 0 && v <= sl->size / sl->step)
 			{
 				sl->value = v;
-				PRINTF("%s: %d%\n", sl->name, v);
+				hamradio_set_gmikeequalizerparams(id, normalize(sl->value, 100, 0, eq_limit));
+
 				uint_fast16_t mid_w = sl->x + sliders_width / 2;
 				strcpy(buf, sl->name);
 				strcat(buf, str_val);
 				lbl = & labels[find_gui_element(TYPE_LABEL, WINDOW_AUDIO, buf)];
-				local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("%d"), hamradio_get_gmikeequalizerparams(id - sl_first_id) + eq_base);
+				local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("%d"), hamradio_get_gmikeequalizerparams(id) + eq_base);
 				strcpy(lbl->text, buf);
 				lbl->x = mid_w - strwidth2(lbl->text) / 2;
-			}
 
-			if(sl->value != sl->value_old)
-			{
+				PRINTF("%s: %d%\n", sl->name, sl->value);
 				gui.vector_move_x = 0;
 				gui.vector_move_y = 0;
-				hamradio_set_gmikeequalizerparams(id - sl_first_id, normalize(v, 100, 0, eq_limit));
 			}
 		}
 
