@@ -438,7 +438,7 @@ display2_smeter15_init(
 
 	colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORMAIN_BLACK, 1);
 
-	for (p = 0, i = 0; i < sizeof markersTX_pwr / sizeof markersTX_pwr [0]; ++ i, p += 10)
+	for (p = 0, i = 0; i < ARRAY_SIZE(markersTX_pwr); ++ i, p += 10)
 	{
 		if (i % 2 == 0)
 		{
@@ -447,7 +447,7 @@ display2_smeter15_init(
 
 			display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markersTX_pwr [i], smeter_params.r1, smeter_params.r1 + 8, smeter, 1);
 			polar_to_dek(xb, yb, markersTX_pwr [i], smeter_params.r1 + 8, & xx, & yy);
-			local_snprintf_P(buf, sizeof buf / sizeof buf [0], PSTR("%u"), p);
+			local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("%u"), p);
 
 			colmain_setcolors(COLORMAIN_YELLOW, COLORMAIN_BLACK);
 			colmain_string3_at_xy(bg, SM_BG_W, SM_BG_H, xx - strwidth3(buf) / 2, yy - pad2w3 + 1, buf);
@@ -456,14 +456,14 @@ display2_smeter15_init(
 			display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markersTX_pwr [i], smeter_params.r1, smeter_params.r1 + 4, smeter, 1);
 	}
 
-	for (p = 1, i = 0; i < sizeof markersTX_swr / sizeof markersTX_swr [0]; ++ i, p += 1)
+	for (p = 1, i = 0; i < ARRAY_SIZE(markersTX_swr); ++ i, p += 1)
 	{
 		char buf [10];
 		uint_fast16_t xx, yy;
 
 		display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markersTX_swr [i], smeter_params.r2, smeter_params.r2 - 8, smeter, 1);
 		polar_to_dek(xb, yb, markersTX_swr [i], smeter_params.r2 - 16, & xx, & yy);
-		local_snprintf_P(buf, sizeof buf / sizeof buf [0], PSTR("%u"), p);
+		local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("%u"), p);
 
 		colmain_setcolors(COLORMAIN_YELLOW, COLORMAIN_BLACK);
 		colmain_string3_at_xy(bg, SM_BG_W, SM_BG_H, xx - SMALLCHARW3 / 2, yy - SMALLCHARW3 / 2 + 1, buf);
@@ -476,36 +476,36 @@ display2_smeter15_init(
 	bg = smeter_bg [SM_STATE_RX];
 	colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORMAIN_BLACK, 1);
 
-	for (p = 1, i = 0; i < sizeof markers / sizeof markers [0]; ++ i, p += 2)
+	for (p = 1, i = 0; i < ARRAY_SIZE(markers); ++ i, p += 2)
 	{
 		char buf [10];
 		uint_fast16_t xx, yy;
 
 		display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markers [i], smeter_params.r1, smeter_params.r1 + 8, smeter, 1);
 		polar_to_dek(xb, yb, markers [i], smeter_params.r1 + 8, & xx, & yy);
-		local_snprintf_P(buf, sizeof buf / sizeof buf [0], PSTR("%u"), p);
+		local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("%u"), p);
 
 		colmain_setcolors(COLORMAIN_YELLOW, COLORMAIN_BLACK);
 		colmain_string3_at_xy(bg, SM_BG_W, SM_BG_H, xx - SMALLCHARW3 / 2, yy - pad2w3 + 1, buf);
 	}
-	for (i = 0; i < sizeof markers2 / sizeof markers2 [0]; ++ i)
+	for (i = 0; i < ARRAY_SIZE(markers2); ++ i)
 	{
 		display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markers2 [i], smeter_params.r1, smeter_params.r1 + 4, smeter, 1);
 	}
 
-	for (p = 20, i = 0; i < sizeof markersR / sizeof markersR [0]; ++ i, p += 20)
+	for (p = 20, i = 0; i < ARRAY_SIZE(markersR); ++ i, p += 20)
 	{
 		char buf [10];
 		uint_fast16_t xx, yy;
 
 		display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markersR [i], smeter_params.r1, smeter_params.r1 + 8, smeterplus, 1);
 		polar_to_dek(xb, yb, markersR [i], smeter_params.r1 + 8, & xx, & yy);
-		local_snprintf_P(buf, sizeof buf / sizeof buf [0], PSTR("+%u"), p);
+		local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("+%u"), p);
 
 		colmain_setcolors(COLORMAIN_RED, COLORMAIN_BLACK);
 		colmain_string3_at_xy(bg, SM_BG_W, SM_BG_H, xx - strwidth3(buf) / 2, yy - pad2w3 + 1, buf);
 	}
-	for (i = 0; i < sizeof markers2R / sizeof markers2R [0]; ++ i)
+	for (i = 0; i < ARRAY_SIZE(markers2R); ++ i)
 	{
 		display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markers2R [i], smeter_params.r1, smeter_params.r1 + 4, smeterplus, 1);
 	}
@@ -540,10 +540,10 @@ display2_smeter15(
 
 	if (is_tx)																	// угол поворота стрелки; 246 минимум, 270 середина, 294 максимум
 	{
-//		enum { gx_hyst = 3 };		// гистерезис в градусах
-//		/* фильтрация - (в градусах) */
-//		static uint_fast16_t gv_smooth;
-//		static uint_fast16_t gswr_smooth;
+		enum { gx_hyst = 3 };		// гистерезис в градусах
+		/* фильтрация - (в градусах) */
+		static uint_fast16_t gv_smooth;
+		static uint_fast16_t gswr_smooth;
 
 		uint_fast8_t power, tracemax;
 		adcvalholder_t forward, reflected;
@@ -552,7 +552,10 @@ display2_smeter15(
 		power = power * power * (smeter_params.ge - smeter_params.gs) / (maxpwrcali * maxpwrcali);
 		gv = smeter_params.gs + normalize(power, 0, 200, smeter_params.ge - smeter_params.gs);
 
-		forward = board_getswrmeter(& reflected, swrcalibr);
+//		forward = board_getswrmeter(& reflected, swrcalibr);
+		reflected = board_getadc_unfiltered_truevalue(REFMRRIX) * (unsigned long) swrcalibr / 100;		// До появления нормального фильтра
+		forward = board_getadc_unfiltered_truevalue(FWDMRRIX);
+
 		const uint_fast16_t fullscale = (SWRMIN * 40 / 10) - SWRMIN;
 									// рассчитанное  значение
 		if (forward < minforward)
@@ -563,17 +566,17 @@ display2_smeter15(
 			swr10 = (forward + reflected) * SWRMIN / (forward - reflected) - SWRMIN;
 		gswr = smeter_params.gs + normalize(swr10, 0, 30, smeter_params.ge - smeter_params.gs);
 
-//		if (gv > smeter_params.gs)
-//			gv_smooth = gv;
-//
-//		if (gv == smeter_params.gs && gv_smooth > smeter_params.gs)
-//			gv = (gv_smooth -= gx_hyst) > smeter_params.gs ? gv_smooth : smeter_params.gs;
-//
-//		if (gswr > smeter_params.gs)
-//			gswr_smooth = gswr;
-//
-//		if (gswr == smeter_params.gs && gswr_smooth > smeter_params.gs)
-//			gswr = (gswr_smooth -= gx_hyst) > smeter_params.gs ? gswr_smooth : smeter_params.gs;
+		if (gv > smeter_params.gs)
+			gv_smooth = gv;
+
+		if (gv == smeter_params.gs && gv_smooth > smeter_params.gs)
+			gv = (gv_smooth -= gx_hyst) > smeter_params.gs ? gv_smooth : smeter_params.gs;
+
+		if (gswr > smeter_params.gs)
+			gswr_smooth = gswr;
+
+		if (gswr == smeter_params.gs && gswr_smooth > smeter_params.gs)
+			gswr = (gswr_smooth -= gx_hyst) > smeter_params.gs ? gswr_smooth : smeter_params.gs;
 	}
 	else
 	{
@@ -840,7 +843,7 @@ static void gui_main_process(void);
 			{ 40, 40, },
 	};
 
-	enum { BG_COUNT = sizeof btn_bg / sizeof btn_bg[0] };
+	enum { BG_COUNT = ARRAY_SIZE(btn_bg) };
 
 	typedef struct {
 		uint16_t x1;				// координаты от начала экрана
@@ -902,7 +905,7 @@ static void gui_main_process(void);
 		{ 0, 0, 40, 40, buttons_uif_handler,  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UIF,   NON_VISIBLE, UINTPTR_MAX, 		"btnUIF+", 		"+", },
 //		{ 375, 120, buttons_uif_handler, 	NULL, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UIF,   NON_VISIBLE, UINTPTR_MAX, 			"btnUIF_OK", "OK", },
 	};
-	enum { BUTTONS_COUNT = sizeof buttons / sizeof buttons[0] };
+	enum { BUTTONS_COUNT = ARRAY_SIZE(buttons) };
 
 	typedef enum {
 		FONT_LARGE,		// S1D13781_smallfont_LTDC
@@ -963,7 +966,7 @@ static void gui_main_process(void);
 		{ 0, 0,	WINDOW_AUDIO, DISABLED,  0, NON_VISIBLE, "eq1.8_name",    "", FONT_MEDIUM, COLORPIP_WHITE, },
 		{ 0, 0,	WINDOW_AUDIO, DISABLED,  0, NON_VISIBLE, "eq5.3_name",    "", FONT_MEDIUM, COLORPIP_WHITE, },
 	};
-	enum { LABELS_COUNT = sizeof labels / sizeof labels[0] };
+	enum { LABELS_COUNT = ARRAY_SIZE(labels) };
 
 	typedef enum  {
 		ORIENTATION_VERTICAL,
@@ -1003,7 +1006,7 @@ static void gui_main_process(void);
 			{ 0, 0, 0, 0, 0, 0, ORIENTATION_VERTICAL, WINDOW_AUDIO, "eq1.8", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
 			{ 0, 0, 0, 0, 0, 0, ORIENTATION_VERTICAL, WINDOW_AUDIO, "eq5.3", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
 	};
-	enum { SLIDERS_COUNT = sizeof sliders / sizeof sliders[0] };
+	enum { SLIDERS_COUNT = ARRAY_SIZE(sliders) };
 
 	typedef struct {
 		uint16_t last_pressed_x; 	 // последняя точка касания экрана
@@ -1054,7 +1057,7 @@ static void gui_main_process(void);
 		{ WINDOW_UIF, 	ALIGN_LEFT_X, 	0, 0, 200, 145, "",   		   NON_VISIBLE, 0, window_uif_process, },
 		{ WINDOW_AUDIO, ALIGN_CENTER_X, 0, 0, 430, 350, "MIC params",  NON_VISIBLE, 0, window_audioparams_process, },
 	};
-	enum { windows_count = sizeof windows / sizeof windows[0] };
+	enum { windows_count = ARRAY_SIZE(windows) };
 
 	typedef struct {
 		int16_t rotate;			// признак поворота второго энкодера
@@ -1359,12 +1362,12 @@ static void gui_main_process(void);
 				x_l = x_0 + normalize(val_low / 10, 0, 50, x_size);
 				x_c = x_l + (x_h - x_l) / 2;
 
-				local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), val_high * 100);
+				local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("%d"), val_high * 100);
 				strcpy(lbl_high->text, buf);
 				lbl_high->x = (x_h + strwidth(lbl_high->text) > x_0 + x_size) ?
 						(x_0 + x_size - strwidth(lbl_high->text)) : x_h;
 
-				local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), val_low * 10);
+				local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("%d"), val_low * 10);
 				strcpy(lbl_low->text, buf);
 				lbl_low->x = (x_l - strwidth(lbl_low->text) < x_0 - 10) ? (x_0 - 10) : (x_l - strwidth(lbl_low->text));
 			}
@@ -1385,11 +1388,11 @@ static void gui_main_process(void);
 				x_l = x_c - normalize(val_w , 0, 500, x_size);
 				x_h = x_c + normalize(val_w , 0, 500, x_size);
 
-				local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), val_w * 20);
+				local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("%d"), val_w * 20);
 				strcpy(lbl_high->text, buf);
 				lbl_high->x = x_c - strwidth(lbl_high->text) / 2;
 
-				local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("P %d"), val_c * 10);
+				local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("P %d"), val_c * 10);
 				strcpy(lbl_low->text, buf);
 				lbl_low->x = x_0 + x_size - strwidth(lbl_low->text);
 			}
@@ -1485,7 +1488,7 @@ static void gui_main_process(void);
 				}
 			}
 			editfreq.key = BUTTON_CODE_DONE;
-			local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%6d k"), editfreq.val);
+			local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("%6d k"), editfreq.val);
 			strcpy(labels[lbl_id].text, buf);
 		}
 	}
@@ -2252,7 +2255,7 @@ static void gui_main_process(void);
 				strcpy(buf, sl->name);
 				strcat(buf, str_name);
 				lbl = & labels[find_gui_element(TYPE_LABEL, WINDOW_AUDIO, buf)];
-				local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%sk"), strchr(sl->name, 'q') + 1);
+				local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("%sk"), strchr(sl->name, 'q') + 1);
 				strcpy(lbl->text, buf);
 				lbl->x = mid_w - strwidth2(lbl->text) / 2;
 				lbl->y = sl->y - SMALLCHARH2 * 4;
@@ -2260,7 +2263,7 @@ static void gui_main_process(void);
 				strcpy(buf, sl->name);
 				strcat(buf, str_val);
 				lbl = & labels[find_gui_element(TYPE_LABEL, WINDOW_AUDIO, buf)];
-				local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), hamradio_get_gmikeequalizerparams(id - sl_first_id) + eq_base);
+				local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("%d"), hamradio_get_gmikeequalizerparams(id - sl_first_id) + eq_base);
 				strcpy(lbl->text, buf);
 				lbl->x = mid_w - strwidth2(lbl->text) / 2;
 				lbl->y = sl->y - SMALLCHARH2 * 3 + SMALLCHARH2 / 2;
@@ -2285,7 +2288,7 @@ static void gui_main_process(void);
 				strcpy(buf, sl->name);
 				strcat(buf, str_val);
 				lbl = & labels[find_gui_element(TYPE_LABEL, WINDOW_AUDIO, buf)];
-				local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), hamradio_get_gmikeequalizerparams(id - sl_first_id) + eq_base);
+				local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("%d"), hamradio_get_gmikeequalizerparams(id - sl_first_id) + eq_base);
 				strcpy(lbl->text, buf);
 				lbl->x = mid_w - strwidth2(lbl->text) / 2;
 			}
@@ -2302,13 +2305,13 @@ static void gui_main_process(void);
 		{
 			uint_fast16_t yy = normalize(i, 0, abs(eq_base), 100);
 			colmain_line(fr, DIM_X, DIM_Y, win->x1 + 50, mid_y + yy, win->x1 + win->w - 50, mid_y + yy, 225, 0);
-			local_snprintf_P(buf, sizeof buf / sizeof buf[0], i == 0 ? PSTR("%d") : PSTR("-%d"), i);
+			local_snprintf_P(buf, ARRAY_SIZE(buf), i == 0 ? PSTR("%d") : PSTR("-%d"), i);
 			colpip_string2_tbg(fr, DIM_X, DIM_Y, win->x1 + 50 - strwidth2(buf) - 5, mid_y + yy - SMALLCHARH2 / 2, buf, COLORMAIN_WHITE);
 
 			if (i == 0)
 				continue;
 			colmain_line(fr, DIM_X, DIM_Y, win->x1 + 50, mid_y - yy, win->x1 + win->w - 50, mid_y - yy, 225, 0);
-			local_snprintf_P(buf, sizeof buf / sizeof buf[0], PSTR("%d"), i);
+			local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("%d"), i);
 			colpip_string2_tbg(fr, DIM_X, DIM_Y, win->x1 + 50 - strwidth2(buf) - 5, mid_y - yy - SMALLCHARH2 / 2, buf, COLORMAIN_WHITE);
 		}
 	}
@@ -2339,7 +2342,7 @@ static void gui_main_process(void);
 		static window_t * win = & windows[WINDOW_MAIN];
 		PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
 		char buf [TEXT_ARRAY_SIZE];
-		const uint_fast8_t buflen = sizeof buf / sizeof buf [0];
+		const uint_fast8_t buflen = ARRAY_SIZE(buf);
 		uint_fast16_t yt, xt;
 
 		if (win->first_call == 1)
