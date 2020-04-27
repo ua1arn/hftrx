@@ -18760,7 +18760,7 @@ void bootloader_detach(uintptr_t ip)
 /* Вызов заказан вызывется из обработчика USB прерываний EP0 */
 void bootloader_deffereddetach(void * arg)
 {
-#if BOOTLOADER_APPAREA
+#if BOOTLOADER_APPFULL
 	  uintptr_t ip;
 	  if (bootloader_get_start(BOOTLOADER_APPAREA, & ip) == 0)
 	  {
@@ -18771,7 +18771,7 @@ void bootloader_deffereddetach(void * arg)
 #endif /* WITHUSBHW */
 			bootloader_detach(ip);
 	  }
-#endif /* BOOTLOADER_APPAREA */
+#endif /* BOOTLOADER_APPFULL */
 }
 
 static void bootloader_mainloop(void)
@@ -18814,21 +18814,21 @@ ddd:
 	}
 #endif /* WITHUSBHW */
 
-#if BOOTLOADER_APPAREA
+#if BOOTLOADER_APPFULL
 	uintptr_t ip;
 	//PRINTF(PSTR("Compare signature of to application\n"));
 	if (bootloader_get_start(BOOTLOADER_APPAREA, & ip) != 0)	/* проверка сигнатуры и получение стартового адреса */
 		goto ddd;
-#else /* BOOTLOADER_APPAREA */
+#else /* BOOTLOADER_APPFULL */
 	goto ddd;
-#endif /* BOOTLOADER_APPAREA */
+#endif /* BOOTLOADER_APPFULL */
 #if WITHUSBHW
 	board_usb_deactivate();
 	board_usb_deinitialize();
 #endif /* WITHUSBHW */
-#if BOOTLOADER_APPAREA
+#if BOOTLOADER_APPFULL
 	bootloader_detach(ip);
-#endif /* BOOTLOADER_APPAREA */
+#endif /* BOOTLOADER_APPFULL */
 }
 
 #endif /* WITHISBOOTLOADER */
