@@ -477,8 +477,8 @@
 	#define KEYBOARD_USE_ADC	1	/* на одной линии установлено  четыре  клавиши. на vref - 6.8K, далее 2.2К, 4.7К и 13K. */
 
 	// ST LM235Z
-	#define THERMOSENSOR_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика температуры
-	#define THERMOSENSOR_LOWER		10	// 1 kOhm - нижний резистор
+	#define THERMOSENSOR_UPPER		10	// 10 kOhm - верхний резистор делителя датчика температуры
+	#define THERMOSENSOR_LOWER		1	// 1 kOhm - нижний резистор
 	#define THERMOSENSOR_OFFSET 	(- 480)		// 2.98 volt = 25 Celsius
 	#define THERMOSENSOR_DENOM	 	10			// миливольты к десятым долям градуса 2.98 volt = 25 Celsius
 
