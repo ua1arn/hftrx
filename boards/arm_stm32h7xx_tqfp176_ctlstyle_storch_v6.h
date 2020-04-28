@@ -479,8 +479,8 @@
 	// ST LM235Z
 	#define THERMOSENSOR_UPPER		10	// 10 kOhm - верхний резистор делителя датчика температуры
 	#define THERMOSENSOR_LOWER		1	// 1 kOhm - нижний резистор
-	#define THERMOSENSOR_OFFSET 	(- 480)		// 2.98 volt = 25 Celsius
-	#define THERMOSENSOR_DENOM	 	10			// миливольты к десятым долям градуса 2.98 volt = 25 Celsius
+	#define THERMOSENSOR_OFFSET 	(- 2730)		// 2.98 volt = 25 Celsius, 10 mV/C
+	#define THERMOSENSOR_DENOM	 	1			// миливольты к десятым долям градуса 2.98 volt = 25 Celsius
 
 
 	//#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания и/или подсветки дисплея
@@ -493,7 +493,8 @@
 		#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
 		#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
 		#define WITHTHERMOLEVEL	1	/* отображение температуры */
-		#define WITHREFSENSOR	1		/* измерение по выделенному каналу АЦП опорного напряжения */
+		//#define WITHREFSENSOR	1		/* измерение по выделенному каналу АЦП опорного напряжения */
+		#define WITHTARGETVREF	3250
 
 		#if WITHREFSENSOR
 			VREFIX = 17,		// Reference voltage
