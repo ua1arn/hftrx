@@ -1221,7 +1221,12 @@ static void display2_thermo4(
 	// 50+ - красный
 	// 30+ - желтый
 	// ниже 30 зеленый
-	if (tempv >= 500)
+	if (tempv < 0)
+	{
+		tempv = 0;
+		colmain_setcolors(COLORMAIN_WHITE, display_getbgcolor());
+	}
+	else if (tempv >= 500)
 		colmain_setcolors(COLORMAIN_RED, display_getbgcolor());
 	else if (tempv >= 300)
 		colmain_setcolors(COLORMAIN_YELLOW, display_getbgcolor());
@@ -1249,7 +1254,12 @@ static void display2_thermo5(
 	// 50+ - красный
 	// 30+ - желтый
 	// ниже 30 зеленый
-	if (tempv >= 500)
+	if (tempv < 0)
+	{
+		tempv = - tempv;
+		colmain_setcolors(COLORMAIN_WHITE, display_getbgcolor());
+	}
+	else if (tempv >= 500)
 		colmain_setcolors(COLORMAIN_RED, display_getbgcolor());
 	else if (tempv >= 300)
 		colmain_setcolors(COLORMAIN_YELLOW, display_getbgcolor());
