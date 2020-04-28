@@ -824,7 +824,7 @@
 
 	// Bootloader parameters
 	#define BOOTLOADER_APPAREA DRAM_MEM_BASE	/* адрес ОЗУ, куда перемещать application */
-	#define BOOTLOADER_APPFULL (1024uL * 4096)	// 4M
+	#define BOOTLOADER_APPFULL (1024uL * 1024uL * 16)	// 16M
 
 	#define BOOTLOADER_SELFBASE QSPI_MEM_BASE	/* адрес где лежит во FLASH образ application */
 	#define BOOTLOADER_SELFSIZE (1024uL * 256)	// 256k
