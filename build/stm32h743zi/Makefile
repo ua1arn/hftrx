@@ -32,7 +32,7 @@ CMSISDIR = ../../../CMSIS_5/CMSIS
 OBJDIR = ./obj
 
 # Define optimisation level here
-OPT = -Os
+OPT = -Ofast
 LTO = -flto
 
 # floating-point use hardware of STM32H743ZI CPU (64-bit and 32-bit float)
