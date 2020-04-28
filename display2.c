@@ -1208,7 +1208,7 @@ static void display_voltlevel4(
 #endif /* WITHVOLTLEVEL */
 }
 
-// отображение целых градусов
+// отображение градусов с десятыми долями
 static void display2_thermo4(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
@@ -1216,14 +1216,14 @@ static void display2_thermo4(
 	)
 {
 #if WITHTHERMOLEVEL
-	int_fast16_t tempv = hamradio_get_temperature_value() / 10;	// Градусы в десятых долях в целые градусы
+	int_fast16_t tempv = hamradio_get_temperature_value();	// Градусы в десятых долях
 
 	// 50+ - красный
 	// 30+ - желтый
-	// ниже 30 щеленый
-	if (tempv >= 50)
+	// ниже 30 зеленый
+	if (tempv >= 500)
 		colmain_setcolors(COLORMAIN_RED, display_getbgcolor());
-	else if (tempv >= 30)
+	else if (tempv >= 300)
 		colmain_setcolors(COLORMAIN_YELLOW, display_getbgcolor());
 	else
 		colmain_setcolors(COLORMAIN_GREEN, display_getbgcolor());
@@ -1231,7 +1231,7 @@ static void display2_thermo4(
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	do
 	{
-		display_value_small(x + CHARS2GRID(0), y + lowhalf, tempv, 3 | WSIGNFLAG, 0, 255, 0, lowhalf);
+		display_value_small(x + CHARS2GRID(0), y + lowhalf, tempv, 3, 1, 255, 0, lowhalf);
 	} while (lowhalf --);
 #endif /* WITHTHERMOLEVEL */
 }
