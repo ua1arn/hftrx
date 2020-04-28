@@ -63,7 +63,7 @@ static void display2_latchwaterfall(
 	uint_fast8_t y, 
 	dctx_t * pctx
 	);
-static void wfpalette_init(
+static void display2_wfl_init(
 	uint_fast8_t x,
 	uint_fast8_t y,
 	dctx_t * pctx
@@ -1233,6 +1233,35 @@ static void display2_thermo4(
 	{
 		display_value_small(x + CHARS2GRID(0), y + lowhalf, tempv, 3, 1, 255, 0, lowhalf);
 	} while (lowhalf --);
+#endif /* WITHTHERMOLEVEL */
+}
+
+// отображение градусов с десятыми долями и "C"
+static void display2_thermo5(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+#if WITHTHERMOLEVEL
+	int_fast16_t tempv = hamradio_get_temperature_value();	// Градусы в десятых долях
+
+	// 50+ - красный
+	// 30+ - желтый
+	// ниже 30 зеленый
+	if (tempv >= 500)
+		colmain_setcolors(COLORMAIN_RED, display_getbgcolor());
+	else if (tempv >= 300)
+		colmain_setcolors(COLORMAIN_YELLOW, display_getbgcolor());
+	else
+		colmain_setcolors(COLORMAIN_GREEN, display_getbgcolor());
+
+	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
+	do
+	{
+		display_value_small(x + CHARS2GRID(0), y + lowhalf, tempv, 3, 1, 255, 0, lowhalf);
+	} while (lowhalf --);
+	display_at_P(x + CHARS2GRID(4), y, PSTR("C"));
 #endif /* WITHTHERMOLEVEL */
 }
 
@@ -3493,7 +3522,7 @@ enum
 			{	0,	10,	display2_legend,	REDRM_MODE, PG0, },	// Отображение оцифровки шкалы S-метра
 			/* ---------------------------------- */
 			{
-			{	0,	9,	wfpalette_init,	REDRM_INIS,	PGINI, },	// формирование палитры водопада
+			{	0,	9,	display2_wfl_init,	REDRM_INIS,	PGINI, },	// формирование палитры водопада
 			{	0,	9,	display2_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 			{	0,	9,	display2_spectrum,	REDRM_BARS, PG1, },// подготовка изображения спектра
 			{	0,	9,	display2_colorbuff,	REDRM_BARS,	PG1, },// Отображение водопада и/или спектра
@@ -3640,7 +3669,7 @@ enum
 			/* ---------------------------------- */
 		#if WITHDSPEXTDDC
 
-			{	0,	9,	wfpalette_init,	REDRM_INIS,	PGINI, },	// формирование палитры водопада
+			{	0,	9,	display2_wfl_init,	REDRM_INIS,	PGINI, },	// формирование палитры водопада
 			{	0,	9,	display2_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 			{	0,	9,	display2_spectrum,	REDRM_BARS, PG1, },// подготовка изображения спектра
 			{	0,	9,	display2_colorbuff,	REDRM_BARS,	PG1, },// Отображение водопада и/или спектра
@@ -3790,7 +3819,7 @@ enum
 		{	0,	15,	display2_bars,		REDRM_BARS, PG0, },	// S-METER, SWR-METER, POWER-METER
 		{	27, 15,	display_smeter5,	REDRM_BARS, PG0, },	// signal level
 
-		{	0,	18,	wfpalette_init,	REDRM_INIS,	PGINI, },	// формирование палитры водопада
+		{	0,	18,	display2_wfl_init,	REDRM_INIS,	PGINI, },	// формирование палитры водопада
 		{	0,	18,	display2_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 		{	0,	18,	display2_spectrum,	REDRM_BARS, PG0, },// подготовка изображения спектра
 		{	0,	18,	display2_waterfall,	REDRM_BARS, PG0, },// подготовка изображения водопада
@@ -4014,7 +4043,7 @@ enum
 			//---
 			{	0,	18,	display2_bars,		REDRM_BARS, PG0, },	// S-METER, SWR-METER, POWER-METER
 		#if WITHIF4DSP
-			{	0,	18,	wfpalette_init,	REDRM_INIS,	PGINI, },	// формирование палитры водопада
+			{	0,	18,	display2_wfl_init,	REDRM_INIS,	PGINI, },	// формирование палитры водопада
 			{	0,	18,	display2_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 			{	0,	18,	display2_spectrum,	REDRM_BARS, PG1, },// подготовка изображения спектра
 			{	0,	18,	display2_waterfall,	REDRM_BARS, PG1, },// подготовка изображения водопада
@@ -4192,7 +4221,7 @@ enum
 		//{	0,	24,	display2_bars,		REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
 		{	25, 24, display_siglevel4, REDRM_BARS, PGSWR, },	// уровень сигнала
 		//{	25, 24, display_smeter5, 	REDRM_BARS, PGSWR, },	// уровень сигнала в баллах S
-		{	0,	28,	wfpalette_init,	REDRM_INIS,	PGINI, },	// формирование палитры водопада
+		{	0,	28,	display2_wfl_init,	REDRM_INIS,	PGINI, },	// формирование палитры водопада
 		{	0,	28,	display2_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 		{	0,	28,	display2_spectrum,	REDRM_BARS, PGSPE, },// подготовка изображения спектра
 		{	0,	28,	display2_waterfall,	REDRM_BARS, PGWFL, },// подготовка изображения водопада
@@ -4367,7 +4396,7 @@ enum
 		{	0,	24,	display2_bars,		REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
 		{	25, 24, display_siglevel4, REDRM_BARS, PGSWR, },	// уровень сигнала
 		//{	25, 24, display_smeter5, 	REDRM_BARS, PGSWR, },	// уровень сигнала в баллах S
-		{	0,	28,	wfpalette_init,	REDRM_INIS,	PGINI, },	// формирование палитры водопада
+		{	0,	28,	display2_wfl_init,	REDRM_INIS,	PGINI, },	// формирование палитры водопада
 		{	0,	28,	display2_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 		{	0,	28,	display2_spectrum,	REDRM_BARS, PGSPE, },// подготовка изображения спектра
 		{	0,	28,	display2_waterfall,	REDRM_BARS, PGWFL, },// подготовка изображения водопада
@@ -4380,7 +4409,7 @@ enum
 		{	0,	51,	display_time5,		REDRM_BARS, PGALL,	},	// TIME
 		{	6, 	51,	display_atu3,		REDRM_MODE, PGALL, },	// TUNER state (optional)
 		{	10, 51,	display_byp3,		REDRM_MODE, PGALL, },	// TUNER BYPASS state (optional)
-		{	14, 51,	display2_thermo4,	REDRM_VOLT, PGALL, },	// thermo sensor
+		{	14, 51,	display2_thermo5,	REDRM_VOLT, PGALL, },	// thermo sensor 20.7C
 		{	19, 51,	display2_currlevel5, REDRM_VOLT, PGALL, },	// PA drain current d.dd without "A"
 		{	25, 51,	display_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
 	#if WITHAMHIGHKBDADJ
@@ -4698,7 +4727,7 @@ enum
 		{	0,	0, display_siglevel4, 	REDRM_BARS, PGSWR, },	// signal level dBm
 //		{	36, 30,	display_freqdelta8, REDRM_BARS, PGSWR, },	// выход ЧМ демодулятора
 	#if WITHSPECTRUMWF
-		{	0,	DLES,	wfpalette_init,	REDRM_INIS,	PGINI, },	// формирование палитры водопада
+		{	0,	DLES,	display2_wfl_init,	REDRM_INIS,	PGINI, },	// формирование палитры водопада
 		{	0,	DLES,	display2_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 		{	0,	DLES,	display2_spectrum,	REDRM_BARS, PGSPE, },// подготовка изображения спектра
 		{	0,	DLES,	display2_waterfall,	REDRM_BARS, PGWFL, },// подготовка изображения водопада
@@ -4867,7 +4896,7 @@ enum
 		{	37, 30,	display_freqdelta8, REDRM_BARS, PGALL, },	// выход ЧМ демодулятора
 		{	46, 30,	display_agc3,		REDRM_MODE, PGALL, },	// AGC mode
 
-		{	0,	DLES,	wfpalette_init,	REDRM_INIS,	PGINI, },	// формирование палитры водопада
+		{	0,	DLES,	display2_wfl_init,	REDRM_INIS,	PGINI, },	// формирование палитры водопада
 		{	0,	DLES,	display2_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 		{	0,	DLES,	display2_spectrum,	REDRM_BARS, PGSPE, },// подготовка изображения спектра
 		{	0,	DLES,	display2_waterfall,	REDRM_BARS, PGWFL, },// подготовка изображения водопада
@@ -5047,7 +5076,7 @@ enum
 		{	36, 30,	display_freqdelta8, REDRM_BARS, PGSWR, },	// выход ЧМ демодулятора
 		{	46, 30,	display_agc3,		REDRM_MODE, PGALL, },	// AGC mode
 	#if WITHSPECTRUMWF
-		{	0,	DLES,	wfpalette_init,	REDRM_INIS,	PGINI, },	// формирование палитры водопада
+		{	0,	DLES,	display2_wfl_init,	REDRM_INIS,	PGINI, },	// формирование палитры водопада
 		{	0,	DLES,	display2_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 		{	0,	DLES,	display2_spectrum,	REDRM_BARS, PGSPE, },// подготовка изображения спектра
 		{	0,	DLES,	display2_waterfall,	REDRM_BARS, PGWFL, },// подготовка изображения водопада
@@ -5785,8 +5814,8 @@ static uint_fast16_t wfscroll;			// сдвиг по вертикали (в ра�
 static uint_fast8_t wfclear;			// стирание всей областии отображение водопада.
 
 // Код взят из проекта Malamute
-void
-wfpalette_init(
+static void
+display2_wfl_init(
 	uint_fast8_t xgrid,
 	uint_fast8_t ygrid,
 	dctx_t * pctx
