@@ -9386,6 +9386,7 @@ void arm_hardware_invalidate(uintptr_t base, size_t size)
 /* считать конфигурационные параметры data cache */
 static void ca9_ca7_cache_diag(void)
 {
+	PRINTF("ca9_ca7_cache_diag: CLIDR=%08lX\n", (unsigned long) __get_CLIDR());
 	uint32_t ccsidr0 [8];	// data cache parameters
 	uint32_t ccsidr1 [8];	// instruction cache parameters
 
@@ -9410,7 +9411,7 @@ static void ca9_ca7_cache_diag(void)
 		unsigned long xDCACHEROWSIZE = 4uL << (((ccsidr0 [leveli] >> 0) & 0x07) + 2);
 		unsigned long xICACHEROWSIZE = 4uL << (((ccsidr1 [leveli] >> 0) & 0x07) + 2);
 
-		PRINTF("DCACHE[%d] ROWSIZE=%d, ICACHE[%d] ROWSIZE=%d\n", leveli, (int) xDCACHEROWSIZE, leveli, (int) xICACHEROWSIZE);
+		PRINTF("ca9_ca7_cache_diag: DCACHE[%d] ROWSIZE=%d, ICACHE[%d] ROWSIZE=%d\n", leveli, (int) xDCACHEROWSIZE, leveli, (int) xICACHEROWSIZE);
 	}
 }
 
@@ -10832,7 +10833,7 @@ static void r7s721_intc_initializeOld(void)
     for (offset = 0; offset < INTC_ICDIPR_REG_TOTAL; ++ offset)
     {
         /* Set the priority for all interrupts to 31 */
-        * (addr + offset) = (31 << ARM_CA9_PRIORITYSHIFT) * 0x01010101uL;
+        * (addr + offset) = 31 * 0x01010101uL;
     }
 
     /* Interrupt Processor Targets Registers setting */
@@ -11518,6 +11519,14 @@ arm_cpu_CMx_initialize_NVIC(void)
 	These registers are byte-accessible.
 */
 
+
+uint32_t gARM_OVERREALTIME_PRIORITY;
+uint32_t gARM_REALTIME_PRIORITY;
+uint32_t gARM_SYSTEM_PRIORITY;
+uint32_t gARM_BASEPRI_ONLY_REALTIME;
+uint32_t gARM_BASEPRI_ALL_ENABLED;
+
+
 static void
 arm_gic_initialize(void)
 {
@@ -11536,30 +11545,23 @@ arm_gic_initialize(void)
 
 	IRQ_Initialize();
 
+	GIC_Enable();	// инициализирует не совсем так как надо для работы
+
 #if CPUSTYLE_R7S721
 	r7s721_intc_initialize();
 #endif /* CPUSTYLE_R7S721 */
 
-    /* Interrupt Priority Mask Register setting */
-    /* Enable priorities for all interrupts */
-#if WITHNESTEDINTERRUPTS
-    GIC_SetInterfacePriorityMask(gARM_BASEPRI_ALL_ENABLED);	// GICC_PMR
-#endif /* WITHNESTEDINTERRUPTS */
-    /* Binary Point Register setting */
-    /* Group priority field [7:3], Subpriority field [2:0](Do not use) */
-    //INTC.ICCBPR = 0x00000002uL; // Binary Point Register, GICC_BPR, may be ARM_CA9_PRIORITYSHIFT - 1
-	GIC_SetBinaryPoint(2);
-    /* CPU Interface Control Register setting */
-    //INTC.ICCICR = 0x00000003uL;	// GICC_CTLR
-	GIC_EnableInterface();	// check GICInterface->CTLR a same for INTC.ICCICR
-
-    /* Initial setting 2 to receive GIC interrupt request */
-    /* Distributor Control Register setting */
-    //INTC.ICDDCR = 0x00000001uL;
-	GIC_EnableDistributor();	// check GICDistributor->CTLR a same for INTC.ICDDCR
+    PRINTF("arm_gic_initialize: GIC_GetBinaryPoint()=%02X\n", GIC_GetBinaryPoint());
 	
 #if WITHNESTEDINTERRUPTS
-    GIC_SetInterfacePriorityMask(gARM_BASEPRI_ALL_ENABLED);
+	gARM_OVERREALTIME_PRIORITY = ARM_CA9_ENCODE_PRIORITY(PRI_OVRT);	// value for GIC_SetPriority
+	gARM_REALTIME_PRIORITY = ARM_CA9_ENCODE_PRIORITY(PRI_RT);	// value for GIC_SetPriority
+	gARM_SYSTEM_PRIORITY = ARM_CA9_ENCODE_PRIORITY(PRI_SYS);		// value for GIC_SetPriority
+
+	gARM_BASEPRI_ONLY_REALTIME = ARM_CA9_ENCODE_PRIORITY(PRI_SYS);	// value for GIC_SetInterfacePriorityMask
+	gARM_BASEPRI_ALL_ENABLED = ARM_CA9_ENCODE_PRIORITY(PRI_USER);	// value for GIC_SetInterfacePriorityMask
+
+	GIC_SetInterfacePriorityMask(gARM_BASEPRI_ALL_ENABLED);
 #endif /* WITHNESTEDINTERRUPTS */
 }
 
