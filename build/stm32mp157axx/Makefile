@@ -35,7 +35,6 @@ OBJDIR = ./$(OBJDIR2)
 OPT = -Os
 LTO = -flto
 
-# This product incorporates the ARM single-core Cortex-A9 MPCore, where the IP version is r3p0.
 MCU  = cortex-a7
 CORE = -march=armv7-a -mfloat-abi=hard -mfpu=vfpv4-d16 -ftree-vectorize
 #CORE = -march=armv7-a -mfloat-abi=hard -mfpu=vfpv4-d16 -mfpu=neon -ftree-vectorize
