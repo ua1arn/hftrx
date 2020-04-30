@@ -1323,21 +1323,39 @@ static void gui_main_process(void);
 	}
 
 	/* Установки статуса основных кнопок */
-	static void footer_buttons_state (uint_fast8_t state, const char * name)					// блокируются все, кроме name == text
+	/* При DISABLED в качестве необязательного параметра передать name активной кнопки или "" для блокирования всех */
+	static void footer_buttons_state (uint_fast8_t state, ...)
 	{
 		window_t * win = & windows[WINDOW_MAIN];
-		uint_fast8_t id_start, id_end;
+		va_list arg;
+		char * name = NULL;
+		uint_fast8_t id_start, id_end, is_name;
 		find_entry_area_elements(TYPE_BUTTON, win, & id_start, & id_end);
+
+		if (state == DISABLED)
+		{
+			va_start(arg, state);
+			name = va_arg(arg, char *);
+			va_end(arg);
+		}
 
 		for (uint_fast8_t i = id_start; i <= id_end; i++)
 		{
 			button_t * bh = & buttons[i];
-			bh->state = strcmp(bh->name, name) ? state : DISABLED;
-			bh->is_locked = (state == DISABLED && ! strcmp(bh->name, name)) ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
+			if (state == DISABLED)
+			{
+				bh->state = strcmp(bh->name, name) ? DISABLED : CANCELLED;
+				bh->is_locked = strcmp(bh->name, name) ? BUTTON_NON_LOCKED : BUTTON_LOCKED;
+			}
+			else if (state == CANCELLED)
+			{
+				bh->state = CANCELLED;
+				bh->is_locked = BUTTON_NON_LOCKED;
+			}
 		}
 	}
 
-	/* Установка признака видимости окна и его элементов*/
+	/* Установка признака видимости окна и его элементов */
 	static void set_window(window_t * win, uint_fast8_t value)
 	{
 		win->state = value;
@@ -1446,7 +1464,7 @@ static void gui_main_process(void);
 			{
 				set_window(win, NON_VISIBLE);
 				encoder2.busy = 0;
-				footer_buttons_state(CANCELLED, "");
+				footer_buttons_state(CANCELLED);
 				hamradio_disable_keyboard_redirect();
 			}
 		}
@@ -1466,16 +1484,16 @@ static void gui_main_process(void);
 			uint_fast16_t id = 0, x, y;
 			uint_fast8_t interval = 20, col1_int = 35, row1_int = 20, id_start, id_end;
 			calculate_window_position(win);
-			x_0 = win->x1 + 50;											// оконные координаты нулевой точки графика
+			x_0 = win->x1 + 50;											// координаты нулевой точки графика
 			y_0 = win->y1 + 90;
 
 			find_entry_area_elements(TYPE_BUTTON, win, & id_start, & id_end);
 
+			x = win->x1 + col1_int;
 			y = win->y1 + win->h - buttons[id_start].h - row1_int;
 			for (uint_fast8_t id = id_start; id <= id_end; id++)
 			{
-				button_t * bh = &buttons[id];
-				x = win->x1 + col1_int;
+				button_t * bh = & buttons[id];
 				bh->x1 = x;
 				bh->y1 = y;
 				x = x + interval + bh->w;
@@ -1642,7 +1660,7 @@ static void gui_main_process(void);
 				if(hamradio_set_freq(editfreq.val * 1000))
 				{
 					set_window(win, NON_VISIBLE);
-					footer_buttons_state(CANCELLED, "");
+					footer_buttons_state(CANCELLED);
 					hamradio_set_lockmode(0);
 					hamradio_disable_keyboard_redirect();
 				} else
@@ -1677,7 +1695,7 @@ static void gui_main_process(void);
 		else
 		{
 			set_window(win, NON_VISIBLE);
-			footer_buttons_state(CANCELLED, "");
+			footer_buttons_state(CANCELLED);
 		}
 	}
 
@@ -1699,7 +1717,7 @@ static void gui_main_process(void);
 		{
 			hamradio_disable_keyboard_redirect();
 			set_window(win, NON_VISIBLE);
-			footer_buttons_state(CANCELLED, "");
+			footer_buttons_state(CANCELLED);
 		}
 	}
 
@@ -1759,7 +1777,7 @@ static void gui_main_process(void);
 			{
 				hamradio_disable_keyboard_redirect();
 				set_window(win, NON_VISIBLE);
-				footer_buttons_state(CANCELLED, "");
+				footer_buttons_state(CANCELLED);
 			}
 			gui.kbd_code = KBD_CODE_MAX;
 		}
@@ -2031,7 +2049,7 @@ static void gui_main_process(void);
 		{
 			set_window(win, NON_VISIBLE);
 			encoder2.busy = 0;
-			footer_buttons_state(CANCELLED, "");
+			footer_buttons_state(CANCELLED);
 			hamradio_set_menu_cond(NON_VISIBLE);
 			return;
 		}
@@ -2154,7 +2172,7 @@ static void gui_main_process(void);
 		{
 			set_window(win, NON_VISIBLE);
 			gui_enc2_menu = NULL;
-			footer_buttons_state(CANCELLED, "");
+			footer_buttons_state(CANCELLED);
 		}
 	}
 
@@ -2202,7 +2220,7 @@ static void gui_main_process(void);
 					hamradio_change_submode(buttons[gui.selected_id].payload);
 
 				set_window(win, NON_VISIBLE);
-				footer_buttons_state(CANCELLED, "");
+				footer_buttons_state(CANCELLED);
 			}
 		}
 	}
@@ -2373,7 +2391,7 @@ static void gui_main_process(void);
 			else
 			{
 				set_window(win, NON_VISIBLE);
-				footer_buttons_state(CANCELLED, "");
+				footer_buttons_state(CANCELLED);
 			}
 		}
 	}
@@ -2394,7 +2412,7 @@ static void gui_main_process(void);
 			{
 				set_window(win, NON_VISIBLE);
 				encoder2.busy = 0;
-				footer_buttons_state(CANCELLED, "");
+				footer_buttons_state(CANCELLED);
 				hamradio_disable_keyboard_redirect();
 			}
 		}
@@ -2413,7 +2431,7 @@ static void gui_main_process(void);
 			else
 			{
 				set_window(win, NON_VISIBLE);
-				footer_buttons_state(CANCELLED, "");
+				footer_buttons_state(CANCELLED);
 			}
 		}
 	}
@@ -2435,7 +2453,7 @@ static void gui_main_process(void);
 				set_window(win, NON_VISIBLE);
 				hamradio_set_lockmode(0);
 				hamradio_disable_keyboard_redirect();
-				footer_buttons_state(CANCELLED, "");
+				footer_buttons_state(CANCELLED);
 			}
 		}
 	}
@@ -2479,7 +2497,7 @@ static void gui_main_process(void);
 			else
 			{
 				set_window(win, NON_VISIBLE);
-				footer_buttons_state(CANCELLED, "");
+				footer_buttons_state(CANCELLED);
 				hamradio_set_menu_cond(NON_VISIBLE);
 			}
 		}
@@ -2499,7 +2517,7 @@ static void gui_main_process(void);
 			else
 			{
 				set_window(win, NON_VISIBLE);
-				footer_buttons_state(CANCELLED, "");
+				footer_buttons_state(CANCELLED);
 				encoder2.busy = 0;
 				hamradio_set_menu_cond(NON_VISIBLE);
 			}
