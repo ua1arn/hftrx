@@ -2214,10 +2214,10 @@ static void gui_main_process(void);
 		window_t * win = & windows[WINDOW_MODES];
 		if(gui.selected_type == TYPE_BUTTON)
 		{
-			if (win->state && buttons[gui.selected_id].parent == WINDOW_MODES)
+			if (win->state && ((button_t *)gui.selected_link)->parent == win->window_id)
 			{
-				if (buttons[gui.selected_id].payload != UINTPTR_MAX)
-					hamradio_change_submode(buttons[gui.selected_id].payload);
+				if (((button_t *)gui.selected_link)->payload != UINTPTR_MAX)
+					hamradio_change_submode(((button_t *)gui.selected_link)->payload);
 
 				set_window(win, NON_VISIBLE);
 				footer_buttons_state(CANCELLED);
@@ -2228,27 +2228,29 @@ static void gui_main_process(void);
 	static void window_mode_process(void)
 	{
 		window_t * win = & windows[WINDOW_MODES];
-		if (windows[WINDOW_MODES].first_call == 1)
+		if (win->first_call == 1)
 		{
 			uint_fast16_t x, y;
 			uint_fast8_t interval = 6, id = 0, col1_int = 20, row1_int = 40;
-			windows[WINDOW_MODES].first_call = 0;
+			uint_fast8_t id_start, id_end;
+			win->first_call = 0;
 			calculate_window_position(win);
+			find_entry_area_elements(TYPE_BUTTON, win, & id_start, & id_end);
 
-			while(buttons[++id].parent != WINDOW_MODES)			// первое вхождение кнопки WINDOW_MODES
-				;
-			x = windows[WINDOW_MODES].x1 + col1_int;
-			y = windows[WINDOW_MODES].y1 + row1_int;
-			do {
-				buttons[id].x1 = x;
-				buttons[id].y1 = y;
-				x = x + interval + buttons[id].w;
-				if (x + buttons[id].w > windows[WINDOW_MODES].x1 + windows[WINDOW_MODES].w)
+			x = win->x1 + col1_int;
+			y = win->y1 + row1_int;
+			for (uint_fast8_t id = id_start; id <= id_end; id++)
+			{
+				button_t * bh = & buttons[id];
+				bh->x1 = x;
+				bh->y1 = y;
+				x = x + interval + bh->w;
+				if (x + bh->w > win->x1 + win->w)
 				{
-					x = windows[WINDOW_MODES].x1 + col1_int;
-					y = windows[WINDOW_MODES].y1 + row1_int + buttons[id].h + interval;
+					x = win->x1 + col1_int;
+					y = win->y1 + row1_int + bh->h + interval;
 				}
-			} while (buttons[++id].parent == WINDOW_MODES);
+			}
 			return;
 		}
 	}
@@ -2256,23 +2258,30 @@ static void gui_main_process(void);
 	static void window_agc_process(void)
 	{
 		window_t * win = & windows[WINDOW_AGC];
-		if (windows[WINDOW_AGC].first_call == 1)
+		if (win->first_call == 1)
 		{
-			uint_fast8_t interval = 40, id = 0, x, y;
-			uint_fast8_t col1_int = 20, row1_int = 40;
-			windows[WINDOW_AGC].first_call = 0;
+			uint_fast16_t x, y;
+			uint_fast8_t interval = 40, col1_int = 20, row1_int = 40;
+			uint_fast8_t id = 0, id_start, id_end;
+			win->first_call = 0;
 			calculate_window_position(win);
 
-			while(buttons[++id].parent != WINDOW_AGC)			// первое вхождение кнопки WINDOW_AGC
-				;
-			x = windows[WINDOW_AGC].x1 + col1_int;
-			y = windows[WINDOW_AGC].y1 + row1_int;
-			do {
-				buttons[id].x1 = x;
-				buttons[id].y1 = y;
-				x = x + interval + buttons[id].w;
+			find_entry_area_elements(TYPE_BUTTON, win, & id_start, & id_end);
 
-			} while (buttons[++id].parent == WINDOW_AGC);
+			x = win->x1 + col1_int;
+			y = win->y1 + row1_int;
+			for (uint_fast8_t id = id_start; id <= id_end; id++)
+			{
+				button_t * bh = & buttons[id];
+				bh->x1 = x;
+				bh->y1 = y;
+				x = x + interval + bh->w;
+				if (x + bh->w > win->x1 + win->w)
+				{
+					x = win->x1 + col1_int;
+					y = win->y1 + row1_int + bh->h + interval;
+				}
+			}
 			return;
 		}
 	}
@@ -2283,10 +2292,10 @@ static void gui_main_process(void);
 		window_t * win = & windows[WINDOW_AUDIO];
 		slider_t * sl = NULL;
 		label_t * lbl = NULL;
-		static uint_fast8_t sl_first_id = 0, eq_limit, eq_base = 0;
+		static uint_fast8_t eq_limit, eq_base = 0;
 		char buf[TEXT_ARRAY_SIZE];
-		static int_fast16_t mid_y = 0, start_y = 0;;
-		uint_fast8_t id = 0;
+		static int_fast16_t mid_y = 0, start_y = 0;
+		static uint_fast8_t id = 0, id_start, id_end;
 
 		if (win->first_call == 1)
 		{
@@ -2294,52 +2303,48 @@ static void gui_main_process(void);
 			uint_fast8_t interval = 70, col1_int = 70, row1_int = 120;
 			win->first_call = 0;
 			calculate_window_position(win);
+			find_entry_area_elements(TYPE_SLIDER, win, & id_start, & id_end);
 
 			eq_base = hamradio_getequalizerbase();
 			eq_limit = abs(eq_base) * 2;
 
-			while(sliders[++id].parent != win->window_id)
-				;
-			sl_first_id = id;
 			x = win->x1 + col1_int;
 			y = win->y1 + row1_int;
 
-			for (; id < SLIDERS_COUNT; id++)
+			for (id = id_start; id <= id_end; id++)
 			{
 				sl = & sliders[id];
-				if (sl->parent != win->window_id)
-					break;
 
 				sl->x = x;
 				sl->y = y;
 				sl->size = 200;
 				sl->step = 2;
-				sl->value = normalize(hamradio_get_gmikeequalizerparams(id - sl_first_id), eq_limit, 0, 100);
+				sl->value = normalize(hamradio_get_gmikeequalizerparams(id - id_start), eq_limit, 0, 100);
 
 				mid_w = sl->x + sliders_width / 2;		// центр шкалы слайдера по x
 
 				local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("lbl_%s_name"), sl->name);
 				lbl = find_gui_element_ref(TYPE_LABEL, win, buf);
 				local_snprintf_P(lbl->text, ARRAY_SIZE(lbl->text), PSTR("%sk"), strchr(sl->name, 'q') + 1);
-				lbl->x = mid_w - strwidth2(lbl->text) / 2;
-				lbl->y = sl->y - SMALLCHARH2 * 4;
+				lbl->x = mid_w - get_label_width(lbl) / 2;
+				lbl->y = sl->y - get_label_height(lbl) * 4;
 
 				local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("lbl_%s_val"), sl->name);
 				lbl = find_gui_element_ref(TYPE_LABEL, win, buf);
-				local_snprintf_P(lbl->text, ARRAY_SIZE(lbl->text), PSTR("%d"), hamradio_get_gmikeequalizerparams(id - sl_first_id) + eq_base);
-				lbl->x = mid_w - strwidth2(lbl->text) / 2;
-				lbl->y = sl->y - SMALLCHARH2 * 3 + SMALLCHARH2 / 2;
+				local_snprintf_P(lbl->text, ARRAY_SIZE(lbl->text), PSTR("%d"), hamradio_get_gmikeequalizerparams(id - id_start) + eq_base);
+				lbl->x = mid_w - get_label_width(lbl) / 2;
+				lbl->y = sl->y - get_label_height(lbl) * 3 + get_label_height(lbl) / 2;
 
 				x = x + interval;
 			}
-			mid_y = sliders[id - 1].y + sliders[id - 1].size / 2;
+			mid_y = sl->y + sl->size / 2;
 			return;
 		}
 
 		if (gui.selected_type == TYPE_SLIDER && gui.is_tracking)
 		{
-			id = gui.selected_id - sl_first_id;
-			sl = & sliders[gui.selected_id];
+			uint_fast8_t id = gui.selected_id - id_start;
+			sl = (slider_t*)gui.selected_link;
 
 			uint16_t v = sl->value + round(gui.vector_move_y / sl->step);
 			if (v >= 0 && v <= sl->size / sl->step)
@@ -2351,7 +2356,7 @@ static void gui_main_process(void);
 				local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("lbl_%s_val"), sl->name);
 				lbl = find_gui_element_ref(TYPE_LABEL, win, buf);
 				local_snprintf_P(lbl->text, ARRAY_SIZE(lbl->text), PSTR("%d"), hamradio_get_gmikeequalizerparams(id) + eq_base);
-				lbl->x = mid_w - strwidth2(lbl->text) / 2;
+				lbl->x = mid_w - get_label_width(lbl) / 2;
 
 				PRINTF("%s: %d%\n", sl->name, sl->value);
 			}
@@ -2386,7 +2391,7 @@ static void gui_main_process(void);
 			if (win->state == NON_VISIBLE)
 			{
 				set_window(win, VISIBLE);
-				footer_buttons_state(DISABLED, buttons[gui.selected_id].name);
+				footer_buttons_state(DISABLED, ((button_t *)gui.selected_link)->name);
 			}
 			else
 			{
@@ -2405,7 +2410,7 @@ static void gui_main_process(void);
 			{
 				encoder2.busy = 1;
 				set_window(win, VISIBLE);
-				footer_buttons_state(DISABLED, buttons[gui.selected_id].name);
+				footer_buttons_state(DISABLED, ((button_t *)gui.selected_link)->name);
 				hamradio_enable_keyboard_redirect();
 			}
 			else
@@ -2426,7 +2431,7 @@ static void gui_main_process(void);
 			if (win->state == NON_VISIBLE)
 			{
 				set_window(win, VISIBLE);
-				footer_buttons_state(DISABLED, buttons[gui.selected_id].name);
+				footer_buttons_state(DISABLED, ((button_t *)gui.selected_link)->name);
 			}
 			else
 			{
@@ -2446,7 +2451,7 @@ static void gui_main_process(void);
 				set_window(win, VISIBLE);
 				hamradio_set_lockmode(1);
 				hamradio_enable_keyboard_redirect();
-				footer_buttons_state(DISABLED, buttons[gui.selected_id].name);
+				footer_buttons_state(DISABLED, ((button_t *)gui.selected_link)->name);
 			}
 			else
 			{
@@ -2492,7 +2497,7 @@ static void gui_main_process(void);
 			if (win->state == NON_VISIBLE)
 			{
 				set_window(win, VISIBLE);
-				footer_buttons_state(DISABLED, buttons[gui.selected_id].name);
+				footer_buttons_state(DISABLED, ((button_t *)gui.selected_link)->name);
 			}
 			else
 			{
@@ -2511,7 +2516,7 @@ static void gui_main_process(void);
 			if (win->state == NON_VISIBLE)
 			{
 				set_window(win, VISIBLE);
-				footer_buttons_state(DISABLED, buttons[gui.selected_id].name);
+				footer_buttons_state(DISABLED, ((button_t *)gui.selected_link)->name);
 				encoder2.busy = 1;
 			}
 			else
@@ -2534,20 +2539,20 @@ static void gui_main_process(void);
 
 		if (win->first_call == 1)
 		{
-			uint_fast8_t interval = 3, id = 0;
-			uint_fast16_t x;
+			uint_fast8_t interval = 3, id_start, id_end;
+			uint_fast16_t x = 0;
+			button_t * bh;
 			win->first_call = 0;
-			while(buttons[++id].parent != WINDOW_MAIN)			// первое вхождение кнопки WINDOW_MAIN
-				;
-			x = win->x1;
-			button_t * bh = & buttons[id];
-			do {
+
+			find_entry_area_elements(TYPE_BUTTON, win, & id_start, & id_end);
+
+			for (uint_fast8_t id = id_start; id <= id_end; id ++)
+			{
 				bh = & buttons[id];
 				bh->x1 = x;
 				bh->y1 = WITHGUIMAXY - bh->h;
 				x = x + interval + bh->w;
-				id ++;
-			} while (bh->parent == WINDOW_MAIN);
+			}
 		}
 
 		uint_fast8_t interval = 15, len1 = 0, len2 = 0;
