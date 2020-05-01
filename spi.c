@@ -884,14 +884,14 @@ static void spidf_iostart(
 			0x03,	// four lines
 	};
 	/* за сколько тактов пройдет один dummy byte */
-	static const uint8_t ndivs [3] =
+	static const uint8_t nmuls [3] =
 	{
-			0x01,	// single line
-			0x02,	// two lines
-			0x04,	// four lines
+			0x08,	// single line
+			0x04,	// two lines
+			0x02,	// four lines
 	};
 	const uint_fast32_t bw = nbits [read4b];
-	const uint_fast32_t dv = ndivs [read4b];
+	const uint_fast32_t ml = nmuls [read4b];
 
 	while ((QUADSPI->SR & QUADSPI_SR_BUSY_Msk) != 0)
 		;
@@ -914,7 +914,7 @@ static void spidf_iostart(
 		((direction ? 0x00uL : 0x01uL) << QUADSPI_CCR_FMODE_Pos) |	// 01: Indirect read mode, 00: Indirect write mode
 		//(0x00 << QUADSPI_CCR_FMODE_Pos) |	//
 		(size != 0) * (bw << QUADSPI_CCR_DMODE_Pos) |	// 01: Data on a single line
-		((8uL * ndummy / dv)  << QUADSPI_CCR_DCYC_Pos) |	// This field defines the duration of the dummy phase (1..31).
+		((ml * ndummy) << QUADSPI_CCR_DCYC_Pos) |	// This field defines the duration of the dummy phase (1..31).
 		//0 * (bw << QUADSPI_CCR_ABSIZE_Pos) |	// 00: 8-bit alternate byte
 		(0 << QUADSPI_CCR_ABMODE_Pos) |	// 00: No alternate bytes
 		(0x02uL << QUADSPI_CCR_ADSIZE_Pos) |	// 010: 24-bit address
