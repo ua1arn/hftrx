@@ -9218,9 +9218,15 @@ uint_fast8_t hamradio_get_tunemodevalue(void)
 // Вольты в десятых долях
 uint_fast8_t hamradio_get_volt_value(void)
 {
-#if WITHTARGETVREF
+#if WITHTDIRECTDATA
 
-	const unsigned Vref_mV = WITHTARGETVREF;//ADCVREF_CPU * 100;
+	return board_getadc_unfiltered_truevalue(VOLTSOURCE) / 100;	// миливольты в 0.1 вольта
+
+#elif WITHTARGETVREF
+
+	unsigned Vref_mV = board_getadc_unfiltered_truevalue(VREFMVMRRIX); //WITHTARGETVREF;//ADCVREF_CPU * 100;
+	if (Vref_mV == 0)
+		Vref_mV = WITHTARGETVREF;
 	const unsigned voltcalibr_mV = (Vref_mV * (VOLTLEVEL_UPPER + VOLTLEVEL_LOWER) + VOLTLEVEL_LOWER / 2) / VOLTLEVEL_LOWER;		// Напряжение fullscale - что показать при ADCVREF_CPU вольт на входе АЦП
 	const uint_fast16_t mv = board_getadc_filtered_u16(VOLTMRRIX, 0, voltcalibr_mV);
 	//debug_printf_P(PSTR("hamradio_get_volt_value: ref=%u, VrefmV=%u, v=%u, out=%u\n"), ref, Vref_mV, mv, (mv + 50) / 100);
@@ -9263,9 +9269,15 @@ int_fast16_t hamradio_get_temperature_value(void)
 	const int_fast16_t thermo_offset = THERMOSENSOR_OFFSET;
 
 	// XTHERMOIX - данные с АЦП напрямую
-#if WITHTARGETVREF
+#if WITHTDIRECTDATA
 
-	const unsigned Vref_mV = WITHTARGETVREF;//ADCVREF_CPU * 100;
+	return board_getadc_unfiltered_truevalue(XTHERMOMRRIX);	// 0.1 градуса
+
+#elif WITHTARGETVREF
+
+	unsigned Vref_mV = board_getadc_unfiltered_truevalue(VREFMVMRRIX); //WITHTARGETVREF;//ADCVREF_CPU * 100;
+	if (Vref_mV == 0)
+		Vref_mV = WITHTARGETVREF;
 	const int_fast32_t mv = (int32_t) board_getadc_filtered_u32(XTHERMOMRRIX, 0, (uint_fast64_t) Vref_mV * (THERMOSENSOR_UPPER + THERMOSENSOR_LOWER) / THERMOSENSOR_LOWER);
 	return (mv + thermo_offset) / THERMOSENSOR_DENOM;	// Приводим к десятым долям градуса
 
@@ -9336,9 +9348,13 @@ int_fast16_t hamradio_get_pacurrent_value(void)
 
 #endif
 
-#if WITHTARGETVREF
+#if WITHTDIRECTDATA
 
-	const unsigned Vref_mV = WITHTARGETVREF;//ADCVREF_CPU * 100;
+#elif WITHTARGETVREF
+
+	unsigned Vref_mV = board_getadc_unfiltered_truevalue(VREFMVMRRIX); //WITHTARGETVREF;//ADCVREF_CPU * 100;
+	if (Vref_mV == 0)
+		Vref_mV = WITHTARGETVREF;
 
 #elif WITHREFSENSOR
 	// Измерение опрного напряжения
@@ -9353,7 +9369,12 @@ int_fast16_t hamradio_get_pacurrent_value(void)
 	const unsigned Vref_mV = ADCVREF_CPU * 100;
 #endif /* WITHREFSENSOR */
 
-#if WITHCURRLEVEL2
+
+#if WITHTDIRECTDATA
+
+	int curr10 = (sadcvalholder_t) board_getadc_unfiltered_truevalue(PASENSEIX) / 10;	// милиамперы в десятки милиампер
+
+#elif WITHCURRLEVEL2
 
 	const adcvalholder_t midp = board_getadc_unfiltered_truevalue(PAREFERIX2);
 	const adcvalholder_t sense = board_getadc_unfiltered_truevalue(PASENSEIX2);

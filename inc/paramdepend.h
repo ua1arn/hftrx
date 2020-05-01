@@ -315,6 +315,8 @@ extern "C" {
 	//#define HARDWARE_ADCINPUTS	40	/* до 32-ти входов АЦП */
 	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast16_t adcvalholder_t;	
+	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
+
 	#if CPUSTYLE_STM32H7XX
 		//#define HARDWARE_ADCBITS 8	/* АЦП работает с 8-битными значениями */
 		//#define HARDWARE_ADCBITS 10	/* АЦП работает с 10-битными значениями */

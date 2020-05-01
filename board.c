@@ -408,8 +408,7 @@ static uint_fast8_t nmeaparser_chsval;
 static uint_fast8_t nmeaparser_param;		// номер принимаемого параметра в строке
 static uint_fast8_t nmeaparser_chars;		// количество символов, помещённых в буфер
 
-//#define NMEA_PARAMS			5
-#define NMEA_CHARSSMALL		16
+#define NMEA_CHARSSMALL		24
 #define NMEA_CHARSBIG		257
 #define NMEA_BIGFIELD		255	// номер большого поля
 
@@ -417,15 +416,13 @@ enum
 {
 	//	ответ:
 	NMF_CODE, //	$ANSW,
-	NMF_STATE, //	state, //состояние устройства (пока = 0)
+
+	NMF_STATE, //	состояние устройства
 	NMF_FWD, //	V_FWD, //ADC датчик апрямой волны
 	NMF_REF, //	V_REF, //ADC датчика отраженной волны
-	NMF_T_SENS, //	T_SENS, //ADC датчика температуры LM235
 	NMF_C_SENS, //	C_SENS, //ADC датчика тока ACS712
 	NMF_12V_SENS, //	U_SENS, //ADC входного напряжения питания 12V
-	NMF_3V3_SENS, //	SENS_3V3, //ADC напряжения питания 3.3V
-	NMF_5V_SENS, //	SENS_5V, //ADC напряжения питания 5V
-	NMF_VREF, //	VREF //ADC измерения опорного напряжения
+	NMF_T_SENS, //	T_SENS, //ADC датчика температуры LM235
 
 	NMEA_PARAMS
 };
@@ -537,11 +534,12 @@ void nmea_parsechar(uint_fast8_t c)
 				// board_adc_store_data
 				const adcvalholder_t FS = board_getadc_fsval(FWD);
 
-				board_adc_store_data(VOLTSOURCE, strtoul(nmeaparser_get_buff(NMF_12V_SENS), NULL, 10) * FS / EXTFS);
 				board_adc_store_data(FWD, strtoul(nmeaparser_get_buff(NMF_FWD), NULL, 10) * FS / EXTFS);
 				board_adc_store_data(REF, strtoul(nmeaparser_get_buff(NMF_REF), NULL, 10) * FS / EXTFS);
-				board_adc_store_data(PASENSEIX, strtoul(nmeaparser_get_buff(NMF_C_SENS), NULL, 10) * FS / EXTFS);
-				board_adc_store_data(XTHERMOIX, strtoul(nmeaparser_get_buff(NMF_T_SENS), NULL, 10) * FS / EXTFS);
+				// для WITHTDIRECTDATA -  значения параметров напрямую получаются от контроллера усилителя мощности
+				board_adc_store_data(PASENSEIX, strtoul(nmeaparser_get_buff(NMF_C_SENS), NULL, 10));
+				board_adc_store_data(XTHERMOIX, strtoul(nmeaparser_get_buff(NMF_T_SENS), NULL, 10));
+				board_adc_store_data(VOLTSOURCE, strtoul(nmeaparser_get_buff(NMF_12V_SENS), NULL, 10));
 			}
 		}
 		break;
