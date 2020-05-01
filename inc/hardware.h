@@ -411,9 +411,11 @@ extern "C" {
 
 	// ST dual core A7 + M4
 
-	// CPUSTYLE_STM32MP157A
+	// CPUSTYLE_STM32MP157A, CPUSTYLE_STM32MP157D
 	// STM32MP157Axx
+	// STM32MP157Dxx
 	// STM32MP157AAB3
+	// STM32MP157DAB1
 
 	#define CORE_CA7	1
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
