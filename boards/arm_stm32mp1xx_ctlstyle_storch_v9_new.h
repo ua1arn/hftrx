@@ -219,8 +219,8 @@
 	//#define LCDMODE_ILI9341	1	/* 320*240 SF-TC240T-9370-T с контроллером ILI9341 - STM32F4DISCO */
 	//#define LCDMODE_ILI9341_TOPDOWN	1	/* LCDMODE_ILI9341 - перевернуть изображение (для выводов справа) */
 	//#define LCDMODE_LQ043T3DX02K 1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 display */
-	//#define LCDMODE_AT070TN90 1	/* AT070TN90 panel (800*480) - 7" display */
-	#define LCDMODE_AT070TNA2 1	/* AT070TNA2 panel (1024*600) - 7" display */
+	#define LCDMODE_AT070TN90 1	/* AT070TN90 panel (800*480) - 7" display */
+	//#define LCDMODE_AT070TNA2 1	/* AT070TNA2 panel (1024*600) - 7" display */
 	// --- Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
 #endif /* WITHISBOOTLOADER */
 
@@ -481,7 +481,7 @@
 	/* фильтры, для которых стоит признак HAVE */
 	#define IF3_FHAVE	( IF3_FMASK_0P5 | IF3_FMASK_3P1 /*| IF3_FMASK_6P0 | IF3_FMASK_8P0*/)
 
-	#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания и/или подсветки дисплея
+	//#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания и/или подсветки дисплея
 
 	#define VOLTLEVEL_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика напряжения
 	#define VOLTLEVEL_LOWER		10	// 1 kOhm - нижний резистор
@@ -489,19 +489,23 @@
 	// Назначения входов АЦП процессора.
 	enum 
 	{ 
+		WPM_POTIX = BOARD_ADCX1IN(2),			// MCP3208 CH2 потенциометр управления скоростью передачи в телеграфе
+		IFGAIN_IXI = BOARD_ADCX1IN(0),			// MCP3208 CH0 IF GAIN
+		AFGAIN_IXI = BOARD_ADCX1IN(1),			// MCP3208 CH1 AF GAIN
+
+	#if WITHPOTIFGAIN
+		POTIFGAIN = IFGAIN_IXI,
+	#endif /* WITHPOTIFGAIN */
+	#if WITHPOTAFGAIN
+		POTAFGAIN = AFGAIN_IXI,
+	#endif /* WITHPOTAFGAIN */
+
 	#if WITHREFSENSOR
 		VREFIX = 17,		// Reference voltage
 	#endif /* WITHREFSENSOR */
 	#if WITHTEMPSENSOR
 		TEMPIX = 16,
 	#endif /* WITHTEMPSENSOR */
-
-	#if WITHPOTIFGAIN
-		POTIFGAIN = 3,		// PA2 IF GAIN
-	#endif /* WITHPOTIFGAIN */
-	#if WITHPOTAFGAIN
-		POTAFGAIN = 7,		// PA7 AF GAIN
-	#endif /* WITHPOTAFGAIN */
 
 	#if WITHPOTWPM
 		POTWPM = 6,			// PA6 потенциометр управления скоростью передачи в телеграфе
