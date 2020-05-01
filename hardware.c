@@ -11551,7 +11551,7 @@ arm_gic_initialize(void)
 	r7s721_intc_initialize();
 #endif /* CPUSTYLE_R7S721 */
 
-    PRINTF("arm_gic_initialize: GIC_GetBinaryPoint()=%02X\n", GIC_GetBinaryPoint());
+    //PRINTF("arm_gic_initialize: GIC_GetBinaryPoint()=%02X\n", GIC_GetBinaryPoint());
 	
 #if WITHNESTEDINTERRUPTS
 	gARM_OVERREALTIME_PRIORITY = ARM_CA9_ENCODE_PRIORITY(PRI_OVRT);	// value for GIC_SetPriority
