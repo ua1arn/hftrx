@@ -618,6 +618,10 @@ void spi_initialize(void)
 enum { SPDIFIO_READ, SPDIFIO_WRITE };	// в случае пеердачи только команды используем write */
 enum { SPDFIO_1WIRE, SPDFIO_2WIRE, SPDFIO_4WIRE };
 
+static uint8_t read1b = 0x0b;	/* 0x0B: Fast Read			*/
+static uint8_t read2b = 0xBB;	/* 0xBB: Fast Read Dual I/O */
+static uint8_t read4b = 0xEB;	/* 0xEB: Fast Read Quad I/O */
+
 #if WIHSPIDFSW || WIHSPIDFOVERSPI
 
 
@@ -772,13 +776,14 @@ static uint_fast8_t spidf_progval8(uint_fast8_t sendval)
 static void spidf_iostart(
 	uint_fast8_t direction,	// 0: dataflash-to-memory, 1: Memory-to-dataflash
 	uint_fast8_t cmd,
-	uint_fast8_t read4b,	// признак работы по QSPI 4 bit - все кроме команлы идет во 4-байтной шине
+	uint_fast8_t readnb,	// признак работы по QSPI 4 bit - все кроме команды идет во 4-байтной шине
 	uint_fast8_t ndummy,	// number of dummy bytes
 	uint_fast32_t size,
 	uint_fast8_t hasaddress,
 	uint_fast32_t address
 	)
 {
+	ASSERT(readnb == SPDFIO_1WIRE);
 	spidf_select(SPIMODE_AT26DF081A);	/* start sending data to target chip */
 	spidf_progval8_p1(cmd);		/* The Read SFDP instruction code is 0x5A */
 
@@ -870,13 +875,14 @@ static void spidf_unselect(void)
 static void spidf_iostart(
 	uint_fast8_t direction,	// 0: dataflash-to-cpu, 1: cpu-to-dataflash
 	uint_fast8_t cmd,
-	uint_fast8_t read4b,	// признак работы по QSPI 4 bit - все кроме команлы идет во 4-байтной шине
+	uint_fast8_t readnb,	// признак работы по QSPI 4 bit - все кроме команды идет во 4-байтной шине
 	uint_fast8_t ndummy,	// number of dummy bytes
 	uint_fast32_t size,
 	uint_fast8_t hasaddress,
 	uint_fast32_t address
 	)
 {
+	/* код ширины шины */
 	static const uint8_t nbits [3] =
 	{
 			0x01,	// single line
@@ -886,12 +892,12 @@ static void spidf_iostart(
 	/* за сколько тактов пройдет один dummy byte */
 	static const uint8_t nmuls [3] =
 	{
-			0x08,	// single line
-			0x04,	// two lines
-			0x02,	// four lines
+			8,	// single line
+			4,	// two lines
+			2,	// four lines
 	};
-	const uint_fast32_t bw = nbits [read4b];
-	const uint_fast32_t ml = nmuls [read4b];
+	const uint_fast32_t bw = nbits [readnb];
+	const uint_fast32_t ml = nmuls [readnb];
 
 	while ((QUADSPI->SR & QUADSPI_SR_BUSY_Msk) != 0)
 		;
@@ -949,8 +955,8 @@ void spidf_initialize(void)
 	QUADSPI->DCR = ((QUADSPI->DCR & ~ (QUADSPI_DCR_FSIZE_Msk | QUADSPI_DCR_CSHT_Msk | QUADSPI_DCR_CKMODE_Msk))) |
 		(23 << QUADSPI_DCR_FSIZE_Pos) |	// FSIZE+1 is effectively the number of address bits required to address the Flash memory.
 		(7 << QUADSPI_DCR_CSHT_Pos) |	// 0: nCS stays high for at least 1 cycle between Flash memory commands
-		(0 << QUADSPI_DCR_CKMODE_Pos) |	// 0: CLK must stay low while nCS is high (chip select released). This is referred to as mode 0.
-		//(1 << QUADSPI_DCR_CKMODE_Pos) |	// 1: CLK must stay high while nCS is high (chip select released). This is referred to as mode 3.
+		//(0 << QUADSPI_DCR_CKMODE_Pos) |	// 0: CLK must stay low while nCS is high (chip select released). This is referred to as mode 0.
+		(1 << QUADSPI_DCR_CKMODE_Pos) |	// 1: CLK must stay high while nCS is high (chip select released). This is referred to as mode 3.
 		0;
 
 	QUADSPI->CR = ((QUADSPI->CR & ~ (QUADSPI_CR_PRESCALER_Msk))) |
@@ -1138,13 +1144,14 @@ void spidf_uninitialize(void)
 static void spidf_iostart(
 	uint_fast8_t direction,	// 0: dataflash-to-CPU, 1: CPU-to-dataflash
 	uint_fast8_t cmd,
-	uint_fast8_t read4b,	// признак работы по QSPI 4 bit - все кроме команлы идет во 4-байтной шине
+	uint_fast8_t readnb,	// признак работы по QSPI 4 bit - все кроме команды идет во 4-байтной шине
 	uint_fast8_t ndummy,	// number of dummy bytes
 	uint_fast32_t size,
 	uint_fast8_t hasaddress,
 	uint_fast32_t address
 	)
 {
+	ASSERT(readnb == SPDFIO_1WIRE);
 	// Connect I/O pins
 	SPIDF_HARDINITIALIZE();
 	/*
@@ -1382,6 +1389,8 @@ int testchipDATAFLASH(void)
 		else
 			PRINTF("SFDP: density=%08lX (%u Mbi)\n", dword2, 1uL << ((dword2 & 0x7FFFFFFF) - 10));
 		//PRINTF("SFDP: Sector Type 1 Size=%08lX, Sector Type 1 Opcode=%02lX\n", 1uL << ((dword8 >> 0) & 0xFF), (dword8 >> 8) & 0xFF);
+		PRINTF("SFDP: DWORD3=%08lX\n", dword3);
+		PRINTF("SFDP: DWORD4=%08lX\n", dword4);
 	}
 	return 0;
 }
