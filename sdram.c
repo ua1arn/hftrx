@@ -16,7 +16,7 @@
 
 #if WITHSDRAMHW
 
-#if CPUSTYLE_STM32F && ! CPUSTYLE_STM32MP157A
+#if CPUSTYLE_STM32F && ! (CPUSTYLE_STM32MP157A || CPUSTYLE_STM32MP157D)
 
 #define assert_param(expr) do { } while (0)
 /**
@@ -2883,7 +2883,7 @@ void arm_hardware_sdram_initialize(void)
   
 }
 
-#elif CPUSTYLE_STM32MP157A
+#elif CPUSTYLE_STM32MP157A || CPUSTYLE_STM32MP157D
 
 // Taken from https://github.com/ARM-software/arm-trusted-firmware
 

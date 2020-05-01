@@ -35,7 +35,8 @@
 		//#define WITHCPUXOSC 24000000uL	/* На процессоре установлен генератор 24.000 МГц */
 
 		#define PLL1DIVM	2	// ref1_ck = 12 MHz
-		#define PLL1DIVN	54	// 12*54 = 648 MHz
+		//#define PLL1DIVN	54	// 12*54 = 648 MHz
+		#define PLL1DIVN	66	// 12*66 = 792 MHz
 		#define PLL1DIVP	1	// MPU
 		#define PLL1DIVQ	2
 		#define PLL1DIVR	2

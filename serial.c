@@ -1240,7 +1240,7 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 		HARDWARE_UART2_ONTXCHAR(& SCIF3);
 	}
 
-#elif CPUSTYLE_STM32MP157A
+#elif CPUSTYLE_STM32MP1
 	#warning Insert interrupt handlers code for CPUSTYLE_STM32MP1
 
 #else
