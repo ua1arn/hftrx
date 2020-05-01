@@ -616,6 +616,7 @@ void spi_initialize(void)
 #if WIHSPIDFHW || WIHSPIDFSW || WIHSPIDFOVERSPI
 
 enum { SPDIFIO_READ, SPDIFIO_WRITE };	// в случае пеердачи только команды используем write */
+enum { SPDFIO_1WIRE, SPDFIO_2WIRE, SPDFIO_4WIRE };
 
 #if WIHSPIDFSW || WIHSPIDFOVERSPI
 
@@ -771,6 +772,7 @@ static uint_fast8_t spidf_progval8(uint_fast8_t sendval)
 static void spidf_iostart(
 	uint_fast8_t direction,	// 0: dataflash-to-memory, 1: Memory-to-dataflash
 	uint_fast8_t cmd,
+	uint_fast8_t read4b,	// признак работы по QSPI 4 bit - все кроме команлы идет во 4-байтной шине
 	uint_fast8_t ndummy,	// number of dummy bytes
 	uint_fast32_t size,
 	uint_fast8_t hasaddress,
@@ -868,12 +870,29 @@ static void spidf_unselect(void)
 static void spidf_iostart(
 	uint_fast8_t direction,	// 0: dataflash-to-cpu, 1: cpu-to-dataflash
 	uint_fast8_t cmd,
+	uint_fast8_t read4b,	// признак работы по QSPI 4 bit - все кроме команлы идет во 4-байтной шине
 	uint_fast8_t ndummy,	// number of dummy bytes
 	uint_fast32_t size,
 	uint_fast8_t hasaddress,
 	uint_fast32_t address
 	)
 {
+	static const uint8_t nbits [3] =
+	{
+			0x01,	// single line
+			0x02,	// two lines
+			0x03,	// four lines
+	};
+	/* за сколько тактов пройдет один dummy byte */
+	static const uint8_t ndivs [3] =
+	{
+			0x01,	// single line
+			0x02,	// two lines
+			0x04,	// four lines
+	};
+	const uint_fast32_t bw = nbits [read4b];
+	const uint_fast32_t dv = ndivs [read4b];
+
 	while ((QUADSPI->SR & QUADSPI_SR_BUSY_Msk) != 0)
 		;
 
@@ -894,12 +913,12 @@ static void spidf_iostart(
 		//(0 << QUADSPI_CCR_SIOO_Pos) |	// 0: Send instruction on every transaction
 		((direction ? 0x00 : 0x01) << QUADSPI_CCR_FMODE_Pos) |	// 01: Indirect read mode, 00: Indirect write mode
 		//(0x00 << QUADSPI_CCR_FMODE_Pos) |	//
-		(size != 0) * (0x01 << QUADSPI_CCR_DMODE_Pos) |	// 01: Data on a single line
-		((8 * ndummy)  << QUADSPI_CCR_DCYC_Pos) |	// This field defines the duration of the dummy phase (0..15).
-		//(0 << QUADSPI_CCR_ABSIZE_Pos) |	// 00: 8-bit alternate byte
+		(size != 0) * (bw << QUADSPI_CCR_DMODE_Pos) |	// 01: Data on a single line
+		((8 * ndummy / dv)  << QUADSPI_CCR_DCYC_Pos) |	// This field defines the duration of the dummy phase (1..31).
+		//0 * (bw << QUADSPI_CCR_ABSIZE_Pos) |	// 00: 8-bit alternate byte
 		(0 << QUADSPI_CCR_ABMODE_Pos) |	// 00: No alternate bytes
 		(0x02 << QUADSPI_CCR_ADSIZE_Pos) |	// 010: 24-bit address
-		(hasaddress != 0) * (0x01 << QUADSPI_CCR_ADMODE_Pos) |	// 01: Address on a single line
+		(hasaddress != 0) * (bw << QUADSPI_CCR_ADMODE_Pos) |	// 01: Address on a single line
 		(0x01 << QUADSPI_CCR_IMODE_Pos) |	// 01: Instruction on a single line
 		(cmd << QUADSPI_CCR_INSTRUCTION_Pos) |	// Instruction to be send to the external SPI device.
 		0;
@@ -1119,6 +1138,7 @@ void spidf_uninitialize(void)
 static void spidf_iostart(
 	uint_fast8_t direction,	// 0: dataflash-to-CPU, 1: CPU-to-dataflash
 	uint_fast8_t cmd,
+	uint_fast8_t read4b,	// признак работы по QSPI 4 bit - все кроме команлы идет во 4-байтной шине
 	uint_fast8_t ndummy,	// number of dummy bytes
 	uint_fast32_t size,
 	uint_fast8_t hasaddress,
@@ -1210,13 +1230,13 @@ static unsigned long ulmin(
 /* снять защиту записи для следующей команды */
 void writeEnableDATAFLASH(void)
 {
-	spidf_iostart(SPDIFIO_WRITE, 0x06, 0, 0, 0, 0);	/* 0x06: write enable */
+	spidf_iostart(SPDIFIO_WRITE, 0x06, SPDFIO_1WIRE, 0, 0, 0, 0);	/* 0x06: write enable */
 	spidf_unselect();	/* done sending data to target chip */
 }
 
 void writeDisableDATAFLASH(void)
 {
-	spidf_iostart(SPDIFIO_WRITE, 0x04, 0, 0, 0, 0);	/* 0x04: write disable */
+	spidf_iostart(SPDIFIO_WRITE, 0x04, SPDFIO_1WIRE, 0, 0, 0, 0);	/* 0x04: write disable */
 	spidf_unselect();	/* done sending data to target chip */
 }
 
@@ -1225,7 +1245,7 @@ uint_fast8_t dataflash_read_status(void)
 	uint8_t v;
 	enum { SPDIF_IOSIZE = sizeof v };
 
-	spidf_iostart(SPDIFIO_READ, 0x05, 0, SPDIF_IOSIZE, 0, 0x00000000);	/* read status register */
+	spidf_iostart(SPDIFIO_READ, 0x05, SPDFIO_1WIRE, 0, SPDIF_IOSIZE, 0, 0x00000000);	/* read status register */
 	spidf_read(& v, SPDIF_IOSIZE);
 	spidf_unselect();	/* done sending data to target chip */
 
@@ -1262,7 +1282,7 @@ static int largetimed_dataflash_read_status(void)
 static void readSFDPDATAFLASH(unsigned long flashoffset, uint8_t * buff, unsigned size)
 {
 	// Read SFDP
-	spidf_iostart(SPDIFIO_READ, 0x5A, 1, size, 1, flashoffset);	// READ SFDP (with dummy bytes)
+	spidf_iostart(SPDIFIO_READ, 0x5A, SPDFIO_1WIRE, 1, size, 1, flashoffset);	// READ SFDP (with dummy bytes)
 	spidf_read(buff, size);
 	spidf_unselect();	/* done sending data to target chip */
 }
@@ -1309,7 +1329,7 @@ int testchipDATAFLASH(void)
 		uint8_t mfa [4];
 
 		enum { SPDIF_IOSIZE = sizeof mfa };
-		spidf_iostart(SPDIFIO_READ, 0x9F, 0, SPDIF_IOSIZE, 0, 0x00000000);	/* read id register */
+		spidf_iostart(SPDIFIO_READ, 0x9F, SPDFIO_1WIRE, 0, SPDIF_IOSIZE, 0, 0x00000000);	/* read id register */
 		spidf_read(mfa, SPDIF_IOSIZE);
 		spidf_unselect();	/* done sending data to target chip */
 
@@ -1383,7 +1403,7 @@ int prepareDATAFLASH(void)
 
 		uint8_t v = 0x00;	/* status register data */
 		// Write Status Register
-		spidf_iostart(SPDIFIO_WRITE, 0x01, 0, 1, 0, 0);	/* Write Status Register */
+		spidf_iostart(SPDIFIO_WRITE, 0x01, SPDFIO_1WIRE, 0, 1, 0, 0);	/* Write Status Register */
 		spidf_write(& v, 1);
 		spidf_unselect();	/* done sending data to target chip */
 		TP();
@@ -1405,7 +1425,7 @@ int sectoreraseDATAFLASH(unsigned long flashoffset)
 	writeEnableDATAFLASH();		/* write enable */
 
 	// start byte programm
-	spidf_iostart(SPDIFIO_WRITE, 0xD8, 0, 0, 1, flashoffset);		/* 64KB SECTOR ERASE */
+	spidf_iostart(SPDIFIO_WRITE, 0xD8, SPDFIO_1WIRE, 0, 0, 1, flashoffset);		/* 64KB SECTOR ERASE */
 	spidf_unselect();	/* done sending data to target chip */
 	//timed_dataflash_read_status(target);
 	return 0;
@@ -1425,7 +1445,7 @@ int writesinglepageDATAFLASH(unsigned long flashoffset, const unsigned char * da
 
 	// start byte programm
 
-	spidf_iostart(SPDIFIO_WRITE, 0x02, 0, len, 1, flashoffset);		/* Page Program */
+	spidf_iostart(SPDIFIO_WRITE, 0x02, SPDFIO_1WIRE, 0, len, 1, flashoffset);		/* Page Program */
 	spidf_write(data, len);
 	spidf_unselect();	/* done sending data to target chip */
 
@@ -1465,7 +1485,13 @@ int verifyDATAFLASH(unsigned long flashoffset, const uint8_t * data, unsigned lo
 		return 1;
 	}
 
-	spidf_iostart(SPDIFIO_READ, 0x03, 0, len, 1, flashoffset);	/* 0x03: sequential read block */
+#if WIHSPIDFHW4BIT
+	spidf_iostart(SPDIFIO_READ, 0xEB, SPDFIO_4WIRE, 3, len, 1, flashoffset);	/* 0xEB: Fast Read Quad I/O */
+#elif WIHSPIDFHW2BIT
+	spidf_iostart(SPDIFIO_READ, 0xBB, SPDFIO_2WIRE, 1, len, 1, flashoffset);	/* 0xBB: Fast Read Dual I/O */
+#else /* WIHSPIDFHW4BIT */
+	spidf_iostart(SPDIFIO_READ, 0x03, SPDFIO_1WIRE, 0, len, 1, flashoffset);	/* 0x03: sequential read block */
+#endif /* WIHSPIDFHW4BIT */
 	err = spidf_verify(data, len);
 	spidf_unselect();	/* done sending data to target chip */
 
@@ -1483,9 +1509,14 @@ int readDATAFLASH(unsigned long flashoffset, uint8_t * data, unsigned long len)
 		PRINTF("readDATAFLASH: timeout\n");
 		return 1;
 	}
-	//PRINTF("readDATAFLASH start2\n");
 
-	spidf_iostart(SPDIFIO_READ, 0x03, 0, len, 1, flashoffset);	/* 0x03: sequential read block */
+#if WIHSPIDFHW4BIT
+	spidf_iostart(SPDIFIO_READ, 0xEB, SPDFIO_4WIRE, 3, len, 1, flashoffset);	/* 0xEB: Fast Read Quad I/O */
+#elif WIHSPIDFHW2BIT
+	spidf_iostart(SPDIFIO_READ, 0xBB, SPDFIO_2WIRE, 1, len, 1, flashoffset);	/* 0xBB: Fast Read Dual I/O */
+#else /* WIHSPIDFHW4BIT */
+	spidf_iostart(SPDIFIO_READ, 0x03, SPDFIO_1WIRE, 0, len, 1, flashoffset);	/* 0x03: sequential read block */
+#endif /* WIHSPIDFHW4BIT */
 	spidf_read(data, len);
 	spidf_unselect();	/* done sending data to target chip */
 	//PRINTF("readDATAFLASH done\n");

@@ -20,7 +20,8 @@
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
 #define WITHMDMAHW		1	/* Использование MDMA для формирования изображений */
 //#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
-#define WIHSPIDFHW	1	/* аппаратное обслуживание DATA FLASH */
+#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
+#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения */
 
 //#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 #define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
@@ -841,22 +842,18 @@
 
 	#if WIHSPIDFSW || WIHSPIDFHW
 
-		//	QUADSPI_CLK 	PF10	AS pin 01	U13-38 (traced to PA7)
-		//	QUADSPI_BK1_NCS PB6 	AS pin 08	U12-21 (traced to PB12)
-		//	QUADSPI_BK1_IO0 PF8		MOSI
-		//	QUADSPI_BK1_IO1 PF9 	MISO
-		#define SPDIF_MISO_BIT (1u << 9)	// PF9
-		#define SPDIF_MOSI_BIT (1u << 8)	// PF8
-		#define SPDIF_SCLK_BIT (1u << 10)	// PF10
-		#define SPDIF_NCS_BIT (1u << 6)		// PB6
+		#define SPDIF_MISO_BIT (1u << 9)	// PF9	QUADSPI_BK1_IO1
+		#define SPDIF_MOSI_BIT (1u << 8)	// PF8	QUADSPI_BK1_IO0
+		#define SPDIF_SCLK_BIT (1u << 10)	// PF10	QUADSPI_CLK
+		#define SPDIF_NCS_BIT (1u << 6)		// PB6	QUADSPI_BK1_NCS
 
-		#define SPDIF_D2_BIT (1u << 7)	// PF7
-		#define SPDIF_D3_BIT (1u << 6)	// PF6
+		#define SPDIF_D2_BIT (1u << 7)		// PF7	QUADSPI_BK1_IO2
+		#define SPDIF_D3_BIT (1u << 6)		// PF6	QUADSPI_BK1_IO3
 
 		#if WIHSPIDFHW
 			#define SPIDF_HARDINITIALIZE() do { \
-					/*arm_hardware_piof_altfn50(SPDIF_D2_BIT, AF_QUADSPI_AF9); */ /* PF7 D2 tie-up */ \
-					/*arm_hardware_piof_altfn50(SPDIF_D3_BIT, AF_QUADSPI_AF9); */ /* PF6 D3 tie-up */ \
+					arm_hardware_piof_altfn50(SPDIF_D2_BIT, AF_QUADSPI_AF9);  	/* PF7 D2 QUADSPI_BK1_IO2 */ \
+					arm_hardware_piof_altfn50(SPDIF_D3_BIT, AF_QUADSPI_AF9);  	/* PF6 D3 QUADSPI_BK1_IO3 */ \
 					/*arm_hardware_piof_outputs(SPDIF_D2_BIT, SPDIF_D2_BIT); */ /* PF7 D2 tie-up */ \
 					/*arm_hardware_piof_outputs(SPDIF_D3_BIT, SPDIF_D3_BIT); */ /* PF6 D3 tie-up */ \
 					arm_hardware_piof_altfn50(SPDIF_SCLK_BIT, AF_QUADSPI_AF9); /* PF10 SCLK */ \
