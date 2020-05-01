@@ -49,9 +49,9 @@
 
 	#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
 	//#define WITHSDRAM_PMC1	1	/* power management chip */
-	//#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
+	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 
-	//#define WITHUSBHW_DEVICE	USB_OTG_HS	/* на этом устройстве поддерживается функциональность DEVICE	*/
+	#define WITHUSBHW_DEVICE	USB_OTG_HS	/* на этом устройстве поддерживается функциональность DEVICE	*/
 	//#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод VBUS_SENSE */
 	#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
 	//#define WITHUSBDEV_HIGHSPEEDULPI	1
@@ -79,8 +79,9 @@
 	//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
 	//#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
 	//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
-	//#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
+	#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
 	//#define WITHUSBWCID	1
+
 #else /* WITHISBOOTLOADER */
 
 	#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
@@ -463,7 +464,7 @@
 	#define targetext1		(1uL << 8)		// PE8 ext1 on front panel
 	#define targetxad2		(1uL << 7)		// PE7 ext2(not connected now)
 	#define targetnvram		(1uL << 0)		// PE0 nvmem FM25L16B
-	#define targetctl1		(1uL << 1)		// PE1 board control registers chain
+	#define targetctl1		(0* 1uL << 1)		// PE1 board control registers chain
 	#define targetcodec1	(1uL << 2)		// PE2 on-board codec1 NAU8822L
 	#define targetadc2		(1uL << 9) 		// PE9 ADC MCP3208-BI/SL chip select (potentiometers)
 	#define targetfpga1		(1uL << 10)		// PE10 FPGA control registers CS1

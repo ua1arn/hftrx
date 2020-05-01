@@ -1496,6 +1496,9 @@ int readDATAFLASH(unsigned long flashoffset, uint8_t * data, unsigned long len)
 void bootloader_readimage(unsigned long flashoffset, uint8_t * dest, unsigned Len)
 {
 	spidf_initialize();
+#if WITHDEBUG
+	testchipDATAFLASH();
+#endif /* WITHDEBUG */
 	readDATAFLASH(flashoffset, dest, Len);
 	spidf_uninitialize();
 }
