@@ -911,16 +911,16 @@ static void spidf_iostart(
 		//(0 << QUADSPI_CCR_DHHC_Pos) |	// 0: Delay the data output using analog delay
 		//(0 << QUADSPI_CCR_FRCM_Pos) |	// 0: Normal mode
 		//(0 << QUADSPI_CCR_SIOO_Pos) |	// 0: Send instruction on every transaction
-		((direction ? 0x00 : 0x01) << QUADSPI_CCR_FMODE_Pos) |	// 01: Indirect read mode, 00: Indirect write mode
+		((direction ? 0x00uL : 0x01uL) << QUADSPI_CCR_FMODE_Pos) |	// 01: Indirect read mode, 00: Indirect write mode
 		//(0x00 << QUADSPI_CCR_FMODE_Pos) |	//
 		(size != 0) * (bw << QUADSPI_CCR_DMODE_Pos) |	// 01: Data on a single line
-		((8 * ndummy / dv)  << QUADSPI_CCR_DCYC_Pos) |	// This field defines the duration of the dummy phase (1..31).
+		((8uL * ndummy / dv)  << QUADSPI_CCR_DCYC_Pos) |	// This field defines the duration of the dummy phase (1..31).
 		//0 * (bw << QUADSPI_CCR_ABSIZE_Pos) |	// 00: 8-bit alternate byte
 		(0 << QUADSPI_CCR_ABMODE_Pos) |	// 00: No alternate bytes
-		(0x02 << QUADSPI_CCR_ADSIZE_Pos) |	// 010: 24-bit address
+		(0x02uL << QUADSPI_CCR_ADSIZE_Pos) |	// 010: 24-bit address
 		(hasaddress != 0) * (bw << QUADSPI_CCR_ADMODE_Pos) |	// 01: Address on a single line
-		(0x01 << QUADSPI_CCR_IMODE_Pos) |	// 01: Instruction on a single line
-		(cmd << QUADSPI_CCR_INSTRUCTION_Pos) |	// Instruction to be send to the external SPI device.
+		(0x01uL << QUADSPI_CCR_IMODE_Pos) |	// 01: Instruction on a single line
+		((uint_fast32_t) cmd << QUADSPI_CCR_INSTRUCTION_Pos) |	// Instruction to be send to the external SPI device.
 		0;
 
 	if ((QUADSPI->CCR & QUADSPI_CCR_ADMODE_Msk) != 0)
