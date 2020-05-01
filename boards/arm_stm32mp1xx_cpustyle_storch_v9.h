@@ -21,6 +21,8 @@
 #define WITHMDMAHW		1	/* Использование MDMA для формирования изображений */
 //#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
 #define WIHSPIDFHW	1	/* аппаратное обслуживание DATA FLASH */
+//#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */
+//#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
 
 //#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 #define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
