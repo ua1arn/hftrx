@@ -6995,7 +6995,11 @@ void board_init_io(void)
 
 #if WITHSAI2HW
 	hardware_fpgaspectrum_initialize();	// Интерфейс к источнику данных о спектре
-#endif /* WITHSAI1HW */
+#endif /* WITHSAI2HW */
+
+#if WITHSAI3HW
+	hardware_fpgawidespectrum_initialize();	// Интерфейс к источнику данных о спектре
+#endif /* WITHSAI3HW */
 
 #if WITHCPUDACHW
 	hardware_dac_initialize();	/* инициализация DAC на STM32F4xx */

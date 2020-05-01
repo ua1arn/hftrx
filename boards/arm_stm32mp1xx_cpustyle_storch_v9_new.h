@@ -28,6 +28,7 @@
 	#define WITHI2SHW	1	/* Использование I2S - аудиокодек на I2S2 и I2S2_alt или I2S2 и I2S3	*/
 	#define WITHSAI1HW	1	/* Использование SAI1 - FPGA или IF codec	*/
 	//#define WITHSAI2HW	1	/* Использование SAI2 - FPGA или IF codec	*/
+	//#define WITHSAI3HW	1	/* Использование SAI3 - FPGA скоростной канал записи спктра	*/
 #endif /* WITHINTEGRATEDDSP */
 
 //#define WITHCPUDACHW	1	/* использование встроенного в процессор DAC */
@@ -207,18 +208,19 @@
 #endif
 
 #if WITHI2SHW
-	// Инициализируются I2S2 и I2S3
+	// Инициализируются I2S2 в дуплексном режиме.
 	#define I2S2HW_INITIALIZE() do { \
 		arm_hardware_piob_altfn2(1uL << 12,	AF_SPI2); /* PB12 I2S2_WS	*/ \
-		arm_hardware_piob_altfn2(1uL << 10,	AF_SPI2); /* PB10 I2S2_CK	*/ \
-		arm_hardware_pioc_altfn2(1uL << 3,	AF_SPI2); /* PC3 I2S2_SD - передача */ \
-		arm_hardware_pioa_altfn2(1uL << 15,	AF_SPI3); /* PA15 I2S3_WS	*/ \
-		arm_hardware_piob_altfn2(1uL << 3,	AF_SPI3); /* PB3 I2S3_CK	*/ \
-		arm_hardware_piob_altfn2(1uL << 2,	7 /* AF_7 */); /* PB2 I2S3_SD, - приём от кодека */ \
+		arm_hardware_piob_altfn2(1uL << 13,	AF_SPI2); /* PB13 I2S2_CK	*/ \
+		arm_hardware_piob_altfn2(1uL << 15,	AF_SPI2); /* PB15 I2S2_SDO - передача */ \
+		arm_hardware_piob_altfn2(1uL << 14,	AF_SPI2); /* PB14 I2S2_SDI, - приём от кодека */ \
 	} while (0)
 #endif /* WITHSAI1HW */
 
 #if WITHSAI1HW
+	/*
+	 *
+	 */
 	#define SAI1HW_INITIALIZE()	do { \
 		/*arm_hardware_pioe_altfn20(1uL << 2, AF_SAI); */	/* PE2 - SAI1_MCK_A - 12.288 MHz	*/ \
 		arm_hardware_pioe_altfn2(1uL << 4,	AF_SAI);			/* PE4 - SAI1_FS_A	- 48 kHz	*/ \
@@ -234,11 +236,17 @@
 	из внешних сигналов требуется только SAI2_SD_A
 	*/
 	#define SAI2HW_INITIALIZE()	do { \
-		/* arm_hardware_pioe_altfn20(1uL << 0, AF_SAI2); */	/* PE0 - SAI2_MCK_A - 12.288 MHz	*/ \
-		/* arm_hardware_piod_altfn2(1uL << 12, AF_SAI2); */	/* PD12 - SAI2_FS_A	- 48 kHz	*/ \
-		/* arm_hardware_piod_altfn20(1uL << 13, AF_SAI2); */	/* PD13 - SAI2_SCK_A	*/ \
-		/* arm_hardware_piod_altfn2(1uL << 11, AF_SAI2); */	/* PD11 - SAI2_SD_A	(i2s data to codec)	*/ \
-		/* arm_hardware_pioe_altfn2(1uL << 11, AF_SAI2);	*/ /* PE11 - SAI2_SD_B	(i2s data from codec)	*/ \
+		arm_hardware_pioe_altfn2(1uL << 11, AF_SAI2);	/* PE11 - SAI2_SD_B	(i2s data from codec)	*/ \
+	} while (0)
+#endif /* WITHSAI1HW */
+
+#if WITHSAI3HW
+	/*
+	*/
+	#define SAI3HW_INITIALIZE()	do { \
+		arm_hardware_piod_altfn50(1uL << 12, AF_SAI2); 		/* PD12 - SAI2_FS_A	- 48 kHz	*/ \
+		arm_hardware_piod_altfn50(1uL << 13, AF_SAI2); 		/* PD13 - SAI2_SCK_A	*/ \
+		arm_hardware_pioe_altfn50(1uL << 11, AF_SAI2);		/* PE11 - SAI2_SD_B	(i2s data from codec)	*/ \
 	} while (0)
 #endif /* WITHSAI1HW */
 

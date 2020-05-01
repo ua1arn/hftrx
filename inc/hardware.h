@@ -687,6 +687,7 @@ void hardware_fpgacodec_enable(void);		// Интерфейс к ВЧ кодек�
 void hardware_fpgacodec_initialize(void);	// Интерфейс к ВЧ кодеку
 void hardware_fpgaspectrum_enable(void);	// Интерфейс к источнику данных о спектре
 void hardware_fpgaspectrum_initialize(void);	// Интерфейс к источнику данных о спектре
+void hardware_fpgawidespectrum_initialize(void);	// Интерфейс к источнику данных о спектре
 
 void hardware_dac_initialize(void);		/* инициализация DAC на STM32F4xx */
 void hardware_dac_ch1_setvalue(uint_fast16_t v);	// вывод 12-битного значения на ЦАП - канал 1
