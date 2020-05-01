@@ -3648,7 +3648,7 @@ void ddr_enable_clock(void)
 	mmio_setbits_32(RCC_BASE + RCC_DDRITFCR,
 			RCC_DDRITFCR_DDRC1EN | RCC_DDRITFCR_DDRC1LPEN |
 			RCC_DDRITFCR_DDRC2EN | RCC_DDRITFCR_DDRC2LPEN |
-			RCC_DDRITFCR_DDRPHYCEN | RCC_DDRITFCR_DDRPHYCAPBLPEN |
+			RCC_DDRITFCR_DDRPHYCEN | RCC_DDRITFCR_DDRPHYCLPEN |
 			RCC_DDRITFCR_DDRPHYCAPBEN | RCC_DDRITFCR_DDRCAPBLPEN |
 			RCC_DDRITFCR_DDRCAPBEN | RCC_DDRITFCR_DDRPHYCAPBLPEN
 			);
@@ -4000,12 +4000,12 @@ static void stm32mp1_ddrphy_idone_wait(struct stm32mp1_ddrphy *phy)
 //		}
 
 		if ((pgsr & DDRPHYC_PGSR_DTERR) != 0U) {
-			VERBOSE("DQS Gate Trainig Error\n");
+			VERBOSE("DQS Gate Training Error\n");
 			error++;
 		}
 
 		if ((pgsr & DDRPHYC_PGSR_DTIERR) != 0U) {
-			VERBOSE("DQS Gate Trainig Intermittent Error\n");
+			VERBOSE("DQS Gate Training Intermittent Error\n");
 			error++;
 		}
 
