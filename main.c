@@ -9220,7 +9220,7 @@ uint_fast8_t hamradio_get_volt_value(void)
 {
 #if WITHTDIRECTDATA
 
-	return board_getadc_unfiltered_truevalue(VOLTSOURCE) / 100;	// миливольты в 0.1 вольта
+	return board_getadc_filtered_truevalue(VOLTMRRIX) / 100;	// миливольты в 0.1 вольта
 
 #elif WITHTARGETVREF
 
@@ -9271,7 +9271,7 @@ int_fast16_t hamradio_get_temperature_value(void)
 	// XTHERMOIX - данные с АЦП напрямую
 #if WITHTDIRECTDATA
 
-	return board_getadc_unfiltered_truevalue(XTHERMOMRRIX);	// 0.1 градуса
+	return board_getadc_filtered_truevalue(XTHERMOMRRIX);	// 0.1 градуса
 
 #elif WITHTARGETVREF
 
@@ -9372,7 +9372,7 @@ int_fast16_t hamradio_get_pacurrent_value(void)
 
 #if WITHTDIRECTDATA
 
-	int curr10 = (sadcvalholder_t) board_getadc_unfiltered_truevalue(PASENSEIX) / 10;	// милиамперы в десятки милиампер
+	int curr10 = (sadcvalholder_t) board_getadc_filtered_truevalue(PASENSEMRRIX) / 10;	// милиамперы в десятки милиампер
 
 #elif WITHCURRLEVEL2
 
@@ -10000,9 +10000,6 @@ display2_redrawbarstimed(
 	#elif WITHCURRLEVEL
 		board_adc_store_data(PASENSEMRRIX, board_getadc_unfiltered_truevalue(PASENSEIX));
 	#endif /* WITHCURRLEVEL */
-	#if WITHTHERMOLEVEL
-		board_adc_store_data(XTHERMOMRRIX, board_getadc_unfiltered_truevalue(XTHERMOIX));
-	#endif /* WITHTHERMOLEVEL */
 		/* --- переписываем значения из возможно внешних АЦП в кеш значений */
 
 		/* отрисовка элементов, общих для всех режимов отображения */
