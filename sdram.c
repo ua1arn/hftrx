@@ -3641,10 +3641,6 @@ struct stm32mp1_ddr_config {
 	struct stm32mp1_ddrphy_cal p_cal;
 };
 
-int stm32mp1_ddr_clk_enable(struct ddr_info *priv, uint32_t mem_speed);
-static void stm32mp1_ddr_init(struct ddr_info *priv,
-		       struct stm32mp1_ddr_config *config);
-
 void ddr_enable_clock(void)
 {
 	//stm32mp1_clk_rcc_regs_lock();
