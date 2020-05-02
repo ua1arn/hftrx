@@ -1315,6 +1315,13 @@ static int seekparamSFDPDATAFLASH(unsigned long * paramoffset, uint_fast8_t * pa
 
 // Atmel Data Flash: Read: ID = 0x1F devId = 0x4501, mf_dlen=0x00
 
+static void modeDATAFLASH(uint_fast16_t dw, const char * title, int buswID)
+{
+	const unsigned bw = 1u << buswID;
+	unsigned ndmy = (((dw >> 5) & 0x07) * bw + ((dw >> 0) & 0x1F) * bw) / 8;
+	PRINTF("SFDP: %s Opcode=%02X, mobbits=%u, ws=%u, ndmy=%u\n", title, (dw >> 8) & 0xFF, (dw >> 5) & 0x07, (dw >> 0) & 0x1F, ndmy);
+}
+
 int testchipDATAFLASH(void)
 {
 	/* Ожидание бита ~RDY в слове состояния. Для FRAM не имеет смысла.
@@ -1389,8 +1396,11 @@ int testchipDATAFLASH(void)
 		else
 			PRINTF("SFDP: density=%08lX (%u Mbi)\n", dword2, 1uL << ((dword2 & 0x7FFFFFFF) - 10));
 		//PRINTF("SFDP: Sector Type 1 Size=%08lX, Sector Type 1 Opcode=%02lX\n", 1uL << ((dword8 >> 0) & 0xFF), (dword8 >> 8) & 0xFF);
-		PRINTF("SFDP: DWORD3=%08lX\n", dword3);
-		PRINTF("SFDP: DWORD4=%08lX\n", dword4);
+
+		modeDATAFLASH(dword3 >> 0, "(1-4-4) Fast Read", SPDFIO_4WIRE);
+		modeDATAFLASH(dword4 >> 16, "(1-2-2) Fast Read", SPDFIO_2WIRE);
+		//modeDATAFLASH(dword6 >> 16, "(2-2-2) Fast Read", SPDFIO_2WIRE);
+		//modeDATAFLASH(dword7 >> 16, "(4-4-4) Fast Read", SPDFIO_4WIRE);
 	}
 	return 0;
 }
