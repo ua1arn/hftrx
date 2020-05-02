@@ -1319,7 +1319,7 @@ static void modeDATAFLASH(uint_fast16_t dw, const char * title, int buswID)
 {
 	const unsigned bw = 1u << buswID;
 	unsigned ndmy = (((dw >> 5) & 0x07) * bw + ((dw >> 0) & 0x1F) * bw) / 8;
-	PRINTF("SFDP: %s Opcode=%02X, mobbits=%u, ws=%u, ndmy=%u\n", title, (dw >> 8) & 0xFF, (dw >> 5) & 0x07, (dw >> 0) & 0x1F, ndmy);
+	//PRINTF("SFDP: %s Opcode=%02X, mobbits=%u, ws=%u, ndmy=%u\n", title, (dw >> 8) & 0xFF, (dw >> 5) & 0x07, (dw >> 0) & 0x1F, ndmy);
 }
 
 int testchipDATAFLASH(void)
