@@ -623,22 +623,22 @@ display2_smeter15(
 	{
 		// RX state
 		colpip_plot(fr, DIM_X, DIM_Y, x0, y0, smeter_bg [SM_STATE_RX], SM_BG_W, SM_BG_H);
-	}
 
-	{
-		// Рисование стрелки
-		const COLORMAIN_T ct = gv_trace > smeter_params.gm ? COLORMAIN_RED : COLORMAIN_YELLOW;
-		display_radius_buf(fr, DIM_X, DIM_Y, xc - 1, yc, gv_trace, smeter_params.r1 - 2, smeter_params.r2 + 2, ct, 0);
-		display_radius_buf(fr, DIM_X, DIM_Y, xc, yc, gv_trace, smeter_params.r1 - 2, smeter_params.r2 + 2, ct, 0);
-		display_radius_buf(fr, DIM_X, DIM_Y, xc + 1, yc, gv_trace, smeter_params.r1 - 2, smeter_params.r2 + 2, ct, 0);
-	}
+		{
+			// Рисование стрелки
+			const COLORMAIN_T ct = gv_trace > smeter_params.gm ? COLORMAIN_RED : COLORMAIN_YELLOW;
+			display_radius_buf(fr, DIM_X, DIM_Y, xc - 1, yc, gv_trace, smeter_params.r1 - 2, smeter_params.r2 + 2, ct, 0);
+			display_radius_buf(fr, DIM_X, DIM_Y, xc, yc, gv_trace, smeter_params.r1 - 2, smeter_params.r2 + 2, ct, 0);
+			display_radius_buf(fr, DIM_X, DIM_Y, xc + 1, yc, gv_trace, smeter_params.r1 - 2, smeter_params.r2 + 2, ct, 0);
+		}
 
-	{
-		// Рисование стрелки (?)
-		const COLORMAIN_T ct2 = gv > smeter_params.gm ? COLORMAIN_RED : COLORMAIN_GREEN;
-		display_radius_buf(fr, DIM_X, DIM_Y, xc - 1, yc, gv, smeter_params.rv1, smeter_params.rv2, ct2, 0);
-		display_radius_buf(fr, DIM_X, DIM_Y, xc, yc, gv, smeter_params.rv1, smeter_params.rv2, ct2, 0);
-		display_radius_buf(fr, DIM_X, DIM_Y, xc + 1, yc, gv, smeter_params.rv1, smeter_params.rv2, ct2, 0);
+		{
+			// Рисование стрелки (?)
+			const COLORMAIN_T ct2 = gv > smeter_params.gm ? COLORMAIN_RED : COLORMAIN_GREEN;
+			display_radius_buf(fr, DIM_X, DIM_Y, xc - 1, yc, gv, smeter_params.rv1, smeter_params.rv2, ct2, 0);
+			display_radius_buf(fr, DIM_X, DIM_Y, xc, yc, gv, smeter_params.rv1, smeter_params.rv2, ct2, 0);
+			display_radius_buf(fr, DIM_X, DIM_Y, xc + 1, yc, gv, smeter_params.rv1, smeter_params.rv2, ct2, 0);
+		}
 	}
 }
 
