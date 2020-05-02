@@ -616,11 +616,10 @@ void spi_initialize(void)
 #if WIHSPIDFHW || WIHSPIDFSW || WIHSPIDFOVERSPI
 
 enum { SPDIFIO_READ, SPDIFIO_WRITE };	// в случае пеердачи только команды используем write */
-enum { SPDFIO_1WIRE, SPDFIO_2WIRE, SPDFIO_4WIRE };
+enum { SPDFIO_1WIRE, SPDFIO_2WIRE, SPDFIO_4WIRE, SPDFIO_numwires };
 
-static uint8_t read1b = 0x0b;	/* 0x0B: Fast Read			*/
-static uint8_t read2b = 0xBB;	/* 0xBB: Fast Read Dual I/O */
-static uint8_t read4b = 0xEB;	/* 0xEB: Fast Read Quad I/O */
+static uint8_t readxb [SPDFIO_numwires] = { 0x0b, 0x00, 0x00 };
+static uint8_t dmyb [SPDFIO_numwires];
 
 #if WIHSPIDFSW || WIHSPIDFOVERSPI
 
@@ -1318,8 +1317,19 @@ static int seekparamSFDPDATAFLASH(unsigned long * paramoffset, uint_fast8_t * pa
 static void modeDATAFLASH(uint_fast16_t dw, const char * title, int buswID)
 {
 	const unsigned bw = 1u << buswID;
-	unsigned ndmy = (((dw >> 5) & 0x07) * bw + ((dw >> 0) & 0x1F) * bw) / 8;
-	//PRINTF("SFDP: %s Opcode=%02X, mobbits=%u, ws=%u, ndmy=%u\n", title, (dw >> 8) & 0xFF, (dw >> 5) & 0x07, (dw >> 0) & 0x1F, ndmy);
+	const unsigned ndmy = (((dw >> 5) & 0x07) * bw + ((dw >> 0) & 0x1F) * bw) / 8;
+	switch ((dw >> 8) & 0xFF)
+	{
+	case 0x00:
+	case 0xFF:
+		PRINTF("SFDP: %s not supported\n", title);
+		break;
+	default:
+		PRINTF("SFDP: %s Opcode=%02X, mobbits=%u, ws=%u, ndmy=%u\n", title, (dw >> 8) & 0xFF, (dw >> 5) & 0x07, (dw >> 0) & 0x1F, ndmy);
+		readxb [buswID] = (dw >> 8) & 0xFF;	// opcode
+		dmyb [buswID] = ndmy;	// dummy bytes
+		break;
+	}
 }
 
 int testchipDATAFLASH(void)
@@ -1396,11 +1406,9 @@ int testchipDATAFLASH(void)
 		else
 			PRINTF("SFDP: density=%08lX (%u Mbi)\n", dword2, 1uL << ((dword2 & 0x7FFFFFFF) - 10));
 		//PRINTF("SFDP: Sector Type 1 Size=%08lX, Sector Type 1 Opcode=%02lX\n", 1uL << ((dword8 >> 0) & 0xFF), (dword8 >> 8) & 0xFF);
-
+		// установка кодов операции
 		modeDATAFLASH(dword3 >> 0, "(1-4-4) Fast Read", SPDFIO_4WIRE);
 		modeDATAFLASH(dword4 >> 16, "(1-2-2) Fast Read", SPDFIO_2WIRE);
-		//modeDATAFLASH(dword6 >> 16, "(2-2-2) Fast Read", SPDFIO_2WIRE);
-		//modeDATAFLASH(dword7 >> 16, "(4-4-4) Fast Read", SPDFIO_4WIRE);
 	}
 	return 0;
 }
@@ -1492,6 +1500,23 @@ int writeDATAFLASH(unsigned long flashoffset, const uint8_t * data, unsigned lon
 	return 0;
 }
 
+static void
+spdif_iostartread(unsigned long len, unsigned long flashoffset)
+{
+	if (0)
+		;
+#if WIHSPIDFHW4BIT
+	else if (readxb [SPDFIO_4WIRE] != 0x00)
+		spidf_iostart(SPDIFIO_READ, readxb [SPDFIO_4WIRE], SPDFIO_4WIRE, dmyb [SPDFIO_4WIRE], len, 1, flashoffset);	/* 0xEB: Fast Read Quad I/O */
+#endif /* WIHSPIDFHW4BIT */
+#if WIHSPIDFHW2BIT
+	else if (readxb [SPDFIO_2WIRE] != 0x00)
+		spidf_iostart(SPDIFIO_READ, readxb [SPDFIO_2WIRE], SPDFIO_2WIRE, dmyb [SPDFIO_2WIRE], len, 1, flashoffset);	/* 0xBB: Fast Read Dual I/O */
+#endif /* WIHSPIDFHW2BIT */
+	else
+		spidf_iostart(SPDIFIO_READ, 0x03, SPDFIO_1WIRE, 0, len, 1, flashoffset);	/* 0x03: sequential read block */
+}
+
 int verifyDATAFLASH(unsigned long flashoffset, const uint8_t * data, unsigned long len)
 {
 	unsigned long err = 0;
@@ -1504,13 +1529,7 @@ int verifyDATAFLASH(unsigned long flashoffset, const uint8_t * data, unsigned lo
 		return 1;
 	}
 
-#if WIHSPIDFHW4BIT
-	spidf_iostart(SPDIFIO_READ, 0xEB, SPDFIO_4WIRE, 3, len, 1, flashoffset);	/* 0xEB: Fast Read Quad I/O */
-#elif WIHSPIDFHW2BIT
-	spidf_iostart(SPDIFIO_READ, 0xBB, SPDFIO_2WIRE, 1, len, 1, flashoffset);	/* 0xBB: Fast Read Dual I/O */
-#else /* WIHSPIDFHW4BIT */
-	spidf_iostart(SPDIFIO_READ, 0x03, SPDFIO_1WIRE, 0, len, 1, flashoffset);	/* 0x03: sequential read block */
-#endif /* WIHSPIDFHW4BIT */
+	spdif_iostartread(len, flashoffset);
 	err = spidf_verify(data, len);
 	spidf_unselect();	/* done sending data to target chip */
 
@@ -1529,13 +1548,7 @@ int readDATAFLASH(unsigned long flashoffset, uint8_t * data, unsigned long len)
 		return 1;
 	}
 
-#if WIHSPIDFHW4BIT
-	spidf_iostart(SPDIFIO_READ, 0xEB, SPDFIO_4WIRE, 3, len, 1, flashoffset);	/* 0xEB: Fast Read Quad I/O */
-#elif WIHSPIDFHW2BIT
-	spidf_iostart(SPDIFIO_READ, 0xBB, SPDFIO_2WIRE, 1, len, 1, flashoffset);	/* 0xBB: Fast Read Dual I/O */
-#else /* WIHSPIDFHW4BIT */
-	spidf_iostart(SPDIFIO_READ, 0x03, SPDFIO_1WIRE, 0, len, 1, flashoffset);	/* 0x03: sequential read block */
-#endif /* WIHSPIDFHW4BIT */
+	spdif_iostartread(len, flashoffset);
 	spidf_read(data, len);
 	spidf_unselect();	/* done sending data to target chip */
 	//PRINTF("readDATAFLASH done\n");
@@ -1546,9 +1559,7 @@ int readDATAFLASH(unsigned long flashoffset, uint8_t * data, unsigned long len)
 void bootloader_readimage(unsigned long flashoffset, uint8_t * dest, unsigned Len)
 {
 	spidf_initialize();
-#if WITHDEBUG
-	testchipDATAFLASH();
-#endif /* WITHDEBUG */
+	testchipDATAFLASH();	// устанока кодов опрерации для скоростныз режимов
 	readDATAFLASH(flashoffset, dest, Len);
 	spidf_uninitialize();
 }

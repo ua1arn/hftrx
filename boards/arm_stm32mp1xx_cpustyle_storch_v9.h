@@ -21,7 +21,7 @@
 #define WITHMDMAHW		1	/* Использование MDMA для формирования изображений */
 //#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
 #define WIHSPIDFHW	1	/* аппаратное обслуживание DATA FLASH */
-//#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */
+#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */
 //#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
 
 //#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
@@ -76,7 +76,7 @@
 	//#define WITHUABUACOUTAUDIO48MONO	1	/* для уменьшения размера буферов в endpoints */
 
 	//#define WITHUSBCDC		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
-	//#define WITHUSBHWCDC_N	2	/* количество виртуальных последовательных портов */
+	//#define WITHUSBHWCDC_N	1	/* количество виртуальных последовательных портов */
 	//#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
 	//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
 	//#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
