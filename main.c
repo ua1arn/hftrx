@@ -18798,16 +18798,21 @@ void bootloader_detach(uintptr_t ip)
 void bootloader_deffereddetach(void * arg)
 {
 #if BOOTLOADER_APPFULL
-	  uintptr_t ip;
-	  if (bootloader_get_start(BOOTLOADER_APPAREA, & ip) == 0)
-	  {
-			/* Perform an Attach-Detach operation on USB bus */
+	uintptr_t ip;
+	if (bootloader_get_start(BOOTLOADER_APPAREA, & ip) == 0)
+	{
+		PRINTF("bootloader_deffereddetach: ip=%08lX\n", (unsigned long) ip);
+		/* Perform an Attach-Detach operation on USB bus */
 #if WITHUSBHW
-			board_usb_deactivate();
-			board_usb_deinitialize();
+		board_usb_deactivate();
+		board_usb_deinitialize();
 #endif /* WITHUSBHW */
-			bootloader_detach(ip);
-	  }
+		bootloader_detach(ip);
+	}
+	else
+	{
+		PRINTF("bootloader_deffereddetach: Header is not loaded to %08lX.\n", (unsigned long) BOOTLOADER_APPAREA);
+	}
 #endif /* BOOTLOADER_APPFULL */
 }
 

@@ -768,11 +768,7 @@ static void DFU_Detach(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req
   if (1) //((USBD_DFU_CfgDesc[12 + (9 * USBD_DFU_MAX_ITF_NUM)]) & DFU_DETACH_MASK)
   {
 #if WITHISBOOTLOADER
-	  uintptr_t ip;
-	  if (bootloader_get_start(BOOTLOADER_APPAREA, & ip) == 0)
-	  {
-		  board_dpc(bootloader_deffereddetach, NULL);
-	  }
+	  board_dpc(bootloader_deffereddetach, NULL);
 #endif /* WITHISBOOTLOADER */
   }
   else
