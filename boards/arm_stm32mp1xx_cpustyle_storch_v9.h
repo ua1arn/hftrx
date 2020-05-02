@@ -73,7 +73,7 @@
 
 	//#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
 	//#define WITHUSBUACIN2		1	/* формируются три канала передачи звука */
-		//#define WITHUABUACOUTAUDIO48MONO	1	/* для уменьшения размера буферов в endpoints */
+	//#define WITHUABUACOUTAUDIO48MONO	1	/* для уменьшения размера буферов в endpoints */
 
 	//#define WITHUSBCDC		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
 	//#define WITHUSBHWCDC_N	2	/* количество виртуальных последовательных портов */
@@ -82,7 +82,9 @@
 	//#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
 	//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
 	//#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
+	#define WITHMOVEDFU 1	// Переместить интерфейс DFU в обоасть меньших номеров. Утилита dfu-util 0.9 не работает с DFU на интерфейсе с индексом 10
 	//#define WITHUSBWCID	1
+
 #else /* WITHISBOOTLOADER */
 
 	#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
@@ -121,7 +123,9 @@
 	//#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
 	//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
 	#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
+	#define WITHMOVEDFU 1	// Переместить интерфейс DFU в обоасть меньших номеров. Утилита dfu-util 0.9 не работает с DFU на интерфейсе с индексом 10
 	//#define WITHUSBWCID	1
+
 #endif /* WITHISBOOTLOADER */
 
 

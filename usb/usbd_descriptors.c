@@ -3988,6 +3988,7 @@ static unsigned fill_DFU_function(uint_fast8_t fill, uint8_t * p, unsigned maxsi
 
 #endif /* WITHUSBDFU */
 
+// последовательность должна соответствовать порядку в enum interfaces_tag
 static unsigned fill_Configuration_compound(uint_fast8_t fill, uint8_t * p, unsigned maxsize, int highspeed)
 {
 	unsigned n = 0;
@@ -3996,14 +3997,14 @@ static unsigned fill_Configuration_compound(uint_fast8_t fill, uint8_t * p, unsi
 	n += fill_RNDIS_function(fill, p + n, maxsize - n, highspeed);
 #endif /* WITHUSBRNDIS */
 
+#if WITHUSBDFU && WITHMOVEDFU
+	n += fill_DFU_function(fill, p + n, maxsize - n, highspeed);
+#endif /* WITHUSBDFU */
+
 #if WITHUSBCDC
 	/* создаем одно или несколько (WITHUSBHWCDC_N) устройств */
 	n += fill_CDCACM_function(fill, p + n, maxsize - n, highspeed);
 #endif /* WITHUSBCDC */
-
-#if WITHUSBDFU && WITHMOVEDFU
-	n += fill_DFU_function(fill, p + n, maxsize - n, highspeed);
-#endif /* WITHUSBDFU */
 
 #if WITHUSBUAC
 	#if 0

@@ -23,10 +23,6 @@
 // STM32F446, STM32F746:
 //	valid EPs: dcp, 0x01/0x81, 0x02/0x82, 0x03/0x83, 0x04/0x84, 0x05/0x85
 
-// Переместить интерфейс DFU в обоасть меньшиз номеров.
-// Утилита dfu-util 0.9 не работает с DFU на интерфейсе с индексом 10
-#define WITHMOVEDFU (WITHUSBUACIN2 && WITHUSBDFU)
-
 // IN and INT Endpoints allocation
 enum
 {
@@ -220,7 +216,7 @@ enum
 #endif /* WITHUSBUAC */
 
 /* Последовательность в данном enum должна соответствовать порядку использования в fill_Configuration_main_group */
-enum
+enum interfaces_tag
 {
 
 #if WITHUSBRNDIS
@@ -228,16 +224,16 @@ enum
 	INTERFACE_RNDIS_DATA_6,		/* RNDIS data Interface */
 #endif /* WITHUSBRNDIS */
 
+#if WITHUSBDFU && WITHMOVEDFU
+	INTERFACE_DFU_CONTROL,		/* DFU control Interface */
+#endif /* WITHUSBDFU */
+
 #if WITHUSBCDC
 	INTERFACE_CDC_base,
 	INTERFACE_CDC_CONTROL_3a = INTERFACE_CDC_base,	/* CDC ACM control Interface */
 	INTERFACE_CDC_DATA_4a,		/* CDC ACM data Interface */
 	INTERFACE_CDC_last = INTERFACE_CDC_base + WITHUSBHWCDC_N * 2 - 1,
 #endif /* WITHUSBCDC */
-
-#if WITHUSBDFU && WITHMOVEDFU
-	INTERFACE_DFU_CONTROL,		/* DFU control Interface */
-#endif /* WITHUSBDFU */
 
 #if WITHUSBUAC
 	#if WITHUSBUACIN2
@@ -291,7 +287,7 @@ enum
 	#if WITHUSBHWCDC_N == 1
 
 	#elif WITHUSBHWCDC_N == 2
-
+		/* набор констант для второго VCP */
 		enum { USBD_EP_CDC_OUTb = USBD_EP_CDC_OUT + 1 };
 		enum { USBD_EP_CDC_INb = USBD_EP_CDC_IN + 1 };
 		enum { USBD_EP_CDC_INTb = USBD_EP_CDC_INT + 1 };
@@ -301,6 +297,7 @@ enum
 	#else
 		//#error Unsupported WITHUSBHWCDC_N
 	#endif
+
 #endif /* WITHUSBCDC */
 
 #define INTERFACE_CDCACM_count 2	/* количество интерфейсов в одном CDC - control & data */

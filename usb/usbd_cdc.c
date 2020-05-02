@@ -358,7 +358,9 @@ static USBD_StatusTypeDef USBD_CDC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 	if (req->bRequest == USBD_WCID_VENDOR_CODE &&
 			(
 					LO_BYTE(req->wValue) == INTERFACE_CDC_CONTROL_3a ||
+#if WITHUSBHWCDC_N > 1
 					LO_BYTE(req->wValue) == INTERFACE_CDC_CONTROL_3b ||
+#endif
 					0)
 			&& req->wIndex == 0x05)
 	{
