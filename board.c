@@ -537,9 +537,9 @@ void nmea_parsechar(uint_fast8_t c)
 				board_adc_store_data(FWD, strtoul(nmeaparser_get_buff(NMF_FWD), NULL, 10) * FS / EXTFS);
 				board_adc_store_data(REF, strtoul(nmeaparser_get_buff(NMF_REF), NULL, 10) * FS / EXTFS);
 				// для WITHTDIRECTDATA -  значения параметров напрямую получаются от контроллера усилителя мощности
-				board_adc_store_data(PASENSEIX, strtoul(nmeaparser_get_buff(NMF_C_SENS), NULL, 10));
-				board_adc_store_data(XTHERMOIX, strtoul(nmeaparser_get_buff(NMF_T_SENS), NULL, 10));
-				board_adc_store_data(VOLTSOURCE, strtoul(nmeaparser_get_buff(NMF_12V_SENS), NULL, 10));
+				board_adc_store_data(PASENSEIX, strtol(nmeaparser_get_buff(NMF_C_SENS), NULL, 10));
+				board_adc_store_data(XTHERMOIX, strtol(nmeaparser_get_buff(NMF_T_SENS), NULL, 10));
+				board_adc_store_data(VOLTSOURCE, strtol(nmeaparser_get_buff(NMF_12V_SENS), NULL, 10));
 			}
 		}
 		break;
@@ -8060,9 +8060,9 @@ enum { ADC_LPF_WND = NTICKS(320) };	// длительность окна
 
 typedef struct lpfdata_tag
 {
-	adcvalholder_t queue [ADC_LPF_WND];
+	sadcvalholder_t queue [ADC_LPF_WND];
 	size_t qpos;	/* индекс в очереди куда будем сейчас писать */
-	uint32_t summ;	/* сумма всех элементов очереди */
+	int32_t summ;	/* сумма всех элементов очереди */
 } lpfdata_t;
 
 typedef struct boardadc_tag
@@ -8274,7 +8274,7 @@ static void lpf_initialize(lpfdata_t * lpfdata)
 static adcvalholder_t
 lpf_filter(lpfdata_t * lpfdata, adcvalholder_t raw)
 {
-	lpfdata->summ += raw;	// добавить входящее
+	lpfdata->summ += (sadcvalholder_t) raw;	// добавить входящее
 	lpfdata->summ -= lpfdata->queue [lpfdata->qpos];	// вычесть выходящее
 	lpfdata->queue [lpfdata->qpos] = raw;
 	lpfdata->qpos = (lpfdata->qpos + 1) % ADC_LPF_WND;

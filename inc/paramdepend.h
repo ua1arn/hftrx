@@ -38,6 +38,7 @@ extern "C" {
 	//#define HARDWARE_ADCINPUTS	40	/* до 8-ти входов АЦП */
 	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast16_t adcvalholder_t;		
+	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
 
 
 #elif CPUSTYLE_STM32F0XX
@@ -73,6 +74,7 @@ extern "C" {
 	//#define HARDWARE_ADCINPUTS	40	/* до 32-ти входов АЦП */
 	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast16_t adcvalholder_t;		
+	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
 	#define WITHREFSENSORVAL	1210	/* Reference voltage: STM32F746, STM32F429, STM32F446 = 1.21V */
 
 #elif CPUSTYLE_STM32L0XX
@@ -114,6 +116,7 @@ extern "C" {
 	//#define HARDWARE_ADCINPUTS	40	/* до 32-ти входов АЦП */
 	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast16_t adcvalholder_t;		
+	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
 	#define WITHREFSENSORVAL	1224	/* Reference voltage: STM32L031xx = 1.224V */
 
 #elif CPUSTYLE_STM32F1XX
@@ -151,6 +154,7 @@ extern "C" {
 	//#define HARDWARE_ADCINPUTS	40	/* до 32-ти входов АЦП */
 	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast16_t adcvalholder_t;		
+	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
 	#define WITHREFSENSORVAL	1210	/* Reference voltage: STM32F746, STM32F429, STM32F446 = 1.21V */
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
@@ -366,6 +370,7 @@ extern "C" {
 	//#define HARDWARE_ADCINPUTS	40	/* до 16-ти входов АЦП */
 	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast16_t adcvalholder_t;		
+	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
 
 #elif CPUSTYLE_ATSAM4S
 
@@ -395,6 +400,7 @@ extern "C" {
 	//#define HARDWARE_ADCINPUTS	40	/* до 16-ти входов АЦП */
 	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast16_t adcvalholder_t;		
+	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
 
 #elif CPUSTYLE_AT91SAM9XE
 
@@ -418,6 +424,7 @@ extern "C" {
 	//#define HARDWARE_ADCINPUTS	40	/* до 8-ти входов АЦП */
 	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast16_t adcvalholder_t;		
+	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
 
 #elif CPUSTYLE_MK20DX	// Tennesy 3.1 - Freescale Semiconductor - KINETIS MK20DX256VLH7
 
@@ -437,6 +444,7 @@ extern "C" {
 
 	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast16_t adcvalholder_t;		
+	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
 
 #elif CPUSTYLE_ATMEGA
 
@@ -468,10 +476,12 @@ extern "C" {
 
 	#if HARDWARE_ADCBITS == 8
 		/* тип для хранения данных, считанных с АЦП */
-		typedef uint_fast8_t adcvalholder_t;		
+		typedef uint_fast16_t adcvalholder_t;
+		typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
 	#elif HARDWARE_ADCBITS == 10
 		/* тип для хранения данных, считанных с АЦП */
 		typedef uint_fast16_t adcvalholder_t;		
+		typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
 	#else
 		#error Erong HARDWARE_ADCBITS value
 	#endif
@@ -501,6 +511,7 @@ extern "C" {
 	//#define HARDWARE_ADCINPUTS	40	/* до 8-ти входов АЦП */
 	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast8_t adcvalholder_t;		
+	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
 
 #elif CPUSTYPE_TMS320F2833X
 
@@ -508,6 +519,7 @@ extern "C" {
 	#define HARDWARE_ADCBITS 12	/* АЦП работает с 12-битными значениями */
 	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast16_t adcvalholder_t;		
+	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
 
 #elif CPUSTYLE_R7S721
 
@@ -535,6 +547,7 @@ extern "C" {
 	//#define HARDWARE_ADCINPUTS	40	/* до 8-ти входов АЦП */
 	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast16_t adcvalholder_t;		
+	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
 
 	enum
 	{
@@ -661,6 +674,7 @@ extern "C" {
 	//#define HARDWARE_ADCINPUTS	40	/* до 32-ти входов АЦП */
 	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast16_t adcvalholder_t;
+	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
 	//#define HARDWARE_ADCBITS 8	/* АЦП работает с 8-битными значениями */
 	//#define HARDWARE_ADCBITS 10	/* АЦП работает с 10-битными значениями */
 	#define HARDWARE_ADCBITS 12	/* АЦП работает с 12-битными значениями */

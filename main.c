@@ -9220,7 +9220,7 @@ uint_fast8_t hamradio_get_volt_value(void)
 {
 #if WITHTDIRECTDATA
 
-	return board_getadc_filtered_truevalue(VOLTMRRIX) / 100;	// миливольты в 0.1 вольта
+	return (sadcvalholder_t) board_getadc_filtered_truevalue(VOLTMRRIX) / 100;	// миливольты в 0.1 вольта
 
 #elif WITHTARGETVREF
 
@@ -9271,7 +9271,7 @@ int_fast16_t hamradio_get_temperature_value(void)
 	// XTHERMOIX - данные с АЦП напрямую
 #if WITHTDIRECTDATA
 
-	return board_getadc_filtered_truevalue(XTHERMOMRRIX);	// 0.1 градуса
+	return (sadcvalholder_t) board_getadc_filtered_truevalue(XTHERMOMRRIX);	// 0.1 градуса
 
 #elif WITHTARGETVREF
 
