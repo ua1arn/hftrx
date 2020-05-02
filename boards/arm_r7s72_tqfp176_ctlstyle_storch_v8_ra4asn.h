@@ -358,17 +358,18 @@
 	//#define WITHUSEAUDIORECCLASSIC	1	// стандартный формат записи, без "дыр"
 
 	#define WITHBARS		1	/* отображение S-метра и SWR-метра */
+
 	#define WITHDISPLAY_FPS		15
 	#define WITHDISPLAYSWR_FPS	30
 
-	#define WITHMAXPWRCALI		136
-	#define WITHSWRCALI			118
+	#define WITHMAXPWRCALI		74
+	#define WITHSWRCALI			50
 
-	#define WITHTOUCHGUI	1
-	#define WITHALPHA		64
+	#define WITHTOUCHGUI		1
+	#define WITHALPHA			64
 
-	#define WITHBOTTOMDBVAL	110
-	#define DEFAULTDIALFREQ	3708000L
+	#define WITHBOTTOMDBVAL		110
+	#define DEFAULTDIALFREQ		3708000L
 
 	#define WITHVOLTLEVEL	1	/* отображение напряжения питания */
 	#define VOLTLEVEL_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика напряжения
