@@ -742,7 +742,7 @@ static void DFU_Detach(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req
 {
 	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 
-	PRINTF(PSTR("DFU_Detach interfacev=%u\n"));
+	//PRINTF(PSTR("DFU_Detach interfacev=%u\n"));
 	USBD_DFU_HandleTypeDef   *hdfu;
 
 	//hdfu = (USBD_DFU_HandleTypeDef*) pdev->pClassData;
@@ -1036,7 +1036,7 @@ static void DFU_GetStatus(USBD_HandleTypeDef *pdev)
   */
 static void DFU_ClearStatus(USBD_HandleTypeDef *pdev)
 {
-	PRINTF(PSTR("DFU_ClearStatus\n"));
+	//PRINTF(PSTR("DFU_ClearStatus\n"));
 	USBD_DFU_HandleTypeDef   *hdfu;
 
 	//hdfu = (USBD_DFU_HandleTypeDef*) pdev->pClassData;
@@ -1072,7 +1072,7 @@ static void DFU_ClearStatus(USBD_HandleTypeDef *pdev)
   */
 static void DFU_GetState(USBD_HandleTypeDef *pdev)
 {
-	PRINTF(PSTR("DFU_GetState\n"));
+	//PRINTF(PSTR("DFU_GetState\n"));
 	USBD_DFU_HandleTypeDef   *hdfu;
 
 	//hdfu = (USBD_DFU_HandleTypeDef*) pdev->pClassData;
@@ -1091,7 +1091,7 @@ static void DFU_GetState(USBD_HandleTypeDef *pdev)
 static void DFU_Abort(USBD_HandleTypeDef *pdev)
 {
 	//PRINTF(PSTR("DFU_Abort\n"));
- USBD_DFU_HandleTypeDef   *hdfu;
+	USBD_DFU_HandleTypeDef   *hdfu;
 
     //hdfu = (USBD_DFU_HandleTypeDef*) pdev->pClassData;
     hdfu = & gdfu;
@@ -1121,7 +1121,7 @@ static void DFU_Abort(USBD_HandleTypeDef *pdev)
   */
 static void DFU_Leave(USBD_HandleTypeDef *pdev)
 {
-	PRINTF(PSTR("DFU_Leave\n"));
+	//PRINTF(PSTR("DFU_Leave\n"));
 	USBD_DFU_HandleTypeDef   *hdfu;
 
 	//hdfu = (USBD_DFU_HandleTypeDef*) pdev->pClassData;
