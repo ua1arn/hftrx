@@ -30,7 +30,7 @@
 	// Варианты конфигурации тактирования
 	// ref1_ck, ref2_ck - 8..16 MHz
 	// PLL1, PLL2 VCOs
-	#if 1
+	#if 0
 		#define WITHCPUXTAL 24000000uL	/* На процессоре установлен кварц 24.000 МГц */
 		//#define WITHCPUXOSC 24000000uL	/* На процессоре установлен генератор 24.000 МГц */
 
@@ -43,37 +43,39 @@
 
 		#define PLL2DIVM	2	// ref2_ck = 12 MHz
 		#define PLL2DIVN	44	// 528 MHz
-		#define PLL2DIVP	2	// AXISS_CK div2=minimum 528/2 = 264 MHz
+		#define PLL2DIVP	2	// AXISS_CK div2=minimum 528/2 = 264 MHz PLL2 selected as AXI sub-system clock (pll2_p_ck)
 		#define PLL2DIVQ	1	// GPU clock divider = 528 MHz
 		#define PLL2DIVR	1	// DDR clock divider = 528 MHz
 
 		#define PLL4DIVM	2	// ref2_ck = 12 MHz
-		#define PLL4DIVN	48	// 576 MHz
+		#define PLL4DIVN	64	// 768 MHz
 		#define PLL4DIVP	2	// div2
 		//#define PLL4DIVQ	19	// LTDC clock divider = 30.315 MHz
-		#define PLL4DIVR	12	// USBPHY clock divider = 48 MHz
+		//#define PLL4DIVR	20	// USBPHY clock divider = 38.4 MHz
+		#define PLL4DIVR	32//16	// USBPHY clock divider = 48 MHz
 
 	#else
 		// HSI version (HSI=64 MHz)
 		#define PLL1DIVM	5	// ref1_ck = 12.8 MHz
-		#define PLL1DIVN	50	// x25..x100: 12.8 * 50 = 640 MHz
-		//#define PLL1DIVN	32	// x25..x100: 12.8 * 32 = 409.6 MHz
+		//#define PLL1DIVN	50	// x25..x100: 12.8 * 50 = 640 MHz
+		#define PLL1DIVN	62	// x25..x100: 12.8 * 32 = 793.6 MHz
 		#define PLL1DIVP	1
 		#define PLL1DIVQ	2
 		#define PLL1DIVR	2
 
 		#define PLL2DIVM	5	// ref2_ck = 12.8 MHz
-		#define PLL2DIVN	35	// 12.8 * 35 = 448 MHz
-		#define PLL2DIVP	2	// div2=minimum
-		#define PLL2DIVQ	2	// GPU clock divider
-		#define PLL2DIVR	3	// DDR clock divider
+		#define PLL2DIVN	41	// 12.8 * 41 = 524.8 MHz
+		#define PLL2DIVP	2	// div2=minimum PLL2 selected as AXI sub-system clock (pll2_p_ck)
+		#define PLL2DIVQ	1	// GPU clock divider
+		#define PLL2DIVR	1	// DDR clock divider
 
 		// TODO: compute USBPHY divider
 		#define PLL4DIVM	5	// ref2_ck = 12.8 MHz
-		#define PLL4DIVN	48	// 12.8 * 48 = 614.4 MHz
+		#define PLL4DIVN	60	// 12.8 * 60 = 768 MHz
 		#define PLL4DIVP	2	// div2
-		//#define PLL4DIVQ	x20	// LTDC clock divider = 32 MHz
-		#define PLL4DIVR	x12	// USBPHY clock divider = 48 MHz
+		//#define PLL4DIVQ	25	// LTDC clock divider = 30.72 MHz
+		//#define PLL4DIVR	20	// USBPHY clock divider = 38.4 MHz
+		#define PLL4DIVR	32//16	// USBPHY clock divider = 48 MHz
 
 	#endif
 

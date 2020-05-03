@@ -9607,8 +9607,9 @@ void stm32mp1_pll_initialize(void)
 		while ((RCC->OCRDYR & RCC_OCRDYR_HSERDY) == 0)
 			;
 
-	#elif CPUSTYLE_STM32MP1
+	#else
 		// На внутреннем генераторе
+		// выклюяаем внешний
 		RCC->OCENCLRR = RCC_OCENCLRR_HSEON;
 		(void) RCC->OCENCLRR;
 
@@ -9687,16 +9688,6 @@ void stm32mp1_pll_initialize(void)
 	RCC->PLL2CR &= ~ RCC_PLL2CR_SSCG_CTRL_Msk;
 	(void) RCC->PLL2CR;
 
-	//0x0: HSI selected as AXI sub-system clock (hsi_ck) (default after reset)
-	//0x1: HSE selected as AXI sub-system clock (hse_ck)
-	//0x2: PLL2 selected as AXI sub-system clock (pll2_p_ck)
-	//others: axiss_ck is gated
-	RCC->ASSCKSELR = (RCC->ASSCKSELR & ~ (RCC_ASSCKSELR_AXISSRC_Msk)) |
-			(0x02 << RCC_ASSCKSELR_AXISSRC_Pos) |	// PLL2
-			0;
-	while ((RCC->ASSCKSELR & RCC_ASSCKSELR_AXISSRCRDY_Msk) == 0)
-		;
-
 	// AXI, AHB5 and AHB6 clock divider
 	RCC->AXIDIVR = (RCC->AXIDIVR & ~ (RCC_AXIDIVR_AXIDIV_Msk)) |
 		((0x01 - 1) << RCC_AXIDIVR_AXIDIV_Pos) |	// div1 (no divide)
@@ -9733,12 +9724,21 @@ void stm32mp1_pll_initialize(void)
 	//0x2: hse_ker_ck clock selected
 	//0x3: Clock disabled
 	RCC->CPERCKSELR = (RCC->CPERCKSELR & ~ (RCC_CPERCKSELR_CKPERSRC_Msk)) |
-		(0x00 << RCC_CPERCKSELR_CKPERSRC_Pos) |	// per_ck
+		(0x00 << RCC_CPERCKSELR_CKPERSRC_Pos) |	// hsi_ker_ck
 		0;
 	(void) RCC->CPERCKSELR;
 
-	// PLL3
+	//0x0: HSI selected as AXI sub-system clock (hsi_ck) (default after reset)
+	//0x1: HSE selected as AXI sub-system clock (hse_ck)
+	//0x2: PLL2 selected as AXI sub-system clock (pll2_p_ck)
+	//others: axiss_ck is gated
+	RCC->ASSCKSELR = (RCC->ASSCKSELR & ~ (RCC_ASSCKSELR_AXISSRC_Msk)) |
+			(0x02 << RCC_ASSCKSELR_AXISSRC_Pos) |	// pll2_p_ck
+			0;
+	while ((RCC->ASSCKSELR & RCC_ASSCKSELR_AXISSRCRDY_Msk) == 0)
+		;
 
+	// PLL3
 
 #if 1//WITHUART1HW
 	// usart1
@@ -9858,7 +9858,9 @@ void stm32mp1_pll_initialize(void)
 
 #endif /* WITHUSBHW || WITHLTDCHW*/
 
-#if 1//WITHUSBHW
+#if 0//WITHUSBHW
+	// Делается в USB_HS_PHYCInit, в случаек неиспользования USB_OTG_HS_EMBEDDED_PHY надо инициализировать
+	//
 	// USBOSRC
 	//	0: pll4_r_ck clock selected as kernel peripheral clock (default after reset)
 	//	1: clock provided by the USB PHY (rcc_ck_usbo_48m) selected as kernel peripheral clock
@@ -9867,10 +9869,11 @@ void stm32mp1_pll_initialize(void)
 	//  0x1: pll4_r_ck clock selected as kernel peripheral clock
 	//  0x2: hse_ker_ck/2 clock selected as kernel peripheral clock
 	RCC->USBCKSELR = (RCC->USBCKSELR & ~ (RCC_USBCKSELR_USBOSRC_Msk | RCC_USBCKSELR_USBPHYSRC_Msk)) |
-		(0x00 << RCC_USBCKSELR_USBOSRC_Pos) |
-		(0x01 << RCC_USBCKSELR_USBPHYSRC_Pos) |
+		(0x00 << RCC_USBCKSELR_USBOSRC_Pos) |		// 50 MHz max pll4_r_ck
+		(0x01 << RCC_USBCKSELR_USBPHYSRC_Pos) |		// 38.4 MHz max pll4_r_ck
 		0;
 	(void) RCC->USBCKSELR;
+
 #endif /* WITHUSBHW */
 
 #if WITHELKEY

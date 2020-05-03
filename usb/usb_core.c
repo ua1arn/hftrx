@@ -3361,7 +3361,7 @@ HAL_StatusTypeDef USB_HS_PHYCInit(USB_OTG_GlobalTypeDef *USBx)
 		(void) USBPHYC->PLL;
 
 		USBPHYC->PLL = (USBPHYC->PLL & ~ (USBPHYC_PLL_PLLDITHEN0_Msk | USBPHYC_PLL_PLLDITHEN1_Msk | USBPHYC_PLL_PLLEN_Msk | USBPHYC_PLL_PLLNDIV_Msk | USBPHYC_PLL_PLLODF_Msk | USBPHYC_PLL_PLLFRACIN_Msk | USBPHYC_PLL_PLLFRACCTL_Msk)) |
-			((60) << USBPHYC_PLL_PLLNDIV_Pos) |	// PLLNDIV
+			((60) << USBPHYC_PLL_PLLNDIV_Pos) |	// PLLNDIV 24/60 = 400 kHz
 			((0) << USBPHYC_PLL_PLLODF_Pos) |	// PLLODF
 			0;
 		(void) USBPHYC->PLL;
@@ -3382,8 +3382,8 @@ HAL_StatusTypeDef USB_HS_PHYCInit(USB_OTG_GlobalTypeDef *USBx)
 		//  0x1: pll4_r_ck clock selected as kernel peripheral clock
 		//  0x2: hse_ker_ck/2 clock selected as kernel peripheral clock
 		RCC->USBCKSELR = (RCC->USBCKSELR & ~ (RCC_USBCKSELR_USBOSRC_Msk | RCC_USBCKSELR_USBPHYSRC_Msk)) |
-			(0x01 << RCC_USBCKSELR_USBOSRC_Pos) |
-			(0x00 << RCC_USBCKSELR_USBPHYSRC_Pos) |
+			(0x00 << RCC_USBCKSELR_USBOSRC_Pos) |
+			(0x01 << RCC_USBCKSELR_USBPHYSRC_Pos) |
 			0;
 		(void) RCC->USBCKSELR;
 
@@ -3535,12 +3535,12 @@ HAL_StatusTypeDef USB_CoreInit(USB_OTG_GlobalTypeDef * USBx, const USB_OTG_CfgTy
 		/* Enables control of a High Speed USB PHY */
 		USB_HS_PHYCInit(USBx);
 
-	if(cfg->use_external_vbus == USB_ENABLE)
-	{
-		USBx->GUSBCFG |= USB_OTG_GUSBCFG_ULPIEVBUSD;
-	}
-	/* Reset after a PHY select  */
-	USB_CoreReset(USBx);
+		if(cfg->use_external_vbus == USB_ENABLE)
+		{
+			USBx->GUSBCFG |= USB_OTG_GUSBCFG_ULPIEVBUSD;
+		}
+		/* Reset after a PHY select  */
+		USB_CoreReset(USBx);
 
 	}
 #endif /* defined(USB_HS_PHYC) || defined (USBPHYC) */
