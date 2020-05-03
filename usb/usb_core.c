@@ -3378,12 +3378,25 @@ HAL_StatusTypeDef USB_HS_PHYCInit(USB_OTG_GlobalTypeDef *USBx)
 		(void) USBPHYC->PLL;
 
 		const uint_fast32_t pll4_r_ck = PLL4_FREQ_R;
-		const uint_fast32_t N = 60;//calcdivround2(pll4_r_ck, 400000uL);
-		const uint_fast32_t ODF = 0;
+		// 1440
+		// Work: USB_HS_PHYCInit: pll4_r_ck=16000000, N=90, ODF=0
+		// Work: USB_HS_PHYCInit: pll4_r_ck=24000000, N=60, ODF=0
+		uint_fast32_t N = calcdivround2(1440000000uL, pll4_r_ck);
+		uint_fast32_t ODF = 0;	// игнорируется
+
+		PRINTF("USB_HS_PHYCInit: pll4_r_ck=%u, N=%u, ODF=%u\n", pll4_r_ck, N, ODF);
+
+//		while (N > 127)
+//		{
+//			N /= 2;
+//			ODF *= 2;
+//		}
+//
+//		PRINTF("USB_HS_PHYCInit: pll4_r_ck=%u, N=%u, ODF=%u\n", pll4_r_ck, N, ODF);
 
 		USBPHYC->PLL = (USBPHYC->PLL & ~ (USBPHYC_PLL_PLLDITHEN0_Msk | USBPHYC_PLL_PLLDITHEN1_Msk | USBPHYC_PLL_PLLEN_Msk | USBPHYC_PLL_PLLNDIV_Msk | USBPHYC_PLL_PLLODF_Msk | USBPHYC_PLL_PLLFRACIN_Msk | USBPHYC_PLL_PLLFRACCTL_Msk)) |
 			((N) << USBPHYC_PLL_PLLNDIV_Pos) |	// PLLNDIV 24/60 = 400 kHz
-			((ODF) << USBPHYC_PLL_PLLODF_Pos) |	// PLLODF
+			((ODF) << USBPHYC_PLL_PLLODF_Pos) |	// PLLODF - игнорируется
 			USBPHYC_PLL_PLLDITHEN0_Msk |
 			USBPHYC_PLL_PLLDITHEN1_Msk |
 			0;

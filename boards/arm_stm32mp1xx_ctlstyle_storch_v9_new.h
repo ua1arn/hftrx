@@ -52,7 +52,8 @@
 		#define PLL4DIVP	2	// div2
 		//#define PLL4DIVQ	19	// LTDC clock divider = 30.315 MHz
 		//#define PLL4DIVR	20	// USBPHY clock divider = 38.4 MHz
-		#define PLL4DIVR	32//16	// USBPHY clock divider = 48 MHz
+		#define PLL4DIVR	24	// USBPHY clock divider = 32 MHz
+		//#define PLL4DIVR	32	// USBPHY clock divider = 24 MHz
 
 	#else
 		// HSI version (HSI=64 MHz)
@@ -75,7 +76,8 @@
 		#define PLL4DIVP	2	// div2
 		//#define PLL4DIVQ	25	// LTDC clock divider = 30.72 MHz
 		//#define PLL4DIVR	20	// USBPHY clock divider = 38.4 MHz
-		#define PLL4DIVR	32//16	// USBPHY clock divider = 48 MHz
+		#define PLL4DIVR	24	// USBPHY clock divider = 32 MHz
+		//#define PLL4DIVR	32	// USBPHY clock divider = 24 MHz
 
 	#endif
 
