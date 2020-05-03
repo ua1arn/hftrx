@@ -783,12 +783,12 @@ static void window_enc2_process(void);
 static void window_audioparams_process(void);
 static void gui_main_process(void);
 
-	enum {
+	typedef enum {
 		TYPE_DUMMY,
 		TYPE_BUTTON,
 		TYPE_LABEL,
 		TYPE_SLIDER
-	};
+	} element_type_t;
 
 	enum {
 		PRESSED,						// нажато
@@ -829,11 +829,11 @@ static void gui_main_process(void);
 		NAME_ARRAY_SIZE = 20,
 		TEXT_ARRAY_SIZE = 20,
 		MENU_ARRAY_SIZE = 30,
-		TOUCH_ARRAY_SIZE = 40
+		TOUCH_ARRAY_SIZE = 100
 	};
 
 	enum {
-		BTN_BUF_W = 96,
+		BTN_BUF_W = 128,
 		BTN_BUF_H = 64
 	};
 
@@ -850,6 +850,7 @@ static void gui_main_process(void);
 	} ALIGNX_END btn_bg_t;
 
 	static btn_bg_t btn_bg [] = {
+			{ 100, 44, },
 			{ 86, 44, },
 			{ 50, 50, },
 			{ 40, 40, },
@@ -915,6 +916,29 @@ static void gui_main_process(void);
 		{ 0, 0, 40, 40, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU,  NON_VISIBLE, UINTPTR_MAX, 		"btnSysMenu+",	"+", },
 		{ 0, 0, 40, 40, buttons_uif_handler,  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UIF,   NON_VISIBLE, UINTPTR_MAX, 		"btnUIF-", 		"-", },
 		{ 0, 0, 40, 40, buttons_uif_handler,  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UIF,   NON_VISIBLE, UINTPTR_MAX, 		"btnUIF+", 		"+", },
+#if ! WITHOLDMENUSTYLE
+		{ 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 		"btnSysMenu1",	"", },
+		{ 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 		"btnSysMenu2",	"", },
+		{ 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 		"btnSysMenu3",	"", },
+		{ 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 		"btnSysMenu4",	"", },
+		{ 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 		"btnSysMenu5",	"", },
+		{ 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 		"btnSysMenu6",	"", },
+		{ 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 		"btnSysMenu7",	"", },
+		{ 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 		"btnSysMenu8",	"", },
+		{ 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 		"btnSysMenu9",	"", },
+		{ 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 		"btnSysMenu10",	"", },
+		{ 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 		"btnSysMenu11",	"", },
+		{ 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 		"btnSysMenu12",	"", },
+		{ 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 		"btnSysMenu13",	"", },
+		{ 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 		"btnSysMenu14",	"", },
+		{ 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 		"btnSysMenu15",	"", },
+		{ 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 		"btnSysMenu16",	"", },
+		{ 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 		"btnSysMenu17",	"", },
+		{ 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 		"btnSysMenu18",	"", },
+		{ 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 		"btnSysMenu19",	"", },
+		{ 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 		"btnSysMenu20",	"", },
+#endif
+
 //		{ 375, 120, buttons_uif_handler, 	NULL, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UIF,   NON_VISIBLE, UINTPTR_MAX, 			"btnUIF_OK", "OK", },
 	};
 	enum { BUTTONS_COUNT = ARRAY_SIZE(buttons) };
@@ -1036,7 +1060,7 @@ static void gui_main_process(void);
 		uint16_t last_pressed_y;
 		uint8_t kbd_code;
 		uint8_t selected_id;		 // индекс последнего выбранного элемента
-		uint8_t selected_type;		 // тип последнего выбранного элемента
+		element_type_t selected_type; // тип последнего выбранного элемента
 		void * selected_link;		 // ссылка на выбранный элемент
 		uint8_t state;				 // последнее состояние
 		uint8_t is_touching_screen;  // есть ли касание экрана в данный момент
@@ -1104,6 +1128,7 @@ static void gui_main_process(void);
 		MENU_COUNT
 	};
 
+#if WITHOLDMENUSTYLE
 	typedef struct {
 		uint8_t first_id;			// первое вхождение номера метки уровня
 		uint8_t last_id;			// последнее вхождение номера метки уровня
@@ -1116,6 +1141,9 @@ static void gui_main_process(void);
 	} menu_t;
 
 	static menu_t menu[MENU_COUNT];
+#else
+
+#endif
 
 	typedef struct {
 		char name [TEXT_ARRAY_SIZE];
@@ -1126,7 +1154,7 @@ static void gui_main_process(void);
 	menu_by_name_t menu_uif;
 
 	typedef struct {
-		uint_fast16_t type;			// тип элемента, поддерживающего реакцию на касания
+		element_type_t type;		// тип элемента, поддерживающего реакцию на касания
 		uint8_t state;				// текущее состояние элемента
 		uint8_t visible;			// текущая видимость элемента
 		uint8_t id;					// номер элемента из структуры описания
@@ -1155,7 +1183,7 @@ static void gui_main_process(void);
 	}
 
 	/* Поиск номера записи в структуре по названию и типу окна */
-	static uint_fast8_t find_gui_element(uint_fast8_t type, uint_fast8_t id_window, const char * name)
+	static uint_fast8_t find_gui_element(element_type_t type, uint_fast8_t id_window, const char * name)
 	{
 		switch (type)
 		{
@@ -1190,7 +1218,7 @@ static void gui_main_process(void);
 	}
 
 	/* Возврат ссылки на запись в структуре по названию и типу окна */
-	static void * find_gui_element_ref(uint_fast8_t type, window_t * win, const char * name)
+	static void * find_gui_element_ref(element_type_t type, window_t * win, const char * name)
 	{
 		switch (type)
 		{
@@ -1228,7 +1256,7 @@ static void gui_main_process(void);
 	}
 
 	/* Поиск области вхождения (включительно) записей в структуре по типу записи и типу окна */
-	static void find_entry_area_elements(uint_fast8_t type, window_t * win, uint_fast8_t * id_start, uint_fast8_t * id_end)
+	static void find_entry_area_elements(element_type_t type, window_t * win, uint_fast8_t * id_start, uint_fast8_t * id_end)
 	{
 		uint_fast8_t i = 1;
 		switch (type)
@@ -1358,58 +1386,61 @@ static void gui_main_process(void);
 	/* Установка признака видимости окна и его элементов */
 	static void set_window(window_t * win, uint_fast8_t value)
 	{
+		uint_fast8_t id_start, id_end;
 		win->state = value;
 		if (value)
 			win->first_call = 1;
 
-		for (uint_fast8_t i = 1; i < BUTTONS_COUNT; i++)
+		find_entry_area_elements(TYPE_BUTTON, win, & id_start, & id_end);
+		for (uint_fast8_t i = id_start; i <= id_end; i++)
 		{
 			button_t * bh = & buttons[i];
-			if (bh->parent == win->window_id)
+			bh->is_locked = 0;
+			if (win->state)
 			{
-				bh->visible = value;
-				bh->is_locked = 0;
-				if (bh->visible)
-				{
-					touch_elements[touch_count].id = i;
-					touch_elements[touch_count].type = TYPE_BUTTON;
-					touch_count++;
-				}
-				else
-					touch_count--;
+				touch_elements[touch_count].id = i;
+				touch_elements[touch_count].type = TYPE_BUTTON;
+				touch_count++;
 			}
+			else
+				touch_count--;
+
+			if (win->state == NON_VISIBLE)
+				bh->visible = NON_VISIBLE;
 		}
-		for (uint_fast8_t i = 1; i < LABELS_COUNT; i++)
+
+		find_entry_area_elements(TYPE_LABEL, win, & id_start, & id_end);
+		for (uint_fast8_t i = id_start; i <= id_end; i++)
 		{
 			label_t * lh = & labels[i];
-			if (lh->parent == win->window_id)
+			if (win->state && lh->onClickHandler)
 			{
-				lh->visible = value;
-				if (lh->visible && lh->onClickHandler)
-				{
-					touch_elements[touch_count].id = i;
-					touch_elements[touch_count].type = TYPE_LABEL;
-					touch_count++;
-				}
-				if(! lh->visible && lh->onClickHandler)
-					touch_count--;
+				touch_elements[touch_count].id = i;
+				touch_elements[touch_count].type = TYPE_LABEL;
+				touch_count++;
 			}
+			if (! win->state && lh->onClickHandler)
+				touch_count--;
+
+			if (win->state == NON_VISIBLE)
+				lh->visible = NON_VISIBLE;
 		}
-		for (uint_fast8_t i = 1; i < SLIDERS_COUNT; i++)
+
+		find_entry_area_elements(TYPE_SLIDER, win, & id_start, & id_end);
+		for (uint_fast8_t i = id_start; i <= id_end; i++)
 		{
 			slider_t * sh = & sliders[i];
-			if (sh->parent == win->window_id)
+			if (win->state)
 			{
-				sh->visible = value;
-				if (sh->visible)
-				{
-					touch_elements[touch_count].id = i;
-					touch_elements[touch_count].type = TYPE_SLIDER;
-					touch_count++;
-				}
-				else
-					touch_count--;
+				touch_elements[touch_count].id = i;
+				touch_elements[touch_count].type = TYPE_SLIDER;
+				touch_count++;
 			}
+			else
+				touch_count--;
+
+			if (win->state == NON_VISIBLE)
+				sh->visible = NON_VISIBLE;
 		}
 	}
 
@@ -1496,6 +1527,7 @@ static void gui_main_process(void);
 				button_t * bh = & buttons[id];
 				bh->x1 = x;
 				bh->y1 = y;
+				bh->visible = VISIBLE;
 				x = x + interval + bh->w;
 			}
 
@@ -1617,6 +1649,7 @@ static void gui_main_process(void);
 				bh = & buttons[i];
 				bh->x1 = x;
 				bh->y1 = y;
+				bh->visible = VISIBLE;
 
 				x = x + interval + bh->w;
 				if (x + bh->w > win->x1 + win->w)
@@ -1726,7 +1759,6 @@ static void gui_main_process(void);
 		static label_t * lbl_uif_param, * lbl_uif_val;
 		static button_t * button_up, * button_down;
 		static uint_fast16_t window_center_x;
-		uint_fast8_t button_menu_w = 40, button_menu_h = 40;
 		window_t * win = & windows[WINDOW_UIF];
 
 		if (win->first_call)
@@ -1736,23 +1768,27 @@ static void gui_main_process(void);
 			window_center_x = win->x1 + win->w / 2;
 
 			lbl_uif_param = find_gui_element_ref(TYPE_LABEL, win, "lbl_uif_param");
-			lbl_uif_val = find_gui_element_ref(TYPE_LABEL, win, "lbl_uif_val");
 			strcpy(lbl_uif_param->text, menu_uif.name);
-			const char * v = hamradio_gui_edit_menu_item(menu_uif.menupos, 0);
-			strcpy(lbl_uif_val->text, v);
-
 			lbl_uif_param->x = window_center_x - (get_label_width(lbl_uif_param) / 2);
 			lbl_uif_param->y = win->y1 + get_label_height(lbl_uif_param);
+			lbl_uif_param->visible = VISIBLE;
+
+			lbl_uif_val = find_gui_element_ref(TYPE_LABEL, win, "lbl_uif_val");
+			const char * v = hamradio_gui_edit_menu_item(menu_uif.menupos, 0);
+			strcpy(lbl_uif_val->text, v);
 			lbl_uif_val->x = window_center_x - (get_label_width(lbl_uif_val) / 2);
 			lbl_uif_val->y = win->y1 + get_label_height(lbl_uif_param) * 4;
+			lbl_uif_val->visible = VISIBLE;
+
+			button_down = find_gui_element_ref(TYPE_BUTTON, win, "btnUIF-");
+			button_down->x1 = lbl_uif_val->x - button_down->w - 10;
+			button_down->y1 = (lbl_uif_val->y + get_label_height(lbl_uif_param) / 2) - (button_down->h / 2);
+			button_down->visible = VISIBLE;
 
 			button_up = find_gui_element_ref(TYPE_BUTTON, win, "btnUIF+");
-			button_down = find_gui_element_ref(TYPE_BUTTON, win, "btnUIF-");
-
-			button_down->x1 = lbl_uif_val->x - button_menu_w - 10;
-			button_down->y1 = (lbl_uif_val->y + get_label_height(lbl_uif_param) / 2) - (button_menu_h / 2);
 			button_up->x1 = lbl_uif_val->x + get_label_width(lbl_uif_val) + 10;
 			button_up->y1 = button_down->y1;
+			button_up->visible = VISIBLE;
 
 			hamradio_enable_keyboard_redirect();
 			return;
@@ -1765,7 +1801,7 @@ static void gui_main_process(void);
 			lbl_uif_val->x = window_center_x - (get_label_width(lbl_uif_val) / 2);
 			encoder2.rotate_done = 1;
 
-			button_down->x1 = lbl_uif_val->x - button_menu_w - 10;
+			button_down->x1 = lbl_uif_val->x - button_down->w - 10;
 			button_up->x1 = lbl_uif_val->x + get_label_width(lbl_uif_val) + 10;
 
 			gui.timer_1sec_updated = 1;
@@ -1782,6 +1818,8 @@ static void gui_main_process(void);
 			gui.kbd_code = KBD_CODE_MAX;
 		}
 	}
+
+#if WITHOLDMENUSTYLE
 
 	static void labels_menu_handler (void)
 	{
@@ -2127,6 +2165,30 @@ static void gui_main_process(void);
 					labels[menu[menu_level].selected_label + menu[menu_level].first_id].y, ">", COLORPIP_YELLOW);
 	}
 
+#else
+	static void labels_menu_handler (void)
+	{
+
+	}
+
+	static void buttons_menu_handler(void)
+	{
+
+	}
+
+	static void window_menu_process(void)
+	{
+		window_t * win = & windows[WINDOW_MENU];
+		if (win->first_call == 1)
+		{
+			win->align_mode = ALIGN_CENTER_X;						// выравнивание окна системных настроек только по центру
+			calculate_window_position(win);
+
+			win->first_call = 0;
+		}
+
+	}
+#endif
 	uint_fast8_t gui_check_encoder2 (int_least16_t rotate)
 	{
 		if (encoder2.rotate_done || encoder2.rotate == 0)
@@ -2192,6 +2254,8 @@ static void gui_main_process(void);
 			lbl_val = find_gui_element_ref(TYPE_LABEL, win, "lbl_enc2_val");
 			lbl_param->y = win->y1 + get_label_height(lbl_param) * 3;
 			lbl_val->y = lbl_param->y + get_label_height(lbl_val) * 2;
+			lbl_param->visible = VISIBLE;
+			lbl_val->visible = VISIBLE;
 			return;
 		}
 		if(gui_enc2_menu->updated)
@@ -2244,6 +2308,7 @@ static void gui_main_process(void);
 				button_t * bh = & buttons[id];
 				bh->x1 = x;
 				bh->y1 = y;
+				bh->visible = VISIBLE;
 				x = x + interval + bh->w;
 				if (x + bh->w > win->x1 + win->w)
 				{
@@ -2275,6 +2340,7 @@ static void gui_main_process(void);
 				button_t * bh = & buttons[id];
 				bh->x1 = x;
 				bh->y1 = y;
+				bh->visible = VISIBLE;
 				x = x + interval + bh->w;
 				if (x + bh->w > win->x1 + win->w)
 				{
@@ -2320,6 +2386,7 @@ static void gui_main_process(void);
 				sl->size = 200;
 				sl->step = 2;
 				sl->value = normalize(hamradio_get_gmikeequalizerparams(id - id_start), eq_limit, 0, 100);
+				sl->visible = VISIBLE;
 
 				mid_w = sl->x + sliders_width / 2;		// центр шкалы слайдера по x
 
@@ -2341,26 +2408,18 @@ static void gui_main_process(void);
 			return;
 		}
 
-		if (gui.selected_type == TYPE_SLIDER && gui.is_tracking)
+		if (gui.selected_type == TYPE_SLIDER)
 		{
 			uint_fast8_t id = gui.selected_id - id_start;
 			sl = (slider_t*)gui.selected_link;
 
-			uint16_t v = sl->value + round(gui.vector_move_y / sl->step);
-			if (v >= 0 && v <= sl->size / sl->step)
-			{
-				sl->value = v;
-				hamradio_set_gmikeequalizerparams(id, normalize(sl->value, 100, 0, eq_limit));
+			hamradio_set_gmikeequalizerparams(id, normalize(sl->value, 100, 0, eq_limit));
 
-				uint_fast16_t mid_w = sl->x + sliders_width / 2;
-				local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("lbl_%s_val"), sl->name);
-				lbl = find_gui_element_ref(TYPE_LABEL, win, buf);
-				local_snprintf_P(lbl->text, ARRAY_SIZE(lbl->text), PSTR("%d"), hamradio_get_gmikeequalizerparams(id) + eq_base);
-				lbl->x = mid_w - get_label_width(lbl) / 2;
-
-				PRINTF("%s: %d%\n", sl->name, sl->value);
-			}
-			reset_tracking();
+			uint_fast16_t mid_w = sl->x + sliders_width / 2;
+			local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("lbl_%s_val"), sl->name);
+			lbl = find_gui_element_ref(TYPE_LABEL, win, buf);
+			local_snprintf_P(lbl->text, ARRAY_SIZE(lbl->text), PSTR("%d"), hamradio_get_gmikeequalizerparams(id) + eq_base);
+			lbl->x = mid_w - get_label_width(lbl) / 2;
 		}
 
 		for (uint_fast16_t i = 0; i <= abs(eq_base); i += 3)
@@ -2551,6 +2610,7 @@ static void gui_main_process(void);
 				bh = & buttons[id];
 				bh->x1 = x;
 				bh->y1 = WITHGUIMAXY - bh->h;
+				bh->visible = VISIBLE;
 				x = x + interval + bh->w;
 			}
 		}
@@ -2683,14 +2743,13 @@ static void gui_main_process(void);
 	}
 
 	/* Кнопка */
-	static void draw_button(uint_fast8_t id)
+	static void draw_button(const button_t * const bh)
 	{
 		PACKEDCOLORMAIN_T * bg = NULL;
 		PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
 		btn_bg_t * b1 = NULL;
 		uint_fast8_t i = 0;
 		static const char delimeters [] = "|";
-		const button_t * const bh = & buttons[id];
 
 		do {
 			if (bh->h == btn_bg[i].h && bh->w == btn_bg[i].w)
@@ -2746,10 +2805,9 @@ static void gui_main_process(void);
 		}
 	}
 
-	static void draw_slider(uint_fast8_t id)
+	static void draw_slider(slider_t * sl)
 	{
 		PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
-		slider_t * sl = & sliders[id];
 
 		if (sl->orientation)		// ORIENTATION_HORIZONTAL
 		{
@@ -2862,6 +2920,14 @@ static void gui_main_process(void);
 		}
 	}
 
+	static void slider_process(slider_t * sl)
+	{
+		uint16_t v = sl->value + round(gui.vector_move_y / sl->step);
+		if (v >= 0 && v <= sl->size / sl->step)
+			sl->value = v;
+		reset_tracking();
+	}
+
 	static void set_state_record(touch_t * val)
 	{
 		ASSERT(val != NULL);
@@ -2891,6 +2957,8 @@ static void gui_main_process(void);
 				gui.selected_type = TYPE_SLIDER;
 				gui.selected_link = (slider_t *) & sliders[val->id];
 				sliders[val->id].state = val->state;
+				if (sliders[val->id].state == PRESSED)
+					slider_process((slider_t *) gui.selected_link);
 				break;
 
 			default:
@@ -3045,15 +3113,15 @@ static void gui_main_process(void);
 					{
 						const button_t * const bh = & buttons[i];
 						if (bh->visible == VISIBLE && bh->parent == win->window_id)
-							draw_button(i);
+							draw_button(bh);
 					}
 
 					// слайдеры
 					for (uint_fast8_t i = 1; i < SLIDERS_COUNT; i++)
 					{
-						const slider_t * const sh = & sliders[i];
+						slider_t * sh = & sliders[i];
 						if (sh->visible == VISIBLE && sh->parent == win->window_id)
-							draw_slider(i);
+							draw_slider(sh);
 					}
 
 				}
