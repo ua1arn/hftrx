@@ -3378,11 +3378,14 @@ HAL_StatusTypeDef USB_HS_PHYCInit(USB_OTG_GlobalTypeDef *USBx)
 		(void) USBPHYC->PLL;
 
 		const uint_fast32_t pll4_r_ck = PLL4_FREQ_R;
-		const uint_fast32_t N = calcdivround2(pll4_r_ck, 400000uL);
+		const uint_fast32_t N = 60;//calcdivround2(pll4_r_ck, 400000uL);
+		const uint_fast32_t ODF = 0;
 
 		USBPHYC->PLL = (USBPHYC->PLL & ~ (USBPHYC_PLL_PLLDITHEN0_Msk | USBPHYC_PLL_PLLDITHEN1_Msk | USBPHYC_PLL_PLLEN_Msk | USBPHYC_PLL_PLLNDIV_Msk | USBPHYC_PLL_PLLODF_Msk | USBPHYC_PLL_PLLFRACIN_Msk | USBPHYC_PLL_PLLFRACCTL_Msk)) |
-			(N << USBPHYC_PLL_PLLNDIV_Pos) |	// PLLNDIV 24/60 = 400 kHz
-			((0) << USBPHYC_PLL_PLLODF_Pos) |	// PLLODF
+			((N) << USBPHYC_PLL_PLLNDIV_Pos) |	// PLLNDIV 24/60 = 400 kHz
+			((ODF) << USBPHYC_PLL_PLLODF_Pos) |	// PLLODF
+			USBPHYC_PLL_PLLDITHEN0_Msk |
+			USBPHYC_PLL_PLLDITHEN1_Msk |
 			0;
 		(void) USBPHYC->PLL;
 
