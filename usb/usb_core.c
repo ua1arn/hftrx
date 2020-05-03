@@ -3356,24 +3356,6 @@ HAL_StatusTypeDef USB_HS_PHYCInit(USB_OTG_GlobalTypeDef *USBx)
 
 	if (1)
 	{
-		// PLL
-		USBPHYC->PLL &= ~ USBPHYC_PLL_PLLEN_Msk;
-		(void) USBPHYC->PLL;
-
-		USBPHYC->PLL = (USBPHYC->PLL & ~ (USBPHYC_PLL_PLLDITHEN0_Msk | USBPHYC_PLL_PLLDITHEN1_Msk | USBPHYC_PLL_PLLEN_Msk | USBPHYC_PLL_PLLNDIV_Msk | USBPHYC_PLL_PLLODF_Msk | USBPHYC_PLL_PLLFRACIN_Msk | USBPHYC_PLL_PLLFRACCTL_Msk)) |
-			((60) << USBPHYC_PLL_PLLNDIV_Pos) |	// PLLNDIV 24/60 = 400 kHz
-			((0) << USBPHYC_PLL_PLLODF_Pos) |	// PLLODF
-			0;
-		(void) USBPHYC->PLL;
-
-		USBPHYC->PLL |= USBPHYC_PLL_PLLEN_Msk;
-		(void) USBPHYC->PLL;
-
-		local_delay_ms(10);
-	}
-
-	if (1)
-	{
 		// USBOSRC
 		//	0: pll4_r_ck clock selected as kernel peripheral clock (default after reset)
 		//	1: clock provided by the USB PHY (rcc_ck_usbo_48m) selected as kernel peripheral clock
@@ -3382,11 +3364,32 @@ HAL_StatusTypeDef USB_HS_PHYCInit(USB_OTG_GlobalTypeDef *USBx)
 		//  0x1: pll4_r_ck clock selected as kernel peripheral clock
 		//  0x2: hse_ker_ck/2 clock selected as kernel peripheral clock
 		RCC->USBCKSELR = (RCC->USBCKSELR & ~ (RCC_USBCKSELR_USBOSRC_Msk | RCC_USBCKSELR_USBPHYSRC_Msk)) |
-			(0x00 << RCC_USBCKSELR_USBOSRC_Pos) |
-			(0x01 << RCC_USBCKSELR_USBPHYSRC_Pos) |
+			(0x00 << RCC_USBCKSELR_USBOSRC_Pos) |	// 50 MHz max pll4_r_ck
+			(0x01 << RCC_USBCKSELR_USBPHYSRC_Pos) |	// 38.4 MHz max pll4_r_ck
 			0;
 		(void) RCC->USBCKSELR;
 
+	}
+
+	if (1)
+	{
+		// PLL
+		USBPHYC->PLL &= ~ USBPHYC_PLL_PLLEN_Msk;
+		(void) USBPHYC->PLL;
+
+		const uint_fast32_t pll4_r_ck = PLL4_FREQ_R;
+		const uint_fast32_t N = calcdivround2(pll4_r_ck, 400000uL);
+
+		USBPHYC->PLL = (USBPHYC->PLL & ~ (USBPHYC_PLL_PLLDITHEN0_Msk | USBPHYC_PLL_PLLDITHEN1_Msk | USBPHYC_PLL_PLLEN_Msk | USBPHYC_PLL_PLLNDIV_Msk | USBPHYC_PLL_PLLODF_Msk | USBPHYC_PLL_PLLFRACIN_Msk | USBPHYC_PLL_PLLFRACCTL_Msk)) |
+			(N << USBPHYC_PLL_PLLNDIV_Pos) |	// PLLNDIV 24/60 = 400 kHz
+			((0) << USBPHYC_PLL_PLLODF_Pos) |	// PLLODF
+			0;
+		(void) USBPHYC->PLL;
+
+		USBPHYC->PLL |= USBPHYC_PLL_PLLEN_Msk;
+		(void) USBPHYC->PLL;
+
+		local_delay_ms(10);
 	}
 
 	// MISC
