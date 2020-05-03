@@ -3370,26 +3370,66 @@ HAL_StatusTypeDef USB_HS_PHYCInit(USB_OTG_GlobalTypeDef *USBx)
 		(void) RCC->USBCKSELR;
 
 	}
+#if 0
+	{
+		// https://github.com/Xilinx/u-boot-xlnx/blob/master/drivers/phy/phy-stm32-usbphyc.c
+		unsigned long long fvco, ndiv, frac;
 
+
+
+		/*
+		 *    | FVCO = INFF*2*(NDIV + FRACT/2^16 ) when DITHER_DISABLE[1] = 1
+		 *    | FVCO = 2880MHz
+		 *    | NDIV = integer part of input bits to set the LDF
+		 *    | FRACT = fractional part of input bits to set the LDF
+		 *  =>	PLLNDIV = integer part of (FVCO / (INFF*2))
+		 *  =>	PLLFRACIN = fractional part of(FVCO / INFF*2) * 2^16
+		 * <=>  PLLFRACIN = ((FVCO / (INFF*2)) - PLLNDIV) * 2^16
+		 */
+
+		fvco = (unsigned long long)PLL_FVCO * 1000000; /* In Hz */
+
+		ndiv = fvco;
+
+		do_div(ndiv, (clk_rate * 2));
+		pll_params->ndiv = (u8)ndiv;
+		frac = fvco * (1 << 16);
+		do_div(frac, (clk_rate * 2));
+		frac = frac - (ndiv * (1 << 16));
+		pll_params->frac = (u16)frac;
+
+	}
+#endif
 	if (1)
 	{
+		// https://github.com/Xilinx/u-boot-xlnx/blob/master/drivers/phy/phy-stm32-usbphyc.c
+
 		// PLL
 		USBPHYC->PLL &= ~ USBPHYC_PLL_PLLEN_Msk;
 		(void) USBPHYC->PLL;
 
+		while ((USBPHYC->PLL & USBPHYC_PLL_PLLEN_Msk) != 0)
+			;
+
 		const uint_fast32_t USBPHYCPLLFREQUENCY = 1440000000uL;
 		const uint_fast32_t pll4_r_ck = PLL4_FREQ_R;
+		const uint_fast32_t ODF = 0;	// игнорируется
 		// 1440 MHz
 		// Work: USB_HS_PHYCInit: pll4_r_ck=16000000, N=90, FRACT=0, ODF=0
 		// Work: USB_HS_PHYCInit: pll4_r_ck=24000000, N=60, FRACT=0, ODF=0
 		// Work: USB_HS_PHYCInit: pll4_r_ck=32000000, N=45, FRACT=0, ODF=0
+		// Bad:  USB_HS_PHYCInit: pll4_r_ck=38400000, N=37, FRACT=32768, ODF=0
 		const ldiv_t d = ldiv(USBPHYCPLLFREQUENCY, pll4_r_ck);
 		const uint_fast32_t N = d.quot;
+
 		const uint_fast32_t FRACTMAX = (USBPHYC_PLL_PLLFRACIN_Msk >> USBPHYC_PLL_PLLFRACIN_Pos) + 1;
 		const uint_fast32_t FRACT = d.rem * (uint_fast64_t) FRACTMAX / pll4_r_ck;
-		const uint_fast32_t ODF = 0;	// игнорируется
 
-		PRINTF("USB_HS_PHYCInit: pll4_r_ck=%u, N=%u, FRACT=%u, ODF=%u\n", pll4_r_ck, N, FRACT, ODF);
+//		uint_fast64_t FRACT = (uint_fast64_t) USBPHYCPLLFREQUENCY << 16;
+//		FRACT /= pll4_r_ck;
+//		FRACT = FRACT - (d.quot << 16);
+
+		PRINTF("USB_HS_PHYCInit: pll4_r_ck=%u, N=%u, FRACT=%u, ODF=%u\n", pll4_r_ck, N, (unsigned) (FRACT & 0xFFFF), ODF);
 
 		USBPHYC->PLL =
 				(USBPHYC->PLL & ~ (USBPHYC_PLL_PLLDITHEN0_Msk | USBPHYC_PLL_PLLDITHEN1_Msk |
@@ -3398,7 +3438,7 @@ HAL_StatusTypeDef USB_HS_PHYCInit(USB_OTG_GlobalTypeDef *USBx)
 			((N) << USBPHYC_PLL_PLLNDIV_Pos) |	// PLLNDIV 24/60 = 400 kHz
 			((ODF) << USBPHYC_PLL_PLLODF_Pos) |	// PLLODF - игнорируется
 			USBPHYC_PLL_PLLSTRBYP_Msk |
-			(((FRACT) & USBPHYC_PLL_PLLFRACIN_Msk) < USBPHYC_PLL_PLLFRACIN_Pos) |
+			(((FRACT) < USBPHYC_PLL_PLLFRACIN_Pos) & USBPHYC_PLL_PLLFRACIN_Msk) |
 			((d.rem != 0) * USBPHYC_PLL_PLLFRACCTL_Msk) |
 			USBPHYC_PLL_PLLDITHEN0_Msk |
 			USBPHYC_PLL_PLLDITHEN1_Msk |
@@ -3407,7 +3447,11 @@ HAL_StatusTypeDef USB_HS_PHYCInit(USB_OTG_GlobalTypeDef *USBx)
 
 		USBPHYC->PLL |= USBPHYC_PLL_PLLEN_Msk;
 		(void) USBPHYC->PLL;
+
 		local_delay_ms(10);
+
+		while ((USBPHYC->PLL & USBPHYC_PLL_PLLEN_Msk) == 0)
+			;
 	}
 
 	// MISC
