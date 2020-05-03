@@ -3379,14 +3379,15 @@ HAL_StatusTypeDef USB_HS_PHYCInit(USB_OTG_GlobalTypeDef *USBx)
 
 		const uint_fast32_t USBPHYCPLLFREQUENCY = 1440000000uL;
 		const uint_fast32_t pll4_r_ck = PLL4_FREQ_R;
-		// 1440
-		// Work: USB_HS_PHYCInit: pll4_r_ck=16000000, N=90, ODF=0
-		// Work: USB_HS_PHYCInit: pll4_r_ck=24000000, N=60, ODF=0
+		// 1440 MHz
+		// Work: USB_HS_PHYCInit: pll4_r_ck=16000000, N=90, FRACT=0, ODF=0
+		// Work: USB_HS_PHYCInit: pll4_r_ck=24000000, N=60, FRACT=0, ODF=0
+		// Work: USB_HS_PHYCInit: pll4_r_ck=32000000, N=45, FRACT=0, ODF=0
 		const ldiv_t d = ldiv(USBPHYCPLLFREQUENCY, pll4_r_ck);
-		uint_fast32_t N = d.quot;
-		uint_fast32_t FRACTMAX = (USBPHYC_PLL_PLLFRACIN_Msk >> USBPHYC_PLL_PLLFRACIN_Pos) + 1;
-		uint_fast32_t FRACT = d.rem * (uint_fast64_t) FRACTMAX / pll4_r_ck;
-		uint_fast32_t ODF = 0;	// игнорируется
+		const uint_fast32_t N = d.quot;
+		const uint_fast32_t FRACTMAX = (USBPHYC_PLL_PLLFRACIN_Msk >> USBPHYC_PLL_PLLFRACIN_Pos) + 1;
+		const uint_fast32_t FRACT = d.rem * (uint_fast64_t) FRACTMAX / pll4_r_ck;
+		const uint_fast32_t ODF = 0;	// игнорируется
 
 		PRINTF("USB_HS_PHYCInit: pll4_r_ck=%u, N=%u, FRACT=%u, ODF=%u\n", pll4_r_ck, N, FRACT, ODF);
 
