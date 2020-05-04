@@ -1083,6 +1083,10 @@ extern "C" {
 
 		#define NVRAM_END 4095U		/* 4K of RAM at BKPSRAM_BASE */
 
+	#elif defined (NVRAM_TYPE) && (NVRAM_TYPE == NVRAM_TYPE_BKPSRAM) && CPUSTYLE_STM32MP1
+
+		#define NVRAM_END 4095U		/* 4K of RAM at BKPSRAM_BASE */
+
 	#endif // ATMEGA
 
 #endif	// Heavy eeprom size optimization

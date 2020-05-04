@@ -323,7 +323,7 @@ ui16min(uint_least16_t a, uint_least16_t b)
 
 /* интерфейсные функции NVRAM */
 
-#if CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX
+#if CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32MP1
 #if (NVRAM_TYPE == NVRAM_TYPE_BKPSRAM)
 	// Разрешить запись в Backup domain
 	static void stm32f4xx_bdenable(void)
@@ -368,7 +368,14 @@ void nvram_initialize(void)
 	//debug_printf_P(PSTR("nvram_initialize\n"));
 #if (NVRAM_TYPE == NVRAM_TYPE_BKPSRAM)
 
-	#if CPUSTYLE_STM32F
+	#if CPUSTYLE_STM32MP1
+
+		RCC->MP_AHB5ENSETR = RCC_MC_AHB5ENSETR_BKPSRAMEN;
+		(void) RCC->MP_AHB5ENSETR;
+		RCC->MP_AHB5LPENSETR = RCC_MC_AHB5LPENSETR_BKPSRAMLPEN;
+		(void) RCC->MP_AHB5LPENSETR;
+
+	#elif CPUSTYLE_STM32F
 		// RCC_APB1ENR_RTCAPBEN ???
 		RCC->APB1ENR |= RCC_APB1ENR_PWREN;	// включить тактирование power management
 		__DSB();
