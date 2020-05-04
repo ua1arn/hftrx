@@ -13712,3 +13712,27 @@ uint_fast8_t hamradio_get_usbh_active(void)
 
 #endif /* WITHUSBHW */
 
+#if WITHEHCIHW
+
+// USB EHCI controller
+void board_ehci_initialize(void)
+{
+	PRINTF("board_ehci_initialize start.\n");
+
+	RCC->MP_AHB6ENSETR = RCC_MC_AHB6ENSETR_USBHEN;
+	(void) RCC->MP_AHB6ENSETR;
+	RCC->MP_AHB6LPENSETR = RCC_MC_AHB6LPENSETR_USBHLPEN;
+	(void) RCC->MP_AHB6LPENSETR;
+
+	// USBH_EHCI_HCICAPLENGTH == USB1_EHCI->HCCAPBASE
+	// USBH_EHCI_HCSPARAMS == USB1_EHCI->HCSPARAMS
+	// USBH_EHCI_HCCPARAMS == USB1_EHCI->HCCPARAMS
+
+	PRINTF("board_ehci_initialize: HCCAPBASE=%08lX\n", (unsigned long) USB1_EHCI->HCCAPBASE);
+
+//	USBH_EHCI_IRQn
+
+	PRINTF("board_ehci_initialize done.\n");
+}
+
+#endif /* WITHEHCIHW */

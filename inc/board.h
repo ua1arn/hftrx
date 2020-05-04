@@ -278,6 +278,9 @@ void board_usb_deactivate(void);
 void board_usb_deinitialize(void);
 void board_usb_spool(void);
 
+void board_ehci_initialize(void);
+
+
 uint_fast8_t hardware_usbd_get_vbusnow(void);
 uint_fast8_t hardware_usbd_get_vbusbefore(void);
 

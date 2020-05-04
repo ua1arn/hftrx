@@ -17199,6 +17199,9 @@ lowinitialize(void)
 #if WITHUSBHW
 	board_usb_initialize();		// USB device and host support
 #endif /* WITHUSBHW */
+#if WITHEHCIHW
+	board_ehci_initialize();		// USB EHCI controller
+#endif /* WITHEHCIHW */
 #if WITHENCODER
 	hardware_encoder_initialize();	//  todo: разобраться - вызов перенесен сюда из board_init_io - иначе не собирается под Cortex-A9.
 #endif /* WITHENCODER */
