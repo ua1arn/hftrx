@@ -279,6 +279,7 @@ void board_usb_deinitialize(void);
 void board_usb_spool(void);
 
 void board_ehci_initialize(void);
+void board_gpu_initialize(void);	// Graphic processor unit
 
 
 uint_fast8_t hardware_usbd_get_vbusnow(void);

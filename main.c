@@ -17202,6 +17202,9 @@ lowinitialize(void)
 #if WITHEHCIHW
 	board_ehci_initialize();		// USB EHCI controller
 #endif /* WITHEHCIHW */
+#if WITHGPUHW
+	board_gpu_initialize();		// GPU controller
+#endif /* WITHGPUHW */
 #if WITHENCODER
 	hardware_encoder_initialize();	//  todo: разобраться - вызов перенесен сюда из board_init_io - иначе не собирается под Cortex-A9.
 #endif /* WITHENCODER */
