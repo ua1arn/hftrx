@@ -153,7 +153,7 @@ all: APP2 $(PROJECT)_app.stm32 app.hex
 bootloader: BOOT2 fsbl.stm32 boot.hex
   
 app_run: $(PROJECT)_app.stm32
-	./dfu-util.exe --device ffff:0738 --alt 2 --transfer-size 1024 --dfuse-address 0xC0000000 --download $(PROJECT)_app.stm32
+	./dfu-util.exe --device ffff:0738 --alt 2 --transfer-size 4096 --dfuse-address 0xC0000000 --download $(PROJECT)_app.stm32
 	./dfu-util.exe --device ffff:0738 --alt 2 --detach
 
 flash: $(PROJECT)_app.stm32
