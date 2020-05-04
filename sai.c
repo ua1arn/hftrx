@@ -500,7 +500,7 @@ DMA_I2S2_RX_initialize(void)
 #if defined (I2S2ext)
 // Интерфейс к НЧ кодеку
 static void 
-hardware_i2s2_master_fullduplex_initialize(void)		/* инициализация I2S на STM32F429 */
+hardware_i2s2_i2s2ext_master_duplex_initialize(void)		/* инициализация I2S на STM32F429 */
 {
 	// SPI2 - master transmit
 	// I2S2ext - slave receive
@@ -568,9 +568,9 @@ hardware_i2s2_master_fullduplex_initialize(void)		/* инициализация 
 
 	// note: SPI_I2SPR_I2SDIV should be >= 2
 #if WITHI2SCLOCKFROMPIN
-	debug_printf_P(PSTR("hardware_i2s2_master_fullduplex_initialize: 1 I2S i2sdivider=%lu, ARMI2SMCLK=%lu, EXTI2S_FREQ=%lu\n"), (unsigned long) calcdivround_exti2s(ARMI2SMCLK), (unsigned long) ARMI2SMCLK, (unsigned long) EXTI2S_FREQ);
+	debug_printf_P(PSTR("hardware_i2s2_i2s2ext_master_duplex_initialize: 1 I2S i2sdivider=%lu, ARMI2SMCLK=%lu, EXTI2S_FREQ=%lu\n"), (unsigned long) calcdivround_exti2s(ARMI2SMCLK), (unsigned long) ARMI2SMCLK, (unsigned long) EXTI2S_FREQ);
 #else /* WITHI2SCLOCKFROMPIN */
-	debug_printf_P(PSTR("hardware_i2s2_master_fullduplex_initialize: 2 I2S i2sdivider=%lu, ARMI2SMCLK=%lu, PLLI2S_FREQ_OUT=%lu\n"), (unsigned long) calcdivround_plli2s(ARMI2SMCLK), (unsigned long) ARMI2SMCLK, (unsigned long) PLLI2S_FREQ_OUT);
+	debug_printf_P(PSTR("hardware_i2s2_i2s2ext_master_duplex_initialize: 2 I2S i2sdivider=%lu, ARMI2SMCLK=%lu, PLLI2S_FREQ_OUT=%lu\n"), (unsigned long) calcdivround_plli2s(ARMI2SMCLK), (unsigned long) ARMI2SMCLK, (unsigned long) PLLI2S_FREQ_OUT);
 #endif /* WITHI2SCLOCKFROMPIN */
 
 	const portholder_t i2spr = 
@@ -753,11 +753,12 @@ hardware_i2s3_slave_rx_initialize(void)		/* инициализация I2S3 STM3
 
 
 // Интерфейс к НЧ кодеку
-/* инициализация I2S2 STM32MP1 */
+/* инициализация I2S2 STM32MP1 (и возможно STM32H7xx) */
 static void
-hardware_i2s2_slave_duplex_initialize(void)
+hardware_i2s2_slave_fullduplex_initialize(void)
 {
-	debug_printf_P(PSTR("hardware_i2s2_slave_duplex_initialize\n"));
+	debug_printf_P(PSTR("hardware_i2s2_slave_fullduplex_initialize\n"));
+
 #if CPUSTYLE_STM32MP1
 	RCC->MP_APB1ENSETR = RCC_MC_APB1ENSETR_SPI2EN; // Подать тактирование
 	(void) RCC->MP_APB1ENSETR;
@@ -773,15 +774,18 @@ hardware_i2s2_slave_duplex_initialize(void)
 
 	const portholder_t i2scfgr = stm32xxx_i2scfgr_afcodec();
 
- 	SPI3->I2SCFGR = i2scfgr | 1 * SPI_I2SCFGR_I2SCFG_0;	// 10: Master - transmit, 11: Master - receive, 01: Slave - receive
+ 	SPI2->I2SCFGR = i2scfgr |
+ 			(4uL << SPI_I2SCFGR_I2SCFG_Pos) |	// 100: slave - full duplex
+			0;
+
 #if CPUSTYLE_STM32H7XX
-	//SPI3->CFG2 |= SPI_CFG2_IOSWP;
+	//SPI2->CFG2 |= SPI_CFG2_IOSWP;
 #endif /* CPUSTYLE_STM32H7XX */
 
 	// Подключить I2S к выводам процессора
 	I2S2HW_INITIALIZE();
 
-	debug_printf_P(PSTR("hardware_i2s2_slave_duplex_initialize done\n"));
+	debug_printf_P(PSTR("hardware_i2s2_slave_fullduplex_initialize done\n"));
 }
 
 #endif /* WITHI2SHWRXSLAVE */
@@ -882,21 +886,21 @@ hardware_i2s2_rx_enable(void)
 
 
 
-#if WITHI2SFULLDUPLEXHW
+#if WITHI2SI2S2EXTFULLDUPLEXHW
 
 // платы, где используются DMA_I2S2 и DMA_I2S2ext
 static const codechw_t audiocodechw =
 {
-	hardware_i2s2_master_fullduplex_initialize,
+	hardware_i2s2_i2s2ext_master_duplex_initialize,
 	hardware_dummy_initialize,
 	DMA_I2S2ext_rx_init,			// DMA по приёму канал 3
 	DMA_I2S2_TX_initialize,				// DMA по передаче канал 0
 	hardware_i2s2_fullduplex_enable,
 	hardware_dummy_enable,
-	"i2s2-audiocodechw"
+	"i2s2-i2s2ext-audiocodechw"
 };
 
-#else /* WITHI2SFULLDUPLEXHW */
+#else /* WITHI2SI2S2EXTFULLDUPLEXHW */
 
 #if CPUSTYLE_STM32MP1
 
@@ -904,7 +908,7 @@ static const codechw_t audiocodechw =
 	static const codechw_t audiocodechw =
 	{
 		#if WITHI2SHWRXSLAVE && WITHI2SHWTXSLAVE
-			hardware_i2s2_slave_duplex_initialize,	/* Интерфейс к НЧ кодеку - микрофон */
+			hardware_i2s2_slave_fullduplex_initialize,	/* Интерфейс к НЧ кодеку - микрофон */
 		#else /* WITHI2SHWRXSLAVE */
 			hardware_dummy_initialize,			/* Интерфейс к НЧ кодеку - микрофон */
 		#endif /* WITHI2SHWRXSLAVE */
@@ -944,7 +948,7 @@ static const codechw_t audiocodechw =
 
 #endif /* CPUSTYLE_STM32MP1 */
 
-#endif /* WITHI2SFULLDUPLEXHW */
+#endif /* WITHI2SI2S2EXTFULLDUPLEXHW */
 
 
 #endif /* WITHI2SHW */
