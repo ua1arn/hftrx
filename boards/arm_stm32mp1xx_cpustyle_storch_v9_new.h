@@ -477,7 +477,7 @@
 	#define targetext1		(1uL << 8)		// PE8 ext1 on front panel
 	#define targetxad2		(1uL << 7)		// PE7 ext2(not connected now)
 	#define targetnvram		(1uL << 0)		// PE0 nvmem FM25L16B
-	#define targetctl1		(0* 1uL << 1)		// PE1 board control registers chain
+	#define targetctl1		(1uL << 1)		// PE1 board control registers chain
 	#define targetcodec1	(1uL << 2)		// PE2 on-board codec1 NAU8822L
 	#define targetadc2		(1uL << 9) 		// PE9 ADC MCP3208-BI/SL chip select (potentiometers)
 	#define targetfpga1		(1uL << 10)		// PE10 FPGA control registers CS1
