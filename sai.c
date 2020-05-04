@@ -438,6 +438,65 @@ DMA_I2S3_RX_initialize(void)
 	DMA1_Stream0->CR |= DMA_SxCR_EN;
 }
 
+/* Инициализация DMA для прёма по I2S2 (дуплекс) */
+// Use arm_hardware_invalidate
+static void
+DMA_I2S2_RX_initialize(void)
+{
+	/* I2S2_RX - DMA1, Stream0, Channel0 */
+#if CPUSTYLE_STM32MP1
+	RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_DMA1EN; // включил DMA1
+	(void) RCC->MP_AHB2ENSETR;
+	// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
+	// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
+	enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
+	DMAMUX1_Channel0->CCR = 39 * DMAMUX_CxCR_DMAREQ_ID_0;	// SPI2_RX
+	DMA1_Stream0->PAR = (uintptr_t) & SPI2->RXDR;
+
+#elif CPUSTYLE_STM32H7XX
+	RCC->AHB1ENR |= RCC_AHB1ENR_DMA1EN;	// включил DMA1
+	(void) RCC->AHB1ENR;
+	// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
+	// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
+	enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
+	DMAMUX1_Channel0->CCR = 39 * DMAMUX_CxCR_DMAREQ_ID_0;	// SPI2_RX
+	DMA1_Stream0->PAR = (uintptr_t) & SPI2->RXDR;
+
+#else /* others */
+	RCC->AHB1ENR |= RCC_AHB1ENR_DMA1EN;	// включил DMA1
+	(void) RCC->AHB1ENR;
+	const uint_fast8_t ch = 0;
+	DMA1_Stream0->PAR = (uintptr_t) & SPI2->DR;
+
+#endif /* CPUSTYLE_STM32MP1 */
+
+    DMA1_Stream0->M0AR = dma_invalidate16rx(allocate_dmabuffer16());
+    DMA1_Stream0->M1AR = dma_invalidate16rx(allocate_dmabuffer16());
+	DMA1_Stream0->NDTR = (DMA1_Stream0->NDTR & ~ DMA_SxNDT) |
+		(DMABUFFSIZE16 * DMA_SxNDT_0);
+
+	DMA1_Stream0->FCR &= ~ DMA_SxFCR_DMDIS;	// use direct mode
+	DMA1_Stream0->CR =
+		ch * DMA_SxCR_CHSEL_0 | // канал
+		0 * DMA_SxCR_MBURST_0 |	// 0: single transfer
+		0 * DMA_SxCR_PBURST_0 |	// 0: single transfer
+		0 * DMA_SxCR_DIR_0 |	// 00: Peripheral-to-memory
+		1 * DMA_SxCR_MINC |		//инкремент памяти
+		(DMA_SxCR_xSIZE << DMA_SxCR_MSIZE_Pos) |	// длина в памяти - 16b/32b
+		(DMA_SxCR_xSIZE << DMA_SxCR_PSIZE_Pos) |	// длина в SPI_DR- 16b/32b
+		(DMA_SxCR_PL_VALUE << DMA_SxCR_PL_Pos) |		// Priority level - High
+		0 * DMA_SxCR_CT |		// M0AR selected
+		1 * DMA_SxCR_DBM |		// double buffer mode seelcted
+		0;
+
+	DMA1->LIFCR = DMA_LISR_TCIF0;	// Clear TC interrupt flag
+	DMA1_Stream0->CR |= DMA_SxCR_TCIE;	// Разрешаем прерывания от DMA
+
+	arm_hardware_set_handler_realtime(DMA1_Stream0_IRQn, DMA1_Stream0_IRQHandler);
+
+	DMA1_Stream0->CR |= DMA_SxCR_EN;
+}
+
 #if defined (I2S2ext)
 // Интерфейс к НЧ кодеку
 static void 
@@ -533,6 +592,8 @@ hardware_i2s2_master_fullduplex_initialize(void)		/* инициализация 
 static void 
 hardware_i2s2_slave_tx_initialize(void)		/* инициализация I2S2, STM32F4xx */
 {
+	debug_printf_P(PSTR("hardware_i2s2_slave_tx_initialize\n"));
+
 #if CPUSTYLE_STM32MP1
 	RCC->MP_APB1ENSETR = RCC_MC_APB1ENSETR_SPI2EN; // Подать тактирование
 	(void) RCC->MP_APB1ENSETR;
@@ -553,6 +614,8 @@ hardware_i2s2_slave_tx_initialize(void)		/* инициализация I2S2, STM
 
 	// Подключить I2S к выводам процессора
 	I2S2HW_INITIALIZE();
+
+	debug_printf_P(PSTR("hardware_i2s2_slave_tx_initialize done\n"));
 }
 
 #else /* WITHI2SHWTXSLAVE */
@@ -561,6 +624,7 @@ hardware_i2s2_slave_tx_initialize(void)		/* инициализация I2S2, STM
 static void 
 hardware_i2s2_master_tx_initialize(void)		/* инициализация I2S2, STM32F4xx */
 {
+	debug_printf_P(PSTR("hardware_i2s2_master_tx_initialize\n"));
 #if WITHI2SCLOCKFROMPIN
 	// тактовая частота на SPI2 (I2S) подается с внешнего генератора, в процессор вводится через MCK сигнал интерфейса
 	#if defined (STM32F446xx)
@@ -650,6 +714,8 @@ hardware_i2s2_master_tx_initialize(void)		/* инициализация I2S2, ST
 	SPI2->I2SPR = i2spr;
 	// Подключить I2S к выводам процессора
 	I2S2HW_INITIALIZE();
+
+	debug_printf_P(PSTR("hardware_i2s2_master_tx_initialize done\n"));
 }
 
 #endif /* WITHI2SHWTXSLAVE */
@@ -683,6 +749,39 @@ hardware_i2s3_slave_rx_initialize(void)		/* инициализация I2S3 STM3
 	I2S2HW_INITIALIZE();
 
 	debug_printf_P(PSTR("hardware_i2s3_slave_rx_initialize done\n"));
+}
+
+
+// Интерфейс к НЧ кодеку
+/* инициализация I2S2 STM32MP1 */
+static void
+hardware_i2s2_slave_duplex_initialize(void)
+{
+	debug_printf_P(PSTR("hardware_i2s2_slave_duplex_initialize\n"));
+#if CPUSTYLE_STM32MP1
+	RCC->MP_APB1ENSETR = RCC_MC_APB1ENSETR_SPI2EN; // Подать тактирование
+	(void) RCC->MP_APB1ENSETR;
+	RCC->MP_APB1LPENSETR = RCC_MC_APB1LPENSETR_SPI2LPEN; // Подать тактирование
+	(void) RCC->MP_APB1LPENSETR;
+#elif CPUSTYLE_STM32H7XX
+	RCC->APB1LENR |= RCC_APB1LENR_SPI2EN; // Подать тактирование
+	(void) RCC->APB1LENR;
+#else /* CPUSTYLE_STM32H7XX */
+	RCC->APB1ENR |= RCC_APB1ENR_SPI2EN; // Подать тактирование
+	(void) RCC->APB1ENR;
+#endif /* CPUSTYLE_STM32H7XX */
+
+	const portholder_t i2scfgr = stm32xxx_i2scfgr_afcodec();
+
+ 	SPI3->I2SCFGR = i2scfgr | 1 * SPI_I2SCFGR_I2SCFG_0;	// 10: Master - transmit, 11: Master - receive, 01: Slave - receive
+#if CPUSTYLE_STM32H7XX
+	//SPI3->CFG2 |= SPI_CFG2_IOSWP;
+#endif /* CPUSTYLE_STM32H7XX */
+
+	// Подключить I2S к выводам процессора
+	I2S2HW_INITIALIZE();
+
+	debug_printf_P(PSTR("hardware_i2s2_slave_duplex_initialize done\n"));
 }
 
 #endif /* WITHI2SHWRXSLAVE */
@@ -760,8 +859,31 @@ hardware_i2s3_rx_enable(void)
 }
 
 
+/* разрешение работы I2S на STM32F4xx */
+// Интерфейс к НЧ кодеку
+static void
+hardware_i2s2_rx_enable(void)
+{
+#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
+
+	SPI2->CFG1 |= SPI_CFG1_RXDMAEN; // DMA по приёму
+	SPI2->CR1 |= SPI_CR1_SPE;		// I2S enable
+	SPI2->CR1 |= SPI_CR1_CSTART;	// I2S run
+	__DSB();
+
+#else /* CPUSTYLE_STM32H7XX */
+
+	SPI2->CR2 |= SPI_CR2_RXDMAEN; // DMA по приёму
+	SPI2->I2SCFGR |= SPI_I2SCFGR_I2SE;		// I2S enable
+	__DSB();
+
+#endif /* CPUSTYLE_STM32H7XX */
+}
+
+
 
 #if WITHI2SFULLDUPLEXHW
+
 // платы, где используются DMA_I2S2 и DMA_I2S2ext
 static const codechw_t audiocodechw =
 {
@@ -776,24 +898,51 @@ static const codechw_t audiocodechw =
 
 #else /* WITHI2SFULLDUPLEXHW */
 
-static const codechw_t audiocodechw =
-{
-	#if WITHI2SHWRXSLAVE
-		hardware_i2s3_slave_rx_initialize,	/* Интерфейс к НЧ кодеку - микрофон */
-	#else /* WITHI2SHWRXSLAVE */
-		hardware_dummy_initialize,			/* Интерфейс к НЧ кодеку - микрофон */
-	#endif /* WITHI2SHWRXSLAVE */
-	#if WITHI2SHWTXSLAVE
-		hardware_i2s2_slave_tx_initialize,	/* Интерфейс к НЧ кодеку - наушники */
-	#else /* WITHI2SHWTXSLAVE */
-		hardware_i2s2_master_tx_initialize,	/* Интерфейс к НЧ кодеку - наушники */
-	#endif /* WITHI2SHWTXSLAVE */
-	DMA_I2S3_RX_initialize,					// DMA по приёму SPI3_RX - DMA1, Stream0, Channel0
-	DMA_I2S2_TX_initialize,					// DMA по передаче канал 0
-	hardware_i2s3_rx_enable,
-	hardware_i2s2_tx_enable,
-	"i2s2-i2s3-audiocodechw"
-};
+#if CPUSTYLE_STM32MP1
+
+	// Испольщуется I2S2 в дуплексном редимк
+	static const codechw_t audiocodechw =
+	{
+		#if WITHI2SHWRXSLAVE && WITHI2SHWTXSLAVE
+			hardware_i2s2_slave_duplex_initialize,	/* Интерфейс к НЧ кодеку - микрофон */
+		#else /* WITHI2SHWRXSLAVE */
+			hardware_dummy_initialize,			/* Интерфейс к НЧ кодеку - микрофон */
+		#endif /* WITHI2SHWRXSLAVE */
+		#if WITHI2SHWTXSLAVE
+			hardware_dummy_initialize,	/* Интерфейс к НЧ кодеку - наушники */
+		#else /* WITHI2SHWTXSLAVE */
+			hardware_dummy_initialize,	/* Интерфейс к НЧ кодеку - наушники */
+		#endif /* WITHI2SHWTXSLAVE */
+		DMA_I2S2_RX_initialize,					// DMA по приёму SPI2_RX
+		DMA_I2S2_TX_initialize,					// DMA по передаче канал 0
+		hardware_i2s2_rx_enable,
+		hardware_i2s2_tx_enable,
+		"i2s2-duplex-audiocodechw"
+	};
+
+
+#else /* CPUSTYLE_STM32MP1 */
+
+	static const codechw_t audiocodechw =
+	{
+		#if WITHI2SHWRXSLAVE
+			hardware_i2s3_slave_rx_initialize,	/* Интерфейс к НЧ кодеку - микрофон */
+		#else /* WITHI2SHWRXSLAVE */
+			hardware_dummy_initialize,			/* Интерфейс к НЧ кодеку - микрофон */
+		#endif /* WITHI2SHWRXSLAVE */
+		#if WITHI2SHWTXSLAVE
+			hardware_i2s2_slave_tx_initialize,	/* Интерфейс к НЧ кодеку - наушники */
+		#else /* WITHI2SHWTXSLAVE */
+			hardware_i2s2_master_tx_initialize,	/* Интерфейс к НЧ кодеку - наушники */
+		#endif /* WITHI2SHWTXSLAVE */
+		DMA_I2S3_RX_initialize,					// DMA по приёму SPI3_RX - DMA1, Stream0, Channel0
+		DMA_I2S2_TX_initialize,					// DMA по передаче канал 0
+		hardware_i2s3_rx_enable,
+		hardware_i2s2_tx_enable,
+		"i2s2-i2s3-audiocodechw"
+	};
+
+#endif /* CPUSTYLE_STM32MP1 */
 
 #endif /* WITHI2SFULLDUPLEXHW */
 
