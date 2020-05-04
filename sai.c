@@ -597,6 +597,8 @@ hardware_i2s2_slave_tx_initialize(void)		/* инициализация I2S2, STM
 #if CPUSTYLE_STM32MP1
 	RCC->MP_APB1ENSETR = RCC_MC_APB1ENSETR_SPI2EN; // Подать тактирование
 	(void) RCC->MP_APB1ENSETR;
+	RCC->MP_APB1LPENSETR = RCC_MC_APB1LPENSETR_SPI2LPEN; // Подать тактирование
+	(void) RCC->MP_APB1LPENSETR;
 #elif CPUSTYLE_STM32H7XX
 	RCC->APB1LENR |= RCC_APB1LENR_SPI2EN; // Подать тактирование
 	(void) RCC->APB1LENR;
@@ -727,9 +729,12 @@ static void
 hardware_i2s3_slave_rx_initialize(void)		/* инициализация I2S3 STM32F4xx */
 {
 	debug_printf_P(PSTR("hardware_i2s3_slave_rx_initialize\n"));
+
 #if CPUSTYLE_STM32MP1
 	RCC->MP_APB1ENSETR = RCC_MC_APB1ENSETR_SPI3EN; // Подать тактирование
 	(void) RCC->MP_APB1ENSETR;
+	RCC->MP_APB1LPENSETR = RCC_MC_APB1LPENSETR_SPI3LPEN; // Подать тактирование
+	(void) RCC->MP_APB1LPENSETR;
 #elif CPUSTYLE_STM32H7XX
 	RCC->APB1LENR |= RCC_APB1LENR_SPI3EN; // Подать тактирование
 	(void) RCC->APB1LENR;
