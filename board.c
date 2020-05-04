@@ -3098,7 +3098,7 @@ prog_rxctrlreg(uint_fast8_t plane)
 		const uint_fast8_t attvalue1 = (attvalue2dbhalf);
 		const uint_fast8_t attvalue2 = (attvalue2db - attvalue2dbhalf);
 
-		//debug_printf_P(PSTR("a1=%u, a2=%u\n"), attvalue1, attvalue2);
+		//PRINTF(PSTR("a1=%u, a2=%u\n"), attvalue1, attvalue2);
 
 		//Current Output at Full Power A1 = 1, A0 = 1, VO = 0 ±500 ±380 ±350 ±320 mA min A
 		//Current Output at Power Cutback A1 = 1, A0 = 0, VO = 0 ±450 ±350 ±320 ±300 mA min A
@@ -4345,7 +4345,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		const uint_fast8_t bpfon19 = (uhfmuxOUT & 0x02) != 0;
 		const uint_fast8_t bpfon20 = (uhfmuxOUT & 0x04) != 0;
 
-		//debug_printf_P(PSTR("prog_ctrlreg: glob_bandf=%u, uhfmuxIN=%02X, uhfmuxOUT=%02X\n"), glob_bandf, uhfmuxIN, uhfmuxOUT);
+		//PRINTF(PSTR("prog_ctrlreg: glob_bandf=%u, uhfmuxIN=%02X, uhfmuxOUT=%02X\n"), glob_bandf, uhfmuxIN, uhfmuxOUT);
 
 		//bandmask = 0;
 		//xvrtr = 0;
@@ -4740,7 +4740,7 @@ void
 //NOINLINEAT
 board_update(void)
 {
-	//debug_printf_P(PSTR("board_update start.\n"));
+	//PRINTF(PSTR("board_update start.\n"));
 
 	board_update_direct();	// Обновление непосредственно подключенных к процессору сигналов
 	board_update_spi();		// Обновление прямо подключенных к SPI регистру сигналов
@@ -4786,7 +4786,7 @@ board_update(void)
 	prog_dsplreg_update();		// услолвное обновление регистров DSP
 	prog_fltlreg_update();		// услолвное обновление регистров DSP
 	prog_codecreg_update();		// услолвное обновление регистров аудио кодека
-	//debug_printf_P(PSTR("board_update done.\n"));
+	//PRINTF(PSTR("board_update done.\n"));
 }
 
 /* Установка запроса на обновление сигналов управления */
@@ -6047,7 +6047,7 @@ uint_fast16_t board_pll1_get_divider(pllhint_t hint)
 /* установка конфигурации ГУН на основании hint */
 void board_pll1_set_vco(pllhint_t hint)
 {
-	//debug_printf_P(PSTR("pll1_getvco(%ld) = %d\n"), (long) f, pll1_getvco(f));
+	//PRINTF(PSTR("pll1_getvco(%ld) = %d\n"), (long) f, pll1_getvco(f));
 #if defined(PLL1_TYPE) && (PLL1_TYPE == PLL_TYPE_HMC830)
 #elif defined(PLL1_TYPE) && (PLL1_TYPE == PLL_TYPE_SI570)
 #elif MULTIVFO
@@ -6432,19 +6432,20 @@ static void board_fpga_loader_PS(void)
 #if (WITHSPIHW && WITHSPI16BIT)	// for skip in test configurations
 	unsigned retries = 0;
 restart:
+
+	if (++ retries > 4)
+	{
+		PRINTF(PSTR("fpga: board_fpga_loader_PS: FPGA is not respond.\n"));
+		return;
+	}
 	;
+
 	unsigned long w = 1000;
 	do {
 		size_t rbflength;
 		const uint16_t * p = getrbfimage(& rbflength);
 
-		if (++ retries > 4)
-		{
-			PRINTF(PSTR("fpga: board_fpga_loader_PS: FPGA is not respond.\n"));
-			return;
-		}
-
-		PRINTF(PSTR("fpga: board_fpga_loader_PS start\n"));
+		PRINTF("fpga: board_fpga_loader_PS start\n");
 		/* After power up, the Cyclone IV device holds nSTATUS low during POR delay. */
 
 		FPGA_NCONFIG_PORT_S(FPGA_NCONFIG_BIT);
@@ -6454,7 +6455,7 @@ restart:
 		FPGA_NCONFIG_PORT_C(FPGA_NCONFIG_BIT);
 		local_delay_ms(1);
 		/* x) Дождаться "0" на nSTATUS */
-		//debug_printf_P(PSTR("fpga: waiting for FPGA_NSTATUS_BIT==0\n"));
+		//PRINTF("fpga: waiting for FPGA_NSTATUS_BIT==0\n");
 		while (board_fpga_get_NSTATUS() != 0)
 		{
 			local_delay_ms(1);
@@ -6464,7 +6465,7 @@ restart:
 		FPGA_NCONFIG_PORT_S(FPGA_NCONFIG_BIT);
 		local_delay_ms(1);
 		/* 2) Дождаться "1" на nSTATUS */
-		//PRINTF(PSTR("fpga: waiting for FPGA_NSTATUS_BIT==1\n"));
+		//PRINTF("fpga: waiting for FPGA_NSTATUS_BIT==1\n");
 		while (board_fpga_get_NSTATUS() == 0)
 		{
 			local_delay_ms(1);
@@ -6472,7 +6473,7 @@ restart:
 				goto restart;
 		}
 		/* 3) Выдать байты (бладший бит .rbf файла первым) */
-		//PRINTF(PSTR("fpga: start sending RBF image (%lu of 16-bit words)\n"), rbflength);
+		//PRINTF("fpga: start sending RBF image (%lu of 16-bit words)\n", rbflength);
 		if (rbflength != 0)
 		{
 			unsigned wcd = 0;
@@ -6486,13 +6487,13 @@ restart:
 			{
 				if (board_fpga_get_CONF_DONE() != 0)
 				{
-					//debug_printf_P(PSTR("fpga: Unexpected state of CONF_DONE==1\n"));
+					//PRINTF("fpga: Unexpected state of CONF_DONE==1\n");
 					break;
 				}
 				hardware_spi_b16_p2(* p ++);
 			}
 
-			//debug_printf_P(PSTR("fpga: done sending RBF image, waiting for CONF_DONE==1\n"));
+			//PRINTF("fpga: done sending RBF image, waiting for CONF_DONE==1\n");
 			/* 4) Дождаться "1" на CONF_DONE */
 			while (board_fpga_get_CONF_DONE() == 0)
 			{
@@ -6504,7 +6505,7 @@ restart:
 
 			hardware_spi_disconnect();
 
-			//PRINTF(PSTR("fpga: CONF_DONE asserted, wcd=%u\n"), wcd);
+			//PRINTF("fpga: CONF_DONE asserted, wcd=%u\n", wcd);
 			/*
 			After the configuration data is accepted and CONF_DONE goes
 			high, Cyclone IV devices require 3,192 clock cycles to initialize properly and enter
@@ -6512,7 +6513,7 @@ restart:
 			*/
 		}
 	} while (board_fpga_get_NSTATUS() == 0);	// если ошибка - повторяем
-	//PRINTF(PSTR("fpga: board_fpga_loader_PS done\n"));
+	//PRINTF("fpga: board_fpga_loader_PS done\n");
 	/* проверяем, проинициализировалась ли FPGA (вошла в user mode). */
 	while (HARDWARE_FPGA_IS_USER_MODE() == 0)
 	{
@@ -6520,7 +6521,7 @@ restart:
 		if (-- w == 0)
 			goto restart;
 	}
-	PRINTF(PSTR("fpga: board_fpga_loader_PS: usermode okay\n"));
+	PRINTF("board_fpga_loader_PS: usermode okay\n");
 #endif /* (WITHSPIHW && WITHSPI16BIT) */	// for skip in test configurations
 }
 
@@ -6529,31 +6530,31 @@ restart:
 /* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
 static void board_fpga_loader_wait_AS(void)
 {
-	debug_printf_P(PSTR("fpga: board_fpga_loader_wait_AS start\n"));
+	PRINTF(PSTR("fpga: board_fpga_loader_wait_AS start\n"));
 	/* After power up, the Cyclone IV device holds nSTATUS low during POR delay. */
 	/* 1) Выставить "1" на nCONFIG */
-	//debug_printf_P(PSTR("fpga: FPGA_NCONFIG_BIT=1\n"));
+	//PRINTF(PSTR("fpga: FPGA_NCONFIG_BIT=1\n"));
 	FPGA_NCONFIG_PORT_C(FPGA_NCONFIG_BIT);
 	local_delay_ms(5);
 	/* x) Дождаться "0" на nSTATUS */
-	//debug_printf_P(PSTR("fpga: waiting for FPGA_NSTATUS_BIT==0\n"));
+	//PRINTF(PSTR("fpga: waiting for FPGA_NSTATUS_BIT==0\n"));
 	while (board_fpga_get_NSTATUS() != 0)
 			;
 	FPGA_NCONFIG_PORT_S(FPGA_NCONFIG_BIT);
 
 	/* 1) Дождаться "1" на nSTATUS */
-	//debug_printf_P(PSTR("fpga: waiting for FPGA_NSTATUS_BIT==1\n"));
+	//PRINTF(PSTR("fpga: waiting for FPGA_NSTATUS_BIT==1\n"));
 	while (board_fpga_get_NSTATUS() == 0)
 		;
 	/* 2) Дождаться "1" на CONF_DONE */
-	//debug_printf_P(PSTR("fpga: waiting for CONF_DONE==1\n"));
+	//PRINTF(PSTR("fpga: waiting for CONF_DONE==1\n"));
 	while (board_fpga_get_CONF_DONE() == 0)
 		;
-	debug_printf_P(PSTR("fpga: CONF_DONE asserted\n"));
+	PRINTF(PSTR("fpga: CONF_DONE asserted\n"));
 	/* проверяем, проинициализировалась ли FPGA (вошла в user mode). */
 	while (HARDWARE_FPGA_IS_USER_MODE() == 0)
 		;
-	debug_printf_P(PSTR("fpga: board_fpga_loader_wait_AS done\n"));
+	PRINTF(PSTR("fpga: board_fpga_loader_wait_AS done\n"));
 }
 #endif
 
@@ -6569,10 +6570,10 @@ void board_fpga_reset(void)
 	FPGA_NCONFIG_PORT_S(FPGA_NCONFIG_BIT);
 	local_delay_ms(1);
 	/* 1) Выставить "1" на nCONFIG */
-	//debug_printf_P(PSTR("fpga: FPGA_NCONFIG_BIT=1\n"));
+	//PRINTF(PSTR("fpga: FPGA_NCONFIG_BIT=1\n"));
 	FPGA_NCONFIG_PORT_C(FPGA_NCONFIG_BIT);
 	/* x) Дождаться "0" на nSTATUS */
-	//debug_printf_P(PSTR("fpga: waiting for FPGA_NSTATUS_BIT==0\n"));
+	//PRINTF(PSTR("fpga: waiting for FPGA_NSTATUS_BIT==0\n"));
 	while (board_fpga_get_NSTATUS() != 0)
 	{
 		local_delay_ms(1);
@@ -6581,7 +6582,7 @@ void board_fpga_reset(void)
 	}
 	FPGA_NCONFIG_PORT_S(FPGA_NCONFIG_BIT);
 	/* 2) Дождаться "1" на nSTATUS */
-	//debug_printf_P(PSTR("fpga: waiting for FPGA_NSTATUS_BIT==1\n"));
+	//PRINTF(PSTR("fpga: waiting for FPGA_NSTATUS_BIT==1\n"));
 	while (board_fpga_get_NSTATUS() == 0)
 	{
 		local_delay_ms(1);
@@ -6597,7 +6598,7 @@ restart:
 
 void board_fpga_fir_initialize(void)
 {
-	debug_printf_P(PSTR("board_fpga_fir_initialize start\n"));
+	PRINTF(PSTR("board_fpga_fir_initialize start\n"));
 
 	TARGET_FPGA_FIR_INITIALIZE();
 
@@ -6611,7 +6612,7 @@ void board_fpga_fir_initialize(void)
 	board_set_flt_reset_n(1);	// снять сигнал сброса
 	board_update();
 
-	debug_printf_P(PSTR("board_fpga_fir_initialize done\n"));
+	PRINTF(PSTR("board_fpga_fir_initialize done\n"));
 }
 
 // Передача одного 32-битного значения и формирование строба.
@@ -6828,7 +6829,7 @@ static void single_rate_out_write_mcv(const int_fast32_t * coef, int coef_length
 				}
 			}
 
-			//debug_printf_P(PSTR("send from tmp_coef[], n=%u, @0=%08lX\n"), (num_mac + mcv_reload_zero_insert) * num_cycles, tmp_coef [0]);
+			//PRINTF(PSTR("send from tmp_coef[], n=%u, @0=%08lX\n"), (num_mac + mcv_reload_zero_insert) * num_cycles, tmp_coef [0]);
 			for (i = 0; i < (num_mac + mcv_reload_zero_insert) * num_cycles; ++ i)
 			{
 				//coef[i] = tmp_coef[i] ;
@@ -6837,7 +6838,7 @@ static void single_rate_out_write_mcv(const int_fast32_t * coef, int coef_length
 		}
 		else
 		{
-			//debug_printf_P(PSTR("send from wrk_coef[], n=%u, @0=%08lX\n"), (num_mac + mcv_reload_zero_insert) * num_cycles, wrk_coef [0]);
+			//PRINTF(PSTR("send from wrk_coef[], n=%u, @0=%08lX\n"), (num_mac + mcv_reload_zero_insert) * num_cycles, wrk_coef [0]);
 			for (i = 0; i< (num_mac + mcv_reload_zero_insert) * num_cycles; ++i)
 			{
 				//coef[i] = wrk_coef[i] ;
@@ -6858,7 +6859,7 @@ board_fpga_fir_send(
 #if (WITHSPIHW && WITHSPI16BIT)	// for skip in test configurations
 
 	ASSERT(CWidth <= 24);
-	//debug_printf_P(PSTR("board_fpga_fir_send: ifir=%u, Ntap=%u\n"), ifir, Ntap);
+	//PRINTF(PSTR("board_fpga_fir_send: ifir=%u, Ntap=%u\n"), ifir, Ntap);
 	board_fpga_fir_connect();
 
 	// strobe
@@ -6926,7 +6927,7 @@ boart_tgl_firprofile(
 
 void board_reload_fir(uint_fast8_t ifir, const int_fast32_t * const k, unsigned Ntap, unsigned CWidth)
 {
-	//debug_printf_P(PSTR("board_reload_fir: ifir=%u, Ntap=%u\n"), ifir, Ntap);
+	//PRINTF(PSTR("board_reload_fir: ifir=%u, Ntap=%u\n"), ifir, Ntap);
 	board_fpga_fir_send(ifir, k, Ntap, CWidth);		/* загрузить массив коэффициентов в FPGA */
 	boart_tgl_firprofile(ifir);
 }
@@ -7035,7 +7036,7 @@ static void board_rtc_initialize(void)
 		uint_fast8_t hour, minute, secounds;
 		board_rtc_getdatetime(& year, & month, & day, & hour, & minute, & secounds);
 		
-		debug_printf_P(PSTR("board_rtc_initialize: %4d-%02d-%02d %02d:%02d:%02d\n"), year, month, day, hour, minute, secounds);
+		PRINTF(PSTR("board_rtc_initialize: %4d-%02d-%02d %02d:%02d:%02d\n"), year, month, day, hour, minute, secounds);
 
 		if (month < 1 || month > 12 ||
 			day < 1 || day > 31 ||
@@ -7264,7 +7265,7 @@ void board_init_chips2(void)
 
 	const codec1if_t * const ifc1 = board_getaudiocodecif();
 
-	debug_printf_P(PSTR("af codec type = '%s'\n"), ifc1->label);
+	PRINTF(PSTR("af codec type = '%s'\n"), ifc1->label);
 
 	ifc1->initialize();	
 	prog_codec1reg();
@@ -7276,7 +7277,7 @@ void board_init_chips2(void)
 
 	const codec2if_t * const ifc2 = board_getfpgacodecif();
 
-	debug_printf_P(PSTR("if codec type = '%s'\n"), ifc2->label);
+	PRINTF(PSTR("if codec type = '%s'\n"), ifc2->label);
 	// MCLK должен уже подаваться в момент инициализации
 	ifc2->initialize();	
 #endif /* defined(CODEC2_TYPE) */
@@ -8467,10 +8468,10 @@ void board_adc_initialize(void)
 	{
 		uint_fast8_t i;
 		/* какие из каналов включать.. */
-		debug_printf_P(PSTR("ADCINPUTS_COUNT=%d: "), (int) board_get_adcinputs());
+		PRINTF(PSTR("ADCINPUTS_COUNT=%d: "), (int) board_get_adcinputs());
 		for (i = 0; i < board_get_adcinputs(); ++ i)
 		{
-			debug_printf_P(PSTR("%d%c"), board_get_adcch(i), (i + 1) == board_get_adcinputs() ? '\n' : ',');
+			PRINTF(PSTR("%d%c"), board_get_adcch(i), (i + 1) == board_get_adcinputs() ? '\n' : ',');
 		}
 	}
 #endif /* WITHDEBUG */
