@@ -984,7 +984,7 @@ void display2_xltrgb24(COLOR24_T * xltable)
 #if defined (COLORPIP_SHADED)
 	int i;
 
-	PRINTF("display2_xltrgb24: init idexing colos\n");
+	PRINTF("display2_xltrgb24: init idexed colors\n");
 
 	for (i = 0; i < 256; ++ i)
 	{
