@@ -1609,3 +1609,29 @@ uint_fast32_t display_getdotclock(void)
 }
 
 #endif /* WITHLTDCHW */
+
+
+#if WITHGPUHW
+
+// Graphic processor unit
+void board_gpu_initialize(void)
+{
+	PRINTF("board_gpu_initialize start.\n");
+
+	RCC->MP_AHB6ENSETR = RCC_MC_AHB6ENSETR_GPUEN;
+	(void) RCC->MP_AHB6ENSETR;
+	RCC->MP_AHB6LPENSETR = RCC_MC_AHB6LPENSETR_GPULPEN;
+	(void) RCC->MP_AHB6LPENSETR;
+
+	// USBH_EHCI_HCICAPLENGTH == USB1_EHCI->HCCAPBASE
+	// USBH_EHCI_HCSPARAMS == USB1_EHCI->HCSPARAMS
+	// USBH_EHCI_HCCPARAMS == USB1_EHCI->HCCPARAMS
+
+	PRINTF("board_gpu_initialize: PRODUCTID=%08lX\n", (unsigned long) GPU->PRODUCTID);
+
+//	GPU_IRQn
+
+	PRINTF("board_gpu_initialize done.\n");
+}
+
+#endif /* WITHGPUHW */
