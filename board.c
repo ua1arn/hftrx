@@ -6430,7 +6430,7 @@ const uint16_t * getrbfimage(size_t * count)
 static void board_fpga_loader_PS(void)
 {
 #if (WITHSPIHW && WITHSPI16BIT)	// for skip in test configurations
-
+	unsigned retries = 0;
 restart:
 	;
 	unsigned long w = 1000;
@@ -6438,13 +6438,19 @@ restart:
 		size_t rbflength;
 		const uint16_t * p = getrbfimage(& rbflength);
 
-		debug_printf_P(PSTR("fpga: board_fpga_loader_PS start\n"));
+		if (++ retries > 4)
+		{
+			PRINTF(PSTR("fpga: board_fpga_loader_PS: FPGA is not respond.\n"));
+			return;
+		}
+
+		PRINTF(PSTR("fpga: board_fpga_loader_PS start\n"));
 		/* After power up, the Cyclone IV device holds nSTATUS low during POR delay. */
 
 		FPGA_NCONFIG_PORT_S(FPGA_NCONFIG_BIT);
 		local_delay_ms(1);
 		/* 1) Выставить "1" на nCONFIG */
-		//debug_printf_P(PSTR("fpga: FPGA_NCONFIG_BIT=1\n"));
+		//PRINTF(PSTR("fpga: FPGA_NCONFIG_BIT=1\n"));
 		FPGA_NCONFIG_PORT_C(FPGA_NCONFIG_BIT);
 		local_delay_ms(1);
 		/* x) Дождаться "0" на nSTATUS */
@@ -6458,7 +6464,7 @@ restart:
 		FPGA_NCONFIG_PORT_S(FPGA_NCONFIG_BIT);
 		local_delay_ms(1);
 		/* 2) Дождаться "1" на nSTATUS */
-		//debug_printf_P(PSTR("fpga: waiting for FPGA_NSTATUS_BIT==1\n"));
+		//PRINTF(PSTR("fpga: waiting for FPGA_NSTATUS_BIT==1\n"));
 		while (board_fpga_get_NSTATUS() == 0)
 		{
 			local_delay_ms(1);
@@ -6466,7 +6472,7 @@ restart:
 				goto restart;
 		}
 		/* 3) Выдать байты (бладший бит .rbf файла первым) */
-		//debug_printf_P(PSTR("fpga: start sending RBF image (%lu of 16-bit words)\n"), rbflength);
+		//PRINTF(PSTR("fpga: start sending RBF image (%lu of 16-bit words)\n"), rbflength);
 		if (rbflength != 0)
 		{
 			unsigned wcd = 0;
@@ -6498,7 +6504,7 @@ restart:
 
 			hardware_spi_disconnect();
 
-			//debug_printf_P(PSTR("fpga: CONF_DONE asserted, wcd=%u\n"), wcd);
+			//PRINTF(PSTR("fpga: CONF_DONE asserted, wcd=%u\n"), wcd);
 			/*
 			After the configuration data is accepted and CONF_DONE goes
 			high, Cyclone IV devices require 3,192 clock cycles to initialize properly and enter
@@ -6506,7 +6512,7 @@ restart:
 			*/
 		}
 	} while (board_fpga_get_NSTATUS() == 0);	// если ошибка - повторяем
-	//debug_printf_P(PSTR("fpga: board_fpga_loader_PS done\n"));
+	//PRINTF(PSTR("fpga: board_fpga_loader_PS done\n"));
 	/* проверяем, проинициализировалась ли FPGA (вошла в user mode). */
 	while (HARDWARE_FPGA_IS_USER_MODE() == 0)
 	{
@@ -6514,7 +6520,7 @@ restart:
 		if (-- w == 0)
 			goto restart;
 	}
-	debug_printf_P(PSTR("fpga: board_fpga_loader_PS: usermode okay\n"));
+	PRINTF(PSTR("fpga: board_fpga_loader_PS: usermode okay\n"));
 #endif /* (WITHSPIHW && WITHSPI16BIT) */	// for skip in test configurations
 }
 
