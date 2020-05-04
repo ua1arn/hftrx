@@ -9784,10 +9784,13 @@ uint_fast8_t hardware_usbd_get_vbusnow(void)
 {
 #if CPUSTYLE_R7S721
 	return (WITHUSBHW_DEVICE->INTSTS0 & USB_INTSTS0_VBSTS) != 0;
-#elif CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
+
+#elif (CPUSTYLE_STM32F || CPUSTYLE_STM32MP1) && defined (USB_OTG_GOTGCTL_BSESVLD_Msk)
 	return (WITHUSBHW_DEVICE->GOTGCTL & USB_OTG_GOTGCTL_BSESVLD_Msk) != 0;
+
 #else /* CPUSTYLE_R7S721 */
 	return 0;
+
 #endif /* CPUSTYLE_R7S721 */
 }
 
@@ -9796,8 +9799,10 @@ static void hardware_usbd_initialize(void)
 {
 #if WITHUSBDEV_HSDESC
 	usbd_descriptors_initialize(1);
+
 #else /* WITHUSBDEV_HSDESC */
 	usbd_descriptors_initialize(0);
+
 #endif /* WITHUSBDEV_HSDESC */
 
 	USBD_Init2(& hUsbDevice);
