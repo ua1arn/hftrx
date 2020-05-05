@@ -135,7 +135,7 @@ SECTIONS
 	.data : AT (__etext)
 	{
 		__data_start__ = .;
-		*(vtable)
+		*(vtable*)
 		. = ALIGN(4);
 		*(.data*)
 		. = ALIGN(4);
@@ -224,7 +224,7 @@ SECTIONS
 	.noinit :
 	{
 		. = ALIGN(32);
-		*(.noinit)
+		*(.noinit*)
 		. = ALIGN(32);
 	} > RAM_D1
 

@@ -54,7 +54,6 @@ SECTIONS
 		KEEP(*(.fini))
 		*(.text*)
 		*(.itcm*)
-		*(.dtcm*)
 	} > RAM
 
 	.ARM.extab :
@@ -172,14 +171,14 @@ SECTIONS
 	.noinit :
 	{
 		. = ALIGN(64);
-		*(.noinit)
+		*(.noinit*)
 		. = ALIGN(64);
 	} > RAM
 
 	.vram :
 	{
 		. = ALIGN(64);
-		*(.framebuff)
+		*(.framebuff*)
 		. = ALIGN(64);
 	} > RAM
 
