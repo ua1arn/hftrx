@@ -546,8 +546,8 @@ void savesampleout96stereo(int_fast32_t ch0, int_fast32_t ch1);
 void savesampleout192stereo(int_fast32_t ch0, int_fast32_t ch1);
 
 #if WITHINTEGRATEDDSP
-	#include "speex\arch.h"
-	#include "speex\speex_preprocess.h"
+	#include "src/speex/arch.h"
+	#include "src/speex/speex_preprocess.h"
 
 	#if WITHNOSPEEX
 		typedef float32_t speexel_t;

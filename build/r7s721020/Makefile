@@ -75,7 +75,7 @@ DLIBS = -lm
 # Start of user section
 #
 
-SRCDIR = ../..
+SRCDIR = ../../src
 
 # Define project name here
 PROJECT = tc1_r7s721020

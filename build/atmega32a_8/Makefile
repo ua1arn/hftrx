@@ -41,7 +41,7 @@ HEX_EEPROM_FLAGS += --change-section-lma .eeprom=0 --no-change-warnings
 ## Objects explicitly added by the user
 LINKONLYOBJECTS = 
 
-SRCDIR = ../..
+SRCDIR = ../../src
 SRC =
 ASRC +=
 UINCDIR += ../.. ../../inc
