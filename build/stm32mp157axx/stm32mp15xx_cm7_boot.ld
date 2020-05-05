@@ -57,9 +57,9 @@ SECTIONS
 {
 	.text :
 	{
-		KEEP(*(.init))
-		KEEP(*(.initfunc))
-		KEEP(*(.initdata))
+		KEEP(*(.init*))
+		KEEP(*(.initfunc*))
+		KEEP(*(.initdata*))
 		KEEP(*(.fini))
 
 		*(.text*)

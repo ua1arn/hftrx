@@ -48,9 +48,9 @@ SECTIONS
 		KEEP(*(.vectors))
 		__Vectors_End = .;
 		__Vectors_Size = __Vectors_End - __Vectors;
-		KEEP(*(.init))
-		KEEP(*(.initfunc))
-		KEEP(*(.initdata))
+		KEEP(*(.init*))
+		KEEP(*(.initfunc*))
+		KEEP(*(.initdata*))
 		KEEP(*(.fini))
 		*(.text*)
 		*(.itcm*)
@@ -103,12 +103,13 @@ SECTIONS
 		__zero_table_end__ = .;
 	} > RAM
 
-	__etext = .;
+	__etext = ALIGN (4);
 
 	.data :
 	{
 		__data_start__ = .;
 
+		. = ALIGN(4);
 		/* .ctors */
 		*crtbegin.o(.ctors)
 		*crtbegin?.o(.ctors)
@@ -128,8 +129,8 @@ SECTIONS
 		KEEP(*(.eh_frame*))
 
 		*(.data*)
-	   . = ALIGN(4);	/* one line added by ua1arn */
 		*(.dtcm*)
+		
 		. = ALIGN(4);
 		/* preinit data */
 		PROVIDE_HIDDEN (__preinit_array_start = .);
@@ -152,7 +153,7 @@ SECTIONS
 		PROVIDE_HIDDEN (__fini_array_end = .);
 
 		KEEP(*(.jcr*))
-		. = ALIGN(64);
+		. = ALIGN(4);
 		/* All data end */
 		__data_end__ = .;
 
@@ -160,8 +161,8 @@ SECTIONS
 
 	.bss :
 	{
-		__bss_start__ = .;
 		. = ALIGN(64);
+		__bss_start__ = .;
 		*(.bss*)
 		*(COMMON)
 		. = ALIGN(64);

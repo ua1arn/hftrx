@@ -11069,28 +11069,6 @@ ttb_map(
 static void FLASHMEMINITFUNC
 sysinit_pll_initialize(void)
 {
-#if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7
-	#if (__FPU_PRESENT == 1) && (__FPU_USED == 1)
-
-		/* FPU enable on Cortex M4F */
-		SCB->CPACR |= ((3UL << 10 * 2) | (3UL << 11 * 2));  /* set CP10 and CP11 Full Access */
-
-		#if 0
-			/* Lazy stacking enabled, automatic state saving enabled is a default state */
-			/* http://infocenter.arm.com/help/topic/com.arm.doc.dai0298a/DAI0298A_cortex_m4f_lazy_stacking_and_context_switching.pdf */
-			__set_FPSCR(			/* Floating-Point Context Control Register */
-				(__get_FPSCR() & ~ (FPU_FPCCR_LSPEN_Msk)) | /* disable Lazy stacking feature */
-				FPU_FPCCR_ASPEN_Msk |
-				0);
-		#endif
-
-	#endif
-	#ifdef UNALIGNED_SUPPORT_DISABLE
-		SCB->CCR |= SCB_CCR_UNALIGN_TRP_Msk;
-	#endif
-
-#endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7 */
-
 #if CPUSTYLE_STM32F1XX
 
 	lowlevel_stm32f10x_pll_clock();
@@ -11309,6 +11287,41 @@ sysinit_pll_initialize(void)
 #endif
 }
 
+
+// PLL and caches inuitialize
+static void FLASHMEMINITFUNC
+sysinit_fpu_initialize(void)
+{
+#if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7
+	#if (__FPU_PRESENT == 1) && (__FPU_USED == 1)
+
+		/* FPU enable on Cortex M4F */
+		SCB->CPACR |= ((3UL << 10 * 2) | (3UL << 11 * 2));  /* set CP10 and CP11 Full Access */
+
+		#if 0
+			/* Lazy stacking enabled, automatic state saving enabled is a default state */
+			/* http://infocenter.arm.com/help/topic/com.arm.doc.dai0298a/DAI0298A_cortex_m4f_lazy_stacking_and_context_switching.pdf */
+			__set_FPSCR(			/* Floating-Point Context Control Register */
+				(__get_FPSCR() & ~ (FPU_FPCCR_LSPEN_Msk)) | /* disable Lazy stacking feature */
+				FPU_FPCCR_ASPEN_Msk |
+				0);
+		#endif
+
+	#endif
+	#ifdef UNALIGNED_SUPPORT_DISABLE
+		SCB->CCR |= SCB_CCR_UNALIGN_TRP_Msk;
+	#endif
+
+#elif (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7)
+
+	// FPU
+	vfp_access_enable();
+	arm_hardware_VFPEnable();
+	//__FPU_Enable();
+
+#endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7 */
+}
+
 static void FLASHMEMINITFUNC
 sysintt_sdram_initialize(void)
 {
@@ -11453,6 +11466,7 @@ void
 FLASHMEMINITFUNC
 SystemInit(void)
 {
+	sysinit_fpu_initialize();
 	sysinit_pll_initialize();
 	sysinit_debug_initialize();
 	sysintt_sdram_initialize();
@@ -11981,11 +11995,6 @@ void cpu_initialize(void)
 	arm_cpu_CMx_initialize_NVIC();
 
 #elif (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7)
-
-	// FPU
-	vfp_access_enable();
-	arm_hardware_VFPEnable();
-	//__FPU_Enable();
 
 	arm_gic_initialize();
 
