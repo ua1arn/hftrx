@@ -312,16 +312,16 @@ static USBD_StatusTypeDef MEM_If_Write_HS(uint8_t *src, uint32_t dest, uint32_t 
 
 #if WITHISBOOTLOADER
 
-#if BOOTLOADER_APPFULL
-	if (dest >= BOOTLOADER_APPAREA && (dest + Len) <= (BOOTLOADER_APPAREA + BOOTLOADER_APPFULL))
+#if BOOTLOADER_RAMSIZE
+	if (dest >= BOOTLOADER_RAMAREA && (dest + Len) <= (BOOTLOADER_RAMAREA + BOOTLOADER_RAMSIZE))
 		memcpy((void *) dest, src, Len);
 	else if (dest >= BOOTLOADER_APPBASE)
-		memcpy((void *) ((uintptr_t) dest - BOOTLOADER_APPBASE + BOOTLOADER_APPAREA), src, Len);
+		memcpy((void *) ((uintptr_t) dest - BOOTLOADER_APPBASE + BOOTLOADER_RAMAREA), src, Len);
 	else
 	{
 		/* программируем бутлоадер */
 	}
-#endif /* BOOTLOADER_APPFULL */
+#endif /* BOOTLOADER_RAMSIZE */
 
 #endif /* WITHISBOOTLOADER */
 	return USBD_OK;

@@ -835,20 +835,22 @@
 #endif
 
 	// Bootloader parameters
-	#define BOOTLOADER_APPAREA DRAM_MEM_BASE	/* адрес ОЗУ, куда перемещать application */
-	#define BOOTLOADER_APPFULL (1024uL * 1024uL * 16)	// 16M
+	#define BOOTLOADER_RAMAREA DRAM_MEM_BASE	/* адрес ОЗУ, куда перемещать application */
+	#define BOOTLOADER_RAMSIZE (1024uL * 1024uL * 256)	// 256M
+	#define BOOTLOADER_RAMPAGESIZE	(1024uL * 1024)	// при загрузке на исполнение используется размер страницы в 1 мегабайт
+	#define USBD_DFU_RAM_XFER_SIZE 4096
 
+	#define BOOTLOADER_FLASHSIZE (1024uL * 1024uL * 16)	// 16M FLASH CHIP
 	#define BOOTLOADER_SELFBASE QSPI_MEM_BASE	/* адрес где лежит во FLASH образ application */
 	#define BOOTLOADER_SELFSIZE (1024uL * 256)	// 256k
 
 	#define BOOTLOADER_APPBASE (BOOTLOADER_SELFBASE + BOOTLOADER_SELFSIZE)	/* адрес где лежит во FLASH образ application */
-	#define BOOTLOADER_APPSIZE (BOOTLOADER_APPFULL - BOOTLOADER_SELFSIZE)	// 2048 - 128
+	#define BOOTLOADER_APPSIZE (BOOTLOADER_FLASHSIZE - BOOTLOADER_SELFSIZE)	// 2048 - 128
 
 	#define BOOTLOADER_PAGESIZE (1024uL * 64)	// W25Q32FV with 64 KB pages
 
-	#define USBD_DFU_RAM_XFER_SIZE 4096
 	#define USBD_DFU_FLASH_XFER_SIZE 256	// match to (Q)SPI FLASH MEMORY page size
-	#define USBD_DFU_FLASHNAME "W25Q32FV"
+	#define USBD_DFU_FLASHNAME "W25Q128JV"
 
 	#if WIHSPIDFSW || WIHSPIDFHW
 

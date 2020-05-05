@@ -4569,7 +4569,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 #if BOOTLOADER_SELFSIZE
 	{
 		// Re-write bootloader parameters
-		static const char strFlashDesc_4 [] = "@SPI Flash BOOTLOADER: %s/0x%08lx/%02u*%03uKg";	// 128 k for bootloader
+		static const char strFlashDesc_4 [] = "@SPI Flash BOOTLOADER: %s/0x%08lx/%02u*%03uKg";
 		unsigned partlen;
 		const uint_fast8_t id = STRING_ID_DFU_1;
 		char b [128];
@@ -4586,17 +4586,17 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 		score += partlen;
 	}
 #endif /* BOOTLOADER_SELFSIZE */
-#if WITHISBOOTLOADER && defined (BOOTLOADER_APPAREA) && BOOTLOADER_APPFULL
+#if WITHISBOOTLOADER && defined (BOOTLOADER_RAMAREA) && BOOTLOADER_RAMSIZE
 	{
 		// RAM target for debug
-		static const char strFlashDesc_3 [] = "@SRAM APPLICATION/0x%08lx/%02u*%03uKg";	// 128 k for bootloader
+		static const char strFlashDesc_3 [] = "@RAM APPLICATION/0x%08lx/%02u*%03uKg";
 		unsigned partlen;
 		const uint_fast8_t id = STRING_ID_DFU_2;
 		char b [128];
 		local_snprintf_P(b, ARRAY_SIZE(b), strFlashDesc_3,
-			(unsigned long) BOOTLOADER_APPAREA,
-			(unsigned) (BOOTLOADER_APPFULL / BOOTLOADER_PAGESIZE),
-			(unsigned) (BOOTLOADER_PAGESIZE / 1024)
+			(unsigned long) BOOTLOADER_RAMAREA,
+			(unsigned) (BOOTLOADER_RAMSIZE / BOOTLOADER_RAMPAGESIZE),
+			(unsigned) (BOOTLOADER_RAMPAGESIZE / 1024)
 			);
 		score += fill_align4(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
 		partlen = fill_string_descriptor(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, b);
@@ -4604,7 +4604,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 		StringDescrTbl [id].data = alldescbuffer + score;
 		score += partlen;
 	}
-#endif /* WITHISBOOTLOADER && defined (BOOTLOADER_APPAREA) && BOOTLOADER_APPFULL */
+#endif /* WITHISBOOTLOADER && defined (BOOTLOADER_RAMAREA) && BOOTLOADER_RAMSIZE */
 #endif /* WITHUSBDFU */
 #if WITHUSBCDCECM || WITHUSBCDCEEM
 	{

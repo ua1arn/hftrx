@@ -18803,9 +18803,9 @@ void bootloader_detach(uintptr_t ip)
 /* Вызов заказан вызывется из обработчика USB прерываний EP0 */
 void bootloader_deffereddetach(void * arg)
 {
-#if BOOTLOADER_APPFULL
+#if BOOTLOADER_RAMSIZE
 	uintptr_t ip;
-	if (bootloader_get_start(BOOTLOADER_APPAREA, & ip) == 0)
+	if (bootloader_get_start(BOOTLOADER_RAMAREA, & ip) == 0)
 	{
 		PRINTF("bootloader_deffereddetach: ip=%08lX\n", (unsigned long) ip);
 		/* Perform an Attach-Detach operation on USB bus */
@@ -18817,19 +18817,19 @@ void bootloader_deffereddetach(void * arg)
 	}
 	else
 	{
-		PRINTF("bootloader_deffereddetach: Header is not loaded to %08lX.\n", (unsigned long) BOOTLOADER_APPAREA);
+		PRINTF("bootloader_deffereddetach: Header is not loaded to %08lX.\n", (unsigned long) BOOTLOADER_RAMAREA);
 	}
-#endif /* BOOTLOADER_APPFULL */
+#endif /* BOOTLOADER_RAMSIZE */
 }
 
 static void bootloader_mainloop(void)
 {
 	board_set_bglight(WITHLCDBACKLIGHTMIN);
 	board_update();
-	//printhex(BOOTLOADER_APPAREA, (void *) BOOTLOADER_APPAREA, 64);
+	//printhex(BOOTLOADER_RAMAREA, (void *) BOOTLOADER_RAMAREA, 64);
 	//local_delay_ms(1000);
-	//printhex(BOOTLOADER_APPAREA, (void *) BOOTLOADER_APPAREA, 512);
-	//PRINTF(PSTR("Ready jump to application at %p. Press 'r' at any time, 'd' for dump.\n"), (void *) BOOTLOADER_APPAREA);
+	//printhex(BOOTLOADER_RAMAREA, (void *) BOOTLOADER_RAMAREA, 512);
+	//PRINTF(PSTR("Ready jump to application at %p. Press 'r' at any time, 'd' for dump.\n"), (void *) BOOTLOADER_RAMAREA);
 ddd:
 	;
 #if WITHUSBHW
@@ -18847,9 +18847,9 @@ ddd:
 				break;
 			if (c == 'd')
 			{
-#if BOOTLOADER_APPFULL
-				printhex(BOOTLOADER_APPAREA, (void *) BOOTLOADER_APPAREA, 512);
-#endif /* BOOTLOADER_APPFULL */
+#if BOOTLOADER_RAMSIZE
+				printhex(BOOTLOADER_RAMAREA, (void *) BOOTLOADER_RAMAREA, 512);
+#endif /* BOOTLOADER_RAMSIZE */
 				continue;
 			}
 		}
@@ -18862,21 +18862,21 @@ ddd:
 	}
 #endif /* WITHUSBHW */
 
-#if BOOTLOADER_APPFULL
+#if BOOTLOADER_RAMSIZE
 	uintptr_t ip;
 	//PRINTF(PSTR("Compare signature of to application\n"));
-	if (bootloader_get_start(BOOTLOADER_APPAREA, & ip) != 0)	/* проверка сигнатуры и получение стартового адреса */
+	if (bootloader_get_start(BOOTLOADER_RAMAREA, & ip) != 0)	/* проверка сигнатуры и получение стартового адреса */
 		goto ddd;
-#else /* BOOTLOADER_APPFULL */
+#else /* BOOTLOADER_RAMSIZE */
 	goto ddd;
-#endif /* BOOTLOADER_APPFULL */
+#endif /* BOOTLOADER_RAMSIZE */
 #if WITHUSBHW
 	board_usb_deactivate();
 	board_usb_deinitialize();
 #endif /* WITHUSBHW */
-#if BOOTLOADER_APPFULL
+#if BOOTLOADER_RAMSIZE
 	bootloader_detach(ip);
-#endif /* BOOTLOADER_APPFULL */
+#endif /* BOOTLOADER_RAMSIZE */
 }
 
 #endif /* WITHISBOOTLOADER */
