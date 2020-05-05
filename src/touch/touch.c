@@ -12,7 +12,7 @@
 #include "gpio.h"
 
 #if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811)
-#include <touch/stmpe811.h>
+#include "stmpe811.h"
 
 uint_fast8_t board_tsc_is_pressed(void) /* Return 1 if touch detection */
 {
@@ -60,7 +60,7 @@ stmpe811_sethandler(void)
 #endif /* defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811) */
 
 #if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_GT911)
-#include <touch/gt911.h>
+#include "gt911.h"
 
 uint_fast8_t
 board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)

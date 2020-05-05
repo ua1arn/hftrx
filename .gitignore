@@ -17,3 +17,15 @@ boards/atmega644_ctlstyle_v1.h
 *.nec32
 *.prefs
 .settings/*.*
+*.log
+*.obj
+*.pch
+*.tlog
+*.cnt
+*.bsc
+*.exe
+*.tmp
+*.res
+*.plg
+*.clw
+*.opt

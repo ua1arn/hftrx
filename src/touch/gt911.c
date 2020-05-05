@@ -4,7 +4,7 @@
 
 #if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_GT911)
 
-#include <touch/gt911.h>
+#include "gt911.h"
 
 static uint_fast8_t gt911_addr = 0;
 static uint_fast8_t tscpresetnt;

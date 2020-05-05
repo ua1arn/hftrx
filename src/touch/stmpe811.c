@@ -3,7 +3,7 @@
 #include "formats.h"
 
 #if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811)
-#include <touch/stmpe811.h>
+#include "stmpe811.h"
 
 static uint_fast8_t tscpresetnt;
 
