@@ -99,7 +99,7 @@ ULIBDIR +=
 # List all user libraries here
 ULIBS += 
 
-SRCC_EXCLUDES += ../../tools/rbf2c.c
+#SRCC_EXCLUDES += ../../tools/rbf2c.c
 SRCCPP_EXCLUDES += 
 
 CSRC = $(filter-out $(SRCC_EXCLUDES), $(wildcard $(SRCDIR)/*.c $(SRCDIR)/*/*.c $(SRCDIR)/*/*/*.c $(SRCDIR)/*/*/*/*.c))

@@ -45,7 +45,7 @@ UINCDIR += ../.. ../../inc
 ULIBDIR +=
 ULIBS += 
 
-SRC_EXCLUDES += ../../tools/rbf2c.c
+#SRC_EXCLUDES += ../../tools/rbf2c.c
 SRC += $(filter-out $(SRC_EXCLUDES), $(wildcard $(SRCDIR)/*.c $(SRCDIR)/*/*.c $(SRCDIR)/*/*/*.c $(SRCDIR)/*/*/*/*.c))
 VPATH = $(SRCDIR)
 
