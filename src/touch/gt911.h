@@ -2,7 +2,7 @@
 #define GT911_H_INCLUDED
 
 #include "hardware.h"
-#include "gt911structs.h
+#include "gt911structs.h"
 
 #define GOODIX_OK   0
 #define GT911_ID	0x39313100	// "911\0"
