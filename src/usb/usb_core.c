@@ -3286,7 +3286,8 @@ USB_Is_OTG_HS(USB_OTG_GlobalTypeDef *USBx)
 #endif
 }
 
-#ifdef USBPHYC
+#if defined(USBPHYC)
+// STM32MP1xx
 
 #define ULL(v) ((unsigned long long) (v))
 #define UL(v) ((unsigned long) (v))
@@ -3348,6 +3349,7 @@ USB_Is_OTG_HS(USB_OTG_GlobalTypeDef *USBx)
 // STM32MP1 UTMI interface
 HAL_StatusTypeDef USB_HS_PHYCInit(USB_OTG_GlobalTypeDef *USBx)
 {
+	PRINTF("USB_HS_PHYCInit start\n");
 	// Clock source
 	RCC->MP_APB4ENSETR = RCC_MC_APB4ENSETR_USBPHYEN;
 	(void)RCC-> MP_APB4ENSETR;
@@ -3405,11 +3407,13 @@ HAL_StatusTypeDef USB_HS_PHYCInit(USB_OTG_GlobalTypeDef *USBx)
 		// https://github.com/Xilinx/u-boot-xlnx/blob/master/drivers/phy/phy-stm32-usbphyc.c
 
 		// PLL
+		PRINTF("USB_HS_PHYCInit: stop PLL.\n");
 		USBPHYC->PLL &= ~ USBPHYC_PLL_PLLEN_Msk;
 		(void) USBPHYC->PLL;
 
 		while ((USBPHYC->PLL & USBPHYC_PLL_PLLEN_Msk) != 0)
 			;
+		PRINTF("USB_HS_PHYCInit: stop PLL done.\n");
 
 		const uint_fast32_t USBPHYCPLLFREQUENCY = 1440000000uL;
 		const uint_fast32_t pll4_r_ck = PLL4_FREQ_R;
@@ -3445,6 +3449,7 @@ HAL_StatusTypeDef USB_HS_PHYCInit(USB_OTG_GlobalTypeDef *USBx)
 			0;
 		(void) USBPHYC->PLL;
 
+		PRINTF("USB_HS_PHYCInit: start PLL.\n");
 		USBPHYC->PLL |= USBPHYC_PLL_PLLEN_Msk;
 		(void) USBPHYC->PLL;
 
@@ -3452,6 +3457,7 @@ HAL_StatusTypeDef USB_HS_PHYCInit(USB_OTG_GlobalTypeDef *USBx)
 
 		while ((USBPHYC->PLL & USBPHYC_PLL_PLLEN_Msk) == 0)
 			;
+		PRINTF("USB_HS_PHYCInit: start PLL done.\n");
 	}
 
 	// MISC
@@ -3483,12 +3489,13 @@ HAL_StatusTypeDef USB_HS_PHYCInit(USB_OTG_GlobalTypeDef *USBx)
 		(void) USBPHYC_PHY2->TUNE;
 	}
 
+	PRINTF("USB_HS_PHYCInit done\n");
 	return HAL_OK;
 }
 
-#endif /* USBPHYC */
+#elif defined(USB_HS_PHYC)
+// STM32F723xx, STM32F730xx, STM32F733xx
 
-#ifdef USB_HS_PHYC
 /**
   * @brief  Enables control of a High Speed USB PHYВ’s
   *         Init the low level hardware : GPIO, CLOCK, NVIC...
@@ -3497,13 +3504,14 @@ HAL_StatusTypeDef USB_HS_PHYCInit(USB_OTG_GlobalTypeDef *USBx)
   */
 HAL_StatusTypeDef USB_HS_PHYCInit(USB_OTG_GlobalTypeDef *USBx)
 {
+	PRINTF("USB_HS_PHYCInit start\n");
   uint32_t count = 0;
 
   /* Enable LDO */
   USB_HS_PHYC->USB_HS_PHYC_LDO |= USB_HS_PHYC_LDO_ENABLE;
 
   /* wait for LDO Ready */
-  while((USB_HS_PHYC->USB_HS_PHYC_LDO & USB_HS_PHYC_LDO_STATUS) == RESET)
+  while ((USB_HS_PHYC->USB_HS_PHYC_LDO & USB_HS_PHYC_LDO_STATUS) == RESET)
   {
     if (++count > 200000)
     {
@@ -3547,7 +3555,8 @@ HAL_StatusTypeDef USB_HS_PHYCInit(USB_OTG_GlobalTypeDef *USBx)
   /* 2ms Delay required to get internal phy clock stable */
   HARDWARE_DELAY_MS(2);
 
-  return HAL_OK;
+	PRINTF("USB_HS_PHYCInit done\n");
+ return HAL_OK;
 }
 
 #endif /* USB_HS_PHYC */
@@ -5592,6 +5601,7 @@ void HAL_PCD_SetState(PCD_HandleTypeDef *hpcd, PCD_StateTypeDef state)
   */
 HAL_StatusTypeDef HAL_PCD_Init(PCD_HandleTypeDef *hpcd)
 {
+	//PRINTF("HAL_PCD_Init start\n");
 	uint_fast8_t i;
 
 	/* Check the PCD handle allocation */
@@ -5670,6 +5680,7 @@ HAL_StatusTypeDef HAL_PCD_Init(PCD_HandleTypeDef *hpcd)
 #endif /* USB_OTG_GCCFG_BCDEN */
 
 	USB_DevDisconnect (hpcd->Instance);
+	//PRINTF("HAL_PCD_Init done\n");
 	return HAL_OK;
 }
 
@@ -9724,9 +9735,9 @@ USBD_StatusTypeDef  USBD_LL_DeInit(USBD_HandleTypeDef *pdev)
 USBD_StatusTypeDef USBD_Init2(USBD_HandleTypeDef *pdev)
 {
 	/* Check whether the USB Host handle is valid */
-	if(pdev == NULL)
+	if (pdev == NULL)
 	{
-		//USBD_ErrLog("Invalid Device handle");
+		PRINTF("Invalid Device handle\n");
 		return USBD_FAIL;
 	}
 	pdev->nClasses = 0;
@@ -9797,6 +9808,7 @@ uint_fast8_t hardware_usbd_get_vbusnow(void)
 /* вызывается при запрещённых прерываниях. */
 static void hardware_usbd_initialize(void)
 {
+	PRINTF("hardware_usbd_initialize start\n");
 #if WITHUSBDEV_HSDESC
 	usbd_descriptors_initialize(1);
 
@@ -9820,6 +9832,7 @@ static void hardware_usbd_initialize(void)
 #if WITHUSBDFU
 	USBD_AddClass(& hUsbDevice, & USBD_CLASS_DFU);
 #endif /* WITHUSBDFU */
+	PRINTF("hardware_usbd_initialize done\n");
 }
 
 /* вызывается при запрещённых прерываниях. */
