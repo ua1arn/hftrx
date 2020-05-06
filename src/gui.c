@@ -2907,7 +2907,7 @@ static void gui_main_process(void);
 
 	static void update_touch(void)
 	{
-		for (uint_fast8_t i = 0; i <= touch_count; i++)
+		for (uint_fast8_t i = 0; i < touch_count; i++)
 		{
 			touch_t * p = & touch_elements[i];
 			if (p->type == TYPE_BUTTON)
@@ -3052,7 +3052,7 @@ static void gui_main_process(void);
 				if (gui.vector_move_x != 0 || gui.vector_move_y != 0)
 				{
 					gui.is_tracking = 1;
-					debug_printf_P(PSTR("move x: %d, move y: %d\n"), gui.vector_move_x, gui.vector_move_y);
+//					debug_printf_P(PSTR("move x: %d, move y: %d\n"), gui.vector_move_x, gui.vector_move_y);
 				}
 				p->state = PRESSED;
 				set_state_record(p);
