@@ -159,9 +159,9 @@ app_run: $(PROJECT)_app.stm32
 flash: $(PROJECT)_app.stm32
 	./dfu-util.exe --device ffff:0738 --alt 0 --dfuse-address 0x70040000 --download $(PROJECT)_app.stm32
 
-BOOT2: $(OBJS) $(PROJECT)_boot.elf $(PROJECT)_boot.bin
+BOOT2: version $(OBJS) $(PROJECT)_boot.elf $(PROJECT)_boot.bin
 
-APP2: $(OBJS) $(PROJECT)_app.elf $(PROJECT)_app.bin
+APP2: version $(OBJS) $(PROJECT)_app.elf $(PROJECT)_app.bin
 
 fsbl.stm32: $(PROJECT)_boot.bin
 	./stm32image.exe -l 0x2FFC2500 -e 0x2FFC2500 -s $(PROJECT)_boot.bin -d $@
@@ -202,11 +202,12 @@ $(OBJDIR)/%.o: %.s
 %bin: %elf
 	$(BIN) $< $@
 
-
-clean:
+clean: version
 	-rm -fR $(OBJDIR)
 	-rm -f $(PROJECT)_boot.elf $(PROJECT)_boot.map
 	-rm -f $(PROJECT)_app.elf $(PROJECT)_app.map
+
+version:
 	$(CC) --version
 	
 # 
