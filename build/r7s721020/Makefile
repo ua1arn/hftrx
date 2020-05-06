@@ -160,21 +160,22 @@ CPFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 all: APP2 $(PROJECT)_app.nec32 app.hex
 
 bootloader: BOOT2 boot.hex
-
   
-app_run: $(PROJECT)_app.nec32
+app_run: IMAGE
 	./dfu-util.exe --device ffff:0738 --alt 2 --transfer-size 4096 --dfuse-address 0x20000000 --download $(PROJECT)_app.nec32
 	./dfu-util.exe --device ffff:0738 --alt 2 --detach
 
-flash: $(PROJECT)_app.nec32
+flash: IMAGE
 	./dfu-util.exe --device ffff:0738 --alt 0 --dfuse-address 0x18020000 --download $(PROJECT)_app.nec32
 
-BOOT2: $(OBJS) $(PROJECT)_boot.elf $(PROJECT)_boot.bin
+IMAGE: $(PROJECT)_app.nec32
+
+BOOT2: version $(OBJS) $(PROJECT)_boot.elf $(PROJECT)_boot.bin
 
 boot.hex: $(PROJECT)_boot.bin
 	./bin2ihex -l 0x00000000 -s $(PROJECT)_boot.bin >$@
 	
-APP2: $(OBJS) $(PROJECT)_app.elf $(PROJECT)_app.bin
+APP2: version $(OBJS) $(PROJECT)_app.elf $(PROJECT)_app.bin
 
 $(PROJECT)_app.nec32: $(PROJECT)_app.bin
 	./stm32image.exe -l 0x20000100 -e 0x20000100 -s $(PROJECT)_app.bin -d $@
@@ -208,10 +209,12 @@ $(OBJDIR)/%.o: %.s
 %bin: %elf
 	$(BIN) $< $@
 
-clean:
+clean: version
 	-rm -fR $(OBJDIR)
 	-rm -f $(PROJECT)_boot.elf $(PROJECT)_boot.map
 	-rm -f $(PROJECT)_app.elf $(PROJECT)_app.map
+
+version:
 	$(CC) --version
 	
 # 
