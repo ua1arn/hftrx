@@ -4354,6 +4354,8 @@ static unsigned fill_string_c4descriptor(
 	return length;
 }
 
+// Add value to HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Enum\USB\VID_F120&PID_0754&MI_01\9&13a6429d&0&0001\Device Parameters
+
 static unsigned fill_extprop_descriptor(
 	uint8_t * buff,
 	unsigned maxsize,
@@ -4591,7 +4593,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 		unsigned partlen;
 		// Device Qualifier
 		score += fill_align4(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
-		partlen = fill_extprop_descriptor(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, "Driver description", "Storch DFU interface");
+		partlen = fill_extprop_descriptor(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, "Label", "Storch DFU interface");
 		ExtOsPropDescTbl [ifc].size = partlen;
 		ExtOsPropDescTbl [ifc].data = alldescbuffer + score;
 		score += partlen;
@@ -4604,8 +4606,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 		unsigned partlen;
 		// Device Qualifier
 		score += fill_align4(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
-		//partlen = fill_extprop_descriptor(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, "Label", "Storch CAT");
-		partlen = fill_extprop_descriptor(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, "Driver description", "Storch CAT");
+		partlen = fill_extprop_descriptor(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, "Label", "Storch CAT");
 		ExtOsPropDescTbl [ifc].size = partlen;
 		ExtOsPropDescTbl [ifc].data = alldescbuffer + score;
 		score += partlen;
