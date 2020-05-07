@@ -4443,7 +4443,7 @@ static unsigned fill_wstring_descriptor(uint8_t * buff, unsigned maxsize, const 
 	return length;
 }
 
-static ALIGNX_BEGIN uint8_t alldescbuffer [2048] ALIGNX_END;
+static ALIGNX_BEGIN uint8_t alldescbuffer [2048 + 512] ALIGNX_END;
 
 struct descholder MsftStringDescr [1];
 struct descholder MsftCompFeatureDescr [1];	// Microsoft Compatible ID Feature Descriptor
