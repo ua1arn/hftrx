@@ -4300,6 +4300,124 @@ static unsigned fill_pattern_descriptor(uint_fast8_t fill, uint8_t * buff, unsig
 	return length;
 }
 
+static unsigned fill_string_c2descriptor(
+	uint_fast8_t fill,
+	uint8_t * buff,
+	unsigned maxsize,
+	const char * s
+	)
+{
+	size_t n = strlen(s) + 1;	// nul include
+	unsigned length = 2 + n * 2;
+	ASSERT(maxsize >= length);
+	if (maxsize < length)
+		return 0;
+	if (fill && buff != NULL)
+	{
+		* buff ++ = LO_BYTE(n * 2);   /* dwLength */
+		* buff ++ = HI_BYTE(n * 2);
+		while (n --)
+		{
+			const int c = * s ++;
+			* buff ++ = LO_BYTE(c);   /* character */
+			* buff ++ = HI_BYTE(c);
+		}
+	}
+	return length;
+}
+
+static unsigned fill_string_c4descriptor(
+	uint_fast8_t fill,
+	uint8_t * buff,
+	unsigned maxsize,
+	const char * s
+	)
+{
+	size_t n = strlen(s) + 1;	// nul include
+	unsigned length = 4 + n * 2;
+	ASSERT(maxsize >= length);
+	if (maxsize < length)
+		return 0;
+	if (fill && buff != NULL)
+	{
+		* buff ++ = LO_BYTE(n * 2);   /* dwLength */
+		* buff ++ = HI_BYTE(n * 2);
+		* buff ++ = HI_24BY(n * 2);
+		* buff ++ = HI_32BY(n * 2);
+		while (n --)
+		{
+			const int c = * s ++;
+			* buff ++ = LO_BYTE(c);   /* character */
+			* buff ++ = HI_BYTE(c);
+		}
+	}
+	return length;
+}
+
+static unsigned fill_extprop_descriptor(
+	uint8_t * buff,
+	unsigned maxsize,
+	const char * name,
+	const char * value
+	)
+{
+	unsigned lengthprops =
+			//{
+			4 + 	// dwSize
+			4 +		// dwPropertyDataType
+			fill_string_c2descriptor(0, buff, maxsize, name) +	// wPropertyNameLength, bPropertyName
+			fill_string_c4descriptor(0, buff, maxsize, value) +	// dwPropertyDataLength, bPropertyData
+			//}
+			0;
+	unsigned lengthheader =
+			4 +		// dwLength
+			2 + 	// bcdVersion
+			2 + 	// wIndex
+			2 +		// wCount
+			0;
+	unsigned length = lengthheader + lengthprops;
+	ASSERT(maxsize >= length);
+	if (maxsize < length)
+		return 0;
+	if (1 && buff != NULL)
+	{
+		const uint_fast16_t bcdVersion = 0x0100;
+		const uint_fast16_t wIndex = 0x05;
+		const uint_fast16_t wCount = 1;
+		uint_fast16_t n;
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
+		* buff ++ = LO_BYTE(length);   /* dwLength */
+		* buff ++ = HI_BYTE(length);
+		* buff ++ = HI_24BY(length);
+		* buff ++ = HI_32BY(length);
+		* buff ++ = LO_BYTE(bcdVersion);   /* bcdVersion */
+		* buff ++ = HI_BYTE(bcdVersion);
+		* buff ++ = LO_BYTE(wIndex);   /* wIndex */
+		* buff ++ = HI_BYTE(wIndex);
+		* buff ++ = LO_BYTE(wCount);   /* wCount */
+		* buff ++ = HI_BYTE(wCount);
+		n = wCount;
+		while (n --)
+		{
+			// The DEVICE_LABEL custom property section contains the device label.
+			const uint_fast16_t dwPropertyDataType = 0x01;	// 0x00000001 (Unicode string)
+			//const uint_fast16_t dwPropertyDataType = 0x02;	// 0x00000002 (Unicode string with environment variables)
+			// properties
+			* buff ++ = LO_BYTE(lengthprops);   /* dwSize */
+			* buff ++ = HI_BYTE(lengthprops);
+			* buff ++ = HI_24BY(lengthprops);
+			* buff ++ = HI_32BY(lengthprops);
+			* buff ++ = LO_BYTE(dwPropertyDataType);   /* dwPropertyDataType */
+			* buff ++ = HI_BYTE(dwPropertyDataType);
+			* buff ++ = HI_24BY(dwPropertyDataType);
+			* buff ++ = HI_32BY(dwPropertyDataType);
+			buff += fill_string_c2descriptor(1, buff, maxsize, name);
+			buff += fill_string_c4descriptor(1, buff, maxsize, value);
+		}
+	}
+	return length;
+}
+
 // todo: ограничить размер дескриптора значением 254
 static unsigned fill_wstring_descriptor(uint8_t * buff, unsigned maxsize, const wchar_t * s)
 {
@@ -4337,6 +4455,7 @@ struct descholder OtherSpeedConfigurationTbl [USBD_CONFIGCOUNT];
 struct descholder DeviceQualifierTbl [USBD_CONFIGCOUNT];
 struct descholder BinaryDeviceObjectStoreTbl [1];
 struct descholder HIDReportDescrTbl [1];
+struct descholder ExtOsPropDescTbl [INTERFACE_count];
 
 
 uint_fast8_t usbd_get_stringsdesc_count(void)
@@ -4394,7 +4513,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 		}
 	}
 
-#if WITHUSBWCID
+#if 1//WITHUSBWCID
 	{
 		// При наличии этого дескриптора система начинает запрашивать по всем интеряейсам MsftCompFeatureDescr
 		// Microsoft OS String Descriptor 
@@ -4426,9 +4545,13 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 		MsftStringDescr [0].data = alldescbuffer + score;
 		score += partlen;
 	}
+	{
+
+
+	}
 #endif /* WITHUSBWCID */
 
-#if WITHUSBDFU
+#if WITHUSBDFU && WITHUSBWCID
 	{
 		// https://docs.microsoft.com/en-us/windows-hardware/drivers/usbcon/microsoft-defined-usb-descriptors
 		// https://docs.microsoft.com/en-us/windows-hardware/drivers/usbcon/microsoft-os-1-0-descriptors-specification
@@ -4446,7 +4569,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 #if 1
 			'W', 'I', 'N', 'U', 'S', 'B', 0x00, 0x00,				// Compatible ID
 #else
-			'L', 'I', 'B', 'U', 'S', 'B', '0', 0x00,				// Compatible ID
+			//'L', 'I', 'B', 'U', 'S', 'B', '0', 0x00,				// Compatible ID
 			//'L', 'I', 'B', 'U', 'S', 'B', 'K', 0x00,				// Compatible ID
 #endif
 			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,			// Sub-Compatible ID 
@@ -4462,6 +4585,44 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 		score += partlen;
 	}
 #endif /* WITHUSBDFU */
+#if WITHUSBDFU
+	{
+		const uint_fast8_t ifc = INTERFACE_DFU_CONTROL;
+		unsigned partlen;
+		// Device Qualifier
+		score += fill_align4(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
+		partlen = fill_extprop_descriptor(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, "Driver description", "Storch DFU interface");
+		ExtOsPropDescTbl [ifc].size = partlen;
+		ExtOsPropDescTbl [ifc].data = alldescbuffer + score;
+		score += partlen;
+	}
+#endif /* WITHUSBDFU */
+
+#if WITHUSBCDC
+	{
+		const uint_fast8_t ifc = INTERFACE_CDC_CONTROL_3a;
+		unsigned partlen;
+		// Device Qualifier
+		score += fill_align4(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
+		//partlen = fill_extprop_descriptor(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, "Label", "Storch CAT");
+		partlen = fill_extprop_descriptor(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, "Driver description", "Storch CAT");
+		ExtOsPropDescTbl [ifc].size = partlen;
+		ExtOsPropDescTbl [ifc].data = alldescbuffer + score;
+		score += partlen;
+	}
+#if WITHUSBHWCDC_N > 1
+	{
+		const uint_fast8_t ifc = INTERFACE_CDC_CONTROL_3b;
+		unsigned partlen;
+		// Device Qualifier
+		score += fill_align4(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
+		partlen = fill_extprop_descriptor(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, "Label", "Storch CTL");
+		ExtOsPropDescTbl [ifc].size = partlen;
+		ExtOsPropDescTbl [ifc].data = alldescbuffer + score;
+		score += partlen;
+	}
+#endif
+#endif /* WITHUSBCDC */
 
 	if (HSdesc != 0)
 	{

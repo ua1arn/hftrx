@@ -570,7 +570,7 @@ static USBD_StatusTypeDef USBD_DFU_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 	//hdfu = (USBD_DFU_HandleTypeDef*) pdev->pClassData;
 	//hdfu = & gdfu;
 
-#if WITHUSBWCID
+#if 1//WITHUSBWCID
 	// WCID devices support
 	/*
 		Extended properties OS descriptors are associated with a particular interface or function,
@@ -580,28 +580,24 @@ static USBD_StatusTypeDef USBD_DFU_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 	// В документе от Микрософт по другому расположены данные в запросе: LO_BYTE(req->wValue) это результат запуска и тестирования
 	if (req->bRequest == USBD_WCID_VENDOR_CODE && LO_BYTE(req->wValue) == INTERFACE_DFU_CONTROL && req->wIndex == 0x05)
 	{
+		const uint_fast8_t ifc = LO_BYTE(req->wValue);
 		// Extended Properties OS Descriptor
 		// See OS_Desc_Ext_Prop.doc, Extended Properties Descriptor Format
 		PRINTF(PSTR("MS USBD_DFU_Setup: bmRequest=%04X, bRequest=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
-		//return USBD_OK;
+		// Extended Properties OS Descriptor
+		// See OS_Desc_Ext_Prop.doc, Extended Properties Descriptor Format
 
-		// https://docs.microsoft.com/en-us/windows-hardware/drivers/usbcon/microsoft-defined-usb-descriptors
-		// https://docs.microsoft.com/en-us/windows-hardware/drivers/usbcon/microsoft-os-1-0-descriptors-specification
-		// Microsoft Compatible ID Feature Descriptor
-		// non-const: на всякий случай - эта структура передается и по DMA. А если FLASH MEMORY для таких операций не подходит?
-		static USBALIGN_BEGIN uint8_t MsftExtendedPropertyOSfeatureDescriptorProto [10] =
+		// Extended Properties OS Descriptor support
+		if (ExtOsPropDescTbl[ifc].size != 0)
 		{
-			0x28, 0x00, 0x00, 0x00,	// dwLength The length, in bytes, of the complete extended properties descriptor
-			0x00, 0x01,				// bcdVersion  The descriptor’s version number, in binary coded decimal (BCD) format
-			0x05, 0x00,				// wIndex The index for extended properties OS descriptors
-			0*0x01, 0x00,				// wCount The number of custom property sections that follow the header section
-		} USBALIGN_END;
-		// Расширяется здесь, увеличивается размер в dwLength
-
-		// WCID devices support
-		USBD_CtlSendData(pdev, MsftExtendedPropertyOSfeatureDescriptorProto, ulmin16(sizeof MsftExtendedPropertyOSfeatureDescriptorProto, req->wLength));
+			USBD_CtlSendData(pdev, ExtOsPropDescTbl[ifc].data, ulmin16(ExtOsPropDescTbl[ifc].size, req->wLength));
+		}
+		else
+		{
+			TP();
+			USBD_CtlError(pdev, req);
+		}
 		return USBD_OK;
-
 	}
 
 #endif /* WITHUSBWCID */
