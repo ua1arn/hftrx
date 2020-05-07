@@ -3588,8 +3588,7 @@ HAL_StatusTypeDef USB_CoreInit(USB_OTG_GlobalTypeDef * USBx, const USB_OTG_CfgTy
   }
 
 #if defined(USB_HS_PHYC) || defined (USBPHYC)
-
-	else if (cfg->phy_itface == USB_OTG_HS_EMBEDDED_PHY)
+ 	else if (cfg->phy_itface == USB_OTG_HS_EMBEDDED_PHY)
 	{
 
 		//USBx->GUSBCFG &= ~ USB_OTG_GUSBCFG_PHYSEL_Msk;	// 0: USB 2.0 internal UTMI high-speed PHY.
@@ -10186,9 +10185,13 @@ USBH_StatusTypeDef  USBH_LL_DriverVBUS(USBH_HandleTypeDef *phost, uint_fast8_t s
 void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 {
 #if CPUSTYLE_STM32MP1
-
+	// Set 3.3 volt DETECTOR enable
 	PWR->CR3 |= PWR_CR3_USB33DEN_Msk;
 	(void) PWR->CR3;
+	while ((PWR->CR3 & PWR_CR3_USB33DEN_Msk) == 0)
+		;
+
+	// Wait 3.3 volt REGULATOR ready
 	while ((PWR->CR3 & PWR_CR3_USB33RDY_Msk) == 0)
 		;
 
@@ -10413,8 +10416,13 @@ void HAL_HCD_MspInit(HCD_HandleTypeDef* hcdHandle)
 	{
 		#if CPUSTYLE_STM32MP1
 
+			// Set 3.3 volt DETECTOR enable
 			PWR->CR3 |= PWR_CR3_USB33DEN_Msk;
 			(void) PWR->CR3;
+			while ((PWR->CR3 & PWR_CR3_USB33DEN_Msk) == 0)
+				;
+
+			// Wait 3.3 volt REGULATOR ready
 			while ((PWR->CR3 & PWR_CR3_USB33RDY_Msk) == 0)
 				;
 
@@ -10457,8 +10465,13 @@ void HAL_HCD_MspInit(HCD_HandleTypeDef* hcdHandle)
 	{
 	#if CPUSTYLE_STM32MP1
 
+		// Set 3.3 volt DETECTOR enable
 		PWR->CR3 |= PWR_CR3_USB33DEN_Msk;
 		(void) PWR->CR3;
+		while ((PWR->CR3 & PWR_CR3_USB33DEN_Msk) == 0)
+			;
+
+		// Wait 3.3 volt REGULATOR ready
 		while ((PWR->CR3 & PWR_CR3_USB33RDY_Msk) == 0)
 			;
 
