@@ -7203,6 +7203,7 @@ static void USBD_GetDescriptor(USBD_HandleTypeDef *pdev,
 			case 0xEE:
 				// WCID devices support
 				// Microsoft OS String Descriptor, ReqLength=0x12
+				// See OS_Desc_Intro.doc, Table 3 describes the OS string descriptor’s fields.
 				if (MsftStringDescr [0].data != NULL && MsftStringDescr [0].size != 0)
 				{
 					len = MsftStringDescr [0].size;

@@ -55,14 +55,25 @@
 
 #if WITHISBOOTLOADER
 
-	#define USB_FUNCTION_PRODUCT_ID	0x0750
+	#if WITHUSBDFU && WITHMOVEDFU
+		#define USB_FUNCTION_PRODUCT_ID	0x0754
+	#else /* WITHUSBDFU && WITHMOVEDFU */
+		#define USB_FUNCTION_PRODUCT_ID	0x0750
+	#endif /* WITHUSBDFU && WITHMOVEDFU */
+
 	#define PRODUCTSTR "Storch TRX Bootloader"
 	#define BUILD_ID 1	// модификатор serial number
 	#define USB_FUNCTION_RELEASE_NO	0x0000
 
 #elif WITHUSBUAC && WITHUSBUACIN2
 	#define PRODUCTSTR "Storch TRX"
-	#define USB_FUNCTION_PRODUCT_ID	0x0737
+
+	#if WITHUSBDFU && WITHMOVEDFU
+		#define USB_FUNCTION_PRODUCT_ID	0x073B
+	#else /* WITHUSBDFU && WITHMOVEDFU */
+		#define USB_FUNCTION_PRODUCT_ID	0x0737
+	#endif /* WITHUSBDFU && WITHMOVEDFU */
+
 	#if WITHRTS96
 		#define BUILD_ID 6	// модификатор serial number
 		#define USB_FUNCTION_RELEASE_NO	0x0106
@@ -75,7 +86,13 @@
 	#endif
 #else /* WITHUSBUAC && WITHUSBUACIN2 */
 	#define PRODUCTSTR "Storch TRX"
-	#define USB_FUNCTION_PRODUCT_ID	0x0738
+
+	#if WITHUSBDFU && WITHMOVEDFU
+		#define USB_FUNCTION_PRODUCT_ID	0x073C
+	#else /* WITHUSBDFU && WITHMOVEDFU */
+		#define USB_FUNCTION_PRODUCT_ID	0x0738
+	#endif /* WITHUSBDFU && WITHMOVEDFU */
+
 	#if WITHRTS96
 		#define BUILD_ID 2	// модификатор serial number
 		#define USB_FUNCTION_RELEASE_NO	0x0102
@@ -4385,6 +4402,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 		// https://github.com/pbatard/libwdi/wiki/WCID-Devices#Example
 		// HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\usbflags
 		// HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Enum\USB
+		// See OS_Desc_Intro.doc, Table 3 describes the OS string descriptor’s fields.
 
 		static const uint8_t MsftStringDescrProto [18] =
 		{
@@ -4425,7 +4443,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 			0x00, 0x00, 0x00,				// Reserved 
 			INTERFACE_DFU_CONTROL,			// Interface Number
 			0x01,							// reserved
-#if 0
+#if 1
 			'W', 'I', 'N', 'U', 'S', 'B', 0x00, 0x00,				// Compatible ID
 #else
 			'L', 'I', 'B', 'U', 'S', 'B', '0', 0x00,				// Compatible ID

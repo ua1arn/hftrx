@@ -576,39 +576,30 @@ static USBD_StatusTypeDef USBD_DFU_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 		Extended properties OS descriptors are associated with a particular interface or function,
 		so a device can have as many descriptors as it has interfaces or functions.
 	*/
+	// MS USBD_DFU_Setup: bmRequest=00C1, bRequest=44, wValue=0000, wIndex=0005, wLength=000A
 	// В документе от Микрософт по другому расположены данные в запросе: LO_BYTE(req->wValue) это результат запуска и тестирования
 	if (req->bRequest == USBD_WCID_VENDOR_CODE && LO_BYTE(req->wValue) == INTERFACE_DFU_CONTROL && req->wIndex == 0x05)
 	{
+		// Extended Properties OS Descriptor
+		// See OS_Desc_Ext_Prop.doc, Extended Properties Descriptor Format
 		PRINTF(PSTR("MS USBD_DFU_Setup: bmRequest=%04X, bRequest=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
-		return USBD_OK;
+		//return USBD_OK;
+
 		// https://docs.microsoft.com/en-us/windows-hardware/drivers/usbcon/microsoft-defined-usb-descriptors
 		// https://docs.microsoft.com/en-us/windows-hardware/drivers/usbcon/microsoft-os-1-0-descriptors-specification
 		// Microsoft Compatible ID Feature Descriptor
 		// non-const: на всякий случай - эта структура передается и по DMA. А если FLASH MEMORY для таких операций не подходит?
-		static USBALIGN_BEGIN uint8_t MsftCompFeatureDescrProto [40] =
+		static USBALIGN_BEGIN uint8_t MsftExtendedPropertyOSfeatureDescriptorProto [10] =
 		{
-			0x28, 0x00, 0x00, 0x00,	// Descriptor length (40 bytes)
-			0x00, 0x01,	// Version ('1.0')
-			0x04, 0x00,	// Compatibility ID Descriptor index
-			0x01,							// Number of sections (1)
-			0x00, 0x00, 0x00, 0x00,			// Reserved
-			0x00, 0x00, 0x00,				// Reserved
-			INTERFACE_DFU_CONTROL,			// Interface Number
-			0x01,							// reserved
-#if 0
-			'W', 'I', 'N', 'U', 'S', 'B', 0x00, 0x00,				// Compatible ID
-#else
-			'L', 'I', 'B', 'U', 'S', 'B', '0', 0x00,				// Compatible ID
-			//'L', 'I', 'B', 'U', 'S', 'B', 'K', 0x00,				// Compatible ID
-#endif
-			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,			// Sub-Compatible ID
-			0x00, 0x00, 0x00, 0x00,			// Reserved
-			0x00, 0x00,						// Reserved
+			0x28, 0x00, 0x00, 0x00,	// dwLength The length, in bytes, of the complete extended properties descriptor
+			0x00, 0x01,				// bcdVersion  The descriptor’s version number, in binary coded decimal (BCD) format
+			0x05, 0x00,				// wIndex The index for extended properties OS descriptors
+			0*0x01, 0x00,				// wCount The number of custom property sections that follow the header section
 		} USBALIGN_END;
-
+		// Расширяется здесь, увеличивается размер в dwLength
 
 		// WCID devices support
-		USBD_CtlSendData(pdev, MsftCompFeatureDescrProto, ulmin16(sizeof MsftCompFeatureDescrProto, req->wLength));
+		USBD_CtlSendData(pdev, MsftExtendedPropertyOSfeatureDescriptorProto, ulmin16(sizeof MsftExtendedPropertyOSfeatureDescriptorProto, req->wLength));
 		return USBD_OK;
 
 	}

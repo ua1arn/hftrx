@@ -365,8 +365,27 @@ static USBD_StatusTypeDef USBD_CDC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 			&& req->wIndex == 0x05)
 	{
 		PRINTF(PSTR("MS USBD_CDC_Setup: bmRequest=%04X, bRequest=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
-		//USBD_CtlError(pdev, req);
+		// Extended Properties OS Descriptor
+		// See OS_Desc_Ext_Prop.doc, Extended Properties Descriptor Format
+		//return USBD_OK;
+
+		// https://docs.microsoft.com/en-us/windows-hardware/drivers/usbcon/microsoft-defined-usb-descriptors
+		// https://docs.microsoft.com/en-us/windows-hardware/drivers/usbcon/microsoft-os-1-0-descriptors-specification
+		// Microsoft Compatible ID Feature Descriptor
+		// non-const: на всякий случай - эта структура передается и по DMA. А если FLASH MEMORY для таких операций не подходит?
+		static USBALIGN_BEGIN uint8_t MsftExtendedPropertyOSfeatureDescriptorProto [10] =
+		{
+			0x28, 0x00, 0x00, 0x00,	// dwLength The length, in bytes, of the complete extended properties descriptor
+			0x00, 0x01,				// bcdVersion  The descriptor’s version number, in binary coded decimal (BCD) format
+			0x05, 0x00,				// wIndex The index for extended properties OS descriptors
+			0*0x01, 0x00,				// wCount The number of custom property sections that follow the header section
+		} USBALIGN_END;
+		// Расширяется здесь, увеличивается размер в dwLength
+
+		// WCID devices support
+		USBD_CtlSendData(pdev, MsftExtendedPropertyOSfeatureDescriptorProto, ulmin16(sizeof MsftExtendedPropertyOSfeatureDescriptorProto, req->wLength));
 		return USBD_OK;
+
 	}
 #endif /* WITHUSBWCID */
 
