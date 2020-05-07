@@ -1864,7 +1864,7 @@ static void gui_main_process(void);
 		static uint_fast8_t menu_is_scrolling = 0, start_str_group = 0, start_str_params = 0;
 		static uint_fast8_t button_pressed = 0;
 		static uint_fast8_t button_menu_w = 0, button_menu_h = 0;
-		button_t * button_up = NULL, * button_down = NULL;
+		static button_t * button_up = NULL, * button_down = NULL;
 		window_t * win = & windows[WINDOW_MENU];
 
 		if (win->first_call == 1)
@@ -2029,7 +2029,6 @@ static void gui_main_process(void);
 
 		if (! encoder2.press_done) // || menu_label_touched || menu_is_scrolling)
 		{
-			label_t * lg = NULL, * lp = NULL, * lv = NULL;
 			// выход из режима редактирования параметра  - краткое или длинное нажатие на энкодер
 			if (encoder2.press && menu_level == MENU_VALS)
 			{
@@ -2051,28 +2050,32 @@ static void gui_main_process(void);
 					menu[MENU_VALS].selected_label = 0;
 				}
 			}
+			PRINTF("menu lvl %d\n", menu_level);
 
 			// при переходе на следующий уровень пункт меню подсвечивается
+			label_t * lh = NULL;
 			if (menu_level == MENU_VALS)
 			{
 				menu[MENU_VALS].selected_label = menu[MENU_PARAMS].selected_label;
-				label_t * sel_label = touch_elements[menu[MENU_VALS].first_id + menu[MENU_VALS].selected_label].link;
+				lh = touch_elements[menu[MENU_VALS].first_id + menu[MENU_VALS].selected_label].link;
 
 				button_down->visible = VISIBLE;
-				button_down->x1 = sel_label->x - button_menu_w - 10;
-				button_down->y1 = (sel_label->y + get_label_height(sel_label) / 2) - (button_menu_h / 2);
+				button_down->x1 = lh->x - button_menu_w - 10;
+				button_down->y1 = (lh->y + get_label_height(lh) / 2) - (button_menu_h / 2);
 
 				button_up->visible = VISIBLE;
-				button_up->x1 = sel_label->x + get_label_width(sel_label) + 10;
+				button_up->x1 = lh->x + get_label_width(lh) + 10;
 				button_up->y1 = button_down->y1;
 				for (uint8_t i = 0; i < menu[MENU_GROUPS].num_rows; i++)
 				{
-					lg = touch_elements[menu[MENU_GROUPS].first_id + i].link;
-					lp = touch_elements[menu[MENU_PARAMS].first_id + i].link;
-					lv = touch_elements[menu[MENU_VALS].first_id + i].link;
-					lg->color = i == menu[MENU_GROUPS].selected_label ? COLORPIP_YELLOW : COLORPIP_GRAY;
-					lp->color = i == menu[MENU_PARAMS].selected_label ? COLORPIP_YELLOW : COLORPIP_GRAY;
-					lv->color = i == menu[MENU_PARAMS].selected_label ? COLORPIP_YELLOW : COLORPIP_GRAY;
+					lh = touch_elements[menu[MENU_GROUPS].first_id + i].link;
+					lh->color = i == menu[MENU_GROUPS].selected_label ? COLORPIP_YELLOW : COLORPIP_GRAY;
+
+					lh = touch_elements[menu[MENU_PARAMS].first_id + i].link;
+					lh->color = i == menu[MENU_PARAMS].selected_label ? COLORPIP_YELLOW : COLORPIP_GRAY;
+
+					lh = touch_elements[menu[MENU_VALS].first_id + i].link;
+					lh->color = i == menu[MENU_PARAMS].selected_label ? COLORPIP_YELLOW : COLORPIP_GRAY;
 				}
 				menu_label_touched = 0;
 			}
@@ -2082,14 +2085,14 @@ static void gui_main_process(void);
 				button_up->visible = NON_VISIBLE;
 				for (uint8_t i = 0; i < menu[MENU_GROUPS].num_rows; i++)
 				{
-					lg = touch_elements[menu[MENU_GROUPS].first_id + i].link;
-					lg->color = i == menu[MENU_GROUPS].selected_label ? COLORPIP_YELLOW : COLORPIP_GRAY;
+					lh = touch_elements[menu[MENU_GROUPS].first_id + i].link;
+					lh->color = i == menu[MENU_GROUPS].selected_label ? COLORPIP_YELLOW : COLORPIP_GRAY;
 
-					lp = touch_elements[menu[MENU_PARAMS].first_id + i].link;
-					lv = touch_elements[menu[MENU_VALS].first_id + i].link;
+					lh = touch_elements[menu[MENU_PARAMS].first_id + i].link;
+					lh->color = COLORPIP_WHITE;
 
-					lp->color = COLORPIP_WHITE;
-					lv->color = COLORPIP_WHITE;
+					lh = touch_elements[menu[MENU_VALS].first_id + i].link;
+					lh->color = COLORPIP_WHITE;
 				}
 			}
 			else if (menu_level == MENU_GROUPS)
@@ -2098,12 +2101,14 @@ static void gui_main_process(void);
 				button_up->visible = NON_VISIBLE;
 				for (uint8_t i = 0; i < menu[MENU_GROUPS].num_rows; i++)
 				{
-					lg = touch_elements[menu[MENU_GROUPS].first_id + i].link;
-					lp = touch_elements[menu[MENU_PARAMS].first_id + i].link;
-					lv = touch_elements[menu[MENU_VALS].first_id + i].link;
-					lg->color = COLORPIP_WHITE;
-					lp->color = COLORPIP_WHITE;
-					lv->color = COLORPIP_WHITE;
+					lh = touch_elements[menu[MENU_GROUPS].first_id + i].link;
+					lh->color = COLORPIP_WHITE;
+
+					lh = touch_elements[menu[MENU_PARAMS].first_id + i].link;
+					lh->color = COLORPIP_WHITE;
+
+					lh = touch_elements[menu[MENU_VALS].first_id + i].link;
+					lh->color = COLORPIP_WHITE;
 				}
 			}
 
@@ -2111,7 +2116,7 @@ static void gui_main_process(void);
 			encoder2.hold = 0;
 			encoder2.press_done = 1;
 		}
-//
+
 		if (menu_level == MENU_OFF)
 		{
 			set_window(win, NON_VISIBLE);
@@ -2121,16 +2126,16 @@ static void gui_main_process(void);
 			return;
 		}
 
-//		if (encoder2.rotate != 0 && menu_level == MENU_VALS)
-//		{
-//			encoder2.rotate_done = 1;
-//			menu[MENU_PARAMS].selected_str = menu[MENU_PARAMS].selected_label + menu[MENU_PARAMS].add_id;
-//			strcpy(labels[menu[MENU_VALS].first_id + menu[MENU_PARAMS].selected_label].text,
-//					hamradio_gui_edit_menu_item(menu[MENU_PARAMS].menu_block[menu[MENU_PARAMS].selected_str].index, encoder2.rotate));
-//
-//			uint_fast8_t id_sel_label = menu[MENU_VALS].first_id + menu[MENU_VALS].selected_label;
-//			button_up->x1 = labels[id_sel_label].x + strwidth(labels[id_sel_label].text) + 10;
-//		}
+		if (encoder2.rotate != 0 && menu_level == MENU_VALS)
+		{
+			encoder2.rotate_done = 1;
+			menu[MENU_PARAMS].selected_str = menu[MENU_PARAMS].selected_label + menu[MENU_PARAMS].add_id;
+			label_t * lh = touch_elements[menu[MENU_VALS].first_id + menu[MENU_PARAMS].selected_label].link;
+			strcpy(lh->text, hamradio_gui_edit_menu_item(menu[MENU_PARAMS].menu_block[menu[MENU_PARAMS].selected_str].index, encoder2.rotate));
+
+			lh = touch_elements[menu[MENU_VALS].first_id + menu[MENU_VALS].selected_label].link;
+			button_up->x1 = lh->x + get_label_width(lh) + 10;
+		}
 
 		if ((menu_label_touched || menu_is_scrolling || encoder2.rotate != 0) && menu_level != MENU_VALS)
 		{
@@ -2166,7 +2171,7 @@ static void gui_main_process(void);
 			}
 
 			if (menu_level == MENU_GROUPS)
-				for(uint_fast8_t i = 0; i < menu[MENU_GROUPS].num_rows; i++)
+				for(uint_fast8_t i = 0; i <= menu[MENU_GROUPS].num_rows; i++)
 				{
 					label_t * l = touch_elements[menu[MENU_GROUPS].first_id + i].link;
 					strcpy(l->text, menu[MENU_GROUPS].menu_block[i + menu[MENU_GROUPS].add_id].name);
@@ -2175,7 +2180,7 @@ static void gui_main_process(void);
 			menu[MENU_VALS].count = menu[MENU_PARAMS].count < menu[MENU_VALS].num_rows ? menu[MENU_PARAMS].count : menu[MENU_VALS].num_rows;
 			hamradio_get_multilinemenu_block_vals(menu[MENU_VALS].menu_block,  menu[MENU_PARAMS].menu_block[menu[MENU_PARAMS].add_id].index, menu[MENU_VALS].count);
 
-			for(uint_fast8_t i = 0; i < menu[MENU_PARAMS].num_rows; i++)
+			for(uint_fast8_t i = 0; i <= menu[MENU_PARAMS].num_rows; i++)
 			{
 				label_t * lp = touch_elements[menu[MENU_PARAMS].first_id + i].link;
 				label_t * lv = touch_elements[menu[MENU_VALS].first_id + i].link;
