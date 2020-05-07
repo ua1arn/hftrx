@@ -6969,6 +6969,28 @@ USBD_StatusTypeDef  USBD_StdItfReq(USBD_HandleTypeDef *pdev, USBD_SetupReqTypede
 	{
 	case USBD_STATE_CONFIGURED:
 		{
+			// Extended Properties OS Descriptor support
+			// wIndex==0x05. Indicates that the request is for an extended properties OS descriptor.
+			if (req->bRequest == USBD_WCID_VENDOR_CODE && req->wIndex == 0x05)
+			{
+				const uint_fast8_t ifc = LO_BYTE(req->wValue);
+				PRINTF(PSTR("MS USBD_StdItfReq: bmRequest=%04X, bRequest=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
+				// Extended Properties OS Descriptor
+				// See OS_Desc_Ext_Prop.doc, Extended Properties Descriptor Format
+
+				// Extended Properties OS Descriptor support
+				if (ExtOsPropDescTbl[ifc].size != 0)
+				{
+					USBD_CtlSendData(pdev, ExtOsPropDescTbl[ifc].data, ulmin16(ExtOsPropDescTbl[ifc].size, req->wLength));
+				}
+				else
+				{
+					TP();
+					USBD_CtlError(pdev, req);
+					return USBD_OK;
+				}
+			}
+
 			uint_fast8_t di;	// device function index
 			for (di = 0; di < pdev->nClasses; ++ di)
 			{
@@ -6976,6 +6998,7 @@ USBD_StatusTypeDef  USBD_StdItfReq(USBD_HandleTypeDef *pdev, USBD_SetupReqTypede
 			}
 			if (req->wLength == 0)
 			{
+				// Этот запрос был без данных
 				USBD_CtlSendStatus(pdev);
 			}
 			else
@@ -7009,7 +7032,7 @@ USBD_StatusTypeDef  USBD_StdItfReq(USBD_HandleTypeDef *pdev, USBD_SetupReqTypede
 */
 USBD_StatusTypeDef  USBD_StdEPReq(USBD_HandleTypeDef * pdev, USBD_SetupReqTypedef * req)
 {
-	//PRINTF(PSTR("USBD_StdEPReq: bmRequest=%04X, bRequest=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
+	PRINTF(PSTR("USBD_StdEPReq: bmRequest=%04X, bRequest=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
 	uint8_t   ep_addr;
 	USBD_StatusTypeDef ret = USBD_OK;
 	USBD_EndpointTypeDef   *pep;
@@ -7606,7 +7629,7 @@ static void USBD_ClrFeature(USBD_HandleTypeDef *pdev,
 */
 USBD_StatusTypeDef  USBD_StdDevReq(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef  *req)
 {
-	//PRINTF(PSTR("USBD_StdDevReq: bmRequest=%04X, bRequest=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
+	PRINTF(PSTR("USBD_StdDevReq: bmRequest=%04X, bRequest=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
 	//PRINTF(PSTR("USBD_StdDevReq: req->bRequest=%d\n"), (int) req->bRequest);
 	USBD_StatusTypeDef ret = USBD_OK;
 

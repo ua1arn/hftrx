@@ -570,38 +570,6 @@ static USBD_StatusTypeDef USBD_DFU_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 	//hdfu = (USBD_DFU_HandleTypeDef*) pdev->pClassData;
 	//hdfu = & gdfu;
 
-#if 1//WITHUSBWCID
-	// WCID devices support
-	/*
-		Extended properties OS descriptors are associated with a particular interface or function,
-		so a device can have as many descriptors as it has interfaces or functions.
-	*/
-	// MS USBD_DFU_Setup: bmRequest=00C1, bRequest=44, wValue=0000, wIndex=0005, wLength=000A
-	// В документе от Микрософт по другому расположены данные в запросе: LO_BYTE(req->wValue) это результат запуска и тестирования
-	if (req->bRequest == USBD_WCID_VENDOR_CODE && LO_BYTE(req->wValue) == INTERFACE_DFU_CONTROL && req->wIndex == 0x05)
-	{
-		const uint_fast8_t ifc = LO_BYTE(req->wValue);
-		// Extended Properties OS Descriptor
-		// See OS_Desc_Ext_Prop.doc, Extended Properties Descriptor Format
-		PRINTF(PSTR("MS USBD_DFU_Setup: bmRequest=%04X, bRequest=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
-		// Extended Properties OS Descriptor
-		// See OS_Desc_Ext_Prop.doc, Extended Properties Descriptor Format
-
-		// Extended Properties OS Descriptor support
-		if (ExtOsPropDescTbl[ifc].size != 0)
-		{
-			USBD_CtlSendData(pdev, ExtOsPropDescTbl[ifc].data, ulmin16(ExtOsPropDescTbl[ifc].size, req->wLength));
-		}
-		else
-		{
-			TP();
-			USBD_CtlError(pdev, req);
-		}
-		return USBD_OK;
-	}
-
-#endif /* WITHUSBWCID */
-
 	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 
   switch (req->bmRequest & USB_REQ_TYPE_MASK)

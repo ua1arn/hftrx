@@ -352,37 +352,6 @@ static USBD_StatusTypeDef USBD_CDC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 	static USBALIGN_BEGIN uint8_t buff [32] USBALIGN_END;	// was: 7
 	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 
-#if 1//WITHUSBWCID
-	// Extended Properties OS Descriptor support
-	// В документе от Микрософт по другому расположены данные в запросе: LO_BYTE(req->wValue) это результат запуска и тестирования
-	if (req->bRequest == USBD_WCID_VENDOR_CODE &&
-			(
-					LO_BYTE(req->wValue) == INTERFACE_CDC_CONTROL_3a ||
-#if WITHUSBHWCDC_N > 1
-					LO_BYTE(req->wValue) == INTERFACE_CDC_CONTROL_3b ||
-#endif
-					0)
-			&& req->wIndex == 0x05)
-	{
-		const uint_fast8_t ifc = LO_BYTE(req->wValue);
-		PRINTF(PSTR("MS USBD_CDC_Setup: bmRequest=%04X, bRequest=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
-		// Extended Properties OS Descriptor
-		// See OS_Desc_Ext_Prop.doc, Extended Properties Descriptor Format
-
-		// Extended Properties OS Descriptor support
-		if (ExtOsPropDescTbl[ifc].size != 0)
-		{
-			USBD_CtlSendData(pdev, ExtOsPropDescTbl[ifc].data, ulmin16(ExtOsPropDescTbl[ifc].size, req->wLength));
-		}
-		else
-		{
-			TP();
-			USBD_CtlError(pdev, req);
-		}
-		return USBD_OK;
-	}
-#endif /* WITHUSBWCID */
-
 	if ((req->bmRequest & USB_REQ_TYPE_DIR) != 0)
 	{
 		// IN direction
