@@ -1624,8 +1624,9 @@ static void update_touch(void);
 
 	static void buttons_freq_handler (void)
 	{
-		if (((button_t *) gui.selected_link)->parent == WINDOW_FREQ && editfreq.key == BUTTON_CODE_DONE)
-			editfreq.key = ((button_t *) gui.selected_link)->payload;
+		button_t * bh =  gui.selected_link->link;
+		if (bh->parent == WINDOW_FREQ && editfreq.key == BUTTON_CODE_DONE)
+			editfreq.key = bh->payload;
 	}
 
 	static void window_freq_process (void)
@@ -1745,15 +1746,19 @@ static void update_touch(void);
 	static void buttons_uif_handler(void)
 	{
 		window_t * win = & windows[WINDOW_UIF];
-		if (gui.selected_type == TYPE_BUTTON && gui.selected_link == find_gui_element_ref(TYPE_BUTTON, win, "btnUIF+"))
-			encoder2.rotate = 1;
-		else if (gui.selected_type == TYPE_BUTTON && gui.selected_link == find_gui_element_ref(TYPE_BUTTON, win, "btnUIF-"))
-			encoder2.rotate = -1;
-		else if (gui.selected_type == TYPE_BUTTON && gui.selected_link == find_gui_element_ref(TYPE_BUTTON, win, "btnUIF_OK"))
+		if (gui.selected_type == TYPE_BUTTON)
 		{
-			hamradio_disable_keyboard_redirect();
-			set_window(win, NON_VISIBLE);
-			footer_buttons_state(CANCELLED);
+			button_t * bh = gui.selected_link->link;
+			if (bh == find_gui_element_ref(TYPE_BUTTON, win, "btnUIF+"))
+				encoder2.rotate = 1;
+			else if (bh == find_gui_element_ref(TYPE_BUTTON, win, "btnUIF-"))
+				encoder2.rotate = -1;
+			else if (bh == find_gui_element_ref(TYPE_BUTTON, win, "btnUIF_OK"))
+			{
+				hamradio_disable_keyboard_redirect();
+				set_window(win, NON_VISIBLE);
+				footer_buttons_state(CANCELLED);
+			}
 		}
 	}
 
@@ -2323,10 +2328,11 @@ static void update_touch(void);
 		window_t * win = & windows[WINDOW_MODES];
 		if(gui.selected_type == TYPE_BUTTON)
 		{
-			if (win->state && ((button_t *)gui.selected_link)->parent == win->window_id)
+			button_t * bh = (button_t *)gui.selected_link->link;
+			if (win->state && bh->parent == win->window_id)
 			{
-				if (((button_t *)gui.selected_link)->payload != UINTPTR_MAX)
-					hamradio_change_submode(((button_t *)gui.selected_link)->payload);
+				if (bh->payload != UINTPTR_MAX)
+					hamradio_change_submode(bh->payload);
 
 				set_window(win, NON_VISIBLE);
 				footer_buttons_state(CANCELLED);
