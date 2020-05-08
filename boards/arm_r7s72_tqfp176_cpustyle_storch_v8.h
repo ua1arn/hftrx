@@ -58,7 +58,7 @@
 	//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
 	#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
 	//#define WITHMOVEDFU 1	// Переместить интерфейс DFU в область меньших номеров. Утилита dfu-util 0.9 не работает с DFU на интерфейсе с индексом 10
-	//#define WITHUSBWCID	1
+	#define WITHUSBWCID	1
 
 #else /* WITHISBOOTLOADER */
 
@@ -103,7 +103,7 @@
 	//#define WITHUSBHID		1	/* HID использовать Human Interface Device на USB соединении */
 	#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
 	//#define WITHMOVEDFU 1	// Переместить интерфейс DFU в область меньших номеров. Утилита dfu-util 0.9 не работает с DFU на интерфейсе с индексом 10
-	//#define WITHUSBWCID	1
+	#define WITHUSBWCID	1
 
 #endif /* WITHISBOOTLOADER */
 

@@ -4569,10 +4569,10 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 			INTERFACE_DFU_CONTROL,			// Interface Number
 			0x01,							// reserved
 #if 1
-			'W', 'I', 'N', 'U', 'S', 'B', 0x00, 0x00,				// Compatible ID
+			'W', 'I', 'N', 'U', 'S', 'B', 0x00, 0x00,				// Compatible ID - требует установки драйвера, не WCID драйвере
 #else
 			//'L', 'I', 'B', 'U', 'S', 'B', '0', 0x00,				// Compatible ID
-			//'L', 'I', 'B', 'U', 'S', 'B', 'K', 0x00,				// Compatible ID
+			'L', 'I', 'B', 'U', 'S', 'B', 'K', 0x00,				// Compatible ID - требует установки драйвера, не WCID драйвере
 #endif
 			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,			// Sub-Compatible ID 
 			0x00, 0x00, 0x00, 0x00,			// Reserved 
