@@ -633,9 +633,9 @@ void buffers_initialize(void)
 
 		RAMBIG static voice192rts_t voicesarray192rts [4];
 
-		ASSERT(offsetof(uacin16_t, item) == offsetof(voice96rts_t, item));
-		ASSERT(offsetof(uacin16_t, buff) == offsetof(voice96rts_t, buff));
-		ASSERT(offsetof(uacin16_t, tag) == offsetof(voice96rts_t, tag));
+		ASSERT(offsetof(uacin16_t, item) == offsetof(voice192rts_t, item));
+		ASSERT(offsetof(uacin16_t, buff) == offsetof(voice192rts_t, buff));
+		ASSERT(offsetof(uacin16_t, tag) == offsetof(voice192rts_t, tag));
 
 		InitializeListHead2(& uacin192rts);		// список для выдачи в канал USB AUDIO - спектр
 		InitializeListHead2(& voicesfree192rts);	// Незаполненные
