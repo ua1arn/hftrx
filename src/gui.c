@@ -782,6 +782,7 @@ static void window_agc_process(void);
 static void window_enc2_process(void);
 static void window_audioparams_process(void);
 static void gui_main_process(void);
+static void update_touch(void);
 
 	typedef enum {
 		TYPE_DUMMY,
@@ -1860,7 +1861,8 @@ static void gui_main_process(void);
 
 	static void window_menu_process(void)
 	{
-		static uint_fast8_t menu_is_scrolling = 0, int_rows = 35;
+		static uint_fast8_t menu_is_scrolling = 0;
+		uint_fast8_t int_cols = 200, int_rows = 35;
 		static button_t * button_up = NULL, * button_down = NULL;
 		window_t * win = & windows[WINDOW_MENU];
 
@@ -1872,7 +1874,7 @@ static void gui_main_process(void);
 
 			hamradio_set_menu_cond(VISIBLE);
 
-			uint_fast8_t col1_int = 50, row1_int = 40, int_cols = 200, id_start, id_end, i = 0;
+			uint_fast8_t col1_int = 20, row1_int = 40, id_start, id_end, i = 0;
 			uint_fast16_t xn, yn;
 			label_t * lh;
 
@@ -2044,7 +2046,7 @@ static void gui_main_process(void);
 				}
 			}
 
-			// при переходе на следующий уровень пункт меню подсвечивается
+			// при переходе между уровнями пункты меню выделяется цветом
 			label_t * lh = NULL;
 			if (menu_level == MENU_VALS)
 			{
@@ -2058,13 +2060,13 @@ static void gui_main_process(void);
 				button_up->visible = VISIBLE;
 				button_up->x1 = lh->x + get_label_width(lh) + 10;
 				button_up->y1 = button_down->y1;
-				for (uint8_t i = 0; i < menu[MENU_GROUPS].num_rows; i++)
+				for (uint8_t i = 0; i <= menu[MENU_GROUPS].num_rows; i++)
 				{
 					lh = touch_elements[menu[MENU_GROUPS].first_id + i].link;
-					lh->color = i == menu[MENU_GROUPS].selected_label ? COLORPIP_YELLOW : COLORPIP_GRAY;
+					lh->color = i == menu[MENU_GROUPS].selected_label ? COLORPIP_WHITE : COLORPIP_GRAY;
 
 					lh = touch_elements[menu[MENU_PARAMS].first_id + i].link;
-					lh->color = i == menu[MENU_PARAMS].selected_label ? COLORPIP_YELLOW : COLORPIP_GRAY;
+					lh->color = i == menu[MENU_PARAMS].selected_label ? COLORPIP_WHITE : COLORPIP_GRAY;
 
 					lh = touch_elements[menu[MENU_VALS].first_id + i].link;
 					lh->color = i == menu[MENU_PARAMS].selected_label ? COLORPIP_YELLOW : COLORPIP_GRAY;
@@ -2075,10 +2077,10 @@ static void gui_main_process(void);
 			{
 				button_down->visible = NON_VISIBLE;
 				button_up->visible = NON_VISIBLE;
-				for (uint8_t i = 0; i < menu[MENU_GROUPS].num_rows; i++)
+				for (uint8_t i = 0; i <= menu[MENU_GROUPS].num_rows; i++)
 				{
 					lh = touch_elements[menu[MENU_GROUPS].first_id + i].link;
-					lh->color = i == menu[MENU_GROUPS].selected_label ? COLORPIP_YELLOW : COLORPIP_GRAY;
+					lh->color = i == menu[MENU_GROUPS].selected_label ? COLORPIP_WHITE : COLORPIP_GRAY;
 
 					lh = touch_elements[menu[MENU_PARAMS].first_id + i].link;
 					lh->color = COLORPIP_WHITE;
@@ -2091,7 +2093,7 @@ static void gui_main_process(void);
 			{
 				button_down->visible = NON_VISIBLE;
 				button_up->visible = NON_VISIBLE;
-				for (uint8_t i = 0; i < menu[MENU_GROUPS].num_rows; i++)
+				for (uint8_t i = 0; i <= menu[MENU_GROUPS].num_rows; i++)
 				{
 					lh = touch_elements[menu[MENU_GROUPS].first_id + i].link;
 					lh->color = COLORPIP_WHITE;
@@ -2192,11 +2194,20 @@ static void gui_main_process(void);
 			}
 			menu_label_touched = 0;
 		}
-		if (menu_level != MENU_VALS)
+
+		label_t * lh;
+		switch (menu_level)
 		{
-			label_t * l = touch_elements[menu[menu_level].selected_label + menu[menu_level].first_id].link;
-			colpip_string_tbg(colmain_fb_draw(), DIM_X, DIM_Y, l->x - SMALLCHARW, l->y, ">", COLORPIP_YELLOW);
+		case MENU_PARAMS:
+		case MENU_VALS:
+			lh = touch_elements[menu[MENU_PARAMS].first_id + menu[MENU_PARAMS].selected_label].link;
+			colpip_rect(colmain_fb_draw(), DIM_X, DIM_Y, lh->x - 5, lh->y - 5, lh->x + int_cols - 20, lh->y + get_label_height(lh) + 5, 228, 1);
+
+		case MENU_GROUPS:
+			lh = touch_elements[menu[MENU_GROUPS].first_id + menu[MENU_GROUPS].selected_label].link;
+			colpip_rect(colmain_fb_draw(), DIM_X, DIM_Y, lh->x - 5, lh->y - 5, lh->x + int_cols - 20, lh->y + get_label_height(lh) + 5, 228, 1);
 		}
+
 	}
 
 #else
