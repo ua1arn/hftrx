@@ -9706,7 +9706,11 @@ USBD_StatusTypeDef  USBD_LL_Init(PCD_HandleTypeDef * hpcd, USBD_HandleTypeDef *p
 		hpcd->Init.vbus_sensing_enable = USB_DISABLE;
 	#endif /* WITHUSBDEV_VBUSSENSE */
 
-	hpcd->Init.dma_enable = ! USB_ENABLE; // xyz
+	#if WITHUSBDEV_DMAENABLE
+		hpcd->Init.dma_enable = USB_ENABLE; // xyz
+	#else /* WITHUSBDEV_DMAENABLE */
+		hpcd->Init.dma_enable = USB_DISABLE; // xyz
+	#endif /* WITHUSBDEV_DMAENABLE */
 	hpcd->Init.Sof_enable = USB_DISABLE;
 	hpcd->Init.low_power_enable = USB_DISABLE;
 	hpcd->Init.lpm_enable = USB_DISABLE;
