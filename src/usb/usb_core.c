@@ -10654,7 +10654,11 @@ USBH_StatusTypeDef  USBH_LL_Init(USBH_HandleTypeDef *phost)
 #elif CPUSTYLE_STM32MP1
 	hhcd_USB_OTG.Init.Host_channels = 16;
 	hhcd_USB_OTG.Init.pcd_speed = PCD_SPEED_HIGH;
-	hhcd_USB_OTG.Init.dma_enable = ! USB_ENABLE;	 // xyz HOST
+	#if WITHUSBHOST_DMAENABLE
+		hhcd_USB_OTG.Init.dma_enable = USB_ENABLE;	 // xyz HOST
+	#else /* WITHUSBHOST_DMAENABLE */
+		hhcd_USB_OTG.Init.dma_enable = USB_DISABLE;	 // xyz HOST
+	#endif /* WITHUSBHOST_DMAENABLE */
 	hhcd_USB_OTG.Init.phy_itface = HCD_PHY_EMBEDDED;
 	hhcd_USB_OTG.Init.phy_itface = USB_OTG_HS_EMBEDDED_PHY;
 	#if WITHUSBHOST_HIGHSPEEDULPI
@@ -10669,7 +10673,11 @@ USBH_StatusTypeDef  USBH_LL_Init(USBH_HandleTypeDef *phost)
 #else /* CPUSTYLE_R7S721 */
 	hhcd_USB_OTG.Init.Host_channels = 16;
 	hhcd_USB_OTG.Init.pcd_speed = PCD_SPEED_FULL;
-	hhcd_USB_OTG.Init.dma_enable = ! USB_ENABLE;	 // xyz HOST
+	#if WITHUSBHOST_DMAENABLE
+		hhcd_USB_OTG.Init.dma_enable = USB_ENABLE;	 // xyz HOST
+	#else /* WITHUSBHOST_DMAENABLE */
+		hhcd_USB_OTG.Init.dma_enable = USB_DISABLE;	 // xyz HOST
+	#endif /* WITHUSBHOST_DMAENABLE */
 	hhcd_USB_OTG.Init.phy_itface = HCD_PHY_EMBEDDED;
 
 #endif /* CPUSTYLE_R7S721 */

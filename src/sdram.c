@@ -5928,10 +5928,10 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 	{
 		// TrustZone address space controller for DDR (TZC)
 
-		// TZC AXI port 1 & port 2 clocks enable
-		RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_TZC1EN | RCC_MC_APB5ENSETR_TZC2EN;
+		// TZC AXI port 1 clocks enable
+		RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_TZC1EN;
 		(void) RCC->MP_APB5ENSETR;
-		RCC->MP_APB5LPENSETR = RCC_MC_APB5LPENSETR_TZC1LPEN | RCC_MC_APB5LPENSETR_TZC2LPEN;
+		RCC->MP_APB5LPENSETR = RCC_MC_APB5LPENSETR_TZC1LPEN;
 		(void) RCC->MP_APB5LPENSETR;
 
 		// TZC AXI port 2 clocks enable
@@ -5951,8 +5951,8 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 		TZC->REG_ID_ACCESSO = 0xFFFFFFFF; // permits read and write non-secure to the region for all NSAIDs
 		(void) TZC->REG_ID_ACCESSO;
 	}
+	if (1)
 	{
-#if 1
         // 0x01001F08
         //PRINTF("TZC->BUILD_CONFIG=%08lX\n", TZC->BUILD_CONFIG);
         //PRINTF("TZC->ACTION=%08lX\n", TZC->ACTION);
@@ -5977,10 +5977,22 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 
             //PRINTF("TZC->REG_ATTRIBUTES%d=%08lX\n", i, * REG_ATTRIBUTESx);
         }
-#endif
 	}
-	TWISOFT_INITIALIZE();
+	if (0)
+	{
+		/* SYSCFG clock enable */
+		RCC->MP_APB3ENSETR = RCC_MC_APB3ENSETR_SYSCFGEN;
+		(void) RCC->MP_APB3ENSETR;
+		/*
+		 * Interconnect update : select master using the port 1.
+		 * MCU interconnect (OTG_HS) = AXI_M0.
+		 */
+		SYSCFG->ICNR |= SYSCFG_ICNR_AXI_M0;
+		(void) SYSCFG->ICNR;
+	}
+
 #if WITHSDRAM_PMC1
+	TWISOFT_INITIALIZE();
 	initialize_pmic();
 #endif /* WITHSDRAM_PMC1 */
 
@@ -6038,7 +6050,9 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 	/* Enable axidcg clock gating */
 	mmio_setbits_32(RCC_BASE + RCC_DDRITFCR, RCC_DDRITFCR_AXIDCGEN);
 
+#if WITHSDRAM_PMC1
 	TWISOFT_DEINITIALIZE();
+#endif /* WITHSDRAM_PMC1 */
 
 	// инициализация выполняетмя еще до включения MMU
 	//__set_SCTLR(__get_SCTLR() & ~ SCTLR_C_Msk);

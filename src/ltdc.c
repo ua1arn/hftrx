@@ -1408,16 +1408,18 @@ arm_hardware_ltdc_initialize(void)
 
 #elif CPUSTYLE_STM32MP1
 
-	/* SYSCFG clock enable */
-	RCC->MP_APB3ENSETR = RCC_MC_APB3ENSETR_SYSCFGEN;
-	(void) RCC->MP_APB3ENSETR;
-	/*
-	 * Interconnect update : select master using the port 1.
-	 * LTDC = AXI_M9.
-	 * MDMA = AXI_M7.
-	 */
-	SYSCFG->ICNR |= SYSCFG_ICNR_AXI_M9;
-	(void) SYSCFG->ICNR;
+	{
+		/* SYSCFG clock enable */
+		RCC->MP_APB3ENSETR = RCC_MC_APB3ENSETR_SYSCFGEN;
+		(void) RCC->MP_APB3ENSETR;
+		/*
+		 * Interconnect update : select master using the port 1.
+		 * LTDC = AXI_M9.
+		 * MDMA = AXI_M7.
+		 */
+		SYSCFG->ICNR |= SYSCFG_ICNR_AXI_M9;
+		(void) SYSCFG->ICNR;
+	}
 
 	/* Enable the LTDC Clock */
 	RCC->MP_APB4ENSETR = RCC_MP_APB4ENSETR_LTDCEN;	/* LTDC clock enable */
