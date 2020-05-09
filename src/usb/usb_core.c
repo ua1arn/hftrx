@@ -13776,6 +13776,276 @@ uint_fast8_t hamradio_get_usbh_active(void)
 
 #if WITHEHCIHW
 
+
+// ------------------------------------------------------------------------------------------------
+// Limits
+
+#define MAX_QH                          8
+#define MAX_TD                          32
+
+// ------------------------------------------------------------------------------------------------
+// PCI Configuration Registers
+
+// EECP-based
+#define USBLEGSUP                       0x00        // USB Legacy Support Extended Capability
+#define UBSLEGCTLSTS                    0x04        // USB Legacy Support Control/Status
+
+// ------------------------------------------------------------------------------------------------
+// USB Legacy Support Register
+
+#define USBLEGSUP_HC_OS                 0x01000000uL  // HC OS Owned Semaphore
+#define USBLEGSUP_HC_BIOS               0x00010000uL  // HC BIOS Owned Semaphore
+#define USBLEGSUP_NCP_MASK              0x0000ff00uL  // Next EHCI Extended Capability Pointer
+#define USBLEGSUP_CAPID                 0x000000ffuL  // Capability ID
+
+// ------------------------------------------------------------------------------------------------
+// Host Controller Capability Registers
+
+typedef struct EhciCapRegs
+{
+    uint8_t capLength;
+    uint8_t reserved;
+    uint16_t hciVersion;
+    uint32_t hcsParams;
+    uint32_t hccParams;
+    uint64_t hcspPortRoute;
+} ATTRPACKED EhciCapRegs;
+
+// ------------------------------------------------------------------------------------------------
+// Host Controller Structural Parameters Register
+
+#define HCSPARAMS_N_PORTS_MASK          (15uL << 0)   // Number of Ports
+#define HCSPARAMS_PPC                   (1uL << 4)    // Port Power Control
+#define HCSPARAMS_PORT_ROUTE            (1uL << 7)    // Port Routing Rules
+#define HCSPARAMS_N_PCC_MASK            (15uL << 8)   // Number of Ports per Companion Controller
+#define HCSPARAMS_N_PCC_SHIFT           8
+#define HCSPARAMS_N_CC_MASK             (15uL << 12)  // Number of Companion Controllers
+#define HCSPARAMS_N_CC_SHIFT            12
+#define HCSPARAMS_P_INDICATOR           (1uL << 16)   // Port Indicator
+#define HCSPARAMS_DPN_MASK              (15uL << 20)  // Debug Port Number
+#define HCSPARAMS_DPN_SHIFT             20
+
+// ------------------------------------------------------------------------------------------------
+// Host Controller Capability Parameters Register
+
+#define HCCPARAMS_64_BIT                (1uL << 0)    // 64-bit Addressing Capability
+#define HCCPARAMS_PFLF                  (1uL << 1)    // Programmable Frame List Flag
+#define HCCPARAMS_ASPC                  (1uL << 2)    // Asynchronous Schedule Park Capability
+#define HCCPARAMS_IST_MASK              (15uL << 4)   // Isochronous Sheduling Threshold
+#define HCCPARAMS_EECP_MASK             (255uL << 8)  // EHCI Extended Capabilities Pointer
+#define HCCPARAMS_EECP_SHIFT            8
+
+// ------------------------------------------------------------------------------------------------
+// Host Controller Operational Registers
+
+typedef struct EhciOpRegs
+{
+    volatile uint32_t usbCmd;
+    volatile uint32_t usbSts;
+    volatile uint32_t usbIntr;
+    volatile uint32_t frameIndex;
+    volatile uint32_t ctrlDsSegment;
+    volatile uint32_t periodicListBase;
+    volatile uint32_t asyncListAddr;
+    volatile uint32_t reserved[9];
+    volatile uint32_t configFlag;
+    volatile uint32_t ports[];
+} EhciOpRegs;
+
+// ------------------------------------------------------------------------------------------------
+// USB Command Register
+
+#define CMD_RS                          (1uL << 0)    // Run/Stop
+#define CMD_HCRESET                     (1uL << 1)    // Host Controller Reset
+#define CMD_FLS_MASK                    (3uL << 2)    // Frame List Size
+#define CMD_FLS_SHIFT                   2
+#define CMD_PSE                         (1uL << 4)    // Periodic Schedule Enable
+#define CMD_ASE                         (1uL << 5)    // Asynchronous Schedule Enable
+#define CMD_IOAAD                       (1uL << 6)    // Interrupt on Async Advance Doorbell
+#define CMD_LHCR                        (1uL << 7)    // Light Host Controller Reset
+#define CMD_ASPMC_MASK                  (3uL << 8)    // Asynchronous Schedule Park Mode Count
+#define CMD_ASPMC_SHIFT                 8
+#define CMD_ASPME                       (1uL << 11)   // Asynchronous Schedule Park Mode Enable
+#define CMD_ITC_MASK                    (255uL << 16) // Interrupt Threshold Control
+#define CMD_ITC_SHIFT                   16
+
+// ------------------------------------------------------------------------------------------------
+// USB Status Register
+
+#define STS_USBINT                      (1uL << 0)    // USB Interrupt
+#define STS_ERROR                       (1uL << 1)    // USB Error Interrupt
+#define STS_PCD                         (1uL << 2)    // Port Change Detect
+#define STS_FLR                         (1uL << 3)    // Frame List Rollover
+#define STS_HSE                         (1uL << 4)    // Host System Error
+#define STS_IOAA                        (1uL << 5)    // Interrupt on Async Advance
+#define STS_HCHALTED                    (1uL << 12)   // Host Controller Halted
+#define STS_RECLAMATION                 (1uL << 13)   // Reclamation
+#define STS_PSS                         (1uL << 14)   // Periodic Schedule Status
+#define STS_ASS                         (1uL << 15)   // Asynchronous Schedule Status
+
+// ------------------------------------------------------------------------------------------------
+// USB Interrupt Enable Register
+
+#define INTR_USBINT                     (1uL << 0)    // USB Interrupt Enable
+#define INTR_ERROR                      (1uL << 1)    // USB Error Interrupt Enable
+#define INTR_PCD                        (1uL << 2)    // Port Change Interrupt Enable
+#define INTR_FLR                        (1uL << 3)    // Frame List Rollover Enable
+#define INTR_HSE                        (1uL << 4)    // Host System Error Enable
+#define INTR_IOAA                       (1uL << 5)    // Interrupt on Async Advance Enable
+
+// ------------------------------------------------------------------------------------------------
+// Frame Index Register
+
+#define FR_MASK                         0x3fff
+
+// ------------------------------------------------------------------------------------------------
+// Configure Flag Register
+
+#define CF_PORT_ROUTE                   (1uL << 0)    // Configure Flag (CF)
+
+// ------------------------------------------------------------------------------------------------
+// Port Status and Control Registers
+
+#define PORT_CONNECTION                 (1uL << 0)    // Current Connect Status
+#define PORT_CONNECTION_CHANGE          (1uL << 1)    // Connect Status Change
+#define PORT_ENABLE                     (1uL << 2)    // Port Enabled
+#define PORT_ENABLE_CHANGE              (1uL << 3)    // Port Enable Change
+#define PORT_OVER_CURRENT               (1uL << 4)    // Over-current Active
+#define PORT_OVER_CURRENT_CHANGE        (1uL << 5)    // Over-current Change
+#define PORT_FPR                        (1uL << 6)    // Force Port Resume
+#define PORT_SUSPEND                    (1uL << 7)    // Suspend
+#define PORT_RESET                      (1uL << 8)    // Port Reset
+#define PORT_LS_MASK                    (3uL << 10)   // Line Status
+#define PORT_LS_SHIFT                   10
+#define PORT_POWER                      (1uL << 12)   // Port Power
+#define PORT_OWNER                      (1uL << 13)   // Port Owner
+#define PORT_IC_MASK                    (3uL << 14)   // Port Indicator Control
+#define PORT_IC_SHIFT                   14
+#define PORT_TC_MASK                    (15uL << 16)  // Port Test Control
+#define PORT_TC_SHIFT                   16
+#define PORT_WKCNNT_E                   (1uL << 20)   // Wake on Connect Enable
+#define PORT_WKDSCNNT_E                 (1uL << 21)   // Wake on Disconnect Enable
+#define PORT_WKOC_E                     (1uL << 22)   // Wake on Over-current Enable
+#define PORT_RWC                        (PORT_CONNECTION_CHANGE | PORT_ENABLE_CHANGE | PORT_OVER_CURRENT_CHANGE)
+
+// ------------------------------------------------------------------------------------------------
+// Transfer Descriptor
+
+typedef struct EhciTD
+{
+    volatile uint32_t link;
+    volatile uint32_t altLink;
+    volatile uint32_t token;
+    volatile uint32_t buffer[5];
+    volatile uint32_t extBuffer[5];
+
+    // internal fields
+    uint32_t tdNext;
+    uint32_t active;
+    uint8_t pad[4];
+} EhciTD;
+
+// TD Link Pointer
+#define PTR_TERMINATE                   (1uL << 0)
+
+#define PTR_TYPE_MASK                   (3uL << 1)
+#define PTR_ITD                         (0uL << 1)
+#define PTR_QH                          (1uL << 1)
+#define PTR_SITD                        (2uL << 1)
+#define PTR_FSTN                        (3uL << 1)
+
+// TD Token
+#define TD_TOK_PING                     (1uL << 0)    // Ping State
+#define TD_TOK_STS                      (1uL << 1)    // Split Transaction State
+#define TD_TOK_MMF                      (1uL << 2)    // Missed Micro-Frame
+#define TD_TOK_XACT                     (1uL << 3)    // Transaction Error
+#define TD_TOK_BABBLE                   (1uL << 4)    // Babble Detected
+#define TD_TOK_DATABUFFER               (1uL << 5)    // Data Buffer Error
+#define TD_TOK_HALTED                   (1uL << 6)    // Halted
+#define TD_TOK_ACTIVE                   (1uL << 7)    // Active
+#define TD_TOK_PID_MASK                 (3uL << 8)    // PID Code
+#define TD_TOK_PID_SHIFT                8
+#define TD_TOK_CERR_MASK                (3uL << 10)   // Error Counter
+#define TD_TOK_CERR_SHIFT               10
+#define TD_TOK_C_PAGE_MASK              (7uL << 12)   // Current Page
+#define TD_TOK_C_PAGE_SHIFT             12
+#define TD_TOK_IOC                      (1uL << 15)   // Interrupt on Complete
+#define TD_TOK_LEN_MASK                 0x7fff0000uL  // Total Bytes to Transfer
+#define TD_TOK_LEN_SHIFT                16
+#define TD_TOK_D                        (1uL << 31)   // Data Toggle
+#define TD_TOK_D_SHIFT                  31
+
+#define USB_PACKET_OUT                  0           // token 0xe1
+#define USB_PACKET_IN                   1           // token 0x69
+#define USB_PACKET_SETUP                2           // token 0x2d
+
+// ------------------------------------------------------------------------------------------------
+// Queue Head
+
+typedef struct EhciQH
+{
+    uint32_t qhlp;       // Queue Head Horizontal Link Pointer
+    uint32_t ch;         // Endpoint Characteristics
+    uint32_t caps;       // Endpoint Capabilities
+    volatile uint32_t curLink;
+
+    // matches a transfer descriptor
+    volatile uint32_t nextLink;
+    volatile uint32_t altLink;
+    volatile uint32_t token;
+    volatile uint32_t buffer[5];
+    volatile uint32_t extBuffer[5];
+
+    // internal fields
+//    UsbTransfer *transfer;
+//    Link qhLink;
+    uint32_t tdHead;
+    uint32_t active;
+    uint8_t pad[20];
+} EhciQH;
+
+// Endpoint Characteristics
+#define QH_CH_DEVADDR_MASK              0x0000007fuL  // Device Address
+#define QH_CH_INACTIVE                  0x00000080uL  // Inactive on Next Transaction
+#define QH_CH_ENDP_MASK                 0x00000f00uL  // Endpoint Number
+#define QH_CH_ENDP_SHIFT                8
+#define QH_CH_EPS_MASK                  0x00003000uL  // Endpoint Speed
+#define QH_CH_EPS_SHIFT                 12
+#define QH_CH_DTC                       0x00004000uL  // Data Toggle Control
+#define QH_CH_H                         0x00008000uL  // Head of Reclamation List Flag
+#define QH_CH_MPL_MASK                  0x07ff0000uL  // Maximum Packet Length
+#define QH_CH_MPL_SHIFT                 16
+#define QH_CH_CONTROL                   0x08000000uL  // Control Endpoint Flag
+#define QH_CH_NAK_RL_MASK               0xf0000000uL  // Nak Count Reload
+#define QH_CH_NAK_RL_SHIFT              28
+
+// Endpoint Capabilities
+#define QH_CAP_INT_SCHED_SHIFT          0
+#define QH_CAP_INT_SCHED_MASK           0x000000ffuL  // Interrupt Schedule Mask
+#define QH_CAP_SPLIT_C_SHIFT            8
+#define QH_CAP_SPLIT_C_MASK             0x0000ff00uL  // Split Completion Mask
+#define QH_CAP_HUB_ADDR_SHIFT           16
+#define QH_CAP_HUB_ADDR_MASK            0x007f0000uL  // Hub Address
+#define QH_CAP_PORT_MASK                0x3f800000uL  // Port Number
+#define QH_CAP_PORT_SHIFT               23
+#define QH_CAP_MULT_MASK                0xc0000000uL  // High-Bandwidth Pipe Multiplier
+#define QH_CAP_MULT_SHIFT               30
+
+// ------------------------------------------------------------------------------------------------
+// Device
+
+typedef struct EhciController
+{
+    EhciCapRegs *capRegs;
+    EhciOpRegs *opRegs;
+    uint32_t *frameList;
+    EhciQH *qhPool;
+    EhciTD *tdPool;
+    EhciQH *asyncQH;
+    EhciQH *periodicQH;
+} EhciController;
+
+
 // USB EHCI controller
 void board_ehci_initialize(void)
 {
@@ -13785,12 +14055,51 @@ void board_ehci_initialize(void)
 	(void) RCC->MP_AHB6ENSETR;
 	RCC->MP_AHB6LPENSETR = RCC_MC_AHB6LPENSETR_USBHLPEN;
 	(void) RCC->MP_AHB6LPENSETR;
+	if (0)
+	{
+		/* SYSCFG clock enable */
+		RCC->MP_APB3ENSETR = RCC_MC_APB3ENSETR_SYSCFGEN;
+		(void) RCC->MP_APB3ENSETR;
+		/*
+		 * Interconnect update : select master using the port 1.
+		 * MCU interconnect (USBH) = AXI_M1, AXI_M2.
+		 */
+		SYSCFG->ICNR |= SYSCFG_ICNR_AXI_M1;
+		(void) SYSCFG->ICNR;
+		SYSCFG->ICNR |= SYSCFG_ICNR_AXI_M2;
+		(void) SYSCFG->ICNR;
+	}
+	// https://github.com/pdoane/osdev/blob/master/usb/ehci.c
 
 	// USBH_EHCI_HCICAPLENGTH == USB1_EHCI->HCCAPBASE
 	// USBH_EHCI_HCSPARAMS == USB1_EHCI->HCSPARAMS
 	// USBH_EHCI_HCCPARAMS == USB1_EHCI->HCCPARAMS
 
 	PRINTF("board_ehci_initialize: HCCAPBASE=%08lX\n", (unsigned long) USB1_EHCI->HCCAPBASE);
+	PRINTF("board_ehci_initialize: HCSPARAMS=%08lX\n", (unsigned long) USB1_EHCI->HCSPARAMS);
+	PRINTF("board_ehci_initialize: HCCPARAMS=%08lX\n", (unsigned long) USB1_EHCI->HCCPARAMS);
+    // Check extended capabilities
+    uint_fast32_t eecp = (USB1_EHCI->HCCPARAMS & HCCPARAMS_EECP_MASK) >> HCCPARAMS_EECP_SHIFT;
+    if (eecp >= 0x40)
+    {
+    	PRINTF("board_ehci_initialize: eecp=%08lX\n", (unsigned long) eecp);
+       // Disable BIOS legacy support
+//        uint legsup = PciRead32(id, eecp + USBLEGSUP);
+//
+//        if (legsup & USBLEGSUP_HC_BIOS)
+//        {
+//            PciWrite32(id, eecp + USBLEGSUP, legsup | USBLEGSUP_HC_OS);
+//            for (;;)
+//            {
+//                legsup = PciRead32(id, eecp + USBLEGSUP);
+//                if (~legsup & USBLEGSUP_HC_BIOS && legsup & USBLEGSUP_HC_OS)
+//                {
+//                    break;
+//                }
+//            }
+//        }
+    }
+
 
 //	USBH_EHCI_IRQn
 
