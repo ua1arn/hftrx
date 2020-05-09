@@ -24,7 +24,7 @@
 #if WITHUSEUSBFLASH
 
 #include "sdcard.h"
-#include "fatfs/ff.h"
+//#include "src/fatfs/ff.h"
 #define USB_DEFAULT_BLOCK_SIZE 512
 
 static
