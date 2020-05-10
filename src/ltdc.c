@@ -95,7 +95,11 @@
 		VSYNCNEG = 1,			/* Negative polarity required for VSYNC signal */
 		HSYNCNEG = 1,			/* Negative polarity required for HSYNC signal */
 		DENEG = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
+#if WITHLCDDEMODE
 		BOARD_DEMODE = 1		/* 0: static signal, 1: DE controlled */
+#else /* WITHLCDSYNCMODE */
+		BOARD_DEMODE = 0		/* 0: static signal, 1: DE controlled */
+#endif /* WITHLCDSYNCMODE */
 	};
 	#define LTDC_DOTCLK	30000000uL	// частота пикселей при работе с интерфейсом RGB
 
