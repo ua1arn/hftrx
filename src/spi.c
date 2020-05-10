@@ -693,12 +693,15 @@ void spidf_uninitialize(void)
 {
 }
 
+
+#define SPIMODE_AT26DF081A	SPIC_MODE3
+
 // Connrect I/O pins
-static void spidf_select(uint_fast8_t mode)
+static void spidf_select(void)
 {
 #if WIHSPIDFOVERSPI
 	spitarget_t target = targetdataflash;	/* addressing to chip */
-	spi_select(target, mode);
+	spi_select(target, SPIMODE_AT26DF081A);
 #else /* WIHSPIDFOVERSPI */
 	SPIDF_SELECT();
 #endif /* WIHSPIDFOVERSPI */
@@ -783,7 +786,7 @@ static void spidf_iostart(
 	)
 {
 	ASSERT(readnb == SPDFIO_1WIRE);
-	spidf_select(SPIMODE_AT26DF081A);	/* start sending data to target chip */
+	spidf_select();	/* start sending data to target chip */
 	spidf_progval8_p1(cmd);		/* The Read SFDP instruction code is 0x5A */
 
 	if (hasaddress)
@@ -793,7 +796,7 @@ static void spidf_iostart(
 		spidf_progval8_p2(address >> 0);
 	}
 	while (ndummy --)
-		spidf_progval8_p2( 0x00);	// dummy byte
+		spidf_progval8_p2(0x00);	// dummy byte
 
 	spidf_complete();	/* done sending data to target chip */
 }
@@ -1433,7 +1436,6 @@ int prepareDATAFLASH(void)
 		spidf_iostart(SPDIFIO_WRITE, 0x01, SPDFIO_1WIRE, 0, 1, 0, 0);	/* Write Status Register */
 		spidf_write(& v, 1);
 		spidf_unselect();	/* done sending data to target chip */
-		TP();
 	}
 
 	return timed_dataflash_read_status();

@@ -110,7 +110,7 @@
 
 	// --- вариации прошивки, специфические для разных частот
 
-	#define CTLREGSTYLE_NOCTLREG	1
+	#define CTLREGMODE_NOCTLREG	1
 
 	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея
 	#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываемый на дисплее)

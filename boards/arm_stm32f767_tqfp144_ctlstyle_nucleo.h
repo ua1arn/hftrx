@@ -160,7 +160,7 @@
 
 	// --- вариации прошивки, специфические для разных плат
 
-	#define CTLREGSTYLE_NOCTLREG	1
+	#define CTLREGMODE_NOCTLREG	1
 
 	//#define WITHPOWERTRIM		1	// Имеется управление мощностью
 	#define WITHPOWERTRIMMIN	5	// Нижний предел регулировки (показываемый на дисплее)

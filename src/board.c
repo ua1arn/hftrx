@@ -4658,7 +4658,7 @@ prog_ctrlreg(uint_fast8_t plane)
 
 
 
-#elif CTLREGSTYLE_NOCTLREG
+#elif CTLREGMODE_NOCTLREG
 
 	#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 

@@ -55,7 +55,7 @@
 	#define WITHAGCMODENONE		1	/* Режимами АРУ не управляем */
 	#define WITHNOATTNOPREAMP		1	// Без УВЧ и без аттенюатора
 	#define BANDSELSTYLERE_NOTHING	1
-	#define CTLREGSTYLE_NOCTLREG	1		/* управляющий регистр отсутствует */
+	#define CTLREGMODE_NOCTLREG	1		/* управляющий регистр отсутствует */
 	#define	BOARD_AGCCODE_SLOW		0x00
 	#define	BOARD_AGCCODE_FAST		0x01
 

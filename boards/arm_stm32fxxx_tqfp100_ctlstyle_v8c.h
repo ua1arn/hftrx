@@ -158,7 +158,7 @@
 	// --- вариации прошивки, специфические для разных плат
 
 
-	#define CTLREGSTYLE_NOCTLREG	1		/* управляющий регистр на SPI отсутствует */
+	#define CTLREGMODE_NOCTLREG	1		/* управляющий регистр на SPI отсутствует */
 	#define WITHAGCMODENONE		1	/* Режимами АРУ не управляем */
 	#define WITHPREAMPATT2_6DB		1	// Управление УВЧ и двухкаскадным аттенюатором с затуханиями 0 - 6 - 12 - 18 dB */
 	#define BOARD_AGCCODE_OFF 0x01

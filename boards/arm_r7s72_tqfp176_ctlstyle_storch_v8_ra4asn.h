@@ -195,7 +195,7 @@
 #if WITHISBOOTLOADER
 
 
-	//#define CTLREGSTYLE_NOCTLREG 1
+	//#define CTLREGMODE_NOCTLREG 1
 	/* коды входов коммутатора источников сигнала для УНЧ приёмника */
 	#define BOARD_DETECTOR_SSB 	0		// Заглушка
 

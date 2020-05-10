@@ -23,7 +23,7 @@
 
 	#define	FONTSTYLE_ITALIC	1	// Использовать альтернативный шрифт
 
-	#define CTLREGSTYLE_NOCTLREG	1		/* управляющий регистр на SPI отсутствует */
+	#define CTLREGMODE_NOCTLREG	1		/* управляющий регистр на SPI отсутствует */
 
 	#define WITHAGCMODENONE		1	/* Режимами АРУ не управляем */
 	#define	BOARD_AGCCODE_ON		0x00

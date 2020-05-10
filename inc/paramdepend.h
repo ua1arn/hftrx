@@ -2119,7 +2119,7 @@ extern "C" {
 	#define	BOARD_FILTERCODE_2	0
 	#define	BOARD_FILTERCODE_3	0
 
-#elif CTLREGSTYLE_NOCTLREG			// Отсутствующий регистр управления
+#elif CTLREGMODE_NOCTLREG			// Отсутствующий регистр управления
 
 	/* коды входов коммутатора источников сигнала для УНЧ приёмника */
 	#define BOARD_DETECTOR_MUTE 0

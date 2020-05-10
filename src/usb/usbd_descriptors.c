@@ -3991,14 +3991,16 @@ static unsigned fill_DFU_function(uint_fast8_t fill, uint8_t * p, unsigned maxsi
 	n += DFU_FunctionalDescriptorReadWrite(fill, p + n, maxsize - n, usbd_dfu_get_xfer_size(ialt));	/* DFU Functional Descriptor */
 	ialt += 1;
 
+#if BOOTLOADER_SELFSIZE
 	n += DFU_InterfaceDescriptor(fill, p + n, maxsize - n, INTERFACE_DFU_CONTROL, ialt, STRING_ID_DFU_1);	/* DFU Interface Descriptor */
 	n += DFU_FunctionalDescriptorReadWrite(fill, p + n, maxsize - n, usbd_dfu_get_xfer_size(ialt));	/* DFU Functional Descriptor */
 	ialt += 1;
-#if WITHISBOOTLOADER
+#endif /* BOOTLOADER_SELFSIZE */
+#if WITHISBOOTLOADER && defined (BOOTLOADER_RAMAREA) && BOOTLOADER_RAMSIZE
 	n += DFU_InterfaceDescriptor(fill, p + n, maxsize - n, INTERFACE_DFU_CONTROL, ialt, STRING_ID_DFU_2);	/* DFU Interface Descriptor */
 	n += DFU_FunctionalDescriptorWriteOnly(fill, p + n, maxsize - n, usbd_dfu_get_xfer_size(ialt));	/* DFU Functional Descriptor */
 	ialt += 1;
-#endif /* WITHISBOOTLOADER */
+#endif /* WITHISBOOTLOADER && defined (BOOTLOADER_RAMAREA) && BOOTLOADER_RAMSIZE */
 
 	return n;
 }
