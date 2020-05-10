@@ -1263,7 +1263,7 @@ uint_fast8_t dataflash_read_status(void)
 
 int timed_dataflash_read_status(void)
 {
-	unsigned long w = 40000;
+	unsigned long w = 4000000;
 	while (w --)
 	{
 		if ((dataflash_read_status() & 0x01) == 0)
