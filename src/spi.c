@@ -1335,6 +1335,11 @@ static void modeDATAFLASH(uint_fast16_t dw, const char * title, int buswID)
 	}
 }
 
+unsigned char mf_id;	// Manufacturer ID
+unsigned char mf_devid1;	// device ID (part 1)
+unsigned char mf_devid2;	// device ID (part 2)
+unsigned char mf_dlen;	// Extended Device Information String Length
+
 int testchipDATAFLASH(void)
 {
 	/* Ожидание бита ~RDY в слове состояния. Для FRAM не имеет смысла.
@@ -1346,12 +1351,8 @@ int testchipDATAFLASH(void)
 		return 1;
 	}
 
-#if WITHDEBUG
+#if 1//WITHDEBUG
 	{
-		unsigned char mf_id;	// Manufacturer ID
-		unsigned char mf_devid1;	// device ID (part 1)
-		unsigned char mf_devid2;	// device ID (part 2)
-		unsigned char mf_dlen;	// Extended Device Information String Length
 
 		uint8_t mfa [4];
 
@@ -1365,7 +1366,7 @@ int testchipDATAFLASH(void)
 		mf_devid2 = mfa [02];
 		mf_dlen = mfa [3];
 
-		PRINTF(PSTR("spidf: ID = 0x%02X devId = 0x%02X%02X, mf_dlen=0x%02X\n"), mf_id, mf_devid1, mf_devid2, mf_dlen);
+		PRINTF(PSTR("spidf: ID=0x%02X devId=0x%02X%02X, mf_dlen=0x%02X\n"), mf_id, mf_devid1, mf_devid2, mf_dlen);
 	}
 #endif /* WITHDEBUG */
 

@@ -9,6 +9,7 @@
 #include "board.h"
 #include "audio.h"
 #include "formats.h"
+#include "spi.h"
 
 #if WITHUSBHW
 
@@ -4731,12 +4732,25 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 #if WITHUSBDFU
 #if BOOTLOADER_APPSIZE
 	{
+		extern unsigned char mf_id;	// Manufacturer ID
+		extern unsigned char mf_devid1;	// device ID (part 1)
+		extern unsigned char mf_devid2;	// device ID (part 2)
+		extern unsigned char mf_dlen;	// Extended Device Information String Length
+
+		spidf_initialize();
+		int status = testchipDATAFLASH();
+		char flashname [32];
+		local_snprintf_P(flashname, ARRAY_SIZE(flashname),
+				PSTR("SPIDF:%02X:%02X%02X:%02X"),
+				mf_id, mf_devid1, mf_devid2, mf_dlen
+				);
+
 		static const char strFlashDesc_4 [] = "@SPI Flash APPLICATION: %s/0x%08lx/%02u*%03uKg";	// 128 k for bootloader
 		unsigned partlen;
 		const uint_fast8_t id = STRING_ID_DFU_0;
 		char b [128];
 		local_snprintf_P(b, ARRAY_SIZE(b), strFlashDesc_4,
-			USBD_DFU_FLASHNAME,
+			status ? USBD_DFU_FLASHNAME : flashname,
 			(unsigned long) BOOTLOADER_APPBASE,
 			(unsigned) (BOOTLOADER_APPSIZE / BOOTLOADER_PAGESIZE),
 			(unsigned) (BOOTLOADER_PAGESIZE / 1024)

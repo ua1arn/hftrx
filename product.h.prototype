@@ -191,6 +191,10 @@
 	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v4.h"	// Rmainunit_v5fm.pcb (USBx2, wide display interface)
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32f4xx_tqfp144_cpustyle_storch_v4.h"	// Rmainunit_v5fm.pcb (USBx2, wide display interface)
+#elif CPUSTYLE_STM32F && CTLSTYLE_STORCH_V5 && 1	// SD-CARD. 2xUSB, DUAL WATCH, STM32F446ZET6, TLV320AIC23B и FPGA EP4CE22E22I7N
+	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v5_progdfu.h"	// Rmainunit_v5l.pcb (mini USBx2, wide display interface) - mini RX
+	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
+	#include "boards/arm_stm32f4xx_tqfp144_cpustyle_storch_v5_progdfu.h"	// Rmainunit_v5l.pcb (mini USBx2, wide display interface) - mini RX
 #elif CPUSTYLE_STM32F && CTLSTYLE_STORCH_V5	// SD-CARD. 2xUSB, DUAL WATCH, STM32F446ZET6, TLV320AIC23B и FPGA EP4CE22E22I7N
 	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v5.h"	// Rmainunit_v5l.pcb (mini USBx2, wide display interface) - mini RX
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v5_xwws.h"	// Rmainunit_v5l.pcb (mini USBx2, wide display interface) - mini RX
@@ -213,8 +217,8 @@
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32h7xx_tqfp176_cpustyle_storch_v7.h"	// Rmainunit_v5l.pcb (mini USBx2, wide display interface) - mini RX
 #elif CPUSTYLE_R7S721 && CTLSTYLE_STORCH_V8	// rmainunit_v5km2.pcb R7S721020VCFP, TFT 4.3" or 7", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N, AD9246BCPZ-125
-	//#include "boards/arm_r7s72_tqfp176_ctlstyle_storch_v8.h"	// rmainunit_v5km2.pcb R7S721020VCFP, TFT 4.3", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
-	#include "boards/arm_r7s72_tqfp176_ctlstyle_storch_v8_ra4asn.h"	// rmainunit_v5km2.pcb R7S721020VCFP, TFT 7", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
+	#include "boards/arm_r7s72_tqfp176_ctlstyle_storch_v8.h"	// rmainunit_v5km2.pcb R7S721020VCFP, TFT 4.3", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
+	//#include "boards/arm_r7s72_tqfp176_ctlstyle_storch_v8_ra4asn.h"	// rmainunit_v5km2.pcb R7S721020VCFP, TFT 7", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 	//#include "boards/arm_r7s72_tqfp176_ctlstyle_storch_v8_us4ijr.h"	// us4ijr@gmail.com rmainunit_v5km2.pcb R7S721020VCFP, TFT 4.3", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 	//#include "boards/arm_r7s72_tqfp176_ctlstyle_storch_v8_r4dz.h"	// rmainunit_v5km2.pcb R7S721020VCFP, TFT 4.3", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 	//#include "boards/arm_r7s72_tqfp176_ctlstyle_storch_v8_ua3reo.h"	// rmainunit_v5km2.pcb R7S721020VCFP, TFT 7", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
@@ -510,7 +514,7 @@
 #else
 	#define LCDMODE_RDX0154		1
 	#define BANDSELSTYLERE_NOTHING	1
-	#define	CTLREGSTYLE_NOCTLREG	1
+	#define	CTLREGMODE_NOCTLREG	1
 	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */
 	#error No any suitable CPUSTYLE_xxx and CTLSTYLE_xxx combination found
 #endif
