@@ -381,7 +381,7 @@ static USBD_StatusTypeDef MEM_If_GetStatus_HS(uint32_t Addr, uint8_t Cmd, uint8_
 	}
 
 	const unsigned FLASH_PROGRAM_TIME = (st & 0x01) ? 5 : 0;
-	const unsigned FLASH_ERASE_TIME = (st & 0x01) ? 25 : 0;
+	const unsigned FLASH_ERASE_TIME = (st & 0x01) ? 5 : 0;
 	switch(Cmd)
 	{
 	case DFU_MEDIA_PROGRAM:
