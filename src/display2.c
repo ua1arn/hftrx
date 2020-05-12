@@ -5817,10 +5817,10 @@ static FLOAT_t filter_spectrum(
 	enum { BUFDIM_X = DIM_X, BUFDIM_Y = DIM_Y };
 	//enum { BUFDIM_X = ALLDX, BUFDIM_Y = ALLDY };
 
-static uint_fast32_t wffreq;			// частота центра спектра, для которой в последной раз отрисовали.
+static uint_fast64_t wffreqpix;			// глобальный пиксель по x центра спектра, для которой в последной раз отрисовали.
 static uint_fast8_t wfzoompow2;				// масштаб, с которым выводили спектр
-static int_fast16_t wfhorshift;			// сдвиг по шоризонтали (отрицаельный - влево) для водопада.
-static uint_fast16_t wfscroll;			// сдвиг по вертикали (в раьочем направлении) для водопада.
+static int_fast16_t wfhscroll;			// сдвиг по шоризонтали (отрицаельный - влево) для водопада.
+static uint_fast16_t wfvscroll;			// сдвиг по вертикали (в раьочем направлении) для водопада.
 static uint_fast8_t wfclear;			// стирание всей областии отображение водопада.
 
 // Код взят из проекта Malamute
@@ -5895,6 +5895,20 @@ deltafreq2x(
 	return dp;
 }
 
+// получить абсолюьный пиксель горизонтальной позиции для заданой частоты
+static
+uint_fast64_t
+deltafreq2x_abspix(
+	int_fast32_t f,	// частота в герцах
+	int_fast32_t bw,	// полоса обзора в герцах
+	uint_fast16_t width	// ширина экрана
+	)
+{
+	const uint_fast64_t pc = ((int_fast64_t) f * width) / bw;	// абсолютный пиксель соответствующий частоте
+
+	return pc;
+}
+
 // получить горизонтальную позицию для заданного отклонения в герцах
 // Использовать для "динамической" разметки дисплея - риски, кратные 10 кГц.
 // Возврат UINT16_MAX при невозможности отобразить запрошенную частоту в указанном окне
@@ -5908,10 +5922,10 @@ deltafreq2x_abs(
 	)
 {
 	const int_fast32_t f0 = fc - bw / 2;	// частота левого края окна
-	const int_fast32_t p0 = ((int_fast64_t) f0 * width) / bw;	// абсолютный пиксель левого края окна
+	const uint_fast64_t p0 = deltafreq2x_abspix(f0, bw, width);	// абсолютный пиксель левого края окна
 
 	const int_fast32_t fm = fc + delta;	// частота маркера
-	const int_fast32_t pm = ((int_fast64_t) fm * width) / bw;	// абсолютный пиксель маркера
+	const uint_fast64_t pm = deltafreq2x_abspix(fm, bw, width);	// абсолютный пиксель маркера
 
 	if (pm < p0)
 		return UINT16_MAX;	// Левее девого края окна
@@ -6305,29 +6319,28 @@ static void display2_latchwaterfall(
 
 	// Сдвиг изображения при необходимости (перестройка/переклбчение диапащонов или масштаба).
 	const uint_fast8_t pathi = 0;	// RX A
-	const uint_fast32_t f0 = hamradio_get_freq_pathi(pathi);	/* frequency at middle of spectrum */
 	const int_fast32_t bw = display_zoomedbw();
-	const uint_fast16_t xm = deltafreq2x(f0, 0, bw, ALLDX);
+	const uint_fast64_t f0pix = deltafreq2x_abspix(hamradio_get_freq_pathi(pathi), bw, ALLDX);	/* pixel of frequency at middle of spectrum */
 
 	int_fast16_t hscroll = 0;
 	uint_fast8_t hclear = 0;
 
-	if (wffreq == 0 || wfzoompow2 != glob_zoomxpow2)
+	if (wffreqpix == 0 || wfzoompow2 != glob_zoomxpow2)
 	{
 		wfsetupnew(); // стираем целиком старое изображение водопада. в строке 0 - новое
 		hclear = 1;
 	}
-	else if (wffreq == f0)
+	else if (wffreqpix == f0pix)
 	{
-		// не менялась частота
+		// не менялась частота (в видимых пикселях)
 	}
-	else if (wffreq > f0 && glob_wfshiftenable)
+	else if (wffreqpix > f0pix && glob_wfshiftenable)
 	{
 		// частота уменьшилась - надо сдвигать картинку вправо
-		const uint_fast32_t delta = wffreq - f0;
-		if (delta < bw / 2)
+		const uint_fast64_t deltapix = wffreqpix - f0pix;
+		if (deltapix < ALLDX / 2)
 		{
-			hscroll = xm - deltafreq2x(f0, 0 - delta, bw, ALLDX);
+			hscroll = (int_fast16_t) deltapix;
 			// нужно сохрянять часть старого изображения
 			// в строке wfrow - новое
 			wflshiftright(hscroll);
@@ -6338,13 +6351,13 @@ static void display2_latchwaterfall(
 			hclear = 1;
 		}
 	}
-	else if (wffreq < f0 && glob_wfshiftenable)
+	else if (wffreqpix < f0pix && glob_wfshiftenable)
 	{
 		// частота увеличилась - надо сдвигать картинку влево
-		const uint_fast32_t delta = f0 - wffreq;
-		if (delta < bw / 2)
+		const uint_fast64_t deltapix = f0pix - wffreqpix;
+		if (deltapix < ALLDX / 2)
 		{
-			hscroll = xm - deltafreq2x(f0, delta, bw, ALLDX);
+			hscroll = - (int_fast16_t) deltapix;
 			// нужно сохрянять часть старого изображения
 			// в строке wfrow - новое
 			wflshiftleft(- hscroll);
@@ -6355,10 +6368,10 @@ static void display2_latchwaterfall(
 			hclear = 1;
 		}
 	}
-	wffreq = f0;
+	wffreqpix = f0pix;
 	wfzoompow2 = glob_zoomxpow2;
-	wfhorshift += hscroll;
-	wfscroll = wfscroll < WFDY ? wfscroll + 1 : WFDY;
+	wfhscroll += hscroll;
+	wfvscroll = wfvscroll < WFDY ? wfvscroll + 1 : WFDY;
 	wfclear = hclear;
 }
 
@@ -6376,19 +6389,19 @@ static void display2_waterfall(
 		const int_fast32_t bw = display_zoomedbw();
 		uint_fast16_t x, y;
 		const uint_fast16_t xm = deltafreq2x(f0, 0, bw, ALLDX);
-		int_fast16_t hscroll = wfclear ? ALLDX : wfhorshift;
+		int_fast16_t hscroll = wfclear ? ALLDX : wfhscroll;
 		(void) pctx;
 
 	#if 1
 		// следы спектра ("водопад")
 		// сдвигаем вниз, отрисовываем только верхнюю строку
-		display_scroll_down(GRID2X(x0), GRID2Y(y0) + WFY0, ALLDX, WFDY, wfscroll, hscroll);
+		display_scroll_down(GRID2X(x0), GRID2Y(y0) + WFY0, ALLDX, WFDY, wfvscroll, hscroll);
 		x = 0;
 		display_wfputrow(GRID2X(x0) + x, GRID2Y(y0) + 0 + WFY0, & wfarray [wfrow] [0]);	// display_plot inside for one row
 	#elif 1
 		// следы спектра ("фонтан")
 		// сдвигаем вверх, отрисовываем только нижнюю строку
-		display_scroll_up(GRID2X(x0), GRID2Y(y0) + WFY0, ALLDX, WFDY, wfscroll, hscroll);
+		display_scroll_up(GRID2X(x0), GRID2Y(y0) + WFY0, ALLDX, WFDY, wfvscroll, hscroll);
 		x = 0;
 		display_wfputrow(GRID2X(x0) + x, GRID2Y(y0) + WFDY - 1 + WFY0, & wfarray [wfrow] [0]);	// display_plot inside for one row
 	#else
@@ -6402,8 +6415,8 @@ static void display2_waterfall(
 		}
 	#endif
 		// Запрос на сдвиг исполнен
-		wfhorshift = 0;
-		wfscroll = 0;
+		wfhscroll = 0;
+		wfvscroll = 0;
 		wfclear = 0;
 
 #elif HHWMG
