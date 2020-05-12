@@ -14346,7 +14346,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #if WITHREVERB
 	{
-		QLABEL("REVERB  "), 7, 0, RJ_ON,	ISTEP1,
+		QLABEL2("REVERB  ", "Reverberator"), 7, 0, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 					/* ревербератор */
 		offsetof(struct nvmap, greverb),
@@ -14355,7 +14355,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		QLABEL("RVB TIME"), 7, 0, 0,	ISTEP1,
+		QLABEL2("RVB TIME", "Reverb Delay"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		0, WITHREVERBDELAYMAX, 					/* ревербератор - задержка */
 		offsetof(struct nvmap, greverbdelay),
@@ -14364,7 +14364,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		QLABEL("RVB LOSS"), 7, 0, 0,	ISTEP3,
+		QLABEL2("RVB LOSS", "Reverb Loss"), 7, 0, 0,	ISTEP3,
 		ITEM_VALUE,
 		ISTEP3, 40 * ISTEP3, 					/* ревербератор - ослабление на возврате */
 		offsetof(struct nvmap, greverbloss),
