@@ -670,7 +670,7 @@ void arm_hardware_mdma_initialize(void)
 #endif /* WITHMDMAHW */
 
 #if LCDMODE_COLORED
-static COLORMAIN_T bgcolor;
+static COLORMAIN_T bgcolor = COLORMAIN_BLACK;
 #endif /* LCDMODE_COLORED */
 
 void 
