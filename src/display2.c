@@ -1166,7 +1166,7 @@ static void display_mode3_b(
 	)
 {
 	const char FLASHMEM * const labels [1] = { hamradio_get_mode_b_value_P(), };
-	display2_text_P(x, y, labels, colorsfg_1freq, colorsbg_1freq, 0);
+	display2_text_P(x, y, labels, colorsfg_1freqB, colorsbg_1freqB, 0);
 }
 
 // dd.dV - 5 places
