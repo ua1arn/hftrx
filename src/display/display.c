@@ -996,44 +996,79 @@ void display2_xltrgb24(COLOR24_T * xltable)
 	// PALETTESIZE == 96
 	int a = 0;
 	// a = 0
-	for (i = 0; i < 12; ++ i)
+	for (i = 0; i < 16; ++ i)
 	{
-		fillpair_xltrgb24(xltable, a + i, COLOR24(0, 0, (int) (powf((float) 0.125 * (i + 14), 4))));	// проверить результат перед попыткой применить целочисленные вычисления!
+		fillpair_xltrgb24(xltable, a + i, COLOR24(0, 0, scalecolor(i, 15, 255)));	// проверить результат перед попыткой применить целочисленные вычисления!
 	}
 	a += i;
-	// a = 12
-	for (i = 0; i < 14; ++ i)
+	// a = 16
+	for (i = 0; i < 16; ++ i)
 	{
-		fillpair_xltrgb24(xltable, a + i, COLOR24(0, scalecolor(i, 13, 255), 255));
+		fillpair_xltrgb24(xltable, a + i, COLOR24(0, scalecolor(i, 15, 255), 255));
 	}
 	a += i;
-	// a = 26
-	for (i = 0; i < 14; ++ i)
+	// a = 32
+	for (i = 0; i < 16; ++ i)
 	{
-		fillpair_xltrgb24(xltable, a + i, COLOR24(0, 255, 255 - scalecolor(i, 13, 255)));
+		fillpair_xltrgb24(xltable, a + i, COLOR24(0, 255, 255 - scalecolor(i, 15, 255)));
 	}
 	a += i;
-	// a = 40
-	for (i = 0; i < 14; ++ i)
+	// a = 48
+	for (i = 0; i < 16; ++ i)
 	{
-		fillpair_xltrgb24(xltable, a + i, COLOR24(scalecolor(i, 13, 255), 255, 0));
+		fillpair_xltrgb24(xltable, a + i, COLOR24(scalecolor(i, 15, 255), 255, 0));
 	}
 	a += i;
-	// a = 54
-	for (i = 0; i < 28; ++ i)
+	// a = 64
+	for (i = 0; i < 16; ++ i)
 	{
-		fillpair_xltrgb24(xltable, a + i, COLOR24(255, 255 - scalecolor(i, 27, 255), 0));
+		fillpair_xltrgb24(xltable, a + i, COLOR24(255, 255 - scalecolor(i, 15, 255), 0));
 	}
 	a += i;
-	// a = 82
-	for (i = 0; i < 14; ++ i)
+	// a = 80
+	for (i = 0; i < 16; ++ i)
 	{
-		fillpair_xltrgb24(xltable, a + i, COLOR24(255, 0, scalecolor(i, 13, 255)));
+		fillpair_xltrgb24(xltable, a + i, COLOR24(255, 0, scalecolor(i, 15, 255)));
 	}
 	a += i;
 	// a = 96
 	ASSERT(a == COLORPIP_BASE);
 
+#if 0
+	{
+		/* тестовое заполнение палитры для проверки целостности сигналов к TFT
+		 * Используется совместно с test: вывод палитры на экран
+		 */
+		enum { TESTSIZE = 64 };
+		for (i = 0; i < 256; ++ i)
+		{
+			xltable [i] = COLOR24(0, 0, 0);
+		}
+
+	#if 0
+		/* RED */
+		for (i = 0; i < TESTSIZE; ++ i)
+		{
+			uint_fast8_t c = scalecolor(i, TESTSIZE - 1, 255);
+			fillpair_xltrgb24(xltable, i, COLOR24(1 * c, 0 * c, 0 * c));	// проверить результат перед попыткой применить целочисленные вычисления!
+		}
+	#elif 0
+		/* GREEN */
+		for (i = 0; i < TESTSIZE; ++ i)
+		{
+			uint_fast8_t c = scalecolor(i, TESTSIZE - 1, 255);
+			fillpair_xltrgb24(xltable, i, COLOR24(0 * c, 1 * c, 0 * c));	// проверить результат перед попыткой применить целочисленные вычисления!
+		}
+	#else
+		/* BLUE */
+		for (i = 0; i < TESTSIZE; ++ i)
+		{
+			uint_fast8_t c = scalecolor(i, TESTSIZE - 1, 255);
+			fillpair_xltrgb24(xltable, i, COLOR24(0 * c, 0 * c, 1 * c));	// проверить результат перед попыткой применить целочисленные вычисления!
+		}
+	#endif
+	}
+#endif
 	// Цвета используемые в дизайне
 
 
