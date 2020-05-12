@@ -3927,7 +3927,6 @@ static void updateboard_tuner(void)
 	//debug_printf_P(PSTR("tuner: CAP=%-3d, IND=%-3d, TYP=%d\n"), tunercap, tunerind, tunertype);
 	board_set_tuner_group();
 	board_update();		/* вывести забуферированные изменения в регистры */
-	//display2_redrawbarstimed(0, 0, NULL);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 }
 
 // ожидание требуемого времени после выдачи параметров на тюнер.
@@ -3958,7 +3957,9 @@ static uint_fast8_t tuneabort(void)
 {
 	uint_fast8_t kbch, kbready;
 
-	display2_redrawbarstimed(0, 0, NULL);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+	// todo: не работает на дисплеях с off screen composition.
+	// счетчик перебора сбрасывается в 0 - и до обновления экрана дело не доходит.
+	//display2_redrawbarstimed(0, 0, NULL);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 
 	processmessages(& kbch, & kbready, 0, NULL);
 	if (kbready != 0)
@@ -4059,6 +4060,7 @@ static uint_fast8_t findbestswr(const tus_t * v, uint_fast8_t n)
 	return best;
 }
 
+/* отсюда не возвращаемся пока нне настроится тюнер */
 static void auto_tune(void)
 {	
 	const uint_fast8_t tx = 1;
@@ -4084,9 +4086,6 @@ static void auto_tune(void)
 			goto aborted;
 		tunerind = statuses [tunertype].tunerind;
 		updateboard_tuner();
-	#if WITHINTEGRATEDDSP
-		audioproc_spool_user();		// решение проблем с прерыванием звука при стирании экрана
-	#endif /* WITHINTEGRATEDDSP */
 
 		// проверка - а может уже нашли подходяшее согласование?
 		////if (statuses [tunertype].swr <= TUS_SWR1p1)
@@ -4096,9 +4095,6 @@ static void auto_tune(void)
 			goto aborted;
 		tunercap = statuses [tunertype].tunercap;
 		updateboard_tuner();
-	#if WITHINTEGRATEDDSP
-		audioproc_spool_user();		// решение проблем с прерыванием звука при стирании экрана
-	#endif /* WITHINTEGRATEDDSP */
 
 		// проверка - а может уже нашли подходяшее согласование?
 		////if (statuses [tunertype].swr <= TUS_SWR1p1)
@@ -18005,7 +18001,7 @@ hamradio_main_step(void)
 			if (reqautotune != 0 && gtx != 0)
 			{
 				/* когда по запоосу на автонастройку наконец-то переключились на передачу */
-				auto_tune();
+				auto_tune();	/* отсюда не возвращаемся пока нне настроится тюнер */
 				reqautotune = 0;
 				updateboard(1, 0);
 			}
