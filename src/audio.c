@@ -129,6 +129,15 @@ static uint_fast8_t 	glob_mikeequal;	// Включение обработки с
 static uint_fast8_t		glob_codec1_gains [HARDWARE_CODEC1_NPROCPARAMS]; // = { -2, -1, -3, +6, +9 };	// параметры эквалайзера
 #endif /* defined(CODEC1_TYPE) */
 
+#if WITHREVERB
+	static uint_fast8_t glob_reverb;		/* ревербератор */
+	static uint_fast8_t glob_reverbdelay = 20;		/* ревербератор - задержка (ms) */
+	static uint_fast8_t glob_reverbloss = 18;		/* ревербератор - ослабление на возврате */
+	static FLOAT_t reverbLossDirect = 1;
+	static FLOAT_t reverbLossDelayed = 0;
+	static unsigned reverbDelay;	/* задержка ревербератора в сэмплах */
+#endif
+
 static uint_fast16_t 	glob_lineamp = WITHLINEINGAINMAX;
 static uint_fast16_t	glob_mik1level = WITHMIKEINGAINMAX;
 static uint_fast8_t 	glob_txaudio = BOARD_TXAUDIO_MIKE;	// при SSB/AM/FM передача с тестовых источников
@@ -2776,6 +2785,36 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 #endif /* WITHDSPEXTDDC && WITHDSPEXTFIR */
 }
 
+static void reverb_update(void)
+{
+#if WITHREVERB
+	reverbLossDelayed = db2ratio(- (int) glob_reverbloss);	/* ревербератор - ослабление на возврате */
+	reverbLossDirect = 1 - reverbLossDelayed;
+	reverbDelay = NSAITICKS(glob_reverbdelay);
+
+#endif /* WITHREVERB */
+}
+
+static FLOAT_t txmikereverb(FLOAT_t sample)
+{
+	enum { MAXDELAYSAMPLES = NSAITICKS(WITHREVERBDELAYMAX) };
+
+	static FLOAT_t delaybuf [MAXDELAYSAMPLES];
+	static unsigned pos;
+#if WITHREVERB
+	if (glob_reverb == 0)
+		return sample;
+
+	pos = pos == 0 ? MAXDELAYSAMPLES - 1 : pos - 1;
+	delaybuf [pos] = sample;
+	FLOAT_t oldsample = delaybuf [(pos + reverbDelay) % MAXDELAYSAMPLES];
+	sample = sample * reverbLossDirect + oldsample * reverbLossDelayed;
+	delaybuf [pos] = sample;
+	return sample;
+#else /* WITHREVERB */
+	return sample;
+#endif /* WITHREVERB */
+}
 // Установка параметров тракта передатчика
 static void audio_setup_mike(const uint_fast8_t spf)
 {
@@ -2798,6 +2837,7 @@ static void audio_setup_mike(const uint_fast8_t spf)
 	case DSPCTL_MODE_TX_SSB:
 	case DSPCTL_MODE_TX_AM:
 	case DSPCTL_MODE_TX_FREEDV:
+		reverb_update();
 		fir_design_bandpass_freq(dCoeff, iCoefNum, glob_aflowcuttx, glob_afhighcuttx);
 		fir_design_adjust_tx(dCoeff, dWindow, iCoefNum);	// Применение эквалайзера к микрофону
 		break;
@@ -3645,7 +3685,10 @@ static RAMFUNC FLOAT_t preparevi(
 			// дополнительно работает ограничитель.
 			// see glob_mik1level (0..100)
 			savemoni16stereo(vi0f, vi0f);
-			return injectsubtone(txmikeagc(vi0f * txlevelXXX / mikefenceIN), ctcss); //* TXINSCALE; // источник сигнала - микрофон
+			return injectsubtone(
+					txmikereverb(
+							txmikeagc(vi0f * txlevelXXX / mikefenceIN)
+							), ctcss); //* TXINSCALE; // источник сигнала - микрофон
 
 #if WITHUSBUACOUT
 		case BOARD_TXAUDIO_USB:
@@ -6492,9 +6535,15 @@ board_set_mikehclip(uint_fast8_t v)
 
 /* ревербератор */
 void
-board_set_reverb(uint_fast8_t greverb, uint_fast8_t greverbdelay, uint_fast8_t greverbloss)
+board_set_reverb(uint_fast8_t reverb, uint_fast8_t reverbdelay, uint_fast8_t reverbloss)
 {
-
+	if (glob_reverb != reverb || glob_reverbdelay != reverbdelay || glob_reverbloss != reverbloss)
+	{
+		glob_reverb = reverb;
+		glob_reverbdelay = reverbdelay;
+		glob_reverbloss = reverbloss;
+		board_flt1regchanged();
+	}
 }
 
 /* изменение тембра звука - на Samplerate/2 АЧХ падает на столько децибел  */

@@ -260,6 +260,7 @@
 
 	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
 	#define WITHUSEDUALWATCH	1	// Второй приемник
+	#define	WITHREVERB	1	// реербератор в обраьотке микрофонного сигнала
 	#define BOARD_FFTZOOM_POW2MAX 4	// Возможные масштабы FFT x1, x2, x4, x8, x16
 	#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
 

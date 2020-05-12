@@ -255,6 +255,7 @@
 	#define WITHUSEAUDIOREC		1	// Запись звука на SD CARD
 	//#define WITHUSEAUDIOREC2CH	1	// Запись звука на SD CARD в стерео
 	#define WITHUSEDUALWATCH	1	// Второй приемник
+	//#define WITHREVERB	1	// реербератор в обраьотке микрофонного сигнала
 	#define WITHRTS96 1		/* вместе с аудиосигналом передача квадратур по USB */
 	#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
 

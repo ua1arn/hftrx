@@ -269,6 +269,7 @@
 	#define BOARD_ENCODER2_DIVIDE 4
 
 	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
+	#define	WITHREVERB	1	// реербератор в обраьотке микрофонного сигнала
 	#define WITHUSEDUALWATCH	1	// Второй приемник
 	//#define BOARD_FFTZOOM_POW2MAX 1	// Возможные масштабы FFT x1, x2
 	//#define BOARD_FFTZOOM_POW2MAX 2	// Возможные масштабы FFT x1, x2, x4

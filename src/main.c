@@ -14357,7 +14357,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	{
 		QLABEL("RVB TIME"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
-		0, 100, 					/* ревербератор - задержка */
+		0, WITHREVERBDELAYMAX, 					/* ревербератор - задержка */
 		offsetof(struct nvmap, greverbdelay),
 		NULL,
 		& greverbdelay,
