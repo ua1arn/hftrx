@@ -5817,7 +5817,7 @@ static FLOAT_t filter_spectrum(
 	enum { BUFDIM_X = DIM_X, BUFDIM_Y = DIM_Y };
 	//enum { BUFDIM_X = ALLDX, BUFDIM_Y = ALLDY };
 
-static uint_fast64_t wffreqpix;			// глобальный пиксель по x центра спектра, для которой в последной раз отрисовали.
+static uint_fast32_t wffreqpix;			// глобальный пиксель по x центра спектра, для которой в последной раз отрисовали.
 static uint_fast8_t wfzoompow2;				// масштаб, с которым выводили спектр
 static int_fast16_t wfhscroll;			// сдвиг по шоризонтали (отрицаельный - влево) для водопада.
 static uint_fast16_t wfvscroll;			// сдвиг по вертикали (в раьочем направлении) для водопада.
@@ -5895,16 +5895,17 @@ deltafreq2x(
 	return dp;
 }
 
-// получить абсолюьный пиксель горизонтальной позиции для заданой частоты
+// Получить абсолюьный пиксель горизонтальной позиции для заданой частоты
+// Значения в пикселях меньше чем частота в герцах - тип шире, чем uint_fast32_t не требуется
 static
-uint_fast64_t
+uint_fast32_t
 deltafreq2x_abspix(
 	int_fast32_t f,	// частота в герцах
 	int_fast32_t bw,	// полоса обзора в герцах
 	uint_fast16_t width	// ширина экрана
 	)
 {
-	const uint_fast64_t pc = ((int_fast64_t) f * width) / bw;	// абсолютный пиксель соответствующий частоте
+	const uint_fast32_t pc = ((int_fast64_t) f * width) / bw;	// абсолютный пиксель соответствующий частоте
 
 	return pc;
 }
@@ -5922,10 +5923,10 @@ deltafreq2x_abs(
 	)
 {
 	const int_fast32_t f0 = fc - bw / 2;	// частота левого края окна
-	const uint_fast64_t p0 = deltafreq2x_abspix(f0, bw, width);	// абсолютный пиксель левого края окна
+	const uint_fast32_t p0 = deltafreq2x_abspix(f0, bw, width);	// абсолютный пиксель левого края окна
 
 	const int_fast32_t fm = fc + delta;	// частота маркера
-	const uint_fast64_t pm = deltafreq2x_abspix(fm, bw, width);	// абсолютный пиксель маркера
+	const uint_fast32_t pm = deltafreq2x_abspix(fm, bw, width);	// абсолютный пиксель маркера
 
 	if (pm < p0)
 		return UINT16_MAX;	// Левее девого края окна
@@ -6320,7 +6321,7 @@ static void display2_latchwaterfall(
 	// Сдвиг изображения при необходимости (перестройка/переклбчение диапащонов или масштаба).
 	const uint_fast8_t pathi = 0;	// RX A
 	const int_fast32_t bw = display_zoomedbw();
-	const uint_fast64_t f0pix = deltafreq2x_abspix(hamradio_get_freq_pathi(pathi), bw, ALLDX);	/* pixel of frequency at middle of spectrum */
+	const uint_fast32_t f0pix = deltafreq2x_abspix(hamradio_get_freq_pathi(pathi), bw, ALLDX);	/* pixel of frequency at middle of spectrum */
 
 	int_fast16_t hscroll = 0;
 	uint_fast8_t hclear = 0;
@@ -6337,7 +6338,7 @@ static void display2_latchwaterfall(
 	else if (wffreqpix > f0pix && glob_wfshiftenable)
 	{
 		// частота уменьшилась - надо сдвигать картинку вправо
-		const uint_fast64_t deltapix = wffreqpix - f0pix;
+		const uint_fast32_t deltapix = wffreqpix - f0pix;
 		if (deltapix < ALLDX / 2)
 		{
 			hscroll = (int_fast16_t) deltapix;
@@ -6354,7 +6355,7 @@ static void display2_latchwaterfall(
 	else if (wffreqpix < f0pix && glob_wfshiftenable)
 	{
 		// частота увеличилась - надо сдвигать картинку влево
-		const uint_fast64_t deltapix = f0pix - wffreqpix;
+		const uint_fast32_t deltapix = f0pix - wffreqpix;
 		if (deltapix < ALLDX / 2)
 		{
 			hscroll = - (int_fast16_t) deltapix;
