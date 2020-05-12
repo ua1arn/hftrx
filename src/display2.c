@@ -5924,15 +5924,15 @@ deltafreq2x_abs(
 {
 	const int_fast32_t fm = fc + delta;	// частота маркера
 	const uint_fast32_t pm = deltafreq2abspix(fm, bw, width);	// абсолютный пиксель маркера
-
-	if (pm <= width / 2)
-		return UINT16_MAX;	// частота левого края выходит за пределы представимого
-
 	const int_fast32_t f0 = fc - bw / 2;	// частота левого края окна
 	const uint_fast32_t p0 = deltafreq2abspix(f0, bw, width);	// абсолютный пиксель левого края окна
 
+	if (fm < 0)
+		return UINT16_MAX;	// частота маркера края выходит за пределы представимого
+	if (f0 < 0)
+		return UINT16_MAX;	// частота левого края выходит за пределы представимого
 	if (pm < p0)
-		return UINT16_MAX;	// Левее девого края окна
+		return UINT16_MAX;	// Левее левого края окна
 	if (pm - p0 >= width)
 		return UINT16_MAX;	// Правее правого края окна
 	return pm - p0;
