@@ -166,8 +166,6 @@ enum
 #define  HI_BYTE(w)  (((w) >> 8) & 0xFF)   /* Extract high-order byte from unsigned word */
 #define  LO_BYTE(w)  ((w) & 0xFF)          /* Extract low-order byte from unsigned word */
 
-#define  ARRAY_SIZE(a)  (sizeof(a)/sizeof(a[0]))
-
 // Descriptor IDs
 // Идентификаторы могут быть произвольными числами (кроме нуля)
 // Применена автоматическая нумерация терминалов в каждой цепочке.

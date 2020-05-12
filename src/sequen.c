@@ -293,10 +293,10 @@ static void keyqueueclear(void)
 
 /* Начальное значение параметров управления трактом - для исключения использования неинициализированных значений. */
 static const FLASHMEM 
-	portholder_t txgfva0 [TXGFI_SZIE] =	// усостояния выходов для разных режимов
+	portholder_t txgfva0 [TXGFI_SIZE] =	// усостояния выходов для разных режимов
 		{ TXGFV_RX, TXGFV_TRANS, TXGFV_TX_SSB, TXGFV_TX_SSB }; // для SSB
 static const FLASHMEM 
-	uint_fast8_t sdtnva0 [TXGFI_SZIE] =	// признаки включения самоконтроля для разных режимов
+	uint_fast8_t sdtnva0 [TXGFI_SIZE] =	// признаки включения самоконтроля для разных режимов
 		{ 0, 0, 0, 0 };	// для SSB
 
 static const portholder_t FLASHMEM * txgfp = txgfva0;	// параметры управления трактом

@@ -1368,8 +1368,8 @@ struct modetempl
 #endif /* ! defined (LO5_SIDE) */
 	uint_fast8_t defagcmode;		/* начальный режим АРУ */
 #if WITHTX
-	portholder_t txgfva [TXGFI_SZIE];	// состояния выходов для разных режимов
-	uint_fast8_t sdtnva [TXGFI_SZIE];	// признаки включения самоконтроля для разных режимов
+	portholder_t txgfva [TXGFI_SIZE];	// состояния выходов для разных режимов
+	uint_fast8_t sdtnva [TXGFI_SIZE];	// признаки включения самоконтроля для разных режимов
 #endif /* WITHTX */
 #if WITHIF4DSP
 	uint_fast8_t dspmode [2];		// Управление для DSP в режиме приёма и передачи
@@ -5840,15 +5840,15 @@ enc2menu_label_P(
 }
 
 /* получение значения редактируемого параметра */
-static 
-const char * 
+static void
 enc2menu_value(
-	uint_fast8_t item
+	uint_fast8_t item,
+	int WDTH,	// ширина поля для отображения (в GUI не используется)
+	char * buff,	// буфер для текста значения параметра
+	size_t sz		// размер буфера
 	)
 {
-	enum { WDTH = 9 };	// ширина поля для отображения
 	const FLASHMEM struct enc2menu * const mp = & enc2menus [item];
-	static char b [WDTH + 1];	// на этот буфер возвращается указатель
 	long int value;
 
 	//const nvramaddress_t nvram = mp->nvram;
@@ -5871,27 +5871,27 @@ enc2menu_value(
 	{
 #if WITHSUBTONES && WITHTX
 	case RJ_SUBTONE:
-		local_snprintf_P(b, ARRAY_SIZE(b), PSTR("%u.%1u"), gsubtones [value] / 10, gsubtones [value] % 10);
+		local_snprintf_P(buff, sz, PSTR("%u.%1u"), gsubtones [value] / 10, gsubtones [value] % 10);
 		break;
 #endif /* WITHSUBTONES && WITHTX */
 	case RJ_YES:
-		local_snprintf_P(b, ARRAY_SIZE(b), PSTR("%s"), value ? "YES" : "NO");
+		local_snprintf_P(buff, sz, PSTR("%s"), value ? "YES" : "NO");
 		break;
 	case RJ_CATTXDTR:
-		local_snprintf_P(b, ARRAY_SIZE(b), PSTR("%s"), value ? "DTR" : "RTS");
+		local_snprintf_P(buff, sz, PSTR("%s"), value ? "DTR" : "RTS");
 		break;
 	case RJ_ON:
-		local_snprintf_P(b, ARRAY_SIZE(b), PSTR("%s"), value ? "ON" : "OFF");
+		local_snprintf_P(buff, sz, PSTR("%s"), value ? "ON" : "OFF");
 		break;
 	case RJ_POW2:
-		local_snprintf_P(b, ARRAY_SIZE(b), PSTR("%u"), 1U << value);
+		local_snprintf_P(buff, sz, PSTR("%u"), 1U << value);
 		break;
 	case RJ_SIGNED:
-		local_snprintf_P(b, ARRAY_SIZE(b), PSTR("%+ld"), (signed long) value);
+		local_snprintf_P(buff, sz, PSTR("%+ld"), (signed long) value);
 		break;
 	case RJ_UNSIGNED:
 	default:
-		local_snprintf_P(b, ARRAY_SIZE(b), PSTR("%lu"), (unsigned long) value);
+		local_snprintf_P(buff, sz, PSTR("%lu"), (unsigned long) value);
 		break;
 	}
 #else
@@ -5899,31 +5899,30 @@ enc2menu_value(
 		{
 	#if WITHSUBTONES && WITHTX
 		case RJ_SUBTONE:
-			local_snprintf_P(b, ARRAY_SIZE(b), PSTR("%*u.%1u"), WDTH - 2, gsubtones [value] / 10, gsubtones [value] % 10);
+			local_snprintf_P(buff, sz, PSTR("%*u.%1u"), WDTH - 2, gsubtones [value] / 10, gsubtones [value] % 10);
 			break;
 	#endif /* WITHSUBTONES && WITHTX */
 		case RJ_YES:
-			local_snprintf_P(b, ARRAY_SIZE(b), PSTR("%*s"), WDTH, value ? "YES" : "NO");
+			local_snprintf_P(buff, sz, PSTR("%*s"), WDTH, value ? "YES" : "NO");
 			break;
 		case RJ_CATTXDTR:
-			local_snprintf_P(b, ARRAY_SIZE(b), PSTR("%*s"), WDTH, value ? "DTR" : "RTS");
+			local_snprintf_P(buff, sz, PSTR("%*s"), WDTH, value ? "DTR" : "RTS");
 			break;
 		case RJ_ON:
-			local_snprintf_P(b, ARRAY_SIZE(b), PSTR("%*s"), WDTH, value ? "ON" : "OFF");
+			local_snprintf_P(buff, sz, PSTR("%*s"), WDTH, value ? "ON" : "OFF");
 			break;
 		case RJ_POW2:
-			local_snprintf_P(b, ARRAY_SIZE(b), PSTR("%*u"), WDTH, 1U << value);
+			local_snprintf_P(buff, sz, PSTR("%*u"), WDTH, 1U << value);
 			break;
 		case RJ_SIGNED:
-			local_snprintf_P(b, ARRAY_SIZE(b), PSTR("%+*ld"), WDTH, (signed long) value);
+			local_snprintf_P(buff, sz, PSTR("%-+*ld"), WDTH, (signed long) value);
 			break;
 		case RJ_UNSIGNED:
 		default:
-			local_snprintf_P(b, ARRAY_SIZE(b), PSTR("%*lu"), WDTH, (unsigned long) value);
+			local_snprintf_P(buff, sz, PSTR("%*lu"), WDTH, (unsigned long) value);
 			break;
 		}
 #endif
-	return b;
 }
 
 enum
@@ -5968,12 +5967,11 @@ uif_encoder2_press(void)
 	enc2_menu.state = enc2state;
 	if (enc2state != ENC2STATE_INITIALIZE)
 	{
-		const char FLASHMEM * text = enc2menu_label_P(enc2pos);
+		const char FLASHMEM * const text = enc2menu_label_P(enc2pos);
 		safestrcpy(enc2_menu.param, ARRAY_SIZE(enc2_menu.param), text);
-		text = enc2menu_value(enc2pos);
-		safestrcpy(enc2_menu.val, ARRAY_SIZE(enc2_menu.val), text);
+		enc2menu_value(enc2pos, INT_MAX, enc2_menu.val, ARRAY_SIZE(enc2_menu.val));
 		enc2_menu.updated = 1;
-		gui_encoder2_menu(&enc2_menu);
+		gui_encoder2_menu(& enc2_menu);
 	}
 #endif /* ! WITHTOUCHGUI */
 }
@@ -6000,7 +5998,7 @@ uif_encoder2_hold(void)
 #else
 	enc2_menu.state = enc2state;
 	if (enc2state == ENC2STATE_INITIALIZE)
-		gui_encoder2_menu(&enc2_menu);
+		gui_encoder2_menu(& enc2_menu);
 #endif /* ! WITHTOUCHGUI */
 }
 
@@ -6094,17 +6092,20 @@ void display_fnvalue9(
 	)
 {
 #if WITHENCODER2 && ! WITHTOUCHGUI
-	const char * const text = enc2menu_value(enc2pos);
+	enum { WDTH = 9 };	// ширина поля для отображения
+	char b [WDTH + 1];	// тут формируется текст для отображения
+
+	enc2menu_value(enc2pos, WDTH, b, ARRAY_SIZE(b));
 	switch (enc2state)
 	{
 	case ENC2STATE_INITIALIZE:
 		display_1state_P(x, y, text_nul9_P);
 		break;
 	case ENC2STATE_SELECTITEM:
-		display_2states(x, y, 0, text, text);
+		display_2states(x, y, 0, b, b);
 		break;
 	case ENC2STATE_EDITITEM:
-		display_2states(x, y, 1, text, text);
+		display_2states(x, y, 1, b, b);
 		break;
 	}
 #endif /* WITHENCODER2 */
@@ -18063,12 +18064,11 @@ hamradio_main_step(void)
 						nrotate2 = 0;
 //
 #if WITHTOUCHGUI
-						const char FLASHMEM * text = enc2menu_label_P(enc2pos);
+						const char FLASHMEM * const text = enc2menu_label_P(enc2pos);
 						safestrcpy(enc2_menu.param, ARRAY_SIZE(enc2_menu.param), text);
-						text = enc2menu_value(enc2pos);
-						safestrcpy(enc2_menu.val, ARRAY_SIZE(enc2_menu.val), text);
+						enc2menu_value(enc2pos, INT_MAX, enc2_menu.val, ARRAY_SIZE(enc2_menu.val));
 						enc2_menu.updated = 1;
-						gui_encoder2_menu(&enc2_menu);
+						gui_encoder2_menu(& enc2_menu);
 						display2_mode_subset(0);
 				}
 			}

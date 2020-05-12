@@ -512,7 +512,7 @@ enum
 	TXGFI_TX_KEYUP,		// режим передачи без нажатого ключа
 	TXGFI_TX_KEYDOWN,	// режим передачи с нажатым ключём
 	//
-	TXGFI_SZIE	// количество элементов
+	TXGFI_SIZE	// количество элементов
 };
 
 // Подготовленные управляющие слова
@@ -521,8 +521,8 @@ enum
 //#define TXGFV_TX_SSB	TXPATH_BIT_ENABLE_SSB
 //#define TXGFV_TX_CW		TXPATH_BIT_ENABLE_CW
 
-//	portholder_t txgfva [TXGFI_SZIE];	// усостояния выходов для разных режимов
-//	uint_fast8_t sdtnva [TXGFI_SZIE];	// признаки включения самоконтроля для разных режимов
+//	portholder_t txgfva [TXGFI_SIZE];	// усостояния выходов для разных режимов
+//	uint_fast8_t sdtnva [TXGFI_SIZE];	// признаки включения самоконтроля для разных режимов
 
 //	{ TXGFV_RX, TXGFV_TRANS, TXGFV_TRANS, TXGFV_TX_CW }, // для CW
 //	{ 0, 0, 0, 1 },	// для CW
