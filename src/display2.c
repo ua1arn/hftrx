@@ -5932,8 +5932,8 @@ display_colorgrid_xor(
 	int_fast32_t bw		// span
 	)
 {
-	const COLORPIP_T color0 = COLORPIP_GRIDCOLOR;	// макркр на центре
-	const COLORPIP_T color = COLORPIP_GRIDCOLOR2;
+	const COLORPIP_T color0 = COLORPIP_GRIDCOLOR;	// макркер на центре
+	const COLORPIP_T color = COLORPIP_GRIDCOLOR2;	// макркеры частот сетки
 	//
 	const int_fast32_t go = f0 % (int) glob_gridstep;	// шаг сетки
 	const int_fast32_t gs = (int) glob_gridstep;	// шаг сетки

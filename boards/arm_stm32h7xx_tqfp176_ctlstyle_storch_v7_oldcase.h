@@ -172,7 +172,7 @@
 
 	//#define KEYB_FPANEL30_V3	1	/* KEYBOARD_USE_ADC6_V1, 30 кнопок на 5 линий - плата rfrontpanel_v3 + LCDMODE_S1D13781 & LCDMODE_LQ043T3DX02K в нормальном расположении */
 	//#define KEYBOARD_USE_ADC6_V1	1
-	#define WITHCOLORS_ATS52 1	// spectrum display in alternative colors
+	#define COLORSTYLE_ATS52 1	// spectrum display in alternative colors
 
 	//#define KEYB_FPANEL20_V0A_PLAYFILE 1
 	//#define WITHSENDWAV 1	/* трансивер может передавать записанные wav файлы */
