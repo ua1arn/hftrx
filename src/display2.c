@@ -35,12 +35,12 @@ static const COLORMAIN_T colorsfg_2rxtx [2] = { COLORMAIN_GREEN, COLORMAIN_RED, 
 static const COLORMAIN_T colorsbg_2rxtx [2] = { COLORMAIN_BLACK, COLORMAIN_BLACK, };
 
 // параметры отображения состояний из трех вариантов
-static const COLORMAIN_T colorsfg_4state [4] = { COLORMAIN_BLACK, COLORMAIN_WHITE, COLORMAIN_WHITE, COLORMAIN_WHITE, };
-static const COLORMAIN_T colorsbg_4state [4] = { DESIGNCOLORSTATE, DESIGNCOLORDARKSTATE, DESIGNCOLORDARKSTATE, DESIGNCOLORDARKSTATE, };
+static const COLORMAIN_T colorsfg_4state [4] = { COLORMAIN_BLACK, COLORMAIN_BLACK, COLORMAIN_BLACK, COLORMAIN_BLACK, };
+static const COLORMAIN_T colorsbg_4state [4] = { DESIGNCOLORDARKSTATE, DESIGNCOLORSTATE, DESIGNCOLORSTATE, DESIGNCOLORSTATE, };
 
 // параметры отображения состояний из двух вариантов
-static const COLORMAIN_T colorsfg_2state [2] = { COLORMAIN_BLACK, COLORMAIN_WHITE, };
-static const COLORMAIN_T colorsbg_2state [2] = { DESIGNCOLORSTATE, DESIGNCOLORDARKSTATE, };	// COLORMAIN_GREEN	COLOR_DARKGREEN
+static const COLORMAIN_T colorsfg_2state [2] = { COLORMAIN_BLACK, COLORMAIN_BLACK, };
+static const COLORMAIN_T colorsbg_2state [2] = { DESIGNCOLORDARKSTATE, DESIGNCOLORSTATE, };	// COLORMAIN_GREEN	COLOR_DARKGREEN
 
 // параметры отображения текстов без вариантов
 static const COLORMAIN_T colorsfg_1state [1] = { DESIGNCOLORSTATE, };
