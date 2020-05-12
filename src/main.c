@@ -3959,7 +3959,7 @@ static uint_fast8_t tuneabort(void)
 
 	// todo: не работает на дисплеях с off screen composition.
 	// счетчик перебора сбрасывается в 0 - и до обновления экрана дело не доходит.
-	//display2_redrawbarstimed(0, 0, NULL);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+	display2_redrawbarstimed(1, 0, NULL);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 
 	processmessages(& kbch, & kbready, 0, NULL);
 	if (kbready != 0)
@@ -17844,8 +17844,16 @@ static void hamradio_tune_initialize(void)
 }
 
 // работа в машине состояний тюнера
+// возврат STTE_OK для перехода на следующее состояние
+// возврат STTE_BUSY - продолжаем тут
 static STTE_t hamradio_tune_step(void)
 {
+	processtxrequest();	/* Установка сиквенсору запроса на передачу.	*/
+	display2_redrawbarstimed(0, 0, NULL);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+	updateboard(1, 0);
+	auto_tune();
+	reqautotune = 0;
+	updateboard(1, 0);
 	return STTE_OK;
 }
 
@@ -17998,12 +18006,9 @@ hamradio_main_step(void)
 				const uint_fast8_t bi_sub = getbankindex_ab(1);		/* состояние выбора банков может измениться */
 			#endif /* WITHSPLIT, WITHSPLITEX */
 			#if WITHAUTOTUNER
-			if (reqautotune != 0 && gtx != 0)
+			if (reqautotune != 0)
 			{
-				/* когда по запоосу на автонастройку наконец-то переключились на передачу */
-				auto_tune();	/* отсюда не возвращаемся пока нне настроится тюнер */
-				reqautotune = 0;
-				updateboard(1, 0);
+				sthrl = STHRL_TUNE;
 			}
 			#endif /* WITHAUTOTUNER */
 

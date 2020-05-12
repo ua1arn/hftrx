@@ -330,7 +330,7 @@ const uint16_t * getrbfimage(size_t * count); /* получить располо
 enum
 {
 	STTE_OK,		// можно переходить к следующему состоянию.
-	STTE_BYUSY,		// вложенная state machine еще выполняет свои фкнкции - требуется повторный вход.
+	STTE_BUSY,		// вложенная state machine еще выполняет свои фкнкции - требуется повторный вход.
 	//
 	STTE_count
 };
