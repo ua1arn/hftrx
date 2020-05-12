@@ -5871,27 +5871,27 @@ enc2menu_value(
 	{
 #if WITHSUBTONES && WITHTX
 	case RJ_SUBTONE:
-		local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%u.%1u"), gsubtones [value] / 10, gsubtones [value] % 10);
+		local_snprintf_P(b, ARRAY_SIZE(b), PSTR("%u.%1u"), gsubtones [value] / 10, gsubtones [value] % 10);
 		break;
 #endif /* WITHSUBTONES && WITHTX */
 	case RJ_YES:
-		local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%s"), value ? "YES" : "NO");
+		local_snprintf_P(b, ARRAY_SIZE(b), PSTR("%s"), value ? "YES" : "NO");
 		break;
 	case RJ_CATTXDTR:
-		local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%s"), value ? "DTR" : "RTS");
+		local_snprintf_P(b, ARRAY_SIZE(b), PSTR("%s"), value ? "DTR" : "RTS");
 		break;
 	case RJ_ON:
-		local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%s"), value ? "ON" : "OFF");
+		local_snprintf_P(b, ARRAY_SIZE(b), PSTR("%s"), value ? "ON" : "OFF");
 		break;
 	case RJ_POW2:
-		local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%u"), 1U << value);
+		local_snprintf_P(b, ARRAY_SIZE(b), PSTR("%u"), 1U << value);
 		break;
 	case RJ_SIGNED:
-		local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%+ld"), (signed long) value);
+		local_snprintf_P(b, ARRAY_SIZE(b), PSTR("%+ld"), (signed long) value);
 		break;
 	case RJ_UNSIGNED:
 	default:
-		local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%lu"), (unsigned long) value);
+		local_snprintf_P(b, ARRAY_SIZE(b), PSTR("%lu"), (unsigned long) value);
 		break;
 	}
 #else
@@ -5899,27 +5899,27 @@ enc2menu_value(
 		{
 	#if WITHSUBTONES && WITHTX
 		case RJ_SUBTONE:
-			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%*u.%1u"), WDTH - 2, gsubtones [value] / 10, gsubtones [value] % 10);
+			local_snprintf_P(b, ARRAY_SIZE(b), PSTR("%*u.%1u"), WDTH - 2, gsubtones [value] / 10, gsubtones [value] % 10);
 			break;
 	#endif /* WITHSUBTONES && WITHTX */
 		case RJ_YES:
-			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%*s"), WDTH, value ? "YES" : "NO");
+			local_snprintf_P(b, ARRAY_SIZE(b), PSTR("%*s"), WDTH, value ? "YES" : "NO");
 			break;
 		case RJ_CATTXDTR:
-			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%*s"), WDTH, value ? "DTR" : "RTS");
+			local_snprintf_P(b, ARRAY_SIZE(b), PSTR("%*s"), WDTH, value ? "DTR" : "RTS");
 			break;
 		case RJ_ON:
-			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%*s"), WDTH, value ? "ON" : "OFF");
+			local_snprintf_P(b, ARRAY_SIZE(b), PSTR("%*s"), WDTH, value ? "ON" : "OFF");
 			break;
 		case RJ_POW2:
-			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%*u"), WDTH, 1U << value);
+			local_snprintf_P(b, ARRAY_SIZE(b), PSTR("%*u"), WDTH, 1U << value);
 			break;
 		case RJ_SIGNED:
-			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%*+ld"), WDTH, (signed long) value);
+			local_snprintf_P(b, ARRAY_SIZE(b), PSTR("%+*ld"), WDTH, (signed long) value);
 			break;
 		case RJ_UNSIGNED:
 		default:
-			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%*lu"), WDTH, (unsigned long) value);
+			local_snprintf_P(b, ARRAY_SIZE(b), PSTR("%*lu"), WDTH, (unsigned long) value);
 			break;
 		}
 #endif
