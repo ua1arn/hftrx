@@ -8481,6 +8481,28 @@ updateboard(
 // обработчики кнопок клавиатуры
 
 //////////////////////////
+#if WITHELKEY
+
+void uif_key_bkintoggle(void)
+{
+	bkinenable = calc_next(bkinenable, 0, 1);
+	save_i8(offsetof(struct nvmap, bkinenable), bkinenable);
+	updateboard(1, 0);
+}
+
+uint_fast8_t hamradio_get_bkin_value(void)
+{
+	return bkinenable;
+}
+
+#else
+
+uint_fast8_t hamradio_get_bkin_value(void)
+{
+	return 0;
+}
+
+#endif /* WITHELKEY */
 
 #if WITHVOX && WITHTX
 
@@ -9426,15 +9448,6 @@ const FLASHMEM char * hamradio_get_rxbw_value_P(void)
 }
 
 #endif /* WITHIF4DSP */
-
-uint_fast8_t hamradio_get_bkin_value(void)
-{
-#if WITHELKEY && WITHTX
-	return bkinenable;
-#else /* WITHELKEY && WITHTX */
-	return 0;
-#endif /* WITHELKEY && WITHTX */
-}
 
 // RX preamplifier
 const FLASHMEM char * hamradio_get_pre_value_P(void)
@@ -16569,6 +16582,11 @@ process_key_menuset_common(uint_fast8_t kbch)
 		uif_key_voxtoggle();
 		return 1;	/* клавиша уже обработана */
 #endif /* WITHVOX */
+#if WITHELKEY
+	case KBD_CODE_BKIN:
+		uif_key_bkintoggle();
+		return 1;
+#endif /* WITHELKEY */
 
 #if WITHIF4DSP && WITHUSBUAC && WITHDATAMODE
 	case KBD_CODE_DATATOGGLE:
@@ -16840,12 +16858,7 @@ process_key_menuset_common(uint_fast8_t kbch)
 		updateboard_tuner();
 		return 1;	// требуется обновление индикатора
 #endif /* WITHAUTOTUNER && KEYB_UA3DKC */
-#if WITHELKEY
-	case KBD_CODE_BKIN:
-		bkinenable = bkinenable ? 0 : 1;
-		save_i8(offsetof(struct nvmap, bkinenable), bkinenable);
-		return 1;
-#endif /* WITHELKEY */
+
 	default:
 		return 0;	/* клавиша не обработана */
 	}
