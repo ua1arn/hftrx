@@ -124,6 +124,7 @@ enum
 //#define	WITHFILTSOFTMIN		0		/* код управления сглаживанием скатов фильтра основной селекции на приёме */
 //#define	WITHFILTSOFTMAX		100		/* код управления сглаживанием скатов фильтра основной селекции на приёме */
 
+#define WITHREVERBDELAYMIN 5	/* минимальная задержка ревербератора (ms) */
 #define WITHREVERBDELAYMAX 200	/* максимальная задержка ревербератора (ms) */
 
 #if defined (DAC1_TYPE)

@@ -2799,7 +2799,7 @@ static FLOAT_t txmikereverb(FLOAT_t sample)
 {
 	enum { MAXDELAYSAMPLES = NSAITICKS(WITHREVERBDELAYMAX) };
 
-	static FLOAT_t delaybuf [MAXDELAYSAMPLES];
+	static RAMNOINIT_D1 FLOAT_t delaybuf [MAXDELAYSAMPLES];
 	static unsigned pos;
 #if WITHREVERB
 	if (glob_reverb == 0)
@@ -2807,7 +2807,7 @@ static FLOAT_t txmikereverb(FLOAT_t sample)
 
 	pos = pos == 0 ? MAXDELAYSAMPLES - 1 : pos - 1;
 	delaybuf [pos] = sample;
-	FLOAT_t oldsample = delaybuf [(pos + reverbDelay) % MAXDELAYSAMPLES];
+	const FLOAT_t oldsample = delaybuf [(pos + reverbDelay) % MAXDELAYSAMPLES];
 	sample = sample * reverbLossDirect + oldsample * reverbLossDelayed;
 	delaybuf [pos] = sample;
 	return sample;

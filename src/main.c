@@ -14357,7 +14357,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	{
 		QLABEL2("RVB TIME", "Reverb Delay"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
-		0, WITHREVERBDELAYMAX, 					/* ревербератор - задержка */
+		WITHREVERBDELAYMIN, WITHREVERBDELAYMAX, 					/* ревербератор - задержка */
 		offsetof(struct nvmap, greverbdelay),
 		NULL,
 		& greverbdelay,
@@ -14366,7 +14366,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	{
 		QLABEL2("RVB LOSS", "Reverb Loss"), 7, 0, 0,	ISTEP3,
 		ITEM_VALUE,
-		ISTEP3, 40 * ISTEP3, 					/* ревербератор - ослабление на возврате */
+		ISTEP3 * 2, 40 * ISTEP3, 					/* ревербератор - ослабление на возврате */
 		offsetof(struct nvmap, greverbloss),
 		NULL,
 		& greverbloss,
