@@ -557,9 +557,7 @@ display2_smeter15(
 		power = board_getadc_filtered_truevalue(PWRI);
 		gp = smeter_params.gs + normalize(power, 0, maxpwrcali << 4, smeter_params.ge - smeter_params.gs);
 
-//		forward = board_getswrmeter(& reflected, swrcalibr);
-		reflected = board_getadc_unfiltered_truevalue(REFMRRIX) * (unsigned long) swrcalibr / 100;		// добавить фильтрацию рассчитанного значения
-		forward = board_getadc_unfiltered_truevalue(FWDMRRIX);
+		forward = board_getswrmeter_unfiltered(& reflected, swrcalibr);
 
 		const uint_fast16_t fullscale = (SWRMIN * 40 / 10) - SWRMIN;
 									// рассчитанное  значение
