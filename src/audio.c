@@ -6490,6 +6490,13 @@ board_set_mikehclip(uint_fast8_t v)
 	}
 }
 
+/* ревербератор */
+void
+board_set_reverb(uint_fast8_t greverb, uint_fast8_t greverbdelay, uint_fast8_t greverbloss)
+{
+
+}
+
 /* изменение тембра звука - на Samplerate/2 АЧХ падает на столько децибел  */
 void
 board_set_afresponcerx(int_fast8_t v)

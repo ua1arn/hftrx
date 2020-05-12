@@ -625,6 +625,8 @@ void board_set_mikeagcgain(uint_fast8_t v);	/* Максимальное усид
 void board_set_afresponcerx(int_fast8_t v);	/* изменение тембра звука в канале приемника */
 void board_set_afresponcetx(int_fast8_t v);	/* изменение тембра звука в канале передатчика */
 void board_set_mikehclip(uint_fast8_t gmikehclip);	/* Ограничитель */
+void board_set_reverb(uint_fast8_t greverb, uint_fast8_t greverbdelay, uint_fast8_t greverbloss); /* ревербератор */
+
 
 void board_set_uacplayer(uint_fast8_t v);	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 void board_set_uacmike(uint_fast8_t v);	/* на вход трансивера берутся аудиоданные с USB виртуальной платы, а не с микрофона */

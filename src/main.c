@@ -2588,6 +2588,11 @@ struct nvmap
 	uint8_t gmikeagc;	/* Включение программной АРУ перед модулятором */
 	uint8_t gmikeagcgain;	/* Максимальное усидение АРУ микрофона */
 	uint8_t gmikehclip;		/* Ограничитель */
+	#if WITHREVERB
+		uint8_t greverb;		/* ревербератор */
+		uint8_t greverbdelay;		/* ревербератор - задержка */
+		uint8_t greverbloss;		/* ревербератор - ослабление на возврате */
+	#endif /* WITHREVERB */
 	#if WITHUSBUAC
 		uint8_t gdatamode;	/* передача звука с USB вместо обычного источника */
 		uint8_t guacplayer;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
@@ -3326,7 +3331,12 @@ enum
 	static uint_fast8_t gmikebust20db;	// предусилитель микрофона
 	static uint_fast8_t gmikeagc = 1;	/* Включение программной АРУ перед модулятором */
 	static uint_fast8_t gmikeagcgain = 30;	/* Максимальное усидение АРУ микрофона */
-	static uint_fast8_t  gmikehclip;		/* Ограничитель */
+	static uint_fast8_t gmikehclip;		/* Ограничитель */
+#if WITHREVERB
+	static uint_fast8_t greverb;		/* ревербератор */
+	static uint_fast8_t greverbdelay = 20;		/* ревербератор - задержка (ms) */
+	static uint_fast8_t greverbloss = 18;		/* ревербератор - ослабление на возврате */
+#endif /* WITHREVERB */
 
 	#if WITHUSBUAC
 		static uint_fast8_t gdatamode;	/* передача звука с USB вместо обычного источника */
@@ -5528,6 +5538,7 @@ enum
 {
 	ISTEP1 = 1,
 	ISTEP2 = 2,
+	ISTEP3 = 3,
 	ISTEP5 = 5,
 	ISTEP10 = 10,
 	ISTEP50 = 50,
@@ -8287,6 +8298,7 @@ updateboard(
 		board_set_mikeagc(gmikeagc);	/* Включение программной АРУ перед модулятором */
 		board_set_mikeagcgain(gmikeagcgain);	/* Максимальное усидение АРУ микрофона */
 		board_set_mikehclip(gmikehclip);	/* Ограничитель */
+		board_set_reverb(greverb, greverbdelay, greverbloss);	/* ревербератор */
 
 		board_set_cwedgetime(gcwedgetime);	/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
 		board_set_sidetonelevel(gsidetonelevel);	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
@@ -14332,6 +14344,35 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		& gmikehclip,
 		getzerobase, /* складывается со смещением и отображается */
 	},
+#if WITHREVERB
+	{
+		QLABEL("REVERB  "), 7, 0, RJ_ON,	ISTEP1,
+		ITEM_VALUE,
+		0, 1, 					/* ревербератор */
+		offsetof(struct nvmap, greverb),
+		NULL,
+		& greverb,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		QLABEL("RVB TIME"), 7, 0, 0,	ISTEP1,
+		ITEM_VALUE,
+		0, 100, 					/* ревербератор - задержка */
+		offsetof(struct nvmap, greverbdelay),
+		NULL,
+		& greverbdelay,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		QLABEL("RVB LOSS"), 7, 0, 0,	ISTEP3,
+		ITEM_VALUE,
+		ISTEP3, 40 * ISTEP3, 					/* ревербератор - ослабление на возврате */
+		offsetof(struct nvmap, greverbloss),
+		NULL,
+		& greverbloss,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+#endif /* WITHREVERB */
 	{
 		QLABEL("MIK BUST"), 8, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,	
