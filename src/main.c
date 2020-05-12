@@ -17889,12 +17889,14 @@ static void hamradio_tune_initialize(void)
 // возврат STTE_BUSY - продолжаем тут
 static STTE_t hamradio_tune_step(void)
 {
+#if WITHAUTOTUNER
 	processtxrequest();	/* Установка сиквенсору запроса на передачу.	*/
 	display2_redrawbarstimed(0, 0, NULL);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 	updateboard(1, 0);
 	auto_tune();
 	reqautotune = 0;
 	updateboard(1, 0);
+#endif /* WITHAUTOTUNER */
 	return STTE_OK;
 }
 
