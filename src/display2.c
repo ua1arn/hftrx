@@ -5899,7 +5899,7 @@ deltafreq2x(
 // Значения в пикселях меньше чем частота в герцах - тип шире, чем uint_fast32_t не требуется
 static
 uint_fast32_t
-deltafreq2x_abspix(
+deltafreq2abspix(
 	int_fast32_t f,	// частота в герцах
 	int_fast32_t bw,	// полоса обзора в герцах
 	uint_fast16_t width	// ширина экрана
@@ -5922,11 +5922,14 @@ deltafreq2x_abs(
 	uint_fast16_t width	// ширина экрана
 	)
 {
-	const int_fast32_t f0 = fc - bw / 2;	// частота левого края окна
-	const uint_fast32_t p0 = deltafreq2x_abspix(f0, bw, width);	// абсолютный пиксель левого края окна
-
 	const int_fast32_t fm = fc + delta;	// частота маркера
-	const uint_fast32_t pm = deltafreq2x_abspix(fm, bw, width);	// абсолютный пиксель маркера
+	const uint_fast32_t pm = deltafreq2abspix(fm, bw, width);	// абсолютный пиксель маркера
+
+	if (pm <= width / 2)
+		return UINT16_MAX;	// частота левого края выходит за пределы представимого
+
+	const int_fast32_t f0 = fc - bw / 2;	// частота левого края окна
+	const uint_fast32_t p0 = deltafreq2abspix(f0, bw, width);	// абсолютный пиксель левого края окна
 
 	if (pm < p0)
 		return UINT16_MAX;	// Левее девого края окна
@@ -6321,7 +6324,7 @@ static void display2_latchwaterfall(
 	// Сдвиг изображения при необходимости (перестройка/переклбчение диапащонов или масштаба).
 	const uint_fast8_t pathi = 0;	// RX A
 	const int_fast32_t bw = display_zoomedbw();
-	const uint_fast32_t f0pix = deltafreq2x_abspix(hamradio_get_freq_pathi(pathi), bw, ALLDX);	/* pixel of frequency at middle of spectrum */
+	const uint_fast32_t f0pix = deltafreq2abspix(hamradio_get_freq_pathi(pathi), bw, ALLDX);	/* pixel of frequency at middle of spectrum */
 
 	int_fast16_t hscroll = 0;
 	uint_fast8_t hclear = 0;
