@@ -133,9 +133,6 @@ static uint_fast8_t		glob_codec1_gains [HARDWARE_CODEC1_NPROCPARAMS]; // = { -2,
 	static uint_fast8_t glob_reverb;		/* ревербератор */
 	static uint_fast8_t glob_reverbdelay = 20;		/* ревербератор - задержка (ms) */
 	static uint_fast8_t glob_reverbloss = 18;		/* ревербератор - ослабление на возврате */
-	static FLOAT_t reverbRatioDirect = 1;
-	static FLOAT_t reverbRatioDelayed = 0;
-	static unsigned reverbDelay;	/* задержка ревербератора в сэмплах */
 #endif /* WITHREVERB */
 
 static uint_fast16_t 	glob_lineamp = WITHLINEINGAINMAX;
@@ -2785,16 +2782,22 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 #endif /* WITHDSPEXTDDC && WITHDSPEXTFIR */
 }
 
-static void reverb_update(void)
+#if WITHREVERB
+	static FLOAT_t reverbRatioDirect [NPROF] = { 1, 1 };
+	static FLOAT_t reverbRatioDelayed [NPROF] = { 0, 0 };
+	static unsigned reverbDelay [NPROF];	/* задержка ревербератора в сэмплах */
+#endif /* WITHREVERB */
+
+static void reverb_update(const uint_fast8_t spf)
 {
 #if WITHREVERB
 	/* при выключенном ревербераторе сигнал все равно
 	 * помещается в линию задержки - чтобы при
 	 * включении уже был готов к работе
 	 * */
-	reverbRatioDelayed = glob_reverb ? 0 : db2ratio(- (int) glob_reverbloss);	/* ревербератор - ослабление на возврате */
-	reverbRatioDirect = 1 - reverbRatioDelayed;
-	reverbDelay = NSAITICKS(glob_reverbdelay);
+	reverbRatioDelayed [spf] = glob_reverb ? 0 : db2ratio(- (int) glob_reverbloss);	/* ревербератор - ослабление на возврате */
+	reverbRatioDirect [spf] = 1 - reverbRatioDelayed [spf];
+	reverbDelay [spf] = NSAITICKS(glob_reverbdelay);
 
 #endif /* WITHREVERB */
 }
@@ -2810,8 +2813,8 @@ static FLOAT_t txmikereverb(FLOAT_t sample)
 
 	pos = pos == 0 ? MAXDELAYSAMPLES - 1 : pos - 1;
 	delaybuf [pos] = sample;
-	const FLOAT_t oldsample = delaybuf [(pos + reverbDelay) % MAXDELAYSAMPLES];
-	sample = sample * reverbRatioDirect + oldsample * reverbRatioDelayed;
+	const FLOAT_t oldsample = delaybuf [(pos + reverbDelay [gwprof]) % MAXDELAYSAMPLES];
+	sample = sample * reverbRatioDirect [gwprof] + oldsample * reverbRatioDelayed [gwprof];
 	delaybuf [pos] = sample;
 	return sample;
 #else /* WITHREVERB */
@@ -2841,7 +2844,7 @@ static void audio_setup_mike(const uint_fast8_t spf)
 	case DSPCTL_MODE_TX_SSB:
 	case DSPCTL_MODE_TX_AM:
 	case DSPCTL_MODE_TX_FREEDV:
-		reverb_update();
+		reverb_update(spf);
 		fir_design_bandpass_freq(dCoeff, iCoefNum, glob_aflowcuttx, glob_afhighcuttx);
 		fir_design_adjust_tx(dCoeff, dWindow, iCoefNum);	// Применение эквалайзера к микрофону
 		break;
