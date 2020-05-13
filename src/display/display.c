@@ -1071,36 +1071,16 @@ void display2_xltrgb24(COLOR24_T * xltable)
 #endif
 	// Цвета используемые в дизайне
 
-
-	fillfour_xltrgb24(xltable, COLORPIP_BASE + 0, COLOR24(255, 255, 255));
-	fillfour_xltrgb24(xltable, COLORPIP_BASE + 1, COLOR24(255, 255, 255));
-	fillfour_xltrgb24(xltable, COLORPIP_BASE + 2, COLOR24(255, 255, 255));
-	fillfour_xltrgb24(xltable, COLORPIP_BASE + 3, COLOR24(255, 255, 255));
-	fillfour_xltrgb24(xltable, COLORPIP_BASE + 4, COLOR24(255, 255, 255));
-	fillfour_xltrgb24(xltable, COLORPIP_BASE + 5, COLOR24(255, 255, 255));
-	fillfour_xltrgb24(xltable, COLORPIP_BASE + 6, COLOR24(255, 255, 255));
-	fillfour_xltrgb24(xltable, COLORPIP_BASE + 7, COLOR24(255, 255, 255));
-	fillfour_xltrgb24(xltable, COLORPIP_BASE + 8, COLOR24(255, 255, 255));
-	fillfour_xltrgb24(xltable, COLORPIP_BASE + 9, COLOR24(255, 255, 255));
-	fillfour_xltrgb24(xltable, COLORPIP_BASE + 10, COLOR24(255, 255, 255));
-	fillfour_xltrgb24(xltable, COLORPIP_BASE + 11, COLOR24(255, 255, 255));
-	fillfour_xltrgb24(xltable, COLORPIP_BASE + 12, COLOR24(255, 255, 255));
-	fillfour_xltrgb24(xltable, COLORPIP_BASE + 13, COLOR24(255, 255, 255));
-	fillfour_xltrgb24(xltable, COLORPIP_BASE + 14, COLOR24(255, 255, 255));
-	fillfour_xltrgb24(xltable, COLORPIP_BASE + 15, COLOR24(255, 255, 255));
-
-
-	fillfour_xltrgb24(xltable, COLORPIP_YELLOW    , COLOR24(0xFF, 0xFF, 0x00));
-	fillfour_xltrgb24(xltable, COLORPIP_ORANGE    , COLOR24(0xFF, 0xA5, 0x00));
-	fillfour_xltrgb24(xltable, COLORPIP_BLACK     , COLOR24(0x00, 0x00, 0x00));
-	fillfour_xltrgb24(xltable, COLORPIP_WHITE     , COLOR24(0xFF, 0xFF, 0xFF));
-	fillfour_xltrgb24(xltable, COLORPIP_GRAY      , COLOR24(0x80, 0x80, 0x80));
-	fillfour_xltrgb24(xltable, COLORPIP_DARKGREEN , COLOR24(0x00, 0x40, 0x00));
-	fillfour_xltrgb24(xltable, COLORPIP_BLUE      , COLOR24(0x00, 0x00, 0xFF));
-	fillfour_xltrgb24(xltable, COLORPIP_GREEN     , COLOR24(0x00, 0xFF, 0x00));
-	fillfour_xltrgb24(xltable, COLORPIP_RED       , COLOR24(0xFF, 0x00, 0x00));
-	fillfour_xltrgb24(xltable, COLORPIP_LOCKED	   , COLOR24(0x3C, 0x3C, 0x00));
-
+	fillfour_xltrgb24(xltable, COLORPIP_YELLOW    	, COLOR24(0xFF, 0xFF, 0x00));
+	fillfour_xltrgb24(xltable, COLORPIP_ORANGE    	, COLOR24(0xFF, 0xA5, 0x00));
+	fillfour_xltrgb24(xltable, COLORPIP_BLACK     	, COLOR24(0x00, 0x00, 0x00));
+	fillfour_xltrgb24(xltable, COLORPIP_WHITE     	, COLOR24(0xFF, 0xFF, 0xFF));
+	fillfour_xltrgb24(xltable, COLORPIP_GRAY      	, COLOR24(0x80, 0x80, 0x80));
+	fillfour_xltrgb24(xltable, COLORPIP_DARKGREEN 	, COLOR24(0x00, 0x20, 0x00));
+	fillfour_xltrgb24(xltable, COLORPIP_BLUE      	, COLOR24(0x00, 0x00, 0xFF));
+	fillfour_xltrgb24(xltable, COLORPIP_GREEN     	, COLOR24(0x00, 0xFF, 0x00));
+	fillfour_xltrgb24(xltable, COLORPIP_RED       	, COLOR24(0xFF, 0x00, 0x00));
+	fillfour_xltrgb24(xltable, COLORPIP_LOCKED	  	, COLOR24(0x3C, 0x3C, 0x00));
 
 #if COLORSTYLE_ATS52
 	// new (for ats52)
@@ -1112,10 +1092,10 @@ void display2_xltrgb24(COLOR24_T * xltable)
 	fillfour_xltrgb24(xltable, COLORPIP_SPECTRUMFENCE	, COLOR24(255, 255, 255));	//COLOR_WHITE
 #else /* COLORSTYLE_ATS52 */
 	// old
-	fillfour_xltrgb24(xltable, COLORPIP_GRIDCOLOR      , COLOR24(128, 128, 0));        //COLOR_GRAY - center marker
-	fillfour_xltrgb24(xltable, COLORPIP_GRIDCOLOR2     , COLOR24(128, 0, 0x00));        //COLOR_DARKRED - other markers
-	fillfour_xltrgb24(xltable, COLORPIP_SPECTRUMBG     , COLOR24(0, 0, 0));            //COLOR_BLACK
-	fillfour_xltrgb24(xltable, COLORMAIN_SPECTRUMBG2    , COLOR24(0, 128, 128));        //COLOR_CYAN - полоса пропускания приемника
+	fillfour_xltrgb24(xltable, COLORPIP_GRIDCOLOR      	, COLOR24(128, 128, 0));        //COLOR_GRAY - center marker
+	fillfour_xltrgb24(xltable, COLORPIP_GRIDCOLOR2     	, COLOR24(128, 0, 0x00));        //COLOR_DARKRED - other markers
+	fillfour_xltrgb24(xltable, COLORPIP_SPECTRUMBG     	, COLOR24(0, 0, 0));            //COLOR_BLACK
+	fillfour_xltrgb24(xltable, COLORMAIN_SPECTRUMBG2   	, COLOR24(0, 128, 128));        //COLOR_CYAN - полоса пропускания приемника
 	fillfour_xltrgb24(xltable, COLORPIP_SPECTRUMFG		, COLOR24(0, 255, 0));		//COLOR_GREEN
 	fillfour_xltrgb24(xltable, COLORPIP_SPECTRUMFENCE	, COLOR24(255, 255, 255));	//COLOR_WHITE
 #endif /* COLORSTYLE_ATS52 */
