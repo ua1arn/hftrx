@@ -1383,7 +1383,15 @@ static void update_touch(void);
 		}
 		else
 		{
-			p = RemoveHeadList(& windows_list);
+			for (PLIST_ENTRY t = windows_list.Flink; t != & windows_list; t = t->Flink)
+			{
+				const window_t * const w = CONTAINING_RECORD(t, window_t, item);
+				if (w == win)
+				{
+					RemoveEntryList(t);
+					break;
+				}
+			}
 		}
 
 		for (uint_fast8_t i = 1; i < BUTTONS_COUNT; i++)
