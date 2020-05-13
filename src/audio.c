@@ -2818,6 +2818,7 @@ static FLOAT_t txmikereverb(FLOAT_t sample)
 	return sample;
 #endif /* WITHREVERB */
 }
+
 // Установка параметров тракта передатчика
 static void audio_setup_mike(const uint_fast8_t spf)
 {
