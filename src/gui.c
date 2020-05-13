@@ -2835,11 +2835,13 @@ static void update_touch(void);
 			colpip_plot(fr, DIM_X, DIM_Y, bh->x1, bh->y1, bg, bh->w, bh->h);
 		}
 
+		uint_fast8_t shift = bh->state == PRESSED ? 1 : 0;
+
 		if (strchr(bh->text, delimeters[0]) == NULL)
 		{
 			/* Однострочная надпись */
-			colpip_string2_tbg(fr, DIM_X, DIM_Y, bh->x1 + (bh->w - (strwidth2(bh->text))) / 2,
-					bh->y1 + (bh->h - SMALLCHARH2) / 2, bh->text, COLORPIP_BLACK);
+			colpip_string2_tbg(fr, DIM_X, DIM_Y, shift + bh->x1 + (bh->w - (strwidth2(bh->text))) / 2,
+					shift + bh->y1 + (bh->h - SMALLCHARH2) / 2, bh->text, COLORPIP_BLACK);
 		} else
 		{
 			/* Двухстрочная надпись */
@@ -2847,12 +2849,12 @@ static void update_touch(void);
 			char buf [TEXT_ARRAY_SIZE];
 			strcpy(buf, bh->text);
 			char * text2 = strtok(buf, delimeters);
-			colpip_string2_tbg(fr, DIM_X, DIM_Y, bh->x1 + (bh->w - (strwidth2(text2))) / 2,
-					bh->y1 + j, text2, COLORPIP_BLACK);
+			colpip_string2_tbg(fr, DIM_X, DIM_Y, shift + bh->x1 + (bh->w - (strwidth2(text2))) / 2,
+					shift + bh->y1 + j, text2, COLORPIP_BLACK);
 
 			text2 = strtok(NULL, delimeters);
-			colpip_string2_tbg(fr, DIM_X, DIM_Y, bh->x1 + (bh->w - (strwidth2(text2))) / 2,
-					bh->h + bh->y1 - SMALLCHARH2 - j, text2, COLORPIP_BLACK);
+			colpip_string2_tbg(fr, DIM_X, DIM_Y, shift + bh->x1 + (bh->w - (strwidth2(text2))) / 2,
+					shift + bh->h + bh->y1 - SMALLCHARH2 - j, text2, COLORPIP_BLACK);
 		}
 	}
 
@@ -2901,7 +2903,10 @@ static void update_touch(void);
 		buf = v->bg_pressed;
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLOR_BUTTON_PR_NON_LOCKED, 1);
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORPIP_GRAY, 0);
-		colpip_rect(buf, w, h, 2, 2, w - 3, h - 3, COLORPIP_BLACK, 0);
+		colmain_line(buf, w, h, 2, 3, w - 3, 3, COLORPIP_BLACK, 0);
+		colmain_line(buf, w, h, 2, 2, w - 3, 2, COLORPIP_BLACK, 0);
+		colmain_line(buf, w, h, 3, 3, 3, h - 3, COLORPIP_BLACK, 0);
+		colmain_line(buf, w, h, 2, 2, 2, h - 2, COLORPIP_BLACK, 0);
 
 		buf = v->bg_locked;
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLOR_BUTTON_LOCKED, 1);
@@ -2911,7 +2916,10 @@ static void update_touch(void);
 		buf = v->bg_locked_pressed;
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLOR_BUTTON_PR_LOCKED, 1);
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORPIP_GRAY, 0);
-		colpip_rect(buf, w, h, 2, 2, w - 3, h - 3, COLORPIP_BLACK, 0);
+		colmain_line(buf, w, h, 2, 3, w - 3, 3, COLORPIP_BLACK, 0);
+		colmain_line(buf, w, h, 2, 2, w - 3, 2, COLORPIP_BLACK, 0);
+		colmain_line(buf, w, h, 3, 3, 3, h - 3, COLORPIP_BLACK, 0);
+		colmain_line(buf, w, h, 2, 2, 2, h - 2, COLORPIP_BLACK, 0);
 
 		buf = v->bg_disabled;
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLOR_BUTTON_DISABLED, 1);
