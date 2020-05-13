@@ -756,6 +756,8 @@ display2_bars_amv0(
 
 #if WITHTOUCHGUI
 
+#include "list.h"
+
 static void button1_handler(void);
 static void button2_handler(void);
 static void button3_handler(void);
@@ -882,7 +884,7 @@ static void update_touch(void);
 		{ 0, 0, 86, 44, button4_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  VISIBLE,     UINTPTR_MAX, 		"btn4", 		"Freq", },
 		{ 0, 0, 86, 44, button5_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  VISIBLE,     UINTPTR_MAX, 		"btn5", 		"", },
 		{ 0, 0, 86, 44, button6_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  VISIBLE,     UINTPTR_MAX, 		"btn6", 		"", },
-		{ 0, 0, 86, 44, button7_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  VISIBLE,     UINTPTR_MAX, 		"btn7", 		"", },
+		{ 0, 0, 86, 44, button7_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  VISIBLE,     UINTPTR_MAX, 		"btn7", 		"2 win|test", },
 		{ 0, 0, 86, 44, button8_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  VISIBLE,     UINTPTR_MAX, 		"btn8", 		"Audio|params", },
 		{ 0, 0, 86, 44, button9_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  VISIBLE,     UINTPTR_MAX, 		"btnSysMenu", 	"System|settings", },
 		{ 0, 0, 86, 44, buttons_mode_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_LSB, 		"btnModeLSB", 	"LSB", },
@@ -1070,21 +1072,23 @@ static void update_touch(void);
 		uint16_t h;
 		char name[NAME_ARRAY_SIZE];	// текст, выводимый в заголовке окна
 		uint8_t state;
+		uint8_t transparent_bg;		// 1 - прозрачный, 0 - непрозрачный
 		uint8_t first_call;			// признак первого вызова для различных инициализаций
 		void (*onVisibleProcess) (void);
+		LIST_ENTRY item;
 	} window_t;
 
 	static window_t windows[] = {
 	//     window_id,   align_mode,     x1, y1, w, h,   title,      is_show, first_call, onVisibleProcess
-		{ WINDOW_MAIN, 	ALIGN_LEFT_X,	0, 0,   0,   0, "",  	   	   NON_VISIBLE,	0, gui_main_process, },
-		{ WINDOW_MODES, ALIGN_CENTER_X, 0, 0, 402, 150, "Select mode", NON_VISIBLE, 0, window_mode_process, },
-		{ WINDOW_BP,    ALIGN_CENTER_X, 0, 0, 372, 205, "Bandpass",    NON_VISIBLE, 0, window_bp_process, },
-		{ WINDOW_AGC,   ALIGN_CENTER_X, 0, 0, 372, 110, "AGC control", NON_VISIBLE, 0, window_agc_process, },
-		{ WINDOW_FREQ,  ALIGN_CENTER_X, 0, 0, 250, 215, "Freq:", 	   NON_VISIBLE, 0, window_freq_process, },
-		{ WINDOW_MENU,  ALIGN_CENTER_X, 0, 0, 550, 240, "Settings",	   NON_VISIBLE, 0, window_menu_process, },
-		{ WINDOW_ENC2, 	ALIGN_RIGHT_X, 	0, 0, 185, 105, "Fast menu",   NON_VISIBLE, 0, window_enc2_process, },
-		{ WINDOW_UIF, 	ALIGN_LEFT_X, 	0, 0, 200, 145, "",   		   NON_VISIBLE, 0, window_uif_process, },
-		{ WINDOW_AUDIO, ALIGN_CENTER_X, 0, 0, 430, 350, "MIC params",  NON_VISIBLE, 0, window_audioparams_process, },
+		{ WINDOW_MAIN, 	ALIGN_LEFT_X,	0, 0,   0,   0, "",  	   	   NON_VISIBLE,	1, 0, gui_main_process, },
+		{ WINDOW_MODES, ALIGN_CENTER_X, 0, 0, 402, 150, "Select mode", NON_VISIBLE, 1, 0, window_mode_process, },
+		{ WINDOW_BP,    ALIGN_CENTER_X, 0, 0, 372, 205, "Bandpass",    NON_VISIBLE, 1, 0, window_bp_process, },
+		{ WINDOW_AGC,   ALIGN_CENTER_X, 0, 0, 372, 110, "AGC control", NON_VISIBLE, 0, 0, window_agc_process, },
+		{ WINDOW_FREQ,  ALIGN_CENTER_X, 0, 0, 250, 215, "Freq:", 	   NON_VISIBLE, 1, 0, window_freq_process, },
+		{ WINDOW_MENU,  ALIGN_CENTER_X, 0, 0, 550, 240, "Settings",	   NON_VISIBLE, 1, 0, window_menu_process, },
+		{ WINDOW_ENC2, 	ALIGN_RIGHT_X, 	0, 0, 185, 105, "Fast menu",   NON_VISIBLE, 1, 0, window_enc2_process, },
+		{ WINDOW_UIF, 	ALIGN_LEFT_X, 	0, 0, 200, 145, "",   		   NON_VISIBLE, 1, 0, window_uif_process, },
+		{ WINDOW_AUDIO, ALIGN_CENTER_X, 0, 0, 430, 350, "MIC params",  NON_VISIBLE, 1, 0, window_audioparams_process, },
 	};
 	enum { windows_count = ARRAY_SIZE(windows) };
 
@@ -1164,6 +1168,8 @@ static void update_touch(void);
 	} gui_t;
 
 	static gui_t gui = { 0, 0, KBD_CODE_MAX, TYPE_DUMMY, NULL, CANCELLED, 0, 0, 0, 0, 0, 1, };
+
+	LIST_ENTRY windows_list;
 
 	static touch_t touch_elements[TOUCH_ARRAY_SIZE];
 	static uint_fast8_t touch_count = 0;
@@ -1367,11 +1373,18 @@ static void update_touch(void);
 	/* Установка признака видимости окна и его элементов */
 	static void set_window(window_t * win, uint_fast8_t value)
 	{
+		PLIST_ENTRY p;
 		uint_fast8_t j = 0;
 		win->state = value;
 		if (value)
+		{
 			win->first_call = 1;
-
+			InsertHeadList(& windows_list, & win->item);
+		}
+		else
+		{
+			p = RemoveHeadList(& windows_list);
+		}
 
 		for (uint_fast8_t i = 1; i < BUTTONS_COUNT; i++)
 		{
@@ -1439,6 +1452,7 @@ static void update_touch(void);
 
 			}
 		}
+		(void) p;
 	}
 
 	/* Расчет экранных координат окна */
@@ -2204,11 +2218,11 @@ static void update_touch(void);
 		case MENU_PARAMS:
 		case MENU_VALS:
 			lh = touch_elements[menu[MENU_PARAMS].first_id + menu[MENU_PARAMS].selected_label].link;
-			colpip_rect(colmain_fb_draw(), DIM_X, DIM_Y, lh->x - 5, lh->y - 5, lh->x + int_cols - 20, lh->y + get_label_height(lh) + 5, 228, 1);
+			colpip_rect(colmain_fb_draw(), DIM_X, DIM_Y, lh->x - 5, lh->y - 5, lh->x + int_cols - 20, lh->y + get_label_height(lh) + 5, GUI_MENUSELECTCOLOR, 1);
 
 		case MENU_GROUPS:
 			lh = touch_elements[menu[MENU_GROUPS].first_id + menu[MENU_GROUPS].selected_label].link;
-			colpip_rect(colmain_fb_draw(), DIM_X, DIM_Y, lh->x - 5, lh->y - 5, lh->x + int_cols - 20, lh->y + get_label_height(lh) + 5, 228, 1);
+			colpip_rect(colmain_fb_draw(), DIM_X, DIM_Y, lh->x - 5, lh->y - 5, lh->x + int_cols - 20, lh->y + get_label_height(lh) + 5, GUI_MENUSELECTCOLOR, 1);
 		}
 
 	}
@@ -2478,13 +2492,13 @@ static void update_touch(void);
 		for (uint_fast16_t i = 0; i <= abs(eq_base); i += 3)
 		{
 			uint_fast16_t yy = normalize(i, 0, abs(eq_base), 100);
-			colmain_line(fr, DIM_X, DIM_Y, win->x1 + 50, mid_y + yy, win->x1 + win->w - 50, mid_y + yy, 225, 0);
+			colmain_line(fr, DIM_X, DIM_Y, win->x1 + 50, mid_y + yy, win->x1 + win->w - 50, mid_y + yy, GUI_SLIDERLAYOUTCOLOR, 0);
 			local_snprintf_P(buf, ARRAY_SIZE(buf), i == 0 ? PSTR("%d") : PSTR("-%d"), i);
 			colpip_string2_tbg(fr, DIM_X, DIM_Y, win->x1 + 50 - strwidth2(buf) - 5, mid_y + yy - SMALLCHARH2 / 2, buf, COLORMAIN_WHITE);
 
 			if (i == 0)
 				continue;
-			colmain_line(fr, DIM_X, DIM_Y, win->x1 + 50, mid_y - yy, win->x1 + win->w - 50, mid_y - yy, 225, 0);
+			colmain_line(fr, DIM_X, DIM_Y, win->x1 + 50, mid_y - yy, win->x1 + win->w - 50, mid_y - yy, GUI_SLIDERLAYOUTCOLOR, 0);
 			local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("%d"), i);
 			colpip_string2_tbg(fr, DIM_X, DIM_Y, win->x1 + 50 - strwidth2(buf) - 5, mid_y - yy - SMALLCHARH2 / 2, buf, COLORMAIN_WHITE);
 		}
@@ -2597,7 +2611,22 @@ static void update_touch(void);
 	{
 		if(gui.selected_type == TYPE_BUTTON)
 		{
+			window_t * win = & windows[WINDOW_AUDIO];
+			if (win->state == NON_VISIBLE)
+			{
+				set_window(win, VISIBLE);
+				win = & windows[WINDOW_AGC];
+				set_window(win, VISIBLE);
+				footer_buttons_state(DISABLED, ((button_t *)gui.selected_link)->name);
 
+			}
+			else
+			{
+				set_window(win, NON_VISIBLE);
+				win = & windows[WINDOW_AGC];
+				set_window(win, NON_VISIBLE);
+				footer_buttons_state(CANCELLED);
+			}
 		}
 	}
 
@@ -2878,7 +2907,7 @@ static void update_touch(void);
 				sl->y2_p = sl->value_p + sliders_h;
 				sl->value_old = sl->value;
 			}
-			colpip_rect(fr, DIM_X, DIM_Y, sl->x + 1, sl->y + 1, sl->x + sliders_width - 1, sl->y + sl->size - 1, 242, 1);
+			colpip_rect(fr, DIM_X, DIM_Y, sl->x + 1, sl->y + 1, sl->x + sliders_width - 1, sl->y + sl->size - 1, COLORMAIN_BLACK, 1);
 			colpip_rect(fr, DIM_X, DIM_Y, sl->x, sl->y, sl->x + sliders_width, sl->y + sl->size, COLORMAIN_WHITE, 0);
 			colpip_rect(fr, DIM_X, DIM_Y, sl->x1_p, sl->y1_p, sl->x2_p, sl->y2_p, sl->state == PRESSED ? COLOR_BUTTON_PR_NON_LOCKED : COLOR_BUTTON_NON_LOCKED, 1);
 			colmain_line(fr, DIM_X, DIM_Y,  sl->x1_p, sl->value_p, sl->x2_p, sl->value_p, COLORMAIN_WHITE, 0);
@@ -2931,6 +2960,9 @@ static void update_touch(void);
 	{
 		uint_fast8_t i = 0;
 		window_t * win = & windows[WINDOW_MAIN];
+
+		InitializeListHead(& windows_list);
+
 		set_window(win, VISIBLE);
 
 		do {
@@ -3050,6 +3082,11 @@ static void update_touch(void);
 			gui.is_after_touch = 0;
 		}
 
+		PLIST_ENTRY t = windows_list.Flink;
+		const window_t * const win1 = CONTAINING_RECORD(t, window_t, item);
+		t = windows_list.Blink;
+		const window_t * const win2 = CONTAINING_RECORD(t, window_t, item);
+
 		if (gui.state == CANCELLED && gui.is_touching_screen && ! gui.is_after_touch)
 		{
 			for (uint_fast8_t i = 0; i < touch_count; i++)
@@ -3058,7 +3095,8 @@ static void update_touch(void);
 
 				if (p->x1 < gui.last_pressed_x && p->x2 > gui.last_pressed_x
 				 && p->y1 < gui.last_pressed_y && p->y2 > gui.last_pressed_y
-				 && p->state != DISABLED && p->visible == VISIBLE)
+				 && p->state != DISABLED && p->visible == VISIBLE
+				 && (p->win == win1 || p->win == win2))
 				{
 					gui.state = PRESSED;
 					break;
@@ -3134,16 +3172,18 @@ static void update_touch(void);
 
 		process_gui();
 
-		for (uint_fast8_t i = 0; i < windows_count; i ++)
+		for (PLIST_ENTRY t = windows_list.Blink; t != & windows_list; t = t->Blink)
 		{
-			const window_t * const win = & windows[i];
+			const window_t * const win = CONTAINING_RECORD(t, window_t, item);
 			uint_fast8_t f = win->first_call;
+
 			if (win->state == VISIBLE)
 			{
 				// при открытии окна рассчитываются экранные координаты самого окна и его child элементов
 				if (! f)
 				{
-					display_transparency(win->x1, win->y1, win->x1 + win->w, win->y1 + win->h, alpha);
+					win->transparent_bg ? display_transparency(win->x1, win->y1, win->x1 + win->w, win->y1 + win->h, alpha) :
+							colpip_fillrect(colmain_fb_draw(), DIM_X, DIM_Y, win->x1, win->y1, win->w, win->h, GUI_WINDOWBGCOLOR);
 				}
 
 				// запуск процедуры фоновой обработки для окна
@@ -3155,7 +3195,6 @@ static void update_touch(void);
 					colpip_string_tbg(fr, DIM_X, DIM_Y, win->x1 + 20, win->y1 + 10, win->name, COLORPIP_YELLOW);
 
 					// отрисовка принадлежащих окну элементов
-
 					for (uint_fast8_t i = 0; i < touch_count; i++)
 					{
 						touch_t * p = & touch_elements[i];

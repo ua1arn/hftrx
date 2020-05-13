@@ -208,6 +208,10 @@
 
 #endif /* COLORSTYLE_RED */
 
+#define GUI_WINDOWBGCOLOR		255
+#define GUI_SLIDERLAYOUTCOLOR	225
+#define GUI_MENUSELECTCOLOR		116
+
 
 typedef struct editfreq_tag
 {
