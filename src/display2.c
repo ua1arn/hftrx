@@ -445,7 +445,7 @@ static void display_recstatus(
 		(int) hamradio_get_recdbuffered()
 		);
 		
-	colmain_setcolors(MODECOLOR, BGCOLOR);
+	colmain_setcolors(DESIGNCOLORSTATE, BGCOLOR);
 	display_at(x, y, buffer);
 
 #endif /* WITHUSEAUDIOREC */
@@ -1050,7 +1050,7 @@ static void display_preovf3(
 	}
 	else
 	{
-		colmain_setcolors(MODECOLOR, BGCOLOR);
+		colmain_setcolors(DESIGNCOLORSTATE, BGCOLOR);
 		display_at_P(x, y, hamradio_get_pre_value_P());
 	}
 }
@@ -1102,7 +1102,7 @@ static void display_att_tx3(
 	const uint_fast8_t tx = hamradio_get_tx();
 	const FLASHMEM char * text = tx ? PSTR("TX  ") : hamradio_get_att_value_P();
 
-	colmain_setcolors(MODECOLOR, BGCOLOR);
+	colmain_setcolors(DESIGNCOLORSTATE, BGCOLOR);
 	display_at_P(x, y, text);
 }
 
@@ -1136,7 +1136,7 @@ static void display_vfomode1(
 	uint_fast8_t state;
 	const char * const label = hamradio_get_vfomode3_value(& state);
 
-	colmain_setcolors(MODECOLOR, BGCOLOR);
+	colmain_setcolors(DESIGNCOLORSTATE, BGCOLOR);
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	do
 	{
@@ -5668,7 +5668,7 @@ static void display2_legend_rx(
 	)
 {
 #if defined(SMETERMAP)
-	colmain_setcolors(MODECOLOR, BGCOLOR);
+	colmain_setcolors(DESIGNCOLORSTATE, BGCOLOR);
 	display_at_P(x, y, PSTR(SMETERMAP));
 #endif /* defined(SMETERMAP) */
 }
@@ -5681,7 +5681,7 @@ static void display2_legend_tx(
 	)
 {
 #if defined(SWRPWRMAP) && WITHTX && (WITHSWRMTR || WITHSHOWSWRPWR)
-	colmain_setcolors(MODECOLOR, BGCOLOR);
+	colmain_setcolors(DESIGNCOLORSTATE, BGCOLOR);
 	#if WITHSWRMTR
 		#if WITHSHOWSWRPWR /* на дисплее одновременно отображаются SWR-meter и PWR-meter */
 				display_at_P(x, y, PSTR(SWRPWRMAP));
