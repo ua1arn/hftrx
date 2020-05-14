@@ -1076,28 +1076,30 @@ void display2_xltrgb24(COLOR24_T * xltable)
 	fillfour_xltrgb24(xltable, COLORPIP_BLACK     	, COLOR24(0x00, 0x00, 0x00));
 	fillfour_xltrgb24(xltable, COLORPIP_WHITE     	, COLOR24(0xFF, 0xFF, 0xFF));
 	fillfour_xltrgb24(xltable, COLORPIP_GRAY      	, COLOR24(0x80, 0x80, 0x80));
-	fillfour_xltrgb24(xltable, COLORPIP_DARKGREEN 	, COLOR24(0x00, 0x20, 0x00));
+	fillfour_xltrgb24(xltable, COLORPIP_DARKGREEN 	, COLOR24(0x00, 0x40, 0x00));
 	fillfour_xltrgb24(xltable, COLORPIP_BLUE      	, COLOR24(0x00, 0x00, 0xFF));
 	fillfour_xltrgb24(xltable, COLORPIP_GREEN     	, COLOR24(0x00, 0xFF, 0x00));
 	fillfour_xltrgb24(xltable, COLORPIP_RED       	, COLOR24(0xFF, 0x00, 0x00));
+
 	fillfour_xltrgb24(xltable, COLORPIP_LOCKED	  	, COLOR24(0x3C, 0x3C, 0x00));
+	// код (COLORPIP_BASE + 15) освободися. GUI_MENUSELECTCOLOR?
 
 #if COLORSTYLE_ATS52
 	// new (for ats52)
-	fillfour_xltrgb24(xltable, COLORPIP_GRIDCOLOR		, COLOR24(128, 0, 0));		//COLOR_GRAY - center marker
-	fillfour_xltrgb24(xltable, COLORPIP_GRIDCOLOR2		, COLOR24(96, 96, 96));		//COLOR_DARKRED - other markers
-	fillfour_xltrgb24(xltable, COLORPIP_SPECTRUMBG		, COLOR24(0, 16, 16));			//
-	fillfour_xltrgb24(xltable, COLORMAIN_SPECTRUMBG2	, COLOR24(0, 24, 8));		//COLOR_xxx - полоса пропускания приемника
-	fillfour_xltrgb24(xltable, COLORPIP_SPECTRUMFG		, COLOR24(0, 255, 0));		//COLOR_GREEN
-	fillfour_xltrgb24(xltable, COLORPIP_SPECTRUMFENCE	, COLOR24(255, 255, 255));	//COLOR_WHITE
+	fillfour_xltrgb24(xltable, COLORPIP_GRIDCOLOR		, COLOR24(0x80, 0x00, 0x00));		//COLOR_GRAY - center marker
+	fillfour_xltrgb24(xltable, COLORPIP_GRIDCOLOR2		, COLOR24(0x60, 0x60, 0x60));		//COLOR_DARKRED - other markers
+	fillfour_xltrgb24(xltable, COLORPIP_SPECTRUMBG		, COLOR24(0x00, 0x80, 0x80));		// фон спектра вне полосы пропускания
+	fillfour_xltrgb24(xltable, COLORMAIN_SPECTRUMBG2	, COLOR24(0x00, 0x40, 0x40));		// фон спектра - полоса пропускания приемника
+	fillfour_xltrgb24(xltable, COLORPIP_SPECTRUMFG		, COLOR24(0x00, 0xFF, 0x00));		//COLOR_GREEN
+
 #else /* COLORSTYLE_ATS52 */
 	// old
-	fillfour_xltrgb24(xltable, COLORPIP_GRIDCOLOR      	, COLOR24(128, 128, 0));        //COLOR_GRAY - center marker
-	fillfour_xltrgb24(xltable, COLORPIP_GRIDCOLOR2     	, COLOR24(128, 0, 0x00));        //COLOR_DARKRED - other markers
-	fillfour_xltrgb24(xltable, COLORPIP_SPECTRUMBG     	, COLOR24(0, 0, 0));            //COLOR_BLACK
-	fillfour_xltrgb24(xltable, COLORMAIN_SPECTRUMBG2   	, COLOR24(0, 128, 128));        //COLOR_CYAN - полоса пропускания приемника
-	fillfour_xltrgb24(xltable, COLORPIP_SPECTRUMFG		, COLOR24(0, 255, 0));		//COLOR_GREEN
-	fillfour_xltrgb24(xltable, COLORPIP_SPECTRUMFENCE	, COLOR24(255, 255, 255));	//COLOR_WHITE
+	fillfour_xltrgb24(xltable, COLORPIP_GRIDCOLOR      	, COLOR24(0x80, 0x80, 0x00));        //COLOR_GRAY - center marker
+	fillfour_xltrgb24(xltable, COLORPIP_GRIDCOLOR2     	, COLOR24(0x80, 0x00, 0x00));        //COLOR_DARKRED - other markers
+	fillfour_xltrgb24(xltable, COLORPIP_SPECTRUMBG     	, COLOR24(0x00, 0x00, 0x00));            // фон спектра вне полосы пропускания
+	fillfour_xltrgb24(xltable, COLORMAIN_SPECTRUMBG2   	, COLOR24(0x00, 0x80, 0x80));        // фон спектра - полоса пропускания приемника
+	fillfour_xltrgb24(xltable, COLORPIP_SPECTRUMFG		, COLOR24(0x00, 0xFF, 0x00));		//COLOR_GREEN
+
 #endif /* COLORSTYLE_ATS52 */
 
 #elif LCDMODE_COLORED && ! LCDMODE_DUMMY	/* LCDMODE_MAIN_L8 && LCDMODE_PIP_L8 */
@@ -1113,6 +1115,7 @@ void display2_xltrgb24(COLOR24_T * xltable)
 		uint_fast8_t b = ((i & 0x03) << 6) | ((i & 0x03) << 4) | ((i & 0x03) << 2) | ((i & 0x03) << 0);	// 2 bit blue
 		xltable [i] = COLOR24(r, g, b);
 	}
+
 #else
 	#warning Monochrome display without indexing colors
 #endif /* LCDMODE_MAIN_L8 && LCDMODE_PIP_L8 */

@@ -35,24 +35,24 @@ static const COLORMAIN_T colorsfg_2rxtx [2] = { COLORMAIN_GREEN, COLORMAIN_RED, 
 static const COLORMAIN_T colorsbg_2rxtx [2] = { COLORMAIN_BLACK, COLORMAIN_BLACK, };
 
 // параметры отображения состояний из трех вариантов
-static const COLORMAIN_T colorsfg_4state [4] = { COLORMAIN_BLACK, COLORMAIN_WHITE, COLORMAIN_WHITE, COLORMAIN_WHITE, };
-static const COLORMAIN_T colorsbg_4state [4] = { DESIGNCOLORSTATE, DESIGNCOLORDARKSTATE, DESIGNCOLORDARKSTATE, DESIGNCOLORDARKSTATE, };
+static const COLORMAIN_T colorsfg_4state [4] = { LABELINACTIVETEXT, LABELACTIVETEXT, LABELACTIVETEXT, LABELACTIVETEXT, };
+static const COLORMAIN_T colorsbg_4state [4] = { LABELINACTIVEBACK, LABELACTIVEBACK, LABELACTIVEBACK, LABELACTIVEBACK, };
 
 // параметры отображения состояний из двух вариантов
-static const COLORMAIN_T colorsfg_2state [2] = { COLORMAIN_BLACK, COLORMAIN_WHITE, };
-static const COLORMAIN_T colorsbg_2state [2] = { DESIGNCOLORSTATE, DESIGNCOLORDARKSTATE, };	// COLORMAIN_GREEN	COLOR_DARKGREEN
+static const COLORMAIN_T colorsfg_2state [2] = { LABELINACTIVETEXT, LABELACTIVETEXT, };
+static const COLORMAIN_T colorsbg_2state [2] = { LABELINACTIVEBACK, LABELACTIVEBACK, };	// COLORMAIN_GREEN	COLOR_DARKGREEN
 
 // параметры отображения текстов без вариантов
-static const COLORMAIN_T colorsfg_1state [1] = { DESIGNCOLORSTATE, };
-static const COLORMAIN_T colorsbg_1state [1] = { COLORMAIN_BLACK, };	// устанавливается в цвет фона из палитры
+static const COLORMAIN_T colorsfg_1state [1] = { LABELTEXT, };
+static const COLORMAIN_T colorsbg_1state [1] = { LABELBACK, };	// устанавливается в цвет фона из палитры
 
 // параметры отображения частоты основного приемника
 static const COLORMAIN_T colorsfg_1freq [1] = { DESIGNBIGCOLOR, };
-static const COLORMAIN_T colorsbg_1freq [1] = { COLORMAIN_BLACK, };	// устанавливается в цвет фона из палитры
+static const COLORMAIN_T colorsbg_1freq [1] = { LABELBACK, };	// устанавливается в цвет фона из палитры
 
 // параметры отображения частоты дополнительного приемника
 static const COLORMAIN_T colorsfg_1freqB [1] = { DESIGNBIGCOLORB, };
-static const COLORMAIN_T colorsbg_1freqB [1] = { COLORMAIN_BLACK, };	// устанавливается в цвет фона из палитры
+static const COLORMAIN_T colorsbg_1freqB [1] = { LABELBACK, };	// устанавливается в цвет фона из палитры
 
 // todo: switch off -Wunused-function
 
@@ -445,7 +445,7 @@ static void display_recstatus(
 		(int) hamradio_get_recdbuffered()
 		);
 		
-	colmain_setcolors(DESIGNCOLORSTATE, BGCOLOR);
+	colmain_setcolors(LABELTEXT, LABELBACK);
 	display_at(x, y, buffer);
 
 #endif /* WITHUSEAUDIOREC */
@@ -1050,7 +1050,7 @@ static void display_preovf3(
 	}
 	else
 	{
-		colmain_setcolors(DESIGNCOLORSTATE, BGCOLOR);
+		colmain_setcolors(LABELTEXT, LABELBACK);
 		display_at_P(x, y, hamradio_get_pre_value_P());
 	}
 }
@@ -1102,7 +1102,7 @@ static void display_att_tx3(
 	const uint_fast8_t tx = hamradio_get_tx();
 	const FLASHMEM char * text = tx ? PSTR("TX  ") : hamradio_get_att_value_P();
 
-	colmain_setcolors(DESIGNCOLORSTATE, BGCOLOR);
+	colmain_setcolors(LABELTEXT, LABELBACK);
 	display_at_P(x, y, text);
 }
 
@@ -1136,7 +1136,7 @@ static void display_vfomode1(
 	uint_fast8_t state;
 	const char * const label = hamradio_get_vfomode3_value(& state);
 
-	colmain_setcolors(DESIGNCOLORSTATE, BGCOLOR);
+	colmain_setcolors(LABELTEXT, LABELBACK);
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	do
 	{
@@ -5668,7 +5668,7 @@ static void display2_legend_rx(
 	)
 {
 #if defined(SMETERMAP)
-	colmain_setcolors(DESIGNCOLORSTATE, BGCOLOR);
+	colmain_setcolors(LABELTEXT, LABELBACK);
 	display_at_P(x, y, PSTR(SMETERMAP));
 #endif /* defined(SMETERMAP) */
 }
@@ -5681,7 +5681,7 @@ static void display2_legend_tx(
 	)
 {
 #if defined(SWRPWRMAP) && WITHTX && (WITHSWRMTR || WITHSHOWSWRPWR)
-	colmain_setcolors(DESIGNCOLORSTATE, BGCOLOR);
+	colmain_setcolors(LABELTEXT, LABELBACK);
 	#if WITHSWRMTR
 		#if WITHSHOWSWRPWR /* на дисплее одновременно отображаются SWR-meter и PWR-meter */
 				display_at_P(x, y, PSTR(SWRPWRMAP));
@@ -6170,7 +6170,7 @@ static void display2_spectrum(
 				// точку на границе
 				if (yv < SPDY)
 				{
-					colpip_point(colorpip, BUFDIM_X, BUFDIM_Y, x, yv + SPY0, COLORPIP_SPECTRUMFENCE);
+					colpip_point(colorpip, BUFDIM_X, BUFDIM_Y, x, yv + SPY0, DESIGNCOLOR_SPECTRUMFENCE);
 
 					// Нижняя часть экрана
 					const int yb = yv + 1;
