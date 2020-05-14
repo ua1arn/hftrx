@@ -58,189 +58,6 @@ colmain_fb_show(void)
 }
 
 
-#if LCDMODE_COLORED
-static COLORMAIN_T bgcolor = COLORMAIN_BLACK;
-#endif /* LCDMODE_COLORED */
-
-void 
-display_setbgcolor(COLORMAIN_T c)
-{
-#if LCDMODE_COLORED
-	bgcolor = c;
-#endif /* LCDMODE_COLORED */
-}
-
-COLORMAIN_T 
-display_getbgcolor(void)
-{
-#if LCDMODE_COLORED
-	return bgcolor;
-#else /* LCDMODE_COLORED */
-	return COLOR_BLACK;
-#endif /* LCDMODE_COLORED */
-}
-
-
-// Используется при выводе на графический индикатор,
-// самый маленький шрифт
-static void
-display_string2(uint_fast8_t xcell, uint_fast8_t ycell, const char * s, uint_fast8_t lowhalf)
-{
-	char c;
-	uint_fast16_t ypix;
-	uint_fast16_t xpix = display_wrdata2_begin(xcell, ycell, & ypix);
-	while((c = * s ++) != '\0') 
-		xpix = display_put_char_small2(xpix, ypix, c, lowhalf);
-	display_wrdata2_end();
-}
-
-
-
-// Используется при выводе на графический индикатор,
-// самый маленький шрифт
-static void
-display_string2_P(uint_fast8_t xcell, uint_fast8_t ycell, const FLASHMEM  char * s, uint_fast8_t lowhalf)
-{
-	char c;
-
-	uint_fast16_t ypix;
-	uint_fast16_t xpix = display_wrdata2_begin(xcell, ycell, & ypix);
-	while((c = * s ++) != '\0') 
-		xpix = display_put_char_small2(xpix, xpix, c, lowhalf);
-	display_wrdata2_end();
-}
-
-
-
-// Используется при выводе на графический индикатор,
-static void
-display_string(uint_fast8_t xcell, uint_fast8_t ycell,const char * s, uint_fast8_t lowhalf)
-{
-	char c;
-
-	uint_fast16_t ypix;
-	uint_fast16_t xpix = display_wrdata_begin(xcell, ycell, & ypix);
-	while((c = * s ++) != '\0') 
-		xpix = display_put_char_small(xpix, ypix, c, lowhalf);
-	display_wrdata_end();
-}
-
-// Выдача строки из ОЗУ в указанное место экрана.
-void 
-//NOINLINEAT
-display_at(uint_fast8_t x, uint_fast8_t y, const char * s)
-{
-	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
-	do
-	{
-		display_string(x, y + lowhalf, s, lowhalf);
-
-	} while (lowhalf --);
-}
-
-// Используется при выводе на графический индикатор,
-static void
-display_string_P(uint_fast8_t xcell, uint_fast8_t ycell, const FLASHMEM  char * s, uint_fast8_t lowhalf)
-{
-	char c;
-
-	uint_fast16_t ypix;
-	uint_fast16_t xpix = display_wrdata_begin(xcell, ycell, & ypix);
-	while((c = * s ++) != '\0')
-		xpix = display_put_char_small(xpix, ypix, c, lowhalf);
-	display_wrdata_end();
-}
-
-// Выдача строки из ПЗУ в указанное место экрана.
-void 
-//NOINLINEAT
-display_at_P(uint_fast8_t x, uint_fast8_t y, const FLASHMEM char * s)
-{
-	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
-	do
-	{
-		display_string_P(x, y + lowhalf, s, lowhalf);
-
-	} while (lowhalf --);
-}
-
-/* выдать на дисплей монохромный буфер с размерами dx * dy битов */
-void display_showbuffer(
-	const GX_t * buffer,
-	unsigned dx,	// пиксели
-	unsigned dy,	// пиксели
-	uint_fast8_t col,	// сетка
-	uint_fast8_t row	// сетка
-	)
-{
-#if 0
-#if LCDMODE_S1D13781
-
-	s1d13781_showbuffer(buffer, dx, dy, col, row);
-
-#else /* LCDMODE_S1D13781 */
-
-	#if WITHSPIHWDMA && (LCDMODE_UC1608 | 0)
-		// на LCDMODE_S1D13781 почему-то DMA сбивает контроллер
-		arm_hardware_flush((uintptr_t) buffer, sizeof (* buffer) * MGSIZE(dx, dy));	// количество байтов
-	#endif
-
-	uint_fast8_t lowhalf = (dy) / 8 - 1;
-	if (lowhalf == 0)
-		return;
-	do
-	{
-		uint_fast8_t pos;
-		const GX_t * const p = buffer + lowhalf * MGADJ(dx);	// начало данных горизонтальной полосы в памяти
-		//debug_printf_P(PSTR("display_showbuffer: col=%d, row=%d, lowhalf=%d\n"), col, row, lowhalf);
-		display_plotfrom(GRID2X(col), GRID2Y(row) + lowhalf * 8);		// курсор в начало первой строки
-		// выдача горизонтальной полосы
-		uint_fast16_t ypix;
-		uint_fast16_t xpix = display_wrdatabar_begin(xcell, ycell, & ypix);
-	#if WITHSPIHWDMA && (0)
-		// на LCDMODE_S1D13781 почему-то DMA сбивает контроллер
-		// на LCDMODE_UC1608 портит мохранене теузей частоты и режима работы (STM32F746xx)
-		hardware_spi_master_send_frame(p, dx);
-	#else
-		for (pos = 0; pos < dx; ++ pos)
-			xpix = display_barcolumn(xpix, ypix, p [pos]);	// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
-	#endif
-		display_wrdatabar_end();
-	} while (lowhalf --);
-
-#endif /* LCDMODE_S1D13781 */
-#endif
-}
-
-#if LCDMODE_S1D13781
-
-	// младший бит левее
-	static const uint_fast16_t mapcolumn [16] =
-	{
-		0x0001, 0x0002, 0x0004, 0x0008, 0x0010, 0x0020, 0x0040, 0x0080, // биты для манипуляций с видеобуфером
-		0x0100, 0x0200, 0x0400, 0x0800, 0x1000, 0x2000, 0x4000, 0x8000,
-	};
-
-#elif LCDMODE_UC1608 || LCDMODE_UC1601
-
-	/* старшие биты соответствуют верхним пикселям изображения */
-	// млдший бит ниже в растре
-	static const uint_fast8_t mapcolumn [8] =
-	{
-		0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01, // биты для манипуляций с видеобуфером
-	};
-#else /* LCDMODE_UC1608 || LCDMODE_UC1601 */
-
-	/* младшие биты соответствуют верхним пикселям изображения */
-	// млдший бит выше в растре
-	static const uint_fast8_t mapcolumn [8] =
-	{
-		0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, // биты для манипуляций с видеобуфером
-	};
-
-#endif /* LCDMODE_UC1608 || LCDMODE_UC1601 */
-
-
 static uint_fast8_t scalecolor(
 	uint_fast8_t cv,	// color component value
 	uint_fast8_t maxv,	// maximal color component value
@@ -509,210 +326,6 @@ void display2_xltrgb24(COLOR24_T * xltable)
 	#warning Monochrome display without indexing colors
 #endif /* LCDMODE_MAIN_L8 && LCDMODE_PIP_L8 */
 }
-
-#if LCDMODE_LTDC && (LCDMODE_MAIN_L8 && LCDMODE_PIP_RGB565) || (! LCDMODE_MAIN_L8 && LCDMODE_PIP_L8)
-
-// Выдать буфер на дисплей
-// В случае фреймбуфеных дисплеев - формат цвета и там и там одинаковый
-// если разный - то заглушка
-
-//#warning colpip_to_main is dummy for this LCDMODE_LTDC combination
-
-void colpip_to_main(
-	const PACKEDCOLORPIP_T * buffer,
-	uint_fast16_t dx,
-	uint_fast16_t dy,
-	uint_fast16_t col,	// горизонтальная координата левого верхнего угла на экране (0..dx-1) слева направо
-	uint_fast16_t row	// вертикальная координата левого верхнего угла на экране (0..dy-1) сверху вниз
-	)
-{
-	ASSERT(0);
-}
-
-#elif LCDMODE_LTDC
-
-// Выдать буфер на дисплей. Функции бывают только для не L8 режимов
-// В случае фреймбуфеных дисплеев - формат цвета и там и там одинаковый
-void colpip_to_main(
-	const PACKEDCOLORPIP_T * buffer,	// источник
-	uint_fast16_t dx,	// ширина буфера источника
-	uint_fast16_t dy,	// высота буфера источника
-	uint_fast16_t col,	// горизонтальная координата левого верхнего угла на экране (0..dx-1) слева направо
-	uint_fast16_t row	// вертикальная координата левого верхнего угла на экране (0..dy-1) сверху вниз
-	)
-{
-	ASSERT(dx <= DIM_X);
-	ASSERT(dy <= DIM_Y);
-#if LCDMODE_HORFILL
-	hwaccel_copy(
-		(uintptr_t) colmain_fb_draw(), sizeof (PACKEDCOLORPIP_T) * GXSIZE(DIM_X, DIM_Y),	// target area invalidate parameters
-		colmain_mem_at(colmain_fb_draw(), DIM_X, DIM_Y, col, row),
-		buffer,
-		dx, GXADJ(DIM_X) - GXADJ(dx), dy);	// w, t, h
-#else /* LCDMODE_HORFILL */
-	hwaccel_copy(
-		(uintptr_t) colmain_fb_draw(), sizeof (PACKEDCOLORPIP_T) * GXSIZE(DIM_X, DIM_Y),	// target area invalidate parameters
-		colmain_mem_at(colmain_fb_draw(), DIM_X, DIM_Y, col, row),
-		buffer,
-		dy, DIM_Y - dy, dx);	// w, t, h
-#endif /* LCDMODE_HORFILL */
-}
-
-#else
-
-// Выдать буфер на дисплей. Функции бывают только для не L8 режимов
-// В случае фреймбуфеных дисплеев - формат цвета и там и там одинаковый
-void colpip_to_main(
-	const PACKEDCOLORPIP_T * buffer,	// источник
-	uint_fast16_t dx,	// ширина буфера источника
-	uint_fast16_t dy,	// высота буфера источника
-	uint_fast16_t col,	// горизонтальная координата левого верхнего угла на экране (0..dx-1) слева направо
-	uint_fast16_t row	// вертикальная координата левого верхнего угла на экране (0..dy-1) сверху вниз
-	)
-{
-#if LCDMODE_COLORED
-	display_plotfrom(col, row);
-	display_plotstart(dy);
-	display_plot(buffer, dx, dy);
-	display_plotstop();
-#endif
-}
-
-#endif /*  */
-
-// погасить точку
-void display_pixelbuffer(
-	GX_t * buffer,
-	uint_fast16_t dx,	
-	uint_fast16_t dy,
-	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t row	// вертикальная координата пикселя (0..dy-1) сверху вниз
-	)
-{
-#if LCDMODE_S1D13781
-
-	//row = (dy - 1) - row;		// смена направления
-	GX_t * const rowstart = buffer + row * MGADJ(dx);	// начало данных строки растра в памяти
-	GX_t * const p = rowstart + col / 16;	
-	//* p |= mapcolumn [col % 16];	// установить точку
-	* p &= ~ mapcolumn [col % 16];	// погасить точку
-	//* p ^= mapcolumn [col % 16];	// инвертировать точку
-
-#else /* LCDMODE_S1D13781 */
-
-	//row = (dy - 1) - row;		// смена направления
-	GX_t * const p = buffer + (row / 8) * MGADJ(dx) + col;	// начало данных горизонтальной полосы в памяти
-	//* p |= mapcolumn [row % 8];	// установить точку
-	* p &= ~ mapcolumn [row % 8];	// погасить точку
-	//* p ^= mapcolumn [row % 8];	// инвертировать точку
-
-#endif /* LCDMODE_S1D13781 */
-}
-
-/* Исключающее ИЛИ с точкой в растре */
-void display_pixelbuffer_xor(
-	GX_t * buffer,
-	uint_fast16_t dx,	
-	uint_fast16_t dy,
-	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t row	// вертикальная координата пикселя (0..dy-1) сверху вниз
-	)
-{
-#if LCDMODE_S1D13781
-	//row = (dy - 1) - row;		// смена направления
-	GX_t * const rowstart = buffer + row * MGADJ(dx);	// начало данных строки растра в памяти
-	GX_t * const p = rowstart + col / 16;	
-	//* p |= mapcolumn [col % 16];	// установить точку
-	//* p &= ~ mapcolumn [col % 16];	// погасить точку
-	* p ^= mapcolumn [col % 16];	// инвертировать точку
-
-#else /* LCDMODE_S1D13781 */
-
-	//row = (dy - 1) - row;		// смена направления
-	GX_t * const p = buffer + (row / 8) * MGADJ(dx);	// начало данных горизонтальной полосы в памяти
-	//* p |= mapcolumn [row % 8];	// установить точку
-	//* p &= ~ mapcolumn [row % 8];	// погасить точку
-	* p ^= mapcolumn [row % 8];	// инвертировать точку
-
-#endif /* LCDMODE_S1D13781 */
-}
-
-void display_pixelbuffer_clear(
-	GX_t * buffer,
-	uint_fast16_t dx,	
-	uint_fast16_t dy
-	)
-{
-	memset(buffer, 0xFF, (size_t) MGSIZE(dx, dy) * (sizeof * buffer));			// рисование способом погасить точку
-}
-
-// Routine to draw a line in the RGB565 color to the LCD.
-// The line is drawn from (xmin,ymin) to (xmax,ymax).
-// The algorithm used to draw the line is "Bresenham's line
-// algorithm". 
-#define SWAP(a, b)  do { (a) ^= (b); (b) ^= (a); (a) ^= (b); } while (0)
-// Нарисовать линию указанным цветом
-void display_pixelbuffer_line(
-	GX_t * buffer,
-	uint_fast16_t dx,	// ширина буфера
-	uint_fast16_t dy,	// высота буфера
-	uint_fast16_t x0,	
-	uint_fast16_t y0,
-	uint_fast16_t x1,	
-	uint_fast16_t y1
-	)
-{
-	int xmin = x0;
-	int xmax = x1;
-	int ymin = y0;
-	int ymax = y1;
-   int Dx = xmax - xmin; 
-   int Dy = ymax - ymin;
-   int steep = (abs(Dy) >= abs(Dx));
-   if (steep) {
-       SWAP(xmin, ymin);
-       SWAP(xmax, ymax);
-       // recompute Dx, Dy after swap
-       Dx = xmax - xmin;
-       Dy = ymax - ymin;
-   }
-   int xstep = 1;
-   if (Dx < 0) {
-       xstep = -1;
-       Dx = -Dx;
-   }
-   int ystep = 1;
-   if (Dy < 0) {
-       ystep = -1;		
-       Dy = -Dy; 
-   }
-   int TwoDy = 2*Dy; 
-   int TwoDyTwoDx = TwoDy - 2*Dx; // 2*Dy - 2*Dx
-   int E = TwoDy - Dx; //2*Dy - Dx
-   int y = ymin;
-   int xDraw, yDraw;
-   int x;
-   for (x = xmin; x != xmax; x += xstep) {		
-       if (steep) {			
-           xDraw = y;
-           yDraw = x;
-       } else {			
-           xDraw = x;
-           yDraw = y;
-       }
-       // plot
-       //LCD_PlotPoint(xDraw, yDraw, color);
-	   display_pixelbuffer(buffer, dx, dy, xDraw, yDraw);
-       // next
-       if (E > 0) {
-           E += TwoDyTwoDx; //E += 2*Dy - 2*Dx;
-           y = y + ystep;
-       } else {
-           E += TwoDy; //E += 2*Dy;
-       }
-   }
-}
-#undef SWAP
 
 #if LCDMODE_LTDC
 
@@ -1136,7 +749,51 @@ static uint_fast16_t RAMFUNC_NONILINE ltdc_horizontal_put_char_half(uint_fast16_
 	}
 	return x + width;
 }
+
 #else /* LCDMODE_HORFILL */
+
+// Вызов этой функции только внутри display_wrdata_begin() и 	display_wrdata_end();
+static uint_fast16_t RAMFUNC_NONILINE ltdc_vertical_put_char_small(uint_fast16_t x, uint_fast16_t y, char cc)
+{
+	uint_fast8_t i = 0;
+	const uint_fast8_t c = smallfont_decode((unsigned char) cc);
+	enum { NBYTES = (sizeof ls020_smallfont [0] / sizeof ls020_smallfont [0] [0]) };
+	const FLASHMEM uint8_t * const p = & ls020_smallfont [c] [0];
+
+	for (; i < NBYTES; ++ i)
+		ltdc_vertical_pixN(x ++, y, p [i], 8);	// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
+	return x;
+}
+
+// Вызов этой функции только внутри display_wrdatabig_begin() и display_wrdatabig_end();
+static uint_fast16_t RAMFUNC_NONILINE ltdc_vertical_put_char_big(uint_fast16_t x, uint_fast16_t y, char cc)
+{
+	// '#' - узкий пробел
+	enum { NBV = (BIGCHARH / 8) }; // сколько байтов в одной вертикали
+	uint_fast8_t i = NBV * ((cc == '.' || cc == '#') ? 12 : 0);	// начальная колонка знакогенератора, откуда начинать.
+    const uint_fast8_t c = bigfont_decode((unsigned char) cc);
+	enum { NBYTES = (sizeof ls020_bigfont [0] / sizeof ls020_bigfont [0] [0]) };
+	const FLASHMEM uint8_t * const p = & ls020_bigfont [c] [0];
+
+	for (; i < NBYTES; ++ i)
+		ltdc_vertical_pixN(x ++, y, p [i], 8);	// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
+	return x;
+}
+
+// Вызов этой функции только внутри display_wrdatabig_begin() и display_wrdatabig_end();
+static uint_fast16_t RAMFUNC_NONILINE ltdc_vertical_put_char_half(uint_fast16_t x, uint_fast16_t y, char cc)
+{
+	uint_fast8_t i = 0;
+    const uint_fast8_t c = bigfont_decode((unsigned char) cc);
+	enum { NBYTES = (sizeof ls020_halffont [0] / sizeof ls020_halffont [0] [0]) };
+	const FLASHMEM uint8_t * const p = & ls020_halffont [c] [0];
+
+	for (; i < NBYTES; ++ i)
+		ltdc_vertical_pixN(x ++, y, p [i], 8);	// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
+	return x;
+}
+
+
 #endif /* LCDMODE_HORFILL */
 
 uint_fast16_t display_put_char_small2(uint_fast16_t x, uint_fast16_t y, uint_fast8_t c, uint_fast8_t lowhalf)
@@ -1283,6 +940,301 @@ smallfont_decode(uint_fast8_t c)
 	return c - ' ';
 }
 
+
+// Используется при выводе на графический индикатор,
+// самый маленький шрифт
+static void
+display_string2(uint_fast8_t xcell, uint_fast8_t ycell, const char * s, uint_fast8_t lowhalf)
+{
+	char c;
+	uint_fast16_t ypix;
+	uint_fast16_t xpix = display_wrdata2_begin(xcell, ycell, & ypix);
+	while((c = * s ++) != '\0')
+		xpix = display_put_char_small2(xpix, ypix, c, lowhalf);
+	display_wrdata2_end();
+}
+
+
+
+// Используется при выводе на графический индикатор,
+// самый маленький шрифт
+static void
+display_string2_P(uint_fast8_t xcell, uint_fast8_t ycell, const FLASHMEM  char * s, uint_fast8_t lowhalf)
+{
+	char c;
+
+	uint_fast16_t ypix;
+	uint_fast16_t xpix = display_wrdata2_begin(xcell, ycell, & ypix);
+	while((c = * s ++) != '\0')
+		xpix = display_put_char_small2(xpix, xpix, c, lowhalf);
+	display_wrdata2_end();
+}
+
+
+
+// Используется при выводе на графический индикатор,
+static void
+display_string(uint_fast8_t xcell, uint_fast8_t ycell,const char * s, uint_fast8_t lowhalf)
+{
+	char c;
+
+	uint_fast16_t ypix;
+	uint_fast16_t xpix = display_wrdata_begin(xcell, ycell, & ypix);
+	while((c = * s ++) != '\0')
+		xpix = display_put_char_small(xpix, ypix, c, lowhalf);
+	display_wrdata_end();
+}
+
+// Выдача строки из ОЗУ в указанное место экрана.
+void
+//NOINLINEAT
+display_at(uint_fast8_t x, uint_fast8_t y, const char * s)
+{
+	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
+	do
+	{
+		display_string(x, y + lowhalf, s, lowhalf);
+
+	} while (lowhalf --);
+}
+
+// Используется при выводе на графический индикатор,
+static void
+display_string_P(uint_fast8_t xcell, uint_fast8_t ycell, const FLASHMEM  char * s, uint_fast8_t lowhalf)
+{
+	char c;
+
+	uint_fast16_t ypix;
+	uint_fast16_t xpix = display_wrdata_begin(xcell, ycell, & ypix);
+	while((c = * s ++) != '\0')
+		xpix = display_put_char_small(xpix, ypix, c, lowhalf);
+	display_wrdata_end();
+}
+
+// Выдача строки из ПЗУ в указанное место экрана.
+void
+//NOINLINEAT
+display_at_P(uint_fast8_t x, uint_fast8_t y, const FLASHMEM char * s)
+{
+	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
+	do
+	{
+		display_string_P(x, y + lowhalf, s, lowhalf);
+
+	} while (lowhalf --);
+}
+
+/* выдать на дисплей монохромный буфер с размерами dx * dy битов */
+void display_showbuffer(
+	const GX_t * buffer,
+	unsigned dx,	// пиксели
+	unsigned dy,	// пиксели
+	uint_fast8_t col,	// сетка
+	uint_fast8_t row	// сетка
+	)
+{
+#if 0
+#if LCDMODE_S1D13781
+
+	s1d13781_showbuffer(buffer, dx, dy, col, row);
+
+#else /* LCDMODE_S1D13781 */
+
+	#if WITHSPIHWDMA && (LCDMODE_UC1608 | 0)
+		// на LCDMODE_S1D13781 почему-то DMA сбивает контроллер
+		arm_hardware_flush((uintptr_t) buffer, sizeof (* buffer) * MGSIZE(dx, dy));	// количество байтов
+	#endif
+
+	uint_fast8_t lowhalf = (dy) / 8 - 1;
+	if (lowhalf == 0)
+		return;
+	do
+	{
+		uint_fast8_t pos;
+		const GX_t * const p = buffer + lowhalf * MGADJ(dx);	// начало данных горизонтальной полосы в памяти
+		//debug_printf_P(PSTR("display_showbuffer: col=%d, row=%d, lowhalf=%d\n"), col, row, lowhalf);
+		display_plotfrom(GRID2X(col), GRID2Y(row) + lowhalf * 8);		// курсор в начало первой строки
+		// выдача горизонтальной полосы
+		uint_fast16_t ypix;
+		uint_fast16_t xpix = display_wrdatabar_begin(xcell, ycell, & ypix);
+	#if WITHSPIHWDMA && (0)
+		// на LCDMODE_S1D13781 почему-то DMA сбивает контроллер
+		// на LCDMODE_UC1608 портит мохранене теузей частоты и режима работы (STM32F746xx)
+		hardware_spi_master_send_frame(p, dx);
+	#else
+		for (pos = 0; pos < dx; ++ pos)
+			xpix = display_barcolumn(xpix, ypix, p [pos]);	// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
+	#endif
+		display_wrdatabar_end();
+	} while (lowhalf --);
+
+#endif /* LCDMODE_S1D13781 */
+#endif
+}
+
+#if LCDMODE_S1D13781
+
+	// младший бит левее
+	static const uint_fast16_t mapcolumn [16] =
+	{
+		0x0001, 0x0002, 0x0004, 0x0008, 0x0010, 0x0020, 0x0040, 0x0080, // биты для манипуляций с видеобуфером
+		0x0100, 0x0200, 0x0400, 0x0800, 0x1000, 0x2000, 0x4000, 0x8000,
+	};
+
+#elif LCDMODE_UC1608 || LCDMODE_UC1601
+
+	/* старшие биты соответствуют верхним пикселям изображения */
+	// млдший бит ниже в растре
+	static const uint_fast8_t mapcolumn [8] =
+	{
+		0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01, // биты для манипуляций с видеобуфером
+	};
+#else /* LCDMODE_UC1608 || LCDMODE_UC1601 */
+
+	/* младшие биты соответствуют верхним пикселям изображения */
+	// млдший бит выше в растре
+	static const uint_fast8_t mapcolumn [8] =
+	{
+		0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, // биты для манипуляций с видеобуфером
+	};
+
+#endif /* LCDMODE_UC1608 || LCDMODE_UC1601 */
+
+
+// погасить точку
+void display_pixelbuffer(
+	GX_t * buffer,
+	uint_fast16_t dx,
+	uint_fast16_t dy,
+	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t row	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	)
+{
+#if LCDMODE_S1D13781
+
+	//row = (dy - 1) - row;		// смена направления
+	GX_t * const rowstart = buffer + row * MGADJ(dx);	// начало данных строки растра в памяти
+	GX_t * const p = rowstart + col / 16;
+	//* p |= mapcolumn [col % 16];	// установить точку
+	* p &= ~ mapcolumn [col % 16];	// погасить точку
+	//* p ^= mapcolumn [col % 16];	// инвертировать точку
+
+#else /* LCDMODE_S1D13781 */
+
+	//row = (dy - 1) - row;		// смена направления
+	GX_t * const p = buffer + (row / 8) * MGADJ(dx) + col;	// начало данных горизонтальной полосы в памяти
+	//* p |= mapcolumn [row % 8];	// установить точку
+	* p &= ~ mapcolumn [row % 8];	// погасить точку
+	//* p ^= mapcolumn [row % 8];	// инвертировать точку
+
+#endif /* LCDMODE_S1D13781 */
+}
+
+/* Исключающее ИЛИ с точкой в растре */
+void display_pixelbuffer_xor(
+	GX_t * buffer,
+	uint_fast16_t dx,
+	uint_fast16_t dy,
+	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t row	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	)
+{
+#if LCDMODE_S1D13781
+	//row = (dy - 1) - row;		// смена направления
+	GX_t * const rowstart = buffer + row * MGADJ(dx);	// начало данных строки растра в памяти
+	GX_t * const p = rowstart + col / 16;
+	//* p |= mapcolumn [col % 16];	// установить точку
+	//* p &= ~ mapcolumn [col % 16];	// погасить точку
+	* p ^= mapcolumn [col % 16];	// инвертировать точку
+
+#else /* LCDMODE_S1D13781 */
+
+	//row = (dy - 1) - row;		// смена направления
+	GX_t * const p = buffer + (row / 8) * MGADJ(dx);	// начало данных горизонтальной полосы в памяти
+	//* p |= mapcolumn [row % 8];	// установить точку
+	//* p &= ~ mapcolumn [row % 8];	// погасить точку
+	* p ^= mapcolumn [row % 8];	// инвертировать точку
+
+#endif /* LCDMODE_S1D13781 */
+}
+
+void display_pixelbuffer_clear(
+	GX_t * buffer,
+	uint_fast16_t dx,
+	uint_fast16_t dy
+	)
+{
+	memset(buffer, 0xFF, (size_t) MGSIZE(dx, dy) * (sizeof * buffer));			// рисование способом погасить точку
+}
+
+// Routine to draw a line in the RGB565 color to the LCD.
+// The line is drawn from (xmin,ymin) to (xmax,ymax).
+// The algorithm used to draw the line is "Bresenham's line
+// algorithm".
+#define SWAP(a, b)  do { (a) ^= (b); (b) ^= (a); (a) ^= (b); } while (0)
+// Нарисовать линию указанным цветом
+void display_pixelbuffer_line(
+	GX_t * buffer,
+	uint_fast16_t dx,	// ширина буфера
+	uint_fast16_t dy,	// высота буфера
+	uint_fast16_t x0,
+	uint_fast16_t y0,
+	uint_fast16_t x1,
+	uint_fast16_t y1
+	)
+{
+	int xmin = x0;
+	int xmax = x1;
+	int ymin = y0;
+	int ymax = y1;
+   int Dx = xmax - xmin;
+   int Dy = ymax - ymin;
+   int steep = (abs(Dy) >= abs(Dx));
+   if (steep) {
+	   SWAP(xmin, ymin);
+	   SWAP(xmax, ymax);
+	   // recompute Dx, Dy after swap
+	   Dx = xmax - xmin;
+	   Dy = ymax - ymin;
+   }
+   int xstep = 1;
+   if (Dx < 0) {
+	   xstep = -1;
+	   Dx = -Dx;
+   }
+   int ystep = 1;
+   if (Dy < 0) {
+	   ystep = -1;
+	   Dy = -Dy;
+   }
+   int TwoDy = 2*Dy;
+   int TwoDyTwoDx = TwoDy - 2*Dx; // 2*Dy - 2*Dx
+   int E = TwoDy - Dx; //2*Dy - Dx
+   int y = ymin;
+   int xDraw, yDraw;
+   int x;
+   for (x = xmin; x != xmax; x += xstep) {
+	   if (steep) {
+		   xDraw = y;
+		   yDraw = x;
+	   } else {
+		   xDraw = x;
+		   yDraw = y;
+	   }
+	   // plot
+	   //LCD_PlotPoint(xDraw, yDraw, color);
+	   display_pixelbuffer(buffer, dx, dy, xDraw, yDraw);
+	   // next
+	   if (E > 0) {
+		   E += TwoDyTwoDx; //E += 2*Dy - 2*Dx;
+		   y = y + ystep;
+	   } else {
+		   E += TwoDy; //E += 2*Dy;
+	   }
+   }
+}
+#undef SWAP
+
 static const FLASHMEM int32_t vals10 [] =
 {
 	1000000000UL,
@@ -1428,6 +1380,99 @@ display_value_small(
 	}
 	display_wrdata_end();
 }
+
+#if LCDMODE_COLORED
+static COLORMAIN_T bgcolor = COLORMAIN_BLACK;
+#endif /* LCDMODE_COLORED */
+
+void
+display_setbgcolor(COLORMAIN_T c)
+{
+#if LCDMODE_COLORED
+	bgcolor = c;
+#endif /* LCDMODE_COLORED */
+}
+
+COLORMAIN_T
+display_getbgcolor(void)
+{
+#if LCDMODE_COLORED
+	return bgcolor;
+#else /* LCDMODE_COLORED */
+	return COLOR_BLACK;
+#endif /* LCDMODE_COLORED */
+}
+
+
+#if LCDMODE_LTDC && (LCDMODE_MAIN_L8 && LCDMODE_PIP_RGB565) || (! LCDMODE_MAIN_L8 && LCDMODE_PIP_L8)
+
+// Выдать буфер на дисплей
+// В случае фреймбуфеных дисплеев - формат цвета и там и там одинаковый
+// если разный - то заглушка
+
+//#warning colpip_to_main is dummy for this LCDMODE_LTDC combination
+
+void colpip_to_main(
+	const PACKEDCOLORPIP_T * buffer,
+	uint_fast16_t dx,
+	uint_fast16_t dy,
+	uint_fast16_t col,	// горизонтальная координата левого верхнего угла на экране (0..dx-1) слева направо
+	uint_fast16_t row	// вертикальная координата левого верхнего угла на экране (0..dy-1) сверху вниз
+	)
+{
+	ASSERT(0);
+}
+
+#elif LCDMODE_LTDC
+
+// Выдать буфер на дисплей. Функции бывают только для не L8 режимов
+// В случае фреймбуфеных дисплеев - формат цвета и там и там одинаковый
+void colpip_to_main(
+	const PACKEDCOLORPIP_T * buffer,	// источник
+	uint_fast16_t dx,	// ширина буфера источника
+	uint_fast16_t dy,	// высота буфера источника
+	uint_fast16_t col,	// горизонтальная координата левого верхнего угла на экране (0..dx-1) слева направо
+	uint_fast16_t row	// вертикальная координата левого верхнего угла на экране (0..dy-1) сверху вниз
+	)
+{
+	ASSERT(dx <= DIM_X);
+	ASSERT(dy <= DIM_Y);
+#if LCDMODE_HORFILL
+	hwaccel_copy(
+		(uintptr_t) colmain_fb_draw(), sizeof (PACKEDCOLORPIP_T) * GXSIZE(DIM_X, DIM_Y),	// target area invalidate parameters
+		colmain_mem_at(colmain_fb_draw(), DIM_X, DIM_Y, col, row),
+		buffer,
+		dx, GXADJ(DIM_X) - GXADJ(dx), dy);	// w, t, h
+#else /* LCDMODE_HORFILL */
+	hwaccel_copy(
+		(uintptr_t) colmain_fb_draw(), sizeof (PACKEDCOLORPIP_T) * GXSIZE(DIM_X, DIM_Y),	// target area invalidate parameters
+		colmain_mem_at(colmain_fb_draw(), DIM_X, DIM_Y, col, row),
+		buffer,
+		dy, DIM_Y - dy, dx);	// w, t, h
+#endif /* LCDMODE_HORFILL */
+}
+
+#else
+
+// Выдать буфер на дисплей. Функции бывают только для не L8 режимов
+// В случае фреймбуфеных дисплеев - формат цвета и там и там одинаковый
+void colpip_to_main(
+	const PACKEDCOLORPIP_T * buffer,	// источник
+	uint_fast16_t dx,	// ширина буфера источника
+	uint_fast16_t dy,	// высота буфера источника
+	uint_fast16_t col,	// горизонтальная координата левого верхнего угла на экране (0..dx-1) слева направо
+	uint_fast16_t row	// вертикальная координата левого верхнего угла на экране (0..dy-1) сверху вниз
+	)
+{
+#if LCDMODE_COLORED
+	display_plotfrom(col, row);
+	display_plotstart(dy);
+	display_plot(buffer, dx, dy);
+	display_plotstop();
+#endif
+}
+
+#endif /*  */
 
 /*
  * настройка портов для последующей работы с дополнительными (кроме последовательного канала)

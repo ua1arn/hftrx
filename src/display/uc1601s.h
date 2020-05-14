@@ -18,6 +18,8 @@
 
 // Цветное изображение не поддерживается на этом дисплее (заглушка).
 #define TFTRGB(r, g, b)	(0)
+#define TFTRGB565 TFTRGB
+
 typedef uint_fast8_t COLORMAIN_T;	/* цвета не поддерживаются - заглушка */
 typedef uint8_t PACKEDCOLORMAIN_T;	/* цвета не поддерживаются - заглушка */
 

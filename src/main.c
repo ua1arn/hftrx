@@ -2776,7 +2776,7 @@ filter_t fi_2p0_455 =
 		uint8_t cat2dtrenable;	/* разрешение манипуляции по DTR CAT */
 
 	#else /* WITHUSBHW && WITHUSBCDC && WITHUSBHWCDC_N > 1 */
-		enum { cat2txdtr = 0, cat2dtrenable = 0, cat2dtrenable = 0 };
+		enum { cat2txdtr = 0, cat2rtsenable = 0, cat2dtrenable = 0 };
 
 	#endif /* WITHUSBHW && WITHUSBCDC && WITHUSBHWCDC_N > 1 */
 #endif /* WITHCAT */

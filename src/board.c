@@ -9,16 +9,18 @@
 #include "board.h"
 #include "audio.h"
 #include "gpio.h"
+#include "formats.h"
 #include "spi.h"
 #include "synthcalcs.h"
 #include "keyboard.h"
-
-#define CTLREG_SPIMODE	SPIC_MODE3	
-
 #include "touch/touch.h"
 #include "display/display.h"
-#include "formats.h"
+
+#include <string.h>
 #include <math.h>
+
+
+#define CTLREG_SPIMODE	SPIC_MODE3
 
 //#include "chip/cmx992.c"
 /********************************/

@@ -10,6 +10,7 @@
 
 #include <stdarg.h>
 #include <stdio.h>
+#include <string.h>
 #include <ctype.h>
 
 // использование библиотечной функции форматного вывода вместо самописной

@@ -1431,48 +1431,6 @@ uint_fast16_t colpip_string_height(
 
 #else /* LCDMODE_HORFILL */
 
-// Вызов этой функции только внутри display_wrdata_begin() и 	display_wrdata_end();
-static uint_fast16_t RAMFUNC_NONILINE ltdc_vertical_put_char_small(uint_fast16_t x, uint_fast16_t y, char cc)
-{
-	uint_fast8_t i = 0;
-	const uint_fast8_t c = smallfont_decode((unsigned char) cc);
-	enum { NBYTES = (sizeof ls020_smallfont [0] / sizeof ls020_smallfont [0] [0]) };
-	const FLASHMEM uint8_t * const p = & ls020_smallfont [c] [0];
-
-	for (; i < NBYTES; ++ i)
-		ltdc_vertical_pixN(x ++, y, p [i], 8);	// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
-	return x;
-}
-
-// Вызов этой функции только внутри display_wrdatabig_begin() и display_wrdatabig_end();
-static uint_fast16_t RAMFUNC_NONILINE ltdc_vertical_put_char_big(uint_fast16_t x, uint_fast16_t y, char cc)
-{
-	// '#' - узкий пробел
-	enum { NBV = (BIGCHARH / 8) }; // сколько байтов в одной вертикали
-	uint_fast8_t i = NBV * ((cc == '.' || cc == '#') ? 12 : 0);	// начальная колонка знакогенератора, откуда начинать.
-    const uint_fast8_t c = bigfont_decode((unsigned char) cc);
-	enum { NBYTES = (sizeof ls020_bigfont [0] / sizeof ls020_bigfont [0] [0]) };
-	const FLASHMEM uint8_t * const p = & ls020_bigfont [c] [0];
-
-	for (; i < NBYTES; ++ i)
-		ltdc_vertical_pixN(x ++, y, p [i], 8);	// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
-	return x;
-}
-
-// Вызов этой функции только внутри display_wrdatabig_begin() и display_wrdatabig_end();
-static uint_fast16_t RAMFUNC_NONILINE ltdc_vertical_put_char_half(uint_fast16_t x, uint_fast16_t y, char cc)
-{
-	uint_fast8_t i = 0;
-    const uint_fast8_t c = bigfont_decode((unsigned char) cc);
-	enum { NBYTES = (sizeof ls020_halffont [0] / sizeof ls020_halffont [0] [0]) };
-	const FLASHMEM uint8_t * const p = & ls020_halffont [c] [0];
-
-	for (; i < NBYTES; ++ i)
-		ltdc_vertical_pixN(x ++, y, p [i], 8);	// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
-	return x;
-}
-
-
 #endif /* LCDMODE_HORFILL */
 
 
