@@ -6,8 +6,8 @@
 //
 // Доработки для LS020 Василий Линывый, livas60@mail.ru
 //
-// Функции построения изоьражений в буфере - вне зависимости от того, есть ли в процессоре LTDC.'
-// Например при offscreen composition растровых изображений доя SPI дисплеев
+// Функции построения изображений в буфере - вне зависимости от того, есть ли в процессоре LTDC.'
+// Например при offscreen composition растровых изображений для SPI дисплеев
 //
 
 #include "hardware.h"
@@ -236,7 +236,6 @@ hwacc_fillrect_u8(
 		hardware_nonguiyield();
 
 #else
-
 	// программная реализация
 
 	const unsigned t = GXADJ(dx) - w;
@@ -416,8 +415,10 @@ hwacc_fillrect_u24(
 	//ALIGNX_BEGIN volatile uint16_t tgcolor ALIGNX_END;	/* значение цвета для заполнения области памяти */
 
 	ASSERT(sizeof (* buffer) == 3);
+
 #if 0//WITHMDMAHW
 	// MDMA implementation
+
 	#error MDMA implementation need
 	tgcolor = color;
 
@@ -536,30 +537,6 @@ hwacc_fillrect_u24(
 	}
 
 #endif
-}
-
-/* заливка замкнутого контура */
-void display_floodfill(
-	PACKEDCOLORMAIN_T * buffer,
-	uint_fast16_t dx,	// ширина буфера
-	uint_fast16_t dy,	// высота буфера
-	uint_fast16_t x,	// начальная координата
-	uint_fast16_t y,	// начальная координата
-	COLORMAIN_T newColor,
-	COLORMAIN_T oldColor
-	)
-{
-	ASSERT(x < dx);
-	ASSERT(y < dy);
-	PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, x, y);
-	if (* tgr == oldColor && * tgr != newColor)
-	{
-		* tgr = newColor;
-		display_floodfill(buffer, dx, dy, x + 1, y, newColor, oldColor);
-		display_floodfill(buffer, dx, dy, x - 1, y, newColor, oldColor);
-		display_floodfill(buffer, dx, dy, x, y + 1, newColor, oldColor);
-		display_floodfill(buffer, dx, dy, x, y - 1, newColor, oldColor);
-	}
 }
 
 #if WITHDMA2DHW
@@ -747,6 +724,30 @@ void colpip_fillrect(
 }
 
 
+/* заливка замкнутого контура */
+void display_floodfill(
+	PACKEDCOLORMAIN_T * buffer,
+	uint_fast16_t dx,	// ширина буфера
+	uint_fast16_t dy,	// высота буфера
+	uint_fast16_t x,	// начальная координата
+	uint_fast16_t y,	// начальная координата
+	COLORMAIN_T newColor,
+	COLORMAIN_T oldColor
+	)
+{
+	ASSERT(x < dx);
+	ASSERT(y < dy);
+	PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, x, y);
+	if (* tgr == oldColor && * tgr != newColor)
+	{
+		* tgr = newColor;
+		display_floodfill(buffer, dx, dy, x + 1, y, newColor, oldColor);
+		display_floodfill(buffer, dx, dy, x - 1, y, newColor, oldColor);
+		display_floodfill(buffer, dx, dy, x, y + 1, newColor, oldColor);
+		display_floodfill(buffer, dx, dy, x, y - 1, newColor, oldColor);
+	}
+}
+
 // начальная инициализация буфера
 // Эта функция используется только в тесте
 void colpip_fill(
@@ -848,6 +849,8 @@ void hwaccel_copy(
 		return;
 
 #if WITHMDMAHW
+	// MDMA реализация
+
 	arm_hardware_flush_invalidate(dstinvalidateaddr, dstinvalidatesize);
 	arm_hardware_flush((uintptr_t) src, sizeof (* src) * GXSIZE(w, h));
 
@@ -908,6 +911,8 @@ void hwaccel_copy(
 	//TP();
 
 #elif WITHDMA2DHW
+	// DMA2D реализация
+
 	arm_hardware_flush_invalidate(dstinvalidateaddr, dstinvalidatesize);
 	arm_hardware_flush((uintptr_t) src, sizeof (* src) * GXSIZE(w, h));
 
@@ -943,6 +948,7 @@ void hwaccel_copy(
 
 #else
 	// программная реализация
+
 	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
 	if (t == 0)
 	{
