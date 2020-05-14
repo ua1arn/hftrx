@@ -2817,8 +2817,11 @@ static FLOAT_t txmikereverb(FLOAT_t sample)
 	sample = sample * reverbRatioDirect [gwprof] + oldsample * reverbRatioDelayed [gwprof];
 	delaybuf [pos] = sample;
 	return sample;
+
 #else /* WITHREVERB */
+
 	return sample;
+
 #endif /* WITHREVERB */
 }
 
