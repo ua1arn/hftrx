@@ -31,28 +31,45 @@
 // todo: учесть LCDMODE_COLORED
 
 // параметры отображения состояния прием/пеердача
-static const COLORMAIN_T colorsfg_2rxtx [2] = { COLORMAIN_GREEN, COLORMAIN_RED, };
-static const COLORMAIN_T colorsbg_2rxtx [2] = { COLORMAIN_BLACK, COLORMAIN_BLACK, };
+static const COLORPAIR_T colors_2rxtx [2] =
+{
+		{	COLORMAIN_GREEN,	COLORMAIN_BLACK,	},	// RX
+		{	COLORMAIN_RED,		COLORMAIN_BLACK,	},	// TX
+};
 
 // параметры отображения состояний из трех вариантов
-static const COLORMAIN_T colorsfg_4state [4] = { LABELINACTIVETEXT, LABELACTIVETEXT, LABELACTIVETEXT, LABELACTIVETEXT, };
-static const COLORMAIN_T colorsbg_4state [4] = { LABELINACTIVEBACK, LABELACTIVEBACK, LABELACTIVEBACK, LABELACTIVEBACK, };
+static const COLORPAIR_T colors_4state [4] =
+{
+		{	LABELINACTIVETEXT,	LABELINACTIVEBACK,	},
+		{	LABELACTIVETEXT,	LABELACTIVEBACK,	},
+		{	LABELACTIVETEXT,	LABELACTIVEBACK,	},
+		{	LABELACTIVETEXT,	LABELACTIVEBACK,	},
+};
 
 // параметры отображения состояний из двух вариантов
-static const COLORMAIN_T colorsfg_2state [2] = { LABELINACTIVETEXT, LABELACTIVETEXT, };
-static const COLORMAIN_T colorsbg_2state [2] = { LABELINACTIVEBACK, LABELACTIVEBACK, };	// COLORMAIN_GREEN	COLOR_DARKGREEN
+static const COLORPAIR_T colors_2state [2] =
+{
+		{	LABELINACTIVETEXT,	LABELINACTIVEBACK,	},
+		{	LABELACTIVETEXT,	LABELACTIVEBACK,	},
+};
 
 // параметры отображения текстов без вариантов
-static const COLORMAIN_T colorsfg_1state [1] = { LABELTEXT, };
-static const COLORMAIN_T colorsbg_1state [1] = { LABELBACK, };	// устанавливается в цвет фона из палитры
+static const COLORPAIR_T colors_1state [1] =
+{
+		{	LABELTEXT,	LABELBACK,	},
+};
 
 // параметры отображения частоты основного приемника
-static const COLORMAIN_T colorsfg_1freq [1] = { DESIGNBIGCOLOR, };
-static const COLORMAIN_T colorsbg_1freq [1] = { LABELBACK, };	// устанавливается в цвет фона из палитры
+static const COLORPAIR_T colors_1freq [1] =
+{
+		{	DESIGNBIGCOLOR,	LABELBACK,	},
+};
 
 // параметры отображения частоты дополнительного приемника
-static const COLORMAIN_T colorsfg_1freqB [1] = { DESIGNBIGCOLORB, };
-static const COLORMAIN_T colorsbg_1freqB [1] = { LABELBACK, };	// устанавливается в цвет фона из палитры
+static const COLORPAIR_T colors_1freqB [1] =
+{
+		{	DESIGNBIGCOLORB,	LABELBACK,	},
+};
 
 // todo: switch off -Wunused-function
 
@@ -170,7 +187,7 @@ static void display_freqXbig_a(
 	uint_fast8_t fullwidth = display_getfreqformat(& rj);
 	const uint_fast8_t comma = 3 - rj;
 
-	colmain_setcolors3(colorsfg_1freq [0], colorsbg_1freq [0], colorsfg_1freq [0]);
+	colmain_setcolors3(colors_1freq [0].fg, colors_1freq [0].bg, colors_1freq [0].fg);
 	if (pctx != NULL && pctx->type == DCTX_FREQ)
 	{
 #if WITHDIRECTFREQENER
@@ -209,7 +226,7 @@ static void display_freqX_a(
 	uint_fast8_t fullwidth = display_getfreqformat(& rj);
 	const uint_fast8_t comma = 3 - rj;
 
-	colmain_setcolors3(colorsfg_1freq [0], colorsbg_1freq [0], colorsfg_1freq [0]);
+	colmain_setcolors3(colors_1freq [0].fg, colors_1freq [0].bg, colors_1freq [0].fg);
 	if (pctx != NULL && pctx->type == DCTX_FREQ)
 	{
 #if WITHDIRECTFREQENER
@@ -247,7 +264,7 @@ static void display_freqchr_a(
 	uint_fast8_t fullwidth = display_getfreqformat(& rj);
 	const uint_fast8_t comma = 3 - rj;
 
-	colmain_setcolors3(colorsfg_1freq [0], colorsbg_1freq [0], colorsfg_1freq [0]);
+	colmain_setcolors3(colors_1freq [0].fg, colors_1freq [0].bg, colors_1freq [0].fg);
 	if (pctx != NULL && pctx->type == DCTX_FREQ)
 	{
 #if WITHDIRECTFREQENER
@@ -286,7 +303,7 @@ static void display_freqchr_b(
 	uint_fast8_t fullwidth = display_getfreqformat(& rj);
 	const uint_fast8_t comma = 3 - rj;
 
-	colmain_setcolors3(colorsfg_1freqB [0], colorsbg_1freq [0], colorsfg_1freqB [0]);
+	colmain_setcolors3(colors_1freqB [0].fg, colors_1freq [0].bg, colors_1freqB [0].fg);
 	if (pctx != NULL && pctx->type == DCTX_FREQ)
 	{
 #if WITHDIRECTFREQENER
@@ -325,7 +342,7 @@ static void display_freqX_b(
 
 	const uint_fast32_t freq = hamradio_get_freq_b();
 
-	colmain_setcolors(colorsfg_1freqB [0], colorsbg_1freqB [0]);
+	colmain_setcolors(colors_1freqB [0].fg, colors_1freqB [0].bg);
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	do
 	{
@@ -349,7 +366,7 @@ static void display_freqmeter10(
 		(unsigned long) board_get_fqmeter()
 		);
 
-	colmain_setcolors(colorsfg_1freq [0], colorsbg_1freq [0]);
+	colmain_setcolors(colors_1freq [0].fg, colors_1freq [0].bg);
 	display_at(x, y, buffer);
 #endif /* WITHFQMETER */
 }
@@ -362,8 +379,7 @@ display2_text_P(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	const FLASHMEM char * const * labels,	// массив указателей на текст
-	const COLORMAIN_T * colorsfg,			// массив цветов face
-	const COLORMAIN_T * colorsbg,			// массив цветов background
+	const COLORPAIR_T * colors,			// массив цветов
 	uint_fast8_t state
 	)
 {
@@ -371,7 +387,7 @@ display2_text_P(
 	#else /* LCDMODE_COLORED */
 	#endif /* LCDMODE_COLORED */
 
-	colmain_setcolors(colorsfg [state], colorsbg [state]);
+	colmain_setcolors(colors [state].fg, colors [state].bg);
 	display_at_P(x, y, labels [state]);
 }
 
@@ -382,8 +398,7 @@ display2_text(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	const char * const * labels,	// массив указателей на текст
-	const COLORMAIN_T * colorsfg,			// массив цветов face
-	const COLORMAIN_T * colorsbg,			// массив цветов background
+	const COLORPAIR_T * colors,			// массив цветов
 	uint_fast8_t state
 	)
 {
@@ -391,7 +406,7 @@ display2_text(
 	#else /* LCDMODE_COLORED */
 	#endif /* LCDMODE_COLORED */
 
-	colmain_setcolors(colorsfg [state], colorsbg [state]);
+	colmain_setcolors(colors [state].fg, colors [state].bg);
 	display_at(x, y, labels [state]);
 }
 
@@ -422,7 +437,7 @@ static void display_txrxstate2(
 	static const FLASHMEM char text0 [] = "RX";
 	static const FLASHMEM char text1 [] = "TX";
 	const FLASHMEM char * const labels [2] = { text0, text1 };
-	display2_text_P(x, y, labels, colorsfg_2rxtx, colorsbg_2rxtx, state);
+	display2_text_P(x, y, labels, colors_2rxtx, state);
 #endif /* WITHTX */
 }
 
@@ -501,7 +516,7 @@ void display_2states(
 	#else /* LCDMODE_COLORED */
 		const char * const labels [2] = { state0, state1, };
 	#endif /* LCDMODE_COLORED */
-	display2_text(x, y, labels, colorsfg_2state, colorsbg_2state, state);
+	display2_text(x, y, labels, colors_2state, state);
 }
 
 void display_2states_P(
@@ -517,7 +532,7 @@ void display_2states_P(
 	#else /* LCDMODE_COLORED */
 		const FLASHMEM char * const labels [2] = { state0, state1, };
 	#endif /* LCDMODE_COLORED */
-	display2_text_P(x, y, labels, colorsfg_2state, colorsbg_2state, state);
+	display2_text_P(x, y, labels, colors_2state, state);
 }
 
 // параметры, не меняющие состояния цветом
@@ -527,7 +542,7 @@ void display_1state_P(
 	const FLASHMEM char * label
 	)
 {
-	display2_text_P(x, y, & label, colorsfg_1state, colorsbg_1state, 0);
+	display2_text_P(x, y, & label, colors_1state, 0);
 }
 
 // параметры, не меняющие состояния цветом
@@ -537,7 +552,7 @@ void display_1state(
 	const char * label
 	)
 {
-	display2_text(x, y, & label, colorsfg_1state, colorsbg_1state, 0);
+	display2_text(x, y, & label, colors_1state, 0);
 }
 
 
@@ -605,7 +620,7 @@ static void display_wpm5(
 	const char * const labels [1] = { s, };
 
 	local_snprintf_P(s, sizeof s / sizeof s [0], PSTR("%2dwpm"), (int) value);
-	display2_text(x, y, labels, colorsfg_1state, colorsbg_1state, 0);
+	display2_text(x, y, labels, colors_1state, 0);
 	(void) pctx;
 #endif /* WITHELKEY */
 }
@@ -665,7 +680,7 @@ static void display_vfomode3(
 {
 	uint_fast8_t state;
 	const char * const labels [1] = { hamradio_get_vfomode3_value(& state), };
-	display2_text(x, y, labels, colorsfg_1state, colorsbg_1state, 0);
+	display2_text(x, y, labels, colors_1state, 0);
 }
 
 
@@ -678,7 +693,7 @@ static void display_vfomode5(
 {
 	uint_fast8_t state;
 	const char * const labels [1] = { hamradio_get_vfomode5_value(& state), };
-	display2_text(x, y, labels, colorsfg_1state, colorsbg_1state, 0);
+	display2_text(x, y, labels, colors_1state, 0);
 }
 
 static void display_XXXXX3(
@@ -822,7 +837,7 @@ static void display_voxtune3(
 		const FLASHMEM char * const labels [4] = { text_nul, text_vox, text_tun, text_tun, };
 	#endif /* LCDMODE_COLORED */
 
-	display2_text_P(x, y, labels, colorsfg_4state, colorsbg_4state, tunev * 2 + voxv);
+	display2_text_P(x, y, labels, colors_4state, tunev * 2 + voxv);
 
 #else /* WITHVOX */
 
@@ -851,7 +866,7 @@ static void display_voxtune4(
 	static const FLASHMEM char text0 [] = "VOX ";
 	static const FLASHMEM char text1 [] = "TUNE";
 	const FLASHMEM char * const labels [4] = { text0, text0, text1, text1, };
-	display2_text_P(x, y, labels, colorsfg_4state, colorsbg_4state, tunev * 2 + voxv);
+	display2_text_P(x, y, labels, colors_4state, tunev * 2 + voxv);
 
 #else /* WITHVOX */
 
@@ -880,7 +895,7 @@ static void display_voxtune1(
 	static const FLASHMEM char text0 [] = "V";
 	static const FLASHMEM char text1 [] = "U";
 	const FLASHMEM char * const labels [4] = { textx, text0, text1, text1, };
-	display2_text_P(x, y, labels, colorsfg_4state, colorsbg_4state, tunev * 2 + voxv);
+	display2_text_P(x, y, labels, colors_4state, tunev * 2 + voxv);
 
 #else /* WITHVOX */
 
@@ -909,7 +924,7 @@ static void display_lockstate3(
 #else /* LCDMODE_COLORED */
 	const FLASHMEM char * const labels [4] = { text0, text2, text1, text1, };
 #endif
-	display2_text_P(x, y, labels, colorsfg_4state, colorsbg_4state, lockv * 2 + fastv);
+	display2_text_P(x, y, labels, colors_4state, lockv * 2 + fastv);
 }
 
 static void display_lockstate4(
@@ -929,7 +944,7 @@ static void display_lockstate4(
 #else /* LCDMODE_COLORED */
 	const FLASHMEM char * const labels [4] = { text0, text2, text1, text1, };
 #endif
-	display2_text_P(x, y, labels, colorsfg_4state, colorsbg_4state, lockv * 2 + fastv);
+	display2_text_P(x, y, labels, colors_4state, lockv * 2 + fastv);
 }
 
 
@@ -971,7 +986,7 @@ static void display_rxbw3(
 	)
 {
 	const char FLASHMEM * const labels [1] = { hamradio_get_rxbw_value_P(), };
-	display2_text_P(x, y, labels, colorsfg_1state, colorsbg_1state, 0);
+	display2_text_P(x, y, labels, colors_1state, 0);
 }
 
 
@@ -999,7 +1014,7 @@ static void display_pre3(
 	)
 {
 	const char FLASHMEM * const labels [1] = { hamradio_get_pre_value_P(), };
-	display2_text_P(x, y, labels, colorsfg_1state, colorsbg_1state, 0);
+	display2_text_P(x, y, labels, colors_1state, 0);
 }
 
 // переполнение АЦП (надо показывать как REDRM_BARS - с таймерным обновлением)
@@ -1011,7 +1026,7 @@ static void display_ovf3(
 {
 #if WITHDSPEXTDDC
 	//const char FLASHMEM * const labels [1] = { hamradio_get_pre_value_P(), };
-	//display2_text_P(x, y, labels, colorsfg_1state, colorsbg_1state, 0);
+	//display2_text_P(x, y, labels, colors_1state, 0);
 
 	if (boad_fpga_adcoverflow() != 0)
 	{
@@ -1064,7 +1079,7 @@ static void display_ant5(
 {
 #if WITHANTSELECT
 	const char FLASHMEM * const labels [1] = { hamradio_get_ant5_value_P(), };
-	display2_text_P(x, y, labels, colorsfg_1state, colorsbg_1state, 0);
+	display2_text_P(x, y, labels, colors_1state, 0);
 #endif /* WITHANTSELECT */
 }
 
@@ -1076,7 +1091,7 @@ static void display_att4(
 	)
 {
 	const char FLASHMEM * const labels [1] = { hamradio_get_att_value_P(), };
-	display2_text_P(x, y, labels, colorsfg_1state, colorsbg_1state, 0);
+	display2_text_P(x, y, labels, colors_1state, 0);
 }
 
 // HP/LP
@@ -1088,7 +1103,7 @@ static void display_hplp2(
 {
 #if WITHPOWERLPHP
 	const char FLASHMEM * const labels [1] = { hamradio_get_hplp_value_P(), };
-	display2_text_P(x, y, labels, colorsfg_1state, colorsbg_1state, 0);
+	display2_text_P(x, y, labels, colors_1state, 0);
 #endif /* WITHPOWERLPHP */
 }
 
@@ -1154,7 +1169,7 @@ static void display_mode3_a(
 	)
 {
 	const char FLASHMEM * const labels [1] = { hamradio_get_mode_a_value_P(), };
-	display2_text_P(x, y, labels, colorsfg_1freq, colorsbg_1freq, 0);
+	display2_text_P(x, y, labels, colors_1freq, 0);
 }
 
 
@@ -1166,7 +1181,7 @@ static void display_mode3_b(
 	)
 {
 	const char FLASHMEM * const labels [1] = { hamradio_get_mode_b_value_P(), };
-	display2_text_P(x, y, labels, colorsfg_1freqB, colorsbg_1freqB, 0);
+	display2_text_P(x, y, labels, colors_1freqB, 0);
 }
 
 // dd.dV - 5 places
@@ -1179,7 +1194,7 @@ static void display_voltlevelV5(
 #if WITHVOLTLEVEL
 	uint_fast8_t volt = hamradio_get_volt_value();	// Напряжение в сотнях милливольт т.е. 151 = 15.1 вольта
 
-	colmain_setcolors(colorsfg_1state [0], colorsbg_1state [0]);
+	colmain_setcolors(colors_1state [0].fg, colors_1state [0].bg);
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	do
 	{
@@ -1199,7 +1214,7 @@ static void display_voltlevel4(
 #if WITHVOLTLEVEL
 	const uint_fast8_t volt = hamradio_get_volt_value();	// Напряжение в сотнях милливольт т.е. 151 = 15.1 вольта
 
-	colmain_setcolors(colorsfg_1state [0], colorsbg_1state [0]);
+	colmain_setcolors(colors_1state [0].fg, colors_1state [0].bg);
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	do
 	{
@@ -1288,7 +1303,7 @@ static void display2_currlevelA6(
 
 		int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
 
-		colmain_setcolors(colorsfg_1state [0], colorsbg_1state [0]);
+		colmain_setcolors(colors_1state [0].fg, colors_1state [0].bg);
 		uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 		do
 		{
@@ -1300,7 +1315,7 @@ static void display2_currlevelA6(
 		// dd.d - 5 places (without "A")
 		int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
 
-		colmain_setcolors(colorsfg_1state [0], colorsbg_1state [0]);
+		colmain_setcolors(colors_1state [0].fg, colors_1state [0].bg);
 		uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 		do
 		{
@@ -1325,7 +1340,7 @@ static void display2_currlevel5(
 
 		int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
 
-		colmain_setcolors(colorsfg_1state [0], colorsbg_1state [0]);
+		colmain_setcolors(colors_1state [0].fg, colors_1state [0].bg);
 		uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 		do
 		{
@@ -1337,7 +1352,7 @@ static void display2_currlevel5(
 		// dd.d - 5 places (without "A")
 		int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
 
-		colmain_setcolors(colorsfg_1state [0], colorsbg_1state [0]);
+		colmain_setcolors(colors_1state [0].fg, colors_1state [0].bg);
 		uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 		do
 		{
@@ -1364,7 +1379,7 @@ static void display_siglevel7(
 	local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("%-+4d" "dBm"), tracemax - UINT8_MAX);
 	(void) v;
 	const char * const labels [1] = { buff, };
-	display2_text(x, y, labels, colorsfg_1state, colorsbg_1state, 0);
+	display2_text(x, y, labels, colors_1state, 0);
 #endif /* WITHIF4DSP */
 }
 
@@ -1383,7 +1398,7 @@ static void display_siglevel4(
 	local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("%-+4d"), tracemax - UINT8_MAX);
 	(void) v;
 	const char * const labels [1] = { buff, };
-	display2_text(x, y, labels, colorsfg_1state, colorsbg_1state, 0);
+	display2_text(x, y, labels, colors_1state, 0);
 #endif /* WITHIF4DSP */
 }
 
@@ -1407,7 +1422,7 @@ static void display2_span9(
 
 	local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("SPAN:%3dk"), (int) ((display_zoomedbw() + 0) / 1000));
 	const char * const labels [1] = { buff, };
-	display2_text(x, y, labels, colorsfg_1state, colorsbg_1state, 0);
+	display2_text(x, y, labels, colors_1state, 0);
 
 #endif /* WITHIF4DSP */
 }
@@ -1470,7 +1485,7 @@ static void display_smeter5(
 		local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("S9+%02d"), alevel - s9level);
 	}
 	const char * const labels [1] = { buff, };
-	display2_text(x, y, labels, colorsfg_1state, colorsbg_1state, 0);
+	display2_text(x, y, labels, colors_1state, 0);
 #endif /* WITHIF4DSP */
 }
 
@@ -1484,7 +1499,7 @@ static void display_freqdelta8(
 	int_fast32_t deltaf;
 	const uint_fast8_t f = dsp_getfreqdelta10(& deltaf, 0);		/* Получить значение отклонения частоты с точностью 0.1 герца для приемника A */
 	deltaf = - deltaf;	// ошибка по частоте преобразуется в расстройку
-	colmain_setcolors(colorsfg_1state [0], colorsbg_1state [0]);
+	colmain_setcolors(colors_1state [0].fg, colors_1state [0].bg);
 	if (f != 0)
 	{
 		uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
@@ -1511,7 +1526,7 @@ static void display_samfreqdelta8(
 	int_fast32_t deltaf;
 	const uint_fast8_t f = hamradio_get_samdelta10(& deltaf, 0);		/* Получить значение отклонения частоты с точностью 0.1 герца для приемника A */
 	deltaf = - deltaf;	// ошибка по частоте преобразуется в расстройку
-	colmain_setcolors(colorsfg_1state [0], colorsbg_1state [0]);
+	colmain_setcolors(colors_1state [0].fg, colors_1state [0].bg);
 	if (f != 0)
 	{
 		uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
@@ -1586,7 +1601,7 @@ static void display_time8(
 		);
 	
 	const char * const labels [1] = { buff, };
-	display2_text(x, y, labels, colorsfg_1state, colorsbg_1state, 0);
+	display2_text(x, y, labels, colors_1state, 0);
 #endif /* WITHNMEA */
 }
 
@@ -1609,7 +1624,7 @@ static void display_time5(
 		);
 
 	const char * const labels [1] = { buff, };
-	display2_text(x, y, labels, colorsfg_1state, colorsbg_1state, 0);
+	display2_text(x, y, labels, colors_1state, 0);
 #endif /* WITHNMEA */
 }
 
@@ -1654,7 +1669,7 @@ static void display2_datetime12(
 		);
 
 	const char * const labels [1] = { buff, };
-	display2_text(x, y, labels, colorsfg_1state, colorsbg_1state, 0);
+	display2_text(x, y, labels, colors_1state, 0);
 #endif /* WITHNMEA */
 }
 

@@ -233,6 +233,11 @@
 #define GUI_SLIDERLAYOUTCOLOR	225
 #define GUI_MENUSELECTCOLOR		116
 
+/* стркутура хранит цвета элементов дизайна. Возмодно треите поле - для анталиасингового формирования изображения */
+typedef struct colorpair_tag
+{
+	COLORMAIN_T fg, bg;
+} COLORPAIR_T;
 
 typedef struct editfreq_tag
 {
