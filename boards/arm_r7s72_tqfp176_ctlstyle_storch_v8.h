@@ -384,6 +384,7 @@
 	#if 0
 		#define WITHTOUCHGUI	1	/* тестирование работы с сенсорным экраном */
 		#define WITHENCODER2NOFREQ	1	/* второй валкодер не перестраивает частоту */
+		#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 	#endif
 	// --- Эти строки можно отключать, уменьшая функциональность готового изделия
 
