@@ -2030,16 +2030,15 @@ ltdc_vertical_pixN(
 	//ltdc_secondoffs ++;
 
 #else /* LCDMODE_LTDC_L24 */
+	PACKEDCOLORMAIN_T * const buffer = colmain_fb_draw();
+	const uint_fast16_t dx = DIM_X;
+	const uint_fast16_t dy = DIM_Y;
+	PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, x, y);
 	// размещаем пиксели по горизонтали
 	// TODO: для паттернов шире чем восемь бит, повторить нужное число раз.
-	const FLASHMEM PACKEDCOLORMAIN_T * const pcl = (* byte2runmain) [v];
-	memcpy((void *) & framebuff [ltdc_first] [ltdc_second + ltdc_secondoffs], pcl, sizeof (* pcl) * w);
-	arm_hardware_flush((uintptr_t) & framebuff [ltdc_first] [ltdc_second + ltdc_secondoffs], sizeof (PACKEDCOLORMAIN_T) * w);
-	if ((ltdc_secondoffs += 8) >= ltdc_h)
-	{
-		ltdc_secondoffs -= ltdc_h;
-		++ ltdc_first;
-	}
+	const FLASHMEM PACKEDCOLORMAIN_T * const pcl = (* byte2runmain) [pattern];
+	memcpy(tgr, pcl, sizeof (* pcl) * w);
+	arm_hardware_flush((uintptr_t) tgr, sizeof (PACKEDCOLORMAIN_T) * w);
 #endif /* LCDMODE_LTDC_L24 */
 }
 
@@ -2174,7 +2173,7 @@ ltdc_horizontal_put_char_small(uint_fast16_t x, uint_fast16_t y, char cc)
 	return x + width;
 }
 
-#if 0
+#if 0//SMALLCHARW
 // return new x coordinate
 static uint_fast16_t
 RAMFUNC_NONILINE
@@ -2197,8 +2196,9 @@ ltdcmain_horizontal_put_char_small(
 	}
 	return x + width;
 }
-#endif
+#endif /* SMALLCHARW */
 
+#if SMALLCHARW
 // возвращаем на сколько пикселей вправо занимет отрисованный символ
 // Фон не трогаем
 // return new x coordinate
@@ -2222,7 +2222,9 @@ static uint_fast16_t RAMFUNC_NONILINE ltdcpip_horizontal_put_char_small_tbg(
 	}
 	return x + width;
 }
+#endif /* SMALLCHARW */
 
+#if SMALLCHARW2
 // возвращаем на сколько пикселей вправо занимет отрисованный символ
 // Фон не трогаем
 // return new x coordinate
@@ -2246,7 +2248,9 @@ static uint_fast16_t RAMFUNC_NONILINE ltdcpip_horizontal_put_char_small2_tbg(
 	}
 	return x + width;
 }
+#endif /* SMALLCHARW2 */
 
+#if SMALLCHARW3
 // возвращаем на сколько пикселей вправо занимет отрисованный символ
 // Фон не трогаем
 // return new x coordinate
@@ -2270,6 +2274,7 @@ static uint_fast16_t RAMFUNC_NONILINE ltdcpip_horizontal_put_char_small3_tbg(
 	}
 	return x + width;
 }
+#endif /* SMALLCHARW3 */
 
 // Вызов этой функции только внутри display_wrdatabig_begin() и display_wrdatabig_end();
 // return new x coordinate
@@ -2429,7 +2434,7 @@ uint_fast16_t colpip_string_height(
 #else /* LCDMODE_HORFILL */
 
 // Вызов этой функции только внутри display_wrdata_begin() и 	display_wrdata_end();
-static uint_fast8_t RAMFUNC_NONILINE ltdc_vertical_put_char_small(uint_fast8_t xcell, uint_fast8_t ycell, char cc)
+static uint_fast16_t RAMFUNC_NONILINE ltdc_vertical_put_char_small(uint_fast16_t x, uint_fast16_t y, char cc)
 {
 	uint_fast8_t i = 0;
 	const uint_fast8_t c = smallfont_decode((unsigned char) cc);
@@ -2437,11 +2442,12 @@ static uint_fast8_t RAMFUNC_NONILINE ltdc_vertical_put_char_small(uint_fast8_t x
 	const FLASHMEM uint8_t * const p = & ls020_smallfont [c] [0];
 
 	for (; i < NBYTES; ++ i)
-		ltdc_vertical_pixN(p [i], 8);	// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
+		ltdc_vertical_pixN(x ++, y, p [i], 8);	// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
+	return x;
 }
 
 // Вызов этой функции только внутри display_wrdatabig_begin() и display_wrdatabig_end();
-static uint_fast8_t RAMFUNC_NONILINE ltdc_vertical_put_char_big(uint_fast8_t xcell, uint_fast8_t ycell, char cc)
+static uint_fast16_t RAMFUNC_NONILINE ltdc_vertical_put_char_big(uint_fast16_t x, uint_fast16_t y, char cc)
 {
 	// '#' - узкий пробел
 	enum { NBV = (BIGCHARH / 8) }; // сколько байтов в одной вертикали
@@ -2451,11 +2457,12 @@ static uint_fast8_t RAMFUNC_NONILINE ltdc_vertical_put_char_big(uint_fast8_t xce
 	const FLASHMEM uint8_t * const p = & ls020_bigfont [c] [0];
 
 	for (; i < NBYTES; ++ i)
-		ltdc_vertical_pixN(p [i], 8);	// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
+		ltdc_vertical_pixN(x ++, y, p [i], 8);	// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
+	return x;
 }
 
 // Вызов этой функции только внутри display_wrdatabig_begin() и display_wrdatabig_end();
-static uint_fast8_t RAMFUNC_NONILINE ltdc_vertical_put_char_half(uint_fast8_t xcell, uint_fast8_t ycell, char cc)
+static uint_fast16_t RAMFUNC_NONILINE ltdc_vertical_put_char_half(uint_fast16_t x, uint_fast16_t y, char cc)
 {
 	uint_fast8_t i = 0;
     const uint_fast8_t c = bigfont_decode((unsigned char) cc);
@@ -2463,7 +2470,8 @@ static uint_fast8_t RAMFUNC_NONILINE ltdc_vertical_put_char_half(uint_fast8_t xc
 	const FLASHMEM uint8_t * const p = & ls020_halffont [c] [0];
 
 	for (; i < NBYTES; ++ i)
-		ltdc_vertical_pixN(p [i], 8);	// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
+		ltdc_vertical_pixN(x ++, y, p [i], 8);	// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
+	return x;
 }
 
 
