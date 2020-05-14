@@ -66,7 +66,7 @@
 	#define WITHAGCMODEONOFF 1	/* среди режимов АРУ есть только включено-выключено */
 	#define	BOARD_AGCCODE_ON	BOARD_AGCCODE_0
 	#define	BOARD_AGCCODE_OFF	BOARD_AGCCODE_1
-	//#define CTLREGSTYLE_NOCTLREG	1	/* отсутствует управляющий регистр - для тестирования. */
+	//#define CTLREGMODE_NOCTLREG	1	/* отсутствует управляющий регистр - для тестирования. */
 
 	// +++ вариации прошивки, специфические для плат на ATMega
 	// --- вариации прошивки, специфические для плат на ATMega

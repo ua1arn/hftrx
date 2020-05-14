@@ -28,9 +28,6 @@ cd ..
 cd r7s721020
 make MAKE_DEFINES="-DCTLSTYLE_STORCH_V8=1 -DNIGHTBUILD=1"
 cd ..
-cd r7s721020_NEON
-make MAKE_DEFINES="-DCTLSTYLE_STORCH_V8=1 -DNIGHTBUILD=1"
-cd ..
 cd stm32f030f4p
 make MAKE_DEFINES="-DCTLSTYLE_V1E=1 -DNIGHTBUILD=1"
 cd ..
@@ -75,6 +72,9 @@ make MAKE_DEFINES="-DCTLSTYLE_STORCH_V3=1 -DNIGHTBUILD=1"
 cd ..
 cd stm32l051k6t
 make MAKE_DEFINES="-DCTLSTYLE_V1G=1 -DNIGHTBUILD=1"
+cd ..
+cd stm32mp157axx
+make MAKE_DEFINES="-DCTLSTYLE_STORCH_V7=1 -DNIGHTBUILD=1"
 cd ..
 
 @echo off
@@ -130,6 +130,8 @@ if exist %MPROC%/tc1_%MPROC%_rom.hex ( ECHO Testing %MPROC% OK ) else ( ECHO Tes
 SET MPROC=stm32h743zi
 if exist %MPROC%/tc1_%MPROC%_rom.hex ( ECHO Testing %MPROC% OK ) else ( ECHO Testing %MPROC% ERROR )
 SET MPROC=stm32l051k6t
+if exist %MPROC%/tc1_%MPROC%_rom.hex ( ECHO Testing %MPROC% OK ) else ( ECHO Testing %MPROC% ERROR )
+SET MPROC=stm32mp157axx
 if exist %MPROC%/tc1_%MPROC%_rom.hex ( ECHO Testing %MPROC% OK ) else ( ECHO Testing %MPROC% ERROR )
 
 pause

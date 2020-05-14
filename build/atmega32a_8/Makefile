@@ -41,14 +41,14 @@ HEX_EEPROM_FLAGS += --change-section-lma .eeprom=0 --no-change-warnings
 ## Objects explicitly added by the user
 LINKONLYOBJECTS = 
 
-SRCDIR = ../..
+SRCDIR = ../../src
 SRC =
 ASRC +=
 UINCDIR += ../.. ../../inc
 ULIBDIR +=
 ULIBS += 
 
-SRC_EXCLUDES += ../../tools/rbf2c.c
+#SRC_EXCLUDES += ../../tools/rbf2c.c
 SRC += $(filter-out $(SRC_EXCLUDES), $(wildcard $(SRCDIR)/*.c $(SRCDIR)/*/*.c $(SRCDIR)/*/*/*.c $(SRCDIR)/*/*/*/*.c))
 VPATH = $(SRCDIR)
 

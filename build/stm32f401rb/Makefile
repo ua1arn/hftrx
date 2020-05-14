@@ -65,7 +65,7 @@ DLIBS = -lm
 # Start of user section
 #
 
-SRCDIR = ../..
+SRCDIR = ../../src
 
 # Define project name here
 PROJECT = tc1_stm32f401rb
@@ -94,7 +94,7 @@ ULIBDIR +=
 # List all user libraries here
 ULIBS += 
 
-SRC_EXCLUDES += ../../tools/rbf2c.c
+#SRC_EXCLUDES += ../../tools/rbf2c.c
 SRC += $(filter-out $(SRC_EXCLUDES), $(wildcard $(SRCDIR)/*.c $(SRCDIR)/*/*.c $(SRCDIR)/*/*/*.c $(SRCDIR)/*/*/*/*.c))
 VPATH = $(SRCDIR)
 

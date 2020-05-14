@@ -113,7 +113,7 @@
 	#define WITHPREAMPATT2_6DB		1	// Управление УВЧ и двухкаскадным аттенюатором с затуханиями 0 - 6 - 12 - 18 dB */
 	#define	BOARD_AGCCODE_ON		0x00
 	#define	BOARD_AGCCODE_OFF		0x01
-	#define CTLREGSTYLE_NOCTLREG	1		/* управляющий регистр отсутствует */
+	#define CTLREGMODE_NOCTLREG	1		/* управляющий регистр отсутствует */
 
 	//#define DSTYLE_UR3LMZMOD	1	// Расположение элементов экрана в трансиверах UR3LMZ
 	#define	FONTSTYLE_ITALIC	1	// Использовать альтернативный шрифт

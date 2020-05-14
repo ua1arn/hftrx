@@ -32,7 +32,7 @@ CMSISDIR = ../../../CMSIS_5/CMSIS
 OBJDIR = ./obj
 
 # Define optimisation level here
-OPT = -Os
+OPT = -Ofast
 LTO = -flto
 
 # floating-point use hardware of STM32H743ZI CPU (64-bit and 32-bit float)
@@ -67,7 +67,7 @@ DLIBS = -lm
 # Start of user section
 #
 
-SRCDIR = ../..
+SRCDIR = ../../src
 
 # Define project name here
 PROJECT = tc1_stm32h743zi
@@ -99,7 +99,7 @@ ULIBDIR +=
 # List all user libraries here
 ULIBS += 
 
-SRCC_EXCLUDES += ../../tools/rbf2c.c
+#SRCC_EXCLUDES += ../../tools/rbf2c.c
 SRCCPP_EXCLUDES += 
 
 CSRC = $(filter-out $(SRCC_EXCLUDES), $(wildcard $(SRCDIR)/*.c $(SRCDIR)/*/*.c $(SRCDIR)/*/*/*.c $(SRCDIR)/*/*/*/*.c))

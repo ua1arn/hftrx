@@ -16,6 +16,7 @@
 	#endif /* ! defined(STM32MP157Axx) */
 
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */
+	// в данной конфигурации I2S и SAI - в режиме SLAVE
 	#define WITHI2SCLOCKFROMPIN 1	// тактовая частота на SPI2 (I2S) подается с внешнего генератора, в процессор вводится через MCK сигнал интерфейса
 	#define WITHSAICLOCKFROMPIN 1	// тактовая частота на SAI1 подается с внешнего генератора, в процессор вводится через MCK сигнал интерфейса
 
@@ -30,49 +31,61 @@
 	// Варианты конфигурации тактирования
 	// ref1_ck, ref2_ck - 8..16 MHz
 	// PLL1, PLL2 VCOs
-	#if 1
+	#if 0
 		#define WITHCPUXTAL 24000000uL	/* На процессоре установлен кварц 24.000 МГц */
 		//#define WITHCPUXOSC 24000000uL	/* На процессоре установлен генератор 24.000 МГц */
 
+		// PLL1_1600
 		#define PLL1DIVM	2	// ref1_ck = 12 MHz
-		#define PLL1DIVN	54	// 12*54 = 648 MHz
+		//#define PLL1DIVN	54	// 12*54 = 648 MHz
+		#define PLL1DIVN	66	// 12*66 = 792 MHz
 		#define PLL1DIVP	1	// MPU
 		#define PLL1DIVQ	2
 		#define PLL1DIVR	2
 
+		// PLL2_1600
 		#define PLL2DIVM	2	// ref2_ck = 12 MHz
 		#define PLL2DIVN	44	// 528 MHz
-		#define PLL2DIVP	2	// AXISS_CK div2=minimum 528/2 = 264 MHz
+		#define PLL2DIVP	2	// AXISS_CK div2=minimum 528/2 = 264 MHz PLL2 selected as AXI sub-system clock (pll2_p_ck)
 		#define PLL2DIVQ	1	// GPU clock divider = 528 MHz
 		#define PLL2DIVR	1	// DDR clock divider = 528 MHz
 
+		// PLL3_800
+
+		// PLL4_800
 		#define PLL4DIVM	2	// ref2_ck = 12 MHz
-		#define PLL4DIVN	48	// 576 MHz
+		#define PLL4DIVN	64	// 768 MHz
 		#define PLL4DIVP	2	// div2
 		//#define PLL4DIVQ	19	// LTDC clock divider = 30.315 MHz
-		#define PLL4DIVR	12	// USBPHY clock divider = 48 MHz
+		//#define PLL4DIVR	20	// USBPHY clock divider = 38.4 MHz
+		#define PLL4DIVR	24	// USBPHY clock divider = 32 MHz
 
 	#else
 		// HSI version (HSI=64 MHz)
+		// PLL1_1600
 		#define PLL1DIVM	5	// ref1_ck = 12.8 MHz
-		#define PLL1DIVN	50	// x25..x100: 12.8 * 50 = 640 MHz
-		//#define PLL1DIVN	32	// x25..x100: 12.8 * 32 = 409.6 MHz
+		//#define PLL1DIVN	50	// x25..x100: 12.8 * 50 = 640 MHz
+		#define PLL1DIVN	62	// x25..x100: 12.8 * 32 = 793.6 MHz
 		#define PLL1DIVP	1
 		#define PLL1DIVQ	2
 		#define PLL1DIVR	2
 
+		// PLL2_1600
 		#define PLL2DIVM	5	// ref2_ck = 12.8 MHz
-		#define PLL2DIVN	35	// 12.8 * 35 = 448 MHz
-		#define PLL2DIVP	2	// div2=minimum
-		#define PLL2DIVQ	2	// GPU clock divider
-		#define PLL2DIVR	3	// DDR clock divider
+		#define PLL2DIVN	41	// 12.8 * 41 = 524.8 MHz
+		#define PLL2DIVP	2	// div2=minimum PLL2 selected as AXI sub-system clock (pll2_p_ck)
+		#define PLL2DIVQ	1	// GPU clock divider
+		#define PLL2DIVR	1	// DDR clock divider
 
-		// TODO: compute USBPHY divider
+		// PLL3_800
+
+		// PLL4_800
 		#define PLL4DIVM	5	// ref2_ck = 12.8 MHz
-		#define PLL4DIVN	48	// 12.8 * 48 = 614.4 MHz
+		#define PLL4DIVN	60	// 12.8 * 60 = 768 MHz
 		#define PLL4DIVP	2	// div2
-		//#define PLL4DIVQ	x20	// LTDC clock divider = 32 MHz
-		#define PLL4DIVR	x12	// USBPHY clock divider = 48 MHz
+		//#define PLL4DIVQ	25	// LTDC clock divider = 30.72 MHz
+		//#define PLL4DIVR	20	// USBPHY clock divider = 38.4 MHz
+		#define PLL4DIVR	24	// USBPHY clock divider = 32 MHz
 
 	#endif
 
@@ -218,8 +231,8 @@
 	//#define LCDMODE_ILI9341	1	/* 320*240 SF-TC240T-9370-T с контроллером ILI9341 - STM32F4DISCO */
 	//#define LCDMODE_ILI9341_TOPDOWN	1	/* LCDMODE_ILI9341 - перевернуть изображение (для выводов справа) */
 	//#define LCDMODE_LQ043T3DX02K 1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 display */
-	//#define LCDMODE_AT070TN90 1	/* AT070TN90 panel (800*480) - 7" display */
-	#define LCDMODE_AT070TNA2 1	/* AT070TNA2 panel (1024*600) - 7" display */
+	#define LCDMODE_AT070TN90 1	/* AT070TN90 panel (800*480) - 7" display */
+	//#define LCDMODE_AT070TNA2 1	/* AT070TNA2 panel (1024*600) - 7" display */
 	// --- Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
 #endif /* WITHISBOOTLOADER */
 
@@ -294,12 +307,13 @@
 
 	// FPGA section
 	//#define	WITHFPGAWAIT_AS	1	/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
-	////*#define	WITHFPGALOAD_PS	1	/* FPGA загружается процессором с помощью SPI */
+	#define	WITHFPGALOAD_PS	1	/* FPGA загружается процессором с помощью SPI */
 
 	//#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
 	#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
 	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
 	#define WITHUSEDUALWATCH	1	// Второй приемник
+	#define WITHREVERB	1	// реербератор в обраьотке микрофонного сигнала
 	//#define WITHLOOPBACKTEST	1	/* прослушивание микрофонного входа, генераторов */
 	//#define WITHMODEMIQLOOPBACK	1	/* модем получает собственные передаваемые квадратуры */
 
@@ -434,9 +448,9 @@
 	//#define NVRAM_TYPE NVRAM_TYPE_AT25040A
 	//#define NVRAM_TYPE NVRAM_TYPE_AT25L16		// demo board with atxmega128a4u
 	//#define NVRAM_TYPE NVRAM_TYPE_AT25256A
-	//#define NVRAM_TYPE NVRAM_TYPE_BKPSRAM	// Область памяти с батарейным питанием
-	#define NVRAM_TYPE NVRAM_TYPE_NOTHING	// нет NVRAM
-	#define HARDWARE_IGNORENONVRAM	1		// отладка на платах где нет никакого NVRAM
+	#define NVRAM_TYPE NVRAM_TYPE_BKPSRAM	// Область памяти с батарейным питанием
+	//#define NVRAM_TYPE NVRAM_TYPE_NOTHING	// нет NVRAM
+	//#define HARDWARE_IGNORENONVRAM	1		// отладка на платах где нет никакого NVRAM
 
 	// End of NVRAM definitions section
 	#define FTW_RESOLUTION 32	/* разрядность FTW выбранного DDS */
@@ -450,7 +464,7 @@
 	//#define PLL1_TYPE PLL_TYPE_ADF4001
 	//#define DDS2_TYPE DDS_TYPE_AD9834
 	//#define RTC1_TYPE RTC_TYPE_M41T81	/* ST M41T81M6 RTC clock chip with I2C interface */
-	//#define RTC1_TYPE RTC_TYPE_STM32F4xx	/* STM32F4xx/STM32F7xx internal RTC peripherial */
+	#define RTC1_TYPE RTC_TYPE_STM32F4xx	/* STM32F4xx/STM32F7xx internal RTC peripherial */
 	//#define TSC1_TYPE TSC_TYPE_STMPE811	/* touch screen controller */
 	//#define DAC1_TYPE	99999		/* наличие ЦАП для подстройки тактовой частоты */
 
@@ -467,7 +481,7 @@
 	// ST LM235Z
 	#define THERMOSENSOR_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика температуры
 	#define THERMOSENSOR_LOWER		10	// 1 kOhm - нижний резистор
-	#define THERMOSENSOR_OFFSET 	(- 480)		// 2.98 volt = 25 Celsius
+	#define THERMOSENSOR_OFFSET 	(- 2730)		// 2.98 volt = 25 Celsius, 10 mV/C
 	#define THERMOSENSOR_DENOM	 	10			// миливольты к десятым долям градуса 2.98 volt = 25 Celsius
 
 #endif /* WITHISBOOTLOADER */
@@ -480,7 +494,7 @@
 	/* фильтры, для которых стоит признак HAVE */
 	#define IF3_FHAVE	( IF3_FMASK_0P5 | IF3_FMASK_3P1 /*| IF3_FMASK_6P0 | IF3_FMASK_8P0*/)
 
-	#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания и/или подсветки дисплея
+	//#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания и/или подсветки дисплея
 
 	#define VOLTLEVEL_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика напряжения
 	#define VOLTLEVEL_LOWER		10	// 1 kOhm - нижний резистор
@@ -488,19 +502,23 @@
 	// Назначения входов АЦП процессора.
 	enum 
 	{ 
+		WPM_POTIX = BOARD_ADCX1IN(2),			// MCP3208 CH2 потенциометр управления скоростью передачи в телеграфе
+		IFGAIN_IXI = BOARD_ADCX1IN(0),			// MCP3208 CH0 IF GAIN
+		AFGAIN_IXI = BOARD_ADCX1IN(1),			// MCP3208 CH1 AF GAIN
+
+	#if WITHPOTIFGAIN
+		POTIFGAIN = IFGAIN_IXI,
+	#endif /* WITHPOTIFGAIN */
+	#if WITHPOTAFGAIN
+		POTAFGAIN = AFGAIN_IXI,
+	#endif /* WITHPOTAFGAIN */
+
 	#if WITHREFSENSOR
 		VREFIX = 17,		// Reference voltage
 	#endif /* WITHREFSENSOR */
 	#if WITHTEMPSENSOR
 		TEMPIX = 16,
 	#endif /* WITHTEMPSENSOR */
-
-	#if WITHPOTIFGAIN
-		POTIFGAIN = 3,		// PA2 IF GAIN
-	#endif /* WITHPOTIFGAIN */
-	#if WITHPOTAFGAIN
-		POTAFGAIN = 7,		// PA7 AF GAIN
-	#endif /* WITHPOTAFGAIN */
 
 	#if WITHPOTWPM
 		POTWPM = 6,			// PA6 потенциометр управления скоростью передачи в телеграфе

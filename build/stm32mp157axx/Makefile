@@ -32,10 +32,9 @@ OBJDIR2 = obj
 OBJDIR = ./$(OBJDIR2)
 
 # Define optimisation level here
-OPT = -Ofast
+OPT = -Os
 LTO = -flto
 
-# This product incorporates the ARM single-core Cortex-A9 MPCore, where the IP version is r3p0.
 MCU  = cortex-a7
 CORE = -march=armv7-a -mfloat-abi=hard -mfpu=vfpv4-d16 -ftree-vectorize
 #CORE = -march=armv7-a -mfloat-abi=hard -mfpu=vfpv4-d16 -mfpu=neon -ftree-vectorize
@@ -69,7 +68,7 @@ DLIBS = -lm
 # Start of user section
 #
 
-SRCDIR = ../..
+SRCDIR = ../../src
 
 # Define project name here
 PROJECT = tc1_stm32mp157axx
@@ -103,7 +102,7 @@ ULIBDIR +=
 # List all user libraries here
 ULIBS += 
 
-SRC_EXCLUDES += ../../tools/rbf2c.c
+#SRC_EXCLUDES += ../../tools/rbf2c.c
 CSRC += $(filter-out $(SRC_EXCLUDES), $(wildcard $(SRCDIR)/*.c $(SRCDIR)/*/*.c $(SRCDIR)/*/*/*.c $(SRCDIR)/*/*/*/*.c))
 CPPSRC += $(filter-out $(SRC_EXCLUDES), $(wildcard $(SRCDIR)/*.cpp $(SRCDIR)/*/*.cpp $(SRCDIR)/*/*/*.cpp $(SRCDIR)/*/*/*/*.cpp))
 VPATH = $(SRCDIR)
@@ -152,13 +151,17 @@ CPFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 all: APP2 $(PROJECT)_app.stm32 app.hex
 
 bootloader: BOOT2 fsbl.stm32 boot.hex
+  
+app_run: $(PROJECT)_app.stm32
+	./dfu-util.exe --device ffff:0738 --alt 2 --transfer-size 4096 --dfuse-address 0xC0000000 --download $(PROJECT)_app.stm32
+	./dfu-util.exe --device ffff:0738 --alt 2 --detach
 
 flash: $(PROJECT)_app.stm32
 	./dfu-util.exe --device ffff:0738 --alt 0 --dfuse-address 0x70040000 --download $(PROJECT)_app.stm32
 
-BOOT2: $(OBJS) $(PROJECT)_boot.elf $(PROJECT)_boot.bin
+BOOT2: version $(OBJS) $(PROJECT)_boot.elf $(PROJECT)_boot.bin
 
-APP2: $(OBJS) $(PROJECT)_app.elf $(PROJECT)_app.bin
+APP2: version $(OBJS) $(PROJECT)_app.elf $(PROJECT)_app.bin
 
 fsbl.stm32: $(PROJECT)_boot.bin
 	./stm32image.exe -l 0x2FFC2500 -e 0x2FFC2500 -s $(PROJECT)_boot.bin -d $@
@@ -199,11 +202,12 @@ $(OBJDIR)/%.o: %.s
 %bin: %elf
 	$(BIN) $< $@
 
-
-clean:
+clean: version
 	-rm -fR $(OBJDIR)
 	-rm -f $(PROJECT)_boot.elf $(PROJECT)_boot.map
 	-rm -f $(PROJECT)_app.elf $(PROJECT)_app.map
+
+version:
 	$(CC) --version
 	
 # 

@@ -174,7 +174,7 @@
 
 	//#define KEYB_FPANEL30_V3	1	/* KEYBOARD_USE_ADC6_V1, 30 кнопок на 5 линий - плата rfrontpanel_v3 + LCDMODE_S1D13781 & LCDMODE_LQ043T3DX02K в нормальном расположении */
 	//#define KEYBOARD_USE_ADC6_V1	1
-	//#define WITHCOLORS_ATS52 1	// spectrum display in alternative colors
+	//#define COLORSTYLE_ATS52 1	// spectrum display in alternative colors
 
 	//#define KEYB_FPANEL20_V0A_PLAYFILE 1
 	//#define WITHSENDWAV 1	/* трансивер может передавать записанные wav файлы */
@@ -288,6 +288,7 @@
 	#define BOARD_FFTZOOM_POW2MAX 1	// Возможные масштабы FFT x1, x2, x4, x8
 	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
 	#define WITHUSEDUALWATCH	1	// Второй приемник
+	#define WITHREVERB	1	// реербератор в обраьотке микрофонного сигнала
 	//#define WITHLOOPBACKTEST	1	/* прослушивание микрофонного входа, генераторов */
 	//#define WITHMODEMIQLOOPBACK	1	/* модем получает собственные передаваемые квадратуры */
 	//#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
@@ -470,7 +471,7 @@
 	// ST LM235Z
 	#define THERMOSENSOR_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика температуры
 	#define THERMOSENSOR_LOWER		10	// 1 kOhm - нижний резистор
-	#define THERMOSENSOR_OFFSET 	(- 480)		// 2.98 volt = 25 Celsius
+	#define THERMOSENSOR_OFFSET 	(- 2730)		// 2.98 volt = 25 Celsius, 10 mV/C
 	#define THERMOSENSOR_DENOM	 	10			// миливольты к десятым долям градуса 2.98 volt = 25 Celsius
 
 	#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания и/или подсветки дисплея

@@ -160,7 +160,7 @@
 
 	// --- вариации прошивки, специфические для разных плат
 
-	#define CTLREGSTYLE_NOCTLREG	1
+	#define CTLREGMODE_NOCTLREG	1
 
 	//#define WITHPOWERTRIM		1	// Имеется управление мощностью
 	#define WITHPOWERTRIMMIN	5	// Нижний предел регулировки (показываемый на дисплее)
@@ -296,6 +296,7 @@
 	//#define BOARD_FFTZOOM_POW2MAX 4	// Возможные масштабы FFT x1, x2, x4, x8, x16
 	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
 	//#define WITHUSEDUALWATCH	1	// Второй приемник
+	//#define WITHREVERB	1	// реербератор в обраьотке микрофонного сигнала
 	//#define WITHLOOPBACKTEST	1	/* прослушивание микрофонного входа, генераторов */
 	//#define WITHMODEMIQLOOPBACK	1	/* модем получает собственные передаваемые квадратуры */
 	//#define WITHUSESDCARD		1	// Включение поддержки SD CARD

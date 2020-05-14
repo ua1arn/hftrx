@@ -67,7 +67,7 @@
 	//#define WITHSLEEPTIMER	1	/* выключить индикатор и вывод звука по истечениии указанного времени */
 	// --- Эти строки можно отключать, уменьшая функциональность готового изделия
 
-	#define CTLREGSTYLE_NOCTLREG 1
+	#define CTLREGMODE_NOCTLREG 1
 	#define WITHAGCMODENONE		1	/* Режимами АРУ не управляем */
 	#define BOARD_AGCCODE_OFF	0	// stub
 	#define WITHPREAMPATT2_6DB		1	// Управление УВЧ и двухкаскадным аттенюатором с затуханиями 0 - 6 - 12 - 18 dB */

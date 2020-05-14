@@ -11,6 +11,7 @@
 #ifndef ARM_R7S72_TQFP176_CTLSTYLE_STORCH_V8_RA4ASN_H_INCLUDED
 #define ARM_R7S72_TQFP176_CTLSTYLE_STORCH_V8_RA4ASN_H_INCLUDED 1
 
+	// в данной конфигурации I2S и SAI (SSIF) - в режиме MASTER
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */
 	#define WITHI2SCLOCKFROMPIN 1	// тактовая частота на SPI2 (I2S) подается с внешнего генератора, в процессор вводится через AUDIO_X1 сигнал интерфейса
 	#define WITHSAICLOCKFROMPIN 1	// тактовая частота на SAI1 подается с внешнего генератора, в процессор вводится через AUDIO_X1 сигнал интерфейса
@@ -102,6 +103,7 @@
 	#define LCDMODE_V2	1	/* только главный экран с тремя видеобуферами, без PIP */
 
 	//#define WITHFLATLINK 1	/* Работа с TFT панелью через SN75LVDS83B	*/
+	#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
 
 #elif 1
 
@@ -193,7 +195,7 @@
 #if WITHISBOOTLOADER
 
 
-	//#define CTLREGSTYLE_NOCTLREG 1
+	//#define CTLREGMODE_NOCTLREG 1
 	/* коды входов коммутатора источников сигнала для УНЧ приёмника */
 	#define BOARD_DETECTOR_SSB 	0		// Заглушка
 
@@ -257,8 +259,8 @@
 	#define BOARD_FILTER_8P0		0	/* 6.0 kHz filter */
 	// --- заглушки для плат с DSP обработкой
 
-	//#define WITHRTS192	1		// Есть канал спектроанализатора - не забыть включить WITHSAI2HW
-	#define WITHRTS96		1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
+	#define WITHRTS192	1		// Есть канал спектроанализатора - не забыть включить WITHSAI2HW
+	//#define WITHRTS96		1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 
 	#define ENCRES_DEFAULT ENCRES_400
 	#define ENCDIV_DEFAULT	12
@@ -277,8 +279,9 @@
 	//#define BOARD_FFTZOOM_POW2MAX 4	// Возможные масштабы FFT x1, x2, x4, x8, x16
 	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
 	//#define WITHUSEDUALWATCH	1	// Второй приемник
+	#define	WITHREVERB	1	// реербератор в обраьотке микрофонного сигнала
 	#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
-	//#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
+	#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 
 	// FPGA section
 	//#define	WITHFPGAWAIT_AS	1	/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
@@ -358,17 +361,19 @@
 	//#define WITHUSEAUDIORECCLASSIC	1	// стандартный формат записи, без "дыр"
 
 	#define WITHBARS		1	/* отображение S-метра и SWR-метра */
+
 	#define WITHDISPLAY_FPS		15
 	#define WITHDISPLAYSWR_FPS	30
 
-	#define WITHMAXPWRCALI		77
-	#define WITHSWRCALI			118
+	#define WITHMAXPWRCALI		74
+	#define WITHSWRCALI			50
 
-	#define WITHTOUCHGUI	1
-	#define WITHALPHA		64
+	#define WITHTOUCHGUI		1
+	#define WITHOLDMENUSTYLE	1	/* Меню в виде прокручиваемого списка */
+	#define WITHALPHA			64
 
-	#define WITHBOTTOMDBVAL	110
-	#define DEFAULTDIALFREQ	3708000L
+	#define WITHBOTTOMDBVAL		110
+	#define DEFAULTDIALFREQ		3708000L
 
 	#define WITHVOLTLEVEL	1	/* отображение напряжения питания */
 	#define VOLTLEVEL_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика напряжения

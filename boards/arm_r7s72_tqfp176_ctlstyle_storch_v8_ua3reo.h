@@ -11,6 +11,7 @@
 #ifndef ARM_R7S72_TQFP176_CTLSTYLE_STORCH_V8_H_INCLUDED
 #define ARM_R7S72_TQFP176_CTLSTYLE_STORCH_V8_H_INCLUDED 1
 
+	// в данной конфигурации I2S и SAI (SSIF) - в режиме MASTER
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */
 	#define WITHI2SCLOCKFROMPIN 1	// тактовая частота на SPI2 (I2S) подается с внешнего генератора, в процессор вводится через AUDIO_X1 сигнал интерфейса
 	#define WITHSAICLOCKFROMPIN 1	// тактовая частота на SAI1 подается с внешнего генератора, в процессор вводится через AUDIO_X1 сигнал интерфейса
@@ -101,6 +102,7 @@
 	#define LCDMODE_V2	1	/* только главный экран с тремя видеобуферами, без PIP */
 
 	//#define WITHFLATLINK 1	/* Работа с TFT панелью через SN75LVDS83B	*/
+	//#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
 
 #elif 1
 
@@ -191,7 +193,7 @@
 
 
 	#define CTLREGMODE_STORCH_V7	1	/* TFT 4.3" "Аист" с DSP и FPGA STM32H743IIT6 или R7S721020VCFP */
-	//#define CTLREGSTYLE_NOCTLREG 1
+	//#define CTLREGMODE_NOCTLREG 1
 	/* коды входов коммутатора источников сигнала для УНЧ приёмника */
 	#define BOARD_DETECTOR_SSB 	0		// Заглушка
 
@@ -267,6 +269,7 @@
 	#define BOARD_ENCODER2_DIVIDE 4
 
 	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
+	#define	WITHREVERB	1	// реербератор в обраьотке микрофонного сигнала
 	#define WITHUSEDUALWATCH	1	// Второй приемник
 	//#define BOARD_FFTZOOM_POW2MAX 1	// Возможные масштабы FFT x1, x2
 	//#define BOARD_FFTZOOM_POW2MAX 2	// Возможные масштабы FFT x1, x2, x4
@@ -496,7 +499,7 @@
 	// ST LM235Z
 	#define THERMOSENSOR_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика температуры
 	#define THERMOSENSOR_LOWER		10	// 1 kOhm - нижний резистор
-	#define THERMOSENSOR_OFFSET 	(- 480)		// 2.98 volt = 25 Celsius
+	#define THERMOSENSOR_OFFSET 	(- 2730)		// 2.98 volt = 25 Celsius, 10 mV/C
 	#define THERMOSENSOR_DENOM	 	10			// миливольты к десятым долям градуса 2.98 volt = 25 Celsius
 
 	#define KI_COUNT 5	// количество используемых под клавиатуру входов АЦП

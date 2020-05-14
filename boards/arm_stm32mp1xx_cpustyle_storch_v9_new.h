@@ -20,7 +20,9 @@
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
 #define WITHMDMAHW		1	/* Использование MDMA для формирования изображений */
 //#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
-#define WIHSPIDFHW	1	/* аппаратное обслуживание DATA FLASH */
+#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
+//#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */
+#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
 
 //#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 #define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
@@ -28,6 +30,7 @@
 	#define WITHI2SHW	1	/* Использование I2S - аудиокодек на I2S2 и I2S2_alt или I2S2 и I2S3	*/
 	#define WITHSAI1HW	1	/* Использование SAI1 - FPGA или IF codec	*/
 	//#define WITHSAI2HW	1	/* Использование SAI2 - FPGA или IF codec	*/
+	//#define WITHSAI3HW	1	/* Использование SAI3 - FPGA скоростной канал записи спктра	*/
 #endif /* WITHINTEGRATEDDSP */
 
 //#define WITHCPUDACHW	1	/* использование встроенного в процессор DAC */
@@ -37,7 +40,7 @@
 //#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 
 //#define WITHUART1HW	1	/* PA9, PA10 Используется периферийный контроллер последовательного порта #1 */
-#define WITHUART2HW	1	/* PA2, PA3 Используется периферийный контроллер последовательного порта #2 */
+#define WITHUART2HW	1	/* PD5, PD6 Используется периферийный контроллер последовательного порта #2 */
 #define WITHUARTFIFO	1	/* испольование FIFO */
 
 //#define WITHCAT_USART1		1
@@ -49,10 +52,14 @@
 
 	#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
 	//#define WITHSDRAM_PMC1	1	/* power management chip */
-	//#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 
-	//#define WITHUSBHW_DEVICE	USB_OTG_HS	/* на этом устройстве поддерживается функциональность DEVICE	*/
-	//#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод VBUS_SENSE */
+	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
+	//#define WITHGPUHW	1	/* Graphic processor unit */
+	//#define WITHEHCIHW	1	/* USB_EHCI controller */
+	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
+
+	#define WITHUSBHW_DEVICE	USB_OTG_HS	/* на этом устройстве поддерживается функциональность DEVICE	*/
+	#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод OTG_VBUS */
 	#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
 	//#define WITHUSBDEV_HIGHSPEEDULPI	1
 	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USBH_HS_DP & USBH_HS_DM
@@ -64,6 +71,7 @@
 
 	//#define WITHUSBHW_HOST		USB_OTG_HS
 	#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB_DP2 & USB_DM2
+	//#define WITHUSBHOST_DMAENABLE 1
 
 
 	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
@@ -71,23 +79,27 @@
 
 	//#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
 	//#define WITHUSBUACIN2		1	/* формируются три канала передачи звука */
-		//#define WITHUABUACOUTAUDIO48MONO	1	/* для уменьшения размера буферов в endpoints */
+	//#define WITHUABUACOUTAUDIO48MONO	1	/* для уменьшения размера буферов в endpoints */
 
-	//#define WITHUSBCDC		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
-	//#define WITHUSBHWCDC_N	2	/* количество виртуальных последовательных портов */
+	#define WITHUSBCDC		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
+	#define WITHUSBHWCDC_N	1	/* количество виртуальных последовательных портов */
 	//#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
 	//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
 	//#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
 	//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
-	//#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
-	//#define WITHUSBWCID	1
+	#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
+	#define WITHMOVEDFU 1	// Переместить интерфейс DFU в область меньших номеров. Утилита dfu-util 0.9 не работает с DFU на интерфейсе с индексом 10
+	#define WITHUSBWCID	1
+
 #else /* WITHISBOOTLOADER */
 
 	#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
+	//#define WITHGPUHW	1	/* Graphic processor unit */
+	//#define WITHEHCIHW	1	/* USB_EHCI controller */
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 
 	#define WITHUSBHW_DEVICE	USB_OTG_HS	/* на этом устройстве поддерживается функциональность DEVICE	*/
-	//#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод VBUS_SENSE */
+	#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод OTG_VBUS */
 	#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
 	//#define WITHUSBDEV_HIGHSPEEDULPI	1
 	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USB_DP2 & USB_DM2
@@ -119,7 +131,9 @@
 	//#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
 	//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
 	#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
-	//#define WITHUSBWCID	1
+	#define WITHMOVEDFU 1	// Переместить интерфейс DFU в область меньших номеров. Утилита dfu-util 0.9 не работает с DFU на интерфейсе с индексом 10
+	#define WITHUSBWCID	1
+
 #endif /* WITHISBOOTLOADER */
 
 
@@ -206,18 +220,19 @@
 #endif
 
 #if WITHI2SHW
-	// Инициализируются I2S2 и I2S3
+	// Инициализируются I2S2 в дуплексном режиме.
 	#define I2S2HW_INITIALIZE() do { \
 		arm_hardware_piob_altfn2(1uL << 12,	AF_SPI2); /* PB12 I2S2_WS	*/ \
-		arm_hardware_piob_altfn2(1uL << 10,	AF_SPI2); /* PB10 I2S2_CK	*/ \
-		arm_hardware_pioc_altfn2(1uL << 3,	AF_SPI2); /* PC3 I2S2_SD - передача */ \
-		arm_hardware_pioa_altfn2(1uL << 15,	AF_SPI3); /* PA15 I2S3_WS	*/ \
-		arm_hardware_piob_altfn2(1uL << 3,	AF_SPI3); /* PB3 I2S3_CK	*/ \
-		arm_hardware_piob_altfn2(1uL << 2,	7 /* AF_7 */); /* PB2 I2S3_SD, - приём от кодека */ \
+		arm_hardware_piob_altfn2(1uL << 13,	AF_SPI2); /* PB13 I2S2_CK	*/ \
+		arm_hardware_piob_altfn2(1uL << 15,	AF_SPI2); /* PB15 I2S2_SDO - передача */ \
+		arm_hardware_piob_altfn2(1uL << 14,	AF_SPI2); /* PB14 I2S2_SDI, - приём от кодека */ \
 	} while (0)
 #endif /* WITHSAI1HW */
 
 #if WITHSAI1HW
+	/*
+	 *
+	 */
 	#define SAI1HW_INITIALIZE()	do { \
 		/*arm_hardware_pioe_altfn20(1uL << 2, AF_SAI); */	/* PE2 - SAI1_MCK_A - 12.288 MHz	*/ \
 		arm_hardware_pioe_altfn2(1uL << 4,	AF_SAI);			/* PE4 - SAI1_FS_A	- 48 kHz	*/ \
@@ -233,11 +248,17 @@
 	из внешних сигналов требуется только SAI2_SD_A
 	*/
 	#define SAI2HW_INITIALIZE()	do { \
-		/* arm_hardware_pioe_altfn20(1uL << 0, AF_SAI2); */	/* PE0 - SAI2_MCK_A - 12.288 MHz	*/ \
-		/* arm_hardware_piod_altfn2(1uL << 12, AF_SAI2); */	/* PD12 - SAI2_FS_A	- 48 kHz	*/ \
-		/* arm_hardware_piod_altfn20(1uL << 13, AF_SAI2); */	/* PD13 - SAI2_SCK_A	*/ \
-		/* arm_hardware_piod_altfn2(1uL << 11, AF_SAI2); */	/* PD11 - SAI2_SD_A	(i2s data to codec)	*/ \
-		/* arm_hardware_pioe_altfn2(1uL << 11, AF_SAI2);	*/ /* PE11 - SAI2_SD_B	(i2s data from codec)	*/ \
+		arm_hardware_pioe_altfn2(1uL << 11, AF_SAI2);	/* PE11 - SAI2_SD_B	(i2s data from codec)	*/ \
+	} while (0)
+#endif /* WITHSAI1HW */
+
+#if WITHSAI3HW
+	/*
+	*/
+	#define SAI3HW_INITIALIZE()	do { \
+		arm_hardware_piod_altfn50(1uL << 12, AF_SAI2); 		/* PD12 - SAI2_FS_A	- 48 kHz	*/ \
+		arm_hardware_piod_altfn50(1uL << 13, AF_SAI2); 		/* PD13 - SAI2_SCK_A	*/ \
+		arm_hardware_pioe_altfn50(1uL << 11, AF_SAI2);		/* PE11 - SAI2_SD_B	(i2s data from codec)	*/ \
 	} while (0)
 #endif /* WITHSAI1HW */
 
@@ -396,14 +417,14 @@
 	// ---
 
 	// +++
-	// PTT input - PD13
-	// PTT2 input - PD0
+	// PTT input - PD10
+	// PTT2 input - PD9
 	#define PTT_TARGET_PIN				(GPIOD->IDR)
 	#define PTT_BIT_PTT					(1uL << 10)		// PD10 - PTT
 	#define PTT2_TARGET_PIN				(GPIOD->IDR)
 	#define PTT2_BIT_PTT				(1uL << 9)		// PD9 - PTT2
 	// получить бит запроса оператором перехода на пердачу
-	#define HARDWARE_GET_PTT() 0//((PTT_TARGET_PIN & PTT_BIT_PTT) == 0 || (PTT2_TARGET_PIN & PTT2_BIT_PTT) == 0)
+	#define HARDWARE_GET_PTT() ((PTT_TARGET_PIN & PTT_BIT_PTT) == 0 || (PTT2_TARGET_PIN & PTT2_BIT_PTT) == 0)
 	#define PTT_INITIALIZE() \
 		do { \
 			arm_hardware_piod_inputs(PTT_BIT_PTT); \
@@ -412,7 +433,7 @@
 			arm_hardware_piod_updown(PTT2_BIT_PTT, 0); \
 		} while (0)
 	// ---
-	// TUNE input - PD9
+	// TUNE input - PD11
 	#define TUNE_TARGET_PIN				(GPIOD->IDR)
 	#define TUNE_BIT_TUNE					(1U << 11)		// PD11
 	#define HARDWARE_GET_TUNE() ((TUNE_TARGET_PIN & TUNE_BIT_TUNE) == 0)
@@ -444,8 +465,8 @@
 
 	#define ELKEY_INITIALIZE() \
 		do { \
-			/*arm_hardware_piod_inputs(ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT); */\
-			/*arm_hardware_piod_updown(ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT, 0); */\
+			arm_hardware_piod_inputs(ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT); \
+			arm_hardware_piod_updown(ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT, 0); \
 		} while (0)
 
 #endif /* WITHELKEY */
@@ -460,23 +481,23 @@
 	#define SPI_ALLCS_PORT_S(v)	do { GPIOE->BSRR = BSRR_S(v); __DSB(); } while (0)
 	#define SPI_ALLCS_PORT_C(v)	do { GPIOE->BSRR = BSRR_C(v); __DSB(); } while (0)
 
-	#define targetext1		(0 * 1uL << 15)	// PG15 ext1 on front panel
-	#define targetxad2		(0 * 1uL << 14)	// PG14 ext2(not connected now)
-	#define targetnvram		(0 * 1uL << 2)		// PE2 nvmem FM25L16B
-	#define targetctl1		(0 * 1uL << 3)	// PG7 board control registers chain
-	#define targetcodec1	(0 * 1uL << 15)		// PE15 on-board codec1 NAU8822L
-	#define targetfpga1		(0 * 1uL << 1)	// PG1 FPGA control registers CS1
-	#define targetfpga2		(0 * 1uL << 0)	// PG0 FPGA control registers CS2
+	#define targetext1		(1uL << 8)		// PE8 ext1 on front panel
+	#define targetxad2		(1uL << 7)		// PE7 ext2(not connected now)
+	#define targetnvram		(1uL << 0)		// PE0 nvmem FM25L16B
+	#define targetctl1		(1uL << 1)		// PE1 board control registers chain
+	#define targetcodec1	(1uL << 2)		// PE2 on-board codec1 NAU8822L
+	#define targetadc2		(1uL << 9) 		// PE9 ADC MCP3208-BI/SL chip select (potentiometers)
+	#define targetfpga1		(1uL << 10)		// PE10 FPGA control registers CS1
 
 	// Здесь должны быть перечислены все биты формирования CS в устройстве.
 	#define SPI_ALLCS_BITS ( \
-		targetext1	| 	/* PG15 ext1 on front panel */ \
-		targetxad2	|	/* PA100W on-board ADC (not connected on this board) */ \
-		targetnvram	| 	/* PG4 nvmem FM25L16B */ \
-		targetctl1	| 	/* PG3 board control registers chain */ \
+		targetext1		| 	/* PG15 ext1 on front panel */ \
+		targetxad2		|	/* PA100W on-board ADC (not connected on this board) */ \
+		targetnvram		| 	/* PG4 nvmem FM25L16B */ \
+		targetctl1		| 	/* PG3 board control registers chain */ \
 		targetcodec1	| 	/* PG2 on-board codec1 NAU8822L */ \
-		targetfpga1	| 	/* PG1 FPGA control registers CS1 */ \
-		targetfpga2	| 	/* PG0 FPGA control registers CS2 targetfir1 */ \
+		targetfpga1		| 	/* PG1 FPGA control registers CS1 */ \
+		targetadc2		| 	/*	PE9 ADC MCP3208-BI/SL chip select (potentiometers) */ \
 		0)
 
 	#define targetlcd	targetext1 	/* LCD over SPI line devices control */ 
@@ -542,7 +563,7 @@
 // WITHUART2HW
 #define HARDWARE_USART2_INITIALIZE() do { \
 		const uint_fast32_t TXMASK = (1uL << 5); /* PD5: TX DATA line (2 MHz) */ \
-		const uint_fast32_t RXMASK = 0 * (1uL << 6); /* PD6: RX DATA line (2 MHz) - pull-up RX data */  \
+		const uint_fast32_t RXMASK = (1uL << 6); /* PD6: RX DATA line (2 MHz) - pull-up RX data */  \
 		arm_hardware_piod_altfn2(TXMASK, AF_USART2); \
 		arm_hardware_piod_altfn2(RXMASK, AF_USART2); \
 		arm_hardware_piod_updown(RXMASK, 0); \
@@ -550,12 +571,12 @@
 
 #if WITHKEYBOARD
 	/* PF0: pull-up second encoder button */
-	#define KBD_MASK (1U << 0)	// PF0
-	#define KBD_TARGET_PIN (GPIOF->IDR)
+	#define KBD_MASK (1U << 15)	// PE15
+	#define KBD_TARGET_PIN (GPIOE->IDR)
 
 	#define HARDWARE_KBD_INITIALIZE() do { \
-			arm_hardware_piof_inputs(KBD_MASK); \
-			arm_hardware_piof_updown(KBD_MASK, 0);	/* PF10: pull-up second encoder button */ \
+			arm_hardware_pioe_inputs(KBD_MASK); \
+			arm_hardware_pioe_updown(KBD_MASK, 0);	/* PF10: pull-up second encoder button */ \
 		} while (0)
 
 #else /* WITHKEYBOARD */
@@ -600,26 +621,26 @@
 #if WITHFPGAWAIT_AS || WITHFPGALOAD_PS
 
 	/* outputs */
-	#define FPGA_NCONFIG_PORT_S(v)	do { GPIOE->BSRR = BSRR_S(v); __DSB(); } while (0)
-	#define FPGA_NCONFIG_PORT_C(v)	do { GPIOE->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define FPGA_NCONFIG_BIT		(1UL << 11)	/* PE11 bit conneced to nCONFIG pin ALTERA FPGA */
+	#define FPGA_NCONFIG_PORT_S(v)	do { GPIOC->BSRR = BSRR_S(v); __DSB(); } while (0)
+	#define FPGA_NCONFIG_PORT_C(v)	do { GPIOC->BSRR = BSRR_C(v); __DSB(); } while (0)
+	#define FPGA_NCONFIG_BIT		(1UL << 11)	/* PC11 bit conneced to nCONFIG pin ALTERA FPGA */
 
 	/* inputs */
-	#define FPGA_CONF_DONE_INPUT	(GPIOE->IDR)
-	#define FPGA_CONF_DONE_BIT		(1UL << 12)	/* PE12 bit conneced to CONF_DONE pin ALTERA FPGA */
+	#define FPGA_CONF_DONE_INPUT	(GPIOC->IDR)
+	#define FPGA_CONF_DONE_BIT		(1UL << 10)	/* PC10 bit conneced to CONF_DONE pin ALTERA FPGA */
 
-	#define FPGA_NSTATUS_INPUT		(GPIOE->IDR)
-	#define FPGA_NSTATUS_BIT		(1UL << 15)	/* PE15 bit conneced to NSTATUS pin ALTERA FPGA */
+	#define FPGA_NSTATUS_INPUT		(GPIOC->IDR)
+	#define FPGA_NSTATUS_BIT		(1UL << 9)	/* PC9 bit conneced to NSTATUS pin ALTERA FPGA */
 
-	#define FPGA_INIT_DONE_INPUT	(GPIOE->IDR)
-	#define FPGA_INIT_DONE_BIT		(1UL << 10)	/* PE10 bit conneced to INIT_DONE pin ALTERA FPGA */
+	#define FPGA_INIT_DONE_INPUT	(GPIOC->IDR)
+	#define FPGA_INIT_DONE_BIT		(1UL << 12)	/* PC12 bit conneced to INIT_DONE pin ALTERA FPGA */
 
 	/* Инициадизация выводов GPIO процессора для получения состояния и управлением загрузкой FPGA */
 	#define HARDWARE_FPGA_LOADER_INITIALIZE() do { \
-			arm_hardware_pioe_outputs(FPGA_NCONFIG_BIT, FPGA_NCONFIG_BIT); \
-			arm_hardware_pioe_inputs(FPGA_NSTATUS_BIT); \
-			arm_hardware_pioe_inputs(FPGA_CONF_DONE_BIT); \
-			arm_hardware_pioe_inputs(FPGA_INIT_DONE_BIT); \
+			arm_hardware_pioc_outputs(FPGA_NCONFIG_BIT, FPGA_NCONFIG_BIT); \
+			arm_hardware_pioc_inputs(FPGA_NSTATUS_BIT); \
+			arm_hardware_pioc_inputs(FPGA_CONF_DONE_BIT); \
+			arm_hardware_pioc_inputs(FPGA_INIT_DONE_BIT); \
 		} while (0)
 
 	/* Проверяем, проинициализировалась ли FPGA (вошла в user mode). */
@@ -635,32 +656,32 @@
 
 #if WITHDSPEXTFIR
 	// Биты доступа к массиву коэффициентов FIR фильтра в FPGA
-	#define TARGET_FPGA_FIR_CS_PORT_C(v)	do { GPIOE->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define TARGET_FPGA_FIR_CS_PORT_S(v)	do { GPIOE->BSRR = BSRR_S(v); __DSB(); } while (0)
-	#define TARGET_FPGA_FIR_CS_BIT (1uL << 7)	/* PE7 - fir CS */
+	#define TARGET_FPGA_FIR_CS_PORT_C(v)	do { GPIOC->BSRR = BSRR_C(v); __DSB(); } while (0)
+	#define TARGET_FPGA_FIR_CS_PORT_S(v)	do { GPIOC->BSRR = BSRR_S(v); __DSB(); } while (0)
+	#define TARGET_FPGA_FIR_CS_BIT (1uL << 13)	/* PC13 - fir CS ~FPGA_FIR_CLK */
 
-	#define TARGET_FPGA_FIR1_WE_PORT_C(v)	do { GPIOH->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define TARGET_FPGA_FIR1_WE_PORT_S(v)	do { GPIOH->BSRR = BSRR_S(v); __DSB(); } while (0)
-	#define TARGET_FPGA_FIR1_WE_BIT (1uL << 6)	/* PH6 - fir1 WE */
+	#define TARGET_FPGA_FIR1_WE_PORT_C(v)	do { GPIOD->BSRR = BSRR_C(v); __DSB(); } while (0)
+	#define TARGET_FPGA_FIR1_WE_PORT_S(v)	do { GPIOD->BSRR = BSRR_S(v); __DSB(); } while (0)
+	#define TARGET_FPGA_FIR1_WE_BIT (1uL << 1)	/* PD1 - fir1 WE */
 
-	#define TARGET_FPGA_FIR2_WE_PORT_C(v)	do { GPIOH->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define TARGET_FPGA_FIR2_WE_PORT_S(v)	do { GPIOH->BSRR = BSRR_S(v); __DSB(); } while (0)
-	#define TARGET_FPGA_FIR2_WE_BIT (1uL << 7)	/* PH7 - fir2 WE */
+	#define TARGET_FPGA_FIR2_WE_PORT_C(v)	do { GPIOD->BSRR = BSRR_C(v); __DSB(); } while (0)
+	#define TARGET_FPGA_FIR2_WE_PORT_S(v)	do { GPIOD->BSRR = BSRR_S(v); __DSB(); } while (0)
+	#define TARGET_FPGA_FIR2_WE_BIT (1uL << 0)	/* PD0 - fir2 WE */
 
 	#define TARGET_FPGA_FIR_INITIALIZE() do { \
-			arm_hardware_pioh_outputs(TARGET_FPGA_FIR1_WE_BIT, TARGET_FPGA_FIR1_WE_BIT); \
-			arm_hardware_pioh_outputs(TARGET_FPGA_FIR2_WE_BIT, TARGET_FPGA_FIR2_WE_BIT); \
-			arm_hardware_pioe_outputs(TARGET_FPGA_FIR_CS_BIT, TARGET_FPGA_FIR_CS_BIT); \
+			arm_hardware_piod_outputs(TARGET_FPGA_FIR1_WE_BIT, TARGET_FPGA_FIR1_WE_BIT); \
+			arm_hardware_piod_outputs(TARGET_FPGA_FIR2_WE_BIT, TARGET_FPGA_FIR2_WE_BIT); \
+			arm_hardware_pioc_outputs(TARGET_FPGA_FIR_CS_BIT, TARGET_FPGA_FIR_CS_BIT); \
 		} while (0)
 #endif /* WITHDSPEXTFIR */
 
 #if 1
 	/* получение состояния переполнения АЦП */
-	#define TARGET_FPGA_OVF_INPUT		(GPIOF->IDR)
-	#define TARGET_FPGA_OVF_BIT			0//(1u << 12)	// PF12
-	#define TARGET_FPGA_OVF_GET			0//((TARGET_FPGA_OVF_INPUT & TARGET_FPGA_OVF_BIT) == 0)	// 1 - overflow active
+	#define TARGET_FPGA_OVF_INPUT		(GPIOC->IDR)
+	#define TARGET_FPGA_OVF_BIT			(1u << 8)	// PC8
+	#define TARGET_FPGA_OVF_GET			((TARGET_FPGA_OVF_INPUT & TARGET_FPGA_OVF_BIT) == 0)	// 1 - overflow active
 	#define TARGET_FPGA_OVF_INITIALIZE() do { \
-				arm_hardware_piof_inputs(TARGET_FPGA_OVF_BIT); \
+				arm_hardware_pioc_inputs(TARGET_FPGA_OVF_BIT); \
 			} while (0)
 #endif
 
@@ -736,11 +757,11 @@
 #endif /* WITHDCDCFREQCTL */
 
 	/* установка яркости и включение/выключение преобразователя подсветки */
-	#define HARDWARE_BL_SET(en, level) do { \
+	#define HARDWARE_BL_SET_XXX(en, level) do { \
 		const portholder_t enmask = (1U << 1); /* PF1 */ \
 		const portholder_t opins = (1U << 3) | (1U << 2); /* PF3:PF2 */ \
 		const portholder_t initialstate = (~ (level) & 0x03) << 2; \
-		GPIOF->BSRR = \
+		GPIOx->BSRR = \
 			((en) ? BSRR_S(enmask) : BSRR_C(enmask)) | /* backlight control on/off */ \
 			BSRR_S((initialstate) & (opins)) | /* set bits */ \
 			BSRR_C(~ (initialstate) & (opins)) | /* reset bits */ \
@@ -753,7 +774,7 @@
 	{
 		GPIO_AF_LTDC14 = 14,  /* LCD-TFT Alternate Function mapping */
 		GPIO_AF_LTDC9 = 9,  /* LCD-TFT Alternate Function mapping */
-		GPIO_AF_LTDC3 = 3  /* LCD-TFT Alternate Function mapping */
+		//GPIO_AF_LTDC3 = 3  /* LCD-TFT Alternate Function mapping */
 	};
 	/* demode values: 0: static signal, 1: DE controlled */
 	#define HARDWARE_LTDC_INITIALIZE(demode) do { \
@@ -762,35 +783,27 @@
 		arm_hardware_pioc_altfn20((1U << 6), GPIO_AF_LTDC14);		/* HSYNC PC6 */ \
 		arm_hardware_piog_altfn50((1U << 7), GPIO_AF_LTDC14);		/* CLK PG7 */ \
 		/* Control */ \
-		arm_hardware_pioc_altfn50((demode != 0) * (1U << 0), GPIO_AF_LTDC14);	/* PC0 DE */ \
-		arm_hardware_pioc_outputs((demode == 0) * (1U << 10), 0 * (1U << 10));	/* DE=0 (DISP, pin 31) */ \
+		arm_hardware_pioe_altfn50((demode != 0) * (1U << 13), GPIO_AF_LTDC14);	/* PE13 DE */ \
+		arm_hardware_pioe_outputs((demode == 0) * (1U << 13), 0 * (1U << 13));	/* PE13 DE=0 (DISP, pin 31) */ \
 		/* RED */ \
-		arm_hardware_piog_altfn50((1U << 13), GPIO_AF_LTDC14);	/* R0 PG13 */ \
-		arm_hardware_piod_altfn50((1U << 15), GPIO_AF_LTDC14);	/* R1 PD15 */ \
-		arm_hardware_pioa_altfn50((1U << 1), GPIO_AF_LTDC14);	/* R2 PA1 */ \
-		arm_hardware_piog_altfn50((1U << 11), GPIO_AF_LTDC14);	/* R3 PG11 */ \
-		arm_hardware_pioa_altfn50((1U << 11), GPIO_AF_LTDC14);	/* R4 PA11 */ \
-		arm_hardware_pioa_altfn50((1U << 12), GPIO_AF_LTDC14);	/* R5 PA12 */ \
-		arm_hardware_piob_altfn50((1U << 1), GPIO_AF_LTDC9);	/* R6 PB1 */ \
-		arm_hardware_piog_altfn50((1U << 6), GPIO_AF_LTDC14);	/* R7 PG6 */ \
+		arm_hardware_piob_altfn20((1U << 0), GPIO_AF_LTDC14);		/* PB0 R3 */ \
+		arm_hardware_pioa_altfn20((1U << 11), GPIO_AF_LTDC14);		/* PA11 R4 */ \
+		arm_hardware_pioa_altfn20((1U << 9), GPIO_AF_LTDC14);		/* PA9 R5 */ \
+		arm_hardware_pioa_altfn20((1U << 8), GPIO_AF_LTDC14);		/* PA8 R6 */ \
+		arm_hardware_piog_altfn20((1U << 6), GPIO_AF_LTDC14);		/* PG6 R7 */ \
 		/* GREEN */ \
-		arm_hardware_pioe_altfn50((1U << 14), GPIO_AF_LTDC14);	/* G0 PE14 */ \
-		arm_hardware_pioe_altfn50((1U << 6), GPIO_AF_LTDC14);	/* G1 PE6 */ \
-		arm_hardware_pioa_altfn50((1U << 6), GPIO_AF_LTDC14);	/* G2 PA6 */ \
-		arm_hardware_piog_altfn50((1U << 10), GPIO_AF_LTDC14);	/* G3 PG10 */ \
-		arm_hardware_piob_altfn50((1U << 10), GPIO_AF_LTDC14);	/* G4 PB10 */ \
-		arm_hardware_piof_altfn50((1U << 11), GPIO_AF_LTDC14);	/* G5 PF11 */ \
-		arm_hardware_pioc_altfn50((1U << 7), GPIO_AF_LTDC14);	/* G6 PC7 */ \
-		arm_hardware_piog_altfn50((1U << 8), GPIO_AF_LTDC14);	/* G7 PG8 */ \
+		arm_hardware_pioa_altfn20((1U << 6), GPIO_AF_LTDC14);		/* PA6 G2 */ \
+		arm_hardware_piog_altfn20((1U << 10), GPIO_AF_LTDC9);		/* PG10 G3 */ \
+		arm_hardware_piob_altfn20((1U << 10), GPIO_AF_LTDC14);		/* PB10 G4 */ \
+		arm_hardware_piof_altfn20((1U << 11), GPIO_AF_LTDC14);		/* PF11 G5 */ \
+		arm_hardware_pioc_altfn20((1U << 7), GPIO_AF_LTDC14);		/* PC7 G6 */ \
+		arm_hardware_piog_altfn20((1U << 8), GPIO_AF_LTDC14);		/* PG8 G7 */ \
 		/* BLUE */ \
-		arm_hardware_piod_altfn50((1U << 9), GPIO_AF_LTDC14);	/* B0 PD9 */ \
-		arm_hardware_piog_altfn50((1U << 12), GPIO_AF_LTDC14);	/* B1 PG12 */ \
-		arm_hardware_piod_altfn50((1U << 6), GPIO_AF_LTDC14);	/* B2 PD6 */ \
-		arm_hardware_piog_altfn50((1U << 11), GPIO_AF_LTDC14);	/* B3 PG11 */ \
-		arm_hardware_pioe_altfn50((1U << 12), GPIO_AF_LTDC9);	/* B4 PE12 */ \
-		arm_hardware_pioa_altfn50((1U << 3), GPIO_AF_LTDC14);	/* B5 PA3 */ \
-		arm_hardware_piob_altfn50((1U << 8), GPIO_AF_LTDC14);	/* B6 PB8 */ \
-		arm_hardware_piod_altfn50((1U << 8), GPIO_AF_LTDC14);	/* B7 PD8 */ \
+		arm_hardware_piog_altfn20((1U << 11), GPIO_AF_LTDC9);		/* PG11 B3 */ \
+		arm_hardware_piog_altfn20((1U << 12), GPIO_AF_LTDC9);		/* PG12 B4 */ \
+		arm_hardware_pioa_altfn20((1U << 3), GPIO_AF_LTDC14);		/* PA3 B5 */ \
+		arm_hardware_piob_altfn20((1U << 8), GPIO_AF_LTDC14);		/* PB8 B6 */ \
+		arm_hardware_piod_altfn20((1U << 8), GPIO_AF_LTDC14);		/* PD8 B7 */ \
 	} while (0)
 
 	/* управление состоянием сигнала DISP панели */
@@ -823,39 +836,37 @@
 #endif
 
 	// Bootloader parameters
-	#define BOOTLOADER_APPAREA DRAM_MEM_BASE	/* адрес ОЗУ, куда перемещать application */
-	#define BOOTLOADER_APPFULL (1024uL * 4096)	// 4M
+	#define BOOTLOADER_RAMAREA DRAM_MEM_BASE	/* адрес ОЗУ, куда перемещать application */
+	#define BOOTLOADER_RAMSIZE (1024uL * 1024uL * 256)	// 256M
+	#define BOOTLOADER_RAMPAGESIZE	(1024uL * 1024)	// при загрузке на исполнение используется размер страницы в 1 мегабайт
+	#define USBD_DFU_RAM_XFER_SIZE 4096
 
+	#define BOOTLOADER_FLASHSIZE (1024uL * 1024uL * 16)	// 16M FLASH CHIP
 	#define BOOTLOADER_SELFBASE QSPI_MEM_BASE	/* адрес где лежит во FLASH образ application */
 	#define BOOTLOADER_SELFSIZE (1024uL * 256)	// 256k
 
 	#define BOOTLOADER_APPBASE (BOOTLOADER_SELFBASE + BOOTLOADER_SELFSIZE)	/* адрес где лежит во FLASH образ application */
-	#define BOOTLOADER_APPSIZE (BOOTLOADER_APPFULL - BOOTLOADER_SELFSIZE)	// 2048 - 128
+	#define BOOTLOADER_APPSIZE (BOOTLOADER_FLASHSIZE - BOOTLOADER_SELFSIZE)	// 2048 - 128
 
 	#define BOOTLOADER_PAGESIZE (1024uL * 64)	// W25Q32FV with 64 KB pages
 
-	#define USBD_DFU_RAM_XFER_SIZE 1024
 	#define USBD_DFU_FLASH_XFER_SIZE 256	// match to (Q)SPI FLASH MEMORY page size
-	#define USBD_DFU_FLASHNAME "W25Q32FV"
+	#define USBD_DFU_FLASHNAME "W25Q128JV"
 
 	#if WIHSPIDFSW || WIHSPIDFHW
 
-		//	QUADSPI_CLK 	PF10	AS pin 01	U13-38 (traced to PA7)
-		//	QUADSPI_BK1_NCS PB6 	AS pin 08	U12-21 (traced to PB12)
-		//	QUADSPI_BK1_IO0 PF8		MOSI
-		//	QUADSPI_BK1_IO1 PF9 	MISO
-		#define SPDIF_MISO_BIT (1u << 9)	// PF9
-		#define SPDIF_MOSI_BIT (1u << 8)	// PF8
-		#define SPDIF_SCLK_BIT (1u << 10)	// PF10
-		#define SPDIF_NCS_BIT (1u << 6)		// PB6
+		#define SPDIF_MISO_BIT (1u << 9)	// PF9	QUADSPI_BK1_IO1
+		#define SPDIF_MOSI_BIT (1u << 8)	// PF8	QUADSPI_BK1_IO0
+		#define SPDIF_SCLK_BIT (1u << 10)	// PF10	QUADSPI_CLK
+		#define SPDIF_NCS_BIT (1u << 6)		// PB6	QUADSPI_BK1_NCS
 
-		#define SPDIF_D2_BIT (1u << 7)	// PF7
-		#define SPDIF_D3_BIT (1u << 6)	// PF6
+		#define SPDIF_D2_BIT (1u << 7)		// PF7	QUADSPI_BK1_IO2
+		#define SPDIF_D3_BIT (1u << 6)		// PF6	QUADSPI_BK1_IO3
 
 		#if WIHSPIDFHW
 			#define SPIDF_HARDINITIALIZE() do { \
-					/*arm_hardware_piof_altfn50(SPDIF_D2_BIT, AF_QUADSPI_AF9); */ /* PF7 D2 tie-up */ \
-					/*arm_hardware_piof_altfn50(SPDIF_D3_BIT, AF_QUADSPI_AF9); */ /* PF6 D3 tie-up */ \
+					arm_hardware_piof_altfn50(SPDIF_D2_BIT, AF_QUADSPI_AF9);  	/* PF7 D2 QUADSPI_BK1_IO2 */ \
+					arm_hardware_piof_altfn50(SPDIF_D3_BIT, AF_QUADSPI_AF9);  	/* PF6 D3 QUADSPI_BK1_IO3 */ \
 					/*arm_hardware_piof_outputs(SPDIF_D2_BIT, SPDIF_D2_BIT); */ /* PF7 D2 tie-up */ \
 					/*arm_hardware_piof_outputs(SPDIF_D3_BIT, SPDIF_D3_BIT); */ /* PF6 D3 tie-up */ \
 					arm_hardware_piof_altfn50(SPDIF_SCLK_BIT, AF_QUADSPI_AF9); /* PF10 SCLK */ \

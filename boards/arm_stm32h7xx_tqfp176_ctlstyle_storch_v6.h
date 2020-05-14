@@ -279,6 +279,7 @@
 
 	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
 	#define WITHUSEDUALWATCH	1	// Второй приемник
+	#define WITHREVERB	1	// реербератор в обраьотке микрофонного сигнала
 	//#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
 	//#define BOARD_FFTZOOM_POW2MAX 1	// Возможные масштабы FFT x1, x2
 	//#define BOARD_FFTZOOM_POW2MAX 2	// Возможные масштабы FFT x1, x2, x4
@@ -476,12 +477,6 @@
 	#define WITHKEYBOARD 1	/* в данном устройстве есть клавиатура */
 	#define KEYBOARD_USE_ADC	1	/* на одной линии установлено  четыре  клавиши. на vref - 6.8K, далее 2.2К, 4.7К и 13K. */
 
-	// ST LM235Z
-	#define THERMOSENSOR_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика температуры
-	#define THERMOSENSOR_LOWER		10	// 1 kOhm - нижний резистор
-	#define THERMOSENSOR_OFFSET 	(- 480)		// 2.98 volt = 25 Celsius
-	#define THERMOSENSOR_DENOM	 	10			// миливольты к десятым долям градуса 2.98 volt = 25 Celsius
-
 
 	//#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания и/или подсветки дисплея
 
@@ -493,7 +488,9 @@
 		#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
 		#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
 		#define WITHTHERMOLEVEL	1	/* отображение температуры */
-		#define WITHREFSENSOR	1		/* измерение по выделенному каналу АЦП опорного напряжения */
+		//#define WITHREFSENSOR	1		/* измерение по выделенному каналу АЦП опорного напряжения */
+		#define WITHTDIRECTDATA	1	// значения параметров напрямую получаются от контроллера усилителя мощности
+		//#define WITHTARGETVREF	3300
 
 		#if WITHREFSENSOR
 			VREFIX = 17,		// Reference voltage
@@ -542,6 +539,14 @@
 
 		#define VOLTLEVEL_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика напряжения
 		#define VOLTLEVEL_LOWER		10	// 1 kOhm - нижний резистор
+
+		VREFMVMRRIX = BOARD_ADCMRRIN(11),	// кеш
+
+		// ST LM235Z
+		#define THERMOSENSOR_UPPER		402	// 4020 Ohm - верхний резистор делителя датчика температуры
+		#define THERMOSENSOR_LOWER		95	// 950 Ohm - нижний резистор
+		#define THERMOSENSOR_OFFSET 	(- 2730)		// 2.98 volt = 25 Celsius, 10 mV/C
+		#define THERMOSENSOR_DENOM	 	1			// миливольты к десятым долям градуса 2.98 volt = 25 Celsius
 
 	#else
 
@@ -593,6 +598,12 @@
 		#define VOLTLEVEL_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика напряжения
 		#define VOLTLEVEL_LOWER		10	// 1 kOhm - нижний резистор
 
+
+		// ST LM235Z
+		#define THERMOSENSOR_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика температуры
+		#define THERMOSENSOR_LOWER		10	// 1 kOhm - нижний резистор
+		#define THERMOSENSOR_OFFSET 	(- 2730)		// 2.98 volt = 25 Celsius, 10 mV/C
+		#define THERMOSENSOR_DENOM	 	1			// миливольты к десятым долям градуса 2.98 volt = 25 Celsius
 
 	#endif
 		KI0 = 10, KI1 = 11, KI2 = 12, KI3 = 0, KI4 = 1	// клавиатура

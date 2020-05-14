@@ -11,6 +11,7 @@
 #ifndef ARM_R7S72_TQFP176_CTLSTYLE_STORCH_V9_H_INCLUDED
 #define ARM_R7S72_TQFP176_CTLSTYLE_STORCH_V9_H_INCLUDED 1
 
+	// в данной конфигурации I2S и SAI (SSIF) - в режиме MASTER
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */
 	#define WITHI2SCLOCKFROMPIN 1	// тактовая частота на SPI2 (I2S) подается с внешнего генератора, в процессор вводится через AUDIO_X1 сигнал интерфейса
 	#define WITHSAICLOCKFROMPIN 1	// тактовая частота на SAI1 подается с внешнего генератора, в процессор вводится через AUDIO_X1 сигнал интерфейса
@@ -103,6 +104,7 @@
 	#define LCDMODE_V2	1	/* только главный экран с тремя видеобуферами, без PIP */
 
 	//#define WITHFLATLINK 1	/* Работа с TFT панелью через SN75LVDS83B	*/
+	//#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
 
 #elif 1
 
@@ -111,6 +113,7 @@
 	#define LCDMODE_V2	1	/* только главный экран с тремя видеобуферами, без PIP */
 
 	#define WITHFLATLINK 1	/* Работа с TFT панелью через SN75LVDS83B	*/
+	//#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
 
 #elif 0
 
@@ -194,7 +197,7 @@
 #if WITHISBOOTLOADER
 
 
-	//#define CTLREGSTYLE_NOCTLREG 1
+	//#define CTLREGMODE_NOCTLREG 1
 	/* коды входов коммутатора источников сигнала для УНЧ приёмника */
 	#define BOARD_DETECTOR_SSB 	0		// Заглушка
 
@@ -263,7 +266,7 @@
 
 	#define ENCRES_DEFAULT ENCRES_128
 	//#define ENCRES_DEFAULT ENCRES_24
-	#define WITHDIRECTFREQENER	1
+	//#define WITHDIRECTFREQENER	1
 	#define	WITHENCODER	1	/* для изменения частоты имеется енкодер */
 	#define WITHENCODER2	1		/* есть второй валкодер */
 	#define BOARD_ENCODER2_DIVIDE 2
@@ -273,10 +276,11 @@
 	//#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
 	//#define BOARD_FFTZOOM_POW2MAX 1	// Возможные масштабы FFT x1, x2
 	//#define BOARD_FFTZOOM_POW2MAX 2	// Возможные масштабы FFT x1, x2, x4
-	//#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
-	#define BOARD_FFTZOOM_POW2MAX 4	// Возможные масштабы FFT x1, x2, x4, x8, x16
+	#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
+	//#define BOARD_FFTZOOM_POW2MAX 4	// Возможные масштабы FFT x1, x2, x4, x8, x16
 	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
 	#define WITHUSEDUALWATCH	1	// Второй приемник
+	#define	WITHREVERB	1	// реербератор в обраьотке микрофонного сигнала
 	#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
 
 	// FPGA section
@@ -301,7 +305,7 @@
 	//#define WITHPWRMTR	1	/* Индикатор выходной мощности или */
 	//#define WITHPWRLIN	1	/* Индикатор выходной мощности показывает напряжение а не мощность */
 
-	#if 0
+	#if 1
 		/* TUNER & PA board 2*RD16 by avbelnn@yandex.ru */
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
 		#define SHORTSET8	1
@@ -509,8 +513,8 @@
 
 		#define WITHCURRLEVEL_ACS712_30A 1	// PA current sense - ACS712ELCTR-30B-T chip
 		//#define WITHCURRLEVEL_ACS712_20A 1	// PA current sense - ACS712ELCTR-20B-T chip
-		PASENSEIX = WPM_POTIX,		// PA1 PA current sense - ACS712-05 chip
-		//PASENSEIX = 2,		// PA1 PA current sense - ACS712-05 chip
+		//PASENSEIX = WPM_POTIX,		// PA1 PA current sense - ACS712-05 chip
+		PASENSEIX = 2,		// PA1 PA current sense - ACS712-05 chip
 
 		FWD = 0, REF = 1,	// PB0	SWR-meter
 		PWRI = FWD,			// PB1
@@ -569,7 +573,7 @@
 	// ST LM235Z
 	#define THERMOSENSOR_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика температуры
 	#define THERMOSENSOR_LOWER		10	// 1 kOhm - нижний резистор
-	#define THERMOSENSOR_OFFSET 	(- 480)		// 2.98 volt = 25 Celsius
+	#define THERMOSENSOR_OFFSET 	(- 2730)		// 2.98 volt = 25 Celsius, 10 mV/C
 	#define THERMOSENSOR_DENOM	 	10			// миливольты к десятым долям градуса 2.98 volt = 25 Celsius
 
 	#define KI_COUNT 5	// количество используемых под клавиатуру входов АЦП

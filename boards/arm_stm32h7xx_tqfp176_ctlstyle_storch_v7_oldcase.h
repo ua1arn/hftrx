@@ -172,7 +172,7 @@
 
 	//#define KEYB_FPANEL30_V3	1	/* KEYBOARD_USE_ADC6_V1, 30 кнопок на 5 линий - плата rfrontpanel_v3 + LCDMODE_S1D13781 & LCDMODE_LQ043T3DX02K в нормальном расположении */
 	//#define KEYBOARD_USE_ADC6_V1	1
-	#define WITHCOLORS_ATS52 1	// spectrum display in alternative colors
+	#define COLORSTYLE_ATS52 1	// spectrum display in alternative colors
 
 	//#define KEYB_FPANEL20_V0A_PLAYFILE 1
 	//#define WITHSENDWAV 1	/* трансивер может передавать записанные wav файлы */
@@ -283,19 +283,21 @@
 	#define	WITHFPGALOAD_PS	1	/* FPGA загружается процессором с помощью SPI */
 
 	//#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
-	#define BOARD_FFTZOOM_POW2MAX 2	// Возможные масштабы FFT x1, x2, x4, x8
+	//#define BOARD_FFTZOOM_POW2MAX 1	// Возможные масштабы FFT x1, x2
+	#define BOARD_FFTZOOM_POW2MAX 2	// Возможные масштабы FFT x1, x2, x4
 	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
-	#define WITHUSEDUALWATCH	1	// Второй приемник
+	//#define WITHUSEDUALWATCH	1	// Второй приемник
+	#define WITHREVERB	1	// реербератор в обраьотке микрофонного сигнала
 	//#define WITHLOOPBACKTEST	1	/* прослушивание микрофонного входа, генераторов */
 	//#define WITHMODEMIQLOOPBACK	1	/* модем получает собственные передаваемые квадратуры */
 	//#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 
 	// выбор накопителя
 	//#define WITHUSESDCARD		1	// Включение поддержки SD CARD
-	#define WITHUSEUSBFLASH		1	// Включение поддержки USB memory stick
+	//#define WITHUSEUSBFLASH		1	// Включение поддержки USB memory stick
 
 	// выбор функциональности
-	#define WITHUSEAUDIOREC		1	// Запись звука
+	//#define WITHUSEAUDIOREC		1	// Запись звука
 	//#define WITHUSEAUDIOREC2CH	1	// Запись звука в стерео формате
 	//#define WITHUSEAUDIORECCLASSIC	1	// стандартный формат записи, без "дыр"
 
@@ -462,7 +464,7 @@
 	// ST LM235Z
 	#define THERMOSENSOR_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика температуры
 	#define THERMOSENSOR_LOWER		10	// 1 kOhm - нижний резистор
-	#define THERMOSENSOR_OFFSET 	(- 480)		// 2.98 volt = 25 Celsius
+	#define THERMOSENSOR_OFFSET 	(- 2730)		// 2.98 volt = 25 Celsius, 10 mV/C
 	#define THERMOSENSOR_DENOM	 	10			// миливольты к десятым долям градуса 2.98 volt = 25 Celsius
 
 
@@ -497,7 +499,7 @@
 	#endif /* WITHTHERMOLEVEL */
 
 	#if 0
-		// UA1CEI PA board: MCP3208 at targetext2 - P2_0 external SPI device (PA BOARD ADC)
+		// UA1CEI PA board: MCP3208 at targetext2 - PG14 external SPI device (PA BOARD ADC)
 		VOLTSOURCE = BOARD_ADCX2IN(4),		// MCP3208 CH7 Средняя точка делителя напряжения, для АКБ
 
 		FWD = BOARD_ADCX2IN(3),
@@ -530,6 +532,14 @@
 			PWRI = FWD,			// PC4
 		#endif /* WITHSWRMTR */
 	#endif
+
+		XTHERMOMRRIX = BOARD_ADCMRRIN(0),	// кеш - индекc не должен повторяться в конфигурации
+		PASENSEMRRIX = BOARD_ADCMRRIN(1),	// кеш - индекc не должен повторяться в конфигурации
+		REFMRRIX = BOARD_ADCMRRIN(2),
+		FWDMRRIX = BOARD_ADCMRRIN(3),
+		PWRMRRIX = FWDMRRIX,
+		VOLTMRRIX = BOARD_ADCMRRIN(4),	// кеш - индекc не должен повторяться в конфигурации
+
 		KI0 = 10, KI1 = 11, KI2 = 12, KI3 = 0, KI4 = 1	// клавиатура
 	};
 

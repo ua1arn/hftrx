@@ -177,7 +177,7 @@
 	// --- вариации прошивки, специфические для разных плат
 
 	#define CTLREGSTYLE_DISCO32	1	// FPGA_V2
-	//#define CTLREGSTYLE_NOCTLREG	1
+	//#define CTLREGMODE_NOCTLREG	1
 
 	#define WITHAGCMODENONE		1	/* Режимами АРУ не управляем */
 	#define WITHPREAMPATT2_6DB		1	// Управление УВЧ и двухкаскадным аттенюатором с затуханиями 0 - 6 - 12 - 18 dB */

@@ -21,6 +21,8 @@
 #define WITHMDMAHW		1	/* Использование MDMA для формирования изображений */
 //#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
 #define WIHSPIDFHW	1	/* аппаратное обслуживание DATA FLASH */
+#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */
+//#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
 
 //#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 #define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
@@ -47,7 +49,11 @@
 
 #if WITHISBOOTLOADER
 
+	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
+	//#define WITHGPUHW	1	/* Graphic processor unit */
 	#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
+	//#define	WITHEHCIHW	1	/* USB_EHCI controller */
+
 	#define WITHSDRAM_PMC1	1	/* power management chip */
 	//#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 
@@ -71,19 +77,23 @@
 
 	//#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
 	//#define WITHUSBUACIN2		1	/* формируются три канала передачи звука */
-		//#define WITHUABUACOUTAUDIO48MONO	1	/* для уменьшения размера буферов в endpoints */
+	//#define WITHUABUACOUTAUDIO48MONO	1	/* для уменьшения размера буферов в endpoints */
 
-	//#define WITHUSBCDC		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
-	//#define WITHUSBHWCDC_N	2	/* количество виртуальных последовательных портов */
+	#define WITHUSBCDC		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
+	#define WITHUSBHWCDC_N	1	/* количество виртуальных последовательных портов */
 	//#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
 	//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
 	//#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
 	//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
 	//#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
-	//#define WITHUSBWCID	1
+	#define WITHMOVEDFU 1	// Переместить интерфейс DFU в область меньших номеров. Утилита dfu-util 0.9 не работает с DFU на интерфейсе с индексом 10
+	#define WITHUSBWCID	1
+
 #else /* WITHISBOOTLOADER */
 
 	#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
+	//#define WITHGPUHW	1	/* Graphic processor unit */
+	//#define	WITHEHCIHW	1	/* USB_EHCI controller */
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 
 	#define WITHUSBHW_DEVICE	USB_OTG_HS	/* на этом устройстве поддерживается функциональность DEVICE	*/
@@ -119,7 +129,9 @@
 	//#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
 	//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
 	#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
-	//#define WITHUSBWCID	1
+	#define WITHMOVEDFU 1	// Переместить интерфейс DFU в область меньших номеров. Утилита dfu-util 0.9 не работает с DFU на интерфейсе с индексом 10
+	#define WITHUSBWCID	1
+
 #endif /* WITHISBOOTLOADER */
 
 
@@ -819,18 +831,20 @@
 #endif
 
 	// Bootloader parameters
-	#define BOOTLOADER_APPAREA DRAM_MEM_BASE	/* адрес ОЗУ, куда перемещать application */
-	#define BOOTLOADER_APPFULL (1024uL * 4096)	// 4M
+	#define BOOTLOADER_RAMAREA DRAM_MEM_BASE	/* адрес ОЗУ, куда перемещать application */
+	#define BOOTLOADER_RAMSIZE (1024uL * 1024uL * 256)	// 256M
+	#define BOOTLOADER_RAMPAGESIZE	(1024uL * 1024)	// при загрузке на исполнение используется размер страницы в 1 мегабайт
+	#define USBD_DFU_RAM_XFER_SIZE 4096
 
+	#define BOOTLOADER_FLASHSIZE (1024uL * 1024uL * 4)	// 4M FLASH CHIP
 	#define BOOTLOADER_SELFBASE QSPI_MEM_BASE	/* адрес где лежит во FLASH образ application */
 	#define BOOTLOADER_SELFSIZE (1024uL * 256)	// 256k
 
 	#define BOOTLOADER_APPBASE (BOOTLOADER_SELFBASE + BOOTLOADER_SELFSIZE)	/* адрес где лежит во FLASH образ application */
-	#define BOOTLOADER_APPSIZE (BOOTLOADER_APPFULL - BOOTLOADER_SELFSIZE)	// 2048 - 128
+	#define BOOTLOADER_APPSIZE (BOOTLOADER_FLASHSIZE - BOOTLOADER_SELFSIZE)	// 2048 - 128
 
 	#define BOOTLOADER_PAGESIZE (1024uL * 64)	// W25Q32FV with 64 KB pages
 
-	#define USBD_DFU_RAM_XFER_SIZE 1024
 	#define USBD_DFU_FLASH_XFER_SIZE 256	// match to (Q)SPI FLASH MEMORY page size
 	#define USBD_DFU_FLASHNAME "W25Q32FV"
 

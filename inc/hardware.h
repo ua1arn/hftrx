@@ -411,9 +411,11 @@ extern "C" {
 
 	// ST dual core A7 + M4
 
-	// CPUSTYLE_STM32MP157A
+	// CPUSTYLE_STM32MP157A, CPUSTYLE_STM32MP157D
 	// STM32MP157Axx
+	// STM32MP157Dxx
 	// STM32MP157AAB3
+	// STM32MP157DAB1
 
 	#define CORE_CA7	1
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
@@ -503,15 +505,15 @@ void hardware_adc_initialize(void);
 		#define RAMHEAP __attribute__((used, section(".heap"), aligned(64))) // memory used as heap zone
 	#elif CPUSTYLE_STM32MP1
 		// TODO: Use SYSRAM as DTCM/ITCM
-		#define FLASHMEMINIT	__attribute__((section(".initdata"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
-		#define FLASHMEMINITFUNC	__attribute__((section(".initfunc"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
-		#define RAMFUNC_NONILINE __attribute__((__section__(".itcm"), noinline))
-		#define RAMFUNC			 __attribute__((__section__(".itcm")))
+		#define FLASHMEMINIT	//__attribute__((section(".initdata"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
+		#define FLASHMEMINITFUNC//	__attribute__((section(".initfunc"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
+		#define RAMFUNC_NONILINE// __attribute__((__section__(".itcm"), noinline))
+		#define RAMFUNC			 //__attribute__((__section__(".itcm")))
 		#define RAMNOINIT_D1	__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
 		#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
 		#define RAMFRAMEBUFF	__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
-		#define RAMDTCM			__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
-		#define RAMBIGDTCM		__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
+		#define RAMDTCM			//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
+		#define RAMBIGDTCM		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 		#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
 		#define RAMHEAP __attribute__((used, section(".heap"), aligned(64))) // memory used as heap zone
 	#elif (CPUSTYLE_STM32H7XX)
@@ -685,6 +687,7 @@ void hardware_fpgacodec_enable(void);		// Интерфейс к ВЧ кодек�
 void hardware_fpgacodec_initialize(void);	// Интерфейс к ВЧ кодеку
 void hardware_fpgaspectrum_enable(void);	// Интерфейс к источнику данных о спектре
 void hardware_fpgaspectrum_initialize(void);	// Интерфейс к источнику данных о спектре
+void hardware_fpgawidespectrum_initialize(void);	// Интерфейс к источнику данных о спектре
 
 void hardware_dac_initialize(void);		/* инициализация DAC на STM32F4xx */
 void hardware_dac_ch1_setvalue(uint_fast16_t v);	// вывод 12-битного значения на ЦАП - канал 1
@@ -942,6 +945,6 @@ void hardware_nonguiyield(void);
 
 uint_fast32_t display_getdotclock(void);
 
-#define  ARRAY_SIZE(a)  (sizeof(a)/sizeof(a[0]))
+#define  ARRAY_SIZE(a)  (sizeof a / sizeof a [0])
 
 #endif // HARDWARE_H_INCLUDED

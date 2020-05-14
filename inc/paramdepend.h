@@ -38,6 +38,7 @@ extern "C" {
 	//#define HARDWARE_ADCINPUTS	40	/* до 8-ти входов АЦП */
 	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast16_t adcvalholder_t;		
+	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
 
 
 #elif CPUSTYLE_STM32F0XX
@@ -73,6 +74,7 @@ extern "C" {
 	//#define HARDWARE_ADCINPUTS	40	/* до 32-ти входов АЦП */
 	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast16_t adcvalholder_t;		
+	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
 	#define WITHREFSENSORVAL	1210	/* Reference voltage: STM32F746, STM32F429, STM32F446 = 1.21V */
 
 #elif CPUSTYLE_STM32L0XX
@@ -114,6 +116,7 @@ extern "C" {
 	//#define HARDWARE_ADCINPUTS	40	/* до 32-ти входов АЦП */
 	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast16_t adcvalholder_t;		
+	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
 	#define WITHREFSENSORVAL	1224	/* Reference voltage: STM32L031xx = 1.224V */
 
 #elif CPUSTYLE_STM32F1XX
@@ -151,6 +154,7 @@ extern "C" {
 	//#define HARDWARE_ADCINPUTS	40	/* до 32-ти входов АЦП */
 	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast16_t adcvalholder_t;		
+	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
 	#define WITHREFSENSORVAL	1210	/* Reference voltage: STM32F746, STM32F429, STM32F446 = 1.21V */
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
@@ -315,6 +319,8 @@ extern "C" {
 	//#define HARDWARE_ADCINPUTS	40	/* до 32-ти входов АЦП */
 	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast16_t adcvalholder_t;	
+	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
+
 	#if CPUSTYLE_STM32H7XX
 		//#define HARDWARE_ADCBITS 8	/* АЦП работает с 8-битными значениями */
 		//#define HARDWARE_ADCBITS 10	/* АЦП работает с 10-битными значениями */
@@ -364,6 +370,7 @@ extern "C" {
 	//#define HARDWARE_ADCINPUTS	40	/* до 16-ти входов АЦП */
 	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast16_t adcvalholder_t;		
+	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
 
 #elif CPUSTYLE_ATSAM4S
 
@@ -393,6 +400,7 @@ extern "C" {
 	//#define HARDWARE_ADCINPUTS	40	/* до 16-ти входов АЦП */
 	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast16_t adcvalholder_t;		
+	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
 
 #elif CPUSTYLE_AT91SAM9XE
 
@@ -416,6 +424,7 @@ extern "C" {
 	//#define HARDWARE_ADCINPUTS	40	/* до 8-ти входов АЦП */
 	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast16_t adcvalholder_t;		
+	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
 
 #elif CPUSTYLE_MK20DX	// Tennesy 3.1 - Freescale Semiconductor - KINETIS MK20DX256VLH7
 
@@ -435,6 +444,7 @@ extern "C" {
 
 	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast16_t adcvalholder_t;		
+	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
 
 #elif CPUSTYLE_ATMEGA
 
@@ -466,10 +476,12 @@ extern "C" {
 
 	#if HARDWARE_ADCBITS == 8
 		/* тип для хранения данных, считанных с АЦП */
-		typedef uint_fast8_t adcvalholder_t;		
+		typedef uint_fast16_t adcvalholder_t;
+		typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
 	#elif HARDWARE_ADCBITS == 10
 		/* тип для хранения данных, считанных с АЦП */
 		typedef uint_fast16_t adcvalholder_t;		
+		typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
 	#else
 		#error Erong HARDWARE_ADCBITS value
 	#endif
@@ -499,6 +511,7 @@ extern "C" {
 	//#define HARDWARE_ADCINPUTS	40	/* до 8-ти входов АЦП */
 	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast8_t adcvalholder_t;		
+	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
 
 #elif CPUSTYPE_TMS320F2833X
 
@@ -506,6 +519,7 @@ extern "C" {
 	#define HARDWARE_ADCBITS 12	/* АЦП работает с 12-битными значениями */
 	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast16_t adcvalholder_t;		
+	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
 
 #elif CPUSTYLE_R7S721
 
@@ -533,6 +547,7 @@ extern "C" {
 	//#define HARDWARE_ADCINPUTS	40	/* до 8-ти входов АЦП */
 	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast16_t adcvalholder_t;		
+	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
 
 	enum
 	{
@@ -547,7 +562,7 @@ extern "C" {
 	};
 
 	/* видимые в контроллере прерывания регистры от ARM CORE */
-	#define ARM_CA9_PRIORITYSHIFT 3	/* ICCPMR[7:3] is valid bit */
+	//#define ARM_CA9_PRIORITYSHIFT 3	/* ICCPMR[7:3] is valid bit */
 
 	//#define GICC_PMR		(INTC.ICCPMR)	// 4.4.2 Interrupt Priority Mask Register, GICC_PMR
 	//#define GICC_RPR		((uint32_t) INTC.ICCRPR)	// 4.4.6 Running Priority Register, GICC_RPR
@@ -613,7 +628,7 @@ extern "C" {
 
 	// все параметры требуют уточнения, пока заглушки
 	#define ARM_CA9_CACHELEVELMAX	1	/* максимальный уровень cache в процессоре */
-	#define ARM_CA9_PRIORITYSHIFT 3	/* ICCPMR[7:3] is valid bit */
+	//#define ARM_CA9_PRIORITYSHIFT 3	/* ICCPMR[7:3] is valid bit */
 
 	#define HSIFREQ 64000000uL
 	//
@@ -633,6 +648,7 @@ extern "C" {
 	#define DDR_FREQ 	(REFINFREQ / (PLL2DIVM) * (PLL2DIVN) / (PLL2DIVR))
 	#define PLL3_FREQ	(REFINFREQ / (PLL3DIVM) * (PLL3DIVN))
 	#define PLL4_FREQ	(REFINFREQ / (PLL4DIVM) * (PLL4DIVN))
+	#define PLL4_FREQ_R	(REFINFREQ / (PLL4DIVM) * (PLL4DIVN) / (PLL4DIVR))
 	/* частоты, подающиеся на периферию */
 	#define	PCLK1_FREQ (AXISS_FREQ / 4)	// 42 MHz PCLK1 frequency
 	#define	PCLK1_TIMERS_FREQ (AXISS_FREQ / 2)	// 42 MHz PCLK1 frequency
@@ -659,6 +675,7 @@ extern "C" {
 	//#define HARDWARE_ADCINPUTS	40	/* до 32-ти входов АЦП */
 	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast16_t adcvalholder_t;
+	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
 	//#define HARDWARE_ADCBITS 8	/* АЦП работает с 8-битными значениями */
 	//#define HARDWARE_ADCBITS 10	/* АЦП работает с 10-битными значениями */
 	#define HARDWARE_ADCBITS 12	/* АЦП работает с 12-битными значениями */
@@ -772,7 +789,7 @@ extern "C" {
 		#define ICACHEROWSIZE 32
 	#elif CPUSTYLE_ARM_CA7
 		#define DCACHEROWSIZE 64
-		#define ICACHEROWSIZE 64
+		#define ICACHEROWSIZE 32
 	#endif
 
 	#define ICPIDR0	(* (const volatile uint32_t *) (GIC_INTERFACE_BASE + 0xFE0))
@@ -781,7 +798,14 @@ extern "C" {
 
 	#if WITHNESTEDINTERRUPTS
 
-		#define ARM_CA9_ENCODE_PRIORITY(v) ((v) << ARM_CA9_PRIORITYSHIFT)
+		// The processor does not process any exception with a priority value greater than or equal to BASEPRI.
+		extern uint32_t gARM_OVERREALTIME_PRIORITY;
+		extern uint32_t gARM_REALTIME_PRIORITY;
+		extern uint32_t gARM_SYSTEM_PRIORITY;
+		extern uint32_t gARM_BASEPRI_ONLY_REALTIME;
+		extern uint32_t gARM_BASEPRI_ALL_ENABLED;
+
+		#define ARM_CA9_ENCODE_PRIORITY(v) ((v) << (GIC_GetBinaryPoint() + 1))
 		/*
 			GICC_PMR == INTC.ICCPMR
 
@@ -797,12 +821,12 @@ extern "C" {
 			PRI_SYS = 2,
 			PRI_USER = 3,
 
-			gARM_OVERREALTIME_PRIORITY = ARM_CA9_ENCODE_PRIORITY(PRI_OVRT),	// value for GIC_SetPriority
-			gARM_REALTIME_PRIORITY = ARM_CA9_ENCODE_PRIORITY(PRI_RT),	// value for GIC_SetPriority
-			gARM_SYSTEM_PRIORITY = ARM_CA9_ENCODE_PRIORITY(PRI_SYS),		// value for GIC_SetPriority
-
-			gARM_BASEPRI_ONLY_REALTIME = ARM_CA9_ENCODE_PRIORITY(PRI_SYS),	// value for GIC_SetInterfacePriorityMask
-			gARM_BASEPRI_ALL_ENABLED = ARM_CA9_ENCODE_PRIORITY(PRI_USER)	// value for GIC_SetInterfacePriorityMask
+//			gARM_OVERREALTIME_PRIORITY = ARM_CA9_ENCODE_PRIORITY(PRI_OVRT),	// value for GIC_SetPriority
+//			gARM_REALTIME_PRIORITY = ARM_CA9_ENCODE_PRIORITY(PRI_RT),	// value for GIC_SetPriority
+//			gARM_SYSTEM_PRIORITY = ARM_CA9_ENCODE_PRIORITY(PRI_SYS),		// value for GIC_SetPriority
+//
+//			gARM_BASEPRI_ONLY_REALTIME = ARM_CA9_ENCODE_PRIORITY(PRI_SYS),	// value for GIC_SetInterfacePriorityMask
+//			gARM_BASEPRI_ALL_ENABLED = ARM_CA9_ENCODE_PRIORITY(PRI_USER)	// value for GIC_SetInterfacePriorityMask
 		};
 
 		//#define RUNNING_PRI	((GICC_RPR & 0xFF) >> ARM_CA9_PRIORITYSHIFT) // The current running priority on the CPU interface.
@@ -1056,6 +1080,10 @@ extern "C" {
 		#define NVRAM_END E2END
 
 	#elif defined (NVRAM_TYPE) && (NVRAM_TYPE == NVRAM_TYPE_BKPSRAM) && CPUSTYLE_STM32F
+
+		#define NVRAM_END 4095U		/* 4K of RAM at BKPSRAM_BASE */
+
+	#elif defined (NVRAM_TYPE) && (NVRAM_TYPE == NVRAM_TYPE_BKPSRAM) && CPUSTYLE_STM32MP1
 
 		#define NVRAM_END 4095U		/* 4K of RAM at BKPSRAM_BASE */
 
@@ -2091,7 +2119,7 @@ extern "C" {
 	#define	BOARD_FILTERCODE_2	0
 	#define	BOARD_FILTERCODE_3	0
 
-#elif CTLREGSTYLE_NOCTLREG			// Отсутствующий регистр управления
+#elif CTLREGMODE_NOCTLREG			// Отсутствующий регистр управления
 
 	/* коды входов коммутатора источников сигнала для УНЧ приёмника */
 	#define BOARD_DETECTOR_MUTE 0

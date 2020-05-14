@@ -278,6 +278,10 @@ void board_usb_deactivate(void);
 void board_usb_deinitialize(void);
 void board_usb_spool(void);
 
+void board_ehci_initialize(void);
+void board_gpu_initialize(void);	// Graphic processor unit
+
+
 uint_fast8_t hardware_usbd_get_vbusnow(void);
 uint_fast8_t hardware_usbd_get_vbusbefore(void);
 
@@ -326,7 +330,7 @@ const uint16_t * getrbfimage(size_t * count); /* получить располо
 enum
 {
 	STTE_OK,		// можно переходить к следующему состоянию.
-	STTE_BYUSY,		// вложенная state machine еще выполняет свои фкнкции - требуется повторный вход.
+	STTE_BUSY,		// вложенная state machine еще выполняет свои фкнкции - требуется повторный вход.
 	//
 	STTE_count
 };

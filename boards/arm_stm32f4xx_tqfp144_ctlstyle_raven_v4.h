@@ -239,7 +239,7 @@
 		// для этого используютя I2S2 как передатчик и I2S3 как приёмник с внешними соединениями
 		#define WITHI2SHWRXSLAVE	1		// Приёмный канал I2S (микрофон) используюся в SLAVE MODE
 	#else /* defined (STM32F446xx) */
-		#define WITHI2SFULLDUPLEXHW 1
+		#define WITHI2SI2S2EXTFULLDUPLEXHW 1
 	#endif /* defined (STM32F446xx) */
 
 	#define WITHSAI1_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
@@ -262,6 +262,7 @@
 	#define WITHUSESDCARD	1		// Включение поддержки SD CARD
 	#define WITHUSEAUDIOREC	1		// Запись звука на SD CARD
 	//#define WITHUSEDUALWATCH	1	// Второй приемник
+	//#define WITHREVERB	1	// реербератор в обраьотке микрофонного сигнала
 	//#define WITHMODEMIQLOOPBACK	1	/* модем получает собственные передаваемые квадратуры */
 	#if 0
 		#define WITHBBOX	1	// Black Box mode - устройство без органов управления
