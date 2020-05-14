@@ -833,22 +833,15 @@ static void update_touch(void);
 		TOUCH_ARRAY_SIZE = 100
 	};
 
-	enum {
-		BTN_BUF_W = 128,
-		BTN_BUF_H = 64
-	};
-
-	typedef ALIGNX_BEGIN PACKEDCOLORMAIN_T bg_t [GXSIZE(BTN_BUF_W, BTN_BUF_H)] ALIGNX_END;
-
-	typedef ALIGNX_BEGIN struct {
+	typedef struct {
 		uint8_t w;
 		uint8_t h;
-		bg_t bg_non_pressed;
-		bg_t bg_pressed;
-		bg_t bg_locked;
-		bg_t bg_locked_pressed;
-		bg_t bg_disabled;
-	} ALIGNX_END btn_bg_t;
+		PACKEDCOLORMAIN_T * bg_non_pressed;
+		PACKEDCOLORMAIN_T * bg_pressed;
+		PACKEDCOLORMAIN_T * bg_locked;
+		PACKEDCOLORMAIN_T * bg_locked_pressed;
+		PACKEDCOLORMAIN_T * bg_disabled;
+	} btn_bg_t;
 
 	static btn_bg_t btn_bg [] = {
 			{ 100, 44, },
@@ -1176,6 +1169,12 @@ static void update_touch(void);
 	static uint_fast8_t menu_label_touched = 0;
 	static uint_fast8_t menu_level;
 	static enc2_menu_t * gui_enc2_menu;
+
+	typedef struct {
+		touch_t * t;
+		LIST_ENTRY item;
+	} test_list_t;
+	LIST_ENTRY tt;
 
 	void gui_timer_update(void * arg)
 	{
@@ -2601,18 +2600,31 @@ static void update_touch(void);
 	{
 		if(gui.selected_type == TYPE_BUTTON)
 		{
-
+			if (IsListEmpty(& tt))
+			{
+				touch_t * t = calloc(1, sizeof(touch_t));
+				t->x1 = 100;
+				test_list_t * d = calloc(1, sizeof(test_list_t));
+				d->t = t;
+				InsertHeadList(& tt, & d->item);
+			}
 		}
-
 	}
 
 	static void button6_handler(void)
 	{
 		if(gui.selected_type == TYPE_BUTTON)
 		{
-
+			if (! IsListEmpty(& tt))
+			{
+				PLIST_ENTRY d = RemoveHeadList(& tt);
+				test_list_t * p = CONTAINING_RECORD(d, test_list_t, item);
+				PRINTF("%d\n", p->t->x1);
+				free(p->t);
+				free(p);
+				PRINTF("%d\n", p->t->x1);
+			}
 		}
-
 	}
 
 	static void button7_handler(void)
@@ -2626,7 +2638,6 @@ static void update_touch(void);
 				win = & windows[WINDOW_AGC];
 				set_window(win, VISIBLE);
 				footer_buttons_state(DISABLED, ((button_t *)gui.selected_link)->name);
-
 			}
 			else
 			{
@@ -2929,15 +2940,22 @@ static void update_touch(void);
 
 		w = v->w;
 		h = v->h;
-		ASSERT(w < BTN_BUF_W);
-		ASSERT(h < BTN_BUF_H);
+		size_t s = GXSIZE(w, h);
+
+		v->bg_non_pressed = (PACKEDCOLORMAIN_T *) malloc(s);
+		v->bg_pressed = (PACKEDCOLORMAIN_T *) malloc(s);
+		v->bg_locked = (PACKEDCOLORMAIN_T *) malloc(s);
+		v->bg_locked_pressed = (PACKEDCOLORMAIN_T *) malloc(s);
+		v->bg_disabled = (PACKEDCOLORMAIN_T *) malloc(s);
 
 		buf = v->bg_non_pressed;
+		ASSERT(buf != NULL);
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLOR_BUTTON_NON_LOCKED, 1);
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORPIP_GRAY, 0);
 		colpip_rect(buf, w, h, 2, 2, w - 3, h - 3, COLORPIP_BLACK, 0);
 
 		buf = v->bg_pressed;
+		ASSERT(buf != NULL);
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLOR_BUTTON_PR_NON_LOCKED, 1);
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORPIP_GRAY, 0);
 		colmain_line(buf, w, h, 2, 3, w - 3, 3, COLORPIP_BLACK, 0);
@@ -2946,11 +2964,13 @@ static void update_touch(void);
 		colmain_line(buf, w, h, 2, 2, 2, h - 2, COLORPIP_BLACK, 0);
 
 		buf = v->bg_locked;
+		ASSERT(buf != NULL);
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLOR_BUTTON_LOCKED, 1);
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORPIP_GRAY, 0);
 		colpip_rect(buf, w, h, 2, 2, w - 3, h - 3, COLORPIP_BLACK, 0);
 
 		buf = v->bg_locked_pressed;
+		ASSERT(buf != NULL);
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLOR_BUTTON_PR_LOCKED, 1);
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORPIP_GRAY, 0);
 		colmain_line(buf, w, h, 2, 3, w - 3, 3, COLORPIP_BLACK, 0);
@@ -2959,6 +2979,7 @@ static void update_touch(void);
 		colmain_line(buf, w, h, 2, 2, 2, h - 2, COLORPIP_BLACK, 0);
 
 		buf = v->bg_disabled;
+		ASSERT(buf != NULL);
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLOR_BUTTON_DISABLED, 1);
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORPIP_GRAY, 0);
 		colpip_rect(buf, w, h, 2, 2, w - 3, h - 3, COLORPIP_BLACK, 0);
@@ -2970,6 +2991,7 @@ static void update_touch(void);
 		window_t * win = & windows[WINDOW_MAIN];
 
 		InitializeListHead(& windows_list);
+		InitializeListHead(& tt);
 
 		set_window(win, VISIBLE);
 
