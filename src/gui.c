@@ -1143,6 +1143,7 @@ static void update_touch(void);
 		uint16_t y1;
 		uint16_t x2;
 		uint16_t y2;
+		LIST_ENTRY item;
 	} touch_t;
 
 	typedef struct {
@@ -1170,10 +1171,10 @@ static void update_touch(void);
 	static uint_fast8_t menu_level;
 	static enc2_menu_t * gui_enc2_menu;
 
-	typedef struct {
-		touch_t * t;
-		LIST_ENTRY item;
-	} test_list_t;
+//	typedef struct {
+//		touch_t * t;
+//		LIST_ENTRY item;
+//	} test_list_t;
 	LIST_ENTRY tt;
 
 	void gui_timer_update(void * arg)
@@ -2602,11 +2603,9 @@ static void update_touch(void);
 		{
 			if (IsListEmpty(& tt))
 			{
-				touch_t * t = calloc(1, sizeof(touch_t));
-				t->x1 = 100;
-				test_list_t * d = calloc(1, sizeof(test_list_t));
-				d->t = t;
-				InsertHeadList(& tt, & d->item);
+				touch_t * tp = malloc(sizeof(touch_t));
+				tp->x1 = 100;
+				InsertHeadList(& tt, & tp->item);
 			}
 		}
 	}
@@ -2618,11 +2617,9 @@ static void update_touch(void);
 			if (! IsListEmpty(& tt))
 			{
 				PLIST_ENTRY d = RemoveHeadList(& tt);
-				test_list_t * p = CONTAINING_RECORD(d, test_list_t, item);
-				PRINTF("%d\n", p->t->x1);
-				free(p->t);
+				touch_t * tp = CONTAINING_RECORD(d, touch_t, item);
+				PRINTF("%d\n", tp->x1);
 				free(p);
-				PRINTF("%d\n", p->t->x1);
 			}
 		}
 	}
