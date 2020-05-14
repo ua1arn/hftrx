@@ -325,26 +325,6 @@ ili9225_pix8(
 	ili9225_pixel_p3(v & 0x80);
 }
 
-static uint_fast8_t
-NOINLINEAT
-bigfont_decode(uint_fast8_t c)
-{
-	// '#' - узкий пробел
-	if (c == ' ' || c == '#')
-		return 11;
-	if (c == '_')
-		return 10;		// курсор - позиция редактирвания частоты
-	if (c == '.')
-		return 12;		// точка
-	return c - '0';		// остальные - цифры 0..9
-}
-
-static uint_fast8_t
-smallfont_decode(uint_fast8_t c)
-{
-	return c - ' ';
-}
-
 // Вызов этой функции только внутри display_wrdata_begin() и 	display_wrdata_end();
 static void ili9225_put_char_small(char cc)
 {

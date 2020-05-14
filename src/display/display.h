@@ -840,6 +840,35 @@ void colmain_fb_next(void);		// прерключиться на использо
 
 void display2_xltrgb24(COLOR24_T * xtable);
 
+void hwaccel_copy(
+	uintptr_t dstinvalidateaddr,
+	size_t dstinvalidatesize,
+	PACKEDCOLORMAIN_T * dst,
+	const PACKEDCOLORMAIN_T * src,
+	unsigned w,
+	unsigned t,	// разница в размере строки получателя от источника
+	unsigned h
+	);
+
+void
+colmain_fillrect_pattern(
+	PACKEDCOLORMAIN_T * buffer,
+	uint_fast16_t dx,
+	uint_fast16_t dy,
+	uint_fast16_t x, uint_fast16_t y, 	// координаты в пикселях
+	uint_fast16_t w, uint_fast16_t h, 	// размеры в пикселях
+	COLORMAIN_T fgcolor,
+	COLORMAIN_T bgcolor,
+	uint_fast8_t hpattern	// horizontal pattern (LSB - left)
+	);
+
+// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
+void ltdc_horizontal_pixels(
+	PACKEDCOLORMAIN_T * tgr,		// target raster
+	const FLASHMEM uint8_t * raster,
+	uint_fast16_t width	// number of bits (start from LSB first byte in raster)
+	);
+
 // Установить прозрачность для прямоугольника
 void display_transparency(
 	uint_fast16_t x1, uint_fast16_t y1,
@@ -858,6 +887,9 @@ void colpip_fillrect(
 	uint_fast16_t h,	// высота
 	COLORPIP_T color	// цвет
 	);
+
+uint_fast8_t smallfont_decode(uint_fast8_t c);
+uint_fast8_t bigfont_decode(uint_fast8_t c);
 
 int_fast32_t display_zoomedbw(void);
 

@@ -180,30 +180,6 @@ static void pcf8535_clear(void)
 	}
 }
 
-
-
-// uc1601s_bigfont & uc1601s_halffont decode
-static uint_fast8_t 
-NOINLINEAT
-bigfont_decode(uint_fast8_t c)
-{
-	// '#' - узкий пробел
-	if (c == ' ' || c == '#')
-		return 11;
-	if (c == '_')
-		return 10;		// курсор - позиция редактирвания частоты
-	if (c == '.')
-		return 12;		// точка
-	return c - '0';		// остальные - цифры 0..9
-}
-
-static uint_fast8_t 
-smallfont_decode(uint_fast8_t c)
-{
-	return c - ' ';
-}
-
-
 // начало выдаче байтов (записи в видеопамять)
 // Вызывается в начале выдачи строки
 static void pcf8535_put_char_begin(void)

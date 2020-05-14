@@ -211,29 +211,6 @@ static void st7565s_clear(void)
 	}
 }
 
-
-// st7565s_bigfont & st7565s_halffont decode
-static uint_fast8_t 
-NOINLINEAT
-bigfont_decode(uint_fast8_t c)
-{
-	// '#' - узкий пробел
-	if (c == ' ' || c == '#')
-		return 11;
-	if (c == '_')
-		return 10;		// курсор - позиция редактирвания частоты
-	if (c == '.')
-		return 12;		// точка
-	return c - '0';		// остальные - цифры 0..9
-}
-
-static uint_fast8_t 
-smallfont_decode(uint_fast8_t c)
-{
-	return c - ' ';
-}
-
-
 // Вызовы этой функции (или группу вызовов) требуется "обрамить" парой вызовов
 // st7565s_put_char_begin() и st7565s_put_char_end().
 //

@@ -109,30 +109,6 @@ uc1608_put_char_end(void)
 	spi_unselect(tglcd);
 }
 
-
-
-static uint_fast8_t
-//NOINLINEAT
-bigfont_decode(uint_fast8_t c)
-{
-	// '#' - узкий пробел
-	if (c == ' ' || c == '#')
-		return 11;
-	if (c == '_')
-		return 10;		// курсор - позиция редактирвания частоты
-	if (c == '.')
-		return 12;		// точка
-	return c - '0';		// остальные - цифры 0..9
-}
-
-
-static uint_fast8_t
-//NOINLINEAT
-smallfont_decode(uint_fast8_t c)
-{
-	return c - ' ';
-}
-
 // многополосный вывод символов - за несколько горизонтальных проходов.
 // Нумерация полос - сверху вниз, начиная с 0
 // Вызов этой функции только внутри display_wrdata_begin() и 	display_wrdata_end();
