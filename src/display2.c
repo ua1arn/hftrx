@@ -371,7 +371,6 @@ static void display_freqmeter10(
 #endif /* WITHFQMETER */
 }
 
-
 // отображение текста (из FLASH) с атрибутами по состоянию
 static void 
 NOINLINEAT
