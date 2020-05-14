@@ -18,6 +18,9 @@
 #include "spi.h"	// hardware_spi_master_send_frame
 #include <string.h>
 
+
+#include "fontmaps.h"
+
 /*
 	Dead time value in the AXI clock cycle inserted between two consecutive accesses on
 	the AXI master port. These bits represent the minimum guaranteed number of cycles
@@ -1128,8 +1131,6 @@ colmain_fillrect(
 	colmain_fillrect_pattern(buffer, dx, dy, x, y, w, h, color, color, 0xFF);
 }
 
-#include "fontmaps.h"
-
 #if LCDMODE_HORFILL
 // для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
 #if 0
@@ -1219,7 +1220,7 @@ ltdcmain_horizontal_put_char_small(
 }
 #endif /* SMALLCHARW */
 
-#if SMALLCHARW
+#if defined (SMALLCHARW)
 // возвращаем на сколько пикселей вправо занимет отрисованный символ
 // Фон не трогаем
 // return new x coordinate
@@ -1243,7 +1244,8 @@ static uint_fast16_t RAMFUNC_NONILINE ltdcpip_horizontal_put_char_small_tbg(
 	}
 	return x + width;
 }
-#endif /* SMALLCHARW */
+
+#endif /* defined (SMALLCHARW) */
 
 #if SMALLCHARW2
 // возвращаем на сколько пикселей вправо занимет отрисованный символ
@@ -1299,6 +1301,8 @@ static uint_fast16_t RAMFUNC_NONILINE ltdcpip_horizontal_put_char_small3_tbg(
 
 
 
+#if defined (SMALLCHARW)
+
 // Используется при выводе на графический индикатор,
 // transparent background - не меняем цвет фона.
 void
@@ -1320,8 +1324,9 @@ colpip_string_tbg(
 		x = ltdcpip_horizontal_put_char_small_tbg(buffer, dx, dy, x, y, c, fg);
 	}
 }
+#endif /* defined (SMALLCHARW) */
 
-#if SMALLCHARW2
+#if defined (SMALLCHARW2)
 
 // Используется при выводе на графический индикатор,
 // transparent background - не меняем цвет фона.
@@ -1353,9 +1358,9 @@ uint_fast16_t strwidth2(
 	return SMALLCHARW2 * strlen(s);
 }
 
-#endif /* SMALLCHARW2 */
+#endif /* defined (SMALLCHARW2) */
 
-#if SMALLCHARW3
+#if defined (SMALLCHARW3)
 // Используется при выводе на графический индикатор,
 // transparent background - не меняем цвет фона.
 void
@@ -1387,10 +1392,10 @@ uint_fast16_t strwidth3(
 	return SMALLCHARW3 * strlen(s);
 }
 
-#endif /* SMALLCHARW3 */
+#endif /* defined (SMALLCHARW3) */
 
 
-
+#if defined (SMALLCHARW) && defined (SMALLCHARH)
 // Возвращает ширину строки в пикселях
 uint_fast16_t strwidth(
 	const char * s
@@ -1415,6 +1420,8 @@ uint_fast16_t colpip_string_height(
 	(void) s;
 	return SMALLCHARH;
 }
+
+#endif /* defined (SMALLCHARW) && defined (SMALLCHARH) */
 
 #else /* LCDMODE_HORFILL */
 

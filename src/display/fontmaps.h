@@ -8,7 +8,9 @@
 #ifndef DISPLAY_FONTMAPS_H_INCLUDED
 #define DISPLAY_FONTMAPS_H_INCLUDED
 
-#if LCDMODE_UC1601
+#if LCDMODE_DUMMY
+
+#elif LCDMODE_UC1601
 
 	/* растровые шрифты */
 	#include "./fonts/uc1601s_font_small.h"

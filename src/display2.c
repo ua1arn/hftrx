@@ -5253,9 +5253,9 @@ static const FLASHMEM struct dzone dzones [] =
 	void display2_getpipparams(pipparams_t * p)
 	{
 		p->x = 0; //GRID2X(0);	// позиция верхнего левого угла в пикселях
-		p->y = GRID2Y(DLES);	// позиция верхнего левого угла в пикселях
+		p->y = 0;	// позиция верхнего левого угла в пикселях
 		p->w = DIM_X; //GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
-		p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
+		p->h = DIM_Y;				// размер по вертикали в пикселях
 		//p->frame = (uintptr_t) 0;
 	}
 

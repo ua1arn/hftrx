@@ -1455,14 +1455,14 @@ extern "C" {
 	#define HALFCOUNT_FREQA 1
 	#define HALFCOUNT_SMALL 1
 	#define HALFCOUNT_BIG 1
-	#define CHAR_W	6
-	#define CHAR_H	8
-	#define SMALLCHARH 8 /* Font height */
+
+	#define CHAR_W 6
+	#define CHAR_H 8
+
 	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
 	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
 	#define GRID2X(cellsx) ((cellsx) * CHAR_W)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
 	#define GRID2Y(cellsy) ((cellsy) * CHAR_H)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
-
 
 	#define DISPLAYMODES_FPS 5	/* количество обновлений отображения режимов работы */
 	#define DISPLAY_FPS	10	/* обновление показаний частоты за секунду */

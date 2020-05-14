@@ -770,50 +770,6 @@ display_fillrect(
 
 #endif /* LCDMODE_LTDC */
 
-/*
- * настройка портов для последующей работы с дополнительными (кроме последовательного канала)
- * сигналами дисплея.
- */
-/* вызывается при запрещённых прерываниях. */
-void display_hardware_initialize(void)
-{
-	debug_printf_P(PSTR("display_hardware_initialize start\n"));
-
-
-#if WITHDMA2DHW
-	// Image construction hardware
-	arm_hardware_dma2d_initialize();
-#endif /* WITHDMA2DHW */
-#if WITHMDMAHW
-	// Image construction hardware
-	arm_hardware_mdma_initialize();
-#endif
-#if WITHLTDCHW
-	// STM32xxx LCD-TFT Controller (LTDC)
-	// RENESAS Video Display Controller 5
-	arm_hardware_ltdc_initialize();
-
-#if LCDMODE_MAIN_PAGES > 1
-	// адрес отображения остановися после обновления
-#else
-	arm_hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
-#endif /* LCDMODE_MAIN_PAGES > 1 */
-
-#endif /* WITHLTDCHW */
-
-#if LCDMODE_HARD_SPI
-#elif LCDMODE_HARD_I2C
-#elif LCDMODE_LTDC
-#else
-	#if LCDMODE_HD44780 && (LCDMODE_SPI == 0)
-		hd44780_io_initialize();
-	#else /* LCDMODE_HD44780 && (LCDMODE_SPI == 0) */
-		DISPLAY_BUS_INITIALIZE();	// see LCD_CONTROL_INITIALIZE, LCD_DATA_INITIALIZE_WRITE
-	#endif /* LCDMODE_HD44780 && (LCDMODE_SPI == 0) */
-#endif
-	debug_printf_P(PSTR("display_hardware_initialize done\n"));
-}
-
 /* копирование содержимого окна с перекрытием для водопада */
 void
 display_scroll_down(
@@ -1471,4 +1427,48 @@ display_value_small(
 		freq = res.rem;
 	}
 	display_wrdata_end();
+}
+
+/*
+ * настройка портов для последующей работы с дополнительными (кроме последовательного канала)
+ * сигналами дисплея.
+ */
+/* вызывается при запрещённых прерываниях. */
+void display_hardware_initialize(void)
+{
+	debug_printf_P(PSTR("display_hardware_initialize start\n"));
+
+
+#if WITHDMA2DHW
+	// Image construction hardware
+	arm_hardware_dma2d_initialize();
+#endif /* WITHDMA2DHW */
+#if WITHMDMAHW
+	// Image construction hardware
+	arm_hardware_mdma_initialize();
+#endif
+#if WITHLTDCHW
+	// STM32xxx LCD-TFT Controller (LTDC)
+	// RENESAS Video Display Controller 5
+	arm_hardware_ltdc_initialize();
+
+#if LCDMODE_MAIN_PAGES > 1
+	// адрес отображения остановися после обновления
+#else
+	arm_hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
+#endif /* LCDMODE_MAIN_PAGES > 1 */
+
+#endif /* WITHLTDCHW */
+
+#if LCDMODE_HARD_SPI
+#elif LCDMODE_HARD_I2C
+#elif LCDMODE_LTDC
+#else
+	#if LCDMODE_HD44780 && (LCDMODE_SPI == 0)
+		hd44780_io_initialize();
+	#else /* LCDMODE_HD44780 && (LCDMODE_SPI == 0) */
+		DISPLAY_BUS_INITIALIZE();	// see LCD_CONTROL_INITIALIZE, LCD_DATA_INITIALIZE_WRITE
+	#endif /* LCDMODE_HD44780 && (LCDMODE_SPI == 0) */
+#endif
+	debug_printf_P(PSTR("display_hardware_initialize done\n"));
 }
