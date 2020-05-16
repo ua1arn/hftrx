@@ -30,14 +30,14 @@
 
 // todo: учесть LCDMODE_COLORED
 
-// параметры отображения состояния прием/пеердача
+// Параметры отображения состояния прием/пеердача
 static const COLORPAIR_T colors_2rxtx [2] =
 {
 		{	COLORMAIN_GREEN,	COLORMAIN_BLACK,	},	// RX
 		{	COLORMAIN_RED,		COLORMAIN_BLACK,	},	// TX
 };
 
-// параметры отображения состояний из трех вариантов
+// Параметры отображения состояний из трех вариантов
 static const COLORPAIR_T colors_4state [4] =
 {
 		{	LABELINACTIVETEXT,	LABELINACTIVEBACK,	},
@@ -46,29 +46,37 @@ static const COLORPAIR_T colors_4state [4] =
 		{	LABELACTIVETEXT,	LABELACTIVEBACK,	},
 };
 
-// параметры отображения состояний из двух вариантов
+// Параметры отображения состояний из двух вариантов
 static const COLORPAIR_T colors_2state [2] =
 {
 		{	LABELINACTIVETEXT,	LABELINACTIVEBACK,	},
 		{	LABELACTIVETEXT,	LABELACTIVEBACK,	},
 };
 
-// параметры отображения текстов без вариантов
+// Параметры отображения текстов без вариантов
 static const COLORPAIR_T colors_1state [1] =
 {
 		{	LABELTEXT,	LABELBACK,	},
 };
 
-// параметры отображения частоты основного приемника
-static const COLORPAIR_T colors_1freq [1] =
+// Параметры отображения текстов без вариантов
+// синий
+static const COLORPAIR_T colors_1stateBlue [1] =
 {
-		{	DESIGNBIGCOLOR,	LABELBACK,	},
+		{	DESIGNBIGCOLORB,	LABELBACK,	},
 };
 
-// параметры отображения частоты дополнительного приемника
+// Параметры отображения частоты дополнительного приемника
+// синий
 static const COLORPAIR_T colors_1freqB [1] =
 {
 		{	DESIGNBIGCOLORB,	LABELBACK,	},
+};
+
+// Параметры отображения частоты основного приемника
+static const COLORPAIR_T colors_1freq [1] =
+{
+		{	DESIGNBIGCOLOR,	LABELBACK,	},
 };
 
 // todo: switch off -Wunused-function
@@ -534,7 +542,7 @@ void display_2states_P(
 	display2_text_P(x, y, labels, colors_2state, state);
 }
 
-// параметры, не меняющие состояния цветом
+// Параметры, не меняющие состояния цветом
 void display_1state_P(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
@@ -544,7 +552,7 @@ void display_1state_P(
 	display2_text_P(x, y, & label, colors_1state, 0);
 }
 
-// параметры, не меняющие состояния цветом
+// Параметры, не меняющие состояния цветом
 void display_1state(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
@@ -1668,7 +1676,7 @@ static void display2_datetime12(
 		);
 
 	const char * const labels [1] = { buff, };
-	display2_text(x, y, labels, colors_1state, 0);
+	display2_text(x, y, labels, colors_1stateBlue, 0);
 #endif /* WITHNMEA */
 }
 
@@ -4873,7 +4881,7 @@ enum
 		/* общий для всех режимов элемент */
 		{	0,	0,	display2_clearbg, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },
 
-		{	0,	0, display_siglevel4, 	REDRM_BARS, PGALL, },	// signal level dBm
+		{	0,	0, 	display_siglevel7, 	REDRM_BARS, PGALL, },	// signal level dBm
 		{	15,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
 		{	18, 0,	display_atu3,		REDRM_MODE, PGALL, },	// TUNER state (optional)
 		{	22, 0,	display_byp3,		REDRM_MODE, PGALL, },	// TUNER BYPASS state (optional)
@@ -6631,7 +6639,7 @@ validforredraw(
 	return 1;
 }
 
-// параметры state machine отображения
+// Параметры state machine отображения
 static RAMDTCM uint8_t reqs [REDRM_count];		// запросы на отображение
 static RAMDTCM uint8_t subsets [REDRM_count];	// параметр прохода по списку отображения.
 static RAMDTCM uint8_t walkis [REDRM_count];	// индекс в списке параметров отображения в данном проходе
