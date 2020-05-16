@@ -383,6 +383,7 @@
 	#define WITHFANTIMER	1	/* выключающийся по таймеру вентилятор в усилителе мощности */
 	#if 0
 		#define WITHTOUCHGUI	1	/* тестирование работы с сенсорным экраном */
+		#define WITHOLDMENUSTYLE	1	/* Меню в виде прокручиваемого списка */
 		#define WITHENCODER2NOFREQ	1	/* второй валкодер не перестраивает частоту */
 		#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 	#endif

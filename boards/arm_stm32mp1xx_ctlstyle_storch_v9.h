@@ -414,7 +414,9 @@
 	#if LCDMODE_AT070TNA2 || LCDMODE_AT070TN90
 		#if 1
 			#define WITHTOUCHGUI	1	/* тестирование работы с сенсорным экраном */
+			#define WITHOLDMENUSTYLE	1	/* Меню в виде прокручиваемого списка */
 			#define WITHENCODER2NOFREQ	1	/* второй валкодер не перестраивает частоту */
+			#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 		#endif
 		#define WITHGUIMAXX		800	//DIM_X
 		#define WITHGUIMAXY		480	//DIM_Y

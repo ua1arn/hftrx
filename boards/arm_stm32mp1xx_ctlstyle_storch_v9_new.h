@@ -327,7 +327,6 @@
 	#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 	////*#define WITHRTS192 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 	#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
-	//#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 
 	#if 0
 		#define WITHUSBHEADSET 1	/* трансивер работает USB гарнитурой для компьютера - режим тестирования */
@@ -427,7 +426,9 @@
 	#if LCDMODE_AT070TNA2 || LCDMODE_AT070TN90
 		#if 1
 			#define WITHTOUCHGUI	1	/* тестирование работы с сенсорным экраном */
+			#define WITHOLDMENUSTYLE	1	/* Меню в виде прокручиваемого списка */
 			#define WITHENCODER2NOFREQ	1	/* второй валкодер не перестраивает частоту */
+			#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 		#endif
 		#define WITHGUIMAXX		800	//DIM_X
 		#define WITHGUIMAXY		480	//DIM_Y
