@@ -3934,7 +3934,7 @@ static void board_set_tuner_group(void)
 // выдача параметров на тюнер
 static void updateboard_tuner(void)
 {
-	//debug_printf_P(PSTR("tuner: CAP=%-3d, IND=%-3d, TYP=%d\n"), tunercap, tunerind, tunertype);
+	PRINTF(PSTR("updateboard_tuner: CAP=%-3d, IND=%-3d, TYP=%d\n"), tunercap, tunerind, tunertype);
 	board_set_tuner_group();
 	board_update();		/* вывести забуферированные изменения в регистры */
 }
@@ -3947,7 +3947,7 @@ static void tuner_waitadc(void)
 		local_delay_ms(5);
 }
 
-static uint_fast8_t tuner_get_swr(uint_fast8_t fullscale)
+static uint_fast8_t tuner_get_swr0(uint_fast8_t fullscale)
 {
 	adcvalholder_t r;
 	const adcvalholder_t f = board_getswrmeter_unfiltered(& r, swrcalibr);
@@ -3960,6 +3960,13 @@ static uint_fast8_t tuner_get_swr(uint_fast8_t fullscale)
 
 	const uint_fast16_t swr10 = (f + r) * SWRMIN / (f - r) - SWRMIN;
 	return swr10 > fs ? swr10 : swr10;
+}
+
+static uint_fast8_t tuner_get_swr(uint_fast8_t fullscale)
+{
+	uint_fast8_t swr = tuner_get_swr0(fullscale);
+	PRINTF("tuner_get_swr: %u\n", swr);
+	return swr;
 }
 
 // Если прервана настройка - возврат не-0
