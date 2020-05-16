@@ -612,10 +612,9 @@ display2_smeter15(
 			display_floodfill(fr, DIM_X, DIM_Y, xx, yy, COLORMAIN_YELLOW, COLORMAIN_BLACK);
 		}
 
-		const COLORMAIN_T ct2 = gp > smeter_params.gm ? COLORMAIN_RED : COLORMAIN_GREEN;
-		display_radius_buf(fr, DIM_X, DIM_Y, xc - 1, yc, gp, smeter_params.rv1, smeter_params.rv2, ct2, 0);
-		display_radius_buf(fr, DIM_X, DIM_Y, xc, yc, gp, smeter_params.rv1, smeter_params.rv2, ct2, 0);
-		display_radius_buf(fr, DIM_X, DIM_Y, xc + 1, yc, gp, smeter_params.rv1, smeter_params.rv2, ct2, 0);
+		display_radius_buf(fr, DIM_X, DIM_Y, xc - 1, yc, gp, smeter_params.rv1, smeter_params.rv2, COLORMAIN_GREEN, 0);
+		display_radius_buf(fr, DIM_X, DIM_Y, xc, yc, gp, smeter_params.rv1, smeter_params.rv2, COLORMAIN_GREEN, 0);
+		display_radius_buf(fr, DIM_X, DIM_Y, xc + 1, yc, gp, smeter_params.rv1, smeter_params.rv2, COLORMAIN_GREEN, 0);
 	}
 	else
 	{
@@ -624,18 +623,16 @@ display2_smeter15(
 
 		{
 			// Рисование стрелки
-			const COLORMAIN_T ct = gv_trace > smeter_params.gm ? COLORMAIN_RED : COLORMAIN_YELLOW;
-			display_radius_buf(fr, DIM_X, DIM_Y, xc - 1, yc, gv_trace, smeter_params.r1 - 2, smeter_params.r2 + 2, ct, 0);
-			display_radius_buf(fr, DIM_X, DIM_Y, xc, yc, gv_trace, smeter_params.r1 - 2, smeter_params.r2 + 2, ct, 0);
-			display_radius_buf(fr, DIM_X, DIM_Y, xc + 1, yc, gv_trace, smeter_params.r1 - 2, smeter_params.r2 + 2, ct, 0);
+			display_radius_buf(fr, DIM_X, DIM_Y, xc - 1, yc, gv_trace, smeter_params.r1 - 2, smeter_params.r2 + 2, COLORMAIN_YELLOW, 0);
+			display_radius_buf(fr, DIM_X, DIM_Y, xc, yc, gv_trace, smeter_params.r1 - 2, smeter_params.r2 + 2, COLORMAIN_YELLOW, 0);
+			display_radius_buf(fr, DIM_X, DIM_Y, xc + 1, yc, gv_trace, smeter_params.r1 - 2, smeter_params.r2 + 2, COLORMAIN_YELLOW, 0);
 		}
 
 		{
 			// Рисование стрелки (?)
-			const COLORMAIN_T ct2 = gv > smeter_params.gm ? COLORMAIN_RED : COLORMAIN_GREEN;
-			display_radius_buf(fr, DIM_X, DIM_Y, xc - 1, yc, gv, smeter_params.rv1, smeter_params.rv2, ct2, 0);
-			display_radius_buf(fr, DIM_X, DIM_Y, xc, yc, gv, smeter_params.rv1, smeter_params.rv2, ct2, 0);
-			display_radius_buf(fr, DIM_X, DIM_Y, xc + 1, yc, gv, smeter_params.rv1, smeter_params.rv2, ct2, 0);
+			display_radius_buf(fr, DIM_X, DIM_Y, xc - 1, yc, gv, smeter_params.rv1, smeter_params.rv2, COLORMAIN_GREEN, 0);
+			display_radius_buf(fr, DIM_X, DIM_Y, xc, yc, gv, smeter_params.rv1, smeter_params.rv2, COLORMAIN_GREEN, 0);
+			display_radius_buf(fr, DIM_X, DIM_Y, xc + 1, yc, gv, smeter_params.rv1, smeter_params.rv2, COLORMAIN_GREEN, 0);
 		}
 	}
 }
