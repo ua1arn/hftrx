@@ -2782,49 +2782,6 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 #endif /* WITHDSPEXTDDC && WITHDSPEXTFIR */
 }
 
-#if WITHREVERB
-	static FLOAT_t reverbRatioDirect [NPROF] = { 1, 1 };
-	static FLOAT_t reverbRatioDelayed [NPROF] = { 0, 0 };
-	static unsigned reverbDelay [NPROF];	/* задержка ревербератора в сэмплах */
-#endif /* WITHREVERB */
-
-static void reverb_update(const uint_fast8_t spf)
-{
-#if WITHREVERB
-	/* при выключенном ревербераторе сигнал все равно
-	 * помещается в линию задержки - чтобы при
-	 * включении уже был готов к работе
-	 * */
-	reverbRatioDelayed [spf] = glob_reverb ? 0 : db2ratio(- (int) glob_reverbloss);	/* ревербератор - ослабление на возврате */
-	reverbRatioDirect [spf] = 1 - reverbRatioDelayed [spf];
-	reverbDelay [spf] = NSAITICKS(glob_reverbdelay);
-
-#endif /* WITHREVERB */
-}
-
-static FLOAT_t txmikereverb(FLOAT_t sample)
-{
-#if WITHREVERB
-
-	enum { MAXDELAYSAMPLES = NSAITICKS(WITHREVERBDELAYMAX) };
-
-	static RAMNOINIT_D1 FLOAT_t delaybuf [MAXDELAYSAMPLES];
-	static unsigned pos;
-
-	pos = pos == 0 ? MAXDELAYSAMPLES - 1 : pos - 1;
-	delaybuf [pos] = sample;
-	const FLOAT_t oldsample = delaybuf [(pos + reverbDelay [gwprof]) % MAXDELAYSAMPLES];
-	sample = sample * reverbRatioDirect [gwprof] + oldsample * reverbRatioDelayed [gwprof];
-	delaybuf [pos] = sample;
-	return sample;
-
-#else /* WITHREVERB */
-
-	return sample;
-
-#endif /* WITHREVERB */
-}
-
 // Установка параметров тракта передатчика
 static void audio_setup_mike(const uint_fast8_t spf)
 {
@@ -2847,7 +2804,6 @@ static void audio_setup_mike(const uint_fast8_t spf)
 	case DSPCTL_MODE_TX_SSB:
 	case DSPCTL_MODE_TX_AM:
 	case DSPCTL_MODE_TX_FREEDV:
-		reverb_update(spf);
 		fir_design_bandpass_freq(dCoeff, iCoefNum, glob_aflowcuttx, glob_afhighcuttx);
 		fir_design_adjust_tx(dCoeff, dWindow, iCoefNum);	// Применение эквалайзера к микрофону
 		break;
@@ -3324,11 +3280,41 @@ static RAMDTCM volatile agcstate_t rxsmeterstate [NTRX];	// На каждый п
 static RAMDTCM volatile agcstate_t rxagcstate [NTRX];	// На каждый приёмник
 static RAMDTCM volatile agcstate_t txagcstate;
 
-static RAMDTCM volatile agcparams_t rxsmeterparams = { 0, };
+static RAMDTCM volatile agcparams_t rxsmeterparams;
 static RAMDTCM volatile agcparams_t rxagcparams [NPROF] [NTRX];
 static RAMDTCM volatile agcparams_t txagcparams [NPROF];
+
 static RAMDTCM volatile uint_fast8_t gwagcprofrx = 0;	// work profile - индекс конфигурационной информации, испольуемый для работы */
 static RAMDTCM volatile uint_fast8_t gwagcproftx = 0;	// work profile - индекс конфигурационной информации, испольуемый для работы */
+
+#if WITHREVERB
+	static FLOAT_t reverbRatioDirect [NPROF] = { 1, 1 };
+	static FLOAT_t reverbRatioDelayed [NPROF] = { 0, 0 };
+	static unsigned reverbDelay [NPROF];	/* задержка ревербератора в сэмплах */
+#endif /* WITHREVERB */
+
+static FLOAT_t txmikereverb(FLOAT_t sample)
+{
+#if WITHREVERB
+
+	enum { MAXDELAYSAMPLES = NSAITICKS(WITHREVERBDELAYMAX) };
+
+	static RAMNOINIT_D1 FLOAT_t delaybuf [MAXDELAYSAMPLES];
+	static unsigned pos;
+
+	pos = pos == 0 ? MAXDELAYSAMPLES - 1 : pos - 1;
+	delaybuf [pos] = sample;
+	const FLOAT_t oldsample = delaybuf [(pos + reverbDelay [gwagcproftx]) % MAXDELAYSAMPLES];
+	sample = sample * reverbRatioDirect [gwagcproftx] + oldsample * reverbRatioDelayed [gwagcproftx];
+	delaybuf [pos] = sample;
+	return sample;
+
+#else /* WITHREVERB */
+
+	return sample;
+
+#endif /* WITHREVERB */
+}
 //	
 static void agc_initialize(void)
 {
@@ -5853,6 +5839,19 @@ txparam_update(uint_fast8_t profile)
 		mickecliplevelp [profile] = FS * grade;
 		mickeclipleveln [profile] = - FS * grade;
 	}
+	{
+		// ревербератор
+	#if WITHREVERB
+		/* при выключенном ревербераторе сигнал все равно
+		 * помещается в линию задержки - чтобы при
+		 * включении уже был готов к работе
+		 * */
+		reverbRatioDelayed [profile] = glob_reverb ? db2ratio(- (int) glob_reverbloss) : 0;	/* ревербератор - ослабление на возврате */
+		reverbRatioDirect [profile] = 1 - reverbRatioDelayed [profile];
+		reverbDelay [profile] = NSAITICKS(glob_reverbdelay);
+
+	#endif /* WITHREVERB */
+	}
 
 	{
 		// AM parameters
@@ -6553,7 +6552,7 @@ board_set_reverb(uint_fast8_t reverb, uint_fast8_t reverbdelay, uint_fast8_t rev
 		glob_reverb = reverb;
 		glob_reverbdelay = reverbdelay;
 		glob_reverbloss = reverbloss;
-		board_flt1regchanged();
+		board_dsp1regchanged();
 	}
 #endif /* WITHREVERB */
 }
