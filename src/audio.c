@@ -3303,7 +3303,6 @@ static FLOAT_t txmikereverb(FLOAT_t sample)
 	static unsigned pos;
 
 	pos = pos == 0 ? MAXDELAYSAMPLES - 1 : pos - 1;
-	delaybuf [pos] = sample;
 	const FLOAT_t oldsample = delaybuf [(pos + reverbDelay [gwagcproftx]) % MAXDELAYSAMPLES];
 	sample = sample * reverbRatioDirect [gwagcproftx] + oldsample * reverbRatioDelayed [gwagcproftx];
 	delaybuf [pos] = sample;
