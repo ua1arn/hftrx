@@ -8639,7 +8639,7 @@ board_get_pressed_key(void)
 		enum { X = KEYBOARD_NOKEY, NK = 4 };
 		static const uint_fast8_t kixlat4 [] = 
 		{
-			0, X, X, 1, 1, X, X, 2, 2, X, X, 3, 3, X, X, X,	/* с защитными интервалами */
+			0, X, 1, 1, 1, X, 2, 2, 2, X, 3, 3, 3, 3, X, X,	/* с защитными интервалами */
 		};
 
 	#endif /* KEYBOARD_USE_ADC6 || KEYBOARD_USE_ADC6_V1 */
@@ -8647,13 +8647,16 @@ board_get_pressed_key(void)
 	for (ki = 0; ki < KI_COUNT; ++ ki)
 	{
 	#if KEYBOARD_USE_ADC6
+		// шесть кнопок на одном входе АЦП
 		const uint_fast8_t v = kbd_adc6_decode(board_getadc_unfiltered_u8(kitable [ki], 0, 255));
 	#elif KEYBOARD_USE_ADC6_V1
+		// шесть кнопок на одном входе АЦП
 		const uint_fast8_t v = kbd_adc6v1_decode(board_getadc_unfiltered_u8(kitable [ki], 0, 255));
 	#else /* KEYBOARD_USE_ADC6 || KEYBOARD_USE_ADC6_V1 */
 		// исправление ошибочного срабатывания - вокруг значений при нажатых клавишах
 		// (между ними) добавляются защитные интервалы, обрабаатываемые как ненажатая клавиша.
-		// шесть кнопок на одном входе АЦП
+		// Последний инлекс не выдается, отпущеная кнопка - предпоследний.
+		// четыре кнопки на одном входе АЦП
 		const uint_fast8_t v = kixlat4 [board_getadc_unfiltered_u8(kitable [ki], 0, sizeof kixlat4 / sizeof kixlat4 [0] - 1)];
 	#endif /* KEYBOARD_USE_ADC6 || KEYBOARD_USE_ADC6_V1 */
 		if (v != KEYBOARD_NOKEY)
