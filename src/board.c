@@ -68,13 +68,11 @@ static uint_fast8_t 	glob_antenna;		// выбор антенны (0 - ANT1, 1 - 
 static uint_fast8_t 	glob_preamp;		// включение предусилителя (УВЧ) приёмника
 static uint_fast8_t 	glob_mikemute;		// отключить аудиовход балансного модулятора
 static uint_fast8_t 	glob_vox;
-#if WITHLCDBACKLIGHT
-	#if WITHISBOOTLOADER
-		static uint_fast8_t 	glob_bglight = WITHLCDBACKLIGHTMIN;	// включаем дисплей для работы в тествх в hightests()
-	#else /* WITHISBOOTLOADER */
-		static uint_fast8_t 	glob_bglight = WITHLCDBACKLIGHTMAX;	// включаем дисплей для работы в тествх в hightests()
-	#endif /* WITHISBOOTLOADER */
-#endif /* WITHLCDBACKLIGHT */
+#if WITHISBOOTLOADER
+	static uint_fast8_t 	glob_bglight = WITHLCDBACKLIGHTMIN;	// включаем дисплей для работы в тествх в hightests()
+#else /* WITHISBOOTLOADER */
+	static uint_fast8_t 	glob_bglight = WITHLCDBACKLIGHTMAX;	// включаем дисплей для работы в тествх в hightests()
+#endif /* WITHISBOOTLOADER */
 #if WITHKBDBACKLIGHT
 static uint_fast8_t 	glob_kblight = 1;
 #endif /* WITHKBDBACKLIGHT */
@@ -5060,7 +5058,6 @@ board_set_mikemute(uint_fast8_t v)
 	}
 }
 
-#if WITHLCDBACKLIGHT
 /* включение подсветки дисплея */
 void
 board_set_bglight(uint_fast8_t n)
@@ -5071,7 +5068,6 @@ board_set_bglight(uint_fast8_t n)
 		board_ctlreg1changed();
 	}
 }
-#endif /* WITHLCDBACKLIGHT */
 
 #if WITHDCDCFREQCTL
 /* установка делителя для формирования рабочей частоты преобразователя подсветки */
