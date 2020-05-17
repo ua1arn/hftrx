@@ -268,7 +268,7 @@
 	#define WITHUSEAUDIOREC		1	// Запись звука на SD CARD
 	//#define WITHUSEAUDIORECCLASSIC	1	// стандартный формат записи, без "дыр"
 	//#define WITHUSEDUALWATCH	1	// Второй приемник
-	//#define WITHREVERB	1	// реербератор в обраьотке микрофонного сигнала
+	//#define WITHREVERB	1	// реербератор в обработке микрофонного сигнала
 	#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
 	#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 	#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */

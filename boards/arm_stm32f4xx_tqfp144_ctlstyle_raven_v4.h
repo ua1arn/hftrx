@@ -262,7 +262,7 @@
 	#define WITHUSESDCARD	1		// Включение поддержки SD CARD
 	#define WITHUSEAUDIOREC	1		// Запись звука на SD CARD
 	//#define WITHUSEDUALWATCH	1	// Второй приемник
-	//#define WITHREVERB	1	// реербератор в обраьотке микрофонного сигнала
+	//#define WITHREVERB	1	// реербератор в обработке микрофонного сигнала
 	//#define WITHMODEMIQLOOPBACK	1	/* модем получает собственные передаваемые квадратуры */
 	#if 0
 		#define WITHBBOX	1	// Black Box mode - устройство без органов управления

@@ -272,7 +272,7 @@
 	#define WITHDSPEXTFIR 1			/* Фильтрация квадратур осуществляется внешней аппаратурой */
 	//#define WITHDSPLOCALFIR 1		/* test: Фильтрация квадратур осуществляется процессором */
 	#define WITHUSEDUALWATCH	1	// Второй приемник
-	//#define WITHREVERB	1	// реербератор в обраьотке микрофонного сигнала
+	//#define WITHREVERB	1	// реербератор в обработке микрофонного сигнала
 	#define WITHUSESDCARD		1	// Включение поддержки SD CARD
 	#define WITHUSEAUDIOREC		1	// Запись звука на SD CARD
 	//#define WITHMODEMIQLOOPBACK	1	/* модем получает собственные передаваемые квадратуры */

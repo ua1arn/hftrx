@@ -270,7 +270,7 @@
 	#define WITHUSESDCARD		1	// Включение поддержки SD CARD
 	#define WITHUSEAUDIOREC		1	// Запись звука на SD CARD
 	#define WITHUSEDUALWATCH	1	// Второй приемник
-	//#define WITHREVERB	1	// реербератор в обраьотке микрофонного сигнала
+	//#define WITHREVERB	1	// реербератор в обработке микрофонного сигнала
 	//#define WITHMODEMIQLOOPBACK	1	/* модем получает собственные передаваемые квадратуры */
 	#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 	#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
