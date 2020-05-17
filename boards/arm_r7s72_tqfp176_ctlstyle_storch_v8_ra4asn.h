@@ -370,6 +370,7 @@
 
 	#define WITHTOUCHGUI		1
 	#define WITHOLDMENUSTYLE	1	/* Меню в виде прокручиваемого списка */
+//	#define WITHOLDBUTTONSTYLE	1   /* Кнопки без закругления углов */
 	#define WITHALPHA			64
 
 	#define WITHBOTTOMDBVAL		110

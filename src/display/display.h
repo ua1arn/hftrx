@@ -743,7 +743,31 @@ colmain_string3_at_xy(
 // x2, y2 - координаты второго угла (не входящие в закрашиваемый прямоугольник)
 void display_solidbar(uint_fast16_t x, uint_fast16_t y, uint_fast16_t x2, uint_fast16_t y2, COLORMAIN_T color);
 
-void polar_to_dek(uint_fast16_t xc, uint_fast16_t yc, uint_fast16_t gs, uint_fast16_t r, uint_fast16_t * x, uint_fast16_t * y);
+/* Нарисовать прямоугольник со скругленными углами */
+void
+colmain_rounded_rect(
+		PACKEDCOLORMAIN_T * buffer,
+		uint_fast16_t bx,	// ширина буфера
+		uint_fast16_t by,	// высота буфера
+		uint_fast16_t x1,
+		uint_fast16_t y1,
+		uint_fast16_t x2,
+		uint_fast16_t y2,
+		uint_fast8_t r,		// радиус закругления углов
+		COLORMAIN_T color,
+		uint_fast8_t fill
+		);
+
+void
+polar_to_dek(
+		uint_fast16_t xc,
+		uint_fast16_t yc,
+		uint_fast16_t gs,
+		uint_fast16_t r,
+		uint_fast16_t * x,
+		uint_fast16_t * y,
+		uint_fast8_t style);
+
 void
 display_radius_buf(
 		PACKEDCOLORMAIN_T * buffer,
@@ -753,7 +777,8 @@ display_radius_buf(
 		unsigned gs,
 		unsigned r1, unsigned r2,
 		COLORMAIN_T color,
-		int antialiasing);
+		int antialiasing,
+		int style);			// 1 - растягивание по горизонтали
 
 void
 display_segm_buf(
@@ -764,7 +789,8 @@ display_segm_buf(
 		unsigned gs, unsigned ge,
 		unsigned r, int step,
 		COLORMAIN_T color,
-		int antialiasing);
+		int antialiasing,
+		int style);			// 1 - растягивание по горизонтали;
 
 // Нарисовать вертикальную цветную полосу
 void
