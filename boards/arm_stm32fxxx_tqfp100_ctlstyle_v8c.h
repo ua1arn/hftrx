@@ -12,8 +12,8 @@
 #define PION_DSP_CTLSTYLE_V1_H_INCLUDED 1
 
 	#define WITHSAICLOCKFROMI2S	1	/* Блок SAI1 тактируется от PLL I2S */
-	//#define	WITHI2SCLOCKFROMPIN 1	// тактовая частота на SPI2 (I2S) подается с внешнего генератора, в процессор вводится через MCK сигнал интерфейса
-	//#define	WITHSAICLOCKFROMPIN 1	// тактовая частота на SAI1 подается с внешнего генератора, в процессор вводится через MCK сигнал интерфейса
+	//#define WITHI2SCLOCKFROMPIN 1	// тактовая частота на SPI2 (I2S) подается с внешнего генератора, в процессор вводится через MCK сигнал интерфейса
+	//#define WITHSAICLOCKFROMPIN 1	// тактовая частота на SAI1 подается с внешнего генератора, в процессор вводится через MCK сигнал интерфейса
 
 	#define WITHUSEPLL		1	/* Главная PLL	*/
 	//#define WITHUSESAIPLL	1	/* SAI PLL	*/

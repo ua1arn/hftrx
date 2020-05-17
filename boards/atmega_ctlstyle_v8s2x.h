@@ -108,7 +108,7 @@
 	#define ENCRES_DEFAULT ENCRES_128
 	//#define ENCRES_DEFAULT ENCRES_24
 	#define WITHDIRECTFREQENER	1 //(! CTLSTYLE_SW2011ALL && ! CTLSTYLE_UA3DKC)
-	#define	WITHENCODER	1	/* для изменения частоты имеется енкодер */
+	#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
 
 	// +++ Эти строки можно отключать, уменьшая функциональность готового изделия
 	//#define WITHRFSG	1	/* включено управление ВЧ сигнал-генератором. */
@@ -201,7 +201,7 @@
 	#define BOARD_FILTER_3P1		BOARD_FILTERCODE_1	/* 3.1 or 2.75 kHz filter */
 
 	//#if WITHFIXEDBFO || WITHDUALBFO
-		//#define	WITHMODESETMIXONLY	1	// Для FIXEDBFO
+		//#define WITHMODESETMIXONLY	1	// Для FIXEDBFO
 		/* все возможные в данной конфигурации фильтры */
 		//#define IF3_FMASK	(IF3_FMASK_3P1)
 		//#define IF3_FHAVE 	(IF3_FMASK_3P1)

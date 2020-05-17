@@ -143,7 +143,7 @@
 	//#define ENCRES_DEFAULT ENCRES_100
 	#define ENCRES_DEFAULT ENCRES_24
 	//#define WITHDIRECTFREQENER	1 //(! CTLSTYLE_SW2011ALL && ! CTLSTYLE_UA3DKC)
-	#define	WITHENCODER	1	/* для изменения частоты имеется енкодер */
+	#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
 
 
 
@@ -227,7 +227,7 @@
 	//#define BOARD_AGCCODE_OFF 0
 	//#define WITHMODESETSMART 1	/* в заваисмости от частоты меняется боковая, используется вместе с WITHFIXEDBFO */
 	#if 0 //WITHFIXEDBFO || WITHDUALBFO
-		#define	WITHMODESETMIXONLY	1	// USB/LSB, CW/CWR - для FIXEDBFO
+		#define WITHMODESETMIXONLY	1	// USB/LSB, CW/CWR - для FIXEDBFO
 		/* все возможные в данной конфигурации фильтры */
 		#define IF3_FMASK	(IF3_FMASK_3P1)
 		#define IF3_FHAVE 	(IF3_FMASK_3P1)

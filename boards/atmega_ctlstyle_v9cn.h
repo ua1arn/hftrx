@@ -36,7 +36,7 @@
 	//#define KEYB_RA1AGG	1	/* расположение кнопок для корпуса, сделанного RA1AGG - три группы по четыре линейки кнопок друг за другом в один ряд. */
 	//#define KEYB_UA1CEI	1	/* расположение кнопок для UA1CEI */
 	#define KEYBSTYLE_SW2012CN	1
-	//#define	WITHAUTOTUNER	1	/* Есть функция автотюнера */
+	//#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
 	//#define SHORTSET7 1
 	// --- Особые варианты расположения кнопок на клавиатуре
 
@@ -73,7 +73,7 @@
 
 	//#define ENCRES_DEFAULT ENCRES_128
 	#define ENCRES_DEFAULT ENCRES_24
-	#define	WITHENCODER	1	/* для изменения частоты имеется енкодер */
+	#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
 
 	#define ENCODER_REVERSE	1	/* шагать в обртную сторону */
 

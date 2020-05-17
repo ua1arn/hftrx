@@ -52,7 +52,7 @@
 	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHGPUHW	1	/* Graphic processor unit */
 	#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
-	//#define	WITHEHCIHW	1	/* USB_EHCI controller */
+	//#define WITHEHCIHW	1	/* USB_EHCI controller */
 
 	#define WITHSDRAM_PMC1	1	/* power management chip */
 	//#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
@@ -93,7 +93,7 @@
 
 	#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHGPUHW	1	/* Graphic processor unit */
-	//#define	WITHEHCIHW	1	/* USB_EHCI controller */
+	//#define WITHEHCIHW	1	/* USB_EHCI controller */
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 
 	#define WITHUSBHW_DEVICE	USB_OTG_HS	/* на этом устройстве поддерживается функциональность DEVICE	*/

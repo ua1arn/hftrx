@@ -167,7 +167,7 @@
 	//#define WITHATT2_6DB	1			/* LTC2217: Только аттенюатор с затуханиями 0 - 6 - 12 - 18 dB */
 
 	#define WITHAGCMODEONOFF	1	// АРУ вкл/выкл
-	//#define	WITHMIC1LEVEL		1	// установка усиления микрофона
+	//#define WITHMIC1LEVEL		1	// установка усиления микрофона
 
 	//#define DSTYLE_UR3LMZMOD	1	// Расположение элементов экрана в трансиверах UR3LMZ
 	#define	FONTSTYLE_ITALIC	1	// Использовать альтернативный шрифт
@@ -221,7 +221,7 @@
 	#define ENCRES_DEFAULT ENCRES_128
 	//#define ENCRES_DEFAULT ENCRES_24
 	#define WITHDIRECTFREQENER	1 //(! CTLSTYLE_SW2011ALL && ! CTLSTYLE_UA3DKC)
-	#define	WITHENCODER	1	/* для изменения частоты имеется енкодер */
+	#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
 
 	/* Board hardware configuration */
 	#define	CODEC1_TYPE	CODEC_TYPE_TLV320AIC23B
@@ -266,23 +266,23 @@
 	//#define WITHMODEMIQLOOPBACK	1	/* модем получает собственные передаваемые квадратуры */
 	#if 0
 		#define WITHBBOX	1	// Black Box mode - устройство без органов управления
-		#define	WITHBBOXFREQ	26985000L		// частота после включения
-		//#define	WITHBBOXFREQ	(26985000L - 260)		// частота после включения - 135 коррекция частоты платы с  122.88 для попадания в приём платы с 100 МГц генератором без коррекции
-		//#define	WITHBBOXFREQ	(26985000L - 1600)		// частота после включения
-		//#define	WITHBBOXFREQ	(14070000L - 1000)		// прослушивание BPSK частот
-		//#define	WITHBBOXFREQ	(14065000L - 135)		// частота после включения - 135 коррекция частоты платы с  122.88 для попадания в приём платы с 100 МГц генератором без коррекции
-		//#define	WITHBBOXFREQ	14065000L		// частота после включения
-		//#define	WITHBBOXFREQ	(14065000L - 1000)		// частота после включения
-		//#define	WITHBBOXSUBMODE	SUBMODE_USB	// единственный режим работы
-		#define	WITHBBOXSUBMODE	SUBMODE_BPSK	// единственный режим работы
-		//#define	WITHBBOXFREQ	27100000L		// частота после включения
-		//#define	WITHBBOXSUBMODE	SUBMODE_CW	// единственный режим работы
-		//#define	WITHBBOXTX		1		// автоматический переход на передачу
+		#define WITHBBOXFREQ	26985000L		// частота после включения
+		//#define WITHBBOXFREQ	(26985000L - 260)		// частота после включения - 135 коррекция частоты платы с  122.88 для попадания в приём платы с 100 МГц генератором без коррекции
+		//#define WITHBBOXFREQ	(26985000L - 1600)		// частота после включения
+		//#define WITHBBOXFREQ	(14070000L - 1000)		// прослушивание BPSK частот
+		//#define WITHBBOXFREQ	(14065000L - 135)		// частота после включения - 135 коррекция частоты платы с  122.88 для попадания в приём платы с 100 МГц генератором без коррекции
+		//#define WITHBBOXFREQ	14065000L		// частота после включения
+		//#define WITHBBOXFREQ	(14065000L - 1000)		// частота после включения
+		//#define WITHBBOXSUBMODE	SUBMODE_USB	// единственный режим работы
+		#define WITHBBOXSUBMODE	SUBMODE_BPSK	// единственный режим работы
+		//#define WITHBBOXFREQ	27100000L		// частота после включения
+		//#define WITHBBOXSUBMODE	SUBMODE_CW	// единственный режим работы
+		//#define WITHBBOXTX		1		// автоматический переход на передачу
 	#endif
 
 	// FPGA section
-	//#define	WITHFPGAWAIT_AS	1	/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
-	#define	WITHFPGALOAD_PS	1	/* FPGA загружается процессором с помощью SPI */
+	//#define WITHFPGAWAIT_AS	1	/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
+	#define WITHFPGALOAD_PS	1	/* FPGA загружается процессором с помощью SPI */
 
 	// +++ Эти строки можно отключать, уменьшая функциональность готового изделия
 	//#define WITHRFSG	1	/* включено управление ВЧ сигнал-генератором. */

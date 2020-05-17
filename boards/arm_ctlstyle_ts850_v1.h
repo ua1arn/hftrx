@@ -162,7 +162,7 @@
 	/* фильтры, для которых стоит признак HAVE */
 	#define IF3_FHAVE	(IF3_FMASK_0P5 | IF3_FMASK_3P1)
 
-	#define	WITHENCODER	1	/* для изменения частоты имеется енкодер */
+	#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
 	#define WITHSPLIT	1	/* управление режимами расстройки одной кнопкой */
 	//#define WITHSPLITEX	1	/* Трехкнопочное управление режимами расстройки */
 	#define WITHCATEXT	1	/* Расширенный набор команд CAT */

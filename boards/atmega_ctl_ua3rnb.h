@@ -61,7 +61,7 @@
 	#define ENCRES_DEFAULT ENCRES_128
 	//#define ENCRES_DEFAULT ENCRES_100
 	//#define ENCRES_DEFAULT ENCRES_24
-	#define	WITHENCODER	1	/* для изменения частоты имеется енкодер */
+	#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
 
 	#define WITHFLATMENU	1	/* без подмиеню */
 	// +++ Эти строки можно отключать, уменьшая функциональность готового изделия

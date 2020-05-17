@@ -38,10 +38,10 @@ typedef uint_least64_t phase_t;
 	#define DEFAULTDIALFREQ	7012000L
 #endif
 
-#define	WITHMAXRXTXDELAY	100
-#define	WITHMAXTXRXDELAY	100
+#define WITHMAXRXTXDELAY	100
+#define WITHMAXTXRXDELAY	100
 
-#define	WITHNOTCHFREQMIN	300
+#define WITHNOTCHFREQMIN	300
 #define WITHNOTCHFREQMAX	5000
 
 /* параметры отображения панорамы */
@@ -115,14 +115,14 @@ enum
 #define	BOARD_AFGAIN_MIN	0		/* код управления усилением НЧ тракта */
 #define	BOARD_AFGAIN_MAX	255		/* код управления усилением НЧ тракта */
 
-#define	WITHLINEINGAINMIN	0		/* код управления усилением входа с линии */
-#define	WITHLINEINGAINMAX	255		/* код управления усилением входа с линии */
+#define WITHLINEINGAINMIN	0		/* код управления усилением входа с линии */
+#define WITHLINEINGAINMAX	255		/* код управления усилением входа с линии */
 
-#define	WITHMIKEINGAINMIN	0		/* код управления усилением входа с микрофона */
-#define	WITHMIKEINGAINMAX	255		/* код управления усилением входа с микрофона */
+#define WITHMIKEINGAINMIN	0		/* код управления усилением входа с микрофона */
+#define WITHMIKEINGAINMAX	255		/* код управления усилением входа с микрофона */
 
-//#define	WITHFILTSOFTMIN		0		/* код управления сглаживанием скатов фильтра основной селекции на приёме */
-//#define	WITHFILTSOFTMAX		100		/* код управления сглаживанием скатов фильтра основной селекции на приёме */
+//#define WITHFILTSOFTMIN		0		/* код управления сглаживанием скатов фильтра основной селекции на приёме */
+//#define WITHFILTSOFTMAX		100		/* код управления сглаживанием скатов фильтра основной селекции на приёме */
 
 #define WITHREVERBDELAYMIN 5	/* минимальная задержка ревербератора (ms) */
 #define WITHREVERBDELAYMAX 200	/* максимальная задержка ревербератора (ms) */
@@ -137,12 +137,12 @@ enum
 	#define	BOARD_AGCCODE_ON	0x00
 	#define	BOARD_AGCCODE_OFF	0x01
 
-	#define	WITHNOTCHFREQ		1	/* NOTCH фильтр с устанавливаемой через меню или потенциометром частотой */
-	//#define	WITHLMSAUTONOTCH	1	/* Использование AUTONOTCH	*/
+	#define WITHNOTCHFREQ		1	/* NOTCH фильтр с устанавливаемой через меню или потенциометром частотой */
+	//#define WITHLMSAUTONOTCH	1	/* Использование AUTONOTCH	*/
 	#define WITHSUBTONES		1	/* выполняется формирование субтона при передаче NFM */
 	#define WITHSAM				1	/* synchronous AM demodulation */
 	#define WITHIFSHIFT			1	/* используется IF SHIFT */
-	#define	WITHMIC1LEVEL		1	/* установка усиления микрофона */
+	#define WITHMIC1LEVEL		1	/* установка усиления микрофона */
 
 	#define	SQUELCHMAX	255	/* Kenwood's value */
 #endif /* WITHIF4DSP */

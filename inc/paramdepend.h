@@ -1486,7 +1486,7 @@ extern "C" {
 	#define WITHPOWERTRIMMIN	1	// Нижний предел регулировки (показываемый на дисплее)
 	#define WITHPOWERTRIMMAX	4	// Верхний предел регулировки (показываемый на дисплее)
 	//#define WITHPOWERTRIMATU	2	// Значение для работы автотюнера
-	#define	WITHMUTEALL			1	// Отключение микрофона во всех режимах
+	#define WITHMUTEALL			1	// Отключение микрофона во всех режимах
 	#define WITHONEATTONEAMP	1	/* только одно положение аттенюатора и УВЧ */
 
 
@@ -1513,7 +1513,7 @@ extern "C" {
 	#define WITHPOWERTRIMMIN	1	// Нижний предел регулировки (показываемый на дисплее)
 	#define WITHPOWERTRIMMAX	4	// Верхний предел регулировки (показываемый на дисплее)
 	//#define WITHPOWERTRIMATU	2	// Значение для работы автотюнера
-	#define	WITHMUTEALL			1	// Отключение микрофона во всех режимах
+	#define WITHMUTEALL			1	// Отключение микрофона во всех режимах
 	#define WITHONEATTONEAMP	1	/* только одно положение аттенюатора и УВЧ */
 
 
@@ -1542,7 +1542,7 @@ extern "C" {
 	#define WITHPOWERTRIMMIN	1	// Нижний предел регулировки (показываемый на дисплее)
 	#define WITHPOWERTRIMMAX	4	// Верхний предел регулировки (показываемый на дисплее)
 	//#define WITHPOWERTRIMATU	2	// Значение для работы автотюнера
-	#define	WITHMUTEALL			1	// Отключение микрофона во всех режимах
+	#define WITHMUTEALL			1	// Отключение микрофона во всех режимах
 	#define WITHONEATTONEAMP	1	/* только одно положение аттенюатора и УВЧ */
 
 
@@ -1569,7 +1569,7 @@ extern "C" {
 	#define WITHPOWERTRIMMIN	1	// Нижний предел регулировки (показываемый на дисплее)
 	#define WITHPOWERTRIMMAX	4	// Верхний предел регулировки (показываемый на дисплее)
 	//#define WITHPOWERTRIMATU	2	// Значение для работы автотюнера
-	#define	WITHMUTEALL			1	// Отключение микрофона во всех режимах
+	#define WITHMUTEALL			1	// Отключение микрофона во всех режимах
 	#define WITHONEATTONEAMP	1	/* только одно положение аттенюатора и УВЧ */
 
 
@@ -1596,7 +1596,7 @@ extern "C" {
 	#define WITHPOWERTRIMMIN	0	// Нижний предел регулировки
 	#define WITHPOWERTRIMMAX	1	// Верхний предел регулировки
 	//#define WITHPOWERTRIMATU	0	// Значение для работы автотюнера
-	#define	WITHMUTEALL			1	// Отключение микрофона во всех режимах
+	#define WITHMUTEALL			1	// Отключение микрофона во всех режимах
 	#define WITHONEATTONEAMP	1	/* только одно положение аттенюатора и УВЧ */
 
 
@@ -1623,7 +1623,7 @@ extern "C" {
 	#define WITHPOWERTRIMMIN	0	// Нижний предел регулировки
 	#define WITHPOWERTRIMMAX	1	// Верхний предел регулировки
 	//#define WITHPOWERTRIMATU	0	// Значение для работы автотюнера
-	#define	WITHMUTEALL			1	// Отключение микрофона во всех режимах
+	#define WITHMUTEALL			1	// Отключение микрофона во всех режимах
 	#define WITHONEATTONEAMP	1	/* только одно положение аттенюатора и УВЧ */
 	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея
 	#define WITHLCDBACKLIGHTMIN	1	// Нижний предел регулировки (показываемый на дисплее)
@@ -1654,7 +1654,7 @@ extern "C" {
 	#define WITHPOWERLPHP		1	// Имеется переключение и отображение HP / LP
 	#define WITHPOWERTRIMMIN	0	// Нижний предел регулировки
 	#define WITHPOWERTRIMMAX	1	// Верхний предел регулировки
-	#define	WITHMUTEALL			1	// Отключение микрофона во всех режимах
+	#define WITHMUTEALL			1	// Отключение микрофона во всех режимах
 	#define WITHONEATTONEAMP	1	/* только одно положение аттенюатора и УВЧ */
 
 	/* коды входов коммутатора источников сигнала для УНЧ приёмника */
@@ -1683,7 +1683,7 @@ extern "C" {
 	#define WITHPOWERLPHP		1	// Имеется переключение и отображение HP / LP
 	#define WITHPOWERTRIMMIN	0	// Нижний предел регулировки
 	#define WITHPOWERTRIMMAX	1	// Верхний предел регулировки
-	#define	WITHMUTEALL			1	// Отключение микрофона во всех режимах
+	#define WITHMUTEALL			1	// Отключение микрофона во всех режимах
 	#define WITHONEATTONEAMP	1	/* только одно положение аттенюатора и УВЧ */
 
 	/* коды входов коммутатора источников сигнала для УНЧ приёмника */
@@ -1709,7 +1709,7 @@ extern "C" {
 	#define WITHPOWERLPHP		1	// Имеется переключение и отображение HP / LP
 	#define WITHPOWERTRIMMIN	0	// Нижний предел регулировки
 	#define WITHPOWERTRIMMAX	1	// Верхний предел регулировки
-	#define	WITHMUTEALL			1	// Отключение микрофона во всех режимах
+	#define WITHMUTEALL			1	// Отключение микрофона во всех режимах
 	#define WITHONEATTONEAMP	1	/* только одно положение аттенюатора и УВЧ */
 
 	/* коды входов коммутатора источников сигнала для УНЧ приёмника */
@@ -1738,7 +1738,7 @@ extern "C" {
 	#define WITHPOWERLPHP		1	// Имеется переключение и отображение HP / LP
 	#define WITHPOWERTRIMMIN	0	// Нижний предел регулировки
 	#define WITHPOWERTRIMMAX	1	// Верхний предел регулировки
-	#define	WITHMUTEALL			1	// Отключение микрофона во всех режимах
+	#define WITHMUTEALL			1	// Отключение микрофона во всех режимах
 	#define WITHONEATTONEAMP	1	/* только одно положение аттенюатора и УВЧ */
 
 	/* коды входов коммутатора источников сигнала для УНЧ приёмника */
@@ -1771,7 +1771,7 @@ extern "C" {
 	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея
 	#define WITHLCDBACKLIGHTMIN	1	// Нижний предел регулировки (показываемый на дисплее)
 	#define WITHLCDBACKLIGHTMAX	4	// Верхний предел регулировки (показываемый на дисплее)
-	#define	WITHMUTEALL			1	// Отключение микрофона во всех режимах
+	#define WITHMUTEALL			1	// Отключение микрофона во всех режимах
 	#define WITHONEATTONEAMP	1	/* только одно положение аттенюатора и УВЧ */
 
 	/* коды входов коммутатора источников сигнала для УНЧ приёмника */
@@ -1799,7 +1799,7 @@ extern "C" {
 	#define WITHPOWERLPHP		1	// Имеется переключение и отображение HP / LP
 	#define WITHPOWERTRIMMIN	0	// Нижний предел регулировки
 	#define WITHPOWERTRIMMAX	1	// Верхний предел регулировки
-	#define	WITHMUTEALL			1	// Отключение микрофона во всех режимах
+	#define WITHMUTEALL			1	// Отключение микрофона во всех режимах
 	#define WITHONEATTONEAMP	1	/* только одно положение аттенюатора и УВЧ */
 
 	/* коды входов коммутатора источников сигнала для УНЧ приёмника */
@@ -1924,7 +1924,7 @@ extern "C" {
 	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея
 	#define WITHLCDBACKLIGHTMIN	1	// Нижний предел регулировки (показываемый на дисплее)
 	#define WITHLCDBACKLIGHTMAX	3	// Верхний предел регулировки (показываемый на дисплее)
-	#define	WITHMUTEALL			1	// Отключение микрофона во всех режимах
+	#define WITHMUTEALL			1	// Отключение микрофона во всех режимах
 	#define WITHONEATTONEAMP	1	/* только одно положение аттенюатора и УВЧ */
 
 
@@ -1950,7 +1950,7 @@ extern "C" {
 	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея
 	#define WITHLCDBACKLIGHTMIN	1	// Нижний предел регулировки (показываемый на дисплее)
 	#define WITHLCDBACKLIGHTMAX	3	// Верхний предел регулировки (показываемый на дисплее)
-	#define	WITHMUTEALL			1	// Отключение микрофона во всех режимах
+	#define WITHMUTEALL			1	// Отключение микрофона во всех режимах
 	#define WITHONEATTONEAMP	1	/* только одно положение аттенюатора и УВЧ */
 
 
@@ -2057,7 +2057,7 @@ extern "C" {
 	#if WITHIF4DSP
 		// Временно, для проверки
 		//#define WITHAGCMODEONOFF	1	// АРУ вкл/выкл
-		//#define	WITHMIC1LEVEL		1	// установка усиления микрофона
+		//#define WITHMIC1LEVEL		1	// установка усиления микрофона
 
 	#else /* WITHIF4DSP */
 

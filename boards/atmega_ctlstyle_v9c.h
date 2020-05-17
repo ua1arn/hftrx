@@ -72,7 +72,7 @@
 
 	//#define ENCRES_DEFAULT ENCRES_128
 	#define ENCRES_DEFAULT ENCRES_24
-	#define	WITHENCODER	1	/* для изменения частоты имеется енкодер */
+	#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
 
 	#define ENCODER_REVERSE	1	/* шагать в обртную сторону */
 
