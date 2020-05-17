@@ -179,7 +179,7 @@ static int isin(unsigned alpha, unsigned r)
 
 static  int icos(unsigned alpha, unsigned r)
 {
-	return isin(alpha + 90, r * 20 / 10);
+	return isin(alpha + 90, r);
 }
 
 
@@ -193,23 +193,32 @@ display_radius_buf(
 		unsigned gs,
 		unsigned r1, unsigned r2,
 		COLORMAIN_T color,
-		int antialiasing)
+		int antialiasing,
+		int style)			// 1 - растягивание по горизонтали
 {
 	int     x, y;
 	int     x2, y2;
 
-	x = xc + icos(gs, r1);
+	x = xc + icos(gs, style ? r1 << 1 : r1);
 	y = yc + isin(gs, r1);
-	x2 = xc + icos(gs, r2);
+	x2 = xc + icos(gs, style ? r2 << 1 : r2);
 	y2 = yc + isin(gs, r2);
 
 	colmain_line(buffer, bx, by, x, y, x2, y2, color, antialiasing);
 
 }
 
-void polar_to_dek(uint_fast16_t xc, uint_fast16_t yc, uint_fast16_t gs, uint_fast16_t r, uint_fast16_t * x, uint_fast16_t * y)
+void
+polar_to_dek(
+		uint_fast16_t xc,
+		uint_fast16_t yc,
+		uint_fast16_t gs,
+		uint_fast16_t r,
+		uint_fast16_t * x,
+		uint_fast16_t * y,
+		uint_fast8_t style)
 {
-	* x = xc + icos(gs, r);
+	* x = xc + icos(gs, style ? r << 1 : r);
 	* y = yc + isin(gs, r);
 }
 
@@ -224,7 +233,8 @@ display_segm_buf(
 		unsigned gs, unsigned ge,
 		unsigned r, int step,
 		COLORMAIN_T color,
-		int antialiasing)
+		int antialiasing,
+		int style)			// 1 - растягивание по горизонтали
 {
 	int     x, y;
 	int     xo, yo;
@@ -236,7 +246,7 @@ display_segm_buf(
 	while (gs != ge)
 	{
 		vsin = isin(gs, r);
-		vcos = icos(gs, r);
+		vcos = icos(gs, style ? r << 1 : r);
 		x = xc + vcos;
 		y = yc + vsin;
 
@@ -271,13 +281,53 @@ display_segm_buf(
 	{
 		// завершение окружности
 		vsin = isin(ge, r);
-		vcos = icos(ge, r);
+		vcos = icos(ge, style ? r << 1 : r);
 		x = xc + vcos;
 		y = yc + vsin;
 
 		colmain_line(buffer, bx, by, xo, yo, x, y, color, antialiasing); // рисовать линию
 	}
 
+}
+
+/* Нарисовать прямоугольник со скругленными углами */
+void colmain_rounded_rect(
+		PACKEDCOLORMAIN_T * buffer,
+		uint_fast16_t bx,	// ширина буфера
+		uint_fast16_t by,	// высота буфера
+		uint_fast16_t x1,
+		uint_fast16_t y1,
+		uint_fast16_t x2,
+		uint_fast16_t y2,
+		uint_fast8_t r,		// радиус закругления углов
+		COLORMAIN_T color,
+		uint_fast8_t fill
+		)
+{
+	if (r == 0)
+	{
+		colpip_rect(buffer, bx, by, x1, y1, x2, y2, color, fill);
+		return;
+	}
+
+	ASSERT(r << 1 < x2 - x1);
+	ASSERT(r << 1 < y2 - y1);
+
+	display_segm_buf(buffer, bx, by, x1 + r, y1 + r, 180, 270, r, 1, color, 1, 0); // up left
+	display_segm_buf(buffer, bx, by, x2 - r, y1 + r, 270, 360, r, 1, color, 1, 0); // up right
+	display_segm_buf(buffer, bx, by, x2 - r, y2 - r,   0,  90, r, 1, color, 1, 0); // down right
+	display_segm_buf(buffer, bx, by, x1 + r, y2 - r,  90, 180, r, 1, color, 1, 0); // down left
+
+	colmain_line(buffer, bx, by, x1 + r, y1, x2 - r, y1, color, 0); // up
+	colmain_line(buffer, bx, by, x1, y1 + r, x1, y2 - r, color, 0); // left
+	colmain_line(buffer, bx, by, x1 + r, y2, x2 - r, y2, color, 0); // down
+	colmain_line(buffer, bx, by, x2, y1 + r, x2, y2 - r, color, 0); // right
+
+	if (fill)
+	{
+		PACKEDCOLORMAIN_T * oldColor = colmain_mem_at(buffer, bx, by, x1 + r, y1 + r);
+		display_floodfill(buffer, bx, by, x1 + r, y1 + r, color, * oldColor);
+	}
 }
 
 #endif /* LCDMODE_LTDC */
@@ -437,6 +487,9 @@ display2_smeter15_init(
 	unsigned i;
 
 	colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORMAIN_BLACK, 1);
+#if WITHTOUCHGUI
+//	colmain_rounded_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H - 1, 5, COLORPIP_WHITE, 0);
+#endif
 
 	for (p = 0, i = 0; i < ARRAY_SIZE(markersTX_pwr); ++ i, p += 10)
 	{
@@ -445,15 +498,15 @@ display2_smeter15_init(
 			char buf [10];
 			uint_fast16_t xx, yy;
 
-			display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markersTX_pwr [i], smeter_params.r1, smeter_params.r1 + 8, smeter, 1);
-			polar_to_dek(xb, yb, markersTX_pwr [i], smeter_params.r1 + 8, & xx, & yy);
+			display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markersTX_pwr [i], smeter_params.r1, smeter_params.r1 + 8, smeter, 1, 1);
+			polar_to_dek(xb, yb, markersTX_pwr [i], smeter_params.r1 + 6, & xx, & yy, 1);
 			local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("%u"), p);
 
 			colmain_setcolors(COLORMAIN_YELLOW, COLORMAIN_BLACK);
 			colmain_string3_at_xy(bg, SM_BG_W, SM_BG_H, xx - strwidth3(buf) / 2, yy - pad2w3 + 1, buf);
 		}
 		else
-			display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markersTX_pwr [i], smeter_params.r1, smeter_params.r1 + 4, smeter, 1);
+			display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markersTX_pwr [i], smeter_params.r1, smeter_params.r1 + 4, smeter, 1, 1);
 	}
 
 	for (p = 1, i = 0; i < ARRAY_SIZE(markersTX_swr); ++ i, p += 1)
@@ -461,28 +514,31 @@ display2_smeter15_init(
 		char buf [10];
 		uint_fast16_t xx, yy;
 
-		display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markersTX_swr [i], smeter_params.r2, smeter_params.r2 - 8, smeter, 1);
-		polar_to_dek(xb, yb, markersTX_swr [i], smeter_params.r2 - 16, & xx, & yy);
+		display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markersTX_swr [i], smeter_params.r2, smeter_params.r2 - 8, smeter, 1, 1);
+		polar_to_dek(xb, yb, markersTX_swr [i], smeter_params.r2 - 16, & xx, & yy, 1);
 		local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("%u"), p);
 
 		colmain_setcolors(COLORMAIN_YELLOW, COLORMAIN_BLACK);
 		colmain_string3_at_xy(bg, SM_BG_W, SM_BG_H, xx - SMALLCHARW3 / 2, yy - SMALLCHARW3 / 2 + 1, buf);
 	}
 
-	display_segm_buf(bg, SM_BG_W, SM_BG_H, xb, yb, smeter_params.gs, smeter_params.gm, smeter_params.r1, 1, smeter, 1);
-	display_segm_buf(bg, SM_BG_W, SM_BG_H, xb, yb, smeter_params.gm, smeter_params.ge, smeter_params.r1, 1, smeter, 1);
-	display_segm_buf(bg, SM_BG_W, SM_BG_H, xb, yb, smeter_params.gs, smeter_params.ge, smeter_params.r2, 1, COLORMAIN_WHITE, 1);
+	display_segm_buf(bg, SM_BG_W, SM_BG_H, xb, yb, smeter_params.gs, smeter_params.gm, smeter_params.r1, 1, smeter, 1, 1);
+	display_segm_buf(bg, SM_BG_W, SM_BG_H, xb, yb, smeter_params.gm, smeter_params.ge, smeter_params.r1, 1, smeter, 1, 1);
+	display_segm_buf(bg, SM_BG_W, SM_BG_H, xb, yb, smeter_params.gs, smeter_params.ge, smeter_params.r2, 1, COLORMAIN_WHITE, 1, 1);
 
 	bg = smeter_bg [SM_STATE_RX];
 	colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORMAIN_BLACK, 1);
+#if WITHTOUCHGUI
+//	colmain_rounded_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H - 1, 5, COLORPIP_WHITE, 0);
+#endif
 
 	for (p = 1, i = 0; i < ARRAY_SIZE(markers); ++ i, p += 2)
 	{
 		char buf [10];
 		uint_fast16_t xx, yy;
 
-		display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markers [i], smeter_params.r1, smeter_params.r1 + 8, smeter, 1);
-		polar_to_dek(xb, yb, markers [i], smeter_params.r1 + 8, & xx, & yy);
+		display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markers [i], smeter_params.r1, smeter_params.r1 + 8, smeter, 1, 1);
+		polar_to_dek(xb, yb, markers [i], smeter_params.r1 + 6, & xx, & yy, 1);
 		local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("%u"), p);
 
 		colmain_setcolors(COLORMAIN_YELLOW, COLORMAIN_BLACK);
@@ -490,7 +546,7 @@ display2_smeter15_init(
 	}
 	for (i = 0; i < ARRAY_SIZE(markers2); ++ i)
 	{
-		display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markers2 [i], smeter_params.r1, smeter_params.r1 + 4, smeter, 1);
+		display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markers2 [i], smeter_params.r1, smeter_params.r1 + 4, smeter, 1, 1);
 	}
 
 	for (p = 20, i = 0; i < ARRAY_SIZE(markersR); ++ i, p += 20)
@@ -498,8 +554,8 @@ display2_smeter15_init(
 		char buf [10];
 		uint_fast16_t xx, yy;
 
-		display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markersR [i], smeter_params.r1, smeter_params.r1 + 8, smeterplus, 1);
-		polar_to_dek(xb, yb, markersR [i], smeter_params.r1 + 8, & xx, & yy);
+		display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markersR [i], smeter_params.r1, smeter_params.r1 + 8, smeterplus, 1, 1);
+		polar_to_dek(xb, yb, markersR [i], smeter_params.r1 + 6, & xx, & yy, 1);
 		local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("+%u"), p);
 
 		colmain_setcolors(COLORMAIN_RED, COLORMAIN_BLACK);
@@ -507,11 +563,11 @@ display2_smeter15_init(
 	}
 	for (i = 0; i < ARRAY_SIZE(markers2R); ++ i)
 	{
-		display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markers2R [i], smeter_params.r1, smeter_params.r1 + 4, smeterplus, 1);
+		display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markers2R [i], smeter_params.r1, smeter_params.r1 + 4, smeterplus, 1, 1);
 	}
-	display_segm_buf(bg, SM_BG_W, SM_BG_H, xb, yb, smeter_params.gs, smeter_params.gm, smeter_params.r1, 1, smeter, 1);
-	display_segm_buf(bg, SM_BG_W, SM_BG_H, xb, yb, smeter_params.gm, smeter_params.ge, smeter_params.r1, 1, smeterplus, 1);
-	display_segm_buf(bg, SM_BG_W, SM_BG_H, xb, yb, smeter_params.gs, smeter_params.ge, smeter_params.r2, 1, COLORMAIN_WHITE, 1);
+	display_segm_buf(bg, SM_BG_W, SM_BG_H, xb, yb, smeter_params.gs, smeter_params.gm, smeter_params.r1, 1, smeter, 1, 1);
+	display_segm_buf(bg, SM_BG_W, SM_BG_H, xb, yb, smeter_params.gm, smeter_params.ge, smeter_params.r1, 1, smeterplus, 1, 1);
+	display_segm_buf(bg, SM_BG_W, SM_BG_H, xb, yb, smeter_params.gs, smeter_params.ge, smeter_params.r2, 1, COLORMAIN_WHITE, 1, 1);
 }
 
 // ширина занимаемого места - 15 ячеек (240/16 = 15)
@@ -605,18 +661,18 @@ display2_smeter15(
 			uint_fast16_t xx, yy;
 			const COLORMAIN_T color = COLORMAIN_YELLOW;
 
-			display_segm_buf(fr, DIM_X, DIM_Y, xc, yc, smeter_params.gs, gswr, smeter_params.r2 + 2, 1, color, 0);
-			display_segm_buf(fr, DIM_X, DIM_Y, xc, yc, smeter_params.gs, gswr, smeter_params.r1 - 2, 1, color, 0);
-			display_radius_buf(fr, DIM_X, DIM_Y, xc, yc, smeter_params.gs, smeter_params.r1 - 2, smeter_params.r2 + 2, color, 0);
-			display_radius_buf(fr, DIM_X, DIM_Y, xc, yc, gswr, smeter_params.r1 - 2, smeter_params.r2 + 2, color, 0);
-			polar_to_dek(xc, yc, gswr - 1, smeter_params.r1 - 4, & xx, & yy);
+			display_segm_buf(fr, DIM_X, DIM_Y, xc, yc, smeter_params.gs, gswr, smeter_params.r2 + 2, 1, color, 0, 1);
+			display_segm_buf(fr, DIM_X, DIM_Y, xc, yc, smeter_params.gs, gswr, smeter_params.r1 - 2, 1, color, 0, 1);
+			display_radius_buf(fr, DIM_X, DIM_Y, xc, yc, smeter_params.gs, smeter_params.r1 - 2, smeter_params.r2 + 2, color, 0, 1);
+			display_radius_buf(fr, DIM_X, DIM_Y, xc, yc, gswr, smeter_params.r1 - 2, smeter_params.r2 + 2, color, 0, 1);
+			polar_to_dek(xc, yc, gswr - 1, smeter_params.r1 - 4, & xx, & yy, 1);
 			display_floodfill(fr, DIM_X, DIM_Y, xx, yy, color, COLORMAIN_BLACK);
 		}
 
 		const COLORMAIN_T color = COLORMAIN_GREEN;
-		display_radius_buf(fr, DIM_X, DIM_Y, xc - 1, yc, gp, smeter_params.rv1, smeter_params.rv2, color, 0);
-		display_radius_buf(fr, DIM_X, DIM_Y, xc, yc, gp, smeter_params.rv1, smeter_params.rv2, color, 0);
-		display_radius_buf(fr, DIM_X, DIM_Y, xc + 1, yc, gp, smeter_params.rv1, smeter_params.rv2, color, 0);
+		display_radius_buf(fr, DIM_X, DIM_Y, xc - 1, yc, gp, smeter_params.rv1, smeter_params.rv2, color, 0, 1);
+		display_radius_buf(fr, DIM_X, DIM_Y, xc, yc, gp, smeter_params.rv1, smeter_params.rv2, color, 0, 1);
+		display_radius_buf(fr, DIM_X, DIM_Y, xc + 1, yc, gp, smeter_params.rv1, smeter_params.rv2, color, 0, 1);
 	}
 	else
 	{
@@ -626,17 +682,17 @@ display2_smeter15(
 		{
 			// Рисование peak value (риска)
 			const COLORMAIN_T color = COLORMAIN_YELLOW;
-			display_radius_buf(fr, DIM_X, DIM_Y, xc - 1, yc, gv_trace, smeter_params.r1 - 2, smeter_params.r2 + 2, color, 0);
-			display_radius_buf(fr, DIM_X, DIM_Y, xc, yc, gv_trace, smeter_params.r1 - 2, smeter_params.r2 + 2, color, 0);
-			display_radius_buf(fr, DIM_X, DIM_Y, xc + 1, yc, gv_trace, smeter_params.r1 - 2, smeter_params.r2 + 2, color, 0);
+			display_radius_buf(fr, DIM_X, DIM_Y, xc - 1, yc, gv_trace, smeter_params.r1 - 2, smeter_params.r2 + 2, color, 0, 1);
+			display_radius_buf(fr, DIM_X, DIM_Y, xc, yc, gv_trace, smeter_params.r1 - 2, smeter_params.r2 + 2, color, 0, 1);
+			display_radius_buf(fr, DIM_X, DIM_Y, xc + 1, yc, gv_trace, smeter_params.r1 - 2, smeter_params.r2 + 2, color, 0, 1);
 		}
 
 		{
 			// Рисование стрелки
 			const COLORMAIN_T color = COLORMAIN_GREEN;
-			display_radius_buf(fr, DIM_X, DIM_Y, xc - 1, yc, gv, smeter_params.rv1, smeter_params.rv2, color, 0);
-			display_radius_buf(fr, DIM_X, DIM_Y, xc, yc, gv, smeter_params.rv1, smeter_params.rv2, color, 0);
-			display_radius_buf(fr, DIM_X, DIM_Y, xc + 1, yc, gv, smeter_params.rv1, smeter_params.rv2, color, 0);
+			display_radius_buf(fr, DIM_X, DIM_Y, xc - 1, yc, gv, smeter_params.rv1, smeter_params.rv2, color, 0, 1);
+			display_radius_buf(fr, DIM_X, DIM_Y, xc, yc, gv, smeter_params.rv1, smeter_params.rv2, color, 0, 1);
+			display_radius_buf(fr, DIM_X, DIM_Y, xc + 1, yc, gv, smeter_params.rv1, smeter_params.rv2, color, 0, 1);
 		}
 	}
 }
@@ -784,6 +840,8 @@ static void window_enc2_process(void);
 static void window_audioparams_process(void);
 static void gui_main_process(void);
 static void update_touch(void);
+
+	enum { button_round_radius = 5 };
 
 	typedef enum {
 		TYPE_DUMMY,
@@ -2864,9 +2922,15 @@ static void update_touch(void);
 			PACKEDCOLORMAIN_T c1, c2;
 			c1 = bh->state == DISABLED ? COLOR_BUTTON_DISABLED : (bh->is_locked ? COLOR_BUTTON_LOCKED : COLOR_BUTTON_NON_LOCKED);
 			c2 = bh->state == DISABLED ? COLOR_BUTTON_DISABLED : (bh->is_locked ? COLOR_BUTTON_PR_LOCKED : COLOR_BUTTON_PR_NON_LOCKED);
+#if WITHOLDBUTTONSTYLE
 			colpip_rect(fr, DIM_X, DIM_Y, bh->x1, bh->y1, bh->x1 + bh->w, bh->y1 + bh->h - 2, bh->state == PRESSED ? c2 : c1, 1);
 			colpip_rect(fr, DIM_X, DIM_Y, bh->x1, bh->y1, bh->x1 + bh->w, bh->y1 + bh->h - 1, COLORPIP_GRAY, 0);
 			colpip_rect(fr, DIM_X, DIM_Y, bh->x1 + 2, bh->y1 + 2, bh->x1 + bh->w - 2, bh->y1 + bh->h - 3, COLORPIP_BLACK, 0);
+#else
+			colmain_rounded_rect(fr, DIM_X, DIM_Y, bh->x1, bh->y1, bh->x1 + bh->w, bh->y1 + bh->h - 2, button_round_radius, bh->state == PRESSED ? c2 : c1, 1);
+			colmain_rounded_rect(fr, DIM_X, DIM_Y, bh->x1, bh->y1, bh->x1 + bh->w, bh->y1 + bh->h - 1, button_round_radius, COLORPIP_GRAY, 0);
+			colmain_rounded_rect(fr, DIM_X, DIM_Y, bh->x1 + 2, bh->y1 + 2, bh->x1 + bh->w - 2, bh->y1 + bh->h - 3, button_round_radius, COLORPIP_BLACK, 0);
+#endif /* WITHOLDBUTTONSTYLE */
 		}
 		else
 		{
@@ -2884,7 +2948,11 @@ static void update_touch(void);
 			colpip_plot(fr, DIM_X, DIM_Y, bh->x1, bh->y1, bg, bh->w, bh->h);
 		}
 
+#if WITHOLDBUTTONSTYLE
 		uint_fast8_t shift = bh->state == PRESSED ? 1 : 0;
+#else
+		uint_fast8_t shift = 0;
+#endif /* WITHOLDBUTTONSTYLE */
 
 		if (strchr(bh->text, delimeters[0]) == NULL)
 		{
@@ -2943,47 +3011,83 @@ static void update_touch(void);
 		h = v->h;
 		size_t s = GXSIZE(w, h) * sizeof (PACKEDCOLORMAIN_T);
 
-		v->bg_non_pressed = 	(PACKEDCOLORMAIN_T *) malloc(s);
-		v->bg_pressed = 		(PACKEDCOLORMAIN_T *) malloc(s);
-		v->bg_locked = 			(PACKEDCOLORMAIN_T *) malloc(s);
-		v->bg_locked_pressed = 	(PACKEDCOLORMAIN_T *) malloc(s);
-		v->bg_disabled = 		(PACKEDCOLORMAIN_T *) malloc(s);
+		v->bg_non_pressed = 	(PACKEDCOLORMAIN_T *) calloc(1, s);
+		v->bg_pressed = 		(PACKEDCOLORMAIN_T *) calloc(1, s);
+		v->bg_locked = 			(PACKEDCOLORMAIN_T *) calloc(1, s);
+		v->bg_locked_pressed = 	(PACKEDCOLORMAIN_T *) calloc(1, s);
+		v->bg_disabled = 		(PACKEDCOLORMAIN_T *) calloc(1, s);
 
 		buf = v->bg_non_pressed;
 		ASSERT(buf != NULL);
+#if WITHOLDBUTTONSTYLE
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLOR_BUTTON_NON_LOCKED, 1);
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORPIP_GRAY, 0);
 		colpip_rect(buf, w, h, 2, 2, w - 3, h - 3, COLORPIP_BLACK, 0);
+#else
+		memset(buf, COLORMAIN_BLACK, s);
+		colmain_rounded_rect(buf, w, h, 0, 0, w - 1, h - 1, button_round_radius, COLOR_BUTTON_NON_LOCKED, 1);
+		colmain_rounded_rect(buf, w, h, 0, 0, w - 1, h - 1, button_round_radius, COLORPIP_GRAY, 0);
+		colmain_rounded_rect(buf, w, h, 2, 2, w - 3, h - 3, button_round_radius, COLORPIP_BLACK, 0);
+#endif /* WITHOLDBUTTONSTYLE */
 
 		buf = v->bg_pressed;
 		ASSERT(buf != NULL);
+#if WITHOLDBUTTONSTYLE
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLOR_BUTTON_PR_NON_LOCKED, 1);
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORPIP_GRAY, 0);
 		colmain_line(buf, w, h, 2, 3, w - 3, 3, COLORPIP_BLACK, 0);
 		colmain_line(buf, w, h, 2, 2, w - 3, 2, COLORPIP_BLACK, 0);
 		colmain_line(buf, w, h, 3, 3, 3, h - 3, COLORPIP_BLACK, 0);
 		colmain_line(buf, w, h, 2, 2, 2, h - 2, COLORPIP_BLACK, 0);
+#else
+		memset(buf, COLORMAIN_BLACK, s);
+		colmain_rounded_rect(buf, w, h, 0, 0, w - 1, h - 1, button_round_radius, COLOR_BUTTON_PR_NON_LOCKED, 1);
+		colmain_rounded_rect(buf, w, h, 0, 0, w - 1, h - 1, button_round_radius, COLORPIP_GRAY, 0);
+		colmain_rounded_rect(buf, w, h, 2, 2, w - 3, h - 3, button_round_radius, COLORPIP_BLACK, 0);
+#endif /* WITHOLDBUTTONSTYLE */
 
 		buf = v->bg_locked;
 		ASSERT(buf != NULL);
+#if WITHOLDBUTTONSTYLE
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLOR_BUTTON_LOCKED, 1);
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORPIP_GRAY, 0);
 		colpip_rect(buf, w, h, 2, 2, w - 3, h - 3, COLORPIP_BLACK, 0);
+#else
+		memset(buf, COLORMAIN_BLACK, s);
+		colmain_rounded_rect(buf, w, h, 0, 0, w - 1, h - 1, button_round_radius, COLOR_BUTTON_LOCKED, 1);
+		colmain_rounded_rect(buf, w, h, 0, 0, w - 1, h - 1, button_round_radius, COLORPIP_GRAY, 0);
+		colmain_rounded_rect(buf, w, h, 2, 2, w - 3, h - 3, button_round_radius, COLORPIP_BLACK, 0);
+#endif /* WITHOLDBUTTONSTYLE */
 
 		buf = v->bg_locked_pressed;
 		ASSERT(buf != NULL);
+#if WITHOLDBUTTONSTYLE
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLOR_BUTTON_PR_LOCKED, 1);
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORPIP_GRAY, 0);
 		colmain_line(buf, w, h, 2, 3, w - 3, 3, COLORPIP_BLACK, 0);
 		colmain_line(buf, w, h, 2, 2, w - 3, 2, COLORPIP_BLACK, 0);
 		colmain_line(buf, w, h, 3, 3, 3, h - 3, COLORPIP_BLACK, 0);
 		colmain_line(buf, w, h, 2, 2, 2, h - 2, COLORPIP_BLACK, 0);
+#else
+		memset(buf, COLORMAIN_BLACK, s);
+		colmain_rounded_rect(buf, w, h, 0, 0, w - 1, h - 1, button_round_radius, COLOR_BUTTON_PR_LOCKED, 1);
+		colmain_rounded_rect(buf, w, h, 0, 0, w - 1, h - 1, button_round_radius, COLORPIP_GRAY, 0);
+		colmain_rounded_rect(buf, w, h, 2, 2, w - 3, h - 3, button_round_radius, COLORPIP_BLACK, 0);
+#endif /* WITHOLDBUTTONSTYLE */
 
 		buf = v->bg_disabled;
 		ASSERT(buf != NULL);
+		memset(buf, COLORMAIN_BLACK, s);
+#if WITHOLDBUTTONSTYLE
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLOR_BUTTON_DISABLED, 1);
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORPIP_GRAY, 0);
 		colpip_rect(buf, w, h, 2, 2, w - 3, h - 3, COLORPIP_BLACK, 0);
+#else
+		memset(buf, COLORMAIN_BLACK, s);
+		colmain_rounded_rect(buf, w, h, 0, 0, w - 1, h - 1, button_round_radius, COLOR_BUTTON_DISABLED, 1);
+		colmain_rounded_rect(buf, w, h, 0, 0, w - 1, h - 1, button_round_radius, COLORPIP_GRAY, 0);
+		colmain_rounded_rect(buf, w, h, 2, 2, w - 3, h - 3, button_round_radius, COLORPIP_BLACK, 0);
+#endif /* WITHOLDBUTTONSTYLE */
 	}
 
 	void gui_initialize (void)
