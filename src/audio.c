@@ -3299,13 +3299,18 @@ static FLOAT_t txmikereverb(FLOAT_t sample)
 
 	enum { MAXDELAYSAMPLES = NSAITICKS(WITHREVERBDELAYMAX) };
 
-	static RAMNOINIT_D1 FLOAT_t delaybuf [MAXDELAYSAMPLES];
+	/* тут нельзя использовать память NOINIT для буфера. Если в ней встречается значение NaN, то
+	 * даже при выключенном ревербераторе результат вычисления результирующего сэмпла так же NaN и он пришется в буфер...
+	 * А я управляю включением/вуключением через значения в reverbRatioDirect и reverbRatioDelayed.
+	 */
+	static RAMBIG FLOAT_t delaybuf [MAXDELAYSAMPLES];
 	static unsigned pos;
 
 	pos = pos == 0 ? MAXDELAYSAMPLES - 1 : pos - 1;
 	const FLOAT_t oldsample = delaybuf [(pos + reverbDelay [gwagcproftx]) % MAXDELAYSAMPLES];
 	sample = sample * reverbRatioDirect [gwagcproftx] + oldsample * reverbRatioDelayed [gwagcproftx];
 	delaybuf [pos] = sample;
+
 	return sample;
 
 #else /* WITHREVERB */
