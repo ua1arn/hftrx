@@ -3293,25 +3293,28 @@ static RAMDTCM volatile uint_fast8_t gwagcproftx = 0;	// work profile - инде
 	static unsigned reverbDelay [NPROF];	/* задержка ревербератора в сэмплах */
 #endif /* WITHREVERB */
 
-static FLOAT_t txmikereverb(FLOAT_t sample)
+/* Получение эффекта реверберации. На входе сэмпл, возвращаем обработанный или неизменный сэмпл
+ *
+ */
+static FLOAT_t txmikereverb(FLOAT_t isample)
 {
 #if WITHREVERB
 
 	enum { MAXDELAYSAMPLES = NSAITICKS(WITHREVERBDELAYMAX) };
 
-	/* тут нельзя использовать память NOINIT для буфера. Если в ней встречается значение NaN, то
+	/* Тут нельзя использовать память NOINIT для буфера. Если в ней встречается значение NaN, то
 	 * даже при выключенном ревербераторе результат вычисления результирующего сэмпла так же NaN и он пришется в буфер...
-	 * А я управляю включением/вуключением через значения в reverbRatioDirect и reverbRatioDelayed.
+	 * А я управляю включением/выключением через значения в reverbRatioDirect и reverbRatioDelayed.
 	 */
 	static RAMBIG FLOAT_t delaybuf [MAXDELAYSAMPLES];
 	static unsigned pos;
 
 	pos = pos == 0 ? MAXDELAYSAMPLES - 1 : pos - 1;
 	const FLOAT_t oldsample = delaybuf [(pos + reverbDelay [gwagcproftx]) % MAXDELAYSAMPLES];
-	sample = sample * reverbRatioDirect [gwagcproftx] + oldsample * reverbRatioDelayed [gwagcproftx];
-	delaybuf [pos] = sample;
+	const FLOAT_t rsample = isample * reverbRatioDirect [gwagcproftx] + oldsample * reverbRatioDelayed [gwagcproftx];
+	delaybuf [pos] = rsample;
 
-	return sample;
+	return rsample;
 
 #else /* WITHREVERB */
 
