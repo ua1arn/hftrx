@@ -8305,8 +8305,9 @@ updateboard(
 		board_set_mikeagc(gmikeagc);	/* Включение программной АРУ перед модулятором */
 		board_set_mikeagcgain(gmikeagcgain);	/* Максимальное усидение АРУ микрофона */
 		board_set_mikehclip(gmikehclip);	/* Ограничитель */
+#if WITHREVERB
 		board_set_reverb(greverb, greverbdelay, greverbloss);	/* ревербератор */
-
+#endif /* WITHREVERB */
 		board_set_cwedgetime(gcwedgetime);	/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
 		board_set_sidetonelevel(gsidetonelevel);	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
 		board_set_moniflag(gmoniflag);	/* glob_moniflag */
