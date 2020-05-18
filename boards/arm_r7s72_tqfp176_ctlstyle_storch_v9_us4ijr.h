@@ -88,7 +88,7 @@
 
 	#define LCDMODE_DUMMY	1
 
-#elif 0
+#elif 1
 
 	#define LCDMODE_LQ043T3DX02K 1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 display */
 
@@ -305,7 +305,7 @@
 	//#define WITHPWRMTR	1	/* Индикатор выходной мощности или */
 	//#define WITHPWRLIN	1	/* Индикатор выходной мощности показывает напряжение а не мощность */
 
-	#if 0
+	#if 1
 		/* TUNER & PA board 2*RD16 by avbelnn@yandex.ru */
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
 		#define SHORTSET8	1
