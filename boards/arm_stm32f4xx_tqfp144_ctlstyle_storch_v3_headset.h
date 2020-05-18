@@ -262,7 +262,7 @@
 	//#define WITHUSEUSBFLASH		1	// Включение поддержки USB memory stick
 	#define WITHUSEAUDIOREC		1	// Запись звука на SD CARD
 	#define WITHUSEDUALWATCH	1	// Второй приемник
-	//#define WITHREVERB	1	// реербератор в обработке микрофонного сигнала
+	//#define WITHREVERB	1	// ревербератор в обработке микрофонного сигнала
 	//#define WITHUSEAUDIOREC2CH	1	// Запись звука на SD CARD в стерео
 	#define WITHDACSTRAIGHT 1	/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
 	#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
