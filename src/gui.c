@@ -837,7 +837,9 @@ static void window_uif_process(void);
 static void window_mode_process(void);
 static void window_agc_process(void);
 static void window_enc2_process(void);
-static void window_audioparams_process(void);
+static void window_audiosettings_process(void);
+static void buttons_audioparams_process(void);
+static void window_ap_mic_eq_process(void);
 static void gui_main_process(void);
 static void update_touch(void);
 
@@ -882,7 +884,8 @@ static void update_touch(void);
 		WINDOW_MENU,
 		WINDOW_ENC2,
 		WINDOW_UIF,
-		WINDOW_AUDIO
+		WINDOW_AUDIOSETTINGS,
+		WINDOW_AP_MIC_EQ
 	};
 
 	enum {
@@ -912,8 +915,6 @@ static void update_touch(void);
 	enum { BG_COUNT = ARRAY_SIZE(btn_bg) };
 
 	typedef struct {
-		LIST_ENTRY item;
-		element_type_t type;
 		uint16_t x1;				// координаты от начала экрана
 		uint16_t y1;
 		uint8_t w;
@@ -932,66 +933,73 @@ static void update_touch(void);
 	static button_t buttons [] = {
 	//   x1, y1, w, h,  onClickHandler,        state,   is_locked, is_trackable, parent,    visible,      payload,	              name, 		text
 		{ },
-		{ { NULL, NULL }, TYPE_BUTTON, 0, 0, 86, 44, button1_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  VISIBLE,     UINTPTR_MAX, 		"btnMode", 		"Mode", },
-		{ { NULL, NULL }, TYPE_BUTTON, 0, 0, 86, 44, button2_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  VISIBLE,     UINTPTR_MAX, 		"btnAF", 		"AF|filter", },
-		{ { NULL, NULL }, TYPE_BUTTON, 0, 0, 86, 44, button3_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  VISIBLE,     UINTPTR_MAX, 		"btnAGC", 		"AGC", },
-		{ { NULL, NULL }, TYPE_BUTTON, 0, 0, 86, 44, button4_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  VISIBLE,     UINTPTR_MAX, 		"btn4", 		"Freq", },
-		{ { NULL, NULL }, TYPE_BUTTON, 0, 0, 86, 44, button5_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  VISIBLE,     UINTPTR_MAX, 		"btn5", 		"", },
-		{ { NULL, NULL }, TYPE_BUTTON, 0, 0, 86, 44, button6_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  VISIBLE,     UINTPTR_MAX, 		"btn6", 		"", },
-		{ { NULL, NULL }, TYPE_BUTTON, 0, 0, 86, 44, button7_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  VISIBLE,     UINTPTR_MAX, 		"btn7", 		"2 win|test", },
-		{ { NULL, NULL }, TYPE_BUTTON, 0, 0, 86, 44, button8_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  VISIBLE,     UINTPTR_MAX, 		"btn8", 		"Audio|params", },
-		{ { NULL, NULL }, TYPE_BUTTON, 0, 0, 86, 44, button9_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  VISIBLE,     UINTPTR_MAX, 		"btnSysMenu", 	"System|settings", },
-		{ { NULL, NULL }, TYPE_BUTTON, 0, 0, 86, 44, buttons_mode_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_LSB, 	"btnModeLSB", 	"LSB", },
-		{ { NULL, NULL }, TYPE_BUTTON, 0, 0, 86, 44, buttons_mode_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_CW,  	"btnModeCW", 	"CW", },
-		{ { NULL, NULL }, TYPE_BUTTON, 0, 0, 86, 44, buttons_mode_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_AM,  	"btnModeAM", 	"AM", },
-		{ { NULL, NULL }, TYPE_BUTTON, 0, 0, 86, 44, buttons_mode_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_DGL, 	"btnModeDGL", 	"DGL", },
-		{ { NULL, NULL }, TYPE_BUTTON, 0, 0, 86, 44, buttons_mode_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_USB, 	"btnModeUSB", 	"USB", },
-		{ { NULL, NULL }, TYPE_BUTTON, 0, 0, 86, 44, buttons_mode_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_CWR, 	"btnModeCWR", 	"CWR", },
-		{ { NULL, NULL }, TYPE_BUTTON, 0, 0, 86, 44, buttons_mode_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_NFM, 	"btnModeNFM", 	"NFM", },
-		{ { NULL, NULL }, TYPE_BUTTON, 0, 0, 86, 44, buttons_mode_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_DGU, 	"btnModeDGU", 	"DGU", },
-		{ { NULL, NULL }, TYPE_BUTTON, 0, 0, 86, 44, buttons_bp_handler,   CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_BP,    NON_VISIBLE, UINTPTR_MAX, 	"btnAF_1", 		"", },
-		{ { NULL, NULL }, TYPE_BUTTON, 0, 0, 86, 44, buttons_bp_handler,   CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_BP,    NON_VISIBLE, UINTPTR_MAX, 	"btnAF_OK", 	"OK", },
-		{ { NULL, NULL }, TYPE_BUTTON, 0, 0, 86, 44, buttons_bp_handler,   CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_BP,    NON_VISIBLE, UINTPTR_MAX, 	"btnAF_2", 		"", },
-		{ { NULL, NULL }, TYPE_BUTTON, 0, 0, 86, 44, hamradio_set_agc_off, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AGC,   NON_VISIBLE, UINTPTR_MAX, 	"btnAGCoff", 	"AGC|off", },
-		{ { NULL, NULL }, TYPE_BUTTON, 0, 0, 86, 44, hamradio_set_agc_slow,CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AGC,   NON_VISIBLE, UINTPTR_MAX, 	"btnAGCslow", 	"AGC|slow", },
-		{ { NULL, NULL }, TYPE_BUTTON, 0, 0, 86, 44, hamradio_set_agc_fast,CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AGC,   NON_VISIBLE, UINTPTR_MAX, 	"btnAGCfast", 	"AGC|fast", },
-		{ { NULL, NULL }, TYPE_BUTTON, 0, 0, 50, 50, buttons_freq_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, 1, 		 		"btnFreq1", 	"1", },
-		{ { NULL, NULL }, TYPE_BUTTON, 0, 0, 50, 50, buttons_freq_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, 2, 		 		"btnFreq2", 	"2", },
-		{ { NULL, NULL }, TYPE_BUTTON, 0, 0, 50, 50, buttons_freq_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, 3, 		 		"btnFreq3", 	"3", },
-		{ { NULL, NULL }, TYPE_BUTTON, 0, 0, 50, 50, buttons_freq_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, BUTTON_CODE_BK, 	"btnFreqBK", 	"<-", },
-		{ { NULL, NULL }, TYPE_BUTTON, 0, 0, 50, 50, buttons_freq_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, 4, 	 			"btnFreq4", 	"4", },
-		{ { NULL, NULL }, TYPE_BUTTON, 0, 0, 50, 50, buttons_freq_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, 5, 				"btnFreq5", 	"5", },
-		{ { NULL, NULL }, TYPE_BUTTON, 0, 0, 50, 50, buttons_freq_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, 6, 				"btnFreq6", 	"6", },
-		{ { NULL, NULL }, TYPE_BUTTON, 0, 0, 50, 50, buttons_freq_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, BUTTON_CODE_OK, 	"btnFreqOK", 	"OK", },
-		{ { NULL, NULL }, TYPE_BUTTON, 0, 0, 50, 50, buttons_freq_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, 7, 				"btnFreq7", 	"7", },
-		{ { NULL, NULL }, TYPE_BUTTON, 0, 0, 50, 50, buttons_freq_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, 8,  				"btnFreq8", 	"8", },
-		{ { NULL, NULL }, TYPE_BUTTON, 0, 0, 50, 50, buttons_freq_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, 9, 		 		"btnFreq9", 	"9", },
-		{ { NULL, NULL }, TYPE_BUTTON, 0, 0, 50, 50, buttons_freq_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, 0, 	 			"btnFreq0", 	"0", },
-		{ { NULL, NULL }, TYPE_BUTTON, 0, 0, 40, 40, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU,  NON_VISIBLE, UINTPTR_MAX, 	"btnSysMenu-",	"-", },
-		{ { NULL, NULL }, TYPE_BUTTON, 0, 0, 40, 40, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU,  NON_VISIBLE, UINTPTR_MAX, 	"btnSysMenu+",	"+", },
-		{ { NULL, NULL }, TYPE_BUTTON, 0, 0, 40, 40, buttons_uif_handler,  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UIF,   NON_VISIBLE, UINTPTR_MAX, 	"btnUIF-", 		"-", },
-		{ { NULL, NULL }, TYPE_BUTTON, 0, 0, 40, 40, buttons_uif_handler,  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UIF,   NON_VISIBLE, UINTPTR_MAX, 	"btnUIF+", 		"+", },
+		{ 0, 0, 86, 44, button1_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  NON_VISIBLE, UINTPTR_MAX,	"btnMode", 		"Mode", },
+		{ 0, 0, 86, 44, button2_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  NON_VISIBLE, UINTPTR_MAX,	"btnAF", 		"AF|filter", },
+		{ 0, 0, 86, 44, button3_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  NON_VISIBLE, UINTPTR_MAX,	"btnAGC", 		"AGC", },
+		{ 0, 0, 86, 44, button4_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  NON_VISIBLE, UINTPTR_MAX,	"btn4", 		"Freq", },
+		{ 0, 0, 86, 44, button5_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  NON_VISIBLE, UINTPTR_MAX,	"btn5", 		"", },
+		{ 0, 0, 86, 44, button6_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  NON_VISIBLE, UINTPTR_MAX,	"btn6", 		"", },
+		{ 0, 0, 86, 44, button7_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  NON_VISIBLE, UINTPTR_MAX,	"btn7", 		"", },
+		{ 0, 0, 86, 44, button8_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  NON_VISIBLE, UINTPTR_MAX,	"btn8", 		"Audio|settings", },
+		{ 0, 0, 86, 44, button9_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  NON_VISIBLE, UINTPTR_MAX,	"btnSysMenu", 	"System|settings", },
+		{ 0, 0, 86, 44, buttons_mode_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_LSB, 	"btnModeLSB", 	"LSB", },
+		{ 0, 0, 86, 44, buttons_mode_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_CW,  	"btnModeCW", 	"CW", },
+		{ 0, 0, 86, 44, buttons_mode_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_AM,  	"btnModeAM", 	"AM", },
+		{ 0, 0, 86, 44, buttons_mode_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_DGL, 	"btnModeDGL", 	"DGL", },
+		{ 0, 0, 86, 44, buttons_mode_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_USB, 	"btnModeUSB", 	"USB", },
+		{ 0, 0, 86, 44, buttons_mode_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_CWR, 	"btnModeCWR", 	"CWR", },
+		{ 0, 0, 86, 44, buttons_mode_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_NFM, 	"btnModeNFM", 	"NFM", },
+		{ 0, 0, 86, 44, buttons_mode_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_DGU, 	"btnModeDGU", 	"DGU", },
+		{ 0, 0, 86, 44, buttons_bp_handler,   CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_BP,    NON_VISIBLE, UINTPTR_MAX, 	"btnAF_1", 		"", },
+		{ 0, 0, 86, 44, buttons_bp_handler,   CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_BP,    NON_VISIBLE, UINTPTR_MAX, 	"btnAF_OK", 	"OK", },
+		{ 0, 0, 86, 44, buttons_bp_handler,   CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_BP,    NON_VISIBLE, UINTPTR_MAX, 	"btnAF_2", 		"", },
+		{ 0, 0, 86, 44, hamradio_set_agc_off, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AGC,   NON_VISIBLE, UINTPTR_MAX, 	"btnAGCoff", 	"AGC|off", },
+		{ 0, 0, 86, 44, hamradio_set_agc_slow,CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AGC,   NON_VISIBLE, UINTPTR_MAX, 	"btnAGCslow", 	"AGC|slow", },
+		{ 0, 0, 86, 44, hamradio_set_agc_fast,CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AGC,   NON_VISIBLE, UINTPTR_MAX, 	"btnAGCfast", 	"AGC|fast", },
+		{ 0, 0, 50, 50, buttons_freq_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, 1, 		 		"btnFreq1", 	"1", },
+		{ 0, 0, 50, 50, buttons_freq_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, 2, 		 		"btnFreq2", 	"2", },
+		{ 0, 0, 50, 50, buttons_freq_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, 3, 		 		"btnFreq3", 	"3", },
+		{ 0, 0, 50, 50, buttons_freq_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, BUTTON_CODE_BK, 	"btnFreqBK", 	"<-", },
+		{ 0, 0, 50, 50, buttons_freq_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, 4, 	 			"btnFreq4", 	"4", },
+		{ 0, 0, 50, 50, buttons_freq_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, 5, 				"btnFreq5", 	"5", },
+		{ 0, 0, 50, 50, buttons_freq_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, 6, 				"btnFreq6", 	"6", },
+		{ 0, 0, 50, 50, buttons_freq_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, BUTTON_CODE_OK, 	"btnFreqOK", 	"OK", },
+		{ 0, 0, 50, 50, buttons_freq_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, 7, 				"btnFreq7", 	"7", },
+		{ 0, 0, 50, 50, buttons_freq_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, 8,  				"btnFreq8", 	"8", },
+		{ 0, 0, 50, 50, buttons_freq_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, 9, 		 		"btnFreq9", 	"9", },
+		{ 0, 0, 50, 50, buttons_freq_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, 0, 	 			"btnFreq0", 	"0", },
+		{ 0, 0, 40, 40, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU,  NON_VISIBLE, UINTPTR_MAX, 	"btnSysMenu-",	"-", },
+		{ 0, 0, 40, 40, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU,  NON_VISIBLE, UINTPTR_MAX, 	"btnSysMenu+",	"+", },
+		{ 0, 0, 40, 40, buttons_uif_handler,  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UIF,   NON_VISIBLE, UINTPTR_MAX, 	"btnUIF-", 		"-", },
+		{ 0, 0, 40, 40, buttons_uif_handler,  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UIF,   NON_VISIBLE, UINTPTR_MAX, 	"btnUIF+", 		"+", },
+		{ 0, 0, 100, 44, buttons_audioparams_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, UINTPTR_MAX, "btnAP1", "Reverb|OFF", },
+		{ 0, 0, 100, 44, buttons_audioparams_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, UINTPTR_MAX, "btnAP2", "Reverb|settings", },
+		{ 0, 0, 100, 44, buttons_audioparams_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, UINTPTR_MAX, "btnAP3", "Monitor|OFF", },
+		{ 0, 0, 100, 44, buttons_audioparams_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, UINTPTR_MAX, "btnAP4", "MIC|source", },
+		{ 0, 0, 100, 44, buttons_audioparams_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, UINTPTR_MAX, "btnAP5", "MIC|settings", },
+		{ 0, 0, 100, 44, buttons_audioparams_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, UINTPTR_MAX, "btnAP6", "MIC TX|equalizer", },
+		{ 0, 0,  40, 40, buttons_audioparams_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_EQ, 	 NON_VISIBLE, UINTPTR_MAX, "btnEQ_ok", "OK", },
 #if ! WITHOLDMENUSTYLE
-		{ { NULL, NULL }, TYPE_BUTTON, 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 	"btnSysMenu1",	"", },
-		{ { NULL, NULL }, TYPE_BUTTON, 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 	"btnSysMenu2",	"", },
-		{ { NULL, NULL }, TYPE_BUTTON, 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 	"btnSysMenu3",	"", },
-		{ { NULL, NULL }, TYPE_BUTTON, 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 	"btnSysMenu4",	"", },
-		{ { NULL, NULL }, TYPE_BUTTON, 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 	"btnSysMenu5",	"", },
-		{ { NULL, NULL }, TYPE_BUTTON, 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 	"btnSysMenu6",	"", },
-		{ { NULL, NULL }, TYPE_BUTTON, 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 	"btnSysMenu7",	"", },
-		{ { NULL, NULL }, TYPE_BUTTON, 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 	"btnSysMenu8",	"", },
-		{ { NULL, NULL }, TYPE_BUTTON, 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 	"btnSysMenu9",	"", },
-		{ { NULL, NULL }, TYPE_BUTTON, 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 	"btnSysMenu10",	"", },
-		{ { NULL, NULL }, TYPE_BUTTON, 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 	"btnSysMenu11",	"", },
-		{ { NULL, NULL }, TYPE_BUTTON, 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 	"btnSysMenu12",	"", },
-		{ { NULL, NULL }, TYPE_BUTTON, 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 	"btnSysMenu13",	"", },
-		{ { NULL, NULL }, TYPE_BUTTON, 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 	"btnSysMenu14",	"", },
-		{ { NULL, NULL }, TYPE_BUTTON, 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 	"btnSysMenu15",	"", },
-		{ { NULL, NULL }, TYPE_BUTTON, 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 	"btnSysMenu16",	"", },
-		{ { NULL, NULL }, TYPE_BUTTON, 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 	"btnSysMenu17",	"", },
-		{ { NULL, NULL }, TYPE_BUTTON, 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 	"btnSysMenu18",	"", },
-		{ { NULL, NULL }, TYPE_BUTTON, 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 	"btnSysMenu19",	"", },
-		{ { NULL, NULL }, TYPE_BUTTON, 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 	"btnSysMenu20",	"", },
+		{ 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 	"btnSysMenu1",	"", },
+		{ 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 	"btnSysMenu2",	"", },
+		{ 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 	"btnSysMenu3",	"", },
+		{ 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 	"btnSysMenu4",	"", },
+		{ 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 	"btnSysMenu5",	"", },
+		{ 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 	"btnSysMenu6",	"", },
+		{ 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 	"btnSysMenu7",	"", },
+		{ 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 	"btnSysMenu8",	"", },
+		{ 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 	"btnSysMenu9",	"", },
+		{ 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 	"btnSysMenu10",	"", },
+		{ 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 	"btnSysMenu11",	"", },
+		{ 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 	"btnSysMenu12",	"", },
+		{ 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 	"btnSysMenu13",	"", },
+		{ 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 	"btnSysMenu14",	"", },
+		{ 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 	"btnSysMenu15",	"", },
+		{ 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 	"btnSysMenu16",	"", },
+		{ 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 	"btnSysMenu17",	"", },
+		{ 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 	"btnSysMenu18",	"", },
+		{ 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 	"btnSysMenu19",	"", },
+		{ 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 	"btnSysMenu20",	"", },
 #endif
 
 //		{ 375, 120, buttons_uif_handler, 	NULL, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UIF,   NON_VISIBLE, UINTPTR_MAX, 			"btnUIF_OK", "OK", },
@@ -1005,8 +1013,6 @@ static void update_touch(void);
 	} font_size_t;
 
 	typedef struct {
-		LIST_ENTRY item;
-		element_type_t type;
 		uint16_t x;
 		uint16_t y;
 		uint8_t parent;
@@ -1023,51 +1029,51 @@ static void update_touch(void);
 	static label_t labels[] = {
 	//    x, y,  parent,     state, is_trackable, visible, name,       Text, font_size, color, onClickHandler
 		{ },
-		{ { NULL, NULL }, TYPE_LABEL, 0, 0, WINDOW_BP,   DISABLED,  0, NON_VISIBLE, "lbl_low",  	  "", FONT_LARGE, COLORPIP_YELLOW, },
-		{ { NULL, NULL }, TYPE_LABEL, 0, 0, WINDOW_BP,   DISABLED,  0, NON_VISIBLE, "lbl_high", 	  "", FONT_LARGE, COLORPIP_YELLOW, },
-		{ { NULL, NULL }, TYPE_LABEL, 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
-		{ { NULL, NULL }, TYPE_LABEL, 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
-		{ { NULL, NULL }, TYPE_LABEL, 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
-		{ { NULL, NULL }, TYPE_LABEL, 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
-		{ { NULL, NULL }, TYPE_LABEL, 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
-		{ { NULL, NULL }, TYPE_LABEL, 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
-		{ { NULL, NULL }, TYPE_LABEL, 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
-		{ { NULL, NULL }, TYPE_LABEL, 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
-		{ { NULL, NULL }, TYPE_LABEL, 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
-		{ { NULL, NULL }, TYPE_LABEL, 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
-		{ { NULL, NULL }, TYPE_LABEL, 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
-		{ { NULL, NULL }, TYPE_LABEL, 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
-		{ { NULL, NULL }, TYPE_LABEL, 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
-		{ { NULL, NULL }, TYPE_LABEL, 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
-		{ { NULL, NULL }, TYPE_LABEL, 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
-		{ { NULL, NULL }, TYPE_LABEL, 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
-		{ { NULL, NULL }, TYPE_LABEL, 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
-		{ { NULL, NULL }, TYPE_LABEL, 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
-		{ { NULL, NULL }, TYPE_LABEL, 0, 0, WINDOW_ENC2, DISABLED,  0, NON_VISIBLE, "lbl_enc2_param", "", FONT_LARGE, COLORPIP_WHITE, },
-		{ { NULL, NULL }, TYPE_LABEL, 0, 0, WINDOW_ENC2, DISABLED,  0, NON_VISIBLE, "lbl_enc2_val",	  "", FONT_LARGE, COLORPIP_WHITE, },
-		{ { NULL, NULL }, TYPE_LABEL, 0, 0,	WINDOW_UIF,  DISABLED,  0, NON_VISIBLE, "lbl_uif_param",  "", FONT_LARGE, COLORPIP_WHITE, },
-		{ { NULL, NULL }, TYPE_LABEL, 0, 0,	WINDOW_UIF,  DISABLED,  0, NON_VISIBLE, "lbl_uif_val", 	  "", FONT_LARGE, COLORPIP_WHITE, },
-		{ { NULL, NULL }, TYPE_LABEL, 0, 0,	WINDOW_FREQ, DISABLED,  0, NON_VISIBLE, "lbl_freq_val",   "", FONT_LARGE, COLORPIP_YELLOW, },
-		{ { NULL, NULL }, TYPE_LABEL, 0, 0,	WINDOW_AUDIO, DISABLED, 0, NON_VISIBLE, "lbl_eq0.08_val",  "", FONT_MEDIUM, COLORPIP_YELLOW, },
-		{ { NULL, NULL }, TYPE_LABEL, 0, 0,	WINDOW_AUDIO, DISABLED, 0, NON_VISIBLE, "lbl_eq0.23_val",  "", FONT_MEDIUM, COLORPIP_YELLOW, },
-		{ { NULL, NULL }, TYPE_LABEL, 0, 0,	WINDOW_AUDIO, DISABLED, 0, NON_VISIBLE, "lbl_eq0.65_val",  "", FONT_MEDIUM, COLORPIP_YELLOW, },
-		{ { NULL, NULL }, TYPE_LABEL, 0, 0,	WINDOW_AUDIO, DISABLED, 0, NON_VISIBLE, "lbl_eq1.8_val",   "", FONT_MEDIUM, COLORPIP_YELLOW, },
-		{ { NULL, NULL }, TYPE_LABEL, 0, 0,	WINDOW_AUDIO, DISABLED, 0, NON_VISIBLE, "lbl_eq5.3_val",   "", FONT_MEDIUM, COLORPIP_YELLOW, },
-		{ { NULL, NULL }, TYPE_LABEL, 0, 0,	WINDOW_AUDIO, DISABLED, 0, NON_VISIBLE, "lbl_eq0.08_name", "", FONT_MEDIUM, COLORPIP_WHITE, },
-		{ { NULL, NULL }, TYPE_LABEL, 0, 0,	WINDOW_AUDIO, DISABLED, 0, NON_VISIBLE, "lbl_eq0.23_name", "", FONT_MEDIUM, COLORPIP_WHITE, },
-		{ { NULL, NULL }, TYPE_LABEL, 0, 0,	WINDOW_AUDIO, DISABLED, 0, NON_VISIBLE, "lbl_eq0.65_name", "", FONT_MEDIUM, COLORPIP_WHITE, },
-		{ { NULL, NULL }, TYPE_LABEL, 0, 0,	WINDOW_AUDIO, DISABLED, 0, NON_VISIBLE, "lbl_eq1.8_name",  "", FONT_MEDIUM, COLORPIP_WHITE, },
-		{ { NULL, NULL }, TYPE_LABEL, 0, 0,	WINDOW_AUDIO, DISABLED, 0, NON_VISIBLE, "lbl_eq5.3_name",  "", FONT_MEDIUM, COLORPIP_WHITE, },
-		{ { NULL, NULL }, TYPE_LABEL, 0, 0,	WINDOW_MAIN,  DISABLED, 0, NON_VISIBLE, "lbl_infobar_1_1", "", FONT_MEDIUM, COLORPIP_WHITE, },
-		{ { NULL, NULL }, TYPE_LABEL, 0, 0,	WINDOW_MAIN,  DISABLED, 0, NON_VISIBLE, "lbl_infobar_1_2", "", FONT_MEDIUM, COLORPIP_WHITE, },
-		{ { NULL, NULL }, TYPE_LABEL, 0, 0,	WINDOW_MAIN,  DISABLED, 0, NON_VISIBLE, "lbl_infobar_2_1", "", FONT_MEDIUM, COLORPIP_WHITE, },
-		{ { NULL, NULL }, TYPE_LABEL, 0, 0,	WINDOW_MAIN,  DISABLED, 0, NON_VISIBLE, "lbl_infobar_2_2", "", FONT_MEDIUM, COLORPIP_WHITE, },
-		{ { NULL, NULL }, TYPE_LABEL, 0, 0,	WINDOW_MAIN,  DISABLED, 0, NON_VISIBLE, "lbl_infobar_3_1", "", FONT_MEDIUM, COLORPIP_WHITE, },
-		{ { NULL, NULL }, TYPE_LABEL, 0, 0,	WINDOW_MAIN,  DISABLED, 0, NON_VISIBLE, "lbl_infobar_3_2", "", FONT_MEDIUM, COLORPIP_WHITE, },
-		{ { NULL, NULL }, TYPE_LABEL, 0, 0,	WINDOW_MAIN,  DISABLED, 0, NON_VISIBLE, "lbl_infobar_4_1", "", FONT_MEDIUM, COLORPIP_WHITE, },
-		{ { NULL, NULL }, TYPE_LABEL, 0, 0,	WINDOW_MAIN,  DISABLED, 0, NON_VISIBLE, "lbl_infobar_4_2", "", FONT_MEDIUM, COLORPIP_WHITE, },
-		{ { NULL, NULL }, TYPE_LABEL, 0, 0,	WINDOW_MAIN,  DISABLED, 0, NON_VISIBLE, "lbl_infobar_5_1", "", FONT_MEDIUM, COLORPIP_WHITE, },
-		{ { NULL, NULL }, TYPE_LABEL, 0, 0,	WINDOW_MAIN,  DISABLED, 0, NON_VISIBLE, "lbl_infobar_5_2", "", FONT_MEDIUM, COLORPIP_WHITE, },
+		{ 0, 0, WINDOW_BP,   DISABLED,  0, NON_VISIBLE, "lbl_low",  	  "", FONT_LARGE, COLORPIP_YELLOW, },
+		{ 0, 0, WINDOW_BP,   DISABLED,  0, NON_VISIBLE, "lbl_high", 	  "", FONT_LARGE, COLORPIP_YELLOW, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_ENC2, DISABLED,  0, NON_VISIBLE, "lbl_enc2_param", "", FONT_LARGE, COLORPIP_WHITE, },
+		{ 0, 0, WINDOW_ENC2, DISABLED,  0, NON_VISIBLE, "lbl_enc2_val",	  "", FONT_LARGE, COLORPIP_WHITE, },
+		{ 0, 0,	WINDOW_UIF,  DISABLED,  0, NON_VISIBLE, "lbl_uif_param",  "", FONT_LARGE, COLORPIP_WHITE, },
+		{ 0, 0,	WINDOW_UIF,  DISABLED,  0, NON_VISIBLE, "lbl_uif_val", 	  "", FONT_LARGE, COLORPIP_WHITE, },
+		{ 0, 0,	WINDOW_FREQ, DISABLED,  0, NON_VISIBLE, "lbl_freq_val",   "", FONT_LARGE, COLORPIP_YELLOW, },
+		{ 0, 0,	WINDOW_AP_MIC_EQ, DISABLED, 0, NON_VISIBLE, "lbl_eq0.08_val",  "", FONT_MEDIUM, COLORPIP_YELLOW, },
+		{ 0, 0,	WINDOW_AP_MIC_EQ, DISABLED, 0, NON_VISIBLE, "lbl_eq0.23_val",  "", FONT_MEDIUM, COLORPIP_YELLOW, },
+		{ 0, 0,	WINDOW_AP_MIC_EQ, DISABLED, 0, NON_VISIBLE, "lbl_eq0.65_val",  "", FONT_MEDIUM, COLORPIP_YELLOW, },
+		{ 0, 0,	WINDOW_AP_MIC_EQ, DISABLED, 0, NON_VISIBLE, "lbl_eq1.8_val",   "", FONT_MEDIUM, COLORPIP_YELLOW, },
+		{ 0, 0,	WINDOW_AP_MIC_EQ, DISABLED, 0, NON_VISIBLE, "lbl_eq5.3_val",   "", FONT_MEDIUM, COLORPIP_YELLOW, },
+		{ 0, 0,	WINDOW_AP_MIC_EQ, DISABLED, 0, NON_VISIBLE, "lbl_eq0.08_name", "", FONT_MEDIUM, COLORPIP_WHITE, },
+		{ 0, 0,	WINDOW_AP_MIC_EQ, DISABLED, 0, NON_VISIBLE, "lbl_eq0.23_name", "", FONT_MEDIUM, COLORPIP_WHITE, },
+		{ 0, 0,	WINDOW_AP_MIC_EQ, DISABLED, 0, NON_VISIBLE, "lbl_eq0.65_name", "", FONT_MEDIUM, COLORPIP_WHITE, },
+		{ 0, 0,	WINDOW_AP_MIC_EQ, DISABLED, 0, NON_VISIBLE, "lbl_eq1.8_name",  "", FONT_MEDIUM, COLORPIP_WHITE, },
+		{ 0, 0,	WINDOW_AP_MIC_EQ, DISABLED, 0, NON_VISIBLE, "lbl_eq5.3_name",  "", FONT_MEDIUM, COLORPIP_WHITE, },
+		{ 0, 0,	WINDOW_MAIN,  DISABLED, 0, NON_VISIBLE, "lbl_infobar_1_1", "", FONT_MEDIUM, COLORPIP_WHITE, },
+		{ 0, 0,	WINDOW_MAIN,  DISABLED, 0, NON_VISIBLE, "lbl_infobar_1_2", "", FONT_MEDIUM, COLORPIP_WHITE, },
+		{ 0, 0,	WINDOW_MAIN,  DISABLED, 0, NON_VISIBLE, "lbl_infobar_2_1", "", FONT_MEDIUM, COLORPIP_WHITE, },
+		{ 0, 0,	WINDOW_MAIN,  DISABLED, 0, NON_VISIBLE, "lbl_infobar_2_2", "", FONT_MEDIUM, COLORPIP_WHITE, },
+		{ 0, 0,	WINDOW_MAIN,  DISABLED, 0, NON_VISIBLE, "lbl_infobar_3_1", "", FONT_MEDIUM, COLORPIP_WHITE, },
+		{ 0, 0,	WINDOW_MAIN,  DISABLED, 0, NON_VISIBLE, "lbl_infobar_3_2", "", FONT_MEDIUM, COLORPIP_WHITE, },
+		{ 0, 0,	WINDOW_MAIN,  DISABLED, 0, NON_VISIBLE, "lbl_infobar_4_1", "", FONT_MEDIUM, COLORPIP_WHITE, },
+		{ 0, 0,	WINDOW_MAIN,  DISABLED, 0, NON_VISIBLE, "lbl_infobar_4_2", "", FONT_MEDIUM, COLORPIP_WHITE, },
+		{ 0, 0,	WINDOW_MAIN,  DISABLED, 0, NON_VISIBLE, "lbl_infobar_5_1", "", FONT_MEDIUM, COLORPIP_WHITE, },
+		{ 0, 0,	WINDOW_MAIN,  DISABLED, 0, NON_VISIBLE, "lbl_infobar_5_2", "", FONT_MEDIUM, COLORPIP_WHITE, },
 
 		};
 	enum { LABELS_COUNT = ARRAY_SIZE(labels) };
@@ -1084,8 +1090,6 @@ static void update_touch(void);
 	};
 
 	typedef struct {
-		LIST_ENTRY item;
-		element_type_t type;
 		uint16_t x;
 		uint16_t y;
 		uint16_t x1_p;			// координаты ползунка
@@ -1106,11 +1110,11 @@ static void update_touch(void);
 
 	static slider_t sliders[] = {
 			{ },
-			{ { NULL, NULL }, TYPE_SLIDER, 0, 0, 0, 0, 0, 0, ORIENTATION_VERTICAL, WINDOW_AUDIO, "eq0.08", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
-			{ { NULL, NULL }, TYPE_SLIDER, 0, 0, 0, 0, 0, 0, ORIENTATION_VERTICAL, WINDOW_AUDIO, "eq0.23", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
-			{ { NULL, NULL }, TYPE_SLIDER, 0, 0, 0, 0, 0, 0, ORIENTATION_VERTICAL, WINDOW_AUDIO, "eq0.65", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
-			{ { NULL, NULL }, TYPE_SLIDER, 0, 0, 0, 0, 0, 0, ORIENTATION_VERTICAL, WINDOW_AUDIO, "eq1.8",  CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
-			{ { NULL, NULL }, TYPE_SLIDER, 0, 0, 0, 0, 0, 0, ORIENTATION_VERTICAL, WINDOW_AUDIO, "eq5.3",  CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
+			{ 0, 0, 0, 0, 0, 0, ORIENTATION_VERTICAL, WINDOW_AP_MIC_EQ, "eq0.08", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
+			{ 0, 0, 0, 0, 0, 0, ORIENTATION_VERTICAL, WINDOW_AP_MIC_EQ, "eq0.23", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
+			{ 0, 0, 0, 0, 0, 0, ORIENTATION_VERTICAL, WINDOW_AP_MIC_EQ, "eq0.65", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
+			{ 0, 0, 0, 0, 0, 0, ORIENTATION_VERTICAL, WINDOW_AP_MIC_EQ, "eq1.8",  CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
+			{ 0, 0, 0, 0, 0, 0, ORIENTATION_VERTICAL, WINDOW_AP_MIC_EQ, "eq5.3",  CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
 	};
 	enum { SLIDERS_COUNT = ARRAY_SIZE(sliders) };
 
@@ -1141,12 +1145,15 @@ static void update_touch(void);
 		{ WINDOW_MAIN, 	ALIGN_LEFT_X,	0, 0,   0,   0, "",  	   	   NON_VISIBLE,	1, 0, gui_main_process, },
 		{ WINDOW_MODES, ALIGN_CENTER_X, 0, 0, 402, 150, "Select mode", NON_VISIBLE, 1, 0, window_mode_process, },
 		{ WINDOW_BP,    ALIGN_CENTER_X, 0, 0, 372, 205, "Bandpass",    NON_VISIBLE, 1, 0, window_bp_process, },
-		{ WINDOW_AGC,   ALIGN_CENTER_X, 0, 0, 372, 110, "AGC control", NON_VISIBLE, 0, 0, window_agc_process, },
+		{ WINDOW_AGC,   ALIGN_CENTER_X, 0, 0, 372, 110, "AGC control", NON_VISIBLE, 1, 0, window_agc_process, },
 		{ WINDOW_FREQ,  ALIGN_CENTER_X, 0, 0, 250, 215, "Freq:", 	   NON_VISIBLE, 1, 0, window_freq_process, },
 		{ WINDOW_MENU,  ALIGN_CENTER_X, 0, 0, 550, 240, "Settings",	   NON_VISIBLE, 1, 0, window_menu_process, },
 		{ WINDOW_ENC2, 	ALIGN_RIGHT_X, 	0, 0, 185, 105, "Fast menu",   NON_VISIBLE, 1, 0, window_enc2_process, },
 		{ WINDOW_UIF, 	ALIGN_LEFT_X, 	0, 0, 200, 145, "",   		   NON_VISIBLE, 1, 0, window_uif_process, },
-		{ WINDOW_AUDIO, ALIGN_CENTER_X, 0, 0, 430, 350, "MIC params",  NON_VISIBLE, 1, 0, window_audioparams_process, },
+		{ WINDOW_AUDIOSETTINGS,
+						ALIGN_CENTER_X, 0, 0, 380, 180, "Audio settings", 	NON_VISIBLE, 1, 0, window_audiosettings_process, },
+		{ WINDOW_AP_MIC_EQ,
+						ALIGN_CENTER_X, 0, 0, 450, 350, "MIC TX equalizer",	NON_VISIBLE, 1, 0, window_ap_mic_eq_process, },
 	};
 	enum { windows_count = ARRAY_SIZE(windows) };
 
@@ -1229,7 +1236,7 @@ static void update_touch(void);
 	static gui_t gui = { 0, 0, KBD_CODE_MAX, TYPE_DUMMY, NULL, CANCELLED, 0, 0, 0, 0, 0, 1, };
 
 	LIST_ENTRY windows_list;
-	LIST_ENTRY tt;
+//	LIST_ENTRY tt;
 	LIST_ENTRY elements_list;
 
 	static touch_t touch_elements[TOUCH_ARRAY_SIZE];
@@ -1237,8 +1244,6 @@ static void update_touch(void);
 	static uint_fast8_t menu_label_touched = 0;
 	static uint_fast8_t menu_level;
 	static enc2_menu_t * gui_enc2_menu;
-
-//	LIST_ENTRY tt;
 
 	void gui_timer_update(void * arg)
 	{
@@ -1307,73 +1312,6 @@ static void update_touch(void);
 				break;
 		}
 		* id_end = i - 1;
-
-//		uint_fast8_t i = 1;
-//		switch (type)
-//				{
-//				case TYPE_BUTTON:
-//
-//					for(; i < BUTTONS_COUNT; i ++)
-//					{
-//						button_t * bh = & buttons[i];
-//						if (bh->parent == win->window_id)
-//							break;
-//					}
-//					* id_start = i;
-//
-//					for(; i < BUTTONS_COUNT; i ++)
-//					{
-//						button_t * bh = & buttons[i];
-//						if (bh->parent != win->window_id)
-//							break;
-//					}
-//					* id_end = i - 1;
-//
-//					break;
-//
-//				case TYPE_LABEL:
-//
-//					for(; i < BUTTONS_COUNT; i ++)
-//					{
-//						label_t * lh = & labels[i];
-//						if (lh->parent == win->window_id)
-//							break;
-//					}
-//					* id_start = i;
-//
-//					for(; i < BUTTONS_COUNT; i ++)
-//					{
-//						label_t * lh = & labels[i];
-//						if (lh->parent != win->window_id)
-//							break;
-//					}
-//					* id_end = i - 1;
-//					break;
-//
-//				case TYPE_SLIDER:
-//
-//					for(; i < BUTTONS_COUNT; i ++)
-//					{
-//						slider_t * sh = & sliders[i];
-//						if (sh->parent == win->window_id)
-//							break;
-//					}
-//					* id_start = i;
-//
-//					for(; i < BUTTONS_COUNT; i ++)
-//					{
-//						slider_t * sh = & sliders[i];
-//						if (sh->parent != win->window_id)
-//							break;
-//					}
-//					* id_end = i - 1;
-//					break;
-//
-//				default:
-//					ASSERT(0);
-//					break;
-//				}
-
 	}
 
 	/* Получение ширины метки в пикселях  */
@@ -2485,16 +2423,73 @@ static void update_touch(void);
 		}
 	}
 
-	static void window_audioparams_process(void)
+	static void buttons_audioparams_process(void)
+	{
+		if(gui.selected_type == TYPE_BUTTON)
+		{
+			window_t * winAP = & windows[WINDOW_AUDIOSETTINGS];
+			window_t * winEQ = & windows[WINDOW_AP_MIC_EQ];
+			button_t * btn_MIC_eq = find_gui_element_ref(TYPE_BUTTON, winAP, "btnAP6");
+			button_t * btn_EQ_ok = find_gui_element_ref(TYPE_BUTTON, winEQ, "btnEQ_ok");
+
+			if (gui.selected_link->link == btn_MIC_eq)
+			{
+				set_window(winEQ, VISIBLE);
+			}
+			else if (gui.selected_link->link == btn_EQ_ok)
+			{
+				set_window(winEQ, NON_VISIBLE);
+			}
+
+		}
+	}
+
+	static void window_audiosettings_process(void)
+	{
+		window_t * win = & windows[WINDOW_AUDIOSETTINGS];
+
+		if (win->first_call == 1)
+		{
+
+			uint_fast16_t x, y;
+			uint_fast8_t interval = 20, col1_int = 20, row1_int = 40;
+			uint_fast8_t id = 0, id_start, id_end;
+			win->first_call = 0;
+			calculate_window_position(win);
+
+			find_entry_area_elements(TYPE_BUTTON, win, & id_start, & id_end);
+
+			x = win->x1 + col1_int;
+			y = win->y1 + row1_int;
+			for (uint_fast8_t id = id_start; id <= id_end; id++)
+			{
+				button_t * bh = (button_t *) touch_elements[id].link;
+				bh->x1 = x;
+				bh->y1 = y;
+				bh->visible = VISIBLE;
+				x = x + interval + bh->w;
+				if (x + bh->w > win->x1 + win->w)
+				{
+					x = win->x1 + col1_int;
+					y = win->y1 + row1_int + bh->h + interval;
+				}
+			}
+			return;
+		}
+
+	}
+
+	static void window_ap_mic_eq_process(void)
 	{
 		PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
-		window_t * win = & windows[WINDOW_AUDIO];
+		window_t * win = & windows[WINDOW_AP_MIC_EQ];
 		slider_t * sl = NULL;
 		label_t * lbl = NULL;
 		static uint_fast8_t eq_limit, eq_base = 0;
 		char buf[TEXT_ARRAY_SIZE];
 		static int_fast16_t mid_y = 0, start_y = 0;
 		static uint_fast8_t id = 0, id_start, id_end;
+		static button_t * btn_EQ_ok;
 
 		if (win->first_call == 1)
 		{
@@ -2540,6 +2535,12 @@ static void update_touch(void);
 				x = x + interval;
 			}
 			mid_y = sl->y + sl->size / 2;
+
+			btn_EQ_ok = find_gui_element_ref(TYPE_BUTTON, win, "btnEQ_ok");
+			btn_EQ_ok->x1 = win->x1 + win->w - btn_EQ_ok->w - 15;
+			btn_EQ_ok->y1 = win->y1 + win->h - btn_EQ_ok->h - 15;
+			btn_EQ_ok->visible = VISIBLE;
+
 			return;
 		}
 
@@ -2562,13 +2563,13 @@ static void update_touch(void);
 		for (uint_fast16_t i = 0; i <= abs(eq_base); i += 3)
 		{
 			uint_fast16_t yy = normalize(i, 0, abs(eq_base), 100);
-			colmain_line(fr, DIM_X, DIM_Y, win->x1 + 50, mid_y + yy, win->x1 + win->w - 50, mid_y + yy, GUI_SLIDERLAYOUTCOLOR, 0);
+			colmain_line(fr, DIM_X, DIM_Y, win->x1 + 50, mid_y + yy, win->x1 + win->w - (btn_EQ_ok->w << 1), mid_y + yy, GUI_SLIDERLAYOUTCOLOR, 0);
 			local_snprintf_P(buf, ARRAY_SIZE(buf), i == 0 ? PSTR("%d") : PSTR("-%d"), i);
 			colpip_string2_tbg(fr, DIM_X, DIM_Y, win->x1 + 50 - strwidth2(buf) - 5, mid_y + yy - SMALLCHARH2 / 2, buf, COLORMAIN_WHITE);
 
 			if (i == 0)
 				continue;
-			colmain_line(fr, DIM_X, DIM_Y, win->x1 + 50, mid_y - yy, win->x1 + win->w - 50, mid_y - yy, GUI_SLIDERLAYOUTCOLOR, 0);
+			colmain_line(fr, DIM_X, DIM_Y, win->x1 + 50, mid_y - yy, win->x1 + win->w - (btn_EQ_ok->w << 1), mid_y - yy, GUI_SLIDERLAYOUTCOLOR, 0);
 			local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("%d"), i);
 			colpip_string2_tbg(fr, DIM_X, DIM_Y, win->x1 + 50 - strwidth2(buf) - 5, mid_y - yy - SMALLCHARH2 / 2, buf, COLORMAIN_WHITE);
 		}
@@ -2663,12 +2664,12 @@ static void update_touch(void);
 	{
 		if(gui.selected_type == TYPE_BUTTON)
 		{
-			if (IsListEmpty(& tt))
-			{
-				touch_t * tp = malloc(sizeof(touch_t));
-				tp->x1 = 100;
-				InsertHeadList(& tt, & tp->item);
-			}
+//			if (IsListEmpty(& tt))
+//			{
+//				touch_t * tp = malloc(sizeof(touch_t));
+//				tp->x1 = 100;
+//				InsertHeadList(& tt, & tp->item);
+//			}
 		}
 	}
 
@@ -2676,13 +2677,19 @@ static void update_touch(void);
 	{
 		if(gui.selected_type == TYPE_BUTTON)
 		{
-			if (! IsListEmpty(& tt))
+//			if (! IsListEmpty(& tt))
+//			{
+//				PLIST_ENTRY d = RemoveHeadList(& tt);
+//				touch_t * tp = CONTAINING_RECORD(d, touch_t, item);
+//				PRINTF("%d\n", tp->x1);
+//				free(tp);
+//			}
+			for (PLIST_ENTRY t = elements_list.Flink; t != & elements_list; t = t->Flink)
 			{
-				PLIST_ENTRY d = RemoveHeadList(& tt);
-				touch_t * tp = CONTAINING_RECORD(d, touch_t, item);
-				PRINTF("%d\n", tp->x1);
-				free(tp);
+				const touch_t * const w = CONTAINING_RECORD(t, touch_t, item);
+				PRINTF("%d\n", w->type);
 			}
+
 		}
 	}
 
@@ -2690,21 +2697,7 @@ static void update_touch(void);
 	{
 		if(gui.selected_type == TYPE_BUTTON)
 		{
-			window_t * win = & windows[WINDOW_AUDIO];
-			if (win->state == NON_VISIBLE)
-			{
-				set_window(win, VISIBLE);
-				win = & windows[WINDOW_AGC];
-				set_window(win, VISIBLE);
-				footer_buttons_state(DISABLED, ((button_t *)gui.selected_link)->name);
-			}
-			else
-			{
-				set_window(win, NON_VISIBLE);
-				win = & windows[WINDOW_AGC];
-				set_window(win, NON_VISIBLE);
-				footer_buttons_state(CANCELLED);
-			}
+
 		}
 	}
 
@@ -2712,7 +2705,7 @@ static void update_touch(void);
 	{
 		if(gui.selected_type == TYPE_BUTTON)
 		{
-			window_t * win = & windows[WINDOW_AUDIO];
+			window_t * win = & windows[WINDOW_AUDIOSETTINGS];
 			if (win->state == NON_VISIBLE)
 			{
 				set_window(win, VISIBLE);
@@ -3096,7 +3089,7 @@ static void update_touch(void);
 		window_t * win = & windows[WINDOW_MAIN];
 
 		InitializeListHead(& windows_list);
-		InitializeListHead(& tt);
+//		InitializeListHead(& tt);
 		InitializeListHead(& elements_list);
 
 		set_window(win, VISIBLE);

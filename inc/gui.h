@@ -229,8 +229,8 @@
 
 #endif /* COLORSTYLE_RED */
 
-#define GUI_WINDOWBGCOLOR		255
-#define GUI_SLIDERLAYOUTCOLOR	225
+#define GUI_WINDOWBGCOLOR		244
+#define GUI_SLIDERLAYOUTCOLOR	116
 #define GUI_MENUSELECTCOLOR		116
 
 /* стркутура хранит цвета элементов дизайна. Возмодно треите поле - для анталиасингового формирования изображения */
