@@ -1067,16 +1067,16 @@ static void window_ap_reverb_process(void);
 		{ 0, 0,	WINDOW_AP_MIC_EQ, DISABLED, 0, NON_VISIBLE, "lbl_eq0.65_name", "", FONT_MEDIUM, COLORPIP_WHITE, },
 		{ 0, 0,	WINDOW_AP_MIC_EQ, DISABLED, 0, NON_VISIBLE, "lbl_eq1.8_name",  "", FONT_MEDIUM, COLORPIP_WHITE, },
 		{ 0, 0,	WINDOW_AP_MIC_EQ, DISABLED, 0, NON_VISIBLE, "lbl_eq5.3_name",  "", FONT_MEDIUM, COLORPIP_WHITE, },
-		{ 0, 0,	WINDOW_MAIN,  DISABLED, 0, NON_VISIBLE, "lbl_infobar_1_1", "", FONT_MEDIUM, COLORPIP_WHITE, },
-		{ 0, 0,	WINDOW_MAIN,  DISABLED, 0, NON_VISIBLE, "lbl_infobar_1_2", "", FONT_MEDIUM, COLORPIP_WHITE, },
-		{ 0, 0,	WINDOW_MAIN,  DISABLED, 0, NON_VISIBLE, "lbl_infobar_2_1", "", FONT_MEDIUM, COLORPIP_WHITE, },
-		{ 0, 0,	WINDOW_MAIN,  DISABLED, 0, NON_VISIBLE, "lbl_infobar_2_2", "", FONT_MEDIUM, COLORPIP_WHITE, },
-		{ 0, 0,	WINDOW_MAIN,  DISABLED, 0, NON_VISIBLE, "lbl_infobar_3_1", "", FONT_MEDIUM, COLORPIP_WHITE, },
-		{ 0, 0,	WINDOW_MAIN,  DISABLED, 0, NON_VISIBLE, "lbl_infobar_3_2", "", FONT_MEDIUM, COLORPIP_WHITE, },
-		{ 0, 0,	WINDOW_MAIN,  DISABLED, 0, NON_VISIBLE, "lbl_infobar_4_1", "", FONT_MEDIUM, COLORPIP_WHITE, },
-		{ 0, 0,	WINDOW_MAIN,  DISABLED, 0, NON_VISIBLE, "lbl_infobar_4_2", "", FONT_MEDIUM, COLORPIP_WHITE, },
-		{ 0, 0,	WINDOW_MAIN,  DISABLED, 0, NON_VISIBLE, "lbl_infobar_5_1", "", FONT_MEDIUM, COLORPIP_WHITE, },
-		{ 0, 0,	WINDOW_MAIN,  DISABLED, 0, NON_VISIBLE, "lbl_infobar_5_2", "", FONT_MEDIUM, COLORPIP_WHITE, },
+//		{ 0, 0,	WINDOW_MAIN,  DISABLED, 0, NON_VISIBLE, "lbl_infobar_1_1", "", FONT_MEDIUM, COLORPIP_WHITE, },
+//		{ 0, 0,	WINDOW_MAIN,  DISABLED, 0, NON_VISIBLE, "lbl_infobar_1_2", "", FONT_MEDIUM, COLORPIP_WHITE, },
+//		{ 0, 0,	WINDOW_MAIN,  DISABLED, 0, NON_VISIBLE, "lbl_infobar_2_1", "", FONT_MEDIUM, COLORPIP_WHITE, },
+//		{ 0, 0,	WINDOW_MAIN,  DISABLED, 0, NON_VISIBLE, "lbl_infobar_2_2", "", FONT_MEDIUM, COLORPIP_WHITE, },
+//		{ 0, 0,	WINDOW_MAIN,  DISABLED, 0, NON_VISIBLE, "lbl_infobar_3_1", "", FONT_MEDIUM, COLORPIP_WHITE, },
+//		{ 0, 0,	WINDOW_MAIN,  DISABLED, 0, NON_VISIBLE, "lbl_infobar_3_2", "", FONT_MEDIUM, COLORPIP_WHITE, },
+//		{ 0, 0,	WINDOW_MAIN,  DISABLED, 0, NON_VISIBLE, "lbl_infobar_4_1", "", FONT_MEDIUM, COLORPIP_WHITE, },
+//		{ 0, 0,	WINDOW_MAIN,  DISABLED, 0, NON_VISIBLE, "lbl_infobar_4_2", "", FONT_MEDIUM, COLORPIP_WHITE, },
+//		{ 0, 0,	WINDOW_MAIN,  DISABLED, 0, NON_VISIBLE, "lbl_infobar_5_1", "", FONT_MEDIUM, COLORPIP_WHITE, },
+//		{ 0, 0,	WINDOW_MAIN,  DISABLED, 0, NON_VISIBLE, "lbl_infobar_5_2", "", FONT_MEDIUM, COLORPIP_WHITE, },
 		{ 0, 0,	WINDOW_AP_REVERB_SETT,  DISABLED, 0, NON_VISIBLE, "lbl_reverbDelay", "", FONT_MEDIUM, COLORPIP_WHITE, },
 		{ 0, 0,	WINDOW_AP_REVERB_SETT,  DISABLED, 0, NON_VISIBLE, "lbl_reverbLoss", "", FONT_MEDIUM, COLORPIP_WHITE, },
 
@@ -1163,7 +1163,7 @@ static void window_ap_reverb_process(void);
 		{ WINDOW_AP_MIC_EQ, WINDOW_AUDIOSETTINGS,
 						ALIGN_CENTER_X, 0, 0, 450, 350, "MIC TX equalizer",	NON_VISIBLE, 1, 0, window_ap_mic_eq_process, },
 		{ WINDOW_AP_REVERB_SETT, WINDOW_AUDIOSETTINGS,
-						ALIGN_CENTER_X, 0, 0, 500, 200, "Reverberator settings", NON_VISIBLE, 1, 0, window_ap_reverb_process, },
+						ALIGN_CENTER_X, 0, 0, 530, 170, "Reverberator settings", NON_VISIBLE, 1, 0, window_ap_reverb_process, },
 	};
 	enum { windows_count = ARRAY_SIZE(windows) };
 
@@ -1278,7 +1278,8 @@ static void window_ap_reverb_process(void);
 				if (bh->parent == win->window_id && strcmp(bh->name, name) == 0)
 					return (button_t *) bh;
 			}
-			return NULL;
+			ASSERT(0);
+			break;
 
 		case TYPE_LABEL:
 			for (uint_fast8_t i = 1; i < LABELS_COUNT; i++)
@@ -1287,7 +1288,8 @@ static void window_ap_reverb_process(void);
 				if (lh->parent == win->window_id && strcmp(lh->name, name) == 0)
 					return (label_t *) lh;
 			}
-			return NULL;
+			ASSERT(0);
+			break;
 
 		case TYPE_SLIDER:
 			for (uint_fast8_t i = 1; i < SLIDERS_COUNT; i++)
@@ -1296,7 +1298,8 @@ static void window_ap_reverb_process(void);
 				if (sh->parent == win->window_id && strcmp(sh->name, name) == 0)
 					return (slider_t *) sh;
 			}
-			return NULL;
+			ASSERT(0);
+			break;
 
 		default:
 			ASSERT(0);
@@ -1318,7 +1321,7 @@ static void window_ap_reverb_process(void);
 
 		for(; i < touch_count; i++)
 		{
-			if (touch_elements[i].type != type)
+			if (touch_elements[i].type != type || touch_elements[i].win != win)
 				break;
 		}
 		* id_end = i - 1;
@@ -1374,6 +1377,7 @@ static void window_ap_reverb_process(void);
 				if (w != win)
 					RemoveEntryList(t);
 			}
+			touch_count = id_end + 1;
 		}
 
 		for (uint_fast8_t i = id_start; i <= id_end; i++)
@@ -1382,7 +1386,7 @@ static void window_ap_reverb_process(void);
 			if (state == DISABLED)
 			{
 				bh->state = strcmp(bh->name, name) ? DISABLED : CANCELLED;
-				bh->is_locked = strcmp(bh->name, name) ? BUTTON_NON_LOCKED : BUTTON_LOCKED;
+				bh->is_locked = bh->state == CANCELLED ? BUTTON_NON_LOCKED : BUTTON_LOCKED;
 			}
 			else if (state == CANCELLED)
 			{
@@ -1404,9 +1408,11 @@ static void window_ap_reverb_process(void);
 
 			if (win->parent_id != UINT8_MAX)	// Есть есть parent window, закрыть его и оставить child window
 			{
-				for (PLIST_ENTRY t = windows_list.Flink; t != & windows_list; t = t->Flink)
+				PLIST_ENTRY savedFlink;
+				for (PLIST_ENTRY t = windows_list.Flink; t != & windows_list; t = savedFlink)
 				{
 					const window_t * const w = CONTAINING_RECORD(t, window_t, item);
+					savedFlink = t->Flink;
 					if (w->window_id == win->parent_id)
 					{
 						RemoveEntryList(t);
@@ -1418,9 +1424,11 @@ static void window_ap_reverb_process(void);
 		}
 		else
 		{
-			for (PLIST_ENTRY t = windows_list.Flink; t != & windows_list; t = t->Flink)
+			PLIST_ENTRY savedFlink;
+			for (PLIST_ENTRY t = windows_list.Flink; t != & windows_list; t = savedFlink)
 			{
 				const window_t * const w = CONTAINING_RECORD(t, window_t, item);
+				savedFlink = t->Flink;
 				if (w == win)
 				{
 					RemoveEntryList(t);
@@ -2557,6 +2565,7 @@ static void window_ap_reverb_process(void);
 			bh->is_locked = hamradio_get_greverb() ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
 			local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("Reverb|%s"), hamradio_get_greverb() ? "ON" : "OFF");
 #else
+			bh = find_gui_element_ref(TYPE_BUTTON, win, "btnAP1");
 			bh->state = DISABLED;
 			bh = find_gui_element_ref(TYPE_BUTTON, win, "btnAP2"); 						// reverb settings
 			bh->state = DISABLED;
@@ -2638,7 +2647,6 @@ static void window_ap_reverb_process(void);
 			/* костыль через костыль */
 			sl = gui.selected_link->link;
 			uint_fast8_t id = gui.selected_link->pos;
-			PRINTF("%d\n", id);
 
 			hamradio_set_gmikeequalizerparams(id, normalize(sl->value, 100, 0, eq_limit));
 
@@ -2672,14 +2680,14 @@ static void window_ap_reverb_process(void);
 
 		if (win->first_call == 1)
 		{
-			uint_fast8_t interval = 60, col1_int = 20, row1_int = 120;
+			uint_fast8_t interval = 60, col1_int = 20;
 			win->first_call = 0;
 			calculate_window_position(win);
 
 			lbl_reverbDelay = find_gui_element_ref(TYPE_LABEL, win, "lbl_reverbDelay");
 			lbl_reverbLoss = find_gui_element_ref(TYPE_LABEL, win, "lbl_reverbLoss");
 			sl_reverbDelay = find_gui_element_ref(TYPE_SLIDER, win, "reverbDelay");
-			sl_reverbLoss = find_gui_element_ref(TYPE_SLIDER, win, "reverbLos");
+			sl_reverbLoss = find_gui_element_ref(TYPE_SLIDER, win, "reverbLoss");
 
 			lbl_reverbDelay->x = win->x1 + col1_int;
 			lbl_reverbDelay->y = win->y1 + interval;
@@ -2691,9 +2699,23 @@ static void window_ap_reverb_process(void);
 			lbl_reverbLoss->visible = VISIBLE;
 			local_snprintf_P(lbl_reverbLoss->text, ARRAY_SIZE(lbl_reverbLoss->text), PSTR("Loss:  10"));
 
+			sl_reverbDelay->x = lbl_reverbDelay->x + get_label_width(lbl_reverbDelay) + interval / 2;
+			sl_reverbDelay->y = lbl_reverbDelay->y;
+			sl_reverbDelay->visible = VISIBLE;
+			sl_reverbDelay->size = 300;
+			sl_reverbDelay->step = 3;
+			sl_reverbDelay->value = 50;
+
+			sl_reverbLoss->x = lbl_reverbLoss->x + get_label_width(lbl_reverbLoss)+ interval / 2;
+			sl_reverbLoss->y = lbl_reverbLoss->y;
+			sl_reverbLoss->visible = VISIBLE;
+			sl_reverbLoss->size = 300;
+			sl_reverbLoss->step = 3;
+			sl_reverbLoss->value = 50;
+
 			button_t * bh = find_gui_element_ref(TYPE_BUTTON, win, "btnREVs_ok");
-			bh->x1 = win->x1 + win->w / 2 - bh->w / 2;
-			bh->y1 = lbl_reverbLoss->y + interval;
+			bh->x1 = sl_reverbLoss->x + sl_reverbLoss->size + interval / 2;
+			bh->y1 = lbl_reverbLoss->y;
 			bh->visible = VISIBLE;
 
 			return;
@@ -2840,7 +2862,6 @@ static void window_ap_reverb_process(void);
 			{
 				set_window(win, NON_VISIBLE);
 				footer_buttons_state(CANCELLED);
-				hamradio_set_menu_cond(NON_VISIBLE);
 			}
 		}
 	}
@@ -3099,17 +3120,20 @@ static void window_ap_reverb_process(void);
 
 		if (sl->orientation)		// ORIENTATION_HORIZONTAL
 		{
-			colpip_rect(fr, DIM_X, DIM_Y, sl->x, sl->y, sl->x + sl->size, sl->y + sliders_width, COLORMAIN_WHITE, 1);		// в процессе
 			if (sl->value_old != sl->value)
 			{
-				uint_fast16_t mid_w = sl->x + sliders_width / 2;
-				sl->value_p = sl->y + sl->size * sl->value / 100;
-				sl->x1_p = mid_w - sliders_w;
-				sl->y1_p = sl->value_p - sliders_h;
-				sl->x2_p = mid_w + sliders_w;
-				sl->y2_p = sl->value_p + sliders_h;
+				uint_fast16_t mid_w = sl->y + sliders_width / 2;
+				sl->value_p = sl->x + sl->size * sl->value / 100;
+				sl->y1_p = mid_w - sliders_h;
+				sl->x1_p = sl->value_p - sliders_w;
+				sl->y2_p = mid_w + sliders_h;
+				sl->x2_p = sl->value_p + sliders_w;
 				sl->value_old = sl->value;
 			}
+			colpip_rect(fr, DIM_X, DIM_Y, sl->x, sl->y, sl->x + sl->size, sl->y + sliders_width, COLORMAIN_BLACK, 1);
+			colpip_rect(fr, DIM_X, DIM_Y, sl->x, sl->y, sl->x + sl->size, sl->y + sliders_width, COLORMAIN_WHITE, 0);
+			colpip_rect(fr, DIM_X, DIM_Y, sl->x1_p, sl->y1_p, sl->x2_p, sl->y2_p, sl->state == PRESSED ? COLOR_BUTTON_PR_NON_LOCKED : COLOR_BUTTON_NON_LOCKED, 1);
+			colmain_line(fr, DIM_X, DIM_Y, sl->value_p, sl->y1_p, sl->value_p, sl->y2_p, COLORMAIN_WHITE, 0);
 		}
 		else						// ORIENTATION_VERTICAL
 		{
@@ -3277,7 +3301,7 @@ static void window_ap_reverb_process(void);
 
 	static void slider_process(slider_t * sl)
 	{
-		uint16_t v = sl->value + round(gui.vector_move_y / sl->step);
+		uint16_t v = sl->value + round((sl->orientation ? gui.vector_move_x : gui.vector_move_y) / sl->step);
 		if (v >= 0 && v <= sl->size / sl->step)
 			sl->value = v;
 		reset_tracking();
