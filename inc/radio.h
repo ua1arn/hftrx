@@ -3307,6 +3307,12 @@ void hamradio_set_gmikeequalizer(uint_fast8_t v);
 uint_fast8_t hamradio_get_gmikeequalizerparams(uint_fast8_t i);
 void hamradio_set_gmikeequalizerparams(uint_fast8_t i, uint_fast8_t v);
 int_fast32_t hamradio_getequalizerbase(void);
+#if WITHREVERB
+void hamradio_set_greverb(uint_fast8_t v);
+uint_fast8_t hamradio_get_greverb(void);
+#endif /* WITHREVERB */
+void hamradio_set_gmoniflag(uint_fast8_t v);
+uint_fast8_t hamradio_get_gmoniflag(void);
 
 #ifdef __cplusplus
 }

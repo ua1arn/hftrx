@@ -842,6 +842,7 @@ static void buttons_audioparams_process(void);
 static void window_ap_mic_eq_process(void);
 static void gui_main_process(void);
 static void update_touch(void);
+static void window_ap_reverb_process(void);
 
 	enum { button_round_radius = 5 };
 
@@ -885,11 +886,12 @@ static void update_touch(void);
 		WINDOW_ENC2,
 		WINDOW_UIF,
 		WINDOW_AUDIOSETTINGS,
-		WINDOW_AP_MIC_EQ
+		WINDOW_AP_MIC_EQ,
+		WINDOW_AP_REVERB_SETT
 	};
 
 	enum {
-		NAME_ARRAY_SIZE = 20,
+		NAME_ARRAY_SIZE = 30,
 		TEXT_ARRAY_SIZE = 20,
 		MENU_ARRAY_SIZE = 30,
 		TOUCH_ARRAY_SIZE = 100
@@ -974,11 +976,12 @@ static void update_touch(void);
 		{ 0, 0, 40, 40, buttons_uif_handler,  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UIF,   NON_VISIBLE, UINTPTR_MAX, 	"btnUIF+", 		"+", },
 		{ 0, 0, 100, 44, buttons_audioparams_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, UINTPTR_MAX, "btnAP1", "Reverb|OFF", },
 		{ 0, 0, 100, 44, buttons_audioparams_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, UINTPTR_MAX, "btnAP2", "Reverb|settings", },
-		{ 0, 0, 100, 44, buttons_audioparams_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, UINTPTR_MAX, "btnAP3", "Monitor|OFF", },
-		{ 0, 0, 100, 44, buttons_audioparams_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, UINTPTR_MAX, "btnAP4", "MIC|source", },
+		{ 0, 0, 100, 44, buttons_audioparams_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, UINTPTR_MAX, "btnAP3", "Monitor|disabled", },
+		{ 0, 0, 100, 44, buttons_audioparams_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, UINTPTR_MAX, "btnAP4", "Audio|source", },
 		{ 0, 0, 100, 44, buttons_audioparams_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, UINTPTR_MAX, "btnAP5", "MIC|settings", },
 		{ 0, 0, 100, 44, buttons_audioparams_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, UINTPTR_MAX, "btnAP6", "MIC TX|equalizer", },
 		{ 0, 0,  40, 40, buttons_audioparams_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_EQ, 	 NON_VISIBLE, UINTPTR_MAX, "btnEQ_ok", "OK", },
+		{ 0, 0,  40, 40, buttons_audioparams_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_REVERB_SETT,NON_VISIBLE, UINTPTR_MAX, "btnREVs_ok", "OK", },
 #if ! WITHOLDMENUSTYLE
 		{ 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 	"btnSysMenu1",	"", },
 		{ 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 	"btnSysMenu2",	"", },
@@ -1074,6 +1077,8 @@ static void update_touch(void);
 		{ 0, 0,	WINDOW_MAIN,  DISABLED, 0, NON_VISIBLE, "lbl_infobar_4_2", "", FONT_MEDIUM, COLORPIP_WHITE, },
 		{ 0, 0,	WINDOW_MAIN,  DISABLED, 0, NON_VISIBLE, "lbl_infobar_5_1", "", FONT_MEDIUM, COLORPIP_WHITE, },
 		{ 0, 0,	WINDOW_MAIN,  DISABLED, 0, NON_VISIBLE, "lbl_infobar_5_2", "", FONT_MEDIUM, COLORPIP_WHITE, },
+		{ 0, 0,	WINDOW_AP_REVERB_SETT,  DISABLED, 0, NON_VISIBLE, "lbl_reverbDelay", "", FONT_MEDIUM, COLORPIP_WHITE, },
+		{ 0, 0,	WINDOW_AP_REVERB_SETT,  DISABLED, 0, NON_VISIBLE, "lbl_reverbLoss", "", FONT_MEDIUM, COLORPIP_WHITE, },
 
 		};
 	enum { LABELS_COUNT = ARRAY_SIZE(labels) };
@@ -1115,6 +1120,8 @@ static void update_touch(void);
 			{ 0, 0, 0, 0, 0, 0, ORIENTATION_VERTICAL, WINDOW_AP_MIC_EQ, "eq0.65", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
 			{ 0, 0, 0, 0, 0, 0, ORIENTATION_VERTICAL, WINDOW_AP_MIC_EQ, "eq1.8",  CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
 			{ 0, 0, 0, 0, 0, 0, ORIENTATION_VERTICAL, WINDOW_AP_MIC_EQ, "eq5.3",  CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
+			{ 0, 0, 0, 0, 0, 0, ORIENTATION_HORIZONTAL, WINDOW_AP_REVERB_SETT, "reverbDelay", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
+			{ 0, 0, 0, 0, 0, 0, ORIENTATION_HORIZONTAL, WINDOW_AP_REVERB_SETT, "reverbLoss",  CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
 	};
 	enum { SLIDERS_COUNT = ARRAY_SIZE(sliders) };
 
@@ -1144,17 +1151,19 @@ static void update_touch(void);
 	static window_t windows[] = {
 	//     window_id,   parent_id, align_mode,     x1, y1, w, h,   title,      is_show, first_call, onVisibleProcess
 		{ WINDOW_MAIN, 	UINT8_MAX, ALIGN_LEFT_X,	0, 0,   0,   0, "",  	   	   NON_VISIBLE,	1, 0, gui_main_process, },
-		{ WINDOW_MODES, UINT8_MAX, ALIGN_CENTER_X, 0, 0, 402, 150, "Select mode", NON_VISIBLE, 1, 0, window_mode_process, },
-		{ WINDOW_BP,    UINT8_MAX, ALIGN_CENTER_X, 0, 0, 372, 205, "Bandpass",    NON_VISIBLE, 1, 0, window_bp_process, },
-		{ WINDOW_AGC,   UINT8_MAX, ALIGN_CENTER_X, 0, 0, 372, 110, "AGC control", NON_VISIBLE, 1, 0, window_agc_process, },
-		{ WINDOW_FREQ,  UINT8_MAX, ALIGN_CENTER_X, 0, 0, 250, 215, "Freq:", 	   NON_VISIBLE, 1, 0, window_freq_process, },
-		{ WINDOW_MENU,  UINT8_MAX, ALIGN_CENTER_X, 0, 0, 550, 240, "Settings",	   NON_VISIBLE, 1, 0, window_menu_process, },
+		{ WINDOW_MODES, UINT8_MAX, ALIGN_CENTER_X,  0, 0, 402, 150, "Select mode", NON_VISIBLE, 1, 0, window_mode_process, },
+		{ WINDOW_BP,    UINT8_MAX, ALIGN_CENTER_X,  0, 0, 372, 205, "Bandpass",    NON_VISIBLE, 1, 0, window_bp_process, },
+		{ WINDOW_AGC,   UINT8_MAX, ALIGN_CENTER_X,  0, 0, 372, 110, "AGC control", NON_VISIBLE, 1, 0, window_agc_process, },
+		{ WINDOW_FREQ,  UINT8_MAX, ALIGN_CENTER_X,  0, 0, 250, 215, "Freq:", 	   NON_VISIBLE, 1, 0, window_freq_process, },
+		{ WINDOW_MENU,  UINT8_MAX, ALIGN_CENTER_X,  0, 0, 550, 240, "Settings",	   NON_VISIBLE, 1, 0, window_menu_process, },
 		{ WINDOW_ENC2, 	UINT8_MAX, ALIGN_RIGHT_X, 	0, 0, 185, 105, "Fast menu",   NON_VISIBLE, 1, 0, window_enc2_process, },
 		{ WINDOW_UIF, 	UINT8_MAX, ALIGN_LEFT_X, 	0, 0, 200, 145, "",   		   NON_VISIBLE, 1, 0, window_uif_process, },
 		{ WINDOW_AUDIOSETTINGS, UINT8_MAX,
 						ALIGN_CENTER_X, 0, 0, 380, 180, "Audio settings", 	NON_VISIBLE, 1, 0, window_audiosettings_process, },
 		{ WINDOW_AP_MIC_EQ, WINDOW_AUDIOSETTINGS,
 						ALIGN_CENTER_X, 0, 0, 450, 350, "MIC TX equalizer",	NON_VISIBLE, 1, 0, window_ap_mic_eq_process, },
+		{ WINDOW_AP_REVERB_SETT, WINDOW_AUDIOSETTINGS,
+						ALIGN_CENTER_X, 0, 0, 500, 200, "Reverberator settings", NON_VISIBLE, 1, 0, window_ap_reverb_process, },
 	};
 	enum { windows_count = ARRAY_SIZE(windows) };
 
@@ -2457,10 +2466,49 @@ static void update_touch(void);
 		{
 			window_t * winAP = & windows[WINDOW_AUDIOSETTINGS];
 			window_t * winEQ = & windows[WINDOW_AP_MIC_EQ];
-			button_t * btn_MIC_eq = find_gui_element_ref(TYPE_BUTTON, winAP, "btnAP6");
+			window_t * winRS = & windows[WINDOW_AP_REVERB_SETT];
+			button_t * btn_reverb = find_gui_element_ref(TYPE_BUTTON, winAP, "btnAP1");				// reverb on/off
+			button_t * btn_reverb_settings = find_gui_element_ref(TYPE_BUTTON, winAP, "btnAP2");	// reverb settings
+			button_t * btn_monitor = find_gui_element_ref(TYPE_BUTTON, winAP, "btnAP3");			// monitor on/off
+			button_t * btn_audio = find_gui_element_ref(TYPE_BUTTON, winAP, "btnAP4");				// audio source
+			button_t * btn_mic_settings = find_gui_element_ref(TYPE_BUTTON, winAP, "btnAP5");		// mic settings
+			button_t * btn_MIC_eq = find_gui_element_ref(TYPE_BUTTON, winAP, "btnAP6");				// mic tx eq
 			button_t * btn_EQ_ok = find_gui_element_ref(TYPE_BUTTON, winEQ, "btnEQ_ok");
+			button_t * btn_REVs_ok = find_gui_element_ref(TYPE_BUTTON, winRS, "btnREVs_ok");
 
-			if (gui.selected_link->link == btn_MIC_eq)
+#if WITHREVERB
+			if (gui.selected_link->link == btn_reverb)
+			{
+				btn_reverb->is_locked = hamradio_get_greverb() ? BUTTON_NON_LOCKED : BUTTON_LOCKED;
+				local_snprintf_P(btn_reverb->text, ARRAY_SIZE(btn_reverb->text), PSTR("Reverb|%s"), btn_reverb->is_locked ? "ON" : "OFF");
+				hamradio_set_greverb(btn_reverb->is_locked);
+
+			}
+			else if (gui.selected_link->link == btn_reverb_settings)
+			{
+				set_window(winRS, VISIBLE);
+			}
+			else if (gui.selected_link->link == btn_REVs_ok)
+			{
+				set_window(winRS, NON_VISIBLE);
+			}
+			else
+#endif /* WITHREVERB */
+			if (gui.selected_link->link == btn_monitor)
+			{
+				btn_monitor->is_locked = hamradio_get_gmoniflag() ? BUTTON_NON_LOCKED : BUTTON_LOCKED;
+				local_snprintf_P(btn_monitor->text, ARRAY_SIZE(btn_monitor->text), PSTR("Monitor|%s"), btn_monitor->is_locked ? "enabled" : "disabled");
+				hamradio_set_gmoniflag(btn_monitor->is_locked);
+			}
+			else if (gui.selected_link->link == btn_audio)
+			{
+
+			}
+			else if (gui.selected_link->link == btn_mic_settings)
+			{
+
+			}
+			else if (gui.selected_link->link == btn_MIC_eq)
 			{
 				set_window(winEQ, VISIBLE);
 			}
@@ -2468,7 +2516,6 @@ static void update_touch(void);
 			{
 				set_window(winEQ, NON_VISIBLE);
 			}
-
 		}
 	}
 
@@ -2478,7 +2525,7 @@ static void update_touch(void);
 
 		if (win->first_call == 1)
 		{
-
+			button_t * bh;
 			uint_fast16_t x, y;
 			uint_fast8_t interval = 20, col1_int = 20, row1_int = 40;
 			uint_fast8_t id = 0, id_start, id_end;
@@ -2491,7 +2538,7 @@ static void update_touch(void);
 			y = win->y1 + row1_int;
 			for (uint_fast8_t id = id_start; id <= id_end; id++)
 			{
-				button_t * bh = (button_t *) touch_elements[id].link;
+				bh = (button_t *) touch_elements[id].link;
 				bh->x1 = x;
 				bh->y1 = y;
 				bh->visible = VISIBLE;
@@ -2502,9 +2549,21 @@ static void update_touch(void);
 					y = win->y1 + row1_int + bh->h + interval;
 				}
 			}
+
+#if WITHREVERB
+			bh = find_gui_element_ref(TYPE_BUTTON, win, "btnAP1"); 						// reverb on/off
+			bh->is_locked = hamradio_get_greverb() ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
+			local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("Reverb|%s"), hamradio_get_greverb() ? "ON" : "OFF");
+#else
+			bh->state = DISABLED;
+			bh = find_gui_element_ref(TYPE_BUTTON, win, "btnAP2"); 						// reverb settings
+			bh->state = DISABLED;
+#endif /* WITHREVERB */
+			bh = find_gui_element_ref(TYPE_BUTTON, win, "btnAP3");						// monitor on/off
+			bh->is_locked = hamradio_get_gmoniflag() ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
+			local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("Monitor|%s"), bh->is_locked ? "enabled" : "disabled");
 			return;
 		}
-
 	}
 
 	static void window_ap_mic_eq_process(void)
@@ -2600,6 +2659,42 @@ static void update_touch(void);
 			colmain_line(fr, DIM_X, DIM_Y, win->x1 + 50, mid_y - yy, win->x1 + win->w - (btn_EQ_ok->w << 1), mid_y - yy, GUI_SLIDERLAYOUTCOLOR, 0);
 			local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("%d"), i);
 			colpip_string2_tbg(fr, DIM_X, DIM_Y, win->x1 + 50 - strwidth2(buf) - 5, mid_y - yy - SMALLCHARH2 / 2, buf, COLORMAIN_WHITE);
+		}
+	}
+
+	static void window_ap_reverb_process(void)
+	{
+		window_t * win = & windows[WINDOW_AP_REVERB_SETT];
+		label_t * lbl_reverbDelay, * lbl_reverbLoss;
+		slider_t * sl_reverbDelay, * sl_reverbLoss;
+
+		if (win->first_call == 1)
+		{
+			uint_fast8_t interval = 60, col1_int = 20, row1_int = 120;
+			win->first_call = 0;
+			calculate_window_position(win);
+
+			lbl_reverbDelay = find_gui_element_ref(TYPE_LABEL, win, "lbl_reverbDelay");
+			lbl_reverbLoss = find_gui_element_ref(TYPE_LABEL, win, "lbl_reverbLoss");
+			sl_reverbDelay = find_gui_element_ref(TYPE_SLIDER, win, "reverbDelay");
+			sl_reverbLoss = find_gui_element_ref(TYPE_SLIDER, win, "reverbLos");
+
+			lbl_reverbDelay->x = win->x1 + col1_int;
+			lbl_reverbDelay->y = win->y1 + interval;
+			lbl_reverbDelay->visible = VISIBLE;
+			local_snprintf_P(lbl_reverbDelay->text, ARRAY_SIZE(lbl_reverbDelay->text), PSTR("Delay: 10"));
+
+			lbl_reverbLoss->x = lbl_reverbDelay->x;
+			lbl_reverbLoss->y = lbl_reverbDelay->y + interval;
+			lbl_reverbLoss->visible = VISIBLE;
+			local_snprintf_P(lbl_reverbLoss->text, ARRAY_SIZE(lbl_reverbLoss->text), PSTR("Loss:  10"));
+
+			button_t * bh = find_gui_element_ref(TYPE_BUTTON, win, "btnREVs_ok");
+			bh->x1 = win->x1 + win->w / 2 - bh->w / 2;
+			bh->y1 = lbl_reverbLoss->y + interval;
+			bh->visible = VISIBLE;
+
+			return;
 		}
 	}
 
@@ -3002,7 +3097,17 @@ static void update_touch(void);
 
 		if (sl->orientation)		// ORIENTATION_HORIZONTAL
 		{
-			colpip_rect(fr, DIM_X, DIM_Y, sl->x, sl->y, sl->x + sl->size, sl->y + sliders_width, COLORMAIN_WHITE, 0);		// в процессе
+			colpip_rect(fr, DIM_X, DIM_Y, sl->x, sl->y, sl->x + sl->size, sl->y + sliders_width, COLORMAIN_WHITE, 1);		// в процессе
+			if (sl->value_old != sl->value)
+			{
+				uint_fast16_t mid_w = sl->x + sliders_width / 2;
+				sl->value_p = sl->y + sl->size * sl->value / 100;
+				sl->x1_p = mid_w - sliders_w;
+				sl->y1_p = sl->value_p - sliders_h;
+				sl->x2_p = mid_w + sliders_w;
+				sl->y2_p = sl->value_p + sliders_h;
+				sl->value_old = sl->value;
+			}
 		}
 		else						// ORIENTATION_VERTICAL
 		{

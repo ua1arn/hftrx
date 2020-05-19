@@ -3318,7 +3318,7 @@ static FLOAT_t txmikereverb(FLOAT_t isample)
 
 #else /* WITHREVERB */
 
-	return sample;
+	return isample;
 
 #endif /* WITHREVERB */
 }
