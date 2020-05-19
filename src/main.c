@@ -3334,8 +3334,8 @@ enum
 	static uint_fast8_t gmikehclip;		/* Ограничитель */
 #if WITHREVERB
 	static uint_fast8_t greverb;		/* ревербератор */
-	static uint_fast8_t greverbdelay = 20;		/* ревербератор - задержка (ms) */
-	static uint_fast8_t greverbloss = 18;		/* ревербератор - ослабление на возврате */
+	static uint_fast8_t greverbdelay = 100;		/* ревербератор - задержка (ms) */
+	static uint_fast8_t greverbloss = 9;		/* ревербератор - ослабление на возврате */
 #endif /* WITHREVERB */
 
 	#if WITHUSBUAC
@@ -3759,15 +3759,21 @@ static int_fast32_t getadcoffsbase(void)
 }
 
 
-#if defined(REFERENCE_FREQ)
+#if defined (REFERENCE_FREQ)
+
 	static const int_fast32_t refbase = REFERENCE_FREQ - OSCSHIFT;
+
+#if defined (REALREFERENCE_FREQ)
+	static uint_fast16_t refbias = OSCSHIFT - (REFERENCE_FREQ - REALREFERENCE_FREQ);
+#else /* defined (REALREFERENCE_FREQ) */
 	static uint_fast16_t refbias = OSCSHIFT;
+#endif /* defined (REALREFERENCE_FREQ) */
 
 	int_fast32_t getrefbase(void)
 	{
 		return refbase;
 	}
-#endif
+#endif /* defined (REFERENCE_FREQ) */
 
 #if CTLSTYLE_SW2011ALL
 static uint_fast8_t gkeybeep10 = 1850 / 10;	/* озвучка нажатий клавиш - 1850 Гц */
