@@ -18266,6 +18266,8 @@ hamradio_main_step(void)
 	return STTE_OK;
 }
 
+#if WITHIF4DSP
+
 void hamradio_set_gmoniflag(uint_fast8_t v)
 {
 	gmoniflag = v != 0;
@@ -18276,7 +18278,10 @@ uint_fast8_t hamradio_get_gmoniflag(void)
 	return gmoniflag;
 }
 
+#endif /* WITHIF4DSP */
+
 #if WITHREVERB
+
 void hamradio_set_greverb(uint_fast8_t v)
 {
 	greverb = v != 0;
@@ -18286,6 +18291,7 @@ uint_fast8_t hamradio_get_greverb(void)
 {
 	return greverb;
 }
+
 #endif /* WITHREVERB */
 
 #if WITHAFCODEC1HAVEPROC
