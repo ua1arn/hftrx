@@ -127,6 +127,9 @@ enum
 #define WITHREVERBDELAYMIN 5	/* минимальная задержка ревербератора (ms) */
 #define WITHREVERBDELAYMAX 200	/* максимальная задержка ревербератора (ms) */
 
+#define WITHREVERBLOSSMIN 6		/* минимальное ослабление на возврате ревербератора (dB) - кратно ISTEP3 */
+#define WITHREVERBLOSSMAX 39	/* максимальная ослабление на возврате ревербератора (dB) - кратно ISTEP3 */
+
 #if defined (DAC1_TYPE)
 	#define WITHDAC1VALMIN	0
 	#define WITHDAC1VALMAX	255

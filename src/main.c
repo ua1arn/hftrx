@@ -14380,7 +14380,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	{
 		QLABEL2("RVB LOSS", "Reverb Loss"), 7, 0, 0,	ISTEP3,
 		ITEM_VALUE,
-		ISTEP3 * 2, 40 * ISTEP3, 					/* ревербератор - ослабление на возврате */
+		WITHREVERBLOSSMIN, WITHREVERBLOSSMAX, 					/* ревербератор - ослабление на возврате */
 		offsetof(struct nvmap, greverbloss),
 		NULL,
 		& greverbloss,
