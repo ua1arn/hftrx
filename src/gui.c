@@ -1366,9 +1366,11 @@ static void window_ap_reverb_process(void);
 		}
 		else
 		{ 	// Очистка оконного стека
-			for (PLIST_ENTRY t = windows_list.Flink; t != & windows_list; t = t->Flink)
+			PLIST_ENTRY savedFlink;
+			for (PLIST_ENTRY t = windows_list.Flink; t != & windows_list; t = savedFlink)
 			{
 				const window_t * const w = CONTAINING_RECORD(t, window_t, item);
+				savedFlink = t->Flink;
 				if (w != win)
 					RemoveEntryList(t);
 			}
