@@ -1127,6 +1127,7 @@ static void update_touch(void);
 
 	typedef struct {
 		uint8_t window_id;			// в окне будут отображаться элементы с соответствующим полем for_window
+		uint8_t parent_id;			// UINT8_MAX - нет parent window
 		align_t align_mode;			// вертикаль выравнивания окна
 		uint16_t x1;
 		uint16_t y1;
@@ -1141,18 +1142,18 @@ static void update_touch(void);
 	} window_t;
 
 	static window_t windows[] = {
-	//     window_id,   align_mode,     x1, y1, w, h,   title,      is_show, first_call, onVisibleProcess
-		{ WINDOW_MAIN, 	ALIGN_LEFT_X,	0, 0,   0,   0, "",  	   	   NON_VISIBLE,	1, 0, gui_main_process, },
-		{ WINDOW_MODES, ALIGN_CENTER_X, 0, 0, 402, 150, "Select mode", NON_VISIBLE, 1, 0, window_mode_process, },
-		{ WINDOW_BP,    ALIGN_CENTER_X, 0, 0, 372, 205, "Bandpass",    NON_VISIBLE, 1, 0, window_bp_process, },
-		{ WINDOW_AGC,   ALIGN_CENTER_X, 0, 0, 372, 110, "AGC control", NON_VISIBLE, 1, 0, window_agc_process, },
-		{ WINDOW_FREQ,  ALIGN_CENTER_X, 0, 0, 250, 215, "Freq:", 	   NON_VISIBLE, 1, 0, window_freq_process, },
-		{ WINDOW_MENU,  ALIGN_CENTER_X, 0, 0, 550, 240, "Settings",	   NON_VISIBLE, 1, 0, window_menu_process, },
-		{ WINDOW_ENC2, 	ALIGN_RIGHT_X, 	0, 0, 185, 105, "Fast menu",   NON_VISIBLE, 1, 0, window_enc2_process, },
-		{ WINDOW_UIF, 	ALIGN_LEFT_X, 	0, 0, 200, 145, "",   		   NON_VISIBLE, 1, 0, window_uif_process, },
-		{ WINDOW_AUDIOSETTINGS,
+	//     window_id,   parent_id, align_mode,     x1, y1, w, h,   title,      is_show, first_call, onVisibleProcess
+		{ WINDOW_MAIN, 	UINT8_MAX, ALIGN_LEFT_X,	0, 0,   0,   0, "",  	   	   NON_VISIBLE,	1, 0, gui_main_process, },
+		{ WINDOW_MODES, UINT8_MAX, ALIGN_CENTER_X, 0, 0, 402, 150, "Select mode", NON_VISIBLE, 1, 0, window_mode_process, },
+		{ WINDOW_BP,    UINT8_MAX, ALIGN_CENTER_X, 0, 0, 372, 205, "Bandpass",    NON_VISIBLE, 1, 0, window_bp_process, },
+		{ WINDOW_AGC,   UINT8_MAX, ALIGN_CENTER_X, 0, 0, 372, 110, "AGC control", NON_VISIBLE, 1, 0, window_agc_process, },
+		{ WINDOW_FREQ,  UINT8_MAX, ALIGN_CENTER_X, 0, 0, 250, 215, "Freq:", 	   NON_VISIBLE, 1, 0, window_freq_process, },
+		{ WINDOW_MENU,  UINT8_MAX, ALIGN_CENTER_X, 0, 0, 550, 240, "Settings",	   NON_VISIBLE, 1, 0, window_menu_process, },
+		{ WINDOW_ENC2, 	UINT8_MAX, ALIGN_RIGHT_X, 	0, 0, 185, 105, "Fast menu",   NON_VISIBLE, 1, 0, window_enc2_process, },
+		{ WINDOW_UIF, 	UINT8_MAX, ALIGN_LEFT_X, 	0, 0, 200, 145, "",   		   NON_VISIBLE, 1, 0, window_uif_process, },
+		{ WINDOW_AUDIOSETTINGS, UINT8_MAX,
 						ALIGN_CENTER_X, 0, 0, 380, 180, "Audio settings", 	NON_VISIBLE, 1, 0, window_audiosettings_process, },
-		{ WINDOW_AP_MIC_EQ,
+		{ WINDOW_AP_MIC_EQ, WINDOW_AUDIOSETTINGS,
 						ALIGN_CENTER_X, 0, 0, 450, 350, "MIC TX equalizer",	NON_VISIBLE, 1, 0, window_ap_mic_eq_process, },
 	};
 	enum { windows_count = ARRAY_SIZE(windows) };
@@ -1354,6 +1355,15 @@ static void update_touch(void);
 			name = va_arg(arg, char *);
 			va_end(arg);
 		}
+		else
+		{ 	// Очистка оконного стека
+			for (PLIST_ENTRY t = windows_list.Flink; t != & windows_list; t = t->Flink)
+			{
+				const window_t * const w = CONTAINING_RECORD(t, window_t, item);
+				if (w != win)
+					RemoveEntryList(t);
+			}
+		}
 
 		for (uint_fast8_t i = id_start; i <= id_end; i++)
 		{
@@ -1380,6 +1390,19 @@ static void update_touch(void);
 		if (value)
 		{
 			win->first_call = 1;
+
+			if (win->parent_id != UINT8_MAX)	// Есть есть parent window, закрыть его и оставить child window
+			{
+				for (PLIST_ENTRY t = windows_list.Flink; t != & windows_list; t = t->Flink)
+				{
+					const window_t * const w = CONTAINING_RECORD(t, window_t, item);
+					if (w->window_id == win->parent_id)
+					{
+						RemoveEntryList(t);
+						break;
+					}
+				}
+			}
 			InsertHeadList(& windows_list, & win->item);
 		}
 		else
@@ -1392,6 +1415,11 @@ static void update_touch(void);
 					RemoveEntryList(t);
 					break;
 				}
+			}
+			if (win->parent_id != UINT8_MAX)	// При закрытии child window открыть parent window, если есть
+			{
+				window_t * r = & windows[win->parent_id];
+				InsertHeadList(& windows_list, & r->item);
 			}
 		}
 
