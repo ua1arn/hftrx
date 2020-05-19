@@ -16109,13 +16109,26 @@ modifysettings(
 		processtxrequest();	/* Установка сиквенсору запроса на передачу.	*/
 
 #if WITHKEYBOARD
-		int_least16_t nr2;
-		uint_fast8_t js;
-		nr2 = getRotateHiRes2(&js);  // перемещение по меню также с помощью 2го энкодера
-		if (kbready != 0 || nr2 != 0)
+		if (kbready == 0)
 		{
-			if (nr2 > 0) kbch=KBD_CODE_BAND_DOWN;
-			else if (nr2 < 0) kbch=KBD_CODE_BAND_UP;
+			uint_fast8_t js;
+			const int_least16_t nr2 = getRotateHiRes2(& js);  // перемещение по меню также с помощью 2го энкодера
+
+			if (nr2 > 0)
+			{
+				kbch = KBD_CODE_BAND_DOWN;
+				kbready = 1;
+			}
+			else if (nr2 < 0)
+			{
+				kbch = KBD_CODE_BAND_UP;
+				kbready = 1;
+			}
+		}
+
+		if (kbready != 0)
+		{
+
 			switch (kbch)
 			{
 			default:
@@ -16152,11 +16165,27 @@ modifysettings(
 #endif /* ! WITHFLATMENU */
 
 			case KBD_CODE_LOCK:
-				/* блокировка валкодера
-					 - не вызывает сохранение состояния диапазона */
+				savemenuvalue(mp);		/* сохраняем отредактированное значение */
 				uif_key_lockencoder();
 				display2_redrawbarstimed(1, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 				continue;	// требуется обновление индикатора
+
+#if WITHTX
+			case KBD_CODE_MOX:
+				savemenuvalue(mp);		/* сохраняем отредактированное значение */
+				/* выключить режим настройки или приём/передача */
+				uif_key_tuneoff();
+				display2_redrawbarstimed(1, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+				continue;	// требуется обновление индикатора
+
+			case KBD_CODE_TXTUNE:
+				savemenuvalue(mp);		/* сохраняем отредактированное значение */
+				/* выключить режим настройки или приём/передача */
+				uif_key_tune();
+				display2_redrawbarstimed(1, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+				continue;	// требуется обновление индикатора
+
+#endif /* WITHTX */
 
 			case KBD_CODE_BAND_DOWN:
 				/* переход на предидущий пункт меню */
@@ -18149,22 +18178,22 @@ hamradio_main_step(void)
 			}
 	#endif /* WITHDEBUG */
 	#if WITHKEYBOARD
-			if (kbready != 0)
-
+			if (kbready != 0 && processkeyboard(kbch))
 			{
-				if (processkeyboard(kbch))
-				{
-					/* обновление индикатора без сохранения состояния диапазона */
-					encoder_clear();				/* при возможном уменьшении шага исключение случайного накопления */
-	#if WITHTOUCHGUI
-					display_redrawfreqstimed(1);
-					display_redrawmodestimed(1);
-	#else
-					display_redrawfreqmodesbarsnow(0, NULL);			/* Обновление дисплея - всё, включая частоту */
-	#endif /* WITHTOUCHGUI */
-				} // end keyboard processing
-			}
+				/* обновление индикатора без сохранения состояния диапазона */
+				encoder_clear();				/* при возможном уменьшении шага исключение случайного накопления */
+		#if WITHTOUCHGUI
+				display_redrawfreqstimed(1);
+				display_redrawmodestimed(1);
+
+		#else /* WITHTOUCHGUI */
+				display_redrawfreqmodesbarsnow(0, NULL);			/* Обновление дисплея - всё, включая частоту */
+
+		#endif /* WITHTOUCHGUI */
+
+			} // end keyboard processing
 	#endif /* WITHKEYBOARD */
+
 			if (processmodem())
 			{
 				/* обновление индикатора без сохранения состояния диапазона */
