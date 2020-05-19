@@ -16216,12 +16216,10 @@ modifysettings(
 					save_i8(posnvram, menupos);	/* сохраняем номер пункта меню, с которым работаем */
 #endif /* (NVRAM_TYPE != NVRAM_TYPE_CPUEEPROM) */
 
-#if !DSTYLE_G_X800_Y480
-				//display2_bgreset();		/* возможно уже с новой цветовой схемой */
-#endif
 #if WITHDEBUG
 				debug_printf_P(PSTR("menu: ")); debug_printf_P(mp->qlabel); debug_printf_P(PSTR("\n")); 
 #endif /* WITHDEBUG */
+
 				display2_redrawbarstimed(1, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 				break;
 			}
