@@ -988,7 +988,7 @@ static void buttons_ap_mic_process(void);
 		{ 0, 0,  40, 40, buttons_audioparams_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_REVERB_SETT,NON_VISIBLE, UINTPTR_MAX, "btn_REVs_ok", 			"OK", },
 		{ 0, 0,  86, 44, buttons_ap_mic_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_SETT, NON_VISIBLE, UINTPTR_MAX, "btn_mic_agc", 	 "AGC|OFF", },
 		{ 0, 0,  86, 44, buttons_ap_mic_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_SETT, NON_VISIBLE, UINTPTR_MAX, "btn_mic_boost", "Boost|OFF", },
-		{ 0, 0,  40, 40, buttons_ap_mic_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_SETT, NON_VISIBLE, UINTPTR_MAX, "btn_mic_OK", 	 "OK", },
+		{ 0, 0,  86, 44, buttons_ap_mic_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_SETT, NON_VISIBLE, UINTPTR_MAX, "btn_mic_OK", 	 "OK", },
 #if ! WITHOLDMENUSTYLE
 		{ 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 	"btnSysMenu1",	"", },
 		{ 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 	"btnSysMenu2",	"", },
@@ -1093,6 +1093,12 @@ static void buttons_ap_mic_process(void);
 		{ 0, 0,	WINDOW_AP_MIC_SETT,  DISABLED, 0, NON_VISIBLE, "lbl_micLevel", "", FONT_MEDIUM, COLORPIP_WHITE, },
 		{ 0, 0,	WINDOW_AP_MIC_SETT,  DISABLED, 0, NON_VISIBLE, "lbl_micClip",  "", FONT_MEDIUM, COLORPIP_WHITE, },
 		{ 0, 0,	WINDOW_AP_MIC_SETT,  DISABLED, 0, NON_VISIBLE, "lbl_micAGC",   "", FONT_MEDIUM, COLORPIP_WHITE, },
+		{ 0, 0,	WINDOW_AP_MIC_SETT,  DISABLED, 0, NON_VISIBLE, "lbl_micLevel_min", "", FONT_SMALL, COLORPIP_WHITE, },
+		{ 0, 0,	WINDOW_AP_MIC_SETT,  DISABLED, 0, NON_VISIBLE, "lbl_micLevel_max", "", FONT_SMALL, COLORPIP_WHITE, },
+		{ 0, 0,	WINDOW_AP_MIC_SETT,  DISABLED, 0, NON_VISIBLE, "lbl_micClip_min",  "", FONT_SMALL, COLORPIP_WHITE, },
+		{ 0, 0,	WINDOW_AP_MIC_SETT,  DISABLED, 0, NON_VISIBLE, "lbl_micClip_max",  "", FONT_SMALL, COLORPIP_WHITE, },
+		{ 0, 0,	WINDOW_AP_MIC_SETT,  DISABLED, 0, NON_VISIBLE, "lbl_micAGC_min",   "", FONT_SMALL, COLORPIP_WHITE, },
+		{ 0, 0,	WINDOW_AP_MIC_SETT,  DISABLED, 0, NON_VISIBLE, "lbl_micAGC_max",   "", FONT_SMALL, COLORPIP_WHITE, },
 		};
 	enum { LABELS_COUNT = ARRAY_SIZE(labels) };
 
@@ -1158,31 +1164,25 @@ static void buttons_ap_mic_process(void);
 		uint16_t h;
 		char name[NAME_ARRAY_SIZE];	// текст, выводимый в заголовке окна
 		uint8_t state;
-		uint8_t transparent_bg;		// 1 - прозрачный, 0 - непрозрачный
 		uint8_t first_call;			// признак первого вызова для различных инициализаций
 		void (*onVisibleProcess) (void);
 		LIST_ENTRY item;
 	} window_t;
 
 	static window_t windows[] = {
-	//     window_id,   parent_id, align_mode,     x1, y1, w, h,   title,      is_show, first_call, onVisibleProcess
-		{ WINDOW_MAIN, 	UINT8_MAX, ALIGN_LEFT_X,	0, 0,   0,   0, "",  	   	   NON_VISIBLE,	1, 0, gui_main_process, },
-		{ WINDOW_MODES, UINT8_MAX, ALIGN_CENTER_X,  0, 0, 402, 150, "Select mode", NON_VISIBLE, 1, 0, window_mode_process, },
-		{ WINDOW_BP,    UINT8_MAX, ALIGN_CENTER_X,  0, 0, 372, 205, "Bandpass",    NON_VISIBLE, 1, 0, window_bp_process, },
-		{ WINDOW_AGC,   UINT8_MAX, ALIGN_CENTER_X,  0, 0, 372, 110, "AGC control", NON_VISIBLE, 1, 0, window_agc_process, },
-		{ WINDOW_FREQ,  UINT8_MAX, ALIGN_CENTER_X,  0, 0, 250, 215, "Freq:", 	   NON_VISIBLE, 1, 0, window_freq_process, },
-		{ WINDOW_MENU,  UINT8_MAX, ALIGN_CENTER_X,  0, 0, 550, 240, "Settings",	   NON_VISIBLE, 1, 0, window_menu_process, },
-		{ WINDOW_ENC2, 	UINT8_MAX, ALIGN_RIGHT_X, 	0, 0, 185, 105, "Fast menu",   NON_VISIBLE, 1, 0, window_enc2_process, },
-		{ WINDOW_UIF, 	UINT8_MAX, ALIGN_LEFT_X, 	0, 0, 200, 145, "",   		   NON_VISIBLE, 1, 0, window_uif_process, },
-		{ WINDOW_AUDIOSETTINGS, UINT8_MAX,
-						ALIGN_CENTER_X, 0, 0, 380, 180, "Audio settings", 	NON_VISIBLE, 1, 0, window_audiosettings_process, },
-		{ WINDOW_AP_MIC_EQ, WINDOW_AUDIOSETTINGS,
-						ALIGN_CENTER_X, 0, 0, 450, 350, "MIC TX equalizer",	NON_VISIBLE, 1, 0, window_ap_mic_eq_process, },
-		{ WINDOW_AP_REVERB_SETT, WINDOW_AUDIOSETTINGS,
-						ALIGN_CENTER_X, 0, 0, 580, 170, "Reverberator settings", NON_VISIBLE, 1, 0, window_ap_reverb_process, },
-		{ WINDOW_AP_MIC_SETT, WINDOW_AUDIOSETTINGS,
-						ALIGN_CENTER_X, 0, 0, 580, 300, "Microphone settings", NON_VISIBLE, 1, 0, window_ap_mic_process, },
-
+	//     window_id,   		 parent_id, 			align_mode,     x1, y1, w, h,   title,     			    is_show, first_call, onVisibleProcess
+		{ WINDOW_MAIN, 			 UINT8_MAX, 			ALIGN_LEFT_X,	0, 0,   0,   0, "",  	   	   			 NON_VISIBLE, 0, gui_main_process, },
+		{ WINDOW_MODES, 		 UINT8_MAX, 			ALIGN_CENTER_X, 0, 0, 402, 150, "Select mode", 			 NON_VISIBLE, 0, window_mode_process, },
+		{ WINDOW_BP,    		 UINT8_MAX, 			ALIGN_CENTER_X, 0, 0, 372, 205, "Bandpass",    			 NON_VISIBLE, 0, window_bp_process, },
+		{ WINDOW_AGC,   		 UINT8_MAX, 			ALIGN_CENTER_X, 0, 0, 372, 110, "AGC control", 			 NON_VISIBLE, 0, window_agc_process, },
+		{ WINDOW_FREQ,  		 UINT8_MAX, 			ALIGN_CENTER_X, 0, 0, 250, 215, "Freq:", 	   			 NON_VISIBLE, 0, window_freq_process, },
+		{ WINDOW_MENU,  		 UINT8_MAX, 			ALIGN_CENTER_X, 0, 0, 550, 240, "Settings",	   		 	 NON_VISIBLE, 0, window_menu_process, },
+		{ WINDOW_ENC2, 			 UINT8_MAX, 			ALIGN_RIGHT_X, 	0, 0, 185, 105, "Fast menu",  			 NON_VISIBLE, 0, window_enc2_process, },
+		{ WINDOW_UIF, 			 UINT8_MAX, 			ALIGN_LEFT_X, 	0, 0, 200, 145, "",   		   	 		 NON_VISIBLE, 0, window_uif_process, },
+		{ WINDOW_AUDIOSETTINGS,  UINT8_MAX, 			ALIGN_CENTER_X, 0, 0, 380, 180, "Audio settings", 		 NON_VISIBLE, 0, window_audiosettings_process, },
+		{ WINDOW_AP_MIC_EQ, 	 WINDOW_AUDIOSETTINGS, 	ALIGN_CENTER_X, 0, 0, 450, 350, "MIC TX equalizer",		 NON_VISIBLE, 0, window_ap_mic_eq_process, },
+		{ WINDOW_AP_REVERB_SETT, WINDOW_AUDIOSETTINGS, 	ALIGN_CENTER_X, 0, 0, 580, 170, "Reverberator settings", NON_VISIBLE, 0, window_ap_reverb_process, },
+		{ WINDOW_AP_MIC_SETT, 	 WINDOW_AUDIOSETTINGS, 	ALIGN_CENTER_X, 0, 0, 480, 260, "Microphone settings", 	 NON_VISIBLE, 0, window_ap_mic_process, },
 	};
 	enum { windows_count = ARRAY_SIZE(windows) };
 
@@ -2686,7 +2686,7 @@ static void buttons_ap_mic_process(void);
 			return;
 		}
 
-		if (gui.selected_type == TYPE_SLIDER)
+		if (gui.selected_type == TYPE_SLIDER && gui.is_tracking)
 		{
 			/* костыль через костыль */
 			sl = gui.selected_link->link;
@@ -2793,6 +2793,7 @@ static void buttons_ap_mic_process(void);
 
 			return;
 		}
+
 		if (gui.selected_type == TYPE_SLIDER && gui.is_tracking)
 		{
 			char buf[TEXT_ARRAY_SIZE];
@@ -2820,12 +2821,18 @@ static void buttons_ap_mic_process(void);
 		window_t * win = & windows[WINDOW_AP_MIC_SETT];
 		static slider_t * sl_micLevel = NULL, * sl_micClip = NULL, * sl_micAGC = NULL;
 		static label_t * lbl_micLevel = NULL, * lbl_micClip = NULL, * lbl_micAGC = NULL;
+		static uint_fast16_t level_min, level_max, clip_min, clip_max, agc_min, agc_max;
+		slider_t * sl;
 
 		if (win->first_call == 1)
 		{
-			uint_fast8_t interval = 60, col1_int = 20;
+			uint_fast8_t interval = 50, col1_int = 20;
 			win->first_call = 0;
 			calculate_window_position(win);
+
+			hamradio_get_mic_level_limits(& level_min, & level_max);
+			hamradio_get_mic_clip_limits(& clip_min, & clip_max);
+			hamradio_get_mic_agc_limits(& agc_min, & agc_max);
 
 			sl_micLevel = find_gui_element_ref(TYPE_SLIDER, win, "sl_micLevel");
 			sl_micClip = find_gui_element_ref(TYPE_SLIDER, win, "sl_micClip");
@@ -2837,41 +2844,122 @@ static void buttons_ap_mic_process(void);
 			lbl_micLevel->x = win->x1 + col1_int;
 			lbl_micLevel->y = win->y1 + interval;
 			lbl_micLevel->visible = VISIBLE;
-			local_snprintf_P(lbl_micLevel->text, ARRAY_SIZE(lbl_micLevel->text), PSTR("Level: 50"));
+			local_snprintf_P(lbl_micLevel->text, ARRAY_SIZE(lbl_micLevel->text), PSTR("Level: %3d"), hamradio_get_mik1level());
 
 			lbl_micClip->x = lbl_micLevel->x;
 			lbl_micClip->y = lbl_micLevel->y + interval;
 			lbl_micClip->visible = VISIBLE;
-			local_snprintf_P(lbl_micClip->text, ARRAY_SIZE(lbl_micClip->text), PSTR("Clip : 10"));
+			local_snprintf_P(lbl_micClip->text, ARRAY_SIZE(lbl_micClip->text), PSTR("Clip : %3d"), hamradio_get_gmikehclip());
 
 			lbl_micAGC->x = lbl_micClip->x;
 			lbl_micAGC->y = lbl_micClip->y + interval;
 			lbl_micAGC->visible = VISIBLE;
-			local_snprintf_P(lbl_micAGC->text, ARRAY_SIZE(lbl_micAGC->text), PSTR("AGC  : 50"));
+			local_snprintf_P(lbl_micAGC->text, ARRAY_SIZE(lbl_micAGC->text), PSTR("AGC  : %3d"), hamradio_get_gmikeagcgain());
 
-
-			sl_micLevel->x = lbl_micLevel->x + interval * 3;
+			sl_micLevel->x = lbl_micLevel->x + interval * 2 + interval / 2;
 			sl_micLevel->y = lbl_micLevel->y;
 			sl_micLevel->visible = VISIBLE;
 			sl_micLevel->size = 300;
 			sl_micLevel->step = 3;
-			sl_micLevel->value = 50;
+			sl_micLevel->value = normalize(hamradio_get_mik1level(), level_min, level_max, 100);
 
 			sl_micClip->x = sl_micLevel->x;
 			sl_micClip->y = lbl_micClip->y;
 			sl_micClip->visible = VISIBLE;
 			sl_micClip->size = 300;
 			sl_micClip->step = 3;
-			sl_micClip->value = 50;
+			sl_micClip->value = normalize(hamradio_get_gmikehclip(), clip_min, clip_max, 100);
 
 			sl_micAGC->x = sl_micLevel->x;
 			sl_micAGC->y = lbl_micAGC->y;
 			sl_micAGC->visible = VISIBLE;
 			sl_micAGC->size = 300;
 			sl_micAGC->step = 3;
-			sl_micAGC->value = 50;
+			sl_micAGC->value = normalize(hamradio_get_gmikeagcgain(), clip_min, clip_max, 100);
+
+			button_t * bh2 = find_gui_element_ref(TYPE_BUTTON, win, "btn_mic_boost");
+			bh2->x1 = win->x1 + win->w / 2 - bh2->w / 2;
+			bh2->y1 = lbl_micAGC->y + interval;
+			bh2->is_locked = hamradio_get_gmikebust20db() ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
+			local_snprintf_P(bh2->text, ARRAY_SIZE(bh2->text), PSTR("Boost|%s"), bh2->is_locked ? "ON" : "OFF");
+			bh2->visible = VISIBLE;
+
+			button_t * bh1 = find_gui_element_ref(TYPE_BUTTON, win, "btn_mic_agc");
+			bh1->x1 = bh2->x1 - bh1->w - interval;
+			bh1->y1 = bh2->y1;
+			bh1->is_locked = hamradio_get_gmikeagc() ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
+			local_snprintf_P(bh1->text, ARRAY_SIZE(bh1->text), PSTR("AGC|%s"), bh1->is_locked ? "ON" : "OFF");
+			bh1->visible = VISIBLE;
+
+			bh1 = find_gui_element_ref(TYPE_BUTTON, win, "btn_mic_OK");
+			bh1->x1 = bh2->x1 + bh2->w + interval;
+			bh1->y1 = bh2->y1;
+			bh1->visible = VISIBLE;
+
+			label_t * lbl_micLevel_min = find_gui_element_ref(TYPE_LABEL, win, "lbl_micLevel_min");
+			local_snprintf_P(lbl_micLevel_min->text, ARRAY_SIZE(lbl_micLevel_min->text), PSTR("%d"), level_min);
+			lbl_micLevel_min->x = sl_micLevel->x - get_label_width(lbl_micLevel_min) / 2;
+			lbl_micLevel_min->y = sl_micLevel->y + get_label_height(lbl_micLevel_min) * 3;
+			lbl_micLevel_min->visible = VISIBLE;
+
+			label_t * lbl_micLevel_max = find_gui_element_ref(TYPE_LABEL, win, "lbl_micLevel_max");
+			local_snprintf_P(lbl_micLevel_max->text, ARRAY_SIZE(lbl_micLevel_max->text), PSTR("%d"), level_max);
+			lbl_micLevel_max->x = sl_micLevel->x + sl_micLevel->size - get_label_width(lbl_micLevel_max) / 2;
+			lbl_micLevel_max->y = sl_micLevel->y + get_label_height(lbl_micLevel_max) * 3;
+			lbl_micLevel_max->visible = VISIBLE;
+
+			label_t * lbl_micClip_min = find_gui_element_ref(TYPE_LABEL, win, "lbl_micClip_min");
+			local_snprintf_P(lbl_micClip_min->text, ARRAY_SIZE(lbl_micClip_min->text), PSTR("%d"), clip_min);
+			lbl_micClip_min->x = sl_micClip->x - get_label_width(lbl_micClip_min) / 2;
+			lbl_micClip_min->y = sl_micClip->y + get_label_height(lbl_micClip_min) * 3;
+			lbl_micClip_min->visible = VISIBLE;
+
+			label_t * lbl_micClip_max = find_gui_element_ref(TYPE_LABEL, win, "lbl_micClip_max");
+			local_snprintf_P(lbl_micClip_max->text, ARRAY_SIZE(lbl_micClip_max->text), PSTR("%d"), clip_max);
+			lbl_micClip_max->x = sl_micClip->x + sl_micClip->size - get_label_width(lbl_micClip_max) / 2;
+			lbl_micClip_max->y = sl_micClip->y + get_label_height(lbl_micClip_max) * 3;
+			lbl_micClip_max->visible = VISIBLE;
+
+			label_t * lbl_micAGC_min = find_gui_element_ref(TYPE_LABEL, win, "lbl_micAGC_min");
+			local_snprintf_P(lbl_micAGC_min->text, ARRAY_SIZE(lbl_micAGC_min->text), PSTR("%d"), agc_min);
+			lbl_micAGC_min->x = sl_micAGC->x - get_label_width(lbl_micAGC_min) / 2;
+			lbl_micAGC_min->y = sl_micAGC->y + get_label_height(lbl_micAGC_min) * 3;
+			lbl_micAGC_min->visible = VISIBLE;
+
+			label_t * lbl_micAGC_max = find_gui_element_ref(TYPE_LABEL, win, "lbl_micAGC_max");
+			local_snprintf_P(lbl_micAGC_max->text, ARRAY_SIZE(lbl_micAGC_max->text), PSTR("%d"), agc_max);
+			lbl_micAGC_max->x = sl_micAGC->x + sl_micClip->size - get_label_width(lbl_micAGC_max) / 2;
+			lbl_micAGC_max->y = sl_micAGC->y + get_label_height(lbl_micAGC_max) * 3;
+			lbl_micAGC_max->visible = VISIBLE;
 
 			return;
+		}
+
+		if (gui.selected_type == TYPE_SLIDER && gui.is_tracking)
+		{
+			char buf[TEXT_ARRAY_SIZE];
+
+			/* костыль через костыль */
+			sl = (slider_t *) gui.selected_link->link;
+
+			if(sl == sl_micLevel)
+			{
+				uint_fast16_t level = level_min + normalize(sl->value, 0, 100, level_max - level_min);
+				local_snprintf_P(lbl_micLevel->text, ARRAY_SIZE(lbl_micLevel->text), PSTR("Level: %3d"), level);
+				hamradio_set_mik1level(level);
+			}
+			else if (sl == sl_micClip)
+			{
+				uint_fast16_t clip = clip_min + normalize(sl->value, 0, 100, clip_max - clip_min);
+				local_snprintf_P(lbl_micClip->text, ARRAY_SIZE(lbl_micClip->text), PSTR("Clip : %3d"), clip);
+				hamradio_set_gmikehclip(clip);
+			}
+			else if (sl == sl_micAGC)
+			{
+				uint_fast16_t agc = agc_min + normalize(sl->value, 0, 100, agc_max - agc_min);
+				local_snprintf_P(lbl_micAGC->text, ARRAY_SIZE(lbl_micAGC->text), PSTR("AGC  : %3d"), agc);
+				hamradio_set_gmikeagc(agc);
+			}
 		}
 	}
 
@@ -2879,7 +2967,27 @@ static void buttons_ap_mic_process(void);
 	{
 		if(gui.selected_type == TYPE_BUTTON)
 		{
+			window_t * win = & windows[WINDOW_AP_MIC_SETT];
+			button_t * btn_mic_boost = find_gui_element_ref(TYPE_BUTTON, win, "btn_mic_boost");
+			button_t * btn_mic_agc = find_gui_element_ref(TYPE_BUTTON, win, "btn_mic_agc");
+			button_t * btn_mic_OK = find_gui_element_ref(TYPE_BUTTON, win, "btn_mic_OK");
 
+			if (gui.selected_link->link == btn_mic_boost)
+			{
+				btn_mic_boost->is_locked = hamradio_get_gmikebust20db() ? BUTTON_NON_LOCKED : BUTTON_LOCKED;
+				local_snprintf_P(btn_mic_boost->text, ARRAY_SIZE(btn_mic_boost->text), PSTR("Boost|%s"), btn_mic_boost->is_locked ? "ON" : "OFF");
+				hamradio_set_gmikebust20db(btn_mic_boost->is_locked);
+			}
+			else if (gui.selected_link->link == btn_mic_agc)
+			{
+				btn_mic_agc->is_locked = hamradio_get_gmikeagc() ? BUTTON_NON_LOCKED : BUTTON_LOCKED;
+				local_snprintf_P(btn_mic_agc->text, ARRAY_SIZE(btn_mic_agc->text), PSTR("AGC|%s"), btn_mic_agc->is_locked ? "ON" : "OFF");
+				hamradio_set_gmikeagc(btn_mic_agc->is_locked);
+			}
+			else if (gui.selected_link->link == btn_mic_OK)
+			{
+				set_window(win, NON_VISIBLE);
+			}
 		}
 	}
 
@@ -3631,8 +3739,11 @@ static void buttons_ap_mic_process(void);
 				// при открытии окна рассчитываются экранные координаты самого окна и его child элементов
 				if (! f)
 				{
-					win->transparent_bg ? display_transparency(win->x1, win->y1, win->x1 + win->w, win->y1 + win->h, alpha) :
-							colpip_fillrect(fr, DIM_X, DIM_Y, win->x1, win->y1, win->w, win->h, GUI_WINDOWBGCOLOR);
+	#if GUI_TRANSPARENT_WINDOWS
+					display_transparency(win->x1, win->y1, win->x1 + win->w, win->y1 + win->h, alpha);
+	#else
+					colpip_fillrect(fr, DIM_X, DIM_Y, win->x1, win->y1, win->w, win->h, GUI_WINDOWBGCOLOR);
+	#endif /* GUI_TRANSPARENT_WINDOWS */
 				}
 
 				// запуск процедуры фоновой обработки для окна

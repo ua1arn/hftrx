@@ -229,9 +229,11 @@
 
 #endif /* COLORSTYLE_RED */
 
-#define GUI_WINDOWBGCOLOR		244
+#define GUI_WINDOWBGCOLOR		2
 #define GUI_SLIDERLAYOUTCOLOR	116
 #define GUI_MENUSELECTCOLOR		116
+
+//#define GUI_TRANSPARENT_WINDOWS	1		/* Прозрачный фон окон */
 
 /* стркутура хранит цвета элементов дизайна. Возмодно треите поле - для анталиасингового формирования изображения */
 typedef struct colorpair_tag

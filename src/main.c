@@ -5761,7 +5761,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		"MIKE CLIP",
 		RJ_UNSIGNED,
 		ISTEP1,	
-		0, 90, 					/* Ограничение */
+		WITHMIKECLIPMIN, WITHMIKECLIPMAX, 		/* Ограничение */
 		offsetof(struct nvmap, gmikehclip),
 		NULL,
 		& gmikehclip,
@@ -14343,7 +14343,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	{
 		QLABEL("MK AGCGN"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,	
-		10, 60, 					/* максимальное усиление АРУ микрофона в дБ */
+		WITHMIKEAGCMIN, WITHMIKEAGCMAX, 	/* максимальное усиление АРУ микрофона в дБ */
 		offsetof(struct nvmap, gmikeagcgain),
 		NULL,
 		& gmikeagcgain,
@@ -18335,6 +18335,86 @@ uint_fast8_t hamradio_get_greverb(void)
 #endif /* WITHREVERB */
 
 #if WITHAFCODEC1HAVEPROC
+
+void hamradio_get_mic_clip_limits(uint_fast8_t * min, uint_fast8_t * max)
+{
+	* min = WITHMIKECLIPMIN;
+	* max = WITHMIKECLIPMAX;
+}
+
+uint_fast8_t hamradio_get_gmikehclip(void)
+{
+	return gmikehclip;
+}
+
+void hamradio_set_gmikehclip(uint_fast8_t v)
+{
+	ASSERT(v >= WITHMIKECLIPMIN);
+	ASSERT(v <= WITHMIKECLIPMAX);
+	gmikehclip = v;
+	updateboard(1, 0);
+}
+
+void hamradio_get_mic_level_limits(uint_fast8_t * min, uint_fast8_t * max)
+{
+	* min = WITHMIKEINGAINMIN;
+	* max = WITHMIKEINGAINMAX;
+}
+
+uint_fast8_t hamradio_get_mik1level(void)
+{
+	return mik1level;
+}
+
+void hamradio_set_mik1level(uint_fast8_t v)
+{
+	ASSERT(v >= WITHMIKEINGAINMIN);
+	ASSERT(v <= WITHMIKEINGAINMAX);
+	mik1level = v;
+	updateboard(1, 0);
+}
+
+uint_fast8_t hamradio_get_gmikeagc(void)
+{
+	return gmikeagc;
+}
+
+void hamradio_set_gmikeagc(uint_fast8_t v)
+{
+	gmikeagc = v != 0;
+	updateboard(1, 0);
+}
+
+void hamradio_get_mic_agc_limits(uint_fast8_t * min, uint_fast8_t * max)
+{
+	* min = WITHMIKEAGCMIN;
+	* max = WITHMIKEAGCMAX;
+}
+
+uint_fast8_t hamradio_get_gmikeagcgain(void)
+{
+	return gmikeagcgain;
+}
+
+void hamradio_set_gmikeagcgain(uint_fast8_t v)
+{
+	ASSERT(v >= WITHMIKEINGAINMIN);
+	ASSERT(v <= WITHMIKEINGAINMAX);
+	gmikeagcgain = v;
+	updateboard(1, 0);
+}
+
+uint_fast8_t hamradio_get_gmikebust20db(void)
+{
+	return gmikebust20db;
+}
+
+void hamradio_set_gmikebust20db(uint_fast8_t v)
+{
+	gmikebust20db = v != 0;
+	updateboard(1, 0);
+}
+
 uint_fast8_t hamradio_get_gmikeequalizer(void)
 {
 	return gmikeequalizer;

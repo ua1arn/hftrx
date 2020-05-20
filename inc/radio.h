@@ -121,6 +121,12 @@ enum
 #define WITHMIKEINGAINMIN	0		/* код управления усилением входа с микрофона */
 #define WITHMIKEINGAINMAX	255		/* код управления усилением входа с микрофона */
 
+#define WITHMIKECLIPMIN		0
+#define WITHMIKECLIPMAX		90
+
+#define WITHMIKEAGCMIN		10
+#define WITHMIKEAGCMAX		60
+
 //#define WITHFILTSOFTMIN		0		/* код управления сглаживанием скатов фильтра основной селекции на приёме */
 //#define WITHFILTSOFTMAX		100		/* код управления сглаживанием скатов фильтра основной селекции на приёме */
 
@@ -3322,6 +3328,19 @@ void hamradio_set_reverb_loss(uint_fast8_t v);
 #endif /* WITHREVERB */
 void hamradio_set_gmoniflag(uint_fast8_t v);
 uint_fast8_t hamradio_get_gmoniflag(void);
+uint_fast8_t hamradio_get_gmikebust20db(void);
+void hamradio_set_gmikebust20db(uint_fast8_t v);
+uint_fast8_t hamradio_get_gmikeagc(void);
+void hamradio_set_gmikeagc(uint_fast8_t v);
+void hamradio_get_mic_level_limits(uint_fast8_t * min, uint_fast8_t * max);
+void hamradio_set_mik1level(uint_fast8_t v);
+uint_fast8_t hamradio_get_mik1level(void);
+void hamradio_get_mic_clip_limits(uint_fast8_t * min, uint_fast8_t * max);
+uint_fast8_t hamradio_get_gmikehclip(void);
+void hamradio_set_gmikehclip(uint_fast8_t v);
+void hamradio_get_mic_agc_limits(uint_fast8_t * min, uint_fast8_t * max);
+uint_fast8_t hamradio_get_gmikeagcgain(void);
+void hamradio_set_gmikeagcgain(uint_fast8_t v);
 
 #ifdef __cplusplus
 }
