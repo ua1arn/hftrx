@@ -18295,6 +18295,7 @@ void hamradio_set_reverb_delay(uint_fast8_t v)
 	ASSERT(v >= WITHREVERBDELAYMIN);
 	ASSERT(v <= WITHREVERBDELAYMAX);
 	greverbdelay = v;
+	updateboard(1, 0);
 }
 
 void hamradio_set_reverb_loss(uint_fast8_t v)
@@ -18302,11 +18303,13 @@ void hamradio_set_reverb_loss(uint_fast8_t v)
 	ASSERT(v >= WITHREVERBLOSSMIN);
 	ASSERT(v <= WITHREVERBLOSSMAX);
 	greverbloss = v;
+	updateboard(1, 0);
 }
 
 void hamradio_set_gmoniflag(uint_fast8_t v)
 {
 	gmoniflag = v != 0;
+	updateboard(1, 0);
 }
 
 uint_fast8_t hamradio_get_gmoniflag(void)
@@ -18321,6 +18324,7 @@ uint_fast8_t hamradio_get_gmoniflag(void)
 void hamradio_set_greverb(uint_fast8_t v)
 {
 	greverb = v != 0;
+	updateboard(1, 0);
 }
 
 uint_fast8_t hamradio_get_greverb(void)

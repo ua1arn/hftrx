@@ -814,6 +814,7 @@ display2_bars_amv0(
 #if WITHTOUCHGUI
 
 #include "list.h"
+#include "codecs/nau8822.h"
 
 static void button1_handler(void);
 static void button2_handler(void);
@@ -974,14 +975,14 @@ static void window_ap_reverb_process(void);
 		{ 0, 0, 40, 40, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU,  NON_VISIBLE, UINTPTR_MAX, 	"btnSysMenu+",	"+", },
 		{ 0, 0, 40, 40, buttons_uif_handler,  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UIF,   NON_VISIBLE, UINTPTR_MAX, 	"btnUIF-", 		"-", },
 		{ 0, 0, 40, 40, buttons_uif_handler,  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UIF,   NON_VISIBLE, UINTPTR_MAX, 	"btnUIF+", 		"+", },
-		{ 0, 0, 100, 44, buttons_audioparams_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, UINTPTR_MAX, "btnAP1", "Reverb|OFF", },
-		{ 0, 0, 100, 44, buttons_audioparams_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, UINTPTR_MAX, "btnAP2", "Reverb|settings", },
-		{ 0, 0, 100, 44, buttons_audioparams_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, UINTPTR_MAX, "btnAP3", "Monitor|disabled", },
-		{ 0, 0, 100, 44, buttons_audioparams_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, UINTPTR_MAX, "btnAP4", "Audio|source", },
-		{ 0, 0, 100, 44, buttons_audioparams_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, UINTPTR_MAX, "btnAP5", "MIC|settings", },
-		{ 0, 0, 100, 44, buttons_audioparams_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, UINTPTR_MAX, "btnAP6", "MIC TX|equalizer", },
-		{ 0, 0,  40, 40, buttons_audioparams_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_EQ, 	 NON_VISIBLE, UINTPTR_MAX, "btnEQ_ok", "OK", },
-		{ 0, 0,  40, 40, buttons_audioparams_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_REVERB_SETT,NON_VISIBLE, UINTPTR_MAX, "btnREVs_ok", "OK", },
+		{ 0, 0, 100, 44, buttons_audioparams_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, UINTPTR_MAX, "btn_reverb", 			"Reverb|OFF", },
+		{ 0, 0, 100, 44, buttons_audioparams_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, UINTPTR_MAX, "btn_reverb_settings", 	"Reverb|settings", },
+		{ 0, 0, 100, 44, buttons_audioparams_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, UINTPTR_MAX, "btn_monitor", 			"Monitor|disabled", },
+		{ 0, 0, 100, 44, buttons_audioparams_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, UINTPTR_MAX, "btn_mic_eq", 			"MIC EQ|OFF", },
+		{ 0, 0, 100, 44, buttons_audioparams_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, UINTPTR_MAX, "btn_mic_eq_settings", 	"MIC EQ|settings", },
+		{ 0, 0, 100, 44, buttons_audioparams_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, UINTPTR_MAX, "btn_mic_settings", 		"MIC|settings", },
+		{ 0, 0,  40, 40, buttons_audioparams_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_EQ, 	 NON_VISIBLE, UINTPTR_MAX, "btn_EQ_ok", 			"OK", },
+		{ 0, 0,  40, 40, buttons_audioparams_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_REVERB_SETT,NON_VISIBLE, UINTPTR_MAX, "btn_REVs_ok", 			"OK", },
 #if ! WITHOLDMENUSTYLE
 		{ 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 	"btnSysMenu1",	"", },
 		{ 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 	"btnSysMenu2",	"", },
@@ -2481,14 +2482,14 @@ static void window_ap_reverb_process(void);
 			window_t * winAP = & windows[WINDOW_AUDIOSETTINGS];
 			window_t * winEQ = & windows[WINDOW_AP_MIC_EQ];
 			window_t * winRS = & windows[WINDOW_AP_REVERB_SETT];
-			button_t * btn_reverb = find_gui_element_ref(TYPE_BUTTON, winAP, "btnAP1");				// reverb on/off
-			button_t * btn_reverb_settings = find_gui_element_ref(TYPE_BUTTON, winAP, "btnAP2");	// reverb settings
-			button_t * btn_monitor = find_gui_element_ref(TYPE_BUTTON, winAP, "btnAP3");			// monitor on/off
-			button_t * btn_audio = find_gui_element_ref(TYPE_BUTTON, winAP, "btnAP4");				// audio source
-			button_t * btn_mic_settings = find_gui_element_ref(TYPE_BUTTON, winAP, "btnAP5");		// mic settings
-			button_t * btn_MIC_eq = find_gui_element_ref(TYPE_BUTTON, winAP, "btnAP6");				// mic tx eq
-			button_t * btn_EQ_ok = find_gui_element_ref(TYPE_BUTTON, winEQ, "btnEQ_ok");
-			button_t * btn_REVs_ok = find_gui_element_ref(TYPE_BUTTON, winRS, "btnREVs_ok");
+			button_t * btn_reverb = find_gui_element_ref(TYPE_BUTTON, winAP, "btn_reverb");						// reverb on/off
+			button_t * btn_reverb_settings = find_gui_element_ref(TYPE_BUTTON, winAP, "btn_reverb_settings");	// reverb settings
+			button_t * btn_monitor = find_gui_element_ref(TYPE_BUTTON, winAP, "btn_monitor");					// monitor on/off
+			button_t * btn_mic_eq = find_gui_element_ref(TYPE_BUTTON, winAP, "btn_mic_eq");						// MIC EQ on/off
+			button_t * btn_mic_eq_settings = find_gui_element_ref(TYPE_BUTTON, winAP, "btn_mic_eq_settings");	// MIC EQ settingss
+			button_t * btn_mic_settings = find_gui_element_ref(TYPE_BUTTON, winAP, "btn_mic_settings");			// mic settingss
+			button_t * btn_EQ_ok = find_gui_element_ref(TYPE_BUTTON, winEQ, "btn_EQ_ok");
+			button_t * btn_REVs_ok = find_gui_element_ref(TYPE_BUTTON, winRS, "btn_REVs_ok");
 
 #if WITHREVERB
 			if (gui.selected_link->link == btn_reverb)
@@ -2515,17 +2516,20 @@ static void window_ap_reverb_process(void);
 				local_snprintf_P(btn_monitor->text, ARRAY_SIZE(btn_monitor->text), PSTR("Monitor|%s"), btn_monitor->is_locked ? "enabled" : "disabled");
 				hamradio_set_gmoniflag(btn_monitor->is_locked);
 			}
-			else if (gui.selected_link->link == btn_audio)
+			else if (gui.selected_link->link == btn_mic_eq)
 			{
-
+				btn_mic_eq->is_locked = hamradio_get_gmikeequalizer() ? BUTTON_NON_LOCKED : BUTTON_LOCKED;
+				local_snprintf_P(btn_mic_eq->text, ARRAY_SIZE(btn_mic_eq->text), PSTR("MIC EQ|%s"), btn_mic_eq->is_locked ? "ON" : "OFF");
+				hamradio_set_gmikeequalizer(btn_mic_eq->is_locked);
+				btn_mic_eq_settings->state = btn_mic_eq->is_locked ? CANCELLED : DISABLED;
+			}
+			else if (gui.selected_link->link == btn_mic_eq_settings)
+			{
+				set_window(winEQ, VISIBLE);
 			}
 			else if (gui.selected_link->link == btn_mic_settings)
 			{
 
-			}
-			else if (gui.selected_link->link == btn_MIC_eq)
-			{
-				set_window(winEQ, VISIBLE);
 			}
 			else if (gui.selected_link->link == btn_EQ_ok)
 			{
@@ -2566,20 +2570,38 @@ static void window_ap_reverb_process(void);
 			}
 
 #if WITHREVERB
-			bh = find_gui_element_ref(TYPE_BUTTON, win, "btnAP1"); 						// reverb on/off
+			bh = find_gui_element_ref(TYPE_BUTTON, win, "btn_reverb"); 						// reverb on/off
 			bh->is_locked = hamradio_get_greverb() ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
 			local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("Reverb|%s"), hamradio_get_greverb() ? "ON" : "OFF");
-			bh = find_gui_element_ref(TYPE_BUTTON, win, "btnAP2");
+
+			bh = find_gui_element_ref(TYPE_BUTTON, win, "btn_reverb_settings");				// reverb settings
 			bh->state = hamradio_get_greverb() ? CANCELLED : DISABLED;
 #else
-			bh = find_gui_element_ref(TYPE_BUTTON, win, "btnAP1");
+			bh = find_gui_element_ref(TYPE_BUTTON, win, "btn_reverb");						// reverb on/off disable
 			bh->state = DISABLED;
-			bh = find_gui_element_ref(TYPE_BUTTON, win, "btnAP2"); 						// reverb settings
+
+			bh = find_gui_element_ref(TYPE_BUTTON, win, "btn_reverb_settings"); 			// reverb settings disable
 			bh->state = DISABLED;
 #endif /* WITHREVERB */
-			bh = find_gui_element_ref(TYPE_BUTTON, win, "btnAP3");						// monitor on/off
+
+			bh = find_gui_element_ref(TYPE_BUTTON, win, "btn_monitor");						// monitor on/off
 			bh->is_locked = hamradio_get_gmoniflag() ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
 			local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("Monitor|%s"), bh->is_locked ? "enabled" : "disabled");
+
+#if WITHAFCODEC1HAVEPROC
+			bh = find_gui_element_ref(TYPE_BUTTON, win, "btn_mic_eq");						// MIC EQ on/off
+			bh->is_locked = hamradio_get_gmikeequalizer() ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
+			local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("MIC EQ|%s"), bh->is_locked ? "ON" : "OFF");
+
+			bh = find_gui_element_ref(TYPE_BUTTON, win, "btn_mic_eq_settings");				// MIC EQ settings
+			bh->state = hamradio_get_gmikeequalizer() ? CANCELLED : DISABLED;
+#else
+			bh = find_gui_element_ref(TYPE_BUTTON, win, "btn_mic_eq");						// MIC EQ on/off disable
+			bh->state = DISABLED;
+
+			bh = find_gui_element_ref(TYPE_BUTTON, win, "btn_mic_eq_settings"); 			// MIC EQ settings disable
+			bh->state = DISABLED;
+#endif /* WITHAFCODEC1HAVEPROC */
 			return;
 		}
 	}
@@ -2641,7 +2663,7 @@ static void window_ap_reverb_process(void);
 			}
 			mid_y = sl->y + sl->size / 2;
 
-			btn_EQ_ok = find_gui_element_ref(TYPE_BUTTON, win, "btnEQ_ok");
+			btn_EQ_ok = find_gui_element_ref(TYPE_BUTTON, win, "btn_EQ_ok");
 			btn_EQ_ok->x1 = win->x1 + win->w - btn_EQ_ok->w - 15;
 			btn_EQ_ok->y1 = win->y1 + win->h - btn_EQ_ok->h - 15;
 			btn_EQ_ok->visible = VISIBLE;
@@ -2749,7 +2771,7 @@ static void window_ap_reverb_process(void);
 			lbl_reverbLoss_max->y = sl_reverbLoss->y + get_label_height(lbl_reverbLoss_max) * 3;
 			lbl_reverbLoss_max->visible = VISIBLE;
 
-			button_t * bh = find_gui_element_ref(TYPE_BUTTON, win, "btnREVs_ok");
+			button_t * bh = find_gui_element_ref(TYPE_BUTTON, win, "btn_REVs_ok");
 			bh->x1 = sl_reverbLoss->x + sl_reverbLoss->size + interval / 2;
 			bh->y1 = lbl_reverbLoss->y;
 			bh->visible = VISIBLE;
