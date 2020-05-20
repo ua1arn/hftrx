@@ -3313,6 +3313,12 @@ int_fast32_t hamradio_getequalizerbase(void);
 #if WITHREVERB
 void hamradio_set_greverb(uint_fast8_t v);
 uint_fast8_t hamradio_get_greverb(void);
+void hamradio_get_reverb_delay_limits(uint_fast8_t * min, uint_fast8_t * max);
+void hamradio_get_reverb_loss_limits(uint_fast8_t * min, uint_fast8_t * max);
+uint_fast8_t hamradio_get_reverb_delay(void);
+uint_fast8_t hamradio_get_reverb_loss(void);
+void hamradio_set_reverb_delay(uint_fast8_t v);
+void hamradio_set_reverb_loss(uint_fast8_t v);
 #endif /* WITHREVERB */
 void hamradio_set_gmoniflag(uint_fast8_t v);
 uint_fast8_t hamradio_get_gmoniflag(void);

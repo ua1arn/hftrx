@@ -1079,6 +1079,10 @@ static void window_ap_reverb_process(void);
 //		{ 0, 0,	WINDOW_MAIN,  DISABLED, 0, NON_VISIBLE, "lbl_infobar_5_2", "", FONT_MEDIUM, COLORPIP_WHITE, },
 		{ 0, 0,	WINDOW_AP_REVERB_SETT,  DISABLED, 0, NON_VISIBLE, "lbl_reverbDelay", "", FONT_MEDIUM, COLORPIP_WHITE, },
 		{ 0, 0,	WINDOW_AP_REVERB_SETT,  DISABLED, 0, NON_VISIBLE, "lbl_reverbLoss", "", FONT_MEDIUM, COLORPIP_WHITE, },
+		{ 0, 0,	WINDOW_AP_REVERB_SETT,  DISABLED, 0, NON_VISIBLE, "lbl_reverbDelay_min", "", FONT_SMALL, COLORPIP_WHITE, },
+		{ 0, 0,	WINDOW_AP_REVERB_SETT,  DISABLED, 0, NON_VISIBLE, "lbl_reverbDelay_max", "", FONT_SMALL, COLORPIP_WHITE, },
+		{ 0, 0,	WINDOW_AP_REVERB_SETT,  DISABLED, 0, NON_VISIBLE, "lbl_reverbLoss_min", "", FONT_SMALL, COLORPIP_WHITE, },
+		{ 0, 0,	WINDOW_AP_REVERB_SETT,  DISABLED, 0, NON_VISIBLE, "lbl_reverbLoss_max", "", FONT_SMALL, COLORPIP_WHITE, },
 
 		};
 	enum { LABELS_COUNT = ARRAY_SIZE(labels) };
@@ -1163,7 +1167,7 @@ static void window_ap_reverb_process(void);
 		{ WINDOW_AP_MIC_EQ, WINDOW_AUDIOSETTINGS,
 						ALIGN_CENTER_X, 0, 0, 450, 350, "MIC TX equalizer",	NON_VISIBLE, 1, 0, window_ap_mic_eq_process, },
 		{ WINDOW_AP_REVERB_SETT, WINDOW_AUDIOSETTINGS,
-						ALIGN_CENTER_X, 0, 0, 530, 170, "Reverberator settings", NON_VISIBLE, 1, 0, window_ap_reverb_process, },
+						ALIGN_CENTER_X, 0, 0, 580, 170, "Reverberator settings", NON_VISIBLE, 1, 0, window_ap_reverb_process, },
 	};
 	enum { windows_count = ARRAY_SIZE(windows) };
 
@@ -2492,6 +2496,7 @@ static void window_ap_reverb_process(void);
 				btn_reverb->is_locked = hamradio_get_greverb() ? BUTTON_NON_LOCKED : BUTTON_LOCKED;
 				local_snprintf_P(btn_reverb->text, ARRAY_SIZE(btn_reverb->text), PSTR("Reverb|%s"), btn_reverb->is_locked ? "ON" : "OFF");
 				hamradio_set_greverb(btn_reverb->is_locked);
+				btn_reverb_settings->state = btn_reverb->is_locked ? CANCELLED : DISABLED;
 
 			}
 			else if (gui.selected_link->link == btn_reverb_settings)
@@ -2564,6 +2569,8 @@ static void window_ap_reverb_process(void);
 			bh = find_gui_element_ref(TYPE_BUTTON, win, "btnAP1"); 						// reverb on/off
 			bh->is_locked = hamradio_get_greverb() ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
 			local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("Reverb|%s"), hamradio_get_greverb() ? "ON" : "OFF");
+			bh = find_gui_element_ref(TYPE_BUTTON, win, "btnAP2");
+			bh->state = hamradio_get_greverb() ? CANCELLED : DISABLED;
 #else
 			bh = find_gui_element_ref(TYPE_BUTTON, win, "btnAP1");
 			bh->state = DISABLED;
@@ -2675,8 +2682,10 @@ static void window_ap_reverb_process(void);
 	static void window_ap_reverb_process(void)
 	{
 		window_t * win = & windows[WINDOW_AP_REVERB_SETT];
-		label_t * lbl_reverbDelay, * lbl_reverbLoss;
-		slider_t * sl_reverbDelay, * sl_reverbLoss;
+		static label_t * lbl_reverbDelay = NULL, * lbl_reverbLoss = NULL;
+		static slider_t * sl_reverbDelay = NULL, * sl_reverbLoss = NULL;
+		static uint_fast16_t delay_min, delay_max, loss_min, loss_max;
+		slider_t * sl = NULL;
 
 		if (win->first_call == 1)
 		{
@@ -2684,34 +2693,61 @@ static void window_ap_reverb_process(void);
 			win->first_call = 0;
 			calculate_window_position(win);
 
+			label_t * lbl_reverbDelay_min = find_gui_element_ref(TYPE_LABEL, win, "lbl_reverbDelay_min");
+			label_t * lbl_reverbDelay_max = find_gui_element_ref(TYPE_LABEL, win, "lbl_reverbDelay_max");
+			label_t * lbl_reverbLoss_min = find_gui_element_ref(TYPE_LABEL, win, "lbl_reverbLoss_min");
+			label_t * lbl_reverbLoss_max = find_gui_element_ref(TYPE_LABEL, win, "lbl_reverbLoss_max");
 			lbl_reverbDelay = find_gui_element_ref(TYPE_LABEL, win, "lbl_reverbDelay");
 			lbl_reverbLoss = find_gui_element_ref(TYPE_LABEL, win, "lbl_reverbLoss");
 			sl_reverbDelay = find_gui_element_ref(TYPE_SLIDER, win, "reverbDelay");
 			sl_reverbLoss = find_gui_element_ref(TYPE_SLIDER, win, "reverbLoss");
 
+			hamradio_get_reverb_delay_limits(& delay_min, & delay_max);
+			hamradio_get_reverb_loss_limits(& loss_min, & loss_max);
+
 			lbl_reverbDelay->x = win->x1 + col1_int;
 			lbl_reverbDelay->y = win->y1 + interval;
 			lbl_reverbDelay->visible = VISIBLE;
-			local_snprintf_P(lbl_reverbDelay->text, ARRAY_SIZE(lbl_reverbDelay->text), PSTR("Delay: 10"));
+			local_snprintf_P(lbl_reverbDelay->text, ARRAY_SIZE(lbl_reverbDelay->text), PSTR("Delay: %3d ms"), hamradio_get_reverb_delay());
 
 			lbl_reverbLoss->x = lbl_reverbDelay->x;
 			lbl_reverbLoss->y = lbl_reverbDelay->y + interval;
 			lbl_reverbLoss->visible = VISIBLE;
-			local_snprintf_P(lbl_reverbLoss->text, ARRAY_SIZE(lbl_reverbLoss->text), PSTR("Loss:  10"));
+			local_snprintf_P(lbl_reverbLoss->text, ARRAY_SIZE(lbl_reverbLoss->text), PSTR("Loss :  %2d dB"), hamradio_get_reverb_loss());
 
-			sl_reverbDelay->x = lbl_reverbDelay->x + get_label_width(lbl_reverbDelay) + interval / 2;
+			sl_reverbDelay->x = lbl_reverbDelay->x + interval * 3;
 			sl_reverbDelay->y = lbl_reverbDelay->y;
 			sl_reverbDelay->visible = VISIBLE;
 			sl_reverbDelay->size = 300;
 			sl_reverbDelay->step = 3;
-			sl_reverbDelay->value = 50;
+			sl_reverbDelay->value = normalize(hamradio_get_reverb_delay(), delay_min, delay_max, 100);
 
-			sl_reverbLoss->x = lbl_reverbLoss->x + get_label_width(lbl_reverbLoss)+ interval / 2;
+			local_snprintf_P(lbl_reverbDelay_min->text, ARRAY_SIZE(lbl_reverbDelay_min->text), PSTR("%d ms"), delay_min);
+			lbl_reverbDelay_min->x = sl_reverbDelay->x - get_label_width(lbl_reverbDelay_min) / 2;
+			lbl_reverbDelay_min->y = sl_reverbDelay->y + get_label_height(lbl_reverbDelay_min) * 3;
+			lbl_reverbDelay_min->visible = VISIBLE;
+
+			local_snprintf_P(lbl_reverbDelay_max->text, ARRAY_SIZE(lbl_reverbDelay_max->text), PSTR("%d ms"), delay_max);
+			lbl_reverbDelay_max->x = sl_reverbDelay->x + sl_reverbDelay->size - get_label_width(lbl_reverbDelay_max) / 2;
+			lbl_reverbDelay_max->y = sl_reverbDelay->y + get_label_height(lbl_reverbDelay_max) * 3;
+			lbl_reverbDelay_max->visible = VISIBLE;
+
+			sl_reverbLoss->x = lbl_reverbLoss->x + interval * 3;
 			sl_reverbLoss->y = lbl_reverbLoss->y;
 			sl_reverbLoss->visible = VISIBLE;
 			sl_reverbLoss->size = 300;
 			sl_reverbLoss->step = 3;
-			sl_reverbLoss->value = 50;
+			sl_reverbLoss->value = normalize(hamradio_get_reverb_loss(), loss_min, loss_max, 100);
+
+			local_snprintf_P(lbl_reverbLoss_min->text, ARRAY_SIZE(lbl_reverbLoss_min->text), PSTR("%d dB"), loss_min);
+			lbl_reverbLoss_min->x = sl_reverbLoss->x - get_label_width(lbl_reverbLoss_min) / 2;
+			lbl_reverbLoss_min->y = sl_reverbLoss->y + get_label_height(lbl_reverbLoss_min) * 3;
+			lbl_reverbLoss_min->visible = VISIBLE;
+
+			local_snprintf_P(lbl_reverbLoss_max->text, ARRAY_SIZE(lbl_reverbLoss_max->text), PSTR("%d dB"), loss_max);
+			lbl_reverbLoss_max->x = sl_reverbLoss->x + sl_reverbLoss->size - get_label_width(lbl_reverbLoss_max) / 2;
+			lbl_reverbLoss_max->y = sl_reverbLoss->y + get_label_height(lbl_reverbLoss_max) * 3;
+			lbl_reverbLoss_max->visible = VISIBLE;
 
 			button_t * bh = find_gui_element_ref(TYPE_BUTTON, win, "btnREVs_ok");
 			bh->x1 = sl_reverbLoss->x + sl_reverbLoss->size + interval / 2;
@@ -2719,6 +2755,26 @@ static void window_ap_reverb_process(void);
 			bh->visible = VISIBLE;
 
 			return;
+		}
+		if (gui.selected_type == TYPE_SLIDER && gui.is_tracking)
+		{
+			char buf[TEXT_ARRAY_SIZE];
+
+			/* костыль через костыль */
+			sl = (slider_t *) gui.selected_link->link;
+
+			if(sl == sl_reverbDelay)
+			{
+				uint_fast16_t delay = delay_min + normalize(sl->value, 0, 100, delay_max - delay_min);
+				local_snprintf_P(lbl_reverbDelay->text, ARRAY_SIZE(lbl_reverbDelay->text), PSTR("Delay: %3d ms"), delay);
+				hamradio_set_reverb_delay(delay);
+			}
+			else if (sl == sl_reverbLoss)
+			{
+				uint_fast16_t loss = loss_min + normalize(sl->value, 0, 100, loss_max - loss_min);
+				local_snprintf_P(lbl_reverbLoss->text, ARRAY_SIZE(lbl_reverbLoss->text), PSTR("Loss :  %2d dB"), loss);
+				hamradio_set_reverb_loss(loss);
+			}
 		}
 	}
 
@@ -3124,10 +3180,10 @@ static void window_ap_reverb_process(void);
 			{
 				uint_fast16_t mid_w = sl->y + sliders_width / 2;
 				sl->value_p = sl->x + sl->size * sl->value / 100;
-				sl->y1_p = mid_w - sliders_h;
-				sl->x1_p = sl->value_p - sliders_w;
-				sl->y2_p = mid_w + sliders_h;
-				sl->x2_p = sl->value_p + sliders_w;
+				sl->y1_p = mid_w - sliders_w;
+				sl->x1_p = sl->value_p - sliders_h;
+				sl->y2_p = mid_w + sliders_w;
+				sl->x2_p = sl->value_p + sliders_h;
 				sl->value_old = sl->value;
 			}
 			colpip_rect(fr, DIM_X, DIM_Y, sl->x, sl->y, sl->x + sl->size, sl->y + sliders_width, COLORMAIN_BLACK, 1);

@@ -18268,6 +18268,42 @@ hamradio_main_step(void)
 
 #if WITHIF4DSP
 
+void hamradio_get_reverb_delay_limits(uint_fast8_t * min, uint_fast8_t * max)
+{
+	* min = WITHREVERBDELAYMIN;
+	* max = WITHREVERBDELAYMAX;
+}
+
+void hamradio_get_reverb_loss_limits(uint_fast8_t * min, uint_fast8_t * max)
+{
+	* min = WITHREVERBLOSSMIN;
+	* max = WITHREVERBLOSSMAX;
+}
+
+uint_fast8_t hamradio_get_reverb_delay(void)
+{
+	return greverbdelay;
+}
+
+uint_fast8_t hamradio_get_reverb_loss(void)
+{
+	return greverbloss;
+}
+
+void hamradio_set_reverb_delay(uint_fast8_t v)
+{
+	ASSERT(v >= WITHREVERBDELAYMIN);
+	ASSERT(v <= WITHREVERBDELAYMAX);
+	greverbdelay = v;
+}
+
+void hamradio_set_reverb_loss(uint_fast8_t v)
+{
+	ASSERT(v >= WITHREVERBLOSSMIN);
+	ASSERT(v <= WITHREVERBLOSSMAX);
+	greverbloss = v;
+}
+
 void hamradio_set_gmoniflag(uint_fast8_t v)
 {
 	gmoniflag = v != 0;
