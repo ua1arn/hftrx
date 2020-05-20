@@ -844,6 +844,8 @@ static void window_ap_mic_eq_process(void);
 static void gui_main_process(void);
 static void update_touch(void);
 static void window_ap_reverb_process(void);
+static void window_ap_mic_process(void);
+static void buttons_ap_mic_process(void);
 
 	enum { button_round_radius = 5 };
 
@@ -888,7 +890,8 @@ static void window_ap_reverb_process(void);
 		WINDOW_UIF,
 		WINDOW_AUDIOSETTINGS,
 		WINDOW_AP_MIC_EQ,
-		WINDOW_AP_REVERB_SETT
+		WINDOW_AP_REVERB_SETT,
+		WINDOW_AP_MIC_SETT
 	};
 
 	enum {
@@ -983,6 +986,9 @@ static void window_ap_reverb_process(void);
 		{ 0, 0, 100, 44, buttons_audioparams_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, UINTPTR_MAX, "btn_mic_settings", 		"MIC|settings", },
 		{ 0, 0,  40, 40, buttons_audioparams_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_EQ, 	 NON_VISIBLE, UINTPTR_MAX, "btn_EQ_ok", 			"OK", },
 		{ 0, 0,  40, 40, buttons_audioparams_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_REVERB_SETT,NON_VISIBLE, UINTPTR_MAX, "btn_REVs_ok", 			"OK", },
+		{ 0, 0,  86, 44, buttons_ap_mic_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_SETT, NON_VISIBLE, UINTPTR_MAX, "btn_mic_agc", 	 "AGC|OFF", },
+		{ 0, 0,  86, 44, buttons_ap_mic_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_SETT, NON_VISIBLE, UINTPTR_MAX, "btn_mic_boost", "Boost|OFF", },
+		{ 0, 0,  40, 40, buttons_ap_mic_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_SETT, NON_VISIBLE, UINTPTR_MAX, "btn_mic_OK", 	 "OK", },
 #if ! WITHOLDMENUSTYLE
 		{ 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 	"btnSysMenu1",	"", },
 		{ 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 	"btnSysMenu2",	"", },
@@ -1084,7 +1090,9 @@ static void window_ap_reverb_process(void);
 		{ 0, 0,	WINDOW_AP_REVERB_SETT,  DISABLED, 0, NON_VISIBLE, "lbl_reverbDelay_max", "", FONT_SMALL, COLORPIP_WHITE, },
 		{ 0, 0,	WINDOW_AP_REVERB_SETT,  DISABLED, 0, NON_VISIBLE, "lbl_reverbLoss_min", "", FONT_SMALL, COLORPIP_WHITE, },
 		{ 0, 0,	WINDOW_AP_REVERB_SETT,  DISABLED, 0, NON_VISIBLE, "lbl_reverbLoss_max", "", FONT_SMALL, COLORPIP_WHITE, },
-
+		{ 0, 0,	WINDOW_AP_MIC_SETT,  DISABLED, 0, NON_VISIBLE, "lbl_micLevel", "", FONT_MEDIUM, COLORPIP_WHITE, },
+		{ 0, 0,	WINDOW_AP_MIC_SETT,  DISABLED, 0, NON_VISIBLE, "lbl_micClip",  "", FONT_MEDIUM, COLORPIP_WHITE, },
+		{ 0, 0,	WINDOW_AP_MIC_SETT,  DISABLED, 0, NON_VISIBLE, "lbl_micAGC",   "", FONT_MEDIUM, COLORPIP_WHITE, },
 		};
 	enum { LABELS_COUNT = ARRAY_SIZE(labels) };
 
@@ -1127,6 +1135,9 @@ static void window_ap_reverb_process(void);
 			{ 0, 0, 0, 0, 0, 0, ORIENTATION_VERTICAL, WINDOW_AP_MIC_EQ, "eq5.3",  CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
 			{ 0, 0, 0, 0, 0, 0, ORIENTATION_HORIZONTAL, WINDOW_AP_REVERB_SETT, "reverbDelay", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
 			{ 0, 0, 0, 0, 0, 0, ORIENTATION_HORIZONTAL, WINDOW_AP_REVERB_SETT, "reverbLoss",  CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
+			{ 0, 0, 0, 0, 0, 0, ORIENTATION_HORIZONTAL, WINDOW_AP_MIC_SETT, "sl_micLevel", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
+			{ 0, 0, 0, 0, 0, 0, ORIENTATION_HORIZONTAL, WINDOW_AP_MIC_SETT, "sl_micClip",  CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
+			{ 0, 0, 0, 0, 0, 0, ORIENTATION_HORIZONTAL, WINDOW_AP_MIC_SETT, "sl_micAGC",   CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
 	};
 	enum { SLIDERS_COUNT = ARRAY_SIZE(sliders) };
 
@@ -1169,6 +1180,9 @@ static void window_ap_reverb_process(void);
 						ALIGN_CENTER_X, 0, 0, 450, 350, "MIC TX equalizer",	NON_VISIBLE, 1, 0, window_ap_mic_eq_process, },
 		{ WINDOW_AP_REVERB_SETT, WINDOW_AUDIOSETTINGS,
 						ALIGN_CENTER_X, 0, 0, 580, 170, "Reverberator settings", NON_VISIBLE, 1, 0, window_ap_reverb_process, },
+		{ WINDOW_AP_MIC_SETT, WINDOW_AUDIOSETTINGS,
+						ALIGN_CENTER_X, 0, 0, 580, 300, "Microphone settings", NON_VISIBLE, 1, 0, window_ap_mic_process, },
+
 	};
 	enum { windows_count = ARRAY_SIZE(windows) };
 
@@ -2482,6 +2496,7 @@ static void window_ap_reverb_process(void);
 			window_t * winAP = & windows[WINDOW_AUDIOSETTINGS];
 			window_t * winEQ = & windows[WINDOW_AP_MIC_EQ];
 			window_t * winRS = & windows[WINDOW_AP_REVERB_SETT];
+			window_t * winMIC = & windows[WINDOW_AP_MIC_SETT];
 			button_t * btn_reverb = find_gui_element_ref(TYPE_BUTTON, winAP, "btn_reverb");						// reverb on/off
 			button_t * btn_reverb_settings = find_gui_element_ref(TYPE_BUTTON, winAP, "btn_reverb_settings");	// reverb settings
 			button_t * btn_monitor = find_gui_element_ref(TYPE_BUTTON, winAP, "btn_monitor");					// monitor on/off
@@ -2529,7 +2544,7 @@ static void window_ap_reverb_process(void);
 			}
 			else if (gui.selected_link->link == btn_mic_settings)
 			{
-
+				set_window(winMIC, VISIBLE);
 			}
 			else if (gui.selected_link->link == btn_EQ_ok)
 			{
@@ -2797,6 +2812,74 @@ static void window_ap_reverb_process(void);
 				local_snprintf_P(lbl_reverbLoss->text, ARRAY_SIZE(lbl_reverbLoss->text), PSTR("Loss :  %2d dB"), loss);
 				hamradio_set_reverb_loss(loss);
 			}
+		}
+	}
+
+	static void window_ap_mic_process(void)
+	{
+		window_t * win = & windows[WINDOW_AP_MIC_SETT];
+		static slider_t * sl_micLevel = NULL, * sl_micClip = NULL, * sl_micAGC = NULL;
+		static label_t * lbl_micLevel = NULL, * lbl_micClip = NULL, * lbl_micAGC = NULL;
+
+		if (win->first_call == 1)
+		{
+			uint_fast8_t interval = 60, col1_int = 20;
+			win->first_call = 0;
+			calculate_window_position(win);
+
+			sl_micLevel = find_gui_element_ref(TYPE_SLIDER, win, "sl_micLevel");
+			sl_micClip = find_gui_element_ref(TYPE_SLIDER, win, "sl_micClip");
+			sl_micAGC = find_gui_element_ref(TYPE_SLIDER, win, "sl_micAGC");
+			lbl_micLevel = find_gui_element_ref(TYPE_LABEL, win, "lbl_micLevel");
+			lbl_micClip = find_gui_element_ref(TYPE_LABEL, win, "lbl_micClip");
+			lbl_micAGC = find_gui_element_ref(TYPE_LABEL, win, "lbl_micAGC");
+
+			lbl_micLevel->x = win->x1 + col1_int;
+			lbl_micLevel->y = win->y1 + interval;
+			lbl_micLevel->visible = VISIBLE;
+			local_snprintf_P(lbl_micLevel->text, ARRAY_SIZE(lbl_micLevel->text), PSTR("Level: 50"));
+
+			lbl_micClip->x = lbl_micLevel->x;
+			lbl_micClip->y = lbl_micLevel->y + interval;
+			lbl_micClip->visible = VISIBLE;
+			local_snprintf_P(lbl_micClip->text, ARRAY_SIZE(lbl_micClip->text), PSTR("Clip : 10"));
+
+			lbl_micAGC->x = lbl_micClip->x;
+			lbl_micAGC->y = lbl_micClip->y + interval;
+			lbl_micAGC->visible = VISIBLE;
+			local_snprintf_P(lbl_micAGC->text, ARRAY_SIZE(lbl_micAGC->text), PSTR("AGC  : 50"));
+
+
+			sl_micLevel->x = lbl_micLevel->x + interval * 3;
+			sl_micLevel->y = lbl_micLevel->y;
+			sl_micLevel->visible = VISIBLE;
+			sl_micLevel->size = 300;
+			sl_micLevel->step = 3;
+			sl_micLevel->value = 50;
+
+			sl_micClip->x = sl_micLevel->x;
+			sl_micClip->y = lbl_micClip->y;
+			sl_micClip->visible = VISIBLE;
+			sl_micClip->size = 300;
+			sl_micClip->step = 3;
+			sl_micClip->value = 50;
+
+			sl_micAGC->x = sl_micLevel->x;
+			sl_micAGC->y = lbl_micAGC->y;
+			sl_micAGC->visible = VISIBLE;
+			sl_micAGC->size = 300;
+			sl_micAGC->step = 3;
+			sl_micAGC->value = 50;
+
+			return;
+		}
+	}
+
+	static void buttons_ap_mic_process(void)
+	{
+		if(gui.selected_type == TYPE_BUTTON)
+		{
+
 		}
 	}
 
