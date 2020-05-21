@@ -279,7 +279,7 @@ calcdivround2(
 
  // возврат позиции старшего значащего бита в числе
 static uint_fast8_t 
-ilog2(
+countbits2(
 	unsigned long v		// число на анализ
 	)
 {
@@ -313,7 +313,7 @@ calcdivider(
 		{
 			// такой предделитель существует.
 			const uint_fast32_t modulus = ((divider + prescaler / 2) / prescaler) - substract;
-			if (ilog2(modulus) <= width)
+			if (countbits2(modulus) <= width)
 			{
 				// найдена подходящая комбинация
 				// rb - степень двойки - деление предделителя.
@@ -9397,14 +9397,14 @@ static void ca9_ca7_cache_diag(void)
 		ccsidr0 [leveli] = __get_CCSIDR();
 
 		//const uint32_t assoc0 = (ccsidr0 >> 3) & 0x3FF;
-		//const int passoc0 = ilog2(assoc0);
+		//const int passoc0 = countbits2(assoc0);
 		//const uint32_t maxsets0 = (ccsidr0 >> 13) & 0x7FFF;
 
 		__set_CSSELR(leveli * 2 + 1);	// instruction cache select
 		ccsidr1 [leveli] = __get_CCSIDR();
 
 		//const uint32_t assoc1 = (ccsidr1 >> 3) & 0x3FF;
-		//const int passoc1 = ilog2(assoc1);
+		//const int passoc1 = countbits2(assoc1);
 		//const uint32_t maxsets1 = (ccsidr1 >> 13) & 0x7FFF;
 
 		// Установка размера строки кэша
@@ -11436,7 +11436,7 @@ sysinit_mmu_initialize(void)
 		__set_CSSELR(leveli * 2 + 0);	// data cache select
 		const uint32_t ccsidr0 = __get_CCSIDR();
 		const uint32_t assoc0 = (ccsidr0 >> 3) & 0x3FF;
-		const int passoc0 = ilog2(assoc0);
+		const int passoc0 = countbits2(assoc0);
 		const uint32_t maxsets0 = (ccsidr0 >> 13) & 0x7FFF;
 		const uint32_t linesize0 = 4uL << (((ccsidr0 >> 0) & 0x07) + 2);
 		debug_printf_P(PSTR("cpu_initialize1: level=%d, passoc=%d, assoc=%u, maxsets=%u, data cache row size = %u\n"), leveli, passoc0, assoc0, maxsets0, linesize0);
@@ -11444,7 +11444,7 @@ sysinit_mmu_initialize(void)
 		__set_CSSELR(leveli * 2 + 1);	// instruction cache select
 		const uint32_t ccsidr1 = __get_CCSIDR();
 		const uint32_t assoc1 = (ccsidr1 >> 3) & 0x3FF;
-		const int passoc1 = ilog2(assoc1);
+		const int passoc1 = countbits2(assoc1);
 		const uint32_t maxsets1 = (ccsidr1 >> 13) & 0x7FFF;
 		const uint32_t linesize1 = 4uL << (((ccsidr1 >> 0) & 0x07) + 2);
 		debug_printf_P(PSTR("cpu_initialize1: level=%d, passoc=%d, assoc=%u, maxsets=%u, instr cache row size = %u\n"), leveli, passoc1, assoc1, maxsets1, linesize1);
