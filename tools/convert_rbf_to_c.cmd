@@ -15,5 +15,6 @@ rbf2c.exe %SRCPATH%\t1_v7h_2ch.rbf ..\rbf\rbfimage_v7h_2ch.h
 rbf2c.exe %SRCPATH%\t1_v7_oleg4z.rbf ..\rbf\rbfimage_oleg4z.h
 rbf2c.exe %SRCPATH%\t1_v8t_96k.rbf ..\rbf\rbfimage_v8t_96k.h
 rbf2c.exe %SRCPATH%\t1_v8t_192k.rbf ..\rbf\rbfimage_v8t_192k.h
+rbf2c.exe %SRCPATH%\t1_v9a_2ch.rbf ..\rbf\rbfimage_v9a_2ch.h
 
 pause
