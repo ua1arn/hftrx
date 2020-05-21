@@ -127,6 +127,15 @@ enum
 #define WITHMIKEAGCMIN		10
 #define WITHMIKEAGCMAX		60
 
+#define WITHVOXDELAYMIN		10
+#define WITHVOXDELAYMAX		250
+
+#define WITHVOXLEVELMIN		0
+#define WITHVOXLEVELMAX		100
+
+#define WITHAVOXLEVELMIN	0
+#define WITHAVOXLEVELMAX	100
+
 //#define WITHFILTSOFTMIN		0		/* код управления сглаживанием скатов фильтра основной селекции на приёме */
 //#define WITHFILTSOFTMAX		100		/* код управления сглаживанием скатов фильтра основной селекции на приёме */
 
@@ -3316,6 +3325,7 @@ void hamradio_set_gmikeequalizer(uint_fast8_t v);
 uint_fast8_t hamradio_get_gmikeequalizerparams(uint_fast8_t i);
 void hamradio_set_gmikeequalizerparams(uint_fast8_t i, uint_fast8_t v);
 int_fast32_t hamradio_getequalizerbase(void);
+
 #if WITHREVERB
 void hamradio_set_greverb(uint_fast8_t v);
 uint_fast8_t hamradio_get_greverb(void);
@@ -3326,6 +3336,7 @@ uint_fast8_t hamradio_get_reverb_loss(void);
 void hamradio_set_reverb_delay(uint_fast8_t v);
 void hamradio_set_reverb_loss(uint_fast8_t v);
 #endif /* WITHREVERB */
+
 void hamradio_set_gmoniflag(uint_fast8_t v);
 uint_fast8_t hamradio_get_gmoniflag(void);
 uint_fast8_t hamradio_get_gmikebust20db(void);
@@ -3341,6 +3352,20 @@ void hamradio_set_gmikehclip(uint_fast8_t v);
 void hamradio_get_mic_agc_limits(uint_fast8_t * min, uint_fast8_t * max);
 uint_fast8_t hamradio_get_gmikeagcgain(void);
 void hamradio_set_gmikeagcgain(uint_fast8_t v);
+
+#if WITHVOX
+void hamradio_set_gvoxenable(uint_fast8_t v);
+uint_fast8_t hamradio_get_gvoxenable(void);
+void hamradio_get_vox_delay_limits(uint_fast8_t * min, uint_fast8_t * max);
+uint_fast8_t hamradio_get_vox_delay(void);
+void hamradio_set_vox_delay(uint_fast8_t v);
+void hamradio_get_vox_level_limits(uint_fast8_t * min, uint_fast8_t * max);
+uint_fast8_t hamradio_get_vox_level(void);
+void hamradio_set_vox_level(uint_fast8_t v);
+void hamradio_get_antivox_delay_limits(uint_fast8_t * min, uint_fast8_t * max);
+uint_fast8_t hamradio_get_antivox_level(void);
+void hamradio_set_antivox_level(uint_fast8_t v);
+#endif /* WITHVOX */
 
 #ifdef __cplusplus
 }

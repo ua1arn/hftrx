@@ -14006,7 +14006,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	{
 		QLABEL("VOXDELAY"), 7, 2, 0,	ISTEP5,	/* 50 mS step of changing value */
 		ITEM_VALUE,
-		10, 250,						/* 0.1..2.5 secounds delay */ 
+		WITHVOXDELAYMIN, WITHVOXDELAYMAX,						/* 0.1..2.5 secounds delay */
 		offsetof(struct nvmap, voxdelay),
 		NULL,
 		& voxdelay,
@@ -14015,7 +14015,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	{
 		QLABEL("VOX LEVL"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
-		0, 100, 
+		WITHVOXLEVELMIN, WITHVOXLEVELMAX,
 		offsetof(struct nvmap, gvoxlevel),
 		NULL,
 		& gvoxlevel,
@@ -14024,7 +14024,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	{
 		QLABEL("AVOX LEV"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
-		0, 100, 
+		WITHAVOXLEVELMIN, WITHAVOXLEVELMAX,
 		offsetof(struct nvmap, gavoxlevel),
 		NULL,
 		& gavoxlevel,
@@ -18265,6 +18265,78 @@ hamradio_main_step(void)
 	}
 	return STTE_OK;
 }
+
+#if WITHVOX
+
+void hamradio_set_gvoxenable(uint_fast8_t v)
+{
+	gvoxenable = v != 0;
+	updateboard(1, 0);
+}
+
+uint_fast8_t hamradio_get_gvoxenable(void)
+{
+	return gvoxenable;
+}
+
+void hamradio_get_vox_delay_limits(uint_fast8_t * min, uint_fast8_t * max)
+{
+	* min = WITHVOXDELAYMIN;
+	* max = WITHVOXDELAYMAX;
+}
+
+uint_fast8_t hamradio_get_vox_delay(void)
+{
+	return voxdelay;
+}
+
+void hamradio_set_vox_delay(uint_fast8_t v)
+{
+	ASSERT(v >= WITHVOXDELAYMIN);
+	ASSERT(v <= WITHVOXDELAYMAX);
+	voxdelay = v;
+	updateboard(1, 0);
+}
+
+void hamradio_get_vox_level_limits(uint_fast8_t * min, uint_fast8_t * max)
+{
+	* min = WITHVOXLEVELMIN;
+	* max = WITHVOXLEVELMAX;
+}
+
+uint_fast8_t hamradio_get_vox_level(void)
+{
+	return gvoxlevel;
+}
+
+void hamradio_set_vox_level(uint_fast8_t v)
+{
+	ASSERT(v >= WITHVOXLEVELMIN);
+	ASSERT(v <= WITHVOXLEVELMAX);
+	gvoxlevel = v;
+	updateboard(1, 0);
+}
+
+void hamradio_get_antivox_delay_limits(uint_fast8_t * min, uint_fast8_t * max)
+{
+	* min = WITHAVOXLEVELMIN;
+	* max = WITHAVOXLEVELMAX;
+}
+
+uint_fast8_t hamradio_get_antivox_level(void)
+{
+	return gavoxlevel;
+}
+
+void hamradio_set_antivox_level(uint_fast8_t v)
+{
+	ASSERT(v >= WITHAVOXLEVELMIN);
+	ASSERT(v <= WITHAVOXLEVELMAX);
+	gavoxlevel = v;
+	updateboard(1, 0);
+}
+
+#endif /* WITHVOX */
 
 #if WITHIF4DSP
 

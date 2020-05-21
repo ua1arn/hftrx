@@ -888,10 +888,12 @@ static void buttons_ap_mic_process(void);
 		WINDOW_MENU,
 		WINDOW_ENC2,
 		WINDOW_UIF,
-		WINDOW_AUDIOSETTINGS,
-		WINDOW_AP_MIC_EQ,
-		WINDOW_AP_REVERB_SETT,
-		WINDOW_AP_MIC_SETT
+		WINDOW_AUDIOSETTINGS,			// настройки аудиопараметров
+		WINDOW_AP_MIC_EQ,				// эквалайзер микрофона
+		WINDOW_AP_REVERB_SETT,			// параметры ревербератора
+		WINDOW_AP_MIC_SETT,				// настройки микрофона
+		WINDOW_TX_SETTINGS,				// настройки, относящиеся к режиму передачи
+		WINDOW_VOX_SETT					// настройки VOX
 	};
 
 	enum {
@@ -1170,19 +1172,19 @@ static void buttons_ap_mic_process(void);
 	} window_t;
 
 	static window_t windows[] = {
-	//     window_id,   		 parent_id, 			align_mode,     x1, y1, w, h,   title,     			    is_show, first_call, onVisibleProcess
-		{ WINDOW_MAIN, 			 UINT8_MAX, 			ALIGN_LEFT_X,	0, 0,   0,   0, "",  	   	   			 NON_VISIBLE, 0, gui_main_process, },
-		{ WINDOW_MODES, 		 UINT8_MAX, 			ALIGN_CENTER_X, 0, 0, 402, 150, "Select mode", 			 NON_VISIBLE, 0, window_mode_process, },
-		{ WINDOW_BP,    		 UINT8_MAX, 			ALIGN_CENTER_X, 0, 0, 372, 205, "Bandpass",    			 NON_VISIBLE, 0, window_bp_process, },
-		{ WINDOW_AGC,   		 UINT8_MAX, 			ALIGN_CENTER_X, 0, 0, 372, 110, "AGC control", 			 NON_VISIBLE, 0, window_agc_process, },
-		{ WINDOW_FREQ,  		 UINT8_MAX, 			ALIGN_CENTER_X, 0, 0, 250, 215, "Freq:", 	   			 NON_VISIBLE, 0, window_freq_process, },
-		{ WINDOW_MENU,  		 UINT8_MAX, 			ALIGN_CENTER_X, 0, 0, 550, 240, "Settings",	   		 	 NON_VISIBLE, 0, window_menu_process, },
-		{ WINDOW_ENC2, 			 UINT8_MAX, 			ALIGN_RIGHT_X, 	0, 0, 185, 105, "Fast menu",  			 NON_VISIBLE, 0, window_enc2_process, },
-		{ WINDOW_UIF, 			 UINT8_MAX, 			ALIGN_LEFT_X, 	0, 0, 200, 145, "",   		   	 		 NON_VISIBLE, 0, window_uif_process, },
-		{ WINDOW_AUDIOSETTINGS,  UINT8_MAX, 			ALIGN_CENTER_X, 0, 0, 380, 180, "Audio settings", 		 NON_VISIBLE, 0, window_audiosettings_process, },
-		{ WINDOW_AP_MIC_EQ, 	 WINDOW_AUDIOSETTINGS, 	ALIGN_CENTER_X, 0, 0, 450, 350, "MIC TX equalizer",		 NON_VISIBLE, 0, window_ap_mic_eq_process, },
-		{ WINDOW_AP_REVERB_SETT, WINDOW_AUDIOSETTINGS, 	ALIGN_CENTER_X, 0, 0, 580, 170, "Reverberator settings", NON_VISIBLE, 0, window_ap_reverb_process, },
-		{ WINDOW_AP_MIC_SETT, 	 WINDOW_AUDIOSETTINGS, 	ALIGN_CENTER_X, 0, 0, 480, 260, "Microphone settings", 	 NON_VISIBLE, 0, window_ap_mic_process, },
+	//     window_id,   		 parent_id, 			align_mode,     x1, y1, w, h,   title,     			 is_show, first_call, onVisibleProcess
+		{ WINDOW_MAIN, 			 UINT8_MAX, 			ALIGN_LEFT_X,	0, 0, 0, 0, "",  	   	   			 NON_VISIBLE, 0, gui_main_process, },
+		{ WINDOW_MODES, 		 UINT8_MAX, 			ALIGN_CENTER_X, 0, 0, 0, 0, "Select mode", 			 NON_VISIBLE, 0, window_mode_process, },
+		{ WINDOW_BP,    		 UINT8_MAX, 			ALIGN_CENTER_X, 0, 0, 0, 0, "Bandpass",    			 NON_VISIBLE, 0, window_bp_process, },
+		{ WINDOW_AGC,   		 UINT8_MAX, 			ALIGN_CENTER_X, 0, 0, 0, 0, "AGC control", 			 NON_VISIBLE, 0, window_agc_process, },
+		{ WINDOW_FREQ,  		 UINT8_MAX, 			ALIGN_CENTER_X, 0, 0, 0, 0, "Freq:", 	   			 NON_VISIBLE, 0, window_freq_process, },
+		{ WINDOW_MENU,  		 UINT8_MAX, 			ALIGN_CENTER_X, 0, 0, 0, 0, "Settings",	   		 	 NON_VISIBLE, 0, window_menu_process, },
+		{ WINDOW_ENC2, 			 UINT8_MAX, 			ALIGN_RIGHT_X, 	0, 0, 0, 0, "",  			 		 NON_VISIBLE, 0, window_enc2_process, },
+		{ WINDOW_UIF, 			 UINT8_MAX, 			ALIGN_LEFT_X, 	0, 0, 0, 0, "",   		   	 		 NON_VISIBLE, 0, window_uif_process, },
+		{ WINDOW_AUDIOSETTINGS,  UINT8_MAX, 			ALIGN_CENTER_X, 0, 0, 0, 0, "Audio settings", 		 NON_VISIBLE, 0, window_audiosettings_process, },
+		{ WINDOW_AP_MIC_EQ, 	 WINDOW_AUDIOSETTINGS, 	ALIGN_CENTER_X, 0, 0, 0, 0, "MIC TX equalizer",		 NON_VISIBLE, 0, window_ap_mic_eq_process, },
+		{ WINDOW_AP_REVERB_SETT, WINDOW_AUDIOSETTINGS, 	ALIGN_CENTER_X, 0, 0, 0, 0, "Reverberator settings", NON_VISIBLE, 0, window_ap_reverb_process, },
+		{ WINDOW_AP_MIC_SETT, 	 WINDOW_AUDIOSETTINGS, 	ALIGN_CENTER_X, 0, 0, 0, 0, "Microphone settings", 	 NON_VISIBLE, 0, window_ap_mic_process, },
 	};
 	enum { windows_count = ARRAY_SIZE(windows) };
 
@@ -1298,6 +1300,7 @@ static void buttons_ap_mic_process(void);
 					return (button_t *) bh;
 			}
 			ASSERT(0);
+			return NULL;
 			break;
 
 		case TYPE_LABEL:
@@ -1308,6 +1311,7 @@ static void buttons_ap_mic_process(void);
 					return (label_t *) lh;
 			}
 			ASSERT(0);
+			return NULL;
 			break;
 
 		case TYPE_SLIDER:
@@ -1318,6 +1322,7 @@ static void buttons_ap_mic_process(void);
 					return (slider_t *) sh;
 			}
 			ASSERT(0);
+			return NULL;
 			break;
 
 		default:
@@ -1530,8 +1535,12 @@ static void buttons_ap_mic_process(void);
 	}
 
 	/* Расчет экранных координат окна */
-	static void calculate_window_position(window_t * win)
+	static void calculate_window_position(window_t * win, uint16_t xmax, uint16_t ymax)
 	{
+		uint_fast8_t edge_step = 20;
+		win->w = xmax + edge_step;
+		win->h = ymax + edge_step;
+
 		win->y1 = ALIGN_Y - win->h / 2;
 
 		switch (win->align_mode)
@@ -1586,6 +1595,7 @@ static void buttons_ap_mic_process(void);
 		}
 	}
 
+	// FIXME: Доделать автовыравнивание
 	static void window_bp_process(void)
 	{
 		static uint_fast8_t val_high, val_low, val_c, val_w;
@@ -1597,16 +1607,15 @@ static void buttons_ap_mic_process(void);
 
 		if (win->first_call == 1)
 		{
-			uint_fast16_t id = 0, x, y;
+			uint_fast16_t id = 0, x, y, xmax = 0, ymax = 0;
 			uint_fast8_t interval = 20, col1_int = 35, row1_int = 20, id_start, id_end;
-			calculate_window_position(win);
-			x_0 = win->x1 + 50;											// координаты нулевой точки графика
-			y_0 = win->y1 + 90;
+			x_0 = 50;											// координаты нулевой точки графика
+			y_0 = 90;
 
 			find_entry_area_elements(TYPE_BUTTON, win, & id_start, & id_end);
 
-			x = win->x1 + col1_int;
-			y = win->y1 + win->h - ((button_t *) touch_elements[id_start].link)->h - row1_int;
+			x = col1_int;
+			y = 150;
 			for (uint_fast8_t id = id_start; id <= id_end; id++)
 			{
 				button_t * bh = (button_t *) touch_elements[id].link;;
@@ -1642,6 +1651,10 @@ static void buttons_ap_mic_process(void);
 				strcpy(button_low->text, "Width");
 				button_low->is_locked = 1;
 			}
+
+			xmax = button_high->x1 + button_high->w;
+			ymax = button_high->y1 + button_high->h;
+			calculate_window_position(win, xmax, ymax);
 		}
 
 		if (encoder2.rotate != 0 || win->first_call)
@@ -1700,12 +1713,12 @@ static void buttons_ap_mic_process(void);
 			gui.timer_1sec_updated = 1;
 		}
 		PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
-		colpip_line(fr, DIM_X, DIM_Y, x_0 - 10, y_0, x_0 + x_size, y_0, COLORPIP_WHITE);
-		colpip_line(fr, DIM_X, DIM_Y, x_0, y_0 - 45, x_0, y_0 + 5, COLORPIP_WHITE);
-		colpip_line(fr, DIM_X, DIM_Y, x_l, y_0 - 40, x_l - 4, y_0 - 3, COLORPIP_YELLOW);
-		colpip_line(fr, DIM_X, DIM_Y, x_h, y_0 - 40, x_h + 4, y_0 - 3, COLORPIP_YELLOW);
-		colpip_line(fr, DIM_X, DIM_Y, x_l, y_0 - 40, x_h, y_0 - 40, COLORPIP_YELLOW);
-		colpip_line(fr, DIM_X, DIM_Y, x_c, y_0 - 45, x_c, y_0 + 5, COLORPIP_RED);
+		colpip_line(fr, DIM_X, DIM_Y, win->x1 + x_0 - 10, win->y1 + y_0, win->x1 + x_0 + x_size, win->y1 + y_0, COLORPIP_WHITE);
+		colpip_line(fr, DIM_X, DIM_Y, win->x1 + x_0, win->y1 + y_0 - 45, win->x1 + x_0, win->y1 + y_0 + 5, COLORPIP_WHITE);
+		colpip_line(fr, DIM_X, DIM_Y, win->x1 + x_l, win->y1 + y_0 - 40, win->x1 + x_l - 4, win->y1 + y_0 - 3, COLORPIP_YELLOW);
+		colpip_line(fr, DIM_X, DIM_Y, win->x1 + x_h, win->y1 + y_0 - 40, win->x1 + x_h + 4, win->y1 + y_0 - 3, COLORPIP_YELLOW);
+		colpip_line(fr, DIM_X, DIM_Y, win->x1 + x_l, win->y1 + y_0 - 40, win->x1 + x_h, win->y1 + y_0 - 40, COLORPIP_YELLOW);
+		colpip_line(fr, DIM_X, DIM_Y, win->x1 + x_c, win->y1 + y_0 - 45, win->x1 + x_c, win->y1 + y_0 + 5, COLORPIP_RED);
 	}
 
 	static void buttons_freq_handler (void)
@@ -1722,18 +1735,17 @@ static void buttons_ap_mic_process(void);
 
 		if (win->first_call == 1)
 		{
-			uint_fast16_t x, y;
-			uint_fast8_t interval = 6, col1_int = 20, row1_int = 40, id_start, id_end;
+			uint_fast16_t x, y, xmax = 0, ymax = 0;
+			uint_fast8_t interval = 6, col1_int = 20, row1_int = 40, row_count = 4, id_start, id_end;
 			button_t * bh = NULL;
 			win->first_call = 0;
-			calculate_window_position(win);
 
 			find_entry_area_elements(TYPE_BUTTON, win, & id_start, & id_end);
 
-			x = win->x1 + col1_int;
-			y = win->y1 + row1_int;
+			x = col1_int;
+			y = row1_int;
 
-			for (uint_fast8_t i = id_start; i <= id_end; i ++)
+			for (uint_fast8_t i = id_start, r = 1; i <= id_end; i ++, r ++)
 			{
 				bh = (button_t *) touch_elements[i].link;
 				bh->x1 = x;
@@ -1741,19 +1753,23 @@ static void buttons_ap_mic_process(void);
 				bh->visible = VISIBLE;
 
 				x = x + interval + bh->w;
-				if (x + bh->w > win->x1 + win->w)
+				if (r >= row_count)
 				{
-					x = win->x1 + col1_int;
+					r = 0;
+					x = col1_int;
 					y = y + bh->h + interval;
 				}
+				xmax = (xmax > bh->x1 + bh->w) ? xmax : (bh->x1 + bh->w);
+				ymax = (ymax > bh->y1 + bh->h) ? ymax : (bh->y1 + bh->h);
 			}
+			calculate_window_position(win, xmax, ymax);
 
 			bh = find_gui_element_ref(TYPE_BUTTON, win, "btnFreqOK");
 			bh->is_locked = BUTTON_LOCKED;
 
 			lbl_freq = find_gui_element_ref(TYPE_LABEL, win, "lbl_freq_val");
-			lbl_freq->x = win->x1 + strwidth(win->name) + strwidth(" ") + 20;
-			lbl_freq->y = win->y1 + 10;
+			lbl_freq->x = strwidth(win->name) + strwidth(" ") + 20;
+			lbl_freq->y = 10;
 			strcpy(lbl_freq->text, "     0 k");
 			lbl_freq->color = COLORPIP_YELLOW;
 			lbl_freq->visible = VISIBLE;
@@ -1848,6 +1864,7 @@ static void buttons_ap_mic_process(void);
 		}
 	}
 
+	// FIXME: Доделать автовыравнивание
 	static void window_uif_process(void)
 	{
 		static label_t * lbl_uif_param, * lbl_uif_val;
@@ -1858,20 +1875,22 @@ static void buttons_ap_mic_process(void);
 		if (win->first_call)
 		{
 			win->first_call = 0;
-			calculate_window_position(win);
-			window_center_x = win->x1 + win->w / 2;
+			uint_fast16_t xmax = 0, ymax = 0;
+			uint_fast8_t col1_int = 20, row1_int = 5;
 
 			lbl_uif_param = find_gui_element_ref(TYPE_LABEL, win, "lbl_uif_param");
 			strcpy(lbl_uif_param->text, menu_uif.name);
-			lbl_uif_param->x = window_center_x - (get_label_width(lbl_uif_param) / 2);
-			lbl_uif_param->y = win->y1 + get_label_height(lbl_uif_param);
+			lbl_uif_param->x = col1_int;
+			lbl_uif_param->y = row1_int;
 			lbl_uif_param->visible = VISIBLE;
+
+			window_center_x = lbl_uif_param->x * 2 + get_label_width(lbl_uif_param) / 2;
 
 			lbl_uif_val = find_gui_element_ref(TYPE_LABEL, win, "lbl_uif_val");
 			const char * v = hamradio_gui_edit_menu_item(menu_uif.menupos, 0);
 			strcpy(lbl_uif_val->text, v);
 			lbl_uif_val->x = window_center_x - (get_label_width(lbl_uif_val) / 2);
-			lbl_uif_val->y = win->y1 + get_label_height(lbl_uif_param) * 4;
+			lbl_uif_val->y = get_label_height(lbl_uif_param) * 4;
 			lbl_uif_val->visible = VISIBLE;
 
 			button_down = find_gui_element_ref(TYPE_BUTTON, win, "btnUIF-");
@@ -1883,6 +1902,10 @@ static void buttons_ap_mic_process(void);
 			button_up->x1 = lbl_uif_val->x + get_label_width(lbl_uif_val) + 10;
 			button_up->y1 = button_down->y1;
 			button_up->visible = VISIBLE;
+
+			xmax = button_up->x1 + button_up->w;
+			ymax = button_up->y1 + button_up->h;
+			calculate_window_position(win, xmax, ymax);
 
 			hamradio_enable_keyboard_redirect();
 			return;
@@ -1959,9 +1982,9 @@ static void buttons_ap_mic_process(void);
 
 		if (win->first_call == 1)
 		{
+			uint_fast16_t xmax = 0, ymax = 0;
 			win->first_call = 0;
 			win->align_mode = ALIGN_CENTER_X;						// выравнивание окна системных настроек всегда по центру
-			calculate_window_position(win);
 
 			hamradio_set_menu_cond(VISIBLE);
 
@@ -2018,8 +2041,8 @@ static void buttons_ap_mic_process(void);
 			menu[MENU_VALS].num_rows = menu[MENU_VALS].last_id - menu[MENU_VALS].first_id;
 
 			menu[MENU_GROUPS].count = hamradio_get_multilinemenu_block_groups(menu[MENU_GROUPS].menu_block) - 1;
-			xn = win->x1 + col1_int;
-			yn = win->y1 + row1_int;
+			xn = col1_int;
+			yn = row1_int;
 			for(i = 0; i <= menu[MENU_GROUPS].num_rows; i++)
 			{
 				lh = touch_elements[menu[MENU_GROUPS].first_id + i].link;
@@ -2033,7 +2056,7 @@ static void buttons_ap_mic_process(void);
 
 			menu[MENU_PARAMS].count = hamradio_get_multilinemenu_block_params(menu[MENU_PARAMS].menu_block, menu[MENU_GROUPS].menu_block[menu[MENU_GROUPS].selected_str].index) - 1;
 			xn += int_cols;
-			yn = win->y1 + row1_int;
+			yn = row1_int;
 			for(i = 0; i <= menu[MENU_PARAMS].num_rows; i++)
 			{
 				lh = touch_elements[menu[MENU_PARAMS].first_id + i].link;
@@ -2048,7 +2071,7 @@ static void buttons_ap_mic_process(void);
 			menu[MENU_VALS].count = menu[MENU_PARAMS].count < menu[MENU_VALS].num_rows ? menu[MENU_PARAMS].count :  menu[MENU_VALS].num_rows;
 			hamradio_get_multilinemenu_block_vals(menu[MENU_VALS].menu_block, menu[MENU_PARAMS].menu_block[menu[MENU_PARAMS].selected_str].index, menu[MENU_VALS].count);
 			xn += int_cols;
-			yn = win->y1 + row1_int;
+			yn = row1_int;
 			for(i = 0; i <= menu[MENU_VALS].num_rows; i++)
 			{
 				lh = touch_elements[menu[MENU_VALS].first_id + i].link;
@@ -2064,6 +2087,10 @@ static void buttons_ap_mic_process(void);
 			}
 
 			menu_level = MENU_GROUPS;
+
+			xmax = lh->x + 100;
+			ymax = lh->y + get_label_height(lh);
+			calculate_window_position(win, xmax, ymax);
 			return;
 		}
 
@@ -2277,7 +2304,7 @@ static void buttons_ap_mic_process(void);
 				if (i > menu[MENU_PARAMS].count)
 					continue;
 				strcpy(lp->text, menu[MENU_PARAMS].menu_block[i + menu[MENU_PARAMS].add_id].name);
-				strcpy(lv->text,   menu[MENU_VALS].menu_block[i].name);
+				strcpy(lv->text, menu[MENU_VALS].menu_block[i].name);
 				lp->visible = VISIBLE;
 				lp->state = CANCELLED;
 				lv->visible = VISIBLE;
@@ -2292,11 +2319,13 @@ static void buttons_ap_mic_process(void);
 		case MENU_PARAMS:
 		case MENU_VALS:
 			lh = touch_elements[menu[MENU_PARAMS].first_id + menu[MENU_PARAMS].selected_label].link;
-			colpip_rect(colmain_fb_draw(), DIM_X, DIM_Y, lh->x - 5, lh->y - 5, lh->x + int_cols - 20, lh->y + get_label_height(lh) + 5, GUI_MENUSELECTCOLOR, 1);
+			colpip_rect(colmain_fb_draw(), DIM_X, DIM_Y, win->x1 + lh->x - 5, win->y1 + lh->y - 5, win->x1 + lh->x + int_cols - 20,
+					win->y1 + lh->y + get_label_height(lh) + 5, GUI_MENUSELECTCOLOR, 1);
 
 		case MENU_GROUPS:
 			lh = touch_elements[menu[MENU_GROUPS].first_id + menu[MENU_GROUPS].selected_label].link;
-			colpip_rect(colmain_fb_draw(), DIM_X, DIM_Y, lh->x - 5, lh->y - 5, lh->x + int_cols - 20, lh->y + get_label_height(lh) + 5, GUI_MENUSELECTCOLOR, 1);
+			colpip_rect(colmain_fb_draw(), DIM_X, DIM_Y, win->x1 + lh->x - 5, win->y1 + lh->y - 5, win->x1 + lh->x + int_cols - 20,
+					win->y1 + lh->y + get_label_height(lh) + 5, GUI_MENUSELECTCOLOR, 1);
 		}
 
 	}
@@ -2318,7 +2347,7 @@ static void buttons_ap_mic_process(void);
 		if (win->first_call == 1)
 		{
 			win->align_mode = ALIGN_CENTER_X;						// выравнивание окна системных настроек только по центру
-			calculate_window_position(win);
+			calculate_window_position(win, xmax, ymax);
 
 			win->first_call = 0;
 		}
@@ -2377,33 +2406,31 @@ static void buttons_ap_mic_process(void);
 	static void window_enc2_process(void)
 	{
 		static label_t * lbl_param,  * lbl_val;
-		static uint_fast16_t window_center_x;
 		window_t * win = & windows[WINDOW_ENC2];
+		uint_fast8_t col1_int = 20, row1_int = 20;
 
-
-		if (win->first_call == 1)
+		if (win->first_call == 1 || gui_enc2_menu->updated)
 		{
-			calculate_window_position(win);
-			window_center_x =  win->x1 + win->w / 2;
+			uint_fast16_t xmax = 0, ymax = 0;
+
 			win->first_call = 0;
 			lbl_param = find_gui_element_ref(TYPE_LABEL, win, "lbl_enc2_param");
-			lbl_val = find_gui_element_ref(TYPE_LABEL, win, "lbl_enc2_val");
-			lbl_param->y = win->y1 + get_label_height(lbl_param) * 3;
-			lbl_val->y = lbl_param->y + get_label_height(lbl_val) * 2;
-			lbl_param->visible = VISIBLE;
-			lbl_val->visible = VISIBLE;
-			return;
-		}
-		if(gui_enc2_menu->updated)
-		{
+			lbl_param->x = col1_int;
+			lbl_param->y = row1_int;
 			strcpy(lbl_param->text, gui_enc2_menu->param);
 			remove_end_line_spaces(lbl_param->text);
+			lbl_param->visible = VISIBLE;
+
+			lbl_val = find_gui_element_ref(TYPE_LABEL, win, "lbl_enc2_val");
+			lbl_val->y = lbl_param->y + get_label_height(lbl_val) * 2;
+			lbl_val->visible = VISIBLE;
 			strcpy(lbl_val->text, gui_enc2_menu->val);
 			lbl_val->color = gui_enc2_menu->state == 2 ? COLORPIP_YELLOW : COLORPIP_WHITE;
+			lbl_val->x = lbl_param->x + get_label_width(lbl_param) / 2 - get_label_width(lbl_val) / 2;
 
-			lbl_param->x = window_center_x - get_label_width(lbl_param) / 2;
-			lbl_val->x = window_center_x - get_label_width(lbl_val) / 2;
-
+			xmax = lbl_param->x + get_label_width(lbl_param);
+			ymax = lbl_val->y + get_label_height(lbl_val);
+			calculate_window_position(win, xmax, ymax);
 			gui_enc2_menu->updated = 0;
 			gui.timer_1sec_updated = 1;
 		}
@@ -2431,28 +2458,34 @@ static void buttons_ap_mic_process(void);
 		window_t * win = & windows[WINDOW_MODES];
 		if (win->first_call == 1)
 		{
+			button_t * bh = NULL;
 			uint_fast16_t x, y;
-			uint_fast8_t interval = 6, id = 0, col1_int = 20, row1_int = 40;
+			uint_fast16_t xmax = 0, ymax = 0;
+			uint_fast8_t interval = 6, col1_int = 20, row1_int = 40, row_count = 4;
 			uint_fast8_t id_start, id_end;
 			win->first_call = 0;
-			calculate_window_position(win);
+
 			find_entry_area_elements(TYPE_BUTTON, win, & id_start, & id_end);
 
-			x = win->x1 + col1_int;
-			y = win->y1 + row1_int;
-			for (uint_fast8_t id = id_start; id <= id_end; id++)
+			x = col1_int;
+			y = row1_int;
+			for (uint_fast8_t i = id_start, r = 1; i <= id_end; i ++, r ++)
 			{
-				button_t * bh = (button_t *) touch_elements[id].link;
+				bh = (button_t *) touch_elements[i].link;
 				bh->x1 = x;
 				bh->y1 = y;
 				bh->visible = VISIBLE;
 				x = x + interval + bh->w;
-				if (x + bh->w > win->x1 + win->w)
+				if (r >= row_count)
 				{
-					x = win->x1 + col1_int;
-					y = win->y1 + row1_int + bh->h + interval;
+					r = 0;
+					x = col1_int;
+					y = row1_int + bh->h + interval;
 				}
+				xmax = (xmax > bh->x1 + bh->w) ? xmax : (bh->x1 + bh->w);
+				ymax = (ymax > bh->y1 + bh->h) ? ymax : (bh->y1 + bh->h);
 			}
+			calculate_window_position(win, xmax, ymax);
 			return;
 		}
 	}
@@ -2462,29 +2495,34 @@ static void buttons_ap_mic_process(void);
 		window_t * win = & windows[WINDOW_AGC];
 		if (win->first_call == 1)
 		{
-			uint_fast16_t x, y;
-			uint_fast8_t interval = 40, col1_int = 20, row1_int = 40;
-			uint_fast8_t id = 0, id_start, id_end;
+			uint_fast16_t x = 0, y = 0, xmax = 0, ymax = 0;
+			uint_fast8_t interval = 6, col1_int = 20, row1_int = 40, row_count = 4, id_start, id_end;
 			win->first_call = 0;
-			calculate_window_position(win);
+			button_t * bh = NULL;
 
 			find_entry_area_elements(TYPE_BUTTON, win, & id_start, & id_end);
 
-			x = win->x1 + col1_int;
-			y = win->y1 + row1_int;
-			for (uint_fast8_t id = id_start; id <= id_end; id++)
+			x = col1_int;
+			y = row1_int;
+
+			for (uint_fast8_t i = id_start, r = 1; i <= id_end; i ++, r ++)
 			{
-				button_t * bh = (button_t *) touch_elements[id].link;
+				bh = (button_t *) touch_elements[i].link;
 				bh->x1 = x;
 				bh->y1 = y;
 				bh->visible = VISIBLE;
+
 				x = x + interval + bh->w;
-				if (x + bh->w > win->x1 + win->w)
+				if (r >= row_count)
 				{
-					x = win->x1 + col1_int;
-					y = win->y1 + row1_int + bh->h + interval;
+					r = 0;
+					x = col1_int;
+					y = y + bh->h + interval;
 				}
+				xmax = (xmax > bh->x1 + bh->w) ? xmax : (bh->x1 + bh->w);
+				ymax = (ymax > bh->y1 + bh->h) ? ymax : (bh->y1 + bh->h);
 			}
+			calculate_window_position(win, xmax, ymax);
 			return;
 		}
 	}
@@ -2559,30 +2597,34 @@ static void buttons_ap_mic_process(void);
 
 		if (win->first_call == 1)
 		{
-			button_t * bh;
-			uint_fast16_t x, y;
-			uint_fast8_t interval = 20, col1_int = 20, row1_int = 40;
-			uint_fast8_t id = 0, id_start, id_end;
+			uint_fast16_t x = 0, y = 0, xmax = 0, ymax = 0;
+			uint_fast8_t interval = 6, col1_int = 20, row1_int = 40, row_count = 3, id_start, id_end;
+			button_t * bh = NULL;
 			win->first_call = 0;
-			calculate_window_position(win);
 
 			find_entry_area_elements(TYPE_BUTTON, win, & id_start, & id_end);
 
-			x = win->x1 + col1_int;
-			y = win->y1 + row1_int;
-			for (uint_fast8_t id = id_start; id <= id_end; id++)
+			x = col1_int;
+			y = row1_int;
+
+			for (uint_fast8_t i = id_start, r = 1; i <= id_end; i ++, r ++)
 			{
-				bh = (button_t *) touch_elements[id].link;
+				bh = (button_t *) touch_elements[i].link;
 				bh->x1 = x;
 				bh->y1 = y;
 				bh->visible = VISIBLE;
+
 				x = x + interval + bh->w;
-				if (x + bh->w > win->x1 + win->w)
+				if (r >= row_count)
 				{
-					x = win->x1 + col1_int;
-					y = win->y1 + row1_int + bh->h + interval;
+					r = 0;
+					x = col1_int;
+					y = y + bh->h + interval;
 				}
+				xmax = (xmax > bh->x1 + bh->w) ? xmax : (bh->x1 + bh->w);
+				ymax = (ymax > bh->y1 + bh->h) ? ymax : (bh->y1 + bh->h);
 			}
+			calculate_window_position(win, xmax, ymax);
 
 #if WITHREVERB
 			bh = find_gui_element_ref(TYPE_BUTTON, win, "btn_reverb"); 						// reverb on/off
@@ -2629,23 +2671,24 @@ static void buttons_ap_mic_process(void);
 		label_t * lbl = NULL;
 		static uint_fast8_t eq_limit, eq_base = 0;
 		char buf[TEXT_ARRAY_SIZE];
-		static int_fast16_t mid_y = 0, start_y = 0;
+		static int_fast16_t mid_y = 0;
 		static uint_fast8_t id = 0, id_start, id_end;
 		static button_t * btn_EQ_ok;
 
 		if (win->first_call == 1)
 		{
 			uint_fast16_t x, y, mid_w;
+			uint_fast16_t xmax = 0, ymax = 0;
 			uint_fast8_t interval = 70, col1_int = 70, row1_int = 120;
 			win->first_call = 0;
-			calculate_window_position(win);
+
 			find_entry_area_elements(TYPE_SLIDER, win, & id_start, & id_end);
 
 			eq_base = hamradio_getequalizerbase();
 			eq_limit = abs(eq_base) * 2;
 
-			x = win->x1 + col1_int;
-			y = win->y1 + row1_int;
+			x = col1_int;
+			y = row1_int;
 
 			for (id = id_start; id <= id_end; id++)
 			{
@@ -2676,12 +2719,17 @@ static void buttons_ap_mic_process(void);
 
 				x = x + interval;
 			}
-			mid_y = sl->y + sl->size / 2;
 
 			btn_EQ_ok = find_gui_element_ref(TYPE_BUTTON, win, "btn_EQ_ok");
-			btn_EQ_ok->x1 = win->x1 + win->w - btn_EQ_ok->w - 15;
-			btn_EQ_ok->y1 = win->y1 + win->h - btn_EQ_ok->h - 15;
+			btn_EQ_ok->x1 = sl->x + sliders_width + btn_EQ_ok->w;
+			btn_EQ_ok->y1 = sl->y + sl->size - btn_EQ_ok->h;
 			btn_EQ_ok->visible = VISIBLE;
+
+			xmax = btn_EQ_ok->x1 + btn_EQ_ok->w;
+			ymax = btn_EQ_ok->y1 + btn_EQ_ok->h;
+			calculate_window_position(win, xmax, ymax);
+
+			mid_y = win->y1 + sl->y + sl->size / 2;
 
 			return;
 		}
@@ -2727,8 +2775,8 @@ static void buttons_ap_mic_process(void);
 		if (win->first_call == 1)
 		{
 			uint_fast8_t interval = 60, col1_int = 20;
+			uint_fast16_t xmax = 0, ymax = 0;
 			win->first_call = 0;
-			calculate_window_position(win);
 
 			label_t * lbl_reverbDelay_min = find_gui_element_ref(TYPE_LABEL, win, "lbl_reverbDelay_min");
 			label_t * lbl_reverbDelay_max = find_gui_element_ref(TYPE_LABEL, win, "lbl_reverbDelay_max");
@@ -2742,8 +2790,8 @@ static void buttons_ap_mic_process(void);
 			hamradio_get_reverb_delay_limits(& delay_min, & delay_max);
 			hamradio_get_reverb_loss_limits(& loss_min, & loss_max);
 
-			lbl_reverbDelay->x = win->x1 + col1_int;
-			lbl_reverbDelay->y = win->y1 + interval;
+			lbl_reverbDelay->x = col1_int;
+			lbl_reverbDelay->y = interval;
 			lbl_reverbDelay->visible = VISIBLE;
 			local_snprintf_P(lbl_reverbDelay->text, ARRAY_SIZE(lbl_reverbDelay->text), PSTR("Delay: %3d ms"), hamradio_get_reverb_delay());
 
@@ -2791,6 +2839,10 @@ static void buttons_ap_mic_process(void);
 			bh->y1 = lbl_reverbLoss->y;
 			bh->visible = VISIBLE;
 
+			xmax = bh->x1 + bh->w;
+			ymax = bh->y1 + bh->h;
+			calculate_window_position(win, xmax, ymax);
+
 			return;
 		}
 
@@ -2827,8 +2879,8 @@ static void buttons_ap_mic_process(void);
 		if (win->first_call == 1)
 		{
 			uint_fast8_t interval = 50, col1_int = 20;
+			uint_fast16_t xmax = 0, ymax = 0;
 			win->first_call = 0;
-			calculate_window_position(win);
 
 			hamradio_get_mic_level_limits(& level_min, & level_max);
 			hamradio_get_mic_clip_limits(& clip_min, & clip_max);
@@ -2841,8 +2893,8 @@ static void buttons_ap_mic_process(void);
 			lbl_micClip = find_gui_element_ref(TYPE_LABEL, win, "lbl_micClip");
 			lbl_micAGC = find_gui_element_ref(TYPE_LABEL, win, "lbl_micAGC");
 
-			lbl_micLevel->x = win->x1 + col1_int;
-			lbl_micLevel->y = win->y1 + interval;
+			lbl_micLevel->x = col1_int;
+			lbl_micLevel->y = interval;
 			lbl_micLevel->visible = VISIBLE;
 			local_snprintf_P(lbl_micLevel->text, ARRAY_SIZE(lbl_micLevel->text), PSTR("Level: %3d"), hamradio_get_mik1level());
 
@@ -2878,7 +2930,7 @@ static void buttons_ap_mic_process(void);
 			sl_micAGC->value = normalize(hamradio_get_gmikeagcgain(), clip_min, clip_max, 100);
 
 			button_t * bh2 = find_gui_element_ref(TYPE_BUTTON, win, "btn_mic_boost");
-			bh2->x1 = win->x1 + win->w / 2 - bh2->w / 2;
+			bh2->x1 = (sl_micLevel->x + sl_micLevel->size + col1_int * 2) / 2 - (bh2->w / 2);
 			bh2->y1 = lbl_micAGC->y + interval;
 			bh2->is_locked = hamradio_get_gmikebust20db() ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
 			local_snprintf_P(bh2->text, ARRAY_SIZE(bh2->text), PSTR("Boost|%s"), bh2->is_locked ? "ON" : "OFF");
@@ -2932,6 +2984,9 @@ static void buttons_ap_mic_process(void);
 			lbl_micAGC_max->y = sl_micAGC->y + get_label_height(lbl_micAGC_max) * 3;
 			lbl_micAGC_max->visible = VISIBLE;
 
+			xmax = sl_micAGC->x + sl_micAGC->size + col1_int;
+			ymax = bh1->y1 + bh1->h;
+			calculate_window_position(win, xmax, ymax);
 			return;
 		}
 
@@ -3314,9 +3369,12 @@ static void buttons_ap_mic_process(void);
 		PACKEDCOLORMAIN_T * bg = NULL;
 		PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
 		btn_bg_t * b1 = NULL;
+		window_t * win = & windows[bh->parent];
 		uint_fast8_t i = 0;
 		static const char delimeters [] = "|";
 
+		uint_fast16_t x1 = win->x1 + bh->x1;
+		uint_fast16_t y1 = win->y1 + bh->y1;
 		do {
 			if (bh->h == btn_bg[i].h && bh->w == btn_bg[i].w)
 			{
@@ -3331,13 +3389,13 @@ static void buttons_ap_mic_process(void);
 			c1 = bh->state == DISABLED ? COLOR_BUTTON_DISABLED : (bh->is_locked ? COLOR_BUTTON_LOCKED : COLOR_BUTTON_NON_LOCKED);
 			c2 = bh->state == DISABLED ? COLOR_BUTTON_DISABLED : (bh->is_locked ? COLOR_BUTTON_PR_LOCKED : COLOR_BUTTON_PR_NON_LOCKED);
 #if WITHOLDBUTTONSTYLE
-			colpip_rect(fr, DIM_X, DIM_Y, bh->x1, bh->y1, bh->x1 + bh->w, bh->y1 + bh->h - 2, bh->state == PRESSED ? c2 : c1, 1);
-			colpip_rect(fr, DIM_X, DIM_Y, bh->x1, bh->y1, bh->x1 + bh->w, bh->y1 + bh->h - 1, COLORPIP_GRAY, 0);
-			colpip_rect(fr, DIM_X, DIM_Y, bh->x1 + 2, bh->y1 + 2, bh->x1 + bh->w - 2, bh->y1 + bh->h - 3, COLORPIP_BLACK, 0);
+			colpip_rect(fr, DIM_X, DIM_Y, x1, y1, x1 + bh->w, y1 + bh->h - 2, bh->state == PRESSED ? c2 : c1, 1);
+			colpip_rect(fr, DIM_X, DIM_Y, x1, y1, x1 + bh->w, y1 + bh->h - 1, COLORPIP_GRAY, 0);
+			colpip_rect(fr, DIM_X, DIM_Y, x1 + 2, y1 + 2, x1 + bh->w - 2, y1 + bh->h - 3, COLORPIP_BLACK, 0);
 #else
-			colmain_rounded_rect(fr, DIM_X, DIM_Y, bh->x1, bh->y1, bh->x1 + bh->w, bh->y1 + bh->h - 2, button_round_radius, bh->state == PRESSED ? c2 : c1, 1);
-			colmain_rounded_rect(fr, DIM_X, DIM_Y, bh->x1, bh->y1, bh->x1 + bh->w, bh->y1 + bh->h - 1, button_round_radius, COLORPIP_GRAY, 0);
-			colmain_rounded_rect(fr, DIM_X, DIM_Y, bh->x1 + 2, bh->y1 + 2, bh->x1 + bh->w - 2, bh->y1 + bh->h - 3, button_round_radius, COLORPIP_BLACK, 0);
+			colmain_rounded_rect(fr, DIM_X, DIM_Y, x1, y1, x1 + bh->w, y1 + bh->h - 2, button_round_radius, bh->state == PRESSED ? c2 : c1, 1);
+			colmain_rounded_rect(fr, DIM_X, DIM_Y, x1, y1, x1 + bh->w, y1 + bh->h - 1, button_round_radius, COLORPIP_GRAY, 0);
+			colmain_rounded_rect(fr, DIM_X, DIM_Y, x1 + 2, y1 + 2, x1 + bh->w - 2, y1 + bh->h - 3, button_round_radius, COLORPIP_BLACK, 0);
 #endif /* WITHOLDBUTTONSTYLE */
 		}
 		else
@@ -3353,7 +3411,7 @@ static void buttons_ap_mic_process(void);
 			else if (! bh->is_locked && bh->state != PRESSED)
 				bg = b1->bg_non_pressed;
 
-			colpip_plot(fr, DIM_X, DIM_Y, bh->x1, bh->y1, bg, bh->w, bh->h);
+			colpip_plot(fr, DIM_X, DIM_Y, x1, y1, bg, bh->w, bh->h);
 		}
 
 #if WITHOLDBUTTONSTYLE
@@ -3365,8 +3423,8 @@ static void buttons_ap_mic_process(void);
 		if (strchr(bh->text, delimeters[0]) == NULL)
 		{
 			/* Однострочная надпись */
-			colpip_string2_tbg(fr, DIM_X, DIM_Y, shift + bh->x1 + (bh->w - (strwidth2(bh->text))) / 2,
-					shift + bh->y1 + (bh->h - SMALLCHARH2) / 2, bh->text, COLORPIP_BLACK);
+			colpip_string2_tbg(fr, DIM_X, DIM_Y, shift + x1 + (bh->w - (strwidth2(bh->text))) / 2,
+					shift + y1 + (bh->h - SMALLCHARH2) / 2, bh->text, COLORPIP_BLACK);
 		} else
 		{
 			/* Двухстрочная надпись */
@@ -3374,18 +3432,19 @@ static void buttons_ap_mic_process(void);
 			char buf [TEXT_ARRAY_SIZE];
 			strcpy(buf, bh->text);
 			char * text2 = strtok(buf, delimeters);
-			colpip_string2_tbg(fr, DIM_X, DIM_Y, shift + bh->x1 + (bh->w - (strwidth2(text2))) / 2,
-					shift + bh->y1 + j, text2, COLORPIP_BLACK);
+			colpip_string2_tbg(fr, DIM_X, DIM_Y, shift + x1 + (bh->w - (strwidth2(text2))) / 2,
+					shift + y1 + j, text2, COLORPIP_BLACK);
 
 			text2 = strtok(NULL, delimeters);
-			colpip_string2_tbg(fr, DIM_X, DIM_Y, shift + bh->x1 + (bh->w - (strwidth2(text2))) / 2,
-					shift + bh->h + bh->y1 - SMALLCHARH2 - j, text2, COLORPIP_BLACK);
+			colpip_string2_tbg(fr, DIM_X, DIM_Y, shift + x1 + (bh->w - (strwidth2(text2))) / 2,
+					shift + bh->h + y1 - SMALLCHARH2 - j, text2, COLORPIP_BLACK);
 		}
 	}
 
 	static void draw_slider(slider_t * sl)
 	{
 		PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
+		window_t * win = &windows[sl->parent];
 
 		if (sl->orientation)		// ORIENTATION_HORIZONTAL
 		{
@@ -3399,10 +3458,10 @@ static void buttons_ap_mic_process(void);
 				sl->x2_p = sl->value_p + sliders_h;
 				sl->value_old = sl->value;
 			}
-			colpip_rect(fr, DIM_X, DIM_Y, sl->x, sl->y, sl->x + sl->size, sl->y + sliders_width, COLORMAIN_BLACK, 1);
-			colpip_rect(fr, DIM_X, DIM_Y, sl->x, sl->y, sl->x + sl->size, sl->y + sliders_width, COLORMAIN_WHITE, 0);
-			colpip_rect(fr, DIM_X, DIM_Y, sl->x1_p, sl->y1_p, sl->x2_p, sl->y2_p, sl->state == PRESSED ? COLOR_BUTTON_PR_NON_LOCKED : COLOR_BUTTON_NON_LOCKED, 1);
-			colmain_line(fr, DIM_X, DIM_Y, sl->value_p, sl->y1_p, sl->value_p, sl->y2_p, COLORMAIN_WHITE, 0);
+			colpip_rect(fr, DIM_X, DIM_Y, win->x1 + sl->x, win->y1 + sl->y,  win->x1 + sl->x + sl->size, win->y1 + sl->y + sliders_width, COLORMAIN_BLACK, 1);
+			colpip_rect(fr, DIM_X, DIM_Y, win->x1 + sl->x, win->y1 + sl->y,  win->x1 + sl->x + sl->size, win->y1 + sl->y + sliders_width, COLORMAIN_WHITE, 0);
+			colpip_rect(fr, DIM_X, DIM_Y, win->x1 + sl->x1_p, win->y1 + sl->y1_p,  win->x1 + sl->x2_p, win->y1 + sl->y2_p, sl->state == PRESSED ? COLOR_BUTTON_PR_NON_LOCKED : COLOR_BUTTON_NON_LOCKED, 1);
+			colmain_line(fr, DIM_X, DIM_Y, win->x1 + sl->value_p, win->y1 + sl->y1_p,  win->x1 + sl->value_p, win->y1 + sl->y2_p, COLORMAIN_WHITE, 0);
 		}
 		else						// ORIENTATION_VERTICAL
 		{
@@ -3416,10 +3475,10 @@ static void buttons_ap_mic_process(void);
 				sl->y2_p = sl->value_p + sliders_h;
 				sl->value_old = sl->value;
 			}
-			colpip_rect(fr, DIM_X, DIM_Y, sl->x + 1, sl->y + 1, sl->x + sliders_width - 1, sl->y + sl->size - 1, COLORMAIN_BLACK, 1);
-			colpip_rect(fr, DIM_X, DIM_Y, sl->x, sl->y, sl->x + sliders_width, sl->y + sl->size, COLORMAIN_WHITE, 0);
-			colpip_rect(fr, DIM_X, DIM_Y, sl->x1_p, sl->y1_p, sl->x2_p, sl->y2_p, sl->state == PRESSED ? COLOR_BUTTON_PR_NON_LOCKED : COLOR_BUTTON_NON_LOCKED, 1);
-			colmain_line(fr, DIM_X, DIM_Y,  sl->x1_p, sl->value_p, sl->x2_p, sl->value_p, COLORMAIN_WHITE, 0);
+			colpip_rect(fr, DIM_X, DIM_Y, win->x1 + sl->x + 1, win->y1 + sl->y + 1, win->x1 + sl->x + sliders_width - 1, win->y1 + sl->y + sl->size - 1, COLORMAIN_BLACK, 1);
+			colpip_rect(fr, DIM_X, DIM_Y, win->x1 + sl->x, win->y1 + sl->y, win->x1 + sl->x + sliders_width, win->y1 + sl->y + sl->size, COLORMAIN_WHITE, 0);
+			colpip_rect(fr, DIM_X, DIM_Y, win->x1 + sl->x1_p, win->y1 + sl->y1_p, win->x1 + sl->x2_p, win->y1 + sl->y2_p, sl->state == PRESSED ? COLOR_BUTTON_PR_NON_LOCKED : COLOR_BUTTON_NON_LOCKED, 1);
+			colmain_line(fr, DIM_X, DIM_Y, win->x1 + sl->x1_p, win->y1 + sl->value_p, win->x1 + sl->x2_p, win->y1 + sl->value_p, COLORMAIN_WHITE, 0);
 		}
 	}
 
@@ -3622,6 +3681,7 @@ static void buttons_ap_mic_process(void);
 		uint_fast16_t tx, ty;
 		static uint_fast16_t x_old = 0, y_old = 0;
 		static touch_t * p = NULL;
+		static window_t * w = NULL;
 
 	#if defined (TSC1_TYPE)
 		if (board_tsc_getxy(& tx, & ty))
@@ -3649,11 +3709,12 @@ static void buttons_ap_mic_process(void);
 			for (uint_fast8_t i = 0; i < touch_count; i++)
 			{
 				p = & touch_elements[i];
+				w = p->win;
+				uint_fast16_t x1 = p->x1 + w->x1, y1 = p->y1 + w->y1;
+				uint_fast16_t x2 = p->x2 + w->x1, y2 = p->y2 + w->y1;
 
-				if (p->x1 < gui.last_pressed_x && p->x2 > gui.last_pressed_x
-				 && p->y1 < gui.last_pressed_y && p->y2 > gui.last_pressed_y
-				 && p->state != DISABLED && p->visible == VISIBLE
-				 && (p->win == win1 || p->win == win2))
+				if (x1 < gui.last_pressed_x && x2 > gui.last_pressed_x && y1 < gui.last_pressed_y && y2 > gui.last_pressed_y
+						&& p->state != DISABLED && p->visible == VISIBLE && (p->win == win1 || p->win == win2))
 				{
 					gui.state = PRESSED;
 					break;
@@ -3688,8 +3749,8 @@ static void buttons_ap_mic_process(void);
 				x_old = gui.last_pressed_x;
 				y_old = gui.last_pressed_y;
 			}
-			else if (p->x1 < gui.last_pressed_x && p->x2 > gui.last_pressed_x
-			 && p->y1 < gui.last_pressed_y && p->y2 > gui.last_pressed_y && ! gui.is_after_touch)
+			else if (w->x1 + p->x1 < gui.last_pressed_x && w->x1 + p->x2 > gui.last_pressed_x
+					&& w->y1 + p->y1 < gui.last_pressed_y && w->y1 + p->y2 > gui.last_pressed_y && ! gui.is_after_touch)
 			{
 				if (gui.is_touching_screen)
 				{
@@ -3771,11 +3832,11 @@ static void buttons_ap_mic_process(void);
 							if (lh->visible && lh->parent == win->window_id)
 							{
 								if (lh->font_size == FONT_LARGE)
-									colpip_string_tbg(fr, DIM_X, DIM_Y, lh->x, lh->y, lh->text, lh->color);
+									colpip_string_tbg(fr, DIM_X, DIM_Y,  win->x1 +lh->x, win->y1 + lh->y, lh->text, lh->color);
 								else if (lh->font_size == FONT_MEDIUM)
-									colpip_string2_tbg(fr, DIM_X, DIM_Y, lh->x, lh->y, lh->text, lh->color);
+									colpip_string2_tbg(fr, DIM_X, DIM_Y, win->x1 +lh->x, win->y1 + lh->y, lh->text, lh->color);
 								else if (lh->font_size == FONT_SMALL)
-									colpip_string3_tbg(fr, DIM_X, DIM_Y, lh->x, lh->y, lh->text, lh->color);
+									colpip_string3_tbg(fr, DIM_X, DIM_Y, win->x1 +lh->x, win->y1 + lh->y, lh->text, lh->color);
 							}
 						}
 						else if (p->type == TYPE_SLIDER)
