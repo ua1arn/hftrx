@@ -258,26 +258,25 @@ ilog2(
 static void nau8822_initialize_fullduplex(uint_fast8_t master)
 {
 	//debug_printf_P(PSTR("nau8822_initialize_fullduplex start\n"));
-	const unsigned long mclk = 12288000;
 
+#if CODEC_TYPE_NAU8822_USE_8KS
+	const unsigned long NAU8822_ADDITIONAL_CONTROL_SMPLR_val = 0x05uL * (1 << 2); // SMPLR=0x05 (8 kHz)
+	const unsigned long NAU8822_CLOCKING_MCLKSEL_val = 0x05uL * (1 << 5);	// 0x05: divide by 6 MCLKSEL master clock prescaler
+	const unsigned long ws = 8000;
+#else /* CODEC_TYPE_NAU8822_USE_8KS */
+	const unsigned long NAU8822_ADDITIONAL_CONTROL_SMPLR_val = 0x00uL * (1 << 2); // SMPLR=0x00 (48kHz)
+	const unsigned long NAU8822_CLOCKING_MCLKSEL_val = 0x00uL * (1 << 5);	// Scaling of master clock source for internal 256fs rate divide by 1
+	const unsigned long ws = 48000;
+#endif /* CODEC_TYPE_NAU8822_USE_8KS */
+
+	const unsigned long mclk = 12288000;
 #if CODEC_TYPE_NAU8822_USE_32BIT
 	const unsigned long framebits = 64;
 #else /* CODEC_TYPE_NAU8822_USE_32BIT */
 	const unsigned long framebits = 32;
 #endif /* CODEC_TYPE_NAU8822_USE_32BIT */
-
-#if CODEC_TYPE_NAU8822_USE_8KS
-	const unsigned long NAU8822_CLOCKING_MCLKSEL_val = 0x05uL * (1 << 5);	// 0x05: divide by 6 MCLKSEL master clock prescaler
-	const unsigned long ws = 8000;
-#else /* CODEC_TYPE_NAU8822_USE_8KS */
-	const unsigned long NAU8822_CLOCKING_MCLKSEL_val = 0x00uL * (1 << 5);	// Scaling of master clock source for internal 256fs rate divide by 1
-	const unsigned long ws = 48000;
-#endif /* CODEC_TYPE_NAU8822_USE_8KS */
-
 	const unsigned long bclk = ws * framebits;
-
 	const unsigned divider = mclk / bclk;
-
 	//debug_printf_P(PSTR("nau8822_initialize_fullduplex: mclk=%lu, bclk=%lu, divider=%lu, ilog2=%u\n"), mclk, bclk, divider, ilog2(divider));
 
 	nau8822_setreg(NAU8822_RESET, 0x00);	// RESET
@@ -315,40 +314,15 @@ static void nau8822_initialize_fullduplex(uint_fast8_t master)
 
 	//nau8822_setreg(NAU8822_COMPANDING_CONTROL, 0x000);	// reg 0x05 = 0 reset state
 
-#if CODEC_TYPE_NAU8822_USE_8KS
+	nau8822_setreg(NAU8822_ADDITIONAL_CONTROL, 	// reg 0x07,
+		NAU8822_ADDITIONAL_CONTROL_SMPLR_val |			// SMPLR=0x05 (8 kHz)
+		0);
 
-	nau8822_setreg(NAU8822_CLOCKING, 	// reg 0x06,
-		NAU8822_CLOCKING_MCLKSEL_val |		// 0x05: divide by 6 MCLKSEL master clock prescaler
-		ilog2(divider) * (0x01uL << 2) |	// BCLKSEL: Scaling of output frequency at BCLK pin#8 when chip is in master mode
-		master * (0x01uL << 0) |	// 1 = FS and BCLK are driven as outputs by internally generated clocks
-		);
-
-	nau8822_setreg(NAU8822_ADDITIONAL_CONTROL, 
-		0x05 * (1 << 2) |			// SMPLR=0x05 (8 kHz)
-		0
-		);	// reg 0x07,
-
-#else /* CODEC_TYPE_NAU8822_USE_8KS */
-	// BCLKSEL field
-	//	000 = divide by 1
-	//	001 = divide by 2
-	//	010 = divide by 4
-	//	011 = divide by 8
-	//	100 = divide by 16
-	//	101 = divide by 32
-	// для режима стерео 2*32 бит
-	// ws=48k 2*32 = 64 bits = 3072k
-	// 12288/3072 = 4
 	nau8822_setreg(NAU8822_CLOCKING,	// reg 0x06
 		NAU8822_CLOCKING_MCLKSEL_val |	// Scaling of master clock source for internal 256fs rate divide by 1
 		ilog2(divider) * (0x01uL << 2) |	// BCLKSEL: Scaling of output frequency at BCLK pin#8 when chip is in master mode
 		master * (0x01uL << 0) |	// 1 = FS and BCLK are driven as outputs by internally generated clocks
 		0);
-	nau8822_setreg(NAU8822_ADDITIONAL_CONTROL,
-		0x000 |	// reg 0x07, 000 = 48kHz
-		0);
-
-#endif /* CODEC_TYPE_NAU8822_USE_8KS */
 
 	// Установка параметров умножителя за ЦАП не требуется - всегда максимальный уровень.
 	//nau8822_setreg(NAU8822_LEFT_DAC_DIGITAL_VOLUME, 255 | 0);
