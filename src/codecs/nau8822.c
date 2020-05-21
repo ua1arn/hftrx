@@ -240,13 +240,14 @@ static void nau8822_setprocparams(
 	}
 }
 
-// возврат степент 2 от числа (не являющиеся 1 2 4 8... округляются до ближайшего меньшего).
+// возврат степени 2 от числа (не являющиеся 1 2 4 8... округляются до ближайшего меньшего).
 static uint_fast8_t
 ilog2(
 	unsigned long v		// число на анализ
 	)
 {
 	uint_fast8_t n;
+	ASSERT(v != 0);
 
 	for (n = 0; v != 1; ++ n)
 		v >>= 1;
@@ -277,7 +278,7 @@ static void nau8822_initialize_fullduplex(uint_fast8_t master)
 
 	const unsigned divider = mclk / bclk;
 
-	debug_printf_P(PSTR("nau8822_initialize_fullduplex: mclk=%lu, bclk=%lu, divider=%lu, ilog2=%u\n"), mclk, bclk, divider, ilog2(divider));
+	//debug_printf_P(PSTR("nau8822_initialize_fullduplex: mclk=%lu, bclk=%lu, divider=%lu, ilog2=%u\n"), mclk, bclk, divider, ilog2(divider));
 
 	nau8822_setreg(NAU8822_RESET, 0x00);	// RESET
 
