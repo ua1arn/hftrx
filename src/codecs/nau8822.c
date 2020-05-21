@@ -240,9 +240,44 @@ static void nau8822_setprocparams(
 	}
 }
 
-static void nau8822_initialize_slave_fullduplex(void)
+// возврат степент 2 от числа (не являющиеся 1 2 4 8... округляются до ближайшего меньшего).
+static uint_fast8_t
+ilog2(
+	unsigned long v		// число на анализ
+	)
 {
-	//debug_printf_P(PSTR("nau8822_initialize_slave_fullduplex start\n"));
+	uint_fast8_t n;
+
+	for (n = 0; v != 1; ++ n)
+		v >>= 1;
+
+	return n;
+}
+
+static void nau8822_initialize_fullduplex(uint_fast8_t master)
+{
+	//debug_printf_P(PSTR("nau8822_initialize_fullduplex start\n"));
+	const unsigned long mclk = 12288000;
+
+#if CODEC_TYPE_NAU8822_USE_32BIT
+	const unsigned long framebits = 64;
+#else /* CODEC_TYPE_NAU8822_USE_32BIT */
+	const unsigned long framebits = 32;
+#endif /* CODEC_TYPE_NAU8822_USE_32BIT */
+
+#if CODEC_TYPE_NAU8822_USE_8KS
+	const unsigned long NAU8822_CLOCKING_MCLKSEL_val = 0x05uL * (1 << 5);	// 0x05: divide by 6 MCLKSEL master clock prescaler
+	const unsigned long ws = 8000;
+#else /* CODEC_TYPE_NAU8822_USE_8KS */
+	const unsigned long NAU8822_CLOCKING_MCLKSEL_val = 0x00uL * (1 << 5);	// Scaling of master clock source for internal 256fs rate divide by 1
+	const unsigned long ws = 48000;
+#endif /* CODEC_TYPE_NAU8822_USE_8KS */
+
+	const unsigned long bclk = ws * framebits;
+
+	const unsigned divider = mclk / bclk;
+
+	debug_printf_P(PSTR("nau8822_initialize_fullduplex: mclk=%lu, bclk=%lu, divider=%lu, ilog2=%u\n"), mclk, bclk, divider, ilog2(divider));
 
 	nau8822_setreg(NAU8822_RESET, 0x00);	// RESET
 
@@ -282,18 +317,35 @@ static void nau8822_initialize_slave_fullduplex(void)
 #if CODEC_TYPE_NAU8822_USE_8KS
 
 	nau8822_setreg(NAU8822_CLOCKING, 	// reg 0x06,
-		0x05 * (1 << 5) |		// 0x05: divide by 6 MCLKSEL master clock prescaler
-		0
+		NAU8822_CLOCKING_MCLKSEL_val |		// 0x05: divide by 6 MCLKSEL master clock prescaler
+		ilog2(divider) * (0x01uL << 2) |	// BCLKSEL: Scaling of output frequency at BCLK pin#8 when chip is in master mode
+		master * (0x01uL << 0) |	// 1 = FS and BCLK are driven as outputs by internally generated clocks
 		);
+
 	nau8822_setreg(NAU8822_ADDITIONAL_CONTROL, 
 		0x05 * (1 << 2) |			// SMPLR=0x05 (8 kHz)
 		0
 		);	// reg 0x07,
 
 #else /* CODEC_TYPE_NAU8822_USE_8KS */
-
-	nau8822_setreg(NAU8822_CLOCKING, 0x000);	// reg 0x06, 000 = divide by 1
-	nau8822_setreg(NAU8822_ADDITIONAL_CONTROL, 0x000);	// reg 0x07, 000 = 48kHz
+	// BCLKSEL field
+	//	000 = divide by 1
+	//	001 = divide by 2
+	//	010 = divide by 4
+	//	011 = divide by 8
+	//	100 = divide by 16
+	//	101 = divide by 32
+	// для режима стерео 2*32 бит
+	// ws=48k 2*32 = 64 bits = 3072k
+	// 12288/3072 = 4
+	nau8822_setreg(NAU8822_CLOCKING,	// reg 0x06
+		NAU8822_CLOCKING_MCLKSEL_val |	// Scaling of master clock source for internal 256fs rate divide by 1
+		ilog2(divider) * (0x01uL << 2) |	// BCLKSEL: Scaling of output frequency at BCLK pin#8 when chip is in master mode
+		master * (0x01uL << 0) |	// 1 = FS and BCLK are driven as outputs by internally generated clocks
+		0);
+	nau8822_setreg(NAU8822_ADDITIONAL_CONTROL,
+		0x000 |	// reg 0x07, 000 = 48kHz
+		0);
 
 #endif /* CODEC_TYPE_NAU8822_USE_8KS */
 
@@ -332,7 +384,17 @@ static void nau8822_initialize_slave_fullduplex(void)
 
 	nau8822_setreg(NAU8822_DAC_DITHER, 0x000);	// dither off
 
-	//debug_printf_P(PSTR("nau8822_initialize_slave_fullduplex done\n"));
+	//debug_printf_P(PSTR("nau8822_initialize_fullduplex done\n"));
+}
+
+static void nau8822_initialize_slave_fullduplex(void)
+{
+	nau8822_initialize_fullduplex(0);
+}
+
+static void nau8822_initialize_master_fullduplex(void)
+{
+	nau8822_initialize_fullduplex(1);
 }
 
 const codec1if_t *
@@ -344,7 +406,11 @@ board_getaudiocodecif(void)
 	/* Интерфейс цправления кодеком */
 	static const codec1if_t ifc =
 	{
-		nau8822_initialize_slave_fullduplex,
+#if CODEC_TYPE_NAU8822_MASTER
+		nau8822_initialize_master_fullduplex,	// кодек формирует I2S синхронизацию
+#else /* CODEC_TYPE_NAU8822_MASTER */
+		nau8822_initialize_slave_fullduplex,	// кодек получает I2S синхронизацию извне
+#endif /* CODEC_TYPE_NAU8822_MASTER */
 		nau8822_setvolume,		/* Установка громкости на наушники */
 		nau8822_lineinput,		/* Выбор LINE IN как источника для АЦП вместо микрофона */
 		nau8822_setprocparams,	/* Параметры обработки звука с микрофона (эхо, эквалайзер, ...) */
