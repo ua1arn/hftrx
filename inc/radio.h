@@ -3368,6 +3368,7 @@ void hamradio_set_antivox_level(uint_fast8_t v);
 #endif /* WITHVOX */
 
 uint_fast8_t hamradio_verify_freq_bands(uint_fast32_t freq, uint_fast32_t * bottom, uint_fast32_t * top);
+void hamradio_set_tune(uint_fast8_t v);
 
 #ifdef __cplusplus
 }
