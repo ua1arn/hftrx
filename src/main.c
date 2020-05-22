@@ -18266,6 +18266,12 @@ hamradio_main_step(void)
 	return STTE_OK;
 }
 
+void hamradio_set_tune(uint_fast8_t v)
+{
+	tunemode = v != 0;
+	updateboard(1, 1);
+}
+
 uint_fast8_t hamradio_verify_freq_bands(uint_fast32_t freq, uint_fast32_t * bottom, uint_fast32_t * top)
 {
 	for (uint_fast8_t i = 0; i < HBANDS_COUNT; i++)
