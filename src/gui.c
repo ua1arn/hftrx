@@ -2112,7 +2112,7 @@ static void buttons_swrscan_process(void);
 			hamradio_get_multilinemenu_block_vals(menu[MENU_VALS].menu_block, menu[MENU_PARAMS].menu_block[menu[MENU_PARAMS].selected_str].index, menu[MENU_VALS].count);
 			xn += int_cols;
 			yn = row1_int;
-			for(i = 0; i <= menu[MENU_VALS].num_rows; i++)
+			for(lh = NULL, i = 0; i <= menu[MENU_VALS].num_rows; i ++)
 			{
 				lh = touch_elements[menu[MENU_VALS].first_id + i].link;
 				lh->x = xn;
@@ -2128,6 +2128,7 @@ static void buttons_swrscan_process(void);
 
 			menu_level = MENU_GROUPS;
 
+			ASSERT(lh != NULL);
 			xmax = lh->x + 100;
 			ymax = lh->y + get_label_height(lh);
 			calculate_window_position(win, xmax, ymax);
