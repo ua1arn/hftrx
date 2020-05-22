@@ -2470,9 +2470,9 @@ static const codechw_t fpgacodechw =
 	
 enum
 {
-	R7S721_SSIF_CKDIV1 = 0, // CKDV	0000: AUDIOц/1: 12,288 -> 12,288 (48 kS, 128 bit, stereo)
+	R7S721_SSIF_CKDIV1 = 0, // CKDV	0000: AUDIOf/1: 12,288 -> 12,288 (48 kS, 128 bit, stereo)
 	R7S721_SSIF_CKDIV2 = 1,
-	R7S721_SSIF_CKDIV4 = 2,	// CKDV	0010: AUDIOц/4: 12,288 -> 3.072 (48 kS, 32 bit, stereo)
+	R7S721_SSIF_CKDIV4 = 2,	// CKDV	0010: AUDIOf/4: 12,288 -> 3.072 (48 kS, 32 bit, stereo)
 	R7S721_SSIF_CKDIV6 = 8,
 	R7S721_SSIF_CKDIV8 = 3,
 	R7S721_SSIF_CKDIV12 = 9,
@@ -2485,17 +2485,19 @@ enum
 	R7S721_SSIF_CKDIV128 = 7,
 };
 
-#define R7S721_MASTER 1
+#define R7S721_SSIF0_MASTER 1	// AUDIO CODEC I2S INTERFACE - see CODEC_TYPE_NAU8822_MASTER
+#define R7S721_SSIF1_MASTER 1	// FGA I2S INTERFACE #1
+#define R7S721_SSIF2_MASTER 1	// FGA I2S INTERFACE #2 (spectrum)
 
 #if WITHI2S_32BITPAIR
-	#define R7S721_SSIF_CKDIV_AFCODEC R7S721_SSIF_CKDIV4	// 0010: AUDIOц/4: 12,288 -> 3.072 (48 kS, 32 bit, stereo)
-	#define R7S721_SSIF_SWL_AFCODEC 3	// SWL 3: 32 bit
-	#define R7S721_SSIF_DWL_AFCODEC 6	// DWL 6: 32 bit
+	#define R7S721_SSIF0_CKDIV (R7S721_SSIF_CKDIV4 * (1uL << 4))	// 0010: AUDIOц/4: 12,288 -> 3.072 (48 kS, 32 bit, stereo)
+	#define R7S721_SSIF0_SWL (3 * (1uL << 16))	// SWL 3: 32 bit
+	#define R7S721_SSIF0_DWL (6 * (1uL << 19))	// DWL 6: 32 bit
 
 #else /* WITHI2S_32BITPAIR */
-	#define R7S721_SSIF_CKDIV_AFCODEC R7S721_SSIF_CKDIV8	// 0011: AUDIOц/8: 12,288 -> 1.536 (48 kS, 16 bit, stereo)
-	#define R7S721_SSIF_SWL_AFCODEC 1	// SWL 1: 16 bit
-	#define R7S721_SSIF_DWL_AFCODEC 1	// DWL 1: 16 bit
+	#define R7S721_SSIF0_CKDIV (R7S721_SSIF_CKDIV8 * (1uL << 4))	// 0011: AUDIOц/8: 12,288 -> 1.536 (48 kS, 16 bit, stereo)
+	#define R7S721_SSIF0_SWL (1 * (1uL << 16))	// SWL 1: 16 bit
+	#define R7S721_SSIF0_DWL (1 * (1uL << 19))	// DWL 1: 16 bit
 
 #endif /* WITHI2S_32BITPAIR */
 
@@ -2687,7 +2689,7 @@ static void r7s721_ssif0_dmatx_initialize(void)
 // AUDIO CODEC I2S INTERFACE
 static void r7s721_ssif0_fullduplex_initialize(void)
 {
-	const uint_fast8_t master = R7S721_MASTER;
+	const uint_fast8_t master = R7S721_SSIF0_MASTER;
     /* ---- Supply clock to the SSIF(channel 0) ---- */
 	CPG.STBCR11 &= ~ (1U << 5);	// Module Stop 115 0: Channel 0 of the serial sound interface runs.
 	(void) CPG.STBCR11;			/* Dummy read */
@@ -2698,12 +2700,12 @@ static void r7s721_ssif0_fullduplex_initialize(void)
 
 	// Control Register (SSICR)
 	SSIF0.SSICR = 
-		R7S721_USE_AUDIO_CLK * (1UL << 30) |		// CKS 1: AUDIO_CLK input 0: AUDIO_X1 input
+		R7S721_USE_AUDIO_CLK * (1uL << 30) |		// CKS 1: AUDIO_CLK input 0: AUDIO_X1 input
 		0 * (1UL << 22) |		// CHNL		00: Having one channel per system word (I2S complaint)
-		R7S721_SSIF_DWL_AFCODEC * (1UL << 19) |		// DWL
-		R7S721_SSIF_SWL_AFCODEC * (1UL << 16) |		// SWL
-		master * (1UL << 15) |		// SCKD		1: Serial bit clock is output, master mode.
-		master * (1UL << 14) |		// SWSD		1: Serial word select is output, master mode.
+		R7S721_SSIF0_DWL |		// DWL
+		R7S721_SSIF0_SWL |		// SWL
+		master * (1uL << 15) |		// SCKD		1: Serial bit clock is output, master mode.
+		master * (1uL << 14) |		// SWSD		1: Serial word select is output, master mode.
 		0 * (1UL << 13) |		// SCKP		0: Данные на выходе меняются по спадающему фронту (I2S complaint)
 		0 * (1UL << 12) |		// SWSP		0: SSIWS is low for the 1st channel, high for the 2nd channel.  (I2S complaint)
 		0 * (1UL << 11) |		// SPDP		0: Padding bits are low.	
@@ -2714,7 +2716,7 @@ static void r7s721_ssif0_fullduplex_initialize(void)
 #else /* WITHI2S_FORMATI2S_PHILIPS */
 		1 * (1UL << 8) |		// DEL	1: No delay between SSIWS and SSIDATA
 #endif /* WITHI2S_FORMATI2S_PHILIPS */
-		master * R7S721_SSIF_CKDIV_AFCODEC * (1UL << 4) |		// CKDV	0011: AUDIOц/8: 12,288 -> 1.536 (48 kS, 16 bit, stereo)
+		master * R7S721_SSIF0_CKDIV |		// CKDV	0011: AUDIOц/8: 12,288 -> 1.536 (48 kS, 16 bit, stereo)
 		0;
 
 	// FIFO Control Register (SSIFCR)
@@ -2937,7 +2939,7 @@ static void r7s721_ssif1_dmatx_initialize(void)
 // FGA I2S INTERFACE #1
 static void r7s721_ssif1_fullduplex_initialize(void)
 {
-	const uint_fast8_t master = R7S721_MASTER;
+	const uint_fast8_t master = R7S721_SSIF1_MASTER;
     /* ---- Supply clock to the SSIF(channel 1) ---- */
 	CPG.STBCR11 &= ~ (1U << 4);	// Module Stop 114	- 0: Channel 1 of the serial sound interface runs.
 	(void) CPG.STBCR11;			/* Dummy read */
@@ -3102,7 +3104,7 @@ static void r7s721_ssif2_dmarx_initialize(void)
 // FPGA/spectrum channel
 static void r7s721_ssif2_rx_initialize(void)
 {
-	const uint_fast8_t master = R7S721_MASTER;
+	const uint_fast8_t master = R7S721_SSIF2_MASTER;
     /* ---- Supply clock to the SSIF(channel 1) ---- */
 	CPG.STBCR11 &= ~ (1U << 3);	// Module Stop 113	- 0: Channel 2 of the serial sound interface runs.
 	(void) CPG.STBCR11;			/* Dummy read */

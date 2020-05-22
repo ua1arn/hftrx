@@ -242,7 +242,7 @@ static void nau8822_setprocparams(
 
 // возврат степени 2 от числа (не являющиеся 1 2 4 8... округляются до ближайшего меньшего).
 static uint_fast8_t
-ilog2(
+nau8822_ilog2(
 	unsigned long v		// число на анализ
 	)
 {
@@ -277,7 +277,7 @@ static void nau8822_initialize_fullduplex(uint_fast8_t master)
 #endif /* CODEC_TYPE_NAU8822_USE_32BIT */
 	const unsigned long bclk = ws * framebits;
 	const unsigned divider = mclk / bclk;
-	//debug_printf_P(PSTR("nau8822_initialize_fullduplex: mclk=%lu, bclk=%lu, divider=%lu, ilog2=%u\n"), mclk, bclk, divider, ilog2(divider));
+	//debug_printf_P(PSTR("nau8822_initialize_fullduplex: mclk=%lu, bclk=%lu, divider=%lu, nau8822_ilog2=%u\n"), mclk, bclk, divider, nau8822_ilog2(divider));
 
 	nau8822_setreg(NAU8822_RESET, 0x00);	// RESET
 
@@ -320,7 +320,7 @@ static void nau8822_initialize_fullduplex(uint_fast8_t master)
 
 	nau8822_setreg(NAU8822_CLOCKING,	// reg 0x06
 		NAU8822_CLOCKING_MCLKSEL_val |	// Scaling of master clock source for internal 256fs rate divide by 1
-		ilog2(divider) * (0x01uL << 2) |	// BCLKSEL: Scaling of output frequency at BCLK pin#8 when chip is in master mode
+		nau8822_ilog2(divider) * (0x01uL << 2) |	// BCLKSEL: Scaling of output frequency at BCLK pin#8 when chip is in master mode
 		master * (0x01uL << 0) |	// 1 = FS and BCLK are driven as outputs by internally generated clocks
 		0);
 
