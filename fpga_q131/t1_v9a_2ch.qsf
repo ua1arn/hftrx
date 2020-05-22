@@ -99,7 +99,6 @@ set_location_assignment PIN_39 -to led0
 set_location_assignment PIN_42 -to led1
 set_location_assignment PIN_129 -to pps_in
 set_location_assignment PIN_143 -to i2s2_mck
-set_location_assignment PIN_144 -to i2s2_ws
 set_location_assignment PIN_43 -to led2
 set_location_assignment PIN_44 -to led3
 
@@ -172,7 +171,6 @@ set_global_assignment -name OUTPUT_IO_TIMING_FAR_END_VMEAS "HALF SIGNAL SWING" -
 
 # end ENTITY(tc1_top_v5_2ch)
 # --------------------------
-set_location_assignment PIN_142 -to i2s2_ck
 set_location_assignment PIN_28 -to fpga_ovf
 set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to dac_sleep -disable
 set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to cpu_miso -disable
