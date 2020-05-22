@@ -270,11 +270,7 @@ static void nau8822_initialize_fullduplex(uint_fast8_t master)
 #endif /* CODEC_TYPE_NAU8822_USE_8KS */
 
 	const unsigned long mclk = 12288000;
-#if CODEC_TYPE_NAU8822_USE_32BIT
-	const unsigned long framebits = 64;
-#else /* CODEC_TYPE_NAU8822_USE_32BIT */
-	const unsigned long framebits = 32;
-#endif /* CODEC_TYPE_NAU8822_USE_32BIT */
+	const unsigned long framebits = WITHI2S_FRAMEBITS;
 	const unsigned long bclk = ws * framebits;
 	const unsigned divider = mclk / bclk;
 	//debug_printf_P(PSTR("nau8822_initialize_fullduplex: mclk=%lu, bclk=%lu, divider=%lu, nau8822_ilog2=%u\n"), mclk, bclk, divider, nau8822_ilog2(divider));
@@ -296,19 +292,19 @@ static void nau8822_initialize_fullduplex(uint_fast8_t master)
 
 #if WITHI2S_FORMATI2S_PHILIPS
 	// I2S mode
-	#if CODEC_TYPE_NAU8822_USE_32BIT
+	#if WITHI2S_FRAMEBITS == 64
 		nau8822_setreg(NAU8822_AUDIO_INTERFACE, 0x010 | 0x060);	// reg 0x04, I2S, 32 bit
-	#else /* CODEC_TYPE_NAU8822_USE_32BIT */
+	#else /* WITHI2S_FRAMEBITS == 64 */
 		nau8822_setreg(NAU8822_AUDIO_INTERFACE, 0x010 | 0x000);	// reg 0x04, I2S, 16 bit
-	#endif /* CODEC_TYPE_NAU8822_USE_32BIT */
+	#endif /* WITHI2S_FRAMEBITS == 64 */
 
 #else /* WITHI2S_FORMATI2S_PHILIPS */
 	// LJ mode
-	#if CODEC_TYPE_NAU8822_USE_32BIT
+	#if WITHI2S_FRAMEBITS == 64
 		nau8822_setreg(NAU8822_AUDIO_INTERFACE, 0x008 | 0x060);	// reg 0x04, LJ, 32 bit
-	#else /* CODEC_TYPE_NAU8822_USE_32BIT */
+	#else /* WITHI2S_FRAMEBITS == 64 */
 		nau8822_setreg(NAU8822_AUDIO_INTERFACE, 0x008 | 0x000);	// reg 0x04, LJ, 16 bit
-	#endif /* CODEC_TYPE_NAU8822_USE_32BIT */
+	#endif /* WITHI2S_FRAMEBITS == 64 */
 
 #endif /* WITHI2S_FORMATI2S_PHILIPS */
 

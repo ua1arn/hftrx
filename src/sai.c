@@ -172,15 +172,15 @@ enum
 
 #if WITHI2SHW
 
-#if WITHI2S_32BITPAIR
+#if WITHI2S_FRAMEBITS == 64
 
 	#define DMA_SxCR_xSIZE		0x02uL	// 10: word (32-bit)
 
-#else /* WITHI2S_32BITPAIR */
+#else /*  WITHI2S_FRAMEBITS == 64 */
 
 	#define DMA_SxCR_xSIZE		0x01uL	// 01: half-word (16-bit)
 
-#endif /* WITHI2S_32BITPAIR */
+#endif /*  WITHI2S_FRAMEBITS == 64 */
 
 /* получение битов режима I2S для каналов обммена с кодеком */
 static portholder_t stm32xxx_i2scfgr_afcodec(void)
@@ -188,17 +188,17 @@ static portholder_t stm32xxx_i2scfgr_afcodec(void)
 	const portholder_t i2scfgr =
 		SPI_I2SCFGR_I2SMOD |	// 1: I2S/PCM mode is selected
 
-#if WITHI2S_32BITPAIR
+#if WITHI2S_FRAMEBITS == 64
 		//(1uL << SPI_I2SCFGR_DATFMT_Pos) |	// 1: the data inside the SPI2S_RXDR or SPI2S_TXDR are left aligned.
 		(1uL << SPI_I2SCFGR_FIXCH_Pos) |		// 1: the channel length in slave mode is supposed to be 16 or 32 bits (according to CHLEN)
 		(1uL << SPI_I2SCFGR_CHLEN_Pos) |		// 1: 32-bit wide audio channel
 		(2uL << SPI_I2SCFGR_DATLEN_Pos) |	// 00: 16-bit data length, 01: 24-bit data length, 10: 32-bit data length
 
-#else /* WITHI2S_32BITPAIR */
+#else /* WITHI2S_FRAMEBITS == 64 */
 		(0uL << SPI_I2SCFGR_CHLEN_Pos) |		// 0: 16-bit wide audio channel
 		(0uL << SPI_I2SCFGR_DATLEN_Pos) |	// 00: 16-bit data length, 01: 24-bit data length, 10: 32-bit data length
 
-#endif /* WITHI2S_32BITPAIR */
+#endif /* WITHI2S_FRAMEBITS == 64 */
 
 #if WITHI2S_FORMATI2S_PHILIPS
 		(0uL << SPI_I2SCFGR_I2SSTD_Pos) |	// 00: I2S Philips standard
@@ -2489,17 +2489,17 @@ enum
 #define R7S721_SSIF1_MASTER 1	// FGA I2S INTERFACE #1
 #define R7S721_SSIF2_MASTER 1	// FGA I2S INTERFACE #2 (spectrum)
 
-#if WITHI2S_32BITPAIR
-	#define R7S721_SSIF0_CKDIV (R7S721_SSIF_CKDIV4 * (1uL << 4))	// 0010: AUDIOц/4: 12,288 -> 3.072 (48 kS, 32 bit, stereo)
-	#define R7S721_SSIF0_SWL (3 * (1uL << 16))	// SWL 3: 32 bit
-	#define R7S721_SSIF0_DWL (6 * (1uL << 19))	// DWL 6: 32 bit
+#if WITHI2S_FRAMEBITS == 64
+	#define R7S721_SSIF0_CKDIV_val (R7S721_SSIF_CKDIV4 * (1uL << 4))	// 0010: AUDIOц/4: 12,288 -> 3.072 (48 kS, 32 bit, stereo)
+	#define R7S721_SSIF0_SWL_val (3 * (1uL << 16))	// SWL 3: 32 bit
+	#define R7S721_SSIF0_DWL_val (6 * (1uL << 19))	// DWL 6: 32 bit
 
-#else /* WITHI2S_32BITPAIR */
-	#define R7S721_SSIF0_CKDIV (R7S721_SSIF_CKDIV8 * (1uL << 4))	// 0011: AUDIOц/8: 12,288 -> 1.536 (48 kS, 16 bit, stereo)
-	#define R7S721_SSIF0_SWL (1 * (1uL << 16))	// SWL 1: 16 bit
-	#define R7S721_SSIF0_DWL (1 * (1uL << 19))	// DWL 1: 16 bit
+#else /* WITHI2S_FRAMEBITS == 64 */
+	#define R7S721_SSIF0_CKDIV_val (R7S721_SSIF_CKDIV8 * (1uL << 4))	// 0011: AUDIOц/8: 12,288 -> 1.536 (48 kS, 16 bit, stereo)
+	#define R7S721_SSIF0_SWL_val (1 * (1uL << 16))	// SWL 1: 16 bit
+	#define R7S721_SSIF0_DWL_val (1 * (1uL << 19))	// DWL 1: 16 bit
 
-#endif /* WITHI2S_32BITPAIR */
+#endif /* WITHI2S_FRAMEBITS == 64 */
 
 #if WITHI2SHW
 
@@ -2702,8 +2702,8 @@ static void r7s721_ssif0_fullduplex_initialize(void)
 	SSIF0.SSICR = 
 		R7S721_USE_AUDIO_CLK * (1uL << 30) |		// CKS 1: AUDIO_CLK input 0: AUDIO_X1 input
 		0 * (1UL << 22) |		// CHNL		00: Having one channel per system word (I2S complaint)
-		R7S721_SSIF0_DWL |		// DWL
-		R7S721_SSIF0_SWL |		// SWL
+		R7S721_SSIF0_DWL_val |		// DWL
+		R7S721_SSIF0_SWL_val |		// SWL
 		master * (1uL << 15) |		// SCKD		1: Serial bit clock is output, master mode.
 		master * (1uL << 14) |		// SWSD		1: Serial word select is output, master mode.
 		0 * (1UL << 13) |		// SCKP		0: Данные на выходе меняются по спадающему фронту (I2S complaint)
@@ -2716,7 +2716,7 @@ static void r7s721_ssif0_fullduplex_initialize(void)
 #else /* WITHI2S_FORMATI2S_PHILIPS */
 		1 * (1UL << 8) |		// DEL	1: No delay between SSIWS and SSIDATA
 #endif /* WITHI2S_FORMATI2S_PHILIPS */
-		master * R7S721_SSIF0_CKDIV |		// CKDV	0011: AUDIOц/8: 12,288 -> 1.536 (48 kS, 16 bit, stereo)
+		master * R7S721_SSIF0_CKDIV_val |		// CKDV	0011: AUDIOц/8: 12,288 -> 1.536 (48 kS, 16 bit, stereo)
 		0;
 
 	// FIFO Control Register (SSIFCR)
