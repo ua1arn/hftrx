@@ -139,13 +139,13 @@
 
 #define LS020_RS_INITIALIZE() \
 	do { \
-		arm_hardware_piof_outputs2m(LS020_RS, LS020_RS); \
+		arm_hardware_piod_outputs2m(LS020_RS, LS020_RS); /* PD3 */ \
 		arm_hardware_pioe_outputs((1U << 0), 0 * (1U << 0));		/* PE0 - enable backlight */ \
 	} while (0)
 
 #define LS020_RESET_INITIALIZE() \
 	do { \
-		arm_hardware_piof_outputs2m(LS020_RESET, LS020_RESET); \
+		arm_hardware_piod_outputs2m(LS020_RESET, LS020_RESET); /* PD4 */ \
 		arm_hardware_pioe_outputs((1U << 0), 0 * (1U << 0));		/* PE0 - enable backlight */ \
 	} while (0)
 
@@ -162,28 +162,28 @@
 #if LCDMODE_SPI_NA
 	// эти контроллеры требуют только RS
 
-	#define LS020_RS_PORT_S(v)		do { GPIOF->BSRR = BSRR_S(v); __DSB(); } while (0)
-	#define LS020_RS_PORT_C(v)		do { GPIOF->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define LS020_RS			(1u << 3)			// PF3 D7 signal
+	#define LS020_RS_PORT_S(v)		do { GPIOD->BSRR = BSRR_S(v); __DSB(); } while (0)
+	#define LS020_RS_PORT_C(v)		do { GPIOD->BSRR = BSRR_C(v); __DSB(); } while (0)
+	#define LS020_RS			(1u << 3)			// PD3 signal
 
 #elif LCDMODE_SPI_RN
 	// эти контроллеры требуют только RESET
 
-	#define LS020_RESET_PORT_S(v)		do { GPIOF->BSRR = BSRR_S(v); __DSB(); } while (0)
-	#define LS020_RESET_PORT_C(v)		do { GPIOF->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define LS020_RESET			(1u << 2)			// PF2 D6 signal in HD44780 socket
+	#define LS020_RESET_PORT_S(v)		do { GPIOD->BSRR = BSRR_S(v); __DSB(); } while (0)
+	#define LS020_RESET_PORT_C(v)		do { GPIOD->BSRR = BSRR_C(v); __DSB(); } while (0)
+	#define LS020_RESET			(1u << 4)			// PD4 signal
 
 #elif LCDMODE_SPI_RA
 	// Эти контроллеры требуют RESET и RS
 	// LCDMODE_UC1608
 
-	#define LS020_RS_PORT_S(v)		do { GPIOF->BSRR = BSRR_S(v); __DSB(); } while (0)
-	#define LS020_RS_PORT_C(v)		do { GPIOF->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define LS020_RS			(1u << 3)			// PF3 D7 signal
+	#define LS020_RS_PORT_S(v)		do { GPIOD->BSRR = BSRR_S(v); __DSB(); } while (0)
+	#define LS020_RS_PORT_C(v)		do { GPIOD->BSRR = BSRR_C(v); __DSB(); } while (0)
+	#define LS020_RS			(1u << 3)			// PD3 signal
 
-	#define LS020_RESET_PORT_S(v)		do { GPIOF->BSRR = BSRR_S(v); __DSB(); } while (0)
-	#define LS020_RESET_PORT_C(v)		do { GPIOF->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define LS020_RESET			(1u << 2)			// PF2 D6 signal in HD44780 socket
+	#define LS020_RESET_PORT_S(v)		do { GPIOD->BSRR = BSRR_S(v); __DSB(); } while (0)
+	#define LS020_RESET_PORT_C(v)		do { GPIOD->BSRR = BSRR_C(v); __DSB(); } while (0)
+	#define LS020_RESET			(1u << 2)			// PD4 signal
 
 #elif LCDMODE_HD44780 && (LCDMODE_SPI == 0)
 
@@ -194,14 +194,14 @@
 #if WITHENCODER
 
 	// Выводы подключения енкодера #1
-	#define ENCODER_INPUT_PORT	(GPIOH->IDR) 
-	#define ENCODER_BITA		0//(1u << 4)		// PH4
-	#define ENCODER_BITB		0//(1u << 5)		// PH5
+	#define ENCODER_INPUT_PORT	(GPIOC->IDR)
+	#define ENCODER_BITA		(1u << 13)		// PC13
+	#define ENCODER_BITB		(1u << 9)		// PC9
 
 	// Выводы подключения енкодера #2
-	#define ENCODER2_INPUT_PORT	(GPIOH->IDR) 
-	#define ENCODER2_BITA		0//(1u << 2)		// PH2
-	#define ENCODER2_BITB		0//(1u << 3)		// PH3
+	#define ENCODER2_INPUT_PORT	(GPIOC->IDR)
+	#define ENCODER2_BITA		(1u << 15)		// PC15
+	#define ENCODER2_BITB		(1u << 14)		// PC14
 
 
 	#define ENCODER_BITS		(ENCODER_BITA | ENCODER_BITB)
@@ -209,12 +209,12 @@
 
 	#define ENCODER_INITIALIZE() \
 		do { \
-			arm_hardware_pioh_inputs(ENCODER_BITS); \
-			arm_hardware_pioh_updown(ENCODER_BITS, 0); \
-			arm_hardware_pioh_onchangeinterrupt(ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ARM_OVERREALTIME_PRIORITY); \
-			arm_hardware_pioh_inputs(ENCODER2_BITS); \
-			arm_hardware_pioh_updown(ENCODER2_BITS, 0); \
-			arm_hardware_pioh_onchangeinterrupt(0 * ENCODER2_BITS, ENCODER2_BITS, ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY); \
+			arm_hardware_pioc_inputs(ENCODER_BITS); \
+			arm_hardware_pioc_updown(ENCODER_BITS, 0); \
+			arm_hardware_pioc_onchangeinterrupt(ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ARM_OVERREALTIME_PRIORITY); \
+			arm_hardware_pioc_inputs(ENCODER2_BITS); \
+			arm_hardware_pioc_updown(ENCODER2_BITS, 0); \
+			arm_hardware_pioc_onchangeinterrupt(0 * ENCODER2_BITS, ENCODER2_BITS, ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY); \
 		} while (0)
 
 #endif
@@ -742,10 +742,6 @@
 		} while (0)
 #endif /* WITHUSBHW */
 
-	#define	HARDWARE_BL_INITIALIZE() do { \
-		/* step-up backlight converter */ \
-		} while (0)
-
 #if WITHDCDCFREQCTL
 	#define	HARDWARE_DCDC_INITIALIZE() do { \
 		arm_hardware_piof_altfn2((1U << 6), AF_TIM1); /* TIM16_CH1 - PF6 */ \
@@ -756,12 +752,19 @@
 		} while (0)
 #endif /* WITHDCDCFREQCTL */
 
+
+	/* BL0: PA14. BL1: PA15 */
+	#define	HARDWARE_BL_INITIALIZE() do { \
+		arm_hardware_pioa_opendrain(0xC000, 0); \
+		} while (0)
+
 	/* установка яркости и включение/выключение преобразователя подсветки */
-	#define HARDWARE_BL_SET_XXX(en, level) do { \
-		const portholder_t enmask = (1U << 1); /* PF1 */ \
-		const portholder_t opins = (1U << 3) | (1U << 2); /* PF3:PF2 */ \
+	/* BL0: PA14. BL1: PA15 */
+	#define HARDWARE_BL_SET(en, level) do { \
+		const portholder_t enmask = 0 * (1U << 1); /* PF1 */ \
+		const portholder_t opins = (1U << 15) | (1U << 14); /* PA15:PA14 */ \
 		const portholder_t initialstate = (~ (level) & 0x03) << 2; \
-		GPIOx->BSRR = \
+		GPIOA->BSRR = \
 			((en) ? BSRR_S(enmask) : BSRR_C(enmask)) | /* backlight control on/off */ \
 			BSRR_S((initialstate) & (opins)) | /* set bits */ \
 			BSRR_C(~ (initialstate) & (opins)) | /* reset bits */ \
@@ -778,48 +781,57 @@
 	};
 	/* demode values: 0: static signal, 1: DE controlled */
 	#define HARDWARE_LTDC_INITIALIZE(demode) do { \
-		/* Synchronisation signals */ \
-		arm_hardware_pioa_altfn20((1U << 4), GPIO_AF_LTDC14);		/* VSYNC PA4 */ \
-		arm_hardware_pioc_altfn20((1U << 6), GPIO_AF_LTDC14);		/* HSYNC PC6 */ \
+		const uint32_t MODEmask = (1U << 3); /* PD3 - MODEmask */ \
+		const uint32_t DEmask = (1U << 13); /* PE13 - DE */ \
+		const uint32_t HSmask = (1U << 6); /* PC6 - HSYNC */ \
+		const uint32_t VSmask = (1U << 4); 	/* PA4 - VSYNC */ \
+		/* Bit clock */ \
 		arm_hardware_piog_altfn50((1U << 7), GPIO_AF_LTDC14);		/* CLK PG7 */ \
 		/* Control */ \
-		arm_hardware_pioe_altfn50((demode != 0) * (1U << 13), GPIO_AF_LTDC14);	/* PE13 DE */ \
-		arm_hardware_pioe_outputs((demode == 0) * (1U << 13), 0 * (1U << 13));	/* PE13 DE=0 (DISP, pin 31) */ \
+		arm_hardware_piod_outputs(MODEmask, (demode != 0) * MODEmask);	/* PD3 MODEmask=state */ \
+		/* Synchronisation signals in SYNC mode */ \
+		arm_hardware_pioe_outputs((demode == 0) * DEmask, 0);	/* DE=0 (DISP, pin 31) */ \
+		arm_hardware_pioa_altfn50((demode == 0) * VSmask, GPIO_AF_LTDC14);	/* VSYNC */ \
+		arm_hardware_pioc_altfn50((demode == 0) * HSmask, GPIO_AF_LTDC14);	/* HSYNC */ \
+		/* Synchronisation signals in DE mode*/ \
+		arm_hardware_pioe_altfn50((demode != 0) * DEmask, GPIO_AF_LTDC14);	/* DE */ \
+		arm_hardware_pioa_outputs((demode != 0) * VSmask, VSmask);	/* VSYNC */ \
+		arm_hardware_pioc_outputs((demode != 0) * HSmask, HSmask);	/* HSYNC */ \
 		/* RED */ \
-		arm_hardware_piob_altfn20((1U << 0), GPIO_AF_LTDC14);		/* PB0 R3 */ \
-		arm_hardware_pioa_altfn20((1U << 11), GPIO_AF_LTDC14);		/* PA11 R4 */ \
-		arm_hardware_pioa_altfn20((1U << 9), GPIO_AF_LTDC14);		/* PA9 R5 */ \
-		arm_hardware_pioa_altfn20((1U << 8), GPIO_AF_LTDC14);		/* PA8 R6 */ \
-		arm_hardware_piog_altfn20((1U << 6), GPIO_AF_LTDC14);		/* PG6 R7 */ \
+		arm_hardware_piob_altfn50((1U << 0), GPIO_AF_LTDC14);		/* PB0 R3 */ \
+		arm_hardware_pioa_altfn50((1U << 11), GPIO_AF_LTDC14);		/* PA11 R4 */ \
+		arm_hardware_pioa_altfn50((1U << 9), GPIO_AF_LTDC14);		/* PA9 R5 */ \
+		arm_hardware_pioa_altfn50((1U << 8), GPIO_AF_LTDC14);		/* PA8 R6 */ \
+		arm_hardware_piog_altfn50((1U << 6), GPIO_AF_LTDC14);		/* PG6 R7 */ \
 		/* GREEN */ \
-		arm_hardware_pioa_altfn20((1U << 6), GPIO_AF_LTDC14);		/* PA6 G2 */ \
-		arm_hardware_piog_altfn20((1U << 10), GPIO_AF_LTDC9);		/* PG10 G3 */ \
-		arm_hardware_piob_altfn20((1U << 10), GPIO_AF_LTDC14);		/* PB10 G4 */ \
-		arm_hardware_piof_altfn20((1U << 11), GPIO_AF_LTDC14);		/* PF11 G5 */ \
-		arm_hardware_pioc_altfn20((1U << 7), GPIO_AF_LTDC14);		/* PC7 G6 */ \
-		arm_hardware_piog_altfn20((1U << 8), GPIO_AF_LTDC14);		/* PG8 G7 */ \
+		arm_hardware_pioa_altfn50((1U << 6), GPIO_AF_LTDC14);		/* PA6 G2 */ \
+		arm_hardware_piog_altfn50((1U << 10), GPIO_AF_LTDC9);		/* PG10 G3 */ \
+		arm_hardware_piob_altfn50((1U << 10), GPIO_AF_LTDC14);		/* PB10 G4 */ \
+		arm_hardware_piof_altfn50((1U << 11), GPIO_AF_LTDC14);		/* PF11 G5 */ \
+		arm_hardware_pioc_altfn50((1U << 7), GPIO_AF_LTDC14);		/* PC7 G6 */ \
+		arm_hardware_piog_altfn50((1U << 8), GPIO_AF_LTDC14);		/* PG8 G7 */ \
 		/* BLUE */ \
-		arm_hardware_piog_altfn20((1U << 11), GPIO_AF_LTDC9);		/* PG11 B3 */ \
-		arm_hardware_piog_altfn20((1U << 12), GPIO_AF_LTDC9);		/* PG12 B4 */ \
-		arm_hardware_pioa_altfn20((1U << 3), GPIO_AF_LTDC14);		/* PA3 B5 */ \
-		arm_hardware_piob_altfn20((1U << 8), GPIO_AF_LTDC14);		/* PB8 B6 */ \
-		arm_hardware_piod_altfn20((1U << 8), GPIO_AF_LTDC14);		/* PD8 B7 */ \
+		arm_hardware_piog_altfn50((1U << 11), GPIO_AF_LTDC9);		/* PG11 B3 */ \
+		arm_hardware_piog_altfn50((1U << 12), GPIO_AF_LTDC9);		/* PG12 B4 */ \
+		arm_hardware_pioa_altfn50((1U << 3), GPIO_AF_LTDC14);		/* PA3 B5 */ \
+		arm_hardware_piob_altfn50((1U << 8), GPIO_AF_LTDC14);		/* PB8 B6 */ \
+		arm_hardware_piod_altfn50((1U << 8), GPIO_AF_LTDC14);		/* PD8 B7 */ \
 	} while (0)
 
 	/* управление состоянием сигнала DISP панели */
 	/* demode values: 0: static signal, 1: DE controlled */
 	#define HARDWARE_LTDC_SET_DISP(demode, state) do { \
+		const uint32_t VSmask = (1U << 4); 	/* PA4 - VSYNC */ \
 		const uint32_t DEmask = (1U << 13); /* PE13 */ \
 		if (demode != 0) break; \
-		/* const uint32_t VSYNC = (1U << 9); */ /* PI9 */ \
-		/* while ((GPIOI->IDR & VSYNC) != 0) ; */ /* схема синхронизации стоит на плате дисплея. дождаться 0 */ \
-		/* while ((GPIOI->IDR & VSYNC) == 0) ; */ /* дождаться 1 */ \
-		/*arm_hardware_pioe_outputs(DEmask, ((state) != 0) * DEmask);	*/ /* DE=DISP, pin 31 - можно менять только при VSYNC=1 */ \
+		/* while ((GPIOA->IDR & VSmask) != 0) ; */ /* схема синхронизации стоит на плате дисплея. дождаться 0 */ \
+		/* while ((GPIOA->IDR & VSmask) == 0) ; */ /* дождаться 1 */ \
+		arm_hardware_pioe_outputs(DEmask, ((state) != 0) * DEmask); /* DE=DISP, pin 31 - можно менять только при VSYNC=1 */ \
 	} while (0)
 	/* управление состоянием сигнала MODE 7" панели */
 	#define HARDWARE_LTDC_SET_MODE(state) do { \
-		const uint32_t mask = (1U << 4); /* PF4 */ \
-		/*arm_hardware_piof_outputs(mask, (state != 0) * mask);	*/ /* PF4 MODE=state */ \
+		const uint32_t MODEmask = (1U << 3); /* PD3 - MODEmask */ \
+		arm_hardware_piod_outputs(MODEmask, (state != 0) * MODEmask); /* PF4 MODE=state */ \
 	} while (0)
 #endif /* LCDMODE_LTDC */
 

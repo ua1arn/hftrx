@@ -6205,25 +6205,35 @@ void hightests(void)
 		// test: вывод палитры на экран
 		display2_bgreset();
 		PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
-		int u = 3, x = 0, y = 0, wx = 45, wy = 8 * 3;
+		int sepx = 3, sepy = 3;
+		int wx = DIM_X / 16;
+		int wy = DIM_Y / 16;
+		int x = 0, y = 0;
 
 		for (int i = 0; i <= 255; i++)
 		{
-			char buf[4];
 
-			display_solidbar(x, y, x + wx, y + wy, i);
-			local_snprintf_P(buf, sizeof buf / sizeof buf [0], PSTR("%d"), i);
-			colpip_string3_tbg(fr, DIM_X, DIM_Y, x, y, buf, COLORMAIN_WHITE);
+			display_solidbar(x, y, x + wx - sepx, y + wy - sepy, i);
 
-			x = x + wx + u;
+			if (wx > 24)
+			{
+				char buf [4];
+				local_snprintf_P(buf, sizeof buf / sizeof buf [0], PSTR("%d"), i);
+				colpip_string3_tbg(fr, DIM_X, DIM_Y, x, y, buf, COLORMAIN_WHITE);
+			}
+
+			x = x + wx;
 			if ((i + 1) % 16 == 0)
 			{
 				x = 0;
-				y = y + wy + u;
+				y = y + wy;
 			}
 		}
 
-		for (;;);
+		arm_hardware_flush((uintptr_t) fr, (uint_fast32_t) DIM_X * DIM_Y * sizeof (PACKEDCOLORMAIN_T));
+		arm_hardware_ltdc_main_set((uintptr_t) fr);
+		for (;;)
+			;
 	}
 #endif
 #if 0 && defined (TSC1_TYPE)
