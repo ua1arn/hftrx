@@ -19189,11 +19189,18 @@ ddd:
 				continue;
 			}
 		}
+
+#elif defined (BOARD_IS_USERBOOT)
+		/* если не установлен джампер - запускаем программу. */
+		if (! BOARD_IS_USERBOOT())
+			break;
+
 #else /* WITHDEBUG */
 		if (hardware_usbd_get_vbusbefore() == 0)
 			break;
 		if (hardware_usbd_get_vbusnow() == 0)
 			break;
+
 #endif /* WITHDEBUG */
 	}
 #endif /* WITHUSBHW */

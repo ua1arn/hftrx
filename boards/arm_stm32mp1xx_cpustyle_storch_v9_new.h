@@ -949,6 +949,12 @@
 				(GPIOA)->BSRR = BSRR_S(BOARD_BLINK_BITS); \
 		} while (0)
 
+	/* запрос на вход в режим загрузчика */
+	#define BOARD_IS_USERBOOT() (((GPIOB->IDR) & (1uL << 1)) == 0)
+	#define BOARD_USERBOOT_INITIALIZE() do { \
+		arm_hardware_piob_inputs(1uL << 1); /* PB1: ~USER_BOOT */ \
+		} while (0)
+
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
 			BOARD_BLINK_INITIALIZE(); \
@@ -958,6 +964,7 @@
 			/* HARDWARE_DCDC_INITIALIZE(); */ \
 			TXDISABLE_INITIALIZE(); \
 			TUNE_INITIALIZE(); \
+			BOARD_USERBOOT_INITIALIZE(); \
 		} while (0)
 
 #endif /* ARM_STM32MP1_CPUSTYLE_STORCH_V9_H_INCLUDED */
