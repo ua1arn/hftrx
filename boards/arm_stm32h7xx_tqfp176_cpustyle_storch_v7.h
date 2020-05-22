@@ -714,7 +714,7 @@
 		const uint32_t DE = (1U << 13); /* PE13 - DE */ \
 		const uint32_t HS = (1U << 10); /* PI10 - HSYNC */ \
 		const uint32_t VS = (1U << 9); 	/* PI9 - VSYNC */ \
-		/* Synchronisation signal */ \
+		/* Bit clock */ \
 		arm_hardware_pioe_altfn20((1U << 14), GPIO_AF_LTDC);	/* CLK */ \
 		/* Control */ \
 		arm_hardware_piof_outputs(MODE, (demode != 0) * MODE);	/* PF4 MODE=state */ \
