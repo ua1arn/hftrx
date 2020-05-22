@@ -849,6 +849,8 @@ static void buttons_ap_mic_process(void);
 static void window_tx_process(void);
 static void window_tx_vox_process(void);
 static void buttons_tx_vox_process(void);
+static void window_swrscan_process(void);
+static void buttons_swrscan_process(void);
 
 	enum { button_round_radius = 5 };
 
@@ -891,17 +893,18 @@ static void buttons_tx_vox_process(void);
 		WINDOW_MENU,
 		WINDOW_ENC2,
 		WINDOW_UIF,
+		WINDOW_SWR_SCANNER,
 		WINDOW_AUDIOSETTINGS,			// настройки аудиопараметров
 		WINDOW_AP_MIC_EQ,				// эквалайзер микрофона
 		WINDOW_AP_REVERB_SETT,			// параметры ревербератора
 		WINDOW_AP_MIC_SETT,				// настройки микрофона
 		WINDOW_TX_SETTINGS,				// настройки, относящиеся к режиму передачи
-		WINDOW_TX_VOX_SETT				// настройки VOX
+		WINDOW_TX_VOX_SETT,				// настройки VOX
 	};
 
 	enum {
 		NAME_ARRAY_SIZE = 30,
-		TEXT_ARRAY_SIZE = 20,
+		TEXT_ARRAY_SIZE = 30,
 		MENU_ARRAY_SIZE = 30,
 		TOUCH_ARRAY_SIZE = 100
 	};
@@ -949,7 +952,7 @@ static void buttons_tx_vox_process(void);
 		{ 0, 0, 86, 44, button3_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  NON_VISIBLE, UINTPTR_MAX,	"btnAGC", 		"AGC", },
 		{ 0, 0, 86, 44, button4_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  NON_VISIBLE, UINTPTR_MAX,	"btn4", 		"Freq|enter", },
 		{ 0, 0, 86, 44, button5_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  NON_VISIBLE, UINTPTR_MAX,	"btn5", 		"", },
-		{ 0, 0, 86, 44, button6_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  NON_VISIBLE, UINTPTR_MAX,	"btn6", 		"", },
+		{ 0, 0, 86, 44, button6_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  NON_VISIBLE, UINTPTR_MAX,	"btn6", 		"SWR|scanner", },
 		{ 0, 0, 86, 44, button7_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  NON_VISIBLE, UINTPTR_MAX,  "btn7", 		"Transmit|settings", },
 		{ 0, 0, 86, 44, button8_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  NON_VISIBLE, UINTPTR_MAX,	"btn8", 		"Audio|settings", },
 		{ 0, 0, 86, 44, button9_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  NON_VISIBLE, UINTPTR_MAX,	"btnSysMenu", 	"System|settings", },
@@ -983,6 +986,8 @@ static void buttons_tx_vox_process(void);
 		{ 0, 0, 40, 40, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU,  NON_VISIBLE, UINTPTR_MAX, 	"btnSysMenu+",	"+", },
 		{ 0, 0, 40, 40, buttons_uif_handler,  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UIF,   NON_VISIBLE, UINTPTR_MAX, 	"btnUIF-", 		"-", },
 		{ 0, 0, 40, 40, buttons_uif_handler,  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UIF,   NON_VISIBLE, UINTPTR_MAX, 	"btnUIF+", 		"+", },
+		{ 0, 0,  86, 44, buttons_swrscan_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_SWR_SCANNER, NON_VISIBLE, UINTPTR_MAX, "btn_swr_start", 	 "Start", },
+		{ 0, 0,  86, 44, buttons_swrscan_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_SWR_SCANNER, NON_VISIBLE, UINTPTR_MAX, "btn_swr_OK", 	 	 "OK", },
 		{ 0, 0, 100, 44, buttons_audioparams_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, UINTPTR_MAX, "btn_reverb", 			"Reverb|OFF", },
 		{ 0, 0, 100, 44, buttons_audioparams_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, UINTPTR_MAX, "btn_reverb_settings", 	"Reverb|settings", },
 		{ 0, 0, 100, 44, buttons_audioparams_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, UINTPTR_MAX, "btn_monitor", 			"Monitor|disabled", },
@@ -994,8 +999,8 @@ static void buttons_tx_vox_process(void);
 		{ 0, 0,  86, 44, buttons_ap_mic_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_SETT, NON_VISIBLE, UINTPTR_MAX, "btn_mic_agc", 	 "AGC|OFF", },
 		{ 0, 0,  86, 44, buttons_ap_mic_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_SETT, NON_VISIBLE, UINTPTR_MAX, "btn_mic_boost", "Boost|OFF", },
 		{ 0, 0,  86, 44, buttons_ap_mic_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_SETT, NON_VISIBLE, UINTPTR_MAX, "btn_mic_OK", 	 "OK", },
-		{ 0, 0,  100, 44, buttons_tx_vox_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_TX_SETTINGS, NON_VISIBLE, UINTPTR_MAX, "btn_vox", 	 "VOX|OFF", },
-		{ 0, 0,  100, 44, buttons_tx_vox_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_TX_SETTINGS, NON_VISIBLE, UINTPTR_MAX, "btn_vox_settings", 	 "VOX|settings", },
+		{ 0, 0, 100, 44, buttons_tx_vox_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_TX_SETTINGS, NON_VISIBLE, UINTPTR_MAX, "btn_vox", 	 "VOX|OFF", },
+		{ 0, 0, 100, 44, buttons_tx_vox_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_TX_SETTINGS, NON_VISIBLE, UINTPTR_MAX, "btn_vox_settings", 	 "VOX|settings", },
 		{ 0, 0,  44, 44, buttons_tx_vox_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_TX_VOX_SETT, NON_VISIBLE, UINTPTR_MAX, "btn_vox_OK", 	 "OK", },
 #if ! WITHOLDMENUSTYLE
 		{ 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 	"btnSysMenu1",	"", },
@@ -1116,6 +1121,9 @@ static void buttons_tx_vox_process(void);
 		{ 0, 0,	WINDOW_TX_VOX_SETT,  DISABLED, 0, NON_VISIBLE, "lbl_vox_level_max",  "", FONT_SMALL, COLORPIP_WHITE, },
 		{ 0, 0,	WINDOW_TX_VOX_SETT,  DISABLED, 0, NON_VISIBLE, "lbl_avox_level_min", "", FONT_SMALL, COLORPIP_WHITE, },
 		{ 0, 0,	WINDOW_TX_VOX_SETT,  DISABLED, 0, NON_VISIBLE, "lbl_avox_level_max", "", FONT_SMALL, COLORPIP_WHITE, },
+		{ 0, 0,	WINDOW_SWR_SCANNER,  DISABLED, 0, NON_VISIBLE, "lbl_swr_bottom", "", FONT_SMALL, COLORPIP_WHITE, },
+		{ 0, 0,	WINDOW_SWR_SCANNER,  DISABLED, 0, NON_VISIBLE, "lbl_swr_top", "", 	 FONT_SMALL, COLORPIP_WHITE, },
+		{ 0, 0,	WINDOW_SWR_SCANNER,  DISABLED, 0, NON_VISIBLE, "lbl_swr_error", "",  FONT_MEDIUM, COLORPIP_WHITE, },
 		};
 	enum { LABELS_COUNT = ARRAY_SIZE(labels) };
 
@@ -1199,6 +1207,7 @@ static void buttons_tx_vox_process(void);
 		{ WINDOW_MENU,  		 UINT8_MAX, 			ALIGN_CENTER_X, 0, 0, 0, 0, "Settings",	   		 	 NON_VISIBLE, 0, window_menu_process, },
 		{ WINDOW_ENC2, 			 UINT8_MAX, 			ALIGN_RIGHT_X, 	0, 0, 0, 0, "",  			 		 NON_VISIBLE, 0, window_enc2_process, },
 		{ WINDOW_UIF, 			 UINT8_MAX, 			ALIGN_LEFT_X, 	0, 0, 0, 0, "",   		   	 		 NON_VISIBLE, 0, window_uif_process, },
+		{ WINDOW_SWR_SCANNER,	 UINT8_MAX, 			ALIGN_CENTER_X, 0, 0, 0, 0, "SWR band scanner",		 NON_VISIBLE, 0, window_swrscan_process, },
 		{ WINDOW_AUDIOSETTINGS,  UINT8_MAX, 			ALIGN_CENTER_X, 0, 0, 0, 0, "Audio settings", 		 NON_VISIBLE, 0, window_audiosettings_process, },
 		{ WINDOW_AP_MIC_EQ, 	 WINDOW_AUDIOSETTINGS, 	ALIGN_CENTER_X, 0, 0, 0, 0, "MIC TX equalizer",		 NON_VISIBLE, 0, window_ap_mic_eq_process, },
 		{ WINDOW_AP_REVERB_SETT, WINDOW_AUDIOSETTINGS, 	ALIGN_CENTER_X, 0, 0, 0, 0, "Reverberator settings", NON_VISIBLE, 0, window_ap_reverb_process, },
@@ -1625,7 +1634,7 @@ static void buttons_tx_vox_process(void);
 		static label_t * lbl_low, * lbl_high;
 		static button_t * button_high, * button_low;
 
-		if (win->first_call == 1)
+		if (win->first_call)
 		{
 			uint_fast16_t id = 0, x, y, xmax = 0, ymax = 0;
 			uint_fast8_t interval = 20, col1_int = 35, row1_int = 20, id_start, id_end;
@@ -1753,7 +1762,7 @@ static void buttons_tx_vox_process(void);
 		static label_t * lbl_freq;
 		window_t * win = & windows[WINDOW_FREQ];
 
-		if (win->first_call == 1)
+		if (win->first_call)
 		{
 			uint_fast16_t x, y, xmax = 0, ymax = 0;
 			uint_fast8_t interval = 6, col1_int = 20, row1_int = 40, row_count = 4, id_start, id_end;
@@ -2000,7 +2009,7 @@ static void buttons_tx_vox_process(void);
 		static button_t * button_up = NULL, * button_down = NULL;
 		window_t * win = & windows[WINDOW_MENU];
 
-		if (win->first_call == 1)
+		if (win->first_call)
 		{
 			uint_fast16_t xmax = 0, ymax = 0;
 			win->first_call = 0;
@@ -2365,7 +2374,7 @@ static void buttons_tx_vox_process(void);
 	static void window_menu_process(void)
 	{
 		window_t * win = & windows[WINDOW_MENU];
-		if (win->first_call == 1)
+		if (win->first_call)
 		{
 			win->align_mode = ALIGN_CENTER_X;						// выравнивание окна системных настроек только по центру
 			calculate_window_position(win, xmax, ymax);
@@ -2477,7 +2486,7 @@ static void buttons_tx_vox_process(void);
 	static void window_mode_process(void)
 	{
 		window_t * win = & windows[WINDOW_MODES];
-		if (win->first_call == 1)
+		if (win->first_call)
 		{
 			button_t * bh = NULL;
 			uint_fast16_t x, y;
@@ -2514,7 +2523,7 @@ static void buttons_tx_vox_process(void);
 	static void window_agc_process(void)
 	{
 		window_t * win = & windows[WINDOW_AGC];
-		if (win->first_call == 1)
+		if (win->first_call)
 		{
 			uint_fast16_t x = 0, y = 0, xmax = 0, ymax = 0;
 			uint_fast8_t interval = 6, col1_int = 20, row1_int = 40, row_count = 4, id_start, id_end;
@@ -2616,7 +2625,7 @@ static void buttons_tx_vox_process(void);
 	{
 		window_t * win = & windows[WINDOW_AUDIOSETTINGS];
 
-		if (win->first_call == 1)
+		if (win->first_call)
 		{
 			uint_fast16_t x = 0, y = 0, xmax = 0, ymax = 0;
 			uint_fast8_t interval = 6, col1_int = 20, row1_int = 40, row_count = 3, id_start, id_end;
@@ -2696,7 +2705,7 @@ static void buttons_tx_vox_process(void);
 		static uint_fast8_t id = 0, id_start, id_end;
 		static button_t * btn_EQ_ok;
 
-		if (win->first_call == 1)
+		if (win->first_call)
 		{
 			uint_fast16_t x, y, mid_w;
 			uint_fast16_t xmax = 0, ymax = 0;
@@ -2793,7 +2802,7 @@ static void buttons_tx_vox_process(void);
 		static uint_fast16_t delay_min, delay_max, loss_min, loss_max;
 		slider_t * sl = NULL;
 
-		if (win->first_call == 1)
+		if (win->first_call)
 		{
 			uint_fast8_t interval = 60, col1_int = 20;
 			uint_fast16_t xmax = 0, ymax = 0;
@@ -2897,7 +2906,7 @@ static void buttons_tx_vox_process(void);
 		static uint_fast16_t level_min, level_max, clip_min, clip_max, agc_min, agc_max;
 		slider_t * sl;
 
-		if (win->first_call == 1)
+		if (win->first_call)
 		{
 			uint_fast8_t interval = 50, col1_int = 20;
 			uint_fast16_t xmax = 0, ymax = 0;
@@ -3071,7 +3080,7 @@ static void buttons_tx_vox_process(void);
 	{
 		window_t * win = & windows[WINDOW_TX_SETTINGS];
 
-		if (win->first_call == 1)
+		if (win->first_call)
 		{
 			uint_fast16_t x = 0, y = 0, xmax = 0, ymax = 0;
 			uint_fast8_t interval = 6, col1_int = 20, row1_int = 40, row_count = 3, id_start, id_end;
@@ -3148,7 +3157,7 @@ static void buttons_tx_vox_process(void);
 		static uint_fast16_t delay_min, delay_max, level_min, level_max, alevel_min, alevel_max;
 		slider_t * sl;
 
-		if (win->first_call == 1)
+		if (win->first_call)
 		{
 			uint_fast8_t interval = 50, col1_int = 20;
 			uint_fast16_t xmax = 0, ymax = 0;
@@ -3309,6 +3318,102 @@ static void buttons_tx_vox_process(void);
 
 	}
 
+	static void window_swrscan_process(void)
+	{
+		PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
+		uint_fast16_t gr_w = 500, gr_h = 250;												// размеры области графика
+		uint_fast8_t interval = 20, col1_int = 20, row1_int = 30;
+		uint_fast16_t x0 = col1_int + interval * 2, y0 = row1_int + gr_h - interval * 2;	// нулевые координаты графика
+		uint_fast16_t x1 = x0 + gr_w - interval * 4, y1 = gr_h - y0 + interval * 2;			// размеры осей графика
+		static uint_fast16_t mid_w = 0;
+		static uint_fast32_t lim_bottom, lim_top;
+		static label_t * lbl_swr_error;
+		static button_t * btn_swr_start;
+		window_t * win = & windows[WINDOW_SWR_SCANNER];
+
+		if (win->first_call)
+		{
+			uint_fast16_t x = 0, y = 0, xmax = 0, ymax = 0;
+			win->first_call = 0;
+			button_t * bh = NULL;
+
+			mid_w = col1_int + gr_w / 2;
+			btn_swr_start = find_gui_element_ref(TYPE_BUTTON, win, "btn_swr_start");
+			btn_swr_start->x1 = mid_w - btn_swr_start->w - interval;
+			btn_swr_start->y1 = row1_int + gr_h + col1_int;
+			btn_swr_start->visible = VISIBLE;
+
+			button_t * btn_swr_OK = find_gui_element_ref(TYPE_BUTTON, win, "btn_swr_OK");
+			btn_swr_OK->x1 = mid_w + interval;
+			btn_swr_OK->y1 = btn_swr_start->y1;
+			btn_swr_OK->visible = VISIBLE;
+
+			if(hamradio_verify_freq_bands(hamradio_get_freq_rx(), & lim_bottom, & lim_top))
+			{
+				label_t * lbl_swr_bottom = find_gui_element_ref(TYPE_LABEL, win, "lbl_swr_bottom");
+				local_snprintf_P(lbl_swr_bottom->text, ARRAY_SIZE(lbl_swr_bottom->text), PSTR("%dk"), lim_bottom / 1000);
+				lbl_swr_bottom->x = x0 - get_label_width(lbl_swr_bottom) / 2;
+				lbl_swr_bottom->y = y0 + get_label_height(lbl_swr_bottom) * 2;
+				lbl_swr_bottom->visible = VISIBLE;
+
+				label_t * lbl_swr_top = find_gui_element_ref(TYPE_LABEL, win, "lbl_swr_top");
+				local_snprintf_P(lbl_swr_top->text, ARRAY_SIZE(lbl_swr_top->text), PSTR("%dk"), lim_top / 1000);
+				lbl_swr_top->x = x1 - get_label_width(lbl_swr_bottom) / 2;
+				lbl_swr_top->y = lbl_swr_bottom->y;
+				lbl_swr_top->visible = VISIBLE;
+
+				btn_swr_start->state = CANCELLED;
+			}
+			else
+			{
+				lbl_swr_error = find_gui_element_ref(TYPE_LABEL, win, "lbl_swr_error");
+				local_snprintf_P(lbl_swr_error->text, ARRAY_SIZE(lbl_swr_error->text), PSTR("%dk not in HAM bands"), hamradio_get_freq_rx() / 1000);
+				lbl_swr_error->x = mid_w - get_label_width(lbl_swr_error) / 2;
+				lbl_swr_error->y = (row1_int + gr_h) / 2;
+				lbl_swr_error->visible = VISIBLE;
+				btn_swr_start->state = DISABLED;
+			}
+
+			xmax = col1_int + gr_w;
+			ymax = btn_swr_OK->y1 + btn_swr_OK->h;
+			calculate_window_position(win, xmax, ymax);
+			return;
+		}
+
+		if (! win->first_call)
+		{
+			uint_fast16_t gr_x = win->x1 + col1_int, gr_y = win->y1 + row1_int;
+			colpip_fillrect(fr, DIM_X, DIM_Y, gr_x, gr_y, gr_w, gr_h, 125);
+			colmain_line(fr, DIM_X, DIM_Y, win->x1 + x0, win->y1 + y0, win->x1 + x0, win->y1 + y1, COLORMAIN_WHITE, 0);
+			colmain_line(fr, DIM_X, DIM_Y, win->x1 + x0, win->y1 + y0, win->x1 + x1, win->y1 + y0, COLORMAIN_WHITE, 0);
+
+			if (btn_swr_start->state == DISABLED)
+				colpip_fillrect(fr, DIM_X, DIM_Y, gr_x, win->y1 + lbl_swr_error->y - 5, gr_w, get_label_height(lbl_swr_error) + 5, COLORMAIN_RED);
+		}
+	}
+
+	static void buttons_swrscan_process(void)
+	{
+		if(gui.selected_type == TYPE_BUTTON)
+		{
+			window_t * win = & windows[WINDOW_SWR_SCANNER];
+			button_t * btn_swr_start = find_gui_element_ref(TYPE_BUTTON, win, "btn_swr_start");
+			button_t * btn_swr_OK = find_gui_element_ref(TYPE_BUTTON, win, "btn_swr_OK");
+
+			if (gui.selected_link->link == btn_swr_start)
+			{
+
+			}
+			else if (gui.selected_link->link == btn_swr_OK)
+			{
+				set_window(win, NON_VISIBLE);
+				footer_buttons_state(CANCELLED);
+				hamradio_set_lockmode(0);
+				hamradio_disable_keyboard_redirect();
+			}
+		}
+	}
+
 	void gui_open_sys_menu(void)
 	{
 		button9_handler();
@@ -3398,12 +3503,7 @@ static void buttons_tx_vox_process(void);
 	{
 		if(gui.selected_type == TYPE_BUTTON)
 		{
-//			if (IsListEmpty(& tt))
-//			{
-//				touch_t * tp = malloc(sizeof(touch_t));
-//				tp->x1 = 100;
-//				InsertHeadList(& tt, & tp->item);
-//			}
+
 		}
 	}
 
@@ -3411,13 +3511,21 @@ static void buttons_tx_vox_process(void);
 	{
 		if(gui.selected_type == TYPE_BUTTON)
 		{
-//			if (! IsListEmpty(& tt))
-//			{
-//				PLIST_ENTRY d = RemoveHeadList(& tt);
-//				touch_t * tp = CONTAINING_RECORD(d, touch_t, item);
-//				PRINTF("%d\n", tp->x1);
-//				free(tp);
-//			}
+			window_t * win = & windows[WINDOW_SWR_SCANNER];
+			if (win->state == NON_VISIBLE)
+			{
+				set_window(win, VISIBLE);
+				footer_buttons_state(DISABLED, ((button_t *)gui.selected_link)->name);
+				hamradio_set_lockmode(1);
+				hamradio_enable_keyboard_redirect();
+			}
+			else
+			{
+				set_window(win, NON_VISIBLE);
+				footer_buttons_state(CANCELLED);
+				hamradio_set_lockmode(0);
+				hamradio_disable_keyboard_redirect();
+			}
 		}
 	}
 
@@ -3486,7 +3594,7 @@ static void buttons_tx_vox_process(void);
 		const uint_fast8_t buflen = ARRAY_SIZE(buf);
 		uint_fast16_t yt, xt;
 
-		if (win->first_call == 1)
+		if (win->first_call)
 		{
 			uint_fast8_t interval = 3, id_start, id_end;
 			uint_fast16_t x = 0;

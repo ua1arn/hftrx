@@ -18266,6 +18266,22 @@ hamradio_main_step(void)
 	return STTE_OK;
 }
 
+uint_fast8_t hamradio_verify_freq_bands(uint_fast32_t freq, uint_fast32_t * bottom, uint_fast32_t * top)
+{
+	for (uint_fast8_t i = 0; i < HBANDS_COUNT; i++)
+	{
+		if (freq >= get_band_bottom(i) && freq <= get_band_top(i))
+		{
+			* bottom = get_band_bottom(i);
+			* top = get_band_top(i);
+			return 1;					// частота внутри диапазона
+		}
+	}
+	* bottom = 0;
+	* top = 0;
+	return 0; 							// частота вне диапазонов
+}
+
 #if WITHVOX
 
 void hamradio_set_gvoxenable(uint_fast8_t v)
