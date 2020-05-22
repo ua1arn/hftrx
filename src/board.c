@@ -4192,7 +4192,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0035, 0);			// D5: CTLSPARE2
 		RBBIT(0034, 0);			// D4: CTLSPARE1
 		RBBIT(0033, 0);			// D3: not used
-		RBBIT(0032, 1);			// D2: LCD_BL_ENABLE
+		RBBIT(0032, WITHLCDBACKLIGHTMIN != glob_bglight);			// D2: LCD_BL_ENABLE
 		RBBIT(0031, 0);			// D1: not used
 		RBBIT(0030, 0);			// D0: not used
 
