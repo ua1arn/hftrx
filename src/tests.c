@@ -5032,7 +5032,11 @@ void looptests(void)
 #if 0 && WITHINTEGRATEDDSP
 	{
 		dsp_speed_diagnostics();	// печать в последовательный порт результатов диагностики
-		//buffers_diagnostics();
+	}
+#endif
+#if 0 && WITHINTEGRATEDDSP
+	{
+		buffers_diagnostics();
 	}
 #endif
 #if 0 && WITHCURRLEVEL
