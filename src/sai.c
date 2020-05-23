@@ -459,6 +459,8 @@ DMA_I2S2_RX_initialize(void)
 	(void) RCC->MP_AHB2ENSETR;
 	RCC->MP_AHB2LPENSETR = RCC_MC_AHB2LPENSETR_DMA1LPEN; // включил DMA1
 	(void) RCC->MP_AHB2LPENSETR;
+	RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_DMAMUXEN; // включил DMAMUX
+	(void) RCC->MP_AHB2ENSETR;
 	// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
 	// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
 	enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
@@ -781,12 +783,15 @@ hardware_i2s2_slave_fullduplex_initialize(void)
 	(void) RCC->MP_APB1ENSETR;
 	RCC->MP_APB1LPENSETR = RCC_MC_APB1LPENSETR_SPI2LPEN; // Подать тактирование
 	(void) RCC->MP_APB1LPENSETR;
+
 #elif CPUSTYLE_STM32H7XX
 	RCC->APB1LENR |= RCC_APB1LENR_SPI2EN; // Подать тактирование
 	(void) RCC->APB1LENR;
+
 #else /* CPUSTYLE_STM32H7XX */
 	RCC->APB1ENR |= RCC_APB1ENR_SPI2EN; // Подать тактирование
 	(void) RCC->APB1ENR;
+
 #endif /* CPUSTYLE_STM32H7XX */
 
 	const portholder_t i2scfgr = stm32xxx_i2scfgr_afcodec();
@@ -795,9 +800,7 @@ hardware_i2s2_slave_fullduplex_initialize(void)
  			(4uL << SPI_I2SCFGR_I2SCFG_Pos) |	// 100: slave - full duplex
 			0;
 
-#if CPUSTYLE_STM32H7XX
-	//SPI2->CFG2 |= SPI_CFG2_IOSWP;
-#endif /* CPUSTYLE_STM32H7XX */
+ 	SPI2->CFG2 |= SPI_CFG2_IOSWP;
 
 	// Подключить I2S к выводам процессора
 	I2S2HW_INITIALIZE();	// hardware_i2s2_slave_fullduplex_initialize
@@ -827,6 +830,7 @@ hardware_i2s2_fullduplex_enable(void)
 	SPI2->CFG1 |= SPI_CFG1_TXDMAEN; // DMA по передаче
 	SPI2->CFG1 |= SPI_CFG1_RXDMAEN; // DMA по приёму
 	SPI2->CR1 |= SPI_CR1_SPE;		// I2S enable
+	__DSB();
 	SPI2->CR1 |= SPI_CR1_CSTART;	// I2S run
 	__DSB();
 
@@ -934,7 +938,7 @@ static const codechw_t audiocodechw =
 			hardware_dummy_initialize,	/* Интерфейс к НЧ кодеку - наушники */
 		#endif /* WITHI2SHWTXSLAVE */
 		DMA_I2S2_RX_initialize,					// DMA по приёму SPI2_RX
-		DMA_I2S2_TX_initialize,					// DMA по передаче канал 0
+		DMA_I2S2_TX_initialize,					// DMA по передаче SPI2_TX
 		hardware_i2s2_fullduplex_enable,
 		hardware_dummy_enable,
 		"i2s2-duplex-audiocodechw"
