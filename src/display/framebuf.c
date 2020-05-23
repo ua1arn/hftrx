@@ -609,14 +609,20 @@ void arm_hardware_mdma_initialize(void)
 
 // получить адрес требуемой позиции в буфере
 PACKEDCOLORMAIN_T *
-colmain_mem_at(
+colmain_mem_at_debug(
 	PACKEDCOLORMAIN_T * buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
 	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t y	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	const char * file,
+	int line
 	)
 {
+	if (x >= dx || y >= dy)
+	{
+		PRINTF("colmain_mem_at(%s/%d): dx=%u, dy=%u, x=%u, y=%u\n", file, line, dx, dy, x, y);
+	}
 	ASSERT(x < dx);
 	ASSERT(y < dy);
 #if LCDMODE_HORFILL
