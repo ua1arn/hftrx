@@ -1150,9 +1150,14 @@ static RAMFUNC void spool_systimerbundle2(void)
 {
 #if 1 && defined (BOARD_BLINK_SETSTATE)
 	{
+	#if WITHISBOOTLOADER
+		const unsigned thalf = 100;	// Toggle every 100 ms
+	#else /* WITHISBOOTLOADER */
+		const unsigned thalf = 500;	// Toggle every 500 ms
+	#endif /* WITHISBOOTLOADER */
 		// BLINK test
 		static unsigned count;
-		if (++ count >= NTICKS(500))	// Toggle every 500 ms
+		if (++ count >= NTICKS(thalf))
 		{
 			count = 0;
 			static uint_fast8_t state;
@@ -1160,7 +1165,7 @@ static RAMFUNC void spool_systimerbundle2(void)
 			BOARD_BLINK_SETSTATE(state);
 		}
 	}
-#endif /* CPUSTYLE_STM32MP1 */
+#endif /* defined (BOARD_BLINK_SETSTATE) */
 
 #if WITHKEYBOARD
 #if ! KEYBOARD_USE_ADC
