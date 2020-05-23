@@ -88,7 +88,6 @@ calcdivround2(
 
 	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 	static uint_fast32_t 
-	NOINLINEAT
 	calcdivround_systick(
 		uint_fast32_t freq		/* требуемая частота на выходе делителя, в герцах. */
 		)
@@ -98,7 +97,6 @@ calcdivround2(
 
 	/* для устройств на шине APB1 (up to 36 MHz) */
 	static uint_fast32_t 
-	NOINLINEAT
 	calcdivround_pclk1(
 		uint_fast32_t freq		/* требуемая частота на выходе делителя, в герцах. */
 		)
@@ -108,7 +106,6 @@ calcdivround2(
 
 	/* для устройствтактирующихся от HSI48 */
 	static uint_fast32_t 
-	NOINLINEAT
 	calcdivround_hsi48(
 		uint_fast32_t freq		/* требуемая частота на выходе делителя, в герцах. */
 		)
@@ -118,7 +115,6 @@ calcdivround2(
 
 	/* для устройств на шине APB1 (up to 36 MHz) - таймеры */
 	static uint_fast32_t 
-	NOINLINEAT
 	calcdivround_pclk1_timers(
 		uint_fast32_t freq		/* требуемая частота на выходе делителя, в герцах. */
 		)
@@ -128,13 +124,25 @@ calcdivround2(
 
 	/* для устройств на шине APB2 (up to 72 MHz) */
 	static uint_fast32_t 
-	NOINLINEAT
 	calcdivround_pclk2(
 		uint_fast32_t freq		/* требуемая частота на выходе делителя, в герцах. */
 		)
 	{
 		return calcdivround2(PCLK2_FREQ, freq);
 	}
+
+#if defined (PCLK3_TIMERS_FREQ)
+	/* для устройств на шине APB2 (up to 72 MHz) */
+	static uint_fast32_t
+	calcdivround_pclk3_timers(
+		uint_fast32_t freq		/* требуемая частота на выходе делителя, в герцах. */
+		)
+	{
+		return calcdivround2(PCLK3_TIMERS_FREQ, freq);
+	}
+
+#endif /* defined (PCLK3_TIMERS_FREQ) */
+
 #if SIDETONE_TARGET_BIT != 0
 	/* для устройств на шине APB2 (up to 72 MHz) */
 	static uint_fast32_t 
@@ -6418,7 +6426,20 @@ void hardware_elkey_set_speed(uint_fast32_t ticksfreq)
 	// разрешение прерываний на входе в PMIC
 	PMIC.CTRL |= (PMIC_HILVLEN_bm | PMIC_MEDLVLEN_bm | PMIC_LOLVLEN_bm);
 	
-#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
+#elif CPUSTYLE_STM32MP1
+	// TIM2 & TIM5 on CPUSTYLE_STM32F4XX have 32-bit CNT and ARR registers
+	// TIM7 located on APB1
+	// TIM7 on APB1
+	// Use basic timer
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(calcdivround_pclk3_timers(ticksfreq), STM32F_TIM3_TIMER_WIDTH, STM32F_TIM3_TIMER_TAPS, & value, 1);
+
+	TIM3->PSC = ((1UL << prei) - 1) & TIM_PSC_PSC;
+	TIM3->ARR = value;
+	TIM3->CR1 = TIM_CR1_CEN | TIM_CR1_ARPE; /* разрешить перезагрузку и включить таймер = перенесено в установку скорости - если счётчик успевал превысить значение ARR - считал до конца */
+
+
+#elif CPUSTYLE_STM32H7XX
 	// TIM2 & TIM5 on CPUSTYLE_STM32F4XX have 32-bit CNT and ARR registers
 	// TIM7 located on APB1
 	// TIM7 on APB1
@@ -9710,6 +9731,30 @@ void stm32mp1_pll_initialize(void)
 		((0x01 - 1) << RCC_AXIDIVR_AXIDIV_Pos) |	// div1 (no divide)
 		0;
 	while((RCC->AXIDIVR & RCC_AXIDIVR_AXIDIVRDY_Msk) == 0)
+		;
+
+	// APB2 Output divider
+	//0x0: mlhclk (default after reset)
+	//0x1: mlhclk / 2
+	//0x2: mlhclk / 4
+	//0x3: mlhclk / 8
+	//0x4: mlhclk / 16
+	RCC->APB2DIVR = (RCC->APB2DIVR & ~ (RCC_APB2DIVR_APB2DIV_Msk)) |
+		((1) << RCC_APB2DIVR_APB2DIV_Pos) |	// div2
+		0;
+	while((RCC->APB2DIVR & RCC_APB2DIVR_APB2DIVRDY_Msk) == 0)
+		;
+
+	// APB3 Output divider
+	//0x0: hclk (default after reset)
+	//0x1: hclk / 2
+	//0x2: hclk / 4
+	//0x3: hclk / 8
+	//others: hclk / 16
+	RCC->APB3DIVR = (RCC->APB3DIVR & ~ (RCC_APB3DIVR_APB3DIV_Msk)) |
+		((1) << RCC_APB4DIVR_APB4DIV_Pos) |	// div2
+		0;
+	while((RCC->APB3DIVR & RCC_APB3DIVR_APB3DIVRDY_Msk) == 0)
 		;
 
 	// APB4 Output divider

@@ -653,6 +653,7 @@ extern "C" {
 	#define	PCLK1_FREQ (AXISS_FREQ / 4)	// 42 MHz PCLK1 frequency
 	#define	PCLK1_TIMERS_FREQ (AXISS_FREQ / 2)	// 42 MHz PCLK1 frequency
 	#define	PCLK2_FREQ (AXISS_FREQ / 4)	// 84 MHz PCLK2 frequency
+	#define	PCLK3_TIMERS_FREQ (AXISS_FREQ / 4)	// 84 MHz PCLK2 frequency
 	#define	PCLK2_TIMERS_FREQ (AXISS_FREQ / 2)	// 84 MHz PCLK2 frequency
 	#define SYSTICK_FREQ AXISS_FREQ	// SysTick_Config станавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 	#define PER_CK_FREQ HSIFREQ	// 2. The per_ck clock could be hse_ck, hsi_ker_ck or csi_ker_ck according to CKPERSEL selection.
