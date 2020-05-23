@@ -231,6 +231,19 @@
 	} while (0)
 #endif /* WITHSAI1HW */
 
+	// для предотвращения треска от оставшегося инициализщированным кодека
+	#define I2S2HW_POOLDOWN() do { \
+		enum { AF_5 = 5 }; \
+		arm_hardware_piob_inputs(1uL << 12); /* PB12 I2S2_WS	*/ \
+		arm_hardware_piob_updown(0, 1uL << 12); \
+		arm_hardware_piob_inputs(1uL << 13); /* PB13 I2S2_CK	*/ \
+		arm_hardware_piob_updown(0, 1uL << 13); \
+		arm_hardware_piob_inputs(1uL << 12); /* PB15 I2S2_SDO - передача */ \
+		arm_hardware_piob_updown(0, 1uL << 15); \
+		arm_hardware_piob_inputs(1uL << 14); /* PB14 I2S2_SDI, - приём от кодека */ \
+		arm_hardware_piob_updown(0, 1uL << 14); \
+	} while (0)
+
 #if WITHSAI1HW
 	/*
 	 *
@@ -959,6 +972,7 @@
 
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
+			I2S2HW_POOLDOWN(); \
 			BOARD_BLINK_INITIALIZE(); \
 			HARDWARE_KBD_INITIALIZE(); \
 			HARDWARE_DAC_INITIALIZE(); \
