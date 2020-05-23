@@ -172,13 +172,14 @@ enum
 
 #if WITHI2SHW
 
-#if WITHI2S_FRAMEBITS == 64
+#if WITHI2S_FRAMEBITS == 32
 
-	#define DMA_SxCR_xSIZE		0x02uL	// 10: word (32-bit)
+	#define DMA_SxCR_xSIZE		0x01uL	// 01: half-word (16-bit)
 
 #else /*  WITHI2S_FRAMEBITS == 64 */
 
-	#define DMA_SxCR_xSIZE		0x01uL	// 01: half-word (16-bit)
+	// 2*32, 2*24
+	#define DMA_SxCR_xSIZE		0x02uL	// 10: word (32-bit)
 
 #endif /*  WITHI2S_FRAMEBITS == 64 */
 
@@ -193,6 +194,12 @@ static portholder_t stm32xxx_i2scfgr_afcodec(void)
 		(1uL << SPI_I2SCFGR_FIXCH_Pos) |		// 1: the channel length in slave mode is supposed to be 16 or 32 bits (according to CHLEN)
 		(1uL << SPI_I2SCFGR_CHLEN_Pos) |		// 1: 32-bit wide audio channel
 		(2uL << SPI_I2SCFGR_DATLEN_Pos) |	// 00: 16-bit data length, 01: 24-bit data length, 10: 32-bit data length
+
+#elif WITHI2S_FRAMEBITS == 32
+		//(1uL << SPI_I2SCFGR_DATFMT_Pos) |	// 1: the data inside the SPI2S_RXDR or SPI2S_TXDR are left aligned.
+		(1uL << SPI_I2SCFGR_FIXCH_Pos) |		// 1: the channel length in slave mode is supposed to be 16 or 32 bits (according to CHLEN)
+		(0uL << SPI_I2SCFGR_CHLEN_Pos) |		// 0: 16-bit wide audio channel
+		(0uL << SPI_I2SCFGR_DATLEN_Pos) |	// 00: 16-bit data length, 01: 24-bit data length, 10: 32-bit data length
 
 #else /* WITHI2S_FRAMEBITS == 64 */
 		(0uL << SPI_I2SCFGR_FIXCH_Pos) |		// 0: the channel length in slave mode is different from 16 or 32 bits (CHLEN not taken into account)
@@ -287,6 +294,8 @@ DMA_I2S2_TX_initialize(void)
 #if CPUSTYLE_STM32MP1
 	RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_DMA1EN; // включил DMA1
 	(void) RCC->MP_AHB2ENSETR;
+	RCC->MP_AHB2LPENSETR = RCC_MC_AHB2LPENSETR_DMA1LPEN; // включил DMA1
+	(void) RCC->MP_AHB2LPENSETR;
 	RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_DMAMUXEN; // включил DMAMUX
 	(void) RCC->MP_AHB2ENSETR;
 	// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
@@ -448,6 +457,8 @@ DMA_I2S2_RX_initialize(void)
 #if CPUSTYLE_STM32MP1
 	RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_DMA1EN; // включил DMA1
 	(void) RCC->MP_AHB2ENSETR;
+	RCC->MP_AHB2LPENSETR = RCC_MC_AHB2LPENSETR_DMA1LPEN; // включил DMA1
+	(void) RCC->MP_AHB2LPENSETR;
 	// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
 	// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
 	enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
@@ -582,7 +593,7 @@ hardware_i2s2_i2s2ext_master_duplex_initialize(void)		/* инициализац�
 	I2S2ext->I2SPR = i2spr;
 	SPI2->I2SPR = i2spr;
 	// Подключить I2S к выводам процессора
-	I2S2HW_INITIALIZE();
+	I2S2HW_INITIALIZE();	// hardware_i2s2_i2s2ext_master_duplex_initialize
 }
 
 #endif /* defined (I2S2ext) */
@@ -616,7 +627,7 @@ hardware_i2s2_slave_tx_initialize(void)		/* инициализация I2S2, STM
 #endif /* CPUSTYLE_STM32H7XX */
 
 	// Подключить I2S к выводам процессора
-	I2S2HW_INITIALIZE();
+	I2S2HW_INITIALIZE();	// hardware_i2s2_slave_tx_initialize
 
 	debug_printf_P(PSTR("hardware_i2s2_slave_tx_initialize done\n"));
 }
@@ -716,7 +727,7 @@ hardware_i2s2_master_tx_initialize(void)		/* инициализация I2S2, ST
 		0;
 	SPI2->I2SPR = i2spr;
 	// Подключить I2S к выводам процессора
-	I2S2HW_INITIALIZE();
+	I2S2HW_INITIALIZE();	// hardware_i2s2_master_tx_initialize
 
 	debug_printf_P(PSTR("hardware_i2s2_master_tx_initialize done\n"));
 }
@@ -752,7 +763,7 @@ hardware_i2s3_slave_rx_initialize(void)		/* инициализация I2S3 STM3
 #endif /* CPUSTYLE_STM32H7XX */
 
 	// Подключить I2S к выводам процессора
-	I2S2HW_INITIALIZE();
+	I2S2HW_INITIALIZE();	// hardware_i2s3_slave_rx_initialize
 
 	debug_printf_P(PSTR("hardware_i2s3_slave_rx_initialize done\n"));
 }
@@ -789,34 +800,19 @@ hardware_i2s2_slave_fullduplex_initialize(void)
 #endif /* CPUSTYLE_STM32H7XX */
 
 	// Подключить I2S к выводам процессора
-	I2S2HW_INITIALIZE();
+	I2S2HW_INITIALIZE();	// hardware_i2s2_slave_fullduplex_initialize
 
 	debug_printf_P(PSTR("hardware_i2s2_slave_fullduplex_initialize done\n"));
 }
 
 #endif /* WITHI2SHWRXSLAVE */
 
-#if defined (I2S2ext)
-
-/* разрешение работы I2S на STM32F4xx */
+/* разрешение работы I2S  */
 // Интерфейс к НЧ кодеку
-static void 
+static void
 hardware_i2s2_fullduplex_enable(void)
 {
-
-
-#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
-
-	I2S2ext->CFG1 |= SPI_CFG1_RXDMAEN; // DMA по приему (slave)
-	SPI2->CFG1 |= SPI_CFG1_TXDMAEN; // DMA по передаче
-	I2S2ext->I2SCFGR |= SPI_I2SCFGR_I2SE;		// I2S enable (slave enabled first)
-	I2S2ext->CR1 |= SPI_CR1_CSTART;	// I2S run
-	__DSB();
-	SPI2->I2SCFGR |= SPI_I2SCFGR_I2SE;		// I2S enable
-	__DSB();
-	SPI2->CR1 |= SPI_CR1_CSTART;	// I2S run
-
-#else /* CPUSTYLE_STM32H7XX */
+#if defined (I2S2ext)
 
 	I2S2ext->CR2 |= SPI_CR2_RXDMAEN; // DMA по приему (slave)
 	SPI2->CR2 |= SPI_CR2_TXDMAEN; // DMA по передаче
@@ -825,14 +821,28 @@ hardware_i2s2_fullduplex_enable(void)
 	SPI2->I2SCFGR |= SPI_I2SCFGR_I2SE;		// I2S enable
 	__DSB();
 
+#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
+
+	/* SPI/I2S поддерживает дуплекс (и два канала DMA). */
+	SPI2->CFG1 |= SPI_CFG1_TXDMAEN; // DMA по передаче
+	SPI2->CFG1 |= SPI_CFG1_RXDMAEN; // DMA по приёму
+	SPI2->CR1 |= SPI_CR1_SPE;		// I2S enable
+	SPI2->CR1 |= SPI_CR1_CSTART;	// I2S run
+	__DSB();
+
+#else /* CPUSTYLE_STM32H7XX */
+
+	SPI2->CR2 |= SPI_CR2_TXDMAEN; // DMA по передаче
+	SPI2->CR2 |= SPI_CR2_RXDMAEN; // DMA по передаче
+	SPI2->I2SCFGR |= SPI_I2SCFGR_I2SE;		// I2S enable
+	__DSB();
+
 #endif /* CPUSTYLE_STM32H7XX */
 }
 
-#endif /* defined (I2S2ext) */
-
 /* разрешение работы I2S на STM32F4xx */
 // Интерфейс к НЧ кодеку
-static void 
+static void
 hardware_i2s2_tx_enable(void)
 {
 #if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
@@ -925,8 +935,8 @@ static const codechw_t audiocodechw =
 		#endif /* WITHI2SHWTXSLAVE */
 		DMA_I2S2_RX_initialize,					// DMA по приёму SPI2_RX
 		DMA_I2S2_TX_initialize,					// DMA по передаче канал 0
-		hardware_i2s2_rx_enable,
-		hardware_i2s2_tx_enable,
+		hardware_i2s2_fullduplex_enable,
+		hardware_dummy_enable,
 		"i2s2-duplex-audiocodechw"
 	};
 
