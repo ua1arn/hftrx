@@ -607,6 +607,8 @@ void arm_hardware_mdma_initialize(void)
 
 #endif /* WITHMDMAHW */
 
+extern const char * savestring;
+
 // получить адрес требуемой позиции в буфере
 PACKEDCOLORMAIN_T *
 colmain_mem_at_debug(
@@ -621,7 +623,7 @@ colmain_mem_at_debug(
 {
 	if (x >= dx || y >= dy)
 	{
-		PRINTF("colmain_mem_at(%s/%d): dx=%u, dy=%u, x=%u, y=%u\n", file, line, dx, dy, x, y);
+		PRINTF("colmain_mem_at(%s/%d): dx=%u, dy=%u, x=%u, y=%u, savestring='%s'\n", file, line, dx, dy, x, y, savestring);
 	}
 	ASSERT(x < dx);
 	ASSERT(y < dy);

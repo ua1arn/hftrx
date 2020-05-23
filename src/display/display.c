@@ -796,6 +796,7 @@ static uint_fast16_t RAMFUNC_NONILINE ltdc_vertical_put_char_half(uint_fast16_t 
 
 #endif /* LCDMODE_HORFILL */
 
+#if 0
 uint_fast16_t display_put_char_small2(uint_fast16_t x, uint_fast16_t y, uint_fast8_t c, uint_fast8_t lowhalf)
 {
 #if LCDMODE_HORFILL
@@ -805,6 +806,7 @@ uint_fast16_t display_put_char_small2(uint_fast16_t x, uint_fast16_t y, uint_fas
 	return ltdc_vertical_put_char_small(x, y, c);
 #endif /* LCDMODE_HORFILL */
 }
+#endif
 
 // полоса индикатора
 uint_fast16_t display_wrdatabar_begin(uint_fast8_t x, uint_fast8_t y, uint_fast16_t * yp)
@@ -941,6 +943,7 @@ smallfont_decode(uint_fast8_t c)
 }
 
 
+#if 0
 // Используется при выводе на графический индикатор,
 // самый маленький шрифт
 static void
@@ -969,13 +972,14 @@ display_string2_P(uint_fast8_t xcell, uint_fast8_t ycell, const FLASHMEM  char *
 		xpix = display_put_char_small2(xpix, xpix, c, lowhalf);
 	display_wrdata2_end();
 }
+#endif
 
-
-
+const char * savestring = "no data";
 // Используется при выводе на графический индикатор,
 static void
-display_string(uint_fast8_t xcell, uint_fast8_t ycell,const char * s, uint_fast8_t lowhalf)
+display_string(uint_fast8_t xcell, uint_fast8_t ycell, const char * s, uint_fast8_t lowhalf)
 {
+	savestring = s;
 	char c;
 
 	uint_fast16_t ypix;
