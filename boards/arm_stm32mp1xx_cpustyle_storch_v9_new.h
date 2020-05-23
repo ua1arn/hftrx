@@ -223,6 +223,7 @@
 	// Инициализируются I2S2 в дуплексном режиме.
 	#define I2S2HW_INITIALIZE() do { \
 		enum { AF_5 = 5 }; \
+		SPI2->CFG2 |= SPI_CFG2_IOSWP; \
 		arm_hardware_piob_altfn2(1uL << 12,	AF_5); /* PB12 I2S2_WS	*/ \
 		arm_hardware_piob_altfn2(1uL << 13,	AF_5); /* PB13 I2S2_CK	*/ \
 		arm_hardware_piob_altfn2(1uL << 15,	AF_5); /* PB15 I2S2_SDO - передача */ \
