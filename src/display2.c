@@ -1382,10 +1382,12 @@ static void display_siglevel7(
 	uint_fast8_t tracemax;
 	uint_fast8_t v = board_getsmeter(& tracemax, 0, UINT8_MAX, 0);
 
-	char buff [32];
+	char buff [8];
+	// в формате при наличии знака числа ширина формата отностися ко всему полю вместе со знаком
 	local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("%-+4d" "dBm"), tracemax - UINT8_MAX);
 	(void) v;
 	const char * const labels [1] = { buff, };
+	ASSERT(strlen(buff) == 7);
 	display2_text(x, y, labels, colors_1state, 0);
 #endif /* WITHIF4DSP */
 }
@@ -1401,10 +1403,12 @@ static void display_siglevel4(
 	uint_fast8_t tracemax;
 	uint_fast8_t v = board_getsmeter(& tracemax, 0, UINT8_MAX, 0);
 
-	char buff [32];
+	char buff [5];
+	// в формате при наличии знака числа ширина формата отностися ко всему полю вместе со знаком
 	local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("%-+4d"), tracemax - UINT8_MAX);
 	(void) v;
 	const char * const labels [1] = { buff, };
+	ASSERT(strlen(buff) == 4);
 	display2_text(x, y, labels, colors_1state, 0);
 #endif /* WITHIF4DSP */
 }
@@ -1429,6 +1433,7 @@ static void display2_span9(
 
 	local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("SPAN:%3dk"), (int) ((display_zoomedbw() + 0) / 1000));
 	const char * const labels [1] = { buff, };
+	ASSERT(strlen(buff) == 9);
 	display2_text(x, y, labels, colors_1state, 0);
 
 #endif /* WITHIF4DSP */
@@ -1492,6 +1497,7 @@ static void display_smeter5(
 		local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("S9+%02d"), alevel - s9level);
 	}
 	const char * const labels [1] = { buff, };
+	ASSERT(strlen(buff) == 5);
 	display2_text(x, y, labels, colors_1state, 0);
 #endif /* WITHIF4DSP */
 }
