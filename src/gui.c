@@ -384,7 +384,7 @@ uint_fast16_t normalize3(
 		return normalize(raw - rawmid, 0, rawmax - rawmid, range2 - range1) + range1;
 }
 
-const uint_fast16_t fullscale = (SWRMIN * 40 / 10) - SWRMIN;
+static const uint_fast16_t swr_fullscale = (SWRMIN * 40 / 10) - SWRMIN;
 
 uint_fast16_t get_swr(void)
 {
@@ -397,7 +397,7 @@ uint_fast16_t get_swr(void)
 	if (forward < minforward)
 		swr10 = 0;				// SWR=1
 	else if (forward <= reflected)
-		swr10 = fullscale;		// SWR is infinite
+		swr10 = swr_fullscale;		// SWR is infinite
 	else
 		swr10 = (forward + reflected) * SWRMIN / (forward - reflected) - SWRMIN;
 	return swr10;
@@ -631,7 +631,7 @@ display2_smeter15(
 		power = board_getadc_filtered_truevalue(PWRI);
 		gp = smeter_params.gs + normalize(power, 0, maxpwrcali << 4, smeter_params.ge - smeter_params.gs);
 
-		gswr = smeter_params.gs + normalize(get_swr(), 0, fullscale, smeter_params.ge - smeter_params.gs);
+		gswr = smeter_params.gs + normalize(get_swr(), 0, swr_fullscale, smeter_params.ge - smeter_params.gs);
 
 		if (gp > smeter_params.gs)
 			gp_smooth = gp;
@@ -3411,7 +3411,7 @@ static void buttons_swrscan_process(void);
 				hamradio_set_tune(0);
 				hamradio_set_freq(backup_freq);
 			}
-			y_vals[i++] = normalize(get_swr(), fullscale, 0, y0 - row1_int);
+			y_vals[i++] = normalize(get_swr(), swr_fullscale, 0, y0 - row1_int);
 			y_vals[i] = y_vals[i] < y1 ? y1 : y_vals[i];
 		}
 
