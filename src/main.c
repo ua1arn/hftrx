@@ -13943,6 +13943,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		NULL,
 	},
 #endif /* ! WITHFLATMENU */
+#if 0 && ! CTLREGMODE_STORCH_V9A
 	{
 		QLABEL("ADC RAND"), 8, 3, RJ_ON,	ISTEP1,	/* управление интерфейсом в LTC2208 */
 		ITEM_VALUE,
@@ -13952,6 +13953,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		& gadcrand,
 		getzerobase, 
 	},
+#endif /* ! CTLREGMODE_STORCH_V9A */
 	{
 		QLABEL("ADC DITH"), 8, 3, RJ_ON,	ISTEP1,	/* управление зашумлением в LTC2208 */
 		ITEM_VALUE,
