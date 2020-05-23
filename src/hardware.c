@@ -669,7 +669,13 @@ hardware_uart1_set_speed(uint_fast32_t baudrate)
 	USARTE0.BAUDCTRLA = (value & 0xff);	/* Значение получено уже уменьшенное на 1 */
 	USARTE0.BAUDCTRLB = (ATXMEGA_UBR_BSEL << 4) | ((value >> 8) & 0x0f);
 
-#elif CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
+#elif CPUSTYLE_STM32MP1
+
+	// uart1 on apb2 up to 72/36 MHz
+
+	USART1->BRR = calcdivround2(HSIFREQ, baudrate);		// младшие 4 бита - это дробная часть.
+
+#elif CPUSTYLE_STM32F
 
 	// uart1 on apb2 up to 72/36 MHz
 
@@ -830,7 +836,13 @@ hardware_uart2_set_speed(uint_fast32_t baudrate)
 	USARTE1.BAUDCTRLA = (value & 0xff);	/* Значение получено уже уменьшенное на 1 */
 	USARTE1.BAUDCTRLB = (ATXMEGA_UBR_BSEL << 4) | ((value >> 8) & 0x0f);
 
-#elif CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
+#elif CPUSTYLE_STM32MP1
+
+	// uart2 on apb1
+
+	USART2->BRR = calcdivround2(HSIFREQ, baudrate);		// младшие 4 бита - это дробная часть.
+
+#elif CPUSTYLE_STM32F
 
 	// uart2 on apb1
 
@@ -9747,6 +9759,12 @@ void stm32mp1_pll_initialize(void)
 
 #if 1//WITHUART1HW
 	// usart1
+	//0x0: pclk5 clock selected as kernel peripheral clock (default after reset)
+	//0x1: pll3_q_ck clock selected as kernel peripheral clock
+	//0x2: hsi_ker_ck clock selected as kernel peripheral clock
+	//0x3: csi_ker_ck clock selected as kernel peripheral clock
+	//0x4: pll4_q_ck clock selected as kernel peripheral clock
+	//0x5: hse_ker_ck clock selected as kernel peripheral clock
 	RCC->UART1CKSELR = (RCC->UART1CKSELR & ~ (RCC_UART1CKSELR_UART1SRC_Msk)) |
 		(0x02 << RCC_UART1CKSELR_UART1SRC_Pos) | // HSI
 		0;
@@ -9761,7 +9779,8 @@ void stm32mp1_pll_initialize(void)
 	//0x3: csi_ker_ck clock selected as kernel peripheral clock
 	//0x4: hse_ker_ck clock selected as kernel peripheral clock
 	RCC->UART24CKSELR = (RCC->UART24CKSELR & ~ (RCC_UART24CKSELR_UART24SRC_Msk)) |
-		(0x02 << RCC_UART24CKSELR_UART24SRC_Pos) |	// HSI
+		(0x02 << RCC_UART24CKSELR_UART24SRC_Pos) |	// hsi_ker_ck
+		//(0x00 << RCC_UART24CKSELR_UART24SRC_Pos) |	// pclk1
 		0;
 	(void) RCC->UART24CKSELR;
 #endif /* WITHUART2HW */
