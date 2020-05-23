@@ -4433,10 +4433,9 @@ static RAMFUNC FLOAT_t processifadcsamplei(uint32_t v1, uint_fast8_t dspmode)
 #if WITHLOOPBACKTEST
 
 // Обеспечение работы тестового канала прохождения стерео звука
-static INT32P_t loopbacktestaudio(INT32P_t vi0, uint_fast8_t dspmode, FLOAT_t shape)
+static FLOAT32P_t loopbacktestaudio(FLOAT32P_t vi0, uint_fast8_t dspmode, FLOAT_t shape)
 {
-	INT32P_t vi;
-	vi = vi0;		// Прослушивание микрофонного сигнала
+	FLOAT32P_t vi = vi0;	// Прослушивание микрофонного сигнала
 	//
 	// Здесь выбираем, что прослушиваем при тесте
 	BEGIN_STAMP2();
