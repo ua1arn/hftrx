@@ -222,24 +222,24 @@
 #if WITHI2SHW
 	// Инициализируются I2S2 в дуплексном режиме.
 	#define I2S2HW_INITIALIZE() do { \
-		enum { AF_5 = 5 }; \
 		SPI2->CFG2 |= SPI_CFG2_IOSWP; \
-		arm_hardware_piob_altfn2(1uL << 12,	AF_5); /* PB12 I2S2_WS	*/ \
-		arm_hardware_piob_altfn2(1uL << 13,	AF_5); /* PB13 I2S2_CK	*/ \
-		arm_hardware_piob_altfn2(1uL << 15,	AF_5); /* PB15 I2S2_SDO - передача */ \
-		arm_hardware_piob_altfn2(1uL << 14,	AF_5); /* PB14 I2S2_SDI, - приём от кодека */ \
+		arm_hardware_piob_altfn2(1uL << 12,	AF_SPI2); /* PB12 I2S2_WS	*/ \
+		arm_hardware_piob_updown(0, 1uL << 12); \
+		arm_hardware_piob_altfn2(1uL << 13,	AF_SPI2); /* PB13 I2S2_CK	*/ \
+		arm_hardware_piob_updown(0, 1uL << 13); \
+		arm_hardware_piob_altfn2(1uL << 15,	AF_SPI2); /* PB15 I2S2_SDO - передача */ \
+		arm_hardware_piob_altfn2(1uL << 14,	AF_SPI2); /* PB14 I2S2_SDI, - приём от кодека */ \
+		arm_hardware_piob_updown(0, 1uL << 14); \
 	} while (0)
 #endif /* WITHSAI1HW */
 
 	// для предотвращения треска от оставшегося инициализщированным кодека
 	#define I2S2HW_POOLDOWN() do { \
-		enum { AF_5 = 5 }; \
 		arm_hardware_piob_inputs(1uL << 12); /* PB12 I2S2_WS	*/ \
 		arm_hardware_piob_updown(0, 1uL << 12); \
 		arm_hardware_piob_inputs(1uL << 13); /* PB13 I2S2_CK	*/ \
 		arm_hardware_piob_updown(0, 1uL << 13); \
 		arm_hardware_piob_inputs(1uL << 12); /* PB15 I2S2_SDO - передача */ \
-		arm_hardware_piob_updown(0, 1uL << 15); \
 		arm_hardware_piob_inputs(1uL << 14); /* PB14 I2S2_SDI, - приём от кодека */ \
 		arm_hardware_piob_updown(0, 1uL << 14); \
 	} while (0)
