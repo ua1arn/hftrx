@@ -274,6 +274,11 @@ static void wm8994_setprocparams(
 
 static uint_fast16_t power_mgnt_reg_1 = 0;
 
+static void wm8994_stop(void)
+{
+	wm8994_setreg(WM8994_SOFTWARE_RESET, 0x0000);	// RESET
+}
+
 static void wm8994_initialize_slave_fullduplex(void)
 {
 	debug_printf_P(PSTR("wm8994_initialize_slave_fullduplex start\n"));
@@ -620,9 +625,10 @@ board_getaudiocodecif(void)
 
 	static const char codecname [] = "WM8994";
 
-	/* Интерфейс цправления кодеком */
+	/* Интерфейс управления кодеком */
 	static const codec1if_t ifc =
 	{
+		wm8994_stop,
 		wm8994_initialize_slave_fullduplex,
 		wm8994_setvolume,		/* Установка громкости на наушники */
 		wm8994_lineinput,		/* Выбор LINE IN как источника для АЦП вместо микрофона */

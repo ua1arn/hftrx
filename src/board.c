@@ -6478,7 +6478,7 @@ const codec2if_t * board_getfpgacodecif(void)
 {
 	static const char codecname [] = "FPGA_V1";
 
-	/* Интерфейс цправления кодеком */
+	/* Интерфейс управления кодеком */
 	static const codec2if_t ifc =
 	{
 		fpga_initialize_fullduplex,
