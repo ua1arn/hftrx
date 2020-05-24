@@ -225,7 +225,7 @@ board_getaudiocodecif(void)
 
 	static const char codecname [] = "TLV320AIC23";
 
-	/* Интерфейс управления кодеком */
+	/* Интерфейс цправления кодеком */
 	static const codec1if_t ifc =
 	{
 		tlv320aic23_stop,

@@ -217,7 +217,7 @@ const codec2if_t * board_getfpgacodecif(void)
 {
 	static const char codecname [] = "CS4272";
 
-	/* Интерфейс управления кодеком */
+	/* Интерфейс цправления кодеком */
 	static const codec2if_t ifc =
 	{
 		cs4272_initialize_fullduplex,

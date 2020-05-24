@@ -625,7 +625,7 @@ board_getaudiocodecif(void)
 
 	static const char codecname [] = "WM8994";
 
-	/* Интерфейс управления кодеком */
+	/* Интерфейс цправления кодеком */
 	static const codec1if_t ifc =
 	{
 		wm8994_stop,

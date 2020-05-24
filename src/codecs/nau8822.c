@@ -379,7 +379,7 @@ board_getaudiocodecif(void)
 
 	static const char codecname [] = "NAU8822";
 
-	/* Интерфейс управления кодеком */
+	/* Интерфейс цправления кодеком */
 	static const codec1if_t ifc =
 	{
 		nau8822_stop,
