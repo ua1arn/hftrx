@@ -9294,11 +9294,11 @@ uint_fast8_t hamradio_get_volt_value(void)
 	else
 	{
 		//debug_printf_P(PSTR("hamradio_get_volt_value: ref=%u\n"), ref);
-		return 3333;
+		return UINT8_MAX;
 	}
 #else /* WITHREFSENSOR */
 
-	//debug_printf_P(PSTR("hamradio_get_volt_value: VOLTMRRIX=%u, voltcalibr=%u\n"), board_getadc_unfiltered_truevalue(VOLTSOURCE), voltcalibr);
+	//debug_printf_P(PSTR("hamradio_get_volt_value: VOLTMRRIX=%u, voltcalibr=%u\n"), board_getadc_unfiltered_truevalue(VOLTMRRIX), voltcalibr);
 	return board_getadc_filtered_u8(VOLTMRRIX, 0, voltcalibr);
 
 #endif /* WITHREFSENSOR */

@@ -499,7 +499,7 @@
 	#define SPI_ALLCS_PORT_C(v)	do { GPIOE->BSRR = BSRR_C(v); __DSB(); } while (0)
 
 	#define targetext1		(1uL << 8)		// PE8 ext1 on front panel
-	#define targetxad2		(1uL << 7)		// PE7 ext2(not connected now)
+	#define targetxad2		(1uL << 7)		// PE7 ext2 двунаправленный SPI для подключения внешних устройств - например тюнера
 	#define targetnvram		(1uL << 0)		// PE0 nvmem FM25L16B
 	#define targetctl1		(1uL << 1)		// PE1 board control registers chain
 	#define targetcodec1	(1uL << 2)		// PE2 on-board codec1 NAU8822L

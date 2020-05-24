@@ -8263,6 +8263,7 @@ adcvalholder_t board_getadc_unfiltered_truevalue(uint_fast8_t adci)
 #if defined (targetxad2)
 		uint_fast8_t valid;
 		uint_fast8_t ch = adci - BOARD_ADCX1BASE;
+		//PRINTF("targetxad2: ch = %u\n", ch);
 		return mcp3208_read(targetxad2, xad2xlt [ch].diff, xad2xlt [ch].ch, & valid);
 #else /* defined (targetxad2) */
 		return 0;
@@ -8270,10 +8271,11 @@ adcvalholder_t board_getadc_unfiltered_truevalue(uint_fast8_t adci)
 	}
 	if (adci >= BOARD_ADCX0BASE)
 	{
-		/* P2_3 ADC MCP3208-BI/SL chip select */
+		/* on-board ADC MCP3208-BI/SL chip select (potentiometers) */
 #if defined (targetadc2)
 		uint_fast8_t valid;
 		uint_fast8_t ch = adci - BOARD_ADCX0BASE;
+		//PRINTF("targetadc2: ch = %u\n", ch);
 		return mcp3208_read(targetadc2, 0, ch, & valid);
 #else /* defined (targetadc2) */
 		return 0;

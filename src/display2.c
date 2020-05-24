@@ -1200,7 +1200,7 @@ static void display_voltlevelV5(
 {
 #if WITHVOLTLEVEL
 	uint_fast8_t volt = hamradio_get_volt_value();	// Напряжение в сотнях милливольт т.е. 151 = 15.1 вольта
-
+	//PRINTF("display_voltlevelV5: volt=%u\n", volt);
 	colmain_setcolors(colors_1state [0].fg, colors_1state [0].bg);
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	do
@@ -1220,6 +1220,7 @@ static void display_voltlevel4(
 {
 #if WITHVOLTLEVEL
 	const uint_fast8_t volt = hamradio_get_volt_value();	// Напряжение в сотнях милливольт т.е. 151 = 15.1 вольта
+	//PRINTF("display_voltlevel4: volt=%u\n", volt);
 
 	colmain_setcolors(colors_1state [0].fg, colors_1state [0].bg);
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;

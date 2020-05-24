@@ -1192,6 +1192,11 @@ static RAMFUNC void spool_systimerbundle2(void)
 	kbd_spool();	//
 #endif /* ! KEYBOARD_USE_ADC */
 #endif /* WITHKEYBOARD */
+
+#if ! WITHCPUADCHW
+	board_adc_filtering();
+#endif /* ! WITHCPUADCHW */
+
 #if WITHCPUADCHW
 	hardware_adc_startonescan();	// хотя бы один вход (s-метр) есть.
 #endif /* WITHCPUADCHW */
@@ -1205,6 +1210,7 @@ static RAMFUNC void spool_systimerbundle2(void)
 */
 static RAMFUNC void spool_adcdonebundle(void)
 {
+	board_adc_filtering();
 #if WITHTX && WITHVOX
 	vox_probe(board_getvox(), board_getavox());
 #endif /* WITHTX && WITHVOX */
@@ -2077,7 +2083,6 @@ void RAMFUNC_NONILINE ADC_Handler(void)
 	{
 		if (++ adc_input >= board_get_adcinputs())
 		{
-			board_adc_filtering();
 			spool_adcdonebundle();
 			break;
 		}
@@ -2110,7 +2115,6 @@ static RAMFUNC_NONILINE void AT91F_ADC_IRQHandler(void)
 	{
 		if (++ adc_input >= board_get_adcinputs())
 		{
-			board_adc_filtering();
 			spool_adcdonebundle();
 			break;
 		}
@@ -2158,7 +2162,6 @@ static RAMFUNC_NONILINE void AT91F_ADC_IRQHandler(void)
 		{
 			if (++ adc_input >= board_get_adcinputs())
 			{
-				board_adc_filtering();
 				spool_adcdonebundle();
 				break;
 			}
@@ -2198,7 +2201,6 @@ static RAMFUNC_NONILINE void AT91F_ADC_IRQHandler(void)
 		{
 			if (++ adc_input >= board_get_adcinputs())
 			{
-				board_adc_filtering();
 				spool_adcdonebundle();
 				break;
 			}
@@ -2277,7 +2279,6 @@ ADCs_IRQHandler(ADC_TypeDef * p)
 		{
 			if (++ adc_input >= board_get_adcinputs())
 			{
-				board_adc_filtering();
 				spool_adcdonebundle();
 				break;
 			}
@@ -2334,7 +2335,6 @@ adcs_stm32f4xx_irq_handler(void)
 	{
 		if (++ adc_input >= board_get_adcinputs())
 		{
-			board_adc_filtering();
 			spool_adcdonebundle();
 			break;
 		}
@@ -2382,7 +2382,6 @@ ADC1_2_IRQHandler(void)
 			{
 				if (++ adc_input >= board_get_adcinputs())
 				{
-					board_adc_filtering();
 					spool_adcdonebundle();
 					break;
 				}
@@ -2412,7 +2411,6 @@ ADC1_2_IRQHandler(void)
 			{
 				if (++ adc_input >= board_get_adcinputs())
 				{
-					board_adc_filtering();
 					spool_adcdonebundle();
 					break;
 				}
@@ -2445,7 +2443,6 @@ ADC1_2_IRQHandler(void)
 		{
 			if (++ adc_input >= board_get_adcinputs())
 			{
-				board_adc_filtering();
 				spool_adcdonebundle();
 				break;
 			}
@@ -2477,7 +2474,6 @@ ADC1_2_IRQHandler(void)
 	{
 		if (++ adc_input >= board_get_adcinputs())
 		{
-			board_adc_filtering();
 			spool_adcdonebundle();
 			break;
 		}
@@ -2530,7 +2526,6 @@ r7s721_adi_irq_handler(void)
 		{
 			ADC.ADCSR &= ~ ADC_SR_ADF;	// ADF: A/D end flag - Cleared by reading ADF while ADF = 1, then writing 0 to ADF
 			// Это был последний вход
-			board_adc_filtering();
 			spool_adcdonebundle();
 			break;
 		}
