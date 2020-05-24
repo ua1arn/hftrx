@@ -3369,6 +3369,8 @@ void hamradio_set_antivox_level(uint_fast8_t v);
 
 #if WITHTX
 void hamradio_set_tune(uint_fast8_t v);
+void hamradio_set_tx_tune_power(uint_fast8_t v);
+uint_fast8_t hamradio_get_tx_tune_power(void);
 void hamradio_set_tx_power(uint_fast8_t v);
 uint_fast8_t hamradio_get_tx_power(void);
 void hamradio_get_tx_power_limits(uint_fast8_t * min, uint_fast8_t * max);
