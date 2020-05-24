@@ -358,6 +358,11 @@ static void nau8822_initialize_fullduplex(uint_fast8_t master)
 	//debug_printf_P(PSTR("nau8822_initialize_fullduplex done\n"));
 }
 
+static void nau8822_stop(void)
+{
+	nau8822_setreg(NAU8822_RESET, 0x00);	// RESET
+}
+
 static void nau8822_initialize_slave_fullduplex(void)
 {
 	nau8822_initialize_fullduplex(0);
@@ -377,6 +382,7 @@ board_getaudiocodecif(void)
 	/* Интерфейс цправления кодеком */
 	static const codec1if_t ifc =
 	{
+		nau8822_stop,
 #if CODEC_TYPE_NAU8822_MASTER
 		nau8822_initialize_master_fullduplex,	// кодек формирует I2S синхронизацию
 #else /* CODEC_TYPE_NAU8822_MASTER */

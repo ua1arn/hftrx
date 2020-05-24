@@ -681,10 +681,11 @@ uint_fast8_t modem_get_ptt(void);
 /* Интерфейс к AF кодеку */
 typedef struct codec1if_tag
 {
-	void (* initialize)(void);
-	void (* setvolume)(uint_fast16_t gain, uint_fast8_t mute, uint_fast8_t mutespk);	/* Установка громкости на наушники */
-	void (* setlineinput)(uint_fast8_t linein, uint_fast8_t mikebust20db, uint_fast16_t mikegain, uint_fast16_t linegain);	/* Выбор LINE IN как источника для АЦП вместо микрофона */
-	void (* setprocparams)(uint_fast8_t procenable, const uint_fast8_t * gains);	/* параметры обработки звука с микрофона (эхо, эквалайзер, ...) */
+	void (* stop) (void);
+	void (* initialize) (void);
+	void (* setvolume) (uint_fast16_t gain, uint_fast8_t mute, uint_fast8_t mutespk);	/* Установка громкости на наушники */
+	void (* setlineinput) (uint_fast8_t linein, uint_fast8_t mikebust20db, uint_fast16_t mikegain, uint_fast16_t linegain);	/* Выбор LINE IN как источника для АЦП вместо микрофона */
+	void (* setprocparams) (uint_fast8_t procenable, const uint_fast8_t * gains);	/* параметры обработки звука с микрофона (эхо, эквалайзер, ...) */
 	const char * label;									/* Название кодека (всегда последний элемент в структуре) */
 } codec1if_t;
 

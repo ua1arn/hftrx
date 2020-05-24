@@ -7371,6 +7371,15 @@ void board_init_chips(void)
 #if defined (TSC1_TYPE)
 	board_tsc_initialize();
 #endif /* defined (TSC1_TYPE) */
+
+#if defined(CODEC1_TYPE)
+	{
+		const codec1if_t * const ifc1 = board_getaudiocodecif();
+
+		ifc1->stop();
+	}
+
+#endif /* defined(CODEC1_TYPE) */
 }
 
 /* Initialize chips. All coeffecienters should be already calculated before. */
@@ -7378,13 +7387,14 @@ void board_init_chips(void)
 void board_init_chips2(void)
 {
 #if defined(CODEC1_TYPE)
+	{
+		const codec1if_t * const ifc1 = board_getaudiocodecif();
 
-	const codec1if_t * const ifc1 = board_getaudiocodecif();
+		PRINTF(PSTR("af codec type = '%s'\n"), ifc1->label);
 
-	PRINTF(PSTR("af codec type = '%s'\n"), ifc1->label);
-
-	ifc1->initialize();	
-	prog_codec1reg();
+		ifc1->initialize();
+		prog_codec1reg();
+	}
 
 #endif /* defined(CODEC1_TYPE) */
 	//prog_cmx992_initialize(target);

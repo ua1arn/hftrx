@@ -71,6 +71,11 @@ static void tlv320aic23_setreg(
 #endif /* CODEC_TYPE_TLV320AIC23B_USE_SPI */
 }
 
+static void tlv320aic23_stop(void)
+{
+	tlv320aic23_setreg(TLV320AIC23_RESET, 0x00);	// RESET
+}
+
 static void tlv320aic23_initialize_slave_fullduplex(void)
 {
 	tlv320aic23_setreg(TLV320AIC23_RESET, 0x00);	// RESET
@@ -223,6 +228,7 @@ board_getaudiocodecif(void)
 	/* Интерфейс цправления кодеком */
 	static const codec1if_t ifc =
 	{
+		tlv320aic23_stop,
 		tlv320aic23_initialize_slave_fullduplex,
 		tlv320aic23_setvolume,	/* Установка громкости на наушники */
 		tlv320aic23_lineinput,	/* Выбор LINE IN как источника для АЦП вместо микрофона */
