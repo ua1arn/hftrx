@@ -6991,11 +6991,9 @@ board_fpga_fir_send(
 	case 0:
 		TARGET_FPGA_FIR1_WE_PORT_C(TARGET_FPGA_FIR1_WE_BIT);
 		break;
-#if TARGET_FPGA_FIR2_WE_BIT != 0
 	case 1:
 		TARGET_FPGA_FIR2_WE_PORT_C(TARGET_FPGA_FIR2_WE_BIT);
 		break;
-#endif /* TARGET_FPGA_FIR2_WE_BIT != 0 */
 	default:
 		ASSERT(0);
 		break;
@@ -7014,11 +7012,9 @@ board_fpga_fir_send(
 	case 0:
 		TARGET_FPGA_FIR1_WE_PORT_S(TARGET_FPGA_FIR1_WE_BIT);
 		break;
-#if TARGET_FPGA_FIR2_WE_BIT != 0
 	case 1:
 		TARGET_FPGA_FIR2_WE_PORT_S(TARGET_FPGA_FIR2_WE_BIT);
 		break;
-#endif /* TARGET_FPGA_FIR2_WE_BIT != 0 */
 	default:
 		ASSERT(0);
 		break;
