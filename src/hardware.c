@@ -11335,6 +11335,30 @@ sysinit_pll_initialize(void)
 	/* далее будет выполняться копирование data и инициализация bss - для нормальной работы RESET требуется без DATA CACHE */
 
 #elif CPUSTYLE_STM32MP1
+	if (0)
+	{
+		// PC13, PC14, PC15, PI8 as the common IO:
+		////RCC->APB1ENR |=  RCC_APB1ENR_BKPEN;     // включить тактирование Backup interface
+		////__DSB();
+		// cancel the backup area write protection
+		PWR->CR1 |= PWR_CR1_DBP;
+		while ((PWR->CR1 & PWR_CR1_DBP) == 0)
+			;
+
+		//PWR->CR |= PWR_CR_DBP; // cancel the backup area write protection
+
+		//RCC->BDCR &= ~ RCC_BDCR_LSEON; // close external low-speed oscillator, PC14, PC15 as ordinary IO
+		RTC->CR &= ~ RTC_CR_TAMPOE; // TAMPER pin; intrusion detection (PC13) used as a universal IO port
+
+		//PWR->CR &= ~ PWR_CR_DBP; // backup area write protection </span>
+
+		PWR->CR1 &= ~ PWR_CR1_DBP;
+		while ((PWR->CR1 & PWR_CR1_DBP) != 0)
+			;
+
+		////RCC->APB1ENR &=  ~ RCC_APB1ENR_BKPEN;     // выключить тактирование Backup interface
+		////__DSB();
+	}
 
 	#if WITHISBOOTLOADER
 		// PLL только в bootloader.
