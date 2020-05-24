@@ -18277,6 +18277,19 @@ void hamradio_set_tune(uint_fast8_t v)
 	updateboard(1, 1);
 }
 
+void hamradio_set_tx_tune_power(uint_fast8_t v)
+{
+	ASSERT(v >= WITHPOWERTRIMMIN);
+	ASSERT(v <= WITHPOWERTRIMMAX);
+	gtunepower = v;
+	updateboard(1, 0);
+}
+
+uint_fast8_t hamradio_get_tx_tune_power(void)
+{
+	return gtunepower;
+}
+
 void hamradio_set_tx_power(uint_fast8_t v)
 {
 	ASSERT(v >= WITHPOWERTRIMMIN);
