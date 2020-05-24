@@ -3367,8 +3367,14 @@ uint_fast8_t hamradio_get_antivox_level(void);
 void hamradio_set_antivox_level(uint_fast8_t v);
 #endif /* WITHVOX */
 
-uint_fast8_t hamradio_verify_freq_bands(uint_fast32_t freq, uint_fast32_t * bottom, uint_fast32_t * top);
+#if WITHTX
 void hamradio_set_tune(uint_fast8_t v);
+void hamradio_set_tx_power(uint_fast8_t v);
+uint_fast8_t hamradio_get_tx_power(void);
+void hamradio_get_tx_power_limits(uint_fast8_t * min, uint_fast8_t * max);
+#endif /* WITHTX */
+
+uint_fast8_t hamradio_verify_freq_bands(uint_fast32_t freq, uint_fast32_t * bottom, uint_fast32_t * top);
 
 #ifdef __cplusplus
 }

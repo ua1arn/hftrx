@@ -960,7 +960,7 @@ static void buttons_swrscan_process(void);
 		{ 0, 0, 86, 44, button3_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  NON_VISIBLE, UINTPTR_MAX,	"btnAGC", 		"AGC", },
 		{ 0, 0, 86, 44, button4_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  NON_VISIBLE, UINTPTR_MAX,	"btn4", 		"Freq|enter", },
 		{ 0, 0, 86, 44, button5_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  NON_VISIBLE, UINTPTR_MAX,	"btn5", 		"", },
-		{ 0, 0, 86, 44, button6_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  NON_VISIBLE, UINTPTR_MAX,	"btn6", 		"SWR|scanner", },
+		{ 0, 0, 86, 44, button6_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  NON_VISIBLE, UINTPTR_MAX,	"btnSWRscan",	"SWR|scanner", },
 		{ 0, 0, 86, 44, button7_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  NON_VISIBLE, UINTPTR_MAX,  "btn7", 		"Transmit|settings", },
 		{ 0, 0, 86, 44, button8_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  NON_VISIBLE, UINTPTR_MAX,	"btn8", 		"Audio|settings", },
 		{ 0, 0, 86, 44, button9_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  NON_VISIBLE, UINTPTR_MAX,	"btnSysMenu", 	"System|settings", },
@@ -1312,7 +1312,7 @@ static void buttons_swrscan_process(void);
 	static uint_fast8_t menu_label_touched = 0;
 	static uint_fast8_t menu_level;
 	static uint_fast8_t swr_scan_enable = 0;		// флаг разрешения сканирования КСВ
-	static uint_fast8_t swr_scan_done = 0;			// сканирование завершено
+	static uint_fast8_t swr_scan_stop = 0;
 	static uint_fast8_t * y_vals;					// массив КСВ
 	static enc2_menu_t * gui_enc2_menu;
 
@@ -3337,11 +3337,14 @@ static void buttons_swrscan_process(void);
 		uint_fast16_t x0 = col1_int + interval * 2, y0 = row1_int + gr_h - interval * 2;	// нулевые координаты графика
 		uint_fast16_t x1 = x0 + gr_w - interval * 4, y1 = gr_h - y0 + interval * 2;			// размеры осей графика
 		static uint_fast16_t mid_w = 0, freq_step = 0;
-		static uint_fast16_t i;
+		static uint_fast16_t i, current_freq_x;
 		static uint_fast32_t lim_bottom, lim_top, swr_freq, backup_freq;
 		static label_t * lbl_swr_error;
-		static button_t * btn_swr_start;
+		static button_t * btn_swr_start, * btnSWRscan, * btn_swr_OK;
+		static uint_fast8_t backup_power;
+		static uint_fast8_t swr_scan_done = 0, is_swr_scanning = 0;
 		window_t * win = & windows[WINDOW_SWR_SCANNER];
+		uint_fast8_t averageFactor = 3;
 
 		if (win->first_call)
 		{
@@ -3353,14 +3356,16 @@ static void buttons_swrscan_process(void);
 			btn_swr_start = find_gui_element_ref(TYPE_BUTTON, win, "btn_swr_start");
 			btn_swr_start->x1 = mid_w - btn_swr_start->w - interval;
 			btn_swr_start->y1 = row1_int + gr_h + col1_int;
+			strcpy(btn_swr_start->text, "Start");
 			btn_swr_start->visible = VISIBLE;
 
-			button_t * btn_swr_OK = find_gui_element_ref(TYPE_BUTTON, win, "btn_swr_OK");
+			btn_swr_OK = find_gui_element_ref(TYPE_BUTTON, win, "btn_swr_OK");
 			btn_swr_OK->x1 = mid_w + interval;
 			btn_swr_OK->y1 = btn_swr_start->y1;
 			btn_swr_OK->visible = VISIBLE;
 
 			lbl_swr_error = find_gui_element_ref(TYPE_LABEL, win, "lbl_swr_error");
+			btnSWRscan = find_gui_element_ref(TYPE_BUTTON, & windows[WINDOW_MAIN], "btnSWRscan");
 
 			backup_freq = hamradio_get_freq_rx();
 			if(hamradio_verify_freq_bands(backup_freq, & lim_bottom, & lim_top))
@@ -3379,10 +3384,12 @@ static void buttons_swrscan_process(void);
 
 				btn_swr_start->state = CANCELLED;
 				swr_freq = lim_bottom;
-				freq_step =(lim_top - lim_bottom) / (x1 - x0);
+				freq_step = (lim_top - lim_bottom) / (x1 - x0);
+				current_freq_x = normalize(backup_freq / 1000, lim_bottom / 1000, lim_top / 1000, x1 - x0);
+//				backup_power = hamradio_get_tx_power();
 			}
 			else
-			{
+			{	// если текущая частота не входит ни в один из диапазонов, вывод сообщения об ошибке
 				local_snprintf_P(lbl_swr_error->text, ARRAY_SIZE(lbl_swr_error->text), PSTR("%dk not into HAM bands"), backup_freq / 1000);
 				lbl_swr_error->x = mid_w - get_label_width(lbl_swr_error) / 2;
 				lbl_swr_error->y = (row1_int + gr_h) / 2;
@@ -3396,41 +3403,83 @@ static void buttons_swrscan_process(void);
 			i = 0;
 			y_vals = calloc(x1 - x0, sizeof(uint_fast8_t));
 			swr_scan_done = 0;
+			is_swr_scanning = 0;
+			swr_scan_stop = 0;
 			return;
 		}
 
-		if (swr_scan_enable)
+		if (swr_scan_enable)						// нажата кнопка Start
+		{
+			swr_scan_enable = 0;
+			strcpy(btn_swr_start->text, "Stop");
+			btnSWRscan->state = DISABLED;
+			btn_swr_OK->state = DISABLED;
+//			hamradio_set_tx_power(50);
+			hamradio_set_tune(1);
+			is_swr_scanning = 1;
+			i = 0;
+			swr_freq = lim_bottom;
+			memset(y_vals, 0, x1 - x0);
+		}
+
+		if (is_swr_scanning)						// сканирование
 		{
 			hamradio_set_freq(swr_freq);
 			swr_freq += freq_step;
-			if (swr_freq >= lim_top)
-			{
-				swr_scan_enable = 0;
+			if (swr_freq >= lim_top || swr_scan_stop)
+			{										// нажата кнопка Stop или сканируемая частота выше границы диапазона
 				swr_scan_done = 1;
-				btn_swr_start->state = CANCELLED;
+				is_swr_scanning = 0;
+				swr_scan_stop = 0;
+				strcpy(btn_swr_start->text, "Start");
+				btnSWRscan->state = CANCELLED;
+				btn_swr_OK->state = CANCELLED;
 				hamradio_set_tune(0);
 				hamradio_set_freq(backup_freq);
+//				hamradio_set_tx_power(backup_power);
 			}
-			y_vals[i++] = normalize(get_swr(), swr_fullscale, 0, y0 - row1_int);
-			y_vals[i] = y_vals[i] < y1 ? y1 : y_vals[i];
+			y_vals[i] = normalize(get_swr(), 0, swr_fullscale, y0 - y1);
+			if(i)
+				y_vals[i] = (y_vals[i - 1] * (averageFactor - 1) + y_vals[i]) / averageFactor;
+			i++;
 		}
 
 		if (! win->first_call)
 		{
-			uint_fast16_t gr_x = win->x1 + col1_int, gr_y = win->y1 + row1_int;
-			colpip_fillrect(fr, DIM_X, DIM_Y, gr_x, gr_y, gr_w, gr_h, COLORMAIN_BLACK);
-			colmain_line(fr, DIM_X, DIM_Y, win->x1 + x0, win->y1 + y0, win->x1 + x0, win->y1 + y1, COLORMAIN_WHITE, 0);
-			colmain_line(fr, DIM_X, DIM_Y, win->x1 + x0, win->y1 + y0, win->x1 + x1, win->y1 + y0, COLORMAIN_WHITE, 0);
+			// отрисофка фона графика и разметки
+			uint_fast16_t gr_x = win->x1 + x0, gr_y = win->y1 + y0;
+			colpip_fillrect(fr, DIM_X, DIM_Y, win->x1 + col1_int, win->y1 + row1_int, gr_w, gr_h, COLORMAIN_BLACK);
+			colmain_line(fr, DIM_X, DIM_Y, gr_x, gr_y, gr_x, win->y1 + y1, COLORMAIN_WHITE, 0);
+			colmain_line(fr, DIM_X, DIM_Y, gr_x, gr_y, win->x1 + x1, gr_y, COLORMAIN_WHITE, 0);
 
-			if (swr_scan_enable || swr_scan_done)
+			char buf[5];
+			uint_fast8_t l = 1, row_step = round((y0 - y1) / 3);
+			local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("%d"), l++);
+			colpip_string3_tbg(fr, DIM_X, DIM_Y, gr_x - SMALLCHARW3 * 2, gr_y - SMALLCHARH3 / 2, buf, COLORMAIN_WHITE);
+			for(int_fast16_t yy = y0 - row_step; yy > y1; yy -= row_step)
 			{
-				for(uint_fast16_t j = 0; j < x1 - x0; j ++)
-					if (y_vals[j])
-						colpip_point(fr, DIM_X, DIM_Y, win->x1 + x0 + j, gr_y + y_vals[j], COLORMAIN_YELLOW);
+				if(yy < 0)
+					break;
+
+				colmain_line(fr, DIM_X, DIM_Y, gr_x, win->y1 + yy, win->x1 + x1, win->y1 + yy, COLORMAIN_DARKGREEN, 0);
+				local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("%d"), l++);
+				colpip_string3_tbg(fr, DIM_X, DIM_Y, gr_x - SMALLCHARW3 * 2, win->y1 + yy - SMALLCHARH3 / 2, buf, COLORMAIN_WHITE);
 			}
 
-			if (lbl_swr_error->visible)
-				colpip_fillrect(fr, DIM_X, DIM_Y, gr_x, win->y1 + lbl_swr_error->y - 5, gr_w, get_label_height(lbl_swr_error) + 5, COLORMAIN_RED);
+			if (lbl_swr_error->visible)				// фон сообщения об ошибке
+			{
+				colpip_fillrect(fr, DIM_X, DIM_Y, win->x1 + col1_int, win->y1 + lbl_swr_error->y - 5, gr_w, get_label_height(lbl_swr_error) + 5, COLORMAIN_RED);
+			}
+			else									// маркер текущей частоты
+			{
+				colmain_line(fr, DIM_X, DIM_Y, gr_x + current_freq_x, gr_y, gr_x + current_freq_x, win->y1 + y1, COLORMAIN_RED, 0);
+			}
+
+			if (is_swr_scanning || swr_scan_done)	// вывод графика во время сканирования и по завершении
+			{
+				for(uint_fast16_t j = 2; j <= i; j ++)
+					colmain_line(fr, DIM_X, DIM_Y, gr_x + j - 2, gr_y - y_vals[j - 2], gr_x + j - 1, gr_y - y_vals[j - 1], COLORMAIN_YELLOW, 1);
+			}
 		}
 	}
 
@@ -3442,11 +3491,13 @@ static void buttons_swrscan_process(void);
 			button_t * btn_swr_start = find_gui_element_ref(TYPE_BUTTON, win, "btn_swr_start");
 			button_t * btn_swr_OK = find_gui_element_ref(TYPE_BUTTON, win, "btn_swr_OK");
 
-			if (gui.selected_link->link == btn_swr_start && btn_swr_start->state != DISABLED)
+			if (gui.selected_link->link == btn_swr_start && ! strcmp(btn_swr_start->text, "Start"))
 			{
 				swr_scan_enable = 1;
-				btn_swr_start->state = DISABLED;
-				hamradio_set_tune(1);
+			}
+			if (gui.selected_link->link == btn_swr_start && ! strcmp(btn_swr_start->text, "Stop"))
+			{
+				swr_scan_stop = 1;
 			}
 			else if (gui.selected_link->link == btn_swr_OK)
 			{
@@ -3455,7 +3506,6 @@ static void buttons_swrscan_process(void);
 				hamradio_set_lockmode(0);
 				hamradio_disable_keyboard_redirect();
 				free(y_vals);
-				swr_scan_done = 0;
 			}
 		}
 	}
@@ -3577,7 +3627,6 @@ static void buttons_swrscan_process(void);
 					hamradio_set_tune(0);
 				}
 				free(y_vals);
-				swr_scan_done = 0;
 				hamradio_set_lockmode(0);
 				hamradio_disable_keyboard_redirect();
 			}
@@ -3780,15 +3829,15 @@ static void buttons_swrscan_process(void);
 		len2 = strwidth2(buf);
 		colpip_string2_tbg(fr, DIM_X, DIM_Y, x, y2, buf, COLORPIP_WHITE);
 
-	#if WITHTHERMOLEVEL	// температура выходных транзисторов (при передаче)
-		static ldiv_t t;
-		if (hamradio_get_tx())// && gui.timer_1sec_updated)
-		{
-			t = ldiv(hamradio_get_temperature_value(), 10);
-			local_snprintf_P(buf, buflen, PSTR("%d.%dC "), t.quot, t.rem);
-			PRINTF("%s\n", buf);		// пока вывод в консоль
-		}
-	#endif /* WITHTHERMOLEVEL */
+//	#if WITHTHERMOLEVEL	// температура выходных транзисторов (при передаче)
+//		static ldiv_t t;
+//		if (hamradio_get_tx())// && gui.timer_1sec_updated)
+//		{
+//			t = ldiv(hamradio_get_temperature_value(), 10);
+//			local_snprintf_P(buf, buflen, PSTR("%d.%dC "), t.quot, t.rem);
+//			PRINTF("%s\n", buf);		// пока вывод в консоль
+//		}
+//	#endif /* WITHTHERMOLEVEL */
 
 		gui.timer_1sec_updated = 0;
 	}
