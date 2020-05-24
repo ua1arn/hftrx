@@ -1235,6 +1235,13 @@ buffers_savetouacin(uacin16_t * p)
 	refreshDMA_uacin();		// если DMA  остановлено - начать обмен
 }
 
+#elif WITHRTS96
+
+int_fast32_t dsp_get_samplerateuacin_rts(void)		// RTS samplerate
+{
+	return 96000L;
+}
+
 #else
 
 int_fast32_t dsp_get_samplerateuacin_rts(void)		// RTS samplerate
