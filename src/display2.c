@@ -993,6 +993,7 @@ static void display_rxbw3(
 	)
 {
 	const char FLASHMEM * const labels [1] = { hamradio_get_rxbw_value_P(), };
+	ASSERT(strlen(labels [0]) == 3);
 	display2_text_P(x, y, labels, colors_1state, 0);
 }
 
@@ -1008,6 +1009,7 @@ static void display_mainsub3(
 	uint_fast8_t state;
 	hamradio_get_vfomode5_value(& state);
 	const char FLASHMEM * const label = hamradio_get_mainsubrxmode3_value_P();
+	ASSERT(strlen(label) == 3);
 	display_2states_P(x, y, state, label, label);
 #endif /* WITHUSEDUALWATCH */
 }
@@ -1021,6 +1023,7 @@ static void display_pre3(
 	)
 {
 	const char FLASHMEM * const labels [1] = { hamradio_get_pre_value_P(), };
+	ASSERT(strlen(labels [0]) == 2);
 	display2_text_P(x, y, labels, colors_1state, 0);
 }
 
@@ -1086,6 +1089,7 @@ static void display_ant5(
 {
 #if WITHANTSELECT
 	const char FLASHMEM * const labels [1] = { hamradio_get_ant5_value_P(), };
+	ASSERT(strlen(labels [0]) == 5);
 	display2_text_P(x, y, labels, colors_1state, 0);
 #endif /* WITHANTSELECT */
 }
@@ -1098,6 +1102,7 @@ static void display_att4(
 	)
 {
 	const char FLASHMEM * const labels [1] = { hamradio_get_att_value_P(), };
+	ASSERT(strlen(labels [0]) == 4);
 	display2_text_P(x, y, labels, colors_1state, 0);
 }
 
@@ -1110,6 +1115,7 @@ static void display_hplp2(
 {
 #if WITHPOWERLPHP
 	const char FLASHMEM * const labels [1] = { hamradio_get_hplp_value_P(), };
+	ASSERT(strlen(labels [0]) == 2);
 	display2_text_P(x, y, labels, colors_1state, 0);
 #endif /* WITHPOWERLPHP */
 }
@@ -1125,6 +1131,7 @@ static void display_att_tx3(
 	const FLASHMEM char * text = tx ? PSTR("TX  ") : hamradio_get_att_value_P();
 
 	colmain_setcolors(LABELTEXT, LABELBACK);
+	ASSERT(strlen(text) == 3);
 	display_at_P(x, y, text);
 }
 
@@ -1135,6 +1142,7 @@ static void display_agc3(
 	dctx_t * pctx
 	)
 {
+	ASSERT(strlen(hamradio_get_agc3_value_P()) == 3);
 	display_1state_P(x, y, hamradio_get_agc3_value_P());
 }
 
@@ -1145,6 +1153,7 @@ static void display_agc4(
 	dctx_t * pctx
 	)
 {
+	ASSERT(strlen(hamradio_get_agc4_value_P()) == 4);
 	display_1state_P(x, y, hamradio_get_agc4_value_P());
 }
 
@@ -1176,6 +1185,7 @@ static void display_mode3_a(
 	)
 {
 	const char FLASHMEM * const labels [1] = { hamradio_get_mode_a_value_P(), };
+	ASSERT(strlen(labels [0]) == 3);
 	display2_text_P(x, y, labels, colors_1freq, 0);
 }
 
@@ -1188,6 +1198,7 @@ static void display_mode3_b(
 	)
 {
 	const char FLASHMEM * const labels [1] = { hamradio_get_mode_b_value_P(), };
+	ASSERT(strlen(labels [0]) == 3);
 	display2_text_P(x, y, labels, colors_1freqB, 0);
 }
 
@@ -1430,7 +1441,7 @@ static void display2_span9(
 {
 #if WITHIF4DSP
 
-	char buff [32];
+	char buff [10];
 
 	local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("SPAN:%3dk"), (int) ((display_zoomedbw() + 0) / 1000));
 	const char * const labels [1] = { buff, };
@@ -1451,7 +1462,7 @@ static void display_smeter5(
 	uint_fast8_t tracemax;
 	uint_fast8_t v = board_getsmeter(& tracemax, 0, UINT8_MAX, 0);
 
-	char buff [32];
+	char buff [6];
 	const int s9level = - 73;
 	const int s9step = 6;
 	const int alevel = tracemax - UINT8_MAX;
