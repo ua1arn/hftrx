@@ -506,12 +506,12 @@
 
 	// Здесь должны быть перечислены все биты формирования CS в устройстве.
 	#define SPI_ALLCS_BITS ( \
-		targetext1		| 	/* PG15 ext1 on front panel */ \
-		targetxad2		|	/* PA100W on-board ADC (not connected on this board) */ \
-		targetnvram		| 	/* PG4 nvmem FM25L16B */ \
-		targetctl1		| 	/* PG3 board control registers chain */ \
-		targetcodec1	| 	/* PG2 on-board codec1 NAU8822L */ \
-		targetfpga1		| 	/* PG1 FPGA control registers CS1 */ \
+		targetext1		| 	/* PE8 ext1 on front panel */ \
+		targetxad2		|	/* PE7 PA100W on-board ADC (not connected on this board) */ \
+		targetnvram		| 	/* PE0 nvmem FM25L16B */ \
+		targetctl1		| 	/* PE1 board control registers chain */ \
+		targetcodec1	| 	/* PE2 on-board codec1 NAU8822L */ \
+		targetfpga1		| 	/* PE10 FPGA control registers CS1 */ \
 		targetadc2		| 	/*	PE9 ADC MCP3208-BI/SL chip select (potentiometers) */ \
 		0)
 
