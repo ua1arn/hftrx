@@ -19211,7 +19211,13 @@ ddd:
 		uint_fast8_t kbch, kbready;
 		processmessages(& kbch, & kbready, 0, NULL);
 
-#if WITHDEBUG
+
+#if defined (BOARD_IS_USERBOOT)
+		/* если не установлен джампер - запускаем программу. */
+		if (! BOARD_IS_USERBOOT())
+			break;
+#elif WITHDEBUG
+		/* ввод 'r' - запускаем программу. */
 		char c;
 		if (dbg_getchar(& c))
 		{
@@ -19227,12 +19233,8 @@ ddd:
 			}
 		}
 
-#elif defined (BOARD_IS_USERBOOT)
-		/* если не установлен джампер - запускаем программу. */
-		if (! BOARD_IS_USERBOOT())
-			break;
-
 #else /* WITHDEBUG */
+		/* вытаскиваем USB кабель - запускаем программу. */
 		if (hardware_usbd_get_vbusbefore() == 0)
 			break;
 		if (hardware_usbd_get_vbusnow() == 0)
