@@ -9178,13 +9178,6 @@ uif_key_tuneoff(void)
 	updateboard(1, 1);
 }
 
-
-void hamradio_set_tune(uint_fast8_t v)
-{
-	tunemode = v != 0;
-	updateboard(1, 1);
-}
-
 ///////////////////////////
 // обработчики кнопок клавиатуры
 //////////////////////////
@@ -18275,6 +18268,35 @@ hamradio_main_step(void)
 	}
 	return STTE_OK;
 }
+
+#if WITHTX
+
+void hamradio_set_tune(uint_fast8_t v)
+{
+	tunemode = v != 0;
+	updateboard(1, 1);
+}
+
+void hamradio_set_tx_power(uint_fast8_t v)
+{
+	ASSERT(v >= WITHPOWERTRIMMIN);
+	ASSERT(v <= WITHPOWERTRIMMAX);
+	gnormalpower.value = v;
+	updateboard(1, 0);
+}
+
+uint_fast8_t hamradio_get_tx_power(void)
+{
+	return gnormalpower.value;
+}
+
+void hamradio_get_tx_power_limits(uint_fast8_t * min, uint_fast8_t * max)
+{
+	* min = WITHPOWERTRIMMIN;
+	* max = WITHPOWERTRIMMAX;
+}
+
+#endif /* WITHTX */
 
 uint_fast8_t hamradio_verify_freq_bands(uint_fast32_t freq, uint_fast32_t * bottom, uint_fast32_t * top)
 {
