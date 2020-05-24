@@ -155,7 +155,7 @@ END RTL;
 -- Retrieval info: CONNECT: dataout 0 0 14 0 @dataout 0 0 14 0
 -- Retrieval info: GEN_FILE: TYPE_NORMAL dacout14.vhd TRUE
 -- Retrieval info: GEN_FILE: TYPE_NORMAL dacout14.inc FALSE
--- Retrieval info: GEN_FILE: TYPE_NORMAL dacout14.cmp TRUE
--- Retrieval info: GEN_FILE: TYPE_NORMAL dacout14.bsf TRUE FALSE
+-- Retrieval info: GEN_FILE: TYPE_NORMAL dacout14.cmp FALSE
+-- Retrieval info: GEN_FILE: TYPE_NORMAL dacout14.bsf TRUE
 -- Retrieval info: GEN_FILE: TYPE_NORMAL dacout14_inst.vhd FALSE
 -- Retrieval info: LIB_FILE: cycloneive
