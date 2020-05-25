@@ -6763,8 +6763,8 @@ board_fpga_fir_connect(void)
 
 	hardware_spi_connect(SPIC_SPEEDUFAST, SPIC_MODE3);
 
-	//hardware_spi_b8_p1(0);	// provide clock for reset bit counter while CS=1
-	//board_fpga_fir_complete();
+	hardware_spi_b8_p1(0);	// provide clock for reset bit counter while CS=1
+	hardware_spi_complete_b8();
 
 	TARGET_FPGA_FIR_CS_PORT_C(TARGET_FPGA_FIR_CS_BIT);	/* start sending data to target chip */
 
@@ -6772,8 +6772,8 @@ board_fpga_fir_connect(void)
 
 	hardware_spi_connect(SPIC_SPEEDUFAST, SPIC_MODE3);
 
-	//hardware_spi_b8_p1(0);	// provide clock for reset bit counter while CS=1
-	//board_fpga_fir_complete();
+	hardware_spi_b8_p1(0);	// provide clock for reset bit counter while CS=1
+	hardware_spi_complete_b8();
 
 	prog_select(targetfir1);	/* start sending data to target chip */
 
@@ -6828,7 +6828,7 @@ static void single_rate_out_write_mcv(const int_fast32_t * coef, int coef_length
 	const enum coef_store_type coef_store_type = M4K;
 	const int sym = 1;
 	const enum poly_type poly_type = SGL;
-	const int num_cycles = 256;
+	const int num_cycles = 512;
 	//const int coef_bit_width = 25;
 
 	int mcv_coef_length;
@@ -6840,6 +6840,8 @@ static void single_rate_out_write_mcv(const int_fast32_t * coef, int coef_length
 	const int half_len = (int) ceilf(coef_length / 2.0f);
 	int zeros_insert;
 	int i,j;
+
+	//PRINTF("single_rate_out_write_mcv: coef_length=%d, half_len=%d\n", coef_length, half_len);
 	//if (struct_type == MCV )
 	{
 		if (sym != 0 && (poly_type == SGL || poly_type == DEC))
@@ -6879,7 +6881,7 @@ static void single_rate_out_write_mcv(const int_fast32_t * coef, int coef_length
 		}
 		else
 		{
-			zeros_insert =(int) floorf((float) (mcv_coef_length - coef_length));
+			zeros_insert = (int) floorf((float) (mcv_coef_length - coef_length));
 		}
 
 		int_fast32_t tmp_coef [mcv_coef_length];
@@ -6887,9 +6889,9 @@ static void single_rate_out_write_mcv(const int_fast32_t * coef, int coef_length
 
 		// сперва "0", потом значения
 		for (i=0; i < zeros_insert; ++ i)
-			tmp_coef[i] = 0;
+			tmp_coef [i] = 0;
 		for (i=0; i < coef_length; ++ i)
-			tmp_coef [i + zeros_insert] = coef[i];
+			tmp_coef [i + zeros_insert] = coef [i];
 
 		//assert(mcv_coef_length == (coef_length + zeros_insert));
 
@@ -6898,27 +6900,27 @@ static void single_rate_out_write_mcv(const int_fast32_t * coef, int coef_length
 			wrk_coef[i] = tmp_coef [i];
 		}
 
-		for (j=0; j< num_mac; ++j)
+		for (j = 0; j< num_mac; ++j)
 		{
-			for (i=0; i<num_cycles; ++i)
+			for (i = 0; i<num_cycles; ++i)
 			{
-				const int k = i*num_mac + j;
-				if (i==0)
+				const int k = i * num_mac + j;
+				if (i == 0)
 				{
-					tmp_coef [k] = wrk_coef[(num_cycles - 1) * num_mac + j];
+					tmp_coef [k] = wrk_coef [(num_cycles - 1) * num_mac + j];
 				}
 				else
 				{
-					tmp_coef [k] = wrk_coef[(i - 1) * num_mac + j];
+					tmp_coef [k] = wrk_coef [(i - 1) * num_mac + j];
 				}
 			}
 		}
 
-		for (j=0; j<num_mac; ++j)
+		for (j = 0; j < num_mac; ++j)
 		{
-			for (i=0; i<num_cycles; ++i)
+			for (i = 0; i<num_cycles; ++i)
 			{
-				const int k = i*num_mac + (num_mac - 1 - j);
+				const int k = i * num_mac + (num_mac - 1 - j);
 				if (coef_store_type == LC)
 				{
 					wrk_coef [j*num_cycles + i] = tmp_coef [k];
@@ -6938,7 +6940,7 @@ static void single_rate_out_write_mcv(const int_fast32_t * coef, int coef_length
 					{
 						tmp_coef [new_index] = wrk_coef[ini_index];
 					}
-					else if(j < (mem_num-1) * coef_one_mem + mcv_reload_zero_insert)
+					else if (j < (mem_num-1) * coef_one_mem + mcv_reload_zero_insert)
 					{
 						tmp_coef [new_index] = 0;
 					}
