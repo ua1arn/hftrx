@@ -5610,6 +5610,8 @@ static nvramaddress_t nvramoffs_band(nvramaddress_t base)
 	const uint_fast8_t bi = getbankindex_tx(gtx);
 	const vindex_t b = getvfoindex(bi);
 
+	ASSERT(base != MENUNONVRAM);
+
 	if (base == MENUNONVRAM)
 		return MENUNONVRAM;
 	//
