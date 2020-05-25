@@ -168,19 +168,20 @@ hwacc_fillrect_u8(
 		return;
 	enum { PIXEL_SIZE = sizeof * buffer };
 	enum { PIXEL_SIZE_CODE = 0 };
-	ALIGNX_BEGIN volatile uint8_t tgcolor ALIGNX_END;	/* значение цвета для заполнения области памяти */
 
 #if WITHMDMAHW
 	// MDMA implementation
 
+	ALIGNX_BEGIN volatile uint8_t tgcolor ALIGNX_END;	/* значение цвета для заполнения области памяти */
 	tgcolor = color;
 
 	arm_hardware_flush((uintptr_t) & tgcolor, sizeof tgcolor);
 	arm_hardware_flush_invalidate((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
 
 	MDMA_CH->CCR &= ~ MDMA_CCR_EN_Msk;
-	//while ((MDMA_CH->CCR & MDMA_CCR_EN_Msk) != 0)
-	//	;
+	while ((MDMA_CH->CCR & MDMA_CCR_EN_Msk) != 0)
+		;
+
 	MDMA_CH->CDAR = (uintptr_t) & buffer [row * GXADJ(dx) + col];
 	MDMA_CH->CSAR = (uintptr_t) & tgcolor;
 	const uint_fast32_t tlen = mdma_tlen(w * PIXEL_SIZE, PIXEL_SIZE);
@@ -270,20 +271,21 @@ hwacc_fillrect_u16(
 		return;
 	enum { PIXEL_SIZE = sizeof * buffer };
 	enum { PIXEL_SIZE_CODE = 1 };
-	ALIGNX_BEGIN volatile uint16_t tgcolor ALIGNX_END;	/* значение цвета для заполнения области памяти */
 
 
 #if WITHMDMAHW
 	// MDMA implementation
 
+	ALIGNX_BEGIN volatile uint16_t tgcolor ALIGNX_END;	/* значение цвета для заполнения области памяти */
 	tgcolor = color;
 
 	arm_hardware_flush((uintptr_t) & tgcolor, sizeof tgcolor);
 	arm_hardware_flush_invalidate((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
 
 	MDMA_CH->CCR &= ~ MDMA_CCR_EN_Msk;
-	//while ((MDMA_CH->CCR & MDMA_CCR_EN_Msk) != 0)
-	//	;
+	while ((MDMA_CH->CCR & MDMA_CCR_EN_Msk) != 0)
+		;
+
 	MDMA_CH->CDAR = (uintptr_t) & buffer [row * GXADJ(dx) + col];
 	MDMA_CH->CSAR = (uintptr_t) & tgcolor;
 	const uint_fast32_t tlen = mdma_tlen(w * PIXEL_SIZE, PIXEL_SIZE);
@@ -412,13 +414,13 @@ hwacc_fillrect_u24(
 		return;
 	enum { PIXEL_SIZE = sizeof * buffer };
 	//enum { PIXEL_SIZE_CODE = 1 };
-	//ALIGNX_BEGIN volatile uint16_t tgcolor ALIGNX_END;	/* значение цвета для заполнения области памяти */
 
 	ASSERT(sizeof (* buffer) == 3);
 
 #if 0//WITHMDMAHW
 	// MDMA implementation
 
+	//ALIGNX_BEGIN volatile uint32_t tgcolor ALIGNX_END;	/* значение цвета для заполнения области памяти */
 	#error MDMA implementation need
 	tgcolor = color;
 
@@ -426,8 +428,9 @@ hwacc_fillrect_u24(
 	arm_hardware_flush_invalidate((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
 
 	MDMA_CH->CCR &= ~ MDMA_CCR_EN_Msk;
-	//while ((MDMA_CH->CCR & MDMA_CCR_EN_Msk) != 0)
-	//	;
+	while ((MDMA_CH->CCR & MDMA_CCR_EN_Msk) != 0)
+		;
+
 	MDMA_CH->CDAR = (uintptr_t) & buffer [row * GXADJ(dx) + col];
 	MDMA_CH->CSAR = (uintptr_t) & tgcolor;
 	const uint_fast32_t tlen = mdma_tlen(w * PIXEL_SIZE, PIXEL_SIZE);
@@ -903,6 +906,9 @@ void hwaccel_copy(
 	arm_hardware_flush((uintptr_t) src, sizeof (* src) * GXSIZE(w, h));
 
 	MDMA_CH->CCR &= ~ MDMA_CCR_EN_Msk;
+	while ((MDMA_CH->CCR & MDMA_CCR_EN_Msk) != 0)
+		;
+
 	MDMA_CH->CDAR = (uintptr_t) dst;
 	MDMA_CH->CSAR = (uintptr_t) src;
 	const uint_fast32_t tlen = mdma_tlen(w * sizeof (PACKEDCOLORMAIN_T), sizeof (PACKEDCOLORMAIN_T));
@@ -1173,7 +1179,7 @@ colmain_fillrect(
 #if 0
 // функции работы с colorbuffer не занимаются выталкиванеим кэш-памяти
 static void RAMFUNC ltdcpip_horizontal_pixels(
-	volatile PACKEDCOLORPIP_T * tgr,		// target raster
+	PACKEDCOLORPIP_T * tgr,		// target raster
 	const FLASHMEM uint8_t * raster,
 	uint_fast16_t width	// number of bits (start from LSB first byte in raster)
 	)
@@ -1199,7 +1205,7 @@ static void RAMFUNC ltdcpip_horizontal_pixels(
 // функции работы с colorbuffer не занимаются выталкиванеим кэш-памяти
 // Фон не трогаем
 static void RAMFUNC ltdcmain_horizontal_pixels_tbg(
-	volatile PACKEDCOLORMAIN_T * tgr,		// target raster
+	PACKEDCOLORMAIN_T * tgr,		// target raster
 	const FLASHMEM uint8_t * raster,
 	uint_fast16_t width,	// number of bits (start from LSB first byte in raster)
 	COLORPIP_T fg
@@ -1250,7 +1256,7 @@ ltdcmain_horizontal_put_char_small(
 	uint_fast8_t cgrow;
 	for (cgrow = 0; cgrow < SMALLCHARH; ++ cgrow)
 	{
-		volatile PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, x, y + cgrow);
+		PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, x, y + cgrow);
 		ltdcpip_horizontal_pixels(tgr, S1D13781_smallfont_LTDC [c] [cgrow], width);
 	}
 	return x + width;
@@ -1276,7 +1282,7 @@ static uint_fast16_t RAMFUNC_NONILINE ltdcpip_horizontal_put_char_small_tbg(
 	uint_fast8_t cgrow;
 	for (cgrow = 0; cgrow < SMALLCHARH; ++ cgrow)
 	{
-		volatile PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, x, y + cgrow);
+		PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, x, y + cgrow);
 		ltdcmain_horizontal_pixels_tbg(tgr, S1D13781_smallfont_LTDC [c] [cgrow], width, fg);
 	}
 	return x + width;
@@ -1303,7 +1309,7 @@ static uint_fast16_t RAMFUNC_NONILINE ltdcpip_horizontal_put_char_small2_tbg(
 	uint_fast8_t cgrow;
 	for (cgrow = 0; cgrow < SMALLCHARH2; ++ cgrow)
 	{
-		volatile PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, x, y + cgrow);
+		PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, x, y + cgrow);
 		ltdcmain_horizontal_pixels_tbg(tgr, S1D13781_smallfont2_LTDC [c] [cgrow], width, fg);
 	}
 	return x + width;
@@ -1329,7 +1335,7 @@ static uint_fast16_t RAMFUNC_NONILINE ltdcpip_horizontal_put_char_small3_tbg(
 	uint_fast8_t cgrow;
 	for (cgrow = 0; cgrow < SMALLCHARH3; ++ cgrow)
 	{
-		volatile PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, x, y + cgrow);
+		PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, x, y + cgrow);
 		ltdcmain_horizontal_pixels_tbg(tgr, & S1D13781_smallfont3_LTDC [c] [cgrow], width, fg);
 	}
 	return x + width;
