@@ -1087,16 +1087,6 @@ void savemoni16stereo(FLOAT_t ch0, FLOAT_t ch1)
 	}
 }
 
-#if WITHUSBUAC
-
-static uint_fast8_t isaudio48(void)
-{
-#if WITHUSBHW && WITHUSBUAC
-	return UACINALT_AUDIO48 == uacinalt;
-#else /* WITHUSBHW && WITHUSBUAC */
-	return 0;
-#endif /* WITHUSBHW && WITHUSBUAC */
-}
 
 // UAC IN samplerate
 // todo: сделать нормальный расчёт для некруглых значений ARMI2SRATE
@@ -1127,6 +1117,18 @@ int_fast32_t dsp_get_samplerateuacin_rts(void)		// RTS samplerate
 #else
 	return dsp_get_samplerateuacin_audio48();
 #endif
+}
+
+
+#if WITHUSBUAC
+
+static uint_fast8_t isaudio48(void)
+{
+#if WITHUSBHW && WITHUSBUAC
+	return UACINALT_AUDIO48 == uacinalt;
+#else /* WITHUSBHW && WITHUSBUAC */
+	return 0;
+#endif /* WITHUSBHW && WITHUSBUAC */
 }
 
 // UAC OUT samplerate
@@ -1235,27 +1237,14 @@ buffers_savetouacin(uacin16_t * p)
 	refreshDMA_uacin();		// если DMA  остановлено - начать обмен
 }
 
-#elif WITHRTS96
-
-int_fast32_t dsp_get_samplerateuacin_rts(void)		// RTS samplerate
-{
-	return 96000L;
-}
-
-#else
-
-int_fast32_t dsp_get_samplerateuacin_rts(void)		// RTS samplerate
-{
-	return 48000L;
-}
-
 #endif /* WITHUSBUAC */
 
 #if WITHUSBUAC
 
 static RAMFUNC unsigned long ulmin(
 	unsigned long a,
-	unsigned long b)
+	unsigned long b
+	)
 {
 	return a < b ? a : b;
 }
