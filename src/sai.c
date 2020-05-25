@@ -594,6 +594,10 @@ hardware_i2s2_i2s2ext_master_duplex_initialize(void)		/* инициализац�
 		0;
 	I2S2ext->I2SPR = i2spr;
 	SPI2->I2SPR = i2spr;
+
+#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
+	SPI2->CFG2 |= SPI_CFG2_AFCNTR_Msk; // 1: the peripheral keeps always control of all associated GPIOs
+#endif /* CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1 */
 	// Подключить I2S к выводам процессора
 	I2S2HW_INITIALIZE();	// hardware_i2s2_i2s2ext_master_duplex_initialize
 }
@@ -627,6 +631,11 @@ hardware_i2s2_slave_tx_initialize(void)		/* инициализация I2S2 */
 	const portholder_t i2scfgr = stm32xxx_i2scfgr_afcodec();
 
  	SPI2->I2SCFGR = i2scfgr | 0 * SPI_I2SCFGR_I2SCFG_0; // 00: Slave - transmit
+
+#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
+	SPI2->CFG2 |= SPI_CFG2_AFCNTR_Msk; // 1: the peripheral keeps always control of all associated GPIOs
+#endif /* CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1 */
+
 #if CPUSTYLE_STM32H7XX
 	SPI2->CFG2 |= SPI_CFG2_IOSWP;	// оставлено тут и не перенесено в I2S2HW_INITIALIZE потому что есть нсаледованная аппаратура и для STM32H7 и для STM32F7
 #endif /* CPUSTYLE_STM32H7XX */
@@ -731,6 +740,11 @@ hardware_i2s2_master_tx_initialize(void)		/* инициализация I2S2, ST
 		SPI_I2SPR_MCKOE |
 		0;
 	SPI2->I2SPR = i2spr;
+
+#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
+	SPI2->CFG2 |= SPI_CFG2_AFCNTR_Msk; // 1: the peripheral keeps always control of all associated GPIOs
+#endif /* CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1 */
+
 	// Подключить I2S к выводам процессора
 	I2S2HW_INITIALIZE();	// hardware_i2s2_master_tx_initialize
 
@@ -763,6 +777,11 @@ hardware_i2s3_slave_rx_initialize(void)		/* инициализация I2S3 STM3
 	const portholder_t i2scfgr = stm32xxx_i2scfgr_afcodec();
 
  	SPI3->I2SCFGR = i2scfgr | 1 * SPI_I2SCFGR_I2SCFG_0;	// 10: Master - transmit, 11: Master - receive, 01: Slave - receive
+
+#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
+	SPI3->CFG2 |= SPI_CFG2_AFCNTR_Msk; // 1: the peripheral keeps always control of all associated GPIOs
+#endif /* CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1 */
+
 #if CPUSTYLE_STM32H7XX
 	//SPI3->CFG2 |= SPI_CFG2_IOSWP;
 #endif /* CPUSTYLE_STM32H7XX */
@@ -803,7 +822,12 @@ hardware_i2s2_slave_fullduplex_initialize(void)
  			(4uL << SPI_I2SCFGR_I2SCFG_Pos) |	// 100: slave - full duplex
 			0;
 
- 	//SPI2->CFG2 |= SPI_CFG2_IOSWP;	// перенесено в I2S2HW_INITIALIZE
+
+#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
+	SPI2->CFG2 |= SPI_CFG2_AFCNTR_Msk; // 1: the peripheral keeps always control of all associated GPIOs
+#endif /* CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1 */
+
+	//SPI2->CFG2 |= SPI_CFG2_IOSWP;	// перенесено в I2S2HW_INITIALIZE
 
 	// Подключить I2S к выводам процессора
 	I2S2HW_INITIALIZE();	// hardware_i2s2_slave_fullduplex_initialize
