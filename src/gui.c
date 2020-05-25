@@ -860,6 +860,9 @@ static void buttons_tx_sett_process(void);
 static void window_swrscan_process(void);
 static void buttons_swrscan_process(void);
 static void window_tx_power_process(void);
+static void window_ap_mic_prof_process(void);
+static void buttons_ap_mic_prof_process(void);
+
 
 	enum { button_round_radius = 5 };
 
@@ -907,6 +910,7 @@ static void window_tx_power_process(void);
 		WINDOW_AP_MIC_EQ,				// эквалайзер микрофона
 		WINDOW_AP_REVERB_SETT,			// параметры ревербератора
 		WINDOW_AP_MIC_SETT,				// настройки микрофона
+		WINDOW_AP_MIC_PROF,				// профили микрофона
 		WINDOW_TX_SETTINGS,				// настройки, относящиеся к режиму передачи
 		WINDOW_TX_VOX_SETT,				// настройки VOX
 		WINDOW_TX_POWER,				// выходная мощность
@@ -1004,6 +1008,7 @@ static void window_tx_power_process(void);
 		{ 0, 0, 100, 44, buttons_audioparams_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, UINTPTR_MAX, "btn_mic_eq", 			"MIC EQ|OFF", },
 		{ 0, 0, 100, 44, buttons_audioparams_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, UINTPTR_MAX, "btn_mic_eq_settings", 	"MIC EQ|settings", },
 		{ 0, 0, 100, 44, buttons_audioparams_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, UINTPTR_MAX, "btn_mic_settings", 		"MIC|settings", },
+		{ 0, 0, 100, 44, buttons_audioparams_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, UINTPTR_MAX, "btn_mic_profiles", 		"MIC|profiles", },
 		{ 0, 0,  40, 40, buttons_audioparams_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_EQ, 	 NON_VISIBLE, UINTPTR_MAX, "btn_EQ_ok", 			"OK", },
 		{ 0, 0,  40, 40, buttons_audioparams_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_REVERB_SETT,NON_VISIBLE, UINTPTR_MAX, "btn_REVs_ok", 			"OK", },
 		{ 0, 0,  86, 44, buttons_ap_mic_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_SETT,  NON_VISIBLE, UINTPTR_MAX, "btn_mic_agc", 		"AGC|OFF", },
@@ -1014,6 +1019,14 @@ static void window_tx_power_process(void);
 		{ 0, 0, 100, 44, buttons_tx_sett_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_TX_SETTINGS, NON_VISIBLE, UINTPTR_MAX, "btn_tx_power", 	 	"TX power", },
 		{ 0, 0,  44, 44, buttons_tx_sett_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_TX_VOX_SETT, NON_VISIBLE, UINTPTR_MAX, "btn_tx_vox_OK", 	 	"OK", },
 		{ 0, 0,  44, 44, buttons_tx_sett_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_TX_POWER,    NON_VISIBLE, UINTPTR_MAX, "btn_tx_pwr_OK", 	 	"OK", },
+
+		{ 0, 0, 100, 44, buttons_ap_mic_prof_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_PROF, NON_VISIBLE, UINTPTR_MAX, "btn_mic_profile_1_load", "Profile 1|load", },
+		{ 0, 0, 100, 44, buttons_ap_mic_prof_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_PROF, NON_VISIBLE, UINTPTR_MAX, "btn_mic_profile_2_load", "Profile 2|load", },
+		{ 0, 0, 100, 44, buttons_ap_mic_prof_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_PROF, NON_VISIBLE, UINTPTR_MAX, "btn_mic_profile_3_load", "Profile 3|load", },
+		{ 0, 0, 100, 44, buttons_ap_mic_prof_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_PROF, NON_VISIBLE, UINTPTR_MAX, "btn_mic_profile_1_save", "Profile 1|save", },
+		{ 0, 0, 100, 44, buttons_ap_mic_prof_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_PROF, NON_VISIBLE, UINTPTR_MAX, "btn_mic_profile_2_save", "Profile 2|save", },
+		{ 0, 0, 100, 44, buttons_ap_mic_prof_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_PROF, NON_VISIBLE, UINTPTR_MAX, "btn_mic_profile_3_save", "Profile 3|save", },
+
 #if ! WITHOLDMENUSTYLE
 		{ 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 	"btnSysMenu1",	"", },
 		{ 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 	"btnSysMenu2",	"", },
@@ -1228,6 +1241,7 @@ static void window_tx_power_process(void);
 		{ WINDOW_AP_MIC_EQ, 	 WINDOW_AUDIOSETTINGS, 	ALIGN_CENTER_X, 0, 0, 0, 0, "MIC TX equalizer",		 NON_VISIBLE, 0, window_ap_mic_eq_process, },
 		{ WINDOW_AP_REVERB_SETT, WINDOW_AUDIOSETTINGS, 	ALIGN_CENTER_X, 0, 0, 0, 0, "Reverberator settings", NON_VISIBLE, 0, window_ap_reverb_process, },
 		{ WINDOW_AP_MIC_SETT, 	 WINDOW_AUDIOSETTINGS, 	ALIGN_CENTER_X, 0, 0, 0, 0, "Microphone settings", 	 NON_VISIBLE, 0, window_ap_mic_process, },
+		{ WINDOW_AP_MIC_PROF, 	 WINDOW_AUDIOSETTINGS, 	ALIGN_CENTER_X, 0, 0, 0, 0, "Microphone profiles", 	 NON_VISIBLE, 0, window_ap_mic_prof_process, },
 		{ WINDOW_TX_SETTINGS, 	 UINT8_MAX, 			ALIGN_CENTER_X, 0, 0, 0, 0, "Transmit settings", 	 NON_VISIBLE, 0, window_tx_process, },
 		{ WINDOW_TX_VOX_SETT, 	 WINDOW_TX_SETTINGS, 	ALIGN_CENTER_X, 0, 0, 0, 0, "VOX settings", 	 	 NON_VISIBLE, 0, window_tx_vox_process, },
 		{ WINDOW_TX_POWER, 		 WINDOW_TX_SETTINGS, 	ALIGN_CENTER_X, 0, 0, 0, 0, "TX power", 	 	 	 NON_VISIBLE, 0, window_tx_power_process, },
@@ -2585,14 +2599,17 @@ static void window_tx_power_process(void);
 			window_t * winEQ = & windows[WINDOW_AP_MIC_EQ];
 			window_t * winRS = & windows[WINDOW_AP_REVERB_SETT];
 			window_t * winMIC = & windows[WINDOW_AP_MIC_SETT];
+			window_t * winMICpr = & windows[WINDOW_AP_MIC_PROF];
 			button_t * btn_reverb = find_gui_element_ref(TYPE_BUTTON, winAP, "btn_reverb");						// reverb on/off
 			button_t * btn_reverb_settings = find_gui_element_ref(TYPE_BUTTON, winAP, "btn_reverb_settings");	// reverb settings
 			button_t * btn_monitor = find_gui_element_ref(TYPE_BUTTON, winAP, "btn_monitor");					// monitor on/off
 			button_t * btn_mic_eq = find_gui_element_ref(TYPE_BUTTON, winAP, "btn_mic_eq");						// MIC EQ on/off
 			button_t * btn_mic_eq_settings = find_gui_element_ref(TYPE_BUTTON, winAP, "btn_mic_eq_settings");	// MIC EQ settingss
-			button_t * btn_mic_settings = find_gui_element_ref(TYPE_BUTTON, winAP, "btn_mic_settings");			// mic settingss
+			button_t * btn_mic_settings = find_gui_element_ref(TYPE_BUTTON, winAP, "btn_mic_settings");			// mic settings
+			button_t * btn_mic_profiles = find_gui_element_ref(TYPE_BUTTON, winAP, "btn_mic_profiles");			// mic profiles
 			button_t * btn_EQ_ok = find_gui_element_ref(TYPE_BUTTON, winEQ, "btn_EQ_ok");
 			button_t * btn_REVs_ok = find_gui_element_ref(TYPE_BUTTON, winRS, "btn_REVs_ok");
+
 
 #if WITHREVERB
 			if (gui.selected_link->link == btn_reverb)
@@ -2633,6 +2650,10 @@ static void window_tx_power_process(void);
 			else if (gui.selected_link->link == btn_mic_settings)
 			{
 				set_window(winMIC, VISIBLE);
+			}
+			else if (gui.selected_link->link == btn_mic_profiles)
+			{
+				set_window(winMICpr, VISIBLE);
 			}
 			else if (gui.selected_link->link == btn_EQ_ok)
 			{
@@ -3606,6 +3627,49 @@ static void window_tx_power_process(void);
 				hamradio_set_tx_tune_power(power);
 			}
 		}
+	}
+
+	static void window_ap_mic_prof_process(void)
+	{
+		window_t * win = & windows[WINDOW_AP_MIC_PROF];
+
+		if (win->first_call)
+		{
+			uint_fast16_t x = 0, y = 0, xmax = 0, ymax = 0;
+			uint_fast8_t interval = 6, col1_int = 20, row1_int = 40, row_count = 3, id_start, id_end;
+			button_t * bh = NULL;
+			win->first_call = 0;
+
+			find_entry_area_elements(TYPE_BUTTON, win, & id_start, & id_end);
+
+			x = col1_int;
+			y = row1_int;
+
+			for (uint_fast8_t i = id_start, r = 1; i <= id_end; i ++, r ++)
+			{
+				bh = (button_t *) touch_elements[i].link;
+				bh->x1 = x;
+				bh->y1 = y;
+				bh->visible = VISIBLE;
+
+				x = x + interval + bh->w;
+				if (r >= row_count)
+				{
+					r = 0;
+					x = col1_int;
+					y = y + bh->h + interval;
+				}
+				xmax = (xmax > bh->x1 + bh->w) ? xmax : (bh->x1 + bh->w);
+				ymax = (ymax > bh->y1 + bh->h) ? ymax : (bh->y1 + bh->h);
+			}
+			calculate_window_position(win, xmax, ymax);
+			return;
+		}
+	}
+
+	static void buttons_ap_mic_prof_process(void)
+	{
+
 	}
 
 	void gui_open_sys_menu(void)
