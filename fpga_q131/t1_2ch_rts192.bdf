@@ -6927,12 +6927,12 @@ applicable agreement for further details.
 	(pt -3216 832)
 )
 (connector
-	(pt -2992 816)
-	(pt -3072 816)
+	(pt -2992 768)
+	(pt -2992 832)
 )
 (connector
-	(pt -2992 768)
-	(pt -2992 816)
+	(pt -3072 832)
+	(pt -2992 832)
 )
 (junction (pt -2616 -480))
 (junction (pt -2936 -696))
