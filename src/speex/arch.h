@@ -91,6 +91,14 @@
 	#define FFTSizeSpectrumM 8
 	#define FFTCONFIGSpectrum	(& arm_cfft_sR_f32_len256)
 
+#elif CPUSTYLE_STM32MP1
+
+	#define FFTSizeFiltersM 10
+	#define FFTCONFIGFilters	(& arm_cfft_sR_f32_len1024)
+
+	#define FFTSizeSpectrumM 10
+	#define FFTCONFIGSpectrum	(& arm_cfft_sR_f32_len1024)
+
 #else
 
 	#define FFTSizeFiltersM 10
