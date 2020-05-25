@@ -18,27 +18,27 @@
 #
 # Quartus II 64-Bit
 # Version 13.1.4 Build 182 03/12/2014 SJ Full Version
-# Date created = 00:48:21  May 22, 2020
+# Date created = 22:43:10  May 25, 2020
 #
 # -------------------------------------------------------------------------- #
 
 QUARTUS_VERSION = "13.1"
-DATE = "00:48:21  May 22, 2020"
+DATE = "22:43:10  May 25, 2020"
 
 # Revisions
 
 PROJECT_REVISION = "t1_v9a_2ch"
-PROJECT_REVISION = "t1_v7h_2ch"
-PROJECT_REVISION = "t1_v8t_96k"
+PROJECT_REVISION = "t1_v8t_192k"
+PROJECT_REVISION = "t1_v3_pll"
 PROJECT_REVISION = "t1_v6_2ch"
 PROJECT_REVISION = "t1_v5_2ch"
 PROJECT_REVISION = "t1_v7_oleg4z"
-PROJECT_REVISION = "t1_v8t_192k"
 PROJECT_REVISION = "t1_v7_2ch"
-PROJECT_REVISION = "t1_v3_pll"
-PROJECT_REVISION = "t1_v4_pll"
-PROJECT_REVISION = "t1_v5_2ch_pll"
-PROJECT_REVISION = "t1_v4"
-PROJECT_REVISION = "t1_v7_1ch"
-PROJECT_REVISION = "t1_v3"
+PROJECT_REVISION = "t1_v7h_2ch"
 PROJECT_REVISION = "t1_v7a_2ch"
+PROJECT_REVISION = "t1_v3"
+PROJECT_REVISION = "t1_v7_1ch"
+PROJECT_REVISION = "t1_v4"
+PROJECT_REVISION = "t1_v5_2ch_pll"
+PROJECT_REVISION = "t1_v4_pll"
+PROJECT_REVISION = "t1_v8t_96k"

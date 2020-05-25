@@ -93,8 +93,8 @@ set_location_assignment PIN_12 -to cpu_sclk
 set_location_assignment PIN_132 -to adc_shdn
 set_location_assignment PIN_133 -to adc_dith
 set_location_assignment PIN_137 -to tx_inh_h
-set_location_assignment PIN_8 -to fpga_fir1_we_n
-set_location_assignment PIN_7 -to fpga_fir2_we_n
+set_location_assignment PIN_77 -to fpga_fir1_we_n
+set_location_assignment PIN_76 -to fpga_fir2_we_n
 set_location_assignment PIN_39 -to led0
 set_location_assignment PIN_42 -to led1
 set_location_assignment PIN_129 -to pps_in
@@ -207,8 +207,7 @@ set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to led3 -disable
 set_instance_assignment -name CURRENT_STRENGTH_NEW "MINIMUM CURRENT" -to dac_d* -disable
 set_global_assignment -name PHYSICAL_SYNTHESIS_COMBO_LOGIC_FOR_AREA ON
 set_global_assignment -name ENABLE_INIT_DONE_OUTPUT ON
-set_location_assignment PIN_23 -to fpga_fir_cs
-set_location_assignment PIN_25 -to fpga_ctl2_cs -disable
+set_location_assignment PIN_80 -to fpga_fir_cs
 set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
 set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
 set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
@@ -272,9 +271,9 @@ set_global_assignment -name QIP_FILE fir_10a_2ch.qip
 set_global_assignment -name QIP_FILE cic_128a_2iq.qip
 set_global_assignment -name QIP_FILE fir_5a_2ch.qip
 set_global_assignment -name BDF_FILE tc1_top_v9a_2ch.bdf
-set_location_assignment PIN_76 -to sai2_sd_out
-set_location_assignment PIN_77 -to sai2_ws
-set_location_assignment PIN_80 -to sai2_ck
+set_location_assignment PIN_76 -to sai2_sd_out -disable
+set_location_assignment PIN_77 -to sai2_ws -disable
+set_location_assignment PIN_80 -to sai2_ck -disable
 set_location_assignment PIN_83 -to pll_out
 set_global_assignment -name SDC_FILE tc1_top_v9a_2ch.sdc
 set_location_assignment PIN_144 -to i2s2_ws
