@@ -606,30 +606,30 @@
 #if 1 // WITHTWISW
 	// I2C1_SDA	PB7
 	// I2C1_SCL	PB6
-	#define TARGET_TWI_TWCK		(1u << 7)		// PD7 SCL
+	#define TARGET_TWI_TWCK		(1u << 7)		// PD7 I2C1_SCL
+	#define TARGET_TWI_TWCK_PIN		(GPIOD->IDR)
 	#define TARGET_TWI_TWCK_PORT_C(v) do { GPIOD->BSRR = BSRR_C(v); __DSB(); } while (0)
 	#define TARGET_TWI_TWCK_PORT_S(v) do { GPIOD->BSRR = BSRR_S(v); __DSB(); } while (0)
-	#define TARGET_TWI_TWCK_PIN		(GPIOD->IDR)
 
-	#define TARGET_TWI_TWD		(1u << 11)		// PB11 SDA
+	#define TARGET_TWI_TWD		(1u << 11)		// PB11 I2C1_SDA
 	#define TARGET_TWI_TWD_PIN		(GPIOB->IDR)
 	#define TARGET_TWI_TWD_PORT_C(v) do { GPIOB->BSRR = BSRR_C(v); __DSB(); } while (0)
 	#define TARGET_TWI_TWD_PORT_S(v) do { GPIOB->BSRR = BSRR_S(v); __DSB(); } while (0)
 
 	// Инициализация битов портов ввода-вывода для программной реализации I2C
 	#define	TWISOFT_INITIALIZE() do { \
-			arm_hardware_piod_opendrain(TARGET_TWI_TWCK, TARGET_TWI_TWCK); \
-			arm_hardware_piob_opendrain(TARGET_TWI_TWD, TARGET_TWI_TWD); \
+			arm_hardware_piod_opendrain(TARGET_TWI_TWCK, TARGET_TWI_TWCK); /* SCL */ \
+			arm_hardware_piob_opendrain(TARGET_TWI_TWD, TARGET_TWI_TWD);  	/* SDA */ \
 		} while (0) 
 	#define	TWISOFT_DEINITIALIZE() do { \
-			arm_hardware_piod_inputs(TARGET_TWI_TWCK);	\
-			arm_hardware_piob_inputs(TARGET_TWI_TWD);	\
+			arm_hardware_piod_inputs(TARGET_TWI_TWCK); 	/* SCL */ \
+			arm_hardware_piob_inputs(TARGET_TWI_TWD);	/* SDA */ \
 		} while (0)
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
 	#define	TWIHARD_INITIALIZE() do { \
-			arm_hardware_piod_periphopendrain_altfn2(TARGET_TWI_TWCK, AF_I2C1);	/* AF=4 */ \
-			arm_hardware_piob_periphopendrain_altfn2(TARGET_TWI_TWD, AF_I2C1);	/* AF=4 */ \
+			arm_hardware_piod_periphopendrain_altfn2(TARGET_TWI_TWCK, AF_I2C1);	/* I2C1_SCL AF=4 */ \
+			arm_hardware_piob_periphopendrain_altfn2(TARGET_TWI_TWD, AF_I2C1);	/* I2C1_SDA AF=4 */ \
 		} while (0) 
 
 
@@ -667,7 +667,7 @@
 		When initialization is complete, the INIT_DONE pin is released and pulled high. 
 		This low-to-high transition signals that the device has entered user mode.
 	*/
-	#define HARDWARE_FPGA_IS_USER_MODE() ((FPGA_INIT_DONE_INPUT & FPGA_INIT_DONE_BIT) != 0)
+	#define HARDWARE_FPGA_IS_USER_MODE() (local_delay_ms(100), (FPGA_INIT_DONE_INPUT & FPGA_INIT_DONE_BIT) != 0)
 
 #endif /* WITHFPGAWAIT_AS || WITHFPGALOAD_PS */
 
