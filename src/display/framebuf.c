@@ -1133,56 +1133,39 @@ void colpip_rect(
 }
 
 void
-colmain_fillrect_pattern(
-	PACKEDCOLORMAIN_T * buffer,
-	uint_fast16_t dx,
-	uint_fast16_t dy,
-	uint_fast16_t x, uint_fast16_t y, 	// координаты в пикселях
-	uint_fast16_t w, uint_fast16_t h, 	// размеры в пикселях
-	COLORMAIN_T fgcolor,
-	COLORMAIN_T bgcolor,
-	uint_fast8_t hpattern	// horizontal pattern (LSB - left)
-	)
-{
-
-#if LCDMODE_HORFILL
-
-	// TODO: bgcolor и hpattern пока игнорируются
-	#if LCDMODE_MAIN_L8 && LCDMODE_LTDC
-		hwacc_fillrect_u8(buffer, dx, dy, x, y, w, h, fgcolor);
-	#elif LCDMODE_LTDC_L24 && LCDMODE_LTDC
-		hwacc_fillrect_u24(buffer, dx, dy, x, y, w, h, fgcolor);
-	#elif LCDMODE_LTDC
-		hwacc_fillrect_u16(buffer, dx, dy, x, y, w, h, fgcolor);
-	#endif
-
-#else /* LCDMODE_HORFILL */
-
-	// TODO: bgcolor и hpattern пока игнорируются
-	#if LCDMODE_MAIN_L8 && LCDMODE_LTDC
-		hwacc_fillrect_u8(buffer, dy, dx, y, x, h, w, fgcolor);
-	#elif LCDMODE_LTDC_L24 && LCDMODE_LTDC
-		hwacc_fillrect_u24(buffer, dy, dx, y, x, h, w, fgcolor);
-	#elif LCDMODE_LTDC
-		hwacc_fillrect_u16(buffer, dy, dx, y, x, h, w, fgcolor);
-	#endif
-
-#endif /* LCDMODE_HORFILL */
-}
-
-/* заполнение прямоугольника в буфере произвольным цветом
-*/
-void
 colmain_fillrect(
 	PACKEDCOLORMAIN_T * buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy,
 	uint_fast16_t x, uint_fast16_t y, 	// координаты в пикселях
 	uint_fast16_t w, uint_fast16_t h, 	// размеры в пикселях
-	COLORMAIN_T color
+	COLORMAIN_T fgcolor
 	)
 {
-	colmain_fillrect_pattern(buffer, dx, dy, x, y, w, h, color, color, 0xFF);
+
+#if LCDMODE_HORFILL
+
+	// TODO: bgcolor и hpattern пока игнорируются
+	#if LCDMODE_MAIN_L8
+		hwacc_fillrect_u8(buffer, dx, dy, x, y, w, h, fgcolor);
+	#elif LCDMODE_LTDC_L24
+		hwacc_fillrect_u24(buffer, dx, dy, x, y, w, h, fgcolor);
+	#else
+		hwacc_fillrect_u16(buffer, dx, dy, x, y, w, h, fgcolor);
+	#endif
+
+#else /* LCDMODE_HORFILL */
+
+	// TODO: bgcolor и hpattern пока игнорируются
+	#if LCDMODE_MAIN_L8
+		hwacc_fillrect_u8(buffer, dy, dx, y, x, h, w, fgcolor);
+	#elif LCDMODE_LTDC_L24
+		hwacc_fillrect_u24(buffer, dy, dx, y, x, h, w, fgcolor);
+	#else
+		hwacc_fillrect_u16(buffer, dy, dx, y, x, h, w, fgcolor);
+	#endif
+
+#endif /* LCDMODE_HORFILL */
 }
 
 #if LCDMODE_HORFILL
@@ -1190,7 +1173,7 @@ colmain_fillrect(
 #if 0
 // функции работы с colorbuffer не занимаются выталкиванеим кэш-памяти
 static void RAMFUNC ltdcpip_horizontal_pixels(
-	PACKEDCOLORPIP_T * tgr,		// target raster
+	volatile PACKEDCOLORPIP_T * tgr,		// target raster
 	const FLASHMEM uint8_t * raster,
 	uint_fast16_t width	// number of bits (start from LSB first byte in raster)
 	)

@@ -377,7 +377,7 @@ display_fillrect(
 	}
 	else
 	{
-		colmain_fillrect_pattern(buffer, dx, dy, x, y, w, h, color, color, 0xFF);
+		colmain_fillrect(buffer, dx, dy, x, y, w, h, color);
 	}
 }
 
@@ -581,10 +581,10 @@ void display_bar(
 	const uint_fast16_t wmark = (uint_fast32_t) wfull * tracevalue / topvalue;
 	const uint_fast8_t hpattern = 0x33;
 
-	colmain_fillrect_pattern(buffer, dx, dy, x, y, wpart, h, ltdc_fg, ltdc_bg, hpattern);
-	colmain_fillrect_pattern(buffer, dx, dy, x + wpart, y, wfull - wpart, h, ltdc_bg, ltdc_bg, 0x00);
+	colmain_fillrect(buffer, dx, dy, 	x, y, 			wpart, h, 			ltdc_fg);
+	colmain_fillrect(buffer, dx, dy, 	x + wpart, y, 	wfull - wpart, h, 	ltdc_bg);
 	if (wmark < wfull && wmark >= wpart)
-		colmain_fillrect_pattern(buffer, dx, dy, x + wmark, y, 1, h, ltdc_fg, ltdc_bg, 0xFF);
+		colmain_fillrect(buffer, dx, dy, x + wmark, y, 	1, h, 				ltdc_fg);
 }
 
 // самый маленький шрифт

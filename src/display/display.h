@@ -880,18 +880,6 @@ void hwaccel_copy(
 	unsigned h
 	);
 
-void
-colmain_fillrect_pattern(
-	PACKEDCOLORMAIN_T * buffer,
-	uint_fast16_t dx,
-	uint_fast16_t dy,
-	uint_fast16_t x, uint_fast16_t y, 	// координаты в пикселях
-	uint_fast16_t w, uint_fast16_t h, 	// размеры в пикселях
-	COLORMAIN_T fgcolor,
-	COLORMAIN_T bgcolor,
-	uint_fast8_t hpattern	// horizontal pattern (LSB - left)
-	);
-
 // для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
 void ltdc_horizontal_pixels(
 	PACKEDCOLORMAIN_T * tgr,		// target raster
