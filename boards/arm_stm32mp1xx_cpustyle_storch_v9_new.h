@@ -140,13 +140,11 @@
 #define LS020_RS_INITIALIZE() \
 	do { \
 		arm_hardware_piod_outputs2m(LS020_RS, LS020_RS); /* PD3 */ \
-		arm_hardware_pioe_outputs((1U << 0), 0 * (1U << 0));		/* PE0 - enable backlight */ \
 	} while (0)
 
 #define LS020_RESET_INITIALIZE() \
 	do { \
 		arm_hardware_piod_outputs2m(LS020_RESET, LS020_RESET); /* PD4 */ \
-		arm_hardware_pioe_outputs((1U << 0), 0 * (1U << 0));		/* PE0 - enable backlight */ \
 	} while (0)
 
 #define LS020_RS_SET(v) do { \
@@ -265,7 +263,7 @@
 	из внешних сигналов требуется только SAI2_SD_A
 	*/
 	#define SAI2HW_INITIALIZE()	do { \
-		arm_hardware_pioe_altfn2(1uL << 11, AF_SAI2);	/* PE11 - SAI2_SD_B	(i2s data from codec)	*/ \
+		arm_hardware_pioe_altfn2(1uL << 11, AF_SAI2);	/* PE11 - SAI2_SD_B	(i2s data from FPGA)	*/ \
 	} while (0)
 #endif /* WITHSAI1HW */
 
@@ -273,9 +271,9 @@
 	/*
 	*/
 	#define SAI3HW_INITIALIZE()	do { \
-		arm_hardware_piod_altfn50(1uL << 12, AF_SAI2); 		/* PD12 - SAI2_FS_A	- 48 kHz	*/ \
+		arm_hardware_piod_altfn50(1uL << 12, AF_SAI2); 		/* PD12 - SAI2_FS_A	- WS from FPGA	*/ \
 		arm_hardware_piod_altfn50(1uL << 13, AF_SAI2); 		/* PD13 - SAI2_SCK_A	*/ \
-		arm_hardware_pioe_altfn50(1uL << 11, AF_SAI2);		/* PE11 - SAI2_SD_B	(i2s data from codec)	*/ \
+		arm_hardware_pioe_altfn50(1uL << 11, AF_SAI2);		/* PE11 - SAI2_SD_B	(i2s data from FPGA)	*/ \
 	} while (0)
 #endif /* WITHSAI1HW */
 
@@ -425,7 +423,7 @@
 	#define TXDISABLE_TARGET_PIN				(GPIOD->IDR)
 	#define TXDISABLE_BIT_TXDISABLE				0//(1U << 10)		// PD10 - TX INHIBIT
 	// получить бит запрета передачи (от усилителя мощности)
-	#define HARDWARE_GET_TXDISABLE() ((TXDISABLE_TARGET_PIN & TXDISABLE_BIT_TXDISABLE) != 0)
+	#define HARDWARE_GET_TXDISABLE() (0) //((TXDISABLE_TARGET_PIN & TXDISABLE_BIT_TXDISABLE) != 0)
 	#define TXDISABLE_INITIALIZE() \
 		do { \
 			arm_hardware_piod_inputs(TXDISABLE_BIT_TXDISABLE); \
@@ -478,7 +476,7 @@
 	#define ELKEY_BIT_LEFT				(1uL << 14)		// PD14
 	#define ELKEY_BIT_RIGHT				(1uL << 15)		// PD15
 
-	#define ELKEY_TARGET_PIN			((ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT)) //(GPIOD->IDR)
+	#define ELKEY_TARGET_PIN			(GPIOD->IDR)
 
 	#define ELKEY_INITIALIZE() \
 		do { \
@@ -530,7 +528,7 @@
 	/* инициализация лиий выбора периферийных микросхем */
 	#define SPI_ALLCS_INITIALIZE() \
 		do { \
-			arm_hardware_pioe_outputs50m(SPI_ALLCS_BITS, SPI_ALLCS_BITS ^ SPI_ALLCS_BITSNEG); \
+			arm_hardware_pioe_outputs2m(SPI_ALLCS_BITS, SPI_ALLCS_BITS ^ SPI_ALLCS_BITSNEG); \
 		} while (0)
 
 	// MOSI & SCK port
@@ -551,8 +549,8 @@
 			arm_hardware_piob_inputs(SPI_MISO_BIT); /* PB4 */ \
 		} while (0)
 	#define HARDWARE_SPI_CONNECT() do { \
-			arm_hardware_piob_altfn50(SPI_MOSI_BIT | SPI_MISO_BIT, AF_SPI1); /* В этих процессорах и входы и выходы перекдючаются на ALT FN */ \
-			arm_hardware_piob_altfn50(SPI_SCLK_BIT, AF_SPI1); /* В этих процессорах и входы и выходы перекдючаются на ALT FN */ \
+			arm_hardware_piob_altfn20(SPI_MOSI_BIT | SPI_MISO_BIT, AF_SPI1); /* В этих процессорах и входы и выходы перекдючаются на ALT FN */ \
+			arm_hardware_piob_altfn20(SPI_SCLK_BIT, AF_SPI1); /* В этих процессорах и входы и выходы перекдючаются на ALT FN */ \
 		} while (0)
 	#define HARDWARE_SPI_DISCONNECT() do { \
 			arm_hardware_piob_outputs50m(SPI_SCLK_BIT, SPI_SCLK_BIT); \
@@ -560,7 +558,7 @@
 			arm_hardware_piob_inputs(SPI_MISO_BIT); \
 		} while (0)
 	#define HARDWARE_SPI_CONNECT_MOSI() do { \
-			arm_hardware_piob_altfn50(SPI_MOSI_BIT, AF_SPI1);	/* PIO disable for MOSI bit (SD CARD read support) */ \
+			arm_hardware_piob_altfn20(SPI_MOSI_BIT, AF_SPI1);	/* PIO disable for MOSI bit (SD CARD read support) */ \
 		} while (0)
 	#define HARDWARE_SPI_DISCONNECT_MOSI() do { \
 			arm_hardware_piob_outputs50m(SPI_MOSI_BIT, SPI_MOSI_BIT);	/* PIO enable for MOSI bit (SD CARD read support)  */ \
@@ -690,9 +688,9 @@
 	#define TARGET_FPGA_FIR2_WE_BIT (1uL << 0)	/* PD0 - fir2 WE */
 
 	#define TARGET_FPGA_FIR_INITIALIZE() do { \
-			arm_hardware_piod_outputs50m(TARGET_FPGA_FIR1_WE_BIT, TARGET_FPGA_FIR1_WE_BIT); \
-			arm_hardware_piod_outputs50m(TARGET_FPGA_FIR2_WE_BIT, TARGET_FPGA_FIR2_WE_BIT); \
-			arm_hardware_pioc_outputs50m(TARGET_FPGA_FIR_CS_BIT, TARGET_FPGA_FIR_CS_BIT); \
+			arm_hardware_piod_outputs2m(TARGET_FPGA_FIR1_WE_BIT, TARGET_FPGA_FIR1_WE_BIT); \
+			arm_hardware_piod_outputs2m(TARGET_FPGA_FIR2_WE_BIT, TARGET_FPGA_FIR2_WE_BIT); \
+			arm_hardware_pioc_outputs2m(TARGET_FPGA_FIR_CS_BIT, TARGET_FPGA_FIR_CS_BIT); \
 		} while (0)
 #endif /* WITHDSPEXTFIR */
 
@@ -777,7 +775,10 @@
 
 	/* BL0: PA14. BL1: PA15 */
 	#define	HARDWARE_BL_INITIALIZE() do { \
-		arm_hardware_pioa_opendrain(0xC000, 0); \
+		const portholder_t opins = (1U << 15) | (1U << 14); /* PA15:PA14 */ \
+		const portholder_t enmask = 0 * (1U << 1); /* PF1 */ \
+		arm_hardware_pioa_opendrain(opins, 0); \
+		arm_hardware_piof_opendrain(enmask, 0 * enmask); \
 		} while (0)
 
 	/* установка яркости и включение/выключение преобразователя подсветки */
@@ -785,7 +786,10 @@
 	#define HARDWARE_BL_SET(en, level) do { \
 		const portholder_t enmask = 0 * (1U << 1); /* PF1 */ \
 		const portholder_t opins = (1U << 15) | (1U << 14); /* PA15:PA14 */ \
-		const portholder_t initialstate = (~ (level) & 0x03) << 2; \
+		const portholder_t initialstate = (~ (level) & 0x03) << 14; \
+		GPIOF->BSRR = \
+			((en) ? BSRR_S(enmask) : BSRR_C(enmask)) | /* backlight control on/off */ \
+			0; \
 		GPIOA->BSRR = \
 			((en) ? BSRR_S(enmask) : BSRR_C(enmask)) | /* backlight control on/off */ \
 			BSRR_S((initialstate) & (opins)) | /* set bits */ \
