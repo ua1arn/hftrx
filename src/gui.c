@@ -326,7 +326,7 @@ void colmain_rounded_rect(
 	if (fill)
 	{
 		PACKEDCOLORMAIN_T * oldColor = colmain_mem_at(buffer, bx, by, x1 + r, y1 + r);
-		display_floodfill(buffer, bx, by, x1 + r, y1 + r, color, * oldColor);
+		display_floodfill(buffer, bx, by, x1 + (x2 - x1) / 2, y1 + r, color, * oldColor, 0);
 	}
 }
 
@@ -674,7 +674,7 @@ display2_smeter15(
 			display_radius_buf(fr, DIM_X, DIM_Y, xc, yc, smeter_params.gs, smeter_params.r1 - 2, smeter_params.r2 + 2, color, 0, 1);
 			display_radius_buf(fr, DIM_X, DIM_Y, xc, yc, gswr, smeter_params.r1 - 2, smeter_params.r2 + 2, color, 0, 1);
 			polar_to_dek(xc, yc, gswr - 1, smeter_params.r1 - 4, & xx, & yy, 1);
-			display_floodfill(fr, DIM_X, DIM_Y, xx, yy, color, COLORMAIN_BLACK);
+			display_floodfill(fr, DIM_X, DIM_Y, xx, yy, color, COLORMAIN_BLACK, 1);
 		}
 
 		const COLORMAIN_T color = COLORMAIN_GREEN;
@@ -860,6 +860,9 @@ static void buttons_tx_sett_process(void);
 static void window_swrscan_process(void);
 static void buttons_swrscan_process(void);
 static void window_tx_power_process(void);
+static void window_ap_mic_prof_process(void);
+static void buttons_ap_mic_prof_process(void);
+
 
 	enum { button_round_radius = 5 };
 
@@ -907,6 +910,7 @@ static void window_tx_power_process(void);
 		WINDOW_AP_MIC_EQ,				// эквалайзер микрофона
 		WINDOW_AP_REVERB_SETT,			// параметры ревербератора
 		WINDOW_AP_MIC_SETT,				// настройки микрофона
+		WINDOW_AP_MIC_PROF,				// профили микрофона
 		WINDOW_TX_SETTINGS,				// настройки, относящиеся к режиму передачи
 		WINDOW_TX_VOX_SETT,				// настройки VOX
 		WINDOW_TX_POWER,				// выходная мощность
@@ -919,6 +923,8 @@ static void window_tx_power_process(void);
 		TOUCH_ARRAY_SIZE = 100
 	};
 
+#if GUI_HWDRAWBUTTONSBG
+
 	typedef struct {
 		uint8_t w;
 		uint8_t h;
@@ -930,13 +936,15 @@ static void window_tx_power_process(void);
 	} btn_bg_t;
 
 	static btn_bg_t btn_bg [] = {
-			{ 100, 44, },
-			{ 86, 44, },
-			{ 50, 50, },
-			{ 40, 40, },
+		{ 100, 44, },
+		{ 86, 44, },
+		{ 50, 50, },
+		{ 40, 40, },
 	};
 
 	enum { BG_COUNT = ARRAY_SIZE(btn_bg) };
+
+#endif /* GUI_HWDRAWBUTTONSBG */
 
 	typedef struct {
 		uint16_t x1;				// координаты от начала экрана
@@ -1004,6 +1012,7 @@ static void window_tx_power_process(void);
 		{ 0, 0, 100, 44, buttons_audioparams_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, UINTPTR_MAX, "btn_mic_eq", 			"MIC EQ|OFF", },
 		{ 0, 0, 100, 44, buttons_audioparams_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, UINTPTR_MAX, "btn_mic_eq_settings", 	"MIC EQ|settings", },
 		{ 0, 0, 100, 44, buttons_audioparams_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, UINTPTR_MAX, "btn_mic_settings", 		"MIC|settings", },
+		{ 0, 0, 100, 44, buttons_audioparams_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, UINTPTR_MAX, "btn_mic_profiles", 		"MIC|profiles", },
 		{ 0, 0,  40, 40, buttons_audioparams_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_EQ, 	 NON_VISIBLE, UINTPTR_MAX, "btn_EQ_ok", 			"OK", },
 		{ 0, 0,  40, 40, buttons_audioparams_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_REVERB_SETT,NON_VISIBLE, UINTPTR_MAX, "btn_REVs_ok", 			"OK", },
 		{ 0, 0,  86, 44, buttons_ap_mic_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_SETT,  NON_VISIBLE, UINTPTR_MAX, "btn_mic_agc", 		"AGC|OFF", },
@@ -1014,7 +1023,15 @@ static void window_tx_power_process(void);
 		{ 0, 0, 100, 44, buttons_tx_sett_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_TX_SETTINGS, NON_VISIBLE, UINTPTR_MAX, "btn_tx_power", 	 	"TX power", },
 		{ 0, 0,  44, 44, buttons_tx_sett_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_TX_VOX_SETT, NON_VISIBLE, UINTPTR_MAX, "btn_tx_vox_OK", 	 	"OK", },
 		{ 0, 0,  44, 44, buttons_tx_sett_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_TX_POWER,    NON_VISIBLE, UINTPTR_MAX, "btn_tx_pwr_OK", 	 	"OK", },
-#if ! WITHOLDMENUSTYLE
+
+		{ 0, 0, 100, 44, buttons_ap_mic_prof_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_PROF, NON_VISIBLE, UINTPTR_MAX, "btn_mic_profile_1_load", "Profile 1|load", },
+		{ 0, 0, 100, 44, buttons_ap_mic_prof_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_PROF, NON_VISIBLE, UINTPTR_MAX, "btn_mic_profile_2_load", "Profile 2|load", },
+		{ 0, 0, 100, 44, buttons_ap_mic_prof_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_PROF, NON_VISIBLE, UINTPTR_MAX, "btn_mic_profile_3_load", "Profile 3|load", },
+		{ 0, 0, 100, 44, buttons_ap_mic_prof_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_PROF, NON_VISIBLE, UINTPTR_MAX, "btn_mic_profile_1_save", "Profile 1|save", },
+		{ 0, 0, 100, 44, buttons_ap_mic_prof_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_PROF, NON_VISIBLE, UINTPTR_MAX, "btn_mic_profile_2_save", "Profile 2|save", },
+		{ 0, 0, 100, 44, buttons_ap_mic_prof_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_PROF, NON_VISIBLE, UINTPTR_MAX, "btn_mic_profile_3_save", "Profile 3|save", },
+
+#if ! GUI_OLDMENUSTYLE
 		{ 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 	"btnSysMenu1",	"", },
 		{ 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 	"btnSysMenu2",	"", },
 		{ 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 	"btnSysMenu3",	"", },
@@ -1228,6 +1245,7 @@ static void window_tx_power_process(void);
 		{ WINDOW_AP_MIC_EQ, 	 WINDOW_AUDIOSETTINGS, 	ALIGN_CENTER_X, 0, 0, 0, 0, "MIC TX equalizer",		 NON_VISIBLE, 0, window_ap_mic_eq_process, },
 		{ WINDOW_AP_REVERB_SETT, WINDOW_AUDIOSETTINGS, 	ALIGN_CENTER_X, 0, 0, 0, 0, "Reverberator settings", NON_VISIBLE, 0, window_ap_reverb_process, },
 		{ WINDOW_AP_MIC_SETT, 	 WINDOW_AUDIOSETTINGS, 	ALIGN_CENTER_X, 0, 0, 0, 0, "Microphone settings", 	 NON_VISIBLE, 0, window_ap_mic_process, },
+		{ WINDOW_AP_MIC_PROF, 	 WINDOW_AUDIOSETTINGS, 	ALIGN_CENTER_X, 0, 0, 0, 0, "Microphone profiles", 	 NON_VISIBLE, 0, window_ap_mic_prof_process, },
 		{ WINDOW_TX_SETTINGS, 	 UINT8_MAX, 			ALIGN_CENTER_X, 0, 0, 0, 0, "Transmit settings", 	 NON_VISIBLE, 0, window_tx_process, },
 		{ WINDOW_TX_VOX_SETT, 	 WINDOW_TX_SETTINGS, 	ALIGN_CENTER_X, 0, 0, 0, 0, "VOX settings", 	 	 NON_VISIBLE, 0, window_tx_vox_process, },
 		{ WINDOW_TX_POWER, 		 WINDOW_TX_SETTINGS, 	ALIGN_CENTER_X, 0, 0, 0, 0, "TX power", 	 	 	 NON_VISIBLE, 0, window_tx_power_process, },
@@ -1255,7 +1273,7 @@ static void window_tx_power_process(void);
 		MENU_COUNT
 	};
 
-#if WITHOLDMENUSTYLE
+#if GUI_OLDMENUSTYLE
 	typedef struct {
 		uint8_t first_id;			// первое вхождение номера метки уровня
 		uint8_t last_id;			// последнее вхождение номера метки уровня
@@ -1985,7 +2003,7 @@ static void window_tx_power_process(void);
 		}
 	}
 
-#if WITHOLDMENUSTYLE
+#if GUI_OLDMENUSTYLE
 
 	static void labels_menu_handler (void)
 	{
@@ -2404,6 +2422,7 @@ static void window_tx_power_process(void);
 
 	}
 #endif
+
 	uint_fast8_t gui_check_encoder2 (int_least16_t rotate)
 	{
 		if (encoder2.rotate_done || encoder2.rotate == 0)
@@ -2585,14 +2604,17 @@ static void window_tx_power_process(void);
 			window_t * winEQ = & windows[WINDOW_AP_MIC_EQ];
 			window_t * winRS = & windows[WINDOW_AP_REVERB_SETT];
 			window_t * winMIC = & windows[WINDOW_AP_MIC_SETT];
+			window_t * winMICpr = & windows[WINDOW_AP_MIC_PROF];
 			button_t * btn_reverb = find_gui_element_ref(TYPE_BUTTON, winAP, "btn_reverb");						// reverb on/off
 			button_t * btn_reverb_settings = find_gui_element_ref(TYPE_BUTTON, winAP, "btn_reverb_settings");	// reverb settings
 			button_t * btn_monitor = find_gui_element_ref(TYPE_BUTTON, winAP, "btn_monitor");					// monitor on/off
 			button_t * btn_mic_eq = find_gui_element_ref(TYPE_BUTTON, winAP, "btn_mic_eq");						// MIC EQ on/off
 			button_t * btn_mic_eq_settings = find_gui_element_ref(TYPE_BUTTON, winAP, "btn_mic_eq_settings");	// MIC EQ settingss
-			button_t * btn_mic_settings = find_gui_element_ref(TYPE_BUTTON, winAP, "btn_mic_settings");			// mic settingss
+			button_t * btn_mic_settings = find_gui_element_ref(TYPE_BUTTON, winAP, "btn_mic_settings");			// mic settings
+			button_t * btn_mic_profiles = find_gui_element_ref(TYPE_BUTTON, winAP, "btn_mic_profiles");			// mic profiles
 			button_t * btn_EQ_ok = find_gui_element_ref(TYPE_BUTTON, winEQ, "btn_EQ_ok");
 			button_t * btn_REVs_ok = find_gui_element_ref(TYPE_BUTTON, winRS, "btn_REVs_ok");
+
 
 #if WITHREVERB
 			if (gui.selected_link->link == btn_reverb)
@@ -2633,6 +2655,10 @@ static void window_tx_power_process(void);
 			else if (gui.selected_link->link == btn_mic_settings)
 			{
 				set_window(winMIC, VISIBLE);
+			}
+			else if (gui.selected_link->link == btn_mic_profiles)
+			{
+				set_window(winMICpr, VISIBLE);
 			}
 			else if (gui.selected_link->link == btn_EQ_ok)
 			{
@@ -3465,7 +3491,7 @@ static void window_tx_power_process(void);
 
 		if (! win->first_call)
 		{
-			// отрисофка фона графика и разметки
+			// отрисовка фона графика и разметки
 			uint_fast16_t gr_x = win->x1 + x0, gr_y = win->y1 + y0;
 			colpip_fillrect(fr, DIM_X, DIM_Y, win->x1 + col1_int, win->y1 + row1_int, gr_w, gr_h, COLORMAIN_BLACK);
 			colmain_line(fr, DIM_X, DIM_Y, gr_x, gr_y, gr_x, win->y1 + y1, COLORMAIN_WHITE, 0);
@@ -3608,6 +3634,49 @@ static void window_tx_power_process(void);
 		}
 	}
 
+	static void window_ap_mic_prof_process(void)
+	{
+		window_t * win = & windows[WINDOW_AP_MIC_PROF];
+
+		if (win->first_call)
+		{
+			uint_fast16_t x = 0, y = 0, xmax = 0, ymax = 0;
+			uint_fast8_t interval = 6, col1_int = 20, row1_int = 40, row_count = 3, id_start, id_end;
+			button_t * bh = NULL;
+			win->first_call = 0;
+
+			find_entry_area_elements(TYPE_BUTTON, win, & id_start, & id_end);
+
+			x = col1_int;
+			y = row1_int;
+
+			for (uint_fast8_t i = id_start, r = 1; i <= id_end; i ++, r ++)
+			{
+				bh = (button_t *) touch_elements[i].link;
+				bh->x1 = x;
+				bh->y1 = y;
+				bh->visible = VISIBLE;
+
+				x = x + interval + bh->w;
+				if (r >= row_count)
+				{
+					r = 0;
+					x = col1_int;
+					y = y + bh->h + interval;
+				}
+				xmax = (xmax > bh->x1 + bh->w) ? xmax : (bh->x1 + bh->w);
+				ymax = (ymax > bh->y1 + bh->h) ? ymax : (bh->y1 + bh->h);
+			}
+			calculate_window_position(win, xmax, ymax);
+			return;
+		}
+	}
+
+	static void buttons_ap_mic_prof_process(void)
+	{
+
+	}
+
 	void gui_open_sys_menu(void)
 	{
 		button9_handler();
@@ -3697,9 +3766,7 @@ static void window_tx_power_process(void);
 	{
 		if(gui.selected_type == TYPE_BUTTON)
 		{
-			button_t * bh = gui.selected_link->link;
-			bh->is_locked = bh->is_locked ? BUTTON_NON_LOCKED : BUTTON_LOCKED;
-			hamradio_set_tune(bh->is_locked);
+
 		}
 	}
 
@@ -3945,13 +4012,14 @@ static void window_tx_power_process(void);
 	{
 		PACKEDCOLORMAIN_T * bg = NULL;
 		PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
-		btn_bg_t * b1 = NULL;
 		window_t * win = & windows[bh->parent];
 		uint_fast8_t i = 0;
 		static const char delimeters [] = "|";
-
 		uint_fast16_t x1 = win->x1 + bh->x1;
 		uint_fast16_t y1 = win->y1 + bh->y1;
+
+#if GUI_HWDRAWBUTTONSBG
+		btn_bg_t * b1 = NULL;
 		do {
 			if (bh->h == btn_bg[i].h && bh->w == btn_bg[i].w)
 			{
@@ -3962,10 +4030,11 @@ static void window_tx_power_process(void);
 
 		if (b1 == NULL)				// если не найден заполненный буфер фона по размерам, программная отрисовка
 		{
+#endif /* GUI_HWDRAWBUTTONSBG */
 			PACKEDCOLORMAIN_T c1, c2;
 			c1 = bh->state == DISABLED ? COLOR_BUTTON_DISABLED : (bh->is_locked ? COLOR_BUTTON_LOCKED : COLOR_BUTTON_NON_LOCKED);
 			c2 = bh->state == DISABLED ? COLOR_BUTTON_DISABLED : (bh->is_locked ? COLOR_BUTTON_PR_LOCKED : COLOR_BUTTON_PR_NON_LOCKED);
-#if WITHOLDBUTTONSTYLE
+#if GUI_OLDBUTTONSTYLE
 			colpip_rect(fr, DIM_X, DIM_Y, x1, y1, x1 + bh->w, y1 + bh->h - 2, bh->state == PRESSED ? c2 : c1, 1);
 			colpip_rect(fr, DIM_X, DIM_Y, x1, y1, x1 + bh->w, y1 + bh->h - 1, COLORPIP_GRAY, 0);
 			colpip_rect(fr, DIM_X, DIM_Y, x1 + 2, y1 + 2, x1 + bh->w - 2, y1 + bh->h - 3, COLORPIP_BLACK, 0);
@@ -3973,7 +4042,9 @@ static void window_tx_power_process(void);
 			colmain_rounded_rect(fr, DIM_X, DIM_Y, x1, y1, x1 + bh->w, y1 + bh->h - 2, button_round_radius, bh->state == PRESSED ? c2 : c1, 1);
 			colmain_rounded_rect(fr, DIM_X, DIM_Y, x1, y1, x1 + bh->w, y1 + bh->h - 1, button_round_radius, COLORPIP_GRAY, 0);
 			colmain_rounded_rect(fr, DIM_X, DIM_Y, x1 + 2, y1 + 2, x1 + bh->w - 2, y1 + bh->h - 3, button_round_radius, COLORPIP_BLACK, 0);
-#endif /* WITHOLDBUTTONSTYLE */
+#endif /* GUI_OLDBUTTONSTYLE */
+
+#if GUI_HWDRAWBUTTONSBG
 		}
 		else
 		{
@@ -3990,12 +4061,13 @@ static void window_tx_power_process(void);
 
 			colpip_plot(fr, DIM_X, DIM_Y, x1, y1, bg, bh->w, bh->h);
 		}
+#endif /* GUI_HWDRAWBUTTONSBG */
 
-#if WITHOLDBUTTONSTYLE
+#if GUI_OLDBUTTONSTYLE
 		uint_fast8_t shift = bh->state == PRESSED ? 1 : 0;
 #else
 		uint_fast8_t shift = 0;
-#endif /* WITHOLDBUTTONSTYLE */
+#endif /* GUI_OLDBUTTONSTYLE */
 
 		if (strchr(bh->text, delimeters[0]) == NULL)
 		{
@@ -4059,6 +4131,8 @@ static void window_tx_power_process(void);
 		}
 	}
 
+#if GUI_HWDRAWBUTTONSBG
+
 	static void fill_button_bg_buf(btn_bg_t * v)
 	{
 		PACKEDCOLORMAIN_T * buf;
@@ -4076,7 +4150,7 @@ static void window_tx_power_process(void);
 
 		buf = v->bg_non_pressed;
 		ASSERT(buf != NULL);
-#if WITHOLDBUTTONSTYLE
+#if GUI_OLDBUTTONSTYLE
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLOR_BUTTON_NON_LOCKED, 1);
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORPIP_GRAY, 0);
 		colpip_rect(buf, w, h, 2, 2, w - 3, h - 3, COLORPIP_BLACK, 0);
@@ -4085,11 +4159,11 @@ static void window_tx_power_process(void);
 		colmain_rounded_rect(buf, w, h, 0, 0, w - 1, h - 1, button_round_radius, COLOR_BUTTON_NON_LOCKED, 1);
 		colmain_rounded_rect(buf, w, h, 0, 0, w - 1, h - 1, button_round_radius, COLORPIP_GRAY, 0);
 		colmain_rounded_rect(buf, w, h, 2, 2, w - 3, h - 3, button_round_radius, COLORPIP_BLACK, 0);
-#endif /* WITHOLDBUTTONSTYLE */
+#endif /* GUI_OLDBUTTONSTYLE */
 
 		buf = v->bg_pressed;
 		ASSERT(buf != NULL);
-#if WITHOLDBUTTONSTYLE
+#if GUI_OLDBUTTONSTYLE
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLOR_BUTTON_PR_NON_LOCKED, 1);
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORPIP_GRAY, 0);
 		colmain_line(buf, w, h, 2, 3, w - 3, 3, COLORPIP_BLACK, 0);
@@ -4101,11 +4175,11 @@ static void window_tx_power_process(void);
 		colmain_rounded_rect(buf, w, h, 0, 0, w - 1, h - 1, button_round_radius, COLOR_BUTTON_PR_NON_LOCKED, 1);
 		colmain_rounded_rect(buf, w, h, 0, 0, w - 1, h - 1, button_round_radius, COLORPIP_GRAY, 0);
 		colmain_rounded_rect(buf, w, h, 2, 2, w - 3, h - 3, button_round_radius, COLORPIP_BLACK, 0);
-#endif /* WITHOLDBUTTONSTYLE */
+#endif /* GUI_OLDBUTTONSTYLE */
 
 		buf = v->bg_locked;
 		ASSERT(buf != NULL);
-#if WITHOLDBUTTONSTYLE
+#if GUI_OLDBUTTONSTYLE
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLOR_BUTTON_LOCKED, 1);
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORPIP_GRAY, 0);
 		colpip_rect(buf, w, h, 2, 2, w - 3, h - 3, COLORPIP_BLACK, 0);
@@ -4114,11 +4188,11 @@ static void window_tx_power_process(void);
 		colmain_rounded_rect(buf, w, h, 0, 0, w - 1, h - 1, button_round_radius, COLOR_BUTTON_LOCKED, 1);
 		colmain_rounded_rect(buf, w, h, 0, 0, w - 1, h - 1, button_round_radius, COLORPIP_GRAY, 0);
 		colmain_rounded_rect(buf, w, h, 2, 2, w - 3, h - 3, button_round_radius, COLORPIP_BLACK, 0);
-#endif /* WITHOLDBUTTONSTYLE */
+#endif /* GUI_OLDBUTTONSTYLE */
 
 		buf = v->bg_locked_pressed;
 		ASSERT(buf != NULL);
-#if WITHOLDBUTTONSTYLE
+#if GUI_OLDBUTTONSTYLE
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLOR_BUTTON_PR_LOCKED, 1);
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORPIP_GRAY, 0);
 		colmain_line(buf, w, h, 2, 3, w - 3, 3, COLORPIP_BLACK, 0);
@@ -4130,12 +4204,12 @@ static void window_tx_power_process(void);
 		colmain_rounded_rect(buf, w, h, 0, 0, w - 1, h - 1, button_round_radius, COLOR_BUTTON_PR_LOCKED, 1);
 		colmain_rounded_rect(buf, w, h, 0, 0, w - 1, h - 1, button_round_radius, COLORPIP_GRAY, 0);
 		colmain_rounded_rect(buf, w, h, 2, 2, w - 3, h - 3, button_round_radius, COLORPIP_BLACK, 0);
-#endif /* WITHOLDBUTTONSTYLE */
+#endif /* GUI_OLDBUTTONSTYLE */
 
 		buf = v->bg_disabled;
 		ASSERT(buf != NULL);
 		memset(buf, COLORMAIN_BLACK, s);
-#if WITHOLDBUTTONSTYLE
+#if GUI_OLDBUTTONSTYLE
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLOR_BUTTON_DISABLED, 1);
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORPIP_GRAY, 0);
 		colpip_rect(buf, w, h, 2, 2, w - 3, h - 3, COLORPIP_BLACK, 0);
@@ -4144,8 +4218,10 @@ static void window_tx_power_process(void);
 		colmain_rounded_rect(buf, w, h, 0, 0, w - 1, h - 1, button_round_radius, COLOR_BUTTON_DISABLED, 1);
 		colmain_rounded_rect(buf, w, h, 0, 0, w - 1, h - 1, button_round_radius, COLORPIP_GRAY, 0);
 		colmain_rounded_rect(buf, w, h, 2, 2, w - 3, h - 3, button_round_radius, COLORPIP_BLACK, 0);
-#endif /* WITHOLDBUTTONSTYLE */
+#endif /* GUI_OLDBUTTONSTYLE */
 	}
+
+#endif /* GUI_HWDRAWBUTTONSBG */
 
 	void gui_initialize (void)
 	{
@@ -4153,14 +4229,15 @@ static void window_tx_power_process(void);
 		window_t * win = & windows[WINDOW_MAIN];
 
 		InitializeListHead(& windows_list);
-//		InitializeListHead(& tt);
 		InitializeListHead(& elements_list);
 
 		set_window(win, VISIBLE);
 
+#if GUI_HWDRAWBUTTONSBG
 		do {
 			fill_button_bg_buf(& btn_bg[i]);
 		} while (++i < BG_COUNT) ;
+#endif /* GUI_SOFTWAREDRAWBG */
 	}
 
 	static void update_touch(void)

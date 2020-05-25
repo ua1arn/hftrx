@@ -512,6 +512,40 @@ applicable agreement for further details.
 	)
 	(annotation_block (location)(rect 2192 1016 2240 1032))
 )
+(pin
+	(output)
+	(rect 1264 624 1440 640)
+	(text "OUTPUT" (rect 1 0 39 10)(font "Arial" (font_size 6)))
+	(text "i2s2_ws" (rect 90 0 128 12)(font "Arial" ))
+	(pt 0 8)
+	(drawing
+		(line (pt 0 8)(pt 52 8))
+		(line (pt 52 4)(pt 78 4))
+		(line (pt 52 12)(pt 78 12))
+		(line (pt 52 12)(pt 52 4))
+		(line (pt 78 4)(pt 82 8))
+		(line (pt 82 8)(pt 78 12))
+		(line (pt 78 12)(pt 82 8))
+	)
+	(annotation_block (location)(rect 1624 656 1680 672))
+)
+(pin
+	(output)
+	(rect 1264 600 1440 616)
+	(text "OUTPUT" (rect 1 0 39 10)(font "Arial" (font_size 6)))
+	(text "i2s2_ck" (rect 90 0 127 12)(font "Arial" ))
+	(pt 0 8)
+	(drawing
+		(line (pt 0 8)(pt 52 8))
+		(line (pt 52 4)(pt 78 4))
+		(line (pt 52 12)(pt 78 12))
+		(line (pt 52 12)(pt 52 4))
+		(line (pt 78 4)(pt 82 8))
+		(line (pt 82 8)(pt 78 12))
+		(line (pt 78 12)(pt 82 8))
+	)
+	(annotation_block (location)(rect 1624 632 1672 648))
+)
 (symbol
 	(rect 1696 464 1744 496)
 	(text "OPNDRN" (rect 1 0 42 10)(font "Arial" (font_size 6)))
@@ -1551,8 +1585,32 @@ applicable agreement for further details.
 	(pt 1264 584)
 )
 (connector
+	(pt 1264 632)
+	(pt 1224 632)
+)
+(connector
+	(pt 1224 712)
+	(pt 1224 632)
+)
+(connector
 	(pt 1168 712)
+	(pt 1224 712)
+)
+(connector
+	(pt 1224 712)
 	(pt 1264 712)
+)
+(connector
+	(pt 1200 608)
+	(pt 1264 608)
+)
+(connector
+	(pt 1200 608)
+	(pt 1200 632)
+)
+(connector
+	(pt 1200 632)
+	(pt 1008 632)
 )
 (junction (pt 1672 480))
 (junction (pt 1552 168))
@@ -1562,3 +1620,4 @@ applicable agreement for further details.
 (junction (pt 1568 328))
 (junction (pt 1168 96))
 (junction (pt 1184 600))
+(junction (pt 1224 712))

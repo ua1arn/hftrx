@@ -4564,13 +4564,19 @@ void hardware_spi_master_setfreq(uint_fast8_t spispeedindex, int_fast32_t spispe
 		31 * SPI_CFG1_DSIZE_0 |
 		0;
 
-	const uint_fast32_t cfg2bits = SPI_CFG2_SSOM | SPI_CFG2_SSOE | SPI_CFG2_SSM | SPI_CFG2_MASTER /* | SPI_CFG2_AFCNTR */;
+	const uint_fast32_t cfg2bits =
+			SPI_CFG2_SSOM_Msk |
+			SPI_CFG2_SSOE_Msk |
+			SPI_CFG2_SSM_Msk |	// 1: SS input value is determined by the SSI bit
+			SPI_CFG2_MASTER_Msk |
+			SPI_CFG2_AFCNTR_Msk | // 1: the peripheral keeps always control of all associated GPIOs
+			0;
 	enum
 	{
 		CFG2_MODE0 = 0,				// TODO: not tested
-		CFG2_MODE1 = SPI_CFG2_CPHA,	// TODO: not tested
-		CFG2_MODE2 = SPI_CFG2_CPOL,	// CLK leave HIGH	
-		CFG2_MODE3 = SPI_CFG2_CPOL | SPI_CFG2_CPHA		// wrk = CLK leave "HIGH"
+		CFG2_MODE1 = SPI_CFG2_CPHA_Msk,	// TODO: not tested
+		CFG2_MODE2 = SPI_CFG2_CPOL_Msk,	// CLK leave HIGH
+		CFG2_MODE3 = SPI_CFG2_CPOL_Msk | SPI_CFG2_CPHA_Msk		// wrk = CLK leave "HIGH"
 	};
 
 	// подготовка управляющих слов для разных spi mode, используемых контроллером.

@@ -6735,46 +6735,86 @@ void board_fpga_fir_initialize(void)
 	PRINTF(PSTR("board_fpga_fir_initialize done\n"));
 }
 
-// Передача одного 32-битного значения и формирование строба.
+// Передача одного (первого) 32-битного значения и формирование строба.
 static void board_fpga_fir_coef_p1(int_fast32_t v)
 {
-	hardware_spi_b8_p1(v >> 16);
-	hardware_spi_b8_p2(v >> 8);
-	hardware_spi_b8_p2(v >> 0);	// на последнем бите формируеся coef_in_clk
-}
+#if WITHSPI32BIT
+	hardware_spi_b32_p1(v);		// на последнем бите формируется coef_in_clk
 
-static void board_fpga_fir_coef_p2(int_fast32_t v)
-{
+#elif WITHSPI16BIT
+	hardware_spi_b16_p1(v >> 16);
+	hardware_spi_b16_p2(v >> 0);		// на последнем бите формируется coef_in_clk
+
+#else /* WITHSPI32BIT */
+	hardware_spi_b8_p1(v >> 24);
 	hardware_spi_b8_p2(v >> 16);
 	hardware_spi_b8_p2(v >> 8);
-	hardware_spi_b8_p2(v >> 0);	// на последнем бите формируеся coef_in_clk
+	hardware_spi_b8_p2(v >> 0);	// на последнем бите формируется coef_in_clk
+
+#endif /* WITHSPI32BIT */
+}
+
+// Передача одного (последующего) 32-битного значения и формирование строба.
+static void board_fpga_fir_coef_p2(int_fast32_t v)
+{
+#if WITHSPI32BIT
+	hardware_spi_b32_p2(v);		// на последнем бите формируется coef_in_clk
+
+#elif WITHSPI16BIT
+	hardware_spi_b16_p2(v >> 16);
+	hardware_spi_b16_p2(v >> 0);		// на последнем бите формируется coef_in_clk
+
+#else /* WITHSPI32BIT */
+	hardware_spi_b8_p2(v >> 24);
+	hardware_spi_b8_p2(v >> 16);
+	hardware_spi_b8_p2(v >> 8);
+	hardware_spi_b8_p2(v >> 0);	// на последнем бите формируется coef_in_clk
+
+#endif /* WITHSPI32BIT */
 }
 
 static void
 board_fpga_fir_complete(void)
 {
+#if WITHSPI32BIT
+	hardware_spi_complete_b32();
+
+#elif WITHSPI16BIT
+	hardware_spi_complete_b16();
+
+#else /* WITHSPI32BIT */
 	hardware_spi_complete_b8();
+
+#endif /* WITHSPI32BIT */
 }
 
 static void
 board_fpga_fir_connect(void)
 {
-#if defined (TARGET_FPGA_FIR_CS_BIT)
+#if WITHSPI32BIT
+	hardware_spi_connect_b32(SPIC_SPEEDUFAST, SPIC_MODE3);
 
+	hardware_spi_b32_p1(0);	// provide clock for reset bit counter while CS=1
+	hardware_spi_complete_b32();
+
+#elif WITHSPI16BIT
+	hardware_spi_connect_b16(SPIC_SPEEDUFAST, SPIC_MODE3);
+
+	hardware_spi_b16_p1(0);	// provide clock for reset bit counter while CS=1
+	hardware_spi_complete_b16();
+
+#else /* WITHSPI32BIT */
 	hardware_spi_connect(SPIC_SPEEDUFAST, SPIC_MODE3);
 
 	hardware_spi_b8_p1(0);	// provide clock for reset bit counter while CS=1
 	hardware_spi_complete_b8();
 
+#endif /* WITHSPI32BIT */
+
+#if defined (TARGET_FPGA_FIR_CS_BIT)
 	TARGET_FPGA_FIR_CS_PORT_C(TARGET_FPGA_FIR_CS_BIT);	/* start sending data to target chip */
 
 #else /* defined (TARGET_FPGA_FIR_CS_BIT) */
-
-	hardware_spi_connect(SPIC_SPEEDUFAST, SPIC_MODE3);
-
-	hardware_spi_b8_p1(0);	// provide clock for reset bit counter while CS=1
-	hardware_spi_complete_b8();
-
 	prog_select(targetfir1);	/* start sending data to target chip */
 
 #endif /* defined (TARGET_FPGA_FIR_CS_BIT) */
@@ -6784,16 +6824,14 @@ static void
 board_fpga_fir_disconnect(void)
 {
 #if defined (TARGET_FPGA_FIR_CS_BIT)
-
 	TARGET_FPGA_FIR_CS_PORT_S(TARGET_FPGA_FIR_CS_BIT); /* Disable SPI */
-	hardware_spi_disconnect();
 
 #else /* defined (TARGET_FPGA_FIR_CS_BIT) */
-
 	prog_unselect(targetfir1);			/* Disable SPI */
-	hardware_spi_disconnect();
 
 #endif /* defined (TARGET_FPGA_FIR_CS_BIT) */
+
+	hardware_spi_disconnect();
 }
 
 /*

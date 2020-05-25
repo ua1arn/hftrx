@@ -119,8 +119,8 @@
 
 	#if WITHINTEGRATEDDSP
 
-		#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
-		#define WITHUSBUACIN2		1	/* формируются три канала передачи звука */
+//		#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
+//		#define WITHUSBUACIN2		1	/* формируются три канала передачи звука */
 		//#define WITHUABUACOUTAUDIO48MONO	1	/* для уменьшения размера буферов в endpoints */
 	#endif /* WITHINTEGRATEDDSP */
 
@@ -530,7 +530,7 @@
 	/* инициализация лиий выбора периферийных микросхем */
 	#define SPI_ALLCS_INITIALIZE() \
 		do { \
-			arm_hardware_pioe_outputs(SPI_ALLCS_BITS, SPI_ALLCS_BITS ^ SPI_ALLCS_BITSNEG); \
+			arm_hardware_pioe_outputs50m(SPI_ALLCS_BITS, SPI_ALLCS_BITS ^ SPI_ALLCS_BITSNEG); \
 		} while (0)
 
 	// MOSI & SCK port
@@ -546,24 +546,24 @@
 	#define	SPI_MISO_BIT			(1uL << 4)	// * PB4 бит, через который идет ввод с SPI.
 
 	#define SPIIO_INITIALIZE() do { \
-			arm_hardware_piob_outputs(SPI_SCLK_BIT, SPI_SCLK_BIT); /* PB3 */ \
-			arm_hardware_piob_outputs(SPI_MOSI_BIT, SPI_MOSI_BIT); /* PB5 */ \
+			arm_hardware_piob_outputs50m(SPI_SCLK_BIT, SPI_SCLK_BIT); /* PB3 */ \
+			arm_hardware_piob_outputs50m(SPI_MOSI_BIT, SPI_MOSI_BIT); /* PB5 */ \
 			arm_hardware_piob_inputs(SPI_MISO_BIT); /* PB4 */ \
 		} while (0)
 	#define HARDWARE_SPI_CONNECT() do { \
-			arm_hardware_piob_altfn20(SPI_MOSI_BIT | SPI_MISO_BIT, AF_SPI1); /* В этих процессорах и входы и выходы перекдючаются на ALT FN */ \
-			arm_hardware_piob_altfn20(SPI_SCLK_BIT, AF_SPI1); /* В этих процессорах и входы и выходы перекдючаются на ALT FN */ \
+			arm_hardware_piob_altfn50(SPI_MOSI_BIT | SPI_MISO_BIT, AF_SPI1); /* В этих процессорах и входы и выходы перекдючаются на ALT FN */ \
+			arm_hardware_piob_altfn50(SPI_SCLK_BIT, AF_SPI1); /* В этих процессорах и входы и выходы перекдючаются на ALT FN */ \
 		} while (0)
 	#define HARDWARE_SPI_DISCONNECT() do { \
-			arm_hardware_piob_outputs(SPI_SCLK_BIT, SPI_SCLK_BIT); \
-			arm_hardware_piob_outputs(SPI_MOSI_BIT, SPI_MOSI_BIT); \
+			arm_hardware_piob_outputs50m(SPI_SCLK_BIT, SPI_SCLK_BIT); \
+			arm_hardware_piob_outputs50m(SPI_MOSI_BIT, SPI_MOSI_BIT); \
 			arm_hardware_piob_inputs(SPI_MISO_BIT); \
 		} while (0)
 	#define HARDWARE_SPI_CONNECT_MOSI() do { \
-			arm_hardware_piob_altfn20(SPI_MOSI_BIT, AF_SPI1);	/* PIO disable for MOSI bit (SD CARD read support) */ \
+			arm_hardware_piob_altfn50(SPI_MOSI_BIT, AF_SPI1);	/* PIO disable for MOSI bit (SD CARD read support) */ \
 		} while (0)
 	#define HARDWARE_SPI_DISCONNECT_MOSI() do { \
-			arm_hardware_piob_outputs(SPI_MOSI_BIT, SPI_MOSI_BIT);	/* PIO enable for MOSI bit (SD CARD read support)  */ \
+			arm_hardware_piob_outputs50m(SPI_MOSI_BIT, SPI_MOSI_BIT);	/* PIO enable for MOSI bit (SD CARD read support)  */ \
 		} while (0)
 
 #endif /* WITHSPIHW || WITHSPISW */
@@ -581,8 +581,8 @@
 #define HARDWARE_USART2_INITIALIZE() do { \
 		const uint_fast32_t TXMASK = (1uL << 5); /* PD5: TX DATA line (2 MHz) */ \
 		const uint_fast32_t RXMASK = (1uL << 6); /* PD6: RX DATA line (2 MHz) - pull-up RX data */  \
-		arm_hardware_piod_altfn2(TXMASK, AF_USART2); \
-		arm_hardware_piod_altfn2(RXMASK, AF_USART2); \
+		arm_hardware_piod_altfn50(TXMASK, AF_USART2); \
+		arm_hardware_piod_altfn50(RXMASK, AF_USART2); \
 		arm_hardware_piod_updown(RXMASK, 0); \
 	} while (0)
 
@@ -686,9 +686,9 @@
 	#define TARGET_FPGA_FIR2_WE_BIT (1uL << 0)	/* PD0 - fir2 WE */
 
 	#define TARGET_FPGA_FIR_INITIALIZE() do { \
-			arm_hardware_piod_outputs(TARGET_FPGA_FIR1_WE_BIT, TARGET_FPGA_FIR1_WE_BIT); \
-			arm_hardware_piod_outputs(TARGET_FPGA_FIR2_WE_BIT, TARGET_FPGA_FIR2_WE_BIT); \
-			arm_hardware_pioc_outputs(TARGET_FPGA_FIR_CS_BIT, TARGET_FPGA_FIR_CS_BIT); \
+			arm_hardware_piod_outputs50m(TARGET_FPGA_FIR1_WE_BIT, TARGET_FPGA_FIR1_WE_BIT); \
+			arm_hardware_piod_outputs50m(TARGET_FPGA_FIR2_WE_BIT, TARGET_FPGA_FIR2_WE_BIT); \
+			arm_hardware_pioc_outputs50m(TARGET_FPGA_FIR_CS_BIT, TARGET_FPGA_FIR_CS_BIT); \
 		} while (0)
 #endif /* WITHDSPEXTFIR */
 
