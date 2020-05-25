@@ -9789,6 +9789,7 @@ void stm32mp1_pll_initialize(void)
 	//0x1: HSE selected as AXI sub-system clock (hse_ck)
 	//0x2: PLL2 selected as AXI sub-system clock (pll2_p_ck)
 	//others: axiss_ck is gated
+	// axiss_ck 266 MHz Max
 	RCC->ASSCKSELR = (RCC->ASSCKSELR & ~ (RCC_ASSCKSELR_AXISSRC_Msk)) |
 			(0x02 << RCC_ASSCKSELR_AXISSRC_Pos) |	// pll2_p_ck
 			0;
