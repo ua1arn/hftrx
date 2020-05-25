@@ -87,6 +87,8 @@
 #endif
 
 		// PLL3_800
+		// pll3_p_ck -> mcuss_ck - 209 MHz Max
+		#define PLL3DIVM	5	// ref2_ck = 12.8 MHz
 
 		// PLL4_800
 		#define PLL4DIVM	5	// ref2_ck = 12.8 MHz
@@ -144,6 +146,7 @@
 		#define BANDSELSTYLERE_UPCONV56M	1	/* Up-conversion with working band .030..56 MHz */
 	#endif
 	#define FQMODEL_FPGA		1	// FPGA + IQ over I2S
+	//#define XVTR_NYQ1			1	// Support Nyquist-style frequency conversion
 
 	// --- вариации прошивки, специфические для разных частот
 
