@@ -5591,7 +5591,8 @@ struct enc2menu
 	uint8_t istep;
 	uint16_t bottom, upper;	/* ограничения на редактируемое значение (upper - включая) */
 
-	nvramaddress_t nvram;				/* Если MENUNONVRAM - только меняем в памяти */
+	nvramaddress_t nvrambase;				/* Если MENUNONVRAM - только меняем в памяти */
+	nvramaddress_t (* nvramoffs)(nvramaddress_t base);	/* Смещение при доступе к NVRAM. Нужно при работе с настройками специфическрми для диапазона например */
 
 	uint_fast16_t * pval16;			/* переменная, которую подстраиваем - если она 16 бит */
 	uint_fast8_t * pval8;			/* переменная, которую подстраиваем  - если она 8 бит*/
@@ -5599,18 +5600,36 @@ struct enc2menu
 	void (* adjust)(const FLASHMEM struct enc2menu * mp, int_least16_t nrotate);
 };
 
+static nvramaddress_t nvramoffs0(nvramaddress_t base)
+{
+	return base;
+}
+
+static nvramaddress_t nvramoffs_band(nvramaddress_t base)
+{
+	const uint_fast8_t bi = getbankindex_tx(gtx);
+	const vindex_t b = getvfoindex(bi);
+
+	if (base == MENUNONVRAM)
+		return MENUNONVRAM;
+	//
+	// для диапазонов - вычисляем шаг увеличения индекса по массиву хранения в диапазонах
+	return base + RMT_BFREQ_BASE(b) - RMT_BFREQ_BASE(0);
+}
+
 /* функция для сохранения значения параметра */
 static void
 enc2savemenuvalue(
 	const FLASHMEM struct enc2menu * mp
 	)
 {
-	const nvramaddress_t nvram = mp->nvram;
+	const nvramaddress_t nvram = mp->nvramoffs(mp->nvrambase);
 	const uint_fast16_t * const pv16 = mp->pval16;
 	const uint_fast8_t * const pv8 = mp->pval8;
 
 	if (nvram == MENUNONVRAM)
 		return;
+
 	if (pv16 != NULL)
 	{
 		save_i16(nvram, * pv16);		/* сохраняем отредактированное значение */
@@ -5633,7 +5652,6 @@ enc2menu_adjust(
 	int_least16_t nrotate	/* знаковое число - на сколько повернут валкодер */
 	)
 {
-	//const nvramaddress_t nvram = mp->nvram;
 	const uint_fast16_t step = mp->istep;
 	uint_fast16_t * const pv16 = mp->pval16;
 	uint_fast8_t * const pv8 = mp->pval8;
@@ -5683,6 +5701,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		ISTEP1,
 		BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX, 					// Громкость в процентах
 		offsetof(struct nvmap, afgain1),
+		nvramoffs0,
 		& afgain1.value,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
@@ -5696,6 +5715,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		ISTEP1,
 		BOARD_IFGAIN_MIN, BOARD_IFGAIN_MAX, 					// Усиление ПЧ/ВЧ в процентах
 		offsetof(struct nvmap, rfgain1),
+		nvramoffs0,
 		& rfgain1.value,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
@@ -5710,6 +5730,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		ISTEP1,
 		CWWPMMIN, CWWPMMAX,		// minimal WPM = 10, maximal = 60 (also changed by command KS).
 		offsetof(struct nvmap, elkeywpm),
+		nvramoffs0,
 		NULL,
 		& elkeywpm.value,
 		getzerobase, /* складывается со смещением и отображается */
@@ -5724,6 +5745,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		ISTEP1,
 		WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
 		offsetof(struct nvmap, gnormalpower),
+		nvramoffs0,
 		NULL,
 		& gnormalpower.value,
 		getzerobase, /* складывается со смещением и отображается */
@@ -5737,6 +5759,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		ISTEP1,	//  Continuous Tone-Coded Squelch System or CTCSS freq
 		0, sizeof gsubtones / sizeof gsubtones [0] - 1, 
 		offsetof(struct nvmap, gsubtonei),
+		nvramoffs0,
 		NULL,
 		& gsubtonei,
 		getzerobase, /* складывается со смещением и отображается */
@@ -5750,6 +5773,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		ISTEP1,		/* подстройка усиления микрофонного усилителя через меню. */
 		WITHMIKEINGAINMIN, WITHMIKEINGAINMAX, 
 		offsetof(struct nvmap, mik1level),	/* усиление микрофонного усилителя */
+		nvramoffs0,
 		& mik1level,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
@@ -5763,6 +5787,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		ISTEP1,	
 		WITHMIKECLIPMIN, WITHMIKECLIPMAX, 		/* Ограничение */
 		offsetof(struct nvmap, gmikehclip),
+		nvramoffs0,
 		NULL,
 		& gmikehclip,
 		getzerobase, /* складывается со смещением и отображается */
@@ -5777,6 +5802,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		ISTEP50,
 		WITHNOTCHFREQMIN, WITHNOTCHFREQMAX,
 		offsetof(struct nvmap, gnotchfreq),	/* центральная частота NOTCH */
+		nvramoffs0,
 		& gnotchfreq.value,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
@@ -5790,6 +5816,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		ISTEP1,		/* nr level */
 		0, NRLEVELMAX, 
 		offsetof(struct nvmap, gnoisereductvl),	/* уровень сигнала болше которого открывается шумодав */
+		nvramoffs0,
 		NULL,
 		& gnoisereductvl,
 		getzerobase, /* складывается со смещением и отображается */
@@ -5801,6 +5828,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		ISTEP1,		/* squelch level */
 		0, SQUELCHMAX, 
 		offsetof(struct nvmap, gsquelchNFM),	/* уровень сигнала болше которого открывается шумодав */
+		nvramoffs0,
 		NULL,
 		& gsquelchNFM,
 		getzerobase, /* складывается со смещением и отображается */
@@ -5811,8 +5839,9 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		"BOTTOM DB",
 		RJ_UNSIGNED,		// rj
 		ISTEP1,		/* spectrum range */
-		80, 160,
-		MENUNONVRAM,	/* диапазон отображаемых значений */
+		80, 160,	/* диапазон отображаемых значений */
+		offsetof(struct nvmap, bands[0].gbottomdb),
+		nvramoffs_band,
 		NULL,
 		& gbottomdb,
 		getzerobase, /* складывается со смещением и отображается */
@@ -5822,8 +5851,9 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		"ZOOM PAN ", 
 		RJ_POW2,		// rj
 		ISTEP1,		/* spectrum range */
-		0, BOARD_FFTZOOM_POW2MAX,
-		MENUNONVRAM,	/* масштаб панорамы */
+		0, BOARD_FFTZOOM_POW2MAX,	/* масштаб панорамы */
+		offsetof(struct nvmap, bands[0].gzoomxpow2),
+		nvramoffs_band,
 		NULL,
 		& gzoomxpow2,
 		getzerobase, /* складывается со смещением и отображается */
@@ -5839,6 +5869,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		ISTEP50,
 		IFSHIFTTMIN, IFSHIFTMAX,			/* -3 kHz..+3 kHz in 50 Hz steps */
 		offsetof(struct nvmap, ifshifoffset),
+		nvramoffs0,
 		& ifshifoffset.value,
 		NULL,
 		getifshiftbase, /* складывается со смещением и отображается */
@@ -5871,7 +5902,6 @@ enc2menu_value(
 	const FLASHMEM struct enc2menu * const mp = & enc2menus [item];
 	long int value;
 
-	//const nvramaddress_t nvram = mp->nvram;
 	if (mp->pval16 != NULL)
 	{
 		value = mp->funcoffs() + * mp->pval16;
