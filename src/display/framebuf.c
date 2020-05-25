@@ -740,19 +740,59 @@ void display_floodfill(
 	uint_fast16_t x,	// начальная координата
 	uint_fast16_t y,	// начальная координата
 	COLORMAIN_T newColor,
-	COLORMAIN_T oldColor
+	COLORMAIN_T oldColor,
+	uint_fast8_t type	// 0 - быстрая закраска (только выпуклый контур), 1 - медленная закраска любого контура
 	)
 {
 	ASSERT(x < dx);
 	ASSERT(y < dy);
-	PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, x, y);
-	if (* tgr == oldColor && * tgr != newColor)
+	PACKEDCOLORMAIN_T * tgr = colmain_mem_at(buffer, dx, dy, x, y);
+
+	if (type) 	// медленная закраска любого контура
 	{
-		* tgr = newColor;
-		display_floodfill(buffer, dx, dy, x + 1, y, newColor, oldColor);
-		display_floodfill(buffer, dx, dy, x - 1, y, newColor, oldColor);
-		display_floodfill(buffer, dx, dy, x, y + 1, newColor, oldColor);
-		display_floodfill(buffer, dx, dy, x, y - 1, newColor, oldColor);
+
+		if (* tgr == oldColor && * tgr != newColor)
+		{
+			* tgr = newColor;
+			display_floodfill(buffer, dx, dy, x + 1, y, newColor, oldColor, 1);
+			display_floodfill(buffer, dx, dy, x - 1, y, newColor, oldColor, 1);
+			display_floodfill(buffer, dx, dy, x, y + 1, newColor, oldColor, 1);
+			display_floodfill(buffer, dx, dy, x, y - 1, newColor, oldColor, 1);
+		}
+	}
+	else 		// быстрая закраска (только выпуклый контур)
+	{
+		uint_fast16_t y0 = y, x_l = x, x_p = x;
+
+		while(* tgr != newColor)		// поиск первой строки в контуре для закраски
+		{
+			tgr = colmain_mem_at(buffer, dx, dy, x, --y0);
+		}
+		y0++;
+
+		do
+		{
+			x_l = x;		// добавить проверку на необходимость поиска новых границ
+			x_p = x;
+
+			// поиск левой границы строки
+			do
+			{
+				tgr = colmain_mem_at(buffer, dx, dy, --x_l, y0);
+			} while(* tgr != newColor);
+
+			// поиск правой границы строки
+			do
+			{
+				tgr = colmain_mem_at(buffer, dx, dy, ++x_p, y0);
+			} while(* tgr != newColor);
+
+			// закраска найденной линии
+			colmain_line(buffer, dx, dy, x_l, y0, x_p, y0, newColor, 0);
+
+			// переход на следующую строку
+			tgr = colmain_mem_at(buffer, dx, dy, x, ++y0);
+		} while(* tgr != newColor);
 	}
 }
 

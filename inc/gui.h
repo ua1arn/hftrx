@@ -233,7 +233,10 @@
 #define GUI_SLIDERLAYOUTCOLOR	116
 #define GUI_MENUSELECTCOLOR		116
 
-//#define GUI_TRANSPARENT_WINDOWS	1		/* Прозрачный фон окон */
+#define GUI_TRANSPARENT_WINDOWS		1		/* Прозрачный фон окон */
+//#define GUI_HWDRAWBUTTONSBG			1		/* Отрисовка фона кнопок заранее сформированными буферами */
+#define GUI_OLDMENUSTYLE			1		/* Меню в виде прокручиваемого списка */
+//#define GUI_OLDBUTTONSTYLE			1   	/* Кнопки без закругления углов */
 
 /* стркутура хранит цвета элементов дизайна. Возмодно треите поле - для анталиасингового формирования изображения */
 typedef struct colorpair_tag

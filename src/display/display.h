@@ -969,7 +969,8 @@ void display_floodfill(
 	uint_fast16_t x,	// начальная координата
 	uint_fast16_t y,	// начальная координата
 	COLORMAIN_T newColor,
-	COLORMAIN_T oldColor
+	COLORMAIN_T oldColor,
+	uint_fast8_t type	// 0 - быстрая закраска (только выпуклый контур), 1 - более медленная закраска любого контура
 	);
 
 #ifdef __cplusplus
