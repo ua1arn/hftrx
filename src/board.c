@@ -6750,6 +6750,7 @@ static void board_fpga_fir_coef_p1(int_fast32_t v)
 	hardware_spi_b8_p2(v >> 16);
 	hardware_spi_b8_p2(v >> 8);
 	hardware_spi_b8_p2(v >> 0);	// на последнем бите формируется coef_in_clk
+
 #endif /* WITHSPI32BIT */
 }
 
