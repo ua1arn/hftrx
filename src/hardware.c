@@ -9797,6 +9797,24 @@ void stm32mp1_pll_initialize(void)
 		;
 
 	// PLL3
+	// PLL3 source mux
+	//0x0: HSI selected as PLL clock (hsi_ck) (default after reset)
+	//0x1: HSE selected as PLL clock (hse_ck)
+	//0x2: CSI selected as PLL clock (csi_ck)
+	//0x3: No clock send to DIVMx divider and PLLs
+	RCC->RCK3SELR = (RCC->RCK3SELR & ~ (RCC_RCK3SELR_PLL3SRC_Msk)) |
+	#if WITHCPUXOSC || WITHCPUXTAL
+		// с внешним генератором
+		// с внешним кварцем
+		(0x01 << RCC_RCK3SELR_PLL3SRC_Pos) |	// HSE
+	#else
+		// На внутреннем генераторе
+		(0x00 << RCC_RCK3SELR_PLL3SRC_Pos) |	// HSI
+	#endif
+		0;
+	while ((RCC->RCK3SELR & RCC_RCK3SELR_PLL3SRCRDY_Msk) == 0)
+		;
+
 
 #if 1//WITHUART1HW
 	// usart1
