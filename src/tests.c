@@ -7314,6 +7314,35 @@ void hightests(void)
 		}
 	}
 #endif
+#if 0 && WITHDSPEXTFIR
+	{
+		// Тестирование сигналов управления загрузкой параметров фильтров FPGA
+
+		unsigned seq;
+
+		TARGET_FPGA_FIR_INITIALIZE();
+
+		for (seq = 0;; ++ seq)
+		{
+			if (seq & 0x01)
+				TARGET_FPGA_FIR_CS_PORT_S(TARGET_FPGA_FIR_CS_BIT);
+			else
+				TARGET_FPGA_FIR_CS_PORT_C(TARGET_FPGA_FIR_CS_BIT);
+
+			if (seq & 0x02)
+				TARGET_FPGA_FIR1_WE_PORT_S(TARGET_FPGA_FIR1_WE_BIT);
+			else
+				TARGET_FPGA_FIR1_WE_PORT_C(TARGET_FPGA_FIR1_WE_BIT);
+
+			if (seq & 0x04)
+				TARGET_FPGA_FIR2_WE_PORT_S(TARGET_FPGA_FIR2_WE_BIT);
+			else
+				TARGET_FPGA_FIR2_WE_PORT_C(TARGET_FPGA_FIR2_WE_BIT);
+
+			local_delay_ms(250);
+		}
+	}
+#endif
 }
 
 // Вызывается перед инициализацией NVRAM, но после инициализации SPI
