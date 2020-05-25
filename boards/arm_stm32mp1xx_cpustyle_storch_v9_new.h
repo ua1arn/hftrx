@@ -726,9 +726,9 @@
 #endif /* WITHCPUADCHW */
 
 #if WITHUSBHW
-	#define TARGET_USBFS_VBUSON_PORT_C(v)	do { GPIOA->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define TARGET_USBFS_VBUSON_PORT_S(v)	do { GPIOA->BSRR = BSRR_S(v); __DSB(); } while (0)
-	#define TARGET_USBFS_VBUSON_BIT 0//(1uL << 6)	// PCx - нулём включение питания для device
+	#define TARGET_USBFS_VBUSON_PORT_C(v)	do { GPIOD->BSRR = BSRR_C(v); __DSB(); } while (0)
+	#define TARGET_USBFS_VBUSON_PORT_S(v)	do { GPIOD->BSRR = BSRR_S(v); __DSB(); } while (0)
+	#define TARGET_USBFS_VBUSON_BIT (1uL << 2)	// PD2 - нулём включение питания для device
 	/**USB_OTG_FS GPIO Configuration    
 	PA9     ------> USB_OTG_FS_VBUS
 	PA10     ------> USB_OTG_FS_ID
@@ -736,6 +736,7 @@
 	PA12     ------> USB_OTG_FS_DP 
 	*/
 	#define	USBD_FS_INITIALIZE() do { \
+		arm_hardware_piod_outputs(TARGET_USBFS_VBUSON_BIT, TARGET_USBFS_VBUSON_BIT); /* PD2 */ \
 		} while (0)
 
 	#define TARGET_USBFS_VBUSON_SET(on)	do { \
