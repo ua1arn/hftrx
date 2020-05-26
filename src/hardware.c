@@ -1251,7 +1251,7 @@ static RAMFUNC void spool_adcdonebundle(void)
 		}
 	}
 
-#if 0
+#if 0//CPUSTYLE_STM32MP1
 	void EXTI0_IRQHandler(void)
 	{
 		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR0);
@@ -6285,7 +6285,7 @@ hardware_elkey_timer_initialize(void)
 	//
 	PMC->PMC_PCER0 = (1UL << ID_TC2);	// разрешить тактированние этого блока (ID_TC0..ID_TC5 avaliable)
 
-	TC0->TC_CHANNEL [2].TC_CMR = 
+	TC2->TC_CHANNEL [2].TC_CMR =
 	                (TC_CMR_CLKI * 0) |
 	                TC_CMR_BURST_NONE |
 	                TC_CMR_WAVSEL_UP_RC | /* TC_CMR_WAVESEL_UP_AUTO */
@@ -6294,9 +6294,9 @@ hardware_elkey_timer_initialize(void)
 					0
 				;
 
-	TC0->TC_CHANNEL [2].TC_CCR = TC_CCR_SWTRG | TC_CCR_CLKEN; // reset and enable TC2 clock
+	TC2->TC_CHANNEL [2].TC_CCR = TC_CCR_SWTRG | TC_CCR_CLKEN; // reset and enable TC2 clock
 
-	TC0->TC_CHANNEL [2].TC_IER = TC_IER_CPCS ; // Interrupt on RC compare
+	TC2->TC_CHANNEL [2].TC_IER = TC_IER_CPCS ; // Interrupt on RC compare
 
 	// enable interrupts from TC2
 	NVIC_SetVector(TC2_IRQn, (uintptr_t) & TC2_IRQHandler);
@@ -6390,9 +6390,9 @@ void hardware_elkey_set_speed(uint_fast32_t ticksfreq)
 	// Использование автоматического расчёта предделителя
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround(ticksfreq), ATSAM3S_TIMER_WIDTH, ATSAM3S_TIMER_TAPS, & value, 1);
-	TC0->TC_CHANNEL [2].TC_CMR =
+	TC2->TC_CHANNEL [2].TC_CMR =
 		(TC0->TC_CHANNEL [2].TC_CMR & ~ TC_CMR_TCCLKS_Msk) | tc_cmr_tcclks [prei];
-	TC0->TC_CHANNEL [2].TC_RC = value;	// программирование полного периода
+	TC2->TC_CHANNEL [2].TC_RC = value;	// программирование полного периода
 
 #elif CPUSTYLE_AT91SAM7S
 

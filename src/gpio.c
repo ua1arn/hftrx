@@ -755,6 +755,8 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 		{
 			RCC->MP_APB3ENSETR |= RCC_MC_APB3ENSETR_SYSCFGEN;     // включить тактирование альтернативных функций
 			(void) RCC->MP_APB3ENSETR;
+			RCC->MP_APB3LPENSETR |= RCC_MC_APB3LPENSETR_SYSCFGLPEN;     // включить тактирование альтернативных функций
+			(void) RCC->MP_APB3LPENSETR;
 		//const portholder_t portcode = AFIO_EXTICR1_EXTI0_PB;	// PORT B
 		//RCC->APB2ENR |= RCC_APB2ENR_AFIOEN;     // включить тактирование альтернативных функций
 
