@@ -8153,9 +8153,10 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 				  {
 					CLEAR_OUT_EP_INTR(epnum, USB_OTG_DOEPINT_XFRC);
 		#if CPUSTYLE_STM32MP1
-					  if(hpcd->Init.dma_enable == USB_ENABLE)
+					  if (hpcd->Init.dma_enable == USB_ENABLE)
 					  {
-						if(USBx_OUTEP(0)->DOEPINT & (1 << 15))
+						  // USB_OTG_DOEPINT_STPKTRX
+						if (USBx_OUTEP(0)->DOEPINT & (1 << 15))	// Setup packet received
 						{
 						  CLEAR_OUT_EP_INTR(epnum, (1 << 15));
 						}
@@ -8164,9 +8165,10 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 					/* setup/out transaction management for Core ID >= 310A */
 					if (USBx->GSNPSID >= USB_OTG_CORE_ID_310A)
 					{
-					  if(hpcd->Init.dma_enable == USB_ENABLE)
+					  if (hpcd->Init.dma_enable == USB_ENABLE)
 					  {
-						if(USBx_OUTEP(0)->DOEPINT & (1 << 15))
+						  // USB_OTG_DOEPINT_STPKTRX
+						if (USBx_OUTEP(0)->DOEPINT & (1 << 15))	// Setup packet received
 						{
 						  CLEAR_OUT_EP_INTR(epnum, (1 << 15));
 						}
@@ -8196,6 +8198,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 		#if CPUSTYLE_STM32MP1
 					  if(hpcd->Init.dma_enable == USB_ENABLE)
 					  {
+						  // USB_OTG_DOEPINT_STPKTRX
 						if(USBx_OUTEP(0)->DOEPINT & (1 << 15))
 						{
 						  CLEAR_OUT_EP_INTR(epnum, (1 << 15));
@@ -8207,6 +8210,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 					{
 					  if(hpcd->Init.dma_enable == USB_ENABLE)
 					  {
+						  // USB_OTG_DOEPINT_STPKTRX
 						if(USBx_OUTEP(0)->DOEPINT & (1 << 15))
 						{
 						  CLEAR_OUT_EP_INTR(epnum, (1 << 15));

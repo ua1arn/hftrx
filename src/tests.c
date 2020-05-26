@@ -5036,6 +5036,7 @@ void looptests(void)
 #endif
 #if 0 && WITHINTEGRATEDDSP
 	{
+		// See buffers.c - WITHBUFFERSDEBUG
 		buffers_diagnostics();
 	}
 #endif
