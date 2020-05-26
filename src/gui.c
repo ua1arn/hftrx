@@ -1292,7 +1292,7 @@ static void buttons_ap_mic_prof_process(void);
 		uint8_t exitkey;
 	} menu_by_name_t;
 
-	menu_by_name_t menu_uif;
+	static menu_by_name_t menu_uif;
 
 	typedef struct {
 		element_type_t type;		// тип элемента, поддерживающего реакцию на касания
@@ -1326,9 +1326,8 @@ static void buttons_ap_mic_prof_process(void);
 
 	static gui_t gui = { 0, 0, KBD_CODE_MAX, TYPE_DUMMY, NULL, CANCELLED, 0, 0, 0, 0, 0, 1, };
 
-	LIST_ENTRY windows_list;
-//	LIST_ENTRY tt;
-	LIST_ENTRY elements_list;
+	static LIST_ENTRY windows_list;
+	static LIST_ENTRY elements_list;
 
 	static touch_t touch_elements[TOUCH_ARRAY_SIZE];
 	static uint_fast8_t touch_count = 0;
@@ -4030,13 +4029,15 @@ static void buttons_ap_mic_prof_process(void);
 			PACKEDCOLORMAIN_T c1, c2;
 			c1 = bh->state == DISABLED ? COLOR_BUTTON_DISABLED : (bh->is_locked ? COLOR_BUTTON_LOCKED : COLOR_BUTTON_NON_LOCKED);
 			c2 = bh->state == DISABLED ? COLOR_BUTTON_DISABLED : (bh->is_locked ? COLOR_BUTTON_PR_LOCKED : COLOR_BUTTON_PR_NON_LOCKED);
-
+#if GUI_OLDBUTTONSTYLE
 			colpip_rect(fr, DIM_X, DIM_Y, x1, y1, x1 + bh->w, y1 + bh->h - 2, bh->state == PRESSED ? c2 : c1, 1);
 			colpip_rect(fr, DIM_X, DIM_Y, x1, y1, x1 + bh->w, y1 + bh->h - 1, COLORPIP_GRAY, 0);
 			colpip_rect(fr, DIM_X, DIM_Y, x1 + 2, y1 + 2, x1 + bh->w - 2, y1 + bh->h - 3, COLORPIP_BLACK, 0);
+#else
 			colmain_rounded_rect(fr, DIM_X, DIM_Y, x1, y1, x1 + bh->w, y1 + bh->h - 2, button_round_radius, bh->state == PRESSED ? c2 : c1, 1);
 			colmain_rounded_rect(fr, DIM_X, DIM_Y, x1, y1, x1 + bh->w, y1 + bh->h - 1, button_round_radius, COLORPIP_GRAY, 0);
 			colmain_rounded_rect(fr, DIM_X, DIM_Y, x1 + 2, y1 + 2, x1 + bh->w - 2, y1 + bh->h - 3, button_round_radius, COLORPIP_BLACK, 0);
+#endif /* GUI_OLDBUTTONSTYLE */
 		}
 		else
 		{
@@ -4062,7 +4063,7 @@ static void buttons_ap_mic_prof_process(void);
 					for (uint16_t xx = x1, xb = 0; xx < x1 + bh->w; xx++, xb++)
 					{
 						src = colmain_mem_at(bg, b1->w, b1->h, xb, yb);
-						if(* src == GUI_DEFAULTCOLOR)
+						if (* src == GUI_DEFAULTCOLOR)
 							continue;
 						dst = colmain_mem_at(fr, DIM_X, DIM_Y, xx, yy);
 						memcpy(dst, src, sizeof(PACKEDCOLORMAIN_T));
