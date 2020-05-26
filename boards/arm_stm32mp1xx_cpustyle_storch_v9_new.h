@@ -95,7 +95,6 @@
 
 	#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHGPUHW	1	/* Graphic processor unit */
-	//#define WITHEHCIHW	1	/* USB_EHCI controller */
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 
 	#define WITHUSBHW_DEVICE	USB_OTG_HS	/* на этом устройстве поддерживается функциональность DEVICE	*/
@@ -109,6 +108,7 @@
 	//#define USB_OTG_HS                   USB1_OTG_HS
 	//#define USB_OTG_FS                   USB2_OTG_FS
 
+	#define WITHEHCIHW	1	/* USB_EHCI controller */
 	//#define WITHUSBHW_HOST		USB_OTG_HS
 	#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB_DP2 & USB_DM2
 	//#define WITHUSBHOST_DMAENABLE 1
@@ -130,9 +130,9 @@
 	//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
 	//#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
 	//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
-	#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
-	#define WITHMOVEDFU 1	// Переместить интерфейс DFU в область меньших номеров. Утилита dfu-util 0.9 не работает с DFU на интерфейсе с индексом 10
-	#define WITHUSBWCID	1
+//	#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
+//	#define WITHMOVEDFU 1	// Переместить интерфейс DFU в область меньших номеров. Утилита dfu-util 0.9 не работает с DFU на интерфейсе с индексом 10
+//	#define WITHUSBWCID	1
 
 #endif /* WITHISBOOTLOADER */
 
@@ -585,13 +585,26 @@
 	} while (0)
 
 #if WITHKEYBOARD
-	/* PF0: pull-up second encoder button */
-	#define KBD_MASK (1U << 15)	// PE15
-	#define KBD_TARGET_PIN (GPIOE->IDR)
+	/* PE15: pull-up second encoder button */
+
+	#define TARGET_ENC2BTN_BIT (1U << 15)	// PE15 - second encoder button with pull-up
+	#define TARGET_POWERBTN_BIT 0//(1U << 8)	// PAxx - ~CPU_POWER_SW signal
+
+#if WITHENCODER2
+	// P7_8
+	#define TARGET_ENC2BTN_GET	(((GPIOE->IDR) & TARGET_ENC2BTN_BIT) == 0)
+#endif /* WITHENCODER2 */
+
+#if WITHPWBUTTON
+	// P5_3 - ~CPU_POWER_SW signal
+	#define TARGET_POWERBTN_GET	0//(((GPIOx->IDR) & TARGET_POWERBTN_BIT) == 0)
+#endif /* WITHPWBUTTON */
 
 	#define HARDWARE_KBD_INITIALIZE() do { \
-			arm_hardware_pioe_inputs(KBD_MASK); \
-			arm_hardware_pioe_updown(KBD_MASK, 0);	/* PF10: pull-up second encoder button */ \
+			arm_hardware_pioe_inputs(TARGET_ENC2BTN_BIT); \
+			arm_hardware_pioe_updown(TARGET_ENC2BTN_BIT, 0); /* PE15: pull-up second encoder button */ \
+			arm_hardware_pioa_inputs(TARGET_POWERBTN_BIT); \
+			arm_hardware_pioa_updown(TARGET_POWERBTN_BIT, 0);	/* PAxx: pull-up second encoder button */ \
 		} while (0)
 
 #else /* WITHKEYBOARD */
