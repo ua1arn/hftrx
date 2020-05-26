@@ -789,7 +789,7 @@ extern "C" {
 		#define DCACHEROWSIZE 32
 		#define ICACHEROWSIZE 32
 	#elif CPUSTYLE_ARM_CA7
-		#define DCACHEROWSIZE 64
+		#define DCACHEROWSIZE 32
 		#define ICACHEROWSIZE 32
 	#endif
 
