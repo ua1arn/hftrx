@@ -923,8 +923,6 @@ static void buttons_ap_mic_prof_process(void);
 		TOUCH_ARRAY_SIZE = 100
 	};
 
-#if GUI_HWDRAWBUTTONSBG
-
 	typedef struct {
 		uint8_t w;
 		uint8_t h;
@@ -943,8 +941,6 @@ static void buttons_ap_mic_prof_process(void);
 	};
 
 	enum { BG_COUNT = ARRAY_SIZE(btn_bg) };
-
-#endif /* GUI_HWDRAWBUTTONSBG */
 
 	typedef struct {
 		uint16_t x1;				// координаты от начала экрана
@@ -4018,7 +4014,7 @@ static void buttons_ap_mic_prof_process(void);
 		uint_fast16_t x1 = win->x1 + bh->x1;
 		uint_fast16_t y1 = win->y1 + bh->y1;
 
-#if GUI_HWDRAWBUTTONSBG
+
 		btn_bg_t * b1 = NULL;
 		do {
 			if (bh->h == btn_bg[i].h && bh->w == btn_bg[i].w)
@@ -4030,21 +4026,17 @@ static void buttons_ap_mic_prof_process(void);
 
 		if (b1 == NULL)				// если не найден заполненный буфер фона по размерам, программная отрисовка
 		{
-#endif /* GUI_HWDRAWBUTTONSBG */
+
 			PACKEDCOLORMAIN_T c1, c2;
 			c1 = bh->state == DISABLED ? COLOR_BUTTON_DISABLED : (bh->is_locked ? COLOR_BUTTON_LOCKED : COLOR_BUTTON_NON_LOCKED);
 			c2 = bh->state == DISABLED ? COLOR_BUTTON_DISABLED : (bh->is_locked ? COLOR_BUTTON_PR_LOCKED : COLOR_BUTTON_PR_NON_LOCKED);
-#if GUI_OLDBUTTONSTYLE
+
 			colpip_rect(fr, DIM_X, DIM_Y, x1, y1, x1 + bh->w, y1 + bh->h - 2, bh->state == PRESSED ? c2 : c1, 1);
 			colpip_rect(fr, DIM_X, DIM_Y, x1, y1, x1 + bh->w, y1 + bh->h - 1, COLORPIP_GRAY, 0);
 			colpip_rect(fr, DIM_X, DIM_Y, x1 + 2, y1 + 2, x1 + bh->w - 2, y1 + bh->h - 3, COLORPIP_BLACK, 0);
-#else
 			colmain_rounded_rect(fr, DIM_X, DIM_Y, x1, y1, x1 + bh->w, y1 + bh->h - 2, button_round_radius, bh->state == PRESSED ? c2 : c1, 1);
 			colmain_rounded_rect(fr, DIM_X, DIM_Y, x1, y1, x1 + bh->w, y1 + bh->h - 1, button_round_radius, COLORPIP_GRAY, 0);
 			colmain_rounded_rect(fr, DIM_X, DIM_Y, x1 + 2, y1 + 2, x1 + bh->w - 2, y1 + bh->h - 3, button_round_radius, COLORPIP_BLACK, 0);
-#endif /* GUI_OLDBUTTONSTYLE */
-
-#if GUI_HWDRAWBUTTONSBG
 		}
 		else
 		{
@@ -4058,10 +4050,32 @@ static void buttons_ap_mic_prof_process(void);
 				bg = b1->bg_pressed;
 			else if (! bh->is_locked && bh->state != PRESSED)
 				bg = b1->bg_non_pressed;
-
+#if GUI_OLDBUTTONSTYLE
 			colpip_plot(fr, DIM_X, DIM_Y, x1, y1, bg, bh->w, bh->h);
+#else
+			PACKEDCOLORMAIN_T * src = NULL, * dst = NULL, * row = NULL;
+			for (uint16_t yy = y1, yb = 0; yy < y1 + bh->h; yy++, yb++)
+			{
+				row = colmain_mem_at(bg, b1->w, b1->h, 0, yb);
+				if (* row == GUI_DEFAULTCOLOR)										// если в первой позиции строки буфера не прозрачный цвет,
+				{																	// скопировать ее целиком, иначе попиксельно с проверкой
+					for (uint16_t xx = x1, xb = 0; xx < x1 + bh->w; xx++, xb++)
+					{
+						src = colmain_mem_at(bg, b1->w, b1->h, xb, yb);
+						if(* src == GUI_DEFAULTCOLOR)
+							continue;
+						dst = colmain_mem_at(fr, DIM_X, DIM_Y, xx, yy);
+						memcpy(dst, src, sizeof(PACKEDCOLORMAIN_T));
+					}
+				}
+				else
+				{
+					dst = colmain_mem_at(fr, DIM_X, DIM_Y, x1, yy);
+					memcpy(dst, row, b1->w * sizeof(PACKEDCOLORMAIN_T));
+				}
+			}
+#endif /* GUI_OLDBUTTONSTYLE */
 		}
-#endif /* GUI_HWDRAWBUTTONSBG */
 
 #if GUI_OLDBUTTONSTYLE
 		uint_fast8_t shift = bh->state == PRESSED ? 1 : 0;
@@ -4074,7 +4088,8 @@ static void buttons_ap_mic_prof_process(void);
 			/* Однострочная надпись */
 			colpip_string2_tbg(fr, DIM_X, DIM_Y, shift + x1 + (bh->w - (strwidth2(bh->text))) / 2,
 					shift + y1 + (bh->h - SMALLCHARH2) / 2, bh->text, COLORPIP_BLACK);
-		} else
+		}
+		else
 		{
 			/* Двухстрочная надпись */
 			uint_fast8_t j = (bh->h - SMALLCHARH2 * 2) / 2;
@@ -4131,8 +4146,6 @@ static void buttons_ap_mic_prof_process(void);
 		}
 	}
 
-#if GUI_HWDRAWBUTTONSBG
-
 	static void fill_button_bg_buf(btn_bg_t * v)
 	{
 		PACKEDCOLORMAIN_T * buf;
@@ -4155,7 +4168,7 @@ static void buttons_ap_mic_prof_process(void);
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORPIP_GRAY, 0);
 		colpip_rect(buf, w, h, 2, 2, w - 3, h - 3, COLORPIP_BLACK, 0);
 #else
-		memset(buf, COLORMAIN_BLACK, s);
+		memset(buf, GUI_DEFAULTCOLOR, s);
 		colmain_rounded_rect(buf, w, h, 0, 0, w - 1, h - 1, button_round_radius, COLOR_BUTTON_NON_LOCKED, 1);
 		colmain_rounded_rect(buf, w, h, 0, 0, w - 1, h - 1, button_round_radius, COLORPIP_GRAY, 0);
 		colmain_rounded_rect(buf, w, h, 2, 2, w - 3, h - 3, button_round_radius, COLORPIP_BLACK, 0);
@@ -4171,7 +4184,7 @@ static void buttons_ap_mic_prof_process(void);
 		colmain_line(buf, w, h, 3, 3, 3, h - 3, COLORPIP_BLACK, 0);
 		colmain_line(buf, w, h, 2, 2, 2, h - 2, COLORPIP_BLACK, 0);
 #else
-		memset(buf, COLORMAIN_BLACK, s);
+		memset(buf, GUI_DEFAULTCOLOR, s);
 		colmain_rounded_rect(buf, w, h, 0, 0, w - 1, h - 1, button_round_radius, COLOR_BUTTON_PR_NON_LOCKED, 1);
 		colmain_rounded_rect(buf, w, h, 0, 0, w - 1, h - 1, button_round_radius, COLORPIP_GRAY, 0);
 		colmain_rounded_rect(buf, w, h, 2, 2, w - 3, h - 3, button_round_radius, COLORPIP_BLACK, 0);
@@ -4184,7 +4197,7 @@ static void buttons_ap_mic_prof_process(void);
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORPIP_GRAY, 0);
 		colpip_rect(buf, w, h, 2, 2, w - 3, h - 3, COLORPIP_BLACK, 0);
 #else
-		memset(buf, COLORMAIN_BLACK, s);
+		memset(buf, GUI_DEFAULTCOLOR, s);
 		colmain_rounded_rect(buf, w, h, 0, 0, w - 1, h - 1, button_round_radius, COLOR_BUTTON_LOCKED, 1);
 		colmain_rounded_rect(buf, w, h, 0, 0, w - 1, h - 1, button_round_radius, COLORPIP_GRAY, 0);
 		colmain_rounded_rect(buf, w, h, 2, 2, w - 3, h - 3, button_round_radius, COLORPIP_BLACK, 0);
@@ -4200,7 +4213,7 @@ static void buttons_ap_mic_prof_process(void);
 		colmain_line(buf, w, h, 3, 3, 3, h - 3, COLORPIP_BLACK, 0);
 		colmain_line(buf, w, h, 2, 2, 2, h - 2, COLORPIP_BLACK, 0);
 #else
-		memset(buf, COLORMAIN_BLACK, s);
+		memset(buf, GUI_DEFAULTCOLOR, s);
 		colmain_rounded_rect(buf, w, h, 0, 0, w - 1, h - 1, button_round_radius, COLOR_BUTTON_PR_LOCKED, 1);
 		colmain_rounded_rect(buf, w, h, 0, 0, w - 1, h - 1, button_round_radius, COLORPIP_GRAY, 0);
 		colmain_rounded_rect(buf, w, h, 2, 2, w - 3, h - 3, button_round_radius, COLORPIP_BLACK, 0);
@@ -4208,20 +4221,17 @@ static void buttons_ap_mic_prof_process(void);
 
 		buf = v->bg_disabled;
 		ASSERT(buf != NULL);
-		memset(buf, COLORMAIN_BLACK, s);
 #if GUI_OLDBUTTONSTYLE
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLOR_BUTTON_DISABLED, 1);
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORPIP_GRAY, 0);
 		colpip_rect(buf, w, h, 2, 2, w - 3, h - 3, COLORPIP_BLACK, 0);
 #else
-		memset(buf, COLORMAIN_BLACK, s);
+		memset(buf, GUI_DEFAULTCOLOR, s);
 		colmain_rounded_rect(buf, w, h, 0, 0, w - 1, h - 1, button_round_radius, COLOR_BUTTON_DISABLED, 1);
 		colmain_rounded_rect(buf, w, h, 0, 0, w - 1, h - 1, button_round_radius, COLORPIP_GRAY, 0);
 		colmain_rounded_rect(buf, w, h, 2, 2, w - 3, h - 3, button_round_radius, COLORPIP_BLACK, 0);
 #endif /* GUI_OLDBUTTONSTYLE */
 	}
-
-#endif /* GUI_HWDRAWBUTTONSBG */
 
 	void gui_initialize (void)
 	{
@@ -4233,11 +4243,9 @@ static void buttons_ap_mic_prof_process(void);
 
 		set_window(win, VISIBLE);
 
-#if GUI_HWDRAWBUTTONSBG
 		do {
 			fill_button_bg_buf(& btn_bg[i]);
 		} while (++i < BG_COUNT) ;
-#endif /* GUI_SOFTWAREDRAWBG */
 	}
 
 	static void update_touch(void)
