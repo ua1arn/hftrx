@@ -3425,11 +3425,21 @@ hardware_adc_startonescan(void)
 			uint32_t fmin;
 			uint32_t fmax;
 		};
+
+	#if CPUSTYLE_STM32H7XX
 		// пока для проверки работоспособности. Таблицу надо расчитать.
 		static const FLASHMEM struct FREQ freqs [] = {
 		  { 63, 6900000uL,  UINT32_MAX },
 		  { 62, 0,		6900000uL },	
 		};
+	#elif CPUSTYLE_STM32MP1
+		// пока для проверки работоспособности. Таблицу надо расчитать.
+		// сейчас делит 32 MHz
+		static const FLASHMEM struct FREQ freqs [] = {
+		  { 29, 6900000uL,  UINT32_MAX },
+		  { 29, 0,		6900000uL },
+		};
+	#endif
 
 		uint_fast8_t high = (sizeof freqs / sizeof freqs [0]);
 		uint_fast8_t low = 0;
@@ -9771,19 +9781,21 @@ void stm32mp1_pll_initialize(void)
 	while((RCC->AXIDIVR & RCC_AXIDIVR_AXIDIVRDY_Msk) == 0)
 		;
 
-	// APB1 Output divider
+	// APB1 Output divider (output max 104.5 MHz)
+	// Input MLHCK (209 MHz max)
 	//0x0: mlhclk (default after reset)
 	//0x1: mlhclk / 2
 	//0x2: mlhclk / 4
 	//0x3: mlhclk / 8
 	//0x4: mlhclk / 16
 	RCC->APB1DIVR = (RCC->APB1DIVR & ~ (RCC_APB1DIVR_APB1DIV_Msk)) |
-		((0) << RCC_APB1DIVR_APB1DIV_Pos) |	// div1
+		((1) << RCC_APB1DIVR_APB1DIV_Pos) |	// div2
 		0;
 	while((RCC->APB1DIVR & RCC_APB1DIVR_APB1DIVRDY_Msk) == 0)
 		;
 
-	// APB2 Output divider
+	// APB2 Output divider (output max 104.5 MHz)
+	// Input MLHCK (209 MHz max)
 	//0x0: mlhclk (default after reset)
 	//0x1: mlhclk / 2
 	//0x2: mlhclk / 4
@@ -9795,7 +9807,8 @@ void stm32mp1_pll_initialize(void)
 	while((RCC->APB2DIVR & RCC_APB2DIVR_APB2DIVRDY_Msk) == 0)
 		;
 
-	// APB3 Output divider
+	// APB3 Output divider (output max 104.5 MHz)
+	// Input MLHCK (209 MHz max)
 	//0x0: hclk (default after reset)
 	//0x1: hclk / 2
 	//0x2: hclk / 4
