@@ -9771,6 +9771,18 @@ void stm32mp1_pll_initialize(void)
 	while((RCC->AXIDIVR & RCC_AXIDIVR_AXIDIVRDY_Msk) == 0)
 		;
 
+	// APB1 Output divider
+	//0x0: mlhclk (default after reset)
+	//0x1: mlhclk / 2
+	//0x2: mlhclk / 4
+	//0x3: mlhclk / 8
+	//0x4: mlhclk / 16
+	RCC->APB1DIVR = (RCC->APB1DIVR & ~ (RCC_APB1DIVR_APB1DIV_Msk)) |
+		((0) << RCC_APB1DIVR_APB1DIV_Pos) |	// div1
+		0;
+	while((RCC->APB1DIVR & RCC_APB1DIVR_APB1DIVRDY_Msk) == 0)
+		;
+
 	// APB2 Output divider
 	//0x0: mlhclk (default after reset)
 	//0x1: mlhclk / 2
@@ -9911,7 +9923,11 @@ void stm32mp1_pll_initialize(void)
 #endif /* WIHSPIDFHW */
 
 	// prescaler value of timers located into APB1 domain
-	// TIM2, TIM3, TIM4, TIM5, TIM6, TIM7, TIM12, TIM13 and TIM14.s
+	// TIM2, TIM3, TIM4, TIM5, TIM6, TIM7, TIM12, TIM13 and TIM14.
+	//	0: The Timers kernel clock is equal to mlhclk if APB1DIV is corresponding to a division by 1
+	//	or 2, else it is equal to 2 x Fpclk1 (default after reset)
+	//	1: The Timers kernel clock is equal to mlhclk if APB1DIV is corresponding to division by 1, 2
+	//	or 4, else it is equal to 4 x Fpclk1
 	RCC->TIMG1PRER = (RCC->TIMG1PRER & ~ (RCC_TIMG1PRER_TIMG1PRE_Msk)) |
 		(0x00 << RCC_TIMG1PRER_TIMG1PRE_Pos) |
 		0;
@@ -9920,6 +9936,10 @@ void stm32mp1_pll_initialize(void)
 		;
 
 	// TIM1, TIM8, TIM15, TIM16, and TIM17.
+	//	0: The Timers kernel clock is equal to mlhclk if APB2DIV is corresponding to a division by 1
+	//	or 2, else it is equal to 2 x Fpclk2 (default after reset)
+	//	1: The Timers kernel clock is equal to mlhclk if APB2DIV is corresponding to division by 1, 2
+	//	or 4, else it is equal to 4 x Fpclk2
 	RCC->TIMG2PRER = (RCC->TIMG2PRER & ~ (RCC_TIMG2PRER_TIMG2PRE_Msk)) |
 		(0x00 << RCC_TIMG2PRER_TIMG2PRE_Pos) |
 		0;
