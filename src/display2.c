@@ -6611,6 +6611,16 @@ static void display2_colorbuff(
 
 }
 
+// Stub
+static void display2_wfl_init(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+
+}
+
 #endif /* WITHSPECTRUMWF && ! LCDMODE_HD44780 && ! LCDMODE_DUMMY */
 
 uint_fast8_t display2_getswrmax(void)
