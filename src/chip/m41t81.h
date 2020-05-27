@@ -14,7 +14,7 @@
 #define M41T81_ADDRESS_R	(M41T81_ADDRESS_W | 0x01)
 
 static void m41t81_readbuff(
-	uint_fast8_t * b,
+	uint8_t * b,
 	uint_fast8_t n,
 	uint_fast8_t r
 	)
@@ -37,7 +37,7 @@ static void m41t81_readbuff(
 }
 
 static void m41t81_writebuff(
-	const uint_fast8_t * b,
+	const uint8_t * b,
 	uint_fast8_t n,
 	uint_fast8_t r		// Addr
 	)
@@ -56,7 +56,7 @@ static void m41t81_setclearbit(
 	uint_fast8_t mask,	// биты, которые требуется модифицировать
 	uint_fast8_t value)	// состояние битов, которое требуется установить.
 {
-	uint_fast8_t b [1];
+	uint8_t b [1];
 
 	m41t81_readbuff(b, sizeof b / sizeof b[0], r);
 
@@ -115,7 +115,7 @@ void board_rtc_settime(
 	)
 {
 	const uint_fast8_t rt = 0x01;	// Addr
-	uint_fast8_t bt [3];
+	uint8_t bt [3];
 
 	m41t81_readbuff(bt, sizeof bt / sizeof bt [0], rt);
 
@@ -136,7 +136,7 @@ void board_rtc_setdatetime(
 	)
 {
 	const uint_fast8_t rd = 0x05;	// Addr
-	uint_fast8_t bd [3];
+	uint8_t bd [3];
 
 	m41t81_readbuff(bd, sizeof bd / sizeof bd [0], rd);
 
@@ -147,7 +147,7 @@ void board_rtc_setdatetime(
 	m41t81_writebuff(bd, sizeof bd / sizeof bd [0], rd);
 
 	const uint_fast8_t rt = 0x01;	// Addr
-	uint_fast8_t bt [3];
+	uint8_t bt [3];
 
 	m41t81_readbuff(bt, sizeof bt / sizeof bt [0], rt);
 
@@ -167,7 +167,7 @@ void board_rtc_setdate(
 	)
 {
 	const uint_fast8_t r = 0x05;	// Addr
-	uint_fast8_t b [3];
+	uint8_t b [3];
 
 	m41t81_readbuff(b, sizeof b / sizeof b[0], r);
 
@@ -185,7 +185,7 @@ void board_rtc_getdate(
 	)
 {
 	const uint_fast8_t r = 0x05;	// Addr
-	uint_fast8_t b [3];
+	uint8_t b [3];
 
 	m41t81_readbuff(b, sizeof b / sizeof b[0], r);
 
@@ -201,7 +201,7 @@ void board_rtc_gettime(
 	)
 {
 	const uint_fast8_t r = 0x01;	// Addr
-	uint_fast8_t b [3];
+	uint8_t b [3];
 
 	m41t81_readbuff(b, sizeof b / sizeof b[0], r);
 
@@ -220,7 +220,7 @@ void board_rtc_getdatetime(
 	)
 {
 	const uint_fast8_t r = 0x01;
-	uint_fast8_t b [7];
+	uint8_t b [7];
 
 	m41t81_readbuff(b, sizeof b / sizeof b[0], r);
 
@@ -236,7 +236,7 @@ void board_rtc_getdatetime(
 uint_fast8_t board_rtc_chip_initialize(void)
 {
 	// Write RTC calibration value (0x00..0x1f)
-	uint_fast8_t rtc_calibratioin = 0x10;
+	uint8_t rtc_calibratioin = 0x10;
 
 	m41t81_setclearbit(0x08, 0x1f, rtc_calibratioin);
 	m41t81_setclearbit(0x0c, 0x40, 0x00);	// ht=0
