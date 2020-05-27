@@ -224,7 +224,7 @@ static void display_freqXbig_a(
 }
 
 // Отображение частоты. Герцы маленьким шрифтом.
-static void display_freqX_a(
+static void display2_freqX_a(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	dctx_t * pctx
@@ -338,7 +338,7 @@ static void display_freqchr_b(
 	}
 }
 
-static void display_freqX_b(
+static void display2_freqX_b(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	dctx_t * pctx
@@ -474,7 +474,7 @@ static void display_recstatus(
 }
 
 // Отображение режима записи аудио фрагмента
-static void display_rec3(
+static void display2_rec3(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	dctx_t * pctx
@@ -493,7 +493,7 @@ static void display_rec3(
 }
 
 // отображение состояния USB HOST
-static void display_usb3(
+static void display2_usb3(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	dctx_t * pctx
@@ -573,7 +573,7 @@ static const char text_nul3 [] = "   ";
 static const char text_nul5 [] = "     ";
 
 // Отображение режима NR ON/OFF
-static void display_nr3(
+static void display2_nr3(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	dctx_t * pctx
@@ -587,7 +587,7 @@ static void display_nr3(
 }
 
 /* Отображение включенного режима CW BREAK-IN */
-static void display_bkin3(
+static void display2_bkin3(
 	uint_fast8_t x,
 	uint_fast8_t y,
 	dctx_t * pctx
@@ -601,7 +601,7 @@ static void display_bkin3(
 }
 
 /* Отображение включенного динамика */
-static void display_spk3(
+static void display2_spk3(
 	uint_fast8_t x,
 	uint_fast8_t y,
 	dctx_t * pctx
@@ -615,7 +615,7 @@ static void display_spk3(
 #endif /* WITHSPKMUTE */
 }
 
-static void display_wpm5(
+static void display2_wpm5(
 		uint_fast8_t x,
 		uint_fast8_t y,
 		dctx_t * pctx
@@ -633,7 +633,7 @@ static void display_wpm5(
 }
 
 // Отображение режима NOCH ON/OFF
-static void display_notch5(
+static void display2_notch5(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	dctx_t * pctx
@@ -647,7 +647,7 @@ static void display_notch5(
 }
 
 // Отображение частоты NOCH
-static void display_notchfreq5(
+static void display2_notchfreq5(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	dctx_t * pctx
@@ -679,7 +679,7 @@ static void display_notch3(
 
 
 // VFO mode
-static void display_vfomode3(
+static void display2_vfomode3(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	dctx_t * pctx
@@ -743,7 +743,7 @@ static void display_datamode4(
 }
 
 // Отображение режима передачи аудио с USB
-static void display_datamode3(
+static void display2_datamode3(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	dctx_t * pctx
@@ -758,7 +758,7 @@ static void display_datamode3(
 }
 
 // Отображение режима автонастройки
-static void display_atu3(
+static void display2_atu3(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	dctx_t * pctx
@@ -774,7 +774,7 @@ static void display_atu3(
 
 
 // Отображение режима General Coverage / HAM bands
-static void display_genham1(
+static void display2_genham1(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	dctx_t * pctx
@@ -790,7 +790,7 @@ static void display_genham1(
 }
 
 // Отображение режима обхода тюнера
-static void display_byp3(
+static void display2_byp3(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	dctx_t * pctx
@@ -821,7 +821,7 @@ static void display_vox3(
 
 // Отображение режимов VOX и TUNE
 // Если VOX не предусмотрен, только TUNE
-static void display_voxtune3(
+static void display2_voxtune3(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	dctx_t * pctx
@@ -934,7 +934,7 @@ static void display_lockstate3(
 	display2_text_P(x, y, labels, colors_4state, lockv * 2 + fastv);
 }
 
-static void display_lockstate4(
+static void display2_lockstate4(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	dctx_t * pctx
@@ -986,7 +986,7 @@ static void display_pbt(
 }
 
 // RX path bandwidth
-static void display_rxbw3(
+static void display2_rxbw3(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	dctx_t * pctx
@@ -999,7 +999,7 @@ static void display_rxbw3(
 
 
 // текущее состояние DUAL WATCH
-static void display_mainsub3(
+static void display2_mainsub3(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	dctx_t * pctx
@@ -1057,7 +1057,7 @@ static void display_ovf3(
 }
 
 // RX preamplifier или переполнение АЦП (надо показывать как REDRM_BARS - с таймерным обновлением)
-static void display_preovf3(
+static void display2_preovf3(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	dctx_t * pctx
@@ -1081,7 +1081,7 @@ static void display_preovf3(
 }
 
 // display antenna
-static void display_ant5(
+static void display2_ant5(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	dctx_t * pctx
@@ -1095,7 +1095,7 @@ static void display_ant5(
 }
 
 // RX att (or att/pre)
-static void display_att4(
+static void display2_att4(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	dctx_t * pctx
@@ -1136,7 +1136,7 @@ static void display_att_tx3(
 }
 
 // RX agc
-static void display_agc3(
+static void display2_agc3(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	dctx_t * pctx
@@ -1178,7 +1178,7 @@ static void display_vfomode1(
 }
 
 // SSB/CW/AM/FM/...
-static void display_mode3_a(
+static void display2_mode3_a(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	dctx_t * pctx
@@ -1191,7 +1191,7 @@ static void display_mode3_a(
 
 
 // SSB/CW/AM/FM/...
-static void display_mode3_b(
+static void display2_mode3_b(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	dctx_t * pctx
@@ -1203,7 +1203,7 @@ static void display_mode3_b(
 }
 
 // dd.dV - 5 places
-static void display_voltlevelV5(
+static void display2_voltlevelV5(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	dctx_t * pctx
@@ -1211,7 +1211,7 @@ static void display_voltlevelV5(
 {
 #if WITHVOLTLEVEL
 	uint_fast8_t volt = hamradio_get_volt_value();	// Напряжение в сотнях милливольт т.е. 151 = 15.1 вольта
-	//PRINTF("display_voltlevelV5: volt=%u\n", volt);
+	//PRINTF("display2_voltlevelV5: volt=%u\n", volt);
 	colmain_setcolors(colors_1state [0].fg, colors_1state [0].bg);
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	do
@@ -1405,7 +1405,7 @@ static void display_siglevel7(
 }
 
 // Отображение уровня сигнала в dBm
-static void display_siglevel4(
+static void display2_siglevel4(
 	uint_fast8_t x,
 	uint_fast8_t y,
 	dctx_t * pctx
@@ -1514,7 +1514,7 @@ static void display_smeter5(
 #endif /* WITHIF4DSP */
 }
 
-static void display_freqdelta8(
+static void display2_freqdelta8(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	dctx_t * pctx
@@ -1781,10 +1781,10 @@ enum
 	{
 		{	0, 0,	display_freqchr_a,	REDRM_FREQ, DPAGEEXT, },	// частота для символьных дисплеев
 		//{	0, 0,	display_txrxstate2,	REDRM_MODE, DPAGEEXT, },
-		{	9, 0,	display_mode3_a,	REDRM_MODE,	DPAGEEXT, },	// SSB/CW/AM/FM/...
+		{	9, 0,	display2_mode3_a,	REDRM_MODE,	DPAGEEXT, },	// SSB/CW/AM/FM/...
 		{	12, 0,	display_lockstate1,	REDRM_MODE, DPAGEEXT, },
-		{	13, 0,	display_rxbw3,		REDRM_MODE, DPAGEEXT, },
-		{	17, 0,	display_vfomode3,	REDRM_MODE, DPAGEEXT, },	// SPLIT
+		{	13, 0,	display2_rxbw3,		REDRM_MODE, DPAGEEXT, },
+		{	17, 0,	display2_vfomode3,	REDRM_MODE, DPAGEEXT, },	// SPLIT
 
 		{	0, 1,	display_att_tx3,	REDRM_MODE, REDRSUBSET(DPAGE0), },
 		{	4, 1,	display_pre3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
@@ -1793,11 +1793,11 @@ enum
 	#endif /* defined (RTC1_TYPE) */
 	#if WITHUSEDUALWATCH
 		{	0, 1,	display_freqchr_b,	REDRM_FREQ, REDRSUBSET(DPAGE1), },	// частота для символьных дисплеев
-		{	17, 1,	display_mainsub3, REDRM_MODE, DPAGEEXT, },	// main/sub RX
+		{	17, 1,	display2_mainsub3, REDRM_MODE, DPAGEEXT, },	// main/sub RX
 	#endif /* WITHUSEDUALWATCH */
 
 		{	0, 2,	display2_bars,		REDRM_BARS, DPAGEEXT, },	// S-METER, SWR-METER, POWER-METER
-		{	17, 2,	display_voxtune3,	REDRM_MODE, DPAGEEXT, },
+		{	17, 2,	display2_voxtune3,	REDRM_MODE, DPAGEEXT, },
 
 	#if WITHVOLTLEVEL && WITHCURRLEVEL
 		{	0, 3,	display_voltlevel4, REDRM_VOLT, DPAGEEXT, },	// voltmeter with "V"
@@ -1805,16 +1805,16 @@ enum
 	#endif /* WITHVOLTLEVEL && WITHCURRLEVEL */
 #if WITHIF4DSP
 	#if WITHUSEAUDIOREC
-		{	13, 3,	display_rec3,		REDRM_BARS, DPAGEEXT, },	// Отображение режима записи аудио фрагмента
+		{	13, 3,	display2_rec3,		REDRM_BARS, DPAGEEXT, },	// Отображение режима записи аудио фрагмента
 	#endif /* WITHUSEAUDIOREC */
 #endif /* WITHIF4DSP */
-		{	17, 3,	display_agc3,		REDRM_MODE, DPAGEEXT, },
+		{	17, 3,	display2_agc3,		REDRM_MODE, DPAGEEXT, },
 
 	#if WITHMENU 
 		{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
 		{	0, 1,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
 		{	4, 1,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
-		{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
+		{	16, 0,	display2_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
 	#endif /* WITHMENU */
 	};
 	#if WITHMENU
@@ -1870,17 +1870,17 @@ enum
 	static const FLASHMEM struct dzone dzones [] =
 	{
 		// строка 0
-		{	0, 0,	display_vfomode3,	REDRM_MODE, REDRSUBSET_ALL, },	// SPLIT
+		{	0, 0,	display2_vfomode3,	REDRM_MODE, REDRSUBSET_ALL, },	// SPLIT
 		{	4, 0,	display_freqchr_a,	REDRM_FREQ, REDRSUBSET_ALL, },	// частота для символьных дисплеев
 		{	12, 0,	display_lockstate1,	REDRM_MODE, REDRSUBSET_ALL, },
-		{	13, 0,	display_mode3_a,	REDRM_MODE,	REDRSUBSET_ALL, },	// SSB/CW/AM/FM/...
-		{	17, 0,	display_rxbw3,		REDRM_MODE, REDRSUBSET_ALL, },
+		{	13, 0,	display2_mode3_a,	REDRM_MODE,	REDRSUBSET_ALL, },	// SSB/CW/AM/FM/...
+		{	17, 0,	display2_rxbw3,		REDRM_MODE, REDRSUBSET_ALL, },
 		// строка 1 - постоянные элементы
-		{	0, 1,	display_voxtune3,	REDRM_MODE, REDRSUBSET_ALL, },
+		{	0, 1,	display2_voxtune3,	REDRM_MODE, REDRSUBSET_ALL, },
 		// строка 1
 		{	4, 1,	display_att_tx3,	REDRM_MODE, REDRSUBSET(DPAGE0), },
 	#if WITHDSPEXTDDC
-		{	9, 1,	display_preovf3,	REDRM_BARS, REDRSUBSET(DPAGE0), },	// ovf/pre
+		{	9, 1,	display2_preovf3,	REDRM_BARS, REDRSUBSET(DPAGE0), },	// ovf/pre
 	#else /* WITHDSPEXTDDC */
 		{	9, 1,	display_pre3,		REDRM_MODE, REDRSUBSET(DPAGE0), },	// pre
 	#endif /* WITHDSPEXTDDC */
@@ -1888,14 +1888,14 @@ enum
 		{	4, 1,	display2_bars,		REDRM_BARS, REDRSUBSET(DPAGE_SMETER), },	// S-METER, SWR-METER, POWER-METER
 		{	4, 1,	display_time8,		REDRM_BARS, REDRSUBSET(DPAGE_TIME), },	// TIME
 		// строка 1 - постоянные элементы
-		{	17, 1,	display_agc3,		REDRM_MODE, REDRSUBSET_ALL, },
+		{	17, 1,	display2_agc3,		REDRM_MODE, REDRSUBSET_ALL, },
 
 		//{	0, 0,	display_txrxstate2,	REDRM_MODE, REDRSUBSET_ALL, },
 	#if WITHMENU
 		{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
 		{	0, 1,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
 		{	4, 1,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
-		{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
+		{	16, 0,	display2_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
 	#endif /* WITHMENU */
 	};
 
@@ -1930,7 +1930,7 @@ enum
 	#define DISPLC_RJ		1	// количество скрытых справа цифр в отображении частоты
 	static const FLASHMEM struct dzone dzones [] =
 	{
-		{	0, 0,	display_vfomode3,	REDRM_MODE, REDRSUBSET(DPAGE0) | REDRSUBSET(DPAGE1), },	// SPLIT
+		{	0, 0,	display2_vfomode3,	REDRM_MODE, REDRSUBSET(DPAGE0) | REDRSUBSET(DPAGE1), },	// SPLIT
 		{	4, 0,	display_freqchr_a,	REDRM_FREQ, REDRSUBSET(DPAGE0) | REDRSUBSET(DPAGE1), },	// частота для символьных дисплеев
 		{	12, 0,	display_lockstate1, REDRM_MODE, REDRSUBSET(DPAGE0) | REDRSUBSET(DPAGE1), },
 		{	4, 1,	display2_bars,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// S-METER, SWR-METER, POWER-METER
@@ -1939,7 +1939,7 @@ enum
 		{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
 		{	0, 1,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
 		{	4, 1,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
-		{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
+		{	16, 0,	display2_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
 	#endif /* WITHMENU */
 	};
 #if WITHMENU
@@ -2028,8 +2028,8 @@ enum
 	static const FLASHMEM struct dzone dzones [] =
 	{
 		{	0, 0,	display_freqchr_a,	REDRM_FREQ, REDRSUBSET(DPAGE0), },	// частота для символьных дисплеев
-		{	8, 0,	display_att4,		REDRM_MODE, REDRSUBSET(DPAGE0), },
-		{	13, 0,	display_rxbw3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+		{	8, 0,	display2_att4,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+		{	13, 0,	display2_rxbw3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 		{	1, 1,	display2_bars_amv0,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// S-METER, SWR-METER, POWER-METER
 	#if WITHMENU 
 		{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
@@ -2087,57 +2087,57 @@ enum
 	{
 		{	0, 0,	display_freqchr_a,	REDRM_FREQ, REDRSUBSET_ALL, },	// частота для символьных дисплеев
 		{	8, 0,	display_lockstate1, REDRM_MODE, REDRSUBSET_ALL, },
-		{	9, 0,	display_mode3_a,	REDRM_MODE,	REDRSUBSET_ALL, },	// SSB/CW/AM/FM/...
-		{	13, 0,	display_rxbw3,		REDRM_MODE, REDRSUBSET_ALL, },
+		{	9, 0,	display2_mode3_a,	REDRM_MODE,	REDRSUBSET_ALL, },	// SSB/CW/AM/FM/...
+		{	13, 0,	display2_rxbw3,		REDRM_MODE, REDRSUBSET_ALL, },
 
-		{	0, 1,	display_vfomode3,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// SPLIT
+		{	0, 1,	display2_vfomode3,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// SPLIT
 		{	4, 1,	display_att_tx3,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// при скрытом s-metre, при передаче показывает TX
 	#if WITHDSPEXTDDC
-		{	9, 1,	display_preovf3,	REDRM_BARS, REDRSUBSET(DPAGE0), },	// ovf/pre
+		{	9, 1,	display2_preovf3,	REDRM_BARS, REDRSUBSET(DPAGE0), },	// ovf/pre
 	#else /* WITHDSPEXTDDC */
 		{	9, 1,	display_pre3,		REDRM_MODE, REDRSUBSET(DPAGE0), },	// pre
 	#endif /* WITHDSPEXTDDC */
 #if WITHIF4DSP
 	#if WITHUSEAUDIOREC
-		{	13, 1,	display_rec3,		REDRM_BARS, REDRSUBSET(DPAGE0) /*| REDRSUBSET(DPAGE_SMETER)*/, },	// Отображение режима записи аудио фрагмента
+		{	13, 1,	display2_rec3,		REDRM_BARS, REDRSUBSET(DPAGE0) /*| REDRSUBSET(DPAGE_SMETER)*/, },	// Отображение режима записи аудио фрагмента
 	#endif /* WITHUSEAUDIOREC */
 #else /* WITHIF4DSP */
-		{	13, 1,	display_agc3,		REDRM_MODE, REDRSUBSET(DPAGE0) /*| REDRSUBSET(DPAGE_SMETER)*/, },
+		{	13, 1,	display2_agc3,		REDRM_MODE, REDRSUBSET(DPAGE0) /*| REDRSUBSET(DPAGE_SMETER)*/, },
 #endif /* WITHIF4DSP */
 
 		{	0, 1,	display2_bars,		REDRM_BARS, REDRSUBSET(DPAGE_SMETER), },	// S-METER, SWR-METER, POWER-METER
 
 	#if WITHVOLTLEVEL && WITHCURRLEVEL
-		{	0, 1,	display_voltlevelV5, REDRM_VOLT, REDRSUBSET(DPAGE_VOLTS), },	// voltmeter with "V"
+		{	0, 1,	display2_voltlevelV5, REDRM_VOLT, REDRSUBSET(DPAGE_VOLTS), },	// voltmeter with "V"
 		{	6, 1,	display2_currlevelA6, REDRM_VOLT, REDRSUBSET(DPAGE_VOLTS), },	// amphermeter with "A"
 	#endif /* WITHVOLTLEVEL && WITHCURRLEVEL */
 	#if WITHMODEM
-		{	0, 1,	display_freqdelta8, REDRM_BARS, REDRSUBSET(DPAGE_BPSK), },	// выход ЧМ демодулятора
+		{	0, 1,	display2_freqdelta8, REDRM_BARS, REDRSUBSET(DPAGE_BPSK), },	// выход ЧМ демодулятора
 	#endif /* WITHMODEM */
 	#if WITHUSEDUALWATCH
 		{	0, 1,	display_freqchr_b,	REDRM_FREQ, REDRSUBSET(DPAGE_SUBRX), },	// FREQ B
-		{	9, 1,	display_vfomode3,	REDRM_MODE, REDRSUBSET(DPAGE_SUBRX), },	// SPLIT
-		{	13, 1,	display_mainsub3, REDRM_MODE, REDRSUBSET(DPAGE_SUBRX), },	// main/sub RX
+		{	9, 1,	display2_vfomode3,	REDRM_MODE, REDRSUBSET(DPAGE_SUBRX), },	// SPLIT
+		{	13, 1,	display2_mainsub3, REDRM_MODE, REDRSUBSET(DPAGE_SUBRX), },	// main/sub RX
 	#endif /* WITHUSEDUALWATCH */
 
 	//#if WITHUSEAUDIOREC
 	//	{	0, 1,	display_recstatus,	REDRM_BARS, REDRSUBSET(DPAGE_SDCARD), },	// recording debug information
-	//	{	13, 1,	display_rec3,		REDRM_BARS, REDRSUBSET(DPAGE_SDCARD), },	// Отображение режима записи аудио фрагмента
+	//	{	13, 1,	display2_rec3,		REDRM_BARS, REDRSUBSET(DPAGE_SDCARD), },	// Отображение режима записи аудио фрагмента
 	//#endif /* WITHUSEAUDIOREC */
 
 	#if defined (RTC1_TYPE)
 		{	0, 1,	display_time8,		REDRM_BARS, REDRSUBSET(DPAGE_TIME), },	// TIME
 	#if WITHUSEDUALWATCH
-		{	9, 1,	display_mainsub3,	REDRM_BARS, REDRSUBSET(DPAGE_TIME), },	// main/sub RX
+		{	9, 1,	display2_mainsub3,	REDRM_BARS, REDRSUBSET(DPAGE_TIME), },	// main/sub RX
 	#endif /* WITHUSEDUALWATCH */
 	#if WITHUSEAUDIOREC
-		{	13, 1,	display_rec3,		REDRM_BARS, REDRSUBSET(DPAGE_TIME), },	// Отображение режима записи аудио фрагмента
+		{	13, 1,	display2_rec3,		REDRM_BARS, REDRSUBSET(DPAGE_TIME), },	// Отображение режима записи аудио фрагмента
 	#endif /* WITHUSEAUDIOREC */
 	#endif /* defined (RTC1_TYPE) */
 
 
 		//{	0, 0,	display_txrxstate2,	REDRM_MODE, REDRSUBSET_ALL, },
-		//{	0, 0,	display_voxtune3,	REDRM_MODE, REDRSUBSET_ALL, },
+		//{	0, 0,	display2_voxtune3,	REDRM_MODE, REDRSUBSET_ALL, },
 	#if WITHMENU
 		{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
 		{	0, 1,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
@@ -2188,27 +2188,27 @@ enum
 	{
 		{	0, 0,	display_freqchr_a,	REDRM_FREQ, REDRSUBSET_ALL, },	// частота для символьных дисплеев
 		{	8, 0,	display_lockstate1, REDRM_MODE, REDRSUBSET_ALL, },
-		{	9, 0,	display_mode3_a,	REDRM_MODE,	REDRSUBSET_ALL, },	// SSB/CW/AM/FM/...
-		{	13, 0,	display_rxbw3,		REDRM_MODE, REDRSUBSET_ALL, },
+		{	9, 0,	display2_mode3_a,	REDRM_MODE,	REDRSUBSET_ALL, },	// SSB/CW/AM/FM/...
+		{	13, 0,	display2_rxbw3,		REDRM_MODE, REDRSUBSET_ALL, },
 
-		{	0, 1,	display_vfomode3,	REDRM_MODE, REDRSUBSET_ALL, },	// SPLIT
+		{	0, 1,	display2_vfomode3,	REDRM_MODE, REDRSUBSET_ALL, },	// SPLIT
 		{	4, 1,	display_att_tx3,	REDRM_MODE, REDRSUBSET_ALL, },		// при передаче показывает TX
 	#if WITHDSPEXTDDC
-		{	9, 1,	display_preovf3,	REDRM_BARS, REDRSUBSET_ALL, },	// ovf/pre
+		{	9, 1,	display2_preovf3,	REDRM_BARS, REDRSUBSET_ALL, },	// ovf/pre
 	#else /* WITHDSPEXTDDC */
 		{	9, 1,	display_pre3,		REDRM_MODE, REDRSUBSET_ALL, },	// pre
 	#endif /* WITHDSPEXTDDC */
 
 		{	0, 2,	display2_bars,		REDRM_BARS, REDRSUBSET_ALL, },	// S-METER, SWR-METER, POWER-METER
 
-		{	0, 3,	display_voxtune3,	REDRM_MODE, REDRSUBSET_ALL, },
+		{	0, 3,	display2_voxtune3,	REDRM_MODE, REDRSUBSET_ALL, },
 	#if defined (RTC1_TYPE)
 		{	4, 3,	display_time8,		REDRM_BARS, REDRSUBSET_ALL, },	// TIME
 	#endif /* defined (RTC1_TYPE) */
-		{	13, 3,	display_agc3,		REDRM_MODE, REDRSUBSET_ALL, },
+		{	13, 3,	display2_agc3,		REDRM_MODE, REDRSUBSET_ALL, },
 
 		//{	0, 0,	display_txrxstate2,	REDRM_MODE, REDRSUBSET_ALL, },
-		//{	0, 0,	display_voxtune3,	REDRM_MODE, REDRSUBSET_ALL, },
+		//{	0, 0,	display2_voxtune3,	REDRM_MODE, REDRSUBSET_ALL, },
 
 	#if WITHMENU
 		{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра параметра
@@ -2264,17 +2264,17 @@ enum
 	static const FLASHMEM struct dzone dzones [] =
 	{
 		{	0, 0,	display_txrxstate2, REDRM_MODE, REDRSUBSET(DPAGE0), },
-		{	3, 0,	display_att4,		REDRM_MODE, REDRSUBSET(DPAGE0), },
-		{	7, 0,	display_mode3_a,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
+		{	3, 0,	display2_att4,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+		{	7, 0,	display2_mode3_a,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 
-		{	0, 1,	display_freqX_a,	REDRM_FREQ, REDRSUBSET(DPAGE0), },
+		{	0, 1,	display2_freqX_a,	REDRM_FREQ, REDRSUBSET(DPAGE0), },
 
 		{	9, 2,	display_vfomode1,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// SPLIT - одним символом
 		{	0, 2,	display2_bars,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// S-METER, SWR-METER, POWER-METER
 
-		{	6, 3,	display_rxbw3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+		{	6, 3,	display2_rxbw3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 		{	9, 3,	display_lockstate1, REDRM_MODE, REDRSUBSET(DPAGE0), },
-		{	0, 3,	display_voxtune3,	REDRM_MODE, REDRSUBSET(DPAGE0), },
+		{	0, 3,	display2_voxtune3,	REDRM_MODE, REDRSUBSET(DPAGE0), },
 	#if WITHMENU 
 		{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
 		{	0, 3,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
@@ -2353,24 +2353,24 @@ enum
 		static const FLASHMEM struct dzone dzones [] =
 		{
 			{	0, 0,	display_txrxstate2, REDRM_MODE, REDRSUBSET(DPAGE0), },	// TX/RX
-			{	3, 0,	display_voxtune3,	REDRM_MODE, REDRSUBSET(DPAGE0), },		// VOX/TUN
-			{	7, 0,	display_att4,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	3, 0,	display2_voxtune3,	REDRM_MODE, REDRSUBSET(DPAGE0), },		// VOX/TUN
+			{	7, 0,	display2_att4,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	10, 0,	display_hplp2,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	13, 0,	display_voltlevel4, REDRM_VOLT, REDRSUBSET(DPAGE0), },	// voltmeter without "V"
-			{	18, 0,	display_rxbw3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	18, 0,	display2_rxbw3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 
 
-			{	0,	1,	display_freqX_a,	REDRM_FREQ, REDRSUBSET(DPAGE0), },
-			{	18, 2,	display_mode3_a,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
+			{	0,	1,	display2_freqX_a,	REDRM_FREQ, REDRSUBSET(DPAGE0), },
+			{	18, 2,	display2_mode3_a,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 
-			{	2, 4,	display_vfomode3,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// SPLIT
-			{	7, 4,	display_freqX_b,	REDRM_FRQB, REDRSUBSET(DPAGE0), },
-			{	18, 4,	display_mode3_b,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
+			{	2, 4,	display2_vfomode3,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// SPLIT
+			{	7, 4,	display2_freqX_b,	REDRM_FRQB, REDRSUBSET(DPAGE0), },
+			{	18, 4,	display2_mode3_b,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 
 
-			{	2, 5,	display_lockstate4, REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	7, 5,	display_atu3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	11, 5,	display_byp3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	2, 5,	display2_lockstate4, REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	7, 5,	display2_atu3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	11, 5,	display2_byp3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 
 			{	0, 6,	display2_bars,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// S-METER, SWR-METER, POWER-METER
 			{	0, 7,	display2_legend,	REDRM_MODE, REDRSUBSET(DPAGE0), },// Отображение оцифровки шкалы S-метра
@@ -2378,7 +2378,7 @@ enum
 			{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
 			{	0, 1,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
 			{	4, 1,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
-			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
+			{	16, 0,	display2_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
 		#endif /* WITHMENU */
 		};
 	#if WITHMENU
@@ -2432,23 +2432,23 @@ enum
 		static const FLASHMEM struct dzone dzones [] =
 		{
 			{	0,	0,	display_txrxstate2, REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	3,	0,	display_voxtune3,	REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	7,	0,	display_att4,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	3,	0,	display2_voxtune3,	REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	7,	0,	display2_att4,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	16, 0,	display_lockstate1, REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	18, 0,	display_rxbw3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	18, 0,	display2_rxbw3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	12, 0,	display_pre3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	0,	2,	display_freqX_a,	REDRM_FREQ, REDRSUBSET(DPAGE0), },		// col = 1 for !WIDEFREQ
-			{	18, 3,	display_mode3_a,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
-			{	18, 5,	display_mode3_b,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
-			{	0,	5,	display_vfomode3,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// SPLIT
-			{	7,	5,	display_freqX_b,	REDRM_FRQB, REDRSUBSET(DPAGE0), },		// x=8 then !WIDEFREQ
-			{	18, 7,	display_agc3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	0,	2,	display2_freqX_a,	REDRM_FREQ, REDRSUBSET(DPAGE0), },		// col = 1 for !WIDEFREQ
+			{	18, 3,	display2_mode3_a,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
+			{	18, 5,	display2_mode3_b,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
+			{	0,	5,	display2_vfomode3,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// SPLIT
+			{	7,	5,	display2_freqX_b,	REDRM_FRQB, REDRSUBSET(DPAGE0), },		// x=8 then !WIDEFREQ
+			{	18, 7,	display2_agc3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	0,	7,	display2_bars,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// S-METER, SWR-METER, POWER-METER
 		#if WITHMENU
 			{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
 			{	0, 1,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
 			{	4, 1,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
-			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
+			{	16, 0,	display2_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
 		#endif /* WITHMENU */
 		};
 	#if WITHMENU
@@ -2526,27 +2526,27 @@ enum
 		static const FLASHMEM struct dzone dzones [] =
 		{
 			{	0,	0,	display_txrxstate2, REDRM_MODE, REDRSUBSET(DPAGE0), },	// TX/RX
-			{	3,	0,	display_voxtune3,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// VOX/TUN
-			{	7,	0,	display_att4,		REDRM_MODE, REDRSUBSET(DPAGE0), },	// PRE/ATT/___
-			{	11, 0,	display_lockstate4, REDRM_MODE, REDRSUBSET(DPAGE0), },	// LOCK
-			{	19, 0,	display_rxbw3,		REDRM_MODE, REDRSUBSET(DPAGE0), },	// 3.1
+			{	3,	0,	display2_voxtune3,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// VOX/TUN
+			{	7,	0,	display2_att4,		REDRM_MODE, REDRSUBSET(DPAGE0), },	// PRE/ATT/___
+			{	11, 0,	display2_lockstate4, REDRM_MODE, REDRSUBSET(DPAGE0), },	// LOCK
+			{	19, 0,	display2_rxbw3,		REDRM_MODE, REDRSUBSET(DPAGE0), },	// 3.1
 
-			{	0,	1,	display_freqX_a,	REDRM_FREQ, REDRSUBSET(DPAGE0), },
-			{	19, 2,	display_mode3_a,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/..
+			{	0,	1,	display2_freqX_a,	REDRM_FREQ, REDRSUBSET(DPAGE0), },
+			{	19, 2,	display2_mode3_a,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/..
 			//
 			{	2,	4,	display_vfomode5,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// SPLIT
-			{	8,	4,	display_freqX_b,	REDRM_FRQB, REDRSUBSET(DPAGE0), },
-			{	19, 4,	display_mode3_b,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
+			{	8,	4,	display2_freqX_b,	REDRM_FRQB, REDRSUBSET(DPAGE0), },
+			{	19, 4,	display2_mode3_b,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 
 			{	0,	5,	display_hplp2,		REDRM_MODE, REDRSUBSET(DPAGE0), },	// HP/LP
-			{	3,	5,	display_voltlevelV5,REDRM_VOLT, REDRSUBSET(DPAGE0), },	// voltmeter with "V"
+			{	3,	5,	display2_voltlevelV5,REDRM_VOLT, REDRSUBSET(DPAGE0), },	// voltmeter with "V"
 		#if WITHANTSELECT
-			{	9,	5,	display_ant5,		REDRM_MODE, REDRSUBSET(DPAGE0), },	// ANTENNA
+			{	9,	5,	display2_ant5,		REDRM_MODE, REDRSUBSET(DPAGE0), },	// ANTENNA
 		#endif /* WITHANTSELECT */
 			{	9,	5,	display_time5,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// TIME
 		#if WITHTX && WITHAUTOTUNER
-			{	15, 5,	display_atu3,		REDRM_MODE, REDRSUBSET(DPAGE0), },	// ATU
-			{	19, 5,	display_byp3,		REDRM_MODE, REDRSUBSET(DPAGE0), },	// BYP
+			{	15, 5,	display2_atu3,		REDRM_MODE, REDRSUBSET(DPAGE0), },	// ATU
+			{	19, 5,	display2_byp3,		REDRM_MODE, REDRSUBSET(DPAGE0), },	// BYP
 		#endif /* WITHTX && WITHAUTOTUNER */
 
 			{	0,	6,	display2_bars,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// S-METER, SWR-METER, POWER-METER
@@ -2555,7 +2555,7 @@ enum
 			{	0,	0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
 			{	0,	1,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
 			{	4,	1,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
-			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
+			{	16, 0,	display2_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
 		#endif /* WITHMENU */
 		};
 	#if WITHMENU
@@ -2607,33 +2607,33 @@ enum
 		static const FLASHMEM struct dzone dzones [] =
 		{
 			{	0, 0,	display_txrxstate2, REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	3, 0,	display_voxtune3,	REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	7, 0,	display_att4,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	3, 0,	display2_voxtune3,	REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	7, 0,	display2_att4,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	12, 0,	display_pre3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	16, 0,	display_lockstate1, REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	19, 0,	display_rxbw3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	19, 0,	display2_rxbw3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 
-			{	0, 2,	display_freqX_a,	REDRM_FREQ, REDRSUBSET(DPAGE0), },	// x=1 then !WIDEFREQ
-			{	19, 3,	display_mode3_a,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
+			{	0, 2,	display2_freqX_a,	REDRM_FREQ, REDRSUBSET(DPAGE0), },	// x=1 then !WIDEFREQ
+			{	19, 3,	display2_mode3_a,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 
 			{	0, 5,	display_voltlevel4, REDRM_VOLT, REDRSUBSET(DPAGE0), },	// voltmeter without "V"
 			{	0, 6,	display2_currlevelA6, REDRM_VOLT, REDRSUBSET(DPAGE0), },	// amphermeter with "A"
-			{	13, 5,	display_vfomode3,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// SPLIT
-			{	16, 5,	display_freqX_b,	REDRM_FRQB, REDRSUBSET(DPAGE0), },	// x=9 then !WIDEFREQ
-			{	19, 5,	display_mode3_b,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
+			{	13, 5,	display2_vfomode3,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// SPLIT
+			{	16, 5,	display2_freqX_b,	REDRM_FRQB, REDRSUBSET(DPAGE0), },	// x=9 then !WIDEFREQ
+			{	19, 5,	display2_mode3_b,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 
-			{	0, 6,	display_atu3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	4, 6,	display_byp3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	0, 6,	display2_atu3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	4, 6,	display2_byp3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 
 	#if WITHIF4DSP
 		#if WITHUSEAUDIOREC
-			{	19, 7,	display_rec3,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// Отображение режима записи аудио фрагмента
+			{	19, 7,	display2_rec3,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// Отображение режима записи аудио фрагмента
 		#endif /* WITHUSEAUDIOREC */
 	#else /* WITHIF4DSP */
-			{	19, 7,	display_agc3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	19, 7,	display2_agc3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 	#endif /* WITHIF4DSP */
 	#if WITHUSEDUALWATCH
-			{	19, 6,	display_mainsub3, REDRM_BARS, REDRSUBSET(DPAGE0), },	// main/sub RX
+			{	19, 6,	display2_mainsub3, REDRM_BARS, REDRSUBSET(DPAGE0), },	// main/sub RX
 	#endif /* WITHUSEDUALWATCH */
 
 			{	0, 7,	display2_bars,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// S-METER, SWR-METER, POWER-METER
@@ -2642,7 +2642,7 @@ enum
 			{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
 			{	0, 1,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
 			{	4, 1,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
-			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
+			{	16, 0,	display2_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
 		#endif /* WITHMENU */
 		};
 	#if WITHMENU
@@ -2720,25 +2720,25 @@ enum
 		static const FLASHMEM struct dzone dzones [] =
 		{
 			{	0, 0,	display_txrxstate2, REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	3, 0,	display_voxtune3,	REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	7, 0,	display_att4,		REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	12, 0,	display_lockstate4, REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	17, 0,	display_rxbw3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	3, 0,	display2_voxtune3,	REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	7, 0,	display2_att4,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	12, 0,	display2_lockstate4, REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	17, 0,	display2_rxbw3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 			//{	0, 0,	display_pre3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
-			//{	0, 0,	display_agc3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			//{	0, 0,	display2_agc3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 
-			{	0,	3,	display_freqX_a,	REDRM_FREQ, REDRSUBSET(DPAGE0), },
-			{	17, 5,	display_mode3_a,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
+			{	0,	3,	display2_freqX_a,	REDRM_FREQ, REDRSUBSET(DPAGE0), },
+			{	17, 5,	display2_mode3_a,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 
-			{	0,	8,	display_vfomode3,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// SPLIT
-			{	7,	8,	display_freqX_b,	REDRM_FRQB, REDRSUBSET(DPAGE0), },
-			{	17, 8,	display_mode3_b,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
+			{	0,	8,	display2_vfomode3,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// SPLIT
+			{	7,	8,	display2_freqX_b,	REDRM_FRQB, REDRSUBSET(DPAGE0), },
+			{	17, 8,	display2_mode3_b,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 
 			{	0,	11,	display_time5,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// TIME
 			//{	0,	11,	display_time8,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// TIME
-			{	0,	11,	display_atu3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	4,	11,	display_byp3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	15, 11,	display_voltlevelV5, REDRM_VOLT, REDRSUBSET(DPAGE0), },	// voltmeter with "V"
+			{	0,	11,	display2_atu3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	4,	11,	display2_byp3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	15, 11,	display2_voltlevelV5, REDRM_VOLT, REDRSUBSET(DPAGE0), },	// voltmeter with "V"
 
 			{	0, 13,	display2_bars,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// S-METER, SWR-METER, POWER-METER
 			{	0, 14,	display2_legend,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// Отображение оцифровки шкалы S-метра
@@ -2748,7 +2748,7 @@ enum
 			{	0, 2,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
 			{	4, 2,	display2_menu_lblng,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
 			{	0, 4,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
-			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
+			{	16, 0,	display2_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
 		#endif /* WITHMENU */
 
 		};
@@ -2801,24 +2801,24 @@ enum
 		static const FLASHMEM struct dzone dzones [] =
 		{
 			{	0,	0,	display_txrxstate2, REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	3,	0,	display_voxtune3,	REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	7,	0,	display_att4,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	3,	0,	display2_voxtune3,	REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	7,	0,	display2_att4,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	12, 0,	display_pre3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	17, 0,	display_rxbw3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	17, 0,	display2_rxbw3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	16, 0,	display_lockstate1, REDRM_MODE, REDRSUBSET(DPAGE0), },
 
-			{	0,	4,	display_freqX_a,	REDRM_FREQ, REDRSUBSET(DPAGE0), },
-			{	17, 6,	display_mode3_a,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
+			{	0,	4,	display2_freqX_a,	REDRM_FREQ, REDRSUBSET(DPAGE0), },
+			{	17, 6,	display2_mode3_a,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 
-			{	0,	9,	display_vfomode3,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// SPLIT
-			{	7,	9,	display_freqX_b,	REDRM_FRQB, REDRSUBSET(DPAGE0), },
-			{	17, 9,	display_mode3_b,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
+			{	0,	9,	display2_vfomode3,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// SPLIT
+			{	7,	9,	display2_freqX_b,	REDRM_FRQB, REDRSUBSET(DPAGE0), },
+			{	17, 9,	display2_mode3_b,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 
 			{	0,	12,	display_time5,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// TIME
 			//{	0,	12,	display_time8,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// TIME
-			{	0,	12,	display_atu3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	4,	12,	display_byp3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	8,	12,	display_voltlevelV5, REDRM_VOLT, REDRSUBSET(DPAGE0), },	// voltmeter with "V"
+			{	0,	12,	display2_atu3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	4,	12,	display2_byp3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	8,	12,	display2_voltlevelV5, REDRM_VOLT, REDRSUBSET(DPAGE0), },	// voltmeter with "V"
 
 			{	16, 13,	display_agc4,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 
@@ -2828,7 +2828,7 @@ enum
 			{	0, 2,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
 			{	4, 2,	display2_menu_lblng,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
 			{	0, 4,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
-			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
+			{	16, 0,	display2_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
 		#endif /* WITHMENU */
 		};
 #if WITHMENU
@@ -2901,26 +2901,26 @@ enum
 			{	0, 0,	display_txrxstate2, REDRM_MODE, REDRSUBSET(DPAGE0), },
 			//{	0, 0,	display_pre3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	3, 0,	display_hplp2,		REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	6, 0,	display_voxtune3,	REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	10, 0,	display_att4,		REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	14, 0,	display_lockstate4, REDRM_MODE, REDRSUBSET(DPAGE0), },
-			//{	0, 0,	display_agc3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	19, 0,	display_rxbw3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	0, 2,	display_voltlevelV5, REDRM_VOLT, REDRSUBSET(DPAGE0), },	// voltmeter with "V"
-			{	6, 2,	display_atu3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	10, 2,	display_byp3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	17, 3,	display_mode3_a,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
-			{	0,	5,	display_freqX_a,	REDRM_FREQ, REDRSUBSET(DPAGE0), },
-			{	0, 10,	display_vfomode3,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// SPLIT
-			{	17, 10,	display_mode3_b,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
-			{	5, 10,	display_freqX_b,	REDRM_FRQB, REDRSUBSET(DPAGE0), },
+			{	6, 0,	display2_voxtune3,	REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	10, 0,	display2_att4,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	14, 0,	display2_lockstate4, REDRM_MODE, REDRSUBSET(DPAGE0), },
+			//{	0, 0,	display2_agc3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	19, 0,	display2_rxbw3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	0, 2,	display2_voltlevelV5, REDRM_VOLT, REDRSUBSET(DPAGE0), },	// voltmeter with "V"
+			{	6, 2,	display2_atu3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	10, 2,	display2_byp3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	17, 3,	display2_mode3_a,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
+			{	0,	5,	display2_freqX_a,	REDRM_FREQ, REDRSUBSET(DPAGE0), },
+			{	0, 10,	display2_vfomode3,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// SPLIT
+			{	17, 10,	display2_mode3_b,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
+			{	5, 10,	display2_freqX_b,	REDRM_FRQB, REDRSUBSET(DPAGE0), },
 			{	0, 13,	display2_bars,		REDRM_BARS, REDRSUBSET(DPAGE0), },		// S-METER, SWR-METER, POWER-METER
 			{	1, 14,	display2_legend,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// Отображение оцифровки шкалы S-метра
 		#if WITHMENU
 			{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
 			{	0, 2,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
 			{	4, 2,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
-			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
+			{	16, 0,	display2_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
 		#endif /* WITHMENU */
 		};
 #if WITHMENU
@@ -2986,23 +2986,23 @@ enum
 		static const FLASHMEM struct dzone dzones [] =
 		{
 			{	0, 0,	display_txrxstate2, REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	3, 0,	display_voxtune3,	REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	7, 0,	display_att4,		REDRM_MODE, REDRSUBSET(DPAGE0), },		// 4 chars - 12dB, 18dB
+			{	3, 0,	display2_voxtune3,	REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	7, 0,	display2_att4,		REDRM_MODE, REDRSUBSET(DPAGE0), },		// 4 chars - 12dB, 18dB
 			{	12, 0,	display_pre3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	16, 0,	display_lockstate1, REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	18, 0,	display_rxbw3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	18, 0,	display2_rxbw3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 
-			{	0, 2,	display_voltlevelV5, REDRM_VOLT, REDRSUBSET(DPAGE0), },	// voltmeter with "V"
-			{	6, 2,	display_atu3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	10, 2,	display_byp3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	0, 2,	display2_voltlevelV5, REDRM_VOLT, REDRSUBSET(DPAGE0), },	// voltmeter with "V"
+			{	6, 2,	display2_atu3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	10, 2,	display2_byp3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	18, 2,	display_agc4,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 
-			{	0,	6,	display_freqX_a,	REDRM_FREQ, REDRSUBSET(DPAGE0), },
-			{	18, 4,	display_mode3_a,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
+			{	0,	6,	display2_freqX_a,	REDRM_FREQ, REDRSUBSET(DPAGE0), },
+			{	18, 4,	display2_mode3_a,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 
-			{	0, 10,	display_vfomode3,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// SPLIT
-			{	4, 10,	display_freqX_b,	REDRM_FRQB, REDRSUBSET(DPAGE0), },
-			{	16, 10,	display_mode3_b,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
+			{	0, 10,	display2_vfomode3,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// SPLIT
+			{	4, 10,	display2_freqX_b,	REDRM_FRQB, REDRSUBSET(DPAGE0), },
+			{	16, 10,	display2_mode3_b,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 
 			{	0, 13,	display2_bars,		REDRM_BARS, REDRSUBSET(DPAGE0), },		// S-METER, SWR-METER, POWER-METER
 			{	1, 14,	display2_legend,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// Отображение оцифровки шкалы S-метра
@@ -3010,7 +3010,7 @@ enum
 			{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
 			{	0, 2,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
 			{	4, 2,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
-			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
+			{	16, 0,	display2_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
 		#endif /* WITHMENU */
 		};
 	#if WITHMENU
@@ -3067,26 +3067,26 @@ enum
 		static const FLASHMEM struct dzone dzones [] =
 		{
 			{	0,	0,	display_txrxstate2, REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	3,	0,	display_voxtune3,	REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	7,	0,	display_att4,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	3,	0,	display2_voxtune3,	REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	7,	0,	display2_att4,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	12, 0,	display_pre3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	16, 0,	display_lockstate1, REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	19, 0,	display_rxbw3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	0,	2,	display_voltlevelV5, REDRM_VOLT, REDRSUBSET(DPAGE0), },	// voltmeter with "V"
-			{	6,	2,	display_atu3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	10, 2,	display_byp3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	0,	4,	display_freqX_a,	REDRM_FREQ, REDRSUBSET(DPAGE0), },
-			{	19, 4,	display_mode3_a,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
-			{	0,	9,	display_vfomode3,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// SPLIT
-			{	8,	9,	display_freqX_b,	REDRM_FRQB, REDRSUBSET(DPAGE0), },
-			{	19, 9,	display_mode3_b,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
+			{	19, 0,	display2_rxbw3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	0,	2,	display2_voltlevelV5, REDRM_VOLT, REDRSUBSET(DPAGE0), },	// voltmeter with "V"
+			{	6,	2,	display2_atu3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	10, 2,	display2_byp3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	0,	4,	display2_freqX_a,	REDRM_FREQ, REDRSUBSET(DPAGE0), },
+			{	19, 4,	display2_mode3_a,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
+			{	0,	9,	display2_vfomode3,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// SPLIT
+			{	8,	9,	display2_freqX_b,	REDRM_FRQB, REDRSUBSET(DPAGE0), },
+			{	19, 9,	display2_mode3_b,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 			{	0,	14,	display2_bars,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// S-METER, SWR-METER, POWER-METER
-			{	18, 14,	display_agc3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	18, 14,	display2_agc3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 		#if WITHMENU
 			{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
 			{	0, 2,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
 			{	4, 2,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
-			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
+			{	16, 0,	display2_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
 		#endif /* WITHMENU */
 		};
 	#if WITHMENU
@@ -3159,31 +3159,31 @@ enum
 			{	0, 0,	display_txrxstate2, REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	3, 0,	display_hplp2,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 			//{	6, 0,	display_pre3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	10, 0,	display_att4,		REDRM_MODE, REDRSUBSET(DPAGE0), },
-			//{	0, 0,	display_agc3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	20, 0,	display_rxbw3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	24, 0,	display_mode3_a,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
+			{	10, 0,	display2_att4,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			//{	0, 0,	display2_agc3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	20, 0,	display2_rxbw3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	24, 0,	display2_mode3_a,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 			
 			{	0, 5,	display_freqXbig_a, REDRM_FREQ, REDRSUBSET(DPAGE0), },
 
-			{	0, 11,	display_vfomode3,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// SPLIT
-			{	11, 11, display_freqX_b,	REDRM_FRQB, REDRSUBSET(DPAGE0), },
-			{	24, 11,	display_mode3_b,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
+			{	0, 11,	display2_vfomode3,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// SPLIT
+			{	11, 11, display2_freqX_b,	REDRM_FRQB, REDRSUBSET(DPAGE0), },
+			{	24, 11,	display2_mode3_b,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 
 			{	0, 14,	display2_bars,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// S-METER, SWR-METER, POWER-METER
 			{	0, 17,	display2_legend,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// Отображение оцифровки шкалы S-метра
 
-			{	0, 20,	display_lockstate4, REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	0, 20,	display2_lockstate4, REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	9, 20,	display_voxtune4,	REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	14, 20,	display_time5,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// TIME HH:MM
-			{	14, 20,	display_atu3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	18, 20,	display_byp3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	22, 20,	display_voltlevelV5, REDRM_VOLT, REDRSUBSET(DPAGE0), },	// voltmeter
+			{	14, 20,	display2_atu3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	18, 20,	display2_byp3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	22, 20,	display2_voltlevelV5, REDRM_VOLT, REDRSUBSET(DPAGE0), },	// voltmeter
 		#if WITHMENU
 			{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
 			{	0, 2,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
 			{	4, 2,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
-			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
+			{	16, 0,	display2_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
 		#endif /* WITHMENU */
 		};
 	#if WITHMENU
@@ -3247,32 +3247,32 @@ enum
 			{	0, 0,	display_txrxstate2, REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	3, 0,	display_hplp2,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	6, 0,	display_pre3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	10, 0,	display_att4,		REDRM_MODE, REDRSUBSET(DPAGE0), },
-			//{	0, 0,	display_agc3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	20, 0,	display_rxbw3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	24, 0,	display_mode3_a,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
+			{	10, 0,	display2_att4,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			//{	0, 0,	display2_agc3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	20, 0,	display2_rxbw3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	24, 0,	display2_mode3_a,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 			
 			{	0, 5,	display_freqXbig_a, REDRM_FREQ, REDRSUBSET(DPAGE0), },
 
-			{	0, 11,	display_vfomode3,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// SPLIT
-			{	11, 11, display_freqX_b,	REDRM_FRQB, REDRSUBSET(DPAGE0), },
-			{	24, 11,	display_mode3_b,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
+			{	0, 11,	display2_vfomode3,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// SPLIT
+			{	11, 11, display2_freqX_b,	REDRM_FRQB, REDRSUBSET(DPAGE0), },
+			{	24, 11,	display2_mode3_b,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 
 			{	0, 14,	display2_bars,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// S-METER, SWR-METER, POWER-METER
 			{	0, 16,	display2_legend,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// Отображение оцифровки шкалы S-метра
 
 			{	0, 18,	display2_datetime12,	REDRM_BARS, REDRSUBSET(DPAGE0), },	// DATE&TIME Jan-01 13:40
 			//{	0, 18,	display_time5,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// TIME HH:MM
-			{	0, 20,	display_lockstate4, REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	0, 20,	display2_lockstate4, REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	9, 20,	display_voxtune4,	REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	14, 20,	display_atu3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	18, 20,	display_byp3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	22, 20,	display_voltlevelV5, REDRM_VOLT, REDRSUBSET(DPAGE0), },	// voltmeter
+			{	14, 20,	display2_atu3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	18, 20,	display2_byp3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	22, 20,	display2_voltlevelV5, REDRM_VOLT, REDRSUBSET(DPAGE0), },	// voltmeter
 		#if WITHMENU
 			{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
 			{	0, 2,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
 			{	4, 2,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
-			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
+			{	16, 0,	display2_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
 		#endif /* WITHMENU */
 		};
 	#if WITHMENU
@@ -3324,31 +3324,31 @@ enum
 		static const FLASHMEM struct dzone dzones [] =
 		{
 			{	0, 0,	display_txrxstate2, REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	4, 0,	display_att4,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	4, 0,	display2_att4,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	10, 0,	display_pre3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	19, 0,	display_rxbw3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	19, 0,	display2_rxbw3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	15, 0,	display_lockstate1, REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	23, 0,	display_mode3_a,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
+			{	23, 0,	display2_mode3_a,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 
-			{	0, 4,	display_freqX_a,	REDRM_FREQ, REDRSUBSET(DPAGE0), },
-			{	19, 10,	display_mode3_b,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
-			{	0, 10,	display_vfomode3,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// SPLIT
-			{	8, 10,	display_freqX_b,	REDRM_FRQB, REDRSUBSET(DPAGE0), },
-			{	19, 13,	display_agc3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	0, 4,	display2_freqX_a,	REDRM_FREQ, REDRSUBSET(DPAGE0), },
+			{	19, 10,	display2_mode3_b,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
+			{	0, 10,	display2_vfomode3,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// SPLIT
+			{	8, 10,	display2_freqX_b,	REDRM_FRQB, REDRSUBSET(DPAGE0), },
+			{	19, 13,	display2_agc3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	0, 14,	display2_bars,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// S-METER, SWR-METER, POWER-METER
 
 		#if defined (RTC1_TYPE)
 			{	0, 20,	display_time8,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// TIME
 		#endif /* defined (RTC1_TYPE) */
 			{	10, 20,	display_voxtune4,	REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	15, 20,	display_atu3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	19, 20,	display_byp3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	15, 20,	display2_atu3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	19, 20,	display2_byp3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	23, 20,	display_voltlevel4, REDRM_VOLT, REDRSUBSET(DPAGE0), },	// voltmeter without "V"
 		#if WITHMENU
 			{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
 			{	0, 2,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
 			{	4, 2,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
-			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
+			{	16, 0,	display2_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
 		#endif /* WITHMENU */
 		};
 	#if WITHMENU
@@ -3421,34 +3421,34 @@ enum
 		{
 		/* ---------------------------------- */
 			{	0,	0,	display_txrxstate2, REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	3,	0,	display_ant5,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	3,	0,	display2_ant5,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	9,	0,	display_hplp2,		REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	16, 0,	display_att4,		REDRM_MODE, REDRSUBSET(DPAGE0), },	// attenuator state
-			{	21, 0,	display_rxbw3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	16, 0,	display2_att4,		REDRM_MODE, REDRSUBSET(DPAGE0), },	// attenuator state
+			{	21, 0,	display2_rxbw3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	25,	0,	display_lockstate1, REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	27, 0,	display_mode3_a,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
+			{	27, 0,	display2_mode3_a,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 		/* ---------------------------------- */
 			{	0,	2,	display_freqXbig_a, REDRM_FREQ, REDRSUBSET(DPAGE0), },	// fullwidth = 8 constantly
 		/* ---------------------------------- */
-			//{	0,	8,	display_mainsub3, REDRM_MODE, REDRSUBSET(DPAGE0), },	// main/sub RX
-			{	4,	8,	display_vfomode3,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// SPL
-			{	12, 8,	display_freqX_b,	REDRM_FRQB, REDRSUBSET(DPAGE0), },
-			{	27, 8,	display_mode3_b,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
+			//{	0,	8,	display2_mainsub3, REDRM_MODE, REDRSUBSET(DPAGE0), },	// main/sub RX
+			{	4,	8,	display2_vfomode3,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// SPL
+			{	12, 8,	display2_freqX_b,	REDRM_FRQB, REDRSUBSET(DPAGE0), },
+			{	27, 8,	display2_mode3_b,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 		/* ---------------------------------- */
 			{	0,	11,	display2_bars,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// S-METER, SWR-METER, POWER-METER
 			{	0,	12,	display2_legend,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// Отображение оцифровки шкалы S-метра
 			/* ---------------------------------- */
-			{	0,	14,	display_voxtune3,	REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	0,	14,	display2_voxtune3,	REDRM_MODE, REDRSUBSET(DPAGE0), },
 	#if WITHNOTCHONOFF || WITHNOTCHFREQ
-			// see next {	4,	14,	display_notch5,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			// see next {	4,	14,	display2_notch5,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 	#endif /* WITHNOTCHONOFF || WITHNOTCHFREQ  */
 	#if WITHAUTOTUNER
-			{	4,	14,	display_atu3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	8,	14,	display_byp3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	4,	14,	display2_atu3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	8,	14,	display2_byp3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 	#endif /* WITHAUTOTUNER  */
 		/* ---------------------------------- */
 	#if WITHVOLTLEVEL
-			{	12,	14,	display_voltlevelV5, REDRM_VOLT, REDRSUBSET(DPAGE0), },	// voltmeter with "V"
+			{	12,	14,	display2_voltlevelV5, REDRM_VOLT, REDRSUBSET(DPAGE0), },	// voltmeter with "V"
 	#endif /* WITHVOLTLEVEL  */
 	#if defined (RTC1_TYPE)
 			//{	18,	14,	display_time8,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// TIME
@@ -3461,9 +3461,9 @@ enum
 	#if WITHMENU
 			{	1,	0,	display2_multilinemenu_block_groups,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
 			{	LABELW + 2,	0,	display2_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
-			{	LABELW*2 + 3,	0,	display_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
+			{	LABELW*2 + 3,	0,	display2_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
 		#if WITHVOLTLEVEL && WITHCURRLEVEL
-			{	0,	9,	display_voltlevelV5, REDRM_VOLT, REDRSUBSET_MENU, },	// voltmeter with "V"
+			{	0,	9,	display2_voltlevelV5, REDRM_VOLT, REDRSUBSET_MENU, },	// voltmeter with "V"
 			{	6,	9,	display2_currlevelA6, REDRM_VOLT, REDRSUBSET_MENU, },	// amphermeter with "A"
 		#endif /* WITHVOLTLEVEL && WITHCURRLEVEL */
 	#endif /* WITHMENU */
@@ -3546,27 +3546,27 @@ enum
 		{
 		/* ---------------------------------- */
 			{	0,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
-			{	3,	0,	display_ant5,		REDRM_MODE, PGALL, },
+			{	3,	0,	display2_ant5,		REDRM_MODE, PGALL, },
 			{	9,	0,	display_ovf3,		REDRM_BARS, PGALL, },	// ovf
 			{	14,	0,	display_pre3,		REDRM_MODE, PGALL, },	// pre
-			{	18, 0,	display_att4,		REDRM_MODE, PGALL, },	// attenuator state
+			{	18, 0,	display2_att4,		REDRM_MODE, PGALL, },	// attenuator state
 			{	22,	0,	display_lockstate1, REDRM_MODE, PGALL, },
-			{	23, 0,	display_rxbw3,		REDRM_MODE, PGALL, },
-			{	27, 0,	display_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
+			{	23, 0,	display2_rxbw3,		REDRM_MODE, PGALL, },
+			{	27, 0,	display2_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 		/* ---------------------------------- */
 			{	0,	2,	display_freqXbig_a, REDRM_FREQ, PGALL, },	// fullwidth = 8 constantly
 		#if ! WITHDSPEXTDDC
-			{	27, 2,	display_agc3,		REDRM_MODE, PGALL, },
+			{	27, 2,	display2_agc3,		REDRM_MODE, PGALL, },
 		#endif /* ! WITHDSPEXTDDC */
-			{	27, 4,	display_voxtune3,	REDRM_MODE, PGALL, },
+			{	27, 4,	display2_voxtune3,	REDRM_MODE, PGALL, },
 		/* ---------------------------------- */
 		#if WITHUSEAUDIOREC
-			{	0,	7,	display_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
+			{	0,	7,	display2_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
 		#endif /* WITHUSEAUDIOREC */
-			{	4,	7,	display_mainsub3, REDRM_MODE, PGALL, },	// main/sub RX
-			{	8,	7,	display_vfomode3,	REDRM_MODE, PGALL, },	// SPL
-			{	16, 7,	display_freqX_b,	REDRM_FRQB, PGALL, },
-			{	27, 7,	display_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
+			{	4,	7,	display2_mainsub3, REDRM_MODE, PGALL, },	// main/sub RX
+			{	8,	7,	display2_vfomode3,	REDRM_MODE, PGALL, },	// SPL
+			{	16, 7,	display2_freqX_b,	REDRM_FRQB, PGALL, },
+			{	27, 7,	display2_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 		/* ---------------------------------- */
 			{	0,	9,	display2_bars,		REDRM_BARS, PG0, },	// S-METER, SWR-METER, POWER-METER
 			{	0,	10,	display2_legend,	REDRM_MODE, PG0, },	// Отображение оцифровки шкалы S-метра
@@ -3579,7 +3579,7 @@ enum
 			/* ---------------------------------- */
 			{	0,	14,	display_time5,		REDRM_BARS, PG0, },	// TIME
 		#if WITHVOLTLEVEL
-			{	6,	14,	display_voltlevelV5, REDRM_VOLT, PG0, },	// voltmeter with "V"
+			{	6,	14,	display2_voltlevelV5, REDRM_VOLT, PG0, },	// voltmeter with "V"
 		#endif /* WITHVOLTLEVEL  */
 		#if WITHCURRLEVEL || WITHCURRLEVEL2
 			{	11, 14,	display2_currlevelA6, REDRM_VOLT, PG0, },	// amphermeter with "A"
@@ -3596,9 +3596,9 @@ enum
 	#if WITHMENU
 			{	1,	9,	display2_multilinemenu_block_groups,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
 			{	LABELW + 2,	9,	display2_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
-			{	LABELW*2 + 3,	9,	display_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
+			{	LABELW*2 + 3,	9,	display2_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
 		#if WITHVOLTLEVEL && WITHCURRLEVEL
-			//{	0,	9,	display_voltlevelV5, REDRM_VOLT, REDRSUBSET_MENU, },	// voltmeter with "V"
+			//{	0,	9,	display2_voltlevelV5, REDRM_VOLT, REDRSUBSET_MENU, },	// voltmeter with "V"
 			//{	6,	9,	display2_currlevelA6, REDRM_VOLT, REDRSUBSET_MENU, },	// amphermeter with "A"
 		#endif /* WITHVOLTLEVEL && WITHCURRLEVEL */
 	#endif /* WITHMENU */
@@ -3686,33 +3686,33 @@ enum
 		{
 		/* ---------------------------------- */
 			{	0,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
-			{	3,	0,	display_ant5,		REDRM_MODE, PGALL, },
+			{	3,	0,	display2_ant5,		REDRM_MODE, PGALL, },
 		#if WITHDSPEXTDDC
 			{	9,	0,	display_ovf3,		REDRM_BARS, PGALL, },	// ovf
 			{	14,	0,	display_pre3,		REDRM_MODE, PGALL, },	// pre
-			{	18, 0,	display_att4,		REDRM_MODE, PGALL, },	// attenuator state
+			{	18, 0,	display2_att4,		REDRM_MODE, PGALL, },	// attenuator state
 			{	22,	0,	display_lockstate1, REDRM_MODE, PGALL, },
 		#else /* WITHDSPEXTDDC */
 			{	9,	0,	display_pre3,		REDRM_MODE, PGALL, },	// pre
-			{	13, 0,	display_att4,		REDRM_MODE, PGALL, },	// attenuator state
-			{	18,	0,	display_lockstate4, REDRM_MODE, PGALL, },
+			{	13, 0,	display2_att4,		REDRM_MODE, PGALL, },	// attenuator state
+			{	18,	0,	display2_lockstate4, REDRM_MODE, PGALL, },
 		#endif /* WITHDSPEXTDDC */
-			{	23, 0,	display_rxbw3,		REDRM_MODE, PGALL, },
-			{	27, 0,	display_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
+			{	23, 0,	display2_rxbw3,		REDRM_MODE, PGALL, },
+			{	27, 0,	display2_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 		/* ---------------------------------- */
 			{	0,	2,	display_freqXbig_a, REDRM_FREQ, PGALL, },	// fullwidth = 8 constantly
 		#if ! WITHDSPEXTDDC
-			{	27, 2,	display_agc3,		REDRM_MODE, PGALL, },
+			{	27, 2,	display2_agc3,		REDRM_MODE, PGALL, },
 		#endif /* ! WITHDSPEXTDDC */
-			{	27, 4,	display_voxtune3,	REDRM_MODE, PGALL, },
+			{	27, 4,	display2_voxtune3,	REDRM_MODE, PGALL, },
 		/* ---------------------------------- */
 		#if WITHUSEAUDIOREC
-			{	0,	7,	display_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
+			{	0,	7,	display2_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
 		#endif /* WITHUSEAUDIOREC */
-			{	4,	7,	display_mainsub3, REDRM_MODE, PGALL, },	// main/sub RX
-			{	8,	7,	display_vfomode3,	REDRM_MODE, PGALL, },	// SPL
-			{	16, 7,	display_freqX_b,	REDRM_FRQB, PGALL, },
-			{	27, 7,	display_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
+			{	4,	7,	display2_mainsub3, REDRM_MODE, PGALL, },	// main/sub RX
+			{	8,	7,	display2_vfomode3,	REDRM_MODE, PGALL, },	// SPL
+			{	16, 7,	display2_freqX_b,	REDRM_FRQB, PGALL, },
+			{	27, 7,	display2_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 		/* ---------------------------------- */
 			{	0,	9,	display2_bars,		REDRM_BARS, PG0 | REDRSUBSET_MENU, },	// S-METER, SWR-METER, POWER-METER
 			{	0,	10,	display2_legend,	REDRM_MODE, PG0 | REDRSUBSET_MENU, },	// Отображение оцифровки шкалы S-метра
@@ -3724,13 +3724,13 @@ enum
 			{	0,	9,	display2_spectrum,	REDRM_BARS, PG1, },// подготовка изображения спектра
 			{	0,	9,	display2_colorbuff,	REDRM_BARS,	PG1, },// Отображение водопада и/или спектра
 		#else /* WITHDSPEXTDDC */
-			{	27, 12,	display_atu3,		REDRM_MODE, PGALL, },	// ATU
-			{	27, 14,	display_byp3,		REDRM_MODE, PGALL, },	// BYP
+			{	27, 12,	display2_atu3,		REDRM_MODE, PGALL, },	// ATU
+			{	27, 14,	display2_byp3,		REDRM_MODE, PGALL, },	// BYP
 		#endif /* WITHDSPEXTDDC */
 			/* ---------------------------------- */
 			{	0,	14,	display_time5,		REDRM_BARS, PG0, },	// TIME
 		#if WITHVOLTLEVEL
-			{	6,	14,	display_voltlevelV5, REDRM_VOLT, PG0, },	// voltmeter with "V"
+			{	6,	14,	display2_voltlevelV5, REDRM_VOLT, PG0, },	// voltmeter with "V"
 		#endif /* WITHVOLTLEVEL  */
 		#if WITHCURRLEVEL || WITHCURRLEVEL2
 			{	11, 14,	display2_currlevelA6, REDRM_VOLT, PG0, },	// amphermeter with "A"
@@ -3747,9 +3747,9 @@ enum
 			{	0,	12,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
 			{	0,	14,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
 			{	4,	14,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
-			//{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
+			//{	16, 0,	display2_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
 		#if WITHVOLTLEVEL && (WITHCURRLEVEL || WITHCURRLEVEL2)
-			//{	0,	14,	display_voltlevelV5, REDRM_VOLT, REDRSUBSET_MENU, },	// voltmeter with "V"
+			//{	0,	14,	display2_voltlevelV5, REDRM_VOLT, REDRSUBSET_MENU, },	// voltmeter with "V"
 			//{	6,	14,	display2_currlevelA6, REDRM_VOLT, REDRSUBSET_MENU, },	// amphermeter with "A"
 		#endif /* WITHVOLTLEVEL && (WITHCURRLEVEL || WITHCURRLEVEL2) */
 	#endif /* WITHMENU */
@@ -3844,26 +3844,26 @@ enum
 	{
 		{	0,	0,	display2_clearbg, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },
 		{	0,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
-		{	3,	0,	display_voxtune3,	REDRM_MODE, PGALL, },
-		{	7,	0,	display_att4,		REDRM_MODE, PGALL, },
+		{	3,	0,	display2_voxtune3,	REDRM_MODE, PGALL, },
+		{	7,	0,	display2_att4,		REDRM_MODE, PGALL, },
 		{	12, 0,	display_pre3,		REDRM_MODE, PGALL, },
 	#if WITHDSPEXTDDC
 		{	16, 0,	display_ovf3,		REDRM_BARS, PGALL, },	// ovf/pre
 	#endif /* WITHDSPEXTDDC */
-		{	20, 0,	display_lockstate4, REDRM_MODE, PGALL, },
-		{	25, 0,	display_agc3,		REDRM_MODE, PGALL, },
-		{	29, 0,	display_rxbw3,		REDRM_MODE, PGALL, },
+		{	20, 0,	display2_lockstate4, REDRM_MODE, PGALL, },
+		{	25, 0,	display2_agc3,		REDRM_MODE, PGALL, },
+		{	29, 0,	display2_rxbw3,		REDRM_MODE, PGALL, },
 
 		{	0,	3,	display_freqXbig_a, REDRM_FREQ, PGALL, },
-		{	25, 3,	display_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
-		{	29, 3,	display_nr3,		REDRM_MODE,	PGALL, },	// NR
+		{	25, 3,	display2_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
+		{	29, 3,	display2_nr3,		REDRM_MODE,	PGALL, },	// NR
 		//---
 		{	0,	9,	display_vfomode5,	REDRM_MODE, PGALL, },	// SPLIT
-		{	6,	9,	display_freqX_b,	REDRM_FRQB, PGALL, },
+		{	6,	9,	display2_freqX_b,	REDRM_FRQB, PGALL, },
 	#if WITHUSEDUALWATCH
-		{	29, 9,	display_mainsub3,	REDRM_MODE, PGNOMEMU, },	// main/sub RX
+		{	29, 9,	display2_mainsub3,	REDRM_MODE, PGNOMEMU, },	// main/sub RX
 	#endif /* WITHUSEDUALWATCH */
-		{	25, 9,	display_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
+		{	25, 9,	display2_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 		//---
 		{	0,	12,	display2_legend,	REDRM_MODE, PG0, },	// Отображение оцифровки шкалы S-метра, PWR & SWR-метра
 		{	0,	15,	display2_bars,		REDRM_BARS, PG0, },	// S-METER, SWR-METER, POWER-METER
@@ -3879,7 +3879,7 @@ enum
 		//{	22, 25,	display_samfreqdelta8, REDRM_BARS, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
 
 	#if WITHVOLTLEVEL
-		{	0, 28,	display_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
+		{	0, 28,	display2_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
 	#endif /* WITHVOLTLEVEL */
 	#if WITHCURRLEVEL || WITHCURRLEVEL2
 		{	6, 28,	display2_currlevelA6, REDRM_VOLT, PGALL, },	// amphermeter with "A"
@@ -3888,12 +3888,12 @@ enum
 		{	13, 28,	display_time8,		REDRM_BARS, PGALL, },	// TIME
 	#endif /* defined (RTC1_TYPE) */
 	#if WITHUSEAUDIOREC
-		{	25, 28,	display_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
+		{	25, 28,	display2_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
 	#endif /* WITHUSEAUDIOREC */
 	#if WITHMENU
 		{	1 + LABELW * 0 + 0,	18,	display2_multilinemenu_block_groups,	REDRM_MLBL, 	REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
 		{	1 + LABELW * 1 + 1,	18,	display2_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
-		{	1 + LABELW * 2 + 2,	18,	display_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
+		{	1 + LABELW * 2 + 2,	18,	display2_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
 	#endif /* WITHMENU */
 		{	0,	0,	display2_nextfb, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },
 	};
@@ -3969,28 +3969,28 @@ enum
 		{
 			{	0,	0,	display2_clearbg, 	REDRM_MODE, REDRSUBSET(DPAGE0) | REDRSUBSET_MENU | REDRSUBSET_SLEEP, },
 			{	0, 0,	display_txrxstate2, REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	3, 0,	display_voxtune3,	REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	7, 0,	display_att4,		REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	12, 0,	display_preovf3,	REDRM_BARS, REDRSUBSET(DPAGE0), },
+			{	3, 0,	display2_voxtune3,	REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	7, 0,	display2_att4,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	12, 0,	display2_preovf3,	REDRM_BARS, REDRSUBSET(DPAGE0), },
 			{	16, 0,	display_lockstate1, REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	19, 0,	display_rxbw3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	19, 0,	display2_rxbw3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 
 			{	0, 8,	display_freqXbig_a, REDRM_FREQ, REDRSUBSET(DPAGE0), },
-			{	19, 8,	display_mode3_a,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
+			{	19, 8,	display2_mode3_a,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 
 			{	0, 18,	display_vfomode5,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// SPLIT
-			{	5, 18,	display_freqX_b,	REDRM_FRQB, REDRSUBSET(DPAGE0), },
-			{	19, 18,	display_mode3_b,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
+			{	5, 18,	display2_freqX_b,	REDRM_FRQB, REDRSUBSET(DPAGE0), },
+			{	19, 18,	display2_mode3_b,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 
 			{	1, 24,	display2_bars,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// S-METER, SWR-METER, POWER-METER
 		#if defined (RTC1_TYPE)
 			{	0, 28,	display_time8,		REDRM_BARS, REDRSUBSET_MENU | REDRSUBSET(DPAGE0), },	// TIME
 		#endif /* defined (RTC1_TYPE) */
-			{	18, 28,	display_agc3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	18, 28,	display2_agc3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 		#if WITHMENU
 			{	1 + LABELW * 0 + 0,	18,	display2_multilinemenu_block_groups,	REDRM_MLBL, sREDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
 			{	1 + LABELW * 1 + 1,	18,	display2_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
-			{	1 + LABELW * 2 + 2,	18,	display_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
+			{	1 + LABELW * 2 + 2,	18,	display2_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
 		#endif /* WITHMENU */
 			{	0,	0,	display2_nextfb, 	REDRM_MODE, REDRSUBSET(DPAGE0) | REDRSUBSET_MENU | REDRSUBSET_SLEEP, },
 		};
@@ -4071,25 +4071,25 @@ enum
 		static const FLASHMEM struct dzone dzones [] =
 		{
 			{	0,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
-			{	3,	0,	display_voxtune3,	REDRM_MODE, PGALL, },
-			{	7,	0,	display_att4,		REDRM_MODE, PGALL, },
+			{	3,	0,	display2_voxtune3,	REDRM_MODE, PGALL, },
+			{	7,	0,	display2_att4,		REDRM_MODE, PGALL, },
 			{	12, 0,	display_pre3,		REDRM_MODE, PGALL, },
 		#if WITHDSPEXTDDC
 			{	16, 0,	display_ovf3,		REDRM_BARS, PGALL, },	// ovf/pre
 		#endif /* WITHDSPEXTDDC */
-			{	20, 0,	display_lockstate4, REDRM_MODE, PGALL, },
-			{	25, 0,	display_agc3,		REDRM_MODE, PGALL, },
-			{	29, 0,	display_rxbw3,		REDRM_MODE, PGALL, },
+			{	20, 0,	display2_lockstate4, REDRM_MODE, PGALL, },
+			{	25, 0,	display2_agc3,		REDRM_MODE, PGALL, },
+			{	29, 0,	display2_rxbw3,		REDRM_MODE, PGALL, },
 
 			{	0,	8,	display_freqXbig_a, REDRM_FREQ, PGALL, },
-			{	29, 8,	display_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
+			{	29, 8,	display2_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 			//---
 			{	0,	15,	display_vfomode5,	REDRM_MODE, PGALL, },	// SPLIT
-			{	6,	15,	display_freqX_b,	REDRM_FRQB, PGALL, },
+			{	6,	15,	display2_freqX_b,	REDRM_FRQB, PGALL, },
 		#if WITHUSEDUALWATCH
-			{	25, 15,	display_mainsub3,	REDRM_MODE, PGNOMEMU, },	// main/sub RX
+			{	25, 15,	display2_mainsub3,	REDRM_MODE, PGNOMEMU, },	// main/sub RX
 		#endif /* WITHUSEDUALWATCH */
-			{	29, 15,	display_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
+			{	29, 15,	display2_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 			//---
 			{	0,	18,	display2_bars,		REDRM_BARS, PG0, },	// S-METER, SWR-METER, POWER-METER
 		#if WITHIF4DSP
@@ -4105,7 +4105,7 @@ enum
 			//{	22, 25,	display_samfreqdelta8, REDRM_BARS, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
 
 		#if WITHVOLTLEVEL
-			{	0, 28,	display_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
+			{	0, 28,	display2_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
 		#endif /* WITHVOLTLEVEL */
 		#if WITHCURRLEVEL || WITHCURRLEVEL2
 			{	6, 28,	display2_currlevelA6, REDRM_VOLT, PGALL, },	// amphermeter with "A"
@@ -4114,12 +4114,12 @@ enum
 			{	13, 28,	display_time8,		REDRM_BARS, PGALL, },	// TIME
 		#endif /* defined (RTC1_TYPE) */
 		#if WITHUSEAUDIOREC
-			{	25, 28,	display_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
+			{	25, 28,	display2_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
 		#endif /* WITHUSEAUDIOREC */
 		#if WITHMENU
 			{	1 + LABELW * 0 + 0,	18,	display2_multilinemenu_block_groups,	REDRM_MLBL, 	REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
 			{	1 + LABELW * 1 + 1,	18,	display2_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
-			{	1 + LABELW * 2 + 2,	18,	display_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
+			{	1 + LABELW * 2 + 2,	18,	display2_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
 		#endif /* WITHMENU */
 		};
 
@@ -4233,43 +4233,43 @@ enum
 	{
 		{	0,	0,	display2_clearbg, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },
 		{	0,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
-		{	3,	0,	display_ant5,		REDRM_MODE, PGALL, },
-		{	9,	0,	display_att4,		REDRM_MODE, PGALL, },
-		{	14,	0,	display_preovf3,	REDRM_BARS, PGALL, },
+		{	3,	0,	display2_ant5,		REDRM_MODE, PGALL, },
+		{	9,	0,	display2_att4,		REDRM_MODE, PGALL, },
+		{	14,	0,	display2_preovf3,	REDRM_BARS, PGALL, },
 		{	18,	0,	display_lockstate1,	REDRM_BARS, PGALL, },	// LOCK (*)
 
 	#if WITHENCODER2
-		{	21, 0,	display_fnlabel9,	REDRM_MODE, PGALL, },	// FUNC item label
-		{	21,	4,	display_fnvalue9,	REDRM_MODE, PGALL, },	// FUNC item value
-		{	25, 12,	display_notch5,		REDRM_MODE, PGALL, },	// NOTCH on/off
+		{	21, 0,	display2_fnlabel9,	REDRM_MODE, PGALL, },	// FUNC item label
+		{	21,	4,	display2_fnvalue9,	REDRM_MODE, PGALL, },	// FUNC item value
+		{	25, 12,	display2_notch5,		REDRM_MODE, PGALL, },	// NOTCH on/off
 	#else /* WITHENCODER2 */
-		{	25, 0,	display_notch5,		REDRM_MODE, PGALL, },	// FUNC item label
-		{	25,	4,	display_notchfreq5,	REDRM_BARS, PGALL, },	// FUNC item value
+		{	25, 0,	display2_notch5,		REDRM_MODE, PGALL, },	// FUNC item label
+		{	25,	4,	display2_notchfreq5,	REDRM_BARS, PGALL, },	// FUNC item value
 	#endif /* WITHENCODER2 */
 
-		{	26, 16,	display_nr3,		REDRM_MODE, PGALL, },	// NR
-//		{	26,	16,	display_agc3,		REDRM_MODE, PGALL, },	// AGC mode
-		{	26,	20,	display_voxtune3,	REDRM_MODE, PGALL, },	// VOX
+		{	26, 16,	display2_nr3,		REDRM_MODE, PGALL, },	// NR
+//		{	26,	16,	display2_agc3,		REDRM_MODE, PGALL, },	// AGC mode
+		{	26,	20,	display2_voxtune3,	REDRM_MODE, PGALL, },	// VOX
 
 		{   0, 6,  display2_smeter15_init,REDRM_INIS, PGINI, },	// Инициализация стрелочного прибора
 		{   0, 6,  display2_smeter15, 	REDRM_BARS, PGALL, },	// Изображение стрелочного прибора
 
-		{	15,	4,	display_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
-//		{	36,	8,	display_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
-//		{	21,	12,	display_rxbw3,		REDRM_MODE, PGALL, },	// 3.1 / 0,5 / WID / NAR
-//		{	26,	8,	display_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
+		{	15,	4,	display2_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
+//		{	36,	8,	display2_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
+//		{	21,	12,	display2_rxbw3,		REDRM_MODE, PGALL, },	// 3.1 / 0,5 / WID / NAR
+//		{	26,	8,	display2_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
 //
-//		{	0,	16,	display_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
-//		{	0,	16,	display_mainsub3,	REDRM_MODE, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
+//		{	0,	16,	display2_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
+//		{	0,	16,	display2_mainsub3,	REDRM_MODE, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
 //
-//		{	5,	16,	display_vfomode3,	REDRM_MODE, PGALL, },	// SPLIT - не очень нужно при наличии индикации на A/B (display_mainsub3) яркостью.
-//		{	9,	16,	display_freqX_b,	REDRM_FRQB, PGALL, },	// SUB FREQ
-//		{	21,	16,	display_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
+//		{	5,	16,	display2_vfomode3,	REDRM_MODE, PGALL, },	// SPLIT - не очень нужно при наличии индикации на A/B (display2_mainsub3) яркостью.
+//		{	9,	16,	display2_freqX_b,	REDRM_FRQB, PGALL, },	// SUB FREQ
+//		{	21,	16,	display2_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 
 #if 1
 		//{	0,	20,	display2_legend,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы S-метра, PWR & SWR-метра
 		//{	0,	24,	display2_bars,		REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
-		{	25, 24, display_siglevel4, REDRM_BARS, PGSWR, },	// уровень сигнала
+		{	25, 24, display2_siglevel4, REDRM_BARS, PGSWR, },	// уровень сигнала
 		//{	25, 24, display_smeter5, 	REDRM_BARS, PGSWR, },	// уровень сигнала в баллах S
 		{	0,	28,	display2_wfl_init,	REDRM_INIS,	PGINI, },	// формирование палитры водопада
 		{	0,	28,	display2_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
@@ -4282,23 +4282,23 @@ enum
 
 		//{	0,	51,	display_samfreqdelta8, REDRM_BARS, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
 		{	0,	51,	display_time5,		REDRM_BARS, PGALL,	},	// TIME
-		{	6, 	51,	display_atu3,		REDRM_MODE, PGALL, },	// TUNER state (optional)
-		{	10, 51,	display_byp3,		REDRM_MODE, PGALL, },	// TUNER BYPASS state (optional)
+		{	6, 	51,	display2_atu3,		REDRM_MODE, PGALL, },	// TUNER state (optional)
+		{	10, 51,	display2_byp3,		REDRM_MODE, PGALL, },	// TUNER BYPASS state (optional)
 		{	14, 51,	display2_thermo4,	REDRM_VOLT, PGALL, },	// thermo sensor
 		{	19, 51,	display2_currlevel5, REDRM_VOLT, PGALL, },	// PA drain current d.dd without "A"
-		{	25, 51,	display_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
+		{	25, 51,	display2_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
 	#if WITHAMHIGHKBDADJ
 		{	25, 51,	display_amfmhighcut5,REDRM_MODE, PGALL, },	// 13.70
 	#endif /* WITHAMHIGHKBDADJ */
 
 		// sleep mode display
 		{	5,	24,	display2_datetime12,	REDRM_BARS, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40
-		{	20, 24,	display_voltlevelV5, REDRM_VOLT, PGSLP, },	// voltmeter with "V"
+		{	20, 24,	display2_voltlevelV5, REDRM_VOLT, PGSLP, },	// voltmeter with "V"
 
 	#if WITHMENU
 		{	1,	25,	display2_multilinemenu_block_groups,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
 		{	LABELW + 3,	25,	display2_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
-		{	LABELW * 2 + 4,	25,	display_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
+		{	LABELW * 2 + 4,	25,	display2_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
 	#endif /* WITHMENU */
 		{	0,	0,	display2_nextfb, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },
 	};
@@ -4411,40 +4411,40 @@ enum
 	{
 		{	0,	0,	display2_clearbg, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },
 		{	0,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
-		{	3,	0,	display_ant5,		REDRM_MODE, PGALL, },
-		{	9,	0,	display_att4,		REDRM_MODE, PGALL, },
-		{	14,	0,	display_preovf3,	REDRM_BARS, PGALL, },
+		{	3,	0,	display2_ant5,		REDRM_MODE, PGALL, },
+		{	9,	0,	display2_att4,		REDRM_MODE, PGALL, },
+		{	14,	0,	display2_preovf3,	REDRM_BARS, PGALL, },
 		{	18,	0,	display_lockstate1,	REDRM_BARS, PGALL, },	// LOCK (*)
 
 	#if WITHENCODER2
-		{	21, 0,	display_fnlabel9,	REDRM_MODE, PGALL, },	// FUNC item label
-		{	21,	4,	display_fnvalue9,	REDRM_MODE, PGALL, },	// FUNC item value
-		{	25, 12,	display_notch5,		REDRM_MODE, PGALL, },	// NOTCH on/off
+		{	21, 0,	display2_fnlabel9,	REDRM_MODE, PGALL, },	// FUNC item label
+		{	21,	4,	display2_fnvalue9,	REDRM_MODE, PGALL, },	// FUNC item value
+		{	25, 12,	display2_notch5,		REDRM_MODE, PGALL, },	// NOTCH on/off
 	#else /* WITHENCODER2 */
-		{	25, 0,	display_notch5,		REDRM_MODE, PGALL, },	// FUNC item label
-		{	25,	4,	display_notchfreq5,	REDRM_BARS, PGALL, },	// FUNC item value
+		{	25, 0,	display2_notch5,		REDRM_MODE, PGALL, },	// FUNC item label
+		{	25,	4,	display2_notchfreq5,	REDRM_BARS, PGALL, },	// FUNC item value
 	#endif /* WITHENCODER2 */
 
-		{	26, 16,	display_nr3,		REDRM_MODE, PGALL, },	// NR
-//		{	26,	16,	display_agc3,		REDRM_MODE, PGALL, },	// AGC mode
-		{	26,	20,	display_voxtune3,	REDRM_MODE, PGALL, },	// VOX
+		{	26, 16,	display2_nr3,		REDRM_MODE, PGALL, },	// NR
+//		{	26,	16,	display2_agc3,		REDRM_MODE, PGALL, },	// AGC mode
+		{	26,	20,	display2_voxtune3,	REDRM_MODE, PGALL, },	// VOX
 		
-		{	0,	4,	display_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
-		{	21,	8,	display_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
-		{	21,	12,	display_rxbw3,		REDRM_MODE, PGALL, },	// 3.1 / 0,5 / WID / NAR
-		{	26,	8,	display_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
+		{	0,	4,	display2_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
+		{	21,	8,	display2_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
+		{	21,	12,	display2_rxbw3,		REDRM_MODE, PGALL, },	// 3.1 / 0,5 / WID / NAR
+		{	26,	8,	display2_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
 
-		{	0,	16,	display_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
-		{	0,	16,	display_mainsub3,	REDRM_MODE, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
+		{	0,	16,	display2_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
+		{	0,	16,	display2_mainsub3,	REDRM_MODE, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
 
-		{	5,	16,	display_vfomode3,	REDRM_MODE, PGALL, },	// SPLIT - не очень нужно при наличии индикации на A/B (display_mainsub3) яркостью.
-		{	9,	16,	display_freqX_b,	REDRM_FRQB, PGALL, },	// SUB FREQ
-		{	21,	16,	display_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
+		{	5,	16,	display2_vfomode3,	REDRM_MODE, PGALL, },	// SPLIT - не очень нужно при наличии индикации на A/B (display2_mainsub3) яркостью.
+		{	9,	16,	display2_freqX_b,	REDRM_FRQB, PGALL, },	// SUB FREQ
+		{	21,	16,	display2_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 
 #if 1
 		{	0,	20,	display2_legend,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы S-метра, PWR & SWR-метра
 		{	0,	24,	display2_bars,		REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
-		{	25, 24, display_siglevel4, REDRM_BARS, PGSWR, },	// уровень сигнала
+		{	25, 24, display2_siglevel4, REDRM_BARS, PGSWR, },	// уровень сигнала
 		//{	25, 24, display_smeter5, 	REDRM_BARS, PGSWR, },	// уровень сигнала в баллах S
 		{	0,	28,	display2_wfl_init,	REDRM_INIS,	PGINI, },	// формирование палитры водопада
 		{	0,	28,	display2_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
@@ -4457,23 +4457,23 @@ enum
 	
 		//{	0,	51,	display_samfreqdelta8, REDRM_BARS, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
 		{	0,	51,	display_time5,		REDRM_BARS, PGALL,	},	// TIME
-		{	6, 	51,	display_atu3,		REDRM_MODE, PGALL, },	// TUNER state (optional)
-		{	10, 51,	display_byp3,		REDRM_MODE, PGALL, },	// TUNER BYPASS state (optional)
+		{	6, 	51,	display2_atu3,		REDRM_MODE, PGALL, },	// TUNER state (optional)
+		{	10, 51,	display2_byp3,		REDRM_MODE, PGALL, },	// TUNER BYPASS state (optional)
 		{	14, 51,	display2_thermo5,	REDRM_VOLT, PGALL, },	// thermo sensor 20.7C
 		{	19, 51,	display2_currlevel5, REDRM_VOLT, PGALL, },	// PA drain current d.dd without "A"
-		{	25, 51,	display_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
+		{	25, 51,	display2_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
 	#if WITHAMHIGHKBDADJ
 		{	25, 51,	display_amfmhighcut5,REDRM_MODE, PGALL, },	// 13.70
 	#endif /* WITHAMHIGHKBDADJ */
 
 		// sleep mode display
 		{	5,	24,	display2_datetime12,	REDRM_BARS, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40
-		{	20, 24,	display_voltlevelV5, REDRM_VOLT, PGSLP, },	// voltmeter with "V"
+		{	20, 24,	display2_voltlevelV5, REDRM_VOLT, PGSLP, },	// voltmeter with "V"
 
 	#if WITHMENU
 		{	1,	25,	display2_multilinemenu_block_groups,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
 		{	LABELW + 3,	25,	display2_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
-		{	LABELW * 2 + 4,	25,	display_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
+		{	LABELW * 2 + 4,	25,	display2_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
 	#endif /* WITHMENU */
 		{	0,	0,	display2_nextfb, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },
 	};
@@ -4573,35 +4573,35 @@ enum
 	{
 		{	0,	0,	display2_clearbg, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },
 		{	0,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
-		{	3,	0,	display_ant5,		REDRM_MODE, PGALL, },
-		{	9,	0,	display_att4,		REDRM_MODE, PGALL, },
-		{	14,	0,	display_preovf3,	REDRM_BARS, PGALL, },
-		{	18,	0,	display_genham1,	REDRM_BARS, PGALL, },	// Отображение режима General Coverage / HAM bands
+		{	3,	0,	display2_ant5,		REDRM_MODE, PGALL, },
+		{	9,	0,	display2_att4,		REDRM_MODE, PGALL, },
+		{	14,	0,	display2_preovf3,	REDRM_BARS, PGALL, },
+		{	18,	0,	display2_genham1,	REDRM_BARS, PGALL, },	// Отображение режима General Coverage / HAM bands
 
 	#if WITHENCODER2
-		{	21, 0,	display_fnlabel9,	REDRM_MODE, PGALL, },	// FUNC item label
-		{	21,	4,	display_fnvalue9,	REDRM_MODE, PGALL, },	// FUNC item value
-		{	25, 15,	display_notch5,		REDRM_MODE, PGALL, },	// NOTCH on/off
+		{	21, 0,	display2_fnlabel9,	REDRM_MODE, PGALL, },	// FUNC item label
+		{	21,	4,	display2_fnvalue9,	REDRM_MODE, PGALL, },	// FUNC item value
+		{	25, 15,	display2_notch5,		REDRM_MODE, PGALL, },	// NOTCH on/off
 	#else /* WITHENCODER2 */
-		{	25, 0,	display_notch5,		REDRM_MODE, PGALL, },	// FUNC item label
-		{	25,	4,	display_notchfreq5,	REDRM_BARS, PGALL, },	// FUNC item value
+		{	25, 0,	display2_notch5,		REDRM_MODE, PGALL, },	// FUNC item label
+		{	25,	4,	display2_notchfreq5,	REDRM_BARS, PGALL, },	// FUNC item value
 	#endif /* WITHENCODER2 */
 
-		{	26, 20,	display_agc3,		REDRM_MODE, PGNOMEMU, },	// AGC mode
-		{	26, 22,	display_voxtune3,	REDRM_MODE, PGNOMEMU, },	// VOX
-		{	25, 30,	display_lockstate4, REDRM_MODE, PGNOMEMU, },	// LOCK
-		{	26, 35,	display_atu3,		REDRM_MODE, PGNOMEMU, },	// TUNER state (optional)
-		{	26, 40,	display_byp3,		REDRM_MODE, PGNOMEMU, },	// TUNER BYPASS state (optional)
-		{	26, 45,	display_rec3,		REDRM_BARS, PGNOMEMU, },	// Отображение режима записи аудио фрагмента
+		{	26, 20,	display2_agc3,		REDRM_MODE, PGNOMEMU, },	// AGC mode
+		{	26, 22,	display2_voxtune3,	REDRM_MODE, PGNOMEMU, },	// VOX
+		{	25, 30,	display2_lockstate4, REDRM_MODE, PGNOMEMU, },	// LOCK
+		{	26, 35,	display2_atu3,		REDRM_MODE, PGNOMEMU, },	// TUNER state (optional)
+		{	26, 40,	display2_byp3,		REDRM_MODE, PGNOMEMU, },	// TUNER BYPASS state (optional)
+		{	26, 45,	display2_rec3,		REDRM_BARS, PGNOMEMU, },	// Отображение режима записи аудио фрагмента
 		
-		{	0,	7,	display_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
-		{	21, 10,	display_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
-		{	26, 10,	display_rxbw3,		REDRM_MODE, PGALL, },	// 3.1 / 0,5 / WID / NAR
-		{	21, 15,	display_mainsub3,	REDRM_MODE, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
+		{	0,	7,	display2_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
+		{	21, 10,	display2_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
+		{	26, 10,	display2_rxbw3,		REDRM_MODE, PGALL, },	// 3.1 / 0,5 / WID / NAR
+		{	21, 15,	display2_mainsub3,	REDRM_MODE, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
 
-		{	5,	22,	display_vfomode3,	REDRM_MODE, PGALL, },	// SPLIT
-		{	8,	22,	display_freqX_b,	REDRM_FRQB, PGALL, },	// SUB FREQ
-		{	21, 22,	display_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
+		{	5,	22,	display2_vfomode3,	REDRM_MODE, PGALL, },	// SPLIT
+		{	8,	22,	display2_freqX_b,	REDRM_FRQB, PGALL, },	// SUB FREQ
+		{	21, 22,	display2_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 
 		{	0,	30,	display2_legend_rx,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы S-метра
 		{	0,	35,	display2_bars_rx,	REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
@@ -4613,16 +4613,16 @@ enum
 		{	9,	51,	display_smeter5,	REDRM_BARS, PGALL, },	// signal level in S points
 		{	15, 51,	display2_thermo4,	REDRM_VOLT, PGALL, },	// thermo sensor
 		{	19, 51,	display2_currlevel5, REDRM_VOLT, PGALL, },	// PA drain current d.dd without "A"
-		{	25, 51,	display_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
+		{	25, 51,	display2_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
 
 		// sleep mode display
 		{	5,	24,	display2_datetime12,	REDRM_BARS, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40
-		{	20, 24,	display_voltlevelV5, REDRM_VOLT, PGSLP, },	// voltmeter with "V"
+		{	20, 24,	display2_voltlevelV5, REDRM_VOLT, PGSLP, },	// voltmeter with "V"
 
 	#if WITHMENU
 		{	1,	25,	display2_multilinemenu_block_groups,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
 		{	LABELW + 3,	25,	display2_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
-		{	LABELW*2 + 3,	25,	display_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
+		{	LABELW*2 + 3,	25,	display2_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
 	#endif /* WITHMENU */
 		{	0,	0,	display2_nextfb, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },
 	};
@@ -4732,50 +4732,50 @@ enum
 	{
 		{	0,	0,	display2_clearbg, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },
 		{	17,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
-		{	20,	0,	display_ant5,		REDRM_MODE, PGALL, },
-		{	26,	0,	display_att4,		REDRM_MODE, PGALL, },
-		{	31,	0,	display_preovf3,	REDRM_BARS, PGALL, },
-		{	35,	0,	display_genham1,	REDRM_BARS, PGALL, },	// Отображение режима General Coverage / HAM bands
-		{	38,	0,	display_lockstate4, REDRM_MODE, PGALL, },	// LOCK
-		{	45, 0,	display_notch5,		REDRM_MODE, PGALL, },	// NOTCH on/off
-		{	47, 15,	display_voxtune3,	REDRM_MODE, PGALL, },	// VOX
-		{	47, 5,	display_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
+		{	20,	0,	display2_ant5,		REDRM_MODE, PGALL, },
+		{	26,	0,	display2_att4,		REDRM_MODE, PGALL, },
+		{	31,	0,	display2_preovf3,	REDRM_BARS, PGALL, },
+		{	35,	0,	display2_genham1,	REDRM_BARS, PGALL, },	// Отображение режима General Coverage / HAM bands
+		{	38,	0,	display2_lockstate4, REDRM_MODE, PGALL, },	// LOCK
+		{	45, 0,	display2_notch5,		REDRM_MODE, PGALL, },	// NOTCH on/off
+		{	47, 15,	display2_voxtune3,	REDRM_MODE, PGALL, },	// VOX
+		{	47, 5,	display2_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
 		{    0, 6,  display2_smeter15_init,REDRM_INIS, PGINI, },	//  Инициализация стрелочного прибора
 		{    0, 6,  display2_smeter15, 	REDRM_BARS, PGALL, },	// Изображение стрелочного прибора
-		{   47, 20, display_bkin3,		REDRM_MODE, PGALL, },
+		{   47, 20, display2_bkin3,		REDRM_MODE, PGALL, },
 	#if WITHENCODER2
-//		{	41, 0,	display_fnlabel9,	REDRM_MODE, PGALL, },	// FUNC item label
-//		{	41,	4,	display_fnvalue9,	REDRM_MODE, PGALL, },	// FUNC item value
-//		{	45, 15,	display_notch5,		REDRM_MODE, PGALL, },	// NOTCH on/off
+//		{	41, 0,	display2_fnlabel9,	REDRM_MODE, PGALL, },	// FUNC item label
+//		{	41,	4,	display2_fnvalue9,	REDRM_MODE, PGALL, },	// FUNC item value
+//		{	45, 15,	display2_notch5,		REDRM_MODE, PGALL, },	// NOTCH on/off
 	#else /* WITHENCODER2 */
-		{	45, 0,	display_notch5,		REDRM_MODE, PGALL, },	// FUNC item label
-		{	45,	4,	display_notchfreq5,	REDRM_BARS, PGALL, },	// FUNC item value
+		{	45, 0,	display2_notch5,		REDRM_MODE, PGALL, },	// FUNC item label
+		{	45,	4,	display2_notchfreq5,	REDRM_BARS, PGALL, },	// FUNC item value
 	#endif /* WITHENCODER2 */
 
-//		{	46, 20,	display_agc3,		REDRM_MODE, PGALL, },	// AGC mode
-//		{	46, 25,	display_voxtune3,	REDRM_MODE, PGALL, },	// VOX
-//		{	46, 30,	display_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
-//		{	46, 35,	display_nr3,		REDRM_MODE, PGALL, },	// NR
-		//{	46, 40,	display_atu3,		REDRM_MODE, PGALL, },	// TUNER state (optional)
-		//{	46, 45,	display_byp3,		REDRM_MODE, PGALL, },	// TUNER BYPASS state (optional)
-		//{	46, 50,	display_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
+//		{	46, 20,	display2_agc3,		REDRM_MODE, PGALL, },	// AGC mode
+//		{	46, 25,	display2_voxtune3,	REDRM_MODE, PGALL, },	// VOX
+//		{	46, 30,	display2_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
+//		{	46, 35,	display2_nr3,		REDRM_MODE, PGALL, },	// NR
+		//{	46, 40,	display2_atu3,		REDRM_MODE, PGALL, },	// TUNER state (optional)
+		//{	46, 45,	display2_byp3,		REDRM_MODE, PGALL, },	// TUNER BYPASS state (optional)
+		//{	46, 50,	display2_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
 		
-		{	17,	7,	display_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
-		{	38, 10,	display_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
-		{	43, 10,	display_rxbw3,		REDRM_MODE, PGALL, },	// 3.1 / 0,5 / WID / NAR
-		{	47, 10,	display_nr3,		REDRM_MODE, PGALL, },	// NR : was: AGC
-		{	38, 15,	display_mainsub3,	REDRM_MODE, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
+		{	17,	7,	display2_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
+		{	38, 10,	display2_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
+		{	43, 10,	display2_rxbw3,		REDRM_MODE, PGALL, },	// 3.1 / 0,5 / WID / NAR
+		{	47, 10,	display2_nr3,		REDRM_MODE, PGALL, },	// NR : was: AGC
+		{	38, 15,	display2_mainsub3,	REDRM_MODE, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
 
-		{	43,	15,	display_vfomode3,	REDRM_MODE, PGALL, },	// SPLIT
-		{	26,	20,	display_freqX_b,	REDRM_FRQB, PGALL, },	// SUB FREQ
-		{	38, 20,	display_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
+		{	43,	15,	display2_vfomode3,	REDRM_MODE, PGALL, },	// SPLIT
+		{	26,	20,	display2_freqX_b,	REDRM_FRQB, PGALL, },	// SUB FREQ
+		{	38, 20,	display2_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 
 #if 1
 		// на освободившеемя место добавить статусную строку с различной информацией
 //		{	0,	25,	display2_legend,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы S-метра
 //		{	0,	30,	display2_bars,		REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
-		{	0,	0, display_siglevel4, 	REDRM_BARS, PGSWR, },	// signal level dBm
-//		{	36, 30,	display_freqdelta8, REDRM_BARS, PGSWR, },	// выход ЧМ демодулятора
+		{	0,	0, display2_siglevel4, 	REDRM_BARS, PGSWR, },	// signal level dBm
+//		{	36, 30,	display2_freqdelta8, REDRM_BARS, PGSWR, },	// выход ЧМ демодулятора
 	#if WITHSPECTRUMWF
 		{	0,	DLES,	display2_wfl_init,	REDRM_INIS,	PGINI, },	// формирование палитры водопада
 		{	0,	DLES,	display2_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
@@ -4793,7 +4793,7 @@ enum
 		//{	XX,	DLE1,	display_samfreqdelta8, REDRM_BARS, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
 		// sleep mode display
 		{	5,	25,	display2_datetime12,	REDRM_BARS, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40
-		{	20, 25,	display_voltlevelV5, REDRM_VOLT, PGSLP, },	// voltmeter with "V"
+		{	20, 25,	display2_voltlevelV5, REDRM_VOLT, PGSLP, },	// voltmeter with "V"
 
 		{	0,	0,	display2_nextfb, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },
 	};
@@ -4901,50 +4901,50 @@ enum
 
 		{	0,	0, 	display_siglevel7, 	REDRM_BARS, PGALL, },	// signal level dBm
 		{	15,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
-		{	18, 0,	display_atu3,		REDRM_MODE, PGALL, },	// TUNER state (optional)
-		{	22, 0,	display_byp3,		REDRM_MODE, PGALL, },	// TUNER BYPASS state (optional)
-		{	26,	0,	display_ant5,		REDRM_MODE, PGALL, },
-		{	32,	0,	display_att4,		REDRM_MODE, PGALL, },
-		{	37,	0,	display_preovf3,	REDRM_BARS, PGALL, },
+		{	18, 0,	display2_atu3,		REDRM_MODE, PGALL, },	// TUNER state (optional)
+		{	22, 0,	display2_byp3,		REDRM_MODE, PGALL, },	// TUNER BYPASS state (optional)
+		{	26,	0,	display2_ant5,		REDRM_MODE, PGALL, },
+		{	32,	0,	display2_att4,		REDRM_MODE, PGALL, },
+		{	37,	0,	display2_preovf3,	REDRM_BARS, PGALL, },
 
 		{   0, 	6,  display2_smeter15_init,REDRM_INIS, PGINI, },	//  Инициализация стрелочного прибора
 		{   0, 	6,	display2_smeter15, 	REDRM_BARS, PGALL, },	// Изображение стрелочного прибора
-		{	15,	6,	display_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
+		{	15,	6,	display2_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
 
-		{	41, 0,	display_fnlabel9,	REDRM_MODE, PGALL, },	// FUNC item label
-		{	41,	4,	display_fnvalue9,	REDRM_MODE, PGALL, },	// FUNC item value
+		{	41, 0,	display2_fnlabel9,	REDRM_MODE, PGALL, },	// FUNC item label
+		{	41,	4,	display2_fnvalue9,	REDRM_MODE, PGALL, },	// FUNC item value
 
-		{	37, 10,	display_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
-		{	41, 10,	display_rxbw3,		REDRM_MODE, PGALL, },	// 3.1 / 0,5 / WID / NAR
+		{	37, 10,	display2_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
+		{	41, 10,	display2_rxbw3,		REDRM_MODE, PGALL, },	// 3.1 / 0,5 / WID / NAR
 		//{	45, 10,
 
-		{	37, 15,	display_nr3,		REDRM_MODE, PGALL, },	// NR : was: AGC
-		{	41, 15,	display_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
-		{	45, 15,	display_notch5,		REDRM_MODE, PGALL, },	// NOTCH on/off
+		{	37, 15,	display2_nr3,		REDRM_MODE, PGALL, },	// NR : was: AGC
+		{	41, 15,	display2_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
+		{	45, 15,	display2_notch5,		REDRM_MODE, PGALL, },	// NOTCH on/off
 
-		{	15, 20,	display_mainsub3,	REDRM_MODE, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
-		{	20,	20,	display_vfomode3,	REDRM_MODE, PGALL, },	// SPL
-		{	24,	20,	display_freqX_b,	REDRM_FRQB, PGALL, },	// SUB FREQ
-		{	37, 20,	display_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
-		{	41, 20,	display_voxtune3,	REDRM_MODE, PGALL, },	// VOX
-		{	45,	20,	display_lockstate4, REDRM_MODE, PGALL, },	// LOCK
+		{	15, 20,	display2_mainsub3,	REDRM_MODE, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
+		{	20,	20,	display2_vfomode3,	REDRM_MODE, PGALL, },	// SPL
+		{	24,	20,	display2_freqX_b,	REDRM_FRQB, PGALL, },	// SUB FREQ
+		{	37, 20,	display2_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
+		{	41, 20,	display2_voxtune3,	REDRM_MODE, PGALL, },	// VOX
+		{	45,	20,	display2_lockstate4, REDRM_MODE, PGALL, },	// LOCK
 
 		// размещены под S-метром (15 ячеек)
-		{	1, 	25,	display_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
+		{	1, 	25,	display2_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
 		{	7, 	25,	display2_currlevelA6, REDRM_VOLT, PGALL, },	// PA drain current d.dd with "A"
 
 		//{	14, 25,
 		//{	19, 25,
 		//{	23, 25,
 		//{	27, 25,
-		{	33, 25,	display_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
-		{	37, 25,	display_spk3,		REDRM_MODE, PGALL, },	// оьображение признака включения динамика
-		{	41, 25, display_bkin3,		REDRM_MODE, PGALL, },	// BREAK-IN
-		{	45,	25,	display_wpm5, 		REDRM_BARS, PGALL, },	// 22WPM
+		{	33, 25,	display2_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
+		{	37, 25,	display2_spk3,		REDRM_MODE, PGALL, },	// оьображение признака включения динамика
+		{	41, 25, display2_bkin3,		REDRM_MODE, PGALL, },	// BREAK-IN
+		{	45,	25,	display2_wpm5, 		REDRM_BARS, PGALL, },	// 22WPM
 
 		//{	24, 30,	display_freqmeter10, REDRM_BARS, PGALL, },	// измеренная частота опоры
-		{	37, 30,	display_freqdelta8, REDRM_BARS, PGALL, },	// выход ЧМ демодулятора
-		{	46, 30,	display_agc3,		REDRM_MODE, PGALL, },	// AGC mode
+		{	37, 30,	display2_freqdelta8, REDRM_BARS, PGALL, },	// выход ЧМ демодулятора
+		{	46, 30,	display2_agc3,		REDRM_MODE, PGALL, },	// AGC mode
 
 		{	0,	DLES,	display2_wfl_init,	REDRM_INIS,	PGINI, },	// формирование палитры водопада
 		{	0,	DLES,	display2_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
@@ -4955,18 +4955,18 @@ enum
 		{	0,	DLE1,	display2_datetime12,	REDRM_BARS, PGALL,	},	// DATE&TIME Jan-01 13:40
 		{	13,	DLE1,	display2_span9,		REDRM_MODE, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
 		{	23, DLE1,	display2_thermo4,	REDRM_VOLT, PGALL, },	// thermo sensor
-		//{	28, DLE1,	display_usb3,		REDRM_BARS, PGALL, },	// USB host status
+		//{	28, DLE1,	display2_usb3,		REDRM_BARS, PGALL, },	// USB host status
 		//{	28, DLE1,	display_freqmeter10, REDRM_BARS, PGALL, },	// измеренная частота опоры
 
 	#if WITHMENU
 		{	3,				DLES,	display2_multilinemenu_block_groups,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
 		{	LABELW + 5,		DLES,	display2_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
-		{	LABELW*2 + 6,	DLES,	display_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
+		{	LABELW*2 + 6,	DLES,	display2_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
 	#endif /* WITHMENU */
 
 		// sleep mode display
 		{	5,	25,	display2_datetime12,	REDRM_BARS, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40
-		{	20, 25,	display_voltlevelV5, REDRM_VOLT, PGSLP, },	// voltmeter with "V"
+		{	20, 25,	display2_voltlevelV5, REDRM_VOLT, PGSLP, },	// voltmeter with "V"
 
 		/* общий для всех режимов элемент */
 		{	0,	0,	display2_nextfb, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },
@@ -5083,48 +5083,48 @@ enum
 	{
 		{	0,	0,	display2_clearbg, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },
 		{	0,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
-		{	3,	0,	display_ant5,		REDRM_MODE, PGALL, },
-		{	9,	0,	display_att4,		REDRM_MODE, PGALL, },
-		{	14,	0,	display_preovf3,	REDRM_BARS, PGALL, },
-		{	18,	0,	display_genham1,	REDRM_BARS, PGALL, },	// Отображение режима General Coverage / HAM bands
-		{	21,	0,	display_lockstate4, REDRM_MODE, PGALL, },	// LOCK
+		{	3,	0,	display2_ant5,		REDRM_MODE, PGALL, },
+		{	9,	0,	display2_att4,		REDRM_MODE, PGALL, },
+		{	14,	0,	display2_preovf3,	REDRM_BARS, PGALL, },
+		{	18,	0,	display2_genham1,	REDRM_BARS, PGALL, },	// Отображение режима General Coverage / HAM bands
+		{	21,	0,	display2_lockstate4, REDRM_MODE, PGALL, },	// LOCK
 
 	#if WITHENCODER2
-		{	41, 0,	display_fnlabel9,	REDRM_MODE, PGALL, },	// FUNC item label
-		{	41,	4,	display_fnvalue9,	REDRM_MODE, PGALL, },	// FUNC item value
-		{	45, 15,	display_notch5,		REDRM_MODE, PGALL, },	// NOTCH on/off
+		{	41, 0,	display2_fnlabel9,	REDRM_MODE, PGALL, },	// FUNC item label
+		{	41,	4,	display2_fnvalue9,	REDRM_MODE, PGALL, },	// FUNC item value
+		{	45, 15,	display2_notch5,		REDRM_MODE, PGALL, },	// NOTCH on/off
 	#else /* WITHENCODER2 */
-		{	45, 0,	display_notch5,		REDRM_MODE, PGALL, },	// FUNC item label
-		{	45,	4,	display_notchfreq5,	REDRM_BARS, PGALL, },	// FUNC item value
+		{	45, 0,	display2_notch5,		REDRM_MODE, PGALL, },	// FUNC item label
+		{	45,	4,	display2_notchfreq5,	REDRM_BARS, PGALL, },	// FUNC item value
 	#endif /* WITHENCODER2 */
 
-		{	34, 20,	display_atu3,		REDRM_MODE, PGALL, },	// TUNER state (optional)
-		{	38, 20,	display_byp3,		REDRM_MODE, PGALL, },	// TUNER BYPASS state (optional)
-		{   42, 20, display_bkin3,		REDRM_MODE, PGALL, },
-		{	46, 20,	display_voxtune3,	REDRM_MODE, PGALL, },	// VOX
+		{	34, 20,	display2_atu3,		REDRM_MODE, PGALL, },	// TUNER state (optional)
+		{	38, 20,	display2_byp3,		REDRM_MODE, PGALL, },	// TUNER BYPASS state (optional)
+		{   42, 20, display2_bkin3,		REDRM_MODE, PGALL, },
+		{	46, 20,	display2_voxtune3,	REDRM_MODE, PGALL, },	// VOX
 
-		{	38, 25,	display_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
+		{	38, 25,	display2_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
 
-		{	42, 25,	display_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
-		{	46, 25,	display_nr3,		REDRM_MODE, PGALL, },	// NR : was: AGC
+		{	42, 25,	display2_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
+		{	46, 25,	display2_nr3,		REDRM_MODE, PGALL, },	// NR : was: AGC
 
-		{	0,	7,	display_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
-		{	21, 10,	display_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
-		{	26, 10,	display_rxbw3,		REDRM_MODE, PGALL, },	// 3.1 / 0,5 / WID / NAR
-		{	21, 15,	display_mainsub3,	REDRM_MODE, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
+		{	0,	7,	display2_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
+		{	21, 10,	display2_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
+		{	26, 10,	display2_rxbw3,		REDRM_MODE, PGALL, },	// 3.1 / 0,5 / WID / NAR
+		{	21, 15,	display2_mainsub3,	REDRM_MODE, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
 
-		{	26,	15,	display_vfomode3,	REDRM_MODE, PGALL, },	// SPLIT
-		{	9,	20,	display_freqX_b,	REDRM_FRQB, PGALL, },	// SUB FREQ
-		{	21, 20,	display_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
+		{	26,	15,	display2_vfomode3,	REDRM_MODE, PGALL, },	// SPLIT
+		{	9,	20,	display2_freqX_b,	REDRM_FRQB, PGALL, },	// SUB FREQ
+		{	21, 20,	display2_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 
 #if 1
 		{	0,	25,	display2_legend,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы S-метра
 		{	0,	30,	display2_bars,		REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
 		//{	0,	35,	display2_legend_tx,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы PWR & SWR-метра
 		//{	0,	40,	display2_bars_tx,	REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
-		{	31,	30, display_siglevel4, 	REDRM_BARS, PGSWR, },	// signal level dBm
-		{	36, 30,	display_freqdelta8, REDRM_BARS, PGSWR, },	// выход ЧМ демодулятора
-		{	46, 30,	display_agc3,		REDRM_MODE, PGALL, },	// AGC mode
+		{	31,	30, display2_siglevel4, 	REDRM_BARS, PGSWR, },	// signal level dBm
+		{	36, 30,	display2_freqdelta8, REDRM_BARS, PGSWR, },	// выход ЧМ демодулятора
+		{	46, 30,	display2_agc3,		REDRM_MODE, PGALL, },	// AGC mode
 	#if WITHSPECTRUMWF
 		{	0,	DLES,	display2_wfl_init,	REDRM_INIS,	PGINI, },	// формирование палитры водопада
 		{	0,	DLES,	display2_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
@@ -5141,11 +5141,11 @@ enum
 		{	0,	DLE1,	display2_datetime12,	REDRM_BARS, PGALL,	},	// DATE&TIME Jan-01 13:40
 		{	13,	DLE1,	display2_span9,		REDRM_MODE, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
 		{	23, DLE1,	display2_thermo4,	REDRM_VOLT, PGALL, },	// thermo sensor
-		//{	28, DLE1,	display_usb3,		REDRM_BARS, PGALL, },	// USB host status
+		//{	28, DLE1,	display2_usb3,		REDRM_BARS, PGALL, },	// USB host status
 		//{	28, DLE1,	display_freqmeter10, REDRM_BARS, PGALL, },	// измеренная частота опоры
 
 		{	39, DLE1,	display2_currlevel5, REDRM_VOLT, PGALL, },	// PA drain current d.dd without "A"
-		{	45, DLE1,	display_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
+		{	45, DLE1,	display2_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
 	#if WITHAMHIGHKBDADJ
 		//{	XX, DLE1,	display_amfmhighcut4,REDRM_MODE, PGALL, },	// 3.70
 	#endif /* WITHAMHIGHKBDADJ */
@@ -5154,12 +5154,12 @@ enum
 	#if WITHMENU
 		{	3,				30,	display2_multilinemenu_block_groups,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
 		{	LABELW + 5,		30,	display2_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
-		{	LABELW*2 + 6,	30,	display_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
+		{	LABELW*2 + 6,	30,	display2_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
 	#endif /* WITHMENU */
 
 		// sleep mode display
 		{	5,	25,	display2_datetime12,	REDRM_BARS, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40
-		{	20, 25,	display_voltlevelV5, REDRM_VOLT, PGSLP, },	// voltmeter with "V"
+		{	20, 25,	display2_voltlevelV5, REDRM_VOLT, PGSLP, },	// voltmeter with "V"
 
 		/* общий для всех режимов элемент */
 		{	0,	0,	display2_nextfb, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },

@@ -6113,7 +6113,7 @@ uif_encoder2_rotate(
 
 
 // FUNC item label
-void display_fnlabel9(
+void display2_fnlabel9(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	dctx_t * pctx
@@ -6137,7 +6137,7 @@ void display_fnlabel9(
 }
 
 // FUNC item value
-void display_fnvalue9(
+void display2_fnvalue9(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	dctx_t * pctx
@@ -8595,9 +8595,6 @@ const FLASHMEM char * hamradio_get_ant5_value_P(void)
 
 #endif /* WITHANTSELECT */
 
-
-#if WITHKEYBOARD
-
 // включение режима split (возможо, с расстройко от текущей частоты)
 static void 
 uif_key_spliton(uint_fast8_t holded)
@@ -9224,6 +9221,7 @@ uif_key_tune(void)
 
 #endif /* WITHTX */
 
+#if WITHKEYBOARD
 #endif /* WITHKEYBOARD */
 
 
@@ -15730,7 +15728,7 @@ void display2_multilinemenu_block_params(uint_fast8_t x, uint_fast8_t y, dctx_t 
 }
 
 // Отображение многострочного меню для больших экранов (значения)
-void display_multilinemenu_block_vals(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
+void display2_multilinemenu_block_vals(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
 {
 	if (pctx == NULL || pctx->type != DCTX_MENU)
 		return;
@@ -15790,7 +15788,7 @@ void display_multilinemenu_block_vals(uint_fast8_t x, uint_fast8_t y, dctx_t * p
             dctx_t dctx;
             dctx.type = DCTX_MENU;
             dctx.pv = mv;
-            display_menu_valxx(x, y_position_params, & dctx); // значение параметра
+            display2_menu_valxx(x, y_position_params, & dctx); // значение параметра
 			y_position_params += window.ystep;
 		}
 	}
@@ -15799,7 +15797,7 @@ void display_multilinemenu_block_vals(uint_fast8_t x, uint_fast8_t y, dctx_t * p
 
 // Вызывается из display2.c
 // код редактируемого параметра
-void display_menu_lblc3(
+void display2_menu_lblc3(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	dctx_t * pctx
@@ -15843,7 +15841,7 @@ void display2_menu_lblng(
 
 // Вызывается из display2.c
 // название редактируемого параметра или группы
-void display_menu_lblst(
+void display2_menu_lblst(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	dctx_t * pctx
@@ -15877,7 +15875,7 @@ void display2_menu_group(
 
 // Вызывается из display2.c
 // значение параметра
-void display_menu_valxx(
+void display2_menu_valxx(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	dctx_t * pctx
@@ -18826,7 +18824,7 @@ void hamradio_get_multilinemenu_block_vals(menu_names_t * vals, uint_fast8_t ind
 			dctx_t dctx;
 			dctx.type = DCTX_MENU;
 			dctx.pv = mv;
-			display_menu_valxx(0, 0, & dctx);
+			display2_menu_valxx(0, 0, & dctx);
 			safestrcpy (v->name, ARRAY_SIZE(v->name), menuw);
 			v->index = el;
 			count++;
@@ -18884,7 +18882,7 @@ const char * hamradio_gui_edit_menu_item(uint_fast8_t index, int_least16_t rotat
 	dctx_t dctx;
 	dctx.type = DCTX_MENU;
 	dctx.pv = mp;
-	display_menu_valxx(0, 0, & dctx);
+	display2_menu_valxx(0, 0, & dctx);
 	return menuw;
 }
 

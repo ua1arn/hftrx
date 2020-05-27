@@ -283,13 +283,13 @@ display2_smeter15_init(
 	);
 
 // FUNC item label
-void display_fnlabel9(
+void display2_fnlabel9(
 	uint_fast8_t x,
 	uint_fast8_t y,
 	dctx_t * pctx
 	);
 // FUNC item value
-void display_fnvalue9(
+void display2_fnvalue9(
 	uint_fast8_t x,
 	uint_fast8_t y,
 	dctx_t * pctx
@@ -310,7 +310,7 @@ void display2_multilinemenu_block_params(
 	dctx_t * pctx
 	);
 //Отображение многострочного меню для больших экранов (значения)
-void display_multilinemenu_block_vals(
+void display2_multilinemenu_block_vals(
 	uint_fast8_t x,
 	uint_fast8_t y,
 	dctx_t * pctx
@@ -325,7 +325,7 @@ void display2_menu_group(
 
 // Вызывается из display2.c
 // значение параметра
-void display_menu_valxx(
+void display2_menu_valxx(
 	uint_fast8_t x,
 	uint_fast8_t y,
 	dctx_t * pctx
@@ -333,7 +333,7 @@ void display_menu_valxx(
 
 // Вызывается из display2.c
 // название редактируемого параметра или группы
-void display_menu_lblst(
+void display2_menu_lblst(
 	uint_fast8_t x,
 	uint_fast8_t y,
 	dctx_t * pctx
@@ -350,7 +350,7 @@ void display2_menu_lblng(
 
 // Вызывается из display2.c
 // код редактируемого параметра
-void display_menu_lblc3(
+void display2_menu_lblc3(
 	uint_fast8_t x,
 	uint_fast8_t y,
 	dctx_t * pctx
