@@ -12671,7 +12671,7 @@ display_menu_digit(
 	colmain_setcolors(MNUVALCOLOR, BGCOLOR);
 	do
 	{
-		display_menu_value(x, y + lowhalf, value, width, comma, rj, lowhalf);
+		display2_menu_value(x, y + lowhalf, value, width, comma, rj, lowhalf);
 	} while (lowhalf --);
 }
 

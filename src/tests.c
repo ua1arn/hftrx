@@ -4848,7 +4848,7 @@ display_debug_digit(
 	do
 	{
 		display_gotoxy(col, row + lowhalf);		// курсор в начало первой строки
-		display_menu_value(value, width, comma, rj, lowhalf);
+		display2_menu_value(value, width, comma, rj, lowhalf);
 	} while (lowhalf --);
 }
 
@@ -6884,9 +6884,9 @@ void hightests(void)
 			do
 			{
 				display_gotoxy(0, 0 + lowhalf);
-				display_menu_value(speed * 100UL / ENCODER_NORMALIZED_RESOLUTION, 7, 2, 0, lowhalf);
+				display2_menu_value(speed * 100UL / ENCODER_NORMALIZED_RESOLUTION, 7, 2, 0, lowhalf);
 				display_gotoxy(0, HALFCOUNT_SMALL + lowhalf);
-				display_menu_value(nrotate, 5 | WSIGNFLAG, 255, 0, lowhalf);
+				display2_menu_value(nrotate, 5 | WSIGNFLAG, 255, 0, lowhalf);
 				local_delay_ms(100);
 			} while (lowhalf --);
 			//(void) nrotate;
@@ -6920,11 +6920,11 @@ void hightests(void)
 		do
 		{
 			display_gotoxy(0, 0 + lowhalf);
-			display_menu_value(board_getadc_unfiltered_u8(KI0, 0, UINT8_MAX), 5, 255, 0, lowhalf);
+			display2_menu_value(board_getadc_unfiltered_u8(KI0, 0, UINT8_MAX), 5, 255, 0, lowhalf);
 			display_gotoxy(5, 0 + lowhalf);
-			display_menu_value(board_getadc_unfiltered_u8(KI1, 0, UINT8_MAX), 5, 255, 0, lowhalf);
+			display2_menu_value(board_getadc_unfiltered_u8(KI1, 0, UINT8_MAX), 5, 255, 0, lowhalf);
 			display_gotoxy(10, 0 + lowhalf);
-			display_menu_value(board_getadc_unfiltered_u8(KI2, 0, UINT8_MAX), 5, 255, 0, lowhalf);
+			display2_menu_value(board_getadc_unfiltered_u8(KI2, 0, UINT8_MAX), 5, 255, 0, lowhalf);
 		} while (lowhalf --);
 		//
 		local_delay_ms(20);
@@ -6946,7 +6946,7 @@ void hightests(void)
 				display_gotoxy(0, row * HALFCOUNT_SMALL + lowhalf);		// курсор в начало второй строки
 				display_at("ADCx=", lowhalf);
 				display_gotoxy(5, row * HALFCOUNT_SMALL + lowhalf);		// курсор в начало второй строки
-				display_menu_value(v0, 5, 255, 0, lowhalf);
+				display2_menu_value(v0, 5, 255, 0, lowhalf);
 			} while (lowhalf --);
 		}
 		//
@@ -7221,7 +7221,7 @@ void hightests(void)
 			do
 			{
 				display_gotoxy(0, 1 + lowhalf);		// курсор в начало первой строки
-				display_menu_value(v * 1000ul, 7, 2, 1, lowhalf);
+				display2_menu_value(v * 1000ul, 7, 2, 1, lowhalf);
 			} while (lowhalf --);
 #endif
 		}

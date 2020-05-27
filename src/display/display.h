@@ -624,7 +624,7 @@ display_panel(
 	);
 
 void
-display_menu_value(
+display2_menu_value(
 	uint_fast8_t x,
 	uint_fast8_t y,
 	int_fast32_t value,
