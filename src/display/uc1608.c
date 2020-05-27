@@ -35,6 +35,7 @@
 #define UC1608_CTRL() do { board_lcd_rs(0); } while (0)	/* RS: Low: CONTROL */
 #define UC1608_DATA() do { board_lcd_rs(1); } while (0)	/* RS: High: DISPLAY DATA TRANSFER */
 
+void uc1608_gotoxy(uint_fast8_t x, uint_fast8_t y);
 
 // S8 SPI mode (not S8uc) used.
 
@@ -210,7 +211,7 @@ display_clear(void)
 	//const COLORMAIN_T bg = display_getbgcolor();
 	unsigned i;
 	
-	display_gotoxy(0, 0);
+	uc1608_gotoxy(0, 0);
 
 	uc1608_put_char_begin();
 	for (i = 0; i < ((unsigned long) DIM_Y * DIM_X) / 8; ++ i)
@@ -232,8 +233,8 @@ void colmain_setcolors3(COLORMAIN_T fg, COLORMAIN_T bg, COLORMAIN_T fgbg)
 	colmain_setcolors(fg, bg);
 }
 
-void
-display_wrdata_begin(void)
+uint_fast16_t
+display_wrdata_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
 {
 	uc1608_put_char_begin();
 }
@@ -245,8 +246,8 @@ display_wrdata_end(void)
 }
 
 // начало вывода сиволов big и half
-void
-display_wrdatabig_begin(void)
+uint_fast16_t
+display_wrdatabig_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
 {
 	uc1608_put_char_begin();
 }
@@ -267,8 +268,8 @@ display_barcolumn(uint_fast8_t pattern)
 	uc1608_putoctet(pattern);	// lower bit placed near to bottom of screen
 }
 
-void
-display_wrdatabar_begin(void)
+uint_fast16_t
+display_wrdatabar_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
 {
 	uc1608_put_char_begin();
 }
@@ -280,14 +281,14 @@ display_wrdatabar_end(void)
 }
 
 
-void
-display_put_char_big(uint_fast8_t c, uint_fast8_t lowhalf)
+uint_fast16_t
+display_put_char_big(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf)
 {
 	uc1608_put_char_big(c, lowhalf);
 }
 
-void
-display_put_char_half(uint_fast8_t c, uint_fast8_t lowhalf)
+uint_fast16_t
+display_put_char_half(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf)
 {
 	uc1608_put_char_half(c, lowhalf);
 }
@@ -295,14 +296,14 @@ display_put_char_half(uint_fast8_t c, uint_fast8_t lowhalf)
 
 // Вызов этой функции только внутри display_wrdata_begin() и display_wrdata_end();
 // Используется при выводе на графический ндикатор, если ТРЕБУЕТСЯ переключать полосы отображения
-void
-display_put_char_small(uint_fast8_t c, uint_fast8_t lowhalf)
+uint_fast16_t
+display_put_char_small(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf)
 {
 	uc1608_put_char_small(c, lowhalf);
 }
 
-void
-display_wrdata2_begin(void)
+uint_fast16_t
+display_wrdata2_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
 {
 	uc1608_put_char_begin();
 }
@@ -315,14 +316,15 @@ display_wrdata2_end(void)
 
 // Вызов этой функции только внутри display_wrdata_begin() и display_wrdata_end();
 // Используется при выводе на графический ндикатор, если ТРЕБУЕТСЯ переключать полосы отображения
-void
-display_put_char_small2(uint_fast8_t c, uint_fast8_t lowhalf)
+
+uint_fast16_t
+display_put_char_small2(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf)
 {
 	uc1608_put_char_small2(c);
 }
 
 void
-display_gotoxy(uint_fast8_t x, uint_fast8_t y)
+uc1608_gotoxy(uint_fast8_t x, uint_fast8_t y)
 {
 	uc1608_set_addr_column(x * CHAR_W, y);
 }
