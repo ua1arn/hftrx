@@ -2775,9 +2775,6 @@ filter_t fi_2p0_455 =
 		uint8_t cat2rtsenable;	/* разрешение включения передачи по линии RTS CAT */
 		uint8_t cat2dtrenable;	/* разрешение манипуляции по DTR CAT */
 
-	#else /* WITHUSBHW && WITHUSBCDC && WITHUSBHWCDC_N > 1 */
-		enum { cat2txdtr = 0, cat2rtsenable = 0, cat2dtrenable = 0 };
-
 	#endif /* WITHUSBHW && WITHUSBCDC && WITHUSBHWCDC_N > 1 */
 #endif /* WITHCAT */
 
@@ -3307,7 +3304,8 @@ enum
 			/* 1: передача управляется по DTR, манипуляция по RTS */
 			/* 0: передача управляется по RTS, манипуляция по DTR */
 			static uint_fast8_t cat2txdtr = 1;
-
+		#else
+			enum { cat2dtrenable = 0, cat2rtsenable = 0, cat2txdtr = 0 };
 		#endif
 
 	#else /* WITHCAT_CDC */
@@ -18307,6 +18305,10 @@ void hamradio_set_tune(uint_fast8_t v)
 	updateboard(1, 1);
 }
 
+#if WITHPOWERTRIM
+
+#if WITHLOWPOWEREXTTUNE
+
 void hamradio_set_tx_tune_power(uint_fast8_t v)
 {
 	ASSERT(v >= WITHPOWERTRIMMIN);
@@ -18319,6 +18321,8 @@ uint_fast8_t hamradio_get_tx_tune_power(void)
 {
 	return gtunepower;
 }
+
+#endif /* WITHLOWPOWEREXTTUNE */
 
 void hamradio_set_tx_power(uint_fast8_t v)
 {
@@ -18338,6 +18342,8 @@ void hamradio_get_tx_power_limits(uint_fast8_t * min, uint_fast8_t * max)
 	* min = WITHPOWERTRIMMIN;
 	* max = WITHPOWERTRIMMAX;
 }
+
+#endif /* WITHPOWERTRIM */
 
 #endif /* WITHTX */
 
@@ -18431,6 +18437,8 @@ void hamradio_set_antivox_level(uint_fast8_t v)
 
 #if WITHIF4DSP
 
+#if WITHREVERB
+
 void hamradio_get_reverb_delay_limits(uint_fast8_t * min, uint_fast8_t * max)
 {
 	* min = WITHREVERBDELAYMIN;
@@ -18479,6 +18487,8 @@ uint_fast8_t hamradio_get_gmoniflag(void)
 {
 	return gmoniflag;
 }
+
+#endif /* WITHREVERB */
 
 #endif /* WITHIF4DSP */
 
