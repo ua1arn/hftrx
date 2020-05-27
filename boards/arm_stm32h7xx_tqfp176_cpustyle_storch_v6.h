@@ -747,6 +747,10 @@
 #endif /* LCDMODE_LTDC */
 
 #if WITHDCDCFREQCTL
+	// ST ST1S10 Synchronizable switching frequency from 400 kHz up to 1.2 MHz
+	#define WITHHWDCDCFREQMIN 400000L
+	#define WITHHWDCDCFREQMAX 1200000L
+
 	// PF6 - DC-DC synchro output
 	// TIM16_CH1 AF1
 	#define	HARDWARE_DCDC_INITIALIZE() do { \
@@ -769,18 +773,18 @@
 		GPIO_AF_LTDC = 14,  /* LCD-TFT Alternate Function mapping */
 		GPIO_AF_LTDC9 = 9  /* LCD-TFT Alternate Function mapping */
 	};
-	/* demode values: 0: static signal, 1: DE controlled */
+	/* demode values: 0: static signal, 1: DEmask controlled */
 	#define HARDWARE_LTDC_INITIALIZE(demode) do { \
-		const uint32_t HS = (1U << 10); /* VSYNC PI10 */ \
-		const uint32_t VS = (1U << 9); /* VSYNC PI9 */ \
-		const uint32_t DE = (1U << 13); /* DE PE13 */ \
+		const uint32_t HSmask = (1U << 10); /* VSYNC PI10 */ \
+		const uint32_t VSmask = (1U << 9); /* VSYNC PI9 */ \
+		const uint32_t DEmask = (1U << 13); /* DEmask PE13 */ \
 		/* Synchronisation signals */ \
-		arm_hardware_pioi_altfn20(VS, GPIO_AF_LTDC);		/* VSYNC */ \
-		arm_hardware_pioi_altfn20(HS, GPIO_AF_LTDC);		/* HSYNC */ \
+		arm_hardware_pioi_altfn20(VSmask, GPIO_AF_LTDC);		/* VSYNC */ \
+		arm_hardware_pioi_altfn20(HSmask, GPIO_AF_LTDC);		/* HSYNC */ \
 		arm_hardware_pioe_altfn20((1U << 14), GPIO_AF_LTDC);	/* CLK */ \
 		/* Control */ \
-		/* arm_hardware_pioe_altfn20((1U << 13), GPIO_AF_LTDC); */	/* DE */ \
-		arm_hardware_pioe_outputs(DE, 0 * DE);		/* DE=0 (DISP, pin 31) */ \
+		/* arm_hardware_pioe_altfn20((1U << 13), GPIO_AF_LTDC); */	/* DEmask */ \
+		arm_hardware_pioe_outputs(DEmask, 0 * DEmask);		/* DEmask=0 (DISP, pin 31) */ \
 		/* RED */ \
 		arm_hardware_pioh_altfn20((1U << 8), GPIO_AF_LTDC);		/* R2 */ \
 		arm_hardware_pioh_altfn20((1U << 9), GPIO_AF_LTDC);		/* R3 */ \
@@ -805,14 +809,14 @@
 	} while (0)
 
 	/* управление состоянием сигнала DISP панели */
-	/* demode values: 0: static signal, 1: DE controlled */
+	/* demode values: 0: static signal, 1: DEmask controlled */
 	#define HARDWARE_LTDC_SET_DISP(demode, state) do { \
-		const uint32_t VS = (1U << 9); /* VSYNC PI9 */ \
-		const uint32_t DE = (1U << 13); /* DE PE13 */ \
+		const uint32_t VSmask = (1U << 9); /* VSYNC PI9 */ \
+		const uint32_t DEmask = (1U << 13); /* DEmask PE13 */ \
 		if (demode != 0) break; \
-		while ((GPIOI->IDR & VS) != 0) ; /* дождаться 0 */ \
-		while ((GPIOI->IDR & VS) == 0) ; /* дождаться 1 */ \
-		arm_hardware_pioe_outputs(DE, ((state) != 0) * DE);	/* DE=DISP, pin 31 - можно менять только при VSYNC=1 */ \
+		while ((GPIOI->IDR & VSmask) != 0) ; /* дождаться 0 */ \
+		while ((GPIOI->IDR & VSmask) == 0) ; /* дождаться 1 */ \
+		arm_hardware_pioe_outputs(DEmask, ((state) != 0) * DEmask);	/* DEmask=DISP, pin 31 - можно менять только при VSYNC=1 */ \
 	} while (0)
 	/* управление состоянием сигнала MODE 7" панели - на этой плате не используется */
 	#define HARDWARE_LTDC_SET_MODE(state) do { \

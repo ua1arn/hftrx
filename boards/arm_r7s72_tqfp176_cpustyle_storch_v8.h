@@ -679,6 +679,10 @@
 	} while (0)
 
 #if WITHDCDCFREQCTL
+	// ST ST1S10 Synchronizable switching frequency from 400 kHz up to 1.2 MHz
+	#define WITHHWDCDCFREQMIN 400000L
+	#define WITHHWDCDCFREQMAX 1200000L
+
 	#define	HARDWARE_DCDC_INITIALIZE() do { \
 		hardware_dcdcfreq_tioc0a_mtu0_initialize(); \
 		arm_hardware_pio2_alternative((1U << 8), R7S721_PIOALT_3);	/* P2_8 TIOC0A (MTU0 output) */ \

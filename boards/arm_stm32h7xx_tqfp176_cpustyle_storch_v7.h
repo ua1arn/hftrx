@@ -683,6 +683,10 @@
 
 
 #if WITHDCDCFREQCTL
+	// ST ST1S10 Synchronizable switching frequency from 400 kHz up to 1.2 MHz
+	#define WITHHWDCDCFREQMIN 400000L
+	#define WITHHWDCDCFREQMAX 1200000L
+
 	// PF6 - DC-DC synchro output
 	// TIM16_CH1 AF1
 	#define	HARDWARE_DCDC_INITIALIZE() do { \

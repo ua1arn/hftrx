@@ -735,6 +735,10 @@
 
 
 #if WITHDCDCFREQCTL
+	// ST ST1S10 Synchronizable switching frequency from 400 kHz up to 1.2 MHz
+	#define WITHHWDCDCFREQMIN 400000L
+	#define WITHHWDCDCFREQMAX 1200000L
+
 	// PB9 - DC-DC synchro output
 	// TIM17_CH1 AF1
 	// TIM4_CH4	AF2	AF_TIM4
