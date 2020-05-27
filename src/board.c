@@ -5201,7 +5201,7 @@ board_set_blfreq(uint_fast32_t n)
 	{
 		glob_blfreq = n;
 		//board_ctlreg1changed();
-		hardware_blfreq_setdivider(n);
+		HARDWARE_DCDC_SETDIV(n);
 	}
 }
 

@@ -586,6 +586,7 @@ extern "C" {
 		AF_SYSTEM,		//!< AF0 - SYSTEM*
 		AF_TIM1,		//!< AF1 - TIM1/2
 		AF_TIM2 = 1,	//!< AF1 - TIM1/2
+		AF_TIM17 = 1,	//!< AF1 - TIM17
 		AF_TIM3,		//!< AF2 - TIM3/4/5
 		AF_TIM4 = 2,	//!< AF2 - TIM3/4/5
 		AF_TIM5 = 2,	//!< AF2 - TIM3/4/5

@@ -3409,8 +3409,8 @@ hardware_adc_startonescan(void)
 		получение делителя частоты для синхронизации DC-DC конверторов
 		для исключения попадания в полосу обзора панорамы гармоник этой частоты.
 	*/
-	uint_fast16_t
-	getbldivider(
+	uint_fast32_t
+	hardware_dcdc_calcdivider(
 		uint_fast32_t freq
 		)
 	{
@@ -3421,7 +3421,7 @@ hardware_adc_startonescan(void)
 #elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 		struct FREQ 
 		{
-			uint_fast16_t dcdcdiv;
+			uint32_t dcdcdiv;
 			uint32_t fmin;
 			uint32_t fmax;
 		};
@@ -3452,11 +3452,74 @@ hardware_adc_startonescan(void)
 #endif /* CPUSTYLE_STM32H7XX, CPUSTYLE_R7S721 */
 	}
 
+#if CPUSTYLE_STM32H7XX
 
-	void hardware_blfreq_initialize(void)
+	void hardware_dcdcfreq_tim16_ch1_initialize(void)
 	{
-	debug_printf_P(PSTR("hardware_blfreq_initialize start\n"));
-#if CPUSTYLE_R7S721
+		/* TIM16_CH1 */
+		RCC->APB2ENR |= RCC_APB2ENR_TIM16EN;   //подаем тактирование на TIM16
+		(void) RCC->APB2ENR;
+
+		TIM16->CCMR1 =
+			3 * TIM_CCMR1_OC1M_0 |	// для кодов более 7 использовать TIM_CCMR1_OC1M_3. Output Compare 1 Mode = 3
+			0;
+		TIM16->CCER = TIM_CCER_CC1E;
+		//TIM16->DIER = TIM_DIER_UIE;        	 // разрешить событие от таймера
+		TIM16->BDTR = TIM_BDTR_MOE;
+	}
+
+	void hardware_dcdcfreq_tim16_ch1_setdiv(uint_fast32_t v)
+	{
+		/* TIM16_CH1 */
+		unsigned value;	/* делитель */
+		const uint_fast8_t prei = calcdivider(v, STM32F_TIM4_TIMER_WIDTH, STM32F_TIM4_TIMER_TAPS, & value, 1);
+		TIM16->PSC = ((1UL << prei) - 1) & TIM_PSC_PSC;
+
+		TIM16->ARR = value;
+		//TIM16->CR1 = TIM_CR1_CEN | TIM_CR1_ARPE; /* разрешить перезагрузку и включить таймер = перенесено в установку скорости - если счётчик успевал превысить значение ARR - считал до конца */
+
+		//TIM16->CCR1 = (value / 2) & TIM_CCR1_CCR1;	// TIM16_CH1 - wave output
+		//TIM16->ARR = value;
+		TIM16->CR1 = TIM_CR1_CEN | TIM_CR1_ARPE;	/* разрешить перезагрузку и включить таймер */
+	}
+
+#elif CPUSTYLE_STM32MP1
+
+	void hardware_dcdcfreq_tim17_ch1_initialize(void)
+	{
+		/* TIM17_CH1 */
+		RCC->MP_APB2ENSETR = RCC_MC_APB2ENSETR_TIM17EN;   //подаем тактирование на TIM17
+		(void) RCC->MP_APB2ENSETR;
+		RCC->MP_APB2LPENSETR = RCC_MC_APB2LPENSETR_TIM17LPEN;   //подаем тактирование на TIM17
+		(void) RCC->MP_APB2LPENSETR;
+
+		TIM17->CCMR1 =
+			3 * TIM_CCMR1_OC1M_0 |	// для кодов более 7 использовать TIM_CCMR1_OC1M_3. Output Compare 1 Mode = 3
+			0;
+		TIM17->CCER = TIM_CCER_CC1E;
+		//TIM17->DIER = TIM_DIER_UIE;        	 // разрешить событие от таймера
+		TIM17->BDTR = TIM_BDTR_MOE;
+	}
+
+	void hardware_dcdcfreq_tim17_ch1_setdiv(uint_fast32_t v)
+	{
+		/* TIM17_CH1 */
+		unsigned value;	/* делитель */
+		const uint_fast8_t prei = calcdivider(v, STM32F_TIM4_TIMER_WIDTH, STM32F_TIM4_TIMER_TAPS, & value, 1);
+		TIM17->PSC = ((1UL << prei) - 1) & TIM_PSC_PSC;
+
+		TIM17->ARR = value;
+		//TIM17->CR1 = TIM_CR1_CEN | TIM_CR1_ARPE; /* разрешить перезагрузку и включить таймер = перенесено в установку скорости - если счётчик успевал превысить значение ARR - считал до конца */
+
+		//TIM17->CCR1 = (value / 2) & TIM_CCR1_CCR1;	// TIM16_CH1 - wave output
+		//TIM17->ARR = value;
+		TIM17->CR1 = TIM_CR1_CEN | TIM_CR1_ARPE;	/* разрешить перезагрузку и включить таймер */
+	}
+
+#elif CPUSTYLE_R7S721
+
+	void hardware_dcdcfreq_tioc0a_mtu0_initialize(void)
+	{
 		/* P2_8 TIOC0A (MTU0 output) */
 		/* ---- Supply clock to the video display controller 5  ---- */
 		CPG.STBCR3 &= ~ CPG_STBCR3_MSTP33;	// Module Stop 33 0: The multi-function timer pulse unit 2 runs.
@@ -3484,42 +3547,16 @@ hardware_adc_startonescan(void)
 
 		MTU2.TSTR |= MTU2_TSTR_CST0;
 
-#elif CPUSTYLE_STM32H7XX
-		/* TIM16_CH1 - PF6 */
-		RCC->APB2ENR |= RCC_APB2ENR_TIM16EN;   //подаем тактирование на TIM16
-		__DSB();
-
-		TIM16->CCMR1 = 
-			3 * TIM_CCMR1_OC1M_0 |	// для кодов более 7 использовать TIM_CCMR1_OC1M_3. Output Compare 1 Mode = 3
-			0;
-		TIM16->CCER = TIM_CCER_CC1E;
-		//TIM16->DIER = TIM_DIER_UIE;        	 // разрешить событие от таймера
-		TIM16->BDTR = TIM_BDTR_MOE;
-#endif /* CPUSTYLE_STM32H7XX, CPUSTYLE_R7S721 */
-		debug_printf_P(PSTR("hardware_blfreq_initialize done\n"));
 	}
 
-	void hardware_blfreq_setdivider(uint_fast32_t v)
+	void hardware_dcdcfreq_tioc0a_mtu0_setdiv(uint_fast32_t v)
 	{
-#if CPUSTYLE_R7S721
 
 		/* P2_8 TIOC0A (MTU0 output) */
 		MTU2.TGRC_0 = v - 1;	// Use C intstead of A
-
-#elif CPUSTYLE_STM32H7XX
-		/* TIM16_CH1 - PF6 */
-		unsigned value;	/* делитель */
-		const uint_fast8_t prei = calcdivider(v, STM32F_TIM4_TIMER_WIDTH, STM32F_TIM4_TIMER_TAPS, & value, 1);
-		TIM16->PSC = ((1UL << prei) - 1) & TIM_PSC_PSC;
-
-		TIM16->ARR = value;
-		//TIM16->CR1 = TIM_CR1_CEN | TIM_CR1_ARPE; /* разрешить перезагрузку и включить таймер = перенесено в установку скорости - если счётчик успевал превысить значение ARR - считал до конца */
-
-		//TIM16->CCR1 = (value / 2) & TIM_CCR1_CCR1;	// TIM16_CH1 - wave output
-		//TIM16->ARR = value;
-		TIM16->CR1 = TIM_CR1_CEN | TIM_CR1_ARPE;	/* разрешить перезагрузку и включить таймер */
-#endif /* CPUSTYLE_STM32H7XX, CPUSTYLE_R7S721 */
 	}
+
+#endif
 
 #endif /* WITHDCDCFREQCTL */
 

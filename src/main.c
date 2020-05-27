@@ -7856,7 +7856,7 @@ updateboard(
 	const uint_fast8_t lo3side = LO3_SIDE;
 	static uint_fast8_t forcelsb [2];
 #if WITHDCDCFREQCTL
-	static uint_fast16_t bldividerout = UINT16_MAX;
+	static uint_fast32_t bldividerout = UINT32_MAX;
 #endif /* WITHDCDCFREQCTL */
 #if CTLSTYLE_IGOR
 	static uint_fast16_t bandf100khint = UINT16_MAX;
@@ -7881,7 +7881,7 @@ updateboard(
 		full2 |= flagne_u8(& lo2hint [pathi], gethintlo2(freq));
 		full2 |= flagne_u8(& forcelsb [pathi], getforcelsb(freq));
 #if WITHDCDCFREQCTL
-		full2 |= flagne_u16(& bldividerout, getbldivider(freq));	// управление частотой dc-dc преобразователя
+		full2 |= flagne_u32(& bldividerout, hardware_dcdc_calcdivider(freq));	// управление частотой dc-dc преобразователя
 #endif /* WITHDCDCFREQCTL */
 	}
 	// параметры, не имеющие специфики для разных приемников

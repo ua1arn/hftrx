@@ -747,13 +747,20 @@
 #endif /* LCDMODE_LTDC */
 
 #if WITHDCDCFREQCTL
+	// PF6 - DC-DC synchro output
+	// TIM16_CH1 AF1
 	#define	HARDWARE_DCDC_INITIALIZE() do { \
-		arm_hardware_piof_altfn2((1U << 6), AF_TIM1); /* TIM16_CH1 - PF6 */ \
-		hardware_blfreq_initialize(); \
+		arm_hardware_piof_altfn2((1U << 6), AF_TIM1); /* PF6 - TIM16_CH1 */ \
+		hardware_dcdcfreq_tim16_ch1_initialize(); \
 		} while (0)
+	#define HARDWARE_DCDC_SETDIV(f) do { \
+		hardware_dcdcfreq_tim16_ch1_setfdiv(f); \
+	} while (0)
 #else /* WITHDCDCFREQCTL */
 	#define	HARDWARE_DCDC_INITIALIZE() do { \
 		} while (0)
+	#define HARDWARE_DCDC_SETDIV(f) do { \
+	} while (0)
 #endif /* WITHDCDCFREQCTL */
 
 #if LCDMODE_LTDC

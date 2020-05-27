@@ -776,13 +776,22 @@
 #endif /* WITHUSBHW */
 
 #if WITHDCDCFREQCTL
+	// PB9 - DC-DC synchro output
+	// TIM17_CH1 AF1
+	// TIM4_CH4	AF2	AF_TIM4
 	#define	HARDWARE_DCDC_INITIALIZE() do { \
-		arm_hardware_piof_altfn2((1U << 6), AF_TIM1); /* TIM16_CH1 - PF6 */ \
-		hardware_blfreq_initialize(); \
-		} while (0)
+		arm_hardware_piob_altfn2((1U << 9), AF_TIM17); /* PB9 - TIM17_CH1 */ \
+		hardware_dcdcfreq_tim17_ch1_initialize(); \
+	} while (0)
+	#define HARDWARE_DCDC_SETDIV(f) do { \
+		hardware_dcdcfreq_tim17_ch1_setdiv(f); \
+	} while (0)
 #else /* WITHDCDCFREQCTL */
 	#define	HARDWARE_DCDC_INITIALIZE() do { \
-		} while (0)
+	} while (0)
+	#define HARDWARE_DCDC_SETDIV(f) do { \
+		(void) (f); \
+	} while (0)
 #endif /* WITHDCDCFREQCTL */
 
 
@@ -1001,7 +1010,7 @@
 			HARDWARE_KBD_INITIALIZE(); \
 			HARDWARE_DAC_INITIALIZE(); \
 			HARDWARE_BL_INITIALIZE(); \
-			/* HARDWARE_DCDC_INITIALIZE(); */ \
+			HARDWARE_DCDC_INITIALIZE(); \
 			TXDISABLE_INITIALIZE(); \
 			TUNE_INITIALIZE(); \
 			BOARD_USERBOOT_INITIALIZE(); \
