@@ -17614,6 +17614,8 @@ static void initialize2(void)
 #endif
 }
 
+static uint_fast8_t usbactivated;
+
 /* вызывается при разрешённых прерываниях. */
 static void 
 hamradio_initialize(void)
@@ -17675,7 +17677,20 @@ hamradio_initialize(void)
 	board_update();
 
 #if WITHUSBHW
-	board_usb_activate();		// USB device and host start
+
+	#if WITHISBOOTLOADER && defined (BOARD_IS_USERBOOT)
+		if (BOARD_IS_USERBOOT())
+		{
+			board_usb_activate();		// USB device and host start
+			usbactivated = 1;
+		}
+
+	#else /* WITHISBOOTLOADER && defined (BOARD_IS_USERBOOT) */
+		board_usb_activate();		// USB device and host start
+		usbactivated = 1;
+
+	#endif /* WITHISBOOTLOADER && defined (BOARD_IS_USERBOOT) */
+
 #endif /* WITHUSBHW */
 
 #if WITHSPISLAVE
@@ -19223,7 +19238,8 @@ void bootloader_deffereddetach(void * arg)
 		PRINTF("bootloader_deffereddetach: ip=%08lX\n", (unsigned long) ip);
 		/* Perform an Attach-Detach operation on USB bus */
 #if WITHUSBHW
-		board_usb_deactivate();
+		if (usbactivated)
+			board_usb_deactivate();
 		board_usb_deinitialize();
 #endif /* WITHUSBHW */
 		bootloader_detach(ip);
