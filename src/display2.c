@@ -1417,14 +1417,17 @@ static void display2_siglevel4(
 
 	char buff [5];
 	// в формате при наличии знака числа ширина формата отностися ко всему полю вместе со знаком
-	local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("%-+4d"), tracemax - UINT8_MAX);
+	int j = local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("%-+4d"), (int) (tracemax - UINT8_MAX));
 	(void) v;
 	const char * const labels [1] = { buff, };
+	if (strlen(buff) != 4)
+	{
+		PRINTF("j=%d, v=%d, tracemax=%d, buff='%s'\n", j, tracemax, tracemax, buff);
+	}
 	ASSERT(strlen(buff) == 4);
 	display2_text(x, y, labels, colors_1state, 0);
 #endif /* WITHIF4DSP */
 }
-
 
 #if WITHIF4DSP
 int_fast32_t display_zoomedbw(void)
