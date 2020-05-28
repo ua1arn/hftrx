@@ -6985,7 +6985,6 @@ USBD_StatusTypeDef  USBD_StdItfReq(USBD_HandleTypeDef *pdev, USBD_SetupReqTypede
 					return USBD_OK;
 				}
 			}
-
 			uint_fast8_t di;	// device function index
 			for (di = 0; di < pdev->nClasses; ++ di)
 			{
@@ -6993,8 +6992,12 @@ USBD_StatusTypeDef  USBD_StdItfReq(USBD_HandleTypeDef *pdev, USBD_SetupReqTypede
 			}
 			if (req->wLength == 0)
 			{
+				//TP();
+				//PRINTF(PSTR("USBD_StdItfReq: bmRequest=%04X, bRequest=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
+				// Уже какой-то ответ в обработчике сформирован.
+				// Если нет - ошибка, там надо вызвать например USBD_CtlSendStatus
 				// Этот запрос был без данных
-				USBD_CtlSendStatus(pdev);
+				//USBD_CtlSendStatus(pdev); // по идее, в обработчике Setup должен быть вызван USBD_CtlSendStatus/USBD_CtlError
 			}
 			else
 			{
@@ -7036,6 +7039,7 @@ USBD_StatusTypeDef  USBD_StdEPReq(USBD_HandleTypeDef * pdev, USBD_SetupReqTypede
   /* Check if it is a class request */
   if ((req->bmRequest & 0x60) == 0x20)
   {
+		TP();
 		uint_fast8_t di;	// device function index
 		for (di = 0; di < pdev->nClasses; ++ di)
 			pdev->pClasses [di]->Setup(pdev, req);
@@ -7070,7 +7074,8 @@ USBD_StatusTypeDef  USBD_StdEPReq(USBD_HandleTypeDef * pdev, USBD_SetupReqTypede
 	uint_fast8_t di;	// device function index
 	for (di = 0; di < pdev->nClasses; ++ di)
 		pdev->pClasses [di]->Setup(pdev, req);
-      USBD_CtlSendStatus(pdev);
+
+      //USBD_CtlSendStatus(pdev);	// по идее, в обработчике Setup должен быть вызван USBD_CtlSendStatus/USBD_CtlError
 
       break;
 
@@ -7099,12 +7104,17 @@ USBD_StatusTypeDef  USBD_StdEPReq(USBD_HandleTypeDef * pdev, USBD_SetupReqTypede
       {
         if ((ep_addr & 0x7F) != 0x00)
         {
-          USBD_LL_ClearStallEP(pdev, ep_addr);
-		uint_fast8_t di;	// device function index
-		for (di = 0; di < pdev->nClasses; ++ di)
-			pdev->pClasses [di]->Setup(pdev, req);
+			USBD_LL_ClearStallEP(pdev, ep_addr);
+			uint_fast8_t di;	// device function index
+			for (di = 0; di < pdev->nClasses; ++ di)
+				pdev->pClasses [di]->Setup(pdev, req);
+			// по идее, в обработчике Setup должен быть вызван USBD_CtlSendStatus/USBD_CtlError
         }
-        USBD_CtlSendStatus(pdev);
+        else
+        {
+        	USBD_CtlSendStatus(pdev);
+
+        }
       }
       break;
 
@@ -7407,7 +7417,7 @@ static void USBD_SetConfig(USBD_HandleTypeDef *pdev,
 {
 
 	const uint_fast8_t  cfgidx = LO_BYTE(req->wValue);
-	//PRINTF(PSTR("USBD_SetConfig: cfgidx=%d, pdev->dev_state=%d\n"), cfgidx, pdev->dev_state);
+	//PRINTF(PSTR("USBD_SetConfig: cfgidx=%d, pdev->dev_state=%d\n"), (int) cfgidx, (int) pdev->dev_state);
 
 	switch (pdev->dev_state)
 	{
@@ -7576,8 +7586,7 @@ static void USBD_SetFeature(USBD_HandleTypeDef *pdev,
 		uint_fast8_t di;	// device function index
 		for (di = 0; di < pdev->nClasses; ++ di)
 			pdev->pClasses [di]->Setup(pdev, req);
-		//pdev->pClass->Setup (pdev, req);
-		USBD_CtlSendStatus(pdev);
+		//USBD_CtlSendStatus(pdev);	// по идее, в обработчике Setup должен быть вызван USBD_CtlSendStatus/USBD_CtlError
 	}
 }
 
@@ -7602,7 +7611,10 @@ static void USBD_ClrFeature(USBD_HandleTypeDef *pdev,
 			uint_fast8_t di;	// device function index
 			for (di = 0; di < pdev->nClasses; ++ di)
 				pdev->pClasses [di]->Setup(pdev, req);
-			//pdev->pClass->Setup (pdev, req);
+			//USBD_CtlSendStatus(pdev);	// по идее, в обработчике Setup должен быть вызван USBD_CtlSendStatus/USBD_CtlError
+		}
+		else
+		{
 			USBD_CtlSendStatus(pdev);
 		}
 		break;

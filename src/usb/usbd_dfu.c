@@ -610,7 +610,7 @@ static USBD_StatusTypeDef USBD_DFU_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 
     case DFU_DETACH:
       DFU_Detach(pdev, req);
-      break;
+     break;
 
     default:
       USBD_CtlError (pdev, req);
@@ -656,11 +656,13 @@ static USBD_StatusTypeDef USBD_DFU_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
  			// Вызывается с номером фльтернативной конфигурации (0, 1, 2). Пррчем 0 ставится после использования ненулевых
 			altinterfaces [interfacev] = LO_BYTE(req->wValue);
 			//PRINTF("USBD_DFU_Setup: USB_REQ_TYPE_STANDARD USB_REQ_SET_INTERFACE DFU interface %d set to %d\n", (int) interfacev, (int) altinterfaces [interfacev]);
+			USBD_CtlSendStatus(pdev); // по идее, в обработчике Setup должен быть вызван USBD_CtlSendStatus/USBD_CtlError
 			break;
 
         case USB_REQ_CLEAR_FEATURE:
         	// Не должны вызывать ошибок по этому коду
-        	break;
+			USBD_CtlSendStatus(pdev); // по идее, в обработчике Setup должен быть вызван USBD_CtlSendStatus/USBD_CtlError
+			break;
 
        default:
     		//PRINTF(PSTR("1 USBD_DFU_Setup: bmRequest=%04X, bRequest=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
@@ -736,6 +738,7 @@ static void DFU_Detach(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req
     //USBD_Delay (req->wValue);
     //local_delay_ms(req->wValue);
   }
+	USBD_CtlSendStatus(pdev);	// confirmed by document
 }
 
 /**
@@ -767,7 +770,7 @@ static void DFU_Download(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *r
       hdfu->dev_status [4] = hdfu->dev_state;
 
       /* Prepare the reception of the buffer over EP0 */
-      USBD_CtlPrepareRx (pdev,
+      USBD_CtlPrepareRx(pdev,
                          (uint8_t*)hdfu->buffer.d8,
                          hdfu->wlength);
     }
@@ -790,6 +793,8 @@ static void DFU_Download(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *r
       hdfu->dev_status [2] = 0;
       hdfu->dev_status [3] = 0;
       hdfu->dev_status [4] = hdfu->dev_state;
+
+      USBD_CtlSendStatus(pdev);		// confirmed by document
     }
     else
     {
@@ -903,6 +908,8 @@ static void DFU_Upload(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req
     hdfu->dev_status [2] = 0;
     hdfu->dev_status [3] = 0;
     hdfu->dev_status [4] = hdfu->dev_state;
+
+    USBD_CtlSendStatus(pdev);
   }
 }
 
@@ -1021,6 +1028,8 @@ static void DFU_ClearStatus(USBD_HandleTypeDef *pdev)
 		hdfu->dev_status [4] = hdfu->dev_state;/*bState*/
 		hdfu->dev_status [5] = 0;/*iString*/
 	}
+
+	USBD_CtlSendStatus(pdev);		// confirmed by document
 }
 
 /**
@@ -1038,7 +1047,7 @@ static void DFU_GetState(USBD_HandleTypeDef *pdev)
 	hdfu = & gdfu;
 
 	/* Return the current state of the DFU interface */
-	USBD_CtlSendData(pdev, & hdfu->dev_state, 1);
+	USBD_CtlSendData(pdev, & hdfu->dev_state, 1);		// confirmed by document
 }
 
 /**
@@ -1069,6 +1078,8 @@ static void DFU_Abort(USBD_HandleTypeDef *pdev)
     hdfu->wblock_num = 0;
     hdfu->wlength = 0;
   }
+
+  USBD_CtlSendStatus(pdev);		// confirmed by document
 }
 
 /**

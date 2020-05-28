@@ -649,7 +649,7 @@ static USBD_StatusTypeDef USBD_UAC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 		case USB_REQ_TYPE_STANDARD:
 			switch (req->bRequest)
 			{
-			case USB_REQ_SET_INTERFACE :
+			case USB_REQ_SET_INTERFACE:
 				//PRINTF(PSTR("USBD_UAC_Setup: USB_REQ_TYPE_STANDARD USB_REQ_SET_INTERFACE interfacev=%d, value=%d\n"), (int) interfacev, (int) LO_BYTE(req->wValue));
 				switch (interfacev)
 				{
