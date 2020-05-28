@@ -473,6 +473,11 @@ static USBD_StatusTypeDef USBD_CDC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 					//bufers_set_cdcalt(altinterfaces [interfacev]);
 					USBD_CtlSendStatus(pdev);
 					break;
+
+				default:
+					// Другие интерфейсы - ничего не отправляем.
+					//TP();
+					break;
 				}
 			}
 			break;

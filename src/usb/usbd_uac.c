@@ -631,7 +631,7 @@ static USBD_StatusTypeDef USBD_UAC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 				/* все запросы этого класса устройств */
 				if (req->wLength != 0)
 				{
-					USBD_CtlPrepareRx (pdev, uac_ep0databuffout, ulmin16(ARRAY_SIZE(uac_ep0databuffout), req->wLength));
+					USBD_CtlPrepareRx(pdev, uac_ep0databuffout, ulmin16(ARRAY_SIZE(uac_ep0databuffout), req->wLength));
 				}
 				else
 				{
@@ -650,24 +650,24 @@ static USBD_StatusTypeDef USBD_UAC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 			switch (req->bRequest)
 			{
 			case USB_REQ_SET_INTERFACE :
-				//PRINTF(PSTR("USBD_UAC_Setup: USB_REQ_TYPE_STANDARD USB_REQ_SET_INTERFACE interfacev=%d, value=%d\n"), interfacev, LO_BYTE(req->wValue));
+				//PRINTF(PSTR("USBD_UAC_Setup: USB_REQ_TYPE_STANDARD USB_REQ_SET_INTERFACE interfacev=%d, value=%d\n"), (int) interfacev, (int) LO_BYTE(req->wValue));
 				switch (interfacev)
 				{
 				case INTERFACE_AUDIO_MIKE: // Audio interface: recording device
-					//PRINTF(PSTR("USBD_UAC_Setup: USB_REQ_TYPE_STANDARD USB_REQ_SET_INTERFACE INTERFACE_AUDIO_MIKE interfacev=%d, value=%d\n"), interfacev, LO_BYTE(req->wValue));
+					//PRINTF(PSTR("USBD_UAC_Setup: USB_REQ_TYPE_STANDARD USB_REQ_SET_INTERFACE INTERFACE_AUDIO_MIKE interfacev=%d, value=%d\n"), (int) interfacev, (int) LO_BYTE(req->wValue));
 					altinterfaces [interfacev] = LO_BYTE(req->wValue);
 					buffers_set_uacinalt(altinterfaces [interfacev]);
 					USBD_CtlSendStatus(pdev);
 					break;
 				case INTERFACE_AUDIO_SPK:	// DATA OUT Audio interface: playback device
-					//PRINTF(PSTR("USBD_UAC_Setup: USB_REQ_TYPE_STANDARD USB_REQ_SET_INTERFACE INTERFACE_AUDIO_SPK interfacev=%d, value=%d\n"), interfacev, LO_BYTE(req->wValue));
+					//PRINTF(PSTR("USBD_UAC_Setup: USB_REQ_TYPE_STANDARD USB_REQ_SET_INTERFACE INTERFACE_AUDIO_SPK interfacev=%d, value=%d\n"), (int) interfacev, (int) LO_BYTE(req->wValue));
 					altinterfaces [interfacev] = LO_BYTE(req->wValue);
 					buffers_set_uacoutalt(altinterfaces [interfacev]);
 					USBD_CtlSendStatus(pdev);
 					break;
 			#if WITHUSBUACIN2
 				case INTERFACE_AUDIO_RTS: // Audio interface: recording device
-					//PRINTF(PSTR("USBD_UAC_Setup: USB_REQ_TYPE_STANDARD USB_REQ_SET_INTERFACE INTERFACE_AUDIO_RTS interfacev=%d, value=%d\n"), interfacev, LO_BYTE(req->wValue));
+					//PRINTF(PSTR("USBD_UAC_Setup: USB_REQ_TYPE_STANDARD USB_REQ_SET_INTERFACE INTERFACE_AUDIO_RTS interfacev=%d, value=%d\n"), (int) interfacev, (int) LO_BYTE(req->wValue));
 					altinterfaces [interfacev] = LO_BYTE(req->wValue);
 					buffers_set_uacinrtsalt(altinterfaces [interfacev]);
 					USBD_CtlSendStatus(pdev);
@@ -676,6 +676,7 @@ static USBD_StatusTypeDef USBD_UAC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 
 				default:
 					// Other interfaces
+					//TP();
 					break;
 				}
 			}

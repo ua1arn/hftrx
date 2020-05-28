@@ -2367,7 +2367,7 @@ void board_set_uacmike(uint_fast8_t v)
 void 
 buffers_set_uacinalt(uint_fast8_t v)	/* выбор альтернативной конфигурации для UAC IN interface */
 {
-	//debug_printf_P(PSTR("buffers_set_uacinalt: v=%d\n"), v);
+	//debug_printf_P(PSTR("buffers_set_uacinalt: v=%d\n"), (int) v);
 	uacinalt = v;
 }
 
@@ -2376,7 +2376,7 @@ buffers_set_uacinalt(uint_fast8_t v)	/* выбор альтернативной 
 void 
 buffers_set_uacinrtsalt(uint_fast8_t v)	/* выбор альтернативной конфигурации для UAC IN interface */
 {
-	//debug_printf_P(PSTR("buffers_set_uacinrtsalt: v=%d\n"), v);
+	//debug_printf_P(PSTR("buffers_set_uacinrtsalt: v=%d\n"), (int) v);
 	uacinrtsalt = v;
 }
 
@@ -2385,7 +2385,7 @@ buffers_set_uacinrtsalt(uint_fast8_t v)	/* выбор альтернативно
 void 
 buffers_set_uacoutalt(uint_fast8_t v)	/* выбор альтернативной конфигурации для UAC OUT interface */
 {
-	//debug_printf_P(PSTR("buffers_set_uacoutalt: v=%d\n"), v);
+	//debug_printf_P(PSTR("buffers_set_uacoutalt: v=%d\n"), (int) v);
 	uacoutalt = v;
 }
 
