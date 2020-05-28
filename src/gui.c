@@ -1112,16 +1112,6 @@ static void buttons_ap_mic_prof_process(void);
 		{ 0, 0,	WINDOW_AP_MIC_EQ, DISABLED, 0, NON_VISIBLE, "lbl_eq0.65_name", "", FONT_MEDIUM, COLORPIP_WHITE, },
 		{ 0, 0,	WINDOW_AP_MIC_EQ, DISABLED, 0, NON_VISIBLE, "lbl_eq1.8_name",  "", FONT_MEDIUM, COLORPIP_WHITE, },
 		{ 0, 0,	WINDOW_AP_MIC_EQ, DISABLED, 0, NON_VISIBLE, "lbl_eq5.3_name",  "", FONT_MEDIUM, COLORPIP_WHITE, },
-//		{ 0, 0,	WINDOW_MAIN,  DISABLED, 0, NON_VISIBLE, "lbl_infobar_1_1", "", FONT_MEDIUM, COLORPIP_WHITE, },
-//		{ 0, 0,	WINDOW_MAIN,  DISABLED, 0, NON_VISIBLE, "lbl_infobar_1_2", "", FONT_MEDIUM, COLORPIP_WHITE, },
-//		{ 0, 0,	WINDOW_MAIN,  DISABLED, 0, NON_VISIBLE, "lbl_infobar_2_1", "", FONT_MEDIUM, COLORPIP_WHITE, },
-//		{ 0, 0,	WINDOW_MAIN,  DISABLED, 0, NON_VISIBLE, "lbl_infobar_2_2", "", FONT_MEDIUM, COLORPIP_WHITE, },
-//		{ 0, 0,	WINDOW_MAIN,  DISABLED, 0, NON_VISIBLE, "lbl_infobar_3_1", "", FONT_MEDIUM, COLORPIP_WHITE, },
-//		{ 0, 0,	WINDOW_MAIN,  DISABLED, 0, NON_VISIBLE, "lbl_infobar_3_2", "", FONT_MEDIUM, COLORPIP_WHITE, },
-//		{ 0, 0,	WINDOW_MAIN,  DISABLED, 0, NON_VISIBLE, "lbl_infobar_4_1", "", FONT_MEDIUM, COLORPIP_WHITE, },
-//		{ 0, 0,	WINDOW_MAIN,  DISABLED, 0, NON_VISIBLE, "lbl_infobar_4_2", "", FONT_MEDIUM, COLORPIP_WHITE, },
-//		{ 0, 0,	WINDOW_MAIN,  DISABLED, 0, NON_VISIBLE, "lbl_infobar_5_1", "", FONT_MEDIUM, COLORPIP_WHITE, },
-//		{ 0, 0,	WINDOW_MAIN,  DISABLED, 0, NON_VISIBLE, "lbl_infobar_5_2", "", FONT_MEDIUM, COLORPIP_WHITE, },
 		{ 0, 0,	WINDOW_AP_REVERB_SETT,  DISABLED, 0, NON_VISIBLE, "lbl_reverbDelay", "", FONT_MEDIUM, COLORPIP_WHITE, },
 		{ 0, 0,	WINDOW_AP_REVERB_SETT,  DISABLED, 0, NON_VISIBLE, "lbl_reverbLoss", "", FONT_MEDIUM, COLORPIP_WHITE, },
 		{ 0, 0,	WINDOW_AP_REVERB_SETT,  DISABLED, 0, NON_VISIBLE, "lbl_reverbDelay_min", "", FONT_SMALL, COLORPIP_WHITE, },
@@ -1775,12 +1765,12 @@ static void buttons_ap_mic_prof_process(void);
 			gui.timer_1sec_updated = 1;
 		}
 		PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
-		colpip_line(fr, DIM_X, DIM_Y, win->x1 + x_0 - 10, win->y1 + y_0, win->x1 + x_0 + x_size, win->y1 + y_0, COLORPIP_WHITE);
-		colpip_line(fr, DIM_X, DIM_Y, win->x1 + x_0, win->y1 + y_0 - 45, win->x1 + x_0, win->y1 + y_0 + 5, COLORPIP_WHITE);
-		colpip_line(fr, DIM_X, DIM_Y, win->x1 + x_l, win->y1 + y_0 - 40, win->x1 + x_l - 4, win->y1 + y_0 - 3, COLORPIP_YELLOW);
-		colpip_line(fr, DIM_X, DIM_Y, win->x1 + x_h, win->y1 + y_0 - 40, win->x1 + x_h + 4, win->y1 + y_0 - 3, COLORPIP_YELLOW);
-		colpip_line(fr, DIM_X, DIM_Y, win->x1 + x_l, win->y1 + y_0 - 40, win->x1 + x_h, win->y1 + y_0 - 40, COLORPIP_YELLOW);
-		colpip_line(fr, DIM_X, DIM_Y, win->x1 + x_c, win->y1 + y_0 - 45, win->x1 + x_c, win->y1 + y_0 + 5, COLORPIP_RED);
+		colmain_line(fr, DIM_X, DIM_Y, win->x1 + x_0 - 10, win->y1 + y_0, win->x1 + x_0 + x_size, win->y1 + y_0, COLORPIP_WHITE, 0);
+		colmain_line(fr, DIM_X, DIM_Y, win->x1 + x_0, win->y1 + y_0 - 45, win->x1 + x_0, win->y1 + y_0 + 5, COLORPIP_WHITE, 0);
+		colmain_line(fr, DIM_X, DIM_Y, win->x1 + x_l, win->y1 + y_0 - 40, win->x1 + x_l - 4, win->y1 + y_0 - 3, COLORPIP_YELLOW, 1);
+		colmain_line(fr, DIM_X, DIM_Y, win->x1 + x_h, win->y1 + y_0 - 40, win->x1 + x_h + 4, win->y1 + y_0 - 3, COLORPIP_YELLOW, 1);
+		colmain_line(fr, DIM_X, DIM_Y, win->x1 + x_l, win->y1 + y_0 - 40, win->x1 + x_h, win->y1 + y_0 - 40, COLORPIP_YELLOW, 0);
+		colmain_line(fr, DIM_X, DIM_Y, win->x1 + x_c, win->y1 + y_0 - 45, win->x1 + x_c, win->y1 + y_0 + 5, COLORPIP_RED, 0);
 	}
 
 	static void buttons_freq_handler (void)
@@ -2513,6 +2503,7 @@ static void buttons_ap_mic_prof_process(void);
 
 				set_window(win, NON_VISIBLE);
 				footer_buttons_state(CANCELLED);
+				gui.timer_1sec_updated = 1;
 			}
 		}
 	}
@@ -3852,15 +3843,18 @@ static void buttons_ap_mic_prof_process(void);
 
 	static void gui_main_process(void)
 	{
+		//lbl_infobar_1_1
 		window_t * win = & windows[WINDOW_MAIN];
+		label_t * lbl_1, * lbl_2;
 		PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
 		char buf [TEXT_ARRAY_SIZE];
 		const uint_fast8_t buflen = ARRAY_SIZE(buf);
-		uint_fast16_t yt, xt;
+		uint_fast16_t yt, xt, y1 = 125, y2 = 145, current_place = 0, xx;
+		uint_fast8_t num_labels = 5, lbl_place_width = 100;
 
 		if (win->first_call)
 		{
-			uint_fast8_t interval = 3, id_start, id_end;
+			uint_fast8_t interval_btn = 3, id_start, id_end;
 			uint_fast16_t x = 0;
 			win->first_call = 0;
 
@@ -3871,12 +3865,17 @@ static void buttons_ap_mic_prof_process(void);
 				bh->x1 = x;
 				bh->y1 = WITHGUIMAXY - bh->h;
 				bh->visible = VISIBLE;
-				x = x + interval + bh->w;
+				x = x + interval_btn + bh->w;
 			}
+			return;
 		}
 
-		uint_fast8_t interval = 15, len1 = 0, len2 = 0;
-		uint_fast16_t x = 10, y1 = 125, y2 = 145;			// пока абсолютные, переделать на относительные
+		// разметка
+		for(uint_fast8_t i = 1; i <= num_labels; i++)
+		{
+			uint_fast16_t x = lbl_place_width * i;
+			colmain_line(fr, DIM_X, DIM_Y, x, y1, x, y2 + SMALLCHARH2, COLORMAIN_GREEN, 0);
+		}
 
 		// текущее время
 	#if defined (RTC1_TYPE)
@@ -3885,15 +3884,13 @@ static void buttons_ap_mic_prof_process(void);
 		if(gui.timer_1sec_updated)
 			board_rtc_getdatetime(& year, & month, & day, & hour, & minute, & secounds);
 		local_snprintf_P(buf, buflen, PSTR("%02d.%02d"), day, month);
-		len1 = strwidth2(buf);
-		colpip_string2_tbg(fr, DIM_X, DIM_Y, x, y1, buf, COLORPIP_WHITE);
+		xx = current_place * lbl_place_width + lbl_place_width / 2;
+		colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, y1, buf, COLORPIP_WHITE);
 		local_snprintf_P(buf, buflen, PSTR("%02d%c%02d"), hour, ((secounds & 1) ? ' ' : ':'), minute);
-		len2 = strwidth2(buf);
-		colpip_string2_tbg(fr, DIM_X, DIM_Y, x, y2, buf, COLORPIP_WHITE);
+		colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, y2, buf, COLORPIP_WHITE);
 	#endif 	/* defined (RTC1_TYPE) */
 
-		x = x + (len1 > len2 ? len1 : len2) + interval;		// при изменении ширины выводимой строки infobar может дергаться, переделать
-		len1 = len2 = 0;									// добавить выравнивание по ячейкам
+		current_place++;
 
 		// напряжение питания
 	#if WITHVOLTLEVEL
@@ -3901,8 +3898,8 @@ static void buttons_ap_mic_prof_process(void);
 		if(gui.timer_1sec_updated)
 			v = ldiv(hamradio_get_volt_value(), 10);
 		local_snprintf_P(buf, buflen, PSTR("%d.%1dV"), v.quot, v.rem);
-		len1 = strwidth2(buf);
-		colpip_string2_tbg(fr, DIM_X, DIM_Y, x, y1, buf, COLORPIP_WHITE);
+		xx = current_place * lbl_place_width + lbl_place_width / 2;
+		colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, hamradio_get_tx() ? y1 : (y1 + (y2 - y1) / 2), buf, COLORPIP_WHITE);
 	#endif /* WITHVOLTLEVEL */
 
 		// ток PA (при передаче)
@@ -3931,13 +3928,11 @@ static void buttons_ap_mic_prof_process(void);
 
 		#endif /* (WITHCURRLEVEL_ACS712_30A || WITHCURRLEVEL_ACS712_20A) */
 
-			len2 = strwidth2(buf);
-			colpip_string2_tbg(fr, DIM_X, DIM_Y, x, y2, buf, COLORPIP_WHITE);
+			colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, y2, buf, COLORPIP_WHITE);
 		}
 	#endif /* WITHCURRLEVEL */
 
-		x = x + (len1 > len2 ? len1 : len2) + interval;
-		len1 = len2 = 0;
+		current_place++;
 
 		// ширина панорамы
 	#if WITHIF4DSP
@@ -3945,15 +3940,13 @@ static void buttons_ap_mic_prof_process(void);
 		if(gui.timer_1sec_updated)
 			z = display_zoomedbw() / 1000;
 		local_snprintf_P(buf, buflen, PSTR("SPAN"));
-		len1 = strwidth2(buf);
-		colpip_string2_tbg(fr, DIM_X, DIM_Y, x, y1, buf, COLORPIP_WHITE);
+		xx = current_place * lbl_place_width + lbl_place_width / 2;
+		colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, y1, buf, COLORPIP_WHITE);
 		local_snprintf_P(buf, buflen, PSTR("%dk"), z);
-		len2 = strwidth2(buf);
-		colpip_string2_tbg(fr, DIM_X, DIM_Y, x, y2, buf, COLORPIP_WHITE);
+		colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, y2, buf, COLORPIP_WHITE);
 	#endif /* WITHIF4DSP */
 
-		x = x + (len1 > len2 ? len1 : len2) + interval;
-		len1 = len2 = 0;
+		current_place++;
 
 		// параметры полосы пропускания фильтра
 		static uint_fast8_t bp_type, bp_low, bp_high;
@@ -3964,30 +3957,34 @@ static void buttons_ap_mic_prof_process(void);
 			bp_type = hamradio_get_bp_type();
 			bp_high = bp_type ? bp_high * 100 : bp_high * 10;
 		}
-		local_snprintf_P(buf, buflen, PSTR("AF filter"));
-		len1 = strwidth2(buf);
-		colpip_string2_tbg(fr, DIM_X, DIM_Y, x, y1, buf, COLORPIP_WHITE);
-		local_snprintf_P(buf, buflen, bp_type ? (PSTR("%d..%d")) : (PSTR("W%d P%d")), bp_low, bp_high);
-		len2 = strwidth2(buf);
-		if (len2 > len1)
-			colpip_string3_tbg(fr, DIM_X, DIM_Y, x, y2 , buf, COLORPIP_WHITE);
-		else
-			colpip_string2_tbg(fr, DIM_X, DIM_Y, x, y2, buf, COLORPIP_WHITE);
-		len2 = len1;
+		local_snprintf_P(buf, buflen, PSTR("AF"));
+		xx = current_place * lbl_place_width + 7;
+		colpip_string2_tbg(fr, DIM_X, DIM_Y, xx, y1 + (y2 - y1) / 2, buf, COLORPIP_WHITE);
+		xx += SMALLCHARW2 * 3;
+		local_snprintf_P(buf, buflen, bp_type ? (PSTR("L %d")) : (PSTR("W %d")), bp_low);
+		colpip_string2_tbg(fr, DIM_X, DIM_Y, xx, y1, buf, COLORPIP_WHITE);
+		local_snprintf_P(buf, buflen, bp_type ? (PSTR("H %d")) : (PSTR("P %d")), bp_high);
+		colpip_string2_tbg(fr, DIM_X, DIM_Y, xx, y2, buf, COLORPIP_WHITE);
 
-		x = x + (len1 > len2 ? len1 : len2) + interval;
-		len1 = len2 = 0;
+		current_place++;
 
 		// значение сдвига частоты
 		static int_fast16_t if_shitf;
 		if (gui.timer_1sec_updated)
 			if_shitf = hamradio_get_if_shift();
-		local_snprintf_P(buf, buflen, PSTR("IF shift"));
-		len1 = strwidth2(buf);
-		colpip_string2_tbg(fr, DIM_X, DIM_Y, x, y1, buf, COLORPIP_WHITE);
-		local_snprintf_P(buf, buflen, if_shitf == 0 ? PSTR("%d") : PSTR("%+dk"), if_shitf);
-		len2 = strwidth2(buf);
-		colpip_string2_tbg(fr, DIM_X, DIM_Y, x, y2, buf, COLORPIP_WHITE);
+		xx = current_place * lbl_place_width + lbl_place_width / 2;
+		if (if_shitf)
+		{
+			local_snprintf_P(buf, buflen, PSTR("IF shift"));
+			colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, y1, buf, COLORPIP_WHITE);
+			local_snprintf_P(buf, buflen, if_shitf == 0 ? PSTR("%d") : PSTR("%+dk"), if_shitf);
+			colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, y2, buf, COLORPIP_WHITE);
+		}
+		else
+		{
+			local_snprintf_P(buf, buflen, PSTR("IF shift"));
+			colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, y1 + (y2 - y1) / 2, buf, COLORPIP_GRAY);
+		}
 
 //	#if WITHTHERMOLEVEL	// температура выходных транзисторов (при передаче)
 //		static ldiv_t t;
