@@ -498,7 +498,7 @@ display_scroll_up(
 #include "./byte2crun.h"
 #endif /* ! LCDMODE_LTDC_L24 */
 
-static PACKEDCOLORMAIN_T ltdc_fg, ltdc_bg;
+static PACKEDCOLORMAIN_T ltdc_fg = COLORMAIN_WHITE, ltdc_bg = COLORMAIN_BLACK;
 
 #if ! LCDMODE_LTDC_L24
 static const FLASHMEM PACKEDCOLORMAIN_T (* byte2runmain) [256][8] = & byte2runmain_COLORMAIN_WHITE_COLORMAIN_BLACK;
@@ -1500,12 +1500,8 @@ void display_hardware_initialize(void)
 	// STM32xxx LCD-TFT Controller (LTDC)
 	// RENESAS Video Display Controller 5
 	arm_hardware_ltdc_initialize();
-
-#if LCDMODE_MAIN_PAGES > 1
-	// адрес отображения остановися после обновления
-#else
+	colmain_setcolors(COLORMAIN_WHITE, COLORMAIN_BLACK);
 	arm_hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
-#endif /* LCDMODE_MAIN_PAGES > 1 */
 
 #endif /* WITHLTDCHW */
 
