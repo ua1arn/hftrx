@@ -397,11 +397,11 @@ static void vdc5fb_init_graphics(struct st_vdc5 * const vdc)
 	const unsigned grx_rdswa_MAIN = 0x06;	// GRx_RDSWA 110: (7) (8) (5) (6) (3) (4) (1) (2) [32-bit swap + 16-bit swap]
 #endif /* LCDMODE_MAIN_L8 */
 
-#if LCDMODE_MAIN_L8
+#if LCDMODE_PIP_L8
 	const unsigned grx_format_PIP = 0x05;	// GRx_FORMAT 5: CLUT8
 	const unsigned grx_rdswa_PIP = 0x07;	// GRx_RDSWA 111: (8) (7) (6) (5) (4) (3) (2) (1) [32-bit swap + 16-bit swap + 8-bit swap]
 #else
-	// LCDMODE_MAIN_RGB565
+	// LCDMODE_PIP_RGB565
 	const unsigned grx_format_PIP = 0x00;	// GRx_FORMAT 0: RGB565
 	const unsigned grx_rdswa_PIP = 0x06;	// GRx_RDSWA 110: (7) (8) (5) (6) (3) (4) (1) (2) [32-bit swap + 16-bit swap]
 #endif
@@ -459,12 +459,12 @@ static void vdc5fb_init_graphics(struct st_vdc5 * const vdc)
 	//vdc->GR2_CLUT ^= (1uL << 16);	// GR2_CLT_SEL Switch to filled table
 //#endif /* LCDMODE_MAIN_L8 */
 
-//#if LCDMODE_MAIN_L8
+//#if LCDMODE_PIP_L8
 	// PIP on GR3
 	SETREG32_CK(& vdc->GR3_CLUT_INT, 1, 16, 0x00);			// GR3_CLT_SEL
 	VDC5_fillLUT_L8(& VDC5_CH0_GR3_CLUT_TBL, xltrgb24);
 	SETREG32_CK(& vdc->GR3_CLUT_INT, 1, 16, 0x01);			// GR3_CLT_SEL
-//#endif /* LCDMODE_MAIN_L8 */
+//#endif /* LCDMODE_PIP_L8 */
 
 	////////////////////////////////////////////////////////////////
 	// GR3 - PIP screen
@@ -489,7 +489,7 @@ static void vdc5fb_init_graphics(struct st_vdc5 * const vdc)
 	SETREG32_CK(& vdc->GR3_AB3, 11, 16, LEFTMARGIN);	// GR3_GRC_HS
 	SETREG32_CK(& vdc->GR3_AB3, 11, 0, WIDTH);			// GR3_GRC_HW
 
-//#if LCDMODE_MAIN_L8 || LCDMODE_MAIN_RGB565
+//#if LCDMODE_PIP_L8 || LCDMODE_PIP_RGB565
 
 	/* Adjust GR3 parameters for PIP mode (GR2 - mani window, GR3 - PIP) */
 
@@ -506,7 +506,7 @@ static void vdc5fb_init_graphics(struct st_vdc5 * const vdc)
 	SETREG32_CK(& vdc->GR3_AB3, 11, 16, LEFTMARGIN + pipwnd.x);	// GR3_GRC_HS
 	SETREG32_CK(& vdc->GR3_AB3, 11, 0, pipwnd.w);			// GR3_GRC_HW
 
-//#endif /* LCDMODE_MAIN_L8 || LCDMODE_MAIN_RGB565 */
+//#endif /* LCDMODE_PIP_L8 || LCDMODE_PIP_RGB565 */
 }
 
 static void vdc5fb_init_outcnt(struct st_vdc5 * const vdc)
@@ -844,9 +844,9 @@ arm_hardware_ltdc_initialize(void)
 	HARDWARE_LTDC_SET_MODE(BOARD_MODEVALUE);
 #endif
 
-#if LCDMODE_MAIN_RGB565 || LCDMODE_MAIN_L8
+#if LCDMODE_PIP_RGB565 || LCDMODE_PIP_L8
 	arm_hardware_ltdc_pip_off();
-#endif /* LCDMODE_MAIN_RGB565 || LCDMODE_MAIN_L8 */
+#endif /* LCDMODE_PIP_RGB565 || LCDMODE_PIP_L8 */
 
 	debug_printf_P(PSTR("arm_hardware_ltdc_initialize done\n"));
 }
@@ -1450,12 +1450,12 @@ arm_hardware_ltdc_initialize(void)
 
 	pipparams_t mainwnd = { 0, 0, DIM_SECOND, DIM_FIRST };
 
-#if LCDMODE_MAIN_RGB565 || LCDMODE_MAIN_L8
+#if LCDMODE_PIP_RGB565 || LCDMODE_PIP_L8
 	pipparams_t pipwnd;
 	display2_getpipparams(& pipwnd);
 
 	debug_printf_P(PSTR("arm_hardware_ltdc_initialize: pip: x/y=%u/%u, w/h=%u/%u\n"), pipwnd.x, pipwnd.y, pipwnd.w, pipwnd.h);
-#endif /* LCDMODE_MAIN_RGB565 || LCDMODE_MAIN_L8 */
+#endif /* LCDMODE_PIP_RGB565 || LCDMODE_PIP_L8 */
 
 	LTDC_InitStruct.LTDC_HSPolarity = HSYNCNEG ? LTDC_HSPolarity_AL : LTDC_HSPolarity_AH;     
 	//LTDC_InitStruct.LTDC_HSPolarity = LTDC_HSPolarity_AH;     
@@ -1514,7 +1514,7 @@ arm_hardware_ltdc_initialize(void)
 
 #endif /* LCDMODE_MAIN_L8 */
 
-#if LCDMODE_MAIN_L8
+#if LCDMODE_PIP_L8
 
 	LCD_LayerInitMain(LAYER_MAIN);	// довести инициализацию
 
@@ -1522,7 +1522,7 @@ arm_hardware_ltdc_initialize(void)
 	LCD_LayerInit(LAYER_PIP, LEFTMARGIN, TOPMARGIN, & pipwnd, LTDC_Pixelformat_L8, 1, sizeof (PACKEDCOLORPIP_T));
 	LCD_LayerInitPIP(LAYER_PIP);	// довести инициализацию
 
-#elif LCDMODE_MAIN_RGB565
+#elif LCDMODE_PIP_RGB565
 
 	LCD_LayerInitMain(LAYER_MAIN);	// довести инициализацию
 
@@ -1530,7 +1530,7 @@ arm_hardware_ltdc_initialize(void)
 	LCD_LayerInit(LAYER_PIP, LEFTMARGIN, TOPMARGIN, & pipwnd, LTDC_Pixelformat_RGB565, 1, sizeof (PACKEDCOLORPIP_T));
 	LCD_LayerInitPIP(LAYER_PIP);	// довести инициализацию
 
-#endif /* LCDMODE_MAIN_RGB565 */
+#endif /* LCDMODE_PIP_RGB565 */
 
 	LTDC->SRCR = LTDC_SRCR_IMR;	/*!< Immediately Reload. */
 
@@ -1542,9 +1542,9 @@ arm_hardware_ltdc_initialize(void)
 #elif LCDMODE_MAIN_L8
 	fillLUT_L8(LAYER_MAIN, xltrgb24);	// загрузка палитры - имеет смысл до Reload
 #endif /* LCDMODE_MAIN_L8 */
-#if LCDMODE_MAIN_L8
+#if LCDMODE_PIP_L8
 	fillLUT_L8(LAYER_PIP, xltrgb24);	// загрузка палитры - имеет смысл до Reload
-#endif /* LCDMODE_MAIN_L8 */
+#endif /* LCDMODE_PIP_L8 */
 
 	/* LTDC reload configuration */  
 	LTDC->SRCR = LTDC_SRCR_IMR;	/* Immediately Reload. */

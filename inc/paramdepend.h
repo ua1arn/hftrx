@@ -2168,8 +2168,8 @@ extern "C" {
 	//#define LCDMODE_MAIN_RGB565	1
 	#define LCDMODE_MAIN_PAGES	1
 
-	//#define LCDMODE_MAIN_RGB565	1	/* используется PIP с форматом 16 бит - RGB565 */
-	//#define LCDMODE_MAIN_L8	1	/* используется PIP с форматом 8 бит - индексные цвета */
+	//#define LCDMODE_PIP_RGB565	1	/* используется PIP с форматом 16 бит - RGB565 */
+	//#define LCDMODE_PIP_L8	1	/* используется PIP с форматом 8 бит - индексные цвета */
 	//#define LCDMODE_PIP_PAGES	3
 
 	#define WITHFASTWATERFLOW 1
@@ -2184,14 +2184,14 @@ extern "C" {
 	//#define LCDMODE_MAIN_RGB565	1
 	#define LCDMODE_MAIN_PAGES	1
 
-	//#define LCDMODE_MAIN_L8	1
-	#define LCDMODE_MAIN_RGB565	1
+	//#define LCDMODE_PIP_L8	1
+	#define LCDMODE_PIP_RGB565	1
 	#define LCDMODE_PIP_PAGES	3
 	//#define COLORPIP_SHADED 128
 
 	#define LCDMODE_MAIN_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит - RGB565. */
-	#define LCDMODE_MAIN_RGB565	1	/* используется PIP с форматом 16 бит - RGB565 */
-	//#define LCDMODE_MAIN_L8	1	/* используется PIP с форматом 8 бит - индексные цвета */
+	#define LCDMODE_PIP_RGB565	1	/* используется PIP с форматом 16 бит - RGB565 */
+	//#define LCDMODE_PIP_L8	1	/* используется PIP с форматом 8 бит - индексные цвета */
 
 	#define WITHFASTWATERFLOW 1
 
@@ -2204,13 +2204,13 @@ extern "C" {
 	#define LCDMODE_MAIN_RGB565	1
 	#define LCDMODE_MAIN_PAGES	1
 
-	//#define LCDMODE_MAIN_L8	1
-	#define LCDMODE_MAIN_RGB565	1
+	//#define LCDMODE_PIP_L8	1
+	#define LCDMODE_PIP_RGB565	1
 	#define LCDMODE_PIP_PAGES	3
 	//#define COLORPIP_SHADED 128
 	//#define LCDMODE_MAIN_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит - RGB565. */
-	#define LCDMODE_MAIN_RGB565	1	/* используется PIP с форматом 16 бит - RGB565 */
-	//#define LCDMODE_MAIN_L8	1	/* используется PIP с форматом 8 бит - индексные цвета */
+	#define LCDMODE_PIP_RGB565	1	/* используется PIP с форматом 16 бит - RGB565 */
+	//#define LCDMODE_PIP_L8	1	/* используется PIP с форматом 8 бит - индексные цвета */
 
 	#define WITHFASTWATERFLOW 1
 
@@ -2221,7 +2221,7 @@ extern "C" {
 	#define LCDMODE_MAIN_L8		1	/* используется 8 бит на пиксель представление экрана */
 	#define LCDMODE_MAIN_PAGES	1
 
-	#define LCDMODE_MAIN_L8	1	/* используется PIP с форматом 8 бит - индексные цвета */
+	#define LCDMODE_PIP_L8	1	/* используется PIP с форматом 8 бит - индексные цвета */
 	#define LCDMODE_PIP_PAGES	3
 	#define COLORPIP_SHADED 128
 
@@ -2234,8 +2234,8 @@ extern "C" {
 	//#define LCDMODE_MAIN_RGB565	1
 	#define LCDMODE_MAIN_PAGES	3
 
-	//#define LCDMODE_MAIN_L8	1
-	//#define LCDMODE_MAIN_RGB565	1
+	//#define LCDMODE_PIP_L8	1
+	//#define LCDMODE_PIP_RGB565	1
 	//#define LCDMODE_PIP_PAGES	3
 
 	// 0..COLORPIP_BASE-1 - волопад
@@ -2251,8 +2251,8 @@ extern "C" {
 	#define COLORPIP_BASE 96	// should be match to PALETTESIZE
 
 	#define LCDMODE_MAIN_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит - RGB565. */
-	//#define LCDMODE_MAIN_RGB565	1	/* используется PIP с форматом 16 бит - RGB565 */
-	//#define LCDMODE_MAIN_L8	1	/* используется PIP с форматом 8 бит - индексные цвета */
+	//#define LCDMODE_PIP_RGB565	1	/* используется PIP с форматом 16 бит - RGB565 */
+	//#define LCDMODE_PIP_L8	1	/* используется PIP с форматом 8 бит - индексные цвета */
 
 	#define WITHFASTWATERFLOW 1
 
@@ -2263,14 +2263,14 @@ extern "C" {
 	#define LCDMODE_MAIN_RGB565	1
 	#define LCDMODE_MAIN_PAGES	3
 
-	//#define LCDMODE_MAIN_L8	1
-	//#define LCDMODE_MAIN_RGB565	1
+	//#define LCDMODE_PIP_L8	1
+	//#define LCDMODE_PIP_RGB565	1
 	//#define LCDMODE_PIP_PAGES	3
 	//#define COLORPIP_SHADED 128
 
 	//#define LCDMODE_MAIN_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит - RGB565. */
-	//#define LCDMODE_MAIN_RGB565	1	/* используется PIP с форматом 16 бит - RGB565 */
-	//#define LCDMODE_MAIN_L8	1	/* используется PIP с форматом 8 бит - индексные цвета */
+	//#define LCDMODE_PIP_RGB565	1	/* используется PIP с форматом 16 бит - RGB565 */
+	//#define LCDMODE_PIP_L8	1	/* используется PIP с форматом 8 бит - индексные цвета */
 
 	#define WITHFASTWATERFLOW 1
 
@@ -2280,7 +2280,7 @@ extern "C" {
 	//#define LCDMODE_MAIN_RGB565	1
 	#define LCDMODE_MAIN_PAGES	0
 
-	#define LCDMODE_MAIN_L8	1
+	#define LCDMODE_PIP_L8	1
 	#define LCDMODE_PIP_PAGES	0
 	//#define COLORPIP_SHADED 128
 

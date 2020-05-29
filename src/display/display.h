@@ -315,20 +315,20 @@ typedef uint_fast32_t COLOR24_T;
 
 	#endif /* LCDMODE_MAIN_L8 */
 
-	#if LCDMODE_MAIN_L8
+	#if LCDMODE_PIP_L8
 		typedef uint8_t PACKEDCOLORPIP_T;
 		typedef uint_fast8_t COLORPIP_T;
 
-	#elif LCDMODE_MAIN_RGB565
+	#elif LCDMODE_PIP_RGB565
 		typedef uint16_t PACKEDCOLORPIP_T;
 		typedef uint_fast16_t COLORPIP_T;
 
-	#else /* LCDMODE_MAIN_RGB565 */
+	#else /* LCDMODE_PIP_RGB565 */
 		/* если только MAIN - тип PIP соответствует */
 		typedef PACKEDCOLORMAIN_T PACKEDCOLORPIP_T;
 		typedef COLORMAIN_T COLORPIP_T;
 
-	#endif /* LCDMODE_MAIN_L8 */
+	#endif /* LCDMODE_PIP_L8 */
 
 
 #endif /* LCDMODE_LTDC */
