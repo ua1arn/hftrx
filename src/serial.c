@@ -706,9 +706,7 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 
 		if (debug == 0)
 		{
-			NVIC_SetVector(USART0_IRQn, (uintptr_t) & USART0_IRQHandler);
-			NVIC_SetPriority(USART0_IRQn, ARM_SYSTEM_PRIORITY);
-			NVIC_EnableIRQ(USART0_IRQn);		// enable USART0_Handler();
+			arm_hardware_set_handler_system(USART0_IRQn, & USART0_IRQHandler);
 		}
 
 		USART0->US_CR = US_CR_RXEN | US_CR_TXEN;	// разрешаем приёмник и передатчик.
@@ -733,9 +731,7 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 
 		if (debug == 0)
 		{
-			NVIC_SetVector(USART1_IRQn, (uintptr_t) & USART1_IRQHandler);
-			NVIC_SetPriority(USART1_IRQn, ARM_SYSTEM_PRIORITY);
-			NVIC_EnableIRQ(USART1_IRQn);		// enable USART1_Handler();
+			arm_hardware_set_handler_system(USART1_IRQn, & USART1_IRQHandler);
 		}
 
 		USART1->US_CR = US_CR_RXEN | US_CR_TXEN;	// разрешаем приёмник и передатчик.
@@ -761,9 +757,7 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 
 		if (debug == 0)
 		{
-			NVIC_SetVector(UART0_IRQn, (uintptr_t) & UART0_IRQHandler);
-			NVIC_SetPriority(UART0_IRQn, ARM_SYSTEM_PRIORITY);
-			NVIC_EnableIRQ(UART0_IRQn);		// enable UART0_Handler();
+			arm_hardware_set_handler_system(UART0_IRQn, & UART0_IRQHandler);
 		}
 
 		UART0->UART_CR = UART_CR_RXEN | UART_CR_TXEN;	// разрешаем приёмник и передатчик.
@@ -789,9 +783,7 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 
 		if (debug == 0)
 		{
-			NVIC_SetVector(UART1_IRQn, (uintptr_t) & UART1_IRQHandler);
-			NVIC_SetPriority(UART1_IRQn, ARM_SYSTEM_PRIORITY);
-			NVIC_EnableIRQ(UART1_IRQn);		// enable UART1_Handler();
+			arm_hardware_set_handler_system(UART1_IRQn, & UART1_IRQHandler);
 		}
 
 		UART1->UART_CR = UART_CR_RXEN | UART_CR_TXEN;	// разрешаем приёмник и передатчик.
@@ -810,15 +802,13 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 
 
 	RCC->APB2ENR |= RCC_APB2ENR_AFIOEN;     //включить тактирование альтернативных функций
-	__DSB();
+	(void) RCC->APB2ENR;
 
 	HARDWARE_USART1_INITIALIZE();	/* Присоединить периферию к выводам */
 
 	if (debug == 0)
 	{
-		NVIC_SetVector(USART1_IRQn, (uintptr_t) & USART1_IRQHandler);
-		NVIC_SetPriority(USART1_IRQn, ARM_SYSTEM_PRIORITY);
-		NVIC_EnableIRQ(USART1_IRQn);		// enable USART1_IRQHandler();
+		arm_hardware_set_handler_system(USART1_IRQn, & USART1_IRQHandler);
 	}
 
 	USART1->CR1 |= USART_CR1_UE; // Включение USART1.
@@ -837,9 +827,7 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 
 	if (debug == 0)
 	{
-		NVIC_SetVector(USART1_IRQn, (uintptr_t) & USART1_IRQHandler);
-		NVIC_SetPriority(USART1_IRQn, ARM_SYSTEM_PRIORITY);
-		NVIC_EnableIRQ(USART1_IRQn);		// enable USART1_IRQHandler();
+		arm_hardware_set_handler_system(USART1_IRQn, & USART1_IRQHandler);
 	}
 
 	USART1->CR1 |= USART_CR1_UE; // Включение USART1.
@@ -1792,9 +1780,7 @@ void hardware_uart2_initialize(uint_fast8_t debug)
 
 		if (debug == 0)
 		{
-			NVIC_SetVector(USART0_IRQn, (uintptr_t) & USART0_IRQHandler);
-			NVIC_SetPriority(USART0_IRQn, ARM_SYSTEM_PRIORITY);
-			NVIC_EnableIRQ(USART0_IRQn);		// enable USART0_Handler();
+			arm_hardware_set_handler_system(USART0_IRQn, & USART0_IRQHandler);
 		}
 
 		USART0->US_CR = US_CR_RXEN | US_CR_TXEN;	// разрешаем приёмник и передатчик.
@@ -1819,9 +1805,7 @@ void hardware_uart2_initialize(uint_fast8_t debug)
 
 		if (debug == 0)
 		{
-			NVIC_SetVector(USART1_IRQn, (uintptr_t) & USART1_IRQHandler);
-			NVIC_SetPriority(USART1_IRQn, ARM_SYSTEM_PRIORITY);
-			NVIC_EnableIRQ(USART1_IRQn);		// enable USART2_Handler();
+			arm_hardware_set_handler_system(USART1_IRQn, & USART1_IRQHandler);
 		}
 
 		USART1->US_CR = US_CR_RXEN | US_CR_TXEN;	// разрешаем приёмник и передатчик.
@@ -1848,9 +1832,7 @@ void hardware_uart2_initialize(uint_fast8_t debug)
 
 		if (debug == 0)
 		{
-			NVIC_SetVector(UART0_IRQn, (uintptr_t) & UART0_IRQHandler);
-			NVIC_SetPriority(UART0_IRQn, ARM_SYSTEM_PRIORITY);
-			NVIC_EnableIRQ(UART0_IRQn);		// enable UART0_Handler();
+			arm_hardware_set_handler_system(UART0_IRQn, & UART0_IRQHandler);
 		}
 
 		UART0->UART_CR = UART_CR_RXEN | UART_CR_TXEN;	// разрешаем приёмник и передатчик.
@@ -1877,9 +1859,7 @@ void hardware_uart2_initialize(uint_fast8_t debug)
 
 		if (debug == 0)
 		{
-			NVIC_SetVector(UART1_IRQn, (uintptr_t) & UART1_IRQHandler);
-			NVIC_SetPriority(UART1_IRQn, ARM_SYSTEM_PRIORITY);
-			NVIC_EnableIRQ(UART1_IRQn);		// enable UART1_Handler();
+			arm_hardware_set_handler_system(UART1_IRQn, & UART1_IRQHandler);
 		}
 
 		UART1->UART_CR = UART_CR_RXEN | UART_CR_TXEN;	// разрешаем приёмник и передатчик.
@@ -1904,9 +1884,7 @@ void hardware_uart2_initialize(uint_fast8_t debug)
 
 	if (debug == 0)
 	{
-		NVIC_SetVector(USART2_IRQn, (uintptr_t) & USART2_IRQHandler);
-		NVIC_SetPriority(USART2_IRQn, ARM_SYSTEM_PRIORITY);
-		NVIC_EnableIRQ(USART2_IRQn);		// enable USART2_IRQHandler();
+		arm_hardware_set_handler_system(USART2_IRQn, & USART2_IRQHandler);
 	}
 
 	USART2->CR1 |= USART_CR1_UE; // Включение USART2.
@@ -1925,9 +1903,7 @@ void hardware_uart2_initialize(uint_fast8_t debug)
 
 	if (debug == 0)
 	{
-		NVIC_SetVector(USART2_IRQn, (uintptr_t) & USART2_IRQHandler);
-		NVIC_SetPriority(USART2_IRQn, ARM_SYSTEM_PRIORITY);
-		NVIC_EnableIRQ(USART2_IRQn);		// enable USART2_IRQHandler();
+		arm_hardware_set_handler_system(USART2_IRQn, & USART2_IRQHandler);
 	}
 
 	USART2->CR1 |= USART_CR1_UE; // Включение USART2.
@@ -1935,7 +1911,7 @@ void hardware_uart2_initialize(uint_fast8_t debug)
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX
 
 	RCC->APB1ENR |= RCC_APB1ENR_USART2EN; // Включение тактирования USART2.
-	__DSB();
+	(void) RCC->APB1ENR;
 
 	USART2->CR1 |= (USART_CR1_RE | USART_CR1_TE); // Transmitter Enable & Receiver Enables
 
@@ -1943,9 +1919,7 @@ void hardware_uart2_initialize(uint_fast8_t debug)
 
 	if (debug == 0)
 	{
-		NVIC_SetVector(USART2_IRQn, (uintptr_t) & USART2_IRQHandler);
-		NVIC_SetPriority(USART2_IRQn, ARM_SYSTEM_PRIORITY);
-		NVIC_EnableIRQ(USART2_IRQn);		// enable USART2_IRQHandler();
+		arm_hardware_set_handler_system(USART2_IRQn, & USART2_IRQHandler);
 	}
 
 	USART2->CR1 |= USART_CR1_UE; // Включение USART2.
