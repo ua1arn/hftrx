@@ -15635,10 +15635,17 @@ void display2_multilinemenu_block_groups(uint_fast8_t x, uint_fast8_t y, dctx_t 
 				continue; //пропускаем пункты для скролла
 			if ((index_groups - menu_block_scroll_offset_groups) > window.multilinemenu_max_rows)
 				continue;
-			if (el == selected_group_left_margin) //подсвечиваем выбранный элемент
+			if (el == selected_group_left_margin)
 			{
+				//подсвечиваем выбранный элемент
 				colmain_setcolors(MENUSELCOLOR, BGCOLOR);
 				display_at_P(x - 1, y_position_groups, PSTR(">"));
+			}
+			else
+			{
+				//снять отметку
+				colmain_setcolors(MENUSELCOLOR, BGCOLOR);
+				display_at_P(x - 1, y_position_groups, PSTR(" "));
 			}
 
 			dctx_t dctx;
@@ -15708,18 +15715,22 @@ void display2_multilinemenu_block_params(uint_fast8_t x, uint_fast8_t y, dctx_t 
 				continue; //пропускаем пункты для скролла
 			if ((index_params - menu_block_scroll_offset_params) > window.multilinemenu_max_rows)
 				continue;
-			if (el == index) //подсвечиваем выбранный элемент
+			if (el == index)
 			{
+				//подсвечиваем выбранный элемент
 				colmain_setcolors(MENUSELCOLOR, BGCOLOR);
 				display_at_P(x - 1, y_position_params, PSTR(">"));
+			}
+			else
+			{
+				//снять подсветку
+				colmain_setcolors(MENUSELCOLOR, BGCOLOR);
+				display_at_P(x - 1, y_position_params, PSTR(" "));
 			}
 			dctx_t dctx;
 			dctx.type = DCTX_MENU;
 			dctx.pv = mv;
 			display2_menu_lblng(x, y_position_params, & dctx); // название редактируемого параметра
-#if DSTYLE_G_X800_Y480
-			//display_at(x + 8, y_position_params, "           ");
-#endif
 			y_position_params += window.ystep;
 		}
 	}
