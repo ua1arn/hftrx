@@ -119,6 +119,19 @@ static COLORPIP_T getshadedcolor(
 		return TFTRGB565((c >> 16) & 0xFF, (c >> 8) & 0xFF, (c >> 0) & 0xFF);
 	}
 
+#elif LCDMODE_PIP_RGB24
+
+	if (dot == COLORPIP_BLACK)
+	{
+		return COLOR24(alpha, alpha, alpha); // back gray
+	}
+	else
+	{
+		return color24_shaded(dot, alpha);
+	}
+
+
+
 #else /*  */
 	//#warning LCDMODE_PIP_L8 or LCDMODE_PIP_RGB565 not defined
 	return dot;
