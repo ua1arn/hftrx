@@ -103,7 +103,7 @@ static COLORPIP_T getshadedcolor(
 
 	return dot |= COLORPIP_SHADED;
 
-#elif LCDMODE_PIP_RGB565
+#elif LCDMODE_MAIN_RGB565
 
 	if (dot == COLORPIP_BLACK)
 	{
@@ -119,11 +119,23 @@ static COLORPIP_T getshadedcolor(
 		return TFTRGB565((c >> 16) & 0xFF, (c >> 8) & 0xFF, (c >> 0) & 0xFF);
 	}
 
+#elif LCDMODE_MAIN_RGB24
+
+	if (dot == COLORPIP_BLACK)
+	{
+		return COLOR24(alpha, alpha, alpha); // back gray
+	}
+	else
+	{
+		return color24_shaded(dot, alpha);
+	}
+
+
 #else /*  */
-	//#warning LCDMODE_PIP_L8 or LCDMODE_PIP_RGB565 not defined
+	//#warning LCDMODE_MAIN_L8 or LCDMODE_MAIN_RGB565 not defined
 	return dot;
 
-#endif /* LCDMODE_PIP_L8 */
+#endif /* LCDMODE_MAIN_L8 */
 }
 
 // Установить прозрачность для прямоугольника
@@ -308,7 +320,7 @@ void display2_xltrgb24(COLOR24_T * xltable)
 
 #endif /* COLORSTYLE_ATS52 */
 
-#elif LCDMODE_COLORED && ! LCDMODE_DUMMY	/* LCDMODE_MAIN_L8 && LCDMODE_PIP_L8 */
+#elif LCDMODE_COLORED && ! LCDMODE_DUMMY	/* LCDMODE_MAIN_L8 && LCDMODE_MAIN_L8 */
 	PRINTF("display2_xltrgb24: init RRRGGGBB colos\n");
 	// Обычная таблица - все цвета могут быть использованы как индекс
 	// Водопад отображается без использования инлдексов цветов
@@ -324,7 +336,7 @@ void display2_xltrgb24(COLOR24_T * xltable)
 
 #else
 	#warning Monochrome display without indexing colors
-#endif /* LCDMODE_MAIN_L8 && LCDMODE_PIP_L8 */
+#endif /* LCDMODE_MAIN_L8 && LCDMODE_MAIN_L8 */
 }
 
 #if LCDMODE_LTDC
@@ -1408,7 +1420,7 @@ display_getbgcolor(void)
 }
 
 
-#if LCDMODE_LTDC && (LCDMODE_MAIN_L8 && LCDMODE_PIP_RGB565) || (! LCDMODE_MAIN_L8 && LCDMODE_PIP_L8)
+#if LCDMODE_LTDC && (LCDMODE_MAIN_L8 && LCDMODE_MAIN_RGB565) || (! LCDMODE_MAIN_L8 && LCDMODE_MAIN_L8)
 
 // Выдать буфер на дисплей
 // В случае фреймбуфеных дисплеев - формат цвета и там и там одинаковый

@@ -48,12 +48,12 @@
 
 #endif /* LCDMODE_MAIN_L8 */
 
-#if LCDMODE_PIP_L8
+#if LCDMODE_MAIN_L8
 	#define DMA2D_FGPFCCR_CM_VALUE_PIP	(5 * DMA2D_FGPFCCR_CM_0)	/* 0101: L8 */
 	#define MDMA_CTCR_xSIZE_PIP			0x00	// 1 byte
 	////#define DMA2D_OPFCCR_CM_VALUE_MAIN	(x * DMA2D_OPFCCR_CM_0)	/* not supported */
 
-#elif LCDMODE_PIP_RGB565
+#elif LCDMODE_MAIN_RGB565
 	#define DMA2D_FGPFCCR_CM_VALUE_PIP	(2 * DMA2D_FGPFCCR_CM_0)	/* 0010: RGB565 */
 	//#define DMA2D_OPFCCR_CM_VALUE_PIP	(2 * DMA2D_OPFCCR_CM_0)	/* 010: RGB565 */
 	#define MDMA_CTCR_xSIZE_PIP			0x01	// 2 byte
@@ -690,10 +690,10 @@ void colpip_fillrect(
 	ASSERT((y + h) <= dy);
 #if LCDMODE_HORFILL
 
-	#if LCDMODE_PIP_L8
+	#if LCDMODE_MAIN_L8
 		hwacc_fillrect_u8(buffer, dx, dy, x, y, w, h, color);
 
-	#elif LCDMODE_PIP_RGB565
+	#elif LCDMODE_MAIN_RGB565
 		hwacc_fillrect_u16(buffer, dx, dy, x, y, w, h, color);
 
 	#elif LCDMODE_PIP_L24
@@ -711,10 +711,10 @@ void colpip_fillrect(
 
 #else /* LCDMODE_HORFILL */
 
-	#if LCDMODE_PIP_L8
+	#if LCDMODE_MAIN_L8
 		hwacc_fillrect_u8(buffer, dy, dx, y, x, h, w, color);
 
-	#elif LCDMODE_PIP_RGB565
+	#elif LCDMODE_MAIN_RGB565
 		hwacc_fillrect_u16(buffer, dy, dx, y, x, h, w, color);
 
 	#elif LCDMODE_PIP_L24
@@ -810,10 +810,10 @@ void colpip_fill(
 {
 #if LCDMODE_HORFILL
 
-	#if LCDMODE_PIP_L8
+	#if LCDMODE_MAIN_L8
 		hwacc_fillrect_u8(buffer, dx, dy, 0, 0, dx, dy, color);
 
-	#elif LCDMODE_PIP_RGB565
+	#elif LCDMODE_MAIN_RGB565
 		hwacc_fillrect_u16(buffer, dx, dy, 0, 0, dx, dy, color);
 
 	#elif LCDMODE_PIP_L24
@@ -832,10 +832,10 @@ void colpip_fill(
 
 #else /* LCDMODE_HORFILL */
 
-	#if LCDMODE_PIP_L8
+	#if LCDMODE_MAIN_L8
 		hwacc_fillrect_u8(buffer, dy, dx, 0, 0, dy, dx, color);
 
-	#elif LCDMODE_PIP_RGB565
+	#elif LCDMODE_MAIN_RGB565
 		hwacc_fillrect_u16(buffer, dy, dx, 0, 0, dy, dx, color);
 
 	#elif LCDMODE_PIP_L24

@@ -160,11 +160,11 @@ display2_clearbg(
 	dctx_t * pctx
 	)
 {
-#if LCDMODE_LTDC && ! (LCDMODE_PIP_RGB565 || LCDMODE_PIP_L8)
+#if LCDMODE_LTDC && ! (LCDMODE_MAIN_RGB565 || LCDMODE_MAIN_L8)
 
 	display_fillrect(GRID2X(0), GRID2X(0), DIM_X, DIM_Y, display_getbgcolor());
 
-#endif /* LCDMODE_LTDC && ! (LCDMODE_PIP_RGB565 || LCDMODE_PIP_L8) */
+#endif /* LCDMODE_LTDC && ! (LCDMODE_MAIN_RGB565 || LCDMODE_MAIN_L8) */
 }
 
 // Завершение отрисовки, переключение на следующий фреймбуфер
@@ -175,13 +175,13 @@ display2_nextfb(
 	dctx_t * pctx
 	)
 {
-#if LCDMODE_LTDC && ! (LCDMODE_PIP_RGB565 || LCDMODE_PIP_L8)
+#if LCDMODE_LTDC && ! (LCDMODE_MAIN_RGB565 || LCDMODE_MAIN_L8)
 
 	colmain_fb_next();
 	arm_hardware_flush((uintptr_t) colmain_fb_show(), (uint_fast32_t) DIM_X * DIM_Y * sizeof (PACKEDCOLORMAIN_T));
 	arm_hardware_ltdc_main_set((uintptr_t) colmain_fb_show());
 
-#endif /* LCDMODE_LTDC && ! (LCDMODE_PIP_RGB565 || LCDMODE_PIP_L8) */
+#endif /* LCDMODE_LTDC && ! (LCDMODE_MAIN_RGB565 || LCDMODE_MAIN_L8) */
 }
 
 // Отображение частоты. Герцы так же большим шрифтом.
@@ -5814,7 +5814,7 @@ static FLOAT_t filter_spectrum(
 	static PACKEDCOLORMAIN_T wfpalette [1];
 	static uint_fast16_t wfrow;		// строка, в которую последней занесены данные
 
-#elif WITHFASTWATERFLOW && LCDMODE_PIP_RGB565
+#elif WITHFASTWATERFLOW && LCDMODE_MAIN_RGB565
 
 	/* быстрое отображение водопада (но требует больше памяти) */
 	static RAMBIGDTCM PACKEDCOLORMAIN_T wfarray [WFDY] [ALLDX];	// массив "водопада"
@@ -5823,7 +5823,7 @@ static FLOAT_t filter_spectrum(
 	static PACKEDCOLORMAIN_T wfpalette [PALETTESIZE];
 	static uint_fast16_t wfrow;		// строка, в которую последней занесены данные
 
-#elif LCDMODE_PIP_L8 || (! LCDMODE_PIP_L8 && LCDMODE_MAIN_L8)
+#elif LCDMODE_MAIN_L8 || (! LCDMODE_MAIN_L8 && LCDMODE_MAIN_L8)
 
 	enum { PALETTESIZE = COLORPIP_BASE };
 	static RAMBIGDTCM PACKEDCOLORMAIN_T wfarray [WFDY] [ALLDX];	// массив "водопада"
@@ -5846,7 +5846,7 @@ static FLOAT_t filter_spectrum(
 	enum { PALETTESIZE = 256 };
 	static RAMBIGDTCM PACKEDCOLOR565_T wfpalette [PALETTESIZE];
 
-#elif LCDMODE_PIP_L8
+#elif LCDMODE_MAIN_L8
 
 #else
 
@@ -6473,7 +6473,7 @@ static void display2_waterfall(
 
 	// следы спектра ("водопад") на монохромных дисплеях
 
-#elif WITHFASTWATERFLOW || LCDMODE_PIP_L8 || (! LCDMODE_PIP_L8 && LCDMODE_MAIN_L8)
+#elif WITHFASTWATERFLOW || LCDMODE_MAIN_L8 || (! LCDMODE_MAIN_L8 && LCDMODE_MAIN_L8)
 	// следы спектра ("водопад") на цветных дисплеях
 	/* быстрое отображение водопада (но требует больше памяти) */
 
