@@ -624,30 +624,19 @@ static void s1d13781_setcolor(COLORMAIN_T fgcolor, COLORMAIN_T bgcolor)
 }
 
 
-/*	Функция установки курсора в позицию x,y
+/*	Функция получения адреса в видеобуфере для координат пикселя
 */
 
-static uint_fast32_t shadow_dstaddr;
-
-
-
-static void s1d13781_gotoxy(
-	uint_fast32_t x,	// горизонтальная координата в пикселях
-	uint_fast32_t y		// вертикальная координата в пикселях
+static uint_fast32_t
+s1d13781_getaddr(
+	uint_fast16_t x,	// горизонтальная координата в пикселях
+	uint_fast16_t y		// вертикальная координата в пикселях
 	)
 {
 	// PIPMEMSTART
 	// вычисление начального адреса в видеопамяти
-	shadow_dstaddr = S1D_PHYSICAL_VMEM_ADDR + x * (S1D_DISPLAY_BPP / 8) + y * S1D_DISPLAY_SCANLINE_BYTES;
-	//shadow_dstaddr = PIPMEMSTART + x * (S1D_DISPLAY_BPP / 8) + y) * S1D_DISPLAY_SCANLINE_BYTES;
-}
-
-
-static void s1d13781_next_column(
-	uint_fast8_t w			// width in pixels of element
-	)
-{
-	shadow_dstaddr += w * (S1D_DISPLAY_BPP / 8);
+	return S1D_PHYSICAL_VMEM_ADDR + (uint_fast32_t) x * (S1D_DISPLAY_BPP / 8) + (uint_fast32_t) y * S1D_DISPLAY_SCANLINE_BYTES;
+	//return PIPMEMSTART + (uint_fast32_t) x * (S1D_DISPLAY_BPP / 8) + (uint_fast32_t) y) * S1D_DISPLAY_SCANLINE_BYTES;
 }
 
 /* заполнение символами с помощью BitBlt engine
@@ -1215,11 +1204,10 @@ static uint_fast16_t s1d13781_put_char_small(uint_fast16_t xpix, uint_fast16_t y
 	// дождаться выполнения предидущей команды BitBlt engine.
 	if (bitblt_waitbusy() != 0)
 	{
-		bitblt_setdstaddr(shadow_dstaddr);
+		bitblt_setdstaddr(s1d13781_getaddr(xpix, ypix));
 		bitblt_chargen_small(getsmallcharbase(cc));
-		s1d13781_next_column(GRID2X(CHARS2GRID(1)));
 	}
-	return xpix;
+	return xpix + GRID2X(CHARS2GRID(1));
 }
 
 // Вызов этой функции только внутри s1d13781_put_char_begin() и s1d13781_put_char_end();
@@ -1229,11 +1217,10 @@ static uint_fast16_t s1d13781_put_char_small2(uint_fast16_t xpix, uint_fast16_t 
 	if (bitblt_waitbusy() != 0)
 	{
 		//s1d13781_wrcmd8(REG80_BLT_CTRL_0, 0x80);	// BitBlt reset
-		bitblt_setdstaddr(shadow_dstaddr);
+		bitblt_setdstaddr(s1d13781_getaddr(xpix, ypix));
 		bitblt_chargen_small(getsmallcharbase2(cc));
-		s1d13781_next_column(SMALLCHARWIDTH2);
 	}
-	return xpix;
+	return xpix + SMALLCHARWIDTH2;
 }
 
 // Вызов этой функции только внутри display_wrdata_begin() и 	display_wrdata_end();
@@ -1243,18 +1230,18 @@ static uint_fast16_t s1d13781_put_char_big(uint_fast16_t xpix, uint_fast16_t ypi
 	// дождаться выполнения предидущей команды BitBlt engine.
 	if (bitblt_waitbusy() != 0)
 	{
-		bitblt_setdstaddr(shadow_dstaddr);
+		bitblt_setdstaddr(s1d13781_getaddr(xpix, ypix));
 
 		// '#' - узкий пробел
 		if (cc == '.' || cc == '#')
 		{
 			bitblt_chargen_big(BIGCHARW_NARROW, getnarrowcharbase(cc));
-			s1d13781_next_column(BIGCHARW_NARROW);
+			return xpix + BIGCHARW_NARROW;
 		}
 		else
 		{
 			bitblt_chargen_big(BIGCHARWIDTH, getbigcharbase(cc));
-			s1d13781_next_column(BIGCHARWIDTH);
+			return xpix + BIGCHARWIDTH;
 		}
 	}
 	return xpix;
@@ -1268,11 +1255,10 @@ s1d13781_put_char_half(uint_fast16_t xpix, uint_fast16_t ypix, char cc)
 	// дождаться выполнения предидущей команды BitBlt engine.
 	if (bitblt_waitbusy() != 0)
 	{
-		bitblt_setdstaddr(shadow_dstaddr);
+		bitblt_setdstaddr(s1d13781_getaddr(xpix, ypix));
 		bitblt_chargen_big(HALFCHARWIDTH, gethalfcharbase(cc));
-		s1d13781_next_column(HALFCHARWIDTH);
 	}
-	return xpix;
+	return xpix + HALFCHARWIDTH;
 }
 
 // рисование незаполненного прямоугольника
@@ -1661,7 +1647,6 @@ void colmain_setcolors3(COLORMAIN_T fg, COLORMAIN_T bg, COLORMAIN_T fgbg)
 uint_fast16_t
 display_wrdata_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
 {
-	s1d13781_gotoxy(GRID2X(xcell), GRID2Y(ycell));
 	s1d13781_put_char_begin();
 	* yp = GRID2Y(ycell);
 	return GRID2X(xcell);
@@ -1676,7 +1661,6 @@ display_wrdata_end(void)
 uint_fast16_t
 display_wrdata2_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
 {
-	s1d13781_gotoxy(GRID2X(xcell), GRID2Y(ycell));
 	s1d13781_put_char_begin2();
 	* yp = GRID2Y(ycell);
 	return GRID2X(xcell);
@@ -1691,7 +1675,6 @@ display_wrdata2_end(void)
 uint_fast16_t
 display_wrdatabig_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
 {
-	s1d13781_gotoxy(GRID2X(xcell), GRID2Y(ycell));
 	s1d13781_put_charbig_begin();
 	* yp = GRID2Y(ycell);
 	return GRID2X(xcell);
@@ -1717,7 +1700,6 @@ display_barcolumn(uint_fast8_t pattern)
 uint_fast16_t
 display_wrdatabar_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
 {
-	s1d13781_gotoxy(GRID2X(xcell), GRID2Y(ycell));
 	* yp = GRID2Y(ycell);
 	return GRID2X(xcell);
 }
@@ -1841,16 +1823,18 @@ display_put_char_small2(uint_fast16_t x, uint_fast16_t y, uint_fast8_t c, uint_f
 	return s1d13781_put_char_small(x, y, c);
 }
 
-static uint_fast8_t stored_xgrid, stored_ygrid;	// используется в display_bar
-
-void
-displayX_gotoxy(uint_fast8_t x, uint_fast8_t y)
-{
-	stored_xgrid = x;	// используется в display_bar
-	stored_ygrid = y;	// используется в display_bar
-
-	s1d13781_gotoxy(GRID2X(x), GRID2Y(y));		// устанавливаем позицию в символьных координатах
-}
+#if 0
+//
+//static uint_fast8_t stored_xgrid, stored_ygrid;	// используется в display_bar
+//
+//void
+//displayX_gotoxy(uint_fast8_t x, uint_fast8_t y)
+//{
+//	stored_xgrid = x;	// используется в display_bar
+//	stored_ygrid = y;	// используется в display_bar
+//
+//	s1d13781_gotoxy(GRID2X(x), GRID2Y(y));		// устанавливаем позицию в символьных координатах
+//}
 
 /* работа с цветным буфером */
 void display_plotfrom(
@@ -1858,7 +1842,7 @@ void display_plotfrom(
 	uint_fast16_t y	// Координаты в пикселях
 	)
 {
-	s1d13781_gotoxy(x, y);
+	//s1d13781_gotoxy(x, y);
 }
 
 
@@ -1882,6 +1866,8 @@ void display_plot(
 	// Передача в индикатор по DMA
 	arm_hardware_flush((uintptr_t) buffer, GXSIZE(dx, dy) * sizeof (* buffer));	// количество байтов
 #endif /* WITHSPIEXT16 && WITHSPIHWDMA */
+
+	uint_fast32_t shadow_dstaddr = s1d13781_getaddr(xpix, ypix);
 
 	for (; dy --; shadow_dstaddr += S1D_DISPLAY_SCANLINE_BYTES)
 	{
@@ -1937,6 +1923,8 @@ void display_plotstop(void)
 {
 }
 
+#endif
+
 // Вызовы этой функции (или группу вызовов) требуется "обрамить" парой вызовов
 // display_wrdatabar_begin() и display_wrdatabar_end().
 void display_bar(
@@ -1952,8 +1940,8 @@ void display_bar(
 	)
 {
 	const uint_fast16_t h = SMALLCHARH; //GRID2Y(1);
-	const uint_fast16_t x = GRID2X(stored_xgrid);
-	const uint_fast16_t y = GRID2Y(stored_ygrid);
+	const uint_fast16_t x = xpix;
+	const uint_fast16_t y = ypix;
 	const uint_fast16_t wfull = GRID2X(width);
 	const uint_fast16_t wpart = (uint_fast32_t) wfull * value / topvalue;
 	const uint_fast16_t wmark = (uint_fast32_t) wfull * tracevalue / topvalue;
