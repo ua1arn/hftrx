@@ -109,7 +109,7 @@
 		#define DIRECT_80M0_X1		1	/* Тактовый генератор на плате 80.0 МГц */
 		//#define DIRECT_72M595_X1	1	/* Тактовый генератор 75.595 МГц */
 		#define BANDSELSTYLERE_UPCONV56M_36M	1	/* Up-conversion with working band .030..36 MHz */
-	#elif 0
+	#elif 1
 		#define DIRECT_100M0_X1		1	/* Тактовый генератор на плате 100.0 МГц */
 		#define BANDSELSTYLERE_UPCONV56M_45M	1	/* Up-conversion with working band .030..45 MHz */
 	#else
@@ -195,6 +195,7 @@
 	//#define LCDMODE_ILI9163_TOPDOWN	1	/* LCDMODE_ILI9163 - перевернуть изображение (для выводов справа, лента дисплея слева) */
 	//#define LCDMODE_L2F50	1	/* Индикатор 176*132 с контроллером Epson L2F50126 */
 	//#define LCDMODE_L2F50_TOPDOWN	1	/* Переворот изображени я в случае LCDMODE_L2F50 */
+	// production-frontpanel_v2-rezonit with 50 MHz osc
 	//#define LCDMODE_S1D13781_NHWACCEL 1	/* Неиспользоване аппаратных особенностей EPSON S1D13781 при выводе графики */
 	//#define LCDMODE_S1D13781	1	/* Инндикатор 480*272 с контроллером Epson S1D13781 */
 	//#define LCDMODE_S1D13781_TOPDOWN	1	/* LCDMODE_S1D13781 - перевернуть изображение */
@@ -242,6 +243,7 @@
 	#define WITHSAI1_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
 	//#define WITHSAI2_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
 	#define WITHI2S_FORMATI2S_PHILIPS 1	// Возможно использование при передаче данных в кодек, подключенный к наушникам и микрофону
+	#define WITHI2S_FRAMEBITS 32	// Полный размер фрейма для двух каналов - канал кодека
 	#define WITHI2SHWRXSLAVE	1		// Приёмный канал I2S (микрофон) используюся в SLAVE MODE
 	#define WITHI2SHWTXSLAVE	1		// Передающий канал I2S (наушники) используюся в SLAVE MODE
 	//#define WITHSAI1HWTXRXMASTER	1		// SAI1 work in MASTER mode
@@ -261,7 +263,7 @@
 
 	// FPGA section
 	//#define WITHFPGAWAIT_AS	1	/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
-	//#define WITHFPGALOAD_PS	1	/* FPGA загружается процессором с помощью SPI */
+	#define WITHFPGALOAD_PS	1	/* FPGA загружается процессором с помощью SPI */
 
 	//#define WITHUSEDUALWATCH	1	// Второй приемник
 	//#define WITHREVERB	1	// ревербератор в обработке микрофонного сигнала
@@ -320,7 +322,22 @@
 	// +++ Эти строки можно отключать, уменьшая функциональность готового изделия
 	//#define WITHRFSG	1	/* включено управление ВЧ сигнал-генератором. */
 	#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
+
 	#if 0
+		/* TUNER & PA board 2*RD16 by avbelnn@yandex.ru */
+		#define WITHAUTOTUNER_UA1CEI	1	/* Плата управления LPF и тюнером от UA1CEI - по компорту */
+		#if defined(WITHDEBUG)
+			#error Please off WITHDEBUG
+		#endif /* defined(WITHDEBUG) */
+		#define WITHNMEA		1	/* используется NMEA parser */
+		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
+		//#define FULLSET8	1
+		#define SHORTSET8	1
+
+		#define WITHENCODER2	1		/* есть второй валкодер */
+		#define BOARD_ENCODER2_DIVIDE 2		/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
+		//#define WITHPOTWPM		1	/* используется регулировка скорости передачи в телеграфе потенциометром */
+	#elif 0
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
 		#define SHORTSET7	1	
 	#endif
@@ -433,40 +450,108 @@
 	// Назначения входов АЦП процессора.
 	enum 
 	{ 
-	#if WITHREFSENSOR
-		VREFIX = 17,		// Reference voltage
-	#endif /* WITHREFSENSOR */
-	#if WITHTEMPSENSOR
-		TEMPIX = 16,
-	#endif /* WITHTEMPSENSOR */
-	#if WITHVOLTLEVEL 
-		VOLTSOURCE = 8,		// PB0 Средняя точка делителя напряжения, для АКБ
-	#endif /* WITHVOLTLEVEL */
+	#if WITHAUTOTUNER_UA1CEI
 
-	#if WITHPOTIFGAIN
-		POTIFGAIN = 3,		// PA2 IF GAIN
-	#endif /* WITHPOTIFGAIN */
-	#if WITHPOTAFGAIN
-		POTAFGAIN = 7,		// PA7 AF GAIN
-	#endif /* WITHPOTAFGAIN */
+		#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
+		#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
+		#define WITHTHERMOLEVEL	1	/* отображение температуры */
+		//#define WITHREFSENSOR	1		/* измерение по выделенному каналу АЦП опорного напряжения */
+		#define WITHTDIRECTDATA	1	// значения параметров напрямую получаются от контроллера усилителя мощности
+		//#define WITHTARGETVREF	3300
 
-	#if WITHPOTWPM
-		POTWPM = 6,			// PA6 потенциометр управления скоростью передачи в телеграфе
-	#endif /* WITHPOTWPM */
-	#if WITHPOTPOWER
-		POTPOWER = 6,			// регулировка мощности
-	#endif /* WITHPOTPOWER */
+		#if WITHREFSENSOR
+			VREFIX = 17,		// Reference voltage
+		#endif /* WITHREFSENSOR */
+		#if WITHTEMPSENSOR
+			TEMPIX = 16,
+		#endif /* WITHTEMPSENSOR */
+		#if WITHVOLTLEVEL
+			VOLTSOURCE = BOARD_ADCMRRIN(0),		// NMEA ch
+		#endif /* WITHVOLTLEVEL */
 
-		ALCINIX = 9,		// PB1 ALC IN
+		#if WITHPOTIFGAIN
+			POTIFGAIN = 3,		// PA2 IF GAIN
+		#endif /* WITHPOTIFGAIN */
+		#if WITHPOTAFGAIN
+			POTAFGAIN = 7,		// PA7 AF GAIN
+		#endif /* WITHPOTAFGAIN */
 
-	#if WITHCURRLEVEL
-		PASENSEIX = 2,		// PA2 PA current sense - ACS712-05 chip
-	#endif /* WITHCURRLEVEL */
+		#if WITHPOTWPM
+			POTWPM = 6,			// PA6 потенциометр управления скоростью передачи в телеграфе
+		#endif /* WITHPOTWPM */
+		#if WITHPOTPOWER
+			POTPOWER = 6,			// регулировка мощности
+		#endif /* WITHPOTPOWER */
 
-	#if WITHSWRMTR
-		PWRI = 14,			// PC4
-		FWD = 14, REF = 15,	// PC5	SWR-meter
-	#endif /* WITHSWRMTR */
+		#if WITHTHERMOLEVEL
+			XTHERMOIX = BOARD_ADCMRRIN(2),		// NMEA ch
+		#endif /* WITHTHERMOLEVEL */
+
+		#if WITHCURRLEVEL
+			#define WITHCURRLEVEL_ACS712_20A 1	// PA current sense - ACS712ELCTR-20B-T chip
+			PASENSEIX = BOARD_ADCMRRIN(4),		// NMEA ch
+		#endif /* WITHCURRLEVEL */
+
+		#if WITHSWRMTR
+			FWD = BOARD_ADCMRRIN(6), REF = BOARD_ADCMRRIN(7),	// PC5	SWR-meter
+			PWRI = FWD,
+		#endif /* WITHSWRMTR */
+
+		#define VOLTLEVEL_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика напряжения
+		#define VOLTLEVEL_LOWER		10	// 1 kOhm - нижний резистор
+
+		// ST LM235Z
+		#define THERMOSENSOR_UPPER		402	// 4020 Ohm - верхний резистор делителя датчика температуры
+		#define THERMOSENSOR_LOWER		95	// 950 Ohm - нижний резистор
+		#define THERMOSENSOR_OFFSET 	(- 2730)		// 2.98 volt = 25 Celsius, 10 mV/C
+		#define THERMOSENSOR_DENOM	 	1			// миливольты к десятым долям градуса 2.98 volt = 25 Celsius
+
+	#else
+		#if WITHREFSENSOR
+			VREFIX = 17,		// Reference voltage
+		#endif /* WITHREFSENSOR */
+		#if WITHTEMPSENSOR
+			TEMPIX = 16,
+		#endif /* WITHTEMPSENSOR */
+		#if WITHVOLTLEVEL
+			VOLTSOURCE = 8,		// PB0 Средняя точка делителя напряжения, для АКБ
+		#endif /* WITHVOLTLEVEL */
+
+		#if WITHPOTIFGAIN
+			POTIFGAIN = 3,		// PA2 IF GAIN
+		#endif /* WITHPOTIFGAIN */
+		#if WITHPOTAFGAIN
+			POTAFGAIN = 7,		// PA7 AF GAIN
+		#endif /* WITHPOTAFGAIN */
+
+		#if WITHPOTWPM
+			POTWPM = 6,			// PA6 потенциометр управления скоростью передачи в телеграфе
+		#endif /* WITHPOTWPM */
+		#if WITHPOTPOWER
+			POTPOWER = 6,			// регулировка мощности
+		#endif /* WITHPOTPOWER */
+
+			ALCINIX = 9,		// PB1 ALC IN
+
+		#if WITHCURRLEVEL
+			PASENSEIX = 2,		// PA2 PA current sense - ACS712-05 chip
+		#endif /* WITHCURRLEVEL */
+
+		#if WITHSWRMTR
+			PWRI = 14,			// PC4
+			FWD = 14, REF = 15,	// PC5	SWR-meter
+		#endif /* WITHSWRMTR */
+#endif
+
+		XTHERMOMRRIX = BOARD_ADCMRRIN(0),	// кеш - индекc не должен повторяться в конфигурации
+		PASENSEMRRIX = BOARD_ADCMRRIN(1),	// кеш - индекc не должен повторяться в конфигурации
+		REFMRRIX = BOARD_ADCMRRIN(2),
+		FWDMRRIX = BOARD_ADCMRRIN(3),
+		PWRMRRIX = FWDMRRIX,
+		VOLTMRRIX = BOARD_ADCMRRIN(4),	// кеш - индекc не должен повторяться в конфигурации
+		PASENSEMRRIX2 = BOARD_ADCMRRIN(5),		// кеш - индекc не должен повторяться в конфигурации
+		PAREFERMRRIX2 = BOARD_ADCMRRIN(6),		// кеш - индекc не должен повторяться в конфигурации
+
 		KI0 = 10, KI1 = 11, KI2 = 12, KI3 = 0, KI4 = 1	// клавиатура
 	};
 

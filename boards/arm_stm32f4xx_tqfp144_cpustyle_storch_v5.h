@@ -409,6 +409,11 @@
 		} while (0)
 #endif /* WITHTX */
 
+	/* сигнал PPS от GPS/GLONASS/GALILEO модуля */
+	#define NMEA_INITIALIZE() \
+		do { \
+		} while (0)
+
 #if WITHELKEY
 	// Electronic key inputs
 	#define ELKEY_TARGET_PIN			(GPIOD->IDR)

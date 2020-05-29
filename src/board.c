@@ -559,6 +559,58 @@ void nmea_disconnect(void)
 
 }
 
+static void
+ua1ceituner_send(void)
+{
+	//управление устройством
+	/*
+	запрос:
+	$COM,
+	RX_TX_state,        //0 = RX 1 = TX
+	BND_number,       //номер диапазона  1 - 10
+	PA_class,         //0 = class A 1 = class AB
+	FAN,              //0 = Вентиляторы выключены 1 = FAN1 = ON, 2 = FAN1+FAN2 = ON
+	ANT,              //0 = антенна 1, 1 = антенна 2
+	SEL_CTUNio,       //0 = конденсатор на входе тюнера 1 = конденсатор на входе тюнера
+	SEL_CTUN,         //перебор емкости конденсатора тюнера  0 - 255
+	SEL_LTUN,          //перебор ендуктивностей тюнера  0 - 255
+	*CS<CR><LF>
+
+	  ответ:
+	  $ANSW,
+	  state,          //состояние устройства (пока = 0)
+	  V_FWD,            //ADC датчик апрямой волны
+	  V_REF,            //ADC датчика отраженной волны
+	  T_SENS,           //ADC датчика температуры LM235
+	  C_SENS,           //ADC датчика тока ACS712
+	  U_SENS,           //ADC входного напряжения питания 12V
+	  SENS_3V3,         //ADC  напряжения питания 3.3V
+	  SENS_5V,          //ADC  напряжения питания 5V
+	  VREF              //ADC  измерения опорного напряжения
+	  *CS<CR><LF>
+	*/
+	nmea_format(
+			"$COM,"
+			"%d,"	// RX_TX_state,        //0 = RX 1 = TX
+			"%d,"	// BND_number,       //номер диапазона  1 - 10
+			"%d,"	// PA_class,         //0 = class A 1 = class AB
+			"%d,"	// FAN,              //0 = Вентиляторы выключены 1 = FAN1 = ON, 2 = FAN1+FAN2 = ON
+			"%d,"	// ANT,              //0 = антенна 1, 1 = антенна 2
+			"%d,"	// SEL_CTUNio,       //0 = конденсатор на входе тюнера 1 = конденсатор на входе тюнера
+			"%d,"	// SEL_CTUN,         //перебор емкости конденсатора тюнера  0 - 255
+			"%d,"	// SEL_LTUN,          //перебор ендуктивностей тюнера  0 - 255
+			"*FF\r\n",	// *CS<CR><LF>
+			glob_tx,
+			glob_bandf3,
+			1,	// 1=class AB, 0=class A
+			glob_fanflag,
+			glob_antenna,
+			glob_tuner_type,
+			glob_tuner_bypass ? 0 : glob_tuner_C,
+			glob_tuner_bypass ? 0 : glob_tuner_L
+		);
+}
+
 #endif /* WITHNMEA && WITHAUTOTUNER_UA1CEI */
 
 
@@ -4258,6 +4310,9 @@ prog_ctrlreg(uint_fast8_t plane)
 #if defined(DDS1_TYPE)
 	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
 #endif
+#if WITHAUTOTUNER_UA1CEI
+	ua1ceituner_send();
+#endif /* WITHAUTOTUNER_UA1CEI */
 
 	// registers chain control register
 	{
@@ -4300,53 +4355,7 @@ prog_ctrlreg(uint_fast8_t plane)
 #endif
 
 #if WITHAUTOTUNER_UA1CEI
-	//управление устройством
-	/*
-	запрос:
-	$COM,
-	RX_TX_state,        //0 = RX 1 = TX
-	BND_number,       //номер диапазона  1 - 10
-	PA_class,         //0 = class A 1 = class AB
-	FAN,              //0 = Вентиляторы выключены 1 = FAN1 = ON, 2 = FAN1+FAN2 = ON
-	ANT,              //0 = антенна 1, 1 = антенна 2
-	SEL_CTUNio,       //0 = конденсатор на входе тюнера 1 = конденсатор на входе тюнера
-	SEL_CTUN,         //перебор емкости конденсатора тюнера  0 - 255
-	SEL_LTUN,          //перебор ендуктивностей тюнера  0 - 255
-	*CS<CR><LF>
-
-	  ответ:
-	  $ANSW,
-	  state,          //состояние устройства (пока = 0)
-	  V_FWD,            //ADC датчик апрямой волны
-	  V_REF,            //ADC датчика отраженной волны
-	  T_SENS,           //ADC датчика температуры LM235
-	  C_SENS,           //ADC датчика тока ACS712
-	  U_SENS,           //ADC входного напряжения питания 12V
-	  SENS_3V3,         //ADC  напряжения питания 3.3V
-	  SENS_5V,          //ADC  напряжения питания 5V
-	  VREF              //ADC  измерения опорного напряжения
-	  *CS<CR><LF>
-	*/
-	nmea_format(
-			"$COM,"
-			"%d,"	// RX_TX_state,        //0 = RX 1 = TX
-			"%d,"	// BND_number,       //номер диапазона  1 - 10
-			"%d,"	// PA_class,         //0 = class A 1 = class AB
-			"%d,"	// FAN,              //0 = Вентиляторы выключены 1 = FAN1 = ON, 2 = FAN1+FAN2 = ON
-			"%d,"	// ANT,              //0 = антенна 1, 1 = антенна 2
-			"%d,"	// SEL_CTUNio,       //0 = конденсатор на входе тюнера 1 = конденсатор на входе тюнера
-			"%d,"	// SEL_CTUN,         //перебор емкости конденсатора тюнера  0 - 255
-			"%d,"	// SEL_LTUN,          //перебор ендуктивностей тюнера  0 - 255
-			"*FF\r\n",	// *CS<CR><LF>
-			glob_tx,
-			glob_bandf3,
-			1,	// 1=class AB, 0=class A
-			glob_fanflag,
-			glob_antenna,
-			glob_tuner_type,
-			glob_tuner_bypass ? 0 : glob_tuner_C,
-			glob_tuner_bypass ? 0 : glob_tuner_L
-		);
+	ua1ceituner_send();
 #endif /* WITHAUTOTUNER_UA1CEI */
 
 	// registers chain control register
