@@ -163,8 +163,8 @@
 
 	// +++ Особые варианты расположения кнопок на клавиатуре
 	//#define KEYB_RAVEN20_V5	1		/* 5 линий клавиатуры: расположение кнопок для Воробей с DSP обработкой */
-	//#define KEYB_FPANEL20_V0A	1	/* 20 кнопок на 5 линий - плата rfrontpanel_v0 + LCDMODE_UC1608 в нормальном расположении с новым расположением */
-	#define KEYB_FPANEL30_V3	1	/* KEYBOARD_USE_ADC6_V1, 30 кнопок на 5 линий - плата rfrontpanel_v3 + LCDMODE_S1D13781 & LCDMODE_LQ043T3DX02K в нормальном расположении */
+	#define KEYB_FPANEL20_V0A	1	/* 20 кнопок на 5 линий - плата rfrontpanel_v0 + LCDMODE_UC1608 в нормальном расположении с новым расположением */
+	//#define KEYB_FPANEL30_V3	1	/* KEYBOARD_USE_ADC6_V1, 30 кнопок на 5 линий - плата rfrontpanel_v3 + LCDMODE_S1D13781 & LCDMODE_LQ043T3DX02K в нормальном расположении */
 	#define WITHSPKMUTE		1	/* управление выключением динамика */
 	#define WITHDATAMODE	1	/* управление с клавиатуры передачей с USB AUDIO канала */
 	// --- Особые варианты расположения кнопок на клавиатуре
@@ -441,7 +441,7 @@
 	#define WITHKBDENCODER 1	// перестройка частоты кнопками
 	#define WITHKEYBOARD 1	/* в данном устройстве есть клавиатура */
 	#define KEYBOARD_USE_ADC	1	/* на одной линии установлено  четыре  клавиши. на vref - 6.8K, далее 2.2К, 4.7К и 13K. */
-	#define KEYBOARD_USE_ADC6_V1	1	/* шесть кнопок на каждом входе ADCx */
+	//#define KEYBOARD_USE_ADC6_V1	1	/* шесть кнопок на каждом входе ADCx */
 
 	#define VOLTLEVEL_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика напряжения
 	#define VOLTLEVEL_LOWER		10	// 1.0 kOhm - нижний резистор
