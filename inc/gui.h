@@ -230,8 +230,8 @@
 #endif /* COLORSTYLE_RED */
 
 #define GUI_WINDOWBGCOLOR		2
-#define GUI_SLIDERLAYOUTCOLOR	116
-#define GUI_MENUSELECTCOLOR		116
+#define GUI_SLIDERLAYOUTCOLOR	100
+#define GUI_MENUSELECTCOLOR		109
 
 #define GUI_TRANSPARENT_WINDOWS		1		/* Прозрачный фон окон */
 #define GUI_OLDMENUSTYLE			1		/* Меню в виде прокручиваемого списка */

@@ -76,7 +76,7 @@ color24_shaded(
 {
 	//return dot;	// test
 	if (dot == 0)
-		return COLOR24(alpha / 10, alpha / 10, alpha / 10);
+		return COLOR24(alpha >> 2, alpha >> 2, alpha >> 2);
 	const uint_fast8_t r = scalecolor((dot >> 16) & 0xFF, 255, alpha);
 	const uint_fast8_t g = scalecolor((dot >> 8) & 0xFF, 255, alpha);
 	const uint_fast8_t b = scalecolor((dot >> 0) & 0xFF, 255, alpha);

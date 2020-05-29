@@ -507,7 +507,7 @@ display2_smeter15_init(
 
 	colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORMAIN_BLACK, 1);
 #if WITHTOUCHGUI
-//	colmain_rounded_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H - 1, 5, COLORPIP_WHITE, 0);
+//	colmain_rounded_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H - 1, 5, COLORMAIN_WHITE, 0);
 #endif
 
 	for (p = 0, i = 0; i < ARRAY_SIZE(markersTX_pwr); ++ i, p += 10)
@@ -548,7 +548,7 @@ display2_smeter15_init(
 	bg = smeter_bg [SM_STATE_RX];
 	colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORMAIN_BLACK, 1);
 #if WITHTOUCHGUI
-//	colmain_rounded_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H - 1, 5, COLORPIP_WHITE, 0);
+//	colmain_rounded_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H - 1, 5, COLORMAIN_WHITE, 0);
 #endif
 
 	for (p = 1, i = 0; i < ARRAY_SIZE(markers); ++ i, p += 2)
@@ -864,7 +864,10 @@ static void window_ap_mic_prof_process(void);
 static void buttons_ap_mic_prof_process(void);
 
 
-	enum { button_round_radius = 5 };
+	enum {
+		button_round_radius = 5,
+		window_title_height = 26,
+	};
 
 	typedef enum {
 		TYPE_DUMMY,
@@ -959,73 +962,72 @@ static void buttons_ap_mic_prof_process(void);
 	} button_t;
 
 	static button_t buttons [] = {
-	//   x1, y1, w, h,  onClickHandler,        state,   is_locked, is_trackable, parent,    visible,      payload,	              name, 		text
+	//   x1, y1, w, h,  onClickHandler,        			state,   	is_locked, is_trackable, parent,   			 visible,      payload,	          name, 					text
 		{ },
-		{ 0, 0, 86, 44, button1_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  NON_VISIBLE, UINTPTR_MAX,	"btnMode", 		"Mode", },
-		{ 0, 0, 86, 44, button2_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  NON_VISIBLE, UINTPTR_MAX,	"btnAF", 		"AF|filter", },
-		{ 0, 0, 86, 44, button3_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  NON_VISIBLE, UINTPTR_MAX,	"btnAGC", 		"AGC", },
-		{ 0, 0, 86, 44, button4_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  NON_VISIBLE, UINTPTR_MAX,	"btn4", 		"Freq|enter", },
-		{ 0, 0, 86, 44, button5_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  NON_VISIBLE, UINTPTR_MAX,	"btn5", 		"", },
-		{ 0, 0, 86, 44, button6_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  NON_VISIBLE, UINTPTR_MAX,	"btnSWRscan",	"SWR|scanner", },
-		{ 0, 0, 86, 44, button7_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  NON_VISIBLE, UINTPTR_MAX,  "btn7", 		"Transmit|settings", },
-		{ 0, 0, 86, 44, button8_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  NON_VISIBLE, UINTPTR_MAX,	"btn8", 		"Audio|settings", },
-		{ 0, 0, 86, 44, button9_handler, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  NON_VISIBLE, UINTPTR_MAX,	"btnSysMenu", 	"System|settings", },
-		{ 0, 0, 86, 44, buttons_mode_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_LSB, 	"btnModeLSB", 	"LSB", },
-		{ 0, 0, 86, 44, buttons_mode_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_CW,  	"btnModeCW", 	"CW", },
-		{ 0, 0, 86, 44, buttons_mode_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_AM,  	"btnModeAM", 	"AM", },
-		{ 0, 0, 86, 44, buttons_mode_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_DGL, 	"btnModeDGL", 	"DGL", },
-		{ 0, 0, 86, 44, buttons_mode_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_USB, 	"btnModeUSB", 	"USB", },
-		{ 0, 0, 86, 44, buttons_mode_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_CWR, 	"btnModeCWR", 	"CWR", },
-		{ 0, 0, 86, 44, buttons_mode_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_NFM, 	"btnModeNFM", 	"NFM", },
-		{ 0, 0, 86, 44, buttons_mode_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_DGU, 	"btnModeDGU", 	"DGU", },
-		{ 0, 0, 86, 44, buttons_bp_handler,   CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_BP,    NON_VISIBLE, UINTPTR_MAX, 	"btnAF_1", 		"", },
-		{ 0, 0, 86, 44, buttons_bp_handler,   CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_BP,    NON_VISIBLE, UINTPTR_MAX, 	"btnAF_OK", 	"OK", },
-		{ 0, 0, 86, 44, buttons_bp_handler,   CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_BP,    NON_VISIBLE, UINTPTR_MAX, 	"btnAF_2", 		"", },
-		{ 0, 0, 86, 44, hamradio_set_agc_off, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AGC,   NON_VISIBLE, UINTPTR_MAX, 	"btnAGCoff", 	"AGC|off", },
-		{ 0, 0, 86, 44, hamradio_set_agc_slow,CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AGC,   NON_VISIBLE, UINTPTR_MAX, 	"btnAGCslow", 	"AGC|slow", },
-		{ 0, 0, 86, 44, hamradio_set_agc_fast,CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AGC,   NON_VISIBLE, UINTPTR_MAX, 	"btnAGCfast", 	"AGC|fast", },
-		{ 0, 0, 50, 50, buttons_freq_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, 1, 		 		"btnFreq1", 	"1", },
-		{ 0, 0, 50, 50, buttons_freq_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, 2, 		 		"btnFreq2", 	"2", },
-		{ 0, 0, 50, 50, buttons_freq_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, 3, 		 		"btnFreq3", 	"3", },
-		{ 0, 0, 50, 50, buttons_freq_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, BUTTON_CODE_BK, 	"btnFreqBK", 	"<-", },
-		{ 0, 0, 50, 50, buttons_freq_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, 4, 	 			"btnFreq4", 	"4", },
-		{ 0, 0, 50, 50, buttons_freq_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, 5, 				"btnFreq5", 	"5", },
-		{ 0, 0, 50, 50, buttons_freq_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, 6, 				"btnFreq6", 	"6", },
-		{ 0, 0, 50, 50, buttons_freq_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, BUTTON_CODE_OK, 	"btnFreqOK", 	"OK", },
-		{ 0, 0, 50, 50, buttons_freq_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, 7, 				"btnFreq7", 	"7", },
-		{ 0, 0, 50, 50, buttons_freq_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, 8,  				"btnFreq8", 	"8", },
-		{ 0, 0, 50, 50, buttons_freq_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, 9, 		 		"btnFreq9", 	"9", },
-		{ 0, 0, 50, 50, buttons_freq_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  NON_VISIBLE, 0, 	 			"btnFreq0", 	"0", },
-		{ 0, 0, 40, 40, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU,  NON_VISIBLE, UINTPTR_MAX, 	"btnSysMenu-",	"-", },
-		{ 0, 0, 40, 40, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU,  NON_VISIBLE, UINTPTR_MAX, 	"btnSysMenu+",	"+", },
-		{ 0, 0, 40, 40, buttons_uif_handler,  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UIF,   NON_VISIBLE, UINTPTR_MAX, 	"btnUIF-", 		"-", },
-		{ 0, 0, 40, 40, buttons_uif_handler,  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UIF,   NON_VISIBLE, UINTPTR_MAX, 	"btnUIF+", 		"+", },
-		{ 0, 0, 86, 44, buttons_swrscan_process, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_SWR_SCANNER, NON_VISIBLE, UINTPTR_MAX, "btn_swr_start", 	 "Start", },
-		{ 0, 0, 86, 44, buttons_swrscan_process, 	  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_SWR_SCANNER, NON_VISIBLE, UINTPTR_MAX, "btn_swr_OK", 	 	 "OK", },
-		{ 0, 0, 100, 44, buttons_audioparams_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, UINTPTR_MAX, "btn_reverb", 			"Reverb|OFF", },
-		{ 0, 0, 100, 44, buttons_audioparams_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, UINTPTR_MAX, "btn_reverb_settings", 	"Reverb|settings", },
-		{ 0, 0, 100, 44, buttons_audioparams_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, UINTPTR_MAX, "btn_monitor", 			"Monitor|disabled", },
-		{ 0, 0, 100, 44, buttons_audioparams_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, UINTPTR_MAX, "btn_mic_eq", 			"MIC EQ|OFF", },
-		{ 0, 0, 100, 44, buttons_audioparams_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, UINTPTR_MAX, "btn_mic_eq_settings", 	"MIC EQ|settings", },
-		{ 0, 0, 100, 44, buttons_audioparams_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, UINTPTR_MAX, "btn_mic_settings", 		"MIC|settings", },
-		{ 0, 0, 100, 44, buttons_audioparams_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, UINTPTR_MAX, "btn_mic_profiles", 		"MIC|profiles", },
-		{ 0, 0,  40, 40, buttons_audioparams_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_EQ, 	 NON_VISIBLE, UINTPTR_MAX, "btn_EQ_ok", 			"OK", },
-		{ 0, 0,  40, 40, buttons_audioparams_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_REVERB_SETT,NON_VISIBLE, UINTPTR_MAX, "btn_REVs_ok", 			"OK", },
-		{ 0, 0,  86, 44, buttons_ap_mic_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_SETT,  NON_VISIBLE, UINTPTR_MAX, "btn_mic_agc", 		"AGC|OFF", },
-		{ 0, 0,  86, 44, buttons_ap_mic_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_SETT,  NON_VISIBLE, UINTPTR_MAX, "btn_mic_boost", 		"Boost|OFF", },
-		{ 0, 0,  86, 44, buttons_ap_mic_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_SETT,  NON_VISIBLE, UINTPTR_MAX, "btn_mic_OK", 	 		"OK", },
-		{ 0, 0, 100, 44, buttons_tx_sett_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_TX_SETTINGS, NON_VISIBLE, UINTPTR_MAX, "btn_tx_vox", 	 		"VOX|OFF", },
-		{ 0, 0, 100, 44, buttons_tx_sett_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_TX_SETTINGS, NON_VISIBLE, UINTPTR_MAX, "btn_tx_vox_settings", "VOX|settings", },
-		{ 0, 0, 100, 44, buttons_tx_sett_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_TX_SETTINGS, NON_VISIBLE, UINTPTR_MAX, "btn_tx_power", 	 	"TX power", },
-		{ 0, 0,  44, 44, buttons_tx_sett_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_TX_VOX_SETT, NON_VISIBLE, UINTPTR_MAX, "btn_tx_vox_OK", 	 	"OK", },
-		{ 0, 0,  44, 44, buttons_tx_sett_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_TX_POWER,    NON_VISIBLE, UINTPTR_MAX, "btn_tx_pwr_OK", 	 	"OK", },
-
-		{ 0, 0, 100, 44, buttons_ap_mic_prof_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_PROF, NON_VISIBLE, UINTPTR_MAX, "btn_mic_profile_1_load", "Profile 1|load", },
-		{ 0, 0, 100, 44, buttons_ap_mic_prof_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_PROF, NON_VISIBLE, UINTPTR_MAX, "btn_mic_profile_2_load", "Profile 2|load", },
-		{ 0, 0, 100, 44, buttons_ap_mic_prof_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_PROF, NON_VISIBLE, UINTPTR_MAX, "btn_mic_profile_3_load", "Profile 3|load", },
-		{ 0, 0, 100, 44, buttons_ap_mic_prof_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_PROF, NON_VISIBLE, UINTPTR_MAX, "btn_mic_profile_1_save", "Profile 1|save", },
-		{ 0, 0, 100, 44, buttons_ap_mic_prof_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_PROF, NON_VISIBLE, UINTPTR_MAX, "btn_mic_profile_2_save", "Profile 2|save", },
-		{ 0, 0, 100, 44, buttons_ap_mic_prof_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_PROF, NON_VISIBLE, UINTPTR_MAX, "btn_mic_profile_3_save", "Profile 3|save", },
+		{ 0, 0, 86, 44, button1_handler, 	  			CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  			NON_VISIBLE, UINTPTR_MAX,		"btnMode", 					"Mode", },
+		{ 0, 0, 86, 44, button2_handler, 	  			CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  			NON_VISIBLE, UINTPTR_MAX,		"btnAF", 					"AF|filter", },
+		{ 0, 0, 86, 44, button3_handler, 	  			CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  			NON_VISIBLE, UINTPTR_MAX,		"btnAGC", 					"AGC", },
+		{ 0, 0, 86, 44, button4_handler, 	  			CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  			NON_VISIBLE, UINTPTR_MAX,		"btn4", 					"Freq|enter", },
+		{ 0, 0, 86, 44, button5_handler, 	  			CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, 			NON_VISIBLE, UINTPTR_MAX,		"btn5", 					"", },
+		{ 0, 0, 86, 44, button6_handler, 	  			CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  			NON_VISIBLE, UINTPTR_MAX,		"btnSWRscan",				"SWR|scanner", },
+		{ 0, 0, 86, 44, button7_handler, 	  			CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  			NON_VISIBLE, UINTPTR_MAX,  		"btn7", 					"Transmit|settings", },
+		{ 0, 0, 86, 44, button8_handler, 	  			CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  			NON_VISIBLE, UINTPTR_MAX,		"btn8", 					"Audio|settings", },
+		{ 0, 0, 86, 44, button9_handler, 	  			CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN,  			NON_VISIBLE, UINTPTR_MAX,		"btnSysMenu", 				"System|settings", },
+		{ 0, 0, 86, 44, buttons_mode_handler, 			CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, 			NON_VISIBLE, SUBMODE_LSB, 		"btnModeLSB", 				"LSB", },
+		{ 0, 0, 86, 44, buttons_mode_handler, 			CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, 			NON_VISIBLE, SUBMODE_CW,  		"btnModeCW", 				"CW", },
+		{ 0, 0, 86, 44, buttons_mode_handler, 			CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES,			NON_VISIBLE, SUBMODE_AM,  		"btnModeAM", 				"AM", },
+		{ 0, 0, 86, 44, buttons_mode_handler, 			CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, 			NON_VISIBLE, SUBMODE_DGL, 		"btnModeDGL", 				"DGL", },
+		{ 0, 0, 86, 44, buttons_mode_handler, 			CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, 			NON_VISIBLE, SUBMODE_USB, 		"btnModeUSB", 				"USB", },
+		{ 0, 0, 86, 44, buttons_mode_handler, 			CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, 			NON_VISIBLE, SUBMODE_CWR, 		"btnModeCWR", 				"CWR", },
+		{ 0, 0, 86, 44, buttons_mode_handler, 			CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, 			NON_VISIBLE, SUBMODE_NFM, 		"btnModeNFM", 				"NFM", },
+		{ 0, 0, 86, 44, buttons_mode_handler, 			CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, 			NON_VISIBLE, SUBMODE_DGU, 		"btnModeDGU", 				"DGU", },
+		{ 0, 0, 86, 44, buttons_bp_handler,   			CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_BP,   			NON_VISIBLE, UINTPTR_MAX, 		"btnAF_1", 					"", },
+		{ 0, 0, 86, 44, buttons_bp_handler,   			CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_BP,    			NON_VISIBLE, UINTPTR_MAX, 		"btnAF_OK", 				"OK", },
+		{ 0, 0, 86, 44, buttons_bp_handler,   			CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_BP,    			NON_VISIBLE, UINTPTR_MAX, 		"btnAF_2", 					"", },
+		{ 0, 0, 86, 44, hamradio_set_agc_off, 			CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AGC,   			NON_VISIBLE, UINTPTR_MAX, 		"btnAGCoff", 				"AGC|off", },
+		{ 0, 0, 86, 44, hamradio_set_agc_slow,			CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AGC,   			NON_VISIBLE, UINTPTR_MAX, 		"btnAGCslow", 				"AGC|slow", },
+		{ 0, 0, 86, 44, hamradio_set_agc_fast,			CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AGC,   			NON_VISIBLE, UINTPTR_MAX, 		"btnAGCfast", 				"AGC|fast", },
+		{ 0, 0, 50, 50, buttons_freq_handler, 			CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  			NON_VISIBLE, 1, 		 		"btnFreq1", 				"1", },
+		{ 0, 0, 50, 50, buttons_freq_handler, 			CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  			NON_VISIBLE, 2, 		 		"btnFreq2", 				"2", },
+		{ 0, 0, 50, 50, buttons_freq_handler, 			CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  			NON_VISIBLE, 3, 		 		"btnFreq3", 				"3", },
+		{ 0, 0, 50, 50, buttons_freq_handler, 			CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  			NON_VISIBLE, BUTTON_CODE_BK, 	"btnFreqBK", 				"<-", },
+		{ 0, 0, 50, 50, buttons_freq_handler, 			CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  			NON_VISIBLE, 4, 	 			"btnFreq4", 				"4", },
+		{ 0, 0, 50, 50, buttons_freq_handler, 			CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ, 			NON_VISIBLE, 5, 				"btnFreq5", 				"5", },
+		{ 0, 0, 50, 50, buttons_freq_handler, 			CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  			NON_VISIBLE, 6, 				"btnFreq6", 				"6", },
+		{ 0, 0, 50, 50, buttons_freq_handler, 			CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  			NON_VISIBLE, BUTTON_CODE_OK, 	"btnFreqOK", 				"OK", },
+		{ 0, 0, 50, 50, buttons_freq_handler, 			CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  			NON_VISIBLE, 7, 				"btnFreq7", 				"7", },
+		{ 0, 0, 50, 50, buttons_freq_handler, 			CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  			NON_VISIBLE, 8,  				"btnFreq8", 				"8", },
+		{ 0, 0, 50, 50, buttons_freq_handler, 			CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  			NON_VISIBLE, 9, 		 		"btnFreq9", 				"9", },
+		{ 0, 0, 50, 50, buttons_freq_handler, 			CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ,  			NON_VISIBLE, 0, 	 			"btnFreq0", 				"0", },
+		{ 0, 0, 40, 40, buttons_menu_handler, 			CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU,  			NON_VISIBLE, UINTPTR_MAX, 		"btnSysMenu-",				"-", },
+		{ 0, 0, 40, 40, buttons_menu_handler,			CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU,  			NON_VISIBLE, UINTPTR_MAX, 		"btnSysMenu+",				"+", },
+		{ 0, 0, 40, 40, buttons_uif_handler,  			CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UIF,   			NON_VISIBLE, UINTPTR_MAX, 		"btnUIF-", 					"-", },
+		{ 0, 0, 40, 40, buttons_uif_handler,  			CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UIF,   			NON_VISIBLE, UINTPTR_MAX, 		"btnUIF+", 					"+", },
+		{ 0, 0, 86, 44, buttons_swrscan_process,		CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_SWR_SCANNER, 	NON_VISIBLE, UINTPTR_MAX, 		"btn_swr_start", 	 		"Start", },
+		{ 0, 0, 86, 44, buttons_swrscan_process, 	  	CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_SWR_SCANNER, 	NON_VISIBLE, UINTPTR_MAX, 		"btn_swr_OK", 	 	 		"OK", },
+		{ 0, 0, 100, 44, buttons_audioparams_process, 	CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, 	NON_VISIBLE, UINTPTR_MAX, 		"btn_reverb", 				"Reverb|OFF", },
+		{ 0, 0, 100, 44, buttons_audioparams_process, 	CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, 	NON_VISIBLE, UINTPTR_MAX, 		"btn_reverb_settings", 		"Reverb|settings", },
+		{ 0, 0, 100, 44, buttons_audioparams_process, 	CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, 	NON_VISIBLE, UINTPTR_MAX, 		"btn_monitor", 				"Monitor|disabled", },
+		{ 0, 0, 100, 44, buttons_audioparams_process, 	CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, 	NON_VISIBLE, UINTPTR_MAX, 		"btn_mic_eq", 				"MIC EQ|OFF", },
+		{ 0, 0, 100, 44, buttons_audioparams_process,	CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, 	NON_VISIBLE, UINTPTR_MAX, 		"btn_mic_eq_settings", 		"MIC EQ|settings", },
+		{ 0, 0, 100, 44, buttons_audioparams_process, 	CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, 	NON_VISIBLE, UINTPTR_MAX, 		"btn_mic_settings", 		"MIC|settings", },
+		{ 0, 0, 100, 44, buttons_audioparams_process, 	CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, 	NON_VISIBLE, UINTPTR_MAX, 		"btn_mic_profiles", 		"MIC|profiles", },
+		{ 0, 0,  40, 40, buttons_audioparams_process, 	CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_EQ, 	 	NON_VISIBLE, UINTPTR_MAX, 		"btn_EQ_ok", 				"OK", },
+		{ 0, 0,  40, 40, buttons_audioparams_process, 	CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_REVERB_SETT,	NON_VISIBLE, UINTPTR_MAX, 		"btn_REVs_ok", 				"OK", },
+		{ 0, 0,  86, 44, buttons_ap_mic_process, 		CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_SETT,  	NON_VISIBLE, UINTPTR_MAX, 		"btn_mic_agc", 				"AGC|OFF", },
+		{ 0, 0,  86, 44, buttons_ap_mic_process, 		CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_SETT,  	NON_VISIBLE, UINTPTR_MAX, 		"btn_mic_boost", 			"Boost|OFF", },
+		{ 0, 0,  86, 44, buttons_ap_mic_process, 		CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_SETT,  	NON_VISIBLE, UINTPTR_MAX,		"btn_mic_OK", 	 			"OK", },
+		{ 0, 0, 100, 44, buttons_tx_sett_process, 		CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_TX_SETTINGS, 	NON_VISIBLE, UINTPTR_MAX, 		"btn_tx_vox", 	 			"VOX|OFF", },
+		{ 0, 0, 100, 44, buttons_tx_sett_process, 		CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_TX_SETTINGS, 	NON_VISIBLE, UINTPTR_MAX, 		"btn_tx_vox_settings", 		"VOX|settings", },
+		{ 0, 0, 100, 44, buttons_tx_sett_process, 		CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_TX_SETTINGS, 	NON_VISIBLE, UINTPTR_MAX, 		"btn_tx_power", 	 		"TX power", },
+		{ 0, 0,  44, 44, buttons_tx_sett_process, 		CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_TX_VOX_SETT, 	NON_VISIBLE, UINTPTR_MAX,		"btn_tx_vox_OK", 	 		"OK", },
+		{ 0, 0,  44, 44, buttons_tx_sett_process, 		CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_TX_POWER,    	NON_VISIBLE, UINTPTR_MAX, 		"btn_tx_pwr_OK", 	 		"OK", },
+		{ 0, 0, 100, 44, buttons_ap_mic_prof_process, 	CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_PROF, 	NON_VISIBLE, UINTPTR_MAX, 		"btn_mic_profile_1_load", 	"Profile 1|load", },
+		{ 0, 0, 100, 44, buttons_ap_mic_prof_process, 	CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_PROF, 	NON_VISIBLE, UINTPTR_MAX, 		"btn_mic_profile_2_load", 	"Profile 2|load", },
+		{ 0, 0, 100, 44, buttons_ap_mic_prof_process, 	CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_PROF, 	NON_VISIBLE, UINTPTR_MAX, 		"btn_mic_profile_3_load", 	"Profile 3|load", },
+		{ 0, 0, 100, 44, buttons_ap_mic_prof_process, 	CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_PROF, 	NON_VISIBLE, UINTPTR_MAX, 		"btn_mic_profile_1_save", 	"Profile 1|save", },
+		{ 0, 0, 100, 44, buttons_ap_mic_prof_process, 	CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_PROF, 	NON_VISIBLE, UINTPTR_MAX, 		"btn_mic_profile_2_save", 	"Profile 2|save", },
+		{ 0, 0, 100, 44, buttons_ap_mic_prof_process, 	CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_PROF, 	NON_VISIBLE, UINTPTR_MAX, 		"btn_mic_profile_3_save", 	"Profile 3|save", },
 
 #if ! GUI_OLDMENUSTYLE
 		{ 0, 0, 100, 44, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, 	"btnSysMenu1",	"", },
@@ -1075,72 +1077,72 @@ static void buttons_ap_mic_prof_process(void);
 	} label_t;
 
 	static label_t labels[] = {
-	//    x, y,  parent,     state, is_trackable, visible, name,       Text, font_size, color, onClickHandler
+	//    x, y,  parent,     		state, is_trackable, visible,   name,       		Text, font_size, 	color, 			onClickHandler
 		{ },
-		{ 0, 0, WINDOW_BP,   DISABLED,  0, NON_VISIBLE, "lbl_low",  	  "", FONT_LARGE, COLORPIP_YELLOW, },
-		{ 0, 0, WINDOW_BP,   DISABLED,  0, NON_VISIBLE, "lbl_high", 	  "", FONT_LARGE, COLORPIP_YELLOW, },
-		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
-		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
-		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
-		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
-		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
-		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
-		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
-		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
-		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
-		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
-		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
-		{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
-		{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
-		{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
-		{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
-		{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
-		{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
-		{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals", 	  "", FONT_LARGE, COLORPIP_WHITE, labels_menu_handler, },
-		{ 0, 0, WINDOW_ENC2, DISABLED,  0, NON_VISIBLE, "lbl_enc2_param", "", FONT_LARGE, COLORPIP_WHITE, },
-		{ 0, 0, WINDOW_ENC2, DISABLED,  0, NON_VISIBLE, "lbl_enc2_val",	  "", FONT_LARGE, COLORPIP_WHITE, },
-		{ 0, 0,	WINDOW_UIF,  DISABLED,  0, NON_VISIBLE, "lbl_uif_param",  "", FONT_LARGE, COLORPIP_WHITE, },
-		{ 0, 0,	WINDOW_UIF,  DISABLED,  0, NON_VISIBLE, "lbl_uif_val", 	  "", FONT_LARGE, COLORPIP_WHITE, },
-		{ 0, 0,	WINDOW_FREQ, DISABLED,  0, NON_VISIBLE, "lbl_freq_val",   "", FONT_LARGE, COLORPIP_YELLOW, },
-		{ 0, 0,	WINDOW_AP_MIC_EQ, DISABLED, 0, NON_VISIBLE, "lbl_eq0.08_val",  "", FONT_MEDIUM, COLORPIP_YELLOW, },
-		{ 0, 0,	WINDOW_AP_MIC_EQ, DISABLED, 0, NON_VISIBLE, "lbl_eq0.23_val",  "", FONT_MEDIUM, COLORPIP_YELLOW, },
-		{ 0, 0,	WINDOW_AP_MIC_EQ, DISABLED, 0, NON_VISIBLE, "lbl_eq0.65_val",  "", FONT_MEDIUM, COLORPIP_YELLOW, },
-		{ 0, 0,	WINDOW_AP_MIC_EQ, DISABLED, 0, NON_VISIBLE, "lbl_eq1.8_val",   "", FONT_MEDIUM, COLORPIP_YELLOW, },
-		{ 0, 0,	WINDOW_AP_MIC_EQ, DISABLED, 0, NON_VISIBLE, "lbl_eq5.3_val",   "", FONT_MEDIUM, COLORPIP_YELLOW, },
-		{ 0, 0,	WINDOW_AP_MIC_EQ, DISABLED, 0, NON_VISIBLE, "lbl_eq0.08_name", "", FONT_MEDIUM, COLORPIP_WHITE, },
-		{ 0, 0,	WINDOW_AP_MIC_EQ, DISABLED, 0, NON_VISIBLE, "lbl_eq0.23_name", "", FONT_MEDIUM, COLORPIP_WHITE, },
-		{ 0, 0,	WINDOW_AP_MIC_EQ, DISABLED, 0, NON_VISIBLE, "lbl_eq0.65_name", "", FONT_MEDIUM, COLORPIP_WHITE, },
-		{ 0, 0,	WINDOW_AP_MIC_EQ, DISABLED, 0, NON_VISIBLE, "lbl_eq1.8_name",  "", FONT_MEDIUM, COLORPIP_WHITE, },
-		{ 0, 0,	WINDOW_AP_MIC_EQ, DISABLED, 0, NON_VISIBLE, "lbl_eq5.3_name",  "", FONT_MEDIUM, COLORPIP_WHITE, },
-		{ 0, 0,	WINDOW_AP_REVERB_SETT,  DISABLED, 0, NON_VISIBLE, "lbl_reverbDelay", "", FONT_MEDIUM, COLORPIP_WHITE, },
-		{ 0, 0,	WINDOW_AP_REVERB_SETT,  DISABLED, 0, NON_VISIBLE, "lbl_reverbLoss", "", FONT_MEDIUM, COLORPIP_WHITE, },
-		{ 0, 0,	WINDOW_AP_REVERB_SETT,  DISABLED, 0, NON_VISIBLE, "lbl_reverbDelay_min", "", FONT_SMALL, COLORPIP_WHITE, },
-		{ 0, 0,	WINDOW_AP_REVERB_SETT,  DISABLED, 0, NON_VISIBLE, "lbl_reverbDelay_max", "", FONT_SMALL, COLORPIP_WHITE, },
-		{ 0, 0,	WINDOW_AP_REVERB_SETT,  DISABLED, 0, NON_VISIBLE, "lbl_reverbLoss_min", "", FONT_SMALL, COLORPIP_WHITE, },
-		{ 0, 0,	WINDOW_AP_REVERB_SETT,  DISABLED, 0, NON_VISIBLE, "lbl_reverbLoss_max", "", FONT_SMALL, COLORPIP_WHITE, },
-		{ 0, 0,	WINDOW_AP_MIC_SETT,  DISABLED, 0, NON_VISIBLE, "lbl_micLevel", "", FONT_MEDIUM, COLORPIP_WHITE, },
-		{ 0, 0,	WINDOW_AP_MIC_SETT,  DISABLED, 0, NON_VISIBLE, "lbl_micClip",  "", FONT_MEDIUM, COLORPIP_WHITE, },
-		{ 0, 0,	WINDOW_AP_MIC_SETT,  DISABLED, 0, NON_VISIBLE, "lbl_micAGC",   "", FONT_MEDIUM, COLORPIP_WHITE, },
-		{ 0, 0,	WINDOW_AP_MIC_SETT,  DISABLED, 0, NON_VISIBLE, "lbl_micLevel_min", "", FONT_SMALL, COLORPIP_WHITE, },
-		{ 0, 0,	WINDOW_AP_MIC_SETT,  DISABLED, 0, NON_VISIBLE, "lbl_micLevel_max", "", FONT_SMALL, COLORPIP_WHITE, },
-		{ 0, 0,	WINDOW_AP_MIC_SETT,  DISABLED, 0, NON_VISIBLE, "lbl_micClip_min",  "", FONT_SMALL, COLORPIP_WHITE, },
-		{ 0, 0,	WINDOW_AP_MIC_SETT,  DISABLED, 0, NON_VISIBLE, "lbl_micClip_max",  "", FONT_SMALL, COLORPIP_WHITE, },
-		{ 0, 0,	WINDOW_AP_MIC_SETT,  DISABLED, 0, NON_VISIBLE, "lbl_micAGC_min",   "", FONT_SMALL, COLORPIP_WHITE, },
-		{ 0, 0,	WINDOW_AP_MIC_SETT,  DISABLED, 0, NON_VISIBLE, "lbl_micAGC_max",   "", FONT_SMALL, COLORPIP_WHITE, },
-		{ 0, 0,	WINDOW_TX_VOX_SETT,  DISABLED, 0, NON_VISIBLE, "lbl_vox_delay",    "", FONT_MEDIUM, COLORPIP_WHITE, },
-		{ 0, 0,	WINDOW_TX_VOX_SETT,  DISABLED, 0, NON_VISIBLE, "lbl_vox_level",    "", FONT_MEDIUM, COLORPIP_WHITE, },
-		{ 0, 0,	WINDOW_TX_VOX_SETT,  DISABLED, 0, NON_VISIBLE, "lbl_avox_level",   "", FONT_MEDIUM, COLORPIP_WHITE, },
-		{ 0, 0,	WINDOW_TX_VOX_SETT,  DISABLED, 0, NON_VISIBLE, "lbl_vox_delay_min", "", FONT_SMALL, COLORPIP_WHITE, },
-		{ 0, 0,	WINDOW_TX_VOX_SETT,  DISABLED, 0, NON_VISIBLE, "lbl_vox_delay_max", "", FONT_SMALL, COLORPIP_WHITE, },
-		{ 0, 0,	WINDOW_TX_VOX_SETT,  DISABLED, 0, NON_VISIBLE, "lbl_vox_level_min",  "", FONT_SMALL, COLORPIP_WHITE, },
-		{ 0, 0,	WINDOW_TX_VOX_SETT,  DISABLED, 0, NON_VISIBLE, "lbl_vox_level_max",  "", FONT_SMALL, COLORPIP_WHITE, },
-		{ 0, 0,	WINDOW_TX_VOX_SETT,  DISABLED, 0, NON_VISIBLE, "lbl_avox_level_min", "", FONT_SMALL, COLORPIP_WHITE, },
-		{ 0, 0,	WINDOW_TX_VOX_SETT,  DISABLED, 0, NON_VISIBLE, "lbl_avox_level_max", "", FONT_SMALL, COLORPIP_WHITE, },
-		{ 0, 0,	WINDOW_SWR_SCANNER,  DISABLED, 0, NON_VISIBLE, "lbl_swr_bottom", "", FONT_SMALL, COLORPIP_WHITE, },
-		{ 0, 0,	WINDOW_SWR_SCANNER,  DISABLED, 0, NON_VISIBLE, "lbl_swr_top", "", 	 FONT_SMALL, COLORPIP_WHITE, },
-		{ 0, 0,	WINDOW_SWR_SCANNER,  DISABLED, 0, NON_VISIBLE, "lbl_swr_error", "",  FONT_MEDIUM, COLORPIP_WHITE, },
-		{ 0, 0,	WINDOW_TX_POWER,  	DISABLED, 0, NON_VISIBLE, "lbl_tx_power",    "", FONT_MEDIUM, COLORPIP_WHITE, },
-		{ 0, 0,	WINDOW_TX_POWER,  	DISABLED, 0, NON_VISIBLE, "lbl_tune_power",  "", FONT_MEDIUM, COLORPIP_WHITE, },
+		{ 0, 0, WINDOW_BP,   			DISABLED,  0, NON_VISIBLE, "lbl_low",  	  			"", FONT_LARGE, COLORMAIN_YELLOW, },
+		{ 0, 0, WINDOW_BP,   			DISABLED,  0, NON_VISIBLE, "lbl_high", 	  			"", FONT_LARGE, COLORMAIN_YELLOW, },
+		{ 0, 0, WINDOW_MENU, 			CANCELLED, 1, NON_VISIBLE, "lbl_group", 	  		"", FONT_LARGE, COLORMAIN_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, 			CANCELLED, 1, NON_VISIBLE, "lbl_group", 	  		"", FONT_LARGE, COLORMAIN_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, 			CANCELLED, 1, NON_VISIBLE, "lbl_group", 	  		"", FONT_LARGE, COLORMAIN_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, 			CANCELLED, 1, NON_VISIBLE, "lbl_group", 	  		"", FONT_LARGE, COLORMAIN_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU,			CANCELLED, 1, NON_VISIBLE, "lbl_group", 	  		"", FONT_LARGE, COLORMAIN_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, 			CANCELLED, 1, NON_VISIBLE, "lbl_group", 	  		"", FONT_LARGE, COLORMAIN_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, 			CANCELLED, 1, NON_VISIBLE, "lbl_params", 	  		"", FONT_LARGE, COLORMAIN_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, 			CANCELLED, 1, NON_VISIBLE, "lbl_params", 	  		"", FONT_LARGE, COLORMAIN_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU,			CANCELLED, 1, NON_VISIBLE, "lbl_params", 	  		"", FONT_LARGE, COLORMAIN_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, 			CANCELLED, 1, NON_VISIBLE, "lbl_params", 	  		"", FONT_LARGE, COLORMAIN_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, 			CANCELLED, 1, NON_VISIBLE, "lbl_params", 	  		"", FONT_LARGE, COLORMAIN_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, 			CANCELLED, 1, NON_VISIBLE, "lbl_params", 	  		"", FONT_LARGE, COLORMAIN_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, 			CANCELLED, 0, NON_VISIBLE, "lbl_vals", 	  			"", FONT_LARGE, COLORMAIN_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, 			CANCELLED, 0, NON_VISIBLE, "lbl_vals", 	  			"", FONT_LARGE, COLORMAIN_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, 			CANCELLED, 0, NON_VISIBLE, "lbl_vals", 	  			"", FONT_LARGE, COLORMAIN_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, 			CANCELLED, 0, NON_VISIBLE, "lbl_vals", 	  			"", FONT_LARGE, COLORMAIN_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, 			CANCELLED, 0, NON_VISIBLE, "lbl_vals", 	  			"", FONT_LARGE, COLORMAIN_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_MENU, 			CANCELLED, 0, NON_VISIBLE, "lbl_vals", 	  			"", FONT_LARGE, COLORMAIN_WHITE, labels_menu_handler, },
+		{ 0, 0, WINDOW_ENC2, 			DISABLED,  0, NON_VISIBLE, "lbl_enc2_param", 		"", FONT_LARGE, COLORMAIN_WHITE, },
+		{ 0, 0, WINDOW_ENC2, 			DISABLED,  0, NON_VISIBLE, "lbl_enc2_val",	  		"", FONT_LARGE, COLORMAIN_WHITE, },
+		{ 0, 0,	WINDOW_UIF,  			DISABLED,  0, NON_VISIBLE, "lbl_uif_param",  		"", FONT_LARGE, COLORMAIN_WHITE, },
+		{ 0, 0,	WINDOW_UIF,  			DISABLED,  0, NON_VISIBLE, "lbl_uif_val", 	  		"", FONT_LARGE, COLORMAIN_WHITE, },
+		{ 0, 0,	WINDOW_FREQ, 			DISABLED,  0, NON_VISIBLE, "lbl_freq_val",  		"", FONT_LARGE, COLORMAIN_YELLOW, },
+		{ 0, 0,	WINDOW_AP_MIC_EQ, 		DISABLED,  0, NON_VISIBLE, "lbl_eq0.08_val",  		"", FONT_LARGE, COLORMAIN_YELLOW, },
+		{ 0, 0,	WINDOW_AP_MIC_EQ, 		DISABLED,  0, NON_VISIBLE, "lbl_eq0.23_val",  		"", FONT_LARGE, COLORMAIN_YELLOW, },
+		{ 0, 0,	WINDOW_AP_MIC_EQ, 		DISABLED,  0, NON_VISIBLE, "lbl_eq0.65_val",  		"", FONT_LARGE, COLORMAIN_YELLOW, },
+		{ 0, 0,	WINDOW_AP_MIC_EQ, 		DISABLED,  0, NON_VISIBLE, "lbl_eq1.8_val",   		"", FONT_LARGE, COLORMAIN_YELLOW, },
+		{ 0, 0,	WINDOW_AP_MIC_EQ, 		DISABLED,  0, NON_VISIBLE, "lbl_eq5.3_val",   		"", FONT_LARGE, COLORMAIN_YELLOW, },
+		{ 0, 0,	WINDOW_AP_MIC_EQ, 		DISABLED,  0, NON_VISIBLE, "lbl_eq0.08_name", 		"", FONT_MEDIUM, COLORMAIN_WHITE, },
+		{ 0, 0,	WINDOW_AP_MIC_EQ, 		DISABLED,  0, NON_VISIBLE, "lbl_eq0.23_name", 		"", FONT_MEDIUM, COLORMAIN_WHITE, },
+		{ 0, 0,	WINDOW_AP_MIC_EQ, 		DISABLED,  0, NON_VISIBLE, "lbl_eq0.65_name", 		"", FONT_MEDIUM, COLORMAIN_WHITE, },
+		{ 0, 0,	WINDOW_AP_MIC_EQ, 		DISABLED,  0, NON_VISIBLE, "lbl_eq1.8_name",  		"", FONT_MEDIUM, COLORMAIN_WHITE, },
+		{ 0, 0,	WINDOW_AP_MIC_EQ, 		DISABLED,  0, NON_VISIBLE, "lbl_eq5.3_name",  		"", FONT_MEDIUM, COLORMAIN_WHITE, },
+		{ 0, 0,	WINDOW_AP_REVERB_SETT,  DISABLED,  0, NON_VISIBLE, "lbl_reverbDelay",		"", FONT_MEDIUM, COLORMAIN_WHITE, },
+		{ 0, 0,	WINDOW_AP_REVERB_SETT,  DISABLED,  0, NON_VISIBLE, "lbl_reverbLoss", 		"", FONT_MEDIUM, COLORMAIN_WHITE, },
+		{ 0, 0,	WINDOW_AP_REVERB_SETT,  DISABLED,  0, NON_VISIBLE, "lbl_reverbDelay_min", 	"", FONT_SMALL, COLORMAIN_WHITE, },
+		{ 0, 0,	WINDOW_AP_REVERB_SETT,  DISABLED,  0, NON_VISIBLE, "lbl_reverbDelay_max", 	"", FONT_SMALL, COLORMAIN_WHITE, },
+		{ 0, 0,	WINDOW_AP_REVERB_SETT,  DISABLED,  0, NON_VISIBLE, "lbl_reverbLoss_min", 	"", FONT_SMALL, COLORMAIN_WHITE, },
+		{ 0, 0,	WINDOW_AP_REVERB_SETT,  DISABLED,  0, NON_VISIBLE, "lbl_reverbLoss_max", 	"", FONT_SMALL, COLORMAIN_WHITE, },
+		{ 0, 0,	WINDOW_AP_MIC_SETT,  	DISABLED,  0, NON_VISIBLE, "lbl_micLevel", 			"", FONT_MEDIUM, COLORMAIN_WHITE, },
+		{ 0, 0,	WINDOW_AP_MIC_SETT,  	DISABLED,  0, NON_VISIBLE, "lbl_micClip",  			"", FONT_MEDIUM, COLORMAIN_WHITE, },
+		{ 0, 0,	WINDOW_AP_MIC_SETT,  	DISABLED,  0, NON_VISIBLE, "lbl_micAGC",   			"", FONT_MEDIUM, COLORMAIN_WHITE, },
+		{ 0, 0,	WINDOW_AP_MIC_SETT,  	DISABLED,  0, NON_VISIBLE, "lbl_micLevel_min", 		"", FONT_SMALL, COLORMAIN_WHITE, },
+		{ 0, 0,	WINDOW_AP_MIC_SETT,  	DISABLED,  0, NON_VISIBLE, "lbl_micLevel_max", 		"", FONT_SMALL, COLORMAIN_WHITE, },
+		{ 0, 0,	WINDOW_AP_MIC_SETT,  	DISABLED,  0, NON_VISIBLE, "lbl_micClip_min",  		"", FONT_SMALL, COLORMAIN_WHITE, },
+		{ 0, 0,	WINDOW_AP_MIC_SETT,  	DISABLED,  0, NON_VISIBLE, "lbl_micClip_max",  		"", FONT_SMALL, COLORMAIN_WHITE, },
+		{ 0, 0,	WINDOW_AP_MIC_SETT,  	DISABLED,  0, NON_VISIBLE, "lbl_micAGC_min",   		"", FONT_SMALL, COLORMAIN_WHITE, },
+		{ 0, 0,	WINDOW_AP_MIC_SETT,  	DISABLED,  0, NON_VISIBLE, "lbl_micAGC_max",   		"", FONT_SMALL, COLORMAIN_WHITE, },
+		{ 0, 0,	WINDOW_TX_VOX_SETT, 	DISABLED,  0, NON_VISIBLE, "lbl_vox_delay",    		"", FONT_MEDIUM, COLORMAIN_WHITE, },
+		{ 0, 0,	WINDOW_TX_VOX_SETT,  	DISABLED,  0, NON_VISIBLE, "lbl_vox_level",    		"", FONT_MEDIUM, COLORMAIN_WHITE, },
+		{ 0, 0,	WINDOW_TX_VOX_SETT,  	DISABLED,  0, NON_VISIBLE, "lbl_avox_level",   		"", FONT_MEDIUM, COLORMAIN_WHITE, },
+		{ 0, 0,	WINDOW_TX_VOX_SETT,  	DISABLED,  0, NON_VISIBLE, "lbl_vox_delay_min", 	"", FONT_SMALL, COLORMAIN_WHITE, },
+		{ 0, 0,	WINDOW_TX_VOX_SETT,  	DISABLED,  0, NON_VISIBLE, "lbl_vox_delay_max", 	"", FONT_SMALL, COLORMAIN_WHITE, },
+		{ 0, 0,	WINDOW_TX_VOX_SETT, 	DISABLED,  0, NON_VISIBLE, "lbl_vox_level_min",  	"", FONT_SMALL, COLORMAIN_WHITE, },
+		{ 0, 0,	WINDOW_TX_VOX_SETT, 	DISABLED,  0, NON_VISIBLE, "lbl_vox_level_max",  	"", FONT_SMALL, COLORMAIN_WHITE, },
+		{ 0, 0,	WINDOW_TX_VOX_SETT,  	DISABLED,  0, NON_VISIBLE, "lbl_avox_level_min", 	"", FONT_SMALL, COLORMAIN_WHITE, },
+		{ 0, 0,	WINDOW_TX_VOX_SETT,  	DISABLED,  0, NON_VISIBLE, "lbl_avox_level_max", 	"", FONT_SMALL, COLORMAIN_WHITE, },
+		{ 0, 0,	WINDOW_SWR_SCANNER,  	DISABLED,  0, NON_VISIBLE, "lbl_swr_bottom", 		"", FONT_SMALL, COLORMAIN_WHITE, },
+		{ 0, 0,	WINDOW_SWR_SCANNER,  	DISABLED,  0, NON_VISIBLE, "lbl_swr_top", 			"", FONT_SMALL, COLORMAIN_WHITE, },
+		{ 0, 0,	WINDOW_SWR_SCANNER,  	DISABLED,  0, NON_VISIBLE, "lbl_swr_error", 		"", FONT_MEDIUM, COLORMAIN_WHITE, },
+		{ 0, 0,	WINDOW_TX_POWER,  		DISABLED,  0, NON_VISIBLE, "lbl_tx_power",    		"", FONT_MEDIUM, COLORMAIN_WHITE, },
+		{ 0, 0,	WINDOW_TX_POWER,  		DISABLED,  0, NON_VISIBLE, "lbl_tune_power",  		"", FONT_MEDIUM, COLORMAIN_WHITE, },
 		};
 	enum { LABELS_COUNT = ARRAY_SIZE(labels) };
 
@@ -1176,21 +1178,21 @@ static void buttons_ap_mic_prof_process(void);
 
 	static slider_t sliders[] = {
 			{ },
-			{ 0, 0, 0, 0, 0, 0, ORIENTATION_VERTICAL, WINDOW_AP_MIC_EQ, "eq0.08", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
-			{ 0, 0, 0, 0, 0, 0, ORIENTATION_VERTICAL, WINDOW_AP_MIC_EQ, "eq0.23", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
-			{ 0, 0, 0, 0, 0, 0, ORIENTATION_VERTICAL, WINDOW_AP_MIC_EQ, "eq0.65", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
-			{ 0, 0, 0, 0, 0, 0, ORIENTATION_VERTICAL, WINDOW_AP_MIC_EQ, "eq1.8",  CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
-			{ 0, 0, 0, 0, 0, 0, ORIENTATION_VERTICAL, WINDOW_AP_MIC_EQ, "eq5.3",  CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
-			{ 0, 0, 0, 0, 0, 0, ORIENTATION_HORIZONTAL, WINDOW_AP_REVERB_SETT, "reverbDelay", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
-			{ 0, 0, 0, 0, 0, 0, ORIENTATION_HORIZONTAL, WINDOW_AP_REVERB_SETT, "reverbLoss",  CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
-			{ 0, 0, 0, 0, 0, 0, ORIENTATION_HORIZONTAL, WINDOW_AP_MIC_SETT, "sl_micLevel", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
-			{ 0, 0, 0, 0, 0, 0, ORIENTATION_HORIZONTAL, WINDOW_AP_MIC_SETT, "sl_micClip",  CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
-			{ 0, 0, 0, 0, 0, 0, ORIENTATION_HORIZONTAL, WINDOW_AP_MIC_SETT, "sl_micAGC",   CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
-			{ 0, 0, 0, 0, 0, 0, ORIENTATION_HORIZONTAL, WINDOW_TX_VOX_SETT, "sl_vox_delay",   CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
-			{ 0, 0, 0, 0, 0, 0, ORIENTATION_HORIZONTAL, WINDOW_TX_VOX_SETT, "sl_vox_level",   CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
-			{ 0, 0, 0, 0, 0, 0, ORIENTATION_HORIZONTAL, WINDOW_TX_VOX_SETT, "sl_avox_level",  CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
-			{ 0, 0, 0, 0, 0, 0, ORIENTATION_HORIZONTAL, WINDOW_TX_POWER, 	"sl_pwr_level",   CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
-			{ 0, 0, 0, 0, 0, 0, ORIENTATION_HORIZONTAL, WINDOW_TX_POWER, 	"sl_pwr_tuner_level",  CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
+			{ 0, 0, 0, 0, 0, 0, ORIENTATION_VERTICAL, 	WINDOW_AP_MIC_EQ, 		"eq0.08", 				CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
+			{ 0, 0, 0, 0, 0, 0, ORIENTATION_VERTICAL, 	WINDOW_AP_MIC_EQ, 		"eq0.23", 				CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
+			{ 0, 0, 0, 0, 0, 0, ORIENTATION_VERTICAL, 	WINDOW_AP_MIC_EQ, 		"eq0.65", 				CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
+			{ 0, 0, 0, 0, 0, 0, ORIENTATION_VERTICAL, 	WINDOW_AP_MIC_EQ, 		"eq1.8",  				CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
+			{ 0, 0, 0, 0, 0, 0, ORIENTATION_VERTICAL, 	WINDOW_AP_MIC_EQ, 		"eq5.3",  				CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
+			{ 0, 0, 0, 0, 0, 0, ORIENTATION_HORIZONTAL, WINDOW_AP_REVERB_SETT, 	"reverbDelay", 			CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
+			{ 0, 0, 0, 0, 0, 0, ORIENTATION_HORIZONTAL, WINDOW_AP_REVERB_SETT, 	"reverbLoss",  			CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
+			{ 0, 0, 0, 0, 0, 0, ORIENTATION_HORIZONTAL, WINDOW_AP_MIC_SETT, 	"sl_micLevel", 			CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
+			{ 0, 0, 0, 0, 0, 0, ORIENTATION_HORIZONTAL, WINDOW_AP_MIC_SETT, 	"sl_micClip",  			CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
+			{ 0, 0, 0, 0, 0, 0, ORIENTATION_HORIZONTAL, WINDOW_AP_MIC_SETT, 	"sl_micAGC",   			CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
+			{ 0, 0, 0, 0, 0, 0, ORIENTATION_HORIZONTAL, WINDOW_TX_VOX_SETT, 	"sl_vox_delay",   		CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
+			{ 0, 0, 0, 0, 0, 0, ORIENTATION_HORIZONTAL, WINDOW_TX_VOX_SETT, 	"sl_vox_level",  		CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
+			{ 0, 0, 0, 0, 0, 0, ORIENTATION_HORIZONTAL, WINDOW_TX_VOX_SETT, 	"sl_avox_level",  		CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
+			{ 0, 0, 0, 0, 0, 0, ORIENTATION_HORIZONTAL, WINDOW_TX_POWER, 		"sl_pwr_level",   		CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
+			{ 0, 0, 0, 0, 0, 0, ORIENTATION_HORIZONTAL, WINDOW_TX_POWER, 		"sl_pwr_tuner_level",  	CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
 	};
 	enum { SLIDERS_COUNT = ARRAY_SIZE(sliders) };
 
@@ -1651,31 +1653,16 @@ static void buttons_ap_mic_prof_process(void);
 	static void window_bp_process(void)
 	{
 		static uint_fast8_t val_high, val_low, val_c, val_w;
-		static uint_fast16_t x_h, x_l, x_c, x_0, y_0;
+		static uint_fast16_t x_h, x_l, x_c;
 		window_t * win = & windows[WINDOW_BP];
-		uint_fast16_t x_size = 290;
+		uint_fast16_t x_size = 290, x_0 = 50, y_0 = 90;
 		static label_t * lbl_low, * lbl_high;
 		static button_t * button_high, * button_low;
 
 		if (win->first_call)
 		{
 			uint_fast16_t id = 0, x, y, xmax = 0, ymax = 0;
-			uint_fast8_t interval = 20, col1_int = 35, row1_int = 20, id_start, id_end;
-			x_0 = 50;											// координаты нулевой точки графика
-			y_0 = 90;
-
-			find_entry_area_elements(TYPE_BUTTON, win, & id_start, & id_end);
-
-			x = col1_int;
-			y = 150;
-			for (uint_fast8_t id = id_start; id <= id_end; id++)
-			{
-				button_t * bh = (button_t *) touch_elements[id].link;;
-				bh->x1 = x;
-				bh->y1 = y;
-				bh->visible = VISIBLE;
-				x = x + interval + bh->w;
-			}
+			uint_fast8_t interval = 20, col1_int = 35, row1_int = window_title_height + 20, id_start, id_end;
 
 			button_high = find_gui_element_ref(TYPE_BUTTON, win, "btnAF_2");
 			button_low = find_gui_element_ref(TYPE_BUTTON, win, "btnAF_1");
@@ -1684,10 +1671,23 @@ static void buttons_ap_mic_prof_process(void);
 			lbl_high = find_gui_element_ref(TYPE_LABEL, win, "lbl_high");
 
 			lbl_low->y = y_0 + get_label_height(lbl_low);
-			lbl_high->y = y_0 + get_label_height(lbl_high);
+			lbl_high->y = lbl_low->y;
 
 			lbl_low->visible = VISIBLE;
 			lbl_high->visible = VISIBLE;
+
+			find_entry_area_elements(TYPE_BUTTON, win, & id_start, & id_end);
+
+			x = col1_int;
+			y = lbl_high->y + get_label_height(lbl_high) * 2;
+			for (uint_fast8_t id = id_start; id <= id_end; id++)
+			{
+				button_t * bh = (button_t *) touch_elements[id].link;;
+				bh->x1 = x;
+				bh->y1 = y;
+				bh->visible = VISIBLE;
+				x = x + interval + bh->w;
+			}
 
 			val_high = hamradio_get_high_bp(0);
 			val_low = hamradio_get_low_bp(0);
@@ -1765,12 +1765,12 @@ static void buttons_ap_mic_prof_process(void);
 			gui.timer_1sec_updated = 1;
 		}
 		PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
-		colmain_line(fr, DIM_X, DIM_Y, win->x1 + x_0 - 10, win->y1 + y_0, win->x1 + x_0 + x_size, win->y1 + y_0, COLORPIP_WHITE, 0);
-		colmain_line(fr, DIM_X, DIM_Y, win->x1 + x_0, win->y1 + y_0 - 45, win->x1 + x_0, win->y1 + y_0 + 5, COLORPIP_WHITE, 0);
-		colmain_line(fr, DIM_X, DIM_Y, win->x1 + x_l, win->y1 + y_0 - 40, win->x1 + x_l - 4, win->y1 + y_0 - 3, COLORPIP_YELLOW, 1);
-		colmain_line(fr, DIM_X, DIM_Y, win->x1 + x_h, win->y1 + y_0 - 40, win->x1 + x_h + 4, win->y1 + y_0 - 3, COLORPIP_YELLOW, 1);
-		colmain_line(fr, DIM_X, DIM_Y, win->x1 + x_l, win->y1 + y_0 - 40, win->x1 + x_h, win->y1 + y_0 - 40, COLORPIP_YELLOW, 0);
-		colmain_line(fr, DIM_X, DIM_Y, win->x1 + x_c, win->y1 + y_0 - 45, win->x1 + x_c, win->y1 + y_0 + 5, COLORPIP_RED, 0);
+		colmain_line(fr, DIM_X, DIM_Y, win->x1 + x_0 - 10, win->y1 + y_0, win->x1 + x_0 + x_size, win->y1 + y_0, COLORMAIN_WHITE, 0);
+		colmain_line(fr, DIM_X, DIM_Y, win->x1 + x_0, win->y1 + y_0 - 45, win->x1 + x_0, win->y1 + y_0 + 5, COLORMAIN_WHITE, 0);
+		colmain_line(fr, DIM_X, DIM_Y, win->x1 + x_l, win->y1 + y_0 - 40, win->x1 + x_l - 4, win->y1 + y_0 - 3, COLORMAIN_YELLOW, 1);
+		colmain_line(fr, DIM_X, DIM_Y, win->x1 + x_h, win->y1 + y_0 - 40, win->x1 + x_h + 4, win->y1 + y_0 - 3, COLORMAIN_YELLOW, 1);
+		colmain_line(fr, DIM_X, DIM_Y, win->x1 + x_l, win->y1 + y_0 - 40, win->x1 + x_h, win->y1 + y_0 - 40, COLORMAIN_YELLOW, 0);
+		colmain_line(fr, DIM_X, DIM_Y, win->x1 + x_c, win->y1 + y_0 - 45, win->x1 + x_c, win->y1 + y_0 + 5, COLORMAIN_RED, 0);
 	}
 
 	static void buttons_freq_handler (void)
@@ -1788,7 +1788,7 @@ static void buttons_ap_mic_prof_process(void);
 		if (win->first_call)
 		{
 			uint_fast16_t x, y, xmax = 0, ymax = 0;
-			uint_fast8_t interval = 6, col1_int = 20, row1_int = 40, row_count = 4, id_start, id_end;
+			uint_fast8_t interval = 6, col1_int = 20, row1_int = window_title_height + 20, row_count = 4, id_start, id_end;
 			button_t * bh = NULL;
 			win->first_call = 0;
 
@@ -1821,9 +1821,9 @@ static void buttons_ap_mic_prof_process(void);
 
 			lbl_freq = find_gui_element_ref(TYPE_LABEL, win, "lbl_freq_val");
 			lbl_freq->x = strwidth(win->name) + strwidth(" ") + 20;
-			lbl_freq->y = 10;
+			lbl_freq->y = 5;
 			strcpy(lbl_freq->text, "     0 k");
-			lbl_freq->color = COLORPIP_YELLOW;
+			lbl_freq->color = COLORMAIN_YELLOW;
 			lbl_freq->visible = VISIBLE;
 
 			editfreq.val = 0;
@@ -1835,7 +1835,7 @@ static void buttons_ap_mic_prof_process(void);
 
 		if (editfreq.key != BUTTON_CODE_DONE)
 		{
-			lbl_freq->color = COLORPIP_YELLOW;
+			lbl_freq->color = COLORMAIN_YELLOW;
 			char buf[TEXT_ARRAY_SIZE];
 			switch (editfreq.key)
 			{
@@ -1855,7 +1855,7 @@ static void buttons_ap_mic_prof_process(void);
 					hamradio_set_lockmode(0);
 					hamradio_disable_keyboard_redirect();
 				} else
-					lbl_freq->color = COLORPIP_RED;
+					lbl_freq->color = COLORMAIN_RED;
 				break;
 
 			default:
@@ -1916,44 +1916,43 @@ static void buttons_ap_mic_prof_process(void);
 		}
 	}
 
-	// FIXME: Доделать автовыравнивание
 	static void window_uif_process(void)
 	{
-		static label_t * lbl_uif_param, * lbl_uif_val;
+		static label_t * lbl_uif_val;
 		static button_t * button_up, * button_down;
 		static uint_fast16_t window_center_x;
+		static uint_fast8_t reinit = 0;
 		window_t * win = & windows[WINDOW_UIF];
 
-		if (win->first_call)
+		if (win->first_call || reinit)
 		{
 			win->first_call = 0;
+			reinit = 0;
 			uint_fast16_t xmax = 0, ymax = 0;
-			uint_fast8_t col1_int = 20, row1_int = 5;
+			uint_fast8_t col1_int = 20, row1_int = window_title_height + 20;
 
-			lbl_uif_param = find_gui_element_ref(TYPE_LABEL, win, "lbl_uif_param");
-			strcpy(lbl_uif_param->text, menu_uif.name);
-			lbl_uif_param->x = col1_int;
-			lbl_uif_param->y = row1_int;
-			lbl_uif_param->visible = VISIBLE;
-
-			window_center_x = lbl_uif_param->x * 2 + get_label_width(lbl_uif_param) / 2;
-
-			lbl_uif_val = find_gui_element_ref(TYPE_LABEL, win, "lbl_uif_val");
-			const char * v = hamradio_gui_edit_menu_item(menu_uif.menupos, 0);
-			strcpy(lbl_uif_val->text, v);
-			lbl_uif_val->x = window_center_x - (get_label_width(lbl_uif_val) / 2);
-			lbl_uif_val->y = get_label_height(lbl_uif_param) * 4;
-			lbl_uif_val->visible = VISIBLE;
+			strcpy(win->name, menu_uif.name);
 
 			button_down = find_gui_element_ref(TYPE_BUTTON, win, "btnUIF-");
-			button_down->x1 = lbl_uif_val->x - button_down->w - 10;
-			button_down->y1 = (lbl_uif_val->y + get_label_height(lbl_uif_param) / 2) - (button_down->h / 2);
+			button_up = find_gui_element_ref(TYPE_BUTTON, win, "btnUIF+");
+			lbl_uif_val = find_gui_element_ref(TYPE_LABEL, win, "lbl_uif_val");
+
+			const char * v = hamradio_gui_edit_menu_item(menu_uif.menupos, 0);
+			strcpy(lbl_uif_val->text, v);
+
+			button_down->x1 = col1_int;
+			button_down->y1 = row1_int;
 			button_down->visible = VISIBLE;
 
-			button_up = find_gui_element_ref(TYPE_BUTTON, win, "btnUIF+");
-			button_up->x1 = lbl_uif_val->x + get_label_width(lbl_uif_val) + 10;
+			button_up->x1 = button_down->x1 + button_down->w + 30 + get_label_width(lbl_uif_val);
 			button_up->y1 = button_down->y1;
 			button_up->visible = VISIBLE;
+
+			window_center_x = (col1_int + button_up->x1 + button_up->w) / 2;
+
+			lbl_uif_val->x = window_center_x - get_label_width(lbl_uif_val) / 2;
+			lbl_uif_val->y = row1_int + button_up->w / 2 - get_label_height(lbl_uif_val) / 2;
+			lbl_uif_val->visible = VISIBLE;
 
 			xmax = button_up->x1 + button_up->w;
 			ymax = button_up->y1 + button_up->h;
@@ -1965,14 +1964,10 @@ static void buttons_ap_mic_prof_process(void);
 
 		if (encoder2.rotate != 0)
 		{
-			const char * v = hamradio_gui_edit_menu_item(menu_uif.menupos, encoder2.rotate);
-			strcpy(lbl_uif_val->text, v);
-			lbl_uif_val->x = window_center_x - (get_label_width(lbl_uif_val) / 2);
+			hamradio_gui_edit_menu_item(menu_uif.menupos, encoder2.rotate);
+
+			reinit = 1;
 			encoder2.rotate_done = 1;
-
-			button_down->x1 = lbl_uif_val->x - button_down->w - 10;
-			button_up->x1 = lbl_uif_val->x + get_label_width(lbl_uif_val) + 10;
-
 			gui.timer_1sec_updated = 1;
 		}
 
@@ -2040,7 +2035,7 @@ static void buttons_ap_mic_prof_process(void);
 
 			hamradio_set_menu_cond(VISIBLE);
 
-			uint_fast8_t col1_int = 20, row1_int = 40, id_start, id_end, i = 0;
+			uint_fast8_t col1_int = 20, row1_int = window_title_height + 20, id_start, id_end, i = 0;
 			uint_fast16_t xn, yn;
 			label_t * lh;
 
@@ -2100,7 +2095,7 @@ static void buttons_ap_mic_prof_process(void);
 				lh = touch_elements[menu[MENU_GROUPS].first_id + i].link;
 				strcpy(lh->text, menu[MENU_GROUPS].menu_block[i + menu[MENU_GROUPS].add_id].name);
 				lh->visible = VISIBLE;
-				lh->color = COLORMAIN_WHITE;
+				lh->color = i == menu[MENU_GROUPS].selected_label ? COLORMAIN_BLACK : COLORMAIN_WHITE;
 				lh->x = xn;
 				lh->y = yn;
 				yn += int_rows;
@@ -2234,13 +2229,13 @@ static void buttons_ap_mic_prof_process(void);
 				for (uint8_t i = 0; i <= menu[MENU_GROUPS].num_rows; i++)
 				{
 					lh = touch_elements[menu[MENU_GROUPS].first_id + i].link;
-					lh->color = i == menu[MENU_GROUPS].selected_label ? COLORPIP_WHITE : COLORPIP_GRAY;
+					lh->color = i == menu[MENU_GROUPS].selected_label ? COLORMAIN_BLACK : COLORMAIN_GRAY;
 
 					lh = touch_elements[menu[MENU_PARAMS].first_id + i].link;
-					lh->color = i == menu[MENU_PARAMS].selected_label ? COLORPIP_WHITE : COLORPIP_GRAY;
+					lh->color = i == menu[MENU_PARAMS].selected_label ? COLORMAIN_BLACK : COLORMAIN_GRAY;
 
 					lh = touch_elements[menu[MENU_VALS].first_id + i].link;
-					lh->color = i == menu[MENU_PARAMS].selected_label ? COLORPIP_YELLOW : COLORPIP_GRAY;
+					lh->color = i == menu[MENU_PARAMS].selected_label ? COLORMAIN_YELLOW : COLORMAIN_GRAY;
 				}
 				menu_label_touched = 0;
 			}
@@ -2251,13 +2246,13 @@ static void buttons_ap_mic_prof_process(void);
 				for (uint8_t i = 0; i <= menu[MENU_GROUPS].num_rows; i++)
 				{
 					lh = touch_elements[menu[MENU_GROUPS].first_id + i].link;
-					lh->color = i == menu[MENU_GROUPS].selected_label ? COLORPIP_WHITE : COLORPIP_GRAY;
+					lh->color = i == menu[MENU_GROUPS].selected_label ? COLORMAIN_BLACK : COLORMAIN_GRAY;
 
 					lh = touch_elements[menu[MENU_PARAMS].first_id + i].link;
-					lh->color = COLORPIP_WHITE;
+					lh->color = i == menu[MENU_PARAMS].selected_label ? COLORMAIN_BLACK : COLORMAIN_WHITE;
 
 					lh = touch_elements[menu[MENU_VALS].first_id + i].link;
-					lh->color = COLORPIP_WHITE;
+					lh->color = COLORMAIN_WHITE;
 				}
 			}
 			else if (menu_level == MENU_GROUPS)
@@ -2267,13 +2262,13 @@ static void buttons_ap_mic_prof_process(void);
 				for (uint8_t i = 0; i <= menu[MENU_GROUPS].num_rows; i++)
 				{
 					lh = touch_elements[menu[MENU_GROUPS].first_id + i].link;
-					lh->color = COLORPIP_WHITE;
+					lh->color = i == menu[MENU_GROUPS].selected_label ? COLORMAIN_BLACK : COLORMAIN_WHITE;
 
 					lh = touch_elements[menu[MENU_PARAMS].first_id + i].link;
-					lh->color = COLORPIP_WHITE;
+					lh->color = COLORMAIN_WHITE;
 
 					lh = touch_elements[menu[MENU_VALS].first_id + i].link;
-					lh->color = COLORPIP_WHITE;
+					lh->color = COLORMAIN_WHITE;
 				}
 			}
 
@@ -2340,6 +2335,7 @@ static void buttons_ap_mic_prof_process(void);
 				{
 					label_t * l = touch_elements[menu[MENU_GROUPS].first_id + i].link;
 					strcpy(l->text, menu[MENU_GROUPS].menu_block[i + menu[MENU_GROUPS].add_id].name);
+					l->color = i == menu[MENU_GROUPS].selected_label ? COLORMAIN_BLACK : COLORMAIN_WHITE;
 				}
 
 			menu[MENU_VALS].count = menu[MENU_PARAMS].count < menu[MENU_VALS].num_rows ? menu[MENU_PARAMS].count : menu[MENU_VALS].num_rows;
@@ -2358,6 +2354,7 @@ static void buttons_ap_mic_prof_process(void);
 					continue;
 				strcpy(lp->text, menu[MENU_PARAMS].menu_block[i + menu[MENU_PARAMS].add_id].name);
 				strcpy(lv->text, menu[MENU_VALS].menu_block[i].name);
+				lp->color = i == menu[MENU_PARAMS].selected_label && menu_level > MENU_GROUPS ? COLORMAIN_BLACK : COLORMAIN_WHITE;
 				lp->visible = VISIBLE;
 				lp->state = CANCELLED;
 				lv->visible = VISIBLE;
@@ -2479,7 +2476,7 @@ static void buttons_ap_mic_prof_process(void);
 			lbl_val->y = lbl_param->y + get_label_height(lbl_val) * 2;
 			lbl_val->visible = VISIBLE;
 			strcpy(lbl_val->text, gui_enc2_menu->val);
-			lbl_val->color = gui_enc2_menu->state == 2 ? COLORPIP_YELLOW : COLORPIP_WHITE;
+			lbl_val->color = gui_enc2_menu->state == 2 ? COLORMAIN_YELLOW : COLORMAIN_WHITE;
 			lbl_val->x = lbl_param->x + get_label_width(lbl_param) / 2 - get_label_width(lbl_val) / 2;
 
 			xmax = lbl_param->x + get_label_width(lbl_param);
@@ -2516,7 +2513,7 @@ static void buttons_ap_mic_prof_process(void);
 			button_t * bh = NULL;
 			uint_fast16_t x, y;
 			uint_fast16_t xmax = 0, ymax = 0;
-			uint_fast8_t interval = 6, col1_int = 20, row1_int = 40, row_count = 4;
+			uint_fast8_t interval = 6, col1_int = 20, row1_int = window_title_height + 20, row_count = 4;
 			uint_fast8_t id_start, id_end;
 			win->first_call = 0;
 
@@ -2551,7 +2548,7 @@ static void buttons_ap_mic_prof_process(void);
 		if (win->first_call)
 		{
 			uint_fast16_t x = 0, y = 0, xmax = 0, ymax = 0;
-			uint_fast8_t interval = 6, col1_int = 20, row1_int = 40, row_count = 4, id_start, id_end;
+			uint_fast8_t interval = 6, col1_int = 20, row1_int = window_title_height + 20, row_count = 4, id_start, id_end;
 			win->first_call = 0;
 			button_t * bh = NULL;
 
@@ -2660,7 +2657,7 @@ static void buttons_ap_mic_prof_process(void);
 		if (win->first_call)
 		{
 			uint_fast16_t x = 0, y = 0, xmax = 0, ymax = 0;
-			uint_fast8_t interval = 6, col1_int = 20, row1_int = 40, row_count = 3, id_start, id_end;
+			uint_fast8_t interval = 6, col1_int = 20, row1_int = window_title_height + 20, row_count = 3, id_start, id_end;
 			button_t * bh = NULL;
 			win->first_call = 0;
 
@@ -2741,7 +2738,7 @@ static void buttons_ap_mic_prof_process(void);
 		{
 			uint_fast16_t x, y, mid_w;
 			uint_fast16_t xmax = 0, ymax = 0;
-			uint_fast8_t interval = 70, col1_int = 70, row1_int = 120;
+			uint_fast8_t interval = 70, col1_int = 70, row1_int = window_title_height + 20;
 			win->first_call = 0;
 
 			find_entry_area_elements(TYPE_SLIDER, win, & id_start, & id_end);
@@ -2757,7 +2754,6 @@ static void buttons_ap_mic_prof_process(void);
 				sl = (slider_t *) touch_elements[id].link;
 
 				sl->x = x;
-				sl->y = y;
 				sl->size = 200;
 				sl->step = 2;
 				sl->value = normalize(hamradio_get_gmikeequalizerparams(id - id_start), eq_limit, 0, 100);
@@ -2769,17 +2765,22 @@ static void buttons_ap_mic_prof_process(void);
 				lbl = find_gui_element_ref(TYPE_LABEL, win, buf);
 				local_snprintf_P(lbl->text, ARRAY_SIZE(lbl->text), PSTR("%sk"), strchr(sl->name, 'q') + 1);
 				lbl->x = mid_w - get_label_width(lbl) / 2;
-				lbl->y = sl->y - get_label_height(lbl) * 4;
+				lbl->y = y;
 				lbl->visible = VISIBLE;
+
+				y = lbl->y + get_label_height(lbl) * 2;
 
 				local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("lbl_%s_val"), sl->name);
 				lbl = find_gui_element_ref(TYPE_LABEL, win, buf);
 				local_snprintf_P(lbl->text, ARRAY_SIZE(lbl->text), PSTR("%d"), hamradio_get_gmikeequalizerparams(id - id_start) + eq_base);
 				lbl->x = mid_w - get_label_width(lbl) / 2;
-				lbl->y = sl->y - get_label_height(lbl) * 3 + get_label_height(lbl) / 2;
+				lbl->y = y;
 				lbl->visible = VISIBLE;
 
+				sl->y = lbl->y + get_label_height(lbl) * 2 + 10;
+
 				x = x + interval;
+				y = row1_int;
 			}
 
 			btn_EQ_ok = find_gui_element_ref(TYPE_BUTTON, win, "btn_EQ_ok");
@@ -3115,7 +3116,7 @@ static void buttons_ap_mic_prof_process(void);
 		if (win->first_call)
 		{
 			uint_fast16_t x = 0, y = 0, xmax = 0, ymax = 0;
-			uint_fast8_t interval = 6, col1_int = 20, row1_int = 40, row_count = 3, id_start, id_end;
+			uint_fast8_t interval = 6, col1_int = 20, row1_int = window_title_height + 20, row_count = 3, id_start, id_end;
 			button_t * bh = NULL;
 			win->first_call = 0;
 
@@ -3627,7 +3628,7 @@ static void buttons_ap_mic_prof_process(void);
 		if (win->first_call)
 		{
 			uint_fast16_t x = 0, y = 0, xmax = 0, ymax = 0;
-			uint_fast8_t interval = 6, col1_int = 20, row1_int = 40, row_count = 3, id_start, id_end;
+			uint_fast8_t interval = 6, col1_int = 20, row1_int = window_title_height + 20, row_count = 3, id_start, id_end;
 			button_t * bh = NULL;
 			win->first_call = 0;
 
@@ -3850,7 +3851,7 @@ static void buttons_ap_mic_prof_process(void);
 		char buf [TEXT_ARRAY_SIZE];
 		const uint_fast8_t buflen = ARRAY_SIZE(buf);
 		uint_fast16_t yt, xt, y1 = 125, y2 = 145, current_place = 0, xx;
-		uint_fast8_t num_labels = 5, lbl_place_width = 100;
+		uint_fast8_t num_places = 8, lbl_place_width = 100;
 
 		if (win->first_call)
 		{
@@ -3871,7 +3872,7 @@ static void buttons_ap_mic_prof_process(void);
 		}
 
 		// разметка
-		for(uint_fast8_t i = 1; i <= num_labels; i++)
+		for(uint_fast8_t i = 1; i < num_places; i++)
 		{
 			uint_fast16_t x = lbl_place_width * i;
 			colmain_line(fr, DIM_X, DIM_Y, x, y1, x, y2 + SMALLCHARH2, COLORMAIN_GREEN, 0);
@@ -3885,9 +3886,9 @@ static void buttons_ap_mic_prof_process(void);
 			board_rtc_getdatetime(& year, & month, & day, & hour, & minute, & secounds);
 		local_snprintf_P(buf, buflen, PSTR("%02d.%02d"), day, month);
 		xx = current_place * lbl_place_width + lbl_place_width / 2;
-		colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, y1, buf, COLORPIP_WHITE);
+		colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, y1, buf, COLORMAIN_WHITE);
 		local_snprintf_P(buf, buflen, PSTR("%02d%c%02d"), hour, ((secounds & 1) ? ' ' : ':'), minute);
-		colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, y2, buf, COLORPIP_WHITE);
+		colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, y2, buf, COLORMAIN_WHITE);
 	#endif 	/* defined (RTC1_TYPE) */
 
 		current_place++;
@@ -3899,7 +3900,7 @@ static void buttons_ap_mic_prof_process(void);
 			v = ldiv(hamradio_get_volt_value(), 10);
 		local_snprintf_P(buf, buflen, PSTR("%d.%1dV"), v.quot, v.rem);
 		xx = current_place * lbl_place_width + lbl_place_width / 2;
-		colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, hamradio_get_tx() ? y1 : (y1 + (y2 - y1) / 2), buf, COLORPIP_WHITE);
+		colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, hamradio_get_tx() ? y1 : (y1 + (y2 - y1) / 2), buf, COLORMAIN_WHITE);
 	#endif /* WITHVOLTLEVEL */
 
 		// ток PA (при передаче)
@@ -3928,7 +3929,7 @@ static void buttons_ap_mic_prof_process(void);
 
 		#endif /* (WITHCURRLEVEL_ACS712_30A || WITHCURRLEVEL_ACS712_20A) */
 
-			colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, y2, buf, COLORPIP_WHITE);
+			colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, y2, buf, COLORMAIN_WHITE);
 		}
 	#endif /* WITHCURRLEVEL */
 
@@ -3941,9 +3942,9 @@ static void buttons_ap_mic_prof_process(void);
 			z = display_zoomedbw() / 1000;
 		local_snprintf_P(buf, buflen, PSTR("SPAN"));
 		xx = current_place * lbl_place_width + lbl_place_width / 2;
-		colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, y1, buf, COLORPIP_WHITE);
+		colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, y1, buf, COLORMAIN_WHITE);
 		local_snprintf_P(buf, buflen, PSTR("%dk"), z);
-		colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, y2, buf, COLORPIP_WHITE);
+		colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, y2, buf, COLORMAIN_WHITE);
 	#endif /* WITHIF4DSP */
 
 		current_place++;
@@ -3959,31 +3960,31 @@ static void buttons_ap_mic_prof_process(void);
 		}
 		local_snprintf_P(buf, buflen, PSTR("AF"));
 		xx = current_place * lbl_place_width + 7;
-		colpip_string2_tbg(fr, DIM_X, DIM_Y, xx, y1 + (y2 - y1) / 2, buf, COLORPIP_WHITE);
+		colpip_string2_tbg(fr, DIM_X, DIM_Y, xx, y1 + (y2 - y1) / 2, buf, COLORMAIN_WHITE);
 		xx += SMALLCHARW2 * 3;
 		local_snprintf_P(buf, buflen, bp_type ? (PSTR("L %d")) : (PSTR("W %d")), bp_low);
-		colpip_string2_tbg(fr, DIM_X, DIM_Y, xx, y1, buf, COLORPIP_WHITE);
+		colpip_string2_tbg(fr, DIM_X, DIM_Y, xx, y1, buf, COLORMAIN_WHITE);
 		local_snprintf_P(buf, buflen, bp_type ? (PSTR("H %d")) : (PSTR("P %d")), bp_high);
-		colpip_string2_tbg(fr, DIM_X, DIM_Y, xx, y2, buf, COLORPIP_WHITE);
+		colpip_string2_tbg(fr, DIM_X, DIM_Y, xx, y2, buf, COLORMAIN_WHITE);
 
 		current_place++;
 
 		// значение сдвига частоты
-		static int_fast16_t if_shitf;
+		static int_fast16_t if_shift;
 		if (gui.timer_1sec_updated)
-			if_shitf = hamradio_get_if_shift();
+			if_shift = hamradio_get_if_shift();
 		xx = current_place * lbl_place_width + lbl_place_width / 2;
-		if (if_shitf)
+		if (if_shift)
 		{
 			local_snprintf_P(buf, buflen, PSTR("IF shift"));
-			colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, y1, buf, COLORPIP_WHITE);
-			local_snprintf_P(buf, buflen, if_shitf == 0 ? PSTR("%d") : PSTR("%+dk"), if_shitf);
-			colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, y2, buf, COLORPIP_WHITE);
+			colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, y1, buf, COLORMAIN_WHITE);
+			local_snprintf_P(buf, buflen, if_shift == 0 ? PSTR("%d") : PSTR("%+dk"), if_shift);
+			colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, y2, buf, COLORMAIN_WHITE);
 		}
 		else
 		{
 			local_snprintf_P(buf, buflen, PSTR("IF shift"));
-			colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, y1 + (y2 - y1) / 2, buf, COLORPIP_GRAY);
+			colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, y1 + (y2 - y1) / 2, buf, COLORMAIN_GRAY);
 		}
 
 //	#if WITHTHERMOLEVEL	// температура выходных транзисторов (при передаче)
@@ -4028,12 +4029,12 @@ static void buttons_ap_mic_prof_process(void);
 			c2 = bh->state == DISABLED ? COLOR_BUTTON_DISABLED : (bh->is_locked ? COLOR_BUTTON_PR_LOCKED : COLOR_BUTTON_PR_NON_LOCKED);
 #if GUI_OLDBUTTONSTYLE
 			colpip_rect(fr, DIM_X, DIM_Y, x1, y1, x1 + bh->w, y1 + bh->h - 2, bh->state == PRESSED ? c2 : c1, 1);
-			colpip_rect(fr, DIM_X, DIM_Y, x1, y1, x1 + bh->w, y1 + bh->h - 1, COLORPIP_GRAY, 0);
-			colpip_rect(fr, DIM_X, DIM_Y, x1 + 2, y1 + 2, x1 + bh->w - 2, y1 + bh->h - 3, COLORPIP_BLACK, 0);
+			colpip_rect(fr, DIM_X, DIM_Y, x1, y1, x1 + bh->w, y1 + bh->h - 1, COLORMAIN_GRAY, 0);
+			colpip_rect(fr, DIM_X, DIM_Y, x1 + 2, y1 + 2, x1 + bh->w - 2, y1 + bh->h - 3, COLORMAIN_BLACK, 0);
 #else
 			colmain_rounded_rect(fr, DIM_X, DIM_Y, x1, y1, x1 + bh->w, y1 + bh->h - 2, button_round_radius, bh->state == PRESSED ? c2 : c1, 1);
-			colmain_rounded_rect(fr, DIM_X, DIM_Y, x1, y1, x1 + bh->w, y1 + bh->h - 1, button_round_radius, COLORPIP_GRAY, 0);
-			colmain_rounded_rect(fr, DIM_X, DIM_Y, x1 + 2, y1 + 2, x1 + bh->w - 2, y1 + bh->h - 3, button_round_radius, COLORPIP_BLACK, 0);
+			colmain_rounded_rect(fr, DIM_X, DIM_Y, x1, y1, x1 + bh->w, y1 + bh->h - 1, button_round_radius, COLORMAIN_GRAY, 0);
+			colmain_rounded_rect(fr, DIM_X, DIM_Y, x1 + 2, y1 + 2, x1 + bh->w - 2, y1 + bh->h - 3, button_round_radius, COLORMAIN_BLACK, 0);
 #endif /* GUI_OLDBUTTONSTYLE */
 		}
 		else
@@ -4085,7 +4086,7 @@ static void buttons_ap_mic_prof_process(void);
 		{
 			/* Однострочная надпись */
 			colpip_string2_tbg(fr, DIM_X, DIM_Y, shift + x1 + (bh->w - (strwidth2(bh->text))) / 2,
-					shift + y1 + (bh->h - SMALLCHARH2) / 2, bh->text, COLORPIP_BLACK);
+					shift + y1 + (bh->h - SMALLCHARH2) / 2, bh->text, COLORMAIN_BLACK);
 		}
 		else
 		{
@@ -4095,11 +4096,11 @@ static void buttons_ap_mic_prof_process(void);
 			strcpy(buf, bh->text);
 			char * text2 = strtok(buf, delimeters);
 			colpip_string2_tbg(fr, DIM_X, DIM_Y, shift + x1 + (bh->w - (strwidth2(text2))) / 2,
-					shift + y1 + j, text2, COLORPIP_BLACK);
+					shift + y1 + j, text2, COLORMAIN_BLACK);
 
 			text2 = strtok(NULL, delimeters);
 			colpip_string2_tbg(fr, DIM_X, DIM_Y, shift + x1 + (bh->w - (strwidth2(text2))) / 2,
-					shift + bh->h + y1 - SMALLCHARH2 - j, text2, COLORPIP_BLACK);
+					shift + bh->h + y1 - SMALLCHARH2 - j, text2, COLORMAIN_BLACK);
 		}
 	}
 
@@ -4163,71 +4164,71 @@ static void buttons_ap_mic_prof_process(void);
 		ASSERT(buf != NULL);
 #if GUI_OLDBUTTONSTYLE
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLOR_BUTTON_NON_LOCKED, 1);
-		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORPIP_GRAY, 0);
-		colpip_rect(buf, w, h, 2, 2, w - 3, h - 3, COLORPIP_BLACK, 0);
+		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORMAIN_GRAY, 0);
+		colpip_rect(buf, w, h, 2, 2, w - 3, h - 3, COLORMAIN_BLACK, 0);
 #else
 		memset(buf, GUI_DEFAULTCOLOR, s);
 		colmain_rounded_rect(buf, w, h, 0, 0, w - 1, h - 1, button_round_radius, COLOR_BUTTON_NON_LOCKED, 1);
-		colmain_rounded_rect(buf, w, h, 0, 0, w - 1, h - 1, button_round_radius, COLORPIP_GRAY, 0);
-		colmain_rounded_rect(buf, w, h, 2, 2, w - 3, h - 3, button_round_radius, COLORPIP_BLACK, 0);
+		colmain_rounded_rect(buf, w, h, 0, 0, w - 1, h - 1, button_round_radius, COLORMAIN_GRAY, 0);
+		colmain_rounded_rect(buf, w, h, 2, 2, w - 3, h - 3, button_round_radius, COLORMAIN_BLACK, 0);
 #endif /* GUI_OLDBUTTONSTYLE */
 
 		buf = v->bg_pressed;
 		ASSERT(buf != NULL);
 #if GUI_OLDBUTTONSTYLE
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLOR_BUTTON_PR_NON_LOCKED, 1);
-		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORPIP_GRAY, 0);
-		colmain_line(buf, w, h, 2, 3, w - 3, 3, COLORPIP_BLACK, 0);
-		colmain_line(buf, w, h, 2, 2, w - 3, 2, COLORPIP_BLACK, 0);
-		colmain_line(buf, w, h, 3, 3, 3, h - 3, COLORPIP_BLACK, 0);
-		colmain_line(buf, w, h, 2, 2, 2, h - 2, COLORPIP_BLACK, 0);
+		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORMAIN_GRAY, 0);
+		colmain_line(buf, w, h, 2, 3, w - 3, 3, COLORMAIN_BLACK, 0);
+		colmain_line(buf, w, h, 2, 2, w - 3, 2, COLORMAIN_BLACK, 0);
+		colmain_line(buf, w, h, 3, 3, 3, h - 3, COLORMAIN_BLACK, 0);
+		colmain_line(buf, w, h, 2, 2, 2, h - 2, COLORMAIN_BLACK, 0);
 #else
 		memset(buf, GUI_DEFAULTCOLOR, s);
 		colmain_rounded_rect(buf, w, h, 0, 0, w - 1, h - 1, button_round_radius, COLOR_BUTTON_PR_NON_LOCKED, 1);
-		colmain_rounded_rect(buf, w, h, 0, 0, w - 1, h - 1, button_round_radius, COLORPIP_GRAY, 0);
-		colmain_rounded_rect(buf, w, h, 2, 2, w - 3, h - 3, button_round_radius, COLORPIP_BLACK, 0);
+		colmain_rounded_rect(buf, w, h, 0, 0, w - 1, h - 1, button_round_radius, COLORMAIN_GRAY, 0);
+		colmain_rounded_rect(buf, w, h, 2, 2, w - 3, h - 3, button_round_radius, COLORMAIN_BLACK, 0);
 #endif /* GUI_OLDBUTTONSTYLE */
 
 		buf = v->bg_locked;
 		ASSERT(buf != NULL);
 #if GUI_OLDBUTTONSTYLE
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLOR_BUTTON_LOCKED, 1);
-		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORPIP_GRAY, 0);
-		colpip_rect(buf, w, h, 2, 2, w - 3, h - 3, COLORPIP_BLACK, 0);
+		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORMAIN_GRAY, 0);
+		colpip_rect(buf, w, h, 2, 2, w - 3, h - 3, COLORMAIN_BLACK, 0);
 #else
 		memset(buf, GUI_DEFAULTCOLOR, s);
 		colmain_rounded_rect(buf, w, h, 0, 0, w - 1, h - 1, button_round_radius, COLOR_BUTTON_LOCKED, 1);
-		colmain_rounded_rect(buf, w, h, 0, 0, w - 1, h - 1, button_round_radius, COLORPIP_GRAY, 0);
-		colmain_rounded_rect(buf, w, h, 2, 2, w - 3, h - 3, button_round_radius, COLORPIP_BLACK, 0);
+		colmain_rounded_rect(buf, w, h, 0, 0, w - 1, h - 1, button_round_radius, COLORMAIN_GRAY, 0);
+		colmain_rounded_rect(buf, w, h, 2, 2, w - 3, h - 3, button_round_radius, COLORMAIN_BLACK, 0);
 #endif /* GUI_OLDBUTTONSTYLE */
 
 		buf = v->bg_locked_pressed;
 		ASSERT(buf != NULL);
 #if GUI_OLDBUTTONSTYLE
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLOR_BUTTON_PR_LOCKED, 1);
-		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORPIP_GRAY, 0);
-		colmain_line(buf, w, h, 2, 3, w - 3, 3, COLORPIP_BLACK, 0);
-		colmain_line(buf, w, h, 2, 2, w - 3, 2, COLORPIP_BLACK, 0);
-		colmain_line(buf, w, h, 3, 3, 3, h - 3, COLORPIP_BLACK, 0);
-		colmain_line(buf, w, h, 2, 2, 2, h - 2, COLORPIP_BLACK, 0);
+		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORMAIN_GRAY, 0);
+		colmain_line(buf, w, h, 2, 3, w - 3, 3, COLORMAIN_BLACK, 0);
+		colmain_line(buf, w, h, 2, 2, w - 3, 2, COLORMAIN_BLACK, 0);
+		colmain_line(buf, w, h, 3, 3, 3, h - 3, COLORMAIN_BLACK, 0);
+		colmain_line(buf, w, h, 2, 2, 2, h - 2, COLORMAIN_BLACK, 0);
 #else
 		memset(buf, GUI_DEFAULTCOLOR, s);
 		colmain_rounded_rect(buf, w, h, 0, 0, w - 1, h - 1, button_round_radius, COLOR_BUTTON_PR_LOCKED, 1);
-		colmain_rounded_rect(buf, w, h, 0, 0, w - 1, h - 1, button_round_radius, COLORPIP_GRAY, 0);
-		colmain_rounded_rect(buf, w, h, 2, 2, w - 3, h - 3, button_round_radius, COLORPIP_BLACK, 0);
+		colmain_rounded_rect(buf, w, h, 0, 0, w - 1, h - 1, button_round_radius, COLORMAIN_GRAY, 0);
+		colmain_rounded_rect(buf, w, h, 2, 2, w - 3, h - 3, button_round_radius, COLORMAIN_BLACK, 0);
 #endif /* GUI_OLDBUTTONSTYLE */
 
 		buf = v->bg_disabled;
 		ASSERT(buf != NULL);
 #if GUI_OLDBUTTONSTYLE
 		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLOR_BUTTON_DISABLED, 1);
-		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORPIP_GRAY, 0);
-		colpip_rect(buf, w, h, 2, 2, w - 3, h - 3, COLORPIP_BLACK, 0);
+		colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORMAIN_GRAY, 0);
+		colpip_rect(buf, w, h, 2, 2, w - 3, h - 3, COLORMAIN_BLACK, 0);
 #else
 		memset(buf, GUI_DEFAULTCOLOR, s);
 		colmain_rounded_rect(buf, w, h, 0, 0, w - 1, h - 1, button_round_radius, COLOR_BUTTON_DISABLED, 1);
-		colmain_rounded_rect(buf, w, h, 0, 0, w - 1, h - 1, button_round_radius, COLORPIP_GRAY, 0);
-		colmain_rounded_rect(buf, w, h, 2, 2, w - 3, h - 3, button_round_radius, COLORPIP_BLACK, 0);
+		colmain_rounded_rect(buf, w, h, 0, 0, w - 1, h - 1, button_round_radius, COLORMAIN_GRAY, 0);
+		colmain_rounded_rect(buf, w, h, 2, 2, w - 3, h - 3, button_round_radius, COLORMAIN_BLACK, 0);
 #endif /* GUI_OLDBUTTONSTYLE */
 	}
 
@@ -4460,11 +4461,15 @@ static void buttons_ap_mic_prof_process(void);
 				// при открытии окна рассчитываются экранные координаты самого окна и его child элементов
 				if (! f)
 				{
+					if (win->window_id != WINDOW_MAIN)
+					{
+						ASSERT(win->w > 0 || win->h > 0);
 	#if GUI_TRANSPARENT_WINDOWS
-					display_transparency(win->x1, win->y1, win->x1 + win->w, win->y1 + win->h, alpha);
+						display_transparency(win->x1, strcmp(win->name, "") ? (win->y1 + window_title_height) : win->y1, win->x1 + win->w - 1, win->y1 + win->h - 1, alpha);
 	#else
-					colpip_fillrect(fr, DIM_X, DIM_Y, win->x1, win->y1, win->w, win->h, GUI_WINDOWBGCOLOR);
+						colpip_fillrect(fr, DIM_X, DIM_Y, win->x1, strcmp(win->name, "") ? (win->y1 + window_title_height) : win->y1, win->w, win->h, GUI_WINDOWBGCOLOR);
 	#endif /* GUI_TRANSPARENT_WINDOWS */
+					}
 				}
 
 				// запуск процедуры фоновой обработки для окна
@@ -4473,7 +4478,11 @@ static void buttons_ap_mic_prof_process(void);
 				if (! f)
 				{
 					// вывод заголовка окна
-					colpip_string_tbg(fr, DIM_X, DIM_Y, win->x1 + 20, win->y1 + 10, win->name, COLORPIP_YELLOW);
+					if (strcmp(win->name, ""))
+					{
+						colpip_fillrect(fr, DIM_X, DIM_Y, win->x1, win->y1, win->w, window_title_height, 20);
+						colpip_string_tbg(fr, DIM_X, DIM_Y, win->x1 + 20, win->y1 + 5, win->name, COLORMAIN_BLACK);
+					}
 
 					// отрисовка принадлежащих окну элементов
 					for (uint_fast8_t i = 0; i < touch_count; i++)

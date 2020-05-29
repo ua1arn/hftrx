@@ -865,7 +865,7 @@ void colmain_fb_next(void);		// прерключиться на использо
 #if WITHALPHA
 #define DEFAULT_ALPHA WITHALPHA
 #else
-#define DEFAULT_ALPHA 128	// 0..255
+#define DEFAULT_ALPHA 64	// 0..255
 #endif
 
 void display2_xltrgb24(COLOR24_T * xtable);
