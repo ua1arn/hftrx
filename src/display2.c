@@ -4585,23 +4585,23 @@ enum
 	#if WITHENCODER2
 		{	21, 0,	display2_fnlabel9,	REDRM_MODE, PGALL, },	// FUNC item label
 		{	21,	4,	display2_fnvalue9,	REDRM_MODE, PGALL, },	// FUNC item value
-		{	25, 15,	display2_notch5,		REDRM_MODE, PGALL, },	// NOTCH on/off
+		{	25, 12,	display2_notch5,		REDRM_MODE, PGALL, },	// NOTCH on/off
 	#else /* WITHENCODER2 */
 		{	25, 0,	display2_notch5,		REDRM_MODE, PGALL, },	// FUNC item label
 		{	25,	4,	display2_notchfreq5,	REDRM_BARS, PGALL, },	// FUNC item value
 	#endif /* WITHENCODER2 */
 
-		{	26, 20,	display2_agc3,		REDRM_MODE, PGNOMEMU, },	// AGC mode
+		//{	26, 20,	display2_agc3,		REDRM_MODE, PGNOMEMU, },	// AGC mode
 		{	26, 22,	display2_voxtune3,	REDRM_MODE, PGNOMEMU, },	// VOX
 		{	25, 30,	display2_lockstate4, REDRM_MODE, PGNOMEMU, },	// LOCK
 		{	26, 35,	display2_atu3,		REDRM_MODE, PGNOMEMU, },	// TUNER state (optional)
 		{	26, 40,	display2_byp3,		REDRM_MODE, PGNOMEMU, },	// TUNER BYPASS state (optional)
 		{	26, 45,	display2_rec3,		REDRM_BARS, PGNOMEMU, },	// Отображение режима записи аудио фрагмента
 		
-		{	0,	7,	display2_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
-		{	21, 10,	display2_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
-		{	26, 10,	display2_rxbw3,		REDRM_MODE, PGALL, },	// 3.1 / 0,5 / WID / NAR
-		{	21, 15,	display2_mainsub3,	REDRM_MODE, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
+		{	0,	5,	display2_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
+		{	21, 8,	display2_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
+		{	26, 8,	display2_rxbw3,		REDRM_MODE, PGALL, },	// 3.1 / 0,5 / WID / NAR
+		{	21, 12,	display2_mainsub3,	REDRM_MODE, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
 
 		{	5,	22,	display2_vfomode3,	REDRM_MODE, PGALL, },	// SPLIT
 		{	8,	22,	display2_freqX_b,	REDRM_FRQB, PGALL, },	// SUB FREQ

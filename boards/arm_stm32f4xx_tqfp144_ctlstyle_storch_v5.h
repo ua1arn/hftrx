@@ -323,7 +323,7 @@
 	//#define WITHRFSG	1	/* включено управление ВЧ сигнал-генератором. */
 	#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
 
-	#if 0
+	#if 1
 		/* TUNER & PA board 2*RD16 by avbelnn@yandex.ru */
 		#define WITHAUTOTUNER_UA1CEI	1	/* Плата управления LPF и тюнером от UA1CEI - по компорту */
 		#if defined(WITHDEBUG)
@@ -335,7 +335,7 @@
 		#define SHORTSET8	1
 
 		#define WITHENCODER2	1		/* есть второй валкодер */
-		#define BOARD_ENCODER2_DIVIDE 2		/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
+		#define BOARD_ENCODER2_DIVIDE 4		/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
 		//#define WITHPOTWPM		1	/* используется регулировка скорости передачи в телеграфе потенциометром */
 	#elif 0
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
@@ -365,7 +365,6 @@
 	#define WITHPOTIFGAIN		1	/* регуляторы усиления ПЧ на потенциометрах */
 	#define WITHPOTAFGAIN		1	/* регуляторы усиления НЧ на потенциометрах */
 	//#define WITHPOTPOWER	1	/* регулятор мощности на потенциометре */
-	//#define WITHANTSELECT	1	// Управление переключением антенн
 
 	#define WITHMENU 	1	/* функциональность меню может быть отключена - если настраивать нечего */
 
@@ -452,6 +451,7 @@
 	{ 
 	#if WITHAUTOTUNER_UA1CEI
 
+		#define WITHANTSELECT	1	// Управление переключением антенн
 		#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
 		#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
 		#define WITHTHERMOLEVEL	1	/* отображение температуры */
@@ -506,6 +506,15 @@
 		#define THERMOSENSOR_OFFSET 	(- 2730)		// 2.98 volt = 25 Celsius, 10 mV/C
 		#define THERMOSENSOR_DENOM	 	1			// миливольты к десятым долям градуса 2.98 volt = 25 Celsius
 
+		XTHERMOMRRIX = BOARD_ADCMRRIN(8),	// кеш - индекc не должен повторяться в конфигурации
+		PASENSEMRRIX = BOARD_ADCMRRIN(9),	// кеш - индекc не должен повторяться в конфигурации
+		REFMRRIX = BOARD_ADCMRRIN(10),
+		FWDMRRIX = BOARD_ADCMRRIN(11),
+		PWRMRRIX = FWDMRRIX,
+		VOLTMRRIX = BOARD_ADCMRRIN(12),	// кеш - индекc не должен повторяться в конфигурации
+		PASENSEMRRIX2 = BOARD_ADCMRRIN(13),		// кеш - индекc не должен повторяться в конфигурации
+		PAREFERMRRIX2 = BOARD_ADCMRRIN(14),		// кеш - индекc не должен повторяться в конфигурации
+
 	#else
 		#if WITHREFSENSOR
 			VREFIX = 17,		// Reference voltage
@@ -541,7 +550,6 @@
 			PWRI = 14,			// PC4
 			FWD = 14, REF = 15,	// PC5	SWR-meter
 		#endif /* WITHSWRMTR */
-#endif
 
 		XTHERMOMRRIX = BOARD_ADCMRRIN(0),	// кеш - индекc не должен повторяться в конфигурации
 		PASENSEMRRIX = BOARD_ADCMRRIN(1),	// кеш - индекc не должен повторяться в конфигурации
@@ -551,6 +559,7 @@
 		VOLTMRRIX = BOARD_ADCMRRIN(4),	// кеш - индекc не должен повторяться в конфигурации
 		PASENSEMRRIX2 = BOARD_ADCMRRIN(5),		// кеш - индекc не должен повторяться в конфигурации
 		PAREFERMRRIX2 = BOARD_ADCMRRIN(6),		// кеш - индекc не должен повторяться в конфигурации
+	#endif
 
 		KI0 = 10, KI1 = 11, KI2 = 12, KI3 = 0, KI4 = 1	// клавиатура
 	};
