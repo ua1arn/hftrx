@@ -1210,7 +1210,7 @@ static void s1d13781_put_charbig_begin(void)
 }
 
 // Вызов этой функции только внутри s1d13781_put_char_begin() и s1d13781_put_char_end();
-static uint_fast16_t s1d13781_put_char_small(uint_fast16_t x, uint_fast16_t y, char cc)
+static uint_fast16_t s1d13781_put_char_small(uint_fast16_t xpix, uint_fast16_t ypix, char cc)
 {
 	// дождаться выполнения предидущей команды BitBlt engine.
 	if (bitblt_waitbusy() != 0)
@@ -1219,10 +1219,11 @@ static uint_fast16_t s1d13781_put_char_small(uint_fast16_t x, uint_fast16_t y, c
 		bitblt_chargen_small(getsmallcharbase(cc));
 		s1d13781_next_column(GRID2X(CHARS2GRID(1)));
 	}
+	return xpix;
 }
 
 // Вызов этой функции только внутри s1d13781_put_char_begin() и s1d13781_put_char_end();
-static uint_fast16_t s1d13781_put_char_small2(uint_fast16_t x, uint_fast16_t y, char cc)
+static uint_fast16_t s1d13781_put_char_small2(uint_fast16_t xpix, uint_fast16_t ypix, char cc)
 {
 	// дождаться выполнения предидущей команды BitBlt engine.
 	if (bitblt_waitbusy() != 0)
@@ -1232,11 +1233,12 @@ static uint_fast16_t s1d13781_put_char_small2(uint_fast16_t x, uint_fast16_t y, 
 		bitblt_chargen_small(getsmallcharbase2(cc));
 		s1d13781_next_column(SMALLCHARWIDTH2);
 	}
+	return xpix;
 }
 
 // Вызов этой функции только внутри display_wrdata_begin() и 	display_wrdata_end();
 
-static uint_fast16_t s1d13781_put_char_big(uint_fast16_t x, uint_fast16_t y, char cc)
+static uint_fast16_t s1d13781_put_char_big(uint_fast16_t xpix, uint_fast16_t ypix, char cc)
 {
 	// дождаться выполнения предидущей команды BitBlt engine.
 	if (bitblt_waitbusy() != 0)
@@ -1255,11 +1257,13 @@ static uint_fast16_t s1d13781_put_char_big(uint_fast16_t x, uint_fast16_t y, cha
 			s1d13781_next_column(BIGCHARWIDTH);
 		}
 	}
+	return xpix;
 }
 
 // Вызов этой функции только внутри display_wrdatabig_begin() и 	display_wrdatabig_end();
 
-static void s1d13781_put_char_half(char cc)
+static uint_fast16_t
+s1d13781_put_char_half(uint_fast16_t xpix, uint_fast16_t ypix, char cc)
 {
 	// дождаться выполнения предидущей команды BitBlt engine.
 	if (bitblt_waitbusy() != 0)
@@ -1268,6 +1272,7 @@ static void s1d13781_put_char_half(char cc)
 		bitblt_chargen_big(HALFCHARWIDTH, gethalfcharbase(cc));
 		s1d13781_next_column(HALFCHARWIDTH);
 	}
+	return xpix;
 }
 
 // рисование незаполненного прямоугольника
@@ -1653,10 +1658,13 @@ void colmain_setcolors3(COLORMAIN_T fg, COLORMAIN_T bg, COLORMAIN_T fgbg)
 	colmain_setcolors(fg, bg);
 }
 
-void
-display_wrdata_begin(void)
+uint_fast16_t
+display_wrdata_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
 {
+	s1d13781_gotoxy(xcell, ycell);
 	s1d13781_put_char_begin();
+	* yp = GRID2Y(ycell);
+	return GRID2X(xcell);
 }
 
 void
@@ -1665,10 +1673,13 @@ display_wrdata_end(void)
 }
 
 
-void
-display_wrdata2_begin(void)
+uint_fast16_t
+display_wrdata2_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
 {
+	s1d13781_gotoxy(xcell, ycell);
 	s1d13781_put_char_begin2();
+	* yp = GRID2Y(ycell);
+	return GRID2X(xcell);
 }
 
 void
@@ -1677,10 +1688,13 @@ display_wrdata2_end(void)
 }
 
 
-void
-display_wrdatabig_begin(void)
+uint_fast16_t
+display_wrdatabig_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
 {
+	s1d13781_gotoxy(xcell, ycell);
 	s1d13781_put_charbig_begin();
+	* yp = GRID2Y(ycell);
+	return GRID2X(xcell);
 }
 
 
@@ -1700,9 +1714,12 @@ display_barcolumn(uint_fast8_t pattern)
 {
 }
 
-void
-display_wrdatabar_begin(void)
+uint_fast16_t
+display_wrdatabar_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
 {
+	s1d13781_gotoxy(xcell, ycell);
+	* yp = GRID2Y(ycell);
+	return GRID2X(xcell);
 }
 
 void
