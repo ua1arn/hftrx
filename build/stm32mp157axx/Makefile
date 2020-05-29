@@ -32,7 +32,7 @@ OBJDIR2 = obj
 OBJDIR = ./$(OBJDIR2)
 
 # Define optimisation level here
-OPT = -Os
+OPT = -Ofast
 LTO = -flto
 
 MCU  = cortex-a7
@@ -91,7 +91,7 @@ CPPSRC +=
 
 # List ASM source files here
 ASRC += \
- $(SRCDIR)/crt_r7s721.s
+ $(SRCDIR)/crt_stm32mp1.s
 
 # List all user directories here
 UINCDIR += ../.. ../../inc
