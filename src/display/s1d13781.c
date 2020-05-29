@@ -1661,7 +1661,7 @@ void colmain_setcolors3(COLORMAIN_T fg, COLORMAIN_T bg, COLORMAIN_T fgbg)
 uint_fast16_t
 display_wrdata_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
 {
-	s1d13781_gotoxy(xcell, ycell);
+	s1d13781_gotoxy(GRID2X(xcell), GRID2Y(ycell));
 	s1d13781_put_char_begin();
 	* yp = GRID2Y(ycell);
 	return GRID2X(xcell);
@@ -1676,7 +1676,7 @@ display_wrdata_end(void)
 uint_fast16_t
 display_wrdata2_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
 {
-	s1d13781_gotoxy(xcell, ycell);
+	s1d13781_gotoxy(GRID2X(xcell), GRID2Y(ycell));
 	s1d13781_put_char_begin2();
 	* yp = GRID2Y(ycell);
 	return GRID2X(xcell);
@@ -1691,7 +1691,7 @@ display_wrdata2_end(void)
 uint_fast16_t
 display_wrdatabig_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
 {
-	s1d13781_gotoxy(xcell, ycell);
+	s1d13781_gotoxy(GRID2X(xcell), GRID2Y(ycell));
 	s1d13781_put_charbig_begin();
 	* yp = GRID2Y(ycell);
 	return GRID2X(xcell);
@@ -1717,7 +1717,7 @@ display_barcolumn(uint_fast8_t pattern)
 uint_fast16_t
 display_wrdatabar_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
 {
-	s1d13781_gotoxy(xcell, ycell);
+	s1d13781_gotoxy(GRID2X(xcell), GRID2Y(ycell));
 	* yp = GRID2Y(ycell);
 	return GRID2X(xcell);
 }
