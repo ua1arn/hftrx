@@ -2219,7 +2219,7 @@ static RAMFUNC_NONILINE void AT91F_ADC_IRQHandler(void)
 	}
 
 
-#elif CPUSTYLE_STM32H7XX
+#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
 // For SM32H7XXX: ADC_IRQn is a same vector as ADC1_2_IRQn (decimal 18)
 
@@ -2237,6 +2237,7 @@ static const adcinmap_t * getadcmap(uint_fast8_t adci)
 {
 	static const adcinmap_t adcinmaps [] =
 	{
+#if CPUSTYLE_STM32H7XX
 		{	16,	ADC1,	ADC12_COMMON,	15,	},	// @0:	PA0	ADC1_INP16 (PA0_C ADC12_INP0)
 		{	17,	ADC1,	ADC12_COMMON,	15,	},	// @1:	PA1	ADC1_INP17 (PA1_C ADC12_INP1)
 		{	14,	ADC1,	ADC12_COMMON,	15,	},	// @2:	PA2	ADC12_INP14
@@ -2255,6 +2256,26 @@ static const adcinmap_t * getadcmap(uint_fast8_t adci)
 		{	8,	ADC1,	ADC12_COMMON,	15,	},	// @15:	PC5	ADC12_INP8
 		{	18,	ADC3,	ADC3_COMMON,	90,	},	// @16:	Temperature sensor (VSENSE) - 9.0 uS required
 		{	19,	ADC3,	ADC3_COMMON,	43,	},	// @17:	Reference voltage (VREFINT) - 4.3 uS required
+#elif CPUSTYLE_STM32MP1
+		{	16,	ADC1,	ADC12_COMMON,	15,	},	// @0:	PA0	ADC1_INP16 (PA0_C ADC12_INP0)
+		{	17,	ADC1,	ADC12_COMMON,	15,	},	// @1:	PA1	ADC1_INP17 (PA1_C ADC12_INP1)
+		{	14,	ADC1,	ADC12_COMMON,	15,	},	// @2:	PA2	ADC12_INP14
+		{	15,	ADC1,	ADC12_COMMON,	15,	},	// @3:	PA3	ADC12_INP15
+		{	18,	ADC1,	ADC12_COMMON,	15,	},	// @4:	PA4	ADC12_INP18
+		{	19,	ADC1,	ADC12_COMMON,	15,	},	// @5:	PA5	ADC12_INP19
+		{	3,	ADC1,	ADC12_COMMON,	15,	},	// @6:	PA6	ADC12_INP3
+		{	7,	ADC1,	ADC12_COMMON,	15,	},	// @7:	PA7	ADC12_INP7
+		{	9,	ADC1,	ADC12_COMMON,	15,	},	// @8:	PB0	ADC12_INP9
+		{	5,	ADC1,	ADC12_COMMON,	15,	},	// @9:	PB1	ADC12_INP5
+		{	10,	ADC1,	ADC12_COMMON,	15,	},	// @10:	PC0	ADC123_INP10
+		{	11,	ADC1,	ADC12_COMMON,	15,	},	// @11:	PC1	ADC123_INP11
+		{	12,	ADC1,	ADC12_COMMON,	15,	},	// @12:	PC2	ADC123_INP12 (PC2_C ADC3_INP0)
+		{	13,	ADC1,	ADC12_COMMON,	15,	},	// @13:	PC3	ADC12_INP13 (PC3_C ADC3_INP1)
+		{	4,	ADC1,	ADC12_COMMON,	15,	},	// @14:	PC4	ADC12_INP4
+		{	8,	ADC1,	ADC12_COMMON,	15,	},	// @15:	PC5	ADC12_INP8
+		//{	18,	ADC3,	ADC3_COMMON,	90,	},	// @16:	Temperature sensor (VSENSE) - 9.0 uS required
+		//{	19,	ADC3,	ADC3_COMMON,	43,	},	// @17:	Reference voltage (VREFINT) - 4.3 uS required
+#endif /* CPUSTYLE_STM32H7XX, CPUSTYLE_STM32MP1 */
 	};
 
 	ASSERT(adci < (sizeof adcinmaps / sizeof adcinmaps [0]));
@@ -2309,17 +2330,35 @@ ADCs_IRQHandler(ADC_TypeDef * p)
 	}
 }
 
-void 
-ADC_IRQHandler(void)
-{
-	ADCs_IRQHandler(ADC1);
-}
+#if CPUSTYLE_STM32H7XX
 
-void 
-ADC3_IRQHandler(void)
-{
-	ADCs_IRQHandler(ADC3);
-}
+	void
+	ADC_IRQHandler(void)
+	{
+		ADCs_IRQHandler(ADC1);
+	}
+
+	void
+	ADC3_IRQHandler(void)
+	{
+		ADCs_IRQHandler(ADC3);
+	}
+
+#elif CPUSTYLE_STM32MP1
+
+	void
+	ADC1_IRQHandler(void)
+	{
+		ADCs_IRQHandler(ADC1);
+	}
+
+	void
+	ADC2_IRQHandler(void)
+	{
+		ADCs_IRQHandler(ADC2);
+	}
+
+#endif
 
 #elif CPUSTYLE_STM32F1XX || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX
 
@@ -2545,8 +2584,6 @@ r7s721_adi_irq_handler(void)
 	}
 }
 
-#elif CPUSTYLE_STM32MP1
-	#warning Insert ADC interrupt code for CPUSTYLE_STM32MP1
 #else
 	#error No CPUSTYLE_XXXXX defined
 #endif
@@ -2806,19 +2843,28 @@ void hardware_adc_initialize(void)
 			; //Ожидаем окончания калибровки
 	#endif /* defined (ADC2) */
 
-#elif CPUSTYLE_STM32H7XX
+#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
 	const uint_fast32_t ainmask = build_adc_mask();
 	HARDWARE_ADC_INITIALIZE(ainmask);
 
+#if CPUSTYLE_STM32MP1
+	RCC->MP_AHB2ENSETR |= RCC_MC_AHB2ENSETR_ADC12EN;	// Затактировали АЦП
+	(void) RCC->MP_AHB2ENSETR;
+	RCC->MP_AHB2LPENSETR |= RCC_MC_AHB2LPENSETR_ADC12LPEN;	// Затактировали АЦП
+	(void) RCC->MP_AHB2LPENSETR;
+
+#elif CPUSTYLE_STM32H7XX
 	RCC->AHB1ENR |= RCC_AHB1ENR_ADC12EN;	// Затактировали АЦП
-	__DSB();
+	(void) RCC->AHB1ENR;
 	RCC->AHB4ENR |= RCC_AHB4ENR_ADC3EN;		// Затактировали АЦП
-	__DSB();
+	(void) RCC->AHB4ENR;
 	#if WITHREFSENSOR
 		RCC->APB4ENR |= RCC_APB4ENR_VREFEN;		// Затактировали источник опорного напрядения (для нормирования значений с АЦП)
-	__DSB();
+		(void) RCC->AHB4ENR;
 	#endif /* WITHREFSENSOR */
+
+#endif
 
 	// расчет делителя для тактирования АЦП
 	unsigned value;
@@ -2867,7 +2913,14 @@ void hardware_adc_initialize(void)
 
 
 		adcmap->adccommon->CCR = 
-			(adcmap->adccommon->CCR & ~ (ADC_CCR_PRESC | ADC_CCR_CKMODE | ADC_CCR_VREFEN | ADC_CCR_TSEN)) |
+			(adcmap->adccommon->CCR & ~ (ADC_CCR_PRESC | ADC_CCR_CKMODE |
+#if WITHREFSENSOR
+					ADC_CCR_VREFEN |
+#endif /* WITHREFSENSOR */
+#if WITHTEMPSENSOR
+					ADC_CCR_TSEN |
+#endif /* WITHTEMPSENSOR */
+					0)) |
 			(presc [prei] << ADC_CCR_PRESC_Pos) |
 			(0 << ADC_CCR_CKMODE_Pos) |
 		#if WITHREFSENSOR
@@ -2961,9 +3014,15 @@ void hardware_adc_initialize(void)
 		while ((adc->ISR & ADC_ISR_ADRDY) == 0)
 			;
 	}
+
 	// connect to interrupt
+#if CPUSTYLE_STM32MP1
+	arm_hardware_set_handler_system(ADC1_IRQn, ADC1_IRQHandler);
+	arm_hardware_set_handler_system(ADC2_IRQn, ADC2_IRQHandler);
+#elif CPUSTYLE_STM32H7XX
 	arm_hardware_set_handler_system(ADC_IRQn, ADC_IRQHandler);
 	arm_hardware_set_handler_system(ADC3_IRQn, ADC3_IRQHandler);
+#endif /* CPUSTYLE_STM32H7XX */
 
 	// первый запуск производится в hardware_adc_startonescan().
 	// А здесь всё...
@@ -3210,13 +3269,9 @@ void hardware_adc_initialize(void)
 	ADC1->CR = ADC_CR_ADEN;
 
 	#if STM32F0XX_MD
-		NVIC_SetVector(ADC1_COMP_IRQn, (uintptr_t) & ADC1_COMP_IRQHandler);
-		NVIC_SetPriority(ADC1_COMP_IRQn, ARM_SYSTEM_PRIORITY);
-		NVIC_EnableIRQ(ADC1_COMP_IRQn);    //Включаем прерывания с АЦП. Обрабатывает ADC1_COMP_IRQHandler()
+		arm_hardware_set_handler_system(ADC1_COMP_IRQn, & ADC1_COMP_IRQHandler);
 	#else /* STM32F0XX_MD */
-		NVIC_SetVector(ADC1_IRQn, (uintptr_t) & ADC1_IRQHandler);
-		NVIC_SetPriority(ADC1_IRQn, ARM_SYSTEM_PRIORITY);
-		NVIC_EnableIRQ(ADC1_IRQn);    //Включаем прерывания с АЦП. Обрабатывает ADC1_IRQHandler()
+		arm_hardware_set_handler_system(ADC1_IRQn, & ADC1_IRQHandler);
 	#endif /* STM32F0XX_MD */
 
 	// первый запуск производится в hardware_adc_startonescan().
@@ -3248,35 +3303,33 @@ void hardware_adc_initialize(void)
 
 	#warning TODO: Add code for CPUSTYLE_STM32L0XX ADC support
 	#if 0
-	const uint_fast32_t ainmask = build_adc_mask();
-	HARDWARE_ADC_INITIALIZE(ainmask);
+		const uint_fast32_t ainmask = build_adc_mask();
+		HARDWARE_ADC_INITIALIZE(ainmask);
 
-	//Initialization ADC. PortC.0 ADC 10  
-	RCC->CFGR = (RCC->CFGR & ~ (RCC_CFGR_ADCPRE)) | RCC_CFGR_ADCPRE_DIV4; // RCC_CFGR_ADCPRE12_DIV2;    //  
-	RCC->APB2ENR |= RCC_APB2ENR_ADC1EN;    //Затактировали АЦП
-	__DSB();
+		//Initialization ADC. PortC.0 ADC 10
+		RCC->CFGR = (RCC->CFGR & ~ (RCC_CFGR_ADCPRE)) | RCC_CFGR_ADCPRE_DIV4; // RCC_CFGR_ADCPRE12_DIV2;    //
+		RCC->APB2ENR |= RCC_APB2ENR_ADC1EN;    //Затактировали АЦП
+		__DSB();
 
-	ADC1->CFGR1 =
-		1 * ADC_CFGR1_DISCEN |
-		2 * ADC_CFGR1_RES_0 |	// 2: 8 bit
-		0;
+		ADC1->CFGR1 =
+			1 * ADC_CFGR1_DISCEN |
+			2 * ADC_CFGR1_RES_0 |	// 2: 8 bit
+			0;
 
-	ADC1->CFGR2 =
-		0;
+		ADC1->CFGR2 =
+			0;
 
-	ADC1->IER = ADC_IER_EOCIE;
+		ADC1->IER = ADC_IER_EOCIE;
 
-	// Калибровка.
-	ADC1->CR = ADC_CR_ADCAL;
-	while ((ADC1->CR & ADC_CR_ADCAL) != 0)
-		;
-	(void) (ADC1->DR & 0x7f); // 0..127 values - calibration factor;
+		// Калибровка.
+		ADC1->CR = ADC_CR_ADCAL;
+		while ((ADC1->CR & ADC_CR_ADCAL) != 0)
+			;
+		(void) (ADC1->DR & 0x7f); // 0..127 values - calibration factor;
 
-	ADC1->CR = ADC_CR_ADEN;
+		ADC1->CR = ADC_CR_ADEN;
 
-	NVIC_SetVector(ADC1_COMP_IRQn, (uintptr_t) & ADC1_COMP_IRQHandler);
-	NVIC_SetPriority(ADC1_COMP_IRQn, ARM_SYSTEM_PRIORITY);
-	NVIC_EnableIRQ(ADC1_COMP_IRQn);    //Включаем прерывания с АЦП. Обрабатывает ADC1_COMP_IRQHandler()
+		arm_hardware_set_handler_system(ADC1_COMP_IRQn, & ADC1_COMP_IRQHandler);
 	#endif
 
 	// первый запуск производится в hardware_adc_startonescan().
@@ -3337,7 +3390,7 @@ hardware_adc_startonescan(void)
 	// Start the AD conversion
 	ADCA.CH0.CTRL |= (1U << ADC_CH_START_bp);			// Start the AD conversion
 
-#elif CPUSTYLE_STM32H7XX
+#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 	// Установить следующий вход (блок ADC может измениться)
 	const adcinmap_t * const adcmap = getadcmap(board_get_adcch(adc_input));
 	ADC_TypeDef * const adc = adcmap->adc;
@@ -3390,8 +3443,6 @@ hardware_adc_startonescan(void)
 #elif CPUSTYLE_STM32F0XX
 	#warning: #warning Must be implemented for this CPU
 
-#elif CPUSTYLE_STM32MP1
-	#warning Insert code for CPUSTYLE_STM32MP1
 #else
 
 	#error Undefined CPUSTYLE_XXX
