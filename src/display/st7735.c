@@ -1313,7 +1313,9 @@ display_put_char_small2(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, 
 void display_plot(
 	const PACKEDCOLORMAIN_T * buffer, 
 	uint_fast16_t dx,	// Размеры окна в пикселях
-	uint_fast16_t dy
+	uint_fast16_t dy,
+	uint_fast16_t xpix,	// начало области рисования
+	uint_fast16_t ypix
 	)
 {
 	uint_fast32_t len = GXSIZE(dx, dy);	// количество элементов

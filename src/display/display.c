@@ -1050,7 +1050,7 @@ void display_showbuffer(
 	uint_fast8_t row	// сетка
 	)
 {
-#if 0
+#if 1
 #if LCDMODE_S1D13781
 
 	s1d13781_showbuffer(buffer, dx, dy, col, row);
@@ -1477,14 +1477,14 @@ void colpip_to_main(
 	const PACKEDCOLORPIP_T * buffer,	// источник
 	uint_fast16_t dx,	// ширина буфера источника
 	uint_fast16_t dy,	// высота буфера источника
-	uint_fast16_t col,	// горизонтальная координата левого верхнего угла на экране (0..dx-1) слева направо
-	uint_fast16_t row	// вертикальная координата левого верхнего угла на экране (0..dy-1) сверху вниз
+	uint_fast16_t xpix,	// горизонтальная координата левого верхнего угла на экране (0..dx-1) слева направо
+	uint_fast16_t ypix	// вертикальная координата левого верхнего угла на экране (0..dy-1) сверху вниз
 	)
 {
 #if LCDMODE_COLORED
-	display_plotfrom(col, row);
+	display_plotfrom(xpix, ypix);
 	display_plotstart(dy);
-	display_plot(buffer, dx, dy);
+	display_plot(buffer, dx, dy, xpix, ypix);
 	display_plotstop();
 #endif
 }

@@ -375,7 +375,7 @@ void colmain_setcolors3(COLORMAIN_T fg, COLORMAIN_T bg, COLORMAIN_T bgfg);	// bg
 /* работа с цветным буфером */
 void display_plotfrom(uint_fast16_t x, uint_fast16_t y);	// Координаты в пикселях
 void display_plotstart(uint_fast16_t dy);	// Высота окна источника в пикселях
-void display_plot(const PACKEDCOLORMAIN_T * buffer, uint_fast16_t dx, uint_fast16_t dy);	// Размеры окна в пикселях
+void display_plot(const PACKEDCOLORMAIN_T * buffer, uint_fast16_t dx, uint_fast16_t dy, uint_fast16_t xpix, uint_fast16_t ypix);	// Размеры окна в пикселях и начальная точка рисования
 void display_plotstop(void);
 #endif
 

@@ -536,7 +536,9 @@ void display_plotstart(
 void display_plot(
 	const PACKEDCOLORMAIN_T * buffer, 
 	uint_fast16_t dx,	// Размеры окна в пикселях
-	uint_fast16_t dy
+	uint_fast16_t dy,
+	uint_fast16_t xpix,	// начало области рисования
+	uint_fast16_t ypix
 	)
 {
 

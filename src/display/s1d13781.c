@@ -1727,7 +1727,7 @@ void s1d13781_showbuffer(
 	if (bitblt_waitbusy() != 0)
 	{
 		// вычисление начального адреса в видеопамяти
-		const uint_fast32_t dstaddr = S1D_PHYSICAL_VMEM_ADDR + (uint_fast32_t) GRID2X(x) * (S1D_DISPLAY_BPP / 8) + (uint_fast32_t) GRID2Y(y) * S1D_DISPLAY_SCANLINE_BYTES;
+		const uint_fast32_t dstaddr = s1d13781_getaddr(GRID2X(x), GRID2Y(y));
 
 		ASSERT((dx % 16) == 0);
 
@@ -1823,7 +1823,7 @@ display_put_char_small2(uint_fast16_t x, uint_fast16_t y, uint_fast8_t c, uint_f
 	return s1d13781_put_char_small(x, y, c);
 }
 
-#if 0
+#if 1
 //
 //static uint_fast8_t stored_xgrid, stored_ygrid;	// используется в display_bar
 //
@@ -1842,7 +1842,6 @@ void display_plotfrom(
 	uint_fast16_t y	// Координаты в пикселях
 	)
 {
-	//s1d13781_gotoxy(x, y);
 }
 
 
@@ -1858,8 +1857,10 @@ void display_plotstart(
 
 void display_plot(
 	const PACKEDCOLORMAIN_T * buffer, 
-	const uint_fast16_t dx,	// Размеры окна в пикселях
-	uint_fast16_t dy
+	uint_fast16_t dx,	// Размеры окна в пикселях
+	uint_fast16_t dy,
+	uint_fast16_t xpix,	// начало области рисования
+	uint_fast16_t ypix
 	)
 {
 #if 0//WITHSPIEXT16 && WITHSPIHWDMA
