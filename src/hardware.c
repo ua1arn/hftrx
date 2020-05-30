@@ -12704,11 +12704,13 @@ void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint
 	const uint_fast32_t mask32 = (1UL << int_id);
 
 	AT91C_BASE_AIC->AIC_IDCR = mask32;		// disable interrupt
-	AT91C_BASE_AIC->AIC_SVR [int_id] = (AT91_REG) handler;
+	AT91C_BASE_AIC->AIC_SVR [int_id] = (AT91_REG) handler;	// vector
+
 	AT91C_BASE_AIC->AIC_SMR [int_id] =
 		(AT91C_AIC_SRCTYPE & AT91C_AIC_SRCTYPE_HIGH_LEVEL) |
-		(AT91C_AIC_PRIOR & AT91C_AIC_PRIOR_HIGHEST) |
+		(AT91C_AIC_PRIOR & priority /*AT91C_AIC_PRIOR_HIGHEST*/) |
 		0;
+
 	AT91C_BASE_AIC->AIC_ICCR = mask32;		// clear pending interrupt
 	AT91C_BASE_AIC->AIC_IECR = mask32;	// enable interrupt
 

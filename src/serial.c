@@ -973,17 +973,9 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 						   AT91C_US_NBSTOP_1_BIT;                   
 		AT91C_BASE_US0->US_IDR = (AT91C_US_RXRDY | AT91C_US_TXRDY);
 
+		if (debug == 0)
 		{
-			enum { irqID = AT91C_ID_US0 };
-			// programming interrupts from ADC
-			AT91C_BASE_AIC->AIC_IDCR = (1UL << irqID);
-			AT91C_BASE_AIC->AIC_SVR [irqID] = (AT91_REG) AT91F_US0Handler;
-			AT91C_BASE_AIC->AIC_SMR [irqID] = 
-				(AT91C_AIC_SRCTYPE & AT91C_AIC_SRCTYPE_INT_HIGH_LEVEL) |
-				(AT91C_AIC_PRIOR & AT91C_AIC_PRIOR_LOWEST);
-			AT91C_BASE_AIC->AIC_ICCR = (1UL << irqID);		// clear pending interrupt
-			AT91C_BASE_AIC->AIC_IECR = (1UL << irqID);	// enable inerrupt
-
+			serial_set_handler(AT91C_ID_US0, AT91F_US0Handler);
 		}
 
 		AT91C_BASE_US0->US_CR = AT91C_US_RXEN  | AT91C_US_TXEN;	// разрешаем приёмник и передатчик.
@@ -1010,16 +1002,9 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 					            
 		AT91C_BASE_US1->US_IDR = (AT91C_US_RXRDY | AT91C_US_TXRDY);
 
+		if (debug == 0)
 		{
-			enum { irqID = AT91C_ID_US1 };
-			// programming interrupts from ADC
-			AT91C_BASE_AIC->AIC_IDCR = (1UL << irqID);
-			AT91C_BASE_AIC->AIC_SVR [irqID] = (AT91_REG) AT91F_US1Handler;
-			AT91C_BASE_AIC->AIC_SMR [irqID] = 
-				(AT91C_AIC_SRCTYPE & AT91C_AIC_SRCTYPE_INT_HIGH_LEVEL) |
-				(AT91C_AIC_PRIOR & AT91C_AIC_PRIOR_LOWEST);
-			AT91C_BASE_AIC->AIC_ICCR = (1UL << irqID);		// clear pending interrupt
-			AT91C_BASE_AIC->AIC_IECR = (1UL << irqID);	// enable inerrupt
+			serial_set_handler(AT91C_ID_US1, AT91F_US1Handler);
 		}
 
 		AT91C_BASE_US1->US_CR = AT91C_US_RXEN | AT91C_US_TXEN;	// разрешаем приёмник и передатчик.
@@ -2103,16 +2088,9 @@ void hardware_uart2_initialize(uint_fast8_t debug)
 					            
 		AT91C_BASE_US1->US_IDR = (AT91C_US_RXRDY | AT91C_US_TXRDY);
 
+		if (debug == 0)
 		{
-			enum { irqID = AT91C_ID_US1 };
-			// programming interrupts from ADC
-			AT91C_BASE_AIC->AIC_IDCR = (1UL << irqID);
-			AT91C_BASE_AIC->AIC_SVR [irqID] = (AT91_REG) AT91F_US1Handler;
-			AT91C_BASE_AIC->AIC_SMR [irqID] = 
-				(AT91C_AIC_SRCTYPE & AT91C_AIC_SRCTYPE_INT_HIGH_LEVEL) |
-				(AT91C_AIC_PRIOR & AT91C_AIC_PRIOR_LOWEST);
-			AT91C_BASE_AIC->AIC_ICCR = (1UL << irqID);		// clear pending interrupt
-			AT91C_BASE_AIC->AIC_IECR = (1UL << irqID);	// enable inerrupt
+			serial_set_handler(AT91C_ID_US1, & AT91F_US1Handler);
 		}
 
 		AT91C_BASE_US1->US_CR = AT91C_US_RXEN | AT91C_US_TXEN;	// разрешаем приёмник и передатчик.
