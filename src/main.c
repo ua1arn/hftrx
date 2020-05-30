@@ -12682,20 +12682,34 @@ static void
 display_menu_string_P(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	const FLASHMEM  char * s,
+	const FLASHMEM  char * text,
 	uint_fast8_t width,
-	uint_fast8_t maxwidth		// ширина, которую займет выводимый текст
+	uint_fast8_t filled		// сколько символов сейчас в text
 	)
 {
 #if WITHTOUCHGUI
 	if (is_menu_opened)
 	{
-		safestrcpy(menuw, ARRAY_SIZE(menuw), s);
+		safestrcpy(menuw, ARRAY_SIZE(menuw), text);
 		return;
 	}
 #else
-	colmain_setcolors(MNUVALCOLOR, BGCOLOR);
-	display_at_P(x + width - maxwidth, y, s);
+	if (width > filled)
+	{
+		const size_t fill = width - filled;
+		char notext [fill + 1];
+		memset(notext, ' ', fill);
+		notext [fill] = '\0';
+
+		colmain_setcolors(MNUVALCOLOR, BGCOLOR);
+		display_at(x + 0, y, notext);
+		display_at_P(x + fill, y, text);
+	}
+	else
+	{
+		colmain_setcolors(MNUVALCOLOR, BGCOLOR);
+		display_at_P(x + 0, y, text);
+	}
 #endif /* WITHTOUCHGUI */
 }
 
@@ -15656,7 +15670,21 @@ void display2_multilinemenu_block_groups(uint_fast8_t x, uint_fast8_t y, dctx_t 
 			y_position_groups += window.ystep;
 		}
 	}
+
+	//стираем ненужные имена групп, оставшиеся от предыдущей страницы
+	char nolabel [1 + LABELW + 1];
+	memset(nolabel, ' ', sizeof nolabel - 1);
+	nolabel [sizeof nolabel - 1] = '\0';
+
+	colmain_setcolors(COLORMAIN_WHITE, BGCOLOR);
+	for (;
+			index_groups - menu_block_scroll_offset_groups < window.multilinemenu_max_rows;
+			++ index_groups, y_position_groups += window.ystep)
+	{
+		display_at(x - 1, y_position_groups, nolabel);
+	}
 }
+
 // Отображение многострочного меню для больших экранов (параметры)
 void display2_multilinemenu_block_params(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
 {
@@ -15734,6 +15762,19 @@ void display2_multilinemenu_block_params(uint_fast8_t x, uint_fast8_t y, dctx_t 
 			y_position_params += window.ystep;
 		}
 	}
+
+	//стираем ненужные имена параметров, оставшиеся от предыдущей страницы
+	char nolabel [1 + LABELW + 1];
+	memset(nolabel, ' ', sizeof nolabel - 1);
+	nolabel [sizeof nolabel - 1] = '\0';
+
+	colmain_setcolors(COLORMAIN_WHITE, BGCOLOR);
+	for (;
+			index_params - menu_block_scroll_offset_params < window.multilinemenu_max_rows;
+			++ index_params, y_position_params += window.ystep)
+	{
+		display_at(x - 1, y_position_params, nolabel);
+	}
 }
 
 // Отображение многострочного меню для больших экранов (значения)
@@ -15800,6 +15841,23 @@ void display2_multilinemenu_block_vals(uint_fast8_t x, uint_fast8_t y, dctx_t * 
             display2_menu_valxx(x, y_position_params, & dctx); // значение параметра
 			y_position_params += window.ystep;
 		}
+	}
+
+	/* параметры полей вывода значений в меню */
+	const uint_fast8_t VALUEW = window.valuew;
+
+	//стираем ненужные значения параметров, оставшиеся от предыдущей страницы
+	char nolabel [VALUEW + 1];
+	memset(nolabel, ' ', VALUEW);
+	nolabel [VALUEW] = '\0';
+
+	colmain_setcolors(COLORMAIN_WHITE, BGCOLOR);
+	for (;
+			index_params - menu_block_scroll_offset_params < window.multilinemenu_max_rows;
+			++ index_params, y_position_params += window.ystep)
+	{
+		//display_menu_string_P(x, y_position_params, nolabel, VALUEW, VALUEW);
+		display_at(x, y_position_params, nolabel);
 	}
 }
 #endif /* ! WITHFLATMENU */
