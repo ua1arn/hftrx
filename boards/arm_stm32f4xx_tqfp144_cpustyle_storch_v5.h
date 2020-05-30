@@ -516,16 +516,40 @@
 #define HARDWARE_SIDETONE_INITIALIZE() do { \
 	} while (0)
 
-#if KEYBOARD_USE_ADC
-	#define HARDWARE_KBD_INITIALIZE() do { \
-		} while (0)
-#else
-	#define HARDWARE_KBD_INITIALIZE() do { \
-		arm_hardware_pioa_inputs(KBD_MASK); \
-		} while (0)
-#endif
+#if WITHKEYBOARD
+	/* PB6: pull-up second encoder button */
+	#if WITHTWISW || WITHTWIHW
+		#error PB6 already used as second encoder button
+	#endif /* WITHTWISW || WITHTWIHW */
 
-#if 1 // WITHTWISW
+	#define TARGET_ENC2BTN_BIT (1U << 6)	// PB6 - second encoder button with pull-up
+	#define TARGET_POWERBTN_BIT 0//(1U << 8)	// PAxx - ~CPU_POWER_SW signal
+
+#if WITHENCODER2
+	// PB6: second encoder button
+	#define TARGET_ENC2BTN_GET	(((GPIOB->IDR) & TARGET_ENC2BTN_BIT) == 0)
+#endif /* WITHENCODER2 */
+
+#if WITHPWBUTTON
+	// Pxx - ~CPU_POWER_SW signal
+	#define TARGET_POWERBTN_GET	0//(((GPIOx->IDR) & TARGET_POWERBTN_BIT) == 0)
+#endif /* WITHPWBUTTON */
+
+	#define HARDWARE_KBD_INITIALIZE() do { \
+			arm_hardware_piob_inputs(TARGET_ENC2BTN_BIT); \
+			arm_hardware_piob_updown(TARGET_ENC2BTN_BIT, 0); /* PE15: pull-up second encoder button */ \
+			arm_hardware_pioa_inputs(TARGET_POWERBTN_BIT); \
+			arm_hardware_pioa_updown(TARGET_POWERBTN_BIT, 0);	/* PAxx: pull-up second encoder button */ \
+		} while (0)
+
+#else /* WITHKEYBOARD */
+
+	#define HARDWARE_KBD_INITIALIZE() do { \
+		} while (0)
+
+#endif /* WITHKEYBOARD */
+
+#if 0 // WITHTWISW
 	#define TARGET_TWI_TWCK_PORT_C(v) do { GPIOB->BSRR = BSRR_C(v); __DSB(); } while (0)
 	#define TARGET_TWI_TWCK_PORT_S(v) do { GPIOB->BSRR = BSRR_S(v); __DSB(); } while (0)
 	#define TARGET_TWI_TWD_PORT_C(v) do { GPIOB->BSRR = BSRR_C(v); __DSB(); } while (0)
