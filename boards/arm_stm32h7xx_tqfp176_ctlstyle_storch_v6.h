@@ -348,9 +348,10 @@
 	//#define WITHRFSG	1	/* включено управление ВЧ сигнал-генератором. */
 	#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
 
-	#if 1
+	#if 0
 		/* TUNER & PA board 2*RD16 by avbelnn@yandex.ru */
 		#define WITHAUTOTUNER_UA1CEI	1	/* Плата управления LPF и тюнером от UA1CEI - по компорту */
+		//#define WITHNMEAOVERREALTIME	1	/* прерывания от SERUAL PORT работают на OVERREALTIME приориоритете */
 		#if defined(WITHDEBUG)
 			#error Please off WITHDEBUG
 		#endif /* defined(WITHDEBUG) */
