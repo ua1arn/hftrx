@@ -229,7 +229,7 @@ enum
 	static RAMDTCM volatile uint_fast8_t uacinrtsalt = UACINRTSALT_NONE;		/* выбор альтернативной конфигурации для RTS UAC IN interface */
 	static RAMDTCM volatile uint_fast8_t uacoutalt;
 
-#if 1//WITHUSBUAC
+#if WITHUSBUACIN
 
 	// USB AUDIO IN
 	typedef ALIGNX_BEGIN struct uacin16_tag
@@ -270,7 +270,7 @@ enum
 	static RAMDTCM LIST_ENTRY2 uacinfree16;
 	static RAMDTCM LIST_ENTRY2 uacinready16;	// Буферы для записи в вудиоканал USB к компьютер 2*16*24 kS/S
 
-#endif /* WITHUSBUAC */
+#endif /* WITHUSBUACIN */
 
 #endif /* WITHINTEGRATEDDSP */
 
@@ -380,7 +380,7 @@ void buffers_diagnostics(void)
 	LIST2PRINT(voicesphones16);
 	LIST2PRINT(voicesmoni16);
 
-	#if WITHUSBUAC
+	#if WITHUSBUACIN
 		#if WITHRTS192
 			//LIST2PRINT(voicesfree192rts);
 			//LIST2PRINT(uacin192rts);
@@ -390,8 +390,10 @@ void buffers_diagnostics(void)
 		#endif
 		//LIST2PRINT(uacinfree16);
 		//LIST2PRINT(uacinready16);
+	#endif /* WITHUSBUACIN */
+	#if WITHUSBUACOUT
 		LIST3PRINT(resample16);
-	#endif /* WITHUSBUAC */
+	#endif /* WITHUSBUACOUT */
 
 	debug_printf_P(PSTR(" add=%u, del=%u, zero=%u, "), nbadd, nbdel, nbzero);
 		
@@ -598,9 +600,17 @@ void buffers_initialize(void)
 
 #if WITHINTEGRATEDDSP
 
-	static RAM_D2 voice16_t voicesarray16 [228];
+	#if WITHUSBUAC
+		/* буферы требуются для ресэмплера */
+		static RAM_D2 voice16_t voicesarray16 [228];
+	#else /* WITHUSBUAC */
+		static RAM_D2 voice16_t voicesarray16 [32];
+	#endif /* WITHUSBUAC */
 
-	InitializeListHead3(& resample16, RESAMPLE16NORMAL);	// буферы от USB для синхронизации
+	#if WITHUSBUACOUT
+		InitializeListHead3(& resample16, RESAMPLE16NORMAL);	// буферы от USB для синхронизации
+	#endif /* WITHUSBUACOUT */
+
 	InitializeListHead3(& voicesmike16, VOICESMIKE16NORMAL);	// список оцифрованных с АЦП
 	InitializeListHead2(& voicesphones16);	// список для выдачи на ЦАП
 	InitializeListHead2(& voicesmoni16);	// самоконтроль
@@ -611,7 +621,7 @@ void buffers_initialize(void)
 		InsertHeadList2(& voicesfree16, & p->item);
 	}
 
-#if WITHUSBUAC
+#if WITHUSBUACIN
 
 	static uacin16_t uacinarray16 [24];
 
@@ -667,7 +677,7 @@ void buffers_initialize(void)
 
 	#endif /* WITHRTS192 */
 
-#endif /* WITHUSBUAC */
+#endif /* WITHUSBUACIN */
 
 	static RAM_D2 voice32tx_t voicesarray32tx [(DMABUFFSIZE32RX / DMABUFSTEP32RX) / (DMABUFFSIZE32TX / DMABUFSTEP32TX) + 4];
 
@@ -850,6 +860,7 @@ static RAMFUNC void buffers_tonull16(voice16_t * p)
 	UNLOCK(& locklist16);
 }
 
+#if WITHUSBUACIN
 // Сохранить USB UAC IN буфер в никуда...
 static RAMFUNC void buffers_tonulluacin(uacin16_t * p)
 {
@@ -857,6 +868,7 @@ static RAMFUNC void buffers_tonulluacin(uacin16_t * p)
 	InsertHeadList2(& uacinfree16, & p->item);
 	UNLOCK(& locklist16);
 }
+#endif /* WITHUSBUACIN */
 
 // Сохранить звук на вход передатчика
 static RAMFUNC void buffers_tomodulators16(voice16_t * p)

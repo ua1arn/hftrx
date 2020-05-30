@@ -40,39 +40,45 @@
 //#define WIHSPIDFOVERSPI 1	/* В SPI программаторе для работы используется один из обычных каналов SPI */
 //#define targetdataflash targetext1
 
-#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
-#define WITHUSBHW_DEVICE	USB_OTG_HS	/* на этом устройстве поддерживается функциональность DEVICE	*/
-#define WITHUSBDEV_VBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
-//#define WITHUSBDEV_HSDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
-//#define WITHUSBDEV_HIGHSPEEDULPI	1
-//#define WITHUSBDEV_HIGHSPEEDPHYC	1
-
-/* For H7 exist: Legacy defines */
-//#define USB_OTG_HS                   USB1_OTG_HS
-//#define USB_OTG_FS                   USB2_OTG_FS
-
-#define WITHUSBHW_HOST		USB_OTG_FS
-
 //#define WITHUART1HW	1	/* PA9, PA10 Используется периферийный контроллер последовательного порта #1 */
 #define WITHUART2HW	1	/* PD5, PD6 Используется периферийный контроллер последовательного порта #2 */
 #define WITHUARTFIFO	1	/* испольование FIFO */
 
+#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 #define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 #define WITHMODEM_CDC	1
 //#define WITHCAT_USART2		1
 #define WITHDEBUG_USART2	1
 #define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
 
-//#define WITHUAC2		1	/* UAC2 support */
-#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
-//#define WITHUSBUACIN2		1	/* формируются три канала передачи звука */
-//#define WITHUABUACOUTAUDIO48MONO	1	/* для уменьшения размера буферов в endpoints */
+#if WITHUSBHW
 
-#define WITHUSBCDC		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
-#define WITHUSBHWCDC_N	2	/* количество виртуальных последовательных портов */
-//#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
-//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
-//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
+	#define WITHUSBHW_DEVICE	USB_OTG_HS	/* на этом устройстве поддерживается функциональность DEVICE	*/
+	#define WITHUSBDEV_VBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
+	//#define WITHUSBDEV_HSDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
+	//#define WITHUSBDEV_HIGHSPEEDULPI	1
+	//#define WITHUSBDEV_HIGHSPEEDPHYC	1
+
+	/* For H7 exist: Legacy defines */
+	//#define USB_OTG_HS                   USB1_OTG_HS
+	//#define USB_OTG_FS                   USB2_OTG_FS
+
+	//#define WITHUSBHW_HOST		USB_OTG_FS
+
+	//#define WITHUAC2		1	/* UAC2 support */
+	#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
+	#if WITHRTS96 || WITHRTS192
+		#define WITHUSBUACIN2		1	/* формируются три канала передачи звука */
+	#endif /* WITHRTS96 || WITHRTS192 */
+	//#define WITHUABUACOUTAUDIO48MONO	1	/* для уменьшения размера буферов в endpoints */
+
+	#define WITHUSBCDC		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
+	#define WITHUSBHWCDC_N	2	/* количество виртуальных последовательных портов */
+	//#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
+	//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
+	//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
+
+#endif /* WITHUSBHW */
 
 //#define BSRR_S(v) ((v) * GPIO_BSRR_BS_0)	/* Преобразование значения для установки бита в регистре */
 //#define BSRR_C(v) ((v) * GPIO_BSRR_BR_0)	/* Преобразование значения для сброса бита в регистре */
