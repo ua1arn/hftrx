@@ -58,6 +58,45 @@ colmain_fb_show(void)
 }
 
 
+// Установить прозрачность для прямоугольника
+void display_transparency(
+	uint_fast16_t x1, uint_fast16_t y1,
+	uint_fast16_t x2, uint_fast16_t y2,
+	uint_fast8_t alpha	// на сколько затемнять цвета (0 - чёрный, 255 - без изменений)
+	)
+{
+	PACKEDCOLORMAIN_T * const buffer = colmain_fb_draw();
+	const uint_fast16_t dx = DIM_X;
+	const uint_fast16_t dy = DIM_Y;
+#if 1
+	uint_fast16_t y;
+
+	for (y = y1; y <= y2; y ++)
+	{
+		uint_fast16_t x;
+		const uint_fast32_t yt = (uint_fast32_t) GXADJ(dx) * y;
+		//ASSERT(y < dy);
+		for (x = x1; x <= x2; x ++)
+		{
+			//ASSERT(x < dx);
+			buffer [yt + x] = getshadedcolor(buffer [yt + x], alpha);
+		}
+	}
+#else
+	uint_fast16_t y;
+
+	for (y = y1; y <= y2; y ++)
+	{
+		for (uint_fast16_t x = x1; x <= x2; x ++)
+		{
+			PACKEDCOLORMAIN_T * const p = colmain_mem_at(buffer, dx, dy, x, y);
+			* p = getshadedcolor(* p, alpha);
+		}
+	}
+#endif
+}
+
+
 static uint_fast8_t scalecolor(
 	uint_fast8_t cv,	// color component value
 	uint_fast8_t maxv,	// maximal color component value
@@ -94,7 +133,7 @@ color24_aliased(
 
 
 /* модифицировать цвет */
-static COLORPIP_T getshadedcolor(
+COLORPIP_T getshadedcolor(
 	COLORPIP_T dot, // исходный цвет
 	uint_fast8_t alpha	// на сколько затемнять цвета (0 - чёрный, 255 - без изменений)
 	)
@@ -137,44 +176,6 @@ static COLORPIP_T getshadedcolor(
 	return dot;
 
 #endif /* LCDMODE_PIP_L8 */
-}
-
-// Установить прозрачность для прямоугольника
-void display_transparency(
-	uint_fast16_t x1, uint_fast16_t y1,
-	uint_fast16_t x2, uint_fast16_t y2,
-	uint_fast8_t alpha	// на сколько затемнять цвета (0 - чёрный, 255 - без изменений)
-	)
-{
-	PACKEDCOLORMAIN_T * const buffer = colmain_fb_draw();
-	const uint_fast16_t dx = DIM_X;
-	const uint_fast16_t dy = DIM_Y;
-#if 1
-	uint_fast16_t y;
-
-	for (y = y1; y <= y2; y ++)
-	{
-		uint_fast16_t x;
-		const uint_fast32_t yt = (uint_fast32_t) GXADJ(dx) * y;
-		//ASSERT(y < dy);
-		for (x = x1; x <= x2; x ++)
-		{
-			//ASSERT(x < dx);
-			buffer [yt + x] = getshadedcolor(buffer [yt + x], alpha);
-		}
-	}
-#else
-	uint_fast16_t y;
-
-	for (y = y1; y <= y2; y ++)
-	{
-		for (uint_fast16_t x = x1; x <= x2; x ++)
-		{
-			PACKEDCOLORMAIN_T * const p = colmain_mem_at(buffer, dx, dy, x, y);
-			* p = getshadedcolor(* p, alpha);
-		}
-	}
-#endif
 }
 
 #if defined (COLORPIP_SHADED)
@@ -341,26 +342,6 @@ void display2_xltrgb24(COLOR24_T * xltable)
 }
 
 #if LCDMODE_LTDC
-
-
-void colmain_putpixel(
-	PACKEDCOLORMAIN_T * buffer,
-	uint_fast16_t dx,	// ширина буфера
-	uint_fast16_t dy,	// высота буфера
-	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
-	COLORMAIN_T color
-	)
-{
-	PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, x, y);
-	#if LCDMODE_LTDC_L24
-		tgr->r = color >> 16;
-		tgr->g = color >> 8;
-		tgr->b = color >> 0;
-	#else /* LCDMODE_LTDC_L24 */
-		* tgr = color;
-	#endif /* LCDMODE_LTDC_L24 */
-}
 
 void display_putpixel(
 	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
@@ -832,9 +813,11 @@ uint_fast16_t display_wrdatabar_begin(uint_fast8_t x, uint_fast8_t y, uint_fast1
 }
 
 // Выдать восемь цветных пикселей, младший бит - самый верхний в растре
-void display_barcolumn(uint_fast8_t pattern)
+uint_fast16_t
+display_barcolumn(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t pattern)
 {
 //	ltdc_vertical_pixN(pattern, 8);	// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
+	return xpix + 1;
 }
 
 void display_wrdatabar_end(void)
@@ -1046,14 +1029,14 @@ void display_showbuffer(
 	const GX_t * buffer,
 	unsigned dx,	// пиксели
 	unsigned dy,	// пиксели
-	uint_fast8_t col,	// сетка
-	uint_fast8_t row	// сетка
+	uint_fast8_t xcell,	// сетка
+	uint_fast8_t ycell	// сетка
 	)
 {
 #if 1
 #if LCDMODE_S1D13781
 
-	s1d13781_showbuffer(buffer, dx, dy, col, row);
+	s1d13781_showbuffer(buffer, dx, dy, xcell, ycell);
 
 #else /* LCDMODE_S1D13781 */
 
@@ -1070,7 +1053,7 @@ void display_showbuffer(
 		uint_fast8_t pos;
 		const GX_t * const p = buffer + lowhalf * MGADJ(dx);	// начало данных горизонтальной полосы в памяти
 		//debug_printf_P(PSTR("display_showbuffer: col=%d, row=%d, lowhalf=%d\n"), col, row, lowhalf);
-		display_plotfrom(GRID2X(col), GRID2Y(row) + lowhalf * 8);		// курсор в начало первой строки
+		display_plotfrom(GRID2X(ycell), GRID2Y(xcell) + lowhalf * 8);		// курсор в начало первой строки
 		// выдача горизонтальной полосы
 		uint_fast16_t ypix;
 		uint_fast16_t xpix = display_wrdatabar_begin(xcell, ycell, & ypix);

@@ -385,7 +385,7 @@ void display_wrdata2_end(void);
 uint_fast16_t display_put_char_small2(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf);
 // полоса индикатора
 uint_fast16_t display_wrdatabar_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp);
-void display_barcolumn(uint_fast8_t pattern);	// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
+uint_fast16_t display_barcolumn(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t pattern);	// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
 void display_wrdatabar_end(void);
 // большие и средние цифры (частота)
 uint_fast16_t display_wrdatabig_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp);
@@ -959,6 +959,11 @@ void display_floodfill(
 	COLORMAIN_T newColor,
 	COLORMAIN_T oldColor,
 	uint_fast8_t type	// 0 - быстрая закраска (только выпуклый контур), 1 - более медленная закраска любого контура
+	);
+
+COLORPIP_T getshadedcolor(
+	COLORPIP_T dot, // исходный цвет
+	uint_fast8_t alpha	// на сколько затемнять цвета (0 - чёрный, 255 - без изменений)
 	);
 
 #ifdef __cplusplus
