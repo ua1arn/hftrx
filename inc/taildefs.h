@@ -555,6 +555,49 @@ typedef enum
 
 #endif /* WITHUART1HW */
 
+#if WITHNMEA && WITHUART1HW && WITHNMEA_USART1
+	// Модемные функции работают через USART1
+	// Вызывается из user-mode программы
+	#define HARDWARE_NMEA_INITIALIZE() do { \
+			hardware_uart1_initialize(0); \
+		} while (0)
+	// Вызывается из user-mode программы
+	#define HARDWARE_NMEA_SET_SPEED(baudrate) do { \
+			hardware_uart1_set_speed(baudrate); \
+		} while (0)
+	// вызывается из state machie протокола CAT или NMEA (в прерываниях)
+	// для управления разрешением последующих вызовов прерывания
+	#define HARDWARE_NMEA_ENABLETX(v) do { \
+			hardware_uart1_enabletx(v); \
+		} while (0)
+	// вызывается из state machie протокола CAT или NMEA (в прерываниях)
+	// для управления разрешением последующих вызовов прерывания
+	#define HARDWARE_NMEA_ENABLERX(v) do { \
+			hardware_uart1_enablerx(v); \
+		} while (0)
+	// вызывается из state machie протокола CAT или NMEA (в прерываниях)
+	// для передачи символа
+	#define HARDWARE_NMEA_TX(ctx, c) do { \
+			hardware_uart1_tx((ctx), (c)); \
+		} while (0)
+
+	// вызывается из обработчика прерываний UART2
+	// с принятым символом
+	#define HARDWARE_UART1_ONRXCHAR(c) do { \
+			nmea_parsechar(c); \
+		} while (0)
+	// вызывается из обработчика прерываний UART2
+	#define HARDWARE_UART1_ONOVERFLOW() do { \
+			nmea_rxoverflow(); \
+		} while (0)
+	// вызывается из обработчика прерываний UART2
+	// по готовности передатчика
+	#define HARDWARE_UART1_ONTXCHAR(ctx) do { \
+			nmea_sendchar(ctx); \
+		} while (0)
+
+#endif /* WITHNMEA && WITHUART1HW && WITHMODEM_USART1 */
+
 #if WITHNMEA && WITHUART2HW && WITHNMEA_USART2
 	// Модемные функции работают через USART2
 	// Вызывается из user-mode программы
@@ -596,7 +639,7 @@ typedef enum
 			nmea_sendchar(ctx); \
 		} while (0)
 
-#endif /* WITHMODEM && WITHUART2HW && WITHMODEM_USART2 */
+#endif /* WITHNMEA && WITHUART2HW && WITHMODEM_USART2 */
 
 #if WITHUART2HW
 	// Заглушки, если есть последовательный порт #2, но нигде не используется.
