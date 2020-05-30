@@ -294,99 +294,9 @@ static void prog_rfadc_update(void);
 
 #endif
 
+#if WITHAUTOTUNER_UA1CEI
 
-#if WITHNMEA && WITHAUTOTUNER_UA1CEI
-
-// Очереди символов для обмена с согласующим устройством
-enum { qSZ = 512 };
-static uint8_t queue [qSZ];
-static volatile unsigned qp, qg;
-
-// Передать символ в host
-static uint_fast8_t	qput(uint_fast8_t c)
-{
-	unsigned qpt = qp;
-	const unsigned next = (qpt + 1) % qSZ;
-	if (next != qg)
-	{
-		queue [qpt] = c;
-		qp = next;
-		HARDWARE_NMEA_ENABLETX(1);
-		return 1;
-	}
-	return 0;
-}
-
-// Получить символ в host
-static uint_fast8_t qget(uint_fast8_t * pc)
-{
-	if (qp != qg)
-	{
-		* pc = queue [qg];
-		qg = (qg + 1) % qSZ;
-		return 1;
-	}
-	return 0;
-}
-
-// получить состояние очереди передачи
-static uint_fast8_t qempty(void)
-{
-	return qp == qg;
-}
-
-// Передать массив символов
-static void qputs(const char * s, int n)
-{
-	while (n --)
-		qput(* s ++);
-}
-
-
-/* вызывается из обработчика прерываний */
-// компорт готов передавать
-void nmea_sendchar(void * ctx)
-{
-	uint_fast8_t c;
-	if (qget(& c))
-	{
-		HARDWARE_NMEA_TX(ctx, c);
-		if (qempty())
-			HARDWARE_NMEA_ENABLETX(0);
-	}
-	else
-	{
-		HARDWARE_NMEA_ENABLETX(0);
-	}
-}
-
-int nmea_putc(int c)
-{
-	disableIRQ();
-	qput(c);
-	enableIRQ();
-	return c;
-}
-
-#include <stdarg.h>
 #include <ctype.h>
-
-void nmea_format(const char * format, ...)
-{
-	char b [256];
-	int n, i;
-	va_list	ap;
-	va_start(ap, format);
-
-	n = vsnprintf(b, sizeof b / sizeof b [0], format, ap);
-
-	for (i = 0; i < n; ++ i)
-		nmea_putc(b [i]);
-
-	va_end(ap);
-}
-
-
 
 enum nmeaparser_states
 {
@@ -548,16 +458,6 @@ void nmea_parsechar(uint_fast8_t c)
 		break;
 	}
 }
-/* вызывается из обработчика прерываний */
-// произошла потеря символа (символов) при получении данных с CAT компорта
-void nmea_rxoverflow(void)
-{
-}
-/* вызывается из обработчика прерываний */
-void nmea_disconnect(void)
-{
-
-}
 
 static void
 ua1ceituner_send(void)
@@ -611,7 +511,7 @@ ua1ceituner_send(void)
 		);
 }
 
-#endif /* WITHNMEA && WITHAUTOTUNER_UA1CEI */
+#endif /* WITHAUTOTUNER_UA1CEI */
 
 
 #if WITHCPUDACHW

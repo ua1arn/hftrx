@@ -716,6 +716,9 @@ void nmea_parsechar(uint_fast8_t c);				/* вызывается из обраб�
 void nmea_rxoverflow(void);							/* вызывается из обработчика прерываний */
 void nmea_sendchar(void * ctx);							/* вызывается из обработчика прерываний */
 
+void nmea_format(const char * format, ...);
+int nmea_putc(int c);
+
 void hardware_uart1_initialize(uint_fast8_t debug);
 void hardware_uart1_set_speed(uint_fast32_t baudrate);
 void hardware_uart1_tx(void * ctx, uint_fast8_t c);	/* передача символа после прерывания о готовности передатчика */
