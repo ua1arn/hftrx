@@ -60,9 +60,10 @@ display_wrdatabar_end(void)
 /* отображение одной вертикальной полосы на графическом индикаторе */
 /* старшие биты соответствуют верхним пикселям изображения */
 /* вызывается между вызовами display_wrdatabar_begin() и display_wrdatabar_end() */
-void
-display_barcolumn(uint_fast8_t pattern)
+uint_fast16_t
+display_barcolumn(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t pattern)
 {
+	return xpix + 1;
 }
 
 /* вызывается между вызовами display_wrdatabig_begin() и display_wrdatabig_end() */

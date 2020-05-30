@@ -355,10 +355,11 @@ display_wrdatabar_begin(void)
 	lph88_put_char_begin();
 }
 
-void 
-display_barcolumn(uint_fast8_t pattern)
+uint_fast16_t
+display_barcolumn(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t pattern)
 {
 	lph88_bar_column(pattern);
+	return xpix + 1;
 }
 
 void
