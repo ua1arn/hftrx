@@ -1625,7 +1625,7 @@ static void display_time8(
 
 	board_rtc_gettime(& hour, & minute, & secounds);
 	local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("%02d:%02d:%02d"), 
-		hour, minute, secounds
+			(int) hour, (int) minute, (int) secounds
 		);
 	
 	const char * const labels [1] = { buff, };
@@ -1645,14 +1645,19 @@ static void display_time5(
 	char buff [6];
 
 	board_rtc_gettime(& hour, & minute, & secounds);
-	local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("%02d%c%02d"), 
-		hour, 
+	local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("%02d%c%02d"),
+		(int) hour,
 		((secounds & 1) ? ' ' : ':'),	// мигающее двоеточие с периодом две секунды
-		minute
+		(int) minute
 		);
 
 	const char * const labels [1] = { buff, };
-	display2_text(x, y, labels, colors_1state, 0);
+	//if (strlen(buff) != 5)
+	{
+	//	PRINTF("hour=%d, minute=%d, secounds=%d, buff='%s'\n", hour, minute, secounds, buff);
+	}
+	ASSERT(strlen(buff) == 5);
+	display2_text(x, y, labels, colors_1stateBlue, 0);
 #endif /* WITHNMEA */
 }
 
@@ -1690,13 +1695,14 @@ static void display2_datetime12(
 
 	local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("%s-%02d %02d%c%02d"),
 		months [month - 1],
-		day,
-		hour, 
+		(int) day,
+		(int) hour,
 		((secounds & 1) ? ' ' : ':'),	// мигающее двоеточие с периодом две секунды
-		minute
+		(int) minute
 		);
 
 	const char * const labels [1] = { buff, };
+	ASSERT(strlen(buff) == 12);
 	display2_text(x, y, labels, colors_1stateBlue, 0);
 #endif /* WITHNMEA */
 }
