@@ -33,9 +33,6 @@
 	//#define WITHSAI3HW	1	/* Использование SAI3 - FPGA скоростной канал записи спктра	*/
 #endif /* WITHINTEGRATEDDSP */
 
-//#define WITHCPUDACHW	1	/* использование встроенного в процессор DAC */
-//#define WITHCPUADCHW 	1	/* использование встроенного в процессор ADC */
-
 //#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
 //#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 
@@ -92,6 +89,10 @@
 	#define WITHUSBWCID	1
 
 #else /* WITHISBOOTLOADER */
+
+
+	//#define WITHCPUDACHW	1	/* использование встроенного в процессор DAC */
+	#define WITHCPUADCHW 	1	/* использование встроенного в процессор ADC */
 
 	#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHGPUHW	1	/* Graphic processor unit */
