@@ -4408,6 +4408,8 @@ enum
 	#endif
 	#define DISPLC_RJ		0	// количество скрытых справа цифр в отображении частоты
 
+	#define MENU1ROW 20
+
 	// 272/5 = 54, 480/16=30
 	// Main frequency indicator 56 lines height = 12 cells
 	static const FLASHMEM struct dzone dzones [] =
@@ -4430,7 +4432,7 @@ enum
 
 		{	26, 16,	display2_nr3,		REDRM_MODE, PGALL, },	// NR
 //		{	26,	16,	display2_agc3,		REDRM_MODE, PGALL, },	// AGC mode
-		{	26,	20,	display2_voxtune3,	REDRM_MODE, PGALL, },	// VOX
+		{	26,	20,	display2_voxtune3,	REDRM_MODE, PGNOMEMU, },	// VOX
 		
 		{	0,	4,	display2_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
 		{	21,	8,	display2_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
@@ -4449,6 +4451,7 @@ enum
 		{	0,	24,	display2_bars,		REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
 		{	25, 24, display2_siglevel4, REDRM_BARS, PGSWR, },	// уровень сигнала
 		//{	25, 24, display_smeter5, 	REDRM_BARS, PGSWR, },	// уровень сигнала в баллах S
+
 		{	0,	28,	display2_wfl_init,	REDRM_INIS,	PGINI, },	// формирование палитры водопада
 		{	0,	28,	display2_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 		{	0,	28,	display2_spectrum,	REDRM_BARS, PGSPE, },// подготовка изображения спектра
@@ -4474,9 +4477,9 @@ enum
 		{	20, 24,	display2_voltlevelV5, REDRM_VOLT, PGSLP, },	// voltmeter with "V"
 
 	#if WITHMENU
-		{	1,	25,	display2_multilinemenu_block_groups,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
-		{	LABELW + 3,	25,	display2_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
-		{	LABELW * 2 + 4,	25,	display2_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
+		{	1,	MENU1ROW,	display2_multilinemenu_block_groups,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
+		{	LABELW + 3,	MENU1ROW,	display2_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
+		{	LABELW * 2 + 4,	MENU1ROW,	display2_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
 	#endif /* WITHMENU */
 		{	0,	0,	display2_nextfb, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },
 	};
@@ -4484,8 +4487,9 @@ enum
 #if WITHMENU
 	void display2_getmultimenu(multimenuwnd_t * p)
 	{
-		p->multilinemenu_max_rows = 6;
-		p->ystep = 4;	// количество ячеек разметки на одну строку меню
+		enum { YSTEP = 4 };		// количество ячеек разметки на одну строку меню
+		p->multilinemenu_max_rows = (51 - MENU1ROW) / YSTEP;
+		p->ystep = YSTEP;	// количество ячеек разметки на одну строку меню
 		p->reverse = 1;
 		p->valuew = 10;	/* количество текстовых символов занимаемых полем вывола значения в меню. */
 	}
