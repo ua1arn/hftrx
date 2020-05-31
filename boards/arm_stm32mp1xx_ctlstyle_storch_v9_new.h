@@ -492,8 +492,8 @@
 	#define WITHCATEXT	1	/* Расширенный набор команд CAT */
 	#define WITHELKEY	1
 	//#define WITHKBDENCODER 1	// перестройка частоты кнопками
-	//#define WITHKEYBOARD 1	/* в данном устройстве есть клавиатура */
-	//#define KEYBOARD_USE_ADC	1	/* на одной линии установлено  четыре  клавиши. на vref - 6.8K, далее 2.2К, 4.7К и 13K. */
+	#define WITHKEYBOARD 1	/* в данном устройстве есть клавиатура */
+	#define KEYBOARD_USE_ADC	1	/* на одной линии установлено  четыре  клавиши. на vref - 6.8K, далее 2.2К, 4.7К и 13K. */
 
 	// ST LM235Z
 	#define THERMOSENSOR_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика температуры
@@ -564,7 +564,7 @@
 
 		#if WITHCURRLEVEL
 			//PASENSEIX = BOARD_ADCXIN(0),		// MCP3208 CH0 PA current sense - ACS712-30 chip
-			PASENSEIX = 2,		// PA2 PA current sense - ACS712-05 chip
+			PASENSEIX = 12,		// PC2 PA current sense - ACS712-05 chip
 		#endif /* WITHCURRLEVEL */
 		#if WITHVOLTLEVEL
 			VOLTSOURCE = BOARD_ADCX1IN(7),		// Средняя точка делителя напряжения, для АКБ
@@ -576,8 +576,8 @@
 
 		#if WITHSWRMTR
 			//FWD = BOARD_ADCXIN(2), REF = BOARD_ADCXIN(3),		// MCP3208 CH2, CH3 Детектор прямой, отраженной волны
-			FWD = 14, REF = 15,	// PC5	SWR-meter
-			PWRI = FWD,			// PC4
+			FWD = 14, REF = 15,	// PC4, PC5	SWR-meter
+			PWRI = FWD,
 		#endif /* WITHSWRMTR */
 	#endif
 
@@ -590,7 +590,7 @@
 		PASENSEMRRIX2 = BOARD_ADCMRRIN(5),		// кеш - индекc не должен повторяться в конфигурации
 		PAREFERMRRIX2 = BOARD_ADCMRRIN(6),		// кеш - индекc не должен повторяться в конфигурации
 
-		KI0 = 10, KI1 = 11, KI2 = 12, KI3 = 0, KI4 = 1	// клавиатура
+		KI0 = 0, KI1 = 1, KI2 = 2, KI3 = 7, KI4 = 10	// клавиатура - PA0, PA1, PA2, PA7, PC0
 	};
 
 	#define KI_COUNT 5	// количество используемых под клавиатуру входов АЦП
