@@ -87,6 +87,7 @@ static void nau8822_setreg(
 /* Установка громкости на наушники */
 static void nau8822_setvolume(uint_fast16_t gain, uint_fast8_t mute, uint_fast8_t mutespk)
 {
+	//PRINTF("nau8822_setvolume: gain=%d, mute=%d, mutespk=%d\n", (int) gain, (int) mute, (int) mutespk);
 	uint_fast8_t vmutehp = 0;
 	uint_fast8_t vmutespk = 0;
 	// 0x3F: +6 dB
