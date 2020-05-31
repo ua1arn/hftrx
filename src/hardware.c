@@ -1222,6 +1222,33 @@ static RAMFUNC void spool_adcdonebundle(void)
 }
 #endif /* WITHCPUADCHW */
 
+
+#if CPUSTYLE_STM32MP1 || CPUSTYLE_STM32F
+/* прерывания от валколера при наличии в системе вложенных прерываний вызываются на уровне приоритета REALTINE */
+static RAMFUNC void stm32fxxx_pinirq(portholder_t pr)
+{
+#if WITHELKEY && defined (ELKEY_BIT_LEFT) && defined (ELKEY_BIT_RIGHT)
+	if ((pr & (ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT)) != 0)
+	{
+		spool_elkeyinputsbundle();
+	}
+#endif /* WITHELKEY && defined (ELKEY_BIT_LEFT) && defined (ELKEY_BIT_RIGHT) */
+#if WITHENCODER && defined (ENCODER_BITS)
+	if ((pr & ENCODER_BITS) != 0)
+	{
+		spool_encinterrupt();	/* прерывание по изменению сигнала на входах от валкодера #1*/
+	}
+#endif /* WITHENCODER && defined (ENCODER_BITS) */
+#if WITHENCODER && defined (ENCODER2_BITS)
+	if ((pr & ENCODER2_BITS) != 0)
+	{
+		//spool_encinterrupt2();	/* прерывание по изменению сигнала на входах от валкодера #2*/
+	}
+#endif /* WITHENCODER && ENCODER2_BITS */
+}
+
+#endif /* CPUSTYLE_STM32MP1 || CPUSTYLE_STM32F */
+
 #if CPUSTYLE_STM32MP1
 
 	#if WITHELKEY
@@ -1251,135 +1278,169 @@ static RAMFUNC void spool_adcdonebundle(void)
 		}
 	}
 
-#if 0//CPUSTYLE_STM32MP1
+#if CPUSTYLE_STM32MP1
 	void EXTI0_IRQHandler(void)
 	{
-		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR0);
-		EXTI->PR = pr;		// reset all existing requests
-		//(void) EXTI->PR;
-		stm32fxxx_pinirq(pr);
+		const uint_fast32_t mask = EXTI_IMR1_IM0;
+		const portholder_t prf = EXTI->FPR1 & mask;
+		EXTI->FPR1 = prf;		// reset all faling requests
+		const portholder_t prr = EXTI->RPR1 & mask;
+		EXTI->RPR1 = prr;		// reset all rising requests
+		stm32fxxx_pinirq(prf | prr);
 	}
 
 	void EXTI1_IRQHandler(void)
 	{
-		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR1);
-		EXTI->PR = pr;		// reset all existing requests
-		//(void) EXTI->PR;
-		stm32fxxx_pinirq(pr);
+		const uint_fast32_t mask = EXTI_IMR1_IM1;
+		const portholder_t prf = EXTI->FPR1 & mask;
+		EXTI->FPR1 = prf;		// reset all faling requests
+		const portholder_t prr = EXTI->RPR1 & mask;
+		EXTI->RPR1 = prr;		// reset all rising requests
+		stm32fxxx_pinirq(prf | prr);
 	}
 
 	void EXTI2_IRQHandler(void)
 	{
-		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR2);
-		EXTI->PR = pr;		// reset all existing requests
-		//(void) EXTI->PR;
-		stm32fxxx_pinirq(pr);
+		const uint_fast32_t mask = EXTI_IMR1_IM2;
+		const portholder_t prf = EXTI->FPR1 & mask;
+		EXTI->FPR1 = prf;		// reset all faling requests
+		const portholder_t prr = EXTI->RPR1 & mask;
+		EXTI->RPR1 = prr;		// reset all rising requests
+		stm32fxxx_pinirq(prf | prr);
 	}
 
 	void EXTI3_IRQHandler(void)
 	{
-		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR3);
-		EXTI->PR = pr;		// reset all existing requests
-		//(void) EXTI->PR;
-		stm32fxxx_pinirq(pr);
+		const uint_fast32_t mask = EXTI_IMR1_IM3;
+		const portholder_t prf = EXTI->FPR1 & mask;
+		EXTI->FPR1 = prf;		// reset all faling requests
+		const portholder_t prr = EXTI->RPR1 & mask;
+		EXTI->RPR1 = prr;		// reset all rising requests
+		stm32fxxx_pinirq(prf | prr);
 	}
 
 	void EXTI4_IRQHandler(void)
 	{
-		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR4);
-		EXTI->PR = pr;		// reset all existing requests
-		//(void) EXTI->PR;
-		stm32fxxx_pinirq(pr);
+		const uint_fast32_t mask = EXTI_IMR1_IM4;
+		const portholder_t prf = EXTI->FPR1 & mask;
+		EXTI->FPR1 = prf;		// reset all faling requests
+		const portholder_t prr = EXTI->RPR1 & mask;
+		EXTI->RPR1 = prr;		// reset all rising requests
+		stm32fxxx_pinirq(prf | prr);
 	}
 
 	void EXTI5_IRQHandler(void)
 	{
-		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR5);
-		EXTI->PR = pr;		// reset all existing requests
-		//(void) EXTI->PR;
-		stm32fxxx_pinirq(pr);
+		const uint_fast32_t mask = EXTI_IMR1_IM5;
+		const portholder_t prf = EXTI->FPR1 & mask;
+		EXTI->FPR1 = prf;		// reset all faling requests
+		const portholder_t prr = EXTI->RPR1 & mask;
+		EXTI->RPR1 = prr;		// reset all rising requests
+		stm32fxxx_pinirq(prf | prr);
 	}
 
 	void EXTI6_IRQHandler(void)
 	{
-		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR6);
-		EXTI->PR = pr;		// reset all existing requests
-		//(void) EXTI->PR;
-		stm32fxxx_pinirq(pr);
+		const uint_fast32_t mask = EXTI_IMR1_IM6;
+		const portholder_t prf = EXTI->FPR1 & mask;
+		EXTI->FPR1 = prf;		// reset all faling requests
+		const portholder_t prr = EXTI->RPR1 & mask;
+		EXTI->RPR1 = prr;		// reset all rising requests
+		stm32fxxx_pinirq(prf | prr);
 	}
 
 	void EXTI7_IRQHandler(void)
 	{
-		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR7);
-		EXTI->PR = pr;		// reset all existing requests
-		//(void) EXTI->PR;
-		stm32fxxx_pinirq(pr);
+		const uint_fast32_t mask = EXTI_IMR1_IM7;
+		const portholder_t prf = EXTI->FPR1 & mask;
+		EXTI->FPR1 = prf;		// reset all faling requests
+		const portholder_t prr = EXTI->RPR1 & mask;
+		EXTI->RPR1 = prr;		// reset all rising requests
+		stm32fxxx_pinirq(prf | prr);
 	}
 
 	void EXTI8_IRQHandler(void)
 	{
-		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR8);
-		EXTI->PR = pr;		// reset all existing requests
-		//(void) EXTI->PR;
-		stm32fxxx_pinirq(pr);
+		const uint_fast32_t mask = EXTI_IMR1_IM8;
+		const portholder_t prf = EXTI->FPR1 & mask;
+		EXTI->FPR1 = prf;		// reset all faling requests
+		const portholder_t prr = EXTI->RPR1 & mask;
+		EXTI->RPR1 = prr;		// reset all rising requests
+		stm32fxxx_pinirq(prf | prr);
 	}
 
 	void EXTI9_IRQHandler(void)
 	{
-		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR9);
-		EXTI->PR = pr;		// reset all existing requests
-		//(void) EXTI->PR;
-		stm32fxxx_pinirq(pr);
+		const uint_fast32_t mask = EXTI_IMR1_IM9;
+		const portholder_t prf = EXTI->FPR1 & mask;
+		EXTI->FPR1 = prf;		// reset all faling requests
+		const portholder_t prr = EXTI->RPR1 & mask;
+		EXTI->RPR1 = prr;		// reset all rising requests
+		stm32fxxx_pinirq(prf | prr);
 	}
 
 	void EXTI10_IRQHandler(void)
 	{
-		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR10);
-		EXTI->PR = pr;		// reset all existing requests
-		//(void) EXTI->PR;
-		stm32fxxx_pinirq(pr);
+		const uint_fast32_t mask = EXTI_IMR1_IM10;
+		const portholder_t prf = EXTI->FPR1 & mask;
+		EXTI->FPR1 = prf;		// reset all faling requests
+		const portholder_t prr = EXTI->RPR1 & mask;
+		EXTI->RPR1 = prr;		// reset all rising requests
+		stm32fxxx_pinirq(prf | prr);
 	}
 
 	void EXTI11_IRQHandler(void)
 	{
-		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR11);
-		EXTI->PR = pr;		// reset all existing requests
-		//(void) EXTI->PR;
-		stm32fxxx_pinirq(pr);
+		const uint_fast32_t mask = EXTI_IMR1_IM11;
+		const portholder_t prf = EXTI->FPR1 & mask;
+		EXTI->FPR1 = prf;		// reset all faling requests
+		const portholder_t prr = EXTI->RPR1 & mask;
+		EXTI->RPR1 = prr;		// reset all rising requests
+		stm32fxxx_pinirq(prf | prr);
 	}
 
 	void EXTI12_IRQHandler(void)
 	{
-		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR12);
-		EXTI->PR = pr;		// reset all existing requests
-		//(void) EXTI->PR;
-		stm32fxxx_pinirq(pr);
+		const uint_fast32_t mask = EXTI_IMR1_IM12;
+		const portholder_t prf = EXTI->FPR1 & mask;
+		EXTI->FPR1 = prf;		// reset all faling requests
+		const portholder_t prr = EXTI->RPR1 & mask;
+		EXTI->RPR1 = prr;		// reset all rising requests
+		stm32fxxx_pinirq(prf | prr);
 	}
 
 	void EXTI13_IRQHandler(void)
 	{
-		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR13);
-		EXTI->PR = pr;		// reset all existing requests
-		//(void) EXTI->PR;
-		stm32fxxx_pinirq(pr);
+		const uint_fast32_t mask = EXTI_IMR1_IM13;
+		const portholder_t prf = EXTI->FPR1 & mask;
+		EXTI->FPR1 = prf;		// reset all faling requests
+		const portholder_t prr = EXTI->RPR1 & mask;
+		EXTI->RPR1 = prr;		// reset all rising requests
+		stm32fxxx_pinirq(prf | prr);
 	}
 
 	void EXTI14_IRQHandler(void)
 	{
-		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR14);
-		EXTI->PR = pr;		// reset all existing requests
-		//(void) EXTI->PR;
-		stm32fxxx_pinirq(pr);
+		const uint_fast32_t mask = EXTI_IMR1_IM14;
+		const portholder_t prf = EXTI->FPR1 & mask;
+		EXTI->FPR1 = prf;		// reset all faling requests
+		const portholder_t prr = EXTI->RPR1 & mask;
+		EXTI->RPR1 = prr;		// reset all rising requests
+		stm32fxxx_pinirq(prf | prr);
 	}
 
 	void EXTI15_IRQHandler(void)
 	{
-		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR15);
-		EXTI->PR = pr;		// reset all existing requests
-		//(void) EXTI->PR;
-		stm32fxxx_pinirq(pr);
+		const uint_fast32_t mask = EXTI_IMR1_IM15;
+		const portholder_t prf = EXTI->FPR1 & mask;
+		EXTI->FPR1 = prf;		// reset all faling requests
+		const portholder_t prr = EXTI->RPR1 & mask;
+		EXTI->RPR1 = prr;		// reset all rising requests
+		stm32fxxx_pinirq(prf | prr);
 	}
-#endif
+
+#endif /* CPUSTYLE_STM32MP1 */
+
 #elif CPUSTYLE_STM32F
 
 	void
@@ -1402,29 +1463,6 @@ static RAMFUNC void spool_adcdonebundle(void)
 		}
 	}
 	#endif /* WITHELKEY */
-
-	/* прерывания от валколера при наличии в системе вложенных прерываний вызываются на уровне приоритета REALTINE */
-	static RAMFUNC void stm32fxxx_pinirq(portholder_t pr)
-	{
-	#if WITHELKEY && defined (ELKEY_BIT_LEFT) && defined (ELKEY_BIT_RIGHT)
-		if ((pr & (ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT)) != 0)
-		{
-			spool_elkeyinputsbundle();
-		}
-	#endif /* WITHELKEY && defined (ELKEY_BIT_LEFT) && defined (ELKEY_BIT_RIGHT) */
-	#if WITHENCODER && defined (ENCODER_BITS)
-		if ((pr & ENCODER_BITS) != 0)
-		{
-			spool_encinterrupt();	/* прерывание по изменению сигнала на входах от валкодера #1*/
-		}
-	#endif /* WITHENCODER && defined (ENCODER_BITS) */
-	#if WITHENCODER && defined (ENCODER2_BITS)
-		if ((pr & ENCODER2_BITS) != 0)
-		{
-			//spool_encinterrupt2();	/* прерывание по изменению сигнала на входах от валкодера #2*/
-		}
-	#endif /* WITHENCODER && ENCODER2_BITS */
-	}
 
 	#if CPUSTYLE_STM32L0XX
 

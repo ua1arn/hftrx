@@ -747,16 +747,18 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 				(gpio)->AFR [0] = ((gpio)->AFR [0] & ~ (lo * 0x0f)) | (lo * (afn)); \
 				(gpio)->AFR [1] = ((gpio)->AFR [1] & ~ (hi * 0x0f)) | (hi * (afn)); \
 			} while (0)
-		/* разрешение прерывания по изменению состояния указанных групп выводов */
-		static void
-		stm32mp1_pioX_onchangeinterrupt(portholder_t ipins,
-				portholder_t raise, portholder_t fall,
-				portholder_t portcode, uint32_t priority)
-		{
-			RCC->MP_APB3ENSETR |= RCC_MC_APB3ENSETR_SYSCFGEN;     // включить тактирование альтернативных функций
-			(void) RCC->MP_APB3ENSETR;
-			RCC->MP_APB3LPENSETR |= RCC_MC_APB3LPENSETR_SYSCFGLPEN;     // включить тактирование альтернативных функций
-			(void) RCC->MP_APB3LPENSETR;
+
+	/* разрешение прерывания по изменению состояния указанных групп выводов */
+	static void
+	stm32mp1_pioX_onchangeinterrupt(portholder_t ipins,
+			portholder_t raise, portholder_t fall,
+			portholder_t portcode, uint32_t priority)
+	{
+		// CPU1 = MPU and CPU2 = MCU
+		RCC->MP_APB3ENSETR |= RCC_MC_APB3ENSETR_SYSCFGEN;     // включить тактирование альтернативных функций
+		(void) RCC->MP_APB3ENSETR;
+		RCC->MP_APB3LPENSETR |= RCC_MC_APB3LPENSETR_SYSCFGLPEN;     // включить тактирование альтернативных функций
+		(void) RCC->MP_APB3LPENSETR;
 		//const portholder_t portcode = AFIO_EXTICR1_EXTI0_PB;	// PORT B
 		//RCC->APB2ENR |= RCC_APB2ENR_AFIOEN;     // включить тактирование альтернативных функций
 
@@ -797,8 +799,8 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 		EXTI->RTSR1 = (EXTI->RTSR1 & ~ ipins) | (ipins & raise);		// прерывание по нарастанию
 		EXTI->FTSR1 = (EXTI->FTSR1 & ~ ipins) | (ipins & fall);		// прерывание по спаду
 
-		////EXTI_D1->IMR1 |= ipins;		// разрешить прерывание
-#if 0
+		// CPU1 = MPU and CPU2 = MCU
+		EXTI->C1IMR1 |= ipins;		// разрешить прерывание
 
 		if ((ipins & EXTI_IMR1_IM0) != 0)
 			arm_hardware_set_handler(EXTI0_IRQn, EXTI0_IRQHandler, priority);
@@ -832,8 +834,9 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 			arm_hardware_set_handler(EXTI14_IRQn, EXTI14_IRQHandler, priority);
 		if ((ipins & EXTI_IMR1_IM15) != 0)
 			arm_hardware_set_handler(EXTI15_IRQn, EXTI15_IRQHandler, priority);
-#endif
-		}
+
+	}
+
 	/* программирвоание битов в регистрах управления GPIO, указанных в iomask, в конфигурацию CNF И режим MODE */
 	#elif \
 		CPUSTYLE_STM32H7XX || \
