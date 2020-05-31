@@ -1420,10 +1420,6 @@ static void display2_siglevel4(
 	int j = local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("%-+4d"), (int) (tracemax - UINT8_MAX));
 	(void) v;
 	const char * const labels [1] = { buff, };
-	if (strlen(buff) != 4)
-	{
-		PRINTF("j=%d, v=%d, tracemax=%d, buff='%s'\n", j, tracemax, tracemax, buff);
-	}
 	ASSERT(strlen(buff) == 4);
 	display2_text(x, y, labels, colors_1state, 0);
 #endif /* WITHIF4DSP */
@@ -1651,13 +1647,10 @@ static void display_time5(
 		(int) minute
 		);
 
-	const char * const labels [1] = { buff, };
-	//if (strlen(buff) != 5)
-	{
-	//	PRINTF("hour=%d, minute=%d, secounds=%d, buff='%s'\n", hour, minute, secounds, buff);
-	}
 	ASSERT(strlen(buff) == 5);
+	const char * const labels [1] = { buff, };
 	display2_text(x, y, labels, colors_1stateBlue, 0);
+
 #endif /* WITHNMEA */
 }
 
@@ -1675,7 +1668,7 @@ static void display2_datetime12(
 	uint_fast16_t year;
 	uint_fast8_t month, day;
 	uint_fast8_t hour, minute, secounds;
-	static const char months [13] [4] = 
+	static const char months [12] [4] =
 	{
 		"JAN",
 		"FEB",
