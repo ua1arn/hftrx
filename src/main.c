@@ -7776,9 +7776,9 @@ flagne_u32_cat(dualctl32_t * oldval, uint_fast32_t v, uint_fast8_t catindex)
 
 #else /* WITHCAT */
 
-#define FLAGNE_U8_CAT(a,b,c) flagne_u8(& (a)->potvalue, (b))
-#define FLAGNE_U16_CAT(a,b,c) flagne_u16(& (a)->potvalue, (b))
-#define FLAGNE_U32_CAT(a,b,c) flagne_u32(& (a)->potvalue, (b))
+#define FLAGNE_U8_CAT(a,b,c) flagne_u8(& (a)->value, (b))
+#define FLAGNE_U16_CAT(a,b,c) flagne_u16(& (a)->value, (b))
+#define FLAGNE_U32_CAT(a,b,c) flagne_u32(& (a)->value, (b))
 
 #endif /* WITHCAT */
 
