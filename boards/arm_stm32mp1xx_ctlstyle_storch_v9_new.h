@@ -66,7 +66,7 @@
 		#define PLL1DIVM	5	// ref1_ck = 12.8 MHz
 		//#define PLL1DIVN	50	// x25..x100: 12.8 * 50 = 640 MHz
 		#define PLL1DIVN	62	// x25..x100: 12.8 * 32 = 793.6 MHz
-		#define PLL1DIVP	1
+		#define PLL1DIVP	1	// MPU
 		#define PLL1DIVQ	2
 		#define PLL1DIVR	2
 
@@ -83,7 +83,7 @@
 		#define PLL2DIVN	61//41	// 12.8 * 41 = 524.8 MHz
 		#define PLL2DIVP	3//2	// div2=minimum PLL2 selected as AXI sub-system clock (pll2_p_ck)
 		#define PLL2DIVQ	2//1	// GPU clock divider
-		#define PLL2DIVR	3//1	// DDR clock divider
+		#define PLL2DIVR	2//1	// DDR clock divider
 #endif
 
 		// PLL3_800
