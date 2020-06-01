@@ -361,7 +361,10 @@ static void nau8822_initialize_fullduplex(uint_fast8_t master)
 
 static void nau8822_stop(void)
 {
+#if CODEC_TYPE_NAU8822_MASTER
+	// после RESET кодек при подаче MCLK формирует WS и BCLK... конфликт с выходами FPGA, если тактирование от неё.
 	nau8822_setreg(NAU8822_RESET, 0x00);	// RESET
+#endif /* CODEC_TYPE_NAU8822_MASTER */
 }
 
 static void nau8822_initialize_slave_fullduplex(void)
