@@ -5395,15 +5395,15 @@ display_bar(
 	{
 		if (i == wmark)
 		{
-			display_barcolumn(vpatternmax);
+			xpix = display_barcolumn(xpix, ypix, vpatternmax);
 			continue;
 		}
 #if (DSTYLE_G_X132_Y64 || DSTYLE_G_X128_Y64) && DSTYLE_UR3LMZMOD
-		display_barcolumn(vpattern);
+		xpix = display_barcolumn(vpattern);
 #elif DSTYLE_G_X64_Y32
-		display_barcolumn((i % 6) != 5 ? vpattern : vemptyp);
+		xpix = display_barcolumn(xpix, ypix, (i % 6) != 5 ? vpattern : vemptyp);
 #else
-		display_barcolumn((i % 2) == 0 ? vpattern : PATTERN_SPACE);
+		xpix = display_barcolumn(xpix, ypix, (i % 2) == 0 ? vpattern : PATTERN_SPACE);
 #endif
 	}
 
@@ -5411,15 +5411,15 @@ display_bar(
 	{
 		if (i == wmark)
 		{
-			display_barcolumn(vpatternmax);
+			xpix = display_barcolumn(xpix, ypix, vpatternmax);
 			continue;
 		}
 #if (DSTYLE_G_X132_Y64 || DSTYLE_G_X128_Y64) && DSTYLE_UR3LMZMOD
-		display_barcolumn(vemptyp);
+		xpix = display_barcolumn(xpix, ypix, vemptyp);
 #elif DSTYLE_G_X64_Y32
-		display_barcolumn((i % 6) == 5 ? vpattern : vemptyp);
+		xpix = display_barcolumn(xpix, ypix, (i % 6) == 5 ? vpattern : vemptyp);
 #else
-		display_barcolumn((i % 2) == 0 ? vemptyp : PATTERN_SPACE);
+		xpix = display_barcolumn(xpix, ypix, (i % 2) == 0 ? vemptyp : PATTERN_SPACE);
 #endif
 	}
 }
