@@ -69,6 +69,21 @@ power4(uint_fast8_t v)
 
 	return tablepow4 [v & 0xff];
 }
+
+// Перенос каждого бита в байте в позицию с увеличенным в 8 раза номером.
+static portholder_t
+power8(uint_fast8_t v)
+{
+	portholder_t r = 0;
+
+	r |= (v & (1U << 0)) ? (1UL << 0) : 0;
+	r |= (v & (1U << 1)) ? (1UL << 8) : 0;
+	r |= (v & (1U << 2)) ? (1UL << 16) : 0;
+	r |= (v & (1U << 3)) ? (1UL << 24) : 0;
+
+	return r;
+}
+
 #endif /* CPUSTYLE_STM32F || CPUSTYLE_STM32MP1 */
 
 #if CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
@@ -765,19 +780,24 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 
 		#if 1
 		{
-			const portholder_t bitpos0 = power4((ipins >> 0) & 0x0f);
+			//
+			const portholder_t bitpos0 = power8((ipins >> 0) & 0x0F);
+			// EXTI_EXTICR1: PZ[3]..PA[3], PZ[2]..PA[2], PZ[1]..PA[0], PZ[3]..PA[0],
 			EXTI->EXTICR [0] = (EXTI->EXTICR [0] & ~ (EXTI_EXTICR1_EXTI0 * bitpos0)) | (portcode * bitpos0);
 		}
 		{
-			const portholder_t bitpos1 = power4((ipins >> 4) & 0x0f);
+			const portholder_t bitpos1 = power8((ipins >> 4) & 0x0F);
+			// EXTI_EXTICR2: PZ[7]..PA[7], PZ[6]..PA[6], PZ[5]..PA[5], PZ[4]..PA[4],
 			EXTI->EXTICR [1] = (EXTI->EXTICR [1] & ~ (EXTI_EXTICR1_EXTI0 * bitpos1)) | (portcode * bitpos1);
 		}
 		{
-			const portholder_t bitpos2 = power4((ipins >> 8) & 0x0f);
+			const portholder_t bitpos2 = power8((ipins >> 8) & 0x0F);
+			// EXTI_EXTICR3: PZ[11]..PA[11], PZ[10]..PA[10], PZ[9]..PA[9], PZ[8]..PA[8],
 			EXTI->EXTICR [2] = (EXTI->EXTICR [2] & ~ (EXTI_EXTICR1_EXTI0 * bitpos2)) | (portcode * bitpos2);
 		}
 		{
-			const portholder_t bitpos3 = power4((ipins >> 12) & 0x0f);
+			const portholder_t bitpos3 = power8((ipins >> 12) & 0x0F);
+			// EXTI_EXTICR4: PZ[15]..PA[15], PZ[14]..PA[14], PZ[13]..PA[13], PZ[12]..PA[12],
 			EXTI->EXTICR [3] = (EXTI->EXTICR [3] & ~ (EXTI_EXTICR1_EXTI0 * bitpos3)) | (portcode * bitpos3);
 		}
 		#else
