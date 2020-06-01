@@ -151,6 +151,7 @@ volatile uint8_t * hwacc_getbufaddr_u8(
 	return & buffer [y * GXADJ(dx) + x];
 }
 
+#if LCDMODE_PIP_L8 || LCDMODE_MAIN_L8
 // Функция получает координаты и работает над буфером в горищонталтной ориентации.
 void
 hwacc_fillrect_u8(
@@ -182,7 +183,7 @@ hwacc_fillrect_u8(
 	while ((MDMA_CH->CCR & MDMA_CCR_EN_Msk) != 0)
 		;
 
-	MDMA_CH->CDAR = (uintptr_t) & buffer [row * GXADJ(dx) + col];
+	MDMA_CH->CDAR = (uintptr_t) colmain_mem_at(buffer, dx, dy, col, row); // dest address
 	MDMA_CH->CSAR = (uintptr_t) & tgcolor;
 	const uint_fast32_t tlen = mdma_tlen(w * PIXEL_SIZE, PIXEL_SIZE);
 	const uint_fast32_t sbus = mdma_getbus(MDMA_CH->CSAR);
@@ -254,6 +255,9 @@ hwacc_fillrect_u8(
 #endif
 }
 
+#endif /* LCDMODE_PIP_L8 || LCDMODE_MAIN_L8 */
+
+#if LCDMODE_PIP_RGB565 || LCDMODE_MAIN_RGB565
 // Функция получает координаты и работает над буфером в горищонталтной ориентации.
 void
 hwacc_fillrect_u16(
@@ -286,7 +290,7 @@ hwacc_fillrect_u16(
 	while ((MDMA_CH->CCR & MDMA_CCR_EN_Msk) != 0)
 		;
 
-	MDMA_CH->CDAR = (uintptr_t) & buffer [row * GXADJ(dx) + col];
+	MDMA_CH->CDAR = (uintptr_t) colmain_mem_at(buffer, dx, dy, col, row); // dest address
 	MDMA_CH->CSAR = (uintptr_t) & tgcolor;
 	const uint_fast32_t tlen = mdma_tlen(w * PIXEL_SIZE, PIXEL_SIZE);
 	const uint_fast32_t sbus = mdma_getbus(MDMA_CH->CSAR);
@@ -397,6 +401,9 @@ hwacc_fillrect_u16(
 #endif
 }
 
+#endif
+
+#if LCDMODE_PIP_L24 || LCDMODE_MAIN_L24
 // Функция получает координаты и работает над буфером в горищонталтной ориентации.
 void
 hwacc_fillrect_u24(
@@ -431,7 +438,7 @@ hwacc_fillrect_u24(
 	while ((MDMA_CH->CCR & MDMA_CCR_EN_Msk) != 0)
 		;
 
-	MDMA_CH->CDAR = (uintptr_t) & buffer [row * GXADJ(dx) + col];
+	MDMA_CH->CDAR = (uintptr_t) colmain_mem_at(buffer, dx, dy, col, row); // dest address
 	MDMA_CH->CSAR = (uintptr_t) & tgcolor;
 	const uint_fast32_t tlen = mdma_tlen(w * PIXEL_SIZE, PIXEL_SIZE);
 	const uint_fast32_t sbus = mdma_getbus(MDMA_CH->CSAR);
@@ -541,6 +548,7 @@ hwacc_fillrect_u24(
 
 #endif
 }
+#endif /* LCDMODE_PIP_L24 || LCDMODE_MAIN_L24 */
 
 #if WITHDMA2DHW
 
@@ -1288,7 +1296,6 @@ colmain_fillrect(
 
 #if LCDMODE_HORFILL
 
-	// TODO: bgcolor и hpattern пока игнорируются
 	#if LCDMODE_MAIN_L8
 		hwacc_fillrect_u8(buffer, dx, dy, x, y, w, h, fgcolor);
 	#elif LCDMODE_LTDC_L24
@@ -1299,7 +1306,6 @@ colmain_fillrect(
 
 #else /* LCDMODE_HORFILL */
 
-	// TODO: bgcolor и hpattern пока игнорируются
 	#if LCDMODE_MAIN_L8
 		hwacc_fillrect_u8(buffer, dy, dx, y, x, h, w, fgcolor);
 	#elif LCDMODE_LTDC_L24
