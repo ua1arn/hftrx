@@ -604,6 +604,7 @@ static USBD_StatusTypeDef USBD_UAC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 			break;
 
 		default:
+			// Other request targets
 			//TP();
 			//PRINTF(PSTR("X USBD_UAC_Setup: bRequest=%02X, wIndex=%04X, wLength=%04X, wValue=%04X (interfacev=%02X)\n"), req->bRequest, req->wIndex, req->wLength, req->wValue, interfacev);
 			break;
@@ -626,6 +627,8 @@ static USBD_StatusTypeDef USBD_UAC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 				switch (req->bRequest)
 				{
 				default:
+					TP();
+					PRINTF(PSTR("USBD_UAC_Setup: USB_REQ_TYPE_CLASS bRequest=%02X interfacev=%d, value=%d\n"), (unsigned) req->bRequest, (int) interfacev, (int) LO_BYTE(req->wValue));
 					break;
 				}
 				/* все запросы этого класса устройств */
@@ -680,6 +683,10 @@ static USBD_StatusTypeDef USBD_UAC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 					break;
 				}
 			}
+			break;
+
+		default:
+			// Other request targets
 			break;
 		}
 	}
