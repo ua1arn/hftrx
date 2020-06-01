@@ -70,6 +70,7 @@
         
 /****************************************************************************/
 /*               Vector table and reset entry                               */
+/* Table B1-3 The vector tables */
 /****************************************************************************/
 __Vectors:
    ldr pc, ResetAddr    /* Reset                 */
@@ -77,7 +78,7 @@ __Vectors:
    ldr pc, SWIAddr      /* Software interrupt    */
    ldr pc, PAbortAddr   /* Prefetch abort        */
    ldr pc, DAbortAddr   /* Data abort            */
-   ldr pc, ReservedAddr /* Reserved              */
+   ldr pc, HypAddr 		/* Entry to Hyp mode	 */
    ldr pc, IRQAddr      /* IRQ interrupt         */
    ldr pc, FIQAddr      /* FIQ interrupt         */
 
@@ -87,7 +88,7 @@ UndefAddr:     .word Undef_Handler
 SWIAddr:       .word SWI_Handler
 PAbortAddr:    .word PAbort_Handler
 DAbortAddr:    .word DAbort_Handler
-ReservedAddr:  .word 0
+HypAddr:  	   .word Hyp_Handler
 IRQAddr:       .word IRQHandlerNested
 FIQAddr:       .word FIQ_Handler
 

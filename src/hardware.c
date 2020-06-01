@@ -9478,6 +9478,13 @@ void FIQ_Handler(void)
 		;
 }
 
+void Hyp_Handler(void)
+{
+	debug_printf_P(PSTR("Hyp_Handler trapped.\n"));
+	for (;;)
+		;
+}
+
 static void arm_hardware_VFPEnable(void)
 {
 	const uint32_t VFPEnable = 0x40000000uL;
