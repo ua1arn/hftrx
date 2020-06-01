@@ -365,14 +365,7 @@ display_fillrect(
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
 
-	if (sizeof * buffer == 1 && x == 0 && y == 0 && w == dx && h == dy)
-	{
-		memset(buffer, color, GXSIZE(dx, dy));
-	}
-	else
-	{
-		colmain_fillrect(buffer, dx, dy, x, y, w, h, color);
-	}
+	colmain_fillrect(buffer, dx, dy, x, y, w, h, color);
 }
 
 #endif /* LCDMODE_LTDC */
