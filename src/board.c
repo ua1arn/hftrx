@@ -70,15 +70,17 @@ static uint_fast8_t 	glob_mikemute;		// отключить аудиовход б
 static uint_fast8_t 	glob_vox;
 #if WITHISBOOTLOADER
 	static uint_fast8_t 	glob_bglight = WITHLCDBACKLIGHTMIN;	// включаем дисплей для работы в тествх в hightests()
-#else /* WITHISBOOTLOADER */
+#elif WITHLCDBACKLIGHT
 	static uint_fast8_t 	glob_bglight = WITHLCDBACKLIGHTMAX;	// включаем дисплей для работы в тествх в hightests()
+#else /* WITHISBOOTLOADER */
+	static uint_fast8_t 	glob_bglight;	// включаем дисплей для работы в тествх в hightests()
 #endif /* WITHISBOOTLOADER */
 #if WITHKBDBACKLIGHT
 static uint_fast8_t 	glob_kblight = 1;
 #endif /* WITHKBDBACKLIGHT */
-//#if WITHKBDBACKLIGHT
+//#if WITHKEYBOARD
 static uint_fast8_t 	glob_poweron = 1;
-//#endif /* WITHKBDBACKLIGHT */
+//#endif /* WITHKEYBOARD */
 
 static uint_fast8_t		glob_fanflag;	/* включение вентилятора */
 #if WITHDCDCFREQCTL
