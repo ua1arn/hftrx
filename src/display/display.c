@@ -1416,6 +1416,12 @@ void colpip_to_main(
 	ASSERT(0);
 }
 
+
+// Координаты в пикселях
+void display_plotfrom(uint_fast16_t x, uint_fast16_t y)
+{
+}
+
 #elif LCDMODE_LTDC
 
 // Выдать буфер на дисплей. Функции бывают только для не L8 режимов
@@ -1443,6 +1449,11 @@ void colpip_to_main(
 		buffer,
 		dy, DIM_Y - dy, dx);	// w, t, h
 #endif /* LCDMODE_HORFILL */
+}
+
+// Координаты в пикселях
+void display_plotfrom(uint_fast16_t x, uint_fast16_t y)
+{
 }
 
 #else

@@ -1676,10 +1676,6 @@ void colpip_plot(
 #endif /* LCDMODE_HORFILL */
 }
 
-// Координаты в пикселях
-void display_plotfrom(uint_fast16_t x, uint_fast16_t y)
-{
-}
 
 #if SMALLCHARH3
 
