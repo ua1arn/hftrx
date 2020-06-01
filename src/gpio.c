@@ -809,7 +809,7 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 				continue;	// Эти биты не трогаем
 
 			const div_t d = div(i, 4);
-			const portholder_t bitpos = (portholder_t) 1 << (d.rem * 4);
+			const portholder_t bitpos = (portholder_t) 1 << (d.rem * 8);
 			const portholder_t bitmask = SYSCFG_EXTICR1_EXTI0 * bitpos;
 			const portholder_t bitvalue = portcode * bitpos;
 			AFIO->EXTICR [d.quot] = (SYSCFG->EXTICR [d.quot] & ~ bitmask) | bitvalue;
