@@ -3143,17 +3143,21 @@ HAL_StatusTypeDef USB_CoreInit(USB_OTG_GlobalTypeDef * USBx, const USB_OTG_CfgTy
 	// Use P1CLOCK_FREQ
 	const uint_fast32_t bwait = ulmin32(ulmax32(calcdivround2(P1CLOCK_FREQ, 15000000uL), 2) - 2, 63);
 	USBx->BUSWAIT = (bwait << USB_BUSWAIT_BWAIT_SHIFT) & USB_BUSWAIT_BWAIT;	// 5 cycles = 75 nS minimum
+	(void) USBx->BUSWAIT;
 
 	USBx->SUSPMODE &= ~ USB_SUSPMODE_SUSPM;	// SUSPM 0: The clock supplied to this module is stopped.
+	(void) USBx->SUSPMODE;
 
 	// This setting shared for USB200 and USB201
 	SYSCFG0_0 = (SYSCFG0_0 & ~ (USB_SYSCFG_UPLLE | USB_SYSCFG_UCKSEL)) |
 		1 * USB_SYSCFG_UPLLE |	// UPLLE 1: Enables operation of the internal PLL.
 		1 * USB_SYSCFG_UCKSEL |	// UCKSEL 1: The 12-MHz EXTAL clock is selected.
 		0;
+	(void) SYSCFG0_0;
 	HARDWARE_DELAY_MS(2);	// required 1 ms delay - see R01UH0437EJ0200 Rev.2.00 28.4.1 System Control and Oscillation Control
 
 	USBx->SUSPMODE |= USB_SUSPMODE_SUSPM;	// SUSPM 1: The clock supplied to this module is enabled.
+	(void) USBx->SUSPMODE;
 
 	return HAL_OK;
 }
@@ -3568,16 +3572,21 @@ HAL_StatusTypeDef USB_CoreInit(USB_OTG_GlobalTypeDef * USBx, const USB_OTG_CfgTy
 {
   if (cfg->phy_itface == USB_OTG_ULPI_PHY)
   {
-    USBx->GCCFG &= ~(USB_OTG_GCCFG_PWRDWN);
+    USBx->GCCFG &= ~ (USB_OTG_GCCFG_PWRDWN);
+	(void) USBx->GCCFG;
 
     /* Init The ULPI Interface */
     USBx->GUSBCFG &= ~(USB_OTG_GUSBCFG_TSDPS | USB_OTG_GUSBCFG_ULPIFSLS | USB_OTG_GUSBCFG_PHYSEL);
+	(void) USBx->GUSBCFG;
 
     /* Select vbus source */
     USBx->GUSBCFG &= ~(USB_OTG_GUSBCFG_ULPIEVBUSD | USB_OTG_GUSBCFG_ULPIEVBUSI);
+	(void) USBx->GUSBCFG;
+
     if(cfg->use_external_vbus == USB_ENABLE)
     {
-      USBx->GUSBCFG |= USB_OTG_GUSBCFG_ULPIEVBUSD;
+		USBx->GUSBCFG |= USB_OTG_GUSBCFG_ULPIEVBUSD;
+		(void) USBx->GUSBCFG;
     }
     /* Reset after a PHY select  */
     USB_CoreReset(USBx);
@@ -3590,16 +3599,22 @@ HAL_StatusTypeDef USB_CoreInit(USB_OTG_GlobalTypeDef * USBx, const USB_OTG_CfgTy
 		//USBx->GUSBCFG &= ~ USB_OTG_GUSBCFG_PHYSEL_Msk;	// 0: USB 2.0 internal UTMI high-speed PHY.
 
 		USBx->GCCFG &= ~(USB_OTG_GCCFG_PWRDWN);
+		(void) USBx->GCCFG;
 
 		/* Init The UTMI Interface */
 		USBx->GUSBCFG &= ~(USB_OTG_GUSBCFG_TSDPS | USB_OTG_GUSBCFG_ULPIFSLS | USB_OTG_GUSBCFG_PHYSEL);
+		(void) USBx->GUSBCFG;
 
 		/* Select vbus source */
 		USBx->GUSBCFG &= ~(USB_OTG_GUSBCFG_ULPIEVBUSD | USB_OTG_GUSBCFG_ULPIEVBUSI);
+		(void) USBx->GUSBCFG;
 
 		/* Select UTMI Interace */
 		USBx->GUSBCFG &= ~ USB_OTG_GUSBCFG_ULPI_UTMI_SEL;
+		(void) USBx->GUSBCFG;
+
 		USBx->GCCFG |= USB_OTG_GCCFG_PHYHSEN;
+		(void) USBx->GCCFG;
 
 		/* Enables control of a High Speed USB PHY */
 		USB_HS_PHYCInit(USBx);
@@ -3607,6 +3622,7 @@ HAL_StatusTypeDef USB_CoreInit(USB_OTG_GlobalTypeDef * USBx, const USB_OTG_CfgTy
 		if(cfg->use_external_vbus == USB_ENABLE)
 		{
 			USBx->GUSBCFG |= USB_OTG_GUSBCFG_ULPIEVBUSD;
+			(void) USBx->GUSBCFG;
 		}
 		/* Reset after a PHY select  */
 		USB_CoreReset(USBx);
@@ -3618,12 +3634,14 @@ HAL_StatusTypeDef USB_CoreInit(USB_OTG_GlobalTypeDef * USBx, const USB_OTG_CfgTy
   {
     /* Select FS Embedded PHY */
     USBx->GUSBCFG |= USB_OTG_GUSBCFG_PHYSEL;
+	(void) USBx->GUSBCFG;
 
     /* Reset after a PHY select and set Host mode */
     USB_CoreReset(USBx);
 
     /* Deactivate the power down*/
     USBx->GCCFG = USB_OTG_GCCFG_PWRDWN;
+	(void) USBx->GCCFG;
   }
 
 	// xyz
@@ -3645,6 +3663,7 @@ HAL_StatusTypeDef USB_CoreInit(USB_OTG_GlobalTypeDef * USBx, const USB_OTG_CfgTy
 		#endif /* CPUSTYLE_STM32H7XX */
 			USB_OTG_GAHBCFG_DMAEN |
 			0;
+		(void) USBx->GAHBCFG;
 	}
 
 	return HAL_OK;
@@ -3658,8 +3677,10 @@ HAL_StatusTypeDef USB_CoreInit(USB_OTG_GlobalTypeDef * USBx, const USB_OTG_CfgTy
   */
 HAL_StatusTypeDef USB_EnableGlobalInt(USB_OTG_GlobalTypeDef *USBx)
 {
-  USBx->GAHBCFG |= USB_OTG_GAHBCFG_GINT;
-  return HAL_OK;
+	USBx->GAHBCFG |= USB_OTG_GAHBCFG_GINT;
+	(void) USBx->GAHBCFG;
+
+	return HAL_OK;
 }
 
 
@@ -3671,8 +3692,10 @@ HAL_StatusTypeDef USB_EnableGlobalInt(USB_OTG_GlobalTypeDef *USBx)
 */
 HAL_StatusTypeDef USB_DisableGlobalInt(USB_OTG_GlobalTypeDef *USBx)
 {
-  USBx->GAHBCFG &= ~ USB_OTG_GAHBCFG_GINT;
-  return HAL_OK;
+	USBx->GAHBCFG &= ~ USB_OTG_GAHBCFG_GINT;
+	(void) USBx->GAHBCFG;
+
+	return HAL_OK;
 }
 
 /**
@@ -3687,17 +3710,20 @@ HAL_StatusTypeDef USB_DisableGlobalInt(USB_OTG_GlobalTypeDef *USBx)
   */
 HAL_StatusTypeDef USB_SetCurrentMode(USB_OTG_GlobalTypeDef *USBx, USB_OTG_ModeTypeDef mode)
 {
-  USBx->GUSBCFG &= ~ (USB_OTG_GUSBCFG_FHMOD | USB_OTG_GUSBCFG_FDMOD);
+	USBx->GUSBCFG &= ~ (USB_OTG_GUSBCFG_FHMOD | USB_OTG_GUSBCFG_FDMOD);
+	(void) USBx->GUSBCFG;
 
-  if (mode == USB_OTG_HOST_MODE)
-  {
-    USBx->GUSBCFG |= USB_OTG_GUSBCFG_FHMOD;
-  }
-  else if (mode == USB_OTG_DEVICE_MODE)
-  {
-    USBx->GUSBCFG |= USB_OTG_GUSBCFG_FDMOD;
-  }
-  HARDWARE_DELAY_MS(50);
+	if (mode == USB_OTG_HOST_MODE)
+	{
+		USBx->GUSBCFG |= USB_OTG_GUSBCFG_FHMOD;
+		(void) USBx->GUSBCFG;
+	}
+	else if (mode == USB_OTG_DEVICE_MODE)
+	{
+		USBx->GUSBCFG |= USB_OTG_GUSBCFG_FDMOD;
+		(void) USBx->GUSBCFG;
+	}
+	HARDWARE_DELAY_MS(50);
 
   return HAL_OK;
 }
@@ -3723,14 +3749,18 @@ HAL_StatusTypeDef USB_DevInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgType
 	{
 		/* Deactivate VBUS Sensing B */
 		USBx->GCCFG &= ~ USB_OTG_GCCFG_VBDEN;
+		(void) USBx->GCCFG;
 
 		/* B-peripheral session valid override enable*/
 		USBx->GOTGCTL |= USB_OTG_GOTGCTL_BVALOEN;
+		(void) USBx->GOTGCTL;
 		USBx->GOTGCTL |= USB_OTG_GOTGCTL_BVALOVAL;
+		(void) USBx->GOTGCTL;
 	}
 	else
 	{
 		USBx->GCCFG |= USB_OTG_GCCFG_VBDEN;
+		(void) USBx->GCCFG;
 	}
 
 	#else
@@ -5051,6 +5081,7 @@ uint32_t USB_ReadDevInEPInterrupt (USB_OTG_GlobalTypeDef *USBx, uint_fast8_t epn
 void  USB_ClearInterrupts (USB_OTG_GlobalTypeDef *USBx, uint32_t interrupt)
 {
   USBx->GINTSTS |= interrupt;
+  (void) USBx->GINTSTS;
 }
 
 /**
@@ -5076,12 +5107,15 @@ HAL_StatusTypeDef  USB_ActivateSetup (USB_OTG_GlobalTypeDef *USBx)
 {
 	/* Set the MPS of the IN EP based on the enumeration speed */
 	USBx_INEP(0)->DIEPCTL &= ~ USB_OTG_DIEPCTL_MPSIZ;	// 64 bytes = code 0
+	(void) USBx_INEP(0)->DIEPCTL;
 
 	if ((USBx_DEVICE->DSTS & USB_OTG_DSTS_ENUMSPD) == DSTS_ENUMSPD_LS_PHY_6MHZ)
 	{
 		USBx_INEP(0)->DIEPCTL |= (DEP0CTL_MPS_8 << USB_OTG_DIEPCTL_MPSIZ_Pos);	// 8 bytes = code 3
+		(void) USBx_INEP(0)->DIEPCTL;
 	}
 	USBx_DEVICE->DCTL |= USB_OTG_DCTL_CGINAK;
+	(void) USBx_DEVICE->DCTL;
 
 	return HAL_OK;
 }
@@ -5103,16 +5137,20 @@ HAL_StatusTypeDef USB_EP0_OutStart(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t dma
 	USBx_OUTEP(0)->DOEPTSIZ |= USB_OTG_DOEPTSIZ_PKTCNT & (1 << USB_OTG_DOEPTSIZ_PKTCNT_Pos);
 	USBx_OUTEP(0)->DOEPTSIZ |= USB_OTG_DOEPTSIZ_XFRSIZ & ((3 * 8) << USB_OTG_DOEPTSIZ_XFRSIZ_Pos);
 	USBx_OUTEP(0)->DOEPTSIZ |= USB_OTG_DOEPTSIZ_STUPCNT;
+	(void) USBx_OUTEP(0)->DOEPTSIZ;
 
 	if (dma == USB_ENABLE)
 	{
 		arm_hardware_flush_invalidate((uintptr_t) psetup, 4 * 12);	// need
 		USBx_OUTEP(0)->DOEPDMA = (uint32_t) psetup;
+		(void) USBx_OUTEP(0)->DOEPDMA;
+
 		/* EP enable */
 		USBx_OUTEP(0)->DOEPCTL =
 			USB_OTG_DOEPCTL_EPENA |
 			USB_OTG_DOEPCTL_USBAEP |
 			0;
+		(void) USBx_OUTEP(0)->DOEPCTL;
 	}
 
 	return HAL_OK;
@@ -5141,6 +5179,7 @@ HAL_StatusTypeDef USB_CoreReset(USB_OTG_GlobalTypeDef *USBx)
   /* Core Soft Reset */
   count = 0;
   USBx->GRSTCTL |= USB_OTG_GRSTCTL_CSRST;
+  (void) USBx->GRSTCTL;
 
   do
   {
@@ -5174,21 +5213,27 @@ HAL_StatusTypeDef USB_HostInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgTyp
     defined(STM32F412Rx) || defined(STM32F412Cx)
 
 	USBx->GCCFG |= USB_OTG_GCCFG_VBDEN;
+	(void) USBx->GCCFG;
 
 #else
 	USBx->GCCFG &=~ (USB_OTG_GCCFG_VBUSASEN);
+	(void) USBx->GCCFG;
 	USBx->GCCFG &=~ (USB_OTG_GCCFG_VBUSBSEN);
+	(void) USBx->GCCFG;
 	USBx->GCCFG |= USB_OTG_GCCFG_NOVBUSSENS;
+	(void) USBx->GCCFG;
 #endif /* STM32F446xx || STM32F469xx || STM32F479xx || STM32F412Zx || STM32F412Rx || STM32F412Vx || STM32F412Cx */
 
 	/* Disable the FS/LS support mode only */
 	if ((cfg->pcd_speed == PCD_SPEED_FULL) && (USBx != USB_OTG_FS))
 	{
 		USBx_HOST->HCFG |= USB_OTG_HCFG_FSLSS;
+		(void) USBx_HOST->HCFG;
 	}
 	else
 	{
 		USBx_HOST->HCFG &= ~ (USB_OTG_HCFG_FSLSS);
+		(void) USBx_HOST->HCFG;
 	}
 
 	/* Make sure the FIFOs are flushed. */
@@ -5199,7 +5244,9 @@ HAL_StatusTypeDef USB_HostInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgTyp
 	for (i = 0; i < cfg->Host_channels; i++)
 	{
 		USBx_HC(i)->HCINT = 0xFFFFFFFF;
+		(void) USBx_HC(i)->HCINT;
 		USBx_HC(i)->HCINTMSK = 0;
+		(void) USBx_HC(i)->HCINTMSK;
 	}
 
 	/* Enable VBUS driving */
