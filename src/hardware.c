@@ -11200,22 +11200,71 @@ M_SIZE_IO_2     EQU     2550            ; [Area11] I/O area 2
 ;===================================================================
 
   */
+#define APval 		0x03	/* Configure for full read/write access in all modes */
+#define DOMAINval	0x0F
+#define SECTIONval	0x02
+
+/* Table B3-10 TEX, C, and B encodings when TRE == 0 */
+#define TEXval_STGORD		0x00	/* Strongly-ordered */
+#define Bval_STGORD			0x00	/* Strongly-ordered */
+#define Cval_STGORD			0x00	/* Strongly-ordered */
+
+#define TEXval_WBCACHE		0x01	/* Outer and Inner Write-Back, Write-Allocate */
+#define Bval_WBCACHE		0x01	/* Outer and Inner Write-Back, Write-Allocate */
+#define Cval_WBCACHE		0x01	/* Outer and Inner Write-Back, Write-Allocate */
+
+#define TEXval_NOCACHE		0x01	/* Outer and Inner Non-cacheable */
+#define Bval_NOCACHE		0x00	/* Outer and Inner Non-cacheable */
+#define Cval_NOCACHE		0x00	/* Outer and Inner Non-cacheable */
+
+#define TEXval_DEVICE		0x02	/* Non-shareable Device */
+#define Bval_DEVICE			0x00	/* Non-shareable Device */
+#define Cval_DEVICE			0x00	/* Non-shareable Device */
+
 // See B3.5.2 in DDI0406C_C_arm_architecture_reference_manual.pdf
 
 //; setting for Strongly-ordered memory
 //#define	TTB_PARA_STRGLY             0b_0000_0000_1101_1110_0010
+// not used
 #define	TTB_PARA_STRGLY \
 	( \
-		0x00DE2uL | \
+		/*0x00DE2uL | */ \
+		SECTIONval * (1uL << 0) |	/* 0b10, Section or Supersection */ \
+		Bval_STGORD * (1uL << 2) |	/* B */ \
+		Cval_STGORD * (1uL << 3) |	/* C */ \
+		0 * (1uL << 4) |	/* XN The Execute-never bit. */ \
+		DOMAINval * (1uL << 5) |	/* DOMAIN */ \
+		0 * (1uL << 9) |	/* implementation defined */ \
+		((APval >> 0) & 0x03) * (1uL << 10) |	/* AP [1..0] */ \
+		TEXval_STGORD * (1uL << 12) |	/* TEX */ \
+		((APval >> 2) & 0x01) * (1uL << 15) |	/* AP[2] */ \
+		0 * (1uL << 16) |	/* S */ \
+		0 * (1uL << 17) |	/* nG */ \
+		0 * (1uL << 18) |	/* 0 */ \
+		0 * (1uL << 19) |	/* NS */ \
 		0 \
 	)
 
 
 //; setting for Outer and inner not cache normal memory
 //#define	TTB_PARA_NORMAL_NOT_CACHE   0b_0000_0001_1101_1110_0010
+// not used
 #define	TTB_PARA_NORMAL_NOT_CACHE \
 	( \
-		0x01DE2uL | \
+		/*0x01DE2uL | */ \
+		SECTIONval * (1uL << 0) |	/* 0b10, Section or Supersection */ \
+		Bval_NOCACHE * (1uL << 2) |	/* B */ \
+		Cval_NOCACHE * (1uL << 3) |	/* C */ \
+		0 * (1uL << 4) |	/* XN The Execute-never bit. */ \
+		DOMAINval * (1uL << 5) |	/* DOMAIN */ \
+		0 * (1uL << 9) |	/* implementation defined */ \
+		((APval >> 0) & 0x03) * (1uL << 10) |	/* AP [1..0] */ \
+		TEXval_NOCACHE * (1uL << 12) |	/* TEX */ \
+		((APval >> 2) & 0x01) * (1uL << 15) |	/* AP[2] */ \
+		0 * (1uL << 16) |	/* S */ \
+		0 * (1uL << 17) |	/* nG */ \
+		0 * (1uL << 18) |	/* 0 */ \
+		0 * (1uL << 19) |	/* NS */ \
 		0 \
 	)
 
@@ -11223,12 +11272,45 @@ M_SIZE_IO_2     EQU     2550            ; [Area11] I/O area 2
 //#define	TTB_PARA_NORMAL_CACHE       0b_0000_0001_1101_1110_1110
 #define	TTB_PARA_NORMAL_CACHE \
 	( \
-		0x01DEEuL | \
+		/*0x01DEEuL | */ \
+		SECTIONval * (1uL << 0) |	/* 0b10, Section or Supersection */ \
+		Bval_WBCACHE * (1uL << 2) |	/* B */ \
+		Cval_WBCACHE * (1uL << 3) |	/* C */ \
+		0 * (1uL << 4) |	/* XN The Execute-never bit. */ \
+		DOMAINval * (1uL << 5) |	/* DOMAIN */ \
+		0 * (1uL << 9) |	/* implementation defined */ \
+		((APval >> 0) & 0x03) * (1uL << 10) |	/* AP [1..0] */ \
+		TEXval_WBCACHE * (1uL << 12) |	/* TEX */ \
+		((APval >> 2) & 0x01) * (1uL << 15) |	/* AP[2] */ \
+		0 * (1uL << 16) |	/* S */ \
+		0 * (1uL << 17) |	/* nG */ \
+		0 * (1uL << 18) |	/* 0 */ \
+		0 * (1uL << 19) |	/* NS */ \
+		0 \
+	)
+
+#define	TTB_PARA_NORMAL_DEVICE \
+	( \
+		/*0x01DEEuL | */ \
+		SECTIONval * (1uL << 0) |	/* 0b10, Section or Supersection */ \
+		Bval_DEVICE * (1uL << 2) |	/* B */ \
+		Cval_DEVICE * (1uL << 3) |	/* C */ \
+		0 * (1uL << 4) |	/* XN The Execute-never bit. */ \
+		DOMAINval * (1uL << 5) |	/* DOMAIN */ \
+		0 * (1uL << 9) |	/* implementation defined */ \
+		((APval >> 0) & 0x03) * (1uL << 10) |	/* AP [1..0] */ \
+		TEXval_DEVICE * (1uL << 12) |	/* TEX */ \
+		((APval >> 2) & 0x01) * (1uL << 15) |	/* AP[2] */ \
+		0 * (1uL << 16) |	/* S */ \
+		0 * (1uL << 17) |	/* nG */ \
+		0 * (1uL << 18) |	/* 0 */ \
+		0 * (1uL << 19) |	/* NS */ \
 		0 \
 	)
 
 #define	TTB_PARA_NO_ACCESS \
 	( \
+		0x00 * (1uL << 0) |	/* 0b00, Invalid */ \
 		0 \
 	)
 
@@ -11240,8 +11322,8 @@ ttb_accessbits(uintptr_t a)
 
 #if CPUSTYLE_R7S721020
 
-	if (a == 0x00000000uL)
-		return addrbase | TTB_PARA_NO_ACCESS;		// NULL pointers access trap
+//	if (a == 0x00000000uL)
+//		return addrbase | TTB_PARA_NO_ACCESS;		// NULL pointers access trap
 
 	if (a >= 0x18000000uL && a < 0x20000000uL)			//
 		return addrbase | TTB_PARA_NORMAL_CACHE;
@@ -11250,28 +11332,36 @@ ttb_accessbits(uintptr_t a)
 	if (a >= 0x20000000uL && a < 0x20A00000uL)			// up to 10 MB
 		return addrbase | TTB_PARA_NORMAL_CACHE;
 
+	return addrbase | TTB_PARA_NORMAL_DEVICE; //TTB_PARA_STRGLY;
+
 #elif CPUSTYLE_STM32MP1
 
 	if (a >= 0x00000000uL && a < 0x10000000uL)			// BOOT
 		return addrbase | TTB_PARA_NO_ACCESS;			// NULL pointers access trap
 
-	if (a >= 0x10000000uL && a < 0x20000000uL)			// SRAMs ??????
-		return addrbase | TTB_PARA_NORMAL_CACHE;
 	if (a >= 0x20000000uL && a < 0x30000000uL)			// SYSRAM
 		return addrbase | TTB_PARA_NORMAL_CACHE;
-	if (a >= 0x30000000uL && a < 0x40000000uL)			// RAM aliases - present
+
+	if (a >= 0x40000000uL && a < 0x60000000uL)			//  peripherials 1, peripherials 2
+		return addrbase | TTB_PARA_NORMAL_DEVICE;
+	if (a >= 0xA0000000uL && a < 0xC0000000uL)			//  GIC
+		return addrbase | TTB_PARA_NORMAL_DEVICE;
+	if (a >= 0xE0000000uL)								//  DEBUG
+		return addrbase | TTB_PARA_NORMAL_DEVICE;
+
+	if (a >= 0x70000000uL && a < 0xA0000000uL)			//  QUADSPI, FMC NAND, ...
 		return addrbase | TTB_PARA_NORMAL_CACHE;
-	if (a >= 0x60000000uL && a < 0xA0000000uL)			//  FMC, QUADSPI, NOR, ...
+	if (a >= 0x60000000uL && a < 0x70000000uL)			//  FMC NOR
 		return addrbase | TTB_PARA_NORMAL_CACHE;
+
 	if (a >= 0xC0000000uL && a < 0xE0000000uL)			// DDR memory
 		return addrbase | TTB_PARA_NORMAL_CACHE;
-/*
-	if (a >= 0xA0000000uL && a < 0xC0000000uL)			// memory
-		return addrbase | TTB_PARA_NORMAL_CACHE;
-*/
+
+	return addrbase | TTB_PARA_NO_ACCESS;
+
 #endif
 
-	return addrbase | TTB_PARA_STRGLY;
+	return addrbase | TTB_PARA_NO_ACCESS; //TTB_PARA_STRGLY;
 }
 
 static void FLASHMEMINITFUNC
@@ -11307,6 +11397,15 @@ ttb_initialize(uint32_t (* accessbits)(uintptr_t a))
 	__ISB();
 #else
 	//CP15_writeTTBCR(0);
+	   /* Set location of level 1 page table
+	    ; 31:14 - Translation table base addr (31:14-TTBCR.N, TTBCR.N is 0 out of reset)
+	    ; 13:7  - 0x0
+	    ; 6     - IRGN[0] 0x1  (Inner WB WA)
+	    ; 5     - NOS     0x0  (Non-shared)
+	    ; 4:3   - RGN     0x01 (Outer WB WA)
+	    ; 2     - IMP     0x0  (Implementation Defined)
+	    ; 1     - S       0x0  (Non-shared)
+	    ; 0     - IRGN[1] 0x0  (Inner WB WA) */
 	__set_TTBR0((unsigned int) tlbbase | 0x48);	// TTBR0
 	//CP15_writeTTB1((unsigned int) tlbbase | 0x48);	// TTBR1
 	  __ISB();
@@ -12122,6 +12221,11 @@ cpu_tms320f2833x_flash_waitstates(uint_fast8_t flashws, uint_fast8_t otpws)
 // Вызывается из main
 void cpu_initialize(void)
 {
+//	PRINTF("TTB_PARA_NORMAL_DEVICE=%08lX (xxx)\n", (unsigned long) TTB_PARA_NORMAL_DEVICE);
+//	PRINTF("TTB_PARA_STRGLY=%08lX (0x00DE2)\n", (unsigned long) TTB_PARA_STRGLY);
+//	PRINTF("TTB_PARA_NORMAL_CACHE=%08lX (0x01DEEuL)\n", (unsigned long) TTB_PARA_NORMAL_CACHE);
+//	PRINTF("TTB_PARA_NORMAL_NOT_CACHE=%08lX (0x01DE2uL)\n", (unsigned long) TTB_PARA_NORMAL_NOT_CACHE);
+
 	//PRINTF("cpu_initialize\n");
 #if CPUSTYLE_STM32F1XX
 
