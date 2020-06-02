@@ -602,9 +602,9 @@ void buffers_initialize(void)
 
 	#if WITHUSBUAC
 		/* буферы требуются для ресэмплера */
-		static RAM_D2 voice16_t voicesarray16 [228];
+		static ALIGNX_BEGIN RAM_D2 voice16_t voicesarray16 [228] ALIGNX_END;
 	#else /* WITHUSBUAC */
-		static RAM_D2 voice16_t voicesarray16 [32];
+		static ALIGNX_BEGIN RAM_D2 voice16_t voicesarray16 [32] ALIGNX_END;
 	#endif /* WITHUSBUAC */
 
 	#if WITHUSBUACOUT
@@ -679,7 +679,7 @@ void buffers_initialize(void)
 
 #endif /* WITHUSBUACIN */
 
-	static RAM_D2 voice32tx_t voicesarray32tx [(DMABUFFSIZE32RX / DMABUFSTEP32RX) / (DMABUFFSIZE32TX / DMABUFSTEP32TX) + 4];
+	static ALIGNX_BEGIN RAM_D2 voice32tx_t voicesarray32tx [(DMABUFFSIZE32RX / DMABUFSTEP32RX) / (DMABUFFSIZE32TX / DMABUFSTEP32TX) + 4] ALIGNX_END;
 
 	InitializeListHead2(& voicesready32tx);	// список для выдачи на ЦАП
 	InitializeListHead2(& voicesfree32tx);	// Незаполненные
@@ -689,7 +689,7 @@ void buffers_initialize(void)
 		InsertHeadList2(& voicesfree32tx, & p->item);
 	}
 
-	static RAM_D2 voice32rx_t voicesarray32rx [6];	// без WFM надо 2
+    static ALIGNX_BEGIN RAM_D2 voice32rx_t voicesarray32rx [6] ALIGNX_END;	// без WFM надо 2
 
 	InitializeListHead2(& voicesfree32rx);	// Незаполненные
 	for (i = 0; i < (sizeof voicesarray32rx / sizeof voicesarray32rx [0]); ++ i)

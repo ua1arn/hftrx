@@ -238,6 +238,10 @@ static portholder_t stm32xxx_i2scfgr_afcodec(void)
 		} \
 	} while (0)
 
+
+// формируется строка вроде такой:
+// DMAERR(DMA1, DMA1_Stream3, LISR, LIFCR, DMA_LISR_TEIF3, DMA_LIFCR_CTEIF3);
+
 #define HANDLEERRORS(d, s, hl) do { \
 		DMAERR(DMA ## d, DMA ## d ## _Stream ## s, hl ## ISR, hl ## IFCR, DMA_ ## hl ## ISR_TEIF ## s, DMA_ ## hl ## IFCR_CTEIF ## s); /* TE */ \
 		DMAERR(DMA ## d, DMA ## d ## _Stream ## s, hl ## ISR, hl ## IFCR, DMA_ ## hl ## ISR_DMEIF ## s, DMA_ ## hl ## IFCR_CDMEIF ## s); /* DME */ \
@@ -1496,8 +1500,8 @@ static void DMA_SAI1_A_TX_initialize(void)
 		1 * DMA_SxCR_DBM | // double buffer mode seelcted
 		0;
 
-	DMA2->LIFCR = DMA_LISR_TCIF1;	// Clear TC interrupt flag
-	DMA2_Stream1->CR |= DMA_SxCR_TCIE;	// Разрешаем прерывания от DMA
+	DMA2->LIFCR = DMA_LISR_TCIF1 | DMA_LISR_TEIF1;	// Clear TC interrupt flag
+	DMA2_Stream1->CR |= (DMA_SxCR_TCIE | DMA_SxCR_TEIE);	// Разрешаем прерывания от DMA
 
 	arm_hardware_set_handler_realtime(DMA2_Stream1_IRQn, DMA2_Stream1_IRQHandler);
 

@@ -74,7 +74,7 @@ SECTIONS
 
 	.copy.table :
 	{
-		. = ALIGN(4);
+		. = ALIGN(64);
 		__copy_table_start__ = .;
 	/*
 		LONG (__etext)
@@ -92,7 +92,7 @@ SECTIONS
 	 * define __STARTUP_CLEAR_BSS_MULTIPLE in startup_ARMCMx.S */
 	.zero.table :
 	{
-		. = ALIGN(4);
+		. = ALIGN(64);
 		__zero_table_start__ = .;
 		LONG (__bss_start__)
 		LONG (__bss_end__ - __bss_start__)
@@ -109,7 +109,7 @@ SECTIONS
 	{
 		__data_start__ = .;
 
-		. = ALIGN(4);
+		. = ALIGN(64);
 		/* .ctors */
 		*crtbegin.o(.ctors)
 		*crtbegin?.o(.ctors)
@@ -131,13 +131,13 @@ SECTIONS
 		*(.data*)
 		*(.dtcm*)
 		
-		. = ALIGN(4);
+		. = ALIGN(64);
 		/* preinit data */
 		PROVIDE_HIDDEN (__preinit_array_start = .);
 		KEEP(*(.preinit_array))
 		PROVIDE_HIDDEN (__preinit_array_end = .);
 
-		. = ALIGN(4);
+		. = ALIGN(64);
 		/* init data */
 		PROVIDE_HIDDEN (__init_array_start = .);
 		KEEP(*(SORT(.init_array.*)))
@@ -145,7 +145,7 @@ SECTIONS
 		PROVIDE_HIDDEN (__init_array_end = .);
 
 
-		. = ALIGN(4);
+		. = ALIGN(64);
 		/* finit data */
 		PROVIDE_HIDDEN (__fini_array_start = .);
 		KEEP(*(SORT(.fini_array.*)))
@@ -153,7 +153,7 @@ SECTIONS
 		PROVIDE_HIDDEN (__fini_array_end = .);
 
 		KEEP(*(.jcr*))
-		. = ALIGN(4);
+		. = ALIGN(64);
 		/* All data end */
 		__data_end__ = .;
 

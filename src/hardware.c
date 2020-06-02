@@ -10177,7 +10177,12 @@ static void Userdef_INTC_Dummy_Interrupt(void)
 
 void IRQ_Handler(void)
 {
+	//dbg_putchar('/');
 	const IRQn_ID_t irqn = IRQ_GetActiveIRQ();
+	static const char hex [16] = "0123456789ABCDEF";
+	//dbg_putchar(hex [(irqn >> 8) & 0x0F]);
+	//dbg_putchar(hex [(irqn >> 4) & 0x0F]);
+	//dbg_putchar(hex [(irqn >> 0) & 0x0F]);
 	IRQHandler_t const handler = IRQ_GetHandler(irqn);
 	// See R01UH0437EJ0200 Rev.2.00 7.8.3 Reading Interrupt ID Values from Interrupt Acknowledge Register (ICCIAR)
 	// IHI0048B_b_gic_architecture_specification.pdf
@@ -10209,6 +10214,7 @@ void IRQ_Handler(void)
 
 #endif /* WITHNESTEDINTERRUPTS */
 	}
+	//dbg_putchar('\\');
 	IRQ_EndOfInterrupt(irqn);
 }
 
