@@ -1201,6 +1201,13 @@ static void buffers_savetonull96rts(voice96rts_t * p)
 	UNLOCK(& locklist16);
 }
 
+#else
+
+static uint_fast8_t isrts96(void)
+{
+	return 0;
+}
+
 #endif /* WITHRTS96 && WITHUSBHW && WITHUSBUAC */
 
 // Сохранить буфер сэмплов для передачи в компьютер
@@ -2023,7 +2030,7 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 	}
 }
 
-#if WITHUSBUAC
+#if WITHUSBUAC && WITHUSBHW
 
 	#if WITHRTS96
 
@@ -2316,7 +2323,7 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 
 	void savesamplerecord16uacin(int_fast16_t ch0, int_fast16_t ch1)
 	{
-	#if WITHUSBHW && WITHUSBUACIN
+	#if WITHUSBUACIN
 		// если есть инициализированный канал для выдачи звука
 		static uacin16_t * p = NULL;
 		static unsigned n = 0;
@@ -2347,7 +2354,7 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 			buffers_savetouacin(p);
 			p = NULL;
 		}
-	#endif /* WITHUSBHW && WITHUSBUACIN */
+	#endif /* WITHUSBUACIN */
 	}
 
 #else /* WITHUSBUAC */
@@ -2355,13 +2362,16 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 void savesampleout96stereo(int_fast32_t ch0, int_fast32_t ch1)
 {
 }
+
 void savesampleout192stereo(int_fast32_t ch0, int_fast32_t ch1)
 {
 }
 
-#endif /* WITHUSBUAC */
+void savesamplerecord16uacin(int_fast16_t ch0, int_fast16_t ch1)
+{
+}
 
-#if WITHUSBUAC
+#endif /* WITHUSBUAC */
 
 /* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 void board_set_uacplayer(uint_fast8_t v)
@@ -2376,14 +2386,18 @@ void board_set_uacmike(uint_fast8_t v)
 }
 
 
+#if WITHUSBUAC && WITHUSBHW
+
+/* +++ UAC OUT data save */
+
+
+
 void 
 buffers_set_uacinalt(uint_fast8_t v)	/* выбор альтернативной конфигурации для UAC IN interface */
 {
 	//debug_printf_P(PSTR("buffers_set_uacinalt: v=%d\n"), (int) v);
 	uacinalt = v;
 }
-
-#if WITHUSBUACIN2
 
 void 
 buffers_set_uacinrtsalt(uint_fast8_t v)	/* выбор альтернативной конфигурации для UAC IN interface */
@@ -2392,17 +2406,12 @@ buffers_set_uacinrtsalt(uint_fast8_t v)	/* выбор альтернативно
 	uacinrtsalt = v;
 }
 
-#endif /* WITHUSBUACIN2 */
-
 void 
 buffers_set_uacoutalt(uint_fast8_t v)	/* выбор альтернативной конфигурации для UAC OUT interface */
 {
 	//debug_printf_P(PSTR("buffers_set_uacoutalt: v=%d\n"), (int) v);
 	uacoutalt = v;
 }
-
-/* +++ UAC OUT data save */
-
 
 static uint_fast16_t ulmin16(uint_fast16_t a, uint_fast16_t b)
 {
@@ -2681,7 +2690,7 @@ uintptr_t getfilled_dmabufferxrts(uint_fast16_t * sizep)
 	case UACINRTSALT_NONE:
 		return 0;
 
-#if WITHUSBUACIN2
+#if WITHUSBUACIN2 && WITHUSBHW
 
 #if WITHRTS96
 	case UACINRTSALT_RTS96:
@@ -2695,7 +2704,7 @@ uintptr_t getfilled_dmabufferxrts(uint_fast16_t * sizep)
 		return getfilled_dmabuffer192uacinrts();
 #endif /* WITHRTS192 */
 
-#endif /* WITHUSBUACIN2 */
+#endif /* WITHUSBUACIN2 && WITHUSBHW */
 
 	default:
 		debug_printf_P(PSTR("getfilled_dmabufferxrts: uacinrtsalt=%u\n"), uacinrtsalt);
