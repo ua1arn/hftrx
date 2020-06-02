@@ -32,7 +32,7 @@ OBJDIR2 = obj
 OBJDIR = ./$(OBJDIR2)
 
 # Define optimisation level here
-OPT = -O1
+OPT = -Ofast
 #LTO = -flto
 
 MCU  = cortex-a7
