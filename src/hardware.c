@@ -11204,17 +11204,33 @@ M_SIZE_IO_2     EQU     2550            ; [Area11] I/O area 2
 
 //; setting for Strongly-ordered memory
 //#define	TTB_PARA_STRGLY             0b_0000_0000_1101_1110_0010
-#define	TTB_PARA_STRGLY             0x00DE2
+#define	TTB_PARA_STRGLY \
+	( \
+		0x00DE2uL | \
+		0 \
+	)
+
 
 //; setting for Outer and inner not cache normal memory
 //#define	TTB_PARA_NORMAL_NOT_CACHE   0b_0000_0001_1101_1110_0010
-#define	TTB_PARA_NORMAL_NOT_CACHE   0x0x01DE2
+#define	TTB_PARA_NORMAL_NOT_CACHE \
+	( \
+		0x01DE2uL | \
+		0 \
+	)
 
 //; setting for Outer and inner write back, write allocate normal memory (Cacheable)
 //#define	TTB_PARA_NORMAL_CACHE       0b_0000_0001_1101_1110_1110
-#define	TTB_PARA_NORMAL_CACHE       0x01DEEuL
+#define	TTB_PARA_NORMAL_CACHE \
+	( \
+		0x01DEEuL | \
+		0 \
+	)
 
-#define	TTB_PARA_NO_ACCESS       	0 //0x01DEEuL
+#define	TTB_PARA_NO_ACCESS \
+	( \
+		0 \
+	)
 
 static uint32_t
 FLASHMEMINITFUNC
