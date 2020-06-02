@@ -3038,12 +3038,17 @@ HAL_StatusTypeDef USB_DeactivateDedicatedEndpoint(USB_OTG_GlobalTypeDef *USBx, U
  */
 
 #define __HAL_PCD_GET_FLAG(h, imask)      ((USB_ReadInterrupts((h)->Instance) & (imask)) == (imask))
-#define __HAL_PCD_CLEAR_FLAG(h, imask)    do { (((h)->Instance->GINTSTS) = (imask)); } while (0)
+
+#define __HAL_PCD_CLEAR_FLAG(h, imask)    do { \
+		(h)->Instance->GINTSTS = (imask); \
+		(void) (h)->Instance->GINTSTS; \
+	} while (0)
+
 #define __HAL_PCD_IS_INVALID_INTERRUPT(h)         (USB_ReadInterrupts((h)->Instance) == 0)
 
 
 #define __HAL_PCD_UNGATE_PHYCLOCK(h) do { \
-	*(__IO uint32_t *)((uint32_t)((h)->Instance) + USB_OTG_PCGCCTL_BASE) &= ~ (USB_OTG_PCGCCTL_STOPCLK); \
+	* (__IO uint32_t *) ((uintptr_t) (h)->Instance + USB_OTG_PCGCCTL_BASE) &= ~ (USB_OTG_PCGCCTL_STOPCLK); \
 	} while (0)
 
 #define __HAL_PCD_GATE_PHYCLOCK(h) do { \
