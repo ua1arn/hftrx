@@ -11,9 +11,7 @@
 #include "audio.h"
 
 #include "formats.h"	// for debug prints
-#include "inc/gpio.h"
-
-//#include <string.h>		// memcpy() for debug
+#include "gpio.h"
 
 typedef struct codechw
 {
