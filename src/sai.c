@@ -225,6 +225,19 @@ static portholder_t stm32xxx_i2scfgr_afcodec(void)
 
 #define DRD(r) ((void) (r))
 
+#define HANDLEERROR(dma, dmastream, status, control, errorf, resetf) do { \
+		if (((dma)->status & errorf) != 0) \
+		{ \
+			(dma)->control = resetf; \
+			PRINTF("HANDLEERROR " # dmastream " " # errorf "\n"); \
+			(dmastream)->CR &= ~ DMA_SxCR_EN; \
+			while ((dmastream)->CR & DMA_SxCR_EN) \
+				; \
+			(dmastream)->CR |= DMA_SxCR_EN; \
+			DRD((dmastream)->CR); \
+		} \
+	} while (0)
+
 // Обработчик прерывания DMA по приему I2S - I2S2_EXT
 // Use arm_hardware_invalidate
 void RAMFUNC_NONILINE DMA1_Stream3_IRQHandler(void)
@@ -248,15 +261,7 @@ void RAMFUNC_NONILINE DMA1_Stream3_IRQHandler(void)
 		DMA1->LIFCR = DMA_LIFCR_CTCIF3;	// Clear TC interrupt flag
 	}
 
-	if ((DMA1->LISR & DMA_LISR_TEIF3) != 0)
-	{
-		DMA1->HIFCR = DMA_LIFCR_CTEIF3;	// Clear ERROR interrupt flag соответствующий stream
-		DMA1_Stream3->CR &= ~ DMA_SxCR_EN;
-		while (DMA1_Stream3->CR & DMA_SxCR_EN)
-			;
-		DMA1_Stream3->CR |= DMA_SxCR_EN;
-		DRD(DMA1_Stream3->CR);
-	}
+	HANDLEERROR(DMA1, DMA1_Stream3, LISR, LIFCR, DMA_LISR_TEIF3, DMA_LIFCR_CTEIF3);
 }
 
 // Обработчик прерывания DMA по приему I2S - I2S3
@@ -281,15 +286,7 @@ void RAMFUNC_NONILINE DMA1_Stream0_IRQHandler(void)
 		DMA1->LIFCR = DMA_LIFCR_CTCIF0;	// Clear TC interrupt flag
 	}
 
-	if ((DMA1->LISR & DMA_LISR_TEIF0) != 0)
-	{
-		DMA1->LIFCR = DMA_LIFCR_CTEIF0;	// Clear ERROR interrupt flag соответствующий stream
-		DMA1_Stream0->CR &= ~ DMA_SxCR_EN;
-		while (DMA1_Stream0->CR & DMA_SxCR_EN)
-			;
-		DMA1_Stream0->CR |= DMA_SxCR_EN;
-		DRD(DMA1_Stream0->CR);
-	}
+	HANDLEERROR(DMA1, DMA1_Stream0, LISR, LIFCR, DMA_LISR_TEIF0, DMA_LIFCR_CTEIF0);
 }
 
 // Обработчик прерывания DMA по передаче I2S2
@@ -314,15 +311,7 @@ void RAMFUNC_NONILINE DMA1_Stream4_IRQHandler(void)
 		DMA1->HIFCR = DMA_HIFCR_CTCIF4;	// Clear TC interrupt flag соответствующий stream
 	}
 
-	if ((DMA1->HISR & DMA_HISR_TEIF4) != 0)
-	{
-		DMA1->HIFCR = DMA_HIFCR_CTEIF4;	// Clear ERROR interrupt flag соответствующий stream
-		DMA1_Stream4->CR &= ~ DMA_SxCR_EN;
-		while (DMA1_Stream4->CR & DMA_SxCR_EN)
-			;
-		DMA1_Stream4->CR |= DMA_SxCR_EN;
-		DRD(DMA1_Stream4->CR);
-	}
+	HANDLEERROR(DMA1, DMA1_Stream4, HISR, HIFCR, DMA_HISR_TEIF4, DMA_HIFCR_CTEIF4);
 }
 
 // Инициализация DMA по передаче I2S2
@@ -1413,15 +1402,7 @@ void RAMFUNC_NONILINE DMA2_Stream5_IRQHandler(void)
 		DMA2->HIFCR = DMA_HIFCR_CTCIF5;	// Clear TC interrupt flag соответствующий stream
 	}
 
-	if ((DMA2->HISR & DMA_HISR_TEIF5) != 0)
-	{
-		DMA2->HIFCR = DMA_HIFCR_CTEIF5;	// Clear ERROR interrupt flag соответствующий stream
-		DMA2_Stream5->CR &= ~ DMA_SxCR_EN;
-		while (DMA2_Stream5->CR & DMA_SxCR_EN)
-			;
-		DMA2_Stream5->CR |= DMA_SxCR_EN;
-		DRD(DMA2_Stream5->CR);
-	}
+	HANDLEERROR(DMA2, DMA2_Stream5, HISR, HIFCR, DMA_HISR_TEIF5, DMA_HIFCR_CTEIF5);
 }
 // DMA по передаче SAI1 - обработчик прерывания
 // TX	SAI1_A	DMA2	Stream 1	Channel 0
@@ -1446,15 +1427,7 @@ void DMA2_Stream1_IRQHandler(void)
 		DMA2->LIFCR = DMA_LIFCR_CTCIF1;	// Clear TC interrupt flag
 	}
 
-	if ((DMA2->LISR & DMA_LISR_TEIF1) != 0)
-	{
-		DMA2->LIFCR = DMA_LIFCR_CTEIF1;	// Clear ERROR interrupt flag соответствующий stream
-		DMA2_Stream1->CR &= ~ DMA_SxCR_EN;
-		while (DMA2_Stream1->CR & DMA_SxCR_EN)
-			;
-		DMA2_Stream1->CR |= DMA_SxCR_EN;
-		DRD(DMA2_Stream1->CR);
-	}
+	HANDLEERROR(DMA2, DMA2_Stream1, LISR, LIFCR, DMA_LISR_TEIF1, DMA_LIFCR_CTEIF1);
 }
 
 
@@ -1897,14 +1870,7 @@ void RAMFUNC_NONILINE DMA2_Stream7_IRQHandler(void)
 		DMA2->HIFCR = DMA_HIFCR_CTCIF7;	// Clear TC interrupt flag соответствующий stream
 	}
 
-	if ((DMA2->HISR & DMA_HISR_TEIF7) != 0)
-	{
-		DMA2->HIFCR = DMA_HIFCR_CTEIF7;	// Clear ERROR interrupt flag соответствующий stream
-		DMA2_Stream7->CR &= ~ DMA_SxCR_EN;
-		while (DMA2_Stream7->CR & DMA_SxCR_EN)
-			;
-		DMA2_Stream7->CR |= DMA_SxCR_EN;
-	}
+	HANDLEERROR(DMA2, DMA2_Stream7, HISR, HIFCR, DMA_HISR_TEIF7, DMA_HIFCR_CTEIF7);
 }
 
 // TX	SAI2_A	DMA2	Stream 4	Channel 3
@@ -1945,15 +1911,7 @@ void DMA2_Stream4_IRQHandler(void)
 		DMA2->HIFCR = DMA_HIFCR_CTCIF4;	// Clear TC interrupt flag соответствующий stream
 	}
 
-	if ((DMA2->HISR & DMA_HISR_TEIF4) != 0)
-	{
-		DMA2->HIFCR = DMA_HIFCR_CTEIF4;	// Clear ERROR interrupt flag соответствующий stream
-		DMA2_Stream4->CR &= ~ DMA_SxCR_EN;
-		while (DMA2_Stream4->CR & DMA_SxCR_EN)
-			;
-		DMA2_Stream4->CR |= DMA_SxCR_EN;
-		DRD(DMA2_Stream4->CR);
-	}
+	HANDLEERROR(DMA2, DMA2_Stream4, HISR, HIFCR, DMA_HISR_TEIF4, DMA_HIFCR_CTEIF4);
 }
 
 // TX	SAI2_A	DMA2	Stream 4	Channel 3
