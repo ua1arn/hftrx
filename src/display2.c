@@ -6654,22 +6654,6 @@ uint_fast8_t display2_getswrmax(void)
 {
 	return SWRMAX;
 }
-// Рисуем на основном экране цветной прямоугольник.
-// x2, y2 - координаты второго угла (не входящие в закрашиваемый прямоугольник)
-void display_solidbar(uint_fast16_t x, uint_fast16_t y, uint_fast16_t x2, uint_fast16_t y2, COLORMAIN_T color)
-{
-	if (x2 < x)
-	{
-		const uint_fast16_t t = x;
-		x = x2, x2 = t;
-	}
-	if (y2 < y)
-	{
-		const uint_fast16_t t = y;
-		y = y2, y2 = t;
-	}
-	display_fillrect(x, y, x2 - x, y2 - y, color);
-}
 
 #define STMD 1
 
