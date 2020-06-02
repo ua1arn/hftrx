@@ -33,7 +33,7 @@ OBJDIR = ./$(OBJDIR2)
 
 # Define optimisation level here
 OPT = -O1
-#LTO = -flto
+LTO = -flto
 
 MCU  = cortex-a7
 CORE = -march=armv7-a -mfloat-abi=hard -mfpu=vfpv4-d16 -ftree-vectorize
