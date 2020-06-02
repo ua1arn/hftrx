@@ -32,12 +32,12 @@ OBJDIR2 = obj
 OBJDIR = ./$(OBJDIR2)
 
 # Define optimisation level here
-OPT = -O1
+OPT = -Ofast
 #LTO = -flto
 
-MCU  = cortex-a7
-CORE = -march=armv7-a -mfloat-abi=hard -mfpu=vfpv4-d16 -ftree-vectorize
-#CORE = -march=armv7-a -mfloat-abi=hard -mfpu=vfpv4-d16 -mfpu=neon -ftree-vectorize
+#CORE = -march=armv7-a -mfloat-abi=hard -mfpu=vfpv4-d16
+CORE = -mcpu=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4-d16
+#CORE += -mfpu=neon
 
 # List all default C defines here, like -D_DEBUG=1
 DDEFS = 
@@ -121,8 +121,7 @@ OBJS 	+= $(patsubst $(SRCDIR)/%.c,$(OBJDIR)/%.o,$(CSRC))
 OBJS 	+= $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(CPPSRC))
 LIBS    = $(DLIBS) $(ULIBS)
 
-MCFLAGS = $(CORE) -fno-math-errno -funroll-loops -fgraphite-identity -ffunction-sections -fdata-sections -ffat-lto-objects
-#MCFLAGS = -mcpu=$(MCU) $(CORE) -fno-math-errno
+MCFLAGS = $(CORE) -fno-math-errno -funroll-loops
 #
 #ASFLAGS = $(MCFLAGS) $(OPT) $(LTO) -g -gdwarf-2 -Wa,-amhls=$(<:.s=.lst) $(ADEFS)
 ASFLAGS = $(MCFLAGS) $(OPT) $(LTO) -g -gdwarf-2 $(ADEFS)
