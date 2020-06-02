@@ -207,6 +207,10 @@ enum
 	enum { SKIPPED = 5000 / (DMABUFFSIZE16 / DMABUFSTEP16) };
 	enum { VOICESMIKE16NORMAL = 5 };	// Нормальное количество буферов в очереди
 	enum { RESAMPLE16NORMAL = SKIPPED * 2 };	// Нормальное количество буферов в очереди
+	enum { CNT16 = DMABUFFSIZE16 / DMABUFSTEP16 };
+	enum { CNT32RX = DMABUFFSIZE32RX / DMABUFSTEP32RX };
+	enum { PHONESLEVELx = (CNT32RX / CNT16) * 3 + 2 };
+	enum { PHONESLEVEL = 32 };
 
 	static RAMDTCM LIST_ENTRY3 voicesmike16;	// буферы с оцифрованными звуками с микрофона/Line in
 	static RAMDTCM LIST_ENTRY3 resample16;		// буферы от USB для синхронизации
@@ -611,8 +615,9 @@ void buffers_initialize(void)
 		InitializeListHead3(& resample16, RESAMPLE16NORMAL);	// буферы от USB для синхронизации
 	#endif /* WITHUSBUACOUT */
 
-	InitializeListHead3(& voicesmike16, VOICESMIKE16NORMAL);	// список оцифрованных с АЦП
-	InitializeListHead2(& voicesphones16);	// список для выдачи на ЦАП
+	PRINTF("PHONESLEVELx=%d, PHONESLEVEL=%d, VOICESMIKE16NORMAL=%d, CNT16=%d, CNT32RX=%d\n", PHONESLEVELx, PHONESLEVEL, VOICESMIKE16NORMAL, CNT16, CNT32RX);
+	InitializeListHead3(& voicesmike16, VOICESMIKE16NORMAL);	// список оцифрованных с АЦП кодека
+	InitializeListHead2(& voicesphones16);	// список для выдачи на ЦАП кодека
 	InitializeListHead2(& voicesmoni16);	// самоконтроль
 	InitializeListHead2(& voicesfree16);	// Незаполненные
 	for (i = 0; i < (sizeof voicesarray16 / sizeof voicesarray16 [0]); ++ i)
@@ -842,13 +847,23 @@ static RAMFUNC void buffers_tophones16(voice16_t * p)
 {
 	LOCK(& locklist16);
 	InsertHeadList2(& voicesphones16, & p->item);
+	while (GetCountList2(& voicesphones16) > PHONESLEVEL)
+	{
+		PLIST_ENTRY t = RemoveTailList2(& voicesphones16);
+		InsertHeadList2(& voicesfree16, t);
+	}
 	UNLOCK(& locklist16);
 }
-// Сохранить звук для самоклнтроля на звуковой выход трансивера
 static RAMFUNC void buffers_tomoni16(voice16_t * p)
+// Сохранить звук для самоклнтроля на звуковой выход трансивера
 {
 	LOCK(& locklist16);
 	InsertHeadList2(& voicesmoni16, & p->item);
+	while (GetCountList2(& voicesmoni16) > PHONESLEVEL)
+	{
+		PLIST_ENTRY t = RemoveTailList2(& voicesmoni16);
+		InsertHeadList2(& voicesfree16, t);
+	}
 	UNLOCK(& locklist16);
 }
 
@@ -1806,8 +1821,6 @@ void RAMFUNC processing_dmabuffer16rxuac(uintptr_t addr)
 // Вызывается на ARM_REALTIME_PRIORITY уровне.
 void RAMFUNC processing_dmabuffer32rx(uintptr_t addr)
 {
-	enum { CNT16 = DMABUFFSIZE16 / DMABUFSTEP16 };
-	enum { CNT32RX = DMABUFFSIZE32RX / DMABUFSTEP32RX };
 	ASSERT(addr != 0);
 	voice32rx_t * const p = CONTAINING_RECORD(addr, voice32rx_t, buff);
 #if WITHBUFFERSDEBUG
@@ -1840,8 +1853,6 @@ void RAMFUNC processing_dmabuffer32rx(uintptr_t addr)
 // Вызывается на ARM_REALTIME_PRIORITY уровне.
 void RAMFUNC processing_dmabuffer32wfm(uintptr_t addr)
 {
-	//enum { CNT16 = DMABUFFSIZE16 / DMABUFSTEP16 };
-	enum { CNT32RX = DMABUFFSIZE32RX / DMABUFSTEP32RX };
 	ASSERT(addr != 0);
 	voice32rx_t * const p = CONTAINING_RECORD(addr, voice32rx_t, buff);
 #if WITHBUFFERSDEBUG
@@ -1926,7 +1937,7 @@ uintptr_t getfilled_dmabuffer16phones(void)
 		voice16_t * const p = CONTAINING_RECORD(t, voice16_t, item);
 		UNLOCK(& locklist16);
 		dsp_addsidetone(p->buff);
-		return (uintptr_t) & p->buff;
+		return (uintptr_t) & p->buff;	// алрес для DMA
 	}
 	UNLOCK(& locklist16);
 #if WITHBUFFERSDEBUG
