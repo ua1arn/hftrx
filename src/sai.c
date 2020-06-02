@@ -225,17 +225,23 @@ static portholder_t stm32xxx_i2scfgr_afcodec(void)
 
 #define DRD(r) ((void) (r))
 
-#define HANDLEERROR(dma, dmastream, status, control, errorf, resetf) do { \
+#define DMAERR(dma, dmastream, status, control, errorf, resetf) do { \
 		if (((dma)->status & errorf) != 0) \
 		{ \
 			(dma)->control = resetf; \
-			PRINTF("HANDLEERROR " # dmastream " " # errorf "\n"); \
+			PRINTF("DMAERR " # dmastream " " # errorf "\n"); \
 			(dmastream)->CR &= ~ DMA_SxCR_EN; \
 			while ((dmastream)->CR & DMA_SxCR_EN) \
 				; \
 			(dmastream)->CR |= DMA_SxCR_EN; \
 			DRD((dmastream)->CR); \
 		} \
+	} while (0)
+
+#define HANDLEERRORS(d, s, hl) do { \
+		DMAERR(DMA ## d, DMA ## d ## _Stream ## s, hl ## ISR, hl ## IFCR, DMA_ ## hl ## ISR_TEIF ## s, DMA_ ## hl ## IFCR_CTEIF ## s); /* TE */ \
+		DMAERR(DMA ## d, DMA ## d ## _Stream ## s, hl ## ISR, hl ## IFCR, DMA_ ## hl ## ISR_DMEIF ## s, DMA_ ## hl ## IFCR_CDMEIF ## s); /* DME */ \
+		DMAERR(DMA ## d, DMA ## d ## _Stream ## s, hl ## ISR, hl ## IFCR, DMA_ ## hl ## ISR_FEIF ## s, DMA_ ## hl ## IFCR_CFEIF ## s); /* FE */ \
 	} while (0)
 
 // Обработчик прерывания DMA по приему I2S - I2S2_EXT
@@ -261,7 +267,8 @@ void RAMFUNC_NONILINE DMA1_Stream3_IRQHandler(void)
 		DMA1->LIFCR = DMA_LIFCR_CTCIF3;	// Clear TC interrupt flag
 	}
 
-	HANDLEERROR(DMA1, DMA1_Stream3, LISR, LIFCR, DMA_LISR_TEIF3, DMA_LIFCR_CTEIF3);
+	//DMAERR(DMA1, DMA1_Stream3, LISR, LIFCR, DMA_LISR_TEIF3, DMA_LIFCR_CTEIF3);
+	HANDLEERRORS(1, 3, L);
 }
 
 // Обработчик прерывания DMA по приему I2S - I2S3
@@ -286,7 +293,8 @@ void RAMFUNC_NONILINE DMA1_Stream0_IRQHandler(void)
 		DMA1->LIFCR = DMA_LIFCR_CTCIF0;	// Clear TC interrupt flag
 	}
 
-	HANDLEERROR(DMA1, DMA1_Stream0, LISR, LIFCR, DMA_LISR_TEIF0, DMA_LIFCR_CTEIF0);
+	//DMAERR(DMA1, DMA1_Stream0, LISR, LIFCR, DMA_LISR_TEIF0, DMA_LIFCR_CTEIF0);
+	HANDLEERRORS(1, 0, L);
 }
 
 // Обработчик прерывания DMA по передаче I2S2
@@ -311,7 +319,8 @@ void RAMFUNC_NONILINE DMA1_Stream4_IRQHandler(void)
 		DMA1->HIFCR = DMA_HIFCR_CTCIF4;	// Clear TC interrupt flag соответствующий stream
 	}
 
-	HANDLEERROR(DMA1, DMA1_Stream4, HISR, HIFCR, DMA_HISR_TEIF4, DMA_HIFCR_CTEIF4);
+	//DMAERR(DMA1, DMA1_Stream4, HISR, HIFCR, DMA_HISR_TEIF4, DMA_HIFCR_CTEIF4);
+	HANDLEERRORS(1, 4, H);
 }
 
 // Инициализация DMA по передаче I2S2
@@ -1402,7 +1411,8 @@ void RAMFUNC_NONILINE DMA2_Stream5_IRQHandler(void)
 		DMA2->HIFCR = DMA_HIFCR_CTCIF5;	// Clear TC interrupt flag соответствующий stream
 	}
 
-	HANDLEERROR(DMA2, DMA2_Stream5, HISR, HIFCR, DMA_HISR_TEIF5, DMA_HIFCR_CTEIF5);
+	//DMAERR(DMA2, DMA2_Stream5, HISR, HIFCR, DMA_HISR_TEIF5, DMA_HIFCR_CTEIF5);
+	HANDLEERRORS(2, 5, H);
 }
 // DMA по передаче SAI1 - обработчик прерывания
 // TX	SAI1_A	DMA2	Stream 1	Channel 0
@@ -1427,7 +1437,8 @@ void DMA2_Stream1_IRQHandler(void)
 		DMA2->LIFCR = DMA_LIFCR_CTCIF1;	// Clear TC interrupt flag
 	}
 
-	HANDLEERROR(DMA2, DMA2_Stream1, LISR, LIFCR, DMA_LISR_TEIF1, DMA_LIFCR_CTEIF1);
+	//DMAERR(DMA2, DMA2_Stream1, LISR, LIFCR, DMA_LISR_TEIF1, DMA_LIFCR_CTEIF1);
+	HANDLEERRORS(2, 1, L);
 }
 
 
@@ -1870,7 +1881,8 @@ void RAMFUNC_NONILINE DMA2_Stream7_IRQHandler(void)
 		DMA2->HIFCR = DMA_HIFCR_CTCIF7;	// Clear TC interrupt flag соответствующий stream
 	}
 
-	HANDLEERROR(DMA2, DMA2_Stream7, HISR, HIFCR, DMA_HISR_TEIF7, DMA_HIFCR_CTEIF7);
+	//DMAERR(DMA2, DMA2_Stream7, HISR, HIFCR, DMA_HISR_TEIF7, DMA_HIFCR_CTEIF7);
+	HANDLEERRORS(2, 7, H);
 }
 
 // TX	SAI2_A	DMA2	Stream 4	Channel 3
@@ -1911,7 +1923,8 @@ void DMA2_Stream4_IRQHandler(void)
 		DMA2->HIFCR = DMA_HIFCR_CTCIF4;	// Clear TC interrupt flag соответствующий stream
 	}
 
-	HANDLEERROR(DMA2, DMA2_Stream4, HISR, HIFCR, DMA_HISR_TEIF4, DMA_HIFCR_CTEIF4);
+	//DMAERR(DMA2, DMA2_Stream4, HISR, HIFCR, DMA_HISR_TEIF4, DMA_HIFCR_CTEIF4);
+	HANDLEERRORS(2, 4, H);
 }
 
 // TX	SAI2_A	DMA2	Stream 4	Channel 3
