@@ -29,250 +29,250 @@ enum
 	BUFFTAG_total
 };
 
-	/* отладочные врапперы для функций работы со списком - позволяют получить размер очереди */
-	typedef struct listcnt
-	{
-		LIST_ENTRY item0;
-		uint_fast8_t Count;	// количество элментов в списке
-	} LIST_ENTRY2, * PLIST_ENTRY2;
+/* отладочные врапперы для функций работы со списком - позволяют получить размер очереди */
+typedef struct listcnt
+{
+	LIST_ENTRY item0;
+	uint_fast8_t Count;	// количество элментов в списке
+} LIST_ENTRY2, * PLIST_ENTRY2;
 
-	#define LIST2PRINT(name) do { \
-			debug_printf_P(PSTR(# name "[%3d] "), (int) name.Count); \
-		} while (0)
+#define LIST2PRINT(name) do { \
+		debug_printf_P(PSTR(# name "[%3d] "), (int) name.Count); \
+	} while (0)
 
-	__STATIC_INLINE int
-	IsListEmpty2(const LIST_ENTRY2 * ListHead)
-	{
-		return (ListHead)->Count == 0;
-		//return IsListEmpty(& (ListHead)->item0);
-	}
+__STATIC_INLINE int
+IsListEmpty2(const LIST_ENTRY2 * ListHead)
+{
+	return (ListHead)->Count == 0;
+	//return IsListEmpty(& (ListHead)->item0);
+}
 
-	__STATIC_INLINE void
-	InitializeListHead2(LIST_ENTRY2 * ListHead)
-	{
-		(ListHead)->Count = 0;
-		InitializeListHead(& (ListHead)->item0);
-	}
+__STATIC_INLINE void
+InitializeListHead2(LIST_ENTRY2 * ListHead)
+{
+	(ListHead)->Count = 0;
+	InitializeListHead(& (ListHead)->item0);
+}
 
-	__STATIC_INLINE void
-	InsertHeadList2(PLIST_ENTRY2 ListHead, PLIST_ENTRY Entry)
-	{
-		(ListHead)->Count += 1;
-		InsertHeadList(& (ListHead)->item0, (Entry));
-	}
+__STATIC_INLINE void
+InsertHeadList2(PLIST_ENTRY2 ListHead, PLIST_ENTRY Entry)
+{
+	(ListHead)->Count += 1;
+	InsertHeadList(& (ListHead)->item0, (Entry));
+}
 
-	__STATIC_INLINE PLIST_ENTRY
-	RemoveTailList2(PLIST_ENTRY2 ListHead)
-	{
-		(ListHead)->Count -= 1;
-		const PLIST_ENTRY t = RemoveTailList(& (ListHead)->item0);	/* прямо вернуть значение RemoveTailList нельзя - Microsoft сделал не совсем правильный макрос. Но по другому и не плучилось бы в стандартном языке C. */
-		return t;
-	}
+__STATIC_INLINE PLIST_ENTRY
+RemoveTailList2(PLIST_ENTRY2 ListHead)
+{
+	(ListHead)->Count -= 1;
+	const PLIST_ENTRY t = RemoveTailList(& (ListHead)->item0);	/* прямо вернуть значение RemoveTailList нельзя - Microsoft сделал не совсем правильный макрос. Но по другому и не плучилось бы в стандартном языке C. */
+	return t;
+}
 
-	__STATIC_INLINE uint_fast8_t GetCountList2(const LIST_ENTRY2 * ListHead)
-	{
-		return (ListHead)->Count;
-	}
+__STATIC_INLINE uint_fast8_t GetCountList2(const LIST_ENTRY2 * ListHead)
+{
+	return (ListHead)->Count;
+}
 
-	/* готовность буферов с "гистерезисом". */
-	__STATIC_INLINE uint_fast8_t fiforeadyupdate(
-		uint_fast8_t ready,		// текущее состояние готовности
-		uint_fast8_t Count,		// сколько элементов сейчас в очереди
-		uint_fast8_t normal		// граница включения готовности
-		)
-	{
-		return ready ? Count != 0 : Count >= normal;
-	}
+/* готовность буферов с "гистерезисом". */
+__STATIC_INLINE uint_fast8_t fiforeadyupdate(
+	uint_fast8_t ready,		// текущее состояние готовности
+	uint_fast8_t Count,		// сколько элементов сейчас в очереди
+	uint_fast8_t normal		// граница включения готовности
+	)
+{
+	return ready ? Count != 0 : Count >= normal;
+}
 
 
-	/* отладочные врапперы для функций работы со списком - позволяют получить размер очереди */
-	typedef struct listcnt3
-	{
-		LIST_ENTRY2 item2;
-		uint_fast8_t RdyLevel;	// Требуемое количество
-		uint_fast8_t Rdy;		// количество элментов в списке
-	} LIST_ENTRY3, * PLIST_ENTRY3;
+/* отладочные врапперы для функций работы со списком - позволяют получить размер очереди */
+typedef struct listcnt3
+{
+	LIST_ENTRY2 item2;
+	uint_fast8_t RdyLevel;	// Требуемое количество
+	uint_fast8_t Rdy;		// количество элментов в списке
+} LIST_ENTRY3, * PLIST_ENTRY3;
 
-	__STATIC_INLINE int
-	IsListEmpty3(const LIST_ENTRY3 * ListHead)
-	{
-		return IsListEmpty2(& (ListHead)->item2);
-	}
+__STATIC_INLINE int
+IsListEmpty3(const LIST_ENTRY3 * ListHead)
+{
+	return IsListEmpty2(& (ListHead)->item2);
+}
 
-	__STATIC_INLINE void
-	InitializeListHead3(LIST_ENTRY3 * ListHead, uint_fast8_t RdyLevel)
-	{
-		(ListHead)->Rdy = 0;
-		(ListHead)->RdyLevel = RdyLevel;
-		InitializeListHead2(& (ListHead)->item2);
-	}
+__STATIC_INLINE void
+InitializeListHead3(LIST_ENTRY3 * ListHead, uint_fast8_t RdyLevel)
+{
+	(ListHead)->Rdy = 0;
+	(ListHead)->RdyLevel = RdyLevel;
+	InitializeListHead2(& (ListHead)->item2);
+}
 
-	// forceReady - если в источнике данных закончился поток.
-	__STATIC_INLINE void
-	InsertHeadList3(PLIST_ENTRY3 ListHead, PLIST_ENTRY Entry, uint_fast8_t forceReady)
-	{
-		InsertHeadList2(& (ListHead)->item2, (Entry));
-		(ListHead)->Rdy = forceReady || fiforeadyupdate((ListHead)->Rdy, (ListHead)->item2.Count, (ListHead)->RdyLevel);
-	}
+// forceReady - если в источнике данных закончился поток.
+__STATIC_INLINE void
+InsertHeadList3(PLIST_ENTRY3 ListHead, PLIST_ENTRY Entry, uint_fast8_t forceReady)
+{
+	InsertHeadList2(& (ListHead)->item2, (Entry));
+	(ListHead)->Rdy = forceReady || fiforeadyupdate((ListHead)->Rdy, (ListHead)->item2.Count, (ListHead)->RdyLevel);
+}
 
-	__STATIC_INLINE PLIST_ENTRY
-	RemoveTailList3(PLIST_ENTRY3 ListHead)
-	{
-		const PLIST_ENTRY t = RemoveTailList2(& (ListHead)->item2);	/* прямо вернуть значение RemoveTailList нельзя - Microsoft сделал не совсем правильный макрос. Но по другому и не плучилось бы в стандартном языке C. */
-		(ListHead)->Rdy = fiforeadyupdate((ListHead)->Rdy, (ListHead)->item2.Count, (ListHead)->RdyLevel);
-		return t;
-	}
+__STATIC_INLINE PLIST_ENTRY
+RemoveTailList3(PLIST_ENTRY3 ListHead)
+{
+	const PLIST_ENTRY t = RemoveTailList2(& (ListHead)->item2);	/* прямо вернуть значение RemoveTailList нельзя - Microsoft сделал не совсем правильный макрос. Но по другому и не плучилось бы в стандартном языке C. */
+	(ListHead)->Rdy = fiforeadyupdate((ListHead)->Rdy, (ListHead)->item2.Count, (ListHead)->RdyLevel);
+	return t;
+}
 
-	__STATIC_INLINE uint_fast8_t GetCountList3(const LIST_ENTRY3 * ListHead)
-	{
-		return GetCountList2(& (ListHead)->item2);
-	}
+__STATIC_INLINE uint_fast8_t GetCountList3(const LIST_ENTRY3 * ListHead)
+{
+	return GetCountList2(& (ListHead)->item2);
+}
 
-	__STATIC_INLINE uint_fast8_t GetReadyList3(const LIST_ENTRY3 * ListHead)
-	{
-		return (ListHead)->Rdy;
-	}
+__STATIC_INLINE uint_fast8_t GetReadyList3(const LIST_ENTRY3 * ListHead)
+{
+	return (ListHead)->Rdy;
+}
 
-	#define LIST3PRINT(name) do { \
-			debug_printf_P(PSTR(# name "[%3d] "), (int) GetCountList3(& (name))); \
-		} while (0)
+#define LIST3PRINT(name) do { \
+		debug_printf_P(PSTR(# name "[%3d] "), (int) GetCountList3(& (name))); \
+	} while (0)
 
 #if 0
-	static RAMDTCM int16_t vfyseq;
-	static RAMDTCM int16_t lastseq;
-	static RAMDTCM int lastseqvalid;
+static RAMDTCM int16_t vfyseq;
+static RAMDTCM int16_t lastseq;
+static RAMDTCM int lastseqvalid;
 
-	int16_t vfydataget(void)
-	{
-		return ++ vfyseq;
-	}
+int16_t vfydataget(void)
+{
+	return ++ vfyseq;
+}
 
-	void vfydata(int16_t v)
+void vfydata(int16_t v)
+{
+	if (lastseqvalid == 0)
 	{
-		if (lastseqvalid == 0)
-		{
-			lastseq = v;
-			lastseqvalid = 1;
-			return;
-		}
-		++ lastseq;
-		ASSERT(lastseq == v);
+		lastseq = v;
+		lastseqvalid = 1;
+		return;
 	}
+	++ lastseq;
+	ASSERT(lastseq == v);
+}
 
-	void vfyalign2(void * p)
-	{
-		ASSERT(((uintptr_t) p & 0x01) == 0);
-	}
+void vfyalign2(void * p)
+{
+	ASSERT(((uintptr_t) p & 0x01) == 0);
+}
 
-	void vfyalign4(void * p)
-	{
-		ASSERT(((uintptr_t) p & 0x03) == 0);
-	}
+void vfyalign4(void * p)
+{
+	ASSERT(((uintptr_t) p & 0x03) == 0);
+}
 
-	void vfylist(LIST_ENTRY2 * head)
+void vfylist(LIST_ENTRY2 * head)
+{
+	LIST_ENTRY * list = & head->item0;
+	LIST_ENTRY * t;
+	for (t = list->Flink; t != list; t = t->Flink)
 	{
-		LIST_ENTRY * list = & head->item0;
-		LIST_ENTRY * t;
-		for (t = list->Flink; t != list; t = t->Flink)
-		{
-			vfyalign4(t);
-		}
+		vfyalign4(t);
 	}
+}
 #endif
-	//////////////////////////////////
-	// Система буферизации аудиоданных
-	//
-	// Audio CODEC in/out
-	typedef ALIGNX_BEGIN struct voice16_tag
-	{
-		LIST_ENTRY item;
-		ALIGNX_BEGIN aubufv_t buff [DMABUFFSIZE16] ALIGNX_END;
-	} ALIGNX_END voice16_t;
+//////////////////////////////////
+// Система буферизации аудиоданных
+//
+// Audio CODEC in/out
+typedef ALIGNX_BEGIN struct voice16_tag
+{
+	LIST_ENTRY item;
+	ALIGNX_BEGIN aubufv_t buff [DMABUFFSIZE16] ALIGNX_END;
+} ALIGNX_END voice16_t;
 
-	// I/Q data to FPGA or IF CODEC
-	typedef ALIGNX_BEGIN struct voices32tx_tag
-	{
-		LIST_ENTRY item;
-		ALIGNX_BEGIN int32_t buff [DMABUFFSIZE32TX] ALIGNX_END;
-	} ALIGNX_END voice32tx_t;
+// I/Q data to FPGA or IF CODEC
+typedef ALIGNX_BEGIN struct voices32tx_tag
+{
+	LIST_ENTRY item;
+	ALIGNX_BEGIN int32_t buff [DMABUFFSIZE32TX] ALIGNX_END;
+} ALIGNX_END voice32tx_t;
 
-	// I/Q data from FPGA or IF CODEC
-	typedef ALIGNX_BEGIN struct voices32rx_tag
-	{
-		LIST_ENTRY item;
-		ALIGNX_BEGIN int32_t buff [DMABUFFSIZE32RX] ALIGNX_END;
-	} ALIGNX_END voice32rx_t;
-	// исправляемая погрешность = 0.02% - один сэмпл добавить/убрать на 5000 сэмплов
+// I/Q data from FPGA or IF CODEC
+typedef ALIGNX_BEGIN struct voices32rx_tag
+{
+	LIST_ENTRY item;
+	ALIGNX_BEGIN int32_t buff [DMABUFFSIZE32RX] ALIGNX_END;
+} ALIGNX_END voice32rx_t;
+// исправляемая погрешность = 0.02% - один сэмпл добавить/убрать на 5000 сэмплов
 
-	enum { SKIPPED = 5000 / (DMABUFFSIZE16 / DMABUFSTEP16) };
-	enum { VOICESMIKE16NORMAL = 5 };	// Нормальное количество буферов в очереди
-	enum { RESAMPLE16NORMAL = SKIPPED * 2 };	// Нормальное количество буферов в очереди
-	enum { CNT16 = DMABUFFSIZE16 / DMABUFSTEP16 };
-	enum { CNT32RX = DMABUFFSIZE32RX / DMABUFSTEP32RX };
-	enum { PHONESLEVELx = (CNT32RX / CNT16) * 3 + 2 };
-	enum { PHONESLEVEL = 32 };
+enum { SKIPPED = 5000 / (DMABUFFSIZE16 / DMABUFSTEP16) };
+enum { VOICESMIKE16NORMAL = 5 };	// Нормальное количество буферов в очереди
+enum { RESAMPLE16NORMAL = SKIPPED * 2 };	// Нормальное количество буферов в очереди
+enum { CNT16 = DMABUFFSIZE16 / DMABUFSTEP16 };
+enum { CNT32RX = DMABUFFSIZE32RX / DMABUFSTEP32RX };
+enum { PHONESLEVELx = (CNT32RX / CNT16) * 3 + 2 };
+enum { PHONESLEVEL = 32 };
 
-	static RAMDTCM LIST_ENTRY3 voicesmike16;	// буферы с оцифрованными звуками с микрофона/Line in
-	static RAMDTCM LIST_ENTRY3 resample16;		// буферы от USB для синхронизации
+static RAMDTCM LIST_ENTRY3 voicesmike16;	// буферы с оцифрованными звуками с микрофона/Line in
+static RAMDTCM LIST_ENTRY3 resample16;		// буферы от USB для синхронизации
 
-	static RAMDTCM LIST_ENTRY2 voicesfree16;
-	static RAMDTCM LIST_ENTRY2 voicesphones16;	// буферы, предназначенные для выдачи на наушники
-	static RAMDTCM LIST_ENTRY2 voicesmoni16;	// буферы, предназначенные для звука самоконтроля
+static RAMDTCM LIST_ENTRY2 voicesfree16;
+static RAMDTCM LIST_ENTRY2 voicesphones16;	// буферы, предназначенные для выдачи на наушники
+static RAMDTCM LIST_ENTRY2 voicesmoni16;	// буферы, предназначенные для звука самоконтроля
 
-	static RAMDTCM LIST_ENTRY2 voicesready32tx;	// буферы, предназначенные для выдачи на IF DAC
-	static RAMDTCM LIST_ENTRY2 voicesfree32tx;
-	static RAMDTCM LIST_ENTRY2 voicesfree32rx;
+static RAMDTCM LIST_ENTRY2 voicesready32tx;	// буферы, предназначенные для выдачи на IF DAC
+static RAMDTCM LIST_ENTRY2 voicesfree32tx;
+static RAMDTCM LIST_ENTRY2 voicesfree32rx;
 
-	static RAMDTCM LIST_ENTRY2 speexfree16;		// Свободные буферы
-	static RAMDTCM LIST_ENTRY2 speexready16;	// Буферы для обработки speex
-	//static int speexready16enable;
+static RAMDTCM LIST_ENTRY2 speexfree16;		// Свободные буферы
+static RAMDTCM LIST_ENTRY2 speexready16;	// Буферы для обработки speex
+//static int speexready16enable;
 
-	static RAMDTCM volatile uint_fast8_t uacoutplayer = 0;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
-	static RAMDTCM volatile uint_fast8_t uacoutmike = 0;	/* на вход трансивера берутся аудиоданные с USB виртуальной платы, а не с микрофона */
-	static RAMDTCM volatile uint_fast8_t uacinalt = UACINALT_NONE;		/* выбор альтернативной конфигурации для UAC IN interface */
-	static RAMDTCM volatile uint_fast8_t uacinrtsalt = UACINRTSALT_NONE;		/* выбор альтернативной конфигурации для RTS UAC IN interface */
-	static RAMDTCM volatile uint_fast8_t uacoutalt;
+static RAMDTCM volatile uint_fast8_t uacoutplayer = 0;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
+static RAMDTCM volatile uint_fast8_t uacoutmike = 0;	/* на вход трансивера берутся аудиоданные с USB виртуальной платы, а не с микрофона */
+static RAMDTCM volatile uint_fast8_t uacinalt = UACINALT_NONE;		/* выбор альтернативной конфигурации для UAC IN interface */
+static RAMDTCM volatile uint_fast8_t uacinrtsalt = UACINRTSALT_NONE;		/* выбор альтернативной конфигурации для RTS UAC IN interface */
+static RAMDTCM volatile uint_fast8_t uacoutalt;
 
 #if WITHUSBUACIN
 
-	// USB AUDIO IN
-	typedef ALIGNX_BEGIN struct uacin16_tag
+// USB AUDIO IN
+typedef ALIGNX_BEGIN struct uacin16_tag
+{
+	LIST_ENTRY item;	// layout should be same in uacin16_t, voice96rts_t and voice192rts_t
+	uint_fast8_t tag;	// layout should be same in uacin16_t, voice96rts_t and voice192rts_t
+	ALIGNX_BEGIN uint16_t buff [DMABUFFSIZEUACIN16] ALIGNX_END;
+} ALIGNX_END uacin16_t;
+
+#if WITHRTS192
+
+	typedef ALIGNX_BEGIN struct voices192rts
 	{
 		LIST_ENTRY item;	// layout should be same in uacin16_t, voice96rts_t and voice192rts_t
 		uint_fast8_t tag;	// layout should be same in uacin16_t, voice96rts_t and voice192rts_t
-		ALIGNX_BEGIN uint16_t buff [DMABUFFSIZEUACIN16] ALIGNX_END;
-	} ALIGNX_END uacin16_t;
+		ALIGNX_BEGIN uint8_t buff [DMABUFFSIZE192RTS] ALIGNX_END;		// спектр, 2*24*192 kS/S
+	} ALIGNX_END voice192rts_t;
 
-	#if WITHRTS192
+	static RAMDTCM LIST_ENTRY2 voicesfree192rts;
+	static RAMDTCM LIST_ENTRY2 uacin192rts;	// Буферы для записи в вудиоканал USB к компьютеру спектра, 2*32*192 kS/S
 
-		typedef ALIGNX_BEGIN struct voices192rts
-		{
-			LIST_ENTRY item;	// layout should be same in uacin16_t, voice96rts_t and voice192rts_t
-			uint_fast8_t tag;	// layout should be same in uacin16_t, voice96rts_t and voice192rts_t
-			ALIGNX_BEGIN uint8_t buff [DMABUFFSIZE192RTS] ALIGNX_END;		// спектр, 2*24*192 kS/S
-		} ALIGNX_END voice192rts_t;
+#endif /* WITHRTS192 */
 
-		static RAMDTCM LIST_ENTRY2 voicesfree192rts;
-		static RAMDTCM LIST_ENTRY2 uacin192rts;	// Буферы для записи в вудиоканал USB к компьютеру спектра, 2*32*192 kS/S
-	
-	#endif /* WITHRTS192 */
+#if WITHRTS96
 
-	#if WITHRTS96
+	typedef ALIGNX_BEGIN struct voices96rts
+	{
+		LIST_ENTRY item;	// layout should be same in uacin16_t, voice96rts_t and voice192rts_t
+		uint_fast8_t tag;	// layout should be same in uacin16_t, voice96rts_t and voice192rts_t
+		ALIGNX_BEGIN uint8_t buff [DMABUFFSIZE96RTS] ALIGNX_END;		// спектр, 2*24*192 kS/S
+	} ALIGNX_END voice96rts_t;
 
-		typedef ALIGNX_BEGIN struct voices96rts
-		{
-			LIST_ENTRY item;	// layout should be same in uacin16_t, voice96rts_t and voice192rts_t
-			uint_fast8_t tag;	// layout should be same in uacin16_t, voice96rts_t and voice192rts_t
-			ALIGNX_BEGIN uint8_t buff [DMABUFFSIZE96RTS] ALIGNX_END;		// спектр, 2*24*192 kS/S
-		} ALIGNX_END voice96rts_t;
+	static RAMDTCM LIST_ENTRY2 voicesfree96rts;
+	static RAMDTCM LIST_ENTRY2 uacin96rts;	// Буферы для записи в вудиоканал USB к компьютер спектра, 2*32*192 kS/S
 
-		static RAMDTCM LIST_ENTRY2 voicesfree96rts;
-		static RAMDTCM LIST_ENTRY2 uacin96rts;	// Буферы для записи в вудиоканал USB к компьютер спектра, 2*32*192 kS/S
-	
-	#endif /* WITHRTS96 */
+#endif /* WITHRTS96 */
 
-	static RAMDTCM LIST_ENTRY2 uacinfree16;
-	static RAMDTCM LIST_ENTRY2 uacinready16;	// Буферы для записи в вудиоканал USB к компьютер 2*16*24 kS/S
+static RAMDTCM LIST_ENTRY2 uacinfree16;
+static RAMDTCM LIST_ENTRY2 uacinready16;	// Буферы для записи в вудиоканал USB к компьютер 2*16*24 kS/S
 
 #endif /* WITHUSBUACIN */
 
@@ -280,19 +280,19 @@ enum
 
 #if WITHUSEAUDIOREC
 
-	typedef ALIGNX_BEGIN struct records16
-	{
-		LIST_ENTRY item;
-		ALIGNX_BEGIN int16_t buff [AUDIORECBUFFSIZE16] ALIGNX_END;
-		unsigned startdata;	// data start
-		unsigned topdata;	// index after last element
-	} ALIGNX_END records16_t;
+typedef ALIGNX_BEGIN struct records16
+{
+	LIST_ENTRY item;
+	ALIGNX_BEGIN int16_t buff [AUDIORECBUFFSIZE16] ALIGNX_END;
+	unsigned startdata;	// data start
+	unsigned topdata;	// index after last element
+} ALIGNX_END records16_t;
 
-	static RAMDTCM LIST_ENTRY2 recordsfree16;		// Свободные буферы
-	static RAMDTCM LIST_ENTRY2 recordsready16;	// Буферы для записи на SD CARD
+static RAMDTCM LIST_ENTRY2 recordsfree16;		// Свободные буферы
+static RAMDTCM LIST_ENTRY2 recordsready16;	// Буферы для записи на SD CARD
 
-	static RAMDTCM volatile unsigned recdropped;
-	static RAMDTCM volatile unsigned recbuffered;
+static RAMDTCM volatile unsigned recdropped;
+static RAMDTCM volatile unsigned recbuffered;
 
 #endif /* WITHUSEAUDIOREC */
 
@@ -325,20 +325,21 @@ static RAMDTCM LIST_ENTRY msgsfree8;		// Свободные буферы
 static RAMDTCM LIST_ENTRY msgsready8;		// Заполненные - готовые к обработке
 
 #if WITHBUFFERSDEBUG
-	static volatile unsigned n1, n1wfm, n2, n3, n4, n5, n6;
-	static volatile unsigned e1, e2, e3, e4, e5, e6, e7;
-	static volatile unsigned nbadd, nbdel, nbzero;
 
-	static volatile unsigned debugcount_ms10;	// с точностью 0.1 ms
+static volatile unsigned n1, n1wfm, n2, n3, n4, n5, n6;
+static volatile unsigned e1, e2, e3, e4, e5, e6, e7;
+static volatile unsigned nbadd, nbdel, nbzero;
 
-	static volatile unsigned debugcount_uacout;
-	static volatile unsigned debugcount_mikeadc;
-	static volatile unsigned debugcount_phonesdac;
-	static volatile unsigned debugcount_rtsadc;
-	static volatile unsigned debugcount_uacin;
-	static volatile unsigned debugcount_rx32adc;
-	static volatile unsigned debugcount_rx32wfm;
-	static volatile unsigned debugcount_tx32dac;
+static volatile unsigned debugcount_ms10;	// с точностью 0.1 ms
+
+static volatile unsigned debugcount_uacout;
+static volatile unsigned debugcount_mikeadc;
+static volatile unsigned debugcount_phonesdac;
+static volatile unsigned debugcount_rtsadc;
+static volatile unsigned debugcount_uacin;
+static volatile unsigned debugcount_rx32adc;
+static volatile unsigned debugcount_rx32wfm;
+static volatile unsigned debugcount_tx32dac;
 	
 #endif /* WITHBUFFERSDEBUG */
 
@@ -438,67 +439,67 @@ void buffers_diagnostics(void)
 
 #if 0 && WITHBUFFERSDEBUG
 
-	typedef struct
-	{
-		uint8_t lock;
-		int line;
-		const char * file;
-	} LOCK_T;
+typedef struct
+{
+	uint8_t lock;
+	int line;
+	const char * file;
+} LOCK_T;
 
-	static RAMDTCM volatile LOCK_T locklist16;
-	static RAMDTCM volatile LOCK_T locklist16ststem;
-	static RAMDTCM volatile LOCK_T locklist32;
-	static RAMDTCM volatile LOCK_T locklist8;
+static RAMDTCM volatile LOCK_T locklist16;
+static RAMDTCM volatile LOCK_T locklist16ststem;
+static RAMDTCM volatile LOCK_T locklist32;
+static RAMDTCM volatile LOCK_T locklist8;
 
-	static void lock_impl(volatile LOCK_T * p, int line, const char * file, const char * variable)
+static void lock_impl(volatile LOCK_T * p, int line, const char * file, const char * variable)
+{
+#if WITHHARDINTERLOCK
+	uint8_t r;
+	do
+		r = __LDREXB(& p->lock);
+	while (__STREXB(1, & p->lock));
+	if (r != 0)
 	{
-	#if WITHHARDINTERLOCK
-		uint8_t r;
-		do
-			r = __LDREXB(& p->lock);
-		while (__STREXB(1, & p->lock));
-		if (r != 0)
-		{
-			debug_printf_P(PSTR("LOCK @%p %s already locked at %d in %s by %d in %s\n"), p, variable, line, file, p->line, p->file);
-			for (;;)
-				;
-		}
-		else
-		{
-			p->file = file;
-			p->line = line;
-		}
-	#endif /* WITHHARDINTERLOCK */
+		debug_printf_P(PSTR("LOCK @%p %s already locked at %d in %s by %d in %s\n"), p, variable, line, file, p->line, p->file);
+		for (;;)
+			;
 	}
-
-	static void unlock_impl(volatile LOCK_T * p, int line, const char * file, const char * variable)
+	else
 	{
-	#if WITHHARDINTERLOCK
-		uint8_t r;
-		do
-			r = __LDREXB(& p->lock);
-		while (__STREXB(0, & p->lock));
-		if (r == 0)
-		{
-			debug_printf_P(PSTR("LOCK @%p %s already unlocked at %d in %s by %d in %s\n"), p, variable, line, file, p->line, p->file);
-			for (;;)
-				;
-		}
-		else
-		{
-			p->file = file;
-			p->line = line;
-		}
-	#endif /* WITHHARDINTERLOCK */
+		p->file = file;
+		p->line = line;
 	}
+#endif /* WITHHARDINTERLOCK */
+}
 
-	#define LOCK(p) do { lock_impl((p), __LINE__, __FILE__, # p); } while (0)
-	#define UNLOCK(p) do { unlock_impl((p), __LINE__, __FILE__, # p); } while (0)
+static void unlock_impl(volatile LOCK_T * p, int line, const char * file, const char * variable)
+{
+#if WITHHARDINTERLOCK
+	uint8_t r;
+	do
+		r = __LDREXB(& p->lock);
+	while (__STREXB(0, & p->lock));
+	if (r == 0)
+	{
+		debug_printf_P(PSTR("LOCK @%p %s already unlocked at %d in %s by %d in %s\n"), p, variable, line, file, p->line, p->file);
+		for (;;)
+			;
+	}
+	else
+	{
+		p->file = file;
+		p->line = line;
+	}
+#endif /* WITHHARDINTERLOCK */
+}
+
+#define LOCK(p) do { lock_impl((p), __LINE__, __FILE__, # p); } while (0)
+#define UNLOCK(p) do { unlock_impl((p), __LINE__, __FILE__, # p); } while (0)
 
 #else /* WITHBUFFERSDEBUG */
 
-	#define LOCK(p) do {  } while (0)
-	#define UNLOCK(p) do {  } while (0)
+#define LOCK(p) do {  } while (0)
+#define UNLOCK(p) do {  } while (0)
 
 #endif /* WITHBUFFERSDEBUG */
 
