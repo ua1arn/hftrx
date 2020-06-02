@@ -11223,96 +11223,43 @@ M_SIZE_IO_2     EQU     2550            ; [Area11] I/O area 2
 
 // See B3.5.2 in DDI0406C_C_arm_architecture_reference_manual.pdf
 
-//; setting for Strongly-ordered memory
-//#define	TTB_PARA_STRGLY             0b_0000_0000_1101_1110_0010
-// not used
-#define	TTB_PARA_STRGLY \
-	( \
-		/*0x00DE2uL | */ \
-		SECTIONval * (1uL << 0) |	/* 0b10, Section or Supersection */ \
-		Bval_STGORD * (1uL << 2) |	/* B */ \
-		Cval_STGORD * (1uL << 3) |	/* C */ \
-		0 * (1uL << 4) |	/* XN The Execute-never bit. */ \
-		DOMAINval * (1uL << 5) |	/* DOMAIN */ \
+
+#define	TTB_PARA(TEX, B, C, DOMAIN, AP, XN) ( \
+		(SECTIONval) * (1uL << 0) |	/* 0b10, Section or Supersection */ \
+		(B) * (1uL << 2) |	/* B */ \
+		(C) * (1uL << 3) |	/* C */ \
+		(XN) * (1uL << 4) |	/* XN The Execute-never bit. */ \
+		(DOMAIN) * (1uL << 5) |	/* DOMAIN */ \
 		0 * (1uL << 9) |	/* implementation defined */ \
-		((APval >> 0) & 0x03) * (1uL << 10) |	/* AP [1..0] */ \
-		TEXval_STGORD * (1uL << 12) |	/* TEX */ \
-		((APval >> 2) & 0x01) * (1uL << 15) |	/* AP[2] */ \
+		(((AP) >> 0) & 0x03) * (1uL << 10) |	/* AP [1..0] */ \
+		(TEX) * (1uL << 12) |	/* TEX */ \
+		(((AP) >> 2) & 0x01) * (1uL << 15) |	/* AP[2] */ \
 		0 * (1uL << 16) |	/* S */ \
 		0 * (1uL << 17) |	/* nG */ \
 		0 * (1uL << 18) |	/* 0 */ \
 		0 * (1uL << 19) |	/* NS */ \
 		0 \
 	)
+
+//; setting for Strongly-ordered memory
+//#define	TTB_PARA_STRGLY             0b_0000_0000_1101_1110_0010
+// not used
+#define	TTB_PARA_STRGLY TTB_PARA(TEXval_STGORD, Bval_STGORD, Cval_STGORD, DOMAINval, APval, 1)
 
 
 //; setting for Outer and inner not cache normal memory
 //#define	TTB_PARA_NORMAL_NOT_CACHE   0b_0000_0001_1101_1110_0010
 // not used
-#define	TTB_PARA_NORMAL_NOT_CACHE \
-	( \
-		/*0x01DE2uL | */ \
-		SECTIONval * (1uL << 0) |	/* 0b10, Section or Supersection */ \
-		Bval_NOCACHE * (1uL << 2) |	/* B */ \
-		Cval_NOCACHE * (1uL << 3) |	/* C */ \
-		0 * (1uL << 4) |	/* XN The Execute-never bit. */ \
-		DOMAINval * (1uL << 5) |	/* DOMAIN */ \
-		0 * (1uL << 9) |	/* implementation defined */ \
-		((APval >> 0) & 0x03) * (1uL << 10) |	/* AP [1..0] */ \
-		TEXval_NOCACHE * (1uL << 12) |	/* TEX */ \
-		((APval >> 2) & 0x01) * (1uL << 15) |	/* AP[2] */ \
-		0 * (1uL << 16) |	/* S */ \
-		0 * (1uL << 17) |	/* nG */ \
-		0 * (1uL << 18) |	/* 0 */ \
-		0 * (1uL << 19) |	/* NS */ \
-		0 \
-	)
+#define	TTB_PARA_NORMAL_NOT_CACHE TTB_PARA(TEXval_NOCACHE, Bval_NOCACHE, Cval_NOCACHE, DOMAINval, APval, 0)
 
 //; setting for Outer and inner write back, write allocate normal memory (Cacheable)
 //#define	TTB_PARA_NORMAL_CACHE       0b_0000_0001_1101_1110_1110
-#define	TTB_PARA_NORMAL_CACHE \
-	( \
-		/*0x01DEEuL | */ \
-		SECTIONval * (1uL << 0) |	/* 0b10, Section or Supersection */ \
-		Bval_WBCACHE * (1uL << 2) |	/* B */ \
-		Cval_WBCACHE * (1uL << 3) |	/* C */ \
-		0 * (1uL << 4) |	/* XN The Execute-never bit. */ \
-		DOMAINval * (1uL << 5) |	/* DOMAIN */ \
-		0 * (1uL << 9) |	/* implementation defined */ \
-		((APval >> 0) & 0x03) * (1uL << 10) |	/* AP [1..0] */ \
-		TEXval_WBCACHE * (1uL << 12) |	/* TEX */ \
-		((APval >> 2) & 0x01) * (1uL << 15) |	/* AP[2] */ \
-		0 * (1uL << 16) |	/* S */ \
-		0 * (1uL << 17) |	/* nG */ \
-		0 * (1uL << 18) |	/* 0 */ \
-		0 * (1uL << 19) |	/* NS */ \
-		0 \
-	)
+#define	TTB_PARA_NORMAL_CACHE TTB_PARA(TEXval_WBCACHE, Bval_WBCACHE, Cval_WBCACHE, DOMAINval, APval, 0)
 
-#define	TTB_PARA_NORMAL_DEVICE \
-	( \
-		/*0x01DEEuL | */ \
-		SECTIONval * (1uL << 0) |	/* 0b10, Section or Supersection */ \
-		Bval_DEVICE * (1uL << 2) |	/* B */ \
-		Cval_DEVICE * (1uL << 3) |	/* C */ \
-		0 * (1uL << 4) |	/* XN The Execute-never bit. */ \
-		DOMAINval * (1uL << 5) |	/* DOMAIN */ \
-		0 * (1uL << 9) |	/* implementation defined */ \
-		((APval >> 0) & 0x03) * (1uL << 10) |	/* AP [1..0] */ \
-		TEXval_DEVICE * (1uL << 12) |	/* TEX */ \
-		((APval >> 2) & 0x01) * (1uL << 15) |	/* AP[2] */ \
-		0 * (1uL << 16) |	/* S */ \
-		0 * (1uL << 17) |	/* nG */ \
-		0 * (1uL << 18) |	/* 0 */ \
-		0 * (1uL << 19) |	/* NS */ \
-		0 \
-	)
+#define	TTB_PARA_NORMAL_DEVICE TTB_PARA(TEXval_DEVICE, Bval_DEVICE, Cval_DEVICE, DOMAINval, APval, 1)
 
-#define	TTB_PARA_NO_ACCESS \
-	( \
-		0x00 * (1uL << 0) |	/* 0b00, Invalid */ \
-		0 \
-	)
+#define	TTB_PARA_NO_ACCESS 0
+
 
 static uint32_t
 FLASHMEMINITFUNC
