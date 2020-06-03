@@ -14210,6 +14210,15 @@ typedef struct EhciController
 } EhciController;
 
 
+void USBH_OHCI_IRQHandler(void)
+{
+	TP();
+}
+
+void USBH_EHCI_IRQHandler(void)
+{
+	TP();
+}
 // USB EHCI controller
 void board_ehci_initialize(void)
 {
@@ -14233,6 +14242,7 @@ void board_ehci_initialize(void)
 		SYSCFG->ICNR |= SYSCFG_ICNR_AXI_M2;
 		(void) SYSCFG->ICNR;
 	}
+
 	// https://github.com/pdoane/osdev/blob/master/usb/ehci.c
 
 	// USBH_EHCI_HCICAPLENGTH == USB1_EHCI->HCCAPBASE
@@ -14266,6 +14276,10 @@ void board_ehci_initialize(void)
 
 
 //	USBH_EHCI_IRQn
+	//USBH_OHCI_IRQn                   = 106,    /*!< USB OHCI global interrupt                                            */
+	//USBH_EHCI_IRQn                   = 107,    /*!< USB EHCI global interrupt                                            */
+	arm_hardware_set_handler_system(USBH_OHCI_IRQn, USBH_OHCI_IRQHandler);
+	arm_hardware_set_handler_system(USBH_EHCI_IRQn, USBH_EHCI_IRQHandler);
 
 	PRINTF("board_ehci_initialize done.\n");
 }
