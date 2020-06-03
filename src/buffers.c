@@ -865,8 +865,9 @@ static RAMFUNC void buffers_tophones16(voice16_t * p)
 	InsertHeadList2(& voicesphones16, & p->item);
 	UNLOCK(& locklist16);
 }
+
+// Сохранить звук для самоконтроля на звуковой выход трансивера
 static RAMFUNC void buffers_tomoni16(voice16_t * p)
-// Сохранить звук для самоклнтроля на звуковой выход трансивера
 {
 	LOCK(& locklist16);
 	purge_buffers16(& voicesphones16);
