@@ -234,7 +234,6 @@
 #define GUI_MENUSELECTCOLOR		109
 
 #define GUI_TRANSPARENT_WINDOWS		1		/* Прозрачный фон окон */
-#define GUI_OLDMENUSTYLE			1		/* Меню в виде прокручиваемого списка */
 //#define GUI_OLDBUTTONSTYLE			1   	/* Кнопки без закругления углов */
 
 #if defined (GUI_OLDBUTTONSTYLE)
