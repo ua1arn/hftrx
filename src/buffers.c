@@ -884,16 +884,6 @@ static RAMFUNC void buffers_tonull16(voice16_t * p)
 	UNLOCK(& locklist16);
 }
 
-#if WITHUSBUACIN
-// Сохранить USB UAC IN буфер в никуда...
-static RAMFUNC void buffers_tonulluacin(uacin16_t * p)
-{
-	LOCK(& locklist16);
-	InsertHeadList2(& uacinfree16, & p->item);
-	UNLOCK(& locklist16);
-}
-#endif /* WITHUSBUACIN */
-
 // Сохранить звук на вход передатчика
 static RAMFUNC void buffers_tomodulators16(voice16_t * p)
 {
@@ -947,6 +937,7 @@ buffers_savefrommoni(voice16_t * p)
 {
 	buffers_tomoni16(p);
 }
+
 
 #if WITHUSBUAC
 // приняли данные от синхронизатора
@@ -2275,6 +2266,14 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 		}
 
 	#endif /* WITHRTS192 */
+
+	// Сохранить USB UAC IN буфер в никуда...
+	static RAMFUNC void buffers_tonulluacin(uacin16_t * p)
+	{
+		LOCK(& locklist16);
+		InsertHeadList2(& uacinfree16, & p->item);
+		UNLOCK(& locklist16);
+	}
 
 	void RAMFUNC release_dmabufferuacin16(uintptr_t addr)
 	{
