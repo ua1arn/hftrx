@@ -789,8 +789,8 @@ void colmain_putpixel(
 
 void colmain_line(
 	PACKEDCOLORMAIN_T * buffer,
-	uint_fast16_t bx,	// ширина буфера
-	uint_fast16_t by,	// высота буфера
+	const uint_fast16_t bx,	// ширина буфера
+	const uint_fast16_t by,	// высота буфера
 	int xn, int yn,
 	int xk, int yk,
 	COLORMAIN_T color,
@@ -839,7 +839,7 @@ void colmain_line(
 	/* разности если текущее s >= 0    */
 	colmain_putpixel(buffer, bx, by, xn, yn, color); /* Первый  пиксел вектора       */
 
-	static uint_fast16_t xold, yold;
+	/*static */ uint_fast16_t xold, yold;
 	xold = xn;
 	yold = yn;
 	while (-- kl >= 0)
@@ -857,21 +857,17 @@ void colmain_line(
 		else
 			xn += sx;
 		s += incr1;
+
 		colmain_putpixel(buffer, bx, by, xn, yn, color); /* Текущая  точка  вектора   */
 
 		if (antialiasing)
 		{
 			if (((xold == xn - 1) || (xold == xn + 1)) && ((yold == yn - 1) || (yold == yn + 1)))
 			{
-				PACKEDCOLORMAIN_T * a;
-				a = colmain_mem_at(buffer, bx, by, xn, yold);	// use colmain_putpixel ?
-				* a = sc;
-				a = colmain_mem_at(buffer, bx, by, xold, yn);
-				* a = sc;
-//				a = colmain_mem_at(buffer, bx, by, xn, yn);		// нужны дополнительные цвета для этих 2х точек
-//				* a = sc;
-//				a = colmain_mem_at(buffer, bx, by, xold, yold);
-//				* a = sc;
+				colmain_putpixel(buffer, bx, by, xn, yold, sc);
+				colmain_putpixel(buffer, bx, by, xold, yn, sc);
+//				colmain_putpixel(buffer, bx, by, xn, yn, sc);		// нужны дополнительные цвета для этих 2х точек
+//				colmain_putpixel(buffer, bx, by, xold, yold, sc);
 			}
 			xold = xn;
 			yold = yn;
