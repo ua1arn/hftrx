@@ -5686,8 +5686,8 @@ static void stm32mp1_ddr_init(struct ddr_info *priv,
 		mmio_read_32((uintptr_t)&priv->ctl->pctrl_1));
 }
 
-#include "stm32mp15-mx_1G.dtsi"	// 64k*16
-//#include "stm32mp15-mx_2G.dtsi"	// 128k*16
+//#include "stm32mp15-mx_1G.dtsi"	// 64k*16
+#include "stm32mp15-mx_2G.dtsi"	// 128k*16
 //#include "stm32mp15-mx_4G.dtsi"		// 256k*16
 //#include "stm32mp15-mx_8G.dtsi"	// 512k*16
 
@@ -6147,6 +6147,8 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 
 	for (;;)
 	{
+		PRINTF("rand_val = %08lX ", (unsigned long) rand_val);
+
 		uret = ddr_test_data_bus();
 		if (uret != 0U) {
 			ERROR("DDR data bus test: can't access memory @ 0x%x\n",
