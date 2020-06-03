@@ -2030,6 +2030,9 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 
 	RCC->MP_APB1ENSETR |= RCC_MC_APB1ENSETR_TIM5EN;   // подаем тактирование на TIM3
 	(void) RCC->MP_APB1ENSETR;
+	RCC->MP_APB1LPENSETR |= RCC_MC_APB1LPENSETR_TIM5LPEN;   // подаем тактирование на TIM3
+	(void) RCC->MP_APB1LPENSETR;
+
 	TIM5->DIER = TIM_DIER_UIE;        	 // разрешить событие от таймера
 
 	// TIM2 & TIM5 on CPUSTYLE_STM32F4XX have 32-bit CNT and ARR registers
@@ -6510,6 +6513,9 @@ hardware_elkey_timer_initialize(void)
 
 	RCC->MP_APB1ENSETR |= RCC_MC_APB1ENSETR_TIM3EN;   // подаем тактирование на TIM3
 	(void) RCC->MP_APB1ENSETR;
+	RCC->MP_APB1LPENSETR |= RCC_MC_APB1LPENSETR_TIM3LPEN;   // подаем тактирование на TIM3
+	(void) RCC->MP_APB1LPENSETR;
+
 	TIM3->DIER = TIM_DIER_UIE;        	 // разрешить событие от таймера
 
 	arm_hardware_set_handler_system(TIM3_IRQn, TIM3_IRQHandler);
