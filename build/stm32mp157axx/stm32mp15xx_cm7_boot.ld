@@ -1,5 +1,5 @@
 /* $Id$ */
-/* RENESAS RZ/A1L R7S721020 memory layout */
+/* ST STM32MP157AAB3/STM32MP157DAB1 memory layout */
 /* Linker script to configure memory regions. */
 
 /* Note: due to ROM code RAM needs, FSBL payload is limited to 247 KB.  */
@@ -185,8 +185,15 @@ SECTIONS
 	.noinit :
 	{
 		. = ALIGN(32);
-		*(.noinit)
+		*(.noinit*)
 		. = ALIGN(32);
+	} > RAM
+
+	.vram :
+	{
+		. = ALIGN(64);
+		*(.framebuff*)
+		. = ALIGN(64);
 	} > RAM
 
 	.heap (COPY):
