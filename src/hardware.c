@@ -2889,23 +2889,23 @@ void hardware_adc_initialize(void)
 	const uint_fast32_t ainmask = build_adc_mask();
 	HARDWARE_ADC_INITIALIZE(ainmask);
 
-#if CPUSTYLE_STM32MP1
-	RCC->MP_AHB2ENSETR |= RCC_MC_AHB2ENSETR_ADC12EN;	// Затактировали АЦП
-	(void) RCC->MP_AHB2ENSETR;
-	RCC->MP_AHB2LPENSETR |= RCC_MC_AHB2LPENSETR_ADC12LPEN;	// Затактировали АЦП
-	(void) RCC->MP_AHB2LPENSETR;
+	#if CPUSTYLE_STM32MP1
+		RCC->MP_AHB2ENSETR |= RCC_MC_AHB2ENSETR_ADC12EN;	// Затактировали АЦП
+		(void) RCC->MP_AHB2ENSETR;
+		RCC->MP_AHB2LPENSETR |= RCC_MC_AHB2LPENSETR_ADC12LPEN;	// Затактировали АЦП
+		(void) RCC->MP_AHB2LPENSETR;
 
-#elif CPUSTYLE_STM32H7XX
-	RCC->AHB1ENR |= RCC_AHB1ENR_ADC12EN;	// Затактировали АЦП
-	(void) RCC->AHB1ENR;
-	RCC->AHB4ENR |= RCC_AHB4ENR_ADC3EN;		// Затактировали АЦП
-	(void) RCC->AHB4ENR;
-	#if WITHREFSENSOR
-		RCC->APB4ENR |= RCC_APB4ENR_VREFEN;		// Затактировали источник опорного напрядения (для нормирования значений с АЦП)
+	#elif CPUSTYLE_STM32H7XX
+		RCC->AHB1ENR |= RCC_AHB1ENR_ADC12EN;	// Затактировали АЦП
+		(void) RCC->AHB1ENR;
+		RCC->AHB4ENR |= RCC_AHB4ENR_ADC3EN;		// Затактировали АЦП
 		(void) RCC->AHB4ENR;
-	#endif /* WITHREFSENSOR */
+		#if WITHREFSENSOR
+			RCC->APB4ENR |= RCC_APB4ENR_VREFEN;		// Затактировали источник опорного напрядения (для нормирования значений с АЦП)
+			(void) RCC->AHB4ENR;
+		#endif /* WITHREFSENSOR */
 
-#endif
+	#endif
 
 	// расчет делителя для тактирования АЦП
 	unsigned value;
