@@ -3662,7 +3662,17 @@ HAL_StatusTypeDef USB_CoreInit(USB_OTG_GlobalTypeDef * USBx, const USB_OTG_CfgTy
 			//(0 << USB_OTG_GAHBCFG_HBSTLEN_Pos) |	// Single
 			//(1 << USB_OTG_GAHBCFG_HBSTLEN_Pos) |	// INCR
 			//(3 << USB_OTG_GAHBCFG_HBSTLEN_Pos) |	// INCR4
-		#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
+		#if CPUSTYLE_STM32MP1
+			// 0x00, 0x01, 0x03, 0x05, 0x07
+			//	0000 Single: Bus transactions use single 32 bit accesses (not recommended)
+			//	0001 INCR: Bus transactions use unspecified length accesses (not recommended, uses the
+			//				INCR AHB bus command)
+			//	0011 INCR4: Bus transactions target 4x 32 bit accesses
+			//	0101 INCR8: Bus transactions target 8x 32 bit accesses
+			//	0111 INCR16: Bus transactions based on 16x 32 bit accesses
+			//	Others: Reserved
+			(0x07uL << USB_OTG_GAHBCFG_HBSTLEN_Pos) |
+		#elif CPUSTYLE_STM32H7XX
 			(USB_OTG_GAHBCFG_HBSTLEN_1 | USB_OTG_GAHBCFG_HBSTLEN_2) | // (0x06 << USB_OTG_GAHBCFG_HBSTLEN_Pos)
 		#else /* CPUSTYLE_STM32H7XX */
 			(5 << USB_OTG_GAHBCFG_HBSTLEN_Pos) |	// INCR8
@@ -3906,12 +3916,15 @@ HAL_StatusTypeDef USB_DevInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgType
 
 #else /* CPUSTYLE_STM32H7XX */
 
-	#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
-		  const int TXTHRLEN = 256;		// in DWORDS: The threshold length has to be at least eight DWORDS.
-		  const int RXTHRLEN = 8;	// in DWORDS: 128 - енумерация проходтит, 256 - нет.
+	#if CPUSTYLE_STM32MP1
+		  const uint_fast32_t TXTHRLEN = 1;		// in DWORDS: The threshold length has to be at least eight DWORDS.
+		  const uint_fast32_t RXTHRLEN = 1;	// in DWORDS: 128 - енумерация проходтит, 256 - нет.
+	#elif CPUSTYLE_STM32H7XX
+		  const uint_fast32_t TXTHRLEN = 256;		// in DWORDS: The threshold length has to be at least eight DWORDS.
+		  const uint_fast32_t RXTHRLEN = 8;	// in DWORDS: 128 - енумерация проходтит, 256 - нет.
 	#else /* CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1 */
-		  const int TXTHRLEN = 64;		// in DWORDS: The threshold length has to be at least eight DWORDS.
-		  const int RXTHRLEN = 2;	// in DWORDS:
+		  const uint_fast32_t TXTHRLEN = 64;		// in DWORDS: The threshold length has to be at least eight DWORDS.
+		  const uint_fast32_t RXTHRLEN = 2;	// in DWORDS:
 	#endif /* CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1 */
 	  // Configuration register applies only to USB OTG HS
     /*Set threshold parameters */
@@ -3919,10 +3932,10 @@ HAL_StatusTypeDef USB_DevInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgType
 									USB_OTG_DTHRCTL_RXTHREN | USB_OTG_DTHRCTL_ISOTHREN | USB_OTG_DTHRCTL_NONISOTHREN | USB_OTG_DTHRCTL_ARPEN)) |
 		TXTHRLEN * USB_OTG_DTHRCTL_TXTHRLEN_0 |		// Transmit (IN) threshold length
 		RXTHRLEN * USB_OTG_DTHRCTL_RXTHRLEN_0 | // see HBSTLEN bit in OTG_GAHBCFG).
-		USB_OTG_DTHRCTL_RXTHREN |		//  Receive (OUT) threshold enable
-		USB_OTG_DTHRCTL_ISOTHREN |		// ISO IN endpoint threshold enable
-		USB_OTG_DTHRCTL_NONISOTHREN |	// Nonisochronous IN endpoints threshold enable
-		USB_OTG_DTHRCTL_ARPEN |			// Arbiter parking enable
+		//USB_OTG_DTHRCTL_RXTHREN |		//  Receive (OUT) threshold enable
+		//USB_OTG_DTHRCTL_ISOTHREN |		// ISO IN endpoint threshold enable
+		//USB_OTG_DTHRCTL_NONISOTHREN |	// Nonisochronous IN endpoints threshold enable
+		USB_OTG_DTHRCTL_ARPEN |			// Arbiter parking enable controls internal DMA arbiter parking for IN endpoints.
 		0;
     (void) USBx_DEVICE->DTHRCTL;
 
@@ -5263,29 +5276,38 @@ HAL_StatusTypeDef USB_HostInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgTyp
 
 	/* Disable all interrupts. */
 	USBx->GINTMSK = 0;
+	(void) USBx->GINTMSK;
 
 	/* Clear any pending interrupts */
 	USBx->GINTSTS = 0xFFFFFFFF;
+	(void) USBx->GINTSTS;
 
-	if(USBx == USB_OTG_FS)
+	if (USBx == USB_OTG_FS)
 	{
 		/* set Rx FIFO size */
 		USBx->GRXFSIZ  = (uint32_t )0x80;
+		(void) USBx->GRXFSIZ;
 		USBx->DIEPTXF0_HNPTXFSIZ = (uint32_t )(((0x60 << 16)& USB_OTG_NPTXFD) | 0x80);
+		(void) USBx->DIEPTXF0_HNPTXFSIZ;
 		USBx->HPTXFSIZ = (uint32_t )(((0x40 << 16)& USB_OTG_HPTXFSIZ_PTXFD) | 0xE0);
+		(void) USBx->HPTXFSIZ;
 	}
 	else
 	{
 		/* set Rx FIFO size */
 		USBx->GRXFSIZ  = (uint32_t) 0x200;
+		(void) USBx->GRXFSIZ;
 		USBx->DIEPTXF0_HNPTXFSIZ = (uint32_t) (((0x100 << 16)& USB_OTG_NPTXFD) | 0x200);
+		(void) USBx->DIEPTXF0_HNPTXFSIZ;
 		USBx->HPTXFSIZ = (uint32_t) (((0xE0 << 16)& USB_OTG_HPTXFSIZ_PTXFD) | 0x300);
+		(void) USBx->HPTXFSIZ;
 	}
 
 	/* Enable the common interrupts */
 	if (cfg->dma_enable == USB_DISABLE)
 	{
 		USBx->GINTMSK |= USB_OTG_GINTMSK_RXFLVLM;
+		(void) USBx->GINTMSK;
 	}
 
 	/* Enable interrupts matching to the Host mode ONLY */
@@ -5297,6 +5319,7 @@ HAL_StatusTypeDef USB_HostInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgTyp
 		USB_OTG_GINTMSK_PXFRM_IISOOXFRM |
 		USB_OTG_GINTMSK_WUIM |
 		0);
+	(void) USBx->GINTMSK;
 
 	return HAL_OK;
 }
@@ -5319,10 +5342,12 @@ HAL_StatusTypeDef USB_InitFSLSPClkSel(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t 
   if (freq ==  HCFG_48_MHZ)
   {
     USBx_HOST->HFIR = (uint32_t)48000;
+    (void) USBx_HOST->HFIR;
   }
   else if (freq ==  HCFG_6_MHZ)
   {
     USBx_HOST->HFIR = (uint32_t)6000;
+    (void) USBx_HOST->HFIR;
   }
   return HAL_OK;
 }
@@ -5346,6 +5371,7 @@ HAL_StatusTypeDef USB_ResetPort(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t state)
 	  USBx_HPRT0 = (USB_OTG_HPRT_PRST | hprt0);
   else
 	  USBx_HPRT0 = ((~ USB_OTG_HPRT_PRST) & hprt0);
+  (void) USBx_HPRT0;
 
   return HAL_OK;
 }
@@ -5367,10 +5393,12 @@ HAL_StatusTypeDef USB_DriveVbus (USB_OTG_GlobalTypeDef *USBx, uint_fast8_t state
   if (((hprt0 & USB_OTG_HPRT_PPWR) == 0 ) && (state == 1 ))
   {
     USBx_HPRT0 = (USB_OTG_HPRT_PPWR | hprt0);
+    (void) USBx_HPRT0;
   }
   if (((hprt0 & USB_OTG_HPRT_PPWR) == USB_OTG_HPRT_PPWR) && (state == 0 ))
   {
     USBx_HPRT0 = ((~USB_OTG_HPRT_PPWR) & hprt0);
+    (void) USBx_HPRT0;
   }
   return HAL_OK;
 }
@@ -8332,10 +8360,10 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 				  if ((epint & USB_OTG_DOEPINT_STUP) == USB_OTG_DOEPINT_STUP)
 				  {
 		#if CPUSTYLE_STM32MP1
-					  if(hpcd->Init.dma_enable == USB_ENABLE)
+					  if (hpcd->Init.dma_enable == USB_ENABLE)
 					  {
 						  // USB_OTG_DOEPINT_STPKTRX
-						if(USBx_OUTEP(0)->DOEPINT & (1 << 15))
+						if (USBx_OUTEP(0)->DOEPINT & (1 << 15))
 						{
 						  CLEAR_OUT_EP_INTR(epnum, (1 << 15));
 						}
@@ -8344,7 +8372,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 					/* setup/out transaction management for Core ID >= 310A */
 					if (USBx->GSNPSID >= USB_OTG_CORE_ID_310A)
 					{
-					  if(hpcd->Init.dma_enable == USB_ENABLE)
+					  if (hpcd->Init.dma_enable == USB_ENABLE)
 					  {
 						  // USB_OTG_DOEPINT_STPKTRX
 						if(USBx_OUTEP(0)->DOEPINT & (1 << 15))
@@ -8642,7 +8670,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
     /* Handle RxQLevel Interrupt */
     if(__HAL_PCD_GET_FLAG(hpcd, USB_OTG_GINTSTS_RXFLVL))
     {
-      //USB_MASK_INTERRUPT(hpcd->Instance, USB_OTG_GINTSTS_RXFLVL); //mgs:????
+      USB_MASK_INTERRUPT(hpcd->Instance, USB_OTG_GINTSTS_RXFLVL); //mgs:????
       const uint_fast32_t grxstsp = USBx->GRXSTSP;
       USB_OTG_EPTypeDef * const ep = & hpcd->OUT_ep [grxstsp & USB_OTG_GRXSTSP_EPNUM];
 
@@ -8664,7 +8692,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
         USB_ReadPacket(USBx, (uint8_t *) hpcd->PSetup, 8);
         ep->xfer_count += bcnt;
       }
-      //USB_UNMASK_INTERRUPT(hpcd->Instance, USB_OTG_GINTSTS_RXFLVL); //mgs:????
+      USB_UNMASK_INTERRUPT(hpcd->Instance, USB_OTG_GINTSTS_RXFLVL); //mgs:????
     }
 
     /* Handle SOF Interrupt */
