@@ -9886,12 +9886,7 @@ display_spool(void)
 		}
 	}
 	#endif /* WITHNMEA */
-	// таймер обновления частоты
-	{
-		const uint_fast8_t t = counterupdatedfreqs;
-		if (t != 0)
-			counterupdatedfreqs = t - 1;
-	}
+
 #if 0
 	// таймер обновления режимов работы
 	{
@@ -9900,6 +9895,13 @@ display_spool(void)
 			counterupdatedmodes = t - 1;
 	}
 #endif
+
+	// таймер обновления частоты
+	{
+		const uint_fast8_t t = counterupdatedfreqs;
+		if (t != 0)
+			counterupdatedfreqs = t - 1;
+	}
 	//отсчёт времени для обновления индикатора АКБ
 	{
 		const uint_fast16_t t = counterupdatedvoltage;
