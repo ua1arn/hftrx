@@ -3048,14 +3048,16 @@ HAL_StatusTypeDef USB_DeactivateDedicatedEndpoint(USB_OTG_GlobalTypeDef *USBx, U
 
 
 #define __HAL_PCD_UNGATE_PHYCLOCK(h) do { \
-	* (__IO uint32_t *) ((uintptr_t) (h)->Instance + USB_OTG_PCGCCTL_BASE) &= ~ (USB_OTG_PCGCCTL_STOPCLK); \
+		* (__IO uint32_t *) ((uintptr_t) (h)->Instance + USB_OTG_PCGCCTL_BASE) &= ~ (USB_OTG_PCGCCTL_STOPCLK); \
+		(void) * (__IO uint32_t *) ((uintptr_t) (h)->Instance + USB_OTG_PCGCCTL_BASE); \
 	} while (0)
 
 #define __HAL_PCD_GATE_PHYCLOCK(h) do { \
-	*(__IO uint32_t *)((uint32_t)((h)->Instance) + USB_OTG_PCGCCTL_BASE) |= USB_OTG_PCGCCTL_STOPCLK; \
+		*(__IO uint32_t *)((uint32_t)((h)->Instance) + USB_OTG_PCGCCTL_BASE) |= USB_OTG_PCGCCTL_STOPCLK; \
+		(void) * (__IO uint32_t *) ((uintptr_t) (h)->Instance + USB_OTG_PCGCCTL_BASE); \
 	} while (0)
 
-#define __HAL_PCD_IS_PHY_SUSPENDED(h)            ((*(__IO uint32_t *)((uint32_t)((h)->Instance) + USB_OTG_PCGCCTL_BASE))&0x10)
+#define __HAL_PCD_IS_PHY_SUSPENDED(h)            ((* (__IO uint32_t *)((uint32_t)((h)->Instance) + USB_OTG_PCGCCTL_BASE)) & 0x10)
 
 /** @defgroup USB_CORE_Frame_Interval_   USB CORE Frame Interval
   * @{
