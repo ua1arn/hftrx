@@ -210,7 +210,7 @@ enum { RESAMPLE16NORMAL = SKIPPED * 2 };	// Нормальное количес�
 enum { CNT16 = DMABUFFSIZE16 / DMABUFSTEP16 };
 enum { CNT32RX = DMABUFFSIZE32RX / DMABUFSTEP32RX };
 //enum { PHONESLEVELx = CNT16 / CNT32RX };
-enum { PHONESLEVEL = 4 };
+enum { PHONESLEVEL = 5 };
 
 static RAMDTCM LIST_ENTRY3 voicesmike16;	// буферы с оцифрованными звуками с микрофона/Line in
 static RAMDTCM LIST_ENTRY3 resample16;		// буферы от USB для синхронизации
@@ -846,13 +846,12 @@ static void purge_buffers16(LIST_ENTRY2 * list)
 {
 	if (GetCountList2(list) > PHONESLEVEL * 3)
 	{
-		uint_fast8_t n = PHONESLEVEL * 2;
 		do
 		{
 			const PLIST_ENTRY t = RemoveTailList2(list);
 			InsertHeadList2(& voicesfree16, t);
 		}
-		while (-- n && ! IsListEmpty2(list));
+		while (GetCountList2(list) > PHONESLEVEL);
 	}
 }
 
@@ -2742,3 +2741,4 @@ void release_dmabufferxrts(uintptr_t addr)	/* освободить буфер о
 #endif /* WITHUSBUAC */
 
 #endif /* WITHINTEGRATEDDSP */
+
