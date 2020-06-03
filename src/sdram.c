@@ -5914,11 +5914,71 @@ static uint32_t ddr_check_size(void)
 		offset <<= 1;
 	}
 
-	INFO("Memory size = 0x%x (%d MB)\n", offset, offset / (1024U * 1024U));
 
 	return offset;
 }
 
+static unsigned long rand_val = 123456UL;
+
+static void local_random_init(void)
+{
+	rand_val = 123456UL;
+}
+
+static unsigned long local_random(void)
+{
+
+
+	if (rand_val & 0x80000000UL)
+		rand_val = (rand_val << 1);
+	else
+		rand_val = (rand_val << 1) ^ 0x201051UL;
+
+	return (rand_val);
+}
+static int oldstate;
+
+static void ddr_check_progress(uint32_t addr)
+{
+	int state = (addr >> 22) & 0x01;
+#if defined (BOARD_BLINK_SETSTATE)
+	if (oldstate != state)
+	{
+		oldstate = state;
+		BOARD_BLINK_SETSTATE(state);
+	}
+#endif /* defined (BOARD_BLINK_SETSTATE) */
+}
+
+static uint32_t ddr_check_rand(void)
+{
+	//uint64_t addressmask = (DDR_MEM_SIZE - 1U);
+	const uint32_t size4 = DDR_MEM_SIZE / 4;
+	volatile uint32_t * p;
+	uint32_t i;
+
+	// fill
+	//local_random_init();
+	uint32_t seed = rand_val;
+	p = (volatile uint32_t *) STM32MP_DDR_BASE;
+	for (i = 0; i < size4; ++ i)
+	{
+		ddr_check_progress(i);
+		p [i] = local_random();
+	}
+	// compare
+	//local_random_init();
+	rand_val = seed;
+	p = (volatile uint32_t *) STM32MP_DDR_BASE;
+	for (i = 0; i < size4; ++ i)
+	{
+		ddr_check_progress(i);
+		if (p [i] != local_random())
+			return i * 4;
+	}
+
+	return DDR_MEM_SIZE;	// OK
+}
 // NT5CC128M16IP-DI BGA DDR3 NT5CC128M16IP DI
 void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 {
@@ -6076,10 +6136,15 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 		      uret, config.info.size);
 		//panic();
 	}
+	INFO("Memory size = 0x%x (%d MB)\n", uret, uret / (1024U * 1024U));
 
 #if 0
 	// Бесконечный тест памяти.
 	PRINTF("DDR memory tests:\n");
+#if defined (BOARD_BLINK_INITIALIZE)
+	BOARD_BLINK_INITIALIZE();
+#endif /* defined (BOARD_BLINK_INITIALIZE) */
+
 	for (;;)
 	{
 		uret = ddr_test_data_bus();
@@ -6100,7 +6165,16 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 			      uret, config.info.size);
 			panic();
 		}
+		uret = ddr_check_rand();
+		if (uret != config.info.size) {
+			ERROR("DDR random test: 0x%x does not match DT config: 0x%x\n",
+			      uret, config.info.size);
+			panic();
+		}
 		PRINTF(".");
+		//char c;
+		//if (dbg_getchar(& c)/* && c == 0x1b*/)
+		//	break;
 	}
 #endif
 	//__set_SCTLR(__get_SCTLR() | SCTLR_C_Msk);
