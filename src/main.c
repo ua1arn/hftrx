@@ -12909,7 +12909,7 @@ static const FLASHMEM struct menudef menutable [] =
 //	},
 #endif
 	{
-		QLABEL2("SHOW dBm", "Show dBm"), 8, 3, RJ_ON,	ISTEP1,
+		QLABEL2("SHOW dBm", "Show dBm"), 8, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,
 		offsetof(struct nvmap, gshowdbm),
