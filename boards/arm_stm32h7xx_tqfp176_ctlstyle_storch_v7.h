@@ -172,7 +172,7 @@
 
 	//#define KEYB_FPANEL30_V3	1	/* KEYBOARD_USE_ADC6_V1, 30 кнопок на 5 линий - плата rfrontpanel_v3 + LCDMODE_S1D13781 & LCDMODE_LQ043T3DX02K в нормальном расположении */
 	//#define KEYBOARD_USE_ADC6_V1	1
-	#define COLORSTYLE_ATS52 1	// spectrum display in alternative colors
+	//#define COLORSTYLE_ATS52 1	// spectrum display in alternative colors
 
 	//#define KEYB_FPANEL20_V0A_PLAYFILE 1
 	//#define WITHSENDWAV 1	/* трансивер может передавать записанные wav файлы */
@@ -282,7 +282,7 @@
 	#define WITHFPGALOAD_PS	1	/* FPGA загружается процессором с помощью SPI */
 
 	//#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
-	#define BOARD_FFTZOOM_POW2MAX 1	// Возможные масштабы FFT x1, x2, x4, x8
+	#define BOARD_FFTZOOM_POW2MAX 2	// Возможные масштабы FFT x1, x2, x4
 	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
 	#define WITHUSEDUALWATCH	1	// Второй приемник
 	#define WITHREVERB	1	// ревербератор в обработке микрофонного сигнала
