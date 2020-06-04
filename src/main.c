@@ -19352,7 +19352,11 @@ ddd:
 
 #if defined (BOARD_IS_USERBOOT)
 		/* если не установлен джампер - запускаем программу. */
-		if (! BOARD_IS_USERBOOT())
+//		if (! BOARD_IS_USERBOOT())
+//			break;
+		//	при наличии перемычки входим в режим загрузчика по USB.
+		//	Выйти или через команду DFU или по сбросу.
+		if (usbactivated == 0)
 			break;
 #elif WITHDEBUG
 		/* ввод 'r' - запускаем программу. */
