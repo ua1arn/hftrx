@@ -2519,6 +2519,7 @@ struct nvmap
 	uint8_t gwfshiftenable; /* разрешение или запрет сдвига водопада при изменении частоты */
 	uint8_t gspantialiasing; /* разрешение или запрет антиалиасинга спектра */
 #endif /* WITHSPECTRUMWF */
+	uint8_t gshowdbm;	/* Отображение уровня сигнала в dBm или S-memter */
 #if WITHBCBANDS
 	uint8_t bandsetbcast;	/* Broadcasting radio bands */
 #endif /* WITHBCBANDS */
@@ -3190,7 +3191,7 @@ static const uint_fast8_t displaymodesfps = DISPLAYMODES_FPS;
 	enum { gbluebgnd = 0 };
 #endif /* LCDMODE_COLORED */
 
-
+	static uint_fast8_t gshowdbm;	// Отображение уровня сигнала в dBm или S-memter
 #if WITHAUTOTUNER
 
 enum
@@ -8359,7 +8360,7 @@ updateboard(
 			board_set_wfshiftenable(gwfshiftenable);	/* разрешение или запрет сдвига водопада при изменении частоты */
 			board_set_spantialiasing(gspantialiasing); /* разрешение или запрет антиалиасинга спектра */
 		#endif /* WITHSPECTRUMWF */
-		board_set_showdbm(0);		// Отображение уровня сигнала в dBm или S-memter (в зависимости от настроек)
+		board_set_showdbm(gshowdbm);		// Отображение уровня сигнала в dBm или S-memter (в зависимости от настроек)
 	#endif /* WITHIF4DSP */
 
 	#if WITHTX
@@ -12907,6 +12908,15 @@ static const FLASHMEM struct menudef menutable [] =
 //		getzerobase, /* складывается со смещением и отображается */
 //	},
 #endif
+	{
+		QLABEL2("SHOW dBm", "Show dBm"), 8, 3, RJ_ON,	ISTEP1,
+		ITEM_VALUE,
+		0, 1,
+		offsetof(struct nvmap, gshowdbm),
+		NULL,
+		& gshowdbm,
+		getzerobase, /* складывается со смещением и отображается */
+	},
 	{
 		QLABEL("FREQ FPS"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
