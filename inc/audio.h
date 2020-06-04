@@ -634,13 +634,14 @@ void board_set_uacmike(uint_fast8_t v);	/* на вход трансивера б
 void dsp_initialize(void);
 
 #if WITHINTEGRATEDDSP
-	// Копрование информации о спектре с текущую строку буфера
-	// wfarray (преобразование к пикселям растра */
+	// Копрование информации о спектре в текущую строку буфера
+	// преобразование к пикселям растра
 	uint_fast8_t dsp_getspectrumrow(
 		FLOAT_t * const hbase,
 		uint_fast16_t dx,	// pixel X width (pixels) of display window
 		uint_fast8_t zoompow2	// horisontal magnification power of two
 		);
+
 	// Нормирование уровня сигнала к шкале
 	// возвращает значения от 0 до ymax включительно
 	// 0 - минимальный сигнал, ymax - максимальный
