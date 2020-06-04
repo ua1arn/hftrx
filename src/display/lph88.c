@@ -136,27 +136,6 @@ lph88_pix8(
 	lph88_pixel_p2(v & 0x80);
 }
 
-static uint_fast8_t
-bigfont_decode(uint_fast8_t c)
-{
-	// '#' - узкий пробел
-	if (c == ' ' || c == '#')
-		return 11;
-	if (c == '_')
-		return 10;		// курсор - позиция редактирвания частоты
-	if (c == '.')
-		return 12;		// точка
-	return c - '0';		// остальные - цифры 0..9
-}
-
-
-static uint_fast8_t
-smallfont_decode(uint_fast8_t c)
-{
-	return c - ' ';
-}
-
-
 // Вызов этой функции только внутри display_wrdata_begin() и 	display_wrdata_end();
 static void lph88_put_char_fast(char cc)
 {
@@ -376,10 +355,11 @@ display_wrdatabar_begin(void)
 	lph88_put_char_begin();
 }
 
-void 
-display_barcolumn(uint_fast8_t pattern)
+uint_fast16_t
+display_barcolumn(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t pattern)
 {
 	lph88_bar_column(pattern);
+	return xpix + 1;
 }
 
 void
@@ -457,7 +437,9 @@ void display_plotstop(void)
 void display_plot(
 	const PACKEDCOLORMAIN_T * buffer, 
 	uint_fast16_t dx,	// Размеры окна в пикселях
-	uint_fast16_t dy
+	uint_fast16_t dy,
+	uint_fast16_t xpix,	// начало области рисования
+	uint_fast16_t ypix
 	)
 {
 

@@ -1,13 +1,25 @@
 /* $Id$ */
-/* ST STM32MP157AAB3 memory layout */
+/* ST STM32MP157AAB3/STM32MP157DAB1 memory layout */
 /* Linker script to configure memory regions. */
+
+/* Note: due to ROM code RAM needs, FSBL payload is limited to 247 KB.  */
+/* The ROM code loads the image into SYSRAM internal memory at address 0x2ffc2400.  */
+/*
+	https://community.st.com/s/question/0D50X0000BiDo0fSQC/stm32mp157aab-failed-to-boot-from-nor-qspi-baremetal?t=1575552683743
+	
+	Load address is ALWAYS 0x2FFC2400 for FSBL, whatever you put in the header (it is ignored for FSBL).
+	Entry point in the header could be anywhere after the header (i.e. 0x2FFC2500) and the end of the SYSRAM
+	I recommend to compile your FSBL SW to fit with a region starting from 0x2FFC2500 (with a size of max 247KB minus 256 for header).
+	Entry point will depend on your SW startup.s construction, it is not always at the very first address.
+*/
 MEMORY
 {
   FLASH (rx) 	: ORIGIN = 0x70000000, LENGTH = 4M		/* W25Q32FVZPIG */
-  RAM (rwx) 	: ORIGIN = 0xC0000100, LENGTH = 0x0FFFFF00 	/* DDR3 single chip NT5CC128M16IP-DI */
-  SYSRAM (rwx)	: ORIGIN = 0x2FFC0000, LENGTH = 240k	/* SYSRAM - 256 kB */
+  RAM (rwx) 	: ORIGIN = 0xC0000100, LENGTH = 0x07FFFF00 	/* half of DDR3 single chip NT5CC128M16IP-DI */
+  SYSRAM (rwx)	: ORIGIN = 0x2FFC2500, LENGTH = 0x00039B00	/* SYSRAM - 256k - 16k - 9k - 256 B */
   TTB (rwx)  	: ORIGIN = 0x2FFFC000, LENGTH = 16k		/* last 16 kB SYSRAM for TTB */
   SRAM (rwx)  	: ORIGIN = 0x20000000, LENGTH = 384k	/* Cortex-M4 memories */
+  SRAM2 (rwx)  	: ORIGIN = 0x30000000, LENGTH = 96k		/* Cortex-M4 memories visible for Cortex-A7*/
 }
 
 /* Library configurations */
@@ -39,21 +51,20 @@ MEMORY
  *   __StackTop
  *   __stack
  */
-/* ENTRY(Reset_Handler) */
+	 ENTRY(Reset_Handler7)
 
 SECTIONS
 {
 	.text :
 	{
-		KEEP(*(.vectors))
-		__Vectors_End = .;
-		__Vectors_Size = __Vectors_End - __Vectors;
 		KEEP(*(.init*))
 		KEEP(*(.initfunc*))
 		KEEP(*(.initdata*))
 		KEEP(*(.fini))
+
 		*(.text*)
 		*(.itcm*)
+		*(.dtcm*)
 	} > RAM
 
 	.ARM.extab :
@@ -71,7 +82,6 @@ SECTIONS
 	/* To copy multiple ROM to RAM sections,
 	 * uncomment .copy.table section and,
 	 * define __STARTUP_COPY_MULTIPLE in startup_ARMCMx.S */
-
 	.copy.table :
 	{
 		. = ALIGN(4);
@@ -103,13 +113,16 @@ SECTIONS
 		__zero_table_end__ = .;
 	} > RAM
 
-	__etext = ALIGN (4);
+	__etext = .;
 
-	.data :
+	.data : /*AT (__etext)*/
 	{
 		__data_start__ = .;
+		. = ALIGN(32);
+		KEEP(*(.vectors))
+		__Vectors_End = .;
+		__Vectors_Size = __Vectors_End - __Vectors;
 
-		. = ALIGN(4);
 		/* .ctors */
 		*crtbegin.o(.ctors)
 		*crtbegin?.o(.ctors)
@@ -129,8 +142,8 @@ SECTIONS
 		KEEP(*(.eh_frame*))
 
 		*(.data*)
-		*(.dtcm*)
-		
+	   . = ALIGN(4);	/* one line added by ua1arn */
+
 		. = ALIGN(4);
 		/* preinit data */
 		PROVIDE_HIDDEN (__preinit_array_start = .);
@@ -153,7 +166,7 @@ SECTIONS
 		PROVIDE_HIDDEN (__fini_array_end = .);
 
 		KEEP(*(.jcr*))
-		. = ALIGN(4);
+		. = ALIGN(32);
 		/* All data end */
 		__data_end__ = .;
 
@@ -161,19 +174,19 @@ SECTIONS
 
 	.bss :
 	{
-		. = ALIGN(64);
+		. = ALIGN(32);
 		__bss_start__ = .;
 		*(.bss*)
 		*(COMMON)
-		. = ALIGN(64);
+		. = ALIGN(32);
 		__bss_end__ = .;
 	} > RAM
 
 	.noinit :
 	{
-		. = ALIGN(64);
+		. = ALIGN(32);
 		*(.noinit*)
-		. = ALIGN(64);
+		. = ALIGN(32);
 	} > RAM
 
 	.vram :

@@ -102,7 +102,7 @@
 	//#define ENCRES_DEFAULT ENCRES_100
 	//#define ENCRES_DEFAULT ENCRES_24
 	#define WITHDIRECTFREQENER	1 //(! CTLSTYLE_SW2011ALL && ! CTLSTYLE_UA3DKC)
-	#define	WITHENCODER	1	/* для изменения частоты имеется енкодер */
+	#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
 
 	// +++ Эти строки можно отключать, уменьшая функциональность готового изделия
 	//#define LFMTICKSFREQ 1000L		/* 10 khz */

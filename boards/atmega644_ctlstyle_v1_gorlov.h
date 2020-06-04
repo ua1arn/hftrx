@@ -297,7 +297,7 @@
 	#define ENCRES_DEFAULT ENCRES_128
 	//#define ENCRES_DEFAULT ENCRES_24
 	#define WITHDIRECTFREQENER	1 //(! CTLSTYLE_SW2011ALL && ! CTLSTYLE_UA3DKC)
-	#define	WITHENCODER	1	/* для изменения частоты имеется енкодер */
+	#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
 	#define WITHSPLIT	1	/* управление режимами расстройки одной кнопкой */
 	//#define WITHSPLITEX	1	/* Трехкнопочное управление режимами расстройки */
 	#define WITHCATEXT	1	/* Расширенный набор команд CAT */
@@ -359,9 +359,9 @@
 
 	#if 0
 		#define WITHBBOX	1	// Black Box mode - устройство без органов управления
-		#define	WITHBBOXFREQ	14063710L		// частота после включения
-		#define	WITHBBOXSUBMODE	SUBMODE_CW	// единственный режим работы
-		#define	WITHBBOXTX		1		// автоматический переход на передачу
+		#define WITHBBOXFREQ	14063710L		// частота после включения
+		#define WITHBBOXSUBMODE	SUBMODE_CW	// единственный режим работы
+		#define WITHBBOXTX		1		// автоматический переход на передачу
 	#endif
 
 	//#define LO1PHASES	1		/* Прямой синтез первого гетеродина двумя DDS с програмимруемым сдвигом фазы */

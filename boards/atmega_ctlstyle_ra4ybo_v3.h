@@ -90,7 +90,7 @@
 	#define ENCRES_DEFAULT ENCRES_128
 	//#define ENCRES_DEFAULT ENCRES_100
 	//#define ENCRES_DEFAULT ENCRES_24
-	#define	WITHENCODER	1	/* для изменения частоты имеется енкодер */
+	#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
 	#define ENCODER_REVERSE	1	/* шагать в обртную сторону */
 
 	// +++ Эти строки можно отключать, уменьшая функциональность готового изделия
@@ -114,7 +114,7 @@
 	#define WITHMENU 	1	/* функциональность меню может быть отключена - если настраивать нечего */
 	#define WITHVIBROPLEX	1	/* возможность эмуляции передачи виброплексом */
 
-	#define	WITHAUTOTUNER	1	/* Есть функция автотюнера */
+	#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
 	//#define FULLSET8 1
 	#define SHORTSET8 1
 	#define WITHSLEEPTIMER	1	/* выключить индикатор и вывод звука по истечениии указанного времени */

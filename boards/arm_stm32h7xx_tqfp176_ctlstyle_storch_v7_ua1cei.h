@@ -161,7 +161,7 @@
 	#define DEFPREAMPSTATE 	0	/* УВЧ по умолчанию включён (1) или выключен (0) */
 
 	#define WITHAGCMODEONOFF	1	// АРУ вкл/выкл
-	#define	WITHMIC1LEVEL		1	// установка усиления микрофона
+	#define WITHMIC1LEVEL		1	// установка усиления микрофона
 
 	//#define DSTYLE_UR3LMZMOD	1	// Расположение элементов экрана в трансиверах UR3LMZ
 	#define	FONTSTYLE_ITALIC	1	// Использовать альтернативный шрифт
@@ -231,7 +231,7 @@
 	#define ENCRES_DEFAULT ENCRES_128
 	//#define ENCRES_DEFAULT ENCRES_24
 	#define WITHDIRECTFREQENER	1 //(! CTLSTYLE_SW2011ALL && ! CTLSTYLE_UA3DKC)
-	#define	WITHENCODER	1	/* для изменения частоты имеется енкодер */
+	#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
 	//#define ENCODER_REVERSE	1	/* разводка на плате с перепутаными фазами от валкодера */
 	//#define ENCODER2_REVERSE	1	/* разводка на плате с перепутаными фазами от валкодера */
 	#define WITHENCODER2	1		/* есть второй валкодер */
@@ -261,8 +261,7 @@
 	#define WITHSAI1_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
 	//#define WITHSAI2_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
 	#define WITHI2S_FORMATI2S_PHILIPS 1	// Возможно использование при передаче данных в кодек, подключенный к наушникам и микрофону
-	//#define WITHI2S_32BITPAIR 1	// 2*32bit при передаче данных в кодек, подключенный к наушникам и микрофону
-	//#define CODEC_TYPE_NAU8822_USE_32BIT 1	// программирование кодека в формате 32 бит стерео
+	#define WITHI2S_FRAMEBITS 32	// Полный размер фрейма для двух каналов - канал кодека
 	#define WITHI2SHWRXSLAVE	1		// Приёмный канал I2S (микрофон) используюся в SLAVE MODE
 	#define WITHI2SHWTXSLAVE	1		// Передающий канал I2S (наушники) используюся в SLAVE MODE
 	//#define WITHSAI1HWTXRXMASTER	1		// SAI1 work in MASTER mode
@@ -281,14 +280,14 @@
 	#define WITHDACSTRAIGHT 1		/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
 
 	// FPGA section
-	//#define	WITHFPGAWAIT_AS	1	/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
-	#define	WITHFPGALOAD_PS	1	/* FPGA загружается процессором с помощью SPI */
+	//#define WITHFPGAWAIT_AS	1	/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
+	#define WITHFPGALOAD_PS	1	/* FPGA загружается процессором с помощью SPI */
 
 	//#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
 	#define BOARD_FFTZOOM_POW2MAX 1	// Возможные масштабы FFT x1, x2, x4, x8
 	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
 	#define WITHUSEDUALWATCH	1	// Второй приемник
-	#define WITHREVERB	1	// реербератор в обраьотке микрофонного сигнала
+	#define WITHREVERB	1	// ревербератор в обработке микрофонного сигнала
 	//#define WITHLOOPBACKTEST	1	/* прослушивание микрофонного входа, генераторов */
 	//#define WITHMODEMIQLOOPBACK	1	/* модем получает собственные передаваемые квадратуры */
 	//#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
@@ -308,43 +307,43 @@
 	#if 0
 		#define WITHWAVPLAYER 1	/* трансивер работает проигрывателем файлов с USB/SD накопителя */
 		//#define WITHBBOX	1	// Black Box mode - устройство без органов управления
-		//#define	WITHBBOXMIKESRC	BOARD_TXAUDIO_USB
+		//#define WITHBBOXMIKESRC	BOARD_TXAUDIO_USB
 	#elif 0
 		#define WITHUSBHEADSET 1	/* трансивер работает USB гарнитурой для компьютера - режим тестирования */
 		#define WITHBBOX	1	// Black Box mode - устройство без органов управления
-		#define	WITHBBOXMIKESRC	BOARD_TXAUDIO_USB
+		#define WITHBBOXMIKESRC	BOARD_TXAUDIO_USB
 	#elif 0
 		#define WITHBBOX	1	// Black Box mode - устройство без органов управления
-		#define	WITHBBOXFREQ	26985000L		// частота после включения
-		//#define	WITHBBOXFREQ	(26985000L - 260)		// частота после включения - 135 коррекция частоты платы с  122.88 для попадания в приём платы с 100 МГц генератором без коррекции
-		//#define	WITHBBOXFREQ	(26985000L - 1600)		// частота после включения
-		//#define	WITHBBOXFREQ	(14070000L - 1000)		// прослушивание BPSK частот
-		//#define	WITHBBOXFREQ	(14065000L - 135)		// частота после включения - 135 коррекция частоты платы с  122.88 для попадания в приём платы с 100 МГц генератором без коррекции
-		//#define	WITHBBOXFREQ	14065000L		// частота после включения
-		//#define	WITHBBOXFREQ	(14065000L - 1000)		// частота после включения
-		//#define	WITHBBOXSUBMODE	SUBMODE_USB	// единственный режим работы
-		#define	WITHBBOXSUBMODE	SUBMODE_BPSK	// единственный режим работы
-		//#define	WITHBBOXFREQ	27100000L		// частота после включения
-		//#define	WITHBBOXSUBMODE	SUBMODE_CW	// единственный режим работы
-		//#define	WITHBBOXTX		1		// автоматический переход на передачу
-		//#define	WITHBBOXMIKESRC	BOARD_TXAUDIO_2TONE
+		#define WITHBBOXFREQ	26985000L		// частота после включения
+		//#define WITHBBOXFREQ	(26985000L - 260)		// частота после включения - 135 коррекция частоты платы с  122.88 для попадания в приём платы с 100 МГц генератором без коррекции
+		//#define WITHBBOXFREQ	(26985000L - 1600)		// частота после включения
+		//#define WITHBBOXFREQ	(14070000L - 1000)		// прослушивание BPSK частот
+		//#define WITHBBOXFREQ	(14065000L - 135)		// частота после включения - 135 коррекция частоты платы с  122.88 для попадания в приём платы с 100 МГц генератором без коррекции
+		//#define WITHBBOXFREQ	14065000L		// частота после включения
+		//#define WITHBBOXFREQ	(14065000L - 1000)		// частота после включения
+		//#define WITHBBOXSUBMODE	SUBMODE_USB	// единственный режим работы
+		#define WITHBBOXSUBMODE	SUBMODE_BPSK	// единственный режим работы
+		//#define WITHBBOXFREQ	27100000L		// частота после включения
+		//#define WITHBBOXSUBMODE	SUBMODE_CW	// единственный режим работы
+		//#define WITHBBOXTX		1		// автоматический переход на передачу
+		//#define WITHBBOXMIKESRC	BOARD_TXAUDIO_2TONE
 	#elif 0
 		#define WITHBBOX	1	// Black Box mode - устройство без органов управления
-		#define	WITHBBOXFREQ	136000L		// частота после включения
-		#define	WITHBBOXSUBMODE	SUBMODE_USB	// единственный режим работы
+		#define WITHBBOXFREQ	136000L		// частота после включения
+		#define WITHBBOXSUBMODE	SUBMODE_USB	// единственный режим работы
 		#define WITHBBOXREC	1		// автоматическое включение режима записи после подачи питания
 	#elif 0
 		#define WITHBBOX	1	// Black Box mode - устройство без органов управления
-		#define	WITHBBOXFREQ	7030000L		// частота после включения
-		#define	WITHBBOXSUBMODE	SUBMODE_LSB	// единственный режим работы
-		#define	WITHBBOXTX		1		// автоматический переход на передачу
-		#define	WITHBBOXMIKESRC	BOARD_TXAUDIO_2TONE
+		#define WITHBBOXFREQ	7030000L		// частота после включения
+		#define WITHBBOXSUBMODE	SUBMODE_LSB	// единственный режим работы
+		#define WITHBBOXTX		1		// автоматический переход на передачу
+		#define WITHBBOXMIKESRC	BOARD_TXAUDIO_2TONE
 	#elif 0
 		#define WITHBBOX	1	// Black Box mode - устройство без органов управления
-		#define	WITHBBOXFREQ	7030000L		// частота после включения
-		#define	WITHBBOXSUBMODE	SUBMODE_CWZ	// единственный режим работы
-		#define	WITHBBOXTX		1		// автоматический переход на передачу
-		//#define	WITHBBOXMIKESRC BOARD_TXAUDIO_2TONE
+		#define WITHBBOXFREQ	7030000L		// частота после включения
+		#define WITHBBOXSUBMODE	SUBMODE_CWZ	// единственный режим работы
+		#define WITHBBOXTX		1		// автоматический переход на передачу
+		//#define WITHBBOXMIKESRC BOARD_TXAUDIO_2TONE
 	#endif
 
 
@@ -372,7 +371,7 @@
 
 	#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
 	//#define WITHTHERMOLEVEL	1	/* отображение температуры */
-
+	#define REALREFERENCE_FREQ 122879268L
 	#define WITHIFSHIFT	1	/* используется IF SHIFT */
 	//#define WITHIFSHIFTOFFSET	(-250)	/* Начальное занчение IF SHIFT */
 	//#define WITHPBT		1	/* используется PBT (если LO3 есть) */

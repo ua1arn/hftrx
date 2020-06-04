@@ -97,7 +97,7 @@
 
 	//#define ENCRES_DEFAULT ENCRES_128
 	#define ENCRES_DEFAULT ENCRES_24
-	#define	WITHENCODER	1	/* для изменения частоты имеется енкодер */
+	#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
 
 	#define ENCODER_REVERSE	1	/* шагать в обртную сторону */
 
@@ -218,6 +218,14 @@ enum
 	PWRI = 0,		// PIN 37 Индикатор мощности передатчика
 	FWD = 4, REF = 3,	// SWR-meter
 #endif /* WITHBARS */
+
+	XTHERMOMRRIX = BOARD_ADCMRRIN(0),	// кеш - индекc не должен повторяться в конфигурации
+	PASENSEMRRIX = BOARD_ADCMRRIN(1),	// кеш - индекc не должен повторяться в конфигурации
+	REFMRRIX = BOARD_ADCMRRIN(2),
+	FWDMRRIX = BOARD_ADCMRRIN(3),
+	PWRMRRIX = FWDMRRIX,
+	VOLTMRRIX = BOARD_ADCMRRIN(4),	// кеш - индекc не должен повторяться в конфигурации
+
 	KI0 = 5, KI1 = 6, KI2 = 7	// клавиатура
 };
 

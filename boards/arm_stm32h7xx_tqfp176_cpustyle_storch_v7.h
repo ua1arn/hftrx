@@ -42,12 +42,14 @@
 //#define WITHUSBDEV_HSDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
 //#define WITHUSBDEV_HIGHSPEEDULPI	1
 //#define WITHUSBDEV_HIGHSPEEDPHYC	1
+//#define WITHUSBDEV_DMAENABLE 1
 
 /* For H7 exist: Legacy defines */
 //#define USB_OTG_HS                   USB1_OTG_HS
 //#define USB_OTG_FS                   USB2_OTG_FS
 
 //#define WITHUSBHW_HOST		USB_OTG_FS	/* на этом устройстве поддерживается функциональность HOST	*/
+//#define WITHUSBHOST_DMAENABLE 1
 
 //#define WITHUART1HW	1	/* PA9, PA10 Используется периферийный контроллер последовательного порта #1 */
 #define WITHUART2HW	1	/* PD5, PD6 Используется периферийный контроллер последовательного порта #2 */
@@ -159,11 +161,16 @@
 #if WITHI2SHW
 	// Инициализируются I2S2 и I2S3
 	#define I2S2HW_INITIALIZE() do { \
+		SPI2->CFG2 |= SPI_CFG2_IOSWP; \
 		arm_hardware_piob_altfn2(1uL << 12,	AF_SPI2); /* PB12 I2S2_WS	*/ \
+		arm_hardware_piob_updown(0, 1uL << 12); \
 		arm_hardware_piob_altfn2(1uL << 10,	AF_SPI2); /* PB10 I2S2_CK	*/ \
+		arm_hardware_piob_updown(0, 1uL << 10); \
 		arm_hardware_pioc_altfn2(1uL << 3,	AF_SPI2); /* PC3 I2S2_SD - передача */ \
 		arm_hardware_pioa_altfn2(1uL << 15,	AF_SPI3); /* PA15 I2S3_WS	*/ \
+		arm_hardware_pioa_updown(0, 1uL << 15); \
 		arm_hardware_piob_altfn2(1uL << 3,	AF_SPI3); /* PB3 I2S3_CK	*/ \
+		arm_hardware_piob_updown(0, 1uL << 3); \
 		arm_hardware_piob_altfn2(1uL << 2,	7 /* AF_7 */); /* PB2 I2S3_SD, - приём от кодека */ \
 	} while (0)
 #endif /* WITHSAI1HW */
@@ -676,14 +683,26 @@
 		arm_hardware_piof_opendrain((1U << 3) | (1U << 2), 0 * (1U << 3) | 0 * (1U << 2));	/* PF3:PF2 - backlight current adjust */ \
 		} while (0)
 
+
 #if WITHDCDCFREQCTL
+	// ST ST1S10 Synchronizable switching frequency from 400 kHz up to 1.2 MHz
+	#define WITHHWDCDCFREQMIN 400000L
+	#define WITHHWDCDCFREQMAX 1200000L
+
+	// PF6 - DC-DC synchro output
+	// TIM16_CH1 AF1
 	#define	HARDWARE_DCDC_INITIALIZE() do { \
-		arm_hardware_piof_altfn2((1U << 6), AF_TIM1); /* TIM16_CH1 - PF6 */ \
-		hardware_blfreq_initialize(); \
+		arm_hardware_piof_altfn2((1U << 6), AF_TIM1); /* PF6 - TIM16_CH1 */ \
+		hardware_dcdcfreq_tim16_ch1_initialize(); \
 		} while (0)
+	#define HARDWARE_DCDC_SETDIV(f) do { \
+		hardware_dcdcfreq_tim16_ch1_setdiv(f); \
+	} while (0)
 #else /* WITHDCDCFREQCTL */
 	#define	HARDWARE_DCDC_INITIALIZE() do { \
 		} while (0)
+	#define HARDWARE_DCDC_SETDIV(f) do { \
+	} while (0)
 #endif /* WITHDCDCFREQCTL */
 
 	/* установка яркости и включение/выключение преобразователя подсветки */
@@ -714,7 +733,7 @@
 		const uint32_t DE = (1U << 13); /* PE13 - DE */ \
 		const uint32_t HS = (1U << 10); /* PI10 - HSYNC */ \
 		const uint32_t VS = (1U << 9); 	/* PI9 - VSYNC */ \
-		/* Synchronisation signal */ \
+		/* Bit clock */ \
 		arm_hardware_pioe_altfn20((1U << 14), GPIO_AF_LTDC);	/* CLK */ \
 		/* Control */ \
 		arm_hardware_piof_outputs(MODE, (demode != 0) * MODE);	/* PF4 MODE=state */ \

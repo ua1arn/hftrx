@@ -12,10 +12,10 @@
 #include "encoder.h"
 
 #include <math.h>
+#include <src/gui/gui.h>
 #include <stdio.h>
 
 #include "display/display.h"
-#include "gui.h"
 #include "formats.h"
 
 #include "codecs/tlv320aic23.h"	// константы управления усилением кодека
@@ -4848,7 +4848,7 @@ display_debug_digit(
 	do
 	{
 		display_gotoxy(col, row + lowhalf);		// курсор в начало первой строки
-		display_menu_value(value, width, comma, rj, lowhalf);
+		display2_menu_value(value, width, comma, rj, lowhalf);
 	} while (lowhalf --);
 }
 
@@ -5032,7 +5032,12 @@ void looptests(void)
 #if 0 && WITHINTEGRATEDDSP
 	{
 		dsp_speed_diagnostics();	// печать в последовательный порт результатов диагностики
-		//buffers_diagnostics();
+	}
+#endif
+#if 0 && WITHINTEGRATEDDSP
+	{
+		// See buffers.c - WITHBUFFERSDEBUG
+		buffers_diagnostics();
 	}
 #endif
 #if 0 && WITHCURRLEVEL
@@ -5130,6 +5135,32 @@ static void sdtick(void)
 #endif
 
 #if LCDMODE_COLORED && ! DSTYLE_G_DUMMY && 0
+
+
+
+// Рисуем на основном экране цветной прямоугольник.
+// x2, y2 - координаты второго угла (не входящие в закрашиваемый прямоугольник)
+static void display_solidbar(
+	uint_fast16_t x,
+	uint_fast16_t y,
+	uint_fast16_t x2,
+	uint_fast16_t y2,
+	COLORMAIN_T color
+	)
+{
+	if (x2 < x)
+	{
+		const uint_fast16_t t = x;
+		x = x2, x2 = t;
+	}
+	if (y2 < y)
+	{
+		const uint_fast16_t t = y;
+		y = y2, y2 = t;
+	}
+	display_fillrect(x, y, x2 - x, y2 - y, color);
+}
+
 
 // Получение псевдослучайныз чисел.
 // 0 .. num-1
@@ -6205,25 +6236,35 @@ void hightests(void)
 		// test: вывод палитры на экран
 		display2_bgreset();
 		PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
-		int u = 3, x = 0, y = 0, wx = 45, wy = 8 * 3;
+		int sepx = 3, sepy = 3;
+		int wx = DIM_X / 16;
+		int wy = DIM_Y / 16;
+		int x = 0, y = 0;
 
 		for (int i = 0; i <= 255; i++)
 		{
-			char buf[4];
 
-			display_solidbar(x, y, x + wx, y + wy, i);
-			local_snprintf_P(buf, sizeof buf / sizeof buf [0], PSTR("%d"), i);
-			colpip_string3_tbg(fr, DIM_X, DIM_Y, x, y, buf, COLORMAIN_WHITE);
+			display_solidbar(x, y, x + wx - sepx, y + wy - sepy, i);
 
-			x = x + wx + u;
+			if (wx > 24)
+			{
+				char buf [4];
+				local_snprintf_P(buf, sizeof buf / sizeof buf [0], PSTR("%d"), i);
+				colpip_string3_tbg(fr, DIM_X, DIM_Y, x, y, buf, COLORMAIN_WHITE);
+			}
+
+			x = x + wx;
 			if ((i + 1) % 16 == 0)
 			{
 				x = 0;
-				y = y + wy + u;
+				y = y + wy;
 			}
 		}
 
-		for (;;);
+		arm_hardware_flush((uintptr_t) fr, (uint_fast32_t) DIM_X * DIM_Y * sizeof (PACKEDCOLORMAIN_T));
+		arm_hardware_ltdc_main_set((uintptr_t) fr);
+		for (;;)
+			;
 	}
 #endif
 #if 0 && defined (TSC1_TYPE)
@@ -6869,9 +6910,9 @@ void hightests(void)
 			do
 			{
 				display_gotoxy(0, 0 + lowhalf);
-				display_menu_value(speed * 100UL / ENCODER_NORMALIZED_RESOLUTION, 7, 2, 0, lowhalf);
+				display2_menu_value(speed * 100UL / ENCODER_NORMALIZED_RESOLUTION, 7, 2, 0, lowhalf);
 				display_gotoxy(0, HALFCOUNT_SMALL + lowhalf);
-				display_menu_value(nrotate, 5 | WSIGNFLAG, 255, 0, lowhalf);
+				display2_menu_value(nrotate, 5 | WSIGNFLAG, 255, 0, lowhalf);
 				local_delay_ms(100);
 			} while (lowhalf --);
 			//(void) nrotate;
@@ -6905,11 +6946,11 @@ void hightests(void)
 		do
 		{
 			display_gotoxy(0, 0 + lowhalf);
-			display_menu_value(board_getadc_unfiltered_u8(KI0, 0, UINT8_MAX), 5, 255, 0, lowhalf);
+			display2_menu_value(board_getadc_unfiltered_u8(KI0, 0, UINT8_MAX), 5, 255, 0, lowhalf);
 			display_gotoxy(5, 0 + lowhalf);
-			display_menu_value(board_getadc_unfiltered_u8(KI1, 0, UINT8_MAX), 5, 255, 0, lowhalf);
+			display2_menu_value(board_getadc_unfiltered_u8(KI1, 0, UINT8_MAX), 5, 255, 0, lowhalf);
 			display_gotoxy(10, 0 + lowhalf);
-			display_menu_value(board_getadc_unfiltered_u8(KI2, 0, UINT8_MAX), 5, 255, 0, lowhalf);
+			display2_menu_value(board_getadc_unfiltered_u8(KI2, 0, UINT8_MAX), 5, 255, 0, lowhalf);
 		} while (lowhalf --);
 		//
 		local_delay_ms(20);
@@ -6931,7 +6972,7 @@ void hightests(void)
 				display_gotoxy(0, row * HALFCOUNT_SMALL + lowhalf);		// курсор в начало второй строки
 				display_at("ADCx=", lowhalf);
 				display_gotoxy(5, row * HALFCOUNT_SMALL + lowhalf);		// курсор в начало второй строки
-				display_menu_value(v0, 5, 255, 0, lowhalf);
+				display2_menu_value(v0, 5, 255, 0, lowhalf);
 			} while (lowhalf --);
 		}
 		//
@@ -7206,7 +7247,7 @@ void hightests(void)
 			do
 			{
 				display_gotoxy(0, 1 + lowhalf);		// курсор в начало первой строки
-				display_menu_value(v * 1000ul, 7, 2, 1, lowhalf);
+				display2_menu_value(v * 1000ul, 7, 2, 1, lowhalf);
 			} while (lowhalf --);
 #endif
 		}
@@ -7297,6 +7338,35 @@ void hightests(void)
 				//	;
 			}
 
+		}
+	}
+#endif
+#if 0 && WITHDSPEXTFIR
+	{
+		// Тестирование сигналов управления загрузкой параметров фильтров FPGA
+
+		unsigned seq;
+
+		TARGET_FPGA_FIR_INITIALIZE();
+
+		for (seq = 0;; ++ seq)
+		{
+			if (seq & 0x01)
+				TARGET_FPGA_FIR_CS_PORT_S(TARGET_FPGA_FIR_CS_BIT);
+			else
+				TARGET_FPGA_FIR_CS_PORT_C(TARGET_FPGA_FIR_CS_BIT);
+
+			if (seq & 0x02)
+				TARGET_FPGA_FIR1_WE_PORT_S(TARGET_FPGA_FIR1_WE_BIT);
+			else
+				TARGET_FPGA_FIR1_WE_PORT_C(TARGET_FPGA_FIR1_WE_BIT);
+
+			if (seq & 0x04)
+				TARGET_FPGA_FIR2_WE_PORT_S(TARGET_FPGA_FIR2_WE_BIT);
+			else
+				TARGET_FPGA_FIR2_WE_PORT_C(TARGET_FPGA_FIR2_WE_BIT);
+
+			local_delay_ms(250);
 		}
 	}
 #endif

@@ -71,7 +71,7 @@
 
 	//#define ENCRES_DEFAULT ENCRES_128
 	#define ENCRES_DEFAULT ENCRES_24
-	#define	WITHENCODER	1	/* для изменения частоты имеется енкодер */
+	#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
 
 	#define ENCODER_REVERSE	1	/* шагать в обртную сторону */
 
@@ -205,7 +205,7 @@ enum
 	#define WITHPOWERTRIMMIN	1	// Нижний предел регулировки (показываемый на дисплее)
 	#define WITHPOWERTRIMMAX	4	// Верхний предел регулировки (показываемый на дисплее)
 	//#define WITHPOWERTRIMATU	2	// Значение для работы автотюнера
-	#define	WITHMUTEALL			1	// Отключение микрофона во всех режимах
+	#define WITHMUTEALL			1	// Отключение микрофона во всех режимах
 	#define WITHONEATTONEAMP	1	/* только одно положение аттенюатора и УВЧ */
 
 

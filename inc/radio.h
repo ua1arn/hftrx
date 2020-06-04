@@ -38,10 +38,10 @@ typedef uint_least64_t phase_t;
 	#define DEFAULTDIALFREQ	7012000L
 #endif
 
-#define	WITHMAXRXTXDELAY	100
-#define	WITHMAXTXRXDELAY	100
+#define WITHMAXRXTXDELAY	100
+#define WITHMAXTXRXDELAY	100
 
-#define	WITHNOTCHFREQMIN	300
+#define WITHNOTCHFREQMIN	300
 #define WITHNOTCHFREQMAX	5000
 
 /* параметры отображения панорамы */
@@ -115,17 +115,35 @@ enum
 #define	BOARD_AFGAIN_MIN	0		/* код управления усилением НЧ тракта */
 #define	BOARD_AFGAIN_MAX	255		/* код управления усилением НЧ тракта */
 
-#define	WITHLINEINGAINMIN	0		/* код управления усилением входа с линии */
-#define	WITHLINEINGAINMAX	255		/* код управления усилением входа с линии */
+#define WITHLINEINGAINMIN	0		/* код управления усилением входа с линии */
+#define WITHLINEINGAINMAX	255		/* код управления усилением входа с линии */
 
-#define	WITHMIKEINGAINMIN	0		/* код управления усилением входа с микрофона */
-#define	WITHMIKEINGAINMAX	255		/* код управления усилением входа с микрофона */
+#define WITHMIKEINGAINMIN	0		/* код управления усилением входа с микрофона */
+#define WITHMIKEINGAINMAX	255		/* код управления усилением входа с микрофона */
 
-//#define	WITHFILTSOFTMIN		0		/* код управления сглаживанием скатов фильтра основной селекции на приёме */
-//#define	WITHFILTSOFTMAX		100		/* код управления сглаживанием скатов фильтра основной селекции на приёме */
+#define WITHMIKECLIPMIN		0
+#define WITHMIKECLIPMAX		90
+
+#define WITHMIKEAGCMIN		10
+#define WITHMIKEAGCMAX		60
+
+#define WITHVOXDELAYMIN		10
+#define WITHVOXDELAYMAX		250
+
+#define WITHVOXLEVELMIN		0
+#define WITHVOXLEVELMAX		100
+
+#define WITHAVOXLEVELMIN	0
+#define WITHAVOXLEVELMAX	100
+
+//#define WITHFILTSOFTMIN		0		/* код управления сглаживанием скатов фильтра основной селекции на приёме */
+//#define WITHFILTSOFTMAX		100		/* код управления сглаживанием скатов фильтра основной селекции на приёме */
 
 #define WITHREVERBDELAYMIN 5	/* минимальная задержка ревербератора (ms) */
 #define WITHREVERBDELAYMAX 200	/* максимальная задержка ревербератора (ms) */
+
+#define WITHREVERBLOSSMIN 6		/* минимальное ослабление на возврате ревербератора (dB) - кратно ISTEP3 */
+#define WITHREVERBLOSSMAX 39	/* максимальная ослабление на возврате ревербератора (dB) - кратно ISTEP3 */
 
 #if defined (DAC1_TYPE)
 	#define WITHDAC1VALMIN	0
@@ -137,12 +155,12 @@ enum
 	#define	BOARD_AGCCODE_ON	0x00
 	#define	BOARD_AGCCODE_OFF	0x01
 
-	#define	WITHNOTCHFREQ		1	/* NOTCH фильтр с устанавливаемой через меню или потенциометром частотой */
-	//#define	WITHLMSAUTONOTCH	1	/* Использование AUTONOTCH	*/
+	#define WITHNOTCHFREQ		1	/* NOTCH фильтр с устанавливаемой через меню или потенциометром частотой */
+	//#define WITHLMSAUTONOTCH	1	/* Использование AUTONOTCH	*/
 	#define WITHSUBTONES		1	/* выполняется формирование субтона при передаче NFM */
 	#define WITHSAM				1	/* synchronous AM demodulation */
 	#define WITHIFSHIFT			1	/* используется IF SHIFT */
-	#define	WITHMIC1LEVEL		1	/* установка усиления микрофона */
+	#define WITHMIC1LEVEL		1	/* установка усиления микрофона */
 
 	#define	SQUELCHMAX	255	/* Kenwood's value */
 #endif /* WITHIF4DSP */
@@ -3307,6 +3325,58 @@ void hamradio_set_gmikeequalizer(uint_fast8_t v);
 uint_fast8_t hamradio_get_gmikeequalizerparams(uint_fast8_t i);
 void hamradio_set_gmikeequalizerparams(uint_fast8_t i, uint_fast8_t v);
 int_fast32_t hamradio_getequalizerbase(void);
+
+#if WITHREVERB
+void hamradio_set_greverb(uint_fast8_t v);
+uint_fast8_t hamradio_get_greverb(void);
+void hamradio_get_reverb_delay_limits(uint_fast8_t * min, uint_fast8_t * max);
+void hamradio_get_reverb_loss_limits(uint_fast8_t * min, uint_fast8_t * max);
+uint_fast8_t hamradio_get_reverb_delay(void);
+uint_fast8_t hamradio_get_reverb_loss(void);
+void hamradio_set_reverb_delay(uint_fast8_t v);
+void hamradio_set_reverb_loss(uint_fast8_t v);
+#endif /* WITHREVERB */
+
+void hamradio_set_gmoniflag(uint_fast8_t v);
+uint_fast8_t hamradio_get_gmoniflag(void);
+uint_fast8_t hamradio_get_gmikebust20db(void);
+void hamradio_set_gmikebust20db(uint_fast8_t v);
+uint_fast8_t hamradio_get_gmikeagc(void);
+void hamradio_set_gmikeagc(uint_fast8_t v);
+void hamradio_get_mic_level_limits(uint_fast8_t * min, uint_fast8_t * max);
+void hamradio_set_mik1level(uint_fast8_t v);
+uint_fast8_t hamradio_get_mik1level(void);
+void hamradio_get_mic_clip_limits(uint_fast8_t * min, uint_fast8_t * max);
+uint_fast8_t hamradio_get_gmikehclip(void);
+void hamradio_set_gmikehclip(uint_fast8_t v);
+void hamradio_get_mic_agc_limits(uint_fast8_t * min, uint_fast8_t * max);
+uint_fast8_t hamradio_get_gmikeagcgain(void);
+void hamradio_set_gmikeagcgain(uint_fast8_t v);
+
+#if WITHVOX
+void hamradio_set_gvoxenable(uint_fast8_t v);
+uint_fast8_t hamradio_get_gvoxenable(void);
+void hamradio_get_vox_delay_limits(uint_fast8_t * min, uint_fast8_t * max);
+uint_fast8_t hamradio_get_vox_delay(void);
+void hamradio_set_vox_delay(uint_fast8_t v);
+void hamradio_get_vox_level_limits(uint_fast8_t * min, uint_fast8_t * max);
+uint_fast8_t hamradio_get_vox_level(void);
+void hamradio_set_vox_level(uint_fast8_t v);
+void hamradio_get_antivox_delay_limits(uint_fast8_t * min, uint_fast8_t * max);
+uint_fast8_t hamradio_get_antivox_level(void);
+void hamradio_set_antivox_level(uint_fast8_t v);
+#endif /* WITHVOX */
+
+#if WITHTX
+void hamradio_set_tune(uint_fast8_t v);
+void hamradio_set_tx_tune_power(uint_fast8_t v);
+uint_fast8_t hamradio_get_tx_tune_power(void);
+void hamradio_set_tx_power(uint_fast8_t v);
+uint_fast8_t hamradio_get_tx_power(void);
+void hamradio_get_tx_power_limits(uint_fast8_t * min, uint_fast8_t * max);
+#endif /* WITHTX */
+
+uint_fast8_t hamradio_verify_freq_bands(uint_fast32_t freq, uint_fast32_t * bottom, uint_fast32_t * top);
 
 #ifdef __cplusplus
 }

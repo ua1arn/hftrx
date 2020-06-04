@@ -201,7 +201,7 @@ enum
 
 #define TERMINAL_ID_SELECTOR_6_INPUTS 2
 
-#define	WITHPLAINDESCROPTOR	1		/* не используется множество конфигураций */
+#define WITHPLAINDESCROPTOR	1		/* не используется множество конфигураций */
 
 #if WITHPLAINDESCROPTOR
 

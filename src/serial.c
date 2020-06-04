@@ -15,7 +15,127 @@
 #include "audio.h"
 
 #include "formats.h"	// for debug prints
-#include "inc/spi.h"
+#include "spi.h"
+
+
+// Set interrupt vector wrapper
+static void serial_set_handler(uint_fast16_t int_id, void (* handler)(void))
+{
+#if WITHNMEAOVERREALTIME
+		arm_hardware_set_handler_overrealtime(int_id, handler);
+#else /* WITHNMEAOVERREALTIME */
+		arm_hardware_set_handler_system(int_id, handler);
+#endif /* WITHNMEAOVERREALTIME */
+}
+
+
+#if WITHNMEA
+
+// Очереди символов для обмена с согласующим устройством
+enum { qSZ = 512 };
+static uint8_t queue [qSZ];
+static volatile unsigned qp, qg;
+
+// Передать символ в host
+static uint_fast8_t	qput(uint_fast8_t c)
+{
+	unsigned qpt = qp;
+	const unsigned next = (qpt + 1) % qSZ;
+	if (next != qg)
+	{
+		queue [qpt] = c;
+		qp = next;
+		HARDWARE_NMEA_ENABLETX(1);
+		return 1;
+	}
+	return 0;
+}
+
+// Получить символ в host
+static uint_fast8_t qget(uint_fast8_t * pc)
+{
+	if (qp != qg)
+	{
+		* pc = queue [qg];
+		qg = (qg + 1) % qSZ;
+		return 1;
+	}
+	return 0;
+}
+
+// получить состояние очереди передачи
+static uint_fast8_t qempty(void)
+{
+	return qp == qg;
+}
+
+// Передать массив символов
+static void qputs(const char * s, int n)
+{
+	while (n --)
+		qput(* s ++);
+}
+
+
+/* вызывается из обработчика прерываний */
+// компорт готов передавать
+void nmea_sendchar(void * ctx)
+{
+	uint_fast8_t c;
+	if (qget(& c))
+	{
+		HARDWARE_NMEA_TX(ctx, c);
+		if (qempty())
+			HARDWARE_NMEA_ENABLETX(0);
+	}
+	else
+	{
+		HARDWARE_NMEA_ENABLETX(0);
+	}
+}
+
+int nmea_putc(int c)
+{
+#if WITHNMEAOVERREALTIME
+	global_disableIRQ();
+	qput(c);
+	global_enableIRQ();
+#else /* WITHNMEAOVERREALTIME */
+    disableIRQ();
+    qput(c);
+	enableIRQ();
+#endif /* WITHNMEAOVERREALTIME */
+	return c;
+}
+
+
+void nmea_format(const char * format, ...)
+{
+	char b [256];
+	int n, i;
+	va_list	ap;
+	va_start(ap, format);
+
+	n = vsnprintf(b, sizeof b / sizeof b [0], format, ap);
+
+	for (i = 0; i < n; ++ i)
+		nmea_putc(b [i]);
+
+	va_end(ap);
+}
+
+/* вызывается из обработчика прерываний */
+// произошла потеря символа (символов) при получении данных с CAT компорта
+void nmea_rxoverflow(void)
+{
+}
+/* вызывается из обработчика прерываний */
+void nmea_disconnect(void)
+{
+
+}
+
+#endif /* WITHNMEA */
 
 #if WITHUART1HW 
 
@@ -706,9 +826,7 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 
 		if (debug == 0)
 		{
-			NVIC_SetVector(USART0_IRQn, (uintptr_t) & USART0_IRQHandler);
-			NVIC_SetPriority(USART0_IRQn, ARM_SYSTEM_PRIORITY);
-			NVIC_EnableIRQ(USART0_IRQn);		// enable USART0_Handler();
+			serial_set_handler(USART0_IRQn, & USART0_IRQHandler);
 		}
 
 		USART0->US_CR = US_CR_RXEN | US_CR_TXEN;	// разрешаем приёмник и передатчик.
@@ -733,9 +851,7 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 
 		if (debug == 0)
 		{
-			NVIC_SetVector(USART1_IRQn, (uintptr_t) & USART1_IRQHandler);
-			NVIC_SetPriority(USART1_IRQn, ARM_SYSTEM_PRIORITY);
-			NVIC_EnableIRQ(USART1_IRQn);		// enable USART1_Handler();
+			serial_set_handler(USART1_IRQn, & USART1_IRQHandler);
 		}
 
 		USART1->US_CR = US_CR_RXEN | US_CR_TXEN;	// разрешаем приёмник и передатчик.
@@ -761,9 +877,7 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 
 		if (debug == 0)
 		{
-			NVIC_SetVector(UART0_IRQn, (uintptr_t) & UART0_IRQHandler);
-			NVIC_SetPriority(UART0_IRQn, ARM_SYSTEM_PRIORITY);
-			NVIC_EnableIRQ(UART0_IRQn);		// enable UART0_Handler();
+			serial_set_handler(UART0_IRQn, & UART0_IRQHandler);
 		}
 
 		UART0->UART_CR = UART_CR_RXEN | UART_CR_TXEN;	// разрешаем приёмник и передатчик.
@@ -789,9 +903,7 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 
 		if (debug == 0)
 		{
-			NVIC_SetVector(UART1_IRQn, (uintptr_t) & UART1_IRQHandler);
-			NVIC_SetPriority(UART1_IRQn, ARM_SYSTEM_PRIORITY);
-			NVIC_EnableIRQ(UART1_IRQn);		// enable UART1_Handler();
+			serial_set_handler(UART1_IRQn, & UART1_IRQHandler);
 		}
 
 		UART1->UART_CR = UART_CR_RXEN | UART_CR_TXEN;	// разрешаем приёмник и передатчик.
@@ -810,15 +922,13 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 
 
 	RCC->APB2ENR |= RCC_APB2ENR_AFIOEN;     //включить тактирование альтернативных функций
-	__DSB();
+	(void) RCC->APB2ENR;
 
 	HARDWARE_USART1_INITIALIZE();	/* Присоединить периферию к выводам */
 
 	if (debug == 0)
 	{
-		NVIC_SetVector(USART1_IRQn, (uintptr_t) & USART1_IRQHandler);
-		NVIC_SetPriority(USART1_IRQn, ARM_SYSTEM_PRIORITY);
-		NVIC_EnableIRQ(USART1_IRQn);		// enable USART1_IRQHandler();
+		serial_set_handler(USART1_IRQn, & USART1_IRQHandler);
 	}
 
 	USART1->CR1 |= USART_CR1_UE; // Включение USART1.
@@ -837,9 +947,7 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 
 	if (debug == 0)
 	{
-		NVIC_SetVector(USART1_IRQn, (uintptr_t) & USART1_IRQHandler);
-		NVIC_SetPriority(USART1_IRQn, ARM_SYSTEM_PRIORITY);
-		NVIC_EnableIRQ(USART1_IRQn);		// enable USART1_IRQHandler();
+		serial_set_handler(USART1_IRQn, & USART1_IRQHandler);
 	}
 
 	USART1->CR1 |= USART_CR1_UE; // Включение USART1.
@@ -865,17 +973,9 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 						   AT91C_US_NBSTOP_1_BIT;                   
 		AT91C_BASE_US0->US_IDR = (AT91C_US_RXRDY | AT91C_US_TXRDY);
 
+		if (debug == 0)
 		{
-			enum { irqID = AT91C_ID_US0 };
-			// programming interrupts from ADC
-			AT91C_BASE_AIC->AIC_IDCR = (1UL << irqID);
-			AT91C_BASE_AIC->AIC_SVR [irqID] = (AT91_REG) AT91F_US0Handler;
-			AT91C_BASE_AIC->AIC_SMR [irqID] = 
-				(AT91C_AIC_SRCTYPE & AT91C_AIC_SRCTYPE_INT_HIGH_LEVEL) |
-				(AT91C_AIC_PRIOR & AT91C_AIC_PRIOR_LOWEST);
-			AT91C_BASE_AIC->AIC_ICCR = (1UL << irqID);		// clear pending interrupt
-			AT91C_BASE_AIC->AIC_IECR = (1UL << irqID);	// enable inerrupt
-
+			serial_set_handler(AT91C_ID_US0, AT91F_US0Handler);
 		}
 
 		AT91C_BASE_US0->US_CR = AT91C_US_RXEN  | AT91C_US_TXEN;	// разрешаем приёмник и передатчик.
@@ -902,16 +1002,9 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 					            
 		AT91C_BASE_US1->US_IDR = (AT91C_US_RXRDY | AT91C_US_TXRDY);
 
+		if (debug == 0)
 		{
-			enum { irqID = AT91C_ID_US1 };
-			// programming interrupts from ADC
-			AT91C_BASE_AIC->AIC_IDCR = (1UL << irqID);
-			AT91C_BASE_AIC->AIC_SVR [irqID] = (AT91_REG) AT91F_US1Handler;
-			AT91C_BASE_AIC->AIC_SMR [irqID] = 
-				(AT91C_AIC_SRCTYPE & AT91C_AIC_SRCTYPE_INT_HIGH_LEVEL) |
-				(AT91C_AIC_PRIOR & AT91C_AIC_PRIOR_LOWEST);
-			AT91C_BASE_AIC->AIC_ICCR = (1UL << irqID);		// clear pending interrupt
-			AT91C_BASE_AIC->AIC_IECR = (1UL << irqID);	// enable inerrupt
+			serial_set_handler(AT91C_ID_US1, AT91F_US1Handler);
 		}
 
 		AT91C_BASE_US1->US_CR = AT91C_US_RXEN | AT91C_US_TXEN;	// разрешаем приёмник и передатчик.
@@ -1033,8 +1126,8 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 
 	if (debug == 0)
 	{
-	   arm_hardware_set_handler_system(SCIFRXI0_IRQn, SCIFRXI0_IRQHandler);
-	   arm_hardware_set_handler_system(SCIFTXI0_IRQn, SCIFTXI0_IRQHandler);
+	   serial_set_handler(SCIFRXI0_IRQn, SCIFRXI0_IRQHandler);
+	   serial_set_handler(SCIFTXI0_IRQn, SCIFTXI0_IRQHandler);
 	}
 	HARDWARE_USART1_INITIALIZE();	/* Присоединить периферию к выводам */
 
@@ -1055,7 +1148,7 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 
 	if (debug == 0)
 	{
-	   arm_hardware_set_handler_system(USART1_IRQn, USART1_IRQHandler);
+	   serial_set_handler(USART1_IRQn, USART1_IRQHandler);
 	}
 
 	USART1->CR1 |= USART_CR1_UE; // Включение USART1.
@@ -1792,9 +1885,7 @@ void hardware_uart2_initialize(uint_fast8_t debug)
 
 		if (debug == 0)
 		{
-			NVIC_SetVector(USART0_IRQn, (uintptr_t) & USART0_IRQHandler);
-			NVIC_SetPriority(USART0_IRQn, ARM_SYSTEM_PRIORITY);
-			NVIC_EnableIRQ(USART0_IRQn);		// enable USART0_Handler();
+			serial_set_handler(USART0_IRQn, & USART0_IRQHandler);
 		}
 
 		USART0->US_CR = US_CR_RXEN | US_CR_TXEN;	// разрешаем приёмник и передатчик.
@@ -1819,9 +1910,7 @@ void hardware_uart2_initialize(uint_fast8_t debug)
 
 		if (debug == 0)
 		{
-			NVIC_SetVector(USART1_IRQn, (uintptr_t) & USART1_IRQHandler);
-			NVIC_SetPriority(USART1_IRQn, ARM_SYSTEM_PRIORITY);
-			NVIC_EnableIRQ(USART1_IRQn);		// enable USART2_Handler();
+			serial_set_handler(USART1_IRQn, & USART1_IRQHandler);
 		}
 
 		USART1->US_CR = US_CR_RXEN | US_CR_TXEN;	// разрешаем приёмник и передатчик.
@@ -1848,9 +1937,7 @@ void hardware_uart2_initialize(uint_fast8_t debug)
 
 		if (debug == 0)
 		{
-			NVIC_SetVector(UART0_IRQn, (uintptr_t) & UART0_IRQHandler);
-			NVIC_SetPriority(UART0_IRQn, ARM_SYSTEM_PRIORITY);
-			NVIC_EnableIRQ(UART0_IRQn);		// enable UART0_Handler();
+			serial_set_handler(UART0_IRQn, & UART0_IRQHandler);
 		}
 
 		UART0->UART_CR = UART_CR_RXEN | UART_CR_TXEN;	// разрешаем приёмник и передатчик.
@@ -1877,9 +1964,7 @@ void hardware_uart2_initialize(uint_fast8_t debug)
 
 		if (debug == 0)
 		{
-			NVIC_SetVector(UART1_IRQn, (uintptr_t) & UART1_IRQHandler);
-			NVIC_SetPriority(UART1_IRQn, ARM_SYSTEM_PRIORITY);
-			NVIC_EnableIRQ(UART1_IRQn);		// enable UART1_Handler();
+			serial_set_handler(UART1_IRQn, & UART1_IRQHandler);
 		}
 
 		UART1->UART_CR = UART_CR_RXEN | UART_CR_TXEN;	// разрешаем приёмник и передатчик.
@@ -1904,9 +1989,7 @@ void hardware_uart2_initialize(uint_fast8_t debug)
 
 	if (debug == 0)
 	{
-		NVIC_SetVector(USART2_IRQn, (uintptr_t) & USART2_IRQHandler);
-		NVIC_SetPriority(USART2_IRQn, ARM_SYSTEM_PRIORITY);
-		NVIC_EnableIRQ(USART2_IRQn);		// enable USART2_IRQHandler();
+		serial_set_handler(USART2_IRQn, & USART2_IRQHandler);
 	}
 
 	USART2->CR1 |= USART_CR1_UE; // Включение USART2.
@@ -1925,9 +2008,7 @@ void hardware_uart2_initialize(uint_fast8_t debug)
 
 	if (debug == 0)
 	{
-		NVIC_SetVector(USART2_IRQn, (uintptr_t) & USART2_IRQHandler);
-		NVIC_SetPriority(USART2_IRQn, ARM_SYSTEM_PRIORITY);
-		NVIC_EnableIRQ(USART2_IRQn);		// enable USART2_IRQHandler();
+		serial_set_handler(USART2_IRQn, & USART2_IRQHandler);
 	}
 
 	USART2->CR1 |= USART_CR1_UE; // Включение USART2.
@@ -1935,7 +2016,7 @@ void hardware_uart2_initialize(uint_fast8_t debug)
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX
 
 	RCC->APB1ENR |= RCC_APB1ENR_USART2EN; // Включение тактирования USART2.
-	__DSB();
+	(void) RCC->APB1ENR;
 
 	USART2->CR1 |= (USART_CR1_RE | USART_CR1_TE); // Transmitter Enable & Receiver Enables
 
@@ -1943,9 +2024,7 @@ void hardware_uart2_initialize(uint_fast8_t debug)
 
 	if (debug == 0)
 	{
-		NVIC_SetVector(USART2_IRQn, (uintptr_t) & USART2_IRQHandler);
-		NVIC_SetPriority(USART2_IRQn, ARM_SYSTEM_PRIORITY);
-		NVIC_EnableIRQ(USART2_IRQn);		// enable USART2_IRQHandler();
+		serial_set_handler(USART2_IRQn, & USART2_IRQHandler);
 	}
 
 	USART2->CR1 |= USART_CR1_UE; // Включение USART2.
@@ -2009,16 +2088,9 @@ void hardware_uart2_initialize(uint_fast8_t debug)
 					            
 		AT91C_BASE_US1->US_IDR = (AT91C_US_RXRDY | AT91C_US_TXRDY);
 
+		if (debug == 0)
 		{
-			enum { irqID = AT91C_ID_US1 };
-			// programming interrupts from ADC
-			AT91C_BASE_AIC->AIC_IDCR = (1UL << irqID);
-			AT91C_BASE_AIC->AIC_SVR [irqID] = (AT91_REG) AT91F_US1Handler;
-			AT91C_BASE_AIC->AIC_SMR [irqID] = 
-				(AT91C_AIC_SRCTYPE & AT91C_AIC_SRCTYPE_INT_HIGH_LEVEL) |
-				(AT91C_AIC_PRIOR & AT91C_AIC_PRIOR_LOWEST);
-			AT91C_BASE_AIC->AIC_ICCR = (1UL << irqID);		// clear pending interrupt
-			AT91C_BASE_AIC->AIC_IECR = (1UL << irqID);	// enable inerrupt
+			serial_set_handler(AT91C_ID_US1, & AT91F_US1Handler);
 		}
 
 		AT91C_BASE_US1->US_CR = AT91C_US_RXEN | AT91C_US_TXEN;	// разрешаем приёмник и передатчик.
@@ -2128,8 +2200,8 @@ xxxx!;
 
 	if (debug == 0)
 	{
-	   arm_hardware_set_handler_system(SCIFRXI3_IRQn, SCIFRXI3_IRQHandler);
-	   arm_hardware_set_handler_system(SCIFTXI3_IRQn, SCIFTXI3_IRQHandler);
+	   serial_set_handler(SCIFRXI3_IRQn, SCIFRXI3_IRQHandler);
+	   serial_set_handler(SCIFTXI3_IRQn, SCIFTXI3_IRQHandler);
 	}
 	HARDWARE_USART2_INITIALIZE();	/* Присоединить периферию к выводам */
 
@@ -2150,7 +2222,7 @@ xxxx!;
 
 	if (debug == 0)
 	{
-		arm_hardware_set_handler_system(USART2_IRQn, USART2_IRQHandler);
+		serial_set_handler(USART2_IRQn, USART2_IRQHandler);
 	}
 
 	USART2->CR1 |= USART_CR1_UE; // Включение USART1.

@@ -716,6 +716,9 @@ void nmea_parsechar(uint_fast8_t c);				/* вызывается из обраб�
 void nmea_rxoverflow(void);							/* вызывается из обработчика прерываний */
 void nmea_sendchar(void * ctx);							/* вызывается из обработчика прерываний */
 
+void nmea_format(const char * format, ...);
+int nmea_putc(int c);
+
 void hardware_uart1_initialize(uint_fast8_t debug);
 void hardware_uart1_set_speed(uint_fast32_t baudrate);
 void hardware_uart1_tx(void * ctx, uint_fast8_t c);	/* передача символа после прерывания о готовности передатчика */
@@ -769,9 +772,11 @@ void hardware_twi_master_configure(void);
 
 uint32_t hardware_get_random(void);
 
-void arm_hardware_ltdc_initialize(void);	// LCD-TFT Controller (LTDC) with framebuffer
-void arm_hardware_dma2d_initialize(void);	// Graphic engine
+void arm_hardware_dma2d_initialize(void);	// Graphic 2D engine
+void arm_hardware_mdma_initialize(void);	// Graphic 2D engine
 void arm_hardware_sdram_initialize(void);	// External memory region(s)
+
+void arm_hardware_ltdc_initialize(void);	// LCD-TFT Controller (LTDC) with framebuffer
 void arm_hardware_ltdc_main_set(uintptr_t addr);	// Set MAIN frame buffer address.
 void arm_hardware_ltdc_pip_set(uintptr_t addr);	// Set PIP frame buffer address.
 void arm_hardware_ltdc_pip_off(void);	// Turn PIP off (main layer only).
@@ -811,9 +816,15 @@ void cpu_stm32f1xx_setmapr(unsigned long bits);
 
 void hardware_tim21_initialize(void);
 
-void hardware_blfreq_initialize(void);
-void hardware_blfreq_setdivider(uint_fast32_t v);
-uint_fast16_t getbldivider(uint_fast32_t freq);
+void hardware_dcdcfreq_tim16_ch1_initialize(void);
+void hardware_dcdcfreq_tim17_ch1_initialize(void);
+void hardware_dcdcfreq_tioc0a_mtu0_initialize(void);
+
+void hardware_dcdcfreq_tim16_ch1_setdiv(uint_fast32_t v);
+void hardware_dcdcfreq_tim17_ch1_setdiv(uint_fast32_t v);
+void hardware_dcdcfreq_tioc0a_mtu0_setdiv(uint_fast32_t v);
+
+uint_fast32_t hardware_dcdc_calcdivider(uint_fast32_t freq);
 
 
 void hardware_sdhost_initialize(void);
@@ -917,6 +928,7 @@ void PAbort_Handler(void);
 void DAbort_Handler(void);
 void FIQ_Handler(void);
 void IRQ_Handler(void);
+void Hyp_Handler(void);
 
 // Set interrupt vector wrappers
 void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint_fast8_t priority);

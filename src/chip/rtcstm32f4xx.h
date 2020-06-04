@@ -25,6 +25,18 @@ stm32f4xx_bin2bcd(uint_fast8_t v)
 	return d.quot * 16 + d.rem;
 }
 
+static uint_fast8_t
+stm32f4xx_min(uint_fast8_t a, uint_fast8_t b)
+{
+	return a < b ? a : b;
+}
+
+static uint_fast8_t
+stm32f4xx_max(uint_fast8_t a, uint_fast8_t b)
+{
+	return a > b ? a : b;
+}
+
 // Разрешить запись в Backup domain
 static void
 stm32f4xx_rtc_bdenable(void)
@@ -336,11 +348,22 @@ void board_rtc_getdate(
 	uint_fast8_t * dayofmonth
 	)
 {
-	const uint32_t dr = RTC->DR;
+	uint_fast32_t dr2;
+	uint_fast32_t tr2;
+	uint_fast32_t dr = RTC->DR;
+	uint_fast32_t tr = RTC->TR;
+	/* wait for TR & DR registers coherent */
+	do
+	{
+		dr2 = dr;
+		tr2 = tr;
+		dr = RTC->DR;
+		tr = RTC->TR;
+	} while ((dr != dr2) || (tr != tr2));
 
-	* year = stm32f4xx_bcd2bin((dr & (RTC_DR_YT | RTC_DR_YU)) / RTC_DR_YU_0) + 2000;
-	* month = stm32f4xx_bcd2bin((dr & (RTC_DR_MT | RTC_DR_MU)) / RTC_DR_MU_0);
-	* dayofmonth = stm32f4xx_bcd2bin((dr & (RTC_DR_DT | RTC_DR_DU)) / RTC_DR_DU_0);
+	* year = stm32f4xx_max(stm32f4xx_min(stm32f4xx_bcd2bin((dr & (RTC_DR_YT | RTC_DR_YU)) / RTC_DR_YU_0), 99), 0) + 2000;
+	* month = stm32f4xx_max(stm32f4xx_min(stm32f4xx_bcd2bin((dr & (RTC_DR_MT | RTC_DR_MU)) / RTC_DR_MU_0), 12), 1);
+	* dayofmonth = stm32f4xx_max(stm32f4xx_min(stm32f4xx_bcd2bin((dr & (RTC_DR_DT | RTC_DR_DU)) / RTC_DR_DU_0), 31), 1);
 }
 
 void board_rtc_gettime(
@@ -349,11 +372,22 @@ void board_rtc_gettime(
 	uint_fast8_t * secounds
 	)
 {
-	const uint32_t tr = RTC->TR;
+	uint_fast32_t dr2;
+	uint_fast32_t tr2;
+	uint_fast32_t dr = RTC->DR;
+	uint_fast32_t tr = RTC->TR;
+	/* wait for TR & DR registers coherent */
+	do
+	{
+		dr2 = dr;
+		tr2 = tr;
+		dr = RTC->DR;
+		tr = RTC->TR;
+	} while ((dr != dr2) || (tr != tr2));
 
-	* hour = stm32f4xx_bcd2bin((tr & (RTC_TR_HT | RTC_TR_HU)) / RTC_TR_HU_0);
-	* minute = stm32f4xx_bcd2bin((tr & (RTC_TR_MNT | RTC_TR_MNU)) / RTC_TR_MNU_0);
-	* secounds = stm32f4xx_bcd2bin((tr & (RTC_TR_ST | RTC_TR_SU)) / RTC_TR_SU_0);
+	* hour = stm32f4xx_max(stm32f4xx_min(stm32f4xx_bcd2bin((tr & (RTC_TR_HT | RTC_TR_HU)) / RTC_TR_HU_0), 23), 0);
+	* minute = stm32f4xx_max(stm32f4xx_min(stm32f4xx_bcd2bin((tr & (RTC_TR_MNT | RTC_TR_MNU)) / RTC_TR_MNU_0), 59), 0);
+	* secounds = stm32f4xx_max(stm32f4xx_min(stm32f4xx_bcd2bin((tr & (RTC_TR_ST | RTC_TR_SU)) / RTC_TR_SU_0), 59), 0);
 }
 
 void board_rtc_getdatetime(
@@ -365,10 +399,10 @@ void board_rtc_getdatetime(
 	uint_fast8_t * secounds
 	)
 {
-	uint32_t dr2;
-	uint32_t tr2;
-	uint32_t dr = RTC->DR;
-	uint32_t tr = RTC->TR;
+	uint_fast32_t dr2;
+	uint_fast32_t tr2;
+	uint_fast32_t dr = RTC->DR;
+	uint_fast32_t tr = RTC->TR;
 	/* wait for TR & DR registers coherent */
 	do
 	{
@@ -378,12 +412,12 @@ void board_rtc_getdatetime(
 		tr = RTC->TR;
 	} while ((dr != dr2) || (tr != tr2));
 
-	* year = stm32f4xx_bcd2bin((dr & (RTC_DR_YT | RTC_DR_YU)) / RTC_DR_YU_0) + 2000;
-	* month = stm32f4xx_bcd2bin((dr & (RTC_DR_MT | RTC_DR_MU)) / RTC_DR_MU_0);
-	* dayofmonth = stm32f4xx_bcd2bin((dr & (RTC_DR_DT | RTC_DR_DU)) / RTC_DR_DU_0);
-	* hour = stm32f4xx_bcd2bin((tr & (RTC_TR_HT | RTC_TR_HU)) / RTC_TR_HU_0);
-	* minute = stm32f4xx_bcd2bin((tr & (RTC_TR_MNT | RTC_TR_MNU)) / RTC_TR_MNU_0);
-	* secounds = stm32f4xx_bcd2bin((tr & (RTC_TR_ST | RTC_TR_SU)) / RTC_TR_SU_0);
+	* year = stm32f4xx_max(stm32f4xx_min(stm32f4xx_bcd2bin((dr & (RTC_DR_YT | RTC_DR_YU)) / RTC_DR_YU_0), 99), 0) + 2000;
+	* month = stm32f4xx_max(stm32f4xx_min(stm32f4xx_bcd2bin((dr & (RTC_DR_MT | RTC_DR_MU)) / RTC_DR_MU_0), 12), 1);
+	* dayofmonth = stm32f4xx_max(stm32f4xx_min(stm32f4xx_bcd2bin((dr & (RTC_DR_DT | RTC_DR_DU)) / RTC_DR_DU_0), 31), 1);
+	* hour = stm32f4xx_max(stm32f4xx_min(stm32f4xx_bcd2bin((tr & (RTC_TR_HT | RTC_TR_HU)) / RTC_TR_HU_0), 23), 0);
+	* minute = stm32f4xx_max(stm32f4xx_min(stm32f4xx_bcd2bin((tr & (RTC_TR_MNT | RTC_TR_MNU)) / RTC_TR_MNU_0), 59), 0);
+	* secounds = stm32f4xx_max(stm32f4xx_min(stm32f4xx_bcd2bin((tr & (RTC_TR_ST | RTC_TR_SU)) / RTC_TR_SU_0), 59), 0);
 }
 
 /* возврат не-0 если требуется начальная загрузка значений */

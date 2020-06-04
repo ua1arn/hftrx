@@ -64,8 +64,8 @@
 
 	// +++ Особые варианты расположения кнопок на клавиатуре
 	#define KEYBSTYLE_SW2013RDX	1	// 8-ми кнопочная клавиатура
-	//#define KEYBSTYLE_SW2013RDX_LTIYUR	1		// 12-ти кнопочная клавиатура LTIYUR (check KI_COUNT) 
-	//#define KEYBSTYLE_SW2013RDX_UT7LC	1	// 12-ти кнопочная клавиатура UT7LC (check KI_COUNT) 
+	//#define KEYBSTYLE_SW2013RDX_LTIYUR	1		// 12-ти кнопочная клавиатура LTIYUR (check KI_COUNT)
+	//#define KEYBSTYLE_SW2013RDX_UT7LC	1	// 12-ти кнопочная клавиатура UT7LC (check KI_COUNT)
 	// --- Особые варианты расположения кнопок на клавиатуре
 
 	// +++ Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
@@ -107,7 +107,7 @@
 	//#define ENCRES_DEFAULT ENCRES_128
 	#define ENCRES_DEFAULT ENCRES_64
 	//#define ENCRES_DEFAULT ENCRES_24
-	#define	WITHENCODER	1	/* для изменения частоты имеется енкодер */
+	#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
 
 	#define ENCODER_REVERSE	1	/* шагать в обртную сторону */
 
@@ -228,6 +228,14 @@ enum
 #if WITHPOTWPM
 	POTWPM = 5,		// потенциометр управления скоростью передачи в телеграфе
 #endif
+
+	XTHERMOMRRIX = BOARD_ADCMRRIN(0),	// кеш - индекc не должен повторяться в конфигурации
+	PASENSEMRRIX = BOARD_ADCMRRIN(1),	// кеш - индекc не должен повторяться в конфигурации
+	REFMRRIX = BOARD_ADCMRRIN(2),
+	FWDMRRIX = BOARD_ADCMRRIN(3),
+	PWRMRRIX = FWDMRRIX,
+	VOLTMRRIX = BOARD_ADCMRRIN(4),	// кеш - индекc не должен повторяться в конфигурации
+
 	 //KI0 = 5, KI1 = 6, KI2 = 7	// клавиатура KEYBSTYLE_SW2013RDX_UT7LC, KEYBSTYLE_SW2013RDX_LTIYUR
 	 KI0 = 6, KI1 = 7	// клавиатура
 };

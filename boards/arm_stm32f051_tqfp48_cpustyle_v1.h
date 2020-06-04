@@ -20,7 +20,7 @@
 //#define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
 #define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
 
-//#define	WITHCPUDACHW	1
+//#define WITHCPUDACHW	1
 //#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 //#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 #define WITHCPUADCHW 	1	/* использование ADC */

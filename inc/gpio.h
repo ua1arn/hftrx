@@ -165,6 +165,7 @@ void arm_hardware_piod_opendrain(unsigned long opins, unsigned long initialstate
 void arm_hardware_pioe_inputs(unsigned long ipins);
 void arm_hardware_pioe_outputs(unsigned long opins, unsigned long initialstate);
 void arm_hardware_pioe_outputs2m(unsigned long opins, unsigned long initialstate);
+void arm_hardware_pioe_outputs50m(unsigned long opins, unsigned long initialstate);
 void arm_hardware_pioe_opendrain(unsigned long opins, unsigned long initialstate);
 
 void arm_hardware_piof_inputs(unsigned long ipins);

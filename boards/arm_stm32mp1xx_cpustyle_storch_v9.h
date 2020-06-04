@@ -52,14 +52,14 @@
 	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHGPUHW	1	/* Graphic processor unit */
 	#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
-	//#define	WITHEHCIHW	1	/* USB_EHCI controller */
+	//#define WITHEHCIHW	1	/* USB_EHCI controller */
 
 	#define WITHSDRAM_PMC1	1	/* power management chip */
 	//#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 
 	//#define WITHUSBHW_DEVICE	USB_OTG_HS	/* на этом устройстве поддерживается функциональность DEVICE	*/
 	//#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод VBUS_SENSE */
-	#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
+	//#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
 	//#define WITHUSBDEV_HIGHSPEEDULPI	1
 	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USBH_HS_DP & USBH_HS_DM
 	//#define WITHUSBDEV_DMAENABLE 1
@@ -93,12 +93,12 @@
 
 	#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHGPUHW	1	/* Graphic processor unit */
-	//#define	WITHEHCIHW	1	/* USB_EHCI controller */
+	//#define WITHEHCIHW	1	/* USB_EHCI controller */
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 
 	#define WITHUSBHW_DEVICE	USB_OTG_HS	/* на этом устройстве поддерживается функциональность DEVICE	*/
 	//#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод VBUS_SENSE */
-	#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
+	//#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
 	//#define WITHUSBDEV_HIGHSPEEDULPI	1
 	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USB_DP2 & USB_DM2
 	//#define WITHUSBDEV_DMAENABLE 1
@@ -733,14 +733,28 @@
 		/* step-up backlight converter */ \
 		} while (0)
 
+
 #if WITHDCDCFREQCTL
+	// ST ST1S10 Synchronizable switching frequency from 400 kHz up to 1.2 MHz
+	#define WITHHWDCDCFREQMIN 400000L
+	#define WITHHWDCDCFREQMAX 1200000L
+
+	// PB9 - DC-DC synchro output
+	// TIM17_CH1 AF1
+	// TIM4_CH4	AF2	AF_TIM4
 	#define	HARDWARE_DCDC_INITIALIZE() do { \
-		arm_hardware_piof_altfn2((1U << 6), AF_TIM1); /* TIM16_CH1 - PF6 */ \
-		hardware_blfreq_initialize(); \
-		} while (0)
+		arm_hardware_piob_altfn2((1U << 9), AF_TIM17); /* PB9 - TIM17_CH1 */ \
+		hardware_dcdcfreq_tim17_ch1_initialize(); \
+	} while (0)
+	#define HARDWARE_DCDC_SETDIV(f) do { \
+		hardware_dcdcfreq_tim17_ch1_setdiv(f); \
+	} while (0)
 #else /* WITHDCDCFREQCTL */
 	#define	HARDWARE_DCDC_INITIALIZE() do { \
-		} while (0)
+	} while (0)
+	#define HARDWARE_DCDC_SETDIV(f) do { \
+		(void) (f); \
+	} while (0)
 #endif /* WITHDCDCFREQCTL */
 
 	/* установка яркости и включение/выключение преобразователя подсветки */

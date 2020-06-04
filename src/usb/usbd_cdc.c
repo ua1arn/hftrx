@@ -265,6 +265,7 @@ static USBD_StatusTypeDef USBD_CDC_DataOut(USBD_HandleTypeDef *pdev, uint_fast8_
 	return USBD_OK;
 }
 
+// При возврате из этой функции в usbd_core.c происходит вызов USBD_CtlSendStatus
 static USBD_StatusTypeDef USBD_CDC_EP0_RxReady(USBD_HandleTypeDef *pdev)
 {
 	const USBD_SetupReqTypedef * const req = & pdev->request;
@@ -472,6 +473,11 @@ static USBD_StatusTypeDef USBD_CDC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 					//PRINTF("USBD_CDC_Setup: CDC interface %d set to %d\n", (int) interfacev, (int) altinterfaces [interfacev]);
 					//bufers_set_cdcalt(altinterfaces [interfacev]);
 					USBD_CtlSendStatus(pdev);
+					break;
+
+				default:
+					// Другие интерфейсы - ничего не отправляем.
+					//TP();
 					break;
 				}
 			}

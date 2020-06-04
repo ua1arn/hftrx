@@ -2782,49 +2782,6 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 #endif /* WITHDSPEXTDDC && WITHDSPEXTFIR */
 }
 
-#if WITHREVERB
-	static FLOAT_t reverbRatioDirect [NPROF] = { 1, 1 };
-	static FLOAT_t reverbRatioDelayed [NPROF] = { 0, 0 };
-	static unsigned reverbDelay [NPROF];	/* задержка ревербератора в сэмплах */
-#endif /* WITHREVERB */
-
-static void reverb_update(const uint_fast8_t spf)
-{
-#if WITHREVERB
-	/* при выключенном ревербераторе сигнал все равно
-	 * помещается в линию задержки - чтобы при
-	 * включении уже был готов к работе
-	 * */
-	reverbRatioDelayed [spf] = glob_reverb ? 0 : db2ratio(- (int) glob_reverbloss);	/* ревербератор - ослабление на возврате */
-	reverbRatioDirect [spf] = 1 - reverbRatioDelayed [spf];
-	reverbDelay [spf] = NSAITICKS(glob_reverbdelay);
-
-#endif /* WITHREVERB */
-}
-
-static FLOAT_t txmikereverb(FLOAT_t sample)
-{
-#if WITHREVERB
-
-	enum { MAXDELAYSAMPLES = NSAITICKS(WITHREVERBDELAYMAX) };
-
-	static RAMNOINIT_D1 FLOAT_t delaybuf [MAXDELAYSAMPLES];
-	static unsigned pos;
-
-	pos = pos == 0 ? MAXDELAYSAMPLES - 1 : pos - 1;
-	delaybuf [pos] = sample;
-	const FLOAT_t oldsample = delaybuf [(pos + reverbDelay [gwprof]) % MAXDELAYSAMPLES];
-	sample = sample * reverbRatioDirect [gwprof] + oldsample * reverbRatioDelayed [gwprof];
-	delaybuf [pos] = sample;
-	return sample;
-
-#else /* WITHREVERB */
-
-	return sample;
-
-#endif /* WITHREVERB */
-}
-
 // Установка параметров тракта передатчика
 static void audio_setup_mike(const uint_fast8_t spf)
 {
@@ -2847,7 +2804,6 @@ static void audio_setup_mike(const uint_fast8_t spf)
 	case DSPCTL_MODE_TX_SSB:
 	case DSPCTL_MODE_TX_AM:
 	case DSPCTL_MODE_TX_FREEDV:
-		reverb_update(spf);
 		fir_design_bandpass_freq(dCoeff, iCoefNum, glob_aflowcuttx, glob_afhighcuttx);
 		fir_design_adjust_tx(dCoeff, dWindow, iCoefNum);	// Применение эквалайзера к микрофону
 		break;
@@ -3324,11 +3280,48 @@ static RAMDTCM volatile agcstate_t rxsmeterstate [NTRX];	// На каждый п
 static RAMDTCM volatile agcstate_t rxagcstate [NTRX];	// На каждый приёмник
 static RAMDTCM volatile agcstate_t txagcstate;
 
-static RAMDTCM volatile agcparams_t rxsmeterparams = { 0, };
+static RAMDTCM volatile agcparams_t rxsmeterparams;
 static RAMDTCM volatile agcparams_t rxagcparams [NPROF] [NTRX];
 static RAMDTCM volatile agcparams_t txagcparams [NPROF];
+
 static RAMDTCM volatile uint_fast8_t gwagcprofrx = 0;	// work profile - индекс конфигурационной информации, испольуемый для работы */
 static RAMDTCM volatile uint_fast8_t gwagcproftx = 0;	// work profile - индекс конфигурационной информации, испольуемый для работы */
+
+#if WITHREVERB
+	static FLOAT_t reverbRatioDirect [NPROF] = { 1, 1 };
+	static FLOAT_t reverbRatioDelayed [NPROF] = { 0, 0 };
+	static unsigned reverbDelay [NPROF];	/* задержка ревербератора в сэмплах */
+#endif /* WITHREVERB */
+
+/* Получение эффекта реверберации. На входе сэмпл, возвращаем обработанный или неизменный сэмпл
+ *
+ */
+static FLOAT_t txmikereverb(FLOAT_t isample)
+{
+#if WITHREVERB
+
+	enum { MAXDELAYSAMPLES = NSAITICKS(WITHREVERBDELAYMAX) };
+
+	/* Тут нельзя использовать память NOINIT для буфера. Если в ней встречается значение NaN, то
+	 * даже при выключенном ревербераторе результат вычисления результирующего сэмпла так же NaN и он пришется в буфер...
+	 * А я управляю включением/выключением через значения в reverbRatioDirect и reverbRatioDelayed.
+	 */
+	static RAMBIG FLOAT_t delaybuf [MAXDELAYSAMPLES];
+	static unsigned pos;
+
+	pos = pos == 0 ? MAXDELAYSAMPLES - 1 : pos - 1;
+	const FLOAT_t oldsample = delaybuf [(pos + reverbDelay [gwagcproftx]) % MAXDELAYSAMPLES];
+	const FLOAT_t rsample = isample * reverbRatioDirect [gwagcproftx] + oldsample * reverbRatioDelayed [gwagcproftx];
+	delaybuf [pos] = rsample;
+
+	return rsample;
+
+#else /* WITHREVERB */
+
+	return isample;
+
+#endif /* WITHREVERB */
+}
 //	
 static void agc_initialize(void)
 {
@@ -4440,10 +4433,9 @@ static RAMFUNC FLOAT_t processifadcsamplei(uint32_t v1, uint_fast8_t dspmode)
 #if WITHLOOPBACKTEST
 
 // Обеспечение работы тестового канала прохождения стерео звука
-static INT32P_t loopbacktestaudio(INT32P_t vi0, uint_fast8_t dspmode, FLOAT_t shape)
+static FLOAT32P_t loopbacktestaudio(FLOAT32P_t vi0, uint_fast8_t dspmode, FLOAT_t shape)
 {
-	INT32P_t vi;
-	vi = vi0;		// Прослушивание микрофонного сигнала
+	FLOAT32P_t vi = vi0;	// Прослушивание микрофонного сигнала
 	//
 	// Здесь выбираем, что прослушиваем при тесте
 	BEGIN_STAMP2();
@@ -5293,11 +5285,11 @@ void dsp_addsidetone(aubufv_t * buff)
 			moni.IV = 0;
 			moni.QV = 0;
 		}
-		const aufastbufv_t moniL = AUDIO16TOAUB(mixmonitor(sdtnshape, sdtnv, moni.IV));
-		const aufastbufv_t moniR = AUDIO16TOAUB(mixmonitor(sdtnshape, sdtnv, moni.QV));
+		const FLOAT_t moniL = AUDIO16TOAUB(mixmonitor(sdtnshape, sdtnv, moni.IV));
+		const FLOAT_t moniR = AUDIO16TOAUB(mixmonitor(sdtnshape, sdtnv, moni.QV));
 
-		aufastbufv_t left = b [L];
-		aufastbufv_t right = b [R];
+		FLOAT_t left = b [L];
+		FLOAT_t right = b [R];
 		//
 #if WITHWAVPLAYER
 		{
@@ -5359,8 +5351,11 @@ void dsp_addsidetone(aubufv_t * buff)
 			break;
 		case BOARD_RXMAINSUB_TWO:
 			// left, right:A+B
-			b [L] = injectsidetone(((int_fast32_t) left + right) / 2, moniL);
-			b [R] = injectsidetone(((int_fast32_t) left + right) / 2, moniR);
+			{
+				const FLOAT_t sumv = ((FLOAT_t) left + right) / 2;
+				b [L] = injectsidetone(sumv, moniL);
+				b [R] = injectsidetone(sumv, moniR);
+			}
 			break;
 		}
 	}
@@ -5766,6 +5761,37 @@ dsp_get_samplerate100(void)
 {
 	return ARMI2SRATE100;
 }
+// UAC IN samplerate
+// todo: сделать нормальный расчёт для некруглых значений ARMI2SRATE
+int_fast32_t dsp_get_samplerateuacin_audio48(void)
+{
+	return dsp_get_sampleraterx();
+}
+// UAC IN samplerate
+// todo: сделать нормальный расчёт для некруглых значений ARMI2SRATE
+int_fast32_t dsp_get_samplerateuacin_RTS96(void)
+{
+	return dsp_get_sampleraterxscaled(2);
+}
+
+// UAC IN samplerate
+// todo: сделать нормальный расчёт для некруглых значений ARMI2SRATE
+int_fast32_t dsp_get_samplerateuacin_RTS192(void)
+{
+	return dsp_get_sampleraterxscaled(4);
+}
+
+int_fast32_t dsp_get_samplerateuacin_rts(void)		// RTS samplerate
+{
+#if WITHRTS192
+	return dsp_get_samplerateuacin_RTS192();
+#elif WITHRTS96
+	return dsp_get_samplerateuacin_RTS96();
+#else
+	return dsp_get_samplerateuacin_audio48();
+#endif
+}
+
 
 // Передача параметров в DSP модуль
 // Обновление параметров приемника (кроме фильтров).
@@ -5852,6 +5878,19 @@ txparam_update(uint_fast8_t profile)
 		mickeclipscale [profile] = 1 / grade;
 		mickecliplevelp [profile] = FS * grade;
 		mickeclipleveln [profile] = - FS * grade;
+	}
+	{
+		// ревербератор
+	#if WITHREVERB
+		/* при выключенном ревербераторе сигнал все равно
+		 * помещается в линию задержки - чтобы при
+		 * включении уже был готов к работе
+		 * */
+		reverbRatioDelayed [profile] = glob_reverb ? db2ratio(- (int) glob_reverbloss) : 0;	/* ревербератор - ослабление на возврате */
+		reverbRatioDirect [profile] = 1 - reverbRatioDelayed [profile];
+		reverbDelay [profile] = NSAITICKS(glob_reverbdelay);
+
+	#endif /* WITHREVERB */
 	}
 
 	{
@@ -6553,7 +6592,7 @@ board_set_reverb(uint_fast8_t reverb, uint_fast8_t reverbdelay, uint_fast8_t rev
 		glob_reverb = reverb;
 		glob_reverbdelay = reverbdelay;
 		glob_reverbloss = reverbloss;
-		board_flt1regchanged();
+		board_dsp1regchanged();
 	}
 #endif /* WITHREVERB */
 }

@@ -1262,22 +1262,22 @@ HAL_StatusTypeDef USB_CoreReset(USB_OTG_GlobalTypeDef *USBx);
 #define GRXSTS_PKTSTS_DATA_TOGGLE_ERR          5U
 #define GRXSTS_PKTSTS_CH_HALTED                7U
 
-#define USBx_PCGCCTL    (*(__IO uint32_t *)((uint32_t)(USBx) + USB_OTG_PCGCCTL_BASE))
-#define USBx_HPRT0      (*(__IO uint32_t *)((uint32_t)(USBx) + USB_OTG_HOST_PORT_BASE))
+#define USBx_PCGCCTL    (* (__IO uint32_t *) ((uintptr_t) (USBx) + USB_OTG_PCGCCTL_BASE))
+#define USBx_HPRT0      (* (__IO uint32_t *) ((uintptr_t) (USBx) + USB_OTG_HOST_PORT_BASE))
 
-#define USBx_DEVICE     ((USB_OTG_DeviceTypeDef *)((uint32_t )(USBx) + USB_OTG_DEVICE_BASE))
-#define USBx_INEP(i)    ((USB_OTG_INEndpointTypeDef *)((uint32_t)(USBx) + USB_OTG_IN_ENDPOINT_BASE + (i)*USB_OTG_EP_REG_SIZE))
-#define USBx_OUTEP(i)   ((USB_OTG_OUTEndpointTypeDef *)((uint32_t)(USBx) + USB_OTG_OUT_ENDPOINT_BASE + (i)*USB_OTG_EP_REG_SIZE))
-#define USBx_DFIFO(i)   (*(__IO uint32_t *)((uint32_t)(USBx) + USB_OTG_FIFO_BASE + (i) * USB_OTG_FIFO_SIZE))
+#define USBx_DEVICE     ((USB_OTG_DeviceTypeDef *) ((uintptr_t) (USBx) + USB_OTG_DEVICE_BASE))
+#define USBx_INEP(i)    ((USB_OTG_INEndpointTypeDef *) ((uintptr_t) (USBx) + USB_OTG_IN_ENDPOINT_BASE + (i) * USB_OTG_EP_REG_SIZE))
+#define USBx_OUTEP(i)   ((USB_OTG_OUTEndpointTypeDef *) ((uintptr_t) (USBx) + USB_OTG_OUT_ENDPOINT_BASE + (i) * USB_OTG_EP_REG_SIZE))
+#define USBx_DFIFO(i)   (* (__IO uint32_t *) ((uintptr_t) (USBx) + USB_OTG_FIFO_BASE + (i) * USB_OTG_FIFO_SIZE))
 
-#define USBx_HOST       ((USB_OTG_HostTypeDef *)((uint32_t )(USBx) + USB_OTG_HOST_BASE))
-#define USBx_HC(i)      ((USB_OTG_HostChannelTypeDef *)((uint32_t)(USBx) + USB_OTG_HOST_CHANNEL_BASE + (i)*USB_OTG_HOST_CHANNEL_SIZE))
+#define USBx_HOST       ((USB_OTG_HostTypeDef *) ((uintptr_t) (USBx) + USB_OTG_HOST_BASE))
+#define USBx_HC(i)      ((USB_OTG_HostChannelTypeDef *) ((uintptr_t) (USBx) + USB_OTG_HOST_CHANNEL_BASE + (i) * USB_OTG_HOST_CHANNEL_SIZE))
 
 /* Exported macro ------------------------------------------------------------*/
-#define USB_MASK_INTERRUPT(i, m)     ((i)->GINTMSK &= ~(m))
-#define USB_UNMASK_INTERRUPT(i, m)   ((i)->GINTMSK |= (m))
-#define CLEAR_IN_EP_INTR(ep, m)          (USBx_INEP(ep)->DIEPINT = (m))
-#define CLEAR_OUT_EP_INTR(ep, m)         (USBx_OUTEP(ep)->DOEPINT = (m))
+#define USB_MASK_INTERRUPT(i, m)     do { (i)->GINTMSK &= ~ (m); (void) (i)->GINTMSK; } while (0)
+#define USB_UNMASK_INTERRUPT(i, m)   do { (i)->GINTMSK |= (m); (void) (i)->GINTMSK; } while (0)
+#define CLEAR_IN_EP_INTR(ep, m)      do { USBx_INEP(ep)->DIEPINT = (m); (void) USBx_INEP(ep)->DIEPINT; } while (0)
+#define CLEAR_OUT_EP_INTR(ep, m)     do { USBx_OUTEP(ep)->DOEPINT = (m); (void) USBx_OUTEP(ep)->DOEPINT; } while (0)
 /**
   * @}
   */

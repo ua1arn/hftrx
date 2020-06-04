@@ -120,7 +120,7 @@
 
 #elif LCDMODE_HD44780 && (LCDMODE_SPI == 0)
 
-	#define	WITHUSEPARALELDISPLAY	1
+	#define WITHUSEPARALELDISPLAY	1
 
 	// Выводы подключения ЖКИ индикатора WH2002 или аналогичного HD44780.
 	#define LCD_DATA_INPUT			(GPIOF->IDR)

@@ -60,23 +60,24 @@ display_wrdatabar_end(void)
 /* отображение одной вертикальной полосы на графическом индикаторе */
 /* старшие биты соответствуют верхним пикселям изображения */
 /* вызывается между вызовами display_wrdatabar_begin() и display_wrdatabar_end() */
-void
-display_barcolumn(uint_fast8_t pattern)
+uint_fast16_t
+display_barcolumn(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t pattern)
 {
+	return xpix + 1;
 }
 
 /* вызывается между вызовами display_wrdatabig_begin() и display_wrdatabig_end() */
 uint_fast16_t
 display_put_char_big(uint_fast16_t x, uint_fast16_t y, uint_fast8_t c, uint_fast8_t lowhalf)
 {
-	return x;
+	return x + 1;
 }
 
 /* вызывается между вызовами display_wrdatabig_begin() и display_wrdatabig_end() */
 uint_fast16_t
 display_put_char_half(uint_fast16_t x, uint_fast16_t y, uint_fast8_t c, uint_fast8_t lowhalf)
 {
-	return x;
+	return x + 1;
 }
 
 
@@ -85,7 +86,7 @@ display_put_char_half(uint_fast16_t x, uint_fast16_t y, uint_fast8_t c, uint_fas
 uint_fast16_t
 display_put_char_small(uint_fast16_t x, uint_fast16_t y, uint_fast8_t c, uint_fast8_t lowhalf)
 {
-	return x;
+	return x + 1;
 }
 
 // Координаты в пикселях
@@ -106,7 +107,9 @@ void display_plotstop(void)
 void display_plot(
 	const PACKEDCOLORMAIN_T * buffer,
 	uint_fast16_t dx,	// Размеры окна в пикселях
-	uint_fast16_t dy
+	uint_fast16_t dy,
+	uint_fast16_t xpix,	// начало области рисования
+	uint_fast16_t ypix
 	)
 {
 

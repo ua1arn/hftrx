@@ -104,33 +104,10 @@ uc1601s_clear(void)
 
 	    for (cnt_x = 0; cnt_x < DIM_X; ++ cnt_x)
 		{
-		    display_barcolumn(0x00);
+		    xpix = display_barcolumn(xpix, ypix, 0x00);
 		}
 	    display_wrdatabar_end();
 	}
-}
-
-
-// uc1601s_bigfont & uc1601s_halffont decode
-static uint_fast8_t 
-NOINLINEAT
-bigfont_decode(uint_fast8_t c)
-{
-	// '#' - узкий пробел
-	if (c == ' ' || c == '#')
-		return 11;
-	if (c == '_')
-		return 10;		// курсор - позиция редактирвания частоты
-	if (c == '.')
-		return 12;		// точка
-	return c - '0';		// остальные - цифры 0..9
-}
-
-static uint_fast8_t 
-//NOINLINEAT
-smallfont_decode(uint_fast8_t c)
-{
-	return c - ' ';
 }
 
 
@@ -502,10 +479,11 @@ display_wrdatabig_end(void)
 /* отображение одной вертикальной полосы на графическом индикаторе */
 /* старшие биты соответствуют верхним пикселям изображения */
 /* вызывается между вызовами display_wrdatabar_begin() и display_wrdatabar_end() */
-void 
-display_barcolumn(uint_fast8_t pattern)
+uint_fast16_t
+display_barcolumn(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t pattern)
 {
 	uc1601s_bar_column(pattern);
+	return xpix + 1;
 }
 
 uint_fast16_t
@@ -559,7 +537,9 @@ void display_plotstart(
 void display_plot(
 	const PACKEDCOLORMAIN_T * buffer, 
 	uint_fast16_t dx,	// Размеры окна в пикселях
-	uint_fast16_t dy
+	uint_fast16_t dy,
+	uint_fast16_t xpix,	// начало области рисования
+	uint_fast16_t ypix
 	)
 {
 

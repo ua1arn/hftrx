@@ -95,7 +95,7 @@
 	#define ENCRES_DEFAULT ENCRES_64	// японский валкодер
 	//#define ENCRES_DEFAULT ENCRES_24
 	#define WITHDIRECTFREQENER	1 //(! CTLSTYLE_SW2011ALL && ! CTLSTYLE_UA3DKC)
-	#define	WITHENCODER	1	/* для изменения частоты имеется енкодер */
+	#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
 
 	// +++ Эти строки можно отключать, уменьшая функциональность готового изделия
 	//#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */

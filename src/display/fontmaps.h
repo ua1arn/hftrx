@@ -8,7 +8,9 @@
 #ifndef DISPLAY_FONTMAPS_H_INCLUDED
 #define DISPLAY_FONTMAPS_H_INCLUDED
 
-#if LCDMODE_UC1601
+#if LCDMODE_DUMMY
+
+#elif LCDMODE_UC1601
 
 	/* растровые шрифты */
 	#include "./fonts/uc1601s_font_small.h"
@@ -33,6 +35,9 @@
 	#include "./fonts/ILI9341_font_small.h"
 	#include "./fonts/ILI9341_font_half.h"
 	#include "./fonts/ILI9341_font_big.h"
+	/* шрифты для работы с буером в памяти */
+	#include "./fonts/S1D13781_font_small3_LTDC.h"
+	#include "./fonts/S1D13781_font_small2_LTDC.h"
 
 	#define	ILI9320_smallfont	ILI9341_smallfont
 	#define	ILI9320_halffont	ILI9341_halffont

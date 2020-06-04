@@ -49,7 +49,7 @@
 	#define WITHPOWERTRIMMIN	0	// Нижний предел регулировки
 	#define WITHPOWERTRIMMAX	1	// Верхний предел регулировки
 	//#define WITHPOWERTRIMATU	0	// Значение для работы автотюнера
-	#define	WITHMUTEALL			1	// Отключение микрофона во всех режимах
+	#define WITHMUTEALL			1	// Отключение микрофона во всех режимах
 	//#define WITHONEATTONEAMP	1	/* только одно положение аттенюатора и УВЧ - "по кругу". */
 	#define WITHATT1PRE1		1	// Управление УВЧ и одиночным аттенюатором
 	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея
@@ -73,7 +73,7 @@
 	#define	BOARD_FILTERCODE_0	0x00
 	#define	BOARD_FILTERCODE_1	0x01
 
-	#define	WITHAUTOTUNER	1	/* Есть функция автотюнера */
+	#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
 
 
 	// +++ Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
@@ -111,7 +111,7 @@
 
 	#define ENCRES_DEFAULT ENCRES_128
 	//#define ENCRES_DEFAULT ENCRES_24
-	#define	WITHENCODER	1	/* для изменения частоты имеется енкодер */
+	#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
 
 	#define ENCODER_REVERSE	1	/* шагать в обртную сторону */
 

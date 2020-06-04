@@ -123,7 +123,7 @@ prog_fpga_ctrlreg(
 	RBBIT(9, glob_i2s_enable);				/* b9: i2s_enable */
 	RBBIT(8, glob_firprofile [1]);			/* b8: fir2_profile - что используется для фильтрации FIR2 */
 	RBBIT(7, glob_firprofile [0]);			/* b7: fir_profile - что используется для фильтрации FIR1 */
-	RBBIT(6, glob_flt_reset_n);				/* b6: flt_reset_n net */
+	RBBIT(6, glob_flt_reset_n && glob_reset_n);				/* b6: flt_reset_n net */
 	RBBIT(5, glob_dither);					/* b5: adc_dith net */
 	RBBIT(4, glob_adcrand);					/* b4: adc_rand net  */
 	RBBIT(3, ! glob_sleep && glob_preamp);	/* b3: adc_pga net */
