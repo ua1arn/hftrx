@@ -6033,14 +6033,20 @@ static void display2_spectrum(
 		{
 			/* рисуем спектр ломанной линией */
 			uint_fast16_t ylast = 0;
-			
-			uint_fast16_t x;
-			for (x = 0; x < ALLDX; ++ x)
+			/* стираем зажний фон, рисуем прямоугольник полосы пропускания */
+			if (xleft > 0)
 			{
-				const uint_fast8_t inband = (x >= xleft && x <= xright);	// в полосе пропускания приемника = "шторка"
-				// формирование фона растра
-				display_colorbuf_set_vline(colorpip, BUFDIM_X, BUFDIM_Y, x, SPY0, SPDY, inband ? COLORMAIN_SPECTRUMBG2 : COLORPIP_SPECTRUMBG);
+				colmain_fillrect(colorpip, BUFDIM_X, BUFDIM_Y, 0, SPY0, xleft, SPDY, COLORPIP_SPECTRUMBG);
 			}
+			if (xleft < xright)
+			{
+				colmain_fillrect(colorpip, BUFDIM_X, BUFDIM_Y, xleft, SPY0, xright - xleft, SPDY, COLORMAIN_SPECTRUMBG2);
+			}
+			if (xright < ALLDX)
+			{
+				colmain_fillrect(colorpip, BUFDIM_X, BUFDIM_Y, xright, SPY0, ALLDX - xright, SPDY, COLORPIP_SPECTRUMBG);
+			}
+			uint_fast16_t x;
 			display_colorgrid_set(colorpip, SPY0, SPDY, f0, bw);	// отрисовка маркеров частот
 			for (x = 0; x < ALLDX; ++ x)
 			{
