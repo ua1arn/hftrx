@@ -9453,7 +9453,7 @@ void DAbort_Handler(void)
 		14. 0bx10110 asynchronous external abort
 		15. 0b000010 debug event.
 	*/
-	debug_printf_P(PSTR(" WnR=%d, Status=%02X\n"), WnR, Status);
+	debug_printf_P(PSTR(" WnR=%d, Status=%02X\n"), (int) WnR, (unsigned) Status);
 	switch (Status)
 	{
 	case 0x01: debug_printf_P(PSTR("alignment fault\n")); break;
