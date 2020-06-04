@@ -57,6 +57,12 @@ SECTIONS
 {
 	.text :
 	{
+		. = ALIGN(32);
+		KEEP(*(.vectors))
+		__Vectors_End = .;
+		__Vectors_Size = __Vectors_End - __Vectors;
+		
+		. = ALIGN(32);
 		KEEP(*(.init*))
 		KEEP(*(.initfunc*))
 		KEEP(*(.initdata*))
@@ -118,11 +124,8 @@ SECTIONS
 	.data : /*AT (__etext)*/
 	{
 		__data_start__ = .;
-		. = ALIGN(32);
-		KEEP(*(.vectors))
-		__Vectors_End = .;
-		__Vectors_Size = __Vectors_End - __Vectors;
 
+		. = ALIGN(32);
 		/* .ctors */
 		*crtbegin.o(.ctors)
 		*crtbegin?.o(.ctors)
