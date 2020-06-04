@@ -430,7 +430,6 @@ hwacc_fillrect_u16(
 
 #else
 	// программная реализация
-
 	const unsigned t = GXADJ(dx) - w;
 	//buffer += (GXADJ(dx) * row) + col;
 	buffer = colmain_mem_at(buffer, dx, dy, col, row); // dest address
@@ -1137,7 +1136,7 @@ void hwaccel_copy(
 		while (h --)
 		{
 			memcpy(dst, src, len);
-			//arm_hardware_flush((uintptr_t) dst, len);
+			arm_hardware_flush((uintptr_t) dst, len);
 			src += GXADJ(w);
 			dst += w + tadj;
 		}
