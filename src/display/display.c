@@ -1494,11 +1494,13 @@ void display_hardware_initialize(void)
 #if WITHDMA2DHW
 	// Image construction hardware
 	arm_hardware_dma2d_initialize();
+
 #endif /* WITHDMA2DHW */
 #if WITHMDMAHW
 	// Image construction hardware
 	arm_hardware_mdma_initialize();
-#endif
+
+#endif /* WITHMDMAHW */
 #if WITHLTDCHW
 	// STM32xxx LCD-TFT Controller (LTDC)
 	// RENESAS Video Display Controller 5
