@@ -5665,7 +5665,8 @@ static FLOAT_t filter_spectrum(
 #if defined (COLORPIP_SHADED)
 
 	/* быстрое отображение водопада (но требует больше памяти) */
-	static RAMBIGDTCM  PACKEDCOLORMAIN_T wfarray [WFDY] [ALLDX];	// массив "водопада"
+	static RAMBIGDTCM  PACKEDCOLORMAIN_T wfjarray [GXSIZE(ALLDX, WFDY)];	// массив "водопада"
+	enum { WFROWS = WFDY };
 
 	enum { PALETTESIZE = COLORPIP_BASE };
 	static PACKEDCOLORMAIN_T wfpalette [1];
@@ -5674,7 +5675,8 @@ static FLOAT_t filter_spectrum(
 #elif WITHFASTWATERFLOW && LCDMODE_PIP_RGB565
 
 	/* быстрое отображение водопада (но требует больше памяти) */
-	static RAMBIGDTCM PACKEDCOLORMAIN_T wfarray [WFDY] [ALLDX];	// массив "водопада"
+	static RAMBIGDTCM PACKEDCOLORMAIN_T wfjarray [GXSIZE(ALLDX, WFDY)];	// массив "водопада"
+	enum { WFROWS = WFDY };
 
 	enum { PALETTESIZE = 256 };
 	static PACKEDCOLORMAIN_T wfpalette [PALETTESIZE];
@@ -5683,13 +5685,15 @@ static FLOAT_t filter_spectrum(
 #elif LCDMODE_PIP_L8 || (! LCDMODE_PIP_L8 && LCDMODE_MAIN_L8)
 
 	enum { PALETTESIZE = COLORPIP_BASE };
-	static RAMBIGDTCM PACKEDCOLORMAIN_T wfarray [WFDY] [ALLDX];	// массив "водопада"
+	static RAMBIGDTCM PACKEDCOLORMAIN_T wfjarray [GXSIZE(ALLDX, WFDY)];	// массив "водопада"
+	enum { WFROWS = WFDY };
 	static uint_fast16_t wfrow;		// строка, в которую последней занесены данные
 
 #elif WITHFASTWATERFLOW
 
 	/* быстрое отображение водопада (но требует больше памяти) */
-	static RAMBIGDTCM PACKEDCOLORMAIN_T wfarray [WFDY] [ALLDX];	// массив "водопада"
+	static RAMBIGDTCM PACKEDCOLORMAIN_T wfjarray [GXSIZE(ALLDX, WFDY)];	// массив "водопада"
+	enum { WFROWS = WFDY };
 
 	enum { PALETTESIZE = 256 };
 	static PACKEDCOLORMAIN_T wfpalette [PALETTESIZE];
@@ -5697,7 +5701,8 @@ static FLOAT_t filter_spectrum(
 
 #elif (! LCDMODE_S1D13781_NHWACCEL && LCDMODE_S1D13781)
 
-	static RAMBIGDTCM PACKEDCOLOR565_T wfarray [1] [ALLDX];	// массив "водопада"
+	static RAMBIGDTCM PACKEDCOLOR565_T wfjarray [GXSIZE(ALLDX, 1)];	// массив "водопада"
+	enum { WFROWS = 1 };
 	enum { wfrow = 0 };				// строка, в которую последней занесены данные
 
 	enum { PALETTESIZE = 256 };
@@ -5707,7 +5712,8 @@ static FLOAT_t filter_spectrum(
 
 #else
 
-	static RAMBIGDTCM uint8_t wfarray [WFDY] [ALLDX];	// массив "водопада"
+	static RAMBIGDTCM uint8_t wfjarray [GXSIZE(ALLDX, WFDY)];	// массив "водопада"
+	enum { WFROWS = WFDY };
 	static uint_fast16_t wfrow;		// строка, в которую последней занесены данные
 
 	enum { PALETTESIZE = 256 };
@@ -6015,6 +6021,7 @@ static void display2_spectrum(
 	(void) x0;
 	(void) y0;
 	(void) pctx;
+
 	// Спектр на цветных дисплеях, не поддерживающих ускоренного
 	// построения изображения по bitmap с раскрашиванием
 	if (1 || hamradio_get_tx() == 0)
@@ -6098,14 +6105,17 @@ static void display2_spectrum(
 // в строке wfrow - новое
 static void wflclear(void)
 {
-	enum { WFROWS = sizeof wfarray / sizeof wfarray [0] };
 	uint_fast16_t y;
 
 	for (y = 0; y < WFROWS; ++ y)
 	{
 		if (y == wfrow)
 			continue;
-		memset(wfarray [y], 0x00, ALLDX * sizeof wfarray [y][0]);
+		memset(
+				colmain_mem_at(wfjarray, ALLDX, WFROWS, 0, y),
+				0x00,
+				ALLDX * sizeof wfjarray [0]
+		);
 	}
 }
 
@@ -6126,7 +6136,6 @@ static void wfl_avg_clear(void)
 // в строке wfrow - новое
 static void wflshiftleft(uint_fast16_t pixels)
 {
-	enum { WFROWS = sizeof wfarray / sizeof wfarray [0] };
 	uint_fast16_t y;
 
 	if (pixels == 0)
@@ -6145,8 +6154,16 @@ static void wflshiftleft(uint_fast16_t pixels)
 		{
 			continue;
 		}
-		memmove(wfarray [y] + 0, wfarray [y] + pixels, (ALLDX - pixels) * sizeof wfarray [y][0]);
-		memset(wfarray [y] + ALLDX - pixels, 0x00, pixels * sizeof wfarray [y][0]);
+		memmove(
+				colmain_mem_at(wfjarray, ALLDX, WFROWS, 0, y),
+				colmain_mem_at(wfjarray, ALLDX, WFROWS, pixels, y),
+				(ALLDX - pixels) * sizeof wfjarray [0]
+		);
+		memset(
+				colmain_mem_at(wfjarray, ALLDX, WFROWS, ALLDX - pixels, y),
+				0x00,
+				pixels * sizeof wfjarray [0]
+		);
 	}
 }
 
@@ -6155,7 +6172,6 @@ static void wflshiftleft(uint_fast16_t pixels)
 // в строке wfrow - новое
 static void wflshiftright(uint_fast16_t pixels)
 {
-	enum { WFROWS = sizeof wfarray / sizeof wfarray [0] };
 	uint_fast16_t y;
 
 	if (pixels == 0)
@@ -6174,8 +6190,16 @@ static void wflshiftright(uint_fast16_t pixels)
 		{
 			continue;
 		}
-		memmove(wfarray [y] + pixels, wfarray [y] + 0, (ALLDX - pixels) * sizeof wfarray [y][0]);
-		memset(wfarray [y] + 0, 0x00, pixels * sizeof wfarray [y][0]);
+		memmove(
+				colmain_mem_at(wfjarray, ALLDX, WFROWS, pixels, y),
+				colmain_mem_at(wfjarray, ALLDX, WFROWS, 0, y),
+				(ALLDX - pixels) * sizeof wfjarray [0]
+		);
+		memset(
+				colmain_mem_at(wfjarray, ALLDX, WFROWS, 0, y),
+				0x00,
+				pixels * sizeof wfjarray [0]
+		);
 	}
 }
 
@@ -6222,9 +6246,9 @@ static void display2_latchwaterfall(
 		// для водопада
 		const int val = dsp_mag2y(filter_waterfall(x), PALETTESIZE - 1, glob_wflevelsep ? glob_topdbwf : glob_topdb, glob_wflevelsep ? glob_bottomdbwf : glob_bottomdb); // возвращает значения от 0 до dy включительно
 	#if LCDMODE_MAIN_L8
-		wfarray [wfrow] [x] = val;	// запись в буфер водопада индекса палитры
+		colmain_putpixel(wfjarray, ALLDX, WFROWS, x, wfrow, val);	// запись в буфер водопада индекса палитры
 	#else /* LCDMODE_MAIN_L8 */
-		wfarray [wfrow] [x] = wfpalette [val];	// запись в буфер водопада цветовой точки
+		colmain_putpixel(wfjarray, ALLDX, WFROWS, x, wfrow, wfpalette [val]);	// запись в буфер водопада цветовой точки
 	#endif /* LCDMODE_MAIN_L8 */
 	}
 
@@ -6350,14 +6374,22 @@ static void display2_waterfall(
 	const uint_fast16_t p1y = WFY0;
 	const uint_fast16_t p2y = WFY0 + p1h;
 
-	/* перенос растра */
-	colpip_plot(colorpip, BUFDIM_X, BUFDIM_Y, 0, p1y,
-			colmain_mem_at(& wfarray [0][0], ALLDX, ALLDY, 0, wfrow),	// начальный алрес источника
-			ALLDX, p1h);	// размеры источника
-	if (p2h != 0)
-		colpip_plot(colorpip, BUFDIM_X, BUFDIM_Y, 0, p2y,
-				colmain_mem_at(& wfarray [0][0], ALLDX, ALLDY, 0, 0),	// начальный алрес источника
-				ALLDX, p2h);	// размеры истояника
+	if (1)
+	{
+		{
+			/* перенос свежей части растра */
+			colpip_plot(colorpip, BUFDIM_X, BUFDIM_Y, 0, p1y,
+					colmain_mem_at(wfjarray, ALLDX, WFROWS, 0, wfrow),	// начальный адрес источника
+					ALLDX, p1h);	// размеры источника
+		}
+		if (p2h != 0)
+		{
+			/* перенос старой части растра */
+			colpip_plot(colorpip, BUFDIM_X, BUFDIM_Y, 0, p2y,
+					colmain_mem_at(wfjarray, ALLDX, WFROWS, 0, 0),	// начальный адрес источника
+					ALLDX, p2h);	// размеры источника
+		}
+	}
 
 #else /* */
 
