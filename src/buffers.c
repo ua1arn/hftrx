@@ -210,7 +210,7 @@ enum { RESAMPLE16NORMAL = SKIPPED * 2 };	// Нормальное количес�
 enum { CNT16 = DMABUFFSIZE16 / DMABUFSTEP16 };
 enum { CNT32RX = DMABUFFSIZE32RX / DMABUFSTEP32RX };
 //enum { PHONESLEVELx = CNT16 / CNT32RX };
-enum { PHONESLEVEL = 5 };
+enum { PHONESLEVEL = 8 };
 
 static RAMDTCM LIST_ENTRY3 voicesmike16;	// буферы с оцифрованными звуками с микрофона/Line in
 static RAMDTCM LIST_ENTRY3 resample16;		// буферы от USB для синхронизации
@@ -842,7 +842,7 @@ void placesemsgbuffer_low(uint_fast8_t type, uint8_t * dest)
 #if WITHINTEGRATEDDSP
 
 // Оставить в указанной очереди не более PHONESLEVEL буферов
-static void purge_buffers16(LIST_ENTRY2 * list)
+static void buffers_purge16(LIST_ENTRY2 * list)
 {
 	if (GetCountList2(list) > PHONESLEVEL * 3)
 	{
@@ -859,8 +859,8 @@ static void purge_buffers16(LIST_ENTRY2 * list)
 static RAMFUNC void buffers_tophones16(voice16_t * p)
 {
 	LOCK(& locklist16);
-	purge_buffers16(& voicesphones16);
-	purge_buffers16(& voicesmoni16);
+	buffers_purge16(& voicesphones16);
+	buffers_purge16(& voicesmoni16);
 	InsertHeadList2(& voicesphones16, & p->item);
 	UNLOCK(& locklist16);
 }
@@ -869,8 +869,8 @@ static RAMFUNC void buffers_tophones16(voice16_t * p)
 static RAMFUNC void buffers_tomoni16(voice16_t * p)
 {
 	LOCK(& locklist16);
-	purge_buffers16(& voicesphones16);
-	purge_buffers16(& voicesmoni16);
+	buffers_purge16(& voicesphones16);
+	buffers_purge16(& voicesmoni16);
 	InsertHeadList2(& voicesmoni16, & p->item);
 	UNLOCK(& locklist16);
 }
