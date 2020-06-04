@@ -2479,7 +2479,7 @@ struct nvmap
 	uint8_t sleeptime;
 #endif /* WITHSLEEPTIMER */
 #if LCDMODE_COLORED
-	uint8_t gbluebgnd;
+	//uint8_t gbluebgnd;
 #endif /* LCDMODE_COLORED */
 
 #if WITHMIC1LEVEL
@@ -3186,7 +3186,8 @@ static const uint_fast8_t displaymodesfps = DISPLAYMODES_FPS;
 #endif /* WITHPWBUTTON */
 
 #if LCDMODE_COLORED
-	static uint_fast8_t gbluebgnd;
+	//static uint_fast8_t gbluebgnd;
+	enum { gbluebgnd = 0 };
 #else
 	enum { gbluebgnd = 0 };
 #endif /* LCDMODE_COLORED */
@@ -12854,7 +12855,7 @@ static const FLASHMEM struct menudef menutable [] =
 #endif /* WITHDCDCFREQCTL */
 #if WITHLCDBACKLIGHT
 	{
-		QLABEL("LCD LIGH"), 7, 0, 0,	ISTEP1,
+		QLABEL2("LCD LIGH", "TFT backlight"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		WITHLCDBACKLIGHTMIN, WITHLCDBACKLIGHTMAX, 
 		offsetof(struct nvmap, bglight),
@@ -12876,7 +12877,7 @@ static const FLASHMEM struct menudef menutable [] =
 #endif /* WITHKBDBACKLIGHT */
 #if WITHLCDBACKLIGHT || WITHKBDBACKLIGHT
 	{
-		QLABEL("DIMM TIM"), 7, 0, 0,	ISTEP5,
+		QLABEL2("DIMM TIM", "Dimmer time"), 7, 0, 0,	ISTEP5,
 		ITEM_VALUE,
 		0, 240, 
 		offsetof(struct nvmap, dimmtime),
@@ -12887,7 +12888,7 @@ static const FLASHMEM struct menudef menutable [] =
 #endif /* WITHKBDBACKLIGHT */
 #if WITHSLEEPTIMER
 	{
-		QLABEL("SLEEPTIM"), 7, 0, 0,	ISTEP5,
+		QLABEL2("SLEEPTIM", "Sleep time"), 7, 0, 0,	ISTEP5,
 		ITEM_VALUE,
 		0, 240, 
 		offsetof(struct nvmap, sleeptime),
