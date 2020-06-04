@@ -349,7 +349,10 @@ void display_putpixel(
 	COLORMAIN_T color
 	)
 {
-	colmain_putpixel(colmain_fb_draw(), DIM_X, DIM_Y, x, y, color);
+	PACKEDCOLORMAIN_T * const buffer = colmain_fb_draw();
+	const uint_fast16_t dx = DIM_X;
+	const uint_fast16_t dy = DIM_Y;
+	colmain_putpixel(buffer, dx, dy, x, y, color);
 }
 
 /* заполнение прямоугольника на основном экране произвольным цветом
