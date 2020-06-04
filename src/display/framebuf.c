@@ -26,11 +26,11 @@
 	the AXI master port. These bits represent the minimum guaranteed number of cycles
 	between two consecutive AXI accesses
  */
-#define DMA2D_AMTCR_DT_VALUE 255	/* 0..255 */
-#define DMA2D_AMTCR_DT_ENABLE 1	/* 0..1 */
+#define DMA2D_AMTCR_DT_VALUE 255uL	/* 0..255 */
+#define DMA2D_AMTCR_DT_ENABLE 1uL	/* 0..1 */
 
 #define MDMA_CH	MDMA_Channel0
-#define MDMA_CCR_PL_VALUE 0	// PL: priority 0..3: min..max
+#define MDMA_CCR_PL_VALUE 0uL	// PL: priority 0..3: min..max
 
 #if LCDMODE_LTDC_L24
 	#define DMA2D_FGPFCCR_CM_VALUE_MAIN	(1 * DMA2D_FGPFCCR_CM_0)	/* 0001: RGB888 */
@@ -152,7 +152,6 @@ mdma_stop_unused(void)
 static void
 mdma_startandwait(void)
 {
-	//return;
 	// MDMA implementation
 	MDMA_CH->CIFCR =
 		MDMA_CIFCR_CLTCIF_Msk |
