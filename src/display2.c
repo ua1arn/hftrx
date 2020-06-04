@@ -1171,9 +1171,10 @@ static void display_vfomode1(
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	do
 	{
-		//display_wrdata_begin(x, y);
-		//display_put_char_small(x, y, label [0], lowhalf);
-		//display_wrdata_end();
+		uint_fast16_t ypix;
+		uint_fast16_t xpix = display_wrdata_begin(x, y, & ypix);
+		display_put_char_small(xpix, ypix, label [0], lowhalf);
+		display_wrdata_end();
 	} while (lowhalf --);
 }
 
