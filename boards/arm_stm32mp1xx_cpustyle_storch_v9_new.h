@@ -118,9 +118,9 @@
 	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 	#define WITHMODEM_CDC	1
 
-	#if WITHINTEGRATEDDSP
+	#if 0//WITHINTEGRATEDDSP
 
-		//#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
+		#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
 		#if WITHRTS96 || WITHRTS192
 			#define WITHUSBUACIN2		1	/* формируются три канала передачи звука */
 		#endif /* WITHRTS96 || WITHRTS192 */
