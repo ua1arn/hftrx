@@ -591,6 +591,8 @@ void arm_hardware_mdma_initialize(void)
 	/* SYSCFG clock enable */
 	RCC->MP_APB3ENSETR = RCC_MC_APB3ENSETR_SYSCFGEN;
 	(void) RCC->MP_APB3ENSETR;
+	RCC->MP_APB3LPENSETR = RCC_MC_APB3LPENSETR_SYSCFGLPEN;
+	(void) RCC->MP_APB3LPENSETR;
 	/*
 	 * Interconnect update : select master using the port 1.
 	 * LTDC = AXI_M9.
