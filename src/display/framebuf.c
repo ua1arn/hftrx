@@ -137,19 +137,88 @@ mdma_getburst(uint_fast16_t tlen, uint_fast8_t bus, uint_fast8_t xinc)
 		return 1;
 	return 0;
 }
-#endif /* WITHMDMAHW */
 
-// получение адреса в видобуфере
-volatile uint8_t * hwacc_getbufaddr_u8(
-	volatile uint8_t * buffer,
-	uint_fast16_t dx,	// ширина буфера
-	uint_fast16_t dy,	// высота буфера
-	uint_fast16_t x,	// начальная координата
-	uint_fast16_t y		// начальная координата
-	)
+static void
+mdma_stop_unused(void)
 {
-	return & buffer [y * GXADJ(dx) + x];
+#if WITHMDMAHW
+	MDMA_CH->CCR &= ~ MDMA_CCR_EN_Msk;
+	while ((MDMA_CH->CCR & MDMA_CCR_EN_Msk) != 0)
+		;
+#endif /* WITHMDMAHW */
 }
+
+/* запустить пересылку и дождаться завершения. */
+static void
+mdma_startandwait(void)
+{
+	//return;
+	// MDMA implementation
+	MDMA_CH->CIFCR =
+		MDMA_CIFCR_CLTCIF_Msk |
+		MDMA_CIFCR_CBTIF_Msk |
+		MDMA_CIFCR_CBRTIF_Msk |
+		MDMA_CIFCR_CCTCIF_Msk |
+		MDMA_CIFCR_CTEIF_Msk |
+		0;
+
+	// Set priority
+	MDMA_CH->CCR = (MDMA_CH->CCR & ~ (MDMA_CCR_PL_Msk)) |
+			(MDMA_CCR_PL_VALUE < MDMA_CCR_PL_Pos) |
+			0;
+	MDMA_CH->CCR |= MDMA_CCR_EN_Msk;
+	/* start transfer */
+	MDMA_CH->CCR |= MDMA_CCR_SWRQ_Msk;
+	/* wait for complete */
+	while ((MDMA_CH->CISR & MDMA_CISR_CTCIF_Msk) == 0)	// Channel x Channel Transfer Complete interrupt flag
+		hardware_nonguiyield();
+
+	ASSERT((MDMA_CH->CISR & MDMA_CISR_TEIF_Msk) == 0);	/* Channel x transfer error interrupt flag */
+
+}
+
+void arm_hardware_mdma_initialize(void)
+{
+#if CPUSTYLE_STM32MP1
+	/* Enable the DMA2D Clock */
+	RCC->MP_AHB6ENSETR |= RCC_MC_AHB6ENSETR_MDMAEN;	/* MDMA clock enable */
+	(void) RCC->MP_AHB6ENSETR;
+	RCC->MP_AHB6LPENSETR |= RCC_MC_AHB6LPENSETR_MDMALPEN;	/* MDMA clock enable */
+	(void) RCC->MP_AHB6LPENSETR;
+	//RCC->MP_TZAHB6ENSETR |= RCC_MP_TZAHB6ENSETR_MDMAEN;
+	//(void) RCC->MP_TZAHB6ENSETR;
+
+	/* SYSCFG clock enable */
+	RCC->MP_APB3ENSETR = RCC_MC_APB3ENSETR_SYSCFGEN;
+	(void) RCC->MP_APB3ENSETR;
+	RCC->MP_APB3LPENSETR = RCC_MC_APB3LPENSETR_SYSCFGLPEN;
+	(void) RCC->MP_APB3LPENSETR;
+	/*
+	 * Interconnect update : select master using the port 1.
+	 * LTDC = AXI_M9.
+	 * MDMA = AXI_M7.
+	 */
+	//SYSCFG->ICNR |= SYSCFG_ICNR_AXI_M7;
+	//(void) SYSCFG->ICNR;
+
+#elif CPUSTYLE_STM32H7XX
+	/* Enable the DMA2D Clock */
+	RCC->AHB3ENR |= RCC_AHB3ENR_MDMAEN_Msk;	/* MDMA clock enable */
+	(void) RCC->AHB3ENR;
+	RCC->AHB3LPENR |= RCC_AHB3LPENR_MDMALPEN_Msk;
+	(void) RCC->AHB3LPENR;
+
+#else /* CPUSTYLE_STM32H7XX */
+	/* Enable the DMA2D Clock */
+	RCC->AHB1ENR |= RCC_AHB1ENR_MDMAEN;	/* MDMA clock enable */
+	(void) RCC->AHB1ENR;
+	RCC->AHB3LPENR |= RCC_AHB3LPENR_MDMALPEN_Msk;
+	(void) RCC->AHB3LPENR;
+
+#endif /* CPUSTYLE_STM32H7XX */
+}
+
+#endif /* WITHMDMAHW */
 
 #if LCDMODE_PIP_L8 || LCDMODE_MAIN_L8
 // Функция получает координаты и работает над буфером в горищонталтной ориентации.
@@ -178,10 +247,6 @@ hwacc_fillrect_u8(
 
 	arm_hardware_flush((uintptr_t) & tgcolor, sizeof tgcolor);
 	arm_hardware_flush_invalidate((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
-
-	MDMA_CH->CCR &= ~ MDMA_CCR_EN_Msk;
-	while ((MDMA_CH->CCR & MDMA_CCR_EN_Msk) != 0)
-		;
 
 	MDMA_CH->CDAR = (uintptr_t) colmain_mem_at(buffer, dx, dy, col, row); // dest address
 	MDMA_CH->CSAR = (uintptr_t) & tgcolor;
@@ -224,18 +289,7 @@ hwacc_fillrect_u8(
 		(dbus << MDMA_CTBR_DBUS_Pos) |
 		0;
 
-	MDMA_CH->CIFCR = MDMA_CIFCR_CLTCIF_Msk | MDMA_CIFCR_CBTIF_Msk |
-					MDMA_CIFCR_CBRTIF_Msk | MDMA_CIFCR_CCTCIF_Msk | MDMA_CIFCR_CTEIF_Msk;
-	// Set priority
-	MDMA_CH->CCR = (MDMA_CH->CCR & ~ (MDMA_CCR_PL_Msk)) |
-			(MDMA_CCR_PL_VALUE < MDMA_CCR_PL_Pos) |
-			0;
-	MDMA_CH->CCR |= MDMA_CCR_EN_Msk;
-	/* start transfer */
-	MDMA_CH->CCR |= MDMA_CCR_SWRQ_Msk;
-	/* wait for complete */
-	while ((MDMA_CH->CISR & MDMA_CISR_CTCIF_Msk) == 0)	// Channel x Channel Transfer Complete interrupt flag
-		hardware_nonguiyield();
+	mdma_startandwait();
 
 #else
 	// программная реализация
@@ -286,10 +340,6 @@ hwacc_fillrect_u16(
 	arm_hardware_flush((uintptr_t) & tgcolor, sizeof tgcolor);
 	arm_hardware_flush_invalidate((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
 
-	MDMA_CH->CCR &= ~ MDMA_CCR_EN_Msk;
-	while ((MDMA_CH->CCR & MDMA_CCR_EN_Msk) != 0)
-		;
-
 	MDMA_CH->CDAR = (uintptr_t) colmain_mem_at(buffer, dx, dy, col, row); // dest address
 	MDMA_CH->CSAR = (uintptr_t) & tgcolor;
 	const uint_fast32_t tlen = mdma_tlen(w * PIXEL_SIZE, PIXEL_SIZE);
@@ -331,18 +381,7 @@ hwacc_fillrect_u16(
 		(dbus << MDMA_CTBR_DBUS_Pos) |
 		0;
 
-	MDMA_CH->CIFCR = MDMA_CIFCR_CLTCIF_Msk | MDMA_CIFCR_CBTIF_Msk |
-					MDMA_CIFCR_CBRTIF_Msk | MDMA_CIFCR_CCTCIF_Msk | MDMA_CIFCR_CTEIF_Msk;
-	// Set priority
-	MDMA_CH->CCR = (MDMA_CH->CCR & ~ (MDMA_CCR_PL_Msk)) |
-			(MDMA_CCR_PL_VALUE < MDMA_CCR_PL_Pos) |
-			0;
-	MDMA_CH->CCR |= MDMA_CCR_EN_Msk;
-	/* start transfer */
-	MDMA_CH->CCR |= MDMA_CCR_SWRQ_Msk;
-	/* wait for complete */
-	while ((MDMA_CH->CISR & MDMA_CISR_CTCIF_Msk) == 0)	// Channel x Channel Transfer Complete interrupt flag
-		hardware_nonguiyield();
+	mdma_startandwait();
 
 #elif WITHDMA2DHW
 	// DMA2D implementation
@@ -434,10 +473,6 @@ hwacc_fillrect_u24(
 	arm_hardware_flush((uintptr_t) & tgcolor, sizeof tgcolor);
 	arm_hardware_flush_invalidate((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
 
-	MDMA_CH->CCR &= ~ MDMA_CCR_EN_Msk;
-	while ((MDMA_CH->CCR & MDMA_CCR_EN_Msk) != 0)
-		;
-
 	MDMA_CH->CDAR = (uintptr_t) colmain_mem_at(buffer, dx, dy, col, row); // dest address
 	MDMA_CH->CSAR = (uintptr_t) & tgcolor;
 	const uint_fast32_t tlen = mdma_tlen(w * PIXEL_SIZE, PIXEL_SIZE);
@@ -479,18 +514,7 @@ hwacc_fillrect_u24(
 		(dbus << MDMA_CTBR_DBUS_Pos) |
 		0;
 
-	MDMA_CH->CIFCR = MDMA_CIFCR_CLTCIF_Msk | MDMA_CIFCR_CBTIF_Msk |
-					MDMA_CIFCR_CBRTIF_Msk | MDMA_CIFCR_CCTCIF_Msk | MDMA_CIFCR_CTEIF_Msk;
-	// Set priority
-	MDMA_CH->CCR = (MDMA_CH->CCR & ~ (MDMA_CCR_PL_Msk)) |
-			(MDMA_CCR_PL_VALUE < MDMA_CCR_PL_Pos) |
-			0;
-	MDMA_CH->CCR |= MDMA_CCR_EN_Msk;
-	/* start transfer */
-	MDMA_CH->CCR |= MDMA_CCR_SWRQ_Msk;
-	/* wait for complete */
-	while ((MDMA_CH->CISR & MDMA_CISR_CTCIF_Msk) == 0)	// Channel x Channel Transfer Complete interrupt flag
-		hardware_nonguiyield();
+	mdma_startandwait();
 
 #elif WITHDMA2DHW
 	// DMA2D implementation
@@ -575,51 +599,6 @@ void arm_hardware_dma2d_initialize(void)
 
 #endif /* WITHDMA2DHW */
 
-#if WITHMDMAHW
-
-void arm_hardware_mdma_initialize(void)
-{
-#if CPUSTYLE_STM32MP1
-	/* Enable the DMA2D Clock */
-	RCC->MP_AHB6ENSETR |= RCC_MC_AHB6ENSETR_MDMAEN;	/* MDMA clock enable */
-	(void) RCC->MP_AHB6ENSETR;
-	RCC->MP_AHB6LPENSETR |= RCC_MC_AHB6LPENSETR_MDMALPEN;	/* MDMA clock enable */
-	(void) RCC->MP_AHB6LPENSETR;
-	//RCC->MP_TZAHB6ENSETR |= RCC_MP_TZAHB6ENSETR_MDMAEN;
-	//(void) RCC->MP_TZAHB6ENSETR;
-
-	/* SYSCFG clock enable */
-	RCC->MP_APB3ENSETR = RCC_MC_APB3ENSETR_SYSCFGEN;
-	(void) RCC->MP_APB3ENSETR;
-	RCC->MP_APB3LPENSETR = RCC_MC_APB3LPENSETR_SYSCFGLPEN;
-	(void) RCC->MP_APB3LPENSETR;
-	/*
-	 * Interconnect update : select master using the port 1.
-	 * LTDC = AXI_M9.
-	 * MDMA = AXI_M7.
-	 */
-	//SYSCFG->ICNR |= SYSCFG_ICNR_AXI_M7;
-	//(void) SYSCFG->ICNR;
-
-#elif CPUSTYLE_STM32H7XX
-	/* Enable the DMA2D Clock */
-	RCC->AHB3ENR |= RCC_AHB3ENR_MDMAEN_Msk;	/* MDMA clock enable */
-	(void) RCC->AHB3ENR;
-	RCC->AHB3LPENR |= RCC_AHB3LPENR_MDMALPEN_Msk;
-	(void) RCC->AHB3LPENR;
-
-#else /* CPUSTYLE_STM32H7XX */
-	/* Enable the DMA2D Clock */
-	RCC->AHB1ENR |= RCC_AHB1ENR_MDMAEN;	/* MDMA clock enable */
-	(void) RCC->AHB1ENR;
-	RCC->AHB3LPENR |= RCC_AHB3LPENR_MDMALPEN_Msk;
-	(void) RCC->AHB3LPENR;
-
-#endif /* CPUSTYLE_STM32H7XX */
-}
-
-#endif /* WITHMDMAHW */
-
 extern const char * savestring;
 
 // получить адрес требуемой позиции в буфере
@@ -678,6 +657,9 @@ display_colorbuf_set_vline(
 	COLORPIP_T color
 	)
 {
+	/* рисуем прямоугольник шириной в 1 пиксель */
+	//colmain_fillrect(buffer, dx, dy, col, row0, 1, h, color);
+
 	while (h --)
 		colpip_point(buffer, dx, dy, col, row0 ++, color);
 }
@@ -1048,10 +1030,6 @@ void hwaccel_copy(
 	arm_hardware_flush_invalidate(dstinvalidateaddr, dstinvalidatesize);
 	arm_hardware_flush((uintptr_t) src, sizeof (* src) * GXSIZE(w, h));
 
-	MDMA_CH->CCR &= ~ MDMA_CCR_EN_Msk;
-	while ((MDMA_CH->CCR & MDMA_CCR_EN_Msk) != 0)
-		;
-
 	MDMA_CH->CDAR = (uintptr_t) dst;
 	MDMA_CH->CSAR = (uintptr_t) src;
 	const uint_fast32_t tlen = mdma_tlen(w * sizeof (PACKEDCOLORMAIN_T), sizeof (PACKEDCOLORMAIN_T));
@@ -1093,19 +1071,7 @@ void hwaccel_copy(
 		(dbus << MDMA_CTBR_DBUS_Pos) |
 		0;
 
-	MDMA_CH->CIFCR = MDMA_CIFCR_CLTCIF_Msk | MDMA_CIFCR_CBTIF_Msk |
-					MDMA_CIFCR_CBRTIF_Msk | MDMA_CIFCR_CCTCIF_Msk | MDMA_CIFCR_CTEIF_Msk;
-	// Set priority
-	MDMA_CH->CCR = (MDMA_CH->CCR & ~ (MDMA_CCR_PL_Msk)) |
-			(MDMA_CCR_PL_VALUE < MDMA_CCR_PL_Pos) |
-			0;
-	MDMA_CH->CCR |= MDMA_CCR_EN_Msk;
-	/* start transfer */
-	MDMA_CH->CCR |= MDMA_CCR_SWRQ_Msk;
-	/* wait for complete */
-	while ((MDMA_CH->CISR & MDMA_CISR_CTCIF_Msk) == 0)	// Channel x Channel Transfer Complete interrupt flag
-		hardware_nonguiyield();
-	//TP();
+	mdma_startandwait();
 
 #elif WITHDMA2DHW
 	// DMA2D реализация
