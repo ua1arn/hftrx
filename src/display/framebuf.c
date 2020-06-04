@@ -165,7 +165,7 @@ mdma_startandwait(void)
 
 	// Set priority
 	MDMA_CH->CCR = (MDMA_CH->CCR & ~ (MDMA_CCR_PL_Msk)) |
-			(MDMA_CCR_PL_VALUE < MDMA_CCR_PL_Pos) |
+			(MDMA_CCR_PL_VALUE << MDMA_CCR_PL_Pos) |
 			0;
 	(void) MDMA_CH->CCR;
 
