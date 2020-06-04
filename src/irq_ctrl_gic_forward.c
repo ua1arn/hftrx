@@ -7,10 +7,10 @@
 
 #include "hardware.h"
 
-#if (__CORTEX_A != 0)
+#if CPUSTYLE_ARM_CA7 || CPUSTYLE_ARM_CA9
 
 	// Закомментировать #include CMSIS_device_header
 
 	#include "irq_ctrl_gic.c"
 
-#endif /* (__CORTEX_A != 0) */
+#endif /* CPUSTYLE_ARM_CA7 || CPUSTYLE_ARM_CA9 */
