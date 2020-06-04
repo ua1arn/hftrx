@@ -9405,7 +9405,7 @@ lowlevel_stm32l0xx_pll_clock(void)
 
 #endif /* CPUSTYLE_STM32L0XX */
 
-#if (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7)
+#if (__CORTEX_A != 0)
 
 void Undef_Handler(void)
 {
@@ -9513,7 +9513,7 @@ static void vfp_access_enable(void)
 	 */
 	__set_CPACR(access | CPACC_FULL(10) | CPACC_FULL(11));
 }
-#endif /* (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7) */
+#endif /* (__CORTEX_A != 0) */
 
 #if CPUSTYLE_ARM_CM7
 
@@ -9550,7 +9550,7 @@ void arm_hardware_flush_invalidate(uintptr_t base, size_t size)
 	SCB_CleanInvalidateDCache_by_Addr((void *) base, size);	// DCCIMVAC register used.
 }
 
-#elif (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7)
+#elif (__CORTEX_A != 0)
 
 #define MK_MVA(addr) ((uintptr_t) (addr) & ~ (uintptr_t) (DCACHEROWSIZE - 1))
 
@@ -9693,7 +9693,7 @@ uint_fast32_t cpu_getdebugticks(void)
 {
 #if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7
 	return DWT->CYCCNT;	// use TIMESTAMP_GET();
-#elif (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7)
+#elif (__CORTEX_A != 0)
 	{
 		uint32_t result;
 		// Read CCNT Register
@@ -10162,7 +10162,7 @@ void hardware_set_dotclock(unsigned long dotfreq)
 
 #endif /* CPUSTYLE_STM32MP1 */
 
-#if (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7)
+#if (__CORTEX_A != 0)
 
 #include "hardware.h"
 #include "formats.h"
@@ -11665,7 +11665,7 @@ sysinit_fpu_initialize(void)
 		SCB->CCR |= SCB_CCR_UNALIGN_TRP_Msk;
 	#endif
 
-#elif (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7)
+#elif (__CORTEX_A != 0)
 
 	// FPU
 	vfp_access_enable();
@@ -11704,7 +11704,7 @@ sysinit_debug_initialize(void)
 
 #endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7 */
 
-#if (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7)
+#if (__CORTEX_A != 0)
 
 	#if WITHDEBUG
 	{
@@ -11741,7 +11741,7 @@ sysinit_debug_initialize(void)
 	}
 	#endif /* WITHDEBUG */
 
-#endif /* (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7) */
+#endif /* (__CORTEX_A != 0) */
 
 #if WITHDEBUG
 	HARDWARE_DEBUG_INITIALIZE();
@@ -11753,7 +11753,7 @@ sysinit_debug_initialize(void)
 static void FLASHMEMINITFUNC
 sysinit_vbar_initialize(void)
 {
-#if (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7)
+#if (__CORTEX_A != 0)
 
 	extern unsigned long __etext, __bss_start__, __bss_end__, __data_end__, __data_start__, __stack, __Vectors;
 
@@ -11770,15 +11770,14 @@ sysinit_vbar_initialize(void)
 
 	//PRINTF("vbar=%08lX, mvbar=%08lX\n", __get_VBAR(), __get_MVBAR());
 
-#endif /* (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7) */
+#endif /* (__CORTEX_A != 0) */
 }
 
 static void FLASHMEMINITFUNC
 sysinit_mmu_initialize(void)
 {
 	//PRINTF("sysinit_mmu_initialize\n");
-
-#if (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7)
+#if (__CORTEX_A != 0)
 	// MMU inuitialize
 
 #if 0 && WITHDEBUG
@@ -11807,7 +11806,7 @@ sysinit_mmu_initialize(void)
 	// MMU inuitialize
 	ttb_initialize(ttb_accessbits);
 
-#endif /* (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7) */
+#endif /* (__CORTEX_A != 0) */
 
 	//PRINTF("MMU initialized\n");
 }
@@ -11882,7 +11881,7 @@ arm_cpu_CMx_initialize_NVIC(void)
 
 #endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7 */
 
-#if (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7)
+#if (__CORTEX_A != 0)
 /* 
 	ARM IHI 0048B.b (IHI0048B_b_gic_architecture_specification.pdf).
 	4.3.11 Interrupt Priority Registers, GICD_IPRIORITYRn says:
@@ -11935,7 +11934,7 @@ arm_gic_initialize(void)
 #endif /* WITHNESTEDINTERRUPTS */
 }
 
-#endif /* (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7) */
+#endif /* (__CORTEX_A != 0) */
 
 #if CPUSTYLE_ATSAM3S
 
@@ -12352,7 +12351,7 @@ void cpu_initialize(void)
 	vectors_relocate();
 	arm_cpu_CMx_initialize_NVIC();
 
-#elif (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7)
+#elif (__CORTEX_A != 0)
 
 	arm_gic_initialize();
 
