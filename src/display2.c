@@ -145,10 +145,10 @@ static int_fast16_t glob_bottomdb = 130;	/* нижний предел FFT */
 
 static int_fast16_t glob_topdbwf = 0;	/* верхний предел FFT */
 static int_fast16_t glob_bottomdbwf = 137;	/* нижний предел FFT */
-
 static uint_fast8_t glob_wflevelsep;	/* чувствительность водопада регулируется отдельной парой параметров */
-
 static uint_fast8_t glob_zoomxpow2;	/* уменьшение отображаемого участка спектра - horisontal magnification power of two */
+
+static uint_fast8_t global_showdbm = 1;	// Отображение уровня сигнала в dBm или S-memter (в зависимости от настроек)
 
 //#define WIDEFREQ (TUNE_TOP > 100000000L)
 
@@ -1511,6 +1511,23 @@ static void display_smeter5(
 	ASSERT(strlen(buff) == 5);
 	display2_text(x, y, labels, colors_1state, 0);
 #endif /* WITHIF4DSP */
+}
+
+// Отображение уровня сигнала в dBm или S-memter (в зависимости от настроек)
+static void display2_smeors5(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+	if (global_showdbm != 0)
+	{
+		display2_siglevel4(x, y, pctx);
+	}
+	else
+	{
+		display_smeter5(x, y, pctx);
+	}
 }
 
 static void display2_freqdelta8(
@@ -4272,8 +4289,8 @@ enum
 #if 1
 		//{	0,	20,	display2_legend,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы S-метра, PWR & SWR-метра
 		//{	0,	24,	display2_bars,		REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
-		{	25, 24, display2_siglevel4, REDRM_BARS, PGSWR, },	// уровень сигнала
-		//{	25, 24, display_smeter5, 	REDRM_BARS, PGSWR, },	// уровень сигнала в баллах S
+		{	25, 24, display2_smeors5, 	REDRM_BARS, PGSWR, },	// уровень сигнала в баллах S или dbM
+
 		{	0,	28,	display2_wfl_init,	REDRM_INIS,	PGINI, },	// формирование палитры водопада
 		{	0,	28,	display2_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 		{	0,	28,	display2_spectrum,	REDRM_BARS, PGSPE, },// подготовка изображения спектра
@@ -4449,8 +4466,7 @@ enum
 #if 1
 		{	0,	20,	display2_legend,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы S-метра, PWR & SWR-метра
 		{	0,	24,	display2_bars,		REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
-		{	25, 24, display2_siglevel4, REDRM_BARS, PGSWR, },	// уровень сигнала
-		//{	25, 24, display_smeter5, 	REDRM_BARS, PGSWR, },	// уровень сигнала в баллах S
+		{	25, 24, display2_smeors5, 	REDRM_BARS, PGSWR, },	// уровень сигнала в баллах S или dbM
 
 		{	0,	28,	display2_wfl_init,	REDRM_INIS,	PGINI, },	// формирование палитры водопада
 		{	0,	28,	display2_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
@@ -7038,6 +7054,14 @@ board_set_wflevelsep(uint_fast8_t v)
 {
 	glob_wflevelsep = v != 0;
 }
+
+// Отображение уровня сигнала в dBm или S-memter (в зависимости от настроек)
+void
+board_set_showdbm(uint_fast8_t v)
+{
+	global_showdbm = v != 0;
+}
+
 
 // S-METER
 /* отображение S-метра на приёме или передаче */

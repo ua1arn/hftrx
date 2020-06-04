@@ -854,6 +854,7 @@ void board_set_fillspect(uint_fast8_t v); /* заливать заполнени
 void board_set_wflevelsep(uint_fast8_t v); /* чувствительность водопада регулируется отдельной парой параметров */
 void board_set_wfshiftenable(uint_fast8_t v);	   /* разрешение или запрет сдвига водопада при изменении частоты */
 void board_set_spantialiasing(uint_fast8_t v); /* разрешение или запрет антиалиасинга спектра */
+void board_set_showdbm(uint_fast8_t v);	// Отображение уровня сигнала в dBm или S-memter (в зависимости от настроек)
 
 PACKEDCOLORMAIN_T * colmain_fb_draw(void);	// буфер для построения изображения
 PACKEDCOLORMAIN_T * colmain_fb_show(void);	// буфер для отображения
