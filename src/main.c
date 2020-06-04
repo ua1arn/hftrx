@@ -7617,6 +7617,7 @@ audioproc_spool_user(void)
 		for (pathi = 0; pathi < NTRX; ++ pathi)
 		{
 			lmsnrstate_t * const nrp = & lmsnrstates [pathi];
+			// nrp->outsp указывает на результат обработки
 			processingonebuff(nrp, p + pathi * FIRBUFSIZE);	// CMSIS DSP or SPEEX
 		}
 		//////////////////////////////////////////////
