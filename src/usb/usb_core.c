@@ -5,13 +5,13 @@
 // UA1ARN
 //
 
+#include <src/gui/gui.h>
 #include "hardware.h"
 #include "board.h"
 #include "audio.h"
 
 #include "src/display/display.h"
 #include "formats.h"
-#include "gui.h"
 #include <string.h>
 
 #include "gpio.h"

@@ -10,10 +10,10 @@
 // Например при offscreen composition растровых изображений для SPI дисплеев
 //
 
+#include <src/gui/gui.h>
 #include "hardware.h"
 #include "board.h"
 #include "display.h"
-#include "gui.h"
 #include "formats.h"
 #include "spi.h"	// hardware_spi_master_send_frame
 #include <string.h>

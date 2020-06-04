@@ -29,10 +29,10 @@
  ****************************************************/
 
 
+#include <src/gui/gui.h>
 #include "hardware.h"
 #include "board.h"
 #include "display.h"
-#include "gui.h"
 #include <stdint.h>
 
 #include "../inc/spi.h"

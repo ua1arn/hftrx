@@ -12,10 +12,10 @@
 #include "encoder.h"
 
 #include <math.h>
+#include <src/gui/gui.h>
 #include <stdio.h>
 
 #include "display/display.h"
-#include "gui.h"
 #include "formats.h"
 
 #include "codecs/tlv320aic23.h"	// константы управления усилением кодека

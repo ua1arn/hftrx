@@ -5,6 +5,7 @@
 // UA1ARN
 //
 
+#include <src/gui/gui.h>
 #include "hardware.h"
 #include "synthcalcs.h"
 #include "board.h"
@@ -12,7 +13,6 @@
 #include "encoder.h"
 
 #include "display/display.h"
-#include "gui.h"
 #include "spi.h"	// bootloader_readimage definition
 #include "formats.h"
 

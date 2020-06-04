@@ -7,10 +7,10 @@
 // Доработки для LS020 Василий Линывый, livas60@mail.ru
 //
 
+#include <src/gui/gui.h>
 #include "hardware.h"
 #include "board.h"
 #include "display.h"
-#include "gui.h"
 #include "formats.h"
 #include "spi.h"	// hardware_spi_master_send_frame
 #include <string.h>
