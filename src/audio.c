@@ -5285,11 +5285,11 @@ void dsp_addsidetone(aubufv_t * buff)
 			moni.IV = 0;
 			moni.QV = 0;
 		}
-		const aufastbufv_t moniL = AUDIO16TOAUB(mixmonitor(sdtnshape, sdtnv, moni.IV));
-		const aufastbufv_t moniR = AUDIO16TOAUB(mixmonitor(sdtnshape, sdtnv, moni.QV));
+		const FLOAT_t moniL = AUDIO16TOAUB(mixmonitor(sdtnshape, sdtnv, moni.IV));
+		const FLOAT_t moniR = AUDIO16TOAUB(mixmonitor(sdtnshape, sdtnv, moni.QV));
 
-		aufastbufv_t left = b [L];
-		aufastbufv_t right = b [R];
+		FLOAT_t left = b [L];
+		FLOAT_t right = b [R];
 		//
 #if WITHWAVPLAYER
 		{
@@ -5351,8 +5351,11 @@ void dsp_addsidetone(aubufv_t * buff)
 			break;
 		case BOARD_RXMAINSUB_TWO:
 			// left, right:A+B
-			b [L] = injectsidetone(((int_fast32_t) left + right) / 2, moniL);
-			b [R] = injectsidetone(((int_fast32_t) left + right) / 2, moniR);
+			{
+				const FLOAT_t sumv = ((FLOAT_t) left + right) / 2;
+				b [L] = injectsidetone(sumv, moniL);
+				b [R] = injectsidetone(sumv, moniR);
+			}
 			break;
 		}
 	}
