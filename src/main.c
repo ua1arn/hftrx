@@ -9618,10 +9618,8 @@ enum nmea_states
 {
 	NMEAST_INITIALIZED,
 	NMEAST_OPENED,	// встретился символ '$'
-	NMEAST_CHSHI,	// прём старшего ссимвола контрольной суммы
+	NMEAST_CHSHI,	// прём старшего символа контрольной суммы
 	NMEAST_CHSLO,	// приём младшего символа контрольной суммы
-
-
 	//
 	NMEAST_COUNTSTATES
 
