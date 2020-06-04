@@ -8359,6 +8359,7 @@ updateboard(
 			board_set_wfshiftenable(gwfshiftenable);	/* разрешение или запрет сдвига водопада при изменении частоты */
 			board_set_spantialiasing(gspantialiasing); /* разрешение или запрет антиалиасинга спектра */
 		#endif /* WITHSPECTRUMWF */
+		board_set_showdbm(0);		// Отображение уровня сигнала в dBm или S-memter (в зависимости от настроек)
 	#endif /* WITHIF4DSP */
 
 	#if WITHTX
