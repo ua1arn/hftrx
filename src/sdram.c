@@ -6049,8 +6049,8 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 		 * Interconnect update : select master using the port 1.
 		 * MCU interconnect (OTG_HS) = AXI_M0.
 		 */
-		SYSCFG->ICNR |= SYSCFG_ICNR_AXI_M0;
-		(void) SYSCFG->ICNR;
+//		SYSCFG->ICNR |= SYSCFG_ICNR_AXI_M0;
+//		(void) SYSCFG->ICNR;
 	}
 
 #if WITHSDRAM_PMC1

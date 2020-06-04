@@ -14239,10 +14239,10 @@ void board_ehci_initialize(void)
 		 * Interconnect update : select master using the port 1.
 		 * MCU interconnect (USBH) = AXI_M1, AXI_M2.
 		 */
-		SYSCFG->ICNR |= SYSCFG_ICNR_AXI_M1;
-		(void) SYSCFG->ICNR;
-		SYSCFG->ICNR |= SYSCFG_ICNR_AXI_M2;
-		(void) SYSCFG->ICNR;
+//		SYSCFG->ICNR |= SYSCFG_ICNR_AXI_M1;
+//		(void) SYSCFG->ICNR;
+//		SYSCFG->ICNR |= SYSCFG_ICNR_AXI_M2;
+//		(void) SYSCFG->ICNR;
 	}
 
 	// https://github.com/pdoane/osdev/blob/master/usb/ehci.c
