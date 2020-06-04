@@ -4940,7 +4940,7 @@ static int raster2fft(
 }
 
 // Копрование информации о спектре с текущую строку буфера
-// wfarray (преобразование к пикселям растра */
+// преобразование к пикселям растра
 uint_fast8_t dsp_getspectrumrow(
 	FLOAT_t * const hbase,	// Буфер амплитуд
 	uint_fast16_t dx,		// X width (pixels) of display window
