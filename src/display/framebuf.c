@@ -161,14 +161,20 @@ mdma_startandwait(void)
 		MDMA_CIFCR_CCTCIF_Msk |
 		MDMA_CIFCR_CTEIF_Msk |
 		0;
+	(void) MDMA_CH->CIFCR;
 
 	// Set priority
 	MDMA_CH->CCR = (MDMA_CH->CCR & ~ (MDMA_CCR_PL_Msk)) |
 			(MDMA_CCR_PL_VALUE < MDMA_CCR_PL_Pos) |
 			0;
+	(void) MDMA_CH->CCR;
+
 	MDMA_CH->CCR |= MDMA_CCR_EN_Msk;
+	(void) MDMA_CH->CCR;
 	/* start transfer */
 	MDMA_CH->CCR |= MDMA_CCR_SWRQ_Msk;
+	(void) MDMA_CH->CCR;
+
 	/* wait for complete */
 	while ((MDMA_CH->CISR & MDMA_CISR_CTCIF_Msk) == 0)	// Channel x Channel Transfer Complete interrupt flag
 		hardware_nonguiyield();
@@ -640,6 +646,8 @@ display_colorbuf_xor_vline(
 	COLORPIP_T color
 	)
 {
+	ASSERT(row0 < dy);
+	ASSERT((row0 + h) <= dy);
 	while (h --)
 		colpip_point_xor(buffer, dx, dy, col, row0 ++, color);
 }
@@ -657,9 +665,10 @@ display_colorbuf_set_vline(
 	COLORPIP_T color
 	)
 {
+	ASSERT(row0 < dy);
+	ASSERT((row0 + h) <= dy);
 	/* рисуем прямоугольник шириной в 1 пиксель */
 	//colmain_fillrect(buffer, dx, dy, col, row0, 1, h, color);
-
 	while (h --)
 		colpip_point(buffer, dx, dy, col, row0 ++, color);
 }
