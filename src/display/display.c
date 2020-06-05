@@ -925,12 +925,16 @@ bigfont_decode(uint_fast8_t c)
 		return 10;		// курсор - позиция редактирвания частоты
 	if (c == '.')
 		return 12;		// точка
+	if (c > '9')
+		return 10;		// ошибка - курсор - позиция редактирвания частоты
 	return c - '0';		// остальные - цифры 0..9
 }
 
 uint_fast8_t
 smallfont_decode(uint_fast8_t c)
 {
+	if (c < ' ' || c > 0x7F)
+		return '$' - ' ';
 	return c - ' ';
 }
 

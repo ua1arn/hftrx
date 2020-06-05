@@ -682,7 +682,7 @@ void elkeyx_spool_dots(elkey_t * const elkey, uint_fast8_t paddle)
 		}
 		break;
 
-	case ELKEY_STATE_SPACE:	// сейчас отсчитывается время после передачи элмента
+	case ELKEY_STATE_SPACE:	// сейчас отсчитывается время после передачи элемента
 		if (ovf)
 		{
 			// законился одиночный интервал после передачи знака.
@@ -794,7 +794,7 @@ void elkeyx_spool_dots(elkey_t * const elkey, uint_fast8_t paddle)
 		}
 		break;
 
-	case ELKEY_STATE_AUTO_SPACE:	// сейчас отсчитывается время после передачи элмента
+	case ELKEY_STATE_AUTO_SPACE:	// сейчас отсчитывается время после передачи элемента
 		if (ovf)
 		{
 			// произошло переполнене - конец интервала
@@ -820,7 +820,7 @@ void elkeyx_spool_dots(elkey_t * const elkey, uint_fast8_t paddle)
 		}
 		break;
 
-	case ELKEY_STATE_AUTO_SPACE2:	// сейчас отсчитывается время после передачи элмента
+	case ELKEY_STATE_AUTO_SPACE2:	// сейчас отсчитывается время после передачи элемента
 		if (ovf)
 		{
 			// В обычом режиме переход к начальному состоянию
