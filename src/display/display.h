@@ -1453,7 +1453,7 @@ uint_fast16_t normalize(
 	uint_fast16_t range
 	);
 
-uint_fast16_t get_swr(void);
+uint_fast16_t get_swr(uint_fast16_t swr_fullscale);
 
 #ifdef __cplusplus
 }

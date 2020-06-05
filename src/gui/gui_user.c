@@ -1027,7 +1027,9 @@ static void window_swrscan_process(void)
 			hamradio_set_freq(backup_freq);
 //			hamradio_set_tx_power(backup_power);
 		}
-		y_vals[i] = normalize(get_swr(), 0, (SWRMIN * 40 / 10) - SWRMIN, y0 - y1);
+
+		const uint_fast16_t swr_fullscale = (SWRMIN * 40 / 10) - SWRMIN;	// количество рисок в шкале ииндикатора
+		y_vals[i] = normalize(get_swr(swr_fullscale), 0, swr_fullscale, y0 - y1);
 		if (i)
 			y_vals[i] = (y_vals[i - 1] * (averageFactor - 1) + y_vals[i]) / averageFactor;
 		i++;

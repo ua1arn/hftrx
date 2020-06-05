@@ -7249,9 +7249,8 @@ uint_fast16_t normalize3(
 		return normalize(raw - rawmid, 0, rawmax - rawmid, range2 - range1) + range1;
 }
 
-static const uint_fast16_t swr_fullscale = (SWRMIN * 40 / 10) - SWRMIN;
 
-uint_fast16_t get_swr(void)
+uint_fast16_t get_swr(uint_fast16_t swr_fullscale)
 {
 	uint_fast16_t swr10; 		// swr10 = 0..30 for swr 1..4
 	adcvalholder_t forward, reflected;
@@ -7494,10 +7493,13 @@ display2_smeter15(
 
 		uint_fast16_t power;
 
-		power = board_getadc_unfiltered_truevalue(PWRI);
+		power = board_getadc_unfiltered_truevalue(PWRMRRIX);	// без возможных тормозов на SPI при чтении
 		gp = smeter_params.gs + normalize(power, 0, maxpwrcali << 4, smeter_params.ge - smeter_params.gs);
 
-		gswr = smeter_params.gs + normalize(get_swr(), 0, swr_fullscale, smeter_params.ge - smeter_params.gs);
+		// todo: get_swr(swr_fullscale) - использщовать MRRxxx.
+		// Для тюнера и измерений не голдится, для показа - без торомозов.
+		const uint_fast16_t swr_fullscale = (SWRMIN * 40 / 10) - SWRMIN;	// количество рисок в шкале ииндикатора
+		gswr = smeter_params.gs + normalize(get_swr(swr_fullscale), 0, swr_fullscale, smeter_params.ge - smeter_params.gs);
 
 		if (gp > smeter_params.gs)
 			gp_smooth = gp;
