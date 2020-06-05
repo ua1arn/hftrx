@@ -6,9 +6,6 @@
 #if WITHTOUCHGUI
 #include "src/gui/gui_structs.h"
 
-/* Возврат ссылки на окно */
-window_t * get_win(uint_fast8_t window_id);
-
 /* Возврат указателя на структуру gui */
 gui_t * get_gui_env(void);
 
@@ -39,9 +36,6 @@ void remove_end_line_spaces(char * str);
 
 /* Сброс данных трекинга тачскрина */
 void reset_tracking(void);
-
-/* Возврат указателя на структуру encoder2 */
-enc2_t * get_enc2_env(void);
 
 #endif /* WITHTOUCHGUI */
 #endif /* GUI_USER_H_INCLUDED */
