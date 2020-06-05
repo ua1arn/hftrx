@@ -1606,13 +1606,13 @@ void colmain_plot(
 	ASSERT(tdy >= dy);
 #if LCDMODE_HORFILL
 	hwaccel_copy(
-		(uintptr_t) dst, sizeof (PACKEDCOLORPIP_T) * tdx * tdy,	// target area invalidate parameters
+		(uintptr_t) dst, sizeof (PACKEDCOLORPIP_T) * GXSIZE(tdx, tdy),	// target area invalidate parameters
 		colmain_mem_at(dst, tdx, tdy, x, y),
 		src,
 		dx, GXADJ(tdx) - GXADJ(dx), dy);	// w, t, h
 #else /* LCDMODE_HORFILL */
 	hwaccel_copy(
-		(uintptr_t) dst, sizeof (PACKEDCOLORPIP_T) * tdx * tdy,	// target area invalidate parameters
+		(uintptr_t) dst, sizeof (PACKEDCOLORPIP_T) * GXSIZE(tdx, tdy),	// target area invalidate parameters
 		colmain_mem_at(dst, tdx, tdy, x, y),
 		src,
 		dy, tdy - dy, dx);	// w, t, h
@@ -1637,13 +1637,13 @@ void colpip_plot(
 	ASSERT(tdy >= dy);
 #if LCDMODE_HORFILL
 	hwaccel_copy(
-		(uintptr_t) dst, sizeof (PACKEDCOLORPIP_T) * tdx * tdy,	// target area invalidate parameters
+		(uintptr_t) dst, sizeof (PACKEDCOLORPIP_T) * GXSIZE(tdx, tdy),	// target area invalidate parameters
 		colmain_mem_at(dst, tdx, tdy, x, y),
 		src,
 		dx, GXADJ(tdx) - GXADJ(dx), dy);	// w, t, h
 #else /* LCDMODE_HORFILL */
 	hwaccel_copy(
-		(uintptr_t) dst, sizeof (PACKEDCOLORPIP_T) * tdx * tdy,	// target area invalidate parameters
+		(uintptr_t) dst, sizeof (PACKEDCOLORPIP_T) * GXSIZE(tdx, tdy),	// target area invalidate parameters
 		colmain_mem_at(dst, tdx, tdy, x, y),
 		src,
 		dy, tdy - dy, dx);	// w, t, h
