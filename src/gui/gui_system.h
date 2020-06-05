@@ -43,8 +43,5 @@ void reset_tracking(void);
 /* Возврат указателя на структуру encoder2 */
 enc2_t * get_enc2_env(void);
 
-/* Возврат указателя на структуру editfreq */
-editfreq_t * get_editfreq_env(void);
-
 #endif /* WITHTOUCHGUI */
 #endif /* GUI_USER_H_INCLUDED */
