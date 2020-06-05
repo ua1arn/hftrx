@@ -1027,7 +1027,7 @@ void hwaccel_copy(
 	PACKEDCOLORMAIN_T * dst,
 	const PACKEDCOLORMAIN_T * src,
 	unsigned w,
-	unsigned tadj,	// разница в размере строки получателя от источника. Уже с учетом запасныз пикселей от GXADJ
+	unsigned tadj,	// разница в размере строки получателя от источника. Уже с учетом выравнивания пикселей от GXADJ
 	unsigned h
 	)
 {
