@@ -3383,36 +3383,7 @@ HAL_StatusTypeDef USB_HS_PHYCInit(USB_OTG_GlobalTypeDef *USBx)
 		(void) RCC->USBCKSELR;
 
 	}
-#if 0
-	{
-		// https://github.com/Xilinx/u-boot-xlnx/blob/master/drivers/phy/phy-stm32-usbphyc.c
-		unsigned long long fvco, ndiv, frac;
 
-
-
-		/*
-		 *    | FVCO = INFF*2*(NDIV + FRACT/2^16 ) when DITHER_DISABLE[1] = 1
-		 *    | FVCO = 2880MHz
-		 *    | NDIV = integer part of input bits to set the LDF
-		 *    | FRACT = fractional part of input bits to set the LDF
-		 *  =>	PLLNDIV = integer part of (FVCO / (INFF*2))
-		 *  =>	PLLFRACIN = fractional part of(FVCO / INFF*2) * 2^16
-		 * <=>  PLLFRACIN = ((FVCO / (INFF*2)) - PLLNDIV) * 2^16
-		 */
-
-		fvco = (unsigned long long)PLL_FVCO * 1000000; /* In Hz */
-
-		ndiv = fvco;
-
-		do_div(ndiv, (clk_rate * 2));
-		pll_params->ndiv = (u8)ndiv;
-		frac = fvco * (1 << 16);
-		do_div(frac, (clk_rate * 2));
-		frac = frac - (ndiv * (1 << 16));
-		pll_params->frac = (u16)frac;
-
-	}
-#endif
 	if (1)
 	{
 		// https://github.com/Xilinx/u-boot-xlnx/blob/master/drivers/phy/phy-stm32-usbphyc.c
@@ -3440,13 +3411,13 @@ HAL_StatusTypeDef USB_HS_PHYCInit(USB_OTG_GlobalTypeDef *USBx)
 //		FRACT /= pll4_r_ck;
 //		FRACT = FRACT - (d.quot << 16);
 
-		PRINTF("USB_HS_PHYCInit: pll4_r_ck=%u, N=%u, FRACT=%u, ODF=%u\n", pll4_r_ck, N, (unsigned) (FRACT & 0xFFFF), ODF);
+		//PRINTF("USB_HS_PHYCInit: pll4_r_ck=%u, N=%u, FRACT=%u, ODF=%u\n", pll4_r_ck, N, (unsigned) (FRACT & 0xFFFF), ODF);
 
 		USBPHYC->PLL =
 				(USBPHYC->PLL & ~ (USBPHYC_PLL_PLLDITHEN0_Msk | USBPHYC_PLL_PLLDITHEN1_Msk |
 					USBPHYC_PLL_PLLEN_Msk | USBPHYC_PLL_PLLNDIV_Msk | USBPHYC_PLL_PLLODF_Msk |
 					USBPHYC_PLL_PLLFRACIN_Msk | USBPHYC_PLL_PLLFRACCTL_Msk | USBPHYC_PLL_PLLSTRB_Msk | USBPHYC_PLL_PLLSTRBYP_Msk)) |
-			((N) << USBPHYC_PLL_PLLNDIV_Pos) |	// PLLNDIV 24/60 = 400 kHz
+			((N) << USBPHYC_PLL_PLLNDIV_Pos) |	// Целая часть делителя
 			((ODF) << USBPHYC_PLL_PLLODF_Pos) |	// PLLODF - игнорируется
 			USBPHYC_PLL_PLLSTRBYP_Msk |
 			(((FRACT) << USBPHYC_PLL_PLLFRACIN_Pos) & USBPHYC_PLL_PLLFRACIN_Msk) |
