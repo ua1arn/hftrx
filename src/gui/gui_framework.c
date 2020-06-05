@@ -116,6 +116,7 @@ void * find_gui_element_ref(element_type_t type, window_t * win, const char * na
 		break;
 
 	default:
+		PRINTF("find_gui_element_ref: undefined type/n");
 		ASSERT(0);
 		return NULL;
 	}
@@ -232,6 +233,7 @@ void set_window(window_t * win, uint_fast8_t value)
 			free(win->sh_ptr);
 			win->sh_count = 0;
 		}
+
 		PLIST_ENTRY savedFlink;
 		for (PLIST_ENTRY t = windows_list.Flink; t != & windows_list; t = savedFlink)
 		{
@@ -243,13 +245,14 @@ void set_window(window_t * win, uint_fast8_t value)
 				break;
 			}
 		}
+
 		if (win->parent_id != UINT8_MAX)	// При закрытии child window открыть parent window, если есть
 		{
 			window_t * r = get_win(win->parent_id);
 			InsertHeadList(& windows_list, & r->item);
 		}
 	}
-(void) p;
+	(void) p;
 }
 
 /* Расчет экранных координат окна */

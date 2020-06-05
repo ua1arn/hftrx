@@ -20,8 +20,7 @@
 #include "src/gui/gui_structs.h"
 
 #include "keyboard.h"
-#include "list.h"
-#include <src/codecs/nau8822.h>
+#include "src/codecs/nau8822.h"
 
 #if WITHTOUCHGUI
 
@@ -43,7 +42,7 @@ static void window_menu_process(void);
 static void window_uif_process(void);
 static void window_enc2_process(void);
 
-window_t windows[] = {
+static window_t windows[] = {
 //     window_id,   		 parent_id, 			align_mode,     x1, y1, w, h,   title,     			 is_show, first_call, onVisibleProcess
 	{ WINDOW_MAIN, 			 UINT8_MAX, 			ALIGN_LEFT_X,	0, 0, 0, 0, "",  	   	   			 NON_VISIBLE, 0, gui_main_process, },
 	{ WINDOW_MODES, 		 UINT8_MAX, 			ALIGN_CENTER_X, 0, 0, 0, 0, "Select mode", 			 NON_VISIBLE, 0, window_mode_process, },
