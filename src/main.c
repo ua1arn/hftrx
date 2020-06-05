@@ -3192,7 +3192,7 @@ static const uint_fast8_t displaymodesfps = DISPLAYMODES_FPS;
 	enum { gbluebgnd = 0 };
 #endif /* LCDMODE_COLORED */
 
-	static uint_fast8_t gshowdbm;	// Отображение уровня сигнала в dBm или S-memter
+	static uint_fast8_t gshowdbm = 1;	// Отображение уровня сигнала в dBm или S-memter
 #if WITHAUTOTUNER
 
 enum
