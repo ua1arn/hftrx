@@ -6374,21 +6374,18 @@ static void display2_waterfall(
 	const uint_fast16_t p1y = WFY0;
 	const uint_fast16_t p2y = WFY0 + p1h;
 
-	if (1)
 	{
-		{
-			/* перенос свежей части растра */
-			colpip_plot(colorpip, BUFDIM_X, BUFDIM_Y, 0, p1y,
-					colmain_mem_at(wfjarray, ALLDX, WFROWS, 0, wfrow),	// начальный адрес источника
-					ALLDX, p1h);	// размеры источника
-		}
-		if (p2h != 0)
-		{
-			/* перенос старой части растра */
-			colpip_plot(colorpip, BUFDIM_X, BUFDIM_Y, 0, p2y,
-					colmain_mem_at(wfjarray, ALLDX, WFROWS, 0, 0),	// начальный адрес источника
-					ALLDX, p2h);	// размеры источника
-		}
+		/* перенос свежей части растра */
+		colpip_plot(colorpip, BUFDIM_X, BUFDIM_Y, 0, p1y,
+				colmain_mem_at(wfjarray, ALLDX, WFROWS, 0, wfrow),	// начальный адрес источника
+				ALLDX, p1h);	// размеры источника
+	}
+	if (p2h != 0)
+	{
+		/* перенос старой части растра */
+		colpip_plot(colorpip, BUFDIM_X, BUFDIM_Y, 0, p2y,
+				colmain_mem_at(wfjarray, ALLDX, WFROWS, 0, 0),	// начальный адрес источника
+				ALLDX, p2h);	// размеры источника
 	}
 
 #else /* */
