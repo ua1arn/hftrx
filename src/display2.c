@@ -14,7 +14,7 @@
 
 #include <string.h>
 #include <math.h>
-#include <src/gui/gui.h>
+#include "src/gui/gui.h"
 
 #define WITHPLACEHOLDERS 1	//  отображение макета с еще незанятыми полями
 

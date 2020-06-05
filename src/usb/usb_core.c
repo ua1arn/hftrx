@@ -5,7 +5,7 @@
 // UA1ARN
 //
 
-#include <src/gui/gui.h>
+#include "src/gui/gui.h"
 #include "hardware.h"
 #include "board.h"
 #include "audio.h"

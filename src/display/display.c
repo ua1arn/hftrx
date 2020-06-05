@@ -7,7 +7,7 @@
 // Доработки для LS020 Василий Линывый, livas60@mail.ru
 //
 
-#include <src/gui/gui.h>
+#include "src/gui/gui.h"
 #include "hardware.h"
 #include "board.h"
 #include "display.h"

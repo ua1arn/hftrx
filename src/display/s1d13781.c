@@ -8,7 +8,7 @@
 //
 
 
-#include <src/gui/gui.h>
+#include "src/gui/gui.h"
 #include "hardware.h"
 #include "board.h"
 #include "display.h"

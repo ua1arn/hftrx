@@ -9,16 +9,16 @@
 #include "board.h"
 #include "audio.h"
 
-#include <src/display/display.h>
+#include "src/display/display.h"
 #include "formats.h"
 
 #include <string.h>
 #include <math.h>
-#include <src/gui/gui.h>
-#include <src/touch/touch.h>
+#include "src/gui/gui.h"
+#include "src/touch/touch.h"
 
 #include "keyboard.h"
-#include <src/display/fontmaps.h>
+#include "src/display/fontmaps.h"
 
 #if (DIM_X < GUIMINX || DIM_Y < GUIMINY) && WITHTOUCHGUI	// не соблюдены минимальные требования к разрешению экрана
 #undef WITHTOUCHGUI											// для функционирования touch GUI
