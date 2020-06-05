@@ -7494,7 +7494,7 @@ display2_smeter15(
 
 		uint_fast16_t power;
 
-		power = board_getadc_filtered_truevalue(PWRI);
+		power = board_getadc_unfiltered_truevalue(PWRI);
 		gp = smeter_params.gs + normalize(power, 0, maxpwrcali << 4, smeter_params.ge - smeter_params.gs);
 
 		gswr = smeter_params.gs + normalize(get_swr(), 0, swr_fullscale, smeter_params.ge - smeter_params.gs);
