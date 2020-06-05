@@ -3,6 +3,14 @@
 
 #include "hardware.h"
 
+#ifndef WITHGUIMAXX
+#define WITHGUIMAXX		DIM_X
+#endif
+
+#ifndef WITHGUIMAXY
+#define WITHGUIMAXY		DIM_Y
+#endif
+
 #if WITHTOUCHGUI
 
 enum {
@@ -57,7 +65,8 @@ enum {								// button_handler.parent & windowpip.window_id
 	WINDOW_AP_MIC_PROF,				// профили микрофона
 	WINDOW_TX_SETTINGS,				// настройки, относящиеся к режиму передачи
 	WINDOW_TX_VOX_SETT,				// настройки VOX
-	WINDOW_TX_POWER					// выходная мощность
+	WINDOW_TX_POWER,					// выходная мощность
+	WINDOWS_COUNT
 };
 
 enum {
