@@ -1071,7 +1071,7 @@ void hwaccel_copy(
 		0;
 	MDMA_CH->CBRUR =
 		((sizeof (PACKEDCOLORMAIN_T) * (GXADJ(w) - w)) << MDMA_CBRUR_SUV_Pos) |	// Source address Update Value
-		((sizeof (PACKEDCOLORMAIN_T) * (t)) << MDMA_CBRUR_DUV_Pos) |			// Destination address Update Value
+		((sizeof (PACKEDCOLORMAIN_T) * (tadj)) << MDMA_CBRUR_DUV_Pos) |			// Destination address Update Value
 		0;
 
 	MDMA_CH->CTBR = (MDMA_CH->CTBR & ~ (MDMA_CTBR_SBUS_Msk | MDMA_CTBR_DBUS_Msk)) |
