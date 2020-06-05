@@ -25,23 +25,23 @@
 
 #if WITHTOUCHGUI
 
-void gui_main_process(void);
-void window_mode_process(void);
-void window_bp_process(void);
-void window_agc_process(void);
-void window_freq_process (void);
-void window_swrscan_process(void);
-void window_tx_process(void);
-void window_tx_vox_process(void);
-void window_tx_power_process(void);
-void window_audiosettings_process(void);
-void window_ap_reverb_process(void);
-void window_ap_mic_eq_process(void);
-void window_ap_mic_process(void);
-void window_ap_mic_prof_process(void);
-void window_menu_process(void);
-void window_uif_process(void);
-void window_enc2_process(void);
+static void gui_main_process(void);
+static void window_mode_process(void);
+static void window_bp_process(void);
+static void window_agc_process(void);
+static void window_freq_process (void);
+static void window_swrscan_process(void);
+static void window_tx_process(void);
+static void window_tx_vox_process(void);
+static void window_tx_power_process(void);
+static void window_audiosettings_process(void);
+static void window_ap_reverb_process(void);
+static void window_ap_mic_eq_process(void);
+static void window_ap_mic_process(void);
+static void window_ap_mic_prof_process(void);
+static void window_menu_process(void);
+static void window_uif_process(void);
+static void window_enc2_process(void);
 
 window_t windows[] = {
 //     window_id,   		 parent_id, 			align_mode,     x1, y1, w, h,   title,     			 is_show, first_call, onVisibleProcess
@@ -85,7 +85,7 @@ window_t * get_win(uint_fast8_t window_id)
 
 // *********************************************************************************************************************************************************************
 
-void btn_main_handler(void)
+static void btn_main_handler(void)
 {
 	gui_t * gui = get_gui_env();
 
@@ -242,7 +242,7 @@ void btn_main_handler(void)
 	}
 }
 
-void gui_main_process(void)
+static void gui_main_process(void)
 {
 	window_t * win = get_win(WINDOW_MAIN);
 	gui_t * gui = get_gui_env();
@@ -421,7 +421,7 @@ void gui_main_process(void)
 
 // *********************************************************************************************************************************************************************
 
-void buttons_mode_handler(void)
+static void buttons_mode_handler(void)
 {
 	window_t * win = get_win(WINDOW_MODES);
 	gui_t * gui = get_gui_env();
@@ -440,7 +440,7 @@ void buttons_mode_handler(void)
 	}
 }
 
-void window_mode_process(void)
+static void window_mode_process(void)
 {
 	window_t * win = get_win(WINDOW_MODES);
 	gui_t * gui = get_gui_env();
@@ -496,7 +496,7 @@ void window_mode_process(void)
 
 // *********************************************************************************************************************************************************************
 
-void buttons_bp_handler(void)
+static void buttons_bp_handler(void)
 {
 	window_t * win = get_win(WINDOW_BP);
 	gui_t * gui = get_gui_env();
@@ -527,7 +527,7 @@ void buttons_bp_handler(void)
 	}
 }
 
-void window_bp_process(void)
+static void window_bp_process(void)
 {
 	static uint_fast8_t val_high, val_low, val_c, val_w;
 	static uint_fast16_t x_h, x_l, x_c;
@@ -675,7 +675,7 @@ void window_bp_process(void)
 
 // *********************************************************************************************************************************************************************
 
-void window_agc_process(void)
+static void window_agc_process(void)
 {
 	window_t * win = get_win(WINDOW_AGC);
 	if (win->first_call)
@@ -725,7 +725,7 @@ void window_agc_process(void)
 
 // *********************************************************************************************************************************************************************
 
-void buttons_freq_handler (void)
+static void buttons_freq_handler (void)
 {
 	gui_t * gui = get_gui_env();
 	button_t * bh =  gui->selected_link->link;
@@ -733,7 +733,7 @@ void buttons_freq_handler (void)
 		editfreq.key = bh->payload;
 }
 
-void window_freq_process (void)
+static void window_freq_process (void)
 {
 	static label_t * lbl_freq;
 	window_t * win = get_win(WINDOW_FREQ);
@@ -865,7 +865,7 @@ void window_freq_process (void)
 
 // *********************************************************************************************************************************************************************
 
-void buttons_swrscan_process(void)
+static void buttons_swrscan_process(void)
 {
 	window_t * win = get_win(WINDOW_SWR_SCANNER);
 	gui_t * gui = get_gui_env();
@@ -894,7 +894,7 @@ void buttons_swrscan_process(void)
 	}
 }
 
-void window_swrscan_process(void)
+static void window_swrscan_process(void)
 {
 	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
 	uint_fast16_t gr_w = 500, gr_h = 250;												// размеры области графика
@@ -1075,7 +1075,7 @@ void window_swrscan_process(void)
 
 // *********************************************************************************************************************************************************************
 
-void buttons_tx_sett_process(void)
+static void buttons_tx_sett_process(void)
 {
 	gui_t * gui = get_gui_env();
 
@@ -1105,7 +1105,7 @@ void buttons_tx_sett_process(void)
 	}
 }
 
-void window_tx_process(void)
+static void window_tx_process(void)
 {
 	window_t * win = get_win(WINDOW_TX_SETTINGS);
 
@@ -1171,7 +1171,7 @@ void window_tx_process(void)
 
 // *********************************************************************************************************************************************************************
 
-void buttons_tx_vox_process(void)
+static void buttons_tx_vox_process(void)
 {
 	gui_t * gui = get_gui_env();
 	if(gui->selected_type == TYPE_BUTTON)
@@ -1183,7 +1183,7 @@ void buttons_tx_vox_process(void)
 	}
 }
 
-void window_tx_vox_process(void)
+static void window_tx_vox_process(void)
 {
 	window_t * win = get_win(WINDOW_TX_VOX_SETT);
 	gui_t * gui = get_gui_env();
@@ -1366,7 +1366,7 @@ void window_tx_vox_process(void)
 
 // *********************************************************************************************************************************************************************
 
-void buttons_tx_power_process(void)
+static void buttons_tx_power_process(void)
 {
 	gui_t * gui = get_gui_env();
 
@@ -1379,7 +1379,7 @@ void buttons_tx_power_process(void)
 	}
 }
 
-void window_tx_power_process(void)
+static void window_tx_power_process(void)
 {
 	window_t * win = get_win(WINDOW_TX_POWER);
 	gui_t * gui = get_gui_env();
@@ -1495,7 +1495,7 @@ void window_tx_power_process(void)
 
 // *********************************************************************************************************************************************************************
 
-void buttons_audiosettings_process(void)
+static void buttons_audiosettings_process(void)
 {
 	gui_t * gui = get_gui_env();
 	if(gui->selected_type == TYPE_BUTTON)
@@ -1557,7 +1557,7 @@ void buttons_audiosettings_process(void)
 	}
 }
 
-void window_audiosettings_process(void)
+static void window_audiosettings_process(void)
 {
 	window_t * win = get_win(WINDOW_AUDIOSETTINGS);
 
@@ -1655,7 +1655,7 @@ static void buttons_ap_reverb_process(void)
 	}
 }
 
-void window_ap_reverb_process(void)
+static void window_ap_reverb_process(void)
 {
 	window_t * win = get_win(WINDOW_AP_REVERB_SETT);
 	gui_t * gui = get_gui_env();
@@ -1806,7 +1806,7 @@ static void buttons_ap_mic_eq_process(void)
 	}
 }
 
-void window_ap_mic_eq_process(void)
+static void window_ap_mic_eq_process(void)
 {
 	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
 	window_t * win = get_win(WINDOW_AP_MIC_EQ);
@@ -1984,7 +1984,7 @@ static void buttons_ap_mic_process(void)
 	}
 }
 
-void window_ap_mic_process(void)
+static void window_ap_mic_process(void)
 {
 	window_t * win = get_win(WINDOW_AP_MIC_SETT);
 	gui_t * gui = get_gui_env();
@@ -2184,7 +2184,7 @@ static void buttons_ap_mic_prof_process(void)
 
 }
 
-void window_ap_mic_prof_process(void)
+static void window_ap_mic_prof_process(void)
 {
 	window_t * win = get_win(WINDOW_AP_MIC_PROF);
 
@@ -2275,7 +2275,7 @@ static void buttons_menu_handler(void)
 		encoder2.rotate = -1;
 }
 
-void window_menu_process(void)
+static void window_menu_process(void)
 {
 	static uint_fast8_t menu_is_scrolling = 0;
 	uint_fast8_t int_cols = 200, int_rows = 35;
@@ -2713,7 +2713,7 @@ static void buttons_uif_handler(void)
 	}
 }
 
-void window_uif_process(void)
+static void window_uif_process(void)
 {
 	static label_t * lbl_uif_val;
 	static button_t * button_up, * button_down;
@@ -2847,7 +2847,7 @@ void gui_encoder2_menu (enc2_menu_t * enc2_menu)
 	}
 }
 
-void window_enc2_process(void)
+static void window_enc2_process(void)
 {
 	static label_t * lbl_param,  * lbl_val;
 	window_t * win = get_win(WINDOW_UIF);
