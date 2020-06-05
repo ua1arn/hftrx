@@ -435,8 +435,6 @@ hwacc_fillrect_u16(
 	buffer = colmain_mem_at(buffer, dx, dy, col, row); // dest address
 	while (h --)
 	{
-		uint16_t * const startmem = buffer;
-
 		unsigned n = w;
 		while (n --)
 			* buffer ++ = color;
@@ -1635,6 +1633,7 @@ void colpip_plot(
 	ASSERT(dst != NULL);
 	ASSERT(tdx >= dx);
 	ASSERT(tdy >= dy);
+
 #if LCDMODE_HORFILL
 	hwaccel_copy(
 		(uintptr_t) dst, sizeof (PACKEDCOLORPIP_T) * GXSIZE(tdx, tdy),	// target area invalidate parameters
