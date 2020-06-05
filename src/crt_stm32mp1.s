@@ -375,6 +375,40 @@ IRQHandlerNested:
 		ldmia   sp!, {pc}^
 		.endfunc
 
+    .func   IRQHandlerNotNested
+IRQHandlerNotNested:
+
+         sub lr,lr,#4
+         stmfd sp!,{lr}
+         mrs lr,SPSR
+         stmfd sp!,{r0,lr}
+
+ #if __ARM_NEON == 1
+		// save Neon data registers
+		VPUSH.F64	{q8-q15}
+#endif /* __ARM_NEON == 1 */
+         VPUSH {d0-d15}
+         FMRX r0,fpscr
+         stmfd sp!,{r0-r3,r4,r12,lr}
+
+         ldr r2,=IRQ_Handler
+         mov lr,pc
+         bx r2
+
+         ldmia sp!,{r0-r3,r4,r12,lr}
+         FMXR fpscr,r0
+         VPOP {d0-d15}
+#if __ARM_NEON == 1
+		// restore VFP/Neon data registers
+		VPOP.F64	{q8-q15}
+#endif /* __ARM_NEON == 1 */
+
+         ldmia sp!,{r0,lr}
+         msr SPSR_cxsf,lr
+         ldmia sp!,{pc}^
+		.endfunc
+
+
 	.bss
 	.align 8
 	.space	STACKSIZEUND

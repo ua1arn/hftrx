@@ -925,12 +925,16 @@ bigfont_decode(uint_fast8_t c)
 		return 10;		// курсор - позиция редактирвания частоты
 	if (c == '.')
 		return 12;		// точка
+	if (c > '9')
+		return 10;		// ошибка - курсор - позиция редактирвания частоты
 	return c - '0';		// остальные - цифры 0..9
 }
 
 uint_fast8_t
 smallfont_decode(uint_fast8_t c)
 {
+	if (c < ' ' || c > 0x7F)
+		return '$' - ' ';
 	return c - ' ';
 }
 
@@ -1494,11 +1498,13 @@ void display_hardware_initialize(void)
 #if WITHDMA2DHW
 	// Image construction hardware
 	arm_hardware_dma2d_initialize();
+
 #endif /* WITHDMA2DHW */
 #if WITHMDMAHW
 	// Image construction hardware
 	arm_hardware_mdma_initialize();
-#endif
+
+#endif /* WITHMDMAHW */
 #if WITHLTDCHW
 	// STM32xxx LCD-TFT Controller (LTDC)
 	// RENESAS Video Display Controller 5

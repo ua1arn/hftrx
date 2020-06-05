@@ -3192,7 +3192,7 @@ static const uint_fast8_t displaymodesfps = DISPLAYMODES_FPS;
 	enum { gbluebgnd = 0 };
 #endif /* LCDMODE_COLORED */
 
-	static uint_fast8_t gshowdbm;	// Отображение уровня сигнала в dBm или S-memter
+	static uint_fast8_t gshowdbm = 1;	// Отображение уровня сигнала в dBm или S-memter
 #if WITHAUTOTUNER
 
 enum
@@ -19352,7 +19352,11 @@ ddd:
 
 #if defined (BOARD_IS_USERBOOT)
 		/* если не установлен джампер - запускаем программу. */
-		if (! BOARD_IS_USERBOOT())
+//		if (! BOARD_IS_USERBOOT())
+//			break;
+		//	при наличии перемычки входим в режим загрузчика по USB.
+		//	Выйти или через команду DFU или по сбросу.
+		if (usbactivated == 0)
 			break;
 #elif WITHDEBUG
 		/* ввод 'r' - запускаем программу. */

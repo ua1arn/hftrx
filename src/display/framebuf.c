@@ -300,10 +300,11 @@ hwacc_fillrect_u8(
 	// программная реализация
 
 	const unsigned t = GXADJ(dx) - w;
-	buffer += (GXADJ(dx) * row) + col;
+	//buffer += (GXADJ(dx) * row) + col;
+	buffer = colmain_mem_at(buffer, dx, dy, col, row); // dest address
 	while (h --)
 	{
-		uint8_t * const startmem = buffer;
+		//uint8_t * const startmem = buffer;
 
 		unsigned n = w;
 		while (n --)
@@ -429,13 +430,11 @@ hwacc_fillrect_u16(
 
 #else
 	// программная реализация
-
 	const unsigned t = GXADJ(dx) - w;
-	buffer += (GXADJ(dx) * row) + col;
+	//buffer += (GXADJ(dx) * row) + col;
+	buffer = colmain_mem_at(buffer, dx, dy, col, row); // dest address
 	while (h --)
 	{
-		uint16_t * const startmem = buffer;
-
 		unsigned n = w;
 		while (n --)
 			* buffer ++ = color;
@@ -564,10 +563,11 @@ hwacc_fillrect_u24(
 	// программная реализация
 
 	const unsigned t = GXADJ(dx) - w;
-	buffer += (GXADJ(dx) * row) + col;
+	//buffer += (GXADJ(dx) * row) + col;
+	buffer = colmain_mem_at(buffer, dx, dy, col, row); // dest address
 	while (h --)
 	{
-		PACKEDCOLORMAIN_T * const startmem = buffer;
+		//PACKEDCOLORMAIN_T * const startmem = buffer;
 
 		unsigned n = w;
 		while (n --)
@@ -1025,7 +1025,7 @@ void hwaccel_copy(
 	PACKEDCOLORMAIN_T * dst,
 	const PACKEDCOLORMAIN_T * src,
 	unsigned w,
-	unsigned t,	// разница в размере строки получателя от источника
+	unsigned tadj,	// разница в размере строки получателя от источника. Уже с учетом выравнивания пикселей от GXADJ
 	unsigned h
 	)
 {
@@ -1071,7 +1071,7 @@ void hwaccel_copy(
 		0;
 	MDMA_CH->CBRUR =
 		((sizeof (PACKEDCOLORMAIN_T) * (GXADJ(w) - w)) << MDMA_CBRUR_SUV_Pos) |	// Source address Update Value
-		((sizeof (PACKEDCOLORMAIN_T) * (t)) << MDMA_CBRUR_DUV_Pos) |			// Destination address Update Value
+		((sizeof (PACKEDCOLORMAIN_T) * (tadj)) << MDMA_CBRUR_DUV_Pos) |			// Destination address Update Value
 		0;
 
 	MDMA_CH->CTBR = (MDMA_CH->CTBR & ~ (MDMA_CTBR_SBUS_Msk | MDMA_CTBR_DBUS_Msk)) |
@@ -1095,7 +1095,7 @@ void hwaccel_copy(
 	/* целевой растр */
 	DMA2D->OMAR = (uintptr_t) dst;
 	DMA2D->OOR = (DMA2D->OOR & ~ (DMA2D_OOR_LO)) |
-		((t) << DMA2D_OOR_LO_Pos) |
+		((tadj) << DMA2D_OOR_LO_Pos) |
 		0;
 	/* размер пересылаемого растра */
 	DMA2D->NLR = (DMA2D->NLR & ~ (DMA2D_NLR_NL | DMA2D_NLR_PL)) |
@@ -1120,8 +1120,8 @@ void hwaccel_copy(
 #else
 	// программная реализация
 
-	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
-	if (t == 0)
+	// для случая когда горизонтальные пиксели в видеопямяти источника располагаются подряд
+	if (tadj == 0)
 	{
 		const size_t len = (size_t) GXSIZE(w, h) * sizeof * src;
 		// ширина строки одинаковая в получателе и источнике
@@ -1136,7 +1136,7 @@ void hwaccel_copy(
 			memcpy(dst, src, len);
 			arm_hardware_flush((uintptr_t) dst, len);
 			src += GXADJ(w);
-			dst += w + t;
+			dst += w + tadj;
 		}
 	}
 
@@ -1604,13 +1604,13 @@ void colmain_plot(
 	ASSERT(tdy >= dy);
 #if LCDMODE_HORFILL
 	hwaccel_copy(
-		(uintptr_t) dst, sizeof (PACKEDCOLORPIP_T) * tdx * tdy,	// target area invalidate parameters
+		(uintptr_t) dst, sizeof (PACKEDCOLORPIP_T) * GXSIZE(tdx, tdy),	// target area invalidate parameters
 		colmain_mem_at(dst, tdx, tdy, x, y),
 		src,
-		dx, tdx - dx, dy);	// w, t, h
+		dx, GXADJ(tdx) - GXADJ(dx), dy);	// w, t, h
 #else /* LCDMODE_HORFILL */
 	hwaccel_copy(
-		(uintptr_t) dst, sizeof (PACKEDCOLORPIP_T) * tdx * tdy,	// target area invalidate parameters
+		(uintptr_t) dst, sizeof (PACKEDCOLORPIP_T) * GXSIZE(tdx, tdy),	// target area invalidate parameters
 		colmain_mem_at(dst, tdx, tdy, x, y),
 		src,
 		dy, tdy - dy, dx);	// w, t, h
@@ -1633,15 +1633,16 @@ void colpip_plot(
 	ASSERT(dst != NULL);
 	ASSERT(tdx >= dx);
 	ASSERT(tdy >= dy);
+
 #if LCDMODE_HORFILL
 	hwaccel_copy(
-		(uintptr_t) dst, sizeof (PACKEDCOLORPIP_T) * tdx * tdy,	// target area invalidate parameters
+		(uintptr_t) dst, sizeof (PACKEDCOLORPIP_T) * GXSIZE(tdx, tdy),	// target area invalidate parameters
 		colmain_mem_at(dst, tdx, tdy, x, y),
 		src,
-		dx, tdx - dx, dy);	// w, t, h
+		dx, GXADJ(tdx) - GXADJ(dx), dy);	// w, t, h
 #else /* LCDMODE_HORFILL */
 	hwaccel_copy(
-		(uintptr_t) dst, sizeof (PACKEDCOLORPIP_T) * tdx * tdy,	// target area invalidate parameters
+		(uintptr_t) dst, sizeof (PACKEDCOLORPIP_T) * GXSIZE(tdx, tdy),	// target area invalidate parameters
 		colmain_mem_at(dst, tdx, tdy, x, y),
 		src,
 		dy, tdy - dy, dx);	// w, t, h
