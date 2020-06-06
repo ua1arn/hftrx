@@ -80,9 +80,9 @@
 
 #if WITHPOTAFGAIN
 
-	#define	NAU8822L_OUT_SPK_MAX	0x39	// неперегружающее значение до 0x39. Возможно до 0x3F
+	#define	NAU8822L_OUT_SPK_MAX	0x3F	// неперегружающее значение до 0x39. Возможно до 0x3F
 	#define	NAU8822L_OUT_SPK_MIN	0x00
-	#define	NAU8822L_OUT_HP_MAX		0x39	// неперегружающее значение до 0x39. Возможно до 0x3F
+	#define	NAU8822L_OUT_HP_MAX		0x3F	// неперегружающее значение до 0x39. Возможно до 0x3F
 	#define	NAU8822L_OUT_HP_MIN		0x00
 
 #else /* WITHPOTAFGAIN */

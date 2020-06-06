@@ -256,10 +256,15 @@ nau8822_ilog2(
 	return n;
 }
 
-static void nau8822_initialize_fullduplex(uint_fast8_t master)
+static void nau8822_initialize_fullduplex(void)
 {
 	//debug_printf_P(PSTR("nau8822_initialize_fullduplex start\n"));
 
+#if CODEC_TYPE_NAU8822_MASTER
+	const uint_fast8_t master = 1;	// кодек формирует I2S синхронизацию
+#else /* CODEC_TYPE_NAU8822_MASTER */
+	const uint_fast8_t master = 0;
+#endif /* CODEC_TYPE_NAU8822_MASTER */
 #if CODEC_TYPE_NAU8822_USE_8KS
 	const unsigned long NAU8822_ADDITIONAL_CONTROL_SMPLR_val = 0x05uL * (1 << 2); // SMPLR=0x05 (8 kHz)
 	const unsigned long NAU8822_CLOCKING_MCLKSEL_val = 0x05uL * (1 << 5);	// 0x05: divide by 6 MCLKSEL master clock prescaler
@@ -367,16 +372,6 @@ static void nau8822_stop(void)
 #endif /* CODEC_TYPE_NAU8822_MASTER */
 }
 
-static void nau8822_initialize_slave_fullduplex(void)
-{
-	nau8822_initialize_fullduplex(0);
-}
-
-static void nau8822_initialize_master_fullduplex(void)
-{
-	nau8822_initialize_fullduplex(1);
-}
-
 const codec1if_t *
 board_getaudiocodecif(void)
 {
@@ -387,11 +382,7 @@ board_getaudiocodecif(void)
 	static const codec1if_t ifc =
 	{
 		nau8822_stop,
-#if CODEC_TYPE_NAU8822_MASTER
-		nau8822_initialize_master_fullduplex,	// кодек формирует I2S синхронизацию
-#else /* CODEC_TYPE_NAU8822_MASTER */
-		nau8822_initialize_slave_fullduplex,	// кодек получает I2S синхронизацию извне
-#endif /* CODEC_TYPE_NAU8822_MASTER */
+		nau8822_initialize_fullduplex,
 		nau8822_setvolume,		/* Установка громкости на наушники */
 		nau8822_lineinput,		/* Выбор LINE IN как источника для АЦП вместо микрофона */
 		nau8822_setprocparams,	/* Параметры обработки звука с микрофона (эхо, эквалайзер, ...) */
