@@ -594,6 +594,7 @@ static void DMA_SDIO_setparams(
 			1 * DMA_SxFCR_DMDIS |	// use FIFO mode
 			3 * DMA_SxFCR_FTH_0 |	// 11: full FIFO
 			0;
+		(void) DMA2_Stream6->FCR;
 
 		DMA2_Stream6->CR =
 			0 * DMA_SxCR_DIR_0 |	// 00: Peripheral-to-memory
@@ -622,6 +623,7 @@ static void DMA_SDIO_setparams(
 			1 * DMA_SxFCR_DMDIS |	// use FIFO mode
 			1 * DMA_SxFCR_FTH_0 |	// 01: 1/2 full FIFO (changed from read !)
 			0;
+		(void) DMA2_Stream6->FCR;
 
 		DMA2_Stream6->CR =
 			1 * DMA_SxCR_DIR_0 |	// 01: Memory-to-peripherial
@@ -641,7 +643,7 @@ static void DMA_SDIO_setparams(
 	}
 
 	DMA2->HIFCR = (DMA_HIFCR_CTCIF6 /*| DMA_HIFCR_CTEIF6 */);	// Clear TC interrupt flag соответствующий stream
-	//DMA2_Stream6->CR |= (DMA_SxCR_TCIE /* | DMA_SxCR_TEIE */);	// разрешить прерывания от DMA по TC и TE
+	//DMA2_Stream6->CR |= DMA_SxCR_TCIE;	// Разрешаем прерывания от DMA
 	
 	DMA2_Stream6->CR |= DMA_SxCR_EN;
 
