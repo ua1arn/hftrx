@@ -223,6 +223,8 @@ static portholder_t stm32xxx_i2scfgr_afcodec(void)
 
 #define DRD(r) ((void) (r))
 
+#if 0
+
 #define DMAERR(dma, dmastream, status, control, errorf, resetf) do { \
 		if (((dma)->status & errorf) != 0) \
 		{ \
@@ -236,7 +238,6 @@ static portholder_t stm32xxx_i2scfgr_afcodec(void)
 		} \
 	} while (0)
 
-
 // формируется строка вроде такой:
 // DMAERR(DMA1, DMA1_Stream3, LISR, LIFCR, DMA_LISR_TEIF3, DMA_LIFCR_CTEIF3);
 
@@ -245,6 +246,11 @@ static portholder_t stm32xxx_i2scfgr_afcodec(void)
 		DMAERR(DMA ## d, DMA ## d ## _Stream ## s, hl ## ISR, hl ## IFCR, DMA_ ## hl ## ISR_DMEIF ## s, DMA_ ## hl ## IFCR_CDMEIF ## s); /* DME */ \
 		DMAERR(DMA ## d, DMA ## d ## _Stream ## s, hl ## ISR, hl ## IFCR, DMA_ ## hl ## ISR_FEIF ## s, DMA_ ## hl ## IFCR_CFEIF ## s); /* FE */ \
 	} while (0)
+
+#else
+
+	#define HANDLEERRORS(d, s, hl) /* */
+#endif
 
 // Обработчик прерывания DMA по приему I2S - I2S2_EXT
 // Use arm_hardware_invalidate
