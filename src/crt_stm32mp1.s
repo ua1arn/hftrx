@@ -56,13 +56,13 @@
    I_BIT          = 0x80      /* disable IRQ when I bit is set */
    F_BIT          = 0x40      /* disable FIQ when I bit is set */
  
-	 STACKSIZEUND = 1024
-	 STACKSIZEABT = 1024
-	 STACKSIZEFIQ = 1024
-	 STACKSIZEIRQ = 1024
-	 STACKSIZESVC = 1024
-	 STACKSIZEHYP = 1024
-	 STACKSIZEMON = 1024
+	 STACKSIZEUND = 4096
+	 STACKSIZEABT = 4096
+	 STACKSIZEFIQ = 4096
+	 STACKSIZEIRQ = 4096
+	 STACKSIZESVC = 4096
+	 STACKSIZEHYP = 4096
+	 STACKSIZEMON = 4096
   
 	.global __Vectors
 	.section .vectors,"ax"

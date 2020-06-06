@@ -9409,6 +9409,7 @@ lowlevel_stm32l0xx_pll_clock(void)
 
 void Undef_Handler(void)
 {
+	dbg_putchar('1');
 	debug_printf_P(PSTR("UndefHandler trapped.\n"));
 	for (;;)
 		;
@@ -9416,6 +9417,7 @@ void Undef_Handler(void)
 
 void SWI_Handler(void)
 {
+	dbg_putchar('2');
 	debug_printf_P(PSTR("SWIHandler trapped.\n"));
 	for (;;)
 		;
@@ -9424,6 +9426,7 @@ void SWI_Handler(void)
 // Prefetch Abort
 void PAbort_Handler(void)
 {
+	dbg_putchar('3');
 	debug_printf_P(PSTR("PAbortHandler trapped.\n"));
 	for (;;)
 		;
@@ -9432,6 +9435,7 @@ void PAbort_Handler(void)
 // Data Abort.
 void DAbort_Handler(void)
 {
+	dbg_putchar('4');
 	debug_printf_P(PSTR("DAbort_Handler trapped.\n"));
 	debug_printf_P(PSTR("DFSR=%08lX\n"), __get_DFSR());
 	const int WnR = (__get_DFSR() & (1uL << 11)) != 0;
@@ -9479,6 +9483,7 @@ void DAbort_Handler(void)
 
 void FIQ_Handler(void)
 {
+	dbg_putchar('5');
 	debug_printf_P(PSTR("FIQHandler trapped.\n"));
 	for (;;)
 		;
@@ -9486,6 +9491,7 @@ void FIQ_Handler(void)
 
 void Hyp_Handler(void)
 {
+	dbg_putchar('6');
 	debug_printf_P(PSTR("Hyp_Handler trapped.\n"));
 	for (;;)
 		;

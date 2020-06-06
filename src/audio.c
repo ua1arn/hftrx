@@ -4859,7 +4859,7 @@ union states
 };
 
 
-#if CPUSTYLE_R7S721
+#if (CPUSTYLE_R7S721 || CPUSTYLE_STM32MP1)
 
 static uint16_t rbfimage0 [] =
 {
@@ -4877,11 +4877,11 @@ const uint16_t * getrbfimage(size_t * count)
 
 #define zoomfft_st (* (union states *) rbfimage0)
 
-#else /* CPUSTYLE_R7S721 */
+#else /* (CPUSTYLE_R7S721 || CPUSTYLE_STM32MP1) */
 
 static RAMBIGDTCM union states zoomfft_st;
 
-#endif /* CPUSTYLE_R7S721 */
+#endif /* (CPUSTYLE_R7S721 || CPUSTYLE_STM32MP1) */
 
 static void fftzoom_filer_decimate(
 	const struct zoom_param * const prm,

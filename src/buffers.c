@@ -844,6 +844,7 @@ void placesemsgbuffer_low(uint_fast8_t type, uint8_t * dest)
 // Оставить в указанной очереди не более PHONESLEVEL буферов
 static void buffers_purge16(LIST_ENTRY2 * list)
 {
+	return;
 	if (GetCountList2(list) > PHONESLEVEL * 3)
 	{
 		do
