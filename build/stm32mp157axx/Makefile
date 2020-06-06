@@ -35,8 +35,9 @@ OBJDIR = ./$(OBJDIR2)
 OPT = -Ofast
 LTO = -flto
 
-#CORE = -march=armv7-a -mfloat-abi=hard -mfpu=vfpv4-d16
-CORE = -mcpu=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4-d16
+CORE = -mcpu=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4-d16 -ftree-vectorize
+#CORE = -mfloat-abi=hard -mfpu=vfpv4-d16
+#CORE += -mcpu=cortex-a7
 #CORE += -mfpu=neon
 
 # List all default C defines here, like -D_DEBUG=1
