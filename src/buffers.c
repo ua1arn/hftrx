@@ -185,22 +185,22 @@ void vfylist(LIST_ENTRY2 * head)
 // Audio CODEC in/out
 typedef ALIGNX_BEGIN struct voice16_tag
 {
-	LIST_ENTRY item;
 	ALIGNX_BEGIN aubufv_t buff [DMABUFFSIZE16] ALIGNX_END;
+	LIST_ENTRY item;
 } ALIGNX_END voice16_t;
 
 // I/Q data to FPGA or IF CODEC
 typedef ALIGNX_BEGIN struct voices32tx_tag
 {
-	LIST_ENTRY item;
 	ALIGNX_BEGIN int32_t buff [DMABUFFSIZE32TX] ALIGNX_END;
+	LIST_ENTRY item;
 } ALIGNX_END voice32tx_t;
 
 // I/Q data from FPGA or IF CODEC
 typedef ALIGNX_BEGIN struct voices32rx_tag
 {
-	LIST_ENTRY item;
 	ALIGNX_BEGIN int32_t buff [DMABUFFSIZE32RX] ALIGNX_END;
+	LIST_ENTRY item;
 } ALIGNX_END voice32rx_t;
 // исправляемая погрешность = 0.02% - один сэмпл добавить/убрать на 5000 сэмплов
 
@@ -282,8 +282,8 @@ static RAMDTCM LIST_ENTRY2 uacinready16;	// Буферы для записи в 
 
 typedef ALIGNX_BEGIN struct records16
 {
-	LIST_ENTRY item;
 	ALIGNX_BEGIN int16_t buff [AUDIORECBUFFSIZE16] ALIGNX_END;
+	LIST_ENTRY item;
 	unsigned startdata;	// data start
 	unsigned topdata;	// index after last element
 } ALIGNX_END records16_t;
