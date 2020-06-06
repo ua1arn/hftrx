@@ -305,7 +305,7 @@ typedef float spx_word32_t;
 #define PDIV32(a,b)     (((spx_word32_t)(a))/(spx_word32_t)(b))
 
 #define WORD2INT(x) ((x) < -32767.5f ? -32768 : \
-                    ((x) > 32766.5f ? 32767 : (spx_int16_t)floor(.5 + (x))))
+                    ((x) > 32766.5f ? 32767 : (spx_int16_t) FLOORF(.5 + (x))))
 #endif
 
 
