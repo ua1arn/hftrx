@@ -5366,23 +5366,23 @@ static int32_t seqNext [DMABUFSTEP32RX];
 static uint_fast8_t  seqValid [DMABUFSTEP32RX];
 static int seqErrors;
 
-static void validateSeq(uint_fast8_t i, int32_t v)
+static void validateSeq(uint_fast8_t slot, int32_t v)
 {
 	if (seqErrors > 10)
 		return;
-	if (! seqValid [i])
+	if (! seqValid [slot])
 	{
-		seqValid [i] = 1;
+		seqValid [slot] = 1;
 	}
 	else
 	{
-		if (seqNext [i] != v)
+		if (seqNext [slot] != v)
 		{
-			PRINTF("validateSeq i=%d: expected=%08lX, v=%08lX\n", i, seqNext [i], v);
+			PRINTF("validateSeq i=%d: expected=%08lX, v=%08lX\n", slot, seqNext [slot], v);
 			++ seqErrors;
 		}
 	}
-	seqNext [i] = v + 1;
+	seqNext [slot] = v + 1;
 }
 // Обработка полученного от DMA буфера с выборками или квадратурами (или двухканальный приём).
 // Вызывается на ARM_REALTIME_PRIORITY уровне.
@@ -5403,9 +5403,9 @@ void RAMFUNC dsp_extbuffer32rx(const int32_t * buff)
 		if (0)
 		{
 			// Проверка качества линии передачи от FPGA
-			uint_fast8_t position;
-			for (position = 0; position < DMABUFSTEP32RX; ++ position)
-				validateSeq(position, buff [i + position]);
+			uint_fast8_t slot;
+			for (slot = 0; slot < DMABUFSTEP32RX; ++ slot)
+				validateSeq(slot, buff [i + slot]);
 		}
 
 	#if ! WITHTRANSPARENTIQ
