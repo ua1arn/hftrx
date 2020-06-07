@@ -5364,12 +5364,22 @@ void dsp_addsidetone(aubufv_t * buff)
 // Проверка качества линии передачи от FPGA
 static int32_t seqNext [DMABUFSTEP32RX];
 static uint_fast8_t  seqValid [DMABUFSTEP32RX];
-static int seqErrors;
+static long int seqErrors;
+static long int seqTotal;
+static int seqDone;
 
 static void validateSeq(uint_fast8_t slot, int32_t v)
 {
-	if (seqErrors > 10)
+//	PRINTF("%d:%08lX ", slot, v);
+//	return;
+	if (seqDone)
 		return;
+	if (seqTotal >= ((DMABUFFSIZE32RX / DMABUFSTEP32RX) * 10000L))
+	{
+		PRINTF("seqErrors=%ld, seqTotal=%ld\n", seqErrors, seqTotal);
+		seqDone = 1;
+		return;
+	}
 	if (! seqValid [slot])
 	{
 		seqValid [slot] = 1;
@@ -5378,11 +5388,13 @@ static void validateSeq(uint_fast8_t slot, int32_t v)
 	{
 		if (seqNext [slot] != v)
 		{
-			PRINTF("validateSeq i=%d: expected=%08lX, v=%08lX\n", slot, seqNext [slot], v);
+			//PRINTF("validateSeq i=%d: expected=%08lX, v=%08lX\n", slot, seqNext [slot], v);
+			//PRINTF("%08lX, v=%08lX\n", seqNext [slot], v);
 			++ seqErrors;
 		}
+		++ seqTotal;
 	}
-	seqNext [slot] = v + 1;
+	seqNext [slot] = v + 2;
 }
 // Обработка полученного от DMA буфера с выборками или квадратурами (или двухканальный приём).
 // Вызывается на ARM_REALTIME_PRIORITY уровне.
@@ -5406,6 +5418,11 @@ void RAMFUNC dsp_extbuffer32rx(const int32_t * buff)
 			uint_fast8_t slot;
 			for (slot = 0; slot < DMABUFSTEP32RX; ++ slot)
 				validateSeq(slot, buff [i + slot]);
+		}
+		else if (0)
+		{
+			uint_fast8_t slot = DMABUF32RTS0I;	// slot 4
+			validateSeq(slot, buff [i + slot]);
 		}
 
 	#if ! WITHTRANSPARENTIQ
@@ -5954,6 +5971,7 @@ trxparam_update(void)
 void dsp_initialize(void)
 {
 	debug_printf_P(PSTR("dsp_initialize start.\n"));
+	PRINTF("DMABUFFSIZE32RX=%d, DMABUFSTEP32RX=%d\n", (int) DMABUFFSIZE32RX, (int) DMABUFSTEP32RX);
 
 	//FFT_initialize();
 #if (WITHRTS96 || WITHRTS192) && ! WITHTRANSPARENTIQ
