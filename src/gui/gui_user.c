@@ -62,15 +62,16 @@ static window_t windows[] = {
 	{ WINDOW_TX_VOX_SETT, 	 WINDOW_TX_SETTINGS, 	ALIGN_CENTER_X, 0, 0, 0, 0, "VOX settings", 	 	 NON_VISIBLE, 0, window_tx_vox_process, },
 	{ WINDOW_TX_POWER, 		 WINDOW_TX_SETTINGS, 	ALIGN_CENTER_X, 0, 0, 0, 0, "TX power", 	 	 	 NON_VISIBLE, 0, window_tx_power_process, },
 };
-enum { windows_count = ARRAY_SIZE(windows) };
 
 static uint_fast8_t swr_scan_enable = 0;		// флаг разрешения сканирования КСВ
-static uint_fast8_t swr_scan_stop = 0;
-static uint_fast8_t * y_vals;					// массив КСВ
+static uint_fast8_t swr_scan_stop = 0;			// флаг нажатия кнопки Stop во время сканирования
+static uint_fast8_t * y_vals;					// массив КСВ в виде отсчетов по оси Y графика
+
 static editfreq_t editfreq;
 static enc2_menu_t * gui_enc2_menu;
 static enc2_t encoder2 = { 0, 0, 0, 0, 1, 1, };
 static menu_by_name_t menu_uif;
+
 static menu_t menu[MENU_COUNT];
 static uint_fast8_t menu_label_touched = 0;
 static uint_fast8_t menu_level;
@@ -682,7 +683,6 @@ static void window_agc_process(void)
 		uint_fast16_t x = 0, y = 0, xmax = 0, ymax = 0;
 		uint_fast8_t interval = 6, col1_int = 20, row1_int = window_title_height + 20, row_count = 4;
 		win->first_call = 0;
-		button_t * bh = NULL;
 
 		button_t buttons [] = {
 		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_trackable, parent,   	visible,      payload,	 name, 		text
@@ -766,9 +766,9 @@ static void window_freq_process (void)
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
 		label_t labels[] = {
-		//    x, y,  parent,     		state, is_trackable, visible,   name,       		Text, font_size, 	color, 			onClickHandler
+		//    x, y,  parent, state, is_trackable, visible, name, Text, font_size, 	color, onClickHandler
 			{ },
-			{ 0, 0,	WINDOW_FREQ, 			DISABLED,  0, NON_VISIBLE, "lbl_freq_val",  		"", FONT_LARGE, COLORMAIN_WHITE, },
+			{ 0, 0,	WINDOW_FREQ, DISABLED, 0, NON_VISIBLE, "lbl_freq_val", "", FONT_LARGE, COLORMAIN_WHITE, },
 		};
 		win->lh_count = ARRAY_SIZE(labels);
 		uint_fast16_t labels_size = sizeof(labels);
@@ -824,7 +824,7 @@ static void window_freq_process (void)
 		}
 
 		lbl_freq->color = COLORMAIN_WHITE;
-		char buf[TEXT_ARRAY_SIZE];
+
 		switch (editfreq.key)
 		{
 		case BUTTON_CODE_BK:
@@ -857,8 +857,8 @@ static void window_freq_process (void)
 			}
 		}
 		editfreq.key = BUTTON_CODE_DONE;
-		local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("%6d k"), editfreq.val);
-		strcpy(lbl_freq->text, buf);
+
+		local_snprintf_P(lbl_freq->text, ARRAY_SIZE(lbl_freq->text), PSTR("%6d k"), editfreq.val);
 	}
 }
 
