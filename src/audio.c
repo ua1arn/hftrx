@@ -5366,6 +5366,7 @@ static int32_t seqNext [DMABUFSTEP32RX];
 static uint_fast8_t  seqValid [DMABUFSTEP32RX];
 static long int seqErrors;
 static long int seqTotal;
+static long int seqRun;
 static int seqDone;
 
 static void validateSeq(uint_fast8_t slot, int32_t v)
@@ -5376,7 +5377,7 @@ static void validateSeq(uint_fast8_t slot, int32_t v)
 		return;
 	if (seqTotal >= ((DMABUFFSIZE32RX / DMABUFSTEP32RX) * 10000L))
 	{
-		PRINTF("seqErrors=%ld, seqTotal=%ld\n", seqErrors, seqTotal);
+		PRINTF("seqErrors=%ld, seqTotal=%ld, seqRun=%ld\n", seqErrors, seqTotal, seqRun);
 		seqDone = 1;
 		return;
 	}
@@ -5391,6 +5392,11 @@ static void validateSeq(uint_fast8_t slot, int32_t v)
 			//PRINTF("validateSeq i=%d: expected=%08lX, v=%08lX\n", slot, seqNext [slot], v);
 			//PRINTF("%08lX, v=%08lX\n", seqNext [slot], v);
 			++ seqErrors;
+			seqRun = 0;
+		}
+		else
+		{
+			++ seqRun;
 		}
 		++ seqTotal;
 	}
