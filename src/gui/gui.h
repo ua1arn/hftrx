@@ -4,19 +4,6 @@
 #include "hardware.h"
 #include "../display/display.h"
 
-#define GUI_WINDOWBGCOLOR		2
-#define GUI_SLIDERLAYOUTCOLOR	100
-#define GUI_MENUSELECTCOLOR		109
-
-#define GUI_TRANSPARENT_WINDOWS		1		/* Прозрачный фон окон */
-//#define GUI_OLDBUTTONSTYLE			1   	/* Кнопки без закругления углов */
-
-#if defined (GUI_OLDBUTTONSTYLE)
-#define GUI_DEFAULTCOLOR		COLORMAIN_BLACK
-#else
-#define GUI_DEFAULTCOLOR		255
-#endif
-
 typedef struct {
 	char name[20];
 	uint_fast8_t index;
@@ -42,8 +29,5 @@ void gui_put_keyb_code(uint_fast8_t kbch);
 void gui_uif_editmenu(const char * name, uint_fast16_t menupos, uint_fast8_t exitkey);
 void gui_open_sys_menu(void);
 void gui_timer_update (void * arg);
-
-#define GUIMINX	800		// минимальное разрешение для touch GUI
-#define GUIMINY	480
 
 #endif /* GUI_H_INCLUDED */

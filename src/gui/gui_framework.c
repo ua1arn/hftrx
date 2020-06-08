@@ -37,6 +37,7 @@
 
 #include "src/gui/gui.h"
 #include "src/gui/gui_structs.h"
+#include "src/gui/gui_settings.h"
 
 #if WITHTOUCHGUI
 

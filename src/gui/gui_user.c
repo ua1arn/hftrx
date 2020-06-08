@@ -15,14 +15,16 @@
 
 #include <string.h>
 #include <math.h>
-#include "src/gui/gui.h"
-#include "src/gui/gui_system.h"
-#include "src/gui/gui_structs.h"
 
 #include "keyboard.h"
 #include "src/codecs/nau8822.h"
 
 #if WITHTOUCHGUI
+
+#include "src/gui/gui.h"
+#include "src/gui/gui_system.h"
+#include "src/gui/gui_structs.h"
+#include "src/gui/gui_settings.h"
 
 static void gui_main_process(void);
 static void window_mode_process(void);

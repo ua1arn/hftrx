@@ -3,20 +3,9 @@
 
 #include "hardware.h"
 
-#ifndef WITHGUIMAXX
-#define WITHGUIMAXX		DIM_X
-#endif
-
-#ifndef WITHGUIMAXY
-#define WITHGUIMAXY		DIM_Y
-#endif
-
 #if WITHTOUCHGUI
 
-enum {
-	button_round_radius = 5,
-	window_title_height = 26,
-};
+#include "src/gui/gui_settings.h"
 
 typedef enum {
 	TYPE_DUMMY,
@@ -43,30 +32,9 @@ enum {
 	BUTTON_CODE_DONE = 99
 };
 
-enum {								// button_handler.visible & windowpip.is_show
+enum {
 	NON_VISIBLE,					// parent window закрыто, кнопка не отрисовывается
 	VISIBLE							// parent window на экране, кнопка отрисовывается
-};
-
-enum {								// button_handler.parent & windowpip.window_id
-	WINDOW_MAIN,					// постоянно отображаемые кнопки внизу экрана
-	WINDOW_MODES,					// переключение режимов работы, видов модуляции
-	WINDOW_BP,						// регулировка полосы пропускания фильтров выбранного режима
-	WINDOW_AGC,						// выбор пресетов настроек АРУ для текущего режима модуляции
-	WINDOW_FREQ,
-	WINDOW_MENU,
-	WINDOW_ENC2,
-	WINDOW_UIF,
-	WINDOW_SWR_SCANNER,
-	WINDOW_AUDIOSETTINGS,			// настройки аудиопараметров
-	WINDOW_AP_MIC_EQ,				// эквалайзер микрофона
-	WINDOW_AP_REVERB_SETT,			// параметры ревербератора
-	WINDOW_AP_MIC_SETT,				// настройки микрофона
-	WINDOW_AP_MIC_PROF,				// профили микрофона
-	WINDOW_TX_SETTINGS,				// настройки, относящиеся к режиму передачи
-	WINDOW_TX_VOX_SETT,				// настройки VOX
-	WINDOW_TX_POWER,					// выходная мощность
-	WINDOWS_COUNT
 };
 
 enum {
@@ -126,12 +94,6 @@ typedef enum  {
 	ORIENTATION_VERTICAL,
 	ORIENTATION_HORIZONTAL
 } orientation_t;
-
-enum {
-	sliders_width = 8,		// ширина шкалы
-	sliders_w = 12,			// размеры ползунка
-	sliders_h = 18			// от центра (*2)
-};
 
 typedef struct {
 	uint16_t x;
