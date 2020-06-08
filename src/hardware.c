@@ -7132,8 +7132,12 @@ void RAMFUNC_NONILINE local_delay_us(int timeUS)
 		const int top = timeUS * 11000 / (CPU_FREQ / 1000000);
 	#elif CPUSTYLE_R7S721
 		const int top = timeUS * 13800 / (CPU_FREQ / 1000000);
+	#elif CPUSTYLE_STM32MP1 && CPU_FREQ <= 650000000uL
+		// калибровано для 650 МГц процессора
+		//const unsigned long top = timeUS * 52500 / (CPU_FREQ / 1000000);
 	#elif CPUSTYLE_STM32MP1
-		const int top = timeUS * 52500 / (CPU_FREQ / 1000000);
+		// калибровано для 800 МГц процессора
+		const unsigned long top = timeUS * 72500 / (CPU_FREQ / 1000000);
 	#elif CPUSTYPE_TMS320F2833X && 1 // RAM code
 		const unsigned long top = timeUS * 760UL / (CPU_FREQ / 1000000);	// tested @ 100 MHz Execute from RAM
 		//const unsigned long top = timeUS * 1600UL / (CPU_FREQ / 1000000);	// tested @ 150 MHz Execute from RAM
@@ -9732,7 +9736,26 @@ void stm32mp1_pll_initialize(void)
 	// переключение на HSI на всякий случай перед программированием PLL
 	// HSI ON
 	RCC->OCENSETR = RCC_OCENSETR_HSION;
+	(void) RCC->OCENSETR;
 	while ((RCC->OCRDYR & RCC_OCRDYR_HSIRDY) == 0)
+		;
+
+	// Wait for HSI ready
+	while ((RCC->OCRDYR & RCC_OCRDYR_HSIRDY_Msk) == 0)
+		;
+
+	// HSIDIV
+	//	0x0: Division by 1, hsi_ck (hsi_ker_ck) = 64 MHz (default after reset)
+	//	0x1: Division by 2, hsi_ck (hsi_ker_ck) = 32 MHz
+	//	0x2: Division by 4, hsi_ck (hsi_ker_ck) = 16 MHz
+	//	0x3: Division by 8, hsi_ck (hsi_ker_ck) = 8 MHz
+	RCC->HSICFGR = (RCC->HSICFGR & ! (RCC_HSICFGR_HSIDIV_Msk)) |
+		(0uL << RCC_HSICFGR_HSIDIV_Pos) |
+		0;
+	(void) RCC->HSICFGR;
+
+	// Wait for HSI DIVIDER ready
+	while ((RCC->OCRDYR & RCC_OCRDYR_HSIDIVRDY_Msk) == 0)
 		;
 
 	//0x0: HSI selected as AXI sub-system clock (hsi_ck) (default after reset)
@@ -9883,6 +9906,10 @@ void stm32mp1_pll_initialize(void)
 	(void) RCC->PLL2CR;
 
 	// AXI, AHB5 and AHB6 clock divider
+	//	0x0: axiss_ck (default after reset)
+	//	0x1: axiss_ck / 2
+	//	0x2: axiss_ck / 3
+	//	others: axiss_ck / 4
 	RCC->AXIDIVR = (RCC->AXIDIVR & ~ (RCC_AXIDIVR_AXIDIV_Msk)) |
 		((0x01 - 1) << RCC_AXIDIVR_AXIDIV_Pos) |	// div1 (no divide)
 		0;
@@ -9942,12 +9969,13 @@ void stm32mp1_pll_initialize(void)
 	while((RCC->APB5DIVR & RCC_APB5DIVR_APB5DIVRDY_Msk) == 0)
 		;
 
+	// Значения 0x02 и 0x03 проверены - 0x03 действительно ниже тактовая
 	//	0x0: HSI selected as MPU sub-system clock (hsi_ck) (default after reset)
 	//	0x1: HSE selected as MPU sub-system clock (hse_ck)
 	//	0x2: PLL1 selected as MPU sub-system clock (pll1_p_ck)
 	//	0x3: PLL1 via MPUDIV is selected as MPU sub-system clock (pll1_p_ck / 2 MPUDIV).
 	RCC->MPCKSELR = (RCC->MPCKSELR & ~ (RCC_MPCKSELR_MPUSRC_Msk)) |
-		(0x02 << RCC_MPCKSELR_MPUSRC_Pos) |	// PLL1
+		(0x02uL << RCC_MPCKSELR_MPUSRC_Pos) |	// PLL1
 		0;
 	while((RCC->MPCKSELR & RCC_MPCKSELR_MPUSRCRDY_Msk) == 0)
 		;
@@ -10191,7 +10219,7 @@ void IRQ_Handler(void)
 {
 	//dbg_putchar('/');
 	const IRQn_ID_t irqn = IRQ_GetActiveIRQ();
-	static const char hex [16] = "0123456789ABCDEF";
+	//static const char hex [16] = "0123456789ABCDEF";
 	//dbg_putchar(hex [(irqn >> 8) & 0x0F]);
 	//dbg_putchar(hex [(irqn >> 4) & 0x0F]);
 	//dbg_putchar(hex [(irqn >> 0) & 0x0F]);
@@ -11761,11 +11789,7 @@ sysinit_vbar_initialize(void)
 {
 #if (__CORTEX_A != 0)
 
-	extern unsigned long __etext, __bss_start__, __bss_end__, __data_end__, __data_start__, __stack, __Vectors;
-
-	//debug_printf_P(PSTR("cpu_initialize1: CP15=%08lX, __data_start__=%p\n"), __get_SCTLR(), & __data_start__);
-	//debug_printf_P(PSTR("__etext=%p, __bss_start__=%p, __bss_end__=%p, __data_start__=%p, __data_end__=%p\n"), & __etext, & __bss_start__, & __bss_end__, & __data_start__, & __data_end__);
-	//debug_printf_P(PSTR("__stack=%p, SystemInit=%p, __Vectors=%p\n"), & __stack, SystemInit, & __Vectors);
+	extern unsigned long __Vectors;
 
 	const uintptr_t vbase = (uintptr_t) & __Vectors;
 	__set_VBAR(vbase);	 // Set Vector Base Address Register (bits 4..0 should be zero)
@@ -12183,6 +12207,12 @@ void cpu_initialize(void)
 //	PRINTF("TTB_PARA_STRGLY=%08lX (0x00DE2)\n", (unsigned long) TTB_PARA_STRGLY);
 //	PRINTF("TTB_PARA_NORMAL_CACHE=%08lX (0x01DEEuL)\n", (unsigned long) TTB_PARA_NORMAL_CACHE);
 //	PRINTF("TTB_PARA_NORMAL_NOT_CACHE=%08lX (0x01DE2uL)\n", (unsigned long) TTB_PARA_NORMAL_NOT_CACHE);
+
+	extern unsigned long __etext, __bss_start__, __bss_end__, __data_end__, __data_start__, __stack, __Vectors;
+
+	debug_printf_P(PSTR("cpu_initialize1: CP15=%08lX, __data_start__=%p\n"), __get_SCTLR(), & __data_start__);
+	debug_printf_P(PSTR("__etext=%p, __bss_start__=%p, __bss_end__=%p, __data_start__=%p, __data_end__=%p\n"), & __etext, & __bss_start__, & __bss_end__, & __data_start__, & __data_end__);
+	debug_printf_P(PSTR("__stack=%p, SystemInit=%p, __Vectors=%p\n"), & __stack, SystemInit, & __Vectors);
 
 	//PRINTF("cpu_initialize\n");
 #if CPUSTYLE_STM32F1XX
