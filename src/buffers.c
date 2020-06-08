@@ -327,7 +327,7 @@ static RAMDTCM LIST_ENTRY msgsready8;		// Заполненные - готовы�
 #if WITHBUFFERSDEBUG
 
 static volatile unsigned n1, n1wfm, n2, n3, n4, n5, n6;
-static volatile unsigned e1, e2, e3, e4, e5, e6, e7;
+static volatile unsigned e1, e2, e3, e4, e5, e6, e7, purge16;
 static volatile unsigned nbadd, nbdel, nbzero;
 
 static volatile unsigned debugcount_ms10;	// с точностью 0.1 ms
@@ -408,7 +408,7 @@ void buffers_diagnostics(void)
 
 #if 1 && WITHDEBUG && WITHINTEGRATEDDSP && WITHBUFFERSDEBUG
 	debug_printf_P(PSTR("n1=%u n1wfm=%u n2=%u n3=%u n4=%u n5=%u n6=%u\n"), n1, n1wfm, n2, n3, n4, n5, n6);
-	debug_printf_P(PSTR("e1=%u e2=%u e3=%u e4=%u e5=%u e6=%u e7=%u uacinalt=%d\n"), e1, e2, e3, e4, e5, e6, e7, uacinalt);
+	debug_printf_P(PSTR("e1=%u e2=%u e3=%u e4=%u e5=%u e6=%u e7=%u uacinalt=%d, purge16=%u\n"), e1, e2, e3, e4, e5, e6, e7, uacinalt, purge16);
 
 	{
 		const unsigned ms10 = getresetval(& debugcount_ms10);
@@ -609,7 +609,7 @@ void buffers_initialize(void)
 		/* буферы требуются для ресэмплера */
 		static ALIGNX_BEGIN RAM_D2 voice16_t voicesarray16 [228] ALIGNX_END;
 	#else /* WITHUSBUAC */
-		static ALIGNX_BEGIN RAM_D2 voice16_t voicesarray16 [32] ALIGNX_END;
+		static ALIGNX_BEGIN RAM_D2 voice16_t voicesarray16 [96] ALIGNX_END;
 	#endif /* WITHUSBUAC */
 
 	#if WITHUSBUACOUT
@@ -838,7 +838,6 @@ void placesemsgbuffer_low(uint_fast8_t type, uint8_t * dest)
 	UNLOCK(& locklist8);
 }
 
-
 #if WITHINTEGRATEDDSP
 
 // Оставить в указанной очереди не более PHONESLEVEL буферов
@@ -851,6 +850,9 @@ static void buffers_purge16(LIST_ENTRY2 * list)
 		{
 			const PLIST_ENTRY t = RemoveTailList2(list);
 			InsertHeadList2(& voicesfree16, t);
+	#if WITHBUFFERSDEBUG
+		++ purge16;
+	#endif /* WITHBUFFERSDEBUG */
 		}
 		while (GetCountList2(list) > PHONESLEVEL);
 	}
