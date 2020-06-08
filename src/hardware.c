@@ -7111,45 +7111,45 @@ void hardware_sdhost_initialize(void)
 void RAMFUNC_NONILINE local_delay_us(int timeUS)
 {
 	#if CPUSTYLE_AT91SAM7S
-		const int top = timeUS * 175 / (CPU_FREQ / 1000000);
+		const unsigned long top = timeUS * 175uL / (CPU_FREQ / 1000000);
 	#elif CPUSTYLE_ATSAM3S
-		const int top = timeUS * 270 / (CPU_FREQ / 1000000);
+		const unsigned long top = timeUS * 270uL / (CPU_FREQ / 1000000);
 	#elif CPUSTYLE_ATSAM4S
-		const int top = timeUS * 270 / (CPU_FREQ / 1000000);
+		const unsigned long top = timeUS * 270uL / (CPU_FREQ / 1000000);
 	#elif CPUSTYLE_STM32F0XX
-		const int top = timeUS * 190 / (CPU_FREQ / 1000000);
+		const unsigned long top = timeUS * 190uL / (CPU_FREQ / 1000000);
 	#elif CPUSTYLE_STM32L0XX
-		const int top = timeUS * 20 / (CPU_FREQ / 1000000);
+		const unsigned long top = timeUS * 20uL / (CPU_FREQ / 1000000);
 	#elif CPUSTYLE_STM32F1XX
-		const int top = timeUS * 345 / (CPU_FREQ / 1000000);
+		const unsigned long top = timeUS * 345uL / (CPU_FREQ / 1000000);
 	#elif CPUSTYLE_STM32F30X
-		const int top = timeUS * 430 / (CPU_FREQ / 1000000);
+		const unsigned long top = timeUS * 430uL / (CPU_FREQ / 1000000);
 	#elif CPUSTYLE_STM32F4XX
-		const int top = timeUS * 3800 / (CPU_FREQ / 1000000);
+		const unsigned long top = timeUS * 3800uL / (CPU_FREQ / 1000000);
 	#elif CPUSTYLE_STM32F7XX
-		const int top = timeUS * 6150 / (CPU_FREQ / 1000000);
+		const unsigned long top = timeUS * 6150uL / (CPU_FREQ / 1000000);
 	#elif CPUSTYLE_STM32H7XX
-		const int top = timeUS * 11000 / (CPU_FREQ / 1000000);
+		const unsigned long top = timeUS * 11000uL / (CPU_FREQ / 1000000);
 	#elif CPUSTYLE_R7S721
-		const int top = timeUS * 13800 / (CPU_FREQ / 1000000);
+		const unsigned long top = timeUS * 13800uL / (CPU_FREQ / 1000000);
 	#elif CPUSTYLE_STM32MP1 && CPU_FREQ <= 650000000uL
 		// калибровано для 650 МГц процессора
-		//const unsigned long top = timeUS * 52500 / (CPU_FREQ / 1000000);
+		//const unsigned long top = timeUS * 52500uL / (CPU_FREQ / 1000000);
 	#elif CPUSTYLE_STM32MP1
 		// калибровано для 800 МГц процессора
-		const unsigned long top = timeUS * 72500 / (CPU_FREQ / 1000000);
+		const unsigned long top = timeUS * 72500uL / (CPU_FREQ / 1000000);
 	#elif CPUSTYPE_TMS320F2833X && 1 // RAM code
-		const unsigned long top = timeUS * 760UL / (CPU_FREQ / 1000000);	// tested @ 100 MHz Execute from RAM
+		const unsigned long top = timeUS * 760uL / (CPU_FREQ / 1000000);	// tested @ 100 MHz Execute from RAM
 		//const unsigned long top = timeUS * 1600UL / (CPU_FREQ / 1000000);	// tested @ 150 MHz Execute from RAM
 	#elif CPUSTYPE_TMS320F2833X	&& 0	// FLASH code
-		const unsigned long top = timeUS * 480UL / (CPU_FREQ / 1000000);	// Execute from RAM
+		const unsigned long top = timeUS * 480uL / (CPU_FREQ / 1000000);	// Execute from RAM
 
 	#else
 		#error TODO: calibrate local_delay_us constant
-		const int top = timeUS * 175 / (CPU_FREQ / 1000000);
+		const unsigned long top = timeUS * 175uL / (CPU_FREQ / 1000000);
 	#endif
 	//
-	volatile int n;
+	volatile unsigned long n;
 	for (n = 0; n < top; ++ n)
 	{
 	}
@@ -9855,12 +9855,14 @@ void stm32mp1_pll_initialize(void)
 		((PLL1DIVM - 1) << RCC_PLL1CFGR1_DIVM1_Pos) |
 		((PLL1DIVN - 1) << RCC_PLL1CFGR1_DIVN_Pos) |
 		0;
+	(void) RCC->PLL1CFGR1;
 
 	RCC->PLL1CFGR2 = (RCC->PLL1CFGR2 & ~ (RCC_PLL1CFGR2_DIVP_Msk | RCC_PLL1CFGR2_DIVQ_Msk | RCC_PLL1CFGR2_DIVR_Msk)) |
 		((PLL1DIVP - 1) << RCC_PLL1CFGR2_DIVP_Pos) |
 		((PLL1DIVQ - 1) << RCC_PLL1CFGR2_DIVQ_Pos) |
 		((PLL1DIVR - 1) << RCC_PLL1CFGR2_DIVR_Pos) |
 		0;
+	(void) RCC->PLL1CFGR2;
 
 	RCC->PLL1CR |= RCC_PLL1CR_PLLON_Msk;
 	while ((RCC->PLL1CR & RCC_PLL1CR_PLL1RDY_Msk) == 0)
@@ -9880,12 +9882,14 @@ void stm32mp1_pll_initialize(void)
 		((PLL2DIVN - 1) << RCC_PLL2CFGR1_DIVN_Pos) |
 		((PLL2DIVM - 1) << RCC_PLL2CFGR1_DIVM2_Pos) |
 		0;
+	(void) RCC->PLL2CFGR1;
 
 	RCC->PLL2CFGR2 = (RCC->PLL2CFGR2 & ~ (RCC_PLL2CFGR2_DIVP_Msk | RCC_PLL2CFGR2_DIVQ_Msk | RCC_PLL2CFGR2_DIVR_Msk)) |
 		((PLL2DIVP - 1) << RCC_PLL2CFGR2_DIVP_Pos) |	// pll2_p_ck - AXI clock (1..128 -> 0x00..0x7f)
 		((PLL2DIVQ - 1) << RCC_PLL2CFGR2_DIVQ_Pos) |	// GPU clock (1..128 -> 0x00..0x7f)
 		((PLL2DIVR - 1) << RCC_PLL2CFGR2_DIVR_Pos) |	// DDR clock (1..128 -> 0x00..0x7f)
 		0;
+	(void) RCC->PLL2CFGR2;
 
 	RCC->PLL2CR |= RCC_PLL2CR_PLLON_Msk;
 	while ((RCC->PLL2CR & RCC_PLL2CR_PLL2RDY_Msk) == 0)
@@ -10123,6 +10127,7 @@ void stm32mp1_pll_initialize(void)
 		((PLL4DIVN - 1) << RCC_PLL4CFGR1_DIVN_Pos) |
 		((PLL4DIVM - 1) << RCC_PLL4CFGR1_DIVM4_Pos) |
 		0;
+	(void) RCC->PLL4CFGR1;
 
 	//const uint32_t pll4divq = calcdivround2(PLL4_FREQ, display_getdotclock());
 	RCC->PLL4CFGR2 = (RCC->PLL4CFGR2 & ~ (RCC_PLL4CFGR2_DIVP_Msk | /* RCC_PLL4CFGR2_DIVQ_Msk | */ RCC_PLL4CFGR2_DIVR_Msk)) |
@@ -10130,6 +10135,7 @@ void stm32mp1_pll_initialize(void)
 		//((pll4divq - 1) << RCC_PLL4CFGR2_DIVQ_Pos) |	// LTDC clock (1..128 -> 0x00..0x7f)
 		((PLL4DIVR - 1) << RCC_PLL4CFGR2_DIVR_Pos) |	// USBPHY clock (1..128 -> 0x00..0x7f)
 		0;
+	(void) RCC->PLL4CFGR2;
 
 	RCC->PLL4CR |= RCC_PLL4CR_PLLON_Msk;
 	while ((RCC->PLL4CR & RCC_PLL4CR_PLL4RDY_Msk) == 0)
