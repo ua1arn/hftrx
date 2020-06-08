@@ -35,7 +35,7 @@ OBJDIR = ./$(OBJDIR2)
 OPT = -Ofast
 LTO = -flto
 
-CORE = -mcpu=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4-d16 -ftree-vectorize
+CORE = -mcpu=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4-d16
 #CORE = -mfloat-abi=hard -mfpu=vfpv4-d16
 #CORE += -mcpu=cortex-a7
 #CORE += -mfpu=neon
@@ -122,7 +122,7 @@ OBJS 	+= $(patsubst $(SRCDIR)/%.c,$(OBJDIR)/%.o,$(CSRC))
 OBJS 	+= $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(CPPSRC))
 LIBS    = $(DLIBS) $(ULIBS)
 
-MCFLAGS = $(CORE) -fno-math-errno -funroll-loops
+MCFLAGS = $(CORE) -fno-math-errno -funroll-loops -fgraphite-identity -ffunction-sections -fdata-sections -ffat-lto-objects -ftree-vectorize
 #
 #ASFLAGS = $(MCFLAGS) $(OPT) $(LTO) -g -gdwarf-2 -Wa,-amhls=$(<:.s=.lst) $(ADEFS)
 ASFLAGS = $(MCFLAGS) $(OPT) $(LTO) -g -gdwarf-2 $(ADEFS)

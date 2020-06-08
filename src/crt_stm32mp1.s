@@ -52,17 +52,17 @@
    ARM_MODE_SYS   = 0x1F      /* System Running in Priviledged Operating Mode */
    ARM_MODE_MASK  = 0x1F
    
-/* Standard definitions of mode bits and interrupt (I & F) flags in PSRs */
-   I_BIT          = 0x80      /* disable IRQ when I bit is set */
-   F_BIT          = 0x40      /* disable FIQ when I bit is set */
+	/* Standard definitions of mode bits and interrupt (I & F) flags in PSRs */
+	I_BIT          = 0x80      /* disable IRQ when I bit is set */
+	F_BIT          = 0x40      /* disable FIQ when I bit is set */
  
-	 STACKSIZEUND = 4096
-	 STACKSIZEABT = 4096
-	 STACKSIZEFIQ = 4096
-	 STACKSIZEIRQ = 4096
-	 STACKSIZESVC = 4096
-	 STACKSIZEHYP = 4096
-	 STACKSIZEMON = 4096
+	 STACKSIZEUND = 256
+	 STACKSIZEABT = 256
+	 STACKSIZEFIQ = 256
+	 STACKSIZEIRQ = 16384
+	 STACKSIZESVC = 256
+	 STACKSIZEHYP = 256
+	 STACKSIZEMON = 256
   
 	.global __Vectors
 	.section .vectors,"ax"
@@ -148,7 +148,7 @@ gotosleep:
    mov   lr, #0
 #endif
    msr   CPSR_c, #ARM_MODE_SYS     /* 0x1F Priviledged Operating Mode */
-   ldr   sp, =__stack	/* __stack_syc_end */
+   ldr   sp, =__stack	/* __stack_sys_end */
    mov   lr, #0
 
 #if 0
@@ -314,7 +314,7 @@ ExitFunction:
 /****************************************************************************/
 /*                         Default interrupt handler                        */
 /****************************************************************************/
-   .section .text
+	.section .itcm
    .code 32
 
 	.align 4, 0
@@ -409,7 +409,7 @@ IRQHandlerNotNested:
 		.endfunc
 
 
-	.bss
+	.section .dtcm
 	.align 8
 	.space	STACKSIZEUND
 __stack_und_end = .
