@@ -38,7 +38,7 @@ LTO = -flto
 CORE = -mcpu=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4-d16
 #CORE = -mfloat-abi=hard -mfpu=vfpv4-d16
 #CORE += -mcpu=cortex-a7
-#CORE += -mfpu=neon
+CORE += -mfpu=neon
 
 # List all default C defines here, like -D_DEBUG=1
 DDEFS = 

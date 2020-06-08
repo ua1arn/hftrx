@@ -399,7 +399,7 @@ extern "C" {
 	#define ALIGNX_END /* nothing */
 
 	#if __ARM_NEON
-		#define ARM_MATH_NEON 1
+		//#define ARM_MATH_NEON 1
 	#endif /* __ARM_NEON */
 
 	#define ARM_MATH_LOOPUNROLL 1
@@ -429,8 +429,9 @@ extern "C" {
 	#define ALIGNX_END /* nothing */
 
 	#if __ARM_NEON
-		#define ARM_MATH_NEON 1
+		//#define ARM_MATH_NEON 1
 	#endif /* __ARM_NEON */
+	#define ARM_MATH_LOOPUNROLL 1
 
 	#include "arm_math.h"
 	#include "arm_const_structs.h"
