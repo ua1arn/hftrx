@@ -44,8 +44,8 @@ static void hardware_dummy_enable(void)
 static uintptr_t 
 dma_invalidate16rx(uintptr_t addr)
 {
-	//arm_hardware_invalidate(addr, DMABUFFSIZE16 * sizeof (aubufv_t));
-	arm_hardware_flush_invalidate(addr, DMABUFFSIZE16 * sizeof (aubufv_t) + ADDPAD);
+	arm_hardware_invalidate(addr, DMABUFFSIZE16 * sizeof (aubufv_t));
+	//arm_hardware_flush_invalidate(addr, DMABUFFSIZE16 * sizeof (aubufv_t) + ADDPAD);
 	return addr;
 }
 
@@ -54,7 +54,7 @@ dma_invalidate16rx(uintptr_t addr)
 static uintptr_t 
 dma_flush16tx(uintptr_t addr)
 {
-	arm_hardware_flush_invalidate(addr, DMABUFFSIZE16 * sizeof (aubufv_t) + ADDPAD);
+	arm_hardware_flush(addr, DMABUFFSIZE16 * sizeof (aubufv_t));
 	return addr;
 }
 
@@ -62,8 +62,8 @@ dma_flush16tx(uintptr_t addr)
 static uintptr_t
 dma_invalidate192rts(uintptr_t addr)
 {
-	//arm_hardware_invalidate(addr, DMABUFFSIZE192RTS * sizeof (uint8_t));
-	arm_hardware_flush_invalidate(addr, DMABUFFSIZE192RTS * sizeof (uint8_t) + ADDPAD);
+	arm_hardware_invalidate(addr, DMABUFFSIZE192RTS * sizeof (uint8_t));
+	//arm_hardware_flush_invalidate(addr, DMABUFFSIZE192RTS * sizeof (uint8_t) + ADDPAD);
 	return addr;
 }
 
@@ -71,8 +71,8 @@ dma_invalidate192rts(uintptr_t addr)
 static uintptr_t 
 dma_invalidate32rx(uintptr_t addr)
 {
-	//arm_hardware_invalidate(addr, DMABUFFSIZE32RX * sizeof (uint32_t));
-	arm_hardware_flush_invalidate(addr, DMABUFFSIZE32RX * sizeof (int32_t) + ADDPAD);
+	arm_hardware_invalidate(addr, DMABUFFSIZE32RX * sizeof (int32_t));
+	//arm_hardware_flush_invalidate(addr, DMABUFFSIZE32RX * sizeof (int32_t) + ADDPAD);
 	return addr;
 }
 
@@ -80,13 +80,13 @@ dma_invalidate32rx(uintptr_t addr)
 // Потом содержимое не требуется
 static uintptr_t dma_flush32tx(uintptr_t addr)
 {
-	arm_hardware_flush_invalidate(addr, DMABUFFSIZE32TX * sizeof (int32_t) + ADDPAD);
+	arm_hardware_flush(addr, DMABUFFSIZE32TX * sizeof (int32_t));
 	return addr;
 }
 
 #if CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
 
-#define DMA_SxCR_PL_VALUE 2uL		// STM32xxx DMA Priority level - High
+#define DMA_SxCR_PL_VALUE 0uL		// STM32xxx DMA Priority level
 
 enum
 {
@@ -1400,7 +1400,7 @@ static void hardware_sai1_sai2_clock_selection(void)
 // DMA по приему SAI1 - обработчик прерывания
 // RX	SAI1_B	DMA2	Stream 5	Channel 0
 // Use arm_hardware_invalidate
-
+// SAI1_B_RX
 void RAMFUNC_NONILINE DMA2_Stream5_IRQHandler(void)
 {
 	// проверка условия может потребоваться при добавлении обработчика ошибки
