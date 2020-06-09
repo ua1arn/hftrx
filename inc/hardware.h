@@ -389,8 +389,8 @@ extern "C" {
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
 	#define	CPUSTYLE_ARM_CA9	1
 
-	#include "irq_ctrl.h"
 	#include "armcpu/Renesas_RZ_A1.h"
+	#include "irq_ctrl.h"
 
 	#include "armcpu/iodefine.h"
 	#include "rza_io_regrw.h"
@@ -422,8 +422,8 @@ extern "C" {
 	#define	CPUSTYLE_ARM_CA7	1
 
 
-	#include "irq_ctrl.h"
 	#include "armcpu/stm32mp1xx.h"
+	#include "irq_ctrl.h"
 
 	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
 	#define ALIGNX_END /* nothing */
