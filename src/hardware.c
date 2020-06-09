@@ -7111,41 +7111,45 @@ void hardware_sdhost_initialize(void)
 void RAMFUNC_NONILINE local_delay_us(int timeUS)
 {
 	#if CPUSTYLE_AT91SAM7S
-		const int top = timeUS * 175 / (CPU_FREQ / 1000000);
+		const unsigned long top = timeUS * 175uL / (CPU_FREQ / 1000000);
 	#elif CPUSTYLE_ATSAM3S
-		const int top = timeUS * 270 / (CPU_FREQ / 1000000);
+		const unsigned long top = timeUS * 270uL / (CPU_FREQ / 1000000);
 	#elif CPUSTYLE_ATSAM4S
-		const int top = timeUS * 270 / (CPU_FREQ / 1000000);
+		const unsigned long top = timeUS * 270uL / (CPU_FREQ / 1000000);
 	#elif CPUSTYLE_STM32F0XX
-		const int top = timeUS * 190 / (CPU_FREQ / 1000000);
+		const unsigned long top = timeUS * 190uL / (CPU_FREQ / 1000000);
 	#elif CPUSTYLE_STM32L0XX
-		const int top = timeUS * 20 / (CPU_FREQ / 1000000);
+		const unsigned long top = timeUS * 20uL / (CPU_FREQ / 1000000);
 	#elif CPUSTYLE_STM32F1XX
-		const int top = timeUS * 345 / (CPU_FREQ / 1000000);
+		const unsigned long top = timeUS * 345uL / (CPU_FREQ / 1000000);
 	#elif CPUSTYLE_STM32F30X
-		const int top = timeUS * 430 / (CPU_FREQ / 1000000);
+		const unsigned long top = timeUS * 430uL / (CPU_FREQ / 1000000);
 	#elif CPUSTYLE_STM32F4XX
-		const int top = timeUS * 3800 / (CPU_FREQ / 1000000);
+		const unsigned long top = timeUS * 3800uL / (CPU_FREQ / 1000000);
 	#elif CPUSTYLE_STM32F7XX
-		const int top = timeUS * 6150 / (CPU_FREQ / 1000000);
+		const unsigned long top = timeUS * 6150uL / (CPU_FREQ / 1000000);
 	#elif CPUSTYLE_STM32H7XX
-		const int top = timeUS * 11000 / (CPU_FREQ / 1000000);
+		const unsigned long top = timeUS * 11000uL / (CPU_FREQ / 1000000);
 	#elif CPUSTYLE_R7S721
-		const int top = timeUS * 13800 / (CPU_FREQ / 1000000);
+		const unsigned long top = timeUS * 13800uL / (CPU_FREQ / 1000000);
+	#elif CPUSTYLE_STM32MP1 && CPU_FREQ <= 650000000uL
+		// калибровано для 650 МГц процессора
+		//const unsigned long top = timeUS * 52500uL / (CPU_FREQ / 1000000);
 	#elif CPUSTYLE_STM32MP1
-		const int top = timeUS * 52500 / (CPU_FREQ / 1000000);
+		// калибровано для 800 МГц процессора
+		const unsigned long top = timeUS * 72500uL / (CPU_FREQ / 1000000);
 	#elif CPUSTYPE_TMS320F2833X && 1 // RAM code
-		const unsigned long top = timeUS * 760UL / (CPU_FREQ / 1000000);	// tested @ 100 MHz Execute from RAM
+		const unsigned long top = timeUS * 760uL / (CPU_FREQ / 1000000);	// tested @ 100 MHz Execute from RAM
 		//const unsigned long top = timeUS * 1600UL / (CPU_FREQ / 1000000);	// tested @ 150 MHz Execute from RAM
 	#elif CPUSTYPE_TMS320F2833X	&& 0	// FLASH code
-		const unsigned long top = timeUS * 480UL / (CPU_FREQ / 1000000);	// Execute from RAM
+		const unsigned long top = timeUS * 480uL / (CPU_FREQ / 1000000);	// Execute from RAM
 
 	#else
 		#error TODO: calibrate local_delay_us constant
-		const int top = timeUS * 175 / (CPU_FREQ / 1000000);
+		const unsigned long top = timeUS * 175uL / (CPU_FREQ / 1000000);
 	#endif
 	//
-	volatile int n;
+	volatile unsigned long n;
 	for (n = 0; n < top; ++ n)
 	{
 	}
@@ -9409,6 +9413,7 @@ lowlevel_stm32l0xx_pll_clock(void)
 
 void Undef_Handler(void)
 {
+	dbg_putchar('1');
 	debug_printf_P(PSTR("UndefHandler trapped.\n"));
 	for (;;)
 		;
@@ -9416,6 +9421,7 @@ void Undef_Handler(void)
 
 void SWI_Handler(void)
 {
+	dbg_putchar('2');
 	debug_printf_P(PSTR("SWIHandler trapped.\n"));
 	for (;;)
 		;
@@ -9424,6 +9430,7 @@ void SWI_Handler(void)
 // Prefetch Abort
 void PAbort_Handler(void)
 {
+	dbg_putchar('3');
 	debug_printf_P(PSTR("PAbortHandler trapped.\n"));
 	for (;;)
 		;
@@ -9432,6 +9439,7 @@ void PAbort_Handler(void)
 // Data Abort.
 void DAbort_Handler(void)
 {
+	dbg_putchar('4');
 	debug_printf_P(PSTR("DAbort_Handler trapped.\n"));
 	debug_printf_P(PSTR("DFSR=%08lX\n"), __get_DFSR());
 	const int WnR = (__get_DFSR() & (1uL << 11)) != 0;
@@ -9479,6 +9487,7 @@ void DAbort_Handler(void)
 
 void FIQ_Handler(void)
 {
+	dbg_putchar('5');
 	debug_printf_P(PSTR("FIQHandler trapped.\n"));
 	for (;;)
 		;
@@ -9486,6 +9495,7 @@ void FIQ_Handler(void)
 
 void Hyp_Handler(void)
 {
+	dbg_putchar('6');
 	debug_printf_P(PSTR("Hyp_Handler trapped.\n"));
 	for (;;)
 		;
@@ -9726,7 +9736,26 @@ void stm32mp1_pll_initialize(void)
 	// переключение на HSI на всякий случай перед программированием PLL
 	// HSI ON
 	RCC->OCENSETR = RCC_OCENSETR_HSION;
+	(void) RCC->OCENSETR;
 	while ((RCC->OCRDYR & RCC_OCRDYR_HSIRDY) == 0)
+		;
+
+	// Wait for HSI ready
+	while ((RCC->OCRDYR & RCC_OCRDYR_HSIRDY_Msk) == 0)
+		;
+
+	// HSIDIV
+	//	0x0: Division by 1, hsi_ck (hsi_ker_ck) = 64 MHz (default after reset)
+	//	0x1: Division by 2, hsi_ck (hsi_ker_ck) = 32 MHz
+	//	0x2: Division by 4, hsi_ck (hsi_ker_ck) = 16 MHz
+	//	0x3: Division by 8, hsi_ck (hsi_ker_ck) = 8 MHz
+	RCC->HSICFGR = (RCC->HSICFGR & ! (RCC_HSICFGR_HSIDIV_Msk)) |
+		(0uL << RCC_HSICFGR_HSIDIV_Pos) |
+		0;
+	(void) RCC->HSICFGR;
+
+	// Wait for HSI DIVIDER ready
+	while ((RCC->OCRDYR & RCC_OCRDYR_HSIDIVRDY_Msk) == 0)
 		;
 
 	//0x0: HSI selected as AXI sub-system clock (hsi_ck) (default after reset)
@@ -9826,12 +9855,14 @@ void stm32mp1_pll_initialize(void)
 		((PLL1DIVM - 1) << RCC_PLL1CFGR1_DIVM1_Pos) |
 		((PLL1DIVN - 1) << RCC_PLL1CFGR1_DIVN_Pos) |
 		0;
+	(void) RCC->PLL1CFGR1;
 
 	RCC->PLL1CFGR2 = (RCC->PLL1CFGR2 & ~ (RCC_PLL1CFGR2_DIVP_Msk | RCC_PLL1CFGR2_DIVQ_Msk | RCC_PLL1CFGR2_DIVR_Msk)) |
 		((PLL1DIVP - 1) << RCC_PLL1CFGR2_DIVP_Pos) |
 		((PLL1DIVQ - 1) << RCC_PLL1CFGR2_DIVQ_Pos) |
 		((PLL1DIVR - 1) << RCC_PLL1CFGR2_DIVR_Pos) |
 		0;
+	(void) RCC->PLL1CFGR2;
 
 	RCC->PLL1CR |= RCC_PLL1CR_PLLON_Msk;
 	while ((RCC->PLL1CR & RCC_PLL1CR_PLL1RDY_Msk) == 0)
@@ -9851,12 +9882,14 @@ void stm32mp1_pll_initialize(void)
 		((PLL2DIVN - 1) << RCC_PLL2CFGR1_DIVN_Pos) |
 		((PLL2DIVM - 1) << RCC_PLL2CFGR1_DIVM2_Pos) |
 		0;
+	(void) RCC->PLL2CFGR1;
 
 	RCC->PLL2CFGR2 = (RCC->PLL2CFGR2 & ~ (RCC_PLL2CFGR2_DIVP_Msk | RCC_PLL2CFGR2_DIVQ_Msk | RCC_PLL2CFGR2_DIVR_Msk)) |
 		((PLL2DIVP - 1) << RCC_PLL2CFGR2_DIVP_Pos) |	// pll2_p_ck - AXI clock (1..128 -> 0x00..0x7f)
 		((PLL2DIVQ - 1) << RCC_PLL2CFGR2_DIVQ_Pos) |	// GPU clock (1..128 -> 0x00..0x7f)
 		((PLL2DIVR - 1) << RCC_PLL2CFGR2_DIVR_Pos) |	// DDR clock (1..128 -> 0x00..0x7f)
 		0;
+	(void) RCC->PLL2CFGR2;
 
 	RCC->PLL2CR |= RCC_PLL2CR_PLLON_Msk;
 	while ((RCC->PLL2CR & RCC_PLL2CR_PLL2RDY_Msk) == 0)
@@ -9877,6 +9910,10 @@ void stm32mp1_pll_initialize(void)
 	(void) RCC->PLL2CR;
 
 	// AXI, AHB5 and AHB6 clock divider
+	//	0x0: axiss_ck (default after reset)
+	//	0x1: axiss_ck / 2
+	//	0x2: axiss_ck / 3
+	//	others: axiss_ck / 4
 	RCC->AXIDIVR = (RCC->AXIDIVR & ~ (RCC_AXIDIVR_AXIDIV_Msk)) |
 		((0x01 - 1) << RCC_AXIDIVR_AXIDIV_Pos) |	// div1 (no divide)
 		0;
@@ -9936,12 +9973,13 @@ void stm32mp1_pll_initialize(void)
 	while((RCC->APB5DIVR & RCC_APB5DIVR_APB5DIVRDY_Msk) == 0)
 		;
 
+	// Значения 0x02 и 0x03 проверены - 0x03 действительно ниже тактовая
 	//	0x0: HSI selected as MPU sub-system clock (hsi_ck) (default after reset)
 	//	0x1: HSE selected as MPU sub-system clock (hse_ck)
 	//	0x2: PLL1 selected as MPU sub-system clock (pll1_p_ck)
 	//	0x3: PLL1 via MPUDIV is selected as MPU sub-system clock (pll1_p_ck / 2 MPUDIV).
 	RCC->MPCKSELR = (RCC->MPCKSELR & ~ (RCC_MPCKSELR_MPUSRC_Msk)) |
-		(0x02 << RCC_MPCKSELR_MPUSRC_Pos) |	// PLL1
+		(0x02uL << RCC_MPCKSELR_MPUSRC_Pos) |	// PLL1
 		0;
 	while((RCC->MPCKSELR & RCC_MPCKSELR_MPUSRCRDY_Msk) == 0)
 		;
@@ -10089,6 +10127,7 @@ void stm32mp1_pll_initialize(void)
 		((PLL4DIVN - 1) << RCC_PLL4CFGR1_DIVN_Pos) |
 		((PLL4DIVM - 1) << RCC_PLL4CFGR1_DIVM4_Pos) |
 		0;
+	(void) RCC->PLL4CFGR1;
 
 	//const uint32_t pll4divq = calcdivround2(PLL4_FREQ, display_getdotclock());
 	RCC->PLL4CFGR2 = (RCC->PLL4CFGR2 & ~ (RCC_PLL4CFGR2_DIVP_Msk | /* RCC_PLL4CFGR2_DIVQ_Msk | */ RCC_PLL4CFGR2_DIVR_Msk)) |
@@ -10096,6 +10135,7 @@ void stm32mp1_pll_initialize(void)
 		//((pll4divq - 1) << RCC_PLL4CFGR2_DIVQ_Pos) |	// LTDC clock (1..128 -> 0x00..0x7f)
 		((PLL4DIVR - 1) << RCC_PLL4CFGR2_DIVR_Pos) |	// USBPHY clock (1..128 -> 0x00..0x7f)
 		0;
+	(void) RCC->PLL4CFGR2;
 
 	RCC->PLL4CR |= RCC_PLL4CR_PLLON_Msk;
 	while ((RCC->PLL4CR & RCC_PLL4CR_PLL4RDY_Msk) == 0)
@@ -10185,7 +10225,7 @@ void IRQ_Handler(void)
 {
 	//dbg_putchar('/');
 	const IRQn_ID_t irqn = IRQ_GetActiveIRQ();
-	static const char hex [16] = "0123456789ABCDEF";
+	//static const char hex [16] = "0123456789ABCDEF";
 	//dbg_putchar(hex [(irqn >> 8) & 0x0F]);
 	//dbg_putchar(hex [(irqn >> 4) & 0x0F]);
 	//dbg_putchar(hex [(irqn >> 0) & 0x0F]);
@@ -11755,11 +11795,7 @@ sysinit_vbar_initialize(void)
 {
 #if (__CORTEX_A != 0)
 
-	extern unsigned long __etext, __bss_start__, __bss_end__, __data_end__, __data_start__, __stack, __Vectors;
-
-	//debug_printf_P(PSTR("cpu_initialize1: CP15=%08lX, __data_start__=%p\n"), __get_SCTLR(), & __data_start__);
-	//debug_printf_P(PSTR("__etext=%p, __bss_start__=%p, __bss_end__=%p, __data_start__=%p, __data_end__=%p\n"), & __etext, & __bss_start__, & __bss_end__, & __data_start__, & __data_end__);
-	//debug_printf_P(PSTR("__stack=%p, SystemInit=%p, __Vectors=%p\n"), & __stack, SystemInit, & __Vectors);
+	extern unsigned long __Vectors;
 
 	const uintptr_t vbase = (uintptr_t) & __Vectors;
 	__set_VBAR(vbase);	 // Set Vector Base Address Register (bits 4..0 should be zero)
@@ -12177,6 +12213,12 @@ void cpu_initialize(void)
 //	PRINTF("TTB_PARA_STRGLY=%08lX (0x00DE2)\n", (unsigned long) TTB_PARA_STRGLY);
 //	PRINTF("TTB_PARA_NORMAL_CACHE=%08lX (0x01DEEuL)\n", (unsigned long) TTB_PARA_NORMAL_CACHE);
 //	PRINTF("TTB_PARA_NORMAL_NOT_CACHE=%08lX (0x01DE2uL)\n", (unsigned long) TTB_PARA_NORMAL_NOT_CACHE);
+
+//	extern unsigned long __etext, __bss_start__, __bss_end__, __data_end__, __data_start__, __stack, __Vectors;
+//
+//	debug_printf_P(PSTR("cpu_initialize1: CP15=%08lX, __data_start__=%p\n"), __get_SCTLR(), & __data_start__);
+//	debug_printf_P(PSTR("__etext=%p, __bss_start__=%p, __bss_end__=%p, __data_start__=%p, __data_end__=%p\n"), & __etext, & __bss_start__, & __bss_end__, & __data_start__, & __data_end__);
+//	debug_printf_P(PSTR("__stack=%p, SystemInit=%p, __Vectors=%p\n"), & __stack, SystemInit, & __Vectors);
 
 	//PRINTF("cpu_initialize\n");
 #if CPUSTYLE_STM32F1XX

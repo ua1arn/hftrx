@@ -8,8 +8,8 @@
 // Трансивер с DSP обработкой "Аист" на процессоре
 // rmainunit_v5km0.pcb, rmainunit_v5km1.pcb STM32H743IIT6, 2xUSB, SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
 
-#ifndef ARM_STM32H7XX_TQFP176_CTLSTYLE_STORCH_V6_H_INCLUDED
-#define ARM_STM32H7XX_TQFP176_CTLSTYLE_STORCH_V6_H_INCLUDED 1
+#ifndef ARM_STM32MP1_LFBGA354_CTLSTYLE_STORCH_V9_NEW_H_INCLUDED
+#define ARM_STM32MP1_LFBGA354_CTLSTYLE_STORCH_V9_NEW_H_INCLUDED 1
 
 	#if ! defined(STM32MP157Axx)
 		#error Wrong CPU selected. STM32MP157Axx expected
@@ -65,7 +65,7 @@
 		// PLL1_1600
 		#define PLL1DIVM	5	// ref1_ck = 12.8 MHz
 		//#define PLL1DIVN	50	// x25..x100: 12.8 * 50 = 640 MHz
-		#define PLL1DIVN	62	// x25..x100: 12.8 * 32 = 793.6 MHz
+		#define PLL1DIVN	62	// x25..x100: 12.8 * 62 = 793.6 MHz
 		#define PLL1DIVP	1	// MPU
 		#define PLL1DIVQ	2
 		#define PLL1DIVR	2
@@ -297,7 +297,7 @@
 	#define WITHSAI1_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
 	//#define WITHSAI2_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
 	#define WITHI2S_FORMATI2S_PHILIPS 1	// Возможно использование при передаче данных в кодек, подключенный к наушникам и микрофону
-	#define WITHI2S_FRAMEBITS 32		// Полный размер фрейма для двух каналов - канал кодека
+	#define WITHI2S_FRAMEBITS 64		// Полный размер фрейма для двух каналов - канал кодека
 	#define CODEC_TYPE_NAU8822_MASTER 1	// кодек формирует синхронизацию
 
 	#define WITHI2SHWRXSLAVE	1		// Приёмный канал I2S (микрофон) используюся в SLAVE MODE
@@ -324,7 +324,7 @@
 	//#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
 	#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
 	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
-	#define WITHUSEDUALWATCH	1	// Второй приемник
+	//#define WITHUSEDUALWATCH	1	// Второй приемник
 	#define WITHREVERB	1	// ревербератор в обработке микрофонного сигнала
 	//#define WITHLOOPBACKTEST	1	/* прослушивание микрофонного входа, генераторов */
 	//#define WITHMODEMIQLOOPBACK	1	/* модем получает собственные передаваемые квадратуры */
@@ -596,4 +596,4 @@
 	#define KI_COUNT 5	// количество используемых под клавиатуру входов АЦП
 	#define KI_LIST	KI4, KI3, KI2, KI1, KI0,	// инициализаторы для функции перекодировки
 
-#endif /* ARM_STM32H7XX_TQFP176_CTLSTYLE_STORCH_V6_H_INCLUDED */
+#endif /* ARM_STM32MP1_LFBGA354_CTLSTYLE_STORCH_V9_NEW_H_INCLUDED */

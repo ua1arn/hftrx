@@ -44,8 +44,8 @@ static void hardware_dummy_enable(void)
 static uintptr_t 
 dma_invalidate16rx(uintptr_t addr)
 {
-	//arm_hardware_invalidate(addr, DMABUFFSIZE16 * sizeof (aubufv_t));
-	arm_hardware_flush_invalidate(addr, DMABUFFSIZE16 * sizeof (aubufv_t) + ADDPAD);
+	arm_hardware_invalidate(addr, DMABUFFSIZE16 * sizeof (aubufv_t));
+	//arm_hardware_flush_invalidate(addr, DMABUFFSIZE16 * sizeof (aubufv_t) + ADDPAD);
 	return addr;
 }
 
@@ -54,7 +54,7 @@ dma_invalidate16rx(uintptr_t addr)
 static uintptr_t 
 dma_flush16tx(uintptr_t addr)
 {
-	arm_hardware_flush_invalidate(addr, DMABUFFSIZE16 * sizeof (aubufv_t) + ADDPAD);
+	arm_hardware_flush(addr, DMABUFFSIZE16 * sizeof (aubufv_t));
 	return addr;
 }
 
@@ -62,8 +62,8 @@ dma_flush16tx(uintptr_t addr)
 static uintptr_t
 dma_invalidate192rts(uintptr_t addr)
 {
-	//arm_hardware_invalidate(addr, DMABUFFSIZE192RTS * sizeof (uint8_t));
-	arm_hardware_flush_invalidate(addr, DMABUFFSIZE192RTS * sizeof (uint8_t) + ADDPAD);
+	arm_hardware_invalidate(addr, DMABUFFSIZE192RTS * sizeof (uint8_t));
+	//arm_hardware_flush_invalidate(addr, DMABUFFSIZE192RTS * sizeof (uint8_t) + ADDPAD);
 	return addr;
 }
 
@@ -71,8 +71,8 @@ dma_invalidate192rts(uintptr_t addr)
 static uintptr_t 
 dma_invalidate32rx(uintptr_t addr)
 {
-	//arm_hardware_invalidate(addr, DMABUFFSIZE32RX * sizeof (uint32_t));
-	arm_hardware_flush_invalidate(addr, DMABUFFSIZE32RX * sizeof (int32_t) + ADDPAD);
+	arm_hardware_invalidate(addr, DMABUFFSIZE32RX * sizeof (int32_t));
+	//arm_hardware_flush_invalidate(addr, DMABUFFSIZE32RX * sizeof (int32_t) + ADDPAD);
 	return addr;
 }
 
@@ -80,13 +80,13 @@ dma_invalidate32rx(uintptr_t addr)
 // Потом содержимое не требуется
 static uintptr_t dma_flush32tx(uintptr_t addr)
 {
-	arm_hardware_flush_invalidate(addr, DMABUFFSIZE32TX * sizeof (int32_t) + ADDPAD);
+	arm_hardware_flush(addr, DMABUFFSIZE32TX * sizeof (int32_t));
 	return addr;
 }
 
 #if CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
 
-#define DMA_SxCR_PL_VALUE 2uL		// STM32xxx DMA Priority level - High
+#define DMA_SxCR_PL_VALUE 0uL		// STM32xxx DMA Priority level
 
 enum
 {
@@ -223,11 +223,13 @@ static portholder_t stm32xxx_i2scfgr_afcodec(void)
 
 #define DRD(r) ((void) (r))
 
+#if 0
+
 #define DMAERR(dma, dmastream, status, control, errorf, resetf) do { \
 		if (((dma)->status & errorf) != 0) \
 		{ \
 			(dma)->control = resetf; \
-			PRINTF("DMAERR " # dmastream " " # errorf "\n"); \
+			PRINTF("DMAERR " # dmastream " " # errorf " M0AR=%p M1AR=%p" "\n", (dmastream)->M0AR, (dmastream)->M1AR); \
 			(dmastream)->CR &= ~ DMA_SxCR_EN; \
 			while ((dmastream)->CR & DMA_SxCR_EN) \
 				; \
@@ -235,7 +237,6 @@ static portholder_t stm32xxx_i2scfgr_afcodec(void)
 			DRD((dmastream)->CR); \
 		} \
 	} while (0)
-
 
 // формируется строка вроде такой:
 // DMAERR(DMA1, DMA1_Stream3, LISR, LIFCR, DMA_LISR_TEIF3, DMA_LIFCR_CTEIF3);
@@ -245,6 +246,11 @@ static portholder_t stm32xxx_i2scfgr_afcodec(void)
 		DMAERR(DMA ## d, DMA ## d ## _Stream ## s, hl ## ISR, hl ## IFCR, DMA_ ## hl ## ISR_DMEIF ## s, DMA_ ## hl ## IFCR_CDMEIF ## s); /* DME */ \
 		DMAERR(DMA ## d, DMA ## d ## _Stream ## s, hl ## ISR, hl ## IFCR, DMA_ ## hl ## ISR_FEIF ## s, DMA_ ## hl ## IFCR_CFEIF ## s); /* FE */ \
 	} while (0)
+
+#else
+
+	#define HANDLEERRORS(d, s, hl) /* */
+#endif
 
 // Обработчик прерывания DMA по приему I2S - I2S2_EXT
 // Use arm_hardware_invalidate
@@ -362,12 +368,13 @@ DMA_I2S2_TX_initialize(void)
 
 #endif /* CPUSTYLE_STM32MP1 */
 
-    DMA1_Stream4->M0AR = dma_flush16tx(allocate_dmabuffer16());
+	ASSERT((DMA1_Stream4->CR & DMA_SxCR_EN) == 0);
+	DMA1_Stream4->M0AR = dma_flush16tx(allocate_dmabuffer16());
     DMA1_Stream4->M1AR = dma_flush16tx(allocate_dmabuffer16());
 	DMA1_Stream4->NDTR = (DMA1_Stream4->NDTR & ~ DMA_SxNDT) |
 		(DMABUFFSIZE16 * DMA_SxNDT_0);
-
-	DMA1_Stream4->FCR &= ~ DMA_SxFCR_DMDIS;	// use direct mode
+	DMA1_Stream4->FCR &= ~ (DMA_SxFCR_FEIE_Msk | DMA_SxFCR_DMDIS_Msk);	// use direct mode
+	DRD(DMA1_Stream4->FCR);
 	DMA1_Stream4->CR =
 		ch * DMA_SxCR_CHSEL_0 | // канал
 		0 * DMA_SxCR_MBURST_0 |	// 0: single transfer
@@ -406,7 +413,8 @@ DMA_I2S2ext_rx_init(void)
 	DMA1_Stream3->NDTR = (DMA1_Stream3->NDTR & ~ DMA_SxNDT) |
 		(DMABUFFSIZE16 * DMA_SxNDT_0);
 
-	DMA1_Stream3->FCR &= ~ DMA_SxFCR_DMDIS;	// use direct mode
+	DMA1_Stream3->FCR &= ~ (DMA_SxFCR_FEIE_Msk | DMA_SxFCR_DMDIS_Msk);	// use direct mode
+	DRD(DMA1_Stream3->FCR);
 	DMA1_Stream3->CR =
 		ch * DMA_SxCR_CHSEL_0 | // канал
 		0 * DMA_SxCR_MBURST_0 |	// 0: single transfer
@@ -467,7 +475,8 @@ DMA_I2S3_RX_initialize(void)
 	DMA1_Stream0->NDTR = (DMA1_Stream0->NDTR & ~ DMA_SxNDT) |
 		(DMABUFFSIZE16 * DMA_SxNDT_0);
 
-	DMA1_Stream0->FCR &= ~ DMA_SxFCR_DMDIS;	// use direct mode
+	DMA1_Stream0->FCR &= ~ (DMA_SxFCR_FEIE_Msk | DMA_SxFCR_DMDIS_Msk);	// use direct mode
+	DRD(DMA1_Stream0->FCR);
 	DMA1_Stream0->CR =
 		ch * DMA_SxCR_CHSEL_0 | // канал
 		0 * DMA_SxCR_MBURST_0 |	// 0: single transfer
@@ -530,7 +539,8 @@ DMA_I2S2_RX_initialize(void)
 	DMA1_Stream0->NDTR = (DMA1_Stream0->NDTR & ~ DMA_SxNDT) |
 		(DMABUFFSIZE16 * DMA_SxNDT_0);
 
-	DMA1_Stream0->FCR &= ~ DMA_SxFCR_DMDIS;	// use direct mode
+	DMA1_Stream0->FCR &= ~ (DMA_SxFCR_FEIE_Msk | DMA_SxFCR_DMDIS_Msk);	// use direct mode
+	DRD(DMA1_Stream0->FCR);
 	DMA1_Stream0->CR =
 		ch * DMA_SxCR_CHSEL_0 | // канал
 		0 * DMA_SxCR_MBURST_0 |	// 0: single transfer
@@ -1390,7 +1400,7 @@ static void hardware_sai1_sai2_clock_selection(void)
 // DMA по приему SAI1 - обработчик прерывания
 // RX	SAI1_B	DMA2	Stream 5	Channel 0
 // Use arm_hardware_invalidate
-
+// SAI1_B_RX
 void RAMFUNC_NONILINE DMA2_Stream5_IRQHandler(void)
 {
 	// проверка условия может потребоваться при добавлении обработчика ошибки
@@ -1498,7 +1508,7 @@ static void DMA_SAI1_A_TX_initialize(void)
 		0;
 
 	DMA2->LIFCR = DMA_LISR_TCIF1 | DMA_LISR_TEIF1;	// Clear TC interrupt flag
-	DMA2_Stream1->CR |= (DMA_SxCR_TCIE | DMA_SxCR_TEIE);	// Разрешаем прерывания от DMA
+	DMA2_Stream1->CR |= DMA_SxCR_TCIE;	// Разрешаем прерывания от DMA
 
 	arm_hardware_set_handler_realtime(DMA2_Stream1_IRQn, DMA2_Stream1_IRQHandler);
 
@@ -1549,7 +1559,8 @@ static void DMA_SAI1_B_RX_initialize(void)
 	DMA2_Stream5->NDTR = (DMA2_Stream5->NDTR & ~ DMA_SxNDT) |
 		(DMABUFFSIZE32RX * DMA_SxNDT_0);
 
-	DMA2_Stream5->FCR &= ~ DMA_SxFCR_DMDIS;	// use direct mode
+	DMA2_Stream5->FCR &= ~ (DMA_SxFCR_FEIE_Msk | DMA_SxFCR_DMDIS_Msk);	// use direct mode
+	DRD(DMA2_Stream5->FCR);
 	DMA2_Stream5->CR =
 		ch * DMA_SxCR_CHSEL_0 | // канал
 		0 * DMA_SxCR_MBURST_0 |	// 0: single transfer
@@ -1564,7 +1575,7 @@ static void DMA_SAI1_B_RX_initialize(void)
 		0;
 
 	DMA2->HIFCR = (DMA_HIFCR_CTCIF5 /* | DMA_HIFCR_CTEIF5 */);	// Clear TC interrupt flag соответствующий stream
-	DMA2_Stream5->CR |= (DMA_SxCR_TCIE /* | DMA_SxCR_TEIE */);	// прерывания от DMA по TC и TE
+	DMA2_Stream5->CR |= DMA_SxCR_TCIE;	// Разрешаем прерывания от DMA
 
 	arm_hardware_set_handler_realtime(DMA2_Stream5_IRQn, DMA2_Stream5_IRQHandler);
 
@@ -1966,7 +1977,8 @@ static void DMA_SAI2_A_TX_initializeXXX(void)
 	DMA2_Stream4->NDTR = (DMA2_Stream4->NDTR & ~ DMA_SxNDT) |
 		(DMABUFFSIZE32TX * DMA_SxNDT_0);
 
-	DMA2_Stream4->FCR &= ~ DMA_SxFCR_DMDIS;	// use direct mode
+	DMA2_Stream4->FCR &= ~ (DMA_SxFCR_FEIE_Msk | DMA_SxFCR_DMDIS_Msk);	// use direct mode
+	DRD(DMA2_Stream4->FCR);
 	DMA2_Stream4->CR =
 		ch * DMA_SxCR_CHSEL_0 | //канал
 		0 * DMA_SxCR_MBURST_0 |	// 0: single transfer
@@ -2025,7 +2037,8 @@ static void DMA_SAI2_A_TX_initializeAUDIO48(void)
 	DMA2_Stream4->NDTR = (DMA2_Stream4->NDTR & ~ DMA_SxNDT) |
 		(DMABUFFSIZE32TX * DMA_SxNDT_0);
 
-	DMA2_Stream4->FCR &= ~ DMA_SxFCR_DMDIS;	// use direct mode
+	DMA2_Stream4->FCR &= ~ (DMA_SxFCR_FEIE_Msk | DMA_SxFCR_DMDIS_Msk);	// use direct mode
+	DRD(DMA2_Stream4->FCR);
 	DMA2_Stream4->CR =
 		ch * DMA_SxCR_CHSEL_0 | //канал
 		0 * DMA_SxCR_MBURST_0 |	// 0: single transfer
@@ -2086,7 +2099,8 @@ static void DMA_SAI2_B_RX_initializeRTS96(void)
 	DMA2_Stream7->NDTR = (DMA2_Stream7->NDTR & ~ DMA_SxNDT) |
 		(DMABUFFSIZE192RTS * DMA_SxNDT_0);
 
-	DMA2_Stream7->FCR &= ~ DMA_SxFCR_DMDIS;	// use direct mode
+	DMA2_Stream7->FCR &= ~ (DMA_SxFCR_FEIE_Msk | DMA_SxFCR_DMDIS_Msk);	// use direct mode
+	DRD(DMA2_Stream7->FCR);
 	DMA2_Stream7->CR =
 		ch * DMA_SxCR_CHSEL_0 | // канал
 		0 * DMA_SxCR_MBURST_0 |	// 0: single transfer
@@ -2101,7 +2115,7 @@ static void DMA_SAI2_B_RX_initializeRTS96(void)
 		0;
 
 	DMA2->HIFCR = (DMA_HIFCR_CTCIF7 /*| DMA_HIFCR_CTEIF7 */);	// Clear TC interrupt flag соответствующий stream
-	DMA2_Stream7->CR |= (DMA_SxCR_TCIE /* | DMA_SxCR_TEIE */);	// прерывания от DMA по TC и TE
+	DMA2_Stream7->CR |= DMA_SxCR_TCIE;	// Разрешаем прерывания от DMA
 
 	arm_hardware_set_handler_realtime(DMA2_Stream7_IRQn, DMA2_Stream7_IRQHandler);
 
@@ -2147,7 +2161,8 @@ static void DMA_SAI2_B_RX_initializeAUDIO48(void)
 	DMA2_Stream7->NDTR = (DMA2_Stream7->NDTR & ~ DMA_SxNDT) |
 		(DMABUFFSIZE32RX * DMA_SxNDT_0);
 
-	DMA2_Stream7->FCR &= ~ DMA_SxFCR_DMDIS;	// use direct mode
+	DMA2_Stream7->FCR &= ~ (DMA_SxFCR_FEIE_Msk | DMA_SxFCR_DMDIS_Msk);	// use direct mode
+	DRD(DMA2_Stream7->FCR);
 	DMA2_Stream7->CR =
 		ch * DMA_SxCR_CHSEL_0 | // канал
 		0 * DMA_SxCR_MBURST_0 |	// 0: single transfer
@@ -2162,7 +2177,7 @@ static void DMA_SAI2_B_RX_initializeAUDIO48(void)
 		0;
 
 	DMA2->HIFCR = (DMA_HIFCR_CTCIF7 /*| DMA_HIFCR_CTEIF7 */);	// Clear TC interrupt flag соответствующий stream
-	DMA2_Stream7->CR |= (DMA_SxCR_TCIE /* | DMA_SxCR_TEIE */);	// прерывания от DMA по TC и TE
+	DMA2_Stream7->CR |= DMA_SxCR_TCIE;	// Разрешаем прерывания от DMA
 
 	arm_hardware_set_handler_realtime(DMA2_Stream7_IRQn, DMA2_Stream7_IRQHandler);
 
@@ -2468,7 +2483,8 @@ static void DMA_SAI2_B_RX_initializeWFM(void)
 	DMA2_Stream7->NDTR = (DMA2_Stream7->NDTR & ~ DMA_SxNDT) |
 		(DMABUFFSIZE32RX * DMA_SxNDT_0);
 
-	DMA2_Stream7->FCR &= ~ DMA_SxFCR_DMDIS;	// use direct mode
+	DMA2_Stream7->FCR &= ~ (DMA_SxFCR_FEIE_Msk | DMA_SxFCR_DMDIS_Msk);	// use direct mode
+	DRD(DMA2_Stream7->FCR);
 	DMA2_Stream7->CR =
 		ch * DMA_SxCR_CHSEL_0 | // канал
 		0 * DMA_SxCR_MBURST_0 |	// 0: single transfer
@@ -2483,7 +2499,7 @@ static void DMA_SAI2_B_RX_initializeWFM(void)
 		0;
 
 	DMA2->HIFCR = (DMA_HIFCR_CTCIF7 /*| DMA_HIFCR_CTEIF7 */);	// Clear TC interrupt flag соответствующий stream
-	DMA2_Stream7->CR |= (DMA_SxCR_TCIE /* | DMA_SxCR_TEIE */);	// прерывания от DMA по TC и TE
+	DMA2_Stream7->CR |= DMA_SxCR_TCIE;	// Разрешаем прерывания от DMA
 
 	arm_hardware_set_handler_realtime(DMA2_Stream7_IRQn, DMA2_Stream7_IRQHandler);
 

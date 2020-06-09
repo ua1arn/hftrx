@@ -9,8 +9,8 @@
 // Трансивер с DSP обработкой "Аист" на процессоре
 // rmainunit_v5km0.pcb STM32H743IIT6, TFT 4.3", 2xUSB, SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
 
-#ifndef ARM_STM32MP1_CPUSTYLE_STORCH_V9_H_INCLUDED
-#define ARM_STM32MP1_CPUSTYLE_STORCH_V9_H_INCLUDED 1
+#ifndef ARM_STM32MP1_LFBGA354_CPUSTYLE_STORCH_V9_H_INCLUDED
+#define ARM_STM32MP1_LFBGA354_CPUSTYLE_STORCH_V9_H_INCLUDED 1
 
 #define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
 #define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
@@ -960,4 +960,4 @@
 			TUNE_INITIALIZE(); \
 		} while (0)
 
-#endif /* ARM_STM32MP1_CPUSTYLE_STORCH_V9_H_INCLUDED */
+#endif /* ARM_STM32MP1_LFBGA354_CPUSTYLE_STORCH_V9_H_INCLUDED */

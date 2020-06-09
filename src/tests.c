@@ -5339,9 +5339,9 @@ typedef struct
 	float i;
 } cplxf;
 
-static RAMFRAMEBUFF FATFSALIGN_BEGIN cplxf src [FFTZS];
-static RAMFRAMEBUFF FATFSALIGN_BEGIN cplxf dst [FFTZS];
-static RAMDTCM FATFSALIGN_BEGIN cplxf refv [FFTZS];
+static RAMFRAMEBUFF ALIGNX_BEGIN cplxf src [FFTZS] ALIGNX_END;
+static RAMFRAMEBUFF ALIGNX_BEGIN cplxf dst [FFTZS] ALIGNX_END;
+static RAMDTCM ALIGNX_BEGIN cplxf refv [FFTZS] ALIGNX_END;
 
 static void RAMFUNC_NONILINE cplxmla(cplxf *s, cplxf *d, cplxf *ref, int len) {
 	while (len--) {
@@ -5375,40 +5375,65 @@ void hightests(void)
 	arm_hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
 #endif /* LCDMODE_LTDC */
 
-#if 0 && WITHDEBUG
-	{
-		// FPU speed test
-		uint_fast8_t state = 0;
-		//const uint_fast32_t mask = (1uL << 14);	// P6_14: RXD0: RX DATA line
-		//arm_hardware_pio6_outputs(mask, mask);
-		const uint_fast32_t mask = (1uL << 9);	// PG9 - U12-50
-		arm_hardware_piog_outputs(mask, 1 * mask);
-		PRINTF("cplxmla @%p, src @%p, dst @%p. refv @%p, CPU_FREQ=%lu MHz\n", cplxmla, src, dst, refv, CPU_FREQ / 1000000uL);
-		global_disableIRQ();
-		for (;;)
-		{
-			cplxmla(src, dst, refv,  FFTZS);
-			//cplxmlasave(dst, FFTZS);
-			if (state)
-			{
-				state = 0;
-				(GPIOG)->BSRR = BSRR_S(mask);
-				//R7S721_TARGET_PORT_S(6, mask);
-			}
-			else
-			{
-				state = 1;
-				(GPIOG)->BSRR = BSRR_C(mask);
-				//R7S721_TARGET_PORT_C(6, mask);
-			}
-		}
-
-	}
-#endif
 #if 1 && defined (__GNUC__)
 	{
 
 		debug_printf_P(PSTR("__GNUC__=%d, __GNUC_MINOR__=%d\n"), (int) __GNUC__, (int) __GNUC_MINOR__);
+	}
+#endif
+#if 0 && WITHDEBUG
+	{
+		// FPU speed test
+		uint_fast8_t state = 0;
+#if CPUSTYLE_R7S721
+		const uint_fast32_t mask = (1uL << 10);	// P7_10: RXD0: RX DATA line
+		arm_hardware_pio7_outputs(mask, mask);
+#else /* CPUSTYLE_R7S721 */
+		const uint_fast32_t mask = (1uL << 13);	// PA13
+		arm_hardware_pioa_outputs(mask, 1 * mask);
+#endif /* CPUSTYLE_R7S721 */
+		PRINTF("cplxmla @%p, src @%p, dst @%p. refv @%p, CPU_FREQ=%lu MHz\n", cplxmla, src, dst, refv, CPU_FREQ / 1000000uL);
+		global_disableIRQ();
+		for (;;)
+		{
+			//	__GNUC__=9, __GNUC_MINOR__=3
+			//	cplxmla @2FFC5698, src @C0114100, dst @C0104100. refv @2FFCC340, CPU_FREQ=793 MHz
+			// stm32mp1 @800 MHz w/o NEON:
+			// cplxmla: 2 kHz
+			// cplxmla & cplxmlasave: 1.85 kHz
+			// stm32mp1 @800 MHz with NEON:
+			// cplxmla: 3 kHz
+			// cplxmla & cplxmlasave: 2.65 kHz
+			// __GNUC__=9, __GNUC_MINOR__=3
+			// cplxmla @20042D08, src @20206040, dst @201F6040. refv @20123080, CPU_FREQ=360 MHz
+			// R7S721 @360 MHz w/o NEON:
+			// cplxmla & cplxmlasave: 0.7 kHz
+			// R7S721 @360 MHz with NEON:
+			// cplxmla & cplxmlasave: 0.7 kHz
+
+			cplxmla(src, dst, refv,  FFTZS);
+			cplxmlasave(dst, FFTZS);
+
+			if (state)
+			{
+				state = 0;
+	#if CPUSTYLE_R7S721
+				R7S721_TARGET_PORT_S(7, mask);
+	#else /* CPUSTYLE_R7S721 */
+				(GPIOA)->BSRR = BSRR_S(mask);
+	#endif /* CPUSTYLE_R7S721 */
+			}
+			else
+			{
+				state = 1;
+		#if CPUSTYLE_R7S721
+					R7S721_TARGET_PORT_C(7, mask);
+		#else /* CPUSTYLE_R7S721 */
+					(GPIOA)->BSRR = BSRR_C(mask);
+		#endif /* CPUSTYLE_R7S721 */
+			}
+		}
+
 	}
 #endif
 #if 0
@@ -7769,19 +7794,19 @@ void lowtests(void)
 		// LED blinking test
 		//const uint_fast32_t mask = (1uL << 14);	// PA14 - GREEN LED LD5 on DK1/DK2 MB1272.pdf
 		//const uint_fast32_t maskd = (1uL << 14);	// PD14 - LED on small board
-		const uint_fast32_t maskg = (1uL << 13);	// PG13 - LCD_R0
+		const uint_fast32_t maska = (1uL << 13);	// PA13 - bootloader status LED
 		//arm_hardware_piod_outputs(maskd, 1 * maskd);
-		arm_hardware_piog_outputs(maskg, 1 * maskg);
+		arm_hardware_pioa_outputs(maska, 1 * maska);
 		for (;;)
 		{
 			//dbg_putchar('5');
 			//(GPIOD)->BSRR = BSRR_S(maskd);
-			(GPIOG)->BSRR = BSRR_S(maskg);
+			(GPIOA)->BSRR = BSRR_S(maska);
 			__DSB();
 			local_delay_ms(50);
 			//dbg_putchar('#');
 			//(GPIOD)->BSRR = BSRR_C(maskd);
-			(GPIOG)->BSRR = BSRR_C(maskg);
+			(GPIOA)->BSRR = BSRR_C(maska);
 			__DSB();
 			local_delay_ms(50);
 

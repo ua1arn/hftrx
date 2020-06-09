@@ -70,7 +70,6 @@ SECTIONS
 
 		*(.text*)
 		*(.itcm*)
-		*(.dtcm*)
 	} > RAM
 
 	.ARM.extab :
@@ -124,6 +123,8 @@ SECTIONS
 	.data : /*AT (__etext)*/
 	{
 		__data_start__ = .;
+		. = ALIGN(32);
+		*(.dtcm*)
 
 		. = ALIGN(32);
 		/* .ctors */

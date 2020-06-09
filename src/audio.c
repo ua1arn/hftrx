@@ -159,7 +159,7 @@ static int_fast16_t		glob_fsadcpower10 = 0;	// мощность, соответ�
 static uint_fast8_t		glob_modem_mode;		// применяемая модуляция
 static uint_fast32_t	glob_modem_speed100 = 3125;	// скорость передачи с точностью 1/100 бод
 
-static int_fast8_t		glob_afresponcerx;	// изменение тембра звука в канале приемника - на Samplerate/2 АЧХ становится на столько децибел
+static int_fast8_t		glob_afresponcerx;	// изменение тембра звука в канале приёмника - на Samplerate/2 АЧХ становится на столько децибел
 static int_fast8_t		glob_afresponcetx;	// изменение тембра звука в канале передатчика - на Samplerate/2 АЧХ становится на столько децибел
 
 static uint_fast8_t		glob_swaprts;		// управление боковой выхода спектроанализатора
@@ -1282,7 +1282,7 @@ static void correctspectrumcomplex(int_fast8_t targetdb)
 }
 
 #define GAIN_1 1
-// Формирование наклона АЧХ звукового тракта приемника
+// Формирование наклона АЧХ звукового тракта приёмника
 static void fir_design_adjust_rx(FLOAT_t * dCoeff, const FLOAT_t * dWindow, int iCoefNum, uint_fast8_t usewindow, FLOAT_t gain)
 {
 	if (glob_afresponcerx != 0)
@@ -4514,7 +4514,7 @@ static RAMFUNC FLOAT32P_t getsampmlemike2(void)
 
 #define DTMF_STEPS              205 // Число шагов преобразования данных
                                     //  при DTMF-детекции
-                                    //  (длина буфера данных одного канала приемника для
+                                    //  (длина буфера данных одного канала приёмника для
                                     //      анализа DTMF-информации)
 #define DTMF_FREQ               8   // Число DTMF-частот
 #define DTMF_EMPTY              (-1)  // Код отсутствия принятой цифры
@@ -4859,7 +4859,7 @@ union states
 };
 
 
-#if CPUSTYLE_R7S721
+#if (CPUSTYLE_R7S721 || CPUSTYLE_STM32MP1)
 
 static uint16_t rbfimage0 [] =
 {
@@ -4877,11 +4877,11 @@ const uint16_t * getrbfimage(size_t * count)
 
 #define zoomfft_st (* (union states *) rbfimage0)
 
-#else /* CPUSTYLE_R7S721 */
+#else /* (CPUSTYLE_R7S721 || CPUSTYLE_STM32MP1) */
 
 static RAMBIGDTCM union states zoomfft_st;
 
-#endif /* CPUSTYLE_R7S721 */
+#endif /* (CPUSTYLE_R7S721 || CPUSTYLE_STM32MP1) */
 
 static void fftzoom_filer_decimate(
 	const struct zoom_param * const prm,
@@ -5307,7 +5307,7 @@ void dsp_addsidetone(aubufv_t * buff)
 		switch (glob_mainsubrxmode)
 		{
 		case BOARD_RXMAINSUB_A_A:
-			right = left;		// Для предотвращения посылки по USB данных от неинициализированного тракта приемника B
+			right = left;		// Для предотвращения посылки по USB данных от неинициализированного тракта приёмника B
 			break;
 		case BOARD_RXMAINSUB_B_B:
 			left = right;
@@ -5361,6 +5361,69 @@ void dsp_addsidetone(aubufv_t * buff)
 	}
 }
 
+// Проверка качества линии передачи от FPGA
+static int32_t seqNext [DMABUFSTEP32RX];
+static uint_fast8_t  seqValid [DMABUFSTEP32RX];
+static long int seqErrors;
+static long int seqTotal;
+static long int seqRun;
+static int seqDone;
+
+static void validateSeq(uint_fast8_t slot, int32_t v)
+{
+//	PRINTF("%d:%08lX ", slot, v);
+//	return;
+	if (seqDone)
+		return;
+	if (seqTotal >= ((DMABUFFSIZE32RX / DMABUFSTEP32RX) * 10000L))
+	{
+		PRINTF("seqErrors=%ld, seqTotal=%ld, seqRun=%ld\n", seqErrors, seqTotal, seqRun);
+		seqDone = 1;
+		return;
+	}
+	if (! seqValid [slot])
+	{
+		seqValid [slot] = 1;
+	}
+	else
+	{
+		if (seqNext [slot] != v)
+		{
+			//PRINTF("validateSeq i=%d: expected=%08lX, v=%08lX\n", slot, seqNext [slot], v);
+			//PRINTF("%08lX, v=%08lX\n", seqNext [slot], v);
+			++ seqErrors;
+			seqRun = 0;
+		}
+		else
+		{
+			++ seqRun;
+		}
+		++ seqTotal;
+	}
+	seqNext [slot] = v + 2;
+}
+
+// Тестирование - заменить приянтые квадратуры синтезированными
+static void
+inject_testsignals(int32_t * const dbuff)
+{
+	// приёмник
+	const FLOAT32P_t simval = scalepair(get_float_monofreq(), rxlevelfence);	// frequency
+	dbuff [DMABUF32RX0I] = simval.IV;
+	dbuff [DMABUF32RX0Q] = simval.QV;
+
+	// панорама
+	// previous - oldest
+	const FLOAT32P_t simval0 = scalepair(get_float_monofreq2(), rxlevelfence);	// frequency2
+	dbuff [DMABUF32RTS0I] = simval0.IV;
+	dbuff [DMABUF32RTS0Q] = simval0.QV;
+
+	// current	- nevest
+	const FLOAT32P_t simval1 = scalepair(get_float_monofreq2(), rxlevelfence);	// frequency2
+	dbuff [DMABUF32RTS1I] = simval1.IV;
+	dbuff [DMABUF32RTS1Q] = simval1.QV;
+}
+
 // Обработка полученного от DMA буфера с выборками или квадратурами (или двухканальный приём).
 // Вызывается на ARM_REALTIME_PRIORITY уровне.
 void RAMFUNC dsp_extbuffer32rx(const int32_t * buff)
@@ -5377,6 +5440,21 @@ void RAMFUNC dsp_extbuffer32rx(const int32_t * buff)
 
 	for (i = 0; i < DMABUFFSIZE32RX; i += DMABUFSTEP32RX)
 	{
+	#if 0
+		if (0)
+		{
+			// Проверка качества линии передачи от FPGA
+			uint_fast8_t slot;
+			for (slot = 0; slot < DMABUFSTEP32RX; ++ slot)
+				validateSeq(slot, buff [i + slot]);
+		}
+		else if (1)
+		{
+			uint_fast8_t slot = DMABUF32RTS0I;	// slot 4
+			validateSeq(slot, buff [i + slot]);
+		}
+	#endif
+
 	#if ! WITHTRANSPARENTIQ
 		const FLOAT_t ctcss = get_float_subtone() * txlevelfenceSSB;
 		const FLOAT32P_t vi = getsampmlemike2();	// с микрофона (или 0, если ещё не запустился) */
@@ -5465,25 +5543,11 @@ void RAMFUNC dsp_extbuffer32rx(const int32_t * buff)
 #elif WITHDSPEXTDDC
 	// Режимы трансиверов с внешним DDC
 
-#if 0
-	// Тестирование - заменить приянтые квадратуры синтезированными
-	int32_t * const dbuff = (int32_t *) buff;
+	#if 0
+			// Тестирование - заменить приянтые квадратуры синтезированными
+			inject_testsignals((int32_t *) (buff + i))
 
-	// приемник
-	const FLOAT32P_t simval = scalepair(get_float_monofreq(), rxlevelfence);	// frequency
-	dbuff [i + DMABUF32RX0I] = simval.IV;
-	dbuff [i + DMABUF32RX0Q] = simval.QV;
-
-	// панорама
-	const FLOAT32P_t simval0 = scalepair(get_float_monofreq2(), rxlevelfence);	// frequency2
-	dbuff [i + DMABUF32RTS0I] = simval0.IV;
-	dbuff [i + DMABUF32RTS0Q] = simval0.QV;
-
-	const FLOAT32P_t simval1 = scalepair(get_float_monofreq2(), rxlevelfence);	// frequency2
-	dbuff [i + DMABUF32RTS1I] = simval1.IV;
-	dbuff [i + DMABUF32RTS1Q] = simval1.QV;
-
-#endif
+	#endif
 
 	saverts96(buff + i);	// использование данных о спектре, передаваемых в общем фрейме
 
@@ -5574,7 +5638,7 @@ void RAMFUNC dsp_extbuffer32rx(const int32_t * buff)
 			save16demod(left, left);
 		}
 
-	#endif /*  DMABUFSTEP32 == 4 */
+	#endif /*  WITHUSEDUALWATCH */
 
 #else /* WITHDSPEXTDDC */
 	// Режимы трансиверов без внешнкго DDC
@@ -5794,7 +5858,7 @@ int_fast32_t dsp_get_samplerateuacin_rts(void)		// RTS samplerate
 
 
 // Передача параметров в DSP модуль
-// Обновление параметров приемника (кроме фильтров).
+// Обновление параметров приёмника (кроме фильтров).
 static void 
 rxparam_update(uint_fast8_t profile, uint_fast8_t pathi)
 {
@@ -5923,6 +5987,7 @@ trxparam_update(void)
 void dsp_initialize(void)
 {
 	debug_printf_P(PSTR("dsp_initialize start.\n"));
+	PRINTF("DMABUFFSIZE32RX=%d, DMABUFSTEP32RX=%d\n", (int) DMABUFFSIZE32RX, (int) DMABUFSTEP32RX);
 
 	//FFT_initialize();
 #if (WITHRTS96 || WITHRTS192) && ! WITHTRANSPARENTIQ

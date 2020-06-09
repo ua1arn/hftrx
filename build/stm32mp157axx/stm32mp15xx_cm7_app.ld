@@ -58,19 +58,12 @@ SECTIONS
 	.text :
 	{
 		. = ALIGN(32);
-		KEEP(*(.vectors))
-		__Vectors_End = .;
-		__Vectors_Size = __Vectors_End - __Vectors;
-		
-		. = ALIGN(32);
 		KEEP(*(.init*))
 		KEEP(*(.initfunc*))
 		KEEP(*(.initdata*))
 		KEEP(*(.fini))
 
 		*(.text*)
-		*(.itcm*)
-		*(.dtcm*)
 	} > RAM
 
 	.ARM.extab :
@@ -96,10 +89,10 @@ SECTIONS
 		LONG (__etext)
 		LONG (__data_start__)
 		LONG (__data_end__ - __data_start__)
+	*/
 		LONG (__etext2)
 		LONG (__data2_start__)
 		LONG (__data2_end__ - __data2_start__)
-	*/
 		__copy_table_end__ = .;
 	} > RAM
 
@@ -174,6 +167,26 @@ SECTIONS
 		__data_end__ = .;
 
 	} > RAM
+
+	__etext2 = .;
+
+	.sysram : AT (__etext2)
+	{
+		__data2_start__ = .;
+		. = ALIGN(32);
+		KEEP(*(.vectors))
+		__Vectors_End = .;
+		__Vectors_Size = __Vectors_End - __Vectors;
+		. = ALIGN(64);
+		*(.itcm*)
+		. = ALIGN(64);
+		*(.dtcm*)
+		. = ALIGN(64);
+		__data2_end__ = .;
+	} > SYSRAM
+
+	. = __etext2 + __data2_end__ - __data2_start__;
+
 
 	.bss :
 	{

@@ -399,7 +399,7 @@ extern "C" {
 	#define ALIGNX_END /* nothing */
 
 	#if __ARM_NEON
-		#define ARM_MATH_NEON 1
+		//#define ARM_MATH_NEON 1
 	#endif /* __ARM_NEON */
 
 	#define ARM_MATH_LOOPUNROLL 1
@@ -429,8 +429,9 @@ extern "C" {
 	#define ALIGNX_END /* nothing */
 
 	#if __ARM_NEON
-		#define ARM_MATH_NEON 1
+		//#define ARM_MATH_NEON 1
 	#endif /* __ARM_NEON */
+	#define ARM_MATH_LOOPUNROLL 1
 
 	#include "arm_math.h"
 	#include "arm_const_structs.h"
@@ -501,19 +502,20 @@ void hardware_adc_initialize(void);
 		#define RAMFRAMEBUFF	__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
 		#define RAMDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 		#define RAMBIGDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
+		#define RAMBIGDTCM_MDMA	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 		#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
 		#define RAMHEAP __attribute__((used, section(".heap"), aligned(64))) // memory used as heap zone
 	#elif CPUSTYLE_STM32MP1
-		// TODO: Use SYSRAM as DTCM/ITCM
 		#define FLASHMEMINIT	//__attribute__((section(".initdata"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 		#define FLASHMEMINITFUNC//	__attribute__((section(".initfunc"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
-		#define RAMFUNC_NONILINE// __attribute__((__section__(".itcm"), noinline))
-		#define RAMFUNC			 //__attribute__((__section__(".itcm")))
+		#define RAMFUNC_NONILINE __attribute__((__section__(".itcm"), noinline))
+		#define RAMFUNC			 __attribute__((__section__(".itcm")))
 		#define RAMNOINIT_D1	__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
 		#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
 		#define RAMFRAMEBUFF	__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
-		#define RAMDTCM			//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
-		#define RAMBIGDTCM		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
+		#define RAMDTCM			__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
+		#define RAMBIGDTCM		__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
+		#define RAMBIGDTCM_MDMA		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 		#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
 		#define RAMHEAP __attribute__((used, section(".heap"), aligned(64))) // memory used as heap zone
 	#elif (CPUSTYLE_STM32H7XX)
@@ -527,6 +529,7 @@ void hardware_adc_initialize(void);
 		#define RAMFRAMEBUFF	__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
 		#define RAMDTCM			__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 		#define RAMBIGDTCM		__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
+		#define RAMBIGDTCM_MDMA		__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 		#define RAMBIG			__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
 		#define RAMHEAP __attribute__((used, section(".heap"), aligned(16))) // memory used as heap zone
 	#elif (CPUSTYLE_STM32F7XX)
@@ -540,6 +543,7 @@ void hardware_adc_initialize(void);
 		#define RAMFRAMEBUFF	//__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
 		#define RAMDTCM			__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 		#define RAMBIGDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
+		#define RAMBIGDTCM_MDMA		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 		#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
 		#define RAMHEAP __attribute__((used, section(".heap"), aligned(16))) // memory used as heap zone
 	#elif CPUSTYLE_STM32F4XX && (defined (STM32F429xx) || defined(STM32F407xx))
@@ -553,6 +557,7 @@ void hardware_adc_initialize(void);
 		#define RAMFRAMEBUFF	//__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
 		#define RAMDTCM			__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 		#define RAMBIGDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
+		#define RAMBIGDTCM_MDMA	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 		#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
 		#define RAMHEAP __attribute__((used, section(".heap"), aligned(16))) // memory used as heap zone
 	#elif CPUSTYLE_STM32F4XX
@@ -566,6 +571,7 @@ void hardware_adc_initialize(void);
 		#define RAMFRAMEBUFF	//__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
 		#define RAMDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 		#define RAMBIGDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
+		#define RAMBIGDTCM_MDMA	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 		#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
 		#define RAMHEAP __attribute__((used, section(".heap"), aligned(16))) // memory used as heap zone
 	#else
@@ -579,6 +585,7 @@ void hardware_adc_initialize(void);
 		#define RAMFRAMEBUFF	//__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
 		#define RAMDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 		#define RAMBIGDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
+		#define RAMBIGDTCM_MDMA	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 		#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
 		#define RAMHEAP __attribute__((used, section(".heap"), aligned(16))) // memory used as heap zone
 	#endif
@@ -836,7 +843,7 @@ void midtests(void);
 void hightests(void);
 void looptests(void);	// Периодически вызывается в главном цикле
 
-#define ADDPAD 32	// TODO: должно быть без этого
+#define ADDPAD 0//32	// TODO: должно быть без этого
 
 void arm_hardware_invalidate(uintptr_t base, size_t size);	// Сейчас в эту память будем читать по DMA
 void arm_hardware_flush(uintptr_t base, size_t size);	// Сейчас эта память будет записываться по DMA куда-то

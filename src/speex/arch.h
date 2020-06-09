@@ -96,8 +96,8 @@
 	#define FFTSizeFiltersM 10
 	#define FFTCONFIGFilters	(& arm_cfft_sR_f32_len1024)
 
-	#define FFTSizeSpectrumM 10
-	#define FFTCONFIGSpectrum	(& arm_cfft_sR_f32_len1024)
+	#define FFTSizeSpectrumM 9
+	#define FFTCONFIGSpectrum	(& arm_cfft_sR_f32_len512)
 
 #else
 
@@ -305,7 +305,7 @@ typedef float spx_word32_t;
 #define PDIV32(a,b)     (((spx_word32_t)(a))/(spx_word32_t)(b))
 
 #define WORD2INT(x) ((x) < -32767.5f ? -32768 : \
-                    ((x) > 32766.5f ? 32767 : (spx_int16_t)floor(.5 + (x))))
+                    ((x) > 32766.5f ? 32767 : (spx_int16_t) floorf(.5 + (x))))
 #endif
 
 

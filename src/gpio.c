@@ -17,7 +17,7 @@
 static portholder_t
 power4(uint_fast8_t v)
 {
-/*
+#if 1
 	portholder_t r = 0;
 
 	r |= (v & (1U << 0)) ? (1UL << 0) : 0;
@@ -30,7 +30,7 @@ power4(uint_fast8_t v)
 	r |= (v & (1U << 7)) ? (1UL << 28) : 0;
 
 	return r;
-*/
+#else
 	static const FLASHMEM uint_fast32_t tablepow4 [256] =
 	{
 	 0x00000000UL,  0x00000001UL,  0x00000010UL,  0x00000011UL,  0x00000100UL,  0x00000101UL,  0x00000110UL,  0x00000111UL,
@@ -68,6 +68,7 @@ power4(uint_fast8_t v)
 	};
 
 	return tablepow4 [v & 0xff];
+#endif
 }
 
 // Перенос каждого бита в байте в позицию с увеличенным в 8 раза номером.
@@ -907,16 +908,14 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 		static void
 		stm32f30x_pioX_onchangeinterrupt(portholder_t ipins,
 				portholder_t raise, portholder_t fall,
-				portholder_t portcode, uint32_t priority)
+				portholder_t portcode,	/* 0x00: PAxx, 0x01: PBxx, .. 0x0a: PKxx */
+				uint32_t priority)
 		{
 			#if CPUSTYLE_STM32H7XX
 				RCC->APB4ENR |= RCC_APB4ENR_SYSCFGEN;     // включить тактирование альтернативных функций
 				(void) RCC->APB4ENR;
 			#elif CPUSTYLE_STM32MP1
-				RCC->MP_APB3ENSETR = RCC_MC_APB3ENSETR_SYSCFGEN;     // включить тактирование альтернативных функций
-				(void) RCC->MP_APB3ENSETR;
-				RCC->MP_APB3LPENSETR = RCC_MC_APB3LPENSETR_SYSCFGLPEN;
-				(void) RCC->MP_APB3LPENSETR;
+				#error wrong config
 			#else /* CPUSTYLE_STM32H7XX */
 				RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;     // включить тактирование альтернативных функций
 				(void) RCC->APB2ENR;
@@ -929,18 +928,22 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 			{
 				const portholder_t bitpos0 = power4((ipins >> 0) & 0x0f);
 				SYSCFG->EXTICR [0] = (SYSCFG->EXTICR [0] & ~ (SYSCFG_EXTICR1_EXTI0 * bitpos0)) | (portcode * bitpos0);
+				(void) SYSCFG->EXTICR [0];
 			}
 			{
 				const portholder_t bitpos1 = power4((ipins >> 4) & 0x0f);
 				SYSCFG->EXTICR [1] = (SYSCFG->EXTICR [1] & ~ (SYSCFG_EXTICR1_EXTI0 * bitpos1)) | (portcode * bitpos1);
+				(void) SYSCFG->EXTICR [1];
 			}
 			{
 				const portholder_t bitpos2 = power4((ipins >> 8) & 0x0f);
 				SYSCFG->EXTICR [2] = (SYSCFG->EXTICR [2] & ~ (SYSCFG_EXTICR1_EXTI0 * bitpos2)) | (portcode * bitpos2);
+				(void) SYSCFG->EXTICR [2];
 			}
 			{
 				const portholder_t bitpos3 = power4((ipins >> 12) & 0x0f);
 				SYSCFG->EXTICR [3] = (SYSCFG->EXTICR [3] & ~ (SYSCFG_EXTICR1_EXTI0 * bitpos3)) | (portcode * bitpos3);
+				(void) SYSCFG->EXTICR [3];
 			}
 		#else
 			uint_fast8_t i;
@@ -954,14 +957,20 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 				const portholder_t bitpos = (portholder_t) 1 << (d.rem * 4);
 				const portholder_t bitmask = SYSCFG_EXTICR1_EXTI0 * bitpos;
 				const portholder_t bitvalue = portcode * bitpos;
-				AFIO->EXTICR [d.quot] = (SYSCFG->EXTICR [d.quot] & ~ bitmask) | bitvalue;
+				SYSCFG->EXTICR [d.quot] = (SYSCFG->EXTICR [d.quot] & ~ bitmask) | bitvalue;
+				(void) SYSCFG->EXTICR [d.quot];
 			}
 		#endif
 
 			EXTI->RTSR1 = (EXTI->RTSR1 & ~ ipins) | (ipins & raise);		// прерывание по нарастанию
+			(void) EXTI->RTSR1;
 			EXTI->FTSR1 = (EXTI->FTSR1 & ~ ipins) | (ipins & fall);		// прерывание по спаду
+			(void) EXTI->FTSR1;
 
 			EXTI_D1->IMR1 |= ipins;		// разрешить прерывание
+			(void) EXTI_D1->IMR1;
+			EXTI_D1->EMR1 &= ~ ipins;		// запретить событие
+			(void) EXTI_D1->EMR1;
 
 
 			if ((ipins & EXTI_IMR1_IM0) != 0)
@@ -7203,10 +7212,6 @@ arm_hardware_pioa_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PA, priority);	// PORT A
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
-
-	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PA, priority);	// PORT A
-
-#elif CPUSTYLE_STM32H7XX
 
 	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PA, priority);	// PORT A
 
