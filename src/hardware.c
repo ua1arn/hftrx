@@ -4111,7 +4111,7 @@ static void DMA2_SPI1_RX_initialize(void)
 		DMA2_Stream0->PAR = (uintptr_t) & SPI1->DR;
 	#endif /* CPUSTYLE_STM32H7XX */
 
-	DMA2_Stream0->FCR &= ~ DMA_SxFCR_DMDIS;	// use Direct mode
+	DMA2_Stream0->FCR &= ~ (DMA_SxFCR_FEIE_Msk | DMA_SxFCR_DMDIS_Msk);	// use Direct mode
 	//DMA2_Stream0->FCR |= DMA_SxFCR_DMDIS;	// Direct mode disabled
 	(void) DMA2_Stream0->FCR;
 
@@ -4160,7 +4160,7 @@ static void DMA2_SPI1_TX_initialize(void)
 	#endif /* CPUSTYLE_STM32H7XX */
 
 
-	DMA2_Stream3->FCR &= ~ DMA_SxFCR_DMDIS;	// use direct mode
+	DMA2_Stream3->FCR &= ~ (DMA_SxFCR_FEIE_Msk | DMA_SxFCR_DMDIS_Msk);	// use direct mode
 	//DMA2_Stream3->FCR |= DMA_SxFCR_DMDIS;	// Direct mode disabled
 	(void) DMA2_Stream3->FCR;
 

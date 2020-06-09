@@ -1502,7 +1502,7 @@ static void DMA_SAI1_A_TX_initialize(void)
 	DMA2_Stream1->NDTR = (DMA2_Stream1->NDTR & ~ DMA_SxNDT) |
 		(DMABUFFSIZE32TX * DMA_SxNDT_0);
 
-	DMA2_Stream1->FCR &= ~ DMA_SxFCR_DMDIS;	// use direct mode
+	DMA2_Stream1->FCR &= ~ (DMA_SxFCR_FEIE_Msk | DMA_SxFCR_DMDIS_Msk);	// use direct mode
 	DMA2_Stream1->CR =
 		ch * DMA_SxCR_CHSEL_0 | //канал
 		0 * DMA_SxCR_MBURST_0 |	// 0: single transfer

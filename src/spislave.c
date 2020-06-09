@@ -52,7 +52,7 @@ static void DMA1_SPI3_RX_initialize(void)
 	DMA1_Stream0->PAR = (uint32_t) & SPI3->DR;
 #endif /* CPUSTYLE_STM32H7XX */
 
-	DMA1_Stream0->FCR &= ~ DMA_SxFCR_DMDIS;	// use direct mode
+	DMA1_Stream0->FCR &= ~ (DMA_SxFCR_FEIE_Msk | DMA_SxFCR_DMDIS_Msk);	// use direct mode
 	DMA1_Stream0->CR =
 		(ch * DMA_SxCR_CHSEL_0) |	//канал
 		(0 * DMA_SxCR_MBURST_0) |	// 0: single transfer
