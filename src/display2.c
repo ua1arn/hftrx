@@ -175,13 +175,13 @@ display2_nextfb(
 	dctx_t * pctx
 	)
 {
-#if LCDMODE_LTDC && ! (LCDMODE_PIP_RGB565 || LCDMODE_PIP_L8)
+#if WITHLTDCHW && LCDMODE_LTDC && ! (LCDMODE_PIP_RGB565 || LCDMODE_PIP_L8)
 
 	colmain_fb_next();
 	arm_hardware_flush((uintptr_t) colmain_fb_show(), (uint_fast32_t) DIM_X * DIM_Y * sizeof (PACKEDCOLORMAIN_T));
 	arm_hardware_ltdc_main_set((uintptr_t) colmain_fb_show());
 
-#endif /* LCDMODE_LTDC && ! (LCDMODE_PIP_RGB565 || LCDMODE_PIP_L8) */
+#endif /* WITHLTDCHW && LCDMODE_LTDC && ! (LCDMODE_PIP_RGB565 || LCDMODE_PIP_L8) */
 }
 
 // Отображение частоты. Герцы так же большим шрифтом.

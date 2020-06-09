@@ -5371,9 +5371,9 @@ static void RAMFUNC_NONILINE cplxmlasave(cplxf *d, int len) {
 
 void hightests(void)
 {
-#if LCDMODE_LTDC
+#if WITHLTDCHW && LCDMODE_LTDC
 	arm_hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
-#endif /* LCDMODE_LTDC */
+#endif /* WITHLTDCHW && LCDMODE_LTDC */
 
 #if 1 && defined (__GNUC__)
 	{
@@ -6256,7 +6256,7 @@ void hightests(void)
 		BarTest();
 	}
 #endif
-#if 0 && LCDMODE_COLORED && ! DSTYLE_G_DUMMY
+#if 0 && WITHLTDCHW && LCDMODE_COLORED && ! DSTYLE_G_DUMMY
 	{
 		// test: вывод палитры на экран
 		display2_bgreset();
