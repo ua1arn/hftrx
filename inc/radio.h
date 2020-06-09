@@ -3380,12 +3380,13 @@ uint_fast8_t hamradio_verify_freq_bands(uint_fast32_t freq, uint_fast32_t * bott
 
 /* выбор внешнего вида прибора - стрелочный или градусник */
 #if (WITHSWRMTR || WITHSHOWSWRPWR)
-typedef enum {
+enum {
 	SMETER_TYPE_BARS,
 	SMETER_TYPE_DIAL
-} smeter_type_t;
-#endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
+};
+
 uint_fast8_t hamradio_get_gsmetertype(void);
+#endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
 
 #ifdef __cplusplus
 }

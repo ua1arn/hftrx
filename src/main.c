@@ -13027,7 +13027,7 @@ static const FLASHMEM struct menudef menutable [] =
 		},
 #if (WITHSWRMTR || WITHSHOWSWRPWR)
 	{
-		QLABEL2("SMETER ", "Smeter type"), 7, 3, RJ_SMETER,	ISTEP1,
+		QLABEL2("SMETER ", "S-meter type"), 7, 3, RJ_SMETER,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,							/* выбор внешнего вида прибора - стрелочный или градусник */
 		offsetof(struct nvmap, gsmetertype),
@@ -19041,10 +19041,12 @@ void hamradio_change_submode(uint_fast8_t newsubmode)
 
 #endif /* WITHTOUCHGUI */
 
+#if (WITHSWRMTR || WITHSHOWSWRPWR)
 uint_fast8_t hamradio_get_gsmetertype(void)
 {
 	return gsmetertype;
 }
+#endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
 
 // основной цикл программы при работе в режиме любительского премника
 static void

@@ -4603,8 +4603,8 @@ enum
 		{	45, 0,	display2_notch5,		REDRM_MODE, PGALL, },	// NOTCH on/off
 		{	47, 15,	display2_voxtune3,	REDRM_MODE, PGALL, },	// VOX
 		{	47, 5,	display2_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
-		{    0, 6,  display2_smeter15_init,REDRM_INIS, PGINI, },	//  Инициализация стрелочного прибора
-		{    0, 6,  display2_smeter15, 	REDRM_BARS, PGALL, },	// Изображение стрелочного прибора
+		{    0, 4,  display2_smeter15_init,REDRM_INIS, PGINI, },	//  Инициализация стрелочного прибора
+		{    0, 4,  display2_smeter15, 	REDRM_BARS, PGALL, },	// Изображение стрелочного прибора
 		{   47, 20, display2_bkin3,		REDRM_MODE, PGALL, },
 	#if WITHENCODER2
 //		{	41, 0,	display2_fnlabel9,	REDRM_MODE, PGALL, },	// FUNC item label
@@ -4771,8 +4771,8 @@ enum
 		{	32,	0,	display2_att4,		REDRM_MODE, PGALL, },
 		{	37,	0,	display2_preovf3,	REDRM_BARS, PGALL, },
 
-		{   0, 	6,  display2_smeter15_init,REDRM_INIS, PGINI, },	//  Инициализация стрелочного прибора
-		{   0, 	6,	display2_smeter15, 	REDRM_BARS, PGALL, },	// Изображение стрелочного прибора
+		{   0, 	4,  display2_smeter15_init,REDRM_INIS, PGINI, },	//  Инициализация стрелочного прибора
+		{   0, 	4,	display2_smeter15, 	REDRM_BARS, PGALL, },	// Изображение стрелочного прибора
 		{	15,	6,	display2_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
 
 		{	41, 0,	display2_fnlabel9,	REDRM_MODE, PGALL, },	// FUNC item label
@@ -7274,7 +7274,7 @@ enum {
 	SM_STATE_TX,
 	SM_STATE_COUNT
 };
-enum { SM_BG_W = 240, SM_BG_H = 70 };
+enum { SM_BG_W = GRID2X(15), SM_BG_H = GRID2Y(20) };
 
 typedef ALIGNX_BEGIN PACKEDCOLORMAIN_T smeter_bg_t [GXSIZE(SM_BG_W, SM_BG_H)] ALIGNX_END;
 static smeter_bg_t smeter_bg[SM_STATE_COUNT]; 	// 0 - rx, 1 - tx
@@ -7287,6 +7287,9 @@ typedef struct {
 	uint_fast16_t r2;
 	uint_fast16_t rv1;
 	uint_fast16_t rv2;
+	uint_fast8_t step1;
+	uint_fast8_t step2;
+	uint_fast8_t step3;
 } smeter_params_t;
 static smeter_params_t smeter_params;
 
@@ -7303,7 +7306,7 @@ display2_smeter15_init(
 	const uint_fast8_t halfsect = 30;
 	const int stripewidth = 12; //16;
 
-	if(global_smetertype)
+	if(global_smetertype)	// SMETER_TYPE_DIAL
 	{
 		smeter_params.gm = 270;
 		smeter_params.gs = smeter_params.gm - halfsect;
@@ -7312,73 +7315,79 @@ display2_smeter15_init(
 		smeter_params.rv2 = smeter_params.rv1 - 3 * GRID2Y(3);
 		smeter_params.r1 = 7 * GRID2Y(3) - 8;	//350;
 		smeter_params.r2 = smeter_params.r1 - stripewidth;
+		smeter_params.step1 = 3;	// шаг для оцифровки S
+		smeter_params.step2 = 4;	// шаг для оцифровки плюсов
+		smeter_params.step3 = 20;	// swr
+
 	}
-	else
+	else					// SMETER_TYPE_BARS
 	{
 		smeter_params.gs = 20;
 		smeter_params.ge = 220;
-		smeter_params.gm = 220 / 2;
+		smeter_params.gm = 240 / 2;
+		smeter_params.step1 = 10;	// шаг для оцифровки S
+		smeter_params.step2 = 14;	// шаг для оцифровки плюсов
+		smeter_params.step3 = 67;	// swr
+		smeter_params.r1 = SM_BG_H / 4;					// горизонталь первой шкалы
+		smeter_params.r2 = SM_BG_H - smeter_params.r1; 	// горизонталь второй шкалы
 	}
 
-	enum { step1 = 3 };		// шаг для оцифровки S
-	enum { step2 = 4 };		// шаг для оцифровки плюсов
-	enum { step3 = 20 };	// swr
 	const int markersTX_pwr [] =
 	{
 		smeter_params.gs,
-		smeter_params.gs + 2 * step1,
-		smeter_params.gs + 4 * step1,
-		smeter_params.gs + 6 * step1,
-		smeter_params.gs + 8 * step1,
-		smeter_params.gs + 10 * step1,
-		smeter_params.gs + 12 * step1,
-		smeter_params.gs + 14 * step1,
-		smeter_params.gs + 16 * step1,
-		smeter_params.gs + 18 * step1,
-		smeter_params.gs + 20 * step1,
+		smeter_params.gs + 2 * smeter_params.step1,
+		smeter_params.gs + 4 * smeter_params.step1,
+		smeter_params.gs + 6 * smeter_params.step1,
+		smeter_params.gs + 8 * smeter_params.step1,
+		smeter_params.gs + 10 * smeter_params.step1,
+		smeter_params.gs + 12 * smeter_params.step1,
+		smeter_params.gs + 14 * smeter_params.step1,
+		smeter_params.gs + 16 * smeter_params.step1,
+		smeter_params.gs + 18 * smeter_params.step1,
+		smeter_params.gs + 20 * smeter_params.step1,
 	};
 	const int markersTX_swr [] =
 	{
 		smeter_params.gs,
-		smeter_params.gs + step3,
-		smeter_params.gs + 2 * step3,
-		smeter_params.gs + 3 * step3,
+		smeter_params.gs + smeter_params.step3,
+		smeter_params.gs + 2 * smeter_params.step3,
+		smeter_params.gs + 3 * smeter_params.step3,
 	};
 	const int markers [] =
 	{
-		//smeter_params.gs + 0 * step1,
-		smeter_params.gs + 2 * step1,		// S1
-		smeter_params.gs + 4 * step1,		// S3
-		smeter_params.gs + 6 * step1,		// S5
-		smeter_params.gs + 8 * step1,		// S7
-		smeter_params.gs + 10 * step1,	// S9
+		//smeter_params.gs + 0 * smeter_params.step1,
+		smeter_params.gs + 2 * smeter_params.step1,		// S1
+		smeter_params.gs + 4 * smeter_params.step1,		// S3
+		smeter_params.gs + 6 * smeter_params.step1,		// S5
+		smeter_params.gs + 8 * smeter_params.step1,		// S7
+		smeter_params.gs + 10 * smeter_params.step1,	// S9
 	};
 	const int markersR [] =
 	{
-		smeter_params.gm + 2 * step2,	//
-		smeter_params.gm + 4 * step2,
-		smeter_params.gm + 6 * step2,
+		smeter_params.gm + 2 * smeter_params.step2,	//
+		smeter_params.gm + 4 * smeter_params.step2,
+		smeter_params.gm + 6 * smeter_params.step2,
 	};
 	const int markers2 [] =
 	{
-		//smeter_params.gs + 1 * step1,
-		smeter_params.gs + 3 * step1,		// S2
-		smeter_params.gs + 5 * step1,		// S4
-		smeter_params.gs + 7 * step1,		// S6
-		smeter_params.gs + 9 * step1,		// S8
+		//smeter_params.gs + 1 * smeter_params.step1,
+		smeter_params.gs + 3 * smeter_params.step1,		// S2
+		smeter_params.gs + 5 * smeter_params.step1,		// S4
+		smeter_params.gs + 7 * smeter_params.step1,		// S6
+		smeter_params.gs + 9 * smeter_params.step1,		// S8
 	};
 	const int markers2R [] =
 	{
-		smeter_params.gm + 1 * step2,
-		smeter_params.gm + 3 * step2,
-		smeter_params.gm + 5 * step2,
+		smeter_params.gm + 1 * smeter_params.step2,
+		smeter_params.gm + 3 * smeter_params.step2,
+		smeter_params.gm + 5 * smeter_params.step2,
 	};
 
 	const COLORMAIN_T smeter = COLORMAIN_WHITE;
 	const COLORMAIN_T smeterplus = COLORMAIN_DARKRED;
 	const uint_fast16_t pad2w3 = strwidth3("ZZ");
 
-	PACKEDCOLORMAIN_T * bg = smeter_bg [SM_STATE_TX];
+	PACKEDCOLORMAIN_T * bg;
 	uint_fast8_t xb = 120, yb = 120;
 	unsigned p;
 	unsigned i;
@@ -7387,6 +7396,8 @@ display2_smeter15_init(
 	{
 
 	case SMETER_TYPE_DIAL:
+
+		bg = smeter_bg [SM_STATE_TX];
 		colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORMAIN_BLACK, 1);
 
 		for (p = 0, i = 0; i < ARRAY_SIZE(markersTX_pwr); ++ i, p += 10)
@@ -7468,6 +7479,68 @@ display2_smeter15_init(
 
 	case SMETER_TYPE_BARS:
 
+		bg = smeter_bg [SM_STATE_TX];
+		colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORMAIN_BLACK, 1);
+//		colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORMAIN_WHITE, 0);
+//		colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H / 2, COLORMAIN_WHITE, 0);
+
+		colmain_line(bg, SM_BG_W, SM_BG_H, smeter_params.gs, smeter_params.r1, smeter_params.ge, smeter_params.r1, COLORMAIN_WHITE, 0);
+		for (p = 0, i = 0; i < ARRAY_SIZE(markersTX_pwr); ++ i, p += 10)
+		{
+			if (i % 2 == 0)
+			{
+				char buf [10];
+				colmain_line(bg, SM_BG_W, SM_BG_H, markersTX_pwr [i], smeter_params.r1, markersTX_pwr [i], smeter_params.r1 - 10, COLORMAIN_WHITE, 0);
+				local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("%u"), p);
+				colpip_string3_tbg(bg, SM_BG_W, SM_BG_H, markersTX_pwr [i] - strwidth3(buf) / 2, smeter_params.r1 - 10 - SMALLCHARH3 - 2, buf, COLORMAIN_YELLOW);
+			}
+			else
+				colmain_line(bg, SM_BG_W, SM_BG_H, markersTX_pwr [i], smeter_params.r1, markersTX_pwr [i], smeter_params.r1 - 5, COLORMAIN_WHITE, 0);
+		}
+
+		colmain_line(bg, SM_BG_W, SM_BG_H, smeter_params.gs, smeter_params.r2, smeter_params.ge, smeter_params.r2, COLORMAIN_WHITE, 0);
+		for (p = 1, i = 0; i < ARRAY_SIZE(markersTX_swr); ++ i, p += 1)
+		{
+			char buf [10];
+			colmain_line(bg, SM_BG_W, SM_BG_H, markersTX_swr [i], smeter_params.r2, markersTX_swr [i], smeter_params.r2 + 10, COLORMAIN_WHITE, 0);
+			local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("%u"), p);
+			colpip_string3_tbg(bg, SM_BG_W, SM_BG_H, markersTX_swr [i] - strwidth3(buf) / 2, smeter_params.r2 + 12, buf, COLORMAIN_YELLOW);
+		}
+
+		bg = smeter_bg [SM_STATE_RX];
+		colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORMAIN_BLACK, 1);
+//		colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORMAIN_WHITE, 0);
+//		colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H / 2, COLORMAIN_WHITE, 0);
+
+		colmain_line(bg, SM_BG_W, SM_BG_H, smeter_params.gs, smeter_params.r1, smeter_params.gm, smeter_params.r1, COLORMAIN_WHITE, 0);
+		colmain_line(bg, SM_BG_W, SM_BG_H, smeter_params.gm, smeter_params.r1, smeter_params.ge, smeter_params.r1, COLORMAIN_RED, 0);
+		colpip_string2_tbg(bg, SM_BG_W, SM_BG_H, smeter_params.gs - SMALLCHARW2, smeter_params.r1 - SMALLCHARH2 - 2, "Sm", COLORMAIN_YELLOW);
+
+		for (p = 1, i = 0; i < ARRAY_SIZE(markers); ++ i, p += 2)
+		{
+			char buf [10];
+			uint_fast16_t xx, yy;
+			colmain_line(bg, SM_BG_W, SM_BG_H, markers [i], smeter_params.r1, markers [i], smeter_params.r1 - 10, COLORMAIN_WHITE, 0);
+			local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("%u"), p);
+			colpip_string3_tbg(bg, SM_BG_W, SM_BG_H, markers [i] - SMALLCHARW3 / 2, smeter_params.r1 - 10 - SMALLCHARH3 - 2, buf, COLORMAIN_YELLOW);
+		}
+		for (i = 0; i < ARRAY_SIZE(markers2); ++ i)
+		{
+			colmain_line(bg, SM_BG_W, SM_BG_H, markers2 [i], smeter_params.r1, markers2 [i], smeter_params.r1 - 5, COLORMAIN_WHITE, 0);
+		}
+
+		for (p = 20, i = 0; i < ARRAY_SIZE(markersR); ++ i, p += 20)
+		{
+			char buf [10];
+			colmain_line(bg, SM_BG_W, SM_BG_H, markersR [i], smeter_params.r1, markersR [i], smeter_params.r1 - 10, COLORMAIN_RED, 0);
+			local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("+%u"), p);
+			colpip_string3_tbg(bg, SM_BG_W, SM_BG_H, markersR [i] - strwidth3(buf) / 2, smeter_params.r1 - 10 - SMALLCHARH3 - 2, buf, COLORMAIN_YELLOW);
+		}
+		for (i = 0; i < ARRAY_SIZE(markers2R); ++ i)
+		{
+			colmain_line(bg, SM_BG_W, SM_BG_H, markers2R [i], smeter_params.r1, markers2R [i], smeter_params.r1 - 5, COLORMAIN_RED, 0);
+		}
+
 		break;
 	}
 }
@@ -7481,12 +7554,13 @@ display2_smeter15(
 	)
 {
 	/* получение координат прямоугольника с изображением */
-	const uint_fast16_t width = GRID2X(15);
-	const uint_fast16_t height = GRID2Y(14);
+	const uint_fast16_t width = SM_BG_W;
+	const uint_fast16_t height = SM_BG_H;
 	const uint_fast16_t x0 = GRID2X(xgrid);
 	const uint_fast16_t y0 = GRID2Y(ygrid);
+	const int dial_shift = GRID2Y(2);
 	const int xc = x0 + width / 2;
-	const int yc = y0 + 120;
+	const int yc = y0 + 120 + dial_shift;
 
 	const uint_fast8_t is_tx = hamradio_get_tx();
 	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
@@ -7495,64 +7569,65 @@ display2_smeter15(
 	int gp = smeter_params.gs, gv = smeter_params.gs, gv_trace = smeter_params.gs, gswr = smeter_params.gs;
 
 	//colpip_rect(colmain_fb_draw(), DIM_X, DIM_Y, x0, y0 - 8, x0 + width - 1, y0 + height - 1 + 15, DESIGNCOLORSTATE, 0);
+
+	if (is_tx)
+	{
+		enum { gx_hyst = 3 };		// гистерезис в градусах
+		/* фильтрация - (в градусах) */
+		static uint_fast16_t gp_smooth, gswr_smooth;
+
+		if (first_tx)				// сброс при переходе на передачу
+		{
+			first_tx = 0;
+			gp_smooth = smeter_params.gs;
+			gswr_smooth = smeter_params.gs;
+		}
+
+		uint_fast16_t power;
+
+		power = board_getadc_unfiltered_truevalue(PWRMRRIX);	// без возможных тормозов на SPI при чтении
+		gp = smeter_params.gs + normalize(power, 0, maxpwrcali << 4, smeter_params.ge - smeter_params.gs);
+
+		// todo: get_swr(swr_fullscale) - использщовать MRRxxx.
+		// Для тюнера и измерений не голдится, для показа - без торомозов.
+		const uint_fast16_t swr_fullscale = (SWRMIN * 40 / 10) - SWRMIN;	// количество рисок в шкале ииндикатора
+		gswr = smeter_params.gs + normalize(get_swr(swr_fullscale), 0, swr_fullscale, smeter_params.ge - smeter_params.gs);
+
+		if (gp > smeter_params.gs)
+			gp_smooth = gp;
+
+		if (gp == smeter_params.gs && gp_smooth > smeter_params.gs)
+			gp = (gp_smooth -= gx_hyst) > smeter_params.gs ? gp_smooth : smeter_params.gs;
+
+		if (gswr > smeter_params.gs)
+			gswr_smooth = gswr;
+
+		if (gswr == smeter_params.gs && gswr_smooth > smeter_params.gs)
+			gswr = (gswr_smooth -= gx_hyst) > smeter_params.gs ? gswr_smooth : smeter_params.gs;
+	}
+	else
+	{
+		uint_fast8_t tracemax;
+		uint_fast8_t value = board_getsmeter(& tracemax, 0, UINT8_MAX, 0);
+		tracemax = value > tracemax ? value : tracemax;	// защита от рассогласования значений
+
+		gv =
+			smeter_params.gs + normalize3(value, 	s9level - s9delta, s9level, s9level + s9_60_delta, smeter_params.gm - smeter_params.gs, smeter_params.ge - smeter_params.gs);
+		gv_trace =
+			smeter_params.gs + normalize3(tracemax, s9level - s9delta, s9level, s9level + s9_60_delta, smeter_params.gm - smeter_params.gs, smeter_params.ge - smeter_params.gs);
+
+		first_tx = 1;
+	}
+
 	switch (global_smetertype)
-		{
+	{
 
-		case SMETER_TYPE_DIAL:
-
-		if (is_tx)
-		{
-			enum { gx_hyst = 3 };		// гистерезис в градусах
-			/* фильтрация - (в градусах) */
-			static uint_fast16_t gp_smooth, gswr_smooth;
-
-			if (first_tx)				// сброс при переходе на передачу
-			{
-				first_tx = 0;
-				gp_smooth = smeter_params.gs;
-				gswr_smooth = smeter_params.gs;
-			}
-
-			uint_fast16_t power;
-
-			power = board_getadc_unfiltered_truevalue(PWRMRRIX);	// без возможных тормозов на SPI при чтении
-			gp = smeter_params.gs + normalize(power, 0, maxpwrcali << 4, smeter_params.ge - smeter_params.gs);
-
-			// todo: get_swr(swr_fullscale) - использщовать MRRxxx.
-			// Для тюнера и измерений не голдится, для показа - без торомозов.
-			const uint_fast16_t swr_fullscale = (SWRMIN * 40 / 10) - SWRMIN;	// количество рисок в шкале ииндикатора
-			gswr = smeter_params.gs + normalize(get_swr(swr_fullscale), 0, swr_fullscale, smeter_params.ge - smeter_params.gs);
-
-			if (gp > smeter_params.gs)
-				gp_smooth = gp;
-
-			if (gp == smeter_params.gs && gp_smooth > smeter_params.gs)
-				gp = (gp_smooth -= gx_hyst) > smeter_params.gs ? gp_smooth : smeter_params.gs;
-
-			if (gswr > smeter_params.gs)
-				gswr_smooth = gswr;
-
-			if (gswr == smeter_params.gs && gswr_smooth > smeter_params.gs)
-				gswr = (gswr_smooth -= gx_hyst) > smeter_params.gs ? gswr_smooth : smeter_params.gs;
-		}
-		else
-		{
-			uint_fast8_t tracemax;
-			uint_fast8_t value = board_getsmeter(& tracemax, 0, UINT8_MAX, 0);
-			tracemax = value > tracemax ? value : tracemax;	// защита от рассогласования значений
-
-			gv =
-				smeter_params.gs + normalize3(value, 	s9level - s9delta, s9level, s9level + s9_60_delta, smeter_params.gm - smeter_params.gs, smeter_params.ge - smeter_params.gs);
-			gv_trace =
-				smeter_params.gs + normalize3(tracemax, s9level - s9delta, s9level, s9level + s9_60_delta, smeter_params.gm - smeter_params.gs, smeter_params.ge - smeter_params.gs);
-
-			first_tx = 1;
-		}
+	case SMETER_TYPE_DIAL:
 
 		if (is_tx)
 		{
 			// TX state
-			colpip_plot(fr, DIM_X, DIM_Y, x0, y0, smeter_bg [SM_STATE_TX], SM_BG_W, SM_BG_H);
+			colpip_plot(fr, DIM_X, DIM_Y, x0, y0 + dial_shift, smeter_bg [SM_STATE_TX], SM_BG_W, SM_BG_H - dial_shift);
 
 			if (gswr > smeter_params.gs)
 			{
@@ -7575,7 +7650,7 @@ display2_smeter15(
 		else
 		{
 			// RX state
-			colpip_plot(fr, DIM_X, DIM_Y, x0, y0, smeter_bg [SM_STATE_RX], SM_BG_W, SM_BG_H);
+			colpip_plot(fr, DIM_X, DIM_Y, x0, y0 + dial_shift, smeter_bg [SM_STATE_RX], SM_BG_W, SM_BG_H - dial_shift);
 
 			{
 				// Рисование peak value (риска)
@@ -7598,8 +7673,29 @@ display2_smeter15(
 
 	case SMETER_TYPE_BARS:
 
-			break;
+		if (is_tx)
+		{
+			colpip_plot(fr, DIM_X, DIM_Y, x0, y0, smeter_bg [SM_STATE_TX], SM_BG_W, SM_BG_H);
+
+			if(gp > smeter_params.gs)
+				colpip_rect(fr, DIM_X, DIM_Y, x0 + smeter_params.gs, y0 + smeter_params.r1 + 5, x0 + gp, y0 + smeter_params.r1 + 20, COLORMAIN_GREEN, 1);
+
+			if(gswr > smeter_params.gs)
+				colpip_rect(fr, DIM_X, DIM_Y, x0 + smeter_params.gs, y0 + smeter_params.r2 - 20, x0 + gswr, y0 + smeter_params.r2 - 5, COLORMAIN_GREEN, 1);
 		}
+		else
+		{
+			colpip_plot(fr, DIM_X, DIM_Y, x0, y0, smeter_bg [SM_STATE_RX], SM_BG_W, SM_BG_H);
+
+			if(gv > smeter_params.gs)
+				colpip_rect(fr, DIM_X, DIM_Y, x0 + smeter_params.gs, y0 + smeter_params.r1 + 5, x0 + gv, y0 + smeter_params.r1 + 20, COLORMAIN_GREEN, 1);
+
+			if(gv_trace > smeter_params.gs)
+				colmain_line(fr, DIM_X, DIM_Y, x0 + gv_trace, y0 + smeter_params.r1 + 5, x0 + gv_trace, y0 + smeter_params.r1 + 20, COLORMAIN_YELLOW, 0);
+		}
+
+		break;
+	}
 }
 
 #endif /* LCDMODE_LTDC */
