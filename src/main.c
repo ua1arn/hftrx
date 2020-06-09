@@ -2882,6 +2882,10 @@ filter_t fi_2p0_455 =
 	uint8_t s9_60_delta;
 #endif /* WITHBARS */
 	
+#if (WITHSWRMTR || WITHSHOWSWRPWR)
+	uint8_t gsmetertype;		/* выбор внешнего вида прибора - стрелочный или градусник */
+#endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
+
 #if LO1PHASES
 	uint16_t phaserx, phasetx;
 #endif /* LO1PHASES */
@@ -2994,7 +2998,9 @@ static uint_fast8_t gagcmode;
 	static uint_fast8_t gnoisereductvl = 25;	// noise reduction
 #endif /* WITHIF4DSP */
 
-
+#if (WITHSWRMTR || WITHSHOWSWRPWR)
+	static uint_fast8_t gsmetertype = SMETER_TYPE_DIAL;	/* выбор внешнего вида прибора - стрелочный или градусник */
+#endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
 
 #if WITHIFSHIFT
 	enum { IFSHIFTTMIN = 0, IFSHIFTHALF = 3000, IFSHIFTMAX = 2 * IFSHIFTHALF };
@@ -5578,6 +5584,7 @@ enum
 	RJ_POWER,		/* отображние мощности HP/LP */
 	RJ_SIGNED,		/* отображние знакового числа (меню на втором валкодере) */
 	RJ_UNSIGNED,		/* отображние знакового числа (меню на втором валкодере) */
+	RJ_SMETER,		/* выбор внешнего вида прибора - стрелочный или градусник */
 	//
 	RJ_notused
 };
@@ -13018,6 +13025,17 @@ static const FLASHMEM struct menudef menutable [] =
 		& gspantialiasing,
 		getzerobase, /* складывается со смещением и отображается */
 		},
+#if (WITHSWRMTR || WITHSHOWSWRPWR)
+	{
+		QLABEL2("SMETER ", "Smeter type"), 7, 3, RJ_SMETER,	ISTEP1,
+		ITEM_VALUE,
+		0, 1,							/* выбор внешнего вида прибора - стрелочный или градусник */
+		offsetof(struct nvmap, gsmetertype),
+		NULL,
+		& gsmetertype,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+#endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
 #endif /* WITHSPECTRUMWF */
 #if defined (RTC1_TYPE)
 #if ! WITHFLATMENU
@@ -16091,6 +16109,18 @@ void display2_menu_valxx(
 		}
 		break;
 
+	case RJ_SMETER:
+			{
+				static const FLASHMEM char msg_dial [] = "DIAL";
+				static const FLASHMEM char msg_bars [] = "BARS";
+
+				width = VALUEW;
+				comma = 4;
+				display_menu_string_P(x, y, value ? msg_dial : msg_bars, width, comma);
+				display2_smeter15_init(0, 0, NULL);
+			}
+			break;
+
 	case RJ_ON:
 		{
 			static const FLASHMEM char msg_on  [] = " On";
@@ -19010,6 +19040,11 @@ void hamradio_change_submode(uint_fast8_t newsubmode)
 }
 
 #endif /* WITHTOUCHGUI */
+
+uint_fast8_t hamradio_get_gsmetertype(void)
+{
+	return gsmetertype;
+}
 
 // основной цикл программы при работе в режиме любительского премника
 static void

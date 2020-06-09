@@ -3378,6 +3378,15 @@ void hamradio_get_tx_power_limits(uint_fast8_t * min, uint_fast8_t * max);
 
 uint_fast8_t hamradio_verify_freq_bands(uint_fast32_t freq, uint_fast32_t * bottom, uint_fast32_t * top);
 
+/* выбор внешнего вида прибора - стрелочный или градусник */
+#if (WITHSWRMTR || WITHSHOWSWRPWR)
+typedef enum {
+	SMETER_TYPE_BARS,
+	SMETER_TYPE_DIAL
+} smeter_type_t;
+#endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
+uint_fast8_t hamradio_get_gsmetertype(void);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

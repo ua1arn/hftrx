@@ -62,12 +62,11 @@ extern "C" {
 		#define DMABUF32TXI	0		// TX, I
 		#define DMABUF32TXQ	4		// TX, Q
 
-		#if WITHRTS96
-			#define DMABUF32RTS0I	2		// RTS0, I	// previous - oldest
-			#define DMABUF32RTS0Q	6		// RTS0, Q	// previous
-			#define DMABUF32RTS1I	3		// RTS1, I	// current	- nevest
-			#define DMABUF32RTS1Q	7		// RTS1, Q	// current
-		#endif /* WITHRTS96 */
+		#define DMABUF32RTS0I	2		// RTS0, I	// previous - oldest
+		#define DMABUF32RTS0Q	6		// RTS0, Q	// previous
+		#define DMABUF32RTS1I	3		// RTS1, I	// current	- nevest
+		#define DMABUF32RTS1Q	7		// RTS1, Q	// current
+
 
 		// Slot S0, S4: Oldest sample (T-3)
 		// Slot S1, S5: Old sample (T-2)
