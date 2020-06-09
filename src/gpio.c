@@ -768,16 +768,15 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 	static void
 	stm32mp1_pioX_onchangeinterrupt(portholder_t ipins,
 			portholder_t raise, portholder_t fall,
-			portholder_t portcode, uint32_t priority)
+			portholder_t portcode, /* 0x00: PAxx, 0x01: PBxx, .. 0x0a: PKxx */
+			uint32_t priority
+			)
 	{
 		// CPU1 = MPU and CPU2 = MCU
 		RCC->MP_APB3ENSETR |= RCC_MC_APB3ENSETR_SYSCFGEN;     // включить тактирование альтернативных функций
 		(void) RCC->MP_APB3ENSETR;
 		RCC->MP_APB3LPENSETR |= RCC_MC_APB3LPENSETR_SYSCFGLPEN;     // включить тактирование альтернативных функций
 		(void) RCC->MP_APB3LPENSETR;
-		//const portholder_t portcode = AFIO_EXTICR1_EXTI0_PB;	// PORT B
-		//RCC->APB2ENR |= RCC_APB2ENR_AFIOEN;     // включить тактирование альтернативных функций
-
 
 		#if 1
 		{
@@ -785,21 +784,25 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 			const portholder_t bitpos0 = power8((ipins >> 0) & 0x0F);
 			// EXTI_EXTICR1: PZ[3]..PA[3], PZ[2]..PA[2], PZ[1]..PA[0], PZ[3]..PA[0],
 			EXTI->EXTICR [0] = (EXTI->EXTICR [0] & ~ (EXTI_EXTICR1_EXTI0 * bitpos0)) | (portcode * bitpos0);
+			(void) EXTI->EXTICR [0];
 		}
 		{
 			const portholder_t bitpos1 = power8((ipins >> 4) & 0x0F);
 			// EXTI_EXTICR2: PZ[7]..PA[7], PZ[6]..PA[6], PZ[5]..PA[5], PZ[4]..PA[4],
 			EXTI->EXTICR [1] = (EXTI->EXTICR [1] & ~ (EXTI_EXTICR1_EXTI0 * bitpos1)) | (portcode * bitpos1);
+			(void) EXTI->EXTICR [1];
 		}
 		{
 			const portholder_t bitpos2 = power8((ipins >> 8) & 0x0F);
 			// EXTI_EXTICR3: PZ[11]..PA[11], PZ[10]..PA[10], PZ[9]..PA[9], PZ[8]..PA[8],
 			EXTI->EXTICR [2] = (EXTI->EXTICR [2] & ~ (EXTI_EXTICR1_EXTI0 * bitpos2)) | (portcode * bitpos2);
+			(void) EXTI->EXTICR [2];
 		}
 		{
 			const portholder_t bitpos3 = power8((ipins >> 12) & 0x0F);
 			// EXTI_EXTICR4: PZ[15]..PA[15], PZ[14]..PA[14], PZ[13]..PA[13], PZ[12]..PA[12],
 			EXTI->EXTICR [3] = (EXTI->EXTICR [3] & ~ (EXTI_EXTICR1_EXTI0 * bitpos3)) | (portcode * bitpos3);
+			(void) EXTI->EXTICR [3];
 		}
 		#else
 		uint_fast8_t i;
@@ -813,15 +816,19 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 			const portholder_t bitpos = (portholder_t) 1 << (d.rem * 8);
 			const portholder_t bitmask = SYSCFG_EXTICR1_EXTI0 * bitpos;
 			const portholder_t bitvalue = portcode * bitpos;
-			AFIO->EXTICR [d.quot] = (SYSCFG->EXTICR [d.quot] & ~ bitmask) | bitvalue;
-		}
+			EXTI->EXTICR [d.quot] = (EXTI->EXTICR [d.quot] & ~ bitmask) | bitvalue;
+			(void) EXTI->EXTICR [d.quot];
+	}
 		#endif
 
 		EXTI->RTSR1 = (EXTI->RTSR1 & ~ ipins) | (ipins & raise);		// прерывание по нарастанию
+		(void) EXTI->RTSR1;
 		EXTI->FTSR1 = (EXTI->FTSR1 & ~ ipins) | (ipins & fall);		// прерывание по спаду
+		(void) EXTI->FTSR1;
 
 		// CPU1 = MPU and CPU2 = MCU
 		EXTI->C1IMR1 |= ipins;		// разрешить прерывание
+		(void) EXTI->C1IMR1;
 
 		if ((ipins & EXTI_IMR1_IM0) != 0)
 			arm_hardware_set_handler(EXTI0_IRQn, EXTI0_IRQHandler, priority);
@@ -1091,9 +1098,12 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 			#endif
 
 			EXTI->RTSR1 = (EXTI->RTSR1 & ~ ipins) | (ipins & raise);		// прерывание по нарастанию
+			(void) EXTI->RTSR1;
 			EXTI->FTSR1 = (EXTI->FTSR1 & ~ ipins) | (ipins & fall);		// прерывание по спаду
+			(void) EXTI->FTSR1;
 
 			EXTI_D1->IMR1 |= ipins;		// разрешить прерывание
+			(void) EXTI_D1->IMR1;
 
 		#else /* CPUSTYLE_STM32H7XX */
 
