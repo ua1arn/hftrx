@@ -5412,6 +5412,7 @@ inject_testsignals(int32_t * const dbuff)
 	dbuff [DMABUF32RX0I] = simval.IV;
 	dbuff [DMABUF32RX0Q] = simval.QV;
 
+#if WITHRTS96
 	// панорама
 	// previous - oldest
 	const FLOAT32P_t simval0 = scalepair(get_float_monofreq2(), rxlevelfence);	// frequency2
@@ -5422,6 +5423,7 @@ inject_testsignals(int32_t * const dbuff)
 	const FLOAT32P_t simval1 = scalepair(get_float_monofreq2(), rxlevelfence);	// frequency2
 	dbuff [DMABUF32RTS1I] = simval1.IV;
 	dbuff [DMABUF32RTS1Q] = simval1.QV;
+#endif /* WITHRTS96 */
 }
 
 // Обработка полученного от DMA буфера с выборками или квадратурами (или двухканальный приём).
