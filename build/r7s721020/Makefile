@@ -42,7 +42,7 @@ OPT = -Ofast
 LTO = -flto
 
 # This product incorporates the ARM single-core Cortex-A9 MPCore, where the IP version is r3p0.
-#CORE = -march=armv7-a -mfloat-abi=hard -mfpu=vfpv3-d16 -mfpu=neon -ftree-vectorize
+#CORE = -march=armv7-a -mfloat-abi=hard -mfpu=vfpv3-d16
 CORE = -mcpu=cortex-a9 -mfloat-abi=hard -mfpu=vfpv3-d16
 #CORE += -mfpu=neon
 
