@@ -4195,7 +4195,7 @@ static void DMA2_waitTC(
 	uint_fast8_t i		// 0..7 - номер Stream
 	)
 {
-	uint_fast8_t mask = 1UL <<((i & 0x01) * 6);
+	uint_fast8_t mask = 1UL << ((i & 0x01) * 6);
 	if (i >= 4)
 	{
 		if (i >= 6)

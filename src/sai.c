@@ -259,6 +259,8 @@ void RAMFUNC_NONILINE DMA1_Stream3_IRQHandler(void)
 	// проверка условия может потребоваться при добавлении обработчика ошибки
 	if ((DMA1->LISR & DMA_LISR_TCIF3) != 0)
 	{
+		DMA1->LIFCR = DMA_LIFCR_CTCIF3;	// Clear TC interrupt flag
+		//ASSERT((SAI1_Block_B->SR & SAI_xSR_OVRUDR_Msk) == 0);
 		const uint_fast8_t b = (DMA1_Stream3->CR & DMA_SxCR_CT) != 0;
 		if (b != 0)
 		{
@@ -272,7 +274,6 @@ void RAMFUNC_NONILINE DMA1_Stream3_IRQHandler(void)
 			DMA1_Stream3->M1AR = dma_invalidate16rx(allocate_dmabuffer16());
 			DRD(DMA1_Stream3->M1AR);
 		}
-		DMA1->LIFCR = DMA_LIFCR_CTCIF3;	// Clear TC interrupt flag
 	}
 
 	//DMAERR(DMA1, DMA1_Stream3, LISR, LIFCR, DMA_LISR_TEIF3, DMA_LIFCR_CTEIF3);
@@ -285,6 +286,8 @@ void RAMFUNC_NONILINE DMA1_Stream0_IRQHandler(void)
 {
 	if ((DMA1->LISR & DMA_LISR_TCIF0) != 0)
 	{
+		DMA1->LIFCR = DMA_LIFCR_CTCIF0;	// Clear TC interrupt flag
+		//ASSERT((SAI1_Block_B->SR & SAI_xSR_OVRUDR_Msk) == 0);
 		const uint_fast8_t b = (DMA1_Stream0->CR & DMA_SxCR_CT) != 0;
 		if (b != 0)
 		{
@@ -298,7 +301,6 @@ void RAMFUNC_NONILINE DMA1_Stream0_IRQHandler(void)
 			DMA1_Stream0->M1AR = dma_invalidate16rx(allocate_dmabuffer16());
 			DRD(DMA1_Stream0->M1AR);
 		}
-		DMA1->LIFCR = DMA_LIFCR_CTCIF0;	// Clear TC interrupt flag
 	}
 
 	//DMAERR(DMA1, DMA1_Stream0, LISR, LIFCR, DMA_LISR_TEIF0, DMA_LIFCR_CTEIF0);
@@ -311,6 +313,8 @@ void RAMFUNC_NONILINE DMA1_Stream4_IRQHandler(void)
 {
 	if ((DMA1->HISR & DMA_HISR_TCIF4) != 0)
 	{
+		DMA1->HIFCR = DMA_HIFCR_CTCIF4;	// Clear TC interrupt flag соответствующий stream
+		//ASSERT((SAI1_Block_B->SR & SAI_xSR_OVRUDR_Msk) == 0);
 		const uint_fast8_t b = (DMA1_Stream4->CR & DMA_SxCR_CT) != 0;
 		if (b != 0)
 		{
@@ -324,7 +328,6 @@ void RAMFUNC_NONILINE DMA1_Stream4_IRQHandler(void)
 			DMA1_Stream4->M1AR = dma_flush16tx(getfilled_dmabuffer16phones());
 			DRD(DMA1_Stream4->M1AR);
 		}
-		DMA1->HIFCR = DMA_HIFCR_CTCIF4;	// Clear TC interrupt flag соответствующий stream
 	}
 
 	//DMAERR(DMA1, DMA1_Stream4, HISR, HIFCR, DMA_HISR_TEIF4, DMA_HIFCR_CTEIF4);
@@ -1416,6 +1419,8 @@ void RAMFUNC_NONILINE DMA2_Stream5_IRQHandler(void)
 	// проверка условия может потребоваться при добавлении обработчика ошибки
 	if ((DMA2->HISR & DMA_HISR_TCIF5) != 0)
 	{
+		DMA2->HIFCR = DMA_HIFCR_CTCIF5;	// Clear TC interrupt flag соответствующий stream
+		ASSERT((SAI1_Block_B->SR & SAI_xSR_OVRUDR_Msk) == 0);
 		const uint_fast8_t b = (DMA2_Stream5->CR & DMA_SxCR_CT) != 0;
 		if (b != 0)
 		{
@@ -1429,7 +1434,6 @@ void RAMFUNC_NONILINE DMA2_Stream5_IRQHandler(void)
 			DMA2_Stream5->M1AR = dma_invalidate32rx(allocate_dmabuffer32rx());
 			DRD(DMA2_Stream5->M1AR);
 		}
-		DMA2->HIFCR = DMA_HIFCR_CTCIF5;	// Clear TC interrupt flag соответствующий stream
 	}
 
 	//DMAERR(DMA2, DMA2_Stream5, HISR, HIFCR, DMA_HISR_TEIF5, DMA_HIFCR_CTEIF5);
@@ -1442,6 +1446,8 @@ void DMA2_Stream1_IRQHandler(void)
 {
 	if ((DMA2->LISR & DMA_LISR_TCIF1) != 0)
 	{
+		DMA2->LIFCR = DMA_LIFCR_CTCIF1;	// Clear TC interrupt flag
+		ASSERT((SAI1_Block_A->SR & SAI_xSR_OVRUDR_Msk) == 0);
 		const uint_fast8_t b = (DMA2_Stream1->CR & DMA_SxCR_CT) != 0;
 		if (b != 0)
 		{
@@ -1455,7 +1461,6 @@ void DMA2_Stream1_IRQHandler(void)
 			DMA2_Stream1->M1AR = dma_flush32tx(getfilled_dmabuffer32tx_main());
 			DRD(DMA2_Stream1->M1AR);
 		}
-		DMA2->LIFCR = DMA_LIFCR_CTCIF1;	// Clear TC interrupt flag
 	}
 
 	//DMAERR(DMA2, DMA2_Stream1, LISR, LIFCR, DMA_LISR_TEIF1, DMA_LIFCR_CTEIF1);
@@ -1572,6 +1577,7 @@ static void DMA_SAI1_B_RX_initialize(void)
 
 	DMA2_Stream5->FCR &= ~ (DMA_SxFCR_FEIE_Msk | DMA_SxFCR_DMDIS_Msk);	// use direct mode
 	DRD(DMA2_Stream5->FCR);
+
 	DMA2_Stream5->CR =
 		ch * DMA_SxCR_CHSEL_0 | // канал
 		0 * DMA_SxCR_MBURST_0 |	// 0: single transfer
@@ -1584,6 +1590,7 @@ static void DMA_SAI1_B_RX_initialize(void)
 		0 * DMA_SxCR_CT |	// M0AR selected
 		1 * DMA_SxCR_DBM |	 // double buffer mode seelcted
 		0;
+	DRD(DMA2_Stream5->CR);
 
 #if CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7XX
 	// DMAMUX init
@@ -1600,6 +1607,7 @@ static void DMA_SAI1_B_RX_initialize(void)
 	arm_hardware_set_handler_realtime(DMA2_Stream5_IRQn, DMA2_Stream5_IRQHandler);
 
 	DMA2_Stream5->CR |= DMA_SxCR_EN;
+	DRD(DMA2_Stream5->CR);
 }
 
 #if WITHSAI1HWTXRXMASTER
@@ -1881,6 +1889,8 @@ void RAMFUNC_NONILINE DMA2_Stream7_IRQHandler(void)
 	// проверка условия может потребоваться при добавлении обработчика ошибки
 	if ((DMA2->HISR & DMA_HISR_TCIF7) != 0)
 	{
+		DMA2->HIFCR = DMA_HIFCR_CTCIF7;	// Clear TC interrupt flag соответствующий stream
+		ASSERT((SAI2_Block_B->SR & SAI_xSR_OVRUDR_Msk) == 0);
 		const uint_fast8_t b = (DMA2_Stream7->CR & DMA_SxCR_CT) != 0;
 
 #if WITHSUSBSPKONLY
@@ -1910,7 +1920,6 @@ void RAMFUNC_NONILINE DMA2_Stream7_IRQHandler(void)
 			DRD(DMA2_Stream7->M1AR);
 		}
 #endif /* WITHSUSBSPKONLY */
-		DMA2->HIFCR = DMA_HIFCR_CTCIF7;	// Clear TC interrupt flag соответствующий stream
 	}
 
 	//DMAERR(DMA2, DMA2_Stream7, HISR, HIFCR, DMA_HISR_TEIF7, DMA_HIFCR_CTEIF7);
@@ -1924,6 +1933,8 @@ void DMA2_Stream4_IRQHandler(void)
 	// проверка условия может потребоваться при добавлении обработчика ошибки
 	if ((DMA2->HISR & DMA_HISR_TCIF4) != 0)
 	{
+		DMA2->HIFCR = DMA_HIFCR_CTCIF4;	// Clear TC interrupt flag соответствующий stream
+		ASSERT((SAI2_Block_A->SR & SAI_xSR_OVRUDR_Msk) == 0);
 		const uint_fast8_t b = (DMA2_Stream4->CR & DMA_SxCR_CT) != 0;
 #if WITHSUSBSPKONLY
 		if (b != 0)
@@ -1952,7 +1963,6 @@ void DMA2_Stream4_IRQHandler(void)
 			DRD(DMA2_Stream4->M1AR);
 		}
 #endif /* WITHSUSBSPKONLY */
-		DMA2->HIFCR = DMA_HIFCR_CTCIF4;	// Clear TC interrupt flag соответствующий stream
 	}
 
 	//DMAERR(DMA2, DMA2_Stream4, HISR, HIFCR, DMA_HISR_TEIF4, DMA_HIFCR_CTEIF4);
