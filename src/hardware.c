@@ -4105,7 +4105,6 @@ static void DMA2_SPI1_RX_initialize(void)
 		// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
 		// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
 		enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
-		DMAMUX1_Channel8->CCR = 37 * DMAMUX_CxCR_DMAREQ_ID_0;	// SPI1_RX
 		DMA2_Stream0->PAR = (uintptr_t) & SPI1->RXDR;
 	#else /* CPUSTYLE_STM32H7XX */
 		const uint_fast8_t ch = 3;
@@ -4114,6 +4113,8 @@ static void DMA2_SPI1_RX_initialize(void)
 
 	DMA2_Stream0->FCR &= ~ DMA_SxFCR_DMDIS;	// use Direct mode
 	//DMA2_Stream0->FCR |= DMA_SxFCR_DMDIS;	// Direct mode disabled
+	(void) DMA2_Stream0->FCR;
+
 	DMA2_Stream0->CR =
 		(ch * DMA_SxCR_CHSEL_0) |	// канал
 		(3 * DMA_SxCR_MBURST_0) |	// INCR16 (incremental burst of 16 beats) - ignored in Direct mode
@@ -4127,6 +4128,16 @@ static void DMA2_SPI1_RX_initialize(void)
 		(0 * DMA_SxCR_CT) |			// M0AR selected
 		//(1 * DMA_SxCR_DBM) |		// double buffer mode seelcted
 		0;
+	(void) DMA2_Stream0->CR;
+
+#if CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7XX
+	// DMAMUX init
+	// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
+	// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
+	DMAMUX1_Channel8->CCR = 37 * DMAMUX_CxCR_DMAREQ_ID_0;	// SPI1_RX
+	(void) DMAMUX1_Channel8->CCR;
+#endif /* CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7XX */
+
 }
 
 // Инициализация DMA для передачи SPI1
@@ -4142,7 +4153,6 @@ static void DMA2_SPI1_TX_initialize(void)
 		// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
 		// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
 		enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
-		DMAMUX1_Channel11->CCR = 38 * DMAMUX_CxCR_DMAREQ_ID_0;	// SPI1_TX
 		DMA2_Stream3->PAR = (uintptr_t) & SPI1->TXDR;
 	#else /* CPUSTYLE_STM32H7XX */
 		const uint_fast8_t ch = 3;
@@ -4152,6 +4162,8 @@ static void DMA2_SPI1_TX_initialize(void)
 
 	DMA2_Stream3->FCR &= ~ DMA_SxFCR_DMDIS;	// use direct mode
 	//DMA2_Stream3->FCR |= DMA_SxFCR_DMDIS;	// Direct mode disabled
+	(void) DMA2_Stream3->FCR;
+
 	DMA2_Stream3->CR =
 		(ch * DMA_SxCR_CHSEL_0) |	// канал
 		(3 * DMA_SxCR_MBURST_0) |	// INCR16 (incremental burst of 16 beats) - ignored in Direct mode
@@ -4165,6 +4177,16 @@ static void DMA2_SPI1_TX_initialize(void)
 		(0 * DMA_SxCR_CT) |			// M0AR selected
 		//(1 * DMA_SxCR_DBM) |		// double buffer mode seelcted
 		0;
+	(void) DMA2_Stream3->CR;
+
+#if CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7XX
+	// DMAMUX init
+	// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
+	// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
+	DMAMUX1_Channel11->CCR = 38 * DMAMUX_CxCR_DMAREQ_ID_0;	// SPI1_TX
+	(void) DMAMUX1_Channel11->CCR;
+#endif /* CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7XX */
+
 }
 
 #if 1
@@ -10229,12 +10251,8 @@ void IRQ_Handler(void)
 	//dbg_putchar(hex [(irqn >> 8) & 0x0F]);
 	//dbg_putchar(hex [(irqn >> 4) & 0x0F]);
 	//dbg_putchar(hex [(irqn >> 0) & 0x0F]);
+	ASSERT(irqn != 0x3FC && irqn != 0x3FD);
 	IRQHandler_t const handler = IRQ_GetHandler(irqn);
-	// See R01UH0437EJ0200 Rev.2.00 7.8.3 Reading Interrupt ID Values from Interrupt Acknowledge Register (ICCIAR)
-	// IHI0048B_b_gic_architecture_specification.pdf
-	// See ARM IHI 0048B.b 3.4.2 Special interrupt numbers when a GIC supports interrupt grouping
-
-	//IRQ_SetPriority(0, IRQ_GetPriority(0));
 
 #if 0
 	switch (irqn)
