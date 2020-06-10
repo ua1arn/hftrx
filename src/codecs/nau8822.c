@@ -4,7 +4,7 @@
 // автор Гена Завидовский mgs2001@mail.ru
 // UA1ARN
 //
-#include "../inc/spi.h"
+#include "spi.h"
 #include "hardware.h"
 #include "board.h"
 #include "formats.h"	// for debug prints
