@@ -3382,10 +3382,12 @@ uint_fast8_t hamradio_verify_freq_bands(uint_fast32_t freq, uint_fast32_t * bott
 #if (WITHSWRMTR || WITHSHOWSWRPWR)
 enum {
 	SMETER_TYPE_BARS,
-	SMETER_TYPE_DIAL
+	SMETER_TYPE_DIAL,
+	SMETER_TYPE_COUNT
 };
 
 uint_fast8_t hamradio_get_gsmetertype(void);
+void display2_set_smetertype(uint_fast8_t v);
 #endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
 
 #ifdef __cplusplus

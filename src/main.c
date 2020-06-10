@@ -8534,6 +8534,8 @@ updateboard(
 	#endif /* WITHTX */
 	}
 
+	display2_set_smetertype(gsmetertype);
+
 	/* после всех перенастроек включаем передатчик */
 #if WITHTX
 	board_set_tx(gtx);		/* в конце выдаём сигнал разрешения передачи */
@@ -16117,7 +16119,6 @@ void display2_menu_valxx(
 				width = VALUEW;
 				comma = 4;
 				display_menu_string_P(x, y, value ? msg_dial : msg_bars, width, comma);
-				display2_smeter15_init(0, 0, NULL);
 			}
 			break;
 
