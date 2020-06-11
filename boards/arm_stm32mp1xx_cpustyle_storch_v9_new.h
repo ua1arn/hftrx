@@ -920,15 +920,23 @@
 	#define USBD_DFU_FLASH_XFER_SIZE 256	// match to (Q)SPI FLASH MEMORY page size
 	#define USBD_DFU_FLASHNAME "W25Q128JV"
 
+	/* Выводы соединения с QSPI BOOT NOR FLASH */
+	#define SPDIF_MISO_BIT (1u << 9)	// PF9	QUADSPI_BK1_IO1
+	#define SPDIF_MOSI_BIT (1u << 8)	// PF8	QUADSPI_BK1_IO0
+	#define SPDIF_SCLK_BIT (1u << 10)	// PF10	QUADSPI_CLK
+	#define SPDIF_NCS_BIT (1u << 6)		// PB6	QUADSPI_BK1_NCS
+
+	#define SPDIF_D2_BIT (1u << 7)		// PF7	QUADSPI_BK1_IO2
+	#define SPDIF_D3_BIT (1u << 6)		// PF6	QUADSPI_BK1_IO3
+	/* Отсоединить процессор от BOOT ROM - для возможности работы внешнего программатора. */
+	#define SPIDF_HANGOFF() do { \
+			arm_hardware_piob_inputs(SPDIF_NCS_BIT); \
+			arm_hardware_piof_inputs(SPDIF_SCLK_BIT); \
+			arm_hardware_piof_inputs(SPDIF_MOSI_BIT); \
+			arm_hardware_piof_inputs(SPDIF_MISO_BIT); \
+		} while (0)
+
 	#if WIHSPIDFSW || WIHSPIDFHW
-
-		#define SPDIF_MISO_BIT (1u << 9)	// PF9	QUADSPI_BK1_IO1
-		#define SPDIF_MOSI_BIT (1u << 8)	// PF8	QUADSPI_BK1_IO0
-		#define SPDIF_SCLK_BIT (1u << 10)	// PF10	QUADSPI_CLK
-		#define SPDIF_NCS_BIT (1u << 6)		// PB6	QUADSPI_BK1_NCS
-
-		#define SPDIF_D2_BIT (1u << 7)		// PF7	QUADSPI_BK1_IO2
-		#define SPDIF_D3_BIT (1u << 6)		// PF6	QUADSPI_BK1_IO3
 
 		#if WIHSPIDFHW
 			#define SPIDF_HARDINITIALIZE() do { \
@@ -940,12 +948,6 @@
 					arm_hardware_piof_altfn50(SPDIF_MOSI_BIT, AF_QUADSPI_AF10); /* PF8 MOSI */ \
 					arm_hardware_piof_altfn50(SPDIF_MISO_BIT, AF_QUADSPI_AF10); /* PF9 MISO */ \
 					arm_hardware_piob_altfn50(SPDIF_NCS_BIT, AF_QUADSPI_AF10); /* PB6 CS */ \
-				} while (0)
-			#define SPIDF_HANGOFF() do { \
-					arm_hardware_piob_inputs(SPDIF_NCS_BIT); \
-					arm_hardware_piof_inputs(SPDIF_SCLK_BIT); \
-					arm_hardware_piof_inputs(SPDIF_MOSI_BIT); \
-					arm_hardware_piof_inputs(SPDIF_MISO_BIT); \
 				} while (0)
 
 		#else /* WIHSPIDFHW */
@@ -959,12 +961,6 @@
 					arm_hardware_piob_outputs(SPDIF_NCS_BIT, SPDIF_NCS_BIT); \
 					arm_hardware_piof_outputs(SPDIF_SCLK_BIT, SPDIF_SCLK_BIT); \
 					arm_hardware_piof_outputs(SPDIF_MOSI_BIT, SPDIF_MOSI_BIT); \
-					arm_hardware_piof_inputs(SPDIF_MISO_BIT); \
-				} while (0)
-			#define SPIDF_HANGOFF() do { \
-					arm_hardware_piob_inputs(SPDIF_NCS_BIT); \
-					arm_hardware_piof_inputs(SPDIF_SCLK_BIT); \
-					arm_hardware_piof_inputs(SPDIF_MOSI_BIT); \
 					arm_hardware_piof_inputs(SPDIF_MISO_BIT); \
 				} while (0)
 			#define SPIDF_SELECT() do { \
