@@ -6230,10 +6230,10 @@ void prog_dsplreg_update(void)
 {	
 	uint_fast8_t f;
 #if WITHSPISLAVE
-	disableIRQ();
+	system_disableIRQ();
 	f = flag_dsp1reg;
 	flag_dsp1reg = 0;
-	enableIRQ();
+	system_enableIRQ();
 #else /* WITHSPISLAVE */
 	f = flag_dsp1reg;
 	flag_dsp1reg = 0;
@@ -6248,10 +6248,10 @@ void prog_fltlreg_update(void)
 {	
 	uint_fast8_t f;
 #if WITHSPISLAVE
-	disableIRQ();
+	system_disableIRQ();
 	f = flag_flt1reg;
 	flag_flt1reg = 0;
-	enableIRQ();
+	system_enableIRQ();
 #else /* WITHSPISLAVE */
 	f = flag_flt1reg;
 	flag_flt1reg = 0;
@@ -6267,10 +6267,10 @@ void prog_codecreg_update(void)		// услолвное обновление ре
 {
 	uint_fast8_t f;
 #if WITHSPISLAVE
-	disableIRQ();
+	system_disableIRQ();
 	f = flag_codec1reg;
 	flag_codec1reg = 0;
-	enableIRQ();
+	system_enableIRQ();
 #else /* WITHSPISLAVE */
 	f = flag_codec1reg;
 	flag_codec1reg = 0;

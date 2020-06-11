@@ -101,9 +101,9 @@ int nmea_putc(int c)
 	qput(c);
 	global_enableIRQ();
 #else /* WITHNMEAOVERREALTIME */
-    disableIRQ();
+    system_disableIRQ();
     qput(c);
-	enableIRQ();
+	system_enableIRQ();
 #endif /* WITHNMEAOVERREALTIME */
 	return c;
 }
@@ -297,8 +297,8 @@ void nmea_disconnect(void)
 
 /* вызывается из обработчика прерываний или при запрещённых прерываниях. */
 /*
-		disableIRQ();
-		enableIRQ();
+		system_disableIRQ();
+		system_enableIRQ();
 */
 /* Разрешение/запрещение прерывания по передаче символа */
 void hardware_uart1_enabletx(uint_fast8_t state)
@@ -1345,8 +1345,8 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 
 /* вызывается из обработчика прерываний или при запрещённых прерываниях. */
 /*
-		disableIRQ();
-		enableIRQ();
+		system_disableIRQ();
+		system_enableIRQ();
 */
 /* Разрешение/запрещение прерывания по передаче символа */
 void hardware_uart2_enabletx(uint_fast8_t state)

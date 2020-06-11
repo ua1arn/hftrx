@@ -118,14 +118,14 @@ static RAMDTCM uint_fast8_t delay_dash;	// 30
 	// скорость уменьшения длительности точки и паузы - имитация виброплекса
 	static void elkeyx_set_slope(elkey_t * const elkey, uint_fast8_t slope)
 	{
-		disableIRQ();
+		system_disableIRQ();
 		if (elkey->vibroplex_slope > slope)
 		{
 			elkey->vibroplex_grade = 0;
 			elkey->vibroplex_derate = 0;
 		}
 		elkey->vibroplex_slope = slope;
-		enableIRQ();
+		system_enableIRQ();
 	}
 
 	static void elkey_vibroplex_next(elkey_t * const elkey)
@@ -879,14 +879,14 @@ void elkey_set_format(
 	)
 {
 #if WITHELKEY
-	disableIRQ();
+	system_disableIRQ();
 
 	delay_space = (spaceratio * ELKEY_DISCRETE) / 10;
 	delay_dash = (dashratio * ELKEY_DISCRETE) / 10;
 	//deay_half = (5 * ELKEY_DISCRETE) / 10;	//delay_space * 5 / 10;
 
 
-	enableIRQ();
+	system_enableIRQ();
 #endif /* WITHELKEY */
 }
 
@@ -899,7 +899,7 @@ elkey_set_mode(
 	)
 {
 #if WITHELKEY
-	disableIRQ();
+	system_disableIRQ();
 	elkey_reverse = reverse;
 	switch (mode)
 	{
@@ -917,7 +917,7 @@ elkey_set_mode(
 		elkey_straight_flags = DASHFLAG;
 		break;
 	}
-	enableIRQ();
+	system_enableIRQ();
 #endif /* WITHELKEY */
 }
 

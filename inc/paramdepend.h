@@ -709,6 +709,7 @@ extern "C" {
 		extern uint32_t gARM_REALTIME_PRIORITY;
 		extern uint32_t gARM_SYSTEM_PRIORITY;
 		extern uint32_t gARM_BASEPRI_ONLY_REALTIME;
+		extern uint32_t gARM_BASEPRI_ONLY_OVERREALTIME;
 		extern uint32_t gARM_BASEPRI_ALL_ENABLED;
 		// See usage of functions NVIC_PriorityGroupConfig and NVIC_SetPriorityGrouping
 		// A lower priority value indicating a higher priority of running handler
@@ -722,27 +723,27 @@ extern "C" {
 
 		#if 0 && WITHDEBUG
 			// отладочная версия - контроль правильного контекста запрета/разрешения прерываний
-			#define enableIRQ() do { \
+			#define system_enableIRQ() do { \
 					if (__get_BASEPRI() != gARM_BASEPRI_ONLY_REALTIME) \
 					{ \
 						TP(); \
-						debug_printf_P(PSTR("enableIRQ: wrong __get_BASEPRI() value: %08lX\n"), __get_BASEPRI()); \
+						debug_printf_P(PSTR("system_enableIRQ: wrong __get_BASEPRI() value: %08lX\n"), __get_BASEPRI()); \
 						for (;;) ; \
 					} \
 					__set_BASEPRI(gARM_BASEPRI_ALL_ENABLED); \
 				} while (0)
-			#define disableIRQ() do { \
+			#define system_disableIRQ() do { \
 					if (__get_BASEPRI() != gARM_BASEPRI_ALL_ENABLED) \
 					{ \
 						TP(); \
-						debug_printf_P(PSTR("disableIRQ: wrong __get_BASEPRI() value: %08lX\n"), __get_BASEPRI()); \
+						debug_printf_P(PSTR("system_disableIRQ: wrong __get_BASEPRI() value: %08lX\n"), __get_BASEPRI()); \
 						for (;;) ; \
 					} \
 					__set_BASEPRI(gARM_BASEPRI_ONLY_REALTIME); \
 				} while (0)
 		#else
-			#define enableIRQ() do { __set_BASEPRI(gARM_BASEPRI_ALL_ENABLED); } while (0)	// разрешены все
-			#define disableIRQ() do { __set_BASEPRI(gARM_BASEPRI_ONLY_REALTIME); } while (0) // разрешены только realtime
+			#define system_enableIRQ() do { __set_BASEPRI(gARM_BASEPRI_ALL_ENABLED); } while (0)	// разрешены все
+			#define system_disableIRQ() do { __set_BASEPRI(gARM_BASEPRI_ONLY_REALTIME); } while (0) // разрешены только realtime
 		#endif
 		
 	#else /* WITHNESTEDINTERRUPTS */
@@ -751,8 +752,8 @@ extern "C" {
 		#define ARM_REALTIME_PRIORITY	(0)
 		#define ARM_SYSTEM_PRIORITY	(0)
 
-		#define enableIRQ() do { __enable_irq(); } while (0)
-		#define disableIRQ() do { __disable_irq(); } while (0)
+		#define system_enableIRQ() do { __enable_irq(); } while (0)
+		#define system_disableIRQ() do { __disable_irq(); } while (0)
 
 		#define ASSERT_IRQL_ALL_ENABLED() ASSERT(1)
 		#define ASSERT_IRQL_SYSTEM() ASSERT(1)
@@ -774,8 +775,8 @@ extern "C" {
 
 #elif CPUSTYLE_ATMEGA || CPUSTYLE_ATXMEGA
 
-	#define enableIRQ() do { sei(); } while (0)
-	#define disableIRQ() do { cli(); } while (0)
+	#define system_enableIRQ() do { sei(); } while (0)
+	#define system_disableIRQ() do { cli(); } while (0)
 
 	#define global_enableIRQ() do { sei(); } while (0)
 	#define global_disableIRQ() do { cli(); } while (0)
@@ -805,6 +806,7 @@ extern "C" {
 		extern uint32_t gARM_REALTIME_PRIORITY;
 		extern uint32_t gARM_SYSTEM_PRIORITY;
 		extern uint32_t gARM_BASEPRI_ONLY_REALTIME;
+		extern uint32_t gARM_BASEPRI_ONLY_OVERREALTIME;
 		extern uint32_t gARM_BASEPRI_ALL_ENABLED;
 
 		#define ARM_CA9_ENCODE_PRIORITY(v) ((v) << (GIC_GetBinaryPoint() + 1))
@@ -846,33 +848,34 @@ extern "C" {
 
 		#if 0 && WITHDEBUG
 			// отладочная версия - контроль правильного контекста запрета/разрешения прерываний
-			#define enableIRQ() do { \
+			#define system_enableIRQ() do { \
 					if (GIC_GetInterfacePriorityMask() != gARM_BASEPRI_ONLY_REALTIME) \
 					{ \
 						TP(); \
-						debug_printf_P(PSTR("enableIRQ: wrong GIC_GetInterfacePriorityMask() value: %08lX\n"), GIC_GetInterfacePriorityMask()); \
+						debug_printf_P(PSTR("system_enableIRQ: wrong GIC_GetInterfacePriorityMask() value: %08lX\n"), GIC_GetInterfacePriorityMask()); \
 						for (;;) ; \
 					} \
 					GIC_SetInterfacePriorityMask(gARM_BASEPRI_ALL_ENABLED); \
 				} while (0)
-			#define disableIRQ() do { \
+			#define system_disableIRQ() do { \
 					if (GIC_GetInterfacePriorityMask() != gARM_BASEPRI_ALL_ENABLED) \
 					{ \
 						TP(); \
-						debug_printf_P(PSTR("disableIRQ: wrong GIC_GetInterfacePriorityMask() value: %08lX\n"), GIC_GetInterfacePriorityMask()); \
+						debug_printf_P(PSTR("system_disableIRQ: wrong GIC_GetInterfacePriorityMask() value: %08lX\n"), GIC_GetInterfacePriorityMask()); \
 						for (;;) ; \
 					} \
 					GIC_SetInterfacePriorityMask(gARM_BASEPRI_ONLY_REALTIME); \
 				} while (0)
 		#else
 			// разрешены все
-			#define enableIRQ() do { \
+			#define system_enableIRQ() do { \
 					GIC_SetInterfacePriorityMask(gARM_BASEPRI_ALL_ENABLED); \
 				} while (0)
 			// разрешены только realtime
-			#define disableIRQ() do { \
+			#define system_disableIRQ() do { \
 					GIC_SetInterfacePriorityMask(gARM_BASEPRI_ONLY_REALTIME); \
 				} while (0)
+
 		#endif
 	#else /* WITHNESTEDINTERRUPTS */
 
@@ -884,8 +887,8 @@ extern "C" {
 		#define ARM_REALTIME_PRIORITY	0
 		#define ARM_SYSTEM_PRIORITY		0
 
-		#define enableIRQ() do { __enable_irq(); } while (0)
-		#define disableIRQ() do { __disable_irq(); } while (0)
+		#define system_enableIRQ() do { __enable_irq(); } while (0)
+		#define system_disableIRQ() do { __disable_irq(); } while (0)
 
 	#endif /* WITHNESTEDINTERRUPTS */
 
@@ -898,14 +901,14 @@ extern "C" {
 	//#define ARM_REALTIME_PRIORITY	(0)
 	//#define ARM_SYSTEM_PRIORITY	(0)
 
-	unsigned (disableIRQ)(void);
-	unsigned (enableIRQ)(void);
+	unsigned (system_disableIRQ)(void);
+	unsigned (system_enableIRQ)(void);
 
-	#define global_enableIRQ() do { (enableIRQ)(); } while (0)
-	#define global_disableIRQ() do { (disableIRQ)(); } while (0)
+	#define global_enableIRQ() do { (system_enableIRQ)(); } while (0)
+	#define global_disableIRQ() do { (system_disableIRQ)(); } while (0)
 
-	unsigned RAMFUNC (enableIRQ)(void);
-	unsigned RAMFUNC (disableIRQ)(void);
+	unsigned RAMFUNC (system_enableIRQ)(void);
+	unsigned RAMFUNC (system_disableIRQ)(void);
 
 	#define ASSERT_IRQL_ALL_ENABLED() ASSERT(1)
 	#define ASSERT_IRQL_SYSTEM() ASSERT(1)

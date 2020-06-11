@@ -9951,9 +9951,9 @@ display_refreshperformed_wpm(void)
 {
 	const uint_fast8_t n = NTICKS(100);	// 100 ms - обновление с частотой 10 герц
 
-	disableIRQ();
+	system_disableIRQ();
 	counterupdatewpm = n;
-	enableIRQ();
+	system_enableIRQ();
 }
 
 // Проверка разрешения обновления дисплея (индикация частоты).
@@ -9969,9 +9969,9 @@ display_refreshperformed_voltage(void)
 {
 	const uint_fast16_t n = NTICKS(500);	/* 1/2 секунды */
 
-	disableIRQ();
+	system_disableIRQ();
 	counterupdatedvoltage = n;
-	enableIRQ();
+	system_enableIRQ();
 }
 
 
@@ -9988,9 +9988,9 @@ display_refreshperformed_freqs(void)
 {
 	const uint_fast8_t n = NTICKS(1000 / displayfreqsfps);	// 50 ms - обновление с частотой 20 герц
 
-	disableIRQ();
+	system_disableIRQ();
 	counterupdatedfreqs = n;
-	enableIRQ();
+	system_enableIRQ();
 }
 
 // Проверка разрешения обновления дисплея (индикация режимов, приём/передача).
@@ -10008,9 +10008,9 @@ display_refreshperformed_modes(void)
 	return;	// TODO: пока этот таймер не работает
 	const uint_fast8_t n = NTICKS(1000 / displaymodesfps);	// 50 ms - обновление с частотой 20 герц
 
-	disableIRQ();
+	system_disableIRQ();
 	counterupdatedmodes = n;
-	enableIRQ();
+	system_enableIRQ();
 }
 
 
@@ -10048,9 +10048,9 @@ display_refreshperformed_bars(void)
 {
 	const uint_fast8_t n = NTICKS(1000 / displaybarsfps);	// 50 ms - обновление с частотой 20 герц
 
-	disableIRQ();
+	system_disableIRQ();
 	counterupdatebars = n;
-	enableIRQ();
+	system_enableIRQ();
 }
 
 /* обновление динамической части отображения - S-метра или SWR-метра и volt-метра. */
@@ -10317,12 +10317,12 @@ void
 static cat_answervariable(const char * p, uint_fast8_t len)
 {
 	//PRINTF(PSTR("cat_answervariable: '%*.*s'"), len, len, p);
-	disableIRQ();
+	system_disableIRQ();
 	if (catstateout != CATSTATEO_SENDREADY)
 	{
 		// Сейчас ещё передается сообщение - новое игнорируем.
 		// Добавлено для поддержки отладки при работающем CAT
-		enableIRQ();
+		system_enableIRQ();
 		return;
 	}
 	if ((catsendcount = len) != 0)
@@ -10336,7 +10336,7 @@ static cat_answervariable(const char * p, uint_fast8_t len)
 		//catstateout = CATSTATEO_SENDREADY;
 		HARDWARE_CAT_ENABLETX(0);
 	}
-	enableIRQ();
+	system_enableIRQ();
 }
 
 
@@ -11249,9 +11249,9 @@ static void badcommandanswer(uint_fast8_t arg)
 static void 
 cat_reset_ptt(void)	
 {
-	disableIRQ();
+	system_disableIRQ();
 	cattunemode = catstatetx = 0;
-	enableIRQ();
+	system_enableIRQ();
 }
 
 
@@ -11330,12 +11330,12 @@ static void processcat_enable(uint_fast8_t enable)
 	catprocenable = enable;
 	if (! catprocenable)
 	{
-		disableIRQ();
+		system_disableIRQ();
 		HARDWARE_CAT_ENABLERX(0);
 		HARDWARE_CAT_ENABLETX(0);
 		catstatein = CATSTATE_HALTED;
 		catstateout = CATSTATEO_HALTED;
-		enableIRQ();
+		system_enableIRQ();
 	}
 	else
 	{
@@ -11351,13 +11351,13 @@ static void processcat_enable(uint_fast8_t enable)
 #endif /* WITHTX */
 
 		aistate = 0; /* Power-up state of AI mode = 0 (TS-590). */
-		disableIRQ();
+		system_disableIRQ();
 		catstatetxdata = 0;
 		cattunemode = catstatetx = 0;
 		HARDWARE_CAT_ENABLERX(1);
 		catstatein = CATSTATE_WAITCOMMAND1;
 		catstateout = CATSTATEO_SENDREADY;
-		enableIRQ();
+		system_enableIRQ();
 	}
 }
 
@@ -11428,16 +11428,16 @@ cat_answer_forming(void)
 	{
 		const uint_fast8_t i = ilast;
 		ilast = calc_next(i, 0, (sizeof cat_answer_map / sizeof cat_answer_map [0]) - 1);
-		disableIRQ();
+		system_disableIRQ();
 		if (cat_answer_map [i] != 0)
 		{
 			const uint_fast8_t answerparam = cat_answerparam_map [i];
 			cat_answer_map [i] = 0;
-			enableIRQ();
+			system_enableIRQ();
 			(* catanswers [i])(answerparam);
 			return;
 		}
-		enableIRQ();
+		system_enableIRQ();
 		if (ilast == original)
 			break;
 	}
@@ -17829,7 +17829,7 @@ dspcontrol_mainloop(void)
 	// Тест производительности.
 	// при запрещённых прерываниях смотрим выхолную частоту на выводе процессора
 	// и сравниваем с тем, что стало при разрешённых прерываниях.
-	disableIRQ();
+	system_disableIRQ();
 	for (;;)
 	{
 		local_delay_ms(50);
@@ -17938,10 +17938,10 @@ static int getevent128ms(void)
 	//local_delay_ms(FREQTEMPO);
 	//return 1;
 
-	disableIRQ();
+	system_disableIRQ();
 	int f = flag128;
 	flag128 = 0;
-	enableIRQ();
+	system_enableIRQ();
 	return f;
 }
 

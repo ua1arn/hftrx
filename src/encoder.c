@@ -220,7 +220,7 @@ void encoder_clear(void)
 {
 	backup_rotate = 0;
 	backup_rotate2 = 0;
-	disableIRQ();
+	system_disableIRQ();
 	rotate1 = 0;
 	rotate_kbd = 0;
 
@@ -228,7 +228,7 @@ void encoder_clear(void)
 	enchist [0] = enchist [1] = enchist [2] = enchist [3] = 0; 
 	tichist = 0;
 
-	enableIRQ();
+	system_enableIRQ();
 }
 
 /* получение количества шагов и скорости вращения. */
@@ -242,7 +242,7 @@ encoder_get_snapshot(
 	unsigned s;				// количество шагов за время измерения
 	unsigned tdelta;	// Время измерения
 
-	disableIRQ();
+	system_disableIRQ();
 
 	// параметры изменерения скорости не модифицируем
 	// 1. количество шагов за время измерения
@@ -257,7 +257,7 @@ encoder_get_snapshot(
 	rotate_kbd = 0;
 
 
-	enableIRQ();
+	system_enableIRQ();
 
 	// Расчёт скорости. Результат - (1 / ENCODER_NORMALIZED_RESOLUTION) долей оборота за секунду
 	// Если результат ENCODER_NORMALIZED_RESOLUTION это обозначает один оборот в секунду
@@ -280,10 +280,10 @@ encoder2_get_snapshot(
 {
 	int hrotate;
 
-	disableIRQ();
+	system_disableIRQ();
 	hrotate = rotate2;
 	rotate2 = 0;
-	enableIRQ();
+	system_enableIRQ();
 
 	/* Уменьшение разрешения валкодера в зависимости от установок в меню */
 	const div_t h = div(hrotate + backup_rotate2, derate);

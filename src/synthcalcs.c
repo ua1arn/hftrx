@@ -107,10 +107,10 @@ board_waitextsync(void)
 	for (;;)
 	{
 		uint_fast8_t f;
-		disableIRQ();
+		system_disableIRQ();
 		f = spool_lfm_flag;
 		spool_lfm_flag = 0;
-		enableIRQ();
+		system_enableIRQ();
 		if (f != 0)
 			break;	
 	}
@@ -147,9 +147,9 @@ scanfreq(ftw_t ftw0, ftw_t ftw_last, long int lfm_nsteps)
 		// Выдаём FTW в микросхему синтезатора частоты, ждём прохода
 		// очередного синхронизирующего импульса.
 		board_waitextsync();
-		disableIRQ();
+		system_disableIRQ();
 		prog_dds1_ftw_noioupdate(& lfm_value);
-		enableIRQ();
+		system_enableIRQ();
 		//display_freq(position, value); // но это тоже может боком
     } while (++ lfm_position < lfm_nsteps);
 	// цикл перестройки частоты завершён

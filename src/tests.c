@@ -3658,10 +3658,10 @@ static void test_recodspool(void * ctx)
 
 static void test_recodstart(void)
 {
-	disableIRQ();
+	system_disableIRQ();
 	recticks = 0;
 	recstop = 0;
-	enableIRQ();
+	system_enableIRQ();
 }
 
 unsigned USBD_poke_u32(uint8_t * buff, uint_fast32_t v);
@@ -5009,11 +5009,11 @@ static void serial_irq_loopback_test(void)
 {
 	//test_spi_trace((rxcount & 0x0f) * 16 + (txcount & 0x0f));
 
-	disableIRQ();
+	system_disableIRQ();
 	HARDWARE_DEBUGSIRQ_INITIALIZE();
 	HARDWARE_DEBUGSIRQ_SET_SPEED(DEBUGSPEED);
 	HARDWARE_DEBUGSIRQ_ENABLERX(1);
-	enableIRQ();
+	system_enableIRQ();
 	cat3_puts_impl_P(PSTR("Serial port ECHO test (with IRQ).\r\n"));
 	for (;;)
 	{
@@ -5968,9 +5968,9 @@ void hightests(void)
 			local_delay_ms(5);
 		}
 		static ticker_t test_recordticker;
-		disableIRQ();
+		system_disableIRQ();
 		ticker_initialize(& test_recordticker, 1, test_recodspool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
-		enableIRQ();
+		system_enableIRQ();
 		{
  			f_mount(NULL, "", 0);		/* Unregister volume work area (never fails) */
 			rc = f_mkfs("0:", NULL, work, sizeof (work));
@@ -6003,9 +6003,9 @@ void hightests(void)
 	// SD CARD file system level functions test
 	{
 		static ticker_t test_recordticker;
-		disableIRQ();
+		system_disableIRQ();
 		ticker_initialize(& test_recordticker, 1, test_recodspool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
-		enableIRQ();
+		system_enableIRQ();
 		fatfs_filesystest();
 	}
 #endif
@@ -6897,10 +6897,10 @@ void hightests(void)
 			unsigned tune1 = hardware_get_tune();
 			unsigned ptt1 = hardware_get_ptt();
 			unsigned ptt2 = HARDWARE_CAT_GET_RTS();
-			disableIRQ();
+			system_disableIRQ();
 			unsigned elkey = hardware_elkey_getpaddle(0);
 			unsigned ckey = HARDWARE_CAT_GET_DTR();
-			enableIRQ();
+			system_enableIRQ();
 
 
 			debug_printf_P(PSTR("tune=%u, ptt=%u, elkey=%u\n"), tune1, ptt1, elkey);
@@ -7019,9 +7019,9 @@ void hightests(void)
 			//continue;
 			
 			uint_fast8_t scancode;
-			disableIRQ();
+			system_disableIRQ();
 			scancode = board_get_pressed_key();
-			enableIRQ();
+			system_enableIRQ();
 
 			if (scancode != KEYBOARD_NOKEY)
 			{
@@ -7702,9 +7702,9 @@ void xSWIHandler(void)
 		global_enableIRQ();
 
 		local_delay_ms(20);
-		disableIRQ();
+		system_disableIRQ();
 		local_delay_ms(20);
-		enableIRQ();
+		system_enableIRQ();
 	}
 }
 
@@ -7757,10 +7757,10 @@ nestedirqtest(void)
 	for (;;)
 	{
 		unsigned iccrpr0 = INTCICCRPR;
-		disableIRQ();
+		system_disableIRQ();
 		unsigned iccrpr1 = INTCICCRPR;
 		local_delay_ms(20);
-		enableIRQ();
+		system_enableIRQ();
 
 		global_disableIRQ();
 		debug_printf_P(PSTR("iccrpr0=%02x, iccrpr1=%02x, INTCICCRPR=%02x cpsr=%08lx*\n"), iccrpr0, iccrpr1, INTCICCRPR, __get_CPSR());

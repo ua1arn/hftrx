@@ -7784,10 +7784,10 @@ board_calcs_setfreq(
 	const uint_fast8_t prei = hardware_calc_sound_params(tonefreq01, & value);
 
 
-	disableIRQ();
+	system_disableIRQ();
 	gprei [sndi] = prei;
 	gvalue [sndi] = value;
-	enableIRQ();
+	system_enableIRQ();
 
 	return 1;
 }
@@ -7819,9 +7819,9 @@ board_keybeep_setfreq(
 	enum { sndi = SNDI_KEYBEEP };
 	if (board_calcs_setfreq(sndi, tonefreq * 10) != 0)	/* если частота изменилась - перепрограммируем */
 	{
-		disableIRQ();
+		system_disableIRQ();
 		board_sounds_resched();
-		enableIRQ();
+		system_enableIRQ();
 	}
 }
 
@@ -7834,9 +7834,9 @@ board_sidetone_setfreq(
 	enum { sndi = SNDI_SIDETONE };
 	if (board_calcs_setfreq(sndi, tonefreq * 10) != 0)	/* если частота изменилась - перепрограммируем */
 	{
-		disableIRQ();
+		system_disableIRQ();
 		board_sounds_resched();
-		enableIRQ();
+		system_enableIRQ();
 	}
 }
 
@@ -7892,9 +7892,9 @@ board_subtone_setfreq(
 	enum { sndi = SNDI_SUBTONE };
 	if (board_calcs_setfreq(sndi, tonefreq01) != 0)	/* если частота изменилась - перепрограммируем */
 	{
-		disableIRQ();
+		system_disableIRQ();
 		board_sounds_resched();
-		enableIRQ();
+		system_enableIRQ();
 	}
 #endif /* WITHSUBTONES */
 }
@@ -8837,7 +8837,7 @@ void hardware_cw_diagnostics_noirq(
 {
 	enum { DIT = 100, DASH = DIT * 3, PAUSE = DIT * 1, PAUSE3 = DIT * 3 };
 
-	//disableIRQ();
+	//system_disableIRQ();
 
 	board_beep_enable(1);
 	if (c1) local_delay_ms(DASH); else local_delay_ms(DIT);
@@ -8857,7 +8857,7 @@ void hardware_cw_diagnostics_noirq(
 
 	local_delay_ms(PAUSE3);
 
-	//enableIRQ();
+	//system_enableIRQ();
 }
 
 void hardware_cw_diagnostics(
@@ -8865,11 +8865,11 @@ void hardware_cw_diagnostics(
 	uint_fast8_t c2,
 	uint_fast8_t c3)
 {
-	disableIRQ();
+	system_disableIRQ();
 
 	hardware_cw_diagnostics_noirq(c1, c2, c3);
 
-	enableIRQ();
+	system_enableIRQ();
 }
 
 
@@ -8955,20 +8955,20 @@ static uint_fast8_t debugusb_ci_qempty(void)
 
 uint_fast8_t debugusb_putchar(uint_fast8_t c)/* передача символа если готов порт */
 {
-	disableIRQ();
+	system_disableIRQ();
 	const uint_fast8_t f = debugusb_qput(c);
 	if (f)
 		HARDWARE_DEBUG_ENABLETX(1);
-	enableIRQ();
+	system_enableIRQ();
 	return f;
 }
 
 uint_fast8_t debugusb_getchar(char * cp) /* приём символа, если готов порт */
 {
 	uint_fast8_t c;
-	disableIRQ();
+	system_disableIRQ();
 	const uint_fast8_t f = debugusb_ci_qget(& c);
-	enableIRQ();
+	system_enableIRQ();
 	if (f)
 		* cp = c;
 	return f;

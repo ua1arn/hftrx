@@ -11884,11 +11884,11 @@ SystemInit(void)
 
 #if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7 || CPUSTYLE_ARM_CM0
 
-uint32_t gARM_OVERREALTIME_PRIORITY = 0;
-uint32_t gARM_REALTIME_PRIORITY = 0;
-uint32_t gARM_SYSTEM_PRIORITY = 0;
-uint32_t gARM_BASEPRI_ONLY_REALTIME = 0;
-uint32_t gARM_BASEPRI_ALL_ENABLED = 0;
+uint32_t gARM_OVERREALTIME_PRIORITY;
+uint32_t gARM_REALTIME_PRIORITY;
+uint32_t gARM_SYSTEM_PRIORITY;
+uint32_t gARM_BASEPRI_ONLY_REALTIME;
+uint32_t gARM_BASEPRI_ALL_ENABLED;
 
 static void
 arm_cpu_CMx_initialize_NVIC(void)
@@ -11908,6 +11908,7 @@ arm_cpu_CMx_initialize_NVIC(void)
 	gARM_SYSTEM_PRIORITY = NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 2, 0);
 	// The processor does not process any exception with a priority value greater than or equal to BASEPRI.
 	gARM_BASEPRI_ONLY_REALTIME = ((gARM_SYSTEM_PRIORITY << (8 - __NVIC_PRIO_BITS)) & 0xff);
+	gARM_BASEPRI_ONLY_OVERREALTIME = ((gARM_REALTIME_PRIORITY << (8 - __NVIC_PRIO_BITS)) & 0xff);
 	gARM_BASEPRI_ALL_ENABLED = 0;
 
 	/* System interrupt init*/
@@ -11947,6 +11948,7 @@ uint32_t gARM_OVERREALTIME_PRIORITY;
 uint32_t gARM_REALTIME_PRIORITY;
 uint32_t gARM_SYSTEM_PRIORITY;
 uint32_t gARM_BASEPRI_ONLY_REALTIME;
+uint32_t gARM_BASEPRI_ONLY_OVERREALTIME;
 uint32_t gARM_BASEPRI_ALL_ENABLED;
 
 
@@ -11982,6 +11984,7 @@ arm_gic_initialize(void)
 	gARM_SYSTEM_PRIORITY = ARM_CA9_ENCODE_PRIORITY(PRI_SYS);		// value for GIC_SetPriority
 
 	gARM_BASEPRI_ONLY_REALTIME = ARM_CA9_ENCODE_PRIORITY(PRI_SYS);	// value for GIC_SetInterfacePriorityMask
+	gARM_BASEPRI_ONLY_OVERREALTIME = ARM_CA9_ENCODE_PRIORITY(PRI_RT);	// value for GIC_SetInterfacePriorityMask
 	gARM_BASEPRI_ALL_ENABLED = ARM_CA9_ENCODE_PRIORITY(PRI_USER);	// value for GIC_SetInterfacePriorityMask
 
 	GIC_SetInterfacePriorityMask(gARM_BASEPRI_ALL_ENABLED);
@@ -12098,7 +12101,7 @@ static uint8_t CLKSYS_Main_ClockSource_Select( CLK_SCLKSEL_t clockSource )
 	auto void CCPWrite(volatile uint8_t * address, uint8_t value)
 	{
 		volatile uint8_t * const tmpAddr = address;
-		//disableIRQ();
+		//system_disableIRQ();
 	#ifdef RAMPZ
 		RAMPZ = 0;
 	#endif
@@ -12112,7 +12115,7 @@ static uint8_t CLKSYS_Main_ClockSource_Select( CLK_SCLKSEL_t clockSource )
 			: "r16", "r30", "r31"
 			);
 
-		//enableIRQ();
+		//system_enableIRQ();
 	}
 
 	const uint8_t clkCtrl = (CLK.CTRL & ~CLK_SCLKSEL_gm) | clockSource;

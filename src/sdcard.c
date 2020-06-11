@@ -784,15 +784,15 @@ WaitEvents(events_t e, int type)
 	unsigned long t;
 	for (t = 0; t < 100000000; ++ t)
 	{
-		disableIRQ();
+		system_disableIRQ();
 		if (sd_event_xx != 0 /*&& (sd_event_value & e) != 0 */)
 		{
 			sd_event_xx = 0;
-			enableIRQ();
+			system_enableIRQ();
 			SDMMC1->MASK = 0;
 			return EV_SD_READY;
 		}
-		enableIRQ();
+		system_enableIRQ();
 	}
 	SDMMC1->MASK = 0;
 	return EV_SD_ERROR;

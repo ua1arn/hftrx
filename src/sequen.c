@@ -141,12 +141,12 @@ uint_fast8_t seq_get_txstate(void)
 */
 void vox_set_levels(uint_fast8_t vlevel, uint_fast8_t alevel)
 {
-	//disableIRQ();
+	//system_disableIRQ();
 	
 	vox_level = vlevel;	// 0..100
 	avox_level = alevel;	// 0..100
 
-	//enableIRQ();
+	//system_enableIRQ();
 }
 
 static int vscale(uint_fast8_t v, uint_fast8_t mag)
@@ -172,10 +172,10 @@ vox_enable(
 	uint_fast8_t vox_delay_tens	/* задержка отпускания vox в 1/100 секундных интервалах */
 	)
 {
-	disableIRQ();
+	system_disableIRQ();
 	vox_delay = NTICKS(10 * vox_delay_tens);
 	seq_voxenable = voxstate;
-	enableIRQ();
+	system_enableIRQ();
 }
 
 #endif
@@ -187,10 +187,10 @@ seq_set_bkin_enable(
 	uint_fast8_t bkin_delay_tens	/* задержка отпускания break-in в 1/100 секундных интервалах */
 	)
 {
-	disableIRQ();
+	system_disableIRQ();
 	bkin_delay = NTICKS(10 * bkin_delay_tens);
 	seq_bkinenable = bkinstate;
-	enableIRQ();
+	system_enableIRQ();
 }
 
 /* разрешение работы CW */
@@ -199,9 +199,9 @@ seq_set_cw_enable(
 	uint_fast8_t state		/* разрешение (не-0) или запрещение (0) работы CW. */
 	)	
 {
-	disableIRQ();
+	system_disableIRQ();
 	seq_cwenable = state;
-	enableIRQ();
+	system_enableIRQ();
 }
 
 /* разрешение формирования roger beep */
@@ -210,9 +210,9 @@ seq_set_rgbeep(
 	uint_fast8_t state		/* разрешение (не-0) или запрещение (0). */
 	)	
 {
-	disableIRQ();
+	system_disableIRQ();
 	seq_rgbeep = state;
-	enableIRQ();
+	system_enableIRQ();
 }
 
 
@@ -308,10 +308,10 @@ void seq_set_txgate_P(
 	const uint_fast8_t FLASHMEM * asdtnp
 	)
 {
-	disableIRQ();
+	system_disableIRQ();
 	txgfp = atxgfp;	// параметры управления трактом
 	sdtnp = asdtnp;	// параметры управления самоконтролем
-	enableIRQ();
+	system_enableIRQ();
 }	
 
 /* в зависимсти от текущего режима возвращает признак для перехода (или невыхода) из
@@ -551,7 +551,7 @@ void seq_set_rxtxdelay(
 	const uint_fast8_t apretxticks = NTICKS(pretxdelay); // задержка перед переходом на передачу
 	if (arxtxticks != rxtxticks || atxrxticks != txrxticks || apretxticks != pretxticks)
 	{
-		disableIRQ();
+		system_disableIRQ();
 		rxtxticks = arxtxticks;
 		txrxticks = atxrxticks;
 		pretxticks = apretxticks;
@@ -559,7 +559,7 @@ void seq_set_rxtxdelay(
 		uint_fast8_t n = (pretxticks + rxtxticks) * 2;
 		while (n --)
 			keyqueuein(0);
-		enableIRQ();
+		system_enableIRQ();
 	}
 }
 
@@ -606,28 +606,28 @@ void seq_initialize(void)
 /* очистка запомненных нажатий до этого момента. Вызывается из user-mode программы */
 void seq_purge(void)
 {
-	//disableIRQ();
-	//enableIRQ();
+	//system_disableIRQ();
+	//system_enableIRQ();
 }
 
 // запрос из user-mode части программы на переход на передачу для tune.
 void seq_txrequest(uint_fast8_t tune, uint_fast8_t aptt)
 {
-	disableIRQ();
+	system_disableIRQ();
 	exttunereq = tune;
 	ptt = aptt;
-	enableIRQ();
+	system_enableIRQ();
 }
 
 /* подтверждение от user-mode программы о том, что смена режима приём-передача осуществлена */
 void seq_ask_txstate(
 	uint_fast8_t tx)	/* 0 - периферия находимся в состоянии приёма, иначе - в состоянии передачи */
 {
-	disableIRQ();
+	system_disableIRQ();
 
 	usertxstate = tx;
 
-	enableIRQ();
+	system_enableIRQ();
 }
 
 
