@@ -7293,6 +7293,12 @@ typedef struct {
 } smeter_params_t;
 static smeter_params_t smeter_params;
 
+void display2_set_smetertype(uint_fast8_t v)
+{
+	ASSERT(v < SMETER_TYPE_COUNT);
+	global_smetertype = v;
+}
+
 void
 display2_smeter15_init(
 	uint_fast8_t xgrid,
@@ -7300,9 +7306,6 @@ display2_smeter15_init(
 	dctx_t * pctx
 	)
 {
-	global_smetertype = hamradio_get_gsmetertype();
-	PRINTF("global_smetertype %d\n", global_smetertype);
-
 	const uint_fast8_t halfsect = 30;
 	const int stripewidth = 12; //16;
 
@@ -7565,6 +7568,13 @@ display2_smeter15(
 	const uint_fast8_t is_tx = hamradio_get_tx();
 	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
 	static uint_fast8_t first_tx = 0;
+
+	static uint_fast8_t old_type = 0;
+	if (old_type != global_smetertype)
+	{
+		display2_smeter15_init(0, 0, NULL);
+		old_type = global_smetertype;
+	}
 
 	int gp = smeter_params.gs, gv = smeter_params.gs, gv_trace = smeter_params.gs, gswr = smeter_params.gs;
 
