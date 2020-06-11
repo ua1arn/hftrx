@@ -208,6 +208,8 @@ static portholder_t stm32xxx_i2scfgr_afcodec(void)
 
 #endif /* WITHI2S_FRAMEBITS == 64 */
 
+		(0uL << SPI_I2SCFGR_CKPOL_Pos) |
+
 #if WITHI2S_FORMATI2S_PHILIPS
 		(0uL << SPI_I2SCFGR_I2SSTD_Pos) |	// 00: I2S Philips standard
 
@@ -1545,20 +1547,14 @@ static void DMA_SAI1_B_RX_initialize(void)
 	(void) RCC->MP_AHB2ENSETR;
 	RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_DMAMUXEN; // включил DMAMUX
 	(void) RCC->MP_AHB2ENSETR;
-	//const uint_fast8_t muxi = 88;	// SAI1_B
-	//stm32h7xx_dma2mux(muxi, 0x05);
-	// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
-	// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
+
 	enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
 	DMA2_Stream5->PAR = (uintptr_t) & SAI1_Block_B->DR;
 
 #elif CPUSTYLE_STM32H7XX
 	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;	// включил DMA2
 	(void) RCC->AHB1ENR;
-	//const uint_fast8_t muxi = 88;	// SAI1_B
-	//stm32h7xx_dma2mux(muxi, 0x05);
-	// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
-	// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
+
 	enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
 	DMA2_Stream5->PAR = (uintptr_t) & SAI1_Block_B->DR;
 
@@ -2475,11 +2471,6 @@ static void hardware_sai2_enable(void)		/* разрешение работы SAI
 	// при dual watch используется SAI2, но
 	// через него не передаются данные.
 	// Для работы синхронизации запукаются обе части - и приём и передача - в SAI2
-
-	////+++
-	//DMA_SAI2_A_TX_initialize();	// SAI_xCR1_DMAEN in CR already set
-	////---
-	//DMA_SAI2_B_RX_initialize();	// SAI_xCR1_DMAEN in CR already set
 
 	SAI2_Block_B->CR1 |= SAI_xCR1_SAIEN;
 	SAI2_Block_A->CR1 |= SAI_xCR1_SAIEN;

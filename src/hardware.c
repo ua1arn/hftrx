@@ -7156,7 +7156,7 @@ void RAMFUNC_NONILINE local_delay_us(int timeUS)
 		const unsigned long top = timeUS * 13800uL / (CPU_FREQ / 1000000);
 	#elif CPUSTYLE_STM32MP1 && CPU_FREQ <= 650000000uL
 		// калибровано для 650 МГц процессора
-		//const unsigned long top = timeUS * 52500uL / (CPU_FREQ / 1000000);
+		const unsigned long top = timeUS * 52500uL / (CPU_FREQ / 1000000);
 	#elif CPUSTYLE_STM32MP1
 		// калибровано для 800 МГц процессора
 		const unsigned long top = timeUS * 72500uL / (CPU_FREQ / 1000000);
@@ -11970,7 +11970,7 @@ arm_gic_initialize(void)
 
 	IRQ_Initialize();
 
-	GIC_Enable();	// инициализирует не совсем так как надо для работы
+	GIC_Enable();
 
 #if CPUSTYLE_R7S721
 	r7s721_intc_initialize();
