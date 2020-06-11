@@ -5369,16 +5369,64 @@ static long int seqTotal;
 static long int seqRun;
 static int seqDone;
 
-static void validateSeq(uint_fast8_t slot, int32_t v)
+enum { MAXSEQHIST = DMABUFCLUSTER + 5 };
+
+static int32_t seqHist [MAXSEQHIST] [DMABUFSTEP32RX];
+static const void * seqHistP [MAXSEQHIST];
+static unsigned seqHistR [MAXSEQHIST];
+static unsigned seqPos;
+static unsigned seqAfterError;
+
+static void printSeqError(void)
 {
+	PRINTF("seqErrors=%ld, seqTotal=%ld, seqRun=%ld\n", seqErrors, seqTotal, seqRun);
+	unsigned i;
+	for (i = 0; i < MAXSEQHIST; ++ i)
+	{
+		unsigned ix = ((MAXSEQHIST - 1) - i + seqPos) % MAXSEQHIST;
+		PRINTF("hist [%2d] %02d @%p :", i, seqHistR [ix], seqHistP [ix]);
+		unsigned col;
+		for (col = 0; col < DMABUFSTEP32RX; ++ col)
+			PRINTF("%08lx ", seqHist [ix] [col]);
+		PRINTF("\n");
+	}
+	for (;;)
+		;
+}
+
+static void validateSeq(uint_fast8_t slot, int32_t v, int rowi, const int32_t * base)
+{
+	seqPos = (seqPos == 0) ? MAXSEQHIST - 1 : seqPos - 1;
+	//memcpy(seqHist [seqPos], base, sizeof seqHist [seqPos]);
+	unsigned col;
+	for (col = 0; col < DMABUFSTEP32RX; ++ col)
+		seqHist [seqPos] [col] = base [col];
+	seqHistP [seqPos] = base;
+	seqHistR [seqPos] = rowi / DMABUFSTEP32RX;
+
+	if (seqAfterError)
+	{
+
+		if (seqAfterError != 0)
+		{
+			seqAfterError = seqAfterError - 1;
+			if (seqAfterError == 0)
+			{
+				printSeqError();
+			}
+		}
+		return;
+	}
+
+
 //	PRINTF("%d:%08lX ", slot, v);
 //	return;
 	if (seqDone)
 		return;
 	if (seqTotal >= ((DMABUFFSIZE32RX / DMABUFSTEP32RX) * 10000L))
 	{
-		PRINTF("seqErrors=%ld, seqTotal=%ld, seqRun=%ld\n", seqErrors, seqTotal, seqRun);
 		seqDone = 1;
+		printSeqError();
 		return;
 	}
 	if (! seqValid [slot])
@@ -5389,10 +5437,10 @@ static void validateSeq(uint_fast8_t slot, int32_t v)
 	{
 		if (seqNext [slot] != v)
 		{
-			//PRINTF("validateSeq i=%d: expected=%08lX, v=%08lX\n", slot, seqNext [slot], v);
-			//PRINTF("%08lX, v=%08lX\n", seqNext [slot], v);
 			++ seqErrors;
 			seqRun = 0;
+			if (seqErrors == 2 && seqAfterError == 0)
+				seqAfterError = 4;	// Еще четыре фрейма и стоп
 		}
 		else
 		{
@@ -5448,12 +5496,12 @@ void RAMFUNC dsp_extbuffer32rx(const int32_t * buff)
 			// Проверка качества линии передачи от FPGA
 			uint_fast8_t slot;
 			for (slot = 0; slot < DMABUFSTEP32RX; ++ slot)
-				validateSeq(slot, buff [i + slot]);
+				validateSeq(slot, buff [i + slot], i, buff + i);
 		}
 		else if (1)
 		{
 			uint_fast8_t slot = DMABUF32RTS0I;	// slot 4
-			validateSeq(slot, buff [i + slot]);
+			validateSeq(slot, buff [i + slot], i, buff + i);
 		}
 	#endif
 
