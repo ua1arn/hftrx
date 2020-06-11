@@ -2834,7 +2834,7 @@ void gui_set_encoder2_state (uint_fast8_t code)
 
 void gui_encoder2_menu (enc2_menu_t * enc2_menu)
 {
-	window_t * win = get_win(WINDOW_UIF);
+	window_t * win = get_win(WINDOW_ENC2);
 
 	if (win->state == NON_VISIBLE && enc2_menu->state != 0)
 	{
@@ -2853,10 +2853,9 @@ void gui_encoder2_menu (enc2_menu_t * enc2_menu)
 static void window_enc2_process(void)
 {
 	static label_t * lbl_param,  * lbl_val;
-	window_t * win = get_win(WINDOW_UIF);
+	window_t * win = get_win(WINDOW_ENC2);
 	gui_t * gui = get_gui_env();
-	uint_fast8_t col1_int = 20, row1_int = 20;
-	uint_fast16_t xmax = 0, ymax = 0;
+	uint_fast8_t row1_int = window_title_height + 20;
 
 	if (win->first_call)
 	{
@@ -2865,7 +2864,6 @@ static void window_enc2_process(void)
 		label_t labels[] = {
 		//    x, y,  parent,  state, is_trackable, visible,   name,   Text, font_size, 	color,  onClickHandler
 			{ },
-			{ 0, 0, WINDOW_ENC2, DISABLED,  0, NON_VISIBLE, "lbl_enc2_param", "", FONT_LARGE, COLORMAIN_WHITE, },
 			{ 0, 0, WINDOW_ENC2,  DISABLED,  0, NON_VISIBLE, "lbl_enc2_val", "", FONT_LARGE, COLORMAIN_WHITE, },
 		};
 		win->lh_count = ARRAY_SIZE(labels);
@@ -2878,23 +2876,17 @@ static void window_enc2_process(void)
 
 	if (gui_enc2_menu->updated)
 	{
-		lbl_param = find_gui_element_ref(TYPE_LABEL, win, "lbl_enc2_param");
-		lbl_param->x = col1_int;
-		lbl_param->y = row1_int;
-		strcpy(lbl_param->text, gui_enc2_menu->param);
-		remove_end_line_spaces(lbl_param->text);
-		lbl_param->visible = VISIBLE;
-
 		lbl_val = find_gui_element_ref(TYPE_LABEL, win, "lbl_enc2_val");
-		lbl_val->y = lbl_param->y + get_label_height(lbl_val) * 2;
-		lbl_val->visible = VISIBLE;
-		strcpy(lbl_val->text, gui_enc2_menu->val);
-		lbl_val->color = gui_enc2_menu->state == 2 ? COLORMAIN_YELLOW : COLORMAIN_WHITE;
-		lbl_val->x = lbl_param->x + get_label_width(lbl_param) / 2 - get_label_width(lbl_val) / 2;
+		strcpy(win->name, gui_enc2_menu->param);
+		remove_end_line_spaces(win->name);
+		calculate_window_position(win, 0, window_title_height + get_label_height(lbl_val) * 2);
 
-		xmax = lbl_param->x + get_label_width(lbl_param);
-		ymax = lbl_val->y + get_label_height(lbl_val);
-		calculate_window_position(win, xmax, ymax);
+		strcpy(lbl_val->text, gui_enc2_menu->val);
+		lbl_val->x = win->w / 2 - get_label_width(lbl_val) / 2;
+		lbl_val->y = row1_int;
+		lbl_val->color = gui_enc2_menu->state == 2 ? COLORMAIN_YELLOW : COLORMAIN_WHITE;
+		lbl_val->visible = VISIBLE;
+
 		gui_enc2_menu->updated = 0;
 		gui->timer_1sec_updated = 1;
 	}
