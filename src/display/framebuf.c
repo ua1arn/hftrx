@@ -178,6 +178,7 @@ mdma_startandwait(void)
 	while ((MDMA_CH->CISR & MDMA_CISR_CTCIF_Msk) == 0)	// Channel x Channel Transfer Complete interrupt flag
 		hardware_nonguiyield();
 
+	__DMB();	//ensure the ordering of data cache maintenance operations and their effects
 	ASSERT((MDMA_CH->CISR & MDMA_CISR_TEIF_Msk) == 0);	/* Channel x transfer error interrupt flag */
 
 }
@@ -272,16 +273,16 @@ hwacc_fillrect_u8(
 		(PIXEL_SIZE_CODE << MDMA_CTCR_DINCOS_Pos) |
 		(dburst << MDMA_CTCR_DBURST_Pos) |	// Destination burst transfer configuration
 		((tlen - 1) << MDMA_CTCR_TLEN_Pos) |		// buffer Transfer Length (number of bytes - 1)
-		(0x00 << MDMA_CTCR_PKE_Pos) |
-		(0x00 << MDMA_CTCR_PAM_Pos) |
-		(0x02 << MDMA_CTCR_TRGM_Pos) |		// Trigger Mode: 10: Each MDMA request (software or hardware) triggers a repeated block transfer (if the block repeat is 0, a single block is transferred)
-		(0x01 << MDMA_CTCR_SWRM_Pos) |		// 1: hardware request are ignored. Transfer is triggered by software writing 1 to the SWRQ bit
-		(0x01 << MDMA_CTCR_BWM_Pos) |
+		(0x00uL << MDMA_CTCR_PKE_Pos) |
+		(0x00uL << MDMA_CTCR_PAM_Pos) |
+		(0x02uL << MDMA_CTCR_TRGM_Pos) |		// Trigger Mode: 10: Each MDMA request (software or hardware) triggers a repeated block transfer (if the block repeat is 0, a single block is transferred)
+		(0x01uL << MDMA_CTCR_SWRM_Pos) |		// 1: hardware request are ignored. Transfer is triggered by software writing 1 to the SWRQ bit
+		(0x01uL << MDMA_CTCR_BWM_Pos) |
 		0;
 	MDMA_CH->CBNDTR =
 		((PIXEL_SIZE * (w)) << MDMA_CBNDTR_BNDT_Pos) |	// Block Number of data bytes to transfer
-		(0x00 << MDMA_CBNDTR_BRSUM_Pos) |	// Block Repeat Source address Update Mode: 0 - increment
-		(0x00 << MDMA_CBNDTR_BRDUM_Pos) |	// Block Repeat Destination address Update Mode: 0 - increment
+		(0x00uL << MDMA_CBNDTR_BRSUM_Pos) |	// Block Repeat Source address Update Mode: 0 - increment
+		(0x00uL << MDMA_CBNDTR_BRDUM_Pos) |	// Block Repeat Destination address Update Mode: 0 - increment
 		((h - 1) << MDMA_CBNDTR_BRC_Pos) |		// Block Repeat Count
 		0;
 	MDMA_CH->CBRUR =
@@ -365,16 +366,16 @@ hwacc_fillrect_u16(
 		(PIXEL_SIZE_CODE << MDMA_CTCR_DINCOS_Pos) |
 		(dburst << MDMA_CTCR_DBURST_Pos) |	// Destination burst transfer configuration
 		((tlen - 1) << MDMA_CTCR_TLEN_Pos) |		// buffer Transfer Length (number of bytes - 1)
-		(0x00 << MDMA_CTCR_PKE_Pos) |
-		(0x00 << MDMA_CTCR_PAM_Pos) |
-		(0x02 << MDMA_CTCR_TRGM_Pos) |		// Trigger Mode: 10: Each MDMA request (software or hardware) triggers a repeated block transfer (if the block repeat is 0, a single block is transferred)
-		(0x01 << MDMA_CTCR_SWRM_Pos) |		// 1: hardware request are ignored. Transfer is triggered by software writing 1 to the SWRQ bit
-		(0x01 << MDMA_CTCR_BWM_Pos) |
+		(0x00uL << MDMA_CTCR_PKE_Pos) |
+		(0x00uL << MDMA_CTCR_PAM_Pos) |
+		(0x02uL << MDMA_CTCR_TRGM_Pos) |		// Trigger Mode: 10: Each MDMA request (software or hardware) triggers a repeated block transfer (if the block repeat is 0, a single block is transferred)
+		(0x01uL << MDMA_CTCR_SWRM_Pos) |		// 1: hardware request are ignored. Transfer is triggered by software writing 1 to the SWRQ bit
+		(0x01uL << MDMA_CTCR_BWM_Pos) |
 		0;
 	MDMA_CH->CBNDTR =
 		((PIXEL_SIZE * (w)) << MDMA_CBNDTR_BNDT_Pos) |	// Block Number of data bytes to transfer
-		(0x00 << MDMA_CBNDTR_BRSUM_Pos) |	// Block Repeat Source address Update Mode: 0 - increment
-		(0x00 << MDMA_CBNDTR_BRDUM_Pos) |	// Block Repeat Destination address Update Mode: 0 - increment
+		(0x00uL << MDMA_CBNDTR_BRSUM_Pos) |	// Block Repeat Source address Update Mode: 0 - increment
+		(0x00uL << MDMA_CBNDTR_BRDUM_Pos) |	// Block Repeat Destination address Update Mode: 0 - increment
 		((h - 1) << MDMA_CBNDTR_BRC_Pos) |		// Block Repeat Count
 		0;
 	MDMA_CH->CBRUR =
@@ -496,16 +497,16 @@ hwacc_fillrect_u24(
 		(PIXEL_SIZE_CODE << MDMA_CTCR_DINCOS_Pos) |
 		(dburst << MDMA_CTCR_DBURST_Pos) |	// Destination burst transfer configuration
 		((tlen - 1) << MDMA_CTCR_TLEN_Pos) |		// buffer Transfer Length (number of bytes - 1)
-		(0x00 << MDMA_CTCR_PKE_Pos) |
-		(0x00 << MDMA_CTCR_PAM_Pos) |
-		(0x02 << MDMA_CTCR_TRGM_Pos) |		// Trigger Mode: 10: Each MDMA request (software or hardware) triggers a repeated block transfer (if the block repeat is 0, a single block is transferred)
-		(0x01 << MDMA_CTCR_SWRM_Pos) |		// 1: hardware request are ignored. Transfer is triggered by software writing 1 to the SWRQ bit
-		(0x01 << MDMA_CTCR_BWM_Pos) |
+		(0x00uL << MDMA_CTCR_PKE_Pos) |
+		(0x00uL << MDMA_CTCR_PAM_Pos) |
+		(0x02uL << MDMA_CTCR_TRGM_Pos) |		// Trigger Mode: 10: Each MDMA request (software or hardware) triggers a repeated block transfer (if the block repeat is 0, a single block is transferred)
+		(0x01uL << MDMA_CTCR_SWRM_Pos) |		// 1: hardware request are ignored. Transfer is triggered by software writing 1 to the SWRQ bit
+		(0x01uL << MDMA_CTCR_BWM_Pos) |
 		0;
 	MDMA_CH->CBNDTR =
 		((PIXEL_SIZE * (w)) << MDMA_CBNDTR_BNDT_Pos) |	// Block Number of data bytes to transfer
-		(0x00 << MDMA_CBNDTR_BRSUM_Pos) |	// Block Repeat Source address Update Mode: 0 - increment
-		(0x00 << MDMA_CBNDTR_BRDUM_Pos) |	// Block Repeat Destination address Update Mode: 0 - increment
+		(0x00uL << MDMA_CBNDTR_BRSUM_Pos) |	// Block Repeat Source address Update Mode: 0 - increment
+		(0x00uL << MDMA_CBNDTR_BRDUM_Pos) |	// Block Repeat Destination address Update Mode: 0 - increment
 		((h - 1) << MDMA_CBNDTR_BRC_Pos) |		// Block Repeat Count
 		0;
 	MDMA_CH->CBRUR =
@@ -688,6 +689,7 @@ void colpip_fillrect(
 	ASSERT((x + w) <= dx);
 	ASSERT(y < dy);
 	ASSERT((y + h) <= dy);
+
 #if LCDMODE_HORFILL
 
 	#if LCDMODE_PIP_L8
@@ -1023,24 +1025,26 @@ void hwaccel_copy(
 	uintptr_t dstinvalidateaddr,
 	size_t dstinvalidatesize,
 	PACKEDCOLORMAIN_T * dst,
+	uint_fast16_t tdx,	// ширина буфера
+	uint_fast16_t tdy,	// высота буфера
 	const PACKEDCOLORMAIN_T * src,
-	unsigned w,
-	unsigned tadj,	// разница в размере строки получателя от источника. Уже с учетом выравнивания пикселей от GXADJ
-	unsigned h
+	uint_fast16_t sdx,	// ширина буфера
+	uint_fast16_t sdy	// высота буфера
 	)
 {
-	if (w == 0 || h == 0)
+	if (sdx == 0 || sdy == 0)
 		return;
 
 #if WITHMDMAHW
 	// MDMA реализация
 
 	arm_hardware_flush_invalidate(dstinvalidateaddr, dstinvalidatesize);
-	arm_hardware_flush((uintptr_t) src, sizeof (* src) * GXSIZE(w, h));
+	ASSERT(((uintptr_t) src % DCACHEROWSIZE) == 0);
+	arm_hardware_flush((uintptr_t) src, sizeof (* src) * GXSIZE(sdx, sdy));
 
 	MDMA_CH->CDAR = (uintptr_t) dst;
 	MDMA_CH->CSAR = (uintptr_t) src;
-	const uint_fast32_t tlen = mdma_tlen(w * sizeof (PACKEDCOLORMAIN_T), sizeof (PACKEDCOLORMAIN_T));
+	const uint_fast32_t tlen = mdma_tlen(sdx * sizeof (PACKEDCOLORMAIN_T), sizeof (PACKEDCOLORMAIN_T));
 	const uint_fast32_t sbus = mdma_getbus(MDMA_CH->CSAR);
 	const uint_fast32_t dbus = mdma_getbus(MDMA_CH->CDAR);
 	const uint_fast32_t sinc = 0x02; // Source increment mode: 10: address pointer is incremented
@@ -1057,21 +1061,21 @@ void hwaccel_copy(
 		(MDMA_CTCR_xSIZE_MAIN << MDMA_CTCR_DINCOS_Pos) |
 		(dburst << MDMA_CTCR_DBURST_Pos) |	// Destination burst transfer configuration
 		((tlen - 1) << MDMA_CTCR_TLEN_Pos) |		// buffer Transfer Length (number of bytes - 1)
-		(0x00 << MDMA_CTCR_PKE_Pos) |
-		(0x00 << MDMA_CTCR_PAM_Pos) |
-		(0x02 << MDMA_CTCR_TRGM_Pos) |		// Trigger Mode: 10: Each MDMA request (software or hardware) triggers a repeated block transfer (if the block repeat is 0, a single block is transferred)
-		(0x01 << MDMA_CTCR_SWRM_Pos) |		// 1: hardware request are ignored. Transfer is triggered by software writing 1 to the SWRQ bit
-		(0x01 << MDMA_CTCR_BWM_Pos) |
+		(0x00uL << MDMA_CTCR_PKE_Pos) |
+		(0x00uL << MDMA_CTCR_PAM_Pos) |
+		(0x02uL << MDMA_CTCR_TRGM_Pos) |		// Trigger Mode: 10: Each MDMA request (software or hardware) triggers a repeated block transfer (if the block repeat is 0, a single block is transferred)
+		(0x01uL << MDMA_CTCR_SWRM_Pos) |		// 1: hardware request are ignored. Transfer is triggered by software writing 1 to the SWRQ bit
+		(0x01uL << MDMA_CTCR_BWM_Pos) |
 		0;
 	MDMA_CH->CBNDTR =
-		((sizeof (PACKEDCOLORMAIN_T) * (w)) << MDMA_CBNDTR_BNDT_Pos) |	// Block Number of data bytes to transfer
-		(0x00 << MDMA_CBNDTR_BRSUM_Pos) |	// Block Repeat Source address Update Mode: 0 - increment
-		(0x00 << MDMA_CBNDTR_BRDUM_Pos) |	// Block Repeat Destination address Update Mode: 0 - increment
-		((h - 1) << MDMA_CBNDTR_BRC_Pos) |		// Block Repeat Count
+		((sizeof (PACKEDCOLORMAIN_T) * (sdx)) << MDMA_CBNDTR_BNDT_Pos) |	// Block Number of data bytes to transfer
+		(0x00uL << MDMA_CBNDTR_BRSUM_Pos) |	// Block Repeat Source address Update Mode: 0 - increment
+		(0x00uL << MDMA_CBNDTR_BRDUM_Pos) |	// Block Repeat Destination address Update Mode: 0 - increment
+		((sdy - 1) << MDMA_CBNDTR_BRC_Pos) |		// Block Repeat Count
 		0;
 	MDMA_CH->CBRUR =
-		((sizeof (PACKEDCOLORMAIN_T) * (GXADJ(w) - w)) << MDMA_CBRUR_SUV_Pos) |	// Source address Update Value
-		((sizeof (PACKEDCOLORMAIN_T) * (tadj)) << MDMA_CBRUR_DUV_Pos) |			// Destination address Update Value
+		((sizeof (PACKEDCOLORMAIN_T) * (GXADJ(sdx) - sdx)) << MDMA_CBRUR_SUV_Pos) |	// Source address Update Value
+		((sizeof (PACKEDCOLORMAIN_T) * (GXADJ(tdx) - tdx)) << MDMA_CBRUR_DUV_Pos) |			// Destination address Update Value
 		0;
 
 	MDMA_CH->CTBR = (MDMA_CH->CTBR & ~ (MDMA_CTBR_SBUS_Msk | MDMA_CTBR_DBUS_Msk)) |
@@ -1085,6 +1089,7 @@ void hwaccel_copy(
 	// DMA2D реализация
 
 	arm_hardware_flush_invalidate(dstinvalidateaddr, dstinvalidatesize);
+	ASSERT(((uintptr_t) src % DCACHEROWSIZE) == 0);
 	arm_hardware_flush((uintptr_t) src, sizeof (* src) * GXSIZE(w, h));
 
 	/* исходный растр */
@@ -1126,7 +1131,7 @@ void hwaccel_copy(
 		const size_t len = (size_t) GXSIZE(w, h) * sizeof * src;
 		// ширина строки одинаковая в получателе и источнике
 		memcpy(dst, src, len);
-		arm_hardware_flush((uintptr_t) dst, len);
+		//arm_hardware_flush((uintptr_t) dst, len);
 	}
 	else
 	{
@@ -1134,7 +1139,7 @@ void hwaccel_copy(
 		while (h --)
 		{
 			memcpy(dst, src, len);
-			arm_hardware_flush((uintptr_t) dst, len);
+			//arm_hardware_flush((uintptr_t) dst, len);
 			src += GXADJ(w);
 			dst += w + tadj;
 		}
@@ -1594,58 +1599,60 @@ void colmain_plot(
 	uint_fast16_t x,	// получатель
 	uint_fast16_t y,	// получатель
 	const PACKEDCOLORMAIN_T * src, 	// источник
-	uint_fast16_t dx,	// источник Размеры окна в пикселях
-	uint_fast16_t dy	// источник
+	uint_fast16_t sdx,	// источник Размеры окна в пикселях
+	uint_fast16_t sdy	// источник
 	)
 {
 	ASSERT(src != NULL);
 	ASSERT(dst != NULL);
-	ASSERT(tdx >= dx);
-	ASSERT(tdy >= dy);
+	ASSERT(tdx >= sdx);
+	ASSERT(tdy >= sdy);
+	ASSERT(((uintptr_t) src % DCACHEROWSIZE) == 0);
 #if LCDMODE_HORFILL
 	hwaccel_copy(
 		(uintptr_t) dst, sizeof (PACKEDCOLORPIP_T) * GXSIZE(tdx, tdy),	// target area invalidate parameters
-		colmain_mem_at(dst, tdx, tdy, x, y),
-		src,
-		dx, GXADJ(tdx) - GXADJ(dx), dy);	// w, t, h
+		colmain_mem_at(dst, tdx, tdy, x, y), tdx, tdy,
+		src, sdx, sdy
+		);
 #else /* LCDMODE_HORFILL */
 	hwaccel_copy(
 		(uintptr_t) dst, sizeof (PACKEDCOLORPIP_T) * GXSIZE(tdx, tdy),	// target area invalidate parameters
-		colmain_mem_at(dst, tdx, tdy, x, y),
-		src,
-		dy, tdy - dy, dx);	// w, t, h
+		colmain_mem_at(dst, tdx, tdy, x, y), tdx, tdy,
+		src, sdx, sdy
+		);
 #endif /* LCDMODE_HORFILL */
 }
 
 // скоприовать прямоугольник с типом пикселей соответствующим pip
 void colpip_plot(
 	PACKEDCOLORPIP_T * dst,	// получатель
-	uint_fast16_t tdx,	// получатель
+	uint_fast16_t tdx,	// получатель Размеры окна в пикселях
 	uint_fast16_t tdy,	// получатель
-	uint_fast16_t x,	// получатель
+	uint_fast16_t x,	// получатель Позиция
 	uint_fast16_t y,	// получатель
 	const PACKEDCOLORPIP_T * src, 	// источник
-	uint_fast16_t dx,	// источник Размеры окна в пикселях
-	uint_fast16_t dy	// источник
+	uint_fast16_t sdx,	// источник Размеры окна в пикселях
+	uint_fast16_t sdy	// источник
 	)
 {
 	ASSERT(src != NULL);
 	ASSERT(dst != NULL);
-	ASSERT(tdx >= dx);
-	ASSERT(tdy >= dy);
+	ASSERT(tdx >= sdx);
+	ASSERT(tdy >= sdy);
 
+	ASSERT(((uintptr_t) src % DCACHEROWSIZE) == 0);
 #if LCDMODE_HORFILL
 	hwaccel_copy(
 		(uintptr_t) dst, sizeof (PACKEDCOLORPIP_T) * GXSIZE(tdx, tdy),	// target area invalidate parameters
-		colmain_mem_at(dst, tdx, tdy, x, y),
-		src,
-		dx, GXADJ(tdx) - GXADJ(dx), dy);	// w, t, h
+		colmain_mem_at(dst, tdx, tdy, x, y), tdx, tdy,
+		src, sdx, sdy
+		);
 #else /* LCDMODE_HORFILL */
 	hwaccel_copy(
 		(uintptr_t) dst, sizeof (PACKEDCOLORPIP_T) * GXSIZE(tdx, tdy),	// target area invalidate parameters
-		colmain_mem_at(dst, tdx, tdy, x, y),
-		src,
-		dy, tdy - dy, dx);	// w, t, h
+		colmain_mem_at(dst, tdx, tdy, x, y), tdx, tdy,
+		src, sdx, sdy
+		);
 #endif /* LCDMODE_HORFILL */
 }
 

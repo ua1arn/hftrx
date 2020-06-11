@@ -333,14 +333,14 @@ typedef uint_fast32_t COLOR24_T;
 
 #endif /* LCDMODE_LTDC */
 
-#define GXALIGN 8	/* размер каждой строки видеобуфера кратен этому заначению */
+#define GXALIGN 1//64	/* количество пикселей в строке видеобуфера кратно этому заначению */
 
 #define GXADJ(dx) (((dx) + (GXALIGN - 1)) / GXALIGN * GXALIGN)
 #define MGADJ(dx) (((dx) + (MGALIGN - 1)) / MGALIGN * MGALIGN)
 
 #if LCDMODE_S1D13781
 	// биты слова буфера располагаются на экране горизонтально
-	// старший битт левее
+	// старший бит левее
 	#define MGALIGN 16
 	typedef uint16_t GX_t;	/* тип элемента буфера для выдачи монохромного растра */
 #elif LCDMODE_COLORED
@@ -470,8 +470,8 @@ void colpip_to_main(
 	const PACKEDCOLORPIP_T * buffer,	// источник
 	uint_fast16_t dx,	// ширина буфера источника
 	uint_fast16_t dy,	// высота буфера источника
-	uint_fast16_t col,	// горизонтальная координата левого верхнего угла на экране (0..dx-1) слева направо
-	uint_fast16_t row	// вертикальная координата левого верхнего угла на экране (0..dy-1) сверху вниз
+	uint_fast16_t col,	// целевая горизонтальная координата левого верхнего угла на экране (0..dx-1) слева направо
+	uint_fast16_t row	// целевая вертикальная координата левого верхнего угла на экране (0..dy-1) сверху вниз
 	);
 
 // Нарисовать линию указанным цветом
@@ -872,10 +872,11 @@ void hwaccel_copy(
 	uintptr_t dstinvalidateaddr,
 	size_t dstinvalidatesize,
 	PACKEDCOLORMAIN_T * dst,
+	uint_fast16_t ddx,	// ширина буфера
+	uint_fast16_t ddy,	// высота буфера
 	const PACKEDCOLORMAIN_T * src,
-	unsigned w,
-	unsigned t,	// разница в размере строки получателя от источника
-	unsigned h
+	uint_fast16_t sdx,	// ширина буфера
+	uint_fast16_t sdy	// высота буфера
 	);
 
 // для случая когда горизонтальные пиксели в видеопямяти располагаются подряд

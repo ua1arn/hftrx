@@ -23,7 +23,7 @@
 //#include "./byte2crun.h"
 //#endif /* ! LCDMODE_LTDC_L24 */
 
-typedef PACKEDCOLORMAIN_T FRAMEBUFF_T [LCDMODE_MAIN_PAGES] [GXSIZE(DIM_SECOND, DIM_FIRST)];
+//typedef PACKEDCOLORMAIN_T FRAMEBUFF_T [LCDMODE_MAIN_PAGES] [GXSIZE(DIM_SECOND, DIM_FIRST)];
 
 #if defined (SDRAM_BANK_ADDR) && LCDMODE_LTDCSDRAMBUFF && LCDMODE_LTDC
 	#define framebuff (* (FRAMEBUFF_T *) SDRAM_BANK_ADDR)
@@ -32,9 +32,16 @@ typedef PACKEDCOLORMAIN_T FRAMEBUFF_T [LCDMODE_MAIN_PAGES] [GXSIZE(DIM_SECOND, D
 	//extern FRAMEBUFF_T framebuff0;	//L8 (8-bit Luminance or CLUT)
 #endif /* defined (SDRAM_BANK_ADDR) && LCDMODE_LTDCSDRAMBUFF && LCDMODE_LTDC */
 
-#if ! defined (SDRAM_BANK_ADDR)
+#if ! defined (SDRAM_BANK_ADDR) && LCDMODE_MAIN_PAGES == 3
 	// буфер экрана
-	RAMFRAMEBUFF ALIGNX_BEGIN FRAMEBUFF_T framebuff0 ALIGNX_END;
+	//RAMFRAMEBUFF ALIGNX_BEGIN FRAMEBUFF_T framebuff0 ALIGNX_END;
+	ALIGNX_BEGIN PACKEDCOLORMAIN_T fbf0 [GXSIZE(DIM_SECOND, DIM_FIRST)] ALIGNX_END;
+	ALIGNX_BEGIN PACKEDCOLORMAIN_T fbf1 [GXSIZE(DIM_SECOND, DIM_FIRST)] ALIGNX_END;
+	ALIGNX_BEGIN PACKEDCOLORMAIN_T fbf2 [GXSIZE(DIM_SECOND, DIM_FIRST)] ALIGNX_END;
+	static PACKEDCOLORMAIN_T * const fbfs [LCDMODE_MAIN_PAGES] =
+	{
+			fbf0, fbf1, fbf2,
+	};
 #endif /* LCDMODE_LTDC */
 
 static uint_fast8_t mainphase;
@@ -47,14 +54,14 @@ void colmain_fb_next(void)
 PACKEDCOLORMAIN_T *
 colmain_fb_draw(void)
 {
-	return (PACKEDCOLORMAIN_T *) & framebuff0 [(mainphase + 1) % LCDMODE_MAIN_PAGES] [0];
+	return fbfs [(mainphase + 1) % LCDMODE_MAIN_PAGES];
 }
 
 
 PACKEDCOLORMAIN_T *
 colmain_fb_show(void)
 {
-	return (PACKEDCOLORMAIN_T *) & framebuff0 [(mainphase + 0) % LCDMODE_MAIN_PAGES] [0];
+	return fbfs [(mainphase + 0) % LCDMODE_MAIN_PAGES];
 }
 
 
@@ -655,7 +662,7 @@ ltdc_vertical_pixN(
 	// TODO: для паттернов шире чем восемь бит, повторить нужное число раз.
 	const FLASHMEM PACKEDCOLORMAIN_T * const pcl = (* byte2runmain) [pattern];
 	memcpy(tgr, pcl, sizeof (* pcl) * w);
-	arm_hardware_flush((uintptr_t) tgr, sizeof (PACKEDCOLORMAIN_T) * w);
+	//arm_hardware_flush((uintptr_t) tgr, sizeof (PACKEDCOLORMAIN_T) * w);
 #endif /* LCDMODE_LTDC_L24 */
 }
 
@@ -681,7 +688,7 @@ void RAMFUNC ltdc_horizontal_pixels(
 		const FLASHMEM PACKEDCOLORMAIN_T * const pcl = (* byte2runmain) [* raster ++];
 		memcpy(tgr + col, pcl, sizeof (* tgr) * w);
 	}
-	arm_hardware_flush((uintptr_t) tgr, sizeof (* tgr) * width);
+	//arm_hardware_flush((uintptr_t) tgr, sizeof (* tgr) * width);
 }
 
 // Вызов этой функции только внутри display_wrdata_begin() и display_wrdata_end();
@@ -1437,24 +1444,27 @@ void colpip_to_main(
 	const PACKEDCOLORPIP_T * buffer,	// источник
 	uint_fast16_t dx,	// ширина буфера источника
 	uint_fast16_t dy,	// высота буфера источника
-	uint_fast16_t col,	// горизонтальная координата левого верхнего угла на экране (0..dx-1) слева направо
-	uint_fast16_t row	// вертикальная координата левого верхнего угла на экране (0..dy-1) сверху вниз
+	uint_fast16_t col,	// целевая горизонтальная координата левого верхнего угла на экране (0..dx-1) слева направо
+	uint_fast16_t row	// целевая вертикальная координата левого верхнего угла на экране (0..dy-1) сверху вниз
 	)
 {
 	ASSERT(dx <= DIM_X);
 	ASSERT(dy <= DIM_Y);
+	ASSERT(((uintptr_t) buffer % DCACHEROWSIZE) == 0);
 #if LCDMODE_HORFILL
 	hwaccel_copy(
-		(uintptr_t) colmain_fb_draw(), sizeof (PACKEDCOLORPIP_T) * GXSIZE(DIM_X, DIM_Y),	// target area invalidate parameters
-		colmain_mem_at(colmain_fb_draw(), DIM_X, DIM_Y, col, row),
-		buffer,
-		dx, GXADJ(DIM_X) - GXADJ(dx), dy);	// w, t, h
+		(uintptr_t) colmain_fb_draw(),
+		sizeof (PACKEDCOLORPIP_T) * GXSIZE(DIM_X, DIM_Y),	// target area invalidate parameters
+		colmain_mem_at(colmain_fb_draw(), DIM_X, DIM_Y, col, row), DIM_X, DIM_Y,
+		buffer, dx, dy
+		);
 #else /* LCDMODE_HORFILL */
 	hwaccel_copy(
-		(uintptr_t) colmain_fb_draw(), sizeof (PACKEDCOLORPIP_T) * GXSIZE(DIM_X, DIM_Y),	// target area invalidate parameters
-		colmain_mem_at(colmain_fb_draw(), DIM_X, DIM_Y, col, row),
-		buffer,
-		dy, DIM_Y - dy, dx);	// w, t, h
+		(uintptr_t) colmain_fb_draw(),
+		sizeof (PACKEDCOLORPIP_T) * GXSIZE(DIM_X, DIM_Y),	// target area invalidate parameters
+		colmain_mem_at(colmain_fb_draw(), DIM_X, DIM_Y, col, row), DIM_X, DIM_Y,
+		buffer, dx, dy
+		);
 #endif /* LCDMODE_HORFILL */
 }
 
