@@ -180,6 +180,7 @@ display2_nextfb(
 #if WITHLTDCHW && LCDMODE_LTDC && ! (LCDMODE_PIP_RGB565 || LCDMODE_PIP_L8)
 
 	colmain_fb_next();
+	ASSERT(((uintptr_t) colmain_fb_show() % DCACHEROWSIZE) == 0);
 	arm_hardware_flush((uintptr_t) colmain_fb_show(), (uint_fast32_t) DIM_X * DIM_Y * sizeof (PACKEDCOLORMAIN_T));
 	arm_hardware_ltdc_main_set((uintptr_t) colmain_fb_show());
 
@@ -5668,7 +5669,7 @@ static FLOAT_t filter_spectrum(
 #if defined (COLORPIP_SHADED)
 
 	/* быстрое отображение водопада (но требует больше памяти) */
-	static RAMBIGDTCM_MDMA  PACKEDCOLORMAIN_T wfjarray [GXSIZE(ALLDX, WFDY)];	// массив "водопада"
+	static ALIGNX_BEGIN ALIGNX_BEGIN RAMBIGDTCM_MDMA  PACKEDCOLORMAIN_T wfjarray [GXSIZE(ALLDX, WFDY)] ALIGNX_END;	// массив "водопада"
 	enum { WFROWS = WFDY };
 
 	enum { PALETTESIZE = COLORPIP_BASE };
@@ -5678,7 +5679,7 @@ static FLOAT_t filter_spectrum(
 #elif WITHFASTWATERFLOW && LCDMODE_PIP_RGB565
 
 	/* быстрое отображение водопада (но требует больше памяти) */
-	static RAMBIGDTCM_MDMA PACKEDCOLORMAIN_T wfjarray [GXSIZE(ALLDX, WFDY)];	// массив "водопада"
+	static RAMBIGDTCM_MDMA PACKEDCOLORMAIN_T wfjarray [GXSIZE(ALLDX, WFDY)] ALIGNX_END;	// массив "водопада"
 	enum { WFROWS = WFDY };
 
 	enum { PALETTESIZE = 256 };
@@ -5688,14 +5689,14 @@ static FLOAT_t filter_spectrum(
 #elif LCDMODE_PIP_L8 || (! LCDMODE_PIP_L8 && LCDMODE_MAIN_L8)
 
 	enum { PALETTESIZE = COLORPIP_BASE };
-	static RAMBIGDTCM PACKEDCOLORMAIN_T wfjarray [GXSIZE(ALLDX, WFDY)];	// массив "водопада"
+	static ALIGNX_BEGIN RAMBIGDTCM PACKEDCOLORMAIN_T wfjarray [GXSIZE(ALLDX, WFDY)];	// массив "водопада"
 	enum { WFROWS = WFDY };
 	static uint_fast16_t wfrow;		// строка, в которую последней занесены данные
 
 #elif WITHFASTWATERFLOW
 
 	/* быстрое отображение водопада (но требует больше памяти) */
-	static RAMBIGDTCM_MDMA PACKEDCOLORMAIN_T wfjarray [GXSIZE(ALLDX, WFDY)];	// массив "водопада"
+	static ALIGNX_BEGIN RAMBIGDTCM_MDMA PACKEDCOLORMAIN_T wfjarray [GXSIZE(ALLDX, WFDY)] ALIGNX_END;	// массив "водопада"
 	enum { WFROWS = WFDY };
 
 	enum { PALETTESIZE = 256 };
@@ -5704,7 +5705,7 @@ static FLOAT_t filter_spectrum(
 
 #elif (! LCDMODE_S1D13781_NHWACCEL && LCDMODE_S1D13781)
 
-	static RAMBIGDTCM_MDMA PACKEDCOLOR565_T wfjarray [GXSIZE(ALLDX, 1)];	// массив "водопада"
+	static ALIGNX_BEGIN RAMBIGDTCM_MDMA PACKEDCOLOR565_T wfjarray [GXSIZE(ALLDX, 1)] ALIGNX_END;	// массив "водопада"
 	enum { WFROWS = 1 };
 	enum { wfrow = 0 };				// строка, в которую последней занесены данные
 
@@ -5715,7 +5716,7 @@ static FLOAT_t filter_spectrum(
 
 #else
 
-	static RAMBIGDTCM_MDMA uint8_t wfjarray [GXSIZE(ALLDX, WFDY)];	// массив "водопада"
+	static ALIGNX_BEGIN RAMBIGDTCM_MDMA uint8_t wfjarray [GXSIZE(ALLDX, WFDY)] ALIGNX_END;	// массив "водопада"
 	enum { WFROWS = WFDY };
 	static uint_fast16_t wfrow;		// строка, в которую последней занесены данные
 
