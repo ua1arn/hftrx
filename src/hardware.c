@@ -9584,25 +9584,6 @@ void arm_hardware_flush_invalidate(uintptr_t base, size_t size)
 
 #elif (__CORTEX_A != 0)
 
-#define MK_MVA(addr) ((uintptr_t) (addr) & ~ (uintptr_t) (DCACHEROWSIZE - 1))
-
-// Сейчас в эту память будем читать по DMA
-// Используется только в startup
-void arm_hardware_invalidate(uintptr_t base, size_t size)
-{
-	unsigned long len = (size + (DCACHEROWSIZE - 1)) / DCACHEROWSIZE + (((unsigned long) base & (DCACHEROWSIZE - 1)) != 0);
-	while (len --)
-	{
-		uintptr_t mva = MK_MVA(base);
-		L1C_InvalidateDCacheMVA((void *) mva);	// очистить кэш
-	#if (__L2C_PRESENT == 1)
-		// Clean cache by physical address
-		L2C_InvPa((void *) mva);
-	#endif
-		base += DCACHEROWSIZE;
-	}
-}
-
 /* считать конфигурационные параметры data cache */
 static void ca9_ca7_cache_diag(void)
 {
@@ -9635,18 +9616,6 @@ static void ca9_ca7_cache_diag(void)
 	}
 }
 
-// используется в startup
-static void 
-arm_hardware_invalidate_all(void)
-{
-	L1C_InvalidateDCacheAll();
-	L1C_InvalidateICacheAll();
-	L1C_InvalidateBTAC();
-#if (__L2C_PRESENT == 1)
-	L2C_InvAllByWay();
-#endif
-}
-
 // Записать содержимое кэша данных в память
 // применяетмся после начальной инициализации среды выполнния
 void arm_hardware_flush_all(void)
@@ -9657,37 +9626,95 @@ void arm_hardware_flush_all(void)
 #endif
 }
 
-// Сейчас эта память будет записываться по DMA куда-то
-void arm_hardware_flush(uintptr_t base, size_t size)
+#define MK_MVA(addr) ((uintptr_t) (addr) & ~ (uintptr_t) (DCACHEROWSIZE - 1))
+
+// Сейчас в эту память будем читать по DMA
+// Используется только в startup
+void arm_hardware_invalidate(uintptr_t addr, size_t dsize)
 {
-	unsigned long len = (size + (DCACHEROWSIZE - 1)) / DCACHEROWSIZE + (((unsigned long) base & (DCACHEROWSIZE - 1)) != 0);
-	while (len --)
+	ASSERT((addr % DCACHEROWSIZE) == 0);
+
+	if (dsize > 0)
 	{
-		uintptr_t mva = MK_MVA(base);
-		L1C_CleanDCacheMVA((void *) mva);		// записать буфер, кэш продолжает хранить
-	#if (__L2C_PRESENT == 1)
-		// предполагается, что размер строки L2 и L2 cache равны
-		// Clean cache by physical address
-		L2C_CleanPa((void *) mva);
-	#endif
-		base += DCACHEROWSIZE;
+		int32_t op_size = dsize + (((uint32_t) addr) & (DCACHEROWSIZE - 1U));
+		uint32_t op_addr = (uint32_t) addr /* & ~(DCACHEROWSIZE - 1U) */;
+
+		__DSB();
+
+		do
+		{
+			const uintptr_t mva = MK_MVA(op_addr);	/* register accepts only 32byte aligned values, only bits 31..5 are valid */
+			L1C_InvalidateDCacheMVA((void *) mva);	// очистить кэш
+		#if (__L2C_PRESENT == 1)
+			// Clean cache by physical address
+			L2C_InvPa((void *) mva);
+		#endif
+			op_addr += DCACHEROWSIZE;
+			op_size -= DCACHEROWSIZE;
+		} while (op_size > 0);
+
+		__DSB();
+		__ISB();
+	}
+}
+
+// Сейчас эта память будет записываться по DMA куда-то
+void arm_hardware_flush(uintptr_t addr, size_t dsize)
+{
+	ASSERT((addr % DCACHEROWSIZE) == 0);
+
+	if (dsize > 0)
+	{
+		int32_t op_size = dsize + (((uint32_t) addr) & (DCACHEROWSIZE - 1U));
+		uint32_t op_addr = (uint32_t) addr /* & ~(DCACHEROWSIZE - 1U) */;
+
+		__DSB();
+
+		do
+		{
+			const uintptr_t mva = MK_MVA(op_addr);	/* register accepts only 32byte aligned values, only bits 31..5 are valid */
+			L1C_CleanDCacheMVA((void *) mva);		// записать буфер, кэш продолжает хранить
+		#if (__L2C_PRESENT == 1)
+			// предполагается, что размер строки L2 и L2 cache равны
+			// Clean cache by physical address
+			L2C_CleanPa((void *) mva);
+		#endif
+			op_addr += DCACHEROWSIZE;
+			op_size -= DCACHEROWSIZE;
+		} while (op_size > 0);
+
+		__DSB();
+		__ISB();
 	}
 }
 
 // Сейчас эта память будет записываться по DMA куда-то. Потом содержимое не требуется
-void arm_hardware_flush_invalidate(uintptr_t base, size_t size)
+void arm_hardware_flush_invalidate(uintptr_t addr, size_t dsize)
 {
-	unsigned long len = (size + (DCACHEROWSIZE - 1)) / DCACHEROWSIZE + (((unsigned long) base & (DCACHEROWSIZE - 1)) != 0);
-	while (len --)
+	ASSERT((addr % DCACHEROWSIZE) == 0);
+
+	if (dsize > 0)
 	{
-		uintptr_t mva = MK_MVA(base);
-		L1C_CleanInvalidateDCacheMVA((void *) mva);	// записать буфер, очистить кэш
-	#if (__L2C_PRESENT == 1)
-		// предполагается, что размер строки L2 и L2 cache равны
-		// Clean cache by physical address
-		L2C_CleanInvPa((void *) mva);
-	#endif
-		base += DCACHEROWSIZE;
+		int32_t op_size = dsize + (((uint32_t) addr) & (DCACHEROWSIZE - 1U));
+		uint32_t op_addr = (uint32_t) addr /* & ~(DCACHEROWSIZE - 1U) */;
+
+		__DSB();
+
+		do
+		{
+			const uintptr_t mva = MK_MVA(op_addr);	/* register accepts only 32byte aligned values, only bits 31..5 are valid */
+			L1C_CleanInvalidateDCacheMVA((void *) mva);	// записать буфер, очистить кэш
+		#if (__L2C_PRESENT == 1)
+			// предполагается, что размер строки L2 и L2 cache равны
+			// Clean cache by physical address
+			L2C_CleanInvPa((void *) mva);
+		#endif
+			op_addr += DCACHEROWSIZE;
+			op_size -= DCACHEROWSIZE;
+		} while (op_size > 0);
+
+		__DSB();
+		__ISB();
 	}
 }
 
@@ -11429,7 +11456,12 @@ ttb_initialize(uint32_t (* accessbits)(uintptr_t a))
 	MMU_InvalidateTLB();
 
 	// Обеспечиваем нормальную обработку RESEТ
-	arm_hardware_invalidate_all();
+	L1C_InvalidateDCacheAll();
+	L1C_InvalidateICacheAll();
+	L1C_InvalidateBTAC();
+#if (__L2C_PRESENT == 1)
+	L2C_InvAllByWay();
+#endif
 
 	MMU_Enable();
 }

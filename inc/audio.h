@@ -201,7 +201,7 @@ extern "C" {
 
 
 /* если приоритет прерываний USB не выше чем у аудиобработки - она должна длиться не более 1 мс (WITHRTS192 - 0.5 ms) */
-#define DMABUFCLUSTER	19	// Прерывания по приему от IF CODEC или FPGA RX должны происходить не реже 1 раз в милисекунду (чтобы USB работать могло) */
+#define DMABUFCLUSTER	22 //19	// Прерывания по приему от IF CODEC или FPGA RX должны происходить не реже 1 раз в милисекунду (чтобы USB работать могло) */
 
 #if WITHI2S_FRAMEBITS == 64
 
@@ -514,6 +514,7 @@ void dsp_addsidetone(aubufv_t * buff);			// перед передачей по D
 void processing_dmabuffer16rx(uintptr_t addr);	// обработать буфер после оцифровки AF ADC
 void processing_dmabuffer16rxuac(uintptr_t addr);	// обработать буфер после приёма пакета с USB AUDIO
 void processing_dmabuffer32rx(uintptr_t addr);
+void release_dmabuffer32rx(uintptr_t addr);
 void processing_dmabuffer32rts(uintptr_t addr);
 void processing_dmabuffer32wfm(uintptr_t addr);
 

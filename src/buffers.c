@@ -186,21 +186,21 @@ void vfylist(LIST_ENTRY2 * head)
 typedef ALIGNX_BEGIN struct voice16_tag
 {
 	ALIGNX_BEGIN aubufv_t buff [DMABUFFSIZE16] ALIGNX_END;
-	LIST_ENTRY item;
+	ALIGNX_BEGIN LIST_ENTRY item ALIGNX_END;
 } ALIGNX_END voice16_t;
 
 // I/Q data to FPGA or IF CODEC
 typedef ALIGNX_BEGIN struct voices32tx_tag
 {
 	ALIGNX_BEGIN int32_t buff [DMABUFFSIZE32TX] ALIGNX_END;
-	LIST_ENTRY item;
+	ALIGNX_BEGIN LIST_ENTRY item ALIGNX_END;
 } ALIGNX_END voice32tx_t;
 
 // I/Q data from FPGA or IF CODEC
 typedef ALIGNX_BEGIN struct voices32rx_tag
 {
 	ALIGNX_BEGIN int32_t buff [DMABUFFSIZE32RX] ALIGNX_END;
-	LIST_ENTRY item;
+	ALIGNX_BEGIN LIST_ENTRY item ALIGNX_END;
 } ALIGNX_END voice32rx_t;
 // исправляемая погрешность = 0.02% - один сэмпл добавить/убрать на 5000 сэмплов
 
@@ -778,21 +778,21 @@ void buffers_initialize(void)
 uint_fast8_t takemsgready_user(uint8_t * * dest)
 {
 	ASSERT_IRQL_USER();
-	global_disableIRQ();
+	system_disableIRQ();
 
 	LOCK(& locklist8);
 	if (! IsListEmpty(& msgsready8))
 	{
 		PLIST_ENTRY t = RemoveTailList(& msgsready8);
 		UNLOCK(& locklist8);
-		global_enableIRQ();
+		system_enableIRQ();
 		message_t * const p = CONTAINING_RECORD(t, message_t, item);
 		* dest = p->data;
 		ASSERT(p->type != MSGT_EMPTY);
 		return p->type;
 	}
 	UNLOCK(& locklist8);
-	global_enableIRQ();
+	system_enableIRQ();
 	return MSGT_EMPTY;
 }
 
@@ -802,11 +802,11 @@ void releasemsgbuffer_user(uint8_t * dest)
 {
 	ASSERT_IRQL_USER();
 	message_t * const p = CONTAINING_RECORD(dest, message_t, data);
-	global_disableIRQ();
+	system_disableIRQ();
 	LOCK(& locklist8);
 	InsertHeadList(& msgsfree8, & p->item);
 	UNLOCK(& locklist8);
-	global_enableIRQ();
+	system_enableIRQ();
 }
 
 // Буфер для формирования сообщения
@@ -1824,17 +1824,12 @@ void RAMFUNC processing_dmabuffer16rxuac(uintptr_t addr)
 void RAMFUNC processing_dmabuffer32rx(uintptr_t addr)
 {
 	ASSERT(addr != 0);
-	voice32rx_t * const p = CONTAINING_RECORD(addr, voice32rx_t, buff);
 #if WITHBUFFERSDEBUG
 	++ n1;
 	// подсчёт скорости в сэмплах за секунду
 	debugcount_rx32adc += CNT32RX;	// в буфере пары сэмплов по четыре байта
 #endif /* WITHBUFFERSDEBUG */
-	dsp_extbuffer32rx(p->buff);
-
-	LOCK(& locklist32);
-	InsertHeadList2(& voicesfree32rx, & p->item);
-	UNLOCK(& locklist32);
+	dsp_extbuffer32rx((const int32_t *) addr);
 
 #if WITHUSBUAC
 	static unsigned rx32adc = 0;
@@ -1850,24 +1845,30 @@ void RAMFUNC processing_dmabuffer32rx(uintptr_t addr)
 #endif /* WITHUSBUAC */
 }
 
+void release_dmabuffer32rx(uintptr_t addr)
+{
+	ASSERT(addr != 0);
+	voice32rx_t * const p = CONTAINING_RECORD(addr, voice32rx_t, buff);
+
+	LOCK(& locklist32);
+	InsertHeadList2(& voicesfree32rx, & p->item);
+	UNLOCK(& locklist32);
+
+}
+
+
 // Этой функцией пользуются обработчики прерываний DMA
 // обработать буфер после оцифровки IF ADC (MAIN RX/SUB RX)
 // Вызывается на ARM_REALTIME_PRIORITY уровне.
 void RAMFUNC processing_dmabuffer32wfm(uintptr_t addr)
 {
 	ASSERT(addr != 0);
-	voice32rx_t * const p = CONTAINING_RECORD(addr, voice32rx_t, buff);
 #if WITHBUFFERSDEBUG
 	++ n1wfm;
 	// подсчёт скорости в сэмплах за секунду
 	debugcount_rx32wfm += CNT32RX;	// в буфере пары сэмплов по четыре байта
 #endif /* WITHBUFFERSDEBUG */
-	dsp_extbuffer32wfm(p->buff);
-
-	LOCK(& locklist32);
-	InsertHeadList2(& voicesfree32rx, & p->item);
-	UNLOCK(& locklist32);
-
+	dsp_extbuffer32wfm((const int32_t *) addr);
 }
 
 #if WITHRTS192

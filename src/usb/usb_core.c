@@ -241,8 +241,7 @@ static ApplicationTypeDef Appli_state = APPLICATION_IDLE;
 static uintptr_t
 dma_flushxrtstx(uintptr_t addr, unsigned long size)
 {
-	//arm_hardware_invalidate(addr, size);
-	arm_hardware_flush_invalidate(addr, size + ADDPAD);
+	arm_hardware_flush_invalidate(addr, size);
 	return addr;
 }
 
@@ -6069,7 +6068,10 @@ HAL_StatusTypeDef HAL_PCD_EP_Transmit(PCD_HandleTypeDef *hpcd, uint_fast8_t ep_a
 	if (hpcd->Init.dma_enable == USB_ENABLE)
 	{
 		if (pBuf != NULL && len != 0)
+		{
+			ASSERT(((uintptr_t) pBuf % DCACHEROWSIZE) == 0);
 			arm_hardware_flush((uintptr_t) pBuf, len);
+		}
 		ep->dma_addr = (uintptr_t) pBuf;
 	}
 

@@ -395,6 +395,9 @@ extern "C" {
 	#include "armcpu/iodefine.h"
 	#include "rza_io_regrw.h"
 
+	#define DCACHEROWSIZE 32
+	#define ICACHEROWSIZE 32
+
 	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
 	#define ALIGNX_END /* nothing */
 
@@ -421,12 +424,16 @@ extern "C" {
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
 	#define	CPUSTYLE_ARM_CA7	1
 
-
 	#include "armcpu/stm32mp1xx.h"
 	#include "irq_ctrl.h"
 
+	#define DCACHEROWSIZE 64
+	#define ICACHEROWSIZE 32
+
 	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
 	#define ALIGNX_END /* nothing */
+	#define ALIGN1K_BEGIN __attribute__ ((aligned(1024)))
+	#define ALIGN1K_END /* nothing */
 
 	#if __ARM_NEON
 		//#define ARM_MATH_NEON 1
@@ -842,8 +849,6 @@ void lowtests(void);
 void midtests(void);
 void hightests(void);
 void looptests(void);	// Периодически вызывается в главном цикле
-
-#define ADDPAD 0//32	// TODO: должно быть без этого
 
 void arm_hardware_invalidate(uintptr_t base, size_t size);	// Сейчас в эту память будем читать по DMA
 void arm_hardware_flush(uintptr_t base, size_t size);	// Сейчас эта память будет записываться по DMA куда-то

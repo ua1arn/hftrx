@@ -787,14 +787,6 @@ extern "C" {
 
 #elif (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7)
 
-	#if CPUSTYLE_ARM_CA9
-		#define DCACHEROWSIZE 32
-		#define ICACHEROWSIZE 32
-	#elif CPUSTYLE_ARM_CA7
-		#define DCACHEROWSIZE 32
-		#define ICACHEROWSIZE 32
-	#endif
-
 	#define ICPIDR0	(* (const volatile uint32_t *) (GIC_INTERFACE_BASE + 0xFE0))
 	#define ICPIDR1	(* (const volatile uint32_t *) (GIC_INTERFACE_BASE + 0xFE4))
 	#define ICPIDR2	(* (const volatile uint32_t *) (GIC_INTERFACE_BASE + 0xFE8))
