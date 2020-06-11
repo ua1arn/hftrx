@@ -37,8 +37,8 @@
 
 		// PLL1_1600
 		#define PLL1DIVM	2	// ref1_ck = 12 MHz
-		//#define PLL1DIVN	54	// 12*54 = 648 MHz
-		#define PLL1DIVN	66	// 12*66 = 792 MHz
+		#define PLL1DIVN	54	// 12*54 = 648 MHz
+		//#define PLL1DIVN	66	// 12*66 = 792 MHz
 		#define PLL1DIVP	1	// MPU
 		#define PLL1DIVQ	2
 		#define PLL1DIVR	2
@@ -64,8 +64,8 @@
 		// HSI version (HSI=64 MHz)
 		// PLL1_1600
 		#define PLL1DIVM	5	// ref1_ck = 12.8 MHz
-		//#define PLL1DIVN	50	// x25..x100: 12.8 * 50 = 640 MHz
-		#define PLL1DIVN	62	// x25..x100: 12.8 * 62 = 793.6 MHz
+		#define PLL1DIVN	50	// x25..x100: 12.8 * 50 = 640 MHz
+		//#define PLL1DIVN	62	// x25..x100: 12.8 * 62 = 793.6 MHz
 		#define PLL1DIVP	1	// MPU
 		#define PLL1DIVQ	2
 		#define PLL1DIVR	2

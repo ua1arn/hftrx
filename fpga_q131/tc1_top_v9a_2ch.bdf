@@ -1483,32 +1483,8 @@ applicable agreement for further details.
 	(pt 1264 584)
 )
 (connector
-	(pt 1224 712)
-	(pt 1224 632)
-)
-(connector
 	(pt 1168 712)
-	(pt 1224 712)
-)
-(connector
-	(pt 1224 712)
 	(pt 1264 712)
-)
-(connector
-	(pt 1200 608)
-	(pt 1200 632)
-)
-(connector
-	(pt 1200 632)
-	(pt 1008 632)
-)
-(connector
-	(pt 1224 632)
-	(pt 1256 632)
-)
-(connector
-	(pt 1200 608)
-	(pt 1256 608)
 )
 (junction (pt 1672 480))
 (junction (pt 1552 168))
@@ -1518,4 +1494,3 @@ applicable agreement for further details.
 (junction (pt 1568 328))
 (junction (pt 1168 96))
 (junction (pt 1184 600))
-(junction (pt 1224 712))

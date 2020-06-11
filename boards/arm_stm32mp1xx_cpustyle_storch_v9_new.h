@@ -18,11 +18,6 @@
 //#define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
 //#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
-#define WITHMDMAHW		1	/* Использование MDMA для формирования изображений */
-//#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
-#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
-//#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */
-#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
 
 //#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 #define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
@@ -46,6 +41,11 @@
 
 
 #if WITHISBOOTLOADER
+
+	//#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
+	#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
+	//#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */
+	#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
 
 	#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
 	//#define WITHSDRAM_PMC1	1	/* power management chip */
@@ -90,7 +90,7 @@
 
 #else /* WITHISBOOTLOADER */
 
-
+	#define WITHMDMAHW		1	/* Использование MDMA для формирования изображений */
 	//#define WITHCPUDACHW	1	/* использование встроенного в процессор DAC */
 	#define WITHCPUADCHW 	1	/* использование встроенного в процессор ADC */
 
@@ -133,9 +133,9 @@
 	//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
 	//#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
 	//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
-	#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
-	#define WITHMOVEDFU 1	// Переместить интерфейс DFU в область меньших номеров. Утилита dfu-util 0.9 не работает с DFU на интерфейсе с индексом 10
-	#define WITHUSBWCID	1
+	////#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
+	////#define WITHMOVEDFU 1	// Переместить интерфейс DFU в область меньших номеров. Утилита dfu-util 0.9 не работает с DFU на интерфейсе с индексом 10
+	////#define WITHUSBWCID	1
 
 #endif /* WITHISBOOTLOADER */
 
@@ -233,7 +233,7 @@
 		arm_hardware_piob_altfn2(1uL << 14,	AF_SPI2); /* PB14 I2S2_SDI, - приём от кодека */ \
 		arm_hardware_piob_updown(0, 1uL << 14); \
 	} while (0)
-#endif /* WITHSAI1HW */
+#endif /* WITHI2SHW */
 
 	// для предотвращения треска от оставшегося инициализщированным кодека
 	#define I2S2HW_POOLDOWN() do { \
@@ -257,6 +257,7 @@
 		arm_hardware_pioe_altfn20(1uL << 5,	AF_SAI);			/* PE5 - SAI1_SCK_A	*/ \
 		arm_hardware_pioe_altfn2(1uL << 6,	AF_SAI);			/* PE6 - SAI1_SD_A	(i2s data to codec)	*/ \
 		arm_hardware_pioe_altfn2(1uL << 3,	AF_SAI);			/* PE3 - SAI1_SD_B	(i2s data from codec)	*/ \
+		arm_hardware_pioe_updown(1uL << 3, 0); \
 	} while (0)
 #endif /* WITHSAI1HW */
 
