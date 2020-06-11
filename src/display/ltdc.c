@@ -1268,7 +1268,8 @@ static void LCD_LayerInit(
 	unsigned pixelsize	// для расчета размера строки в байтах
 	)
 {
-	const unsigned ROWSIZE = (pixelsize * wnd->w);	// размер одной строки в байтах
+	const unsigned long ROWSIZE = pixelsize * wnd->w;	// размер одной строки в байтах
+	const unsigned long ROWMEMINC = pixelsize * GXADJ(wnd->w);	// размер одной строки в байтах
 
 	LTDC_Layer_InitTypeDef LTDC_Layer_InitStruct; 
 	/* Windowing configuration */
@@ -1307,7 +1308,7 @@ static void LCD_LayerInit(
 	/* the pitch is the increment from the start of one line of pixels to the 
 	start of the next line in bytes, then :
 	Pitch = Active high width x number of bytes per pixel */ 
-	LTDC_Layer_InitStruct.LTDC_CFBPitch = ROWSIZE; // (DIM_SECOND * 2);
+	LTDC_Layer_InitStruct.LTDC_CFBPitch = ROWMEMINC;
 
 	/* Configure the number of lines */  
 	LTDC_Layer_InitStruct.LTDC_CFBLineNumber = wnd->h;
