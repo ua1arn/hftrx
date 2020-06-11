@@ -7036,10 +7036,7 @@ void board_init_io(void)
 #endif /* WITHFPGAWAIT_AS */
 
 
-#if CPUSTYLE_STM32MP1 && (TARGET_TWI_TWCK == SPDIF_NCS_BIT)
-	#warning CPUSTYLE_STM32MP1: wrong PB6 connection. Remove this case then fix.
-	////i2c_initialize();
-#elif (WITHTWIHW || WITHTWISW)
+#if (WITHTWIHW || WITHTWISW)
 	i2c_initialize();
 #endif /* WITHTWIHW || WITHTWISW */
 

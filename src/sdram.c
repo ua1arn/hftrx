@@ -16,7 +16,7 @@
 
 #if WITHSDRAMHW
 
-#if CPUSTYLE_STM32F && ! (CPUSTYLE_STM32MP157A || CPUSTYLE_STM32MP157D)
+#if CPUSTYLE_STM32F
 
 #define assert_param(expr) do { } while (0)
 /**
@@ -6054,7 +6054,6 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 	}
 
 #if WITHSDRAM_PMC1
-	TWISOFT_INITIALIZE();
 	initialize_pmic();
 #endif /* WITHSDRAM_PMC1 */
 
@@ -6111,10 +6110,6 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 
 	/* Enable axidcg clock gating */
 	mmio_setbits_32(RCC_BASE + RCC_DDRITFCR, RCC_DDRITFCR_AXIDCGEN);
-
-#if WITHSDRAM_PMC1
-	TWISOFT_DEINITIALIZE();
-#endif /* WITHSDRAM_PMC1 */
 
 	// инициализация выполняетмя еще до включения MMU
 	//__set_SCTLR(__get_SCTLR() & ~ SCTLR_C_Msk);
