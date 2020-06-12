@@ -333,7 +333,7 @@ typedef uint_fast32_t COLOR24_T;
 
 #endif /* LCDMODE_LTDC */
 
-#define GXALIGN 1//64	/* количество пикселей в строке видеобуфера кратно этому заначению */
+#define GXALIGN 64	/* количество пикселей в строке видеобуфера кратно этому заначению */
 
 #define GXADJ(dx) (((dx) + (GXALIGN - 1)) / GXALIGN * GXALIGN)
 #define MGADJ(dx) (((dx) + (MGALIGN - 1)) / MGALIGN * MGALIGN)

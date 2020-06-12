@@ -29,6 +29,8 @@
 #define DMA2D_AMTCR_DT_VALUE 255uL	/* 0..255 */
 #define DMA2D_AMTCR_DT_ENABLE 1uL	/* 0..1 */
 
+#define DMA2D_CR_LOM	(1u << 6)	/* documented but missing in headers. */
+
 #define MDMA_CH	MDMA_Channel0
 #define MDMA_CCR_PL_VALUE 0uL	// PL: priority 0..3: min..max
 
@@ -427,6 +429,10 @@ hwacc_fillrect_u16(
 	/* ожидаем выполнения операции */
 	while ((DMA2D->CR & DMA2D_CR_START) != 0)
 		hardware_nonguiyield();
+	__DMB();
+
+	ASSERT((DMA2D->ISR & DMA2D_ISR_CEIF) == 0);	// Configuration Error
+	ASSERT((DMA2D->ISR & DMA2D_ISR_TEIF) == 0);	// Transfer Error
 
 
 #else
@@ -558,7 +564,10 @@ hwacc_fillrect_u24(
 	/* ожидаем выполнения операции */
 	while ((DMA2D->CR & DMA2D_CR_START) != 0)
 		hardware_nonguiyield();
+	__DMB();
 
+	ASSERT((DMA2D->ISR & DMA2D_ISR_CEIF) == 0);	// Configuration Error
+	ASSERT((DMA2D->ISR & DMA2D_ISR_TEIF) == 0);	// Transfer Error
 
 #else
 	// программная реализация
@@ -601,6 +610,13 @@ void arm_hardware_dma2d_initialize(void)
 		(DMA2D_AMTCR_DT_VALUE << DMA2D_AMTCR_DT_Pos) |
 		(DMA2D_AMTCR_DT_ENABLE << DMA2D_AMTCR_EN_Pos) |
 		0;
+#if 0
+	static ALIGNX_BEGIN uint32_t clut [256] ALIGNX_END;
+	memset(clut, 0xFF, sizeof clut);
+	arm_hardware_flush((uintptr_t) clut, sizeof clut);
+	DMA2D->FGCMAR = (uintptr_t) clut;
+	DMA2D->BGCMAR = (uintptr_t) clut;
+#endif
 }
 
 #endif /* WITHDMA2DHW */
@@ -1087,40 +1103,49 @@ void hwaccel_copy(
 
 #elif WITHDMA2DHW
 	// DMA2D реализация
-
+	// See DMA2D_FGCMAR for L8
 	arm_hardware_flush_invalidate(dstinvalidateaddr, dstinvalidatesize);
 	ASSERT(((uintptr_t) src % DCACHEROWSIZE) == 0);
-	arm_hardware_flush((uintptr_t) src, sizeof (* src) * GXSIZE(w, h));
+	arm_hardware_flush((uintptr_t) src, sizeof (* src) * GXSIZE(sdx, sdy));
 
 	/* исходный растр */
 	DMA2D->FGMAR = (uintptr_t) src;
+	//	The line offset used for the foreground image, expressed in pixel when the LOM bit is
+	//	reset and in byte when the LOM bit is set.
 	DMA2D->FGOR = (DMA2D->FGOR & ~ (DMA2D_FGOR_LO)) |
-		((GXADJ(w) - w) << DMA2D_FGOR_LO_Pos) |
+		((GXADJ(sdx) - sdx) << DMA2D_FGOR_LO_Pos) |
 		0;
 	/* целевой растр */
 	DMA2D->OMAR = (uintptr_t) dst;
 	DMA2D->OOR = (DMA2D->OOR & ~ (DMA2D_OOR_LO)) |
-		((tadj) << DMA2D_OOR_LO_Pos) |
+		((GXADJ(tdx) - sdx) << DMA2D_OOR_LO_Pos) |
 		0;
 	/* размер пересылаемого растра */
 	DMA2D->NLR = (DMA2D->NLR & ~ (DMA2D_NLR_NL | DMA2D_NLR_PL)) |
-		((h) << DMA2D_NLR_NL_Pos) |
-		((w) << DMA2D_NLR_PL_Pos) |
+		((sdy) << DMA2D_NLR_NL_Pos) |
+		((sdx) << DMA2D_NLR_PL_Pos) |
 		0;
 	/* формат пикселя */
-	DMA2D->FGPFCCR = (DMA2D->FGPFCCR & ~ (DMA2D_FGPFCCR_CM)) |
+	DMA2D->FGPFCCR = (DMA2D->FGPFCCR & ~ (DMA2D_FGPFCCR_CM | DMA2D_FGPFCCR_AM)) |
+		0 * DMA2D_FGPFCCR_AM |
 		DMA2D_FGPFCCR_CM_VALUE_MAIN |	/* Color mode - framebuffer pixel format */
 		0;
 
 	/* запустить операцию */
-	DMA2D->CR = (DMA2D->CR & ~ (DMA2D_CR_MODE)) |
-		0 * DMA2D_CR_MODE_0 |	// 00: Memory-to-memory (FG fetch only)
+	DMA2D->CR = (DMA2D->CR & ~ (DMA2D_CR_MODE | DMA2D_CR_LOM)) |
+		0 * DMA2D_CR_LOM | // 0: Line offsets are expressed in pixels
+		0 * DMA2D_CR_MODE_0 |	// 000: Memory-to-memory (FG fetch only)
 		1 * DMA2D_CR_START |
 		0;
 
 	/* ожидаем выполнения операции */
 	while ((DMA2D->CR & DMA2D_CR_START) != 0)
 		hardware_nonguiyield();
+
+	ASSERT((DMA2D->ISR & DMA2D_ISR_CEIF) == 0);	// Configuration Error
+	ASSERT((DMA2D->ISR & DMA2D_ISR_TEIF) == 0);	// Transfer Error
+
+	__DMB();
 
 #else
 	// программная реализация

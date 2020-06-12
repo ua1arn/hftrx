@@ -397,7 +397,7 @@ display_scroll_down(
 
 #if WITHDMA2DHW && LCDMODE_LTDC
 
-#if LCDMODE_HORFILL
+#if LCDMODE_HORFILL && defined (DMA2D_FGPFCCR_CM_VALUE_MAIN)
 	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
 	/* TODO: В DMA2D нет средств управления направлением пересылки, потому данный код копирует сам на себя данные (размножает) */
 	/* исходный растр */
@@ -429,6 +429,10 @@ display_scroll_down(
 	/* ожидаем выполнения операции */
 	while ((DMA2D->CR & DMA2D_CR_START) != 0)
 		hardware_nonguiyield();
+	__DMB();
+
+	ASSERT((DMA2D->ISR & DMA2D_ISR_CEIF) == 0);	// Configuration Error
+	ASSERT((DMA2D->ISR & DMA2D_ISR_TEIF) == 0);	// Transfer Error
 
 #else /* LCDMODE_HORFILL */
 #endif /* LCDMODE_HORFILL */
@@ -452,7 +456,7 @@ display_scroll_up(
 	const uint_fast16_t dy = DIM_Y;
 
 #if WITHDMA2DHW && LCDMODE_LTDC
-#if LCDMODE_HORFILL
+#if LCDMODE_HORFILL && defined (DMA2D_FGPFCCR_CM_VALUE_MAIN)
 	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
 
 	/* исходный растр */
@@ -484,6 +488,10 @@ display_scroll_up(
 	/* ожидаем выполнения операции */
 	while ((DMA2D->CR & DMA2D_CR_START) != 0)
 		hardware_nonguiyield();
+	__DMB();
+
+	ASSERT((DMA2D->ISR & DMA2D_ISR_CEIF) == 0);	// Configuration Error
+	ASSERT((DMA2D->ISR & DMA2D_ISR_TEIF) == 0);	// Transfer Error
 
 #else /* LCDMODE_HORFILL */
 #endif /* LCDMODE_HORFILL */
