@@ -850,9 +850,9 @@ void midtests(void);
 void hightests(void);
 void looptests(void);	// Периодически вызывается в главном цикле
 
-void arm_hardware_invalidate(uintptr_t base, size_t size);	// Сейчас в эту память будем читать по DMA
-void arm_hardware_flush(uintptr_t base, size_t size);	// Сейчас эта память будет записываться по DMA куда-то
-void arm_hardware_flush_invalidate(uintptr_t base, size_t size);	// Сейчас эта память будет записываться по DMA куда-то. Потом содержимое не требуется
+void arm_hardware_invalidate(uintptr_t base, int_fast32_t size);	// Сейчас в эту память будем читать по DMA
+void arm_hardware_flush(uintptr_t base, int_fast32_t size);	// Сейчас эта память будет записываться по DMA куда-то
+void arm_hardware_flush_invalidate(uintptr_t base, int_fast32_t size);	// Сейчас эта память будет записываться по DMA куда-то. Потом содержимое не требуется
 void arm_hardware_flush_all(void);
 
 void r7s721_sdhi0_dma_handler(void);
