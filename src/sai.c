@@ -2671,6 +2671,7 @@ enum
 
 static RAMFUNC_NONILINE void r7s721_ssif0_rxdma(void)
 {
+	__DMB();
 	DMAC0.CHCFG_n |= DMAC0_CHCFG_n_REN;	// REN bit
 	// SR (bt 7)
 	// Indicates the register set currently selected in register mode.
@@ -2695,6 +2696,7 @@ static RAMFUNC_NONILINE void r7s721_ssif0_rxdma(void)
 
 static void r7s721_ssif0_txdma(void)
 {
+	__DMB();
 	DMAC1.CHCFG_n |= DMAC1_CHCFG_n_REN;	// REN bit
 	// SR (bt 7)
 	// Indicates the register set currently selected in register mode.
@@ -2925,6 +2927,7 @@ static const codechw_t audiocodechw =
 
 static void r7s721_ssif1_txdma(void)
 {
+	__DMB();
 	DMAC3.CHCFG_n |= DMAC3_CHCFG_n_REN;	// REN bit
 	// SR (bt 7)
 	// Indicates the register set currently selected in register mode.
@@ -2949,6 +2952,7 @@ static void r7s721_ssif1_txdma(void)
 
 static RAMFUNC_NONILINE void r7s721_ssif1_rxdma(void)
 {
+	__DMB();
 	DMAC2.CHCFG_n |= DMAC2_CHCFG_n_REN;	// REN bit
 	// SR (bt 7)
 	// Indicates the register set currently selected in register mode.
@@ -3184,6 +3188,7 @@ static const codechw_t fpgacodechw =
 
 static RAMFUNC_NONILINE void r7s721_ssif2_rxdma_handler(void)
 {
+	__DMB();
 	DMAC4.CHCFG_n |= DMAC4_CHCFG_n_REN;	// REN bit
 	// SR (bt 7)
 	// Indicates the register set currently selected in register mode.
