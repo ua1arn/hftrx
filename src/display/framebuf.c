@@ -1640,7 +1640,7 @@ void colpip_plot(
 	ASSERT(tdx >= sdx);
 	ASSERT(tdy >= sdy);
 
-	ASSERT(((uintptr_t) src % DCACHEROWSIZE) == 0);
+	//ASSERT(((uintptr_t) src % DCACHEROWSIZE) == 0);	// TODO: добавиль парамтр для flush исходного растра
 #if LCDMODE_HORFILL
 	hwaccel_copy(
 		(uintptr_t) dst, sizeof (PACKEDCOLORPIP_T) * GXSIZE(tdx, tdy),	// target area invalidate parameters
