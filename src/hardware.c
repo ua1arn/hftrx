@@ -11910,7 +11910,6 @@ SystemInit(void)
 	sysintt_sdram_initialize();
 	sysinit_vbar_initialize();		// interrupt vectors relocate
 	sysinit_mmu_initialize();
-	//ca9_ca7_cache_diag();	// print
 }
 
 
@@ -11920,6 +11919,7 @@ uint32_t gARM_OVERREALTIME_PRIORITY;
 uint32_t gARM_REALTIME_PRIORITY;
 uint32_t gARM_SYSTEM_PRIORITY;
 uint32_t gARM_BASEPRI_ONLY_REALTIME;
+uint32_t gARM_BASEPRI_ONLY_OVERREALTIME;
 uint32_t gARM_BASEPRI_ALL_ENABLED;
 
 static void
@@ -12272,6 +12272,8 @@ void cpu_initialize(void)
 //	debug_printf_P(PSTR("cpu_initialize1: CP15=%08lX, __data_start__=%p\n"), __get_SCTLR(), & __data_start__);
 //	debug_printf_P(PSTR("__etext=%p, __bss_start__=%p, __bss_end__=%p, __data_start__=%p, __data_end__=%p\n"), & __etext, & __bss_start__, & __bss_end__, & __data_start__, & __data_end__);
 //	debug_printf_P(PSTR("__stack=%p, SystemInit=%p, __Vectors=%p\n"), & __stack, SystemInit, & __Vectors);
+
+//	ca9_ca7_cache_diag();	// print
 
 	//PRINTF("cpu_initialize\n");
 #if CPUSTYLE_STM32F1XX

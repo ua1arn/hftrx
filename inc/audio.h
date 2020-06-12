@@ -201,7 +201,7 @@ extern "C" {
 
 
 /* если приоритет прерываний USB не выше чем у аудиобработки - она должна длиться не более 1 мс (WITHRTS192 - 0.5 ms) */
-#define DMABUFCLUSTER	22 //19	// Прерывания по приему от IF CODEC или FPGA RX должны происходить не реже 1 раз в милисекунду (чтобы USB работать могло) */
+#define DMABUFCLUSTER	19	// Прерывания по приему от IF CODEC или FPGA RX должны происходить не реже 1 раз в милисекунду (чтобы USB работать могло) */
 
 #if WITHI2S_FRAMEBITS == 64
 
@@ -517,6 +517,12 @@ void processing_dmabuffer32rx(uintptr_t addr);
 void release_dmabuffer32rx(uintptr_t addr);
 void processing_dmabuffer32rts(uintptr_t addr);
 void processing_dmabuffer32wfm(uintptr_t addr);
+
+int_fast32_t buffers_dmabuffer32rxcachesize(void);
+int_fast32_t buffers_dmabuffer32txcachesize(void);
+int_fast32_t buffers_dmabuffer16cachesize(void);
+int_fast32_t buffers_dmabuffer192rtscachesize(void);
+int_fast32_t buffers_dmabuffer96rtscachesize(void);
 
 void savesamplerecord16SD(int_fast16_t ch0, int_fast16_t ch1); /* to SD CARD */
 void savesamplerecord16uacin(int_fast16_t ch0, int_fast16_t ch1); /* to USB AUDIO */

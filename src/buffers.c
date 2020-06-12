@@ -189,12 +189,22 @@ typedef ALIGNX_BEGIN struct voice16_tag
 	ALIGNX_BEGIN LIST_ENTRY item ALIGNX_END;
 } ALIGNX_END voice16_t;
 
+int_fast32_t buffers_dmabuffer16cachesize(void)
+{
+	return offsetof(voice16_t, item) - offsetof(voice16_t, buff);
+}
+
 // I/Q data to FPGA or IF CODEC
 typedef ALIGNX_BEGIN struct voices32tx_tag
 {
 	ALIGNX_BEGIN int32_t buff [DMABUFFSIZE32TX] ALIGNX_END;
 	ALIGNX_BEGIN LIST_ENTRY item ALIGNX_END;
 } ALIGNX_END voice32tx_t;
+
+int_fast32_t buffers_dmabuffer32txcachesize(void)
+{
+	return offsetof(voice32tx_t, item) - offsetof(voice32tx_t, buff);
+}
 
 // I/Q data from FPGA or IF CODEC
 typedef ALIGNX_BEGIN struct voices32rx_tag
@@ -203,6 +213,11 @@ typedef ALIGNX_BEGIN struct voices32rx_tag
 	ALIGNX_BEGIN LIST_ENTRY item ALIGNX_END;
 } ALIGNX_END voice32rx_t;
 // исправляемая погрешность = 0.02% - один сэмпл добавить/убрать на 5000 сэмплов
+
+int_fast32_t buffers_dmabuffer32rxcachesize(void)
+{
+	return offsetof(voice32rx_t, item) - offsetof(voice32rx_t, buff);
+}
 
 enum { SKIPPED = 5000 / (DMABUFFSIZE16 / DMABUFSTEP16) };
 enum { VOICESMIKE16NORMAL = 5 };	// Нормальное количество буферов в очереди
@@ -240,8 +255,17 @@ typedef ALIGNX_BEGIN struct uacin16_tag
 {
 	LIST_ENTRY item;	// layout should be same in uacin16_t, voice96rts_t and voice192rts_t
 	uint_fast8_t tag;	// layout should be same in uacin16_t, voice96rts_t and voice192rts_t
-	ALIGNX_BEGIN uint16_t buff [DMABUFFSIZEUACIN16] ALIGNX_END;
+	ALIGNX_BEGIN union
+	{
+		uint16_t buff [DMABUFFSIZEUACIN16];
+		uint8_t filler [(DMABUFFSIZEUACIN16 * 2 + DCACHEROWSIZE - 1) / DCACHEROWSIZE * DCACHEROWSIZE / 2];
+	} u ALIGNX_END;		// спектр, 2*24*192 kS/S
 } ALIGNX_END uacin16_t;
+
+int_fast32_t buffers_dmabufferuacin16cachesize(void)
+{
+	return (DMABUFFSIZE192RTS + DCACHEROWSIZE - 1) / DCACHEROWSIZE * DCACHEROWSIZE;
+}
 
 #if WITHRTS192
 
@@ -249,8 +273,17 @@ typedef ALIGNX_BEGIN struct uacin16_tag
 	{
 		LIST_ENTRY item;	// layout should be same in uacin16_t, voice96rts_t and voice192rts_t
 		uint_fast8_t tag;	// layout should be same in uacin16_t, voice96rts_t and voice192rts_t
-		ALIGNX_BEGIN uint8_t buff [DMABUFFSIZE192RTS] ALIGNX_END;		// спектр, 2*24*192 kS/S
+		ALIGNX_BEGIN union
+		{
+			uint8_t buff [DMABUFFSIZE192RTS];
+			uint8_t	filler [(DMABUFFSIZE192RTS + DCACHEROWSIZE - 1) / DCACHEROWSIZE * DCACHEROWSIZE];
+		} u ALIGNX_END;		// спектр, 2*24*192 kS/S
 	} ALIGNX_END voice192rts_t;
+
+	int_fast32_t buffers_dmabuffer192rtscachesize(void)
+	{
+		return (DMABUFFSIZE192RTS + DCACHEROWSIZE - 1) / DCACHEROWSIZE * DCACHEROWSIZE;
+	}
 
 	static RAMDTCM LIST_ENTRY2 voicesfree192rts;
 	static RAMDTCM LIST_ENTRY2 uacin192rts;	// Буферы для записи в вудиоканал USB к компьютеру спектра, 2*32*192 kS/S
@@ -263,9 +296,17 @@ typedef ALIGNX_BEGIN struct uacin16_tag
 	{
 		LIST_ENTRY item;	// layout should be same in uacin16_t, voice96rts_t and voice192rts_t
 		uint_fast8_t tag;	// layout should be same in uacin16_t, voice96rts_t and voice192rts_t
-		ALIGNX_BEGIN uint8_t buff [DMABUFFSIZE96RTS] ALIGNX_END;		// спектр, 2*24*192 kS/S
+		ALIGNX_BEGIN union
+		{
+			uint8_t buff [DMABUFFSIZE96RTS];
+			uint8_t	 filler [(DMABUFFSIZE96RTS + DCACHEROWSIZE - 1) / DCACHEROWSIZE * DCACHEROWSIZE];
+		} u ALIGNX_END;		// спектр, 2*24*192 kS/S
 	} ALIGNX_END voice96rts_t;
 
+	int_fast32_t buffers_dmabuffer96rtscachesize(void)
+	{
+		return (DMABUFFSIZE96RTS + DCACHEROWSIZE - 1) / DCACHEROWSIZE * DCACHEROWSIZE;
+	}
 	static RAMDTCM LIST_ENTRY2 voicesfree96rts;
 	static RAMDTCM LIST_ENTRY2 uacin96rts;	// Буферы для записи в вудиоканал USB к компьютер спектра, 2*32*192 kS/S
 
@@ -649,7 +690,7 @@ void buffers_initialize(void)
 		RAMBIG static voice192rts_t voicesarray192rts [4];
 
 		ASSERT(offsetof(uacin16_t, item) == offsetof(voice192rts_t, item));
-		ASSERT(offsetof(uacin16_t, buff) == offsetof(voice192rts_t, buff));
+		ASSERT(offsetof(uacin16_t, u.buff) == offsetof(voice192rts_t, u.buff));
 		ASSERT(offsetof(uacin16_t, tag) == offsetof(voice192rts_t, tag));
 
 		InitializeListHead2(& uacin192rts);		// список для выдачи в канал USB AUDIO - спектр
@@ -668,7 +709,7 @@ void buffers_initialize(void)
 		RAMBIG static voice96rts_t voicesarray96rts [4];
 
 		ASSERT(offsetof(uacin16_t, item) == offsetof(voice96rts_t, item));
-		ASSERT(offsetof(uacin16_t, buff) == offsetof(voice96rts_t, buff));
+		ASSERT(offsetof(uacin16_t, u.buff) == offsetof(voice96rts_t, u.buff));
 		ASSERT(offsetof(uacin16_t, tag) == offsetof(voice96rts_t, tag));
 
 		InitializeListHead2(& uacin96rts);		// список для выдачи в канал USB AUDIO - спектр
@@ -1880,13 +1921,13 @@ void RAMFUNC processing_dmabuffer32rts(uintptr_t addr)
 #if WITHBUFFERSDEBUG
 	++ n4;
 #endif /* WITHBUFFERSDEBUG */
-	voice192rts_t * const p = CONTAINING_RECORD(addr, voice192rts_t, buff);
+	voice192rts_t * const p = CONTAINING_RECORD(addr, voice192rts_t, u.buff);
 
 #if ! WITHTRANSPARENTIQ
 	unsigned i;
 	for (i = 0; i < DMABUFFSIZE192RTS; i += DMABUFSTEP192RTS)
 	{
-		const int32_t * const b = (const int32_t *) & p->buff [i];
+		const int32_t * const b = (const int32_t *) & p->u.buff [i];
 		saveIQRTSxx(b [0], b [1]);
 	}
 #endif /* ! WITHTRANSPARENTIQ */
@@ -2060,7 +2101,7 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 			#if WITHBUFFERSDEBUG
 				++ n5;
 			#endif /* WITHBUFFERSDEBUG */
-				return (uintptr_t) & p->buff;
+				return (uintptr_t) & p->u.buff;
 			}
 			else if (! IsListEmpty2(& uacin96rts))
 			{
@@ -2080,7 +2121,7 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 			#if WITHBUFFERSDEBUG
 				++ e5;
 			#endif /* WITHBUFFERSDEBUG */
-				return (uintptr_t) & p->buff;
+				return (uintptr_t) & p->u.buff;
 			}
 			else
 			{
@@ -2096,7 +2137,7 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 		static void release_dmabuffer96rts(uintptr_t addr)
 		{
 			LOCK(& locklist32);
-			voice96rts_t * const p = CONTAINING_RECORD(addr, voice96rts_t, buff);
+			voice96rts_t * const p = CONTAINING_RECORD(addr, voice96rts_t, u.buff);
 			InsertHeadList2(& voicesfree96rts, & p->item);
 			UNLOCK(& locklist32);
 		}
@@ -2112,7 +2153,7 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 				PLIST_ENTRY t = RemoveTailList2(& uacin96rts);
 				voice96rts_t * const p = CONTAINING_RECORD(t, voice96rts_t, item);
 				UNLOCK(& locklist16);
-				return (uintptr_t) & p->buff;
+				return (uintptr_t) & p->u.buff;
 			}
 			UNLOCK(& locklist16);
 			return 0;
@@ -2133,7 +2174,7 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 				if (! isrts96())
 					return;
 				uint32_t addr = allocate_dmabuffer96rts();
-				p = CONTAINING_RECORD(addr, voice96rts_t, buff);
+				p = CONTAINING_RECORD(addr, voice96rts_t, u.buff);
 				n = 0;
 			}
 			else if (! isrts96())
@@ -2144,12 +2185,12 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 			}
 
 			ASSERT(DMABUFSTEP96RTS == 6);
-			p->buff [n ++] = ch0 >> 8;	// sample value
-			p->buff [n ++] = ch0 >> 16;	// sample value
-			p->buff [n ++] = ch0 >> 24;	// sample value
-			p->buff [n ++] = ch1 >> 8;	// sample value
-			p->buff [n ++] = ch1 >> 16;	// sample value
-			p->buff [n ++] = ch1 >> 24;	// sample value
+			p->u.buff [n ++] = ch0 >> 8;	// sample value
+			p->u.buff [n ++] = ch0 >> 16;	// sample value
+			p->u.buff [n ++] = ch0 >> 24;	// sample value
+			p->u.buff [n ++] = ch1 >> 8;	// sample value
+			p->u.buff [n ++] = ch1 >> 16;	// sample value
+			p->u.buff [n ++] = ch1 >> 24;	// sample value
 
 			if (n >= DMABUFFSIZE96RTS)
 			{
@@ -2173,7 +2214,7 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 				PLIST_ENTRY t = RemoveTailList2(& uacin192rts);
 				voice192rts_t * const p = CONTAINING_RECORD(t, voice192rts_t, item);
 				UNLOCK(& locklist16);
-				return (uintptr_t) & p->buff;
+				return (uintptr_t) & p->u.buff;
 			}
 			UNLOCK(& locklist16);
 			return 0;
@@ -2191,7 +2232,7 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 			#if WITHBUFFERSDEBUG
 				++ n5;
 			#endif /* WITHBUFFERSDEBUG */
-				return (uintptr_t) & p->buff;
+				return (uintptr_t) & p->u.buff;
 			}
 			else if (! IsListEmpty2(& uacin192rts))
 			{
@@ -2211,7 +2252,7 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 			#if WITHBUFFERSDEBUG
 				++ e5;
 			#endif /* WITHBUFFERSDEBUG */
-				return (uintptr_t) & p->buff;
+				return (uintptr_t) & p->u.buff;
 			}
 			else
 			{
@@ -2227,7 +2268,7 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 		static void release_dmabuffer192rts(uint32_t addr)
 		{
 			LOCK(& locklist32);
-			voice192rts_t * const p = CONTAINING_RECORD(addr, voice192rts_t, buff);
+			voice192rts_t * const p = CONTAINING_RECORD(addr, voice192rts_t, u.buff);
 			InsertHeadList2(& voicesfree192rts, & p->item);
 			UNLOCK(& locklist32);
 		}
@@ -2248,7 +2289,7 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 				if (! isrts192())
 					return;
 				uint32_t addr = allocate_dmabuffer192rts();
-				p = CONTAINING_RECORD(addr, voice192rts_t, buff);
+				p = CONTAINING_RECORD(addr, voice192rts_t, u.buff);
 				n = 0;
 			}
 			else if (! isrts192())
@@ -2258,8 +2299,8 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 				return;
 			}
 
-			p->buff [n ++] = ch0;	// sample value
-			p->buff [n ++] = ch1;	// sample value
+			p->u.buff [n ++] = ch0;	// sample value
+			p->u.buff [n ++] = ch1;	// sample value
 
 			if (n >= DMABUFFSIZE192RTS)
 			{
@@ -2281,7 +2322,7 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 	void RAMFUNC release_dmabufferuacin16(uintptr_t addr)
 	{
 		ASSERT(addr != 0);
-		uacin16_t * const p = CONTAINING_RECORD(addr, uacin16_t, buff);
+		uacin16_t * const p = CONTAINING_RECORD(addr, uacin16_t, u.buff);
 		buffers_tonulluacin(p);
 	}
 
@@ -2293,7 +2334,7 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 			PLIST_ENTRY t = RemoveTailList2(& uacinfree16);
 			uacin16_t * const p = CONTAINING_RECORD(t, uacin16_t, item);
 			UNLOCK(& locklist16);
-			return (uintptr_t) & p->buff;
+			return (uintptr_t) & p->u.buff;
 		}
 		else if (! IsListEmpty2(& uacinready16))
 		{
@@ -2311,7 +2352,7 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 			PLIST_ENTRY t = RemoveTailList2(& uacinfree16);
 			uacin16_t * const p = CONTAINING_RECORD(t, uacin16_t, item);
 			UNLOCK(& locklist16);
-			return (uintptr_t) & p->buff;
+			return (uintptr_t) & p->u.buff;
 		}
 		else
 		{
@@ -2334,7 +2375,7 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 			PLIST_ENTRY t = RemoveTailList2(& uacinready16);
 			uacin16_t * const p = CONTAINING_RECORD(t, uacin16_t, item);
 			UNLOCK(& locklist16);
-			return (uintptr_t) & p->buff;
+			return (uintptr_t) & p->u.buff;
 		}
 		UNLOCK(& locklist16);
 		return 0;
@@ -2355,7 +2396,7 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 			if (! isaudio48())
 				return;
 			uintptr_t addr = allocate_dmabufferuacin16();
-			p = CONTAINING_RECORD(addr, uacin16_t, buff);
+			p = CONTAINING_RECORD(addr, uacin16_t, u.buff);
 			n = 0;
 		}
 		else if (! isaudio48())
@@ -2365,9 +2406,9 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 			return;
 		}
 
-		p->buff [n + 0] = ch0;		// sample value
+		p->u.buff [n + 0] = ch0;		// sample value
 #if DMABUFSTEPUACIN16 > 1
-		p->buff [n + 1] = ch1;	// sample value
+		p->u.buff [n + 1] = ch1;	// sample value
 #endif
 		n += DMABUFSTEPUACIN16;
 
@@ -2635,7 +2676,7 @@ void uacout_buffer_save_realtime(const uint8_t * buff, uint_fast16_t size, uint_
 void release_dmabufferx(uintptr_t addr)
 {
 	ASSERT(addr != 0);
-	uacin16_t * const p = CONTAINING_RECORD(addr, uacin16_t, buff);
+	uacin16_t * const p = CONTAINING_RECORD(addr, uacin16_t, u.buff);
 	switch (p->tag)
 	{
 #if WITHRTS96

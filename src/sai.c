@@ -45,7 +45,8 @@ static uintptr_t
 dma_invalidate16rx(uintptr_t addr)
 {
 	ASSERT((addr % DCACHEROWSIZE) == 0);
-	arm_hardware_invalidate(addr, DMABUFFSIZE16 * sizeof (aubufv_t));
+	ASSERT((buffers_dmabuffer16cachesize() % DCACHEROWSIZE) == 0);
+	arm_hardware_invalidate(addr, buffers_dmabuffer16cachesize());
 	return addr;
 }
 
@@ -55,7 +56,8 @@ static uintptr_t
 dma_flush16tx(uintptr_t addr)
 {
 	ASSERT((addr % DCACHEROWSIZE) == 0);
-	arm_hardware_flush(addr, DMABUFFSIZE16 * sizeof (aubufv_t));
+	ASSERT((buffers_dmabuffer16cachesize() % DCACHEROWSIZE) == 0);
+	arm_hardware_flush(addr, buffers_dmabuffer16cachesize());
 	return addr;
 }
 
@@ -64,7 +66,8 @@ static uintptr_t
 dma_invalidate192rts(uintptr_t addr)
 {
 	ASSERT((addr % DCACHEROWSIZE) == 0);
-	arm_hardware_invalidate(addr, DMABUFFSIZE192RTS * sizeof (uint8_t));
+	ASSERT((buffers_dmabuffer192rtscachesize() % DCACHEROWSIZE) == 0);
+	arm_hardware_invalidate(addr,  buffers_dmabuffer192rtscachesize());
 	return addr;
 }
 
@@ -73,7 +76,8 @@ static uintptr_t
 dma_invalidate32rx(uintptr_t addr)
 {
 	ASSERT((addr % DCACHEROWSIZE) == 0);
-	arm_hardware_invalidate(addr, DMABUFFSIZE32RX * sizeof (int32_t));
+	ASSERT((buffers_dmabuffer32rxcachesize() % DCACHEROWSIZE) == 0);
+	arm_hardware_invalidate(addr, buffers_dmabuffer32rxcachesize());
 	return addr;
 }
 
@@ -82,7 +86,8 @@ dma_invalidate32rx(uintptr_t addr)
 static uintptr_t dma_flush32tx(uintptr_t addr)
 {
 	ASSERT((addr % DCACHEROWSIZE) == 0);
-	arm_hardware_flush(addr, DMABUFFSIZE32TX * sizeof (int32_t));
+	ASSERT((buffers_dmabuffer32txcachesize() % DCACHEROWSIZE) == 0);
+	arm_hardware_flush(addr,  buffers_dmabuffer32txcachesize());
 	return addr;
 }
 
@@ -257,7 +262,6 @@ static portholder_t stm32xxx_i2scfgr_afcodec(void)
 #endif
 
 // Обработчик прерывания DMA по приему I2S - I2S2_EXT
-// Use arm_hardware_invalidate
 void RAMFUNC_NONILINE DMA1_Stream3_IRQHandler(void)
 {
 	// проверка условия может потребоваться при добавлении обработчика ошибки
@@ -286,7 +290,6 @@ void RAMFUNC_NONILINE DMA1_Stream3_IRQHandler(void)
 }
 
 // Обработчик прерывания DMA по приему I2S - I2S3
-// Use arm_hardware_invalidate
 void RAMFUNC_NONILINE DMA1_Stream0_IRQHandler(void)
 {
 	if ((DMA1->LISR & DMA_LISR_TCIF0) != 0)
@@ -413,7 +416,6 @@ DMA_I2S2_TX_initialize(void)
 
 #if defined (I2S2ext)
 /* Инициализация DMA для прёма по I2S2ext*/
-// Use arm_hardware_invalidate
 static void 
 DMA_I2S2ext_rx_init(void)
 {
@@ -454,7 +456,6 @@ DMA_I2S2ext_rx_init(void)
 #endif /* defined (I2S2ext) */
 
 /* Инициализация DMA для прёма по I2S3 */
-// Use arm_hardware_invalidate
 static void 
 DMA_I2S3_RX_initialize(void)
 {
@@ -516,7 +517,6 @@ DMA_I2S3_RX_initialize(void)
 }
 
 /* Инициализация DMA для прёма по I2S2 (дуплекс) */
-// Use arm_hardware_invalidate
 static void
 DMA_I2S2_RX_initialize(void)
 {
@@ -1416,12 +1416,11 @@ static void hardware_sai1_sai2_clock_selection(void)
 
 #if WITHSAI1HW
 
-ALIGN1K_BEGIN int32_t buff0rx32 [DMABUFFSIZE32RX] ALIGN1K_END;
-ALIGN1K_BEGIN int32_t buff1rx32 [DMABUFFSIZE32RX] ALIGN1K_END;
+//ALIGN1K_BEGIN int32_t buff0rx32 [DMABUFFSIZE32RX] ALIGN1K_END;
+//ALIGN1K_BEGIN int32_t buff1rx32 [DMABUFFSIZE32RX] ALIGN1K_END;
 
 // DMA по приему SAI1 - обработчик прерывания
 // RX	SAI1_B	DMA2	Stream 5	Channel 0
-// Use arm_hardware_invalidate
 // SAI1_B_RX
 void RAMFUNC_NONILINE DMA2_Stream5_IRQHandler(void)
 {
@@ -1435,22 +1434,16 @@ void RAMFUNC_NONILINE DMA2_Stream5_IRQHandler(void)
 		if (b != 0)
 		{
 			const uintptr_t addr = DMA2_Stream5->M0AR;
-			//DMA2_Stream5->M0AR = dma_invalidate32rx(allocate_dmabuffer32rx());
-			ASSERT(DMA2_Stream5->M0AR == (uintptr_t) buff0rx32);
-			ASSERT(addr == (uintptr_t) buff0rx32);
+			DMA2_Stream5->M0AR = dma_invalidate32rx(allocate_dmabuffer32rx());
 			processing_dmabuffer32rx(addr);
-			dma_invalidate32rx(addr);
-			//release_dmabuffer32rx(addr);
+			release_dmabuffer32rx(addr);
 		}
 		else
 		{
 			const uintptr_t addr = DMA2_Stream5->M1AR;
-			//DMA2_Stream5->M1AR = dma_invalidate32rx(allocate_dmabuffer32rx());
-			ASSERT(DMA2_Stream5->M1AR == (uintptr_t) buff1rx32);
-			ASSERT(addr == (uintptr_t) buff1rx32);
+			DMA2_Stream5->M1AR = dma_invalidate32rx(allocate_dmabuffer32rx());
 			processing_dmabuffer32rx(addr);
-			dma_invalidate32rx(addr);
-			//release_dmabuffer32rx(addr);
+			release_dmabuffer32rx(addr);
 		}
 	}
 
@@ -1555,7 +1548,6 @@ static void DMA_SAI1_A_TX_initialize(void)
 
 /* DMA для прёма по SAI_1_B  - инициализация */
 // RX	SAI1_B	DMA2	Stream 5	Channel 0
-// Use arm_hardware_invalidate
 static void DMA_SAI1_B_RX_initialize(void)
 {
 	/* SAI1_B - Stream5, Channel0 */ 
@@ -1583,8 +1575,8 @@ static void DMA_SAI1_B_RX_initialize(void)
 
 #endif /* CPUSTYLE_STM32MP1 */
 
-	DMA2_Stream5->M0AR = dma_invalidate32rx((uintptr_t) buff0rx32);
-	DMA2_Stream5->M1AR = dma_invalidate32rx((uintptr_t) buff1rx32);
+	DMA2_Stream5->M0AR = dma_invalidate32rx(allocate_dmabuffer32rx());
+	DMA2_Stream5->M1AR = dma_invalidate32rx(allocate_dmabuffer32rx());
 	DMA2_Stream5->NDTR = (DMA2_Stream5->NDTR & ~ DMA_SxNDT) |
 		(DMABUFFSIZE32RX * DMA_SxNDT_0);
 
@@ -1896,7 +1888,6 @@ static void hardware_sai1_enable(void)		/* разрешение работы SAI
 
 // DMA по приему SAI2 - обработчик прерывания
 // RX	SAI2_B	DMA2	Stream7	Channel 3
-// Use arm_hardware_invalidate
 void RAMFUNC_NONILINE DMA2_Stream7_IRQHandler(void)
 {
 	// проверка условия может потребоваться при добавлении обработчика ошибки
@@ -2119,7 +2110,6 @@ static void DMA_SAI2_A_TX_initializeAUDIO48(void)
 
 /* DMA для прёма по SAI_2_B  - инициализация */
 //	RX	SAI2_B	DMA2	Stream7	Channel 0	
-// Use arm_hardware_invalidate
 static void DMA_SAI2_B_RX_initializeRTS96(void)
 {
 #if CPUSTYLE_STM32MP1
@@ -2184,7 +2174,6 @@ static void DMA_SAI2_B_RX_initializeRTS96(void)
 
 /* DMA для прёма по SAI_2_B  - инициализация */
 //	RX	SAI2_B	DMA2	Stream7	Channel 0	
-// Use arm_hardware_invalidate
 static void DMA_SAI2_B_RX_initializeAUDIO48(void)
 {
 #if CPUSTYLE_STM32MP1
@@ -2502,7 +2491,6 @@ static void hardware_sai2_enable(void)		/* разрешение работы SAI
 
 /* DMA для прёма по SAI_2_B  - инициализация */
 //	RX	SAI2_B	DMA2	Stream7	Channel 0	
-// Use arm_hardware_invalidate
 static void DMA_SAI2_B_RX_initializeWFM(void)
 {
 	debug_printf_P(PSTR("DMA_SAI2_B_RX_initializeWFM start.\n"));
