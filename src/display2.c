@@ -6040,23 +6040,34 @@ static void display2_spectrum(
 			xleft = 0;
 		if (xright == xleft)
 			xright = xleft + 1;
-
+		if (xright >= ALLDX)
+			xright = ALLDX - 1;
 		if (glob_fillspect == 0)
 		{
+			const uint_fast16_t xrightv = xright + 1;	// рисуем от xleft до xright включительно
 			/* рисуем спектр ломанной линией */
 			uint_fast16_t ylast = 0;
-			/* стираем зажний фон, рисуем прямоугольник полосы пропускания */
-			if (xleft > 0)
+
+			/* стираем старый фон, рисуем прямоугольник полосы пропускания */
+			if (ALLDX / (xrightv - xleft) > 8)
 			{
-				colmain_fillrect(colorpip, BUFDIM_X, BUFDIM_Y, 0, SPY0, xleft, SPDY, COLORPIP_SPECTRUMBG);
+				colmain_fillrect(colorpip, BUFDIM_X, BUFDIM_Y, 0, SPY0, ALLDX, SPDY, COLORPIP_SPECTRUMBG);
 			}
-			if (xleft < xright)
+			else
 			{
-				colmain_fillrect(colorpip, BUFDIM_X, BUFDIM_Y, xleft, SPY0, xright - xleft, SPDY, COLORMAIN_SPECTRUMBG2);
+				if (xleft > 0)
+				{
+					colmain_fillrect(colorpip, BUFDIM_X, BUFDIM_Y, 0, SPY0, xleft, SPDY, COLORPIP_SPECTRUMBG);
+				}
+				if (xrightv < ALLDX)
+				{
+					colmain_fillrect(colorpip, BUFDIM_X, BUFDIM_Y, xrightv, SPY0, ALLDX - xrightv, SPDY, COLORPIP_SPECTRUMBG);
+				}
 			}
-			if (xright < ALLDX)
+			// Изображение "шторки".
+			if (xleft < xrightv)
 			{
-				colmain_fillrect(colorpip, BUFDIM_X, BUFDIM_Y, xright, SPY0, ALLDX - xright, SPDY, COLORPIP_SPECTRUMBG);
+				colmain_fillrect(colorpip, BUFDIM_X, BUFDIM_Y, xleft, SPY0, xrightv - xleft, SPDY, COLORMAIN_SPECTRUMBG2);
 			}
 			uint_fast16_t x;
 			display_colorgrid_set(colorpip, SPY0, SPDY, f0, bw);	// отрисовка маркеров частот
