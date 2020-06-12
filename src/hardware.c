@@ -9661,7 +9661,7 @@ void arm_hardware_invalidate(uintptr_t addr, size_t dsize)
 // Сейчас эта память будет записываться по DMA куда-то
 void arm_hardware_flush(uintptr_t addr, size_t dsize)
 {
-	ASSERT((addr % DCACHEROWSIZE) == 0);
+	//ASSERT((addr % DCACHEROWSIZE) == 0);
 
 	if (dsize > 0)
 	{

@@ -1039,7 +1039,7 @@ void hwaccel_copy(
 	// MDMA реализация
 
 	arm_hardware_flush_invalidate(dstinvalidateaddr, dstinvalidatesize);
-	ASSERT(((uintptr_t) src % DCACHEROWSIZE) == 0);
+	//ASSERT(((uintptr_t) src % DCACHEROWSIZE) == 0);	// TODO: добавиль парамтр для flush исходного растра
 	arm_hardware_flush((uintptr_t) src, sizeof (* src) * GXSIZE(sdx, sdy));
 
 	MDMA_CH->CDAR = (uintptr_t) dst;
