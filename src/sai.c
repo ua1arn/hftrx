@@ -2958,14 +2958,14 @@ static RAMFUNC_NONILINE void r7s721_ssif1_rxdma(void)
 	if (b != 0)
 	{
 		const uintptr_t addr = DMAC2.N0DA_n;
-		DDMAC2.N0DA_n = dma_invalidate32rx(allocate_dmabuffer32rx());
+		DMAC2.N0DA_n = dma_invalidate32rx(allocate_dmabuffer32rx());
 		processing_dmabuffer32rx(addr);
 		release_dmabuffer32rx(addr);
 	}
 	else
 	{
 		const uintptr_t addr = DMAC2.N1DA_n;
-		DDMAC2.N1DA_n = dma_invalidate32rx(allocate_dmabuffer32rx());
+		DMAC2.N1DA_n = dma_invalidate32rx(allocate_dmabuffer32rx());
 		processing_dmabuffer32rx(addr);
 		release_dmabuffer32rx(addr);
 	}
