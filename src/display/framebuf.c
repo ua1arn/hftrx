@@ -10,7 +10,6 @@
 // Например при offscreen composition растровых изображений для SPI дисплеев
 //
 
-#include "src/gui/gui.h"
 #include "hardware.h"
 #include "board.h"
 #include "display.h"
