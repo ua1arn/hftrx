@@ -296,6 +296,7 @@ void refreshDMA_uacin(void)
 // Работает на ARM_REALTIME_PRIORITY
 static void RAMFUNC_NONILINE r7s721_usbX_dma1_dmatx_handler(void)
 {
+	__DMB();
 	ASSERT(DMAC12.N0SA_n != 0);
 	release_dmabufferx(DMAC12.N0SA_n);
 
@@ -533,6 +534,7 @@ static USBALIGN_BEGIN uint8_t uacoutbuff1 [UACOUT_AUDIO48_DATASIZE] USBALIGN_END
 // Работает на ARM_REALTIME_PRIORITY
 static RAMFUNC_NONILINE void r7s721_usbX_dma0_dmarx_handler(void)
 {
+	__DMB();
 	// Enable switch to next regidters set
 	DMAC13.CHCFG_n |= DMAC13_CHCFG_n_REN;	// REN bit
 	// SR (bt 7)
@@ -1476,6 +1478,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 // Renesas, usb device
 void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 {
+	__DMB();
 	USB_OTG_GlobalTypeDef * const USBx = hpcd->Instance;
 	USBD_HandleTypeDef * const pdev = hpcd->pData;
 	const uint_fast16_t intsts0 = USBx->INTSTS0;
@@ -1751,6 +1754,7 @@ printhex(unsigned long voffs, const unsigned char * buff, unsigned length)
 // Renesas, usb host
 void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 {
+	__DMB();
 	USB_OTG_GlobalTypeDef * const USBx = hhcd->Instance;
 	const uint_fast16_t intsts0 = USBx->INTSTS0;
 	const uint_fast16_t intsts1 = USBx->INTSTS1;
@@ -8253,6 +8257,7 @@ static HAL_StatusTypeDef PCD_WriteEmptyTxFifo(PCD_HandleTypeDef *hpcd, uint32_t 
 // F4, F7, H7...
 void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 {
+	__DMB();
 	//	PRINTF(PSTR("HAL_PCD_IRQHandler:\n"));
 	USB_OTG_GlobalTypeDef *USBx = hpcd->Instance;
 
@@ -13706,6 +13711,7 @@ void HAL_HCD_HC_NotifyURBChange_Callback(HCD_HandleTypeDef *hhcd, uint8_t chnum,
   */
 void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 {
+	__DMB();
 	USB_OTG_GlobalTypeDef *USBx = hhcd->Instance;
 
 	/* ensure that we are in device mode */
