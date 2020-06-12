@@ -1126,22 +1126,22 @@ void hwaccel_copy(
 	// программная реализация
 
 	// для случая когда горизонтальные пиксели в видеопямяти источника располагаются подряд
-	if (tadj == 0)
+	if (tdx == sdx)
 	{
-		const size_t len = (size_t) GXSIZE(w, h) * sizeof * src;
+		const size_t len = (size_t) GXSIZE(sdx, sdy) * sizeof * src;
 		// ширина строки одинаковая в получателе и источнике
 		memcpy(dst, src, len);
 		//arm_hardware_flush((uintptr_t) dst, len);
 	}
 	else
 	{
-		const size_t len = w * sizeof * src;
-		while (h --)
+		const size_t len = sdx * sizeof * src;
+		while (sdy --)
 		{
 			memcpy(dst, src, len);
 			//arm_hardware_flush((uintptr_t) dst, len);
-			src += GXADJ(w);
-			dst += w + tadj;
+			src += GXADJ(sdx);
+			dst += GXADJ(tdx);
 		}
 	}
 
