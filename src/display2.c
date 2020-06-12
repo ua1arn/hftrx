@@ -7025,7 +7025,7 @@ display2_bars_amv0(
 #endif /* CTLSTYLE_RA4YBO_AM0 */
 
 #if LCDMODE_LTDC
-#include <src/display/fontmaps.h>
+#include "display/fontmaps.h"
 
 const int sin90 [91] =
 {
