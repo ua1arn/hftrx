@@ -384,7 +384,7 @@ static void vdc5fb_init_scalers(struct st_vdc5 * const vdc)
 
 static void vdc5fb_init_graphics(struct st_vdc5 * const vdc)
 {
-	const unsigned MAINROWSIZE = sizeof (PACKEDCOLORMAIN_T) * DIM_SECOND;	// размер одной строки в байтах
+	const unsigned MAINROWSIZE = sizeof (PACKEDCOLORMAIN_T) * GXADJ(DIM_SECOND);	// размер одной строки в байтах
 	// Таблица используемой при отображении палитры
 	COLOR24_T xltrgb24 [256];
 	display2_xltrgb24(xltrgb24);
@@ -495,9 +495,9 @@ static void vdc5fb_init_graphics(struct st_vdc5 * const vdc)
 
 	SETREG32_CK(& vdc->GR3_FLM_RD, 1, 0, 0);			// GR3_R_ENB Frame Buffer Read Enable
 	SETREG32_CK(& vdc->GR3_AB1, 2, 0,	0x01);			// GR3_DISP_SEL 1: Lower-layer graphics display
-	SETREG32_CK(& vdc->GR3_FLM3, 15, 16, pipwnd.w * sizeof (PACKEDCOLORPIP_T));		// GR3_LN_OFF
+	SETREG32_CK(& vdc->GR3_FLM3, 15, 16, GXADJ(pipwnd.w) * sizeof (PACKEDCOLORPIP_T));		// GR3_LN_OFF
 	SETREG32_CK(& vdc->GR3_FLM3, 10, 0, 0x00);			// GR3_FLM_NUM
-	SETREG32_CK(& vdc->GR3_FLM4, 23, 0, pipwnd.w * pipwnd.h * sizeof (PACKEDCOLORPIP_T));	// GR3_FLM_OFF
+	SETREG32_CK(& vdc->GR3_FLM4, 23, 0, GXADJ(pipwnd.w) * pipwnd.h * sizeof (PACKEDCOLORPIP_T));	// GR3_FLM_OFF
 	SETREG32_CK(& vdc->GR3_FLM5, 11, 16, pipwnd.h - 1);	// GR3_FLM_LNUM Sets the number of lines in a frame
 	SETREG32_CK(& vdc->GR3_FLM5, 11, 0, pipwnd.h - 1);	// GR3_FLM_LOOP Sets the number of lines in a frame
 	SETREG32_CK(& vdc->GR3_FLM6, 11, 16, pipwnd.w - 1);	// GR3_HW Sets the width of the horizontal valid period.
