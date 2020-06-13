@@ -6230,7 +6230,9 @@ static void wfsetupnew(void)
 // отрисовка вновь появившихся данных на водопаде (в случае использования аппаратного scroll видеопамяти).
 static void display_wfputrow(uint_fast16_t x, uint_fast16_t y, const PACKEDCOLORMAIN_T * p)
 {
-	colpip_to_main(p, ALLDX, 1, x, y);
+	colpip_to_main(
+			(uintptr_t) p, ALLDX * sizeof * p,
+			p, ALLDX, 1, x, y);
 }
 
 // формирование данных спектра для последующего отображения
@@ -6391,14 +6393,20 @@ static void display2_waterfall(
 
 	{
 		/* перенос свежей части растра */
-		colpip_plot(colorpip, BUFDIM_X, BUFDIM_Y, 0, p1y,
+		colpip_plot(
+				(uintptr_t) colorpip, GXSIZE(BUFDIM_X, BUFDIM_Y),
+				colorpip, BUFDIM_X, BUFDIM_Y, 0, p1y,
+				(uintptr_t) wfjarray, sizeof (* wfjarray) * GXSIZE(ALLDX, WFROWS),	// папаметры для clean
 				colmain_mem_at(wfjarray, ALLDX, WFROWS, 0, wfrow),	// начальный адрес источника
 				ALLDX, p1h);	// размеры источника
 	}
 	if (p2h != 0)
 	{
 		/* перенос старой части растра */
-		colpip_plot(colorpip, BUFDIM_X, BUFDIM_Y, 0, p2y,
+		colpip_plot(
+				(uintptr_t) colorpip, 0,
+				colorpip, BUFDIM_X, BUFDIM_Y, 0, p2y,
+				(uintptr_t) wfjarray, 0,	// размер области 0 - ранее уже вызывали clean
 				colmain_mem_at(wfjarray, ALLDX, WFROWS, 0, 0),	// начальный адрес источника
 				ALLDX, p2h);	// размеры источника
 	}
@@ -7649,7 +7657,11 @@ display2_smeter15(
 		if (is_tx)
 		{
 			// TX state
-			colpip_plot(fr, DIM_X, DIM_Y, x0, y0 + dial_shift, smeter_bg [SM_STATE_TX], SM_BG_W, SM_BG_H - dial_shift);
+			colpip_plot(
+					(uintptr_t) fr, GXSIZE(DIM_X, DIM_Y),
+					fr, DIM_X, DIM_Y, x0, y0 + dial_shift,
+					(uintptr_t) smeter_bg [SM_STATE_TX], GXSIZE(SM_BG_W, SM_BG_H),
+					smeter_bg [SM_STATE_TX], SM_BG_W, SM_BG_H - dial_shift);
 
 			if (gswr > smeter_params.gs)
 			{
@@ -7672,7 +7684,11 @@ display2_smeter15(
 		else
 		{
 			// RX state
-			colpip_plot(fr, DIM_X, DIM_Y, x0, y0 + dial_shift, smeter_bg [SM_STATE_RX], SM_BG_W, SM_BG_H - dial_shift);
+			colpip_plot(
+					(uintptr_t) fr, GXSIZE(DIM_X, DIM_Y),
+					fr, DIM_X, DIM_Y, x0, y0 + dial_shift,
+					(uintptr_t) smeter_bg [SM_STATE_RX], GXSIZE(SM_BG_W, SM_BG_H),
+					smeter_bg [SM_STATE_RX], SM_BG_W, SM_BG_H - dial_shift);
 
 			{
 				// Рисование peak value (риска)
@@ -7697,7 +7713,11 @@ display2_smeter15(
 
 		if (is_tx)
 		{
-			colpip_plot(fr, DIM_X, DIM_Y, x0, y0, smeter_bg [SM_STATE_TX], SM_BG_W, SM_BG_H);
+			colpip_plot(
+					(uintptr_t) fr, GXSIZE(DIM_X, DIM_Y),
+					fr, DIM_X, DIM_Y, x0, y0,
+					(uintptr_t) smeter_bg [SM_STATE_TX], GXSIZE(SM_BG_W, SM_BG_H),
+					smeter_bg [SM_STATE_TX], SM_BG_W, SM_BG_H);
 
 			if(gp > smeter_params.gs)
 				colpip_rect(fr, DIM_X, DIM_Y, x0 + smeter_params.gs, y0 + smeter_params.r1 + 5, x0 + gp, y0 + smeter_params.r1 + 20, COLORMAIN_GREEN, 1);
@@ -7707,7 +7727,12 @@ display2_smeter15(
 		}
 		else
 		{
-			colpip_plot(fr, DIM_X, DIM_Y, x0, y0, smeter_bg [SM_STATE_RX], SM_BG_W, SM_BG_H);
+			colpip_plot(
+					(uintptr_t) fr, GXSIZE(DIM_X, DIM_Y),
+					fr, DIM_X, DIM_Y, x0, y0,
+					(uintptr_t) smeter_bg [SM_STATE_RX], GXSIZE(SM_BG_W, SM_BG_H),
+					smeter_bg [SM_STATE_RX], SM_BG_W, SM_BG_H
+					);
 
 			if(gv > smeter_params.gs)
 				colpip_rect(fr, DIM_X, DIM_Y, x0 + smeter_params.gs, y0 + smeter_params.r1 + 5, x0 + gv, y0 + smeter_params.r1 + 20, COLORMAIN_GREEN, 1);

@@ -467,6 +467,8 @@ void colpip_fill(
 // Выдать цветной буфер на дисплей
 // В случае фреймбуфеных дисплеев - формат цвета и там и там одинаковый
 void colpip_to_main(
+	uintptr_t srcinvalidateaddr,	// параметры clean источника
+	int_fast32_t srcinvalidatesize,
 	const PACKEDCOLORPIP_T * buffer,	// источник
 	uint_fast16_t dx,	// ширина буфера источника
 	uint_fast16_t dy,	// высота буфера источника
@@ -705,25 +707,17 @@ colmain_fillrect(
 	COLORMAIN_T color
 	);
 
-// скоприовать прямоугольник с типом пикселей соответствующим основному экрану
-void colmain_plot(
-	PACKEDCOLORMAIN_T * tbuffer,	// получатель
-	uint_fast16_t tdx,	// получатель
-	uint_fast16_t tdy,	// получатель
-	uint_fast16_t x,	// получатель
-	uint_fast16_t y,	// получатель
-	const PACKEDCOLORMAIN_T * buffer, 	// источник
-	uint_fast16_t dx,	// источник Размеры окна в пикселях
-	uint_fast16_t dy	// источник
-	);
-
 // скоприовать прямоугольник с типом пикселей соответствующим pip
 void colpip_plot(
+	uintptr_t dstinvalidateaddr,	// параметры clean invalidate получателя
+	int_fast32_t dstinvalidatesize,
 	PACKEDCOLORPIP_T * tbuffer,	// получатель
 	uint_fast16_t tdx,	// получатель
 	uint_fast16_t tdy,	// получатель
 	uint_fast16_t x,	// получатель
 	uint_fast16_t y,	// получатель
+	uintptr_t srcinvalidateaddr,	// параметры clean источника
+	int_fast32_t srcinvalidatesize,
 	const PACKEDCOLORPIP_T * buffer, 	// источник
 	uint_fast16_t dx,	// источник Размеры окна в пикселях
 	uint_fast16_t dy	// источник
@@ -869,11 +863,13 @@ void colmain_fb_next(void);		// прерключиться на использо
 void display2_xltrgb24(COLOR24_T * xtable);
 
 void hwaccel_copy(
-	uintptr_t dstinvalidateaddr,
-	size_t dstinvalidatesize,
+	uintptr_t dstinvalidateaddr,	// параметры clean invalidate получателя
+	int_fast32_t dstinvalidatesize,
 	PACKEDCOLORMAIN_T * dst,
 	uint_fast16_t ddx,	// ширина буфера
 	uint_fast16_t ddy,	// высота буфера
+	uintptr_t srcinvalidateaddr,	// параметры clean источника
+	int_fast32_t srcinvalidatesize,
 	const PACKEDCOLORMAIN_T * src,
 	uint_fast16_t sdx,	// ширина буфера
 	uint_fast16_t sdy	// высота буфера

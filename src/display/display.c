@@ -1449,6 +1449,8 @@ void display_plotfrom(uint_fast16_t x, uint_fast16_t y)
 // Выдать буфер на дисплей. Функции бывают только для не L8 режимов
 // В случае фреймбуфеных дисплеев - формат цвета и там и там одинаковый
 void colpip_to_main(
+	uintptr_t srcinvalidateaddr,	// параметры clean источника
+	int_fast32_t srcinvalidatesize,
 	const PACKEDCOLORPIP_T * buffer,	// источник
 	uint_fast16_t dx,	// ширина буфера источника
 	uint_fast16_t dy,	// высота буфера источника
@@ -1461,16 +1463,16 @@ void colpip_to_main(
 	ASSERT(((uintptr_t) buffer % DCACHEROWSIZE) == 0);
 #if LCDMODE_HORFILL
 	hwaccel_copy(
-		(uintptr_t) colmain_fb_draw(),
-		sizeof (PACKEDCOLORPIP_T) * GXSIZE(DIM_X, DIM_Y),	// target area invalidate parameters
+		(uintptr_t) colmain_fb_draw(), sizeof (PACKEDCOLORPIP_T) * GXSIZE(DIM_X, DIM_Y),	// target area invalidate parameters
 		colmain_mem_at(colmain_fb_draw(), DIM_X, DIM_Y, col, row), DIM_X, DIM_Y,
+		srcinvalidateaddr, srcinvalidatesize,	// параметры clean источника
 		buffer, dx, dy
 		);
 #else /* LCDMODE_HORFILL */
 	hwaccel_copy(
-		(uintptr_t) colmain_fb_draw(),
-		sizeof (PACKEDCOLORPIP_T) * GXSIZE(DIM_X, DIM_Y),	// target area invalidate parameters
+		(uintptr_t) colmain_fb_draw(), sizeof (PACKEDCOLORPIP_T) * GXSIZE(DIM_X, DIM_Y),	// target area invalidate parameters
 		colmain_mem_at(colmain_fb_draw(), DIM_X, DIM_Y, col, row), DIM_X, DIM_Y,
+		srcinvalidateaddr, srcinvalidatesize,	// параметры clean источника
 		buffer, dx, dy
 		);
 #endif /* LCDMODE_HORFILL */

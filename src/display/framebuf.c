@@ -229,7 +229,7 @@ void arm_hardware_mdma_initialize(void)
 
 #if LCDMODE_PIP_L8 || LCDMODE_MAIN_L8
 // Функция получает координаты и работает над буфером в горищонталтной ориентации.
-void
+static void
 hwacc_fillrect_u8(
 	uint8_t * buffer,
 	uint_fast16_t dx,	// ширина буфера
@@ -321,7 +321,7 @@ hwacc_fillrect_u8(
 
 #if LCDMODE_PIP_RGB565 || LCDMODE_MAIN_RGB565
 // Функция получает координаты и работает над буфером в горищонталтной ориентации.
-void
+static void
 hwacc_fillrect_u16(
 	uint16_t * buffer,
 	uint_fast16_t dx,	// ширина буфера
@@ -454,7 +454,7 @@ hwacc_fillrect_u16(
 
 #if LCDMODE_PIP_L24 || LCDMODE_MAIN_L24
 // Функция получает координаты и работает над буфером в горищонталтной ориентации.
-void
+static void
 hwacc_fillrect_u24(
 	PACKEDCOLORMAIN_T * buffer,
 	uint_fast16_t dx,	// ширина буфера
@@ -1037,11 +1037,13 @@ void colpip_point_xor(
 // MDMA, DMA2D или программа
 // для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
 void hwaccel_copy(
-	uintptr_t dstinvalidateaddr,
-	size_t dstinvalidatesize,
+	uintptr_t dstinvalidateaddr,	// параметры invalidate получателя
+	int_fast32_t dstinvalidatesize,
 	PACKEDCOLORMAIN_T * dst,
 	uint_fast16_t tdx,	// ширина буфера
 	uint_fast16_t tdy,	// высота буфера
+	uintptr_t srcinvalidateaddr,	// параметры clean источника
+	int_fast32_t srcinvalidatesize,
 	const PACKEDCOLORMAIN_T * src,
 	uint_fast16_t sdx,	// ширина буфера
 	uint_fast16_t sdy	// высота буфера
@@ -1054,8 +1056,7 @@ void hwaccel_copy(
 	// MDMA реализация
 
 	arm_hardware_flush_invalidate(dstinvalidateaddr, dstinvalidatesize);
-	//ASSERT(((uintptr_t) src % DCACHEROWSIZE) == 0);	// TODO: добавиль парамтр для flush исходного растра
-	arm_hardware_flush((uintptr_t) src, sizeof (* src) * GXSIZE(sdx, sdy));
+	arm_hardware_flush(srcinvalidateaddr, srcinvalidatesize);
 
 	MDMA_CH->CDAR = (uintptr_t) dst;
 	MDMA_CH->CSAR = (uintptr_t) src;
@@ -1104,8 +1105,7 @@ void hwaccel_copy(
 	// DMA2D реализация
 	// See DMA2D_FGCMAR for L8
 	arm_hardware_flush_invalidate(dstinvalidateaddr, dstinvalidatesize);
-	ASSERT(((uintptr_t) src % DCACHEROWSIZE) == 0);
-	arm_hardware_flush((uintptr_t) src, sizeof (* src) * GXSIZE(sdx, sdy));
+	arm_hardware_flush(srcinvalidateaddr, srcinvalidatesize);
 
 	/* исходный растр */
 	DMA2D->FGMAR = (uintptr_t) src;
@@ -1155,7 +1155,6 @@ void hwaccel_copy(
 		const size_t len = (size_t) GXSIZE(sdx, sdy) * sizeof * src;
 		// ширина строки одинаковая в получателе и источнике
 		memcpy(dst, src, len);
-		//arm_hardware_flush((uintptr_t) dst, len);
 	}
 	else
 	{
@@ -1614,46 +1613,17 @@ uint_fast16_t colpip_string_height(
 
 #endif /* LCDMODE_HORFILL */
 
-
-// скоприовать прямоугольник с типом пикселей соответствующим основному экрану
-void colmain_plot(
-	PACKEDCOLORMAIN_T * dst,	// получатель
-	uint_fast16_t tdx,	// получатель
-	uint_fast16_t tdy,	// получатель
-	uint_fast16_t x,	// получатель
-	uint_fast16_t y,	// получатель
-	const PACKEDCOLORMAIN_T * src, 	// источник
-	uint_fast16_t sdx,	// источник Размеры окна в пикселях
-	uint_fast16_t sdy	// источник
-	)
-{
-	ASSERT(src != NULL);
-	ASSERT(dst != NULL);
-	ASSERT(tdx >= sdx);
-	ASSERT(tdy >= sdy);
-	ASSERT(((uintptr_t) src % DCACHEROWSIZE) == 0);
-#if LCDMODE_HORFILL
-	hwaccel_copy(
-		(uintptr_t) dst, sizeof (PACKEDCOLORPIP_T) * GXSIZE(tdx, tdy),	// target area invalidate parameters
-		colmain_mem_at(dst, tdx, tdy, x, y), tdx, tdy,
-		src, sdx, sdy
-		);
-#else /* LCDMODE_HORFILL */
-	hwaccel_copy(
-		(uintptr_t) dst, sizeof (PACKEDCOLORPIP_T) * GXSIZE(tdx, tdy),	// target area invalidate parameters
-		colmain_mem_at(dst, tdx, tdy, x, y), tdx, tdy,
-		src, sdx, sdy
-		);
-#endif /* LCDMODE_HORFILL */
-}
-
 // скоприовать прямоугольник с типом пикселей соответствующим pip
 void colpip_plot(
+	uintptr_t dstinvalidateaddr,	// параметры clean invalidate получателя
+	int_fast32_t dstinvalidatesize,
 	PACKEDCOLORPIP_T * dst,	// получатель
 	uint_fast16_t tdx,	// получатель Размеры окна в пикселях
 	uint_fast16_t tdy,	// получатель
 	uint_fast16_t x,	// получатель Позиция
 	uint_fast16_t y,	// получатель
+	uintptr_t srcinvalidateaddr,	// параметры clean источника
+	int_fast32_t srcinvalidatesize,
 	const PACKEDCOLORPIP_T * src, 	// источник
 	uint_fast16_t sdx,	// источник Размеры окна в пикселях
 	uint_fast16_t sdy	// источник
@@ -1667,14 +1637,16 @@ void colpip_plot(
 	//ASSERT(((uintptr_t) src % DCACHEROWSIZE) == 0);	// TODO: добавиль парамтр для flush исходного растра
 #if LCDMODE_HORFILL
 	hwaccel_copy(
-		(uintptr_t) dst, sizeof (PACKEDCOLORPIP_T) * GXSIZE(tdx, tdy),	// target area invalidate parameters
+		dstinvalidateaddr, dstinvalidatesize,	// target area clean invalidate parameters
 		colmain_mem_at(dst, tdx, tdy, x, y), tdx, tdy,
+		srcinvalidateaddr, srcinvalidatesize,	// параметры clean источника
 		src, sdx, sdy
 		);
 #else /* LCDMODE_HORFILL */
 	hwaccel_copy(
-		(uintptr_t) dst, sizeof (PACKEDCOLORPIP_T) * GXSIZE(tdx, tdy),	// target area invalidate parameters
+		dstinvalidateaddr, dstinvalidatesize,	// target area clean invalidate parameters
 		colmain_mem_at(dst, tdx, tdy, x, y), tdx, tdy,
+		srcinvalidateaddr, srcinvalidatesize,	// параметры clean источника
 		src, sdx, sdy
 		);
 #endif /* LCDMODE_HORFILL */
