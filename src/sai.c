@@ -273,15 +273,17 @@ void RAMFUNC_NONILINE DMA1_Stream3_IRQHandler(void)
 		const uint_fast8_t b = (DMA1_Stream3->CR & DMA_SxCR_CT) != 0;
 		if (b != 0)
 		{
-			processing_dmabuffer16rx(DMA1_Stream3->M0AR);
+			const uintptr_t addr = DMA1_Stream3->M0AR;
 			DMA1_Stream3->M0AR = dma_invalidate16rx(allocate_dmabuffer16());
 			DRD(DMA1_Stream3->M0AR);
+			processing_dmabuffer16rx(addr);
 		}
 		else
 		{
-			processing_dmabuffer16rx(DMA1_Stream3->M1AR);
+			const uintptr_t addr = DMA1_Stream3->M1AR;
 			DMA1_Stream3->M1AR = dma_invalidate16rx(allocate_dmabuffer16());
 			DRD(DMA1_Stream3->M1AR);
+			processing_dmabuffer16rx(addr);
 		}
 	}
 
@@ -300,15 +302,17 @@ void RAMFUNC_NONILINE DMA1_Stream0_IRQHandler(void)
 		const uint_fast8_t b = (DMA1_Stream0->CR & DMA_SxCR_CT) != 0;
 		if (b != 0)
 		{
-			processing_dmabuffer16rx(DMA1_Stream0->M0AR);
+			const uintptr_t addr = DMA1_Stream0->M0AR;
 			DMA1_Stream0->M0AR = dma_invalidate16rx(allocate_dmabuffer16());
 			DRD(DMA1_Stream0->M0AR);
+			processing_dmabuffer16rx(addr);
 		}
 		else
 		{
-			processing_dmabuffer16rx(DMA1_Stream0->M1AR);
+			const uintptr_t addr = DMA1_Stream0->M1AR;
 			DMA1_Stream0->M1AR = dma_invalidate16rx(allocate_dmabuffer16());
 			DRD(DMA1_Stream0->M1AR);
+			processing_dmabuffer16rx(addr);
 		}
 	}
 
@@ -2660,7 +2664,6 @@ enum
 static RAMFUNC_NONILINE void r7s721_ssif0_rxdma(void)
 {
 	__DMB();
-	DMAC0.CHCFG_n |= DMAC0_CHCFG_n_REN;	// REN bit
 	// SR (bt 7)
 	// Indicates the register set currently selected in register mode.
 	// 0: Next0 Register Set
@@ -2668,13 +2671,17 @@ static RAMFUNC_NONILINE void r7s721_ssif0_rxdma(void)
 	const uint_fast8_t b = (DMAC0.CHSTAT_n & (1U << DMAC0_CHSTAT_n_SR_SHIFT)) != 0;	// SR
 	if (b != 0)
 	{
-		processing_dmabuffer16rx(DMAC0.N0DA_n);
+		const uintptr_t addr = DMAC0.N0DA_n;
 		DMAC0.N0DA_n = dma_invalidate16rx(allocate_dmabuffer16());
+		DMAC0.CHCFG_n |= DMAC0_CHCFG_n_REN;	// REN bit
+		processing_dmabuffer16rx(addr);
 	}
 	else
 	{
-		processing_dmabuffer16rx(DMAC0.N1DA_n);
+		const uintptr_t addr = DMAC0.N1DA_n;
 		DMAC0.N1DA_n = dma_invalidate16rx(allocate_dmabuffer16());
+		DMAC0.CHCFG_n |= DMAC0_CHCFG_n_REN;	// REN bit
+		processing_dmabuffer16rx(addr);
 	}
 }
 
@@ -2685,7 +2692,6 @@ static RAMFUNC_NONILINE void r7s721_ssif0_rxdma(void)
 static void r7s721_ssif0_txdma(void)
 {
 	__DMB();
-	DMAC1.CHCFG_n |= DMAC1_CHCFG_n_REN;	// REN bit
 	// SR (bt 7)
 	// Indicates the register set currently selected in register mode.
 	// 0: Next0 Register Set
@@ -2693,13 +2699,17 @@ static void r7s721_ssif0_txdma(void)
 	const uint_fast8_t b = (DMAC1.CHSTAT_n & DMAC1_CHSTAT_n_SR) != 0;	// SR
 	if (b != 0)
 	{
-		release_dmabuffer16(DMAC1.N0SA_n);
+		const uintptr_t addr = DMAC1.N0SA_n;
 		DMAC1.N0SA_n = dma_flush16tx(getfilled_dmabuffer16phones());
+		DMAC1.CHCFG_n |= DMAC1_CHCFG_n_REN;	// REN bit
+		release_dmabuffer16(addr);
 	}
 	else
 	{
-		release_dmabuffer16(DMAC1.N1SA_n);
+		const uintptr_t addr = DMAC1.N1SA_n;
 		DMAC1.N1SA_n = dma_flush16tx(getfilled_dmabuffer16phones());
+		DMAC1.CHCFG_n |= DMAC1_CHCFG_n_REN;	// REN bit
+		release_dmabuffer16(addr);
 	}
 }
 
@@ -2916,7 +2926,6 @@ static const codechw_t audiocodechw =
 static void r7s721_ssif1_txdma(void)
 {
 	__DMB();
-	DMAC3.CHCFG_n |= DMAC3_CHCFG_n_REN;	// REN bit
 	// SR (bt 7)
 	// Indicates the register set currently selected in register mode.
 	// 0: Next0 Register Set
@@ -2924,13 +2933,17 @@ static void r7s721_ssif1_txdma(void)
 	const uint_fast8_t b = (DMAC3.CHSTAT_n & (1U << DMAC3_CHSTAT_n_SR_SHIFT)) != 0;	// SR
 	if (b != 0)
 	{
-		release_dmabuffer32tx(DMAC3.N0SA_n);
+		const uintptr_t addr = DMAC3.N0SA_n;
 		DMAC3.N0SA_n = dma_flush32tx(getfilled_dmabuffer32tx_main());
+		DMAC3.CHCFG_n |= DMAC3_CHCFG_n_REN;	// REN bit
+		release_dmabuffer32tx(addr);
 	}
 	else
 	{
-		release_dmabuffer32tx(DMAC3.N1SA_n);
+		const uintptr_t addr = DMAC3.N1SA_n;
 		DMAC3.N1SA_n = dma_flush32tx(getfilled_dmabuffer32tx_main());
+		DMAC3.CHCFG_n |= DMAC3_CHCFG_n_REN;	// REN bit
+		release_dmabuffer32tx(addr);
 	}
 }
 
@@ -2941,7 +2954,6 @@ static void r7s721_ssif1_txdma(void)
 static RAMFUNC_NONILINE void r7s721_ssif1_rxdma(void)
 {
 	__DMB();
-	DMAC2.CHCFG_n |= DMAC2_CHCFG_n_REN;	// REN bit
 	// SR (bt 7)
 	// Indicates the register set currently selected in register mode.
 	// 0: Next0 Register Set
@@ -2951,6 +2963,7 @@ static RAMFUNC_NONILINE void r7s721_ssif1_rxdma(void)
 	{
 		const uintptr_t addr = DMAC2.N0DA_n;
 		DMAC2.N0DA_n = dma_invalidate32rx(allocate_dmabuffer32rx());
+		DMAC2.CHCFG_n |= DMAC2_CHCFG_n_REN;	// REN bit
 		processing_dmabuffer32rx(addr);
 		release_dmabuffer32rx(addr);
 	}
@@ -2958,6 +2971,7 @@ static RAMFUNC_NONILINE void r7s721_ssif1_rxdma(void)
 	{
 		const uintptr_t addr = DMAC2.N1DA_n;
 		DMAC2.N1DA_n = dma_invalidate32rx(allocate_dmabuffer32rx());
+		DMAC2.CHCFG_n |= DMAC2_CHCFG_n_REN;	// REN bit
 		processing_dmabuffer32rx(addr);
 		release_dmabuffer32rx(addr);
 	}
