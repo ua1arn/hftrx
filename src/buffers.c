@@ -2262,6 +2262,9 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 				do
 				{
 					const PLIST_ENTRY t = RemoveTailList2(& uacin192rts);
+					voice192rts_t * const p = CONTAINING_RECORD(t, voice192rts_t, item);
+					ASSERT(p->tag2 == p);
+					ASSERT(p->tag3 == p);
 					InsertHeadList2(& voicesfree192rts, t);
 				} while (-- n && ! IsListEmpty2(& uacin192rts));
 
