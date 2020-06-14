@@ -196,8 +196,10 @@ void vfylist(LIST_ENTRY2 * head)
 // Audio CODEC in/out
 typedef ALIGNX_BEGIN struct voice16_tag
 {
+	void * tag2;
 	ALIGNX_BEGIN aubufv_t buff [DMABUFFSIZE16] ALIGNX_END;
 	ALIGNX_BEGIN LIST_ENTRY item ALIGNX_END;
+	void * tag3;
 } ALIGNX_END voice16_t;
 
 int_fast32_t buffers_dmabuffer16cachesize(void)
@@ -682,6 +684,8 @@ void buffers_initialize(void)
 	for (i = 0; i < (sizeof voicesarray16 / sizeof voicesarray16 [0]); ++ i)
 	{
 		voice16_t * const p = & voicesarray16 [i];
+		p->tag2 = p;
+		p->tag3 = p;
 		InsertHeadList2(& voicesfree16, & p->item);
 	}
 
@@ -926,6 +930,8 @@ static void buffers_purge16(LIST_ENTRY2 * list)
 // Сохранить звук на звуковой выход трансивера
 static RAMFUNC void buffers_tophones16(voice16_t * p)
 {
+	ASSERT(p->tag2 == p);
+	ASSERT(p->tag3 == p);
 	LOCK(& locklist16);
 	buffers_purge16(& voicesphones16);
 	buffers_purge16(& voicesmoni16);
@@ -936,6 +942,8 @@ static RAMFUNC void buffers_tophones16(voice16_t * p)
 // Сохранить звук для самоконтроля на звуковой выход трансивера
 static RAMFUNC void buffers_tomoni16(voice16_t * p)
 {
+	ASSERT(p->tag2 == p);
+	ASSERT(p->tag3 == p);
 	LOCK(& locklist16);
 	buffers_purge16(& voicesphones16);
 	buffers_purge16(& voicesmoni16);
@@ -946,6 +954,8 @@ static RAMFUNC void buffers_tomoni16(voice16_t * p)
 // Сохранить звук в никуда...
 static RAMFUNC void buffers_tonull16(voice16_t * p)
 {
+	ASSERT(p->tag2 == p);
+	ASSERT(p->tag3 == p);
 	LOCK(& locklist16);
 	InsertHeadList2(& voicesfree16, & p->item);
 	UNLOCK(& locklist16);
@@ -954,6 +964,8 @@ static RAMFUNC void buffers_tonull16(voice16_t * p)
 // Сохранить звук на вход передатчика
 static RAMFUNC void buffers_tomodulators16(voice16_t * p)
 {
+	ASSERT(p->tag2 == p);
+	ASSERT(p->tag3 == p);
 	LOCK(& locklist16);
 	InsertHeadList3(& voicesmike16, & p->item, 0);
 	UNLOCK(& locklist16);
@@ -978,6 +990,8 @@ static RAMFUNC void buffers_savefrommikeadc(voice16_t * p)
 // Сохранить звук после получения из него информации для модулятора
 static RAMFUNC void buffers_aftermodulators(voice16_t * p)
 {
+	ASSERT(p->tag2 == p);
+	ASSERT(p->tag3 == p);
 	// если поток используется и как источник аудиоинформации для модулятора и для динамиков,
 	// в динамики будет направлен после модулятора
 
@@ -992,6 +1006,8 @@ static RAMFUNC void buffers_aftermodulators(voice16_t * p)
 static RAMFUNC void
 buffers_savefromrxout(voice16_t * p)
 {
+	ASSERT(p->tag2 == p);
+	ASSERT(p->tag3 == p);
 	if (uacoutplayer != 0)
 		buffers_tonull16(p);
 	else
@@ -1002,6 +1018,8 @@ buffers_savefromrxout(voice16_t * p)
 static RAMFUNC void
 buffers_savefrommoni(voice16_t * p)
 {
+	ASSERT(p->tag2 == p);
+	ASSERT(p->tag3 == p);
 	buffers_tomoni16(p);
 }
 
@@ -1011,6 +1029,8 @@ buffers_savefrommoni(voice16_t * p)
 static RAMFUNC void
 buffers_savefromresampling(voice16_t * p)
 {
+	ASSERT(p->tag2 == p);
+	ASSERT(p->tag3 == p);
 	// если поток используется и как источник аудиоинформации для модулятора и для динамиков,
 	// в динамики будет направлен после модулятора
 
@@ -1027,6 +1047,8 @@ buffers_savefromresampling(voice16_t * p)
 // Сохранить звук от несинхронного источника - USB - для последующего ресэмплинга
 RAMFUNC static void buffers_savetoresampling16(voice16_t * p)
 {
+	ASSERT(p->tag2 == p);
+	ASSERT(p->tag3 == p);
 	LOCK(& locklist16);
 	// Помеестить в очередь принятых с USB UAC
 	InsertHeadList3(& resample16, & p->item, 0);
@@ -1048,6 +1070,8 @@ RAMFUNC static void buffers_savetoresampling16(voice16_t * p)
 static RAMFUNC void
 buffers_savefromuacout(voice16_t * p)
 {
+	ASSERT(p->tag2 == p);
+	ASSERT(p->tag3 == p);
 #if WITHBUFFERSDEBUG
 	// подсчёт скорости в сэмплах за секунду
 	debugcount_uacout += sizeof p->buff / sizeof p->buff [0] / DMABUFSTEP16;	// в буфере пары сэмплов по два байта
@@ -1788,6 +1812,8 @@ RAMFUNC uintptr_t allocate_dmabuffer16(void)
 		const PLIST_ENTRY t = RemoveTailList2(& voicesfree16);
 		UNLOCK(& locklist16);
 		voice16_t * const p = CONTAINING_RECORD(t, voice16_t, item);
+		ASSERT(p->tag2 == p);
+		ASSERT(p->tag3 == p);
 		return (uintptr_t) & p->buff;
 	}
 #if WITHUSBUAC
@@ -1799,7 +1825,9 @@ RAMFUNC uintptr_t allocate_dmabuffer16(void)
 		do
 		{
 			const PLIST_ENTRY t = RemoveTailList3(& resample16);
-
+			voice16_t * const p = CONTAINING_RECORD(t, voice16_t, item);
+			ASSERT(p->tag2 == p);
+			ASSERT(p->tag3 == p);
 			InsertHeadList2(& voicesfree16, t);
 		}
 		while (-- n && ! IsListEmpty3(& resample16));
@@ -1810,6 +1838,8 @@ RAMFUNC uintptr_t allocate_dmabuffer16(void)
 	#if WITHBUFFERSDEBUG
 		++ e3;
 	#endif /* WITHBUFFERSDEBUG */
+		ASSERT(p->tag2 == p);
+		ASSERT(p->tag3 == p);
 		return (uintptr_t) & p->buff;
 	}
 #endif /* WITHUSBUAC */
@@ -1822,6 +1852,9 @@ RAMFUNC uintptr_t allocate_dmabuffer16(void)
 		do
 		{
 			const PLIST_ENTRY t = RemoveTailList2(& voicesphones16);
+			voice16_t * const p = CONTAINING_RECORD(t, voice16_t, item);
+			ASSERT(p->tag2 == p);
+			ASSERT(p->tag3 == p);
 			InsertHeadList2(& voicesfree16, t);
 		}
 		while (-- n && ! IsListEmpty2(& voicesphones16));
