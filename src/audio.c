@@ -6036,8 +6036,8 @@ trxparam_update(void)
 /* вызывается при разрешённых прерываниях. */
 void dsp_initialize(void)
 {
-	debug_printf_P(PSTR("dsp_initialize start.\n"));
-	PRINTF("DMABUFFSIZE32RX=%d, DMABUFSTEP32RX=%d\n", (int) DMABUFFSIZE32RX, (int) DMABUFSTEP32RX);
+	PRINTF("dsp_initialize: ARMI2SRATE=%lu, ARMI2SRATE100=%lu.%02lu\n", (unsigned long) ARMI2SRATE, (unsigned long) (ARMI2SRATE100 / 100), (unsigned long) (ARMI2SRATE100 % 100));
+	//PRINTF("DMABUFFSIZE32RX=%d, DMABUFSTEP32RX=%d\n", (int) DMABUFFSIZE32RX, (int) DMABUFSTEP32RX);
 
 	//FFT_initialize();
 #if (WITHRTS96 || WITHRTS192) && ! WITHTRANSPARENTIQ
@@ -6102,9 +6102,6 @@ void dsp_initialize(void)
 	gwprof = spf;
 
 	modem_update();
-
-	debug_printf_P(PSTR("dsp_initialize: ARMI2SRATE=%lu\n"), (unsigned long) ARMI2SRATE);
-	debug_printf_P(PSTR("dsp_initialize: ARMI2SRATE100=%lu.%02lu\n"), (unsigned long) (ARMI2SRATE100 / 100), (unsigned long) (ARMI2SRATE100 % 100));
 
 #if 0
 	{
