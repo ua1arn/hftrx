@@ -138,7 +138,6 @@ gotosleep:
    msr   CPSR_c, #ARM_MODE_SYS     /* 0x1F Priviledged Operating Mode */
    ldr   sp, =__stack	/* __stack_syc_end */
    mov   lr, #0
-   sub	sp, # 4096
 
 #if 0
 	/* Clean Data Cache  */
