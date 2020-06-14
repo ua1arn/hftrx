@@ -974,7 +974,8 @@ static RAMFUNC void buffers_tomodulators16(voice16_t * p)
 // Сохранить звук от АЦП пикрофона
 static RAMFUNC void buffers_savefrommikeadc(voice16_t * p)
 {
-
+	ASSERT(p->tag2 == p);
+	ASSERT(p->tag3 == p);
 #if WITHBUFFERSDEBUG
 	// подсчёт скорости в сэмплах за секунду
 	debugcount_mikeadc += sizeof p->buff / sizeof p->buff [0] / DMABUFSTEP16;	// в буфере пары сэмплов по два байта
@@ -1109,6 +1110,8 @@ RAMFUNC uint_fast8_t getsampmlemike(FLOAT32P_t * v)
 		{
 			PLIST_ENTRY t = RemoveTailList3(& voicesmike16);
 			p = CONTAINING_RECORD(t, voice16_t, item);
+			ASSERT(p->tag2 == p);
+			ASSERT(p->tag3 == p);
 			UNLOCK(& locklist16);
 			pos = 0;
 		}
@@ -1123,6 +1126,8 @@ RAMFUNC uint_fast8_t getsampmlemike(FLOAT32P_t * v)
 	{
 		UNLOCK(& locklist16);
 	}
+	ASSERT(p->tag2 == p);
+	ASSERT(p->tag3 == p);
 
 	// Использование данных.
 	v->ivqv [L] = AUBTOAUDIO16(p->buff [pos * DMABUFSTEP16 + L]);	// микрофон или левый канал
@@ -1152,6 +1157,8 @@ RAMFUNC uint_fast8_t getsampmlemoni(FLOAT32P_t * v)
 			PLIST_ENTRY t = RemoveTailList2(& voicesmoni16);
 			p = CONTAINING_RECORD(t, voice16_t, item);
 			UNLOCK(& locklist16);
+			ASSERT(p->tag2 == p);
+			ASSERT(p->tag3 == p);
 			pos = 0;
 		}
 		else
@@ -1165,6 +1172,9 @@ RAMFUNC uint_fast8_t getsampmlemoni(FLOAT32P_t * v)
 	{
 		UNLOCK(& locklist16);
 	}
+
+	ASSERT(p->tag2 == p);
+	ASSERT(p->tag3 == p);
 
 	// Использование данных.
 	v->ivqv [L] = AUBTOAUDIO16(p->buff [pos * DMABUFSTEP16 + L]);	// микрофон или левый канал
@@ -1189,8 +1199,13 @@ void savemoni16stereo(FLOAT_t ch0, FLOAT_t ch1)
 	{
 		uintptr_t addr = allocate_dmabuffer16();
 		p = CONTAINING_RECORD(addr, voice16_t, buff);
+		ASSERT(p->tag2 == p);
+		ASSERT(p->tag3 == p);
 		n = 0;
 	}
+
+	ASSERT(p->tag2 == p);
+	ASSERT(p->tag3 == p);
 
 	p->buff [n + 0] = AUDIO16TOAUB(ch0);		// sample value
 #if DMABUFSTEP16 > 1
