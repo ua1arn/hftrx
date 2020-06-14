@@ -255,11 +255,13 @@ typedef ALIGNX_BEGIN struct uacin16_tag
 {
 	LIST_ENTRY item;	// layout should be same in uacin16_t, voice96rts_t and voice192rts_t
 	uint_fast8_t tag;	// layout should be same in uacin16_t, voice96rts_t and voice192rts_t
+	void * tag2;
 	ALIGNX_BEGIN union
 	{
 		uint16_t buff [DMABUFFSIZEUACIN16];
 		uint8_t filler [(DMABUFFSIZEUACIN16 * 2 + DCACHEROWSIZE - 1) / DCACHEROWSIZE * DCACHEROWSIZE / 2];
 	} u ALIGNX_END;		// спектр, 2*24*192 kS/S
+	void * tag3;
 } ALIGNX_END uacin16_t;
 
 int_fast32_t buffers_dmabufferuacin16cachesize(void)
@@ -273,11 +275,13 @@ int_fast32_t buffers_dmabufferuacin16cachesize(void)
 	{
 		LIST_ENTRY item;	// layout should be same in uacin16_t, voice96rts_t and voice192rts_t
 		uint_fast8_t tag;	// layout should be same in uacin16_t, voice96rts_t and voice192rts_t
+		void * tag2;
 		ALIGNX_BEGIN union
 		{
 			uint8_t buff [DMABUFFSIZE192RTS];
 			uint8_t	filler [(DMABUFFSIZE192RTS + DCACHEROWSIZE - 1) / DCACHEROWSIZE * DCACHEROWSIZE];
 		} u ALIGNX_END;		// спектр, 2*24*192 kS/S
+		void * tag3;
 	} ALIGNX_END voice192rts_t;
 
 	int_fast32_t buffers_dmabuffer192rtscachesize(void)
@@ -296,17 +300,20 @@ int_fast32_t buffers_dmabufferuacin16cachesize(void)
 	{
 		LIST_ENTRY item;	// layout should be same in uacin16_t, voice96rts_t and voice192rts_t
 		uint_fast8_t tag;	// layout should be same in uacin16_t, voice96rts_t and voice192rts_t
+		void * tag2;
 		ALIGNX_BEGIN union
 		{
 			uint8_t buff [DMABUFFSIZE96RTS];
 			uint8_t	 filler [(DMABUFFSIZE96RTS + DCACHEROWSIZE - 1) / DCACHEROWSIZE * DCACHEROWSIZE];
 		} u ALIGNX_END;		// спектр, 2*24*192 kS/S
+		void * tag3;
 	} ALIGNX_END voice96rts_t;
 
 	int_fast32_t buffers_dmabuffer96rtscachesize(void)
 	{
 		return (DMABUFFSIZE96RTS + DCACHEROWSIZE - 1) / DCACHEROWSIZE * DCACHEROWSIZE;
 	}
+
 	static RAMDTCM LIST_ENTRY2 voicesfree96rts;
 	static RAMDTCM LIST_ENTRY2 uacin96rts;	// Буферы для записи в вудиоканал USB к компьютер спектра, 2*32*192 kS/S
 
@@ -678,6 +685,8 @@ void buffers_initialize(void)
 	{
 		uacin16_t * const p = & uacinarray16 [i];
 		p->tag = BUFFTAG_UACIN16;
+		p->tag2 = p;
+		p->tag3 = p;
 		InsertHeadList2(& uacinfree16, & p->item);
 	}
 
@@ -699,6 +708,8 @@ void buffers_initialize(void)
 		{
 			voice192rts_t * const p = & voicesarray192rts [i];
 			p->tag = BUFFTAG_RTS192;
+			p->tag2 = p;
+			p->tag3 = p;
 			InsertHeadList2(& voicesfree192rts, & p->item);
 		}
 
@@ -718,6 +729,8 @@ void buffers_initialize(void)
 		{
 			voice96rts_t * const p = & voicesarray96rts [i];
 			p->tag = BUFFTAG_RTS96;
+			p->tag2 = p;
+			p->tag3 = p;
 			InsertHeadList2(& voicesfree96rts, & p->item);
 		}
 
@@ -1197,6 +1210,8 @@ static uint_fast8_t isrts192(void)
 static RAMFUNC void
 buffers_savetouacin192rts(voice192rts_t * p)
 {
+	ASSERT(p->tag2 == p);
+	ASSERT(p->tag3 == p);
 #if WITHBUFFERSDEBUG
 	// подсчёт скорости в сэмплах за секунду
 	debugcount_rtsadc += sizeof p->buff / sizeof p->buff [0] / DMABUFSTEP192RTS;	// в буфере пары сэмплов по четыре байта
@@ -1211,6 +1226,8 @@ buffers_savetouacin192rts(voice192rts_t * p)
 
 static void buffers_savetonull192rts(voice192rts_t * p)
 {
+	ASSERT(p->tag2 == p);
+	ASSERT(p->tag3 == p);
 	LOCK(& locklist16);
 	InsertHeadList2(& voicesfree192rts, & p->item);
 	UNLOCK(& locklist16);
@@ -2228,6 +2245,8 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 			{
 				PLIST_ENTRY t = RemoveTailList2(& voicesfree192rts);
 				voice192rts_t * const p = CONTAINING_RECORD(t, voice192rts_t, item);
+				ASSERT(p->tag2 == p);
+				ASSERT(p->tag3 == p);
 				UNLOCK(& locklist32);
 			#if WITHBUFFERSDEBUG
 				++ n5;
@@ -2248,7 +2267,9 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 
 				const PLIST_ENTRY t = RemoveTailList2(& voicesfree192rts);
 				voice192rts_t * const p = CONTAINING_RECORD(t, voice192rts_t, item);
-				UNLOCK(& locklist32);
+				ASSERT(p->tag2 == p);
+				ASSERT(p->tag3 == p);
+			UNLOCK(& locklist32);
 			#if WITHBUFFERSDEBUG
 				++ e5;
 			#endif /* WITHBUFFERSDEBUG */
@@ -2269,6 +2290,8 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 		{
 			LOCK(& locklist32);
 			voice192rts_t * const p = CONTAINING_RECORD(addr, voice192rts_t, u.buff);
+			ASSERT(p->tag2 == p);
+			ASSERT(p->tag3 == p);
 			InsertHeadList2(& voicesfree192rts, & p->item);
 			UNLOCK(& locklist32);
 		}
@@ -2290,6 +2313,8 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 					return;
 				uint32_t addr = allocate_dmabuffer192rts();
 				p = CONTAINING_RECORD(addr, voice192rts_t, u.buff);
+				ASSERT(p->tag2 == p);
+				ASSERT(p->tag3 == p);
 				n = 0;
 			}
 			else if (! isrts192())
@@ -2299,6 +2324,8 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 				return;
 			}
 
+			ASSERT(p->tag2 == p);
+			ASSERT(p->tag3 == p);
 			p->u.buff [n ++] = ch0;	// sample value
 			p->u.buff [n ++] = ch1;	// sample value
 
@@ -2323,6 +2350,8 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 	{
 		ASSERT(addr != 0);
 		uacin16_t * const p = CONTAINING_RECORD(addr, uacin16_t, u.buff);
+		ASSERT(p->tag2 == p);
+		ASSERT(p->tag3 == p);
 		buffers_tonulluacin(p);
 	}
 
@@ -2334,6 +2363,8 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 			PLIST_ENTRY t = RemoveTailList2(& uacinfree16);
 			uacin16_t * const p = CONTAINING_RECORD(t, uacin16_t, item);
 			UNLOCK(& locklist16);
+			ASSERT(p->tag2 == p);
+			ASSERT(p->tag3 == p);
 			return (uintptr_t) & p->u.buff;
 		}
 		else if (! IsListEmpty2(& uacinready16))
@@ -2352,6 +2383,8 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 			PLIST_ENTRY t = RemoveTailList2(& uacinfree16);
 			uacin16_t * const p = CONTAINING_RECORD(t, uacin16_t, item);
 			UNLOCK(& locklist16);
+			ASSERT(p->tag2 == p);
+			ASSERT(p->tag3 == p);
 			return (uintptr_t) & p->u.buff;
 		}
 		else
@@ -2375,6 +2408,8 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 			PLIST_ENTRY t = RemoveTailList2(& uacinready16);
 			uacin16_t * const p = CONTAINING_RECORD(t, uacin16_t, item);
 			UNLOCK(& locklist16);
+			ASSERT(p->tag2 == p);
+			ASSERT(p->tag3 == p);
 			return (uintptr_t) & p->u.buff;
 		}
 		UNLOCK(& locklist16);
@@ -2397,6 +2432,8 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 				return;
 			uintptr_t addr = allocate_dmabufferuacin16();
 			p = CONTAINING_RECORD(addr, uacin16_t, u.buff);
+			ASSERT(p->tag2 == p);
+			ASSERT(p->tag3 == p);
 			n = 0;
 		}
 		else if (! isaudio48())
@@ -2406,6 +2443,8 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 			return;
 		}
 
+		ASSERT(p->tag2 == p);
+		ASSERT(p->tag3 == p);
 		p->u.buff [n + 0] = ch0;		// sample value
 #if DMABUFSTEPUACIN16 > 1
 		p->u.buff [n + 1] = ch1;	// sample value
