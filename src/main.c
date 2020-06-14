@@ -7608,6 +7608,8 @@ static void processingonebuff(lmsnrstate_t * const nrp, speexel_t * p)
 	else
 	{
 		// Filtering only.
+		ASSERT(p != NULL);
+		ASSERT(nrp->wire1 != NULL);
 		arm_fir_f32(& nrp->fir_instance, p, nrp->wire1, FIRBUFSIZE);
 		nrp->outsp = nrp->wire1;
 	}
