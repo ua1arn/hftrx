@@ -57,6 +57,10 @@ InitializeListHead2(LIST_ENTRY2 * ListHead)
 __STATIC_INLINE void
 InsertHeadList2(PLIST_ENTRY2 ListHead, PLIST_ENTRY Entry)
 {
+	volatile int marker;
+	ASSERT((void *) & marker > (void *) ListHead);
+	ASSERT((void *) & marker > (void *) Entry);
+
 	(ListHead)->Count += 1;
 	InsertHeadList(& (ListHead)->item0, (Entry));
 }
@@ -64,13 +68,20 @@ InsertHeadList2(PLIST_ENTRY2 ListHead, PLIST_ENTRY Entry)
 __STATIC_INLINE PLIST_ENTRY
 RemoveTailList2(PLIST_ENTRY2 ListHead)
 {
+	volatile int marker;
+	ASSERT((void *) & marker > (void *) ListHead);
+
 	(ListHead)->Count -= 1;
 	const PLIST_ENTRY t = RemoveTailList(& (ListHead)->item0);	/* прямо вернуть значение RemoveTailList нельзя - Microsoft сделал не совсем правильный макрос. Но по другому и не плучилось бы в стандартном языке C. */
+	ASSERT((void *) & marker > (void *) t);
 	return t;
 }
 
 __STATIC_INLINE uint_fast8_t GetCountList2(const LIST_ENTRY2 * ListHead)
 {
+	volatile int marker;
+	ASSERT((void *) & marker > (void *) ListHead);
+
 	return (ListHead)->Count;
 }
 
