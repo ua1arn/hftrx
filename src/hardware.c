@@ -9458,12 +9458,26 @@ void PAbort_Handler(void)
 		;
 }
 
+	//	MRC p15, 0, <Rt>, c6, c0, 0 ; Read DFAR into Rt
+	//	MCR p15, 0, <Rt>, c6, c0, 0 ; Write Rt to DFAR
+
+/** \brief  Get DFAR
+    \return               Data Fault Address register value
+ */
+__STATIC_FORCEINLINE uint32_t __get_DFAR(void)
+{
+  uint32_t result;
+  __get_CP(15, 0, result, 6, 0, 0);
+  return result;
+}
+
 // Data Abort.
 void DAbort_Handler(void)
 {
+	volatile uint32_t marker = 0xDEADBEEF;
 	dbg_putchar('4');
 	debug_printf_P(PSTR("DAbort_Handler trapped.\n"));
-	debug_printf_P(PSTR("DFSR=%08lX\n"), __get_DFSR());
+	debug_printf_P(PSTR("DFSR=%08lX, DFAR=%08lX, pc=%08lX\n"), __get_DFSR(),__get_DFAR(), (& marker) [2]);
 	const int WnR = (__get_DFSR() & (1uL << 11)) != 0;
 	const int Status = (__get_DFSR() & (0x0FuL << 0));
 	/*
@@ -9502,6 +9516,11 @@ void DAbort_Handler(void)
 	case 0x16: debug_printf_P(PSTR("asynchronous external abort\n")); break;
 	case 0x02: debug_printf_P(PSTR("debug event.\n")); break;
 	default: debug_printf_P(PSTR("undefined Status=%02X\n"), Status); break;
+	}
+	unsigned i;
+	for (i = 0; i < 8; ++ i)
+	{
+		PRINTF("marker [%2d] = %08lX\n", i, (& marker) [i]);
 	}
 	for (;;)
 		;
