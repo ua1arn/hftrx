@@ -3506,11 +3506,6 @@ hardware_adc_startonescan(void)
 		uint_fast32_t freq
 		)
 	{
-#if CPUSTYLE_R7S721
-
-		return calcdivround_p0clock(760000uL * 2);	// на выходе формирователя делитель на 2 - требуемую частоту умножаем на два
-
-#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 		struct FREQ 
 		{
 			uint32_t dcdcdiv;
@@ -3518,24 +3513,32 @@ hardware_adc_startonescan(void)
 			uint32_t fmax;
 		};
 
+#if CPUSTYLE_R7S721
+
+		return calcdivround_p0clock(760000uL * 2);	// на выходе формирователя делитель на 2 - требуемую частоту умножаем на два
+
+#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
+
 	#if CPUSTYLE_STM32H7XX
 		// пока для проверки работоспособности. Таблицу надо расчитать.
 		static const FLASHMEM struct FREQ freqs [] = {
-		  { 63, 6900000uL,  UINT32_MAX },
+		  { 63, 26900000uL,  UINT32_MAX },
+		  { 63, 6900000uL,  26900000uL },
 		  { 62, 0,		6900000uL },	
 		};
 	#elif CPUSTYLE_STM32MP1
 		// пока для проверки работоспособности. Таблицу надо расчитать.
 		// сейчас делит 32 MHz
 		static const FLASHMEM struct FREQ freqs [] = {
-		  { 29, 6900000uL,  UINT32_MAX },
+		  { 29, 26900000uL,  UINT32_MAX },
+		  { 29, 6900000uL,  26900000uL },
 		  { 29, 0,		6900000uL },
 		};
 	#endif
 
 		uint_fast8_t high = (sizeof freqs / sizeof freqs [0]);
 		uint_fast8_t low = 0;
-		uint_fast8_t middle;	// результат поиска
+		uint_fast8_t middle = 0;	// результат поиска
 
 		// Двоичный поиск
 		while (low < high)
