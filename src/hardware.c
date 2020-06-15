@@ -10343,7 +10343,7 @@ void IRQ_Handler(void)
 {
 	//dbg_putchar('/');
 	const IRQn_ID_t irqn = IRQ_GetActiveIRQ();
-	irqlog_record(1, irqn);
+	//irqlog_record(1, irqn);
 	//static const char hex [16] = "0123456789ABCDEF";
 	//dbg_putchar(hex [(irqn >> 8) & 0x0F]);
 	//dbg_putchar(hex [(irqn >> 4) & 0x0F]);
@@ -10375,7 +10375,7 @@ void IRQ_Handler(void)
 
 #endif /* WITHNESTEDINTERRUPTS */
 	}
-	irqlog_record(2, irqn);
+	//irqlog_record(2, irqn);
 	//dbg_putchar('\\');
 	IRQ_EndOfInterrupt(irqn);
 }
