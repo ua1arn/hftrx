@@ -9438,16 +9438,14 @@ lowlevel_stm32l0xx_pll_clock(void)
 
 void Undef_Handler(void)
 {
-	dbg_putchar('1');
-	debug_printf_P(PSTR("UndefHandler trapped.\n"));
+	dbg_puts_impl_P(PSTR("UndefHandler trapped.\n"));
 	for (;;)
 		;
 }
 
 void SWI_Handler(void)
 {
-	dbg_putchar('2');
-	debug_printf_P(PSTR("SWIHandler trapped.\n"));
+	dbg_puts_impl_P(PSTR("SWIHandler trapped.\n"));
 	for (;;)
 		;
 }
@@ -9455,8 +9453,7 @@ void SWI_Handler(void)
 // Prefetch Abort
 void PAbort_Handler(void)
 {
-	dbg_putchar('3');
-	debug_printf_P(PSTR("PAbortHandler trapped.\n"));
+	dbg_puts_impl_P(PSTR("PAbortHandler trapped.\n"));
 	for (;;)
 		;
 }
@@ -9477,10 +9474,12 @@ __STATIC_FORCEINLINE uint32_t __get_DFAR(void)
 // Data Abort.
 void DAbort_Handler(void)
 {
-	volatile uint32_t marker = 0xDEADBEEF;
-	dbg_putchar('4');
-	debug_printf_P(PSTR("DAbort_Handler trapped.\n"));
+	const volatile uint32_t marker = 0xDEADBEEF;
+	dbg_puts_impl_P(PSTR("DAbort_Handler trapped.\n"));
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Warray-bounds"
 	debug_printf_P(PSTR("DFSR=%08lX, DFAR=%08lX, pc=%08lX\n"), __get_DFSR(),__get_DFAR(), (& marker) [2]);
+#pragma GCC diagnostic pop
 	const int WnR = (__get_DFSR() & (1uL << 11)) != 0;
 	const int Status = (__get_DFSR() & (0x0FuL << 0));
 	/*
@@ -9520,27 +9519,25 @@ void DAbort_Handler(void)
 	case 0x02: debug_printf_P(PSTR("debug event.\n")); break;
 	default: debug_printf_P(PSTR("undefined Status=%02X\n"), Status); break;
 	}
-	unsigned i;
-	for (i = 0; i < 8; ++ i)
-	{
-		PRINTF("marker [%2d] = %08lX\n", i, (& marker) [i]);
-	}
+//	unsigned i;
+//	for (i = 0; i < 8; ++ i)
+//	{
+//		PRINTF("marker [%2d] = %08lX\n", i, (& marker) [i]);
+//	}
 	for (;;)
 		;
 }
 
 void FIQ_Handler(void)
 {
-	dbg_putchar('5');
-	debug_printf_P(PSTR("FIQHandler trapped.\n"));
+	dbg_puts_impl_P(PSTR("FIQHandler trapped.\n"));
 	for (;;)
 		;
 }
 
 void Hyp_Handler(void)
 {
-	dbg_putchar('6');
-	debug_printf_P(PSTR("Hyp_Handler trapped.\n"));
+	dbg_puts_impl_P(PSTR("Hyp_Handler trapped.\n"));
 	for (;;)
 		;
 }
