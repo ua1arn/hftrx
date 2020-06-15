@@ -1201,8 +1201,8 @@ void savemoni16stereo(FLOAT_t ch0, FLOAT_t ch1)
 {
 	enum { L, R };
 	// если есть инициализированный канал для выдачи звука
-	static voice16_t * p = NULL;
-	static unsigned n;
+	static voice16_t * RAMDTCM p = NULL;
+	static RAMDTCM unsigned n;
 
 	if (p == NULL)
 	{
@@ -1957,7 +1957,7 @@ void RAMFUNC processing_dmabuffer32rx(uintptr_t addr)
 	dsp_extbuffer32rx((const int32_t *) addr);
 
 #if WITHUSBUAC
-	static unsigned rx32adc = 0;
+	static RAMDTCM unsigned rx32adc = 0;
 	rx32adc += CNT32RX; 
 	while (rx32adc >= CNT16)
 	{
@@ -2117,8 +2117,8 @@ void savesampleout16stereo_user(FLOAT_t ch0, FLOAT_t ch1)
 {
 	enum { L, R };
 	// если есть инициализированный канал для выдачи звука
-	static voice16_t * p = NULL;
-	static unsigned n;
+	static voice16_t * RAMDTCM p = NULL;
+	static RAMDTCM unsigned n;
 
 	if (p == NULL)
 	{
@@ -2149,8 +2149,8 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 {
 	enum { L, R };
 	// если есть инициализированный канал для выдачи звука
-	static voice16_t * p = NULL;
-	static unsigned n;
+	static voice16_t * RAMDTCM p = NULL;
+	static RAMDTCM unsigned n;
 
 	if (p == NULL)
 	{
