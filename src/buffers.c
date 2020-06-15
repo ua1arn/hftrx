@@ -2115,6 +2115,7 @@ void savesampleout32stereo(int_fast32_t ch0, int_fast32_t ch1)
 
 void savesampleout16stereo_user(FLOAT_t ch0, FLOAT_t ch1)
 {
+	enum { L, R };
 	// если есть инициализированный канал для выдачи звука
 	static voice16_t * p = NULL;
 	static unsigned n;
@@ -2130,9 +2131,9 @@ void savesampleout16stereo_user(FLOAT_t ch0, FLOAT_t ch1)
 	ASSERT(p->tag2 == p);
 	ASSERT(p->tag3 == p);
 
-	p->buff [n * DMABUFSTEP16 + 0] = AUDIO16TOAUB(ch0);		// sample value
+	p->buff [n * DMABUFSTEP16 + L] = AUDIO16TOAUB(ch0);		// sample value
 #if DMABUFSTEP16 > 1
-	p->buff [n * DMABUFSTEP16 + 1] = AUDIO16TOAUB(ch1);	// sample value
+	p->buff [n * DMABUFSTEP16 + R] = AUDIO16TOAUB(ch1);	// sample value
 #endif
 
 	if (++ n >= CNT16)
@@ -2146,6 +2147,7 @@ void savesampleout16stereo_user(FLOAT_t ch0, FLOAT_t ch1)
 
 void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 {
+	enum { L, R };
 	// если есть инициализированный канал для выдачи звука
 	static voice16_t * p = NULL;
 	static unsigned n;
@@ -2159,9 +2161,9 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 	ASSERT(p->tag2 == p);
 	ASSERT(p->tag3 == p);
 
-	p->buff [n * DMABUFSTEP16 + 0] = AUDIO16TOAUB(ch0);		// sample value
+	p->buff [n * DMABUFSTEP16 + L] = AUDIO16TOAUB(ch0);		// sample value
 #if DMABUFSTEP16 > 1
-	p->buff [n * DMABUFSTEP16 + 1] = AUDIO16TOAUB(ch1);	// sample value
+	p->buff [n * DMABUFSTEP16 + R] = AUDIO16TOAUB(ch1);	// sample value
 #endif
 
 	if (++ n >= CNT16)

@@ -5633,6 +5633,11 @@ void RAMFUNC dsp_extbuffer32rx(const int32_t * buff)
 				);	
 			save16demod(pair.IV, pair.QV);	/* к line output подключен модем - озвучку запрещаем */
 		}
+		else if (0)
+		{
+			// тест - обход приемной части.
+			save16demod(get_lout16(), get_rout16());
+		}
 		else
 		{
 			// buff data layout: I main/I sub/Q main/Q sub
