@@ -63,7 +63,7 @@ typedef struct {
 	uint8_t state;				// текущее состояние кнопки
 	uint8_t is_locked;			// признак фиксации кнопки
 	uint8_t is_trackable;		// получение относительных координат точки перемещения нажатия, нужно ли для кнопок?
-	uint8_t parent;				// индекс окна, в котором будет отображаться кнопка
+	window_id_t parent;			// индекс окна, в котором будет отображаться кнопка
 	uint8_t visible;			// рисовать ли кнопку на экране
 	uintptr_t payload;
 	char name [NAME_ARRAY_SIZE];
@@ -79,7 +79,7 @@ typedef enum {
 typedef struct {
 	uint16_t x;
 	uint16_t y;
-	uint8_t parent;
+	window_id_t parent;
 	uint8_t state;
 	uint8_t is_trackable;
 	uint8_t visible;
@@ -103,7 +103,7 @@ typedef struct {
 	uint16_t x2_p;
 	uint16_t y2_p;
 	orientation_t orientation;
-	uint8_t parent;
+	window_id_t parent;
 	char name [NAME_ARRAY_SIZE];
 	uint8_t state;
 	uint8_t visible;
@@ -122,8 +122,8 @@ typedef enum {
 } align_t;
 
 typedef struct {
-	uint8_t window_id;			// в окне будут отображаться элементы с соответствующим полем for_window
-	uint8_t parent_id;			// UINT8_MAX - нет parent window
+	window_id_t window_id;		// в окне будут отображаться элементы с соответствующим полем for_window
+	window_id_t parent_id;		// UINT8_MAX - нет parent window
 	align_t align_mode;			// вертикаль выравнивания окна
 	uint16_t x1;
 	uint16_t y1;
@@ -191,6 +191,8 @@ typedef struct {
 	LIST_ENTRY item;
 } touch_t;
 
+enum { win_gui_count = 2 };
+
 typedef struct {
 	uint16_t last_pressed_x; 	  // последняя точка касания экрана
 	uint16_t last_pressed_y;
@@ -204,6 +206,7 @@ typedef struct {
 	int16_t vector_move_x;	 	  // в т.ч. и за границами элемента, при state == PRESSED
 	int16_t vector_move_y;
 	uint8_t timer_1sec_updated;	  // для периодических обновлений состояния
+	window_id_t win[win_gui_count];	// на экране не более 2х окон, одно из которых - основное на весь экран
 } gui_t;
 
 #endif /* WITHTOUCHGUI */

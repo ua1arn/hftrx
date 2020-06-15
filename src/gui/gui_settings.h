@@ -19,7 +19,7 @@ enum {
 	window_title_height = 26,	// высота области заголовка окна
 };
 
-enum {
+typedef enum {
 	WINDOW_MAIN,					// постоянно отображаемые кнопки внизу экрана
 	WINDOW_MODES,					// переключение режимов работы, видов модуляции
 	WINDOW_BP,						// регулировка полосы пропускания фильтров выбранного режима
@@ -38,7 +38,7 @@ enum {
 	WINDOW_TX_VOX_SETT,				// настройки VOX
 	WINDOW_TX_POWER,				// выходная мощность
 	WINDOWS_COUNT
-};
+} window_id_t;
 
 
 #if defined (GUI_OLDBUTTONSTYLE)

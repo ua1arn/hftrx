@@ -42,7 +42,7 @@
 #if WITHTOUCHGUI
 
 static void update_touch_list(void);
-window_t * get_win(uint_fast8_t window_id);
+window_t * get_win(window_id_t window_id);
 
 static btn_bg_t btn_bg [] = {
 	{ 100, 44, },
@@ -52,8 +52,7 @@ static btn_bg_t btn_bg [] = {
 };
 enum { BG_COUNT = ARRAY_SIZE(btn_bg) };
 
-static gui_t gui = { 0, 0, KBD_CODE_MAX, TYPE_DUMMY, NULL, CANCELLED, 0, 0, 0, 0, 0, 1, };
-static LIST_ENTRY windows_list;
+static gui_t gui = { 0, 0, KBD_CODE_MAX, TYPE_DUMMY, NULL, CANCELLED, 0, 0, 0, 0, 0, 1, { WINDOW_MAIN, UINT8_MAX, }, };
 static touch_t touch_elements[TOUCH_ARRAY_SIZE];
 static uint_fast8_t touch_count = 0;
 
@@ -163,15 +162,8 @@ void footer_buttons_state (uint_fast8_t state, ...)
 		va_end(arg);
 	}
 	else
-	{ 	// Очистка оконного стека
-		PLIST_ENTRY savedFlink;
-		for (PLIST_ENTRY t = windows_list.Flink; t != & windows_list; t = savedFlink)
-		{
-			const window_t * const w = CONTAINING_RECORD(t, window_t, item);
-			savedFlink = t->Flink;
-			if (w != win)
-				RemoveEntryList(t);
-		}
+	{
+		gui.win[1] = UINT8_MAX;
 		touch_count = win->bh_count;
 	}
 
@@ -191,6 +183,26 @@ void footer_buttons_state (uint_fast8_t state, ...)
 	}
 }
 
+static void free_win_ptr (window_t * win)
+{
+	if(win->bh_count)
+	{
+		free(win->bh_ptr);
+		win->bh_count = 0;
+	}
+	if(win->lh_count)
+	{
+		free(win->lh_ptr);
+		win->lh_count = 0;
+	}
+	if(win->sh_count)
+	{
+		free(win->sh_ptr);
+		win->sh_count = 0;
+	}
+	PRINTF("free: %d %s\n", win->window_id, win->name);
+}
+
 /* Установка признака видимости окна */
 void set_window(window_t * win, uint_fast8_t value)
 {
@@ -200,60 +212,23 @@ void set_window(window_t * win, uint_fast8_t value)
 	if (value)
 	{
 		win->first_call = 1;
-
 		if (win->parent_id != UINT8_MAX)	// Есть есть parent window, закрыть его и оставить child window
 		{
-			PLIST_ENTRY savedFlink;
-			for (PLIST_ENTRY t = windows_list.Flink; t != & windows_list; t = savedFlink)
-			{
-				const window_t * const w = CONTAINING_RECORD(t, window_t, item);
-				savedFlink = t->Flink;
-				if (w->window_id == win->parent_id)
-				{
-					RemoveEntryList(t);
-					break;
-				}
-			}
+			window_t * pwin = get_win(win->parent_id);
+			free_win_ptr(pwin);
+			pwin->first_call = 1;
 		}
-		InsertHeadList(& windows_list, & win->item);
+		gui.win[1] = win->window_id;
 	}
 	else
 	{
-		if(win->bh_count)
-		{
-			free(win->bh_ptr);
-			win->bh_count = 0;
-		}
-		if(win->lh_count)
-		{
-			free(win->lh_ptr);
-			win->lh_count = 0;
-		}
-		if(win->sh_count)
-		{
-			free(win->sh_ptr);
-			win->sh_count = 0;
-		}
-
-		PLIST_ENTRY savedFlink;
-		for (PLIST_ENTRY t = windows_list.Flink; t != & windows_list; t = savedFlink)
-		{
-			const window_t * const w = CONTAINING_RECORD(t, window_t, item);
-			savedFlink = t->Flink;
-			if (w == win)
-			{
-				RemoveEntryList(t);
-				break;
-			}
-		}
+		free_win_ptr(win);
+		gui.win[1] = UINT8_MAX;
 
 		if (win->parent_id != UINT8_MAX)	// При закрытии child window открыть parent window, если есть
-		{
-			window_t * r = get_win(win->parent_id);
-			InsertHeadList(& windows_list, & r->item);
-		}
+			gui.win[1] = win->parent_id;
+
 	}
-	(void) p;
 }
 
 /* Расчет экранных координат окна */
@@ -620,8 +595,6 @@ void gui_initialize (void)
 	uint_fast8_t i = 0;
 	window_t * win = get_win(WINDOW_MAIN);
 
-	InitializeListHead(& windows_list);
-
 	set_window(win, VISIBLE);
 
 	do {
@@ -743,11 +716,6 @@ static void process_gui(void)
 		gui.is_after_touch = 0;
 	}
 
-	PLIST_ENTRY t = windows_list.Flink;
-	const window_t * const win1 = CONTAINING_RECORD(t, window_t, item);
-	t = windows_list.Blink;
-	const window_t * const win2 = CONTAINING_RECORD(t, window_t, item);
-
 	if (gui.state == CANCELLED && gui.is_touching_screen && ! gui.is_after_touch)
 	{
 		for (uint_fast8_t i = 0; i < touch_count; i++)
@@ -758,7 +726,7 @@ static void process_gui(void)
 			uint_fast16_t x2 = p->x2 + w->x1, y2 = p->y2 + w->y1;
 
 			if (x1 < gui.last_pressed_x && x2 > gui.last_pressed_x && y1 < gui.last_pressed_y && y2 > gui.last_pressed_y
-					&& p->state != DISABLED && p->visible == VISIBLE && (p->win == win1 || p->win == win2))
+					&& p->state != DISABLED && p->visible == VISIBLE)
 			{
 				gui.state = PRESSED;
 				break;
@@ -834,9 +802,12 @@ void gui_WM_walktrough(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
 
 	process_gui();
 
-	for (PLIST_ENTRY t = windows_list.Blink; t != & windows_list; t = t->Blink)
+	for(uint_fast8_t i = 0; i < win_gui_count; i++)
 	{
-		const window_t * const win = CONTAINING_RECORD(t, window_t, item);
+		if (gui.win[i] == UINT8_MAX)
+			break;
+
+		const window_t * const win = get_win(gui.win[i]);
 		uint_fast8_t f = win->first_call;
 
 		if (win->state == VISIBLE)
