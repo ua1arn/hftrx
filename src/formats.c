@@ -60,13 +60,13 @@ static uint_fast8_t local_isdigit(char c)
 	return c >= '0' && c <= '9';
 }
 
-static uint_fast8_t
+static int
 local_format(void * param, int (* putsub)(void *, int), const FLASHMEM char * pfmt, va_list args)
 {
 	enum { TMP_S_SIZE = 14 };
-	int_fast8_t /* int	*/ rj, altern;
-	char	c, signc, fillc;
-	uint_fast8_t /* int */	maxwidth, width, i;
+	int	rj, altern;
+	char c, signc, fillc;
+	int maxwidth, width, i;
 	union
 	{
 #ifdef	__NOLONG__
@@ -77,7 +77,7 @@ local_format(void * param, int (* putsub)(void *, int), const FLASHMEM char * pf
 #endif
 		void * pval;
 		/* double dval;	*/
-	}		u;
+	} u;
 	char	 	* cp;
 	char		s [TMP_S_SIZE + 1];
 	int		len;
