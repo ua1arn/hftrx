@@ -377,9 +377,11 @@ static RAMDTCM LIST_ENTRY2 modemsrx8;	// Буферы с принятымти ч
 
 typedef struct message
 {
+	void * tag2;
 	LIST_ENTRY item;
 	uint8_t type;
 	uint8_t data [MSGBUFFERSIZE8];
+	void * tag3;
 } message_t;
 
 static RAMDTCM LIST_ENTRY msgsfree8;		// Свободные буферы
@@ -836,6 +838,8 @@ void buffers_initialize(void)
 	for (i = 0; i < (sizeof messagesarray8 / sizeof messagesarray8 [0]); ++ i)
 	{
 		message_t * const p = & messagesarray8 [i];
+		p->tag2 = p;
+		p->tag3 = p;
 		//InitializeListHead2(& p->item);
 		InsertHeadList(& msgsfree8, & p->item);
 	}
@@ -871,6 +875,8 @@ void releasemsgbuffer_user(uint8_t * dest)
 {
 	ASSERT_IRQL_USER();
 	message_t * const p = CONTAINING_RECORD(dest, message_t, data);
+	ASSERT(p->tag2 == p);
+	ASSERT(p->tag3 == p);
 	system_disableIRQ();
 	LOCK(& locklist8);
 	InsertHeadList(& msgsfree8, & p->item);
@@ -888,6 +894,8 @@ size_t takemsgbufferfree_low(uint8_t * * dest)
 		PLIST_ENTRY t = RemoveTailList(& msgsfree8);
 		UNLOCK(& locklist8);
 		message_t * const p = CONTAINING_RECORD(t, message_t, item);
+		ASSERT(p->tag2 == p);
+		ASSERT(p->tag3 == p);
 		* dest = p->data;
 		return (MSGBUFFERSIZE8 * sizeof p->data [0]);
 	}
@@ -901,6 +909,8 @@ void placesemsgbuffer_low(uint_fast8_t type, uint8_t * dest)
 	ASSERT_IRQL_SYSTEM();
 	ASSERT(type != MSGT_EMPTY);
 	message_t * p = CONTAINING_RECORD(dest, message_t, data);
+	ASSERT(p->tag2 == p);
+	ASSERT(p->tag3 == p);
 	p->type = type;
 	LOCK(& locklist8);
 	InsertHeadList(& msgsready8, & p->item);
@@ -1101,7 +1111,6 @@ RAMFUNC uint_fast8_t getsampmlemike(FLOAT32P_t * v)
 	enum { L, R };
 	static voice16_t * RAMDTCM p = NULL;
 	static RAMDTCM unsigned pos = 0;	// позиция по выходному количеству
-	const unsigned CNT = (DMABUFFSIZE16 / DMABUFSTEP16);	// фиксированное число сэмплов во входном буфере
 
 	LOCK(& locklist16);
 	if (p == NULL)
@@ -1133,7 +1142,7 @@ RAMFUNC uint_fast8_t getsampmlemike(FLOAT32P_t * v)
 	v->ivqv [L] = AUBTOAUDIO16(p->buff [pos * DMABUFSTEP16 + L]);	// микрофон или левый канал
 	v->ivqv [R] = AUBTOAUDIO16(p->buff [pos * DMABUFSTEP16 + R]);	// правый канал
 
-	if (++ pos >= CNT)
+	if (++ pos >= CNT16)
 	{
 		buffers_aftermodulators(p);
 		p = NULL;
@@ -1147,7 +1156,6 @@ RAMFUNC uint_fast8_t getsampmlemoni(FLOAT32P_t * v)
 	enum { L, R };
 	static voice16_t * RAMDTCM p = NULL;
 	static RAMDTCM unsigned pos = 0;	// позиция по выходному количеству
-	const unsigned CNT = (DMABUFFSIZE16 / DMABUFSTEP16);	// фиксированное число сэмплов во входном буфере
 
 	LOCK(& locklist16);
 	if (p == NULL)
@@ -1180,7 +1188,7 @@ RAMFUNC uint_fast8_t getsampmlemoni(FLOAT32P_t * v)
 	v->ivqv [L] = AUBTOAUDIO16(p->buff [pos * DMABUFSTEP16 + L]);	// микрофон или левый канал
 	v->ivqv [R] = AUBTOAUDIO16(p->buff [pos * DMABUFSTEP16 + R]);	// правый канал
 
-	if (++ pos >= CNT)
+	if (++ pos >= CNT16)
 	{
 		buffers_tonull16(p);
 		p = NULL;
@@ -1191,6 +1199,7 @@ RAMFUNC uint_fast8_t getsampmlemoni(FLOAT32P_t * v)
 // звук для самоконтроля
 void savemoni16stereo(FLOAT_t ch0, FLOAT_t ch1)
 {
+	enum { L, R };
 	// если есть инициализированный канал для выдачи звука
 	static voice16_t * p = NULL;
 	static unsigned n;
@@ -1207,13 +1216,12 @@ void savemoni16stereo(FLOAT_t ch0, FLOAT_t ch1)
 	ASSERT(p->tag2 == p);
 	ASSERT(p->tag3 == p);
 
-	p->buff [n + 0] = AUDIO16TOAUB(ch0);		// sample value
+	p->buff [n * DMABUFSTEP16 + L] = AUDIO16TOAUB(ch0);		// sample value
 #if DMABUFSTEP16 > 1
-	p->buff [n + 1] = AUDIO16TOAUB(ch1);	// sample value
+	p->buff [n * DMABUFSTEP16 + R] = AUDIO16TOAUB(ch1);	// sample value
 #endif
-	n += DMABUFSTEP16;
 
-	if (n >= DMABUFFSIZE16)
+	if (++ n >= CNT16)
 	{
 		buffers_savefrommoni(p);
 		p = NULL;
@@ -2119,14 +2127,15 @@ void savesampleout16stereo_user(FLOAT_t ch0, FLOAT_t ch1)
 		p = CONTAINING_RECORD(addr, voice16_t, buff);
 		n = 0;
 	}
+	ASSERT(p->tag2 == p);
+	ASSERT(p->tag3 == p);
 
-	p->buff [n + 0] = AUDIO16TOAUB(ch0);		// sample value
+	p->buff [n * DMABUFSTEP16 + 0] = AUDIO16TOAUB(ch0);		// sample value
 #if DMABUFSTEP16 > 1
-	p->buff [n + 1] = AUDIO16TOAUB(ch1);	// sample value
+	p->buff [n * DMABUFSTEP16 + 1] = AUDIO16TOAUB(ch1);	// sample value
 #endif
-	n += DMABUFSTEP16;
 
-	if (n >= DMABUFFSIZE16)
+	if (++ n >= CNT16)
 	{
 		global_disableIRQ();
 		buffers_savefromrxout(p);
@@ -2147,14 +2156,15 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 		p = CONTAINING_RECORD(addr, voice16_t, buff);
 		n = 0;
 	}
+	ASSERT(p->tag2 == p);
+	ASSERT(p->tag3 == p);
 
-	p->buff [n + 0] = AUDIO16TOAUB(ch0);		// sample value
+	p->buff [n * DMABUFSTEP16 + 0] = AUDIO16TOAUB(ch0);		// sample value
 #if DMABUFSTEP16 > 1
-	p->buff [n + 1] = AUDIO16TOAUB(ch1);	// sample value
+	p->buff [n * DMABUFSTEP16 + 1] = AUDIO16TOAUB(ch1);	// sample value
 #endif
-	n += DMABUFSTEP16;
 
-	if (n >= DMABUFFSIZE16)
+	if (++ n >= CNT16)
 	{
 		buffers_savefromrxout(p);
 		p = NULL;
