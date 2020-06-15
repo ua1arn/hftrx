@@ -264,7 +264,7 @@
 		//#define WITHBBOXSUBMODE	SUBMODE_CW	// единственный режим работы
 		//#define WITHBBOXTX		1		// автоматический переход на передачу
 		//#define WITHBBOXMIKESRC	BOARD_TXAUDIO_2TONE
-	#elif 1
+	#elif 0
 		#define WITHBBOX	1	// Black Box mode - устройство без органов управления
 		//#define WITHBBOXFREQ	136000L		// частота после включения
 		//#define WITHBBOXSUBMODE	SUBMODE_USB	// единственный режим работы
