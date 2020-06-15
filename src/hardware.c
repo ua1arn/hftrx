@@ -11373,7 +11373,7 @@ M_SIZE_IO_2     EQU     2550            ; [Area11] I/O area 2
 
 static uint32_t
 FLASHMEMINITFUNC
-ttb_accessbits(uintptr_t a)
+ttb_accessbits(uintptr_t a, int ro)
 {
 	const uint32_t addrbase = a & 0xFFF00000uL;
 
@@ -11422,16 +11422,24 @@ ttb_accessbits(uintptr_t a)
 }
 
 static void FLASHMEMINITFUNC
-ttb_initialize(uint32_t (* accessbits)(uintptr_t a))
+ttb_initialize(uint32_t (* accessbits)(uintptr_t a, int ro), uintptr_t textstart, uint_fast32_t textsize)
 {
 	extern volatile uint32_t __TTB_BASE;		// получено из скрипта линкера
 	volatile uint32_t * const tlbbase = & __TTB_BASE;
 	unsigned i;
+	const uint_fast32_t pagesize = (1uL << 20);
 
 	for (i = 0; i < 4096; ++ i)
 	{
 		const uintptr_t address = (uint32_t) i << 20;
-		tlbbase [i] =  accessbits(address);
+		tlbbase [i] =  accessbits(address, 0);
+	}
+	/* Установить R/O атрибуты для указанной области */
+	while (textsize >= pagesize)
+	{
+		tlbbase [i] =  accessbits(textstart, 1);
+		textsize -= pagesize;
+		textstart += pagesize;
 	}
 
 #if 0
@@ -11909,7 +11917,7 @@ sysinit_mmu_initialize(void)
 #endif /* WITHDEBUG */
 
 	// MMU inuitialize
-	ttb_initialize(ttb_accessbits);
+	ttb_initialize(ttb_accessbits, 0, 0);
 
 #endif /* (__CORTEX_A != 0) */
 
