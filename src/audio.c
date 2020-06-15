@@ -882,6 +882,7 @@ static void CMEMSGF(int erno, FLOAT_t * datap)
 	* datap = 0;
 }
 
+#if WITHIF4DSP
 
 // tnx UA3REO
 FLOAT_t local_log10(FLOAT_t x)
@@ -1115,7 +1116,7 @@ FLOAT_t local_exp(FLOAT_t x)
 }
 
 #endif
-
+#endif /* WITHIF4DSP */
 
 //////////////////////////////////////////
 
@@ -5914,7 +5915,7 @@ int_fast32_t dsp_get_samplerateuacin_rts(void)		// RTS samplerate
 #endif
 }
 
-
+#if WITHIF4DSP
 // Передача параметров в DSP модуль
 // Обновление параметров приёмника (кроме фильтров).
 static void 
@@ -6151,6 +6152,20 @@ prog_dsplreg(void)
 #endif /* (CTLSTYLE_RAVENDSP_V1 || CTLSTYLE_DSPV1A) */
 
 }
+
+#else
+
+void dsp_initialize(void)
+{
+	// заглушка
+}
+
+void prog_dsplreg(void)
+{
+	// заглушка
+}
+
+#endif /* WITHIF4DSP */
 
 void 
 prog_fltlreg(void)

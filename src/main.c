@@ -7649,6 +7649,16 @@ audioproc_spool_user(void)
 
 #else /* WITHIF4DSP */
 
+void audioproc_spool_user(void)
+{
+	// заглушка
+}
+
+void InitNoiseReduction(void)
+{
+	// заглушка
+}
+
 /* поддержка компиляции без Link Time Optimization */
 void *speex_alloc (int size)
 {
