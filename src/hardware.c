@@ -11317,7 +11317,8 @@ M_SIZE_IO_2     EQU     2550            ; [Area11] I/O area 2
 // For TRE - see
 // B4.1.127 PRRR, Primary Region Remap Register, VMSA
 
-#define APval 		0x03	/* Configure for full read/write access in all modes */
+#define APRWval 		0x03	/* Full access */
+#define APROval 		0x06	/* All write accesses generate Permission faults */
 #define DOMAINval	0x0F
 #define SECTIONval	0x02
 
@@ -11361,19 +11362,19 @@ M_SIZE_IO_2     EQU     2550            ; [Area11] I/O area 2
 //; setting for Strongly-ordered memory
 //#define	TTB_PARA_STRGLY             0b_0000_0000_1101_1110_0010
 // not used
-#define	TTB_PARA_STRGLY TTB_PARA(TEXval_STGORD, Bval_STGORD, Cval_STGORD, DOMAINval, APval, 1)
+#define	TTB_PARA_STRGLY TTB_PARA(TEXval_STGORD, Bval_STGORD, Cval_STGORD, DOMAINval, APRWval, 1)
 
 
 //; setting for Outer and inner not cache normal memory
 //#define	TTB_PARA_NORMAL_NOT_CACHE   0b_0000_0001_1101_1110_0010
 // not used
-#define	TTB_PARA_NORMAL_NOT_CACHE TTB_PARA(TEXval_NOCACHE, Bval_NOCACHE, Cval_NOCACHE, DOMAINval, APval, 0)
+#define	TTB_PARA_NORMAL_NOT_CACHE TTB_PARA(TEXval_NOCACHE, Bval_NOCACHE, Cval_NOCACHE, DOMAINval, APRWval, 0)
 
 //; setting for Outer and inner write back, write allocate normal memory (Cacheable)
 //#define	TTB_PARA_NORMAL_CACHE       0b_0000_0001_1101_1110_1110
-#define	TTB_PARA_NORMAL_CACHE TTB_PARA(TEXval_WBCACHE, Bval_WBCACHE, Cval_WBCACHE, DOMAINval, APval, 0)
+#define	TTB_PARA_NORMAL_CACHE(ro) TTB_PARA(TEXval_WBCACHE, Bval_WBCACHE, Cval_WBCACHE, DOMAINval, (ro) ? APROval : APRWval, 0)
 
-#define	TTB_PARA_NORMAL_DEVICE TTB_PARA(TEXval_DEVICE, Bval_DEVICE, Cval_DEVICE, DOMAINval, APval, 1)
+#define	TTB_PARA_NORMAL_DEVICE TTB_PARA(TEXval_DEVICE, Bval_DEVICE, Cval_DEVICE, DOMAINval, APRWval, 1)
 
 #define	TTB_PARA_NO_ACCESS 0
 
@@ -11390,11 +11391,11 @@ ttb_accessbits(uintptr_t a, int ro)
 //		return addrbase | TTB_PARA_NO_ACCESS;		// NULL pointers access trap
 
 	if (a >= 0x18000000uL && a < 0x20000000uL)			//
-		return addrbase | TTB_PARA_NORMAL_CACHE;
+		return addrbase | TTB_PARA_NORMAL_CACHE(ro);
 	if (a >= 0x00000000uL && a < 0x00A00000uL)			// up to 10 MB
-		return addrbase | TTB_PARA_NORMAL_CACHE;
+		return addrbase | TTB_PARA_NORMAL_CACHE(ro);
 	if (a >= 0x20000000uL && a < 0x20A00000uL)			// up to 10 MB
-		return addrbase | TTB_PARA_NORMAL_CACHE;
+		return addrbase | TTB_PARA_NORMAL_CACHE(ro);
 
 	return addrbase | TTB_PARA_NORMAL_DEVICE; //TTB_PARA_STRGLY;
 
@@ -11404,7 +11405,7 @@ ttb_accessbits(uintptr_t a, int ro)
 		return addrbase | TTB_PARA_NO_ACCESS;			// NULL pointers access trap
 
 	if (a >= 0x20000000uL && a < 0x30000000uL)			// SYSRAM
-		return addrbase | TTB_PARA_NORMAL_CACHE;
+		return addrbase | TTB_PARA_NORMAL_CACHE(ro);
 
 	if (a >= 0x40000000uL && a < 0x60000000uL)			//  peripherials 1, peripherials 2
 		return addrbase | TTB_PARA_NORMAL_DEVICE;
@@ -11414,12 +11415,12 @@ ttb_accessbits(uintptr_t a, int ro)
 		return addrbase | TTB_PARA_NORMAL_DEVICE;
 
 	if (a >= 0x70000000uL && a < 0xA0000000uL)			//  QUADSPI, FMC NAND, ...
-		return addrbase | TTB_PARA_NORMAL_CACHE;
+		return addrbase | TTB_PARA_NORMAL_CACHE(ro);
 	if (a >= 0x60000000uL && a < 0x70000000uL)			//  FMC NOR
-		return addrbase | TTB_PARA_NORMAL_CACHE;
+		return addrbase | TTB_PARA_NORMAL_CACHE(ro);
 
 	if (a >= 0xC0000000uL && a < 0xE0000000uL)			// DDR memory
-		return addrbase | TTB_PARA_NORMAL_CACHE;
+		return addrbase | TTB_PARA_NORMAL_CACHE(ro);
 
 	return addrbase | TTB_PARA_NO_ACCESS;
 
