@@ -221,7 +221,7 @@
 	//#define WITHI2SHWRXSLAVE	1		// Приёмный канал I2S (микрофон) используюся в SLAVE MODE
 	//#define WITHI2SHWTXSLAVE	1		// Передающий канал I2S (наушники) используюся в SLAVE MODE
 	#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
-	#define WITHINTEGRATEDDSP		1	/* в программу включена инициализация и запуск DSP части. */
+	//#define WITHINTEGRATEDDSP		1	/* в программу включена инициализация и запуск DSP части. */
 	#define WITHIFDACWIDTH	16		// 1 бит знак и 31 бит значащих
 	#define WITHIFADCWIDTH	16		// 1 бит знак и 31 бит значащих
 	#define WITHAFADCWIDTH	16		// 1 бит знак и 15 бит значащих
@@ -231,7 +231,7 @@
 	//#define WITHLOOPBACKTEST	1	/* прослушивание микрофонного входа, генераторов */
 	//#define WITHDSPEXTDDC 1			/* Квадратуры получаются внешней аппаратурой */
 	//#define WITHDSPEXTFIR 1			/* Фильтрация квадратур осуществляется внешней аппаратурой */
-	#define WITHDSPLOCALFIR 1		/* test: Фильтрация квадратур осуществляется процессором */
+	//#define WITHDSPLOCALFIR 1		/* test: Фильтрация квадратур осуществляется процессором */
 	//#define WITHIF4DSP	1	// "Дятел"
 	//#define WITHUSESDCARD		1	// Включение поддержки SD CARD
 	//#define WITHUSEAUDIOREC		1	// Запись звука на SD CARD
@@ -304,22 +304,22 @@
 	//#define WITHNMEA		1	/* используется NMEA parser */
 	//#define WITHBEACON	1	/* Используется режим маяка */
 	//#define WITHVOX			1	/* используется VOX */
-	#define WITHSHOWSWRPWR 1	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
+	//#define WITHSHOWSWRPWR 1	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
 	//#define WITHSWRMTR	1		/* Измеритель КСВ */
 	//#define WITHPWRMTR	1	/* Индикатор выходной мощности или */
 	//#define WITHPWRLIN	1	/* Индикатор выходной мощности показывает напряжение а не мощность */
-	#define WITHBARS		1	/* отображение S-метра и SWR-метра */
+	//#define WITHBARS		1	/* отображение S-метра и SWR-метра */
 	//#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
 	//#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
 	//#define WITHSWLMODE	1	/* поддержка запоминания множества частот в swl-mode */
-	#define WITHVIBROPLEX	1	/* возможность эмуляции передачи виброплексом */
+	//#define WITHVIBROPLEX	1	/* возможность эмуляции передачи виброплексом */
 	#define WITHSPKMUTE		1	/* управление выключением динамика */
 	// Есть ли регулировка параметров потенциометрами
 	////#define WITHPOTWPM		1	/* используется регулировка скорости передачи в телеграфе потенциометром */
 	//#define WITHPOTGAIN		1	/* регуляторы усиления на потенциометрах */
 	//#define WITHPOTPOWER	1	/* регулятор мощности на потенциометре */
 
-	#define WITHMENU 	1	/* функциональность меню может быть отключена - если настраивать нечего */
+	//#define WITHMENU 	1	/* функциональность меню может быть отключена - если настраивать нечего */
 
 	//#define WITHONLYBANDS 1		/* Перестройка может быть ограничена любительскими диапазонами */
 	//#define WITHBCBANDS	1		/* в таблице диапазонов присутствуют вещательные диапазоны */

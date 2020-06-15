@@ -2195,6 +2195,15 @@ static void fir_design_integers_passtrough(int_fast32_t *lCoeff, int iCoefNum, F
 
 #endif /* WITHDSPEXTFIR */
 
+#if ! defined WITHDSPEXTFIR && ! defined WITHDSPLOCALFIR
+
+static void fir_design_integers_passtrough(int_fast32_t *lCoeff, int iCoefNum, FLOAT_t dGain)
+{
+	// заглушка
+}
+
+#endif /* ! defined WITHDSPEXTFIR && ! defined WITHDSPLOCALFIR */
+
 #if 0
 // debug function
 static void writecoefs(const int_fast32_t * lCoeff, int iCoefNum)
@@ -2695,7 +2704,7 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 			fir_design_passtrough(FIRCoef_rx_SSB_IQ [spf], Ntap_rx_SSB_IQ, rxfiltergain);
 		else if (isdspmodetx(dspmode))
 			fir_design_passtrough(FIRCoef_tx_SSB_IQ [spf], Ntap_tx_SSB_IQ, txfiltergain);
-	#else /* WITHDSPLOCALFIR */
+	#elif WITHDSPEXTFIR /* WITHDSPLOCALFIR */
 		(void) dspmode;
 		fir_design_integers_passtrough(FIRCoef_trxi_IQ, Ntap_trxi_IQ, 1);
 	#endif /* WITHDSPLOCALFIR */
@@ -2724,7 +2733,7 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 		else if (isdspmodetx(dspmode))
 			fir_design_lowpass_freq_scaled(FIRCoef_tx_SSB_IQ [spf], FIRCwnd_tx_SSB_IQ, Ntap_tx_SSB_IQ, cutfreq, txfiltergain);	// с управлением крутизной скатов и нормированием усиления, с наложением окна
 
-	#else /* WITHDSPLOCALFIR */
+	#elif WITHDSPEXTFIR /* WITHDSPLOCALFIR */
 
 		(void) dspmode;
 		#if WITHDOUBLEFIRCOEFS && (__ARM_FP & 0x08)
@@ -3869,6 +3878,7 @@ static RAMFUNC void processafadcsample(
 	FLOAT_t ctcss	// субтон, audio sample in range [- txlevelfence.. + txlevelfence]
 	)
 {
+#if WITHTX
 #if WITHDSPLOCALFIR == 0
 	#error WITHDSPLOCALFIR should be defined
 #endif /* WITHDSPLOCALFIR == 0 */
@@ -3892,6 +3902,7 @@ static RAMFUNC void processafadcsample(
 		filter_fir_tx_MIKE(vi, 1);		// Фильтр не применяется, только выполняется сдвиг в линии задержки
 		savesampleout32stereo(0, 0);
 	}
+#endif /* WITHTX */
 }
 
 #endif /* WITHDSPEXTDDC */
@@ -4403,7 +4414,7 @@ static RAMFUNC FLOAT_t processifadcsampleIQ(
 	}
 }
 
-#else /* WITHDSPEXTDDC */
+//#else /* WITHDSPEXTDDC */
 
 // ПРИЁМ
 // Обрабатывается 24-х битное число.
