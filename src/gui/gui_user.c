@@ -79,7 +79,7 @@ static uint_fast8_t menu_label_touched = 0;
 static uint_fast8_t menu_level;
 
 /* Возврат ссылки на окно */
-window_t * get_win(uint_fast8_t window_id)
+window_t * get_win(window_id_t window_id)
 {
 	ASSERT(window_id < WINDOWS_COUNT);
 	return & windows[window_id];
@@ -277,6 +277,7 @@ static void gui_main_process(void)
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
 		win->bh_ptr = malloc(buttons_size);
+		ASSERT(win->bh_ptr != NULL);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
 		for (uint_fast8_t id = 1; id < win->bh_count; id ++)
@@ -469,6 +470,7 @@ static void window_mode_process(void)
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
 		win->bh_ptr = malloc(buttons_size);
+		ASSERT(win->bh_ptr != NULL);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
 		x = col1_int;
@@ -554,6 +556,7 @@ static void window_bp_process(void)
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
 		win->bh_ptr = malloc(buttons_size);
+		ASSERT(win->bh_ptr != NULL);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
 		label_t labels[] = {
@@ -565,6 +568,7 @@ static void window_bp_process(void)
 		win->lh_count = ARRAY_SIZE(labels);
 		uint_fast16_t labels_size = sizeof(labels);
 		win->lh_ptr = malloc(labels_size);
+		ASSERT(win->lh_ptr != NULL);
 		memcpy(win->lh_ptr, labels, labels_size);
 
 		button_high = find_gui_element_ref(TYPE_BUTTON, win, "btnAF_2");
@@ -696,6 +700,7 @@ static void window_agc_process(void)
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
 		win->bh_ptr = malloc(buttons_size);
+		ASSERT(win->bh_ptr != NULL);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
 		x = col1_int;
@@ -765,6 +770,7 @@ static void window_freq_process (void)
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
 		win->bh_ptr = malloc(buttons_size);
+		ASSERT(win->bh_ptr != NULL);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
 		label_t labels[] = {
@@ -775,6 +781,7 @@ static void window_freq_process (void)
 		win->lh_count = ARRAY_SIZE(labels);
 		uint_fast16_t labels_size = sizeof(labels);
 		win->lh_ptr = malloc(labels_size);
+		ASSERT(win->lh_ptr != NULL);
 		memcpy(win->lh_ptr, labels, labels_size);
 
 		x = col1_int;
@@ -927,6 +934,7 @@ static void window_swrscan_process(void)
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
 		win->bh_ptr = malloc(buttons_size);
+		ASSERT(win->bh_ptr != NULL);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
 		label_t labels[] = {
@@ -939,6 +947,7 @@ static void window_swrscan_process(void)
 		win->lh_count = ARRAY_SIZE(labels);
 		uint_fast16_t labels_size = sizeof(labels);
 		win->lh_ptr = malloc(labels_size);
+		ASSERT(win->lh_ptr != NULL);
 		memcpy(win->lh_ptr, labels, labels_size);
 
 		mid_w = col1_int + gr_w / 2;
@@ -1129,6 +1138,7 @@ static void window_tx_process(void)
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
 		win->bh_ptr = malloc(buttons_size);
+		ASSERT(win->bh_ptr != NULL);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
 		x = col1_int;
@@ -1209,6 +1219,7 @@ static void window_tx_vox_process(void)
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
 		win->bh_ptr = malloc(buttons_size);
+		ASSERT(win->bh_ptr != NULL);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
 		slider_t sliders [] = {
@@ -1220,6 +1231,7 @@ static void window_tx_vox_process(void)
 		win->sh_count = ARRAY_SIZE(sliders);
 		uint_fast16_t sliders_size = sizeof(sliders);
 		win->sh_ptr = malloc(sliders_size);
+		ASSERT(win->sh_ptr != NULL);
 		memcpy(win->sh_ptr, sliders, sliders_size);
 
 		label_t labels[] = {
@@ -1238,6 +1250,7 @@ static void window_tx_vox_process(void)
 		win->lh_count = ARRAY_SIZE(labels);
 		uint_fast16_t labels_size = sizeof(labels);
 		win->lh_ptr = malloc(labels_size);
+		ASSERT(win->lh_ptr != NULL);
 		memcpy(win->lh_ptr, labels, labels_size);
 
 		hamradio_get_vox_delay_limits(& delay_min, & delay_max);
@@ -1405,6 +1418,7 @@ static void window_tx_power_process(void)
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
 		win->bh_ptr = malloc(buttons_size);
+		ASSERT(win->bh_ptr != NULL);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
 		slider_t sliders [] = {
@@ -1415,6 +1429,7 @@ static void window_tx_power_process(void)
 		win->sh_count = ARRAY_SIZE(sliders);
 		uint_fast16_t sliders_size = sizeof(sliders);
 		win->sh_ptr = malloc(sliders_size);
+		ASSERT(win->sh_ptr != NULL);
 		memcpy(win->sh_ptr, sliders, sliders_size);
 
 		label_t labels[] = {
@@ -1426,6 +1441,7 @@ static void window_tx_power_process(void)
 		win->lh_count = ARRAY_SIZE(labels);
 		uint_fast16_t labels_size = sizeof(labels);
 		win->lh_ptr = malloc(labels_size);
+		ASSERT(win->lh_ptr != NULL);
 		memcpy(win->lh_ptr, labels, labels_size);
 
 		sl_pwr_level = find_gui_element_ref(TYPE_SLIDER, win, "sl_pwr_level");
@@ -1585,6 +1601,7 @@ static void window_audiosettings_process(void)
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
 		win->bh_ptr = malloc(buttons_size);
+		ASSERT(win->bh_ptr != NULL);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
 		x = col1_int;
@@ -1681,6 +1698,7 @@ static void window_ap_reverb_process(void)
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
 		win->bh_ptr = malloc(buttons_size);
+		ASSERT(win->bh_ptr != NULL);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
 		label_t labels[] = {
@@ -1696,6 +1714,7 @@ static void window_ap_reverb_process(void)
 		win->lh_count = ARRAY_SIZE(labels);
 		uint_fast16_t labels_size = sizeof(labels);
 		win->lh_ptr = malloc(labels_size);
+		ASSERT(win->lh_ptr != NULL);
 		memcpy(win->lh_ptr, labels, labels_size);
 
 		slider_t sliders [] = {
@@ -1706,6 +1725,7 @@ static void window_ap_reverb_process(void)
 		win->sh_count = ARRAY_SIZE(sliders);
 		uint_fast16_t sliders_size = sizeof(sliders);
 		win->sh_ptr = malloc(sliders_size);
+		ASSERT(win->sh_ptr != NULL);
 		memcpy(win->sh_ptr, sliders, sliders_size);
 
 		label_t * lbl_reverbDelay_min = find_gui_element_ref(TYPE_LABEL, win, "lbl_reverbDelay_min");
@@ -1837,6 +1857,7 @@ static void window_ap_mic_eq_process(void)
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
 		win->bh_ptr = malloc(buttons_size);
+		ASSERT(win->bh_ptr != NULL);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
 		label_t labels[] = {
@@ -1856,6 +1877,7 @@ static void window_ap_mic_eq_process(void)
 		win->lh_count = ARRAY_SIZE(labels);
 		uint_fast16_t labels_size = sizeof(labels);
 		win->lh_ptr = malloc(labels_size);
+		ASSERT(win->lh_ptr != NULL);
 		memcpy(win->lh_ptr, labels, labels_size);
 
 		slider_t sliders [] = {
@@ -1869,6 +1891,7 @@ static void window_ap_mic_eq_process(void)
 		win->sh_count = ARRAY_SIZE(sliders);
 		uint_fast16_t sliders_size = sizeof(sliders);
 		win->sh_ptr = malloc(sliders_size);
+		ASSERT(win->sh_ptr != NULL);
 		memcpy(win->sh_ptr, sliders, sliders_size);
 
 		eq_base = hamradio_getequalizerbase();
@@ -2012,6 +2035,7 @@ static void window_ap_mic_process(void)
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
 		win->bh_ptr = malloc(buttons_size);
+		ASSERT(win->bh_ptr != NULL);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
 		label_t labels[] = {
@@ -2030,6 +2054,7 @@ static void window_ap_mic_process(void)
 		win->lh_count = ARRAY_SIZE(labels);
 		uint_fast16_t labels_size = sizeof(labels);
 		win->lh_ptr = malloc(labels_size);
+		ASSERT(win->lh_ptr != NULL);
 		memcpy(win->lh_ptr, labels, labels_size);
 
 		slider_t sliders [] = {
@@ -2041,6 +2066,7 @@ static void window_ap_mic_process(void)
 		win->sh_count = ARRAY_SIZE(sliders);
 		uint_fast16_t sliders_size = sizeof(sliders);
 		win->sh_ptr = malloc(sliders_size);
+		ASSERT(win->sh_ptr != NULL);
 		memcpy(win->sh_ptr, sliders, sliders_size);
 
 		hamradio_get_mic_level_limits(& level_min, & level_max);
@@ -2211,6 +2237,7 @@ static void window_ap_mic_prof_process(void)
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
 		win->bh_ptr = malloc(buttons_size);
+		ASSERT(win->bh_ptr != NULL);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
 		x = col1_int;
@@ -2307,6 +2334,7 @@ static void window_menu_process(void)
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
 		win->bh_ptr = malloc(buttons_size);
+		ASSERT(win->bh_ptr != NULL);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
 		label_t labels[] = {
@@ -2334,6 +2362,7 @@ static void window_menu_process(void)
 		win->lh_count = ARRAY_SIZE(labels);
 		uint_fast16_t labels_size = sizeof(labels);
 		win->lh_ptr = malloc(labels_size);
+		ASSERT(win->lh_ptr != NULL);
 		memcpy(win->lh_ptr, labels, labels_size);
 
 		button_up = find_gui_element_ref(TYPE_BUTTON, win, "btnSysMenu+");
@@ -2739,6 +2768,7 @@ static void window_uif_process(void)
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
 		win->bh_ptr = malloc(buttons_size);
+		ASSERT(win->bh_ptr != NULL);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
 		label_t labels[] = {
@@ -2750,6 +2780,7 @@ static void window_uif_process(void)
 		win->lh_count = ARRAY_SIZE(labels);
 		uint_fast16_t labels_size = sizeof(labels);
 		win->lh_ptr = malloc(labels_size);
+		ASSERT(win->lh_ptr != NULL);
 		memcpy(win->lh_ptr, labels, labels_size);
 
 		elements_state(win);
@@ -2869,6 +2900,7 @@ static void window_enc2_process(void)
 		win->lh_count = ARRAY_SIZE(labels);
 		uint_fast16_t labels_size = sizeof(labels);
 		win->lh_ptr = malloc(labels_size);
+		ASSERT(win->lh_ptr != NULL);
 		memcpy(win->lh_ptr, labels, labels_size);
 
 		elements_state(win);

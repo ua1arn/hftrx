@@ -259,8 +259,8 @@
 	#define BOARD_FILTER_8P0		0	/* 6.0 kHz filter */
 	// --- заглушки для плат с DSP обработкой
 
-	#define WITHRTS192	1		// Есть канал спектроанализатора - не забыть включить WITHSAI2HW
-	//#define WITHRTS96		1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
+	//#define WITHRTS192	1		// Есть канал спектроанализатора - не забыть включить WITHSAI2HW
+	#define WITHRTS96		1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 
 	#define ENCRES_DEFAULT ENCRES_400
 	#define ENCDIV_DEFAULT	12
