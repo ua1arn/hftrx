@@ -11310,6 +11310,13 @@ M_SIZE_IO_2     EQU     2550            ; [Area11] I/O area 2
 ;===================================================================
 
   */
+
+// Short-descriptor format memory region attributes, without TEX remap
+// When using the Short-descriptor translation table formats, TEX remap is disabled when SCTLR.TRE is set to 0.
+
+// For TRE - see
+// B4.1.127 PRRR, Primary Region Remap Register, VMSA
+
 #define APval 		0x03	/* Configure for full read/write access in all modes */
 #define DOMAINval	0x0F
 #define SECTIONval	0x02
