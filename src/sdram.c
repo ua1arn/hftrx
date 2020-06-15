@@ -2557,6 +2557,7 @@ void RCC_AHB1PeriphClockCmd(uint32_t RCC_AHB1Periph, FunctionalState NewState)
   */
 void SDRAM_GPIOConfig(void)
 {
+#if defined CTLSTYLE_V1D	/* Плата STM32F429I-DISCO с процессором STM32F429ZIT6	*/
   GPIO_InitTypeDef GPIO_InitStructure;
   
   /* Enable GPIOs clock */
@@ -2676,7 +2677,113 @@ void SDRAM_GPIOConfig(void)
   GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_4 |
                                 GPIO_Pin_5 | GPIO_Pin_8 | GPIO_Pin_15;
 
-  GPIO_Init(GPIOG, &GPIO_InitStructure);    
+  GPIO_Init(GPIOG, &GPIO_InitStructure);
+
+#elif defined CTLSTYLE_V3D	/* Плата STM32F746G-DISCO с процессором STM32F746NGH6	*/
+
+  /*
+   D0 -> PD14*		A0 -> PF0*		SDNWE  -> PH5*
+   D1 -> PD15*		A1 -> PF1*		SDNRAS -> PF11*
+   D2 -> PD0*		A2 -> PF2*		SDNCAS -> PG15*
+   D3 -> PD1*		A3 -> PF3*		SDCLK  -> PG8*
+   D4 -> PE7*		A4 -> PF4*		BA0	   -> PG4*
+   D5 -> PE8*		A5 -> PF5*		BA1	   -> PG5*
+   D6 -> PE9*		A6 -> PF12*		SDNE0  -> PH3*
+   D7 -> PE10*		A7 -> PF13*		SDCKE0 -> PC3*
+   D8 -> PE11*		A8 -> PF14*		NBL0   -> PE0*
+   D9 -> PE12*		A9 -> PF15*		NBL1   -> PE1*
+   D10 -> PE13*		A10 -> PG0*
+   D11 -> PE14*		A11 -> PG1*
+   D12 -> PE15*
+   D13 -> PD8*
+   D14 -> PD9*
+   D15 -> PD10*
+  */
+
+  GPIO_InitTypeDef GPIO_InitStructure;
+
+  /* Enable GPIOs clock */
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC | RCC_AHB1Periph_GPIOD | RCC_AHB1Periph_GPIOE |
+			RCC_AHB1Periph_GPIOF | RCC_AHB1Periph_GPIOG | RCC_AHB1Periph_GPIOH, ENABLE);
+
+	enum { GPIO_AF_FMC = 12 };
+
+	/* GPIOC configuration */
+	GPIO_PinAFConfig(GPIOC, GPIO_PinSource3 , GPIO_AF_FMC);
+
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_3;
+
+	GPIO_Init(GPIOC, &GPIO_InitStructure);
+
+	/* GPIOD configuration */
+	GPIO_PinAFConfig(GPIOD, GPIO_PinSource14, GPIO_AF_FMC);
+	GPIO_PinAFConfig(GPIOD, GPIO_PinSource15, GPIO_AF_FMC);
+	GPIO_PinAFConfig(GPIOD, GPIO_PinSource0, GPIO_AF_FMC);
+	GPIO_PinAFConfig(GPIOD, GPIO_PinSource1, GPIO_AF_FMC);
+	GPIO_PinAFConfig(GPIOD, GPIO_PinSource8, GPIO_AF_FMC);
+	GPIO_PinAFConfig(GPIOD, GPIO_PinSource9, GPIO_AF_FMC);
+	GPIO_PinAFConfig(GPIOD, GPIO_PinSource10, GPIO_AF_FMC);
+
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_14 | GPIO_Pin_15 | GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_8 | GPIO_Pin_9 | GPIO_Pin_10;
+
+	GPIO_Init(GPIOD, &GPIO_InitStructure);
+
+	/* GPIOE configuration */
+	GPIO_PinAFConfig(GPIOE, GPIO_PinSource7, GPIO_AF_FMC);
+	GPIO_PinAFConfig(GPIOE, GPIO_PinSource8, GPIO_AF_FMC);
+	GPIO_PinAFConfig(GPIOE, GPIO_PinSource9, GPIO_AF_FMC);
+	GPIO_PinAFConfig(GPIOE, GPIO_PinSource10, GPIO_AF_FMC);
+	GPIO_PinAFConfig(GPIOE, GPIO_PinSource11, GPIO_AF_FMC);
+	GPIO_PinAFConfig(GPIOE, GPIO_PinSource12, GPIO_AF_FMC);
+	GPIO_PinAFConfig(GPIOE, GPIO_PinSource13, GPIO_AF_FMC);
+	GPIO_PinAFConfig(GPIOE, GPIO_PinSource14, GPIO_AF_FMC);
+	GPIO_PinAFConfig(GPIOE, GPIO_PinSource15, GPIO_AF_FMC);
+	GPIO_PinAFConfig(GPIOE, GPIO_PinSource0, GPIO_AF_FMC);
+	GPIO_PinAFConfig(GPIOE, GPIO_PinSource1, GPIO_AF_FMC);
+
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_7 | GPIO_Pin_8 | GPIO_Pin_9 | GPIO_Pin_10 | GPIO_Pin_11 | GPIO_Pin_12 | GPIO_Pin_13 | GPIO_Pin_14 | GPIO_Pin_15 | GPIO_Pin_0 | GPIO_Pin_1;
+
+	GPIO_Init(GPIOE, &GPIO_InitStructure);
+
+	/* GPIOF configuration */
+	GPIO_PinAFConfig(GPIOF, GPIO_PinSource0, GPIO_AF_FMC);
+	GPIO_PinAFConfig(GPIOF, GPIO_PinSource1, GPIO_AF_FMC);
+	GPIO_PinAFConfig(GPIOF, GPIO_PinSource2, GPIO_AF_FMC);
+	GPIO_PinAFConfig(GPIOF, GPIO_PinSource3, GPIO_AF_FMC);
+	GPIO_PinAFConfig(GPIOF, GPIO_PinSource4, GPIO_AF_FMC);
+	GPIO_PinAFConfig(GPIOF, GPIO_PinSource5, GPIO_AF_FMC);
+	GPIO_PinAFConfig(GPIOF, GPIO_PinSource12, GPIO_AF_FMC);
+	GPIO_PinAFConfig(GPIOF, GPIO_PinSource13, GPIO_AF_FMC);
+	GPIO_PinAFConfig(GPIOF, GPIO_PinSource14, GPIO_AF_FMC);
+	GPIO_PinAFConfig(GPIOF, GPIO_PinSource15, GPIO_AF_FMC);
+	GPIO_PinAFConfig(GPIOF, GPIO_PinSource11, GPIO_AF_FMC);
+
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_2 | GPIO_Pin_3 | GPIO_Pin_4 | GPIO_Pin_5 | GPIO_Pin_12 | GPIO_Pin_13 | GPIO_Pin_14 | GPIO_Pin_15 | GPIO_Pin_11;
+
+	GPIO_Init(GPIOF, &GPIO_InitStructure);
+
+	/* GPIOG configuration */
+	GPIO_PinAFConfig(GPIOG, GPIO_PinSource0, GPIO_AF_FMC);
+	GPIO_PinAFConfig(GPIOG, GPIO_PinSource1, GPIO_AF_FMC);
+	GPIO_PinAFConfig(GPIOG, GPIO_PinSource15, GPIO_AF_FMC);
+	GPIO_PinAFConfig(GPIOG, GPIO_PinSource8, GPIO_AF_FMC);
+	GPIO_PinAFConfig(GPIOG, GPIO_PinSource4, GPIO_AF_FMC);
+	GPIO_PinAFConfig(GPIOG, GPIO_PinSource5, GPIO_AF_FMC);
+
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_15 | GPIO_Pin_8 | GPIO_Pin_4 | GPIO_Pin_5;
+
+	GPIO_Init(GPIOG, &GPIO_InitStructure);
+
+	/* GPIOH configuration */
+	GPIO_PinAFConfig(GPIOH, GPIO_PinSource3, GPIO_AF_FMC);
+	GPIO_PinAFConfig(GPIOH, GPIO_PinSource5, GPIO_AF_FMC);
+
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_3 | GPIO_Pin_5;
+
+	GPIO_Init(GPIOH, &GPIO_InitStructure);
+
+
+#endif
 }
 
 void FMC_SetRefreshCount(uint32_t FMC_Count)

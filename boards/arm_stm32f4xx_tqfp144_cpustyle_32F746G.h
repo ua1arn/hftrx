@@ -35,7 +35,7 @@
 
 #define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 #define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	*/
-//#define WITHSDRAMHW	1	/* В процессоре есть внешняя память */
+#define WITHSDRAMHW	1	/* В процессоре есть внешняя память */
 
 #define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 #if 1
