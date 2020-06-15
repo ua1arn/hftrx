@@ -23,7 +23,7 @@
 //#include "./byte2crun.h"
 //#endif /* ! LCDMODE_LTDC_L24 */
 
-//typedef PACKEDCOLORMAIN_T FRAMEBUFF_T [LCDMODE_MAIN_PAGES] [GXSIZE(DIM_SECOND, DIM_FIRST)];
+typedef PACKEDCOLORMAIN_T FRAMEBUFF_T [LCDMODE_MAIN_PAGES] [GXSIZE(DIM_SECOND, DIM_FIRST)];
 
 #if defined (SDRAM_BANK_ADDR) && LCDMODE_LTDCSDRAMBUFF && LCDMODE_LTDC
 	#define framebuff (* (FRAMEBUFF_T *) SDRAM_BANK_ADDR)
@@ -63,8 +63,26 @@
 		return fbfs [(mainphase + 0) % LCDMODE_MAIN_PAGES];
 	}
 
-#elif LCDMODE_LTDC
+#elif defined (SDRAM_BANK_ADDR)
 
+	void colmain_fb_next(void)
+	{
+	}
+
+	PACKEDCOLORMAIN_T *
+	colmain_fb_draw(void)
+	{
+		return & framebuff[0][0];
+	}
+
+
+	PACKEDCOLORMAIN_T *
+	colmain_fb_show(void)
+	{
+		return & framebuff[0][0];
+	}
+
+#else
 	RAMFRAMEBUFF ALIGNX_BEGIN PACKEDCOLORMAIN_T fbf [GXSIZE(DIM_SECOND, DIM_FIRST)] ALIGNX_END;
 
 	void colmain_fb_next(void)
@@ -83,8 +101,6 @@
 	{
 		return fbf;
 	}
-
-
 #endif /* LCDMODE_LTDC */
 
 
