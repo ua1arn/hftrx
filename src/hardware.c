@@ -11445,7 +11445,7 @@ ttb_initialize(uint32_t (* accessbits)(uintptr_t a, int ro), uintptr_t textstart
 	/* Установить R/O атрибуты для указанной области */
 	while (textsize >= pagesize)
 	{
-		tlbbase [i] =  accessbits(textstart, 1);
+		tlbbase [textstart / pagesize] =  accessbits(textstart, 0 * 1);
 		textsize -= pagesize;
 		textstart += pagesize;
 	}
@@ -11924,8 +11924,21 @@ sysinit_mmu_initialize(void)
 	}
 #endif /* WITHDEBUG */
 
+#if WITHISBOOTLOADER || CPUSTYLE_R7S721
+
 	// MMU inuitialize
 	ttb_initialize(ttb_accessbits, 0, 0);
+
+#elif CPUSTYLE_STM32MP1
+	extern uint32_t __data_start__;
+	// MMU inuitialize
+	ttb_initialize(ttb_accessbits, 0xC0000000, (uintptr_t) & __data_start__ - 0xC0000000);
+
+#else
+	// MMU inuitialize
+	ttb_initialize(ttb_accessbits, 0, 0);
+
+#endif
 
 #endif /* (__CORTEX_A != 0) */
 

@@ -116,9 +116,9 @@ SECTIONS
 
 	.data : /*AT (__etext)*/
 	{
+		. = ALIGN(0x100000);
 		__data_start__ = .;
 
-		. = ALIGN(4);
 		/* .ctors */
 		*crtbegin.o(.ctors)
 		*crtbegin?.o(.ctors)
