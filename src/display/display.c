@@ -42,27 +42,50 @@
 	{
 			fbf0, fbf1, fbf2,
 	};
+
+	static uint_fast8_t mainphase;
+
+	void colmain_fb_next(void)
+	{
+		mainphase = (mainphase + 1) % LCDMODE_MAIN_PAGES;
+	}
+
+	PACKEDCOLORMAIN_T *
+	colmain_fb_draw(void)
+	{
+		return fbfs [(mainphase + 1) % LCDMODE_MAIN_PAGES];
+	}
+
+
+	PACKEDCOLORMAIN_T *
+	colmain_fb_show(void)
+	{
+		return fbfs [(mainphase + 0) % LCDMODE_MAIN_PAGES];
+	}
+
+#elif LCDMODE_LTDC
+
+	RAMFRAMEBUFF ALIGNX_BEGIN PACKEDCOLORMAIN_T fbf [GXSIZE(DIM_SECOND, DIM_FIRST)] ALIGNX_END;
+
+	void colmain_fb_next(void)
+	{
+	}
+
+	PACKEDCOLORMAIN_T *
+	colmain_fb_draw(void)
+	{
+		return fbf;
+	}
+
+
+	PACKEDCOLORMAIN_T *
+	colmain_fb_show(void)
+	{
+		return fbf;
+	}
+
+
 #endif /* LCDMODE_LTDC */
-
-static uint_fast8_t mainphase;
-
-void colmain_fb_next(void)
-{
-	mainphase = (mainphase + 1) % LCDMODE_MAIN_PAGES;
-}
-
-PACKEDCOLORMAIN_T *
-colmain_fb_draw(void)
-{
-	return fbfs [(mainphase + 1) % LCDMODE_MAIN_PAGES];
-}
-
-
-PACKEDCOLORMAIN_T *
-colmain_fb_show(void)
-{
-	return fbfs [(mainphase + 0) % LCDMODE_MAIN_PAGES];
-}
 
 
 // Установить прозрачность для прямоугольника

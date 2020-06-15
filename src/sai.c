@@ -175,6 +175,39 @@ enum
 	}
 #endif /* WITHI2SCLOCKFROMPIN */
 
+
+
+#define DRD(r) ((void) (r))
+
+#if 0
+
+#define DMAERR(dma, dmastream, status, control, errorf, resetf) do { \
+		if (((dma)->status & errorf) != 0) \
+		{ \
+			(dma)->control = resetf; \
+			PRINTF("DMAERR " # dmastream " " # errorf " M0AR=%p M1AR=%p" "\n", (dmastream)->M0AR, (dmastream)->M1AR); \
+			(dmastream)->CR &= ~ DMA_SxCR_EN; \
+			while ((dmastream)->CR & DMA_SxCR_EN) \
+				; \
+			(dmastream)->CR |= DMA_SxCR_EN; \
+			DRD((dmastream)->CR); \
+		} \
+	} while (0)
+
+// формируется строка вроде такой:
+// DMAERR(DMA1, DMA1_Stream3, LISR, LIFCR, DMA_LISR_TEIF3, DMA_LIFCR_CTEIF3);
+
+#define HANDLEERRORS(d, s, hl) do { \
+		DMAERR(DMA ## d, DMA ## d ## _Stream ## s, hl ## ISR, hl ## IFCR, DMA_ ## hl ## ISR_TEIF ## s, DMA_ ## hl ## IFCR_CTEIF ## s); /* TE */ \
+		DMAERR(DMA ## d, DMA ## d ## _Stream ## s, hl ## ISR, hl ## IFCR, DMA_ ## hl ## ISR_DMEIF ## s, DMA_ ## hl ## IFCR_CDMEIF ## s); /* DME */ \
+		DMAERR(DMA ## d, DMA ## d ## _Stream ## s, hl ## ISR, hl ## IFCR, DMA_ ## hl ## ISR_FEIF ## s, DMA_ ## hl ## IFCR_CFEIF ## s); /* FE */ \
+	} while (0)
+
+#else
+
+	#define HANDLEERRORS(d, s, hl) /* */
+#endif
+
 #if WITHI2SHW
 
 #if WITHI2S_FRAMEBITS == 32
@@ -228,38 +261,6 @@ static portholder_t stm32xxx_i2scfgr_afcodec(void)
 
 	return i2scfgr;
 }
-
-
-#define DRD(r) ((void) (r))
-
-#if 0
-
-#define DMAERR(dma, dmastream, status, control, errorf, resetf) do { \
-		if (((dma)->status & errorf) != 0) \
-		{ \
-			(dma)->control = resetf; \
-			PRINTF("DMAERR " # dmastream " " # errorf " M0AR=%p M1AR=%p" "\n", (dmastream)->M0AR, (dmastream)->M1AR); \
-			(dmastream)->CR &= ~ DMA_SxCR_EN; \
-			while ((dmastream)->CR & DMA_SxCR_EN) \
-				; \
-			(dmastream)->CR |= DMA_SxCR_EN; \
-			DRD((dmastream)->CR); \
-		} \
-	} while (0)
-
-// формируется строка вроде такой:
-// DMAERR(DMA1, DMA1_Stream3, LISR, LIFCR, DMA_LISR_TEIF3, DMA_LIFCR_CTEIF3);
-
-#define HANDLEERRORS(d, s, hl) do { \
-		DMAERR(DMA ## d, DMA ## d ## _Stream ## s, hl ## ISR, hl ## IFCR, DMA_ ## hl ## ISR_TEIF ## s, DMA_ ## hl ## IFCR_CTEIF ## s); /* TE */ \
-		DMAERR(DMA ## d, DMA ## d ## _Stream ## s, hl ## ISR, hl ## IFCR, DMA_ ## hl ## ISR_DMEIF ## s, DMA_ ## hl ## IFCR_CDMEIF ## s); /* DME */ \
-		DMAERR(DMA ## d, DMA ## d ## _Stream ## s, hl ## ISR, hl ## IFCR, DMA_ ## hl ## ISR_FEIF ## s, DMA_ ## hl ## IFCR_CFEIF ## s); /* FE */ \
-	} while (0)
-
-#else
-
-	#define HANDLEERRORS(d, s, hl) /* */
-#endif
 
 // Обработчик прерывания DMA по приему I2S - I2S2_EXT
 void RAMFUNC_NONILINE DMA1_Stream3_IRQHandler(void)

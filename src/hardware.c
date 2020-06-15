@@ -10270,6 +10270,56 @@ void hardware_set_dotclock(unsigned long dotfreq)
 
 #endif /* CPUSTYLE_STM32MP1 */
 
+#if 0
+
+typedef struct irqlog_tag
+{
+	IRQn_ID_t irqn;
+	int pos;	// in/out
+} irqlog_t;
+enum { IRQLOG_LEN = 1024 };
+
+static volatile unsigned irqlog_enabled;
+static volatile unsigned irqlog_count;
+static irqlog_t irqlogs [IRQLOG_LEN];
+
+void irqlog_start(void)
+{
+	irqlog_enabled = 0;
+	irqlog_count = 0;
+	irqlog_enabled = 1;
+}
+
+void irqlog_stop(void)
+{
+	irqlog_enabled = 0;
+}
+
+void irqlog_record(int pos, IRQn_ID_t irqn)
+{
+	if (irqlog_enabled == 0)
+		return;
+
+	if (irqlog_count >= IRQLOG_LEN)
+		return;
+
+	irqlog_t * const p = & irqlogs [irqlog_count ++];
+	p->pos = pos;
+	p->irqn = irqn;
+}
+
+void irqlog_print(void)
+{
+	PRINTF("irqlog_count=%u\n", irqlog_count);
+	unsigned i;
+	for (i = 0; i < irqlog_count; ++ i)
+	{
+		const irqlog_t * const p = & irqlogs [i];
+		PRINTF(" pos=%d, IRQ=%3u (0x%03X)\n", (int) p->pos, (unsigned) p->irqn, (unsigned) p->irqn);
+	}
+}
+#endif
+
 #if (__CORTEX_A != 0)
 
 #include "hardware.h"
@@ -10293,6 +10343,7 @@ void IRQ_Handler(void)
 {
 	//dbg_putchar('/');
 	const IRQn_ID_t irqn = IRQ_GetActiveIRQ();
+	irqlog_record(1, irqn);
 	//static const char hex [16] = "0123456789ABCDEF";
 	//dbg_putchar(hex [(irqn >> 8) & 0x0F]);
 	//dbg_putchar(hex [(irqn >> 4) & 0x0F]);
@@ -10324,6 +10375,7 @@ void IRQ_Handler(void)
 
 #endif /* WITHNESTEDINTERRUPTS */
 	}
+	irqlog_record(2, irqn);
 	//dbg_putchar('\\');
 	IRQ_EndOfInterrupt(irqn);
 }

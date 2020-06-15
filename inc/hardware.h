@@ -986,4 +986,8 @@ uint_fast32_t display_getdotclock(void);
 
 #define  ARRAY_SIZE(a)  (sizeof a / sizeof a [0])
 
+void irqlog_start(void);
+void irqlog_stop(void);
+void irqlog_print(void);
+
 #endif // HARDWARE_H_INCLUDED

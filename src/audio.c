@@ -5041,23 +5041,23 @@ saverts96(const int32_t * buff)
 	if (glob_swapiq != glob_swaprts)
 	{
 		savesampleout96stereo(
-			(int_fast32_t) buff [DMABUF32RTS0Q],	// previous
-			(int_fast32_t) buff [DMABUF32RTS0I]
+			buff [DMABUF32RTS0Q],	// previous
+			buff [DMABUF32RTS0I]
 			);	
 		savesampleout96stereo(
-			(int_fast32_t) buff [DMABUF32RTS1Q],	// current
-			(int_fast32_t) buff [DMABUF32RTS1I]
+			buff [DMABUF32RTS1Q],	// current
+			buff [DMABUF32RTS1I]
 			);	
 	}
 	else
 	{
 		savesampleout96stereo(
-			(int_fast32_t) buff [DMABUF32RTS0I],	// previous
-			(int_fast32_t) buff [DMABUF32RTS0Q]
+			buff [DMABUF32RTS0I],	// previous
+			buff [DMABUF32RTS0Q]
 			);	
 		savesampleout96stereo(
-			(int_fast32_t) buff [DMABUF32RTS1I],	// current
-			(int_fast32_t) buff [DMABUF32RTS1Q]
+			buff [DMABUF32RTS1I],	// current
+			buff [DMABUF32RTS1Q]
 			);	
 	}
 #endif /* WITHUSBHW && WITHUSBUAC */
@@ -5067,23 +5067,23 @@ saverts96(const int32_t * buff)
 	if (glob_swaprts != 0)
 	{
 			saveIQRTSxx(
-			(int32_t) buff [DMABUF32RTS0Q],	// previous
-			(int32_t) buff [DMABUF32RTS0I]
+			buff [DMABUF32RTS0Q],	// previous
+			buff [DMABUF32RTS0I]
 			);	
 		saveIQRTSxx(
-			(int32_t) buff [DMABUF32RTS1Q],	// current
-			(int32_t) buff [DMABUF32RTS1I]
+			buff [DMABUF32RTS1Q],	// current
+			buff [DMABUF32RTS1I]
 			);	
 	}
 	else
 	{
 		saveIQRTSxx(
-			(int32_t) buff [DMABUF32RTS0I],	// previous
-			(int32_t) buff [DMABUF32RTS0Q]
+			buff [DMABUF32RTS0I],	// previous
+			buff [DMABUF32RTS0Q]
 			);	
 		saveIQRTSxx(
-			(int32_t) buff [DMABUF32RTS1I],	// current
-			(int32_t) buff [DMABUF32RTS1Q]
+			buff [DMABUF32RTS1I],	// current
+			buff [DMABUF32RTS1Q]
 			);	
 	}
 
@@ -5455,6 +5455,7 @@ static void validateSeq(uint_fast8_t slot, int32_t v, int rowi, const int32_t * 
 static void
 inject_testsignals(int32_t * const dbuff)
 {
+#ifdef DMABUF32RX0I
 	// приёмник
 	const FLOAT32P_t simval = scalepair(get_float_monofreq(), rxlevelfence);	// frequency
 	dbuff [DMABUF32RX0I] = simval.IV;
@@ -5472,6 +5473,8 @@ inject_testsignals(int32_t * const dbuff)
 	dbuff [DMABUF32RTS1I] = simval1.IV;
 	dbuff [DMABUF32RTS1Q] = simval1.QV;
 #endif /* WITHRTS96 */
+
+#endif
 }
 
 // Обработка полученного от DMA буфера с выборками или квадратурами (или двухканальный приём).
@@ -5527,8 +5530,8 @@ void RAMFUNC dsp_extbuffer32rx(const int32_t * buff)
 		//savesampleout32stereo(intn_to_tx(dual.IV, 24), intn_to_tx(dual.QV, 24));	// кодек получает 24 бита left justified в 32-х битном числе.
 //		recordsampleUAC(dual.IV >> 8, dual.QV >> 8);	// Запись в UAC демодулированного сигнала без озвучки клавиш
 		recordsampleUAC(
-			(int_fast32_t) buff [i + DMABUF32RXI] >> (32 - UACIN_AUDIO48_SAMPLEBITS),
-			(int_fast32_t) buff [i + DMABUF32RXQ] >> (32 - UACIN_AUDIO48_SAMPLEBITS)
+			buff [i + DMABUF32RXI] >> (32 - UACIN_AUDIO48_SAMPLEBITS),
+			buff [i + DMABUF32RXQ] >> (32 - UACIN_AUDIO48_SAMPLEBITS)
 			);
 
 #elif WITHSUSBSPKONLY
@@ -5547,7 +5550,7 @@ void RAMFUNC dsp_extbuffer32rx(const int32_t * buff)
 		else if (isdspmoderx(dspmodeA))
 		{
 			//const INT32P_t dual = loopbacktestaudio(vi, dspmodeA, shape);
-			const INT32P_t dual = vi;
+			const FLOAT32P_t dual = vi;
 			savesampleout32stereo(iq2tx(dual.IV), iq2tx(dual.QV));	// кодек получает 24 бита left justified в 32-х битном числе.
 			//savesampleout16stereo(injectsidetone(dual.IV, sdtn), injectsidetone(dual.QV, sdtn));
 			recordsampleUAC(get_lout16(), get_rout16());	// Запись в UAC демодулированного сигнала без озвучки клавиш
@@ -5562,8 +5565,8 @@ void RAMFUNC dsp_extbuffer32rx(const int32_t * buff)
 		/* процессор просто поддерживает двунаправленный обмен между USB и FPGA */
 	
 		savesampleout96stereo(
-			(int_fast32_t) buff [i + DMABUF32RX0I],
-			(int_fast32_t) buff [i + DMABUF32RX0Q]
+			buff [i + DMABUF32RX0I],
+			buff [i + DMABUF32RX0Q]
 			);
 
 		static FLOAT32P_t vi;
@@ -5628,8 +5631,8 @@ void RAMFUNC dsp_extbuffer32rx(const int32_t * buff)
 			/* прием независимых боковых полос */
 			// Обработка буфера с парами значений
 			const FLOAT32P_t pair = processifadcsampleIQ_ISB(
-				(int_fast32_t) buff [i + DMABUF32RX0I] * rxgate,	// Расширяем 24-х битные числа до 32 бит
-				(int_fast32_t) buff [i + DMABUF32RX0Q] * rxgate	// Расширяем 24-х битные числа до 32 бит
+				buff [i + DMABUF32RX0I] * rxgate,	// Расширяем 24-х битные числа до 32 бит
+				buff [i + DMABUF32RX0Q] * rxgate	// Расширяем 24-х битные числа до 32 бит
 				);	
 			save16demod(pair.IV, pair.QV);	/* к line output подключен модем - озвучку запрещаем */
 		}
@@ -5642,15 +5645,15 @@ void RAMFUNC dsp_extbuffer32rx(const int32_t * buff)
 		{
 			// buff data layout: I main/I sub/Q main/Q sub
 			const FLOAT_t rxA = processifadcsampleIQ(
-				(int_fast32_t) buff [i + DMABUF32RX0I] * rxgate,	// Расширяем 24-х битные числа до 32 бит
-				(int_fast32_t) buff [i + DMABUF32RX0Q] * rxgate,	// Расширяем 24-х битные числа до 32 бит
+				buff [i + DMABUF32RX0I] * rxgate,	// Расширяем 24-х битные числа до 32 бит
+				buff [i + DMABUF32RX0Q] * rxgate,	// Расширяем 24-х битные числа до 32 бит
 				dspmodeA,
 				0	// MAIN RX
 				);
 
 			const FLOAT_t rxB = processifadcsampleIQ(
-				(int_fast32_t) buff [i + DMABUF32RX1I] * rxgate,	// Расширяем 24-х битные числа до 32 бит
-				(int_fast32_t) buff [i + DMABUF32RX1Q] * rxgate,	// Расширяем 24-х битные числа до 32 бит
+				buff [i + DMABUF32RX1I] * rxgate,	// Расширяем 24-х битные числа до 32 бит
+				buff [i + DMABUF32RX1Q] * rxgate,	// Расширяем 24-х битные числа до 32 бит
 				dspmodeB,
 				1	// SUB RX
 				);	

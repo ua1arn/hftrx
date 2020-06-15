@@ -2169,7 +2169,10 @@ extern "C" {
 	//#define LCDMODE_PIP_PAGES	3
 
 	#define WITHFASTWATERFLOW 1
+
 	#define COLORPIP_SHADED 128
+	#define COLORPIP_ALIASED 16
+	#define COLORPIP_BASE 96	// should be match to PALETTESIZE
 
 #elif LCDMODE_V1
 	#error Use LCDMODE_V2 instedd of LCDMODE_V1
