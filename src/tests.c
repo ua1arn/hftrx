@@ -6327,10 +6327,7 @@ void hightests(void)
 
 #if LCDMODE_LTDCSDRAMBUFF
 
-	typedef PACKEDCOLORMAIN_T FRAMEBUFF_T [LCDMODE_MAIN_PAGES] [GXSIZE(DIM_SECOND, DIM_FIRST)];
-	#define framebuff (* (FRAMEBUFF_T *) SDRAM_BANK_ADDR)
-
-	PACKEDCOLORMAIN_T * ff = & framebuff[0][0];
+	PACKEDCOLORMAIN_T * ff = colmain_fb_draw();
 	* ff = 0xBE;
 
 	local_delay_ms(100);
