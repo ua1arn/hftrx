@@ -56,7 +56,6 @@ typedef PACKEDCOLORMAIN_T FRAMEBUFF_T [LCDMODE_MAIN_PAGES] [GXSIZE(DIM_SECOND, D
 		return fbfs [(mainphase + 1) % LCDMODE_MAIN_PAGES];
 	}
 
-
 	PACKEDCOLORMAIN_T *
 	colmain_fb_show(void)
 	{

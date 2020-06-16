@@ -6256,7 +6256,7 @@ void hightests(void)
 		BarTest();
 	}
 #endif
-#if 1 && WITHLTDCHW && LCDMODE_COLORED && ! DSTYLE_G_DUMMY
+#if 0 && WITHLTDCHW && LCDMODE_COLORED && ! DSTYLE_G_DUMMY
 	{
 		// test: вывод палитры на экран
 		display2_bgreset();
