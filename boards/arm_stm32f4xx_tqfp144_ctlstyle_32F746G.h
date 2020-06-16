@@ -151,9 +151,9 @@
 
 	// +++ Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
 	//#define LCDMODE_HARD_SPI	1	/* LCD over SPI line */
-	#define LCDMODE_V0	1	/* Обычная конфигурация без PIP с L8 на основном экране */
+	#define LCDMODE_V2A	1	/* только главный экран 16 бит (три страницы), без PIP */
 	#define LCDMODE_LTDCSDRAMBUFF	1	/* используется область внешнего SDRAM для хранения framebuffer */
-	#define SDRAM_BANK_ADDR     0xC0000000uL
+	//#define SDRAM_BANK_ADDR     ((uint32_t)0xC0000000)
 	//#define LCDMODE_WH2002	1	/* тип применяемого индикатора 20*2, возможно вместе с LCDMODE_HARD_SPI */
 	//#define LCDMODE_WH1602	1	/* тип применяемого индикатора 16*2 */
 	//#define LCDMODE_WH1604	1	/* тип применяемого индикатора 16*4 */

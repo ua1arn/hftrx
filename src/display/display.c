@@ -63,7 +63,7 @@ typedef PACKEDCOLORMAIN_T FRAMEBUFF_T [LCDMODE_MAIN_PAGES] [GXSIZE(DIM_SECOND, D
 		return fbfs [(mainphase + 0) % LCDMODE_MAIN_PAGES];
 	}
 
-#elif defined (SDRAM_BANK_ADDR)
+#elif WITHSDRAMHW && LCDMODE_LTDCSDRAMBUFF
 
 	void colmain_fb_next(void)
 	{
@@ -250,7 +250,7 @@ void display2_xltrgb24(COLOR24_T * xltable)
 #if defined (COLORPIP_SHADED)
 	int i;
 
-	PRINTF("display2_xltrgb24: init idexed colors\n");
+	PRINTF("display2_xltrgb24: init indexed colors\n");
 
 	for (i = 0; i < 256; ++ i)
 	{

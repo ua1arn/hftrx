@@ -9,6 +9,7 @@ MEMORY
 	DTCM (rwx) :		ORIGIN = 0x20000000, LENGTH = 64k	/* DTCM = RAMDTCM_BASE */
 	RAM (rwx)  :		ORIGIN = 0x20010000, LENGTH = 256k	/* was: 240k SRAM = SRAM1_BASE (240k) */
 	/*RAM2 (rwx)  :		ORIGIN = 0x2004C000, LENGTH = 64k	 SRAM = SRAM2_BASE (64k) */
+	SDRAM  (rwx)  :		ORIGIN = 0xC0000000, LENGTH = 8192k	/* MT48LC4M32B2 */
 }
 
 /* Library configurations */
@@ -50,6 +51,13 @@ ENTRY(Reset_Handler)
 
 SECTIONS
 {
+  .sdram :
+	{
+		. = ALIGN(8);
+		*(.framebuff*)
+		. = ALIGN(8);
+	} > SDRAM
+  
 	.text :
 	{
 		KEEP(*(.vectors))

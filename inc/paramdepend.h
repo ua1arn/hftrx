@@ -2161,7 +2161,7 @@ extern "C" {
 	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
 	#define LCDMODE_MAIN_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит - RGB565. */
 	//#define LCDMODE_MAIN_RGB565	1
-	#define LCDMODE_MAIN_PAGES	1
+	#define LCDMODE_MAIN_PAGES	3
 	#define LCDMODE_PIXELSIZE 1
 
 	//#define LCDMODE_PIP_RGB565	1	/* используется PIP с форматом 16 бит - RGB565 */

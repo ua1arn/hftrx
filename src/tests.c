@@ -6324,21 +6324,6 @@ void hightests(void)
 		}
 
 #endif
-
-#if LCDMODE_LTDCSDRAMBUFF
-
-	PACKEDCOLORMAIN_T * ff = colmain_fb_draw();
-	* ff = 0xBE;
-
-	local_delay_ms(100);
-
-	PRINTF("%X\n", * ff);
-
-//	for (;;)
-//		;
-
-#endif
-
 #if 0 && (CTLSTYLE_V1E || CTLSTYLE_V1F)
 	{
 		//int n = TIM6_DAC_IRQn;
