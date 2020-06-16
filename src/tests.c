@@ -5134,7 +5134,7 @@ static void sdtick(void)
 }
 #endif
 
-#if LCDMODE_COLORED && ! DSTYLE_G_DUMMY && 0
+#if LCDMODE_COLORED && ! DSTYLE_G_DUMMY && 1
 
 
 
@@ -6256,7 +6256,7 @@ void hightests(void)
 		BarTest();
 	}
 #endif
-#if 0 && WITHLTDCHW && LCDMODE_COLORED && ! DSTYLE_G_DUMMY
+#if 1 && WITHLTDCHW && LCDMODE_COLORED && ! DSTYLE_G_DUMMY
 	{
 		// test: вывод палитры на экран
 		display2_bgreset();

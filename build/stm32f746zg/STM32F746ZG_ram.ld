@@ -53,9 +53,9 @@ SECTIONS
 {
   .sdram :
 	{
-		. = ALIGN(8);
+		. = ALIGN(64);
 		*(.framebuff*)
-		. = ALIGN(8);
+		. = ALIGN(64);
 	} > SDRAM
   
 	.text :
