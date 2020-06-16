@@ -451,10 +451,12 @@
 //#define SPI_NAEN_BIT (1u << 7)		// * PE7 used
 
 /* инициализация лиий выбора периферийных микросхем */
+/*
 #define SPI_ALLCS_INITIALIZE() \
 	do { \
 		arm_hardware_piog_outputs(SPI_ALLCS_BITS, SPI_ALLCS_BITS ^ SPI_ALLCS_BITSNEG); \
 	} while (0)
+*/
 
 /* инициализация сигналов управлдения дешифратором CS */
 #define SPI_ADDRESS_NAEN_INITIALIZE() \
@@ -599,12 +601,14 @@
 #endif /* WITHDSPEXTFIR */
 
 /* получение состояния переполнения АЦП */
+/*
 #define TARGET_FPGA_OVF_PIN		(GPIOG->IDR)
 #define TARGET_FPGA_OVF_BIT		(1u << 5)	// PG5
 #define TARGET_FPGA_OVF_GET		((TARGET_FPGA_OVF_PIN & TARGET_FPGA_OVF_BIT) == 0)	// 1 - overflow active
 #define TARGET_FPGA_OVF_INITIALIZE() do { \
 			arm_hardware_piog_inputs(TARGET_FPGA_OVF_BIT); \
 		} while (0)
+*/
 
 #if WITHCPUDACHW
 	/* включить нужные каналы */

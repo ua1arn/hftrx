@@ -11859,7 +11859,7 @@ sysintt_sdram_initialize(void)
 	/* В процессоре есть внешняя память - если уже в ней то не трогаем */
 	arm_hardware_sdram_initialize();
 
-#elif WITHSDRAMHW && CTLSTYLE_V1D
+#elif WITHSDRAMHW && (CTLSTYLE_V1D || CTLSTYLE_V3D)
 	/* В процессоре есть внешняя память - только данные */
 	arm_hardware_sdram_initialize();
 

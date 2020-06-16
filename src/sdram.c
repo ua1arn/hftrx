@@ -3103,7 +3103,7 @@ void arm_hardware_sdram_initialize(void)
 
   /* FMC SDRAM bank initialization */
   FMC_SDRAMInit(&FMC_SDRAMInitStructure); 
-  
+
   /* FMC SDRAM device initialization sequence */
   SDRAM_InitSequence(); 
 }

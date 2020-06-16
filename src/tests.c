@@ -6324,6 +6324,24 @@ void hightests(void)
 		}
 
 #endif
+
+#if LCDMODE_LTDCSDRAMBUFF
+
+	typedef PACKEDCOLORMAIN_T FRAMEBUFF_T [LCDMODE_MAIN_PAGES] [GXSIZE(DIM_SECOND, DIM_FIRST)];
+	#define framebuff (* (FRAMEBUFF_T *) SDRAM_BANK_ADDR)
+
+	PACKEDCOLORMAIN_T * ff = & framebuff[0][0];
+	* ff = 0xBE;
+
+	local_delay_ms(100);
+
+	PRINTF("%X\n", * ff);
+
+//	for (;;)
+//		;
+
+#endif
+
 #if 0 && (CTLSTYLE_V1E || CTLSTYLE_V1F)
 	{
 		//int n = TIM6_DAC_IRQn;
