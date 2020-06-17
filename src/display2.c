@@ -5880,6 +5880,7 @@ display_colorgrid_xor(
 				char buf [4];
 				uint_fast16_t freqw;	// ширина строки со значением частоты
 				local_snprintf_P(buf, sizeof buf / sizeof buf [0], ".%0*d", glob_gridwc, (int) ((f0 + df) / glob_griddigit % glob_gridmod));
+				ASSERT(strlen(buf) == (glob_gridwc + 1));
 				freqw = strwidth3(buf);
 				if (xmarker > freqw / 2 && xmarker < (ALLDX - freqw / 2))
 				{
@@ -5924,6 +5925,7 @@ display_colorgrid_set(
 				char buf [4];
 				uint_fast16_t freqw;	// ширина строки со значением частоты
 				local_snprintf_P(buf, sizeof buf / sizeof buf [0], ".%0*d", glob_gridwc, (int) ((f0 + df) / glob_griddigit % glob_gridmod));
+				ASSERT(strlen(buf) == (glob_gridwc + 1));
 				freqw = strwidth3(buf);
 				if (xmarker > freqw / 2 && xmarker < (ALLDX - freqw / 2))
 				{
