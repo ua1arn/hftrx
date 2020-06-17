@@ -596,20 +596,21 @@ void arm_hardware_sdram_initialize(void)
 		#define SDRAM_ADDR ((uint32_t)0xC0000000)
 	#endif
 	#define BUFFER_SIZE 		((uint32_t)0x0100)
-	uint32_t aTxBuffer[BUFFER_SIZE];
-	uint32_t aRxBuffer[BUFFER_SIZE];
+	uint16_t aTxBuffer[BUFFER_SIZE];
+	uint16_t aRxBuffer[BUFFER_SIZE];
 
 	for (uint32_t tmpIndex = 0; tmpIndex < BUFFER_SIZE; tmpIndex++ )
-		aTxBuffer[tmpIndex] = tmpIndex + 0x37BA0F68;
+		aTxBuffer[tmpIndex] = tmpIndex + 0xAA00;
 
 	for (uint32_t uwIndex = 0; uwIndex < BUFFER_SIZE; uwIndex++)
-		*(uint32_t*) (SDRAM_ADDR + 4 * uwIndex) = aTxBuffer[uwIndex];
+		*(uint16_t*) (SDRAM_ADDR + 2 * uwIndex) = aTxBuffer[uwIndex];
 
 	for (uint32_t uwIndex = 0; uwIndex < BUFFER_SIZE; uwIndex++)
-		aRxBuffer[uwIndex] = *(uint32_t*) (SDRAM_ADDR + 4 * uwIndex);
+		aRxBuffer[uwIndex] = *(uint16_t*) (SDRAM_ADDR + 2 * uwIndex);
 
 	for (uint32_t uwIndex = 0; uwIndex < BUFFER_SIZE; uwIndex++)
-		PRINTF("%d - fill: %08X, read: %08X\n", uwIndex, aTxBuffer[uwIndex], aRxBuffer[uwIndex]);
+		if(aTxBuffer[uwIndex] != aRxBuffer[uwIndex])
+			PRINTF("ERROR! %d - fill: %04X, read: %04X\n", uwIndex, aTxBuffer[uwIndex], aRxBuffer[uwIndex]);
 
 	for(;;)
 		;
