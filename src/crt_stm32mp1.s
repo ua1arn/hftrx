@@ -54,7 +54,7 @@
    
 	/* Standard definitions of mode bits and interrupt (I & F) flags in PSRs */
 	I_BIT          = 0x80      /* disable IRQ when I bit is set */
-	F_BIT          = 0x40      /* disable FIQ when I bit is set */
+	F_BIT          = 0x40      /* disable FIQ when F bit is set */
  
 	 STACKSIZEUND = 256
 	 STACKSIZEABT = 256
@@ -331,10 +331,10 @@ IRQHandlerNested:
 		/* Save interrupt context on the stack to allow nesting */
 		sub		lr, lr, #4
 		stmfd   sp!, {lr}
-		mrs     lr, SPSR
+		mrs     lr, SPSR	/* Copy SPSR_irq to LR */
 		stmfd   sp!, {r0, lr}
 
-        msr     CPSR_c, #ARM_MODE_SYS | I_BIT
+        msr     CPSR_c, #ARM_MODE_SYS | I_BIT | F_BIT	/* write bits 0..7 - switch to SYS stack */
 		stmfd   sp!, {r1-r3, r4, r12, lr}
 
 #if __ARM_NEON == 1
@@ -368,10 +368,10 @@ IRQHandlerNested:
 #endif /* __ARM_NEON == 1 */
 
 		ldmia   sp!, {r1-r3, r4, r12, lr}
-        msr     CPSR_c, #ARM_MODE_IRQ | I_BIT
+        msr     CPSR_c, #ARM_MODE_IRQ | I_BIT | F_BIT
 
 		ldmia   sp!, {r0, lr}
-		msr     SPSR_cxsf, lr
+		msr     SPSR_cxsf, lr	/* Copy LR to SPSR_irq */
 		ldmia   sp!, {pc}^
 		.endfunc
 
@@ -404,7 +404,7 @@ IRQHandlerNotNested:
 #endif /* __ARM_NEON == 1 */
 
          ldmia sp!,{r0,lr}
-         msr SPSR_cxsf,lr
+         msr SPSR_cxsf,lr	/* write all 32 bits to SPSR */
          ldmia sp!,{pc}^
 		.endfunc
 
