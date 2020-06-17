@@ -141,29 +141,6 @@ void FMC_SDRAMInit(FMC_SDRAMInitTypeDef* FMC_SDRAMInitStruct)
   
 }
 
-void FMC_SDRAMStructInit(FMC_SDRAMInitTypeDef* FMC_SDRAMInitStruct)  
-{  
-  /* Reset SDRAM Init structure parameters values */
-  FMC_SDRAMInitStruct->FMC_Bank = FMC_Bank1_SDRAM;
-  FMC_SDRAMInitStruct->FMC_ColumnBitsNumber = FMC_ColumnBits_Number_8b;
-  FMC_SDRAMInitStruct->FMC_RowBitsNumber = FMC_RowBits_Number_11b; 
-  FMC_SDRAMInitStruct->FMC_SDMemoryDataWidth = FMC_SDMemory_Width_16b;
-  FMC_SDRAMInitStruct->FMC_InternalBankNumber = FMC_InternalBank_Number_4; 
-  FMC_SDRAMInitStruct->FMC_CASLatency = FMC_CAS_Latency_1;  
-  FMC_SDRAMInitStruct->FMC_WriteProtection = FMC_Write_Protection_Enable;
-  FMC_SDRAMInitStruct->FMC_SDClockPeriod = FMC_SDClock_Disable;
-  FMC_SDRAMInitStruct->FMC_ReadBurst = FMC_Read_Burst_Disable;
-  FMC_SDRAMInitStruct->FMC_ReadPipeDelay = FMC_ReadPipe_Delay_0; 
-   
-  FMC_SDRAMInitStruct->FMC_SDRAMTimingStruct->FMC_LoadToActiveDelay = 16;
-  FMC_SDRAMInitStruct->FMC_SDRAMTimingStruct->FMC_ExitSelfRefreshDelay = 16;
-  FMC_SDRAMInitStruct->FMC_SDRAMTimingStruct->FMC_SelfRefreshTime = 16;
-  FMC_SDRAMInitStruct->FMC_SDRAMTimingStruct->FMC_RowCycleDelay = 16;
-  FMC_SDRAMInitStruct->FMC_SDRAMTimingStruct->FMC_WriteRecoveryTime = 16;
-  FMC_SDRAMInitStruct->FMC_SDRAMTimingStruct->FMC_RPDelay = 16;
-  FMC_SDRAMInitStruct->FMC_SDRAMTimingStruct->FMC_RCDDelay = 16;
-  
-}
 void FMC_SDRAMCmdConfig(FMC_SDRAMCommandTypeDef* FMC_SDRAMCommandStruct)
 {
   uint32_t tmpr = 0x0;
@@ -611,6 +588,32 @@ void arm_hardware_sdram_initialize(void)
 
   /* FMC SDRAM device initialization sequence */
   SDRAM_InitSequence(); 
+
+#if 1		// Тест памяти
+	#if defined (SDRAM_BANK_ADDR)
+		#define SDRAM_ADDR	SDRAM_BANK_ADDR
+	#else
+		#define SDRAM_ADDR ((uint32_t)0xC0000000)
+	#endif
+	#define BUFFER_SIZE 		((uint32_t)0x0100)
+	uint32_t aTxBuffer[BUFFER_SIZE];
+	uint32_t aRxBuffer[BUFFER_SIZE];
+
+	for (uint32_t tmpIndex = 0; tmpIndex < BUFFER_SIZE; tmpIndex++ )
+		aTxBuffer[tmpIndex] = tmpIndex + 0x37BA0F68;
+
+	for (uint32_t uwIndex = 0; uwIndex < BUFFER_SIZE; uwIndex++)
+		*(uint32_t*) (SDRAM_ADDR + 4 * uwIndex) = aTxBuffer[uwIndex];
+
+	for (uint32_t uwIndex = 0; uwIndex < BUFFER_SIZE; uwIndex++)
+		aRxBuffer[uwIndex] = *(uint32_t*) (SDRAM_ADDR + 4 * uwIndex);
+
+	for (uint32_t uwIndex = 0; uwIndex < BUFFER_SIZE; uwIndex++)
+		PRINTF("%d - fill: %08X, read: %08X\n", uwIndex, aTxBuffer[uwIndex], aRxBuffer[uwIndex]);
+
+	for(;;)
+		;
+#endif
 }
 
 #elif CPUSTYLE_STM32MP157A || CPUSTYLE_STM32MP157D
