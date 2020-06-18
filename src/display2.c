@@ -6260,7 +6260,7 @@ static void display2_latchwaterfall(
 #else
 	wfrow = (wfrow == 0) ? (WFDY - 1) : (wfrow - 1);
 #endif
-#if 1
+
 	// запоминание информации спектра для водопада
 	for (x = 0; x < ALLDX; ++ x)
 	{
