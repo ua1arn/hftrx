@@ -589,7 +589,7 @@ void arm_hardware_sdram_initialize(void)
   /* FMC SDRAM device initialization sequence */
   SDRAM_InitSequence(); 
 
-#if 1		// Тест памяти
+#if 0		// Тест памяти
 	#if defined (SDRAM_BANK_ADDR)
 		#define SDRAM_ADDR	SDRAM_BANK_ADDR
 	#else
