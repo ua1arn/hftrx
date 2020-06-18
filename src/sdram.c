@@ -18,6 +18,56 @@
 
 #include "sdram.h"
 
+void sdram_test_pattern(uint_fast32_t addr, uint_fast16_t buffer_size, uint_fast16_t pattern)
+{
+	for (uint32_t i = 0; i < buffer_size; i++)
+		*(volatile uint16_t*) (addr + 2 * i) = pattern;
+
+	volatile uint16_t r;
+	for (uint32_t i = 0; i < buffer_size; i++)
+	{
+		r = *(volatile uint16_t*) (addr + 2 * i);
+		if(r !=  pattern)
+			PRINTF("ERROR! %X - fill pattern: %04X, read: %04X\n", addr + 2 * i,  pattern, r);
+	}
+
+}
+
+void sdram_test_increment(uint_fast32_t addr, uint_fast16_t buffer_size, uint_fast16_t seed)
+{
+	for (uint32_t i = 0; i < buffer_size; i++)
+		*(volatile uint16_t*) (addr + 2 * i) = seed + i;
+
+	volatile uint16_t r;
+	for (uint32_t i = 0; i < buffer_size; i++)
+	{
+		r = *(volatile uint16_t*) (addr + 2 * i);
+		if(r !=  seed + i)
+			PRINTF("ERROR! %X - fill increment: %04X, read: %04X\n", addr + 2 * i,  seed + i, r);
+	}
+
+}
+
+void sdram_test_random(uint_fast32_t addr, uint_fast16_t buffer_size)
+{
+	volatile uint16_t aTxBuffer[buffer_size];
+	volatile uint16_t r;
+
+	for (uint32_t i = 0; i < buffer_size; i++)
+	{
+		aTxBuffer[i] = rand() & 0xFFFF;
+		*(volatile uint16_t*) (addr + 2 * i) = aTxBuffer[i];
+	}
+
+	for (uint32_t i = 0; i < buffer_size; i++)
+	{
+		r = *(volatile uint16_t*) (addr + 2 * i);
+		if(aTxBuffer[i] !=  r)
+			PRINTF("ERROR! %X - fill random: %04X, read: %04X\n", addr + 2 * i, aTxBuffer[i], r);
+	}
+
+}
+
 #if CPUSTYLE_STM32F
 
 void FMC_SDRAMInit(FMC_SDRAMInitTypeDef* FMC_SDRAMInitStruct)
@@ -591,27 +641,29 @@ void arm_hardware_sdram_initialize(void)
 
 #if 0		// Тест памяти
 	#if defined (SDRAM_BANK_ADDR)
-		#define SDRAM_ADDR	SDRAM_BANK_ADDR
+		#define SDRAM_ADDR		SDRAM_BANK_ADDR
+		#define SDRAM_SIZE 		0x8000uL
 	#else
-		#define SDRAM_ADDR ((uint32_t)0xC0000000)
+		#define SDRAM_ADDR 		0xC0000000uL
+		#define SDRAM_SIZE 		0x800000uL
 	#endif
-	#define BUFFER_SIZE 		((uint32_t)0x0100)
-	uint16_t aTxBuffer[BUFFER_SIZE];
-	uint16_t aRxBuffer[BUFFER_SIZE];
+	#define BUFFER_SIZE 		0x1000uL
 
-	for (uint32_t tmpIndex = 0; tmpIndex < BUFFER_SIZE; tmpIndex++ )
-		aTxBuffer[tmpIndex] = tmpIndex + 0xAA00;
+	uint32_t addr = SDRAM_ADDR;
 
-	for (uint32_t uwIndex = 0; uwIndex < BUFFER_SIZE; uwIndex++)
-		*(uint16_t*) (SDRAM_ADDR + 2 * uwIndex) = aTxBuffer[uwIndex];
+	PRINTF("sdram testing...\n");
 
-	for (uint32_t uwIndex = 0; uwIndex < BUFFER_SIZE; uwIndex++)
-		aRxBuffer[uwIndex] = *(uint16_t*) (SDRAM_ADDR + 2 * uwIndex);
+	while(addr < SDRAM_ADDR + SDRAM_SIZE - BUFFER_SIZE)
+	{
+		sdram_test_pattern(addr, BUFFER_SIZE, 0x5555);
+		sdram_test_pattern(addr, BUFFER_SIZE, 0xCCCC);
+		sdram_test_increment(addr, BUFFER_SIZE, 0x7800);
+		sdram_test_random(addr, BUFFER_SIZE);
 
-	for (uint32_t uwIndex = 0; uwIndex < BUFFER_SIZE; uwIndex++)
-		if(aTxBuffer[uwIndex] != aRxBuffer[uwIndex])
-			PRINTF("ERROR! %d - fill: %04X, read: %04X\n", uwIndex, aTxBuffer[uwIndex], aRxBuffer[uwIndex]);
+		addr += BUFFER_SIZE;
+	} ;
 
+	PRINTF("sdram testing done\n");
 	for(;;)
 		;
 #endif
