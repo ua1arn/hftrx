@@ -12360,11 +12360,18 @@ void cpu_initialize(void)
 
 //	ca9_ca7_cache_diag();	// print
 
+#if (__GIC_PRESENT == 1)
+	// GIC version diagnostics
 	//PRINTF("arm_gic_initialize: ICPIDR0=%08lX\n", ICPIDR0);	// ICPIDR0
 	//PRINTF("arm_gic_initialize: ICPIDR1=%08lX\n", ICPIDR1);	// ICPIDR1
 	//PRINTF("arm_gic_initialize: ICPIDR2=%08lX\n", ICPIDR2);	// ICPIDR2
-#if (__GIC_PRESENT == 1)
-	// GIC version diagnostics
+
+	// Renesas:
+	//	arm_gic_initialize: ARM GICv1
+	//	GICInterface->IIDR=3901043B, GICDistributor->IIDR=0000043B
+	// STM32MP1:
+	//	arm_gic_initialize: ARM GICv2
+	//	GICInterface->IIDR=0102143B, GICDistributor->IIDR=0100143B
 	switch (ICPIDR1 & 0x0F)
 	{
 	case 0x03:	PRINTF("arm_gic_initialize: ARM GICv1\n"); break;
@@ -12548,7 +12555,7 @@ void cpu_initialize(void)
 	vectors_relocate();
 	arm_cpu_CMx_initialize_NVIC();
 
-#elif (__CORTEX_A != 0)
+#elif (__GIC_PRESENT != 0)
 
 	arm_gic_initialize();
 
