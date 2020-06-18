@@ -3467,18 +3467,6 @@ void hardware_fpgaspectrum_initialize(void)
 
 #endif /* WITHSAI2HW */
 
-#else /* WITHINTEGRATEDDSP */
-
-void hardware_fpgaspectrum_initialize(void)
-{
-	// заглушка
-}
-
-void hardware_fpgaspectrum_enable(void)
-{
-	// заглушка
-}
-
 #endif /* WITHINTEGRATEDDSP */
 
 #if WITHCPUDACHW

@@ -7995,7 +7995,7 @@ static const uint_fast8_t adcinputs [] =
 #endif /* WITHVOLTLEVEL */
 
 #if WITHBARS
-	#if ! WITHINTEGRATEDDSP && ! WITHCPUADCHW
+	#if ! WITHINTEGRATEDDSP
 		SMETERIX,		// вход S-метра
 	#endif /* ! WITHINTEGRATEDDSP */
 	#if WITHTX && WITHSWRMTR
