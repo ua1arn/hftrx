@@ -578,7 +578,7 @@ void arm_hardware_sdram_initialize(void)
 	FMC_SDRAMInitStructure.FMC_WriteProtection = FMC_Write_Protection_Disable;
 	FMC_SDRAMInitStructure.FMC_SDClockPeriod = FMC_SDClock_Period_2;
 	FMC_SDRAMInitStructure.FMC_ReadBurst = FMC_Read_Burst_Enable;
-	FMC_SDRAMInitStructure.FMC_ReadPipeDelay = FMC_ReadPipe_Delay_0;
+	FMC_SDRAMInitStructure.FMC_ReadPipeDelay = FMC_ReadPipe_Delay_1;
 	FMC_SDRAMInitStructure.FMC_SDRAMTimingStruct = &FMC_SDRAMTimingInitStructure;
 
 #endif

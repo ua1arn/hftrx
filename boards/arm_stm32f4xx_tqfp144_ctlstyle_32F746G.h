@@ -33,7 +33,7 @@
 			#define HARDWARE_FLASH_LATENCY FLASH_ACR_LATENCY_6WS	// overvlocking
 		#elif CPUSTYLE_STM32F7XX
 			// normal operation frequency
-			#define REF1_MUL 400		// 2*216.000 MHz (192 <= PLLN <= 432)
+			#define REF1_MUL 432		// 2*216.000 MHz (192 <= PLLN <= 432)
 			#define HARDWARE_FLASH_LATENCY FLASH_ACR_LATENCY_7WS	// overvlocking
 		#endif
 
