@@ -43,6 +43,7 @@ typedef struct listcnt
 __STATIC_INLINE int
 IsListEmpty2(const LIST_ENTRY2 * ListHead)
 {
+	ASSERT(ListHead->item0.Flink != NULL && ListHead->item0.Blink != NULL);
 	return (ListHead)->Count == 0;
 	//return IsListEmpty(& (ListHead)->item0);
 }
@@ -57,10 +58,7 @@ InitializeListHead2(LIST_ENTRY2 * ListHead)
 __STATIC_INLINE void
 InsertHeadList2(PLIST_ENTRY2 ListHead, PLIST_ENTRY Entry)
 {
-//	volatile int marker;
-//	ASSERT((void *) & marker > (void *) ListHead);
-//	ASSERT((void *) & marker > (void *) Entry);
-
+	ASSERT(ListHead->item0.Flink != NULL && ListHead->item0.Blink != NULL);
 	(ListHead)->Count += 1;
 	InsertHeadList(& (ListHead)->item0, (Entry));
 }
@@ -69,18 +67,16 @@ __STATIC_INLINE PLIST_ENTRY
 RemoveTailList2(PLIST_ENTRY2 ListHead)
 {
 	volatile int marker;
-	ASSERT((void *) & marker > (void *) ListHead);
+	ASSERT(ListHead->item0.Flink != NULL && ListHead->item0.Blink != NULL);
 
 	(ListHead)->Count -= 1;
 	const PLIST_ENTRY t = RemoveTailList(& (ListHead)->item0);	/* прямо вернуть значение RemoveTailList нельзя - Microsoft сделал не совсем правильный макрос. Но по другому и не плучилось бы в стандартном языке C. */
-//	ASSERT((void *) & marker > (void *) t);
 	return t;
 }
 
 __STATIC_INLINE uint_fast8_t GetCountList2(const LIST_ENTRY2 * ListHead)
 {
-	volatile int marker;
-	ASSERT((void *) & marker > (void *) ListHead);
+	ASSERT(ListHead->item0.Flink != NULL && ListHead->item0.Blink != NULL);
 
 	return (ListHead)->Count;
 }
