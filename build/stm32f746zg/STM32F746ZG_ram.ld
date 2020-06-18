@@ -51,7 +51,7 @@ ENTRY(Reset_Handler)
 
 SECTIONS
 {
-  .sdram :
+  .sdram (NOLOAD):
 	{
 		. = ALIGN(64);
 		*(.framebuff*)
