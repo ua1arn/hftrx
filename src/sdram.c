@@ -653,7 +653,7 @@ void arm_hardware_sdram_initialize(void)
 
 	PRINTF("sdram testing...\n");
 
-	while(addr < SDRAM_ADDR + SDRAM_SIZE - BUFFER_SIZE)
+	do
 	{
 		sdram_test_pattern(addr, BUFFER_SIZE, 0x5555);
 		sdram_test_pattern(addr, BUFFER_SIZE, 0xCCCC);
@@ -661,7 +661,7 @@ void arm_hardware_sdram_initialize(void)
 		sdram_test_random(addr, BUFFER_SIZE);
 
 		addr += BUFFER_SIZE;
-	} ;
+	} while(addr < SDRAM_ADDR + SDRAM_SIZE - BUFFER_SIZE);
 
 	PRINTF("sdram testing done\n");
 	for(;;)
