@@ -4951,7 +4951,7 @@ uint_fast8_t dsp_getspectrumrow(
 	uint_fast16_t i;
 	uint_fast16_t x;
 
-	// проверка, есть ли нудное количество данных для формирования спектра
+	// проверка, есть ли нужное количество данных для формирования спектра
 	global_disableIRQ();
 	if (renderready < needsize)
 	{
