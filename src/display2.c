@@ -5650,6 +5650,8 @@ static FLOAT_t filter_waterfall(
 	uint_fast16_t x
 	)
 {
+	ASSERT(x < ARRAY_SIZE(spavgarray));
+	ASSERT(x < ARRAY_SIZE(Yold_wtf));
 	const FLOAT_t val = spavgarray [x];
 	const FLOAT_t Y = Yold_wtf [x] * waterfall_alpha + waterfall_beta * val;
 	Yold_wtf [x] = Y;
@@ -6258,7 +6260,7 @@ static void display2_latchwaterfall(
 #else
 	wfrow = (wfrow == 0) ? (WFDY - 1) : (wfrow - 1);
 #endif
-
+#if 1
 	// запоминание информации спектра для водопада
 	for (x = 0; x < ALLDX; ++ x)
 	{
