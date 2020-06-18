@@ -6267,6 +6267,8 @@ static void display2_latchwaterfall(
 	#if LCDMODE_MAIN_L8
 		colmain_putpixel(wfjarray, ALLDX, WFROWS, x, wfrow, val);	// запись в буфер водопада индекса палитры
 	#else /* LCDMODE_MAIN_L8 */
+		ASSERT(val >= 0);
+		ASSERT(val < ARRAY_SIZE(wfpalette));
 		colmain_putpixel(wfjarray, ALLDX, WFROWS, x, wfrow, wfpalette [val]);	// запись в буфер водопада цветовой точки
 	#endif /* LCDMODE_MAIN_L8 */
 	}
