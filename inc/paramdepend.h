@@ -785,11 +785,11 @@ extern "C" {
 	#define ASSERT_IRQL_SYSTEM() ASSERT(1)
 	#define ASSERT_IRQL_USER() ASSERT(1)
 
-#elif (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7)
+#elif (__GIC_PRESENT == 1)
 
-	#define ICPIDR0	(* (const volatile uint32_t *) (GIC_INTERFACE_BASE + 0xFE0))
-	#define ICPIDR1	(* (const volatile uint32_t *) (GIC_INTERFACE_BASE + 0xFE4))
-	#define ICPIDR2	(* (const volatile uint32_t *) (GIC_INTERFACE_BASE + 0xFE8))
+	#define ICPIDR0	(* (const volatile uint32_t *) (GIC_DISTRIBUTOR_BASE + 0xFE0))
+	#define ICPIDR1	(* (const volatile uint32_t *) (GIC_DISTRIBUTOR_BASE + 0xFE4))
+	#define ICPIDR2	(* (const volatile uint32_t *) (GIC_DISTRIBUTOR_BASE + 0xFE8))
 
 	#if WITHNESTEDINTERRUPTS
 
