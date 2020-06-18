@@ -113,37 +113,6 @@ static uint_fast16_t ulmax16(uint_fast16_t a, uint_fast16_t b)
 	return a > b ? a : b;
 }
 
-static int
-toprintc(int c)
-{
-	if (c < 0x20 || c >= 0x7f)
-		return '.';
-	return c;
-}
-
-static void
-printhex(unsigned long voffs, const unsigned char * buff, unsigned length)
-{
-	unsigned i, j;
-	unsigned rows = (length + 15) / 16;
-
-	for (i = 0; i < rows; ++ i)
-	{
-		const int trl = ((length - 1) - i * 16) % 16 + 1;
-		PRINTF(PSTR("%08lX "), voffs + i * 16);
-		for (j = 0; j < trl; ++ j)
-			PRINTF(PSTR(" %02X"), buff [i * 16 + j]);
-
-		PRINTF(PSTR("%*s"), (16 - trl) * 3, "");
-
-		PRINTF(PSTR("  "));
-		for (j = 0; j < trl; ++ j)
-			PRINTF(PSTR("%c"), toprintc(buff [i * 16 + j]));
-
-		PRINTF(PSTR("\n"));
-	}
-}
-
 /*****************************************/
 #if WITHISBOOTLOADER
 	#define PREPROCMAX(a, b) ((a) > (b) ? (a) : (b))
