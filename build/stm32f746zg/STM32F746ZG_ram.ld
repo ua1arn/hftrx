@@ -60,6 +60,7 @@ SECTIONS
   
 	.text :
 	{
+		. = ALIGN(32);
 		KEEP(*(.vectors))
 		__Vectors_End = .;
 		__Vectors_Size = __Vectors_End - __Vectors;
@@ -173,6 +174,7 @@ SECTIONS
 	.data : AT (__etext3)
 	{
 		__data3_start__ = .;
+		. = ALIGN(4);	/* may be 32 */
 		*(.data*)
 		. = ALIGN(4);	/* may be 32 */
 		/* preinit data */
@@ -198,7 +200,7 @@ SECTIONS
 		KEEP(*(.jcr*))
 		. = ALIGN(4);	/* may be 32 */
 		__data3_end__ = .;
-	} > RAM
+	} > SDRAM
 
 	. = __etext3 + __data3_end__ - __data3_start__;
 
@@ -208,9 +210,9 @@ SECTIONS
 		__bss_start__ = .;
 		*(.bss*)
 		*(COMMON)
-		. = ALIGN(32);
+		. = ALIGN(4);	/* may be 32 */
 		__bss_end__ = .;
-	} > RAM
+	} > SDRAM
 
 	.heap (COPY):
 	{

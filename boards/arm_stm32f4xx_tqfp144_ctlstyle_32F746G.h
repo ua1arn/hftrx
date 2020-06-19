@@ -230,7 +230,7 @@
 	#define WITHAFDACWIDTH	16		// 1 бит знак и 15 бит значащих
 	//#define WITHDACOUTDSPAGC		1	/* АРУ реализовано как выход ЦАП на аналоговую часть. */
 	//#define WITHEXTERNALDDSP		1	/* имеется управление внешней DSP платой. */
-	#define WITHLOOPBACKTEST	1	/* прослушивание микрофонного входа, генераторов */
+	//#define WITHLOOPBACKTEST	1	/* прослушивание микрофонного входа, генераторов */
 	//#define WITHDSPEXTDDC 1			/* Квадратуры получаются внешней аппаратурой */
 	//#define WITHDSPEXTFIR 1			/* Фильтрация квадратур осуществляется внешней аппаратурой */
 	#define WITHDSPLOCALFIR 1		/* test: Фильтрация квадратур осуществляется процессором */
@@ -242,7 +242,7 @@
 	#define WITHDACSTRAIGHT 1	/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
 	//#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 	//#define WITHRTS192 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
-	//#define WITHSUSBSPKONLY 1
+	#define WITHSUSBSPKONLY 1
 	//#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
 	#define BOARD_FFTZOOM_POW2MAX 1	// Возможные масштабы FFT x1, x2
 	//#define BOARD_FFTZOOM_POW2MAX 2	// Возможные масштабы FFT x1, x2, x4
@@ -266,7 +266,7 @@
 		//#define WITHBBOXSUBMODE	SUBMODE_CW	// единственный режим работы
 		//#define WITHBBOXTX		1		// автоматический переход на передачу
 		//#define WITHBBOXMIKESRC	BOARD_TXAUDIO_2TONE
-	#elif 0
+	#elif 1
 		#define WITHBBOX	1	// Black Box mode - устройство без органов управления
 		//#define WITHBBOXFREQ	136000L		// частота после включения
 		//#define WITHBBOXSUBMODE	SUBMODE_USB	// единственный режим работы
@@ -299,7 +299,7 @@
 	#define WITHIFSHIFT	1	/* используется IF SHIFT */
 	//#define WITHIFSHIFTOFFSET	(-250)	/* Начальное занчение IF SHIFT */
 	//#define WITHPBT		1	/* используется PBT (если LO3 есть) */
-	////#define WITHCAT		1	/* используется CAT */
+	#define WITHCAT		1	/* используется CAT */
 	//#define WITHDEBUG		1	/* Отладочная печать через COM-порт. */
 	//#define WITHMODEM		1	/* Устройство работает как радиомодем с последовательным интерфейсом */
 	//#define WITHFREEDV	1	/* поддержка режима FreeDV - http://freedv.org/ */

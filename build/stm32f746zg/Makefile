@@ -24,7 +24,7 @@ CC   = $(TRGT)gcc
 CP   = $(TRGT)objcopy
 AS   = $(TRGT)gcc -x assembler-with-cpp
 HEX  = $(CP) -O ihex -R .bss -R .heap
-BIN  = $(CP) -O binary -R .bss -R .heap
+BIN  = $(CP) -O binary -R .bss -R .heap -R .sdram
 
 CMSISDIR = ../../../CMSIS_5/CMSIS
 OBJDIR = ./obj
@@ -34,9 +34,8 @@ OPT = -Ofast
 LTO = -flto
 
 # floating-point use hardware of STM32F746ZG CPU (only 32-bit float)
-MCU = cortex-m7
-CORE = -mthumb -mfloat-abi=hard -mfpu=fpv5-sp-d16 -ftree-vectorize
-#CORE = -mthumb -mfloat-abi=hard -mfpu=fpv5-sp-d16
+CORE = -mcpu=cortex-m7 -mthumb -mfloat-abi=hard -mfpu=fpv5-sp-d16
+#CORE = -mcpu=cortex-m7 -mthumb -mfloat-abi=hard -mfpu=fpv5-sp-d16
 
 #
 # List all default C defines here, like -D_DEBUG=1
@@ -113,8 +112,8 @@ OBJS 	= $(patsubst %.s,$(OBJDIR)/%.o,$(ASRC)) $(patsubst $(SRCDIR)/%.c,$(OBJDIR)
 LIBS    = $(DLIBS) $(ULIBS)
 
 
-MCFLAGS = -mcpu=$(MCU) $(CORE) -fno-math-errno -funroll-loops -fgraphite-identity -ffunction-sections -fdata-sections -ffat-lto-objects
-#MCFLAGS = -mcpu=$(MCU) $(CORE) -fno-math-errno
+MCFLAGS = $(CORE) -fno-math-errno -funroll-loops -fgraphite-identity -ffunction-sections -fdata-sections -ffat-lto-objects  -ftree-vectorize
+#MCFLAGS = $(CORE) -fno-math-errno
 #
 #ASFLAGS = $(MCFLAGS) $(OPT) $(LTO) -g -gdwarf-2 -Wa,-amhls=$(<:.s=.lst) $(ADEFS)
 ASFLAGS = $(MCFLAGS) $(OPT) $(LTO) -g -gdwarf-2 $(ADEFS)
@@ -139,7 +138,7 @@ CPFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 #
 
 #all: RAM ROM
-all: ROM
+all: RAM
 
 flash: ROM
 	ST-LINK_CLI.exe -Q -V -P $(PROJECT)_rom.hex -rst
