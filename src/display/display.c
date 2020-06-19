@@ -1511,6 +1511,8 @@ void display_plotfrom(uint_fast16_t x, uint_fast16_t y)
 // Выдать буфер на дисплей. Функции бывают только для не L8 режимов
 // В случае фреймбуфеных дисплеев - формат цвета и там и там одинаковый
 void colpip_to_main(
+	uintptr_t srcinvalidateaddr,	// параметры clean источника
+	int_fast32_t srcinvalidatesize,
 	const PACKEDCOLORPIP_T * buffer,	// источник
 	uint_fast16_t dx,	// ширина буфера источника
 	uint_fast16_t dy,	// высота буфера источника
