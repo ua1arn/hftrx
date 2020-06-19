@@ -8125,6 +8125,8 @@ uint_fast8_t board_get_adcinputs(void)
 /* получить канал АЦП но индексу в таблице */
 uint_fast8_t board_get_adcch(uint_fast8_t i)
 {
+	if (i >= board_get_adcinputs())
+		return 0;
 	ASSERT(i < board_get_adcinputs());
 	return adcinputs [i];
 }
