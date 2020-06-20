@@ -330,7 +330,7 @@ IRQHandlerNested:
        PUSH    {R0-R12,LR}          // save register context
        MRS     LR, SPSR_irq                // Copy SPSR_irq to LR
        PUSH    {LR}                    // Save SPSR_irq
-       MSR     CPSR_c, #ARM_MODE_SVC | I_BIT          // Disable IRQ (Sys Mode)
+       MSR     CPSR_c, #ARM_MODE_SVC | I_BIT          // Disable IRQ (Svc Mode)
        PUSH    {LR}                    // Save LR
 
 		// save VFP/Neon FPSCR register
