@@ -54,12 +54,12 @@
    
 	/* Standard definitions of mode bits and interrupt (I & F) flags in PSRs */
 	I_BIT          = 0x80      /* disable IRQ when I bit is set */
-	F_BIT          = 0x40      /* disable FIQ when I bit is set */
+	F_BIT          = 0x40      /* disable FIQ when F bit is set */
  
 	 STACKSIZEUND = 256
 	 STACKSIZEABT = 256
 	 STACKSIZEFIQ = 256
-	 STACKSIZEIRQ = 16384
+	 STACKSIZEIRQ = 256
 	 STACKSIZESVC = 256
 	 STACKSIZEHYP = 256
 	 STACKSIZEMON = 256
@@ -147,7 +147,7 @@ gotosleep:
    ldr   sp, =__stack_hyp_end
    mov   lr, #0
 #endif
-   msr   CPSR_c, #ARM_MODE_SYS     /* 0x1F Priviledged Operating Mode */
+   msr   CPSR_c, #ARM_MODE_SYS | I_BIT     /* 0x1F Priviledged Operating Mode */
    ldr   sp, =__stack	/* __stack_sys_end */
    mov   lr, #0
 
@@ -328,14 +328,20 @@ DummyResetHandler:
     .func   IRQHandlerNested
 IRQHandlerNested:
 
-		/* Save interrupt context on the stack to allow nesting */
-		sub		lr, lr, #4
-		stmfd   sp!, {lr}
-		mrs     lr, SPSR
-		stmfd   sp!, {r0, lr}
+       PUSH    {R0-R12,LR}          // save register context
+       MRS     LR, SPSR_irq                // Copy SPSR_irq to LR
+       PUSH    {LR}                    // Save SPSR_irq
+       MSR     CPSR_c, #ARM_MODE_SYS | I_BIT          // Disable IRQ (Sys Mode)
+       PUSH    {LR}                    // Save LR
 
-        msr     CPSR_c, #ARM_MODE_SYS | I_BIT
-		stmfd   sp!, {r1-r3, r4, r12, lr}
+		// save VFP/Neon FPSCR register
+		FMRX	LR, FPSCR
+		FMXR	FPSCR, LR
+		PUSH	{LR}
+		// save VFP/Neon FPEXC register
+		FMRX	LR, FPEXC
+		FMXR	FPEXC, LR
+		PUSH	{LR}
 
 #if __ARM_NEON == 1
 		// save Neon data registers
@@ -343,23 +349,10 @@ IRQHandlerNested:
 #endif /* __ARM_NEON == 1 */
 		// save VFP/Neon data registers
 		VPUSH.F64	{q0-q7}
-		// save VFP/Neon FPSCR register
-		FMRX	r2, FPSCR
-		PUSH	{r2}
-		// save VFP/Neon FPEXC register
-		FMRX	r2, FPEXC
-		PUSH	{r2}
 
-		ldr		r2, =IRQ_Handler
+		ldr		r0, =IRQ_Handler
 		mov		lr, pc
-		bx		r2     /* And jump... */
-
-		// restore VFP/Neon FPEXC register
-		POP		{r2}
-		FMXR	FPEXC, r2
-		// restore VFP/Neon FPSCR register
-		POP		{r2}
-		FMXR	FPSCR, r2
+		bx		r0     /* And jump... */
 		// restore VFP data registers
 		VPOP.F64   {q0-q7}
 #if __ARM_NEON == 1
@@ -367,47 +360,21 @@ IRQHandlerNested:
 		VPOP.F64	{q8-q15}
 #endif /* __ARM_NEON == 1 */
 
-		ldmia   sp!, {r1-r3, r4, r12, lr}
-        msr     CPSR_c, #ARM_MODE_IRQ | I_BIT
+		// restore VFP/Neon FPEXC register
+		POP		{LR}
+		FMXR	FPEXC, LR
+		// restore VFP/Neon FPSCR register
+		POP		{LR}
+		FMXR	FPSCR, LR
 
-		ldmia   sp!, {r0, lr}
-		msr     SPSR_cxsf, lr
-		ldmia   sp!, {pc}^
+       POP     {LR}                    // Restore LR
+       MSR     CPSR_c, #ARM_MODE_IRQ  | I_BIT  // Disable IRQ (IRQ Mode)
+       POP     {LR}                    // Restore SPSR_irq to LR
+       MSR     SPSR_cxsf, LR           // Copy LR to SPSR_irq
+
+       POP     {R0-R12,LR}          // restore register context
+       SUBS    R15,R14,#0x0004         // return from interrupt
 		.endfunc
-
-    .func   IRQHandlerNotNested
-IRQHandlerNotNested:
-
-         sub lr,lr,#4
-         stmfd sp!,{lr}
-         mrs lr,SPSR
-         stmfd sp!,{r0,lr}
-
- #if __ARM_NEON == 1
-		// save Neon data registers
-		VPUSH.F64	{q8-q15}
-#endif /* __ARM_NEON == 1 */
-         VPUSH {d0-d15}
-         FMRX r0,fpscr
-         stmfd sp!,{r0-r3,r4,r12,lr}
-
-         ldr r2,=IRQ_Handler
-         mov lr,pc
-         bx r2
-
-         ldmia sp!,{r0-r3,r4,r12,lr}
-         FMXR fpscr,r0
-         VPOP {d0-d15}
-#if __ARM_NEON == 1
-		// restore VFP/Neon data registers
-		VPOP.F64	{q8-q15}
-#endif /* __ARM_NEON == 1 */
-
-         ldmia sp!,{r0,lr}
-         msr SPSR_cxsf,lr
-         ldmia sp!,{pc}^
-		.endfunc
-
 
 	.section .dtcm
 	.align 8

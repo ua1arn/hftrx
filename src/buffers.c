@@ -43,6 +43,7 @@ typedef struct listcnt
 __STATIC_INLINE int
 IsListEmpty2(const LIST_ENTRY2 * ListHead)
 {
+	ASSERT(ListHead->item0.Flink != NULL && ListHead->item0.Blink != NULL);
 	return (ListHead)->Count == 0;
 	//return IsListEmpty(& (ListHead)->item0);
 }
@@ -57,10 +58,7 @@ InitializeListHead2(LIST_ENTRY2 * ListHead)
 __STATIC_INLINE void
 InsertHeadList2(PLIST_ENTRY2 ListHead, PLIST_ENTRY Entry)
 {
-//	volatile int marker;
-//	ASSERT((void *) & marker > (void *) ListHead);
-//	ASSERT((void *) & marker > (void *) Entry);
-
+	ASSERT(ListHead->item0.Flink != NULL && ListHead->item0.Blink != NULL);
 	(ListHead)->Count += 1;
 	InsertHeadList(& (ListHead)->item0, (Entry));
 }
@@ -69,18 +67,16 @@ __STATIC_INLINE PLIST_ENTRY
 RemoveTailList2(PLIST_ENTRY2 ListHead)
 {
 	volatile int marker;
-	ASSERT((void *) & marker > (void *) ListHead);
+	ASSERT(ListHead->item0.Flink != NULL && ListHead->item0.Blink != NULL);
 
 	(ListHead)->Count -= 1;
 	const PLIST_ENTRY t = RemoveTailList(& (ListHead)->item0);	/* прямо вернуть значение RemoveTailList нельзя - Microsoft сделал не совсем правильный макрос. Но по другому и не плучилось бы в стандартном языке C. */
-//	ASSERT((void *) & marker > (void *) t);
 	return t;
 }
 
 __STATIC_INLINE uint_fast8_t GetCountList2(const LIST_ENTRY2 * ListHead)
 {
-	volatile int marker;
-	ASSERT((void *) & marker > (void *) ListHead);
+	ASSERT(ListHead->item0.Flink != NULL && ListHead->item0.Blink != NULL);
 
 	return (ListHead)->Count;
 }
@@ -1315,9 +1311,11 @@ static uint_fast8_t isrts96(void)
 static RAMFUNC void
 buffers_savetouacin96rts(voice96rts_t * p)
 {
+	ASSERT(p->tag2 == p);
+	ASSERT(p->tag3 == p);
 #if WITHBUFFERSDEBUG
 	// подсчёт скорости в сэмплах за секунду
-	debugcount_rtsadc += sizeof p->buff / sizeof p->buff [0] / DMABUFSTEP96RTS;	// в буфере пары сэмплов по три байта
+	debugcount_rtsadc += sizeof p->u.buff / sizeof p->u.buff [0] / DMABUFSTEP96RTS;	// в буфере пары сэмплов по три байта
 #endif /* WITHBUFFERSDEBUG */
 	
 	LOCK(& locklist16);
@@ -1349,7 +1347,7 @@ buffers_savetouacin(uacin16_t * p)
 {
 #if WITHBUFFERSDEBUG
 	// подсчёт скорости в сэмплах за секунду
-	debugcount_uacin += sizeof p->buff / sizeof p->buff [0] / DMABUFSTEPUACIN16;	// в буфере пары сэмплов по три байта
+	debugcount_uacin += sizeof p->u.buff / sizeof p->u.buff [0] / DMABUFSTEPUACIN16;	// в буфере пары сэмплов по три байта
 #endif /* WITHBUFFERSDEBUG */
 	LOCK(& locklist16);
 	InsertHeadList2(& uacinready16, & p->item);
@@ -1485,6 +1483,8 @@ static RAMFUNC void buffers_resample(void)
 {
 	const uintptr_t addr = allocate_dmabuffer16();	// выходной буфер
 	voice16_t * const p = CONTAINING_RECORD(addr, voice16_t, buff);
+	ASSERT(p->tag2 == p);
+	ASSERT(p->tag3 == p);
 	//
 	// выполнение ресэмплинга
 	unsigned pos;
@@ -2189,6 +2189,8 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 			#if WITHBUFFERSDEBUG
 				++ n5;
 			#endif /* WITHBUFFERSDEBUG */
+				ASSERT(p->tag2 == p);
+				ASSERT(p->tag3 == p);
 				return (uintptr_t) & p->u.buff;
 			}
 			else if (! IsListEmpty2(& uacin96rts))
@@ -2209,6 +2211,8 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 			#if WITHBUFFERSDEBUG
 				++ e5;
 			#endif /* WITHBUFFERSDEBUG */
+				ASSERT(p->tag2 == p);
+				ASSERT(p->tag3 == p);
 				return (uintptr_t) & p->u.buff;
 			}
 			else
@@ -2226,6 +2230,8 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 		{
 			LOCK(& locklist32);
 			voice96rts_t * const p = CONTAINING_RECORD(addr, voice96rts_t, u.buff);
+			ASSERT(p->tag2 == p);
+			ASSERT(p->tag3 == p);
 			InsertHeadList2(& voicesfree96rts, & p->item);
 			UNLOCK(& locklist32);
 		}
@@ -2241,6 +2247,8 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 				PLIST_ENTRY t = RemoveTailList2(& uacin96rts);
 				voice96rts_t * const p = CONTAINING_RECORD(t, voice96rts_t, item);
 				UNLOCK(& locklist16);
+				ASSERT(p->tag2 == p);
+				ASSERT(p->tag3 == p);
 				return (uintptr_t) & p->u.buff;
 			}
 			UNLOCK(& locklist16);
@@ -2264,6 +2272,8 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 				uint32_t addr = allocate_dmabuffer96rts();
 				p = CONTAINING_RECORD(addr, voice96rts_t, u.buff);
 				n = 0;
+				ASSERT(p->tag2 == p);
+				ASSERT(p->tag3 == p);
 			}
 			else if (! isrts96())
 			{
@@ -2272,6 +2282,8 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 				return;
 			}
 
+			ASSERT(p->tag2 == p);
+			ASSERT(p->tag3 == p);
 			ASSERT(DMABUFSTEP96RTS == 6);
 			p->u.buff [n ++] = ch0 >> 8;	// sample value
 			p->u.buff [n ++] = ch0 >> 16;	// sample value

@@ -21,6 +21,8 @@ void debug_printf_P(const FLASHMEM char *format, ... );
 
 char * safestrcpy(char * dst, size_t blen, const char * src);
 
+void printhex(unsigned long voffs, const unsigned char * buff, unsigned length);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

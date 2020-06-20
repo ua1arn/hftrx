@@ -4951,7 +4951,7 @@ uint_fast8_t dsp_getspectrumrow(
 	uint_fast16_t i;
 	uint_fast16_t x;
 
-	// проверка, есть ли нудное количество данных для формирования спектра
+	// проверка, есть ли нужное количество данных для формирования спектра
 	global_disableIRQ();
 	if (renderready < needsize)
 	{
@@ -5066,7 +5066,7 @@ saverts96(const int32_t * buff)
 	// если используется конвертор на Rafael Micro R820T - требуется инверсия спектра
 	if (glob_swaprts != 0)
 	{
-			saveIQRTSxx(
+		saveIQRTSxx(
 			buff [DMABUF32RTS0Q],	// previous
 			buff [DMABUF32RTS0I]
 			);	

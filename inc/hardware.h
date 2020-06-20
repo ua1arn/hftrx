@@ -405,10 +405,11 @@ extern "C" {
 	#define	CPUSTYLE_ARM_CA9	1
 
 	#include "armcpu/Renesas_RZ_A1.h"
+	#include "armcpu/iodefine.h"
+	#include "armcpu/rza_io_regrw.h"
+
 	#include "irq_ctrl.h"
 
-	#include "armcpu/iodefine.h"
-	#include "rza_io_regrw.h"
 
 	#define DCACHEROWSIZE 32
 	#define ICACHEROWSIZE 32

@@ -12087,19 +12087,6 @@ uint32_t gARM_BASEPRI_ALL_ENABLED;
 static void
 arm_gic_initialize(void)
 {
-	//PRINTF("arm_gic_initialize: ICPIDR0=%08lX\n", ICPIDR0);	// ICPIDR0
-	//PRINTF("arm_gic_initialize: ICPIDR1=%08lX\n", ICPIDR1);	// ICPIDR1
-	//PRINTF("arm_gic_initialize: ICPIDR2=%08lX\n", ICPIDR2);	// ICPIDR2
-#if 0
-	// GIC version diagnostics
-	switch (ICPIDR1 & 0x0F)
-	{
-	case 0x03:	PRINTF("arm_gic_initialize: ARM GICv1\n"); break;
-	case 0x04:	PRINTF("arm_gic_initialize: ARM GICv2\n"); break;
-	default:	PRINTF("arm_gic_initialize: ARM GICv? (code=%08lX @%p)\n", (unsigned long) ICPIDR1, & ICPIDR1); break;
-	}
-#endif
-
 	IRQ_Initialize();
 
 	GIC_Enable();
@@ -12108,8 +12095,6 @@ arm_gic_initialize(void)
 	r7s721_intc_initialize();
 #endif /* CPUSTYLE_R7S721 */
 
-    //PRINTF("arm_gic_initialize: GIC_GetBinaryPoint()=%02X\n", GIC_GetBinaryPoint());
-	
 #if WITHNESTEDINTERRUPTS
 	gARM_OVERREALTIME_PRIORITY = ARM_CA9_ENCODE_PRIORITY(PRI_OVRT);	// value for GIC_SetPriority
 	gARM_REALTIME_PRIORITY = ARM_CA9_ENCODE_PRIORITY(PRI_RT);	// value for GIC_SetPriority
@@ -12375,6 +12360,28 @@ void cpu_initialize(void)
 
 //	ca9_ca7_cache_diag();	// print
 
+#if (__GIC_PRESENT == 1)
+	// GIC version diagnostics
+	//PRINTF("arm_gic_initialize: ICPIDR0=%08lX\n", ICPIDR0);	// ICPIDR0
+	//PRINTF("arm_gic_initialize: ICPIDR1=%08lX\n", ICPIDR1);	// ICPIDR1
+	//PRINTF("arm_gic_initialize: ICPIDR2=%08lX\n", ICPIDR2);	// ICPIDR2
+
+	// Renesas:
+	//	arm_gic_initialize: ARM GICv1
+	//	GICInterface->IIDR=3901043B, GICDistributor->IIDR=0000043B
+	// STM32MP1:
+	//	arm_gic_initialize: ARM GICv2
+	//	GICInterface->IIDR=0102143B, GICDistributor->IIDR=0100143B
+	switch (ICPIDR1 & 0x0F)
+	{
+	case 0x03:	PRINTF("arm_gic_initialize: ARM GICv1\n"); break;
+	case 0x04:	PRINTF("arm_gic_initialize: ARM GICv2\n"); break;
+	default:	PRINTF("arm_gic_initialize: ARM GICv? (code=%08lX @%p)\n", (unsigned long) ICPIDR1, & ICPIDR1); break;
+	}
+
+	PRINTF("GICInterface->IIDR=%08lX, GICDistributor->IIDR=%08lX\n", (unsigned long) GICInterface->IIDR, (unsigned long) GIC_DistributorImplementer());
+#endif
+
 	//PRINTF("cpu_initialize\n");
 #if CPUSTYLE_STM32F1XX
 
@@ -12548,7 +12555,7 @@ void cpu_initialize(void)
 	vectors_relocate();
 	arm_cpu_CMx_initialize_NVIC();
 
-#elif (__CORTEX_A != 0)
+#elif (__GIC_PRESENT != 0)
 
 	arm_gic_initialize();
 

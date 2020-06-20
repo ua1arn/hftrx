@@ -116,7 +116,7 @@ SECTIONS
 
 	.data : /*AT (__etext)*/
 	{
-		. = ALIGN(0x100000);
+		. = ALIGN(64);
 		__data_start__ = .;
 
 		/* .ctors */
@@ -162,7 +162,6 @@ SECTIONS
 		PROVIDE_HIDDEN (__fini_array_end = .);
 
 		KEEP(*(.jcr*))
-		. = ALIGN(32);
 		/* All data end */
 		__data_end__ = .;
 
@@ -172,8 +171,8 @@ SECTIONS
 
 	.sysram : AT (__etext2)
 	{
-		__data2_start__ = .;
 		. = ALIGN(32);
+		__data2_start__ = .;
 		KEEP(*(.vectors))
 		__Vectors_End = .;
 		__Vectors_Size = __Vectors_End - __Vectors;
@@ -181,7 +180,6 @@ SECTIONS
 		*(.itcm*)
 		. = ALIGN(64);
 		*(.dtcm*)
-		. = ALIGN(64);
 		__data2_end__ = .;
 	} > SYSRAM
 
@@ -194,7 +192,6 @@ SECTIONS
 		__bss_start__ = .;
 		*(.bss*)
 		*(COMMON)
-		. = ALIGN(32);
 		__bss_end__ = .;
 	} > RAM
 
@@ -209,7 +206,6 @@ SECTIONS
 	{
 		. = ALIGN(64);
 		*(.framebuff*)
-		. = ALIGN(64);
 	} > RAM
 
 	.heap (COPY):

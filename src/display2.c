@@ -5650,6 +5650,8 @@ static FLOAT_t filter_waterfall(
 	uint_fast16_t x
 	)
 {
+	ASSERT(x < ARRAY_SIZE(spavgarray));
+	ASSERT(x < ARRAY_SIZE(Yold_wtf));
 	const FLOAT_t val = spavgarray [x];
 	const FLOAT_t Y = Yold_wtf [x] * waterfall_alpha + waterfall_beta * val;
 	Yold_wtf [x] = Y;
@@ -5731,7 +5733,7 @@ static FLOAT_t filter_spectrum(
 static uint_fast32_t wffreqpix;			// глобальный пиксель по x центра спектра, для которой в последной раз отрисовали.
 static uint_fast8_t wfzoompow2;				// масштаб, с которым выводили спектр
 static int_fast16_t wfhscroll;			// сдвиг по шоризонтали (отрицаельный - влево) для водопада.
-static uint_fast16_t wfvscroll;			// сдвиг по вертикали (в раьочем направлении) для водопада.
+static uint_fast16_t wfvscroll;			// сдвиг по вертикали (в рабочем направлении) для водопада.
 static uint_fast8_t wfclear;			// стирание всей областии отображение водопада.
 
 // Код взят из проекта Malamute
@@ -5877,9 +5879,10 @@ display_colorgrid_xor(
 			xmarker = deltafreq2x_abs(f0, df, bw, ALLDX);
 			if (xmarker != UINT16_MAX)
 			{
-				char buf [4];
+				char buf [16];
 				uint_fast16_t freqw;	// ширина строки со значением частоты
 				local_snprintf_P(buf, sizeof buf / sizeof buf [0], ".%0*d", glob_gridwc, (int) ((f0 + df) / glob_griddigit % glob_gridmod));
+				ASSERT(strlen(buf) == (glob_gridwc + 1));
 				freqw = strwidth3(buf);
 				if (xmarker > freqw / 2 && xmarker < (ALLDX - freqw / 2))
 				{
@@ -5921,9 +5924,10 @@ display_colorgrid_set(
 			xmarker = deltafreq2x_abs(f0, df, bw, ALLDX);
 			if (xmarker != UINT16_MAX)
 			{
-				char buf [4];
+				char buf [16];
 				uint_fast16_t freqw;	// ширина строки со значением частоты
 				local_snprintf_P(buf, sizeof buf / sizeof buf [0], ".%0*d", glob_gridwc, (int) ((f0 + df) / glob_griddigit % glob_gridmod));
+				ASSERT(strlen(buf) == (glob_gridwc + 1));
 				freqw = strwidth3(buf);
 				if (xmarker > freqw / 2 && xmarker < (ALLDX - freqw / 2))
 				{
@@ -6265,6 +6269,8 @@ static void display2_latchwaterfall(
 	#if LCDMODE_MAIN_L8
 		colmain_putpixel(wfjarray, ALLDX, WFROWS, x, wfrow, val);	// запись в буфер водопада индекса палитры
 	#else /* LCDMODE_MAIN_L8 */
+		ASSERT(val >= 0);
+		ASSERT(val < ARRAY_SIZE(wfpalette));
 		colmain_putpixel(wfjarray, ALLDX, WFROWS, x, wfrow, wfpalette [val]);	// запись в буфер водопада цветовой точки
 	#endif /* LCDMODE_MAIN_L8 */
 	}
