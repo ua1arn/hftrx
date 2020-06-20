@@ -867,9 +867,14 @@ typedef enum IRQn
 
 /*@}*/ /* end of group Renesas_RZ_A1_MemoryMap */
 #endif
+
+
+
 /******************************************************************************/
 /*                         Clock Settings                                     */
 /******************************************************************************/
+
+#if 0
 /** @addtogroup Renesas_RZ_A1_Clocks Renesas_RZ_A1 Clock definitions
   @{
 */
@@ -927,6 +932,8 @@ typedef enum IRQn
 
 
 /*@}*/ /* end of group Renesas_RZ_A1_Clocks */
+
+#endif
 
 /******************************************************************************/
 /*                         CPG   Settings                                     */
