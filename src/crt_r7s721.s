@@ -78,7 +78,7 @@ __Vectors:
    ldr pc, SWIAddr      /* Software interrupt    */
    ldr pc, PAbortAddr   /* Prefetch abort        */
    ldr pc, DAbortAddr   /* Data abort            */
-   ldr pc, HypAddr 		/* entry to Hyp mode     */
+   ldr pc, HypAddr 		/* Entry to Hyp mode	 */
    ldr pc, IRQAddr      /* IRQ interrupt         */
    ldr pc, FIQAddr      /* FIQ interrupt         */
 
@@ -88,7 +88,7 @@ UndefAddr:     .word Undef_Handler
 SWIAddr:       .word SWI_Handler
 PAbortAddr:    .word PAbort_Handler
 DAbortAddr:    .word DAbort_Handler
-HypAddr:  		.word Hyp_Handler
+HypAddr:  	   .word Hyp_Handler
 IRQAddr:       .word IRQHandlerNested
 FIQAddr:       .word FIQ_Handler
 
@@ -119,38 +119,36 @@ gotosleep:
   /*
     * Setup a stack for each mode
     */    
-   msr   CPSR_c, #ARM_MODE_UNDEF   /* 0x1b Undefined Instruction Mode */
+   msr   CPSR_c, #ARM_MODE_UNDEF | I_BIT   /* 0x1b Undefined Instruction Mode */
    ldr   sp, =__stack_und_end
    mov   lr, #0
    
-   msr   CPSR_c, #ARM_MODE_ABORT   /* 0x17 Abort Mode */
+   msr   CPSR_c, #ARM_MODE_ABORT | I_BIT   /* 0x17 Abort Mode */
    ldr   sp, =__stack_abt_end
    mov   lr, #0
    
-   msr   CPSR_c, #ARM_MODE_FIQ     /* 0x11 FIQ Mode */
+   msr   CPSR_c, #ARM_MODE_FIQ | I_BIT     /* 0x11 FIQ Mode */
    ldr   sp, =__stack_fiq_end
    mov   lr, #0
    
-   msr   CPSR_c, #ARM_MODE_IRQ     /* 0x12 IRQ Mode */
+   msr   CPSR_c, #ARM_MODE_IRQ | I_BIT     /* 0x12 IRQ Mode */
    ldr   sp, =__stack_irq_end
    mov   lr, #0
 
-   msr   CPSR_c, #ARM_MODE_SVC     /* 0x13 Supervisor Mode */
+   msr   CPSR_c, #ARM_MODE_SVC | I_BIT     /* 0x13 Supervisor Mode */
    ldr   sp, =__stack_svc_end
    mov   lr, #0
-
 #if 1
-   msr   CPSR_c, #ARM_MODE_MON     /* 0x16 Monitor Mode */
+   msr   CPSR_c, #ARM_MODE_MON | I_BIT     /* 0x16 Monitor Mode */
    ldr   sp, =__stack_mon_end
    mov   lr, #0
 
-   msr   CPSR_c, #ARM_MODE_HYP     /* 0x1B Hypervisor Mode */
+   msr   CPSR_c, #ARM_MODE_HYP | I_BIT     /* 0x1B Hypervisor Mode */
    ldr   sp, =__stack_hyp_end
    mov   lr, #0
 #endif
-
-   msr   CPSR_c, #ARM_MODE_SYS     /* 0x1F Priviledged Operating Mode */
-   ldr   sp, =__stack	/* __stack_syc_end */
+   msr   CPSR_c, #ARM_MODE_SYS | I_BIT     /* 0x1F Priviledged Operating Mode */
+   ldr   sp, =__stack	/* __stack_sys_end */
    mov   lr, #0
 
 #if 0
@@ -325,56 +323,6 @@ ExitFunction:
 /* Entry point for the IRQ handler */
 /* ================================================================== */
 
-    .func   IRQHandlerNestedSSS
-IRQHandlerNestedSSS:
-
-		/* Save interrupt context on the stack to allow nesting */
-		sub		lr, lr, #4
-		stmfd   sp!, {lr}
-		mrs     lr, SPSR
-		stmfd   sp!, {r0, lr}
-
-        msr     CPSR_c, #ARM_MODE_SYS | I_BIT
-		stmfd   sp!, {r1-r3, r4, r12, lr}
-
-#if __ARM_NEON == 1
-		// save Neon data registers
-		VPUSH.F64	{q8-q15}
-#endif /* __ARM_NEON == 1 */
-		// save VFP/Neon data registers
-		VPUSH.F64	{q0-q7}
-		// save VFP/Neon FPSCR register
-		FMRX	r2, FPSCR
-		PUSH	{r2}
-		// save VFP/Neon FPEXC register
-		FMRX	r2, FPEXC
-		PUSH	{r2}
-
-		ldr		r2, =IRQ_Handler
-		mov		lr, pc
-		bx		r2     /* And jump... */
-
-		// restore VFP/Neon FPEXC register
-		POP		{r2}
-		FMXR	FPEXC, r2
-		// restore VFP/Neon FPSCR register
-		POP		{r2}
-		FMXR	FPSCR, r2
-		// restore VFP data registers
-		VPOP.F64   {q0-q7}
-#if __ARM_NEON == 1
-		// restore VFP/Neon data registers
-		VPOP.F64	{q8-q15}
-#endif /* __ARM_NEON == 1 */
-
-		ldmia   sp!, {r1-r3, r4, r12, lr}
-        msr     CPSR_c, #ARM_MODE_IRQ | I_BIT
-
-		ldmia   sp!, {r0, lr}
-		msr     SPSR_cxsf, lr
-		ldmia   sp!, {pc}^
-		.endfunc
-
     .func   IRQHandlerNested
 IRQHandlerNested:
 
@@ -424,6 +372,7 @@ IRQHandlerNested:
 
        POP     {R0-R12,LR}          // restore register context
        SUBS    R15,R14,#0x0004         // return from interrupt
+		.endfunc
 
 	.bss
 	.align 8
