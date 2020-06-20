@@ -44,22 +44,26 @@
    ARM_MODE_USER  = 0x10      /* Normal User Mode                             */ 
    ARM_MODE_FIQ   = 0x11      /* FIQ Fast Interrupts Mode                     */
    ARM_MODE_IRQ   = 0x12      /* IRQ Standard Interrupts Mode                 */
-   ARM_MODE_SVC   = 0x13      /* Supervisor Interrupts Mode                   */
+   ARM_MODE_SVC   = 0x13      /* Supervisor Interrupts Mode            		  */
+   ARM_MODE_MON   = 0x16      /* Monitor Interrupts Mode (With Security Extensions) */
    ARM_MODE_ABORT = 0x17      /* Abort Processing memory Faults Mode          */
+   ARM_MODE_HYP	  = 0x1a      /* Hypervisor Interrupts Mode            		  */
    ARM_MODE_UNDEF = 0x1B      /* Undefined Instructions Mode                  */
    ARM_MODE_SYS   = 0x1F      /* System Running in Priviledged Operating Mode */
    ARM_MODE_MASK  = 0x1F
    
-/* Standard definitions of mode bits and interrupt (I & F) flags in PSRs */
-   I_BIT          = 0x80      /* disable IRQ when I bit is set */
-   F_BIT          = 0x40      /* disable FIQ when I bit is set */
+	/* Standard definitions of mode bits and interrupt (I & F) flags in PSRs */
+	I_BIT          = 0x80      /* disable IRQ when I bit is set */
+	F_BIT          = 0x40      /* disable FIQ when F bit is set */
  
-	 STACKSIZEUND = 1024
-	 STACKSIZEABT = 1024
-	 STACKSIZEFIQ = 1024
-	 STACKSIZEIRQ = 1024
-	 STACKSIZESVC = 1024
-  
+	 STACKSIZEUND = 256
+	 STACKSIZEABT = 256
+	 STACKSIZEFIQ = 256
+	 STACKSIZEIRQ = 256
+	 STACKSIZESVC = 256
+	 STACKSIZEHYP = 256
+	 STACKSIZEMON = 256
+
 	.global __Vectors
 	.section .vectors,"ax"
 	.code 32
@@ -134,6 +138,16 @@ gotosleep:
    msr   CPSR_c, #ARM_MODE_SVC     /* 0x13 Supervisor Mode */
    ldr   sp, =__stack_svc_end
    mov   lr, #0
+
+#if 1
+   msr   CPSR_c, #ARM_MODE_MON     /* 0x16 Monitor Mode */
+   ldr   sp, =__stack_mon_end
+   mov   lr, #0
+
+   msr   CPSR_c, #ARM_MODE_HYP     /* 0x1B Hypervisor Mode */
+   ldr   sp, =__stack_hyp_end
+   mov   lr, #0
+#endif
 
    msr   CPSR_c, #ARM_MODE_SYS     /* 0x1F Priviledged Operating Mode */
    ldr   sp, =__stack	/* __stack_syc_end */
@@ -375,6 +389,10 @@ __stack_fiq_end = .
 __stack_irq_end = .
 	.space	STACKSIZESVC
 __stack_svc_end = .
+	.space	STACKSIZEMON
+__stack_mon_end = .
+	.space	STACKSIZEHYP
+__stack_hyp_end = .
 
    .ltorg
 /*** EOF ***/   
