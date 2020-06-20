@@ -318,8 +318,6 @@ ExitFunction:
    .code 32
 
 	.align 4, 0
-DummyResetHandler:
-   b DummyResetHandler
 
 /* ================================================================== */
 /* Entry point for the IRQ handler */

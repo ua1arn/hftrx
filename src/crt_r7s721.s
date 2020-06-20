@@ -320,15 +320,13 @@ ExitFunction:
    .code 32
 
 	.align 4, 0
-DummyResetHandler:
-   b DummyResetHandler
 
 /* ================================================================== */
 /* Entry point for the IRQ handler */
 /* ================================================================== */
 
-    .func   IRQHandlerNested
-IRQHandlerNested:
+    .func   IRQHandlerNestedSSS
+IRQHandlerNestedSSS:
 
 		/* Save interrupt context on the stack to allow nesting */
 		sub		lr, lr, #4
@@ -376,6 +374,56 @@ IRQHandlerNested:
 		msr     SPSR_cxsf, lr
 		ldmia   sp!, {pc}^
 		.endfunc
+
+    .func   IRQHandlerNested
+IRQHandlerNested:
+
+       PUSH    {R0-R12,LR}          // save register context
+       MRS     LR, SPSR                // Copy SPSR_irq to LR
+       PUSH    {LR}                    // Save SPSR_irq
+       MSR     CPSR_c, #ARM_MODE_SYS | I_BIT          // Disable IRQ (Sys Mode)
+       PUSH    {LR}                    // Save LR
+
+		// save VFP/Neon FPSCR register
+		FMRX	LR, FPSCR
+		FMXR	FPSCR, LR
+		PUSH	{LR}
+		// save VFP/Neon FPEXC register
+		FMRX	LR, FPEXC
+		FMXR	FPEXC, LR
+		PUSH	{LR}
+
+#if __ARM_NEON == 1
+		// save Neon data registers
+		VPUSH.F64	{q8-q15}
+#endif /* __ARM_NEON == 1 */
+		// save VFP/Neon data registers
+		VPUSH.F64	{q0-q7}
+
+		ldr		r0, =IRQ_Handler
+		mov		lr, pc
+		bx		r0     /* And jump... */
+		// restore VFP data registers
+		VPOP.F64   {q0-q7}
+#if __ARM_NEON == 1
+		// restore VFP/Neon data registers
+		VPOP.F64	{q8-q15}
+#endif /* __ARM_NEON == 1 */
+
+		// restore VFP/Neon FPEXC register
+		POP		{LR}
+		FMXR	FPEXC, LR
+		// restore VFP/Neon FPSCR register
+		POP		{LR}
+		FMXR	FPSCR, LR
+
+       POP     {LR}                    // Restore LR
+       MSR     CPSR_c, #ARM_MODE_IRQ  | I_BIT  // Disable IRQ (IRQ Mode)
+       POP     {LR}                    // Restore SPSR_irq to LR
+       MSR     SPSR_cxsf, LR           // Copy LR to SPSR_irq
+
+       POP     {R0-R12,LR}          // restore register context
+       SUBS    R15,R14,#0x0004         // return from interrupt
 
 	.bss
 	.align 8
