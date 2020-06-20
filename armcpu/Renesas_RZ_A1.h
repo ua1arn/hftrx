@@ -13,8 +13,6 @@
 #ifndef __Renesas_RZ_A1_H__
 #define __Renesas_RZ_A1_H__
 
-#include "mcu_board_select.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif

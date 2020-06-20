@@ -404,6 +404,15 @@ extern "C" {
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
 	#define	CPUSTYLE_ARM_CA9	1
 
+	/* MCU Lineup */
+	#define TARGET_RZA1LC           (0x00200000)
+	#define TARGET_RZA1L            (0x00300000)
+	#define TARGET_RZA1LU           (0x00300010)
+	#define TARGET_RZA1M            (0x00500000)
+	#define TARGET_RZA1H            (0x00A00000)
+
+	//#define TARGET_RZA1             (TARGET_RZA1L)	// перенесено в Makefile
+
 	#include "armcpu/Renesas_RZ_A1.h"
 	#include "armcpu/iodefine.h"
 	#include "armcpu/rza_io_regrw.h"

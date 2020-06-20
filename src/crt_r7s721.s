@@ -95,7 +95,7 @@ FIQAddr:       .word FIQ_Handler
    .code 32
    
    .extern _start
-   .extern __libc_init_array
+   /*.extern __libc_init_array*/
    .extern SystemInit
    .global Reset_Handler7
 /****************************************************************************/
