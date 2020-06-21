@@ -9652,6 +9652,7 @@ void arm_hardware_flush_all(void)
 void arm_hardware_invalidate(uintptr_t addr, int_fast32_t dsize)
 {
 	ASSERT((addr % DCACHEROWSIZE) == 0);
+	ASSERT((dsize % DCACHEROWSIZE) == 0);
 
 	if (dsize > 0)
 	{
@@ -9681,6 +9682,7 @@ void arm_hardware_invalidate(uintptr_t addr, int_fast32_t dsize)
 void arm_hardware_flush(uintptr_t addr, int_fast32_t dsize)
 {
 	//ASSERT((addr % DCACHEROWSIZE) == 0);
+	//ASSERT((dsize % DCACHEROWSIZE) == 0);
 
 	if (dsize > 0)
 	{
@@ -9711,6 +9713,7 @@ void arm_hardware_flush(uintptr_t addr, int_fast32_t dsize)
 void arm_hardware_flush_invalidate(uintptr_t addr, int_fast32_t dsize)
 {
 	ASSERT((addr % DCACHEROWSIZE) == 0);
+	//ASSERT((dsize % DCACHEROWSIZE) == 0);
 
 	if (dsize > 0)
 	{
@@ -9742,12 +9745,12 @@ void arm_hardware_flush_invalidate(uintptr_t addr, int_fast32_t dsize)
 // Заглушки
 // Сейчас в эту память будем читать по DMA
 // Используется только в startup
-void arm_hardware_invalidate(uintptr_t base, int_fast32_t size)
+void arm_hardware_invalidate(uintptr_t base, int_fast32_t dsize)
 {
 }
 
 // Сейчас эта память будет записываться по DMA куда-то
-void arm_hardware_flush(uintptr_t base, size_t size)
+void arm_hardware_flush(uintptr_t base, int_fast32_t dsize)
 {
 }
 
@@ -9758,7 +9761,7 @@ void arm_hardware_flush_all(void)
 }
 
 // Сейчас эта память будет записываться по DMA куда-то. Потом содержимое не требуется
-void arm_hardware_flush_invalidate(uintptr_t base, size_t size)
+void arm_hardware_flush_invalidate(uintptr_t base, int_fast32_t dsize)
 {
 }
 
