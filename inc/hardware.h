@@ -163,6 +163,8 @@ extern "C" {
 
 	#define ALIGNX_BEGIN __attribute__ ((aligned(32)))
 	#define ALIGNX_END /* nothing */
+	#define ALIGN1K_BEGIN __attribute__ ((aligned(1024)))
+	#define ALIGN1K_END /* nothing */
 
 	//#define DCACHEROWSIZE __SCB_DCACHE_LINE_SIZE  //32U /*!< Cortex-M7 cache line size is fixed to 32 bytes (8 words). See also register SCB_CCSIDR */
 	//#define ICACHEROWSIZE __SCB_ICACHE_LINE_SIZE  //32U /*!< Cortex-M7 cache line size is fixed to 32 bytes (8 words). See also register SCB_CCSIDR */
@@ -189,6 +191,8 @@ extern "C" {
 
 	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
 	#define ALIGNX_END /* nothing */
+	#define ALIGN1K_BEGIN __attribute__ ((aligned(1024)))
+	#define ALIGN1K_END /* nothing */
 
 	//#define DCACHEROWSIZE __SCB_DCACHE_LINE_SIZE  //32U /*!< Cortex-M7 cache line size is fixed to 32 bytes (8 words). See also register SCB_CCSIDR */
 	//#define ICACHEROWSIZE __SCB_ICACHE_LINE_SIZE  //32U /*!< Cortex-M7 cache line size is fixed to 32 bytes (8 words). See also register SCB_CCSIDR */
@@ -214,6 +218,8 @@ extern "C" {
 
 	#define ALIGNX_BEGIN __attribute__ ((aligned(16)))
 	#define ALIGNX_END /* nothing */
+	#define ALIGN1K_BEGIN __attribute__ ((aligned(1024)))
+	#define ALIGN1K_END /* nothing */
 
 	//#define DCACHEROWSIZE __SCB_DCACHE_LINE_SIZE  //32U /*!< Cortex-M7 cache line size is fixed to 32 bytes (8 words). See also register SCB_CCSIDR */
 	//#define ICACHEROWSIZE __SCB_ICACHE_LINE_SIZE  //32U /*!< Cortex-M7 cache line size is fixed to 32 bytes (8 words). See also register SCB_CCSIDR */
@@ -238,8 +244,10 @@ extern "C" {
 	// STM32F303VC processors
 	#include "armcpu/stm32f30x.h"
 
-	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
+	#define ALIGNX_BEGIN __attribute__ ((aligned(16)))
 	#define ALIGNX_END /* nothing */
+	#define ALIGN1K_BEGIN __attribute__ ((aligned(1024)))
+	#define ALIGN1K_END /* nothing */
 
 	#if __ARM_NEON
 		#define ARM_MATH_NEON 1
@@ -258,8 +266,10 @@ extern "C" {
 
 	#include "armcpu/stm32f1xx.h"
 
-	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
+	#define ALIGNX_BEGIN __attribute__ ((aligned(16)))
 	#define ALIGNX_END /* nothing */
+	#define ALIGN1K_BEGIN __attribute__ ((aligned(1024)))
+	#define ALIGN1K_END /* nothing */
 
 	#if __ARM_NEON
 		#define ARM_MATH_NEON 1
@@ -278,8 +288,10 @@ extern "C" {
 	
 	#include "armcpu/stm32f0xx.h"
 
-	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
+	#define ALIGNX_BEGIN __attribute__ ((aligned(16)))
 	#define ALIGNX_END /* nothing */
+	#define ALIGN1K_BEGIN __attribute__ ((aligned(1024)))
+	#define ALIGN1K_END /* nothing */
 
 	#if __ARM_NEON
 		#define ARM_MATH_NEON 1
@@ -297,8 +309,10 @@ extern "C" {
 	#define CPUSTYLE_ARM_CM0	1		/* архитектура процессора CORTEX M0 */
 	#include "armcpu/stm32l0xx.h"
 
-	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
+	#define ALIGNX_BEGIN __attribute__ ((aligned(16)))
 	#define ALIGNX_END /* nothing */
+	#define ALIGN1K_BEGIN __attribute__ ((aligned(1024)))
+	#define ALIGN1K_END /* nothing */
 
 	#if __ARM_NEON
 		#define ARM_MATH_NEON 1
@@ -425,6 +439,8 @@ extern "C" {
 
 	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
 	#define ALIGNX_END /* nothing */
+	#define ALIGN1K_BEGIN __attribute__ ((aligned(1024)))
+	#define ALIGN1K_END /* nothing */
 
 	#if __ARM_NEON
 		//#define ARM_MATH_NEON 1
