@@ -12770,8 +12770,11 @@ int __attribute__((used)) (_write)(int fd, char * ptr, int len)
 static RAMHEAP uint8_t heapplace [8 * 1024uL];
 
 #if WITHTOUCHGUI
-	static RAMHEAP uint8_t goibuff [256];
-#endif /* SPEEXALLOCSIZE */
+#if ! defined WITHGUIHEAP
+	#define WITHGUIHEAP (1024uL)
+#endif /* ! defined WITHGUIALLOCMEMORY */
+	static RAMHEAP uint8_t guiheap [WITHGUIHEAP];
+#endif /* WITHTOUCHGUI */
 
 extern int __HeapBase;
 extern int __HeapLimit;
@@ -12786,7 +12789,7 @@ caddr_t __attribute__((used)) (_sbrk)(int incr)
 		heap = (char *) &__HeapBase;
 	}
 
-	//debug_printf_P("_sbrk: incr=%d, & __HeapBase=%p, & __HeapLimit=%p\n", incr, & __HeapBase, & __HeapLimit);
+	debug_printf_P("_sbrk: incr=%X, new heap=%X, & __HeapBase=%p, & __HeapLimit=%p\n", incr, heap + incr, & __HeapBase, & __HeapLimit);
 
 	prev_heap = heap;
 

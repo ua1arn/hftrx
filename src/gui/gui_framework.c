@@ -185,22 +185,13 @@ void footer_buttons_state (uint_fast8_t state, ...)
 
 static void free_win_ptr (window_t * win)
 {
-	if(win->bh_count)
-	{
-		free(win->bh_ptr);
-		win->bh_count = 0;
-	}
-	if(win->lh_count)
-	{
-		free(win->lh_ptr);
-		win->lh_count = 0;
-	}
-	if(win->sh_count)
-	{
-		free(win->sh_ptr);
-		win->sh_count = 0;
-	}
-	PRINTF("free: %d %s\n", win->window_id, win->name);
+	free(win->bh_ptr);
+	win->bh_count = 0;
+	free(win->lh_ptr);
+	win->lh_count = 0;
+	free(win->sh_ptr);
+	win->sh_count = 0;
+//	PRINTF("free: %d %s\n", win->window_id, win->name);
 }
 
 /* Установка признака видимости окна */
@@ -212,6 +203,9 @@ void set_window(window_t * win, uint_fast8_t value)
 	if (value)
 	{
 		win->first_call = 1;
+		win->bh_ptr = NULL;
+		win->lh_ptr = NULL;
+		win->sh_ptr = NULL;
 		if (win->parent_id != UINT8_MAX)	// Есть есть parent window, закрыть его и оставить child window
 		{
 			window_t * pwin = get_win(win->parent_id);
@@ -227,7 +221,6 @@ void set_window(window_t * win, uint_fast8_t value)
 
 		if (win->parent_id != UINT8_MAX)	// При закрытии child window открыть parent window, если есть
 			gui.win[1] = win->parent_id;
-
 	}
 }
 
@@ -512,11 +505,11 @@ static void fill_button_bg_buf(btn_bg_t * v)
 	h = v->h;
 	size_t s = GXSIZE(w, h) * sizeof (PACKEDCOLORMAIN_T);
 
-	v->bg_non_pressed = 	(PACKEDCOLORMAIN_T *) calloc(1, s);
-	v->bg_pressed = 		(PACKEDCOLORMAIN_T *) calloc(1, s);
-	v->bg_locked = 			(PACKEDCOLORMAIN_T *) calloc(1, s);
-	v->bg_locked_pressed = 	(PACKEDCOLORMAIN_T *) calloc(1, s);
-	v->bg_disabled = 		(PACKEDCOLORMAIN_T *) calloc(1, s);
+	v->bg_non_pressed = 	(PACKEDCOLORMAIN_T *) malloc(s);
+	v->bg_pressed = 		(PACKEDCOLORMAIN_T *) malloc(s);
+	v->bg_locked = 			(PACKEDCOLORMAIN_T *) malloc(s);
+	v->bg_locked_pressed = 	(PACKEDCOLORMAIN_T *) malloc(s);
+	v->bg_disabled = 		(PACKEDCOLORMAIN_T *) malloc(s);
 
 	buf = v->bg_non_pressed;
 	ASSERT(buf != NULL);
