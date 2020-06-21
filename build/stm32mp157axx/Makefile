@@ -76,8 +76,8 @@ SRCDIR = ../../src
 PROJECT = tc1_stm32mp157axx
 
 # Define linker script file here
-LDSCRIPT_BOOT = ./stm32mp15xx_cm7_boot.ld
-LDSCRIPT_APP = ./stm32mp15xx_cm7_app.ld
+LDSCRIPT_BOOT = ./stm32mp15xx_ca7_boot.ld
+LDSCRIPT_APP = ./stm32mp15xx_ca7_app.ld
 
 # List all user C define here, like -D_DEBUG=1
 UDEFS = -DNDEBUG=1 -DCPUSTYLE_STM32MP1=1 -DCPUSTYLE_STM32MP157A=1 -DSTM32MP157Axx=1
