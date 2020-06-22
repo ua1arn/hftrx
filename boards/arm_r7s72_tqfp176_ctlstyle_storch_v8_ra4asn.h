@@ -362,8 +362,8 @@
 
 	#define WITHBARS		1	/* отображение S-метра и SWR-метра */
 
-	#define WITHDISPLAY_FPS		15
-	#define WITHDISPLAYSWR_FPS	30
+	#define WITHDISPLAY_FPS		25
+	#define WITHDISPLAYSWR_FPS	25
 
 	#define WITHMAXPWRCALI		74
 	#define WITHSWRCALI			50
