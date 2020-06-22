@@ -7447,7 +7447,7 @@ static lmsnrstate_t lmsnrstates [NTRX];
 
 #if WITHUSEMALLOC
 
-	#define ROUNDUP64(v) (((v) + 63uL) & ~ 64)
+	#define ROUNDUP64(v) (((v) + 63uL) & ~ 63uL)
 
 	#if ! WITHNOSPEEX
 		static RAMHEAP uint8_t speexheap [ROUNDUP64(SPEEXALLOCSIZE)];
