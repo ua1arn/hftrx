@@ -369,6 +369,7 @@
 	#define WITHSWRCALI			50
 
 	#define WITHTOUCHGUI		1
+	#define WITHGUIHEAP 		(2 * 1024uL)
 	#define WITHALPHA			64
 
 	#define WITHBOTTOMDBVAL		110

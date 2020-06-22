@@ -17,6 +17,7 @@ enum {
 	sliders_h = 18,				// от центра (*2)
 	button_round_radius = 5,	// радиус закругления кнопки
 	window_title_height = 26,	// высота области заголовка окна
+	footer_buttons_count = 9,
 };
 
 typedef enum {
