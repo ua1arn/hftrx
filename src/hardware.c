@@ -9535,6 +9535,14 @@ void FIQ_Handler(void)
 		;
 }
 
+void CPU1_Handler(void)
+{
+	dbg_puts_impl_P(PSTR("CPU1_Handler trapped.\n"));
+	for (;;)
+		;
+}
+
+
 void Hyp_Handler(void)
 {
 	dbg_puts_impl_P(PSTR("Hyp_Handler trapped.\n"));
@@ -11289,7 +11297,7 @@ static void r7s721_intc_initializeOld(void)
 
 #endif
 
-uint8_t __attribute__ ((section(".stack"), used, aligned(32))) mystack [1024];
+uint8_t __attribute__ ((section(".stack"), used, aligned(64))) mystack [2048];
 /******************************************************************************/
 
 // TTB initialize
@@ -12363,6 +12371,12 @@ void cpu_initialize(void)
 
 //	ca9_ca7_cache_diag();	// print
 
+//	SMP tests
+//	TP();
+//	RCC->MP_GRSTCSETR = RCC_MP_GRSTCSETR_MPUP1RST;
+//	(void) RCC->MP_GRSTCSETR;
+//	TP();
+
 #if (__GIC_PRESENT == 1)
 	// GIC version diagnostics
 	//PRINTF("arm_gic_initialize: ICPIDR0=%08lX\n", ICPIDR0);	// ICPIDR0
@@ -12757,7 +12771,7 @@ caddr_t __attribute__((used)) (_sbrk)(int incr)
 		heap = (char *) &__HeapBase;
 	}
 
-	debug_printf_P(PSTR("_sbrk: incr=%X, new heap=%X, & __HeapBase=%p, & __HeapLimit=%p\n"), incr, heap + incr, & __HeapBase, & __HeapLimit);
+	//debug_printf_P(PSTR("_sbrk: incr=%X, new heap=%X, & __HeapBase=%p, & __HeapLimit=%p\n"), incr, heap + incr, & __HeapBase, & __HeapLimit);
 
 	prev_heap = heap;
 

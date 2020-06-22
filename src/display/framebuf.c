@@ -231,7 +231,7 @@ void arm_hardware_mdma_initialize(void)
 // Функция получает координаты и работает над буфером в горищонталтной ориентации.
 static void
 hwacc_fillrect_u8(
-	uint8_t * buffer,
+	uint8_t * __restrict buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
 	uint_fast16_t col,	// начальная координата
@@ -323,7 +323,7 @@ hwacc_fillrect_u8(
 // Функция получает координаты и работает над буфером в горищонталтной ориентации.
 static void
 hwacc_fillrect_u16(
-	uint16_t * buffer,
+	uint16_t * __restrict buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
 	uint_fast16_t col,	// начальная координата
@@ -456,7 +456,7 @@ hwacc_fillrect_u16(
 // Функция получает координаты и работает над буфером в горищонталтной ориентации.
 static void
 hwacc_fillrect_u24(
-	PACKEDCOLORMAIN_T * buffer,
+	PACKEDCOLORMAIN_T * __restrict buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
 	uint_fast16_t col,	// начальная координата
@@ -625,7 +625,7 @@ extern const char * savestring;
 // получить адрес требуемой позиции в буфере
 PACKEDCOLORMAIN_T *
 colmain_mem_at_debug(
-	PACKEDCOLORMAIN_T * buffer,
+	PACKEDCOLORMAIN_T * __restrict buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
 	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
@@ -1007,7 +1007,7 @@ void colpip_fill(
 
 // поставить цветную точку.
 void colpip_point(
-	PACKEDCOLORPIP_T * buffer,
+	PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy,
 	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
@@ -1020,7 +1020,7 @@ void colpip_point(
 
 // поставить цветную точку (модификация с сохранением старого изоьражения).
 void colpip_point_xor(
-	PACKEDCOLORPIP_T * buffer,
+	PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy,
 	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
@@ -1039,12 +1039,12 @@ void colpip_point_xor(
 void hwaccel_copy(
 	uintptr_t dstinvalidateaddr,	// параметры invalidate получателя
 	int_fast32_t dstinvalidatesize,
-	PACKEDCOLORMAIN_T * dst,
+	PACKEDCOLORMAIN_T * __restrict dst,
 	uint_fast16_t tdx,	// ширина буфера
 	uint_fast16_t tdy,	// высота буфера
 	uintptr_t srcinvalidateaddr,	// параметры clean источника
 	int_fast32_t srcinvalidatesize,
-	const PACKEDCOLORMAIN_T * src,
+	const PACKEDCOLORMAIN_T * __restrict src,
 	uint_fast16_t sdx,	// ширина буфера
 	uint_fast16_t sdy	// высота буфера
 	)
@@ -1322,8 +1322,8 @@ colmain_fillrect(
 #if 0
 // функции работы с colorbuffer не занимаются выталкиванеим кэш-памяти
 static void RAMFUNC ltdcpip_horizontal_pixels(
-	PACKEDCOLORPIP_T * tgr,		// target raster
-	const FLASHMEM uint8_t * raster,
+	PACKEDCOLORPIP_T * __restrict tgr,		// target raster
+	const FLASHMEM uint8_t * __restrict raster,
 	uint_fast16_t width	// number of bits (start from LSB first byte in raster)
 	)
 {
@@ -1348,8 +1348,8 @@ static void RAMFUNC ltdcpip_horizontal_pixels(
 // функции работы с colorbuffer не занимаются выталкиванеим кэш-памяти
 // Фон не трогаем
 static void RAMFUNC ltdcmain_horizontal_pixels_tbg(
-	PACKEDCOLORMAIN_T * tgr,		// target raster
-	const FLASHMEM uint8_t * raster,
+	PACKEDCOLORMAIN_T * __restrict tgr,		// target raster
+	const FLASHMEM uint8_t * __restrict raster,
 	uint_fast16_t width,	// number of bits (start from LSB first byte in raster)
 	COLORPIP_T fg
 	)
@@ -1386,7 +1386,7 @@ static void RAMFUNC ltdcmain_horizontal_pixels_tbg(
 static uint_fast16_t
 RAMFUNC_NONILINE
 ltdcmain_horizontal_put_char_small(
-	PACKEDCOLORPIP_T * buffer,
+	PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy,
 	uint_fast16_t x,
@@ -1411,7 +1411,7 @@ ltdcmain_horizontal_put_char_small(
 // Фон не трогаем
 // return new x coordinate
 static uint_fast16_t RAMFUNC_NONILINE ltdcpip_horizontal_put_char_small_tbg(
-	PACKEDCOLORPIP_T * buffer,
+	PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy,
 	uint_fast16_t x,
@@ -1438,7 +1438,7 @@ static uint_fast16_t RAMFUNC_NONILINE ltdcpip_horizontal_put_char_small_tbg(
 // Фон не трогаем
 // return new x coordinate
 static uint_fast16_t RAMFUNC_NONILINE ltdcpip_horizontal_put_char_small2_tbg(
-	PACKEDCOLORPIP_T * buffer,
+	PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy,
 	uint_fast16_t x,
@@ -1464,7 +1464,7 @@ static uint_fast16_t RAMFUNC_NONILINE ltdcpip_horizontal_put_char_small2_tbg(
 // Фон не трогаем
 // return new x coordinate
 static uint_fast16_t RAMFUNC_NONILINE ltdcpip_horizontal_put_char_small3_tbg(
-	PACKEDCOLORPIP_T * buffer,
+	PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy,
 	uint_fast16_t x,
@@ -1493,7 +1493,7 @@ static uint_fast16_t RAMFUNC_NONILINE ltdcpip_horizontal_put_char_small3_tbg(
 // transparent background - не меняем цвет фона.
 void
 colpip_string_tbg(
-	PACKEDCOLORPIP_T * buffer,
+	PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy,
 	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
@@ -1518,7 +1518,7 @@ colpip_string_tbg(
 // transparent background - не меняем цвет фона.
 void
 colpip_string2_tbg(
-	PACKEDCOLORPIP_T * buffer,
+	PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy,
 	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
@@ -1551,7 +1551,7 @@ uint_fast16_t strwidth2(
 // transparent background - не меняем цвет фона.
 void
 colpip_string3_tbg(
-	PACKEDCOLORPIP_T * buffer,
+	PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy,
 	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
@@ -1589,22 +1589,6 @@ uint_fast16_t strwidth(
 {
 	ASSERT(s != NULL);
 	return SMALLCHARW * strlen(s);
-}
-
-// Возвращает высоту строки в пикселях
-uint_fast16_t colpip_string_height(
-	PACKEDCOLORPIP_T * buffer,
-	uint_fast16_t dx,
-	uint_fast16_t dy,
-	const char * s
-	)
-{
-	ASSERT(s != NULL);
-	(void) buffer;
-	(void) dx;
-	(void) dy;
-	(void) s;
-	return SMALLCHARH;
 }
 
 #endif /* defined (SMALLCHARW) && defined (SMALLCHARH) */
@@ -1657,7 +1641,7 @@ void colpip_plot(
 
 static uint_fast16_t
 RAMFUNC_NONILINE ltdc_horizontal_put_char_small3(
-	PACKEDCOLORMAIN_T * const buffer,
+	PACKEDCOLORMAIN_T * const __restrict buffer,
 	const uint_fast16_t dx,
 	const uint_fast16_t dy,
 	uint_fast16_t x, uint_fast16_t y,
@@ -1690,12 +1674,12 @@ display_string3(uint_fast16_t x, uint_fast16_t y, const char * s, uint_fast8_t l
 
 void
 colmain_string3_at_xy(
-	PACKEDCOLORMAIN_T * const buffer,
+	PACKEDCOLORMAIN_T * const __restrict buffer,
 	const uint_fast16_t dx,
 	const uint_fast16_t dy,
 	uint_fast16_t x,
 	uint_fast16_t y,
-	const char * s
+	const char * __restrict s
 	)
 {
 	char c;
@@ -1706,7 +1690,7 @@ colmain_string3_at_xy(
 }
 
 void
-display_string3_at_xy(uint_fast16_t x, uint_fast16_t y, const char * s, COLORMAIN_T fg, COLORMAIN_T bg)
+display_string3_at_xy(uint_fast16_t x, uint_fast16_t y, const char * __restrict s, COLORMAIN_T fg, COLORMAIN_T bg)
 {
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	colmain_setcolors(fg, bg);

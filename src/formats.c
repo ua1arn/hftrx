@@ -289,7 +289,7 @@ vsputchar(void * param, int ch)
 
 	// Для архитектуры ATMega определена только эта функция -
 	// с расположением форматной строкии в памяти программ.
-uint_fast8_t local_snprintf_P( char *buffer, uint_fast8_t count, const FLASHMEM char *format, ... )
+uint_fast8_t local_snprintf_P( char * __restrict buffer, uint_fast8_t count, const FLASHMEM char * __restrict format, ... )
 {
 	va_list	ap;
 	int n;
@@ -332,7 +332,7 @@ safestrcpy(char * dst, size_t blen, const char * src)
 /*	User-side of console output.			*/
 // использование библиотечной функции (поддержка печати чисел с плавающей точкой).
 
-void debug_printf_P(const FLASHMEM char *format, ... )
+void debug_printf_P(const FLASHMEM char *__restrict format, ... )
 {
 	char b [256];
 	va_list	ap;
