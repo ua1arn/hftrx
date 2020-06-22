@@ -12389,14 +12389,14 @@ void cpu_initialize(void)
 	// STM32MP1:
 	//	arm_gic_initialize: ARM GICv2
 	//	GICInterface->IIDR=0102143B, GICDistributor->IIDR=0100143B
-	switch (ICPIDR1 & 0x0F)
-	{
-	case 0x03:	PRINTF("arm_gic_initialize: ARM GICv1\n"); break;
-	case 0x04:	PRINTF("arm_gic_initialize: ARM GICv2\n"); break;
-	default:	PRINTF("arm_gic_initialize: ARM GICv? (code=%08lX @%p)\n", (unsigned long) ICPIDR1, & ICPIDR1); break;
-	}
-
-	PRINTF("GICInterface->IIDR=%08lX, GICDistributor->IIDR=%08lX\n", (unsigned long) GICInterface->IIDR, (unsigned long) GIC_DistributorImplementer());
+//	switch (ICPIDR1 & 0x0F)
+//	{
+//	case 0x03:	PRINTF("arm_gic_initialize: ARM GICv1\n"); break;
+//	case 0x04:	PRINTF("arm_gic_initialize: ARM GICv2\n"); break;
+//	default:	PRINTF("arm_gic_initialize: ARM GICv? (code=%08lX @%p)\n", (unsigned long) ICPIDR1, & ICPIDR1); break;
+//	}
+//
+//	PRINTF("GICInterface->IIDR=%08lX, GICDistributor->IIDR=%08lX\n", (unsigned long) GICInterface->IIDR, (unsigned long) GIC_DistributorImplementer());
 #endif
 
 	//PRINTF("cpu_initialize\n");
