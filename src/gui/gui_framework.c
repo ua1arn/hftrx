@@ -196,6 +196,7 @@ void elements_state (window_t * win)
 			button_t * bh = & b[i];
 			if (win->state)
 			{
+				ASSERT(touch_count < TOUCH_ARRAY_SIZE);
 				touch_elements[touch_count].link = bh;
 				touch_elements[touch_count].win = win;
 				touch_elements[touch_count].type = TYPE_BUTTON;
@@ -206,6 +207,7 @@ void elements_state (window_t * win)
 			{
 				touch_count--;
 				bh->visible = NON_VISIBLE;
+				ASSERT(touch_count >= footer_buttons_count);
 			}
 		}
 	}
@@ -219,6 +221,7 @@ void elements_state (window_t * win)
 			label_t * lh = & l[i];
 			if (win->state)
 			{
+				ASSERT(touch_count < TOUCH_ARRAY_SIZE);
 				touch_elements[touch_count].link = lh;
 				touch_elements[touch_count].win = win;
 				touch_elements[touch_count].type = TYPE_LABEL;
@@ -226,9 +229,10 @@ void elements_state (window_t * win)
 				touch_count++;
 			}
 			else
-			{;
+			{
 				touch_count--;
 				lh->visible = NON_VISIBLE;
+				ASSERT(touch_count >= footer_buttons_count);
 			}
 		}
 	}
@@ -242,6 +246,7 @@ void elements_state (window_t * win)
 			slider_t * sh = & s[i];
 			if (win->state)
 			{
+				ASSERT(touch_count < TOUCH_ARRAY_SIZE);
 				touch_elements[touch_count].link = (slider_t *) sh;
 				touch_elements[touch_count].win = win;
 				touch_elements[touch_count].type = TYPE_SLIDER;
@@ -252,6 +257,7 @@ void elements_state (window_t * win)
 			{
 				touch_count--;
 				sh->visible = NON_VISIBLE;
+				ASSERT(touch_count >= footer_buttons_count);
 			}
 		}
 	}
