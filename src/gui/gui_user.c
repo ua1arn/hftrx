@@ -2114,7 +2114,7 @@ static void window_ap_mic_process(void)
 		sl_micAGC->visible = VISIBLE;
 		sl_micAGC->size = 300;
 		sl_micAGC->step = 3;
-		sl_micAGC->value = normalize(hamradio_get_gmikeagcgain(), clip_min, clip_max, 100);
+		sl_micAGC->value = normalize(hamradio_get_gmikeagcgain(), agc_min, agc_max, 100);
 
 		button_t * bh2 = find_gui_element_ref(TYPE_BUTTON, win, "btn_mic_boost");
 		bh2->x1 = (sl_micLevel->x + sl_micLevel->size + col1_int * 2) / 2 - (bh2->w / 2);

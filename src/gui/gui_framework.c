@@ -164,7 +164,7 @@ void footer_buttons_state (uint_fast8_t state, ...)
 	else
 	{
 		gui.win[1] = UINT8_MAX;
-		touch_count = win->bh_count;
+		touch_count = footer_buttons_count;
 	}
 
 	for (uint_fast8_t i = 1; i < win->bh_count; i++)
@@ -180,79 +180,6 @@ void footer_buttons_state (uint_fast8_t state, ...)
 			bh->state = CANCELLED;
 			bh->is_locked = BUTTON_NON_LOCKED;
 		}
-	}
-}
-
-static void free_win_ptr (window_t * win)
-{
-	free(win->bh_ptr);
-	win->bh_count = 0;
-	free(win->lh_ptr);
-	win->lh_count = 0;
-	free(win->sh_ptr);
-	win->sh_count = 0;
-//	PRINTF("free: %d %s\n", win->window_id, win->name);
-}
-
-/* Установка признака видимости окна */
-void set_window(window_t * win, uint_fast8_t value)
-{
-	PLIST_ENTRY p;
-	uint_fast8_t j = 0;
-	win->state = value;
-	if (value)
-	{
-		win->first_call = 1;
-		win->bh_ptr = NULL;
-		win->lh_ptr = NULL;
-		win->sh_ptr = NULL;
-		if (win->parent_id != UINT8_MAX)	// Есть есть parent window, закрыть его и оставить child window
-		{
-			window_t * pwin = get_win(win->parent_id);
-			free_win_ptr(pwin);
-			pwin->first_call = 1;
-		}
-		gui.win[1] = win->window_id;
-	}
-	else
-	{
-		free_win_ptr(win);
-		gui.win[1] = UINT8_MAX;
-
-		if (win->parent_id != UINT8_MAX)	// При закрытии child window открыть parent window, если есть
-			gui.win[1] = win->parent_id;
-	}
-}
-
-/* Расчет экранных координат окна */
-void calculate_window_position(window_t * win, uint16_t xmax, uint16_t ymax)
-{
-	uint_fast8_t edge_step = 20;
-	win->w = xmax > (strlen(win->name) * SMALLCHARW) ? (xmax + edge_step) : (strlen(win->name) * SMALLCHARW + edge_step * 2);
-	win->h = ymax + edge_step;
-
-	win->y1 = ALIGN_Y - win->h / 2;
-
-	switch (win->align_mode)
-	{
-	case ALIGN_LEFT_X:
-		if (ALIGN_LEFT_X - win->w / 2 < 0)
-			win->x1 = 0;
-		else
-			win->x1 = ALIGN_LEFT_X - win->w / 2;
-		break;
-
-	case ALIGN_RIGHT_X:
-		if (ALIGN_RIGHT_X + win->w / 2 > WITHGUIMAXX)
-			win->x1 = WITHGUIMAXX - win->w;
-		else
-			win->x1 = ALIGN_RIGHT_X - win->w / 2;
-		break;
-
-	case ALIGN_CENTER_X:
-	default:
-		win->x1 = ALIGN_CENTER_X - win->w / 2;
-		break;
 	}
 }
 
@@ -299,7 +226,7 @@ void elements_state (window_t * win)
 				touch_count++;
 			}
 			else
-			{
+			{;
 				touch_count--;
 				lh->visible = NON_VISIBLE;
 			}
@@ -327,6 +254,90 @@ void elements_state (window_t * win)
 				sh->visible = NON_VISIBLE;
 			}
 		}
+	}
+}
+
+static void free_win_ptr (window_t * win)
+{
+	free(win->bh_ptr);
+	free(win->lh_ptr);
+	free(win->sh_ptr);
+
+	win->bh_count = 0;
+	win->lh_count = 0;
+	win->sh_count = 0;
+
+	win->bh_ptr = NULL;
+	win->lh_ptr = NULL;
+	win->sh_ptr = NULL;
+//	PRINTF("free: %d %s\n", win->window_id, win->name);
+}
+
+/* Установка признака видимости окна */
+void set_window(window_t * win, uint_fast8_t value)
+{
+	PLIST_ENTRY p;
+	uint_fast8_t j = 0;
+	win->state = value;
+	if (value)
+	{
+		win->first_call = 1;
+		if (win->parent_id != UINT8_MAX)	// Есть есть parent window, закрыть его и оставить child window
+		{
+			window_t * pwin = get_win(win->parent_id);
+			pwin->state = NON_VISIBLE;
+			elements_state(pwin);
+			free_win_ptr(pwin);
+			pwin->first_call = 1;
+		}
+		gui.win[1] = win->window_id;
+	}
+	else
+	{
+		elements_state(win);
+		free_win_ptr(win);
+		gui.win[1] = UINT8_MAX;
+
+		if (win->parent_id != UINT8_MAX)	// При закрытии child window открыть parent window, если есть
+		{
+			window_t * pwin = get_win(win->parent_id);
+			pwin->state = VISIBLE;
+			gui.win[1] = win->parent_id;
+			free_win_ptr(pwin);
+			pwin->first_call = 1;
+		}
+	}
+}
+
+/* Расчет экранных координат окна */
+void calculate_window_position(window_t * win, uint16_t xmax, uint16_t ymax)
+{
+	uint_fast8_t edge_step = 20;
+	win->w = xmax > (strlen(win->name) * SMALLCHARW) ? (xmax + edge_step) : (strlen(win->name) * SMALLCHARW + edge_step * 2);
+	win->h = ymax + edge_step;
+
+	win->y1 = ALIGN_Y - win->h / 2;
+
+	switch (win->align_mode)
+	{
+	case ALIGN_LEFT_X:
+		if (ALIGN_LEFT_X - win->w / 2 < 0)
+			win->x1 = 0;
+		else
+			win->x1 = ALIGN_LEFT_X - win->w / 2;
+		break;
+
+	case ALIGN_RIGHT_X:
+		if (ALIGN_RIGHT_X + win->w / 2 > WITHGUIMAXX)
+			win->x1 = WITHGUIMAXX - win->w;
+		else
+			win->x1 = ALIGN_RIGHT_X - win->w / 2;
+		break;
+
+	case ALIGN_CENTER_X:
+	default:
+		win->x1 = ALIGN_CENTER_X - win->w / 2;
+		break;
 	}
 }
 
