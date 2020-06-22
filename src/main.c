@@ -7429,44 +7429,61 @@ typedef struct lmsnrstate_tag
 
 static lmsnrstate_t lmsnrstates [NTRX];
 
-#if WITHUSEMALLOC && ! WITHNOSPEEX
+#if ! WITHNOSPEEX
 
-void * speex_allocXX(int size)
+	#if SPEEXNN == 64
+		#define SPEEXALLOCSIZE (NTRX * 15584)
+	#elif SPEEXNN == 128
+		#define SPEEXALLOCSIZE (NTRX * 22584)
+	#elif SPEEXNN == 256
+		#define SPEEXALLOCSIZE (NTRX * 38584)
+	#elif SPEEXNN == 512
+		#define SPEEXALLOCSIZE (NTRX * 75448)
+	#elif SPEEXNN == 1024
+		#define SPEEXALLOCSIZE (NTRX * 149176)
+	#endif
+
+#endif /* ! WITHNOSPEEX */
+
+#if WITHUSEMALLOC
+
+	#define ROUNDUP64(v) (((v) + 63uL) & ~ 64)
+
+	#if ! WITHNOSPEEX
+		static RAMHEAP uint8_t speexheap [ROUNDUP64(SPEEXALLOCSIZE)];
+	#endif /* ! WITHNOSPEEX */
+
+	#if WITHTOUCHGUI
+
+		#if ! defined WITHGUIHEAP
+			#define WITHGUIHEAP (1024uL)
+		#endif /* ! defined WITHGUIHEAP */
+
+		static RAMHEAP uint8_t guiheap [ROUNDUP64(WITHGUIHEAP)];
+	#endif /* WITHTOUCHGUI */
+
+#endif /* WITHUSEMALLOC */
+
+#if WITHUSEMALLOC
+
+void *speex_alloc(int size)
 {
-	debug_printf_P(PSTR("speex_alloc(%d)\n"), size);
-	void * const ptr = malloc(size);
-	if (ptr == NULL)
-	{
-		debug_printf_P(PSTR("speex_alloc failure\n"));
-		for (;;)
-			;
-	}
-	memset(ptr, 0, size);
-	return ptr;
+   /* WARNING: this is not equivalent to malloc(). If you want to use malloc()
+      or your own allocator, YOU NEED TO CLEAR THE MEMORY ALLOCATED. Otherwise
+      you will experience strange bugs */
+	void * p = calloc(size, 1);
+	ASSERT(p != NULL);
+	return p;
 }
 
-void speex_freeXX(void * ptr)
+void speex_free (void *ptr)
 {
 	free(ptr);
 }
 
-#endif /* WITHNOSPEEX */
-
-#if ! WITHNOSPEEX
+#else /* WITHUSEMALLOC */
 
 static int speexallocated = 0;
-
-#if SPEEXNN == 64
-	#define SPEEXALLOCSIZE (NTRX * 15584)
-#elif SPEEXNN == 128
-	#define SPEEXALLOCSIZE (NTRX * 22584)
-#elif SPEEXNN == 256
-	#define SPEEXALLOCSIZE (NTRX * 38584)
-#elif SPEEXNN == 512
-	#define SPEEXALLOCSIZE (NTRX * 75448)
-#elif SPEEXNN == 1024
-	#define SPEEXALLOCSIZE (NTRX * 149176)
-#endif
 //static uint8_t sipexbuff [NTRX * 149176 /* + 24716 */];
 static uint8_t sipexbuff [SPEEXALLOCSIZE];
 
@@ -7488,7 +7505,7 @@ void speex_free (void *ptr)
 {
 }
 
-#endif /* WITHNOSPEEX */
+#endif /* WITHUSEMALLOC */
 
 static void speex_update_rx(void)
 {
