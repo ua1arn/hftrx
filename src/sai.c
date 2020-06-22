@@ -1421,9 +1421,6 @@ static void hardware_sai1_sai2_clock_selection(void)
 
 #if WITHSAI1HW
 
-//ALIGN1K_BEGIN int32_t buff0rx32 [DMABUFFSIZE32RX] ALIGN1K_END;
-//ALIGN1K_BEGIN int32_t buff1rx32 [DMABUFFSIZE32RX] ALIGN1K_END;
-
 // DMA по приему SAI1 - обработчик прерывания
 // RX	SAI1_B	DMA2	Stream 5	Channel 0
 // SAI1_B_RX
@@ -1455,6 +1452,7 @@ void RAMFUNC_NONILINE DMA2_Stream5_IRQHandler(void)
 	//DMAERR(DMA2, DMA2_Stream5, HISR, HIFCR, DMA_HISR_TEIF5, DMA_HIFCR_CTEIF5);
 	HANDLEERRORS(2, 5, H);
 }
+
 // DMA по передаче SAI1 - обработчик прерывания
 // TX	SAI1_A	DMA2	Stream 1	Channel 0
 // Use arm_hardware_flush
@@ -1483,7 +1481,6 @@ void DMA2_Stream1_IRQHandler(void)
 	//DMAERR(DMA2, DMA2_Stream1, LISR, LIFCR, DMA_LISR_TEIF1, DMA_LIFCR_CTEIF1);
 	HANDLEERRORS(2, 1, L);
 }
-
 
 // DMA по передаче SAI1 - инициализация
 // TX	SAI1_A	DMA2	Stream 1	Channel 0
@@ -1548,7 +1545,6 @@ static void DMA_SAI1_A_TX_initialize(void)
 	arm_hardware_set_handler_realtime(DMA2_Stream1_IRQn, DMA2_Stream1_IRQHandler);
 
 	DMA2_Stream1->CR |= DMA_SxCR_EN;
-
 }
 
 /* DMA для прёма по SAI_1_B  - инициализация */

@@ -63,6 +63,7 @@
 	 STACKSIZESVC = 256
 	 STACKSIZEHYP = 256
 	 STACKSIZEMON = 256
+	 STACKSIZESYS = 256
   
 	.global __Vectors
 	.section .vectors,"ax"
@@ -119,36 +120,36 @@ gotosleep:
   /*
     * Setup a stack for each mode
     */    
-   msr   CPSR_c, #ARM_MODE_UNDEF   /* 0x1b Undefined Instruction Mode */
+   msr   CPSR_c, #ARM_MODE_UNDEF | I_BIT   /* 0x1b Undefined Instruction Mode */
    ldr   sp, =__stack_und_end
    mov   lr, #0
    
-   msr   CPSR_c, #ARM_MODE_ABORT   /* 0x17 Abort Mode */
+   msr   CPSR_c, #ARM_MODE_ABORT | I_BIT   /* 0x17 Abort Mode */
    ldr   sp, =__stack_abt_end
    mov   lr, #0
    
-   msr   CPSR_c, #ARM_MODE_FIQ     /* 0x11 FIQ Mode */
+   msr   CPSR_c, #ARM_MODE_FIQ | I_BIT     /* 0x11 FIQ Mode */
    ldr   sp, =__stack_fiq_end
    mov   lr, #0
    
-   msr   CPSR_c, #ARM_MODE_IRQ     /* 0x12 IRQ Mode */
+   msr   CPSR_c, #ARM_MODE_IRQ | I_BIT     /* 0x12 IRQ Mode */
    ldr   sp, =__stack_irq_end
    mov   lr, #0
 
-   msr   CPSR_c, #ARM_MODE_SVC     /* 0x13 Supervisor Mode */
-   ldr   sp, =__stack_svc_end
-   mov   lr, #0
-#if 1
-   msr   CPSR_c, #ARM_MODE_MON     /* 0x16 Monitor Mode */
+   msr   CPSR_c, #ARM_MODE_MON | I_BIT     /* 0x16 Monitor Mode */
    ldr   sp, =__stack_mon_end
    mov   lr, #0
 
-   msr   CPSR_c, #ARM_MODE_HYP     /* 0x1B Hypervisor Mode */
+   msr   CPSR_c, #ARM_MODE_HYP | I_BIT     /* 0x1B Hypervisor Mode */
    ldr   sp, =__stack_hyp_end
    mov   lr, #0
-#endif
+
    msr   CPSR_c, #ARM_MODE_SYS | I_BIT     /* 0x1F Priviledged Operating Mode */
-   ldr   sp, =__stack	/* __stack_sys_end */
+   ldr   sp, =__stack_sys_end
+   mov   lr, #0
+
+   msr   CPSR_c, #ARM_MODE_SVC | I_BIT     /* 0x13 Supervisor Mode */
+   ldr   sp, =__stack
    mov   lr, #0
 
 #if 0
@@ -318,8 +319,6 @@ ExitFunction:
    .code 32
 
 	.align 4, 0
-DummyResetHandler:
-   b DummyResetHandler
 
 /* ================================================================== */
 /* Entry point for the IRQ handler */
@@ -331,7 +330,7 @@ IRQHandlerNested:
        PUSH    {R0-R12,LR}          // save register context
        MRS     LR, SPSR_irq                // Copy SPSR_irq to LR
        PUSH    {LR}                    // Save SPSR_irq
-       MSR     CPSR_c, #ARM_MODE_SYS | I_BIT          // Disable IRQ (Sys Mode)
+       MSR     CPSR_c, #ARM_MODE_SVC | I_BIT          // Disable IRQ (Svc Mode)
        PUSH    {LR}                    // Save LR
 
 		// save VFP/Neon FPSCR register
@@ -392,6 +391,8 @@ __stack_svc_end = .
 __stack_mon_end = .
 	.space	STACKSIZEHYP
 __stack_hyp_end = .
+	.space	STACKSIZESYS
+__stack_sys_end = .
 
    .ltorg
 /*** EOF ***/   

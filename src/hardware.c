@@ -9535,6 +9535,14 @@ void FIQ_Handler(void)
 		;
 }
 
+void CPU1_Handler(void)
+{
+	dbg_puts_impl_P(PSTR("CPU1_Handler trapped.\n"));
+	for (;;)
+		;
+}
+
+
 void Hyp_Handler(void)
 {
 	dbg_puts_impl_P(PSTR("Hyp_Handler trapped.\n"));
@@ -9652,6 +9660,7 @@ void arm_hardware_flush_all(void)
 void arm_hardware_invalidate(uintptr_t addr, int_fast32_t dsize)
 {
 	ASSERT((addr % DCACHEROWSIZE) == 0);
+	ASSERT((dsize % DCACHEROWSIZE) == 0);
 
 	if (dsize > 0)
 	{
@@ -9681,6 +9690,7 @@ void arm_hardware_invalidate(uintptr_t addr, int_fast32_t dsize)
 void arm_hardware_flush(uintptr_t addr, int_fast32_t dsize)
 {
 	//ASSERT((addr % DCACHEROWSIZE) == 0);
+	//ASSERT((dsize % DCACHEROWSIZE) == 0);
 
 	if (dsize > 0)
 	{
@@ -9711,6 +9721,7 @@ void arm_hardware_flush(uintptr_t addr, int_fast32_t dsize)
 void arm_hardware_flush_invalidate(uintptr_t addr, int_fast32_t dsize)
 {
 	ASSERT((addr % DCACHEROWSIZE) == 0);
+	//ASSERT((dsize % DCACHEROWSIZE) == 0);
 
 	if (dsize > 0)
 	{
@@ -9742,12 +9753,12 @@ void arm_hardware_flush_invalidate(uintptr_t addr, int_fast32_t dsize)
 // Заглушки
 // Сейчас в эту память будем читать по DMA
 // Используется только в startup
-void arm_hardware_invalidate(uintptr_t base, int_fast32_t size)
+void arm_hardware_invalidate(uintptr_t base, int_fast32_t dsize)
 {
 }
 
 // Сейчас эта память будет записываться по DMA куда-то
-void arm_hardware_flush(uintptr_t base, size_t size)
+void arm_hardware_flush(uintptr_t base, int_fast32_t dsize)
 {
 }
 
@@ -9758,7 +9769,7 @@ void arm_hardware_flush_all(void)
 }
 
 // Сейчас эта память будет записываться по DMA куда-то. Потом содержимое не требуется
-void arm_hardware_flush_invalidate(uintptr_t base, size_t size)
+void arm_hardware_flush_invalidate(uintptr_t base, int_fast32_t dsize)
 {
 }
 
@@ -12360,6 +12371,12 @@ void cpu_initialize(void)
 
 //	ca9_ca7_cache_diag();	// print
 
+//	SMP tests
+//	TP();
+//	RCC->MP_GRSTCSETR = RCC_MP_GRSTCSETR_MPUP1RST;
+//	(void) RCC->MP_GRSTCSETR;
+//	TP();
+
 #if (__GIC_PRESENT == 1)
 	// GIC version diagnostics
 	//PRINTF("arm_gic_initialize: ICPIDR0=%08lX\n", ICPIDR0);	// ICPIDR0
@@ -12754,7 +12771,7 @@ caddr_t __attribute__((used)) (_sbrk)(int incr)
 		heap = (char *) &__HeapBase;
 	}
 
-	debug_printf_P(PSTR("_sbrk: incr=%X, new heap=%X, & __HeapBase=%p, & __HeapLimit=%p\n"), incr, heap + incr, & __HeapBase, & __HeapLimit);
+	//debug_printf_P(PSTR("_sbrk: incr=%X, new heap=%X, & __HeapBase=%p, & __HeapLimit=%p\n"), incr, heap + incr, & __HeapBase, & __HeapLimit);
 
 	prev_heap = heap;
 

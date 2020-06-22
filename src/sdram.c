@@ -2883,7 +2883,7 @@ void arm_hardware_sdram_initialize(void)
   
 }
 
-#elif CPUSTYLE_STM32MP157A || CPUSTYLE_STM32MP157D
+#elif CPUSTYLE_STM32MP1
 
 // Taken from https://github.com/ARM-software/arm-trusted-firmware
 
