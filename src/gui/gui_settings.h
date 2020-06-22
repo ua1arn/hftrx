@@ -48,16 +48,5 @@ typedef enum {
 #define GUI_DEFAULTCOLOR		255
 #endif
 
-#define GUIMINX	800		// минимальное разрешение для touch GUI
-#define GUIMINY	480
-
-#ifndef WITHGUIMAXX
-#define WITHGUIMAXX		DIM_X
-#endif
-
-#ifndef WITHGUIMAXY
-#define WITHGUIMAXY		DIM_Y
-#endif
-
 #endif /* WITHTOUCHGUI */
 #endif /* GUI_STRUCTS_H_INCLUDED */

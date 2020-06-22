@@ -21,20 +21,6 @@
 #include "list.h"
 #include "src/codecs/nau8822.h"
 
-#if (DIM_X < GUIMINX || DIM_Y < GUIMINY) && WITHTOUCHGUI	// не соблюдены минимальные требования к разрешению экрана
-#undef WITHTOUCHGUI											// для функционирования touch GUI
-#endif
-
-#if WITHGUIMAXX < GUIMINX
-#undef WITHGUIMAXX
-#define WITHGUIMAXX 	GUIMINX
-#endif
-
-#if WITHGUIMAXY < GUIMINY
-#undef WITHGUIMAXY
-#define WITHGUIMAXY 	GUIMINY
-#endif
-
 #include "src/gui/gui.h"
 #include "src/gui/gui_structs.h"
 #include "src/gui/gui_settings.h"

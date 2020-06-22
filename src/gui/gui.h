@@ -4,6 +4,36 @@
 #include "hardware.h"
 #include "../display/display.h"
 
+#define GUIMINX					800							// минимальное разрешение для touch GUI
+#define GUIMINY					480
+#define WITHGUIMAXX				DIM_X
+#define WITHGUIMAXY				DIM_Y
+
+#if (DIM_X < GUIMINX || DIM_Y < GUIMINY) && WITHTOUCHGUI	// не соблюдены минимальные требования к разрешению экрана
+	#undef WITHTOUCHGUI										// для функционирования touch GUI
+#endif
+
+#if WITHGUIMAXX != GUIMINX									// дизайн GUI в данный момент только для 800х480,
+	#undef WITHGUIMAXX
+	#define WITHGUIMAXX 		GUIMINX
+#endif
+
+#if WITHGUIMAXY != GUIMINY									// при большем разрешении интерфейс будет сжат до 800х480.
+	#undef WITHGUIMAXY
+	#define WITHGUIMAXY 		GUIMINY
+#endif
+
+#if WITHTOUCHGUI
+
+#if ! defined WITHUSEMALLOC									// необходима поддержка динамического управления памятью
+	#define WITHUSEMALLOC		1
+#endif /* ! defined WITHUSEMALLOC */
+
+#if ! defined WITHGUIHEAP || WITHGUIHEAP < (80 * 1024uL)	// требуемый размер кучи для touch GUI
+	#undef WITHGUIHEAP
+	#define WITHGUIHEAP 		(80 * 1024uL)
+#endif /* ! defined WITHGUIHEAP || WITHGUIHEAP < (80 * 1024uL) */
+
 typedef struct {
 	char name[20];
 	uint_fast8_t index;
@@ -31,4 +61,5 @@ void gui_uif_editmenu(const char * name, uint_fast16_t menupos, uint_fast8_t exi
 void gui_open_sys_menu(void);
 void gui_timer_update (void * arg);
 
+#endif /* WITHTOUCHGUI */
 #endif /* GUI_H_INCLUDED */

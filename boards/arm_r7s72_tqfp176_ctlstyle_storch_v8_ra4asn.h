@@ -281,7 +281,7 @@
 	//#define WITHUSEDUALWATCH	1	// Второй приемник
 	#define WITHREVERB	1	// ревербератор в обработке микрофонного сигнала
 	#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
-	#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
+	//#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 
 	// FPGA section
 	//#define WITHFPGAWAIT_AS	1	/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
@@ -369,7 +369,6 @@
 	#define WITHSWRCALI			50
 
 	#define WITHTOUCHGUI		1
-	#define WITHGUIHEAP 		(2 * 1024uL)
 	#define WITHALPHA			64
 
 	#define WITHBOTTOMDBVAL		110

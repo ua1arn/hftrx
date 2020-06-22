@@ -16,7 +16,7 @@
 #include "formats.h"	// for debug prints
 #include "gpio.h"
 #include "spi.h"
-
+#include "gui/gui.h"
 
 static unsigned long ulmin(
 	unsigned long a,
@@ -11286,7 +11286,7 @@ static void r7s721_intc_initializeOld(void)
 
 #endif
 
-uint8_t __attribute__ ((section(".stack"), used, aligned(32))) mystack [1024];
+uint8_t __attribute__ ((section(".stack"), used, aligned(64))) mystack [2048];
 /******************************************************************************/
 
 // TTB initialize
