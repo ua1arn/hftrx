@@ -34,9 +34,7 @@
 #endif /* WITHRFSG */
 
 #if WITHTOUCHGUI
-static uint_fast8_t encoder2_busy = 0;		// признак занятости энкодера в обработке gui
 static uint_fast8_t keyboard_redirect = 0;	// перенаправление кодов кнопок в менеджер gui
-static uint_fast8_t is_menu_opened = 0;		// открыто gui системное меню
 static char menuw [20];						// буфер для вывода значений системного меню
 static enc2_menu_t enc2_menu;
 #endif /* WITHTOUCHGUI */
@@ -12722,11 +12720,8 @@ display_menu_string_P(
 	)
 {
 #if WITHTOUCHGUI
-	if (is_menu_opened)
-	{
-		safestrcpy(menuw, ARRAY_SIZE(menuw), text);
-		return;
-	}
+	safestrcpy(menuw, ARRAY_SIZE(menuw), text);
+	return;
 #else
 	if (width > filled)
 	{
@@ -16784,10 +16779,10 @@ process_key_menuset_common(uint_fast8_t kbch)
 #if WITHENCODER2
 	#if WITHTOUCHGUI
 		case KBD_ENC2_PRESS:
-			encoder2_busy ? gui_set_encoder2_state (KBD_ENC2_PRESS): uif_encoder2_press();
+			gui_set_encoder2_state (KBD_ENC2_PRESS);
 			return 0;
 		case KBD_ENC2_HOLD:
-			encoder2_busy ? gui_set_encoder2_state (KBD_ENC2_HOLD) : uif_encoder2_hold();
+			gui_set_encoder2_state (KBD_ENC2_HOLD);
 			return 0;
 	#else
 		case KBD_ENC2_PRESS:
@@ -18317,30 +18312,21 @@ hamradio_main_step(void)
 				nrotate = getRotateHiRes(& jumpsize, ghiresdiv * gencderate);
 				nrotate2 = getRotateHiRes2(& jumpsize2);
 			#endif
-#if WITHTOUCHGUI
-			if (!encoder2_busy)
-			{
-				if (uif_encoder2_rotate(nrotate2))
-				{
-#else
+
 			if (uif_encoder2_rotate(nrotate2))
 			{
-#endif
-						nrotate2 = 0;
-//
+				nrotate2 = 0;
 #if WITHTOUCHGUI
-						const char FLASHMEM * const text = enc2menu_label_P(enc2pos);
-						safestrcpy(enc2_menu.param, ARRAY_SIZE(enc2_menu.param), text);
-						enc2menu_value(enc2pos, INT_MAX, enc2_menu.val, ARRAY_SIZE(enc2_menu.val));
-						enc2_menu.updated = 1;
-						gui_encoder2_menu(& enc2_menu);
-						display2_mode_subset(0);
-				}
-			}
+				const char FLASHMEM * const text = enc2menu_label_P(enc2pos);
+				safestrcpy(enc2_menu.param, ARRAY_SIZE(enc2_menu.param), text);
+				enc2menu_value(enc2pos, INT_MAX, enc2_menu.val, ARRAY_SIZE(enc2_menu.val));
+				enc2_menu.updated = 1;
+				gui_encoder2_menu(& enc2_menu);
+				display2_mode_subset(0);
 #else
 				display_redrawfreqmodesbarsnow(0, NULL);			/* Обновление дисплея - всё, включая частоту */
-			}
 #endif /* WITHTOUCHGUI */
+			}
 	#if WITHDEBUG
 			{
 				/* здесь можно добавить обработку каких-либо команд с debug порта */
@@ -18435,7 +18421,7 @@ hamradio_main_step(void)
 				}
 			}
 			#if WITHTOUCHGUI
-				encoder2_busy = gui_check_encoder2(nrotate2);
+				gui_check_encoder2(nrotate2);
 			#endif /* WITHTOUCHGUI */
 		}
 		break;
@@ -19056,11 +19042,6 @@ const char * hamradio_gui_edit_menu_item(uint_fast8_t index, int_least16_t rotat
 	dctx.pv = mp;
 	display2_menu_valxx(0, 0, & dctx);
 	return menuw;
-}
-
-void hamradio_set_menu_cond (uint_fast8_t m)
-{
-	is_menu_opened = m;
 }
 
 void hamradio_change_submode(uint_fast8_t newsubmode)

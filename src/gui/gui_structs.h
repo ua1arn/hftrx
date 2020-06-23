@@ -139,7 +139,6 @@ typedef struct {
 	uint8_t lh_count;
 	slider_t * sh_ptr;
 	uint8_t sh_count;
-	LIST_ENTRY item;
 } window_t;
 
 typedef struct {

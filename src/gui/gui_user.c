@@ -89,6 +89,18 @@ window_t * get_win(window_id_t window_id)
 	return & windows[window_id];
 }
 
+void disable_options_button(void)
+{
+	button_t * btn_Options = find_gui_element_ref(TYPE_BUTTON, get_win(WINDOW_MAIN), "btn_Options");
+	btn_Options->state = DISABLED;
+}
+
+void enable_options_button(void)
+{
+	button_t * btn_Options = find_gui_element_ref(TYPE_BUTTON, get_win(WINDOW_MAIN), "btn_Options");
+	btn_Options->state = CANCELLED;
+}
+
 // *********************************************************************************************************************************************************************
 
 static void btn_main_handler(void)
@@ -336,99 +348,43 @@ static void buttons_options_handler(void)
 		if (gui->selected_link->link == btn_AF)
 		{
 			window_t * win = get_win(WINDOW_BP);
-			if (win->state == NON_VISIBLE)
-			{
-				encoder2.busy = 1;
-				open_window(win);
-				hamradio_enable_keyboard_redirect();
-			}
-			else
-			{
-				close_top_window();
-				encoder2.busy = 0;
-				hamradio_disable_keyboard_redirect();
-			}
+			encoder2.busy = 1;
+			open_window(win);
+			hamradio_enable_keyboard_redirect();
+			disable_options_button();
 		}
 		else if (gui->selected_link->link == btn_AGC)
 		{
 			window_t * win = get_win(WINDOW_AGC);
-			if (win->state == NON_VISIBLE)
-			{
-				open_window(win);
-			}
-			else
-			{
-				close_top_window();
-			}
+			open_window(win);
 		}
 		else if (gui->selected_link->link == btn_Utils)
 		{
 			window_t * win = get_win(WINDOW_UTILS);
-			if (win->state == NON_VISIBLE)
-			{
-				open_window(win);
-			}
-			else
-			{
-				close_top_window();
-			}
+			open_window(win);
 		}
 		else if (gui->selected_link->link == btn_Freq)
 		{
 			window_t * win = get_win(WINDOW_FREQ);
-			if (win->state == NON_VISIBLE)
-			{
-				open_window(win);
-				hamradio_set_lockmode(1);
-				hamradio_enable_keyboard_redirect();
-			}
-			else
-			{
-				close_top_window();
-				hamradio_set_lockmode(0);
-				hamradio_disable_keyboard_redirect();
-			}
+			open_window(win);
+			hamradio_set_lockmode(1);
+			hamradio_enable_keyboard_redirect();
+			disable_options_button();
 		}
 		else if (gui->selected_link->link == btn_TXsett)
 		{
 			window_t * win = get_win(WINDOW_TX_SETTINGS);
-			if (win->state == NON_VISIBLE)
-			{
-				open_window(win);
-			}
-			else
-			{
-				close_top_window();
-			}
+			open_window(win);
 		}
 		else if (gui->selected_link->link == btn_AUDsett)
 		{
 			window_t * win = get_win(WINDOW_AUDIOSETTINGS);
-			if (win->state == NON_VISIBLE)
-			{
-				hamradio_enable_keyboard_redirect();
-				open_window(win);
-			}
-			else
-			{
-				hamradio_disable_keyboard_redirect();
-				close_top_window();
-			}
+			open_window(win);
 		}
 		else if (gui->selected_link->link == btn_SysMenu)
 		{
 			window_t * win = get_win(WINDOW_MENU);
-			if (win->state == NON_VISIBLE)
-			{
-				open_window(win);
-				encoder2.busy = 1;
-			}
-			else
-			{
-				close_top_window();
-				encoder2.busy = 0;
-				hamradio_set_menu_cond(NON_VISIBLE);
-			}
+			open_window(win);
 		}
 	}
 }
@@ -482,6 +438,8 @@ static void window_options_process(void)
 		}
 		elements_state(win);
 		calculate_window_position(win, xmax, ymax);
+		encoder2.busy = 0;
+		hamradio_disable_keyboard_redirect();
 		return;
 	}
 }
@@ -656,6 +614,7 @@ static void buttons_bp_handler(void)
 			encoder2.busy = 0;
 			footer_buttons_state(CANCELLED);
 			hamradio_disable_keyboard_redirect();
+			enable_options_button();
 		}
 	}
 }
@@ -974,12 +933,12 @@ static void window_freq_process (void)
 			break;
 
 		case BUTTON_CODE_OK:
-			if(hamradio_set_freq(editfreq.val * 1000))
+			if(hamradio_set_freq(editfreq.val * 1000) || editfreq.val == 0)
 			{
 				close_top_window();
-				footer_buttons_state(CANCELLED);
 				hamradio_set_lockmode(0);
 				hamradio_disable_keyboard_redirect();
+				enable_options_button();
 			}
 			else
 				lbl_freq->color = COLORMAIN_RED;
@@ -2462,8 +2421,6 @@ static void window_menu_process(void)
 		win->first_call = 0;
 		win->align_mode = ALIGN_CENTER_X;						// выравнивание окна системных настроек всегда по центру
 
-		hamradio_set_menu_cond(VISIBLE);
-
 		uint_fast8_t col1_int = 20, row1_int = window_title_height + 20, i;
 		uint_fast16_t xn, yn;
 		label_t * lh;
@@ -2748,9 +2705,6 @@ static void window_menu_process(void)
 	if (menu_level == MENU_OFF)
 	{
 		close_top_window();
-		encoder2.busy = 0;
-		footer_buttons_state(CANCELLED);
-		hamradio_set_menu_cond(NON_VISIBLE);
 		return;
 	}
 
@@ -2987,14 +2941,13 @@ static void window_uif_process(void)
 
 // *********************************************************************************************************************************************************************
 
-uint_fast8_t gui_check_encoder2 (int_least16_t rotate)
+void gui_check_encoder2 (int_least16_t rotate)
 {
 	if (encoder2.rotate_done || encoder2.rotate == 0)
 	{
 		encoder2.rotate = rotate;
 		encoder2.rotate_done = 0;
 	}
-	return encoder2.busy;
 }
 
 void gui_set_encoder2_state (uint_fast8_t code)
@@ -3077,14 +3030,11 @@ void gui_open_sys_menu(void)
 	{
 		open_window(win);
 		footer_buttons_state(DISABLED, ((button_t *)gui->selected_link)->name);
-		encoder2.busy = 1;
 	}
 	else
 	{
 		close_top_window();
 		footer_buttons_state(CANCELLED);
-		encoder2.busy = 0;
-		hamradio_set_menu_cond(NON_VISIBLE);
 	}
 }
 
