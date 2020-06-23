@@ -38,6 +38,8 @@ typedef enum {
 	WINDOW_TX_SETTINGS,				// настройки, относящиеся к режиму передачи
 	WINDOW_TX_VOX_SETT,				// настройки VOX
 	WINDOW_TX_POWER,				// выходная мощность
+	WINDOW_OPTIONS,
+	WINDOW_UTILS,
 	WINDOWS_COUNT
 } window_id_t;
 

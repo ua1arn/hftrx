@@ -122,8 +122,8 @@ typedef enum {
 } align_t;
 
 typedef struct {
-	window_id_t window_id;		// в окне будут отображаться элементы с соответствующим полем for_window
-	window_id_t parent_id;		// UINT8_MAX - нет parent window
+	const window_id_t window_id;		// в окне будут отображаться элементы с соответствующим полем for_window
+	const window_id_t parent_id;		// UINT8_MAX - нет parent window
 	align_t align_mode;			// вертикаль выравнивания окна
 	uint16_t x1;
 	uint16_t y1;

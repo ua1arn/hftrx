@@ -38,7 +38,7 @@ static btn_bg_t btn_bg [] = {
 };
 enum { BG_COUNT = ARRAY_SIZE(btn_bg) };
 
-static gui_t gui = { 0, 0, KBD_CODE_MAX, TYPE_DUMMY, NULL, CANCELLED, 0, 0, 0, 0, 0, 1, { WINDOW_MAIN, UINT8_MAX, }, };
+static gui_t gui = { 0, 0, KBD_CODE_MAX, TYPE_DUMMY, NULL, CANCELLED, 0, 0, 0, 0, 0, 1, };
 static touch_t touch_elements[TOUCH_ARRAY_SIZE];
 static uint_fast8_t touch_count = 0;
 
@@ -147,11 +147,6 @@ void footer_buttons_state (uint_fast8_t state, ...)
 		name = va_arg(arg, char *);
 		va_end(arg);
 	}
-	else
-	{
-		gui.win[1] = UINT8_MAX;
-		touch_count = footer_buttons_count;
-	}
 
 	for (uint_fast8_t i = 1; i < win->bh_count; i++)
 	{
@@ -161,7 +156,7 @@ void footer_buttons_state (uint_fast8_t state, ...)
 			bh->state = strcmp(bh->name, name) ? DISABLED : CANCELLED;
 			bh->is_locked = bh->state == CANCELLED ? BUTTON_NON_LOCKED : BUTTON_LOCKED;
 		}
-		else if (state == CANCELLED)
+		else if (state == CANCELLED && gui.win[1] == UINT8_MAX)
 		{
 			bh->state = CANCELLED;
 			bh->is_locked = BUTTON_NON_LOCKED;
@@ -173,6 +168,7 @@ void footer_buttons_state (uint_fast8_t state, ...)
 void elements_state (window_t * win)
 {
 	uint_fast8_t j = 0;
+	int debug_num = 0;
 	button_t * b = win->bh_ptr;
 	if (b != NULL)
 	{
@@ -187,11 +183,13 @@ void elements_state (window_t * win)
 				touch_elements[touch_count].win = win;
 				touch_elements[touch_count].type = TYPE_BUTTON;
 				touch_elements[touch_count].pos = j++;
-				touch_count++;
+				touch_count ++;
+				debug_num ++;
 			}
 			else
 			{
-				touch_count--;
+				debug_num --;
+				touch_count --;
 				bh->visible = NON_VISIBLE;
 				ASSERT(touch_count >= footer_buttons_count);
 			}
@@ -212,11 +210,13 @@ void elements_state (window_t * win)
 				touch_elements[touch_count].win = win;
 				touch_elements[touch_count].type = TYPE_LABEL;
 				touch_elements[touch_count].pos = j++;
-				touch_count++;
+				touch_count ++;
+				debug_num ++;
 			}
 			else
 			{
-				touch_count--;
+				debug_num --;
+				touch_count --;
 				lh->visible = NON_VISIBLE;
 				ASSERT(touch_count >= footer_buttons_count);
 			}
@@ -237,16 +237,19 @@ void elements_state (window_t * win)
 				touch_elements[touch_count].win = win;
 				touch_elements[touch_count].type = TYPE_SLIDER;
 				touch_elements[touch_count].pos = j++;
-				touch_count++;
+				touch_count ++;
+				debug_num ++;
 			}
 			else
 			{
-				touch_count--;
+				debug_num --;
+				touch_count --;
 				sh->visible = NON_VISIBLE;
 				ASSERT(touch_count >= footer_buttons_count);
 			}
 		}
 	}
+	PRINTF("%s %d touch_count: %d %+d\n", win->name, win->state, touch_count, debug_num);
 }
 
 static void free_win_ptr (window_t * win)
@@ -266,39 +269,38 @@ static void free_win_ptr (window_t * win)
 }
 
 /* Установка признака видимости окна */
-void set_window(window_t * win, uint_fast8_t value)
+void close_top_window(void)
 {
-	PLIST_ENTRY p;
-	uint_fast8_t j = 0;
-	win->state = value;
-	if (value)
+	window_t * win = get_win(gui.win[1]);
+	win->state = NON_VISIBLE;
+	elements_state(win);
+	free_win_ptr(win);
+	gui.win[1] = UINT8_MAX;
+
+	if (win->parent_id != UINT8_MAX)	// При закрытии child window открыть parent window, если есть
 	{
-		win->first_call = 1;
-		if (win->parent_id != UINT8_MAX)	// Есть есть parent window, закрыть его и оставить child window
-		{
-			window_t * pwin = get_win(win->parent_id);
-			pwin->state = NON_VISIBLE;
-			elements_state(pwin);
-			free_win_ptr(pwin);
-			pwin->first_call = 1;
-		}
-		gui.win[1] = win->window_id;
+		window_t * pwin = get_win(win->parent_id);
+		pwin->state = VISIBLE;
+		gui.win[1] = pwin->window_id;
+		free_win_ptr(pwin);
+		pwin->first_call = 1;
 	}
 	else
-	{
-		elements_state(win);
-		free_win_ptr(win);
-		gui.win[1] = UINT8_MAX;
+		touch_count = footer_buttons_count;
+}
 
-		if (win->parent_id != UINT8_MAX)	// При закрытии child window открыть parent window, если есть
-		{
-			window_t * pwin = get_win(win->parent_id);
-			pwin->state = VISIBLE;
-			gui.win[1] = win->parent_id;
-			free_win_ptr(pwin);
-			pwin->first_call = 1;
-		}
+void open_window(window_t * win)
+{
+	win->state = VISIBLE;
+	win->first_call = 1;
+	if (win->parent_id != UINT8_MAX)	// Есть есть parent window, закрыть его и оставить child window
+	{
+		window_t * pwin = get_win(win->parent_id);
+		pwin->state = NON_VISIBLE;
+		elements_state(pwin);
+		free_win_ptr(pwin);
 	}
+	gui.win[1] = win->window_id;
 }
 
 /* Расчет экранных координат окна */
@@ -591,7 +593,8 @@ void gui_initialize (void)
 	uint_fast8_t i = 0;
 	window_t * win = get_win(WINDOW_MAIN);
 
-	set_window(win, VISIBLE);
+	open_window(win);
+	gui.win[1] = UINT8_MAX;
 
 	do {
 		fill_button_bg_buf(& btn_bg[i]);
