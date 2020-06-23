@@ -7481,28 +7481,31 @@ void speex_free (void *ptr)
 
 #else /* WITHUSEMALLOC */
 
-static int speexallocated = 0;
-//static uint8_t sipexbuff [NTRX * 149176 /* + 24716 */];
-static uint8_t sipexbuff [SPEEXALLOCSIZE];
+	#if SPEEXALLOCSIZE
 
-void *speex_alloc (int size)
-{
-	size = (size + 0x03) & ~ 0x03;
-	ASSERT((speexallocated + size) <= sizeof sipexbuff / sizeof sipexbuff [0]);
-	if (! ((speexallocated + size) <= sizeof sipexbuff / sizeof sipexbuff [0]))
+	static int speexallocated = 0;
+
+	static uint8_t speexheapbuff [SPEEXALLOCSIZE];
+
+	void *speex_alloc (int size)
 	{
-		for (;;)
-			;
+		size = (size + 0x03) & ~ 0x03;
+		ASSERT((speexallocated + size) <= sizeof speexheapbuff / sizeof speexheapbuff [0]);
+		if (! ((speexallocated + size) <= sizeof speexheapbuff / sizeof speexheapbuff [0]))
+		{
+			for (;;)
+				;
+		}
+		void * p = (void *) (speexheapbuff + speexallocated);
+		speexallocated += size;
+		return p;
 	}
-	void * p = (void *) (sipexbuff + speexallocated);
-	speexallocated += size;
-	return p;
-}
 
-void speex_free (void *ptr)
-{
-}
+	void speex_free (void *ptr)
+	{
+	}
 
+	#endif /* SPEEXALLOCSIZE */
 #endif /* WITHUSEMALLOC */
 
 static void speex_update_rx(void)

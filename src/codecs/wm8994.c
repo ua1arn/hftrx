@@ -756,7 +756,7 @@ static uint32_t inputEnabled = 0;
 /** @defgroup WM8994_Function_Prototypes
   * @{
   */
-static uint8_t CODEC_IO_Write(uint8_t Addr, uint16_t Reg, uint16_t Value);
+static uint_fast8_t CODEC_IO_Write(uint_fast8_t Addr, uint_fast16_t Reg, uint_fast16_t Value);
 /**
   * @}
   */ 
@@ -775,13 +775,13 @@ static uint8_t CODEC_IO_Write(uint8_t Addr, uint16_t Reg, uint16_t Value);
   * @param AudioFreq: Audio Frequency 
   * @retval 0 if correct communication, else wrong communication
   */
-uint32_t wm8994_Init(uint16_t DeviceAddr, uint16_t OutputInputDevice, uint8_t Volume, uint32_t AudioFreq)
+static uint_fast32_t wm8994_Init(uint_fast16_t DeviceAddr, uint_fast16_t OutputInputDevice, uint_fast8_t Volume, uint32_t AudioFreq)
 {
-  uint32_t counter = 0;
-  uint16_t output_device = OutputInputDevice & 0xFF;
-  uint16_t input_device = OutputInputDevice & 0xFF00;
-  //uint16_t power_mgnt_reg_1 = 0;
-  
+	uint_fast32_t counter = 0;
+	uint_fast16_t output_device = OutputInputDevice & 0xFF;
+	uint_fast16_t input_device = OutputInputDevice & 0xFF00;
+	//uint16_t power_mgnt_reg_1 = 0;
+
   /* Initialize the Control interface of the Audio Codec */
   AUDIO_IO_Init();
   /* wm8994 Errata Work-Arounds */
@@ -1273,10 +1273,10 @@ uint32_t wm8994_Stop(uint16_t DeviceAddr, uint32_t CodecPdwnMode)
   *         description for more details).
   * @retval 0 if correct communication, else wrong communication
   */
-uint32_t wm8994_SetVolume(uint16_t DeviceAddr, uint8_t Volume)
+uint_fast32_t wm8994_SetVolume(uint_fast16_t DeviceAddr, uint_fast8_t Volume)
 {
-  uint32_t counter = 0;
-  uint8_t convertedvol = VOLUME_CONVERT(Volume);
+	uint_fast32_t counter = 0;
+	uint_fast8_t convertedvol = VOLUME_CONVERT(Volume);
 
   /* Output volume */
   if (outputEnabled != 0)
@@ -1349,9 +1349,9 @@ uint32_t wm8994_SetVolume(uint16_t DeviceAddr, uint8_t Volume)
   *             mute mode.
   * @retval 0 if correct communication, else wrong communication
   */
-uint32_t wm8994_SetMute(uint16_t DeviceAddr, uint32_t Cmd)
+uint_fast32_t wm8994_SetMute(uint_fast16_t DeviceAddr, uint_fast32_t Cmd)
 {
-  uint32_t counter = 0;
+	uint_fast32_t counter = 0;
   
   if (outputEnabled != 0)
   {
@@ -1384,9 +1384,9 @@ uint32_t wm8994_SetMute(uint16_t DeviceAddr, uint32_t Cmd)
   *         OUTPUT_DEVICE_HEADPHONE, OUTPUT_DEVICE_BOTH or OUTPUT_DEVICE_AUTO 
   * @retval 0 if correct communication, else wrong communication
   */
-uint32_t wm8994_SetOutputMode(uint16_t DeviceAddr, uint8_t Output)
+uint_fast32_t wm8994_SetOutputMode(uint_fast16_t DeviceAddr, uint_fast8_t Output)
 {
-  uint32_t counter = 0; 
+	uint_fast32_t counter = 0;
 
 #if 1
     /* Enable DAC1 (Left), Enable DAC1 (Right), 
@@ -1564,7 +1564,7 @@ uint32_t wm8994_Reset(uint16_t DeviceAddr)
   * @param  Value: Data to be written
   * @retval None
   */
-static uint8_t CODEC_IO_Write(uint8_t Addr, uint16_t Reg, uint16_t Value)
+static uint_fast8_t CODEC_IO_Write(uint_fast8_t Addr, uint_fast32_t Reg, uint_fast32_t Value)
 {
   uint32_t result = 0;
   
