@@ -45,8 +45,8 @@ enum {
 };
 
 typedef struct {
-	uint8_t w;
-	uint8_t h;
+	uint16_t w;
+	uint16_t h;
 	PACKEDCOLORMAIN_T * bg_non_pressed;
 	PACKEDCOLORMAIN_T * bg_pressed;
 	PACKEDCOLORMAIN_T * bg_locked;
@@ -57,8 +57,8 @@ typedef struct {
 typedef struct {
 	uint16_t x1;				// координаты от начала экрана
 	uint16_t y1;
-	uint8_t w;
-	uint8_t h;
+	uint16_t w;
+	uint16_t h;
 	void(*onClickHandler) (void);	// обработчик события RELEASED
 	uint8_t state;				// текущее состояние кнопки
 	uint8_t is_locked;			// признак фиксации кнопки
