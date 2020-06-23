@@ -3376,6 +3376,11 @@ uint_fast8_t hamradio_get_tx_power(void);
 void hamradio_get_tx_power_limits(uint_fast8_t * min, uint_fast8_t * max);
 #endif /* WITHTX */
 
+#if WITHSPKMUTE
+uint_fast8_t hamradio_get_gmutespkr(void);
+void hamradio_set_gmutespkr(uint_fast8_t v);
+#endif /* WITHSPKMUTE */
+
 uint_fast8_t hamradio_verify_freq_bands(uint_fast32_t freq, uint_fast32_t * bottom, uint_fast32_t * top);
 
 /* выбор внешнего вида прибора - стрелочный или градусник */

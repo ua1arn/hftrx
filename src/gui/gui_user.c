@@ -215,11 +215,13 @@ static void btn_main_handler(void)
 			window_t * win = get_win(WINDOW_AUDIOSETTINGS);
 			if (win->state == NON_VISIBLE)
 			{
+				hamradio_enable_keyboard_redirect();
 				set_window(win, VISIBLE);
 				footer_buttons_state(DISABLED, ((button_t *)gui->selected_link)->name);
 			}
 			else
 			{
+				hamradio_disable_keyboard_redirect();
 				set_window(win, NON_VISIBLE);
 				footer_buttons_state(CANCELLED);
 			}
@@ -1527,12 +1529,12 @@ static void buttons_audiosettings_process(void)
 		button_t * btn_reverb = find_gui_element_ref(TYPE_BUTTON, winAP, "btn_reverb");						// reverb on/off
 		button_t * btn_reverb_settings = find_gui_element_ref(TYPE_BUTTON, winAP, "btn_reverb_settings");	// reverb settings
 		button_t * btn_monitor = find_gui_element_ref(TYPE_BUTTON, winAP, "btn_monitor");					// monitor on/off
+		button_t * btn_speaker = find_gui_element_ref(TYPE_BUTTON, winAP, "btn_speaker");					// speaker mute
 		button_t * btn_mic_eq = find_gui_element_ref(TYPE_BUTTON, winAP, "btn_mic_eq");						// MIC EQ on/off
 		button_t * btn_mic_eq_settings = find_gui_element_ref(TYPE_BUTTON, winAP, "btn_mic_eq_settings");	// MIC EQ settingss
 		button_t * btn_mic_settings = find_gui_element_ref(TYPE_BUTTON, winAP, "btn_mic_settings");			// mic settings
 		button_t * btn_mic_profiles = find_gui_element_ref(TYPE_BUTTON, winAP, "btn_mic_profiles");			// mic profiles
 
-#if WITHREVERB
 		if (gui->selected_link->link == btn_reverb)
 		{
 			btn_reverb->is_locked = hamradio_get_greverb() ? BUTTON_NON_LOCKED : BUTTON_LOCKED;
@@ -1546,13 +1548,17 @@ static void buttons_audiosettings_process(void)
 			set_window(winRS, VISIBLE);
 		}
 
-		else
-#endif /* WITHREVERB */
-		if (gui->selected_link->link == btn_monitor)
+		else if (gui->selected_link->link == btn_monitor)
 		{
 			btn_monitor->is_locked = hamradio_get_gmoniflag() ? BUTTON_NON_LOCKED : BUTTON_LOCKED;
 			local_snprintf_P(btn_monitor->text, ARRAY_SIZE(btn_monitor->text), PSTR("Monitor|%s"), btn_monitor->is_locked ? "enabled" : "disabled");
 			hamradio_set_gmoniflag(btn_monitor->is_locked);
+		}
+		else if (gui->selected_link->link == btn_speaker)
+		{
+			btn_speaker->is_locked = hamradio_get_gmutespkr() ? BUTTON_NON_LOCKED : BUTTON_LOCKED;
+			local_snprintf_P(btn_speaker->text, ARRAY_SIZE(btn_speaker->text), PSTR("Speaker|%s"), btn_speaker->is_locked ? "muted" : "on air");
+			hamradio_set_gmutespkr(btn_speaker->is_locked);
 		}
 		else if (gui->selected_link->link == btn_mic_eq)
 		{
@@ -1583,7 +1589,7 @@ static void window_audiosettings_process(void)
 	if (win->first_call)
 	{
 		uint_fast16_t x = 0, y = 0, xmax = 0, ymax = 0;
-		uint_fast8_t interval = 6, col1_int = 20, row1_int = window_title_height + 20, row_count = 3;
+		uint_fast8_t interval = 6, col1_int = 20, row1_int = window_title_height + 20, row_count = 4;
 		button_t * bh = NULL;
 		win->first_call = 0;
 
@@ -1593,6 +1599,7 @@ static void window_audiosettings_process(void)
 			{ 0, 0, 100, 44, buttons_audiosettings_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, 	NON_VISIBLE, UINTPTR_MAX, "btn_reverb", 			"Reverb|OFF", },
 			{ 0, 0, 100, 44, buttons_audiosettings_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, 	NON_VISIBLE, UINTPTR_MAX, "btn_reverb_settings", 	"Reverb|settings", },
 			{ 0, 0, 100, 44, buttons_audiosettings_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, 	NON_VISIBLE, UINTPTR_MAX, "btn_monitor", 			"Monitor|disabled", },
+			{ 0, 0, 100, 44, buttons_audiosettings_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, 	NON_VISIBLE, UINTPTR_MAX, "btn_speaker", 			"Speaker|on air", },
 			{ 0, 0, 100, 44, buttons_audiosettings_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, 	NON_VISIBLE, UINTPTR_MAX, "btn_mic_eq", 			"MIC EQ|OFF", },
 			{ 0, 0, 100, 44, buttons_audiosettings_process,	CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, 	NON_VISIBLE, UINTPTR_MAX, "btn_mic_eq_settings", 	"MIC EQ|settings", },
 			{ 0, 0, 100, 44, buttons_audiosettings_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, 	NON_VISIBLE, UINTPTR_MAX, "btn_mic_settings", 		"MIC|settings", },
@@ -1659,6 +1666,15 @@ static void window_audiosettings_process(void)
 		bh = find_gui_element_ref(TYPE_BUTTON, win, "btn_mic_eq_settings"); 			// MIC EQ settings disable
 		bh->state = DISABLED;
 #endif /* WITHAFCODEC1HAVEPROC */
+
+		bh = find_gui_element_ref(TYPE_BUTTON, win, "btn_speaker");
+#if WITHSPKMUTE
+		bh->is_locked = hamradio_get_gmutespkr();
+		local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("Speaker|%s"), bh->is_locked ? "muted" : "on air");
+#else
+		bh->state = DISABLED;
+#endif /* WITHSPKMUTE */
+
 		elements_state(win);
 		return;
 	}

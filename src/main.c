@@ -18446,6 +18446,19 @@ hamradio_main_step(void)
 	return STTE_OK;
 }
 
+#if WITHSPKMUTE
+uint_fast8_t hamradio_get_gmutespkr(void)
+{
+	return gmutespkr;
+}
+
+void hamradio_set_gmutespkr(uint_fast8_t v)
+{
+	gmutespkr = v != 0;
+	updateboard(1, 0);
+}
+#endif /* WITHSPKMUTE */
+
 #if WITHTX
 
 void hamradio_set_tune(uint_fast8_t v)
