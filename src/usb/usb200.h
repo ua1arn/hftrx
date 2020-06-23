@@ -104,17 +104,17 @@
 /* USB defined request codes */
 /* see chapter 9 of the USB 2.0 specifcation for more information. */
 /* These are the correct values based on the USB 2.0 specification */
-#define USB_REQUEST_GET_STATUS                    0x00
-#define USB_REQUEST_CLEAR_FEATURE                 0x01
-#define USB_REQUEST_SET_FEATURE                   0x03
-#define USB_REQUEST_SET_ADDRESS                   0x05
-#define USB_REQUEST_GET_DESCRIPTOR                0x06
-#define USB_REQUEST_SET_DESCRIPTOR                0x07
-#define USB_REQUEST_GET_CONFIGURATION             0x08
-#define USB_REQUEST_SET_CONFIGURATION             0x09
-#define USB_REQUEST_GET_INTERFACE                 0x0A
-#define USB_REQUEST_SET_INTERFACE                 0x0B
-#define USB_REQUEST_SYNC_FRAME                    0x0C
+//#define USB_REQUEST_GET_STATUS                    0x00
+//#define USB_REQUEST_CLEAR_FEATURE                 0x01
+//#define USB_REQUEST_SET_FEATURE                   0x03
+//#define USB_REQUEST_SET_ADDRESS                   0x05
+//#define USB_REQUEST_GET_DESCRIPTOR                0x06
+//#define USB_REQUEST_SET_DESCRIPTOR                0x07
+//#define USB_REQUEST_GET_CONFIGURATION             0x08
+//#define USB_REQUEST_SET_CONFIGURATION             0x09
+//#define USB_REQUEST_GET_INTERFACE                 0x0A
+//#define USB_REQUEST_SET_INTERFACE                 0x0B
+//#define USB_REQUEST_SYNC_FRAME                    0x0C
 
 /* defined USB device classes */
 /*
@@ -144,17 +144,17 @@
 #define  USB_REQ_RECIPIENT_ENDPOINT                     0x02
 #define  USB_REQ_RECIPIENT_MASK                         0x03
 
-#define  USB_REQ_GET_STATUS                             0x00
-#define  USB_REQ_CLEAR_FEATURE                          0x01
-#define  USB_REQ_SET_FEATURE                            0x03
-#define  USB_REQ_SET_ADDRESS                            0x05
-#define  USB_REQ_GET_DESCRIPTOR                         0x06
-#define  USB_REQ_SET_DESCRIPTOR                         0x07
-#define  USB_REQ_GET_CONFIGURATION                      0x08
-#define  USB_REQ_SET_CONFIGURATION                      0x09
-#define  USB_REQ_GET_INTERFACE                          0x0A
-#define  USB_REQ_SET_INTERFACE                          0x0B
-#define  USB_REQ_SYNCH_FRAME                            0x0C
+//#define  USB_REQ_GET_STATUS                             0x00
+//#define  USB_REQ_CLEAR_FEATURE                          0x01
+//#define  USB_REQ_SET_FEATURE                            0x03
+//#define  USB_REQ_SET_ADDRESS                            0x05
+//#define  USB_REQ_GET_DESCRIPTOR                         0x06
+//#define  USB_REQ_SET_DESCRIPTOR                         0x07
+//#define  USB_REQ_GET_CONFIGURATION                      0x08
+//#define  USB_REQ_SET_CONFIGURATION                      0x09
+//#define  USB_REQ_GET_INTERFACE                          0x0A
+//#define  USB_REQ_SET_INTERFACE                          0x0B
+//#define  USB_REQ_SYNCH_FRAME                            0x0C
 
 
 /** @defgroup USBH_CTLREQ_Exported_Defines
