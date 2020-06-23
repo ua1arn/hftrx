@@ -2651,7 +2651,7 @@ static void window_menu_process(void)
 			button_up->visible = VISIBLE;
 			button_up->x1 = lh->x + get_label_width(lh) + 10;
 			button_up->y1 = button_down->y1;
-			for (uint8_t i = 0; i <= menu[MENU_GROUPS].num_rows; i++)
+			for (uint_fast8_t i = 0; i <= menu[MENU_GROUPS].num_rows; i++)
 			{
 				lh = & win->lh_ptr[menu[MENU_GROUPS].first_id + i];
 				lh->color = i == menu[MENU_GROUPS].selected_label ? COLORMAIN_BLACK : COLORMAIN_GRAY;
@@ -2668,7 +2668,7 @@ static void window_menu_process(void)
 		{
 			button_down->visible = NON_VISIBLE;
 			button_up->visible = NON_VISIBLE;
-			for (uint8_t i = 0; i <= menu[MENU_GROUPS].num_rows; i++)
+			for (uint_fast8_t i = 0; i <= menu[MENU_GROUPS].num_rows; i++)
 			{
 				lh = & win->lh_ptr[menu[MENU_GROUPS].first_id + i];
 				lh->color = i == menu[MENU_GROUPS].selected_label ? COLORMAIN_BLACK : COLORMAIN_GRAY;
@@ -2684,7 +2684,7 @@ static void window_menu_process(void)
 		{
 			button_down->visible = NON_VISIBLE;
 			button_up->visible = NON_VISIBLE;
-			for (uint8_t i = 0; i <= menu[MENU_GROUPS].num_rows; i++)
+			for (uint_fast8_t i = 0; i <= menu[MENU_GROUPS].num_rows; i++)
 			{
 				lh = & win->lh_ptr[menu[MENU_GROUPS].first_id + i];
 				lh->color = i == menu[MENU_GROUPS].selected_label ? COLORMAIN_BLACK : COLORMAIN_WHITE;
