@@ -2704,8 +2704,12 @@ static void window_menu_process(void)
 
 	if (menu_level == MENU_OFF)
 	{
-		close_top_window();
-		return;
+		if(win->parent_id != UINT8_MAX)
+		{
+			close_top_window();
+			return;
+		} else
+			menu_level = MENU_GROUPS;
 	}
 
 	if (encoder2.rotate != 0 && menu_level == MENU_VALS)
@@ -3026,15 +3030,21 @@ void gui_open_sys_menu(void)
 {
 	window_t * win = get_win(WINDOW_MENU);
 	gui_t * gui = get_gui_env();
-	if (win->state == NON_VISIBLE)
+	static uint_fast8_t backup_parent = UINT8_MAX;
+
+	if(gui->win[1] == UINT8_MAX && win->parent_id != UINT8_MAX)
 	{
+		backup_parent = win->parent_id;		// для возможности открытия окна напрямую временно "обнулить" parent_id
+		win->parent_id = UINT8_MAX;
 		open_window(win);
-		footer_buttons_state(DISABLED, ((button_t *)gui->selected_link)->name);
+		footer_buttons_state(DISABLED, "");
 	}
-	else
+	else if(gui->win[1] == WINDOW_MENU && win->parent_id == UINT8_MAX)
 	{
 		close_top_window();
 		footer_buttons_state(CANCELLED);
+		win->parent_id = backup_parent;
+		backup_parent = UINT8_MAX;
 	}
 }
 
