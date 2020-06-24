@@ -369,16 +369,16 @@ static void display_freqmeter10(
 	)
 {
 #if WITHFQMETER
-	char buffer [11];
+	char buf2 [11];
 
 	local_snprintf_P(
-		buffer, sizeof buffer / sizeof buffer [0],
+		buf2, ARRAY_SIZE(buf2),
 		PSTR("%010lu"),
 		(unsigned long) board_get_fqmeter()
 		);
 
 	colmain_setcolors(colors_1freq [0].fg, colors_1freq [0].bg);
-	display_at(x, y, buffer);
+	display_at(x, y, buf2);
 #endif /* WITHFQMETER */
 }
 
@@ -461,17 +461,17 @@ static void display_recstatus(
 	unsigned long hamradio_get_recdropped(void);
 	int hamradio_get_recdbuffered(void);
 
-	char buffer [12];
+	char buf2 [12];
 	local_snprintf_P(
-		buffer,
-		sizeof buffer / sizeof buffer [0],
+		buf2,
+		ARRAY_SIZE(buf2),
 		PSTR("%08lx %2d"), 
 		(unsigned long) hamradio_get_recdropped(),
 		(int) hamradio_get_recdbuffered()
 		);
 		
 	colmain_setcolors(LABELTEXT, LABELBACK);
-	display_at(x, y, buffer);
+	display_at(x, y, buf2);
 
 #endif /* WITHUSEAUDIOREC */
 }
@@ -626,10 +626,10 @@ static void display2_wpm5(
 {
 #if WITHELKEY
 	const uint_fast8_t value = hamradio_get_cw_wpm();	// не-0: динамик включен
-	char s [6];
-	const char * const labels [1] = { s, };
+	char buf2 [6];
+	const char * const labels [1] = { buf2, };
 
-	local_snprintf_P(s, sizeof s / sizeof s [0], PSTR("%2dwpm"), (int) value);
+	local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("%2dwpm"), (int) value);
 	display2_text(x, y, labels, colors_1state, 0);
 	(void) pctx;
 #endif /* WITHELKEY */
@@ -659,9 +659,9 @@ static void display2_notchfreq5(
 #if WITHNOTCHONOFF || WITHNOTCHFREQ
 	int_fast32_t freq;
 	const uint_fast8_t state = hamradio_get_notchvalue(& freq);
-	char s [6];
-	local_snprintf_P(s, sizeof s / sizeof s [0], PSTR("%5lu"), freq);
-	display_2states(x, y, state, s, text_nul5);
+	char buf2 [6];
+	local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("%5lu"), freq);
+	display_2states(x, y, state, buf2, text_nul5);
 #endif /* WITHNOTCHONOFF || WITHNOTCHFREQ */
 }
 
@@ -1398,12 +1398,12 @@ static void display_siglevel7(
 	uint_fast8_t tracemax;
 	uint_fast8_t v = board_getsmeter(& tracemax, 0, UINT8_MAX, 0);
 
-	char buff [8];
+	char buf2 [8];
 	// в формате при наличии знака числа ширина формата отностися ко всему полю вместе со знаком
-	local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("%-+4d" "dBm"), tracemax - UINT8_MAX);
+	local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("%-+4d" "dBm"), tracemax - UINT8_MAX);
 	(void) v;
-	const char * const labels [1] = { buff, };
-	ASSERT(strlen(buff) == 7);
+	const char * const labels [1] = { buf2, };
+	ASSERT(strlen(buf2) == 7);
 	display2_text(x, y, labels, colors_1state, 0);
 #endif /* WITHIF4DSP */
 }
@@ -1419,12 +1419,12 @@ static void display2_siglevel4(
 	uint_fast8_t tracemax;
 	uint_fast8_t v = board_getsmeter(& tracemax, 0, UINT8_MAX, 0);
 
-	char buff [5];
+	char buf2 [5];
 	// в формате при наличии знака числа ширина формата отностися ко всему полю вместе со знаком
-	int j = local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("%-+4d"), (int) (tracemax - UINT8_MAX));
+	int j = local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("%-+4d"), (int) (tracemax - UINT8_MAX));
 	(void) v;
-	const char * const labels [1] = { buff, };
-	ASSERT(strlen(buff) == 4);
+	const char * const labels [1] = { buf2, };
+	ASSERT(strlen(buf2) == 4);
 	display2_text(x, y, labels, colors_1state, 0);
 #endif /* WITHIF4DSP */
 }
@@ -1444,11 +1444,11 @@ static void display2_span9(
 {
 #if WITHIF4DSP
 
-	char buff [10];
+	char buf2 [10];
 
-	local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("SPAN:%3dk"), (int) ((display_zoomedbw() + 0) / 1000));
-	const char * const labels [1] = { buff, };
-	ASSERT(strlen(buff) == 9);
+	local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("SPAN:%3dk"), (int) ((display_zoomedbw() + 0) / 1000));
+	const char * const labels [1] = { buf2, };
+	ASSERT(strlen(buf2) == 9);
 	display2_text(x, y, labels, colors_1state, 0);
 
 #endif /* WITHIF4DSP */
@@ -1465,7 +1465,7 @@ static void display_smeter5(
 	uint_fast8_t tracemax;
 	uint_fast8_t v = board_getsmeter(& tracemax, 0, UINT8_MAX, 0);
 
-	char buff [6];
+	char buf2 [6];
 	const int s9level = - 73;
 	const int s9step = 6;
 	const int alevel = tracemax - UINT8_MAX;
@@ -1473,46 +1473,46 @@ static void display_smeter5(
 	(void) v;
 	if (alevel < (s9level - s9step * 9))
 	{
-		local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("S0   "));
+		local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("S0   "));
 	}
 	else if (alevel < (s9level - s9step * 7))
 	{
-		local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("S1   "));
+		local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("S1   "));
 	}
 	else if (alevel < (s9level - s9step * 6))
 	{
-		local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("S2   "));
+		local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("S2   "));
 	}
 	else if (alevel < (s9level - s9step * 5))
 	{
-		local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("S3   "));
+		local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("S3   "));
 	}
 	else if (alevel < (s9level - s9step * 4))
 	{
-		local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("S4   "));
+		local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("S4   "));
 	}
 	else if (alevel < (s9level - s9step * 3))
 	{
-		local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("S5   "));
+		local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("S5   "));
 	}
 	else if (alevel < (s9level - s9step * 2))
 	{
-		local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("S6   "));
+		local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("S6   "));
 	}
 	else if (alevel < (s9level - s9step * 1))
 	{
-		local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("S7   "));
+		local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("S7   "));
 	}
 	else if (alevel < (s9level - s9step * 0))
 	{
-		local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("S8   "));
+		local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("S8   "));
 	}
 	else
 	{
-		local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("S9+%02d"), alevel - s9level);
+		local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("S9+%02d"), alevel - s9level);
 	}
-	const char * const labels [1] = { buff, };
-	ASSERT(strlen(buff) == 5);
+	const char * const labels [1] = { buf2, };
+	ASSERT(strlen(buf2) == 5);
 	display2_text(x, y, labels, colors_1state, 0);
 #endif /* WITHIF4DSP */
 }
@@ -1638,14 +1638,14 @@ static void display_time8(
 {
 #if defined (RTC1_TYPE)
 	uint_fast8_t hour, minute, secounds;
-	char buff [9];
+	char buf2 [9];
 
 	board_rtc_gettime(& hour, & minute, & secounds);
-	local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("%02d:%02d:%02d"), 
+	local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("%02d:%02d:%02d"),
 			(int) hour, (int) minute, (int) secounds
 		);
 	
-	const char * const labels [1] = { buff, };
+	const char * const labels [1] = { buf2, };
 	display2_text(x, y, labels, colors_1state, 0);
 #endif /* WITHNMEA */
 }
@@ -1659,17 +1659,17 @@ static void display_time5(
 {
 #if defined (RTC1_TYPE)
 	uint_fast8_t hour, minute, secounds;
-	char buff [6];
+	char buf2 [6];
 
 	board_rtc_gettime(& hour, & minute, & secounds);
-	local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("%02d%c%02d"),
+	local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("%02d%c%02d"),
 		(int) hour,
 		((secounds & 1) ? ' ' : ':'),	// мигающее двоеточие с периодом две секунды
 		(int) minute
 		);
 
-	ASSERT(strlen(buff) == 5);
-	const char * const labels [1] = { buff, };
+	ASSERT(strlen(buf2) == 5);
+	const char * const labels [1] = { buf2, };
 	display2_text(x, y, labels, colors_1stateBlue, 0);
 
 #endif /* WITHNMEA */
@@ -1684,7 +1684,7 @@ static void display2_datetime12(
 	)
 {
 #if defined (RTC1_TYPE)
-	char buff [13];
+	char buf2 [13];
 
 	uint_fast16_t year;
 	uint_fast8_t month, day;
@@ -1707,7 +1707,7 @@ static void display2_datetime12(
 
 	board_rtc_getdatetime(& year, & month, & day, & hour, & minute, & secounds);
 
-	local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("%s-%02d %02d%c%02d"),
+	local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("%s-%02d %02d%c%02d"),
 		months [month - 1],
 		(int) day,
 		(int) hour,
@@ -1715,8 +1715,8 @@ static void display2_datetime12(
 		(int) minute
 		);
 
-	const char * const labels [1] = { buff, };
-	ASSERT(strlen(buff) == 12);
+	const char * const labels [1] = { buf2, };
+	ASSERT(strlen(buf2) == 12);
 	display2_text(x, y, labels, colors_1stateBlue, 0);
 #endif /* WITHNMEA */
 }
@@ -5879,14 +5879,14 @@ display_colorgrid_xor(
 			xmarker = deltafreq2x_abs(f0, df, bw, ALLDX);
 			if (xmarker != UINT16_MAX)
 			{
-				char buf [16];
+				char buf2 [16];
 				uint_fast16_t freqw;	// ширина строки со значением частоты
-				local_snprintf_P(buf, sizeof buf / sizeof buf [0], ".%0*d", glob_gridwc, (int) ((f0 + df) / glob_griddigit % glob_gridmod));
+				local_snprintf_P(buf2, ARRAY_SIZE(buf2), ".%0*d", glob_gridwc, (int) ((f0 + df) / glob_griddigit % glob_gridmod));
 				ASSERT(strlen(buf) == (glob_gridwc + 1));
-				freqw = strwidth3(buf);
+				freqw = strwidth3(buf2);
 				if (xmarker > freqw / 2 && xmarker < (ALLDX - freqw / 2))
 				{
-					colpip_string3_tbg(buffer, BUFDIM_X, BUFDIM_Y, xmarker - freqw / 2, row0, buf, COLORPIP_YELLOW);
+					colpip_string3_tbg(buffer, BUFDIM_X, BUFDIM_Y, xmarker - freqw / 2, row0, buf2, COLORPIP_YELLOW);
 					display_colorbuf_xor_vline(buffer, BUFDIM_X, BUFDIM_Y, xmarker, row0 + MARKERH, h - MARKERH, color);
 				}
 				else
@@ -5924,14 +5924,14 @@ display_colorgrid_set(
 			xmarker = deltafreq2x_abs(f0, df, bw, ALLDX);
 			if (xmarker != UINT16_MAX)
 			{
-				char buf [16];
+				char buf2 [16];
 				uint_fast16_t freqw;	// ширина строки со значением частоты
-				local_snprintf_P(buf, sizeof buf / sizeof buf [0], ".%0*d", glob_gridwc, (int) ((f0 + df) / glob_griddigit % glob_gridmod));
-				ASSERT(strlen(buf) == (glob_gridwc + 1));
-				freqw = strwidth3(buf);
+				local_snprintf_P(buf2, ARRAY_SIZE(buf2), ".%0*d", glob_gridwc, (int) ((f0 + df) / glob_griddigit % glob_gridmod));
+				ASSERT(strlen(buf2) == (glob_gridwc + 1));
+				freqw = strwidth3(buf2);
 				if (xmarker > freqw / 2 && xmarker < (ALLDX - freqw / 2))
 				{
-					colpip_string3_tbg(buffer, BUFDIM_X, BUFDIM_Y, xmarker - freqw / 2, row0, buf, COLORPIP_YELLOW);
+					colpip_string3_tbg(buffer, BUFDIM_X, BUFDIM_Y, xmarker - freqw / 2, row0, buf2, COLORPIP_YELLOW);
 					display_colorbuf_set_vline(buffer, BUFDIM_X, BUFDIM_Y, xmarker, row0 + MARKERH, h - MARKERH, color);
 				}
 				else
@@ -7433,15 +7433,15 @@ display2_smeter15_init(
 		{
 			if (i % 2 == 0)
 			{
-				char buf [10];
+				char buf2 [10];
 				uint_fast16_t xx, yy;
 
 				display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markersTX_pwr [i], smeter_params.r1, smeter_params.r1 + 8, smeter, 1, 1);
 				polar_to_dek(xb, yb, markersTX_pwr [i], smeter_params.r1 + 6, & xx, & yy, 1);
-				local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("%u"), p);
+				local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("%u"), p);
 
 				colmain_setcolors(COLORMAIN_YELLOW, COLORMAIN_BLACK);
-				colmain_string3_at_xy(bg, SM_BG_W, SM_BG_H, xx - strwidth3(buf) / 2, yy - pad2w3 + 1, buf);
+				colmain_string3_at_xy(bg, SM_BG_W, SM_BG_H, xx - strwidth3(buf2) / 2, yy - pad2w3 + 1, buf2);
 			}
 			else
 				display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markersTX_pwr [i], smeter_params.r1, smeter_params.r1 + 4, smeter, 1, 1);
@@ -7449,15 +7449,15 @@ display2_smeter15_init(
 
 		for (p = 1, i = 0; i < ARRAY_SIZE(markersTX_swr); ++ i, p += 1)
 		{
-			char buf [10];
+			char buf2 [10];
 			uint_fast16_t xx, yy;
 
 			display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markersTX_swr [i], smeter_params.r2, smeter_params.r2 - 8, smeter, 1, 1);
 			polar_to_dek(xb, yb, markersTX_swr [i], smeter_params.r2 - 16, & xx, & yy, 1);
-			local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("%u"), p);
+			local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("%u"), p);
 
 			colmain_setcolors(COLORMAIN_YELLOW, COLORMAIN_BLACK);
-			colmain_string3_at_xy(bg, SM_BG_W, SM_BG_H, xx - SMALLCHARW3 / 2, yy - SMALLCHARW3 / 2 + 1, buf);
+			colmain_string3_at_xy(bg, SM_BG_W, SM_BG_H, xx - SMALLCHARW3 / 2, yy - SMALLCHARW3 / 2 + 1, buf2);
 		}
 
 		display_segm_buf(bg, SM_BG_W, SM_BG_H, xb, yb, smeter_params.gs, smeter_params.gm, smeter_params.r1, 1, smeter, 1, 1);
@@ -7469,15 +7469,15 @@ display2_smeter15_init(
 
 		for (p = 1, i = 0; i < ARRAY_SIZE(markers); ++ i, p += 2)
 		{
-			char buf [10];
+			char buf2 [10];
 			uint_fast16_t xx, yy;
 
 			display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markers [i], smeter_params.r1, smeter_params.r1 + 8, smeter, 1, 1);
 			polar_to_dek(xb, yb, markers [i], smeter_params.r1 + 6, & xx, & yy, 1);
-			local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("%u"), p);
+			local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("%u"), p);
 
 			colmain_setcolors(COLORMAIN_YELLOW, COLORMAIN_BLACK);
-			colmain_string3_at_xy(bg, SM_BG_W, SM_BG_H, xx - SMALLCHARW3 / 2, yy - pad2w3 + 1, buf);
+			colmain_string3_at_xy(bg, SM_BG_W, SM_BG_H, xx - SMALLCHARW3 / 2, yy - pad2w3 + 1, buf2);
 		}
 		for (i = 0; i < ARRAY_SIZE(markers2); ++ i)
 		{
@@ -7486,15 +7486,15 @@ display2_smeter15_init(
 
 		for (p = 20, i = 0; i < ARRAY_SIZE(markersR); ++ i, p += 20)
 		{
-			char buf [10];
+			char buf2 [10];
 			uint_fast16_t xx, yy;
 
 			display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markersR [i], smeter_params.r1, smeter_params.r1 + 8, smeterplus, 1, 1);
 			polar_to_dek(xb, yb, markersR [i], smeter_params.r1 + 6, & xx, & yy, 1);
-			local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("+%u"), p);
+			local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("+%u"), p);
 
 			colmain_setcolors(COLORMAIN_RED, COLORMAIN_BLACK);
-			colmain_string3_at_xy(bg, SM_BG_W, SM_BG_H, xx - strwidth3(buf) / 2, yy - pad2w3 + 1, buf);
+			colmain_string3_at_xy(bg, SM_BG_W, SM_BG_H, xx - strwidth3(buf2) / 2, yy - pad2w3 + 1, buf2);
 		}
 		for (i = 0; i < ARRAY_SIZE(markers2R); ++ i)
 		{
@@ -7518,10 +7518,10 @@ display2_smeter15_init(
 		{
 			if (i % 2 == 0)
 			{
-				char buf [10];
+				char buf2 [10];
 				colmain_line(bg, SM_BG_W, SM_BG_H, markersTX_pwr [i], smeter_params.r1, markersTX_pwr [i], smeter_params.r1 - 10, COLORMAIN_WHITE, 0);
-				local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("%u"), p);
-				colpip_string3_tbg(bg, SM_BG_W, SM_BG_H, markersTX_pwr [i] - strwidth3(buf) / 2, smeter_params.r1 - 10 - SMALLCHARH3 - 2, buf, COLORMAIN_YELLOW);
+				local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("%u"), p);
+				colpip_string3_tbg(bg, SM_BG_W, SM_BG_H, markersTX_pwr [i] - strwidth3(buf2) / 2, smeter_params.r1 - 10 - SMALLCHARH3 - 2, buf2, COLORMAIN_YELLOW);
 			}
 			else
 				colmain_line(bg, SM_BG_W, SM_BG_H, markersTX_pwr [i], smeter_params.r1, markersTX_pwr [i], smeter_params.r1 - 5, COLORMAIN_WHITE, 0);
@@ -7530,10 +7530,10 @@ display2_smeter15_init(
 		colmain_line(bg, SM_BG_W, SM_BG_H, smeter_params.gs, smeter_params.r2, smeter_params.ge, smeter_params.r2, COLORMAIN_WHITE, 0);
 		for (p = 1, i = 0; i < ARRAY_SIZE(markersTX_swr); ++ i, p += 1)
 		{
-			char buf [10];
+			char buf2 [10];
 			colmain_line(bg, SM_BG_W, SM_BG_H, markersTX_swr [i], smeter_params.r2, markersTX_swr [i], smeter_params.r2 + 10, COLORMAIN_WHITE, 0);
-			local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("%u"), p);
-			colpip_string3_tbg(bg, SM_BG_W, SM_BG_H, markersTX_swr [i] - strwidth3(buf) / 2, smeter_params.r2 + 12, buf, COLORMAIN_YELLOW);
+			local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("%u"), p);
+			colpip_string3_tbg(bg, SM_BG_W, SM_BG_H, markersTX_swr [i] - strwidth3(buf2) / 2, smeter_params.r2 + 12, buf2, COLORMAIN_YELLOW);
 		}
 
 		bg = smeter_bg [SM_STATE_RX];
@@ -7547,11 +7547,11 @@ display2_smeter15_init(
 
 		for (p = 1, i = 0; i < ARRAY_SIZE(markers); ++ i, p += 2)
 		{
-			char buf [10];
+			char buf2 [10];
 			uint_fast16_t xx, yy;
 			colmain_line(bg, SM_BG_W, SM_BG_H, markers [i], smeter_params.r1, markers [i], smeter_params.r1 - 10, COLORMAIN_WHITE, 0);
-			local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("%u"), p);
-			colpip_string3_tbg(bg, SM_BG_W, SM_BG_H, markers [i] - SMALLCHARW3 / 2, smeter_params.r1 - 10 - SMALLCHARH3 - 2, buf, COLORMAIN_YELLOW);
+			local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("%u"), p);
+			colpip_string3_tbg(bg, SM_BG_W, SM_BG_H, markers [i] - SMALLCHARW3 / 2, smeter_params.r1 - 10 - SMALLCHARH3 - 2, buf2, COLORMAIN_YELLOW);
 		}
 		for (i = 0; i < ARRAY_SIZE(markers2); ++ i)
 		{
@@ -7560,10 +7560,10 @@ display2_smeter15_init(
 
 		for (p = 20, i = 0; i < ARRAY_SIZE(markersR); ++ i, p += 20)
 		{
-			char buf [10];
+			char buf2 [10];
 			colmain_line(bg, SM_BG_W, SM_BG_H, markersR [i], smeter_params.r1, markersR [i], smeter_params.r1 - 10, COLORMAIN_RED, 0);
-			local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("+%u"), p);
-			colpip_string3_tbg(bg, SM_BG_W, SM_BG_H, markersR [i] - strwidth3(buf) / 2, smeter_params.r1 - 10 - SMALLCHARH3 - 2, buf, COLORMAIN_YELLOW);
+			local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("+%u"), p);
+			colpip_string3_tbg(bg, SM_BG_W, SM_BG_H, markersR [i] - strwidth3(buf2) / 2, smeter_params.r1 - 10 - SMALLCHARH3 - 2, buf2, COLORMAIN_YELLOW);
 		}
 		for (i = 0; i < ARRAY_SIZE(markers2R); ++ i)
 		{
