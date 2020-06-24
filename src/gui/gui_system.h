@@ -25,6 +25,7 @@ void footer_buttons_state (uint_fast8_t state, ...);
 /* Установка признака видимости окна */
 void open_window(window_t * win);
 void close_top_window(void);
+void close_all_windows(void);
 
 /* Расчет экранных координат окна */
 void calculate_window_position(window_t * win, uint16_t xmax, uint16_t ymax);

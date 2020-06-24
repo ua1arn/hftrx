@@ -5882,7 +5882,7 @@ display_colorgrid_xor(
 				char buf2 [16];
 				uint_fast16_t freqw;	// ширина строки со значением частоты
 				local_snprintf_P(buf2, ARRAY_SIZE(buf2), ".%0*d", glob_gridwc, (int) ((f0 + df) / glob_griddigit % glob_gridmod));
-				ASSERT(strlen(buf) == (glob_gridwc + 1));
+				ASSERT(strlen(buf2) == (glob_gridwc + 1));
 				freqw = strwidth3(buf2);
 				if (xmarker > freqw / 2 && xmarker < (ALLDX - freqw / 2))
 				{

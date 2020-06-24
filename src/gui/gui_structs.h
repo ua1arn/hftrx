@@ -41,7 +41,7 @@ enum {
 	NAME_ARRAY_SIZE = 30,
 	TEXT_ARRAY_SIZE = 30,
 	MENU_ARRAY_SIZE = 30,
-	TOUCH_ARRAY_SIZE = 100
+	TOUCH_ARRAY_SIZE = 50
 };
 
 typedef struct {

@@ -45,6 +45,8 @@ static void window_uif_process(void);
 static void window_enc2_process(void);
 static void window_options_process(void);
 static void window_utilites_process(void);
+static void window_bands_process(void);
+static void window_memory_process(void);
 
 static window_t windows[] = {
 //     window_id,   		 parent_id, 			align_mode,     x1, y1, w, h,   title,     			 is_show, first_call, onVisibleProcess
@@ -67,6 +69,8 @@ static window_t windows[] = {
 	{ WINDOW_TX_POWER, 		 WINDOW_TX_SETTINGS, 	ALIGN_CENTER_X, 0, 0, 0, 0, "TX power", 	 	 	 NON_VISIBLE, 0, window_tx_power_process, },
 	{ WINDOW_OPTIONS, 		 UINT8_MAX, 			ALIGN_CENTER_X,	0, 0, 0, 0, "Options",  	   	   	 NON_VISIBLE, 0, window_options_process, },
 	{ WINDOW_UTILS, 		 WINDOW_OPTIONS,		ALIGN_CENTER_X,	0, 0, 0, 0, "Utilites",  	   	   	 NON_VISIBLE, 0, window_utilites_process, },
+	{ WINDOW_BANDS, 		 UINT8_MAX,				ALIGN_CENTER_X,	0, 0, 0, 0, "Bands",  	   	   	 	 NON_VISIBLE, 0, window_bands_process, },
+	{ WINDOW_MEMORY, 		 UINT8_MAX,				ALIGN_CENTER_X,	0, 0, 0, 0, "Memory",  	   	   	 	 NON_VISIBLE, 0, window_memory_process, },
 };
 
 static uint_fast8_t swr_scan_enable = 0;		// флаг разрешения сканирования КСВ
@@ -110,18 +114,46 @@ static void btn_main_handler(void)
 	if(gui->selected_type == TYPE_BUTTON)
 	{
 		window_t * winMain = get_win(WINDOW_MAIN);
-		button_t * btn_band1 = find_gui_element_ref(TYPE_BUTTON, winMain, "btn_band1"); // 160
-		button_t * btn_band2 = find_gui_element_ref(TYPE_BUTTON, winMain, "btn_band2"); // 80
-		button_t * btn_band3 = find_gui_element_ref(TYPE_BUTTON, winMain, "btn_band3"); // 40
-		button_t * btn_band4 = find_gui_element_ref(TYPE_BUTTON, winMain, "btn_band4"); // 20
-		button_t * btn_band5 = find_gui_element_ref(TYPE_BUTTON, winMain, "btn_band5"); // 15
-		button_t * btn_band6 = find_gui_element_ref(TYPE_BUTTON, winMain, "btn_band6"); // 10
+		button_t * btn_Bands = find_gui_element_ref(TYPE_BUTTON, winMain, "btn_Bands");
+		button_t * btn_Memory = find_gui_element_ref(TYPE_BUTTON, winMain, "btn_Memory");
+//		button_t * btn_band3 = find_gui_element_ref(TYPE_BUTTON, winMain, "btn_band3");
+//		button_t * btn_band4 = find_gui_element_ref(TYPE_BUTTON, winMain, "btn_band4");
+//		button_t * btn_band5 = find_gui_element_ref(TYPE_BUTTON, winMain, "btn_band5");
+//		button_t * btn_band6 = find_gui_element_ref(TYPE_BUTTON, winMain, "btn_band6");
 		button_t * btn_Mode = find_gui_element_ref(TYPE_BUTTON, winMain, "btn_Mode");
 		button_t * btn_Options = find_gui_element_ref(TYPE_BUTTON, winMain, "btn_Options");
 
 		if (gui->selected_link->link == btn_Mode)
 		{
 			window_t * win = get_win(WINDOW_MODES);
+			if (win->state == NON_VISIBLE)
+			{
+				open_window(win);
+				footer_buttons_state(DISABLED, ((button_t *)gui->selected_link)->name);
+			}
+			else
+			{
+				close_top_window();
+				footer_buttons_state(CANCELLED);
+			}
+		}
+		else if (gui->selected_link->link == btn_Bands)
+		{
+			window_t * win = get_win(WINDOW_BANDS);
+			if (win->state == NON_VISIBLE)
+			{
+				open_window(win);
+				footer_buttons_state(DISABLED, ((button_t *)gui->selected_link)->name);
+			}
+			else
+			{
+				close_top_window();
+				footer_buttons_state(CANCELLED);
+			}
+		}
+		else if (gui->selected_link->link == btn_Memory)
+		{
+			window_t * win = get_win(WINDOW_MEMORY);
 			if (win->state == NON_VISIBLE)
 			{
 				open_window(win);
@@ -171,14 +203,14 @@ static void gui_main_process(void)
 		button_t buttons [] = {
 		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_trackable, parent,   	visible,      payload,	 name, 		text
 			{ },
-			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, UINTPTR_MAX, "btn_band1", 	 "160m", },
-			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, UINTPTR_MAX, "btn_band2", 	 "80m", },
-			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, UINTPTR_MAX, "btn_band3", 	 "40m", },
-			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, UINTPTR_MAX, "btn_band4", 	 "20m", },
-			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, UINTPTR_MAX, "btn_band5", 	 "15m", },
-			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, UINTPTR_MAX, "btn_band6", 	 "10m", },
+			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, UINTPTR_MAX, "btn_Bands", 	 "Bands", },
+			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, UINTPTR_MAX, "btn_Memory",  "Memory", },
 			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, UINTPTR_MAX, "btn_Mode", 	 "Mode", },
-			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, UINTPTR_MAX, "btn_Empty", 	 "", },
+			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, UINTPTR_MAX, "btn_4", 	 	 "", },
+			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, UINTPTR_MAX, "btn_5", 	 	 "", },
+			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, UINTPTR_MAX, "btn_6", 	 	 "", },
+			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, UINTPTR_MAX, "btn_7", 	 	 "", },
+			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, UINTPTR_MAX, "btn_8", 	 	 "", },
 			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, UINTPTR_MAX, "btn_Options", "Options", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
@@ -330,6 +362,151 @@ static void gui_main_process(void)
 }
 
 // *********************************************************************************************************************************************************************
+
+static void buttons_memory_handler(void)
+{
+//	gui_t * gui = get_gui_env();
+
+//	if(gui->selected_type == TYPE_BUTTON)
+//	{
+//		window_t * win = get_win(WINDOW_MEMORY);
+//		button_t * btn_AF = find_gui_element_ref(TYPE_BUTTON, win, "btn_AF");
+//
+//		if (gui->selected_link->link == btn_AF)
+//		{
+//
+//		}
+//	}
+}
+
+static void window_memory_process(void)
+{
+	window_t * win = get_win(WINDOW_MEMORY);
+
+	if (win->first_call)
+	{
+		uint_fast16_t x = 0, y = 0, xmax = 0, ymax = 0;
+		uint_fast8_t interval = 6, col1_int = 20, row1_int = window_title_height + 20, row_count = 5;
+		win->first_call = 0;
+
+		button_t buttons [] = {
+		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_trackable, parent,   	visible,      payload,	 name, 		text
+			{ },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell1", 	 "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell2", 	 "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell3", 	 "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell4", 	 "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell5", 	 "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell6", 	 "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell7", 	 "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell8", 	 "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell9", 	 "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell10", 	 "---", },
+		};
+		win->bh_count = ARRAY_SIZE(buttons);
+		uint_fast16_t buttons_size = sizeof(buttons);
+		win->bh_ptr = malloc(buttons_size);
+		ASSERT(win->bh_ptr != NULL);
+		memcpy(win->bh_ptr, buttons, buttons_size);
+
+		x = col1_int;
+		y = row1_int;
+
+		for (uint_fast8_t i = 1, r = 1; i < win->bh_count; i ++, r ++)
+		{
+			button_t * bh = & win->bh_ptr[i];
+			bh->x1 = x;
+			bh->y1 = y;
+			bh->visible = VISIBLE;
+
+			x = x + interval + bh->w;
+			if (r >= row_count)
+			{
+				r = 0;
+				x = col1_int;
+				y = y + bh->h + interval;
+			}
+			xmax = (xmax > bh->x1 + bh->w) ? xmax : (bh->x1 + bh->w);
+			ymax = (ymax > bh->y1 + bh->h) ? ymax : (bh->y1 + bh->h);
+		}
+		elements_state(win);
+		calculate_window_position(win, xmax, ymax);
+		return;
+	}
+}
+
+// *********************************************************************************************************************************************************************
+
+static void buttons_bands_handler(void)
+{
+//	gui_t * gui = get_gui_env();
+
+//	if(gui->selected_type == TYPE_BUTTON)
+//	{
+//		window_t * win = get_win(WINDOW_BANDS);
+//		button_t * btn_AF = find_gui_element_ref(TYPE_BUTTON, win, "btn_AF");
+//
+//		if (gui->selected_link->link == btn_AF)
+//		{
+//
+//		}
+//	}
+}
+
+static void window_bands_process(void)
+{
+	window_t * win = get_win(WINDOW_BANDS);
+
+	if (win->first_call)
+	{
+		uint_fast16_t x = 0, y = 0, xmax = 0, ymax = 0;
+		uint_fast8_t interval = 6, col1_int = 20, row1_int = window_title_height + 20, row_count = 3;
+		win->first_call = 0;
+
+		button_t buttons [] = {
+		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_trackable, parent,   	visible,      payload,	 name, 		text
+			{ },
+			{ 0, 0, 86, 44, buttons_bands_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_BANDS, NON_VISIBLE, UINTPTR_MAX, "btn_band1", 	 "160m", },
+			{ 0, 0, 86, 44, buttons_bands_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_BANDS, NON_VISIBLE, UINTPTR_MAX, "btn_band2", 	 "80m", },
+			{ 0, 0, 86, 44, buttons_bands_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_BANDS, NON_VISIBLE, UINTPTR_MAX, "btn_band3", 	 "40m", },
+			{ 0, 0, 86, 44, buttons_bands_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_BANDS, NON_VISIBLE, UINTPTR_MAX, "btn_band4", 	 "20m", },
+			{ 0, 0, 86, 44, buttons_bands_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_BANDS, NON_VISIBLE, UINTPTR_MAX, "btn_band5", 	 "15m", },
+			{ 0, 0, 86, 44, buttons_bands_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_BANDS, NON_VISIBLE, UINTPTR_MAX, "btn_band6", 	 "10m", },
+		};
+		win->bh_count = ARRAY_SIZE(buttons);
+		uint_fast16_t buttons_size = sizeof(buttons);
+		win->bh_ptr = malloc(buttons_size);
+		ASSERT(win->bh_ptr != NULL);
+		memcpy(win->bh_ptr, buttons, buttons_size);
+
+		x = col1_int;
+		y = row1_int;
+
+		for (uint_fast8_t i = 1, r = 1; i < win->bh_count; i ++, r ++)
+		{
+			button_t * bh = & win->bh_ptr[i];
+			bh->x1 = x;
+			bh->y1 = y;
+			bh->visible = VISIBLE;
+
+			x = x + interval + bh->w;
+			if (r >= row_count)
+			{
+				r = 0;
+				x = col1_int;
+				y = y + bh->h + interval;
+			}
+			xmax = (xmax > bh->x1 + bh->w) ? xmax : (bh->x1 + bh->w);
+			ymax = (ymax > bh->y1 + bh->h) ? ymax : (bh->y1 + bh->h);
+		}
+		elements_state(win);
+		calculate_window_position(win, xmax, ymax);
+		return;
+	}
+}
+
+// *********************************************************************************************************************************************************************
+
 static void buttons_options_handler(void)
 {
 	gui_t * gui = get_gui_env();

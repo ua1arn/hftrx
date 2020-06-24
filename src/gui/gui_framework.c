@@ -249,7 +249,7 @@ void elements_state (window_t * win)
 			}
 		}
 	}
-	PRINTF("%s %d touch_count: %d %+d\n", win->name, win->state, touch_count, debug_num);
+//	PRINTF("%s %d touch_count: %d %+d\n", win->name, win->state, touch_count, debug_num);
 }
 
 static void free_win_ptr (window_t * win)
@@ -287,6 +287,16 @@ void close_top_window(void)
 	}
 	else
 		touch_count = footer_buttons_count;
+}
+
+void close_all_windows(void)
+{
+	window_t * win = get_win(gui.win[1]);
+	win->state = NON_VISIBLE;
+	elements_state(win);
+	free_win_ptr(win);
+	gui.win[1] = UINT8_MAX;
+	touch_count = footer_buttons_count;
 }
 
 void open_window(window_t * win)

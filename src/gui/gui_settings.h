@@ -40,6 +40,8 @@ typedef enum {
 	WINDOW_TX_POWER,				// выходная мощность
 	WINDOW_OPTIONS,
 	WINDOW_UTILS,
+	WINDOW_BANDS,
+	WINDOW_MEMORY,
 	WINDOWS_COUNT
 } window_id_t;
 
