@@ -133,7 +133,7 @@ static void btn_main_handler(void)
 			}
 			else
 			{
-				close_top_window();
+				close_window(OPEN_PARENT_WINDOW);
 				footer_buttons_state(CANCELLED);
 			}
 		}
@@ -147,7 +147,7 @@ static void btn_main_handler(void)
 			}
 			else
 			{
-				close_top_window();
+				close_window(OPEN_PARENT_WINDOW);
 				footer_buttons_state(CANCELLED);
 			}
 		}
@@ -161,7 +161,7 @@ static void btn_main_handler(void)
 			}
 			else
 			{
-				close_top_window();
+				close_window(OPEN_PARENT_WINDOW);
 				footer_buttons_state(CANCELLED);
 			}
 		}
@@ -169,7 +169,7 @@ static void btn_main_handler(void)
 		{
 			if(gui->win[1] != UINT8_MAX)
 			{
-				close_top_window();
+				close_window(OPEN_PARENT_WINDOW);
 				footer_buttons_state(CANCELLED);
 			}
 			else
@@ -700,7 +700,7 @@ static void buttons_mode_handler(void)
 			if (bh->payload != UINTPTR_MAX)
 				hamradio_change_submode(bh->payload);
 
-			close_top_window();
+			close_window(OPEN_PARENT_WINDOW);
 			footer_buttons_state(CANCELLED);
 			gui->timer_1sec_updated = 1;
 		}
@@ -787,7 +787,7 @@ static void buttons_bp_handler(void)
 		}
 		else if (gui->selected_link->link == button_OK)
 		{
-			close_top_window();
+			close_window(OPEN_PARENT_WINDOW);
 			encoder2.busy = 0;
 			footer_buttons_state(CANCELLED);
 			hamradio_disable_keyboard_redirect();
@@ -1112,7 +1112,7 @@ static void window_freq_process (void)
 		case BUTTON_CODE_OK:
 			if(hamradio_set_freq(editfreq.val * 1000) || editfreq.val == 0)
 			{
-				close_top_window();
+				close_window(OPEN_PARENT_WINDOW);
 				hamradio_set_lockmode(0);
 				hamradio_disable_keyboard_redirect();
 				enable_options_button();
@@ -1158,7 +1158,7 @@ static void buttons_swrscan_process(void)
 		}
 		else if (gui->selected_link->link == btn_swr_OK)
 		{
-			close_top_window();
+			close_window(OPEN_PARENT_WINDOW);
 			footer_buttons_state(CANCELLED);
 			hamradio_set_lockmode(0);
 			hamradio_disable_keyboard_redirect();
@@ -1457,7 +1457,7 @@ static void buttons_tx_vox_process(void)
 		window_t * win = get_win(WINDOW_TX_VOX_SETT);
 		button_t * btn_tx_vox_OK = find_gui_element_ref(TYPE_BUTTON, win, "btn_tx_vox_OK");
 		if (gui->selected_link->link == btn_tx_vox_OK)
-			close_top_window();
+			close_window(OPEN_PARENT_WINDOW);
 	}
 }
 
@@ -1656,7 +1656,7 @@ static void buttons_tx_power_process(void)
 		window_t * win = get_win(WINDOW_TX_POWER);
 		button_t * btn_tx_pwr_OK = find_gui_element_ref(TYPE_BUTTON, win, "btn_tx_pwr_OK");
 		if (gui->selected_link->link == btn_tx_pwr_OK)
-			close_top_window();
+			close_window(OPEN_PARENT_WINDOW);
 	}
 }
 
@@ -1950,7 +1950,7 @@ static void buttons_ap_reverb_process(void)
 	gui_t * gui = get_gui_env();
 	if(gui->selected_type == TYPE_BUTTON)
 	{
-		close_top_window();
+		close_window(OPEN_PARENT_WINDOW);
 	}
 }
 
@@ -2104,7 +2104,7 @@ static void buttons_ap_mic_eq_process(void)
 	gui_t * gui = get_gui_env();
 	if(gui->selected_type == TYPE_BUTTON)
 	{
-		close_top_window();
+		close_window(OPEN_PARENT_WINDOW);
 	}
 }
 
@@ -2284,7 +2284,7 @@ static void buttons_ap_mic_process(void)
 		}
 		else if (gui->selected_link->link == btn_mic_OK)
 		{
-			close_top_window();
+			close_window(OPEN_PARENT_WINDOW);
 		}
 	}
 }
@@ -2883,7 +2883,7 @@ static void window_menu_process(void)
 	{
 		if(win->parent_id != UINT8_MAX)
 		{
-			close_top_window();
+			close_window(OPEN_PARENT_WINDOW);
 			return;
 		} else
 			menu_level = MENU_GROUPS;
@@ -2989,6 +2989,7 @@ void gui_uif_editmenu(const char * name, uint_fast16_t menupos, uint_fast8_t exi
 	window_t * win = get_win(WINDOW_UIF);
 	if (win->state == NON_VISIBLE)
 	{
+		close_window(DONT_OPEN_PARENT_WINDOW);
 		open_window(win);
 		footer_buttons_state(DISABLED, "");
 		strcpy(menu_uif.name, name);
@@ -2997,7 +2998,7 @@ void gui_uif_editmenu(const char * name, uint_fast16_t menupos, uint_fast8_t exi
 	}
 	else
 	{
-		close_top_window();
+		close_window(OPEN_PARENT_WINDOW);
 		footer_buttons_state(CANCELLED);
 	}
 }
@@ -3017,7 +3018,7 @@ static void buttons_uif_handler(void)
 		else if (bh == find_gui_element_ref(TYPE_BUTTON, win, "btnUIF_OK"))
 		{
 			hamradio_disable_keyboard_redirect();
-			close_top_window();
+			close_window(OPEN_PARENT_WINDOW);
 			footer_buttons_state(CANCELLED);
 		}
 	}
@@ -3113,7 +3114,7 @@ static void window_uif_process(void)
 		if (gui->kbd_code == menu_uif.exitkey)
 		{
 			hamradio_disable_keyboard_redirect();
-			close_top_window();
+			close_window(OPEN_PARENT_WINDOW);
 			footer_buttons_state(CANCELLED);
 		}
 		gui->kbd_code = KBD_CODE_MAX;
@@ -3143,16 +3144,18 @@ void gui_set_encoder2_state (uint_fast8_t code)
 void gui_encoder2_menu (enc2_menu_t * enc2_menu)
 {
 	window_t * win = get_win(WINDOW_ENC2);
+	gui_t * gui = get_gui_env();
 
 	if (win->state == NON_VISIBLE && enc2_menu->state != 0)
 	{
+		close_window(DONT_OPEN_PARENT_WINDOW);
 		open_window(win);
 		footer_buttons_state(DISABLED, "");
 		gui_enc2_menu = enc2_menu;
 	}
 	else if (win->state == VISIBLE && enc2_menu->state == 0)
 	{
-		close_top_window();
+		close_window(OPEN_PARENT_WINDOW);
 		gui_enc2_menu = NULL;
 		footer_buttons_state(CANCELLED);
 	}
@@ -3218,7 +3221,7 @@ void gui_open_sys_menu(void)
 	}
 	else if(gui->win[1] == WINDOW_MENU && win->parent_id == UINT8_MAX)
 	{
-		close_top_window();
+		close_window(OPEN_PARENT_WINDOW);
 		footer_buttons_state(CANCELLED);
 		win->parent_id = backup_parent;
 		backup_parent = UINT8_MAX;

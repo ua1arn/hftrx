@@ -269,7 +269,7 @@ static void free_win_ptr (window_t * win)
 }
 
 /* Установка признака видимости окна */
-void close_top_window(void)
+void close_window(uint_fast8_t parent) // 0 - не открывать parent window, 1 - открыть
 {
 	window_t * win = get_win(gui.win[1]);
 	win->state = NON_VISIBLE;
@@ -277,7 +277,7 @@ void close_top_window(void)
 	free_win_ptr(win);
 	gui.win[1] = UINT8_MAX;
 
-	if (win->parent_id != UINT8_MAX)	// При закрытии child window открыть parent window, если есть
+	if (win->parent_id != UINT8_MAX && parent)	// При закрытии child window открыть parent window, если есть и если разрешено
 	{
 		window_t * pwin = get_win(win->parent_id);
 		pwin->state = VISIBLE;
@@ -287,16 +287,6 @@ void close_top_window(void)
 	}
 	else
 		touch_count = footer_buttons_count;
-}
-
-void close_all_windows(void)
-{
-	window_t * win = get_win(gui.win[1]);
-	win->state = NON_VISIBLE;
-	elements_state(win);
-	free_win_ptr(win);
-	gui.win[1] = UINT8_MAX;
-	touch_count = footer_buttons_count;
 }
 
 void open_window(window_t * win)

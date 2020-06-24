@@ -16783,9 +16783,11 @@ process_key_menuset_common(uint_fast8_t kbch)
 	#if WITHTOUCHGUI
 		case KBD_ENC2_PRESS:
 			gui_set_encoder2_state (KBD_ENC2_PRESS);
+			uif_encoder2_press();
 			return 0;
 		case KBD_ENC2_HOLD:
 			gui_set_encoder2_state (KBD_ENC2_HOLD);
+			uif_encoder2_hold();
 			return 0;
 	#else
 		case KBD_ENC2_PRESS:
