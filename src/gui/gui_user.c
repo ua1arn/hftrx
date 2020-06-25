@@ -49,28 +49,28 @@ static void window_bands_process(void);
 static void window_memory_process(void);
 
 static window_t windows[] = {
-//     window_id,   		 parent_id, 			align_mode,     x1, y1, w, h,   title,     			 is_show, first_call, onVisibleProcess
-	{ WINDOW_MAIN, 			 UINT8_MAX, 			ALIGN_LEFT_X,	0, 0, 0, 0, "",  	   	   			 NON_VISIBLE, 0, gui_main_process, },
-	{ WINDOW_MODES, 		 UINT8_MAX, 			ALIGN_CENTER_X, 0, 0, 0, 0, "Select mode", 			 NON_VISIBLE, 0, window_mode_process, },
-	{ WINDOW_BP,    		 WINDOW_OPTIONS,		ALIGN_CENTER_X, 0, 0, 0, 0, "Bandpass",    			 NON_VISIBLE, 0, window_bp_process, },
-	{ WINDOW_AGC,   		 WINDOW_OPTIONS,		ALIGN_CENTER_X, 0, 0, 0, 0, "AGC control", 			 NON_VISIBLE, 0, window_agc_process, },
-	{ WINDOW_FREQ,  		 WINDOW_OPTIONS,		ALIGN_CENTER_X, 0, 0, 0, 0, "Freq:", 	   			 NON_VISIBLE, 0, window_freq_process, },
-	{ WINDOW_MENU,  		 WINDOW_OPTIONS,		ALIGN_CENTER_X, 0, 0, 0, 0, "Settings",	   		 	 NON_VISIBLE, 0, window_menu_process, },
-	{ WINDOW_ENC2, 			 UINT8_MAX, 			ALIGN_RIGHT_X, 	0, 0, 0, 0, "",  			 		 NON_VISIBLE, 0, window_enc2_process, },
-	{ WINDOW_UIF, 			 UINT8_MAX, 			ALIGN_LEFT_X, 	0, 0, 0, 0, "",   		   	 		 NON_VISIBLE, 0, window_uif_process, },
-	{ WINDOW_SWR_SCANNER,	 WINDOW_UTILS, 			ALIGN_CENTER_X, 0, 0, 0, 0, "SWR band scanner",		 NON_VISIBLE, 0, window_swrscan_process, },
-	{ WINDOW_AUDIOSETTINGS,  WINDOW_OPTIONS,		ALIGN_CENTER_X, 0, 0, 0, 0, "Audio settings", 		 NON_VISIBLE, 0, window_audiosettings_process, },
-	{ WINDOW_AP_MIC_EQ, 	 WINDOW_AUDIOSETTINGS, 	ALIGN_CENTER_X, 0, 0, 0, 0, "MIC TX equalizer",		 NON_VISIBLE, 0, window_ap_mic_eq_process, },
-	{ WINDOW_AP_REVERB_SETT, WINDOW_AUDIOSETTINGS, 	ALIGN_CENTER_X, 0, 0, 0, 0, "Reverberator settings", NON_VISIBLE, 0, window_ap_reverb_process, },
-	{ WINDOW_AP_MIC_SETT, 	 WINDOW_AUDIOSETTINGS, 	ALIGN_CENTER_X, 0, 0, 0, 0, "Microphone settings", 	 NON_VISIBLE, 0, window_ap_mic_process, },
-	{ WINDOW_AP_MIC_PROF, 	 WINDOW_AUDIOSETTINGS, 	ALIGN_CENTER_X, 0, 0, 0, 0, "Microphone profiles", 	 NON_VISIBLE, 0, window_ap_mic_prof_process, },
-	{ WINDOW_TX_SETTINGS, 	 WINDOW_OPTIONS, 		ALIGN_CENTER_X, 0, 0, 0, 0, "Transmit settings", 	 NON_VISIBLE, 0, window_tx_process, },
-	{ WINDOW_TX_VOX_SETT, 	 WINDOW_TX_SETTINGS, 	ALIGN_CENTER_X, 0, 0, 0, 0, "VOX settings", 	 	 NON_VISIBLE, 0, window_tx_vox_process, },
-	{ WINDOW_TX_POWER, 		 WINDOW_TX_SETTINGS, 	ALIGN_CENTER_X, 0, 0, 0, 0, "TX power", 	 	 	 NON_VISIBLE, 0, window_tx_power_process, },
-	{ WINDOW_OPTIONS, 		 UINT8_MAX, 			ALIGN_CENTER_X,	0, 0, 0, 0, "Options",  	   	   	 NON_VISIBLE, 0, window_options_process, },
-	{ WINDOW_UTILS, 		 WINDOW_OPTIONS,		ALIGN_CENTER_X,	0, 0, 0, 0, "Utilites",  	   	   	 NON_VISIBLE, 0, window_utilites_process, },
-	{ WINDOW_BANDS, 		 UINT8_MAX,				ALIGN_CENTER_X,	0, 0, 0, 0, "Bands",  	   	   	 	 NON_VISIBLE, 0, window_bands_process, },
-	{ WINDOW_MEMORY, 		 UINT8_MAX,				ALIGN_CENTER_X,	0, 0, 0, 0, "Memory",  	   	   	 	 NON_VISIBLE, 0, window_memory_process, },
+//     window_id,   		 parent_id, 			align_mode,     x1, y1, w, h,   title,     		is_show, first_call, is_close, onVisibleProcess
+	{ WINDOW_MAIN, 			 UINT8_MAX, 			ALIGN_LEFT_X,	0, 0, 0, 0, "",  	   	   			 NON_VISIBLE, 0, 0, gui_main_process, },
+	{ WINDOW_MODES, 		 UINT8_MAX, 			ALIGN_CENTER_X, 0, 0, 0, 0, "Select mode", 			 NON_VISIBLE, 0, 1, window_mode_process, },
+	{ WINDOW_BP,    		 WINDOW_OPTIONS,		ALIGN_CENTER_X, 0, 0, 0, 0, "Bandpass",    			 NON_VISIBLE, 0, 1, window_bp_process, },
+	{ WINDOW_AGC,   		 WINDOW_OPTIONS,		ALIGN_CENTER_X, 0, 0, 0, 0, "AGC control", 			 NON_VISIBLE, 0, 1, window_agc_process, },
+	{ WINDOW_FREQ,  		 WINDOW_OPTIONS,		ALIGN_CENTER_X, 0, 0, 0, 0, "Freq:", 	   			 NON_VISIBLE, 0, 1, window_freq_process, },
+	{ WINDOW_MENU,  		 WINDOW_OPTIONS,		ALIGN_CENTER_X, 0, 0, 0, 0, "Settings",	   		 	 NON_VISIBLE, 0, 1, window_menu_process, },
+	{ WINDOW_ENC2, 			 UINT8_MAX, 			ALIGN_RIGHT_X, 	0, 0, 0, 0, "",  			 		 NON_VISIBLE, 0, 0, window_enc2_process, },
+	{ WINDOW_UIF, 			 UINT8_MAX, 			ALIGN_LEFT_X, 	0, 0, 0, 0, "",   		   	 		 NON_VISIBLE, 0, 0, window_uif_process, },
+	{ WINDOW_SWR_SCANNER,	 WINDOW_UTILS, 			ALIGN_CENTER_X, 0, 0, 0, 0, "SWR band scanner",		 NON_VISIBLE, 0, 0, window_swrscan_process, },
+	{ WINDOW_AUDIOSETTINGS,  WINDOW_OPTIONS,		ALIGN_CENTER_X, 0, 0, 0, 0, "Audio settings", 		 NON_VISIBLE, 0, 1, window_audiosettings_process, },
+	{ WINDOW_AP_MIC_EQ, 	 WINDOW_AUDIOSETTINGS, 	ALIGN_CENTER_X, 0, 0, 0, 0, "MIC TX equalizer",		 NON_VISIBLE, 0, 1, window_ap_mic_eq_process, },
+	{ WINDOW_AP_REVERB_SETT, WINDOW_AUDIOSETTINGS, 	ALIGN_CENTER_X, 0, 0, 0, 0, "Reverberator settings", NON_VISIBLE, 0, 1, window_ap_reverb_process, },
+	{ WINDOW_AP_MIC_SETT, 	 WINDOW_AUDIOSETTINGS, 	ALIGN_CENTER_X, 0, 0, 0, 0, "Microphone settings", 	 NON_VISIBLE, 0, 1, window_ap_mic_process, },
+	{ WINDOW_AP_MIC_PROF, 	 WINDOW_AUDIOSETTINGS, 	ALIGN_CENTER_X, 0, 0, 0, 0, "Microphone profiles", 	 NON_VISIBLE, 0, 1, window_ap_mic_prof_process, },
+	{ WINDOW_TX_SETTINGS, 	 WINDOW_OPTIONS, 		ALIGN_CENTER_X, 0, 0, 0, 0, "Transmit settings", 	 NON_VISIBLE, 0, 1, window_tx_process, },
+	{ WINDOW_TX_VOX_SETT, 	 WINDOW_TX_SETTINGS, 	ALIGN_CENTER_X, 0, 0, 0, 0, "VOX settings", 	 	 NON_VISIBLE, 0, 1, window_tx_vox_process, },
+	{ WINDOW_TX_POWER, 		 WINDOW_TX_SETTINGS, 	ALIGN_CENTER_X, 0, 0, 0, 0, "TX power", 	 	 	 NON_VISIBLE, 0, 1, window_tx_power_process, },
+	{ WINDOW_OPTIONS, 		 UINT8_MAX, 			ALIGN_CENTER_X,	0, 0, 0, 0, "Options",  	   	   	 NON_VISIBLE, 0, 1, window_options_process, },
+	{ WINDOW_UTILS, 		 WINDOW_OPTIONS,		ALIGN_CENTER_X,	0, 0, 0, 0, "Utilites",  	   	   	 NON_VISIBLE, 0, 1, window_utilites_process, },
+	{ WINDOW_BANDS, 		 UINT8_MAX,				ALIGN_CENTER_X,	0, 0, 0, 0, "Bands",  	   	   	 	 NON_VISIBLE, 0, 1, window_bands_process, },
+	{ WINDOW_MEMORY, 		 UINT8_MAX,				ALIGN_CENTER_X,	0, 0, 0, 0, "Memory",  	   	   	 	 NON_VISIBLE, 0, 1, window_memory_process, },
 };
 
 static uint_fast8_t swr_scan_enable = 0;		// флаг разрешения сканирования КСВ
@@ -79,7 +79,7 @@ static uint_fast8_t * y_vals;					// массив КСВ в виде отсче�
 
 static editfreq_t editfreq;
 static enc2_menu_t * gui_enc2_menu;
-static enc2_t encoder2 = { 0, 0, 0, 0, 1, 1, };
+static enc2_t encoder2 = { 0, 0, 0, 1, 1, };
 static menu_by_name_t menu_uif;
 
 static menu_t menu[MENU_COUNT];
@@ -93,18 +93,6 @@ window_t * get_win(window_id_t window_id)
 	return & windows[window_id];
 }
 
-void disable_options_button(void)
-{
-	button_t * btn_Options = find_gui_element_ref(TYPE_BUTTON, get_win(WINDOW_MAIN), "btn_Options");
-	btn_Options->state = DISABLED;
-}
-
-void enable_options_button(void)
-{
-	button_t * btn_Options = find_gui_element_ref(TYPE_BUTTON, get_win(WINDOW_MAIN), "btn_Options");
-	btn_Options->state = CANCELLED;
-}
-
 // *********************************************************************************************************************************************************************
 
 static void btn_main_handler(void)
@@ -114,7 +102,7 @@ static void btn_main_handler(void)
 	if(is_long_pressed())
 	{
 		window_t * winMain = get_win(WINDOW_MAIN);
-		button_t * btn_4 = find_gui_element_ref(TYPE_BUTTON, winMain, "btn_4");
+		button_t * btn_4 = find_gui_element(TYPE_BUTTON, winMain, "btn_4");
 		if (gui->selected_link->link == btn_4)
 		{
 			local_snprintf_P(btn_4->text, ARRAY_SIZE(btn_4->text), PSTR("Long|press"));
@@ -124,14 +112,10 @@ static void btn_main_handler(void)
 	if(is_short_pressed())
 	{
 		window_t * winMain = get_win(WINDOW_MAIN);
-		button_t * btn_Bands = find_gui_element_ref(TYPE_BUTTON, winMain, "btn_Bands");
-		button_t * btn_Memory = find_gui_element_ref(TYPE_BUTTON, winMain, "btn_Memory");
-//		button_t * btn_band3 = find_gui_element_ref(TYPE_BUTTON, winMain, "btn_band3");
-//		button_t * btn_band4 = find_gui_element_ref(TYPE_BUTTON, winMain, "btn_band4");
-//		button_t * btn_band5 = find_gui_element_ref(TYPE_BUTTON, winMain, "btn_band5");
-//		button_t * btn_band6 = find_gui_element_ref(TYPE_BUTTON, winMain, "btn_band6");
-		button_t * btn_Mode = find_gui_element_ref(TYPE_BUTTON, winMain, "btn_Mode");
-		button_t * btn_Options = find_gui_element_ref(TYPE_BUTTON, winMain, "btn_Options");
+		button_t * btn_Bands = find_gui_element(TYPE_BUTTON, winMain, "btn_Bands");
+		button_t * btn_Memory = find_gui_element(TYPE_BUTTON, winMain, "btn_Memory");
+		button_t * btn_Mode = find_gui_element(TYPE_BUTTON, winMain, "btn_Mode");
+		button_t * btn_Options = find_gui_element(TYPE_BUTTON, winMain, "btn_Options");
 
 		if (gui->selected_link->link == btn_Mode)
 		{
@@ -181,6 +165,8 @@ static void btn_main_handler(void)
 			{
 				close_window(OPEN_PARENT_WINDOW);
 				footer_buttons_state(CANCELLED);
+				hamradio_set_lockmode(0);
+				hamradio_disable_keyboard_redirect();
 			}
 			else
 			{
@@ -211,12 +197,12 @@ static void gui_main_process(void)
 		gui_enc2_menu->updated = 1;
 
 		button_t buttons [] = {
-		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_trackable, parent,   	visible,      payload,	 name, 		text
+		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
 			{ },
 			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, UINTPTR_MAX, "btn_Bands", 	 "Bands", },
 			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, UINTPTR_MAX, "btn_Memory",  "Memory", },
 			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, UINTPTR_MAX, "btn_Mode", 	 "Mode", },
-			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, UINTPTR_MAX, "btn_4", 	 	 "", },
+			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MAIN, NON_VISIBLE, UINTPTR_MAX, "btn_4", 	 	 "", },
 			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, UINTPTR_MAX, "btn_5", 	 	 "", },
 			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, UINTPTR_MAX, "btn_6", 	 	 "", },
 			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, UINTPTR_MAX, "btn_7", 	 	 "", },
@@ -375,18 +361,17 @@ static void gui_main_process(void)
 
 static void buttons_memory_handler(void)
 {
-//	gui_t * gui = get_gui_env();
+	gui_t * gui = get_gui_env();
 
-//	if(is_short_pressed())
-//	{
-//		window_t * win = get_win(WINDOW_MEMORY);
-//		button_t * btn_AF = find_gui_element_ref(TYPE_BUTTON, win, "btn_AF");
-//
-//		if (gui->selected_link->link == btn_AF)
-//		{
-//
-//		}
-//	}
+	if(is_short_pressed())
+	{
+
+	}
+
+	if(is_long_pressed())
+	{
+
+	}
 }
 
 static void window_memory_process(void)
@@ -400,18 +385,18 @@ static void window_memory_process(void)
 		win->first_call = 0;
 
 		button_t buttons [] = {
-		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_trackable, parent,   	visible,      payload,	 name, 		text
+		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
 			{ },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell1", 	 "---", },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell2", 	 "---", },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell3", 	 "---", },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell4", 	 "---", },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell5", 	 "---", },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell6", 	 "---", },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell7", 	 "---", },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell8", 	 "---", },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell9", 	 "---", },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell10", 	 "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell1",  "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell2",  "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell3",  "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell4",  "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell5",  "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell6",  "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell7",  "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell8",  "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell9",  "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell10", "---", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -454,7 +439,7 @@ static void buttons_bands_handler(void)
 //	if(is_short_pressed())
 //	{
 //		window_t * win = get_win(WINDOW_BANDS);
-//		button_t * btn_AF = find_gui_element_ref(TYPE_BUTTON, win, "btn_AF");
+//		button_t * btn_AF = find_gui_element(TYPE_BUTTON, win, "btn_AF");
 //
 //		if (gui->selected_link->link == btn_AF)
 //		{
@@ -474,7 +459,7 @@ static void window_bands_process(void)
 		win->first_call = 0;
 
 		button_t buttons [] = {
-		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_trackable, parent,   	visible,      payload,	 name, 		text
+		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
 			{ },
 			{ 0, 0, 86, 44, buttons_bands_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_BANDS, NON_VISIBLE, UINTPTR_MAX, "btn_band1", 	 "160m", },
 			{ 0, 0, 86, 44, buttons_bands_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_BANDS, NON_VISIBLE, UINTPTR_MAX, "btn_band2", 	 "80m", },
@@ -524,21 +509,19 @@ static void buttons_options_handler(void)
 	if(is_short_pressed())
 	{
 		window_t * win = get_win(WINDOW_OPTIONS);
-		button_t * btn_AF = find_gui_element_ref(TYPE_BUTTON, win, "btn_AF");
-		button_t * btn_AGC = find_gui_element_ref(TYPE_BUTTON, win, "btn_AGC");
-		button_t * btn_Freq = find_gui_element_ref(TYPE_BUTTON, win, "btn_Freq");
-		button_t * btn_TXsett = find_gui_element_ref(TYPE_BUTTON, win, "btn_TXsett");
-		button_t * btn_AUDsett = find_gui_element_ref(TYPE_BUTTON, win, "btn_AUDsett");
-		button_t * btn_SysMenu = find_gui_element_ref(TYPE_BUTTON, win, "btn_SysMenu");
-		button_t * btn_Utils = find_gui_element_ref(TYPE_BUTTON, win, "btn_Utils");
+		button_t * btn_AF = find_gui_element(TYPE_BUTTON, win, "btn_AF");
+		button_t * btn_AGC = find_gui_element(TYPE_BUTTON, win, "btn_AGC");
+		button_t * btn_Freq = find_gui_element(TYPE_BUTTON, win, "btn_Freq");
+		button_t * btn_TXsett = find_gui_element(TYPE_BUTTON, win, "btn_TXsett");
+		button_t * btn_AUDsett = find_gui_element(TYPE_BUTTON, win, "btn_AUDsett");
+		button_t * btn_SysMenu = find_gui_element(TYPE_BUTTON, win, "btn_SysMenu");
+		button_t * btn_Utils = find_gui_element(TYPE_BUTTON, win, "btn_Utils");
 
 		if (gui->selected_link->link == btn_AF)
 		{
 			window_t * win = get_win(WINDOW_BP);
-			encoder2.busy = 1;
 			open_window(win);
 			hamradio_enable_keyboard_redirect();
-			disable_options_button();
 		}
 		else if (gui->selected_link->link == btn_AGC)
 		{
@@ -556,7 +539,6 @@ static void buttons_options_handler(void)
 			open_window(win);
 			hamradio_set_lockmode(1);
 			hamradio_enable_keyboard_redirect();
-			disable_options_button();
 		}
 		else if (gui->selected_link->link == btn_TXsett)
 		{
@@ -587,7 +569,7 @@ static void window_options_process(void)
 		win->first_call = 0;
 
 		button_t buttons [] = {
-		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_trackable, parent,   	visible,      payload,	 name, 		text
+		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
 			{ },
 			{ 0, 0, 100, 44, buttons_options_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_OPTIONS, NON_VISIBLE, UINTPTR_MAX, "btn_AUDsett", "Audio|settings", },
 			{ 0, 0, 100, 44, buttons_options_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_OPTIONS, NON_VISIBLE, UINTPTR_MAX, "btn_TXsett",  "Transmit|settings", },
@@ -625,7 +607,6 @@ static void window_options_process(void)
 		}
 		elements_state(win);
 		calculate_window_position(win, xmax, ymax);
-		encoder2.busy = 0;
 		hamradio_disable_keyboard_redirect();
 		return;
 	}
@@ -639,7 +620,7 @@ static void buttons_utilites_handler(void)
 	if(is_short_pressed())
 	{
 		window_t * win = get_win(WINDOW_UTILS);
-		button_t * btn_SWRscan = find_gui_element_ref(TYPE_BUTTON, win, "btn_SWRscan");						// SWR scanner
+		button_t * btn_SWRscan = find_gui_element(TYPE_BUTTON, win, "btn_SWRscan");						// SWR scanner
 
 		if (gui->selected_link->link == btn_SWRscan)
 		{
@@ -659,7 +640,7 @@ static void window_utilites_process(void)
 		win->first_call = 0;
 
 		button_t buttons [] = {
-		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_trackable, parent,   	visible,      payload,	 name, 		text
+		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
 			{ },
 			{ 0, 0, 100, 44, buttons_utilites_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UTILS, NON_VISIBLE, UINTPTR_MAX, "btn_SWRscan", "SWR|scanner", },
 
@@ -730,7 +711,7 @@ static void window_mode_process(void)
 		win->first_call = 0;
 
 		button_t buttons [] = {
-		//   x1, y1, w, h,  onClickHandler,      state,   	is_locked, is_trackable, parent,   	visible,      payload,	 name, 		text
+		//   x1, y1, w, h,  onClickHandler,      state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
 			{ },
 			{ 0, 0, 86, 44, buttons_mode_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_LSB, "btnModeLSB", "LSB", },
 			{ 0, 0, 86, 44, buttons_mode_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_CW,  "btnModeCW", "CW", },
@@ -781,9 +762,9 @@ static void buttons_bp_handler(void)
 
 	if(is_short_pressed())
 	{
-		button_t * button_high = find_gui_element_ref(TYPE_BUTTON, win, "btnAF_2");
-		button_t * button_low = find_gui_element_ref(TYPE_BUTTON, win, "btnAF_1");
-		button_t * button_OK = find_gui_element_ref(TYPE_BUTTON, win, "btnAF_OK");
+		button_t * button_high = find_gui_element(TYPE_BUTTON, win, "btnAF_2");
+		button_t * button_low = find_gui_element(TYPE_BUTTON, win, "btnAF_1");
+		button_t * button_OK = find_gui_element(TYPE_BUTTON, win, "btnAF_OK");
 
 		if (gui->selected_link->link == button_low)
 		{
@@ -798,10 +779,8 @@ static void buttons_bp_handler(void)
 		else if (gui->selected_link->link == button_OK)
 		{
 			close_window(OPEN_PARENT_WINDOW);
-			encoder2.busy = 0;
 			footer_buttons_state(CANCELLED);
 			hamradio_disable_keyboard_redirect();
-			enable_options_button();
 		}
 	}
 }
@@ -822,7 +801,7 @@ static void window_bp_process(void)
 		uint_fast8_t interval = 20, col1_int = 35, row1_int = window_title_height + 20;
 
 		button_t buttons [] = {
-		//   x1, y1, w, h,  onClickHandler,     state,   	is_locked, is_trackable, parent,   	visible,      payload,	 name, 		text
+		//   x1, y1, w, h,  onClickHandler,     state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
 			{ },
 			{ 0, 0, 86, 44, buttons_bp_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_BP, NON_VISIBLE, UINTPTR_MAX, "btnAF_1",  "", },
 			{ 0, 0, 86, 44, buttons_bp_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_BP, NON_VISIBLE, UINTPTR_MAX, "btnAF_OK", "OK", },
@@ -846,11 +825,11 @@ static void window_bp_process(void)
 		ASSERT(win->lh_ptr != NULL);
 		memcpy(win->lh_ptr, labels, labels_size);
 
-		button_high = find_gui_element_ref(TYPE_BUTTON, win, "btnAF_2");
-		button_low = find_gui_element_ref(TYPE_BUTTON, win, "btnAF_1");
+		button_high = find_gui_element(TYPE_BUTTON, win, "btnAF_2");
+		button_low = find_gui_element(TYPE_BUTTON, win, "btnAF_1");
 
-		lbl_low = find_gui_element_ref(TYPE_LABEL, win, "lbl_low");
-		lbl_high = find_gui_element_ref(TYPE_LABEL, win, "lbl_high");
+		lbl_low = find_gui_element(TYPE_LABEL, win, "lbl_low");
+		lbl_high = find_gui_element(TYPE_LABEL, win, "lbl_high");
 
 		lbl_low->y = y_0 + get_label_height(lbl_low);
 		lbl_high->y = lbl_low->y;
@@ -966,7 +945,7 @@ static void window_agc_process(void)
 		win->first_call = 0;
 
 		button_t buttons [] = {
-		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_trackable, parent,   	visible,      payload,	 name, 		text
+		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
 			{ },
 			{ 0, 0, 86, 44, hamradio_set_agc_off,  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AGC, NON_VISIBLE, UINTPTR_MAX, "btnAGCoff",  "AGC|off", },
 			{ 0, 0, 86, 44, hamradio_set_agc_slow, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AGC, NON_VISIBLE, UINTPTR_MAX, "btnAGCslow", "AGC|slow", },
@@ -1030,7 +1009,7 @@ static void window_freq_process (void)
 		button_t * bh = NULL;
 
 		button_t buttons [] = {
-		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_trackable, parent,   	visible,      payload,	 name, 		text
+		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
 			{ },
 			{ 0, 0, 50, 50, buttons_freq_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ, NON_VISIBLE, 1, 		 		"btnFreq1",  "1", },
 			{ 0, 0, 50, 50, buttons_freq_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ, NON_VISIBLE, 2, 		 		"btnFreq2",  "2", },
@@ -1083,13 +1062,13 @@ static void window_freq_process (void)
 			ymax = (ymax > bh->y1 + bh->h) ? ymax : (bh->y1 + bh->h);
 		}
 
-		bh = find_gui_element_ref(TYPE_BUTTON, win, "btnFreqOK");
+		bh = find_gui_element(TYPE_BUTTON, win, "btnFreqOK");
 		bh->is_locked = BUTTON_LOCKED;
 
-		lbl_freq = find_gui_element_ref(TYPE_LABEL, win, "lbl_freq_val");
+		lbl_freq = find_gui_element(TYPE_LABEL, win, "lbl_freq_val");
 		lbl_freq->x = strwidth(win->name) + strwidth(" ") + 20;
 		lbl_freq->y = 5;
-		strcpy(lbl_freq->text, "     0 k");
+		strcpy(lbl_freq->text, "    0 k");
 		lbl_freq->color = COLORMAIN_WHITE;
 		lbl_freq->visible = VISIBLE;
 
@@ -1125,10 +1104,7 @@ static void window_freq_process (void)
 		case BUTTON_CODE_OK:
 			if(hamradio_set_freq(editfreq.val * 1000) || editfreq.val == 0)
 			{
-				close_window(OPEN_PARENT_WINDOW);
-				hamradio_set_lockmode(0);
-				hamradio_disable_keyboard_redirect();
-				enable_options_button();
+				close_all_windows();
 			}
 			else
 				lbl_freq->color = COLORMAIN_RED;
@@ -1136,7 +1112,7 @@ static void window_freq_process (void)
 			break;
 
 		default:
-			if (editfreq.num < 6)
+			if (editfreq.num < 5)
 			{
 				editfreq.val  = editfreq.val * 10 + editfreq.key;
 				if (editfreq.val)
@@ -1145,7 +1121,7 @@ static void window_freq_process (void)
 		}
 		editfreq.key = BUTTON_CODE_DONE;
 
-		local_snprintf_P(lbl_freq->text, ARRAY_SIZE(lbl_freq->text), PSTR("%6d k"), editfreq.val);
+		local_snprintf_P(lbl_freq->text, ARRAY_SIZE(lbl_freq->text), PSTR("%5d k"), editfreq.val);
 	}
 }
 
@@ -1158,8 +1134,8 @@ static void buttons_swrscan_process(void)
 
 	if(is_short_pressed())
 	{
-		button_t * btn_swr_start = find_gui_element_ref(TYPE_BUTTON, win, "btn_swr_start");
-		button_t * btn_swr_OK = find_gui_element_ref(TYPE_BUTTON, win, "btn_swr_OK");
+		button_t * btn_swr_start = find_gui_element(TYPE_BUTTON, win, "btn_swr_start");
+		button_t * btn_swr_OK = find_gui_element(TYPE_BUTTON, win, "btn_swr_OK");
 
 		if (gui->selected_link->link == btn_swr_start && ! strcmp(btn_swr_start->text, "Start"))
 		{
@@ -1204,7 +1180,7 @@ static void window_swrscan_process(void)
 		button_t * bh = NULL;
 
 		button_t buttons [] = {
-		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_trackable, parent,   	visible,      payload,	 name, 		text
+		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
 			{ },
 			{ 0, 0, 86, 44, buttons_swrscan_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_SWR_SCANNER, 	NON_VISIBLE, UINTPTR_MAX,  "btn_swr_start", "Start", },
 			{ 0, 0, 86, 44, buttons_swrscan_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_SWR_SCANNER, 	NON_VISIBLE, UINTPTR_MAX,  "btn_swr_OK", 	"OK", },
@@ -1229,30 +1205,30 @@ static void window_swrscan_process(void)
 		memcpy(win->lh_ptr, labels, labels_size);
 
 		mid_w = col1_int + gr_w / 2;
-		btn_swr_start = find_gui_element_ref(TYPE_BUTTON, win, "btn_swr_start");
+		btn_swr_start = find_gui_element(TYPE_BUTTON, win, "btn_swr_start");
 		btn_swr_start->x1 = mid_w - btn_swr_start->w - interval;
 		btn_swr_start->y1 = row1_int + gr_h + col1_int;
 		strcpy(btn_swr_start->text, "Start");
 		btn_swr_start->visible = VISIBLE;
 
-		btn_swr_OK = find_gui_element_ref(TYPE_BUTTON, win, "btn_swr_OK");
+		btn_swr_OK = find_gui_element(TYPE_BUTTON, win, "btn_swr_OK");
 		btn_swr_OK->x1 = mid_w + interval;
 		btn_swr_OK->y1 = btn_swr_start->y1;
 		btn_swr_OK->visible = VISIBLE;
 
-		lbl_swr_error = find_gui_element_ref(TYPE_LABEL, win, "lbl_swr_error");
-		btn_Options = find_gui_element_ref(TYPE_BUTTON, get_win(WINDOW_MAIN), "btn_Options");
+		lbl_swr_error = find_gui_element(TYPE_LABEL, win, "lbl_swr_error");
+		btn_Options = find_gui_element(TYPE_BUTTON, get_win(WINDOW_MAIN), "btn_Options");
 
 		backup_freq = hamradio_get_freq_rx();
 		if(hamradio_verify_freq_bands(backup_freq, & lim_bottom, & lim_top))
 		{
-			label_t * lbl_swr_bottom = find_gui_element_ref(TYPE_LABEL, win, "lbl_swr_bottom");
+			label_t * lbl_swr_bottom = find_gui_element(TYPE_LABEL, win, "lbl_swr_bottom");
 			local_snprintf_P(lbl_swr_bottom->text, ARRAY_SIZE(lbl_swr_bottom->text), PSTR("%dk"), lim_bottom / 1000);
 			lbl_swr_bottom->x = x0 - get_label_width(lbl_swr_bottom) / 2;
 			lbl_swr_bottom->y = y0 + get_label_height(lbl_swr_bottom) * 2;
 			lbl_swr_bottom->visible = VISIBLE;
 
-			label_t * lbl_swr_top = find_gui_element_ref(TYPE_LABEL, win, "lbl_swr_top");
+			label_t * lbl_swr_top = find_gui_element(TYPE_LABEL, win, "lbl_swr_top");
 			local_snprintf_P(lbl_swr_top->text, ARRAY_SIZE(lbl_swr_top->text), PSTR("%dk"), lim_top / 1000);
 			lbl_swr_top->x = x1 - get_label_width(lbl_swr_bottom) / 2;
 			lbl_swr_top->y = lbl_swr_bottom->y;
@@ -1374,9 +1350,9 @@ static void buttons_tx_sett_process(void)
 		window_t * winTX = get_win(WINDOW_TX_SETTINGS);
 		window_t * winPower = get_win(WINDOW_TX_POWER);
 		window_t * winVOX = get_win(WINDOW_TX_VOX_SETT);
-		button_t * btn_tx_vox = find_gui_element_ref(TYPE_BUTTON, winTX, "btn_tx_vox");
-		button_t * btn_tx_power = find_gui_element_ref(TYPE_BUTTON, winTX, "btn_tx_power");
-		button_t * btn_tx_vox_settings = find_gui_element_ref(TYPE_BUTTON, winTX, "btn_tx_vox_settings");
+		button_t * btn_tx_vox = find_gui_element(TYPE_BUTTON, winTX, "btn_tx_vox");
+		button_t * btn_tx_power = find_gui_element(TYPE_BUTTON, winTX, "btn_tx_power");
+		button_t * btn_tx_vox_settings = find_gui_element(TYPE_BUTTON, winTX, "btn_tx_vox_settings");
 		if (gui->selected_link->link == btn_tx_vox)
 		{
 			btn_tx_vox->is_locked = hamradio_get_gvoxenable() ? BUTTON_NON_LOCKED : BUTTON_LOCKED;
@@ -1407,7 +1383,7 @@ static void window_tx_process(void)
 		win->first_call = 0;
 
 		button_t buttons [] = {
-		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_trackable, parent,   	visible,      payload,	 name, 		text
+		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
 			{ },
 			{ 0, 0, 100, 44, buttons_tx_sett_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_TX_SETTINGS, 	NON_VISIBLE, UINTPTR_MAX, "btn_tx_vox", 	 	 "VOX|OFF", },
 			{ 0, 0, 100, 44, buttons_tx_sett_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_TX_SETTINGS, 	NON_VISIBLE, UINTPTR_MAX, "btn_tx_vox_settings", "VOX|settings", },
@@ -1442,17 +1418,17 @@ static void window_tx_process(void)
 		calculate_window_position(win, xmax, ymax);
 
 #if WITHVOX
-		bh = find_gui_element_ref(TYPE_BUTTON, win, "btn_tx_vox"); 						// vox on/off
+		bh = find_gui_element(TYPE_BUTTON, win, "btn_tx_vox"); 						// vox on/off
 		bh->is_locked = hamradio_get_gvoxenable() ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
 		local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("VOX|%s"), hamradio_get_gvoxenable() ? "ON" : "OFF");
 
-		bh = find_gui_element_ref(TYPE_BUTTON, win, "btn_tx_vox_settings");				// vox settings
+		bh = find_gui_element(TYPE_BUTTON, win, "btn_tx_vox_settings");				// vox settings
 		bh->state = hamradio_get_gvoxenable() ? CANCELLED : DISABLED;
 #else
-		bh = find_gui_element_ref(TYPE_BUTTON, win, "btn_tx_vox");						// reverb on/off disable
+		bh = find_gui_element(TYPE_BUTTON, win, "btn_tx_vox");						// reverb on/off disable
 		bh->state = DISABLED;
 
-		bh = find_gui_element_ref(TYPE_BUTTON, win, "btn_tx_vox_settings"); 			// reverb settings disable
+		bh = find_gui_element(TYPE_BUTTON, win, "btn_tx_vox_settings"); 			// reverb settings disable
 		bh->state = DISABLED;
 #endif /* WITHVOX */
 		elements_state(win);
@@ -1468,7 +1444,7 @@ static void buttons_tx_vox_process(void)
 	if(is_short_pressed())
 	{
 		window_t * win = get_win(WINDOW_TX_VOX_SETT);
-		button_t * btn_tx_vox_OK = find_gui_element_ref(TYPE_BUTTON, win, "btn_tx_vox_OK");
+		button_t * btn_tx_vox_OK = find_gui_element(TYPE_BUTTON, win, "btn_tx_vox_OK");
 		if (gui->selected_link->link == btn_tx_vox_OK)
 			close_window(OPEN_PARENT_WINDOW);
 	}
@@ -1490,7 +1466,7 @@ static void window_tx_vox_process(void)
 		win->first_call = 0;
 
 		button_t buttons [] = {
-		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_trackable, parent,   	visible,      payload,	 name, 		text
+		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
 			{ },
 			{ 0, 0,  44, 44, buttons_tx_vox_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_TX_VOX_SETT, NON_VISIBLE, UINTPTR_MAX,	"btn_tx_vox_OK", "OK", },
 		};
@@ -1535,12 +1511,12 @@ static void window_tx_vox_process(void)
 		hamradio_get_vox_level_limits(& level_min, & level_max);
 		hamradio_get_antivox_delay_limits(& alevel_min, & alevel_max);
 
-		sl_vox_delay = find_gui_element_ref(TYPE_SLIDER, win, "sl_vox_delay");
-		sl_vox_level = find_gui_element_ref(TYPE_SLIDER, win, "sl_vox_level");
-		sl_avox_level = find_gui_element_ref(TYPE_SLIDER, win, "sl_avox_level");
-		lbl_vox_delay = find_gui_element_ref(TYPE_LABEL, win, "lbl_vox_delay");
-		lbl_vox_level = find_gui_element_ref(TYPE_LABEL, win, "lbl_vox_level");
-		lbl_avox_level = find_gui_element_ref(TYPE_LABEL, win, "lbl_avox_level");
+		sl_vox_delay = find_gui_element(TYPE_SLIDER, win, "sl_vox_delay");
+		sl_vox_level = find_gui_element(TYPE_SLIDER, win, "sl_vox_level");
+		sl_avox_level = find_gui_element(TYPE_SLIDER, win, "sl_avox_level");
+		lbl_vox_delay = find_gui_element(TYPE_LABEL, win, "lbl_vox_delay");
+		lbl_vox_level = find_gui_element(TYPE_LABEL, win, "lbl_vox_level");
+		lbl_avox_level = find_gui_element(TYPE_LABEL, win, "lbl_avox_level");
 
 		ldiv_t d = ldiv(hamradio_get_vox_delay(), 100);
 		lbl_vox_delay->x = col1_int;
@@ -1579,44 +1555,44 @@ static void window_tx_vox_process(void)
 		sl_avox_level->step = 3;
 		sl_avox_level->value = normalize(hamradio_get_antivox_level(), alevel_min, alevel_max, 100);
 
-		button_t * bh = find_gui_element_ref(TYPE_BUTTON, win, "btn_tx_vox_OK");
+		button_t * bh = find_gui_element(TYPE_BUTTON, win, "btn_tx_vox_OK");
 		bh->x1 = (sl_vox_delay->x + sl_vox_delay->size + col1_int * 2) / 2 - (bh->w / 2);
 		bh->y1 = lbl_avox_level->y + interval;
 		bh->visible = VISIBLE;
 
 		d = ldiv(delay_min, 100);
-		label_t * lbl_vox_delay_min = find_gui_element_ref(TYPE_LABEL, win, "lbl_vox_delay_min");
+		label_t * lbl_vox_delay_min = find_gui_element(TYPE_LABEL, win, "lbl_vox_delay_min");
 		local_snprintf_P(lbl_vox_delay_min->text, ARRAY_SIZE(lbl_vox_delay_min->text), PSTR("%d.%d sec"), d.quot, d.rem / 10);
 		lbl_vox_delay_min->x = sl_vox_delay->x - get_label_width(lbl_vox_delay_min) / 2;
 		lbl_vox_delay_min->y = sl_vox_delay->y + get_label_height(lbl_vox_delay_min) * 3;
 		lbl_vox_delay_min->visible = VISIBLE;
 
 		d = ldiv(delay_max, 100);
-		label_t * lbl_vox_delay_max = find_gui_element_ref(TYPE_LABEL, win, "lbl_vox_delay_max");
+		label_t * lbl_vox_delay_max = find_gui_element(TYPE_LABEL, win, "lbl_vox_delay_max");
 		local_snprintf_P(lbl_vox_delay_max->text, ARRAY_SIZE(lbl_vox_delay_max->text), PSTR("%d.%d sec"), d.quot, d.rem / 10);
 		lbl_vox_delay_max->x = sl_vox_delay->x + sl_vox_delay->size - get_label_width(lbl_vox_delay_max) / 2;
 		lbl_vox_delay_max->y = sl_vox_delay->y + get_label_height(lbl_vox_delay_max) * 3;
 		lbl_vox_delay_max->visible = VISIBLE;
 
-		label_t * lbl_vox_level_min = find_gui_element_ref(TYPE_LABEL, win, "lbl_vox_level_min");
+		label_t * lbl_vox_level_min = find_gui_element(TYPE_LABEL, win, "lbl_vox_level_min");
 		local_snprintf_P(lbl_vox_level_min->text, ARRAY_SIZE(lbl_vox_level_min->text), PSTR("%d"), level_min);
 		lbl_vox_level_min->x = sl_vox_level->x - get_label_width(lbl_vox_level_min) / 2;
 		lbl_vox_level_min->y = sl_vox_level->y + get_label_height(lbl_vox_level_min) * 3;
 		lbl_vox_level_min->visible = VISIBLE;
 
-		label_t * lbl_vox_level_max = find_gui_element_ref(TYPE_LABEL, win, "lbl_vox_level_max");
+		label_t * lbl_vox_level_max = find_gui_element(TYPE_LABEL, win, "lbl_vox_level_max");
 		local_snprintf_P(lbl_vox_level_max->text, ARRAY_SIZE(lbl_vox_level_max->text), PSTR("%d"), level_max);
 		lbl_vox_level_max->x = sl_vox_level->x + sl_vox_level->size - get_label_width(lbl_vox_level_max) / 2;
 		lbl_vox_level_max->y = sl_vox_level->y + get_label_height(lbl_vox_level_max) * 3;
 		lbl_vox_level_max->visible = VISIBLE;
 
-		label_t * lbl_avox_level_min = find_gui_element_ref(TYPE_LABEL, win, "lbl_avox_level_min");
+		label_t * lbl_avox_level_min = find_gui_element(TYPE_LABEL, win, "lbl_avox_level_min");
 		local_snprintf_P(lbl_avox_level_min->text, ARRAY_SIZE(lbl_avox_level_min->text), PSTR("%d"), alevel_min);
 		lbl_avox_level_min->x = sl_avox_level->x - get_label_width(lbl_avox_level_min) / 2;
 		lbl_avox_level_min->y = sl_avox_level->y + get_label_height(lbl_avox_level_min) * 3;
 		lbl_avox_level_min->visible = VISIBLE;
 
-		label_t * lbl_avox_level_max = find_gui_element_ref(TYPE_LABEL, win, "lbl_avox_level_max");
+		label_t * lbl_avox_level_max = find_gui_element(TYPE_LABEL, win, "lbl_avox_level_max");
 		local_snprintf_P(lbl_avox_level_max->text, ARRAY_SIZE(lbl_avox_level_max->text), PSTR("%d"), alevel_max);
 		lbl_avox_level_max->x = sl_avox_level->x + sl_vox_level->size - get_label_width(lbl_avox_level_max) / 2;
 		lbl_avox_level_max->y = sl_avox_level->y + get_label_height(lbl_avox_level_max) * 3;
@@ -1667,7 +1643,7 @@ static void buttons_tx_power_process(void)
 	if(is_short_pressed())
 	{
 		window_t * win = get_win(WINDOW_TX_POWER);
-		button_t * btn_tx_pwr_OK = find_gui_element_ref(TYPE_BUTTON, win, "btn_tx_pwr_OK");
+		button_t * btn_tx_pwr_OK = find_gui_element(TYPE_BUTTON, win, "btn_tx_pwr_OK");
 		if (gui->selected_link->link == btn_tx_pwr_OK)
 			close_window(OPEN_PARENT_WINDOW);
 	}
@@ -1689,7 +1665,7 @@ static void window_tx_power_process(void)
 		win->first_call = 0;
 
 		button_t buttons [] = {
-		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_trackable, parent,   	visible,      payload,	 name, 		text
+		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
 			{ },
 			{ 0, 0,  44, 44, buttons_tx_power_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_TX_POWER,  NON_VISIBLE, UINTPTR_MAX, "btn_tx_pwr_OK", "OK", },
 		};
@@ -1722,11 +1698,11 @@ static void window_tx_power_process(void)
 		ASSERT(win->lh_ptr != NULL);
 		memcpy(win->lh_ptr, labels, labels_size);
 
-		sl_pwr_level = find_gui_element_ref(TYPE_SLIDER, win, "sl_pwr_level");
-		sl_pwr_tuner_level = find_gui_element_ref(TYPE_SLIDER, win, "sl_pwr_tuner_level");
+		sl_pwr_level = find_gui_element(TYPE_SLIDER, win, "sl_pwr_level");
+		sl_pwr_tuner_level = find_gui_element(TYPE_SLIDER, win, "sl_pwr_tuner_level");
 
-		lbl_tx_power = find_gui_element_ref(TYPE_LABEL, win, "lbl_tx_power");
-		lbl_tune_power = find_gui_element_ref(TYPE_LABEL, win, "lbl_tune_power");
+		lbl_tx_power = find_gui_element(TYPE_LABEL, win, "lbl_tx_power");
+		lbl_tune_power = find_gui_element(TYPE_LABEL, win, "lbl_tune_power");
 
 		hamradio_get_tx_power_limits(& power_min, & power_max);
 		uint_fast8_t power = hamradio_get_tx_power();
@@ -1756,7 +1732,7 @@ static void window_tx_power_process(void)
 		sl_pwr_tuner_level->step = 3;
 		sl_pwr_tuner_level->value = normalize(tune_power, power_min, power_max, 100);
 
-		button_t * bh = find_gui_element_ref(TYPE_BUTTON, win, "btn_tx_pwr_OK");
+		button_t * bh = find_gui_element(TYPE_BUTTON, win, "btn_tx_pwr_OK");
 		bh->x1 = (sl_pwr_level->x + sl_pwr_level->size + col1_int * 2) / 2 - (bh->w / 2);
 		bh->y1 = lbl_tune_power->y + interval;
 		bh->visible = VISIBLE;
@@ -1802,14 +1778,14 @@ static void buttons_audiosettings_process(void)
 		window_t * winRS = get_win(WINDOW_AP_REVERB_SETT);
 		window_t * winMIC = get_win(WINDOW_AP_MIC_SETT);
 		window_t * winMICpr = get_win(WINDOW_AP_MIC_PROF);
-		button_t * btn_reverb = find_gui_element_ref(TYPE_BUTTON, winAP, "btn_reverb");						// reverb on/off
-		button_t * btn_reverb_settings = find_gui_element_ref(TYPE_BUTTON, winAP, "btn_reverb_settings");	// reverb settings
-		button_t * btn_monitor = find_gui_element_ref(TYPE_BUTTON, winAP, "btn_monitor");					// monitor on/off
-		button_t * btn_speaker = find_gui_element_ref(TYPE_BUTTON, winAP, "btn_speaker");					// speaker mute
-		button_t * btn_mic_eq = find_gui_element_ref(TYPE_BUTTON, winAP, "btn_mic_eq");						// MIC EQ on/off
-		button_t * btn_mic_eq_settings = find_gui_element_ref(TYPE_BUTTON, winAP, "btn_mic_eq_settings");	// MIC EQ settingss
-		button_t * btn_mic_settings = find_gui_element_ref(TYPE_BUTTON, winAP, "btn_mic_settings");			// mic settings
-		button_t * btn_mic_profiles = find_gui_element_ref(TYPE_BUTTON, winAP, "btn_mic_profiles");			// mic profiles
+		button_t * btn_reverb = find_gui_element(TYPE_BUTTON, winAP, "btn_reverb");						// reverb on/off
+		button_t * btn_reverb_settings = find_gui_element(TYPE_BUTTON, winAP, "btn_reverb_settings");	// reverb settings
+		button_t * btn_monitor = find_gui_element(TYPE_BUTTON, winAP, "btn_monitor");					// monitor on/off
+		button_t * btn_speaker = find_gui_element(TYPE_BUTTON, winAP, "btn_speaker");					// speaker mute
+		button_t * btn_mic_eq = find_gui_element(TYPE_BUTTON, winAP, "btn_mic_eq");						// MIC EQ on/off
+		button_t * btn_mic_eq_settings = find_gui_element(TYPE_BUTTON, winAP, "btn_mic_eq_settings");	// MIC EQ settingss
+		button_t * btn_mic_settings = find_gui_element(TYPE_BUTTON, winAP, "btn_mic_settings");			// mic settings
+		button_t * btn_mic_profiles = find_gui_element(TYPE_BUTTON, winAP, "btn_mic_profiles");			// mic profiles
 
 		if (gui->selected_link->link == btn_reverb)
 		{
@@ -1870,7 +1846,7 @@ static void window_audiosettings_process(void)
 		win->first_call = 0;
 
 		button_t buttons [] = {
-		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_trackable, parent,   	visible,      payload,	 name, 		text
+		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
 			{ },
 			{ 0, 0, 100, 44, buttons_audiosettings_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, 	NON_VISIBLE, UINTPTR_MAX, "btn_reverb", 			"Reverb|OFF", },
 			{ 0, 0, 100, 44, buttons_audiosettings_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, 	NON_VISIBLE, UINTPTR_MAX, "btn_reverb_settings", 	"Reverb|settings", },
@@ -1910,40 +1886,40 @@ static void window_audiosettings_process(void)
 		calculate_window_position(win, xmax, ymax);
 
 #if WITHREVERB
-		bh = find_gui_element_ref(TYPE_BUTTON, win, "btn_reverb"); 						// reverb on/off
+		bh = find_gui_element(TYPE_BUTTON, win, "btn_reverb"); 						// reverb on/off
 		bh->is_locked = hamradio_get_greverb() ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
 		local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("Reverb|%s"), hamradio_get_greverb() ? "ON" : "OFF");
 
-		bh = find_gui_element_ref(TYPE_BUTTON, win, "btn_reverb_settings");				// reverb settings
+		bh = find_gui_element(TYPE_BUTTON, win, "btn_reverb_settings");				// reverb settings
 		bh->state = hamradio_get_greverb() ? CANCELLED : DISABLED;
 #else
-		bh = find_gui_element_ref(TYPE_BUTTON, win, "btn_reverb");						// reverb on/off disable
+		bh = find_gui_element(TYPE_BUTTON, win, "btn_reverb");						// reverb on/off disable
 		bh->state = DISABLED;
 
-		bh = find_gui_element_ref(TYPE_BUTTON, win, "btn_reverb_settings"); 			// reverb settings disable
+		bh = find_gui_element(TYPE_BUTTON, win, "btn_reverb_settings"); 			// reverb settings disable
 		bh->state = DISABLED;
 #endif /* WITHREVERB */
 
-		bh = find_gui_element_ref(TYPE_BUTTON, win, "btn_monitor");						// monitor on/off
+		bh = find_gui_element(TYPE_BUTTON, win, "btn_monitor");						// monitor on/off
 		bh->is_locked = hamradio_get_gmoniflag() ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
 		local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("Monitor|%s"), bh->is_locked ? "enabled" : "disabled");
 
 #if WITHAFCODEC1HAVEPROC
-		bh = find_gui_element_ref(TYPE_BUTTON, win, "btn_mic_eq");						// MIC EQ on/off
+		bh = find_gui_element(TYPE_BUTTON, win, "btn_mic_eq");						// MIC EQ on/off
 		bh->is_locked = hamradio_get_gmikeequalizer() ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
 		local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("MIC EQ|%s"), bh->is_locked ? "ON" : "OFF");
 
-		bh = find_gui_element_ref(TYPE_BUTTON, win, "btn_mic_eq_settings");				// MIC EQ settings
+		bh = find_gui_element(TYPE_BUTTON, win, "btn_mic_eq_settings");				// MIC EQ settings
 		bh->state = hamradio_get_gmikeequalizer() ? CANCELLED : DISABLED;
 #else
-		bh = find_gui_element_ref(TYPE_BUTTON, win, "btn_mic_eq");						// MIC EQ on/off disable
+		bh = find_gui_element(TYPE_BUTTON, win, "btn_mic_eq");						// MIC EQ on/off disable
 		bh->state = DISABLED;
 
-		bh = find_gui_element_ref(TYPE_BUTTON, win, "btn_mic_eq_settings"); 			// MIC EQ settings disable
+		bh = find_gui_element(TYPE_BUTTON, win, "btn_mic_eq_settings"); 			// MIC EQ settings disable
 		bh->state = DISABLED;
 #endif /* WITHAFCODEC1HAVEPROC */
 
-		bh = find_gui_element_ref(TYPE_BUTTON, win, "btn_speaker");
+		bh = find_gui_element(TYPE_BUTTON, win, "btn_speaker");
 #if WITHSPKMUTE
 		bh->is_locked = hamradio_get_gmutespkr();
 		local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("Speaker|%s"), bh->is_locked ? "muted" : "on air");
@@ -1983,7 +1959,7 @@ static void window_ap_reverb_process(void)
 		win->first_call = 0;
 
 		button_t buttons [] = {
-		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_trackable, parent,   	visible,      payload,	 name, 		text
+		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
 			{ },
 			{ 0, 0,  40, 40, buttons_ap_reverb_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_REVERB_SETT,	NON_VISIBLE, UINTPTR_MAX, "btn_REVs_ok", "OK", },
 		};
@@ -2020,14 +1996,14 @@ static void window_ap_reverb_process(void)
 		ASSERT(win->sh_ptr != NULL);
 		memcpy(win->sh_ptr, sliders, sliders_size);
 
-		label_t * lbl_reverbDelay_min = find_gui_element_ref(TYPE_LABEL, win, "lbl_reverbDelay_min");
-		label_t * lbl_reverbDelay_max = find_gui_element_ref(TYPE_LABEL, win, "lbl_reverbDelay_max");
-		label_t * lbl_reverbLoss_min = find_gui_element_ref(TYPE_LABEL, win, "lbl_reverbLoss_min");
-		label_t * lbl_reverbLoss_max = find_gui_element_ref(TYPE_LABEL, win, "lbl_reverbLoss_max");
-		lbl_reverbDelay = find_gui_element_ref(TYPE_LABEL, win, "lbl_reverbDelay");
-		lbl_reverbLoss = find_gui_element_ref(TYPE_LABEL, win, "lbl_reverbLoss");
-		sl_reverbDelay = find_gui_element_ref(TYPE_SLIDER, win, "reverbDelay");
-		sl_reverbLoss = find_gui_element_ref(TYPE_SLIDER, win, "reverbLoss");
+		label_t * lbl_reverbDelay_min = find_gui_element(TYPE_LABEL, win, "lbl_reverbDelay_min");
+		label_t * lbl_reverbDelay_max = find_gui_element(TYPE_LABEL, win, "lbl_reverbDelay_max");
+		label_t * lbl_reverbLoss_min = find_gui_element(TYPE_LABEL, win, "lbl_reverbLoss_min");
+		label_t * lbl_reverbLoss_max = find_gui_element(TYPE_LABEL, win, "lbl_reverbLoss_max");
+		lbl_reverbDelay = find_gui_element(TYPE_LABEL, win, "lbl_reverbDelay");
+		lbl_reverbLoss = find_gui_element(TYPE_LABEL, win, "lbl_reverbLoss");
+		sl_reverbDelay = find_gui_element(TYPE_SLIDER, win, "reverbDelay");
+		sl_reverbLoss = find_gui_element(TYPE_SLIDER, win, "reverbLoss");
 
 		hamradio_get_reverb_delay_limits(& delay_min, & delay_max);
 		hamradio_get_reverb_loss_limits(& loss_min, & loss_max);
@@ -2076,7 +2052,7 @@ static void window_ap_reverb_process(void)
 		lbl_reverbLoss_max->y = sl_reverbLoss->y + get_label_height(lbl_reverbLoss_max) * 3;
 		lbl_reverbLoss_max->visible = VISIBLE;
 
-		button_t * bh = find_gui_element_ref(TYPE_BUTTON, win, "btn_REVs_ok");
+		button_t * bh = find_gui_element(TYPE_BUTTON, win, "btn_REVs_ok");
 		bh->x1 = sl_reverbLoss->x + sl_reverbLoss->size + interval / 2;
 		bh->y1 = lbl_reverbLoss->y;
 		bh->visible = VISIBLE;
@@ -2142,7 +2118,7 @@ static void window_ap_mic_eq_process(void)
 		win->first_call = 0;
 
 		button_t buttons [] = {
-		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_trackable, parent,   	visible,      payload,	 name, 		text
+		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
 			{ },
 			{ 0, 0,  40, 40, buttons_ap_mic_eq_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_EQ, 	NON_VISIBLE, UINTPTR_MAX, "btn_EQ_ok", "OK", },
 		};
@@ -2205,7 +2181,7 @@ static void window_ap_mic_eq_process(void)
 			mid_w = sl->x + sliders_width / 2;		// центр шкалы слайдера по x
 
 			local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("lbl_%s_name"), sl->name);
-			lbl = find_gui_element_ref(TYPE_LABEL, win, buf);
+			lbl = find_gui_element(TYPE_LABEL, win, buf);
 			local_snprintf_P(lbl->text, ARRAY_SIZE(lbl->text), PSTR("%sk"), strchr(sl->name, 'q') + 1);
 			lbl->x = mid_w - get_label_width(lbl) / 2;
 			lbl->y = y;
@@ -2214,7 +2190,7 @@ static void window_ap_mic_eq_process(void)
 			y = lbl->y + get_label_height(lbl) * 2;
 
 			local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("lbl_%s_val"), sl->name);
-			lbl = find_gui_element_ref(TYPE_LABEL, win, buf);
+			lbl = find_gui_element(TYPE_LABEL, win, buf);
 			local_snprintf_P(lbl->text, ARRAY_SIZE(lbl->text), PSTR("%d"), hamradio_get_gmikeequalizerparams(id - 1) + eq_base);
 			lbl->x = mid_w - get_label_width(lbl) / 2;
 			lbl->y = y;
@@ -2226,7 +2202,7 @@ static void window_ap_mic_eq_process(void)
 			y = row1_int;
 		}
 
-		btn_EQ_ok = find_gui_element_ref(TYPE_BUTTON, win, "btn_EQ_ok");
+		btn_EQ_ok = find_gui_element(TYPE_BUTTON, win, "btn_EQ_ok");
 		btn_EQ_ok->x1 = sl->x + sliders_width + btn_EQ_ok->w;
 		btn_EQ_ok->y1 = sl->y + sl->size - btn_EQ_ok->h;
 		btn_EQ_ok->visible = VISIBLE;
@@ -2251,7 +2227,7 @@ static void window_ap_mic_eq_process(void)
 
 		uint_fast16_t mid_w = sl->x + sliders_width / 2;
 		local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("lbl_%s_val"), sl->name);
-		lbl = find_gui_element_ref(TYPE_LABEL, win, buf);
+		lbl = find_gui_element(TYPE_LABEL, win, buf);
 		local_snprintf_P(lbl->text, ARRAY_SIZE(lbl->text), PSTR("%d"), hamradio_get_gmikeequalizerparams(id) + eq_base);
 		lbl->x = mid_w - get_label_width(lbl) / 2;
 	}
@@ -2279,9 +2255,9 @@ static void buttons_ap_mic_process(void)
 	if(is_short_pressed())
 	{
 		window_t * win = get_win(WINDOW_AP_MIC_SETT);
-		button_t * btn_mic_boost = find_gui_element_ref(TYPE_BUTTON, win, "btn_mic_boost");
-		button_t * btn_mic_agc = find_gui_element_ref(TYPE_BUTTON, win, "btn_mic_agc");
-		button_t * btn_mic_OK = find_gui_element_ref(TYPE_BUTTON, win, "btn_mic_OK");
+		button_t * btn_mic_boost = find_gui_element(TYPE_BUTTON, win, "btn_mic_boost");
+		button_t * btn_mic_agc = find_gui_element(TYPE_BUTTON, win, "btn_mic_agc");
+		button_t * btn_mic_OK = find_gui_element(TYPE_BUTTON, win, "btn_mic_OK");
 
 		if (gui->selected_link->link == btn_mic_boost)
 		{
@@ -2318,7 +2294,7 @@ static void window_ap_mic_process(void)
 		win->first_call = 0;
 
 		button_t buttons [] = {
-		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_trackable, parent,   	visible,      payload,	 name, 		text
+		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
 			{ },
 			{ 0, 0,  86, 44, buttons_ap_mic_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_SETT,  	NON_VISIBLE, UINTPTR_MAX, "btn_mic_agc", 	"AGC|OFF", },
 			{ 0, 0,  86, 44, buttons_ap_mic_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_SETT,  	NON_VISIBLE, UINTPTR_MAX, "btn_mic_boost", 	"Boost|OFF", },
@@ -2365,12 +2341,12 @@ static void window_ap_mic_process(void)
 		hamradio_get_mic_clip_limits(& clip_min, & clip_max);
 		hamradio_get_mic_agc_limits(& agc_min, & agc_max);
 
-		sl_micLevel = find_gui_element_ref(TYPE_SLIDER, win, "sl_micLevel");
-		sl_micClip = find_gui_element_ref(TYPE_SLIDER, win, "sl_micClip");
-		sl_micAGC = find_gui_element_ref(TYPE_SLIDER, win, "sl_micAGC");
-		lbl_micLevel = find_gui_element_ref(TYPE_LABEL, win, "lbl_micLevel");
-		lbl_micClip = find_gui_element_ref(TYPE_LABEL, win, "lbl_micClip");
-		lbl_micAGC = find_gui_element_ref(TYPE_LABEL, win, "lbl_micAGC");
+		sl_micLevel = find_gui_element(TYPE_SLIDER, win, "sl_micLevel");
+		sl_micClip = find_gui_element(TYPE_SLIDER, win, "sl_micClip");
+		sl_micAGC = find_gui_element(TYPE_SLIDER, win, "sl_micAGC");
+		lbl_micLevel = find_gui_element(TYPE_LABEL, win, "lbl_micLevel");
+		lbl_micClip = find_gui_element(TYPE_LABEL, win, "lbl_micClip");
+		lbl_micAGC = find_gui_element(TYPE_LABEL, win, "lbl_micAGC");
 
 		lbl_micLevel->x = col1_int;
 		lbl_micLevel->y = interval;
@@ -2408,56 +2384,56 @@ static void window_ap_mic_process(void)
 		sl_micAGC->step = 3;
 		sl_micAGC->value = normalize(hamradio_get_gmikeagcgain(), agc_min, agc_max, 100);
 
-		button_t * bh2 = find_gui_element_ref(TYPE_BUTTON, win, "btn_mic_boost");
+		button_t * bh2 = find_gui_element(TYPE_BUTTON, win, "btn_mic_boost");
 		bh2->x1 = (sl_micLevel->x + sl_micLevel->size + col1_int * 2) / 2 - (bh2->w / 2);
 		bh2->y1 = lbl_micAGC->y + interval;
 		bh2->is_locked = hamradio_get_gmikebust20db() ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
 		local_snprintf_P(bh2->text, ARRAY_SIZE(bh2->text), PSTR("Boost|%s"), bh2->is_locked ? "ON" : "OFF");
 		bh2->visible = VISIBLE;
 
-		button_t * bh1 = find_gui_element_ref(TYPE_BUTTON, win, "btn_mic_agc");
+		button_t * bh1 = find_gui_element(TYPE_BUTTON, win, "btn_mic_agc");
 		bh1->x1 = bh2->x1 - bh1->w - interval;
 		bh1->y1 = bh2->y1;
 		bh1->is_locked = hamradio_get_gmikeagc() ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
 		local_snprintf_P(bh1->text, ARRAY_SIZE(bh1->text), PSTR("AGC|%s"), bh1->is_locked ? "ON" : "OFF");
 		bh1->visible = VISIBLE;
 
-		bh1 = find_gui_element_ref(TYPE_BUTTON, win, "btn_mic_OK");
+		bh1 = find_gui_element(TYPE_BUTTON, win, "btn_mic_OK");
 		bh1->x1 = bh2->x1 + bh2->w + interval;
 		bh1->y1 = bh2->y1;
 		bh1->visible = VISIBLE;
 
-		label_t * lbl_micLevel_min = find_gui_element_ref(TYPE_LABEL, win, "lbl_micLevel_min");
+		label_t * lbl_micLevel_min = find_gui_element(TYPE_LABEL, win, "lbl_micLevel_min");
 		local_snprintf_P(lbl_micLevel_min->text, ARRAY_SIZE(lbl_micLevel_min->text), PSTR("%d"), level_min);
 		lbl_micLevel_min->x = sl_micLevel->x - get_label_width(lbl_micLevel_min) / 2;
 		lbl_micLevel_min->y = sl_micLevel->y + get_label_height(lbl_micLevel_min) * 3;
 		lbl_micLevel_min->visible = VISIBLE;
 
-		label_t * lbl_micLevel_max = find_gui_element_ref(TYPE_LABEL, win, "lbl_micLevel_max");
+		label_t * lbl_micLevel_max = find_gui_element(TYPE_LABEL, win, "lbl_micLevel_max");
 		local_snprintf_P(lbl_micLevel_max->text, ARRAY_SIZE(lbl_micLevel_max->text), PSTR("%d"), level_max);
 		lbl_micLevel_max->x = sl_micLevel->x + sl_micLevel->size - get_label_width(lbl_micLevel_max) / 2;
 		lbl_micLevel_max->y = sl_micLevel->y + get_label_height(lbl_micLevel_max) * 3;
 		lbl_micLevel_max->visible = VISIBLE;
 
-		label_t * lbl_micClip_min = find_gui_element_ref(TYPE_LABEL, win, "lbl_micClip_min");
+		label_t * lbl_micClip_min = find_gui_element(TYPE_LABEL, win, "lbl_micClip_min");
 		local_snprintf_P(lbl_micClip_min->text, ARRAY_SIZE(lbl_micClip_min->text), PSTR("%d"), clip_min);
 		lbl_micClip_min->x = sl_micClip->x - get_label_width(lbl_micClip_min) / 2;
 		lbl_micClip_min->y = sl_micClip->y + get_label_height(lbl_micClip_min) * 3;
 		lbl_micClip_min->visible = VISIBLE;
 
-		label_t * lbl_micClip_max = find_gui_element_ref(TYPE_LABEL, win, "lbl_micClip_max");
+		label_t * lbl_micClip_max = find_gui_element(TYPE_LABEL, win, "lbl_micClip_max");
 		local_snprintf_P(lbl_micClip_max->text, ARRAY_SIZE(lbl_micClip_max->text), PSTR("%d"), clip_max);
 		lbl_micClip_max->x = sl_micClip->x + sl_micClip->size - get_label_width(lbl_micClip_max) / 2;
 		lbl_micClip_max->y = sl_micClip->y + get_label_height(lbl_micClip_max) * 3;
 		lbl_micClip_max->visible = VISIBLE;
 
-		label_t * lbl_micAGC_min = find_gui_element_ref(TYPE_LABEL, win, "lbl_micAGC_min");
+		label_t * lbl_micAGC_min = find_gui_element(TYPE_LABEL, win, "lbl_micAGC_min");
 		local_snprintf_P(lbl_micAGC_min->text, ARRAY_SIZE(lbl_micAGC_min->text), PSTR("%d"), agc_min);
 		lbl_micAGC_min->x = sl_micAGC->x - get_label_width(lbl_micAGC_min) / 2;
 		lbl_micAGC_min->y = sl_micAGC->y + get_label_height(lbl_micAGC_min) * 3;
 		lbl_micAGC_min->visible = VISIBLE;
 
-		label_t * lbl_micAGC_max = find_gui_element_ref(TYPE_LABEL, win, "lbl_micAGC_max");
+		label_t * lbl_micAGC_max = find_gui_element(TYPE_LABEL, win, "lbl_micAGC_max");
 		local_snprintf_P(lbl_micAGC_max->text, ARRAY_SIZE(lbl_micAGC_max->text), PSTR("%d"), agc_max);
 		lbl_micAGC_max->x = sl_micAGC->x + sl_micClip->size - get_label_width(lbl_micAGC_max) / 2;
 		lbl_micAGC_max->y = sl_micAGC->y + get_label_height(lbl_micAGC_max) * 3;
@@ -2517,7 +2493,7 @@ static void window_ap_mic_prof_process(void)
 		win->first_call = 0;
 
 		button_t buttons [] = {
-		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_trackable, parent,   	visible,      payload,	 name, 		text
+		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
 			{ },
 			{ 0, 0, 100, 44, buttons_ap_mic_prof_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_PROF, 	NON_VISIBLE, UINTPTR_MAX, "btn_mic_profile_1_load", "Profile 1|load", },
 			{ 0, 0, 100, 44, buttons_ap_mic_prof_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_PROF, 	NON_VISIBLE, UINTPTR_MAX, "btn_mic_profile_2_load", "Profile 2|load", },
@@ -2603,7 +2579,7 @@ static void buttons_menu_handler(void)
 static void window_menu_process(void)
 {
 	static uint_fast8_t menu_is_scrolling = 0;
-	uint_fast8_t int_cols = 200, int_rows = 35;
+	uint_fast8_t int_cols = 230, int_rows = 35;
 	static button_t * button_up = NULL, * button_down = NULL;
 	window_t * win = get_win(WINDOW_MENU);
 	gui_t * gui = get_gui_env();
@@ -2619,7 +2595,7 @@ static void window_menu_process(void)
 		label_t * lh;
 
 		button_t buttons [] = {
-		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_trackable, parent,   	visible,      payload,	 name, 		text
+		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
 			{ },
 			{ 0, 0, 40, 40, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, "btnSysMenu-", "-", },
 			{ 0, 0, 40, 40, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, "btnSysMenu+", "+", },
@@ -2658,8 +2634,8 @@ static void window_menu_process(void)
 		ASSERT(win->lh_ptr != NULL);
 		memcpy(win->lh_ptr, labels, labels_size);
 
-		button_up = find_gui_element_ref(TYPE_BUTTON, win, "btnSysMenu+");
-		button_down = find_gui_element_ref(TYPE_BUTTON, win, "btnSysMenu-");
+		button_up = find_gui_element(TYPE_BUTTON, win, "btnSysMenu+");
+		button_down = find_gui_element(TYPE_BUTTON, win, "btnSysMenu-");
 		button_up->visible = NON_VISIBLE;
 		button_down->visible = NON_VISIBLE;
 
@@ -3027,11 +3003,11 @@ static void buttons_uif_handler(void)
 	if(is_short_pressed())
 	{
 		button_t * bh = gui->selected_link->link;
-		if (bh == find_gui_element_ref(TYPE_BUTTON, win, "btnUIF+"))
+		if (bh == find_gui_element(TYPE_BUTTON, win, "btnUIF+"))
 			encoder2.rotate = 1;
-		else if (bh == find_gui_element_ref(TYPE_BUTTON, win, "btnUIF-"))
+		else if (bh == find_gui_element(TYPE_BUTTON, win, "btnUIF-"))
 			encoder2.rotate = -1;
-		else if (bh == find_gui_element_ref(TYPE_BUTTON, win, "btnUIF_OK"))
+		else if (bh == find_gui_element(TYPE_BUTTON, win, "btnUIF_OK"))
 		{
 			hamradio_disable_keyboard_redirect();
 			close_window(OPEN_PARENT_WINDOW);
@@ -3055,7 +3031,7 @@ static void window_uif_process(void)
 		reinit = 1;
 
 		button_t buttons [] = {
-		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_trackable, parent,   	visible,      payload,	 name, 		text
+		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
 			{ },
 			{ 0, 0, 40, 40, buttons_uif_handler,  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UIF, NON_VISIBLE, UINTPTR_MAX, "btnUIF-", "-", },
 			{ 0, 0, 40, 40, buttons_uif_handler,  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UIF, NON_VISIBLE, UINTPTR_MAX, "btnUIF+",  "+", },
@@ -3087,9 +3063,9 @@ static void window_uif_process(void)
 		uint_fast8_t col1_int = 20, row1_int = window_title_height + 20;
 		strcpy(win->name, menu_uif.name);
 
-		button_down = find_gui_element_ref(TYPE_BUTTON, win, "btnUIF-");
-		button_up = find_gui_element_ref(TYPE_BUTTON, win, "btnUIF+");
-		lbl_uif_val = find_gui_element_ref(TYPE_LABEL, win, "lbl_uif_val");
+		button_down = find_gui_element(TYPE_BUTTON, win, "btnUIF-");
+		button_up = find_gui_element(TYPE_BUTTON, win, "btnUIF+");
+		lbl_uif_val = find_gui_element(TYPE_LABEL, win, "lbl_uif_val");
 
 		const char * v = hamradio_gui_edit_menu_item(menu_uif.menupos, 0);
 		strcpy(lbl_uif_val->text, v);
@@ -3204,7 +3180,7 @@ static void window_enc2_process(void)
 
 	if (gui_enc2_menu->updated)
 	{
-		lbl_val = find_gui_element_ref(TYPE_LABEL, win, "lbl_enc2_val");
+		lbl_val = find_gui_element(TYPE_LABEL, win, "lbl_enc2_val");
 		strcpy(win->name, gui_enc2_menu->param);
 		remove_end_line_spaces(win->name);
 		calculate_window_position(win, 0, window_title_height + get_label_height(lbl_val) * 2);

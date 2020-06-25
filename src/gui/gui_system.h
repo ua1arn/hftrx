@@ -10,7 +10,7 @@
 gui_t * get_gui_env(void);
 
 /* Возврат ссылки на запись в структуре по названию и типу окна */
-void * find_gui_element_ref(element_type_t type, window_t * win, const char * name);
+void * find_gui_element(element_type_t type, window_t * win, const char * name);
 
 /* Получение ширины метки в пикселях  */
 uint_fast8_t get_label_width(const label_t * const lh);
@@ -25,6 +25,7 @@ void footer_buttons_state (uint_fast8_t state, ...);
 /* Установка признака видимости окна */
 void close_window(uint_fast8_t parent);
 void open_window(window_t * win);
+void close_all_windows(void);
 
 /* Расчет экранных координат окна */
 void calculate_window_position(window_t * win, uint16_t xmax, uint16_t ymax);

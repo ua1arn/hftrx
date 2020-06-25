@@ -11,7 +11,8 @@ typedef enum {
 	TYPE_DUMMY,
 	TYPE_BUTTON,
 	TYPE_LABEL,
-	TYPE_SLIDER
+	TYPE_SLIDER,
+	TYPE_CLOSE_BUTTON
 } element_type_t;
 
 enum {
@@ -47,7 +48,7 @@ enum {
 	NAME_ARRAY_SIZE = 30,
 	TEXT_ARRAY_SIZE = 30,
 	MENU_ARRAY_SIZE = 30,
-	TOUCH_ARRAY_SIZE = 50
+	GUI_ELEMENTS_ARRAY_SIZE = 50
 };
 
 typedef struct {
@@ -68,7 +69,7 @@ typedef struct {
 	void(*onClickHandler) (void);	// обработчик события RELEASED
 	uint8_t state;				// текущее состояние кнопки
 	uint8_t is_locked;			// признак фиксации кнопки
-	uint8_t is_trackable;		// получение относительных координат точки перемещения нажатия, нужно ли для кнопок?
+	uint8_t is_long_press;		// разрешение обработки долгого нажатия
 	window_id_t parent;			// индекс окна, в котором будет отображаться кнопка
 	uint8_t visible;			// рисовать ли кнопку на экране
 	uintptr_t payload;
@@ -138,6 +139,7 @@ typedef struct {
 	char name[NAME_ARRAY_SIZE];	// текст, выводимый в заголовке окна
 	uint8_t state;
 	uint8_t first_call;			// признак первого вызова для различных инициализаций
+	uint8_t is_close;			// разрешение или запрет вывода кнопки закрытия окна
 	void (*onVisibleProcess) (void);
 	button_t * bh_ptr;			// указатели на массивы оконных элементов
 	uint8_t bh_count;
@@ -151,7 +153,6 @@ typedef struct {
 	int16_t rotate;			// признак поворота второго энкодера
 	uint8_t press;			// короткое нажание
 	uint8_t hold;			// длинное нажатие
-	uint8_t busy;			// второй энкодер выделен для обработки данных окна
 	uint8_t rotate_done;	// событие поворота от энкодера обработано, можно получать новые данные
 	uint8_t press_done;		// событие нажатия от энкодера обработано, можно получать новые данные
 } enc2_t;
@@ -189,12 +190,13 @@ typedef struct {
 	uint8_t state;				// текущее состояние элемента
 	uint8_t visible;			// текущая видимость элемента
 	uint8_t is_trackable;		// поддерживает ли элемент возврат относительных координат перемещения точки нажатия
+	uint8_t is_long_press;		// разрешение обработки долгого нажатия
 	uint16_t x1;				// координаты окна
 	uint16_t y1;
 	uint16_t x2;
 	uint16_t y2;
 	LIST_ENTRY item;
-} touch_t;
+} gui_element_t;
 
 enum { win_gui_count = 2 };
 
@@ -203,7 +205,7 @@ typedef struct {
 	uint16_t last_pressed_y;
 	uint8_t kbd_code;
 	element_type_t selected_type; // тип последнего выбранного элемента
-	touch_t * selected_link;	  // ссылка на выбранный элемент
+	gui_element_t * selected_link;	  // ссылка на выбранный элемент
 	uint8_t state;				  // последнее состояние
 	uint8_t is_touching_screen;   // есть ли касание экрана в данный момент
 	uint8_t is_after_touch; 	  // есть ли касание экрана после выхода точки касания из элемента (при is_tracking == 0)
