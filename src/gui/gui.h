@@ -46,10 +46,23 @@ typedef struct {
 	uint_fast8_t updated;
 } enc2_menu_t;
 
+enum {
+	memory_cells_count = 10
+};
+
+struct memory_t{
+	int_fast32_t freq;
+	int_fast8_t submode;
+	int_fast8_t att;
+	int_fast8_t preamp;
+};
+
 uint_fast8_t hamradio_get_multilinemenu_block_groups(menu_names_t * vals);
 uint_fast8_t hamradio_get_multilinemenu_block_params(menu_names_t * vals, uint_fast8_t index);
 void hamradio_get_multilinemenu_block_vals(menu_names_t * vals, uint_fast8_t index, uint_fast8_t cnt);
 const char * hamradio_gui_edit_menu_item(uint_fast8_t index, int_least16_t rotate);
+void hamradio_save_memory_cells(struct memory_t * mc);
+void hamradio_load_memory_cells(struct memory_t * mc);
 
 void gui_encoder2_menu(enc2_menu_t * enc2_menu);
 void gui_WM_walktrough(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx);

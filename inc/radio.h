@@ -3306,7 +3306,14 @@ int_fast16_t hamradio_getleft_bp(uint_fast8_t pathi);	/* получить лев
 int_fast16_t hamradio_getright_bp(uint_fast8_t pathi);	/* получить правый (высокочастотный) скат полосы пропускания для отображения "шторки" на спектранализаторе */
 uint_fast8_t hamradio_get_bkin_value(void);
 uint_fast8_t hamradio_get_spkon_value(void);	// не-0: динамик включен
-void hamradio_change_submode(uint_fast8_t newsubmode);
+
+uint_fast8_t hamradio_get_pre_value(void);
+void hamradio_set_pre_value(uint_fast8_t v);
+uint_fast8_t hamradio_get_att_value(void);
+void hamradio_set_att_value(uint_fast8_t v);
+const char * hamradio_get_submode_label(uint_fast8_t v);
+uint_fast8_t hamradio_get_submode(void);
+void hamradio_change_submode(uint_fast8_t newsubmode, uint_fast8_t need_correct_freq);
 uint_fast8_t hamradio_get_low_bp(int_least16_t rotate);
 uint_fast8_t hamradio_get_high_bp(int_least16_t rotate);
 uint_fast8_t hamradio_get_bp_type(void);

@@ -2912,6 +2912,9 @@ filter_t fi_2p0_455 =
 #if	WITHDIRECTBANDS
 	uint8_t	bandgroup [BANDGROUP_COUNT];	/* последний диапазон в группе, куда был переход по кнопке диапазона (индекс в bands). */
 #endif	/* WITHDIRECTBANDS */
+#if WITHTOUCHGUI
+	struct memory_t memory_cell[memory_cells_count];
+#endif
 	uint8_t signature [sizeof nvramsign - 1];	/* сигнатура соответствия версии программы и содержимого NVRAM */
 } ATTRPACKED;	// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
 
@@ -19049,18 +19052,86 @@ const char * hamradio_gui_edit_menu_item(uint_fast8_t index, int_least16_t rotat
 	return menuw;
 }
 
-void hamradio_change_submode(uint_fast8_t newsubmode)
+const char * hamradio_get_submode_label(uint_fast8_t v)
+{
+	ASSERT(v < SUBMODE_COUNT);
+	return submodes[v].qlabel;
+}
+
+uint_fast8_t hamradio_get_submode(void)
+{
+	return getsubmode(0);
+}
+
+void hamradio_change_submode(uint_fast8_t newsubmode, uint_fast8_t need_correct_freq)
 {
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* VFO bank index */
 	const uint_fast8_t defcol = locatesubmode(newsubmode, & gmoderows [bi]);	/* строка/колонка для SSB. Что делать, если не нашли? */
 	putmodecol(gmoderows [bi], defcol, bi);	/* внести новое значение в битовую маску */
-	gsubmodechange(getsubmode(bi), bi);
+
+	if(need_correct_freq)
+		gsubmodechange(getsubmode(bi), bi);
+	else
+		savebandstate(getvfoindex(bi), bi); // записать все параметры настройки (кроме частоты) в область данных диапазона */
+
 	updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
 	display_redrawfreqstimed(1);
 	display_redrawmodestimed(1);
 }
 
+void hamradio_save_memory_cells(struct memory_t * mc)
+{
+	ASSERT(mc != NULL);
+	for(uint_fast8_t i = 0; i < memory_cells_count; i++)
+	{
+		save_i32(offsetof(struct nvmap, memory_cell[i].freq), mc[i].freq);
+		save_i8(offsetof(struct nvmap, memory_cell[i].submode), mc[i].submode);
+		save_i8(offsetof(struct nvmap, memory_cell[i].att), mc[i].att);
+		save_i8(offsetof(struct nvmap, memory_cell[i].preamp), mc[i].preamp);
+	}
+}
+
+void hamradio_load_memory_cells(struct memory_t * mc)
+{
+	ASSERT(mc != NULL);
+	for(uint_fast8_t i = 0; i < memory_cells_count; i++)
+	{
+		mc[i].freq = restore_i32(offsetof(struct nvmap, memory_cell[i].freq));
+		mc[i].submode = restore_i8(offsetof(struct nvmap, memory_cell[i].submode));
+		mc[i].att = restore_i8(offsetof(struct nvmap, memory_cell[i].att));
+		mc[i].preamp = restore_i8(offsetof(struct nvmap, memory_cell[i].preamp));
+	}
+}
+
 #endif /* WITHTOUCHGUI */
+
+uint_fast8_t hamradio_get_pre_value(void)
+{
+#if ! WITHONEATTONEAMP
+	return gpamps [getbankindex_tx(0)];
+#else /* ! WITHONEATTONEAMP */
+	return 0;
+#endif /* ! WITHONEATTONEAMP */
+}
+
+void hamradio_set_pre_value(uint_fast8_t v)
+{
+	ASSERT(v < PAMPMODE_COUNT);
+	gpamps [getbankindex_tx(0)] = v;
+	updateboard (1, 0);
+}
+
+uint_fast8_t hamradio_get_att_value(void)
+{
+	return gatts [getbankindex_tx(0)];
+}
+
+void hamradio_set_att_value(uint_fast8_t v)
+{
+	ASSERT(v < ATTMODE_COUNT);
+	gatts [getbankindex_tx(0)] = v;
+	updateboard (1, 0);
+}
 
 #if (WITHSWRMTR || WITHSHOWSWRPWR)
 uint_fast8_t hamradio_get_gsmetertype(void)
