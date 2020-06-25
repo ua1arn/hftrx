@@ -111,7 +111,17 @@ static void btn_main_handler(void)
 {
 	gui_t * gui = get_gui_env();
 
-	if(gui->selected_type == TYPE_BUTTON)
+	if(is_long_pressed())
+	{
+		window_t * winMain = get_win(WINDOW_MAIN);
+		button_t * btn_4 = find_gui_element_ref(TYPE_BUTTON, winMain, "btn_4");
+		if (gui->selected_link->link == btn_4)
+		{
+			local_snprintf_P(btn_4->text, ARRAY_SIZE(btn_4->text), PSTR("Long|press"));
+		}
+	}
+
+	if(is_short_pressed())
 	{
 		window_t * winMain = get_win(WINDOW_MAIN);
 		button_t * btn_Bands = find_gui_element_ref(TYPE_BUTTON, winMain, "btn_Bands");
@@ -367,7 +377,7 @@ static void buttons_memory_handler(void)
 {
 //	gui_t * gui = get_gui_env();
 
-//	if(gui->selected_type == TYPE_BUTTON)
+//	if(is_short_pressed())
 //	{
 //		window_t * win = get_win(WINDOW_MEMORY);
 //		button_t * btn_AF = find_gui_element_ref(TYPE_BUTTON, win, "btn_AF");
@@ -441,7 +451,7 @@ static void buttons_bands_handler(void)
 {
 //	gui_t * gui = get_gui_env();
 
-//	if(gui->selected_type == TYPE_BUTTON)
+//	if(is_short_pressed())
 //	{
 //		window_t * win = get_win(WINDOW_BANDS);
 //		button_t * btn_AF = find_gui_element_ref(TYPE_BUTTON, win, "btn_AF");
@@ -511,7 +521,7 @@ static void buttons_options_handler(void)
 {
 	gui_t * gui = get_gui_env();
 
-	if(gui->selected_type == TYPE_BUTTON)
+	if(is_short_pressed())
 	{
 		window_t * win = get_win(WINDOW_OPTIONS);
 		button_t * btn_AF = find_gui_element_ref(TYPE_BUTTON, win, "btn_AF");
@@ -626,7 +636,7 @@ static void window_options_process(void)
 static void buttons_utilites_handler(void)
 {
 	gui_t * gui = get_gui_env();
-	if(gui->selected_type == TYPE_BUTTON)
+	if(is_short_pressed())
 	{
 		window_t * win = get_win(WINDOW_UTILS);
 		button_t * btn_SWRscan = find_gui_element_ref(TYPE_BUTTON, win, "btn_SWRscan");						// SWR scanner
@@ -692,7 +702,7 @@ static void buttons_mode_handler(void)
 {
 	window_t * win = get_win(WINDOW_MODES);
 	gui_t * gui = get_gui_env();
-	if(gui->selected_type == TYPE_BUTTON)
+	if(is_short_pressed())
 	{
 		button_t * bh = (button_t *)gui->selected_link->link;
 		if (win->state && bh->parent == win->window_id)
@@ -769,7 +779,7 @@ static void buttons_bp_handler(void)
 	window_t * win = get_win(WINDOW_BP);
 	gui_t * gui = get_gui_env();
 
-	if(gui->selected_type == TYPE_BUTTON)
+	if(is_short_pressed())
 	{
 		button_t * button_high = find_gui_element_ref(TYPE_BUTTON, win, "btnAF_2");
 		button_t * button_low = find_gui_element_ref(TYPE_BUTTON, win, "btnAF_1");
@@ -999,9 +1009,12 @@ static void window_agc_process(void)
 static void buttons_freq_handler (void)
 {
 	gui_t * gui = get_gui_env();
-	button_t * bh =  gui->selected_link->link;
-	if (bh->parent == WINDOW_FREQ && editfreq.key == BUTTON_CODE_DONE)
-		editfreq.key = bh->payload;
+	if(is_short_pressed())
+	{
+		button_t * bh =  gui->selected_link->link;
+		if (bh->parent == WINDOW_FREQ && editfreq.key == BUTTON_CODE_DONE)
+			editfreq.key = bh->payload;
+	}
 }
 
 static void window_freq_process (void)
@@ -1143,7 +1156,7 @@ static void buttons_swrscan_process(void)
 	window_t * win = get_win(WINDOW_SWR_SCANNER);
 	gui_t * gui = get_gui_env();
 
-	if(gui->selected_type == TYPE_BUTTON)
+	if(is_short_pressed())
 	{
 		button_t * btn_swr_start = find_gui_element_ref(TYPE_BUTTON, win, "btn_swr_start");
 		button_t * btn_swr_OK = find_gui_element_ref(TYPE_BUTTON, win, "btn_swr_OK");
@@ -1356,7 +1369,7 @@ static void buttons_tx_sett_process(void)
 {
 	gui_t * gui = get_gui_env();
 
-	if(gui->selected_type == TYPE_BUTTON)
+	if(is_short_pressed())
 	{
 		window_t * winTX = get_win(WINDOW_TX_SETTINGS);
 		window_t * winPower = get_win(WINDOW_TX_POWER);
@@ -1452,7 +1465,7 @@ static void window_tx_process(void)
 static void buttons_tx_vox_process(void)
 {
 	gui_t * gui = get_gui_env();
-	if(gui->selected_type == TYPE_BUTTON)
+	if(is_short_pressed())
 	{
 		window_t * win = get_win(WINDOW_TX_VOX_SETT);
 		button_t * btn_tx_vox_OK = find_gui_element_ref(TYPE_BUTTON, win, "btn_tx_vox_OK");
@@ -1651,7 +1664,7 @@ static void buttons_tx_power_process(void)
 {
 	gui_t * gui = get_gui_env();
 
-	if(gui->selected_type == TYPE_BUTTON)
+	if(is_short_pressed())
 	{
 		window_t * win = get_win(WINDOW_TX_POWER);
 		button_t * btn_tx_pwr_OK = find_gui_element_ref(TYPE_BUTTON, win, "btn_tx_pwr_OK");
@@ -1782,7 +1795,7 @@ static void window_tx_power_process(void)
 static void buttons_audiosettings_process(void)
 {
 	gui_t * gui = get_gui_env();
-	if(gui->selected_type == TYPE_BUTTON)
+	if(is_short_pressed())
 	{
 		window_t * winAP = get_win(WINDOW_AUDIOSETTINGS);
 		window_t * winEQ = get_win(WINDOW_AP_MIC_EQ);
@@ -1948,7 +1961,7 @@ static void window_audiosettings_process(void)
 static void buttons_ap_reverb_process(void)
 {
 	gui_t * gui = get_gui_env();
-	if(gui->selected_type == TYPE_BUTTON)
+	if(is_short_pressed())
 	{
 		close_window(OPEN_PARENT_WINDOW);
 	}
@@ -2102,7 +2115,7 @@ static void window_ap_reverb_process(void)
 static void buttons_ap_mic_eq_process(void)
 {
 	gui_t * gui = get_gui_env();
-	if(gui->selected_type == TYPE_BUTTON)
+	if(is_short_pressed())
 	{
 		close_window(OPEN_PARENT_WINDOW);
 	}
@@ -2263,7 +2276,7 @@ static void window_ap_mic_eq_process(void)
 static void buttons_ap_mic_process(void)
 {
 	gui_t * gui = get_gui_env();
-	if(gui->selected_type == TYPE_BUTTON)
+	if(is_short_pressed())
 	{
 		window_t * win = get_win(WINDOW_AP_MIC_SETT);
 		button_t * btn_mic_boost = find_gui_element_ref(TYPE_BUTTON, win, "btn_mic_boost");
@@ -2578,10 +2591,13 @@ static void labels_menu_handler (void)
 static void buttons_menu_handler(void)
 {
 	gui_t * gui = get_gui_env();
-	if (! strcmp(((button_t *) gui->selected_link->link)->name, "btnSysMenu+"))
-		encoder2.rotate = 1;
-	else if (! strcmp(((button_t *) gui->selected_link->link)->name, "btnSysMenu-"))
-		encoder2.rotate = -1;
+	if(is_short_pressed())
+	{
+		if (! strcmp(((button_t *) gui->selected_link->link)->name, "btnSysMenu+"))
+			encoder2.rotate = 1;
+		else if (! strcmp(((button_t *) gui->selected_link->link)->name, "btnSysMenu-"))
+			encoder2.rotate = -1;
+	}
 }
 
 static void window_menu_process(void)
@@ -3008,7 +3024,7 @@ static void buttons_uif_handler(void)
 	window_t * win = get_win(WINDOW_UIF);
 	gui_t * gui = get_gui_env();
 
-	if (gui->selected_type == TYPE_BUTTON)
+	if(is_short_pressed())
 	{
 		button_t * bh = gui->selected_link->link;
 		if (bh == find_gui_element_ref(TYPE_BUTTON, win, "btnUIF+"))

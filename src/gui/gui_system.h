@@ -38,5 +38,9 @@ void remove_end_line_spaces(char * str);
 /* Сброс данных трекинга тачскрина */
 void reset_tracking(void);
 
+/* Возврат признака нажатия кнопки*/
+uint_fast8_t is_short_pressed(void);
+uint_fast8_t is_long_pressed(void);
+
 #endif /* WITHTOUCHGUI */
 #endif /* GUI_USER_H_INCLUDED */

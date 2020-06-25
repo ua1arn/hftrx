@@ -285,8 +285,6 @@ void close_window(uint_fast8_t parent) // 0 - не открывать parent win
 		free_win_ptr(pwin);
 		pwin->first_call = 1;
 	}
-	else
-		touch_count = footer_buttons_count;
 }
 
 void open_window(window_t * win)
@@ -650,6 +648,16 @@ static void slider_process(slider_t * sl)
 	reset_tracking();
 }
 
+uint_fast8_t is_short_pressed(void)
+{
+	return gui.selected_type == TYPE_BUTTON && gui.state == RELEASED;
+}
+
+uint_fast8_t is_long_pressed(void)
+{
+	return gui.selected_type == TYPE_BUTTON && gui.state == LONG_PRESSED;
+}
+
 static void set_state_record(touch_t * val)
 {
 	ASSERT(val != NULL);
@@ -661,7 +669,7 @@ static void set_state_record(touch_t * val)
 			gui.selected_type = TYPE_BUTTON;
 			gui.selected_link = val;
 			bh->state = val->state;
-			if (bh->state == RELEASED)
+			if (bh->state == RELEASED || bh->state == LONG_PRESSED)
 				bh->onClickHandler();
 			break;
 
@@ -695,9 +703,11 @@ static void set_state_record(touch_t * val)
 static void process_gui(void)
 {
 	uint_fast16_t tx, ty;
-	static uint_fast16_t x_old = 0, y_old = 0;
+	static uint_fast16_t x_old = 0, y_old = 0, long_press_counter = 0;
 	static touch_t * p = NULL;
 	static window_t * w = NULL;
+	uint_fast8_t long_press_limit = 20;
+	static uint_fast8_t is_long_press = 0;		// 1 - долгое нажатие уже обработано
 
 #if defined (TSC1_TYPE)
 	if (board_tsc_getxy(& tx, & ty))
@@ -728,6 +738,8 @@ static void process_gui(void)
 					&& p->state != DISABLED && p->visible == VISIBLE)
 			{
 				gui.state = PRESSED;
+				is_long_press = 0;
+				long_press_counter = 0;
 				break;
 			}
 		}
@@ -767,6 +779,15 @@ static void process_gui(void)
 			{
 				p->state = PRESSED;
 				set_state_record(p);
+
+				if(gui.state != LONG_PRESSED && ! is_long_press)
+					long_press_counter ++;
+
+				if(long_press_counter > long_press_limit)
+				{
+					long_press_counter = 0;
+					gui.state = LONG_PRESSED;
+				}
 			}
 			else
 				gui.state = RELEASED;
@@ -782,12 +803,22 @@ static void process_gui(void)
 	if (gui.state == RELEASED)
 	{
 		p->state = RELEASED;			// для запуска обработчика нажатия
-		set_state_record(p);
+		if(! is_long_press)				// если было долгое нажатие, обработчик по короткому не запускать
+			set_state_record(p);
 		p->state = CANCELLED;
 		set_state_record(p);
 		gui.is_after_touch = 0;
 		gui.state = CANCELLED;
 		gui.is_tracking = 0;
+	}
+	//TODO: добавить элементам свойство разрешения long press и учитывать его при проверке
+	if (gui.state == LONG_PRESSED)
+	{
+		p->state = LONG_PRESSED;		// для запуска обработчика нажатия
+		set_state_record(p);
+		p->state = PRESSED;
+		gui.state = PRESSED;
+		is_long_press = 1;				// долгое нажатие обработано
 	}
 }
 
