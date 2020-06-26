@@ -114,7 +114,7 @@ static uint_fast16_t ulmax16(uint_fast16_t a, uint_fast16_t b)
 }
 
 /*****************************************/
-#if WITHISBOOTLOADER
+#if WITHISBOOTLOADER && defined (USBD_DFU_RAM_XFER_SIZE)
 	#define PREPROCMAX(a, b) ((a) > (b) ? (a) : (b))
 	#define USBD_DFU_XFER_SIZE (PREPROCMAX(USBD_DFU_RAM_XFER_SIZE, USBD_DFU_FLASH_XFER_SIZE))
 #else /* WITHISBOOTLOADER */
@@ -652,9 +652,9 @@ usbd_dfu_get_xfer_size(uint_fast8_t alt)
 	default:
 	case 0: return USBD_DFU_FLASH_XFER_SIZE;
 	case 1: return USBD_DFU_FLASH_XFER_SIZE;
-#if WITHISBOOTLOADER
+#if WITHISBOOTLOADER && defined (USBD_DFU_RAM_XFER_SIZE)
 	case 2: return USBD_DFU_RAM_XFER_SIZE;
-#endif /* WITHISBOOTLOADER */
+#endif /* WITHISBOOTLOADER && defined (USBD_DFU_RAM_XFER_SIZE) */
 	}
 }
 
