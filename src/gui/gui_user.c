@@ -86,7 +86,7 @@ static menu_t menu[MENU_COUNT];
 static uint_fast8_t menu_label_touched = 0;
 static uint_fast8_t menu_level;
 
-struct memory_t memory_cell[memory_cells_count];
+static memory_t memory_cell[memory_cells_count];
 static uint_fast8_t memory_need_save = 0;
 
 /* Возврат ссылки на окно */
@@ -362,14 +362,7 @@ static void buttons_memory_handler(void)
 	{
 		if(strcmp(btn_cell->text, "---"))
 		{
-			if(memory_cell[cell_id].freq > 0)
-				hamradio_set_freq(memory_cell[cell_id].freq);
-			if(memory_cell[cell_id].submode > 0)
-				hamradio_change_submode(memory_cell[cell_id].submode, 0);
-			if(memory_cell[cell_id].att > 0)
-				hamradio_set_att_value(memory_cell[cell_id].att);
-			if(memory_cell[cell_id].preamp > 0)
-				hamradio_set_pre_value(memory_cell[cell_id].preamp);
+			hamradio_load_memory_cells(memory_cell, cell_id, 1);
 		}
 	}
 
@@ -377,13 +370,13 @@ static void buttons_memory_handler(void)
 	{
 		memory_need_save = 1;
 		memory_cell[cell_id].freq = hamradio_get_freq_rx();
-		memory_cell[cell_id].submode = hamradio_get_submode();
-		memory_cell[cell_id].att = hamradio_get_att_value();
-		memory_cell[cell_id].preamp = hamradio_get_pre_value();
-		char mode_label[TEXT_ARRAY_SIZE];
-		strcpy(mode_label, hamradio_get_submode_label(memory_cell[cell_id].submode));
-		remove_end_line_spaces(mode_label);
-		local_snprintf_P(btn_cell->text, ARRAY_SIZE(btn_cell->text), PSTR("%dk|%s"), memory_cell[cell_id].freq / 1000, mode_label);
+//		memory_cell[cell_id].submode = hamradio_get_submode();
+//		char mode_label[TEXT_ARRAY_SIZE];
+//		strcpy(mode_label, hamradio_get_submode_label(memory_cell[cell_id].submode));
+//		remove_end_line_spaces(mode_label);
+//		local_snprintf_P(btn_cell->text, ARRAY_SIZE(btn_cell->text), PSTR("%dk|%s"), memory_cell[cell_id].freq / 1000, mode_label);
+		local_snprintf_P(btn_cell->text, ARRAY_SIZE(btn_cell->text), PSTR("%dk"), memory_cell[cell_id].freq / 1000);
+		hamradio_save_memory_cells(cell_id);
 	}
 }
 
@@ -395,8 +388,6 @@ static void window_memory_process(void)
 		uint_fast16_t x = 0, y = 0, xmax = 0, ymax = 0;
 		uint_fast8_t interval = 6, col1_int = 20, row1_int = window_title_height + 20, row_count = 5;
 		win->first_call = 0;
-
-		hamradio_load_memory_cells(memory_cell);
 
 		button_t buttons [] = {
 		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
@@ -411,6 +402,16 @@ static void window_memory_process(void)
 			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, 7, "btn_cell7", "---", },
 			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, 8, "btn_cell8", "---", },
 			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, 9, "btn_cell9", "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, 10, "btn_cell10", "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, 11, "btn_cell11", "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, 12, "btn_cell12", "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, 13, "btn_cell13", "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, 14, "btn_cell14", "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, 15, "btn_cell15", "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, 16, "btn_cell16", "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, 17, "btn_cell17", "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, 18, "btn_cell18", "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, 19, "btn_cell19", "---", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -435,12 +436,15 @@ static void window_memory_process(void)
 				x = col1_int;
 				y = y + bh->h + interval;
 			}
+
+			hamradio_load_memory_cells(memory_cell, i - 1, 0);
 			if(memory_cell[i - 1].freq > 0)
 			{
-				char mode_label[TEXT_ARRAY_SIZE];
-				strcpy(mode_label, hamradio_get_submode_label(memory_cell[i - 1].submode));
-				remove_end_line_spaces(mode_label);
-				local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("%dk|%s"), memory_cell[i - 1].freq / 1000, mode_label);
+//				char mode_label[TEXT_ARRAY_SIZE];
+//				strcpy(mode_label, hamradio_get_submode_label(memory_cell[i - 1].submode));
+//				remove_end_line_spaces(mode_label);
+//				local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("%dk|%s"), memory_cell[i - 1].freq / 1000, mode_label);
+				local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("%dk"), memory_cell[i - 1].freq / 1000);
 			}
 
 			xmax = (xmax > bh->x1 + bh->w) ? xmax : (bh->x1 + bh->w);
@@ -449,12 +453,6 @@ static void window_memory_process(void)
 		elements_state(win);
 		calculate_window_position(win, xmax, ymax);
 		return;
-	}
-
-	if(memory_need_save)
-	{
-		memory_need_save = 0;
-		hamradio_save_memory_cells(memory_cell);
 	}
 }
 

@@ -2105,6 +2105,10 @@ static FLASHMEM struct bandrange  const bandsmap [] =
 		#define MBANDS_COUNT	1000 // (254 - MBANDS_BASE)	/* количество ячеек фиксированных частот */
 		typedef uint_fast16_t vindex_t;
 	#endif
+#elif WITHTOUCHGUI
+
+	#define MBANDS_COUNT	memory_cells_count	/* количество ячеек фиксированных частот */
+	typedef uint_fast8_t vindex_t;
 
 #else
 
@@ -2112,7 +2116,6 @@ static FLASHMEM struct bandrange  const bandsmap [] =
 	typedef uint_fast8_t vindex_t;
 
 #endif	/* WITHSWLMODE */
-
 	
 /* получение индекса хранения VFO в памяти в зависимости от текущего режима расстройки
    - в режиме приема
@@ -2912,9 +2915,6 @@ filter_t fi_2p0_455 =
 #if	WITHDIRECTBANDS
 	uint8_t	bandgroup [BANDGROUP_COUNT];	/* последний диапазон в группе, куда был переход по кнопке диапазона (индекс в bands). */
 #endif	/* WITHDIRECTBANDS */
-#if WITHTOUCHGUI
-	struct memory_t memory_cell[memory_cells_count];
-#endif
 	uint8_t signature [sizeof nvramsign - 1];	/* сигнатура соответствия версии программы и содержимого NVRAM */
 } ATTRPACKED;	// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
 
@@ -19079,27 +19079,28 @@ void hamradio_change_submode(uint_fast8_t newsubmode, uint_fast8_t need_correct_
 	display_redrawmodestimed(1);
 }
 
-void hamradio_save_memory_cells(struct memory_t * mc)
+void hamradio_save_memory_cells(uint_fast8_t i)
 {
-	ASSERT(mc != NULL);
-	for(uint_fast8_t i = 0; i < memory_cells_count; i++)
-	{
-		save_i32(offsetof(struct nvmap, memory_cell[i].freq), mc[i].freq);
-		save_i8(offsetof(struct nvmap, memory_cell[i].submode), mc[i].submode);
-		save_i8(offsetof(struct nvmap, memory_cell[i].att), mc[i].att);
-		save_i8(offsetof(struct nvmap, memory_cell[i].preamp), mc[i].preamp);
-	}
+	ASSERT(i < MBANDS_COUNT);
+	savebandstate(MBANDS_BASE + i, getbankindex_tx(gtx));
+	savebandfreq(MBANDS_BASE + i, getbankindex_tx(gtx));
 }
 
-void hamradio_load_memory_cells(struct memory_t * mc)
+void hamradio_load_memory_cells(memory_t * mc, uint_fast8_t i, uint_fast8_t set)
 {
 	ASSERT(mc != NULL);
-	for(uint_fast8_t i = 0; i < memory_cells_count; i++)
+	ASSERT(i < MBANDS_COUNT);
+	memory_t * cell = & mc[i];
+
+	cell->freq = restore_i32(RMT_BFREQ_BASE(MBANDS_BASE + i));
+	if(cell->freq > 0 && set)
 	{
-		mc[i].freq = restore_i32(offsetof(struct nvmap, memory_cell[i].freq));
-		mc[i].submode = restore_i8(offsetof(struct nvmap, memory_cell[i].submode));
-		mc[i].att = restore_i8(offsetof(struct nvmap, memory_cell[i].att));
-		mc[i].preamp = restore_i8(offsetof(struct nvmap, memory_cell[i].preamp));
+		const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
+		const vindex_t vi = getvfoindex(bi);
+		loadnewband(MBANDS_BASE + i, bi);	/* загрузка всех параметров (и частоты) нового режима */
+		savebandfreq(vi, bi);	/* сохранение частоты в текущем VFO */
+		savebandstate(vi, bi); // записать все параметры настройки (кроме частоты)  в текущем VFO */
+		updateboard(1, 1);
 	}
 }
 
