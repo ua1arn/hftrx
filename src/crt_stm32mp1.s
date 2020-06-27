@@ -64,6 +64,8 @@
 	 STACKSIZEHYP = 256
 	 STACKSIZEMON = 256
 	 STACKSIZESYS = 256
+
+ 	 STACKSIZESVC1 = 4096
   
 	.global __Vectors
 	.section .vectors,"ax"
@@ -113,9 +115,7 @@ Reset_Handler7:
 	cpsid   iaf
 	mrc     p15, 0, r0, c0, c0, 5      /* Read MPIDR */
 	ands    r0, r0, #3
-gotosleep:
-	wfine
-	bne     gotosleep
+	bne     ResetOtherCPUs
 
   /*
     * Setup a stack for each mode
@@ -168,9 +168,23 @@ line_loop:
     CMP R0,#(1 << 13)
     BNE way_loop
 #endif
+	b invokeSystemInit
+
+ResetOtherCPUs:
+   msr   CPSR_c, #ARM_MODE_SVC | I_BIT     /* 0x13 Supervisor Mode */
+   ldr   sp, =__stack_svc1_end
+   mov   lr, #0
+
+   ldr   r2, =Reset_CPUn_Handler
+   mov   lr, pc
+   bx    r2     /* And jump... */
+ResetOtherCPUsLoop:
+	wfi
+	b ResetOtherCPUsLoop
 
 /* low-level CPU peripherials init */
-	
+
+invokeSystemInit:
    ldr   r2, =SystemInit
    mov   lr, pc
    bx    r2     /* And jump... */
@@ -393,6 +407,10 @@ __stack_mon_end = .
 __stack_hyp_end = .
 	.space	STACKSIZESYS
 __stack_sys_end = .
+
+/* CPU 1 ctack */
+	.space	STACKSIZESVC1
+__stack_svc1_end = .
 
    .ltorg
 /*** EOF ***/   

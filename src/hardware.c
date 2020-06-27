@@ -9528,6 +9528,16 @@ void DAbort_Handler(void)
 		;
 }
 
+void Reset_CPUn_Handler(void)
+{
+	uint_fast8_t cpu = __get_MPIDR() & 0x03;
+	dbg_puts_impl_P(cpu ? PSTR("Reset_CPU1_Handler trapped.\n") : PSTR("Reset_CPU0_Handler trapped.\n"));
+	for (;;)
+	{
+		__WFI();
+	}
+}
+
 void FIQ_Handler(void)
 {
 	dbg_puts_impl_P(PSTR("FIQHandler trapped.\n"));
@@ -11947,7 +11957,7 @@ sysinit_vbar_initialize(void)
 
 	const uintptr_t vbase = (uintptr_t) & __Vectors;
 	__set_VBAR(vbase);	 // Set Vector Base Address Register (bits 4..0 should be zero)
-	__set_MVBAR(vbase);	 // Set Vector Base Address Register (bits 4..0 should be zero) - на работу не вличет... но на всякий случай
+	__set_MVBAR(vbase);	 // Set Monitor Vector Base Address Register (bits 4..0 should be zero) - на работу не вличет... но на всякий случай
 
 	__set_SCTLR(__get_SCTLR() & ~ SCTLR_V_Msk);	// v=0 - use VBAR as vectors address
 	__set_SCTLR(__get_SCTLR() & ~ SCTLR_A_Msk);	// 0 = Strict alignment fault checking disabled. This is the reset value.
@@ -12371,11 +12381,16 @@ void cpu_initialize(void)
 
 //	ca9_ca7_cache_diag();	// print
 
-//	SMP tests
-//	TP();
-//	RCC->MP_GRSTCSETR = RCC_MP_GRSTCSETR_MPUP1RST;
-//	(void) RCC->MP_GRSTCSETR;
-//	TP();
+#if WITHSMPSYSTEM
+	//	SMP tests
+	TP();
+	RCC->MP_GRSTCSETR = RCC_MP_GRSTCSETR_MPUP1RST;
+	(void) RCC->MP_GRSTCSETR;
+	/* ждем пока второй процессор выйдет из RESET */
+	while ((RCC->MP_GRSTCSETR & RCC_MP_GRSTCSETR_MPUP1RST) != 0)
+		;
+	TP();
+#endif /* WITHSMPSYSTEM */
 
 #if (__GIC_PRESENT == 1)
 	// GIC version diagnostics
