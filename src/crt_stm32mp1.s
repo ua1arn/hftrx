@@ -65,7 +65,7 @@
 	 STACKSIZEMON = 256
 	 STACKSIZESYS = 256
 
- 	 STACKSIZESVC1 = 4096
+	 STACKSIZECPU1SVC = 4096
   
 	.global __Vectors
 	.section .vectors,"ax"
@@ -105,6 +105,7 @@ FIQAddr:       .word FIQ_Handler
    /*.extern __libc_init_array*/
    .extern SystemInit
    .global Reset_Handler7
+   .global Reset_CPU1_Handler
 /****************************************************************************/
 /*                           Reset handler                                  */
 /****************************************************************************/
@@ -115,7 +116,9 @@ Reset_Handler7:
 	cpsid   iaf
 	mrc     p15, 0, r0, c0, c0, 5      /* Read MPIDR */
 	ands    r0, r0, #3
-	bne     ResetOtherCPUs
+gotosleep:
+	wfine
+	bne     gotosleep
 
   /*
     * Setup a stack for each mode
@@ -168,23 +171,9 @@ line_loop:
     CMP R0,#(1 << 13)
     BNE way_loop
 #endif
-	b invokeSystemInit
-
-ResetOtherCPUs:
-   msr   CPSR_c, #ARM_MODE_SVC | I_BIT     /* 0x13 Supervisor Mode */
-   ldr   sp, =__stack_svc1_end
-   mov   lr, #0
-
-   ldr   r2, =Reset_CPUn_Handler
-   mov   lr, pc
-   bx    r2     /* And jump... */
-ResetOtherCPUsLoop:
-	wfi
-	b ResetOtherCPUsLoop
 
 /* low-level CPU peripherials init */
 
-invokeSystemInit:
    ldr   r2, =SystemInit
    mov   lr, pc
    bx    r2     /* And jump... */
@@ -389,6 +378,22 @@ IRQHandlerNested:
        SUBS    R15,R14,#0x0004         // return from interrupt
 		.endfunc
 
+    .func   Reset_CPU1_Handler
+Reset_CPU1_Handler:
+	msr   CPSR_c, #ARM_MODE_SVC | I_BIT     /* 0x13 Supervisor Mode */
+	ldr   sp, =__stack_svc_cpu1_end
+	mov   lr, #0
+
+	ldr		r2, =Reset_CPUn_Handler
+	mov		lr, pc
+	bx		r2     /* And jump... */
+
+Reset_CPU1_HandlerSleep:
+	wfi
+	b     Reset_CPU1_HandlerSleep
+
+		.endfunc
+
 	.section .dtcm
 	.align 8
 	.space	STACKSIZEUND
@@ -407,10 +412,8 @@ __stack_mon_end = .
 __stack_hyp_end = .
 	.space	STACKSIZESYS
 __stack_sys_end = .
-
-/* CPU 1 ctack */
-	.space	STACKSIZESVC1
-__stack_svc1_end = .
+	.space	STACKSIZECPU1SVC
+__stack_svc_cpu1_end = .
 
    .ltorg
 /*** EOF ***/   

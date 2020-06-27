@@ -982,6 +982,8 @@ void FIQ_Handler(void);
 void IRQ_Handler(void);
 void Hyp_Handler(void);
 
+void Reset_CPU1_Handler(void);	// startup located function
+
 // Set interrupt vector wrappers
 void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint_fast8_t priority);
 void arm_hardware_set_handler_overrealtime(uint_fast16_t int_id, void (* handler)(void));

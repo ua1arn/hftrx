@@ -9545,14 +9545,6 @@ void FIQ_Handler(void)
 		;
 }
 
-void CPU1_Handler(void)
-{
-	dbg_puts_impl_P(PSTR("CPU1_Handler trapped.\n"));
-	for (;;)
-		;
-}
-
-
 void Hyp_Handler(void)
 {
 	dbg_puts_impl_P(PSTR("Hyp_Handler trapped.\n"));
