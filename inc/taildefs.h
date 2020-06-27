@@ -786,6 +786,7 @@ typedef enum
 #endif /* WITHDEBUG */
 
 #if WITHSMPSYSTEM
+	/* Пока привязка процессора обрабаьывающего прерывание по приортитету. */
 	#define TARGETCPU_SYSTEM 0x01	// CPU #0
 	#define TARGETCPU_RT 0x01		// CPU #0
 	#define TARGETCPU_OVRT 0x02		// CPU #1
@@ -805,6 +806,7 @@ typedef enum
 	void spin_unlock(spinlock_t *lock);
 
 #else /* WITHSMPSYSTEM */
+	/* Единственный процесор. */
 	#define TARGETCPU_SYSTEM 0x01	// CPU #0
 	#define TARGETCPU_RT 0x01		// CPU #0
 	#define TARGETCPU_OVRT 0x01		// CPU #0
