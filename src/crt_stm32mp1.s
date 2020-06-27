@@ -381,6 +381,10 @@ IRQHandlerNested:
     .func   Reset_CPU1_Handler
     /* invoked at ARM_MODE_SVC */
 Reset_CPU1_Handler:
+	msr   CPSR_c, #ARM_MODE_IRQ | I_BIT | F_BIT     /* 0x12 IRQ Mode */
+	ldr   sp, =__stack_irq_cpu1_end
+	mov   lr, #0
+
 	msr   CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT     /* 0x13 Supervisor Mode */
 	ldr   sp, =__stack_svc_cpu1_end
 	mov   lr, #0
@@ -415,6 +419,8 @@ __stack_hyp_end = .
 __stack_sys_end = .
 	.space	STACKSIZECPU1SVC
 __stack_svc_cpu1_end = .
+	.space	STACKSIZEIRQ
+__stack_irq_cpu1_end = .
 
    .ltorg
 /*** EOF ***/   
