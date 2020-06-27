@@ -382,6 +382,7 @@ typedef struct message
 
 static RAMDTCM LIST_ENTRY msgsfree8;		// Свободные буферы
 static RAMDTCM LIST_ENTRY msgsready8;		// Заполненные - готовые к обработке
+static RAMDTCM SPINLOCK_t locklist8 = SPINLOCK_INIT;
 
 #if WITHBUFFERSDEBUG
 
@@ -497,7 +498,6 @@ void buffers_diagnostics(void)
 static RAMDTCM SPINLOCK_t locklist16 = SPINLOCK_INIT;
 static RAMDTCM SPINLOCK_t locklist16ststem = SPINLOCK_INIT;
 static RAMDTCM SPINLOCK_t locklist32 = SPINLOCK_INIT;
-static RAMDTCM SPINLOCK_t locklist8 = SPINLOCK_INIT;
 
 #if WITHINTEGRATEDDSP
 
