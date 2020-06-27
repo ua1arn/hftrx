@@ -945,7 +945,7 @@ void hardware_twi_master_configure(void)
 
 	//конфигурирую непосредствено І2С
 	RCC->APB1ENR |= (RCC_APB1ENR_I2C1EN); //вкл тактирование контроллера I2C
-	__DSB();
+	(void) RCC->APB1ENR;
 
 	I2C1->CR1 |= I2C_CR1_SWRST;
 	I2C1->CR1 &= ~ I2C_CR1_SWRST;
@@ -981,7 +981,7 @@ void hardware_twi_master_configure(void)
 
 	//конфигурирую непосредствено І2С
 	RCC->APB1ENR |= (RCC_APB1ENR_I2C1EN); //вкл тактирование контроллера I2C
-	__DSB();
+	(void) RCC->APB1ENR;
     // set I2C1 clock to PCLCK (72/64/36 MHz)
     RCC->CFGR3 |= RCC_CFGR3_I2C1SW;		// PCLK1_FREQ or PCLK2_FREQ (PCLK of this BUS, PCLK1) selected as I2C spi clock source
 
@@ -1012,7 +1012,7 @@ void hardware_twi_master_configure(void)
 #elif CPUSTYLE_STM32F7XX
 	//конфигурирую непосредствено І2С
 	RCC->APB1ENR |= (RCC_APB1ENR_I2C1EN); //вкл тактирование контроллера I2C
-	__DSB();
+	(void) RCC->APB1ENR;
 
 	// Disable the I2Cx peripheral
 	I2C1->CR1 &= ~ I2C_CR1_PE;
@@ -1046,7 +1046,7 @@ void hardware_twi_master_configure(void)
 #elif CPUSTYLE_STM32H7XX
 	//конфигурирую непосредствено І2С
 	RCC->APB1LENR |= (RCC_APB1LENR_I2C1EN); //вкл тактирование контроллера I2C
-	__DSB();
+	(void) RCC->APB1LENR;
 
 	// Disable the I2Cx peripheral
 	I2C1->CR1 &= ~ I2C_CR1_PE;
@@ -9530,8 +9530,8 @@ void DAbort_Handler(void)
 
 void Reset_CPUn_Handler(void)
 {
-	uint_fast8_t cpu = __get_MPIDR() & 0x03;
-	dbg_puts_impl_P(cpu ? PSTR("Reset_CPU1_Handler trapped.\n") : PSTR("Reset_CPU0_Handler trapped.\n"));
+	uint_fast8_t cpuid = __get_MPIDR() & 0x03;
+	dbg_puts_impl_P(cpuid ? PSTR("Reset_CPU1_Handler trapped.\n") : PSTR("Reset_CPU0_Handler trapped.\n"));
 	for (;;)
 	{
 		__WFI();
@@ -11948,6 +11948,20 @@ sysinit_debug_initialize(void)
 #endif /* WITHDEBUG */
 }
 
+#if (__CORTEX_A != 0)
+/** \brief  Set HVBAR
+
+    This function assigns the given value to the Hyp Vector Base Address Register.
+
+    \param [in]    hvbar  Hyp Vector Base Address Register value to set
+ */
+__STATIC_FORCEINLINE void __set_HVBAR(uint32_t hvbar)
+{
+	// cp, op1, Rt, CRn, CRm, op2
+  __set_CP(15, 4, hvbar, 12, 0, 0);
+}
+#endif /* (__CORTEX_A != 0) */
+
 static void FLASHMEMINITFUNC
 sysinit_vbar_initialize(void)
 {
@@ -11956,8 +11970,10 @@ sysinit_vbar_initialize(void)
 	extern unsigned long __Vectors;
 
 	const uintptr_t vbase = (uintptr_t) & __Vectors;
+
 	__set_VBAR(vbase);	 // Set Vector Base Address Register (bits 4..0 should be zero)
 	__set_MVBAR(vbase);	 // Set Monitor Vector Base Address Register (bits 4..0 should be zero) - на работу не вличет... но на всякий случай
+	//__set_HVBAR(vbase);	 // Set Hyp Vector Base Address Register
 
 	__set_SCTLR(__get_SCTLR() & ~ SCTLR_V_Msk);	// v=0 - use VBAR as vectors address
 	__set_SCTLR(__get_SCTLR() & ~ SCTLR_A_Msk);	// 0 = Strict alignment fault checking disabled. This is the reset value.
@@ -12365,6 +12381,97 @@ cpu_tms320f2833x_flash_waitstates(uint_fast8_t flashws, uint_fast8_t otpws)
 }
 #endif /* CPUSTYPE_TMS320F2833X */
 
+#if WITHSMPSYSTEM
+
+
+/*
+ * Cores secure magic numbers
+ * Constant to be stored in bakcup register
+ * BOOT_API_MAGIC_NUMBER_TAMP_BCK_REG_IDX
+ */
+#define BOOT_API_A7_CORE0_MAGIC_NUMBER				0xCA7FACE0U
+#define BOOT_API_A7_CORE1_MAGIC_NUMBER				0xCA7FACE1U
+
+/*
+ * TAMP_BCK4R register index
+ * This register is used to write a Magic Number in order to restart
+ * Cortex A7 Core 1 and make it execute @ branch address from TAMP_BCK5R
+ */
+#define BOOT_API_CORE1_MAGIC_NUMBER_TAMP_BCK_REG_IDX		4U
+
+/*
+ * TAMP_BCK5R register index
+ * This register is used to contain the branch address of
+ * Cortex A7 Core 1 when restarted by a TAMP_BCK4R magic number writing
+ */
+#define BOOT_API_CORE1_BRANCH_ADDRESS_TAMP_BCK_REG_IDX		5U
+
+/*******************************************************************************
+ * STM32MP1 TAMP
+ ******************************************************************************/
+#define TAMP_BKP_REGISTER_BASE		(TAMP_BASE + 0x100uL)
+
+static inline uint32_t tamp_bkpr(uint32_t idx)
+{
+	return TAMP_BKP_REGISTER_BASE + (idx * 4);
+}
+
+
+static void
+mmio_write_32(uintptr_t addr, uint32_t value)
+{
+	volatile uint32_t * const reg = (volatile uint32_t * const) addr;
+	* reg = value;
+	(void) * reg;
+	ASSERT(* reg == value);
+}
+
+
+/*******************************************************************************
+ * STM32MP1 handler called when a power domain is about to be turned on. The
+ * mpidr determines the CPU to be turned on.
+ * call by core 0 to activate core 1
+ ******************************************************************************/
+static void stm32_pwr_domain_on(void)
+{
+	//unsigned long current_cpu_mpidr = read_mpidr_el1();
+	uint32_t bkpr_core1_addr =
+		tamp_bkpr(BOOT_API_CORE1_BRANCH_ADDRESS_TAMP_BCK_REG_IDX);
+	uint32_t bkpr_core1_magic =
+		tamp_bkpr(BOOT_API_CORE1_MAGIC_NUMBER_TAMP_BCK_REG_IDX);
+
+	//stm32mp_clk_enable(RTCAPB);
+
+	PWR->CR1 |= PWR_CR1_DBP;
+	while ((PWR->CR1 & PWR_CR1_DBP) == 0)
+		;
+
+	RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_RTCAPBEN;
+	(void) RCC->MP_APB5ENSETR;
+
+	//cntfrq_core0 = read_cntfrq_el0();
+
+	/* Write entrypoint in backup RAM register */
+	mmio_write_32(bkpr_core1_addr, (uintptr_t) Reset_CPUn_Handler);
+
+	/* Write magic number in backup register */
+	mmio_write_32(bkpr_core1_magic, BOOT_API_A7_CORE1_MAGIC_NUMBER);
+
+	//stm32mp_clk_disable(RTCAPB);
+//	RCC->MP_APB5ENCLRR = RCC_MC_APB5ENSETR_RTCAPBEN;
+//	(void) RCC->MP_APB5ENCLRR;
+//
+//	PWR->CR1 &= ~ PWR_CR1_DBP;
+//	while ((PWR->CR1 & PWR_CR1_DBP) != 0)
+//		;
+
+	/* Generate an IT to core 1 */
+	GIC_SendSGI(SGI8_IRQn, 0x02, 0x00);	// CPU1, filer=0
+
+	//return PSCI_E_SUCCESS;
+}
+#endif /* WITHSMPSYSTEM */
+
 // Вызывается из main
 void cpu_initialize(void)
 {
@@ -12383,13 +12490,14 @@ void cpu_initialize(void)
 
 #if WITHSMPSYSTEM
 	//	SMP tests
-	TP();
-	RCC->MP_GRSTCSETR = RCC_MP_GRSTCSETR_MPUP1RST;
-	(void) RCC->MP_GRSTCSETR;
-	/* ждем пока второй процессор выйдет из RESET */
-	while ((RCC->MP_GRSTCSETR & RCC_MP_GRSTCSETR_MPUP1RST) != 0)
-		;
-	TP();
+//	TP();
+//	RCC->MP_GRSTCSETR = RCC_MP_GRSTCSETR_MPUP1RST;
+//	(void) RCC->MP_GRSTCSETR;
+//	/* ждем пока второй процессор выйдет из RESET */
+//	while ((RCC->MP_GRSTCSETR & RCC_MP_GRSTCSETR_MPUP1RST) != 0)
+//		;
+//	TP();
+	stm32_pwr_domain_on();
 #endif /* WITHSMPSYSTEM */
 
 #if (__GIC_PRESENT == 1)
