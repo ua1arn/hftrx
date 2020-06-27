@@ -192,7 +192,7 @@ static void r7s721_pio_onchangeinterrupt(
 		const IRQn_ID_t int_id = irqbase + bitpos;
 		IRQ_Disable(int_id);
 		GIC_SetConfiguration(int_id, edge ? GIC_CONFIG_EDGE : GIC_CONFIG_LEVEL);
-		arm_hardware_set_handler(int_id, vector, priority);
+		arm_hardware_set_handler(int_id, vector, priority, TARGETCPU);
 	}
 }
 
@@ -607,7 +607,7 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 		const IRQn_ID_t int_id = IRQ0_IRQn + irq;
 		IRQ_Disable(int_id);
 		GIC_SetConfiguration(int_id, GIC_CONFIG_LEVEL);
-		arm_hardware_set_handler(int_id, r7s721_IRQn_IRQHandler, priority);
+		arm_hardware_set_handler(int_id, r7s721_IRQn_IRQHandler, priority, TARGETCPU);
 	}
 }
 
@@ -670,6 +670,7 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 		RCC->APB2ENR |= RCC_APB2ENR_AFIOEN;     //включить тактирование альтернативных функций
 		__DSB();
 
+		const uint_fast8_t targetcpu = TARGETCPU;
 	#if 1
 		{
 			const portholder_t bitpos0 = power4((ipins >> 0) & 0x0f);
@@ -708,19 +709,19 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 		EXTI->IMR |= ipins;		// разрешить прерывание
 
 		if ((ipins & EXTI_IMR_MR0) != 0)
-			arm_hardware_set_handler(EXTI0_IRQn, EXTI0_IRQHandler, priority);
+			arm_hardware_set_handler(EXTI0_IRQn, EXTI0_IRQHandler, priority, targetcpu);
 		if ((ipins & EXTI_IMR_MR1) != 0)
-			arm_hardware_set_handler(EXTI1_IRQn, EXTI1_IRQHandler, priority);
+			arm_hardware_set_handler(EXTI1_IRQn, EXTI1_IRQHandler, priority, targetcpu);
 		if ((ipins & EXTI_IMR_MR2) != 0)
-			arm_hardware_set_handler(EXTI2_IRQn, EXTI2_IRQHandler, priority);
+			arm_hardware_set_handler(EXTI2_IRQn, EXTI2_IRQHandler, priority, targetcpu);
 		if ((ipins & EXTI_IMR_MR3) != 0)
-			arm_hardware_set_handler(EXTI3_IRQn, EXTI3_IRQHandler, priority);
+			arm_hardware_set_handler(EXTI3_IRQn, EXTI3_IRQHandler, priority, targetcpu);
 		if ((ipins & EXTI_IMR_MR4) != 0)
-			arm_hardware_set_handler(EXTI4_IRQn, EXTI4_IRQHandler, priority);
+			arm_hardware_set_handler(EXTI4_IRQn, EXTI4_IRQHandler, priority, targetcpu);
 		if ((ipins & (EXTI_IMR_MR9 | EXTI_IMR_MR8 | EXTI_IMR_MR7 | EXTI_IMR_MR6 | EXTI_IMR_MR5)) != 0)
-			arm_hardware_set_handler(EXTI9_5_IRQn, EXTI9_5_IRQHandler, priority);
+			arm_hardware_set_handler(EXTI9_5_IRQn, EXTI9_5_IRQHandler, priority, targetcpu);
 		if ((ipins & (EXTI_IMR_MR15 | EXTI_IMR_MR14 | EXTI_IMR_MR14 | EXTI_IMR_MR13 | EXTI_IMR_MR12 | EXTI_IMR_MR11 | EXTI_IMR_MR10)) != 0)
-			arm_hardware_set_handler(EXTI15_10_IRQn, EXTI15_10_IRQHandler, priority);
+			arm_hardware_set_handler(EXTI15_10_IRQn, EXTI15_10_IRQHandler, priority, targetcpu);
 
 	}
 	/* программирвоание битов в регистрах управления GPIO, указанных в iomask, в конфигурацию CNF И режим MODE */
@@ -769,7 +770,8 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 	stm32mp1_pioX_onchangeinterrupt(portholder_t ipins,
 			portholder_t raise, portholder_t fall,
 			portholder_t portcode, /* 0x00: PAxx, 0x01: PBxx, .. 0x0a: PKxx */
-			uint32_t priority
+			uint32_t priority,
+			uint_fast8_t targetcpu
 			)
 	{
 		// CPU1 = MPU and CPU2 = MCU
@@ -831,37 +833,37 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 		(void) EXTI->C1IMR1;
 
 		if ((ipins & EXTI_IMR1_IM0) != 0)
-			arm_hardware_set_handler(EXTI0_IRQn, EXTI0_IRQHandler, priority);
+			arm_hardware_set_handler(EXTI0_IRQn, EXTI0_IRQHandler, priority, targetcpu);
 		if ((ipins & EXTI_IMR1_IM1) != 0)
-			arm_hardware_set_handler(EXTI1_IRQn, EXTI1_IRQHandler, priority);
+			arm_hardware_set_handler(EXTI1_IRQn, EXTI1_IRQHandler, priority, targetcpu);
 		if ((ipins & EXTI_IMR1_IM2) != 0)
-			arm_hardware_set_handler(EXTI2_IRQn, EXTI2_IRQHandler, priority);
+			arm_hardware_set_handler(EXTI2_IRQn, EXTI2_IRQHandler, priority, targetcpu);
 		if ((ipins & EXTI_IMR1_IM3) != 0)
-			arm_hardware_set_handler(EXTI3_IRQn, EXTI3_IRQHandler, priority);
+			arm_hardware_set_handler(EXTI3_IRQn, EXTI3_IRQHandler, priority, targetcpu);
 		if ((ipins & EXTI_IMR1_IM4) != 0)
-			arm_hardware_set_handler(EXTI4_IRQn, EXTI4_IRQHandler, priority);
+			arm_hardware_set_handler(EXTI4_IRQn, EXTI4_IRQHandler, priority, targetcpu);
 		if ((ipins & EXTI_IMR1_IM5) != 0)
-			arm_hardware_set_handler(EXTI5_IRQn, EXTI5_IRQHandler, priority);
+			arm_hardware_set_handler(EXTI5_IRQn, EXTI5_IRQHandler, priority, targetcpu);
 		if ((ipins & EXTI_IMR1_IM6) != 0)
-			arm_hardware_set_handler(EXTI6_IRQn, EXTI6_IRQHandler, priority);
+			arm_hardware_set_handler(EXTI6_IRQn, EXTI6_IRQHandler, priority, targetcpu);
 		if ((ipins & EXTI_IMR1_IM7) != 0)
-			arm_hardware_set_handler(EXTI7_IRQn, EXTI7_IRQHandler, priority);
+			arm_hardware_set_handler(EXTI7_IRQn, EXTI7_IRQHandler, priority, targetcpu);
 		if ((ipins & EXTI_IMR1_IM8) != 0)
-			arm_hardware_set_handler(EXTI8_IRQn, EXTI8_IRQHandler, priority);
+			arm_hardware_set_handler(EXTI8_IRQn, EXTI8_IRQHandler, priority, targetcpu);
 		if ((ipins & EXTI_IMR1_IM9) != 0)
-			arm_hardware_set_handler(EXTI9_IRQn, EXTI9_IRQHandler, priority);
+			arm_hardware_set_handler(EXTI9_IRQn, EXTI9_IRQHandler, priority, targetcpu);
 		if ((ipins & EXTI_IMR1_IM10) != 0)
-			arm_hardware_set_handler(EXTI10_IRQn, EXTI10_IRQHandler, priority);
+			arm_hardware_set_handler(EXTI10_IRQn, EXTI10_IRQHandler, priority, targetcpu);
 		if ((ipins & EXTI_IMR1_IM11) != 0)
-			arm_hardware_set_handler(EXTI11_IRQn, EXTI11_IRQHandler, priority);
+			arm_hardware_set_handler(EXTI11_IRQn, EXTI11_IRQHandler, priority, targetcpu);
 		if ((ipins & EXTI_IMR1_IM12) != 0)
-			arm_hardware_set_handler(EXTI12_IRQn, EXTI12_IRQHandler, priority);
+			arm_hardware_set_handler(EXTI12_IRQn, EXTI12_IRQHandler, priority, targetcpu);
 		if ((ipins & EXTI_IMR1_IM13) != 0)
-			arm_hardware_set_handler(EXTI13_IRQn, EXTI13_IRQHandler, priority);
+			arm_hardware_set_handler(EXTI13_IRQn, EXTI13_IRQHandler, priority, targetcpu);
 		if ((ipins & EXTI_IMR1_IM14) != 0)
-			arm_hardware_set_handler(EXTI14_IRQn, EXTI14_IRQHandler, priority);
+			arm_hardware_set_handler(EXTI14_IRQn, EXTI14_IRQHandler, priority, targetcpu);
 		if ((ipins & EXTI_IMR1_IM15) != 0)
-			arm_hardware_set_handler(EXTI15_IRQn, EXTI15_IRQHandler, priority);
+			arm_hardware_set_handler(EXTI15_IRQn, EXTI15_IRQHandler, priority, targetcpu);
 
 	}
 
@@ -981,19 +983,19 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 
 
 			if ((ipins & EXTI_IMR1_IM0) != 0)
-				arm_hardware_set_handler(EXTI0_IRQn, EXTI0_IRQHandler, priority);
+				arm_hardware_set_handler(EXTI0_IRQn, EXTI0_IRQHandler, priority, targetcpu);
 			if ((ipins & EXTI_IMR1_IM1) != 0)
-				arm_hardware_set_handler(EXTI1_IRQn, EXTI1_IRQHandler, priority);
+				arm_hardware_set_handler(EXTI1_IRQn, EXTI1_IRQHandler, priority, targetcpu);
 			if ((ipins & EXTI_IMR1_IM2) != 0)
-				arm_hardware_set_handler(EXTI2_IRQn, EXTI2_IRQHandler, priority);
+				arm_hardware_set_handler(EXTI2_IRQn, EXTI2_IRQHandler, priority, targetcpu);
 			if ((ipins & EXTI_IMR1_IM3) != 0)
-				arm_hardware_set_handler(EXTI3_IRQn, EXTI3_IRQHandler, priority);
+				arm_hardware_set_handler(EXTI3_IRQn, EXTI3_IRQHandler, priority, targetcpu);
 			if ((ipins & EXTI_IMR1_IM4) != 0)
-				arm_hardware_set_handler(EXTI4_IRQn, EXTI4_IRQHandler, priority);
+				arm_hardware_set_handler(EXTI4_IRQn, EXTI4_IRQHandler, priority, targetcpu);
 			if ((ipins & (EXTI_IMR1_IM9 | EXTI_IMR1_IM8 | EXTI_IMR1_IM7 | EXTI_IMR1_IM6 | EXTI_IMR1_IM5)) != 0)
-				arm_hardware_set_handler(EXTI9_5_IRQn, EXTI9_5_IRQHandler, priority);
+				arm_hardware_set_handler(EXTI9_5_IRQn, EXTI9_5_IRQHandler, priority, targetcpu);
 			if ((ipins & (EXTI_IMR1_IM15 | EXTI_IMR1_IM14 | EXTI_IMR1_IM13 | EXTI_IMR1_IM12 | EXTI_IMR1_IM11 | EXTI_IMR1_IM10)) != 0)
-				arm_hardware_set_handler(EXTI15_10_IRQn, EXTI15_10_IRQHandler, priority);
+				arm_hardware_set_handler(EXTI15_10_IRQn, EXTI15_10_IRQHandler, priority, targetcpu);
 		}
 
 	/* программирвоание битов в регистрах управления GPIO, указанных в iomask, в конфигурацию CNF И режим MODE */
@@ -1150,81 +1152,81 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 		#if CPUSTYLE_STM32L0XX
 
 			if ((ipins & (EXTI_IMR_IM1 | EXTI_IMR_IM0)) != 0)
-				arm_hardware_set_handler(EXTI0_1_IRQn, EXTI0_1_IRQHandler, priority);
+				arm_hardware_set_handler(EXTI0_1_IRQn, EXTI0_1_IRQHandler, priority, targetcpu);
 			else if ((ipins & (EXTI_IMR_IM2 | EXTI_IMR_IM3)) != 0)
-				arm_hardware_set_handler(EXTI2_3_IRQn, EXTI2_3_IRQHandler, priority);
+				arm_hardware_set_handler(EXTI2_3_IRQn, EXTI2_3_IRQHandler, priority, targetcpu);
 			else if ((ipins & (EXTI_IMR_IM4 | EXTI_IMR_IM5 | EXTI_IMR_IM6 | EXTI_IMR_IM7 | EXTI_IMR_IM8 | 
 							EXTI_IMR_IM9 | EXTI_IMR_IM10 | EXTI_IMR_IM11 | EXTI_IMR_IM12 | EXTI_IMR_IM13 | 
 							EXTI_IMR_IM14 | EXTI_IMR_IM15)) != 0)
-				arm_hardware_set_handler(EXTI4_15_IRQn, EXTI4_15_IRQHandler, priority);
+				arm_hardware_set_handler(EXTI4_15_IRQn, EXTI4_15_IRQHandler, priority, targetcpu);
 
 		#elif CPUSTYLE_STM32F0XX
 
 			if ((ipins & (EXTI_IMR_MR1 | EXTI_IMR_MR0)) != 0)
-				arm_hardware_set_handler(EXTI0_1_IRQn, EXTI0_1_IRQHandler, priority);
+				arm_hardware_set_handler(EXTI0_1_IRQn, EXTI0_1_IRQHandler, priority, targetcpu);
 			else if ((ipins & (EXTI_IMR_MR2 | EXTI_IMR_MR3)) != 0)
-				arm_hardware_set_handler(EXTI2_3_IRQn, EXTI2_3_IRQHandler, priority);
+				arm_hardware_set_handler(EXTI2_3_IRQn, EXTI2_3_IRQHandler, priority, targetcpu);
 			else if ((ipins & (EXTI_MRR_MR4 | EXTI_MRR_MR5 | EXTI_MRR_MR6 | EXTI_MRR_MR7 | EXTI_MRR_MR8 | 
 							EXTI_MRR_MR9 | EXTI_MRR_MR10 | EXTI_MRR_MR11 | EXTI_MRR_MR12 | EXTI_MRR_MR13 | 
 							EXTI_MRR_MR14 | EXTI_MRR_MR15)) != 0)
-				arm_hardware_set_handler(EXTI4_15_IRQn, EXTI4_15_IRQHandler, priority);
+				arm_hardware_set_handler(EXTI4_15_IRQn, EXTI4_15_IRQHandler, priority, targetcpu);
 
 		#elif CPUSTYLE_STM32F7XX
 
 			if ((ipins & (EXTI_IMR_MR0)) != 0)
-				arm_hardware_set_handler(EXTI0_IRQn, EXTI0_IRQHandler, priority);
+				arm_hardware_set_handler(EXTI0_IRQn, EXTI0_IRQHandler, priority, targetcpu);
 			if ((ipins & (EXTI_IMR_MR1)) != 0)
-				arm_hardware_set_handler(EXTI1_IRQn, EXTI1_IRQHandler, priority);
+				arm_hardware_set_handler(EXTI1_IRQn, EXTI1_IRQHandler, priority, targetcpu);
 			if ((ipins & (EXTI_IMR_MR2)) != 0)
-				arm_hardware_set_handler(EXTI2_IRQn, EXTI2_IRQHandler, priority);
+				arm_hardware_set_handler(EXTI2_IRQn, EXTI2_IRQHandler, priority, targetcpu);
 			if ((ipins & (EXTI_IMR_MR3)) != 0)
-				arm_hardware_set_handler(EXTI3_IRQn, EXTI3_IRQHandler, priority);
+				arm_hardware_set_handler(EXTI3_IRQn, EXTI3_IRQHandler, priority, targetcpu);
 			if ((ipins & (EXTI_IMR_MR4)) != 0)
-				arm_hardware_set_handler(EXTI4_IRQn, EXTI4_IRQHandler, priority);
+				arm_hardware_set_handler(EXTI4_IRQn, EXTI4_IRQHandler, priority, targetcpu);
 			if ((ipins & (EXTI_IMR_MR9 | EXTI_IMR_MR8 | EXTI_IMR_MR7 | EXTI_IMR_MR6 | EXTI_IMR_MR5)) != 0)
-				arm_hardware_set_handler(EXTI9_5_IRQn, EXTI9_5_IRQHandler, priority);
+				arm_hardware_set_handler(EXTI9_5_IRQn, EXTI9_5_IRQHandler, priority, targetcpu);
 			if ((ipins & (EXTI_IMR_MR15 | EXTI_IMR_MR14 | EXTI_IMR_MR14 | EXTI_IMR_MR13 | EXTI_IMR_MR12 | EXTI_IMR_MR11 | EXTI_IMR_MR10)) != 0)
-				arm_hardware_set_handler(EXTI15_10_IRQn, EXTI15_10_IRQHandler, priority);
+				arm_hardware_set_handler(EXTI15_10_IRQn, EXTI15_10_IRQHandler, priority, targetcpu);
 
 		#elif CPUSTYLE_STM32H7XX
 
 			if ((ipins & EXTI_IMR1_IM0) != 0)
-				arm_hardware_set_handler(EXTI0_IRQn, EXTI0_IRQHandler, priority);
+				arm_hardware_set_handler(EXTI0_IRQn, EXTI0_IRQHandler, priority, targetcpu);
 			if ((ipins & EXTI_IMR1_IM1) != 0)
-				arm_hardware_set_handler(EXTI1_IRQn, EXTI1_IRQHandler, priority);
+				arm_hardware_set_handler(EXTI1_IRQn, EXTI1_IRQHandler, priority, targetcpu);
 			if ((ipins & EXTI_IMR1_IM2) != 0)
-				arm_hardware_set_handler(EXTI2_IRQn, EXTI2_IRQHandler, priority);
+				arm_hardware_set_handler(EXTI2_IRQn, EXTI2_IRQHandler, priority, targetcpu);
 			if ((ipins & EXTI_IMR1_IM3) != 0)
-				arm_hardware_set_handler(EXTI3_IRQn, EXTI3_IRQHandler, priority);
+				arm_hardware_set_handler(EXTI3_IRQn, EXTI3_IRQHandler, priority, targetcpu);
 			if ((ipins & EXTI_IMR1_IM4) != 0)
-				arm_hardware_set_handler(EXTI4_IRQn, EXTI4_IRQHandler, priority);
+				arm_hardware_set_handler(EXTI4_IRQn, EXTI4_IRQHandler, priority, targetcpu);
 			if ((ipins & (EXTI_IMR1_IM9 | EXTI_IMR1_IM8 | EXTI_IMR1_IM7 | EXTI_IMR1_IM6 | EXTI_IMR1_IM5)) != 0)
-				arm_hardware_set_handler(EXTI9_5_IRQn, EXTI9_5_IRQHandler, priority);
+				arm_hardware_set_handler(EXTI9_5_IRQn, EXTI9_5_IRQHandler, priority, targetcpu);
 			if ((ipins & (EXTI_IMR1_IM15 | EXTI_IMR1_IM14 | EXTI_IMR1_IM13 | EXTI_IMR1_IM12 | EXTI_IMR1_IM11 | EXTI_IMR1_IM10)) != 0)
-				arm_hardware_set_handler(EXTI15_10_IRQn, EXTI15_10_IRQHandler, priority);
+				arm_hardware_set_handler(EXTI15_10_IRQn, EXTI15_10_IRQHandler, priority, targetcpu);
 
 		#else /* CPUSTYLE_STM32F0XX */
 
 			if ((ipins & EXTI_IMR_MR0) != 0)
-				arm_hardware_set_handler(EXTI0_IRQn, EXTI0_IRQHandler, priority);
+				arm_hardware_set_handler(EXTI0_IRQn, EXTI0_IRQHandler, priority, targetcpu);
 			if ((ipins & EXTI_IMR_MR1) != 0)
-				arm_hardware_set_handler(EXTI1_IRQn, EXTI1_IRQHandler, priority);
+				arm_hardware_set_handler(EXTI1_IRQn, EXTI1_IRQHandler, priority, targetcpu);
 			if ((ipins & EXTI_IMR_MR2) != 0)
 			{
 				#if CPUSTYLE_STM32F4XX
-					arm_hardware_set_handler(EXTI2_IRQn, EXTI2_IRQHandler, priority);
+					arm_hardware_set_handler(EXTI2_IRQn, EXTI2_IRQHandler, priority, targetcpu);
 				#else
-					arm_hardware_set_handler(EXTI2_TS_IRQn, EXTI2_TS_IRQHandler, priority);
+					arm_hardware_set_handler(EXTI2_TS_IRQn, EXTI2_TS_IRQHandler, priority, targetcpu);
 				#endif
 			}
 			if ((ipins & EXTI_IMR_MR3) != 0)
-				arm_hardware_set_handler(EXTI3_IRQn, EXTI3_IRQHandler, priority);
+				arm_hardware_set_handler(EXTI3_IRQn, EXTI3_IRQHandler, priority, targetcpu);
 			if ((ipins & EXTI_IMR_MR4) != 0)
-				arm_hardware_set_handler(EXTI4_IRQn, EXTI4_IRQHandler, priority);
+				arm_hardware_set_handler(EXTI4_IRQn, EXTI4_IRQHandler, priority, targetcpu);
 			if ((ipins & (EXTI_IMR_MR9 | EXTI_IMR_MR8 | EXTI_IMR_MR7 | EXTI_IMR_MR6 | EXTI_IMR_MR5)) != 0)
-				arm_hardware_set_handler(EXTI9_5_IRQn, EXTI9_5_IRQHandler, priority);
+				arm_hardware_set_handler(EXTI9_5_IRQn, EXTI9_5_IRQHandler, priority, targetcpu);
 			if ((ipins & (EXTI_IMR_MR15 | EXTI_IMR_MR14 | EXTI_IMR_MR13 | EXTI_IMR_MR12 | EXTI_IMR_MR11 | EXTI_IMR_MR10)) != 0)
-				arm_hardware_set_handler(EXTI15_10_IRQn, EXTI15_10_IRQHandler, priority);
+				arm_hardware_set_handler(EXTI15_10_IRQn, EXTI15_10_IRQHandler, priority, targetcpu);
 
 		#endif /* CPUSTYLE_STM32F0XX */
 
@@ -7215,19 +7217,19 @@ arm_hardware_pioa_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 	(void) PIOA->PIO_ISR; // consume interrupt request
 	PIOA->PIO_IER = (ipins);	// interrupt on change pin enable
 
-	arm_hardware_set_handler(PIOA_IRQn, PIOA_IRQHandler, priority);
+	arm_hardware_set_handler(PIOA_IRQn, PIOA_IRQHandler, priority, TARGETCPU);
 
 #elif CPUSTYLE_STM32F1XX
 
-	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PA, priority);	// PORT A
+	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PA, priority, TARGETCPU);	// PORT A
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 
-	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PA, priority);	// PORT A
+	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PA, priority, TARGETCPU);	// PORT A
 
 #elif CPUSTYLE_STM32MP1
 
-	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PA, priority);	// PORT A
+	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PA, priority, TARGETCPU);	// PORT A
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -7246,19 +7248,19 @@ arm_hardware_piob_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 	(void) PIOB->PIO_ISR; // consume interrupt request
 	PIOB->PIO_IER = (ipins);	// interrupt on change pin enable
 
-	arm_hardware_set_handler(PIOB_IRQn, PIOB_IRQHandler, priority);
+	arm_hardware_set_handler(PIOB_IRQn, PIOB_IRQHandler, priority, TARGETCPU);
 
 #elif CPUSTYLE_STM32F1XX
 
-	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PB, priority);	// PORT B
+	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PB, priority, TARGETCPU);	// PORT B
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 
-	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PB, priority);	// PORT B
+	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PB, priority, TARGETCPU);	// PORT B
 
 #elif CPUSTYLE_STM32MP1
 
-	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PB, priority);	// PORT B
+	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PB, priority, TARGETCPU);	// PORT B
 
 #elif CPUSTYLE_AT91SAM7S
 
@@ -7282,19 +7284,19 @@ arm_hardware_pioc_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 	(void) PIOC->PIO_ISR; // consume interrupt request
 	PIOC->PIO_IER = (ipins);	// interrupt on change pin enable
 
-	arm_hardware_set_handler(PIOC_IRQn, PIOC_IRQHandler, priority);
+	arm_hardware_set_handler(PIOC_IRQn, PIOC_IRQHandler, priority, TARGETCPU);
 
 #elif CPUSTYLE_STM32F1XX
 
-	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PC, priority);	// PORT C
+	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PC, priority, TARGETCPU);	// PORT C
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 
-	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PC, priority);	// PORT C
+	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PC, priority, TARGETCPU);	// PORT C
 
 #elif CPUSTYLE_STM32MP1
 
-	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PC, priority);	// PORT C
+	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PC, priority, TARGETCPU);	// PORT C
 
 #elif CPUSTYLE_AT91SAM7S
 
@@ -7318,19 +7320,19 @@ arm_hardware_piod_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 	(void) PIOD->PIO_ISR; // consume interrupt request
 	PIOD->PIO_IER = (ipins);	// interrupt on change pin enable
 
-	arm_hardware_set_handler(PIOD_IRQn, PIOD_IRQHandler, priority);
+	arm_hardware_set_handler(PIOD_IRQn, PIOD_IRQHandler, priority, TARGETCPU);
 
 #elif CPUSTYLE_STM32F1XX
 
-	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PD, priority);	// PORT D
+	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PD, priority, TARGETCPU);	// PORT D
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 
-	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PD, priority);	// PORT D
+	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PD, priority, TARGETCPU);	// PORT D
 
 #elif CPUSTYLE_STM32MP1
 
-	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PD, priority);	// PORTD
+	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PD, priority, TARGETCPU);	// PORTD
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -7352,19 +7354,19 @@ arm_hardware_pioe_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 	(void) PIOE->PIO_ISR; // consume interrupt request
 	PIOE->PIO_IER = (ipins);	// interrupt on change pin enable
 
-	arm_hardware_set_handler(PIOE_IRQn, PIOE_IRQHandler, priority);
+	arm_hardware_set_handler(PIOE_IRQn, PIOE_IRQHandler, priority, TARGETCPU);
 
 #elif CPUSTYLE_STM32F1XX
 
-	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PE, priority);	// PORT E
+	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PE, priority, TARGETCPU);	// PORT E
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 
-	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PE, priority);	// PORT E
+	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PE, priority, TARGETCPU);	// PORT E
 
 #elif CPUSTYLE_STM32MP1
 
-	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PE, priority);	// PORT E
+	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PE, priority, TARGETCPU);	// PORT E
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -7386,19 +7388,19 @@ arm_hardware_piof_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 	(void) PIOF->PIO_ISR; // consume interrupt request
 	PIOF->PIO_IER = (ipins);	// interrupt on change pin enable
 
-	arm_hardware_set_handler(PIOF_IRQn, PIOF_IRQHandler, priority);
+	arm_hardware_set_handler(PIOF_IRQn, PIOF_IRQHandler, priority, TARGETCPU);
 
 #elif CPUSTYLE_STM32F1XX
 
-	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PF, priority);	// PORT F
+	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PF, priority, TARGETCPU);	// PORT F
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 
-	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PF, priority);	// PORT F
+	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PF, priority, TARGETCPU);	// PORT F
 
 #elif CPUSTYLE_STM32MP1
 
-	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PF, priority);	// PORT F
+	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PF, priority, TARGETCPU);	// PORT F
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -7419,19 +7421,19 @@ arm_hardware_piog_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 	(void) PIOG->PIO_ISR; // consume interrupt request
 	PIOG->PIO_IER = (ipins);	// interrupt on change pin enable
 
-	arm_hardware_set_handler(PIOG_IRQn, PIOG_IRQHandler, priority);
+	arm_hardware_set_handler(PIOG_IRQn, PIOG_IRQHandler, priority, TARGETCPU);
 
 #elif CPUSTYLE_STM32F1XX
 
-	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PG, priority);	// PORT G
+	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PG, priority, TARGETCPU);	// PORT G
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 
-	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PG, priority);	// PORT G
+	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PG, priority, TARGETCPU);	// PORT G
 
 #elif CPUSTYLE_STM32MP1
 
-	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PG, priority);	// PORT G
+	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PG, priority, TARGETCPU);	// PORT G
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -7449,15 +7451,15 @@ arm_hardware_pioh_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 {
 #if CPUSTYLE_STM32F1XX
 
-	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PH, priority);	// PORT H
+	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PH, priority, TARGETCPU);	// PORT H
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 
-	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PH, priority);	// PORT H
+	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PH, priority, TARGETCPU);	// PORT H
 
 #elif CPUSTYLE_STM32MP1
 
-	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PH, priority);	// PORT H
+	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PH, priority, TARGETCPU);	// PORT H
 
 #else
 	#error Undefined CPUSTYLE_XXX

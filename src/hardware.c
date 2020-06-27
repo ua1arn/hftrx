@@ -12047,23 +12047,25 @@ static void printcpustate(void)
 	PRINTF(PSTR("Reset_CPUn_Handler: VBAR=%p, TTBR0=%p, cpsr=%08lX, cpuid=%02X, sp=%p\n"), __get_VBAR(), __get_TTBR0(), cpsr, cpuid, & cpuid);
 }
 
+static void arm_gic_initialize(void);
+
 void Reset_CPUn_Handler(void)
 {
 	sysinit_fpu_initialize();
 	sysinit_vbar_initialize();		// interrupt vectors relocate
 	sysinit_ttbr_initialize();		// TODO: убрать работу с L2 для второго процессора
 
-	GIC_CPUInterfaceInit();
-#if WITHNESTEDINTERRUPTS
-	GIC_SetInterfacePriorityMask(gARM_BASEPRI_ALL_ENABLED);
-#endif /* WITHNESTEDINTERRUPTS */
+	arm_gic_initialize();
+//	GIC_CPUInterfaceInit();
+//#if WITHNESTEDINTERRUPTS
+//	GIC_SetInterfacePriorityMask(gARM_BASEPRI_ALL_ENABLED);
+//#endif /* WITHNESTEDINTERRUPTS */
 
 	printcpustate();
 	__enable_irq();
 	// Idle loop
 	for (;;)
 	{
-		dbg_putchar('$');
 		__WFI();
 	}
 }
@@ -13204,7 +13206,7 @@ static void vectors_relocate(void)
 
 #if CPUSTYLE_ARM
 // Set interrupt vector wrapper
-void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint_fast8_t priority)
+void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint_fast8_t priority, uint_fast8_t targetcpu)
 {
 #if CPUSTYLE_AT91SAM7S
 
@@ -13228,7 +13230,8 @@ void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint
 	VERIFY(IRQ_SetHandler(int_id, handler) == 0);
 	VERIFY(IRQ_SetPriority(int_id, priority) == 0);
 	//GIC_SetTarget(int_id, 0x02);	// CPU#1
-	GIC_SetTarget(int_id, 0x01);	// CPU#0
+	//GIC_SetTarget(int_id, 0x01);	// CPU#0
+	GIC_SetTarget(int_id, targetcpu);
 #if CPUSTYLE_STM32MP1
 	uint_fast32_t cfg = GIC_GetConfiguration(int_id);
 	cfg &= ~ 0x02;	/* Set level sensitive configuration */
@@ -13250,19 +13253,19 @@ void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint
 // Set interrupt vector wrapper
 void arm_hardware_set_handler_overrealtime(uint_fast16_t int_id, void (* handler)(void))
 {
-	arm_hardware_set_handler(int_id, handler, ARM_OVERREALTIME_PRIORITY);
+	arm_hardware_set_handler(int_id, handler, ARM_OVERREALTIME_PRIORITY, TARGETCPU);
 }
 
 // Set interrupt vector wrapper
 void arm_hardware_set_handler_realtime(uint_fast16_t int_id, void (* handler)(void))
 {
-	arm_hardware_set_handler(int_id, handler, ARM_REALTIME_PRIORITY);
+	arm_hardware_set_handler(int_id, handler, ARM_REALTIME_PRIORITY, TARGETCPU);
 }
 
 // Set interrupt vector wrapper
 void arm_hardware_set_handler_system(uint_fast16_t int_id, void (* handler)(void))
 {
-	arm_hardware_set_handler(int_id, handler, ARM_SYSTEM_PRIORITY);
+	arm_hardware_set_handler(int_id, handler, ARM_SYSTEM_PRIORITY, TARGETCPU);
 }
 
 #endif /* CPUSTYLE_ARM */
