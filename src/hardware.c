@@ -12051,13 +12051,14 @@ void Reset_CPUn_Handler(void)
 {
 	sysinit_fpu_initialize();
 	sysinit_vbar_initialize();		// interrupt vectors relocate
-	loadttbr();
+	loadttbr();	// TODO: убрать работу с L2
 
 	printcpustate();
-	global_enableIRQ();
+	__enable_irq();
 	// Idle loop
 	for (;;)
 	{
+		dbg_putchar('$');
 		__WFI();
 	}
 }
