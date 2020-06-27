@@ -17369,6 +17369,11 @@ int dbg_puts_impl(const char * s)
 
 #else /* WITHDEBUG */
 
+int dbg_getchar(char * r)
+{
+	return 0;
+}
+
 int dbg_putchar(int c)
 {
 #if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM0 || CPUSTYLE_ARM_CM7
