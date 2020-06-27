@@ -12474,6 +12474,8 @@ static void stm32_pwr_domain_on(void)
 
 	RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_RTCAPBEN;
 	(void) RCC->MP_APB5ENSETR;
+	RCC->MP_APB5LPENSETR = RCC_MC_APB5LPENSETR_RTCAPBLPEN;  // Включить тактирование
+	(void) RCC->MP_APB5LPENSETR;
 
 	//cntfrq_core0 = read_cntfrq_el0();
 
