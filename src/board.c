@@ -7765,7 +7765,7 @@ static uint_fast8_t gstate [SNDI_SIZE];		/* признак включённог�
 static uint_fast8_t gprei [SNDI_SIZE];
 static unsigned gvalue [SNDI_SIZE];	/* делитель или FTW для синтезатора озвучки */
 static uint_least16_t gtone [SNDI_SIZE];
-
+static RAMDTCM SPINLOCK_t gpreilock = SPINLOCK_INIT;
 
 /* если параметры для данной частоты уже рассчитывали - просто возврат */
 static uint_fast8_t 
@@ -7782,8 +7782,10 @@ board_calcs_setfreq(
 
 
 	system_disableIRQ();
+	SPIN_LOCK(& gpreilock);
 	gprei [sndi] = prei;
 	gvalue [sndi] = value;
+	SPIN_UNLOCK(& gpreilock);
 	system_enableIRQ();
 
 	return 1;
@@ -7817,7 +7819,9 @@ board_keybeep_setfreq(
 	if (board_calcs_setfreq(sndi, tonefreq * 10) != 0)	/* если частота изменилась - перепрограммируем */
 	{
 		system_disableIRQ();
+		SPIN_LOCK(& gpreilock);
 		board_sounds_resched();
+		SPIN_UNLOCK(& gpreilock);
 		system_enableIRQ();
 	}
 }
@@ -7832,7 +7836,9 @@ board_sidetone_setfreq(
 	if (board_calcs_setfreq(sndi, tonefreq * 10) != 0)	/* если частота изменилась - перепрограммируем */
 	{
 		system_disableIRQ();
+		SPIN_LOCK(& gpreilock);
 		board_sounds_resched();
+		SPIN_UNLOCK(& gpreilock);
 		system_enableIRQ();
 	}
 }
@@ -7890,7 +7896,9 @@ board_subtone_setfreq(
 	if (board_calcs_setfreq(sndi, tonefreq01) != 0)	/* если частота изменилась - перепрограммируем */
 	{
 		system_disableIRQ();
+		SPIN_LOCK(& gpreilock);
 		board_sounds_resched();
+		SPIN_UNLOCK(& gpreilock);
 		system_enableIRQ();
 	}
 #endif /* WITHSUBTONES */
