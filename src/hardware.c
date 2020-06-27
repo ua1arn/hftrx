@@ -12048,7 +12048,7 @@ static void printcpustate(void)
 {
 	const uint_fast32_t cpsr = __get_CPSR();
 	const uint_fast8_t cpuid = __get_MPIDR() & 0x03;
-	PRINTF(PSTR("Reset_CPUn_Handler: VBAR=%p, TTBR0=%p, cpsr=%08lX, cpuid=%02X, sp=%p\n"), __get_VBAR(), __get_TTBR0(), cpsr, cpuid, & cpuid);
+	PRINTF(PSTR("CPU: VBAR=%p, TTBR0=%p, cpsr=%08lX, cpuid=%02X, sp=%p\n"), __get_VBAR(), __get_TTBR0(), cpsr, cpuid, & cpuid);
 }
 
 static void arm_gic_initialize(void);
@@ -12513,12 +12513,6 @@ void cpu_initialize(void)
 //	ca9_ca7_cache_diag();	// print
 
 #if WITHSMPSYSTEM
-
-	RCC->MP_GRSTCSETR = RCC_MP_GRSTCSETR_MPUP1RST;
-	(void) RCC->MP_GRSTCSETR;
-	/* ждем пока второй процессор выйдет из RESET */
-	while ((RCC->MP_GRSTCSETR & RCC_MP_GRSTCSETR_MPUP1RST) != 0)
-		;
 
 	//	SMP tests
 	//printcpustate();
