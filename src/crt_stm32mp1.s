@@ -379,8 +379,9 @@ IRQHandlerNested:
 		.endfunc
 
     .func   Reset_CPU1_Handler
+    /* invoked at ARM_MODE_SVC */
 Reset_CPU1_Handler:
-	msr   CPSR_c, #ARM_MODE_SVC | I_BIT     /* 0x13 Supervisor Mode */
+	msr   CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT     /* 0x13 Supervisor Mode */
 	ldr   sp, =__stack_svc_cpu1_end
 	mov   lr, #0
 

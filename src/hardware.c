@@ -9530,8 +9530,9 @@ void DAbort_Handler(void)
 
 void Reset_CPUn_Handler(void)
 {
-	uint_fast8_t cpuid = __get_MPIDR() & 0x03;
-	dbg_puts_impl_P(cpuid ? PSTR("Reset_CPU1_Handler trapped.\n") : PSTR("Reset_CPU0_Handler trapped.\n"));
+	const uint_fast32_t cpsr = __get_CPSR();
+	const uint_fast8_t cpuid = __get_MPIDR() & 0x03;
+	PRINTF(PSTR("Reset_CPUn_Handler trapped: cpsr=%08lX, cpuid=%02X, sp=%p\n"), cpsr, cpuid, & cpuid);
 	for (;;)
 	{
 		__WFI();
@@ -12444,7 +12445,7 @@ static void stm32_pwr_domain_on(void)
 	//cntfrq_core0 = read_cntfrq_el0();
 
 	/* Write entrypoint in backup RAM register */
-	mmio_write_32(bkpr_core1_addr, (uintptr_t) Reset_CPUn_Handler);
+	mmio_write_32(bkpr_core1_addr, (uintptr_t) Reset_CPU1_Handler);	// Invoke at SVC context
 
 	/* Write magic number in backup register */
 	mmio_write_32(bkpr_core1_magic, BOOT_API_A7_CORE1_MAGIC_NUMBER);
@@ -12460,6 +12461,7 @@ static void stm32_pwr_domain_on(void)
 	/* Generate an IT to core 1 */
 	GIC_SendSGI(SGI8_IRQn, 0x02, 0x00);	// CPU1, filer=0
 
+	local_delay_ms(2000);
 	//return PSCI_E_SUCCESS;
 }
 #endif /* WITHSMPSYSTEM */
