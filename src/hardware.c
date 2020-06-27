@@ -12061,7 +12061,7 @@ void Reset_CPUn_Handler(void)
 //	GIC_SetInterfacePriorityMask(gARM_BASEPRI_ALL_ENABLED);
 //#endif /* WITHNESTEDINTERRUPTS */
 
-	printcpustate();
+	//printcpustate();
 	__enable_irq();
 	// Idle loop
 	for (;;)
@@ -12512,14 +12512,7 @@ void cpu_initialize(void)
 
 #if WITHSMPSYSTEM
 	//	SMP tests
-//	TP();
-//	RCC->MP_GRSTCSETR = RCC_MP_GRSTCSETR_MPUP1RST;
-//	(void) RCC->MP_GRSTCSETR;
-//	/* ждем пока второй процессор выйдет из RESET */
-//	while ((RCC->MP_GRSTCSETR & RCC_MP_GRSTCSETR_MPUP1RST) != 0)
-//		;
-//	TP();
-	printcpustate();
+	//printcpustate();
 	stm32_pwr_domain_on();
 #endif /* WITHSMPSYSTEM */
 
@@ -13253,19 +13246,19 @@ void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint
 // Set interrupt vector wrapper
 void arm_hardware_set_handler_overrealtime(uint_fast16_t int_id, void (* handler)(void))
 {
-	arm_hardware_set_handler(int_id, handler, ARM_OVERREALTIME_PRIORITY, TARGETCPU);
+	arm_hardware_set_handler(int_id, handler, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT);
 }
 
 // Set interrupt vector wrapper
 void arm_hardware_set_handler_realtime(uint_fast16_t int_id, void (* handler)(void))
 {
-	arm_hardware_set_handler(int_id, handler, ARM_REALTIME_PRIORITY, TARGETCPU);
+	arm_hardware_set_handler(int_id, handler, ARM_REALTIME_PRIORITY, TARGETCPU_RT);
 }
 
 // Set interrupt vector wrapper
 void arm_hardware_set_handler_system(uint_fast16_t int_id, void (* handler)(void))
 {
-	arm_hardware_set_handler(int_id, handler, ARM_SYSTEM_PRIORITY, TARGETCPU);
+	arm_hardware_set_handler(int_id, handler, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM);
 }
 
 #endif /* CPUSTYLE_ARM */
