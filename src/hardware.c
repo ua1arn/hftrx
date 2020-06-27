@@ -12511,6 +12511,13 @@ void cpu_initialize(void)
 //	ca9_ca7_cache_diag();	// print
 
 #if WITHSMPSYSTEM
+
+	RCC->MP_GRSTCSETR = RCC_MP_GRSTCSETR_MPUP1RST;
+	(void) RCC->MP_GRSTCSETR;
+	/* ждем пока второй процессор выйдет из RESET */
+	while ((RCC->MP_GRSTCSETR & RCC_MP_GRSTCSETR_MPUP1RST) != 0)
+		;
+
 	//	SMP tests
 	//printcpustate();
 	stm32_pwr_domain_on();
