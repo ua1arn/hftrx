@@ -11484,6 +11484,7 @@ ttb_accessbits(uintptr_t a, int ro)
 	return addrbase | TTB_PARA_NO_ACCESS; //TTB_PARA_STRGLY;
 }
 
+/* Загрузка TTBR, инвалидация кеш памяти и включение MMU */
 static void FLASHMEMINITFUNC
 sysinit_ttbr_initialize(void)
 {
@@ -12006,16 +12007,18 @@ sysinit_mmu_initialize(void)
 
 	// MMU inuitialize
 	ttb_initialize(ttb_accessbits, 0, 0);
-	sysinit_ttbr_initialize();
+	sysinit_ttbr_initialize();	/* Загрузка TTBR, инвалидация кеш памяти и включение MMU */
 
 #elif CPUSTYLE_STM32MP1
 	extern uint32_t __data_start__;
 	// MMU inuitialize
 	ttb_initialize(ttb_accessbits, 0xC0000000, (uintptr_t) & __data_start__ - 0xC0000000);
+	sysinit_ttbr_initialize();	/* Загрузка TTBR, инвалидация кеш памяти и включение MMU */
 
 #else
 	// MMU inuitialize
 	ttb_initialize(ttb_accessbits, 0, 0);
+	sysinit_ttbr_initialize();	/* Загрузка TTBR, инвалидация кеш памяти и включение MMU */
 
 #endif
 
@@ -12053,7 +12056,7 @@ void Reset_CPUn_Handler(void)
 {
 	sysinit_fpu_initialize();
 	sysinit_vbar_initialize();		// interrupt vectors relocate
-	sysinit_ttbr_initialize();		// TODO: убрать работу с L2 для второго процессора
+	sysinit_ttbr_initialize();		// TODO: убрать работу с L2 для второго процессора - Загрузка TTBR, инвалидация кеш памяти и включение MMU
 
 	arm_gic_initialize();
 //	GIC_CPUInterfaceInit();
