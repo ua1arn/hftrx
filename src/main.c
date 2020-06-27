@@ -19450,6 +19450,12 @@ ddd:
 
 
 #if defined (BOARD_IS_USERBOOT)
+		/* тест что всё еще работает и не повисло... */
+		char c;
+		if (dbg_getchar(& c))
+		{
+			dbg_putchar(c);
+		}
 		/* если не установлен джампер - запускаем программу. */
 //		if (! BOARD_IS_USERBOOT())
 //			break;
