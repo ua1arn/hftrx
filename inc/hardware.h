@@ -983,9 +983,10 @@ void IRQ_Handler(void);
 void Hyp_Handler(void);
 
 void Reset_CPU1_Handler(void);	// startup located function
+void Reset_CPUn_Handler(void);
 
 // Set interrupt vector wrappers
-void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint_fast8_t priority);
+void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint_fast8_t priority, uint_fast8_t targetcpu);
 void arm_hardware_set_handler_overrealtime(uint_fast16_t int_id, void (* handler)(void));
 void arm_hardware_set_handler_realtime(uint_fast16_t int_id, void (* handler)(void));
 void arm_hardware_set_handler_system(uint_fast16_t int_id, void (* handler)(void));
@@ -995,12 +996,27 @@ void audioproc_spool_user(void);	// вызывать при выполнении
 void hardware_set_dotclock(unsigned long dotfreq);
 void hardware_nonguiyield(void);
 
+uint_fast32_t display_getdotclock(void);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
 
 #include "product.h"
 #include "taildefs.h"
+
+
+#if WITHSMPSYSTEM
+	#define TARGETCPU_SYSTEM 0x01	// CPU #0
+	#define TARGETCPU_RT 0x02		// CPU #1
+	#define TARGETCPU_OVRT 0x01		// CPU #0
+	#define TARGETCPU_EXTIO 0x01	// CPU #0
+#else /* WITHSMPSYSTEM */
+	#define TARGETCPU_SYSTEM 0x01	// CPU #0
+	#define TARGETCPU_RT 0x01		// CPU #0
+	#define TARGETCPU_OVRT 0x01		// CPU #0
+	#define TARGETCPU_EXTIO 0x01	// CPU #0
+#endif /* WITHSMPSYSTEM */
 
 #define USBALIGN_BEGIN __attribute__ ((aligned (64)))
 #define USBALIGN_END /* nothing */
@@ -1009,12 +1025,7 @@ void hardware_nonguiyield(void);
 
 #define AUDIORECBUFFSIZE16 (16384)	// размер данных должен быть не меньше размера кластера на SD карте
 
-uint_fast32_t display_getdotclock(void);
 
 #define  ARRAY_SIZE(a)  (sizeof a / sizeof a [0])
-
-void irqlog_start(void);
-void irqlog_stop(void);
-void irqlog_print(void);
 
 #endif // HARDWARE_H_INCLUDED

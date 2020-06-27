@@ -9528,17 +9528,6 @@ void DAbort_Handler(void)
 		;
 }
 
-void Reset_CPUn_Handler(void)
-{
-	const uint_fast32_t cpsr = __get_CPSR();
-	const uint_fast8_t cpuid = __get_MPIDR() & 0x03;
-	PRINTF(PSTR("Reset_CPUn_Handler trapped: cpsr=%08lX, cpuid=%02X, sp=%p\n"), cpsr, cpuid, & cpuid);
-	for (;;)
-	{
-		__WFI();
-	}
-}
-
 void FIQ_Handler(void)
 {
 	dbg_puts_impl_P(PSTR("FIQHandler trapped.\n"));
@@ -11496,25 +11485,10 @@ ttb_accessbits(uintptr_t a, int ro)
 }
 
 static void FLASHMEMINITFUNC
-ttb_initialize(uint32_t (* accessbits)(uintptr_t a, int ro), uintptr_t textstart, uint_fast32_t textsize)
+sysinit_ttbr_initialize(void)
 {
 	extern volatile uint32_t __TTB_BASE;		// получено из скрипта линкера
 	volatile uint32_t * const tlbbase = & __TTB_BASE;
-	unsigned i;
-	const uint_fast32_t pagesize = (1uL << 20);
-
-	for (i = 0; i < 4096; ++ i)
-	{
-		const uintptr_t address = (uint32_t) i << 20;
-		tlbbase [i] =  accessbits(address, 0);
-	}
-	/* Установить R/O атрибуты для указанной области */
-	while (textsize >= pagesize)
-	{
-		tlbbase [textstart / pagesize] =  accessbits(textstart, 0 * 1);
-		textsize -= pagesize;
-		textstart += pagesize;
-	}
 
 #if 0
 	/* Set location of level 1 page table
@@ -11565,6 +11539,28 @@ ttb_initialize(uint32_t (* accessbits)(uintptr_t a, int ro), uintptr_t textstart
 #endif
 
 	MMU_Enable();
+}
+
+static void FLASHMEMINITFUNC
+ttb_initialize(uint32_t (* accessbits)(uintptr_t a, int ro), uintptr_t textstart, uint_fast32_t textsize)
+{
+	extern volatile uint32_t __TTB_BASE;		// получено из скрипта линкера
+	volatile uint32_t * const tlbbase = & __TTB_BASE;
+	unsigned i;
+	const uint_fast32_t pagesize = (1uL << 20);
+
+	for (i = 0; i < 4096; ++ i)
+	{
+		const uintptr_t address = (uint32_t) i << 20;
+		tlbbase [i] =  accessbits(address, 0);
+	}
+	/* Установить R/O атрибуты для указанной области */
+	while (textsize >= pagesize)
+	{
+		tlbbase [textstart / pagesize] =  accessbits(textstart, 0 * 1);
+		textsize -= pagesize;
+		textstart += pagesize;
+	}
 }
 
 // TODO: use MMU_TTSection. See also MMU_TTPage4k MMU_TTPage64k and MMU_CreateTranslationTable
@@ -12010,6 +12006,7 @@ sysinit_mmu_initialize(void)
 
 	// MMU inuitialize
 	ttb_initialize(ttb_accessbits, 0, 0);
+	sysinit_ttbr_initialize();
 
 #elif CPUSTYLE_STM32MP1
 	extern uint32_t __data_start__;
@@ -12040,6 +12037,37 @@ SystemInit(void)
 	sysintt_sdram_initialize();
 	sysinit_vbar_initialize();		// interrupt vectors relocate
 	sysinit_mmu_initialize();
+}
+
+
+static void printcpustate(void)
+{
+	const uint_fast32_t cpsr = __get_CPSR();
+	const uint_fast8_t cpuid = __get_MPIDR() & 0x03;
+	PRINTF(PSTR("Reset_CPUn_Handler: VBAR=%p, TTBR0=%p, cpsr=%08lX, cpuid=%02X, sp=%p\n"), __get_VBAR(), __get_TTBR0(), cpsr, cpuid, & cpuid);
+}
+
+static void arm_gic_initialize(void);
+
+void Reset_CPUn_Handler(void)
+{
+	sysinit_fpu_initialize();
+	sysinit_vbar_initialize();		// interrupt vectors relocate
+	sysinit_ttbr_initialize();		// TODO: убрать работу с L2 для второго процессора
+
+	arm_gic_initialize();
+//	GIC_CPUInterfaceInit();
+//#if WITHNESTEDINTERRUPTS
+//	GIC_SetInterfacePriorityMask(gARM_BASEPRI_ALL_ENABLED);
+//#endif /* WITHNESTEDINTERRUPTS */
+
+	//printcpustate();
+	__enable_irq();
+	// Idle loop
+	for (;;)
+	{
+		__WFI();
+	}
 }
 
 
@@ -12484,13 +12512,7 @@ void cpu_initialize(void)
 
 #if WITHSMPSYSTEM
 	//	SMP tests
-//	TP();
-//	RCC->MP_GRSTCSETR = RCC_MP_GRSTCSETR_MPUP1RST;
-//	(void) RCC->MP_GRSTCSETR;
-//	/* ждем пока второй процессор выйдет из RESET */
-//	while ((RCC->MP_GRSTCSETR & RCC_MP_GRSTCSETR_MPUP1RST) != 0)
-//		;
-//	TP();
+	//printcpustate();
 	stm32_pwr_domain_on();
 #endif /* WITHSMPSYSTEM */
 
@@ -13177,7 +13199,7 @@ static void vectors_relocate(void)
 
 #if CPUSTYLE_ARM
 // Set interrupt vector wrapper
-void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint_fast8_t priority)
+void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint_fast8_t priority, uint_fast8_t targetcpu)
 {
 #if CPUSTYLE_AT91SAM7S
 
@@ -13200,10 +13222,15 @@ void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint
 	VERIFY(IRQ_Disable(int_id) == 0);
 	VERIFY(IRQ_SetHandler(int_id, handler) == 0);
 	VERIFY(IRQ_SetPriority(int_id, priority) == 0);
-	GIC_SetTarget(int_id, 0x01);	// CPU#0
-	#if CPUSTYLE_STM32MP1
-		GIC_SetConfiguration(int_id, GIC_GetConfiguration(int_id) & ~ 0x02);	/* Set level sensitive configuration */
-	#endif /* CPUSTYLE_STM32MP1 */
+	//GIC_SetTarget(int_id, 0x02);	// CPU#1
+	//GIC_SetTarget(int_id, 0x01);	// CPU#0
+	GIC_SetTarget(int_id, targetcpu);
+#if CPUSTYLE_STM32MP1
+	uint_fast32_t cfg = GIC_GetConfiguration(int_id);
+	cfg &= ~ 0x02;	/* Set level sensitive configuration */
+	cfg |= 0x01;	/* Set 1-N model - Only one processor handles this interrupt. */
+	GIC_SetConfiguration(int_id, cfg);
+#endif /* CPUSTYLE_STM32MP1 */
 	VERIFY(IRQ_Enable(int_id) == 0);
 
 #else /* CPUSTYLE_STM32MP1 */
@@ -13219,19 +13246,19 @@ void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint
 // Set interrupt vector wrapper
 void arm_hardware_set_handler_overrealtime(uint_fast16_t int_id, void (* handler)(void))
 {
-	arm_hardware_set_handler(int_id, handler, ARM_OVERREALTIME_PRIORITY);
+	arm_hardware_set_handler(int_id, handler, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT);
 }
 
 // Set interrupt vector wrapper
 void arm_hardware_set_handler_realtime(uint_fast16_t int_id, void (* handler)(void))
 {
-	arm_hardware_set_handler(int_id, handler, ARM_REALTIME_PRIORITY);
+	arm_hardware_set_handler(int_id, handler, ARM_REALTIME_PRIORITY, TARGETCPU_RT);
 }
 
 // Set interrupt vector wrapper
 void arm_hardware_set_handler_system(uint_fast16_t int_id, void (* handler)(void))
 {
-	arm_hardware_set_handler(int_id, handler, ARM_SYSTEM_PRIORITY);
+	arm_hardware_set_handler(int_id, handler, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM);
 }
 
 #endif /* CPUSTYLE_ARM */
