@@ -998,34 +998,22 @@ void hardware_nonguiyield(void);
 
 uint_fast32_t display_getdotclock(void);
 
+
+#define USBALIGN_BEGIN __attribute__ ((aligned (64)))
+#define USBALIGN_END /* nothing */
+#define UNUSED(x) ((void)(x))
+
+#define AUDIORECBUFFSIZE16 (16384)	// размер данных должен быть не меньше размера кластера на SD карте
+
+
+#define  ARRAY_SIZE(a)  (sizeof a / sizeof a [0])
+
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
 
 #include "product.h"
 #include "taildefs.h"
-
-
-#if WITHSMPSYSTEM
-	#define TARGETCPU_SYSTEM 0x01	// CPU #0
-	#define TARGETCPU_RT 0x02		// CPU #1
-	#define TARGETCPU_OVRT 0x01		// CPU #0
-	#define TARGETCPU_EXTIO 0x01	// CPU #0
-#else /* WITHSMPSYSTEM */
-	#define TARGETCPU_SYSTEM 0x01	// CPU #0
-	#define TARGETCPU_RT 0x01		// CPU #0
-	#define TARGETCPU_OVRT 0x01		// CPU #0
-	#define TARGETCPU_EXTIO 0x01	// CPU #0
-#endif /* WITHSMPSYSTEM */
-
-#define USBALIGN_BEGIN __attribute__ ((aligned (64)))
-#define USBALIGN_END /* nothing */
-#define UNUSED(x) ((void)(x))
-
-
-#define AUDIORECBUFFSIZE16 (16384)	// размер данных должен быть не меньше размера кластера на SD карте
-
-
-#define  ARRAY_SIZE(a)  (sizeof a / sizeof a [0])
 
 #endif // HARDWARE_H_INCLUDED

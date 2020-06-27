@@ -12491,9 +12491,6 @@ static void stm32_pwr_domain_on(void)
 
 	/* Generate an IT to core 1 */
 	GIC_SendSGI(SGI8_IRQn, 0x02, 0x00);	// CPU1, filer=0
-
-	local_delay_ms(2000);
-	//return PSCI_E_SUCCESS;
 }
 #endif /* WITHSMPSYSTEM */
 

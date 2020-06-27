@@ -307,7 +307,7 @@
 
 	#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
 	#define WITHINTEGRATEDDSP		1	/* в программу включена инициализация и запуск DSP части. */
-	//#define WITHSMPSYSTEM	1	/* разрешение поддержки SMP, Symmetric Multiprocessing */
+	#define WITHSMPSYSTEM	1	/* разрешение поддержки SMP, Symmetric Multiprocessing */
 
 	#define WITHIF4DSP	1			/*  "Дятел" */
 	#define WITHIFDACWIDTH	32		// 1 бит знак и 31 бит значащих
