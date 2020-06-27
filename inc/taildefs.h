@@ -790,11 +790,31 @@ typedef enum
 	#define TARGETCPU_RT 0x01		// CPU #0
 	#define TARGETCPU_OVRT 0x02		// CPU #1
 	#define TARGETCPU_EXTIO 0x01	// CPU #0
+
+
+	#define SPINLOCK_t spinlock_t
+	#define SPIN_LOCK(p) do { spin_lock(p); } while (0)
+	#define SPIN_UNLOCK(p) do { spin_unlock(p); } while (0)
+
+	typedef struct spinlock_tag {
+		volatile uint32_t lock;
+	} spinlock_t;
+
+	#define SPINLOCK_INIT { 0 }
+	void spin_lock(spinlock_t *lock);
+	void spin_unlock(spinlock_t *lock);
+
 #else /* WITHSMPSYSTEM */
 	#define TARGETCPU_SYSTEM 0x01	// CPU #0
 	#define TARGETCPU_RT 0x01		// CPU #0
 	#define TARGETCPU_OVRT 0x01		// CPU #0
 	#define TARGETCPU_EXTIO 0x01	// CPU #0
+
+	#define SPINLOCK_INIT { 0 }
+	#define SPINLOCK_t uint_fast8_t
+	#define SPIN_LOCK(p) do { (void) p; } while (0)
+	#define SPIN_UNLOCK(p) do { (void) p; } while (0)
+
 #endif /* WITHSMPSYSTEM */
 
 #endif /* TAILDEFS_H_INCLUDED */

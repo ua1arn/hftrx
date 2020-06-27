@@ -12042,6 +12042,7 @@ SystemInit(void)
 	sysinit_mmu_initialize();
 }
 
+#if  (__CORTEX_A != 0)
 
 static void printcpustate(void)
 {
@@ -12073,8 +12074,9 @@ void Reset_CPUn_Handler(void)
 	}
 }
 
+#endif /*  (__CORTEX_A != 0) */
 
-#if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7 || CPUSTYLE_ARM_CM0
+#if (__CORTEX_M != 0)
 
 uint32_t gARM_OVERREALTIME_PRIORITY;
 uint32_t gARM_REALTIME_PRIORITY;
@@ -12127,7 +12129,7 @@ arm_cpu_CMx_initialize_NVIC(void)
 	//__set_BASEPRI(gARM_BASEPRI_ALL_ENABLED);
 }
 
-#endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7 */
+#endif /* (__CORTEX_M != 0) */
 
 #if (__CORTEX_A != 0)
 /* 
@@ -12712,7 +12714,7 @@ void cpu_initialize(void)
 
 #endif /* CPUSTYLE_R7S721 */
 
-#if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7 || CPUSTYLE_ARM_CM0
+#if (__CORTEX_M != 0)
 
 	// Таблица находится в области вне Data Cache
 	vectors_relocate();
@@ -13203,6 +13205,94 @@ static void vectors_relocate(void)
 	//ASSERT(SCB->VTOR == (uint32_t) & ramVectors);
 }
 #endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM0 || CPUSTYLE_ARM_CM7 */
+
+
+#if CPUSTYLE_ARM && WITHSMPSYSTEM
+
+// http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dai0321a/BIHEJCHB.html
+void spin_lock(spinlock_t *p)
+{
+	// Note: __LDREXW and __STREXW are CMSIS functions
+	int status = 0;
+	do {
+		while (__LDREXW(& p->lock) != 0)// Wait until
+			;
+		// Lock_Variable is free
+		status = __STREXW(1, & p->lock); // Try to set
+	// Lock_Variable
+	} while (status != 0); //retry until lock successfully
+	__DMB();		// Do not start any other memory access
+	// until memory barrier is completed
+
+}
+
+void spin_unlock(spinlock_t *p)
+{
+	// Note: __LDREXW and __STREXW are CMSIS functions
+	__DMB(); // Ensure memory operations completed before
+	// releasing lock
+	p->lock = 0;
+	return;
+}
+
+#if 0
+
+
+#define LOCK(p) do { lock_impl((p), __LINE__, __FILE__, # p); } while (0)
+#define UNLOCK(p) do { unlock_impl((p), __LINE__, __FILE__, # p); } while (0)
+
+
+typedef struct
+{
+	volatile uint8_t lock;
+	int line;
+	const char * file;
+} LOCK_T;
+
+static void lock_impl(volatile LOCK_T * p, int line, const char * file, const char * variable)
+{
+
+	uint8_t r;
+	do
+		r = __LDREXB(& p->lock);
+	while (__STREXB(1, & p->lock));
+	if (r != 0)
+	{
+		debug_printf_P(PSTR("LOCK @%p %s already locked at %d in %s by %d in %s\n"), p, variable, line, file, p->line, p->file);
+		for (;;)
+			;
+	}
+	else
+	{
+		p->file = file;
+		p->line = line;
+	}
+
+}
+
+static void unlock_impl(volatile LOCK_T * p, int line, const char * file, const char * variable)
+{
+
+	uint8_t r;
+	do
+		r = __LDREXB(& p->lock);
+	while (__STREXB(0, & p->lock));
+	if (r == 0)
+	{
+		debug_printf_P(PSTR("LOCK @%p %s already unlocked at %d in %s by %d in %s\n"), p, variable, line, file, p->line, p->file);
+		for (;;)
+			;
+	}
+	else
+	{
+		p->file = file;
+		p->line = line;
+	}
+
+}
+#endif
+
+#endif /* CPUSTYLE_ARM && WITHSMPSYSTEM */
 
 #if CPUSTYLE_ARM
 // Set interrupt vector wrapper
