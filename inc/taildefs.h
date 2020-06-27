@@ -4,8 +4,8 @@
 
 // В зависимости от типа платы - какие микросхемы применены в синтезаторе
 
-#ifndef PRODUCT_H_INCLUDED
-	#error Do not include this file directly.
+#ifndef HARDWARE_H_INCLUDED
+	#error PLEASE, DO NOT USE THIS FILE DIRECTLY. USE FILE "hardware.h" INSTEAD.
 #endif
 
 #define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
