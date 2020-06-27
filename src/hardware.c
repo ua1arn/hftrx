@@ -12065,7 +12065,7 @@ void Reset_CPUn_Handler(void)
 //	GIC_SetInterfacePriorityMask(gARM_BASEPRI_ALL_ENABLED);
 //#endif /* WITHNESTEDINTERRUPTS */
 
-	//printcpustate();
+	printcpustate();
 	__enable_irq();
 	// Idle loop
 	for (;;)
@@ -12517,8 +12517,9 @@ void cpu_initialize(void)
 #if WITHSMPSYSTEM
 
 	//	SMP tests
-	//printcpustate();
 	stm32_pwr_domain_on();
+	local_delay_ms(400);
+	printcpustate();
 #endif /* WITHSMPSYSTEM */
 
 #if (__GIC_PRESENT == 1)
