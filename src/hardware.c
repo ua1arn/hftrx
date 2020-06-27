@@ -9533,6 +9533,8 @@ void Reset_CPUn_Handler(void)
 	const uint_fast32_t cpsr = __get_CPSR();
 	const uint_fast8_t cpuid = __get_MPIDR() & 0x03;
 	PRINTF(PSTR("Reset_CPUn_Handler trapped: cpsr=%08lX, cpuid=%02X, sp=%p\n"), cpsr, cpuid, & cpuid);
+	global_enableIRQ();
+	// Idle loop
 	for (;;)
 	{
 		__WFI();
