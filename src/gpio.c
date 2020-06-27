@@ -192,7 +192,7 @@ static void r7s721_pio_onchangeinterrupt(
 		const IRQn_ID_t int_id = irqbase + bitpos;
 		IRQ_Disable(int_id);
 		GIC_SetConfiguration(int_id, edge ? GIC_CONFIG_EDGE : GIC_CONFIG_LEVEL);
-		arm_hardware_set_handler(int_id, vector, priority, TARGETCPU);
+		arm_hardware_set_handler(int_id, vector, priority, TARGETCPU_EXTIO);
 	}
 }
 
@@ -607,7 +607,7 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 		const IRQn_ID_t int_id = IRQ0_IRQn + irq;
 		IRQ_Disable(int_id);
 		GIC_SetConfiguration(int_id, GIC_CONFIG_LEVEL);
-		arm_hardware_set_handler(int_id, r7s721_IRQn_IRQHandler, priority, TARGETCPU);
+		arm_hardware_set_handler(int_id, r7s721_IRQn_IRQHandler, priority, TARGETCPU_EXTIO);
 	}
 }
 
@@ -670,7 +670,7 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 		RCC->APB2ENR |= RCC_APB2ENR_AFIOEN;     //включить тактирование альтернативных функций
 		__DSB();
 
-		const uint_fast8_t targetcpu = TARGETCPU;
+		const uint_fast8_t targetcpu = TARGETCPU_EXTIO;
 	#if 1
 		{
 			const portholder_t bitpos0 = power4((ipins >> 0) & 0x0f);
@@ -7217,19 +7217,19 @@ arm_hardware_pioa_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 	(void) PIOA->PIO_ISR; // consume interrupt request
 	PIOA->PIO_IER = (ipins);	// interrupt on change pin enable
 
-	arm_hardware_set_handler(PIOA_IRQn, PIOA_IRQHandler, priority, TARGETCPU);
+	arm_hardware_set_handler(PIOA_IRQn, PIOA_IRQHandler, priority, TARGETCPU_EXTIO);
 
 #elif CPUSTYLE_STM32F1XX
 
-	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PA, priority, TARGETCPU);	// PORT A
+	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PA, priority, TARGETCPU_EXTIO);	// PORT A
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 
-	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PA, priority, TARGETCPU);	// PORT A
+	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PA, priority, TARGETCPU_EXTIO);	// PORT A
 
 #elif CPUSTYLE_STM32MP1
 
-	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PA, priority, TARGETCPU);	// PORT A
+	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PA, priority, TARGETCPU_EXTIO);	// PORT A
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -7248,19 +7248,19 @@ arm_hardware_piob_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 	(void) PIOB->PIO_ISR; // consume interrupt request
 	PIOB->PIO_IER = (ipins);	// interrupt on change pin enable
 
-	arm_hardware_set_handler(PIOB_IRQn, PIOB_IRQHandler, priority, TARGETCPU);
+	arm_hardware_set_handler(PIOB_IRQn, PIOB_IRQHandler, priority, TARGETCPU_EXTIO);
 
 #elif CPUSTYLE_STM32F1XX
 
-	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PB, priority, TARGETCPU);	// PORT B
+	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PB, priority, TARGETCPU_EXTIO);	// PORT B
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 
-	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PB, priority, TARGETCPU);	// PORT B
+	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PB, priority, TARGETCPU_EXTIO);	// PORT B
 
 #elif CPUSTYLE_STM32MP1
 
-	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PB, priority, TARGETCPU);	// PORT B
+	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PB, priority, TARGETCPU_EXTIO);	// PORT B
 
 #elif CPUSTYLE_AT91SAM7S
 
@@ -7284,19 +7284,19 @@ arm_hardware_pioc_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 	(void) PIOC->PIO_ISR; // consume interrupt request
 	PIOC->PIO_IER = (ipins);	// interrupt on change pin enable
 
-	arm_hardware_set_handler(PIOC_IRQn, PIOC_IRQHandler, priority, TARGETCPU);
+	arm_hardware_set_handler(PIOC_IRQn, PIOC_IRQHandler, priority, TARGETCPU_EXTIO);
 
 #elif CPUSTYLE_STM32F1XX
 
-	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PC, priority, TARGETCPU);	// PORT C
+	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PC, priority, TARGETCPU_EXTIO);	// PORT C
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 
-	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PC, priority, TARGETCPU);	// PORT C
+	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PC, priority, TARGETCPU_EXTIO);	// PORT C
 
 #elif CPUSTYLE_STM32MP1
 
-	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PC, priority, TARGETCPU);	// PORT C
+	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PC, priority, TARGETCPU_EXTIO);	// PORT C
 
 #elif CPUSTYLE_AT91SAM7S
 
@@ -7320,19 +7320,19 @@ arm_hardware_piod_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 	(void) PIOD->PIO_ISR; // consume interrupt request
 	PIOD->PIO_IER = (ipins);	// interrupt on change pin enable
 
-	arm_hardware_set_handler(PIOD_IRQn, PIOD_IRQHandler, priority, TARGETCPU);
+	arm_hardware_set_handler(PIOD_IRQn, PIOD_IRQHandler, priority, TARGETCPU_EXTIO);
 
 #elif CPUSTYLE_STM32F1XX
 
-	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PD, priority, TARGETCPU);	// PORT D
+	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PD, priority, TARGETCPU_EXTIO);	// PORT D
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 
-	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PD, priority, TARGETCPU);	// PORT D
+	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PD, priority, TARGETCPU_EXTIO);	// PORT D
 
 #elif CPUSTYLE_STM32MP1
 
-	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PD, priority, TARGETCPU);	// PORTD
+	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PD, priority, TARGETCPU_EXTIO);	// PORTD
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -7354,19 +7354,19 @@ arm_hardware_pioe_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 	(void) PIOE->PIO_ISR; // consume interrupt request
 	PIOE->PIO_IER = (ipins);	// interrupt on change pin enable
 
-	arm_hardware_set_handler(PIOE_IRQn, PIOE_IRQHandler, priority, TARGETCPU);
+	arm_hardware_set_handler(PIOE_IRQn, PIOE_IRQHandler, priority, TARGETCPU_EXTIO);
 
 #elif CPUSTYLE_STM32F1XX
 
-	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PE, priority, TARGETCPU);	// PORT E
+	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PE, priority, TARGETCPU_EXTIO);	// PORT E
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 
-	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PE, priority, TARGETCPU);	// PORT E
+	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PE, priority, TARGETCPU_EXTIO);	// PORT E
 
 #elif CPUSTYLE_STM32MP1
 
-	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PE, priority, TARGETCPU);	// PORT E
+	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PE, priority, TARGETCPU_EXTIO);	// PORT E
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -7388,19 +7388,19 @@ arm_hardware_piof_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 	(void) PIOF->PIO_ISR; // consume interrupt request
 	PIOF->PIO_IER = (ipins);	// interrupt on change pin enable
 
-	arm_hardware_set_handler(PIOF_IRQn, PIOF_IRQHandler, priority, TARGETCPU);
+	arm_hardware_set_handler(PIOF_IRQn, PIOF_IRQHandler, priority, TARGETCPU_EXTIO);
 
 #elif CPUSTYLE_STM32F1XX
 
-	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PF, priority, TARGETCPU);	// PORT F
+	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PF, priority, TARGETCPU_EXTIO);	// PORT F
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 
-	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PF, priority, TARGETCPU);	// PORT F
+	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PF, priority, TARGETCPU_EXTIO);	// PORT F
 
 #elif CPUSTYLE_STM32MP1
 
-	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PF, priority, TARGETCPU);	// PORT F
+	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PF, priority, TARGETCPU_EXTIO);	// PORT F
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -7421,19 +7421,19 @@ arm_hardware_piog_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 	(void) PIOG->PIO_ISR; // consume interrupt request
 	PIOG->PIO_IER = (ipins);	// interrupt on change pin enable
 
-	arm_hardware_set_handler(PIOG_IRQn, PIOG_IRQHandler, priority, TARGETCPU);
+	arm_hardware_set_handler(PIOG_IRQn, PIOG_IRQHandler, priority, TARGETCPU_EXTIO);
 
 #elif CPUSTYLE_STM32F1XX
 
-	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PG, priority, TARGETCPU);	// PORT G
+	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PG, priority, TARGETCPU_EXTIO);	// PORT G
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 
-	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PG, priority, TARGETCPU);	// PORT G
+	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PG, priority, TARGETCPU_EXTIO);	// PORT G
 
 #elif CPUSTYLE_STM32MP1
 
-	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PG, priority, TARGETCPU);	// PORT G
+	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PG, priority, TARGETCPU_EXTIO);	// PORT G
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -7451,15 +7451,15 @@ arm_hardware_pioh_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 {
 #if CPUSTYLE_STM32F1XX
 
-	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PH, priority, TARGETCPU);	// PORT H
+	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PH, priority, TARGETCPU_EXTIO);	// PORT H
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 
-	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PH, priority, TARGETCPU);	// PORT H
+	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PH, priority, TARGETCPU_EXTIO);	// PORT H
 
 #elif CPUSTYLE_STM32MP1
 
-	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PH, priority, TARGETCPU);	// PORT H
+	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PH, priority, TARGETCPU_EXTIO);	// PORT H
 
 #else
 	#error Undefined CPUSTYLE_XXX
