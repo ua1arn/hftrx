@@ -399,6 +399,46 @@ Reset_CPU1_HandlerSleep:
 
 		.endfunc
 
+
+	.globl	spin_lock
+	.globl	spin_unlock
+
+#if 1//ARM_ARCH_AT_LEAST(8, 0)
+/*
+ * According to the ARMv8-A Architecture Reference Manual, "when the global
+ * monitor for a PE changes from Exclusive Access state to Open Access state,
+ * an event is generated.". This applies to both AArch32 and AArch64 modes of
+ * ARMv8-A. As a result, no explicit SEV with unlock is required.
+ */
+#define COND_SEV()
+#else
+#define COND_SEV()	sev
+#endif
+
+	.func spin_lock
+	mov	r2, #1
+1:
+	ldrex	r1, [r0]
+	cmp	r1, #0
+	wfene
+	strexeq	r1, r2, [r0]
+	cmpeq	r1, #0
+	bne	1b
+	dmb
+	bx	lr
+	.endfunc
+
+
+	.func spin_unlock
+	mov	r2, #0
+1:
+	strex	r1, r2, [r0]
+	cmp	r1, #0
+	COND_SEV()
+	bne	1b
+	bx	lr
+	.endfunc
+
 	.section .dtcm
 	.align 8
 	.space	STACKSIZEUND
