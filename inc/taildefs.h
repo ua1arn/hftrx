@@ -787,8 +787,8 @@ typedef enum
 
 #if WITHSMPSYSTEM
 	#define TARGETCPU_SYSTEM 0x01	// CPU #0
-	#define TARGETCPU_RT 0x01		// CPU #1
-	#define TARGETCPU_OVRT 0x01		// CPU #0
+	#define TARGETCPU_RT 0x01		// CPU #0
+	#define TARGETCPU_OVRT 0x02		// CPU #1
 	#define TARGETCPU_EXTIO 0x01	// CPU #0
 #else /* WITHSMPSYSTEM */
 	#define TARGETCPU_SYSTEM 0x01	// CPU #0

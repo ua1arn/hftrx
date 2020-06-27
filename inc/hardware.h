@@ -1008,6 +1008,13 @@ uint_fast32_t display_getdotclock(void);
 
 #define  ARRAY_SIZE(a)  (sizeof a / sizeof a [0])
 
+typedef struct spinlock {
+	volatile uint32_t lock;
+} spinlock_t;
+
+void spin_lock(spinlock_t *lock);
+void spin_unlock(spinlock_t *lock);
+
 
 #ifdef __cplusplus
 }

@@ -13229,15 +13229,15 @@ void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint
 	VERIFY(IRQ_Disable(int_id) == 0);
 	VERIFY(IRQ_SetHandler(int_id, handler) == 0);
 	VERIFY(IRQ_SetPriority(int_id, priority) == 0);
-	//GIC_SetTarget(int_id, 0x02);	// CPU#1
-	//GIC_SetTarget(int_id, 0x01);	// CPU#0
 	GIC_SetTarget(int_id, targetcpu);
+
 #if CPUSTYLE_STM32MP1
 	uint_fast32_t cfg = GIC_GetConfiguration(int_id);
 	cfg &= ~ 0x02;	/* Set level sensitive configuration */
 	cfg |= 0x01;	/* Set 1-N model - Only one processor handles this interrupt. */
 	GIC_SetConfiguration(int_id, cfg);
 #endif /* CPUSTYLE_STM32MP1 */
+
 	VERIFY(IRQ_Enable(int_id) == 0);
 
 #else /* CPUSTYLE_STM32MP1 */
