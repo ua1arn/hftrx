@@ -11485,7 +11485,7 @@ ttb_accessbits(uintptr_t a, int ro)
 }
 
 static void FLASHMEMINITFUNC
-loadttbr(void)
+sysinit_ttbr_initialize(void)
 {
 	extern volatile uint32_t __TTB_BASE;		// получено из скрипта линкера
 	volatile uint32_t * const tlbbase = & __TTB_BASE;
@@ -12006,7 +12006,7 @@ sysinit_mmu_initialize(void)
 
 	// MMU inuitialize
 	ttb_initialize(ttb_accessbits, 0, 0);
-	loadttbr();
+	sysinit_ttbr_initialize();
 
 #elif CPUSTYLE_STM32MP1
 	extern uint32_t __data_start__;
@@ -12051,7 +12051,12 @@ void Reset_CPUn_Handler(void)
 {
 	sysinit_fpu_initialize();
 	sysinit_vbar_initialize();		// interrupt vectors relocate
-	loadttbr();	// TODO: убрать работу с L2
+	sysinit_ttbr_initialize();		// TODO: убрать работу с L2 для второго процессора
+
+	GIC_CPUInterfaceInit();
+#if WITHNESTEDINTERRUPTS
+	GIC_SetInterfacePriorityMask(gARM_BASEPRI_ALL_ENABLED);
+#endif /* WITHNESTEDINTERRUPTS */
 
 	printcpustate();
 	__enable_irq();
@@ -13224,9 +13229,12 @@ void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint
 	VERIFY(IRQ_SetPriority(int_id, priority) == 0);
 	//GIC_SetTarget(int_id, 0x02);	// CPU#1
 	GIC_SetTarget(int_id, 0x01);	// CPU#0
-	#if CPUSTYLE_STM32MP1
-		GIC_SetConfiguration(int_id, GIC_GetConfiguration(int_id) & ~ 0x02);	/* Set level sensitive configuration */
-	#endif /* CPUSTYLE_STM32MP1 */
+#if CPUSTYLE_STM32MP1
+	uint_fast32_t cfg = GIC_GetConfiguration(int_id);
+	cfg &= ~ 0x02;	/* Set level sensitive configuration */
+	cfg |= 0x01;	/* Set 1-N model - Only one processor handles this interrupt. */
+	GIC_SetConfiguration(int_id, cfg);
+#endif /* CPUSTYLE_STM32MP1 */
 	VERIFY(IRQ_Enable(int_id) == 0);
 
 #else /* CPUSTYLE_STM32MP1 */
