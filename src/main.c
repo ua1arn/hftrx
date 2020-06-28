@@ -2504,6 +2504,7 @@ struct nvmap
 #elif WITHNOTCHFREQ
 	uint8_t	ggrpnotch; // последний посещённый пункт группы
 	uint8_t gnotch;
+	uint8_t gautonotch;
 	uint16_t gnotchfreq;
 	uint16_t gnotchwidth;
 #endif /* WITHNOTCHONOFF, WITHNOTCHFREQ */
@@ -3087,6 +3088,7 @@ static uint_fast8_t gusefast;
 	static uint_fast8_t gnotch;
 #elif WITHNOTCHFREQ
 	static uint_fast8_t gnotch;
+	static uint_fast8_t gautonotch;
 	static dualctl16_t gnotchfreq = { 1000, 1000 };
 	static dualctl16_t gnotchwidth = { 500, 500 };
 #endif /* WITHNOTCHFREQ */
@@ -7584,6 +7586,56 @@ static void processNoiseReduction(lmsnrstate_t * nrp, const float* bufferIn, flo
 
 #endif /* WITHNOSPEEX */
 
+enum {
+	autonotch_step = ARMI2SRATE / FIRBUFSIZE,
+	autonotch_buf_size = FIRBUFSIZE,
+	autonotch_double_buf_size = FIRBUFSIZE * 2,
+	autonotch_half_buf_size = FIRBUFSIZE / 2
+};
+
+static void hamradio_autonotch_process(float32_t * in_buf)
+{
+	static float32_t tmp [autonotch_buf_size], tmp2 [autonotch_double_buf_size], max_value;
+	static uint32_t max_index;
+	static uint16_t cnt = 0;
+	uint_fast16_t notch_freq;
+	unsigned i;
+	cnt ++;
+
+	if(cnt > 10)
+	{
+		cnt = 0;
+		arm_copy_f32(in_buf, tmp, autonotch_buf_size);
+
+		for(i = 0; i < autonotch_double_buf_size; i += 2)
+		{
+			tmp2[i] = tmp[i / 2];
+			tmp2[i + 1] = 0;
+		}
+
+		arm_cfft_f32(& arm_cfft_sR_f32_len512, tmp2, 0, 1);
+		arm_cmplx_mag_f32(tmp2, tmp2, autonotch_buf_size);
+		arm_max_f32(tmp2, autonotch_half_buf_size, & max_value, & max_index);
+
+		if(max_value > 1000000)		// pre-alpha ver. Autonotch
+		{
+			notch_freq = max_index * autonotch_step;
+//			PRINTF("%d: %f, %d\n", max_index, max_value, notch_freq);
+			gnotch = 1;
+			gnotchfreq.value = notch_freq;
+			board_set_notch_on(notchmodes [gnotch].code);
+			board_set_notch_freq(gnotchfreq.value);
+			speex_update_rx();
+		}
+		else
+		{
+			gnotch = 0;
+			board_set_notch_on(notchmodes [gnotch].code);
+			speex_update_rx();
+		}
+	}
+}
+
 // обработка и сохранение в savesampleout16stereo_user()
 static void processingonebuff(lmsnrstate_t * const nrp, speexel_t * p)
 {
@@ -7593,6 +7645,11 @@ static void processingonebuff(lmsnrstate_t * const nrp, speexel_t * p)
 	//////////////////////////////////////////////
 	// Filtering
 	// Use CMSIS DSP interface
+if(gautonotch)
+{
+	hamradio_autonotch_process(p);
+}
+
 #if WITHNOSPEEX
 	if (denoise)
 	{
@@ -13859,6 +13916,15 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
 	},
+	{
+		QLABEL2("AUTONTCH", "Auto Notch"), 8, 3, RJ_ON,	ISTEP1,		/* управление режимом NOTCH */
+		ITEM_VALUE,
+		0, NOTCHMODE_COUNT - 1,
+		offsetof(struct nvmap, gautonotch),							/* управление режимом NOTCH */
+		NULL,
+		& gautonotch,
+		getzerobase, /* складывается со смещением и отображается */
+	},
 	#endif /* ! WITHPOTNOTCH */
 #elif WITHNOTCHONOFF
 #if ! WITHFLATMENU
@@ -18814,6 +18880,22 @@ uint_fast8_t hamradio_set_freq(uint_fast32_t freq)
 	return 0;
 }
 #if WITHTOUCHGUI
+
+void hamradio_set_autonotch(uint_fast8_t v)
+{
+	gautonotch = v != 0;
+	if (!v && gnotch)
+	{
+		gnotch = 0;
+		board_set_notch_on(notchmodes [gnotch].code);
+		speex_update_rx();
+	}
+}
+
+uint_fast8_t hamradio_get_autonotch(void)
+{
+	return gautonotch;
+}
 
 void hamradio_disable_keyboard_redirect (void)
 {

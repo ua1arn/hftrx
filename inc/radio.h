@@ -3343,6 +3343,8 @@ void hamradio_set_reverb_delay(uint_fast8_t v);
 void hamradio_set_reverb_loss(uint_fast8_t v);
 #endif /* WITHREVERB */
 
+void hamradio_set_autonotch(uint_fast8_t v);
+uint_fast8_t hamradio_get_autonotch(void);
 void hamradio_set_gmoniflag(uint_fast8_t v);
 uint_fast8_t hamradio_get_gmoniflag(void);
 uint_fast8_t hamradio_get_gmikebust20db(void);
