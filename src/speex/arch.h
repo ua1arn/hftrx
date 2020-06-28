@@ -39,6 +39,7 @@
 	// No speex
 	#define FFTSizeFiltersM 10
 	#define FFTCONFIGFilters	(& arm_cfft_sR_f32_len1024)
+	#define FFTCONFIGAutoNotch	(& arm_cfft_sR_f32_len512)	// Half of FFTCONFIGFilters
 
 	#define FFTSizeSpectrumM 9
 	#define FFTCONFIGSpectrum	(& arm_cfft_sR_f32_len512)
@@ -47,6 +48,7 @@
 	// With speex
 	#define FFTSizeFiltersM 10
 	#define FFTCONFIGFilters	(& arm_cfft_sR_f32_len1024)
+	#define FFTCONFIGAutoNotch	(& arm_cfft_sR_f32_len512)	// Half of FFTCONFIGFilters
 
 	#define FFTSizeSpectrumM 9
 	#define FFTCONFIGSpectrum	(& arm_cfft_sR_f32_len512)
@@ -55,6 +57,7 @@
 	// No speex
 	#define FFTSizeFiltersM 10
 	#define FFTCONFIGFilters	(& arm_cfft_sR_f32_len1024)
+	#define FFTCONFIGAutoNotch	(& arm_cfft_sR_f32_len512)	// Half of FFTCONFIGFilters
 
 	#define FFTSizeSpectrumM 9
 	#define FFTCONFIGSpectrum	(& arm_cfft_sR_f32_len512)
@@ -63,6 +66,7 @@
 	// With speex
 	#define FFTSizeFiltersM 10
 	#define FFTCONFIGFilters	(& arm_cfft_sR_f32_len1024)
+	#define FFTCONFIGAutoNotch	(& arm_cfft_sR_f32_len512)	// Half of FFTCONFIGFilters
 
 	#define FFTSizeSpectrumM 9
 	#define FFTCONFIGSpectrum	(& arm_cfft_sR_f32_len512)
@@ -71,6 +75,7 @@
 	// No speex
 	#define FFTSizeFiltersM 10
 	#define FFTCONFIGFilters	(& arm_cfft_sR_f32_len1024)
+	#define FFTCONFIGAutoNotch	(& arm_cfft_sR_f32_len512)	// Half of FFTCONFIGFilters
 
 	#define FFTSizeSpectrumM 9
 	#define FFTCONFIGSpectrum	(& arm_cfft_sR_f32_len512)
@@ -79,6 +84,7 @@
 	// With speex
 	#define FFTSizeFiltersM 10
 	#define FFTCONFIGFilters	(& arm_cfft_sR_f32_len1024)
+	#define FFTCONFIGAutoNotch	(& arm_cfft_sR_f32_len512)	// Half of FFTCONFIGFilters
 
 	#define FFTSizeSpectrumM 9
 	#define FFTCONFIGSpectrum	(& arm_cfft_sR_f32_len512)
@@ -87,6 +93,7 @@
 
 	#define FFTSizeFiltersM 10
 	#define FFTCONFIGFilters	(& arm_cfft_sR_f32_len1024)
+	#define FFTCONFIGAutoNotch	(& arm_cfft_sR_f32_len512)	// Half of FFTCONFIGFilters
 
 	#define FFTSizeSpectrumM 8
 	#define FFTCONFIGSpectrum	(& arm_cfft_sR_f32_len256)
@@ -95,6 +102,7 @@
 
 	#define FFTSizeFiltersM 10
 	#define FFTCONFIGFilters	(& arm_cfft_sR_f32_len1024)
+	#define FFTCONFIGAutoNotch	(& arm_cfft_sR_f32_len512)	// Half of FFTCONFIGFilters
 
 	#define FFTSizeSpectrumM 10
 	#define FFTCONFIGSpectrum	(& arm_cfft_sR_f32_len1024)
@@ -103,6 +111,7 @@
 
 	#define FFTSizeFiltersM 10
 	#define FFTCONFIGFilters	(& arm_cfft_sR_f32_len1024)
+	#define FFTCONFIGAutoNotch	(& arm_cfft_sR_f32_len512)	// Half of FFTCONFIGFilters
 
 	#define FFTSizeSpectrumM 8
 	#define FFTCONFIGSpectrum	(& arm_cfft_sR_f32_len256)

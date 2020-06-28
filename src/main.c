@@ -7588,7 +7588,7 @@ static void processNoiseReduction(lmsnrstate_t * nrp, const float* bufferIn, flo
 
 enum {
 	autonotch_step = ARMI2SRATE / FIRBUFSIZE,
-	autonotch_buf_size = FIRBUFSIZE,
+	autonotch_buf_size = FIRBUFSIZE,	// See FFTCONFIGFilters, FFTCONFIGAutoNotch definition
 	autonotch_double_buf_size = FIRBUFSIZE * 2,
 	autonotch_half_buf_size = FIRBUFSIZE / 2
 };
@@ -7602,22 +7602,22 @@ static void hamradio_autonotch_process(float32_t * in_buf)
 	unsigned i;
 	cnt ++;
 
-	if(cnt > 10)
+	if (cnt > 10)
 	{
 		cnt = 0;
 		arm_copy_f32(in_buf, tmp, autonotch_buf_size);
 
 		for(i = 0; i < autonotch_double_buf_size; i += 2)
 		{
-			tmp2[i] = tmp[i / 2];
-			tmp2[i + 1] = 0;
+			tmp2 [i] = tmp [i / 2];
+			tmp2 [i + 1] = 0;
 		}
 
-		arm_cfft_f32(& arm_cfft_sR_f32_len512, tmp2, 0, 1);
+		arm_cfft_f32(FFTCONFIGAutoNotch, tmp2, 0, 1);
 		arm_cmplx_mag_f32(tmp2, tmp2, autonotch_buf_size);
 		arm_max_f32(tmp2, autonotch_half_buf_size, & max_value, & max_index);
 
-		if(max_value > 1000000)		// pre-alpha ver. Autonotch
+		if (max_value > 1000000)		// pre-alpha ver. Autonotch
 		{
 			notch_freq = max_index * autonotch_step;
 //			PRINTF("%d: %f, %d\n", max_index, max_value, notch_freq);
