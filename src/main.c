@@ -7587,7 +7587,6 @@ static void processNoiseReduction(lmsnrstate_t * nrp, const float* bufferIn, flo
 #endif /* WITHNOSPEEX */
 
 enum {
-	autonotch_step = ARMI2SRATE / FIRBUFSIZE,
 	autonotch_buf_size = FIRBUFSIZE,	// See FFTCONFIGFilters, FFTCONFIGAutoNotch definition
 	autonotch_double_buf_size = FIRBUFSIZE * 2,
 	autonotch_half_buf_size = FIRBUFSIZE / 2
@@ -7598,7 +7597,6 @@ static void hamradio_autonotch_process(float32_t * in_buf)
 	static float32_t tmp [autonotch_buf_size], tmp2 [autonotch_double_buf_size], max_value;
 	static uint32_t max_index;
 	static uint16_t cnt = 0;
-	uint_fast16_t notch_freq;
 	unsigned i;
 	cnt ++;
 
@@ -7619,8 +7617,9 @@ static void hamradio_autonotch_process(float32_t * in_buf)
 
 		if (max_value > 1000000)		// pre-alpha ver. Autonotch
 		{
-			notch_freq = max_index * autonotch_step;
+			const uint_fast16_t notch_freq = (uint_fast64_t) max_index * ARMI2SRATE / FIRBUFSIZE;
 //			PRINTF("%d: %f, %d\n", max_index, max_value, notch_freq);
+			// TODO: adjust to WITHNOTCHFREQMIN..WITHNOTCHFREQMAX,
 			gnotch = 1;
 			gnotchfreq.value = notch_freq;
 			board_set_notch_on(notchmodes [gnotch].code);
