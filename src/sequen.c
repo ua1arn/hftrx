@@ -11,7 +11,7 @@
 #include "hardware.h"
 #include "board.h"
 #include "formats.h"
-#include "inc/spi.h"
+#include "spi.h"
 
 static ticker_t seqticker;
 

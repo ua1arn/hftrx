@@ -7,10 +7,10 @@
 
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
 #include "formats.h"
+#include "gpio.h"
 
 #include <string.h>
 #include <math.h>
-#include "inc/gpio.h"
 
 #if CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
 // Перенос каждого бита в байте в позицию с увеличенным в 4 раза номером.

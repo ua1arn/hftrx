@@ -7,12 +7,10 @@
 
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
 #include "board.h"
+#include "formats.h"	// for debug prints
+#include "spi.h"
 
 #include <stdlib.h>
-//#include <assert.h>
-
-#include "formats.h"	// for debug prints
-#include "inc/spi.h"
 
 #if CPUSTYLE_STM32H7XX
 #else /* CPUSTYLE_STM32H7XX */

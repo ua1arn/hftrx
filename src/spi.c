@@ -7,7 +7,6 @@
 
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
 #include <stdlib.h>
-//#include <assert.h>
 #include "spi.h"
 #include "gpio.h"
 #include "formats.h"
