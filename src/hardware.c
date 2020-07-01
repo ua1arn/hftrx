@@ -13207,7 +13207,7 @@ static void vectors_relocate(void)
 #endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM0 || CPUSTYLE_ARM_CM7 */
 
 
-#if CPUSTYLE_ARM && 1//WITHSMPSYSTEM
+#if CPUSTYLE_ARM && WITHSMPSYSTEM
 
 // http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dai0321a/BIHEJCHB.html
 void spin_lock(spinlock_t *p)
