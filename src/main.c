@@ -7399,9 +7399,9 @@ static uint_fast8_t getlo4div(
 #if WITHIF4DSP
 
 #define NOISE_REDUCTION_BLOCK_SIZE FIRBUFSIZE
-#define NOISE_REDUCTION_TAPS 16
-#define NOISE_REDUCTION_REFERENCE_SIZE (NOISE_REDUCTION_BLOCK_SIZE*2)
-#define NOISE_REDUCTION_STEP 0.000001f
+#define NOISE_REDUCTION_TAPS 64
+#define NOISE_REDUCTION_REFERENCE_SIZE (NOISE_REDUCTION_BLOCK_SIZE * 2)
+#define NOISE_REDUCTION_STEP 0.01f
 
 typedef struct lmsnrstate_tag
 {
@@ -7587,52 +7587,42 @@ static void processNoiseReduction(lmsnrstate_t * nrp, const float* bufferIn, flo
 #endif /* WITHNOSPEEX */
 
 enum {
-	autonotch_buf_size = FIRBUFSIZE,	// See FFTCONFIGFilters, FFTCONFIGAutoNotch definition
-	autonotch_double_buf_size = FIRBUFSIZE * 2,
-	autonotch_half_buf_size = FIRBUFSIZE / 2
+	autonotch_numtaps = 64,
+	autonotch_buffer_size = FIRBUFSIZE * 4,
+	autonotch_state_array_size = autonotch_numtaps + FIRBUFSIZE,
 };
 
-static void hamradio_autonotch_process(float32_t * in_buf)
+typedef struct
 {
-	static float32_t tmp [autonotch_buf_size], tmp2 [autonotch_double_buf_size], max_value;
-	static uint32_t max_index;
-	static uint16_t cnt = 0;
-	unsigned i;
-	cnt ++;
+    float32_t   				errsig2[FIRBUFSIZE];
+    arm_lms_norm_instance_f32	lms2Norm_instance;
+    arm_lms_instance_f32	    lms2_instance;
+    float32_t	                lms2StateF32[autonotch_state_array_size];
+    float32_t	                lms2NormCoeff_f32[autonotch_numtaps];
+    float32_t	                lms2_nr_delay[autonotch_buffer_size];
+    uint_fast16_t 				reference_index_old;
+    uint_fast16_t 				reference_index_new;
+} LMSData;
+LMSData lmsData;
 
-	if (cnt > 10)
-	{
-		cnt = 0;
-		arm_copy_f32(in_buf, tmp, autonotch_buf_size);
+static void hamradio_ANR_init(void)
+{
+	float32_t mu = log10f(((20 + 1.0)/1500.0) + 1.0);
+	arm_lms_norm_init_f32(&lmsData.lms2Norm_instance, autonotch_numtaps, lmsData.lms2NormCoeff_f32, lmsData.lms2StateF32, mu, FIRBUFSIZE);
+	arm_fill_f32(0.0,lmsData.lms2_nr_delay,autonotch_buffer_size);
+	arm_fill_f32(0.0,lmsData.lms2NormCoeff_f32,autonotch_numtaps);
+	lmsData.reference_index_old = 0;
+	lmsData.reference_index_new = 0;
+}
 
-		for(i = 0; i < autonotch_double_buf_size; i += 2)
-		{
-			tmp2 [i] = tmp [i / 2];
-			tmp2 [i + 1] = 0;
-		}
-
-		arm_cfft_f32(FFTCONFIGAutoNotch, tmp2, 0, 1);
-		arm_cmplx_mag_f32(tmp2, tmp2, autonotch_buf_size);
-		arm_max_f32(tmp2, autonotch_half_buf_size, & max_value, & max_index);
-
-		if (max_value > 1000000)		// pre-alpha ver. Autonotch
-		{
-			const uint_fast16_t notch_freq = (uint_fast64_t) max_index * ARMI2SRATE / FIRBUFSIZE;
-//			PRINTF("%d: %f, %d\n", max_index, max_value, notch_freq);
-			// TODO: adjust to WITHNOTCHFREQMIN..WITHNOTCHFREQMAX,
-			gnotch = 1;
-			gnotchfreq.value = notch_freq;
-			board_set_notch_on(notchmodes [gnotch].code);
-			board_set_notch_freq(gnotchfreq.value);
-			speex_update_rx();
-		}
-		else
-		{
-			gnotch = 0;
-			board_set_notch_on(notchmodes [gnotch].code);
-			speex_update_rx();
-		}
-	}
+static void hamradio_ANR_process(float32_t * notchbuffer)
+{
+	arm_copy_f32(notchbuffer, &lmsData.lms2_nr_delay[lmsData.reference_index_new], FIRBUFSIZE);
+	arm_lms_norm_f32(&lmsData.lms2Norm_instance, notchbuffer, &lmsData.lms2_nr_delay[lmsData.reference_index_old], lmsData.errsig2, notchbuffer, FIRBUFSIZE);
+	lmsData.reference_index_old += FIRBUFSIZE;
+	lmsData.reference_index_new = lmsData.reference_index_old + FIRBUFSIZE;
+	lmsData.reference_index_old %= autonotch_buffer_size;
+	lmsData.reference_index_new %= autonotch_buffer_size;
 }
 
 // обработка и сохранение в savesampleout16stereo_user()
@@ -7644,11 +7634,6 @@ static void processingonebuff(lmsnrstate_t * const nrp, speexel_t * p)
 	//////////////////////////////////////////////
 	// Filtering
 	// Use CMSIS DSP interface
-if(gautonotch)
-{
-	hamradio_autonotch_process(p);
-}
-
 #if WITHNOSPEEX
 	if (denoise)
 	{
@@ -7672,6 +7657,8 @@ if(gautonotch)
 	if (denoise)
 	{
 		// Filtering and denoise.
+		if(gautonotch)
+			hamradio_ANR_process(p);
 		arm_fir_f32(& nrp->fir_instance, p, nrp->wire1, FIRBUFSIZE);
 		speex_preprocess_run(nrp->st_handle, nrp->wire1);
 		nrp->outsp = nrp->wire1;
@@ -7687,6 +7674,8 @@ if(gautonotch)
 		// Filtering only.
 		ASSERT(p != NULL);
 		ASSERT(nrp->wire1 != NULL);
+		if(gautonotch)
+			hamradio_ANR_process(p);
 		arm_fir_f32(& nrp->fir_instance, p, nrp->wire1, FIRBUFSIZE);
 		nrp->outsp = nrp->wire1;
 	}
@@ -18883,12 +18872,8 @@ uint_fast8_t hamradio_set_freq(uint_fast32_t freq)
 void hamradio_set_autonotch(uint_fast8_t v)
 {
 	gautonotch = v != 0;
-	if (!v && gnotch)
-	{
-		gnotch = 0;
-		board_set_notch_on(notchmodes [gnotch].code);
-		speex_update_rx();
-	}
+	if (v)
+		hamradio_ANR_init();
 }
 
 uint_fast8_t hamradio_get_autonotch(void)
