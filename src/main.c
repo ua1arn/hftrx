@@ -7605,7 +7605,7 @@ typedef struct
 } LMSData;
 LMSData lmsData;
 
-static void hamradio_ANR_init(void)
+static void hamradio_autonotch_init(void)
 {
 	float32_t mu = log10f(((20 + 1.0)/1500.0) + 1.0);
 	arm_lms_norm_init_f32(&lmsData.lms2Norm_instance, autonotch_numtaps, lmsData.lms2NormCoeff_f32, lmsData.lms2StateF32, mu, FIRBUFSIZE);
@@ -7615,7 +7615,7 @@ static void hamradio_ANR_init(void)
 	lmsData.reference_index_new = 0;
 }
 
-static void hamradio_ANR_process(float32_t * notchbuffer)
+static void hamradio_autonotch_process(float32_t * notchbuffer)
 {
 	arm_copy_f32(notchbuffer, &lmsData.lms2_nr_delay[lmsData.reference_index_new], FIRBUFSIZE);
 	arm_lms_norm_f32(&lmsData.lms2Norm_instance, notchbuffer, &lmsData.lms2_nr_delay[lmsData.reference_index_old], lmsData.errsig2, notchbuffer, FIRBUFSIZE);
@@ -7658,7 +7658,7 @@ static void processingonebuff(lmsnrstate_t * const nrp, speexel_t * p)
 	{
 		// Filtering and denoise.
 		if(gautonotch)
-			hamradio_ANR_process(p);
+			hamradio_autonotch_process(p);
 		arm_fir_f32(& nrp->fir_instance, p, nrp->wire1, FIRBUFSIZE);
 		speex_preprocess_run(nrp->st_handle, nrp->wire1);
 		nrp->outsp = nrp->wire1;
@@ -7675,7 +7675,7 @@ static void processingonebuff(lmsnrstate_t * const nrp, speexel_t * p)
 		ASSERT(p != NULL);
 		ASSERT(nrp->wire1 != NULL);
 		if(gautonotch)
-			hamradio_ANR_process(p);
+			hamradio_autonotch_process(p);
 		arm_fir_f32(& nrp->fir_instance, p, nrp->wire1, FIRBUFSIZE);
 		nrp->outsp = nrp->wire1;
 	}
@@ -18873,7 +18873,7 @@ void hamradio_set_autonotch(uint_fast8_t v)
 {
 	gautonotch = v != 0;
 	if (v)
-		hamradio_ANR_init();
+		hamradio_autonotch_init();
 }
 
 uint_fast8_t hamradio_get_autonotch(void)
