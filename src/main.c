@@ -17708,7 +17708,8 @@ static void initialize2(void)
 			for (;;)
 			{
 				while (kbd_scan(& kbch) == 0)
-					;
+					local_delay_ms(20);	// FIXME: разобраться почему не работает без
+				PRINTF("kbch=0x%02X (%u)\n", (unsigned) kbch, (unsigned) kbch);
 				if (kbch == KBD_CODE_SPLIT || kbch == KBD_CODE_ERASECONFIG)
 					break;
 			}
@@ -17766,7 +17767,8 @@ static void initialize2(void)
 			for (;;)
 			{
 				while (kbd_scan(& kbch) == 0)
-					;
+					local_delay_ms(20);	// FIXME: разобраться почему не работает без
+				PRINTF("kbch=0x%02X (%u)\n", (unsigned) kbch, (unsigned) kbch);
 				if (kbch == KBD_CODE_SPLIT || kbch == KBD_CODE_ERASECONFIG)
 					break;
 			}
