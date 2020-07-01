@@ -35,7 +35,7 @@ static int position_kbd;	/* накопитель от клавиатуры - з�
 
 // dimensions are:
 // old_bits new_bits
-static RAMDTCM int_fast8_t graydecoder [4][4] =
+static const RAMDTCM int8_t graydecoder [4][4] =
 {
 	{
 		+0,		/* 00 -> 00 stopped				*/
@@ -83,7 +83,7 @@ void spool_encinterrupt(void)
 
 static RAMDTCM uint_fast8_t old_val2;
 
-static void spool_encinterrupt2_local(void * ctx)
+void spool_encinterrupt2(void)
 {
 	const uint_fast8_t new_val = hardware_get_encoder2_bits();	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
 
@@ -419,6 +419,11 @@ getRotateHiRes2(
 
 	* jumpsize = 1;
 	return nrotate;
+}
+
+static void spool_encinterrupt2_local(void * ctx)
+{
+	spool_encinterrupt2();
 }
 
 /* вызывается при запрещенных прерываниях */

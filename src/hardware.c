@@ -1099,6 +1099,9 @@ static RAMFUNC void spool_elkeybundle(void)
 #elif WITHELKEY
 	elkey_spool_dots();		// вызывается с периодом 1/ELKEY_DISCRETE от длительности точки
 #endif /* WITHOPERA4BEACON */
+#if WITHENCODER2 && defined (ENCODER2_BITS)
+	spool_encinterrupt2();	/* прерывание по изменению сигнала на входах от валкодера #2*/
+#endif /* WITHENCODER2 && ENCODER2_BITS */
 }
 
 /* 
@@ -1239,7 +1242,7 @@ static RAMFUNC void stm32fxxx_pinirq(portholder_t pr)
 		spool_encinterrupt();	/* прерывание по изменению сигнала на входах от валкодера #1*/
 	}
 #endif /* WITHENCODER && defined (ENCODER_BITS) */
-#if WITHENCODER && defined (ENCODER2_BITS)
+#if WITHENCODER2 && defined (ENCODER2_BITS)
 	if ((pr & ENCODER2_BITS) != 0)
 	{
 		//spool_encinterrupt2();	/* прерывание по изменению сигнала на входах от валкодера #2*/
@@ -13204,7 +13207,7 @@ static void vectors_relocate(void)
 #endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM0 || CPUSTYLE_ARM_CM7 */
 
 
-#if CPUSTYLE_ARM && WITHSMPSYSTEM
+#if CPUSTYLE_ARM && 1//WITHSMPSYSTEM
 
 // http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dai0321a/BIHEJCHB.html
 void spin_lock(spinlock_t *p)
