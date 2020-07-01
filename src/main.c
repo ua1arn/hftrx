@@ -7603,22 +7603,24 @@ typedef struct
     uint_fast16_t 				reference_index_old;
     uint_fast16_t 				reference_index_new;
 } LMSData;
-LMSData lmsData;
+
+static LMSData lmsData;
 
 static void hamradio_autonotch_init(void)
 {
-	float32_t mu = log10f(((20 + 1.0)/1500.0) + 1.0);
-	arm_lms_norm_init_f32(&lmsData.lms2Norm_instance, autonotch_numtaps, lmsData.lms2NormCoeff_f32, lmsData.lms2StateF32, mu, FIRBUFSIZE);
-	arm_fill_f32(0.0,lmsData.lms2_nr_delay,autonotch_buffer_size);
-	arm_fill_f32(0.0,lmsData.lms2NormCoeff_f32,autonotch_numtaps);
+	const float32_t mu = log10f(((20 + 1.0f) / 1500.0f) + 1.0f);
+	arm_lms_norm_init_f32(& lmsData.lms2Norm_instance, autonotch_numtaps, lmsData.lms2NormCoeff_f32, lmsData.lms2StateF32, mu, FIRBUFSIZE);
+	arm_fill_f32(0, lmsData.lms2_nr_delay,autonotch_buffer_size);
+	arm_fill_f32(0, lmsData.lms2NormCoeff_f32,autonotch_numtaps);
 	lmsData.reference_index_old = 0;
 	lmsData.reference_index_new = 0;
 }
 
+// TODO: учесть возмодность работы двух каналов приёма
 static void hamradio_autonotch_process(float32_t * notchbuffer)
 {
-	arm_copy_f32(notchbuffer, &lmsData.lms2_nr_delay[lmsData.reference_index_new], FIRBUFSIZE);
-	arm_lms_norm_f32(&lmsData.lms2Norm_instance, notchbuffer, &lmsData.lms2_nr_delay[lmsData.reference_index_old], lmsData.errsig2, notchbuffer, FIRBUFSIZE);
+	arm_copy_f32(notchbuffer, & lmsData.lms2_nr_delay [lmsData.reference_index_new], FIRBUFSIZE);
+	arm_lms_norm_f32(&lmsData.lms2Norm_instance, notchbuffer, & lmsData.lms2_nr_delay [lmsData.reference_index_old], lmsData.errsig2, notchbuffer, FIRBUFSIZE);
 	lmsData.reference_index_old += FIRBUFSIZE;
 	lmsData.reference_index_new = lmsData.reference_index_old + FIRBUFSIZE;
 	lmsData.reference_index_old %= autonotch_buffer_size;
@@ -7626,7 +7628,7 @@ static void hamradio_autonotch_process(float32_t * notchbuffer)
 }
 
 // обработка и сохранение в savesampleout16stereo_user()
-static void processingonebuff(lmsnrstate_t * const nrp, speexel_t * p)
+static void processingonebuff(uint_fast8_t pathi, lmsnrstate_t * const nrp, speexel_t * p)
 {
 	const uint_fast8_t mode = submodes [gsubmode].mode;
 	const uint_fast8_t nospeex = gtx || mode == MODE_DIGI || gdatamode;	// не делать даже коррекцию АЧХ
@@ -7657,7 +7659,7 @@ static void processingonebuff(lmsnrstate_t * const nrp, speexel_t * p)
 	if (denoise)
 	{
 		// Filtering and denoise.
-		if(gautonotch)
+		if (gautonotch && pathi == 0)
 			hamradio_autonotch_process(p);
 		arm_fir_f32(& nrp->fir_instance, p, nrp->wire1, FIRBUFSIZE);
 		speex_preprocess_run(nrp->st_handle, nrp->wire1);
@@ -7674,7 +7676,7 @@ static void processingonebuff(lmsnrstate_t * const nrp, speexel_t * p)
 		// Filtering only.
 		ASSERT(p != NULL);
 		ASSERT(nrp->wire1 != NULL);
-		if(gautonotch)
+		if (gautonotch && pathi == 0)
 			hamradio_autonotch_process(p);
 		arm_fir_f32(& nrp->fir_instance, p, nrp->wire1, FIRBUFSIZE);
 		nrp->outsp = nrp->wire1;
@@ -7695,7 +7697,7 @@ audioproc_spool_user(void)
 		{
 			lmsnrstate_t * const nrp = & lmsnrstates [pathi];
 			// nrp->outsp указывает на результат обработки
-			processingonebuff(nrp, p + pathi * FIRBUFSIZE);	// CMSIS DSP or SPEEX
+			processingonebuff(pathi, nrp, p + pathi * FIRBUFSIZE);	// CMSIS DSP or SPEEX
 		}
 		//////////////////////////////////////////////
 		// Save results
@@ -17855,6 +17857,7 @@ hamradio_initialize(void)
 #if WITHINTEGRATEDDSP	/* в программу включена инициализация и запуск DSP части. */
 	dsp_initialize();		// цифровая обработка подготавливается
 	InitNoiseReduction();
+	hamradio_autonotch_init();
 #endif /* WITHINTEGRATEDDSP */
 
 #if WITHI2SHW
@@ -18867,11 +18870,13 @@ uint_fast8_t hamradio_set_freq(uint_fast32_t freq)
 	}
 	return 0;
 }
-#if WITHTOUCHGUI
+
 
 void hamradio_set_autonotch(uint_fast8_t v)
 {
 	gautonotch = v != 0;
+	save_i8(offsetof(struct nvmap, gautonotch), gautonotch);
+
 	if (v)
 		hamradio_autonotch_init();
 }
@@ -18880,6 +18885,8 @@ uint_fast8_t hamradio_get_autonotch(void)
 {
 	return gautonotch;
 }
+
+#if WITHTOUCHGUI
 
 void hamradio_disable_keyboard_redirect (void)
 {
