@@ -1,0 +1,10 @@
+*.hex
+*.o
+*.d
+*.eep
+*.map
+*.elf
+*.dfu
+*.stm32
+*.nec32
+*.bin
