@@ -170,6 +170,6 @@ END RTL;
 -- Retrieval info: GEN_FILE: TYPE_NORMAL clkctrl1.vhd TRUE
 -- Retrieval info: GEN_FILE: TYPE_NORMAL clkctrl1.inc FALSE
 -- Retrieval info: GEN_FILE: TYPE_NORMAL clkctrl1.cmp FALSE
--- Retrieval info: GEN_FILE: TYPE_NORMAL clkctrl1.bsf TRUE FALSE
+-- Retrieval info: GEN_FILE: TYPE_NORMAL clkctrl1.bsf TRUE
 -- Retrieval info: GEN_FILE: TYPE_NORMAL clkctrl1_inst.vhd FALSE
 -- Retrieval info: LIB_FILE: cycloneive
