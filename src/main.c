@@ -18894,6 +18894,7 @@ uint_fast8_t hamradio_set_freq(uint_fast32_t freq)
 	return 0;
 }
 
+#if WITHNOTCHFREQ
 
 void hamradio_set_autonotch(uint_fast8_t v)
 {
@@ -18908,6 +18909,8 @@ uint_fast8_t hamradio_get_autonotch(void)
 {
 	return gautonotch;
 }
+
+#endif /* WITHNOTCHFREQ */
 
 #if WITHTOUCHGUI
 
