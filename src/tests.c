@@ -12,7 +12,7 @@
 #include "encoder.h"
 
 #include <math.h>
-#include <src/gui/gui.h>
+#include "src/gui/gui.h"
 #include <stdio.h>
 
 #include "display/display.h"
@@ -3658,10 +3658,10 @@ static void test_recodspool(void * ctx)
 
 static void test_recodstart(void)
 {
-	disableIRQ();
+	system_disableIRQ();
 	recticks = 0;
 	recstop = 0;
-	enableIRQ();
+	system_enableIRQ();
 }
 
 unsigned USBD_poke_u32(uint8_t * buff, uint_fast32_t v);
@@ -3857,38 +3857,6 @@ void displfiles_buff(const char* path)
         //f_closedir(&dir);
     }
 }
-
-static int
-toprintc(int c)
-{
-	if (c < 0x20 || c >= 0x7f)
-		return '.';
-	return c;
-}
-
-static void
-printhex(unsigned long voffs, const unsigned char * buff, unsigned length)
-{
-	unsigned i, j;
-	unsigned rows = (length + 15) / 16;
-
-	for (i = 0; i < rows; ++ i)
-	{
-		const int trl = ((length - 1) - i * 16) % 16 + 1;
-		debug_printf_P(PSTR("%08lX "), voffs + i * 16);
-		for (j = 0; j < trl; ++ j)
-			debug_printf_P(PSTR(" %02X"), buff [i * 16 + j]);
-
-		debug_printf_P(PSTR("%*s"), (16 - trl) * 3, "");
-
-		debug_printf_P(PSTR("  "));
-		for (j = 0; j < trl; ++ j)
-			debug_printf_P(PSTR("%c"), toprintc(buff [i * 16 + j]));
-
-		debug_printf_P(PSTR("\n"));
-	}
-}
-
 
 static BYTE targetdrv = 0;
 
@@ -5009,11 +4977,11 @@ static void serial_irq_loopback_test(void)
 {
 	//test_spi_trace((rxcount & 0x0f) * 16 + (txcount & 0x0f));
 
-	disableIRQ();
+	system_disableIRQ();
 	HARDWARE_DEBUGSIRQ_INITIALIZE();
 	HARDWARE_DEBUGSIRQ_SET_SPEED(DEBUGSPEED);
 	HARDWARE_DEBUGSIRQ_ENABLERX(1);
-	enableIRQ();
+	system_enableIRQ();
 	cat3_puts_impl_P(PSTR("Serial port ECHO test (with IRQ).\r\n"));
 	for (;;)
 	{
@@ -5272,40 +5240,6 @@ GrideTest(void)
 #endif /* LCDMODE_COLORED && ! DSTYLE_G_DUMMY */
 
 #if 0
-static int
-toprintc(int c)
-{
-	if (c < 0x20 || c >= 0x7f)
-		return '.';
-	return c;
-}
-
-static void
-printhex(unsigned long voffs, const unsigned char * buff, unsigned length)
-{
-	unsigned i, j;
-	unsigned rows = (length + 15) / 16;
-
-	for (i = 0; i < rows; ++ i)
-	{
-		const int trl = ((length - 1) - i * 16) % 16 + 1;
-		debug_printf_P(PSTR("%08lX "), voffs + i * 16);
-		for (j = 0; j < trl; ++ j)
-			debug_printf_P(PSTR(" %02X"), buff [i * 16 + j]);
-
-		debug_printf_P(PSTR("%*s"), (16 - trl) * 3, "");
-
-		debug_printf_P(PSTR("  "));
-		for (j = 0; j < trl; ++ j)
-			debug_printf_P(PSTR("%c"), toprintc(buff [i * 16 + j]));
-
-		debug_printf_P(PSTR("\n"));
-	}
-}
-
-#endif
-
-#if 0
 // MCU_AHB_SRAM - 96k
 
 static void memfill(unsigned k)
@@ -5339,9 +5273,9 @@ typedef struct
 	float i;
 } cplxf;
 
-static RAMFRAMEBUFF FATFSALIGN_BEGIN cplxf src [FFTZS];
-static RAMFRAMEBUFF FATFSALIGN_BEGIN cplxf dst [FFTZS];
-static RAMDTCM FATFSALIGN_BEGIN cplxf refv [FFTZS];
+static RAMFRAMEBUFF ALIGNX_BEGIN cplxf src [FFTZS] ALIGNX_END;
+static RAMFRAMEBUFF ALIGNX_BEGIN cplxf dst [FFTZS] ALIGNX_END;
+static RAMDTCM ALIGNX_BEGIN cplxf refv [FFTZS] ALIGNX_END;
 
 static void RAMFUNC_NONILINE cplxmla(cplxf *s, cplxf *d, cplxf *ref, int len) {
 	while (len--) {
@@ -5371,44 +5305,69 @@ static void RAMFUNC_NONILINE cplxmlasave(cplxf *d, int len) {
 
 void hightests(void)
 {
-#if LCDMODE_LTDC
+#if WITHLTDCHW && LCDMODE_LTDC
 	arm_hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
-#endif /* LCDMODE_LTDC */
+#endif /* WITHLTDCHW && LCDMODE_LTDC */
 
-#if 0 && WITHDEBUG
-	{
-		// FPU speed test
-		uint_fast8_t state = 0;
-		//const uint_fast32_t mask = (1uL << 14);	// P6_14: RXD0: RX DATA line
-		//arm_hardware_pio6_outputs(mask, mask);
-		const uint_fast32_t mask = (1uL << 9);	// PG9 - U12-50
-		arm_hardware_piog_outputs(mask, 1 * mask);
-		PRINTF("cplxmla @%p, src @%p, dst @%p. refv @%p, CPU_FREQ=%lu MHz\n", cplxmla, src, dst, refv, CPU_FREQ / 1000000uL);
-		global_disableIRQ();
-		for (;;)
-		{
-			cplxmla(src, dst, refv,  FFTZS);
-			//cplxmlasave(dst, FFTZS);
-			if (state)
-			{
-				state = 0;
-				(GPIOG)->BSRR = BSRR_S(mask);
-				//R7S721_TARGET_PORT_S(6, mask);
-			}
-			else
-			{
-				state = 1;
-				(GPIOG)->BSRR = BSRR_C(mask);
-				//R7S721_TARGET_PORT_C(6, mask);
-			}
-		}
-
-	}
-#endif
 #if 1 && defined (__GNUC__)
 	{
 
 		debug_printf_P(PSTR("__GNUC__=%d, __GNUC_MINOR__=%d\n"), (int) __GNUC__, (int) __GNUC_MINOR__);
+	}
+#endif
+#if 0 && WITHDEBUG
+	{
+		// FPU speed test
+		uint_fast8_t state = 0;
+#if CPUSTYLE_R7S721
+		const uint_fast32_t mask = (1uL << 10);	// P7_10: RXD0: RX DATA line
+		arm_hardware_pio7_outputs(mask, mask);
+#else /* CPUSTYLE_R7S721 */
+		const uint_fast32_t mask = (1uL << 13);	// PA13
+		arm_hardware_pioa_outputs(mask, 1 * mask);
+#endif /* CPUSTYLE_R7S721 */
+		PRINTF("cplxmla @%p, src @%p, dst @%p. refv @%p, CPU_FREQ=%lu MHz\n", cplxmla, src, dst, refv, CPU_FREQ / 1000000uL);
+		global_disableIRQ();
+		for (;;)
+		{
+			//	__GNUC__=9, __GNUC_MINOR__=3
+			//	cplxmla @2FFC5698, src @C0114100, dst @C0104100. refv @2FFCC340, CPU_FREQ=793 MHz
+			// stm32mp1 @800 MHz w/o NEON:
+			// cplxmla: 2 kHz
+			// cplxmla & cplxmlasave: 1.85 kHz
+			// stm32mp1 @800 MHz with NEON:
+			// cplxmla: 3 kHz
+			// cplxmla & cplxmlasave: 2.65 kHz
+			// __GNUC__=9, __GNUC_MINOR__=3
+			// cplxmla @20042D08, src @20206040, dst @201F6040. refv @20123080, CPU_FREQ=360 MHz
+			// R7S721 @360 MHz w/o NEON:
+			// cplxmla & cplxmlasave: 0.7 kHz
+			// R7S721 @360 MHz with NEON:
+			// cplxmla & cplxmlasave: 0.7 kHz
+
+			cplxmla(src, dst, refv,  FFTZS);
+			cplxmlasave(dst, FFTZS);
+
+			if (state)
+			{
+				state = 0;
+	#if CPUSTYLE_R7S721
+				R7S721_TARGET_PORT_S(7, mask);
+	#else /* CPUSTYLE_R7S721 */
+				(GPIOA)->BSRR = BSRR_S(mask);
+	#endif /* CPUSTYLE_R7S721 */
+			}
+			else
+			{
+				state = 1;
+		#if CPUSTYLE_R7S721
+					R7S721_TARGET_PORT_C(7, mask);
+		#else /* CPUSTYLE_R7S721 */
+					(GPIOA)->BSRR = BSRR_C(mask);
+		#endif /* CPUSTYLE_R7S721 */
+			}
+		}
+
 	}
 #endif
 #if 0
@@ -5943,9 +5902,9 @@ void hightests(void)
 			local_delay_ms(5);
 		}
 		static ticker_t test_recordticker;
-		disableIRQ();
+		system_disableIRQ();
 		ticker_initialize(& test_recordticker, 1, test_recodspool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
-		enableIRQ();
+		system_enableIRQ();
 		{
  			f_mount(NULL, "", 0);		/* Unregister volume work area (never fails) */
 			rc = f_mkfs("0:", NULL, work, sizeof (work));
@@ -5978,9 +5937,9 @@ void hightests(void)
 	// SD CARD file system level functions test
 	{
 		static ticker_t test_recordticker;
-		disableIRQ();
+		system_disableIRQ();
 		ticker_initialize(& test_recordticker, 1, test_recodspool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
-		enableIRQ();
+		system_enableIRQ();
 		fatfs_filesystest();
 	}
 #endif
@@ -6231,7 +6190,7 @@ void hightests(void)
 		BarTest();
 	}
 #endif
-#if 0 && LCDMODE_COLORED && ! DSTYLE_G_DUMMY
+#if 0 && WITHLTDCHW && LCDMODE_COLORED && ! DSTYLE_G_DUMMY
 	{
 		// test: вывод палитры на экран
 		display2_bgreset();
@@ -6872,10 +6831,10 @@ void hightests(void)
 			unsigned tune1 = hardware_get_tune();
 			unsigned ptt1 = hardware_get_ptt();
 			unsigned ptt2 = HARDWARE_CAT_GET_RTS();
-			disableIRQ();
+			system_disableIRQ();
 			unsigned elkey = hardware_elkey_getpaddle(0);
 			unsigned ckey = HARDWARE_CAT_GET_DTR();
-			enableIRQ();
+			system_enableIRQ();
 
 
 			debug_printf_P(PSTR("tune=%u, ptt=%u, elkey=%u\n"), tune1, ptt1, elkey);
@@ -6994,9 +6953,9 @@ void hightests(void)
 			//continue;
 			
 			uint_fast8_t scancode;
-			disableIRQ();
+			system_disableIRQ();
 			scancode = board_get_pressed_key();
-			enableIRQ();
+			system_enableIRQ();
 
 			if (scancode != KEYBOARD_NOKEY)
 			{
@@ -7677,9 +7636,9 @@ void xSWIHandler(void)
 		global_enableIRQ();
 
 		local_delay_ms(20);
-		disableIRQ();
+		system_disableIRQ();
 		local_delay_ms(20);
-		enableIRQ();
+		system_enableIRQ();
 	}
 }
 
@@ -7732,10 +7691,10 @@ nestedirqtest(void)
 	for (;;)
 	{
 		unsigned iccrpr0 = INTCICCRPR;
-		disableIRQ();
+		system_disableIRQ();
 		unsigned iccrpr1 = INTCICCRPR;
 		local_delay_ms(20);
-		enableIRQ();
+		system_enableIRQ();
 
 		global_disableIRQ();
 		debug_printf_P(PSTR("iccrpr0=%02x, iccrpr1=%02x, INTCICCRPR=%02x cpsr=%08lx*\n"), iccrpr0, iccrpr1, INTCICCRPR, __get_CPSR());
@@ -7769,19 +7728,19 @@ void lowtests(void)
 		// LED blinking test
 		//const uint_fast32_t mask = (1uL << 14);	// PA14 - GREEN LED LD5 on DK1/DK2 MB1272.pdf
 		//const uint_fast32_t maskd = (1uL << 14);	// PD14 - LED on small board
-		const uint_fast32_t maskg = (1uL << 13);	// PG13 - LCD_R0
+		const uint_fast32_t maska = (1uL << 13);	// PA13 - bootloader status LED
 		//arm_hardware_piod_outputs(maskd, 1 * maskd);
-		arm_hardware_piog_outputs(maskg, 1 * maskg);
+		arm_hardware_pioa_outputs(maska, 1 * maska);
 		for (;;)
 		{
 			//dbg_putchar('5');
 			//(GPIOD)->BSRR = BSRR_S(maskd);
-			(GPIOG)->BSRR = BSRR_S(maskg);
+			(GPIOA)->BSRR = BSRR_S(maska);
 			__DSB();
 			local_delay_ms(50);
 			//dbg_putchar('#');
 			//(GPIOD)->BSRR = BSRR_C(maskd);
-			(GPIOG)->BSRR = BSRR_C(maskg);
+			(GPIOA)->BSRR = BSRR_C(maska);
 			__DSB();
 			local_delay_ms(50);
 

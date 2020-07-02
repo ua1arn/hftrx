@@ -100,6 +100,7 @@ SECTIONS
 	.data : AT (__etext)
 	{
 		__data_start__ = .;
+		. = ALIGN(32);
 		KEEP(*(.vectors))
 		__Vectors_End = .;
 		__Vectors_Size = __Vectors_End - __Vectors;

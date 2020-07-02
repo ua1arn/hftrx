@@ -113,39 +113,8 @@ static uint_fast16_t ulmax16(uint_fast16_t a, uint_fast16_t b)
 	return a > b ? a : b;
 }
 
-static int
-toprintc(int c)
-{
-	if (c < 0x20 || c >= 0x7f)
-		return '.';
-	return c;
-}
-
-static void
-printhex(unsigned long voffs, const unsigned char * buff, unsigned length)
-{
-	unsigned i, j;
-	unsigned rows = (length + 15) / 16;
-
-	for (i = 0; i < rows; ++ i)
-	{
-		const int trl = ((length - 1) - i * 16) % 16 + 1;
-		PRINTF(PSTR("%08lX "), voffs + i * 16);
-		for (j = 0; j < trl; ++ j)
-			PRINTF(PSTR(" %02X"), buff [i * 16 + j]);
-
-		PRINTF(PSTR("%*s"), (16 - trl) * 3, "");
-
-		PRINTF(PSTR("  "));
-		for (j = 0; j < trl; ++ j)
-			PRINTF(PSTR("%c"), toprintc(buff [i * 16 + j]));
-
-		PRINTF(PSTR("\n"));
-	}
-}
-
 /*****************************************/
-#if WITHISBOOTLOADER
+#if WITHISBOOTLOADER && defined (USBD_DFU_RAM_XFER_SIZE)
 	#define PREPROCMAX(a, b) ((a) > (b) ? (a) : (b))
 	#define USBD_DFU_XFER_SIZE (PREPROCMAX(USBD_DFU_RAM_XFER_SIZE, USBD_DFU_FLASH_XFER_SIZE))
 #else /* WITHISBOOTLOADER */
@@ -683,9 +652,9 @@ usbd_dfu_get_xfer_size(uint_fast8_t alt)
 	default:
 	case 0: return USBD_DFU_FLASH_XFER_SIZE;
 	case 1: return USBD_DFU_FLASH_XFER_SIZE;
-#if WITHISBOOTLOADER
+#if WITHISBOOTLOADER && defined (USBD_DFU_RAM_XFER_SIZE)
 	case 2: return USBD_DFU_RAM_XFER_SIZE;
-#endif /* WITHISBOOTLOADER */
+#endif /* WITHISBOOTLOADER && defined (USBD_DFU_RAM_XFER_SIZE) */
 	}
 }
 

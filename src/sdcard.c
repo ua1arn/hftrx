@@ -594,6 +594,7 @@ static void DMA_SDIO_setparams(
 			1 * DMA_SxFCR_DMDIS |	// use FIFO mode
 			3 * DMA_SxFCR_FTH_0 |	// 11: full FIFO
 			0;
+		(void) DMA2_Stream6->FCR;
 
 		DMA2_Stream6->CR =
 			0 * DMA_SxCR_DIR_0 |	// 00: Peripheral-to-memory
@@ -622,6 +623,7 @@ static void DMA_SDIO_setparams(
 			1 * DMA_SxFCR_DMDIS |	// use FIFO mode
 			1 * DMA_SxFCR_FTH_0 |	// 01: 1/2 full FIFO (changed from read !)
 			0;
+		(void) DMA2_Stream6->FCR;
 
 		DMA2_Stream6->CR =
 			1 * DMA_SxCR_DIR_0 |	// 01: Memory-to-peripherial
@@ -641,7 +643,7 @@ static void DMA_SDIO_setparams(
 	}
 
 	DMA2->HIFCR = (DMA_HIFCR_CTCIF6 /*| DMA_HIFCR_CTEIF6 */);	// Clear TC interrupt flag соответствующий stream
-	//DMA2_Stream6->CR |= (DMA_SxCR_TCIE /* | DMA_SxCR_TEIE */);	// разрешить прерывания от DMA по TC и TE
+	//DMA2_Stream6->CR |= DMA_SxCR_TCIE;	// Разрешаем прерывания от DMA
 	
 	DMA2_Stream6->CR |= DMA_SxCR_EN;
 
@@ -664,13 +666,17 @@ static uint_fast8_t DMA_sdio_waitdone(void)
 	while ((SDHI0.SD_INFO2 & (1uL << 13)) == 0)	// SCLKDIVEN
 		;
 	SDHI0.CC_EXT_MODE &= ~ (1uL << 1);	// DMASDRW
+	__DMB();
 	return 0;
 
 #elif CPUSTYLE_STM32H7XX
 	// в процессоре для обмена с SDIO используется выделенный блок DMA
 	// check result
 	if ((SDMMC1->STA & (SDMMC_STA_DATAEND | SDMMC_STA_DCRCFAIL | SDMMC_STA_DTIMEOUT)) != SDMMC_STA_DATAEND)
+	{
+		__DMB();
 		return 1;
+	}
 	return 0;
 
 #elif CPUSTYLE_STM32F7XX || CPUSTYLE_STM32F4XX
@@ -692,6 +698,7 @@ static uint_fast8_t DMA_sdio_waitdone(void)
 			;
 		//DMA2_Stream6->CR |= DMA_SxCR_EN;	// перезапуск DMA
 	}
+	__DMB();
 	return 0;
 
 #else
@@ -782,15 +789,15 @@ WaitEvents(events_t e, int type)
 	unsigned long t;
 	for (t = 0; t < 100000000; ++ t)
 	{
-		disableIRQ();
+		system_disableIRQ();
 		if (sd_event_xx != 0 /*&& (sd_event_value & e) != 0 */)
 		{
 			sd_event_xx = 0;
-			enableIRQ();
+			system_enableIRQ();
 			SDMMC1->MASK = 0;
 			return EV_SD_READY;
 		}
-		enableIRQ();
+		system_enableIRQ();
 	}
 	SDMMC1->MASK = 0;
 	return EV_SD_ERROR;

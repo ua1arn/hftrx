@@ -175,20 +175,6 @@ static void uc1608_put_char_small2(char cc)
 */
 static void uc1608_set_addr_column(uint_fast8_t col, uint_fast8_t row)
 {
-/*
-	if (row > 15)
-	{
-		global_disableIRQ();
-		for (;;)
-			;
-	}
-	if (col > 239)
-	{
-		global_disableIRQ();
-		for (;;)
-			;
-	}
-*/
 	UC1608_CTRL();	/* Send commands */
 	/* Enable SPI */
 	spi_select2(tglcd, UC1608_SPIMODE, SPIC_SPEEDUC1608);

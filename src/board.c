@@ -6442,7 +6442,7 @@ static void board_fpga_loader_initialize(void)
 
 #if WITHFPGALOAD_PS
 
-#if ! CPUSTYLE_R7S721
+#if ! (CPUSTYLE_R7S721 || CPUSTYLE_STM32MP1)
 /* на процессоре renesas образ располагается в памяти, испольщуемой для хранений буферов DSP части */
 static const FLASHMEMINIT uint16_t rbfimage0 [] =
 {
@@ -6456,7 +6456,7 @@ const uint16_t * getrbfimage(size_t * count)
 	return & rbfimage0 [0];
 }
 
-#endif /* ! CPUSTYLE_R7S721 */
+#endif /* ! (CPUSTYLE_R7S721 || CPUSTYLE_STM32MP1) */
 
 /* FPGA загружается процессором с помощью SPI */
 static void board_fpga_loader_PS(void)
@@ -7036,10 +7036,7 @@ void board_init_io(void)
 #endif /* WITHFPGAWAIT_AS */
 
 
-#if CPUSTYLE_STM32MP1 && (TARGET_TWI_TWCK == SPDIF_NCS_BIT)
-	#warning CPUSTYLE_STM32MP1: wrong PB6 connection. Remove this case then fix.
-	////i2c_initialize();
-#elif (WITHTWIHW || WITHTWISW)
+#if (WITHTWIHW || WITHTWISW)
 	i2c_initialize();
 #endif /* WITHTWIHW || WITHTWISW */
 
@@ -7768,7 +7765,7 @@ static uint_fast8_t gstate [SNDI_SIZE];		/* признак включённог�
 static uint_fast8_t gprei [SNDI_SIZE];
 static unsigned gvalue [SNDI_SIZE];	/* делитель или FTW для синтезатора озвучки */
 static uint_least16_t gtone [SNDI_SIZE];
-
+static RAMDTCM SPINLOCK_t gpreilock = SPINLOCK_INIT;
 
 /* если параметры для данной частоты уже рассчитывали - просто возврат */
 static uint_fast8_t 
@@ -7784,10 +7781,12 @@ board_calcs_setfreq(
 	const uint_fast8_t prei = hardware_calc_sound_params(tonefreq01, & value);
 
 
-	disableIRQ();
+	system_disableIRQ();
+	SPIN_LOCK(& gpreilock);
 	gprei [sndi] = prei;
 	gvalue [sndi] = value;
-	enableIRQ();
+	SPIN_UNLOCK(& gpreilock);
+	system_enableIRQ();
 
 	return 1;
 }
@@ -7819,9 +7818,11 @@ board_keybeep_setfreq(
 	enum { sndi = SNDI_KEYBEEP };
 	if (board_calcs_setfreq(sndi, tonefreq * 10) != 0)	/* если частота изменилась - перепрограммируем */
 	{
-		disableIRQ();
+		system_disableIRQ();
+		SPIN_LOCK(& gpreilock);
 		board_sounds_resched();
-		enableIRQ();
+		SPIN_UNLOCK(& gpreilock);
+		system_enableIRQ();
 	}
 }
 
@@ -7834,9 +7835,11 @@ board_sidetone_setfreq(
 	enum { sndi = SNDI_SIDETONE };
 	if (board_calcs_setfreq(sndi, tonefreq * 10) != 0)	/* если частота изменилась - перепрограммируем */
 	{
-		disableIRQ();
+		system_disableIRQ();
+		SPIN_LOCK(& gpreilock);
 		board_sounds_resched();
-		enableIRQ();
+		SPIN_UNLOCK(& gpreilock);
+		system_enableIRQ();
 	}
 }
 
@@ -7892,9 +7895,11 @@ board_subtone_setfreq(
 	enum { sndi = SNDI_SUBTONE };
 	if (board_calcs_setfreq(sndi, tonefreq01) != 0)	/* если частота изменилась - перепрограммируем */
 	{
-		disableIRQ();
+		system_disableIRQ();
+		SPIN_LOCK(& gpreilock);
 		board_sounds_resched();
-		enableIRQ();
+		SPIN_UNLOCK(& gpreilock);
+		system_enableIRQ();
 	}
 #endif /* WITHSUBTONES */
 }
@@ -8128,6 +8133,8 @@ uint_fast8_t board_get_adcinputs(void)
 /* получить канал АЦП но индексу в таблице */
 uint_fast8_t board_get_adcch(uint_fast8_t i)
 {
+	if (i >= board_get_adcinputs())
+		return 0;
 	ASSERT(i < board_get_adcinputs());
 	return adcinputs [i];
 }
@@ -8837,7 +8844,7 @@ void hardware_cw_diagnostics_noirq(
 {
 	enum { DIT = 100, DASH = DIT * 3, PAUSE = DIT * 1, PAUSE3 = DIT * 3 };
 
-	//disableIRQ();
+	//system_disableIRQ();
 
 	board_beep_enable(1);
 	if (c1) local_delay_ms(DASH); else local_delay_ms(DIT);
@@ -8857,7 +8864,7 @@ void hardware_cw_diagnostics_noirq(
 
 	local_delay_ms(PAUSE3);
 
-	//enableIRQ();
+	//system_enableIRQ();
 }
 
 void hardware_cw_diagnostics(
@@ -8865,11 +8872,11 @@ void hardware_cw_diagnostics(
 	uint_fast8_t c2,
 	uint_fast8_t c3)
 {
-	disableIRQ();
+	system_disableIRQ();
 
 	hardware_cw_diagnostics_noirq(c1, c2, c3);
 
-	enableIRQ();
+	system_enableIRQ();
 }
 
 
@@ -8955,20 +8962,20 @@ static uint_fast8_t debugusb_ci_qempty(void)
 
 uint_fast8_t debugusb_putchar(uint_fast8_t c)/* передача символа если готов порт */
 {
-	disableIRQ();
+	system_disableIRQ();
 	const uint_fast8_t f = debugusb_qput(c);
 	if (f)
 		HARDWARE_DEBUG_ENABLETX(1);
-	enableIRQ();
+	system_enableIRQ();
 	return f;
 }
 
 uint_fast8_t debugusb_getchar(char * cp) /* приём символа, если готов порт */
 {
 	uint_fast8_t c;
-	disableIRQ();
+	system_disableIRQ();
 	const uint_fast8_t f = debugusb_ci_qget(& c);
-	enableIRQ();
+	system_enableIRQ();
 	if (f)
 		* cp = c;
 	return f;

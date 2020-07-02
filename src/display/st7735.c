@@ -29,13 +29,12 @@
  ****************************************************/
 
 
-#include <src/gui/gui.h>
 #include "hardware.h"
 #include "board.h"
 #include "display.h"
 #include <stdint.h>
 
-#include "../inc/spi.h"
+#include "spi.h"
 #include "formats.h"	// for debug prints
 
 #if LCDMODE_ST7735 || LCDMODE_ILI9163 || LCDMODE_ILI9341

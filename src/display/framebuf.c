@@ -10,7 +10,6 @@
 // Например при offscreen composition растровых изображений для SPI дисплеев
 //
 
-#include <src/gui/gui.h>
 #include "hardware.h"
 #include "board.h"
 #include "display.h"
@@ -26,11 +25,13 @@
 	the AXI master port. These bits represent the minimum guaranteed number of cycles
 	between two consecutive AXI accesses
  */
-#define DMA2D_AMTCR_DT_VALUE 255	/* 0..255 */
-#define DMA2D_AMTCR_DT_ENABLE 1	/* 0..1 */
+#define DMA2D_AMTCR_DT_VALUE 255uL	/* 0..255 */
+#define DMA2D_AMTCR_DT_ENABLE 1uL	/* 0..1 */
+
+#define DMA2D_CR_LOM	(1u << 6)	/* documented but missing in headers. */
 
 #define MDMA_CH	MDMA_Channel0
-#define MDMA_CCR_PL_VALUE 0	// PL: priority 0..3: min..max
+#define MDMA_CCR_PL_VALUE 0uL	// PL: priority 0..3: min..max
 
 #if LCDMODE_LTDC_L24
 	#define DMA2D_FGPFCCR_CM_VALUE_MAIN	(1 * DMA2D_FGPFCCR_CM_0)	/* 0001: RGB888 */
@@ -137,25 +138,100 @@ mdma_getburst(uint_fast16_t tlen, uint_fast8_t bus, uint_fast8_t xinc)
 		return 1;
 	return 0;
 }
-#endif /* WITHMDMAHW */
 
-// получение адреса в видобуфере
-volatile uint8_t * hwacc_getbufaddr_u8(
-	volatile uint8_t * buffer,
-	uint_fast16_t dx,	// ширина буфера
-	uint_fast16_t dy,	// высота буфера
-	uint_fast16_t x,	// начальная координата
-	uint_fast16_t y		// начальная координата
-	)
+static void
+mdma_stop_unused(void)
 {
-	return & buffer [y * GXADJ(dx) + x];
+#if WITHMDMAHW
+	MDMA_CH->CCR &= ~ MDMA_CCR_EN_Msk;
+	while ((MDMA_CH->CCR & MDMA_CCR_EN_Msk) != 0)
+		;
+#endif /* WITHMDMAHW */
 }
+
+/* запустить пересылку и дождаться завершения. */
+static void
+mdma_startandwait(void)
+{
+	// MDMA implementation
+	MDMA_CH->CIFCR =
+		MDMA_CIFCR_CLTCIF_Msk |
+		MDMA_CIFCR_CBTIF_Msk |
+		MDMA_CIFCR_CBRTIF_Msk |
+		MDMA_CIFCR_CCTCIF_Msk |
+		MDMA_CIFCR_CTEIF_Msk |
+		0;
+	(void) MDMA_CH->CIFCR;
+
+	// Set priority
+	MDMA_CH->CCR = (MDMA_CH->CCR & ~ (MDMA_CCR_PL_Msk)) |
+			(MDMA_CCR_PL_VALUE << MDMA_CCR_PL_Pos) |
+			0;
+	(void) MDMA_CH->CCR;
+
+	MDMA_CH->CCR |= MDMA_CCR_EN_Msk;
+	(void) MDMA_CH->CCR;
+	/* start transfer */
+	MDMA_CH->CCR |= MDMA_CCR_SWRQ_Msk;
+	(void) MDMA_CH->CCR;
+
+	/* wait for complete */
+	while ((MDMA_CH->CISR & MDMA_CISR_CTCIF_Msk) == 0)	// Channel x Channel Transfer Complete interrupt flag
+		hardware_nonguiyield();
+
+	__DMB();	//ensure the ordering of data cache maintenance operations and their effects
+	ASSERT((MDMA_CH->CISR & MDMA_CISR_TEIF_Msk) == 0);	/* Channel x transfer error interrupt flag */
+
+}
+
+void arm_hardware_mdma_initialize(void)
+{
+#if CPUSTYLE_STM32MP1
+	/* Enable the DMA2D Clock */
+	RCC->MP_AHB6ENSETR |= RCC_MC_AHB6ENSETR_MDMAEN;	/* MDMA clock enable */
+	(void) RCC->MP_AHB6ENSETR;
+	RCC->MP_AHB6LPENSETR |= RCC_MC_AHB6LPENSETR_MDMALPEN;	/* MDMA clock enable */
+	(void) RCC->MP_AHB6LPENSETR;
+	//RCC->MP_TZAHB6ENSETR |= RCC_MP_TZAHB6ENSETR_MDMAEN;
+	//(void) RCC->MP_TZAHB6ENSETR;
+
+	/* SYSCFG clock enable */
+	RCC->MP_APB3ENSETR = RCC_MC_APB3ENSETR_SYSCFGEN;
+	(void) RCC->MP_APB3ENSETR;
+	RCC->MP_APB3LPENSETR = RCC_MC_APB3LPENSETR_SYSCFGLPEN;
+	(void) RCC->MP_APB3LPENSETR;
+	/*
+	 * Interconnect update : select master using the port 1.
+	 * LTDC = AXI_M9.
+	 * MDMA = AXI_M7.
+	 */
+	//SYSCFG->ICNR |= SYSCFG_ICNR_AXI_M7;
+	//(void) SYSCFG->ICNR;
+
+#elif CPUSTYLE_STM32H7XX
+	/* Enable the DMA2D Clock */
+	RCC->AHB3ENR |= RCC_AHB3ENR_MDMAEN_Msk;	/* MDMA clock enable */
+	(void) RCC->AHB3ENR;
+	RCC->AHB3LPENR |= RCC_AHB3LPENR_MDMALPEN_Msk;
+	(void) RCC->AHB3LPENR;
+
+#else /* CPUSTYLE_STM32H7XX */
+	/* Enable the DMA2D Clock */
+	RCC->AHB1ENR |= RCC_AHB1ENR_MDMAEN;	/* MDMA clock enable */
+	(void) RCC->AHB1ENR;
+	RCC->AHB3LPENR |= RCC_AHB3LPENR_MDMALPEN_Msk;
+	(void) RCC->AHB3LPENR;
+
+#endif /* CPUSTYLE_STM32H7XX */
+}
+
+#endif /* WITHMDMAHW */
 
 #if LCDMODE_PIP_L8 || LCDMODE_MAIN_L8
 // Функция получает координаты и работает над буфером в горищонталтной ориентации.
-void
+static void
 hwacc_fillrect_u8(
-	uint8_t * buffer,
+	uint8_t * __restrict buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
 	uint_fast16_t col,	// начальная координата
@@ -179,10 +255,6 @@ hwacc_fillrect_u8(
 	arm_hardware_flush((uintptr_t) & tgcolor, sizeof tgcolor);
 	arm_hardware_flush_invalidate((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
 
-	MDMA_CH->CCR &= ~ MDMA_CCR_EN_Msk;
-	while ((MDMA_CH->CCR & MDMA_CCR_EN_Msk) != 0)
-		;
-
 	MDMA_CH->CDAR = (uintptr_t) colmain_mem_at(buffer, dx, dy, col, row); // dest address
 	MDMA_CH->CSAR = (uintptr_t) & tgcolor;
 	const uint_fast32_t tlen = mdma_tlen(w * PIXEL_SIZE, PIXEL_SIZE);
@@ -202,16 +274,16 @@ hwacc_fillrect_u8(
 		(PIXEL_SIZE_CODE << MDMA_CTCR_DINCOS_Pos) |
 		(dburst << MDMA_CTCR_DBURST_Pos) |	// Destination burst transfer configuration
 		((tlen - 1) << MDMA_CTCR_TLEN_Pos) |		// buffer Transfer Length (number of bytes - 1)
-		(0x00 << MDMA_CTCR_PKE_Pos) |
-		(0x00 << MDMA_CTCR_PAM_Pos) |
-		(0x02 << MDMA_CTCR_TRGM_Pos) |		// Trigger Mode: 10: Each MDMA request (software or hardware) triggers a repeated block transfer (if the block repeat is 0, a single block is transferred)
-		(0x01 << MDMA_CTCR_SWRM_Pos) |		// 1: hardware request are ignored. Transfer is triggered by software writing 1 to the SWRQ bit
-		(0x01 << MDMA_CTCR_BWM_Pos) |
+		(0x00uL << MDMA_CTCR_PKE_Pos) |
+		(0x00uL << MDMA_CTCR_PAM_Pos) |
+		(0x02uL << MDMA_CTCR_TRGM_Pos) |		// Trigger Mode: 10: Each MDMA request (software or hardware) triggers a repeated block transfer (if the block repeat is 0, a single block is transferred)
+		(0x01uL << MDMA_CTCR_SWRM_Pos) |		// 1: hardware request are ignored. Transfer is triggered by software writing 1 to the SWRQ bit
+		(0x01uL << MDMA_CTCR_BWM_Pos) |
 		0;
 	MDMA_CH->CBNDTR =
 		((PIXEL_SIZE * (w)) << MDMA_CBNDTR_BNDT_Pos) |	// Block Number of data bytes to transfer
-		(0x00 << MDMA_CBNDTR_BRSUM_Pos) |	// Block Repeat Source address Update Mode: 0 - increment
-		(0x00 << MDMA_CBNDTR_BRDUM_Pos) |	// Block Repeat Destination address Update Mode: 0 - increment
+		(0x00uL << MDMA_CBNDTR_BRSUM_Pos) |	// Block Repeat Source address Update Mode: 0 - increment
+		(0x00uL << MDMA_CBNDTR_BRDUM_Pos) |	// Block Repeat Destination address Update Mode: 0 - increment
 		((h - 1) << MDMA_CBNDTR_BRC_Pos) |		// Block Repeat Count
 		0;
 	MDMA_CH->CBRUR =
@@ -224,27 +296,17 @@ hwacc_fillrect_u8(
 		(dbus << MDMA_CTBR_DBUS_Pos) |
 		0;
 
-	MDMA_CH->CIFCR = MDMA_CIFCR_CLTCIF_Msk | MDMA_CIFCR_CBTIF_Msk |
-					MDMA_CIFCR_CBRTIF_Msk | MDMA_CIFCR_CCTCIF_Msk | MDMA_CIFCR_CTEIF_Msk;
-	// Set priority
-	MDMA_CH->CCR = (MDMA_CH->CCR & ~ (MDMA_CCR_PL_Msk)) |
-			(MDMA_CCR_PL_VALUE < MDMA_CCR_PL_Pos) |
-			0;
-	MDMA_CH->CCR |= MDMA_CCR_EN_Msk;
-	/* start transfer */
-	MDMA_CH->CCR |= MDMA_CCR_SWRQ_Msk;
-	/* wait for complete */
-	while ((MDMA_CH->CISR & MDMA_CISR_CTCIF_Msk) == 0)	// Channel x Channel Transfer Complete interrupt flag
-		hardware_nonguiyield();
+	mdma_startandwait();
 
 #else
 	// программная реализация
 
 	const unsigned t = GXADJ(dx) - w;
-	buffer += (GXADJ(dx) * row) + col;
+	//buffer += (GXADJ(dx) * row) + col;
+	buffer = colmain_mem_at(buffer, dx, dy, col, row); // dest address
 	while (h --)
 	{
-		uint8_t * const startmem = buffer;
+		//uint8_t * const startmem = buffer;
 
 		unsigned n = w;
 		while (n --)
@@ -259,9 +321,9 @@ hwacc_fillrect_u8(
 
 #if LCDMODE_PIP_RGB565 || LCDMODE_MAIN_RGB565
 // Функция получает координаты и работает над буфером в горищонталтной ориентации.
-void
+static void
 hwacc_fillrect_u16(
-	uint16_t * buffer,
+	uint16_t * __restrict buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
 	uint_fast16_t col,	// начальная координата
@@ -286,10 +348,6 @@ hwacc_fillrect_u16(
 	arm_hardware_flush((uintptr_t) & tgcolor, sizeof tgcolor);
 	arm_hardware_flush_invalidate((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
 
-	MDMA_CH->CCR &= ~ MDMA_CCR_EN_Msk;
-	while ((MDMA_CH->CCR & MDMA_CCR_EN_Msk) != 0)
-		;
-
 	MDMA_CH->CDAR = (uintptr_t) colmain_mem_at(buffer, dx, dy, col, row); // dest address
 	MDMA_CH->CSAR = (uintptr_t) & tgcolor;
 	const uint_fast32_t tlen = mdma_tlen(w * PIXEL_SIZE, PIXEL_SIZE);
@@ -309,16 +367,16 @@ hwacc_fillrect_u16(
 		(PIXEL_SIZE_CODE << MDMA_CTCR_DINCOS_Pos) |
 		(dburst << MDMA_CTCR_DBURST_Pos) |	// Destination burst transfer configuration
 		((tlen - 1) << MDMA_CTCR_TLEN_Pos) |		// buffer Transfer Length (number of bytes - 1)
-		(0x00 << MDMA_CTCR_PKE_Pos) |
-		(0x00 << MDMA_CTCR_PAM_Pos) |
-		(0x02 << MDMA_CTCR_TRGM_Pos) |		// Trigger Mode: 10: Each MDMA request (software or hardware) triggers a repeated block transfer (if the block repeat is 0, a single block is transferred)
-		(0x01 << MDMA_CTCR_SWRM_Pos) |		// 1: hardware request are ignored. Transfer is triggered by software writing 1 to the SWRQ bit
-		(0x01 << MDMA_CTCR_BWM_Pos) |
+		(0x00uL << MDMA_CTCR_PKE_Pos) |
+		(0x00uL << MDMA_CTCR_PAM_Pos) |
+		(0x02uL << MDMA_CTCR_TRGM_Pos) |		// Trigger Mode: 10: Each MDMA request (software or hardware) triggers a repeated block transfer (if the block repeat is 0, a single block is transferred)
+		(0x01uL << MDMA_CTCR_SWRM_Pos) |		// 1: hardware request are ignored. Transfer is triggered by software writing 1 to the SWRQ bit
+		(0x01uL << MDMA_CTCR_BWM_Pos) |
 		0;
 	MDMA_CH->CBNDTR =
 		((PIXEL_SIZE * (w)) << MDMA_CBNDTR_BNDT_Pos) |	// Block Number of data bytes to transfer
-		(0x00 << MDMA_CBNDTR_BRSUM_Pos) |	// Block Repeat Source address Update Mode: 0 - increment
-		(0x00 << MDMA_CBNDTR_BRDUM_Pos) |	// Block Repeat Destination address Update Mode: 0 - increment
+		(0x00uL << MDMA_CBNDTR_BRSUM_Pos) |	// Block Repeat Source address Update Mode: 0 - increment
+		(0x00uL << MDMA_CBNDTR_BRDUM_Pos) |	// Block Repeat Destination address Update Mode: 0 - increment
 		((h - 1) << MDMA_CBNDTR_BRC_Pos) |		// Block Repeat Count
 		0;
 	MDMA_CH->CBRUR =
@@ -331,18 +389,7 @@ hwacc_fillrect_u16(
 		(dbus << MDMA_CTBR_DBUS_Pos) |
 		0;
 
-	MDMA_CH->CIFCR = MDMA_CIFCR_CLTCIF_Msk | MDMA_CIFCR_CBTIF_Msk |
-					MDMA_CIFCR_CBRTIF_Msk | MDMA_CIFCR_CCTCIF_Msk | MDMA_CIFCR_CTEIF_Msk;
-	// Set priority
-	MDMA_CH->CCR = (MDMA_CH->CCR & ~ (MDMA_CCR_PL_Msk)) |
-			(MDMA_CCR_PL_VALUE < MDMA_CCR_PL_Pos) |
-			0;
-	MDMA_CH->CCR |= MDMA_CCR_EN_Msk;
-	/* start transfer */
-	MDMA_CH->CCR |= MDMA_CCR_SWRQ_Msk;
-	/* wait for complete */
-	while ((MDMA_CH->CISR & MDMA_CISR_CTCIF_Msk) == 0)	// Channel x Channel Transfer Complete interrupt flag
-		hardware_nonguiyield();
+	mdma_startandwait();
 
 #elif WITHDMA2DHW
 	// DMA2D implementation
@@ -381,17 +428,19 @@ hwacc_fillrect_u16(
 	/* ожидаем выполнения операции */
 	while ((DMA2D->CR & DMA2D_CR_START) != 0)
 		hardware_nonguiyield();
+	__DMB();
+
+	ASSERT((DMA2D->ISR & DMA2D_ISR_CEIF) == 0);	// Configuration Error
+	ASSERT((DMA2D->ISR & DMA2D_ISR_TEIF) == 0);	// Transfer Error
 
 
 #else
 	// программная реализация
-
 	const unsigned t = GXADJ(dx) - w;
-	buffer += (GXADJ(dx) * row) + col;
+	//buffer += (GXADJ(dx) * row) + col;
+	buffer = colmain_mem_at(buffer, dx, dy, col, row); // dest address
 	while (h --)
 	{
-		uint16_t * const startmem = buffer;
-
 		unsigned n = w;
 		while (n --)
 			* buffer ++ = color;
@@ -405,9 +454,9 @@ hwacc_fillrect_u16(
 
 #if LCDMODE_PIP_L24 || LCDMODE_MAIN_L24
 // Функция получает координаты и работает над буфером в горищонталтной ориентации.
-void
+static void
 hwacc_fillrect_u24(
-	PACKEDCOLORMAIN_T * buffer,
+	PACKEDCOLORMAIN_T * __restrict buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
 	uint_fast16_t col,	// начальная координата
@@ -434,10 +483,6 @@ hwacc_fillrect_u24(
 	arm_hardware_flush((uintptr_t) & tgcolor, sizeof tgcolor);
 	arm_hardware_flush_invalidate((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
 
-	MDMA_CH->CCR &= ~ MDMA_CCR_EN_Msk;
-	while ((MDMA_CH->CCR & MDMA_CCR_EN_Msk) != 0)
-		;
-
 	MDMA_CH->CDAR = (uintptr_t) colmain_mem_at(buffer, dx, dy, col, row); // dest address
 	MDMA_CH->CSAR = (uintptr_t) & tgcolor;
 	const uint_fast32_t tlen = mdma_tlen(w * PIXEL_SIZE, PIXEL_SIZE);
@@ -457,16 +502,16 @@ hwacc_fillrect_u24(
 		(PIXEL_SIZE_CODE << MDMA_CTCR_DINCOS_Pos) |
 		(dburst << MDMA_CTCR_DBURST_Pos) |	// Destination burst transfer configuration
 		((tlen - 1) << MDMA_CTCR_TLEN_Pos) |		// buffer Transfer Length (number of bytes - 1)
-		(0x00 << MDMA_CTCR_PKE_Pos) |
-		(0x00 << MDMA_CTCR_PAM_Pos) |
-		(0x02 << MDMA_CTCR_TRGM_Pos) |		// Trigger Mode: 10: Each MDMA request (software or hardware) triggers a repeated block transfer (if the block repeat is 0, a single block is transferred)
-		(0x01 << MDMA_CTCR_SWRM_Pos) |		// 1: hardware request are ignored. Transfer is triggered by software writing 1 to the SWRQ bit
-		(0x01 << MDMA_CTCR_BWM_Pos) |
+		(0x00uL << MDMA_CTCR_PKE_Pos) |
+		(0x00uL << MDMA_CTCR_PAM_Pos) |
+		(0x02uL << MDMA_CTCR_TRGM_Pos) |		// Trigger Mode: 10: Each MDMA request (software or hardware) triggers a repeated block transfer (if the block repeat is 0, a single block is transferred)
+		(0x01uL << MDMA_CTCR_SWRM_Pos) |		// 1: hardware request are ignored. Transfer is triggered by software writing 1 to the SWRQ bit
+		(0x01uL << MDMA_CTCR_BWM_Pos) |
 		0;
 	MDMA_CH->CBNDTR =
 		((PIXEL_SIZE * (w)) << MDMA_CBNDTR_BNDT_Pos) |	// Block Number of data bytes to transfer
-		(0x00 << MDMA_CBNDTR_BRSUM_Pos) |	// Block Repeat Source address Update Mode: 0 - increment
-		(0x00 << MDMA_CBNDTR_BRDUM_Pos) |	// Block Repeat Destination address Update Mode: 0 - increment
+		(0x00uL << MDMA_CBNDTR_BRSUM_Pos) |	// Block Repeat Source address Update Mode: 0 - increment
+		(0x00uL << MDMA_CBNDTR_BRDUM_Pos) |	// Block Repeat Destination address Update Mode: 0 - increment
 		((h - 1) << MDMA_CBNDTR_BRC_Pos) |		// Block Repeat Count
 		0;
 	MDMA_CH->CBRUR =
@@ -479,18 +524,7 @@ hwacc_fillrect_u24(
 		(dbus << MDMA_CTBR_DBUS_Pos) |
 		0;
 
-	MDMA_CH->CIFCR = MDMA_CIFCR_CLTCIF_Msk | MDMA_CIFCR_CBTIF_Msk |
-					MDMA_CIFCR_CBRTIF_Msk | MDMA_CIFCR_CCTCIF_Msk | MDMA_CIFCR_CTEIF_Msk;
-	// Set priority
-	MDMA_CH->CCR = (MDMA_CH->CCR & ~ (MDMA_CCR_PL_Msk)) |
-			(MDMA_CCR_PL_VALUE < MDMA_CCR_PL_Pos) |
-			0;
-	MDMA_CH->CCR |= MDMA_CCR_EN_Msk;
-	/* start transfer */
-	MDMA_CH->CCR |= MDMA_CCR_SWRQ_Msk;
-	/* wait for complete */
-	while ((MDMA_CH->CISR & MDMA_CISR_CTCIF_Msk) == 0)	// Channel x Channel Transfer Complete interrupt flag
-		hardware_nonguiyield();
+	mdma_startandwait();
 
 #elif WITHDMA2DHW
 	// DMA2D implementation
@@ -529,16 +563,20 @@ hwacc_fillrect_u24(
 	/* ожидаем выполнения операции */
 	while ((DMA2D->CR & DMA2D_CR_START) != 0)
 		hardware_nonguiyield();
+	__DMB();
 
+	ASSERT((DMA2D->ISR & DMA2D_ISR_CEIF) == 0);	// Configuration Error
+	ASSERT((DMA2D->ISR & DMA2D_ISR_TEIF) == 0);	// Transfer Error
 
 #else
 	// программная реализация
 
 	const unsigned t = GXADJ(dx) - w;
-	buffer += (GXADJ(dx) * row) + col;
+	//buffer += (GXADJ(dx) * row) + col;
+	buffer = colmain_mem_at(buffer, dx, dy, col, row); // dest address
 	while (h --)
 	{
-		PACKEDCOLORMAIN_T * const startmem = buffer;
+		//PACKEDCOLORMAIN_T * const startmem = buffer;
 
 		unsigned n = w;
 		while (n --)
@@ -571,59 +609,23 @@ void arm_hardware_dma2d_initialize(void)
 		(DMA2D_AMTCR_DT_VALUE << DMA2D_AMTCR_DT_Pos) |
 		(DMA2D_AMTCR_DT_ENABLE << DMA2D_AMTCR_EN_Pos) |
 		0;
+#if 0
+	static ALIGNX_BEGIN uint32_t clut [256] ALIGNX_END;
+	memset(clut, 0xFF, sizeof clut);
+	arm_hardware_flush((uintptr_t) clut, sizeof clut);
+	DMA2D->FGCMAR = (uintptr_t) clut;
+	DMA2D->BGCMAR = (uintptr_t) clut;
+#endif
 }
 
 #endif /* WITHDMA2DHW */
-
-#if WITHMDMAHW
-
-void arm_hardware_mdma_initialize(void)
-{
-#if CPUSTYLE_STM32MP1
-	/* Enable the DMA2D Clock */
-	RCC->MP_AHB6ENSETR |= RCC_MC_AHB6ENSETR_MDMAEN;	/* MDMA clock enable */
-	(void) RCC->MP_AHB6ENSETR;
-	RCC->MP_AHB6LPENSETR |= RCC_MC_AHB6LPENSETR_MDMALPEN;	/* MDMA clock enable */
-	(void) RCC->MP_AHB6LPENSETR;
-	//RCC->MP_TZAHB6ENSETR |= RCC_MP_TZAHB6ENSETR_MDMAEN;
-	//(void) RCC->MP_TZAHB6ENSETR;
-
-	/* SYSCFG clock enable */
-	RCC->MP_APB3ENSETR = RCC_MC_APB3ENSETR_SYSCFGEN;
-	(void) RCC->MP_APB3ENSETR;
-	/*
-	 * Interconnect update : select master using the port 1.
-	 * LTDC = AXI_M9.
-	 * MDMA = AXI_M7.
-	 */
-	//SYSCFG->ICNR |= SYSCFG_ICNR_AXI_M7;
-	//(void) SYSCFG->ICNR;
-
-#elif CPUSTYLE_STM32H7XX
-	/* Enable the DMA2D Clock */
-	RCC->AHB3ENR |= RCC_AHB3ENR_MDMAEN_Msk;	/* MDMA clock enable */
-	(void) RCC->AHB3ENR;
-	RCC->AHB3LPENR |= RCC_AHB3LPENR_MDMALPEN_Msk;
-	(void) RCC->AHB3LPENR;
-
-#else /* CPUSTYLE_STM32H7XX */
-	/* Enable the DMA2D Clock */
-	RCC->AHB1ENR |= RCC_AHB1ENR_MDMAEN;	/* MDMA clock enable */
-	(void) RCC->AHB1ENR;
-	RCC->AHB3LPENR |= RCC_AHB3LPENR_MDMALPEN_Msk;
-	(void) RCC->AHB3LPENR;
-
-#endif /* CPUSTYLE_STM32H7XX */
-}
-
-#endif /* WITHMDMAHW */
 
 extern const char * savestring;
 
 // получить адрес требуемой позиции в буфере
 PACKEDCOLORMAIN_T *
 colmain_mem_at_debug(
-	PACKEDCOLORMAIN_T * buffer,
+	PACKEDCOLORMAIN_T * __restrict buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
 	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
@@ -659,6 +661,8 @@ display_colorbuf_xor_vline(
 	COLORPIP_T color
 	)
 {
+	ASSERT(row0 < dy);
+	ASSERT((row0 + h) <= dy);
 	while (h --)
 		colpip_point_xor(buffer, dx, dy, col, row0 ++, color);
 }
@@ -676,6 +680,10 @@ display_colorbuf_set_vline(
 	COLORPIP_T color
 	)
 {
+	ASSERT(row0 < dy);
+	ASSERT((row0 + h) <= dy);
+	/* рисуем прямоугольник шириной в 1 пиксель */
+	//colmain_fillrect(buffer, dx, dy, col, row0, 1, h, color);
 	while (h --)
 		colpip_point(buffer, dx, dy, col, row0 ++, color);
 }
@@ -696,6 +704,7 @@ void colpip_fillrect(
 	ASSERT((x + w) <= dx);
 	ASSERT(y < dy);
 	ASSERT((y + h) <= dy);
+
 #if LCDMODE_HORFILL
 
 	#if LCDMODE_PIP_L8
@@ -998,7 +1007,7 @@ void colpip_fill(
 
 // поставить цветную точку.
 void colpip_point(
-	PACKEDCOLORPIP_T * buffer,
+	PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy,
 	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
@@ -1011,7 +1020,7 @@ void colpip_point(
 
 // поставить цветную точку (модификация с сохранением старого изоьражения).
 void colpip_point_xor(
-	PACKEDCOLORPIP_T * buffer,
+	PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy,
 	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
@@ -1028,31 +1037,30 @@ void colpip_point_xor(
 // MDMA, DMA2D или программа
 // для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
 void hwaccel_copy(
-	uintptr_t dstinvalidateaddr,
-	size_t dstinvalidatesize,
-	PACKEDCOLORMAIN_T * dst,
-	const PACKEDCOLORMAIN_T * src,
-	unsigned w,
-	unsigned t,	// разница в размере строки получателя от источника
-	unsigned h
+	uintptr_t dstinvalidateaddr,	// параметры invalidate получателя
+	int_fast32_t dstinvalidatesize,
+	PACKEDCOLORMAIN_T * __restrict dst,
+	uint_fast16_t tdx,	// ширина буфера
+	uint_fast16_t tdy,	// высота буфера
+	uintptr_t srcinvalidateaddr,	// параметры clean источника
+	int_fast32_t srcinvalidatesize,
+	const PACKEDCOLORMAIN_T * __restrict src,
+	uint_fast16_t sdx,	// ширина буфера
+	uint_fast16_t sdy	// высота буфера
 	)
 {
-	if (w == 0 || h == 0)
+	if (sdx == 0 || sdy == 0)
 		return;
 
 #if WITHMDMAHW
 	// MDMA реализация
 
 	arm_hardware_flush_invalidate(dstinvalidateaddr, dstinvalidatesize);
-	arm_hardware_flush((uintptr_t) src, sizeof (* src) * GXSIZE(w, h));
-
-	MDMA_CH->CCR &= ~ MDMA_CCR_EN_Msk;
-	while ((MDMA_CH->CCR & MDMA_CCR_EN_Msk) != 0)
-		;
+	arm_hardware_flush(srcinvalidateaddr, srcinvalidatesize);
 
 	MDMA_CH->CDAR = (uintptr_t) dst;
 	MDMA_CH->CSAR = (uintptr_t) src;
-	const uint_fast32_t tlen = mdma_tlen(w * sizeof (PACKEDCOLORMAIN_T), sizeof (PACKEDCOLORMAIN_T));
+	const uint_fast32_t tlen = mdma_tlen(sdx * sizeof (PACKEDCOLORMAIN_T), sizeof (PACKEDCOLORMAIN_T));
 	const uint_fast32_t sbus = mdma_getbus(MDMA_CH->CSAR);
 	const uint_fast32_t dbus = mdma_getbus(MDMA_CH->CDAR);
 	const uint_fast32_t sinc = 0x02; // Source increment mode: 10: address pointer is incremented
@@ -1069,21 +1077,21 @@ void hwaccel_copy(
 		(MDMA_CTCR_xSIZE_MAIN << MDMA_CTCR_DINCOS_Pos) |
 		(dburst << MDMA_CTCR_DBURST_Pos) |	// Destination burst transfer configuration
 		((tlen - 1) << MDMA_CTCR_TLEN_Pos) |		// buffer Transfer Length (number of bytes - 1)
-		(0x00 << MDMA_CTCR_PKE_Pos) |
-		(0x00 << MDMA_CTCR_PAM_Pos) |
-		(0x02 << MDMA_CTCR_TRGM_Pos) |		// Trigger Mode: 10: Each MDMA request (software or hardware) triggers a repeated block transfer (if the block repeat is 0, a single block is transferred)
-		(0x01 << MDMA_CTCR_SWRM_Pos) |		// 1: hardware request are ignored. Transfer is triggered by software writing 1 to the SWRQ bit
-		(0x01 << MDMA_CTCR_BWM_Pos) |
+		(0x00uL << MDMA_CTCR_PKE_Pos) |
+		(0x00uL << MDMA_CTCR_PAM_Pos) |
+		(0x02uL << MDMA_CTCR_TRGM_Pos) |		// Trigger Mode: 10: Each MDMA request (software or hardware) triggers a repeated block transfer (if the block repeat is 0, a single block is transferred)
+		(0x01uL << MDMA_CTCR_SWRM_Pos) |		// 1: hardware request are ignored. Transfer is triggered by software writing 1 to the SWRQ bit
+		(0x01uL << MDMA_CTCR_BWM_Pos) |
 		0;
 	MDMA_CH->CBNDTR =
-		((sizeof (PACKEDCOLORMAIN_T) * (w)) << MDMA_CBNDTR_BNDT_Pos) |	// Block Number of data bytes to transfer
-		(0x00 << MDMA_CBNDTR_BRSUM_Pos) |	// Block Repeat Source address Update Mode: 0 - increment
-		(0x00 << MDMA_CBNDTR_BRDUM_Pos) |	// Block Repeat Destination address Update Mode: 0 - increment
-		((h - 1) << MDMA_CBNDTR_BRC_Pos) |		// Block Repeat Count
+		((sizeof (PACKEDCOLORMAIN_T) * (sdx)) << MDMA_CBNDTR_BNDT_Pos) |	// Block Number of data bytes to transfer
+		(0x00uL << MDMA_CBNDTR_BRSUM_Pos) |	// Block Repeat Source address Update Mode: 0 - increment
+		(0x00uL << MDMA_CBNDTR_BRDUM_Pos) |	// Block Repeat Destination address Update Mode: 0 - increment
+		((sdy - 1) << MDMA_CBNDTR_BRC_Pos) |		// Block Repeat Count
 		0;
 	MDMA_CH->CBRUR =
-		((sizeof (PACKEDCOLORMAIN_T) * (GXADJ(w) - w)) << MDMA_CBRUR_SUV_Pos) |	// Source address Update Value
-		((sizeof (PACKEDCOLORMAIN_T) * (t)) << MDMA_CBRUR_DUV_Pos) |			// Destination address Update Value
+		((sizeof (PACKEDCOLORMAIN_T) * (GXADJ(sdx) - sdx)) << MDMA_CBRUR_SUV_Pos) |		// Source address Update Value
+		((sizeof (PACKEDCOLORMAIN_T) * (GXADJ(tdx) - sdx)) << MDMA_CBRUR_DUV_Pos) |		// Destination address Update Value
 		0;
 
 	MDMA_CH->CTBR = (MDMA_CH->CTBR & ~ (MDMA_CTBR_SBUS_Msk | MDMA_CTBR_DBUS_Msk)) |
@@ -1091,49 +1099,41 @@ void hwaccel_copy(
 		(dbus << MDMA_CTBR_DBUS_Pos) |
 		0;
 
-	MDMA_CH->CIFCR = MDMA_CIFCR_CLTCIF_Msk | MDMA_CIFCR_CBTIF_Msk |
-					MDMA_CIFCR_CBRTIF_Msk | MDMA_CIFCR_CCTCIF_Msk | MDMA_CIFCR_CTEIF_Msk;
-	// Set priority
-	MDMA_CH->CCR = (MDMA_CH->CCR & ~ (MDMA_CCR_PL_Msk)) |
-			(MDMA_CCR_PL_VALUE < MDMA_CCR_PL_Pos) |
-			0;
-	MDMA_CH->CCR |= MDMA_CCR_EN_Msk;
-	/* start transfer */
-	MDMA_CH->CCR |= MDMA_CCR_SWRQ_Msk;
-	/* wait for complete */
-	while ((MDMA_CH->CISR & MDMA_CISR_CTCIF_Msk) == 0)	// Channel x Channel Transfer Complete interrupt flag
-		hardware_nonguiyield();
-	//TP();
+	mdma_startandwait();
 
 #elif WITHDMA2DHW
 	// DMA2D реализация
-
+	// See DMA2D_FGCMAR for L8
 	arm_hardware_flush_invalidate(dstinvalidateaddr, dstinvalidatesize);
-	arm_hardware_flush((uintptr_t) src, sizeof (* src) * GXSIZE(w, h));
+	arm_hardware_flush(srcinvalidateaddr, srcinvalidatesize);
 
 	/* исходный растр */
 	DMA2D->FGMAR = (uintptr_t) src;
+	//	The line offset used for the foreground image, expressed in pixel when the LOM bit is
+	//	reset and in byte when the LOM bit is set.
 	DMA2D->FGOR = (DMA2D->FGOR & ~ (DMA2D_FGOR_LO)) |
-		((GXADJ(w) - w) << DMA2D_FGOR_LO_Pos) |
+		((GXADJ(sdx) - sdx) << DMA2D_FGOR_LO_Pos) |
 		0;
 	/* целевой растр */
 	DMA2D->OMAR = (uintptr_t) dst;
 	DMA2D->OOR = (DMA2D->OOR & ~ (DMA2D_OOR_LO)) |
-		((t) << DMA2D_OOR_LO_Pos) |
+		((GXADJ(tdx) - sdx) << DMA2D_OOR_LO_Pos) |
 		0;
 	/* размер пересылаемого растра */
 	DMA2D->NLR = (DMA2D->NLR & ~ (DMA2D_NLR_NL | DMA2D_NLR_PL)) |
-		((h) << DMA2D_NLR_NL_Pos) |
-		((w) << DMA2D_NLR_PL_Pos) |
+		((sdy) << DMA2D_NLR_NL_Pos) |
+		((sdx) << DMA2D_NLR_PL_Pos) |
 		0;
 	/* формат пикселя */
-	DMA2D->FGPFCCR = (DMA2D->FGPFCCR & ~ (DMA2D_FGPFCCR_CM)) |
+	DMA2D->FGPFCCR = (DMA2D->FGPFCCR & ~ (DMA2D_FGPFCCR_CM | DMA2D_FGPFCCR_AM)) |
+		0 * DMA2D_FGPFCCR_AM |
 		DMA2D_FGPFCCR_CM_VALUE_MAIN |	/* Color mode - framebuffer pixel format */
 		0;
 
 	/* запустить операцию */
-	DMA2D->CR = (DMA2D->CR & ~ (DMA2D_CR_MODE)) |
-		0 * DMA2D_CR_MODE_0 |	// 00: Memory-to-memory (FG fetch only)
+	DMA2D->CR = (DMA2D->CR & ~ (DMA2D_CR_MODE | DMA2D_CR_LOM)) |
+		0 * DMA2D_CR_LOM | // 0: Line offsets are expressed in pixels
+		0 * DMA2D_CR_MODE_0 |	// 000: Memory-to-memory (FG fetch only)
 		1 * DMA2D_CR_START |
 		0;
 
@@ -1141,26 +1141,30 @@ void hwaccel_copy(
 	while ((DMA2D->CR & DMA2D_CR_START) != 0)
 		hardware_nonguiyield();
 
+	ASSERT((DMA2D->ISR & DMA2D_ISR_CEIF) == 0);	// Configuration Error
+	ASSERT((DMA2D->ISR & DMA2D_ISR_TEIF) == 0);	// Transfer Error
+
+	__DMB();
+
 #else
 	// программная реализация
 
-	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
-	if (t == 0)
+	// для случая когда горизонтальные пиксели в видеопямяти источника располагаются подряд
+	if (tdx == sdx)
 	{
-		const size_t len = (size_t) GXSIZE(w, h) * sizeof * src;
+		const size_t len = (size_t) GXSIZE(sdx, sdy) * sizeof * src;
 		// ширина строки одинаковая в получателе и источнике
 		memcpy(dst, src, len);
-		arm_hardware_flush((uintptr_t) dst, len);
 	}
 	else
 	{
-		const size_t len = w * sizeof * src;
-		while (h --)
+		const size_t len = sdx * sizeof * src;
+		while (sdy --)
 		{
 			memcpy(dst, src, len);
-			arm_hardware_flush((uintptr_t) dst, len);
-			src += GXADJ(w);
-			dst += w + t;
+			//arm_hardware_flush((uintptr_t) dst, len);
+			src += GXADJ(sdx);
+			dst += GXADJ(tdx);
 		}
 	}
 
@@ -1318,8 +1322,8 @@ colmain_fillrect(
 #if 0
 // функции работы с colorbuffer не занимаются выталкиванеим кэш-памяти
 static void RAMFUNC ltdcpip_horizontal_pixels(
-	PACKEDCOLORPIP_T * tgr,		// target raster
-	const FLASHMEM uint8_t * raster,
+	PACKEDCOLORPIP_T * __restrict tgr,		// target raster
+	const FLASHMEM uint8_t * __restrict raster,
 	uint_fast16_t width	// number of bits (start from LSB first byte in raster)
 	)
 {
@@ -1344,8 +1348,8 @@ static void RAMFUNC ltdcpip_horizontal_pixels(
 // функции работы с colorbuffer не занимаются выталкиванеим кэш-памяти
 // Фон не трогаем
 static void RAMFUNC ltdcmain_horizontal_pixels_tbg(
-	PACKEDCOLORMAIN_T * tgr,		// target raster
-	const FLASHMEM uint8_t * raster,
+	PACKEDCOLORMAIN_T * __restrict tgr,		// target raster
+	const FLASHMEM uint8_t * __restrict raster,
 	uint_fast16_t width,	// number of bits (start from LSB first byte in raster)
 	COLORPIP_T fg
 	)
@@ -1382,7 +1386,7 @@ static void RAMFUNC ltdcmain_horizontal_pixels_tbg(
 static uint_fast16_t
 RAMFUNC_NONILINE
 ltdcmain_horizontal_put_char_small(
-	PACKEDCOLORPIP_T * buffer,
+	PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy,
 	uint_fast16_t x,
@@ -1407,7 +1411,7 @@ ltdcmain_horizontal_put_char_small(
 // Фон не трогаем
 // return new x coordinate
 static uint_fast16_t RAMFUNC_NONILINE ltdcpip_horizontal_put_char_small_tbg(
-	PACKEDCOLORPIP_T * buffer,
+	PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy,
 	uint_fast16_t x,
@@ -1434,7 +1438,7 @@ static uint_fast16_t RAMFUNC_NONILINE ltdcpip_horizontal_put_char_small_tbg(
 // Фон не трогаем
 // return new x coordinate
 static uint_fast16_t RAMFUNC_NONILINE ltdcpip_horizontal_put_char_small2_tbg(
-	PACKEDCOLORPIP_T * buffer,
+	PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy,
 	uint_fast16_t x,
@@ -1460,7 +1464,7 @@ static uint_fast16_t RAMFUNC_NONILINE ltdcpip_horizontal_put_char_small2_tbg(
 // Фон не трогаем
 // return new x coordinate
 static uint_fast16_t RAMFUNC_NONILINE ltdcpip_horizontal_put_char_small3_tbg(
-	PACKEDCOLORPIP_T * buffer,
+	PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy,
 	uint_fast16_t x,
@@ -1489,7 +1493,7 @@ static uint_fast16_t RAMFUNC_NONILINE ltdcpip_horizontal_put_char_small3_tbg(
 // transparent background - не меняем цвет фона.
 void
 colpip_string_tbg(
-	PACKEDCOLORPIP_T * buffer,
+	PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy,
 	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
@@ -1514,7 +1518,7 @@ colpip_string_tbg(
 // transparent background - не меняем цвет фона.
 void
 colpip_string2_tbg(
-	PACKEDCOLORPIP_T * buffer,
+	PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy,
 	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
@@ -1547,7 +1551,7 @@ uint_fast16_t strwidth2(
 // transparent background - не меняем цвет фона.
 void
 colpip_string3_tbg(
-	PACKEDCOLORPIP_T * buffer,
+	PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy,
 	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
@@ -1587,88 +1591,48 @@ uint_fast16_t strwidth(
 	return SMALLCHARW * strlen(s);
 }
 
-// Возвращает высоту строки в пикселях
-uint_fast16_t colpip_string_height(
-	PACKEDCOLORPIP_T * buffer,
-	uint_fast16_t dx,
-	uint_fast16_t dy,
-	const char * s
-	)
-{
-	ASSERT(s != NULL);
-	(void) buffer;
-	(void) dx;
-	(void) dy;
-	(void) s;
-	return SMALLCHARH;
-}
-
 #endif /* defined (SMALLCHARW) && defined (SMALLCHARH) */
 
 #else /* LCDMODE_HORFILL */
 
 #endif /* LCDMODE_HORFILL */
 
-
-// скоприовать прямоугольник с типом пикселей соответствующим основному экрану
-void colmain_plot(
-	PACKEDCOLORMAIN_T * dst,	// получатель
-	uint_fast16_t tdx,	// получатель
-	uint_fast16_t tdy,	// получатель
-	uint_fast16_t x,	// получатель
-	uint_fast16_t y,	// получатель
-	const PACKEDCOLORMAIN_T * src, 	// источник
-	uint_fast16_t dx,	// источник Размеры окна в пикселях
-	uint_fast16_t dy	// источник
-	)
-{
-	ASSERT(src != NULL);
-	ASSERT(dst != NULL);
-	ASSERT(tdx >= dx);
-	ASSERT(tdy >= dy);
-#if LCDMODE_HORFILL
-	hwaccel_copy(
-		(uintptr_t) dst, sizeof (PACKEDCOLORPIP_T) * tdx * tdy,	// target area invalidate parameters
-		colmain_mem_at(dst, tdx, tdy, x, y),
-		src,
-		dx, tdx - dx, dy);	// w, t, h
-#else /* LCDMODE_HORFILL */
-	hwaccel_copy(
-		(uintptr_t) dst, sizeof (PACKEDCOLORPIP_T) * tdx * tdy,	// target area invalidate parameters
-		colmain_mem_at(dst, tdx, tdy, x, y),
-		src,
-		dy, tdy - dy, dx);	// w, t, h
-#endif /* LCDMODE_HORFILL */
-}
-
 // скоприовать прямоугольник с типом пикселей соответствующим pip
 void colpip_plot(
+	uintptr_t dstinvalidateaddr,	// параметры clean invalidate получателя
+	int_fast32_t dstinvalidatesize,
 	PACKEDCOLORPIP_T * dst,	// получатель
-	uint_fast16_t tdx,	// получатель
+	uint_fast16_t tdx,	// получатель Размеры окна в пикселях
 	uint_fast16_t tdy,	// получатель
-	uint_fast16_t x,	// получатель
+	uint_fast16_t x,	// получатель Позиция
 	uint_fast16_t y,	// получатель
+	uintptr_t srcinvalidateaddr,	// параметры clean источника
+	int_fast32_t srcinvalidatesize,
 	const PACKEDCOLORPIP_T * src, 	// источник
-	uint_fast16_t dx,	// источник Размеры окна в пикселях
-	uint_fast16_t dy	// источник
+	uint_fast16_t sdx,	// источник Размеры окна в пикселях
+	uint_fast16_t sdy	// источник
 	)
 {
 	ASSERT(src != NULL);
 	ASSERT(dst != NULL);
-	ASSERT(tdx >= dx);
-	ASSERT(tdy >= dy);
+	ASSERT(tdx >= sdx);
+	ASSERT(tdy >= sdy);
+
+	//ASSERT(((uintptr_t) src % DCACHEROWSIZE) == 0);	// TODO: добавиль парамтр для flush исходного растра
 #if LCDMODE_HORFILL
 	hwaccel_copy(
-		(uintptr_t) dst, sizeof (PACKEDCOLORPIP_T) * tdx * tdy,	// target area invalidate parameters
-		colmain_mem_at(dst, tdx, tdy, x, y),
-		src,
-		dx, tdx - dx, dy);	// w, t, h
+		dstinvalidateaddr, dstinvalidatesize,	// target area clean invalidate parameters
+		colmain_mem_at(dst, tdx, tdy, x, y), tdx, tdy,
+		srcinvalidateaddr, srcinvalidatesize,	// параметры clean источника
+		src, sdx, sdy
+		);
 #else /* LCDMODE_HORFILL */
 	hwaccel_copy(
-		(uintptr_t) dst, sizeof (PACKEDCOLORPIP_T) * tdx * tdy,	// target area invalidate parameters
-		colmain_mem_at(dst, tdx, tdy, x, y),
-		src,
-		dy, tdy - dy, dx);	// w, t, h
+		dstinvalidateaddr, dstinvalidatesize,	// target area clean invalidate parameters
+		colmain_mem_at(dst, tdx, tdy, x, y), tdx, tdy,
+		srcinvalidateaddr, srcinvalidatesize,	// параметры clean источника
+		src, sdx, sdy
+		);
 #endif /* LCDMODE_HORFILL */
 }
 
@@ -1677,7 +1641,7 @@ void colpip_plot(
 
 static uint_fast16_t
 RAMFUNC_NONILINE ltdc_horizontal_put_char_small3(
-	PACKEDCOLORMAIN_T * const buffer,
+	PACKEDCOLORMAIN_T * const __restrict buffer,
 	const uint_fast16_t dx,
 	const uint_fast16_t dy,
 	uint_fast16_t x, uint_fast16_t y,
@@ -1710,12 +1674,12 @@ display_string3(uint_fast16_t x, uint_fast16_t y, const char * s, uint_fast8_t l
 
 void
 colmain_string3_at_xy(
-	PACKEDCOLORMAIN_T * const buffer,
+	PACKEDCOLORMAIN_T * const __restrict buffer,
 	const uint_fast16_t dx,
 	const uint_fast16_t dy,
 	uint_fast16_t x,
 	uint_fast16_t y,
-	const char * s
+	const char * __restrict s
 	)
 {
 	char c;
@@ -1726,7 +1690,7 @@ colmain_string3_at_xy(
 }
 
 void
-display_string3_at_xy(uint_fast16_t x, uint_fast16_t y, const char * s, COLORMAIN_T fg, COLORMAIN_T bg)
+display_string3_at_xy(uint_fast16_t x, uint_fast16_t y, const char * __restrict s, COLORMAIN_T fg, COLORMAIN_T bg)
 {
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	colmain_setcolors(fg, bg);

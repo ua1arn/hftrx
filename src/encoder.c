@@ -15,6 +15,10 @@
 #include <stdlib.h>
 #include <limits.h>
 
+#undef SPIN_LOCK
+#undef SPIN_UNLOCK
+#define SPIN_LOCK(p) do { (void) p; } while (0)
+#define SPIN_UNLOCK(p) do { (void) p; } while (0)
 
 /* обработчики прерывания от валкодера */
 
@@ -31,7 +35,7 @@ static int position_kbd;	/* накопитель от клавиатуры - з�
 
 // dimensions are:
 // old_bits new_bits
-static RAMDTCM int_fast8_t graydecoder [4][4] =
+static RAMDTCM int8_t graydecoder [4][4] =
 {
 	{
 		+0,		/* 00 -> 00 stopped				*/
@@ -59,25 +63,31 @@ static RAMDTCM int_fast8_t graydecoder [4][4] =
 	},
 };
 
+static RAMDTCM SPINLOCK_t enc1lock = SPINLOCK_INIT;
+
 static RAMDTCM uint_fast8_t old_val;
 
 void spool_encinterrupt(void)
 {
 	const uint_fast8_t new_val = hardware_get_encoder_bits();	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
 
+	SPIN_LOCK(& enc1lock);
 #if ENCODER_REVERSE
 	position1 -= graydecoder [old_val][new_val];
 #else
 	position1 += graydecoder [old_val][new_val];
 #endif
 	old_val = new_val;
+	SPIN_UNLOCK(& enc1lock);
 }
 
 static RAMDTCM uint_fast8_t old_val2;
 
-static void spool_encinterrupt2_local(void * ctx)
+void spool_encinterrupt2(void)
 {
 	const uint_fast8_t new_val = hardware_get_encoder2_bits();	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
+
+	SPIN_LOCK(& enc1lock);
 
 #if ENCODER2_REVERSE
 	position2 -= graydecoder [old_val2][new_val];
@@ -85,6 +95,7 @@ static void spool_encinterrupt2_local(void * ctx)
 	position2 += graydecoder [old_val2][new_val];
 #endif
 	old_val2 = new_val;
+	SPIN_UNLOCK(& enc1lock);
 }
 
 static int safegetposition1(void)
@@ -185,6 +196,8 @@ void encoder_set_resolution(uint_fast8_t v, uint_fast8_t encdynamic)
 static void
 enc_spool(void * ctx)
 {
+	SPIN_LOCK(& enc1lock);
+
 	const int p1 = safegetposition1();	// Валкодер #1
 	const int p1kbd = safegetposition_kbd();
 	rotate1 += p1;		/* учёт количества импульсов (для прямого отсчёта) */
@@ -208,6 +221,7 @@ enc_spool(void * ctx)
 	// Валкодер #2
 	const int p2 = safegetposition2();
 	rotate2 += p2;		/* учёт количества импульсов (для прямого отсчёта) */
+	SPIN_UNLOCK(& enc1lock);
 }
 
 
@@ -220,7 +234,9 @@ void encoder_clear(void)
 {
 	backup_rotate = 0;
 	backup_rotate2 = 0;
-	disableIRQ();
+	system_disableIRQ();
+
+	SPIN_LOCK(& enc1lock);
 	rotate1 = 0;
 	rotate_kbd = 0;
 
@@ -228,7 +244,8 @@ void encoder_clear(void)
 	enchist [0] = enchist [1] = enchist [2] = enchist [3] = 0; 
 	tichist = 0;
 
-	enableIRQ();
+	SPIN_UNLOCK(& enc1lock);
+	system_enableIRQ();
 }
 
 /* получение количества шагов и скорости вращения. */
@@ -242,7 +259,8 @@ encoder_get_snapshot(
 	unsigned s;				// количество шагов за время измерения
 	unsigned tdelta;	// Время измерения
 
-	disableIRQ();
+	system_disableIRQ();
+	SPIN_LOCK(& enc1lock);
 
 	// параметры изменерения скорости не модифицируем
 	// 1. количество шагов за время измерения
@@ -257,7 +275,8 @@ encoder_get_snapshot(
 	rotate_kbd = 0;
 
 
-	enableIRQ();
+	SPIN_UNLOCK(& enc1lock);
+	system_enableIRQ();
 
 	// Расчёт скорости. Результат - (1 / ENCODER_NORMALIZED_RESOLUTION) долей оборота за секунду
 	// Если результат ENCODER_NORMALIZED_RESOLUTION это обозначает один оборот в секунду
@@ -280,10 +299,12 @@ encoder2_get_snapshot(
 {
 	int hrotate;
 
-	disableIRQ();
+	system_disableIRQ();
+	SPIN_LOCK(& enc1lock);
 	hrotate = rotate2;
 	rotate2 = 0;
-	enableIRQ();
+	SPIN_UNLOCK(& enc1lock);
+	system_enableIRQ();
 
 	/* Уменьшение разрешения валкодера в зависимости от установок в меню */
 	const div_t h = div(hrotate + backup_rotate2, derate);
@@ -400,6 +421,11 @@ getRotateHiRes2(
 	return nrotate;
 }
 
+static void spool_encinterrupt2_local(void * ctx)
+{
+	spool_encinterrupt2();
+}
+
 /* вызывается при запрещенных прерываниях */
 void encoder_initialize(void)
 {
@@ -415,7 +441,7 @@ void encoder_initialize(void)
 	ticker_initialize(& encticker, 1, enc_spool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 #endif /* WITHENCODER */
 #if WITHENCODER2
-	// второй енколе всегда по опросу
+	// второй енкодер всегда по опросу
 	ticker_initialize(& encticker2, 1, spool_encinterrupt2_local, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 #endif /* WITHENCODER2 */
 }

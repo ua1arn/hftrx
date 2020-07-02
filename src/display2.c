@@ -14,7 +14,7 @@
 
 #include <string.h>
 #include <math.h>
-#include <src/gui/gui.h>
+#include "src/gui/gui.h"
 
 #define WITHPLACEHOLDERS 1	//  отображение макета с еще незанятыми полями
 
@@ -150,6 +150,8 @@ static uint_fast8_t glob_zoomxpow2;	/* уменьшение отображаем
 
 static uint_fast8_t global_showdbm = 1;	// Отображение уровня сигнала в dBm или S-memter (в зависимости от настроек)
 
+static uint_fast8_t global_smetertype;	/* выбор внешнего вида прибора - стрелочный или градусник */
+
 //#define WIDEFREQ (TUNE_TOP > 100000000L)
 
 // очистка фона
@@ -175,13 +177,14 @@ display2_nextfb(
 	dctx_t * pctx
 	)
 {
-#if LCDMODE_LTDC && ! (LCDMODE_PIP_RGB565 || LCDMODE_PIP_L8)
+#if WITHLTDCHW && LCDMODE_LTDC && ! (LCDMODE_PIP_RGB565 || LCDMODE_PIP_L8)
 
 	colmain_fb_next();
+	ASSERT(((uintptr_t) colmain_fb_show() % DCACHEROWSIZE) == 0);
 	arm_hardware_flush((uintptr_t) colmain_fb_show(), (uint_fast32_t) DIM_X * DIM_Y * sizeof (PACKEDCOLORMAIN_T));
 	arm_hardware_ltdc_main_set((uintptr_t) colmain_fb_show());
 
-#endif /* LCDMODE_LTDC && ! (LCDMODE_PIP_RGB565 || LCDMODE_PIP_L8) */
+#endif /* WITHLTDCHW && LCDMODE_LTDC && ! (LCDMODE_PIP_RGB565 || LCDMODE_PIP_L8) */
 }
 
 // Отображение частоты. Герцы так же большим шрифтом.
@@ -366,16 +369,16 @@ static void display_freqmeter10(
 	)
 {
 #if WITHFQMETER
-	char buffer [11];
+	char buf2 [11];
 
 	local_snprintf_P(
-		buffer, sizeof buffer / sizeof buffer [0],
+		buf2, ARRAY_SIZE(buf2),
 		PSTR("%010lu"),
 		(unsigned long) board_get_fqmeter()
 		);
 
 	colmain_setcolors(colors_1freq [0].fg, colors_1freq [0].bg);
-	display_at(x, y, buffer);
+	display_at(x, y, buf2);
 #endif /* WITHFQMETER */
 }
 
@@ -458,17 +461,17 @@ static void display_recstatus(
 	unsigned long hamradio_get_recdropped(void);
 	int hamradio_get_recdbuffered(void);
 
-	char buffer [12];
+	char buf2 [12];
 	local_snprintf_P(
-		buffer,
-		sizeof buffer / sizeof buffer [0],
+		buf2,
+		ARRAY_SIZE(buf2),
 		PSTR("%08lx %2d"), 
 		(unsigned long) hamradio_get_recdropped(),
 		(int) hamradio_get_recdbuffered()
 		);
 		
 	colmain_setcolors(LABELTEXT, LABELBACK);
-	display_at(x, y, buffer);
+	display_at(x, y, buf2);
 
 #endif /* WITHUSEAUDIOREC */
 }
@@ -487,13 +490,13 @@ static void display2_rec3(
 	static const FLASHMEM char text_pau [] = "PAU";
 	static const FLASHMEM char text_rec [] = "REC";
 	const FLASHMEM char * const labels [2] = { text_pau, text_rec };
-	display2_text_P(x, y, labels, colorsfg_2state, colorsbg_2state, state);
+	display2_text_P(x, y, labels, colors_2state, state);
 
 #endif /* WITHUSEAUDIOREC */
 }
 
 // отображение состояния USB HOST
-static void display2_usb3(
+static void display2_usbsts3(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	dctx_t * pctx
@@ -623,16 +626,16 @@ static void display2_wpm5(
 {
 #if WITHELKEY
 	const uint_fast8_t value = hamradio_get_cw_wpm();	// не-0: динамик включен
-	char s [6];
-	const char * const labels [1] = { s, };
+	char buf2 [6];
+	const char * const labels [1] = { buf2, };
 
-	local_snprintf_P(s, sizeof s / sizeof s [0], PSTR("%2dwpm"), (int) value);
+	local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("%2dwpm"), (int) value);
 	display2_text(x, y, labels, colors_1state, 0);
 	(void) pctx;
 #endif /* WITHELKEY */
 }
 
-// Отображение режима NOCH ON/OFF
+// Отображение типа режима NOCH и ON/OFF
 static void display2_notch5(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
@@ -642,7 +645,8 @@ static void display2_notch5(
 #if WITHNOTCHONOFF || WITHNOTCHFREQ
 	int_fast32_t freq;
 	const uint_fast8_t state = hamradio_get_notchvalue(& freq);
-	display_2states_P(x, y, state, PSTR("NOTCH"), text_nul5_P);
+	const char FLASHMEM * const labels [2] = { hamradio_get_notchtype5_P(), hamradio_get_notchtype5_P(), };
+	display2_text_P(x, y, labels, colors_2state, state);
 #endif /* WITHNOTCHONOFF || WITHNOTCHFREQ */
 }
 
@@ -656,9 +660,9 @@ static void display2_notchfreq5(
 #if WITHNOTCHONOFF || WITHNOTCHFREQ
 	int_fast32_t freq;
 	const uint_fast8_t state = hamradio_get_notchvalue(& freq);
-	char s [6];
-	local_snprintf_P(s, sizeof s / sizeof s [0], PSTR("%5lu"), freq);
-	display_2states(x, y, state, s, text_nul5);
+	char buf2 [6];
+	local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("%5lu"), freq);
+	display_2states(x, y, state, buf2, text_nul5);
 #endif /* WITHNOTCHONOFF || WITHNOTCHFREQ */
 }
 
@@ -1171,9 +1175,10 @@ static void display_vfomode1(
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	do
 	{
-		//display_wrdata_begin(x, y);
-		//display_put_char_small(x, y, label [0], lowhalf);
-		//display_wrdata_end();
+		uint_fast16_t ypix;
+		uint_fast16_t xpix = display_wrdata_begin(x, y, & ypix);
+		display_put_char_small(xpix, ypix, label [0], lowhalf);
+		display_wrdata_end();
 	} while (lowhalf --);
 }
 
@@ -1394,12 +1399,12 @@ static void display_siglevel7(
 	uint_fast8_t tracemax;
 	uint_fast8_t v = board_getsmeter(& tracemax, 0, UINT8_MAX, 0);
 
-	char buff [8];
+	char buf2 [8];
 	// в формате при наличии знака числа ширина формата отностися ко всему полю вместе со знаком
-	local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("%-+4d" "dBm"), tracemax - UINT8_MAX);
+	local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("%-+4d" "dBm"), tracemax - UINT8_MAX);
 	(void) v;
-	const char * const labels [1] = { buff, };
-	ASSERT(strlen(buff) == 7);
+	const char * const labels [1] = { buf2, };
+	ASSERT(strlen(buf2) == 7);
 	display2_text(x, y, labels, colors_1state, 0);
 #endif /* WITHIF4DSP */
 }
@@ -1415,12 +1420,12 @@ static void display2_siglevel4(
 	uint_fast8_t tracemax;
 	uint_fast8_t v = board_getsmeter(& tracemax, 0, UINT8_MAX, 0);
 
-	char buff [5];
+	char buf2 [5];
 	// в формате при наличии знака числа ширина формата отностися ко всему полю вместе со знаком
-	int j = local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("%-+4d"), (int) (tracemax - UINT8_MAX));
+	int j = local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("%-+4d"), (int) (tracemax - UINT8_MAX));
 	(void) v;
-	const char * const labels [1] = { buff, };
-	ASSERT(strlen(buff) == 4);
+	const char * const labels [1] = { buf2, };
+	ASSERT(strlen(buf2) == 4);
 	display2_text(x, y, labels, colors_1state, 0);
 #endif /* WITHIF4DSP */
 }
@@ -1440,11 +1445,11 @@ static void display2_span9(
 {
 #if WITHIF4DSP
 
-	char buff [10];
+	char buf2 [10];
 
-	local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("SPAN:%3dk"), (int) ((display_zoomedbw() + 0) / 1000));
-	const char * const labels [1] = { buff, };
-	ASSERT(strlen(buff) == 9);
+	local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("SPAN:%3dk"), (int) ((display_zoomedbw() + 0) / 1000));
+	const char * const labels [1] = { buf2, };
+	ASSERT(strlen(buf2) == 9);
 	display2_text(x, y, labels, colors_1state, 0);
 
 #endif /* WITHIF4DSP */
@@ -1461,7 +1466,7 @@ static void display_smeter5(
 	uint_fast8_t tracemax;
 	uint_fast8_t v = board_getsmeter(& tracemax, 0, UINT8_MAX, 0);
 
-	char buff [6];
+	char buf2 [6];
 	const int s9level = - 73;
 	const int s9step = 6;
 	const int alevel = tracemax - UINT8_MAX;
@@ -1469,46 +1474,46 @@ static void display_smeter5(
 	(void) v;
 	if (alevel < (s9level - s9step * 9))
 	{
-		local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("S0   "));
+		local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("S0   "));
 	}
 	else if (alevel < (s9level - s9step * 7))
 	{
-		local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("S1   "));
+		local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("S1   "));
 	}
 	else if (alevel < (s9level - s9step * 6))
 	{
-		local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("S2   "));
+		local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("S2   "));
 	}
 	else if (alevel < (s9level - s9step * 5))
 	{
-		local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("S3   "));
+		local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("S3   "));
 	}
 	else if (alevel < (s9level - s9step * 4))
 	{
-		local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("S4   "));
+		local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("S4   "));
 	}
 	else if (alevel < (s9level - s9step * 3))
 	{
-		local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("S5   "));
+		local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("S5   "));
 	}
 	else if (alevel < (s9level - s9step * 2))
 	{
-		local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("S6   "));
+		local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("S6   "));
 	}
 	else if (alevel < (s9level - s9step * 1))
 	{
-		local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("S7   "));
+		local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("S7   "));
 	}
 	else if (alevel < (s9level - s9step * 0))
 	{
-		local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("S8   "));
+		local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("S8   "));
 	}
 	else
 	{
-		local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("S9+%02d"), alevel - s9level);
+		local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("S9+%02d"), alevel - s9level);
 	}
-	const char * const labels [1] = { buff, };
-	ASSERT(strlen(buff) == 5);
+	const char * const labels [1] = { buf2, };
+	ASSERT(strlen(buf2) == 5);
 	display2_text(x, y, labels, colors_1state, 0);
 #endif /* WITHIF4DSP */
 }
@@ -1634,14 +1639,14 @@ static void display_time8(
 {
 #if defined (RTC1_TYPE)
 	uint_fast8_t hour, minute, secounds;
-	char buff [9];
+	char buf2 [9];
 
 	board_rtc_gettime(& hour, & minute, & secounds);
-	local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("%02d:%02d:%02d"), 
+	local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("%02d:%02d:%02d"),
 			(int) hour, (int) minute, (int) secounds
 		);
 	
-	const char * const labels [1] = { buff, };
+	const char * const labels [1] = { buf2, };
 	display2_text(x, y, labels, colors_1state, 0);
 #endif /* WITHNMEA */
 }
@@ -1655,17 +1660,17 @@ static void display_time5(
 {
 #if defined (RTC1_TYPE)
 	uint_fast8_t hour, minute, secounds;
-	char buff [6];
+	char buf2 [6];
 
 	board_rtc_gettime(& hour, & minute, & secounds);
-	local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("%02d%c%02d"),
+	local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("%02d%c%02d"),
 		(int) hour,
 		((secounds & 1) ? ' ' : ':'),	// мигающее двоеточие с периодом две секунды
 		(int) minute
 		);
 
-	ASSERT(strlen(buff) == 5);
-	const char * const labels [1] = { buff, };
+	ASSERT(strlen(buf2) == 5);
+	const char * const labels [1] = { buf2, };
 	display2_text(x, y, labels, colors_1stateBlue, 0);
 
 #endif /* WITHNMEA */
@@ -1680,7 +1685,7 @@ static void display2_datetime12(
 	)
 {
 #if defined (RTC1_TYPE)
-	char buff [13];
+	char buf2 [13];
 
 	uint_fast16_t year;
 	uint_fast8_t month, day;
@@ -1703,7 +1708,7 @@ static void display2_datetime12(
 
 	board_rtc_getdatetime(& year, & month, & day, & hour, & minute, & secounds);
 
-	local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("%s-%02d %02d%c%02d"),
+	local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("%s-%02d %02d%c%02d"),
 		months [month - 1],
 		(int) day,
 		(int) hour,
@@ -1711,8 +1716,8 @@ static void display2_datetime12(
 		(int) minute
 		);
 
-	const char * const labels [1] = { buff, };
-	ASSERT(strlen(buff) == 12);
+	const char * const labels [1] = { buf2, };
+	ASSERT(strlen(buf2) == 12);
 	display2_text(x, y, labels, colors_1stateBlue, 0);
 #endif /* WITHNMEA */
 }
@@ -4164,185 +4169,6 @@ enum
 
 	#endif /* DSTYLE_UR3LMZMOD && WITHONEATTONEAMP */
 
-#elif 0//DSTYLE_G_X480_Y272 && WITHSPECTRUMWF && (LCDMODE_MAIN_PAGES > 1)
-
-	// TFT панель SONY PSP-1000
-	// 272/5 = 54, 480/16=30
-	// со стрелочным s-метром
-
-	#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
-		//					"012345678901234567890123"
-		#define SWRPWRMAP	"1   2   3   4  0% | 100%"
-		#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - значение на полной шкале
-	#else
-		//					"012345678901234567890123"
-		#define POWERMAP	"0    25    50   75   100"
-		#define SWRMAP		"1   |   2  |   3   |   4"	//
-		#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - значение на полной шкале
-	#endif
-	//						"012345678901234567890123"
-	#define SMETERMAP		"1  3  5  7  9 +20 +40 60"
-	enum
-	{
-		BDTH_ALLRX = 30,	// ширина зоны для отображение полосы на индикаторе
-		BDTH_ALLRXBARS = 24,	// ширина зоны для отображение полосы на индикаторе
-		BDTH_LEFTRX = 12,	// ширина индикатора баллов
-		BDTH_RIGHTRX = BDTH_ALLRXBARS - BDTH_LEFTRX,	// ширина индикатора плюсов
-		BDTH_SPACERX = 0,
-	#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
-		BDTH_ALLSWR = 13,
-		BDTH_SPACESWR = 2,
-		BDTH_ALLPWR = 9,
-		BDTH_SPACEPWR = 0,
-	#else /* WITHSHOWSWRPWR */
-		BDTH_ALLSWR = BDTH_ALLRXBARS,
-		BDTH_SPACESWR = BDTH_SPACERX,
-		BDTH_ALLPWR = BDTH_ALLRXBARS,
-		BDTH_SPACEPWR = BDTH_SPACERX,
-	#endif /* WITHSHOWSWRPWR */
-
-		BDCV_ALLRX = ROWS2GRID(22),	// количество строк (ячееек), отведенное под S-метр, панораму, иные отображения
-
-		/* совмещение на одном экрание водопада и панорамы */
-		BDCO_SPMRX = ROWS2GRID(0),	// смещение спектра по вертикали в ячейках от начала общего поля
-		BDCV_SPMRX = ROWS2GRID(12),	// вертикальный размер спектра в ячейках		};
-		BDCO_WFLRX = BDCV_SPMRX,	// смещение водопада по вертикали в ячейках от начала общего поля
-		BDCV_WFLRX = BDCV_ALLRX - BDCO_WFLRX	// вертикальный размер водопада в ячейках		};
-	};
-
-	enum
-	{
-		PATTERN_SPACE = 0x00,	/* очищаем место за SWR и PWR метром этим символом */
-		PATTERN_BAR_FULL = 0xFF,
-		PATTERN_BAR_HALF = 0x3c,
-		PATTERN_BAR_EMPTYFULL = 0x00,	//0x00
-		PATTERN_BAR_EMPTYHALF = 0x00	//0x00
-	};
-
-	/* совмещение на одном экрание водопада и панорамы */
-	enum
-	{
-		DPAGE0,					// Страница, в которой отображаются основные (или все)
-		DISPLC_MODCOUNT
-	};
-
-	enum
-	{
-		PG0 = REDRSUBSET(DPAGE0),
-		PGNOMEMU = PG0,
-		PGALL = PG0 | REDRSUBSET_MENU,
-		PGWFL = PG0,	// страница отображения водопада
-		PGSPE = PG0,	// страница отображения панорамы
-		PGSWR = PG0,	// страница отоюражения S-meter и SWR-meter
-		PGLATCH = PGALL | REDRSUBSET_SLEEP,	// страницы, на которых возможно отображение водопада или панорамы.
-		PGSLP = REDRSUBSET_SLEEP,
-		PGINI = REDRSUBSET_INIT,
-		PGunused
-	};
-
-	#if TUNE_TOP > 100000000uL
-		#define DISPLC_WIDTH	9	// количество цифр в отображении частоты
-	#else
-		#define DISPLC_WIDTH	8	// количество цифр в отображении частоты
-	#endif
-	#define DISPLC_RJ		0	// количество скрытых справа цифр в отображении частоты
-
-	// 272/5 = 54, 480/16=30
-	// Main frequency indicator 56 lines height = 12 cells
-	static const FLASHMEM struct dzone dzones [] =
-	{
-		{	0,	0,	display2_clearbg, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },
-		{	0,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
-		{	3,	0,	display2_ant5,		REDRM_MODE, PGALL, },
-		{	9,	0,	display2_att4,		REDRM_MODE, PGALL, },
-		{	14,	0,	display2_preovf3,	REDRM_BARS, PGALL, },
-		{	18,	0,	display_lockstate1,	REDRM_BARS, PGALL, },	// LOCK (*)
-
-	#if WITHENCODER2
-		{	21, 0,	display2_fnlabel9,	REDRM_MODE, PGALL, },	// FUNC item label
-		{	21,	4,	display2_fnvalue9,	REDRM_MODE, PGALL, },	// FUNC item value
-		{	25, 12,	display2_notch5,		REDRM_MODE, PGALL, },	// NOTCH on/off
-	#else /* WITHENCODER2 */
-		{	25, 0,	display2_notch5,		REDRM_MODE, PGALL, },	// FUNC item label
-		{	25,	4,	display2_notchfreq5,	REDRM_BARS, PGALL, },	// FUNC item value
-	#endif /* WITHENCODER2 */
-
-		{	26, 16,	display2_nr3,		REDRM_MODE, PGALL, },	// NR
-//		{	26,	16,	display2_agc3,		REDRM_MODE, PGALL, },	// AGC mode
-		{	26,	20,	display2_voxtune3,	REDRM_MODE, PGALL, },	// VOX
-
-		{   0, 6,  display2_smeter15_init,REDRM_INIS, PGINI, },	// Инициализация стрелочного прибора
-		{   0, 6,  display2_smeter15, 	REDRM_BARS, PGALL, },	// Изображение стрелочного прибора
-
-		{	15,	4,	display2_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
-//		{	36,	8,	display2_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
-//		{	21,	12,	display2_rxbw3,		REDRM_MODE, PGALL, },	// 3.1 / 0,5 / WID / NAR
-//		{	26,	8,	display2_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
-//
-//		{	0,	16,	display2_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
-//		{	0,	16,	display2_mainsub3,	REDRM_MODE, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
-//
-//		{	5,	16,	display2_vfomode3,	REDRM_MODE, PGALL, },	// SPLIT - не очень нужно при наличии индикации на A/B (display2_mainsub3) яркостью.
-//		{	9,	16,	display2_freqX_b,	REDRM_FRQB, PGALL, },	// SUB FREQ
-//		{	21,	16,	display2_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
-
-#if 1
-		//{	0,	20,	display2_legend,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы S-метра, PWR & SWR-метра
-		//{	0,	24,	display2_bars,		REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
-		{	25, 24, display2_smeors5, 	REDRM_BARS, PGSWR, },	// уровень сигнала в баллах S или dbM
-
-		{	0,	28,	display2_wfl_init,	REDRM_INIS,	PGINI, },	// формирование палитры водопада
-		{	0,	28,	display2_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
-		{	0,	28,	display2_spectrum,	REDRM_BARS, PGSPE, },// подготовка изображения спектра
-		{	0,	28,	display2_waterfall,	REDRM_BARS, PGWFL, },// подготовка изображения водопада
-		{	0,	28,	display2_colorbuff,	REDRM_BARS,	PGWFL | PGSPE, },// Отображение водопада и/или спектра
-#else
-		{	0,	20,	display2_adctest,	REDRM_BARS, PGSWR, },	// ADC raw data print
-#endif
-
-		//{	0,	51,	display_samfreqdelta8, REDRM_BARS, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
-		{	0,	51,	display_time5,		REDRM_BARS, PGALL,	},	// TIME
-		{	6, 	51,	display2_atu3,		REDRM_MODE, PGALL, },	// TUNER state (optional)
-		{	10, 51,	display2_byp3,		REDRM_MODE, PGALL, },	// TUNER BYPASS state (optional)
-		{	14, 51,	display2_thermo4,	REDRM_VOLT, PGALL, },	// thermo sensor
-		{	19, 51,	display2_currlevel5, REDRM_VOLT, PGALL, },	// PA drain current d.dd without "A"
-		{	25, 51,	display2_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
-	#if WITHAMHIGHKBDADJ
-		{	25, 51,	display_amfmhighcut5,REDRM_MODE, PGALL, },	// 13.70
-	#endif /* WITHAMHIGHKBDADJ */
-
-		// sleep mode display
-		{	5,	24,	display2_datetime12,	REDRM_BARS, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40
-		{	20, 24,	display2_voltlevelV5, REDRM_VOLT, PGSLP, },	// voltmeter with "V"
-
-	#if WITHMENU
-		{	1,	25,	display2_multilinemenu_block_groups,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
-		{	LABELW + 3,	25,	display2_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
-		{	LABELW * 2 + 4,	25,	display2_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
-	#endif /* WITHMENU */
-		{	0,	0,	display2_nextfb, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },
-	};
-
-#if WITHMENU
-	void display2_getmultimenu(multimenuwnd_t * p)
-	{
-		p->multilinemenu_max_rows = 6;
-		p->ystep = 4;	// количество ячеек разметки на одну строку меню
-		p->reverse = 1;
-		p->valuew = 10;	/* количество текстовых символов занимаемых полем вывола значения в меню. */
-	}
-#endif /* WITHMENU */
-
-	/* получить координаты окна с панорамой и/или водопадом. */
-	void display2_getpipparams(pipparams_t * p)
-	{
-		p->x = 0; //GRID2X(0);	// позиция верхнего левого угла в пикселях
-		p->y = GRID2Y(28);	// позиция верхнего левого угла в пикселях
-		p->w = DIM_X; //GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
-		p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
-	}
-
-
 #elif DSTYLE_G_X480_Y272 && WITHSPECTRUMWF
 
 	// TFT панель SONY PSP-1000
@@ -4466,7 +4292,7 @@ enum
 #if 1
 		{	0,	20,	display2_legend,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы S-метра, PWR & SWR-метра
 		{	0,	24,	display2_bars,		REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
-		{	25, 24, display2_smeors5, 	REDRM_BARS, PGSWR, },	// уровень сигнала в баллах S или dbM
+		{	25, 24, display2_smeors5, 	REDRM_BARS, PGSWR, },	// уровень сигнала в баллах S или dBm
 
 		{	0,	28,	display2_wfl_init,	REDRM_INIS,	PGINI, },	// формирование палитры водопада
 		{	0,	28,	display2_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
@@ -4628,16 +4454,11 @@ enum
 			{	21,	16,	display2_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 
 	#if 1
-	        {	0,  20,	display2_legend_rx,    REDRM_MODE, PGSWR, },    // Отображение оцифровки шкалы S-метра
-	        {	0,  24,	display2_bars_rx,    REDRM_BARS, PGSWR, },    // S-METER, SWR-METER, POWER-METER
-	        {	0,  28,	display2_legend_tx,    REDRM_MODE, PGSWR, },    // Отображение оцифровки шкалы PWR & SWR-метра
-	        {	0,  32,	display2_bars_tx,    REDRM_BARS, PGSWR, },    // S-METER, SWR-METER, POWER-METER
-
-			//{	0,	20,	display2_legend,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы S-метра, PWR & SWR-метра
-			//{	0,	24,	display2_bars,		REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
-
-			{	25, 24, display2_siglevel4, REDRM_BARS, PGSWR, },	// уровень сигнала
-			//{	25, 24, display_smeter5, 	REDRM_BARS, PGSWR, },	// уровень сигнала в баллах S
+	        {	0,  20,	display2_legend_rx, REDRM_MODE, PGSWR, },    // Отображение оцифровки шкалы S-метра
+	        {	0,  24,	display2_bars_rx,   REDRM_BARS, PGSWR, },    // S-METER, SWR-METER, POWER-METER
+			{	25, 24, display2_smeors5, 	REDRM_BARS, PGSWR, },	 // уровень сигнала в баллах S или dBm
+	        {	0,  28,	display2_legend_tx, REDRM_MODE, PGSWR, },    // Отображение оцифровки шкалы PWR & SWR-метра
+	        {	0,  32,	display2_bars_tx,   REDRM_BARS, PGSWR, },    // S-METER, SWR-METER, POWER-METER
 
 //			{	0,	28,	display2_wfl_init,	REDRM_INIS,	PGINI, },	// формирование палитры водопада
 //			{	0,	28,	display2_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
@@ -4784,8 +4605,8 @@ enum
 		{	45, 0,	display2_notch5,		REDRM_MODE, PGALL, },	// NOTCH on/off
 		{	47, 15,	display2_voxtune3,	REDRM_MODE, PGALL, },	// VOX
 		{	47, 5,	display2_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
-		{    0, 6,  display2_smeter15_init,REDRM_INIS, PGINI, },	//  Инициализация стрелочного прибора
-		{    0, 6,  display2_smeter15, 	REDRM_BARS, PGALL, },	// Изображение стрелочного прибора
+		{    0, 4,  display2_smeter15_init,REDRM_INIS, PGINI, },	//  Инициализация стрелочного прибора
+		{    0, 4,  display2_smeter15, 	REDRM_BARS, PGALL, },	// Изображение стрелочного прибора
 		{   47, 20, display2_bkin3,		REDRM_MODE, PGALL, },
 	#if WITHENCODER2
 //		{	41, 0,	display2_fnlabel9,	REDRM_MODE, PGALL, },	// FUNC item label
@@ -4944,6 +4765,7 @@ enum
 		{	0,	0,	display2_clearbg, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },
 
 		{	0,	0, 	display_siglevel7, 	REDRM_BARS, PGALL, },	// signal level dBm
+		//{	0,	0, 	display2_smeors5, 	REDRM_BARS, PGALL, },	// уровень сигнала в баллах S или dBm
 		{	15,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
 		{	18, 0,	display2_atu3,		REDRM_MODE, PGALL, },	// TUNER state (optional)
 		{	22, 0,	display2_byp3,		REDRM_MODE, PGALL, },	// TUNER BYPASS state (optional)
@@ -4951,8 +4773,8 @@ enum
 		{	32,	0,	display2_att4,		REDRM_MODE, PGALL, },
 		{	37,	0,	display2_preovf3,	REDRM_BARS, PGALL, },
 
-		{   0, 	6,  display2_smeter15_init,REDRM_INIS, PGINI, },	//  Инициализация стрелочного прибора
-		{   0, 	6,	display2_smeter15, 	REDRM_BARS, PGALL, },	// Изображение стрелочного прибора
+		{   0, 	4,  display2_smeter15_init,REDRM_INIS, PGINI, },	//  Инициализация стрелочного прибора
+		{   0, 	4,	display2_smeter15, 	REDRM_BARS, PGALL, },	// Изображение стрелочного прибора
 		{	15,	6,	display2_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
 
 		{	41, 0,	display2_fnlabel9,	REDRM_MODE, PGALL, },	// FUNC item label
@@ -4999,7 +4821,7 @@ enum
 		{	0,	DLE1,	display2_datetime12,	REDRM_BARS, PGALL,	},	// DATE&TIME Jan-01 13:40
 		{	13,	DLE1,	display2_span9,		REDRM_MODE, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
 		{	23, DLE1,	display2_thermo4,	REDRM_VOLT, PGALL, },	// thermo sensor
-		//{	28, DLE1,	display2_usb3,		REDRM_BARS, PGALL, },	// USB host status
+		//{	28, DLE1,	display2_usbsts3,		REDRM_BARS, PGALL, },	// USB host status
 		//{	28, DLE1,	display_freqmeter10, REDRM_BARS, PGALL, },	// измеренная частота опоры
 
 	#if WITHMENU
@@ -5185,7 +5007,7 @@ enum
 		{	0,	DLE1,	display2_datetime12,	REDRM_BARS, PGALL,	},	// DATE&TIME Jan-01 13:40
 		{	13,	DLE1,	display2_span9,		REDRM_MODE, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
 		{	23, DLE1,	display2_thermo4,	REDRM_VOLT, PGALL, },	// thermo sensor
-		//{	28, DLE1,	display2_usb3,		REDRM_BARS, PGALL, },	// USB host status
+		//{	28, DLE1,	display2_usbsts3,		REDRM_BARS, PGALL, },	// USB host status
 		//{	28, DLE1,	display_freqmeter10, REDRM_BARS, PGALL, },	// измеренная частота опоры
 
 		{	39, DLE1,	display2_currlevel5, REDRM_VOLT, PGALL, },	// PA drain current d.dd without "A"
@@ -5829,6 +5651,8 @@ static FLOAT_t filter_waterfall(
 	uint_fast16_t x
 	)
 {
+	ASSERT(x < ARRAY_SIZE(spavgarray));
+	ASSERT(x < ARRAY_SIZE(Yold_wtf));
 	const FLOAT_t val = spavgarray [x];
 	const FLOAT_t Y = Yold_wtf [x] * waterfall_alpha + waterfall_beta * val;
 	Yold_wtf [x] = Y;
@@ -5848,7 +5672,8 @@ static FLOAT_t filter_spectrum(
 #if defined (COLORPIP_SHADED)
 
 	/* быстрое отображение водопада (но требует больше памяти) */
-	static RAMBIGDTCM  PACKEDCOLORMAIN_T wfarray [WFDY] [ALLDX];	// массив "водопада"
+	static ALIGNX_BEGIN RAMFRAMEBUFF PACKEDCOLORMAIN_T wfjarray [GXSIZE(ALLDX, WFDY)] ALIGNX_END;	// массив "водопада"
+	enum { WFROWS = WFDY };
 
 	enum { PALETTESIZE = COLORPIP_BASE };
 	static PACKEDCOLORMAIN_T wfpalette [1];
@@ -5857,7 +5682,8 @@ static FLOAT_t filter_spectrum(
 #elif WITHFASTWATERFLOW && LCDMODE_PIP_RGB565
 
 	/* быстрое отображение водопада (но требует больше памяти) */
-	static RAMBIGDTCM PACKEDCOLORMAIN_T wfarray [WFDY] [ALLDX];	// массив "водопада"
+	static ALIGNX_BEGIN RAMFRAMEBUFF PACKEDCOLORMAIN_T wfjarray [GXSIZE(ALLDX, WFDY)] ALIGNX_END;	// массив "водопада"
+	enum { WFROWS = WFDY };
 
 	enum { PALETTESIZE = 256 };
 	static PACKEDCOLORMAIN_T wfpalette [PALETTESIZE];
@@ -5866,13 +5692,15 @@ static FLOAT_t filter_spectrum(
 #elif LCDMODE_PIP_L8 || (! LCDMODE_PIP_L8 && LCDMODE_MAIN_L8)
 
 	enum { PALETTESIZE = COLORPIP_BASE };
-	static RAMBIGDTCM PACKEDCOLORMAIN_T wfarray [WFDY] [ALLDX];	// массив "водопада"
+	static ALIGNX_BEGIN RAMFRAMEBUFF PACKEDCOLORMAIN_T wfjarray [GXSIZE(ALLDX, WFDY)];	// массив "водопада"
+	enum { WFROWS = WFDY };
 	static uint_fast16_t wfrow;		// строка, в которую последней занесены данные
 
 #elif WITHFASTWATERFLOW
 
 	/* быстрое отображение водопада (но требует больше памяти) */
-	static RAMBIGDTCM PACKEDCOLORMAIN_T wfarray [WFDY] [ALLDX];	// массив "водопада"
+	static ALIGNX_BEGIN RAMFRAMEBUFF PACKEDCOLORMAIN_T wfjarray [GXSIZE(ALLDX, WFDY)] ALIGNX_END;	// массив "водопада"
+	enum { WFROWS = WFDY };
 
 	enum { PALETTESIZE = 256 };
 	static PACKEDCOLORMAIN_T wfpalette [PALETTESIZE];
@@ -5880,7 +5708,8 @@ static FLOAT_t filter_spectrum(
 
 #elif (! LCDMODE_S1D13781_NHWACCEL && LCDMODE_S1D13781)
 
-	static RAMBIGDTCM PACKEDCOLOR565_T wfarray [1] [ALLDX];	// массив "водопада"
+	static ALIGNX_BEGIN RAMFRAMEBUFF PACKEDCOLOR565_T wfjarray [GXSIZE(ALLDX, 1)] ALIGNX_END;	// массив "водопада"
+	enum { WFROWS = 1 };
 	enum { wfrow = 0 };				// строка, в которую последней занесены данные
 
 	enum { PALETTESIZE = 256 };
@@ -5890,7 +5719,8 @@ static FLOAT_t filter_spectrum(
 
 #else
 
-	static RAMBIGDTCM uint8_t wfarray [WFDY] [ALLDX];	// массив "водопада"
+	static ALIGNX_BEGIN RAMFRAMEBUFF uint8_t wfjarray [GXSIZE(ALLDX, WFDY)] ALIGNX_END;	// массив "водопада"
+	enum { WFROWS = WFDY };
 	static uint_fast16_t wfrow;		// строка, в которую последней занесены данные
 
 	enum { PALETTESIZE = 256 };
@@ -5904,7 +5734,7 @@ static FLOAT_t filter_spectrum(
 static uint_fast32_t wffreqpix;			// глобальный пиксель по x центра спектра, для которой в последной раз отрисовали.
 static uint_fast8_t wfzoompow2;				// масштаб, с которым выводили спектр
 static int_fast16_t wfhscroll;			// сдвиг по шоризонтали (отрицаельный - влево) для водопада.
-static uint_fast16_t wfvscroll;			// сдвиг по вертикали (в раьочем направлении) для водопада.
+static uint_fast16_t wfvscroll;			// сдвиг по вертикали (в рабочем направлении) для водопада.
 static uint_fast8_t wfclear;			// стирание всей областии отображение водопада.
 
 // Код взят из проекта Malamute
@@ -6050,13 +5880,14 @@ display_colorgrid_xor(
 			xmarker = deltafreq2x_abs(f0, df, bw, ALLDX);
 			if (xmarker != UINT16_MAX)
 			{
-				char buf [4];
+				char buf2 [16];
 				uint_fast16_t freqw;	// ширина строки со значением частоты
-				local_snprintf_P(buf, sizeof buf / sizeof buf [0], ".%0*d", glob_gridwc, (int) ((f0 + df) / glob_griddigit % glob_gridmod));
-				freqw = strwidth3(buf);
+				local_snprintf_P(buf2, ARRAY_SIZE(buf2), ".%0*d", glob_gridwc, (int) ((f0 + df) / glob_griddigit % glob_gridmod));
+				ASSERT(strlen(buf2) == (glob_gridwc + 1));
+				freqw = strwidth3(buf2);
 				if (xmarker > freqw / 2 && xmarker < (ALLDX - freqw / 2))
 				{
-					colpip_string3_tbg(buffer, BUFDIM_X, BUFDIM_Y, xmarker - freqw / 2, row0, buf, COLORPIP_YELLOW);
+					colpip_string3_tbg(buffer, BUFDIM_X, BUFDIM_Y, xmarker - freqw / 2, row0, buf2, COLORPIP_YELLOW);
 					display_colorbuf_xor_vline(buffer, BUFDIM_X, BUFDIM_Y, xmarker, row0 + MARKERH, h - MARKERH, color);
 				}
 				else
@@ -6094,13 +5925,14 @@ display_colorgrid_set(
 			xmarker = deltafreq2x_abs(f0, df, bw, ALLDX);
 			if (xmarker != UINT16_MAX)
 			{
-				char buf [4];
+				char buf2 [16];
 				uint_fast16_t freqw;	// ширина строки со значением частоты
-				local_snprintf_P(buf, sizeof buf / sizeof buf [0], ".%0*d", glob_gridwc, (int) ((f0 + df) / glob_griddigit % glob_gridmod));
-				freqw = strwidth3(buf);
+				local_snprintf_P(buf2, ARRAY_SIZE(buf2), ".%0*d", glob_gridwc, (int) ((f0 + df) / glob_griddigit % glob_gridmod));
+				ASSERT(strlen(buf2) == (glob_gridwc + 1));
+				freqw = strwidth3(buf2);
 				if (xmarker > freqw / 2 && xmarker < (ALLDX - freqw / 2))
 				{
-					colpip_string3_tbg(buffer, BUFDIM_X, BUFDIM_Y, xmarker - freqw / 2, row0, buf, COLORPIP_YELLOW);
+					colpip_string3_tbg(buffer, BUFDIM_X, BUFDIM_Y, xmarker - freqw / 2, row0, buf2, COLORPIP_YELLOW);
 					display_colorbuf_set_vline(buffer, BUFDIM_X, BUFDIM_Y, xmarker, row0 + MARKERH, h - MARKERH, color);
 				}
 				else
@@ -6198,6 +6030,7 @@ static void display2_spectrum(
 	(void) x0;
 	(void) y0;
 	(void) pctx;
+
 	// Спектр на цветных дисплеях, не поддерживающих ускоренного
 	// построения изображения по bitmap с раскрашиванием
 	if (1 || hamradio_get_tx() == 0)
@@ -6212,19 +6045,36 @@ static void display2_spectrum(
 			xleft = 0;
 		if (xright == xleft)
 			xright = xleft + 1;
-
+		if (xright >= ALLDX)
+			xright = ALLDX - 1;
 		if (glob_fillspect == 0)
 		{
+			const uint_fast16_t xrightv = xright + 1;	// рисуем от xleft до xright включительно
 			/* рисуем спектр ломанной линией */
 			uint_fast16_t ylast = 0;
-			
-			uint_fast16_t x;
-			for (x = 0; x < ALLDX; ++ x)
+
+			/* стираем старый фон, рисуем прямоугольник полосы пропускания */
+			if (ALLDX / (xrightv - xleft) > 8)
 			{
-				const uint_fast8_t inband = (x >= xleft && x <= xright);	// в полосе пропускания приемника = "шторка"
-				// формирование фона растра
-				display_colorbuf_set_vline(colorpip, BUFDIM_X, BUFDIM_Y, x, SPY0, SPDY, inband ? COLORMAIN_SPECTRUMBG2 : COLORPIP_SPECTRUMBG);
+				colmain_fillrect(colorpip, BUFDIM_X, BUFDIM_Y, 0, SPY0, ALLDX, SPDY, COLORPIP_SPECTRUMBG);
 			}
+			else
+			{
+				if (xleft > 0)
+				{
+					colmain_fillrect(colorpip, BUFDIM_X, BUFDIM_Y, 0, SPY0, xleft, SPDY, COLORPIP_SPECTRUMBG);
+				}
+				if (xrightv < ALLDX)
+				{
+					colmain_fillrect(colorpip, BUFDIM_X, BUFDIM_Y, xrightv, SPY0, ALLDX - xrightv, SPDY, COLORPIP_SPECTRUMBG);
+				}
+			}
+			// Изображение "шторки".
+			if (xleft < xrightv)
+			{
+				colmain_fillrect(colorpip, BUFDIM_X, BUFDIM_Y, xleft, SPY0, xrightv - xleft, SPDY, COLORMAIN_SPECTRUMBG2);
+			}
+			uint_fast16_t x;
 			display_colorgrid_set(colorpip, SPY0, SPDY, f0, bw);	// отрисовка маркеров частот
 			for (x = 0; x < ALLDX; ++ x)
 			{
@@ -6275,14 +6125,17 @@ static void display2_spectrum(
 // в строке wfrow - новое
 static void wflclear(void)
 {
-	enum { WFROWS = sizeof wfarray / sizeof wfarray [0] };
 	uint_fast16_t y;
 
 	for (y = 0; y < WFROWS; ++ y)
 	{
 		if (y == wfrow)
 			continue;
-		memset(wfarray [y], 0x00, ALLDX * sizeof wfarray [y][0]);
+		memset(
+				colmain_mem_at(wfjarray, ALLDX, WFROWS, 0, y),
+				0x00,
+				ALLDX * sizeof wfjarray [0]
+		);
 	}
 }
 
@@ -6303,7 +6156,6 @@ static void wfl_avg_clear(void)
 // в строке wfrow - новое
 static void wflshiftleft(uint_fast16_t pixels)
 {
-	enum { WFROWS = sizeof wfarray / sizeof wfarray [0] };
 	uint_fast16_t y;
 
 	if (pixels == 0)
@@ -6322,8 +6174,16 @@ static void wflshiftleft(uint_fast16_t pixels)
 		{
 			continue;
 		}
-		memmove(wfarray [y] + 0, wfarray [y] + pixels, (ALLDX - pixels) * sizeof wfarray [y][0]);
-		memset(wfarray [y] + ALLDX - pixels, 0x00, pixels * sizeof wfarray [y][0]);
+		memmove(
+				colmain_mem_at(wfjarray, ALLDX, WFROWS, 0, y),
+				colmain_mem_at(wfjarray, ALLDX, WFROWS, pixels, y),
+				(ALLDX - pixels) * sizeof wfjarray [0]
+		);
+		memset(
+				colmain_mem_at(wfjarray, ALLDX, WFROWS, ALLDX - pixels, y),
+				0x00,
+				pixels * sizeof wfjarray [0]
+		);
 	}
 }
 
@@ -6332,7 +6192,6 @@ static void wflshiftleft(uint_fast16_t pixels)
 // в строке wfrow - новое
 static void wflshiftright(uint_fast16_t pixels)
 {
-	enum { WFROWS = sizeof wfarray / sizeof wfarray [0] };
 	uint_fast16_t y;
 
 	if (pixels == 0)
@@ -6351,8 +6210,16 @@ static void wflshiftright(uint_fast16_t pixels)
 		{
 			continue;
 		}
-		memmove(wfarray [y] + pixels, wfarray [y] + 0, (ALLDX - pixels) * sizeof wfarray [y][0]);
-		memset(wfarray [y] + 0, 0x00, pixels * sizeof wfarray [y][0]);
+		memmove(
+				colmain_mem_at(wfjarray, ALLDX, WFROWS, pixels, y),
+				colmain_mem_at(wfjarray, ALLDX, WFROWS, 0, y),
+				(ALLDX - pixels) * sizeof wfjarray [0]
+		);
+		memset(
+				colmain_mem_at(wfjarray, ALLDX, WFROWS, 0, y),
+				0x00,
+				pixels * sizeof wfjarray [0]
+		);
 	}
 }
 
@@ -6368,7 +6235,9 @@ static void wfsetupnew(void)
 // отрисовка вновь появившихся данных на водопаде (в случае использования аппаратного scroll видеопамяти).
 static void display_wfputrow(uint_fast16_t x, uint_fast16_t y, const PACKEDCOLORMAIN_T * p)
 {
-	colpip_to_main(p, ALLDX, 1, x, y);
+	colpip_to_main(
+			(uintptr_t) p, ALLDX * sizeof * p,
+			p, ALLDX, 1, x, y);
 }
 
 // формирование данных спектра для последующего отображения
@@ -6399,9 +6268,11 @@ static void display2_latchwaterfall(
 		// для водопада
 		const int val = dsp_mag2y(filter_waterfall(x), PALETTESIZE - 1, glob_wflevelsep ? glob_topdbwf : glob_topdb, glob_wflevelsep ? glob_bottomdbwf : glob_bottomdb); // возвращает значения от 0 до dy включительно
 	#if LCDMODE_MAIN_L8
-		wfarray [wfrow] [x] = val;	// запись в буфер водопада индекса палитры
+		colmain_putpixel(wfjarray, ALLDX, WFROWS, x, wfrow, val);	// запись в буфер водопада индекса палитры
 	#else /* LCDMODE_MAIN_L8 */
-		wfarray [wfrow] [x] = wfpalette [val];	// запись в буфер водопада цветовой точки
+		ASSERT(val >= 0);
+		ASSERT(val < ARRAY_SIZE(wfpalette));
+		colmain_putpixel(wfjarray, ALLDX, WFROWS, x, wfrow, wfpalette [val]);	// запись в буфер водопада цветовой точки
 	#endif /* LCDMODE_MAIN_L8 */
 	}
 
@@ -6527,14 +6398,25 @@ static void display2_waterfall(
 	const uint_fast16_t p1y = WFY0;
 	const uint_fast16_t p2y = WFY0 + p1h;
 
-	/* перенос растра */
-	colpip_plot(colorpip, BUFDIM_X, BUFDIM_Y, 0, p1y,
-			colmain_mem_at(& wfarray [0][0], ALLDX, ALLDY, 0, wfrow),	// начальный алрес источника
-			ALLDX, p1h);	// размеры источника
+	{
+		/* перенос свежей части растра */
+		colpip_plot(
+				(uintptr_t) colorpip, GXSIZE(BUFDIM_X, BUFDIM_Y),
+				colorpip, BUFDIM_X, BUFDIM_Y, 0, p1y,
+				(uintptr_t) wfjarray, sizeof (* wfjarray) * GXSIZE(ALLDX, WFROWS),	// папаметры для clean
+				colmain_mem_at(wfjarray, ALLDX, WFROWS, 0, wfrow),	// начальный адрес источника
+				ALLDX, p1h);	// размеры источника
+	}
 	if (p2h != 0)
-		colpip_plot(colorpip, BUFDIM_X, BUFDIM_Y, 0, p2y,
-				colmain_mem_at(& wfarray [0][0], ALLDX, ALLDY, 0, 0),	// начальный алрес источника
-				ALLDX, p2h);	// размеры истояника
+	{
+		/* перенос старой части растра */
+		colpip_plot(
+				(uintptr_t) colorpip, 0,
+				colorpip, BUFDIM_X, BUFDIM_Y, 0, p2y,
+				(uintptr_t) wfjarray, 0,	// размер области 0 - ранее уже вызывали clean
+				colmain_mem_at(wfjarray, ALLDX, WFROWS, 0, 0),	// начальный адрес источника
+				ALLDX, p2h);	// размеры источника
+	}
 
 #else /* */
 
@@ -7158,7 +7040,7 @@ display2_bars_amv0(
 #endif /* CTLSTYLE_RA4YBO_AM0 */
 
 #if LCDMODE_LTDC
-#include <src/display/fontmaps.h>
+#include "display/fontmaps.h"
 
 const int sin90 [91] =
 {
@@ -7396,9 +7278,8 @@ uint_fast16_t normalize3(
 		return normalize(raw - rawmid, 0, rawmax - rawmid, range2 - range1) + range1;
 }
 
-static const uint_fast16_t swr_fullscale = (SWRMIN * 40 / 10) - SWRMIN;
 
-uint_fast16_t get_swr(void)
+uint_fast16_t get_swr(uint_fast16_t swr_fullscale)
 {
 	uint_fast16_t swr10; 		// swr10 = 0..30 for swr 1..4
 	adcvalholder_t forward, reflected;
@@ -7420,7 +7301,7 @@ enum {
 	SM_STATE_TX,
 	SM_STATE_COUNT
 };
-enum { SM_BG_W = 240, SM_BG_H = 70 };
+enum { SM_BG_W = GRID2X(15), SM_BG_H = GRID2Y(20) };
 
 typedef ALIGNX_BEGIN PACKEDCOLORMAIN_T smeter_bg_t [GXSIZE(SM_BG_W, SM_BG_H)] ALIGNX_END;
 static smeter_bg_t smeter_bg[SM_STATE_COUNT]; 	// 0 - rx, 1 - tx
@@ -7433,8 +7314,17 @@ typedef struct {
 	uint_fast16_t r2;
 	uint_fast16_t rv1;
 	uint_fast16_t rv2;
+	uint_fast8_t step1;
+	uint_fast8_t step2;
+	uint_fast8_t step3;
 } smeter_params_t;
 static smeter_params_t smeter_params;
+
+void display2_set_smetertype(uint_fast8_t v)
+{
+	ASSERT(v < SMETER_TYPE_COUNT);
+	global_smetertype = v;
+}
 
 void
 display2_smeter15_init(
@@ -7444,162 +7334,245 @@ display2_smeter15_init(
 	)
 {
 	const uint_fast8_t halfsect = 30;
-
-	smeter_params.gm = 270;
-	smeter_params.gs = smeter_params.gm - halfsect;
-	smeter_params.ge = smeter_params.gm + halfsect;
-	smeter_params.rv1 = 7 * GRID2Y(3);
-	smeter_params.rv2 = smeter_params.rv1 - 3 * GRID2Y(3);
-
 	const int stripewidth = 12; //16;
-	smeter_params.r1 = 7 * GRID2Y(3) - 8;	//350;
-	smeter_params.r2 = smeter_params.r1 - stripewidth;
 
-	enum { step1 = 3 };		// шаг для оцифровки S
-	enum { step2 = 4 };		// шаг для оцифровки плюсов
-	enum { step3 = 20 };	// swr
+	if(global_smetertype)	// SMETER_TYPE_DIAL
+	{
+		smeter_params.gm = 270;
+		smeter_params.gs = smeter_params.gm - halfsect;
+		smeter_params.ge = smeter_params.gm + halfsect;
+		smeter_params.rv1 = 7 * GRID2Y(3);
+		smeter_params.rv2 = smeter_params.rv1 - 3 * GRID2Y(3);
+		smeter_params.r1 = 7 * GRID2Y(3) - 8;	//350;
+		smeter_params.r2 = smeter_params.r1 - stripewidth;
+		smeter_params.step1 = 3;	// шаг для оцифровки S
+		smeter_params.step2 = 4;	// шаг для оцифровки плюсов
+		smeter_params.step3 = 20;	// swr
+
+	}
+	else					// SMETER_TYPE_BARS
+	{
+		smeter_params.gs = 20;
+		smeter_params.ge = 220;
+		smeter_params.gm = 240 / 2;
+		smeter_params.step1 = 10;	// шаг для оцифровки S
+		smeter_params.step2 = 14;	// шаг для оцифровки плюсов
+		smeter_params.step3 = 67;	// swr
+		smeter_params.r1 = SM_BG_H / 4;					// горизонталь первой шкалы
+		smeter_params.r2 = SM_BG_H - smeter_params.r1; 	// горизонталь второй шкалы
+	}
+
 	const int markersTX_pwr [] =
 	{
 		smeter_params.gs,
-		smeter_params.gs + 2 * step1,
-		smeter_params.gs + 4 * step1,
-		smeter_params.gs + 6 * step1,
-		smeter_params.gs + 8 * step1,
-		smeter_params.gs + 10 * step1,
-		smeter_params.gs + 12 * step1,
-		smeter_params.gs + 14 * step1,
-		smeter_params.gs + 16 * step1,
-		smeter_params.gs + 18 * step1,
-		smeter_params.gs + 20 * step1,
+		smeter_params.gs + 2 * smeter_params.step1,
+		smeter_params.gs + 4 * smeter_params.step1,
+		smeter_params.gs + 6 * smeter_params.step1,
+		smeter_params.gs + 8 * smeter_params.step1,
+		smeter_params.gs + 10 * smeter_params.step1,
+		smeter_params.gs + 12 * smeter_params.step1,
+		smeter_params.gs + 14 * smeter_params.step1,
+		smeter_params.gs + 16 * smeter_params.step1,
+		smeter_params.gs + 18 * smeter_params.step1,
+		smeter_params.gs + 20 * smeter_params.step1,
 	};
 	const int markersTX_swr [] =
 	{
 		smeter_params.gs,
-		smeter_params.gs + step3,
-		smeter_params.gs + 2 * step3,
-		smeter_params.gs + 3 * step3,
+		smeter_params.gs + smeter_params.step3,
+		smeter_params.gs + 2 * smeter_params.step3,
+		smeter_params.gs + 3 * smeter_params.step3,
 	};
 	const int markers [] =
 	{
-		//smeter_params.gs + 0 * step1,
-		smeter_params.gs + 2 * step1,		// S1
-		smeter_params.gs + 4 * step1,		// S3
-		smeter_params.gs + 6 * step1,		// S5
-		smeter_params.gs + 8 * step1,		// S7
-		smeter_params.gs + 10 * step1,	// S9
+		//smeter_params.gs + 0 * smeter_params.step1,
+		smeter_params.gs + 2 * smeter_params.step1,		// S1
+		smeter_params.gs + 4 * smeter_params.step1,		// S3
+		smeter_params.gs + 6 * smeter_params.step1,		// S5
+		smeter_params.gs + 8 * smeter_params.step1,		// S7
+		smeter_params.gs + 10 * smeter_params.step1,	// S9
 	};
 	const int markersR [] =
 	{
-		smeter_params.gm + 2 * step2,	//
-		smeter_params.gm + 4 * step2,
-		smeter_params.gm + 6 * step2,
+		smeter_params.gm + 2 * smeter_params.step2,	//
+		smeter_params.gm + 4 * smeter_params.step2,
+		smeter_params.gm + 6 * smeter_params.step2,
 	};
 	const int markers2 [] =
 	{
-		//smeter_params.gs + 1 * step1,
-		smeter_params.gs + 3 * step1,		// S2
-		smeter_params.gs + 5 * step1,		// S4
-		smeter_params.gs + 7 * step1,		// S6
-		smeter_params.gs + 9 * step1,		// S8
+		//smeter_params.gs + 1 * smeter_params.step1,
+		smeter_params.gs + 3 * smeter_params.step1,		// S2
+		smeter_params.gs + 5 * smeter_params.step1,		// S4
+		smeter_params.gs + 7 * smeter_params.step1,		// S6
+		smeter_params.gs + 9 * smeter_params.step1,		// S8
 	};
 	const int markers2R [] =
 	{
-		smeter_params.gm + 1 * step2,
-		smeter_params.gm + 3 * step2,
-		smeter_params.gm + 5 * step2,
+		smeter_params.gm + 1 * smeter_params.step2,
+		smeter_params.gm + 3 * smeter_params.step2,
+		smeter_params.gm + 5 * smeter_params.step2,
 	};
 
 	const COLORMAIN_T smeter = COLORMAIN_WHITE;
 	const COLORMAIN_T smeterplus = COLORMAIN_DARKRED;
 	const uint_fast16_t pad2w3 = strwidth3("ZZ");
 
-	PACKEDCOLORMAIN_T * bg = smeter_bg [SM_STATE_TX];
+	PACKEDCOLORMAIN_T * bg;
 	uint_fast8_t xb = 120, yb = 120;
 	unsigned p;
 	unsigned i;
 
-	colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORMAIN_BLACK, 1);
-#if WITHTOUCHGUI
-//	colmain_rounded_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H - 1, 5, COLORMAIN_WHITE, 0);
-#endif
-
-	for (p = 0, i = 0; i < ARRAY_SIZE(markersTX_pwr); ++ i, p += 10)
+	switch (global_smetertype)
 	{
-		if (i % 2 == 0)
+
+	case SMETER_TYPE_DIAL:
+
+		bg = smeter_bg [SM_STATE_TX];
+		colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORMAIN_BLACK, 1);
+
+		for (p = 0, i = 0; i < ARRAY_SIZE(markersTX_pwr); ++ i, p += 10)
 		{
-			char buf [10];
+			if (i % 2 == 0)
+			{
+				char buf2 [10];
+				uint_fast16_t xx, yy;
+
+				display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markersTX_pwr [i], smeter_params.r1, smeter_params.r1 + 8, smeter, 1, 1);
+				polar_to_dek(xb, yb, markersTX_pwr [i], smeter_params.r1 + 6, & xx, & yy, 1);
+				local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("%u"), p);
+
+				colmain_setcolors(COLORMAIN_YELLOW, COLORMAIN_BLACK);
+				colmain_string3_at_xy(bg, SM_BG_W, SM_BG_H, xx - strwidth3(buf2) / 2, yy - pad2w3 + 1, buf2);
+			}
+			else
+				display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markersTX_pwr [i], smeter_params.r1, smeter_params.r1 + 4, smeter, 1, 1);
+		}
+
+		for (p = 1, i = 0; i < ARRAY_SIZE(markersTX_swr); ++ i, p += 1)
+		{
+			char buf2 [10];
 			uint_fast16_t xx, yy;
 
-			display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markersTX_pwr [i], smeter_params.r1, smeter_params.r1 + 8, smeter, 1, 1);
-			polar_to_dek(xb, yb, markersTX_pwr [i], smeter_params.r1 + 6, & xx, & yy, 1);
-			local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("%u"), p);
+			display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markersTX_swr [i], smeter_params.r2, smeter_params.r2 - 8, smeter, 1, 1);
+			polar_to_dek(xb, yb, markersTX_swr [i], smeter_params.r2 - 16, & xx, & yy, 1);
+			local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("%u"), p);
 
 			colmain_setcolors(COLORMAIN_YELLOW, COLORMAIN_BLACK);
-			colmain_string3_at_xy(bg, SM_BG_W, SM_BG_H, xx - strwidth3(buf) / 2, yy - pad2w3 + 1, buf);
+			colmain_string3_at_xy(bg, SM_BG_W, SM_BG_H, xx - SMALLCHARW3 / 2, yy - SMALLCHARW3 / 2 + 1, buf2);
 		}
-		else
-			display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markersTX_pwr [i], smeter_params.r1, smeter_params.r1 + 4, smeter, 1, 1);
+
+		display_segm_buf(bg, SM_BG_W, SM_BG_H, xb, yb, smeter_params.gs, smeter_params.gm, smeter_params.r1, 1, smeter, 1, 1);
+		display_segm_buf(bg, SM_BG_W, SM_BG_H, xb, yb, smeter_params.gm, smeter_params.ge, smeter_params.r1, 1, smeter, 1, 1);
+		display_segm_buf(bg, SM_BG_W, SM_BG_H, xb, yb, smeter_params.gs, smeter_params.ge, smeter_params.r2, 1, COLORMAIN_WHITE, 1, 1);
+
+		bg = smeter_bg [SM_STATE_RX];
+		colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORMAIN_BLACK, 1);
+
+		for (p = 1, i = 0; i < ARRAY_SIZE(markers); ++ i, p += 2)
+		{
+			char buf2 [10];
+			uint_fast16_t xx, yy;
+
+			display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markers [i], smeter_params.r1, smeter_params.r1 + 8, smeter, 1, 1);
+			polar_to_dek(xb, yb, markers [i], smeter_params.r1 + 6, & xx, & yy, 1);
+			local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("%u"), p);
+
+			colmain_setcolors(COLORMAIN_YELLOW, COLORMAIN_BLACK);
+			colmain_string3_at_xy(bg, SM_BG_W, SM_BG_H, xx - SMALLCHARW3 / 2, yy - pad2w3 + 1, buf2);
+		}
+		for (i = 0; i < ARRAY_SIZE(markers2); ++ i)
+		{
+			display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markers2 [i], smeter_params.r1, smeter_params.r1 + 4, smeter, 1, 1);
+		}
+
+		for (p = 20, i = 0; i < ARRAY_SIZE(markersR); ++ i, p += 20)
+		{
+			char buf2 [10];
+			uint_fast16_t xx, yy;
+
+			display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markersR [i], smeter_params.r1, smeter_params.r1 + 8, smeterplus, 1, 1);
+			polar_to_dek(xb, yb, markersR [i], smeter_params.r1 + 6, & xx, & yy, 1);
+			local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("+%u"), p);
+
+			colmain_setcolors(COLORMAIN_RED, COLORMAIN_BLACK);
+			colmain_string3_at_xy(bg, SM_BG_W, SM_BG_H, xx - strwidth3(buf2) / 2, yy - pad2w3 + 1, buf2);
+		}
+		for (i = 0; i < ARRAY_SIZE(markers2R); ++ i)
+		{
+			display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markers2R [i], smeter_params.r1, smeter_params.r1 + 4, smeterplus, 1, 1);
+		}
+		display_segm_buf(bg, SM_BG_W, SM_BG_H, xb, yb, smeter_params.gs, smeter_params.gm, smeter_params.r1, 1, smeter, 1, 1);
+		display_segm_buf(bg, SM_BG_W, SM_BG_H, xb, yb, smeter_params.gm, smeter_params.ge, smeter_params.r1, 1, smeterplus, 1, 1);
+		display_segm_buf(bg, SM_BG_W, SM_BG_H, xb, yb, smeter_params.gs, smeter_params.ge, smeter_params.r2, 1, COLORMAIN_WHITE, 1, 1);
+
+		break;
+
+	case SMETER_TYPE_BARS:
+
+		bg = smeter_bg [SM_STATE_TX];
+		colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORMAIN_BLACK, 1);
+//		colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORMAIN_WHITE, 0);
+//		colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H / 2, COLORMAIN_WHITE, 0);
+
+		colmain_line(bg, SM_BG_W, SM_BG_H, smeter_params.gs, smeter_params.r1, smeter_params.ge, smeter_params.r1, COLORMAIN_WHITE, 0);
+		for (p = 0, i = 0; i < ARRAY_SIZE(markersTX_pwr); ++ i, p += 10)
+		{
+			if (i % 2 == 0)
+			{
+				char buf2 [10];
+				colmain_line(bg, SM_BG_W, SM_BG_H, markersTX_pwr [i], smeter_params.r1, markersTX_pwr [i], smeter_params.r1 - 10, COLORMAIN_WHITE, 0);
+				local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("%u"), p);
+				colpip_string3_tbg(bg, SM_BG_W, SM_BG_H, markersTX_pwr [i] - strwidth3(buf2) / 2, smeter_params.r1 - 10 - SMALLCHARH3 - 2, buf2, COLORMAIN_YELLOW);
+			}
+			else
+				colmain_line(bg, SM_BG_W, SM_BG_H, markersTX_pwr [i], smeter_params.r1, markersTX_pwr [i], smeter_params.r1 - 5, COLORMAIN_WHITE, 0);
+		}
+
+		colmain_line(bg, SM_BG_W, SM_BG_H, smeter_params.gs, smeter_params.r2, smeter_params.ge, smeter_params.r2, COLORMAIN_WHITE, 0);
+		for (p = 1, i = 0; i < ARRAY_SIZE(markersTX_swr); ++ i, p += 1)
+		{
+			char buf2 [10];
+			colmain_line(bg, SM_BG_W, SM_BG_H, markersTX_swr [i], smeter_params.r2, markersTX_swr [i], smeter_params.r2 + 10, COLORMAIN_WHITE, 0);
+			local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("%u"), p);
+			colpip_string3_tbg(bg, SM_BG_W, SM_BG_H, markersTX_swr [i] - strwidth3(buf2) / 2, smeter_params.r2 + 12, buf2, COLORMAIN_YELLOW);
+		}
+
+		bg = smeter_bg [SM_STATE_RX];
+		colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORMAIN_BLACK, 1);
+//		colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORMAIN_WHITE, 0);
+//		colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H / 2, COLORMAIN_WHITE, 0);
+
+		colmain_line(bg, SM_BG_W, SM_BG_H, smeter_params.gs, smeter_params.r1, smeter_params.gm, smeter_params.r1, COLORMAIN_WHITE, 0);
+		colmain_line(bg, SM_BG_W, SM_BG_H, smeter_params.gm, smeter_params.r1, smeter_params.ge, smeter_params.r1, COLORMAIN_RED, 0);
+		colpip_string2_tbg(bg, SM_BG_W, SM_BG_H, smeter_params.gs - SMALLCHARW2, smeter_params.r1 - SMALLCHARH2 - 2, "Sm", COLORMAIN_YELLOW);
+
+		for (p = 1, i = 0; i < ARRAY_SIZE(markers); ++ i, p += 2)
+		{
+			char buf2 [10];
+			uint_fast16_t xx, yy;
+			colmain_line(bg, SM_BG_W, SM_BG_H, markers [i], smeter_params.r1, markers [i], smeter_params.r1 - 10, COLORMAIN_WHITE, 0);
+			local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("%u"), p);
+			colpip_string3_tbg(bg, SM_BG_W, SM_BG_H, markers [i] - SMALLCHARW3 / 2, smeter_params.r1 - 10 - SMALLCHARH3 - 2, buf2, COLORMAIN_YELLOW);
+		}
+		for (i = 0; i < ARRAY_SIZE(markers2); ++ i)
+		{
+			colmain_line(bg, SM_BG_W, SM_BG_H, markers2 [i], smeter_params.r1, markers2 [i], smeter_params.r1 - 5, COLORMAIN_WHITE, 0);
+		}
+
+		for (p = 20, i = 0; i < ARRAY_SIZE(markersR); ++ i, p += 20)
+		{
+			char buf2 [10];
+			colmain_line(bg, SM_BG_W, SM_BG_H, markersR [i], smeter_params.r1, markersR [i], smeter_params.r1 - 10, COLORMAIN_RED, 0);
+			local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("+%u"), p);
+			colpip_string3_tbg(bg, SM_BG_W, SM_BG_H, markersR [i] - strwidth3(buf2) / 2, smeter_params.r1 - 10 - SMALLCHARH3 - 2, buf2, COLORMAIN_YELLOW);
+		}
+		for (i = 0; i < ARRAY_SIZE(markers2R); ++ i)
+		{
+			colmain_line(bg, SM_BG_W, SM_BG_H, markers2R [i], smeter_params.r1, markers2R [i], smeter_params.r1 - 5, COLORMAIN_RED, 0);
+		}
+
+		break;
 	}
-
-	for (p = 1, i = 0; i < ARRAY_SIZE(markersTX_swr); ++ i, p += 1)
-	{
-		char buf [10];
-		uint_fast16_t xx, yy;
-
-		display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markersTX_swr [i], smeter_params.r2, smeter_params.r2 - 8, smeter, 1, 1);
-		polar_to_dek(xb, yb, markersTX_swr [i], smeter_params.r2 - 16, & xx, & yy, 1);
-		local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("%u"), p);
-
-		colmain_setcolors(COLORMAIN_YELLOW, COLORMAIN_BLACK);
-		colmain_string3_at_xy(bg, SM_BG_W, SM_BG_H, xx - SMALLCHARW3 / 2, yy - SMALLCHARW3 / 2 + 1, buf);
-	}
-
-	display_segm_buf(bg, SM_BG_W, SM_BG_H, xb, yb, smeter_params.gs, smeter_params.gm, smeter_params.r1, 1, smeter, 1, 1);
-	display_segm_buf(bg, SM_BG_W, SM_BG_H, xb, yb, smeter_params.gm, smeter_params.ge, smeter_params.r1, 1, smeter, 1, 1);
-	display_segm_buf(bg, SM_BG_W, SM_BG_H, xb, yb, smeter_params.gs, smeter_params.ge, smeter_params.r2, 1, COLORMAIN_WHITE, 1, 1);
-
-	bg = smeter_bg [SM_STATE_RX];
-	colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORMAIN_BLACK, 1);
-#if WITHTOUCHGUI
-//	colmain_rounded_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H - 1, 5, COLORMAIN_WHITE, 0);
-#endif
-
-	for (p = 1, i = 0; i < ARRAY_SIZE(markers); ++ i, p += 2)
-	{
-		char buf [10];
-		uint_fast16_t xx, yy;
-
-		display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markers [i], smeter_params.r1, smeter_params.r1 + 8, smeter, 1, 1);
-		polar_to_dek(xb, yb, markers [i], smeter_params.r1 + 6, & xx, & yy, 1);
-		local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("%u"), p);
-
-		colmain_setcolors(COLORMAIN_YELLOW, COLORMAIN_BLACK);
-		colmain_string3_at_xy(bg, SM_BG_W, SM_BG_H, xx - SMALLCHARW3 / 2, yy - pad2w3 + 1, buf);
-	}
-	for (i = 0; i < ARRAY_SIZE(markers2); ++ i)
-	{
-		display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markers2 [i], smeter_params.r1, smeter_params.r1 + 4, smeter, 1, 1);
-	}
-
-	for (p = 20, i = 0; i < ARRAY_SIZE(markersR); ++ i, p += 20)
-	{
-		char buf [10];
-		uint_fast16_t xx, yy;
-
-		display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markersR [i], smeter_params.r1, smeter_params.r1 + 8, smeterplus, 1, 1);
-		polar_to_dek(xb, yb, markersR [i], smeter_params.r1 + 6, & xx, & yy, 1);
-		local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("+%u"), p);
-
-		colmain_setcolors(COLORMAIN_RED, COLORMAIN_BLACK);
-		colmain_string3_at_xy(bg, SM_BG_W, SM_BG_H, xx - strwidth3(buf) / 2, yy - pad2w3 + 1, buf);
-	}
-	for (i = 0; i < ARRAY_SIZE(markers2R); ++ i)
-	{
-		display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markers2R [i], smeter_params.r1, smeter_params.r1 + 4, smeterplus, 1, 1);
-	}
-	display_segm_buf(bg, SM_BG_W, SM_BG_H, xb, yb, smeter_params.gs, smeter_params.gm, smeter_params.r1, 1, smeter, 1, 1);
-	display_segm_buf(bg, SM_BG_W, SM_BG_H, xb, yb, smeter_params.gm, smeter_params.ge, smeter_params.r1, 1, smeterplus, 1, 1);
-	display_segm_buf(bg, SM_BG_W, SM_BG_H, xb, yb, smeter_params.gs, smeter_params.ge, smeter_params.r2, 1, COLORMAIN_WHITE, 1, 1);
 }
 
 // ширина занимаемого места - 15 ячеек (240/16 = 15)
@@ -7611,16 +7584,24 @@ display2_smeter15(
 	)
 {
 	/* получение координат прямоугольника с изображением */
-	const uint_fast16_t width = GRID2X(15);
-	const uint_fast16_t height = GRID2Y(14);
+	const uint_fast16_t width = SM_BG_W;
+	const uint_fast16_t height = SM_BG_H;
 	const uint_fast16_t x0 = GRID2X(xgrid);
 	const uint_fast16_t y0 = GRID2Y(ygrid);
+	const int dial_shift = GRID2Y(2);
 	const int xc = x0 + width / 2;
-	const int yc = y0 + 120;
+	const int yc = y0 + 120 + dial_shift;
 
 	const uint_fast8_t is_tx = hamradio_get_tx();
 	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
 	static uint_fast8_t first_tx = 0;
+
+	static uint_fast8_t old_type = 0;
+	if (old_type != global_smetertype)
+	{
+		display2_smeter15_init(0, 0, NULL);
+		old_type = global_smetertype;
+	}
 
 	int gp = smeter_params.gs, gv = smeter_params.gs, gv_trace = smeter_params.gs, gswr = smeter_params.gs;
 
@@ -7641,10 +7622,13 @@ display2_smeter15(
 
 		uint_fast16_t power;
 
-		power = board_getadc_filtered_truevalue(PWRI);
+		power = board_getadc_unfiltered_truevalue(PWRMRRIX);	// без возможных тормозов на SPI при чтении
 		gp = smeter_params.gs + normalize(power, 0, maxpwrcali << 4, smeter_params.ge - smeter_params.gs);
 
-		gswr = smeter_params.gs + normalize(get_swr(), 0, swr_fullscale, smeter_params.ge - smeter_params.gs);
+		// todo: get_swr(swr_fullscale) - использщовать MRRxxx.
+		// Для тюнера и измерений не голдится, для показа - без торомозов.
+		const uint_fast16_t swr_fullscale = (SWRMIN * 40 / 10) - SWRMIN;	// количество рисок в шкале ииндикатора
+		gswr = smeter_params.gs + normalize(get_swr(swr_fullscale), 0, swr_fullscale, smeter_params.ge - smeter_params.gs);
 
 		if (gp > smeter_params.gs)
 			gp_smooth = gp;
@@ -7672,49 +7656,99 @@ display2_smeter15(
 		first_tx = 1;
 	}
 
-	if (is_tx)
+	switch (global_smetertype)
 	{
-		// TX state
-		colpip_plot(fr, DIM_X, DIM_Y, x0, y0, smeter_bg [SM_STATE_TX], SM_BG_W, SM_BG_H);
 
-		if (gswr > smeter_params.gs)
+	case SMETER_TYPE_DIAL:
+
+		if (is_tx)
 		{
-			uint_fast16_t xx, yy;
-			const COLORMAIN_T color = COLORMAIN_YELLOW;
+			// TX state
+			colpip_plot(
+					(uintptr_t) fr, GXSIZE(DIM_X, DIM_Y),
+					fr, DIM_X, DIM_Y, x0, y0 + dial_shift,
+					(uintptr_t) smeter_bg [SM_STATE_TX], GXSIZE(SM_BG_W, SM_BG_H),
+					smeter_bg [SM_STATE_TX], SM_BG_W, SM_BG_H - dial_shift);
 
-			display_segm_buf(fr, DIM_X, DIM_Y, xc, yc, smeter_params.gs, gswr, smeter_params.r2 + 2, 1, color, 0, 1);
-			display_segm_buf(fr, DIM_X, DIM_Y, xc, yc, smeter_params.gs, gswr, smeter_params.r1 - 2, 1, color, 0, 1);
-			display_radius_buf(fr, DIM_X, DIM_Y, xc, yc, smeter_params.gs, smeter_params.r1 - 2, smeter_params.r2 + 2, color, 0, 1);
-			display_radius_buf(fr, DIM_X, DIM_Y, xc, yc, gswr, smeter_params.r1 - 2, smeter_params.r2 + 2, color, 0, 1);
-			polar_to_dek(xc, yc, gswr - 1, smeter_params.r1 - 4, & xx, & yy, 1);
-			display_floodfill(fr, DIM_X, DIM_Y, xx, yy, color, COLORMAIN_BLACK, 1);
-		}
+			if (gswr > smeter_params.gs)
+			{
+				uint_fast16_t xx, yy;
+				const COLORMAIN_T color = COLORMAIN_YELLOW;
 
-		const COLORMAIN_T color = COLORMAIN_GREEN;
-		display_radius_buf(fr, DIM_X, DIM_Y, xc - 1, yc, gp, smeter_params.rv1, smeter_params.rv2, color, 0, 1);
-		display_radius_buf(fr, DIM_X, DIM_Y, xc, yc, gp, smeter_params.rv1, smeter_params.rv2, color, 0, 1);
-		display_radius_buf(fr, DIM_X, DIM_Y, xc + 1, yc, gp, smeter_params.rv1, smeter_params.rv2, color, 0, 1);
-	}
-	else
-	{
-		// RX state
-		colpip_plot(fr, DIM_X, DIM_Y, x0, y0, smeter_bg [SM_STATE_RX], SM_BG_W, SM_BG_H);
+				display_segm_buf(fr, DIM_X, DIM_Y, xc, yc, smeter_params.gs, gswr, smeter_params.r2 + 2, 1, color, 0, 1);
+				display_segm_buf(fr, DIM_X, DIM_Y, xc, yc, smeter_params.gs, gswr, smeter_params.r1 - 2, 1, color, 0, 1);
+				display_radius_buf(fr, DIM_X, DIM_Y, xc, yc, smeter_params.gs, smeter_params.r1 - 2, smeter_params.r2 + 2, color, 0, 1);
+				display_radius_buf(fr, DIM_X, DIM_Y, xc, yc, gswr, smeter_params.r1 - 2, smeter_params.r2 + 2, color, 0, 1);
+				polar_to_dek(xc, yc, gswr - 1, smeter_params.r1 - 4, & xx, & yy, 1);
+				display_floodfill(fr, DIM_X, DIM_Y, xx, yy, color, COLORMAIN_BLACK, 1);
+			}
 
-		{
-			// Рисование peak value (риска)
-			const COLORMAIN_T color = COLORMAIN_YELLOW;
-			display_radius_buf(fr, DIM_X, DIM_Y, xc - 1, yc, gv_trace, smeter_params.r1 - 2, smeter_params.r2 + 2, color, 0, 1);
-			display_radius_buf(fr, DIM_X, DIM_Y, xc, yc, gv_trace, smeter_params.r1 - 2, smeter_params.r2 + 2, color, 0, 1);
-			display_radius_buf(fr, DIM_X, DIM_Y, xc + 1, yc, gv_trace, smeter_params.r1 - 2, smeter_params.r2 + 2, color, 0, 1);
-		}
-
-		{
-			// Рисование стрелки
 			const COLORMAIN_T color = COLORMAIN_GREEN;
-			display_radius_buf(fr, DIM_X, DIM_Y, xc - 1, yc, gv, smeter_params.rv1, smeter_params.rv2, color, 0, 1);
-			display_radius_buf(fr, DIM_X, DIM_Y, xc, yc, gv, smeter_params.rv1, smeter_params.rv2, color, 0, 1);
-			display_radius_buf(fr, DIM_X, DIM_Y, xc + 1, yc, gv, smeter_params.rv1, smeter_params.rv2, color, 0, 1);
+			display_radius_buf(fr, DIM_X, DIM_Y, xc - 1, yc, gp, smeter_params.rv1, smeter_params.rv2, color, 0, 1);
+			display_radius_buf(fr, DIM_X, DIM_Y, xc, yc, gp, smeter_params.rv1, smeter_params.rv2, color, 0, 1);
+			display_radius_buf(fr, DIM_X, DIM_Y, xc + 1, yc, gp, smeter_params.rv1, smeter_params.rv2, color, 0, 1);
 		}
+		else
+		{
+			// RX state
+			colpip_plot(
+					(uintptr_t) fr, GXSIZE(DIM_X, DIM_Y),
+					fr, DIM_X, DIM_Y, x0, y0 + dial_shift,
+					(uintptr_t) smeter_bg [SM_STATE_RX], GXSIZE(SM_BG_W, SM_BG_H),
+					smeter_bg [SM_STATE_RX], SM_BG_W, SM_BG_H - dial_shift);
+
+			{
+				// Рисование peak value (риска)
+				const COLORMAIN_T color = COLORMAIN_YELLOW;
+				display_radius_buf(fr, DIM_X, DIM_Y, xc - 1, yc, gv_trace, smeter_params.r1 - 2, smeter_params.r2 + 2, color, 0, 1);
+				display_radius_buf(fr, DIM_X, DIM_Y, xc, yc, gv_trace, smeter_params.r1 - 2, smeter_params.r2 + 2, color, 0, 1);
+				display_radius_buf(fr, DIM_X, DIM_Y, xc + 1, yc, gv_trace, smeter_params.r1 - 2, smeter_params.r2 + 2, color, 0, 1);
+			}
+
+			{
+				// Рисование стрелки
+				const COLORMAIN_T color = COLORMAIN_GREEN;
+				display_radius_buf(fr, DIM_X, DIM_Y, xc - 1, yc, gv, smeter_params.rv1, smeter_params.rv2, color, 0, 1);
+				display_radius_buf(fr, DIM_X, DIM_Y, xc, yc, gv, smeter_params.rv1, smeter_params.rv2, color, 0, 1);
+				display_radius_buf(fr, DIM_X, DIM_Y, xc + 1, yc, gv, smeter_params.rv1, smeter_params.rv2, color, 0, 1);
+			}
+		}
+
+		break;
+
+	case SMETER_TYPE_BARS:
+
+		if (is_tx)
+		{
+			colpip_plot(
+					(uintptr_t) fr, GXSIZE(DIM_X, DIM_Y),
+					fr, DIM_X, DIM_Y, x0, y0,
+					(uintptr_t) smeter_bg [SM_STATE_TX], GXSIZE(SM_BG_W, SM_BG_H),
+					smeter_bg [SM_STATE_TX], SM_BG_W, SM_BG_H);
+
+			if(gp > smeter_params.gs)
+				colpip_rect(fr, DIM_X, DIM_Y, x0 + smeter_params.gs, y0 + smeter_params.r1 + 5, x0 + gp, y0 + smeter_params.r1 + 20, COLORMAIN_GREEN, 1);
+
+			if(gswr > smeter_params.gs)
+				colpip_rect(fr, DIM_X, DIM_Y, x0 + smeter_params.gs, y0 + smeter_params.r2 - 20, x0 + gswr, y0 + smeter_params.r2 - 5, COLORMAIN_GREEN, 1);
+		}
+		else
+		{
+			colpip_plot(
+					(uintptr_t) fr, GXSIZE(DIM_X, DIM_Y),
+					fr, DIM_X, DIM_Y, x0, y0,
+					(uintptr_t) smeter_bg [SM_STATE_RX], GXSIZE(SM_BG_W, SM_BG_H),
+					smeter_bg [SM_STATE_RX], SM_BG_W, SM_BG_H
+					);
+
+			if(gv > smeter_params.gs)
+				colpip_rect(fr, DIM_X, DIM_Y, x0 + smeter_params.gs, y0 + smeter_params.r1 + 5, x0 + gv, y0 + smeter_params.r1 + 20, COLORMAIN_GREEN, 1);
+
+			if(gv_trace > smeter_params.gs)
+				colmain_line(fr, DIM_X, DIM_Y, x0 + gv_trace, y0 + smeter_params.r1 + 5, x0 + gv_trace, y0 + smeter_params.r1 + 20, COLORMAIN_YELLOW, 0);
+		}
+
+		break;
 	}
 }
 

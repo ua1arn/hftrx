@@ -52,9 +52,9 @@
    ARM_MODE_MASK  = 0x1F
    
    I_BIT          = 0x80      /* disable IRQ when I bit is set */
-   F_BIT          = 0x40      /* disable FIQ when I bit is set */
+   F_BIT          = 0x40      /* disable FIQ when F bit is set */
  
-	 STACKSIZE = 512
+	 STACKSIZE = 256
   
    .global __Vectors
    .section .vectors,"ax"

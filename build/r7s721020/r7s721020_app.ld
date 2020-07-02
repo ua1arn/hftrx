@@ -42,9 +42,12 @@ SECTIONS
 {
 	.text :
 	{
+		. = ALIGN(32);
 		KEEP(*(.vectors))
 		__Vectors_End = .;
 		__Vectors_Size = __Vectors_End - __Vectors;
+		
+		. = ALIGN(4);
 		KEEP(*(.init))
 		KEEP(*(.initfunc))
 		KEEP(*(.initdata))

@@ -333,24 +333,24 @@ typedef uint_fast32_t COLOR24_T;
 
 #endif /* LCDMODE_LTDC */
 
-#define GXALIGN 8	/* размер каждой строки видеобуфера кратен этому заначению */
+#define GXALIGN (DCACHEROWSIZE / LCDMODE_PIXELSIZE)	/* количество пикселей в строке видеобуфера кратно этому заначению */
 
 #define GXADJ(dx) (((dx) + (GXALIGN - 1)) / GXALIGN * GXALIGN)
 #define MGADJ(dx) (((dx) + (MGALIGN - 1)) / MGALIGN * MGALIGN)
 
 #if LCDMODE_S1D13781
 	// биты слова буфера располагаются на экране горизонтально
-	// старший битт левее
+	// старший бит левее
 	#define MGALIGN 16
-	typedef uint16_t GX_t;	/* тип элмента буфера для выдачи монохромного растра */
+	typedef uint16_t GX_t;	/* тип элемента буфера для выдачи монохромного растра */
 #elif LCDMODE_COLORED
 	// биты слова буфера располагаются на экране вертикально
 	#define MGALIGN 8
-	typedef uint8_t GX_t;	/* тип элмента буфера для выдачи монохромного растра */
+	typedef uint8_t GX_t;	/* тип элемента буфера для выдачи монохромного растра */
 #else	/* LCDMODE_S1D13781 */
 	// биты слова буфера располагаются на экране вертикально
 	#define MGALIGN 8
-	typedef uint8_t GX_t;	/* тип элмента буфера для выдачи монохромного растра */
+	typedef uint8_t GX_t;	/* тип элемента буфера для выдачи монохромного растра */
 #endif	/* */
 
 #define MGSIZE(dx, dy)	((unsigned long) MGADJ(dx) * (dy))	// размер буфера для монохромного растра
@@ -467,11 +467,13 @@ void colpip_fill(
 // Выдать цветной буфер на дисплей
 // В случае фреймбуфеных дисплеев - формат цвета и там и там одинаковый
 void colpip_to_main(
+	uintptr_t srcinvalidateaddr,	// параметры clean источника
+	int_fast32_t srcinvalidatesize,
 	const PACKEDCOLORPIP_T * buffer,	// источник
 	uint_fast16_t dx,	// ширина буфера источника
 	uint_fast16_t dy,	// высота буфера источника
-	uint_fast16_t col,	// горизонтальная координата левого верхнего угла на экране (0..dx-1) слева направо
-	uint_fast16_t row	// вертикальная координата левого верхнего угла на экране (0..dy-1) сверху вниз
+	uint_fast16_t col,	// целевая горизонтальная координата левого верхнего угла на экране (0..dx-1) слева направо
+	uint_fast16_t row	// целевая вертикальная координата левого верхнего угла на экране (0..dy-1) сверху вниз
 	);
 
 // Нарисовать линию указанным цветом
@@ -705,25 +707,17 @@ colmain_fillrect(
 	COLORMAIN_T color
 	);
 
-// скоприовать прямоугольник с типом пикселей соответствующим основному экрану
-void colmain_plot(
-	PACKEDCOLORMAIN_T * tbuffer,	// получатель
-	uint_fast16_t tdx,	// получатель
-	uint_fast16_t tdy,	// получатель
-	uint_fast16_t x,	// получатель
-	uint_fast16_t y,	// получатель
-	const PACKEDCOLORMAIN_T * buffer, 	// источник
-	uint_fast16_t dx,	// источник Размеры окна в пикселях
-	uint_fast16_t dy	// источник
-	);
-
 // скоприовать прямоугольник с типом пикселей соответствующим pip
 void colpip_plot(
+	uintptr_t dstinvalidateaddr,	// параметры clean invalidate получателя
+	int_fast32_t dstinvalidatesize,
 	PACKEDCOLORPIP_T * tbuffer,	// получатель
 	uint_fast16_t tdx,	// получатель
 	uint_fast16_t tdy,	// получатель
 	uint_fast16_t x,	// получатель
 	uint_fast16_t y,	// получатель
+	uintptr_t srcinvalidateaddr,	// параметры clean источника
+	int_fast32_t srcinvalidatesize,
 	const PACKEDCOLORPIP_T * buffer, 	// источник
 	uint_fast16_t dx,	// источник Размеры окна в пикселях
 	uint_fast16_t dy	// источник
@@ -869,13 +863,16 @@ void colmain_fb_next(void);		// прерключиться на использо
 void display2_xltrgb24(COLOR24_T * xtable);
 
 void hwaccel_copy(
-	uintptr_t dstinvalidateaddr,
-	size_t dstinvalidatesize,
+	uintptr_t dstinvalidateaddr,	// параметры clean invalidate получателя
+	int_fast32_t dstinvalidatesize,
 	PACKEDCOLORMAIN_T * dst,
+	uint_fast16_t ddx,	// ширина буфера
+	uint_fast16_t ddy,	// высота буфера
+	uintptr_t srcinvalidateaddr,	// параметры clean источника
+	int_fast32_t srcinvalidatesize,
 	const PACKEDCOLORMAIN_T * src,
-	unsigned w,
-	unsigned t,	// разница в размере строки получателя от источника
-	unsigned h
+	uint_fast16_t sdx,	// ширина буфера
+	uint_fast16_t sdy	// высота буфера
 	);
 
 // для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
@@ -1453,7 +1450,7 @@ uint_fast16_t normalize(
 	uint_fast16_t range
 	);
 
-uint_fast16_t get_swr(void);
+uint_fast16_t get_swr(uint_fast16_t swr_fullscale);
 
 #ifdef __cplusplus
 }

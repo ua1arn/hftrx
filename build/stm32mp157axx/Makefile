@@ -35,9 +35,11 @@ OBJDIR = ./$(OBJDIR2)
 OPT = -Ofast
 LTO = -flto
 
-#CORE = -march=armv7-a -mfloat-abi=hard -mfpu=vfpv4-d16
+# This product incorporates the ARM dual-core Cortex-A7 MPCore, where the IP version is xxxx.
 CORE = -mcpu=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4-d16
-#CORE += -mfpu=neon
+#CORE = -mfloat-abi=hard -mfpu=vfpv4-d16
+#CORE += -mcpu=cortex-a7
+CORE += -mfpu=neon
 
 # List all default C defines here, like -D_DEBUG=1
 DDEFS = 
@@ -74,11 +76,11 @@ SRCDIR = ../../src
 PROJECT = tc1_stm32mp157axx
 
 # Define linker script file here
-LDSCRIPT_BOOT = ./stm32mp15xx_cm7_boot.ld
-LDSCRIPT_APP = ./stm32mp15xx_cm7_app.ld
+LDSCRIPT_BOOT = ./stm32mp15xx_ca7_boot.ld
+LDSCRIPT_APP = ./stm32mp15xx_ca7_app.ld
 
 # List all user C define here, like -D_DEBUG=1
-UDEFS = -DNDEBUG=1 -DCPUSTYLE_STM32MP1=1 -DCPUSTYLE_STM32MP157A=1 -DSTM32MP157Axx=1
+UDEFS = -DNDEBUG=1 -DCPUSTYLE_STM32MP1=1 -DSTM32MP157Axx=1
 
 # Define ASM defines here
 UADEFS = 
@@ -121,7 +123,7 @@ OBJS 	+= $(patsubst $(SRCDIR)/%.c,$(OBJDIR)/%.o,$(CSRC))
 OBJS 	+= $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(CPPSRC))
 LIBS    = $(DLIBS) $(ULIBS)
 
-MCFLAGS = $(CORE) -fno-math-errno -funroll-loops
+MCFLAGS = $(CORE) -fno-math-errno -funroll-loops -fgraphite-identity -ffunction-sections -fdata-sections -ffat-lto-objects -ftree-vectorize
 #
 #ASFLAGS = $(MCFLAGS) $(OPT) $(LTO) -g -gdwarf-2 -Wa,-amhls=$(<:.s=.lst) $(ADEFS)
 ASFLAGS = $(MCFLAGS) $(OPT) $(LTO) -g -gdwarf-2 $(ADEFS)

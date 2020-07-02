@@ -5,7 +5,7 @@
 // UA1ARN
 //
 
-#include <src/gui/gui.h>
+#include "src/gui/gui.h"
 #include "hardware.h"
 #include "board.h"
 #include "audio.h"
@@ -241,8 +241,7 @@ static ApplicationTypeDef Appli_state = APPLICATION_IDLE;
 static uintptr_t
 dma_flushxrtstx(uintptr_t addr, unsigned long size)
 {
-	//arm_hardware_invalidate(addr, size);
-	arm_hardware_flush_invalidate(addr, size + ADDPAD);
+	arm_hardware_flush_invalidate(addr, size);
 	return addr;
 }
 
@@ -297,6 +296,7 @@ void refreshDMA_uacin(void)
 // Работает на ARM_REALTIME_PRIORITY
 static void RAMFUNC_NONILINE r7s721_usbX_dma1_dmatx_handler(void)
 {
+	__DMB();
 	ASSERT(DMAC12.N0SA_n != 0);
 	release_dmabufferx(DMAC12.N0SA_n);
 
@@ -534,6 +534,7 @@ static USBALIGN_BEGIN uint8_t uacoutbuff1 [UACOUT_AUDIO48_DATASIZE] USBALIGN_END
 // Работает на ARM_REALTIME_PRIORITY
 static RAMFUNC_NONILINE void r7s721_usbX_dma0_dmarx_handler(void)
 {
+	__DMB();
 	// Enable switch to next regidters set
 	DMAC13.CHCFG_n |= DMAC13_CHCFG_n_REN;	// REN bit
 	// SR (bt 7)
@@ -1477,6 +1478,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 // Renesas, usb device
 void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 {
+	__DMB();
 	USB_OTG_GlobalTypeDef * const USBx = hpcd->Instance;
 	USBD_HandleTypeDef * const pdev = hpcd->pData;
 	const uint_fast16_t intsts0 = USBx->INTSTS0;
@@ -1717,41 +1719,11 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 
 }
 
-static int
-toprintc(int c)
-{
-	if (c < 0x20 || c >= 0x7f)
-		return '.';
-	return c;
-}
-
-static void
-printhex(unsigned long voffs, const unsigned char * buff, unsigned length)
-{
-	unsigned i, j;
-	unsigned rows = (length + 15) / 16;
-
-	for (i = 0; i < rows; ++ i)
-	{
-		const int trl = ((length - 1) - i * 16) % 16 + 1;
-		debug_printf_P(PSTR("%08lX "), voffs + i * 16);
-		for (j = 0; j < trl; ++ j)
-			debug_printf_P(PSTR(" %02X"), buff [i * 16 + j]);
-
-		debug_printf_P(PSTR("%*s"), (16 - trl) * 3, "");
-
-		debug_printf_P(PSTR("  "));
-		for (j = 0; j < trl; ++ j)
-			debug_printf_P(PSTR("%c"), toprintc(buff [i * 16 + j]));
-
-		debug_printf_P(PSTR("\n"));
-	}
-}
-
 
 // Renesas, usb host
 void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 {
+	__DMB();
 	USB_OTG_GlobalTypeDef * const USBx = hhcd->Instance;
 	const uint_fast16_t intsts0 = USBx->INTSTS0;
 	const uint_fast16_t intsts1 = USBx->INTSTS1;
@@ -3383,36 +3355,7 @@ HAL_StatusTypeDef USB_HS_PHYCInit(USB_OTG_GlobalTypeDef *USBx)
 		(void) RCC->USBCKSELR;
 
 	}
-#if 0
-	{
-		// https://github.com/Xilinx/u-boot-xlnx/blob/master/drivers/phy/phy-stm32-usbphyc.c
-		unsigned long long fvco, ndiv, frac;
 
-
-
-		/*
-		 *    | FVCO = INFF*2*(NDIV + FRACT/2^16 ) when DITHER_DISABLE[1] = 1
-		 *    | FVCO = 2880MHz
-		 *    | NDIV = integer part of input bits to set the LDF
-		 *    | FRACT = fractional part of input bits to set the LDF
-		 *  =>	PLLNDIV = integer part of (FVCO / (INFF*2))
-		 *  =>	PLLFRACIN = fractional part of(FVCO / INFF*2) * 2^16
-		 * <=>  PLLFRACIN = ((FVCO / (INFF*2)) - PLLNDIV) * 2^16
-		 */
-
-		fvco = (unsigned long long)PLL_FVCO * 1000000; /* In Hz */
-
-		ndiv = fvco;
-
-		do_div(ndiv, (clk_rate * 2));
-		pll_params->ndiv = (u8)ndiv;
-		frac = fvco * (1 << 16);
-		do_div(frac, (clk_rate * 2));
-		frac = frac - (ndiv * (1 << 16));
-		pll_params->frac = (u16)frac;
-
-	}
-#endif
 	if (1)
 	{
 		// https://github.com/Xilinx/u-boot-xlnx/blob/master/drivers/phy/phy-stm32-usbphyc.c
@@ -3440,16 +3383,16 @@ HAL_StatusTypeDef USB_HS_PHYCInit(USB_OTG_GlobalTypeDef *USBx)
 //		FRACT /= pll4_r_ck;
 //		FRACT = FRACT - (d.quot << 16);
 
-		PRINTF("USB_HS_PHYCInit: pll4_r_ck=%u, N=%u, FRACT=%u, ODF=%u\n", pll4_r_ck, N, (unsigned) (FRACT & 0xFFFF), ODF);
+		//PRINTF("USB_HS_PHYCInit: pll4_r_ck=%u, N=%u, FRACT=%u, ODF=%u\n", pll4_r_ck, N, (unsigned) (FRACT & 0xFFFF), ODF);
 
 		USBPHYC->PLL =
 				(USBPHYC->PLL & ~ (USBPHYC_PLL_PLLDITHEN0_Msk | USBPHYC_PLL_PLLDITHEN1_Msk |
 					USBPHYC_PLL_PLLEN_Msk | USBPHYC_PLL_PLLNDIV_Msk | USBPHYC_PLL_PLLODF_Msk |
 					USBPHYC_PLL_PLLFRACIN_Msk | USBPHYC_PLL_PLLFRACCTL_Msk | USBPHYC_PLL_PLLSTRB_Msk | USBPHYC_PLL_PLLSTRBYP_Msk)) |
-			((N) << USBPHYC_PLL_PLLNDIV_Pos) |	// PLLNDIV 24/60 = 400 kHz
+			((N) << USBPHYC_PLL_PLLNDIV_Pos) |	// Целая часть делителя
 			((ODF) << USBPHYC_PLL_PLLODF_Pos) |	// PLLODF - игнорируется
 			USBPHYC_PLL_PLLSTRBYP_Msk |
-			(((FRACT) < USBPHYC_PLL_PLLFRACIN_Pos) & USBPHYC_PLL_PLLFRACIN_Msk) |
+			(((FRACT) << USBPHYC_PLL_PLLFRACIN_Pos) & USBPHYC_PLL_PLLFRACIN_Msk) |
 			((d.rem != 0) * USBPHYC_PLL_PLLFRACCTL_Msk) |
 			USBPHYC_PLL_PLLDITHEN0_Msk |
 			USBPHYC_PLL_PLLDITHEN1_Msk |
@@ -6098,7 +6041,10 @@ HAL_StatusTypeDef HAL_PCD_EP_Transmit(PCD_HandleTypeDef *hpcd, uint_fast8_t ep_a
 	if (hpcd->Init.dma_enable == USB_ENABLE)
 	{
 		if (pBuf != NULL && len != 0)
+		{
+			ASSERT(((uintptr_t) pBuf % DCACHEROWSIZE) == 0);
 			arm_hardware_flush((uintptr_t) pBuf, len);
+		}
 		ep->dma_addr = (uintptr_t) pBuf;
 	}
 
@@ -8280,6 +8226,7 @@ static HAL_StatusTypeDef PCD_WriteEmptyTxFifo(PCD_HandleTypeDef *hpcd, uint32_t 
 // F4, F7, H7...
 void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 {
+	__DMB();
 	//	PRINTF(PSTR("HAL_PCD_IRQHandler:\n"));
 	USB_OTG_GlobalTypeDef *USBx = hpcd->Instance;
 
@@ -9982,7 +9929,7 @@ uint_fast8_t hardware_usbd_get_vbusbefore(void)
 	return device_vbusbefore;
 }
 
-uint_fast8_t hardware_usbd_get_vbusnow(void)
+static uint_fast8_t hardware_usbd_get_vbusnow0(void)
 {
 #if CPUSTYLE_R7S721
 	return (WITHUSBHW_DEVICE->INTSTS0 & USB_INTSTS0_VBSTS) != 0;
@@ -9996,6 +9943,19 @@ uint_fast8_t hardware_usbd_get_vbusnow(void)
 #endif /* CPUSTYLE_R7S721 */
 }
 
+
+uint_fast8_t hardware_usbd_get_vbusnow(void)
+{
+	uint_fast8_t st0;
+	uint_fast8_t st = hardware_usbd_get_vbusnow0();
+
+	do
+	{
+		st0 = st;
+		st = hardware_usbd_get_vbusnow0();
+	} while (st0 != st);
+	return st;
+}
 /* вызывается при запрещённых прерываниях. */
 static void hardware_usbd_initialize(void)
 {
@@ -13733,6 +13693,7 @@ void HAL_HCD_HC_NotifyURBChange_Callback(HCD_HandleTypeDef *hhcd, uint8_t chnum,
   */
 void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 {
+	__DMB();
 	USB_OTG_GlobalTypeDef *USBx = hhcd->Instance;
 
 	/* ensure that we are in device mode */
@@ -14233,14 +14194,16 @@ void board_ehci_initialize(void)
 		/* SYSCFG clock enable */
 		RCC->MP_APB3ENSETR = RCC_MC_APB3ENSETR_SYSCFGEN;
 		(void) RCC->MP_APB3ENSETR;
+		RCC->MP_APB3LPENSETR = RCC_MC_APB3LPENSETR_SYSCFGLPEN;
+		(void) RCC->MP_APB3LPENSETR;
 		/*
 		 * Interconnect update : select master using the port 1.
 		 * MCU interconnect (USBH) = AXI_M1, AXI_M2.
 		 */
-		SYSCFG->ICNR |= SYSCFG_ICNR_AXI_M1;
-		(void) SYSCFG->ICNR;
-		SYSCFG->ICNR |= SYSCFG_ICNR_AXI_M2;
-		(void) SYSCFG->ICNR;
+//		SYSCFG->ICNR |= SYSCFG_ICNR_AXI_M1;
+//		(void) SYSCFG->ICNR;
+//		SYSCFG->ICNR |= SYSCFG_ICNR_AXI_M2;
+//		(void) SYSCFG->ICNR;
 	}
 
 	// https://github.com/pdoane/osdev/blob/master/usb/ehci.c

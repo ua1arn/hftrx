@@ -44,22 +44,27 @@
    ARM_MODE_USER  = 0x10      /* Normal User Mode                             */ 
    ARM_MODE_FIQ   = 0x11      /* FIQ Fast Interrupts Mode                     */
    ARM_MODE_IRQ   = 0x12      /* IRQ Standard Interrupts Mode                 */
-   ARM_MODE_SVC   = 0x13      /* Supervisor Interrupts Mode                   */
+   ARM_MODE_SVC   = 0x13      /* Supervisor Interrupts Mode            		  */
+   ARM_MODE_MON   = 0x16      /* Monitor Interrupts Mode (With Security Extensions) */
    ARM_MODE_ABORT = 0x17      /* Abort Processing memory Faults Mode          */
+   ARM_MODE_HYP	  = 0x1a      /* Hypervisor Interrupts Mode            		  */
    ARM_MODE_UNDEF = 0x1B      /* Undefined Instructions Mode                  */
    ARM_MODE_SYS   = 0x1F      /* System Running in Priviledged Operating Mode */
    ARM_MODE_MASK  = 0x1F
    
-/* Standard definitions of mode bits and interrupt (I & F) flags in PSRs */
-   I_BIT          = 0x80      /* disable IRQ when I bit is set */
-   F_BIT          = 0x40      /* disable FIQ when I bit is set */
+	/* Standard definitions of mode bits and interrupt (I & F) flags in PSRs */
+	I_BIT          = 0x80      /* disable IRQ when I bit is set */
+	F_BIT          = 0x40      /* disable FIQ when F bit is set */
  
-	 STACKSIZEUND = 1024
-	 STACKSIZEABT = 1024
-	 STACKSIZEFIQ = 1024
-	 STACKSIZEIRQ = 1024
-	 STACKSIZESVC = 1024
-  
+	 STACKSIZEUND = 256
+	 STACKSIZEABT = 256
+	 STACKSIZEFIQ = 256
+	 STACKSIZEIRQ = 256
+	 STACKSIZESVC = 256
+	 STACKSIZEHYP = 256
+	 STACKSIZEMON = 256
+	 STACKSIZESYS = 256
+
 	.global __Vectors
 	.section .vectors,"ax"
 	.code 32
@@ -74,7 +79,7 @@ __Vectors:
    ldr pc, SWIAddr      /* Software interrupt    */
    ldr pc, PAbortAddr   /* Prefetch abort        */
    ldr pc, DAbortAddr   /* Data abort            */
-   ldr pc, HypAddr 		/* entry to Hyp mode     */
+   ldr pc, HypAddr 		/* Entry to Hyp mode	 */
    ldr pc, IRQAddr      /* IRQ interrupt         */
    ldr pc, FIQAddr      /* FIQ interrupt         */
 
@@ -84,7 +89,7 @@ UndefAddr:     .word Undef_Handler
 SWIAddr:       .word SWI_Handler
 PAbortAddr:    .word PAbort_Handler
 DAbortAddr:    .word DAbort_Handler
-HypAddr:  		.word Hyp_Handler
+HypAddr:  	   .word Hyp_Handler
 IRQAddr:       .word IRQHandlerNested
 FIQAddr:       .word FIQ_Handler
 
@@ -95,7 +100,7 @@ FIQAddr:       .word FIQ_Handler
    .code 32
    
    .extern _start
-   .extern __libc_init_array
+   /*.extern __libc_init_array*/
    .extern SystemInit
    .global Reset_Handler7
 /****************************************************************************/
@@ -115,28 +120,36 @@ gotosleep:
   /*
     * Setup a stack for each mode
     */    
-   msr   CPSR_c, #ARM_MODE_UNDEF   /* 0x1b Undefined Instruction Mode */
+   msr   CPSR_c, #ARM_MODE_UNDEF | I_BIT   /* 0x1b Undefined Instruction Mode */
    ldr   sp, =__stack_und_end
    mov   lr, #0
    
-   msr   CPSR_c, #ARM_MODE_ABORT   /* 0x17 Abort Mode */
+   msr   CPSR_c, #ARM_MODE_ABORT | I_BIT   /* 0x17 Abort Mode */
    ldr   sp, =__stack_abt_end
    mov   lr, #0
    
-   msr   CPSR_c, #ARM_MODE_FIQ     /* 0x11 FIQ Mode */
+   msr   CPSR_c, #ARM_MODE_FIQ | I_BIT     /* 0x11 FIQ Mode */
    ldr   sp, =__stack_fiq_end
    mov   lr, #0
    
-   msr   CPSR_c, #ARM_MODE_IRQ     /* 0x12 IRQ Mode */
+   msr   CPSR_c, #ARM_MODE_IRQ | I_BIT     /* 0x12 IRQ Mode */
    ldr   sp, =__stack_irq_end
    mov   lr, #0
 
-   msr   CPSR_c, #ARM_MODE_SVC     /* 0x13 Supervisor Mode */
-   ldr   sp, =__stack_svc_end
+   msr   CPSR_c, #ARM_MODE_MON | I_BIT     /* 0x16 Monitor Mode */
+   ldr   sp, =__stack_mon_end
    mov   lr, #0
 
-   msr   CPSR_c, #ARM_MODE_SYS     /* 0x1F Priviledged Operating Mode */
-   ldr   sp, =__stack	/* __stack_syc_end */
+   msr   CPSR_c, #ARM_MODE_HYP | I_BIT     /* 0x1B Hypervisor Mode */
+   ldr   sp, =__stack_hyp_end
+   mov   lr, #0
+
+   msr   CPSR_c, #ARM_MODE_SYS | I_BIT     /* 0x1F Priviledged Operating Mode */
+   ldr   sp, =__stack_sys_end
+   mov   lr, #0
+
+   msr   CPSR_c, #ARM_MODE_SVC | I_BIT     /* 0x13 Supervisor Mode */
+   ldr   sp, =__stack	/* __stack_svc_end */
    mov   lr, #0
 
 #if 0
@@ -306,8 +319,6 @@ ExitFunction:
    .code 32
 
 	.align 4, 0
-DummyResetHandler:
-   b DummyResetHandler
 
 /* ================================================================== */
 /* Entry point for the IRQ handler */
@@ -316,14 +327,20 @@ DummyResetHandler:
     .func   IRQHandlerNested
 IRQHandlerNested:
 
-		/* Save interrupt context on the stack to allow nesting */
-		sub		lr, lr, #4
-		stmfd   sp!, {lr}
-		mrs     lr, SPSR
-		stmfd   sp!, {r0, lr}
+       PUSH    {R0-R12,LR}          // save register context
+       MRS     LR, SPSR                // Copy SPSR_irq to LR
+       PUSH    {LR}                    // Save SPSR_irq
+       MSR     CPSR_c, #ARM_MODE_SVC | I_BIT          // Disable IRQ (Svc Mode)
+       PUSH    {LR}                    // Save LR
 
-        msr     CPSR_c, #ARM_MODE_SYS | I_BIT
-		stmfd   sp!, {r1-r3, r4, r12, lr}
+		// save VFP/Neon FPSCR register
+		FMRX	LR, FPSCR
+		FMXR	FPSCR, LR
+		PUSH	{LR}
+		// save VFP/Neon FPEXC register
+		FMRX	LR, FPEXC
+		FMXR	FPEXC, LR
+		PUSH	{LR}
 
 #if __ARM_NEON == 1
 		// save Neon data registers
@@ -331,23 +348,10 @@ IRQHandlerNested:
 #endif /* __ARM_NEON == 1 */
 		// save VFP/Neon data registers
 		VPUSH.F64	{q0-q7}
-		// save VFP/Neon FPSCR register
-		FMRX	r2, FPSCR
-		PUSH	{r2}
-		// save VFP/Neon FPEXC register
-		FMRX	r2, FPEXC
-		PUSH	{r2}
 
-		ldr		r2, =IRQ_Handler
+		ldr		r0, =IRQ_Handler
 		mov		lr, pc
-		bx		r2     /* And jump... */
-
-		// restore VFP/Neon FPEXC register
-		POP		{r2}
-		FMXR	FPEXC, r2
-		// restore VFP/Neon FPSCR register
-		POP		{r2}
-		FMXR	FPSCR, r2
+		bx		r0     /* And jump... */
 		// restore VFP data registers
 		VPOP.F64   {q0-q7}
 #if __ARM_NEON == 1
@@ -355,12 +359,20 @@ IRQHandlerNested:
 		VPOP.F64	{q8-q15}
 #endif /* __ARM_NEON == 1 */
 
-		ldmia   sp!, {r1-r3, r4, r12, lr}
-        msr     CPSR_c, #ARM_MODE_IRQ | I_BIT
+		// restore VFP/Neon FPEXC register
+		POP		{LR}
+		FMXR	FPEXC, LR
+		// restore VFP/Neon FPSCR register
+		POP		{LR}
+		FMXR	FPSCR, LR
 
-		ldmia   sp!, {r0, lr}
-		msr     SPSR_cxsf, lr
-		ldmia   sp!, {pc}^
+       POP     {LR}                    // Restore LR
+       MSR     CPSR_c, #ARM_MODE_IRQ  | I_BIT  // Disable IRQ (IRQ Mode)
+       POP     {LR}                    // Restore SPSR_irq to LR
+       MSR     SPSR_cxsf, LR           // Copy LR to SPSR_irq
+
+       POP     {R0-R12,LR}          // restore register context
+       SUBS    R15,R14,#0x0004         // return from interrupt
 		.endfunc
 
 	.bss
@@ -375,6 +387,12 @@ __stack_fiq_end = .
 __stack_irq_end = .
 	.space	STACKSIZESVC
 __stack_svc_end = .
+	.space	STACKSIZEMON
+__stack_mon_end = .
+	.space	STACKSIZEHYP
+__stack_hyp_end = .
+	.space	STACKSIZESYS
+__stack_sys_end = .
 
    .ltorg
 /*** EOF ***/   

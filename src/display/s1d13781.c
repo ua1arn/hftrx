@@ -7,8 +7,6 @@
 // Поддержка контроллера TFT панели Epson S1D13781
 //
 
-
-#include <src/gui/gui.h>
 #include "hardware.h"
 #include "board.h"
 #include "display.h"

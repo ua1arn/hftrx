@@ -201,39 +201,6 @@ static const struct stringtempl strtemplates [] =
 #endif /* CTLSTYLE_OLEG4Z_V1 */
 };
 
-static int
-toprintc(int c)
-{
-	if (c < 0x20 || c >= 0x7f)
-		return '.';
-	return c;
-}
-
-void
-static printhex(unsigned long voffs, const unsigned char * buff, unsigned length)
-{
-	unsigned i, j;
-	unsigned rows = (length + 15) / 16;
-
-	for (i = 0; i < rows; ++ i)
-	{
-		int trl = 16;
-		//const int trl = ((length - 1) - i * 16) % 16 + 1;	// количество символов в данной строке
-
-		debug_printf_P(PSTR("%08lX "), voffs + i * 16);
-		for (j = 0; j < trl; ++ j)
-			debug_printf_P(PSTR(" %02X"), buff [i * 16 + j]);
-
-		debug_printf_P(PSTR("%*s"), (16 - trl) * 3, "");
-
-		debug_printf_P(PSTR("  "));
-		for (j = 0; j < trl; ++ j)
-			debug_printf_P(PSTR("%c"), toprintc(buff [i * 16 + j]));
-
-		debug_printf_P(PSTR("\n"));
-	}
-}
-
 // usb_20.pdf:
 // 5.9 High-Speed, High Bandwidth Endpoints
 // 9.6.6 Endpoint

@@ -155,8 +155,12 @@ enum
 	#define	BOARD_AGCCODE_ON	0x00
 	#define	BOARD_AGCCODE_OFF	0x01
 
+	#define BOARD_NOTCH_OFF		0
+	#define BOARD_NOTCH_MANUAL	1
+	#define BOARD_NOTCH_AUTO	2
+	#define WITHLMSAUTONOTCH	1	/* Использование AUTONOTCH	*/
+
 	#define WITHNOTCHFREQ		1	/* NOTCH фильтр с устанавливаемой через меню или потенциометром частотой */
-	//#define WITHLMSAUTONOTCH	1	/* Использование AUTONOTCH	*/
 	#define WITHSUBTONES		1	/* выполняется формирование субтона при передаче NFM */
 	#define WITHSAM				1	/* synchronous AM demodulation */
 	#define WITHIFSHIFT			1	/* используется IF SHIFT */
@@ -211,7 +215,7 @@ enum
 	DSPCTL_OFFSET_HIGHCUTTX_HI,		// верхняя частота среза аудио фильтра
 	DSPCTL_OFFSET_HIGHCUTTX_LO,		// верхняя частота среза аудио фильтра
 
-	DSPCTL_OFFSET_NOTCH_ON,
+	DSPCTL_OFFSET_NOTCH_MODE,
 	DSPCTL_OFFSET_NOTCH_WIDTH_HI,
 	DSPCTL_OFFSET_NOTCH_WIDTH_LO,
 	DSPCTL_OFFSET_NOTCH_FREQ_HI,
@@ -3281,6 +3285,7 @@ uint_fast32_t hamradio_get_freq_b(void);		// Частота VFO B для ото�
 uint_fast32_t hamradio_get_freq_rx(void);		// Частота VFO A для маркировки файлов
 uint_fast32_t hamradio_get_modem_baudrate100(void);	// скорость передачи BPSK * 100
 uint_fast8_t hamradio_get_notchvalue(int_fast32_t * p);		// Notch filter ON/OFF
+const FLASHMEM char * hamradio_get_notchtype5_P(void);	// FREQ/ANOTCH
 uint_fast8_t hamradio_get_nrvalue(int_fast32_t * p);		// NR ON/OFF
 const FLASHMEM char * hamradio_get_mode_a_value_P(void);	// SSB/CW/AM/FM/..
 const FLASHMEM char * hamradio_get_mode_b_value_P(void);	// SSB/CW/AM/FM/..
@@ -3306,14 +3311,20 @@ int_fast16_t hamradio_getleft_bp(uint_fast8_t pathi);	/* получить лев
 int_fast16_t hamradio_getright_bp(uint_fast8_t pathi);	/* получить правый (высокочастотный) скат полосы пропускания для отображения "шторки" на спектранализаторе */
 uint_fast8_t hamradio_get_bkin_value(void);
 uint_fast8_t hamradio_get_spkon_value(void);	// не-0: динамик включен
-void hamradio_change_submode(uint_fast8_t newsubmode);
+
+uint_fast8_t hamradio_get_pre_value(void);
+void hamradio_set_pre_value(uint_fast8_t v);
+uint_fast8_t hamradio_get_att_value(void);
+void hamradio_set_att_value(uint_fast8_t v);
+const char * hamradio_get_submode_label(uint_fast8_t v);
+uint_fast8_t hamradio_get_submode(void);
+void hamradio_change_submode(uint_fast8_t newsubmode, uint_fast8_t need_correct_freq);
 uint_fast8_t hamradio_get_low_bp(int_least16_t rotate);
 uint_fast8_t hamradio_get_high_bp(int_least16_t rotate);
 uint_fast8_t hamradio_get_bp_type(void);
 void hamradio_set_agc_off(void);
 void hamradio_set_agc_slow(void);
 void hamradio_set_agc_fast(void);
-void hamradio_set_menu_cond(uint_fast8_t m);
 void hamradio_disable_keyboard_redirect(void);
 void hamradio_enable_keyboard_redirect(void);
 uint_fast8_t hamradio_set_freq (uint_fast32_t freq);
@@ -3337,6 +3348,8 @@ void hamradio_set_reverb_delay(uint_fast8_t v);
 void hamradio_set_reverb_loss(uint_fast8_t v);
 #endif /* WITHREVERB */
 
+void hamradio_set_autonotch(uint_fast8_t v);
+uint_fast8_t hamradio_get_autonotch(void);
 void hamradio_set_gmoniflag(uint_fast8_t v);
 uint_fast8_t hamradio_get_gmoniflag(void);
 uint_fast8_t hamradio_get_gmikebust20db(void);
@@ -3376,7 +3389,22 @@ uint_fast8_t hamradio_get_tx_power(void);
 void hamradio_get_tx_power_limits(uint_fast8_t * min, uint_fast8_t * max);
 #endif /* WITHTX */
 
+#if WITHSPKMUTE
+uint_fast8_t hamradio_get_gmutespkr(void);
+void hamradio_set_gmutespkr(uint_fast8_t v);
+#endif /* WITHSPKMUTE */
+
 uint_fast8_t hamradio_verify_freq_bands(uint_fast32_t freq, uint_fast32_t * bottom, uint_fast32_t * top);
+
+/* выбор внешнего вида прибора - стрелочный или градусник */
+enum {
+	SMETER_TYPE_BARS,
+	SMETER_TYPE_DIAL,
+	SMETER_TYPE_COUNT
+};
+
+uint_fast8_t hamradio_get_gsmetertype(void);
+void display2_set_smetertype(uint_fast8_t v);
 
 #ifdef __cplusplus
 }

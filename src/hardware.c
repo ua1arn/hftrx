@@ -16,7 +16,7 @@
 #include "formats.h"	// for debug prints
 #include "gpio.h"
 #include "spi.h"
-
+#include "gui/gui.h"
 
 static unsigned long ulmin(
 	unsigned long a,
@@ -945,7 +945,7 @@ void hardware_twi_master_configure(void)
 
 	//конфигурирую непосредствено І2С
 	RCC->APB1ENR |= (RCC_APB1ENR_I2C1EN); //вкл тактирование контроллера I2C
-	__DSB();
+	(void) RCC->APB1ENR;
 
 	I2C1->CR1 |= I2C_CR1_SWRST;
 	I2C1->CR1 &= ~ I2C_CR1_SWRST;
@@ -981,7 +981,7 @@ void hardware_twi_master_configure(void)
 
 	//конфигурирую непосредствено І2С
 	RCC->APB1ENR |= (RCC_APB1ENR_I2C1EN); //вкл тактирование контроллера I2C
-	__DSB();
+	(void) RCC->APB1ENR;
     // set I2C1 clock to PCLCK (72/64/36 MHz)
     RCC->CFGR3 |= RCC_CFGR3_I2C1SW;		// PCLK1_FREQ or PCLK2_FREQ (PCLK of this BUS, PCLK1) selected as I2C spi clock source
 
@@ -1012,7 +1012,7 @@ void hardware_twi_master_configure(void)
 #elif CPUSTYLE_STM32F7XX
 	//конфигурирую непосредствено І2С
 	RCC->APB1ENR |= (RCC_APB1ENR_I2C1EN); //вкл тактирование контроллера I2C
-	__DSB();
+	(void) RCC->APB1ENR;
 
 	// Disable the I2Cx peripheral
 	I2C1->CR1 &= ~ I2C_CR1_PE;
@@ -1046,7 +1046,7 @@ void hardware_twi_master_configure(void)
 #elif CPUSTYLE_STM32H7XX
 	//конфигурирую непосредствено І2С
 	RCC->APB1LENR |= (RCC_APB1LENR_I2C1EN); //вкл тактирование контроллера I2C
-	__DSB();
+	(void) RCC->APB1LENR;
 
 	// Disable the I2Cx peripheral
 	I2C1->CR1 &= ~ I2C_CR1_PE;
@@ -1099,6 +1099,9 @@ static RAMFUNC void spool_elkeybundle(void)
 #elif WITHELKEY
 	elkey_spool_dots();		// вызывается с периодом 1/ELKEY_DISCRETE от длительности точки
 #endif /* WITHOPERA4BEACON */
+#if WITHENCODER2 && defined (ENCODER2_BITS)
+	spool_encinterrupt2();	/* прерывание по изменению сигнала на входах от валкодера #2*/
+#endif /* WITHENCODER2 && ENCODER2_BITS */
 }
 
 /* 
@@ -1239,7 +1242,7 @@ static RAMFUNC void stm32fxxx_pinirq(portholder_t pr)
 		spool_encinterrupt();	/* прерывание по изменению сигнала на входах от валкодера #1*/
 	}
 #endif /* WITHENCODER && defined (ENCODER_BITS) */
-#if WITHENCODER && defined (ENCODER2_BITS)
+#if WITHENCODER2 && defined (ENCODER2_BITS)
 	if ((pr & ENCODER2_BITS) != 0)
 	{
 		//spool_encinterrupt2();	/* прерывание по изменению сигнала на входах от валкодера #2*/
@@ -3506,11 +3509,6 @@ hardware_adc_startonescan(void)
 		uint_fast32_t freq
 		)
 	{
-#if CPUSTYLE_R7S721
-
-		return calcdivround_p0clock(760000uL * 2);	// на выходе формирователя делитель на 2 - требуемую частоту умножаем на два
-
-#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 		struct FREQ 
 		{
 			uint32_t dcdcdiv;
@@ -3518,24 +3516,32 @@ hardware_adc_startonescan(void)
 			uint32_t fmax;
 		};
 
+#if CPUSTYLE_R7S721
+
+		return calcdivround_p0clock(760000uL * 2);	// на выходе формирователя делитель на 2 - требуемую частоту умножаем на два
+
+#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
+
 	#if CPUSTYLE_STM32H7XX
 		// пока для проверки работоспособности. Таблицу надо расчитать.
 		static const FLASHMEM struct FREQ freqs [] = {
-		  { 63, 6900000uL,  UINT32_MAX },
+		  { 63, 26900000uL,  UINT32_MAX },
+		  { 63, 6900000uL,  26900000uL },
 		  { 62, 0,		6900000uL },	
 		};
 	#elif CPUSTYLE_STM32MP1
 		// пока для проверки работоспособности. Таблицу надо расчитать.
 		// сейчас делит 32 MHz
 		static const FLASHMEM struct FREQ freqs [] = {
-		  { 29, 6900000uL,  UINT32_MAX },
+		  { 29, 26900000uL,  UINT32_MAX },
+		  { 29, 6900000uL,  26900000uL },
 		  { 29, 0,		6900000uL },
 		};
 	#endif
 
 		uint_fast8_t high = (sizeof freqs / sizeof freqs [0]);
 		uint_fast8_t low = 0;
-		uint_fast8_t middle;	// результат поиска
+		uint_fast8_t middle = 0;	// результат поиска
 
 		// Двоичный поиск
 		while (low < high)
@@ -4105,15 +4111,16 @@ static void DMA2_SPI1_RX_initialize(void)
 		// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
 		// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
 		enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
-		DMAMUX1_Channel8->CCR = 37 * DMAMUX_CxCR_DMAREQ_ID_0;	// SPI1_RX
 		DMA2_Stream0->PAR = (uintptr_t) & SPI1->RXDR;
 	#else /* CPUSTYLE_STM32H7XX */
 		const uint_fast8_t ch = 3;
 		DMA2_Stream0->PAR = (uintptr_t) & SPI1->DR;
 	#endif /* CPUSTYLE_STM32H7XX */
 
-	DMA2_Stream0->FCR &= ~ DMA_SxFCR_DMDIS;	// use Direct mode
+	DMA2_Stream0->FCR &= ~ (DMA_SxFCR_FEIE_Msk | DMA_SxFCR_DMDIS_Msk);	// use Direct mode
 	//DMA2_Stream0->FCR |= DMA_SxFCR_DMDIS;	// Direct mode disabled
+	(void) DMA2_Stream0->FCR;
+
 	DMA2_Stream0->CR =
 		(ch * DMA_SxCR_CHSEL_0) |	// канал
 		(3 * DMA_SxCR_MBURST_0) |	// INCR16 (incremental burst of 16 beats) - ignored in Direct mode
@@ -4127,6 +4134,16 @@ static void DMA2_SPI1_RX_initialize(void)
 		(0 * DMA_SxCR_CT) |			// M0AR selected
 		//(1 * DMA_SxCR_DBM) |		// double buffer mode seelcted
 		0;
+	(void) DMA2_Stream0->CR;
+
+#if CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7XX
+	// DMAMUX init
+	// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
+	// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
+	DMAMUX1_Channel8->CCR = 37 * DMAMUX_CxCR_DMAREQ_ID_0;	// SPI1_RX
+	(void) DMAMUX1_Channel8->CCR;
+#endif /* CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7XX */
+
 }
 
 // Инициализация DMA для передачи SPI1
@@ -4142,7 +4159,6 @@ static void DMA2_SPI1_TX_initialize(void)
 		// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
 		// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
 		enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
-		DMAMUX1_Channel11->CCR = 38 * DMAMUX_CxCR_DMAREQ_ID_0;	// SPI1_TX
 		DMA2_Stream3->PAR = (uintptr_t) & SPI1->TXDR;
 	#else /* CPUSTYLE_STM32H7XX */
 		const uint_fast8_t ch = 3;
@@ -4150,8 +4166,10 @@ static void DMA2_SPI1_TX_initialize(void)
 	#endif /* CPUSTYLE_STM32H7XX */
 
 
-	DMA2_Stream3->FCR &= ~ DMA_SxFCR_DMDIS;	// use direct mode
+	DMA2_Stream3->FCR &= ~ (DMA_SxFCR_FEIE_Msk | DMA_SxFCR_DMDIS_Msk);	// use direct mode
 	//DMA2_Stream3->FCR |= DMA_SxFCR_DMDIS;	// Direct mode disabled
+	(void) DMA2_Stream3->FCR;
+
 	DMA2_Stream3->CR =
 		(ch * DMA_SxCR_CHSEL_0) |	// канал
 		(3 * DMA_SxCR_MBURST_0) |	// INCR16 (incremental burst of 16 beats) - ignored in Direct mode
@@ -4165,6 +4183,16 @@ static void DMA2_SPI1_TX_initialize(void)
 		(0 * DMA_SxCR_CT) |			// M0AR selected
 		//(1 * DMA_SxCR_DBM) |		// double buffer mode seelcted
 		0;
+	(void) DMA2_Stream3->CR;
+
+#if CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7XX
+	// DMAMUX init
+	// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
+	// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
+	DMAMUX1_Channel11->CCR = 38 * DMAMUX_CxCR_DMAREQ_ID_0;	// SPI1_TX
+	(void) DMAMUX1_Channel11->CCR;
+#endif /* CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7XX */
+
 }
 
 #if 1
@@ -4173,7 +4201,7 @@ static void DMA2_waitTC(
 	uint_fast8_t i		// 0..7 - номер Stream
 	)
 {
-	uint_fast8_t mask = 1UL <<((i & 0x01) * 6);
+	uint_fast8_t mask = 1UL << ((i & 0x01) * 6);
 	if (i >= 4)
 	{
 		if (i >= 6)
@@ -7111,41 +7139,45 @@ void hardware_sdhost_initialize(void)
 void RAMFUNC_NONILINE local_delay_us(int timeUS)
 {
 	#if CPUSTYLE_AT91SAM7S
-		const int top = timeUS * 175 / (CPU_FREQ / 1000000);
+		const unsigned long top = timeUS * 175uL / (CPU_FREQ / 1000000);
 	#elif CPUSTYLE_ATSAM3S
-		const int top = timeUS * 270 / (CPU_FREQ / 1000000);
+		const unsigned long top = timeUS * 270uL / (CPU_FREQ / 1000000);
 	#elif CPUSTYLE_ATSAM4S
-		const int top = timeUS * 270 / (CPU_FREQ / 1000000);
+		const unsigned long top = timeUS * 270uL / (CPU_FREQ / 1000000);
 	#elif CPUSTYLE_STM32F0XX
-		const int top = timeUS * 190 / (CPU_FREQ / 1000000);
+		const unsigned long top = timeUS * 190uL / (CPU_FREQ / 1000000);
 	#elif CPUSTYLE_STM32L0XX
-		const int top = timeUS * 20 / (CPU_FREQ / 1000000);
+		const unsigned long top = timeUS * 20uL / (CPU_FREQ / 1000000);
 	#elif CPUSTYLE_STM32F1XX
-		const int top = timeUS * 345 / (CPU_FREQ / 1000000);
+		const unsigned long top = timeUS * 345uL / (CPU_FREQ / 1000000);
 	#elif CPUSTYLE_STM32F30X
-		const int top = timeUS * 430 / (CPU_FREQ / 1000000);
+		const unsigned long top = timeUS * 430uL / (CPU_FREQ / 1000000);
 	#elif CPUSTYLE_STM32F4XX
-		const int top = timeUS * 3800 / (CPU_FREQ / 1000000);
+		const unsigned long top = timeUS * 3800uL / (CPU_FREQ / 1000000);
 	#elif CPUSTYLE_STM32F7XX
-		const int top = timeUS * 6150 / (CPU_FREQ / 1000000);
+		const unsigned long top = timeUS * 6150uL / (CPU_FREQ / 1000000);
 	#elif CPUSTYLE_STM32H7XX
-		const int top = timeUS * 11000 / (CPU_FREQ / 1000000);
+		const unsigned long top = timeUS * 11000uL / (CPU_FREQ / 1000000);
 	#elif CPUSTYLE_R7S721
-		const int top = timeUS * 13800 / (CPU_FREQ / 1000000);
+		const unsigned long top = timeUS * 13800uL / (CPU_FREQ / 1000000);
+	#elif CPUSTYLE_STM32MP1 && CPU_FREQ <= 650000000uL
+		// калибровано для 650 МГц процессора
+		const unsigned long top = timeUS * 52500uL / (CPU_FREQ / 1000000);
 	#elif CPUSTYLE_STM32MP1
-		const int top = timeUS * 52500 / (CPU_FREQ / 1000000);
+		// калибровано для 800 МГц процессора
+		const unsigned long top = timeUS * 72500uL / (CPU_FREQ / 1000000);
 	#elif CPUSTYPE_TMS320F2833X && 1 // RAM code
-		const unsigned long top = timeUS * 760UL / (CPU_FREQ / 1000000);	// tested @ 100 MHz Execute from RAM
+		const unsigned long top = timeUS * 760uL / (CPU_FREQ / 1000000);	// tested @ 100 MHz Execute from RAM
 		//const unsigned long top = timeUS * 1600UL / (CPU_FREQ / 1000000);	// tested @ 150 MHz Execute from RAM
 	#elif CPUSTYPE_TMS320F2833X	&& 0	// FLASH code
-		const unsigned long top = timeUS * 480UL / (CPU_FREQ / 1000000);	// Execute from RAM
+		const unsigned long top = timeUS * 480uL / (CPU_FREQ / 1000000);	// Execute from RAM
 
 	#else
 		#error TODO: calibrate local_delay_us constant
-		const int top = timeUS * 175 / (CPU_FREQ / 1000000);
+		const unsigned long top = timeUS * 175uL / (CPU_FREQ / 1000000);
 	#endif
 	//
-	volatile int n;
+	volatile unsigned long n;
 	for (n = 0; n < top; ++ n)
 	{
 	}
@@ -9409,14 +9441,14 @@ lowlevel_stm32l0xx_pll_clock(void)
 
 void Undef_Handler(void)
 {
-	debug_printf_P(PSTR("UndefHandler trapped.\n"));
+	dbg_puts_impl_P(PSTR("UndefHandler trapped.\n"));
 	for (;;)
 		;
 }
 
 void SWI_Handler(void)
 {
-	debug_printf_P(PSTR("SWIHandler trapped.\n"));
+	dbg_puts_impl_P(PSTR("SWIHandler trapped.\n"));
 	for (;;)
 		;
 }
@@ -9424,16 +9456,33 @@ void SWI_Handler(void)
 // Prefetch Abort
 void PAbort_Handler(void)
 {
-	debug_printf_P(PSTR("PAbortHandler trapped.\n"));
+	dbg_puts_impl_P(PSTR("PAbortHandler trapped.\n"));
 	for (;;)
 		;
+}
+
+	//	MRC p15, 0, <Rt>, c6, c0, 0 ; Read DFAR into Rt
+	//	MCR p15, 0, <Rt>, c6, c0, 0 ; Write Rt to DFAR
+
+/** \brief  Get DFAR
+    \return               Data Fault Address register value
+ */
+__STATIC_FORCEINLINE uint32_t __get_DFAR(void)
+{
+  uint32_t result;
+  __get_CP(15, 0, result, 6, 0, 0);
+  return result;
 }
 
 // Data Abort.
 void DAbort_Handler(void)
 {
-	debug_printf_P(PSTR("DAbort_Handler trapped.\n"));
-	debug_printf_P(PSTR("DFSR=%08lX\n"), __get_DFSR());
+	const volatile uint32_t marker = 0xDEADBEEF;
+	dbg_puts_impl_P(PSTR("DAbort_Handler trapped.\n"));
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Warray-bounds"
+	debug_printf_P(PSTR("DFSR=%08lX, DFAR=%08lX, pc=%08lX\n"), __get_DFSR(),__get_DFAR(), (& marker) [2]);
+#pragma GCC diagnostic pop
 	const int WnR = (__get_DFSR() & (1uL << 11)) != 0;
 	const int Status = (__get_DFSR() & (0x0FuL << 0));
 	/*
@@ -9473,20 +9522,25 @@ void DAbort_Handler(void)
 	case 0x02: debug_printf_P(PSTR("debug event.\n")); break;
 	default: debug_printf_P(PSTR("undefined Status=%02X\n"), Status); break;
 	}
+//	unsigned i;
+//	for (i = 0; i < 8; ++ i)
+//	{
+//		PRINTF("marker [%2d] = %08lX\n", i, (& marker) [i]);
+//	}
 	for (;;)
 		;
 }
 
 void FIQ_Handler(void)
 {
-	debug_printf_P(PSTR("FIQHandler trapped.\n"));
+	dbg_puts_impl_P(PSTR("FIQHandler trapped.\n"));
 	for (;;)
 		;
 }
 
 void Hyp_Handler(void)
 {
-	debug_printf_P(PSTR("Hyp_Handler trapped.\n"));
+	dbg_puts_impl_P(PSTR("Hyp_Handler trapped.\n"));
 	for (;;)
 		;
 }
@@ -9520,18 +9574,18 @@ static void vfp_access_enable(void)
 // Сейчас в эту память будем читать по DMA
 // Убрать копию этой области из кэша
 // Используется только в startup
-void arm_hardware_invalidate(uintptr_t base, size_t size)
+void arm_hardware_invalidate(uintptr_t base, int_fast32_t dsize)
 {
 	//ASSERT((base % 32) == 0);		// при работе с BACKUP SRAM невыровненно
-	SCB_InvalidateDCache_by_Addr((void *) base, size);	// DCIMVAC register used.
+	SCB_InvalidateDCache_by_Addr((void *) base, dsize);	// DCIMVAC register used.
 }
 
 // Сейчас эта память будет записываться по DMA куда-то
 // Записать содержимое кэша данных в память
-void arm_hardware_flush(uintptr_t base, size_t size)
+void arm_hardware_flush(uintptr_t base, int_fast32_t dsize)
 {
 	//ASSERT((base % 32) == 0);		// при работе с BACKUP SRAM невыровненно
-	SCB_CleanDCache_by_Addr((void *) base, size);	// DCCMVAC register used.
+	SCB_CleanDCache_by_Addr((void *) base, dsize);	// DCCMVAC register used.
 }
 
 // Записать содержимое кэша данных в память
@@ -9544,32 +9598,13 @@ void arm_hardware_flush_all(void)
 // Сейчас эта память будет записываться по DMA куда-то. Потом содержимое не требуется
 // Записать содержимое кэша данных в память
 // Убрать копию этой области из кэша
-void arm_hardware_flush_invalidate(uintptr_t base, size_t size)
+void arm_hardware_flush_invalidate(uintptr_t base, int_fast32_t dsize)
 {
 	//ASSERT((base % 32) == 0);		// при работе с BACKUP SRAM невыровненно
-	SCB_CleanInvalidateDCache_by_Addr((void *) base, size);	// DCCIMVAC register used.
+	SCB_CleanInvalidateDCache_by_Addr((void *) base, dsize);	// DCCIMVAC register used.
 }
 
 #elif (__CORTEX_A != 0)
-
-#define MK_MVA(addr) ((uintptr_t) (addr) & ~ (uintptr_t) (DCACHEROWSIZE - 1))
-
-// Сейчас в эту память будем читать по DMA
-// Используется только в startup
-void arm_hardware_invalidate(uintptr_t base, size_t size)
-{
-	unsigned long len = (size + (DCACHEROWSIZE - 1)) / DCACHEROWSIZE + (((unsigned long) base & (DCACHEROWSIZE - 1)) != 0);
-	while (len --)
-	{
-		uintptr_t mva = MK_MVA(base);
-		L1C_InvalidateDCacheMVA((void *) mva);	// очистить кэш
-	#if (__L2C_PRESENT == 1)
-		// Clean cache by physical address
-		L2C_InvPa((void *) mva);
-	#endif
-		base += DCACHEROWSIZE;
-	}
-}
 
 /* считать конфигурационные параметры data cache */
 static void ca9_ca7_cache_diag(void)
@@ -9603,18 +9638,6 @@ static void ca9_ca7_cache_diag(void)
 	}
 }
 
-// используется в startup
-static void 
-arm_hardware_invalidate_all(void)
-{
-	L1C_InvalidateDCacheAll();
-	L1C_InvalidateICacheAll();
-	L1C_InvalidateBTAC();
-#if (__L2C_PRESENT == 1)
-	L2C_InvAllByWay();
-#endif
-}
-
 // Записать содержимое кэша данных в память
 // применяетмся после начальной инициализации среды выполнния
 void arm_hardware_flush_all(void)
@@ -9625,37 +9648,98 @@ void arm_hardware_flush_all(void)
 #endif
 }
 
-// Сейчас эта память будет записываться по DMA куда-то
-void arm_hardware_flush(uintptr_t base, size_t size)
+#define MK_MVA(addr) ((uintptr_t) (addr) & ~ (uintptr_t) (DCACHEROWSIZE - 1))
+
+// Сейчас в эту память будем читать по DMA
+// Используется только в startup
+void arm_hardware_invalidate(uintptr_t addr, int_fast32_t dsize)
 {
-	unsigned long len = (size + (DCACHEROWSIZE - 1)) / DCACHEROWSIZE + (((unsigned long) base & (DCACHEROWSIZE - 1)) != 0);
-	while (len --)
+	ASSERT((addr % DCACHEROWSIZE) == 0);
+	ASSERT((dsize % DCACHEROWSIZE) == 0);
+
+	if (dsize > 0)
 	{
-		uintptr_t mva = MK_MVA(base);
-		L1C_CleanDCacheMVA((void *) mva);		// записать буфер, кэш продолжает хранить
-	#if (__L2C_PRESENT == 1)
-		// предполагается, что размер строки L2 и L2 cache равны
-		// Clean cache by physical address
-		L2C_CleanPa((void *) mva);
-	#endif
-		base += DCACHEROWSIZE;
+		int32_t op_size = dsize + (((uint32_t) addr) & (DCACHEROWSIZE - 1U));
+		uint32_t op_addr = (uint32_t) addr /* & ~(DCACHEROWSIZE - 1U) */;
+
+		__DSB();
+
+		do
+		{
+			const uintptr_t mva = MK_MVA(op_addr);	/* register accepts only 32byte aligned values, only bits 31..5 are valid */
+			L1C_InvalidateDCacheMVA((void *) mva);	// очистить кэш
+		#if (__L2C_PRESENT == 1)
+			// Clean cache by physical address
+			L2C_InvPa((void *) mva);
+		#endif
+			op_addr += DCACHEROWSIZE;
+			op_size -= DCACHEROWSIZE;
+		} while (op_size > 0);
+
+		__DSB();
+		__ISB();
+	}
+}
+
+// Сейчас эта память будет записываться по DMA куда-то
+void arm_hardware_flush(uintptr_t addr, int_fast32_t dsize)
+{
+	//ASSERT((addr % DCACHEROWSIZE) == 0);
+	//ASSERT((dsize % DCACHEROWSIZE) == 0);
+
+	if (dsize > 0)
+	{
+		int32_t op_size = dsize + (((uint32_t) addr) & (DCACHEROWSIZE - 1U));
+		uint32_t op_addr = (uint32_t) addr /* & ~(DCACHEROWSIZE - 1U) */;
+
+		__DSB();
+
+		do
+		{
+			const uintptr_t mva = MK_MVA(op_addr);	/* register accepts only 32byte aligned values, only bits 31..5 are valid */
+			L1C_CleanDCacheMVA((void *) mva);		// записать буфер, кэш продолжает хранить
+		#if (__L2C_PRESENT == 1)
+			// предполагается, что размер строки L2 и L2 cache равны
+			// Clean cache by physical address
+			L2C_CleanPa((void *) mva);
+		#endif
+			op_addr += DCACHEROWSIZE;
+			op_size -= DCACHEROWSIZE;
+		} while (op_size > 0);
+
+		__DSB();
+		__ISB();
 	}
 }
 
 // Сейчас эта память будет записываться по DMA куда-то. Потом содержимое не требуется
-void arm_hardware_flush_invalidate(uintptr_t base, size_t size)
+void arm_hardware_flush_invalidate(uintptr_t addr, int_fast32_t dsize)
 {
-	unsigned long len = (size + (DCACHEROWSIZE - 1)) / DCACHEROWSIZE + (((unsigned long) base & (DCACHEROWSIZE - 1)) != 0);
-	while (len --)
+	ASSERT((addr % DCACHEROWSIZE) == 0);
+	//ASSERT((dsize % DCACHEROWSIZE) == 0);
+
+	if (dsize > 0)
 	{
-		uintptr_t mva = MK_MVA(base);
-		L1C_CleanInvalidateDCacheMVA((void *) mva);	// записать буфер, очистить кэш
-	#if (__L2C_PRESENT == 1)
-		// предполагается, что размер строки L2 и L2 cache равны
-		// Clean cache by physical address
-		L2C_CleanInvPa((void *) mva);
-	#endif
-		base += DCACHEROWSIZE;
+		int32_t op_size = dsize + (((uint32_t) addr) & (DCACHEROWSIZE - 1U));
+		uint32_t op_addr = (uint32_t) addr /* & ~(DCACHEROWSIZE - 1U) */;
+
+		__DSB();
+
+		do
+		{
+			const uintptr_t mva = MK_MVA(op_addr);	/* register accepts only 32byte aligned values, only bits 31..5 are valid */
+			L1C_CleanInvalidateDCacheMVA((void *) mva);	// записать буфер, очистить кэш
+		#if (__L2C_PRESENT == 1)
+			// предполагается, что размер строки L2 и L2 cache равны
+			// Clean cache by physical address
+			L2C_CleanInvPa((void *) mva);
+		#endif
+			op_addr += DCACHEROWSIZE;
+			op_size -= DCACHEROWSIZE;
+		} while (op_size > 0);
+
+		__DSB();
+		__ISB();
 	}
 }
 
@@ -9664,12 +9748,12 @@ void arm_hardware_flush_invalidate(uintptr_t base, size_t size)
 // Заглушки
 // Сейчас в эту память будем читать по DMA
 // Используется только в startup
-void arm_hardware_invalidate(uintptr_t base, size_t size)
+void arm_hardware_invalidate(uintptr_t base, int_fast32_t dsize)
 {
 }
 
 // Сейчас эта память будет записываться по DMA куда-то
-void arm_hardware_flush(uintptr_t base, size_t size)
+void arm_hardware_flush(uintptr_t base, int_fast32_t dsize)
 {
 }
 
@@ -9680,7 +9764,7 @@ void arm_hardware_flush_all(void)
 }
 
 // Сейчас эта память будет записываться по DMA куда-то. Потом содержимое не требуется
-void arm_hardware_flush_invalidate(uintptr_t base, size_t size)
+void arm_hardware_flush_invalidate(uintptr_t base, int_fast32_t dsize)
 {
 }
 
@@ -9726,7 +9810,26 @@ void stm32mp1_pll_initialize(void)
 	// переключение на HSI на всякий случай перед программированием PLL
 	// HSI ON
 	RCC->OCENSETR = RCC_OCENSETR_HSION;
+	(void) RCC->OCENSETR;
 	while ((RCC->OCRDYR & RCC_OCRDYR_HSIRDY) == 0)
+		;
+
+	// Wait for HSI ready
+	while ((RCC->OCRDYR & RCC_OCRDYR_HSIRDY_Msk) == 0)
+		;
+
+	// HSIDIV
+	//	0x0: Division by 1, hsi_ck (hsi_ker_ck) = 64 MHz (default after reset)
+	//	0x1: Division by 2, hsi_ck (hsi_ker_ck) = 32 MHz
+	//	0x2: Division by 4, hsi_ck (hsi_ker_ck) = 16 MHz
+	//	0x3: Division by 8, hsi_ck (hsi_ker_ck) = 8 MHz
+	RCC->HSICFGR = (RCC->HSICFGR & ! (RCC_HSICFGR_HSIDIV_Msk)) |
+		(0uL << RCC_HSICFGR_HSIDIV_Pos) |
+		0;
+	(void) RCC->HSICFGR;
+
+	// Wait for HSI DIVIDER ready
+	while ((RCC->OCRDYR & RCC_OCRDYR_HSIDIVRDY_Msk) == 0)
 		;
 
 	//0x0: HSI selected as AXI sub-system clock (hsi_ck) (default after reset)
@@ -9826,12 +9929,14 @@ void stm32mp1_pll_initialize(void)
 		((PLL1DIVM - 1) << RCC_PLL1CFGR1_DIVM1_Pos) |
 		((PLL1DIVN - 1) << RCC_PLL1CFGR1_DIVN_Pos) |
 		0;
+	(void) RCC->PLL1CFGR1;
 
 	RCC->PLL1CFGR2 = (RCC->PLL1CFGR2 & ~ (RCC_PLL1CFGR2_DIVP_Msk | RCC_PLL1CFGR2_DIVQ_Msk | RCC_PLL1CFGR2_DIVR_Msk)) |
 		((PLL1DIVP - 1) << RCC_PLL1CFGR2_DIVP_Pos) |
 		((PLL1DIVQ - 1) << RCC_PLL1CFGR2_DIVQ_Pos) |
 		((PLL1DIVR - 1) << RCC_PLL1CFGR2_DIVR_Pos) |
 		0;
+	(void) RCC->PLL1CFGR2;
 
 	RCC->PLL1CR |= RCC_PLL1CR_PLLON_Msk;
 	while ((RCC->PLL1CR & RCC_PLL1CR_PLL1RDY_Msk) == 0)
@@ -9851,12 +9956,14 @@ void stm32mp1_pll_initialize(void)
 		((PLL2DIVN - 1) << RCC_PLL2CFGR1_DIVN_Pos) |
 		((PLL2DIVM - 1) << RCC_PLL2CFGR1_DIVM2_Pos) |
 		0;
+	(void) RCC->PLL2CFGR1;
 
 	RCC->PLL2CFGR2 = (RCC->PLL2CFGR2 & ~ (RCC_PLL2CFGR2_DIVP_Msk | RCC_PLL2CFGR2_DIVQ_Msk | RCC_PLL2CFGR2_DIVR_Msk)) |
 		((PLL2DIVP - 1) << RCC_PLL2CFGR2_DIVP_Pos) |	// pll2_p_ck - AXI clock (1..128 -> 0x00..0x7f)
 		((PLL2DIVQ - 1) << RCC_PLL2CFGR2_DIVQ_Pos) |	// GPU clock (1..128 -> 0x00..0x7f)
 		((PLL2DIVR - 1) << RCC_PLL2CFGR2_DIVR_Pos) |	// DDR clock (1..128 -> 0x00..0x7f)
 		0;
+	(void) RCC->PLL2CFGR2;
 
 	RCC->PLL2CR |= RCC_PLL2CR_PLLON_Msk;
 	while ((RCC->PLL2CR & RCC_PLL2CR_PLL2RDY_Msk) == 0)
@@ -9877,6 +9984,10 @@ void stm32mp1_pll_initialize(void)
 	(void) RCC->PLL2CR;
 
 	// AXI, AHB5 and AHB6 clock divider
+	//	0x0: axiss_ck (default after reset)
+	//	0x1: axiss_ck / 2
+	//	0x2: axiss_ck / 3
+	//	others: axiss_ck / 4
 	RCC->AXIDIVR = (RCC->AXIDIVR & ~ (RCC_AXIDIVR_AXIDIV_Msk)) |
 		((0x01 - 1) << RCC_AXIDIVR_AXIDIV_Pos) |	// div1 (no divide)
 		0;
@@ -9936,12 +10047,13 @@ void stm32mp1_pll_initialize(void)
 	while((RCC->APB5DIVR & RCC_APB5DIVR_APB5DIVRDY_Msk) == 0)
 		;
 
+	// Значения 0x02 и 0x03 проверены - 0x03 действительно ниже тактовая
 	//	0x0: HSI selected as MPU sub-system clock (hsi_ck) (default after reset)
 	//	0x1: HSE selected as MPU sub-system clock (hse_ck)
 	//	0x2: PLL1 selected as MPU sub-system clock (pll1_p_ck)
 	//	0x3: PLL1 via MPUDIV is selected as MPU sub-system clock (pll1_p_ck / 2 MPUDIV).
 	RCC->MPCKSELR = (RCC->MPCKSELR & ~ (RCC_MPCKSELR_MPUSRC_Msk)) |
-		(0x02 << RCC_MPCKSELR_MPUSRC_Pos) |	// PLL1
+		(0x02uL << RCC_MPCKSELR_MPUSRC_Pos) |	// PLL1
 		0;
 	while((RCC->MPCKSELR & RCC_MPCKSELR_MPUSRCRDY_Msk) == 0)
 		;
@@ -10089,6 +10201,7 @@ void stm32mp1_pll_initialize(void)
 		((PLL4DIVN - 1) << RCC_PLL4CFGR1_DIVN_Pos) |
 		((PLL4DIVM - 1) << RCC_PLL4CFGR1_DIVM4_Pos) |
 		0;
+	(void) RCC->PLL4CFGR1;
 
 	//const uint32_t pll4divq = calcdivround2(PLL4_FREQ, display_getdotclock());
 	RCC->PLL4CFGR2 = (RCC->PLL4CFGR2 & ~ (RCC_PLL4CFGR2_DIVP_Msk | /* RCC_PLL4CFGR2_DIVQ_Msk | */ RCC_PLL4CFGR2_DIVR_Msk)) |
@@ -10096,6 +10209,7 @@ void stm32mp1_pll_initialize(void)
 		//((pll4divq - 1) << RCC_PLL4CFGR2_DIVQ_Pos) |	// LTDC clock (1..128 -> 0x00..0x7f)
 		((PLL4DIVR - 1) << RCC_PLL4CFGR2_DIVR_Pos) |	// USBPHY clock (1..128 -> 0x00..0x7f)
 		0;
+	(void) RCC->PLL4CFGR2;
 
 	RCC->PLL4CR |= RCC_PLL4CR_PLLON_Msk;
 	while ((RCC->PLL4CR & RCC_PLL4CR_PLL4RDY_Msk) == 0)
@@ -10162,6 +10276,56 @@ void hardware_set_dotclock(unsigned long dotfreq)
 
 #endif /* CPUSTYLE_STM32MP1 */
 
+#if 0
+
+typedef struct irqlog_tag
+{
+	IRQn_ID_t irqn;
+	int pos;	// in/out
+} irqlog_t;
+enum { IRQLOG_LEN = 1024 };
+
+static volatile unsigned irqlog_enabled;
+static volatile unsigned irqlog_count;
+static irqlog_t irqlogs [IRQLOG_LEN];
+
+void irqlog_start(void)
+{
+	irqlog_enabled = 0;
+	irqlog_count = 0;
+	irqlog_enabled = 1;
+}
+
+void irqlog_stop(void)
+{
+	irqlog_enabled = 0;
+}
+
+void irqlog_record(int pos, IRQn_ID_t irqn)
+{
+	if (irqlog_enabled == 0)
+		return;
+
+	if (irqlog_count >= IRQLOG_LEN)
+		return;
+
+	irqlog_t * const p = & irqlogs [irqlog_count ++];
+	p->pos = pos;
+	p->irqn = irqn;
+}
+
+void irqlog_print(void)
+{
+	PRINTF("irqlog_count=%u\n", irqlog_count);
+	unsigned i;
+	for (i = 0; i < irqlog_count; ++ i)
+	{
+		const irqlog_t * const p = & irqlogs [i];
+		PRINTF(" pos=%d, IRQ=%3u (0x%03X)\n", (int) p->pos, (unsigned) p->irqn, (unsigned) p->irqn);
+	}
+}
+#endif
+
 #if (__CORTEX_A != 0)
 
 #include "hardware.h"
@@ -10185,16 +10349,13 @@ void IRQ_Handler(void)
 {
 	//dbg_putchar('/');
 	const IRQn_ID_t irqn = IRQ_GetActiveIRQ();
-	static const char hex [16] = "0123456789ABCDEF";
+	//irqlog_record(1, irqn);
+	//static const char hex [16] = "0123456789ABCDEF";
 	//dbg_putchar(hex [(irqn >> 8) & 0x0F]);
 	//dbg_putchar(hex [(irqn >> 4) & 0x0F]);
 	//dbg_putchar(hex [(irqn >> 0) & 0x0F]);
+	ASSERT(irqn != 0x3FC && irqn != 0x3FD);
 	IRQHandler_t const handler = IRQ_GetHandler(irqn);
-	// See R01UH0437EJ0200 Rev.2.00 7.8.3 Reading Interrupt ID Values from Interrupt Acknowledge Register (ICCIAR)
-	// IHI0048B_b_gic_architecture_specification.pdf
-	// See ARM IHI 0048B.b 3.4.2 Special interrupt numbers when a GIC supports interrupt grouping
-
-	//IRQ_SetPriority(0, IRQ_GetPriority(0));
 
 #if 0
 	switch (irqn)
@@ -10220,6 +10381,7 @@ void IRQ_Handler(void)
 
 #endif /* WITHNESTEDINTERRUPTS */
 	}
+	//irqlog_record(2, irqn);
 	//dbg_putchar('\\');
 	IRQ_EndOfInterrupt(irqn);
 }
@@ -11130,7 +11292,7 @@ static void r7s721_intc_initializeOld(void)
 
 #endif
 
-uint8_t __attribute__ ((section(".stack"), used, aligned(32))) mystack [1024];
+uint8_t __attribute__ ((section(".stack"), used, aligned(64))) mystack [2048];
 /******************************************************************************/
 
 // TTB initialize
@@ -11206,7 +11368,15 @@ M_SIZE_IO_2     EQU     2550            ; [Area11] I/O area 2
 ;===================================================================
 
   */
-#define APval 		0x03	/* Configure for full read/write access in all modes */
+
+// Short-descriptor format memory region attributes, without TEX remap
+// When using the Short-descriptor translation table formats, TEX remap is disabled when SCTLR.TRE is set to 0.
+
+// For TRE - see
+// B4.1.127 PRRR, Primary Region Remap Register, VMSA
+
+#define APRWval 		0x03	/* Full access */
+#define APROval 		0x06	/* All write accesses generate Permission faults */
 #define DOMAINval	0x0F
 #define SECTIONval	0x02
 
@@ -11250,26 +11420,26 @@ M_SIZE_IO_2     EQU     2550            ; [Area11] I/O area 2
 //; setting for Strongly-ordered memory
 //#define	TTB_PARA_STRGLY             0b_0000_0000_1101_1110_0010
 // not used
-#define	TTB_PARA_STRGLY TTB_PARA(TEXval_STGORD, Bval_STGORD, Cval_STGORD, DOMAINval, APval, 1)
+#define	TTB_PARA_STRGLY TTB_PARA(TEXval_STGORD, Bval_STGORD, Cval_STGORD, DOMAINval, APRWval, 1)
 
 
 //; setting for Outer and inner not cache normal memory
 //#define	TTB_PARA_NORMAL_NOT_CACHE   0b_0000_0001_1101_1110_0010
 // not used
-#define	TTB_PARA_NORMAL_NOT_CACHE TTB_PARA(TEXval_NOCACHE, Bval_NOCACHE, Cval_NOCACHE, DOMAINval, APval, 0)
+#define	TTB_PARA_NORMAL_NOT_CACHE TTB_PARA(TEXval_NOCACHE, Bval_NOCACHE, Cval_NOCACHE, DOMAINval, APRWval, 0)
 
 //; setting for Outer and inner write back, write allocate normal memory (Cacheable)
 //#define	TTB_PARA_NORMAL_CACHE       0b_0000_0001_1101_1110_1110
-#define	TTB_PARA_NORMAL_CACHE TTB_PARA(TEXval_WBCACHE, Bval_WBCACHE, Cval_WBCACHE, DOMAINval, APval, 0)
+#define	TTB_PARA_NORMAL_CACHE(ro) TTB_PARA(TEXval_WBCACHE, Bval_WBCACHE, Cval_WBCACHE, DOMAINval, (ro) ? APROval : APRWval, 0)
 
-#define	TTB_PARA_NORMAL_DEVICE TTB_PARA(TEXval_DEVICE, Bval_DEVICE, Cval_DEVICE, DOMAINval, APval, 1)
+#define	TTB_PARA_NORMAL_DEVICE TTB_PARA(TEXval_DEVICE, Bval_DEVICE, Cval_DEVICE, DOMAINval, APRWval, 1)
 
 #define	TTB_PARA_NO_ACCESS 0
 
 
 static uint32_t
 FLASHMEMINITFUNC
-ttb_accessbits(uintptr_t a)
+ttb_accessbits(uintptr_t a, int ro)
 {
 	const uint32_t addrbase = a & 0xFFF00000uL;
 
@@ -11279,11 +11449,11 @@ ttb_accessbits(uintptr_t a)
 //		return addrbase | TTB_PARA_NO_ACCESS;		// NULL pointers access trap
 
 	if (a >= 0x18000000uL && a < 0x20000000uL)			//
-		return addrbase | TTB_PARA_NORMAL_CACHE;
+		return addrbase | TTB_PARA_NORMAL_CACHE(ro);
 	if (a >= 0x00000000uL && a < 0x00A00000uL)			// up to 10 MB
-		return addrbase | TTB_PARA_NORMAL_CACHE;
+		return addrbase | TTB_PARA_NORMAL_CACHE(ro);
 	if (a >= 0x20000000uL && a < 0x20A00000uL)			// up to 10 MB
-		return addrbase | TTB_PARA_NORMAL_CACHE;
+		return addrbase | TTB_PARA_NORMAL_CACHE(ro);
 
 	return addrbase | TTB_PARA_NORMAL_DEVICE; //TTB_PARA_STRGLY;
 
@@ -11293,7 +11463,7 @@ ttb_accessbits(uintptr_t a)
 		return addrbase | TTB_PARA_NO_ACCESS;			// NULL pointers access trap
 
 	if (a >= 0x20000000uL && a < 0x30000000uL)			// SYSRAM
-		return addrbase | TTB_PARA_NORMAL_CACHE;
+		return addrbase | TTB_PARA_NORMAL_CACHE(ro);
 
 	if (a >= 0x40000000uL && a < 0x60000000uL)			//  peripherials 1, peripherials 2
 		return addrbase | TTB_PARA_NORMAL_DEVICE;
@@ -11303,12 +11473,12 @@ ttb_accessbits(uintptr_t a)
 		return addrbase | TTB_PARA_NORMAL_DEVICE;
 
 	if (a >= 0x70000000uL && a < 0xA0000000uL)			//  QUADSPI, FMC NAND, ...
-		return addrbase | TTB_PARA_NORMAL_CACHE;
+		return addrbase | TTB_PARA_NORMAL_CACHE(ro);
 	if (a >= 0x60000000uL && a < 0x70000000uL)			//  FMC NOR
-		return addrbase | TTB_PARA_NORMAL_CACHE;
+		return addrbase | TTB_PARA_NORMAL_CACHE(ro);
 
 	if (a >= 0xC0000000uL && a < 0xE0000000uL)			// DDR memory
-		return addrbase | TTB_PARA_NORMAL_CACHE;
+		return addrbase | TTB_PARA_NORMAL_CACHE(ro);
 
 	return addrbase | TTB_PARA_NO_ACCESS;
 
@@ -11317,18 +11487,12 @@ ttb_accessbits(uintptr_t a)
 	return addrbase | TTB_PARA_NO_ACCESS; //TTB_PARA_STRGLY;
 }
 
+/* Загрузка TTBR, инвалидация кеш памяти и включение MMU */
 static void FLASHMEMINITFUNC
-ttb_initialize(uint32_t (* accessbits)(uintptr_t a))
+sysinit_ttbr_initialize(void)
 {
 	extern volatile uint32_t __TTB_BASE;		// получено из скрипта линкера
 	volatile uint32_t * const tlbbase = & __TTB_BASE;
-	unsigned i;
-
-	for (i = 0; i < 4096; ++ i)
-	{
-		const uintptr_t address = (uint32_t) i << 20;
-		tlbbase [i] =  accessbits(address);
-	}
 
 #if 0
 	/* Set location of level 1 page table
@@ -11371,9 +11535,36 @@ ttb_initialize(uint32_t (* accessbits)(uintptr_t a))
 	MMU_InvalidateTLB();
 
 	// Обеспечиваем нормальную обработку RESEТ
-	arm_hardware_invalidate_all();
+	L1C_InvalidateDCacheAll();
+	L1C_InvalidateICacheAll();
+	L1C_InvalidateBTAC();
+#if (__L2C_PRESENT == 1)
+	L2C_InvAllByWay();
+#endif
 
 	MMU_Enable();
+}
+
+static void FLASHMEMINITFUNC
+ttb_initialize(uint32_t (* accessbits)(uintptr_t a, int ro), uintptr_t textstart, uint_fast32_t textsize)
+{
+	extern volatile uint32_t __TTB_BASE;		// получено из скрипта линкера
+	volatile uint32_t * const tlbbase = & __TTB_BASE;
+	unsigned i;
+	const uint_fast32_t pagesize = (1uL << 20);
+
+	for (i = 0; i < 4096; ++ i)
+	{
+		const uintptr_t address = (uint32_t) i << 20;
+		tlbbase [i] =  accessbits(address, 0);
+	}
+	/* Установить R/O атрибуты для указанной области */
+	while (textsize >= pagesize)
+	{
+		tlbbase [textstart / pagesize] =  accessbits(textstart, 0 * 1);
+		textsize -= pagesize;
+		textstart += pagesize;
+	}
 }
 
 // TODO: use MMU_TTSection. See also MMU_TTPage4k MMU_TTPage64k and MMU_CreateTranslationTable
@@ -11750,20 +11941,32 @@ sysinit_debug_initialize(void)
 #endif /* WITHDEBUG */
 }
 
+#if (__CORTEX_A != 0)
+/** \brief  Set HVBAR
+
+    This function assigns the given value to the Hyp Vector Base Address Register.
+
+    \param [in]    hvbar  Hyp Vector Base Address Register value to set
+ */
+__STATIC_FORCEINLINE void __set_HVBAR(uint32_t hvbar)
+{
+	// cp, op1, Rt, CRn, CRm, op2
+  __set_CP(15, 4, hvbar, 12, 0, 0);
+}
+#endif /* (__CORTEX_A != 0) */
+
 static void FLASHMEMINITFUNC
 sysinit_vbar_initialize(void)
 {
 #if (__CORTEX_A != 0)
 
-	extern unsigned long __etext, __bss_start__, __bss_end__, __data_end__, __data_start__, __stack, __Vectors;
-
-	//debug_printf_P(PSTR("cpu_initialize1: CP15=%08lX, __data_start__=%p\n"), __get_SCTLR(), & __data_start__);
-	//debug_printf_P(PSTR("__etext=%p, __bss_start__=%p, __bss_end__=%p, __data_start__=%p, __data_end__=%p\n"), & __etext, & __bss_start__, & __bss_end__, & __data_start__, & __data_end__);
-	//debug_printf_P(PSTR("__stack=%p, SystemInit=%p, __Vectors=%p\n"), & __stack, SystemInit, & __Vectors);
+	extern unsigned long __Vectors;
 
 	const uintptr_t vbase = (uintptr_t) & __Vectors;
+
 	__set_VBAR(vbase);	 // Set Vector Base Address Register (bits 4..0 should be zero)
-	__set_MVBAR(vbase);	 // Set Vector Base Address Register (bits 4..0 should be zero) - на работу не вличет... но на всякий случай
+	__set_MVBAR(vbase);	 // Set Monitor Vector Base Address Register (bits 4..0 should be zero) - на работу не вличет... но на всякий случай
+	//__set_HVBAR(vbase);	 // Set Hyp Vector Base Address Register
 
 	__set_SCTLR(__get_SCTLR() & ~ SCTLR_V_Msk);	// v=0 - use VBAR as vectors address
 	__set_SCTLR(__get_SCTLR() & ~ SCTLR_A_Msk);	// 0 = Strict alignment fault checking disabled. This is the reset value.
@@ -11803,8 +12006,24 @@ sysinit_mmu_initialize(void)
 	}
 #endif /* WITHDEBUG */
 
+#if WITHISBOOTLOADER || CPUSTYLE_R7S721
+
 	// MMU inuitialize
-	ttb_initialize(ttb_accessbits);
+	ttb_initialize(ttb_accessbits, 0, 0);
+	sysinit_ttbr_initialize();	/* Загрузка TTBR, инвалидация кеш памяти и включение MMU */
+
+#elif CPUSTYLE_STM32MP1
+	extern uint32_t __data_start__;
+	// MMU inuitialize
+	ttb_initialize(ttb_accessbits, 0xC0000000, (uintptr_t) & __data_start__ - 0xC0000000);
+	sysinit_ttbr_initialize();	/* Загрузка TTBR, инвалидация кеш памяти и включение MMU */
+
+#else
+	// MMU inuitialize
+	ttb_initialize(ttb_accessbits, 0, 0);
+	sysinit_ttbr_initialize();	/* Загрузка TTBR, инвалидация кеш памяти и включение MMU */
+
+#endif
 
 #endif /* (__CORTEX_A != 0) */
 
@@ -11824,17 +12043,50 @@ SystemInit(void)
 	sysintt_sdram_initialize();
 	sysinit_vbar_initialize();		// interrupt vectors relocate
 	sysinit_mmu_initialize();
-	//ca9_ca7_cache_diag();	// print
 }
 
+#if  (__CORTEX_A != 0)
 
-#if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7 || CPUSTYLE_ARM_CM0
+static void printcpustate(void)
+{
+	const uint_fast32_t cpsr = __get_CPSR();
+	const uint_fast8_t cpuid = __get_MPIDR() & 0x03;
+	PRINTF(PSTR("CPU: VBAR=%p, TTBR0=%p, cpsr=%08lX, cpuid=%02X, sp=%p\n"), __get_VBAR(), __get_TTBR0(), cpsr, cpuid, & cpuid);
+}
 
-uint32_t gARM_OVERREALTIME_PRIORITY = 0;
-uint32_t gARM_REALTIME_PRIORITY = 0;
-uint32_t gARM_SYSTEM_PRIORITY = 0;
-uint32_t gARM_BASEPRI_ONLY_REALTIME = 0;
-uint32_t gARM_BASEPRI_ALL_ENABLED = 0;
+static void arm_gic_initialize(void);
+
+void Reset_CPUn_Handler(void)
+{
+	sysinit_fpu_initialize();
+	sysinit_vbar_initialize();		// interrupt vectors relocate
+	sysinit_ttbr_initialize();		// TODO: убрать работу с L2 для второго процессора - Загрузка TTBR, инвалидация кеш памяти и включение MMU
+
+	arm_gic_initialize();
+//	GIC_CPUInterfaceInit();
+//#if WITHNESTEDINTERRUPTS
+//	GIC_SetInterfacePriorityMask(gARM_BASEPRI_ALL_ENABLED);
+//#endif /* WITHNESTEDINTERRUPTS */
+
+	printcpustate();
+	__enable_irq();
+	// Idle loop
+	for (;;)
+	{
+		__WFI();
+	}
+}
+
+#endif /*  (__CORTEX_A != 0) */
+
+#if (__CORTEX_M != 0)
+
+uint32_t gARM_OVERREALTIME_PRIORITY;
+uint32_t gARM_REALTIME_PRIORITY;
+uint32_t gARM_SYSTEM_PRIORITY;
+uint32_t gARM_BASEPRI_ONLY_REALTIME;
+uint32_t gARM_BASEPRI_ONLY_OVERREALTIME;
+uint32_t gARM_BASEPRI_ALL_ENABLED;
 
 static void
 arm_cpu_CMx_initialize_NVIC(void)
@@ -11854,6 +12106,7 @@ arm_cpu_CMx_initialize_NVIC(void)
 	gARM_SYSTEM_PRIORITY = NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 2, 0);
 	// The processor does not process any exception with a priority value greater than or equal to BASEPRI.
 	gARM_BASEPRI_ONLY_REALTIME = ((gARM_SYSTEM_PRIORITY << (8 - __NVIC_PRIO_BITS)) & 0xff);
+	gARM_BASEPRI_ONLY_OVERREALTIME = ((gARM_REALTIME_PRIORITY << (8 - __NVIC_PRIO_BITS)) & 0xff);
 	gARM_BASEPRI_ALL_ENABLED = 0;
 
 	/* System interrupt init*/
@@ -11879,7 +12132,7 @@ arm_cpu_CMx_initialize_NVIC(void)
 	//__set_BASEPRI(gARM_BASEPRI_ALL_ENABLED);
 }
 
-#endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7 */
+#endif /* (__CORTEX_M != 0) */
 
 #if (__CORTEX_A != 0)
 /* 
@@ -11893,41 +12146,28 @@ uint32_t gARM_OVERREALTIME_PRIORITY;
 uint32_t gARM_REALTIME_PRIORITY;
 uint32_t gARM_SYSTEM_PRIORITY;
 uint32_t gARM_BASEPRI_ONLY_REALTIME;
+uint32_t gARM_BASEPRI_ONLY_OVERREALTIME;
 uint32_t gARM_BASEPRI_ALL_ENABLED;
 
 
 static void
 arm_gic_initialize(void)
 {
-	//PRINTF("arm_gic_initialize: ICPIDR0=%08lX\n", ICPIDR0);	// ICPIDR0
-	//PRINTF("arm_gic_initialize: ICPIDR1=%08lX\n", ICPIDR1);	// ICPIDR1
-	//PRINTF("arm_gic_initialize: ICPIDR2=%08lX\n", ICPIDR2);	// ICPIDR2
-#if 0
-	// GIC version diagnostics
-	switch (ICPIDR1 & 0x0F)
-	{
-	case 0x03:	PRINTF("arm_gic_initialize: ARM GICv1\n"); break;
-	case 0x04:	PRINTF("arm_gic_initialize: ARM GICv2\n"); break;
-	default:	PRINTF("arm_gic_initialize: ARM GICv? (code=%08lX @%p)\n", (unsigned long) ICPIDR1, & ICPIDR1); break;
-	}
-#endif
-
 	IRQ_Initialize();
 
-	GIC_Enable();	// инициализирует не совсем так как надо для работы
+	GIC_Enable();
 
 #if CPUSTYLE_R7S721
 	r7s721_intc_initialize();
 #endif /* CPUSTYLE_R7S721 */
 
-    //PRINTF("arm_gic_initialize: GIC_GetBinaryPoint()=%02X\n", GIC_GetBinaryPoint());
-	
 #if WITHNESTEDINTERRUPTS
 	gARM_OVERREALTIME_PRIORITY = ARM_CA9_ENCODE_PRIORITY(PRI_OVRT);	// value for GIC_SetPriority
 	gARM_REALTIME_PRIORITY = ARM_CA9_ENCODE_PRIORITY(PRI_RT);	// value for GIC_SetPriority
 	gARM_SYSTEM_PRIORITY = ARM_CA9_ENCODE_PRIORITY(PRI_SYS);		// value for GIC_SetPriority
 
 	gARM_BASEPRI_ONLY_REALTIME = ARM_CA9_ENCODE_PRIORITY(PRI_SYS);	// value for GIC_SetInterfacePriorityMask
+	gARM_BASEPRI_ONLY_OVERREALTIME = ARM_CA9_ENCODE_PRIORITY(PRI_RT);	// value for GIC_SetInterfacePriorityMask
 	gARM_BASEPRI_ALL_ENABLED = ARM_CA9_ENCODE_PRIORITY(PRI_USER);	// value for GIC_SetInterfacePriorityMask
 
 	GIC_SetInterfacePriorityMask(gARM_BASEPRI_ALL_ENABLED);
@@ -12044,7 +12284,7 @@ static uint8_t CLKSYS_Main_ClockSource_Select( CLK_SCLKSEL_t clockSource )
 	auto void CCPWrite(volatile uint8_t * address, uint8_t value)
 	{
 		volatile uint8_t * const tmpAddr = address;
-		//disableIRQ();
+		//system_disableIRQ();
 	#ifdef RAMPZ
 		RAMPZ = 0;
 	#endif
@@ -12058,7 +12298,7 @@ static uint8_t CLKSYS_Main_ClockSource_Select( CLK_SCLKSEL_t clockSource )
 			: "r16", "r30", "r31"
 			);
 
-		//enableIRQ();
+		//system_enableIRQ();
 	}
 
 	const uint8_t clkCtrl = (CLK.CTRL & ~CLK_SCLKSEL_gm) | clockSource;
@@ -12170,6 +12410,97 @@ cpu_tms320f2833x_flash_waitstates(uint_fast8_t flashws, uint_fast8_t otpws)
 }
 #endif /* CPUSTYPE_TMS320F2833X */
 
+#if WITHSMPSYSTEM
+
+
+/*
+ * Cores secure magic numbers
+ * Constant to be stored in bakcup register
+ * BOOT_API_MAGIC_NUMBER_TAMP_BCK_REG_IDX
+ */
+#define BOOT_API_A7_CORE0_MAGIC_NUMBER				0xCA7FACE0U
+#define BOOT_API_A7_CORE1_MAGIC_NUMBER				0xCA7FACE1U
+
+/*
+ * TAMP_BCK4R register index
+ * This register is used to write a Magic Number in order to restart
+ * Cortex A7 Core 1 and make it execute @ branch address from TAMP_BCK5R
+ */
+#define BOOT_API_CORE1_MAGIC_NUMBER_TAMP_BCK_REG_IDX		4U
+
+/*
+ * TAMP_BCK5R register index
+ * This register is used to contain the branch address of
+ * Cortex A7 Core 1 when restarted by a TAMP_BCK4R magic number writing
+ */
+#define BOOT_API_CORE1_BRANCH_ADDRESS_TAMP_BCK_REG_IDX		5U
+
+/*******************************************************************************
+ * STM32MP1 TAMP
+ ******************************************************************************/
+#define TAMP_BKP_REGISTER_BASE		(TAMP_BASE + 0x100uL)
+
+static inline uint32_t tamp_bkpr(uint32_t idx)
+{
+	return TAMP_BKP_REGISTER_BASE + (idx * 4);
+}
+
+
+static void
+mmio_write_32(uintptr_t addr, uint32_t value)
+{
+	volatile uint32_t * const reg = (volatile uint32_t * const) addr;
+	* reg = value;
+	(void) * reg;
+	ASSERT(* reg == value);
+}
+
+
+/*******************************************************************************
+ * STM32MP1 handler called when a power domain is about to be turned on. The
+ * mpidr determines the CPU to be turned on.
+ * call by core 0 to activate core 1
+ ******************************************************************************/
+static void stm32_pwr_domain_on(void)
+{
+	//unsigned long current_cpu_mpidr = read_mpidr_el1();
+	uint32_t bkpr_core1_addr =
+		tamp_bkpr(BOOT_API_CORE1_BRANCH_ADDRESS_TAMP_BCK_REG_IDX);
+	uint32_t bkpr_core1_magic =
+		tamp_bkpr(BOOT_API_CORE1_MAGIC_NUMBER_TAMP_BCK_REG_IDX);
+
+	//stm32mp_clk_enable(RTCAPB);
+
+	PWR->CR1 |= PWR_CR1_DBP;
+	while ((PWR->CR1 & PWR_CR1_DBP) == 0)
+		;
+
+	RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_RTCAPBEN;
+	(void) RCC->MP_APB5ENSETR;
+	RCC->MP_APB5LPENSETR = RCC_MC_APB5LPENSETR_RTCAPBLPEN;  // Включить тактирование
+	(void) RCC->MP_APB5LPENSETR;
+
+	//cntfrq_core0 = read_cntfrq_el0();
+
+	/* Write entrypoint in backup RAM register */
+	mmio_write_32(bkpr_core1_addr, (uintptr_t) Reset_CPU1_Handler);	// Invoke at SVC context
+
+	/* Write magic number in backup register */
+	mmio_write_32(bkpr_core1_magic, BOOT_API_A7_CORE1_MAGIC_NUMBER);
+
+	//stm32mp_clk_disable(RTCAPB);
+//	RCC->MP_APB5ENCLRR = RCC_MC_APB5ENSETR_RTCAPBEN;
+//	(void) RCC->MP_APB5ENCLRR;
+//
+//	PWR->CR1 &= ~ PWR_CR1_DBP;
+//	while ((PWR->CR1 & PWR_CR1_DBP) != 0)
+//		;
+
+	/* Generate an IT to core 1 */
+	GIC_SendSGI(SGI8_IRQn, 0x02, 0x00);	// CPU1, filer=0
+}
+#endif /* WITHSMPSYSTEM */
+
 // Вызывается из main
 void cpu_initialize(void)
 {
@@ -12177,6 +12508,44 @@ void cpu_initialize(void)
 //	PRINTF("TTB_PARA_STRGLY=%08lX (0x00DE2)\n", (unsigned long) TTB_PARA_STRGLY);
 //	PRINTF("TTB_PARA_NORMAL_CACHE=%08lX (0x01DEEuL)\n", (unsigned long) TTB_PARA_NORMAL_CACHE);
 //	PRINTF("TTB_PARA_NORMAL_NOT_CACHE=%08lX (0x01DE2uL)\n", (unsigned long) TTB_PARA_NORMAL_NOT_CACHE);
+
+//	extern unsigned long __etext, __bss_start__, __bss_end__, __data_end__, __data_start__, __stack, __Vectors;
+//
+//	debug_printf_P(PSTR("cpu_initialize1: CP15=%08lX, __data_start__=%p\n"), __get_SCTLR(), & __data_start__);
+//	debug_printf_P(PSTR("__etext=%p, __bss_start__=%p, __bss_end__=%p, __data_start__=%p, __data_end__=%p\n"), & __etext, & __bss_start__, & __bss_end__, & __data_start__, & __data_end__);
+//	debug_printf_P(PSTR("__stack=%p, SystemInit=%p, __Vectors=%p\n"), & __stack, SystemInit, & __Vectors);
+
+//	ca9_ca7_cache_diag();	// print
+
+#if WITHSMPSYSTEM
+
+	//	SMP tests
+	stm32_pwr_domain_on();
+	local_delay_ms(400);
+	printcpustate();
+#endif /* WITHSMPSYSTEM */
+
+#if (__GIC_PRESENT == 1)
+	// GIC version diagnostics
+	//PRINTF("arm_gic_initialize: ICPIDR0=%08lX\n", ICPIDR0);	// ICPIDR0
+	//PRINTF("arm_gic_initialize: ICPIDR1=%08lX\n", ICPIDR1);	// ICPIDR1
+	//PRINTF("arm_gic_initialize: ICPIDR2=%08lX\n", ICPIDR2);	// ICPIDR2
+
+	// Renesas:
+	//	arm_gic_initialize: ARM GICv1
+	//	GICInterface->IIDR=3901043B, GICDistributor->IIDR=0000043B
+	// STM32MP1:
+	//	arm_gic_initialize: ARM GICv2
+	//	GICInterface->IIDR=0102143B, GICDistributor->IIDR=0100143B
+//	switch (ICPIDR1 & 0x0F)
+//	{
+//	case 0x03:	PRINTF("arm_gic_initialize: ARM GICv1\n"); break;
+//	case 0x04:	PRINTF("arm_gic_initialize: ARM GICv2\n"); break;
+//	default:	PRINTF("arm_gic_initialize: ARM GICv? (code=%08lX @%p)\n", (unsigned long) ICPIDR1, & ICPIDR1); break;
+//	}
+//
+//	PRINTF("GICInterface->IIDR=%08lX, GICDistributor->IIDR=%08lX\n", (unsigned long) GICInterface->IIDR, (unsigned long) GIC_DistributorImplementer());
+#endif
 
 	//PRINTF("cpu_initialize\n");
 #if CPUSTYLE_STM32F1XX
@@ -12345,13 +12714,13 @@ void cpu_initialize(void)
 
 #endif /* CPUSTYLE_R7S721 */
 
-#if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7 || CPUSTYLE_ARM_CM0
+#if (__CORTEX_M != 0)
 
 	// Таблица находится в области вне Data Cache
 	vectors_relocate();
 	arm_cpu_CMx_initialize_NVIC();
 
-#elif (__CORTEX_A != 0)
+#elif (__GIC_PRESENT != 0)
 
 	arm_gic_initialize();
 
@@ -12535,39 +12904,7 @@ int __attribute__((used)) (_write)(int fd, char * ptr, int len)
 }
 
 
-// Corte-A9 require
-
-#if ! WITHNOSPEEX
-
-#if SPEEXNN == 64
-	#define SPEEXALLOCSIZE (NTRX * 15584)
-#elif SPEEXNN == 128
-	#define SPEEXALLOCSIZE (NTRX * 22584)
-#elif SPEEXNN == 256
-	#define SPEEXALLOCSIZE (NTRX * 38584)
-#elif SPEEXNN == 512
-	#define SPEEXALLOCSIZE (NTRX * 75448)
-#elif SPEEXNN == 1024
-	#define SPEEXALLOCSIZE (NTRX * 149176)
-#endif
-
-#if SPEEXALLOCSIZE
-	//static uint8_t sipexbuff [NTRX * 149176 /* + 24716 */];
-	static RAMHEAP uint8_t sipexbuff [SPEEXALLOCSIZE];
-#endif /* SPEEXALLOCSIZE */
-
-#if SPEEXALLOCSIZE
-	//static uint8_t sipexbuff [NTRX * 149176 /* + 24716 */];
-	static RAMHEAP uint8_t sipexbuff [SPEEXALLOCSIZE];
-#endif /* SPEEXALLOCSIZE */
-
-#endif /* ! WITHNOSPEEX */
-
 static RAMHEAP uint8_t heapplace [8 * 1024uL];
-
-#if WITHTOUCHGUI
-	static RAMHEAP uint8_t goibuff [256];
-#endif /* SPEEXALLOCSIZE */
 
 extern int __HeapBase;
 extern int __HeapLimit;
@@ -12582,7 +12919,7 @@ caddr_t __attribute__((used)) (_sbrk)(int incr)
 		heap = (char *) &__HeapBase;
 	}
 
-	//debug_printf_P("_sbrk: incr=%d, & __HeapBase=%p, & __HeapLimit=%p\n", incr, & __HeapBase, & __HeapLimit);
+	//debug_printf_P(PSTR("_sbrk: incr=%X, new heap=%X, & __HeapBase=%p, & __HeapLimit=%p\n"), incr, heap + incr, & __HeapBase, & __HeapLimit);
 
 	prev_heap = heap;
 
@@ -12869,9 +13206,97 @@ static void vectors_relocate(void)
 }
 #endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM0 || CPUSTYLE_ARM_CM7 */
 
+
+#if CPUSTYLE_ARM && WITHSMPSYSTEM
+
+// http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dai0321a/BIHEJCHB.html
+void spin_lock(spinlock_t *p)
+{
+	// Note: __LDREXW and __STREXW are CMSIS functions
+	int status = 0;
+	do {
+		while (__LDREXW(& p->lock) != 0)// Wait until
+			;
+		// Lock_Variable is free
+		status = __STREXW(1, & p->lock); // Try to set
+	// Lock_Variable
+	} while (status != 0); //retry until lock successfully
+	__DMB();		// Do not start any other memory access
+	// until memory barrier is completed
+
+}
+
+void spin_unlock(spinlock_t *p)
+{
+	// Note: __LDREXW and __STREXW are CMSIS functions
+	__DMB(); // Ensure memory operations completed before
+	// releasing lock
+	p->lock = 0;
+	return;
+}
+
+#if 0
+
+
+#define LOCK(p) do { lock_impl((p), __LINE__, __FILE__, # p); } while (0)
+#define UNLOCK(p) do { unlock_impl((p), __LINE__, __FILE__, # p); } while (0)
+
+
+typedef struct
+{
+	volatile uint8_t lock;
+	int line;
+	const char * file;
+} LOCK_T;
+
+static void lock_impl(volatile LOCK_T * p, int line, const char * file, const char * variable)
+{
+
+	uint8_t r;
+	do
+		r = __LDREXB(& p->lock);
+	while (__STREXB(1, & p->lock));
+	if (r != 0)
+	{
+		debug_printf_P(PSTR("LOCK @%p %s already locked at %d in %s by %d in %s\n"), p, variable, line, file, p->line, p->file);
+		for (;;)
+			;
+	}
+	else
+	{
+		p->file = file;
+		p->line = line;
+	}
+
+}
+
+static void unlock_impl(volatile LOCK_T * p, int line, const char * file, const char * variable)
+{
+
+	uint8_t r;
+	do
+		r = __LDREXB(& p->lock);
+	while (__STREXB(0, & p->lock));
+	if (r == 0)
+	{
+		debug_printf_P(PSTR("LOCK @%p %s already unlocked at %d in %s by %d in %s\n"), p, variable, line, file, p->line, p->file);
+		for (;;)
+			;
+	}
+	else
+	{
+		p->file = file;
+		p->line = line;
+	}
+
+}
+#endif
+
+#endif /* CPUSTYLE_ARM && WITHSMPSYSTEM */
+
 #if CPUSTYLE_ARM
 // Set interrupt vector wrapper
-void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint_fast8_t priority)
+void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint_fast8_t priority, uint_fast8_t targetcpu)
 {
 #if CPUSTYLE_AT91SAM7S
 
@@ -12894,7 +13319,15 @@ void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint
 	VERIFY(IRQ_Disable(int_id) == 0);
 	VERIFY(IRQ_SetHandler(int_id, handler) == 0);
 	VERIFY(IRQ_SetPriority(int_id, priority) == 0);
-	GIC_SetTarget(int_id, 0x01);	// CPU#0
+	GIC_SetTarget(int_id, targetcpu);
+
+#if CPUSTYLE_STM32MP1
+	uint_fast32_t cfg = GIC_GetConfiguration(int_id);
+	cfg &= ~ 0x02;	/* Set level sensitive configuration */
+	cfg |= 0x01;	/* Set 1-N model - Only one processor handles this interrupt. */
+	GIC_SetConfiguration(int_id, cfg);
+#endif /* CPUSTYLE_STM32MP1 */
+
 	VERIFY(IRQ_Enable(int_id) == 0);
 
 #else /* CPUSTYLE_STM32MP1 */
@@ -12910,19 +13343,19 @@ void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint
 // Set interrupt vector wrapper
 void arm_hardware_set_handler_overrealtime(uint_fast16_t int_id, void (* handler)(void))
 {
-	arm_hardware_set_handler(int_id, handler, ARM_OVERREALTIME_PRIORITY);
+	arm_hardware_set_handler(int_id, handler, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT);
 }
 
 // Set interrupt vector wrapper
 void arm_hardware_set_handler_realtime(uint_fast16_t int_id, void (* handler)(void))
 {
-	arm_hardware_set_handler(int_id, handler, ARM_REALTIME_PRIORITY);
+	arm_hardware_set_handler(int_id, handler, ARM_REALTIME_PRIORITY, TARGETCPU_RT);
 }
 
 // Set interrupt vector wrapper
 void arm_hardware_set_handler_system(uint_fast16_t int_id, void (* handler)(void))
 {
-	arm_hardware_set_handler(int_id, handler, ARM_SYSTEM_PRIORITY);
+	arm_hardware_set_handler(int_id, handler, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM);
 }
 
 #endif /* CPUSTYLE_ARM */

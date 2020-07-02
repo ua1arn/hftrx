@@ -29,7 +29,7 @@
 #ifndef IODEFINE_SELECT_H
 #define IODEFINE_SELECT_H
 
-#include "mcu_board_select.h"
+#include "hardware.h"
 
 #if ((TARGET_RZA1 == TARGET_RZA1H) || (TARGET_RZA1 == TARGET_RZA1M))
 #include "./iodefines/RZA1H/iodefine_RZA1H.h"

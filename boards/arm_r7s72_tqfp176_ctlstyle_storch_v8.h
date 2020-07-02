@@ -204,6 +204,12 @@
 	#define	BOARD_AGCCODE_ON	0
 	#define	BOARD_AGCCODE_OFF	0
 
+	// +++ заглушки для плат с DSP обработкой
+	#define BOARD_NOTCH_OFF		0
+	#define BOARD_NOTCH_MANUAL	1
+	#define BOARD_NOTCH_AUTO	2
+	//#define WITHLMSAUTONOTCH	1	/* Использование AUTONOTCH	*/
+
 	/* коды фильтров второй ПЧ, выдаваемые на дешифраторы */
 	#define BOARD_FILTER_0P5		0	/* 0.5 or 0.3 kHz filter */
 	#define BOARD_FILTER_3P1		0	/* 3.1 or 2.75 kHz filter */
@@ -383,7 +389,6 @@
 	#define WITHFANTIMER	1	/* выключающийся по таймеру вентилятор в усилителе мощности */
 	#if 0
 		#define WITHTOUCHGUI	1	/* тестирование работы с сенсорным экраном */
-		#define WITHOLDMENUSTYLE	1	/* Меню в виде прокручиваемого списка */
 		#define WITHENCODER2NOFREQ	1	/* второй валкодер не перестраивает частоту */
 		#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 	#endif

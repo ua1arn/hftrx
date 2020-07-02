@@ -13,8 +13,6 @@
 #ifndef __Renesas_RZ_A1_H__
 #define __Renesas_RZ_A1_H__
 
-#include "mcu_board_select.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -867,9 +865,14 @@ typedef enum IRQn
 
 /*@}*/ /* end of group Renesas_RZ_A1_MemoryMap */
 #endif
+
+
+
 /******************************************************************************/
 /*                         Clock Settings                                     */
 /******************************************************************************/
+
+#if 0
 /** @addtogroup Renesas_RZ_A1_Clocks Renesas_RZ_A1 Clock definitions
   @{
 */
@@ -927,6 +930,8 @@ typedef enum IRQn
 
 
 /*@}*/ /* end of group Renesas_RZ_A1_Clocks */
+
+#endif
 
 /******************************************************************************/
 /*                         CPG   Settings                                     */

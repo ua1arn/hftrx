@@ -8,7 +8,7 @@
 //
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
 #include "formats.h"	// for debug prints
-#include "inc/gpio.h"
+#include "gpio.h"
 
 #if WITHTWIHW || WITHTWISW
 

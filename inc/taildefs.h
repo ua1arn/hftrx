@@ -4,8 +4,8 @@
 
 // В зависимости от типа платы - какие микросхемы применены в синтезаторе
 
-#ifndef PRODUCT_H_INCLUDED
-	#error Do not include this file directly.
+#ifndef HARDWARE_H_INCLUDED
+	#error PLEASE, DO NOT USE THIS FILE DIRECTLY. USE FILE "hardware.h" INSTEAD.
 #endif
 
 #define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
@@ -784,5 +784,39 @@ typedef enum
 	#define TRACE5(f,a1,a2,a3,a4,a5)		do {} while (0)
 
 #endif /* WITHDEBUG */
+
+#if WITHSMPSYSTEM
+	/* Пока привязка процессора обрабатывающего прерывание по приоритету. */
+	#define TARGETCPU_SYSTEM 0x01	// CPU #0
+	#define TARGETCPU_RT 0x01		// CPU #0
+	#define TARGETCPU_OVRT 0x02		// CPU #1
+	#define TARGETCPU_EXTIO 0x01	// CPU #0
+
+
+	#define SPINLOCK_t spinlock_t
+	#define SPIN_LOCK(p) do { spin_lock(p); } while (0)
+	#define SPIN_UNLOCK(p) do { spin_unlock(p); } while (0)
+
+	typedef struct spinlock_tag {
+		volatile uint32_t lock;
+	} spinlock_t;
+
+	#define SPINLOCK_INIT { 0 }
+	void spin_lock(spinlock_t *lock);
+	void spin_unlock(spinlock_t *lock);
+
+#else /* WITHSMPSYSTEM */
+	/* Единственный процесор. */
+	#define TARGETCPU_SYSTEM 0x01	// CPU #0
+	#define TARGETCPU_RT 0x01		// CPU #0
+	#define TARGETCPU_OVRT 0x01		// CPU #0
+	#define TARGETCPU_EXTIO 0x01	// CPU #0
+
+	#define SPINLOCK_INIT { 0 }
+	#define SPINLOCK_t uint_fast8_t
+	#define SPIN_LOCK(p) do { (void) p; } while (0)
+	#define SPIN_UNLOCK(p) do { (void) p; } while (0)
+
+#endif /* WITHSMPSYSTEM */
 
 #endif /* TAILDEFS_H_INCLUDED */

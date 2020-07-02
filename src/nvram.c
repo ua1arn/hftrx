@@ -15,7 +15,6 @@
 
 #if defined (NVRAM_TYPE) && (NVRAM_TYPE != NVRAM_TYPE_NOTHING)
 
-//#include <assert.h>
 #include "spi.h"
 
 #define NVRAM_SPIMODE SPIC_MODE3		// mode 3 or mode 0 suppeoted by FRAM chip.

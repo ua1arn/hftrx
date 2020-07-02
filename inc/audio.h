@@ -69,6 +69,7 @@ extern "C" {
 			#define DMABUF32RTS1Q	7		// RTS1, Q	// current
 		#endif /* WITHRTS96 */
 
+
 		// Slot S0, S4: Oldest sample (T-3)
 		// Slot S1, S5: Old sample (T-2)
 		// Slot S2, S6: Old sample (T-1)
@@ -445,6 +446,11 @@ typedef struct
 		#define Ntap_tx_SSB_IQ	NtapValidate(241)	// SSB/CW TX filter: complex numbers, floating-point implementation
 		#define Ntap_tx_MIKE	NtapValidate(105)	// single samples, floating point implementation
 
+	#elif CPUSTYLE_STM32MP1
+		#define Ntap_rx_SSB_IQ	NtapValidate(241)	// SSB/CW filters: complex numbers, floating-point implementation
+		#define Ntap_tx_SSB_IQ	NtapValidate(241)	// SSB/CW TX filter: complex numbers, floating-point implementation
+		#define Ntap_tx_MIKE	NtapValidate(241)	// single samples, floating point implementation
+
 	#elif CPUSTYLE_STM32F7XX
 		#define Ntap_rx_SSB_IQ	NtapValidate(241)	// SSB/CW filters: complex numbers, floating-point implementation
 		#define Ntap_tx_SSB_IQ	NtapValidate(241)	// SSB/CW TX filter: complex numbers, floating-point implementation
@@ -508,8 +514,15 @@ void dsp_addsidetone(aubufv_t * buff);			// перед передачей по D
 void processing_dmabuffer16rx(uintptr_t addr);	// обработать буфер после оцифровки AF ADC
 void processing_dmabuffer16rxuac(uintptr_t addr);	// обработать буфер после приёма пакета с USB AUDIO
 void processing_dmabuffer32rx(uintptr_t addr);
+void release_dmabuffer32rx(uintptr_t addr);
 void processing_dmabuffer32rts(uintptr_t addr);
 void processing_dmabuffer32wfm(uintptr_t addr);
+
+int_fast32_t buffers_dmabuffer32rxcachesize(void);
+int_fast32_t buffers_dmabuffer32txcachesize(void);
+int_fast32_t buffers_dmabuffer16cachesize(void);
+int_fast32_t buffers_dmabuffer192rtscachesize(void);
+int_fast32_t buffers_dmabuffer96rtscachesize(void);
 
 void savesamplerecord16SD(int_fast16_t ch0, int_fast16_t ch1); /* to SD CARD */
 void savesamplerecord16uacin(int_fast16_t ch0, int_fast16_t ch1); /* to USB AUDIO */
@@ -590,7 +603,7 @@ void board_set_agc_scale(uint_fast8_t v);	/* подстройка парамет
 void board_set_squelch(uint_fast8_t v);	/* уровень открывания шумоподавителя */
 void board_set_notch_freq(uint_fast16_t n);	/* частота NOTCH фильтра */
 void board_set_notch_width(uint_fast16_t n);	/* полоса NOTCH фильтра */
-void board_set_notch_on(uint_fast8_t v);	/* включение NOTCH фильтра */
+void board_set_notch_mode(uint_fast8_t n);	/* включение NOTCH фильтра */
 void board_set_cwedgetime(uint_fast8_t n);	/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
 void board_set_sidetonelevel(uint_fast8_t n);	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
 void board_set_moniflag(uint_fast8_t n);	/* разрешение самопрослушивания */
@@ -634,13 +647,14 @@ void board_set_uacmike(uint_fast8_t v);	/* на вход трансивера б
 void dsp_initialize(void);
 
 #if WITHINTEGRATEDDSP
-	// Копрование информации о спектре с текущую строку буфера
-	// wfarray (преобразование к пикселям растра */
+	// Копрование информации о спектре в текущую строку буфера
+	// преобразование к пикселям растра
 	uint_fast8_t dsp_getspectrumrow(
 		FLOAT_t * const hbase,
 		uint_fast16_t dx,	// pixel X width (pixels) of display window
 		uint_fast8_t zoompow2	// horisontal magnification power of two
 		);
+
 	// Нормирование уровня сигнала к шкале
 	// возвращает значения от 0 до ymax включительно
 	// 0 - минимальный сигнал, ymax - максимальный

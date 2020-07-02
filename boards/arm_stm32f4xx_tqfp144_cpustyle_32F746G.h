@@ -42,14 +42,14 @@
 	// use FS
 	//#define WITHUSBDEV_HSDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
 	//#define WITHUSBDEV_VBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
-	#define WITHUSBHW_DEVICE	USB_OTG_FS	/* на этом устройстве поддерживается функциональность DEVICE	*/
+	////#define WITHUSBHW_DEVICE	USB_OTG_FS	/* на этом устройстве поддерживается функциональность DEVICE	*/
 #else
 	// USE HS with ULPI
 	//#define WITHUSBDEV_HSDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
 	#define WITHUSBDEV_VBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
 	#define WITHUSBDEV_HIGHSPEEDULPI	1
 	//#define WITHUSBDEV_HIGHSPEEDPHYC	1
-	#define WITHUSBHW_DEVICE	USB_OTG_HS	/* на этом устройстве поддерживается функциональность DEVICE	*/
+	////#define WITHUSBHW_DEVICE	USB_OTG_HS	/* на этом устройстве поддерживается функциональность DEVICE	*/
 #endif
 
 #define WITHUART1HW	1	/* PA9, PB7 Используется периферийный контроллер последовательного порта #1 */
@@ -62,16 +62,18 @@
 #define WITHDEBUG_USART1	1
 //#define WITHNMEA_USART1		1	/* порт подключения GPS/GLONASS */
 
-#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
-//#define WITHUSBUACIN2		1	/* формируются три канала передачи звука */
-//#define WITHUAC2		1	/* UAC2 support */
+#ifdef WITHUSBHW_DEVICE
+	#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
+	//#define WITHUSBUACIN2		1	/* формируются три канала передачи звука */
+	//#define WITHUAC2		1	/* UAC2 support */
 
-#define WITHUSBCDC		1	/* использовать виртуальный последовательный порт на USB соединении */
-#define WITHUSBHWCDC_N	2	/* количество виртуальных последовательных портов */
-//#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
-//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
-//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
+	#define WITHUSBCDC		1	/* использовать виртуальный последовательный порт на USB соединении */
+	#define WITHUSBHWCDC_N	2	/* количество виртуальных последовательных портов */
+	//#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
+	//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
+	//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
 
+#endif
 
 //#define BSRR_S(v) ((v) * GPIO_BSRR_BS_0)	/* Преобразование значения для установки бита в регистре */
 //#define BSRR_C(v) ((v) * GPIO_BSRR_BR_0)	/* Преобразование значения для сброса бита в регистре */

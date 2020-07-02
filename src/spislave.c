@@ -7,12 +7,10 @@
 
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
 #include "board.h"
+#include "formats.h"	// for debug prints
+#include "spi.h"
 
 #include <stdlib.h>
-//#include <assert.h>
-
-#include "formats.h"	// for debug prints
-#include "inc/spi.h"
 
 #if CPUSTYLE_STM32H7XX
 #else /* CPUSTYLE_STM32H7XX */
@@ -35,7 +33,6 @@ static void DMA1_SPI3_RX_initialize(void)
 	RCC->AHB1ENR |= RCC_AHB1ENR_DMA1EN;//включил DMA1
 	(void) RCC->AHB1ENR;
 	enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
-	DMAMUX1_Channel0->CCR = 61 * DMAMUX_CxCR_DMAREQ_ID_0;	// SPI3_RX
 	DMA1_Stream0->PAR = (uint32_t) & SPI3->RXDR;
 #elif CPUSTYLE_STM32MP1
 	/* SPI3_RX - Stream0, Channel0 */
@@ -44,7 +41,6 @@ static void DMA1_SPI3_RX_initialize(void)
 	RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_DMAMUXEN; // включил DMAMUX
 	(void) RCC->MP_AHB2ENSETR;
 	enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
-	DMAMUX1_Channel0->CCR = 61 * DMAMUX_CxCR_DMAREQ_ID_0;	// SPI3_RX
 	DMA1_Stream0->PAR = (uint32_t) & SPI3->RXDR;
 #else /* CPUSTYLE_STM32H7XX */
 	/* SPI3_RX - Stream0, Channel0 */
@@ -54,7 +50,7 @@ static void DMA1_SPI3_RX_initialize(void)
 	DMA1_Stream0->PAR = (uint32_t) & SPI3->DR;
 #endif /* CPUSTYLE_STM32H7XX */
 
-	DMA1_Stream0->FCR &= ~ DMA_SxFCR_DMDIS;	// use direct mode
+	DMA1_Stream0->FCR &= ~ (DMA_SxFCR_FEIE_Msk | DMA_SxFCR_DMDIS_Msk);	// use direct mode
 	DMA1_Stream0->CR =
 		(ch * DMA_SxCR_CHSEL_0) |	//канал
 		(0 * DMA_SxCR_MBURST_0) |	// 0: single transfer
@@ -66,6 +62,14 @@ static void DMA1_SPI3_RX_initialize(void)
 		(0 * DMA_SxCR_PL_0) |		// Priority level - low
 		(0 * DMA_SxCR_CT) | // M0AR selected
 		0;
+
+#if CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7XX
+	// DMAMUX init
+	// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
+	// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
+	DMAMUX1_Channel0->CCR = 61 * DMAMUX_CxCR_DMAREQ_ID_0;	// SPI3_RX
+	(void) DMAMUX1_Channel0;
+#endif /* CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7XX */
 
 	// Подготовка DMA к следующему приёму с начала буфера
 	DMA1_Stream0->M0AR = (uint32_t) spi3rxbuf16;

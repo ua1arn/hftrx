@@ -10,7 +10,6 @@
 
 #include <stdlib.h>
 #include <stdint.h>
-//#include <assert.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -161,8 +160,15 @@ extern "C" {
 
 	#include "armcpu/stm32h7xx.h"
 
-	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
+	#define ALIGNX_BEGIN __attribute__ ((aligned(32)))
 	#define ALIGNX_END /* nothing */
+	#define ALIGN1K_BEGIN __attribute__ ((aligned(1024)))
+	#define ALIGN1K_END /* nothing */
+
+	//#define DCACHEROWSIZE __SCB_DCACHE_LINE_SIZE  //32U /*!< Cortex-M7 cache line size is fixed to 32 bytes (8 words). See also register SCB_CCSIDR */
+	//#define ICACHEROWSIZE __SCB_ICACHE_LINE_SIZE  //32U /*!< Cortex-M7 cache line size is fixed to 32 bytes (8 words). See also register SCB_CCSIDR */
+	#define DCACHEROWSIZE 32U /*!< Cortex-M7 cache line size is fixed to 32 bytes (8 words). See also register SCB_CCSIDR */
+	#define ICACHEROWSIZE 32U /*!< Cortex-M7 cache line size is fixed to 32 bytes (8 words). See also register SCB_CCSIDR */
 
 	#if __ARM_NEON
 		#define ARM_MATH_NEON 1
@@ -184,6 +190,13 @@ extern "C" {
 
 	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
 	#define ALIGNX_END /* nothing */
+	#define ALIGN1K_BEGIN __attribute__ ((aligned(1024)))
+	#define ALIGN1K_END /* nothing */
+
+	//#define DCACHEROWSIZE __SCB_DCACHE_LINE_SIZE  //32U /*!< Cortex-M7 cache line size is fixed to 32 bytes (8 words). See also register SCB_CCSIDR */
+	//#define ICACHEROWSIZE __SCB_ICACHE_LINE_SIZE  //32U /*!< Cortex-M7 cache line size is fixed to 32 bytes (8 words). See also register SCB_CCSIDR */
+	#define DCACHEROWSIZE 32U /*!< Cortex-M7 cache line size is fixed to 32 bytes (8 words). See also register SCB_CCSIDR */
+	#define ICACHEROWSIZE 32U /*!< Cortex-M7 cache line size is fixed to 32 bytes (8 words). See also register SCB_CCSIDR */
 
 	#if __ARM_NEON
 		#define ARM_MATH_NEON 1
@@ -202,8 +215,15 @@ extern "C" {
 
 	#include "armcpu/stm32f4xx.h"
 
-	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
+	#define ALIGNX_BEGIN __attribute__ ((aligned(16)))
 	#define ALIGNX_END /* nothing */
+	#define ALIGN1K_BEGIN __attribute__ ((aligned(1024)))
+	#define ALIGN1K_END /* nothing */
+
+	//#define DCACHEROWSIZE __SCB_DCACHE_LINE_SIZE  //32U /*!< Cortex-M7 cache line size is fixed to 32 bytes (8 words). See also register SCB_CCSIDR */
+	//#define ICACHEROWSIZE __SCB_ICACHE_LINE_SIZE  //32U /*!< Cortex-M7 cache line size is fixed to 32 bytes (8 words). See also register SCB_CCSIDR */
+	#define DCACHEROWSIZE 16U /*!< Cortex-M7 cache line size is fixed to 32 bytes (8 words). See also register SCB_CCSIDR */
+	#define ICACHEROWSIZE 16U /*!< Cortex-M7 cache line size is fixed to 32 bytes (8 words). See also register SCB_CCSIDR */
 
 	#if __ARM_NEON
 		#define ARM_MATH_NEON 1
@@ -223,8 +243,10 @@ extern "C" {
 	// STM32F303VC processors
 	#include "armcpu/stm32f30x.h"
 
-	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
+	#define ALIGNX_BEGIN __attribute__ ((aligned(16)))
 	#define ALIGNX_END /* nothing */
+	#define ALIGN1K_BEGIN __attribute__ ((aligned(1024)))
+	#define ALIGN1K_END /* nothing */
 
 	#if __ARM_NEON
 		#define ARM_MATH_NEON 1
@@ -243,8 +265,10 @@ extern "C" {
 
 	#include "armcpu/stm32f1xx.h"
 
-	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
+	#define ALIGNX_BEGIN __attribute__ ((aligned(16)))
 	#define ALIGNX_END /* nothing */
+	#define ALIGN1K_BEGIN __attribute__ ((aligned(1024)))
+	#define ALIGN1K_END /* nothing */
 
 	#if __ARM_NEON
 		#define ARM_MATH_NEON 1
@@ -263,8 +287,10 @@ extern "C" {
 	
 	#include "armcpu/stm32f0xx.h"
 
-	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
+	#define ALIGNX_BEGIN __attribute__ ((aligned(16)))
 	#define ALIGNX_END /* nothing */
+	#define ALIGN1K_BEGIN __attribute__ ((aligned(1024)))
+	#define ALIGN1K_END /* nothing */
 
 	#if __ARM_NEON
 		#define ARM_MATH_NEON 1
@@ -282,8 +308,10 @@ extern "C" {
 	#define CPUSTYLE_ARM_CM0	1		/* архитектура процессора CORTEX M0 */
 	#include "armcpu/stm32l0xx.h"
 
-	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
+	#define ALIGNX_BEGIN __attribute__ ((aligned(16)))
 	#define ALIGNX_END /* nothing */
+	#define ALIGN1K_BEGIN __attribute__ ((aligned(1024)))
+	#define ALIGN1K_END /* nothing */
 
 	#if __ARM_NEON
 		#define ARM_MATH_NEON 1
@@ -389,17 +417,32 @@ extern "C" {
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
 	#define	CPUSTYLE_ARM_CA9	1
 
-	#include "irq_ctrl.h"
-	#include "armcpu/Renesas_RZ_A1.h"
+	/* MCU Lineup */
+	#define TARGET_RZA1LC           (0x00200000)
+	#define TARGET_RZA1L            (0x00300000)
+	#define TARGET_RZA1LU           (0x00300010)
+	#define TARGET_RZA1M            (0x00500000)
+	#define TARGET_RZA1H            (0x00A00000)
 
+	//#define TARGET_RZA1             (TARGET_RZA1L)	// перенесено в Makefile
+
+	#include "armcpu/Renesas_RZ_A1.h"
 	#include "armcpu/iodefine.h"
-	#include "rza_io_regrw.h"
+	#include "armcpu/rza_io_regrw.h"
+
+	#include "irq_ctrl.h"
+
+
+	#define DCACHEROWSIZE 32
+	#define ICACHEROWSIZE 32
 
 	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
 	#define ALIGNX_END /* nothing */
+	#define ALIGN1K_BEGIN __attribute__ ((aligned(1024)))
+	#define ALIGN1K_END /* nothing */
 
 	#if __ARM_NEON
-		#define ARM_MATH_NEON 1
+		//#define ARM_MATH_NEON 1
 	#endif /* __ARM_NEON */
 
 	#define ARM_MATH_LOOPUNROLL 1
@@ -411,7 +454,6 @@ extern "C" {
 
 	// ST dual core A7 + M4
 
-	// CPUSTYLE_STM32MP157A, CPUSTYLE_STM32MP157D
 	// STM32MP157Axx
 	// STM32MP157Dxx
 	// STM32MP157AAB3
@@ -421,16 +463,21 @@ extern "C" {
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
 	#define	CPUSTYLE_ARM_CA7	1
 
-
-	#include "irq_ctrl.h"
 	#include "armcpu/stm32mp1xx.h"
+	#include "irq_ctrl.h"
+
+	#define DCACHEROWSIZE 64
+	#define ICACHEROWSIZE 32
 
 	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
 	#define ALIGNX_END /* nothing */
+	#define ALIGN1K_BEGIN __attribute__ ((aligned(1024)))
+	#define ALIGN1K_END /* nothing */
 
 	#if __ARM_NEON
-		#define ARM_MATH_NEON 1
+		//#define ARM_MATH_NEON 1
 	#endif /* __ARM_NEON */
+	#define ARM_MATH_LOOPUNROLL 1
 
 	#include "arm_math.h"
 	#include "arm_const_structs.h"
@@ -501,19 +548,20 @@ void hardware_adc_initialize(void);
 		#define RAMFRAMEBUFF	__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
 		#define RAMDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 		#define RAMBIGDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
+		#define RAMBIGDTCM_MDMA	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 		#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
 		#define RAMHEAP __attribute__((used, section(".heap"), aligned(64))) // memory used as heap zone
 	#elif CPUSTYLE_STM32MP1
-		// TODO: Use SYSRAM as DTCM/ITCM
 		#define FLASHMEMINIT	//__attribute__((section(".initdata"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 		#define FLASHMEMINITFUNC//	__attribute__((section(".initfunc"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
-		#define RAMFUNC_NONILINE// __attribute__((__section__(".itcm"), noinline))
-		#define RAMFUNC			 //__attribute__((__section__(".itcm")))
+		#define RAMFUNC_NONILINE __attribute__((__section__(".itcm"), noinline))
+		#define RAMFUNC			 __attribute__((__section__(".itcm")))
 		#define RAMNOINIT_D1	__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
 		#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
 		#define RAMFRAMEBUFF	__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
-		#define RAMDTCM			//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
-		#define RAMBIGDTCM		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
+		#define RAMDTCM			__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
+		#define RAMBIGDTCM		__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
+		#define RAMBIGDTCM_MDMA		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 		#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
 		#define RAMHEAP __attribute__((used, section(".heap"), aligned(64))) // memory used as heap zone
 	#elif (CPUSTYLE_STM32H7XX)
@@ -527,6 +575,7 @@ void hardware_adc_initialize(void);
 		#define RAMFRAMEBUFF	__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
 		#define RAMDTCM			__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 		#define RAMBIGDTCM		__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
+		#define RAMBIGDTCM_MDMA		__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 		#define RAMBIG			__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
 		#define RAMHEAP __attribute__((used, section(".heap"), aligned(16))) // memory used as heap zone
 	#elif (CPUSTYLE_STM32F7XX)
@@ -540,6 +589,7 @@ void hardware_adc_initialize(void);
 		#define RAMFRAMEBUFF	//__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
 		#define RAMDTCM			__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 		#define RAMBIGDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
+		#define RAMBIGDTCM_MDMA		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 		#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
 		#define RAMHEAP __attribute__((used, section(".heap"), aligned(16))) // memory used as heap zone
 	#elif CPUSTYLE_STM32F4XX && (defined (STM32F429xx) || defined(STM32F407xx))
@@ -553,6 +603,7 @@ void hardware_adc_initialize(void);
 		#define RAMFRAMEBUFF	//__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
 		#define RAMDTCM			__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 		#define RAMBIGDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
+		#define RAMBIGDTCM_MDMA	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 		#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
 		#define RAMHEAP __attribute__((used, section(".heap"), aligned(16))) // memory used as heap zone
 	#elif CPUSTYLE_STM32F4XX
@@ -566,6 +617,7 @@ void hardware_adc_initialize(void);
 		#define RAMFRAMEBUFF	//__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
 		#define RAMDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 		#define RAMBIGDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
+		#define RAMBIGDTCM_MDMA	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 		#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
 		#define RAMHEAP __attribute__((used, section(".heap"), aligned(16))) // memory used as heap zone
 	#else
@@ -579,6 +631,7 @@ void hardware_adc_initialize(void);
 		#define RAMFRAMEBUFF	//__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
 		#define RAMDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 		#define RAMBIGDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
+		#define RAMBIGDTCM_MDMA	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 		#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
 		#define RAMHEAP __attribute__((used, section(".heap"), aligned(16))) // memory used as heap zone
 	#endif
@@ -628,8 +681,8 @@ void hardware_adc_initialize(void);
 	/* тип для хранения данных, считанный из порта ввода-вывода или для формируемого значения */
 	typedef uint_fast32_t portholder_t;		
 
-	#define enableIRQ() do { asm(" NOP"); } while (0)
-	#define disableIRQ() do { asm(" NOP"); } while (0)
+	#define system_enableIRQ() do { asm(" NOP"); } while (0)
+	#define system_disableIRQ() do { asm(" NOP"); } while (0)
 
 	#define global_enableIRQ() do { asm(" NOP"); } while (0)
 	#define global_disableIRQ() do { asm(" NOP"); } while (0)
@@ -836,11 +889,9 @@ void midtests(void);
 void hightests(void);
 void looptests(void);	// Периодически вызывается в главном цикле
 
-#define ADDPAD 32	// TODO: должно быть без этого
-
-void arm_hardware_invalidate(uintptr_t base, size_t size);	// Сейчас в эту память будем читать по DMA
-void arm_hardware_flush(uintptr_t base, size_t size);	// Сейчас эта память будет записываться по DMA куда-то
-void arm_hardware_flush_invalidate(uintptr_t base, size_t size);	// Сейчас эта память будет записываться по DMA куда-то. Потом содержимое не требуется
+void arm_hardware_invalidate(uintptr_t base, int_fast32_t size);	// Сейчас в эту память будем читать по DMA
+void arm_hardware_flush(uintptr_t base, int_fast32_t size);	// Сейчас эта память будет записываться по DMA куда-то
+void arm_hardware_flush_invalidate(uintptr_t base, int_fast32_t size);	// Сейчас эта память будет записываться по DMA куда-то. Потом содержимое не требуется
 void arm_hardware_flush_all(void);
 
 void r7s721_sdhi0_dma_handler(void);
@@ -930,8 +981,11 @@ void FIQ_Handler(void);
 void IRQ_Handler(void);
 void Hyp_Handler(void);
 
+void Reset_CPU1_Handler(void);	// startup located function
+void Reset_CPUn_Handler(void);
+
 // Set interrupt vector wrappers
-void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint_fast8_t priority);
+void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint_fast8_t priority, uint_fast8_t targetcpu);
 void arm_hardware_set_handler_overrealtime(uint_fast16_t int_id, void (* handler)(void));
 void arm_hardware_set_handler_realtime(uint_fast16_t int_id, void (* handler)(void));
 void arm_hardware_set_handler_system(uint_fast16_t int_id, void (* handler)(void));
@@ -941,22 +995,24 @@ void audioproc_spool_user(void);	// вызывать при выполнении
 void hardware_set_dotclock(unsigned long dotfreq);
 void hardware_nonguiyield(void);
 
+uint_fast32_t display_getdotclock(void);
+
+
+#define USBALIGN_BEGIN __attribute__ ((aligned (64)))
+#define USBALIGN_END /* nothing */
+#define UNUSED(x) ((void)(x))
+
+#define AUDIORECBUFFSIZE16 (16384)	// размер данных должен быть не меньше размера кластера на SD карте
+
+
+#define  ARRAY_SIZE(a)  (sizeof a / sizeof a [0])
+
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
 
 #include "product.h"
 #include "taildefs.h"
-
-#define USBALIGN_BEGIN __attribute__ ((aligned (64)))
-#define USBALIGN_END /* nothing */
-#define UNUSED(x) ((void)(x))
-
-
-#define AUDIORECBUFFSIZE16 (16384)	// размер данных должен быть не меньше размера кластера на SD карте
-
-uint_fast32_t display_getdotclock(void);
-
-#define  ARRAY_SIZE(a)  (sizeof a / sizeof a [0])
 
 #endif // HARDWARE_H_INCLUDED

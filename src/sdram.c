@@ -16,7 +16,7 @@
 
 #if WITHSDRAMHW
 
-#if CPUSTYLE_STM32F && ! (CPUSTYLE_STM32MP157A || CPUSTYLE_STM32MP157D)
+#if CPUSTYLE_STM32F
 
 #define assert_param(expr) do { } while (0)
 /**
@@ -2883,7 +2883,7 @@ void arm_hardware_sdram_initialize(void)
   
 }
 
-#elif CPUSTYLE_STM32MP157A || CPUSTYLE_STM32MP157D
+#elif CPUSTYLE_STM32MP1
 
 // Taken from https://github.com/ARM-software/arm-trusted-firmware
 
@@ -5950,18 +5950,19 @@ static void ddr_check_progress(uint32_t addr)
 #endif /* defined (BOARD_BLINK_SETSTATE) */
 }
 
-static uint32_t ddr_check_rand(void)
+static uint32_t ddr_check_rand(unsigned long sizeee)
 {
+	typedef uint8_t test_t;
 	//uint64_t addressmask = (DDR_MEM_SIZE - 1U);
-	const uint32_t size4 = DDR_MEM_SIZE / 4;
-	volatile uint32_t * p;
+	const uint32_t sizeN = sizeee / sizeof (test_t);
+	volatile test_t * const p = (volatile test_t *) STM32MP_DDR_BASE;
 	uint32_t i;
 
 	// fill
 	//local_random_init();
 	uint32_t seed = rand_val;
-	p = (volatile uint32_t *) STM32MP_DDR_BASE;
-	for (i = 0; i < size4; ++ i)
+
+	for (i = 0; i < sizeN; ++ i)
 	{
 		ddr_check_progress(i);
 		p [i] = local_random();
@@ -5969,15 +5970,15 @@ static uint32_t ddr_check_rand(void)
 	// compare
 	//local_random_init();
 	rand_val = seed;
-	p = (volatile uint32_t *) STM32MP_DDR_BASE;
-	for (i = 0; i < size4; ++ i)
+	//p = (volatile uint16_t *) STM32MP_DDR_BASE;
+	for (i = 0; i < sizeN; ++ i)
 	{
 		ddr_check_progress(i);
-		if (p [i] != local_random())
-			return i * 4;
+		if (p [i] != (test_t) local_random())
+			return i * sizeof (test_t);
 	}
 
-	return DDR_MEM_SIZE;	// OK
+	return sizeee;	// OK
 }
 // NT5CC128M16IP-DI BGA DDR3 NT5CC128M16IP DI
 void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
@@ -6043,16 +6044,17 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 		/* SYSCFG clock enable */
 		RCC->MP_APB3ENSETR = RCC_MC_APB3ENSETR_SYSCFGEN;
 		(void) RCC->MP_APB3ENSETR;
+		RCC->MP_APB3LPENSETR = RCC_MC_APB3LPENSETR_SYSCFGLPEN;
+		(void) RCC->MP_APB3LPENSETR;
 		/*
 		 * Interconnect update : select master using the port 1.
 		 * MCU interconnect (OTG_HS) = AXI_M0.
 		 */
-		SYSCFG->ICNR |= SYSCFG_ICNR_AXI_M0;
-		(void) SYSCFG->ICNR;
+//		SYSCFG->ICNR |= SYSCFG_ICNR_AXI_M0;
+//		(void) SYSCFG->ICNR;
 	}
 
 #if WITHSDRAM_PMC1
-	TWISOFT_INITIALIZE();
 	initialize_pmic();
 #endif /* WITHSDRAM_PMC1 */
 
@@ -6110,10 +6112,6 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 	/* Enable axidcg clock gating */
 	mmio_setbits_32(RCC_BASE + RCC_DDRITFCR, RCC_DDRITFCR_AXIDCGEN);
 
-#if WITHSDRAM_PMC1
-	TWISOFT_DEINITIALIZE();
-#endif /* WITHSDRAM_PMC1 */
-
 	// инициализация выполняетмя еще до включения MMU
 	//__set_SCTLR(__get_SCTLR() & ~ SCTLR_C_Msk);
 
@@ -6167,10 +6165,10 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 			      uret, config.info.size);
 			panic();
 		}
-		uret = ddr_check_rand();
-		if (uret != config.info.size) {
+		uret = ddr_check_rand(config.info.size / 32);
+		if (uret != (config.info.size / 32)) {
 			ERROR("DDR random test: 0x%x does not match DT config: 0x%x\n",
-			      uret, config.info.size);
+			      uret, config.info.size / 32);
 			panic();
 		}
 		PRINTF(".");
@@ -6181,6 +6179,11 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 #endif
 	//__set_SCTLR(__get_SCTLR() | SCTLR_C_Msk);
 	//PRINTF("TZC->INT_STATUS=%08lX\n", TZC->INT_STATUS);
+
+	/* Software Self-Refresh mode (SSR) during DDR initilialization */
+	mmio_clrsetbits_32(RCC_BASE + RCC_DDRITFCR,
+			   RCC_DDRITFCR_DDRCKMOD_Msk,
+			   (0) << RCC_DDRITFCR_DDRCKMOD_Pos);
 
 	PRINTF("arm_hardware_sdram_initialize done\n");
 }

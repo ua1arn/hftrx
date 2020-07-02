@@ -7,7 +7,7 @@
 // Доработки для LS020 Василий Линывый, livas60@mail.ru
 //
 
-#include <src/gui/gui.h>
+#include "src/gui/gui.h"
 #include "hardware.h"
 #include "board.h"
 #include "display.h"
@@ -23,7 +23,7 @@
 //#include "./byte2crun.h"
 //#endif /* ! LCDMODE_LTDC_L24 */
 
-typedef PACKEDCOLORMAIN_T FRAMEBUFF_T [LCDMODE_MAIN_PAGES] [GXSIZE(DIM_SECOND, DIM_FIRST)];
+//typedef PACKEDCOLORMAIN_T FRAMEBUFF_T [LCDMODE_MAIN_PAGES] [GXSIZE(DIM_SECOND, DIM_FIRST)];
 
 #if defined (SDRAM_BANK_ADDR) && LCDMODE_LTDCSDRAMBUFF && LCDMODE_LTDC
 	#define framebuff (* (FRAMEBUFF_T *) SDRAM_BANK_ADDR)
@@ -32,30 +32,60 @@ typedef PACKEDCOLORMAIN_T FRAMEBUFF_T [LCDMODE_MAIN_PAGES] [GXSIZE(DIM_SECOND, D
 	//extern FRAMEBUFF_T framebuff0;	//L8 (8-bit Luminance or CLUT)
 #endif /* defined (SDRAM_BANK_ADDR) && LCDMODE_LTDCSDRAMBUFF && LCDMODE_LTDC */
 
-#if ! defined (SDRAM_BANK_ADDR)
+#if ! defined (SDRAM_BANK_ADDR) && LCDMODE_MAIN_PAGES == 3
 	// буфер экрана
-	RAMFRAMEBUFF ALIGNX_BEGIN FRAMEBUFF_T framebuff0 ALIGNX_END;
+	//RAMFRAMEBUFF ALIGNX_BEGIN FRAMEBUFF_T framebuff0 ALIGNX_END;
+	RAMFRAMEBUFF ALIGNX_BEGIN PACKEDCOLORMAIN_T fbf0 [GXSIZE(DIM_SECOND, DIM_FIRST)] ALIGNX_END;
+	RAMFRAMEBUFF ALIGNX_BEGIN PACKEDCOLORMAIN_T fbf1 [GXSIZE(DIM_SECOND, DIM_FIRST)] ALIGNX_END;
+	RAMFRAMEBUFF ALIGNX_BEGIN PACKEDCOLORMAIN_T fbf2 [GXSIZE(DIM_SECOND, DIM_FIRST)] ALIGNX_END;
+	static PACKEDCOLORMAIN_T * const fbfs [LCDMODE_MAIN_PAGES] =
+	{
+			fbf0, fbf1, fbf2,
+	};
+
+	static uint_fast8_t mainphase;
+
+	void colmain_fb_next(void)
+	{
+		mainphase = (mainphase + 1) % LCDMODE_MAIN_PAGES;
+	}
+
+	PACKEDCOLORMAIN_T *
+	colmain_fb_draw(void)
+	{
+		return fbfs [(mainphase + 1) % LCDMODE_MAIN_PAGES];
+	}
+
+
+	PACKEDCOLORMAIN_T *
+	colmain_fb_show(void)
+	{
+		return fbfs [(mainphase + 0) % LCDMODE_MAIN_PAGES];
+	}
+
+#elif LCDMODE_LTDC
+
+	RAMFRAMEBUFF ALIGNX_BEGIN PACKEDCOLORMAIN_T fbf [GXSIZE(DIM_SECOND, DIM_FIRST)] ALIGNX_END;
+
+	void colmain_fb_next(void)
+	{
+	}
+
+	PACKEDCOLORMAIN_T *
+	colmain_fb_draw(void)
+	{
+		return fbf;
+	}
+
+
+	PACKEDCOLORMAIN_T *
+	colmain_fb_show(void)
+	{
+		return fbf;
+	}
+
+
 #endif /* LCDMODE_LTDC */
-
-static uint_fast8_t mainphase;
-
-void colmain_fb_next(void)
-{
-	mainphase = (mainphase + 1) % LCDMODE_MAIN_PAGES;
-}
-
-PACKEDCOLORMAIN_T *
-colmain_fb_draw(void)
-{
-	return (PACKEDCOLORMAIN_T *) & framebuff0 [(mainphase + 1) % LCDMODE_MAIN_PAGES] [0];
-}
-
-
-PACKEDCOLORMAIN_T *
-colmain_fb_show(void)
-{
-	return (PACKEDCOLORMAIN_T *) & framebuff0 [(mainphase + 0) % LCDMODE_MAIN_PAGES] [0];
-}
 
 
 // Установить прозрачность для прямоугольника
@@ -296,7 +326,7 @@ void display2_xltrgb24(COLOR24_T * xltable)
 	fillfour_xltrgb24(xltable, COLORPIP_BLACK     	, COLOR24(0x00, 0x00, 0x00));
 	fillfour_xltrgb24(xltable, COLORPIP_WHITE     	, COLOR24(0xFF, 0xFF, 0xFF));
 	fillfour_xltrgb24(xltable, COLORPIP_GRAY      	, COLOR24(0x60, 0x60, 0x60));
-	fillfour_xltrgb24(xltable, COLORPIP_DARKGREEN 	, COLOR24(0x00, 0x40, 0x00));
+	fillfour_xltrgb24(xltable, COLORPIP_DARKGREEN 	, COLOR24(0x00, 0x80, 0x00));
 	fillfour_xltrgb24(xltable, COLORPIP_BLUE      	, COLOR24(0x00, 0x00, 0xFF));
 	fillfour_xltrgb24(xltable, COLORPIP_GREEN     	, COLOR24(0x00, 0xFF, 0x00));
 	fillfour_xltrgb24(xltable, COLORPIP_RED       	, COLOR24(0xFF, 0x00, 0x00));
@@ -323,7 +353,7 @@ void display2_xltrgb24(COLOR24_T * xltable)
 #endif /* COLORSTYLE_ATS52 */
 
 #elif LCDMODE_COLORED && ! LCDMODE_DUMMY	/* LCDMODE_MAIN_L8 && LCDMODE_PIP_L8 */
-	PRINTF("display2_xltrgb24: init RRRGGGBB colos\n");
+	PRINTF("display2_xltrgb24: init RRRRRGGG GGGBBBBB colos\n");
 	// Обычная таблица - все цвета могут быть использованы как индекс
 	// Водопад отображается без использования инлдексов цветов
 	int i;
@@ -349,7 +379,10 @@ void display_putpixel(
 	COLORMAIN_T color
 	)
 {
-	colmain_putpixel(colmain_fb_draw(), DIM_X, DIM_Y, x, y, color);
+	PACKEDCOLORMAIN_T * const buffer = colmain_fb_draw();
+	const uint_fast16_t dx = DIM_X;
+	const uint_fast16_t dy = DIM_Y;
+	colmain_putpixel(buffer, dx, dy, x, y, color);
 }
 
 /* заполнение прямоугольника на основном экране произвольным цветом
@@ -387,7 +420,7 @@ display_scroll_down(
 
 #if WITHDMA2DHW && LCDMODE_LTDC
 
-#if LCDMODE_HORFILL
+#if LCDMODE_HORFILL && defined (DMA2D_FGPFCCR_CM_VALUE_MAIN)
 	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
 	/* TODO: В DMA2D нет средств управления направлением пересылки, потому данный код копирует сам на себя данные (размножает) */
 	/* исходный растр */
@@ -419,6 +452,10 @@ display_scroll_down(
 	/* ожидаем выполнения операции */
 	while ((DMA2D->CR & DMA2D_CR_START) != 0)
 		hardware_nonguiyield();
+	__DMB();
+
+	ASSERT((DMA2D->ISR & DMA2D_ISR_CEIF) == 0);	// Configuration Error
+	ASSERT((DMA2D->ISR & DMA2D_ISR_TEIF) == 0);	// Transfer Error
 
 #else /* LCDMODE_HORFILL */
 #endif /* LCDMODE_HORFILL */
@@ -442,7 +479,7 @@ display_scroll_up(
 	const uint_fast16_t dy = DIM_Y;
 
 #if WITHDMA2DHW && LCDMODE_LTDC
-#if LCDMODE_HORFILL
+#if LCDMODE_HORFILL && defined (DMA2D_FGPFCCR_CM_VALUE_MAIN)
 	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
 
 	/* исходный растр */
@@ -474,6 +511,10 @@ display_scroll_up(
 	/* ожидаем выполнения операции */
 	while ((DMA2D->CR & DMA2D_CR_START) != 0)
 		hardware_nonguiyield();
+	__DMB();
+
+	ASSERT((DMA2D->ISR & DMA2D_ISR_CEIF) == 0);	// Configuration Error
+	ASSERT((DMA2D->ISR & DMA2D_ISR_TEIF) == 0);	// Transfer Error
 
 #else /* LCDMODE_HORFILL */
 #endif /* LCDMODE_HORFILL */
@@ -652,7 +693,7 @@ ltdc_vertical_pixN(
 	// TODO: для паттернов шире чем восемь бит, повторить нужное число раз.
 	const FLASHMEM PACKEDCOLORMAIN_T * const pcl = (* byte2runmain) [pattern];
 	memcpy(tgr, pcl, sizeof (* pcl) * w);
-	arm_hardware_flush((uintptr_t) tgr, sizeof (PACKEDCOLORMAIN_T) * w);
+	//arm_hardware_flush((uintptr_t) tgr, sizeof (PACKEDCOLORMAIN_T) * w);
 #endif /* LCDMODE_LTDC_L24 */
 }
 
@@ -678,7 +719,7 @@ void RAMFUNC ltdc_horizontal_pixels(
 		const FLASHMEM PACKEDCOLORMAIN_T * const pcl = (* byte2runmain) [* raster ++];
 		memcpy(tgr + col, pcl, sizeof (* tgr) * w);
 	}
-	arm_hardware_flush((uintptr_t) tgr, sizeof (* tgr) * width);
+	//arm_hardware_flush((uintptr_t) tgr, sizeof (* tgr) * width);
 }
 
 // Вызов этой функции только внутри display_wrdata_begin() и display_wrdata_end();
@@ -922,12 +963,16 @@ bigfont_decode(uint_fast8_t c)
 		return 10;		// курсор - позиция редактирвания частоты
 	if (c == '.')
 		return 12;		// точка
+	if (c > '9')
+		return 10;		// ошибка - курсор - позиция редактирвания частоты
 	return c - '0';		// остальные - цифры 0..9
 }
 
 uint_fast8_t
 smallfont_decode(uint_fast8_t c)
 {
+	if (c < ' ' || c > 0x7F)
+		return '$' - ' ';
 	return c - ' ';
 }
 
@@ -1427,27 +1472,32 @@ void display_plotfrom(uint_fast16_t x, uint_fast16_t y)
 // Выдать буфер на дисплей. Функции бывают только для не L8 режимов
 // В случае фреймбуфеных дисплеев - формат цвета и там и там одинаковый
 void colpip_to_main(
+	uintptr_t srcinvalidateaddr,	// параметры clean источника
+	int_fast32_t srcinvalidatesize,
 	const PACKEDCOLORPIP_T * buffer,	// источник
 	uint_fast16_t dx,	// ширина буфера источника
 	uint_fast16_t dy,	// высота буфера источника
-	uint_fast16_t col,	// горизонтальная координата левого верхнего угла на экране (0..dx-1) слева направо
-	uint_fast16_t row	// вертикальная координата левого верхнего угла на экране (0..dy-1) сверху вниз
+	uint_fast16_t col,	// целевая горизонтальная координата левого верхнего угла на экране (0..dx-1) слева направо
+	uint_fast16_t row	// целевая вертикальная координата левого верхнего угла на экране (0..dy-1) сверху вниз
 	)
 {
 	ASSERT(dx <= DIM_X);
 	ASSERT(dy <= DIM_Y);
+	ASSERT(((uintptr_t) buffer % DCACHEROWSIZE) == 0);
 #if LCDMODE_HORFILL
 	hwaccel_copy(
 		(uintptr_t) colmain_fb_draw(), sizeof (PACKEDCOLORPIP_T) * GXSIZE(DIM_X, DIM_Y),	// target area invalidate parameters
-		colmain_mem_at(colmain_fb_draw(), DIM_X, DIM_Y, col, row),
-		buffer,
-		dx, GXADJ(DIM_X) - GXADJ(dx), dy);	// w, t, h
+		colmain_mem_at(colmain_fb_draw(), DIM_X, DIM_Y, col, row), DIM_X, DIM_Y,
+		srcinvalidateaddr, srcinvalidatesize,	// параметры clean источника
+		buffer, dx, dy
+		);
 #else /* LCDMODE_HORFILL */
 	hwaccel_copy(
 		(uintptr_t) colmain_fb_draw(), sizeof (PACKEDCOLORPIP_T) * GXSIZE(DIM_X, DIM_Y),	// target area invalidate parameters
-		colmain_mem_at(colmain_fb_draw(), DIM_X, DIM_Y, col, row),
-		buffer,
-		dy, DIM_Y - dy, dx);	// w, t, h
+		colmain_mem_at(colmain_fb_draw(), DIM_X, DIM_Y, col, row), DIM_X, DIM_Y,
+		srcinvalidateaddr, srcinvalidatesize,	// параметры clean источника
+		buffer, dx, dy
+		);
 #endif /* LCDMODE_HORFILL */
 }
 
@@ -1461,6 +1511,8 @@ void display_plotfrom(uint_fast16_t x, uint_fast16_t y)
 // Выдать буфер на дисплей. Функции бывают только для не L8 режимов
 // В случае фреймбуфеных дисплеев - формат цвета и там и там одинаковый
 void colpip_to_main(
+	uintptr_t srcinvalidateaddr,	// параметры clean источника
+	int_fast32_t srcinvalidatesize,
 	const PACKEDCOLORPIP_T * buffer,	// источник
 	uint_fast16_t dx,	// ширина буфера источника
 	uint_fast16_t dy,	// высота буфера источника
@@ -1491,11 +1543,13 @@ void display_hardware_initialize(void)
 #if WITHDMA2DHW
 	// Image construction hardware
 	arm_hardware_dma2d_initialize();
+
 #endif /* WITHDMA2DHW */
 #if WITHMDMAHW
 	// Image construction hardware
 	arm_hardware_mdma_initialize();
-#endif
+
+#endif /* WITHMDMAHW */
 #if WITHLTDCHW
 	// STM32xxx LCD-TFT Controller (LTDC)
 	// RENESAS Video Display Controller 5

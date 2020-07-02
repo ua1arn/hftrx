@@ -14,7 +14,6 @@
 #include <string.h>
 #include <math.h>
 #include <ctype.h>
-#include <assert.h>
 //////////////////
 // ++++++
 
@@ -792,10 +791,10 @@ uint_fast8_t processmodem(void)
 	uint_fast8_t any = 0;	// если что-то поменялось в режимах
 	uint_fast8_t f;
 
-	disableIRQ();
+	system_disableIRQ();
 	f = paramschangedfreq;
 	paramschangedfreq = 0;
-	enableIRQ();
+	system_enableIRQ();
 
 	if (f)
 	{
@@ -803,10 +802,10 @@ uint_fast8_t processmodem(void)
 		modemchangefreq(modemfreq);
 	}
 
-	disableIRQ();
+	system_disableIRQ();
 	f = paramschangedspeed;
 	paramschangedspeed = 0;
-	enableIRQ();
+	system_enableIRQ();
 
 	if (f)
 	{
@@ -814,10 +813,10 @@ uint_fast8_t processmodem(void)
 		modemchangespeed(modemspeed100);
 	}
 
-	disableIRQ();
+	system_disableIRQ();
 	f = paramschangedmode;
 	paramschangedmode = 0;
-	enableIRQ();
+	system_enableIRQ();
 
 	if (f)
 	{

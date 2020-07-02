@@ -60,13 +60,13 @@ static uint_fast8_t local_isdigit(char c)
 	return c >= '0' && c <= '9';
 }
 
-static uint_fast8_t
+static int
 local_format(void * param, int (* putsub)(void *, int), const FLASHMEM char * pfmt, va_list args)
 {
 	enum { TMP_S_SIZE = 14 };
-	int_fast8_t /* int	*/ rj, altern;
-	char	c, signc, fillc;
-	uint_fast8_t /* int */	maxwidth, width, i;
+	int	rj, altern;
+	char c, signc, fillc;
+	int maxwidth, width, i;
 	union
 	{
 #ifdef	__NOLONG__
@@ -77,7 +77,7 @@ local_format(void * param, int (* putsub)(void *, int), const FLASHMEM char * pf
 #endif
 		void * pval;
 		/* double dval;	*/
-	}		u;
+	} u;
 	char	 	* cp;
 	char		s [TMP_S_SIZE + 1];
 	int		len;
@@ -289,7 +289,7 @@ vsputchar(void * param, int ch)
 
 	// Для архитектуры ATMega определена только эта функция -
 	// с расположением форматной строкии в памяти программ.
-uint_fast8_t local_snprintf_P( char *buffer, uint_fast8_t count, const FLASHMEM char *format, ... )
+uint_fast8_t local_snprintf_P( char * __restrict buffer, uint_fast8_t count, const FLASHMEM char * __restrict format, ... )
 {
 	va_list	ap;
 	int n;
@@ -332,7 +332,7 @@ safestrcpy(char * dst, size_t blen, const char * src)
 /*	User-side of console output.			*/
 // использование библиотечной функции (поддержка печати чисел с плавающей точкой).
 
-void debug_printf_P(const FLASHMEM char *format, ... )
+void debug_printf_P(const FLASHMEM char *__restrict format, ... )
 {
 	char b [256];
 	va_list	ap;
@@ -369,10 +369,48 @@ void debug_printf_P(const FLASHMEM char *format, ... )
 
 #endif /* FORMATFROMLIBRARY */
 
+
+
+static int
+toprintc(int c)
+{
+	if (c < 0x20 || c >= 0x7f)
+		return '.';
+	return c;
+}
+
+void
+printhex(unsigned long voffs, const unsigned char * buff, unsigned length)
+{
+	unsigned i, j;
+	unsigned rows = (length + 15) / 16;
+
+	for (i = 0; i < rows; ++ i)
+	{
+		const int trl = ((length - 1) - i * 16) % 16 + 1;
+		debug_printf_P(PSTR("%08lX "), voffs + i * 16);
+		for (j = 0; j < trl; ++ j)
+			debug_printf_P(PSTR(" %02X"), buff [i * 16 + j]);
+
+		debug_printf_P(PSTR("%*s"), (16 - trl) * 3, "");
+
+		debug_printf_P(PSTR("  "));
+		for (j = 0; j < trl; ++ j)
+			debug_printf_P(PSTR("%c"), toprintc(buff [i * 16 + j]));
+
+		debug_printf_P(PSTR("\n"));
+	}
+}
+
 #else /* WITHDEBUG */
 
 void debug_printf_P(const FLASHMEM char *format, ... )
 {
 	(void) format;
+}
+
+void
+printhex(unsigned long voffs, const unsigned char * buff, unsigned length)
+{
 }
 #endif /* WITHDEBUG */

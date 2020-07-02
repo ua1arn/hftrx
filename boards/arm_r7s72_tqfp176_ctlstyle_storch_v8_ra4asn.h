@@ -252,6 +252,12 @@
 	#define	BOARD_AGCCODE_ON	0x00
 	#define	BOARD_AGCCODE_OFF	0x01
 
+	// +++ заглушки для плат с DSP обработкой
+	#define BOARD_NOTCH_OFF		0
+	#define BOARD_NOTCH_MANUAL	1
+	#define BOARD_NOTCH_AUTO	2
+	//#define WITHLMSAUTONOTCH	1	/* Использование AUTONOTCH	*/
+
 	/* коды фильтров второй ПЧ, выдаваемые на дешифраторы */
 	#define BOARD_FILTER_0P5		1	/* 0.5 or 0.3 kHz filter */
 	#define BOARD_FILTER_3P1		0	/* 3.1 or 2.75 kHz filter */
@@ -259,8 +265,8 @@
 	#define BOARD_FILTER_8P0		0	/* 6.0 kHz filter */
 	// --- заглушки для плат с DSP обработкой
 
-	#define WITHRTS192	1		// Есть канал спектроанализатора - не забыть включить WITHSAI2HW
-	//#define WITHRTS96		1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
+	//#define WITHRTS192	1		// Есть канал спектроанализатора - не забыть включить WITHSAI2HW
+	#define WITHRTS96		1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 
 	#define ENCRES_DEFAULT ENCRES_400
 	#define ENCDIV_DEFAULT	12
@@ -281,7 +287,7 @@
 	//#define WITHUSEDUALWATCH	1	// Второй приемник
 	#define WITHREVERB	1	// ревербератор в обработке микрофонного сигнала
 	#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
-	#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
+	//#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 
 	// FPGA section
 	//#define WITHFPGAWAIT_AS	1	/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
@@ -294,7 +300,7 @@
 	//#define WITHIFSHIFTOFFSET	(-250)	/* Начальное занчение IF SHIFT */
 	//#define WITHPBT		1	/* используется PBT (если LO3 есть) */
 	#define WITHCAT			1	/* используется CAT (через USB CDC) */
-	//#define WITHDEBUG		1	/* Отладочная печать через COM-порт. */
+	#define WITHDEBUG		1	/* Отладочная печать через COM-порт. */
 	//#define WITHNMEA		1	/* используется NMEA parser */
 	//#define WITHMODEM		1	/* Устройство работает как радиомодем с последовательным интерфейсом */
 	//#define WITHFREEDV	1	/* поддержка режима FreeDV - http://freedv.org/ */
@@ -362,14 +368,15 @@
 
 	#define WITHBARS		1	/* отображение S-метра и SWR-метра */
 
-	#define WITHDISPLAY_FPS		15
-	#define WITHDISPLAYSWR_FPS	30
+	#define WITHDISPLAY_FPS		25
+	#define WITHDISPLAYSWR_FPS	25
 
 	#define WITHMAXPWRCALI		74
 	#define WITHSWRCALI			50
 
 	#define WITHTOUCHGUI		1
 	#define WITHALPHA			64
+	#define FORMATFROMLIBRARY 	1
 
 	#define WITHBOTTOMDBVAL		110
 	#define DEFAULTDIALFREQ		3708000L
