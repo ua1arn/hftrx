@@ -645,7 +645,7 @@ static void display2_notch5(
 #if WITHNOTCHONOFF || WITHNOTCHFREQ
 	int_fast32_t freq;
 	const uint_fast8_t state = hamradio_get_notchvalue(& freq);
-	const char FLASHMEM * const labels [2] = { text_nul5_P, hamradio_get_notchtype5_P(), };
+	const char FLASHMEM * const labels [2] = { hamradio_get_notchtype5_P(), hamradio_get_notchtype5_P(), };
 	display2_text_P(x, y, labels, colors_2state, state);
 #endif /* WITHNOTCHONOFF || WITHNOTCHFREQ */
 }
