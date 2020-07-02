@@ -35,7 +35,7 @@ static int position_kbd;	/* накопитель от клавиатуры - з�
 
 // dimensions are:
 // old_bits new_bits
-static const RAMDTCM int8_t graydecoder [4][4] =
+static RAMDTCM int8_t graydecoder [4][4] =
 {
 	{
 		+0,		/* 00 -> 00 stopped				*/
