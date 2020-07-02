@@ -654,11 +654,11 @@ static const FLASHMEM struct {
 	char label [6];
 }  notchmodes [] =
 {
-	{ 0, "     " },
-	{ 1, "NOTCH" },
+//	{ BOARD_NOTCH_OFF, 		"     " },
 #if WITHLMSAUTONOTCH
-	{ 2, "ANTCH" },
+	{ BOARD_NOTCH_AUTO, 	"ANTCH" },
 #endif /* WITHLMSAUTONOTCH */
+	{ BOARD_NOTCH_MANUAL, 	"NOTCH" },
 };
 
 #if WITHUSEDUALWATCH
@@ -2503,8 +2503,9 @@ struct nvmap
 	uint8_t gnotch;
 #elif WITHNOTCHFREQ
 	uint8_t	ggrpnotch; // последний посещённый пункт группы
-	uint8_t gnotch;
-	uint8_t gautonotch;
+	uint8_t gautonotch;	// TODO: remove
+	uint8_t gnotch;		// on/off - кнопкой, не через меню
+	uint8_t gnotchtype;
 	uint16_t gnotchfreq;
 	uint16_t gnotchwidth;
 #endif /* WITHNOTCHONOFF, WITHNOTCHFREQ */
@@ -2956,8 +2957,9 @@ filter_t fi_2p0_455 =
 #define RMT_MODEROW_BASE(i)	offsetof(struct nvmap, bands[(i)].moderow)			/* номер строки в массиве режимов. */
 #define RMT_MODECOLS_BASE(i, j)	offsetof(struct nvmap, bands[(i)].modecols [(j)])	/* выбранный столбец в каждой строке режимов. */
 #define RMT_PWR_BASE offsetof(struct nvmap, gpwri)								/* большая мощность sw2012sf */
-#define RMT_NOTCH_BASE offsetof(struct nvmap, gnotch)							/* NOTCH filter */
-//#define RMT_NOTCHFREQ_BASE offsetof(struct nvmap, gnotchfreq)							/* NOTCH filter frequency */
+#define RMT_NOTCH_BASE offsetof(struct nvmap, gnotch)							/* NOTCH on/off */
+#define RMT_NOTCHTYPE_BASE offsetof(struct nvmap, gnotchtype)					/* NOTCH filter type */
+//#define RMT_NOTCHFREQ_BASE offsetof(struct nvmap, gnotchfreq)					/* Manual NOTCH filter frequency */
 
 #define RMT_USER1_BASE offsetof(struct nvmap, guser1)
 #define RMT_USER2_BASE offsetof(struct nvmap, guser2)
@@ -3085,10 +3087,11 @@ static uint_fast8_t lockmode;
 static uint_fast8_t gusefast;
 
 #if WITHNOTCHONOFF
-	static uint_fast8_t gnotch;
+	static uint_fast8_t gnotch;	// on/off
 #elif WITHNOTCHFREQ
-	static uint_fast8_t gnotch;
-	static uint_fast8_t gautonotch;
+	static uint_fast8_t gautonotch;	// TODO: remove
+	static uint_fast8_t gnotch;	// on/off
+	static uint_fast8_t gnotchtype;
 	static dualctl16_t gnotchfreq = { 1000, 1000 };
 	static dualctl16_t gnotchwidth = { 500, 500 };
 #endif /* WITHNOTCHFREQ */
@@ -5588,6 +5591,7 @@ enum
 	RJ_SIGNED,		/* отображние знакового числа (меню на втором валкодере) */
 	RJ_UNSIGNED,		/* отображние знакового числа (меню на втором валкодере) */
 	RJ_SMETER,		/* выбор внешнего вида прибора - стрелочный или градусник */
+	RJ_NOTCH,		/* тип NOTCH фильтра - MANUAL/AUTO */
 	//
 	RJ_notused
 };
@@ -6191,16 +6195,13 @@ loadsavedstate(void)
 	gpwri = loadvfy8up(RMT_PWR_BASE, 0, PWRMODE_COUNT - 1, gpwri);
 #endif /* WITHPOWERLPHP */
 #if WITHNOTCHONOFF
-	gnotch = loadvfy8up(RMT_NOTCH_BASE, 0, NOTCHMODE_COUNT - 1, gnotch);
+	gnotch = loadvfy8up(RMT_NOTCH_BASE, 0, 1, gnotch);
 #elif WITHNOTCHFREQ
+	gnotch = loadvfy8up(RMT_NOTCH_BASE, 0, 1, gnotch);
 #if WITHENCODER2
 	enc2state = loadvfy8up(RMT_ENC2STATE_BASE, ENC2STATE_INITIALIZE, ENC2STATE_COUNT - 1, enc2state);	/* вытаскиваем режим режактирования паарметров вторым валкодером */
 	enc2pos = loadvfy8up(RMT_ENC2POS_BASE, 0, ENC2POS_COUNT - 1, enc2pos);	/* вытаскиваем номер параметра для редактирования вторым валкодером */
 #endif /* WITHENCODER2 */
-	// паратметры регулируются через меню - тут не нужны.
-	// правда, вкд/выед через клавиатуру...
-	//gnotch = loadvfy8up(RMT_NOTCH_BASE, 0, NOTCHMODE_COUNT - 1, gnotch);
-	//gnotchfreq = loadvfy16up(RMT_NOTCHFREQ_BASE, WITHNOTCHFREQMIN, WITHNOTCHFREQMAX, gnotchfreq);
 #endif /* WITHNOTCHONOFF */
 	menuset = loadvfy8up(RMT_MENUSET_BASE, 0, display_getpagesmax(), menuset);		/* вытаскиваем номер субменю, с которым работаем сейчас */
 #if WITHSPLIT
@@ -7586,6 +7587,7 @@ static void processNoiseReduction(lmsnrstate_t * nrp, const float* bufferIn, flo
 
 #endif /* WITHNOSPEEX */
 
+#if WITHLMSAUTONOTCH
 enum {
 	autonotch_numtaps = 64,
 	autonotch_buffer_size = FIRBUFSIZE * 4,
@@ -7626,6 +7628,7 @@ static void hamradio_autonotch_process(float32_t * notchbuffer)
 	lmsData.reference_index_old %= autonotch_buffer_size;
 	lmsData.reference_index_new %= autonotch_buffer_size;
 }
+#endif /* WITHLMSAUTONOTCH */
 
 // обработка и сохранение в savesampleout16stereo_user()
 static void processingonebuff(uint_fast8_t pathi, lmsnrstate_t * const nrp, speexel_t * p)
@@ -7633,6 +7636,7 @@ static void processingonebuff(uint_fast8_t pathi, lmsnrstate_t * const nrp, spee
 	const uint_fast8_t mode = submodes [gsubmode].mode;
 	const uint_fast8_t nospeex = gtx || mode == MODE_DIGI || gdatamode;	// не делать даже коррекцию АЧХ
 	const uint_fast8_t denoise = ! nospeex && gnoisereducts [mode];
+	const uint_fast8_t anotch = gnotch && notchmodes [gnotchtype].code == BOARD_NOTCH_AUTO;
 	//////////////////////////////////////////////
 	// Filtering
 	// Use CMSIS DSP interface
@@ -7659,7 +7663,7 @@ static void processingonebuff(uint_fast8_t pathi, lmsnrstate_t * const nrp, spee
 	if (denoise)
 	{
 		// Filtering and denoise.
-		if (gautonotch && pathi == 0)
+		if (anotch && pathi == 0)
 			hamradio_autonotch_process(p);
 		arm_fir_f32(& nrp->fir_instance, p, nrp->wire1, FIRBUFSIZE);
 		speex_preprocess_run(nrp->st_handle, nrp->wire1);
@@ -7676,7 +7680,7 @@ static void processingonebuff(uint_fast8_t pathi, lmsnrstate_t * const nrp, spee
 		// Filtering only.
 		ASSERT(p != NULL);
 		ASSERT(nrp->wire1 != NULL);
-		if (gautonotch && pathi == 0)
+		if (anotch && pathi == 0)
 			hamradio_autonotch_process(p);
 		arm_fir_f32(& nrp->fir_instance, p, nrp->wire1, FIRBUFSIZE);
 		nrp->outsp = nrp->wire1;
@@ -8177,10 +8181,10 @@ updateboard(
 			if (gtx == 0)
 			{
 			#if WITHNOTCHONOFF
-				board_set_notch(notchmodes [gnotch].code);
-				board_set_notchnarrow(notchmodes [gnotch].code && pamodetempl->nar);
+				board_set_notch(gnotch && notchmodes [gnotchtype].code != BOARD_NOTCH_OFF);
+				board_set_notchnarrow(gnotch && notchmodes [gnotchtype].code != BOARD_NOTCH_OFF && pamodetempl->nar);
 			#elif WITHNOTCHFREQ
-				board_set_notch_on(notchmodes [gnotch].code);
+				board_set_notch_mode(gnotch == 0 ? BOARD_NOTCH_OFF : notchmodes [gnotchtype].code);
 				board_set_notch_width(gnotchwidth.value);
 				board_set_notch_freq(gnotchfreq.value);	// TODO: при AUTONOTCH ставить INT16_MAX ?
 			#endif /* WITHNOTCHFREQ */
@@ -9070,11 +9074,11 @@ uif_key_click_pwr(void)
 #endif /* WITHPOWERLPHP */
 
 #if WITHNOTCHONOFF || WITHNOTCHFREQ
-/* переключение режима NOTCH  */
+/* включение/выключение NOTCH  */
 static void 
 uif_key_click_notch(void)
 {
-	gnotch = calc_next(gnotch, 0, NOTCHMODE_COUNT - 1);
+	gnotch = calc_next(gnotch, 0, 1);
 	save_i8(RMT_NOTCH_BASE, gnotch);
 
 	updateboard(1, 0);
@@ -9352,8 +9356,14 @@ uint_fast8_t hamradio_get_notchvalue(int_fast32_t * p)
 #else /* WITHNOTCHFREQ */
 	* p = 0;
 #endif /* WITHNOTCHFREQ */
-	return gnotch;
+	return gnotch && notchmodes [gnotchtype].code != BOARD_NOTCH_OFF;
 }
+
+const FLASHMEM char * hamradio_get_notchtype5_P(void)
+{
+	return notchmodes [gnotchtype].label;
+}
+
 
 #endif /* WITHNOTCHONOFF || WITHNOTCHFREQ  */
 
@@ -13879,12 +13889,12 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #endif /* ! WITHFLATMENU */
 	{
-		QLABEL("NOTCH   "), 8, 3, RJ_ON,	ISTEP1,		/* управление режимом NOTCH */
+		QLABEL("NOTCH   "), 8, 3, RJ_NOTCH,	ISTEP1,		/* управление режимом NOTCH */
 		ITEM_VALUE,
 		0, NOTCHMODE_COUNT - 1,
-		RMT_NOTCH_BASE,							/* управление режимом NOTCH */
+		RMT_NOTCHTYPE_BASE,							/* управление режимом NOTCH */
 		NULL,
-		& gnotch,
+		& gnotchtype,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	#if ! WITHPOTNOTCH
@@ -13904,15 +13914,6 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		offsetof(struct nvmap, gnotchwidth),	/* полоса режекции NOTCH */
 		& gnotchwidth.value,
 		NULL,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL2("AUTONTCH", "Auto Notch"), 8, 3, RJ_ON,	ISTEP1,		/* управление режимом NOTCH */
-		ITEM_VALUE,
-		0, NOTCHMODE_COUNT - 1,
-		offsetof(struct nvmap, gautonotch),							/* управление режимом NOTCH */
-		NULL,
-		& gautonotch,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	#endif /* ! WITHPOTNOTCH */
@@ -16190,15 +16191,35 @@ void display2_menu_valxx(
 		break;
 
 	case RJ_SMETER:
-			{
-				static const FLASHMEM char msg_dial [] = "DIAL";
-				static const FLASHMEM char msg_bars [] = "BARS";
+		{
+			static const FLASHMEM char msg_dial [] = "DIAL";
+			static const FLASHMEM char msg_bars [] = "BARS";
 
-				width = VALUEW;
-				comma = 4;
-				display_menu_string_P(x, y, value ? msg_dial : msg_bars, width, comma);
+			width = VALUEW;
+			comma = 4;
+			display_menu_string_P(x, y, value ? msg_dial : msg_bars, width, comma);
+		}
+		break;
+
+	case RJ_NOTCH:
+		{
+			width = VALUEW;
+			comma = 4;
+			switch (notchmodes [value].code)
+			{
+			default:
+			case BOARD_NOTCH_OFF:
+				display_menu_string_P(x, y, PSTR("OFF "), width, comma);
+				break;
+			case BOARD_NOTCH_MANUAL:
+				display_menu_string_P(x, y, PSTR("FRRQ"), width, comma);
+				break;
+			case BOARD_NOTCH_AUTO:
+				display_menu_string_P(x, y, PSTR("AUTO"), width, comma);
+				break;
 			}
-			break;
+		}
+		break;
 
 	case RJ_ON:
 		{

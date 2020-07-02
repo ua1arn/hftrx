@@ -155,8 +155,12 @@ enum
 	#define	BOARD_AGCCODE_ON	0x00
 	#define	BOARD_AGCCODE_OFF	0x01
 
+	#define BOARD_NOTCH_OFF		0
+	#define BOARD_NOTCH_MANUAL	1
+	#define BOARD_NOTCH_AUTO	2
+	#define WITHLMSAUTONOTCH	1	/* Использование AUTONOTCH	*/
+
 	#define WITHNOTCHFREQ		1	/* NOTCH фильтр с устанавливаемой через меню или потенциометром частотой */
-	//#define WITHLMSAUTONOTCH	1	/* Использование AUTONOTCH	*/
 	#define WITHSUBTONES		1	/* выполняется формирование субтона при передаче NFM */
 	#define WITHSAM				1	/* synchronous AM demodulation */
 	#define WITHIFSHIFT			1	/* используется IF SHIFT */
@@ -211,7 +215,7 @@ enum
 	DSPCTL_OFFSET_HIGHCUTTX_HI,		// верхняя частота среза аудио фильтра
 	DSPCTL_OFFSET_HIGHCUTTX_LO,		// верхняя частота среза аудио фильтра
 
-	DSPCTL_OFFSET_NOTCH_ON,
+	DSPCTL_OFFSET_NOTCH_MODE,
 	DSPCTL_OFFSET_NOTCH_WIDTH_HI,
 	DSPCTL_OFFSET_NOTCH_WIDTH_LO,
 	DSPCTL_OFFSET_NOTCH_FREQ_HI,
@@ -3281,6 +3285,7 @@ uint_fast32_t hamradio_get_freq_b(void);		// Частота VFO B для ото�
 uint_fast32_t hamradio_get_freq_rx(void);		// Частота VFO A для маркировки файлов
 uint_fast32_t hamradio_get_modem_baudrate100(void);	// скорость передачи BPSK * 100
 uint_fast8_t hamradio_get_notchvalue(int_fast32_t * p);		// Notch filter ON/OFF
+const FLASHMEM char * hamradio_get_notchtype5_P(void);	// FREQ/ANOTCH
 uint_fast8_t hamradio_get_nrvalue(int_fast32_t * p);		// NR ON/OFF
 const FLASHMEM char * hamradio_get_mode_a_value_P(void);	// SSB/CW/AM/FM/..
 const FLASHMEM char * hamradio_get_mode_b_value_P(void);	// SSB/CW/AM/FM/..

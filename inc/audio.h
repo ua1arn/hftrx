@@ -603,7 +603,7 @@ void board_set_agc_scale(uint_fast8_t v);	/* подстройка парамет
 void board_set_squelch(uint_fast8_t v);	/* уровень открывания шумоподавителя */
 void board_set_notch_freq(uint_fast16_t n);	/* частота NOTCH фильтра */
 void board_set_notch_width(uint_fast16_t n);	/* полоса NOTCH фильтра */
-void board_set_notch_on(uint_fast8_t v);	/* включение NOTCH фильтра */
+void board_set_notch_mode(uint_fast8_t n);	/* включение NOTCH фильтра */
 void board_set_cwedgetime(uint_fast8_t n);	/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
 void board_set_sidetonelevel(uint_fast8_t n);	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
 void board_set_moniflag(uint_fast8_t n);	/* разрешение самопрослушивания */

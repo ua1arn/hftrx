@@ -490,7 +490,7 @@ static void display2_rec3(
 	static const FLASHMEM char text_pau [] = "PAU";
 	static const FLASHMEM char text_rec [] = "REC";
 	const FLASHMEM char * const labels [2] = { text_pau, text_rec };
-	display2_text_P(x, y, labels, colorsfg_2state, colorsbg_2state, state);
+	display2_text_P(x, y, labels, colors_2state, state);
 
 #endif /* WITHUSEAUDIOREC */
 }
@@ -635,7 +635,7 @@ static void display2_wpm5(
 #endif /* WITHELKEY */
 }
 
-// Отображение режима NOCH ON/OFF
+// Отображение типа режима NOCH и ON/OFF
 static void display2_notch5(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
@@ -645,7 +645,8 @@ static void display2_notch5(
 #if WITHNOTCHONOFF || WITHNOTCHFREQ
 	int_fast32_t freq;
 	const uint_fast8_t state = hamradio_get_notchvalue(& freq);
-	display_2states_P(x, y, state, PSTR("NOTCH"), text_nul5_P);
+	const char FLASHMEM * const labels [2] = { text_nul5_P, hamradio_get_notchtype5_P(), };
+	display2_text_P(x, y, labels, colors_2state, state);
 #endif /* WITHNOTCHONOFF || WITHNOTCHFREQ */
 }
 

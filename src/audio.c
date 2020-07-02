@@ -140,7 +140,7 @@ static uint_fast8_t 	glob_txaudio = BOARD_TXAUDIO_MIKE;	// при SSB/AM/FM пе
 
 static uint_fast16_t 	glob_notch_freq = 1000;	/* частота NOTCH фильтра */
 static uint_fast16_t	glob_notch_width = 500;	/* полоса NOTCH фильтра */
-static uint_fast8_t 	glob_notch_on;		/* включение NOTCH фильтра */
+static uint_fast8_t 	glob_notch_mode = BOARD_NOTCH_OFF;		/* включение NOTCH фильтра */
 
 static uint_fast8_t 	glob_cwedgetime = 4;		/* CW Rise Time (in 1 ms discrete) */
 static uint_fast8_t 	glob_sidetonelevel = 10;	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
@@ -2905,7 +2905,7 @@ void dsp_recalceq_coeffs(uint_fast8_t pathi, float * dCoeff, int iCoefNum)
 	case DSPCTL_MODE_RX_AM:
 	case DSPCTL_MODE_RX_WIDE:
 		// audio
-		if (glob_notch_on != 0)
+		if (glob_notch_mode == BOARD_NOTCH_MANUAL)
 		{
 			// частоты SSB фильтра
 			//const int fssbL = cutfreqlow;
@@ -6199,7 +6199,7 @@ prog_dsplreg(void)
 	buff [DSPCTL_OFFSET_CWEDGETIME] = glob_cwedgetime;
 	buff [DSPCTL_OFFSET_SIDETONELVL] = glob_sidetonelevel;
 
-	buff [DSPCTL_OFFSET_NOTCH_ON] = glob_notch_on;
+	buff [DSPCTL_OFFSET_NOTCH_MODE] = glob_notch_mode;
 	buff [DSPCTL_OFFSET_NOTCH_WIDTH_HI] = glob_notch_width >> 8;
 	buff [DSPCTL_OFFSET_NOTCH_WIDTH_LO] = glob_notch_width >> 0;
 	buff [DSPCTL_OFFSET_NOTCH_FREQ_HI] = glob_notch_freq >> 8;
@@ -6497,6 +6497,7 @@ board_set_swaprts(uint_fast8_t v)	/* если используется конв�
 	}
 }
 
+// Работает при BOARD_NOTCH_MANUAL
 void 
 board_set_notch_freq(uint_fast16_t n)	/* частота NOTCH фильтра */
 {
@@ -6507,6 +6508,7 @@ board_set_notch_freq(uint_fast16_t n)	/* частота NOTCH фильтра */
 	}
 }
 
+// Работает при BOARD_NOTCH_MANUAL
 void 
 board_set_notch_width(uint_fast16_t n)	/* полоса NOTCH фильтра */
 {
@@ -6517,13 +6519,15 @@ board_set_notch_width(uint_fast16_t n)	/* полоса NOTCH фильтра */
 	}
 }
 
+//	#define BOARD_NOTCH_OFF		0
+//	#define BOARD_NOTCH_MANUAL	1
+//	#define BOARD_NOTCH_AUTO	2
 void 
-board_set_notch_on(uint_fast8_t v)	/* включение NOTCH фильтра */
+board_set_notch_mode(uint_fast8_t n)	/* включение NOTCH фильтра */
 {
-	const uint_fast8_t n = v != 0;
-	if (glob_notch_on != n)
+	if (glob_notch_mode != n)
 	{
-		glob_notch_on = n;
+		glob_notch_mode = n;
 		board_flt1regchanged();		// параметры этой функции используются в audio_update();
 	}
 }
@@ -6965,7 +6969,7 @@ void hardware_spi_slave_callback(uint8_t * buff, uint_fast8_t len)
 		board_set_cwedgetime(buff [DSPCTL_OFFSET_CWEDGETIME]);
 		board_set_sidetonelevel(buff [DSPCTL_OFFSET_SIDETONELVL]);
 
-		board_set_notch_on(buff [DSPCTL_OFFSET_NOTCH_ON]);
+		board_set_notch_mode(buff [DSPCTL_OFFSET_NOTCH_MODE]);
 		board_set_notch_width(buff [DSPCTL_OFFSET_NOTCH_WIDTH_HI] * 256 + buff [DSPCTL_OFFSET_NOTCH_WIDTH_LO]);
 		board_set_notch_freq(buff [DSPCTL_OFFSET_NOTCH_FREQ_HI] * 256 + buff [DSPCTL_OFFSET_NOTCH_FREQ_LO]);
 		board_set_lo6(buff [DSPCTL_OFFSET_LO6_FREQ_HI] * 256 + buff [DSPCTL_OFFSET_LO6_FREQ_LO]);
