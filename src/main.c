@@ -7636,7 +7636,7 @@ static void processingonebuff(uint_fast8_t pathi, lmsnrstate_t * const nrp, spee
 	const uint_fast8_t mode = submodes [gsubmode].mode;
 	const uint_fast8_t nospeex = gtx || mode == MODE_DIGI || gdatamode;	// не делать даже коррекцию АЧХ
 	const uint_fast8_t denoise = ! nospeex && gnoisereducts [mode];
-	const uint_fast8_t anotch = gnotch && notchmodes [gnotchtype].code == BOARD_NOTCH_AUTO;
+	const uint_fast8_t anotch = ! (gtx || mode == MODE_DIGI || gdatamode) && gnotch && notchmodes [gnotchtype].code == BOARD_NOTCH_AUTO;
 	//////////////////////////////////////////////
 	// Filtering
 	// Use CMSIS DSP interface
