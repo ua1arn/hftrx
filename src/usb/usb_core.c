@@ -9929,7 +9929,7 @@ uint_fast8_t hardware_usbd_get_vbusbefore(void)
 	return device_vbusbefore;
 }
 
-uint_fast8_t hardware_usbd_get_vbusnow(void)
+static uint_fast8_t hardware_usbd_get_vbusnow0(void)
 {
 #if CPUSTYLE_R7S721
 	return (WITHUSBHW_DEVICE->INTSTS0 & USB_INTSTS0_VBSTS) != 0;
@@ -9943,6 +9943,19 @@ uint_fast8_t hardware_usbd_get_vbusnow(void)
 #endif /* CPUSTYLE_R7S721 */
 }
 
+
+uint_fast8_t hardware_usbd_get_vbusnow(void)
+{
+	uint_fast8_t st0;
+	uint_fast8_t st = hardware_usbd_get_vbusnow0();
+
+	do
+	{
+		st0 = st;
+		st = hardware_usbd_get_vbusnow0();
+	} while (st0 != st);
+	return st;
+}
 /* вызывается при запрещённых прерываниях. */
 static void hardware_usbd_initialize(void)
 {
