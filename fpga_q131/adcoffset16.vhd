@@ -144,6 +144,6 @@ END SYN;
 -- Retrieval info: GEN_FILE: TYPE_NORMAL adcoffset16.vhd TRUE
 -- Retrieval info: GEN_FILE: TYPE_NORMAL adcoffset16.inc FALSE
 -- Retrieval info: GEN_FILE: TYPE_NORMAL adcoffset16.cmp FALSE
--- Retrieval info: GEN_FILE: TYPE_NORMAL adcoffset16.bsf TRUE FALSE
+-- Retrieval info: GEN_FILE: TYPE_NORMAL adcoffset16.bsf TRUE
 -- Retrieval info: GEN_FILE: TYPE_NORMAL adcoffset16_inst.vhd FALSE
 -- Retrieval info: LIB_FILE: lpm
