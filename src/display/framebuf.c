@@ -227,7 +227,7 @@ void arm_hardware_mdma_initialize(void)
 
 #endif /* WITHMDMAHW */
 
-#if LCDMODE_PIP_L8 || LCDMODE_MAIN_L8
+#if LCDMODE_PIXELSIZE == 1
 // Функция получает координаты и работает над буфером в горищонталтной ориентации.
 static void
 hwacc_fillrect_u8(
@@ -317,9 +317,9 @@ hwacc_fillrect_u8(
 #endif
 }
 
-#endif /* LCDMODE_PIP_L8 || LCDMODE_MAIN_L8 */
+#endif /* LCDMODE_PIXELSIZE == 1 */
 
-#if LCDMODE_PIP_RGB565 || LCDMODE_MAIN_RGB565
+#if LCDMODE_PIXELSIZE == 2
 // Функция получает координаты и работает над буфером в горищонталтной ориентации.
 static void
 hwacc_fillrect_u16(
@@ -452,7 +452,7 @@ hwacc_fillrect_u16(
 
 #endif
 
-#if LCDMODE_PIP_L24 || LCDMODE_MAIN_L24
+#if LCDMODE_PIXELSIZE == 3
 // Функция получает координаты и работает над буфером в горищонталтной ориентации.
 static void
 hwacc_fillrect_u24(
