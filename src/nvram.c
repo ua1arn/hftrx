@@ -330,12 +330,14 @@ ui16min(uint_least16_t a, uint_least16_t b)
 	#if CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX
 
 		PWR->CR |= PWR_CR_DBP;  
+		(void) PWR->CR;
 		while ((PWR->CR & PWR_CR_DBP) == 0)
 			;
 
 	#else /* CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX */
 
 		PWR->CR1 |= PWR_CR1_DBP;  
+		(void) PWR->CR1;
 		while ((PWR->CR1 & PWR_CR1_DBP) == 0)
 			;
 
@@ -348,12 +350,14 @@ ui16min(uint_least16_t a, uint_least16_t b)
 	#if CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX
 
 		PWR->CR &= ~ PWR_CR_DBP;	
+		(void) PWR->CR;
 		while ((PWR->CR & PWR_CR_DBP) != 0)
 			;
 
 	#else /* CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX */
 
-		PWR->CR1 &= ~ PWR_CR1_DBP;	
+		PWR->CR1 &= ~ PWR_CR1_DBP;
+		(void) PWR->CR1;
 		while ((PWR->CR1 & PWR_CR1_DBP) != 0)
 			;
 
@@ -373,6 +377,20 @@ void nvram_initialize(void)
 		(void) RCC->MP_AHB5ENSETR;
 		RCC->MP_AHB5LPENSETR = RCC_MC_AHB5LPENSETR_BKPSRAMLPEN;
 		(void) RCC->MP_AHB5LPENSETR;
+
+		stm32f4xx_bdenable();
+
+		//		PWR->CR2 |= PWR_CR2_RREN;	// Retention regulator enable.
+//		(void) PWR->CR2;
+//		while ((PWR->CR2 & PWR_CR2_RRRDY) == 0)
+			;
+
+		PWR->CR2 |= PWR_CR2_BREN;	// Backup regulator enable.
+		(void) PWR->CR2;
+		while ((PWR->CR2 & PWR_CR2_BRRDY) == 0)
+			;
+
+		stm32f4xx_bddisable();
 
 	#elif CPUSTYLE_STM32F
 		// RCC_APB1ENR_RTCAPBEN ???
