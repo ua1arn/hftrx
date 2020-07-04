@@ -41,50 +41,63 @@ typedef struct colorpair_tag
 // Параметры отображения состояния прием/пеердача
 static const COLORPAIR_T colors_2rxtx [2] =
 {
-		{	COLORMAIN_GREEN,	COLORMAIN_BLACK,	},	// RX
-		{	COLORMAIN_RED,		COLORMAIN_BLACK,	},	// TX
+	{	COLORMAIN_GREEN,	COLORMAIN_BLACK,	},	// RX
+	{	COLORMAIN_RED,		COLORMAIN_BLACK,	},	// TX
 };
 
 // Параметры отображения состояний из трех вариантов
 static const COLORPAIR_T colors_4state [4] =
 {
-		{	LABELINACTIVETEXT,	LABELINACTIVEBACK,	},
-		{	LABELACTIVETEXT,	LABELACTIVEBACK,	},
-		{	LABELACTIVETEXT,	LABELACTIVEBACK,	},
-		{	LABELACTIVETEXT,	LABELACTIVEBACK,	},
+	{	LABELINACTIVETEXT,	LABELINACTIVEBACK,	},
+	{	LABELACTIVETEXT,	LABELACTIVEBACK,	},
+	{	LABELACTIVETEXT,	LABELACTIVEBACK,	},
+	{	LABELACTIVETEXT,	LABELACTIVEBACK,	},
 };
 
 // Параметры отображения состояний из двух вариантов
 static const COLORPAIR_T colors_2state [2] =
 {
-		{	LABELINACTIVETEXT,	LABELINACTIVEBACK,	},
-		{	LABELACTIVETEXT,	LABELACTIVEBACK,	},
+	{	LABELINACTIVETEXT,	LABELINACTIVEBACK,	},
+	{	LABELACTIVETEXT,	LABELACTIVEBACK,	},
 };
 
 // Параметры отображения текстов без вариантов
 static const COLORPAIR_T colors_1state [1] =
 {
-		{	LABELTEXT,	LABELBACK,	},
+	{	LABELTEXT,	LABELBACK,	},
+};
+
+// Параметры отображения состояний FUNC MENU из двух вариантов
+static const COLORPAIR_T colors_2fmenu [2] =
+{
+	{	FMENUINACTIVETEXT,	FMENUINACTIVEBACK,	},
+	{	FMENUACTIVETEXT,	FMENUACTIVEBACK,	},
+};
+
+// Параметры отображения текстов без вариантов
+static const COLORPAIR_T colors_1fmenu [1] =
+{
+	{	FMENUTEXT,	FMENUBACK,	},
 };
 
 // Параметры отображения текстов без вариантов
 // синий
 static const COLORPAIR_T colors_1stateBlue [1] =
 {
-		{	DESIGNBIGCOLORB,	LABELBACK,	},
+	{	DESIGNBIGCOLORB,	LABELBACK,	},
 };
 
 // Параметры отображения частоты дополнительного приемника
 // синий
 static const COLORPAIR_T colors_1freqB [1] =
 {
-		{	DESIGNBIGCOLORB,	LABELBACK,	},
+	{	DESIGNBIGCOLORB,	LABELBACK,	},
 };
 
 // Параметры отображения частоты основного приемника
 static const COLORPAIR_T colors_1freq [1] =
 {
-		{	DESIGNBIGCOLOR,	LABELBACK,	},
+	{	DESIGNBIGCOLOR,	LABELBACK,	},
 };
 
 // todo: switch off -Wunused-function
@@ -563,16 +576,58 @@ void display_1state_P(
 	display2_text_P(x, y, & label, colors_1state, 0);
 }
 
+
+void display_2fmenus(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	uint_fast8_t state,
+	const char * state1,	// активное
+	const char * state0
+	)
+{
+	#if LCDMODE_COLORED
+		const char * const labels [2] = { state1, state1, };
+	#else /* LCDMODE_COLORED */
+		const char * const labels [2] = { state0, state1, };
+	#endif /* LCDMODE_COLORED */
+	display2_text(x, y, labels, colors_2fmenu, state);
+}
+
+void display_2fmenus_P(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	uint_fast8_t state,
+	const FLASHMEM char * state1,	// активное
+	const FLASHMEM char * state0
+	)
+{
+	#if LCDMODE_COLORED
+		const FLASHMEM char * const labels [2] = { state1, state1, };
+	#else /* LCDMODE_COLORED */
+		const FLASHMEM char * const labels [2] = { state0, state1, };
+	#endif /* LCDMODE_COLORED */
+	display2_text_P(x, y, labels, colors_2fmenu, state);
+}
+
 // Параметры, не меняющие состояния цветом
-void display_1state(
+void display_1fmenu(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	const char * label
 	)
 {
-	display2_text(x, y, & label, colors_1state, 0);
+	display2_text(x, y, & label, colors_1fmenu, 0);
 }
 
+// Параметры, не меняющие состояния цветом
+void display_1fmenu_P(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	const FLASHMEM char * label
+	)
+{
+	display2_text_P(x, y, & label, colors_1fmenu, 0);
+}
 
 static const FLASHMEM char text_nul1_P [] = " ";
 static const FLASHMEM char text_nul2_P [] = "  ";

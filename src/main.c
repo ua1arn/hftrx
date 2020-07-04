@@ -6138,13 +6138,13 @@ void display2_fnlabel9(
 	switch (enc2state)
 	{
 	case ENC2STATE_INITIALIZE:
-		display_1state_P(x, y, text_nul9_P);
+		display_1fmenu_P(x, y, text_nul9_P);
 		break;
 	case ENC2STATE_SELECTITEM:
-		display_2states_P(x, y, 0, text, text);
+		display_2fmenus_P(x, y, 0, text, text);
 		break;
 	case ENC2STATE_EDITITEM:
-		display_2states_P(x, y, 1, text, text);
+		display_2fmenus_P(x, y, 1, text, text);
 		break;
 	}
 #endif /* WITHENCODER2 */
@@ -6165,13 +6165,13 @@ void display2_fnvalue9(
 	switch (enc2state)
 	{
 	case ENC2STATE_INITIALIZE:
-		display_1state_P(x, y, text_nul9_P);
+		display_1fmenu_P(x, y, text_nul9_P);
 		break;
 	case ENC2STATE_SELECTITEM:
-		display_2states(x, y, 0, b, b);
+		display_2fmenus(x, y, 0, b, b);
 		break;
 	case ENC2STATE_EDITITEM:
-		display_2states(x, y, 1, b, b);
+		display_2fmenus(x, y, 1, b, b);
 		break;
 	}
 #endif /* WITHENCODER2 */

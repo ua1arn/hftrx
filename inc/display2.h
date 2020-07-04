@@ -305,6 +305,38 @@ void display_1state(
 	const char * label
 	);
 
+// FUNC menu
+
+void display_2fmenus_P(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	uint_fast8_t state,
+	const FLASHMEM char * state1,	// активное
+	const FLASHMEM char * state0
+	);
+
+void display_2fmenus(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	uint_fast8_t state,
+	const char * state1,	// активное
+	const char * state0
+	);
+
+// параметры, не меняющие состояния цветом
+void display_1fmenu_P(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	const FLASHMEM char * label
+	);
+// параметры, не меняющие состояния цветом
+void display_1fmenu(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	const char * label
+	);
+
+
 #define SWRMIN 10	// минимум - соответствует SWR = 1.0, точность = 0.1
 
 #ifdef __cplusplus
@@ -506,6 +538,13 @@ void display_1state(
 	#define DESIGNBIGCOLOR 		COLORMAIN_RED 		// DARK RED
 	#define DESIGNBIGCOLORB 	COLORMAIN_RED		// цвет частоты дополнительного приемника
 
+	#define FMENUACTIVETEXT		COLORMAIN_WHITE
+	#define FMENUACTIVEBACK		COLORMAIN_DARKRED
+	#define FMENUINACTIVETEXT	COLORMAIN_BLACK
+	#define FMENUINACTIVEBACK	COLORMAIN_RED
+	#define FMENUTEXT			COLORMAIN_RED
+	#define FMENUBACK			COLORMAIN_BLACK
+
 	#define LABELACTIVETEXT		COLORMAIN_WHITE
 	#define LABELACTIVEBACK		COLORMAIN_DARKRED
 	#define LABELINACTIVETEXT	COLORMAIN_BLACK
@@ -517,6 +556,14 @@ void display_1state(
 	/* цветовая схема для Александра ATS52 */
 	#define DESIGNBIGCOLOR 		COLORMAIN_YELLOW 	// GOLD
 	#define DESIGNBIGCOLORB 	COLORMAIN_YELLOW		// цвет частоты дополнительного приемника
+
+	#define FMENUACTIVETEXT		COLORMAIN_YELLOW
+	#define FMENUACTIVEBACK		COLORMAIN_DARKGREEN
+	#define FMENUINACTIVETEXT	COLORMAIN_BLACK
+	#define FMENUINACTIVEBACK	COLORMAIN_DARKGREEN
+	#define FMENUTEXT			COLORMAIN_GREEN
+	#define FMENUBACK			COLORMAIN_BLACK
+
 
 	#define LABELACTIVETEXT		COLORMAIN_YELLOW
 	#define LABELACTIVEBACK		COLORMAIN_DARKGREEN
@@ -530,6 +577,13 @@ void display_1state(
 	#define DESIGNBIGCOLOR 		COLORMAIN_YELLOW 	// GOLD
 	#define DESIGNBIGCOLORB 	COLORMAIN_SPECTRUMBG2		// цвет частоты дополнительного приемника
 
+	#define FMENUACTIVETEXT		COLORMAIN_WHITE
+	#define FMENUACTIVEBACK		COLORMAIN_BLACK
+	#define FMENUINACTIVETEXT	COLORMAIN_GREEN
+	#define FMENUINACTIVEBACK	COLORMAIN_BLACK
+	#define FMENUTEXT			COLORMAIN_GREEN
+	#define FMENUBACK			COLORMAIN_BLACK
+
 	#define LABELACTIVETEXT		COLORMAIN_WHITE
 	#define LABELACTIVEBACK		COLORMAIN_BLACK
 	#define LABELINACTIVETEXT	COLORMAIN_GREEN
@@ -540,6 +594,13 @@ void display_1state(
 #else /* COLORSTYLE_RED */
 	#define DESIGNBIGCOLOR 		COLORMAIN_YELLOW 	// GOLD
 	#define DESIGNBIGCOLORB 	COLORMAIN_SPECTRUMBG2		// цвет частоты дополнительного приемника
+
+	#define FMENUACTIVETEXT		COLORMAIN_WHITE
+	#define FMENUACTIVEBACK		COLORMAIN_BLACK
+	#define FMENUINACTIVETEXT	COLORMAIN_GREEN
+	#define FMENUINACTIVEBACK	COLORMAIN_BLACK
+	#define FMENUTEXT			COLORMAIN_GREEN
+	#define FMENUBACK			COLORMAIN_BLACK
 
 	#define LABELACTIVETEXT		COLORMAIN_WHITE
 	#define LABELACTIVEBACK		COLORMAIN_DARKGREEN
