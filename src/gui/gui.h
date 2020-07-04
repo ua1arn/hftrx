@@ -3,6 +3,7 @@
 
 #include "hardware.h"
 #include "../display/display.h"
+#include "display2.h"
 
 #define GUIMINX					800							// минимальное разрешение для touch GUI
 #define GUIMINY					480

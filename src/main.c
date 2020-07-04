@@ -11,8 +11,8 @@
 #include "board.h"
 #include "keyboard.h"
 #include "encoder.h"
+#include "display2.h"
 
-#include "display/display.h"
 #include "spi.h"	// bootloader_readimage definition
 #include "formats.h"
 

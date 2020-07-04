@@ -8,8 +8,8 @@
 #include "hardware.h"
 #include "board.h"
 #include "audio.h"
+#include "display2.h"
 
-#include "display/display.h"
 #include "formats.h"
 
 #include <string.h>
@@ -27,6 +27,14 @@
 	static PACKEDCOLORMAIN_T * getscratchwnd(void);
 
 #endif /* LCDMODE_LTDC */
+
+
+
+/* стркутура хранит цвета элементов дизайна. Возмодно треите поле - для анталиасингового формирования изображения */
+typedef struct colorpair_tag
+{
+	COLORMAIN_T fg, bg;
+} COLORPAIR_T;
 
 // todo: учесть LCDMODE_COLORED
 
@@ -4782,7 +4790,7 @@ enum
 
 		{	37, 10,	display2_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 		{	41, 10,	display2_rxbw3,		REDRM_MODE, PGALL, },	// 3.1 / 0,5 / WID / NAR
-		//{	45, 10,
+		{	46, 10,	display2_agc3,		REDRM_MODE, PGALL, },	// AGC mode
 
 		{	37, 15,	display2_nr3,		REDRM_MODE, PGALL, },	// NR : was: AGC
 		{	41, 15,	display2_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
@@ -4810,7 +4818,6 @@ enum
 
 		//{	24, 30,	display_freqmeter10, REDRM_BARS, PGALL, },	// измеренная частота опоры
 		{	37, 30,	display2_freqdelta8, REDRM_BARS, PGALL, },	// выход ЧМ демодулятора
-		{	46, 30,	display2_agc3,		REDRM_MODE, PGALL, },	// AGC mode
 
 		{	0,	DLES,	display2_wfl_init,	REDRM_INIS,	PGINI, },	// формирование палитры водопада
 		{	0,	DLES,	display2_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада

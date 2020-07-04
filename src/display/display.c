@@ -13,6 +13,7 @@
 #include "display.h"
 #include "formats.h"
 #include "spi.h"	// hardware_spi_master_send_frame
+#include "display2.h"
 #include <string.h>
 
 #if LCDMODE_LTDC
