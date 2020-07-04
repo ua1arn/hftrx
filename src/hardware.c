@@ -12443,6 +12443,7 @@ cpu_tms320f2833x_flash_waitstates(uint_fast8_t flashws, uint_fast8_t otpws)
 static void stm32_pwr_domain_on(void)
 {
 	PWR->CR1 |= PWR_CR1_DBP;	// 1: Write access to RTC and backup domain registers enabled.
+	(void) PWR->CR1;
 	while ((PWR->CR1 & PWR_CR1_DBP) == 0)
 		;
 
@@ -12450,6 +12451,7 @@ static void stm32_pwr_domain_on(void)
 //	(void) RCC->MP_APB5ENSETR;
 //	RCC->MP_APB5LPENSETR = RCC_MC_APB5LPENSETR_RTCAPBLPEN;  // Включить тактирование
 //	(void) RCC->MP_APB5LPENSETR;
+
 //	RCC->MP_AHB5ENSETR = RCC_MC_AHB5ENSETR_BKPSRAMEN;
 //	(void) RCC->MP_AHB5ENSETR;
 //	RCC->MP_AHB5LPENSETR = RCC_MC_AHB5LPENSETR_BKPSRAMLPEN;
@@ -12464,6 +12466,7 @@ static void stm32_pwr_domain_on(void)
 	(void) TAMP->BKP4R;
 
 	PWR->CR1 &= ~ PWR_CR1_DBP;	// 0: Write access to RTC and backup domain registers disabled.
+	(void) PWR->CR1;
 	while ((PWR->CR1 & PWR_CR1_DBP) != 0)
 		;
 
