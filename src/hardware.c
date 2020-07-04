@@ -12436,68 +12436,39 @@ cpu_tms320f2833x_flash_waitstates(uint_fast8_t flashws, uint_fast8_t otpws)
 #define BOOT_API_CORE1_BRANCH_ADDRESS_TAMP_BCK_REG_IDX		5U
 
 /*******************************************************************************
- * STM32MP1 TAMP
- ******************************************************************************/
-#define TAMP_BKP_REGISTER_BASE		(TAMP_BASE + 0x100uL)
-
-static inline uint32_t tamp_bkpr(uint32_t idx)
-{
-	return TAMP_BKP_REGISTER_BASE + (idx * 4);
-}
-
-
-static void
-mmio_write_32(uintptr_t addr, uint32_t value)
-{
-	volatile uint32_t * const reg = (volatile uint32_t * const) addr;
-	* reg = value;
-	(void) * reg;
-	ASSERT(* reg == value);
-}
-
-
-/*******************************************************************************
  * STM32MP1 handler called when a power domain is about to be turned on. The
  * mpidr determines the CPU to be turned on.
  * call by core 0 to activate core 1
  ******************************************************************************/
 static void stm32_pwr_domain_on(void)
 {
-	//unsigned long current_cpu_mpidr = read_mpidr_el1();
-	uint32_t bkpr_core1_addr =
-		tamp_bkpr(BOOT_API_CORE1_BRANCH_ADDRESS_TAMP_BCK_REG_IDX);
-	uint32_t bkpr_core1_magic =
-		tamp_bkpr(BOOT_API_CORE1_MAGIC_NUMBER_TAMP_BCK_REG_IDX);
-
-	//stm32mp_clk_enable(RTCAPB);
-
-	PWR->CR1 |= PWR_CR1_DBP;
+	PWR->CR1 |= PWR_CR1_DBP;	// 1: Write access to RTC and backup domain registers enabled.
 	while ((PWR->CR1 & PWR_CR1_DBP) == 0)
 		;
 
-	RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_RTCAPBEN;
-	(void) RCC->MP_APB5ENSETR;
-	RCC->MP_APB5LPENSETR = RCC_MC_APB5LPENSETR_RTCAPBLPEN;  // Включить тактирование
-	(void) RCC->MP_APB5LPENSETR;
-
-	//cntfrq_core0 = read_cntfrq_el0();
+//	RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_RTCAPBEN;
+//	(void) RCC->MP_APB5ENSETR;
+//	RCC->MP_APB5LPENSETR = RCC_MC_APB5LPENSETR_RTCAPBLPEN;  // Включить тактирование
+//	(void) RCC->MP_APB5LPENSETR;
+//	RCC->MP_AHB5ENSETR = RCC_MC_AHB5ENSETR_BKPSRAMEN;
+//	(void) RCC->MP_AHB5ENSETR;
+//	RCC->MP_AHB5LPENSETR = RCC_MC_AHB5LPENSETR_BKPSRAMLPEN;
+//	(void) RCC->MP_AHB5LPENSETR;
 
 	/* Write entrypoint in backup RAM register */
-	mmio_write_32(bkpr_core1_addr, (uintptr_t) Reset_CPU1_Handler);	// Invoke at SVC context
+	TAMP->BKP5R = (uintptr_t) Reset_CPU1_Handler;	// Invoke at SVC context
+	(void) TAMP->BKP5R;
 
 	/* Write magic number in backup register */
-	mmio_write_32(bkpr_core1_magic, BOOT_API_A7_CORE1_MAGIC_NUMBER);
+	TAMP->BKP4R = BOOT_API_A7_CORE1_MAGIC_NUMBER;
+	(void) TAMP->BKP4R;
 
-	//stm32mp_clk_disable(RTCAPB);
-//	RCC->MP_APB5ENCLRR = RCC_MC_APB5ENSETR_RTCAPBEN;
-//	(void) RCC->MP_APB5ENCLRR;
-//
-//	PWR->CR1 &= ~ PWR_CR1_DBP;
-//	while ((PWR->CR1 & PWR_CR1_DBP) != 0)
-//		;
+	PWR->CR1 &= ~ PWR_CR1_DBP;	// 0: Write access to RTC and backup domain registers disabled.
+	while ((PWR->CR1 & PWR_CR1_DBP) != 0)
+		;
 
 	/* Generate an IT to core 1 */
-	GIC_SendSGI(SGI8_IRQn, 0x02, 0x00);	// CPU1, filer=0
+	GIC_SendSGI(SGI8_IRQn, 0x01 << 1, 0x00);	// CPU1, filer=0
 }
 #endif /* WITHSMPSYSTEM */
 
