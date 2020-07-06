@@ -509,8 +509,8 @@
 
 		#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
 
-		//#define WITHCURRLEVEL_ACS712_30A 1	// PA current sense - ACS712ELCTR-30B-T chip
-		#define WITHCURRLEVEL_ACS712_20A 1	// PA current sense - ACS712ELCTR-30B-T chip
+		#define WITHCURRLEVEL_ACS712_30A 1	// PA current sense - ACS712ELCTR-30B-T chip
+		//#define WITHCURRLEVEL_ACS712_20A 1	// PA current sense - ACS712ELCTR-30B-T chip
 		#if WITHCURRLEVEL
 			//PASENSEIX = BOARD_ADCXIN(0),		// MCP3208 CH0 PA current sense - ACS712-30 chip
 			PASENSEIX = 6,			// PA6 потенциометр управления скоростью передачи в телеграфе
