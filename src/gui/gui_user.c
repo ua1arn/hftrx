@@ -100,8 +100,6 @@ window_t * get_win(window_id_t window_id)
 
 static void btn_main_handler(void)
 {
-	gui_t * gui = get_gui_env();
-
 	if(is_short_pressed())
 	{
 		window_t * winMain = get_win(WINDOW_MAIN);
@@ -110,13 +108,13 @@ static void btn_main_handler(void)
 		button_t * btn_Mode = find_gui_element(TYPE_BUTTON, winMain, "btn_Mode");
 		button_t * btn_Options = find_gui_element(TYPE_BUTTON, winMain, "btn_Options");
 
-		if (gui->selected_link->link == btn_Mode)
+		if (get_selected_element() == btn_Mode)
 		{
 			window_t * win = get_win(WINDOW_MODES);
 			if (win->state == NON_VISIBLE)
 			{
 				open_window(win);
-				footer_buttons_state(DISABLED, ((button_t *)gui->selected_link)->name);
+				footer_buttons_state(DISABLED, btn_Mode);
 			}
 			else
 			{
@@ -124,13 +122,13 @@ static void btn_main_handler(void)
 				footer_buttons_state(CANCELLED);
 			}
 		}
-		else if (gui->selected_link->link == btn_Bands)
+		else if (get_selected_element() == btn_Bands)
 		{
 			window_t * win = get_win(WINDOW_BANDS);
 			if (win->state == NON_VISIBLE)
 			{
 				open_window(win);
-				footer_buttons_state(DISABLED, ((button_t *)gui->selected_link)->name);
+				footer_buttons_state(DISABLED, btn_Bands);
 			}
 			else
 			{
@@ -138,13 +136,13 @@ static void btn_main_handler(void)
 				footer_buttons_state(CANCELLED);
 			}
 		}
-		else if (gui->selected_link->link == btn_Memory)
+		else if (get_selected_element() == btn_Memory)
 		{
 			window_t * win = get_win(WINDOW_MEMORY);
 			if (win->state == NON_VISIBLE)
 			{
 				open_window(win);
-				footer_buttons_state(DISABLED, ((button_t *)gui->selected_link)->name);
+				footer_buttons_state(DISABLED, btn_Memory);
 			}
 			else
 			{
@@ -152,9 +150,9 @@ static void btn_main_handler(void)
 				footer_buttons_state(CANCELLED);
 			}
 		}
-		else if (gui->selected_link->link == btn_Options)
+		else if (get_selected_element() == btn_Options)
 		{
-			if(gui->win[1] != UINT8_MAX)
+			if(check_for_parent_window() != UINT8_MAX)
 			{
 				close_window(OPEN_PARENT_WINDOW);
 				footer_buttons_state(CANCELLED);
@@ -165,7 +163,7 @@ static void btn_main_handler(void)
 			{
 				window_t * win = get_win(WINDOW_OPTIONS);
 				open_window(win);
-				footer_buttons_state(DISABLED, ((button_t *)gui->selected_link)->name);
+				footer_buttons_state(DISABLED, btn_Options);
 			}
 
 		}
@@ -175,7 +173,7 @@ static void btn_main_handler(void)
 static void gui_main_process(void)
 {
 	window_t * win = get_win(WINDOW_MAIN);
-	gui_t * gui = get_gui_env();
+
 	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
 	char buf [TEXT_ARRAY_SIZE];
 	const uint_fast8_t buflen = ARRAY_SIZE(buf);
@@ -232,7 +230,7 @@ static void gui_main_process(void)
 #if defined (RTC1_TYPE)
 	static uint_fast16_t year;
 	static uint_fast8_t month, day, hour, minute, secounds;
-	if(gui->timer_1sec_updated)
+	if(get_gui_1sec_timer())
 		board_rtc_getdatetime(& year, & month, & day, & hour, & minute, & secounds);
 	local_snprintf_P(buf, buflen, PSTR("%02d.%02d"), day, month);
 	xx = current_place * lbl_place_width + lbl_place_width / 2;
@@ -246,7 +244,7 @@ static void gui_main_process(void)
 	// напряжение питания
 #if WITHVOLTLEVEL
 	static ldiv_t v;
-	if(gui->timer_1sec_updated)
+	if(get_gui_1sec_timer())
 		v = ldiv(hamradio_get_volt_value(), 10);
 	local_snprintf_P(buf, buflen, PSTR("%d.%1dV"), v.quot, v.rem);
 	xx = current_place * lbl_place_width + lbl_place_width / 2;
@@ -258,7 +256,7 @@ static void gui_main_process(void)
 	if (hamradio_get_tx())
 	{
 		static int_fast16_t drain;
-		if (gui->timer_1sec_updated)
+		if (get_gui_1sec_timer())
 		{
 			drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (может быть отрицательным)
 			if (drain < 0)
@@ -288,7 +286,7 @@ static void gui_main_process(void)
 	// ширина панорамы
 #if WITHIF4DSP
 	static int_fast32_t z;
-	if(gui->timer_1sec_updated)
+	if(get_gui_1sec_timer())
 		z = display_zoomedbw() / 1000;
 	local_snprintf_P(buf, buflen, PSTR("SPAN"));
 	xx = current_place * lbl_place_width + lbl_place_width / 2;
@@ -301,7 +299,7 @@ static void gui_main_process(void)
 
 	// параметры полосы пропускания фильтра
 	static uint_fast8_t bp_type, bp_low, bp_high;
-	if(gui->timer_1sec_updated)
+	if(get_gui_1sec_timer())
 	{
 		bp_high = hamradio_get_high_bp(0);
 		bp_low = hamradio_get_low_bp(0) * 10;
@@ -321,7 +319,7 @@ static void gui_main_process(void)
 
 	// значение сдвига частоты
 	static int_fast16_t if_shift;
-	if (gui->timer_1sec_updated)
+	if (get_gui_1sec_timer())
 		if_shift = hamradio_get_if_shift();
 	xx = current_place * lbl_place_width + lbl_place_width / 2;
 	if (if_shift)
@@ -339,7 +337,7 @@ static void gui_main_process(void)
 
 //	#if WITHTHERMOLEVEL	// температура выходных транзисторов (при передаче)
 //		static ldiv_t t;
-//		if (hamradio_get_tx())// && gui->timer_1sec_updated)
+//		if (hamradio_get_tx())// && get_gui_1sec_timer())
 //		{
 //			t = ldiv(hamradio_get_temperature_value(), 10);
 //			local_snprintf_P(buf, buflen, PSTR("%d.%dC "), t.quot, t.rem);
@@ -347,15 +345,14 @@ static void gui_main_process(void)
 //		}
 //	#endif /* WITHTHERMOLEVEL */
 
-	gui->timer_1sec_updated = 0;
 }
 
 // *********************************************************************************************************************************************************************
 
 static void buttons_memory_handler(void)
 {
-	gui_t * gui = get_gui_env();
-	button_t * btn_cell = (button_t *) gui->selected_link->link;
+
+	button_t * btn_cell = (button_t *) get_selected_element();
 	uint_fast8_t cell_id = btn_cell->payload;
 
 	if(is_short_pressed())
@@ -460,14 +457,14 @@ static void window_memory_process(void)
 
 static void buttons_bands_handler(void)
 {
-//	gui_t * gui = get_gui_env();
+//
 
 //	if(is_short_pressed())
 //	{
 //		window_t * win = get_win(WINDOW_BANDS);
 //		button_t * btn_AF = find_gui_element(TYPE_BUTTON, win, "btn_AF");
 //
-//		if (gui->selected_link->link == btn_AF)
+//		if (get_selected_element() == btn_AF)
 //		{
 //
 //		}
@@ -530,7 +527,7 @@ static void window_bands_process(void)
 
 static void buttons_options_handler(void)
 {
-	gui_t * gui = get_gui_env();
+
 
 	if(is_short_pressed())
 	{
@@ -544,47 +541,47 @@ static void buttons_options_handler(void)
 		button_t * btn_Utils = find_gui_element(TYPE_BUTTON, win, "btn_Utils");
 //		button_t * btn_AutoNotch = find_gui_element(TYPE_BUTTON, win, "btn_AutoNotch");
 //
-//		if (gui->selected_link->link == btn_AutoNotch)
+//		if (get_selected_element() == btn_AutoNotch)
 //		{
 //			btn_AutoNotch->is_locked = hamradio_get_autonotch() ? BUTTON_NON_LOCKED : BUTTON_LOCKED;
 //			local_snprintf_P(btn_AutoNotch->text, ARRAY_SIZE(btn_AutoNotch->text), PSTR("AutoNotch|%s"), btn_AutoNotch->is_locked ? "ON" : "OFF");
 //			hamradio_set_autonotch(btn_AutoNotch->is_locked);
 //		}
 //		else
-		if (gui->selected_link->link == btn_AF)
+		if (get_selected_element() == btn_AF)
 		{
 			window_t * win = get_win(WINDOW_BP);
 			open_window(win);
 			hamradio_enable_keyboard_redirect();
 		}
-		else if (gui->selected_link->link == btn_AGC)
+		else if (get_selected_element() == btn_AGC)
 		{
 			window_t * win = get_win(WINDOW_AGC);
 			open_window(win);
 		}
-		else if (gui->selected_link->link == btn_Utils)
+		else if (get_selected_element() == btn_Utils)
 		{
 			window_t * win = get_win(WINDOW_UTILS);
 			open_window(win);
 		}
-		else if (gui->selected_link->link == btn_Freq)
+		else if (get_selected_element() == btn_Freq)
 		{
 			window_t * win = get_win(WINDOW_FREQ);
 			open_window(win);
 			hamradio_set_lockmode(1);
 			hamradio_enable_keyboard_redirect();
 		}
-		else if (gui->selected_link->link == btn_TXsett)
+		else if (get_selected_element() == btn_TXsett)
 		{
 			window_t * win = get_win(WINDOW_TX_SETTINGS);
 			open_window(win);
 		}
-		else if (gui->selected_link->link == btn_AUDsett)
+		else if (get_selected_element() == btn_AUDsett)
 		{
 			window_t * win = get_win(WINDOW_AUDIOSETTINGS);
 			open_window(win);
 		}
-		else if (gui->selected_link->link == btn_SysMenu)
+		else if (get_selected_element() == btn_SysMenu)
 		{
 			window_t * win = get_win(WINDOW_MENU);
 			open_window(win);
@@ -656,13 +653,13 @@ static void window_options_process(void)
 
 static void buttons_utilites_handler(void)
 {
-	gui_t * gui = get_gui_env();
+
 	if(is_short_pressed())
 	{
 		window_t * win = get_win(WINDOW_UTILS);
 		button_t * btn_SWRscan = find_gui_element(TYPE_BUTTON, win, "btn_SWRscan");						// SWR scanner
 
-		if (gui->selected_link->link == btn_SWRscan)
+		if (get_selected_element() == btn_SWRscan)
 		{
 			window_t * winSWR = get_win(WINDOW_SWR_SCANNER);
 			open_window(winSWR);
@@ -722,10 +719,10 @@ static void window_utilites_process(void)
 static void buttons_mode_handler(void)
 {
 	window_t * win = get_win(WINDOW_MODES);
-	gui_t * gui = get_gui_env();
+
 	if(is_short_pressed())
 	{
-		button_t * bh = (button_t *)gui->selected_link->link;
+		button_t * bh = (button_t *)get_selected_element();
 		if (win->state && bh->parent == win->window_id)
 		{
 			if (bh->payload != UINTPTR_MAX)
@@ -733,7 +730,7 @@ static void buttons_mode_handler(void)
 
 			close_window(OPEN_PARENT_WINDOW);
 			footer_buttons_state(CANCELLED);
-			gui->timer_1sec_updated = 1;
+			gui_timer_update(NULL);
 		}
 	}
 }
@@ -741,7 +738,7 @@ static void buttons_mode_handler(void)
 static void window_mode_process(void)
 {
 	window_t * win = get_win(WINDOW_MODES);
-	gui_t * gui = get_gui_env();
+
 	if (win->first_call)
 	{
 		uint_fast16_t x, y;
@@ -798,7 +795,7 @@ static void window_mode_process(void)
 static void buttons_bp_handler(void)
 {
 	window_t * win = get_win(WINDOW_BP);
-	gui_t * gui = get_gui_env();
+
 
 	if(is_short_pressed())
 	{
@@ -806,17 +803,17 @@ static void buttons_bp_handler(void)
 		button_t * button_low = find_gui_element(TYPE_BUTTON, win, "btnAF_1");
 		button_t * button_OK = find_gui_element(TYPE_BUTTON, win, "btnAF_OK");
 
-		if (gui->selected_link->link == button_low)
+		if (get_selected_element() == button_low)
 		{
 			button_high->is_locked = 0;
 			button_low->is_locked = 1;
 		}
-		else if (gui->selected_link->link == button_high)
+		else if (get_selected_element() == button_high)
 		{
 			button_high->is_locked = 1;
 			button_low->is_locked = 0;
 		}
-		else if (gui->selected_link->link == button_OK)
+		else if (get_selected_element() == button_OK)
 		{
 			close_window(OPEN_PARENT_WINDOW);
 			footer_buttons_state(CANCELLED);
@@ -830,7 +827,7 @@ static void window_bp_process(void)
 	static uint_fast8_t val_high, val_low, val_c, val_w;
 	static uint_fast16_t x_h, x_l, x_c;
 	window_t * win = get_win(WINDOW_BP);
-	gui_t * gui = get_gui_env();
+
 	uint_fast16_t x_size = 290, x_0 = 50, y_0 = 90;
 	static label_t * lbl_low, * lbl_high;
 	static button_t * button_high, * button_low;
@@ -962,7 +959,7 @@ static void window_bp_process(void)
 			strcpy(lbl_low->text, buf);
 			lbl_low->x = x_0 + x_size - get_label_width(lbl_low);
 		}
-		gui->timer_1sec_updated = 1;
+		gui_timer_update(NULL);
 	}
 	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
 	colmain_line(fr, DIM_X, DIM_Y, win->x1 + x_0 - 10, win->y1 + y_0, win->x1 + x_0 + x_size, win->y1 + y_0, COLORMAIN_WHITE, 0);
@@ -1027,10 +1024,10 @@ static void window_agc_process(void)
 
 static void buttons_freq_handler (void)
 {
-	gui_t * gui = get_gui_env();
+
 	if(is_short_pressed())
 	{
-		button_t * bh =  gui->selected_link->link;
+		button_t * bh =  get_selected_element();
 		if (bh->parent == WINDOW_FREQ && editfreq.key == BUTTON_CODE_DONE)
 			editfreq.key = bh->payload;
 	}
@@ -1170,22 +1167,22 @@ static void window_freq_process (void)
 static void buttons_swrscan_process(void)
 {
 	window_t * win = get_win(WINDOW_SWR_SCANNER);
-	gui_t * gui = get_gui_env();
+
 
 	if(is_short_pressed())
 	{
 		button_t * btn_swr_start = find_gui_element(TYPE_BUTTON, win, "btn_swr_start");
 		button_t * btn_swr_OK = find_gui_element(TYPE_BUTTON, win, "btn_swr_OK");
 
-		if (gui->selected_link->link == btn_swr_start && ! strcmp(btn_swr_start->text, "Start"))
+		if (get_selected_element() == btn_swr_start && ! strcmp(btn_swr_start->text, "Start"))
 		{
 			swr_scan_enable = 1;
 		}
-		else if (gui->selected_link->link == btn_swr_start && ! strcmp(btn_swr_start->text, "Stop"))
+		else if (get_selected_element() == btn_swr_start && ! strcmp(btn_swr_start->text, "Stop"))
 		{
 			swr_scan_stop = 1;
 		}
-		else if (gui->selected_link->link == btn_swr_OK)
+		else if (get_selected_element() == btn_swr_OK)
 		{
 			close_window(OPEN_PARENT_WINDOW);
 			footer_buttons_state(CANCELLED);
@@ -1383,7 +1380,7 @@ static void window_swrscan_process(void)
 
 static void buttons_tx_sett_process(void)
 {
-	gui_t * gui = get_gui_env();
+
 
 	if(is_short_pressed())
 	{
@@ -1393,18 +1390,18 @@ static void buttons_tx_sett_process(void)
 		button_t * btn_tx_vox = find_gui_element(TYPE_BUTTON, winTX, "btn_tx_vox");
 		button_t * btn_tx_power = find_gui_element(TYPE_BUTTON, winTX, "btn_tx_power");
 		button_t * btn_tx_vox_settings = find_gui_element(TYPE_BUTTON, winTX, "btn_tx_vox_settings");
-		if (gui->selected_link->link == btn_tx_vox)
+		if (get_selected_element() == btn_tx_vox)
 		{
 			btn_tx_vox->is_locked = hamradio_get_gvoxenable() ? BUTTON_NON_LOCKED : BUTTON_LOCKED;
 			local_snprintf_P(btn_tx_vox->text, ARRAY_SIZE(btn_tx_vox->text), PSTR("VOX|%s"), btn_tx_vox->is_locked ? "ON" : "OFF");
 			hamradio_set_gvoxenable(btn_tx_vox->is_locked);
 			btn_tx_vox_settings->state = hamradio_get_gvoxenable() ? CANCELLED : DISABLED;
 		}
-		else if (gui->selected_link->link == btn_tx_vox_settings)
+		else if (get_selected_element() == btn_tx_vox_settings)
 		{
 			open_window(winVOX);
 		}
-		else if (gui->selected_link->link == btn_tx_power)
+		else if (get_selected_element() == btn_tx_power)
 		{
 			open_window(winPower);
 		}
@@ -1480,12 +1477,12 @@ static void window_tx_process(void)
 
 static void buttons_tx_vox_process(void)
 {
-	gui_t * gui = get_gui_env();
+
 	if(is_short_pressed())
 	{
 		window_t * win = get_win(WINDOW_TX_VOX_SETT);
 		button_t * btn_tx_vox_OK = find_gui_element(TYPE_BUTTON, win, "btn_tx_vox_OK");
-		if (gui->selected_link->link == btn_tx_vox_OK)
+		if (get_selected_element() == btn_tx_vox_OK)
 			close_window(OPEN_PARENT_WINDOW);
 	}
 }
@@ -1493,7 +1490,7 @@ static void buttons_tx_vox_process(void)
 static void window_tx_vox_process(void)
 {
 	window_t * win = get_win(WINDOW_TX_VOX_SETT);
-	gui_t * gui = get_gui_env();
+
 	static slider_t * sl_vox_delay = NULL, * sl_vox_level = NULL, * sl_avox_level = NULL;
 	static label_t * lbl_vox_delay = NULL, * lbl_vox_level = NULL, * lbl_avox_level = NULL;
 	static uint_fast16_t delay_min, delay_max, level_min, level_max, alevel_min, alevel_max;
@@ -1645,12 +1642,12 @@ static void window_tx_vox_process(void)
 		return;
 	}
 
-	if (gui->selected_type == TYPE_SLIDER && gui->is_tracking)
+	if (is_moving_slider())
 	{
 		char buf[TEXT_ARRAY_SIZE];
 
 		/* костыль через костыль */
-		sl = (slider_t *) gui->selected_link->link;
+		sl = (slider_t *) get_selected_element();
 
 		if(sl == sl_vox_delay)
 		{
@@ -1678,13 +1675,13 @@ static void window_tx_vox_process(void)
 
 static void buttons_tx_power_process(void)
 {
-	gui_t * gui = get_gui_env();
+
 
 	if(is_short_pressed())
 	{
 		window_t * win = get_win(WINDOW_TX_POWER);
 		button_t * btn_tx_pwr_OK = find_gui_element(TYPE_BUTTON, win, "btn_tx_pwr_OK");
-		if (gui->selected_link->link == btn_tx_pwr_OK)
+		if (get_selected_element() == btn_tx_pwr_OK)
 			close_window(OPEN_PARENT_WINDOW);
 	}
 }
@@ -1692,7 +1689,7 @@ static void buttons_tx_power_process(void)
 static void window_tx_power_process(void)
 {
 	window_t * win = get_win(WINDOW_TX_POWER);
-	gui_t * gui = get_gui_env();
+
 	static slider_t * sl_pwr_level = NULL, * sl_pwr_tuner_level = NULL;
 	static label_t * lbl_tx_power = NULL, * lbl_tune_power = NULL;
 	static uint_fast16_t power_min, power_max;
@@ -1784,12 +1781,12 @@ static void window_tx_power_process(void)
 		return;
 	}
 
-	if (gui->selected_type == TYPE_SLIDER && gui->is_tracking)
+	if (is_moving_slider())
 	{
 		char buf[TEXT_ARRAY_SIZE];
 
 		/* костыль через костыль */
-		sl = (slider_t *) gui->selected_link->link;
+		sl = (slider_t *) get_selected_element();
 
 		if(sl == sl_pwr_level)
 		{
@@ -1810,7 +1807,7 @@ static void window_tx_power_process(void)
 
 static void buttons_audiosettings_process(void)
 {
-	gui_t * gui = get_gui_env();
+
 	if(is_short_pressed())
 	{
 		window_t * winAP = get_win(WINDOW_AUDIOSETTINGS);
@@ -1827,7 +1824,7 @@ static void buttons_audiosettings_process(void)
 		button_t * btn_mic_settings = find_gui_element(TYPE_BUTTON, winAP, "btn_mic_settings");			// mic settings
 		button_t * btn_mic_profiles = find_gui_element(TYPE_BUTTON, winAP, "btn_mic_profiles");			// mic profiles
 
-		if (gui->selected_link->link == btn_reverb)
+		if (get_selected_element() == btn_reverb)
 		{
 			btn_reverb->is_locked = hamradio_get_greverb() ? BUTTON_NON_LOCKED : BUTTON_LOCKED;
 			local_snprintf_P(btn_reverb->text, ARRAY_SIZE(btn_reverb->text), PSTR("Reverb|%s"), btn_reverb->is_locked ? "ON" : "OFF");
@@ -1835,39 +1832,39 @@ static void buttons_audiosettings_process(void)
 			btn_reverb_settings->state = btn_reverb->is_locked ? CANCELLED : DISABLED;
 
 		}
-		else if (gui->selected_link->link == btn_reverb_settings)
+		else if (get_selected_element() == btn_reverb_settings)
 		{
 			open_window(winRS);
 		}
 
-		else if (gui->selected_link->link == btn_monitor)
+		else if (get_selected_element() == btn_monitor)
 		{
 			btn_monitor->is_locked = hamradio_get_gmoniflag() ? BUTTON_NON_LOCKED : BUTTON_LOCKED;
 			local_snprintf_P(btn_monitor->text, ARRAY_SIZE(btn_monitor->text), PSTR("Monitor|%s"), btn_monitor->is_locked ? "enabled" : "disabled");
 			hamradio_set_gmoniflag(btn_monitor->is_locked);
 		}
-		else if (gui->selected_link->link == btn_speaker)
+		else if (get_selected_element() == btn_speaker)
 		{
 			btn_speaker->is_locked = hamradio_get_gmutespkr() ? BUTTON_NON_LOCKED : BUTTON_LOCKED;
 			local_snprintf_P(btn_speaker->text, ARRAY_SIZE(btn_speaker->text), PSTR("Speaker|%s"), btn_speaker->is_locked ? "muted" : "on air");
 			hamradio_set_gmutespkr(btn_speaker->is_locked);
 		}
-		else if (gui->selected_link->link == btn_mic_eq)
+		else if (get_selected_element() == btn_mic_eq)
 		{
 			btn_mic_eq->is_locked = hamradio_get_gmikeequalizer() ? BUTTON_NON_LOCKED : BUTTON_LOCKED;
 			local_snprintf_P(btn_mic_eq->text, ARRAY_SIZE(btn_mic_eq->text), PSTR("MIC EQ|%s"), btn_mic_eq->is_locked ? "ON" : "OFF");
 			hamradio_set_gmikeequalizer(btn_mic_eq->is_locked);
 			btn_mic_eq_settings->state = btn_mic_eq->is_locked ? CANCELLED : DISABLED;
 		}
-		else if (gui->selected_link->link == btn_mic_eq_settings)
+		else if (get_selected_element() == btn_mic_eq_settings)
 		{
 			open_window(winEQ);
 		}
-		else if (gui->selected_link->link == btn_mic_settings)
+		else if (get_selected_element() == btn_mic_settings)
 		{
 			open_window(winMIC);
 		}
-		else if (gui->selected_link->link == btn_mic_profiles)
+		else if (get_selected_element() == btn_mic_profiles)
 		{
 			open_window(winMICpr);
 		}
@@ -1976,7 +1973,7 @@ static void window_audiosettings_process(void)
 
 static void buttons_ap_reverb_process(void)
 {
-	gui_t * gui = get_gui_env();
+
 	if(is_short_pressed())
 	{
 		close_window(OPEN_PARENT_WINDOW);
@@ -1986,7 +1983,7 @@ static void buttons_ap_reverb_process(void)
 static void window_ap_reverb_process(void)
 {
 	window_t * win = get_win(WINDOW_AP_REVERB_SETT);
-	gui_t * gui = get_gui_env();
+
 	static label_t * lbl_reverbDelay = NULL, * lbl_reverbLoss = NULL;
 	static slider_t * sl_reverbDelay = NULL, * sl_reverbLoss = NULL;
 	static uint_fast16_t delay_min, delay_max, loss_min, loss_max;
@@ -2104,12 +2101,12 @@ static void window_ap_reverb_process(void)
 		return;
 	}
 
-	if (gui->selected_type == TYPE_SLIDER && gui->is_tracking)
+	if (is_moving_slider())
 	{
 		char buf[TEXT_ARRAY_SIZE];
 
 		/* костыль через костыль */
-		sl = (slider_t *) gui->selected_link->link;
+		sl = (slider_t *) get_selected_element();
 
 		if(sl == sl_reverbDelay)
 		{
@@ -2130,7 +2127,7 @@ static void window_ap_reverb_process(void)
 
 static void buttons_ap_mic_eq_process(void)
 {
-	gui_t * gui = get_gui_env();
+
 	if(is_short_pressed())
 	{
 		close_window(OPEN_PARENT_WINDOW);
@@ -2141,7 +2138,7 @@ static void window_ap_mic_eq_process(void)
 {
 	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
 	window_t * win = get_win(WINDOW_AP_MIC_EQ);
-	gui_t * gui = get_gui_env();
+
 	slider_t * sl = NULL;
 	label_t * lbl = NULL;
 	static uint_fast8_t eq_limit, eq_base = 0;
@@ -2257,11 +2254,11 @@ static void window_ap_mic_eq_process(void)
 		return;
 	}
 
-	if (gui->selected_type == TYPE_SLIDER && gui->is_tracking)
+	if (is_moving_slider())
 	{
 		/* костыль через костыль */
-		sl = gui->selected_link->link;
-		uint_fast8_t id = gui->selected_link->pos;
+		sl = get_selected_element();
+		uint_fast8_t id = get_selected_element_pos();
 
 		hamradio_set_gmikeequalizerparams(id, normalize(sl->value, 100, 0, eq_limit));
 
@@ -2291,7 +2288,7 @@ static void window_ap_mic_eq_process(void)
 
 static void buttons_ap_mic_process(void)
 {
-	gui_t * gui = get_gui_env();
+
 	if(is_short_pressed())
 	{
 		window_t * win = get_win(WINDOW_AP_MIC_SETT);
@@ -2299,19 +2296,19 @@ static void buttons_ap_mic_process(void)
 		button_t * btn_mic_agc = find_gui_element(TYPE_BUTTON, win, "btn_mic_agc");
 		button_t * btn_mic_OK = find_gui_element(TYPE_BUTTON, win, "btn_mic_OK");
 
-		if (gui->selected_link->link == btn_mic_boost)
+		if (get_selected_element() == btn_mic_boost)
 		{
 			btn_mic_boost->is_locked = hamradio_get_gmikebust20db() ? BUTTON_NON_LOCKED : BUTTON_LOCKED;
 			local_snprintf_P(btn_mic_boost->text, ARRAY_SIZE(btn_mic_boost->text), PSTR("Boost|%s"), btn_mic_boost->is_locked ? "ON" : "OFF");
 			hamradio_set_gmikebust20db(btn_mic_boost->is_locked);
 		}
-		else if (gui->selected_link->link == btn_mic_agc)
+		else if (get_selected_element() == btn_mic_agc)
 		{
 			btn_mic_agc->is_locked = hamradio_get_gmikeagc() ? BUTTON_NON_LOCKED : BUTTON_LOCKED;
 			local_snprintf_P(btn_mic_agc->text, ARRAY_SIZE(btn_mic_agc->text), PSTR("AGC|%s"), btn_mic_agc->is_locked ? "ON" : "OFF");
 			hamradio_set_gmikeagc(btn_mic_agc->is_locked);
 		}
-		else if (gui->selected_link->link == btn_mic_OK)
+		else if (get_selected_element() == btn_mic_OK)
 		{
 			close_window(OPEN_PARENT_WINDOW);
 		}
@@ -2321,7 +2318,7 @@ static void buttons_ap_mic_process(void)
 static void window_ap_mic_process(void)
 {
 	window_t * win = get_win(WINDOW_AP_MIC_SETT);
-	gui_t * gui = get_gui_env();
+
 	static slider_t * sl_micLevel = NULL, * sl_micClip = NULL, * sl_micAGC = NULL;
 	static label_t * lbl_micLevel = NULL, * lbl_micClip = NULL, * lbl_micAGC = NULL;
 	static uint_fast16_t level_min, level_max, clip_min, clip_max, agc_min, agc_max;
@@ -2486,12 +2483,12 @@ static void window_ap_mic_process(void)
 		return;
 	}
 
-	if (gui->selected_type == TYPE_SLIDER && gui->is_tracking)
+	if (is_moving_slider())
 	{
 		char buf[TEXT_ARRAY_SIZE];
 
 		/* костыль через костыль */
-		sl = (slider_t *) gui->selected_link->link;
+		sl = (slider_t *) get_selected_element();
 
 		if(sl == sl_micLevel)
 		{
@@ -2578,40 +2575,36 @@ static void window_ap_mic_prof_process(void)
 
 static void labels_menu_handler (void)
 {
-	gui_t * gui = get_gui_env();
-	if (gui->selected_type == TYPE_LABEL)
+	label_t * lh = get_selected_element();
+	if(strcmp(lh->name, "lbl_group") == 0)
 	{
-		label_t * lh = gui->selected_link->link;
-		if(strcmp(lh->name, "lbl_group") == 0)
-		{
-			menu[MENU_GROUPS].selected_label = gui->selected_link->pos % (menu[MENU_GROUPS].num_rows + 1);
-			menu_label_touched = 1;
-			menu_level = MENU_GROUPS;
-		}
-		else if(strcmp(lh->name, "lbl_params") == 0)
-		{
-			menu[MENU_PARAMS].selected_label = gui->selected_link->pos % (menu[MENU_GROUPS].num_rows + 1);
-			menu_label_touched = 1;
-			menu_level = MENU_PARAMS;
-		}
-		else if(strcmp(lh->name, "lbl_vals") == 0)
-		{
-			menu[MENU_VALS].selected_label = gui->selected_link->pos % (menu[MENU_GROUPS].num_rows + 1);
-			menu[MENU_PARAMS].selected_label = menu[MENU_VALS].selected_label;
-			menu_label_touched = 1;
-			menu_level = MENU_VALS;
-		}
+		menu[MENU_GROUPS].selected_label = get_selected_element_pos() % (menu[MENU_GROUPS].num_rows + 1);
+		menu_label_touched = 1;
+		menu_level = MENU_GROUPS;
+	}
+	else if(strcmp(lh->name, "lbl_params") == 0)
+	{
+		menu[MENU_PARAMS].selected_label = get_selected_element_pos() % (menu[MENU_GROUPS].num_rows + 1);
+		menu_label_touched = 1;
+		menu_level = MENU_PARAMS;
+	}
+	else if(strcmp(lh->name, "lbl_vals") == 0)
+	{
+		menu[MENU_VALS].selected_label = get_selected_element_pos() % (menu[MENU_GROUPS].num_rows + 1);
+		menu[MENU_PARAMS].selected_label = menu[MENU_VALS].selected_label;
+		menu_label_touched = 1;
+		menu_level = MENU_VALS;
 	}
 }
 
 static void buttons_menu_handler(void)
 {
-	gui_t * gui = get_gui_env();
+
 	if(is_short_pressed())
 	{
-		if (! strcmp(((button_t *) gui->selected_link->link)->name, "btnSysMenu+"))
+		if (! strcmp(((button_t *) get_selected_element())->name, "btnSysMenu+"))
 			encoder2.rotate = 1;
-		else if (! strcmp(((button_t *) gui->selected_link->link)->name, "btnSysMenu-"))
+		else if (! strcmp(((button_t *) get_selected_element())->name, "btnSysMenu-"))
 			encoder2.rotate = -1;
 	}
 }
@@ -2622,7 +2615,7 @@ static void window_menu_process(void)
 	uint_fast8_t int_cols = 230, int_rows = 35;
 	static button_t * button_up = NULL, * button_down = NULL;
 	window_t * win = get_win(WINDOW_MENU);
-	gui_t * gui = get_gui_env();
+	int_fast8_t move_x, move_y;
 
 	if (win->first_call)
 	{
@@ -2776,7 +2769,8 @@ static void window_menu_process(void)
 		return;
 	}
 
-	if(gui->is_tracking && gui->selected_type == TYPE_LABEL && gui->vector_move_y != 0)
+	get_gui_tracking(& move_x, & move_y);
+	if(is_moving_label() && move_y != 0)
 	{
 		static uint_fast8_t start_str_group = 0, start_str_params = 0;
 		if (! menu_is_scrolling)
@@ -2784,8 +2778,8 @@ static void window_menu_process(void)
 			start_str_group = menu[MENU_GROUPS].add_id;
 			start_str_params = menu[MENU_PARAMS].add_id;
 		}
-		ldiv_t r = ldiv(gui->vector_move_y, int_rows);
-		if(strcmp(((label_t *) gui->selected_link->link)->name, "lbl_group") == 0)
+		ldiv_t r = ldiv(move_y, int_rows);
+		if(strcmp(((label_t *) get_selected_element())->name, "lbl_group") == 0)
 		{
 			int_fast8_t q = start_str_group - r.quot;
 			menu[MENU_GROUPS].add_id = q <= 0 ? 0 : q;
@@ -2800,7 +2794,7 @@ static void window_menu_process(void)
 			menu[MENU_VALS].selected_str = 0;
 			menu[MENU_VALS].selected_label = 0;
 		}
-		else if(strcmp(((label_t *) gui->selected_link->link)->name, "lbl_params") == 0 &&
+		else if(strcmp(((label_t *) get_selected_element())->name, "lbl_params") == 0 &&
 				menu[MENU_PARAMS].count > menu[MENU_PARAMS].num_rows)
 		{
 			int_fast8_t q = start_str_params - r.quot;
@@ -2816,7 +2810,7 @@ static void window_menu_process(void)
 		menu_is_scrolling = 1;
 	}
 
-	if(! gui->is_tracking && menu_is_scrolling)
+	if(! is_moving_label() && menu_is_scrolling)
 	{
 		menu_is_scrolling = 0;
 		reset_tracking();
@@ -3023,7 +3017,7 @@ void gui_uif_editmenu(const char * name, uint_fast16_t menupos, uint_fast8_t exi
 	{
 		close_window(DONT_OPEN_PARENT_WINDOW);
 		open_window(win);
-		footer_buttons_state(DISABLED, "");
+		footer_buttons_state(DISABLED, NULL);
 		strcpy(menu_uif.name, name);
 		menu_uif.menupos = menupos;
 		menu_uif.exitkey = exitkey;
@@ -3038,11 +3032,11 @@ void gui_uif_editmenu(const char * name, uint_fast16_t menupos, uint_fast8_t exi
 static void buttons_uif_handler(void)
 {
 	window_t * win = get_win(WINDOW_UIF);
-	gui_t * gui = get_gui_env();
+
 
 	if(is_short_pressed())
 	{
-		button_t * bh = gui->selected_link->link;
+		button_t * bh = get_selected_element();
 		if (bh == find_gui_element(TYPE_BUTTON, win, "btnUIF+"))
 			encoder2.rotate = 1;
 		else if (bh == find_gui_element(TYPE_BUTTON, win, "btnUIF-"))
@@ -3063,7 +3057,7 @@ static void window_uif_process(void)
 	static uint_fast16_t window_center_x;
 	static uint_fast8_t reinit = 0;
 	window_t * win = get_win(WINDOW_UIF);
-	gui_t * gui = get_gui_env();
+
 
 	if (win->first_call)
 	{
@@ -3138,18 +3132,18 @@ static void window_uif_process(void)
 
 		reinit = 1;
 		encoder2.rotate_done = 1;
-		gui->timer_1sec_updated = 1;
+		gui_timer_update(NULL);
 	}
 
-	if (gui->kbd_code != KBD_CODE_MAX)
+	if (get_gui_keyb_code() != KBD_CODE_MAX)
 	{
-		if (gui->kbd_code == menu_uif.exitkey)
+		if (get_gui_keyb_code() == menu_uif.exitkey)
 		{
 			hamradio_disable_keyboard_redirect();
 			close_window(OPEN_PARENT_WINDOW);
 			footer_buttons_state(CANCELLED);
 		}
-		gui->kbd_code = KBD_CODE_MAX;
+		gui_put_keyb_code(KBD_CODE_MAX);
 	}
 }
 
@@ -3176,13 +3170,13 @@ void gui_set_encoder2_state (uint_fast8_t code)
 void gui_encoder2_menu (enc2_menu_t * enc2_menu)
 {
 	window_t * win = get_win(WINDOW_ENC2);
-	gui_t * gui = get_gui_env();
+
 
 	if (win->state == NON_VISIBLE && enc2_menu->state != 0)
 	{
 		close_window(DONT_OPEN_PARENT_WINDOW);
 		open_window(win);
-		footer_buttons_state(DISABLED, "");
+		footer_buttons_state(DISABLED, NULL);
 		gui_enc2_menu = enc2_menu;
 	}
 	else if (win->state == VISIBLE && enc2_menu->state == 0)
@@ -3197,7 +3191,7 @@ static void window_enc2_process(void)
 {
 	static label_t * lbl_param,  * lbl_val;
 	window_t * win = get_win(WINDOW_ENC2);
-	gui_t * gui = get_gui_env();
+
 	uint_fast8_t row1_int = window_title_height + 20;
 
 	if (win->first_call)
@@ -3232,7 +3226,7 @@ static void window_enc2_process(void)
 		lbl_val->visible = VISIBLE;
 
 		gui_enc2_menu->updated = 0;
-		gui->timer_1sec_updated = 1;
+		gui_timer_update(NULL);
 	}
 }
 
@@ -3241,17 +3235,17 @@ static void window_enc2_process(void)
 void gui_open_sys_menu(void)
 {
 	window_t * win = get_win(WINDOW_MENU);
-	gui_t * gui = get_gui_env();
+
 	static uint_fast8_t backup_parent = UINT8_MAX;
 
-	if(gui->win[1] == UINT8_MAX && win->parent_id != UINT8_MAX)
+	if(check_for_parent_window() == UINT8_MAX && win->parent_id != UINT8_MAX)
 	{
 		backup_parent = win->parent_id;		// для возможности открытия окна напрямую временно "обнулить" parent_id
 		win->parent_id = UINT8_MAX;
 		open_window(win);
-		footer_buttons_state(DISABLED, "");
+		footer_buttons_state(DISABLED, NULL);
 	}
-	else if(gui->win[1] == WINDOW_MENU && win->parent_id == UINT8_MAX)
+	else if(check_for_parent_window() == WINDOW_MENU && win->parent_id == UINT8_MAX)
 	{
 		close_window(OPEN_PARENT_WINDOW);
 		footer_buttons_state(CANCELLED);

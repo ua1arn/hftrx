@@ -50,6 +50,11 @@ void gui_timer_update(void * arg)
 	gui.timer_1sec_updated = 1;
 }
 
+uint_fast8_t get_gui_1sec_timer(void)
+{
+	return gui.timer_1sec_updated;
+}
+
 /* Сброс данных трекинга тачскрина */
 void reset_tracking(void)
 {
@@ -57,10 +62,10 @@ void reset_tracking(void)
 	gui.vector_move_y = 0;
 }
 
-/* Возврат указателя на структуру gui */
-gui_t * get_gui_env(void)
+void get_gui_tracking(int_fast8_t * x, int_fast8_t * y)
 {
-	return & gui;
+	* x = gui.vector_move_x;
+	* y = gui.vector_move_y;
 }
 
 /* Возврат ссылки на запись в структуре по названию и типу окна */
@@ -136,18 +141,18 @@ uint_fast8_t get_label_height(const label_t * const lh)
 }
 
 /* Установки статуса основных кнопок */
-/* При DISABLED в качестве необязательного параметра передать name активной кнопки или "" для блокирования всех */
+/* При DISABLED в качестве необязательного параметра передать указатель на активную кнопку или NULL для блокирования всех */
 void footer_buttons_state (uint_fast8_t state, ...)
 {
 	window_t * win = get_win(WINDOW_MAIN);
 	va_list arg;
-	char * name = NULL;
+	button_t * bt = NULL;
 	uint_fast8_t is_name;
 
 	if (state == DISABLED)
 	{
 		va_start(arg, state);
-		name = va_arg(arg, char *);
+		bt = va_arg(arg, button_t *);
 		va_end(arg);
 	}
 
@@ -156,8 +161,8 @@ void footer_buttons_state (uint_fast8_t state, ...)
 		button_t * bh = & win->bh_ptr[i];
 		if (state == DISABLED)
 		{
-			bh->state = strcmp(bh->name, name) ? DISABLED : CANCELLED;
-			bh->is_locked = bh->state == CANCELLED ? BUTTON_NON_LOCKED : BUTTON_LOCKED;
+			bh->state = bh == bt ? CANCELLED : DISABLED;
+			bh->is_locked = bh->state == CANCELLED ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
 		}
 		else if (state == CANCELLED && gui.win[1] == UINT8_MAX)
 		{
@@ -275,6 +280,11 @@ void elements_state (window_t * win)
 //	PRINTF("%s %d gui_element_count: %d %+d\n", win->name, win->state, gui_element_count, debug_num);
 }
 
+uint_fast8_t check_for_parent_window(void)
+{
+	return gui.win[1];
+}
+
 void close_all_windows(void)
 {
 	close_window(DONT_OPEN_PARENT_WINDOW);
@@ -384,6 +394,11 @@ void gui_put_keyb_code (uint_fast8_t kbch)
 	// После обработки события по коду кнопки
 	// сбрасывать gui.kbd_code в KBD_CODE_MAX.
 	gui.kbd_code = gui.kbd_code == KBD_CODE_MAX ? kbch : gui.kbd_code;
+}
+
+uint_fast8_t get_gui_keyb_code(void)
+{
+	return gui.kbd_code;
 }
 
 /* Удаление пробелов в конце строки */
@@ -717,6 +732,26 @@ uint_fast8_t is_short_pressed(void)
 uint_fast8_t is_long_pressed(void)
 {
 	return gui.selected_type == TYPE_BUTTON && gui.state == LONG_PRESSED;
+}
+
+void * get_selected_element(void)
+{
+	return gui.selected_link->link;
+}
+
+uint_fast8_t is_moving_slider(void)
+{
+	return gui.selected_type == TYPE_SLIDER && gui.is_tracking;
+}
+
+uint_fast8_t is_moving_label(void)
+{
+	return gui.selected_type == TYPE_LABEL && gui.is_tracking;
+}
+
+uint_fast8_t get_selected_element_pos(void)
+{
+	return gui.selected_link->pos;
 }
 
 static void set_state_record(gui_element_t * val)

@@ -6,9 +6,6 @@
 #if WITHTOUCHGUI
 #include "src/gui/gui_structs.h"
 
-/* Возврат указателя на структуру gui */
-gui_t * get_gui_env(void);
-
 /* Возврат ссылки на запись в структуре по названию и типу окна */
 void * find_gui_element(element_type_t type, window_t * win, const char * name);
 
@@ -42,6 +39,15 @@ void reset_tracking(void);
 /* Возврат признака нажатия кнопки*/
 uint_fast8_t is_short_pressed(void);
 uint_fast8_t is_long_pressed(void);
+
+uint_fast8_t is_moving_label(void);
+uint_fast8_t is_moving_slider(void);
+void * get_selected_element(void);
+uint_fast8_t check_for_parent_window(void);
+uint_fast8_t get_gui_1sec_timer(void);
+uint_fast8_t get_selected_element_pos(void);
+uint_fast8_t get_gui_keyb_code(void);
+void get_gui_tracking(int_fast8_t * x, int_fast8_t * y);
 
 #endif /* WITHTOUCHGUI */
 #endif /* GUI_USER_H_INCLUDED */
