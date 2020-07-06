@@ -391,14 +391,14 @@ void calculate_window_position(window_t * win, uint16_t xmax, uint16_t ymax)
 
 void gui_put_keyb_code (uint_fast8_t kbch)
 {
-	// После обработки события по коду кнопки
-	// сбрасывать gui.kbd_code в KBD_CODE_MAX.
 	gui.kbd_code = gui.kbd_code == KBD_CODE_MAX ? kbch : gui.kbd_code;
 }
 
 uint_fast8_t get_gui_keyb_code(void)
 {
-	return gui.kbd_code;
+	uint_fast8_t code = gui.kbd_code;
+	gui.kbd_code = KBD_CODE_MAX;
+	return code;
 }
 
 /* Удаление пробелов в конце строки */

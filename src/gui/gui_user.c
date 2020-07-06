@@ -527,8 +527,6 @@ static void window_bands_process(void)
 
 static void buttons_options_handler(void)
 {
-
-
 	if(is_short_pressed())
 	{
 		window_t * win = get_win(WINDOW_OPTIONS);
@@ -653,7 +651,6 @@ static void window_options_process(void)
 
 static void buttons_utilites_handler(void)
 {
-
 	if(is_short_pressed())
 	{
 		window_t * win = get_win(WINDOW_UTILS);
@@ -795,7 +792,6 @@ static void window_mode_process(void)
 static void buttons_bp_handler(void)
 {
 	window_t * win = get_win(WINDOW_BP);
-
 
 	if(is_short_pressed())
 	{
@@ -1024,7 +1020,6 @@ static void window_agc_process(void)
 
 static void buttons_freq_handler (void)
 {
-
 	if(is_short_pressed())
 	{
 		button_t * bh =  get_selected_element();
@@ -1167,7 +1162,6 @@ static void window_freq_process (void)
 static void buttons_swrscan_process(void)
 {
 	window_t * win = get_win(WINDOW_SWR_SCANNER);
-
 
 	if(is_short_pressed())
 	{
@@ -1380,8 +1374,6 @@ static void window_swrscan_process(void)
 
 static void buttons_tx_sett_process(void)
 {
-
-
 	if(is_short_pressed())
 	{
 		window_t * winTX = get_win(WINDOW_TX_SETTINGS);
@@ -1477,7 +1469,6 @@ static void window_tx_process(void)
 
 static void buttons_tx_vox_process(void)
 {
-
 	if(is_short_pressed())
 	{
 		window_t * win = get_win(WINDOW_TX_VOX_SETT);
@@ -1675,8 +1666,6 @@ static void window_tx_vox_process(void)
 
 static void buttons_tx_power_process(void)
 {
-
-
 	if(is_short_pressed())
 	{
 		window_t * win = get_win(WINDOW_TX_POWER);
@@ -1807,7 +1796,6 @@ static void window_tx_power_process(void)
 
 static void buttons_audiosettings_process(void)
 {
-
 	if(is_short_pressed())
 	{
 		window_t * winAP = get_win(WINDOW_AUDIOSETTINGS);
@@ -1973,7 +1961,6 @@ static void window_audiosettings_process(void)
 
 static void buttons_ap_reverb_process(void)
 {
-
 	if(is_short_pressed())
 	{
 		close_window(OPEN_PARENT_WINDOW);
@@ -2127,7 +2114,6 @@ static void window_ap_reverb_process(void)
 
 static void buttons_ap_mic_eq_process(void)
 {
-
 	if(is_short_pressed())
 	{
 		close_window(OPEN_PARENT_WINDOW);
@@ -2288,7 +2274,6 @@ static void window_ap_mic_eq_process(void)
 
 static void buttons_ap_mic_process(void)
 {
-
 	if(is_short_pressed())
 	{
 		window_t * win = get_win(WINDOW_AP_MIC_SETT);
@@ -2599,7 +2584,6 @@ static void labels_menu_handler (void)
 
 static void buttons_menu_handler(void)
 {
-
 	if(is_short_pressed())
 	{
 		if (! strcmp(((button_t *) get_selected_element())->name, "btnSysMenu+"))
@@ -3022,9 +3006,9 @@ void gui_uif_editmenu(const char * name, uint_fast16_t menupos, uint_fast8_t exi
 		menu_uif.menupos = menupos;
 		menu_uif.exitkey = exitkey;
 	}
-	else
+	else if (win->state == VISIBLE)
 	{
-		close_window(OPEN_PARENT_WINDOW);
+		close_window(DONT_OPEN_PARENT_WINDOW);
 		footer_buttons_state(CANCELLED);
 	}
 }
@@ -3033,7 +3017,6 @@ static void buttons_uif_handler(void)
 {
 	window_t * win = get_win(WINDOW_UIF);
 
-
 	if(is_short_pressed())
 	{
 		button_t * bh = get_selected_element();
@@ -3041,12 +3024,6 @@ static void buttons_uif_handler(void)
 			encoder2.rotate = 1;
 		else if (bh == find_gui_element(TYPE_BUTTON, win, "btnUIF-"))
 			encoder2.rotate = -1;
-		else if (bh == find_gui_element(TYPE_BUTTON, win, "btnUIF_OK"))
-		{
-			hamradio_disable_keyboard_redirect();
-			close_window(OPEN_PARENT_WINDOW);
-			footer_buttons_state(CANCELLED);
-		}
 	}
 }
 
@@ -3057,7 +3034,6 @@ static void window_uif_process(void)
 	static uint_fast16_t window_center_x;
 	static uint_fast8_t reinit = 0;
 	window_t * win = get_win(WINDOW_UIF);
-
 
 	if (win->first_call)
 	{
@@ -3135,15 +3111,15 @@ static void window_uif_process(void)
 		gui_timer_update(NULL);
 	}
 
-	if (get_gui_keyb_code() != KBD_CODE_MAX)
+	uint_fast8_t keyb_code = get_gui_keyb_code();
+	if (keyb_code != KBD_CODE_MAX)
 	{
-		if (get_gui_keyb_code() == menu_uif.exitkey)
+		if (keyb_code == menu_uif.exitkey)
 		{
 			hamradio_disable_keyboard_redirect();
-			close_window(OPEN_PARENT_WINDOW);
+			close_window(DONT_OPEN_PARENT_WINDOW);
 			footer_buttons_state(CANCELLED);
 		}
-		gui_put_keyb_code(KBD_CODE_MAX);
 	}
 }
 
@@ -3171,7 +3147,6 @@ void gui_encoder2_menu (enc2_menu_t * enc2_menu)
 {
 	window_t * win = get_win(WINDOW_ENC2);
 
-
 	if (win->state == NON_VISIBLE && enc2_menu->state != 0)
 	{
 		close_window(DONT_OPEN_PARENT_WINDOW);
@@ -3181,7 +3156,7 @@ void gui_encoder2_menu (enc2_menu_t * enc2_menu)
 	}
 	else if (win->state == VISIBLE && enc2_menu->state == 0)
 	{
-		close_window(OPEN_PARENT_WINDOW);
+		close_window(DONT_OPEN_PARENT_WINDOW);
 		gui_enc2_menu = NULL;
 		footer_buttons_state(CANCELLED);
 	}
@@ -3191,7 +3166,6 @@ static void window_enc2_process(void)
 {
 	static label_t * lbl_param,  * lbl_val;
 	window_t * win = get_win(WINDOW_ENC2);
-
 	uint_fast8_t row1_int = window_title_height + 20;
 
 	if (win->first_call)
@@ -3235,7 +3209,6 @@ static void window_enc2_process(void)
 void gui_open_sys_menu(void)
 {
 	window_t * win = get_win(WINDOW_MENU);
-
 	static uint_fast8_t backup_parent = UINT8_MAX;
 
 	if(check_for_parent_window() == UINT8_MAX && win->parent_id != UINT8_MAX)
