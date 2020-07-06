@@ -7415,7 +7415,7 @@ typedef struct lmsnrstate_tag
 #if WITHNOSPEEX
 	// NLMS NR
 	arm_lms_norm_instance_f32 lms2_Norm_instance;
-	float32_t lms2_stateF32 [NOISE_REDUCTION_TAPS + NOISE_REDUCTION_BLOCK_SIZE];
+	float32_t lms2_stateF32 [NOISE_REDUCTION_TAPS + NOISE_REDUCTION_BLOCK_SIZE - 1];
 	float32_t lms2_normCoeff_f32 [NOISE_REDUCTION_TAPS];
 	float32_t lms2_reference [NOISE_REDUCTION_REFERENCE_SIZE];
 	float32_t lms2_errsig2 [NOISE_REDUCTION_BLOCK_SIZE];
@@ -7588,45 +7588,48 @@ static void processNoiseReduction(lmsnrstate_t * nrp, const float* bufferIn, flo
 #endif /* WITHNOSPEEX */
 
 #if WITHLMSAUTONOTCH
+
 enum {
-	autonotch_numtaps = 64,
-	autonotch_buffer_size = FIRBUFSIZE * 4,
-	autonotch_state_array_size = autonotch_numtaps + FIRBUFSIZE,
+	AUTONOTCH_NUMTAPS = 64,
+	AUTONOTCH_BUFFER_SIZE = FIRBUFSIZE * 4,
+	AUTONOTCH_STATE_ARRAY_SIZE = AUTONOTCH_NUMTAPS + FIRBUFSIZE - 1,
 };
 
 typedef struct
 {
-    float32_t   				errsig2[FIRBUFSIZE];
+    float32_t   				errsig2 [FIRBUFSIZE];
     arm_lms_norm_instance_f32	lms2Norm_instance;
     arm_lms_instance_f32	    lms2_instance;
-    float32_t	                lms2StateF32[autonotch_state_array_size];
-    float32_t	                lms2NormCoeff_f32[autonotch_numtaps];
-    float32_t	                lms2_nr_delay[autonotch_buffer_size];
-    uint_fast16_t 				reference_index_old;
-    uint_fast16_t 				reference_index_new;
-} LMSData;
+    float32_t	                lms2StateF32 [AUTONOTCH_STATE_ARRAY_SIZE];
+    float32_t	                lms2NormCoeff_f32 [AUTONOTCH_NUMTAPS];
+    float32_t	                lms2_nr_delay [AUTONOTCH_BUFFER_SIZE];
+    unsigned 					reference_index_old;
+    unsigned 					reference_index_new;
+} LMSData_t;
 
-static LMSData lmsData;
+static RAMBIGDTCM LMSData_t lmsData0;
 
 static void hamradio_autonotch_init(void)
 {
+	LMSData_t * const lmsd = & lmsData0;
 	const float32_t mu = log10f(((20 + 1.0f) / 1500.0f) + 1.0f);
-	arm_lms_norm_init_f32(& lmsData.lms2Norm_instance, autonotch_numtaps, lmsData.lms2NormCoeff_f32, lmsData.lms2StateF32, mu, FIRBUFSIZE);
-	arm_fill_f32(0, lmsData.lms2_nr_delay,autonotch_buffer_size);
-	arm_fill_f32(0, lmsData.lms2NormCoeff_f32,autonotch_numtaps);
-	lmsData.reference_index_old = 0;
-	lmsData.reference_index_new = 0;
+	arm_lms_norm_init_f32(& lmsd->lms2Norm_instance, AUTONOTCH_NUMTAPS, lmsd->lms2NormCoeff_f32, lmsd->lms2StateF32, mu, FIRBUFSIZE);
+	arm_fill_f32(0, lmsd->lms2_nr_delay, AUTONOTCH_BUFFER_SIZE);
+	arm_fill_f32(0, lmsd->lms2NormCoeff_f32, AUTONOTCH_NUMTAPS);
+	lmsd->reference_index_old = 0;
+	lmsd->reference_index_new = 0;
 }
 
 // TODO: учесть возмодность работы двух каналов приёма
 static void hamradio_autonotch_process(float32_t * notchbuffer)
 {
-	arm_copy_f32(notchbuffer, & lmsData.lms2_nr_delay [lmsData.reference_index_new], FIRBUFSIZE);
-	arm_lms_norm_f32(&lmsData.lms2Norm_instance, notchbuffer, & lmsData.lms2_nr_delay [lmsData.reference_index_old], lmsData.errsig2, notchbuffer, FIRBUFSIZE);
-	lmsData.reference_index_old += FIRBUFSIZE;
-	lmsData.reference_index_new = lmsData.reference_index_old + FIRBUFSIZE;
-	lmsData.reference_index_old %= autonotch_buffer_size;
-	lmsData.reference_index_new %= autonotch_buffer_size;
+	LMSData_t * const lmsd = & lmsData0;
+	arm_copy_f32(notchbuffer, & lmsd->lms2_nr_delay [lmsd->reference_index_new], FIRBUFSIZE);
+	arm_lms_norm_f32(& lmsd->lms2Norm_instance, notchbuffer, & lmsd->lms2_nr_delay [lmsd->reference_index_old], lmsd->errsig2, notchbuffer, FIRBUFSIZE);
+	lmsd->reference_index_old += FIRBUFSIZE;
+	lmsd->reference_index_new = lmsd->reference_index_old + FIRBUFSIZE;
+	lmsd->reference_index_old %= AUTONOTCH_BUFFER_SIZE;
+	lmsd->reference_index_new %= AUTONOTCH_BUFFER_SIZE;
 }
 #endif /* WITHLMSAUTONOTCH */
 
