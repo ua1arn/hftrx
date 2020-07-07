@@ -1448,6 +1448,7 @@ USBD_StatusTypeDef  USBD_Stop(USBD_HandleTypeDef *pdev);
 extern const USBD_ClassTypeDef USBD_CLASS_UAC;
 extern const USBD_ClassTypeDef USBD_CLASS_CDC;
 extern const USBD_ClassTypeDef USBD_CLASS_DFU;
+extern const USBD_ClassTypeDef USBD_CLASS_EEM;
 
 uint_fast16_t usbd_getuacinrtsmaxpacket(void);
 uint_fast16_t usbd_getuacinmaxpacket(void);

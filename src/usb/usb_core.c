@@ -54,6 +54,10 @@ usbd_epaddr2pipe(uint_fast8_t ep_addr)
 	case USBD_EP_CDC_INb:	return HARDWARE_USBD_PIPE_CDC_INb;
 	case USBD_EP_CDC_INTb:	return HARDWARE_USBD_PIPE_CDC_INTb;
 #endif /* WITHUSBCDC */
+#if WITHUSBCDCEEM
+	case USBD_EP_CDCEEM_OUT:	return HARDWARE_USBD_PIPE_CDCEEM_OUT;
+	case USBD_EP_CDCEEM_IN:		return HARDWARE_USBD_PIPE_CDCEEM_IN;
+#endif /* WITHUSBCDCEEM */
 	}
 }
 
@@ -95,6 +99,10 @@ usbd_pipe2epaddr(uint_fast8_t pipe)
 	case HARDWARE_USBD_PIPE_CDC_INb: return USBD_EP_CDC_INb;
 	case HARDWARE_USBD_PIPE_CDC_INTb: return USBD_EP_CDC_INTb;
 #endif /* WITHUSBCDC */
+#if WITHUSBCDCEEM
+	case HARDWARE_USBD_PIPE_CDCEEM_OUT: return USBD_EP_CDCEEM_OUT;
+	case HARDWARE_USBD_PIPE_CDCEEM_IN: return USBD_EP_CDCEEM_IN;
+#endif /* WITHUSBCDCEEM */
 	}
 }
 
@@ -1416,6 +1424,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 		USBx->PIPESEL = 0;
 	}
 #endif /* WITHUSBUAC */
+
 #if WITHUSBUAC
 	if (1)
 	{
@@ -1448,6 +1457,67 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 		USBx->PIPESEL = 0;
 	}
 #endif /* WITHUSBUAC */
+
+#if WITHUSBCDCEEM
+	#if WITHUSBCDC
+		#error not together (same EP numbers)
+	#endif /* WITHUSBCDC */
+
+	if (1)
+	{
+		// Данные CDC EEM из компьютера в трансивер
+		const uint_fast8_t pipe = HARDWARE_USBD_PIPE_CDCEEM_OUT;	// PIPE3
+		const uint_fast8_t epnum = USBD_EP_CDCEEM_OUT;
+		const uint_fast8_t dir = 0;
+		//PRINTF(PSTR("usbd_pipe_initialize: pipe=%u endpoint=%02X\n"), pipe, epnum);
+
+		USBx->PIPESEL = pipe << USB_PIPESEL_PIPESEL_SHIFT;
+		while ((USBx->PIPESEL & USB_PIPESEL_PIPESEL) != (pipe << USB_PIPESEL_PIPESEL_SHIFT))
+			;
+		ASSERT(pipe == 3);
+		USBx->PIPECFG =
+			(0x0F & epnum) * (1u << USB_PIPECFG_EPNUM_SHIFT) |	// EPNUM endpoint
+			dir * (1u << USB_PIPECFG_DIR_SHIFT) |			// DIR 1: Transmitting direction 0: Receiving direction
+			1 * (1u << USB_PIPECFG_TYPE_SHIFT) |			// TYPE 1: Bulk transfer
+			1 * (1u << 9) |				// DBLB
+			0;
+		const unsigned bufsize64 = (USBD_CDCEEM_BUFSIZE + 63) / 64;
+
+		USBx->PIPEBUF = ((bufsize64 - 1) << USB_PIPEBUF_BUFSIZE_SHIFT) | (bufnumb64 << USB_PIPEBUF_BUFNMB_SHIFT);
+		USBx->PIPEMAXP = USBD_CDCEEM_BUFSIZE << USB_PIPEMAXP_MXPS_SHIFT;
+		bufnumb64 += bufsize64 * 2; // * 2 for DBLB
+		ASSERT(bufnumb64 <= 0x100);
+
+		USBx->PIPESEL = 0;
+	}
+	if (1)
+	{
+		// Данные CDC в компьютер из трансивера
+		const uint_fast8_t pipe = HARDWARE_USBD_PIPE_CDCEEM_IN;	// PIPE4
+		const uint_fast8_t epnum = USBD_EP_CDCEEM_IN;
+		const uint_fast8_t dir = 1;
+		//PRINTF(PSTR("usbd_pipe_initialize: pipe=%u endpoint=%02X\n"), pipe, epnum);
+
+		USBx->PIPESEL = pipe << USB_PIPESEL_PIPESEL_SHIFT;
+		while ((USBx->PIPESEL & USB_PIPESEL_PIPESEL) != (pipe << USB_PIPESEL_PIPESEL_SHIFT))
+			;
+		ASSERT(pipe == 4);
+		USBx->PIPECFG =
+			(0x0F & epnum) * (1u << USB_PIPECFG_EPNUM_SHIFT) |		// EPNUM endpoint
+			dir * (1u << USB_PIPECFG_DIR_SHIFT) |		// DIR 1: Transmitting direction 0: Receiving direction
+			1 * (1u << USB_PIPECFG_TYPE_SHIFT) |		// TYPE 1: Bulk transfer
+			1 * USB_PIPECFG_DBLB |		// DBLB
+			0;
+		const unsigned bufsize64 = (USBD_CDCEEM_BUFSIZE + 63) / 64;
+
+		USBx->PIPEBUF = ((bufsize64 - 1) << USB_PIPEBUF_BUFSIZE_SHIFT) | (bufnumb64 << USB_PIPEBUF_BUFNMB_SHIFT);
+		USBx->PIPEMAXP = USBD_CDCEEM_BUFSIZE << USB_PIPEMAXP_MXPS_SHIFT;
+		bufnumb64 += bufsize64 * 2; // * 2 for DBLB
+		ASSERT(bufnumb64 <= 0x100);
+
+		USBx->PIPESEL = 0;
+	}
+#endif /* WITHUSBCDCEEM */
 
 	/*
 	uint_fast8_t pipe;
@@ -6520,6 +6590,33 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 
 #endif /* WITHUSBCDC */
 
+#if WITHUSBCDCEEM
+	{
+		/* полнофункциональное устройство */
+		const uint_fast8_t pipe = USBD_EP_CDCEEM_IN & 0x7F;
+
+		numoutendpoints += 1;
+		#if WITHUSBUAC
+			#if WITHRTS96 || WITHRTS192
+				const int ncdceemindatapackets = 3 * mul2, ncdceemoutdatapackets = 4;
+			#else /* WITHRTS96 || WITHRTS192 */
+				const int ncdceemindatapackets = 2 * mul2, ncdceemoutdatapackets = 2;
+			#endif /* WITHRTS96 || WITHRTS192 */
+		#else /* WITHUSBUAC */
+			const int ncdceemindatapackets = 4 * mul2, ncdceemoutdatapackets = 4;
+		#endif /* WITHUSBUAC */
+
+		maxoutpacketsize4 = ulmax16(maxoutpacketsize4, ncdceemoutdatapackets * size2buff4(USBD_CDCEEM_BUFSIZE));
+
+
+		const uint_fast16_t size4 = ncdceemindatapackets * (size2buff4(USBD_CDCEEM_BUFSIZE) + add3tx);
+		ASSERT(last4 >= size4);
+		last4 -= size4;
+		instance->DIEPTXF [pipe - 1] = usbd_makeTXFSIZ(last4, size4);
+		PRINTF(PSTR("usbd_fifo_initialize5 EEM %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
+	}
+#endif /* WITHUSBCDCEEM */
+
 #if WITHUSBHID && 0
 	{
 		/* ... устройство */
@@ -9983,6 +10080,9 @@ static void hardware_usbd_initialize(void)
 #if WITHUSBDFU
 	USBD_AddClass(& hUsbDevice, & USBD_CLASS_DFU);
 #endif /* WITHUSBDFU */
+#if WITHUSBCDCEEM
+	USBD_AddClass(& hUsbDevice, & USBD_CLASS_EEM);
+#endif /* WITHUSBCDCEEM */
 	PRINTF("hardware_usbd_initialize done\n");
 }
 
