@@ -367,11 +367,6 @@ static void buttons_memory_handler(void)
 	{
 		memory_need_save = 1;
 		memory_cell[cell_id].freq = hamradio_get_freq_rx();
-//		memory_cell[cell_id].submode = hamradio_get_submode();
-//		char mode_label[TEXT_ARRAY_SIZE];
-//		strcpy(mode_label, hamradio_get_submode_label(memory_cell[cell_id].submode));
-//		remove_end_line_spaces(mode_label);
-//		local_snprintf_P(btn_cell->text, ARRAY_SIZE(btn_cell->text), PSTR("%dk|%s"), memory_cell[cell_id].freq / 1000, mode_label);
 		local_snprintf_P(btn_cell->text, ARRAY_SIZE(btn_cell->text), PSTR("%dk"), memory_cell[cell_id].freq / 1000);
 		hamradio_save_memory_cells(cell_id);
 	}
@@ -436,13 +431,7 @@ static void window_memory_process(void)
 
 			hamradio_load_memory_cells(memory_cell, i - 1, 0);
 			if(memory_cell[i - 1].freq > 0)
-			{
-//				char mode_label[TEXT_ARRAY_SIZE];
-//				strcpy(mode_label, hamradio_get_submode_label(memory_cell[i - 1].submode));
-//				remove_end_line_spaces(mode_label);
-//				local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("%dk|%s"), memory_cell[i - 1].freq / 1000, mode_label);
 				local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("%dk"), memory_cell[i - 1].freq / 1000);
-			}
 
 			xmax = (xmax > bh->x1 + bh->w) ? xmax : (bh->x1 + bh->w);
 			ymax = (ymax > bh->y1 + bh->h) ? ymax : (bh->y1 + bh->h);

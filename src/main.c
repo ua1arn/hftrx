@@ -19213,34 +19213,6 @@ void hamradio_load_memory_cells(memory_t * mc, uint_fast8_t i, uint_fast8_t set)
 
 #endif /* WITHTOUCHGUI */
 
-uint_fast8_t hamradio_get_pre_value(void)
-{
-#if ! WITHONEATTONEAMP
-	return gpamps [getbankindex_tx(0)];
-#else /* ! WITHONEATTONEAMP */
-	return 0;
-#endif /* ! WITHONEATTONEAMP */
-}
-
-void hamradio_set_pre_value(uint_fast8_t v)
-{
-	ASSERT(v < PAMPMODE_COUNT);
-	gpamps [getbankindex_tx(0)] = v;
-	updateboard (1, 0);
-}
-
-uint_fast8_t hamradio_get_att_value(void)
-{
-	return gatts [getbankindex_tx(0)];
-}
-
-void hamradio_set_att_value(uint_fast8_t v)
-{
-	ASSERT(v < ATTMODE_COUNT);
-	gatts [getbankindex_tx(0)] = v;
-	updateboard (1, 0);
-}
-
 #if (WITHSWRMTR || WITHSHOWSWRPWR)
 uint_fast8_t hamradio_get_gsmetertype(void)
 {
