@@ -12,6 +12,7 @@
 #include "formats.h"
 #include "usb_core.h"
 
+
 // CDC class-specific request codes
 // (usbcdc11.pdf, 6.2, Table 46)
 // see Table 45 for info about the specific requests.
@@ -44,6 +45,184 @@ static uint_fast16_t ulmax16(uint_fast16_t a, uint_fast16_t b)
 	return a > b ? a : b;
 }
 
+
+/* Собираем поток из CDC EEM USB пакетов */
+// construct EEM packets
+enum
+{
+	CDCEEMOUT_COMMAND,
+	CDCEEMOUT_DATA,
+	CDCEEMOUT_CRC,
+	//
+	CDCEEMOUT_nstates
+};
+
+static uint_fast8_t cdceemoutstate = CDCEEMOUT_COMMAND;
+static uint_fast32_t cdceemoutscore = 0;
+static uint_fast32_t cdceemoutacc;
+static uint_fast32_t cdceemlength;
+static uint_fast32_t cdceematcrc;
+static uint_fast32_t cdceemnpackets;
+
+static uint8_t cdceembuff [1514];
+
+static void cdceemout_initialize(void)
+{
+	cdceemoutstate = CDCEEMOUT_COMMAND;
+	cdceemoutscore = 0;
+}
+
+static void cdceemout_buffer_print(
+	const uint8_t * data,
+	uint_fast16_t length
+	)
+{
+	// debug print
+	uint_fast16_t pos;
+	for (pos = 0; pos < length; ++ pos)
+	{
+		PRINTF(PSTR("%02X%s"), data [pos], ((pos + 1) % 16) == 0 ? ",\n" : ", ");
+	}
+	PRINTF(PSTR("\n"));
+}
+
+// Ethernet II frame print (64..1518 bytes)
+static void cdceemout_buffer_print2(
+	const uint8_t * data,
+	uint_fast16_t length
+	)
+{
+	// +++ MAC header
+	PRINTF(PSTR("Dst MAC = %02X:%02X:%02X:%02X:%02X:%02X, "), data [0], data [1], data [2], data [3], data [4], data [5]);
+	PRINTF(PSTR("Src MAC = %02X:%02X:%02X:%02X:%02X:%02X, "), data [6], data [7], data [8], data [9], data [10], data [11]);
+	const uint_fast16_t EtherType = data [12] * 256 + data [13];	// 0x0800
+	PRINTF(PSTR("EtherType %04X\n"), EtherType);
+	// --- MAC header
+	data += 14;
+	length = length >= 14 ? length - 14 : 0;
+
+	switch (EtherType)
+	{
+	case 0x0800:
+		// IPv4 datagram
+		PRINTF(PSTR("IPv4 datagram: "));
+		PRINTF(PSTR("Protocol=%02X, "), data [9]);	// 0x11 == UDP,
+		PRINTF(PSTR("Src IP=%d.%d.%d.%d, "), data [12], data [13], data [14], data [15]);
+		PRINTF(PSTR("Dst IP=%d.%d.%d.%d\n"), data [16], data [17], data [18], data [19]);
+		{
+		}
+		break;
+
+	case 0x86DD:
+		// IPv6 datagram
+		//PRINTF(PSTR("IPv6 datagram\n"));
+		break;
+
+	case 0x0806:
+		// ARP frame
+		//PRINTF(PSTR("ARP frame\n"));
+		break;
+
+	case 0x88CC:
+		// IEEE Std 802.1AB - Link Layer Discovery Protocol (LLDP)s
+		//PRINTF(PSTR("LLDP\n"));
+		break;
+
+	default:
+		{
+			// pyloaddebug print
+			uint_fast16_t pos;
+			for (pos = 0; pos < length; ++ pos)
+			{
+				PRINTF(PSTR("%02X%s"), data [pos], ((pos + 1) % 16) == 0 ? ",\n" : ", ");
+			}
+			PRINTF(PSTR("\n"));
+		}
+		break;
+	}
+
+
+}
+
+static USBALIGN_BEGIN uint8_t dbd [2] USBALIGN_END;
+
+static void cdceemout_buffer_save(
+	const uint8_t * data,
+	uint_fast16_t length
+	)
+{
+	uint_fast16_t pos;
+
+	for (pos = 0; pos < length; )
+	{
+		switch (cdceemoutstate)
+		{
+		case CDCEEMOUT_COMMAND:
+			cdceemoutacc = cdceemoutacc * 256 + data [pos ++];
+			if (++ cdceemoutscore >= 2)
+			{
+				const uint_fast8_t w = (cdceemoutacc & 0xFFFF);
+				cdceemoutscore = 0;
+				// разбор команды
+				const uint_fast8_t bmType = (w >> 15) & 0x0001;	// 0: EEM data payload 1: EEM Command
+				if (bmType == 0)
+				{
+					const uint_fast8_t bmCRC = (w >> 14) & 0x0001;	// 0: Ethernet Frame CRC is set to 0xdeadbeef
+					cdceemlength = (w >> 0) & 0x3FFF;					// размер включая 4 байта СКС
+					if (cdceemlength > 0)
+					{
+						if (cdceemlength >= 4)
+						{
+							cdceematcrc = cdceemlength - 4;
+							cdceemoutstate = CDCEEMOUT_DATA;
+						}
+					}
+					//PRINTF(PSTR("Data: bmCRC=%02X, cdceemlength=%u, pyload=0x%04X\n"), bmCRC, cdceemlength, cdceematcrc);
+				}
+				else
+				{
+					const uint_fast8_t bmEEMCmd = (w >> 11) & 0x0007;	// 0: Ethernet Frame CRC is set to 0xdeadbeef
+					const uint_fast16_t bmEEMCmdParam = (w >> 11) & 0x07FF;
+					PRINTF(PSTR("Command: bmEEMCmd=%02X, bmEEMCmdParam=%u\n"), bmEEMCmd, bmEEMCmdParam);
+				}
+			}
+			break;
+
+		case CDCEEMOUT_DATA:
+			{
+				const uint_fast16_t chunk = ulmin16(length - pos, cdceematcrc - cdceemoutscore);
+				memcpy(cdceembuff + cdceemoutscore, data + pos, ulmin16(sizeof cdceembuff - cdceemoutscore, chunk)); // use data bytes
+				pos += chunk;
+				if ((cdceemoutscore += chunk) >= cdceematcrc)
+				{
+					cdceemoutscore = 0;
+					cdceemoutstate = CDCEEMOUT_CRC;
+				}
+			}
+			break;
+
+		case CDCEEMOUT_CRC:
+			cdceemoutacc = cdceemoutacc * 256 + data [pos ++];
+			if (++ cdceemoutscore >= 4)
+			{
+				cdceemoutscore = 0;
+				cdceemoutstate = CDCEEMOUT_COMMAND;
+
+				++ cdceemnpackets;
+				//PRINTF(PSTR("CDCEEMOUT packets=%lu\n"), (unsigned long) cdceemnpackets);
+
+				//PRINTF(PSTR("crc=%08lX\n"), (cdceemoutacc & 0xFFFFFFFF));
+				// Тут полностью собран ethernet, используем его (или например печатаем содержимое).
+				PRINTF(PSTR("Data pyload length=0x%04X\n"), cdceematcrc);
+				//cdceemout_buffer_print(cdceembuff, cdceematcrc);
+				cdceemout_buffer_print2(cdceembuff, cdceematcrc);
+			}
+		}
+
+	}
+
+}
+
 /*
 * @param  epnum: endpoint index without direction bit
 *
@@ -54,8 +233,9 @@ static USBD_StatusTypeDef USBD_CDCEEM_DataIn(USBD_HandleTypeDef *pdev, uint_fast
 	switch (epnum)
 	{
 	case (USBD_EP_CDCEEM_IN & 0x7F):
-		USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), cdceem1buffin, cdceem1buffinlevel);
-		cdceem1buffinlevel = 0;
+		//USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), cdceem1buffin, cdceem1buffinlevel);
+		//cdceem1buffinlevel = 0;
+		USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), dbd, sizeof dbd);
 		break;
 	}
 	return USBD_OK;
@@ -67,8 +247,8 @@ static USBD_StatusTypeDef USBD_CDCEEM_DataOut(USBD_HandleTypeDef *pdev, uint_fas
 	{
 	case USBD_EP_CDCEEM_OUT:
 		/* EEM EP OUT */
-		// use CDC data
-		//cdc1out_buffer_save(cdc1buffout, USBD_LL_GetRxDataSize(pdev, epnum));	/* использование буфера принятых данных */
+		// use CDC EEM data
+		cdceemout_buffer_save(cdceem1buffout, USBD_LL_GetRxDataSize(pdev, epnum));	/* использование буфера принятых данных */
 		//memcpy(cdc1buffin, cdc1buffout, cdc1buffinlevel = USBD_LL_GetRxDataSize(pdev, epnum));
 		/* Prepare Out endpoint to receive next cdc data packet */
 		USBD_LL_PrepareReceive(pdev, USB_ENDPOINT_OUT(epnum), cdceem1buffout, USBD_CDCEEM_BUFSIZE);
@@ -254,6 +434,9 @@ static USBD_StatusTypeDef USBD_CDCEEM_Init(USBD_HandleTypeDef *pdev, uint_fast8_
 	USBD_LL_OpenEP(pdev, USBD_EP_CDCEEM_OUT, USBD_EP_TYPE_BULK, USBD_CDCEEM_BUFSIZE);
     /* CDC EEM Prepare Out endpoint to receive 1st packet */
     USBD_LL_PrepareReceive(pdev, USB_ENDPOINT_OUT(USBD_EP_CDCEEM_OUT), cdceem1buffout,  USBD_CDCEEM_BUFSIZE);
+
+    cdceemoutstate = CDCEEMOUT_COMMAND;
+
 	return USBD_OK;
 }
 
