@@ -6596,15 +6596,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 		const uint_fast8_t pipe = USBD_EP_CDCEEM_IN & 0x7F;
 
 		numoutendpoints += 1;
-		#if WITHUSBUAC
-			#if WITHRTS96 || WITHRTS192
-				const int ncdceemindatapackets = 3 * mul2, ncdceemoutdatapackets = 4;
-			#else /* WITHRTS96 || WITHRTS192 */
-				const int ncdceemindatapackets = 2 * mul2, ncdceemoutdatapackets = 2;
-			#endif /* WITHRTS96 || WITHRTS192 */
-		#else /* WITHUSBUAC */
-			const int ncdceemindatapackets = 4 * mul2, ncdceemoutdatapackets = 4;
-		#endif /* WITHUSBUAC */
+		const int ncdceemindatapackets = 1 * mul2, ncdceemoutdatapackets = 3;
 
 		maxoutpacketsize4 = ulmax16(maxoutpacketsize4, ncdceemoutdatapackets * size2buff4(USBD_CDCEEM_BUFSIZE));
 
@@ -6612,7 +6604,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 		const uint_fast16_t size4 = ncdceemindatapackets * (size2buff4(USBD_CDCEEM_BUFSIZE) + add3tx);
 		ASSERT(last4 >= size4);
 		last4 -= size4;
-		instance->DIEPTXF [pipe - 1] = usbd_makeTXFSIZ(last4, size4);
+		USBx->DIEPTXF [pipe - 1] = usbd_makeTXFSIZ(last4, size4);
 		PRINTF(PSTR("usbd_fifo_initialize5 EEM %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
 	}
 #endif /* WITHUSBCDCEEM */
