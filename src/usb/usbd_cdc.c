@@ -6,6 +6,9 @@
 */
 
 #include "hardware.h"
+
+#if WITHUSBHW && WITHUSBCDC
+
 #include "board.h"
 #include "audio.h"
 #include "src/display/display.h"
@@ -14,8 +17,6 @@
 
 #include "gpio.h"
 #include "spi.h"
-
-#if WITHUSBHW && WITHUSBCDC
 
 #include "usb_core.h"
 

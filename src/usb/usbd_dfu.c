@@ -5,16 +5,15 @@
  * UA1ARN
 */
 
-
-#include "../inc/gpio.h"
-#include "../inc/spi.h"
 #include "hardware.h"
-#include "board.h"
-#include "audio.h"
-#include "formats.h"
 
 #if WITHUSBHW && WITHUSBDFU
 
+#include "gpio.h"
+#include "spi.h"
+#include "board.h"
+#include "audio.h"
+#include "formats.h"
 #include "usb_core.h"
 
 
