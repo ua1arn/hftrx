@@ -4660,6 +4660,7 @@ void USB_WritePacket(USB_OTG_GlobalTypeDef *USBx, const uint8_t * data, uint_fas
 	//else
 	//	PRINTF(PSTR("USB_WritePacket, pipe=%d, size=%d, data[]={}\n"), ch_ep_num, size);
 
+	ASSERT(data != NULL);
 
 	if (dma == USB_DISABLE)
 	{
@@ -4721,7 +4722,7 @@ void USB_ReadPacket(USB_OTG_GlobalTypeDef *USBx, uint8_t * dest, uint_fast16_t l
 	uint_fast16_t count32b = (len + 3) / 4;
 	uint32_t * dest32 = (uint32_t *) dest;
 	const volatile uint32_t * const rxfifo32 = & USBx_DFIFO(0);
-
+	ASSERT(dest != NULL);
 	for (; count32b >= 16; count32b -= 16)
 	{
 		* dest32 ++ = * rxfifo32;
@@ -6596,7 +6597,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 		const uint_fast8_t pipe = USBD_EP_CDCEEM_IN & 0x7F;
 
 		numoutendpoints += 1;
-		const int ncdceemindatapackets = 1 * mul2, ncdceemoutdatapackets = 3;
+		const int ncdceemindatapackets = 1 * mul2 + 1, ncdceemoutdatapackets = 3;
 
 		maxoutpacketsize4 = ulmax16(maxoutpacketsize4, ncdceemoutdatapackets * size2buff4(USBD_CDCEEM_BUFSIZE));
 
@@ -8715,6 +8716,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 		const unsigned bcnt = (grxstsp & USB_OTG_GRXSTSP_BCNT) >> USB_OTG_GRXSTSP_BCNT_Pos;
         if (bcnt != 0)
         {
+			ASSERT(ep->xfer_buff != NULL);
           USB_ReadPacket(USBx, ep->xfer_buff, bcnt);
           ep->xfer_buff += bcnt;
           ep->xfer_count += bcnt;
@@ -13339,6 +13341,7 @@ static void HCD_RXQLVL_IRQHandler(HCD_HandleTypeDef *hhcd)
 		if ((pktcnt > 0) && (hhcd->hc [channelnum].xfer_buff != (void *)0))
 		{
 
+			ASSERT(hhcd->hc [channelnum].xfer_buff != NULL);
 			USB_ReadPacket(hhcd->Instance, hhcd->hc [channelnum].xfer_buff, pktcnt);
 
 			/*manage multiple Xfer */
