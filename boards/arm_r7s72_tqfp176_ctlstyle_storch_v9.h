@@ -513,6 +513,7 @@
 
 	#elif WITHAUTOTUNER_AVBELNN
 
+		#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
 		XTHERMOIX = BOARD_ADCX1IN(6),		// MCP3208 CH6 Exernal thermo sensor ST LM235Z
 
 		#define WITHVOLTLEVEL	1	/* отображение напряжения питания */
@@ -535,6 +536,7 @@
 	#elif 0
 		// UA1CEI PA board: MCP3208 at targetext2 - P2_0 external SPI device (PA BOARD ADC)
 
+		#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
 		#define WITHVOLTLEVEL	1	/* отображение напряжения питания */
 		//#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
 		#define WITHCURRLEVEL2	1	/* отображение тока оконечного каскада */
@@ -555,6 +557,7 @@
 	#else /* WITHAUTOTUNER_AVBELNN */
 		// QRP вариант - только 5 ватт на плате
 
+		//#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
 		#define WITHVOLTLEVEL	1	/* отображение напряжения питания */
 		#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
 

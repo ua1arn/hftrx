@@ -507,6 +507,7 @@
 	#if WITHAUTOTUNER_AVBELNN
 		/* TUNER & PA board us4ijr@gmail.com */
 
+		//#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
 		#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
 
 		#define WITHCURRLEVEL_ACS712_30A 1	// PA current sense - ACS712ELCTR-30B-T chip
@@ -533,6 +534,8 @@
 
 	#elif 0
 		// UA1CEI PA board: MCP3208 at targetext2 - P2_0 external SPI device (PA BOARD ADC)
+		//#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
+
 		VOLTSOURCE = BOARD_ADCX2IN(4),		// MCP3208 CH7 Средняя точка делителя напряжения, для АКБ
 		VOLTMRRIX = BOARD_ADCMRRIN(1),	// кеш - индекc не должен повторяться в конфигурации
 
@@ -553,6 +556,7 @@
 		// толькло основная плата - 5W усилитель
 
 		#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
+		//#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
 
 		#if WITHCURRLEVEL
 			//PASENSEIX = BOARD_ADCXIN(0),		// MCP3208 CH0 PA current sense - ACS712-30 chip

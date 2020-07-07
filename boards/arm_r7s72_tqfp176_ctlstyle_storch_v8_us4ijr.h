@@ -502,11 +502,13 @@
 	#endif /* WITHSWRMTR */
 
 	#if WITHAUTOTUNER_AVBELNN
+		//#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
 		#define WITHCURRLEVEL_ACS712_30A 1	// PA current sense - ACS712ELCTR-30B-T chip
 		#if WITHCURRLEVEL
 			PASENSEIX = WPM_POTIX,		// PA1 PA current sense - ACS712-05 chip
 		#endif /* WITHCURRLEVEL */
 	#else /* WITHAUTOTUNER_AVBELNN */
+			//#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
 		#if WITHCURRLEVEL
 			PASENSEIX = 2,		// PA1 PA current sense - ACS712-05 chip
 		#endif /* WITHCURRLEVEL */
