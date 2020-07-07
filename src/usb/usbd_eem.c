@@ -225,7 +225,7 @@ static USBD_StatusTypeDef USBD_CDCEEM_Setup(USBD_HandleTypeDef *pdev, const USBD
 				case INTERFACE_CDCEEM_DATA_6:	// CDC EEM interface
 					// Only zero value here
 					//altinterfaces [interfacev] = LO_BYTE(req->wValue);
-					//PRINTF("USBD_CDC_Setup: CDC interface %d set to %d\n", (int) interfacev, (int) altinterfaces [interfacev]);
+					PRINTF("USBD_CDCEEM_Setup: CDC interface %d set to %d\n", (int) interfacev, (int) LO_BYTE(req->wValue));
 					//bufers_set_cdcalt(altinterfaces [interfacev]);
 					USBD_CtlSendStatus(pdev);
 					break;
@@ -252,6 +252,8 @@ static USBD_StatusTypeDef USBD_CDCEEM_Init(USBD_HandleTypeDef *pdev, uint_fast8_
 	USBD_LL_Transmit(pdev, USBD_EP_CDCEEM_IN, NULL, 0);
 	/* CDC EEM Open EP OUT */
 	USBD_LL_OpenEP(pdev, USBD_EP_CDCEEM_OUT, USBD_EP_TYPE_BULK, USBD_CDCEEM_BUFSIZE);
+    /* CDC EEM Prepare Out endpoint to receive 1st packet */
+    USBD_LL_PrepareReceive(pdev, USB_ENDPOINT_OUT(USBD_EP_CDCEEM_OUT), cdceem1buffout,  USBD_CDCEEM_BUFSIZE);
 	return USBD_OK;
 }
 

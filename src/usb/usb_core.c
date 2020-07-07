@@ -8336,6 +8336,39 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 			TP();
 		}
 
+	    /* Handle RxQLevel Interrupt */
+	    if (__HAL_PCD_GET_FLAG(hpcd, USB_OTG_GINTSTS_RXFLVL))
+	    {
+	      USB_MASK_INTERRUPT(hpcd->Instance, USB_OTG_GINTSTS_RXFLVL); //mgs:????
+	      const uint_fast32_t grxstsp = USBx->GRXSTSP;
+	      USB_OTG_EPTypeDef * const ep = & hpcd->OUT_ep [(grxstsp & USB_OTG_GRXSTSP_EPNUM_Msk) >> USB_OTG_GRXSTSP_EPNUM_Pos];
+
+	      if (((grxstsp & USB_OTG_GRXSTSP_PKTSTS_Msk) >> USB_OTG_GRXSTSP_PKTSTS_Pos) ==  STS_DATA_UPDT)
+	      {
+			const unsigned bcnt = (grxstsp & USB_OTG_GRXSTSP_BCNT_Msk) >> USB_OTG_GRXSTSP_BCNT_Pos;
+	        if (bcnt != 0)
+	        {
+//	        	if (ep->xfer_buff == NULL)
+//	        	{
+//	        		PRINTF("ep=%d\n", (int) ((grxstsp & USB_OTG_GRXSTSP_EPNUM_Msk) >> USB_OTG_GRXSTSP_EPNUM_Pos));
+//	        	}
+				ASSERT(ep->xfer_buff != NULL);
+	          USB_ReadPacket(USBx, ep->xfer_buff, bcnt);
+	          ep->xfer_buff += bcnt;
+	          ep->xfer_count += bcnt;
+	        }
+	      }
+	      else if (((grxstsp & USB_OTG_GRXSTSP_PKTSTS_Msk) >> USB_OTG_GRXSTSP_PKTSTS_Pos) ==  STS_SETUP_UPDT)
+	      {
+			const unsigned bcnt = (grxstsp & USB_OTG_GRXSTSP_BCNT) >> USB_OTG_GRXSTSP_BCNT_Pos;
+			ASSERT(bcnt == 8);
+			ASSERT((grxstsp & USB_OTG_GRXSTSP_EPNUM) == 0);
+	        USB_ReadPacket(USBx, (uint8_t *) hpcd->PSetup, 8);
+	        ep->xfer_count += bcnt;
+	      }
+	      USB_UNMASK_INTERRUPT(hpcd->Instance, USB_OTG_GINTSTS_RXFLVL); //mgs:????
+	    }
+
 		/* OUT endpoints interrupts */
 		if (__HAL_PCD_GET_FLAG(hpcd, USB_OTG_GINTSTS_OEPINT))
 		{
@@ -8702,35 +8735,6 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
       HAL_PCD_ResetCallback(hpcd);
 
       __HAL_PCD_CLEAR_FLAG(hpcd, USB_OTG_GINTSTS_ENUMDNE);
-    }
-
-    /* Handle RxQLevel Interrupt */
-    if(__HAL_PCD_GET_FLAG(hpcd, USB_OTG_GINTSTS_RXFLVL))
-    {
-      USB_MASK_INTERRUPT(hpcd->Instance, USB_OTG_GINTSTS_RXFLVL); //mgs:????
-      const uint_fast32_t grxstsp = USBx->GRXSTSP;
-      USB_OTG_EPTypeDef * const ep = & hpcd->OUT_ep [grxstsp & USB_OTG_GRXSTSP_EPNUM];
-
-      if (((grxstsp & USB_OTG_GRXSTSP_PKTSTS) >> USB_OTG_GRXSTSP_PKTSTS_Pos) ==  STS_DATA_UPDT)
-      {
-		const unsigned bcnt = (grxstsp & USB_OTG_GRXSTSP_BCNT) >> USB_OTG_GRXSTSP_BCNT_Pos;
-        if (bcnt != 0)
-        {
-			ASSERT(ep->xfer_buff != NULL);
-          USB_ReadPacket(USBx, ep->xfer_buff, bcnt);
-          ep->xfer_buff += bcnt;
-          ep->xfer_count += bcnt;
-        }
-      }
-      else if (((grxstsp & USB_OTG_GRXSTSP_PKTSTS) >> USB_OTG_GRXSTSP_PKTSTS_Pos) ==  STS_SETUP_UPDT)
-      {
-		const unsigned bcnt = (grxstsp & USB_OTG_GRXSTSP_BCNT) >> USB_OTG_GRXSTSP_BCNT_Pos;
-		ASSERT(bcnt == 8);
-		ASSERT((grxstsp & USB_OTG_GRXSTSP_EPNUM) == 0);
-        USB_ReadPacket(USBx, (uint8_t *) hpcd->PSetup, 8);
-        ep->xfer_count += bcnt;
-      }
-      USB_UNMASK_INTERRUPT(hpcd->Instance, USB_OTG_GINTSTS_RXFLVL); //mgs:????
     }
 
     /* Handle SOF Interrupt */
