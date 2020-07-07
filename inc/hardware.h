@@ -917,9 +917,9 @@ calcdivround2(
 	#define HARDWARE_USBD_PIPE_RNDIS_IN		13	// RNDIS IN Данные RNDIS в компьютер из TRX
 	#define HARDWARE_USBD_PIPE_RNDIS_INT	8	//
 
-	/* совпадает с CDC */
-	#define HARDWARE_USBD_PIPE_CDCEEM_OUT	3	// CDC EEM OUT Данные ком-порта от компьютера в TRX
-	#define HARDWARE_USBD_PIPE_CDCEEM_IN	4	// CDC EEM IN Данные ком-порта в компьютер из TRX
+	/* совпадает с RNDIS */
+	#define HARDWARE_USBD_PIPE_CDCEEM_OUT	12	// CDC EEM OUT Данные ком-порта от компьютера в TRX
+	#define HARDWARE_USBD_PIPE_CDCEEM_IN	13	// CDC EEM IN Данные ком-порта в компьютер из TRX
 
 #endif /* CPUSTYLE_R7S721 */
 

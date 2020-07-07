@@ -1459,14 +1459,10 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 #endif /* WITHUSBUAC */
 
 #if WITHUSBCDCEEM
-	#if WITHUSBCDC
-		#error not together (same EP numbers)
-	#endif /* WITHUSBCDC */
-
 	if (1)
 	{
 		// Данные CDC EEM из компьютера в трансивер
-		const uint_fast8_t pipe = HARDWARE_USBD_PIPE_CDCEEM_OUT;	// PIPE3
+		const uint_fast8_t pipe = HARDWARE_USBD_PIPE_CDCEEM_OUT;	// PIPE12
 		const uint_fast8_t epnum = USBD_EP_CDCEEM_OUT;
 		const uint_fast8_t dir = 0;
 		//PRINTF(PSTR("usbd_pipe_initialize: pipe=%u endpoint=%02X\n"), pipe, epnum);
@@ -1474,7 +1470,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 		USBx->PIPESEL = pipe << USB_PIPESEL_PIPESEL_SHIFT;
 		while ((USBx->PIPESEL & USB_PIPESEL_PIPESEL) != (pipe << USB_PIPESEL_PIPESEL_SHIFT))
 			;
-		ASSERT(pipe == 3);
+		ASSERT(pipe == 12);
 		USBx->PIPECFG =
 			(0x0F & epnum) * (1u << USB_PIPECFG_EPNUM_SHIFT) |	// EPNUM endpoint
 			dir * (1u << USB_PIPECFG_DIR_SHIFT) |			// DIR 1: Transmitting direction 0: Receiving direction
@@ -1493,7 +1489,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 	if (1)
 	{
 		// Данные CDC в компьютер из трансивера
-		const uint_fast8_t pipe = HARDWARE_USBD_PIPE_CDCEEM_IN;	// PIPE4
+		const uint_fast8_t pipe = HARDWARE_USBD_PIPE_CDCEEM_IN;	// PIPE13
 		const uint_fast8_t epnum = USBD_EP_CDCEEM_IN;
 		const uint_fast8_t dir = 1;
 		//PRINTF(PSTR("usbd_pipe_initialize: pipe=%u endpoint=%02X\n"), pipe, epnum);
@@ -1501,7 +1497,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 		USBx->PIPESEL = pipe << USB_PIPESEL_PIPESEL_SHIFT;
 		while ((USBx->PIPESEL & USB_PIPESEL_PIPESEL) != (pipe << USB_PIPESEL_PIPESEL_SHIFT))
 			;
-		ASSERT(pipe == 4);
+		ASSERT(pipe == 13);
 		USBx->PIPECFG =
 			(0x0F & epnum) * (1u << USB_PIPECFG_EPNUM_SHIFT) |		// EPNUM endpoint
 			dir * (1u << USB_PIPECFG_DIR_SHIFT) |		// DIR 1: Transmitting direction 0: Receiving direction
