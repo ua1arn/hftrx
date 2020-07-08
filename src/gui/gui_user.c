@@ -798,9 +798,7 @@ static void buttons_bp_handler(void)
 		}
 		else if (get_selected_element() == button_OK)
 		{
-			close_window(OPEN_PARENT_WINDOW);
-			footer_buttons_state(CANCELLED);
-			hamradio_disable_keyboard_redirect();
+			close_all_windows();
 		}
 	}
 }
@@ -967,14 +965,17 @@ static void buttons_agc_handler(void)
 		if (get_selected_element() == btnAGCoff)
 		{
 			hamradio_set_agc_off();
+			close_all_windows();
 		}
 		else if (get_selected_element() == btnAGCslow)
 		{
 			hamradio_set_agc_slow();
+			close_all_windows();
 		}
 		else if (get_selected_element() == btnAGCfast)
 		{
 			hamradio_set_agc_fast();
+			close_all_windows();
 		}
 	}
 }
@@ -1188,10 +1189,7 @@ static void buttons_swrscan_process(void)
 		}
 		else if (get_selected_element() == btn_swr_OK)
 		{
-			close_window(OPEN_PARENT_WINDOW);
-			footer_buttons_state(CANCELLED);
-			hamradio_set_lockmode(0);
-			hamradio_disable_keyboard_redirect();
+			close_all_windows();
 			free(y_vals);
 		}
 	}
@@ -1484,7 +1482,9 @@ static void buttons_tx_vox_process(void)
 		window_t * win = get_win(WINDOW_TX_VOX_SETT);
 		button_t * btn_tx_vox_OK = find_gui_element(TYPE_BUTTON, win, "btn_tx_vox_OK");
 		if (get_selected_element() == btn_tx_vox_OK)
-			close_window(OPEN_PARENT_WINDOW);
+		{
+			close_all_windows();
+		}
 	}
 }
 
@@ -1681,7 +1681,9 @@ static void buttons_tx_power_process(void)
 		window_t * win = get_win(WINDOW_TX_POWER);
 		button_t * btn_tx_pwr_OK = find_gui_element(TYPE_BUTTON, win, "btn_tx_pwr_OK");
 		if (get_selected_element() == btn_tx_pwr_OK)
-			close_window(OPEN_PARENT_WINDOW);
+		{
+			close_all_windows();
+		}
 	}
 }
 
@@ -2305,7 +2307,7 @@ static void buttons_ap_mic_process(void)
 		}
 		else if (get_selected_element() == btn_mic_OK)
 		{
-			close_window(OPEN_PARENT_WINDOW);
+			close_all_windows();
 		}
 	}
 }
