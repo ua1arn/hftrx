@@ -27,6 +27,7 @@
 //#include "lwip/ip.h"
 //#include "lwip/raw.h"
 #include "lwip/udp.h"
+#include "lwip/dhcp.h"
 //#include "lwip/priv/tcp_priv.h"
 //#include "lwip/igmp.h"
 //#include "lwip/dns.h"
@@ -146,6 +147,7 @@ udp_setup(void)
   udp_remove_all();
   default_netif_add();
   //lwip_check_ensure_no_alloc(SKIP_POOL(MEMP_SYS_TIMEOUT));
+  //dhcp_start(& test_netif1);
 }
 
 static void
