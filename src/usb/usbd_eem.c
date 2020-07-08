@@ -12,7 +12,7 @@
 #include "formats.h"
 #include "usb_core.h"
 
-
+#if 0
 
 #include "lwip/opt.h"
 
@@ -162,6 +162,9 @@ udp_teardown(void)
   default_netif_remove();
   //lwip_check_ensure_no_alloc(SKIP_POOL(MEMP_SYS_TIMEOUT));
 }
+
+
+#endif
 
 // CDC class-specific request codes
 // (usbcdc11.pdf, 6.2, Table 46)
@@ -604,9 +607,8 @@ static USBD_StatusTypeDef USBD_CDCEEM_DeInit(USBD_HandleTypeDef *pdev, uint_fast
 
 static void USBD_CDCEEM_ColdInit(void)
 {
-	  lwip_init();
-
-	  udp_setup();
+//	  lwip_init();
+//	  udp_setup();
 }
 
 const USBD_ClassTypeDef USBD_CLASS_CDC_EEM =
