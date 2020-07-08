@@ -787,6 +787,20 @@ struct micproc
 	uint8_t complevel;
 } ATTRPACKED;	// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
 
+struct micprof_cell
+{
+	uint_fast8_t level;
+	uint_fast8_t clip;
+	uint_fast8_t agc;
+	uint_fast8_t agcgain;
+	uint_fast8_t mikebust20db;
+	uint_fast8_t cell_saved;
+} ATTRPACKED;
+
+typedef struct micprof_cell	micprof_t;
+#define NMICPROFCELLS	3
+
+static micprof_t micprof_cells[NMICPROFCELLS];
 
 static RAMDTCM mikproc_t micprofiles [] =
 {
@@ -2917,6 +2931,10 @@ filter_t fi_2p0_455 =
 #if	WITHDIRECTBANDS
 	uint8_t	bandgroup [BANDGROUP_COUNT];	/* последний диапазон в группе, куда был переход по кнопке диапазона (индекс в bands). */
 #endif	/* WITHDIRECTBANDS */
+
+#if WITHTOUCHGUI
+	struct micprof_cell micprof_cells [NMICPROFCELLS];	/* ячейки памяти профилей микрофона */
+#endif
 	uint8_t signature [sizeof nvramsign - 1];	/* сигнатура соответствия версии программы и содержимого NVRAM */
 } ATTRPACKED;	// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
 
@@ -2973,6 +2991,13 @@ filter_t fi_2p0_455 =
 #define RMT_BWPROPSRIGHT_BASE(i) offsetof(struct nvmap, bwpropsright [(i)])
 //#define RMT_BWPROPSFLTSOFTER_BASE(i) offsetof(struct nvmap, bwpropsfltsofter [(i)])
 #define RMT_BWPROPSAFRESPONCE_BASE(i) offsetof(struct nvmap, bwpropsafresponce [(i)])
+
+#define RMT_MICLEVEL_BASE(i) offsetof(struct nvmap, micprof_cells[(i)].level)
+#define RMT_MICCLIP_BASE(i) offsetof(struct nvmap, micprof_cells[(i)].clip)
+#define RMT_MICAGC_BASE(i) offsetof(struct nvmap, micprof_cells[(i)].agc)
+#define RMT_MICAGCGAIN_BASE(i) offsetof(struct nvmap, micprof_cells[(i)].agcgain)
+#define RMT_MICBOOST_BASE(i) offsetof(struct nvmap, micprof_cells[(i)].mikebust20db)
+#define RMT_MICPSAVE_BASE(i) offsetof(struct nvmap, micprof_cells[(i)].cell_saved)
 
 /* переменные, вынесенные из главной функции - определяют текущий тежим рботы
    и частоту настройки
@@ -5548,6 +5573,20 @@ static void micproc_load(void)
 	{
 		gtxaprofiles [i] = loadvfy8up(RMT_TXAPROFIGLE_BASE(i), 0, NMICPROFILES - 1, gtxaprofiles [i]);
 	}
+
+#if WITHTOUCHGUI
+	for (i = 0; i < NMICPROFCELLS; i++)
+	{
+		micprof_t * mp = & micprof_cells[i];
+
+		mp->cell_saved = loadvfy8up(RMT_MICPSAVE_BASE(i), 0, 1, 0);
+		mp->agc = loadvfy8up(RMT_MICAGC_BASE(i), 0, 1, 1);
+		mp->agcgain = loadvfy8up(RMT_MICAGCGAIN_BASE(i), WITHMIKEAGCMIN, WITHMIKEAGCMAX, 30);
+		mp->clip = loadvfy8up(RMT_MICCLIP_BASE(i), WITHMIKECLIPMIN, WITHMIKECLIPMAX, 0);
+		mp->level = loadvfy8up(RMT_MICLEVEL_BASE(i), WITHMIKEINGAINMIN, WITHMIKEINGAINMAX, WITHMIKEINGAINMAX);
+		mp->mikebust20db = loadvfy8up(RMT_MICBOOST_BASE(i), 0, 1, 0);
+	}
+#endif /* WITHTOUCHGUI */
 }
 
 
@@ -19209,6 +19248,12 @@ void hamradio_load_memory_cells(memory_t * mc, uint_fast8_t i, uint_fast8_t set)
 		savebandstate(vi, bi); // записать все параметры настройки (кроме частоты)  в текущем VFO */
 		updateboard(1, 1);
 	}
+}
+
+uint_fast8_t hamradio_check_mic_profile_is_saved(uint_fast8_t cell)
+{
+	ASSERT(cell < NMICPROFCELLS);
+	return micprof_cells[cell].cell_saved;
 }
 
 #endif /* WITHTOUCHGUI */

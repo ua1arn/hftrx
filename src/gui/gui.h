@@ -64,6 +64,7 @@ void hamradio_save_memory_cells(uint_fast8_t i);
 void hamradio_load_memory_cells(memory_t * mc, uint_fast8_t i, uint_fast8_t set);
 uint_fast8_t hamradio_get_submode(void);
 const char * hamradio_get_submode_label(uint_fast8_t v);
+uint_fast8_t hamradio_check_mic_profile_is_saved(uint_fast8_t cell);
 
 void gui_encoder2_menu(enc2_menu_t * enc2_menu);
 void gui_WM_walktrough(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx);
