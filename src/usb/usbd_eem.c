@@ -13,6 +13,156 @@
 #include "usb_core.h"
 
 
+
+#include "lwip/opt.h"
+
+#include "lwip/init.h"
+//#include "lwip/stats.h"
+//#include "lwip/sys.h"
+//#include "lwip/mem.h"
+//#include "lwip/memp.h"
+//#include "lwip/pbuf.h"
+//#include "lwip/netif.h"
+//#include "lwip/sockets.h"
+//#include "lwip/ip.h"
+//#include "lwip/raw.h"
+#include "lwip/udp.h"
+//#include "lwip/priv/tcp_priv.h"
+//#include "lwip/igmp.h"
+//#include "lwip/dns.h"
+//#include "lwip/timeouts.h"
+//#include "lwip/etharp.h"
+//#include "lwip/ip6.h"
+//#include "lwip/nd6.h"
+//#include "lwip/mld6.h"
+//#include "lwip/api.h"
+
+
+static struct netif test_netif1, test_netif2;
+static ip4_addr_t test_gw1, test_ipaddr1, test_netmask1;
+static ip4_addr_t test_gw2, test_ipaddr2, test_netmask2;
+static int output_ctr, linkoutput_ctr;
+
+/* Helper functions */
+static void
+udp_remove_all(void)
+{
+  struct udp_pcb *pcb = udp_pcbs;
+  struct udp_pcb *pcb2;
+
+  while(pcb != NULL) {
+    pcb2 = pcb;
+    pcb = pcb->next;
+    udp_remove(pcb2);
+  }
+  ASSERT(MEMP_STATS_GET(used, MEMP_UDP_PCB) == 0);
+}
+
+static err_t
+default_netif_output(struct netif *netif, struct pbuf *p, const ip4_addr_t *ipaddr)
+{
+  ASSERT((netif == &test_netif1) || (netif == &test_netif2));
+  ASSERT(p != NULL);
+  ASSERT(ipaddr != NULL);
+  output_ctr++;
+  return ERR_OK;
+}
+
+static err_t
+default_netif_linkoutput(struct netif *netif, struct pbuf *p)
+{
+  ASSERT((netif == &test_netif1) || (netif == &test_netif2));
+  ASSERT(p != NULL);
+  linkoutput_ctr++;
+  return ERR_OK;
+}
+
+static err_t
+default_netif_init(struct netif *netif)
+{
+  ASSERT(netif != NULL);
+  netif->output = default_netif_output;
+  netif->linkoutput = default_netif_linkoutput;
+  netif->mtu = 1500;
+  netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_LINK_UP;
+  netif->hwaddr_len = 6;
+  return ERR_OK;
+}
+
+static void
+default_netif_add(void)
+{
+  struct netif *n;
+
+#if LWIP_HAVE_LOOPIF
+  ASSERT(netif_list != NULL); /* the loopif */
+  ASSERT(netif_list->next == NULL);
+#else
+  ASSERT(netif_list == NULL);
+#endif
+  ASSERT(netif_default == NULL);
+	TP();
+
+  IP4_ADDR(&test_ipaddr1, 192,168,0,1);
+  IP4_ADDR(&test_netmask1, 255,255,255,0);
+  IP4_ADDR(&test_gw1, 192,168,0,254);
+	TP();
+  n = netif_add(&test_netif1, &test_ipaddr1, &test_netmask1,
+                &test_gw1, NULL, default_netif_init, NULL);
+  ASSERT(n == &test_netif1);
+
+	TP();
+ IP4_ADDR(&test_ipaddr2, 192,168,1,1);
+  IP4_ADDR(&test_netmask2, 255,255,255,0);
+  IP4_ADDR(&test_gw2, 192,168,1,254);
+  n = netif_add(&test_netif2, &test_ipaddr2, &test_netmask2,
+                &test_gw2, NULL, default_netif_init, NULL);
+  ASSERT(n == &test_netif2);
+	TP();
+
+  netif_set_default(&test_netif1);
+	TP();
+  netif_set_up(&test_netif1);
+	TP();
+  netif_set_up(&test_netif2);
+	TP();
+}
+
+static void
+default_netif_remove(void)
+{
+  ASSERT(netif_default == &test_netif1);
+  netif_remove(&test_netif1);
+  netif_remove(&test_netif2);
+  ASSERT(netif_default == NULL);
+#if LWIP_HAVE_LOOPIF
+  ASSERT(netif_list != NULL); /* the loopif */
+  ASSERT(netif_list->next == NULL);
+#else
+  ASSERT(netif_list == NULL);
+#endif
+}
+/* Setups/teardown functions */
+
+static void
+udp_setup(void)
+{
+	TP();
+  udp_remove_all();
+	TP();
+  default_netif_add();
+	TP();
+  //lwip_check_ensure_no_alloc(SKIP_POOL(MEMP_SYS_TIMEOUT));
+}
+
+static void
+udp_teardown(void)
+{
+  udp_remove_all();
+  default_netif_remove();
+  //lwip_check_ensure_no_alloc(SKIP_POOL(MEMP_SYS_TIMEOUT));
+}
+
 // CDC class-specific request codes
 // (usbcdc11.pdf, 6.2, Table 46)
 // see Table 45 for info about the specific requests.
@@ -212,10 +362,15 @@ static void cdceemout_buffer_save(
 				//PRINTF(PSTR("CDCEEMOUT packets=%lu\n"), (unsigned long) cdceemnpackets);
 
 				//PRINTF(PSTR("crc=%08lX\n"), (cdceemoutacc & 0xFFFFFFFF));
-				// Тут полностью собран ethernet, используем его (или например печатаем содержимое).
+				// Тут полностью собран ethernet пакет, используем его (или например печатаем содержимое).
+#if 0
+				// Save to LWIP
+#elif 0
+				// Отладочная печать
 				PRINTF(PSTR("Data pyload length=0x%04X\n"), cdceematcrc);
 				//cdceemout_buffer_print(cdceembuff, cdceematcrc);
 				cdceemout_buffer_print2(cdceembuff, cdceematcrc);
+#endif
 			}
 		}
 
@@ -449,9 +604,12 @@ static USBD_StatusTypeDef USBD_CDCEEM_DeInit(USBD_HandleTypeDef *pdev, uint_fast
 
 static void USBD_CDCEEM_ColdInit(void)
 {
+	  lwip_init();
+
+	  udp_setup();
 }
 
-const USBD_ClassTypeDef USBD_CLASS_EEM =
+const USBD_ClassTypeDef USBD_CLASS_CDC_EEM =
 {
 	USBD_CDCEEM_ColdInit,
 	USBD_CDCEEM_Init,	// Init

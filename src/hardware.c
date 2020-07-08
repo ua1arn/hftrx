@@ -1145,6 +1145,24 @@ static void tickers_spool(void)
 	}
 }
 
+static uint32_t sys_now_counter;
+
+/* прототип в lwip/sys.h
+ *
+ */
+/**
+ * @ingroup sys_time
+ * Returns the current time in milliseconds,
+ * may be the same as sys_jiffies or at least based on it.
+ * Don't care for wraparound, this is only used for time diffs.
+ * Not implementing this function means you cannot use some modules (e.g. TCP
+ * timestamps, internal timeouts for NO_SYS==1).
+ */
+uint32_t sys_now(void)
+{
+	return sys_now_counter;
+}
+
 /* Машинно-независимый обработчик прерываний. */
 // Функции с побочным эффектом - отсчитывание времени.
 // При возможности вызываются столько раз, сколько произошло таймерных прерываний.
@@ -1152,6 +1170,8 @@ static RAMFUNC void spool_systimerbundle1(void)
 {
 	static uint_fast16_t spool_1stickcount;
 	//beacon_255();
+
+	sys_now_counter += (1000 / TICKS_FREQUENCY);
 
 	enum { TICKS1000MS = NTICKS(1000) };
 	//spool_lfm();

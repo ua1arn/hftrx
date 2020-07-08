@@ -33,6 +33,7 @@ BIN  = $(CP) -O binary -R .noinit -R .bss -R .vram -R .heap
 
 
 CMSISDIR = ../../../CMSIS_5/CMSIS
+LWIPDIR = ../../src/lwip-2.1.2/src
 
 OBJDIR2 = obj
 OBJDIR = ./$(OBJDIR2)
@@ -57,7 +58,8 @@ DINCDIR = \
 	$(CMSISDIR)/DSP/Include \
 	$(CMSISDIR)/Core_A/Source \
 	$(CMSISDIR)/DSP/Source \
-	$(CMSISDIR)/DSP/PrivateInclude
+	$(CMSISDIR)/DSP/PrivateInclude \
+	$(LWIPDIR)/include
 
 # List the default directory to look for the libraries here
 DLIBDIR = $(CMSISDIR)/DSP/Lib/GCC
@@ -112,8 +114,8 @@ ULIBDIR +=
 ULIBS += 
 
 #SRC_EXCLUDES += ../../tools/rbf2c.c
-CSRC += $(filter-out $(SRC_EXCLUDES), $(wildcard $(SRCDIR)/*.c $(SRCDIR)/*/*.c $(SRCDIR)/*/*/*.c $(SRCDIR)/*/*/*/*.c))
-CPPSRC += $(filter-out $(SRC_EXCLUDES), $(wildcard $(SRCDIR)/*.cpp $(SRCDIR)/*/*.cpp $(SRCDIR)/*/*/*.cpp $(SRCDIR)/*/*/*/*.cpp))
+CSRC += $(filter-out $(SRC_EXCLUDES), $(wildcard $(SRCDIR)/*.c $(SRCDIR)/*/*.c $(SRCDIR)/*/*/*.c $(SRCDIR)/*/*/*/*.c $(SRCDIR)/*/*/*/*/*.c))
+CPPSRC += $(filter-out $(SRC_EXCLUDES), $(wildcard $(SRCDIR)/*.cpp $(SRCDIR)/*/*.cpp $(SRCDIR)/*/*/*.cpp $(SRCDIR)/*/*/*/*.cpp $(SRCDIR)/*/*/*/*/*.cpp))
 VPATH = $(SRCDIR)
 
 #
@@ -224,5 +226,8 @@ version:
 -include $(wildcard $(OBJDIR)/*/*.d)
 -include $(wildcard $(OBJDIR)/*/*/*.d)
 -include $(wildcard $(OBJDIR)/*/*/*/*.d)
+-include $(wildcard $(OBJDIR)/*/*/*/*/*.d)
+-include $(wildcard $(OBJDIR)/*/*/*/*/*/*.d)
+-include $(wildcard $(OBJDIR)/*/*/*/*/*/*/*.d)
 
 # *** EOF ***
