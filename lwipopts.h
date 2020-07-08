@@ -35,6 +35,7 @@
 #include "hardware.h"
 #include "formats.h"
 
+#define MEM_ALIGNMENT                   4
 #define LWIP_TESTMODE                  0
 
 #define LWIP_IPV6                       0
