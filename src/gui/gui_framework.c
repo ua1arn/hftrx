@@ -45,11 +45,13 @@ static gui_element_t gui_elements[GUI_ELEMENTS_ARRAY_SIZE];
 static uint_fast8_t gui_element_count = 0;
 static button_t close_button = { 0, 0, 0, 0, close_all_windows, CANCELLED, BUTTON_NON_LOCKED, 0, UINT8_MAX, NON_VISIBLE, UINTPTR_MAX, "btn_close", "", };
 
+/* Обновить секундрый таймер GUI */
 void gui_timer_update(void * arg)
 {
 	gui.timer_1sec_updated = 1;
 }
 
+/* Получить состояние таймера GUI */
 uint_fast8_t get_gui_1sec_timer(void)
 {
 	return gui.timer_1sec_updated;
@@ -62,6 +64,7 @@ void reset_tracking(void)
 	gui.vector_move_y = 0;
 }
 
+/* Получить данные трекинга */
 void get_gui_tracking(int_fast8_t * x, int_fast8_t * y)
 {
 	* x = gui.vector_move_x;
@@ -280,11 +283,13 @@ void elements_state (window_t * win)
 //	PRINTF("%s %d gui_element_count: %d %+d\n", win->name, win->state, gui_element_count, debug_num);
 }
 
+/* Возврат id parent window */
 uint_fast8_t check_for_parent_window(void)
 {
 	return gui.win[1];
 }
 
+/* Закрыть все окна (обработчик системной кнопки закрытия окна) */
 void close_all_windows(void)
 {
 	close_window(DONT_OPEN_PARENT_WINDOW);
@@ -293,6 +298,7 @@ void close_all_windows(void)
 	hamradio_disable_keyboard_redirect();
 }
 
+/* Освободить выделенную память в куче и обнулить счетчики элементов окна */
 static void free_win_ptr (window_t * win)
 {
 	free(win->bh_ptr);
@@ -331,11 +337,12 @@ void close_window(uint_fast8_t parent) // 0 - не открывать parent win
 	}
 }
 
+/* Открыть окно */
 void open_window(window_t * win)
 {
 	win->state = VISIBLE;
 	win->first_call = 1;
-	if (win->parent_id != UINT8_MAX)	// Есть есть parent window, закрыть его и оставить child window
+	if (win->parent_id != UINT8_MAX && gui.win[1] == win->parent_id)	// Если открыто parent window, закрыть его и оставить child window
 	{
 		window_t * pwin = get_win(win->parent_id);
 		pwin->state = NON_VISIBLE;
@@ -389,11 +396,13 @@ void calculate_window_position(window_t * win, uint16_t xmax, uint16_t ymax)
 	}
 }
 
+/* Передать менеджеру GUI код нажатой кнопки на клавиатуре */
 void gui_put_keyb_code (uint_fast8_t kbch)
 {
 	gui.kbd_code = gui.kbd_code == KBD_CODE_MAX ? kbch : gui.kbd_code;
 }
 
+/* Получить переданный код аппаратной кнопки */
 uint_fast8_t get_gui_keyb_code(void)
 {
 	uint_fast8_t code = gui.kbd_code;
@@ -415,7 +424,7 @@ void remove_end_line_spaces(char * str)
 	str [i + 1] = '\0';
 }
 
-/* Кнопка */
+/* Отрисовка кнопки */
 static void draw_button(const button_t * const bh)
 {
 	PACKEDCOLORMAIN_T * bg = NULL;
@@ -519,6 +528,7 @@ static void draw_button(const button_t * const bh)
 	}
 }
 
+/* Отрисовка слайдера */
 static void draw_slider(slider_t * sl)
 {
 	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
@@ -560,6 +570,7 @@ static void draw_slider(slider_t * sl)
 	}
 }
 
+/* Заполнение буферов фонов кнопок при инициализации GUI */
 static void fill_button_bg_buf(btn_bg_t * v)
 {
 	PACKEDCOLORMAIN_T * buf;
@@ -647,6 +658,7 @@ static void fill_button_bg_buf(btn_bg_t * v)
 #endif /* GUI_OLDBUTTONSTYLE */
 }
 
+/* Инициализация GUI */
 void gui_initialize (void)
 {
 	uint_fast8_t i = 0;
@@ -660,6 +672,7 @@ void gui_initialize (void)
 	} while (++i < BG_COUNT) ;
 }
 
+/* Обновление данных в массиве элементов открытых окон */
 static void update_gui_elements_list(void)
 {
 	for (uint_fast8_t i = 0; i < gui_element_count; i++)
@@ -716,6 +729,7 @@ static void update_gui_elements_list(void)
 	}
 }
 
+/* Системный обработчик слайдера в момент его перемещения */
 static void slider_process(slider_t * sl)
 {
 	uint16_t v = sl->value + round((sl->orientation ? gui.vector_move_x : gui.vector_move_y) / sl->step);
@@ -724,36 +738,43 @@ static void slider_process(slider_t * sl)
 	reset_tracking();
 }
 
+/* Возврат признака короткого нажатия */
 uint_fast8_t is_short_pressed(void)
 {
 	return gui.selected_type == TYPE_BUTTON && gui.state == RELEASED;
 }
 
+/* Возврат признака длинного нажатия */
 uint_fast8_t is_long_pressed(void)
 {
 	return gui.selected_type == TYPE_BUTTON && gui.state == LONG_PRESSED;
 }
 
+/* Возврат указателя на активный элемент */
 void * get_selected_element(void)
 {
 	return gui.selected_link->link;
 }
 
+/* Возврат признака перемещения слайдера */
 uint_fast8_t is_moving_slider(void)
 {
 	return gui.selected_type == TYPE_SLIDER && gui.is_tracking;
 }
 
+/* Возврат признака перемещения метки */
 uint_fast8_t is_moving_label(void)
 {
 	return gui.selected_type == TYPE_LABEL && gui.is_tracking;
 }
 
+/* Возврат позиции однотипного элемента */
 uint_fast8_t get_selected_element_pos(void)
 {
 	return gui.selected_link->pos;
 }
 
+/* Селектор запуска функций обработки событий */
 static void set_state_record(gui_element_t * val)
 {
 	ASSERT(val != NULL);
@@ -797,6 +818,7 @@ static void set_state_record(gui_element_t * val)
 	}
 }
 
+/* GUI state mashine */
 static void process_gui(void)
 {
 	uint_fast16_t tx, ty;
@@ -918,6 +940,7 @@ static void process_gui(void)
 	}
 }
 
+/* Запуск state mashine и отрисовка элементов GUI */
 void gui_WM_walktrough(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
 {
 	uint_fast8_t alpha = DEFAULT_ALPHA; // на сколько затемнять цвета

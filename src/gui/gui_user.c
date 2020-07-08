@@ -704,10 +704,9 @@ static void window_utilites_process(void)
 
 static void buttons_mode_handler(void)
 {
-	window_t * win = get_win(WINDOW_MODES);
-
 	if(is_short_pressed())
 	{
+		window_t * win = get_win(WINDOW_MODES);
 		button_t * bh = (button_t *)get_selected_element();
 		if (win->state && bh->parent == win->window_id)
 		{
@@ -780,10 +779,9 @@ static void window_mode_process(void)
 
 static void buttons_bp_handler(void)
 {
-	window_t * win = get_win(WINDOW_BP);
-
 	if(is_short_pressed())
 	{
+		window_t * win = get_win(WINDOW_BP);
 		button_t * button_high = find_gui_element(TYPE_BUTTON, win, "btnAF_2");
 		button_t * button_low = find_gui_element(TYPE_BUTTON, win, "btnAF_1");
 		button_t * button_OK = find_gui_element(TYPE_BUTTON, win, "btnAF_OK");
@@ -957,6 +955,30 @@ static void window_bp_process(void)
 
 // *********************************************************************************************************************************************************************
 
+static void buttons_agc_handler(void)
+{
+	if(is_short_pressed())
+	{
+		window_t * win = get_win(WINDOW_AGC);
+		button_t * btnAGCoff = find_gui_element(TYPE_BUTTON, win, "btnAGCoff");
+		button_t * btnAGCslow = find_gui_element(TYPE_BUTTON, win, "btnAGCslow");
+		button_t * btnAGCfast = find_gui_element(TYPE_BUTTON, win, "btnAGCfast");
+
+		if (get_selected_element() == btnAGCoff)
+		{
+			hamradio_set_agc_off();
+		}
+		else if (get_selected_element() == btnAGCslow)
+		{
+			hamradio_set_agc_slow();
+		}
+		else if (get_selected_element() == btnAGCfast)
+		{
+			hamradio_set_agc_fast();
+		}
+	}
+}
+
 static void window_agc_process(void)
 {
 	window_t * win = get_win(WINDOW_AGC);
@@ -969,9 +991,9 @@ static void window_agc_process(void)
 		button_t buttons [] = {
 		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
 			{ },
-			{ 0, 0, 86, 44, hamradio_set_agc_off,  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AGC, NON_VISIBLE, UINTPTR_MAX, "btnAGCoff",  "AGC|off", },
-			{ 0, 0, 86, 44, hamradio_set_agc_slow, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AGC, NON_VISIBLE, UINTPTR_MAX, "btnAGCslow", "AGC|slow", },
-			{ 0, 0, 86, 44, hamradio_set_agc_fast, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AGC, NON_VISIBLE, UINTPTR_MAX, "btnAGCfast", "AGC|fast", },
+			{ 0, 0, 86, 44, buttons_agc_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AGC, NON_VISIBLE, UINTPTR_MAX, "btnAGCoff",  "AGC|off", },
+			{ 0, 0, 86, 44, buttons_agc_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AGC, NON_VISIBLE, UINTPTR_MAX, "btnAGCslow", "AGC|slow", },
+			{ 0, 0, 86, 44, buttons_agc_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AGC, NON_VISIBLE, UINTPTR_MAX, "btnAGCfast", "AGC|fast", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -1150,10 +1172,9 @@ static void window_freq_process (void)
 
 static void buttons_swrscan_process(void)
 {
-	window_t * win = get_win(WINDOW_SWR_SCANNER);
-
 	if(is_short_pressed())
 	{
+		window_t * win = get_win(WINDOW_SWR_SCANNER);
 		button_t * btn_swr_start = find_gui_element(TYPE_BUTTON, win, "btn_swr_start");
 		button_t * btn_swr_OK = find_gui_element(TYPE_BUTTON, win, "btn_swr_OK");
 
@@ -2575,10 +2596,18 @@ static void buttons_menu_handler(void)
 {
 	if(is_short_pressed())
 	{
-		if (! strcmp(((button_t *) get_selected_element())->name, "btnSysMenu+"))
+		window_t * win = get_win(WINDOW_MENU);
+		button_t * btn1 = find_gui_element(TYPE_BUTTON, win, "btnSysMenu+");
+		button_t * btn2 = find_gui_element(TYPE_BUTTON, win, "btnSysMenu-");
+
+		if (get_selected_element() == btn1)
+		{
 			encoder2.rotate = 1;
-		else if (! strcmp(((button_t *) get_selected_element())->name, "btnSysMenu-"))
+		}
+		else if (get_selected_element() == btn2)
+		{
 			encoder2.rotate = -1;
+		}
 	}
 }
 
@@ -3004,15 +3033,19 @@ void gui_uif_editmenu(const char * name, uint_fast16_t menupos, uint_fast8_t exi
 
 static void buttons_uif_handler(void)
 {
-	window_t * win = get_win(WINDOW_UIF);
-
 	if(is_short_pressed())
 	{
-		button_t * bh = get_selected_element();
-		if (bh == find_gui_element(TYPE_BUTTON, win, "btnUIF+"))
+		window_t * win = get_win(WINDOW_UIF);
+		button_t * btn1 = find_gui_element(TYPE_BUTTON, win, "btnUIF+");
+		button_t * btn2 = find_gui_element(TYPE_BUTTON, win, "btnUIF-");
+		if (get_selected_element() == btn1)
+		{
 			encoder2.rotate = 1;
-		else if (bh == find_gui_element(TYPE_BUTTON, win, "btnUIF-"))
+		}
+		else if (get_selected_element() == btn2)
+		{
 			encoder2.rotate = -1;
+		}
 	}
 }
 
