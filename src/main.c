@@ -794,6 +794,8 @@ struct micprof_cell
 	uint_fast8_t agc;
 	uint_fast8_t agcgain;
 	uint_fast8_t mikebust20db;
+	uint_fast8_t eq_enable;
+	uint8_t eq_params [HARDWARE_CODEC1_NPROCPARAMS];
 	uint_fast8_t cell_saved;
 } ATTRPACKED;
 
@@ -2997,7 +2999,11 @@ filter_t fi_2p0_455 =
 #define RMT_MICAGC_BASE(i) offsetof(struct nvmap, micprof_cells[(i)].agc)
 #define RMT_MICAGCGAIN_BASE(i) offsetof(struct nvmap, micprof_cells[(i)].agcgain)
 #define RMT_MICBOOST_BASE(i) offsetof(struct nvmap, micprof_cells[(i)].mikebust20db)
+#define RMT_MICEQ_BASE(i) offsetof(struct nvmap, micprof_cells[(i)].eq_enable)
+#define RMT_MICEQPARAMS_BASE(i, j) offsetof(struct nvmap, micprof_cells[(i)].eq_params[(j)])
 #define RMT_MICPSAVE_BASE(i) offsetof(struct nvmap, micprof_cells[(i)].cell_saved)
+
+
 
 /* переменные, вынесенные из главной функции - определяют текущий тежим рботы
    и частоту настройки
@@ -5585,10 +5591,12 @@ static void micproc_load(void)
 		mp->clip = loadvfy8up(RMT_MICCLIP_BASE(i), WITHMIKECLIPMIN, WITHMIKECLIPMAX, 0);
 		mp->level = loadvfy8up(RMT_MICLEVEL_BASE(i), WITHMIKEINGAINMIN, WITHMIKEINGAINMAX, WITHMIKEINGAINMAX);
 		mp->mikebust20db = loadvfy8up(RMT_MICBOOST_BASE(i), 0, 1, 0);
+		mp->eq_enable = loadvfy8up(RMT_MICEQ_BASE(i), 0, 1, 0);
+		for(uint_fast8_t j = 0; j < HARDWARE_CODEC1_NPROCPARAMS; j ++)
+			mp->eq_params[j] = loadvfy8up(RMT_MICEQPARAMS_BASE(i, j), 0, EQUALIZERBASE * 2, EQUALIZERBASE);
 	}
 #endif /* WITHTOUCHGUI */
 }
-
 
 #endif /* WITHIF4DSP */
 
@@ -19225,6 +19233,12 @@ void hamradio_change_submode(uint_fast8_t newsubmode, uint_fast8_t need_correct_
 	display_redrawmodestimed(1);
 }
 
+void hamradio_clean_memory_cells(uint_fast8_t i)
+{
+	ASSERT(i < MBANDS_COUNT);
+	save_i32(RMT_BFREQ_BASE(MBANDS_BASE + i), 0);
+}
+
 void hamradio_save_memory_cells(uint_fast8_t i)
 {
 	ASSERT(i < MBANDS_COUNT);
@@ -19232,28 +19246,101 @@ void hamradio_save_memory_cells(uint_fast8_t i)
 	savebandfreq(MBANDS_BASE + i, getbankindex_tx(gtx));
 }
 
-void hamradio_load_memory_cells(memory_t * mc, uint_fast8_t i, uint_fast8_t set)
+uint_fast32_t hamradio_load_memory_cells(uint_fast8_t cell, uint_fast8_t set)
 {
-	ASSERT(mc != NULL);
-	ASSERT(i < MBANDS_COUNT);
-	memory_t * cell = & mc[i];
+	ASSERT(cell < MBANDS_COUNT);
 
-	cell->freq = restore_i32(RMT_BFREQ_BASE(MBANDS_BASE + i));
-	if(cell->freq > 0 && set)
+	int_fast32_t freq = restore_i32(RMT_BFREQ_BASE(MBANDS_BASE + cell));
+	if(freq > 0)
 	{
-		const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
-		const vindex_t vi = getvfoindex(bi);
-		loadnewband(MBANDS_BASE + i, bi);	/* загрузка всех параметров (и частоты) нового режима */
-		savebandfreq(vi, bi);	/* сохранение частоты в текущем VFO */
-		savebandstate(vi, bi); // записать все параметры настройки (кроме частоты)  в текущем VFO */
-		updateboard(1, 1);
+		if (set)
+		{
+			const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
+			const vindex_t vi = getvfoindex(bi);
+			loadnewband(MBANDS_BASE + cell, bi);	/* загрузка всех параметров (и частоты) нового режима */
+			savebandfreq(vi, bi);	/* сохранение частоты в текущем VFO */
+			savebandstate(vi, bi); // записать все параметры настройки (кроме частоты)  в текущем VFO */
+			updateboard(1, 1);
+		}
+		return freq;
 	}
+	else
+		return 0;
 }
 
-uint_fast8_t hamradio_check_mic_profile_is_saved(uint_fast8_t cell)
+void hamradio_clean_mic_profile(uint_fast8_t cell)
 {
 	ASSERT(cell < NMICPROFCELLS);
-	return micprof_cells[cell].cell_saved;
+
+	micprof_t * mp = & micprof_cells[cell];
+
+	mp->mikebust20db = 0;
+	mp->level = 0;
+	mp->agc = 0;
+	mp->agcgain = 0;
+	mp->clip = 0;
+	mp->cell_saved = 0;
+	mp->eq_enable = 0;
+
+	save_i8(RMT_MICPSAVE_BASE(cell), mp->cell_saved);
+}
+
+void hamradio_save_mic_profile(uint_fast8_t cell)
+{
+	ASSERT(cell < NMICPROFCELLS);
+
+	micprof_t * mp = & micprof_cells[cell];
+
+	mp->cell_saved = 1;
+	mp->mikebust20db = gmikebust20db;
+	mp->level = mik1level;
+	mp->agc = gmikeagc;
+	mp->agcgain = gmikeagcgain;
+	mp->clip = gmikehclip;
+	mp->eq_enable = gmikeequalizer;
+
+	for(uint_fast8_t j = 0; j < HARDWARE_CODEC1_NPROCPARAMS; j ++)
+	{
+		mp->eq_params[j] = gmikeequalizerparams[j];
+		save_i8(RMT_MICEQPARAMS_BASE(cell, j), mp->eq_params[j]);
+	}
+
+	save_i8(RMT_MICBOOST_BASE(cell), mp->mikebust20db);
+	save_i8(RMT_MICLEVEL_BASE(cell), mp->level);
+	save_i8(RMT_MICAGC_BASE(cell), mp->agc);
+	save_i8(RMT_MICAGCGAIN_BASE(cell), mp->agcgain);
+	save_i8(RMT_MICCLIP_BASE(cell), mp->clip);
+	save_i8(RMT_MICPSAVE_BASE(cell), mp->cell_saved);
+}
+
+uint_fast8_t hamradio_load_mic_profile(uint_fast8_t cell, uint_fast8_t set)
+{
+	ASSERT(cell < NMICPROFCELLS);
+
+	micprof_t * mp = & micprof_cells[cell];
+
+	if (mp->cell_saved && set)
+	{
+		gmikebust20db = mp->mikebust20db;
+		mik1level = mp->level;
+		gmikeagc = mp->agc;
+		gmikeagcgain = mp->agcgain;
+		gmikehclip = mp->clip;
+		gmikeequalizer = mp->eq_enable;
+
+		for(uint_fast8_t j = 0; j < HARDWARE_CODEC1_NPROCPARAMS; j ++)
+			gmikeequalizerparams[j] = mp->eq_params[j];
+
+		board_set_mikebust20db(gmikebust20db);
+		board_set_mik1level(mik1level);
+		board_set_mikeagc(gmikeagc);
+		board_set_mikeagcgain(gmikeagcgain);
+		board_set_mikehclip(gmikehclip);
+		board_set_mikeequal(gmikeequalizer);
+		board_set_mikeequalparams(gmikeequalizerparams);
+		board_update();
+	}
+	return mp->cell_saved;
 }
 
 #endif /* WITHTOUCHGUI */

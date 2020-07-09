@@ -86,9 +86,6 @@ static menu_t menu[MENU_COUNT];
 static uint_fast8_t menu_label_touched = 0;
 static uint_fast8_t menu_level;
 
-static memory_t memory_cell[memory_cells_count];
-static uint_fast8_t memory_need_save = 0;
-
 /* Возврат ссылки на окно */
 window_t * get_win(window_id_t window_id)
 {
@@ -353,22 +350,31 @@ static void buttons_memory_handler(void)
 {
 
 	button_t * btn_cell = (button_t *) get_selected_element();
-	uint_fast8_t cell_id = btn_cell->payload;
+	uint_fast8_t cell_id = get_selected_element_pos();
 
 	if(is_short_pressed())
 	{
-		if(strcmp(btn_cell->text, "---"))
+		if(btn_cell->payload)
 		{
-			hamradio_load_memory_cells(memory_cell, cell_id, 1);
+			hamradio_load_memory_cells(cell_id, 1);
 		}
 	}
 
 	if(is_long_pressed())
 	{
-		memory_need_save = 1;
-		memory_cell[cell_id].freq = hamradio_get_freq_rx();
-		local_snprintf_P(btn_cell->text, ARRAY_SIZE(btn_cell->text), PSTR("%dk"), memory_cell[cell_id].freq / 1000);
-		hamradio_save_memory_cells(cell_id);
+		if(btn_cell->payload)
+		{
+			btn_cell->payload = 0;
+			hamradio_clean_memory_cells(cell_id);
+			local_snprintf_P(btn_cell->text, ARRAY_SIZE(btn_cell->text), PSTR("---"));
+		}
+		else
+		{
+			btn_cell->payload = 1;
+			uint_fast32_t freq = hamradio_get_freq_rx();
+			local_snprintf_P(btn_cell->text, ARRAY_SIZE(btn_cell->text), PSTR("%dk"), freq / 1000);
+			hamradio_save_memory_cells(cell_id);
+		}
 	}
 }
 
@@ -382,28 +388,28 @@ static void window_memory_process(void)
 		win->first_call = 0;
 
 		button_t buttons [] = {
-		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
+		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,     	 	payload,	 name, 		text
 			{ },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, 0, "btn_cell0", "---", },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, 1, "btn_cell1", "---", },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, 2, "btn_cell2", "---", },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, 3, "btn_cell3", "---", },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, 4, "btn_cell4", "---", },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, 5, "btn_cell5", "---", },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, 6, "btn_cell6", "---", },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, 7, "btn_cell7", "---", },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, 8, "btn_cell8", "---", },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, 9, "btn_cell9", "---", },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, 10, "btn_cell10", "---", },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, 11, "btn_cell11", "---", },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, 12, "btn_cell12", "---", },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, 13, "btn_cell13", "---", },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, 14, "btn_cell14", "---", },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, 15, "btn_cell15", "---", },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, 16, "btn_cell16", "---", },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, 17, "btn_cell17", "---", },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, 18, "btn_cell18", "---", },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, 19, "btn_cell19", "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell0", "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell1", "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell2", "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell3", "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell4", "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell5", "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell6", "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell7", "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell8", "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell9", "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell10", "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell11", "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell12", "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell13", "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell14", "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell15", "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell16", "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell17", "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell18", "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell19", "---", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -420,6 +426,7 @@ static void window_memory_process(void)
 			bh->x1 = x;
 			bh->y1 = y;
 			bh->visible = VISIBLE;
+			bh->payload = 0;
 
 			x = x + interval + bh->w;
 			if (r >= row_count)
@@ -429,9 +436,12 @@ static void window_memory_process(void)
 				y = y + bh->h + interval;
 			}
 
-			hamradio_load_memory_cells(memory_cell, i - 1, 0);
-			if(memory_cell[i - 1].freq > 0)
-				local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("%dk"), memory_cell[i - 1].freq / 1000);
+			uint_fast32_t freq = hamradio_load_memory_cells(i - 1, 0);
+			if(freq > 0)
+			{
+				local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("%dk"), freq / 1000);
+				bh->payload = 1;
+			}
 
 			xmax = (xmax > bh->x1 + bh->w) ? xmax : (bh->x1 + bh->w);
 			ymax = (ymax > bh->y1 + bh->h) ? ymax : (bh->y1 + bh->h);
@@ -2512,14 +2522,31 @@ static void window_ap_mic_process(void)
 
 static void buttons_ap_mic_prof_process(void)
 {
-	if (is_short_pressed())
-	{
+	button_t * btn_profile = (button_t *) get_selected_element();
+	uint_fast8_t profile_id = get_selected_element_pos();
 
+	if(is_short_pressed())
+	{
+		if(btn_profile->payload)
+		{
+			hamradio_load_mic_profile(profile_id, 1);
+		}
 	}
 
 	if (is_long_pressed())
 	{
-
+		if (btn_profile->payload)
+		{
+			hamradio_clean_mic_profile(profile_id);
+			local_snprintf_P(btn_profile->text, ARRAY_SIZE(btn_profile->text), PSTR("Profile %d|empty"), profile_id + 1);
+			btn_profile->payload = 0;
+		}
+		else
+		{
+			hamradio_save_mic_profile(profile_id);
+			local_snprintf_P(btn_profile->text, ARRAY_SIZE(btn_profile->text), PSTR("Profile %d|saved"), profile_id + 1);
+			btn_profile->payload = 1;
+		}
 	}
 }
 
@@ -2565,8 +2592,9 @@ static void window_ap_mic_prof_process(void)
 				x = col1_int;
 				y = y + bh->h + interval;
 			}
-			uint_fast8_t cell_saved = hamradio_check_mic_profile_is_saved(i - 1);
+			uint_fast8_t cell_saved = hamradio_load_mic_profile(i - 1, 0);
 			local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("Profile %d|%s"), i, cell_saved ? "saved" : "empty");
+			bh->payload = cell_saved;
 			xmax = (xmax > bh->x1 + bh->w) ? xmax : (bh->x1 + bh->w);
 			ymax = (ymax > bh->y1 + bh->h) ? ymax : (bh->y1 + bh->h);
 		}
