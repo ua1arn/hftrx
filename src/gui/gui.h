@@ -76,6 +76,7 @@ uint_fast8_t hamradio_load_mic_profile(uint_fast8_t cell, uint_fast8_t set);
 void hamradio_save_mic_profile(uint_fast8_t cell);
 void hamradio_clean_mic_profile(uint_fast8_t cell);
 uint_fast8_t hamradio_get_bands(band_array_t * bands);
+void hamradio_goto_band_by_freq(uint_fast32_t f);
 
 void gui_encoder2_menu(enc2_menu_t * enc2_menu);
 void gui_WM_walktrough(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx);

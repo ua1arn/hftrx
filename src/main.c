@@ -4843,6 +4843,9 @@ existingband(
 	uint_fast8_t b	// код диапазона
 	)
 {
+#if WITHTOUCHGUI
+	return 1;
+#endif
 	const uint_fast8_t bandset = get_band_bandset(b);
 
 	if (get_band_bottom(b) >= TUNE_TOP || get_band_top(b) < TUNE_BOTTOM)
@@ -19361,7 +19364,29 @@ uint_fast8_t hamradio_get_bands(band_array_t * bands)
 			count ++;
 		}
 	}
+
+	for (uint_fast8_t i = 0; i < HBANDS_COUNT; i++)
+	{
+		uint_fast8_t bandset = get_band_bandset(i);
+		if (bandset == BANDSETF_BCAST || bandset == BANDSETF_ALL)
+		{
+			band_array_t * b = & bands[count];
+
+			b->index = i;
+			b->init_freq = get_band_init(i);
+			b->type = BAND_TYPE_BROADCAST;
+			local_snprintf_P(b->name, ARRAY_SIZE(b->name), PSTR("%dk"), b->init_freq / 1000);
+			count ++;
+		}
+	}
+
 	return count;
+}
+
+void hamradio_goto_band_by_freq(uint_fast32_t f)
+{
+
+	uif_key_click_banddjump(f);
 }
 
 #endif /* WITHTOUCHGUI */

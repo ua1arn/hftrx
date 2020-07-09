@@ -77,7 +77,7 @@ void * find_gui_element(element_type_t type, window_t * win, const char * name)
 	switch (type)
 	{
 	case TYPE_BUTTON:
-		for (uint_fast8_t i = 1; i < win->bh_count; i++)
+		for (uint_fast8_t i = 0; i < win->bh_count; i++)
 		{
 			button_t * bh = & win->bh_ptr[i];
 			if (!strcmp(bh->name, name))
@@ -89,7 +89,7 @@ void * find_gui_element(element_type_t type, window_t * win, const char * name)
 		break;
 
 	case TYPE_LABEL:
-		for (uint_fast8_t i = 1; i < win->lh_count; i++)
+		for (uint_fast8_t i = 0; i < win->lh_count; i++)
 		{
 			label_t * lh = & win->lh_ptr[i];
 			if (!strcmp(lh->name, name))
@@ -101,7 +101,7 @@ void * find_gui_element(element_type_t type, window_t * win, const char * name)
 		break;
 
 	case TYPE_SLIDER:
-		for (uint_fast8_t i = 1; i < win->sh_count; i++)
+		for (uint_fast8_t i = 0; i < win->sh_count; i++)
 		{
 			slider_t * sh = & win->sh_ptr[i];
 			if (!strcmp(sh->name, name))
@@ -159,7 +159,7 @@ void footer_buttons_state (uint_fast8_t state, ...)
 		va_end(arg);
 	}
 
-	for (uint_fast8_t i = 1; i < win->bh_count; i++)
+	for (uint_fast8_t i = 0; i < win->bh_count; i++)
 	{
 		button_t * bh = & win->bh_ptr[i];
 		if (state == DISABLED)
@@ -184,7 +184,7 @@ void elements_state (window_t * win)
 	if (b != NULL)
 	{
 		j = 0;
-		for (uint_fast8_t i = 1; i < win->bh_count; i++)
+		for (uint_fast8_t i = 0; i < win->bh_count; i++)
 		{
 			button_t * bh = & b[i];
 			if (win->state)
@@ -211,7 +211,7 @@ void elements_state (window_t * win)
 	if(l != NULL)
 	{
 		j = 0;
-		for (uint_fast8_t i = 1; i < win->lh_count; i++)
+		for (uint_fast8_t i = 0; i < win->lh_count; i++)
 		{
 			label_t * lh = & l[i];
 			if (win->state)
@@ -238,7 +238,7 @@ void elements_state (window_t * win)
 	if(s != NULL)
 	{
 		j = 0;
-		for (uint_fast8_t i = 1; i < win->sh_count; i++)
+		for (uint_fast8_t i = 0; i < win->sh_count; i++)
 		{
 			slider_t * sh = & s[i];
 			if (win->state)
