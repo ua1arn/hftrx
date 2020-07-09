@@ -52,7 +52,7 @@ static window_t windows[] = {
 //     window_id,   		 parent_id, 			align_mode,     x1, y1, w, h,   title,     		is_show, first_call, is_close, onVisibleProcess
 	{ WINDOW_MAIN, 			 UINT8_MAX, 			ALIGN_LEFT_X,	0, 0, 0, 0, "",  	   	   			 NON_VISIBLE, 0, 0, gui_main_process, },
 	{ WINDOW_MODES, 		 UINT8_MAX, 			ALIGN_CENTER_X, 0, 0, 0, 0, "Select mode", 			 NON_VISIBLE, 0, 1, window_mode_process, },
-	{ WINDOW_BP,    		 WINDOW_OPTIONS,		ALIGN_CENTER_X, 0, 0, 0, 0, "Bandpass",    			 NON_VISIBLE, 0, 1, window_bp_process, },
+	{ WINDOW_BP,    		 UINT8_MAX,				ALIGN_CENTER_X, 0, 0, 0, 0, "Bandpass",    			 NON_VISIBLE, 0, 1, window_bp_process, },
 	{ WINDOW_AGC,   		 WINDOW_OPTIONS,		ALIGN_CENTER_X, 0, 0, 0, 0, "AGC control", 			 NON_VISIBLE, 0, 1, window_agc_process, },
 	{ WINDOW_FREQ,  		 WINDOW_OPTIONS,		ALIGN_CENTER_X, 0, 0, 0, 0, "Freq:", 	   			 NON_VISIBLE, 0, 1, window_freq_process, },
 	{ WINDOW_MENU,  		 WINDOW_OPTIONS,		ALIGN_CENTER_X, 0, 0, 0, 0, "Settings",	   		 	 NON_VISIBLE, 0, 1, window_menu_process, },
@@ -106,8 +106,32 @@ static void btn_main_handler(void)
 		button_t * btn_Memory = find_gui_element(TYPE_BUTTON, winMain, "btn_Memory");
 		button_t * btn_Mode = find_gui_element(TYPE_BUTTON, winMain, "btn_Mode");
 		button_t * btn_Options = find_gui_element(TYPE_BUTTON, winMain, "btn_Options");
+		button_t * btn_AF = find_gui_element(TYPE_BUTTON, winMain, "btn_AF");
+		button_t * btn_AutoNotch = find_gui_element(TYPE_BUTTON, winMain, "btn_AutoNotch");
 
-		if (get_selected_element() == btn_Mode)
+		if (get_selected_element() == btn_AutoNotch)
+		{
+			btn_AutoNotch->payload = ! hamradio_get_autonotch();
+			local_snprintf_P(btn_AutoNotch->text, ARRAY_SIZE(btn_AutoNotch->text), PSTR("ANotch|%s"), btn_AutoNotch->payload ? "ON" : "OFF");
+			hamradio_set_autonotch(btn_AutoNotch->payload);
+		}
+		else if (get_selected_element() == btn_AF)
+		{
+			window_t * win = get_win(WINDOW_BP);
+			if (win->state == NON_VISIBLE)
+			{
+				open_window(win);
+				footer_buttons_state(DISABLED, btn_AF);
+				hamradio_enable_keyboard_redirect();
+			}
+			else
+			{
+				close_window(OPEN_PARENT_WINDOW);
+				footer_buttons_state(CANCELLED);
+				hamradio_disable_keyboard_redirect();
+			}
+		}
+		else if (get_selected_element() == btn_Mode)
 		{
 			window_t * win = get_win(WINDOW_MODES);
 			if (win->state == NON_VISIBLE)
@@ -191,8 +215,8 @@ static void gui_main_process(void)
 			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, UINTPTR_MAX, "btn_Bands", 	 "Bands", },
 			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, UINTPTR_MAX, "btn_Memory",  "Memory", },
 			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, UINTPTR_MAX, "btn_Mode", 	 "Mode", },
-			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, UINTPTR_MAX, "btn_4", 	 	 "", },
-			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, UINTPTR_MAX, "btn_5", 	 	 "", },
+			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, UINTPTR_MAX, "btn_AF",  	 "AF|filter", },
+			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, UINTPTR_MAX, "btn_AutoNotch", "", },
 			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, UINTPTR_MAX, "btn_6", 	 	 "", },
 			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, UINTPTR_MAX, "btn_7", 	 	 "", },
 			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, UINTPTR_MAX, "btn_8", 	 	 "", },
@@ -214,6 +238,11 @@ static void gui_main_process(void)
 		}
 
 		elements_state(win);
+
+		button_t * btn_AutoNotch = find_gui_element(TYPE_BUTTON, win, "btn_AutoNotch");
+		btn_AutoNotch->payload = hamradio_get_autonotch();
+		local_snprintf_P(btn_AutoNotch->text, ARRAY_SIZE(btn_AutoNotch->text), PSTR("ANotch|%s"), btn_AutoNotch->payload ? "ON" : "OFF");
+
 		return;
 	}
 
@@ -580,29 +609,14 @@ static void buttons_options_handler(void)
 	if(is_short_pressed())
 	{
 		window_t * win = get_win(WINDOW_OPTIONS);
-		button_t * btn_AF = find_gui_element(TYPE_BUTTON, win, "btn_AF");
 		button_t * btn_AGC = find_gui_element(TYPE_BUTTON, win, "btn_AGC");
 		button_t * btn_Freq = find_gui_element(TYPE_BUTTON, win, "btn_Freq");
 		button_t * btn_TXsett = find_gui_element(TYPE_BUTTON, win, "btn_TXsett");
 		button_t * btn_AUDsett = find_gui_element(TYPE_BUTTON, win, "btn_AUDsett");
 		button_t * btn_SysMenu = find_gui_element(TYPE_BUTTON, win, "btn_SysMenu");
 		button_t * btn_Utils = find_gui_element(TYPE_BUTTON, win, "btn_Utils");
-//		button_t * btn_AutoNotch = find_gui_element(TYPE_BUTTON, win, "btn_AutoNotch");
-//
-//		if (get_selected_element() == btn_AutoNotch)
-//		{
-//			btn_AutoNotch->is_locked = hamradio_get_autonotch() ? BUTTON_NON_LOCKED : BUTTON_LOCKED;
-//			local_snprintf_P(btn_AutoNotch->text, ARRAY_SIZE(btn_AutoNotch->text), PSTR("AutoNotch|%s"), btn_AutoNotch->is_locked ? "ON" : "OFF");
-//			hamradio_set_autonotch(btn_AutoNotch->is_locked);
-//		}
-//		else
-		if (get_selected_element() == btn_AF)
-		{
-			window_t * win = get_win(WINDOW_BP);
-			open_window(win);
-			hamradio_enable_keyboard_redirect();
-		}
-		else if (get_selected_element() == btn_AGC)
+
+		if (get_selected_element() == btn_AGC)
 		{
 			window_t * win = get_win(WINDOW_AGC);
 			open_window(win);
@@ -644,19 +658,17 @@ static void window_options_process(void)
 	if (win->first_call)
 	{
 		uint_fast16_t x = 0, y = 0, xmax = 0, ymax = 0;
-		uint_fast8_t interval = 6, col1_int = 20, row1_int = window_title_height + 20, row_count = 4;
+		uint_fast8_t interval = 6, col1_int = 20, row1_int = window_title_height + 20, row_count = 3;
 		win->first_call = 0;
 
 		button_t buttons [] = {
 		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
+			{ 0, 0, 100, 44, buttons_options_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_OPTIONS, NON_VISIBLE, UINTPTR_MAX, "btn_SysMenu",   "System|settings", },
 			{ 0, 0, 100, 44, buttons_options_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_OPTIONS, NON_VISIBLE, UINTPTR_MAX, "btn_AUDsett",   "Audio|settings", },
 			{ 0, 0, 100, 44, buttons_options_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_OPTIONS, NON_VISIBLE, UINTPTR_MAX, "btn_TXsett",    "Transmit|settings", },
-			{ 0, 0, 100, 44, buttons_options_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_OPTIONS, NON_VISIBLE, UINTPTR_MAX, "btn_AF",  	  "AF|filter", },
 			{ 0, 0, 100, 44, buttons_options_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_OPTIONS, NON_VISIBLE, UINTPTR_MAX, "btn_Freq",      "Freq|enter", },
 			{ 0, 0, 100, 44, buttons_options_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_OPTIONS, NON_VISIBLE, UINTPTR_MAX, "btn_AGC",  	  "AGC", },
-			{ 0, 0, 100, 44, buttons_options_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_OPTIONS, NON_VISIBLE, UINTPTR_MAX, "btn_SysMenu",   "System|settings", },
 			{ 0, 0, 100, 44, buttons_options_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_OPTIONS, NON_VISIBLE, UINTPTR_MAX, "btn_Utils", 	  "Utils", },
-//			{ 0, 0, 100, 44, buttons_options_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_OPTIONS, NON_VISIBLE, UINTPTR_MAX, "btn_AutoNotch", "AutoNotch|OFF", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -685,11 +697,6 @@ static void window_options_process(void)
 			ymax = (ymax > bh->y1 + bh->h) ? ymax : (bh->y1 + bh->h);
 		}
 		elements_state(win);
-
-//		button_t * btn_AutoNotch = find_gui_element(TYPE_BUTTON, win, "btn_AutoNotch");
-//		btn_AutoNotch->is_locked = hamradio_get_autonotch();
-//		local_snprintf_P(btn_AutoNotch->text, ARRAY_SIZE(btn_AutoNotch->text), PSTR("AutoNotch|%s"), btn_AutoNotch->is_locked ? "ON" : "OFF");
-
 		calculate_window_position(win, xmax, ymax);
 		hamradio_disable_keyboard_redirect();
 		return;
@@ -2615,8 +2622,8 @@ static void window_ap_mic_prof_process(void)
 				x = col1_int;
 				y = y + bh->h + interval;
 			}
-			uint_fast8_t cell_saved = hamradio_load_mic_profile(i - 1, 0);
-			local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("Profile %d|%s"), i, cell_saved ? "saved" : "empty");
+			uint_fast8_t cell_saved = hamradio_load_mic_profile(i, 0);
+			local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("Profile %d|%s"), i + 1, cell_saved ? "saved" : "empty");
 			bh->payload = cell_saved;
 			xmax = (xmax > bh->x1 + bh->w) ? xmax : (bh->x1 + bh->w);
 			ymax = (ymax > bh->y1 + bh->h) ? ymax : (bh->y1 + bh->h);

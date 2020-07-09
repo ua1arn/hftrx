@@ -2542,7 +2542,6 @@ struct nvmap
 	uint8_t gnotch;
 #elif WITHNOTCHFREQ
 	uint8_t	ggrpnotch; // последний посещённый пункт группы
-	uint8_t gautonotch;	// TODO: remove
 	uint8_t gnotch;		// on/off - кнопкой, не через меню
 	uint8_t gnotchtype;
 	uint16_t gnotchfreq;
@@ -3143,7 +3142,6 @@ static uint_fast8_t gusefast;
 #if WITHNOTCHONOFF
 	static uint_fast8_t gnotch;	// on/off
 #elif WITHNOTCHFREQ
-	static uint_fast8_t gautonotch;	// TODO: remove
 	static uint_fast8_t gnotch;	// on/off
 	static uint_fast8_t gnotchtype;
 	static dualctl16_t gnotchfreq = { 1000, 1000 };
@@ -18974,16 +18972,24 @@ uint_fast8_t hamradio_set_freq(uint_fast32_t freq)
 
 void hamradio_set_autonotch(uint_fast8_t v)
 {
-	gautonotch = v != 0;
-	save_i8(offsetof(struct nvmap, gautonotch), gautonotch);
+	static uint_fast8_t old_type = 0;
 
+	gnotch = v != 0;
 	if (v)
-		hamradio_autonotch_init();
+	{
+		old_type = gnotchtype;
+		gnotchtype = 0;
+	}
+	else
+	{
+		gnotchtype = old_type;
+	}
+	board_set_notch_mode(gnotch == 0 ? BOARD_NOTCH_OFF : notchmodes [gnotchtype].code);
 }
 
 uint_fast8_t hamradio_get_autonotch(void)
 {
-	return gautonotch;
+	return gnotch && notchmodes [gnotchtype].code == BOARD_NOTCH_AUTO;
 }
 
 #endif /* WITHNOTCHFREQ */
@@ -19279,7 +19285,7 @@ uint_fast32_t hamradio_load_memory_cells(uint_fast8_t cell, uint_fast8_t set)
 	// TODO:
 	// loadvfy32(RMT_BFREQ_BASE(MBANDS_BASE + cell), TUNE_BOTTOM, TUNE_TOP - 1, TUNE_BOTTOM);
 	int_fast32_t freq = restore_i32(RMT_BFREQ_BASE(MBANDS_BASE + cell));
-	if(freq > 0)
+	if(freqvalid(freq, gtx))
 	{
 		if (set)
 		{
@@ -19410,8 +19416,8 @@ uint_fast8_t hamradio_get_bands(band_array_t * bands)
 
 void hamradio_goto_band_by_freq(uint_fast32_t f)
 {
-
-	uif_key_click_banddjump(f);
+	if(freqvalid(f, gtx))
+		uif_key_click_banddjump(f);
 }
 
 #endif /* WITHTOUCHGUI */
