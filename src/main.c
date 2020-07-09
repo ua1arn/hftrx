@@ -1940,6 +1940,16 @@ enum
 	BANDGROUP_COUNT			// Значение, используемое как признак отсутствия группировки диапазонов
 };
 
+
+static const char * const bandlabels [BANDGROUP_COUNT] =
+{
+	"14 ",
+	"28 ",
+	"70 ",
+	"144",
+	"430",
+};
+
 #if (FLASHEND > 0x7FFF)	
 #else
 #endif
@@ -2121,10 +2131,11 @@ static FLASHMEM struct bandrange  const bandsmap [] =
 		#define MBANDS_COUNT	1000 // (254 - MBANDS_BASE)	/* количество ячеек фиксированных частот */
 		typedef uint_fast16_t vindex_t;
 	#endif
+
 #elif WITHTOUCHGUI
 
 	#define MBANDS_COUNT	memory_cells_count	/* количество ячеек фиксированных частот */
-	typedef uint_fast8_t vindex_t;
+	typedef unsigned vindex_t;
 
 #else
 
@@ -2142,6 +2153,18 @@ getvfoindex(uint_fast8_t bi)
 {
 	ASSERT(bi < 2);
 	return VFOS_BASE + bi;
+}
+
+/* получение человекопонятного названия диапазона */
+const char *
+get_band_label3(unsigned b)	/* b: диапазон в таблице bandsmap */
+{
+	const uint_fast8_t bandgroup = bandsmap [b].bandgroup;
+	if (bandgroup >= ARRAY_SIZE(bandlabels))
+		return "ERR";
+	if (bandlabels [bandgroup] == NULL)
+		return "NUL";	// недостаточно правильно заполненная таблица
+	return bandlabels [bandgroup];
 }
 
 /* интерфейсная функция доступа к параметра диапазона */

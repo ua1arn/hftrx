@@ -3400,6 +3400,9 @@ enum {
 uint_fast8_t hamradio_get_gsmetertype(void);
 void display2_set_smetertype(uint_fast8_t v);
 
+
+const char * get_band_label3(unsigned b); /* получение человекопонятного названия диапазона */
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
