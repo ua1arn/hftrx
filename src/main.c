@@ -19276,6 +19276,8 @@ uint_fast32_t hamradio_load_memory_cells(uint_fast8_t cell, uint_fast8_t set)
 {
 	ASSERT(cell < MBANDS_COUNT);
 
+	// TODO:
+	// loadvfy32(RMT_BFREQ_BASE(MBANDS_BASE + cell), TUNE_BOTTOM, TUNE_TOP - 1, TUNE_BOTTOM);
 	int_fast32_t freq = restore_i32(RMT_BFREQ_BASE(MBANDS_BASE + cell));
 	if(freq > 0)
 	{
