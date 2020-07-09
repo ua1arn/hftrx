@@ -86,6 +86,8 @@ static menu_t menu[MENU_COUNT];
 static uint_fast8_t menu_label_touched = 0;
 static uint_fast8_t menu_level;
 
+static band_array_t bands[30];;
+
 /* Возврат ссылки на окно */
 window_t * get_win(window_id_t window_id)
 {
@@ -480,21 +482,23 @@ static void window_bands_process(void)
 		uint_fast8_t interval = 6, col1_int = 20, row1_int = window_title_height + 20, row_count = 3;
 		win->first_call = 0;
 
-		button_t buttons [] = {
-		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
-			{ },
-			{ 0, 0, 86, 44, buttons_bands_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_BANDS, NON_VISIBLE, UINTPTR_MAX, "btn_band1", 	 "160m", },
-			{ 0, 0, 86, 44, buttons_bands_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_BANDS, NON_VISIBLE, UINTPTR_MAX, "btn_band2", 	 "80m", },
-			{ 0, 0, 86, 44, buttons_bands_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_BANDS, NON_VISIBLE, UINTPTR_MAX, "btn_band3", 	 "40m", },
-			{ 0, 0, 86, 44, buttons_bands_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_BANDS, NON_VISIBLE, UINTPTR_MAX, "btn_band4", 	 "20m", },
-			{ 0, 0, 86, 44, buttons_bands_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_BANDS, NON_VISIBLE, UINTPTR_MAX, "btn_band5", 	 "15m", },
-			{ 0, 0, 86, 44, buttons_bands_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_BANDS, NON_VISIBLE, UINTPTR_MAX, "btn_band6", 	 "10m", },
-		};
-		win->bh_count = ARRAY_SIZE(buttons);
-		uint_fast16_t buttons_size = sizeof(buttons);
+		uint_fast8_t ham_bands_count = hamradio_get_bands(bands);
+
+//		button_t buttons [] = {
+//		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
+//			{ },
+//			{ 0, 0, 86, 44, buttons_bands_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_BANDS, NON_VISIBLE, UINTPTR_MAX, "btn_band1", 	 "160m", },
+//			{ 0, 0, 86, 44, buttons_bands_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_BANDS, NON_VISIBLE, UINTPTR_MAX, "btn_band2", 	 "80m", },
+//			{ 0, 0, 86, 44, buttons_bands_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_BANDS, NON_VISIBLE, UINTPTR_MAX, "btn_band3", 	 "40m", },
+//			{ 0, 0, 86, 44, buttons_bands_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_BANDS, NON_VISIBLE, UINTPTR_MAX, "btn_band4", 	 "20m", },
+//			{ 0, 0, 86, 44, buttons_bands_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_BANDS, NON_VISIBLE, UINTPTR_MAX, "btn_band5", 	 "15m", },
+//			{ 0, 0, 86, 44, buttons_bands_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_BANDS, NON_VISIBLE, UINTPTR_MAX, "btn_band6", 	 "10m", },
+//		};
+		win->bh_count = ham_bands_count + 1; //ARRAY_SIZE(buttons);
+		uint_fast16_t buttons_size = win->bh_count * sizeof (button_t);
 		win->bh_ptr = malloc(buttons_size);
 		ASSERT(win->bh_ptr != NULL);
-		memcpy(win->bh_ptr, buttons, buttons_size);
+//		memcpy(win->bh_ptr, buttons, buttons_size);
 
 		x = col1_int;
 		y = row1_int;
@@ -505,6 +509,14 @@ static void window_bands_process(void)
 			bh->x1 = x;
 			bh->y1 = y;
 			bh->visible = VISIBLE;
+
+			bh->w = 100;
+			bh->h = 44;
+			bh->onClickHandler = buttons_bands_handler;
+			bh->state = CANCELLED;
+			bh->parent = WINDOW_BANDS;
+			local_snprintf_P(bh->name, ARRAY_SIZE(bh->name), PSTR("btn_ham_%d"), i);
+			strcpy(bh->text, bands[i - 1].name);
 
 			x = x + interval + bh->w;
 			if (r >= row_count)
