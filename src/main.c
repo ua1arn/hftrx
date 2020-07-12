@@ -18418,8 +18418,10 @@ hamradio_main_step(void)
 	#endif
 				sthrl = STHRL_RXTX;
 
-//				display_freqpair();
-//				display_refreshperformed_freqs();
+#if ! LCDMODE_LTDC
+				display_freqpair();
+				display_refreshperformed_freqs();
+#endif /* ! LCDMODE_LTDC */
 				board_wakeup();
 				break;
 			}
@@ -19260,7 +19262,7 @@ void hamradio_change_submode(uint_fast8_t newsubmode, uint_fast8_t need_correct_
 	const uint_fast8_t defcol = locatesubmode(newsubmode, & gmoderows [bi]);	/* строка/колонка для SSB. Что делать, если не нашли? */
 	putmodecol(gmoderows [bi], defcol, bi);	/* внести новое значение в битовую маску */
 
-	if(need_correct_freq)
+	if (need_correct_freq)
 		gsubmodechange(getsubmode(bi), bi);
 	else
 		savebandstate(getvfoindex(bi), bi); // записать все параметры настройки (кроме частоты) в область данных диапазона */
