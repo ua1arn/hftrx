@@ -828,6 +828,7 @@
 
 	#define HARDWARE_USB0_INITIALIZE() do { \
 			arm_hardware_pio5_outputs(HARDWARE_VBUS_ON_MASK, 1 * HARDWARE_VBUS_ON_MASK);	/* P5_2 ~VBUS_ON = 1*/ \
+			local_delay_ms(200); \
 		} while (0)
 
 	#define HARDWARE_USB1_INITIALIZE() do { \
