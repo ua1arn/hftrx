@@ -19148,7 +19148,7 @@ uint_fast8_t hamradio_get_multilinemenu_block_groups(menu_names_t * vals)
 		const FLASHMEM struct menudef * const mv = & menutable [el];
 		if (ismenukind(mv, ITEM_GROUP))
 		{
-			menu_names_t * const v = & vals[count];
+			menu_names_t * const v = & vals [count];
 			safestrcpy(v->name, ARRAY_SIZE(v->name), mv->label);
 			v->index = el;
 			count++;
@@ -19169,7 +19169,7 @@ uint_fast8_t hamradio_get_multilinemenu_block_params(menu_names_t * vals, uint_f
 			break;
 		if (ismenukind(mv, ITEM_VALUE))
 		{
-			menu_names_t * const v = & vals[count];
+			menu_names_t * const v = & vals [count];
 			safestrcpy (v->name, ARRAY_SIZE(v->name), mv->label);
 			v->index = el;
 			count++;
@@ -19257,7 +19257,7 @@ const char * hamradio_gui_edit_menu_item(uint_fast8_t index, int_least16_t rotat
 const char * hamradio_get_submode_label(uint_fast8_t v)
 {
 	ASSERT(v < SUBMODE_COUNT);
-	return submodes[v].qlabel;
+	return submodes [v].qlabel;
 }
 
 uint_fast8_t hamradio_get_submode(void)
@@ -19349,7 +19349,7 @@ void hamradio_save_mic_profile(uint_fast8_t cell)
 
 	for(uint_fast8_t j = 0; j < HARDWARE_CODEC1_NPROCPARAMS; j ++)
 	{
-		mp->eq_params[j] = gmikeequalizerparams [j];
+		mp->eq_params [j] = gmikeequalizerparams [j];
 		save_i8(RMT_MICEQPARAMS_BASE(cell, j), mp->eq_params [j]);
 	}
 
@@ -19377,7 +19377,7 @@ uint_fast8_t hamradio_load_mic_profile(uint_fast8_t cell, uint_fast8_t set)
 		gmikeequalizer = mp->eq_enable;
 
 		for(uint_fast8_t j = 0; j < HARDWARE_CODEC1_NPROCPARAMS; j ++)
-			gmikeequalizerparams[j] = mp->eq_params [j];
+			gmikeequalizerparams [j] = mp->eq_params [j];
 
 		board_set_mikebust20db(gmikebust20db);
 		board_set_mik1level(mik1level);
@@ -19400,7 +19400,7 @@ uint_fast8_t hamradio_get_bands(band_array_t * bands)
 		uint_fast8_t bandset = get_band_bandset(i);
 		if (bandset == BANDSETF_HAM)
 		{
-			band_array_t * b = & bands[count];
+			band_array_t * b = & bands [count];
 			const char * l = get_band_label(i);
 
 			b->index = i;
@@ -19424,7 +19424,7 @@ uint_fast8_t hamradio_get_bands(band_array_t * bands)
 		uint_fast8_t bandset = get_band_bandset(i);
 		if (bandset == BANDSETF_BCAST || bandset == BANDSETF_ALL)
 		{
-			band_array_t * b = & bands[count];
+			band_array_t * b = & bands [count];
 			const char * l = get_band_label(i);
 
 			b->index = i;
