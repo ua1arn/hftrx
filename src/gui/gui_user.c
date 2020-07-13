@@ -48,7 +48,7 @@ static void window_utilites_process(void);
 static void window_bands_process(void);
 static void window_memory_process(void);
 
-static window_t windows[] = {
+static window_t windows [] = {
 //     window_id,   		 parent_id, 			align_mode,     x1, y1, w, h,   title,     		is_show, first_call, is_close, onVisibleProcess
 	{ WINDOW_MAIN, 			 UINT8_MAX, 			ALIGN_LEFT_X,	0, 0, 0, 0, "",  	   	   			 NON_VISIBLE, 0, 0, gui_main_process, },
 	{ WINDOW_MODES, 		 UINT8_MAX, 			ALIGN_CENTER_X, 0, 0, 0, 0, "Select mode", 			 NON_VISIBLE, 0, 1, window_mode_process, },
@@ -82,24 +82,24 @@ static enc2_menu_t * gui_enc2_menu;
 static enc2_t encoder2 = { 0, 0, 0, 1, 1, };
 static menu_by_name_t menu_uif;
 
-static menu_t menu[MENU_COUNT];
+static menu_t menu [MENU_COUNT];
 static uint_fast8_t menu_label_touched = 0;
 static uint_fast8_t menu_level;
 
-static band_array_t bands[30];;
+static band_array_t bands [30];;
 
 /* Возврат ссылки на окно */
 window_t * get_win(window_id_t window_id)
 {
 	ASSERT(window_id < WINDOWS_COUNT);
-	return & windows[window_id];
+	return & windows [window_id];
 }
 
 // *********************************************************************************************************************************************************************
 
 static void btn_main_handler(void)
 {
-	if(is_short_pressed())
+	if (is_short_pressed())
 	{
 		window_t * winMain = get_win(WINDOW_MAIN);
 		button_t * btn_Bands = find_gui_element(TYPE_BUTTON, winMain, "btn_Bands");
@@ -175,7 +175,7 @@ static void btn_main_handler(void)
 		}
 		else if (get_selected_element() == btn_Options)
 		{
-			if(check_for_parent_window() != UINT8_MAX)
+			if (check_for_parent_window() != UINT8_MAX)
 			{
 				close_window(OPEN_PARENT_WINDOW);
 				footer_buttons_state(CANCELLED);
@@ -230,7 +230,7 @@ static void gui_main_process(void)
 
 		for (uint_fast8_t id = 0; id < win->bh_count; id ++)
 		{
-			button_t * bh = & win->bh_ptr[id];
+			button_t * bh = & win->bh_ptr [id];
 			bh->x1 = x;
 			bh->y1 = WITHGUIMAXY - bh->h;
 			bh->visible = VISIBLE;
@@ -257,7 +257,7 @@ static void gui_main_process(void)
 #if defined (RTC1_TYPE)
 	static uint_fast16_t year;
 	static uint_fast8_t month, day, hour, minute, secounds;
-	if(get_gui_1sec_timer())
+	if (get_gui_1sec_timer())
 		board_rtc_getdatetime(& year, & month, & day, & hour, & minute, & secounds);
 	local_snprintf_P(buf, buflen, PSTR("%02d.%02d"), day, month);
 	xx = current_place * lbl_place_width + lbl_place_width / 2;
@@ -271,7 +271,7 @@ static void gui_main_process(void)
 	// напряжение питания
 #if WITHVOLTLEVEL
 	static ldiv_t v;
-	if(get_gui_1sec_timer())
+	if (get_gui_1sec_timer())
 		v = ldiv(hamradio_get_volt_value(), 10);
 	local_snprintf_P(buf, buflen, PSTR("%d.%1dV"), v.quot, v.rem);
 	xx = current_place * lbl_place_width + lbl_place_width / 2;
@@ -313,7 +313,7 @@ static void gui_main_process(void)
 	// ширина панорамы
 #if WITHIF4DSP
 	static int_fast32_t z;
-	if(get_gui_1sec_timer())
+	if (get_gui_1sec_timer())
 		z = display_zoomedbw() / 1000;
 	local_snprintf_P(buf, buflen, PSTR("SPAN"));
 	xx = current_place * lbl_place_width + lbl_place_width / 2;
@@ -326,7 +326,7 @@ static void gui_main_process(void)
 
 	// параметры полосы пропускания фильтра
 	static uint_fast8_t bp_type, bp_low, bp_high;
-	if(get_gui_1sec_timer())
+	if (get_gui_1sec_timer())
 	{
 		bp_high = hamradio_get_high_bp(0);
 		bp_low = hamradio_get_low_bp(0) * 10;
@@ -382,17 +382,17 @@ static void buttons_memory_handler(void)
 	button_t * btn_cell = (button_t *) get_selected_element();
 	uint_fast8_t cell_id = get_selected_element_pos();
 
-	if(is_short_pressed())
+	if (is_short_pressed())
 	{
-		if(btn_cell->payload)
+		if (btn_cell->payload)
 		{
 			hamradio_load_memory_cells(cell_id, 1);
 		}
 	}
 
-	if(is_long_pressed())
+	if (is_long_pressed())
 	{
-		if(btn_cell->payload)
+		if (btn_cell->payload)
 		{
 			btn_cell->payload = 0;
 			hamradio_clean_memory_cells(cell_id);
@@ -451,7 +451,7 @@ static void window_memory_process(void)
 
 		for (uint_fast8_t i = 0, r = 1; i < win->bh_count; i ++, r ++)
 		{
-			button_t * bh = & win->bh_ptr[i];
+			button_t * bh = & win->bh_ptr [i];
 			bh->x1 = x;
 			bh->y1 = y;
 			bh->visible = VISIBLE;
@@ -466,7 +466,7 @@ static void window_memory_process(void)
 			}
 
 			uint_fast32_t freq = hamradio_load_memory_cells(i, 0);
-			if(freq > 0)
+			if (freq > 0)
 			{
 				local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("%dk"), freq / 1000);
 				bh->payload = 1;
@@ -485,7 +485,7 @@ static void window_memory_process(void)
 
 static void buttons_bands_handler(void)
 {
-	if(is_short_pressed())
+	if (is_short_pressed())
 	{
 		button_t * bh = (button_t *) get_selected_element();
 		hamradio_goto_band_by_freq(bh->payload);
@@ -507,7 +507,7 @@ static void window_bands_process(void)
 
 		uint_fast8_t bands_count = hamradio_get_bands(bands);
 
-		label_t labels[] = {
+		label_t labels [] = {
 		//    x, y,  parent, state, is_trackable, visible,  	name, 		Text, 				font_size, 	color, onClickHandler
 			{ 0, 0, WINDOW_BANDS, DISABLED,  0, NON_VISIBLE, "lbl_ham",   "HAM Bands",		 FONT_LARGE, COLORMAIN_WHITE, },
 			{ 0, 0, WINDOW_BANDS, DISABLED,  0, NON_VISIBLE, "lbl_bcast", "Broadcast bands", FONT_LARGE, COLORMAIN_WHITE, },
@@ -533,10 +533,10 @@ static void window_bands_process(void)
 
 		for (uint_fast8_t r = 1; i < win->bh_count; i ++, r ++)
 		{
-			if (bands[i].type != BAND_TYPE_HAM)
+			if (bands [i].type != BAND_TYPE_HAM)
 				break;
 
-			bh = & win->bh_ptr[i];
+			bh = & win->bh_ptr [i];
 			bh->x1 = x;
 			bh->y1 = y;
 			bh->visible = VISIBLE;
@@ -546,9 +546,14 @@ static void window_bands_process(void)
 			bh->onClickHandler = buttons_bands_handler;
 			bh->state = CANCELLED;
 			bh->parent = WINDOW_BANDS;
-			bh->payload = bands[i].init_freq;
+			bh->payload = bands [i].init_freq;
+
+			char * div = strchr(bands [i].name, ' ');
+			if(div)
+				memcpy(div, "|", 1);
+
 			local_snprintf_P(bh->name, ARRAY_SIZE(bh->name), PSTR("btn_ham_%d"), i);
-			strcpy(bh->text, bands[i].name);
+			strcpy(bh->text, bands [i].name);
 
 			x = x + interval + bh->w;
 			if (r >= row_count)
@@ -571,7 +576,7 @@ static void window_bands_process(void)
 
 		for (uint_fast8_t r = 1; i < win->bh_count; i ++, r ++)
 		{
-			bh = & win->bh_ptr[i];
+			bh = & win->bh_ptr [i];
 			bh->x1 = x;
 			bh->y1 = y;
 			bh->visible = VISIBLE;
@@ -581,9 +586,9 @@ static void window_bands_process(void)
 			bh->onClickHandler = buttons_bands_handler;
 			bh->state = CANCELLED;
 			bh->parent = WINDOW_BANDS;
-			bh->payload = bands[i].init_freq;
+			bh->payload = bands [i].init_freq;
 			local_snprintf_P(bh->name, ARRAY_SIZE(bh->name), PSTR("btn_bcast_%d"), i);
-			strcpy(bh->text, bands[i].name);
+			strcpy(bh->text, bands [i].name);
 
 			x = x + interval + bh->w;
 			if (r >= row_count)
@@ -606,7 +611,7 @@ static void window_bands_process(void)
 
 static void buttons_options_handler(void)
 {
-	if(is_short_pressed())
+	if (is_short_pressed())
 	{
 		window_t * win = get_win(WINDOW_OPTIONS);
 		button_t * btn_AGC = find_gui_element(TYPE_BUTTON, win, "btn_AGC");
@@ -681,7 +686,7 @@ static void window_options_process(void)
 
 		for (uint_fast8_t i = 0, r = 1; i < win->bh_count; i ++, r ++)
 		{
-			button_t * bh = & win->bh_ptr[i];
+			button_t * bh = & win->bh_ptr [i];
 			bh->x1 = x;
 			bh->y1 = y;
 			bh->visible = VISIBLE;
@@ -707,7 +712,7 @@ static void window_options_process(void)
 
 static void buttons_utilites_handler(void)
 {
-	if(is_short_pressed())
+	if (is_short_pressed())
 	{
 		window_t * win = get_win(WINDOW_UTILS);
 		button_t * btn_SWRscan = find_gui_element(TYPE_BUTTON, win, "btn_SWRscan");						// SWR scanner
@@ -745,7 +750,7 @@ static void window_utilites_process(void)
 
 		for (uint_fast8_t i = 0, r = 1; i < win->bh_count; i ++, r ++)
 		{
-			button_t * bh = & win->bh_ptr[i];
+			button_t * bh = & win->bh_ptr [i];
 			bh->x1 = x;
 			bh->y1 = y;
 			bh->visible = VISIBLE;
@@ -770,7 +775,7 @@ static void window_utilites_process(void)
 
 static void buttons_mode_handler(void)
 {
-	if(is_short_pressed())
+	if (is_short_pressed())
 	{
 		window_t * win = get_win(WINDOW_MODES);
 		button_t * bh = (button_t *)get_selected_element();
@@ -820,7 +825,7 @@ static void window_mode_process(void)
 
 		for (uint_fast8_t i = 0, r = 1; i < win->bh_count; i ++, r ++)
 		{
-			button_t * bh = & win->bh_ptr[i];
+			button_t * bh = & win->bh_ptr [i];
 			bh->x1 = x;
 			bh->y1 = y;
 			bh->visible = VISIBLE;
@@ -844,7 +849,7 @@ static void window_mode_process(void)
 
 static void buttons_bp_handler(void)
 {
-	if(is_short_pressed())
+	if (is_short_pressed())
 	{
 		window_t * win = get_win(WINDOW_BP);
 		button_t * button_high = find_gui_element(TYPE_BUTTON, win, "btnAF_2");
@@ -895,7 +900,7 @@ static void window_bp_process(void)
 		ASSERT(win->bh_ptr != NULL);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
-		label_t labels[] = {
+		label_t labels [] = {
 		//    x, y,  parent, state, is_trackable, visible,  name, Text, font_size, 	color, onClickHandler
 			{ 0, 0, WINDOW_BP, DISABLED,  0, NON_VISIBLE, "lbl_low", "", FONT_LARGE, COLORMAIN_YELLOW, },
 			{ 0, 0, WINDOW_BP, DISABLED,  0, NON_VISIBLE, "lbl_high", "", FONT_LARGE, COLORMAIN_YELLOW, },
@@ -922,7 +927,7 @@ static void window_bp_process(void)
 		y = lbl_high->y + get_label_height(lbl_high) * 2;
 		for (uint_fast8_t id = 0; id < win->bh_count; id ++)
 		{
-			button_t * bh = & win->bh_ptr[id];
+			button_t * bh = & win->bh_ptr [id];
 			bh->x1 = x;
 			bh->y1 = y;
 			bh->visible = VISIBLE;
@@ -952,7 +957,7 @@ static void window_bp_process(void)
 
 	if (encoder2.rotate != 0 || win->first_call)
 	{
-		char buf[TEXT_ARRAY_SIZE];
+		char buf [TEXT_ARRAY_SIZE];
 
 		if (win->first_call)
 			win->first_call = 0;
@@ -1018,7 +1023,7 @@ static void window_bp_process(void)
 
 static void buttons_agc_handler(void)
 {
-	if(is_short_pressed())
+	if (is_short_pressed())
 	{
 		window_t * win = get_win(WINDOW_AGC);
 		button_t * btnAGCoff = find_gui_element(TYPE_BUTTON, win, "btnAGCoff");
@@ -1069,7 +1074,7 @@ static void window_agc_process(void)
 
 		for (uint_fast8_t i = 0, r = 1; i < win->bh_count; i ++, r ++)
 		{
-			button_t * bh = & win->bh_ptr[i];
+			button_t * bh = & win->bh_ptr [i];
 			bh->x1 = x;
 			bh->y1 = y;
 			bh->visible = VISIBLE;
@@ -1094,7 +1099,7 @@ static void window_agc_process(void)
 
 static void buttons_freq_handler (void)
 {
-	if(is_short_pressed())
+	if (is_short_pressed())
 	{
 		button_t * bh =  get_selected_element();
 		if (bh->parent == WINDOW_FREQ && editfreq.key == BUTTON_CODE_DONE)
@@ -1135,7 +1140,7 @@ static void window_freq_process (void)
 		ASSERT(win->bh_ptr != NULL);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
-		label_t labels[] = {
+		label_t labels [] = {
 		//    x, y,  parent, state, is_trackable, visible, name, Text, font_size, 	color, onClickHandler
 			{ 0, 0,	WINDOW_FREQ, DISABLED, 0, NON_VISIBLE, "lbl_freq_val", "", FONT_LARGE, COLORMAIN_WHITE, },
 		};
@@ -1150,7 +1155,7 @@ static void window_freq_process (void)
 
 		for (uint_fast8_t i = 0, r = 1; i < win->bh_count; i ++, r ++)
 		{
-			bh = & win->bh_ptr[i];
+			bh = & win->bh_ptr [i];
 			bh->x1 = x;
 			bh->y1 = y;
 			bh->visible = VISIBLE;
@@ -1206,7 +1211,7 @@ static void window_freq_process (void)
 			break;
 
 		case BUTTON_CODE_OK:
-			if(hamradio_set_freq(editfreq.val * 1000) || editfreq.val == 0)
+			if (hamradio_set_freq(editfreq.val * 1000) || editfreq.val == 0)
 			{
 				close_all_windows();
 			}
@@ -1233,7 +1238,7 @@ static void window_freq_process (void)
 
 static void buttons_swrscan_process(void)
 {
-	if(is_short_pressed())
+	if (is_short_pressed())
 	{
 		window_t * win = get_win(WINDOW_SWR_SCANNER);
 		button_t * btn_swr_start = find_gui_element(TYPE_BUTTON, win, "btn_swr_start");
@@ -1289,7 +1294,7 @@ static void window_swrscan_process(void)
 		ASSERT(win->bh_ptr != NULL);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
-		label_t labels[] = {
+		label_t labels [] = {
 		//    x, y,  parent,    state, is_trackable, visible,   name,   Text, font_size, 	color, 	 onClickHandler
 			{ 0, 0,	WINDOW_SWR_SCANNER, DISABLED,  0, NON_VISIBLE, "lbl_swr_bottom", "", FONT_SMALL, COLORMAIN_WHITE, },
 			{ 0, 0,	WINDOW_SWR_SCANNER, DISABLED,  0, NON_VISIBLE, "lbl_swr_top", 	 "", FONT_SMALL, COLORMAIN_WHITE, },
@@ -1317,7 +1322,7 @@ static void window_swrscan_process(void)
 		btn_Options = find_gui_element(TYPE_BUTTON, get_win(WINDOW_MAIN), "btn_Options");
 
 		backup_freq = hamradio_get_freq_rx();
-		if(hamradio_verify_freq_bands(backup_freq, & lim_bottom, & lim_top))
+		if (hamradio_verify_freq_bands(backup_freq, & lim_bottom, & lim_top))
 		{
 			label_t * lbl_swr_bottom = find_gui_element(TYPE_LABEL, win, "lbl_swr_bottom");
 			local_snprintf_P(lbl_swr_bottom->text, ARRAY_SIZE(lbl_swr_bottom->text), PSTR("%dk"), lim_bottom / 1000);
@@ -1391,9 +1396,9 @@ static void window_swrscan_process(void)
 		}
 
 		const uint_fast16_t swr_fullscale = (SWRMIN * 40 / 10) - SWRMIN;	// количество рисок в шкале ииндикатора
-		y_vals[i] = normalize(get_swr(swr_fullscale), 0, swr_fullscale, y0 - y1);
+		y_vals [i] = normalize(get_swr(swr_fullscale), 0, swr_fullscale, y0 - y1);
 		if (i)
-			y_vals[i] = (y_vals[i - 1] * (averageFactor - 1) + y_vals[i]) / averageFactor;
+			y_vals [i] = (y_vals [i - 1] * (averageFactor - 1) + y_vals [i]) / averageFactor;
 		i++;
 	}
 
@@ -1405,13 +1410,13 @@ static void window_swrscan_process(void)
 		colmain_line(fr, DIM_X, DIM_Y, gr_x, gr_y, gr_x, win->y1 + y1, COLORMAIN_WHITE, 0);
 		colmain_line(fr, DIM_X, DIM_Y, gr_x, gr_y, win->x1 + x1, gr_y, COLORMAIN_WHITE, 0);
 
-		char buf[5];
+		char buf [5];
 		uint_fast8_t l = 1, row_step = round((y0 - y1) / 3);
 		local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("%d"), l++);
 		colpip_string3_tbg(fr, DIM_X, DIM_Y, gr_x - SMALLCHARW3 * 2, gr_y - SMALLCHARH3 / 2, buf, COLORMAIN_WHITE);
 		for(int_fast16_t yy = y0 - row_step; yy > y1; yy -= row_step)
 		{
-			if(yy < 0)
+			if (yy < 0)
 				break;
 
 			colmain_line(fr, DIM_X, DIM_Y, gr_x, win->y1 + yy, win->x1 + x1, win->y1 + yy, COLORMAIN_DARKGREEN, 0);
@@ -1431,7 +1436,7 @@ static void window_swrscan_process(void)
 		if (is_swr_scanning || swr_scan_done)	// вывод графика во время сканирования и по завершении
 		{
 			for(uint_fast16_t j = 2; j <= i; j ++)
-				colmain_line(fr, DIM_X, DIM_Y, gr_x + j - 2, gr_y - y_vals[j - 2], gr_x + j - 1, gr_y - y_vals[j - 1], COLORMAIN_YELLOW, 1);
+				colmain_line(fr, DIM_X, DIM_Y, gr_x + j - 2, gr_y - y_vals [j - 2], gr_x + j - 1, gr_y - y_vals [j - 1], COLORMAIN_YELLOW, 1);
 		}
 	}
 }
@@ -1440,7 +1445,7 @@ static void window_swrscan_process(void)
 
 static void buttons_tx_sett_process(void)
 {
-	if(is_short_pressed())
+	if (is_short_pressed())
 	{
 		window_t * winTX = get_win(WINDOW_TX_SETTINGS);
 		window_t * winPower = get_win(WINDOW_TX_POWER);
@@ -1494,7 +1499,7 @@ static void window_tx_process(void)
 
 		for (uint_fast8_t i = 0, r = 1; i < win->bh_count; i ++, r ++)
 		{
-			button_t * bh = & win->bh_ptr[i];
+			button_t * bh = & win->bh_ptr [i];
 			bh->x1 = x;
 			bh->y1 = y;
 			bh->visible = VISIBLE;
@@ -1534,7 +1539,7 @@ static void window_tx_process(void)
 
 static void buttons_tx_vox_process(void)
 {
-	if(is_short_pressed())
+	if (is_short_pressed())
 	{
 		window_t * win = get_win(WINDOW_TX_VOX_SETT);
 		button_t * btn_tx_vox_OK = find_gui_element(TYPE_BUTTON, win, "btn_tx_vox_OK");
@@ -1581,7 +1586,7 @@ static void window_tx_vox_process(void)
 		ASSERT(win->sh_ptr != NULL);
 		memcpy(win->sh_ptr, sliders, sliders_size);
 
-		label_t labels[] = {
+		label_t labels [] = {
 		//    x, y,  parent,  state, is_trackable, visible,   name,   Text, font_size, 	color, 	onClickHandler
 			{ 0, 0,	WINDOW_TX_VOX_SETT, DISABLED,  0, NON_VISIBLE, "lbl_vox_delay",    	 "", FONT_MEDIUM, COLORMAIN_WHITE, },
 			{ 0, 0,	WINDOW_TX_VOX_SETT, DISABLED,  0, NON_VISIBLE, "lbl_vox_level",    	 "", FONT_MEDIUM, COLORMAIN_WHITE, },
@@ -1699,12 +1704,12 @@ static void window_tx_vox_process(void)
 
 	if (is_moving_slider())
 	{
-		char buf[TEXT_ARRAY_SIZE];
+		char buf [TEXT_ARRAY_SIZE];
 
 		/* костыль через костыль */
 		sl = (slider_t *) get_selected_element();
 
-		if(sl == sl_vox_delay)
+		if (sl == sl_vox_delay)
 		{
 			uint_fast16_t delay = delay_min + normalize(sl->value, 0, 100, delay_max - delay_min);
 			ldiv_t d = ldiv(delay, 100);
@@ -1730,7 +1735,7 @@ static void window_tx_vox_process(void)
 
 static void buttons_tx_power_process(void)
 {
-	if(is_short_pressed())
+	if (is_short_pressed())
 	{
 		window_t * win = get_win(WINDOW_TX_POWER);
 		button_t * btn_tx_pwr_OK = find_gui_element(TYPE_BUTTON, win, "btn_tx_pwr_OK");
@@ -1776,7 +1781,7 @@ static void window_tx_power_process(void)
 		ASSERT(win->sh_ptr != NULL);
 		memcpy(win->sh_ptr, sliders, sliders_size);
 
-		label_t labels[] = {
+		label_t labels [] = {
 		//    x, y,  parent,  state, is_trackable, visible,   name,    Text, font_size, 	color, 		onClickHandler
 			{ 0, 0,	WINDOW_TX_POWER, DISABLED,  0, NON_VISIBLE, "lbl_tx_power",   "", FONT_MEDIUM, COLORMAIN_WHITE, },
 			{ 0, 0,	WINDOW_TX_POWER, DISABLED,  0, NON_VISIBLE, "lbl_tune_power", "", FONT_MEDIUM, COLORMAIN_WHITE, },
@@ -1835,12 +1840,12 @@ static void window_tx_power_process(void)
 
 	if (is_moving_slider())
 	{
-		char buf[TEXT_ARRAY_SIZE];
+		char buf [TEXT_ARRAY_SIZE];
 
 		/* костыль через костыль */
 		sl = (slider_t *) get_selected_element();
 
-		if(sl == sl_pwr_level)
+		if (sl == sl_pwr_level)
 		{
 			uint_fast8_t power = power_min + normalize(sl->value, 0, 100, power_max - power_min);
 			local_snprintf_P(lbl_tx_power->text, ARRAY_SIZE(lbl_tx_power->text), PSTR("TX power  : %3d"),power);
@@ -1859,7 +1864,7 @@ static void window_tx_power_process(void)
 
 static void buttons_audiosettings_process(void)
 {
-	if(is_short_pressed())
+	if (is_short_pressed())
 	{
 		window_t * winAP = get_win(WINDOW_AUDIOSETTINGS);
 		window_t * winEQ = get_win(WINDOW_AP_MIC_EQ);
@@ -1955,7 +1960,7 @@ static void window_audiosettings_process(void)
 
 		for (uint_fast8_t i = 0, r = 1; i < win->bh_count; i ++, r ++)
 		{
-			button_t * bh = & win->bh_ptr[i];
+			button_t * bh = & win->bh_ptr [i];
 			bh->x1 = x;
 			bh->y1 = y;
 			bh->visible = VISIBLE;
@@ -2023,7 +2028,7 @@ static void window_audiosettings_process(void)
 
 static void buttons_ap_reverb_process(void)
 {
-	if(is_short_pressed())
+	if (is_short_pressed())
 	{
 		close_window(OPEN_PARENT_WINDOW);
 	}
@@ -2054,7 +2059,7 @@ static void window_ap_reverb_process(void)
 		ASSERT(win->bh_ptr != NULL);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
-		label_t labels[] = {
+		label_t labels [] = {
 		//    x, y,  parent,     		state, is_trackable, visible,   name,       		Text, font_size, 	color, 	onClickHandler
 			{ 0, 0,	WINDOW_AP_REVERB_SETT,  DISABLED,  0, NON_VISIBLE, "lbl_reverbDelay",		"", FONT_MEDIUM, COLORMAIN_WHITE, },
 			{ 0, 0,	WINDOW_AP_REVERB_SETT,  DISABLED,  0, NON_VISIBLE, "lbl_reverbLoss", 		"", FONT_MEDIUM, COLORMAIN_WHITE, },
@@ -2149,12 +2154,12 @@ static void window_ap_reverb_process(void)
 
 	if (is_moving_slider())
 	{
-		char buf[TEXT_ARRAY_SIZE];
+		char buf [TEXT_ARRAY_SIZE];
 
 		/* костыль через костыль */
 		sl = (slider_t *) get_selected_element();
 
-		if(sl == sl_reverbDelay)
+		if (sl == sl_reverbDelay)
 		{
 			uint_fast16_t delay = delay_min + normalize(sl->value, 0, 100, delay_max - delay_min);
 			local_snprintf_P(lbl_reverbDelay->text, ARRAY_SIZE(lbl_reverbDelay->text), PSTR("Delay: %3d ms"), delay);
@@ -2173,7 +2178,7 @@ static void window_ap_reverb_process(void)
 
 static void buttons_ap_mic_eq_process(void)
 {
-	if(is_short_pressed())
+	if (is_short_pressed())
 	{
 		close_window(OPEN_PARENT_WINDOW);
 	}
@@ -2187,7 +2192,7 @@ static void window_ap_mic_eq_process(void)
 	slider_t * sl = NULL;
 	label_t * lbl = NULL;
 	static uint_fast8_t eq_limit, eq_base = 0;
-	char buf[TEXT_ARRAY_SIZE];
+	char buf [TEXT_ARRAY_SIZE];
 	static int_fast16_t mid_y = 0;
 	static uint_fast8_t id = 0;
 	static button_t * btn_EQ_ok;
@@ -2209,7 +2214,7 @@ static void window_ap_mic_eq_process(void)
 		ASSERT(win->bh_ptr != NULL);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
-		label_t labels[] = {
+		label_t labels [] = {
 		//    x, y,  parent, state, is_trackable, visible,   name,    Text, font_size, 	color, 	onClickHandler
 			{ 0, 0,	WINDOW_AP_MIC_EQ, DISABLED,  0, NON_VISIBLE, "lbl_eq0.08_val", 	"", FONT_LARGE, COLORMAIN_YELLOW, },
 			{ 0, 0,	WINDOW_AP_MIC_EQ, DISABLED,  0, NON_VISIBLE, "lbl_eq0.23_val", 	"", FONT_LARGE, COLORMAIN_YELLOW, },
@@ -2249,7 +2254,7 @@ static void window_ap_mic_eq_process(void)
 
 		for (id = 0; id < win->sh_count; id++)
 		{
-			sl = & win->sh_ptr[id];
+			sl = & win->sh_ptr [id];
 
 			sl->x = x;
 			sl->size = 200;
@@ -2330,7 +2335,7 @@ static void window_ap_mic_eq_process(void)
 
 static void buttons_ap_mic_process(void)
 {
-	if(is_short_pressed())
+	if (is_short_pressed())
 	{
 		window_t * win = get_win(WINDOW_AP_MIC_SETT);
 		button_t * btn_mic_boost = find_gui_element(TYPE_BUTTON, win, "btn_mic_boost");
@@ -2383,7 +2388,7 @@ static void window_ap_mic_process(void)
 		ASSERT(win->bh_ptr != NULL);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
-		label_t labels[] = {
+		label_t labels [] = {
 		//    x, y,  parent,     		state, is_trackable, visible,   name,       		Text, font_size, 	color, 			onClickHandler
 			{ 0, 0,	WINDOW_AP_MIC_SETT,  	DISABLED,  0, NON_VISIBLE, "lbl_micLevel", 			"", FONT_MEDIUM, COLORMAIN_WHITE, },
 			{ 0, 0,	WINDOW_AP_MIC_SETT,  	DISABLED,  0, NON_VISIBLE, "lbl_micClip",  			"", FONT_MEDIUM, COLORMAIN_WHITE, },
@@ -2523,12 +2528,12 @@ static void window_ap_mic_process(void)
 
 	if (is_moving_slider())
 	{
-		char buf[TEXT_ARRAY_SIZE];
+		char buf [TEXT_ARRAY_SIZE];
 
 		/* костыль через костыль */
 		sl = (slider_t *) get_selected_element();
 
-		if(sl == sl_micLevel)
+		if (sl == sl_micLevel)
 		{
 			uint_fast16_t level = level_min + normalize(sl->value, 0, 100, level_max - level_min);
 			local_snprintf_P(lbl_micLevel->text, ARRAY_SIZE(lbl_micLevel->text), PSTR("Level: %3d"), level);
@@ -2556,9 +2561,9 @@ static void buttons_ap_mic_prof_process(void)
 	button_t * btn_profile = (button_t *) get_selected_element();
 	uint_fast8_t profile_id = get_selected_element_pos();
 
-	if(is_short_pressed())
+	if (is_short_pressed())
 	{
-		if(btn_profile->payload)
+		if (btn_profile->payload)
 		{
 			hamradio_load_mic_profile(profile_id, 1);
 		}
@@ -2581,7 +2586,7 @@ static void buttons_ap_mic_prof_process(void)
 	}
 }
 
-//static micprof_t micprof_cells[micprof_cells_count];
+//static micprof_t micprof_cells [micprof_cells_count];
 static void window_ap_mic_prof_process(void)
 {
 	window_t * win = get_win(WINDOW_AP_MIC_PROF);
@@ -2610,7 +2615,7 @@ static void window_ap_mic_prof_process(void)
 
 		for (uint_fast8_t i = 0, r = 1; i < win->bh_count; i ++, r ++)
 		{
-			button_t * bh = & win->bh_ptr[i];
+			button_t * bh = & win->bh_ptr [i];
 			bh->x1 = x;
 			bh->y1 = y;
 			bh->visible = VISIBLE;
@@ -2639,22 +2644,22 @@ static void window_ap_mic_prof_process(void)
 static void labels_menu_handler (void)
 {
 	label_t * lh = get_selected_element();
-	if(strcmp(lh->name, "lbl_group") == 0)
+	if (strcmp(lh->name, "lbl_group") == 0)
 	{
-		menu[MENU_GROUPS].selected_label = get_selected_element_pos() % (menu[MENU_GROUPS].num_rows + 1);
+		menu [MENU_GROUPS].selected_label = get_selected_element_pos() % (menu [MENU_GROUPS].num_rows + 1);
 		menu_label_touched = 1;
 		menu_level = MENU_GROUPS;
 	}
-	else if(strcmp(lh->name, "lbl_params") == 0)
+	else if (strcmp(lh->name, "lbl_params") == 0)
 	{
-		menu[MENU_PARAMS].selected_label = get_selected_element_pos() % (menu[MENU_GROUPS].num_rows + 1);
+		menu [MENU_PARAMS].selected_label = get_selected_element_pos() % (menu [MENU_GROUPS].num_rows + 1);
 		menu_label_touched = 1;
 		menu_level = MENU_PARAMS;
 	}
-	else if(strcmp(lh->name, "lbl_vals") == 0)
+	else if (strcmp(lh->name, "lbl_vals") == 0)
 	{
-		menu[MENU_VALS].selected_label = get_selected_element_pos() % (menu[MENU_GROUPS].num_rows + 1);
-		menu[MENU_PARAMS].selected_label = menu[MENU_VALS].selected_label;
+		menu [MENU_VALS].selected_label = get_selected_element_pos() % (menu [MENU_GROUPS].num_rows + 1);
+		menu [MENU_PARAMS].selected_label = menu [MENU_VALS].selected_label;
 		menu_label_touched = 1;
 		menu_level = MENU_VALS;
 	}
@@ -2662,7 +2667,7 @@ static void labels_menu_handler (void)
 
 static void buttons_menu_handler(void)
 {
-	if(is_short_pressed())
+	if (is_short_pressed())
 	{
 		window_t * win = get_win(WINDOW_MENU);
 		button_t * btn1 = find_gui_element(TYPE_BUTTON, win, "btnSysMenu+");
@@ -2708,7 +2713,7 @@ static void window_menu_process(void)
 		ASSERT(win->bh_ptr != NULL);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
-		label_t labels[] = {
+		label_t labels [] = {
 		//    x, y,  parent,  state, is_trackable, visible,   name,  Text, font_size, 	color, 			onClickHandler
 			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group",  "", FONT_LARGE, COLORMAIN_WHITE, labels_menu_handler, },
 			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group",  "", FONT_LARGE, COLORMAIN_WHITE, labels_menu_handler, },
@@ -2740,68 +2745,68 @@ static void window_menu_process(void)
 		button_up->visible = NON_VISIBLE;
 		button_down->visible = NON_VISIBLE;
 
-		menu[MENU_GROUPS].add_id = 0;
-		menu[MENU_GROUPS].selected_str = 0;
-		menu[MENU_GROUPS].selected_label = 0;
-		menu[MENU_PARAMS].add_id = 0;
-		menu[MENU_PARAMS].selected_str = 0;
-		menu[MENU_PARAMS].selected_label = 0;
-		menu[MENU_VALS].add_id = 0;
-		menu[MENU_VALS].selected_str = 0;
-		menu[MENU_VALS].selected_label = 0;
+		menu [MENU_GROUPS].add_id = 0;
+		menu [MENU_GROUPS].selected_str = 0;
+		menu [MENU_GROUPS].selected_label = 0;
+		menu [MENU_PARAMS].add_id = 0;
+		menu [MENU_PARAMS].selected_str = 0;
+		menu [MENU_PARAMS].selected_label = 0;
+		menu [MENU_VALS].add_id = 0;
+		menu [MENU_VALS].selected_str = 0;
+		menu [MENU_VALS].selected_label = 0;
 
-		menu[MENU_GROUPS].first_id = 0;
+		menu [MENU_GROUPS].first_id = 0;
 		for (i = 0; i < win->lh_count; i++)
 		{
-			lh = & win->lh_ptr[i];
-			if(strcmp(lh->name, "lbl_group"))
+			lh = & win->lh_ptr [i];
+			if (strcmp(lh->name, "lbl_group"))
 				break;
 		}
 
-		menu[MENU_GROUPS].last_id = --i;
-		menu[MENU_GROUPS].num_rows = menu[MENU_GROUPS].last_id - menu[MENU_GROUPS].first_id;
+		menu [MENU_GROUPS].last_id = --i;
+		menu [MENU_GROUPS].num_rows = menu [MENU_GROUPS].last_id - menu [MENU_GROUPS].first_id;
 
-		menu[MENU_PARAMS].first_id = ++i;
+		menu [MENU_PARAMS].first_id = ++i;
 		for (; i < win->lh_count; i++)
 		{
-			lh = & win->lh_ptr[i];
-			if(strcmp(lh->name, "lbl_params"))
+			lh = & win->lh_ptr [i];
+			if (strcmp(lh->name, "lbl_params"))
 				break;
 		}
-		menu[MENU_PARAMS].last_id = --i;
-		menu[MENU_PARAMS].num_rows = menu[MENU_PARAMS].last_id - menu[MENU_PARAMS].first_id;
+		menu [MENU_PARAMS].last_id = --i;
+		menu [MENU_PARAMS].num_rows = menu [MENU_PARAMS].last_id - menu [MENU_PARAMS].first_id;
 
-		menu[MENU_VALS].first_id = ++i;
+		menu [MENU_VALS].first_id = ++i;
 		for (; i < win->lh_count; i++)
 		{
-			lh = & win->lh_ptr[i];
-			if(strcmp(lh->name, "lbl_vals"))
+			lh = & win->lh_ptr [i];
+			if (strcmp(lh->name, "lbl_vals"))
 				break;
 		}
-		menu[MENU_VALS].last_id = --i;
-		menu[MENU_VALS].num_rows = menu[MENU_VALS].last_id - menu[MENU_VALS].first_id;
+		menu [MENU_VALS].last_id = --i;
+		menu [MENU_VALS].num_rows = menu [MENU_VALS].last_id - menu [MENU_VALS].first_id;
 
-		menu[MENU_GROUPS].count = hamradio_get_multilinemenu_block_groups(menu[MENU_GROUPS].menu_block) - 1;
+		menu [MENU_GROUPS].count = hamradio_get_multilinemenu_block_groups(menu [MENU_GROUPS].menu_block) - 1;
 		xn = col1_int;
 		yn = row1_int;
-		for(i = 0; i <= menu[MENU_GROUPS].num_rows; i++)
+		for(i = 0; i <= menu [MENU_GROUPS].num_rows; i++)
 		{
-			lh = & win->lh_ptr[menu[MENU_GROUPS].first_id + i];
-			strcpy(lh->text, menu[MENU_GROUPS].menu_block[i + menu[MENU_GROUPS].add_id].name);
+			lh = & win->lh_ptr [menu [MENU_GROUPS].first_id + i];
+			strcpy(lh->text, menu [MENU_GROUPS].menu_block [i + menu [MENU_GROUPS].add_id].name);
 			lh->visible = VISIBLE;
-			lh->color = i == menu[MENU_GROUPS].selected_label ? COLORMAIN_BLACK : COLORMAIN_WHITE;
+			lh->color = i == menu [MENU_GROUPS].selected_label ? COLORMAIN_BLACK : COLORMAIN_WHITE;
 			lh->x = xn;
 			lh->y = yn;
 			yn += int_rows;
 		}
 
-		menu[MENU_PARAMS].count = hamradio_get_multilinemenu_block_params(menu[MENU_PARAMS].menu_block, menu[MENU_GROUPS].menu_block[menu[MENU_GROUPS].selected_str].index) - 1;
+		menu [MENU_PARAMS].count = hamradio_get_multilinemenu_block_params(menu [MENU_PARAMS].menu_block, menu [MENU_GROUPS].menu_block [menu [MENU_GROUPS].selected_str].index) - 1;
 		xn += int_cols;
 		yn = row1_int;
-		for(i = 0; i <= menu[MENU_PARAMS].num_rows; i++)
+		for(i = 0; i <= menu [MENU_PARAMS].num_rows; i++)
 		{
-			lh = & win->lh_ptr[menu[MENU_PARAMS].first_id + i];
-			strcpy(lh->text, menu[MENU_PARAMS].menu_block[i + menu[MENU_PARAMS].add_id].name);
+			lh = & win->lh_ptr [menu [MENU_PARAMS].first_id + i];
+			strcpy(lh->text, menu [MENU_PARAMS].menu_block [i + menu [MENU_PARAMS].add_id].name);
 			lh->visible = VISIBLE;
 			lh->color = COLORMAIN_WHITE;
 			lh->x = xn;
@@ -2809,21 +2814,21 @@ static void window_menu_process(void)
 			yn += int_rows;
 		}
 
-		menu[MENU_VALS].count = menu[MENU_PARAMS].count < menu[MENU_VALS].num_rows ? menu[MENU_PARAMS].count : menu[MENU_VALS].num_rows;
-		hamradio_get_multilinemenu_block_vals(menu[MENU_VALS].menu_block, menu[MENU_PARAMS].menu_block[menu[MENU_PARAMS].selected_str].index, menu[MENU_VALS].count);
+		menu [MENU_VALS].count = menu [MENU_PARAMS].count < menu [MENU_VALS].num_rows ? menu [MENU_PARAMS].count : menu [MENU_VALS].num_rows;
+		hamradio_get_multilinemenu_block_vals(menu [MENU_VALS].menu_block, menu [MENU_PARAMS].menu_block [menu [MENU_PARAMS].selected_str].index, menu [MENU_VALS].count);
 		xn += int_cols;
 		yn = row1_int;
-		for(lh = NULL, i = 0; i <= menu[MENU_VALS].num_rows; i ++)
+		for(lh = NULL, i = 0; i <= menu [MENU_VALS].num_rows; i ++)
 		{
-			lh = & win->lh_ptr[menu[MENU_VALS].first_id + i];
+			lh = & win->lh_ptr [menu [MENU_VALS].first_id + i];
 			lh->x = xn;
 			lh->y = yn;
 			yn += int_rows;
 			lh->visible = NON_VISIBLE;
 			lh->color = COLORMAIN_WHITE;
-			if (menu[MENU_VALS].count < i)
+			if (menu [MENU_VALS].count < i)
 				continue;
-			strcpy(lh->text, menu[MENU_VALS].menu_block[i + menu[MENU_VALS].add_id].name);
+			strcpy(lh->text, menu [MENU_VALS].menu_block [i + menu [MENU_VALS].add_id].name);
 			lh->visible = VISIBLE;
 		}
 
@@ -2838,47 +2843,47 @@ static void window_menu_process(void)
 	}
 
 	get_gui_tracking(& move_x, & move_y);
-	if(is_moving_label() && move_y != 0)
+	if (is_moving_label() && move_y != 0)
 	{
 		static uint_fast8_t start_str_group = 0, start_str_params = 0;
 		if (! menu_is_scrolling)
 		{
-			start_str_group = menu[MENU_GROUPS].add_id;
-			start_str_params = menu[MENU_PARAMS].add_id;
+			start_str_group = menu [MENU_GROUPS].add_id;
+			start_str_params = menu [MENU_PARAMS].add_id;
 		}
 		ldiv_t r = ldiv(move_y, int_rows);
-		if(strcmp(((label_t *) get_selected_element())->name, "lbl_group") == 0)
+		if (strcmp(((label_t *) get_selected_element())->name, "lbl_group") == 0)
 		{
 			int_fast8_t q = start_str_group - r.quot;
-			menu[MENU_GROUPS].add_id = q <= 0 ? 0 : q;
-			menu[MENU_GROUPS].add_id = (menu[MENU_GROUPS].add_id + menu[MENU_GROUPS].num_rows) > menu[MENU_GROUPS].count ?
-					(menu[MENU_GROUPS].count - menu[MENU_GROUPS].num_rows) : menu[MENU_GROUPS].add_id;
-			menu[MENU_GROUPS].selected_str = menu[MENU_GROUPS].selected_label + menu[MENU_GROUPS].add_id;
+			menu [MENU_GROUPS].add_id = q <= 0 ? 0 : q;
+			menu [MENU_GROUPS].add_id = (menu [MENU_GROUPS].add_id + menu [MENU_GROUPS].num_rows) > menu [MENU_GROUPS].count ?
+					(menu [MENU_GROUPS].count - menu [MENU_GROUPS].num_rows) : menu [MENU_GROUPS].add_id;
+			menu [MENU_GROUPS].selected_str = menu [MENU_GROUPS].selected_label + menu [MENU_GROUPS].add_id;
 			menu_level = MENU_GROUPS;
-			menu[MENU_PARAMS].add_id = 0;
-			menu[MENU_PARAMS].selected_str = 0;
-			menu[MENU_PARAMS].selected_label = 0;
-			menu[MENU_VALS].add_id = 0;
-			menu[MENU_VALS].selected_str = 0;
-			menu[MENU_VALS].selected_label = 0;
+			menu [MENU_PARAMS].add_id = 0;
+			menu [MENU_PARAMS].selected_str = 0;
+			menu [MENU_PARAMS].selected_label = 0;
+			menu [MENU_VALS].add_id = 0;
+			menu [MENU_VALS].selected_str = 0;
+			menu [MENU_VALS].selected_label = 0;
 		}
-		else if(strcmp(((label_t *) get_selected_element())->name, "lbl_params") == 0 &&
-				menu[MENU_PARAMS].count > menu[MENU_PARAMS].num_rows)
+		else if (strcmp(((label_t *) get_selected_element())->name, "lbl_params") == 0 &&
+				menu [MENU_PARAMS].count > menu [MENU_PARAMS].num_rows)
 		{
 			int_fast8_t q = start_str_params - r.quot;
-			menu[MENU_PARAMS].add_id = q <= 0 ? 0 : q;
-			menu[MENU_PARAMS].add_id = (menu[MENU_PARAMS].add_id + menu[MENU_PARAMS].num_rows) > menu[MENU_PARAMS].count ?
-					(menu[MENU_PARAMS].count - menu[MENU_PARAMS].num_rows) : menu[MENU_PARAMS].add_id;
-			menu[MENU_PARAMS].selected_str = menu[MENU_PARAMS].selected_label + menu[MENU_PARAMS].add_id;
-			menu[MENU_VALS].add_id = menu[MENU_PARAMS].add_id;
-			menu[MENU_VALS].selected_str = menu[MENU_PARAMS].selected_str;
-			menu[MENU_VALS].selected_label = menu[MENU_PARAMS].selected_label;
+			menu [MENU_PARAMS].add_id = q <= 0 ? 0 : q;
+			menu [MENU_PARAMS].add_id = (menu [MENU_PARAMS].add_id + menu [MENU_PARAMS].num_rows) > menu [MENU_PARAMS].count ?
+					(menu [MENU_PARAMS].count - menu [MENU_PARAMS].num_rows) : menu [MENU_PARAMS].add_id;
+			menu [MENU_PARAMS].selected_str = menu [MENU_PARAMS].selected_label + menu [MENU_PARAMS].add_id;
+			menu [MENU_VALS].add_id = menu [MENU_PARAMS].add_id;
+			menu [MENU_VALS].selected_str = menu [MENU_PARAMS].selected_str;
+			menu [MENU_VALS].selected_label = menu [MENU_PARAMS].selected_label;
 			menu_level = MENU_PARAMS;
 		}
 		menu_is_scrolling = 1;
 	}
 
-	if(! is_moving_label() && menu_is_scrolling)
+	if (! is_moving_label() && menu_is_scrolling)
 	{
 		menu_is_scrolling = 0;
 		reset_tracking();
@@ -2899,12 +2904,12 @@ static void window_menu_process(void)
 			menu_level = --menu_level == MENU_OFF ? MENU_OFF : menu_level;
 			if (menu_level == MENU_GROUPS)
 			{
-				menu[MENU_PARAMS].add_id = 0;
-				menu[MENU_PARAMS].selected_str = 0;
-				menu[MENU_PARAMS].selected_label = 0;
-				menu[MENU_VALS].add_id = 0;
-				menu[MENU_VALS].selected_str = 0;
-				menu[MENU_VALS].selected_label = 0;
+				menu [MENU_PARAMS].add_id = 0;
+				menu [MENU_PARAMS].selected_str = 0;
+				menu [MENU_PARAMS].selected_label = 0;
+				menu [MENU_VALS].add_id = 0;
+				menu [MENU_VALS].selected_str = 0;
+				menu [MENU_VALS].selected_label = 0;
 			}
 		}
 
@@ -2912,8 +2917,8 @@ static void window_menu_process(void)
 		label_t * lh = NULL;
 		if (menu_level == MENU_VALS)
 		{
-			menu[MENU_VALS].selected_label = menu[MENU_PARAMS].selected_label;
-			lh = & win->lh_ptr[menu[MENU_VALS].first_id + menu[MENU_VALS].selected_label];
+			menu [MENU_VALS].selected_label = menu [MENU_PARAMS].selected_label;
+			lh = & win->lh_ptr [menu [MENU_VALS].first_id + menu [MENU_VALS].selected_label];
 
 			button_down->visible = VISIBLE;
 			button_down->x1 = lh->x - button_down->w - 10;
@@ -2922,16 +2927,16 @@ static void window_menu_process(void)
 			button_up->visible = VISIBLE;
 			button_up->x1 = lh->x + get_label_width(lh) + 10;
 			button_up->y1 = button_down->y1;
-			for (uint_fast8_t i = 0; i <= menu[MENU_GROUPS].num_rows; i++)
+			for (uint_fast8_t i = 0; i <= menu [MENU_GROUPS].num_rows; i++)
 			{
-				lh = & win->lh_ptr[menu[MENU_GROUPS].first_id + i];
-				lh->color = i == menu[MENU_GROUPS].selected_label ? COLORMAIN_BLACK : COLORMAIN_GRAY;
+				lh = & win->lh_ptr [menu [MENU_GROUPS].first_id + i];
+				lh->color = i == menu [MENU_GROUPS].selected_label ? COLORMAIN_BLACK : COLORMAIN_GRAY;
 
-				lh = & win->lh_ptr[menu[MENU_PARAMS].first_id + i];
-				lh->color = i == menu[MENU_PARAMS].selected_label ? COLORMAIN_BLACK : COLORMAIN_GRAY;
+				lh = & win->lh_ptr [menu [MENU_PARAMS].first_id + i];
+				lh->color = i == menu [MENU_PARAMS].selected_label ? COLORMAIN_BLACK : COLORMAIN_GRAY;
 
-				lh = & win->lh_ptr[menu[MENU_VALS].first_id + i];
-				lh->color = i == menu[MENU_PARAMS].selected_label ? COLORMAIN_YELLOW : COLORMAIN_GRAY;
+				lh = & win->lh_ptr [menu [MENU_VALS].first_id + i];
+				lh->color = i == menu [MENU_PARAMS].selected_label ? COLORMAIN_YELLOW : COLORMAIN_GRAY;
 			}
 			menu_label_touched = 0;
 		}
@@ -2939,15 +2944,15 @@ static void window_menu_process(void)
 		{
 			button_down->visible = NON_VISIBLE;
 			button_up->visible = NON_VISIBLE;
-			for (uint_fast8_t i = 0; i <= menu[MENU_GROUPS].num_rows; i++)
+			for (uint_fast8_t i = 0; i <= menu [MENU_GROUPS].num_rows; i++)
 			{
-				lh = & win->lh_ptr[menu[MENU_GROUPS].first_id + i];
-				lh->color = i == menu[MENU_GROUPS].selected_label ? COLORMAIN_BLACK : COLORMAIN_GRAY;
+				lh = & win->lh_ptr [menu [MENU_GROUPS].first_id + i];
+				lh->color = i == menu [MENU_GROUPS].selected_label ? COLORMAIN_BLACK : COLORMAIN_GRAY;
 
-				lh = & win->lh_ptr[menu[MENU_PARAMS].first_id + i];
-				lh->color = i == menu[MENU_PARAMS].selected_label ? COLORMAIN_BLACK : COLORMAIN_WHITE;
+				lh = & win->lh_ptr [menu [MENU_PARAMS].first_id + i];
+				lh->color = i == menu [MENU_PARAMS].selected_label ? COLORMAIN_BLACK : COLORMAIN_WHITE;
 
-				lh = & win->lh_ptr[menu[MENU_VALS].first_id + i];
+				lh = & win->lh_ptr [menu [MENU_VALS].first_id + i];
 				lh->color = COLORMAIN_WHITE;
 			}
 		}
@@ -2955,15 +2960,15 @@ static void window_menu_process(void)
 		{
 			button_down->visible = NON_VISIBLE;
 			button_up->visible = NON_VISIBLE;
-			for (uint_fast8_t i = 0; i <= menu[MENU_GROUPS].num_rows; i++)
+			for (uint_fast8_t i = 0; i <= menu [MENU_GROUPS].num_rows; i++)
 			{
-				lh = & win->lh_ptr[menu[MENU_GROUPS].first_id + i];
-				lh->color = i == menu[MENU_GROUPS].selected_label ? COLORMAIN_BLACK : COLORMAIN_WHITE;
+				lh = & win->lh_ptr [menu [MENU_GROUPS].first_id + i];
+				lh->color = i == menu [MENU_GROUPS].selected_label ? COLORMAIN_BLACK : COLORMAIN_WHITE;
 
-				lh = & win->lh_ptr[menu[MENU_PARAMS].first_id + i];
+				lh = & win->lh_ptr [menu [MENU_PARAMS].first_id + i];
 				lh->color = COLORMAIN_WHITE;
 
-				lh = & win->lh_ptr[menu[MENU_VALS].first_id + i];
+				lh = & win->lh_ptr [menu [MENU_VALS].first_id + i];
 				lh->color = COLORMAIN_WHITE;
 			}
 		}
@@ -2975,7 +2980,7 @@ static void window_menu_process(void)
 
 	if (menu_level == MENU_OFF)
 	{
-		if(win->parent_id != UINT8_MAX)
+		if (win->parent_id != UINT8_MAX)
 		{
 			close_window(OPEN_PARENT_WINDOW);
 			return;
@@ -2986,11 +2991,11 @@ static void window_menu_process(void)
 	if (encoder2.rotate != 0 && menu_level == MENU_VALS)
 	{
 		encoder2.rotate_done = 1;
-		menu[MENU_PARAMS].selected_str = menu[MENU_PARAMS].selected_label + menu[MENU_PARAMS].add_id;
-		label_t * lh = & win->lh_ptr[menu[MENU_VALS].first_id + menu[MENU_PARAMS].selected_label];
-		strcpy(lh->text, hamradio_gui_edit_menu_item(menu[MENU_PARAMS].menu_block[menu[MENU_PARAMS].selected_str].index, encoder2.rotate));
+		menu [MENU_PARAMS].selected_str = menu [MENU_PARAMS].selected_label + menu [MENU_PARAMS].add_id;
+		label_t * lh = & win->lh_ptr [menu [MENU_VALS].first_id + menu [MENU_PARAMS].selected_label];
+		strcpy(lh->text, hamradio_gui_edit_menu_item(menu [MENU_PARAMS].menu_block [menu [MENU_PARAMS].selected_str].index, encoder2.rotate));
 
-		lh = & win->lh_ptr[menu[MENU_VALS].first_id + menu[MENU_VALS].selected_label];
+		lh = & win->lh_ptr [menu [MENU_VALS].first_id + menu [MENU_VALS].selected_label];
 		button_up->x1 = lh->x + get_label_width(lh) + 10;
 	}
 
@@ -3000,58 +3005,58 @@ static void window_menu_process(void)
 
 		if (encoder2.rotate != 0)
 		{
-			menu[menu_level].selected_str = (menu[menu_level].selected_str + encoder2.rotate) <= 0 ? 0 : (menu[menu_level].selected_str + encoder2.rotate);
-			menu[menu_level].selected_str = menu[menu_level].selected_str > menu[menu_level].count ? menu[menu_level].count : menu[menu_level].selected_str;
+			menu [menu_level].selected_str = (menu [menu_level].selected_str + encoder2.rotate) <= 0 ? 0 : (menu [menu_level].selected_str + encoder2.rotate);
+			menu [menu_level].selected_str = menu [menu_level].selected_str > menu [menu_level].count ? menu [menu_level].count : menu [menu_level].selected_str;
 		}
 		else if (menu_label_touched)
-			menu[menu_level].selected_str = menu[menu_level].selected_label + menu[menu_level].add_id;
+			menu [menu_level].selected_str = menu [menu_level].selected_label + menu [menu_level].add_id;
 
-		menu[MENU_PARAMS].count = hamradio_get_multilinemenu_block_params(menu[MENU_PARAMS].menu_block, menu[MENU_GROUPS].menu_block[menu[MENU_GROUPS].selected_str].index) - 1;
+		menu [MENU_PARAMS].count = hamradio_get_multilinemenu_block_params(menu [MENU_PARAMS].menu_block, menu [MENU_GROUPS].menu_block [menu [MENU_GROUPS].selected_str].index) - 1;
 
 		if (encoder2.rotate > 0)
 		{
 			// указатель подошел к нижней границе списка
-			if (++menu[menu_level].selected_label > (menu[menu_level].count < menu[menu_level].num_rows ? menu[menu_level].count : menu[menu_level].num_rows))
+			if (++menu [menu_level].selected_label > (menu [menu_level].count < menu [menu_level].num_rows ? menu [menu_level].count : menu [menu_level].num_rows))
 			{
-				menu[menu_level].selected_label = (menu[menu_level].count < menu[menu_level].num_rows ? menu[menu_level].count : menu[menu_level].num_rows);
-				menu[menu_level].add_id = menu[menu_level].selected_str - menu[menu_level].selected_label;
+				menu [menu_level].selected_label = (menu [menu_level].count < menu [menu_level].num_rows ? menu [menu_level].count : menu [menu_level].num_rows);
+				menu [menu_level].add_id = menu [menu_level].selected_str - menu [menu_level].selected_label;
 			}
 		}
 		if (encoder2.rotate < 0)
 		{
 			// указатель подошел к верхней границе списка
-			if (--menu[menu_level].selected_label < 0)
+			if (--menu [menu_level].selected_label < 0)
 			{
-				menu[menu_level].selected_label = 0;
-				menu[menu_level].add_id = menu[menu_level].selected_str;
+				menu [menu_level].selected_label = 0;
+				menu [menu_level].add_id = menu [menu_level].selected_str;
 			}
 		}
 
 		if (menu_level == MENU_GROUPS)
-			for(uint_fast8_t i = 0; i <= menu[MENU_GROUPS].num_rows; i++)
+			for(uint_fast8_t i = 0; i <= menu [MENU_GROUPS].num_rows; i++)
 			{
-				label_t * l = & win->lh_ptr[menu[MENU_GROUPS].first_id + i];
-				strcpy(l->text, menu[MENU_GROUPS].menu_block[i + menu[MENU_GROUPS].add_id].name);
-				l->color = i == menu[MENU_GROUPS].selected_label ? COLORMAIN_BLACK : COLORMAIN_WHITE;
+				label_t * l = & win->lh_ptr [menu [MENU_GROUPS].first_id + i];
+				strcpy(l->text, menu [MENU_GROUPS].menu_block [i + menu [MENU_GROUPS].add_id].name);
+				l->color = i == menu [MENU_GROUPS].selected_label ? COLORMAIN_BLACK : COLORMAIN_WHITE;
 			}
 
-		menu[MENU_VALS].count = menu[MENU_PARAMS].count < menu[MENU_VALS].num_rows ? menu[MENU_PARAMS].count : menu[MENU_VALS].num_rows;
-		hamradio_get_multilinemenu_block_vals(menu[MENU_VALS].menu_block,  menu[MENU_PARAMS].menu_block[menu[MENU_PARAMS].add_id].index, menu[MENU_VALS].count);
+		menu [MENU_VALS].count = menu [MENU_PARAMS].count < menu [MENU_VALS].num_rows ? menu [MENU_PARAMS].count : menu [MENU_VALS].num_rows;
+		hamradio_get_multilinemenu_block_vals(menu [MENU_VALS].menu_block,  menu [MENU_PARAMS].menu_block [menu [MENU_PARAMS].add_id].index, menu [MENU_VALS].count);
 
-		for(uint_fast8_t i = 0; i <= menu[MENU_PARAMS].num_rows; i++)
+		for(uint_fast8_t i = 0; i <= menu [MENU_PARAMS].num_rows; i++)
 		{
-			label_t * lp = & win->lh_ptr[menu[MENU_PARAMS].first_id + i];
-			label_t * lv = & win->lh_ptr[menu[MENU_VALS].first_id + i];
+			label_t * lp = & win->lh_ptr [menu [MENU_PARAMS].first_id + i];
+			label_t * lv = & win->lh_ptr [menu [MENU_VALS].first_id + i];
 
 			lp->visible = NON_VISIBLE;
 			lp->state = DISABLED;
 			lv->visible = NON_VISIBLE;
 			lv->state = DISABLED;
-			if (i > menu[MENU_PARAMS].count)
+			if (i > menu [MENU_PARAMS].count)
 				continue;
-			strcpy(lp->text, menu[MENU_PARAMS].menu_block[i + menu[MENU_PARAMS].add_id].name);
-			strcpy(lv->text, menu[MENU_VALS].menu_block[i].name);
-			lp->color = i == menu[MENU_PARAMS].selected_label && menu_level > MENU_GROUPS ? COLORMAIN_BLACK : COLORMAIN_WHITE;
+			strcpy(lp->text, menu [MENU_PARAMS].menu_block [i + menu [MENU_PARAMS].add_id].name);
+			strcpy(lv->text, menu [MENU_VALS].menu_block [i].name);
+			lp->color = i == menu [MENU_PARAMS].selected_label && menu_level > MENU_GROUPS ? COLORMAIN_BLACK : COLORMAIN_WHITE;
 			lp->visible = VISIBLE;
 			lp->state = CANCELLED;
 			lv->visible = VISIBLE;
@@ -3065,12 +3070,12 @@ static void window_menu_process(void)
 	{
 	case MENU_PARAMS:
 	case MENU_VALS:
-		lh = & win->lh_ptr[menu[MENU_PARAMS].first_id + menu[MENU_PARAMS].selected_label];
+		lh = & win->lh_ptr [menu [MENU_PARAMS].first_id + menu [MENU_PARAMS].selected_label];
 		colpip_rect(colmain_fb_draw(), DIM_X, DIM_Y, win->x1 + lh->x - 5, win->y1 + lh->y - 5, win->x1 + lh->x + int_cols - 20,
 				win->y1 + lh->y + get_label_height(lh) + 5, GUI_MENUSELECTCOLOR, 1);
 
 	case MENU_GROUPS:
-		lh = & win->lh_ptr[menu[MENU_GROUPS].first_id + menu[MENU_GROUPS].selected_label];
+		lh = & win->lh_ptr [menu [MENU_GROUPS].first_id + menu [MENU_GROUPS].selected_label];
 		colpip_rect(colmain_fb_draw(), DIM_X, DIM_Y, win->x1 + lh->x - 5, win->y1 + lh->y - 5, win->x1 + lh->x + int_cols - 20,
 				win->y1 + lh->y + get_label_height(lh) + 5, GUI_MENUSELECTCOLOR, 1);
 	}
@@ -3099,7 +3104,7 @@ void gui_uif_editmenu(const char * name, uint_fast16_t menupos, uint_fast8_t exi
 
 static void buttons_uif_handler(void)
 {
-	if(is_short_pressed())
+	if (is_short_pressed())
 	{
 		window_t * win = get_win(WINDOW_UIF);
 		button_t * btn1 = find_gui_element(TYPE_BUTTON, win, "btnUIF+");
@@ -3139,7 +3144,7 @@ static void window_uif_process(void)
 		ASSERT(win->bh_ptr != NULL);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
-		label_t labels[] = {
+		label_t labels [] = {
 		//    x, y,  parent,  state, is_trackable, visible,   name,  Text, font_size, 	color, 	 onClickHandler
 			{ 0, 0,	WINDOW_UIF,  DISABLED,  0, NON_VISIBLE, "lbl_uif_param", "", FONT_LARGE, COLORMAIN_WHITE, },
 			{ 0, 0,	WINDOW_UIF,  DISABLED,  0, NON_VISIBLE, "lbl_uif_val", 	 "", FONT_LARGE, COLORMAIN_WHITE, },
@@ -3258,7 +3263,7 @@ static void window_enc2_process(void)
 	{
 		win->first_call = 0;
 
-		label_t labels[] = {
+		label_t labels [] = {
 		//    x, y,  parent,  state, is_trackable, visible,   name,   Text, font_size, 	color,  onClickHandler
 			{ 0, 0, WINDOW_ENC2,  DISABLED,  0, NON_VISIBLE, "lbl_enc2_val", "", FONT_LARGE, COLORMAIN_WHITE, },
 		};
@@ -3296,14 +3301,14 @@ void gui_open_sys_menu(void)
 	window_t * win = get_win(WINDOW_MENU);
 	static uint_fast8_t backup_parent = UINT8_MAX;
 
-	if(check_for_parent_window() == UINT8_MAX && win->parent_id != UINT8_MAX)
+	if (check_for_parent_window() == UINT8_MAX && win->parent_id != UINT8_MAX)
 	{
 		backup_parent = win->parent_id;		// для возможности открытия окна напрямую временно "обнулить" parent_id
 		win->parent_id = UINT8_MAX;
 		open_window(win);
 		footer_buttons_state(DISABLED, NULL);
 	}
-	else if(check_for_parent_window() == WINDOW_MENU && win->parent_id == UINT8_MAX)
+	else if (check_for_parent_window() == WINDOW_MENU && win->parent_id == UINT8_MAX)
 	{
 		close_window(OPEN_PARENT_WINDOW);
 		footer_buttons_state(CANCELLED);

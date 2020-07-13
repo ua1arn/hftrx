@@ -37,6 +37,7 @@
 static uint_fast8_t keyboard_redirect = 0;	// перенаправление кодов кнопок в менеджер gui
 static char menuw [20];						// буфер для вывода значений системного меню
 static enc2_menu_t enc2_menu;
+static uint_fast8_t band_no_check = 0;
 #endif /* WITHTOUCHGUI */
 
 static uint_fast32_t 
@@ -1979,6 +1980,7 @@ static const char * const bandlabels [BANDGROUP_COUNT] =
 		uint16_t init;
 		uint8_t 	defsubmode_bandset;
 		uint8_t	bandgroup;
+		char label[8];
 	};
 
 	#define BMF_SCALE	1000UL
@@ -2054,8 +2056,8 @@ static FLASHMEM struct bandrange  const bandsmap [] =
 	{ BMF(11500000L), 			BMF(12160000), 				BMF(11500000L), 	BANDMAPSUBMODE_AM | BANDSETF_BCAST,  	BANDGROUP_COUNT, "25m", },		/*  */
 	{ BMF(13570000L), 			BMF(13870000), 				BMF(13570000L), 	BANDMAPSUBMODE_AM | BANDSETF_BCAST,  	BANDGROUP_COUNT, "22m", },		/*  */
 
-	{ BMF(14000000L - BANDPAD), BMF(14105000L), 			BMF(14000000L), 	BANDMAPSUBMODE_CW | BANDSETF_HAM, 		BANDGROUP_14MHZ, "14M|CW", },	/*  */
-	{ BMF(14105000L),			BMF(14350000L + BANDPAD),	BMF(14130000L), 	BANDMAPSUBMODE_USB | BANDSETF_HAM, 		BANDGROUP_14MHZ, "14M|SSB", },	/*  */
+	{ BMF(14000000L - BANDPAD), BMF(14105000L), 			BMF(14000000L), 	BANDMAPSUBMODE_CW | BANDSETF_HAM, 		BANDGROUP_14MHZ, "14M CW", },	/*  */
+	{ BMF(14105000L),			BMF(14350000L + BANDPAD),	BMF(14130000L), 	BANDMAPSUBMODE_USB | BANDSETF_HAM, 		BANDGROUP_14MHZ, "14M SSB", },	/*  */
 
 	{ BMF(15030000L), 			BMF(15800000), 				BMF(15030000L), 	BANDMAPSUBMODE_AM | BANDSETF_BCAST,  	BANDGROUP_COUNT, "19m", },		/*  */
 	{ BMF(17480000L), 			BMF(17900000), 				BMF(17480000L), 	BANDMAPSUBMODE_AM | BANDSETF_BCAST,  	BANDGROUP_COUNT, "16m", },		/*  */
@@ -2075,9 +2077,9 @@ static FLASHMEM struct bandrange  const bandsmap [] =
 	{ BMF(26965000L - BANDPAD), BMF(27405000L + BANDPAD), 	BMF(27120000L), 	BANDMAPSUBMODE_USB | BANDSETF_CB, 		BANDGROUP_COUNT, "CB", },		/* Citizens Band 26.9650 MHz to 27.4050 MHz (40 channels) */
 
 	/* next three sections - one band - "ten". */
-	{ BMF(28000000L - BANDPAD), BMF(28320000L), 			BMF(28000000L), 	BANDMAPSUBMODE_CW | BANDSETF_HAM, 		BANDGROUP_28MHZ, "10M|CW", },	/* CW */
-	{ BMF(28320000L), 			BMF(29200000L), 			BMF(28500000L), 	BANDMAPSUBMODE_USB | BANDSETF_HAM, 		BANDGROUP_28MHZ, "10M|SSB", },	/* SSB */
-	{ BMF(29200000L), 			BMF(29700000L + BANDPAD),	BMF(29600000L), 	BANDMAPSUBMODE_USB | BANDSETF_HAM, 		BANDGROUP_28MHZ, "10M|FM", },	/* FM */
+	{ BMF(28000000L - BANDPAD), BMF(28320000L), 			BMF(28000000L), 	BANDMAPSUBMODE_CW | BANDSETF_HAM, 		BANDGROUP_28MHZ, "10M CW", },	/* CW */
+	{ BMF(28320000L), 			BMF(29200000L), 			BMF(28500000L), 	BANDMAPSUBMODE_USB | BANDSETF_HAM, 		BANDGROUP_28MHZ, "10M SSB", },	/* SSB */
+	{ BMF(29200000L), 			BMF(29700000L + BANDPAD),	BMF(29600000L), 	BANDMAPSUBMODE_USB | BANDSETF_HAM, 		BANDGROUP_28MHZ, "10M FM", },	/* FM */
 #endif
 
 #if TUNE_6MBAND
@@ -2207,6 +2209,11 @@ static uint_fast8_t
 get_band_bandset(vindex_t b)	/* b: диапазон в таблице bandsmap */
 {
 	return bandsmap [b].defsubmode_bandset & BANDSET_MASK;
+}
+
+static const char * get_band_label(vindex_t b)	/* b: диапазон в таблице bandsmap */
+{
+	return bandsmap [b].label;
 }
 
 /* "карта" режимов,
@@ -4869,13 +4876,15 @@ existingband(
 	uint_fast8_t b	// код диапазона
 	)
 {
-#if WITHTOUCHGUI
-	return 1;
-#endif
 	const uint_fast8_t bandset = get_band_bandset(b);
 
 	if (get_band_bottom(b) >= TUNE_TOP || get_band_top(b) < TUNE_BOTTOM)
 		return 0;
+
+#if WITHTOUCHGUI
+	if (band_no_check)
+		return 1;
+#endif
 
 	switch (bandset)
 	{
@@ -18924,14 +18933,14 @@ void hamradio_set_gmikeequalizer(uint_fast8_t v)
 uint_fast8_t hamradio_get_gmikeequalizerparams(uint_fast8_t i)
 {
 	ASSERT(i < HARDWARE_CODEC1_NPROCPARAMS);
-	return gmikeequalizerparams[i];
+	return gmikeequalizerparams [i];
 }
 
 void hamradio_set_gmikeequalizerparams(uint_fast8_t i, uint_fast8_t v)
 {
 	ASSERT(i < HARDWARE_CODEC1_NPROCPARAMS);
 	ASSERT(v <= EQUALIZERBASE * 2);
-	gmikeequalizerparams[i] = v;
+	gmikeequalizerparams [i] = v;
 	updateboard(1, 0);
 }
 
@@ -19289,8 +19298,6 @@ uint_fast32_t hamradio_load_memory_cells(uint_fast8_t cell, uint_fast8_t set)
 {
 	ASSERT(cell < MBANDS_COUNT);
 
-	// TODO:
-	// loadvfy32(RMT_BFREQ_BASE(MBANDS_BASE + cell), TUNE_BOTTOM, TUNE_TOP - 1, TUNE_BOTTOM);
 	int_fast32_t freq = restore_i32(RMT_BFREQ_BASE(MBANDS_BASE + cell));
 	if(freqvalid(freq, gtx))
 	{
@@ -19313,7 +19320,7 @@ void hamradio_clean_mic_profile(uint_fast8_t cell)
 {
 	ASSERT(cell < NMICPROFCELLS);
 
-	micprof_t * mp = & micprof_cells[cell];
+	micprof_t * mp = & micprof_cells [cell];
 
 	mp->mikebust20db = 0;
 	mp->level = 0;
@@ -19330,7 +19337,7 @@ void hamradio_save_mic_profile(uint_fast8_t cell)
 {
 	ASSERT(cell < NMICPROFCELLS);
 
-	micprof_t * mp = & micprof_cells[cell];
+	micprof_t * mp = & micprof_cells [cell];
 
 	mp->cell_saved = 1;
 	mp->mikebust20db = gmikebust20db;
@@ -19342,8 +19349,8 @@ void hamradio_save_mic_profile(uint_fast8_t cell)
 
 	for(uint_fast8_t j = 0; j < HARDWARE_CODEC1_NPROCPARAMS; j ++)
 	{
-		mp->eq_params[j] = gmikeequalizerparams[j];
-		save_i8(RMT_MICEQPARAMS_BASE(cell, j), mp->eq_params[j]);
+		mp->eq_params[j] = gmikeequalizerparams [j];
+		save_i8(RMT_MICEQPARAMS_BASE(cell, j), mp->eq_params [j]);
 	}
 
 	save_i8(RMT_MICBOOST_BASE(cell), mp->mikebust20db);
@@ -19358,7 +19365,7 @@ uint_fast8_t hamradio_load_mic_profile(uint_fast8_t cell, uint_fast8_t set)
 {
 	ASSERT(cell < NMICPROFCELLS);
 
-	micprof_t * mp = & micprof_cells[cell];
+	micprof_t * mp = & micprof_cells [cell];
 
 	if (mp->cell_saved && set)
 	{
@@ -19370,7 +19377,7 @@ uint_fast8_t hamradio_load_mic_profile(uint_fast8_t cell, uint_fast8_t set)
 		gmikeequalizer = mp->eq_enable;
 
 		for(uint_fast8_t j = 0; j < HARDWARE_CODEC1_NPROCPARAMS; j ++)
-			gmikeequalizerparams[j] = mp->eq_params[j];
+			gmikeequalizerparams[j] = mp->eq_params [j];
 
 		board_set_mikebust20db(gmikebust20db);
 		board_set_mik1level(mik1level);
@@ -19394,13 +19401,14 @@ uint_fast8_t hamradio_get_bands(band_array_t * bands)
 		if (bandset == BANDSETF_HAM)
 		{
 			band_array_t * b = & bands[count];
+			const char * l = get_band_label(i);
 
 			b->index = i;
 			b->init_freq = get_band_init(i);
 			b->type = BAND_TYPE_HAM;
-			if (strcmp(bandsmap[i].label, ""))
+			if (strcmp(l, ""))
 			{
-				strcpy(b->name, bandsmap[i].label);
+				strcpy(b->name, l);
 			}
 			else
 			{
@@ -19417,13 +19425,14 @@ uint_fast8_t hamradio_get_bands(band_array_t * bands)
 		if (bandset == BANDSETF_BCAST || bandset == BANDSETF_ALL)
 		{
 			band_array_t * b = & bands[count];
+			const char * l = get_band_label(i);
 
 			b->index = i;
 			b->init_freq = get_band_init(i);
 			b->type = BAND_TYPE_BROADCAST;
-			if (strcmp(bandsmap[i].label, ""))
+			if (strcmp(l, ""))
 			{
-				strcpy(b->name, bandsmap[i].label);
+				strcpy(b->name, l);
 			}
 			else
 			{
@@ -19438,8 +19447,12 @@ uint_fast8_t hamradio_get_bands(band_array_t * bands)
 
 void hamradio_goto_band_by_freq(uint_fast32_t f)
 {
+	band_no_check = 1;
+
 	if(freqvalid(f, gtx))
 		uif_key_click_banddjump(f);
+
+	band_no_check = 0;
 }
 
 #endif /* WITHTOUCHGUI */

@@ -41,7 +41,7 @@ static btn_bg_t btn_bg [] = {
 enum { BG_COUNT = ARRAY_SIZE(btn_bg) };
 
 static gui_t gui = { 0, 0, KBD_CODE_MAX, TYPE_DUMMY, NULL, CANCELLED, 0, 0, 0, 0, 0, 1, };
-static gui_element_t gui_elements[GUI_ELEMENTS_ARRAY_SIZE];
+static gui_element_t gui_elements [GUI_ELEMENTS_ARRAY_SIZE];
 static uint_fast8_t gui_element_count = 0;
 static button_t close_button = { 0, 0, 0, 0, close_all_windows, CANCELLED, BUTTON_NON_LOCKED, 0, UINT8_MAX, NON_VISIBLE, UINTPTR_MAX, "btn_close", "", };
 
@@ -77,9 +77,9 @@ void * find_gui_element(element_type_t type, window_t * win, const char * name)
 	switch (type)
 	{
 	case TYPE_BUTTON:
-		for (uint_fast8_t i = 0; i < win->bh_count; i++)
+		for (uint_fast8_t i = 0; i < win->bh_count; i ++)
 		{
-			button_t * bh = & win->bh_ptr[i];
+			button_t * bh = & win->bh_ptr [i];
 			if (!strcmp(bh->name, name))
 				return (button_t *) bh;
 		}
@@ -89,9 +89,9 @@ void * find_gui_element(element_type_t type, window_t * win, const char * name)
 		break;
 
 	case TYPE_LABEL:
-		for (uint_fast8_t i = 0; i < win->lh_count; i++)
+		for (uint_fast8_t i = 0; i < win->lh_count; i ++)
 		{
-			label_t * lh = & win->lh_ptr[i];
+			label_t * lh = & win->lh_ptr [i];
 			if (!strcmp(lh->name, name))
 				return (label_t *) lh;
 		}
@@ -101,9 +101,9 @@ void * find_gui_element(element_type_t type, window_t * win, const char * name)
 		break;
 
 	case TYPE_SLIDER:
-		for (uint_fast8_t i = 0; i < win->sh_count; i++)
+		for (uint_fast8_t i = 0; i < win->sh_count; i ++)
 		{
-			slider_t * sh = & win->sh_ptr[i];
+			slider_t * sh = & win->sh_ptr [i];
 			if (!strcmp(sh->name, name))
 				return (slider_t *) sh;
 		}
@@ -159,15 +159,15 @@ void footer_buttons_state (uint_fast8_t state, ...)
 		va_end(arg);
 	}
 
-	for (uint_fast8_t i = 0; i < win->bh_count; i++)
+	for (uint_fast8_t i = 0; i < win->bh_count; i ++)
 	{
-		button_t * bh = & win->bh_ptr[i];
+		button_t * bh = & win->bh_ptr [i];
 		if (state == DISABLED)
 		{
 			bh->state = bh == bt ? CANCELLED : DISABLED;
 			bh->is_locked = bh->state == CANCELLED ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
 		}
-		else if (state == CANCELLED && gui.win[1] == UINT8_MAX)
+		else if (state == CANCELLED && gui.win [1] == UINT8_MAX)
 		{
 			bh->state = CANCELLED;
 			bh->is_locked = BUTTON_NON_LOCKED;
@@ -184,16 +184,16 @@ void elements_state (window_t * win)
 	if (b != NULL)
 	{
 		j = 0;
-		for (uint_fast8_t i = 0; i < win->bh_count; i++)
+		for (uint_fast8_t i = 0; i < win->bh_count; i ++)
 		{
-			button_t * bh = & b[i];
+			button_t * bh = & b [i];
 			if (win->state)
 			{
 				ASSERT(gui_element_count < GUI_ELEMENTS_ARRAY_SIZE);
-				gui_elements[gui_element_count].link = bh;
-				gui_elements[gui_element_count].win = win;
-				gui_elements[gui_element_count].type = TYPE_BUTTON;
-				gui_elements[gui_element_count].pos = j++;
+				gui_elements [gui_element_count].link = bh;
+				gui_elements [gui_element_count].win = win;
+				gui_elements [gui_element_count].type = TYPE_BUTTON;
+				gui_elements [gui_element_count].pos = j ++;
 				gui_element_count ++;
 				debug_num ++;
 			}
@@ -211,16 +211,16 @@ void elements_state (window_t * win)
 	if(l != NULL)
 	{
 		j = 0;
-		for (uint_fast8_t i = 0; i < win->lh_count; i++)
+		for (uint_fast8_t i = 0; i < win->lh_count; i ++)
 		{
-			label_t * lh = & l[i];
+			label_t * lh = & l [i];
 			if (win->state)
 			{
 				ASSERT(gui_element_count < GUI_ELEMENTS_ARRAY_SIZE);
-				gui_elements[gui_element_count].link = lh;
-				gui_elements[gui_element_count].win = win;
-				gui_elements[gui_element_count].type = TYPE_LABEL;
-				gui_elements[gui_element_count].pos = j++;
+				gui_elements [gui_element_count].link = lh;
+				gui_elements [gui_element_count].win = win;
+				gui_elements [gui_element_count].type = TYPE_LABEL;
+				gui_elements [gui_element_count].pos = j ++;
 				gui_element_count ++;
 				debug_num ++;
 			}
@@ -238,16 +238,16 @@ void elements_state (window_t * win)
 	if(s != NULL)
 	{
 		j = 0;
-		for (uint_fast8_t i = 0; i < win->sh_count; i++)
+		for (uint_fast8_t i = 0; i < win->sh_count; i ++)
 		{
-			slider_t * sh = & s[i];
+			slider_t * sh = & s [i];
 			if (win->state)
 			{
 				ASSERT(gui_element_count < GUI_ELEMENTS_ARRAY_SIZE);
-				gui_elements[gui_element_count].link = (slider_t *) sh;
-				gui_elements[gui_element_count].win = win;
-				gui_elements[gui_element_count].type = TYPE_SLIDER;
-				gui_elements[gui_element_count].pos = j++;
+				gui_elements [gui_element_count].link = (slider_t *) sh;
+				gui_elements [gui_element_count].win = win;
+				gui_elements [gui_element_count].type = TYPE_SLIDER;
+				gui_elements [gui_element_count].pos = j ++;
 				gui_element_count ++;
 				debug_num ++;
 			}
@@ -266,9 +266,9 @@ void elements_state (window_t * win)
 		if (win->state)
 		{
 			ASSERT(gui_element_count < GUI_ELEMENTS_ARRAY_SIZE);
-			gui_elements[gui_element_count].link = (button_t *) & close_button;
-			gui_elements[gui_element_count].win = NULL;
-			gui_elements[gui_element_count].type = TYPE_CLOSE_BUTTON;
+			gui_elements [gui_element_count].link = (button_t *) & close_button;
+			gui_elements [gui_element_count].win = NULL;
+			gui_elements [gui_element_count].type = TYPE_CLOSE_BUTTON;
 			gui_element_count ++;
 			debug_num ++;
 		}
@@ -286,7 +286,7 @@ void elements_state (window_t * win)
 /* Возврат id parent window */
 uint_fast8_t check_for_parent_window(void)
 {
-	return gui.win[1];
+	return gui.win [1];
 }
 
 /* Закрыть все окна (обработчик системной кнопки закрытия окна) */
@@ -318,19 +318,19 @@ static void free_win_ptr (window_t * win)
 /* Установка признака видимости окна */
 void close_window(uint_fast8_t parent) // 0 - не открывать parent window, 1 - открыть
 {
-	if(gui.win[1] != UINT8_MAX)
+	if(gui.win [1] != UINT8_MAX)
 	{
-		window_t * win = get_win(gui.win[1]);
+		window_t * win = get_win(gui.win [1]);
 		win->state = NON_VISIBLE;
 		elements_state(win);
 		free_win_ptr(win);
-		gui.win[1] = UINT8_MAX;
+		gui.win [1] = UINT8_MAX;
 
 		if (win->parent_id != UINT8_MAX && parent)	// При закрытии child window открыть parent window, если есть и если разрешено
 		{
 			window_t * pwin = get_win(win->parent_id);
 			pwin->state = VISIBLE;
-			gui.win[1] = pwin->window_id;
+			gui.win [1] = pwin->window_id;
 			free_win_ptr(pwin);
 			pwin->first_call = 1;
 		}
@@ -342,14 +342,14 @@ void open_window(window_t * win)
 {
 	win->state = VISIBLE;
 	win->first_call = 1;
-	if (win->parent_id != UINT8_MAX && gui.win[1] == win->parent_id)	// Если открыто parent window, закрыть его и оставить child window
+	if (win->parent_id != UINT8_MAX && gui.win [1] == win->parent_id)	// Если открыто parent window, закрыть его и оставить child window
 	{
 		window_t * pwin = get_win(win->parent_id);
 		pwin->state = NON_VISIBLE;
 		elements_state(pwin);
 		free_win_ptr(pwin);
 	}
-	gui.win[1] = win->window_id;
+	gui.win [1] = win->window_id;
 }
 
 /* Расчет экранных координат окна */
@@ -438,12 +438,12 @@ static void draw_button(const button_t * const bh)
 
 	btn_bg_t * b1 = NULL;
 	do {
-		if (bh->h == btn_bg[i].h && bh->w == btn_bg[i].w)
+		if (bh->h == btn_bg [i].h && bh->w == btn_bg [i].w)
 		{
-			b1 = & btn_bg[i];
+			b1 = & btn_bg [i];
 			break;
 		}
-	} while (++i < BG_COUNT);
+	} while ( ++i < BG_COUNT);
 
 	if (b1 == NULL)				// если не найден заполненный буфер фона по размерам, программная отрисовка
 	{
@@ -477,12 +477,12 @@ static void draw_button(const button_t * const bh)
 		colpip_plot(fr, DIM_X, DIM_Y, x1, y1, bg, bh->w, bh->h);
 #else
 		PACKEDCOLORMAIN_T * src = NULL, * dst = NULL, * row = NULL;
-		for (uint16_t yy = y1, yb = 0; yy < y1 + bh->h; yy++, yb++)
+		for (uint16_t yy = y1, yb = 0; yy < y1 + bh->h; yy ++, yb ++)
 		{
 			row = colmain_mem_at(bg, b1->w, b1->h, 0, yb);
 			if (* row == GUI_DEFAULTCOLOR)										// если в первой позиции строки буфера не прозрачный цвет,
 			{																	// скопировать ее целиком, иначе попиксельно с проверкой
-				for (uint16_t xx = x1, xb = 0; xx < x1 + bh->w; xx++, xb++)
+				for (uint16_t xx = x1, xb = 0; xx < x1 + bh->w; xx ++, xb ++)
 				{
 					src = colmain_mem_at(bg, b1->w, b1->h, xb, yb);
 					if (* src == GUI_DEFAULTCOLOR)
@@ -506,7 +506,7 @@ static void draw_button(const button_t * const bh)
 	uint_fast8_t shift = 0;
 #endif /* GUI_OLDBUTTONSTYLE */
 
-	if (strchr(bh->text, delimeters[0]) == NULL)
+	if (strchr(bh->text, delimeters [0]) == NULL)
 	{
 		/* Однострочная надпись */
 		colpip_string2_tbg(fr, DIM_X, DIM_Y, shift + x1 + (bh->w - (strwidth2(bh->text))) / 2,
@@ -665,19 +665,19 @@ void gui_initialize (void)
 	window_t * win = get_win(WINDOW_MAIN);
 
 	open_window(win);
-	gui.win[1] = UINT8_MAX;
+	gui.win [1] = UINT8_MAX;
 
 	do {
-		fill_button_bg_buf(& btn_bg[i]);
-	} while (++i < BG_COUNT) ;
+		fill_button_bg_buf(& btn_bg [i]);
+	} while ( ++i < BG_COUNT) ;
 }
 
 /* Обновление данных в массиве элементов открытых окон */
 static void update_gui_elements_list(void)
 {
-	for (uint_fast8_t i = 0; i < gui_element_count; i++)
+	for (uint_fast8_t i = 0; i < gui_element_count; i ++)
 	{
-		gui_element_t * p = & gui_elements[i];
+		gui_element_t * p = & gui_elements [i];
 		if (p->type == TYPE_BUTTON)
 		{
 			button_t * bh = (button_t *) p->link;
@@ -846,9 +846,9 @@ static void process_gui(void)
 
 	if (gui.state == CANCELLED && gui.is_touching_screen && ! gui.is_after_touch)
 	{
-		for (uint_fast8_t i = 0; i < gui_element_count; i++)
+		for (uint_fast8_t i = 0; i < gui_element_count; i ++)
 		{
-			p = & gui_elements[i];
+			p = & gui_elements [i];
 			w = p->win;
 			uint_fast16_t x1 = p->x1 + w->x1, y1 = p->y1 + w->y1;
 			uint_fast16_t x2 = p->x2 + w->x1, y2 = p->y2 + w->y1;
@@ -951,12 +951,12 @@ void gui_WM_walktrough(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
 
 	process_gui();
 
-	for(uint_fast8_t i = 0; i < win_gui_count; i++)
+	for(uint_fast8_t i = 0; i < win_gui_count; i ++)
 	{
-		if (gui.win[i] == UINT8_MAX)
+		if (gui.win [i] == UINT8_MAX)
 			break;
 
-		const window_t * const win = get_win(gui.win[i]);
+		const window_t * const win = get_win(gui.win [i]);
 		uint_fast8_t f = win->first_call;
 
 		if (win->state == VISIBLE)
@@ -988,9 +988,9 @@ void gui_WM_walktrough(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
 				}
 
 				// отрисовка принадлежащих окну элементов
-				for (uint_fast8_t i = 0; i < gui_element_count; i++)
+				for (uint_fast8_t i = 0; i < gui_element_count; i ++)
 				{
-					gui_element_t * p = & gui_elements[i];
+					gui_element_t * p = & gui_elements [i];
 
 					if (p->type == TYPE_BUTTON)
 					{
