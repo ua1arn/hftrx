@@ -14108,7 +14108,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, 
 	},
 	{
-		QLABEL("CWKEYREV"), 7, 3, RJ_YES,	ISTEP1,
+		QLABEL("KEY REVE"), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,	/* режим электронного ключа - поменять местами точки с тире или нет. */
 		offsetof(struct nvmap, elkeyreverse),
@@ -14117,7 +14117,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, 
 	},
 	{
-		QLABEL("CWWEIGHT"), 7, 1, 0,	ISTEP1,
+		QLABEL("DASH LEN"), 7, 1, 0,	ISTEP1,
 		ITEM_VALUE,
 		23, 45, 
 		offsetof(struct nvmap, dashratio),
@@ -14126,7 +14126,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, 
 	},
 	{
-		QLABEL("SPACEWGH"), 7, 1, 0,	ISTEP1,
+		QLABEL("DOT LEN "), 7, 1, 0,	ISTEP1,
 		ITEM_VALUE,
 		7, 13, 
 		offsetof(struct nvmap, spaceratio),
