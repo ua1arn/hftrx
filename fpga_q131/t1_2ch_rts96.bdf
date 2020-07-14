@@ -4175,7 +4175,7 @@ applicable agreement for further details.
 	)
 )
 (symbol
-	(rect -4528 -184 -4312 -56)
+	(rect -4456 -184 -4240 -56)
 	(text "ddc_mux" (rect 5 0 56 14)(font "Arial" (font_size 8)))
 	(text "inst77" (rect 8 112 37 124)(font "Arial" ))
 	(port
@@ -4857,6 +4857,79 @@ applicable agreement for further details.
 		(line (pt 0 0)(pt 0 0))
 	)
 )
+(symbol
+	(rect -4640 -72 -4496 24)
+	(text "lpm_mux16sync" (rect 26 0 138 16)(font "Arial" (font_size 10)))
+	(text "inst46" (rect 8 80 37 92)(font "Arial" ))
+	(port
+		(pt 0 40)
+		(input)
+		(text "data1x[15..0]" (rect 0 0 74 14)(font "Arial" (font_size 8)))
+		(text "data1x[15..0]" (rect 4 26 78 40)(font "Arial" (font_size 8)))
+		(line (pt 0 40)(pt 64 40)(line_width 3))
+	)
+	(port
+		(pt 0 56)
+		(input)
+		(text "data0x[15..0]" (rect 0 0 74 14)(font "Arial" (font_size 8)))
+		(text "data0x[15..0]" (rect 4 42 78 56)(font "Arial" (font_size 8)))
+		(line (pt 0 56)(pt 64 56)(line_width 3))
+	)
+	(port
+		(pt 0 72)
+		(input)
+		(text "clock" (rect 0 0 29 14)(font "Arial" (font_size 8)))
+		(text "clock" (rect 4 58 33 72)(font "Arial" (font_size 8)))
+		(line (pt 0 72)(pt 64 72))
+	)
+	(port
+		(pt 72 96)
+		(input)
+		(text "sel" (rect 0 0 14 16)(font "Arial" (font_size 8))(vertical))
+		(text "sel" (rect 65 67 79 83)(font "Arial" (font_size 8))(vertical))
+		(line (pt 72 96)(pt 72 84))
+	)
+	(port
+		(pt 144 56)
+		(output)
+		(text "result[15..0]" (rect 0 0 67 14)(font "Arial" (font_size 8)))
+		(text "result[15..0]" (rect 84 42 151 56)(font "Arial" (font_size 8)))
+		(line (pt 144 56)(pt 80 56)(line_width 3))
+	)
+	(drawing
+		(line (pt 64 24)(pt 64 88))
+		(line (pt 64 24)(pt 80 32))
+		(line (pt 64 88)(pt 80 80))
+		(line (pt 80 32)(pt 80 80))
+		(line (pt 0 0)(pt 146 0))
+		(line (pt 146 0)(pt 146 98))
+		(line (pt 0 98)(pt 146 98))
+		(line (pt 0 0)(pt 0 98))
+		(line (pt 64 66)(pt 70 72))
+		(line (pt 70 72)(pt 64 78))
+		(line (pt 0 0)(pt 0 0))
+		(line (pt 0 0)(pt 0 0))
+		(line (pt 0 0)(pt 0 0))
+		(line (pt 0 0)(pt 0 0))
+	)
+)
+(symbol
+	(rect -4832 0 -4800 32)
+	(text "GND" (rect 8 16 29 26)(font "Arial" (font_size 6)))
+	(text "inst93" (rect 3 21 32 33)(font "Arial" )(invisible))
+	(port
+		(pt 16 0)
+		(output)
+		(text "1" (rect 18 0 23 12)(font "Courier New" (bold))(invisible))
+		(text "1" (rect 18 0 23 12)(font "Courier New" (bold))(invisible))
+		(line (pt 16 8)(pt 16 0))
+	)
+	(drawing
+		(line (pt 8 8)(pt 16 16))
+		(line (pt 16 16)(pt 24 8))
+		(line (pt 8 8)(pt 24 8))
+	)
+)
 (connector
 	(pt -1576 -336)
 	(pt -1608 -336)
@@ -5116,30 +5189,6 @@ applicable agreement for further details.
 	(bus)
 )
 (connector
-	(pt -4544 -136)
-	(pt -4528 -136)
-	(color 255 0 0)
-)
-(connector
-	(pt -4608 -120)
-	(pt -4528 -120)
-	(bus)
-)
-(connector
-	(text "lo3_sin[16..0]" (rect -4718 -120 -4652 -108)(font "Arial" ))
-	(pt -4528 -104)
-	(pt -4720 -104)
-	(bus)
-	(color 0 85 0)
-)
-(connector
-	(text "lo3_cos[16..0]" (rect -4718 -104 -4649 -92)(font "Arial" ))
-	(pt -4528 -88)
-	(pt -4720 -88)
-	(bus)
-	(color 0 85 0)
-)
-(connector
 	(pt -4608 -264)
 	(pt -4608 -120)
 	(bus)
@@ -5252,11 +5301,6 @@ applicable agreement for further details.
 	(text "main_valid" (rect -2294 -496 -2241 -484)(font "Arial" ))
 	(pt -2352 -480)
 	(pt -2248 -480)
-)
-(connector
-	(pt -4544 -280)
-	(pt -4544 -136)
-	(color 255 0 0)
 )
 (connector
 	(pt -2232 -712)
@@ -5620,11 +5664,6 @@ applicable agreement for further details.
 	(text "xvrtr_on" (rect -1390 1064 -1349 1076)(font "Arial" ))
 	(pt -1392 1080)
 	(pt -1264 1080)
-)
-(connector
-	(text "adcfifoready" (rect -4726 -168 -4663 -156)(font "Arial" ))
-	(pt -4728 -152)
-	(pt -4528 -152)
 )
 (connector
 	(text "adcfifoready" (rect -4726 -312 -4663 -300)(font "Arial" ))
@@ -6393,16 +6432,6 @@ applicable agreement for further details.
 	(bus)
 )
 (connector
-	(pt -4312 -136)
-	(pt -4208 -136)
-	(bus)
-)
-(connector
-	(pt -4312 -152)
-	(pt -4224 -152)
-	(bus)
-)
-(connector
 	(pt -4312 -280)
 	(pt -4240 -280)
 	(bus)
@@ -6592,11 +6621,6 @@ applicable agreement for further details.
 	(color 255 0 0)
 )
 (connector
-	(text "mode_rx" (rect -4662 -864 -4620 -852)(font "Arial" ))
-	(pt -4576 -848)
-	(pt -4664 -848)
-)
-(connector
 	(pt -5096 -576)
 	(pt -5192 -576)
 )
@@ -6715,11 +6739,6 @@ applicable agreement for further details.
 	(color 255 0 0)
 )
 (connector
-	(pt -4544 -424)
-	(pt -4544 -280)
-	(color 255 0 0)
-)
-(connector
 	(pt -4608 -624)
 	(pt -4608 -408)
 	(bus)
@@ -6834,16 +6853,6 @@ applicable agreement for further details.
 (connector
 	(pt -4208 -360)
 	(pt -4160 -360)
-	(bus)
-)
-(connector
-	(pt -4208 -136)
-	(pt -4208 -360)
-	(bus)
-)
-(connector
-	(pt -4224 -152)
-	(pt -4224 -408)
 	(bus)
 )
 (connector
@@ -7620,6 +7629,134 @@ applicable agreement for further details.
 	(pt -3928 840)
 	(pt -3760 840)
 )
+(connector
+	(pt -4208 -136)
+	(pt -4240 -136)
+	(bus)
+)
+(connector
+	(pt -4224 -152)
+	(pt -4240 -152)
+	(bus)
+)
+(connector
+	(pt -4208 -360)
+	(pt -4208 -136)
+	(bus)
+)
+(connector
+	(pt -4224 -408)
+	(pt -4224 -152)
+	(bus)
+)
+(connector
+	(pt -4544 -424)
+	(pt -4544 -280)
+	(color 255 0 0)
+)
+(connector
+	(pt -4544 -280)
+	(pt -4544 -136)
+	(color 255 0 0)
+)
+(connector
+	(text "adcfifoready" (rect -4726 -168 -4663 -156)(font "Arial" ))
+	(pt -4456 -152)
+	(pt -4728 -152)
+)
+(connector
+	(pt -4456 -120)
+	(pt -4472 -120)
+	(bus)
+)
+(connector
+	(pt -4472 -16)
+	(pt -4472 -120)
+	(bus)
+)
+(connector
+	(pt -4472 -16)
+	(pt -4496 -16)
+	(bus)
+)
+(connector
+	(text "lo3_sin[16..0]" (rect -4790 -120 -4724 -108)(font "Arial" ))
+	(pt -4456 -104)
+	(pt -4792 -104)
+	(bus)
+	(color 0 85 0)
+)
+(connector
+	(text "lo3_cos[16..0]" (rect -4790 -104 -4721 -92)(font "Arial" ))
+	(pt -4456 -88)
+	(pt -4792 -88)
+	(bus)
+	(color 0 85 0)
+)
+(connector
+	(pt -4608 -120)
+	(pt -4680 -120)
+	(bus)
+)
+(connector
+	(pt -4640 -16)
+	(pt -4680 -16)
+	(bus)
+)
+(connector
+	(pt -4680 -16)
+	(pt -4680 -120)
+	(bus)
+)
+(connector
+	(text "duc_out[13..0],0,0" (rect -4790 -48 -4701 -36)(font "Arial" ))
+	(pt -4640 -32)
+	(pt -4792 -32)
+	(bus)
+)
+(connector
+	(pt -4656 -136)
+	(pt -4544 -136)
+	(color 255 0 0)
+)
+(connector
+	(pt -4544 -136)
+	(pt -4456 -136)
+	(color 255 0 0)
+)
+(connector
+	(pt -4656 -136)
+	(pt -4656 0)
+	(color 255 0 0)
+)
+(connector
+	(pt -4640 0)
+	(pt -4656 0)
+	(color 255 0 0)
+)
+(connector
+	(pt -4568 24)
+	(pt -4568 40)
+)
+(connector
+	(text "mode_tx" (rect -4750 24 -4708 36)(font "Arial" ))
+	(pt -4568 40)
+	(pt -4752 40)
+)
+(connector
+	(pt -4816 0)
+	(pt -4816 -8)
+)
+(connector
+	(text "0" (rect -4766 -24 -4761 -12)(font "Arial" ))
+	(pt -4816 -8)
+	(pt -4752 -8)
+)
+(connector
+	(text "mode_rx" (rect -4662 -864 -4620 -852)(font "Arial" ))
+	(pt -4576 -848)
+	(pt -4664 -848)
+)
 (junction (pt -1592 -696))
 (junction (pt -4384 -696))
 (junction (pt -1480 -1176))
@@ -7705,6 +7842,7 @@ applicable agreement for further details.
 (junction (pt -3832 616))
 (junction (pt -3800 632))
 (junction (pt -3048 1232))
+(junction (pt -4544 -136))
 (text "Previous" (rect -2280 1000 -2231 1014)(font "Arial" (font_size 8)))
 (text "Current" (rect -2280 1096 -2238 1110)(font "Arial" (font_size 8)))
 (text "Previous" (rect -1904 -112 -1855 -98)(font "Arial" (font_size 8)))
