@@ -1615,20 +1615,20 @@ enum
 	full_hue = sixth_hue * 6
 };
 
-inline RGB_t rgb(uint8_t r, uint8_t g, uint8_t b)
+RGB_t rgb(uint8_t r, uint8_t g, uint8_t b)
 {
-    return (RGB_t) {r, g, b};
+    return (RGB_t) { r, g, b };
 }
 
-inline HSV_t hsv(uint8_t h, uint8_t s, uint8_t v)
+HSV_t hsv(uint8_t h, uint8_t s, uint8_t v)
 {
-    return (HSV_t) {h, s, v};
+    return (HSV_t) { h, s, v };
 }
-
-const RGB_t black = {0, 0, 0};
 
 RGB_t hsv2rgb(HSV_t hsv)
 {
+	const RGB_t black = { 0, 0, 0 };
+
     if (hsv.v == 0) return black;
 
     uint8_t high = hsv.v * max_whiteness;//channel with max value
