@@ -5194,7 +5194,7 @@ static void save16demod(FLOAT_t ch0, FLOAT_t ch1)
 #endif /* WITHSKIPUSERMODE */
 }
 
-#if WITHDSPEXTDDC
+#if WITHDSPEXTDDC || WITHLOOPBACKTEST
 // Обработка полученного от DMA буфера с выборками или квадратурами (или двухканальный приём).
 // Вызывается на ARM_REALTIME_PRIORITY уровне.
 void RAMFUNC dsp_extbuffer32wfm(const int32_t * buff)
@@ -5702,7 +5702,7 @@ void RAMFUNC dsp_extbuffer32rx(const int32_t * buff)
 
 	#if WITHLOOPBACKTEST
 
-		const INT32P_t dual = loopbacktestaudio(vi, dspmodeA, shape);
+		const FLOAT32P_t dual = loopbacktestaudio(vi, dspmodeA, shape);
 		processafadcsample(dual, dspmodeA, shape, ctcss);	// обработка одного сэмпла с микрофона
 		//
 		// Тестирование источников и потребителей звука

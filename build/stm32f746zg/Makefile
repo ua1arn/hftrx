@@ -73,6 +73,7 @@ PROJECT = tc1_stm32f746zg
 
 # Define linker script file here
 LDSCRIPT_ROM = ./STM32F746ZG_rom.ld
+LDSCRIPT_RAM = ./STM32F746ZG_ram.ld
 
 # List all user C define here, like -D_DEBUG=1
 UDEFS = -DNDEBUG=1 -DCPUSTYLE_STM32F7XX=1 -DSTM32F746xx=1
@@ -142,6 +143,9 @@ all: ROM
 
 flash: ROM
 	ST-LINK_CLI.exe -Q -V -P $(PROJECT)_rom.hex -rst
+
+app_run: RAM
+	ST-LINK_CLI.exe -Q -P $(PROJECT)_ram.hex 0x20010000 -Run 0x20010000 -NoPrompt
 	
 RAM: $(OBJS) $(PROJECT)_ram.elf $(PROJECT)_ram.hex
 
