@@ -788,6 +788,7 @@ struct micproc
 	uint8_t complevel;
 } ATTRPACKED;	// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
 
+#if WITHAFCODEC1HAVEPROC
 struct micprof_cell
 {
 	uint_fast8_t level;
@@ -804,6 +805,7 @@ typedef struct micprof_cell	micprof_t;
 #define NMICPROFCELLS	3
 
 static micprof_t micprof_cells[NMICPROFCELLS];
+#endif /* WITHAFCODEC1HAVEPROC */
 
 static RAMDTCM mikproc_t micprofiles [] =
 {
@@ -19316,6 +19318,8 @@ uint_fast32_t hamradio_load_memory_cells(uint_fast8_t cell, uint_fast8_t set)
 		return 0;
 }
 
+#if WITHAFCODEC1HAVEPROC
+
 void hamradio_clean_mic_profile(uint_fast8_t cell)
 {
 	ASSERT(cell < NMICPROFCELLS);
@@ -19390,6 +19394,8 @@ uint_fast8_t hamradio_load_mic_profile(uint_fast8_t cell, uint_fast8_t set)
 	}
 	return mp->cell_saved;
 }
+
+#endif /* WITHAFCODEC1HAVEPROC */
 
 uint_fast8_t hamradio_get_bands(band_array_t * bands)
 {

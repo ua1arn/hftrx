@@ -46,7 +46,7 @@ extern "C" {
    чтобы во всех буферах помещалось не меньше сэмплов,
    чем в DMABUFFSIZE32RX
  */
-#if WITHDSPEXTDDC || WITHLOOPBACKTEST
+#if WITHDSPEXTDDC
 
 	#if CPUSTYLE_R7S721
 
