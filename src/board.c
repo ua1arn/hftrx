@@ -68,13 +68,8 @@ static uint_fast8_t 	glob_antenna;		// выбор антенны (0 - ANT1, 1 - 
 static uint_fast8_t 	glob_preamp;		// включение предусилителя (УВЧ) приёмника
 static uint_fast8_t 	glob_mikemute;		// отключить аудиовход балансного модулятора
 static uint_fast8_t 	glob_vox;
-#if WITHISBOOTLOADER
-	static uint_fast8_t 	glob_bglight = WITHLCDBACKLIGHTMIN;	// включаем дисплей для работы в тествх в hightests()
-#elif WITHLCDBACKLIGHT
-	static uint_fast8_t 	glob_bglight = WITHLCDBACKLIGHTMAX;	// включаем дисплей для работы в тествх в hightests()
-#else /* WITHISBOOTLOADER */
-	static uint_fast8_t 	glob_bglight;	// включаем дисплей для работы в тествх в hightests()
-#endif /* WITHISBOOTLOADER */
+static uint_fast8_t 	glob_bglight = WITHLCDBACKLIGHTMIN;	// включаем дисплей для работы в тествх в hightests()
+static uint_fast8_t 	glob_bglightoff;	// выключаем дисплей
 #if WITHKBDBACKLIGHT
 static uint_fast8_t 	glob_kblight = 1;
 #endif /* WITHKBDBACKLIGHT */
@@ -642,7 +637,7 @@ prog_gpioreg(void)
 
 	#if defined (HARDWARE_BL_SET)
 		// яркость подсветки
-		HARDWARE_BL_SET(WITHLCDBACKLIGHTMIN != glob_bglight, glob_bglight - (WITHLCDBACKLIGHTMIN + 1));
+		HARDWARE_BL_SET(! glob_bglightoff, glob_bglight - WITHLCDBACKLIGHTMIN);
 	#endif /* defined (HARDWARE_BL_SET) */
 
 	#if defined (HARDWARE_DAC_ALC)
@@ -4073,7 +4068,6 @@ prog_ctrlreg(uint_fast8_t plane)
 
 	// registers chain control register
 	{
-		const uint_fast8_t lcdblcode = (glob_bglight - WITHLCDBACKLIGHTMIN);
 		//Current Output at Full Power A1 = 1, A0 = 1, VO = 0 ±500 ±380 ±350 ±320 mA min A
 		//Current Output at Power Cutback A1 = 1, A0 = 0, VO = 0 ±450 ±350 ±320 ±300 mA min A
 		//Current Output at Idle Power A1 = 0, A0 = 1, VO = 0 ±100 ±60 ±55 ±50 mA min A
@@ -4147,7 +4141,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0035, 0);			// D5: CTLSPARE2
 		RBBIT(0034, 0);			// D4: CTLSPARE1
 		RBBIT(0033, 0);			// D3: not used
-		RBBIT(0032, WITHLCDBACKLIGHTMIN != glob_bglight);			// D2: LCD_BL_ENABLE
+		RBBIT(0032, ! glob_bglightoff);			// D2: LCD_BL_ENABLE
 		RBBIT(0031, 0);			// D1: not used
 		RBBIT(0030, 0);			// D0: not used
 
@@ -5094,11 +5088,12 @@ board_set_mikemute(uint_fast8_t v)
 
 /* включение подсветки дисплея */
 void
-board_set_bglight(uint_fast8_t n)
+board_set_bglight(uint_fast8_t dispoff, uint_fast8_t dispbright)
 {
-	if (glob_bglight != n)
+	if (glob_bglightoff != dispoff || glob_bglight != dispbright)
 	{
-		glob_bglight = n;
+		glob_bglightoff = dispoff;
+		glob_bglight = dispbright;
 		board_ctlreg1changed();
 	}
 }

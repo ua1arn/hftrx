@@ -112,7 +112,7 @@ void board_set_adcrand(uint_fast8_t v);	/* управление интерфей
 void board_set_dacscale(uint_fast8_t n);	/* Использование амплитуды сигнала с ЦАП передатчика - 0..100% */
 void board_set_gdigiscale(uint_fast16_t n);	/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 void board_set_dac1(uint_fast8_t n);	/* подстройка опорного генератора */
-void board_set_bglight(uint_fast8_t n);	/* Включение подсветки дисплея */
+void board_set_bglight(uint_fast8_t dispoff, uint_fast8_t dispbright);	/* Включение подсветки дисплея */
 void board_set_kblight(uint_fast8_t v);	/* Включение подсветки клавиатуры */
 void board_set_poweron(uint_fast8_t v);	/* Включение удерхания схемы питания */
 void board_set_blfreq(uint_fast32_t n);	/* установка делителя для формирования рабочей частоты преобразователя подсветки */

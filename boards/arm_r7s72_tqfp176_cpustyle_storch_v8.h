@@ -659,6 +659,20 @@
 			arm_hardware_pio1_alternative((ainmask) << 8, R7S721_PIOALT_1);	/* P1_8..P1_15 - AN0..AN7 inputs */ \
 		} while (0)
 
+	#if LCDMODE_LQ043T3DX02K
+		#define WITHLCDBACKLIGHTOFF	1	// Имеется управление включением/выключением подсветки дисплея
+		#define WITHLCDBACKLIGHT	1	// Имеется управление яркостью дисплея
+		#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываемый на дисплее)
+		#define WITHLCDBACKLIGHTMAX	3	// Верхний предел регулировки (показываемый на дисплее)
+		#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
+	#elif LCDMODE_AT070TN90 || LCDMODE_AT070TNA2
+		#define WITHLCDBACKLIGHTOFF	1	// Имеется управление включением/выключением подсветки дисплея
+		#define WITHLCDBACKLIGHT	1	// Имеется управление яркостью дисплея
+		#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываемый на дисплее)
+		#define WITHLCDBACKLIGHTMAX	2	// Верхний предел регулировки (показываемый на дисплее)
+		#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
+	#endif
+
 	#define	HARDWARE_BL_INITIALIZE() do { \
 		const portholder_t enpins = (1U << 9); /* P7_9 */ \
 		const portholder_t blpins = (1U << 3) | (1U << 2); /* P7_3:P7_2 */ \

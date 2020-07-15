@@ -714,6 +714,21 @@
 #endif /* WITHUSBHW */
 
 #if LCDMODE_LTDC
+
+	#if LCDMODE_LQ043T3DX02K
+		#define WITHLCDBACKLIGHTOFF	1	// Имеется управление включением/выключением подсветки дисплея
+		#define WITHLCDBACKLIGHT	1	// Имеется управление яркостью дисплея
+		#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываемый на дисплее)
+		#define WITHLCDBACKLIGHTMAX	3	// Верхний предел регулировки (показываемый на дисплее)
+		#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
+	#elif LCDMODE_AT070TN90 || LCDMODE_AT070TNA2
+		#define WITHLCDBACKLIGHTOFF	1	// Имеется управление включением/выключением подсветки дисплея
+		#define WITHLCDBACKLIGHT	1	// Имеется управление яркостью дисплея
+		#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываемый на дисплее)
+		#define WITHLCDBACKLIGHTMAX	2	// Верхний предел регулировки (показываемый на дисплее)
+		#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
+	#endif
+
 	#define	HARDWARE_BL_INITIALIZE() do { \
 		/* step-up backlight converter */ \
 		arm_hardware_pioe_outputs((1U << 0), 1 * (1U << 0));		/* PE0 - enable backlight */ \
@@ -824,18 +839,6 @@
 		arm_hardware_piof_outputs(mask, (state != 0) * mask);	/* PF4 MODE=state */ \
 	} while (0)
 #endif /* LCDMODE_LTDC */
-
-#if LCDMODE_LQ043T3DX02K
-	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея
-	#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываемый на дисплее)
-	#define WITHLCDBACKLIGHTMAX	4	// Верхний предел регулировки (показываемый на дисплее)
-	#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
-#else
-	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея
-	#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываемый на дисплее)
-	#define WITHLCDBACKLIGHTMAX	3	// Верхний предел регулировки (показываемый на дисплее)
-	#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
-#endif
 
 #if WITHKEYBOARD
 	/* PF5: pull-up second encoder button */

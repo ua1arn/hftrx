@@ -180,18 +180,6 @@
 	// --- Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
 #endif
 
-#if LCDMODE_LQ043T3DX02K || LCDMODE_AT070TN90|| LCDMODE_AT070TNA2
-	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея
-	#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываемый на дисплее)
-	#define WITHLCDBACKLIGHTMAX	4	// Верхний предел регулировки (показываемый на дисплее)
-	#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
-#else
-	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея
-	#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываемый на дисплее)
-	#define WITHLCDBACKLIGHTMAX	3	// Верхний предел регулировки (показываемый на дисплее)
-	#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
-#endif
-
 	#define CTLREGMODE_STORCH_V9	1	/* TFT 4.3", 7" "Аист" с DSP и FPGA R7S721020VCFP, LVDS, дополнения для подключения трансвертора */
 
 #if WITHISBOOTLOADER

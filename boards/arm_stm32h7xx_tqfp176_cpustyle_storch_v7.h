@@ -677,6 +677,20 @@
 		} while (0)
 #endif /* WITHUSBHW */
 
+	#if LCDMODE_LQ043T3DX02K
+		#define WITHLCDBACKLIGHTOFF	1	// Имеется управление включением/выключением подсветки дисплея
+		#define WITHLCDBACKLIGHT	1	// Имеется управление яркостью дисплея
+		#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываемый на дисплее)
+		#define WITHLCDBACKLIGHTMAX	3	// Верхний предел регулировки (показываемый на дисплее)
+		#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
+	#elif LCDMODE_AT070TN90 || LCDMODE_AT070TNA2
+		#define WITHLCDBACKLIGHTOFF	1	// Имеется управление включением/выключением подсветки дисплея
+		#define WITHLCDBACKLIGHT	1	// Имеется управление яркостью дисплея
+		#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываемый на дисплее)
+		#define WITHLCDBACKLIGHTMAX	2	// Верхний предел регулировки (показываемый на дисплее)
+		#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
+	#endif
+
 	#define	HARDWARE_BL_INITIALIZE() do { \
 		/* step-up backlight converter */ \
 		arm_hardware_piof_outputs((1U << 1), 1 * (1U << 1));		/* PF1 - enable backlight */ \
@@ -782,18 +796,6 @@
 		arm_hardware_piof_outputs(MODE, (state != 0) * MODE);	/* PF4 MODE=state */ \
 	} while (0)
 #endif /* LCDMODE_LTDC */
-
-#if LCDMODE_LQ043T3DX02K
-	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея
-	#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываемый на дисплее)
-	#define WITHLCDBACKLIGHTMAX	4	// Верхний предел регулировки (показываемый на дисплее)
-	#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
-#else
-	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея
-	#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываемый на дисплее)
-	#define WITHLCDBACKLIGHTMAX	3	// Верхний предел регулировки (показываемый на дисплее)
-	#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
-#endif
 
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
