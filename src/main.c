@@ -18682,16 +18682,16 @@ uint_fast8_t hamradio_verify_freq_bands(uint_fast32_t freq, uint_fast32_t * bott
 {
 	for (uint_fast8_t i = 0; i < HBANDS_COUNT; i++)
 	{
-		if (freq >= get_band_bottom(i) && freq <= get_band_top(i))
+		if (freq >= get_band_bottom(i) && freq <= get_band_top(i) && get_band_bandset(i) == BANDSETF_HAM)
 		{
 			* bottom = get_band_bottom(i);
 			* top = get_band_top(i);
-			return 1;					// частота внутри диапазона
+			return 1;					// частота внутри любительского диапазона
 		}
 	}
 	* bottom = 0;
 	* top = 0;
-	return 0; 							// частота вне диапазонов
+	return 0; 							// частота вне любительских диапазонов
 }
 
 #if WITHVOX

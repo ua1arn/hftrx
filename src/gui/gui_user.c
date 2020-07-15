@@ -86,7 +86,7 @@ static menu_t menu [MENU_COUNT];
 static uint_fast8_t menu_label_touched = 0;
 static uint_fast8_t menu_level;
 
-static band_array_t bands [30];;
+static band_array_t bands [30];
 
 /* Возврат ссылки на окно */
 window_t * get_win(window_id_t window_id)
@@ -509,7 +509,7 @@ static void window_bands_process(void)
 
 		label_t labels [] = {
 		//    x, y,  parent, state, is_trackable, visible,  	name, 		Text, 				font_size, 	color, onClickHandler
-			{ 0, 0, WINDOW_BANDS, DISABLED,  0, NON_VISIBLE, "lbl_ham",   "HAM Bands",		 FONT_LARGE, COLORMAIN_WHITE, },
+			{ 0, 0, WINDOW_BANDS, DISABLED,  0, NON_VISIBLE, "lbl_ham",   "HAM bands",		 FONT_LARGE, COLORMAIN_WHITE, },
 			{ 0, 0, WINDOW_BANDS, DISABLED,  0, NON_VISIBLE, "lbl_bcast", "Broadcast bands", FONT_LARGE, COLORMAIN_WHITE, },
 		};
 		win->lh_count = ARRAY_SIZE(labels);
@@ -1343,7 +1343,7 @@ static void window_swrscan_process(void)
 //				backup_power = hamradio_get_tx_power();
 		}
 		else
-		{	// если текущая частота не входит ни в один из диапазонов, вывод сообщения об ошибке
+		{	// если текущая частота не входит ни в один из любительских диапазонов, вывод сообщения об ошибке
 			local_snprintf_P(lbl_swr_error->text, ARRAY_SIZE(lbl_swr_error->text), PSTR("%dk not into HAM bands"), backup_freq / 1000);
 			lbl_swr_error->x = mid_w - get_label_width(lbl_swr_error) / 2;
 			lbl_swr_error->y = (row1_int + gr_h) / 2;

@@ -738,13 +738,13 @@ static void slider_process(slider_t * sl)
 	reset_tracking();
 }
 
-/* Возврат признака короткого нажатия */
+/* Возврат признака короткого нажатия кнопки */
 uint_fast8_t is_short_pressed(void)
 {
 	return gui.selected_type == TYPE_BUTTON && gui.state == RELEASED;
 }
 
-/* Возврат признака длинного нажатия */
+/* Возврат признака длинного нажатия кнопки */
 uint_fast8_t is_long_pressed(void)
 {
 	return gui.selected_type == TYPE_BUTTON && gui.state == LONG_PRESSED;
