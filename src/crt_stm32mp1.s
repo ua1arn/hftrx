@@ -338,11 +338,9 @@ IRQHandlerNested:
 
 		// save VFP/Neon FPSCR register
 		FMRX	LR, FPSCR
-		FMXR	FPSCR, LR
 		PUSH	{LR}
 		// save VFP/Neon FPEXC register
 		FMRX	LR, FPEXC
-		FMXR	FPEXC, LR
 		PUSH	{LR}
 
 #if __ARM_NEON == 1

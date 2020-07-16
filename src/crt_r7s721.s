@@ -120,35 +120,35 @@ gotosleep:
   /*
     * Setup a stack for each mode
     */    
-   msr   CPSR_c, #ARM_MODE_UNDEF | I_BIT   /* 0x1b Undefined Instruction Mode */
+   msr   CPSR_c, #ARM_MODE_UNDEF | I_BIT | F_BIT   /* 0x1b Undefined Instruction Mode */
    ldr   sp, =__stack_und_end
    mov   lr, #0
    
-   msr   CPSR_c, #ARM_MODE_ABORT | I_BIT   /* 0x17 Abort Mode */
+   msr   CPSR_c, #ARM_MODE_ABORT | I_BIT | F_BIT   /* 0x17 Abort Mode */
    ldr   sp, =__stack_abt_end
    mov   lr, #0
    
-   msr   CPSR_c, #ARM_MODE_FIQ | I_BIT     /* 0x11 FIQ Mode */
+   msr   CPSR_c, #ARM_MODE_FIQ | I_BIT | F_BIT     /* 0x11 FIQ Mode */
    ldr   sp, =__stack_fiq_end
    mov   lr, #0
    
-   msr   CPSR_c, #ARM_MODE_IRQ | I_BIT     /* 0x12 IRQ Mode */
+   msr   CPSR_c, #ARM_MODE_IRQ | I_BIT | F_BIT     /* 0x12 IRQ Mode */
    ldr   sp, =__stack_irq_end
    mov   lr, #0
 
-   msr   CPSR_c, #ARM_MODE_MON | I_BIT     /* 0x16 Monitor Mode */
+   msr   CPSR_c, #ARM_MODE_MON | I_BIT | F_BIT     /* 0x16 Monitor Mode */
    ldr   sp, =__stack_mon_end
    mov   lr, #0
 
-   msr   CPSR_c, #ARM_MODE_HYP | I_BIT     /* 0x1B Hypervisor Mode */
+   msr   CPSR_c, #ARM_MODE_HYP | I_BIT | F_BIT     /* 0x1B Hypervisor Mode */
    ldr   sp, =__stack_hyp_end
    mov   lr, #0
 
-   msr   CPSR_c, #ARM_MODE_SYS | I_BIT     /* 0x1F Priviledged Operating Mode */
+   msr   CPSR_c, #ARM_MODE_SYS | I_BIT | F_BIT     /* 0x1F Priviledged Operating Mode */
    ldr   sp, =__stack_sys_end
    mov   lr, #0
 
-   msr   CPSR_c, #ARM_MODE_SVC | I_BIT     /* 0x13 Supervisor Mode */
+   msr   CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT     /* 0x13 Supervisor Mode */
    ldr   sp, =__stack	/* __stack_svc_end */
    mov   lr, #0
 
@@ -330,16 +330,14 @@ IRQHandlerNested:
        PUSH    {R0-R12,LR}          // save register context
        MRS     LR, SPSR                // Copy SPSR_irq to LR
        PUSH    {LR}                    // Save SPSR_irq
-       MSR     CPSR_c, #ARM_MODE_SVC | I_BIT          // Disable IRQ (Svc Mode)
+       MSR     CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT         // Disable IRQ (Svc Mode)
        PUSH    {LR}                    // Save LR
 
 		// save VFP/Neon FPSCR register
 		FMRX	LR, FPSCR
-		FMXR	FPSCR, LR
 		PUSH	{LR}
 		// save VFP/Neon FPEXC register
 		FMRX	LR, FPEXC
-		FMXR	FPEXC, LR
 		PUSH	{LR}
 
 #if __ARM_NEON == 1
