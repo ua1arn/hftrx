@@ -3851,7 +3851,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0103, ! (glob_tx && ! glob_autotune));	// HP/LP: 0: high power, 1: low power
 		RBBIT(0102, glob_tx);
 		RBBIT(0101, glob_fanflag);	// FAN
-
+		// 0100 is a bpf7
 		RBVAL(0072, 1U << glob_bandf2, 7);	// BPF7..BPF1 (fences: 2.4 MHz, 3.9 MHz, 7.4 MHz, 14.8 MHz, 22 MHz, 30 MHz, 50 MHz)
 		RBBIT(0071, glob_tuner_type);		// TY
 		RBBIT(0070, ! glob_tuner_bypass);	// в обесточенном состоянии - режим BYPASS
@@ -3975,7 +3975,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0113, ! (glob_tx && ! glob_autotune));	// HP/LP: 0: high power, 1: low power
 		RBBIT(0112, glob_tx);
 		RBBIT(0111, glob_fanflag);	// FAN
-
+		// 0110 is a bpf7
 		RBVAL(0102, 1U << glob_bandf2, 7);	// BPF7..BPF1 (fences: 2.4 MHz, 3.9 MHz, 7.4 MHz, 14.8 MHz, 22 MHz, 30 MHz, 50 MHz)
 		RBBIT(0101, glob_tuner_type);		// TY
 		RBBIT(0100, ! glob_tuner_bypass);	// в обесточенном состоянии - режим BYPASS
@@ -4106,7 +4106,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0103, ! (glob_tx && ! glob_autotune));	// HP/LP: 0: high power, 1: low power
 		RBBIT(0102, glob_tx);
 		RBBIT(0101, glob_fanflag);	// FAN
-
+		// 0100 is a bpf7
 		RBVAL(0072, 1U << glob_bandf2, 7);	// BPF7..BPF1 (fences: 2.4 MHz, 3.9 MHz, 7.4 MHz, 14.8 MHz, 22 MHz, 30 MHz, 50 MHz)
 		RBBIT(0071, glob_tuner_type);		// TY
 		RBBIT(0070, ! glob_tuner_bypass);	// в обесточенном состоянии - режим BYPASS
