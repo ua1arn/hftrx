@@ -327,18 +327,17 @@ ExitFunction:
     .func   IRQHandlerNested
 IRQHandlerNested:
 
-       PUSH    {R0-R12,LR}          // save register context
+       PUSH    {R0,LR}          // save register context
        MRS     LR, SPSR                // Copy SPSR_irq to LR
-       PUSH    {LR}                    // Save SPSR_irq
+       PUSH    {R0,LR}                    // Save SPSR_irq
        MSR     CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT         // Disable IRQ (Svc Mode)
-       PUSH    {LR}                    // Save LR
+       PUSH    {r1-r3, r4, r12, lr}                    // Save LR
 
 		// save VFP/Neon FPSCR register
-		FMRX	LR, FPSCR
-		PUSH	{LR}
 		// save VFP/Neon FPEXC register
+		FMRX	R0, FPSCR
 		FMRX	LR, FPEXC
-		PUSH	{LR}
+		PUSH	{R0, LR}
 
 #if __ARM_NEON == 1
 		// save Neon data registers
@@ -358,18 +357,17 @@ IRQHandlerNested:
 #endif /* __ARM_NEON == 1 */
 
 		// restore VFP/Neon FPEXC register
-		POP		{LR}
-		FMXR	FPEXC, LR
 		// restore VFP/Neon FPSCR register
-		POP		{LR}
-		FMXR	FPSCR, LR
+		POP		{R0, LR}
+		FMXR	FPEXC, LR
+		FMXR	FPSCR, R0
 
-       POP     {LR}                    // Restore LR
+       POP     {r1-r3, r4, r12, lr}                    // Restore LR
        MSR     CPSR_c, #ARM_MODE_IRQ  | I_BIT  // Disable IRQ (IRQ Mode)
-       POP     {LR}                    // Restore SPSR_irq to LR
+       POP     {R0,LR}                    // Restore SPSR_irq to LR
        MSR     SPSR_cxsf, LR           // Copy LR to SPSR_irq
 
-       POP     {R0-R12,LR}          // restore register context
+       POP     {R0,LR}          // restore register context
        SUBS    R15,R14,#0x0004         // return from interrupt
 		.endfunc
 
