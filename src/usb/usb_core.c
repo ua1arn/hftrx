@@ -2634,10 +2634,15 @@ HAL_StatusTypeDef USB_HC_StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_HCTypeDe
 						(int) hc->dev_addr,
 						pSetup->b.bmRequestType, pSetup->b.bRequest, pSetup->b.wValue.w, pSetup->b.wIndex.w, pSetup->b.wLength.w);
 
-				USBx->USBREQ = ((pSetup->b.bRequest) << USB_USBREQ_BREQUEST_SHIFT) | pSetup->b.bmRequestType;
-				USBx->USBVAL = pSetup->b.wValue.w;
-				USBx->USBINDX = pSetup->b.wIndex.w;
-				USBx->USBLENG = pSetup->b.wLength.w;
+				USBx->USBREQ =
+						(pSetup->b.bRequest << USB_USBREQ_BREQUEST_SHIFT) |
+						(pSetup->b.bmRequestType << USB_USBREQ_BMREQUESTTYPE_SHIFT);
+				USBx->USBVAL =
+						(pSetup->b.wValue.w << USB_USBVAL_SHIFT);
+				USBx->USBINDX =
+						(pSetup->b.wIndex.w << USB_USBINDX_SHIFT);
+				USBx->USBLENG =
+						(pSetup->b.wLength.w << USB_USBLENG_SHIFT);
 
 				USBx->DCPMAXP = (USBx->DCPMAXP & ~ (USB_DCPMAXP_DEVSEL)) |
 						(0x00 << USB_DCPMAXP_DEVSEL_SHIFT) |	// DEVADD0 used
@@ -2954,10 +2959,12 @@ HAL_StatusTypeDef USB_HostInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgTyp
 
 	for (i = 0; i < USB20_DEVADD0_COUNT; ++ i)
 	{
-		volatile uint16_t * const DEVADDx = (& USBx->DEVADD0) + i;
+		volatile uint16_t * const DEVADDn = (& USBx->DEVADD0) + i;
 
-		* DEVADDx = (* DEVADDx & ~ (USB_DEVADDn_USBSPD)) |
+		* DEVADDn = (* DEVADDn & ~ (USB_DEVADDn_USBSPD | USB_DEVADDn_HUBPORT | USB_DEVADDn_UPPHUB)) |
 			(((cfg->pcd_speed == PCD_SPEED_HIGH) ? 0x03 : 0x02) << USB_DEVADDn_USBSPD_SHIFT) |
+			(0x00 << USB_DEVADDn_HUBPORT_SHIFT) |
+			(0x00 << USB_DEVADDn_UPPHUB_SHIFT) |
 			0;
 	}
 	return HAL_OK;
@@ -3260,9 +3267,9 @@ HAL_StatusTypeDef USB_DevInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgType
 	// When the function controller mode is selected, set all the bits in this register to 0.
 	for (i = 0; i < USB20_DEVADD0_COUNT; ++ i)
 	{
-		volatile uint16_t * const DEVADDx = (& USBx->DEVADD0) + i;
+		volatile uint16_t * const DEVADDn = (& USBx->DEVADD0) + i;
 
-		* DEVADDx = 0;
+		* DEVADDn = 0;
 	}
 
 	return HAL_OK;
