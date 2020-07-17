@@ -7693,7 +7693,7 @@ static RAMBIGDTCM LMSData_t lmsData0;
 static void hamradio_autonotch_init(void)
 {
 	LMSData_t * const lmsd = & lmsData0;
-	const float32_t mu = log10f(((20 + 1.0f) / 1500.0f) + 1.0f);
+	const float32_t mu = log10f(((5 + 1.0f) / 1500.0f) + 1.0f);
 	arm_lms_norm_init_f32(& lmsd->lms2Norm_instance, AUTONOTCH_NUMTAPS, lmsd->lms2NormCoeff_f32, lmsd->lms2StateF32, mu, FIRBUFSIZE);
 	arm_fill_f32(0, lmsd->lms2_nr_delay, AUTONOTCH_BUFFER_SIZE);
 	arm_fill_f32(0, lmsd->lms2NormCoeff_f32, AUTONOTCH_NUMTAPS);
@@ -19001,6 +19001,12 @@ void hamradio_set_autonotch(uint_fast8_t v)
 uint_fast8_t hamradio_get_autonotch(void)
 {
 	return gnotch && notchmodes [gnotchtype].code == BOARD_NOTCH_AUTO;
+}
+
+void hamradio_gebug_autonotch(void)
+{
+	for (uint_fast16_t i = 0; i < AUTONOTCH_NUMTAPS; i ++)
+		PRINTF("%d: %f\n", i, lmsData0.lms2NormCoeff_f32[i]);
 }
 
 #endif /* WITHNOTCHFREQ */

@@ -108,12 +108,17 @@ static void btn_main_handler(void)
 		button_t * btn_Options = find_gui_element(TYPE_BUTTON, winMain, "btn_Options");
 		button_t * btn_AF = find_gui_element(TYPE_BUTTON, winMain, "btn_AF");
 		button_t * btn_AutoNotch = find_gui_element(TYPE_BUTTON, winMain, "btn_AutoNotch");
+		button_t * btn_6 = find_gui_element(TYPE_BUTTON, winMain, "btn_6");
 
 		if (get_selected_element() == btn_AutoNotch)
 		{
 			btn_AutoNotch->payload = ! hamradio_get_autonotch();
 			local_snprintf_P(btn_AutoNotch->text, ARRAY_SIZE(btn_AutoNotch->text), PSTR("ANotch|%s"), btn_AutoNotch->payload ? "ON" : "OFF");
 			hamradio_set_autonotch(btn_AutoNotch->payload);
+		}
+		else if (get_selected_element() == btn_6)
+		{
+			hamradio_gebug_autonotch();
 		}
 		else if (get_selected_element() == btn_AF)
 		{

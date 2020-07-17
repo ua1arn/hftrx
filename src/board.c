@@ -69,7 +69,7 @@ static uint_fast8_t 	glob_preamp;		// включение предусилите�
 static uint_fast8_t 	glob_mikemute;		// отключить аудиовход балансного модулятора
 static uint_fast8_t 	glob_vox;
 static uint_fast8_t 	glob_bglight = WITHLCDBACKLIGHTMIN;	// включаем дисплей для работы в тествх в hightests()
-static uint_fast8_t 	glob_bglightoff;	// выключаем дисплей
+static uint_fast8_t 	glob_bglightoff = 1;	// выключаем дисплей
 #if WITHKBDBACKLIGHT
 static uint_fast8_t 	glob_kblight = 1;
 #endif /* WITHKBDBACKLIGHT */
