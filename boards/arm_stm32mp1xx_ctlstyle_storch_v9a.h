@@ -162,16 +162,6 @@
 	/* коды входов коммутатора источников сигнала для УНЧ приёмника */
 	#define BOARD_DETECTOR_SSB 	0		// Заглушка
 
-	// +++ заглушки для плат с DSP обработкой
-	#define	BOARD_AGCCODE_ON	0x00
-	#define	BOARD_AGCCODE_OFF	0x01
-
-	// +++ заглушки для плат с DSP обработкой
-	#define BOARD_NOTCH_OFF		0
-	#define BOARD_NOTCH_MANUAL	1
-	#define BOARD_NOTCH_AUTO	2
-	//#define WITHLMSAUTONOTCH	1	/* Использование AUTONOTCH	*/
-
 	/* коды фильтров второй ПЧ, выдаваемые на дешифраторы */
 	#define BOARD_FILTER_0P5		1	/* 0.5 or 0.3 kHz filter */
 	#define BOARD_FILTER_3P1		0	/* 3.1 or 2.75 kHz filter */
@@ -257,10 +247,19 @@
 
 #if WITHISBOOTLOADER
 
+	// +++ заглушки для плат с DSP обработкой
+	#define	BOARD_AGCCODE_ON	0x00
+	#define	BOARD_AGCCODE_OFF	0x01
+
 	#define BOARD_DETECTOR_AM 	0		// Заглушка
 	#define BOARD_DETECTOR_FM 	0		// Заглушка
 	#define BOARD_DETECTOR_MUTE 	0		// Заглушка
 	#define BOARD_DETECTOR_TUNE 	0		// Заглушка
+
+	// +++ заглушки для плат с DSP обработкой
+	#define BOARD_NOTCH_OFF		0
+	#define BOARD_NOTCH_MANUAL	0
+	#define BOARD_NOTCH_AUTO	0
 
 	#define NVRAM_TYPE NVRAM_TYPE_NOTHING	// нет NVRAM
 	#define HARDWARE_IGNORENONVRAM	1		// отладка на платах где нет никакого NVRAM
