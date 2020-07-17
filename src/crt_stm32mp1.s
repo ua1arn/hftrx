@@ -65,7 +65,7 @@
 	 STACKSIZEMON = 256
 	 STACKSIZESYS = 256
 
-	 STACKSIZECPU1SVC = 4096
+	 STACKSIZESVC = 4096
   
 	.global __Vectors
 	.section .vectors,"ax"
@@ -124,31 +124,31 @@ gotosleep:
     * Setup a stack for each mode
     */    
    msr   CPSR_c, #ARM_MODE_UNDEF | I_BIT | F_BIT   /* 0x1b Undefined Instruction Mode */
-   ldr   sp, =__stack_und_end
+   ldr   sp, =__stack_cpu0_und_end
    mov   lr, #0
    
    msr   CPSR_c, #ARM_MODE_ABORT | I_BIT | F_BIT   /* 0x17 Abort Mode */
-   ldr   sp, =__stack_abt_end
+   ldr   sp, =__stack_cpu0_abt_end
    mov   lr, #0
    
    msr   CPSR_c, #ARM_MODE_FIQ | I_BIT | F_BIT     /* 0x11 FIQ Mode */
-   ldr   sp, =__stack_fiq_end
+   ldr   sp, =__stack_cpu0_fiq_end
    mov   lr, #0
    
    msr   CPSR_c, #ARM_MODE_IRQ | I_BIT | F_BIT     /* 0x12 IRQ Mode */
-   ldr   sp, =__stack_irq_end
+   ldr   sp, =__stack_cpu0_irq_end
    mov   lr, #0
 
    msr   CPSR_c, #ARM_MODE_MON | I_BIT | F_BIT     /* 0x16 Monitor Mode */
-   ldr   sp, =__stack_mon_end
+   ldr   sp, =__stack_cpu0_mon_end
    mov   lr, #0
 
    msr   CPSR_c, #ARM_MODE_HYP | I_BIT | F_BIT     /* 0x1B Hypervisor Mode */
-   ldr   sp, =__stack_hyp_end
+   ldr   sp, =__stack_cpu0_hyp_end
    mov   lr, #0
 
    msr   CPSR_c, #ARM_MODE_SYS | I_BIT | F_BIT     /* 0x1F Priviledged Operating Mode */
-   ldr   sp, =__stack_sys_end
+   ldr   sp, =__stack_cpu0_sys_end
    mov   lr, #0
 
    msr   CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT     /* 0x13 Supervisor Mode */
@@ -377,12 +377,39 @@ IRQHandlerNested:
     .func   Reset_CPU1_Handler
     /* invoked at ARM_MODE_SVC */
 Reset_CPU1_Handler:
-	msr   CPSR_c, #ARM_MODE_IRQ | I_BIT | F_BIT     /* 0x12 IRQ Mode */
-	ldr   sp, =__stack_irq_cpu1_end
-	mov   lr, #0
+  /*
+    * Setup a stack for each mode
+    */
+   msr   CPSR_c, #ARM_MODE_UNDEF | I_BIT | F_BIT   /* 0x1b Undefined Instruction Mode */
+   ldr   sp, =__stack_cpu1_und_end
+   mov   lr, #0
+
+   msr   CPSR_c, #ARM_MODE_ABORT | I_BIT | F_BIT   /* 0x17 Abort Mode */
+   ldr   sp, =__stack_cpu1_abt_end
+   mov   lr, #0
+
+   msr   CPSR_c, #ARM_MODE_FIQ | I_BIT | F_BIT     /* 0x11 FIQ Mode */
+   ldr   sp, =__stack_cpu1_fiq_end
+   mov   lr, #0
+
+   msr   CPSR_c, #ARM_MODE_IRQ | I_BIT | F_BIT     /* 0x12 IRQ Mode */
+   ldr   sp, =__stack_cpu1_irq_end
+   mov   lr, #0
+
+   msr   CPSR_c, #ARM_MODE_MON | I_BIT | F_BIT     /* 0x16 Monitor Mode */
+   ldr   sp, =__stack_cpu1_mon_end
+   mov   lr, #0
+
+   msr   CPSR_c, #ARM_MODE_HYP | I_BIT | F_BIT     /* 0x1B Hypervisor Mode */
+   ldr   sp, =__stack_cpu1_hyp_end
+   mov   lr, #0
+
+   msr   CPSR_c, #ARM_MODE_SYS | I_BIT | F_BIT     /* 0x1F Priviledged Operating Mode */
+   ldr   sp, =__stack_cpu1_sys_end
+   mov   lr, #0
 
 	msr   CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT     /* 0x13 Supervisor Mode */
-	ldr   sp, =__stack_svc_cpu1_end
+	ldr   sp, =__stack_cpu1_svc_end
 	mov   lr, #0
 
 	ldr		r2, =Reset_CPUn_Handler
@@ -398,25 +425,44 @@ Reset_CPU1_HandlerSleep:
 	.section .dtcm
 	.align 8
 	.space	STACKSIZEUND
-__stack_und_end = .
+__stack_cpu0_und_end = .
 	.space	STACKSIZEABT
-__stack_abt_end = .
+__stack_cpu0_abt_end = .
 	.space	STACKSIZEFIQ
-__stack_fiq_end = .
+__stack_cpu0_fiq_end = .
 	.space	STACKSIZEIRQ
-__stack_irq_end = .
+__stack_cpu0_irq_end = .
 	.space	STACKSIZESVC
-__stack_svc_end = .
+__stack_cpu0_svc_end = .
 	.space	STACKSIZEMON
-__stack_mon_end = .
+__stack_cpu0_mon_end = .
 	.space	STACKSIZEHYP
-__stack_hyp_end = .
+__stack_cpu0_hyp_end = .
 	.space	STACKSIZESYS
-__stack_sys_end = .
-	.space	STACKSIZECPU1SVC
-__stack_svc_cpu1_end = .
+__stack_cpu0_sys_end = .
+/*
+	.space	STACKSIZESVC
+__stack_cpu0_svc_end = .
+*/
+	.space	STACKSIZEUND
+__stack_cpu1_und_end = .
+	.space	STACKSIZEABT
+__stack_cpu1_abt_end = .
+	.space	STACKSIZEFIQ
+__stack_cpu1_fiq_end = .
 	.space	STACKSIZEIRQ
-__stack_irq_cpu1_end = .
+__stack_cpu1_irq_end = .
+	.space	STACKSIZESVC
+__stack_cpu1_svc_end = .
+	.space	STACKSIZEMON
+__stack_cpu1_mon_end = .
+	.space	STACKSIZEHYP
+__stack_cpu1_hyp_end = .
+	.space	STACKSIZESYS
+__stack_cpu1_sys_end = .
+
+	.space	STACKSIZESVC
+__stack_cpu1_svc_end = .
 
    .ltorg
 /*** EOF ***/   
