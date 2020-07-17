@@ -192,6 +192,10 @@
 	#define	BOARD_AGCCODE_ON	0
 	#define	BOARD_AGCCODE_OFF	0
 
+	#define BOARD_NOTCH_OFF		0
+	#define BOARD_NOTCH_MANUAL	0
+	#define BOARD_NOTCH_AUTO	1
+
 	// +++ заглушки для плат с DSP обработкой
 	#define BOARD_NOTCH_OFF		0
 	#define BOARD_NOTCH_MANUAL	1

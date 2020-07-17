@@ -19762,7 +19762,7 @@ void bootloader_deffereddetach(void * arg)
 
 static void bootloader_mainloop(void)
 {
-	board_set_bglight(WITHLCDBACKLIGHTMIN);
+	board_set_bglight(1, bglight);	// выключить подсветку
 	board_update();
 	//printhex(BOOTLOADER_RAMAREA, (void *) BOOTLOADER_RAMAREA, 64);
 	//local_delay_ms(1000);

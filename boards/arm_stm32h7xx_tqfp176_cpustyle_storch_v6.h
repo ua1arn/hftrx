@@ -727,6 +727,9 @@
 		#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываемый на дисплее)
 		#define WITHLCDBACKLIGHTMAX	2	// Верхний предел регулировки (показываемый на дисплее)
 		#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
+	#else
+		/* Заглушка для работы без дисплея */
+		#define WITHLCDBACKLIGHTMIN	0
 	#endif
 
 	#define	HARDWARE_BL_INITIALIZE() do { \
