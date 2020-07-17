@@ -193,7 +193,7 @@
 
 	#define BOARD_NOTCH_OFF		0
 	#define BOARD_NOTCH_MANUAL	0
-	#define BOARD_NOTCH_AUTO	1
+	#define BOARD_NOTCH_AUTO	0
 
 	/* коды фильтров второй ПЧ, выдаваемые на дешифраторы */
 	#define BOARD_FILTER_0P5		0	/* 0.5 or 0.3 kHz filter */
@@ -238,12 +238,6 @@
 	// +++ заглушки для плат с DSP обработкой
 	#define	BOARD_AGCCODE_ON	0x00
 	#define	BOARD_AGCCODE_OFF	0x01
-
-	// +++ заглушки для плат с DSP обработкой
-	#define BOARD_NOTCH_OFF		0
-	#define BOARD_NOTCH_MANUAL	1
-	#define BOARD_NOTCH_AUTO	2
-	//#define WITHLMSAUTONOTCH	1	/* Использование AUTONOTCH	*/
 
 	/* коды фильтров второй ПЧ, выдаваемые на дешифраторы */
 	#define BOARD_FILTER_0P5		1	/* 0.5 or 0.3 kHz filter */

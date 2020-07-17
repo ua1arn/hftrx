@@ -152,8 +152,8 @@ enum
 
 #if WITHIF4DSP
 
-	#define	BOARD_AGCCODE_ON	0x00
-	#define	BOARD_AGCCODE_OFF	0x01
+	#define	BOARD_AGCCODE_ON	0
+	#define	BOARD_AGCCODE_OFF	1
 
 	#define BOARD_NOTCH_OFF		0
 	#define BOARD_NOTCH_MANUAL	1
