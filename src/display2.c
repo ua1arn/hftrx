@@ -1497,7 +1497,7 @@ static void display2_siglevel4(
 #if WITHIF4DSP
 int_fast32_t display_zoomedbw(void)
 {
-	return dsp_get_samplerateuacin_rts() >> glob_zoomxpow2;
+	return (dsp_get_samplerateuacin_rts()  * SPECTRUMWIDTH_MULT / SPECTRUMWIDTH_DENOM) >> glob_zoomxpow2;
 }
 #endif /* WITHIF4DSP */
 
@@ -6145,9 +6145,9 @@ static void display2_spectrum(
 			{
 				// ломанная
 				uint_fast16_t ynew = SPDY - 1 - dsp_mag2y(filter_spectrum(x), SPDY - 1, glob_topdb, glob_bottomdb);
-
-				if (glob_colorsp && LCDMODE_MAIN_L8)
+				if (glob_colorsp)
 				{
+					/* раскрашенный спектр */
 					for (uint_fast16_t dy = SPDY - 1, i = 0; dy > ynew; dy --, i ++)
 					{
 						colpip_point(colorpip, BUFDIM_X, BUFDIM_Y, x, dy, color_scale [i]);
@@ -7837,7 +7837,11 @@ void display2_fill_color_scale(void)
 {
 	for(uint_fast8_t i = 0; i < SPDY; i ++)
 	{
+#if LCDMODE_MAIN_L8
 		color_scale [i] = normalize(i, 0, PALETTESIZE - 1, PALETTESIZE - 1);
+#else /* LCDMODE_MAIN_L8 */
+		color_scale [i] = wfpalette [normalize(i, 0, PALETTESIZE - 1, PALETTESIZE - 1)];
+#endif /* LCDMODE_MAIN_L8 */
 	}
 }
 

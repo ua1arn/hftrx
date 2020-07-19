@@ -4928,13 +4928,15 @@ make_cmplx(
 
 static int raster2fft(
 	int x,	// window pos
-	int dx	// width
+	int dx,	// width
+	int fftsize,	// размер буфера FFT (в бинах)
+	int visiblefftsize	// Часть буфера FFT, отобрааемая на экране (в бинах)
 	)
 {
 	const int xm = dx / 2;	// middle
 	const int delta = x - xm;	// delta in pixels
-	const int fftoffset = delta * ((int) NORMALFFT / 2 - 1) / xm;
-	return fftoffset < 0 ? ((int) NORMALFFT + fftoffset) : fftoffset;
+	const int fftoffset = delta * (fftsize / 2 - 1) / xm;
+	return fftoffset < 0 ? (fftsize + fftoffset) : fftoffset;
 
 }
 
@@ -4989,7 +4991,7 @@ uint_fast8_t dsp_getspectrumrow(
 	for (x = 0; x < dx; ++ x)
 	{
 		static const FLOAT_t fftcoeff = (FLOAT_t) 1 / (int32_t) (NORMALFFT / 2);
-		const int fftpos = raster2fft(x, dx);
+		const int fftpos = raster2fft(x, dx, NORMALFFT, NORMALFFT * SPECTRUMWIDTH_MULT / SPECTRUMWIDTH_DENOM);
 		hbase [x] = zoomfft_st.cmplx_sig [fftpos] * fftcoeff;
 	}
 	return 1;

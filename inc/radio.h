@@ -3391,10 +3391,18 @@ void hamradio_set_gmutespkr(uint_fast8_t v);
 uint_fast8_t hamradio_verify_freq_bands(uint_fast32_t freq, uint_fast32_t * bottom, uint_fast32_t * top);
 
 /* выбор внешнего вида прибора - стрелочный или градусник */
-enum {
+enum
+{
 	SMETER_TYPE_BARS,
 	SMETER_TYPE_DIAL,
 	SMETER_TYPE_COUNT
+};
+
+/* Управление частичной полосоц отображением спектра/волопада */
+enum
+{
+	SPECTRUMWIDTH_MULT = 12, //11,	// 44 кГц
+	SPECTRUMWIDTH_DENOM = 12,
 };
 
 uint_fast8_t hamradio_get_gsmetertype(void);
