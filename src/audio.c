@@ -4935,7 +4935,7 @@ static int raster2fft(
 {
 	const int xm = dx / 2;	// middle
 	const int delta = x - xm;	// delta in pixels
-	const int fftoffset = delta * (fftsize / 2 - 1) / xm;
+	const int fftoffset = delta * (visiblefftsize / 2 - 1) / xm;
 	return fftoffset < 0 ? (fftsize + fftoffset) : fftoffset;
 
 }
@@ -4988,10 +4988,12 @@ uint_fast8_t dsp_getspectrumrow(
 	arm_cfft_f32(FFTCONFIGSpectrum, zoomfft_st.cmplx_sig, 0, 1);	// forward transform
 	arm_cmplx_mag_f32(zoomfft_st.cmplx_sig, zoomfft_st.cmplx_sig, NORMALFFT);	/* Calculate magnitudes */
 
+	enum { visiblefftsize = (int_fast64_t) NORMALFFT * SPECTRUMWIDTH_MULT / SPECTRUMWIDTH_DENOM };
+	enum { fftsize = NORMALFFT };
+	static const FLOAT_t fftcoeff = (FLOAT_t) 1 / (int32_t) (NORMALFFT / 2);
 	for (x = 0; x < dx; ++ x)
 	{
-		static const FLOAT_t fftcoeff = (FLOAT_t) 1 / (int32_t) (NORMALFFT / 2);
-		const int fftpos = raster2fft(x, dx, NORMALFFT, NORMALFFT * SPECTRUMWIDTH_MULT / SPECTRUMWIDTH_DENOM);
+		const int fftpos = raster2fft(x, dx, fftsize, visiblefftsize);
 		hbase [x] = zoomfft_st.cmplx_sig [fftpos] * fftcoeff;
 	}
 	return 1;

@@ -3401,7 +3401,7 @@ enum
 /* Управление частичной полосоц отображением спектра/волопада */
 enum
 {
-	SPECTRUMWIDTH_MULT = 12, //11,	// 44 кГц
+	SPECTRUMWIDTH_MULT = 11,	// 44 кГц
 	SPECTRUMWIDTH_DENOM = 12,
 };
 

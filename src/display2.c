@@ -1497,7 +1497,7 @@ static void display2_siglevel4(
 #if WITHIF4DSP
 int_fast32_t display_zoomedbw(void)
 {
-	return (dsp_get_samplerateuacin_rts()  * SPECTRUMWIDTH_MULT / SPECTRUMWIDTH_DENOM) >> glob_zoomxpow2;
+	return ((int_fast64_t) dsp_get_samplerateuacin_rts() * SPECTRUMWIDTH_MULT / SPECTRUMWIDTH_DENOM) >> glob_zoomxpow2;
 }
 #endif /* WITHIF4DSP */
 
