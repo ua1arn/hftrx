@@ -2570,6 +2570,7 @@ struct nvmap
 	uint8_t gwflevelsep;	/* чувствительность водопада регулируется отдельной парой параметров */
 	uint8_t gwfshiftenable; /* разрешение или запрет сдвига водопада при изменении частоты */
 	uint8_t gspantialiasing; /* разрешение или запрет антиалиасинга спектра */
+	uint8_t gcolorsp;		 /* разрешение или запрет раскраски спектра */
 #endif /* WITHSPECTRUMWF */
 	uint8_t gshowdbm;	/* Отображение уровня сигнала в dBm или S-memter */
 #if WITHBCBANDS
@@ -3239,6 +3240,7 @@ static const uint_fast8_t displaymodesfps = DISPLAYMODES_FPS;
 	static uint_fast8_t gzoomxpow2;		/* степень двойки - состояние растягиваия спектра (уменьшение наблюдаемой полосы частот) */
 	static uint_fast8_t gwfshiftenable = 1; /* разрешение или запрет сдвига водопада при изменении частоты */
 	static uint_fast8_t gspantialiasing  = 1; /* разрешение или запрет антиалиасинга спектра */
+	static uint_fast8_t gcolorsp  = 0;		/* разрешение или запрет раскраски спектра */
 #endif /* WITHSPECTRUMWF */
 #if WITHLCDBACKLIGHT
 	#if WITHISBOOTLOADER 
@@ -8524,7 +8526,8 @@ updateboard(
 			board_set_zoomxpow2(gzoomxpow2);	/* уменьшение отображаемого участка спектра */
 			board_set_wflevelsep(gwflevelsep);	/* чувствительность водопада регулируется отдельной парой параметров */
 			board_set_wfshiftenable(gwfshiftenable);	/* разрешение или запрет сдвига водопада при изменении частоты */
-			board_set_spantialiasing(gspantialiasing); /* разрешение или запрет антиалиасинга спектра */
+			board_set_spantialiasing(gspantialiasing); 	/* разрешение или запрет антиалиасинга спектра */
+			board_set_colorsp(gcolorsp);				/* разрешение или запрет раскраски спектра */
 		#endif /* WITHSPECTRUMWF */
 		board_set_showdbm(gshowdbm);		// Отображение уровня сигнала в dBm или S-memter (в зависимости от настроек)
 	#endif /* WITHIF4DSP */
@@ -13119,6 +13122,15 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
+		QLABEL2("SPEC CLR", "Color spectrum"), 7, 3, RJ_YES,	ISTEP1,
+		ITEM_VALUE,
+		0, 1,							/* разрешение или запрет раскраски спектра */
+		offsetof(struct nvmap, gcolorsp),
+		NULL,
+		& gcolorsp,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
 		QLABEL("TOP DB  "), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		WITHTOPDBMIN, WITHTOPDBMAX,							/* сколько не показывать сверху */
@@ -13189,7 +13201,7 @@ static const FLASHMEM struct menudef menutable [] =
 		NULL,
 		& gspantialiasing,
 		getzerobase, /* складывается со смещением и отображается */
-		},
+	},
 #if (WITHSWRMTR || WITHSHOWSWRPWR)
 	{
 		QLABEL2("SMETER ", "S-meter type"), 7, 3, RJ_SMETER,	ISTEP1,
@@ -18003,6 +18015,8 @@ hamradio_initialize(void)
 #endif /* WITHSPISLAVE */
 
 	board_init_chips2();	// программирование кодеков при подающейся тактовой частоте
+
+	display2_fill_color_scale();
 
 #if WITHTOUCHGUI
 	gui_initialize();

@@ -160,6 +160,7 @@ static int_fast16_t glob_gridstep = 10000; //1 * glob_griddigit;	// 10, 20. 50 k
 static uint_fast8_t glob_fillspect;	/* заливать заполнением площадь под графиком спектра */
 static uint_fast8_t glob_wfshiftenable;	/* разрешение или запрет сдвига водопада при изменении частоты */
 static uint_fast8_t glob_spantialiasing;	/* разрешение или запрет антиалиасинга спектра */
+static uint_fast8_t glob_colorsp;	/* разрешение или запрет раскраски спектра */
 
 static int_fast16_t glob_topdb = 30;	/* верхний предел FFT */
 static int_fast16_t glob_bottomdb = 130;	/* нижний предел FFT */
@@ -6005,6 +6006,8 @@ display_colorgrid_set(
 	display_colorbuf_set_vline(buffer, BUFDIM_X, BUFDIM_Y, ALLDX / 2, row0, h, color0);	// center frequency marker
 }
 
+static uint_fast8_t color_scale[SPDY];	/* массив значений для раскраски спектра */
+
 // Спектр на монохромных дисплеях
 // или на цветных, где есть возможность раскраски растровой картинки.
 
@@ -6142,6 +6145,15 @@ static void display2_spectrum(
 			{
 				// ломанная
 				uint_fast16_t ynew = SPDY - 1 - dsp_mag2y(filter_spectrum(x), SPDY - 1, glob_topdb, glob_bottomdb);
+
+				if (glob_colorsp && LCDMODE_MAIN_L8)
+				{
+					for (uint_fast16_t dy = SPDY - 1, i = 0; dy > ynew; dy --, i ++)
+					{
+						colpip_point(colorpip, BUFDIM_X, BUFDIM_Y, x, dy, color_scale [i]);
+					}
+				}
+
 				if (x != 0)
 					colmain_line(colorpip, BUFDIM_X, BUFDIM_Y, x - 1, ylast, x, ynew, COLORPIP_SPECTRUMLINE, glob_spantialiasing);
 				ylast = ynew;
@@ -6176,7 +6188,7 @@ static void display2_spectrum(
 					}
 				}
 			}
-			display_colorgrid_xor(colorpip, SPY0, SPDY, f0, bw);	// отрисовка маркеров частот
+			display_colorgrid_set(colorpip, SPY0, SPDY, f0, bw);	// отрисовка маркеров частот
 		}
 	}
 
@@ -6947,6 +6959,13 @@ void
 board_set_spantialiasing(uint_fast8_t v)
 {
 	glob_spantialiasing = v != 0;
+}
+
+/* разрешение или запрет раскраски спектра */
+void
+board_set_colorsp(uint_fast8_t v)
+{
+	glob_colorsp = v != 0;
 }
 
 /* заливать заполнением площадь под графиком спектра */
@@ -7811,6 +7830,14 @@ display2_smeter15(
 		}
 
 		break;
+	}
+}
+
+void display2_fill_color_scale(void)
+{
+	for(uint_fast8_t i = 0; i < SPDY; i ++)
+	{
+		color_scale [i] = normalize(i, 0, PALETTESIZE - 1, PALETTESIZE - 1);
 	}
 }
 
