@@ -2620,7 +2620,8 @@ struct nvmap
 	uint8_t ggainnfmrx10;		/* дополнительное усиление по НЧ в режиме приёма NFM 100..1000% */
 	uint8_t gnfmdeviation;	/* Девиация при передаче в NFM - в сотнях герц */
 	uint8_t gdacscale;		/* Использование амплитуды сигнала с ЦАП передатчика - 0..100% */
-	uint16_t ggainndigitx;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
+	uint16_t ggaindigitx;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
+	uint16_t ggaincwtx;		/* Увеличение усиления при передаче в CW режимах 50..100% */
 	uint8_t	gcwedgetime;			/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
 	uint8_t	gsidetonelevel;	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
 	uint8_t gmoniflag;		/* разрешение самопрослушивания */
@@ -3864,7 +3865,13 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 #endif /* WITHMIC1LEVEL */
 #if WITHIF4DSP
 #if WITHTX
-	static uint_fast16_t ggainndigitx = 250;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
+	#if WITHTXCWREDUCE
+		static uint_fast16_t ggaincwtx = 50;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
+		static uint_fast16_t ggaindigitx = 250;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
+	#else /* WITHTXCWREDUCE */
+		static uint_fast16_t ggaincwtx = 100;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
+		static uint_fast16_t ggaindigitx = 250;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
+	#endif /* WITHTXCWREDUCE */
 	static uint_fast8_t gamdepth = 30;		/* Глубина модуляции в АМ - 0..100% */
 	static uint_fast8_t gnfmdeviation = 55;	/* Девиация при передаче в NFM - в сотнях герц */
 
@@ -8553,7 +8560,8 @@ updateboard(
 			/* мощность регулируется постоянны напряжением на ЦАП */
 			board_set_dacscale(gdacscale);
 		#endif /* CPUDAC */
-			board_set_gdigiscale(ggainndigitx);	/* Увеличение усиления при передаче в цифровых режимах 100..300% */
+			board_set_gdigiscale(ggaindigitx);	/* Увеличение усиления при передаче в цифровых режимах 100..300% */
+			board_set_cwscale(ggaincwtx);	/* Увеличение усиления при передаче в CW режимах 50..100% */
 			board_set_amdepth(gamdepth);	/* Глубина модуляции в АМ - 0..100% */
 		}
 		#endif /* WITHIF4DSP */
@@ -15266,11 +15274,22 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		QLABEL("FT8BOOST"),	7, 2, 0,	ISTEP1,		/* Увеличение усиления при передаче в цифровых режимах 90..300% */
 		ITEM_VALUE,
 		90, 300,
-		offsetof(struct nvmap, ggainndigitx),
-		& ggainndigitx,
+		offsetof(struct nvmap, ggaindigitx),
+		& ggaindigitx,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
 	},
+#if WITHTXCWREDUCE
+	{
+		QLABEL("CW BOOST"),	7, 2, 0,	ISTEP1,		/* Увеличение усиления при передаче в цифровых режимах 90..300% */
+		ITEM_VALUE,
+		30, 110,
+		offsetof(struct nvmap, ggaincwtx),
+		& ggaincwtx,
+		NULL,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+#endif /* WITHTXCWREDUCE */
 	{
 		QLABEL("DACSCALE"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
