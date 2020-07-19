@@ -13036,7 +13036,7 @@ static const FLASHMEM struct menudef menutable [] =
 #endif /* WITHDCDCFREQCTL */
 #if WITHLCDBACKLIGHT
 	{
-		QLABEL2("LCD LIGH", "TFT backlight"), 7, 0, 0,	ISTEP1,
+		QLABEL2("LCD LIGH", "TFT Backlight"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		WITHLCDBACKLIGHTMIN, WITHLCDBACKLIGHTMAX, 
 		offsetof(struct nvmap, bglight),
@@ -13058,7 +13058,7 @@ static const FLASHMEM struct menudef menutable [] =
 #endif /* WITHKBDBACKLIGHT */
 #if WITHLCDBACKLIGHT || WITHKBDBACKLIGHT
 	{
-		QLABEL2("DIMM TIM", "Dimmer time"), 7, 0, 0,	ISTEP5,
+		QLABEL2("DIMM TIM", "Dimmer Time"), 7, 0, 0,	ISTEP5,
 		ITEM_VALUE,
 		0, 240, 
 		offsetof(struct nvmap, dimmtime),
@@ -13069,7 +13069,7 @@ static const FLASHMEM struct menudef menutable [] =
 #endif /* WITHKBDBACKLIGHT */
 #if WITHSLEEPTIMER
 	{
-		QLABEL2("SLEEPTIM", "Sleep time"), 7, 0, 0,	ISTEP5,
+		QLABEL2("SLEEPTIM", "Sleep Time"), 7, 0, 0,	ISTEP5,
 		ITEM_VALUE,
 		0, 240, 
 		offsetof(struct nvmap, sleeptime),
@@ -13130,7 +13130,7 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		QLABEL2("SPEC CLR", "Color spectrum"), 7, 3, RJ_YES,	ISTEP1,
+		QLABEL2("SPEC CLR", "Color Spectrum"), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,							/* разрешение или запрет раскраски спектра */
 		offsetof(struct nvmap, gcolorsp),
@@ -13212,7 +13212,7 @@ static const FLASHMEM struct menudef menutable [] =
 	},
 #if (WITHSWRMTR || WITHSHOWSWRPWR)
 	{
-		QLABEL2("SMETER ", "S-meter type"), 7, 3, RJ_SMETER,	ISTEP1,
+		QLABEL2("SMETER ", "S-meter Type"), 7, 3, RJ_SMETER,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,							/* выбор внешнего вида прибора - стрелочный или градусник */
 		offsetof(struct nvmap, gsmetertype),
@@ -15271,7 +15271,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		QLABEL("FT8BOOST"),	7, 2, 0,	ISTEP1,		/* Увеличение усиления при передаче в цифровых режимах 90..300% */
+		QLABEL2("FT8BOOST", "FT8 Boost"),	7, 2, 0,	ISTEP1,		/* Увеличение усиления при передаче в цифровых режимах 90..300% */
 		ITEM_VALUE,
 		90, 300,
 		offsetof(struct nvmap, ggaindigitx),
@@ -15279,17 +15279,15 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
 	},
-#if WITHTXCWREDUCE
 	{
 		QLABEL("CW BOOST"),	7, 2, 0,	ISTEP1,		/* Увеличение усиления при передаче в цифровых режимах 90..300% */
 		ITEM_VALUE,
-		30, 110,
+		30, 100,
 		offsetof(struct nvmap, ggaincwtx),
 		& ggaincwtx,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
 	},
-#endif /* WITHTXCWREDUCE */
 	{
 		QLABEL("DACSCALE"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
