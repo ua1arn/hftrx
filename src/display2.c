@@ -4754,12 +4754,18 @@ enum
 
 	#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - значение на полной шкале (на этом дизайне нет, просто для того чтобы компилировлось)
 
+	enum {
+		DLES = 35,		// spectrum window upper line
+        DLE1 = 91,		// 96-5
+		DLE_unused
+	};
+
 	enum
 	{
 		BDTH_ALLRXBARS = 30,	// ширина зоны для отображение барграфов на индикаторе
 
 		BDTH_ALLRX = 50, 		// ширина зоны для отображение графического окна на индикаторе
-		BDCV_ALLRX = ROWS2GRID(50),	// количество строк, отведенное под S-метр, панораму, иные отображения
+		BDCV_ALLRX = ROWS2GRID(55 /* DLE1 - DLES */),	// количество строк, отведенное под панораму и волопад.
 
 		BDTH_LEFTRX = 17,	// ширина индикатора баллов (без плюсов)
 		BDTH_RIGHTRX = BDTH_ALLRXBARS - BDTH_LEFTRX,	// ширина индикатора плюсов
@@ -4774,11 +4780,6 @@ enum
 		BDCV_SPMRX = ROWS2GRID(32),	// вертикальный размер спектра в ячейках
 		BDCO_WFLRX = BDCV_SPMRX,	// смещение водопада по вертикали в ячейках от начала общего поля
 		BDCV_WFLRX = BDCV_ALLRX - BDCV_SPMRX	// вертикальный размер водопада в ячейках
-	};
-	enum {
-		DLES = 35,		// spectrum window upper line
-        DLE1 = 91,		// 96-5
-		DLE_unused
 	};
 
 
