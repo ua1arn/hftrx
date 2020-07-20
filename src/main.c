@@ -688,7 +688,6 @@ static const FLASHMEM struct {
 
 #define MENUNONVRAM ((nvramaddress_t) ~ 0)		// такой адрес, что не соответствует ни одному настраиваемому параметру.
 
-
 // Интерфейсные функции доступа к NVRAM
 static uint_fast8_t 
 //NOINLINEAT
@@ -696,8 +695,13 @@ loadvfy8up(
 	nvramaddress_t place, 
 	uint_fast8_t bottom, uint_fast8_t upper, uint_fast8_t def)	// upper - inclusive limit
 {
+#if HARDWARE_IGNORENONVRAM
+	return def;
+#endif /* HARDWARE_IGNORENONVRAM */
+
 	if (place == MENUNONVRAM)
 		return def;
+
 	const uint_fast8_t v = restore_i8(place);
 
 	// pre-chechk default value added for mode row switching with same column as default
@@ -706,7 +710,6 @@ loadvfy8up(
 
 	if (v > upper || v < bottom)
 	{
-
 		save_i8(place, def);
 		return def;
 	}
@@ -721,6 +724,13 @@ loadvfy16up(
 	nvramaddress_t place, 
 	uint_fast16_t bottom, uint_fast16_t upper, uint_fast16_t def)	// upper - inclusive limit
 {
+#if HARDWARE_IGNORENONVRAM
+	return def;
+#endif /* HARDWARE_IGNORENONVRAM */
+
+	if (place == MENUNONVRAM)
+		return def;
+
 	const uint_fast16_t v = restore_i16(place);
 
 	if (def > upper || def < bottom)
@@ -749,14 +759,19 @@ vfy32up(
 	return v;
 }
 
-
-
 static uint_fast32_t 
 //NOINLINEAT
 loadvfy32(
 	nvramaddress_t place, 
 	uint_fast32_t bottom, uint_fast32_t top, uint_fast32_t def)
 {
+#if HARDWARE_IGNORENONVRAM
+	return def;
+#endif /* HARDWARE_IGNORENONVRAM */
+
+	if (place == MENUNONVRAM)
+		return def;
+
 	const uint_fast32_t v = restore_i32(place);
 
 	if (def >= top || def < bottom)
@@ -769,7 +784,6 @@ loadvfy32(
 	}
 	return v;
 }
-
 
 #if WITHIF4DSP
 
@@ -6322,7 +6336,6 @@ loadsavedstate(void)
 #endif /* WITHAUTOTUNER */
 
 #if WITHIF4DSP
-
 	#if WITHUSBUAC && WITHTX
 		gdatamode = loadvfy8up(RMT_DATAMODE_BASE, 0, 1, gdatamode);
 	#endif /* WITHUSBUAC && WITHTX */
@@ -6330,7 +6343,6 @@ loadsavedstate(void)
 	// Сохранение происходит при модификации в обработчика нажатия клавиши BW
 	bwseti_load();
 
-	
 	agcseti_load();	/* загрузка параметров слухового приема */
 	micproc_load();	/* чтение из NVRAM параметров профилей обработки сигнала перед модулятором */
 
@@ -7521,7 +7533,7 @@ typedef struct lmsnrstate_tag
 	speexel_t * outsp;	/* pointer to buffer with result of processing */
 } lmsnrstate_t;
 
-static lmsnrstate_t lmsnrstates [NTRX];
+static RAMBIG lmsnrstate_t lmsnrstates [NTRX];
 
 #if ! WITHNOSPEEX
 
