@@ -560,6 +560,9 @@ static void window_bands_process(void)
 			local_snprintf_P(bh->name, ARRAY_SIZE(bh->name), PSTR("btn_ham_%d"), i);
 			strcpy(bh->text, bands [i].name);
 
+			if (hamradio_check_current_freq_by_band(bands [i].index))
+				bh->is_locked = BUTTON_LOCKED;
+
 			x = x + interval + bh->w;
 			if (r >= row_count)
 			{
@@ -594,6 +597,9 @@ static void window_bands_process(void)
 			bh->payload = bands [i].init_freq;
 			local_snprintf_P(bh->name, ARRAY_SIZE(bh->name), PSTR("btn_bcast_%d"), i);
 			strcpy(bh->text, bands [i].name);
+
+			if (hamradio_check_current_freq_by_band(bands [i].index))
+				bh->is_locked = BUTTON_LOCKED;
 
 			x = x + interval + bh->w;
 			if (r >= row_count)
@@ -2264,7 +2270,7 @@ static void window_ap_mic_eq_process(void)
 			sl->x = x;
 			sl->size = 200;
 			sl->step = 2;
-			sl->value = normalize(hamradio_get_gmikeequalizerparams(id - 1), eq_limit, 0, 100);
+			sl->value = normalize(hamradio_get_gmikeequalizerparams(id), eq_limit, 0, 100);
 			sl->visible = VISIBLE;
 
 			mid_w = sl->x + sliders_width / 2;		// центр шкалы слайдера по x
@@ -2280,7 +2286,7 @@ static void window_ap_mic_eq_process(void)
 
 			local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("lbl_%s_val"), sl->name);
 			lbl = find_gui_element(TYPE_LABEL, win, buf);
-			local_snprintf_P(lbl->text, ARRAY_SIZE(lbl->text), PSTR("%d"), hamradio_get_gmikeequalizerparams(id - 1) + eq_base);
+			local_snprintf_P(lbl->text, ARRAY_SIZE(lbl->text), PSTR("%d"), hamradio_get_gmikeequalizerparams(id) + eq_base);
 			lbl->x = mid_w - get_label_width(lbl) / 2;
 			lbl->y = y;
 			lbl->visible = VISIBLE;

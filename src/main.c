@@ -19502,6 +19502,14 @@ void hamradio_goto_band_by_freq(uint_fast32_t f)
 	band_no_check = 0;
 }
 
+uint_fast8_t hamradio_check_current_freq_by_band(uint_fast8_t band)
+{
+	band_no_check = 1;
+	uint_fast8_t v = getfreqband(hamradio_get_freq_rx()) == band;
+	band_no_check = 0;
+	return v;
+}
+
 #endif /* WITHTOUCHGUI */
 
 #if (WITHSWRMTR || WITHSHOWSWRPWR)
