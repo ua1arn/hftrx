@@ -3423,12 +3423,13 @@ enum
 	static uint_fast8_t gmikebust20db;	// предусилитель микрофона
 	static uint_fast8_t gmikeagc = 1;	/* Включение программной АРУ перед модулятором */
 	static uint_fast8_t gmikeagcgain = 30;	/* Максимальное усидение АРУ микрофона */
-	static uint_fast8_t gmikehclip;		/* Ограничитель */
-#if WITHREVERB
-	static uint_fast8_t greverb;		/* ревербератор */
-	static uint_fast8_t greverbdelay = 100;		/* ревербератор - задержка (ms) */
-	static uint_fast8_t greverbloss = 9;		/* ревербератор - ослабление на возврате */
-#endif /* WITHREVERB */
+	static uint_fast8_t gmikehclip = 20;		/* Ограничитель */
+
+	#if WITHREVERB
+		static uint_fast8_t greverb;		/* ревербератор */
+		static uint_fast8_t greverbdelay = 100;		/* ревербератор - задержка (ms) */
+		static uint_fast8_t greverbloss = 9;		/* ревербератор - ослабление на возврате */
+	#endif /* WITHREVERB */
 
 	#if WITHUSBUAC
 		static uint_fast8_t gdatamode;	/* передача звука с USB вместо обычного источника */
@@ -3880,7 +3881,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 #if WITHIF4DSP
 #if WITHTX
 	#if WITHTXCWREDUCE
-		static uint_fast16_t ggaincwtx = 50;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
+		static uint_fast16_t ggaincwtx = 60;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 		static uint_fast16_t ggaindigitx = 250;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 	#else /* WITHTXCWREDUCE */
 		static uint_fast16_t ggaincwtx = 100;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
