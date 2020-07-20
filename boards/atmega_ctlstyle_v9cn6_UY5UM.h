@@ -235,5 +235,6 @@ enum
 #define VOLTLEVEL_UPPER		43	// 4.3 kOhm - верхний резистор делителя датчика напряжения
 #define VOLTLEVEL_LOWER		10	// 1.0 kOhm - нижний резистор
 
+#define WITHMAXPWRCALI		100	/* калибровочный параметр PWR-метра */
 
 #endif /* ATMEGA_CTLSTYLE_V9CN6_UY5UM_H_INCLUDED */

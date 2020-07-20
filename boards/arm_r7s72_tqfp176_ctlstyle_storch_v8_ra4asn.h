@@ -349,8 +349,8 @@
 	#define WITHDISPLAY_FPS		25
 	#define WITHDISPLAYSWR_FPS	25
 
-	#define WITHMAXPWRCALI		74
-	#define WITHSWRCALI			50
+	#define WITHMAXPWRCALI		74	/* калибровочный параметр PWR-метра */
+	#define WITHSWRCALI			50	/* калибровочный параметр SWR-метра */
 
 	#define WITHTOUCHGUI		1
 	#define WITHALPHA			64

@@ -3731,16 +3731,6 @@ static uint_fast8_t dctxmodecw;	/* при передаче предполага�
 	#if WITHPWRMTR || WITHSWRMTR
 		#if WITHMAXPWRCALI
 			uint_fast8_t maxpwrcali = WITHMAXPWRCALI;	/* калибровочный параметр PWR-метра */
-		#elif CTLSTYLE_SW2013RDX
-			uint_fast8_t maxpwrcali = 216;	/* калибровочный параметр PWR-метра */
-		#elif CTLSTYLE_SW2015
-			uint_fast8_t maxpwrcali = 216;	/* калибровочный параметр PWR-метра */
-		#elif CTLSTYLE_SW2018XVR
-			uint_fast8_t maxpwrcali = 216;	/* калибровочный параметр PWR-метра */
-		#elif CTLSTYLE_SW2016 || CTLSTYLE_SW2016VHF
-			uint_fast8_t maxpwrcali = 216;	/* калибровочный параметр PWR-метра */
-		#elif CTLSTYLE_SW2016MINI
-			uint_fast8_t maxpwrcali = 100;	/* калибровочный параметр PWR-метра */
 		#else
 			uint_fast8_t maxpwrcali = 255;	/* калибровочный параметр PWR-метра */
 		#endif
@@ -3815,9 +3805,9 @@ static uint_fast8_t gmodecolmaps4 [2] [4];	/* индексом 1-й размер
 
 #endif /* WITHTX */
 
-static uint_fast8_t menuset; 	/* номер комплекта функций на кнопках (переключабтся кнопкой Fn) */
+static uint_fast8_t menuset; 	/* номер комплекта функций на кнопках (переключается кнопкой MENU) */
 static uint_fast8_t dimmflag;	/* не-0: притушить дисплей. */
-static uint_fast8_t sleepflag;	/* не-0: выклбючить дисплей и звук. */
+static uint_fast8_t sleepflag;	/* не-0: выключить дисплей и звук. */
 
 static uint_fast8_t amenuset(void)
 {
@@ -15720,6 +15710,26 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 
 #endif /* CTLREGMODE_RA4YBO || CTLREGMODE_RA4YBO_V1 || CTLREGMODE_RA4YBO_V2 || CTLREGMODE_RA4YBO_V3 || CTLREGMODE_RA4YBO_V3A */
+#if ! WITHFLATMENU
+	{
+		QLABEL2("ABOUT   ", "About"), 0, 0, 0, 0,
+		ITEM_GROUP,
+		0, 0,
+		offsetof(struct nvmap, ggrpabout),
+		NULL,
+		NULL,
+		NULL,
+	},
+#endif /* ! WITHFLATMENU */
+	{
+		QLABEL("CPU FREQ"), 7, 2, 0, 	ISTEP1,	// CW bandwidth for WIDE
+		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+		0, 0,
+		MENUNONVRAM,
+		NULL,
+		& gzero,
+		getcpufreqbase,
+	},
 };
 
 /* входит ли данный пункт меню в группу разрешенных для показа */
