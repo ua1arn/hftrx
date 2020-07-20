@@ -24,7 +24,7 @@
 
 //#define WITHI2SHW	1	/* Использование I2S - аудиокодек	*/
 
-//#define WITHSAI1HW	1	/* Использование SAI1 - FPGA или IF codec	*/
+#define WITHSAI1HW	1	/* Использование SAI1 - FPGA или IF codec	*/
 #define WITHSAI2HW	1	/* Использование SAI2 - аудиокодек	*/
 
 //#define WITHCPUDACHW	1	/* использование встроенного в процессор DAC */
@@ -55,10 +55,11 @@
 #define WITHUART1HW	1	/* PA9, PB7 Используется периферийный контроллер последовательного порта #1 */
 //#define WITHUART2HW	1	/* PD5, PD6 Используется периферийный контроллер последовательного порта #2 */
 
-#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
-#define WITHMODEM_CDC	1
+//#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
+//#define WITHMODEM_CDC	1
 //#define WITHCAT_USART2		1
 //#define WITHDEBUG_CDC	1
+#define WITHDEBUG			1
 #define WITHDEBUG_USART1	1
 //#define WITHNMEA_USART1		1	/* порт подключения GPS/GLONASS */
 
@@ -229,11 +230,10 @@
 
 #if WITHSAI1HW
 	#define SAI1HW_INITIALIZE()	do { \
-		arm_hardware_pioe_altfn20(1U << 2, AF_SAI); 	/* PE2 - SAI1_MCLK_A - 12.288 MHz	*/ \
-		arm_hardware_pioe_altfn2(1U << 4, AF_SAI);		/* PE4 - SAI1_FS_A	- 48 kHz	*/ \
-		arm_hardware_pioe_altfn20(1U << 5, AF_SAI);		/* PE5 - SAI1_SCK_A	*/ \
-		arm_hardware_pioe_altfn2(1U << 6, AF_SAI);		/* PE6 - SAI1_SD_A	(i2s data to codec)	*/ \
-		arm_hardware_pioe_altfn2(1U << 3, AF_SAI);		/* PE3 - SAI1_SD_B	(i2s data from codec)	*/ \
+		arm_hardware_piof_altfn2(1U << 9, AF_SAI);		/* PF9 - SAI1_FS_B	- 48 kHz	*/ \
+		arm_hardware_piof_altfn20(1U << 8, AF_SAI);		/* PF8 - SAI1_SCK_B	*/ \
+		arm_hardware_piob_altfn2(1U << 2, AF_SAI);		/* PB2 - SAI1_SD_A	(i2s data to codec)	*/ \
+		arm_hardware_piof_altfn2(1U << 6, AF_SAI);		/* PF6 - SAI1_SD_B	(i2s data from codec)	*/ \
 	} while (0)
 #endif /* WITHSAI1HW */
 
@@ -429,19 +429,19 @@
 //#define SPI_IOUPDATE_BIT		(1U << 15)	// * PA15
 
 // Набор определений для работы без внешнего дешифратора
-#define SPI_ALLCS_PORT_S(v)	do { GPIOG->BSRR = BSRR_S(v); __DSB(); } while (0)
-#define SPI_ALLCS_PORT_C(v)	do { GPIOG->BSRR = BSRR_C(v); __DSB(); } while (0)
+#define SPI_ALLCS_PORT_S(v)	do { GPIOC->BSRR = BSRR_S(v); __DSB(); } while (0)
+#define SPI_ALLCS_PORT_C(v)	do { GPIOC->BSRR = BSRR_C(v); __DSB(); } while (0)
 
 #define SPI_CSEL_PG15	0//(1U << 15)	// PG15 ext1
 #define SPI_CSEL_PG8	0//(1U << 8)	// PG8 nvmem FM25L16B
 #define SPI_CSEL_PG7	0//(1U << 7)	// PG7 board control registers chain
 #define SPI_CSEL_PG6	0//(1U << 6)	// PG6 on-board codec1 NAU8822L
 //#define SPI_CSEL_PG5	0//(1U << 5)	// PG5 FPGA CS2 - used as overflov signal from ADC
-#define SPI_CSEL_PG1	0//(1U << 1)	// PG0 FPGA control registers CS
-#define SPI_CSEL_PG0	0//(1U << 0)	// PG1 FPGA NCO1 registers CS
+#define SPI_CSEL_PC7	(1U << 7)		// PC7 FPGA control registers CS
+#define SPI_CSEL_PG1	0//(1U << 7)	// PG1 FPGA NCO1 registers CS
 
 // Здесь должны быть перечислены все биты формирования CS в устройстве.
-#define SPI_ALLCS_BITS ( 0)
+#define SPI_ALLCS_BITS (SPI_CSEL_PC7)
 
 #define SPI_ALLCS_BITSNEG 0		// Выходы, активные при "1"
 
@@ -451,12 +451,12 @@
 //#define SPI_NAEN_BIT (1u << 7)		// * PE7 used
 
 /* инициализация лиий выбора периферийных микросхем */
-/*
+
 #define SPI_ALLCS_INITIALIZE() \
 	do { \
-		arm_hardware_piog_outputs(SPI_ALLCS_BITS, SPI_ALLCS_BITS ^ SPI_ALLCS_BITSNEG); \
+		arm_hardware_pioc_outputs(SPI_ALLCS_BITS, SPI_ALLCS_BITS ^ SPI_ALLCS_BITSNEG); \
 	} while (0)
-*/
+
 
 /* инициализация сигналов управлдения дешифратором CS */
 #define SPI_ADDRESS_NAEN_INITIALIZE() \
@@ -476,20 +476,21 @@
 	} while (0)
 
 // MOSI & SCK port
-#define SPI_TARGET_SCLK_PORT_C(v)	do { GPIOA->BSRR = BSRR_C(v); __DSB(); } while (0)
-#define SPI_TARGET_SCLK_PORT_S(v)	do { GPIOA->BSRR = BSRR_S(v); __DSB(); } while (0)
-#define	SPI_SCLK_BIT			0//(1U << 5)	// * PA5 бит, через который идет синхронизация SPI
+#define SPI_TARGET_SCLK_PORT_C(v)	do { GPIOH->BSRR = BSRR_C(v); __DSB(); } while (0)
+#define SPI_TARGET_SCLK_PORT_S(v)	do { GPIOH->BSRR = BSRR_S(v); __DSB(); } while (0)
+#define	SPI_SCLK_BIT			(1U << 6)	// * PH6 бит, через который идет синхронизация SPI
 
-#define SPI_TARGET_MOSI_PORT_C(v)	do { GPIOA->BSRR = BSRR_C(v); __DSB(); } while (0)
-#define SPI_TARGET_MOSI_PORT_S(v)	do { GPIOA->BSRR = BSRR_S(v); __DSB(); } while (0)
-#define	SPI_MOSI_BIT			0//(1U << 7)	// * PA7 бит, через который идет вывод (или ввод в случае двунаправленного SPI).
+#define SPI_TARGET_MOSI_PORT_C(v)	do { GPIOI->BSRR = BSRR_C(v); __DSB(); } while (0)
+#define SPI_TARGET_MOSI_PORT_S(v)	do { GPIOI->BSRR = BSRR_S(v); __DSB(); } while (0)
+#define	SPI_MOSI_BIT			(1U << 0)	// * PI0 бит, через который идет вывод (или ввод в случае двунаправленного SPI).
 
-#define SPI_TARGET_MISO_PIN		(GPIOB->IDR)		// was PINA 
-#define	SPI_MISO_BIT			0//(1U << 4)	// * PB4 бит, через который идет ввод с SPI.
+#define SPI_TARGET_MISO_PIN		(GPIOG->IDR)		// was PINA
+#define	SPI_MISO_BIT			(1U << 7)	// * PG7 бит, через который идет ввод с SPI.
 
 #define SPIIO_INITIALIZE() do { \
-		arm_hardware_pioa_outputs(SPI_MOSI_BIT | SPI_SCLK_BIT, SPI_MOSI_BIT | SPI_SCLK_BIT); \
-		arm_hardware_piob_inputs(SPI_MISO_BIT); \
+		arm_hardware_pioh_outputs(SPI_SCLK_BIT, SPI_SCLK_BIT); \
+		arm_hardware_pioi_outputs(SPI_MOSI_BIT, SPI_MOSI_BIT); \
+		arm_hardware_piog_inputs(SPI_MISO_BIT); \
 	} while (0)
 
 
@@ -581,17 +582,17 @@
 
 #if WITHDSPEXTFIR
 	// Биты доступа к массиву коэффициентов FIR фильтра в FPGA
-	#define TARGET_FPGA_FIR_CS_PORT_C(v)	do { GPIOE->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define TARGET_FPGA_FIR_CS_PORT_S(v)	do { GPIOE->BSRR = BSRR_S(v); __DSB(); } while (0)
-	#define TARGET_FPGA_FIR_CS_BIT (1U << 7)	/* PE7 - fir CLK */
+	#define TARGET_FPGA_FIR_CS_PORT_C(v)	do { GPIOB->BSRR = BSRR_C(v); __DSB(); } while (0)
+	#define TARGET_FPGA_FIR_CS_PORT_S(v)	do { GPIOB->BSRR = BSRR_S(v); __DSB(); } while (0)
+	#define TARGET_FPGA_FIR_CS_BIT (1U << 4)	/* PB4 - fir CLK */
 
-	#define TARGET_FPGA_FIR1_WE_PORT_C(v)	do { GPIOE->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define TARGET_FPGA_FIR1_WE_PORT_S(v)	do { GPIOE->BSRR = BSRR_S(v); __DSB(); } while (0)
-	#define TARGET_FPGA_FIR1_WE_BIT (1U << 8)	/* PE8 - fir1 WE */
+	#define TARGET_FPGA_FIR1_WE_PORT_C(v)	do { GPIOC->BSRR = BSRR_C(v); __DSB(); } while (0)
+	#define TARGET_FPGA_FIR1_WE_PORT_S(v)	do { GPIOC->BSRR = BSRR_S(v); __DSB(); } while (0)
+	#define TARGET_FPGA_FIR1_WE_BIT (1U << 6)	/* PC6 - fir1 WE */
 
-	#define TARGET_FPGA_FIR2_WE_PORT_C(v)	do { GPIOE->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define TARGET_FPGA_FIR2_WE_PORT_S(v)	do { GPIOE->BSRR = BSRR_S(v); __DSB(); } while (0)
-	#define TARGET_FPGA_FIR2_WE_BIT (1U << 9)	/* PE9 - fir2 WE */
+	#define TARGET_FPGA_FIR2_WE_PORT_C(v)	do { GPIOG->BSRR = BSRR_C(v); __DSB(); } while (0)
+	#define TARGET_FPGA_FIR2_WE_PORT_S(v)	do { GPIOG->BSRR = BSRR_S(v); __DSB(); } while (0)
+	#define TARGET_FPGA_FIR2_WE_BIT (1U << 6)	/* PG6 - fir2 WE */
 
 	#define TARGET_FPGA_FIR_INITIALIZE() do { \
 			arm_hardware_pioe_outputs(TARGET_FPGA_FIR1_WE_BIT, TARGET_FPGA_FIR1_WE_BIT); \
