@@ -3459,7 +3459,7 @@ enum
 	static uint_fast8_t tunertype;
 	static uint_fast8_t tunerwork;	/* начинаем работу с выключенным тюнером */
 #if WITHAUTOTUNER_UA1CEI
-	static uint_fast8_t tunerdelay = 80;
+	static uint_fast8_t tunerdelay = 130;
 #else /* WITHAUTOTUNER_UA1CEI */
 	static uint_fast8_t tunerdelay = 35;
 #endif /* WITHAUTOTUNER_UA1CEI */
