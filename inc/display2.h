@@ -273,8 +273,6 @@ uint_fast16_t normalize(
 
 uint_fast16_t get_swr(uint_fast16_t swr_fullscale);
 
-void display2_fill_color_scale(void);
-
 #define BGCOLOR (display_getbgcolor())
 
 void display_2states_P(

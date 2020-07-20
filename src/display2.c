@@ -5791,8 +5791,10 @@ static FLOAT_t filter_spectrum(
 
 #endif
 
-	enum { BUFDIM_X = DIM_X, BUFDIM_Y = DIM_Y };
-	//enum { BUFDIM_X = ALLDX, BUFDIM_Y = ALLDY };
+static PACKEDCOLORMAIN_T color_scale [SPDY];	/* массив значений для раскраски спектра */
+
+enum { BUFDIM_X = DIM_X, BUFDIM_Y = DIM_Y };
+//enum { BUFDIM_X = ALLDX, BUFDIM_Y = ALLDY };
 
 static uint_fast32_t wffreqpix;			// глобальный пиксель по x центра спектра, для которой в последной раз отрисовали.
 static uint_fast8_t wfzoompow2;				// масштаб, с которым выводили спектр
@@ -5809,53 +5811,64 @@ display2_wfl_init(
 	)
 {
 	//PRINTF("wfpalette_initialize: main=%d, pip=%d, PALETTESIZE=%d, LCDMODE_MAIN_PAGES=%d\n", sizeof (PACKEDCOLORMAIN_T), sizeof (PACKEDCOLORMAIN_T), PALETTESIZE, LCDMODE_MAIN_PAGES);
-	if (PALETTESIZE != 256)
-		return;
-#if ! defined (COLORPIP_SHADED)
-	// Init 256 colors palette
-	ASSERT(PALETTESIZE == 256);
-	// PALETTESIZE == 256
-	int a = 0;
 	int i;
-	// a = 0
-	for (i = 0; i < 64; ++ i)
+	if (PALETTESIZE == 256)
 	{
-		// для i = 0..15 результат формулы = ноль
-		wfpalette [a + i] = TFTRGB565(0, 0, (int) (powf((float) 0.0625 * i, 4)));	// проверить результат перед попыткой применить целочисленные вычисления!
-	}
-	a += i;
-	// a = 64
-	for (i = 0; i < 32; ++ i)
-	{
-		wfpalette [a + i] = TFTRGB565(0, i * 8, 255);
-	}
-	a += i;
-	// a = 96
-	for (i = 0; i < 32; ++ i)
-	{
-		wfpalette [a + i] = TFTRGB565(0, 255, 255 - i * 8);
-	}
-	a += i;
-	// a = 128
-	for (i = 0; i < 32; ++ i)
-	{
-		wfpalette [a + i] = TFTRGB565(i * 8, 255, 0);
-	}
-	a += i;
-	// a = 160
-	for (i = 0; i < 64; ++ i)
-	{
-		wfpalette [a + i] = TFTRGB565(255, 255 - i * 4, 0);
-	}
-	a += i;
-	// a = 224
-	for (i = 0; i < 32; ++ i)
-	{
-		wfpalette [a + i] = TFTRGB565(255, 0, i * 8);
-	}
-	a += i;
-	// a = 256
+#if ! defined (COLORPIP_SHADED)
+		// Init 256 colors palette
+		ASSERT(PALETTESIZE == 256);
+		// PALETTESIZE == 256
+		int a = 0;
+		// a = 0
+		for (i = 0; i < 64; ++ i)
+		{
+			// для i = 0..15 результат формулы = ноль
+			wfpalette [a + i] = TFTRGB565(0, 0, (int) (powf((float) 0.0625 * i, 4)));	// проверить результат перед попыткой применить целочисленные вычисления!
+		}
+		a += i;
+		// a = 64
+		for (i = 0; i < 32; ++ i)
+		{
+			wfpalette [a + i] = TFTRGB565(0, i * 8, 255);
+		}
+		a += i;
+		// a = 96
+		for (i = 0; i < 32; ++ i)
+		{
+			wfpalette [a + i] = TFTRGB565(0, 255, 255 - i * 8);
+		}
+		a += i;
+		// a = 128
+		for (i = 0; i < 32; ++ i)
+		{
+			wfpalette [a + i] = TFTRGB565(i * 8, 255, 0);
+		}
+		a += i;
+		// a = 160
+		for (i = 0; i < 64; ++ i)
+		{
+			wfpalette [a + i] = TFTRGB565(255, 255 - i * 4, 0);
+		}
+		a += i;
+		// a = 224
+		for (i = 0; i < 32; ++ i)
+		{
+			wfpalette [a + i] = TFTRGB565(255, 0, i * 8);
+		}
+		a += i;
+		// a = 256
 #endif /* !  defined (COLORPIP_SHADED) */
+	}
+
+	/* массив значений для раскраски спектра */
+	for (i = 0; i < SPDY; ++ i)
+	{
+#if LCDMODE_MAIN_L8
+		color_scale [i] = normalize(i, 0, SPDY - 1, PALETTESIZE - 1);
+#else /* LCDMODE_MAIN_L8 */
+		color_scale [i] = wfpalette [normalize(i, 0, SPDY - 1, PALETTESIZE - 1)];
+#endif /* LCDMODE_MAIN_L8 */
+	}
 }
 
 // получить горизонтальную позицию для заданного отклонения в герцах
@@ -6005,8 +6018,6 @@ display_colorgrid_set(
 	}
 	display_colorbuf_set_vline(buffer, BUFDIM_X, BUFDIM_Y, ALLDX / 2, row0, h, color0);	// center frequency marker
 }
-
-static uint_fast8_t color_scale[SPDY];	/* массив значений для раскраски спектра */
 
 // Спектр на монохромных дисплеях
 // или на цветных, где есть возможность раскраски растровой картинки.
@@ -7830,18 +7841,6 @@ display2_smeter15(
 		}
 
 		break;
-	}
-}
-
-void display2_fill_color_scale(void)
-{
-	for(uint_fast8_t i = 0; i < SPDY; i ++)
-	{
-#if LCDMODE_MAIN_L8
-		color_scale [i] = normalize(i, 0, PALETTESIZE - 1, PALETTESIZE - 1);
-#else /* LCDMODE_MAIN_L8 */
-		color_scale [i] = wfpalette [normalize(i, 0, PALETTESIZE - 1, PALETTESIZE - 1)];
-#endif /* LCDMODE_MAIN_L8 */
 	}
 }
 

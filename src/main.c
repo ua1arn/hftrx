@@ -18033,8 +18033,6 @@ hamradio_initialize(void)
 
 	board_init_chips2();	// программирование кодеков при подающейся тактовой частоте
 
-	display2_fill_color_scale();
-
 #if WITHTOUCHGUI
 	gui_initialize();
 #endif /* WITHTOUCHGUI */
