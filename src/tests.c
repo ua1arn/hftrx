@@ -6227,6 +6227,8 @@ void hightests(void)
 	}
 #endif
 #if 0 && defined (TSC1_TYPE)
+#include "touch\touch.h"
+
 	{
 		uint_fast16_t gridx = 16;
 		uint_fast16_t gridy = 16;
@@ -6234,27 +6236,32 @@ void hightests(void)
 		uint_fast16_t markery = 0;
 
 		display2_bgreset();
-		display_solidbar(markerx, markery, markerx + gridx, markery + gridy, COLOR_WHITE);
-		colmain_setcolors(COLOR_WHITE,COLOR_BLACK);
+		colmain_setcolors(COLORMAIN_WHITE, COLORMAIN_BLACK);
 
 			// touch screen test
 			for (;;)
 			{
+				PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
+
 				uint_fast16_t x, y;
-				if (board_tsc_is_pressed())
+				if (board_tsc_getxy(& x, & y))
 				{
-					board_tsc_getxy(& x, & y);
 					debug_printf_P(PSTR("board_tsc_getxy: x=%5d, y=%5d\n"), x, y);
-					display_solidbar(markerx, markery, markerx + gridx, markery + gridy, COLOR_BLACK);
+					colmain_fillrect(fr, DIM_X, DIM_Y, markerx, markery, gridx, gridy, COLORMAIN_BLACK);
 					markerx = x / gridx * gridx;
 					markery = y / gridy * gridy;
-					display_solidbar(markerx, markery, markerx + gridx, markery + gridy, COLOR_WHITE);
+					colmain_fillrect(fr, DIM_X, DIM_Y, markerx, markery, gridx, gridy, COLORMAIN_WHITE);
 					display_at(22, 26,"Pressed");
 				} else {
 					display_at(22, 26,"       ");
+					colmain_fillrect(fr, DIM_X, DIM_Y, markerx, markery, gridx, gridy, COLORMAIN_BLACK);
 				}
 				local_delay_ms(10);
+
+				arm_hardware_flush((uintptr_t) fr, (uint_fast32_t) DIM_X * DIM_Y * sizeof (PACKEDCOLORMAIN_T));
+				arm_hardware_ltdc_main_set((uintptr_t) fr);
 			}
+
 		}
 
 #endif
