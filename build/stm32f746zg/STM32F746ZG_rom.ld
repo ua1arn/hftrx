@@ -9,6 +9,7 @@ MEMORY
 	DTCM (rwx) :		ORIGIN = 0x20000000, LENGTH = 64k	/* DTCM = RAMDTCM_BASE */
 	RAM (rwx)  :		ORIGIN = 0x20010000, LENGTH = 256k	/* was: 240k SRAM = SRAM1_BASE (240k) */
 	/*RAM2 (rwx)  :		ORIGIN = 0x2004C000, LENGTH = 64k	 SRAM = SRAM2_BASE (64k) */
+  SDRAM  (rwx)  :		ORIGIN = 0xC0000000, LENGTH = 8192k	/* MT48LC4M32B2 */
 }
 
 /* Library configurations */
@@ -50,33 +51,26 @@ ENTRY(Reset_Handler)
 
 SECTIONS
 {
+  .sdram (NOLOAD):
+	{
+		. = ALIGN(32);
+		*(.framebuff*)
+    . = ALIGN(32);
+	} > SDRAM
+  
 	.text :
 	{
+		. = ALIGN(32);
 		KEEP(*(.vectors))
 		__Vectors_End = .;
 		__Vectors_Size = __Vectors_End - __Vectors;
-		*(.text*)
-
+		
+		. = ALIGN(4);
 		KEEP(*(.init))
+		KEEP(*(.initfunc))
+		KEEP(*(.initdata))
 		KEEP(*(.fini))
-
-		/* .ctors */
-		*crtbegin.o(.ctors)
-		*crtbegin?.o(.ctors)
-		*(EXCLUDE_FILE(*crtend?.o *crtend.o) .ctors)
-		*(SORT(.ctors.*))
-		*(.ctors)
-
-		/* .dtors */
- 		*crtbegin.o(.dtors)
- 		*crtbegin?.o(.dtors)
- 		*(EXCLUDE_FILE(*crtend?.o *crtend.o) .dtors)
- 		*(SORT(.dtors.*))
- 		*(.dtors)
-
-		*(.rodata*)
-
-		KEEP(*(.eh_frame*))
+		*(.text*)
 	} > FLASH
 
 	.ARM.extab :
@@ -99,18 +93,16 @@ SECTIONS
 	{
 		. = ALIGN(4);
 		__copy_table_start__ = .;
+  /*
 		LONG (__etext)
 		LONG (__data_start__)
-		LONG ((__data_end__ - __data_start__) / 4)
+		LONG (__data_end__ - __data_start__)
 		LONG (__etext2)
 		LONG (__data2_start__)
-		LONG ((__data2_end__ - __data2_start__) / 4)
-		LONG (__etext3)
-		LONG (__data3_start__)
-		LONG ((__data3_end__ - __data3_start__) / 4)
+		LONG (__data2_end__ - __data2_start__)
+	*/		
 		__copy_table_end__ = .;
 	} > FLASH
-
 
 	/* To clear multiple BSS sections,
 	 * uncomment .zero.table section and,
@@ -121,32 +113,26 @@ SECTIONS
 		. = ALIGN(4);
 		__zero_table_start__ = .;
 		LONG (__bss_start__)
-		LONG ((__bss_end__ - __bss_start__) / 4)
+		LONG (__bss_end__ - __bss_start__)
+	/*
+		LONG (__bss2_start__)
+		LONG (__bss2_end__ - __bss2_start__)
+	*/
 		__zero_table_end__ = .;
 	} > FLASH
 
-
-	__etext = .;
-
-	.dtcm : AT (__etext)
+	.dtcm :
 	{
-		__data_start__ = .;
 		*(vtable)
 		. = ALIGN(4);
 		*(.dtcm*)
 		. = ALIGN(4);	/* may be 32 */
 		/* All data end */
-		__data_end__ = .;
-
 	} > DTCM
 
-	. = __etext + __data_end__ - __data_start__;
 
-	__etext2 = .;
-
-	.itcm : AT (__etext2)
+	.itcm :
 	{
-		__data2_start__ = .;
 		*(.itcm*)
 		*(.text.__ieee754_logf)
 		*(.text.__ieee754_powf)
@@ -155,24 +141,41 @@ SECTIONS
 		*(.text.__kernel_rem_pio2f)
 
 		. = ALIGN(4);	/* may be 32 */
-		__data2_end__ = .;
 	} > ITCM
-
-	. = __etext2 + __data2_end__ - __data2_start__;
-
-	__etext3 = .;
-
-	.data : AT (__etext3)
+  
+	.data :
 	{
-		__data3_start__ = .;
+		__data_start__ = .;
+
+		/* .ctors */
+		*crtbegin.o(.ctors)
+		*crtbegin?.o(.ctors)
+		*(EXCLUDE_FILE(*crtend?.o *crtend.o) .ctors)
+		*(SORT(.ctors.*))
+		*(.ctors)
+
+		/* .dtors */
+ 		*crtbegin.o(.dtors)
+ 		*crtbegin?.o(.dtors)
+ 		*(EXCLUDE_FILE(*crtend?.o *crtend.o) .dtors)
+ 		*(SORT(.dtors.*))
+ 		*(.dtors)
+
+		*(.rodata*)
+
+		KEEP(*(.eh_frame*))
+
+		*(vtable)
 		*(.data*)
-		. = ALIGN(4);	/* may be 32 */
+	   . = ALIGN(4);	/* one line added by ua1arn */
+
+		. = ALIGN(4);
 		/* preinit data */
 		PROVIDE_HIDDEN (__preinit_array_start = .);
 		KEEP(*(.preinit_array))
 		PROVIDE_HIDDEN (__preinit_array_end = .);
 
-		. = ALIGN(4);	/* may be 32 */
+		. = ALIGN(4);
 		/* init data */
 		PROVIDE_HIDDEN (__init_array_start = .);
 		KEEP(*(SORT(.init_array.*)))
@@ -180,7 +183,7 @@ SECTIONS
 		PROVIDE_HIDDEN (__init_array_end = .);
 
 
-		. = ALIGN(4);	/* may be 32 */
+		. = ALIGN(4);
 		/* finit data */
 		PROVIDE_HIDDEN (__fini_array_start = .);
 		KEEP(*(SORT(.fini_array.*)))
@@ -188,13 +191,12 @@ SECTIONS
 		PROVIDE_HIDDEN (__fini_array_end = .);
 
 		KEEP(*(.jcr*))
-		. = ALIGN(4);	/* may be 32 */
-		__data3_end__ = .;
+		. = ALIGN(32);
+		/* All data end */
+		__data_end__ = .;
 	} > RAM
 
-	. = __etext3 + __data3_end__ - __data3_start__;
-
-	.bss :
+	.bss (NOLOAD):
 	{
 		. = ALIGN(32);
 		__bss_start__ = .;
@@ -202,16 +204,14 @@ SECTIONS
 		*(COMMON)
 		. = ALIGN(32);
 		__bss_end__ = .;
-	} > RAM
+	} > SDRAM
 
-	.heap (COPY):
+	.heap (NOLOAD):
 	{
 		__HeapBase = .;
-		__end__ = .;
-		end = __end__;
 		KEEP(*(.heap*))
 		__HeapLimit = .;
-	} > RAM
+	} > SDRAM
 
 	/* .stack_dummy section doesn't contains any symbols. It is only
 	 * used for linker to calculate size of stack sections, and assign

@@ -97,6 +97,20 @@ window_t * get_win(window_id_t window_id)
 
 // *********************************************************************************************************************************************************************
 
+#if WITHGUISTYLE_MINI
+
+static void btn_main_handler(void)
+{
+
+}
+
+static void gui_main_process(void)
+{
+
+}
+
+#else
+
 static void btn_main_handler(void)
 {
 	if (is_short_pressed())
@@ -378,6 +392,8 @@ static void gui_main_process(void)
 //	#endif /* WITHTHERMOLEVEL */
 
 }
+
+#endif /* WITHGUISTYLE_MINI */
 
 // *********************************************************************************************************************************************************************
 

@@ -41,7 +41,6 @@ uint16_t ft5336_ReadID(uint16_t DeviceAddr)
   {
     /* Read register FT5336_CHIP_ID_REG as DeviceID detection */
 	  ucReadId = ft5336_read(FT5336_CHIP_ID_REG);
-	  PRINTF("%x\n", ucReadId);
 	  if (ucReadId == FT5336_ID_VALUE)
 		  return ucReadId;
   }

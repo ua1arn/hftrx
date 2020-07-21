@@ -144,9 +144,6 @@ all: ROM
 flash: ROM
 	ST-LINK_CLI.exe -Q -V -P $(PROJECT)_rom.hex -rst
 
-app_run: RAM
-	ST-LINK_CLI.exe -Q -P $(PROJECT)_ram.hex 0x20010000 -Run 0x20010000 -NoPrompt
-	
 RAM: $(OBJS) $(PROJECT)_ram.elf $(PROJECT)_ram.hex
 
 ROM: $(OBJS) $(PROJECT)_rom.elf $(PROJECT)_rom.hex

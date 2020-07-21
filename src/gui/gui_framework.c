@@ -834,7 +834,7 @@ static void process_gui(void)
 		gui.last_pressed_x = tx;
 		gui.last_pressed_y = ty;
 		gui.is_touching_screen = 1;
-//		debug_printf_P(PSTR("last x/y=%d/%d\n"), gui.last_pressed_x, gui.last_pressed_y);
+		debug_printf_P(PSTR("last x/y=%d/%d\n"), gui.last_pressed_x, gui.last_pressed_y);
 		update_gui_elements_list();
 	}
 	else
