@@ -5,8 +5,14 @@
 #include "../display/display.h"
 #include "display2.h"
 
-#define GUIMINX					800							// минимальное разрешение для touch GUI
-#define GUIMINY					480
+#if WITHGUISTYLE_MINI
+	#define GUIMINX					480
+	#define GUIMINY					272
+#else
+	#define GUIMINX					800
+	#define GUIMINY					480
+#endif
+
 #define WITHGUIMAXX				DIM_X
 #define WITHGUIMAXY				DIM_Y
 

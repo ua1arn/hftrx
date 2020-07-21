@@ -1247,6 +1247,8 @@ static void window_freq_process (void)
 
 // *********************************************************************************************************************************************************************
 
+#if WITHTX
+
 static void buttons_swrscan_process(void)
 {
 	if (is_short_pressed())
@@ -1871,6 +1873,26 @@ static void window_tx_power_process(void)
 	}
 }
 
+#else
+
+static void window_swrscan_process(void)
+{
+}
+
+static void window_tx_process(void)
+{
+}
+
+static void window_tx_vox_process(void)
+{
+}
+
+static void window_tx_power_process(void)
+{
+}
+
+#endif /* WITHTX */
+
 // *********************************************************************************************************************************************************************
 
 static void buttons_audiosettings_process(void)
@@ -1891,6 +1913,7 @@ static void buttons_audiosettings_process(void)
 		button_t * btn_mic_settings = find_gui_element(TYPE_BUTTON, winAP, "btn_mic_settings");			// mic settings
 		button_t * btn_mic_profiles = find_gui_element(TYPE_BUTTON, winAP, "btn_mic_profiles");			// mic profiles
 
+#if WITHREVERB
 		if (get_selected_element() == btn_reverb)
 		{
 			btn_reverb->is_locked = hamradio_get_greverb() ? BUTTON_NON_LOCKED : BUTTON_LOCKED;
@@ -1899,42 +1922,46 @@ static void buttons_audiosettings_process(void)
 			btn_reverb_settings->state = btn_reverb->is_locked ? CANCELLED : DISABLED;
 
 		}
-		else if (get_selected_element() == btn_reverb_settings)
+		if (get_selected_element() == btn_reverb_settings)
 		{
 			open_window(winRS);
 		}
-
-		else if (get_selected_element() == btn_monitor)
+#endif /* WITHREVERB */
+		if (get_selected_element() == btn_monitor)
 		{
 			btn_monitor->is_locked = hamradio_get_gmoniflag() ? BUTTON_NON_LOCKED : BUTTON_LOCKED;
 			local_snprintf_P(btn_monitor->text, ARRAY_SIZE(btn_monitor->text), PSTR("Monitor|%s"), btn_monitor->is_locked ? "enabled" : "disabled");
 			hamradio_set_gmoniflag(btn_monitor->is_locked);
 		}
-		else if (get_selected_element() == btn_speaker)
+#if WITHSPKMUTE
+		if (get_selected_element() == btn_speaker)
 		{
 			btn_speaker->is_locked = hamradio_get_gmutespkr() ? BUTTON_NON_LOCKED : BUTTON_LOCKED;
 			local_snprintf_P(btn_speaker->text, ARRAY_SIZE(btn_speaker->text), PSTR("Speaker|%s"), btn_speaker->is_locked ? "muted" : "on air");
 			hamradio_set_gmutespkr(btn_speaker->is_locked);
 		}
-		else if (get_selected_element() == btn_mic_eq)
+#endif /* WITHSPKMUTE */
+#if WITHAFCODEC1HAVEPROC
+		if (get_selected_element() == btn_mic_eq)
 		{
 			btn_mic_eq->is_locked = hamradio_get_gmikeequalizer() ? BUTTON_NON_LOCKED : BUTTON_LOCKED;
 			local_snprintf_P(btn_mic_eq->text, ARRAY_SIZE(btn_mic_eq->text), PSTR("MIC EQ|%s"), btn_mic_eq->is_locked ? "ON" : "OFF");
 			hamradio_set_gmikeequalizer(btn_mic_eq->is_locked);
 			btn_mic_eq_settings->state = btn_mic_eq->is_locked ? CANCELLED : DISABLED;
 		}
-		else if (get_selected_element() == btn_mic_eq_settings)
+		if (get_selected_element() == btn_mic_eq_settings)
 		{
 			open_window(winEQ);
 		}
-		else if (get_selected_element() == btn_mic_settings)
+		if (get_selected_element() == btn_mic_settings)
 		{
 			open_window(winMIC);
 		}
-		else if (get_selected_element() == btn_mic_profiles)
+		if (get_selected_element() == btn_mic_profiles)
 		{
 			open_window(winMICpr);
 		}
+#endif /* WITHAFCODEC1HAVEPROC */
 	}
 }
 
@@ -2036,7 +2063,7 @@ static void window_audiosettings_process(void)
 }
 
 // *********************************************************************************************************************************************************************
-
+#if WITHREVERB
 static void buttons_ap_reverb_process(void)
 {
 	if (is_short_pressed())
@@ -2185,7 +2212,16 @@ static void window_ap_reverb_process(void)
 	}
 }
 
+#else
+
+static void window_ap_reverb_process(void)
+{
+}
+
+#endif /* WITHREVERB */
 // *********************************************************************************************************************************************************************
+
+#if WITHAFCODEC1HAVEPROC
 
 static void buttons_ap_mic_eq_process(void)
 {
@@ -2597,7 +2633,6 @@ static void buttons_ap_mic_prof_process(void)
 	}
 }
 
-//static micprof_t micprof_cells [micprof_cells_count];
 static void window_ap_mic_prof_process(void)
 {
 	window_t * win = get_win(WINDOW_AP_MIC_PROF);
@@ -2650,7 +2685,25 @@ static void window_ap_mic_prof_process(void)
 	}
 }
 
+#else
+
+static void window_ap_mic_eq_process(void)
+{
+}
+
+static void window_ap_mic_process(void)
+{
+}
+
+static void window_ap_mic_prof_process(void)
+{
+}
+
+#endif /* WITHAFCODEC1HAVEPROC */
+
 // *********************************************************************************************************************************************************************
+
+#if WITHMENU
 
 static void labels_menu_handler (void)
 {
@@ -3327,6 +3380,23 @@ void gui_open_sys_menu(void)
 		backup_parent = UINT8_MAX;
 	}
 }
+
+#else
+
+static void window_menu_process(void)
+{
+}
+
+static void window_uif_process(void)
+{
+}
+
+static void window_enc2_process(void)
+{
+}
+
+
+#endif /* WITHMENU */
 
 // *********************************************************************************************************************************************************************
 #endif /* WITHTOUCHGUI */

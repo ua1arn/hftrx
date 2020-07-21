@@ -9,7 +9,7 @@ MEMORY
 	DTCM (rwx) :		ORIGIN = 0x20000000, LENGTH = 64k	/* DTCM = RAMDTCM_BASE */
 	RAM (rwx)  :		ORIGIN = 0x20010000, LENGTH = 256k	/* was: 240k SRAM = SRAM1_BASE (240k) */
 	/*RAM2 (rwx)  :		ORIGIN = 0x2004C000, LENGTH = 64k	 SRAM = SRAM2_BASE (64k) */
-	SDRAM  (rwx)  :		ORIGIN = 0xC0000000, LENGTH = 8192k	/* MT48LC4M32B2 */
+	SDRAM  (rwx)  :		ORIGIN = 0xC0000000, LENGTH = 8M	/* MT48LC4M32B2 */
 }
 
 /* Library configurations */
@@ -202,7 +202,7 @@ SECTIONS
 
 	. = __etext3 + __data3_end__ - __data3_start__;
 
-	.bss :
+	.bss (NOLOAD):
 	{
 		. = ALIGN(32);
 		__bss_start__ = .;
@@ -210,7 +210,7 @@ SECTIONS
 		*(COMMON)
 		. = ALIGN(32);
 		__bss_end__ = .;
-	} > RAM
+	} > SDRAM
 
 	.heap (COPY):
 	{
@@ -219,7 +219,7 @@ SECTIONS
 		end = __end__;
 		KEEP(*(.heap*))
 		__HeapLimit = .;
-	} > RAM
+	} > SDRAM
 
 	/* .stack_dummy section doesn't contains any symbols. It is only
 	 * used for linker to calculate size of stack sections, and assign

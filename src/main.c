@@ -2984,9 +2984,9 @@ filter_t fi_2p0_455 =
 	uint8_t	bandgroup [BANDGROUP_COUNT];	/* последний диапазон в группе, куда был переход по кнопке диапазона (индекс в bands). */
 #endif	/* WITHDIRECTBANDS */
 
-#if WITHTOUCHGUI
+#if WITHTOUCHGUI && WITHAFCODEC1HAVEPROC
 	struct micprof_cell micprof_cells [NMICPROFCELLS];	/* ячейки памяти профилей микрофона */
-#endif
+#endif /*  WITHTOUCHGUI && WITHAFCODEC1HAVEPROC */
 	uint8_t signature [sizeof nvramsign - 1];	/* сигнатура соответствия версии программы и содержимого NVRAM */
 } ATTRPACKED;	// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
 
@@ -5640,7 +5640,7 @@ static void micproc_load(void)
 		gtxaprofiles [i] = loadvfy8up(RMT_TXAPROFIGLE_BASE(i), 0, NMICPROFILES - 1, gtxaprofiles [i]);
 	}
 
-#if WITHTOUCHGUI
+#if WITHTOUCHGUI && WITHAFCODEC1HAVEPROC
 	for (i = 0; i < NMICPROFCELLS; i++)
 	{
 		micprof_t * mp = & micprof_cells[i];
@@ -5655,7 +5655,7 @@ static void micproc_load(void)
 		for(uint_fast8_t j = 0; j < HARDWARE_CODEC1_NPROCPARAMS; j ++)
 			mp->eq_params[j] = loadvfy8up(RMT_MICEQPARAMS_BASE(i, j), 0, EQUALIZERBASE * 2, EQUALIZERBASE);
 	}
-#endif /* WITHTOUCHGUI */
+#endif /* WITHTOUCHGUI && WITHAFCODEC1HAVEPROC */
 }
 
 #endif /* WITHIF4DSP */
@@ -18576,7 +18576,7 @@ hamradio_main_step(void)
 			if (uif_encoder2_rotate(nrotate2))
 			{
 				nrotate2 = 0;
-#if WITHTOUCHGUI
+#if WITHTOUCHGUI && WITHENCODER2
 				const char FLASHMEM * const text = enc2menu_label_P(enc2pos);
 				safestrcpy(enc2_menu.param, ARRAY_SIZE(enc2_menu.param), text);
 				enc2menu_value(enc2pos, INT_MAX, enc2_menu.val, ARRAY_SIZE(enc2_menu.val));
@@ -18585,7 +18585,7 @@ hamradio_main_step(void)
 				display2_mode_subset(0);
 #else
 				display_redrawfreqmodesbarsnow(0, NULL);			/* Обновление дисплея - всё, включая частоту */
-#endif /* WITHTOUCHGUI */
+#endif /* WITHTOUCHGUI && WITHENCODER2 */
 			}
 	#if WITHDEBUG
 			{
@@ -18680,7 +18680,7 @@ hamradio_main_step(void)
 					updateboard(0, 0);	/* частичная перенастройка - без смены режима работы */
 				}
 			}
-			#if WITHTOUCHGUI
+			#if WITHTOUCHGUI && WITHENCODER2
 				gui_check_encoder2(nrotate2);
 			#endif /* WITHTOUCHGUI */
 		}
@@ -18885,6 +18885,8 @@ void hamradio_set_reverb_loss(uint_fast8_t v)
 	updateboard(1, 0);
 }
 
+#endif /* WITHREVERB */
+
 void hamradio_set_gmoniflag(uint_fast8_t v)
 {
 	gmoniflag = v != 0;
@@ -18895,8 +18897,6 @@ uint_fast8_t hamradio_get_gmoniflag(void)
 {
 	return gmoniflag;
 }
-
-#endif /* WITHREVERB */
 
 #endif /* WITHIF4DSP */
 
@@ -19218,6 +19218,7 @@ uint_fast8_t hamradio_get_high_bp(int_least16_t rotate)
 	return high;
 }
 
+#if WITHMENU
 uint_fast8_t hamradio_get_multilinemenu_block_groups(menu_names_t * vals)
 {
 	uint_fast16_t el;
@@ -19336,6 +19337,7 @@ const char * hamradio_gui_edit_menu_item(uint_fast8_t index, int_least16_t rotat
 	display2_menu_valxx(0, 0, & dctx);
 	return menuw;
 }
+#endif /* WITHMENU */
 
 const char * hamradio_get_submode_label(uint_fast8_t v)
 {
