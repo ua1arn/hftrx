@@ -537,6 +537,7 @@ void hardware_adc_initialize(void);
 
 	#define FLASHMEM //__flash
 	#define NOINLINEAT // __attribute__((noinline))
+	#define strlen_P(s) strlen(s)
 
 	#if CPUSTYLE_R7S721
 		#define FLASHMEMINIT	__attribute__((section(".initdata"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */

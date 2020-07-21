@@ -2510,6 +2510,7 @@ struct nvmap
 #if defined (RTC1_TYPE)
 	uint8_t	ggrpclock; // последний посещённый пункт группы
 #endif /* defined (RTC1_TYPE) */
+	uint8_t	ggrpabout;		// последний посещённый пункт группы
 
 #if LO1MODE_HYBRID
 	uint8_t alignmode;			/* режимы для настройки аппаратной части (0-нормальная работа) */
@@ -3834,6 +3835,14 @@ static int_fast32_t getzerobase(void)
 {
 	return 0;
 }
+
+/* поддержка ABOUT: частота процессора */
+static int_fast32_t getcpufreqbase(void)
+{
+	return CPU_FREQ / 1000000L;
+}
+
+static uint_fast16_t gzero;
 
 #define ADCOFFSETMID (512 / 2)
 static int_fast32_t getadcoffsbase(void)
@@ -5690,6 +5699,7 @@ enum
 	RJ_UNSIGNED,		/* отображние знакового числа (меню на втором валкодере) */
 	RJ_SMETER,		/* выбор внешнего вида прибора - стрелочный или градусник */
 	RJ_NOTCH,		/* тип NOTCH фильтра - MANUAL/AUTO */
+	RJ_CPUTYPE,		/* текст типа процессора */
 	//
 	RJ_notused
 };
@@ -15722,7 +15732,16 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #endif /* ! WITHFLATMENU */
 	{
-		QLABEL("CPU FREQ"), 7, 2, 0, 	ISTEP1,	// CW bandwidth for WIDE
+		QLABEL("CPU TYPE"), 7, 0, RJ_CPUTYPE, 	ISTEP1,	// тип процессора
+		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+		0, 0,
+		MENUNONVRAM,
+		NULL,
+		& gzero,
+		getzerobase,
+	},
+	{
+		QLABEL("CPU FREQ"), 7, 0, 0, 	ISTEP1,	// частота процессора
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, 0,
 		MENUNONVRAM,
@@ -16317,8 +16336,8 @@ void display2_menu_valxx(
 
 	case RJ_YES:
 		{
-			static const FLASHMEM char msg_yes [] = "Yes";
-			static const FLASHMEM char msg_no  [] = " No";
+			static const FLASHMEM char msg_yes [] = "YES";
+			static const FLASHMEM char msg_no  [] = " NO";
 
 			width = VALUEW;
 			comma = 3;
@@ -16348,7 +16367,7 @@ void display2_menu_valxx(
 				display_menu_string_P(x, y, PSTR("OFF "), width, comma);
 				break;
 			case BOARD_NOTCH_MANUAL:
-				display_menu_string_P(x, y, PSTR("FRRQ"), width, comma);
+				display_menu_string_P(x, y, PSTR("FREQ"), width, comma);
 				break;
 			case BOARD_NOTCH_AUTO:
 				display_menu_string_P(x, y, PSTR("AUTO"), width, comma);
@@ -16359,8 +16378,8 @@ void display2_menu_valxx(
 
 	case RJ_ON:
 		{
-			static const FLASHMEM char msg_on  [] = " On";
-			static const FLASHMEM char msg_off [] = "Off";
+			static const FLASHMEM char msg_on  [] = " ON";
+			static const FLASHMEM char msg_off [] = "OFF";
 
 			width = VALUEW;
 			comma = 3;
@@ -16421,6 +16440,7 @@ void display2_menu_valxx(
 		}
 		break;
 #endif /* WITHELKEY */
+
 #if WITHPOWERLPHP
 	case RJ_POWER:	/* отображние мощности HP/LP */
 		width = VALUEW;
@@ -16428,6 +16448,16 @@ void display2_menu_valxx(
 			display_menu_string_P(x, y, pwrmodes [value].label, width, comma);
 		break;
 #endif /* WITHPOWERLPHP */
+
+	case RJ_CPUTYPE:
+		{
+			static const FLASHMEM char msg [] = "CPUxxx";
+
+			width = VALUEW;
+			comma = strlen_P(msg);
+			display_menu_string_P(x, y, msg, width, comma);
+		}
+		break;
 
 	default:
 		if (width & WSIGNFLAG)
