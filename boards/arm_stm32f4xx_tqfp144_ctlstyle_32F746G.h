@@ -318,9 +318,6 @@
 
 	//#define WITHMENU 	1	/* функциональность меню может быть отключена - если настраивать нечего */
 
-	#define WITHTOUCHGUI	1
-	#define WITHGUISTYLE_MINI	1
-
 	//#define WITHONLYBANDS 1		/* Перестройка может быть ограничена любительскими диапазонами */
 	//#define WITHBCBANDS	1		/* в таблице диапазонов присутствуют вещательные диапазоны */
 	#define WITHWARCBANDS	1	/* В таблице диапазонов присутствуют HF WARC диапазоны */
