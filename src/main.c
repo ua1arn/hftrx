@@ -7578,55 +7578,54 @@ void AudioDriver_LeakyLmsNr(float32_t * in_buff, float32_t * out_buff, int buff_
     float32_t c0, c1;
     float32_t y, error, sigma, inv_sigp;
     float32_t nel, nev;
+        for (i = 0; i < buff_size; i++)
+        {
+            leakyLMS.d[leakyLMS.in_idx] = in_buff[i];
 
-	for (i = 0; i < buff_size; i++)
-	{
-		leakyLMS.d [leakyLMS.in_idx] = in_buff [i];
+            y = 0;
+            sigma = 0;
 
-		y = 0;
-		sigma = 0;
+            for (j = 0; j < leakyLMS.n_taps; j++)
+            {
+                idx = (leakyLMS.in_idx + j + leakyLMS.delay) & leakyLMS.mask;
+                y += leakyLMS.w[j] * leakyLMS.d[idx];
+                sigma += leakyLMS.d[idx] * leakyLMS.d[idx];
+            }
+            inv_sigp = 1.0 / (sigma + 1e-10);
+            error = leakyLMS.d[leakyLMS.in_idx] - y;
 
-		for (j = 0; j < leakyLMS.n_taps; j ++)
-		{
-			idx = (leakyLMS.in_idx + j + leakyLMS.delay) % leakyLMS.dline_size;
-			y += leakyLMS.w [j] * leakyLMS.d [idx];
-			sigma += leakyLMS.d [idx] * leakyLMS.d [idx];
-		}
-		inv_sigp = 1 / (sigma + (float32_t) 1e-10);
-		error = leakyLMS.d [leakyLMS.in_idx] - y;
-
-		if (notch)
-		{ // automatic notch filter
-			out_buff[i] = error;
-		}
-		else
-		{ // noise reduction
-			out_buff[i] = y;
-		}
+            if(notch)
+            { // automatic notch filter
+                out_buff[i] = error;
+            }
+            else
+            { // noise reduction
+                out_buff[i] = y;
+            }
 //          leakyLMS.out_buff[2 * i + 1] = 0.0;
 
-		if ((nel = error * (1 - leakyLMS.two_mu * sigma * inv_sigp)) < 0) nel = -nel;
-		if ((nev = leakyLMS.d [leakyLMS.in_idx] - (1 - leakyLMS.two_mu * leakyLMS.ngamma) * y - leakyLMS.two_mu * error * sigma * inv_sigp) < 0.0) nev = -nev;
-		if (nev < nel)
-		{
-			if ((leakyLMS.lidx += leakyLMS.lincr) > leakyLMS.lidx_max) leakyLMS.lidx = leakyLMS.lidx_max;
-		}
-		else
-		{
-			if ((leakyLMS.lidx -= leakyLMS.ldecr) < leakyLMS.lidx_min) leakyLMS.lidx = leakyLMS.lidx_min;
-		}
-		leakyLMS.ngamma = leakyLMS.gamma * (leakyLMS.lidx * leakyLMS.lidx) * (leakyLMS.lidx * leakyLMS.lidx) * leakyLMS.den_mult;
+            if((nel = error * (1.0 - leakyLMS.two_mu * sigma * inv_sigp)) < 0.0) nel = -nel;
+            if((nev = leakyLMS.d[leakyLMS.in_idx] - (1.0 - leakyLMS.two_mu * leakyLMS.ngamma) * y - leakyLMS.two_mu * error * sigma * inv_sigp) < 0.0) nev = -nev;
+            if (nev < nel)
+            {
+                if((leakyLMS.lidx += leakyLMS.lincr) > leakyLMS.lidx_max) leakyLMS.lidx = leakyLMS.lidx_max;
+            }
+            else
+            {
+                if((leakyLMS.lidx -= leakyLMS.ldecr) < leakyLMS.lidx_min) leakyLMS.lidx = leakyLMS.lidx_min;
+            }
+            leakyLMS.ngamma = leakyLMS.gamma * (leakyLMS.lidx * leakyLMS.lidx) * (leakyLMS.lidx * leakyLMS.lidx) * leakyLMS.den_mult;
 
-		c0 = 1 - leakyLMS.two_mu * leakyLMS.ngamma;
-		c1 = leakyLMS.two_mu * error * inv_sigp;
+            c0 = 1.0 - leakyLMS.two_mu * leakyLMS.ngamma;
+            c1 = leakyLMS.two_mu * error * inv_sigp;
 
-		for (j = 0; j < leakyLMS.n_taps; j++)
-		{
-			idx = (leakyLMS.in_idx + j + leakyLMS.delay) % leakyLMS.dline_size;
-			leakyLMS.w[j] = c0 * leakyLMS.w [j] + c1 * leakyLMS.d [idx];
-		}
-		leakyLMS.in_idx = (leakyLMS.in_idx + leakyLMS.mask) % leakyLMS.dline_size;
-	}
+            for (j = 0; j < leakyLMS.n_taps; j++)
+            {
+                idx = (leakyLMS.in_idx + j + leakyLMS.delay) & leakyLMS.mask;
+                leakyLMS.w[j] = c0 * leakyLMS.w[j] + c1 * leakyLMS.d[idx];
+            }
+            leakyLMS.in_idx = (leakyLMS.in_idx + leakyLMS.mask) & leakyLMS.mask;
+        }
 }
 
 #endif /* WITHLEAKYLMSANR */
