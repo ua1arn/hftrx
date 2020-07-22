@@ -7560,7 +7560,7 @@ static void AudioDriver_LeakyLmsNr_Init(void)
     leakyLMS.lincr =    1.0;                      // lincr
     leakyLMS.ldecr =    3.0;                     // ldecr
     //int leakyLMS.mask = leakyLMS.dline_size - 1;
-    leakyLMS.mask = LEAKYLMSDLINE_SIZE - 1;
+    //leakyLMS.mask = LEAKYLMSDLINE_SIZE - 1;
     leakyLMS.in_idx = 0;
     leakyLMS.on = 0;
     leakyLMS.notch = 0;
@@ -7581,19 +7581,19 @@ void AudioDriver_LeakyLmsNr(float32_t * in_buff, float32_t * out_buff, int buff_
 
 	for (i = 0; i < buff_size; i++)
 	{
-		leakyLMS.d[leakyLMS.in_idx] = in_buff[i];
+		leakyLMS.d [leakyLMS.in_idx] = in_buff [i];
 
 		y = 0;
 		sigma = 0;
 
 		for (j = 0; j < leakyLMS.n_taps; j ++)
 		{
-			idx = (leakyLMS.in_idx + j + leakyLMS.delay) & leakyLMS.mask;
+			idx = (leakyLMS.in_idx + j + leakyLMS.delay) % leakyLMS.dline_size;
 			y += leakyLMS.w [j] * leakyLMS.d [idx];
 			sigma += leakyLMS.d [idx] * leakyLMS.d [idx];
 		}
-		inv_sigp = 1 / (sigma + 1e-10);
-		error = leakyLMS.d[leakyLMS.in_idx] - y;
+		inv_sigp = 1 / (sigma + (float32_t) 1e-10);
+		error = leakyLMS.d [leakyLMS.in_idx] - y;
 
 		if (notch)
 		{ // automatic notch filter
@@ -7617,15 +7617,15 @@ void AudioDriver_LeakyLmsNr(float32_t * in_buff, float32_t * out_buff, int buff_
 		}
 		leakyLMS.ngamma = leakyLMS.gamma * (leakyLMS.lidx * leakyLMS.lidx) * (leakyLMS.lidx * leakyLMS.lidx) * leakyLMS.den_mult;
 
-		c0 = 1.0 - leakyLMS.two_mu * leakyLMS.ngamma;
+		c0 = 1 - leakyLMS.two_mu * leakyLMS.ngamma;
 		c1 = leakyLMS.two_mu * error * inv_sigp;
 
 		for (j = 0; j < leakyLMS.n_taps; j++)
 		{
-			idx = (leakyLMS.in_idx + j + leakyLMS.delay) & leakyLMS.mask;
-			leakyLMS.w[j] = c0 * leakyLMS.w[j] + c1 * leakyLMS.d[idx];
+			idx = (leakyLMS.in_idx + j + leakyLMS.delay) % leakyLMS.dline_size;
+			leakyLMS.w[j] = c0 * leakyLMS.w [j] + c1 * leakyLMS.d [idx];
 		}
-		leakyLMS.in_idx = (leakyLMS.in_idx + leakyLMS.mask) & leakyLMS.mask;
+		leakyLMS.in_idx = (leakyLMS.in_idx + leakyLMS.mask) % leakyLMS.dline_size;
 	}
 }
 
@@ -7874,8 +7874,8 @@ static void hamradio_autonotch_process(float32_t * notchbuffer)
 static void processingonebuff(uint_fast8_t pathi, lmsnrstate_t * const nrp, speexel_t * p)
 {
 	const uint_fast8_t mode = submodes [gsubmode].mode;
-	const uint_fast8_t nospeex = gtx || mode == MODE_DIGI || gdatamode;	// не делать даже коррекцию АЧХ
-	const uint_fast8_t denoise = ! nospeex && gnoisereducts [mode];
+	const uint_fast8_t noprocessing = gtx || mode == MODE_DIGI || gdatamode;	// не делать даже коррекцию АЧХ
+	const uint_fast8_t denoise = ! noprocessing && gnoisereducts [mode];
 	const uint_fast8_t anotch = ! (gtx || mode == MODE_DIGI || gdatamode) && gnotch && notchmodes [gnotchtype].code == BOARD_NOTCH_AUTO;
 	//////////////////////////////////////////////
 	// Filtering
@@ -7888,7 +7888,7 @@ static void processingonebuff(uint_fast8_t pathi, lmsnrstate_t * const nrp, spee
 		processNoiseReduction(nrp, nrp->wire1, p);	// result copy back
 		nrp->outsp = p;
 	}
-	else if (nospeex)
+	else if (noprocessing)
 	{
 		// не делать даже коррекцию АЧХ
 		nrp->outsp = p;
@@ -7903,16 +7903,23 @@ static void processingonebuff(uint_fast8_t pathi, lmsnrstate_t * const nrp, spee
 	if (denoise)
 	{
 		// Filtering and denoise.
-		if (anotch && pathi == 0)
-			hamradio_autonotch_process(p);
 		arm_fir_f32(& nrp->fir_instance, p, nrp->wire1, FIRBUFSIZE);
+		if (anotch && pathi == 0)
+			hamradio_autonotch_process(nrp->wire1);
+#if WITHLEAKYLMSANR
+		if (pathi == 0)
+			AudioDriver_LeakyLmsNr(nrp->wire1, nrp->wire1, FIRBUFSIZE, 0);
+#else /* WITHLEAKYLMSANR */
 		speex_preprocess_run(nrp->st_handle, nrp->wire1);
+#endif /* WITHLEAKYLMSANR */
 		nrp->outsp = nrp->wire1;
 	}
-	else if (nospeex)
+	else if (noprocessing)
 	{
 		// не делать даже коррекцию АЧХ
+#if ! WITHLEAKYLMSANR
 		speex_preprocess_estimate_update(nrp->st_handle, p);
+#endif /* ! WITHLEAKYLMSANR */
 		nrp->outsp = p;
 	}
 	else
@@ -7920,9 +7927,9 @@ static void processingonebuff(uint_fast8_t pathi, lmsnrstate_t * const nrp, spee
 		// Filtering only.
 		ASSERT(p != NULL);
 		ASSERT(nrp->wire1 != NULL);
-		if (anotch && pathi == 0)
-			hamradio_autonotch_process(p);
 		arm_fir_f32(& nrp->fir_instance, p, nrp->wire1, FIRBUFSIZE);
+		if (anotch && pathi == 0)
+			hamradio_autonotch_process(nrp->wire1);
 		nrp->outsp = nrp->wire1;
 	}
 #endif /* WITHNOSPEEX */
