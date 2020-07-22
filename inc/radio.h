@@ -161,6 +161,7 @@ enum
 	#define BOARD_NOTCH_MANUAL	1
 	#define BOARD_NOTCH_AUTO	2
 	#define WITHLMSAUTONOTCH	1	/* Использование AUTONOTCH	*/
+	//#define WITHLEAKYLMSANR		1	/* Использование LeakyLmsNr */
 
 	#define WITHNOTCHFREQ		1	/* NOTCH фильтр с устанавливаемой через меню или потенциометром частотой */
 	#define WITHSUBTONES		1	/* выполняется формирование субтона при передаче NFM */
