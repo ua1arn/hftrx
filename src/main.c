@@ -7580,7 +7580,7 @@ void AudioDriver_LeakyLmsNr(float32_t * in_buff, float32_t * out_buff, int buff_
     float32_t nel, nev;
         for (i = 0; i < buff_size; i++)
         {
-            leakyLMS.d[leakyLMS.in_idx] = in_buff[i];
+            leakyLMS.d [leakyLMS.in_idx] = in_buff[i];
 
             y = 0;
             sigma = 0;
@@ -7588,11 +7588,11 @@ void AudioDriver_LeakyLmsNr(float32_t * in_buff, float32_t * out_buff, int buff_
             for (j = 0; j < leakyLMS.n_taps; j++)
             {
                 idx = (leakyLMS.in_idx + j + leakyLMS.delay) & leakyLMS.mask;
-                y += leakyLMS.w[j] * leakyLMS.d[idx];
-                sigma += leakyLMS.d[idx] * leakyLMS.d[idx];
+                y += leakyLMS.w [j] * leakyLMS.d [idx];
+                sigma += leakyLMS.d [idx] * leakyLMS.d [idx];
             }
             inv_sigp = 1.0 / (sigma + 1e-10);
-            error = leakyLMS.d[leakyLMS.in_idx] - y;
+            error = leakyLMS.d [leakyLMS.in_idx] - y;
 
             if (notch)
             { // automatic notch filter
@@ -7605,7 +7605,7 @@ void AudioDriver_LeakyLmsNr(float32_t * in_buff, float32_t * out_buff, int buff_
 //          leakyLMS.out_buff[2 * i + 1] = 0.0;
 
             if ((nel = error * (1.0 - leakyLMS.two_mu * sigma * inv_sigp)) < 0.0) nel = -nel;
-            if ((nev = leakyLMS.d[leakyLMS.in_idx] - (1.0 - leakyLMS.two_mu * leakyLMS.ngamma) * y - leakyLMS.two_mu * error * sigma * inv_sigp) < 0.0) nev = -nev;
+            if ((nev = leakyLMS.d [leakyLMS.in_idx] - (1.0 - leakyLMS.two_mu * leakyLMS.ngamma) * y - leakyLMS.two_mu * error * sigma * inv_sigp) < 0.0) nev = -nev;
             if (nev < nel)
             {
                 if ((leakyLMS.lidx += leakyLMS.lincr) > leakyLMS.lidx_max) leakyLMS.lidx = leakyLMS.lidx_max;
@@ -7622,7 +7622,7 @@ void AudioDriver_LeakyLmsNr(float32_t * in_buff, float32_t * out_buff, int buff_
             for (j = 0; j < leakyLMS.n_taps; j++)
             {
                 idx = (leakyLMS.in_idx + j + leakyLMS.delay) & leakyLMS.mask;
-                leakyLMS.w[j] = c0 * leakyLMS.w[j] + c1 * leakyLMS.d[idx];
+                leakyLMS.w [j] = c0 * leakyLMS.w [j] + c1 * leakyLMS.d [idx];
             }
             leakyLMS.in_idx = (leakyLMS.in_idx + leakyLMS.mask) & leakyLMS.mask;
         }
@@ -12993,19 +12993,19 @@ display_menu_digit(
 
 		if (ca == 1)
 		{
-			local_snprintf_P(menuw, sizeof menuw / sizeof menuw[0], PSTR("%ld"), value);
+			local_snprintf_P(menuw, ARRAY_SIZE(menuw), PSTR("%ld"), value);
 		}
 		else if (value < 0)
 		{
 			ldiv_t d;
 			d = ldiv(- value, ca);
-			local_snprintf_P(menuw, sizeof menuw / sizeof menuw[0], PSTR("-%ld.%0*ld"), d.quot, (int) comma, d.rem);
+			local_snprintf_P(menuw, ARRAY_SIZE(menuw), PSTR("-%ld.%0*ld"), d.quot, (int) comma, d.rem);
 		}
 		else
 		{
 			ldiv_t d;
 			d = ldiv(value, ca);
-			local_snprintf_P(menuw, sizeof menuw / sizeof menuw[0], PSTR("%ld.%0*ld"), d.quot, (int) comma, d.rem);
+			local_snprintf_P(menuw, ARRAY_SIZE(menuw), PSTR("%ld.%0*ld"), d.quot, (int) comma, d.rem);
 		}
 		return;
 #endif /* WITHTOUCHGUI */
