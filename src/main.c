@@ -7560,7 +7560,7 @@ static void AudioDriver_LeakyLmsNr_Init(void)
     leakyLMS.lincr =    1.0;                      // lincr
     leakyLMS.ldecr =    3.0;                     // ldecr
     //int leakyLMS.mask = leakyLMS.dline_size - 1;
-    //leakyLMS.mask = LEAKYLMSDLINE_SIZE - 1;
+    leakyLMS.mask = LEAKYLMSDLINE_SIZE - 1;
     leakyLMS.in_idx = 0;
     leakyLMS.on = 0;
     leakyLMS.notch = 0;
@@ -7594,7 +7594,7 @@ void AudioDriver_LeakyLmsNr(float32_t * in_buff, float32_t * out_buff, int buff_
             inv_sigp = 1.0 / (sigma + 1e-10);
             error = leakyLMS.d[leakyLMS.in_idx] - y;
 
-            if(notch)
+            if (notch)
             { // automatic notch filter
                 out_buff[i] = error;
             }
@@ -7604,15 +7604,15 @@ void AudioDriver_LeakyLmsNr(float32_t * in_buff, float32_t * out_buff, int buff_
             }
 //          leakyLMS.out_buff[2 * i + 1] = 0.0;
 
-            if((nel = error * (1.0 - leakyLMS.two_mu * sigma * inv_sigp)) < 0.0) nel = -nel;
-            if((nev = leakyLMS.d[leakyLMS.in_idx] - (1.0 - leakyLMS.two_mu * leakyLMS.ngamma) * y - leakyLMS.two_mu * error * sigma * inv_sigp) < 0.0) nev = -nev;
+            if ((nel = error * (1.0 - leakyLMS.two_mu * sigma * inv_sigp)) < 0.0) nel = -nel;
+            if ((nev = leakyLMS.d[leakyLMS.in_idx] - (1.0 - leakyLMS.two_mu * leakyLMS.ngamma) * y - leakyLMS.two_mu * error * sigma * inv_sigp) < 0.0) nev = -nev;
             if (nev < nel)
             {
-                if((leakyLMS.lidx += leakyLMS.lincr) > leakyLMS.lidx_max) leakyLMS.lidx = leakyLMS.lidx_max;
+                if ((leakyLMS.lidx += leakyLMS.lincr) > leakyLMS.lidx_max) leakyLMS.lidx = leakyLMS.lidx_max;
             }
             else
             {
-                if((leakyLMS.lidx -= leakyLMS.ldecr) < leakyLMS.lidx_min) leakyLMS.lidx = leakyLMS.lidx_min;
+                if ((leakyLMS.lidx -= leakyLMS.ldecr) < leakyLMS.lidx_min) leakyLMS.lidx = leakyLMS.lidx_min;
             }
             leakyLMS.ngamma = leakyLMS.gamma * (leakyLMS.lidx * leakyLMS.lidx) * (leakyLMS.lidx * leakyLMS.lidx) * leakyLMS.den_mult;
 
