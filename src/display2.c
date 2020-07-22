@@ -6167,7 +6167,7 @@ static void display2_spectrum(
 				}
 
 				if (x != 0)
-					colmain_line(colorpip, BUFDIM_X, BUFDIM_Y, x - 1, ylast, x, ynew, COLORPIP_SPECTRUMLINE, glob_spantialiasing);
+					colmain_line(colorpip, BUFDIM_X, BUFDIM_Y, x - 1, ylast, x, ynew, COLORPIP_SPECTRUMLINE, glob_colorsp ? 0 : glob_spantialiasing);
 				ylast = ynew;
 			}
 		}
