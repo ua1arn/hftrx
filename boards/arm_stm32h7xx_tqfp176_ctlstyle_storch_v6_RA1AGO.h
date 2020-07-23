@@ -273,13 +273,13 @@
 
 	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
 	//#define WITHUSEDUALWATCH	1	// Второй приемник
-	#define WITHREVERB	1	// ревербератор в обработке микрофонного сигнала
+	//#define WITHREVERB	1	// ревербератор в обработке микрофонного сигнала
 	//#define WITHLOOPBACKTEST	1	/* прослушивание микрофонного входа, генераторов */
 	//#define WITHMODEMIQLOOPBACK	1	/* модем получает собственные передаваемые квадратуры */
 
 	//#define WITHUSESDCARD		1	// Включение поддержки SD CARD
-	#define WITHUSEUSBFLASH		1	// Включение поддержки USB memory stick
-	#define WITHUSEAUDIOREC		1	// Запись звука на SD CARD
+	//#define WITHUSEUSBFLASH		1	// Включение поддержки USB memory stick
+	//#define WITHUSEAUDIOREC		1	// Запись звука на SD CARD
 	//#define WITHUSEAUDIOREC2CH	1	// Запись звука на SD CARD в стерео
 	//#define WITHUSEAUDIORECCLASSIC	1	// стандартный формат записи, без "дыр"
 
@@ -495,6 +495,16 @@
 		PWRI = 14,			// PC4
 		FWD = 14, REF = 15,	// PC5	SWR-meter
 	#endif /* WITHSWRMTR */
+
+		XTHERMOMRRIX = BOARD_ADCMRRIN(0),	// кеш - индекc не должен повторяться в конфигурации
+		PASENSEMRRIX = BOARD_ADCMRRIN(1),	// кеш - индекc не должен повторяться в конфигурации
+		REFMRRIX = BOARD_ADCMRRIN(2),
+		FWDMRRIX = BOARD_ADCMRRIN(3),
+		PWRMRRIX = FWDMRRIX,
+		VOLTMRRIX = BOARD_ADCMRRIN(4),	// кеш - индекc не должен повторяться в конфигурации
+		PASENSEMRRIX2 = BOARD_ADCMRRIN(5),		// кеш - индекc не должен повторяться в конфигурации
+		PAREFERMRRIX2 = BOARD_ADCMRRIN(6),		// кеш - индекc не должен повторяться в конфигурации
+
 		KI0 = 10, KI1 = 11, KI2 = 12, KI3 = 0, KI4 = 1	// клавиатура
 	};
 
