@@ -7666,7 +7666,7 @@ typedef struct lmsnrstate_tag
 	speexel_t * outsp;	/* pointer to buffer with result of processing */
 } lmsnrstate_t;
 
-static RAMBIG lmsnrstate_t lmsnrstates [NTRX];
+static lmsnrstate_t lmsnrstates [NTRX];
 
 #if ! WITHNOSPEEX
 
@@ -7953,6 +7953,10 @@ audioproc_spool_user(void)
 			// nrp->outsp указывает на результат обработки
 			processingonebuff(pathi, nrp, p + pathi * FIRBUFSIZE);	// CMSIS DSP or SPEEX
 		}
+
+#if WITHTOUCHGUI
+		gui_copy_audio_buf(lmsnrstates [0].outsp);
+#endif
 		//////////////////////////////////////////////
 		// Save results
 		unsigned i;

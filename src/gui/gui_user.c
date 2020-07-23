@@ -88,11 +88,24 @@ static uint_fast8_t menu_level;
 
 static band_array_t bands [30];
 
+static float32_t updated_spectre [FIRBUFSIZE];
+float32_t fftbuf [FIRBUFSIZE * 2];
+static uint_fast8_t is_sp_ready = 0;
+
 /* Возврат ссылки на окно */
 window_t * get_win(window_id_t window_id)
 {
 	ASSERT(window_id < WINDOWS_COUNT);
 	return & windows [window_id];
+}
+
+void gui_copy_audio_buf(float32_t * buf)
+{
+	if (! is_sp_ready)
+	{
+		arm_copy_f32(buf, updated_spectre, FIRBUFSIZE);
+		is_sp_ready = 1;
+	}
 }
 
 // *********************************************************************************************************************************************************************
@@ -884,10 +897,12 @@ static void window_bp_process(void)
 	static uint_fast8_t val_high, val_low, val_c, val_w;
 	static uint_fast16_t x_h, x_l, x_c;
 	window_t * win = get_win(WINDOW_BP);
+	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
 
-	uint_fast16_t x_size = 290, x_0 = 50, y_0 = 90;
+	uint_fast16_t x_size = 290, x_0 = 50, y_0 = 90, max_ind = 0;
 	static label_t * lbl_low, * lbl_high;
 	static button_t * button_high, * button_low;
+	float32_t max_val = 0;
 
 	if (win->first_call)
 	{
@@ -1016,7 +1031,33 @@ static void window_bp_process(void)
 		}
 		gui_timer_update(NULL);
 	}
-	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
+
+	if(is_sp_ready)
+	{
+		is_sp_ready = 0;
+
+		for (uint_fast16_t i = 0; i < FIRBUFSIZE; i ++)
+		{
+			fftbuf[i * 2] = updated_spectre [i];
+			fftbuf[i * 2 + 1] = 0;
+		}
+
+		apply_window_function(fftbuf, FIRBUFSIZE);
+		arm_cfft_f32(FFTCONFIGSpectrum, fftbuf, 0, 1);
+		arm_cmplx_mag_f32(fftbuf, fftbuf, FIRBUFSIZE);
+		arm_max_f32(fftbuf, FIRBUFSIZE, & max_val, (uint32_t *) & max_ind);
+
+		enum { visiblefftsize = 50 };
+		float32_t fft_step = x_size / visiblefftsize;
+
+		for (uint_fast16_t xx = x_0, i = 0; xx < x_size; xx ++, i ++)
+		{
+			int fftpos = FIRBUFSIZE - i / fft_step;
+			uint_fast8_t yy = normalize(fftbuf [fftpos], 0, max_val, 40);
+			colmain_line(fr, DIM_X, DIM_Y, win->x1 + xx, win->y1 + y_0 - yy, win->x1 + xx, win->y1 + y_0, COLORMAIN_GREEN, 0);
+		}
+	}
+
 	colmain_line(fr, DIM_X, DIM_Y, win->x1 + x_0 - 10, win->y1 + y_0, win->x1 + x_0 + x_size, win->y1 + y_0, COLORMAIN_WHITE, 0);
 	colmain_line(fr, DIM_X, DIM_Y, win->x1 + x_0, win->y1 + y_0 - 45, win->x1 + x_0, win->y1 + y_0 + 5, COLORMAIN_WHITE, 0);
 	colmain_line(fr, DIM_X, DIM_Y, win->x1 + x_l, win->y1 + y_0 - 40, win->x1 + x_l - 4, win->y1 + y_0 - 3, COLORMAIN_YELLOW, 1);

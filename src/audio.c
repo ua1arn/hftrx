@@ -4830,6 +4830,11 @@ static void printsigwnd(void)
 }
 #endif
 
+void apply_window_function(float32_t * v, uint_fast16_t size)
+{
+	arm_cmplx_mult_real_f32(v, wnd256, v, size);
+}
+
 // Нормирование уровня сигнала к шкале
 // возвращает значения от 0 до ymax включительно
 // 0 - минимальный сигнал, ymax - максимальный
