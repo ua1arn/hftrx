@@ -899,10 +899,9 @@ static void window_bp_process(void)
 	window_t * win = get_win(WINDOW_BP);
 	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
 
-	uint_fast16_t x_size = 290, x_0 = 50, y_0 = 90, max_ind = 0;
+	uint_fast16_t x_size = 290, x_0 = 50, y_0 = 90;
 	static label_t * lbl_low, * lbl_high;
 	static button_t * button_high, * button_low;
-	float32_t max_val = 0;
 
 	if (win->first_call)
 	{
@@ -1032,20 +1031,23 @@ static void window_bp_process(void)
 		gui_timer_update(NULL);
 	}
 
-	if(is_sp_ready)
+	if (is_sp_ready)
 	{
+		float32_t max_val = 0;
+		uint32_t max_ind = 0;
+
 		is_sp_ready = 0;
 
 		for (uint_fast16_t i = 0; i < FIRBUFSIZE; i ++)
 		{
-			fftbuf[i * 2] = updated_spectre [i];
+			fftbuf[i * 2 + 0] = updated_spectre [i];
 			fftbuf[i * 2 + 1] = 0;
 		}
 
 		apply_window_function(fftbuf, FIRBUFSIZE);
 		arm_cfft_f32(FFTCONFIGSpectrum, fftbuf, 0, 1);
 		arm_cmplx_mag_f32(fftbuf, fftbuf, FIRBUFSIZE);
-		arm_max_f32(fftbuf, FIRBUFSIZE, & max_val, (uint32_t *) & max_ind);
+		arm_max_f32(fftbuf, FIRBUFSIZE, & max_val, & max_ind);
 
 		enum { visiblefftsize = 50 };
 		float32_t fft_step = x_size / visiblefftsize;
