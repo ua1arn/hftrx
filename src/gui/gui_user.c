@@ -1034,27 +1034,26 @@ static void window_bp_process(void)
 	if (is_sp_ready)
 	{
 		float32_t max_val = 0;
-		uint32_t max_ind = 0;
-
+		enum { visiblefftsize = 112 };
+		uint_fast16_t fft_step = (x_0 + x_size) / visiblefftsize;
 		is_sp_ready = 0;
+
+		fftzoom_x2(updated_spectre);
 
 		for (uint_fast16_t i = 0; i < FIRBUFSIZE; i ++)
 		{
-			fftbuf[i * 2 + 0] = updated_spectre [i];
-			fftbuf[i * 2 + 1] = 0;
+			fftbuf [i * 2 + 0] = updated_spectre [i];
+			fftbuf [i * 2 + 1] = 0;
 		}
 
 		apply_window_function(fftbuf, FIRBUFSIZE);
 		arm_cfft_f32(FFTCONFIGSpectrum, fftbuf, 0, 1);
 		arm_cmplx_mag_f32(fftbuf, fftbuf, FIRBUFSIZE);
-		arm_max_f32(fftbuf, FIRBUFSIZE, & max_val, & max_ind);
+		arm_max_no_idx_f32(fftbuf, FIRBUFSIZE, & max_val);
 
-		enum { visiblefftsize = 50 };
-		float32_t fft_step = x_size / visiblefftsize;
-
-		for (uint_fast16_t xx = x_0, i = 0; xx < x_size; xx ++, i ++)
+		for (uint_fast16_t xx = x_0, i = 0; xx < (x_0 + x_size); xx ++, i ++)
 		{
-			int fftpos = FIRBUFSIZE - i / fft_step;
+			uint_fast16_t fftpos = FIRBUFSIZE - i / fft_step;
 			uint_fast8_t yy = normalize(fftbuf [fftpos], 0, max_val, 40);
 			colmain_line(fr, DIM_X, DIM_Y, win->x1 + xx, win->y1 + y_0 - yy, win->x1 + xx, win->y1 + y_0, COLORMAIN_GREEN, 0);
 		}
