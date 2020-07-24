@@ -128,22 +128,22 @@ static void btn_main_handler(void)
 			local_snprintf_P(btn_AutoNotch->text, ARRAY_SIZE(btn_AutoNotch->text), PSTR("ANotch|%s"), btn_AutoNotch->payload ? "ON" : "OFF");
 			hamradio_set_autonotch(btn_AutoNotch->payload);
 		}
-		else if (get_selected_element() == btn_AF)
-		{
-			window_t * win = get_win(WINDOW_BP);
-			if (win->state == NON_VISIBLE)
-			{
-				open_window(win);
-				footer_buttons_state(DISABLED, btn_AF);
-				hamradio_enable_keyboard_redirect();
-			}
-			else
-			{
-				close_window(OPEN_PARENT_WINDOW);
-				footer_buttons_state(CANCELLED);
-				hamradio_disable_keyboard_redirect();
-			}
-		}
+//		else if (get_selected_element() == btn_AF)
+//		{
+//			window_t * win = get_win(WINDOW_BP);
+//			if (win->state == NON_VISIBLE)
+//			{
+//				open_window(win);
+//				footer_buttons_state(DISABLED, btn_AF);
+//				hamradio_enable_keyboard_redirect();
+//			}
+//			else
+//			{
+//				close_window(OPEN_PARENT_WINDOW);
+//				footer_buttons_state(CANCELLED);
+//				hamradio_disable_keyboard_redirect();
+//			}
+//		}
 		else if (get_selected_element() == btn_Mode)
 		{
 			window_t * win = get_win(WINDOW_MODES);
@@ -214,7 +214,9 @@ static void gui_main_process(void)
 	char buf [TEXT_ARRAY_SIZE];
 	const uint_fast8_t buflen = ARRAY_SIZE(buf);
 	uint_fast16_t yt, xt, y1 = 125, y2 = 145, current_place = 0, xx;
-	uint_fast8_t num_places = 8, lbl_place_width = 100;
+	const uint_fast8_t num_places = 7;
+	const uint_fast8_t lbl_place_width = 100;
+	const uint_fast16_t x_width = lbl_place_width * 2 - 6;
 
 	if (win->first_call)
 	{
@@ -279,7 +281,7 @@ static void gui_main_process(void)
 	colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, y2, buf, COLORMAIN_WHITE);
 #endif 	/* defined (RTC1_TYPE) */
 
-	current_place++;
+	current_place ++;
 
 	// напряжение питания
 #if WITHVOLTLEVEL
@@ -321,7 +323,7 @@ static void gui_main_process(void)
 	}
 #endif /* WITHCURRLEVEL */
 
-	current_place++;
+	current_place ++;
 
 	// ширина панорамы
 #if WITHIF4DSP
@@ -335,7 +337,31 @@ static void gui_main_process(void)
 	colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, y2, buf, COLORMAIN_WHITE);
 #endif /* WITHIF4DSP */
 
-	current_place++;
+	current_place ++;
+
+	// значение сдвига частоты
+	static int_fast16_t if_shift;
+	if (get_gui_1sec_timer())
+		if_shift = hamradio_get_if_shift();
+	xx = current_place * lbl_place_width + lbl_place_width / 2;
+	if (if_shift)
+	{
+		local_snprintf_P(buf, buflen, PSTR("IF shift"));
+		colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, y1, buf, COLORMAIN_WHITE);
+		local_snprintf_P(buf, buflen, if_shift == 0 ? PSTR("%d") : PSTR("%+dk"), if_shift);
+		colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, y2, buf, COLORMAIN_WHITE);
+	}
+	else
+	{
+		local_snprintf_P(buf, buflen, PSTR("IF shift"));
+		colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, y1 + (y2 - y1) / 2, buf, COLORMAIN_GRAY);
+	}
+
+	current_place ++;
+
+	// пусто
+
+	current_place ++;
 
 	// параметры полосы пропускания фильтра
 	static uint_fast8_t bp_type, bp_low, bp_high;
@@ -355,24 +381,43 @@ static void gui_main_process(void)
 	local_snprintf_P(buf, buflen, bp_type ? (PSTR("H %d")) : (PSTR("P %d")), bp_high);
 	colpip_string2_tbg(fr, DIM_X, DIM_Y, xx, y2, buf, COLORMAIN_WHITE);
 
-	current_place++;
+	current_place ++;
 
-	// значение сдвига частоты
-	static int_fast16_t if_shift;
-	if (get_gui_1sec_timer())
-		if_shift = hamradio_get_if_shift();
-	xx = current_place * lbl_place_width + lbl_place_width / 2;
-	if (if_shift)
+	// отображение НЧ спектра
+	xx = current_place * lbl_place_width + 3;
+
+	if (is_sp_ready)
 	{
-		local_snprintf_P(buf, buflen, PSTR("IF shift"));
-		colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, y1, buf, COLORMAIN_WHITE);
-		local_snprintf_P(buf, buflen, if_shift == 0 ? PSTR("%d") : PSTR("%+dk"), if_shift);
-		colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, y2, buf, COLORMAIN_WHITE);
-	}
-	else
-	{
-		local_snprintf_P(buf, buflen, PSTR("IF shift"));
-		colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, y1 + (y2 - y1) / 2, buf, COLORMAIN_GRAY);
+		float32_t max_val = 0;
+		static uint_fast8_t y_old_array [FIRBUFSIZE];
+		const uint_fast16_t visiblefftsize = 95;
+		uint_fast16_t fft_step = x_width / visiblefftsize;
+
+		if (! hamradio_get_tx())
+		{
+			is_sp_ready = 0;
+			fftzoom_x2(updated_spectre);
+
+			for (uint_fast16_t i = 0; i < FIRBUFSIZE; i ++)
+			{
+				fftbuf [i * 2 + 0] = updated_spectre [i];
+				fftbuf [i * 2 + 1] = 0;
+			}
+
+			apply_window_function(fftbuf, FIRBUFSIZE);
+			arm_cfft_f32(FFTCONFIGSpectrum, fftbuf, 0, 1);
+			arm_cmplx_mag_f32(fftbuf, fftbuf, FIRBUFSIZE);
+			arm_max_no_idx_f32(fftbuf, FIRBUFSIZE, & max_val);
+		}
+
+		for (uint_fast16_t i = 3; i < x_width; i ++)
+		{
+			uint_fast16_t fftpos = FIRBUFSIZE - round(i / fft_step);
+			const FLOAT_t val = normalize(fftbuf [fftpos], 0, max_val, 38);
+			const FLOAT_t yy = y_old_array [i] * 0.8 + 0.2 * val;
+			y_old_array [i] = yy;
+			colmain_line(fr, DIM_X, DIM_Y, xx + i - 3, y2 + SMALLCHARH2 - yy, xx + i - 3, y2 + SMALLCHARH2, COLORMAIN_YELLOW, 0);
+		}
 	}
 
 //	#if WITHTHERMOLEVEL	// температура выходных транзисторов (при передаче)
@@ -866,59 +911,14 @@ static void window_mode_process(void)
 
 // *********************************************************************************************************************************************************************
 
-static void buttons_bp_handler(void)
-{
-	if (is_short_pressed())
-	{
-		window_t * win = get_win(WINDOW_BP);
-		button_t * button_high = find_gui_element(TYPE_BUTTON, win, "btnAF_2");
-		button_t * button_low = find_gui_element(TYPE_BUTTON, win, "btnAF_1");
-		button_t * button_OK = find_gui_element(TYPE_BUTTON, win, "btnAF_OK");
-
-		if (get_selected_element() == button_low)
-		{
-			button_high->is_locked = 0;
-			button_low->is_locked = 1;
-		}
-		else if (get_selected_element() == button_high)
-		{
-			button_high->is_locked = 1;
-			button_low->is_locked = 0;
-		}
-		else if (get_selected_element() == button_OK)
-		{
-			close_all_windows();
-		}
-	}
-}
-
 static void window_bp_process(void)
 {
-	static uint_fast8_t val_high, val_low, val_c, val_w;
-	static uint_fast16_t x_h, x_l, x_c;
 	window_t * win = get_win(WINDOW_BP);
-	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
-
-	enum { x_size = 290, x_0 = 50, y_0 = 90 };
 	static label_t * lbl_low, * lbl_high;
-	static button_t * button_high, * button_low;
 
 	if (win->first_call)
 	{
-		uint_fast16_t id = 0, x, y, xmax = 0, ymax = 0;
-		uint_fast8_t interval = 20, col1_int = 35, row1_int = window_title_height + 20;
-
-		button_t buttons [] = {
-		//   x1, y1, w, h,  onClickHandler,     state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
-			{ 0, 0, 86, 44, buttons_bp_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_BP, NON_VISIBLE, UINTPTR_MAX, "btnAF_1",  "", },
-			{ 0, 0, 86, 44, buttons_bp_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_BP, NON_VISIBLE, UINTPTR_MAX, "btnAF_OK", "OK", },
-			{ 0, 0, 86, 44, buttons_bp_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_BP, NON_VISIBLE, UINTPTR_MAX, "btnAF_2",  "", },
-		};
-		win->bh_count = ARRAY_SIZE(buttons);
-		uint_fast16_t buttons_size = sizeof(buttons);
-		win->bh_ptr = malloc(buttons_size);
-		ASSERT(win->bh_ptr != NULL);
-		memcpy(win->bh_ptr, buttons, buttons_size);
+		win->first_call = 0;
 
 		label_t labels [] = {
 		//    x, y,  parent, state, is_trackable, visible,  name, Text, font_size, 	color, onClickHandler
@@ -931,142 +931,188 @@ static void window_bp_process(void)
 		ASSERT(win->lh_ptr != NULL);
 		memcpy(win->lh_ptr, labels, labels_size);
 
-		button_high = find_gui_element(TYPE_BUTTON, win, "btnAF_2");
-		button_low = find_gui_element(TYPE_BUTTON, win, "btnAF_1");
-
-		lbl_low = find_gui_element(TYPE_LABEL, win, "lbl_low");
-		lbl_high = find_gui_element(TYPE_LABEL, win, "lbl_high");
-
-		lbl_low->y = y_0 + get_label_height(lbl_low);
-		lbl_high->y = lbl_low->y;
-
-		lbl_low->visible = VISIBLE;
-		lbl_high->visible = VISIBLE;
-
-		x = col1_int;
-		y = lbl_high->y + get_label_height(lbl_high) * 2;
-		for (uint_fast8_t id = 0; id < win->bh_count; id ++)
-		{
-			button_t * bh = & win->bh_ptr [id];
-			bh->x1 = x;
-			bh->y1 = y;
-			bh->visible = VISIBLE;
-			x = x + interval + bh->w;
-		}
-
-		val_high = hamradio_get_high_bp(0);
-		val_low = hamradio_get_low_bp(0);
-		if (hamradio_get_bp_type())			// BWSET_WIDE
-		{
-			strcpy(button_high->text, "High|cut");
-			strcpy(button_low->text, "Low|cut");
-			button_high->is_locked = 1;
-		}
-		else								// BWSET_NARROW
-		{
-			strcpy(button_high->text, "Pitch");
-			strcpy(button_low->text, "Width");
-			button_low->is_locked = 1;
-		}
-
-		xmax = button_high->x1 + button_high->w;
-		ymax = button_high->y1 + button_high->h;
-		calculate_window_position(win, xmax, ymax);
-		elements_state(win);
+		slider_t sliders [] = {
+			{ 0, 0, 0, 0, 0, 0, ORIENTATION_HORIZONTAL, WINDOW_BP, "sl_low",  CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
+			{ 0, 0, 0, 0, 0, 0, ORIENTATION_HORIZONTAL, WINDOW_BP, "sl_high", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
+		};
+		win->sh_count = ARRAY_SIZE(sliders);
+		uint_fast16_t sliders_size = sizeof(sliders);
+		win->sh_ptr = malloc(sliders_size);
+		ASSERT(win->sh_ptr != NULL);
+		memcpy(win->sh_ptr, sliders, sliders_size);
 	}
-
-	if (encoder2.rotate != 0 || win->first_call)
-	{
-		char buf [TEXT_ARRAY_SIZE];
-
-		if (win->first_call)
-			win->first_call = 0;
-
-		if (hamradio_get_bp_type())			// BWSET_WIDE
-		{
-			if (button_high->is_locked == 1)
-				val_high = hamradio_get_high_bp(encoder2.rotate);
-			else if (button_low->is_locked == 1)
-				val_low = hamradio_get_low_bp(encoder2.rotate * 10);
-			encoder2.rotate_done = 1;
-
-			x_h = x_0 + normalize(val_high, 0, 50, x_size);
-			x_l = x_0 + normalize(val_low / 10, 0, 50, x_size);
-			x_c = x_l + (x_h - x_l) / 2;
-
-			local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("%d"), val_high * 100);
-			strcpy(lbl_high->text, buf);
-			lbl_high->x = (x_h + get_label_width(lbl_high) > x_0 + x_size) ?
-					(x_0 + x_size - get_label_width(lbl_high)) : x_h;
-
-			local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("%d"), val_low * 10);
-			strcpy(lbl_low->text, buf);
-			lbl_low->x = (x_l - get_label_width(lbl_low) < x_0 - 10) ? (x_0 - 10) : (x_l - get_label_width(lbl_low));
-		}
-		else						// BWSET_NARROW
-		{
-			if (button_high->is_locked == 1)
-			{
-				val_c = hamradio_get_high_bp(encoder2.rotate);
-				val_w = hamradio_get_low_bp(0) / 2;
-			}
-			else if (button_low->is_locked == 1)
-			{
-				val_c = hamradio_get_high_bp(0);
-				val_w = hamradio_get_low_bp(encoder2.rotate) / 2;
-			}
-			encoder2.rotate_done = 1;
-			x_c = x_0 + x_size / 2;
-			x_l = x_c - normalize(val_w , 0, 500, x_size);
-			x_h = x_c + normalize(val_w , 0, 500, x_size);
-
-			local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("%d"), val_w * 20);
-			strcpy(lbl_high->text, buf);
-			lbl_high->x = x_c - get_label_width(lbl_high) / 2;
-
-			local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("P %d"), val_c * 10);
-			strcpy(lbl_low->text, buf);
-			lbl_low->x = x_0 + x_size - get_label_width(lbl_low);
-		}
-		gui_timer_update(NULL);
-	}
-
-	if (is_sp_ready)
-	{
-		float32_t max_val = 0;
-		enum { visiblefftsize = 110 };
-		uint_fast16_t fft_step = (x_0 + x_size) / visiblefftsize;
-		is_sp_ready = 0;
-
-		fftzoom_x2(updated_spectre);
-
-		for (uint_fast16_t i = 0; i < FIRBUFSIZE; i ++)
-		{
-			fftbuf [i * 2 + 0] = updated_spectre [i];
-			fftbuf [i * 2 + 1] = 0;
-		}
-
-		apply_window_function(fftbuf, FIRBUFSIZE);
-		arm_cfft_f32(FFTCONFIGSpectrum, fftbuf, 0, 1);
-		arm_cmplx_mag_f32(fftbuf, fftbuf, FIRBUFSIZE);
-		arm_max_no_idx_f32(fftbuf, FIRBUFSIZE, & max_val);
-
-		for (uint_fast16_t xx = x_0, i = 0; xx < (x_0 + x_size); xx ++, i ++)
-		{
-			static uint_fast8_t Yold_array [x_size];
-			uint_fast16_t fftpos = FIRBUFSIZE - i / fft_step;
-
-			const FLOAT_t val = normalize(fftbuf [fftpos], 0, max_val, 40);
-			const FLOAT_t yy = Yold_array [i] * 0.8 + 0.2 * val;
-			Yold_array [i] = yy;
-
-			colmain_line(fr, DIM_X, DIM_Y, win->x1 + xx, win->y1 + y_0 - yy, win->x1 + xx, win->y1 + y_0, COLORMAIN_GREEN, 0);
-		}
-	}
-
-	colmain_line(fr, DIM_X, DIM_Y, win->x1 + x_0 - 10, win->y1 + y_0, win->x1 + x_0 + x_size, win->y1 + y_0, COLORMAIN_WHITE, 0);
-	colmain_line(fr, DIM_X, DIM_Y, win->x1 + x_0, win->y1 + y_0 - 45, win->x1 + x_0, win->y1 + y_0 + 5, COLORMAIN_WHITE, 0);
 }
+
+
+//static void buttons_bp_handler(void)
+//{
+//	if (is_short_pressed())
+//	{
+//		window_t * win = get_win(WINDOW_BP);
+//		button_t * button_high = find_gui_element(TYPE_BUTTON, win, "btnAF_2");
+//		button_t * button_low = find_gui_element(TYPE_BUTTON, win, "btnAF_1");
+//		button_t * button_OK = find_gui_element(TYPE_BUTTON, win, "btnAF_OK");
+//
+//		if (get_selected_element() == button_low)
+//		{
+//			button_high->is_locked = 0;
+//			button_low->is_locked = 1;
+//		}
+//		else if (get_selected_element() == button_high)
+//		{
+//			button_high->is_locked = 1;
+//			button_low->is_locked = 0;
+//		}
+//		else if (get_selected_element() == button_OK)
+//		{
+//			close_all_windows();
+//		}
+//	}
+//}
+
+//static void window_bp_process(void)
+//{
+//	static uint_fast8_t val_high, val_low, val_c, val_w;
+//	static uint_fast16_t x_h, x_l, x_c;
+//	window_t * win = get_win(WINDOW_BP);
+//	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
+//
+//	enum { x_size = 290, x_0 = 50, y_0 = 90 };
+//	static label_t * lbl_low, * lbl_high;
+//	static button_t * button_high, * button_low;
+//
+//	if (win->first_call)
+//	{
+//		uint_fast16_t id = 0, x, y, xmax = 0, ymax = 0;
+//		uint_fast8_t interval = 20, col1_int = 35, row1_int = window_title_height + 20;
+//
+//		button_t buttons [] = {
+//		//   x1, y1, w, h,  onClickHandler,     state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
+//			{ 0, 0, 86, 44, buttons_bp_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_BP, NON_VISIBLE, UINTPTR_MAX, "btnAF_1",  "", },
+//			{ 0, 0, 86, 44, buttons_bp_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_BP, NON_VISIBLE, UINTPTR_MAX, "btnAF_OK", "OK", },
+//			{ 0, 0, 86, 44, buttons_bp_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_BP, NON_VISIBLE, UINTPTR_MAX, "btnAF_2",  "", },
+//		};
+//		win->bh_count = ARRAY_SIZE(buttons);
+//		uint_fast16_t buttons_size = sizeof(buttons);
+//		win->bh_ptr = malloc(buttons_size);
+//		ASSERT(win->bh_ptr != NULL);
+//		memcpy(win->bh_ptr, buttons, buttons_size);
+//
+//		label_t labels [] = {
+//		//    x, y,  parent, state, is_trackable, visible,  name, Text, font_size, 	color, onClickHandler
+//			{ 0, 0, WINDOW_BP, DISABLED,  0, NON_VISIBLE, "lbl_low", "", FONT_LARGE, COLORMAIN_YELLOW, },
+//			{ 0, 0, WINDOW_BP, DISABLED,  0, NON_VISIBLE, "lbl_high", "", FONT_LARGE, COLORMAIN_YELLOW, },
+//		};
+//		win->lh_count = ARRAY_SIZE(labels);
+//		uint_fast16_t labels_size = sizeof(labels);
+//		win->lh_ptr = malloc(labels_size);
+//		ASSERT(win->lh_ptr != NULL);
+//		memcpy(win->lh_ptr, labels, labels_size);
+//
+//		button_high = find_gui_element(TYPE_BUTTON, win, "btnAF_2");
+//		button_low = find_gui_element(TYPE_BUTTON, win, "btnAF_1");
+//
+//		lbl_low = find_gui_element(TYPE_LABEL, win, "lbl_low");
+//		lbl_high = find_gui_element(TYPE_LABEL, win, "lbl_high");
+//
+//		lbl_low->y = y_0 + get_label_height(lbl_low);
+//		lbl_high->y = lbl_low->y;
+//
+//		lbl_low->visible = VISIBLE;
+//		lbl_high->visible = VISIBLE;
+//
+//		x = col1_int;
+//		y = lbl_high->y + get_label_height(lbl_high) * 2;
+//		for (uint_fast8_t id = 0; id < win->bh_count; id ++)
+//		{
+//			button_t * bh = & win->bh_ptr [id];
+//			bh->x1 = x;
+//			bh->y1 = y;
+//			bh->visible = VISIBLE;
+//			x = x + interval + bh->w;
+//		}
+//
+//		val_high = hamradio_get_high_bp(0);
+//		val_low = hamradio_get_low_bp(0);
+//		if (hamradio_get_bp_type())			// BWSET_WIDE
+//		{
+//			strcpy(button_high->text, "High|cut");
+//			strcpy(button_low->text, "Low|cut");
+//			button_high->is_locked = 1;
+//		}
+//		else								// BWSET_NARROW
+//		{
+//			strcpy(button_high->text, "Pitch");
+//			strcpy(button_low->text, "Width");
+//			button_low->is_locked = 1;
+//		}
+//
+//		xmax = button_high->x1 + button_high->w;
+//		ymax = button_high->y1 + button_high->h;
+//		calculate_window_position(win, xmax, ymax);
+//		elements_state(win);
+//	}
+//
+//	if (encoder2.rotate != 0 || win->first_call)
+//	{
+//		char buf [TEXT_ARRAY_SIZE];
+//
+//		if (win->first_call)
+//			win->first_call = 0;
+//
+//		if (hamradio_get_bp_type())			// BWSET_WIDE
+//		{
+//			if (button_high->is_locked == 1)
+//				val_high = hamradio_get_high_bp(encoder2.rotate);
+//			else if (button_low->is_locked == 1)
+//				val_low = hamradio_get_low_bp(encoder2.rotate * 10);
+//			encoder2.rotate_done = 1;
+//
+//			x_h = x_0 + normalize(val_high, 0, 50, x_size);
+//			x_l = x_0 + normalize(val_low / 10, 0, 50, x_size);
+//			x_c = x_l + (x_h - x_l) / 2;
+//
+//			local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("%d"), val_high * 100);
+//			strcpy(lbl_high->text, buf);
+//			lbl_high->x = (x_h + get_label_width(lbl_high) > x_0 + x_size) ?
+//					(x_0 + x_size - get_label_width(lbl_high)) : x_h;
+//
+//			local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("%d"), val_low * 10);
+//			strcpy(lbl_low->text, buf);
+//			lbl_low->x = (x_l - get_label_width(lbl_low) < x_0 - 10) ? (x_0 - 10) : (x_l - get_label_width(lbl_low));
+//		}
+//		else						// BWSET_NARROW
+//		{
+//			if (button_high->is_locked == 1)
+//			{
+//				val_c = hamradio_get_high_bp(encoder2.rotate);
+//				val_w = hamradio_get_low_bp(0) / 2;
+//			}
+//			else if (button_low->is_locked == 1)
+//			{
+//				val_c = hamradio_get_high_bp(0);
+//				val_w = hamradio_get_low_bp(encoder2.rotate) / 2;
+//			}
+//			encoder2.rotate_done = 1;
+//			x_c = x_0 + x_size / 2;
+//			x_l = x_c - normalize(val_w , 0, 500, x_size);
+//			x_h = x_c + normalize(val_w , 0, 500, x_size);
+//
+//			local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("%d"), val_w * 20);
+//			strcpy(lbl_high->text, buf);
+//			lbl_high->x = x_c - get_label_width(lbl_high) / 2;
+//
+//			local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("P %d"), val_c * 10);
+//			strcpy(lbl_low->text, buf);
+//			lbl_low->x = x_0 + x_size - get_label_width(lbl_low);
+//		}
+//		gui_timer_update(NULL);
+//	}
+//
+//
+//	colmain_line(fr, DIM_X, DIM_Y, win->x1 + x_0 - 10, win->y1 + y_0, win->x1 + x_0 + x_size, win->y1 + y_0, COLORMAIN_WHITE, 0);
+//	colmain_line(fr, DIM_X, DIM_Y, win->x1 + x_0, win->y1 + y_0 - 45, win->x1 + x_0, win->y1 + y_0 + 5, COLORMAIN_WHITE, 0);
+//}
 
 // *********************************************************************************************************************************************************************
 
