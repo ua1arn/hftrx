@@ -899,7 +899,7 @@ static void window_bp_process(void)
 	window_t * win = get_win(WINDOW_BP);
 	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
 
-	uint_fast16_t x_size = 290, x_0 = 50, y_0 = 90;
+	enum { x_size = 290, x_0 = 50, y_0 = 90 };
 	static label_t * lbl_low, * lbl_high;
 	static button_t * button_high, * button_low;
 
@@ -1034,7 +1034,7 @@ static void window_bp_process(void)
 	if (is_sp_ready)
 	{
 		float32_t max_val = 0;
-		enum { visiblefftsize = 112 };
+		enum { visiblefftsize = 110 };
 		uint_fast16_t fft_step = (x_0 + x_size) / visiblefftsize;
 		is_sp_ready = 0;
 
@@ -1053,18 +1053,19 @@ static void window_bp_process(void)
 
 		for (uint_fast16_t xx = x_0, i = 0; xx < (x_0 + x_size); xx ++, i ++)
 		{
+			static uint_fast8_t Yold_array [x_size];
 			uint_fast16_t fftpos = FIRBUFSIZE - i / fft_step;
-			uint_fast8_t yy = normalize(fftbuf [fftpos], 0, max_val, 40);
+
+			const FLOAT_t val = normalize(fftbuf [fftpos], 0, max_val, 40);
+			const FLOAT_t yy = Yold_array [i] * 0.8 + 0.2 * val;
+			Yold_array [i] = yy;
+
 			colmain_line(fr, DIM_X, DIM_Y, win->x1 + xx, win->y1 + y_0 - yy, win->x1 + xx, win->y1 + y_0, COLORMAIN_GREEN, 0);
 		}
 	}
 
 	colmain_line(fr, DIM_X, DIM_Y, win->x1 + x_0 - 10, win->y1 + y_0, win->x1 + x_0 + x_size, win->y1 + y_0, COLORMAIN_WHITE, 0);
 	colmain_line(fr, DIM_X, DIM_Y, win->x1 + x_0, win->y1 + y_0 - 45, win->x1 + x_0, win->y1 + y_0 + 5, COLORMAIN_WHITE, 0);
-	colmain_line(fr, DIM_X, DIM_Y, win->x1 + x_l, win->y1 + y_0 - 40, win->x1 + x_l - 4, win->y1 + y_0 - 3, COLORMAIN_YELLOW, 1);
-	colmain_line(fr, DIM_X, DIM_Y, win->x1 + x_h, win->y1 + y_0 - 40, win->x1 + x_h + 4, win->y1 + y_0 - 3, COLORMAIN_YELLOW, 1);
-	colmain_line(fr, DIM_X, DIM_Y, win->x1 + x_l, win->y1 + y_0 - 40, win->x1 + x_h, win->y1 + y_0 - 40, COLORMAIN_YELLOW, 0);
-	colmain_line(fr, DIM_X, DIM_Y, win->x1 + x_c, win->y1 + y_0 - 45, win->x1 + x_c, win->y1 + y_0 + 5, COLORMAIN_RED, 0);
 }
 
 // *********************************************************************************************************************************************************************
