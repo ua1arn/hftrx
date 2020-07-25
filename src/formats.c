@@ -14,7 +14,7 @@
 #include <ctype.h>
 
 // использование библиотечной функции форматного вывода вместо самописной
-//#define FORMATFROMLIBRARY (CPUSTYLE_ARM_CM7 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM0 /* || CPUSTYLE_ARM_CA9 */)
+//#define FORMATFROMLIBRARY (CPUSTYLE_ARM_CM7 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM0 /* || (__CORTEX_A != 0) */)
 
 #if ! FORMATFROMLIBRARY
 

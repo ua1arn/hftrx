@@ -415,7 +415,6 @@ extern "C" {
 
 	// Renesas CPU
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
-	#define	CPUSTYLE_ARM_CA9	1
 
 	/* MCU Lineup */
 	#define TARGET_RZA1LC           (0x00200000)
@@ -461,7 +460,6 @@ extern "C" {
 
 	#define CORE_CA7	1
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
-	#define	CPUSTYLE_ARM_CA7	1
 
 	#include "armcpu/stm32mp1xx.h"
 	#include "irq_ctrl.h"
