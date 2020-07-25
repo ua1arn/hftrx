@@ -4915,7 +4915,7 @@ static void fftzoom_filer_decimate(
 	arm_fir_decimate_f32(& c.fir_config, buffer, buffer, usedSize);
 }
 
-#if WITHTOUCHGUI
+// децимация НЧ спектра для увеличения разрешения
 void fftzoom_x2(float32_t * buffer)
 {
 	const struct zoom_param * const prm = & zoom_params [0];
@@ -4929,7 +4929,6 @@ void fftzoom_x2(float32_t * buffer)
 						usedSize));
 	arm_fir_decimate_f32(& fir_config, buffer, buffer, usedSize);
 }
-#endif /* WITHTOUCHGUI */
 
 static void
 make_cmplx(

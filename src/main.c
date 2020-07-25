@@ -19176,8 +19176,21 @@ int_fast32_t hamradio_getequalizerbase(void)
 #endif /* WITHAFCODEC1HAVEPROC */
 
 #if WITHIFSHIFT
-int_fast16_t hamradio_get_if_shift(void)
+int_fast16_t hamradio_if_shift(int_fast8_t step)
 {
+	if (step != 0)
+	{
+		int_fast16_t val = ifshifoffset.value + step * ISTEP50;
+
+		if (val < IFSHIFTTMIN)
+			val = IFSHIFTTMIN;
+
+		if (val > IFSHIFTMAX)
+			val = IFSHIFTMAX;
+
+		ifshifoffset.value = val;
+		updateboard(1, 0);
+	}
 	return ifshifoffset.value + getifshiftbase();	// Добавить учет признака наличия сдвига
 }
 #endif /* WITHIFSHIFT */

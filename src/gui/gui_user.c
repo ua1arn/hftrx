@@ -22,13 +22,14 @@
 #if WITHTOUCHGUI
 
 #include "src/gui/gui.h"
+#include "src/gui/gui_user.h"
 #include "src/gui/gui_system.h"
 #include "src/gui/gui_structs.h"
 #include "src/gui/gui_settings.h"
 
 static void gui_main_process(void);
 static void window_mode_process(void);
-static void window_bp_process(void);
+static void window_af_process(void);
 static void window_agc_process(void);
 static void window_freq_process (void);
 static void window_swrscan_process(void);
@@ -52,7 +53,7 @@ static window_t windows [] = {
 //     window_id,   		 parent_id, 			align_mode,     x1, y1, w, h,   title,     		is_show, first_call, is_close, onVisibleProcess
 	{ WINDOW_MAIN, 			 UINT8_MAX, 			ALIGN_LEFT_X,	0, 0, 0, 0, "",  	   	   			 NON_VISIBLE, 0, 0, gui_main_process, },
 	{ WINDOW_MODES, 		 UINT8_MAX, 			ALIGN_CENTER_X, 0, 0, 0, 0, "Select mode", 			 NON_VISIBLE, 0, 1, window_mode_process, },
-	{ WINDOW_BP,    		 UINT8_MAX,				ALIGN_CENTER_X, 0, 0, 0, 0, "Bandpass",    			 NON_VISIBLE, 0, 1, window_bp_process, },
+	{ WINDOW_BP,    		 UINT8_MAX,				ALIGN_CENTER_X, 0, 0, 0, 0, "AF settings",    		 NON_VISIBLE, 0, 1, window_af_process, },
 	{ WINDOW_AGC,   		 WINDOW_OPTIONS,		ALIGN_CENTER_X, 0, 0, 0, 0, "AGC control", 			 NON_VISIBLE, 0, 1, window_agc_process, },
 	{ WINDOW_FREQ,  		 WINDOW_OPTIONS,		ALIGN_CENTER_X, 0, 0, 0, 0, "Freq:", 	   			 NON_VISIBLE, 0, 1, window_freq_process, },
 	{ WINDOW_MENU,  		 WINDOW_OPTIONS,		ALIGN_CENTER_X, 0, 0, 0, 0, "Settings",	   		 	 NON_VISIBLE, 0, 1, window_menu_process, },
@@ -87,6 +88,8 @@ static uint_fast8_t menu_label_touched = 0;
 static uint_fast8_t menu_level;
 
 static band_array_t bands [30];
+
+static bp_var_t bp_t;
 
 static float32_t updated_spectre [FIRBUFSIZE];
 float32_t fftbuf [FIRBUFSIZE * 2];
@@ -128,22 +131,22 @@ static void btn_main_handler(void)
 			local_snprintf_P(btn_AutoNotch->text, ARRAY_SIZE(btn_AutoNotch->text), PSTR("ANotch|%s"), btn_AutoNotch->payload ? "ON" : "OFF");
 			hamradio_set_autonotch(btn_AutoNotch->payload);
 		}
-//		else if (get_selected_element() == btn_AF)
-//		{
-//			window_t * win = get_win(WINDOW_BP);
-//			if (win->state == NON_VISIBLE)
-//			{
-//				open_window(win);
-//				footer_buttons_state(DISABLED, btn_AF);
-//				hamradio_enable_keyboard_redirect();
-//			}
-//			else
-//			{
-//				close_window(OPEN_PARENT_WINDOW);
-//				footer_buttons_state(CANCELLED);
-//				hamradio_disable_keyboard_redirect();
-//			}
-//		}
+		else if (get_selected_element() == btn_AF)
+		{
+			window_t * win = get_win(WINDOW_BP);
+			if (win->state == NON_VISIBLE)
+			{
+				open_window(win);
+				footer_buttons_state(DISABLED, btn_AF);
+				hamradio_enable_keyboard_redirect();
+			}
+			else
+			{
+				close_window(OPEN_PARENT_WINDOW);
+				footer_buttons_state(CANCELLED);
+				hamradio_disable_keyboard_redirect();
+			}
+		}
 		else if (get_selected_element() == btn_Mode)
 		{
 			window_t * win = get_win(WINDOW_MODES);
@@ -227,15 +230,15 @@ static void gui_main_process(void)
 
 		button_t buttons [] = {
 		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
-			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, UINTPTR_MAX, "btn_Bands", 	 "Bands", },
-			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, UINTPTR_MAX, "btn_Memory",  "Memory", },
-			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, UINTPTR_MAX, "btn_Mode", 	 "Mode", },
-			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, UINTPTR_MAX, "btn_AF",  	 "AF|filter", },
-			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, UINTPTR_MAX, "btn_AutoNotch", "", },
-			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, UINTPTR_MAX, "btn_6", 	 	 "", },
-			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, UINTPTR_MAX, "btn_7", 	 	 "", },
-			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, UINTPTR_MAX, "btn_8", 	 	 "", },
-			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, UINTPTR_MAX, "btn_Options", "Options", },
+			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_Bands", 	 "Bands", },
+			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_Memory",  "Memory", },
+			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_Mode", 	 "Mode", },
+			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_AF",  	 "AF|filter", },
+			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_AutoNotch", "", },
+			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_6", 	 	 "", },
+			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_7", 	 	 "", },
+			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_8", 	 	 "", },
+			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_Options", "Options", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -342,7 +345,7 @@ static void gui_main_process(void)
 	// значение сдвига частоты
 	static int_fast16_t if_shift;
 	if (get_gui_1sec_timer())
-		if_shift = hamradio_get_if_shift();
+		if_shift = hamradio_if_shift(0);
 	xx = current_place * lbl_place_width + lbl_place_width / 2;
 	if (if_shift)
 	{
@@ -477,26 +480,26 @@ static void window_memory_process(void)
 
 		button_t buttons [] = {
 		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,     	 	payload,	 name, 		text
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell0", "---", },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell1", "---", },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell2", "---", },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell3", "---", },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell4", "---", },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell5", "---", },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell6", "---", },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell7", "---", },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell8", "---", },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell9", "---", },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell10", "---", },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell11", "---", },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell12", "---", },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell13", "---", },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell14", "---", },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell15", "---", },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell16", "---", },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell17", "---", },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell18", "---", },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, UINTPTR_MAX, "btn_cell19", "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, INT32_MAX, "btn_cell0", "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, INT32_MAX, "btn_cell1", "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, INT32_MAX, "btn_cell2", "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, INT32_MAX, "btn_cell3", "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, INT32_MAX, "btn_cell4", "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, INT32_MAX, "btn_cell5", "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, INT32_MAX, "btn_cell6", "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, INT32_MAX, "btn_cell7", "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, INT32_MAX, "btn_cell8", "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, INT32_MAX, "btn_cell9", "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, INT32_MAX, "btn_cell10", "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, INT32_MAX, "btn_cell11", "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, INT32_MAX, "btn_cell12", "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, INT32_MAX, "btn_cell13", "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, INT32_MAX, "btn_cell14", "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, INT32_MAX, "btn_cell15", "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, INT32_MAX, "btn_cell16", "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, INT32_MAX, "btn_cell17", "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, INT32_MAX, "btn_cell18", "---", },
+			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, INT32_MAX, "btn_cell19", "---", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -732,12 +735,12 @@ static void window_options_process(void)
 
 		button_t buttons [] = {
 		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
-			{ 0, 0, 100, 44, buttons_options_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_OPTIONS, NON_VISIBLE, UINTPTR_MAX, "btn_SysMenu",   "System|settings", },
-			{ 0, 0, 100, 44, buttons_options_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_OPTIONS, NON_VISIBLE, UINTPTR_MAX, "btn_AUDsett",   "Audio|settings", },
-			{ 0, 0, 100, 44, buttons_options_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_OPTIONS, NON_VISIBLE, UINTPTR_MAX, "btn_TXsett",    "Transmit|settings", },
-			{ 0, 0, 100, 44, buttons_options_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_OPTIONS, NON_VISIBLE, UINTPTR_MAX, "btn_Freq",      "Freq|enter", },
-			{ 0, 0, 100, 44, buttons_options_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_OPTIONS, NON_VISIBLE, UINTPTR_MAX, "btn_AGC",  	  "AGC", },
-			{ 0, 0, 100, 44, buttons_options_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_OPTIONS, NON_VISIBLE, UINTPTR_MAX, "btn_Utils", 	  "Utils", },
+			{ 0, 0, 100, 44, buttons_options_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_OPTIONS, NON_VISIBLE, INT32_MAX, "btn_SysMenu",   "System|settings", },
+			{ 0, 0, 100, 44, buttons_options_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_OPTIONS, NON_VISIBLE, INT32_MAX, "btn_AUDsett",   "Audio|settings", },
+			{ 0, 0, 100, 44, buttons_options_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_OPTIONS, NON_VISIBLE, INT32_MAX, "btn_TXsett",    "Transmit|settings", },
+			{ 0, 0, 100, 44, buttons_options_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_OPTIONS, NON_VISIBLE, INT32_MAX, "btn_Freq",      "Freq|enter", },
+			{ 0, 0, 100, 44, buttons_options_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_OPTIONS, NON_VISIBLE, INT32_MAX, "btn_AGC",  	  "AGC", },
+			{ 0, 0, 100, 44, buttons_options_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_OPTIONS, NON_VISIBLE, INT32_MAX, "btn_Utils", 	  "Utils", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -800,7 +803,7 @@ static void window_utilites_process(void)
 
 		button_t buttons [] = {
 		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
-			{ 0, 0, 100, 44, buttons_utilites_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UTILS, NON_VISIBLE, UINTPTR_MAX, "btn_SWRscan", "SWR|scanner", },
+			{ 0, 0, 100, 44, buttons_utilites_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UTILS, NON_VISIBLE, INT32_MAX, "btn_SWRscan", "SWR|scanner", },
 
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
@@ -845,7 +848,7 @@ static void buttons_mode_handler(void)
 		button_t * bh = (button_t *)get_selected_element();
 		if (win->state && bh->parent == win->window_id)
 		{
-			if (bh->payload != UINTPTR_MAX)
+			if (bh->payload != INT32_MAX)
 				hamradio_change_submode(bh->payload, 1);
 
 			close_window(OPEN_PARENT_WINDOW);
@@ -911,19 +914,74 @@ static void window_mode_process(void)
 
 // *********************************************************************************************************************************************************************
 
-static void window_bp_process(void)
+static void buttons_af_handler(void)
+{
+	if (is_short_pressed())
+	{
+		window_t * win = get_win(WINDOW_BP);
+		button_t * btnlowm = find_gui_element(TYPE_BUTTON, win, "btnlow-");
+		button_t * btnlowp = find_gui_element(TYPE_BUTTON, win, "btnlow+");
+		button_t * btnhighm = find_gui_element(TYPE_BUTTON, win, "btnhigh-");
+		button_t * btnhighp = find_gui_element(TYPE_BUTTON, win, "btnhigh+");
+		button_t * btnifshiftm = find_gui_element(TYPE_BUTTON, win, "btnifshift-");
+		button_t * btnifshiftp = find_gui_element(TYPE_BUTTON, win, "btnifshift+");
+		button_t * sel_el = get_selected_element();
+
+		if (sel_el == btnlowm || sel_el == btnlowp)
+		{
+			bp_t.select = TYPE_BP_LOW;
+			bp_t.change = sel_el->payload;
+			bp_t.updated = 1;
+		}
+		else if (sel_el == btnhighm || sel_el == btnhighp)
+		{
+			bp_t.select = TYPE_BP_HIGH;
+			bp_t.change = sel_el->payload;
+			bp_t.updated = 1;
+		}
+		else if (sel_el == btnifshiftm || sel_el == btnifshiftp)
+		{
+			bp_t.select = TYPE_IF_SHIFT;
+			bp_t.change = sel_el->payload;
+			bp_t.updated = 1;
+		}
+	}
+}
+
+static void window_af_process(void)
 {
 	window_t * win = get_win(WINDOW_BP);
-	static label_t * lbl_low, * lbl_high;
+	static label_t * lbl_low = NULL, * lbl_high = NULL, * lbl_ifshift = NULL;
+	static char str_low [TEXT_ARRAY_SIZE], str_high [TEXT_ARRAY_SIZE];
+	uint_fast8_t val_high = 0, val_low = 0;
+	static uint_fast8_t bp_type = 0;
 
 	if (win->first_call)
 	{
 		win->first_call = 0;
+		uint_fast8_t interval = 50, col1_int = 20;
+		uint_fast16_t xmax = 0, ymax = 0;
+
+		button_t buttons [] = {
+		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   visible,   payload,	 name, 			text
+			{ 0, 0, 40, 40, buttons_af_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_BP, NON_VISIBLE, -1, "btnlow-", 		"-", },
+			{ 0, 0, 40, 40, buttons_af_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_BP, NON_VISIBLE, 1,  "btnlow+", 		"+", },
+			{ 0, 0, 40, 40, buttons_af_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_BP, NON_VISIBLE, -1, "btnhigh-", 		"-", },
+			{ 0, 0, 40, 40, buttons_af_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_BP, NON_VISIBLE, 1,  "btnhigh+", 		"+", },
+			{ 0, 0, 40, 40, buttons_af_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_BP, NON_VISIBLE, -1, "btnifshift-", 	"-", },
+			{ 0, 0, 40, 40, buttons_af_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_BP, NON_VISIBLE, 1,  "btnifshift+", 	"+", },
+		};
+		win->bh_count = ARRAY_SIZE(buttons);
+		uint_fast16_t buttons_size = sizeof(buttons);
+		win->bh_ptr = malloc(buttons_size);
+		ASSERT(win->bh_ptr != NULL);
+		memcpy(win->bh_ptr, buttons, buttons_size);
 
 		label_t labels [] = {
-		//    x, y,  parent, state, is_trackable, visible,  name, Text, font_size, 	color, onClickHandler
-			{ 0, 0, WINDOW_BP, DISABLED,  0, NON_VISIBLE, "lbl_low", "", FONT_LARGE, COLORMAIN_YELLOW, },
-			{ 0, 0, WINDOW_BP, DISABLED,  0, NON_VISIBLE, "lbl_high", "", FONT_LARGE, COLORMAIN_YELLOW, },
+		//    x, y,  parent, state, is_trackable, visible,  name, 			Text, 				font_size, 	color, 		onClickHandler
+			{ 0, 0, WINDOW_BP, DISABLED,  0, NON_VISIBLE, "lbl_low",     "Low  cut : **** ",  FONT_MEDIUM, COLORMAIN_WHITE, },
+			{ 0, 0, WINDOW_BP, DISABLED,  0, NON_VISIBLE, "lbl_high",    "High cut : **** ",  FONT_MEDIUM, COLORMAIN_WHITE, },
+			{ 0, 0, WINDOW_BP, DISABLED,  0, NON_VISIBLE, "lbl_ifshift", "IF shift : **** ",  FONT_MEDIUM, COLORMAIN_WHITE, },
 		};
 		win->lh_count = ARRAY_SIZE(labels);
 		uint_fast16_t labels_size = sizeof(labels);
@@ -931,188 +989,112 @@ static void window_bp_process(void)
 		ASSERT(win->lh_ptr != NULL);
 		memcpy(win->lh_ptr, labels, labels_size);
 
-		slider_t sliders [] = {
-			{ 0, 0, 0, 0, 0, 0, ORIENTATION_HORIZONTAL, WINDOW_BP, "sl_low",  CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
-			{ 0, 0, 0, 0, 0, 0, ORIENTATION_HORIZONTAL, WINDOW_BP, "sl_high", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
-		};
-		win->sh_count = ARRAY_SIZE(sliders);
-		uint_fast16_t sliders_size = sizeof(sliders);
-		win->sh_ptr = malloc(sliders_size);
-		ASSERT(win->sh_ptr != NULL);
-		memcpy(win->sh_ptr, sliders, sliders_size);
+		lbl_low = find_gui_element(TYPE_LABEL, win, "lbl_low");
+		lbl_high = find_gui_element(TYPE_LABEL, win, "lbl_high");
+		lbl_ifshift = find_gui_element(TYPE_LABEL, win, "lbl_ifshift");
+
+		button_t * bh = & win->bh_ptr [0];
+
+		lbl_low->x = col1_int;
+		lbl_low->y = interval;
+		lbl_low->visible = VISIBLE;
+
+		lbl_high->x = lbl_low->x;
+		lbl_high->y = lbl_low->y + interval;
+		lbl_high->visible = VISIBLE;
+
+		lbl_ifshift->x = lbl_high->x;
+		lbl_ifshift->y = lbl_high->y + interval;
+		lbl_ifshift->visible = VISIBLE;
+		int16_t shift = hamradio_if_shift(0);
+		if (shift == 0)
+			local_snprintf_P(lbl_ifshift->text, ARRAY_SIZE(lbl_ifshift->text), PSTR("IF shift :  OFF"));
+		else
+			local_snprintf_P(lbl_ifshift->text, ARRAY_SIZE(lbl_ifshift->text), PSTR("IF shift :%+5d"), shift);
+
+		uint_fast16_t x = lbl_low->x + get_label_width(lbl_low);
+		uint_fast16_t y = lbl_low->y + get_label_height(lbl_low) / 2 - bh->h / 2;
+
+		for (uint_fast8_t i = 0, r = 1; i < win->bh_count; i ++, r ++)
+		{
+			bh = & win->bh_ptr [i];
+			bh->x1 = x;
+			bh->y1 = y;
+			bh->visible = VISIBLE;
+
+			x = x + bh->w + 10;
+			if (r >= 2)
+			{
+				r = 0;
+				x = lbl_low->x + get_label_width(lbl_low);
+				y = y + interval;
+			}
+			xmax = (xmax > bh->x1 + bh->w) ? xmax : (bh->x1 + bh->w);
+			ymax = (ymax > bh->y1 + bh->h) ? ymax : (bh->y1 + bh->h);
+		}
+
+		bp_type = hamradio_get_bp_type();
+		val_low = hamradio_get_low_bp(0);
+		val_high = hamradio_get_high_bp(0);
+
+		if (bp_type)						// BWSET_WIDE
+		{
+			strcpy(str_low,  "Low  cut ");
+			strcpy(str_high, "High cut ");
+			val_high *= 100;
+		}
+		else								// BWSET_NARROW
+		{
+			strcpy(str_low,  "Width    ");
+			strcpy(str_high, "Pitch    ");
+			val_high *= 10;
+		}
+
+		local_snprintf_P(lbl_low->text, ARRAY_SIZE(lbl_low->text), PSTR("%s: %4d "), str_low, val_low * 10);
+		local_snprintf_P(lbl_high->text, ARRAY_SIZE(lbl_high->text), PSTR("%s: %4d "), str_high, val_high);
+
+		calculate_window_position(win, xmax, ymax);
+		elements_state(win);
+
+		return;
+	}
+
+	if (bp_t.updated)
+	{
+		bp_t.updated = 0;
+		gui_timer_update(NULL);
+		int16_t shift;
+
+		switch(bp_t.select)
+		{
+		case TYPE_BP_LOW:
+
+			val_low = hamradio_get_low_bp(bp_t.change * 5);
+			local_snprintf_P(lbl_low->text, ARRAY_SIZE(lbl_low->text), PSTR("%s: %4d "), str_low, val_low * 10);
+			break;
+
+		case TYPE_BP_HIGH:
+
+			val_high = hamradio_get_high_bp(bp_t.change);
+			if (bp_type)
+				val_high *= 100;
+			else
+				val_high *= 10;
+			local_snprintf_P(lbl_high->text, ARRAY_SIZE(lbl_high->text), PSTR("%s: %4d "), str_high, val_high);
+
+			break;
+
+		case TYPE_IF_SHIFT:
+
+			shift = hamradio_if_shift(bp_t.change);
+			if (shift == 0)
+				local_snprintf_P(lbl_ifshift->text, ARRAY_SIZE(lbl_ifshift->text), PSTR("IF shift :  OFF"));
+			else
+				local_snprintf_P(lbl_ifshift->text, ARRAY_SIZE(lbl_ifshift->text), PSTR("IF shift :%+5d"), shift);
+			break;
+		}
 	}
 }
-
-
-//static void buttons_bp_handler(void)
-//{
-//	if (is_short_pressed())
-//	{
-//		window_t * win = get_win(WINDOW_BP);
-//		button_t * button_high = find_gui_element(TYPE_BUTTON, win, "btnAF_2");
-//		button_t * button_low = find_gui_element(TYPE_BUTTON, win, "btnAF_1");
-//		button_t * button_OK = find_gui_element(TYPE_BUTTON, win, "btnAF_OK");
-//
-//		if (get_selected_element() == button_low)
-//		{
-//			button_high->is_locked = 0;
-//			button_low->is_locked = 1;
-//		}
-//		else if (get_selected_element() == button_high)
-//		{
-//			button_high->is_locked = 1;
-//			button_low->is_locked = 0;
-//		}
-//		else if (get_selected_element() == button_OK)
-//		{
-//			close_all_windows();
-//		}
-//	}
-//}
-
-//static void window_bp_process(void)
-//{
-//	static uint_fast8_t val_high, val_low, val_c, val_w;
-//	static uint_fast16_t x_h, x_l, x_c;
-//	window_t * win = get_win(WINDOW_BP);
-//	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
-//
-//	enum { x_size = 290, x_0 = 50, y_0 = 90 };
-//	static label_t * lbl_low, * lbl_high;
-//	static button_t * button_high, * button_low;
-//
-//	if (win->first_call)
-//	{
-//		uint_fast16_t id = 0, x, y, xmax = 0, ymax = 0;
-//		uint_fast8_t interval = 20, col1_int = 35, row1_int = window_title_height + 20;
-//
-//		button_t buttons [] = {
-//		//   x1, y1, w, h,  onClickHandler,     state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
-//			{ 0, 0, 86, 44, buttons_bp_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_BP, NON_VISIBLE, UINTPTR_MAX, "btnAF_1",  "", },
-//			{ 0, 0, 86, 44, buttons_bp_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_BP, NON_VISIBLE, UINTPTR_MAX, "btnAF_OK", "OK", },
-//			{ 0, 0, 86, 44, buttons_bp_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_BP, NON_VISIBLE, UINTPTR_MAX, "btnAF_2",  "", },
-//		};
-//		win->bh_count = ARRAY_SIZE(buttons);
-//		uint_fast16_t buttons_size = sizeof(buttons);
-//		win->bh_ptr = malloc(buttons_size);
-//		ASSERT(win->bh_ptr != NULL);
-//		memcpy(win->bh_ptr, buttons, buttons_size);
-//
-//		label_t labels [] = {
-//		//    x, y,  parent, state, is_trackable, visible,  name, Text, font_size, 	color, onClickHandler
-//			{ 0, 0, WINDOW_BP, DISABLED,  0, NON_VISIBLE, "lbl_low", "", FONT_LARGE, COLORMAIN_YELLOW, },
-//			{ 0, 0, WINDOW_BP, DISABLED,  0, NON_VISIBLE, "lbl_high", "", FONT_LARGE, COLORMAIN_YELLOW, },
-//		};
-//		win->lh_count = ARRAY_SIZE(labels);
-//		uint_fast16_t labels_size = sizeof(labels);
-//		win->lh_ptr = malloc(labels_size);
-//		ASSERT(win->lh_ptr != NULL);
-//		memcpy(win->lh_ptr, labels, labels_size);
-//
-//		button_high = find_gui_element(TYPE_BUTTON, win, "btnAF_2");
-//		button_low = find_gui_element(TYPE_BUTTON, win, "btnAF_1");
-//
-//		lbl_low = find_gui_element(TYPE_LABEL, win, "lbl_low");
-//		lbl_high = find_gui_element(TYPE_LABEL, win, "lbl_high");
-//
-//		lbl_low->y = y_0 + get_label_height(lbl_low);
-//		lbl_high->y = lbl_low->y;
-//
-//		lbl_low->visible = VISIBLE;
-//		lbl_high->visible = VISIBLE;
-//
-//		x = col1_int;
-//		y = lbl_high->y + get_label_height(lbl_high) * 2;
-//		for (uint_fast8_t id = 0; id < win->bh_count; id ++)
-//		{
-//			button_t * bh = & win->bh_ptr [id];
-//			bh->x1 = x;
-//			bh->y1 = y;
-//			bh->visible = VISIBLE;
-//			x = x + interval + bh->w;
-//		}
-//
-//		val_high = hamradio_get_high_bp(0);
-//		val_low = hamradio_get_low_bp(0);
-//		if (hamradio_get_bp_type())			// BWSET_WIDE
-//		{
-//			strcpy(button_high->text, "High|cut");
-//			strcpy(button_low->text, "Low|cut");
-//			button_high->is_locked = 1;
-//		}
-//		else								// BWSET_NARROW
-//		{
-//			strcpy(button_high->text, "Pitch");
-//			strcpy(button_low->text, "Width");
-//			button_low->is_locked = 1;
-//		}
-//
-//		xmax = button_high->x1 + button_high->w;
-//		ymax = button_high->y1 + button_high->h;
-//		calculate_window_position(win, xmax, ymax);
-//		elements_state(win);
-//	}
-//
-//	if (encoder2.rotate != 0 || win->first_call)
-//	{
-//		char buf [TEXT_ARRAY_SIZE];
-//
-//		if (win->first_call)
-//			win->first_call = 0;
-//
-//		if (hamradio_get_bp_type())			// BWSET_WIDE
-//		{
-//			if (button_high->is_locked == 1)
-//				val_high = hamradio_get_high_bp(encoder2.rotate);
-//			else if (button_low->is_locked == 1)
-//				val_low = hamradio_get_low_bp(encoder2.rotate * 10);
-//			encoder2.rotate_done = 1;
-//
-//			x_h = x_0 + normalize(val_high, 0, 50, x_size);
-//			x_l = x_0 + normalize(val_low / 10, 0, 50, x_size);
-//			x_c = x_l + (x_h - x_l) / 2;
-//
-//			local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("%d"), val_high * 100);
-//			strcpy(lbl_high->text, buf);
-//			lbl_high->x = (x_h + get_label_width(lbl_high) > x_0 + x_size) ?
-//					(x_0 + x_size - get_label_width(lbl_high)) : x_h;
-//
-//			local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("%d"), val_low * 10);
-//			strcpy(lbl_low->text, buf);
-//			lbl_low->x = (x_l - get_label_width(lbl_low) < x_0 - 10) ? (x_0 - 10) : (x_l - get_label_width(lbl_low));
-//		}
-//		else						// BWSET_NARROW
-//		{
-//			if (button_high->is_locked == 1)
-//			{
-//				val_c = hamradio_get_high_bp(encoder2.rotate);
-//				val_w = hamradio_get_low_bp(0) / 2;
-//			}
-//			else if (button_low->is_locked == 1)
-//			{
-//				val_c = hamradio_get_high_bp(0);
-//				val_w = hamradio_get_low_bp(encoder2.rotate) / 2;
-//			}
-//			encoder2.rotate_done = 1;
-//			x_c = x_0 + x_size / 2;
-//			x_l = x_c - normalize(val_w , 0, 500, x_size);
-//			x_h = x_c + normalize(val_w , 0, 500, x_size);
-//
-//			local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("%d"), val_w * 20);
-//			strcpy(lbl_high->text, buf);
-//			lbl_high->x = x_c - get_label_width(lbl_high) / 2;
-//
-//			local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("P %d"), val_c * 10);
-//			strcpy(lbl_low->text, buf);
-//			lbl_low->x = x_0 + x_size - get_label_width(lbl_low);
-//		}
-//		gui_timer_update(NULL);
-//	}
-//
-//
-//	colmain_line(fr, DIM_X, DIM_Y, win->x1 + x_0 - 10, win->y1 + y_0, win->x1 + x_0 + x_size, win->y1 + y_0, COLORMAIN_WHITE, 0);
-//	colmain_line(fr, DIM_X, DIM_Y, win->x1 + x_0, win->y1 + y_0 - 45, win->x1 + x_0, win->y1 + y_0 + 5, COLORMAIN_WHITE, 0);
-//}
 
 // *********************************************************************************************************************************************************************
 
@@ -1154,9 +1136,9 @@ static void window_agc_process(void)
 
 		button_t buttons [] = {
 		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
-			{ 0, 0, 86, 44, buttons_agc_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AGC, NON_VISIBLE, UINTPTR_MAX, "btnAGCoff",  "AGC|off", },
-			{ 0, 0, 86, 44, buttons_agc_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AGC, NON_VISIBLE, UINTPTR_MAX, "btnAGCslow", "AGC|slow", },
-			{ 0, 0, 86, 44, buttons_agc_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AGC, NON_VISIBLE, UINTPTR_MAX, "btnAGCfast", "AGC|fast", },
+			{ 0, 0, 86, 44, buttons_agc_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AGC, NON_VISIBLE, INT32_MAX, "btnAGCoff",  "AGC|off", },
+			{ 0, 0, 86, 44, buttons_agc_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AGC, NON_VISIBLE, INT32_MAX, "btnAGCslow", "AGC|slow", },
+			{ 0, 0, 86, 44, buttons_agc_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AGC, NON_VISIBLE, INT32_MAX, "btnAGCfast", "AGC|fast", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -1380,8 +1362,8 @@ static void window_swrscan_process(void)
 
 		button_t buttons [] = {
 		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
-			{ 0, 0, 86, 44, buttons_swrscan_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_SWR_SCANNER, 	NON_VISIBLE, UINTPTR_MAX,  "btn_swr_start", "Start", },
-			{ 0, 0, 86, 44, buttons_swrscan_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_SWR_SCANNER, 	NON_VISIBLE, UINTPTR_MAX,  "btn_swr_OK", 	"OK", },
+			{ 0, 0, 86, 44, buttons_swrscan_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_SWR_SCANNER, 	NON_VISIBLE, INT32_MAX,  "btn_swr_start", "Start", },
+			{ 0, 0, 86, 44, buttons_swrscan_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_SWR_SCANNER, 	NON_VISIBLE, INT32_MAX,  "btn_swr_OK", 	"OK", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -1579,9 +1561,9 @@ static void window_tx_process(void)
 
 		button_t buttons [] = {
 		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
-			{ 0, 0, 100, 44, buttons_tx_sett_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_TX_SETTINGS, 	NON_VISIBLE, UINTPTR_MAX, "btn_tx_vox", 	 	 "VOX|OFF", },
-			{ 0, 0, 100, 44, buttons_tx_sett_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_TX_SETTINGS, 	NON_VISIBLE, UINTPTR_MAX, "btn_tx_vox_settings", "VOX|settings", },
-			{ 0, 0, 100, 44, buttons_tx_sett_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_TX_SETTINGS, 	NON_VISIBLE, UINTPTR_MAX, "btn_tx_power", 	 	 "TX power", },
+			{ 0, 0, 100, 44, buttons_tx_sett_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_TX_SETTINGS, 	NON_VISIBLE, INT32_MAX, "btn_tx_vox", 	 	 "VOX|OFF", },
+			{ 0, 0, 100, 44, buttons_tx_sett_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_TX_SETTINGS, 	NON_VISIBLE, INT32_MAX, "btn_tx_vox_settings", "VOX|settings", },
+			{ 0, 0, 100, 44, buttons_tx_sett_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_TX_SETTINGS, 	NON_VISIBLE, INT32_MAX, "btn_tx_power", 	 	 "TX power", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -1662,7 +1644,7 @@ static void window_tx_vox_process(void)
 
 		button_t buttons [] = {
 		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
-			{ 0, 0,  44, 44, buttons_tx_vox_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_TX_VOX_SETT, NON_VISIBLE, UINTPTR_MAX,	"btn_tx_vox_OK", "OK", },
+			{ 0, 0,  44, 44, buttons_tx_vox_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_TX_VOX_SETT, NON_VISIBLE, INT32_MAX,	"btn_tx_vox_OK", "OK", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -1858,7 +1840,7 @@ static void window_tx_power_process(void)
 
 		button_t buttons [] = {
 		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
-			{ 0, 0,  44, 44, buttons_tx_power_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_TX_POWER,  NON_VISIBLE, UINTPTR_MAX, "btn_tx_pwr_OK", "OK", },
+			{ 0, 0,  44, 44, buttons_tx_power_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_TX_POWER,  NON_VISIBLE, INT32_MAX, "btn_tx_pwr_OK", "OK", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -2035,14 +2017,14 @@ static void window_audiosettings_process(void)
 
 		button_t buttons [] = {
 		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
-			{ 0, 0, 100, 44, buttons_audiosettings_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, 	NON_VISIBLE, UINTPTR_MAX, "btn_reverb", 			"Reverb|OFF", },
-			{ 0, 0, 100, 44, buttons_audiosettings_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, 	NON_VISIBLE, UINTPTR_MAX, "btn_reverb_settings", 	"Reverb|settings", },
-			{ 0, 0, 100, 44, buttons_audiosettings_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, 	NON_VISIBLE, UINTPTR_MAX, "btn_monitor", 			"Monitor|disabled", },
-			{ 0, 0, 100, 44, buttons_audiosettings_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, 	NON_VISIBLE, UINTPTR_MAX, "btn_speaker", 			"Speaker|on air", },
-			{ 0, 0, 100, 44, buttons_audiosettings_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, 	NON_VISIBLE, UINTPTR_MAX, "btn_mic_eq", 			"MIC EQ|OFF", },
-			{ 0, 0, 100, 44, buttons_audiosettings_process,	CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, 	NON_VISIBLE, UINTPTR_MAX, "btn_mic_eq_settings", 	"MIC EQ|settings", },
-			{ 0, 0, 100, 44, buttons_audiosettings_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, 	NON_VISIBLE, UINTPTR_MAX, "btn_mic_settings", 		"MIC|settings", },
-			{ 0, 0, 100, 44, buttons_audiosettings_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, 	NON_VISIBLE, UINTPTR_MAX, "btn_mic_profiles", 		"MIC|profiles", },
+			{ 0, 0, 100, 44, buttons_audiosettings_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, 	NON_VISIBLE, INT32_MAX, "btn_reverb", 			"Reverb|OFF", },
+			{ 0, 0, 100, 44, buttons_audiosettings_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, 	NON_VISIBLE, INT32_MAX, "btn_reverb_settings", 	"Reverb|settings", },
+			{ 0, 0, 100, 44, buttons_audiosettings_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, 	NON_VISIBLE, INT32_MAX, "btn_monitor", 			"Monitor|disabled", },
+			{ 0, 0, 100, 44, buttons_audiosettings_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, 	NON_VISIBLE, INT32_MAX, "btn_speaker", 			"Speaker|on air", },
+			{ 0, 0, 100, 44, buttons_audiosettings_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, 	NON_VISIBLE, INT32_MAX, "btn_mic_eq", 			"MIC EQ|OFF", },
+			{ 0, 0, 100, 44, buttons_audiosettings_process,	CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, 	NON_VISIBLE, INT32_MAX, "btn_mic_eq_settings", 	"MIC EQ|settings", },
+			{ 0, 0, 100, 44, buttons_audiosettings_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, 	NON_VISIBLE, INT32_MAX, "btn_mic_settings", 		"MIC|settings", },
+			{ 0, 0, 100, 44, buttons_audiosettings_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, 	NON_VISIBLE, INT32_MAX, "btn_mic_profiles", 		"MIC|profiles", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -2146,7 +2128,7 @@ static void window_ap_reverb_process(void)
 
 		button_t buttons [] = {
 		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
-			{ 0, 0,  40, 40, buttons_ap_reverb_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_REVERB_SETT,	NON_VISIBLE, UINTPTR_MAX, "btn_REVs_ok", "OK", },
+			{ 0, 0,  40, 40, buttons_ap_reverb_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_REVERB_SETT,	NON_VISIBLE, INT32_MAX, "btn_REVs_ok", "OK", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -2301,7 +2283,7 @@ static void window_ap_mic_eq_process(void)
 
 		button_t buttons [] = {
 		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
-			{ 0, 0,  40, 40, buttons_ap_mic_eq_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_EQ, 	NON_VISIBLE, UINTPTR_MAX, "btn_EQ_ok", "OK", },
+			{ 0, 0,  40, 40, buttons_ap_mic_eq_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_EQ, 	NON_VISIBLE, INT32_MAX, "btn_EQ_ok", "OK", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -2473,9 +2455,9 @@ static void window_ap_mic_process(void)
 
 		button_t buttons [] = {
 		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
-			{ 0, 0,  86, 44, buttons_ap_mic_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_SETT,  	NON_VISIBLE, UINTPTR_MAX, "btn_mic_agc", 	"AGC|OFF", },
-			{ 0, 0,  86, 44, buttons_ap_mic_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_SETT,  	NON_VISIBLE, UINTPTR_MAX, "btn_mic_boost", 	"Boost|OFF", },
-			{ 0, 0,  86, 44, buttons_ap_mic_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_SETT,  	NON_VISIBLE, UINTPTR_MAX, "btn_mic_OK", 	"OK", },
+			{ 0, 0,  86, 44, buttons_ap_mic_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_SETT,  	NON_VISIBLE, INT32_MAX, "btn_mic_agc", 	"AGC|OFF", },
+			{ 0, 0,  86, 44, buttons_ap_mic_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_SETT,  	NON_VISIBLE, INT32_MAX, "btn_mic_boost", 	"Boost|OFF", },
+			{ 0, 0,  86, 44, buttons_ap_mic_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_SETT,  	NON_VISIBLE, INT32_MAX, "btn_mic_OK", 	"OK", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -2695,9 +2677,9 @@ static void window_ap_mic_prof_process(void)
 
 		button_t buttons [] = {
 		//   x1, y1, w, h,  onClickHandler,   				state,   	is_locked, is_long_press, parent,   	visible,      payload,	 	name, 				text
-			{ 0, 0, 100, 44, buttons_ap_mic_prof_process, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_AP_MIC_PROF, 	NON_VISIBLE, UINTPTR_MAX, "btn_mic_profile_1", "", },
-			{ 0, 0, 100, 44, buttons_ap_mic_prof_process, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_AP_MIC_PROF, 	NON_VISIBLE, UINTPTR_MAX, "btn_mic_profile_2", "", },
-			{ 0, 0, 100, 44, buttons_ap_mic_prof_process, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_AP_MIC_PROF, 	NON_VISIBLE, UINTPTR_MAX, "btn_mic_profile_3", "", },
+			{ 0, 0, 100, 44, buttons_ap_mic_prof_process, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_AP_MIC_PROF, 	NON_VISIBLE, INT32_MAX, "btn_mic_profile_1", "", },
+			{ 0, 0, 100, 44, buttons_ap_mic_prof_process, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_AP_MIC_PROF, 	NON_VISIBLE, INT32_MAX, "btn_mic_profile_2", "", },
+			{ 0, 0, 100, 44, buttons_ap_mic_prof_process, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_AP_MIC_PROF, 	NON_VISIBLE, INT32_MAX, "btn_mic_profile_3", "", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -2799,8 +2781,8 @@ static void window_menu_process(void)
 
 		button_t buttons [] = {
 		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
-			{ 0, 0, 40, 40, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, "btnSysMenu-", "-", },
-			{ 0, 0, 40, 40, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, UINTPTR_MAX, "btnSysMenu+", "+", },
+			{ 0, 0, 40, 40, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, INT32_MAX, "btnSysMenu-", "-", },
+			{ 0, 0, 40, 40, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, INT32_MAX, "btnSysMenu+", "+", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -3230,8 +3212,8 @@ static void window_uif_process(void)
 
 		button_t buttons [] = {
 		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
-			{ 0, 0, 40, 40, buttons_uif_handler,  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UIF, NON_VISIBLE, UINTPTR_MAX, "btnUIF-", "-", },
-			{ 0, 0, 40, 40, buttons_uif_handler,  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UIF, NON_VISIBLE, UINTPTR_MAX, "btnUIF+",  "+", },
+			{ 0, 0, 40, 40, buttons_uif_handler,  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UIF, NON_VISIBLE, INT32_MAX, "btnUIF-", "-", },
+			{ 0, 0, 40, 40, buttons_uif_handler,  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UIF, NON_VISIBLE, INT32_MAX, "btnUIF+",  "+", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -3277,7 +3259,7 @@ static void window_uif_process(void)
 		window_center_x = (col1_int + button_up->x1 + button_up->w) / 2;
 
 		lbl_uif_val->x = window_center_x - get_label_width(lbl_uif_val) / 2;
-		lbl_uif_val->y = row1_int + button_up->w / 2 - get_label_height(lbl_uif_val) / 2;
+		lbl_uif_val->y = row1_int + button_up->h / 2 - get_label_height(lbl_uif_val) / 2;
 		lbl_uif_val->visible = VISIBLE;
 
 		uint_fast16_t xmax = button_up->x1 + button_up->w;
