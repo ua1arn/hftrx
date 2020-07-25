@@ -4663,7 +4663,7 @@ void USB_WritePacket(USB_OTG_GlobalTypeDef *USBx, const uint8_t * data, uint_fas
 	//else
 	//	PRINTF(PSTR("USB_WritePacket, pipe=%d, size=%d, data[]={}\n"), ch_ep_num, size);
 
-	ASSERT(data != NULL);
+	ASSERT(data != NULL || size == 0);
 
 	if (dma == USB_DISABLE)
 	{
@@ -4725,7 +4725,7 @@ void USB_ReadPacket(USB_OTG_GlobalTypeDef *USBx, uint8_t * dest, uint_fast16_t l
 	uint_fast16_t count32b = (len + 3) / 4;
 	uint32_t * dest32 = (uint32_t *) dest;
 	const volatile uint32_t * const rxfifo32 = & USBx_DFIFO(0);
-	ASSERT(dest != NULL);
+	ASSERT(dest != NULL || len == 0);
 	for (; count32b >= 16; count32b -= 16)
 	{
 		* dest32 ++ = * rxfifo32;
