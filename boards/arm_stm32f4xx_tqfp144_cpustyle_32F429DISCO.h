@@ -494,30 +494,6 @@ Free:
 	} while (0)
 #endif /* WITHSAI1HW */
 
-
-// Назначения входов АЦП процессора.
-enum 
-{ 
-#if WITHREFSENSOR
-	VREFIX = 17,		// Reference voltage
-#endif /* WITHREFSENSOR */
-//#if WITHTEMPSENSOR
-//	TEMPIX = 16,		// ADC1->CR2 |= ADC_CR2_TSVREFE;	// для тестов
-//#endif
-//#if WITHVOLTLEVEL 
-//	VOLTSOURCE = 0,		// Средняя точка делителя напряжения, для АКБ
-//#endif /* WITHVOLTLEVEL */
-
-//#if WITHSWRMTR
-//	PWRI = 0,
-//	FWD = 0, REF = 0,	// SWR-meter
-//#endif
-	KI0 = 5, KI1 = 13, KI2 = 15	// PA5, PC3, PC5 клавиатура
-};
-
-#define KI_COUNT 3	// количество используемых под клавиатуру входов АЦП
-#define KI_LIST	KI2, KI1, KI0,	// инициализаторы для функции перекодировки
-
 #if WITHUSBHW
 	/**USB_OTG_HS GPIO Configuration    
 	PB12  OTG_HS_ID

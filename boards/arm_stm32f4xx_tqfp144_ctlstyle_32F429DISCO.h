@@ -291,6 +291,8 @@
 	#define WITHAFADCWIDTH	16		// 1 бит знак и 15 бит значащих
 	#define WITHAFDACWIDTH	16		// 1 бит знак и 15 бит значащих
 
+	#define WITHLCDBACKLIGHTMIN 0	// stub
+
 	// +++ Эти строки можно отключать, уменьшая функциональность готового изделия
 	//#define WITHRFSG	1	/* включено управление ВЧ сигнал-генератором. */
 	#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
@@ -325,6 +327,9 @@
 	//#define WITHTEMPSENSOR	1	/* отображение данных с датчика температуры */
 	//#define WITHSLEEPTIMER	1	/* выключить индикатор и вывод звука по истечениии указанного времени */
 	#define BOARD_FFTZOOM_POW2MAX 1	// Возможные масштабы FFT x1
+	#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
+	//#define WITHUSEDUALWATCH	1	// Второй приемник
+	//#define WITHREVERB	1	// ревербератор в обработке микрофонного сигнала
 	// --- Эти строки можно отключать, уменьшая функциональность готового изделия
 
 	//#define LO1PHASES	1		/* Прямой синтез первого гетеродина двумя DDS с програмимруемым сдвигом фазы */
@@ -395,6 +400,40 @@
 	#define BOARD_FILTER_1P8		0x01	/* 1.8 kHz filter - на очень старых платах */
 	#define BOARD_FILTER_2P7		0x03	/* 3.1 or 2.75 kHz filter */
 	#define BOARD_FILTER_3P1		0x03	/* 3.1 or 2.75 kHz filter */
+
+
+
+	// Назначения входов АЦП процессора.
+	enum
+	{
+	#if WITHREFSENSOR
+		VREFIX = 17,		// Reference voltage
+	#endif /* WITHREFSENSOR */
+	//#if WITHTEMPSENSOR
+	//	TEMPIX = 16,		// ADC1->CR2 |= ADC_CR2_TSVREFE;	// для тестов
+	//#endif
+	//#if WITHVOLTLEVEL
+	//	VOLTSOURCE = 0,		// Средняя точка делителя напряжения, для АКБ
+	//#endif /* WITHVOLTLEVEL */
+
+	//#if WITHSWRMTR
+	//	PWRI = 0,
+	//	FWD = 0, REF = 0,	// SWR-meter
+	//#endif
+
+	XTHERMOMRRIX = BOARD_ADCMRRIN(0),	// кеш - индекc не должен повторяться в конфигурации
+	PASENSEMRRIX = BOARD_ADCMRRIN(1),	// кеш - индекc не должен повторяться в конфигурации
+	REFMRRIX = BOARD_ADCMRRIN(2),
+	FWDMRRIX = BOARD_ADCMRRIN(3),
+	PWRMRRIX = FWDMRRIX,
+	VOLTMRRIX = BOARD_ADCMRRIN(4),	// кеш - индекc не должен повторяться в конфигурации
+
+	KI0 = 5, KI1 = 13, KI2 = 15	// PA5, PC3, PC5 клавиатура
+
+	};
+
+	#define KI_COUNT 3	// количество используемых под клавиатуру входов АЦП
+	#define KI_LIST	KI2, KI1, KI0,	// инициализаторы для функции перекодировки
 
 	//#define BOARD_AGCCODE_OFF 0
 	#if 1

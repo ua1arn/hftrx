@@ -32,6 +32,7 @@
 #include "hardware.h"
 #include "board.h"
 #include "display.h"
+#include "display2.h"
 #include <stdint.h>
 
 #include "spi.h"
@@ -67,6 +68,7 @@ static uint_fast8_t colstart, rowstart, tabcolor; // May be overridden in init f
 	typedef uint_fast8_t xholder_t;
 #endif
 
+#if ! LCDMODE_LTDC
 // в режим передачи данных переводим сразу по окончании команд.
 static void st7735_put_char_begin(void)
 {
@@ -636,27 +638,6 @@ st7735_gotoxy(uint_fast8_t x, uint_fast8_t y)
 	st7735_set_addr_column(x * CHAR_W);
 }
 
-// Координаты в пикселях
-void display_plotfrom(uint_fast16_t x, uint_fast16_t y)
-{
-	st7735_y = y;		/* переход от символьных координат к экранным */
-	st7735_set_addr_column(x);
-}
-
-void display_plotstart(
-	uint_fast16_t dy	// Высота окна в пикселях
-	)
-{
-	st7735_set_strype(dy);
-	st7735_put_char_begin();
-}
-
-void display_plotstop(void)
-{
-	st7735_put_char_end();
-}
-
-
 static void st7735_clear(COLORMAIN_T bg)
 {
 	unsigned long i;
@@ -689,6 +670,182 @@ static void st7735_clear(COLORMAIN_T bg)
 #endif /* WITHSPIEXT16 */
 
 }
+
+void
+display_clear(void)
+{
+	const COLORMAIN_T bg = display_getbgcolor();
+
+	st7735_clear(bg);
+}
+
+void
+colmain_setcolors(COLORMAIN_T fg, COLORMAIN_T bg)
+{
+	st7735_setcolor(fg, bg, bg);
+}
+
+void colmain_setcolors3(COLORMAIN_T fg, COLORMAIN_T bg, COLORMAIN_T fgbg)
+{
+	st7735_setcolor(fg, bg, fgbg);
+}
+
+uint_fast16_t
+display_wrdata_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
+{
+	st7735_gotoxy(xcell, ycell);
+	st7735_set_strype(SMALLCHARH);
+	st7735_put_char_begin();
+	* yp = GRID2Y(ycell);
+	return GRID2X(xcell);
+}
+
+void
+display_wrdata_end(void)
+{
+	st7735_put_char_end();
+}
+
+uint_fast16_t
+display_wrdata2_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
+{
+	st7735_gotoxy(xcell, ycell);
+	st7735_set_strype(SMALLCHARH);
+	st7735_put_char_begin();
+	* yp = GRID2Y(ycell);
+	return GRID2X(xcell);
+}
+
+void
+display_wrdata2_end(void)
+{
+	st7735_put_char_end();
+}
+
+uint_fast16_t
+display_wrdatabig_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
+{
+	st7735_gotoxy(xcell, ycell);
+	st7735_set_strype(BIGCHARH);	// same as HALFCHARH
+	st7735_put_char_begin();
+	* yp = GRID2Y(ycell);
+	return GRID2X(xcell);
+}
+
+
+void
+display_wrdatabig_end(void)
+{
+	st7735_put_char_end();
+}
+
+/* отображение одной вертикальной полосы на графическом индикаторе */
+/* старшие биты соответствуют верхним пикселям изображения */
+/* вызывается между вызовами display_wrdatabar_begin() и display_wrdatabar_end() */
+uint_fast16_t
+display_barcolumn(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t pattern)
+{
+	st7735_pix8(pattern);
+	return xpix + 1;
+}
+
+uint_fast16_t
+display_wrdatabar_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
+{
+	st7735_gotoxy(xcell, ycell);
+	st7735_set_strype(CHAR_H);
+	st7735_put_char_begin();
+	* yp = GRID2Y(ycell);
+	return GRID2X(xcell);
+}
+
+void
+display_wrdatabar_end(void)
+{
+	st7735_put_char_end();
+}
+
+uint_fast16_t
+display_put_char_big(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf)
+{
+	return st7735_put_char_big(xpix, c);
+}
+
+uint_fast16_t
+display_put_char_half(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf)
+{
+	return st7735_put_char_half(xpix, c);
+}
+
+
+// Вызов этой функции только внутри display_wrdata_begin() и display_wrdata_end();
+// Используется при выводе на графический ндикатор, если ТРЕБУЕТСЯ переключать полосы отображения
+uint_fast16_t
+display_put_char_small(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf)
+{
+	return st7735_put_char_small(xpix, c);
+}
+
+// Вызов этой функции только внутри display_wrdata2_begin() и display_wrdata2_end();
+// Используется при выводе на графический ндикатор, если ТРЕБУЕТСЯ переключать полосы отображения
+uint_fast16_t
+display_put_char_small2(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf)
+{
+	return st7735_put_char_small(xpix, c);
+}
+
+void display_plot(
+	const PACKEDCOLORMAIN_T * buffer,
+	uint_fast16_t dx,	// Размеры окна в пикселях
+	uint_fast16_t dy,
+	uint_fast16_t xpix,	// начало области рисования
+	uint_fast16_t ypix
+	)
+{
+	uint_fast32_t len = GXSIZE(dx, dy);	// количество элементов
+#if WITHSPIEXT16 && WITHSPIHWDMA
+	// Передача в индикатор по DMA
+	arm_hardware_flush((uintptr_t) buffer, len * sizeof (* buffer));	// количество байтов
+	hardware_spi_master_send_frame_16b(buffer, len);
+#else /* WITHSPIEXT16 */
+	if (len >= 3)
+	{
+		st7735_colorpixel_p1(* buffer ++);
+		len -= 2;
+		while (len --)
+			st7735_colorpixel_p2(* buffer ++);
+		st7735_colorpixel_p3(* buffer ++);
+	}
+	else if (len == 2)
+	{
+		st7735_colorpixel_p1(* buffer ++);
+		st7735_colorpixel_p3(* buffer ++);
+	}
+#endif /* WITHSPIEXT16 */
+}
+
+
+// Координаты в пикселях
+void display_plotfrom(uint_fast16_t x, uint_fast16_t y)
+{
+	st7735_y = y;		/* переход от символьных координат к экранным */
+	st7735_set_addr_column(x);
+}
+
+void display_plotstart(
+	uint_fast16_t dy	// Высота окна в пикселях
+	)
+{
+	st7735_set_strype(dy);
+	st7735_put_char_begin();
+}
+
+void display_plotstop(void)
+{
+	st7735_put_char_end();
+}
+
+#endif /* ! LCDMODE_LTDC */
 
 // MY = Mirror Y-axis (Row address direction parameter), D7 parameter of MADCTL command
 // MX = Mirror X-axis (Column address direction parameter), D6 parameter of MADCTL command
@@ -1186,162 +1343,6 @@ void display_set_contrast(uint_fast8_t v)
 {
 }
 
-#if ! LCDMODE_LTDC
-void 
-display_clear(void)
-{
-	const COLORMAIN_T bg = display_getbgcolor();
-
-	st7735_clear(bg);
-}
-
-void
-colmain_setcolors(COLORMAIN_T fg, COLORMAIN_T bg)
-{
-	st7735_setcolor(fg, bg, bg);
-}
-
-void colmain_setcolors3(COLORMAIN_T fg, COLORMAIN_T bg, COLORMAIN_T fgbg)
-{
-	st7735_setcolor(fg, bg, fgbg);
-}
-
-uint_fast16_t
-display_wrdata_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
-{
-	st7735_gotoxy(xcell, ycell);
-	st7735_set_strype(SMALLCHARH);
-	st7735_put_char_begin();
-	* yp = GRID2Y(ycell);
-	return GRID2X(xcell);
-}
-
-void
-display_wrdata_end(void)
-{
-	st7735_put_char_end();
-}
-
-uint_fast16_t
-display_wrdata2_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
-{
-	st7735_gotoxy(xcell, ycell);
-	st7735_set_strype(SMALLCHARH);
-	st7735_put_char_begin();
-	* yp = GRID2Y(ycell);
-	return GRID2X(xcell);
-}
-
-void
-display_wrdata2_end(void)
-{
-	st7735_put_char_end();
-}
-
-uint_fast16_t
-display_wrdatabig_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
-{
-	st7735_gotoxy(xcell, ycell);
-	st7735_set_strype(BIGCHARH);	// same as HALFCHARH
-	st7735_put_char_begin();
-	* yp = GRID2Y(ycell);
-	return GRID2X(xcell);
-}
-
-
-void
-display_wrdatabig_end(void)
-{
-	st7735_put_char_end();
-}
-
-/* отображение одной вертикальной полосы на графическом индикаторе */
-/* старшие биты соответствуют верхним пикселям изображения */
-/* вызывается между вызовами display_wrdatabar_begin() и display_wrdatabar_end() */
-uint_fast16_t
-display_barcolumn(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t pattern)
-{
-	st7735_pix8(pattern);
-	return xpix + 1;
-}
-
-uint_fast16_t
-display_wrdatabar_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
-{
-	st7735_gotoxy(xcell, ycell);
-	st7735_set_strype(CHAR_H);
-	st7735_put_char_begin();
-	* yp = GRID2Y(ycell);
-	return GRID2X(xcell);
-}
-
-void
-display_wrdatabar_end(void)
-{
-	st7735_put_char_end();
-}
-
-uint_fast16_t
-display_put_char_big(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf)
-{
-	return st7735_put_char_big(xpix, c);
-}
-
-uint_fast16_t
-display_put_char_half(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf)
-{
-	return st7735_put_char_half(xpix, c);
-}
-
-
-// Вызов этой функции только внутри display_wrdata_begin() и display_wrdata_end();
-// Используется при выводе на графический ндикатор, если ТРЕБУЕТСЯ переключать полосы отображения
-uint_fast16_t
-display_put_char_small(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf)
-{
-	return st7735_put_char_small(xpix, c);
-}
-
-// Вызов этой функции только внутри display_wrdata2_begin() и display_wrdata2_end();
-// Используется при выводе на графический ндикатор, если ТРЕБУЕТСЯ переключать полосы отображения
-uint_fast16_t
-display_put_char_small2(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf)
-{
-	return st7735_put_char_small(xpix, c);
-}
-
-void display_plot(
-	const PACKEDCOLORMAIN_T * buffer, 
-	uint_fast16_t dx,	// Размеры окна в пикселях
-	uint_fast16_t dy,
-	uint_fast16_t xpix,	// начало области рисования
-	uint_fast16_t ypix
-	)
-{
-	uint_fast32_t len = GXSIZE(dx, dy);	// количество элементов
-#if WITHSPIEXT16 && WITHSPIHWDMA
-	// Передача в индикатор по DMA
-	arm_hardware_flush((uintptr_t) buffer, len * sizeof (* buffer));	// количество байтов
-	hardware_spi_master_send_frame_16b(buffer, len);
-#else /* WITHSPIEXT16 */
-	if (len >= 3)
-	{
-		st7735_colorpixel_p1(* buffer ++);
-		len -= 2;
-		while (len --)
-			st7735_colorpixel_p2(* buffer ++);
-		st7735_colorpixel_p3(* buffer ++);
-	}
-	else if (len == 2)
-	{
-		st7735_colorpixel_p1(* buffer ++);
-		st7735_colorpixel_p3(* buffer ++);
-	}
-#endif /* WITHSPIEXT16 */
-}
-
-#endif /* ! LCDMODE_LTDC */
-
 /* аппаратный сброс дисплея - перед инициализаций */
 /* вызывается при разрешённых прерываниях. */
 void display_reset(void)
@@ -1367,8 +1368,6 @@ void display_reset(void)
 
 #endif
 }
-
-
 
 /* Разряжаем конденсаторы питания */
 void display_discharge(void)

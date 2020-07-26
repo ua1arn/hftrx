@@ -8879,7 +8879,7 @@ updateboard(
 // обработчики кнопок клавиатуры
 
 //////////////////////////
-#if WITHELKEY
+#if WITHELKEY && WITHTX
 
 void uif_key_bkintoggle(void)
 {
@@ -17603,10 +17603,13 @@ processkeyboard(uint_fast8_t kbch)
 		updateboard2();			/* настройки валкодера и цветовой схемы дисплея. */
 		display2_bgreset();		/* возможно уже с новой цветовой схемой */
 		return 1;	// требуется обновление индикатора
-#else
+#elif WITHTOUCHGUI
 		gui_open_sys_menu();
 		return 0;
+#else
+		return 0;
 #endif //WITHMENU && ! WITHTOUCHGUI
+
 	case KBD_CODE_DISPMODE:
 		if (display_getpagesmax() != 0)
 		{
@@ -17620,7 +17623,7 @@ processkeyboard(uint_fast8_t kbch)
 		return 0;	// не требуется обновление индикатора
 
 #if WITHMENU
-#if KEYBSTYLE_SW2013SF_US2IT || KEYBSTYLE_SW2012CN5_UY5UM || WITHIF4DSP
+#if WITHIF4DSP
 	case KBD_CODE_MENU_CWSPEED:
 		uif_key_click_menubyname("CW SPEED", KBD_CODE_MENU_CWSPEED);
 		return 1;	/* клавиша уже обработана */
@@ -17628,14 +17631,26 @@ processkeyboard(uint_fast8_t kbch)
 	case KBD_CODE_IFSHIFT:
 		uif_key_click_menubyname("IF SHIFT", KBD_CODE_IFSHIFT);
 		return 1;	/* клавиша уже обработана */
+
+#elif KEYBSTYLE_SW2013SF_US2IT || KEYBSTYLE_SW2012CN5_UY5UM
+	case KBD_CODE_MENU_CWSPEED:
+		uif_key_click_menubyname("CW SPEED", KBD_CODE_MENU_CWSPEED);
+		return 1;	/* клавиша уже обработана */
+
+	case KBD_CODE_IFSHIFT:
+		uif_key_click_menubyname("IF SHIFT", KBD_CODE_IFSHIFT);
+		return 1;	/* клавиша уже обработана */
+
 #elif KEYB_RA4YBO_V1
 	case KBD_CODE_IFSHIFT:
 		uif_key_click_menubyname("IF SHIFT", KBD_CODE_IFSHIFT);
 		return 1;	/* клавиша уже обработана */
+
 #elif KEYB_RA4YBO_V3
 	case KBD_CODE_IFSHIFT:
 		uif_key_click_menubyname("IF SHIFT", KBD_CODE_IFSHIFT);
 		return 1;	/* клавиша уже обработана */
+
 #endif /* KEYBSTYLE_SW2013SF_US2IT || WITHIF4DSP */
 #endif /* WITHMENU */
 

@@ -5250,6 +5250,7 @@ static uint_fast8_t display_mapbar(
 		return mapinside;
 	return mapright;
 }
+
 #if WITHBARS
 
 // количество точек в отображении мощности на диспле
@@ -5258,8 +5259,9 @@ static uint_fast16_t display_getpwrfullwidth(void)
 	return GRID2X(CHARS2GRID(BDTH_ALLPWR));
 }
 
-#if LCDMODE_LTDC && LCDMODE_HORFILL
+#if LCDMODE_LTDC
 	// Используеся frame buffer - свои оптимизированные функции рисования
+
 #elif LCDMODE_HD44780
 	// На HD44780 используется псевдографика
 
