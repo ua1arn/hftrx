@@ -75,7 +75,7 @@
 /* Other defines                                  */
 /**************************************************/
 /* Bit Detach capable = bit 3 in bmAttributes field */
-#define DFU_DETACH_MASK                (uint8_t)(1 << 4)
+#define DFU_DETACH_MASK                ((uint8_t)(1uL << 4))
 #define DFU_STATUS_DEPTH               (6)
 
 // INTERFACE_DFU_CONTROL bRequest codes
