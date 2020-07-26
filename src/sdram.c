@@ -3738,8 +3738,7 @@ static void ddr_check_progress(uint32_t addr)
 
 static uint32_t ddr_check_rand(unsigned long sizeee)
 {
-	typedef uint8_t test_t;
-	//uint64_t addressmask = (DDR_MEM_SIZE - 1U);
+	typedef uint32_t test_t;
 	const uint32_t sizeN = sizeee / sizeof (test_t);
 	volatile test_t * const p = (volatile test_t *) STM32MP_DDR_BASE;
 	uint32_t i;
@@ -3951,8 +3950,9 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 			      uret, config.info.size);
 			panic();
 		}
-		uret = ddr_check_rand(config.info.size / 32);
-		if (uret != (config.info.size / 32)) {
+		int partfortest = 1;
+		uret = ddr_check_rand(config.info.size / partfortest);
+		if (uret != (config.info.size / partfortest)) {
 			ERROR("DDR random test: 0x%x does not match DT config: 0x%x\n",
 			      uret, config.info.size / 32);
 			panic();
