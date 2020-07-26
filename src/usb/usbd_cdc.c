@@ -99,9 +99,9 @@
 #define CDC_SERIAL_STATE_RX_CARRIER             (1 << 0)  // state of receiver carrier
 
 // Состояние - выбранные альтернативные конфигурации по каждому интерфейсу USB configuration descriptor
-//static RAMDTCM uint8_t altinterfaces [INTERFACE_count];
+//static RAMBIGDTCM uint8_t altinterfaces [INTERFACE_count];
 
-static RAMDTCM volatile uint_fast16_t usb_cdc_control_state [INTERFACE_count];
+static RAMBIGDTCM volatile uint_fast16_t usb_cdc_control_state [INTERFACE_count];
 
 
 static uint_fast32_t ulmin32(uint_fast32_t a, uint_fast32_t b)
@@ -124,21 +124,21 @@ static uint_fast16_t ulmax16(uint_fast16_t a, uint_fast16_t b)
 	return a > b ? a : b;
 }
 
-static RAMDTCM volatile uint_fast8_t usbd_cdc1_rxenabled;	/* виртуальный флаг разрешения прерывания по приёму символа - HARDWARE_CDC_ONRXCHAR */
-static USBALIGN_BEGIN uint8_t cdc1buffout [VIRTUAL_COM_PORT_OUT_DATA_SIZE] USBALIGN_END;
-static USBALIGN_BEGIN uint8_t cdc1buffin [VIRTUAL_COM_PORT_IN_DATA_SIZE] USBALIGN_END;
-static RAMDTCM uint_fast16_t cdc1buffinlevel;
+static RAMBIGDTCM volatile uint_fast8_t usbd_cdc1_rxenabled;	/* виртуальный флаг разрешения прерывания по приёму символа - HARDWARE_CDC_ONRXCHAR */
+static RAMBIGDTCM USBALIGN_BEGIN uint8_t cdc1buffout [VIRTUAL_COM_PORT_OUT_DATA_SIZE] USBALIGN_END;
+static RAMBIGDTCM USBALIGN_BEGIN uint8_t cdc1buffin [VIRTUAL_COM_PORT_IN_DATA_SIZE] USBALIGN_END;
+static RAMBIGDTCM uint_fast16_t cdc1buffinlevel;
 
 #if WITHUSBHWCDC_N > 1
-	static RAMDTCM volatile uint_fast8_t usbd_cdc2_rxenabled;	/* виртуальный флаг разрешения прерывания по приёму символа - HARDWARE_CDC_ONRXCHAR */
-	static USBALIGN_BEGIN uint8_t cdc2buffout [VIRTUAL_COM_PORT_OUT_DATA_SIZE] USBALIGN_END;
-	static USBALIGN_BEGIN uint8_t cdc2buffin [VIRTUAL_COM_PORT_IN_DATA_SIZE] USBALIGN_END;
-	static RAMDTCM uint_fast16_t cdc2buffinlevel;
+	static RAMBIGDTCM volatile uint_fast8_t usbd_cdc2_rxenabled;	/* виртуальный флаг разрешения прерывания по приёму символа - HARDWARE_CDC_ONRXCHAR */
+	static RAMBIGDTCM USBALIGN_BEGIN uint8_t cdc2buffout [VIRTUAL_COM_PORT_OUT_DATA_SIZE] USBALIGN_END;
+	static RAMBIGDTCM USBALIGN_BEGIN uint8_t cdc2buffin [VIRTUAL_COM_PORT_IN_DATA_SIZE] USBALIGN_END;
+	static RAMBIGDTCM uint_fast16_t cdc2buffinlevel;
 #endif /* WITHUSBHWCDC_N > 1 */
 
-static USBALIGN_BEGIN uint8_t cdc_epXdatabuffout [USB_OTG_MAX_EP0_SIZE] USBALIGN_END;
+static RAMBIGDTCM USBALIGN_BEGIN uint8_t cdc_epXdatabuffout [USB_OTG_MAX_EP0_SIZE] USBALIGN_END;
 
-static RAMDTCM uint_fast32_t dwDTERate [INTERFACE_count];
+static RAMBIGDTCM uint_fast32_t dwDTERate [INTERFACE_count];
 
 /* управление по DTR происходит сразу, RTS только вместе со следующим DTR */
 /* хранимое значение после получения CDC_SET_CONTROL_LINE_STATE */
@@ -180,7 +180,7 @@ uint_fast8_t usbd_cdc2_getdtr(void)
 		0;
 }
 
-static RAMDTCM volatile uint_fast8_t usbd_cdc_txenabled;	/* виртуальный флаг разрешения прерывания по готовности передатчика - HARDWARE_CDC_ONTXCHAR*/
+static RAMBIGDTCM volatile uint_fast8_t usbd_cdc_txenabled;	/* виртуальный флаг разрешения прерывания по готовности передатчика - HARDWARE_CDC_ONTXCHAR*/
 
 /* Разрешение/запрещение прерывания по передаче символа */
 void usbd_cdc_enabletx(uint_fast8_t state)	/* вызывается из обработчика прерываний */

@@ -229,15 +229,15 @@ unsigned USBD_poke_u8(uint8_t * buff, uint_fast8_t v)
   */
 
 /* PCD Handle Structure */
-static USBALIGN_BEGIN PCD_HandleTypeDef hpcd_USB_OTG USBALIGN_END;
+static RAMBIGDTCM USBALIGN_BEGIN PCD_HandleTypeDef hpcd_USB_OTG USBALIGN_END;
 /* USB Device Core handle declaration */
-static USBALIGN_BEGIN USBD_HandleTypeDef hUsbDevice USBALIGN_END;
+static RAMBIGDTCM USBALIGN_BEGIN USBD_HandleTypeDef hUsbDevice USBALIGN_END;
 
 /* HCD Handle Structure */
-static USBALIGN_BEGIN HCD_HandleTypeDef hhcd_USB_OTG USBALIGN_END;
+static RAMBIGDTCM USBALIGN_BEGIN HCD_HandleTypeDef hhcd_USB_OTG USBALIGN_END;
 /* USB Host Core handle declaration */
-/*static */ USBALIGN_BEGIN USBH_HandleTypeDef hUSB_Host USBALIGN_END;
-static ApplicationTypeDef Appli_state = APPLICATION_IDLE;
+/*static */RAMBIGDTCM  USBALIGN_BEGIN USBH_HandleTypeDef hUSB_Host USBALIGN_END;
+static RAMBIGDTCM ApplicationTypeDef Appli_state = APPLICATION_IDLE;
 
 
 #if CPUSTYLE_R7S721
@@ -533,8 +533,8 @@ void refreshDMA_uacin(void)
 
 #if WITHDMAHW_UACOUT
 
-static USBALIGN_BEGIN uint8_t uacoutbuff0 [UACOUT_AUDIO48_DATASIZE] USBALIGN_END;
-static USBALIGN_BEGIN uint8_t uacoutbuff1 [UACOUT_AUDIO48_DATASIZE] USBALIGN_END;
+static RAMBIGDTCM USBALIGN_BEGIN uint8_t uacoutbuff0 [UACOUT_AUDIO48_DATASIZE] USBALIGN_END;
+static RAMBIGDTCM USBALIGN_BEGIN uint8_t uacoutbuff1 [UACOUT_AUDIO48_DATASIZE] USBALIGN_END;
 
 // USB AUDIO
 // DMA по приему USB0 DMA0 - обработчик прерывания

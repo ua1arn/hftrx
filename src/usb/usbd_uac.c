@@ -154,12 +154,12 @@ uint_fast16_t usbd_getuacinrtsmaxpacket(void)
 
 
 // Состояние - выбранные альтернативные конфигурации по каждому интерфейсу USB configuration descriptor
-static RAMDTCM uint8_t altinterfaces [INTERFACE_count];
+static RAMBIGDTCM uint8_t altinterfaces [INTERFACE_count];
 
-static RAMDTCM uintptr_t uacinaddr = 0;
-static RAMDTCM uint_fast16_t uacinsize = 0;
-static RAMDTCM uintptr_t uacinrtsaddr = 0;
-static RAMDTCM uint_fast16_t uacinrtssize = 0;
+static RAMBIGDTCM uintptr_t uacinaddr = 0;
+static RAMBIGDTCM uint_fast16_t uacinsize = 0;
+static RAMBIGDTCM uintptr_t uacinrtsaddr = 0;
+static RAMBIGDTCM uint_fast16_t uacinrtssize = 0;
 
 static USBALIGN_BEGIN uint8_t uacoutbuff [UACOUT_AUDIO48_DATASIZE] USBALIGN_END;
 
@@ -474,7 +474,7 @@ static unsigned USBD_UAC2_ClockSource_req(
 
 static USBD_StatusTypeDef USBD_UAC_Setup(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req)
 {
-	static USBALIGN_BEGIN uint8_t buff [32] USBALIGN_END;	// was: 7
+	static RAMBIGDTCM USBALIGN_BEGIN uint8_t buff [32] USBALIGN_END;	// was: 7
 	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 
 #if WITHUSBWCID
