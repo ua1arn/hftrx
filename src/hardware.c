@@ -8301,8 +8301,9 @@ stm32h7xx_pll_initialize(void)
 	// VOS0 (revidion V) - up to 480 MHz
 	// VOS1 (revidion Y and other) - up to 400 MHz
 
+#if defined PWR_CR3_SCUEN
 	/* Configure voltage regulator */
-	//Set the highest core voltage (Scale 1)
+	// Set the highest core voltage (Scale 1)
 	PWR->CR3 = PWR_CR3_LDOEN | PWR_CR3_SCUEN;
 	PWR->D3CR = (PWR->D3CR & ~ (PWR_D3CR_VOS)) |
 		PWR_D3CR_VOS_value |
@@ -8312,9 +8313,12 @@ stm32h7xx_pll_initialize(void)
 		//PWR_D3CR_VOS_0 * 0 |		// Rev Y: SCALE 3 1.064 mV VOS3
 		0;
 	(void) PWR->D3CR;
-	//Wait for LDO ready
+	// Wait for LDO ready
 	while ((PWR->D3CR & PWR_D3CR_VOSRDY) == 0)
 		;
+#else
+	#warning LDO control should be implemented
+#endif
 
 	#if WITHCPUXOSC
 		// Внешний кварцевый генератор

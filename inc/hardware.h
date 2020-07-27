@@ -158,6 +158,8 @@ extern "C" {
 	#define CPUSTYLE_STM32F		1		/* архитектура процессора STM32F */
 	#define CPUSTYLE_ARM_CM7	1		/* архитектура процессора CORTEX M7 */
 
+	#define CORE_CM7 1	/* for STM32H745 dual-core config */
+
 	#include "armcpu/stm32h7xx.h"
 
 	#define ALIGNX_BEGIN __attribute__ ((aligned(32)))

@@ -11,9 +11,9 @@
 #ifndef ARM_STM32H7XX_TQFP176_CTLSTYLE_STORCH_V7_NO_RADIO_H_INCLUDED
 #define ARM_STM32H7XX_TQFP176_CTLSTYLE_STORCH_V7_NO_RADIO_H_INCLUDED 1
 
-	#if ! defined(STM32H743xx)
-		#error Wrong CPU selected. STM32H743xx expected
-	#endif /* ! defined(STM32F767xx) */
+	#if ! defined(STM32H743xx) && ! defined(STM32H745xx)
+		#error Wrong CPU selected. STM32H743xx or STM32H745xx expected
+	#endif /* ! defined(STM32H743xx) && ! defined(STM32H745xx) */
 
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */
 	#define WITHI2SCLOCKFROMPIN 1	// тактовая частота на SPI2 (I2S) подается с внешнего генератора, в процессор вводится через MCK сигнал интерфейса
