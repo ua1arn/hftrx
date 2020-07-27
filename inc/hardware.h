@@ -659,15 +659,17 @@ void hardware_adc_initialize(void);
 	#define FLASHMEM __flash
 	#define FLASHMEMINIT	__flash	/* не требуется быстрый доступ - например образ загружаемый в FPGA */
 	#define FLASHMEMINITFUNC	/* не требуется быстрый доступ - например образ загружаемый в FPGA */
-	#define RAMDTCM
 
 	#if (FLASHEND > 0x7FFF)	
 		// нет нужды экономить память FLASH
 		#define NOINLINEAT // __attribute__((noinline))
+		#define RAMFUNC_NONILINE // __attribute__((noinline))
 	#else
 		#define NOINLINEAT __attribute__((noinline))	// On small FLASH ATMega CPUs
+		#define RAMFUNC_NONILINE __attribute__((noinline))	// On small FLASH ATMega CPUs
 	#endif
-	#define RAMFUNC_NONILINE // __attribute__((__section__(".ramfunc"), noinline))  
+
+	#define RAMDTCM
 	#define RAMFUNC			 // __attribute__((__section__(".ramfunc")))  
 	#define RAMNOINIT_D1
 	#define RAMHEAP 		//__attribute__((used, section(".heap"))) // memory used as heap zone
