@@ -16509,6 +16509,7 @@ void display2_menu_valxx(
 		}
 		break;
 
+#if WITHNOTCHFREQ || WITHNOTCHONOFF
 	case RJ_NOTCH:
 		{
 			width = VALUEW;
@@ -16528,6 +16529,7 @@ void display2_menu_valxx(
 			}
 		}
 		break;
+#endif /* WITHNOTCHFREQ || WITHNOTCHONOFF */
 
 	case RJ_ON:
 		{
