@@ -11629,15 +11629,11 @@ uint_fast8_t cat_get_keydown(void)
 	{
 		const uint_fast8_t dtr1 = HARDWARE_CAT_GET_DTR() && cat1dtrenable;
 		const uint_fast8_t rts1 = HARDWARE_CAT_GET_RTS() && cat1rtsenable;
-		const uint_fast8_t r1 =
-			(! cat1txdtr ? dtr1 : rts1) ||
-			0;
+		const uint_fast8_t r1 = ! cat1txdtr ? dtr1 : rts1;
 #if WITHUSBHW && WITHUSBCDC && WITHUSBHWCDC_N > 1
 		const uint_fast8_t dtr2 = HARDWARE_CAT2_GET_DTR() && cat2dtrenable;
 		const uint_fast8_t rts2 = HARDWARE_CAT2_GET_RTS() && cat2rtsenable;
-		const uint_fast8_t r2 =
-				(! cat2txdtr ? dtr2 : rts2) ||
-				0;
+		const uint_fast8_t r2 = ! cat2txdtr ? dtr2 : rts2;
 #else
 		enum { r2 = 0 };
 #endif
