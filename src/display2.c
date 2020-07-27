@@ -5303,7 +5303,7 @@ display_bar(
 			continue;
 		}
 #if (DSTYLE_G_X132_Y64 || DSTYLE_G_X128_Y64) && DSTYLE_UR3LMZMOD
-		xpix = display_barcolumn(vpattern);
+		xpix = display_barcolumn(xpix, ypix, vpattern);
 #elif DSTYLE_G_X64_Y32
 		xpix = display_barcolumn(xpix, ypix, (i % 6) != 5 ? vpattern : vemptyp);
 #else

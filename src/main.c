@@ -10405,10 +10405,12 @@ display2_redrawbarstimed(
 		/* быстро меняющиеся значения с частым опорсом */
 		looptests();		// Периодически вызывается в главном цикле - тесты
 		/* +++ переписываем значения из возможно внешних АЦП в кеш значений */
-	#if WITHSWRMTR || WITHPWRMTR
+	#if WITHSWRMTR
 		board_adc_store_data(PWRMRRIX, board_getadc_unfiltered_truevalue(PWRI));
 		board_adc_store_data(FWDMRRIX, board_getadc_unfiltered_truevalue(FWD));
 		board_adc_store_data(REFMRRIX, board_getadc_unfiltered_truevalue(REF));
+	#elif WITHPWRMTR
+		board_adc_store_data(PWRMRRIX, board_getadc_unfiltered_truevalue(PWRI));
 	#endif /* WITHSWRMTR || WITHPWRMTR */
 	#if WITHCURRLEVEL2
 		board_adc_store_data(PASENSEMRRIX2, board_getadc_unfiltered_truevalue(PASENSEIX2));
@@ -11602,14 +11604,15 @@ cat_get_ptt(void)
 	{
 		const uint_fast8_t dtr1 = HARDWARE_CAT_GET_DTR() && cat1dtrenable;
 		const uint_fast8_t rts1 = HARDWARE_CAT_GET_RTS() && cat1rtsenable;
+		const uint_fast8_t r1 = (cat1txdtr ? dtr1 : rts1);
+#if WITHUSBHW && WITHUSBCDC && WITHUSBHWCDC_N > 1
 		const uint_fast8_t dtr2 = HARDWARE_CAT2_GET_DTR() && cat2dtrenable;
 		const uint_fast8_t rts2 = HARDWARE_CAT2_GET_RTS() && cat2rtsenable;
-		const uint_fast8_t r =
-			(cat1txdtr ? dtr1 : rts1) ||
-			(cat2txdtr ? dtr2 : rts2) ||
-			(catstatetx != 0) ||	// catstatetx - это по текстовым командам
-			0;
-		return r;
+		const uint_fast8_t r2 = (cat2txdtr ? dtr2 : rts2);
+#else
+		enum { r2 = 0 };
+#endif
+		return (catstatetx != 0) || r1 || r2;	// catstatetx - это по текстовым командам
 	}
 	return 0;
 }
@@ -11626,13 +11629,19 @@ uint_fast8_t cat_get_keydown(void)
 	{
 		const uint_fast8_t dtr1 = HARDWARE_CAT_GET_DTR() && cat1dtrenable;
 		const uint_fast8_t rts1 = HARDWARE_CAT_GET_RTS() && cat1rtsenable;
+		const uint_fast8_t r1 =
+			(! cat1txdtr ? dtr1 : rts1) ||
+			0;
+#if WITHUSBHW && WITHUSBCDC && WITHUSBHWCDC_N > 1
 		const uint_fast8_t dtr2 = HARDWARE_CAT2_GET_DTR() && cat2dtrenable;
 		const uint_fast8_t rts2 = HARDWARE_CAT2_GET_RTS() && cat2rtsenable;
-		const uint_fast8_t r =
-			(! cat1txdtr ? dtr1 : rts1) ||
-			(! cat2txdtr ? dtr2 : rts2) ||
-			0;
-		return r;
+		const uint_fast8_t r2 =
+				(! cat2txdtr ? dtr2 : rts2) ||
+				0;
+#else
+		enum { r2 = 0 };
+#endif
+		return r1 || r2;
 	}
 #endif /* WITHELKEY */
 	return 0;
@@ -15884,8 +15893,8 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, 0,
 		MENUNONVRAM,
-		NULL,
 		& gzero,
+		NULL,
 		getzerobase,
 	},
 	{
@@ -15893,8 +15902,8 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, 0,
 		MENUNONVRAM,
-		NULL,
 		& gzero,
+		NULL,
 		getcpufreqbase,
 	},
 };
