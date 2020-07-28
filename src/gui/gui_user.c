@@ -914,6 +914,36 @@ static void window_mode_process(void)
 
 // *********************************************************************************************************************************************************************
 
+static void labels_af_handler (void)
+{
+	window_t * win = get_win(WINDOW_BP);
+	label_t * lh = get_selected_element();
+	label_t * lbl_low = find_gui_element(TYPE_LABEL, win, "lbl_low");
+	label_t * lbl_high = find_gui_element(TYPE_LABEL, win, "lbl_high");
+	label_t * lbl_ifshift = find_gui_element(TYPE_LABEL, win, "lbl_ifshift");
+
+	if (lh == lbl_low)
+	{
+		bp_t.select = TYPE_BP_LOW;
+		bp_t.change = 0;
+		bp_t.updated = 1;
+	}
+	else if (lh == lbl_high)
+	{
+
+		bp_t.select = TYPE_BP_HIGH;
+		bp_t.change = 0;
+		bp_t.updated = 1;
+	}
+	else if (lh == lbl_ifshift)
+	{
+		bp_t.select = TYPE_IF_SHIFT;
+		bp_t.change = 0;
+		bp_t.updated = 1;
+	}
+
+}
+
 static void buttons_af_handler(void)
 {
 	if (is_short_pressed())
@@ -978,10 +1008,10 @@ static void window_af_process(void)
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
 		label_t labels [] = {
-		//    x, y,  parent, state, is_trackable, visible,  name, 			Text, 				font_size, 	color, 		onClickHandler
-			{ 0, 0, WINDOW_BP, DISABLED,  0, NON_VISIBLE, "lbl_low",     "Low  cut : **** ",  FONT_MEDIUM, COLORMAIN_WHITE, },
-			{ 0, 0, WINDOW_BP, DISABLED,  0, NON_VISIBLE, "lbl_high",    "High cut : **** ",  FONT_MEDIUM, COLORMAIN_WHITE, },
-			{ 0, 0, WINDOW_BP, DISABLED,  0, NON_VISIBLE, "lbl_ifshift", "IF shift : **** ",  FONT_MEDIUM, COLORMAIN_WHITE, },
+		//    x, y,  parent, state, is_trackable, visible,  name, 			Text, 				font_size, 	color, 				onClickHandler
+			{ 0, 0, WINDOW_BP, CANCELLED,  0, NON_VISIBLE, "lbl_low",     "Low  cut : **** ",  FONT_MEDIUM, COLORMAIN_YELLOW, labels_af_handler, },
+			{ 0, 0, WINDOW_BP, CANCELLED,  0, NON_VISIBLE, "lbl_high",    "High cut : **** ",  FONT_MEDIUM, COLORMAIN_WHITE,  labels_af_handler, },
+			{ 0, 0, WINDOW_BP, CANCELLED,  0, NON_VISIBLE, "lbl_ifshift", "IF shift : **** ",  FONT_MEDIUM, COLORMAIN_WHITE,  labels_af_handler, },
 		};
 		win->lh_count = ARRAY_SIZE(labels);
 		uint_fast16_t labels_size = sizeof(labels);
@@ -1059,11 +1089,23 @@ static void window_af_process(void)
 		return;
 	}
 
+	if (encoder2.rotate != 0)
+	{
+		bp_t.updated = 1;
+		bp_t.change = encoder2.rotate;
+		encoder2.rotate_done = 1;
+	}
+
 	if (bp_t.updated)
 	{
 		bp_t.updated = 0;
 		gui_timer_update(NULL);
 		int16_t shift;
+
+		for(uint_fast8_t i = 0; i < win->lh_count; i ++)
+			win->lh_ptr[i].color = COLORMAIN_WHITE;
+
+		win->lh_ptr[bp_t.select].color = COLORMAIN_YELLOW;
 
 		switch(bp_t.select)
 		{
