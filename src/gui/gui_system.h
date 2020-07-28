@@ -22,12 +22,14 @@ uint_fast8_t is_short_pressed(void);
 uint_fast8_t is_long_pressed(void);
 uint_fast8_t is_moving_label(void);
 uint_fast8_t is_moving_slider(void);
-void * get_selected_element(void);
 uint_fast8_t check_for_parent_window(void);
 uint_fast8_t get_gui_1sec_timer(void);
 uint_fast8_t get_selected_element_pos(void);
 uint_fast8_t get_gui_keyb_code(void);
 void get_gui_tracking(int_fast8_t * x, int_fast8_t * y);
+button_t * get_selected_button(void);
+label_t * get_selected_label(void);
+slider_t * get_selected_slider(void);
 
 #endif /* WITHTOUCHGUI */
 #endif /* GUI_USER_H_INCLUDED */

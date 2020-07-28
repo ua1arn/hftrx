@@ -750,10 +750,28 @@ uint_fast8_t is_long_pressed(void)
 	return gui.selected_type == TYPE_BUTTON && gui.state == LONG_PRESSED;
 }
 
-/* Возврат указателя на активный элемент */
-void * get_selected_element(void)
+button_t * get_selected_button(void)
 {
-	return gui.selected_link->link;
+	if (gui.selected_type == TYPE_BUTTON)
+		return (button_t *) gui.selected_link->link;
+	else
+		return NULL;
+}
+
+label_t * get_selected_label(void)
+{
+	if (gui.selected_type == TYPE_LABEL)
+		return (label_t *) gui.selected_link->link;
+	else
+		return NULL;
+}
+
+slider_t * get_selected_slider(void)
+{
+	if (gui.selected_type == TYPE_SLIDER)
+		return (slider_t *) gui.selected_link->link;
+	else
+		return NULL;
 }
 
 /* Возврат признака перемещения слайдера */
