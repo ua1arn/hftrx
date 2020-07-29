@@ -96,7 +96,7 @@ float32_t fftbuf [FIRBUFSIZE * 2];
 static uint_fast8_t is_sp_ready = 0;
 
 /* Возврат ссылки на окно */
-window_t * get_win(window_id_t window_id)
+window_t * get_win(uint8_t window_id)
 {
 	ASSERT(window_id < WINDOWS_COUNT);
 	return & windows [window_id];
@@ -263,6 +263,27 @@ static void gui_main_process(void)
 		local_snprintf_P(btn_AutoNotch->text, ARRAY_SIZE(btn_AutoNotch->text), PSTR("ANotch|%s"), btn_AutoNotch->payload ? "ON" : "OFF");
 
 		return;
+	}
+
+	if (encoder2.rotate != 0)
+	{
+		uint_fast16_t step = 500;
+		uint32_t freq = hamradio_get_freq_rx();
+		uint16_t ff = freq % step;
+
+		if (encoder2.rotate > 0)
+		{
+			hamradio_set_freq(freq + (step - ff));
+		}
+		else if (encoder2.rotate < 0)
+		{
+			if (ff == 0)
+				ff = step;
+
+			hamradio_set_freq(freq - ff);
+		}
+
+		encoder2.rotate_done = 1;
 	}
 
 	// разметка

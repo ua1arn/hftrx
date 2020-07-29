@@ -22,13 +22,14 @@
 #include "src/codecs/nau8822.h"
 
 #include "src/gui/gui.h"
+#include "src/gui/gui_user.h"
 #include "src/gui/gui_structs.h"
 #include "src/gui/gui_settings.h"
 
 #if WITHTOUCHGUI
 
 static void update_gui_elements_list(void);
-window_t * get_win(window_id_t window_id);
+window_t * get_win(uint8_t window_id);
 void close_window(uint_fast8_t parent);
 void close_all_windows(void);
 

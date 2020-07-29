@@ -78,7 +78,6 @@ void hamradio_clean_mic_profile(uint_fast8_t cell);
 uint_fast8_t hamradio_get_bands(band_array_t * bands);
 void hamradio_goto_band_by_freq(uint_fast32_t f);
 uint_fast8_t hamradio_check_current_freq_by_band(uint_fast8_t band);
-void hamradio_gebug_autonotch(void);
 void gui_copy_audio_buf(float32_t * buf);
 void apply_window_function(float32_t * v, uint_fast16_t size);
 void fftzoom_x2(float32_t * buffer);

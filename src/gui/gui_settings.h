@@ -22,32 +22,6 @@ enum {
 	footer_buttons_count = 9,
 };
 
-typedef enum {
-	WINDOW_MAIN,					// постоянно отображаемые кнопки внизу экрана
-	WINDOW_MODES,					// переключение режимов работы, видов модуляции
-	WINDOW_BP,						// регулировка полосы пропускания фильтров выбранного режима
-	WINDOW_AGC,						// выбор пресетов настроек АРУ для текущего режима модуляции
-	WINDOW_FREQ,					// прямой ввод частоты
-	WINDOW_MENU,					// системное меню
-	WINDOW_ENC2,					// быстрое меню по нажатию 2-го энкодера
-	WINDOW_UIF,						// быстрое меню по нажатию заранее определенных кнопок
-	WINDOW_SWR_SCANNER,				// сканер КСВ по диапазону
-	WINDOW_AUDIOSETTINGS,			// настройки аудиопараметров
-	WINDOW_AP_MIC_EQ,				// эквалайзер микрофона
-	WINDOW_AP_REVERB_SETT,			// параметры ревербератора
-	WINDOW_AP_MIC_SETT,				// настройки микрофона
-	WINDOW_AP_MIC_PROF,				// профили микрофона (заготовка окна)
-	WINDOW_TX_SETTINGS,				// настройки, относящиеся к режиму передачи
-	WINDOW_TX_VOX_SETT,				// настройки VOX
-	WINDOW_TX_POWER,				// выходная мощность
-	WINDOW_OPTIONS,
-	WINDOW_UTILS,
-	WINDOW_BANDS,
-	WINDOW_MEMORY,
-	WINDOWS_COUNT
-} window_id_t;
-
-
 #if defined (GUI_OLDBUTTONSTYLE)
 #define GUI_DEFAULTCOLOR		COLORMAIN_BLACK
 #else

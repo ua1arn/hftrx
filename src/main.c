@@ -19268,12 +19268,6 @@ uint_fast8_t hamradio_get_autonotch(void)
 	return gnotch && notchmodes [gnotchtype].code == BOARD_NOTCH_AUTO;
 }
 
-void hamradio_gebug_autonotch(void)
-{
-	for (uint_fast16_t i = 0; i < AUTONOTCH_NUMTAPS; i ++)
-		PRINTF("%d: %f\n", i, lmsData0.lms2NormCoeff_f32[i]);
-}
-
 #endif /* WITHNOTCHFREQ */
 
 #if WITHTOUCHGUI
