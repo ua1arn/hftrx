@@ -726,6 +726,9 @@ void uacout_buffer_save_realtime(const uint8_t * buff, uint_fast16_t size, uint_
  */
 uint_fast8_t takewavsample(FLOAT32P_t * rv, uint_fast8_t suspend);
 
+void apply_window_function(float32_t * v, uint_fast16_t size);
+void fftzoom_x2(float32_t * buffer);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
