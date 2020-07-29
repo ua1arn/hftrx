@@ -3083,7 +3083,11 @@ static uint_fast8_t gagcmode;
 #endif /* WITHIF4DSP */
 
 #if (WITHSWRMTR || WITHSHOWSWRPWR)
+#if WITHAFSPECTRE
+	static uint_fast8_t gsmetertype = SMETER_TYPE_BARS;
+#else
 	static uint_fast8_t gsmetertype = SMETER_TYPE_DIAL;	/* выбор внешнего вида прибора - стрелочный или градусник */
+#endif /* WITHAFSPECTRE */
 #endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
 
 #if WITHIFSHIFT
@@ -7938,7 +7942,7 @@ static void processingonebuff(uint_fast8_t pathi, lmsnrstate_t * const nrp, spee
 #endif /* WITHNOSPEEX */
 }
 
-void afsp_copy_audio_buf(float32_t * buf);
+void afsp_save_sample(FLOAT_t v);
 
 // user-mode processing
 void
@@ -7955,10 +7959,6 @@ audioproc_spool_user(void)
 			// nrp->outsp указывает на результат обработки
 			processingonebuff(pathi, nrp, p + pathi * FIRBUFSIZE);	// CMSIS DSP or SPEEX
 		}
-
-#if WITHAFSPECTRE
-		afsp_copy_audio_buf(lmsnrstates [0].outsp);
-#endif
 		//////////////////////////////////////////////
 		// Save results
 		unsigned i;
@@ -7969,6 +7969,10 @@ audioproc_spool_user(void)
 	  #else /* WITHUSEDUALWATCH */
 			savesampleout16stereo_user(lmsnrstates [0].outsp [i], lmsnrstates [0].outsp [i]);	// to AUDIO codec
 	  #endif /* WITHUSEDUALWATCH */
+
+	#if WITHAFSPECTRE
+			afsp_save_sample(lmsnrstates [0].outsp [i]);
+	#endif
 		}
 		// Освобождаем буфер
 		releasespeexbuffer_user(p);
