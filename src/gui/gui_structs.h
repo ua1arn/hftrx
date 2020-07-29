@@ -45,6 +45,10 @@ enum {
 };
 
 enum {
+	NO_PARENT_WINDOW = UINT8_MAX,
+};
+
+enum {
 	NAME_ARRAY_SIZE = 30,
 	TEXT_ARRAY_SIZE = 30,
 	MENU_ARRAY_SIZE = 30,

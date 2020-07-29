@@ -44,7 +44,7 @@ enum { BG_COUNT = ARRAY_SIZE(btn_bg) };
 static gui_t gui = { 0, 0, KBD_CODE_MAX, TYPE_DUMMY, NULL, CANCELLED, 0, 0, 0, 0, 0, 1, };
 static gui_element_t gui_elements [GUI_ELEMENTS_ARRAY_SIZE];
 static uint_fast8_t gui_element_count = 0;
-static button_t close_button = { 0, 0, 0, 0, close_all_windows, CANCELLED, BUTTON_NON_LOCKED, 0, UINT8_MAX, NON_VISIBLE, UINTPTR_MAX, "btn_close", "", };
+static button_t close_button = { 0, 0, 0, 0, close_all_windows, CANCELLED, BUTTON_NON_LOCKED, 0, NO_PARENT_WINDOW, NON_VISIBLE, UINTPTR_MAX, "btn_close", "", };
 
 /* Обновить секундрый таймер GUI */
 void gui_timer_update(void * arg)
@@ -168,7 +168,7 @@ void footer_buttons_state (uint_fast8_t state, ...)
 			bh->state = bh == bt ? CANCELLED : DISABLED;
 			bh->is_locked = bh->state == CANCELLED ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
 		}
-		else if (state == CANCELLED && gui.win [1] == UINT8_MAX)
+		else if (state == CANCELLED && gui.win [1] == NO_PARENT_WINDOW)
 		{
 			bh->state = CANCELLED;
 			bh->is_locked = BUTTON_NON_LOCKED;
@@ -319,15 +319,15 @@ static void free_win_ptr (window_t * win)
 /* Установка признака видимости окна */
 void close_window(uint_fast8_t parent) // 0 - не открывать parent window, 1 - открыть
 {
-	if(gui.win [1] != UINT8_MAX)
+	if(gui.win [1] != NO_PARENT_WINDOW)
 	{
 		window_t * win = get_win(gui.win [1]);
 		win->state = NON_VISIBLE;
 		elements_state(win);
 		free_win_ptr(win);
-		gui.win [1] = UINT8_MAX;
+		gui.win [1] = NO_PARENT_WINDOW;
 
-		if (win->parent_id != UINT8_MAX && parent)	// При закрытии child window открыть parent window, если есть и если разрешено
+		if (win->parent_id != NO_PARENT_WINDOW && parent)	// При закрытии child window открыть parent window, если есть и если разрешено
 		{
 			window_t * pwin = get_win(win->parent_id);
 			pwin->state = VISIBLE;
@@ -343,7 +343,7 @@ void open_window(window_t * win)
 {
 	win->state = VISIBLE;
 	win->first_call = 1;
-	if (win->parent_id != UINT8_MAX && gui.win [1] == win->parent_id)	// Если открыто parent window, закрыть его и оставить child window
+	if (win->parent_id != NO_PARENT_WINDOW && gui.win [1] == win->parent_id)	// Если открыто parent window, закрыть его и оставить child window
 	{
 		window_t * pwin = get_win(win->parent_id);
 		pwin->state = NON_VISIBLE;
@@ -666,7 +666,7 @@ void gui_initialize (void)
 	window_t * win = get_win(WINDOW_MAIN);
 
 	open_window(win);
-	gui.win [1] = UINT8_MAX;
+	gui.win [1] = NO_PARENT_WINDOW;
 
 	do {
 		fill_button_bg_buf(& btn_bg [i]);
@@ -972,7 +972,7 @@ void gui_WM_walktrough(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
 
 	for(uint_fast8_t i = 0; i < win_gui_count; i ++)
 	{
-		if (gui.win [i] == UINT8_MAX)
+		if (gui.win [i] == NO_PARENT_WINDOW)
 			break;
 
 		const window_t * const win = get_win(gui.win [i]);

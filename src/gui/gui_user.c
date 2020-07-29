@@ -51,14 +51,14 @@ static void window_memory_process(void);
 
 static window_t windows [] = {
 //     window_id,   		 parent_id, 			align_mode,     x1, y1, w, h,   title,     		is_show, first_call, is_close, onVisibleProcess
-	{ WINDOW_MAIN, 			 UINT8_MAX, 			ALIGN_LEFT_X,	0, 0, 0, 0, "",  	   	   			 NON_VISIBLE, 0, 0, gui_main_process, },
-	{ WINDOW_MODES, 		 UINT8_MAX, 			ALIGN_CENTER_X, 0, 0, 0, 0, "Select mode", 			 NON_VISIBLE, 0, 1, window_mode_process, },
-	{ WINDOW_BP,    		 UINT8_MAX,				ALIGN_CENTER_X, 0, 0, 0, 0, "AF settings",    		 NON_VISIBLE, 0, 1, window_af_process, },
+	{ WINDOW_MAIN, 			 NO_PARENT_WINDOW, 		ALIGN_LEFT_X,	0, 0, 0, 0, "",  	   	   			 NON_VISIBLE, 0, 0, gui_main_process, },
+	{ WINDOW_MODES, 		 NO_PARENT_WINDOW, 		ALIGN_CENTER_X, 0, 0, 0, 0, "Select mode", 			 NON_VISIBLE, 0, 1, window_mode_process, },
+	{ WINDOW_BP,    		 NO_PARENT_WINDOW,		ALIGN_CENTER_X, 0, 0, 0, 0, "AF settings",    		 NON_VISIBLE, 0, 1, window_af_process, },
 	{ WINDOW_AGC,   		 WINDOW_OPTIONS,		ALIGN_CENTER_X, 0, 0, 0, 0, "AGC control", 			 NON_VISIBLE, 0, 1, window_agc_process, },
 	{ WINDOW_FREQ,  		 WINDOW_OPTIONS,		ALIGN_CENTER_X, 0, 0, 0, 0, "Freq:", 	   			 NON_VISIBLE, 0, 1, window_freq_process, },
 	{ WINDOW_MENU,  		 WINDOW_OPTIONS,		ALIGN_CENTER_X, 0, 0, 0, 0, "Settings",	   		 	 NON_VISIBLE, 0, 1, window_menu_process, },
-	{ WINDOW_ENC2, 			 UINT8_MAX, 			ALIGN_RIGHT_X, 	0, 0, 0, 0, "",  			 		 NON_VISIBLE, 0, 0, window_enc2_process, },
-	{ WINDOW_UIF, 			 UINT8_MAX, 			ALIGN_LEFT_X, 	0, 0, 0, 0, "",   		   	 		 NON_VISIBLE, 0, 0, window_uif_process, },
+	{ WINDOW_ENC2, 			 NO_PARENT_WINDOW, 		ALIGN_RIGHT_X, 	0, 0, 0, 0, "",  			 		 NON_VISIBLE, 0, 0, window_enc2_process, },
+	{ WINDOW_UIF, 			 NO_PARENT_WINDOW, 		ALIGN_LEFT_X, 	0, 0, 0, 0, "",   		   	 		 NON_VISIBLE, 0, 0, window_uif_process, },
 	{ WINDOW_SWR_SCANNER,	 WINDOW_UTILS, 			ALIGN_CENTER_X, 0, 0, 0, 0, "SWR band scanner",		 NON_VISIBLE, 0, 0, window_swrscan_process, },
 	{ WINDOW_AUDIOSETTINGS,  WINDOW_OPTIONS,		ALIGN_CENTER_X, 0, 0, 0, 0, "Audio settings", 		 NON_VISIBLE, 0, 1, window_audiosettings_process, },
 	{ WINDOW_AP_MIC_EQ, 	 WINDOW_AUDIOSETTINGS, 	ALIGN_CENTER_X, 0, 0, 0, 0, "MIC TX equalizer",		 NON_VISIBLE, 0, 1, window_ap_mic_eq_process, },
@@ -68,10 +68,10 @@ static window_t windows [] = {
 	{ WINDOW_TX_SETTINGS, 	 WINDOW_OPTIONS, 		ALIGN_CENTER_X, 0, 0, 0, 0, "Transmit settings", 	 NON_VISIBLE, 0, 1, window_tx_process, },
 	{ WINDOW_TX_VOX_SETT, 	 WINDOW_TX_SETTINGS, 	ALIGN_CENTER_X, 0, 0, 0, 0, "VOX settings", 	 	 NON_VISIBLE, 0, 1, window_tx_vox_process, },
 	{ WINDOW_TX_POWER, 		 WINDOW_TX_SETTINGS, 	ALIGN_CENTER_X, 0, 0, 0, 0, "TX power", 	 	 	 NON_VISIBLE, 0, 1, window_tx_power_process, },
-	{ WINDOW_OPTIONS, 		 UINT8_MAX, 			ALIGN_CENTER_X,	0, 0, 0, 0, "Options",  	   	   	 NON_VISIBLE, 0, 1, window_options_process, },
+	{ WINDOW_OPTIONS, 		 NO_PARENT_WINDOW, 		ALIGN_CENTER_X,	0, 0, 0, 0, "Options",  	   	   	 NON_VISIBLE, 0, 1, window_options_process, },
 	{ WINDOW_UTILS, 		 WINDOW_OPTIONS,		ALIGN_CENTER_X,	0, 0, 0, 0, "Utilites",  	   	   	 NON_VISIBLE, 0, 1, window_utilites_process, },
-	{ WINDOW_BANDS, 		 UINT8_MAX,				ALIGN_CENTER_X,	0, 0, 0, 0, "Bands",  	   	   	 	 NON_VISIBLE, 0, 1, window_bands_process, },
-	{ WINDOW_MEMORY, 		 UINT8_MAX,				ALIGN_CENTER_X,	0, 0, 0, 0, "Memory",  	   	   	 	 NON_VISIBLE, 0, 1, window_memory_process, },
+	{ WINDOW_BANDS, 		 NO_PARENT_WINDOW,		ALIGN_CENTER_X,	0, 0, 0, 0, "Bands",  	   	   	 	 NON_VISIBLE, 0, 1, window_bands_process, },
+	{ WINDOW_MEMORY, 		 NO_PARENT_WINDOW,		ALIGN_CENTER_X,	0, 0, 0, 0, "Memory",  	   	   	 	 NON_VISIBLE, 0, 1, window_memory_process, },
 };
 
 static uint_fast8_t swr_scan_enable = 0;		// флаг разрешения сканирования КСВ
@@ -192,7 +192,7 @@ static void btn_main_handler(void)
 		}
 		else if (pressed_btn == btn_Options)
 		{
-			if (check_for_parent_window() != UINT8_MAX)
+			if (check_for_parent_window() != NO_PARENT_WINDOW)
 			{
 				close_window(OPEN_PARENT_WINDOW);
 				footer_buttons_state(CANCELLED);
@@ -265,22 +265,22 @@ static void gui_main_process(void)
 		return;
 	}
 
-	if (encoder2.rotate != 0)
+	if (encoder2.rotate != 0 && check_for_parent_window() == NO_PARENT_WINDOW)
 	{
 		uint_fast16_t step = 500;
 		uint32_t freq = hamradio_get_freq_rx();
-		uint16_t ff = freq % step;
+		uint16_t f_rem = freq % step;
 
 		if (encoder2.rotate > 0)
 		{
-			hamradio_set_freq(freq + (step - ff));
+			hamradio_set_freq(freq + (step - f_rem));
 		}
 		else if (encoder2.rotate < 0)
 		{
-			if (ff == 0)
-				ff = step;
+			if (f_rem == 0)
+				f_rem = step;
 
-			hamradio_set_freq(freq - ff);
+			hamradio_set_freq(freq - f_rem);
 		}
 
 		encoder2.rotate_done = 1;
@@ -3128,7 +3128,7 @@ static void window_menu_process(void)
 
 	if (menu_level == MENU_OFF)
 	{
-		if (win->parent_id != UINT8_MAX)
+		if (win->parent_id != NO_PARENT_WINDOW)
 		{
 			close_window(OPEN_PARENT_WINDOW);
 			return;
@@ -3448,21 +3448,21 @@ static void window_enc2_process(void)
 void gui_open_sys_menu(void)
 {
 	window_t * win = get_win(WINDOW_MENU);
-	static uint_fast8_t backup_parent = UINT8_MAX;
+	static uint_fast8_t backup_parent = NO_PARENT_WINDOW;
 
-	if (check_for_parent_window() == UINT8_MAX && win->parent_id != UINT8_MAX)
+	if (check_for_parent_window() == NO_PARENT_WINDOW && win->parent_id != NO_PARENT_WINDOW)
 	{
 		backup_parent = win->parent_id;		// для возможности открытия окна напрямую временно "обнулить" parent_id
-		win->parent_id = UINT8_MAX;
+		win->parent_id = NO_PARENT_WINDOW;
 		open_window(win);
 		footer_buttons_state(DISABLED, NULL);
 	}
-	else if (check_for_parent_window() == WINDOW_MENU && win->parent_id == UINT8_MAX)
+	else if (check_for_parent_window() == WINDOW_MENU && win->parent_id == NO_PARENT_WINDOW)
 	{
 		close_window(OPEN_PARENT_WINDOW);
 		footer_buttons_state(CANCELLED);
 		win->parent_id = backup_parent;
-		backup_parent = UINT8_MAX;
+		backup_parent = NO_PARENT_WINDOW;
 	}
 }
 
