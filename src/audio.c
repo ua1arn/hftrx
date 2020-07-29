@@ -4921,12 +4921,14 @@ void fftzoom_x2(float32_t * buffer)
 	const struct zoom_param * const prm = & zoom_params [0];
 	arm_fir_decimate_instance_f32 fir_config;
 	const unsigned usedSize = NORMALFFT * prm->zoom;
+
 	VERIFY(ARM_MATH_SUCCESS == arm_fir_decimate_init_f32(& fir_config,
 						prm->numTaps,
 						prm->zoom,          // Decimation factor
 						prm->pCoeffs,
-						zoomfft_st.fir_state,            // Filter state variables
+						zoomfft_st.fir_state,       	// Filter state variables
 						usedSize));
+
 	arm_fir_decimate_f32(& fir_config, buffer, buffer, usedSize);
 }
 
