@@ -710,10 +710,11 @@ display2_smeter15(
 
 #if WITHAFSPECTRE
 
-static float32_t afsp_raw_buf [FIRBUFSIZE];
-static float32_t afsp_fft_buf [FIRBUFSIZE * 2];
+
 
 typedef struct {
+	float32_t raw_buf [FIRBUFSIZE * 4];
+	float32_t fft_buf [FIRBUFSIZE * 2];
 	uint_fast8_t is_ready;
 	float32_t max_val;
 	uint_fast16_t x;
@@ -726,23 +727,13 @@ typedef struct {
 
 static afsp_t afsp;
 
-void afsp_copy_audio_buf(float32_t * buf)
-{
-	if (! afsp.is_ready)
-	{
-		arm_copy_f32(afsp_raw_buf, afsp_raw_buf, FIRBUFSIZE);
-		afsp.is_ready = 1;
-		PRINTF("%f\n", afsp_raw_buf[31]);
-	}
-}
-
 void afsp_save_sample(float32_t v)
 {
-	static uint_fast16_t i = 0, j = 0;
+	static uint_fast16_t i = 0;
 
 	if (afsp.is_ready == 0)
 	{
-		afsp_raw_buf [i] = v;
+		afsp.raw_buf [i] = v;
 		i ++;
 	}
 
@@ -750,18 +741,7 @@ void afsp_save_sample(float32_t v)
 	{
 		afsp.is_ready = 1;
 		i = 0;
-		j ++;
 	}
-
-//	if (j == 500)
-//	{
-//		j = 0;
-//		for (uint_fast8_t t = 0; t < FIRBUFSIZE; t ++)
-//		{
-//			PRINTF("%f ", afsp_raw_buf [t]);
-//		}
-//		PRINTF("\n");
-//	}
 }
 
 void display2_init_af_spectre(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)		// вызывать после инициализации s-meter
@@ -778,33 +758,22 @@ void display2_init_af_spectre(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)		//
 void display2_latch_af_spectre(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
 {
 	static uint_fast8_t j = 0;
-	if (afsp.is_ready)// && ! hamradio_get_tx())
+	if (afsp.is_ready && ! hamradio_get_tx())
 	{
 		afsp.is_ready = 0;
 
-		//fftzoom_x2(afsp_raw_buf);
+		fftzoom_x2(afsp.raw_buf);
 
 		for (uint_fast16_t i = 0; i < FIRBUFSIZE; i ++)
 		{
-			afsp_fft_buf [i * 2 + 0] = afsp_raw_buf [i];
-			afsp_fft_buf [i * 2 + 1] = 0;
+			afsp.fft_buf [i * 2 + 0] = afsp.raw_buf [i];
+			afsp.fft_buf [i * 2 + 1] = 0;
 		}
 
-		apply_window_function(afsp_fft_buf, FIRBUFSIZE);
-		arm_cfft_f32(FFTCONFIGSpectrum, afsp_fft_buf, 0, 1);
-		arm_cmplx_mag_f32(afsp_fft_buf, afsp_fft_buf, FIRBUFSIZE);
-		arm_max_no_idx_f32(afsp_fft_buf, FIRBUFSIZE, & afsp.max_val);
-
-//		j++;
-//		if (j == 200)
-//		{
-//			j = 0;
-//			for (uint_fast8_t t = 0; t < FIRBUFSIZE; t ++)
-//			{
-//				PRINTF("%f ", afsp_fft_buf [t]);
-//			}
-//			PRINTF("\n");
-//		}
+		apply_window_function(afsp.fft_buf, FIRBUFSIZE);
+		arm_cfft_f32(FFTCONFIGSpectrum, afsp.fft_buf, 0, 1);
+		arm_cmplx_mag_f32(afsp.fft_buf, afsp.fft_buf, FIRBUFSIZE);
+		arm_max_no_idx_f32(afsp.fft_buf, FIRBUFSIZE, & afsp.max_val);
 	}
 }
 
@@ -818,7 +787,7 @@ void display2_af_spectre(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
 		for (uint_fast16_t i = 3; i < afsp.w; i ++)
 		{
 			uint_fast16_t fftpos = FIRBUFSIZE - round(i / afsp.step);
-			const FLOAT_t val = normalize(afsp_fft_buf [fftpos], 0, afsp.max_val, afsp.h);
+			const FLOAT_t val = normalize(afsp.fft_buf [fftpos], 0, afsp.max_val, afsp.h);
 			const FLOAT_t yy = y_old_array [i] * 0.8 + 0.2 * val;
 			y_old_array [i] = yy;
 			colmain_line(fr, DIM_X, DIM_Y, afsp.x + i - 3, afsp.y - yy, afsp.x + i - 3, afsp.y, COLORMAIN_YELLOW, 0);
