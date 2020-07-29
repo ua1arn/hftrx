@@ -7938,6 +7938,8 @@ static void processingonebuff(uint_fast8_t pathi, lmsnrstate_t * const nrp, spee
 #endif /* WITHNOSPEEX */
 }
 
+void afsp_copy_audio_buf(float32_t * buf);
+
 // user-mode processing
 void
 audioproc_spool_user(void)
@@ -7954,8 +7956,8 @@ audioproc_spool_user(void)
 			processingonebuff(pathi, nrp, p + pathi * FIRBUFSIZE);	// CMSIS DSP or SPEEX
 		}
 
-#if WITHTOUCHGUI
-		gui_copy_audio_buf(lmsnrstates [0].outsp);
+#if WITHAFSPECTRE
+		afsp_copy_audio_buf(lmsnrstates [0].outsp);
 #endif
 		//////////////////////////////////////////////
 		// Save results

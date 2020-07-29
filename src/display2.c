@@ -7324,6 +7324,63 @@ void colmain_rounded_rect(
 
 #endif /* LCDMODE_LTDC */
 
+#if WITHAFSPECTRE
+
+static float32_t afsp_raw_buf [FIRBUFSIZE];
+float32_t afsp_fft_buf [FIRBUFSIZE * 2];
+static uint_fast8_t is_sp_ready = 0;
+
+void afsp_copy_audio_buf(float32_t * buf)
+{
+	if (! is_sp_ready)
+	{
+		arm_copy_f32(buf, afsp_raw_buf, FIRBUFSIZE);
+		is_sp_ready = 1;
+	}
+}
+
+void display_af_spectre(uint_fast16_t x, uint_fast16_t y, uint_fast8_t w, uint_fast8_t h)
+{
+	if (is_sp_ready)
+	{
+		PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
+		float32_t max_val = 0;
+		static uint_fast8_t y_old_array [FIRBUFSIZE];
+		const uint_fast16_t visiblefftsize = 95;
+		uint_fast16_t fft_step = w / visiblefftsize;
+
+		if (! hamradio_get_tx())
+		{
+			is_sp_ready = 0;
+
+			fftzoom_x2(afsp_raw_buf);
+
+			for (uint_fast16_t i = 0; i < FIRBUFSIZE; i ++)
+			{
+				afsp_fft_buf [i * 2 + 0] = afsp_raw_buf [i];
+				afsp_fft_buf [i * 2 + 1] = 0;
+			}
+
+			apply_window_function(afsp_fft_buf, FIRBUFSIZE);
+			arm_cfft_f32(FFTCONFIGSpectrum, afsp_fft_buf, 0, 1);
+			arm_cmplx_mag_f32(afsp_fft_buf, afsp_fft_buf, FIRBUFSIZE);
+			arm_max_no_idx_f32(afsp_fft_buf, FIRBUFSIZE, & max_val);
+		}
+
+		for (uint_fast16_t i = 3; i < w; i ++)
+		{
+			uint_fast16_t fftpos = FIRBUFSIZE - round(i / fft_step);
+			const FLOAT_t val = normalize(afsp_fft_buf [fftpos], 0, max_val, h);
+			const FLOAT_t yy = y_old_array [i] * 0.8 + 0.2 * val;
+			y_old_array [i] = yy;
+			colmain_line(fr, DIM_X, DIM_Y, x + i - 3, y - yy, x + i - 3, y, COLORMAIN_YELLOW, 0);
+		}
+	}
+
+}
+
+#endif /* WITHAFSPECTRE */
+
 #if LCDMODE_LTDC
 
 uint_fast16_t normalize(
@@ -7841,6 +7898,11 @@ display2_smeter15(
 
 			if(gv_trace > smeter_params.gs)
 				colmain_line(fr, DIM_X, DIM_Y, x0 + gv_trace, y0 + smeter_params.r1 + 5, x0 + gv_trace, y0 + smeter_params.r1 + 20, COLORMAIN_YELLOW, 0);
+
+#if WITHAFSPECTRE
+			display_af_spectre(x0 + smeter_params.gs, y0 + SM_BG_H - 10, smeter_params.ge - smeter_params.gs, 40);
+#endif /* WITHAFSPECTRE */
+
 		}
 
 		break;

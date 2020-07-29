@@ -91,9 +91,9 @@ static band_array_t bands [30];
 
 static bp_var_t bp_t;
 
-static float32_t updated_spectre [FIRBUFSIZE];
-float32_t fftbuf [FIRBUFSIZE * 2];
-static uint_fast8_t is_sp_ready = 0;
+//static float32_t updated_spectre [FIRBUFSIZE];
+//float32_t fftbuf [FIRBUFSIZE * 2];
+//static uint_fast8_t is_sp_ready = 0;
 
 /* Возврат ссылки на окно */
 window_t * get_win(uint8_t window_id)
@@ -102,14 +102,14 @@ window_t * get_win(uint8_t window_id)
 	return & windows [window_id];
 }
 
-void gui_copy_audio_buf(float32_t * buf)
-{
-	if (! is_sp_ready)
-	{
-		arm_copy_f32(buf, updated_spectre, FIRBUFSIZE);
-		is_sp_ready = 1;
-	}
-}
+//void gui_copy_audio_buf(float32_t * buf)
+//{
+//	if (! is_sp_ready)
+//	{
+//		arm_copy_f32(buf, updated_spectre, FIRBUFSIZE);
+//		is_sp_ready = 1;
+//	}
+//}
 
 // *********************************************************************************************************************************************************************
 
@@ -411,39 +411,39 @@ static void gui_main_process(void)
 	// отображение НЧ спектра
 	xx = current_place * lbl_place_width + 3;
 
-	if (is_sp_ready)
-	{
-		float32_t max_val = 0;
-		static uint_fast8_t y_old_array [FIRBUFSIZE];
-		const uint_fast16_t visiblefftsize = 95;
-		uint_fast16_t fft_step = x_width / visiblefftsize;
-
-		if (! hamradio_get_tx())
-		{
-			is_sp_ready = 0;
-			fftzoom_x2(updated_spectre);
-
-			for (uint_fast16_t i = 0; i < FIRBUFSIZE; i ++)
-			{
-				fftbuf [i * 2 + 0] = updated_spectre [i];
-				fftbuf [i * 2 + 1] = 0;
-			}
-
-			apply_window_function(fftbuf, FIRBUFSIZE);
-			arm_cfft_f32(FFTCONFIGSpectrum, fftbuf, 0, 1);
-			arm_cmplx_mag_f32(fftbuf, fftbuf, FIRBUFSIZE);
-			arm_max_no_idx_f32(fftbuf, FIRBUFSIZE, & max_val);
-		}
-
-		for (uint_fast16_t i = 3; i < x_width; i ++)
-		{
-			uint_fast16_t fftpos = FIRBUFSIZE - round(i / fft_step);
-			const FLOAT_t val = normalize(fftbuf [fftpos], 0, max_val, 38);
-			const FLOAT_t yy = y_old_array [i] * 0.8 + 0.2 * val;
-			y_old_array [i] = yy;
-			colmain_line(fr, DIM_X, DIM_Y, xx + i - 3, y2 + SMALLCHARH2 - yy, xx + i - 3, y2 + SMALLCHARH2, COLORMAIN_YELLOW, 0);
-		}
-	}
+//	if (is_sp_ready)
+//	{
+//		float32_t max_val = 0;
+//		static uint_fast8_t y_old_array [FIRBUFSIZE];
+//		const uint_fast16_t visiblefftsize = 95;
+//		uint_fast16_t fft_step = x_width / visiblefftsize;
+//
+//		if (! hamradio_get_tx())
+//		{
+//			is_sp_ready = 0;
+//			fftzoom_x2(updated_spectre);
+//
+//			for (uint_fast16_t i = 0; i < FIRBUFSIZE; i ++)
+//			{
+//				fftbuf [i * 2 + 0] = updated_spectre [i];
+//				fftbuf [i * 2 + 1] = 0;
+//			}
+//
+//			apply_window_function(fftbuf, FIRBUFSIZE);
+//			arm_cfft_f32(FFTCONFIGSpectrum, fftbuf, 0, 1);
+//			arm_cmplx_mag_f32(fftbuf, fftbuf, FIRBUFSIZE);
+//			arm_max_no_idx_f32(fftbuf, FIRBUFSIZE, & max_val);
+//		}
+//
+//		for (uint_fast16_t i = 3; i < x_width; i ++)
+//		{
+//			uint_fast16_t fftpos = FIRBUFSIZE - round(i / fft_step);
+//			const FLOAT_t val = normalize(fftbuf [fftpos], 0, max_val, 38);
+//			const FLOAT_t yy = y_old_array [i] * 0.8 + 0.2 * val;
+//			y_old_array [i] = yy;
+//			colmain_line(fr, DIM_X, DIM_Y, xx + i - 3, y2 + SMALLCHARH2 - yy, xx + i - 3, y2 + SMALLCHARH2, COLORMAIN_YELLOW, 0);
+//		}
+//	}
 
 //	#if WITHTHERMOLEVEL	// температура выходных транзисторов (при передаче)
 //		static ldiv_t t;
