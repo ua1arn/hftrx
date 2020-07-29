@@ -237,4 +237,9 @@ enum
 
 #define WITHMAXPWRCALI		100	/* калибровочный параметр PWR-метра */
 
+#define BOARD_NOTCH_OFF 0	// stub
+#define BOARD_NOTCH_MANUAL 1	// stub
+#define WITHLCDBACKLIGHTMIN 0	// stub
+
+
 #endif /* ATMEGA_CTLSTYLE_V9CN6_UY5UM_H_INCLUDED */
