@@ -710,8 +710,6 @@ display2_smeter15(
 
 #if WITHAFSPECTRE
 
-
-
 typedef struct {
 	float32_t raw_buf [FIRBUFSIZE * 4];
 	float32_t fft_buf [FIRBUFSIZE * 2];

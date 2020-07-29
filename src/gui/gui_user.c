@@ -218,7 +218,7 @@ static void gui_main_process(void)
 	char buf [TEXT_ARRAY_SIZE];
 	const uint_fast8_t buflen = ARRAY_SIZE(buf);
 	uint_fast16_t yt, xt, y1 = 125, y2 = 145, current_place = 0, xx;
-	const uint_fast8_t num_places = 7;
+	const uint_fast8_t num_places = 8;
 	const uint_fast8_t lbl_place_width = 100;
 	const uint_fast16_t x_width = lbl_place_width * 2 - 6;
 
@@ -286,27 +286,78 @@ static void gui_main_process(void)
 		encoder2.rotate_done = 1;
 	}
 
-	// разметка
+	// разметка инфобара
 	for(uint_fast8_t i = 1; i < num_places; i++)
 	{
 		uint_fast16_t x = lbl_place_width * i;
 		colmain_line(fr, DIM_X, DIM_Y, x, y1, x, y2 + SMALLCHARH2, COLORMAIN_GREEN, 0);
 	}
 
-	// текущее время
-#if defined (RTC1_TYPE)
-	static uint_fast16_t year;
-	static uint_fast8_t month, day, hour, minute, secounds;
+	// параметры полосы пропускания фильтра
+	static uint_fast8_t bp_type, bp_low, bp_high;
 	if (get_gui_1sec_timer())
-		board_rtc_getdatetime(& year, & month, & day, & hour, & minute, & secounds);
-	local_snprintf_P(buf, buflen, PSTR("%02d.%02d"), day, month);
+	{
+		bp_high = hamradio_get_high_bp(0);
+		bp_low = hamradio_get_low_bp(0) * 10;
+		bp_type = hamradio_get_bp_type();
+		bp_high = bp_type ? bp_high * 100 : bp_high * 10;
+	}
+	local_snprintf_P(buf, buflen, PSTR("AF"));
+	xx = current_place * lbl_place_width + 7;
+	colpip_string2_tbg(fr, DIM_X, DIM_Y, xx, y1 + (y2 - y1) / 2, buf, COLORMAIN_WHITE);
+	xx += SMALLCHARW2 * 3;
+	local_snprintf_P(buf, buflen, bp_type ? (PSTR("L %d")) : (PSTR("W %d")), bp_low);
+	colpip_string2_tbg(fr, DIM_X, DIM_Y, xx, y1, buf, COLORMAIN_WHITE);
+	local_snprintf_P(buf, buflen, bp_type ? (PSTR("H %d")) : (PSTR("P %d")), bp_high);
+	colpip_string2_tbg(fr, DIM_X, DIM_Y, xx, y2, buf, COLORMAIN_WHITE);
+
+	current_place ++;	// 2
+
+	// значение сдвига частоты
+	static int_fast16_t if_shift;
+	if (get_gui_1sec_timer())
+		if_shift = hamradio_if_shift(0);
+	xx = current_place * lbl_place_width + lbl_place_width / 2;
+	if (if_shift)
+	{
+		local_snprintf_P(buf, buflen, PSTR("IF shift"));
+		colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, y1, buf, COLORMAIN_WHITE);
+		local_snprintf_P(buf, buflen, if_shift == 0 ? PSTR("%d") : PSTR("%+dk"), if_shift);
+		colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, y2, buf, COLORMAIN_WHITE);
+	}
+	else
+	{
+		local_snprintf_P(buf, buflen, PSTR("IF shift"));
+		colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, y1 + (y2 - y1) / 2, buf, COLORMAIN_GRAY);
+	}
+
+	current_place ++;	// 3
+
+	// пусто
+
+	current_place ++;	// 4
+
+	// пусто
+
+	current_place ++;	// 5
+
+	// пусто
+
+	current_place ++;	// 6
+
+	// ширина панорамы
+#if WITHIF4DSP
+	static int_fast32_t z;
+	if (get_gui_1sec_timer())
+		z = display_zoomedbw() / 1000;
+	local_snprintf_P(buf, buflen, PSTR("SPAN"));
 	xx = current_place * lbl_place_width + lbl_place_width / 2;
 	colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, y1, buf, COLORMAIN_WHITE);
-	local_snprintf_P(buf, buflen, PSTR("%02d%c%02d"), hour, ((secounds & 1) ? ' ' : ':'), minute);
+	local_snprintf_P(buf, buflen, PSTR("%dk"), z);
 	colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, y2, buf, COLORMAIN_WHITE);
-#endif 	/* defined (RTC1_TYPE) */
+#endif /* WITHIF4DSP */
 
-	current_place ++;
+	current_place ++;	// 7
 
 	// напряжение питания
 #if WITHVOLTLEVEL
@@ -348,102 +399,19 @@ static void gui_main_process(void)
 	}
 #endif /* WITHCURRLEVEL */
 
-	current_place ++;
+	current_place ++;	// 8
 
-	// ширина панорамы
-#if WITHIF4DSP
-	static int_fast32_t z;
-	if (get_gui_1sec_timer())
-		z = display_zoomedbw() / 1000;
-	local_snprintf_P(buf, buflen, PSTR("SPAN"));
+	// текущее время
+#if defined (RTC1_TYPE)
+	static uint_fast16_t year;
+	static uint_fast8_t month, day, hour, minute, secounds;
+	board_rtc_getdatetime(& year, & month, & day, & hour, & minute, & secounds);
+	local_snprintf_P(buf, buflen, PSTR("%02d.%02d"), day, month);
 	xx = current_place * lbl_place_width + lbl_place_width / 2;
 	colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, y1, buf, COLORMAIN_WHITE);
-	local_snprintf_P(buf, buflen, PSTR("%dk"), z);
+	local_snprintf_P(buf, buflen, PSTR("%02d%c%02d"), hour, ((secounds & 1) ? ' ' : ':'), minute);
 	colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, y2, buf, COLORMAIN_WHITE);
-#endif /* WITHIF4DSP */
-
-	current_place ++;
-
-	// значение сдвига частоты
-	static int_fast16_t if_shift;
-	if (get_gui_1sec_timer())
-		if_shift = hamradio_if_shift(0);
-	xx = current_place * lbl_place_width + lbl_place_width / 2;
-	if (if_shift)
-	{
-		local_snprintf_P(buf, buflen, PSTR("IF shift"));
-		colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, y1, buf, COLORMAIN_WHITE);
-		local_snprintf_P(buf, buflen, if_shift == 0 ? PSTR("%d") : PSTR("%+dk"), if_shift);
-		colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, y2, buf, COLORMAIN_WHITE);
-	}
-	else
-	{
-		local_snprintf_P(buf, buflen, PSTR("IF shift"));
-		colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, y1 + (y2 - y1) / 2, buf, COLORMAIN_GRAY);
-	}
-
-	current_place ++;
-
-	// пусто
-
-	current_place ++;
-
-	// параметры полосы пропускания фильтра
-	static uint_fast8_t bp_type, bp_low, bp_high;
-	if (get_gui_1sec_timer())
-	{
-		bp_high = hamradio_get_high_bp(0);
-		bp_low = hamradio_get_low_bp(0) * 10;
-		bp_type = hamradio_get_bp_type();
-		bp_high = bp_type ? bp_high * 100 : bp_high * 10;
-	}
-	local_snprintf_P(buf, buflen, PSTR("AF"));
-	xx = current_place * lbl_place_width + 7;
-	colpip_string2_tbg(fr, DIM_X, DIM_Y, xx, y1 + (y2 - y1) / 2, buf, COLORMAIN_WHITE);
-	xx += SMALLCHARW2 * 3;
-	local_snprintf_P(buf, buflen, bp_type ? (PSTR("L %d")) : (PSTR("W %d")), bp_low);
-	colpip_string2_tbg(fr, DIM_X, DIM_Y, xx, y1, buf, COLORMAIN_WHITE);
-	local_snprintf_P(buf, buflen, bp_type ? (PSTR("H %d")) : (PSTR("P %d")), bp_high);
-	colpip_string2_tbg(fr, DIM_X, DIM_Y, xx, y2, buf, COLORMAIN_WHITE);
-
-	current_place ++;
-
-	// отображение НЧ спектра
-	xx = current_place * lbl_place_width + 3;
-
-//	if (is_sp_ready)
-//	{
-//		float32_t max_val = 0;
-//		static uint_fast8_t y_old_array [FIRBUFSIZE];
-//		const uint_fast16_t visiblefftsize = 95;
-//		uint_fast16_t fft_step = x_width / visiblefftsize;
-//
-//		if (! hamradio_get_tx())
-//		{
-//			is_sp_ready = 0;
-//			fftzoom_x2(updated_spectre);
-//
-//			for (uint_fast16_t i = 0; i < FIRBUFSIZE; i ++)
-//			{
-//				fftbuf [i * 2 + 0] = updated_spectre [i];
-//				fftbuf [i * 2 + 1] = 0;
-//			}
-//
-//			apply_window_function(fftbuf, FIRBUFSIZE);
-//			arm_cfft_f32(FFTCONFIGSpectrum, fftbuf, 0, 1);
-//			arm_cmplx_mag_f32(fftbuf, fftbuf, FIRBUFSIZE);
-//			arm_max_no_idx_f32(fftbuf, FIRBUFSIZE, & max_val);
-//		}
-//
-//		for (uint_fast16_t i = 3; i < x_width; i ++)
-//		{
-//			uint_fast16_t fftpos = FIRBUFSIZE - round(i / fft_step);
-//			const FLOAT_t val = normalize(fftbuf [fftpos], 0, max_val, 38);
-//			const FLOAT_t yy = y_old_array [i] * 0.8 + 0.2 * val;
-//			y_old_array [i] = yy;
-//			colmain_line(fr, DIM_X, DIM_Y, xx + i - 3, y2 + SMALLCHARH2 - yy, xx + i - 3, y2 + SMALLCHARH2, COLORMAIN_YELLOW, 0);
-//		}
-//	}
+#endif 	/* defined (RTC1_TYPE) */
 
 //	#if WITHTHERMOLEVEL	// температура выходных транзисторов (при передаче)
 //		static ldiv_t t;
