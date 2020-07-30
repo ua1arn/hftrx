@@ -91,7 +91,7 @@ void board_set_bandf3(uint_fast8_t n);	/* управление через раз
 void board_set_bcdfreq100k(uint_fast16_t bcdfreq);	/* Для выбора диапазона - частота с дискретностью 100 кГц */
 void board_set_pabias(uint_fast8_t n);	/* установить ток покоя выходного каскада передатчика */
 void board_set_bandfonhpf(uint_fast8_t n);	/* установить код выбора диапазонного фильтра, с которого включается ФВЧ перед УВЧ в SW20xx */
-void board_set_bandfonuhf(uint_fast8_t n);	/* Установить код диапазонного фильтра, на котором вкдючать UHF */
+void board_set_bandfonuhf(uint_fast8_t n);	/* Установить код диапазонного фильтра, на котором включать UHF */
 void board_set_if4lsb(uint_fast8_t v);	/* требуется для приемников прямого преобразования */
 //void board_set_fltsofter(uint_fast8_t n);/* Код управления сглаживанием скатов фильтра основной селекции на приёме */
 void board_set_narrow(uint_fast8_t v);	/* установка режима према телеграфа (НЧ) */

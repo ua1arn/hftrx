@@ -4869,7 +4869,7 @@ board_set_bandfonhpf(uint_fast8_t n)
 	}
 }
 
-/* Установить код диапазонного фильтра, на котором вкдючать UHF */
+/* Установить код диапазонного фильтра, на котором включать UHF */
 void 
 board_set_bandfonuhf(uint_fast8_t n)
 {
