@@ -168,6 +168,8 @@ static uint_fast8_t		glob_mainsubrxmode = BOARD_RXMAINSUB_A_A;	// Левый/п�
 
 static uint_fast8_t		glob_nfmdeviation100 = 75;	// 7.5 kHz максимальная девиация в NFM
 
+static uint_fast8_t 	glob_dspagc;
+static uint_fast8_t		glob_dsploudspeaker_off;
 
 #if WITHINTEGRATEDDSP
 
@@ -1430,7 +1432,7 @@ static void agc_parameters_update(volatile agcparams_t * const agcp, FLOAT_t gai
 {
 	const uint_fast8_t flatgain = glob_agcrate [pathi] == UINT8_MAX;
 
-	agcp->agcoff = (glob_agc == BOARD_AGCCODE_OFF);
+	agcp->agcoff = (glob_dspagc == BOARD_AGCCODE_OFF);
 
 	agcp->dischargespeedfast = MAKETAUIF((int) glob_agc_t4 [pathi] * (FLOAT_t) 0.001);	// в милисекундах
 
@@ -6214,7 +6216,7 @@ prog_dsplreg(void)
 	buff [DSPCTL_OFFSET_IFGAIN_HI] = glob_ifgain >> 8;
 	buff [DSPCTL_OFFSET_IFGAIN_LO] = glob_ifgain;
 	buff [DSPCTL_OFFSET_AFMUTE] = glob_afmute;	/* отключить звук в наушниках и динамиках */
-	buff [DSPCTL_OFFSET_AGCOFF] = (glob_agc == BOARD_AGCCODE_OFF);
+	buff [DSPCTL_OFFSET_AGCOFF] = (glob_dspagc == BOARD_AGCCODE_OFF);
 	buff [DSPCTL_OFFSET_MICLEVEL_HI] = glob_mik1level >> 8;
 	buff [DSPCTL_OFFSET_MICLEVEL_LO] = glob_mik1level;
 	buff [DSPCTL_OFFSET_AGC_T1] = glob_agc_t1;
@@ -6292,7 +6294,7 @@ prog_codec1reg(void)
 	const codec1if_t * const ifc1 = board_getaudiocodecif();
 
 	// also use glob_mik1level
-	ifc1->setvolume(glob_afgain, glob_afmute, glob_loudspeaker_off);
+	ifc1->setvolume(glob_afgain, glob_afmute, glob_dsploudspeaker_off);
 	ifc1->setlineinput(glob_lineinput, glob_mikebust20db, glob_mik1level, glob_lineamp);
 	ifc1->setprocparams(glob_mikeequal, glob_codec1_gains);	/* параметры обработки звука с микрофона (эхо, эквалайзер, ...) */
 
@@ -6972,6 +6974,30 @@ void board_set_mainsubrxmode(uint_fast8_t v)
 	glob_mainsubrxmode = v;
 }
 
+
+/*  */
+void
+board_set_dsploudspeaker(uint_fast8_t v)
+{
+	const uint_fast8_t n = v != 0;
+	if (glob_dsploudspeaker_off != n)
+	{
+		glob_dsploudspeaker_off = n;
+		board_codec1regchanged();
+	}
+}
+
+void
+board_set_dspagc(uint_fast8_t n)
+{
+	if (glob_dspagc != n)
+	{
+		glob_dspagc = n;
+		board_dsp1regchanged();
+	}
+}
+
+
 #if WITHSPISLAVE
 
 // вызывается из прерывания для обработки принятого блока данных
@@ -6981,7 +7007,8 @@ void hardware_spi_slave_callback(uint8_t * buff, uint_fast8_t len)
 	{
 		board_set_dspmodeA(buff [DSPCTL_OFFSET_MODEA]);
 		board_set_dspmodeB(buff [DSPCTL_OFFSET_MODEB]);
-		board_set_agc(buff [DSPCTL_OFFSET_AGCOFF] ? BOARD_AGCCODE_OFF : BOARD_AGCCODE_ON);
+		board_set_boardagc(buff [DSPCTL_OFFSET_AGCOFF] ? BOARD_AGCCODE_OFF : BOARD_AGCCODE_ON);
+		board_set_dspagc(buff [DSPCTL_OFFSET_AGCOFF] ? BOARD_AGCCODE_OFF : BOARD_AGCCODE_ON);
 #if ! WITHPOTIFGAIN
 		board_set_ifgain(buff [DSPCTL_OFFSET_IFGAIN_HI] * 256 + buff [DSPCTL_OFFSET_IFGAIN_LO]);
 #endif /* ! WITHPOTIFGAIN */

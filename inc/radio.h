@@ -183,9 +183,6 @@ enum
 	#define DDS2_CLK_DIV	1		/* Делитель опорной частоты перед подачей в DDS2 */
 #endif
 
-extern uint_fast8_t glob_agc;
-extern uint_fast8_t	glob_loudspeaker_off;
-
 enum
 {
 	DSPCTL_OFFSET_MODEA,

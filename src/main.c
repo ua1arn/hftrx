@@ -8609,7 +8609,8 @@ updateboard(
 			board_set_preamp(pampmodes [gpamps [rxbi]].code);
 		#endif /* WITHONEATTONEAMP */
 		#if ! WITHAGCMODENONE
-			board_set_agc(gagcoff ? BOARD_AGCCODE_OFF : agcmodes [gagcmode].code);
+			board_set_boardagc(gagcoff ? BOARD_AGCCODE_OFF : agcmodes [gagcmode].code);
+			board_set_dspagc(gagcoff ? BOARD_AGCCODE_OFF : agcmodes [gagcmode].code);
 		#endif /* ! WITHAGCMODENONE */
 		#if CTLSTYLE_RA4YBO || CTLSTYLE_RA4YBO_V3
 			board_set_affilter(gaffilter);
@@ -8775,6 +8776,7 @@ updateboard(
 
 	#if WITHSPKMUTE
 		board_set_loudspeaker(gmutespkr); /*  выключение динамика */
+		board_set_dsploudspeaker(gmutespkr); /*  выключение динамика (управление кодеком) */
 	#endif /* WITHSPKMUTE */
 
 	#if WITHAUTOTUNER
@@ -19291,14 +19293,21 @@ void hamradio_enable_keyboard_redirect (void)
 void hamradio_set_agc_off(void)
 {
 	gagcoff = 1;
-	board_set_agc(BOARD_AGCCODE_OFF);
+	save_i8(offsetof(struct nvmap, gagcoff), gagcoff);
+
+//	board_set_boardagc(BOARD_AGCCODE_OFF);
+//	board_set_dspagc(BOARD_AGCCODE_OFF);
 	updateboard (1, 0);
 }
 
 void hamradio_set_agc_fast(void)
 {
 	gagcoff = 0;
-	board_set_agc(BOARD_AGCCODE_ON);
+	save_i8(offsetof(struct nvmap, gagcoff), gagcoff);
+
+//	board_set_boardagc(BOARD_AGCCODE_ON);
+//	board_set_dspagc(BOARD_AGCCODE_ON);
+
 //	const uint_fast8_t asubmode = getasubmode(0);
 //	const struct modetempl * const pmodet = getmodetempl(gsubmode);
 //	const uint_fast8_t agcseti = pmodet->agcseti;
@@ -19313,7 +19322,11 @@ void hamradio_set_agc_fast(void)
 void hamradio_set_agc_slow(void)
 {
 	gagcoff = 0;
-	board_set_agc(BOARD_AGCCODE_ON);
+	save_i8(offsetof(struct nvmap, gagcoff), gagcoff);
+
+//	board_set_boardagc(BOARD_AGCCODE_ON);
+//	board_set_dspagc(BOARD_AGCCODE_ON);
+
 //	const uint_fast8_t asubmode = getasubmode(0);
 //	const struct modetempl * const pmodet = getmodetempl(gsubmode);
 //	const uint_fast8_t agcseti = pmodet->agcseti;

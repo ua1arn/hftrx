@@ -74,7 +74,8 @@ void board_set_opowerlevel(uint_fast8_t n);	/* установить выходн
 
 void board_set_att(uint_fast8_t v);
 void board_set_antenna(uint_fast8_t v);
-void board_set_agc(uint_fast8_t n);
+void board_set_boardagc(uint_fast8_t n);
+void board_set_dspagc(uint_fast8_t n);
 void board_set_sleep(uint_fast8_t v);	/* перевести в режим минимального потребления */
 
 void board_set_maxlabdac(uint_fast16_t n);	/* значение на выходе ЦАП для увода частоты опорного генератора PLL */
@@ -145,6 +146,7 @@ void prog_dac1_a_value(uint_fast8_t v);
 void prog_dac1_b_value(uint_fast8_t v);
 void board_set_affilter(uint_fast8_t v);
 void board_set_loudspeaker(uint_fast8_t v);
+void board_set_dsploudspeaker(uint_fast8_t v);
 void board_set_digigainmax(uint_fast8_t v);		/* диапазон ручной регулировки цифрового усиления - максимальное значение */
 void board_set_gainnfmrx(int_fast16_t n);	/* дополнительное усиление по НЧ в режиме приёма NFM */
 void board_set_gvad605(uint_fast8_t v);		/* напряжение на AD605 (управление усилением тракта ПЧ */
