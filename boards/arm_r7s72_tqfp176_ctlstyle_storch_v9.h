@@ -258,7 +258,8 @@
 	//#define WITHDIRECTFREQENER	1
 	#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
 	#define WITHENCODER2	1		/* есть второй валкодер */
-	#define BOARD_ENCODER2_DIVIDE 2
+	#define BOARD_ENCODER2_DIVIDE 4	// PEC11R-4220K-S0024 (общий на среднем выводе)
+	//#define BOARD_ENCODER2_DIVIDE 2	//
 	//#define WITHPWBUTTON	1	/* Наличие схемы электронного включения питания */
 	//#define WITHBANDF2_FT757	1	/* Управление LPF от трансивра FT-757 */
 
@@ -540,7 +541,7 @@
 	#else /* WITHAUTOTUNER_AVBELNN */
 		// QRP вариант - только 5 ватт на плате
 
-		//#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
+		#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
 		#define WITHVOLTLEVEL	1	/* отображение напряжения питания */
 		#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
 
