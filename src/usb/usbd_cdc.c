@@ -557,7 +557,7 @@ static void USBD_CDC_ColdInit(void)
 #endif
 }
 
-const USBD_ClassTypeDef USBD_CLASS_CDC =
+const USBD_ClassTypeDef USBD_CLASS_CDCACM =
 {
 	USBD_CDC_ColdInit,
 	USBD_CDC_Init,	// Init

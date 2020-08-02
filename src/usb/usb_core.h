@@ -1446,7 +1446,7 @@ USBD_StatusTypeDef  USBD_CtlSendStatus(USBD_HandleTypeDef  *pdev);
 USBD_StatusTypeDef  USBD_Stop(USBD_HandleTypeDef *pdev);
 
 extern const USBD_ClassTypeDef USBD_CLASS_UAC;
-extern const USBD_ClassTypeDef USBD_CLASS_CDC;
+extern const USBD_ClassTypeDef USBD_CLASS_CDCACM;
 extern const USBD_ClassTypeDef USBD_CLASS_DFU;
 extern const USBD_ClassTypeDef USBD_CLASS_CDC_EEM;
 extern const USBD_ClassTypeDef USBD_CLASS_RNDIS;
