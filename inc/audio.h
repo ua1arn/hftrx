@@ -662,6 +662,9 @@ void dsp_initialize(void);
 
 	void saveIQRTSxx(FLOAT_t iv, FLOAT_t qv);	// формирование отображения спектра
 
+	void apply_window_function(float32_t * v, uint_fast16_t size);
+	void fftzoom_x2(float32_t * buffer);
+
 #endif /* WITHINTEGRATEDDSP */
 
 int_fast32_t dsp_get_ifreq(void);		/* Получить значение входной ПЧ для обработки DSP */
@@ -725,9 +728,6 @@ void uacout_buffer_save_realtime(const uint8_t * buff, uint_fast16_t size, uint_
  * Возврат 0, если нет ничего для воспроизведения.
  */
 uint_fast8_t takewavsample(FLOAT32P_t * rv, uint_fast8_t suspend);
-
-void apply_window_function(float32_t * v, uint_fast16_t size);
-void fftzoom_x2(float32_t * buffer);
 
 #ifdef __cplusplus
 }
