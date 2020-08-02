@@ -2895,7 +2895,7 @@ filter_t fi_2p0_455 =
 #endif /* WITHTX */
 
 #if WITHVOLTLEVEL && ! WITHREFSENSOR
-	uint8_t voltcalibr;	/* калибровочный параметр измерителя напряжения АКБ - Напряжение fullscale = VREF * 5.3 = 3.3 * 5.3 = 17.5 вольта */
+	uint8_t voltcalibr100mV;	/* калибровочный параметр измерителя напряжения АКБ - Напряжение fullscale = VREF * 5.3 = 3.3 * 5.3 = 17.5 вольта */
 #endif /* WITHVOLTLEVEL && ! WITHREFSENSOR */
 
 #if WITHELKEY
@@ -3760,7 +3760,7 @@ static uint_fast8_t dctxmodecw;	/* при передаче предполага�
 	// в схеме датчика делитель: сверху 4.3 килоома, снизу 1 килоом.
 	// ADCVREF_CPU - в сотнях милливольт.
 
-	uint_fast8_t voltcalibr = (ADCVREF_CPU * (VOLTLEVEL_UPPER + VOLTLEVEL_LOWER) + VOLTLEVEL_LOWER / 2) / VOLTLEVEL_LOWER;		// Напряжение fullscale - что показать при ADCVREF_CPU вольт на входе АЦП
+	uint_fast8_t voltcalibr100mV = (ADCVREF_CPU * (VOLTLEVEL_UPPER + VOLTLEVEL_LOWER) + VOLTLEVEL_LOWER / 2) / VOLTLEVEL_LOWER;		// Напряжение fullscale - что показать при ADCVREF_CPU вольт на входе АЦП
 
 #endif /* WITHVOLTLEVEL && ! WITHREFSENSOR */
 
@@ -9686,14 +9686,14 @@ uint_fast8_t hamradio_get_volt_value(void)
 
 #elif CTLSTYLE_SW2011ALL
 
-	//debug_printf_P(PSTR("hamradio_get_volt_value: VOLTMRRIX=%u, voltcalibr=%u\n"), board_getadc_unfiltered_truevalue(VOLTMRRIX), voltcalibr);
-	return board_getadc_unfiltered_u8(VOLTSOURCE, 0, voltcalibr);
+	//debug_printf_P(PSTR("hamradio_get_volt_value: VOLTMRRIX=%u, voltcalibr100mV=%u\n"), board_getadc_unfiltered_truevalue(VOLTMRRIX), voltcalibr100mV);
+	return board_getadc_unfiltered_u8(VOLTSOURCE, 0, voltcalibr100mV);
 
 #else /* WITHREFSENSOR */
 
-	// TODO: разораться почему это не работает на SW20xx
-	//debug_printf_P(PSTR("hamradio_get_volt_value: VOLTMRRIX=%u, voltcalibr=%u\n"), board_getadc_unfiltered_truevalue(VOLTMRRIX), voltcalibr);
-	return board_getadc_filtered_u8(VOLTMRRIX, 0, voltcalibr);
+	// TODO: разобраться почему это не работает на SW20xx
+	//debug_printf_P(PSTR("hamradio_get_volt_value: VOLTMRRIX=%u, voltcalibr100mV=%u\n"), board_getadc_unfiltered_truevalue(VOLTMRRIX), voltcalibr100mV);
+	return board_getadc_filtered_u8(VOLTMRRIX, 0, voltcalibr100mV);
 
 #endif /* WITHREFSENSOR */
 }
@@ -15549,9 +15549,9 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		QLABEL("BAT CALI"), 7, 1, 0,	ISTEP1,			/* калибровочный параметр делителя напряжения АКБ */
 		ITEM_VALUE,
 		ADCVREF_CPU, 255,	// 3.3/5.0 .. 25.5 вольта
-		offsetof(struct nvmap, voltcalibr),
+		offsetof(struct nvmap, voltcalibr100mV),
 		NULL,
-		& voltcalibr,
+		& voltcalibr100mV,
 		getzerobase, 
 	},
 #endif /* WITHVOLTLEVEL && ! WITHREFSENSOR */
