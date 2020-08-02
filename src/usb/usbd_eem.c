@@ -165,7 +165,6 @@ udp_teardown(void)
 // see Table 45 for info about the specific requests.
 #define CDC_SET_CONTROL_LINE_STATE              0x22
 
-static unsigned cdceem1buffinlevel;
 static USBALIGN_BEGIN uint8_t cdceem1buffout [USBD_CDCEEM_BUFSIZE] USBALIGN_END;
 static USBALIGN_BEGIN uint8_t cdceem1buffin [USBD_CDCEEM_BUFSIZE] USBALIGN_END;
 static RAMDTCM uint_fast16_t cdceem1buffinlevel;

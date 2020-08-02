@@ -10084,6 +10084,9 @@ static void hardware_usbd_initialize(void)
 #if WITHUSBCDCEEM
 	USBD_AddClass(& hUsbDevice, & USBD_CLASS_CDC_EEM);
 #endif /* WITHUSBCDCEEM */
+#if WITHUSBRNDIS
+	USBD_AddClass(& hUsbDevice, & USBD_CLASS_RNDIS);
+#endif /* WITHUSBRNDIS */
 	PRINTF("hardware_usbd_initialize done\n");
 }
 
