@@ -18833,7 +18833,7 @@ hamradio_main_step(void)
 					//gfreqs [bi_main] = nextfreq(gfreqs [bi_main], gfreqs [bi_main] + (jumpsize * nrotate), gstep, TUNE_TOP);
 					freqchanged = 1;
 				}
-#if !WITHENCODER2NOFREQ
+#if ! WITHTOUCHGUI
 				if (nrotate2 < 0)
 				{
 					/* Валкодер B: вращали "вниз" */
@@ -18850,7 +18850,7 @@ hamradio_main_step(void)
 					//gfreqs [bi_sub] = nextfreq(gfreqs [bi_sub], gfreqs [bi_sub] + (jumpsize2 * nrotate2), gstep, TUNE_TOP);
 					freqchanged = 1;
 				}
-#endif
+#endif /* ! WITHTOUCHGUI */
 				if (freqchanged != 0)
 				{
 					// Ограничение по скорости обновления дисплея уже заложено в него
@@ -18858,9 +18858,9 @@ hamradio_main_step(void)
 					updateboard(0, 0);	/* частичная перенастройка - без смены режима работы */
 				}
 			}
-			#if WITHTOUCHGUI && WITHENCODER2
+#if WITHTOUCHGUI && WITHENCODER2
 				gui_check_encoder2(nrotate2);
-			#endif /* WITHTOUCHGUI */
+#endif /* WITHTOUCHGUI && WITHENCODER2 */
 		}
 		break;
 
