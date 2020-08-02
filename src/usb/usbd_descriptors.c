@@ -2643,7 +2643,7 @@ static unsigned fill_UAC2_function(uint_fast8_t fill, uint8_t * p, unsigned maxs
 
 #endif /* WITHUSBUAC */
 
-#if WITHUSBCDC
+#if WITHUSBCDCACM
 /* CDC IAD */
 
 // ISBLyzer: Interface Association Descriptor Abstract Control Model
@@ -2881,12 +2881,12 @@ static unsigned fill_CDCACM_function(uint_fast8_t fill, uint8_t * p, unsigned ma
 	unsigned offset;
 	unsigned n = 0;
 
-	for (offset = 0; offset < WITHUSBHWCDC_N; ++ offset)
+	for (offset = 0; offset < WITHUSBCDCACM_N; ++ offset)
 		n += fill_CDCACM_function_a(fill, p + n, maxsize - n, highspeed, offset);
 	return n;
 }
 
-#endif /* WITHUSBCDC */
+#endif /* WITHUSBCDCACM */
 
 #if WITHUSBCDCEEM
 
@@ -3988,10 +3988,10 @@ static unsigned fill_Configuration_compound(uint_fast8_t fill, uint8_t * p, unsi
 	n += fill_DFU_function(fill, p + n, maxsize - n, highspeed);
 #endif /* WITHUSBDFU */
 
-#if WITHUSBCDC
-	/* создаем одно или несколько (WITHUSBHWCDC_N) устройств */
+#if WITHUSBCDCACM
+	/* создаем одно или несколько (WITHUSBCDCACM_N) устройств */
 	n += fill_CDCACM_function(fill, p + n, maxsize - n, highspeed);
-#endif /* WITHUSBCDC */
+#endif /* WITHUSBCDCACM */
 
 #if WITHUSBUAC
 	#if 0
@@ -4570,7 +4570,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 	}
 #endif /* WITHUSBDFU */
 
-#if WITHUSBCDC
+#if WITHUSBCDCACM
 	{
 		const uint_fast8_t ifc = INTERFACE_CDC_CONTROL_3a;
 		unsigned partlen;
@@ -4581,7 +4581,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 		ExtOsPropDescTbl [ifc].data = alldescbuffer + score;
 		score += partlen;
 	}
-#if WITHUSBHWCDC_N > 1
+#if WITHUSBCDCACM_N > 1
 	{
 		const uint_fast8_t ifc = INTERFACE_CDC_CONTROL_3b;
 		unsigned partlen;
@@ -4593,7 +4593,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 		score += partlen;
 	}
 #endif
-#endif /* WITHUSBCDC */
+#endif /* WITHUSBCDCACM */
 
 	if (HSdesc != 0)
 	{

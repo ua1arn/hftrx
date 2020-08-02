@@ -2840,12 +2840,12 @@ filter_t fi_2p0_455 =
 	uint8_t cat1rtsenable;	/* разрешение включения передачи по линии RTS CAT */
 	uint8_t cat1dtrenable;	/* разрешение манипуляции по DTR CAT */
 
-	#if WITHUSBHW && WITHUSBCDC && WITHUSBHWCDC_N > 1
+	#if WITHUSBHW && WITHUSBCDCACM && WITHUSBCDCACM_N > 1
 		uint8_t cat2txdtr;	/* передача управляется по DTR, а не по RTS */
 		uint8_t cat2rtsenable;	/* разрешение включения передачи по линии RTS CAT */
 		uint8_t cat2dtrenable;	/* разрешение манипуляции по DTR CAT */
 
-	#endif /* WITHUSBHW && WITHUSBCDC && WITHUSBHWCDC_N > 1 */
+	#endif /* WITHUSBHW && WITHUSBCDCACM && WITHUSBCDCACM_N > 1 */
 #endif /* WITHCAT */
 
 #if WITHAUTOTUNER
@@ -3396,7 +3396,7 @@ enum
 		/* 0: передача управляется по RTS, манипуляция по DTR */
 		static uint_fast8_t cat1txdtr = 1;
 
-		#if WITHUSBHWCDC_N > 1
+		#if WITHUSBCDCACM_N > 1
 		// Основной порт предназначен для управление манипуляцией через DTR
 			static uint_fast8_t cat2dtrenable = noctl;	/* разрешение DTR */
 			static uint_fast8_t cat2rtsenable = 0;	/* разрешение RTS */
@@ -11620,7 +11620,7 @@ cat_get_ptt(void)
 		const uint_fast8_t dtr1 = HARDWARE_CAT_GET_DTR() && cat1dtrenable;
 		const uint_fast8_t rts1 = HARDWARE_CAT_GET_RTS() && cat1rtsenable;
 		const uint_fast8_t r1 = (cat1txdtr ? dtr1 : rts1);
-#if WITHUSBHW && WITHUSBCDC && WITHUSBHWCDC_N > 1
+#if WITHUSBHW && WITHUSBCDCACM && WITHUSBCDCACM_N > 1
 		const uint_fast8_t dtr2 = HARDWARE_CAT2_GET_DTR() && cat2dtrenable;
 		const uint_fast8_t rts2 = HARDWARE_CAT2_GET_RTS() && cat2rtsenable;
 		const uint_fast8_t r2 = (cat2txdtr ? dtr2 : rts2);
@@ -11645,7 +11645,7 @@ uint_fast8_t cat_get_keydown(void)
 		const uint_fast8_t dtr1 = HARDWARE_CAT_GET_DTR() && cat1dtrenable;
 		const uint_fast8_t rts1 = HARDWARE_CAT_GET_RTS() && cat1rtsenable;
 		const uint_fast8_t r1 = ! cat1txdtr ? dtr1 : rts1;
-#if WITHUSBHW && WITHUSBCDC && WITHUSBHWCDC_N > 1
+#if WITHUSBHW && WITHUSBCDCACM && WITHUSBCDCACM_N > 1
 		const uint_fast8_t dtr2 = HARDWARE_CAT2_GET_DTR() && cat2dtrenable;
 		const uint_fast8_t rts2 = HARDWARE_CAT2_GET_RTS() && cat2rtsenable;
 		const uint_fast8_t r2 = ! cat2txdtr ? dtr2 : rts2;
@@ -14495,7 +14495,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		& catenable,
 		getzerobase,
 	},
-	#if WITHUSBCDC == 0
+	#if WITHUSBCDCACM == 0
 	{
 		QLABEL("CAT SPD "), 7, 0, RJ_CATSPEED,	ISTEP1,
 		ITEM_VALUE,
@@ -14505,7 +14505,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		& catbaudrate,
 		getzerobase,
 	},
-	#endif /* WITHUSBCDC == 0 */
+	#endif /* WITHUSBCDCACM == 0 */
 	{
 		QLABEL("CAT DTR "), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
@@ -14535,7 +14535,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, 
 	},
 	#endif /* WITHTX */
-#if WITHUSBHW && WITHUSBCDC && WITHUSBHWCDC_N > 1
+#if WITHUSBHW && WITHUSBCDCACM && WITHUSBCDCACM_N > 1
 	{
 		QLABEL("CAT2 DTR"), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
@@ -14565,7 +14565,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, 
 	},
 	#endif /* WITHTX */
-#endif /* WITHUSBHW && WITHUSBCDC && WITHUSBHWCDC_N > 1 */
+#endif /* WITHUSBHW && WITHUSBCDCACM && WITHUSBCDCACM_N > 1 */
 #endif /* WITHCAT */
 
 #if WITHSUBTONES && WITHTX

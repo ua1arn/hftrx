@@ -51,8 +51,8 @@
 	#define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
 
 	//#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
-	//#define WITHUSBCDC		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
-	//#define WITHUSBHWCDC_N	2	/* количество виртуальных последовательных портов */
+	//#define WITHUSBCDCACM		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
+	//#define WITHUSBCDCACM_N	2	/* количество виртуальных последовательных портов */
 	//#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
 	//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
 	//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
@@ -97,8 +97,8 @@
 		// Обычный AUDIO + 2*CDC + DFU
 		//#define WITHUAC2		1	/* UAC2 support */
 		#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
-		#define WITHUSBCDC		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
-		#define WITHUSBHWCDC_N	2	/* количество виртуальных последовательных портов */
+		#define WITHUSBCDCACM		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
+		#define WITHUSBCDCACM_N	2	/* количество виртуальных последовательных портов */
 		//#define WITHUSBHID		1	/* HID использовать Human Interface Device на USB соединении */
 		#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
 		//#define WITHMOVEDFU 1	// Переместить интерфейс DFU в область меньших номеров. Утилита dfu-util 0.9 не работает с DFU на интерфейсе с индексом 10
@@ -113,8 +113,8 @@
 		// For TCI
 		//#define WITHUAC2		1	/* UAC2 support */
 		//#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
-		//#define WITHUSBCDC		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
-		//#define WITHUSBHWCDC_N	2	/* количество виртуальных последовательных портов */
+		//#define WITHUSBCDCACM		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
+		//#define WITHUSBCDCACM_N	2	/* количество виртуальных последовательных портов */
 		#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
 		//#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
 		//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */

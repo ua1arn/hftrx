@@ -8876,7 +8876,7 @@ void hardware_cw_diagnostics(
 
 #endif
 
-#if WITHDEBUG && WITHUSBCDC && WITHDEBUG_CDC
+#if WITHDEBUG && WITHUSBCDCACM && WITHDEBUG_CDC
 
 
 // Очереди символов для обмена с host
@@ -9000,7 +9000,7 @@ void debugusb_initialize(void)
 {
 }
 
-#endif /* WITHDEBUG && WITHUSBCDC && WITHDEBUG_CDC */
+#endif /* WITHDEBUG && WITHUSBCDCACM && WITHDEBUG_CDC */
 
 // Read ADC MCP3204/MCP3208
 uint_fast16_t

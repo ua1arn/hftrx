@@ -42,13 +42,13 @@ enum
 	#endif
 #endif /* WITHUSBUAC */
 
-#if WITHUSBCDC
+#if WITHUSBCDCACM
 	USBD_EP_CDC_IN,		// CDC IN Данные ком-порта в компьютер из TRX
-	USBD_EP_CDC_INlast = USBD_EP_CDC_IN + WITHUSBHWCDC_N - 1,
+	USBD_EP_CDC_INlast = USBD_EP_CDC_IN + WITHUSBCDCACM_N - 1,
 
 	USBD_EP_CDC_INT,	// CDC INT События ком-порта в компьютер из TRX
-	USBD_EP_CDC_INTlast = USBD_EP_CDC_INT + WITHUSBHWCDC_N - 1,
-#endif /* WITHUSBCDC */
+	USBD_EP_CDC_INTlast = USBD_EP_CDC_INT + WITHUSBCDCACM_N - 1,
+#endif /* WITHUSBCDCACM */
 
 #if WITHUSBCDCEEM
 	USBD_EP_CDCEEM_IN,	// CDC IN Данные ком-порта в компьютер из TRX
@@ -87,10 +87,10 @@ enum
 	#endif
 #endif /* WITHUSBUAC */
 
-#if WITHUSBCDC
+#if WITHUSBCDCACM
 	USBD_EP_CDC_OUT,	// CDC OUT Данные ком-порта от компьютера в TRX
-	USBD_EP_CDC_OUTlast = USBD_EP_CDC_OUT + WITHUSBHWCDC_N - 1,
-#endif /* WITHUSBCDC */
+	USBD_EP_CDC_OUTlast = USBD_EP_CDC_OUT + WITHUSBCDCACM_N - 1,
+#endif /* WITHUSBCDCACM */
 
 #if WITHUSBCDCEEM
 	USBD_EP_CDCEEM_OUT,	// CDC OUT Данные ком-порта от компьютера в TRX
@@ -110,7 +110,7 @@ enum
 	epoutcount
 };
 
-#if WITHUSBCDC
+#if WITHUSBCDCACM
 	#define VIRTUAL_COM_PORT_INT_SIZE 			10
 	#if 0 && WITHUSBDEV_HSDESC
 		#define VIRTUAL_COM_PORT_IN_DATA_SIZE			USB_OTG_HS_MAX_PACKET_SIZE
@@ -119,7 +119,7 @@ enum
 		#define VIRTUAL_COM_PORT_IN_DATA_SIZE			USB_OTG_FS_MAX_PACKET_SIZE
 		#define VIRTUAL_COM_PORT_OUT_DATA_SIZE			USB_OTG_FS_MAX_PACKET_SIZE
 	#endif /* WITHUSBDEV_HSDESC */
-#endif /* WITHUSBCDC */
+#endif /* WITHUSBCDCACM */
 
 #if WITHUSBHID
 	#define HIDMOUSE_INT_DATA_SIZE 4
@@ -226,12 +226,12 @@ enum interfaces_tag
 	INTERFACE_DFU_CONTROL,		/* DFU control Interface */
 #endif /* WITHUSBDFU */
 
-#if WITHUSBCDC
+#if WITHUSBCDCACM
 	INTERFACE_CDC_base,
 	INTERFACE_CDC_CONTROL_3a = INTERFACE_CDC_base,	/* CDC ACM control Interface */
 	INTERFACE_CDC_DATA_4a,		/* CDC ACM data Interface */
-	INTERFACE_CDC_last = INTERFACE_CDC_base + WITHUSBHWCDC_N * 2 - 1,
-#endif /* WITHUSBCDC */
+	INTERFACE_CDC_last = INTERFACE_CDC_base + WITHUSBCDCACM_N * 2 - 1,
+#endif /* WITHUSBCDCACM */
 
 #if WITHUSBUAC
 	#if WITHUSBUACIN2
@@ -280,11 +280,11 @@ enum interfaces_tag
 	INTERFACE_count				/* Значение для configuration descriptor */
 };
 
-#if WITHUSBCDC
+#if WITHUSBCDCACM
 
-	#if WITHUSBHWCDC_N == 1
+	#if WITHUSBCDCACM_N == 1
 
-	#elif WITHUSBHWCDC_N == 2
+	#elif WITHUSBCDCACM_N == 2
 		/* набор констант для второго VCP */
 		enum { USBD_EP_CDC_OUTb = USBD_EP_CDC_OUT + 1 };
 		enum { USBD_EP_CDC_INb = USBD_EP_CDC_IN + 1 };
@@ -293,10 +293,10 @@ enum interfaces_tag
 		enum { INTERFACE_CDC_CONTROL_3b = INTERFACE_CDC_CONTROL_3a + 2, INTERFACE_CDC_DATA_4b };	/* CDC ACM control Interface */
 
 	#else
-		//#error Unsupported WITHUSBHWCDC_N
+		//#error Unsupported WITHUSBCDCACM_N
 	#endif
 
-#endif /* WITHUSBCDC */
+#endif /* WITHUSBCDCACM */
 
 #define INTERFACE_CDCACM_count 2	/* количество интерфейсов в одном CDC - control & data */
 #define INTERFACE_CDCEEM_count 1	/* количество интерфейсов в одном CDC EEM */
@@ -344,16 +344,16 @@ enum interfaces_tag
 			#endif
 		};
 	#endif /* WITHUSBUAC */
-	#if WITHUSBCDC
+	#if WITHUSBCDCACM
 		enum
 		{
 
 			INTERFACE_CDC_base,
 			INTERFACE_CDC_CONTROL_3a = INTERFACE_CDC_base,	/* CDC ACM control Interface */
 			INTERFACE_CDC_DATA_4a,		/* CDC ACM data Interface */
-			INTERFACE_CDC_last = INTERFACE_CDC_base + WITHUSBHWCDC_N * 2 - 1,
+			INTERFACE_CDC_last = INTERFACE_CDC_base + WITHUSBCDCACM_N * 2 - 1,
 		};
-	#endif /* WITHUSBCDC */
+	#endif /* WITHUSBCDCACM */
 	#if WITHUSBCDCEEM
 		enum
 		{
