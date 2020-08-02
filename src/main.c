@@ -9683,8 +9683,15 @@ uint_fast8_t hamradio_get_volt_value(void)
 		//debug_printf_P(PSTR("hamradio_get_volt_value: ref=%u\n"), ref);
 		return UINT8_MAX;
 	}
+
+#elif CTLSTYLE_SW2011ALL
+
+	//debug_printf_P(PSTR("hamradio_get_volt_value: VOLTMRRIX=%u, voltcalibr=%u\n"), board_getadc_unfiltered_truevalue(VOLTMRRIX), voltcalibr);
+	return board_getadc_unfiltered_u8(VOLTSOURCE, 0, voltcalibr);
+
 #else /* WITHREFSENSOR */
 
+	// TODO: разораться почему это не работает на SW20xx
 	//debug_printf_P(PSTR("hamradio_get_volt_value: VOLTMRRIX=%u, voltcalibr=%u\n"), board_getadc_unfiltered_truevalue(VOLTMRRIX), voltcalibr);
 	return board_getadc_filtered_u8(VOLTMRRIX, 0, voltcalibr);
 
