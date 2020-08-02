@@ -7,7 +7,7 @@
 
 #include "hardware.h"
 
-#if WITHUSBHW && WITHUSBCDCEEM
+#if WITHUSBHW && WITHUSBRNDIS
 
 #include "formats.h"
 #include "usb_core.h"
@@ -165,9 +165,9 @@ udp_teardown(void)
 // see Table 45 for info about the specific requests.
 #define CDC_SET_CONTROL_LINE_STATE              0x22
 
-static USBALIGN_BEGIN uint8_t cdceem1buffout [USBD_CDCEEM_BUFSIZE] USBALIGN_END;
-static USBALIGN_BEGIN uint8_t cdceem1buffin [USBD_CDCEEM_BUFSIZE] USBALIGN_END;
-static RAMDTCM uint_fast16_t cdceem1buffinlevel;
+static USBALIGN_BEGIN uint8_t rndis1buffout [USBD_RNDIS_OUT_BUFSIZE] USBALIGN_END;
+static USBALIGN_BEGIN uint8_t rndis1buffin [USBD_RNDIS_IN_BUFSIZE] USBALIGN_END;
+static RAMDTCM uint_fast16_t rndis1buffinlevel;
 static USBALIGN_BEGIN uint8_t cdceem_epXdatabuffout [USB_OTG_MAX_EP0_SIZE] USBALIGN_END;
 
 
@@ -393,31 +393,31 @@ static void cdceemout_buffer_save(
 * @param  epnum: endpoint index without direction bit
 *
  */
-static USBD_StatusTypeDef USBD_CDCEEM_DataIn(USBD_HandleTypeDef *pdev, uint_fast8_t epnum)
+static USBD_StatusTypeDef USBD_RNDIS_DataIn(USBD_HandleTypeDef *pdev, uint_fast8_t epnum)
 {
-	//PRINTF("USBD_CDCEEM_DataIn: epnum=%d\n", (int) epnum);
+	//PRINTF("USBD_RNDIS_DataIn: epnum=%d\n", (int) epnum);
 	switch (epnum)
 	{
-	case (USBD_EP_CDCEEM_IN & 0x7F):
-		//USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), cdceem1buffin, cdceem1buffinlevel);
-		//cdceem1buffinlevel = 0;
+	case (USBD_EP_RNDIS_IN & 0x7F):
+		//USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), rndis1buffin, rndis1buffinlevel);
+		//rndis1buffinlevel = 0;
 		USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), dbd, sizeof dbd);
 		break;
 	}
 	return USBD_OK;
 }
 
-static USBD_StatusTypeDef USBD_CDCEEM_DataOut(USBD_HandleTypeDef *pdev, uint_fast8_t epnum)
+static USBD_StatusTypeDef USBD_RNDIS_DataOut(USBD_HandleTypeDef *pdev, uint_fast8_t epnum)
 {
 	switch (epnum)
 	{
-	case USBD_EP_CDCEEM_OUT:
+	case USBD_EP_RNDIS_OUT:
 		/* EEM EP OUT */
 		// use CDC EEM data
-		cdceemout_buffer_save(cdceem1buffout, USBD_LL_GetRxDataSize(pdev, epnum));	/* использование буфера принятых данных */
+		cdceemout_buffer_save(rndis1buffout, USBD_LL_GetRxDataSize(pdev, epnum));	/* использование буфера принятых данных */
 		//memcpy(cdc1buffin, cdc1buffout, cdc1buffinlevel = USBD_LL_GetRxDataSize(pdev, epnum));
 		/* Prepare Out endpoint to receive next cdc data packet */
-		USBD_LL_PrepareReceive(pdev, USB_ENDPOINT_OUT(epnum), cdceem1buffout, USBD_CDCEEM_BUFSIZE);
+		USBD_LL_PrepareReceive(pdev, USB_ENDPOINT_OUT(epnum), rndis1buffout, USBD_RNDIS_OUT_BUFSIZE);
 		break;
 	default:
 		break;
@@ -426,7 +426,7 @@ static USBD_StatusTypeDef USBD_CDCEEM_DataOut(USBD_HandleTypeDef *pdev, uint_fas
 }
 
 // При возврате из этой функции в usbd_core.c происходит вызов USBD_CtlSendStatus
-static USBD_StatusTypeDef USBD_CDCEEM_EP0_RxReady(USBD_HandleTypeDef *pdev)
+static USBD_StatusTypeDef USBD_RNDIS_EP0_RxReady(USBD_HandleTypeDef *pdev)
 {
 	const USBD_SetupReqTypedef * const req = & pdev->request;
 
@@ -435,7 +435,7 @@ static USBD_StatusTypeDef USBD_CDCEEM_EP0_RxReady(USBD_HandleTypeDef *pdev)
 	//PRINTF(PSTR("1 USBD_CDC_EP0_RxReady: interfacev=%u: bRequest=%u, wLength=%u\n"), interfacev, req->bRequest, req->wLength);
 	switch (interfacev)
 	{
-	case INTERFACE_CDCEEM_DATA:	// CDC EEM interface
+	case INTERFACE_RNDIS_DATA:	// CDC EEM interface
 		{
 			switch (req->bRequest)
 			{
@@ -444,7 +444,7 @@ static USBD_StatusTypeDef USBD_CDCEEM_EP0_RxReady(USBD_HandleTypeDef *pdev)
 ////					const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 ////					ASSERT(req->wLength == 7);
 ////					dwDTERate [interfacev] = USBD_peek_u32(& cdceem_epXdatabuffout [0]);
-//					//PRINTF(PSTR("USBD_CDCEEM_EP0_RxReady: CDC_SET_LINE_CODING: interfacev=%u, dwDTERate=%lu, bits=%u\n"), interfacev, dwDTERate [interfacev], cdceem_epXdatabuffout [6]);
+//					//PRINTF(PSTR("USBD_RNDIS_EP0_RxReady: CDC_SET_LINE_CODING: interfacev=%u, dwDTERate=%lu, bits=%u\n"), interfacev, dwDTERate [interfacev], cdceem_epXdatabuffout [6]);
 //				}
 //				break;
 			default:
@@ -462,7 +462,7 @@ static USBD_StatusTypeDef USBD_CDCEEM_EP0_RxReady(USBD_HandleTypeDef *pdev)
 }
 
 
-static USBD_StatusTypeDef USBD_CDCEEM_Setup(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req)
+static USBD_StatusTypeDef USBD_RNDIS_Setup(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req)
 {
 	static USBALIGN_BEGIN uint8_t buff [32] USBALIGN_END;	// was: 7
 	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
@@ -476,7 +476,7 @@ static USBD_StatusTypeDef USBD_CDCEEM_Setup(USBD_HandleTypeDef *pdev, const USBD
 			switch (interfacev)
 			{
 
-			case INTERFACE_CDCEEM_DATA:	// CDC EEM interface
+			case INTERFACE_RNDIS_DATA:	// CDC EEM interface
 				{
 					switch (req->bRequest)
 					{
@@ -492,7 +492,7 @@ static USBD_StatusTypeDef USBD_CDCEEM_Setup(USBD_HandleTypeDef *pdev, const USBD
 
 					default:
 						TP();
-						PRINTF(PSTR("USBD_CDCEEM_Setup IN: bRequest=%02X, wValue=%04X\n"), (unsigned) req->bRequest, (unsigned) req->wValue);
+						PRINTF(PSTR("USBD_RNDIS_Setup IN: bRequest=%02X, wValue=%04X\n"), (unsigned) req->bRequest, (unsigned) req->wValue);
 						USBD_CtlError(pdev, req);
 						break;
 					}
@@ -508,7 +508,7 @@ static USBD_StatusTypeDef USBD_CDCEEM_Setup(USBD_HandleTypeDef *pdev, const USBD
 			switch (interfacev)
 			{
 
-			case INTERFACE_CDCEEM_DATA:	// CDC EEM interface
+			case INTERFACE_RNDIS_DATA:	// CDC EEM interface
 				{
 					case USB_REQ_GET_INTERFACE:
 					{
@@ -531,19 +531,19 @@ static USBD_StatusTypeDef USBD_CDCEEM_Setup(USBD_HandleTypeDef *pdev, const USBD
 		case USB_REQ_TYPE_CLASS:
 			switch (interfacev)
 			{
-			case INTERFACE_CDCEEM_DATA:	// CDC EEM interface
+			case INTERFACE_RNDIS_DATA:	// CDC EEM interface
 				switch (req->bRequest)
 				{
 				case CDC_SET_CONTROL_LINE_STATE:
 					// Выполнение этого запроса не требует дополнительного чтения данных
-					PRINTF(PSTR("USBD_CDCEEM_Setup OUT: CDC_SET_CONTROL_LINE_STATE, wValue=%04X, wLength=%04X\n"), req->wValue, (unsigned) req->wLength);
+					PRINTF(PSTR("USBD_RNDIS_Setup OUT: CDC_SET_CONTROL_LINE_STATE, wValue=%04X, wLength=%04X\n"), req->wValue, (unsigned) req->wLength);
 //					usb_cdc_control_state [interfacev] = req->wValue;
 					ASSERT(req->wLength == 0);
 					break;
 
 				default:
 					TP();
-					PRINTF(PSTR("USBD_CDCEEM_Setup OUT: bRequest=%02X, wValue=%04X, wLength=%04X\n"), (unsigned) req->bRequest, (unsigned) req->wValue, (unsigned) req->wLength);
+					PRINTF(PSTR("USBD_RNDIS_Setup OUT: bRequest=%02X, wValue=%04X, wLength=%04X\n"), (unsigned) req->bRequest, (unsigned) req->wValue, (unsigned) req->wLength);
 					break;
 				}
 				/* все запросы этого класса устройств */
@@ -568,10 +568,10 @@ static USBD_StatusTypeDef USBD_CDCEEM_Setup(USBD_HandleTypeDef *pdev, const USBD
 			case USB_REQ_SET_INTERFACE:
 				switch (interfacev)
 				{
-				case INTERFACE_CDCEEM_DATA:	// CDC EEM interface
+				case INTERFACE_RNDIS_DATA:	// CDC EEM interface
 					// Only zero value here
 					//altinterfaces [interfacev] = LO_BYTE(req->wValue);
-					PRINTF("USBD_CDCEEM_Setup: CDC interface %d set to %d\n", (int) interfacev, (int) LO_BYTE(req->wValue));
+					PRINTF("USBD_RNDIS_Setup: CDC interface %d set to %d\n", (int) interfacev, (int) LO_BYTE(req->wValue));
 					//bufers_set_cdcalt(altinterfaces [interfacev]);
 					USBD_CtlSendStatus(pdev);
 					break;
@@ -591,29 +591,29 @@ static USBD_StatusTypeDef USBD_CDCEEM_Setup(USBD_HandleTypeDef *pdev, const USBD
 	return USBD_OK;
 }
 
-static USBD_StatusTypeDef USBD_CDCEEM_Init(USBD_HandleTypeDef *pdev, uint_fast8_t cfgidx)
+static USBD_StatusTypeDef USBD_RNDIS_Init(USBD_HandleTypeDef *pdev, uint_fast8_t cfgidx)
 {
 	/* CDC EEM Open EP IN */
-	USBD_LL_OpenEP(pdev, USBD_EP_CDCEEM_IN, USBD_EP_TYPE_BULK, USBD_CDCEEM_BUFSIZE);
-	USBD_LL_Transmit(pdev, USBD_EP_CDCEEM_IN, NULL, 0);
+	USBD_LL_OpenEP(pdev, USBD_EP_RNDIS_IN, USBD_EP_TYPE_BULK, USBD_RNDIS_IN_BUFSIZE);
+	USBD_LL_Transmit(pdev, USBD_EP_RNDIS_IN, NULL, 0);
 	/* CDC EEM Open EP OUT */
-	USBD_LL_OpenEP(pdev, USBD_EP_CDCEEM_OUT, USBD_EP_TYPE_BULK, USBD_CDCEEM_BUFSIZE);
+	USBD_LL_OpenEP(pdev, USBD_EP_RNDIS_OUT, USBD_EP_TYPE_BULK, USBD_RNDIS_OUT_BUFSIZE);
     /* CDC EEM Prepare Out endpoint to receive 1st packet */
-    USBD_LL_PrepareReceive(pdev, USB_ENDPOINT_OUT(USBD_EP_CDCEEM_OUT), cdceem1buffout,  USBD_CDCEEM_BUFSIZE);
+    USBD_LL_PrepareReceive(pdev, USB_ENDPOINT_OUT(USBD_EP_RNDIS_OUT), rndis1buffout,  USBD_RNDIS_OUT_BUFSIZE);
 
     cdceemoutstate = CDCEEMOUT_COMMAND;
 
 	return USBD_OK;
 }
 
-static USBD_StatusTypeDef USBD_CDCEEM_DeInit(USBD_HandleTypeDef *pdev, uint_fast8_t cfgidx)
+static USBD_StatusTypeDef USBD_RNDIS_DeInit(USBD_HandleTypeDef *pdev, uint_fast8_t cfgidx)
 {
-	USBD_LL_CloseEP(pdev, USBD_EP_CDCEEM_IN);
-	USBD_LL_CloseEP(pdev, USBD_EP_CDCEEM_OUT);
+	USBD_LL_CloseEP(pdev, USBD_EP_RNDIS_IN);
+	USBD_LL_CloseEP(pdev, USBD_EP_RNDIS_OUT);
 	return USBD_OK;
 }
 
-static void USBD_CDCEEM_ColdInit(void)
+static void USBD_RNDIS_ColdInit(void)
 {
 #if WITHLWIP
 	lwip_init();
@@ -621,20 +621,20 @@ static void USBD_CDCEEM_ColdInit(void)
 #endif /* WITHLWIP */
 }
 
-const USBD_ClassTypeDef USBD_CLASS_CDC_EEM =
+const USBD_ClassTypeDef USBD_CLASS_RNDIS =
 {
-	USBD_CDCEEM_ColdInit,
-	USBD_CDCEEM_Init,	// Init
-	USBD_CDCEEM_DeInit,	// DeInit
-	USBD_CDCEEM_Setup,		// Setup
+	USBD_RNDIS_ColdInit,
+	USBD_RNDIS_Init,	// Init
+	USBD_RNDIS_DeInit,	// DeInit
+	USBD_RNDIS_Setup,		// Setup
 	NULL,	// EP0_TxSent
-	USBD_CDCEEM_EP0_RxReady,	// EP0_RxReady
-	USBD_CDCEEM_DataIn,	// DataIn
-	USBD_CDCEEM_DataOut,	// DataOut
+	USBD_RNDIS_EP0_RxReady,	// EP0_RxReady
+	USBD_RNDIS_DataIn,	// DataIn
+	USBD_RNDIS_DataOut,	// DataOut
 	NULL,	//USBD_XXX_SOF,	// SOF
 	NULL,	//USBD_XXX_IsoINIncomplete,	// IsoINIncomplete
 	NULL,	//USBD_XXX_IsoOUTIncomplete,	// IsoOUTIncomplete
 };
 
-#endif /* WITHUSBHW && WITHUSBCDCEEM */
+#endif /* WITHUSBHW && WITHUSBRNDIS */
 

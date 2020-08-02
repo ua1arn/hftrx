@@ -216,12 +216,6 @@ enum
 /* Последовательность в данном enum должна соответствовать порядку использования в fill_Configuration_main_group */
 enum interfaces_tag
 {
-
-#if WITHUSBRNDIS
-	INTERFACE_RNDIS_CONTROL_5,	/* RNDIS control Interface */
-	INTERFACE_RNDIS_DATA_6,		/* RNDIS data Interface */
-#endif /* WITHUSBRNDIS */
-
 #if WITHUSBDFU && WITHMOVEDFU
 	INTERFACE_DFU_CONTROL,		/* DFU control Interface */
 #endif /* WITHUSBDFU */
@@ -260,17 +254,22 @@ enum interfaces_tag
 	#endif /* WITHUSBUACIN2 */
 #endif /* WITHUSBUAC */
 
+#if WITHUSBRNDIS
+	INTERFACE_RNDIS_CONTROL,	/* RNDIS control Interface */
+	INTERFACE_RNDIS_DATA,		/* RNDIS data Interface */
+#endif /* WITHUSBRNDIS */
+
 #if WITHUSBCDCEEM
-	INTERFACE_CDCEEM_DATA_6,	/* CDC ECM/CDC EEM data Interface */
+	INTERFACE_CDCEEM_DATA,	/* CDC ECM/CDC EEM data Interface */
 #endif /* WITHUSBCDCEEM */
 
 #if WITHUSBCDCECM
-	INTERFACE_CDCECM_CONTROL_5,	/* CDC ECM control Interface */
-	INTERFACE_CDCECM_DATA_6,	/* CDC ECM/CDC EEM data Interface */
+	INTERFACE_CDCECM_CONTROL,	/* CDC ECM control Interface */
+	INTERFACE_CDCECM_DATA,	/* CDC ECM/CDC EEM data Interface */
 #endif /* WITHUSBCDCECM */
 
 #if WITHUSBHID
-	INTERFACE_HID_CONTROL_7,	/* HID control Interface */
+	INTERFACE_HID_CONTROL,	/* HID control Interface */
 #endif /* WITHUSBHID */
 
 #if WITHUSBDFU && ! WITHMOVEDFU
@@ -321,8 +320,8 @@ enum interfaces_tag
 		enum
 		{
 
-			INTERFACE_RNDIS_CONTROL_5,	/* RNDIS control Interface */
-			INTERFACE_RNDIS_DATA_6,		/* RNDIS data Interface */
+			INTERFACE_RNDIS_CONTROL,	/* RNDIS control Interface */
+			INTERFACE_RNDIS_DATA,		/* RNDIS data Interface */
 		};
 	#endif /* WITHUSBRNDIS */
 	#if WITHUSBUAC
@@ -357,20 +356,20 @@ enum interfaces_tag
 	#if WITHUSBCDCEEM
 		enum
 		{
-			INTERFACE_CDCEEM_DATA_6		/* CDC ECM/CDC EEM data Interface */
+			INTERFACE_CDCEEM_DATA		/* CDC ECM/CDC EEM data Interface */
 		};
 	#endif /* WITHUSBCDCEEM */
 	#if WITHUSBCDCECM
 		enum
 		{
-			INTERFACE_CDCECM_CONTROL_5,	/* CDC ECM control Interface */
-			INTERFACE_CDCECM_DATA_6		/* CDC ECM/CDC EEM data Interface */
+			INTERFACE_CDCECM_CONTROL,	/* CDC ECM control Interface */
+			INTERFACE_CDCECM_DATA		/* CDC ECM/CDC EEM data Interface */
 		};
 	#endif /* WITHUSBCDCECM */
 	#if WITHUSBHID
 		enum
 		{
-			INTERFACE_HID_CONTROL_7	/* HID control Interface */
+			INTERFACE_HID_CONTROL	/* HID control Interface */
 			//
 		};
 	#endif /* WITHUSBHID */
