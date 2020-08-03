@@ -1577,4 +1577,7 @@ USBH_StatusTypeDef USBH_ClosePipe  (USBH_HandleTypeDef *phost,
 
 HAL_StatusTypeDef USB_DoPing(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t ch_num);
 
+void usb_polling(void);	/* LWIP support */
+void tcp_tmr(void);	/* LWIP support */
+
 #endif /* USB_USB_CORE_H_ */

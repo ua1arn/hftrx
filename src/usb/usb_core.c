@@ -58,6 +58,11 @@ usbd_epaddr2pipe(uint_fast8_t ep_addr)
 	case USBD_EP_CDCEEM_OUT:	return HARDWARE_USBD_PIPE_CDCEEM_OUT;
 	case USBD_EP_CDCEEM_IN:		return HARDWARE_USBD_PIPE_CDCEEM_IN;
 #endif /* WITHUSBCDCEEM */
+#if WITHUSBRNDIS
+	case USBD_EP_RNDIS_OUT:		return HARDWARE_USBD_PIPE_RNDIS_OUT;
+	case USBD_EP_RNDIS_IN:		return HARDWARE_USBD_PIPE_RNDIS_IN;
+	case USBD_EP_RNDIS_INT:		return HARDWARE_USBD_PIPE_RNDIS_INT;
+#endif /* WITHUSBRNDIS */
 	}
 }
 
@@ -103,6 +108,11 @@ usbd_pipe2epaddr(uint_fast8_t pipe)
 	case HARDWARE_USBD_PIPE_CDCEEM_OUT: return USBD_EP_CDCEEM_OUT;
 	case HARDWARE_USBD_PIPE_CDCEEM_IN: return USBD_EP_CDCEEM_IN;
 #endif /* WITHUSBCDCEEM */
+#if WITHUSBRNDIS
+	case HARDWARE_USBD_PIPE_RNDIS_OUT: return USBD_EP_RNDIS_OUT;
+	case HARDWARE_USBD_PIPE_RNDIS_IN: return USBD_EP_RNDIS_IN;
+	case HARDWARE_USBD_PIPE_RNDIS_INT: return USBD_EP_RNDIS_INT;
+#endif /* WITHUSBRNDIS */
 	}
 }
 
@@ -1310,6 +1320,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 
 		USBx->PIPESEL = 0;
 	}
+#if WITHUSBCDCACM_N > 1
 	if (1)
 	{
 		// Данные CDC из компьютера в трансивер
@@ -1388,6 +1399,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 
 		USBx->PIPESEL = 0;
 	}
+#endif /* WITHUSBCDCACM_N > 1 */
 #endif /* WITHUSBCDCACM */
 
 #if WITHUSBUAC
@@ -6486,6 +6498,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 	const uint_fast16_t full4 = fullsize / 4;
 	uint_fast16_t last4 = full4;
 	uint_fast16_t base4 = 0;
+
 #if WITHUSBCDCACM
 	// параметры TX FIFO для ендпоинтов, в которые никогда не будут идти данные для передачи
 	const uint_fast16_t size4dummy = 0;//0x10;//bigbuff ? 0x10 : 4;
@@ -6612,6 +6625,33 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 		PRINTF(PSTR("usbd_fifo_initialize5 EEM %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
 	}
 #endif /* WITHUSBCDCEEM */
+
+#if WITHUSBRNDIS
+	{
+		/* полнофункциональное устройство */
+		const uint_fast8_t pipe = (USBD_EP_RNDIS_IN + 0) & 0x7F;
+		const uint_fast8_t pipeint = (USBD_EP_RNDIS_INT + 0) & 0x7F;
+		numoutendpoints += 1;
+		const int
+			nrndisindatapackets = 3,
+			nrndisintdatapackets = 3,
+			nrndisoutdatapackets = 3;
+
+		maxoutpacketsize4 = ulmax16(maxoutpacketsize4, nrndisoutdatapackets * size2buff4(USBD_RNDIS_OUT_BUFSIZE));
+
+
+		const uint_fast16_t size4 = nrndisindatapackets * (size2buff4(USBD_RNDIS_IN_BUFSIZE) + add3tx);
+		ASSERT(last4 >= size4);
+		last4 -= size4;
+		USBx->DIEPTXF [pipe - 1] = usbd_makeTXFSIZ(last4, size4);
+		const uint_fast16_t size4int = nrndisintdatapackets * (size2buff4(USBD_RNDIS_INT_SIZE) + add3tx);
+		ASSERT(last4 >= size4int);
+		last4 -= size4int;
+		USBx->DIEPTXF [pipeint - 1] = usbd_makeTXFSIZ(last4, size4int);
+		PRINTF(PSTR("usbd_fifo_initialize4 RNDIS %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
+	}
+
+#endif /* WITHUSBRNDIS */
 
 #if WITHUSBHID && 0
 	{

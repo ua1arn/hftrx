@@ -12733,6 +12733,9 @@ static void dpc_1stimer(void * arg)
 		}
 #endif /* WITHSLEEPTIMER */
 
+#if WITHLWIP
+	  tcp_tmr();
+#endif /* WITHLWIP */
 }
 
 static void
@@ -12827,6 +12830,12 @@ processmessages(
 			cat_answer_forming();
 		}
 #endif /* WITHCAT */
+
+#if WITHLWIP
+		/* LWIP */
+		usb_polling();     // usb device polling
+		//stmr();            // call software timers
+#endif /* WITHLWIP */
 		return;
 
 	case MSGT_CAT:

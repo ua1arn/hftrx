@@ -1145,7 +1145,7 @@ static void tickers_spool(void)
 	}
 }
 
-#if WITHLWIP
+#if 0//WITHLWIP
 	#include "lwip/sys.h"
 	#include "lwip/timeouts.h"
 #endif /* WITHLWIP */
@@ -1178,7 +1178,7 @@ static RAMFUNC void spool_systimerbundle1(void)
 	//beacon_255();
 
 	sys_now_counter += (1000 / TICKS_FREQUENCY);
-#if WITHLWIP
+#if 0//WITHLWIP
     sys_check_timeouts();
 #endif /* WITHLWIP */
 
