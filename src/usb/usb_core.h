@@ -492,6 +492,7 @@ typedef USBALIGN_BEGIN struct
   uint_fast32_t                total_length;
   uint_fast32_t                rem_length;
   uint_fast32_t                maxpacket;
+  uint_fast32_t is_used;
 } USBALIGN_END USBD_EndpointTypeDef;
 
 #define USBD_MAX_NUM_CLASSES 16
