@@ -237,7 +237,10 @@ TIMER_PROC(tcp_timer, TCP_TMR_INTERVAL * 1000, 1, NULL)
 
 static bool dns_query_proc(const char *name, ip_addr_t *addr)
 {
-  if (strcmp(name, "run.stm") == 0 || strcmp(name, "www.run.stm") == 0)
+  if (
+		  strcmp(name, "run.stm") == 0 ||
+		  strcmp(name, "www.run.stm") == 0
+		  )
   {
     addr->addr = *(uint32_t *)ipaddr;
     return true;
