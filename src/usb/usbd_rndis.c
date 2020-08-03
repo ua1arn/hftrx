@@ -31,6 +31,7 @@
 //#include "lwip/dns.h"
 #include "src/dhcp-server/dhserver.h"
 #include "src/dns-server/dnserver.h"
+#include "src/lwip-1.4.1/apps/httpserver_raw/httpd.h"
 //#include "lwip/timeouts.h"
 //#include "lwip/etharp.h"
 //#include "lwip/ip6.h"
@@ -253,7 +254,7 @@ static void on_packet(const uint8_t *data, int size)
 
 void init_lwip()
 {
-	PRINTF("init_lwip start\n");
+//	PRINTF("init_lwip start\n");
   uint8_t hwaddr[6]  = HWADDR;
   uint8_t netmask[4] = NETMASK;
   uint8_t gateway[4] = GATEWAY;
@@ -269,7 +270,7 @@ void init_lwip()
   netif_set_default(netif);
 
   //stmr_add(&tcp_timer);
-	PRINTF("init_lwip done\n");
+//	PRINTF("init_lwip done\n");
 }
 
 
@@ -281,16 +282,18 @@ void init_netif(void)
 
 void init_dnserv(void)
 {
-	uint8_t ipaddr[4]  = IPADDR;
-	while (dnserv_init(PADDR(ipaddr), 53, dns_query_proc) != ERR_OK) ;
+	uint8_t ipaddr [4] = IPADDR;
+	while (dnserv_init(PADDR(ipaddr), 53, dns_query_proc) != ERR_OK)
+		;
 }
 
 void init_dhserv(void)
 {
-  while (dhserv_init(&dhcp_config) != ERR_OK) ;
+  while (dhserv_init(&dhcp_config) != ERR_OK)
+	  ;
 }
 
-#if 0
+#if 1
 static const char *ssi_tags_table[] =
 {
     "systick", /* 0 */
@@ -315,7 +318,7 @@ void init_htserv(void)
   httpd_init();
 }
 
-uint8_t PORTC[8];
+static uint8_t PORTC[8];
 
 const char *state_cgi_handler(int index, int n_params, char *params[], char *values[])
 {
@@ -359,11 +362,11 @@ static uint16_t ssi_handler(int index, char *insert, int ins_len)
   switch (index)
   {
   case 0: // systick
-    res = snprintf(insert, ins_len, "%s", "1234");
+    res = local_snprintf_P(insert, ins_len, "%s", "1234");
     break;
   case 1: // PORTC
     {
-      res = snprintf(insert, ins_len, "%u, %u, %u, %u, %u, %u, %u, %u", 10, 10, 10, 10, 10, 10, 10, 10);
+      res = local_snprintf_P(insert, ins_len, "%u, %u, %u, %u, %u, %u, %u, %u", 10, 10, 10, 10, 10, 10, 10, 10);
       break;
     }
   case 2: // PA0
@@ -405,17 +408,17 @@ static uint16_t ssi_handler(int index, char *insert, int ins_len)
 #else
 static u16_t ssi_handler(int index, char *insert, int ins_len)
 {
-    int res;
+    int res = 0;
 
     if (ins_len < 32) return 0;
 
     switch (index)
     {
     case 0: /* systick */
-        res = snprintf(insert, ins_len, "%u", (unsigned)mtime());
+        res = local_snprintf_P(insert, ins_len, "%u", (unsigned)111);
         break;
     case 1: /* btn */
-        res = snprintf(insert, ins_len, "%i", 1);
+        res = local_snprintf_P(insert, ins_len, "%i", 1);
         break;
     case 2: /* acc */
     {
@@ -423,7 +426,7 @@ static u16_t ssi_handler(int index, char *insert, int ins_len)
         acc[0] = 1;
         acc[1] = 2;
         acc[2] = 4;
-        res = snprintf(insert, ins_len, "%i, %i, %i", acc[0], acc[1], acc[2]);
+        res = local_snprintf_P(insert, ins_len, "%i, %i, %i", acc[0], acc[1], acc[2]);
         break;
     }
     case 3: /* ledg */
@@ -948,7 +951,7 @@ static void rndis_handle_set_msg(void  *pdev)
 
 static int sended = 0;
 
-static __inline uint8_t usbd_cdc_transfer(void *pdev)
+static USBD_StatusTypeDef usbd_cdc_transfer(void *pdev)
 {
 	if (sended != 0 || rndis_tx_ptr == NULL || rndis_tx_size <= 0) return USBD_OK;
 	if (rndis_first_tx)
@@ -1159,7 +1162,7 @@ static USBD_StatusTypeDef usbd_rndis_data_out(USBD_HandleTypeDef *pdev, uint_fas
 }
 
 // Start Of Frame event management
-static uint8_t usbd_rndis_sof(USBD_HandleTypeDef *pdev)
+static USBD_StatusTypeDef usbd_rndis_sof(USBD_HandleTypeDef *pdev)
 {
 	return usbd_cdc_transfer(pdev);
 }
