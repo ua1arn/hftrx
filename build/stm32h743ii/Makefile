@@ -29,6 +29,8 @@ HEX  = $(CP) -O ihex -R .noinit -R .bss -R .heap
 BIN  = $(CP) -O binary -R .noinit -R .bss -R .heap
 
 CMSISDIR = ../../../CMSIS_5/CMSIS
+LWIPDIR = ../../src/lwip-1.4.1/src
+
 OBJDIR = ./obj
 
 # Define optimisation level here
@@ -50,7 +52,9 @@ DINCDIR = \
 	$(CMSISDIR)/Core/Include \
 	$(CMSISDIR)/DSP/Include \
 	$(CMSISDIR)/DSP/Source \
-	$(CMSISDIR)/DSP/PrivateInclude
+	$(CMSISDIR)/DSP/PrivateInclude \
+	$(LWIPDIR)/include \
+	$(LWIPDIR)/include/ipv4
 
 # List the default directory to look for the libraries here
 #DLIBDIR = $(CMSISDIR)/DSP/Lib/GCC
