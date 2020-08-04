@@ -19773,6 +19773,31 @@ uint_fast8_t hamradio_get_gsmetertype(void)
 }
 #endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
 
+#if WITHSPECTRUMWF
+uint_fast8_t hamradio_get_gcolorsp(void)
+{
+	return gcolorsp;
+}
+
+void hamradio_set_gcolorsp(uint_fast8_t v)
+{
+	gcolorsp = v != 0;
+	board_set_colorsp(gcolorsp);
+}
+
+uint_fast8_t hamradio_get_gzoomxpow2(void)
+{
+	return gzoomxpow2;
+}
+
+void hamradio_set_gzoomxpow2(uint_fast8_t v)
+{
+	ASSERT(v <= BOARD_FFTZOOM_POW2MAX);
+	gzoomxpow2 = v;
+	board_set_zoomxpow2(gzoomxpow2);
+}
+#endif /* WITHSPECTRUMWF */
+
 // основной цикл программы при работе в режиме любительского премника
 static void
 hamradio_mainloop(void)
