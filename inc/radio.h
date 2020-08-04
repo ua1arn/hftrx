@@ -3334,6 +3334,12 @@ uint_fast8_t hamradio_get_gcolorsp(void);
 void hamradio_set_gcolorsp(uint_fast8_t v);
 uint_fast8_t hamradio_get_gzoomxpow2(void);
 void hamradio_set_gzoomxpow2(uint_fast8_t v);
+void hamradio_get_gtopdb_limits(uint_fast8_t * min, uint_fast8_t * max);
+uint_fast8_t hamradio_get_gtopdb(void);
+void hamradio_set_gtopdb(uint_fast8_t v);
+void hamradio_get_gbottomdb_limits(uint_fast8_t * min, uint_fast8_t * max);
+uint_fast8_t hamradio_get_gbottomdb(void);
+void hamradio_set_gbottomdb(uint_fast8_t v);
 
 #if WITHREVERB
 void hamradio_set_greverb(uint_fast8_t v);

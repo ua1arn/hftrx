@@ -19796,6 +19796,43 @@ void hamradio_set_gzoomxpow2(uint_fast8_t v)
 	gzoomxpow2 = v;
 	board_set_zoomxpow2(gzoomxpow2);
 }
+
+void hamradio_get_gtopdb_limits(uint_fast8_t * min, uint_fast8_t * max)
+{
+	* min = WITHTOPDBMIN;
+	* max = WITHTOPDBMAX;
+}
+
+uint_fast8_t hamradio_get_gtopdb(void)
+{
+	return gtopdb;
+}
+
+void hamradio_set_gtopdb(uint_fast8_t v)
+{
+	ASSERT(v >= WITHTOPDBMIN && v <= WITHTOPDBMAX);
+	gtopdb = v;
+	board_set_topdbwf(gtopdbwf);
+}
+
+void hamradio_get_gbottomdb_limits(uint_fast8_t * min, uint_fast8_t * max)
+{
+	* min = WITHBOTTOMDBMIN;
+	* max = WITHBOTTOMDBMAX;
+}
+
+uint_fast8_t hamradio_get_gbottomdb(void)
+{
+	return gbottomdb;
+}
+
+void hamradio_set_gbottomdb(uint_fast8_t v)
+{
+	ASSERT(v >= WITHBOTTOMDBMIN && v <= WITHBOTTOMDBMAX);
+	gbottomdb = v;
+	board_set_bottomdbwf(gbottomdb);
+}
+
 #endif /* WITHSPECTRUMWF */
 
 // основной цикл программы при работе в режиме любительского премника
