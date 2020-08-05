@@ -152,6 +152,7 @@ void footer_buttons_state (uint_fast8_t state, ...)
 	va_list arg;
 	button_t * bt = NULL;
 	uint_fast8_t is_name;
+	static uint_fast16_t bitmask_locked_buttons = 0;
 
 	if (state == DISABLED)
 	{
@@ -160,9 +161,16 @@ void footer_buttons_state (uint_fast8_t state, ...)
 		va_end(arg);
 	}
 
+	if (state == DISABLED && bt != NULL)
+		bitmask_locked_buttons = 0;
+
 	for (uint_fast8_t i = 0; i < win->bh_count; i ++)
 	{
 		button_t * bh = & win->bh_ptr [i];
+
+		if (state == DISABLED && bt != NULL)
+			bitmask_locked_buttons |= bh->is_locked << i;
+
 		if (state == DISABLED)
 		{
 			bh->state = bh == bt ? CANCELLED : DISABLED;
@@ -171,7 +179,7 @@ void footer_buttons_state (uint_fast8_t state, ...)
 		else if (state == CANCELLED && gui.win [1] == NO_PARENT_WINDOW)
 		{
 			bh->state = CANCELLED;
-			bh->is_locked = BUTTON_NON_LOCKED;
+			bh->is_locked = ((bitmask_locked_buttons >> i) & 1) ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
 		}
 	}
 }
@@ -354,10 +362,62 @@ void open_window(window_t * win)
 }
 
 /* Расчет экранных координат окна */
-void calculate_window_position(window_t * win, uint16_t xmax, uint16_t ymax)
+/* при mode = WINDOW_POSITION_MANUAL в качестве необязательных параметров передать xmax и ymax */
+void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 {
 	uint_fast8_t edge_step = 20;
 	uint_fast8_t title_length = strlen(win->name) * SMALLCHARW;
+	uint_fast16_t xmax = 0, ymax = 0;
+	va_list arg;
+
+	if (mode)					// WINDOW_POSITION_MANUAL
+	{
+		va_start(arg, mode);
+		xmax = va_arg(arg, uint_fast8_t);
+		ymax = va_arg(arg, uint_fast8_t);
+		va_end(arg);
+	}
+	else						// WINDOW_POSITION_AUTO
+	{
+		if (win->bh_ptr != NULL)
+		{
+			for (uint_fast8_t i = 0; i < win->bh_count; i++)
+			{
+				button_t * bh = & win->bh_ptr [i];
+				xmax = (xmax > bh->x1 + bh->w) ? xmax : (bh->x1 + bh->w);
+				ymax = (ymax > bh->y1 + bh->h) ? ymax : (bh->y1 + bh->h);
+			}
+		}
+
+		if (win->lh_ptr != NULL)
+		{
+			for (uint_fast8_t i = 0; i < win->lh_count; i++)
+			{
+				label_t * lh = & win->lh_ptr [i];
+				xmax = (xmax > lh->x + get_label_width(lh)) ? xmax : (lh->x + get_label_width(lh));
+				ymax = (ymax > lh->y + get_label_height(lh)) ? ymax : (lh->y + get_label_height(lh));
+			}
+		}
+
+		if (win->sh_ptr != NULL)
+		{
+			for (uint_fast8_t i = 0; i < win->sh_count; i++)
+			{
+				slider_t * sh = & win->sh_ptr [i];
+				if (sh->orientation)	// ORIENTATION_HORIZONTAL
+				{
+					xmax = (xmax > sh->x + sh->size + sliders_w) ? xmax : (sh->x + sh->size + sliders_w);
+					ymax = (ymax > sh->y + sliders_h * 2) ? ymax : (sh->y + sliders_h * 2);
+				}
+				else					// ORIENTATION_VERTICAL
+				{
+					xmax = (xmax > sh->x + sliders_w * 2) ? xmax : (sh->x + sliders_w * 2);
+					ymax = (ymax > sh->y + sh->size + sliders_h) ? ymax : (sh->y + sh->size + sliders_h);
+				}
+			}
+		}
+	}
+
 	win->w = xmax > title_length ? (xmax + edge_step) : (title_length + edge_step * 2);
 	win->w = (win->is_close && win->w < title_length + window_close_button_size * 2) ? win->w + window_close_button_size : win->w;
 	win->h = ymax + edge_step;
@@ -475,7 +535,7 @@ static void draw_button(const button_t * const bh)
 		else if (! bh->is_locked && bh->state != PRESSED)
 			bg = b1->bg_non_pressed;
 #if GUI_OLDBUTTONSTYLE
-		colpip_plot(fr, DIM_X, DIM_Y, x1, y1, bg, bh->w, bh->h);
+		colpip_plot((uintptr_t) fr, GXSIZE(DIM_X, DIM_Y), fr, DIM_X, DIM_Y, x1, y1, (uintptr_t) bg, GXSIZE(bh->w, bh->h), bg, bh->w, bh->h);
 #else
 		PACKEDCOLORMAIN_T * src = NULL, * dst = NULL, * row = NULL;
 		for (uint16_t yy = y1, yb = 0; yy < y1 + bh->h; yy ++, yb ++)
