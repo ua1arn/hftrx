@@ -800,10 +800,15 @@ static void buttons_display_handler(void)
 static void window_display_process(void)
 {
 	window_t * win = get_win(WINDOW_DISPLAY);
+	static slider_t * sl_bottomDB = NULL, * sl_topDB = NULL;
+	static label_t * lbl_topDB = NULL, * lbl_bottomDB = NULL;
+	static uint_fast8_t bottomDB_min = 0, bottomDB_max = 0, topDB_min = 0, topDB_max = 0;
+
 	if (win->first_call)
 	{
 		uint_fast16_t x = 0, y = 0;
 		uint_fast8_t interval = 6, col1_int = 20, row1_int = window_title_height + 20, row_count = 4;
+		label_t * lbl_bottomDB_min = NULL, * lbl_bottomDB_max = NULL, * lbl_topDB_min = NULL, * lbl_topDB_max = NULL;
 		win->first_call = 0;
 
 		button_t buttons [] = {
@@ -817,8 +822,87 @@ static void window_display_process(void)
 		ASSERT(win->bh_ptr != NULL);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
+		label_t labels [] = {
+		//    x, y,  parent,     		state, is_trackable, visible,   name,    Text, font_size, 	color, 	onClickHandler
+			{ 0, 0,	WINDOW_DISPLAY,  DISABLED,  0, NON_VISIBLE, "lbl_bottomDB",		"Bottom DB: xxx", FONT_MEDIUM, COLORMAIN_WHITE, },
+			{ 0, 0,	WINDOW_DISPLAY,  DISABLED,  0, NON_VISIBLE, "lbl_topDB", 		"Top DB:    xxx", FONT_MEDIUM, COLORMAIN_WHITE, },
+			{ 0, 0,	WINDOW_DISPLAY,  DISABLED,  0, NON_VISIBLE, "lbl_bottomDB_min",	"xxx", FONT_SMALL, COLORMAIN_WHITE, },
+			{ 0, 0,	WINDOW_DISPLAY,  DISABLED,  0, NON_VISIBLE, "lbl_bottomDB_max",	"xxx", FONT_SMALL, COLORMAIN_WHITE, },
+			{ 0, 0,	WINDOW_DISPLAY,  DISABLED,  0, NON_VISIBLE, "lbl_topDB_min", 	"xxx", FONT_SMALL, COLORMAIN_WHITE, },
+			{ 0, 0,	WINDOW_DISPLAY,  DISABLED,  0, NON_VISIBLE, "lbl_topDB_max", 	"xxx", FONT_SMALL, COLORMAIN_WHITE, },
+		};
+		win->lh_count = ARRAY_SIZE(labels);
+		uint_fast16_t labels_size = sizeof(labels);
+		win->lh_ptr = malloc(labels_size);
+		ASSERT(win->lh_ptr != NULL);
+		memcpy(win->lh_ptr, labels, labels_size);
+
+		slider_t sliders [] = {
+			{ 0, 0, 0, 0, 0, 0, ORIENTATION_HORIZONTAL, WINDOW_DISPLAY, "sl_bottomDB", CANCELLED, NON_VISIBLE, 300, 50, 255, 0, 3, },
+			{ 0, 0, 0, 0, 0, 0, ORIENTATION_HORIZONTAL, WINDOW_DISPLAY, "sl_topDB",    CANCELLED, NON_VISIBLE, 300, 50, 255, 0, 3, },
+		};
+		win->sh_count = ARRAY_SIZE(sliders);
+		uint_fast16_t sliders_size = sizeof(sliders);
+		win->sh_ptr = malloc(sliders_size);
+		ASSERT(win->sh_ptr != NULL);
+		memcpy(win->sh_ptr, sliders, sliders_size);
+
 		x = col1_int;
 		y = row1_int;
+
+		hamradio_get_gtopdb_limits(& topDB_min, & topDB_max);
+		hamradio_get_gbottomdb_limits(& bottomDB_min, & bottomDB_max);
+
+		lbl_bottomDB_min = find_gui_element(TYPE_LABEL, win, "lbl_bottomDB_min");
+		lbl_bottomDB_max = find_gui_element(TYPE_LABEL, win, "lbl_bottomDB_max");
+		lbl_topDB_min = find_gui_element(TYPE_LABEL, win, "lbl_topDB_min");
+		lbl_topDB_max = find_gui_element(TYPE_LABEL, win, "lbl_topDB_max");
+
+		lbl_topDB = find_gui_element(TYPE_LABEL, win, "lbl_topDB");
+		lbl_topDB->x = x;
+		lbl_topDB->y = y;
+		local_snprintf_P(lbl_topDB->text, ARRAY_SIZE(lbl_topDB->text), PSTR("Top DB:    %3d"), hamradio_get_gtopdb());
+		lbl_topDB->visible = VISIBLE;
+
+		sl_topDB = find_gui_element(TYPE_SLIDER, win, "sl_topDB");
+		sl_topDB->x = lbl_topDB->x + get_label_width(lbl_topDB) + interval * 3;
+		sl_topDB->y = y;
+		sl_topDB->value = normalize(hamradio_get_gtopdb(), topDB_min, topDB_max, 100);
+		sl_topDB->visible = VISIBLE;
+
+		lbl_bottomDB = find_gui_element(TYPE_LABEL, win, "lbl_bottomDB");
+		lbl_bottomDB->x = x;
+		lbl_bottomDB->y = sl_topDB->y + sliders_h * 3;
+		local_snprintf_P(lbl_bottomDB->text, ARRAY_SIZE(lbl_bottomDB->text), PSTR("Bottom DB: %3d"), hamradio_get_gbottomdb());
+		lbl_bottomDB->visible = VISIBLE;
+
+		sl_bottomDB = find_gui_element(TYPE_SLIDER, win, "sl_bottomDB");
+		sl_bottomDB->x = sl_topDB->x;
+		sl_bottomDB->y = lbl_bottomDB->y;
+		sl_bottomDB->value = normalize(hamradio_get_gbottomdb(), bottomDB_min, bottomDB_max, 100);
+		sl_bottomDB->visible = VISIBLE;
+
+		local_snprintf_P(lbl_topDB_min->text, ARRAY_SIZE(lbl_topDB_min->text), PSTR("%d"), topDB_min);
+		lbl_topDB_min->x = sl_topDB->x - get_label_width(lbl_topDB_min) / 2;
+		lbl_topDB_min->y = sl_topDB->y + get_label_height(lbl_topDB_min) * 3;
+		lbl_topDB_min->visible = VISIBLE;
+
+		local_snprintf_P(lbl_topDB_max->text, ARRAY_SIZE(lbl_topDB_max->text), PSTR("%d"), topDB_max);
+		lbl_topDB_max->x = sl_topDB->x + sl_topDB->size - get_label_width(lbl_topDB_max) / 2;
+		lbl_topDB_max->y = sl_topDB->y + get_label_height(lbl_topDB_max) * 3;
+		lbl_topDB_max->visible = VISIBLE;
+
+		local_snprintf_P(lbl_bottomDB_min->text, ARRAY_SIZE(lbl_bottomDB_min->text), PSTR("%d"), bottomDB_min);
+		lbl_bottomDB_min->x = sl_bottomDB->x - get_label_width(lbl_bottomDB_min) / 2;
+		lbl_bottomDB_min->y = sl_bottomDB->y + get_label_height(lbl_bottomDB_min) * 3;
+		lbl_bottomDB_min->visible = VISIBLE;
+
+		local_snprintf_P(lbl_bottomDB_max->text, ARRAY_SIZE(lbl_bottomDB_max->text), PSTR("%d"), bottomDB_max);
+		lbl_bottomDB_max->x = sl_bottomDB->x + sl_bottomDB->size - get_label_width(lbl_bottomDB_max) / 2;
+		lbl_bottomDB_max->y = sl_bottomDB->y + get_label_height(lbl_bottomDB_max) * 3;
+		lbl_bottomDB_max->visible = VISIBLE;
+
+		y = sl_bottomDB->y + sliders_h * 3;
 
 		for (uint_fast8_t i = 0, r = 1; i < win->bh_count; i ++, r ++)
 		{
@@ -845,6 +929,24 @@ static void window_display_process(void)
 		elements_state(win);
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 		return;
+	}
+
+	if (is_moving_slider())
+	{
+		slider_t * sl = get_selected_slider();
+
+		if (sl == sl_bottomDB)
+		{
+			uint_fast16_t v = bottomDB_min + normalize(sl->value, 0, 100, bottomDB_max - bottomDB_min);
+			hamradio_set_gbottomdb(v);
+			local_snprintf_P(lbl_bottomDB->text, ARRAY_SIZE(lbl_bottomDB->text), PSTR("Bottom DB: %3d"), v);
+		}
+		else if (sl == sl_topDB)
+		{
+			uint_fast16_t v = topDB_min + normalize(sl->value, 0, 100, topDB_max - topDB_min);
+			hamradio_set_gtopdb(v);
+			local_snprintf_P(lbl_topDB->text, ARRAY_SIZE(lbl_topDB->text), PSTR("Top DB:    %3d"), hamradio_get_gtopdb());
+		}
 	}
 }
 
@@ -3453,7 +3555,7 @@ static void window_enc2_process(void)
 		lbl_val = find_gui_element(TYPE_LABEL, win, "lbl_enc2_val");
 		strcpy(win->name, gui_enc2_menu->param);
 		remove_end_line_spaces(win->name);
-		calculate_window_position(win, WINDOW_POSITION_MANUAL, window_title_height + get_label_height(lbl_val) * 2);
+		calculate_window_position(win, WINDOW_POSITION_MANUAL, 0, window_title_height + get_label_height(lbl_val) * 2);
 
 		strcpy(lbl_val->text, gui_enc2_menu->val);
 		lbl_val->x = win->w / 2 - get_label_width(lbl_val) / 2;

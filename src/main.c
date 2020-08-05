@@ -19812,6 +19812,8 @@ void hamradio_set_gtopdb(uint_fast8_t v)
 {
 	ASSERT(v >= WITHTOPDBMIN && v <= WITHTOPDBMAX);
 	gtopdb = v;
+	gtopdbwf = v;
+	board_set_topdb(gtopdb);
 	board_set_topdbwf(gtopdbwf);
 }
 
@@ -19830,7 +19832,9 @@ void hamradio_set_gbottomdb(uint_fast8_t v)
 {
 	ASSERT(v >= WITHBOTTOMDBMIN && v <= WITHBOTTOMDBMAX);
 	gbottomdb = v;
-	board_set_bottomdbwf(gbottomdb);
+	gbottomdbwf = v;
+	board_set_bottomdb(gbottomdb);
+	board_set_bottomdbwf(gbottomdbwf);
 }
 
 #endif /* WITHSPECTRUMWF */
