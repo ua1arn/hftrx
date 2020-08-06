@@ -46,7 +46,7 @@ static gui_element_t gui_elements [GUI_ELEMENTS_ARRAY_SIZE];
 static uint_fast8_t gui_element_count = 0;
 static button_t close_button = { 0, 0, 0, 0, close_all_windows, CANCELLED, BUTTON_NON_LOCKED, 0, NO_PARENT_WINDOW, NON_VISIBLE, UINTPTR_MAX, "btn_close", "", };
 
-/* Обновить секундрый таймер GUI */
+/* Обновить секундный таймер GUI */
 void gui_timer_update(void * arg)
 {
 	gui.timer_1sec_updated = 1;
@@ -305,6 +305,7 @@ void close_all_windows(void)
 	footer_buttons_state(CANCELLED);
 	hamradio_set_lockmode(0);
 	hamradio_disable_keyboard_redirect();
+	gui_user_actions_ater_close_window();
 }
 
 /* Освободить выделенную память в куче и обнулить счетчики элементов окна */
@@ -344,6 +345,7 @@ void close_window(uint_fast8_t parent) // 0 - не открывать parent win
 			pwin->first_call = 1;
 		}
 	}
+	gui_user_actions_ater_close_window();
 }
 
 /* Открыть окно */
