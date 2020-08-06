@@ -6,6 +6,8 @@
 #if WITHTOUCHGUI
 #include "src/gui/gui_structs.h"
 
+void gui_user_actions_ater_close_window(void);
+
 enum {
 	WINDOW_MAIN,					// постоянно отображаемые кнопки внизу экрана
 	WINDOW_MODES,					// переключение режимов работы, видов модуляции
@@ -33,12 +35,17 @@ enum {
 };
 
 typedef struct {
-	int16_t rotate;			// признак поворота второго энкодера
 	uint8_t press;			// короткое нажание
 	uint8_t hold;			// длинное нажатие
-	uint8_t rotate_done;	// событие поворота от энкодера обработано, можно получать новые данные
 	uint8_t press_done;		// событие нажатия от энкодера обработано, можно получать новые данные
 } enc2_t;
+
+#define ENC2_STACK_SIZE	10
+
+typedef struct enc2_stack_tag {
+    int_fast8_t data[ENC2_STACK_SIZE];
+    size_t size;
+} enc2_stack_t;
 
 enum {
 	MENU_OFF,
