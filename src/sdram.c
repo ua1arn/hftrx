@@ -3950,11 +3950,11 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 			      uret, config.info.size);
 			panic();
 		}
-		int partfortest = 1;
+		int partfortest = 4;
 		uret = ddr_check_rand(config.info.size / partfortest);
 		if (uret != (config.info.size / partfortest)) {
 			ERROR("DDR random test: 0x%x does not match DT config: 0x%x\n",
-			      uret, config.info.size / 32);
+			      uret, config.info.size / partfortest);
 			panic();
 		}
 		PRINTF(".");
