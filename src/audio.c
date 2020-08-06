@@ -3233,6 +3233,11 @@ static void agc_state_initialize(volatile agcstate_t * st, const volatile agcpar
 	st->agcslowcap = caplevel;
 }
 
+// TODO: eliminate LOGF
+// are equal:
+//gain = valelout / adjsig * powf(10.0f, log10f(adjsig / valelin) * agcfactor);
+//gain = valelout / adjsig * powf(adjsig / valelin, agcfactor);
+
 // Для работы функции performagc требуется siglevel, больште значения которого
 // соответствуют большим уровням сигнала. может быть отрицательным
 static RAMFUNC FLOAT_t agccalcstrength(const volatile agcparams_t * const agcp, FLOAT_t siglevel)
