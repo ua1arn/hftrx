@@ -8694,10 +8694,10 @@ updateboard(
 		board_set_moniflag(gmoniflag);	/* glob_moniflag */
 		#if WITHSPECTRUMWF
 			board_set_fillspect(gfillspect);	/* заливать заполнением площадь под графиком спектра */
-			board_set_topdb(gtopdb);		/* верхний предел FFT */
-			board_set_bottomdb(gbottomdb);		/* нижний предел FFT */
-			board_set_topdbwf(gtopdbwf);		/* верхний предел FFT для водопада */
-			board_set_bottomdbwf(gbottomdbwf);		/* нижний предел FFT для водопада */
+			board_set_topdb(gtx ? WITHTOPDBMIN : gtopdb);		/* верхний предел FFT */
+			board_set_bottomdb(gtx ? WITHBOTTOMDBMAX : gbottomdb);		/* нижний предел FFT */
+			board_set_topdbwf(gtx ? WITHTOPDBMIN : gtopdbwf);		/* верхний предел FFT для водопада */
+			board_set_bottomdbwf(gtx ? WITHBOTTOMDBMAX : gbottomdbwf);		/* нижний предел FFT для водопада */
 			board_set_zoomxpow2(gzoomxpow2);	/* уменьшение отображаемого участка спектра */
 			board_set_wflevelsep(gwflevelsep);	/* чувствительность водопада регулируется отдельной парой параметров */
 			board_set_wfshiftenable(gwfshiftenable);	/* разрешение или запрет сдвига водопада при изменении частоты */
