@@ -115,8 +115,16 @@ int_fast8_t pop_enc2_stack(void)
     if (enc2_stack.size == 0)
         return 0;
 
-    enc2_stack.size --;
-    return enc2_stack.data [enc2_stack.size];
+    // суммирование содержимого стека перед возвращением
+    int_fast8_t v = 0;
+    do {
+    	enc2_stack.size --;
+    	v += enc2_stack.data [enc2_stack.size];
+
+    } while (enc2_stack.size > 0);
+
+    memset(enc2_stack.data, 0, sizeof(enc2_stack.data));
+    return v;
 }
 
 void clean_enc2_stack(void)
@@ -3474,7 +3482,6 @@ static void window_uif_process(void)
 	if (rotate != 0)
 	{
 		hamradio_gui_edit_menu_item(menu_uif.menupos, rotate);
-		PRINTF("%d\n", rotate);
 		reinit = 1;
 		gui_timer_update(NULL);
 	}
