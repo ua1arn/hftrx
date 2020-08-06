@@ -19306,51 +19306,40 @@ void hamradio_enable_keyboard_redirect (void)
 	keyboard_redirect = 1;
 }
 
-void hamradio_set_agc_off(void)
-{
-	gagcoff = 1;
-	save_i8(offsetof(struct nvmap, gagcoff), gagcoff);
-
-//	board_set_boardagc(BOARD_AGCCODE_OFF);
-//	board_set_dspagc(BOARD_AGCCODE_OFF);
-	updateboard (1, 0);
-}
-
+//todo: добавить учет текущего режима
 void hamradio_set_agc_fast(void)
 {
-	gagcoff = 0;
-	save_i8(offsetof(struct nvmap, gagcoff), gagcoff);
+	const FLASHMEM struct modetempl * pamodetempl;
+	const uint_fast8_t asubmode = getasubmode(0);
+	pamodetempl = getmodetempl(asubmode);
+	const uint_fast8_t agcseti = pamodetempl->agcseti;
 
-//	board_set_boardagc(BOARD_AGCCODE_ON);
-//	board_set_dspagc(BOARD_AGCCODE_ON);
+	gagc [agcseti].rate = AGC_RATE_SSB;
+	gagc [agcseti].scale = 100;
+	gagc [agcseti].t0 = 0;
+	gagc [agcseti].t1 = 120;
+	gagc [agcseti].release10 = 1;
+	gagc [agcseti].t4 = 50;
+	gagc [agcseti].thung10 = 1;
 
-//	const uint_fast8_t asubmode = getasubmode(0);
-//	const struct modetempl * const pmodet = getmodetempl(gsubmode);
-//	const uint_fast8_t agcseti = pmodet->agcseti;
-//	board_set_agcrate(agcseti == AGCSETI_FLAT ? UINT8_MAX : gagc [agcseti].rate);
-//	board_set_agc_t1(120);
-//	board_set_agc_t2(1);
-//	board_set_agc_t4(50);
-//	board_set_agc_thung(1);
 	updateboard (1, 0);
 }
 
 void hamradio_set_agc_slow(void)
 {
-	gagcoff = 0;
-	save_i8(offsetof(struct nvmap, gagcoff), gagcoff);
+	const FLASHMEM struct modetempl * pamodetempl;
+	const uint_fast8_t asubmode = getasubmode(0);
+	pamodetempl = getmodetempl(asubmode);
+	const uint_fast8_t agcseti = pamodetempl->agcseti;
 
-//	board_set_boardagc(BOARD_AGCCODE_ON);
-//	board_set_dspagc(BOARD_AGCCODE_ON);
+	gagc [agcseti].rate = AGC_RATE_SSB;
+	gagc [agcseti].scale = 100;
+	gagc [agcseti].t0 = 0;
+	gagc [agcseti].t1 = 120;
+	gagc [agcseti].release10 = 5;
+	gagc [agcseti].t4 = 50;
+	gagc [agcseti].thung10 = 3;
 
-//	const uint_fast8_t asubmode = getasubmode(0);
-//	const struct modetempl * const pmodet = getmodetempl(gsubmode);
-//	const uint_fast8_t agcseti = pmodet->agcseti;
-//	board_set_agcrate(agcseti == AGCSETI_FLAT ? UINT8_MAX : gagc [agcseti].rate);
-//	board_set_agc_t1(120);
-//	board_set_agc_t2(5);
-//	board_set_agc_t4(50);
-//	board_set_agc_thung(3);
 	updateboard (1, 0);
 }
 
