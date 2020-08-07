@@ -4395,7 +4395,7 @@ HAL_StatusTypeDef USB_EPStartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDef
 
       if (ep->type == USBD_EP_TYPE_ISOC)
       {
-        if ((USBx_DEVICE->DSTS & USB_OTG_DSTS_FNSOF_Msk) == 0U)
+        if ((USBx_DEVICE->DSTS & USB_OTG_DSTS_FNSOF_Msk) == 0U || USB_GetDevSpeed(USBx) == USB_OTG_SPEED_HIGH)
         {
           inep->DIEPCTL |= USB_OTG_DIEPCTL_SODDFRM;
           (void) inep->DIEPCTL;
@@ -4427,7 +4427,7 @@ HAL_StatusTypeDef USB_EPStartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDef
       }
       else
       {
-        if ((USBx_DEVICE->DSTS & (1U << USB_OTG_DSTS_FNSOF_Pos)) == 0U)
+        if ((USBx_DEVICE->DSTS & (1U << USB_OTG_DSTS_FNSOF_Pos)) == 0U || USB_GetDevSpeed(USBx) == USB_OTG_SPEED_HIGH)
         {
           inep->DIEPCTL |= USB_OTG_DIEPCTL_SODDFRM;
           (void) inep->DIEPCTL;
