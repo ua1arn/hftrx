@@ -3934,26 +3934,26 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 
 		uret = ddr_test_data_bus();
 		if (uret != 0U) {
-			ERROR("DDR data bus test: can't access memory @ 0x%x\n",
+			ERROR("DDR data bus test: can't access memory @ 0x%08x\n",
 			      uret);
 			panic();
 		}
 		uret = ddr_test_addr_bus();
 		if (uret != 0U) {
-			ERROR("DDR addr bus test: can't access memory @ 0x%x\n",
+			ERROR("DDR addr bus test: can't access memory @ 0x%08x\n",
 			      uret);
 			panic();
 		}
 		uret = ddr_check_size();
 		if (uret != config.info.size) {
-			ERROR("DDR size: 0x%x does not match DT config: 0x%x\n",
+			ERROR("DDR size: 0x%x does not match DT config: 0x%08x\n",
 			      uret, config.info.size);
 			panic();
 		}
-		int partfortest = 4;
+		int partfortest = 1;
 		uret = ddr_check_rand(config.info.size / partfortest);
 		if (uret != (config.info.size / partfortest)) {
-			ERROR("DDR random test: 0x%x does not match DT config: 0x%x\n",
+			ERROR("DDR random test: 0x%08x does not match DT config: 0x%08x\n",
 			      uret, config.info.size / partfortest);
 			panic();
 		}
