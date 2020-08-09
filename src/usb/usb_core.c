@@ -4189,9 +4189,9 @@ HAL_StatusTypeDef USB_ActivateEndpoint(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTy
 		if ((inep->DIEPCTL & USB_OTG_DIEPCTL_USBAEP) == 0)
 		{
 			inep->DIEPCTL = (inep->DIEPCTL & ~ (USB_OTG_DIEPCTL_MPSIZ | USB_OTG_DIEPCTL_EPTYP | USB_OTG_DIEPCTL_TXFNUM)) |
-				((ep->maxpacket << USB_OTG_DIEPCTL_MPSIZ_Pos) & USB_OTG_DIEPCTL_MPSIZ ) |
-				(ep->type << USB_OTG_DIEPCTL_EPTYP_Pos ) |
-				(ep->tx_fifo_num << USB_OTG_DIEPCTL_TXFNUM_Pos ) |	// TX FIFO index
+				((ep->maxpacket << USB_OTG_DIEPCTL_MPSIZ_Pos) & USB_OTG_DIEPCTL_MPSIZ) |
+				(ep->type << USB_OTG_DIEPCTL_EPTYP_Pos) |
+				(ep->tx_fifo_num << USB_OTG_DIEPCTL_TXFNUM_Pos) |	// TX FIFO index
 				USB_OTG_DIEPCTL_SD0PID_SEVNFRM |
 				USB_OTG_DIEPCTL_USBAEP |
 				0;
@@ -4209,8 +4209,8 @@ HAL_StatusTypeDef USB_ActivateEndpoint(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTy
 		if ((outep->DOEPCTL & USB_OTG_DOEPCTL_USBAEP) == 0)
 		{
 			outep->DOEPCTL = (outep->DOEPCTL & ~ (USB_OTG_DOEPCTL_MPSIZ | USB_OTG_DOEPCTL_EPTYP)) |
-				((ep->maxpacket << USB_OTG_DOEPCTL_MPSIZ_Pos) & USB_OTG_DOEPCTL_MPSIZ ) |
-				(ep->type << USB_OTG_DOEPCTL_EPTYP_Pos ) |
+				((ep->maxpacket << USB_OTG_DOEPCTL_MPSIZ_Pos) & USB_OTG_DOEPCTL_MPSIZ) |
+				(ep->type << USB_OTG_DOEPCTL_EPTYP_Pos) |
 				USB_OTG_DOEPCTL_SD0PID_SEVNFRM |
 				USB_OTG_DOEPCTL_USBAEP |
 				0;
@@ -4235,10 +4235,10 @@ HAL_StatusTypeDef USB_ActivateDedicatedEndpoint(USB_OTG_GlobalTypeDef *USBx, USB
 		{
 			inep->DIEPCTL = (inep->DIEPCTL & ~ (USB_OTG_DIEPCTL_MPSIZ | USB_OTG_DIEPCTL_EPTYP | USB_OTG_DIEPCTL_TXFNUM)) |
 				((ep->maxpacket << USB_OTG_DIEPCTL_MPSIZ_Pos) & USB_OTG_DIEPCTL_MPSIZ ) |
-				(ep->type << USB_OTG_DIEPCTL_EPTYP_Pos ) |
-				(ep->tx_fifo_num << USB_OTG_DIEPCTL_TXFNUM_Pos ) |	// TX FIFO index
-				(USB_OTG_DIEPCTL_SD0PID_SEVNFRM) |
-				(USB_OTG_DIEPCTL_USBAEP) |
+				(ep->type << USB_OTG_DIEPCTL_EPTYP_Pos) |
+				(ep->tx_fifo_num << USB_OTG_DIEPCTL_TXFNUM_Pos) |	// TX FIFO index
+				USB_OTG_DIEPCTL_SD0PID_SEVNFRM |
+				USB_OTG_DIEPCTL_USBAEP |
 				0;
 			(void) inep->DIEPCTL;
 		}
@@ -4352,8 +4352,11 @@ HAL_StatusTypeDef USB_EPStartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDef
     if (ep->xfer_len == 0U)
     {
       inep->DIEPTSIZ &= ~(USB_OTG_DIEPTSIZ_PKTCNT);
-      inep->DIEPTSIZ |= (USB_OTG_DIEPTSIZ_PKTCNT & (1U << 19));
-      inep->DIEPTSIZ &= ~(USB_OTG_DIEPTSIZ_XFRSIZ);
+      (void) inep->DIEPTSIZ;
+      inep->DIEPTSIZ |= (USB_OTG_DIEPTSIZ_PKTCNT & (1U << USB_OTG_DIEPTSIZ_PKTCNT_Pos));
+      (void) inep->DIEPTSIZ;
+      inep->DIEPTSIZ &= ~ (USB_OTG_DIEPTSIZ_XFRSIZ);
+      (void) inep->DIEPTSIZ;
     }
     else
     {
@@ -4363,14 +4366,20 @@ HAL_StatusTypeDef USB_EPStartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDef
       * exist ? 1 : 0)
       */
       inep->DIEPTSIZ &= ~(USB_OTG_DIEPTSIZ_XFRSIZ);
+      (void) inep->DIEPTSIZ;
       inep->DIEPTSIZ &= ~(USB_OTG_DIEPTSIZ_PKTCNT);
+      (void) inep->DIEPTSIZ;
       inep->DIEPTSIZ |= (USB_OTG_DIEPTSIZ_PKTCNT & (((ep->xfer_len + ep->maxpacket - 1U) / ep->maxpacket) << 19));
+      (void) inep->DIEPTSIZ;
       inep->DIEPTSIZ |= (USB_OTG_DIEPTSIZ_XFRSIZ & ep->xfer_len);
+      (void) inep->DIEPTSIZ;
 
       if (ep->type == USBD_EP_TYPE_ISOC)
       {
         inep->DIEPTSIZ &= ~(USB_OTG_DIEPTSIZ_MULCNT);
-        inep->DIEPTSIZ |= (USB_OTG_DIEPTSIZ_MULCNT & (1U << 29));
+        (void) inep->DIEPTSIZ;
+        inep->DIEPTSIZ |= (USB_OTG_DIEPTSIZ_MULCNT & (1U << USB_OTG_DIEPTSIZ_MULCNT_Pos));
+        (void) inep->DIEPTSIZ;
       }
     }
 
@@ -4379,6 +4388,7 @@ HAL_StatusTypeDef USB_EPStartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDef
       if ((uint32_t)ep->dma_addr != 0U)
       {
         inep->DIEPDMA = (uint32_t)(ep->dma_addr);
+        (void) inep->DIEPDMA;
       }
 
       if (ep->type == USBD_EP_TYPE_ISOC)
@@ -4411,6 +4421,7 @@ HAL_StatusTypeDef USB_EPStartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDef
         if (ep->xfer_len > 0U)
         {
           USBx_DEVICE->DIEPEMPMSK |= 1UL << (ep->num & 0x7F);
+          (void) USBx_DEVICE->DIEPEMPMSK;
         }
       }
       else
