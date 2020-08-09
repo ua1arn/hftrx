@@ -1,9 +1,9 @@
-/*
- * codecs.h
- *
- *  Created on: Aug 9, 2020
- *      Author: gena
- */
+/* $Id: $ */
+//
+// Проект HF Dream Receiver (КВ приёмник мечты)
+// автор Гена Завидовский mgs2001@mail.ru
+// UA1ARN
+//
 
 #ifndef INC_CODECS_H_INCLUDED
 #define INC_CODECS_H_INCLUDED
