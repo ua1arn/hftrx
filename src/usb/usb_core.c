@@ -4340,20 +4340,8 @@ HAL_StatusTypeDef USB_DeactivateDedicatedEndpoint(USB_OTG_GlobalTypeDef *USBx, U
   *           1 : DMA feature used
   * @retval HAL status
   */
-// for isochroneus
-//if (USB_GetDevSpeed(USBx) == USB_OTG_SPEED_HIGH)	// romanetz
-//{
-//	if (notseq)
-//		outep->DOEPCTL |= USB_OTG_DOEPCTL_SD0PID_SEVNFRM;
-//	else
-//		outep->DOEPCTL |= USB_OTG_DOEPCTL_SODDFRM;
-//	(void) outep->DOEPCTL;
-//}
-
 HAL_StatusTypeDef USB_EPStartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDef *ep, uint_fast8_t dma)
 {
-  uint32_t USBx_BASE = (uint32_t)USBx;
-  uint32_t epnum = (uint32_t)ep->num;
   uint16_t pktcnt;
 
   /* IN endpoint */
@@ -4512,8 +4500,6 @@ HAL_StatusTypeDef USB_EPStartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDef
   */
 HAL_StatusTypeDef USB_EP0StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDef *ep, uint_fast8_t dma)
 {
-  uint32_t USBx_BASE = (uint32_t)USBx;
-  uint32_t epnum = (uint32_t)ep->num;
 
   /* IN endpoint */
   if (ep->is_in == 1U)
