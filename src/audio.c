@@ -1556,7 +1556,6 @@ agc_perform(const volatile agcparams_t * agcp, volatile agcstate_t * st, FLOAT_t
 static FLOAT_t agc_result_slow(const volatile agcstate_t * st)
 {
 	SPIN_LOCK(& st->lock);
-
 	const FLOAT_t v = FMAXF(st->agcfastcap, st->agcslowcap);	// разница после ИЛИ
 	SPIN_UNLOCK(& st->lock);
 
@@ -1565,7 +1564,11 @@ static FLOAT_t agc_result_slow(const volatile agcstate_t * st)
 
 static FLOAT_t agc_result_fast(const volatile agcstate_t * st)
 {
-	return st->agcfastcap;
+	SPIN_LOCK(& st->lock);
+	const FLOAT_t v = st->agcfastcap;
+	SPIN_UNLOCK(& st->lock);
+
+	return v;
 }
 
 
