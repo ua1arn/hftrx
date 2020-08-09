@@ -17,9 +17,7 @@
 #include "formats.h"
 
 #include "audio.h"
-
-#include "codecs/tlv320aic23.h"	// константы управления усилением кодека
-#include "codecs/nau8822.h"
+#include "codecs.h"
 
 #if WITHUSEAUDIOREC || WITHUSESDCARD
 	#include "sdcard.h"

@@ -19,7 +19,7 @@
 #include "keyboard.h"
 #include "src/display/fontmaps.h"
 #include "list.h"
-#include "src/codecs/nau8822.h"
+#include "codecs.h"
 
 #include "src/gui/gui.h"
 #include "src/gui/gui_user.h"

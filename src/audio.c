@@ -11,9 +11,7 @@
 #include "spi.h"
 #include "formats.h"	// for debug prints
 
-#include "codecs/tlv320aic23.h"	// константы управления усилением кодека
-#include "codecs/nau8822.h"
-#include "codecs/wm8994.h"
+#include "codecs.h"
 
 #include <limits.h>
 #include <string.h>

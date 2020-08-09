@@ -17,7 +17,7 @@
 #include <math.h>
 
 #include "keyboard.h"
-#include "src/codecs/nau8822.h"
+#include "codecs.h"
 
 #if WITHTOUCHGUI
 
