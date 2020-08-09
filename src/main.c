@@ -14739,8 +14739,8 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		WITHLINEINGAINMIN, WITHLINEINGAINMAX, 
 		offsetof(struct nvmap, glineamp),	/* усиление с линейного входа */
-		NULL,
 		& glineamp,
+		NULL,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	#endif /* WITHAFCODEC1HAVELINEINLEVEL */
@@ -18893,6 +18893,7 @@ uint_fast8_t hamradio_get_gmutespkr(void)
 void hamradio_set_gmutespkr(uint_fast8_t v)
 {
 	gmutespkr = v != 0;
+	save_i8(RMT_MUTELOUDSP_BASE, gmutespkr);
 	updateboard(1, 0);
 }
 #endif /* WITHSPKMUTE */
@@ -18914,6 +18915,7 @@ void hamradio_set_tx_tune_power(uint_fast8_t v)
 	ASSERT(v >= WITHPOWERTRIMMIN);
 	ASSERT(v <= WITHPOWERTRIMMAX);
 	gtunepower = v;
+	save_i8(offsetof(struct nvmap, gtunepower), gtunepower);
 	updateboard(1, 0);
 }
 
@@ -18929,6 +18931,7 @@ void hamradio_set_tx_power(uint_fast8_t v)
 	ASSERT(v >= WITHPOWERTRIMMIN);
 	ASSERT(v <= WITHPOWERTRIMMAX);
 	gnormalpower.value = v;
+	save_i8(offsetof(struct nvmap, gnormalpower), gnormalpower.value = v);
 	updateboard(1, 0);
 }
 
@@ -18968,6 +18971,7 @@ uint_fast8_t hamradio_verify_freq_bands(uint_fast32_t freq, uint_fast32_t * bott
 void hamradio_set_gvoxenable(uint_fast8_t v)
 {
 	gvoxenable = v != 0;
+	save_i8(offsetof(struct nvmap, gvoxenable), gvoxenable);
 	updateboard(1, 0);
 }
 
@@ -18992,6 +18996,7 @@ void hamradio_set_vox_delay(uint_fast8_t v)
 	ASSERT(v >= WITHVOXDELAYMIN);
 	ASSERT(v <= WITHVOXDELAYMAX);
 	voxdelay = v;
+	save_i8(offsetof(struct nvmap, voxdelay), voxdelay);
 	updateboard(1, 0);
 }
 
@@ -19011,6 +19016,7 @@ void hamradio_set_vox_level(uint_fast8_t v)
 	ASSERT(v >= WITHVOXLEVELMIN);
 	ASSERT(v <= WITHVOXLEVELMAX);
 	gvoxlevel = v;
+	save_i8(offsetof(struct nvmap, gvoxlevel), gvoxlevel);
 	updateboard(1, 0);
 }
 
@@ -19030,6 +19036,7 @@ void hamradio_set_antivox_level(uint_fast8_t v)
 	ASSERT(v >= WITHAVOXLEVELMIN);
 	ASSERT(v <= WITHAVOXLEVELMAX);
 	gavoxlevel = v;
+	save_i8(offsetof(struct nvmap, gavoxlevel), gavoxlevel);
 	updateboard(1, 0);
 }
 
@@ -19066,6 +19073,7 @@ void hamradio_set_reverb_delay(uint_fast8_t v)
 	ASSERT(v >= WITHREVERBDELAYMIN);
 	ASSERT(v <= WITHREVERBDELAYMAX);
 	greverbdelay = v;
+	save_i8(offsetof(struct nvmap, greverbdelay), greverbdelay);
 	updateboard(1, 0);
 }
 
@@ -19074,29 +19082,14 @@ void hamradio_set_reverb_loss(uint_fast8_t v)
 	ASSERT(v >= WITHREVERBLOSSMIN);
 	ASSERT(v <= WITHREVERBLOSSMAX);
 	greverbloss = v;
+	save_i8(offsetof(struct nvmap, greverbloss), greverbloss);
 	updateboard(1, 0);
 }
-
-#endif /* WITHREVERB */
-
-void hamradio_set_gmoniflag(uint_fast8_t v)
-{
-	gmoniflag = v != 0;
-	updateboard(1, 0);
-}
-
-uint_fast8_t hamradio_get_gmoniflag(void)
-{
-	return gmoniflag;
-}
-
-#endif /* WITHIF4DSP */
-
-#if WITHREVERB
 
 void hamradio_set_greverb(uint_fast8_t v)
 {
 	greverb = v != 0;
+	save_i8(offsetof(struct nvmap, greverb), greverb);
 	updateboard(1, 0);
 }
 
@@ -19106,6 +19099,20 @@ uint_fast8_t hamradio_get_greverb(void)
 }
 
 #endif /* WITHREVERB */
+
+void hamradio_set_gmoniflag(uint_fast8_t v)
+{
+	gmoniflag = v != 0;
+	save_i8(offsetof(struct nvmap, gmoniflag), gmoniflag);
+	updateboard(1, 0);
+}
+
+uint_fast8_t hamradio_get_gmoniflag(void)
+{
+	return gmoniflag;
+}
+
+#endif /* WITHIF4DSP */
 
 #if WITHAFCODEC1HAVEPROC
 
@@ -19125,6 +19132,7 @@ void hamradio_set_gmikehclip(uint_fast8_t v)
 	ASSERT(v >= WITHMIKECLIPMIN);
 	ASSERT(v <= WITHMIKECLIPMAX);
 	gmikehclip = v;
+	save_i8(offsetof(struct nvmap, gmikehclip), gmikehclip);
 	updateboard(1, 0);
 }
 
@@ -19144,6 +19152,7 @@ void hamradio_set_mik1level(uint_fast8_t v)
 	ASSERT(v >= WITHMIKEINGAINMIN);
 	ASSERT(v <= WITHMIKEINGAINMAX);
 	mik1level = v;
+	save_i8(offsetof(struct nvmap, mik1level), mik1level);
 	updateboard(1, 0);
 }
 
@@ -19155,6 +19164,7 @@ uint_fast8_t hamradio_get_gmikeagc(void)
 void hamradio_set_gmikeagc(uint_fast8_t v)
 {
 	gmikeagc = v != 0;
+	save_i8(offsetof(struct nvmap, gmikeagc), gmikeagc);
 	updateboard(1, 0);
 }
 
@@ -19174,6 +19184,7 @@ void hamradio_set_gmikeagcgain(uint_fast8_t v)
 	ASSERT(v >= WITHMIKEINGAINMIN);
 	ASSERT(v <= WITHMIKEINGAINMAX);
 	gmikeagcgain = v;
+	save_i8(offsetof(struct nvmap, gmikeagcgain), gmikeagcgain);
 	updateboard(1, 0);
 }
 
@@ -19185,6 +19196,7 @@ uint_fast8_t hamradio_get_gmikebust20db(void)
 void hamradio_set_gmikebust20db(uint_fast8_t v)
 {
 	gmikebust20db = v != 0;
+	save_i8(offsetof(struct nvmap, gmikebust20db), gmikebust20db);
 	updateboard(1, 0);
 }
 
@@ -19196,6 +19208,7 @@ uint_fast8_t hamradio_get_gmikeequalizer(void)
 void hamradio_set_gmikeequalizer(uint_fast8_t v)
 {
 	gmikeequalizer = v != 0;
+	save_i8(offsetof(struct nvmap, gmikeequalizer), gmikeequalizer);
 	updateboard(1, 0);
 }
 
@@ -19210,6 +19223,7 @@ void hamradio_set_gmikeequalizerparams(uint_fast8_t i, uint_fast8_t v)
 	ASSERT(i < HARDWARE_CODEC1_NPROCPARAMS);
 	ASSERT(v <= EQUALIZERBASE * 2);
 	gmikeequalizerparams [i] = v;
+	//save_i8(offsetof(struct nvmap, gmoniflagxxx), gmoniflagxxx);
 	updateboard(1, 0);
 }
 
@@ -19665,14 +19679,7 @@ uint_fast8_t hamradio_load_mic_profile(uint_fast8_t cell, uint_fast8_t set)
 		for(uint_fast8_t j = 0; j < HARDWARE_CODEC1_NPROCPARAMS; j ++)
 			gmikeequalizerparams [j] = mp->eq_params [j];
 
-		board_set_mikebust20db(gmikebust20db);
-		board_set_mik1level(mik1level);
-		board_set_mikeagc(gmikeagc);
-		board_set_mikeagcgain(gmikeagcgain);
-		board_set_mikehclip(gmikehclip);
-		board_set_mikeequal(gmikeequalizer);
-		board_set_mikeequalparams(gmikeequalizerparams);
-		board_update();
+		updateboard(1, 0);
 	}
 	return mp->cell_saved;
 }
@@ -19769,7 +19776,8 @@ uint_fast8_t hamradio_get_gcolorsp(void)
 void hamradio_set_gcolorsp(uint_fast8_t v)
 {
 	gcolorsp = v != 0;
-	board_set_colorsp(gcolorsp);
+	save_i8(offsetof(struct nvmap, gcolorsp), gcolorsp);
+	updateboard(1, 0);
 }
 
 uint_fast8_t hamradio_get_gzoomxpow2(void)
@@ -19781,7 +19789,9 @@ void hamradio_set_gzoomxpow2(uint_fast8_t v)
 {
 	ASSERT(v <= BOARD_FFTZOOM_POW2MAX);
 	gzoomxpow2 = v;
-	board_set_zoomxpow2(gzoomxpow2);
+	// сохранение зависит от текущего диапазона
+	save_i8(nvramoffs_band(offsetof(struct nvmap, bands[0].gzoomxpow2)), gzoomxpow2);
+	updateboard(1, 0);
 }
 
 void hamradio_get_gtopdb_limits(uint_fast8_t * min, uint_fast8_t * max)
@@ -19800,8 +19810,10 @@ void hamradio_set_gtopdb(uint_fast8_t v)
 	ASSERT(v >= WITHTOPDBMIN && v <= WITHTOPDBMAX);
 	gtopdb = v;
 	gtopdbwf = v;
-	board_set_topdb(gtopdb);
-	board_set_topdbwf(gtopdbwf);
+	// сохранение зависит от текущего диапазона
+	save_i8(nvramoffs_band(offsetof(struct nvmap, bands[0].gtopdb)), gtopdb);
+	save_i8(nvramoffs_band(offsetof(struct nvmap, bands[0].gtopdbwf)), gtopdbwf);
+	updateboard(1, 0);
 }
 
 void hamradio_get_gbottomdb_limits(uint_fast8_t * min, uint_fast8_t * max)
@@ -19820,8 +19832,10 @@ void hamradio_set_gbottomdb(uint_fast8_t v)
 	ASSERT(v >= WITHBOTTOMDBMIN && v <= WITHBOTTOMDBMAX);
 	gbottomdb = v;
 	gbottomdbwf = v;
-	board_set_bottomdb(gbottomdb);
-	board_set_bottomdbwf(gbottomdbwf);
+	// сохранение зависит от текущего диапазона
+	save_i8(nvramoffs_band(offsetof(struct nvmap, bands[0].gbottomdb)), gbottomdb);
+	save_i8(nvramoffs_band(offsetof(struct nvmap, bands[0].gbottomdbwf)), gbottomdbwf);
+	updateboard(1, 0);
 }
 
 #endif /* WITHSPECTRUMWF */
