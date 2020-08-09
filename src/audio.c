@@ -2747,13 +2747,13 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 		else
 		{
 			const int iCoefNum = Ntap_trxi_IQ;
-			const FLOAT_t * const dWindow = FIRCwnd_trxi_IQ;
+			const double * const dWindow = FIRCwndL_trxi_IQ;
 			double dCoeff [NtapCoeffs(iCoefNum)];	/* Use GCC extension */
 			//fir_design_lowpass_freq_scaledL(dCoeff, dWindow, iCoefNum, iCutHigh, dGain);	// с управлением крутизной скатов и нормированием усиления, с наложением окна
 			{
-				fir_design_lowpassL(dCoeff, iCoefNum, fir_design_normfreqL(iCutHigh));
+				fir_design_lowpassL(dCoeff, iCoefNum, fir_design_normfreqL(cutfreq));
 				if (dspmode == DSPCTL_MODE_RX_AM)
-					fir_design_adjust_rxL(FIRCoef_rx_SSB_IQ [spf], FIRCwndL_trxi_IQ, iCoefNum, 0);	// Формирование наклона АЧХ
+					fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 0, GAIN_1);	// Формирование наклона АЧХ
 				fir_design_applaywindowL(dCoeff, dWindow, iCoefNum);
 				fir_design_scaleL(dCoeff, iCoefNum, 1 / testgain_float_DCL(dCoeff, iCoefNum));
 			}
