@@ -17338,14 +17338,20 @@ process_key_menuset_common(uint_fast8_t kbch)
 
 	case KBD_CODE_CWSPEEDDOWN:
 			if (elkeywpm.value > CWWPMMIN)
+			{
 				elkeywpm.value -= 1;
-			updateboard(1, 0);
+				save_i8(offsetof(struct nvmap, elkeywpm), elkeywpm.value);
+				updateboard(1, 0);
+			}
 		return 1;	/* клавиша уже обработана */
 
 	case KBD_CODE_CWSPEEDUP:
 			if (elkeywpm.value < CWWPMMAX)
+			{
 				elkeywpm.value += 1;
-			updateboard(1, 0);
+				save_i8(offsetof(struct nvmap, elkeywpm), elkeywpm.value);
+				updateboard(1, 0);
+			}
 		return 1;	/* клавиша уже обработана */
 
 #endif /* WITHELKEY */
@@ -19264,6 +19270,8 @@ uint_fast8_t hamradio_get_cw_wpm(void)
 void hamradio_set_lockmode(uint_fast8_t lock)
 {
 	lockmode = lock != 0;
+	save_i8(RMT_LOCKMODE_BASE, lockmode);
+	updateboard(1, 0);
 }
 
 uint_fast8_t hamradio_set_freq(uint_fast32_t freq)
