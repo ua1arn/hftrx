@@ -802,6 +802,7 @@ typedef enum
 	} spinlock_t;
 
 	#define SPINLOCK_INIT { 0 }
+	#define SPINLOCK_INIT_EXEC 0
 	void spin_lock(spinlock_t *lock);
 	void spin_unlock(spinlock_t *lock);
 
@@ -813,6 +814,7 @@ typedef enum
 	#define TARGETCPU_EXTIO 0x01	// CPU #0
 
 	#define SPINLOCK_INIT { 0 }
+	#define SPINLOCK_INIT_EXEC 0
 	#define SPINLOCK_t uint_fast8_t
 	#define SPIN_LOCK(p) do { (void) p; } while (0)
 	#define SPIN_UNLOCK(p) do { (void) p; } while (0)

@@ -1370,13 +1370,14 @@ typedef struct agcstate
 	FLOAT_t  agcfastcap;	// разница после выпрямления
 	FLOAT_t  agcslowcap;	// разница после выпрямления
 	unsigned agchangticks;				// сколько сэмплов надо сохранять agcslowcap неизменным.
+	SPINLOCK_t lock /* = SPINLOCK_INIT */;
 } agcstate_t;
 
 typedef struct agcparams
 {
 	uint_fast8_t agcoff;	// признак отключения АРУ
 
-	// Временные паарметры АРУ
+	// Временные парметры АРУ
 
 	// постоянные времени цепи АРУ для реакции на импульсные помехи (быстрая АРУ).
 	FLOAT_t dischargespeedfast;	//0.02f;	// 1 - мгновенно, 0 - никогда
@@ -1506,8 +1507,10 @@ static void comp_parameters_update(volatile agcparams_t * const agcp, FLOAT_t ga
 // со всеми положенными задержками на срабатывание/отпускание
 
 static void
-performagc(const volatile agcparams_t * agcp, volatile agcstate_t * st, FLOAT_t sample)
+agc_perform(const volatile agcparams_t * agcp, volatile agcstate_t * st, FLOAT_t sample)
 {
+	SPIN_LOCK(& st->lock);
+
 	if (st->agcfastcap < sample)
 	{
 		// быстрая цепь АРУ
@@ -1547,14 +1550,20 @@ performagc(const volatile agcparams_t * agcp, volatile agcstate_t * st, FLOAT_t 
 		// не меняется значение
 		st->agchangticks = agcp->hungticks;
 	}
+	SPIN_UNLOCK(& st->lock);
 }
 
-static FLOAT_t performagcresultslow(const volatile agcstate_t * st)
+static FLOAT_t agc_result_slow(const volatile agcstate_t * st)
 {
-	return FMAXF(st->agcfastcap, st->agcslowcap);	// разница после ИЛИ
+	SPIN_LOCK(& st->lock);
+
+	const FLOAT_t v = FMAXF(st->agcfastcap, st->agcslowcap);	// разница после ИЛИ
+	SPIN_UNLOCK(& st->lock);
+
+	return v;
 }
 
-static FLOAT_t performagcresultfast(const volatile agcstate_t * st)
+static FLOAT_t agc_result_fast(const volatile agcstate_t * st)
 {
 	return st->agcfastcap;
 }
@@ -3220,6 +3229,7 @@ static RAMDTCM FLOAT_t agclogof10 = 1;
 	
 static void agc_state_initialize(volatile agcstate_t * st, const volatile agcparams_t * agcp)
 {
+	st->lock = SPINLOCK_INIT_EXEC;
 	const FLOAT_t f0 = agcp->levelfence;
 	const FLOAT_t m0 = agcp->mininput;
 	const FLOAT_t siglevel = 0;
@@ -3238,9 +3248,9 @@ static void agc_state_initialize(volatile agcstate_t * st, const volatile agcpar
 //gain = valelout / adjsig * powf(10.0f, log10f(adjsig / valelin) * agcfactor);
 //gain = valelout / adjsig * powf(adjsig / valelin, agcfactor);
 
-// Для работы функции performagc требуется siglevel, больште значения которого
+// Для работы функции agc_perform требуется siglevel, больште значения которого
 // соответствуют большим уровням сигнала. может быть отрицательным
-static RAMFUNC FLOAT_t agccalcstrength(const volatile agcparams_t * const agcp, FLOAT_t siglevel)
+static RAMFUNC FLOAT_t agccalcstrength_log(const volatile agcparams_t * const agcp, FLOAT_t siglevel)
 {
 	const FLOAT_t f0 = agcp->levelfence;
 	const FLOAT_t m0 = agcp->mininput;
@@ -3253,7 +3263,7 @@ static RAMFUNC FLOAT_t agccalcstrength(const volatile agcparams_t * const agcp, 
 
 // По отфильтрованому в соответствии с заданными временныме параметрами показатлю
 // силы сигнала получаем требуемое усиление (в разах отношения напряжений).
-static RAMFUNC FLOAT_t agccalcgain(const volatile agcparams_t * const agcp, FLOAT_t streingth)
+static RAMFUNC FLOAT_t agccalcgain_log(const volatile agcparams_t * const agcp, FLOAT_t streingth)
 {
 	const FLOAT_t gain0 = POWF((FLOAT_t) M_E, streingth * agcp->agcfactor);
 	// реализация "спортивной" АРУ
@@ -3265,7 +3275,7 @@ static RAMFUNC FLOAT_t agccalcgain(const volatile agcparams_t * const agcp, FLOA
 
 // По отфильтрованому в соответствии с заданными временныме параметрами показатлю
 // силы сигнала получаем относительный уровень (логарифмированный)
-static RAMFUNC FLOAT_t agccalcstrengthlog10(const volatile agcparams_t * const agcp, FLOAT_t streingth)
+static RAMFUNC FLOAT_t agc_calcstrengthlog10(const volatile agcparams_t * const agcp, FLOAT_t streingth)
 {
 	return streingth / agclogof10;	// уже логарифмировано
 }
@@ -3378,18 +3388,18 @@ static RAMFUNC FLOAT_t agc_measure_float(
 	const volatile agcparams_t * const agcp = & rxagcparams [gwagcprofrx] [pathi];
 	volatile agcstate_t * const st = & rxagcstate [pathi];
 	//BEGIN_STAMP();
-	const FLOAT_t strength = agccalcstrength(agcp, siglevel0);	// получение логарифмического хначения уровня сигнала
+	const FLOAT_t strength = agccalcstrength_log(agcp, siglevel0);	// получение логарифмического хначения уровня сигнала
 	//END_STAMP();
 
 	// показ S-метра
-	performagc(& rxsmeterparams, & rxsmeterstate [pathi], strength);	// измеритель уровня сигнала
+	agc_perform(& rxsmeterparams, & rxsmeterstate [pathi], strength);	// измеритель уровня сигнала
 
 	//BEGIN_STAMP();
-	performagc(agcp, st, strength);	// измеритель уровня сигнала
+	agc_perform(agcp, st, strength);	// измеритель уровня сигнала
 	//END_STAMP();
 
 	END_STAMP3();
-	return performagcresultslow(st);
+	return agc_result_slow(st);
 }
 
 // АРУ вперёд для floaing-point тракта
@@ -3402,7 +3412,7 @@ static RAMFUNC FLOAT_t agc_getgain_float(
 	const volatile agcparams_t * const agcp = & rxagcparams [gwagcprofrx] [pathi];
 
 	//BEGIN_STAMP();
-	const FLOAT_t gain = agccalcgain(agcp, fltstrengthslow);
+	const FLOAT_t gain = agccalcgain_log(agcp, fltstrengthslow);
 	//END_STAMP();
 
 	return gain;
@@ -3417,6 +3427,7 @@ static RAMFUNC int agc_squelchopen(
 {
 	return fltstrengthslow > manualsquelch [pathi];
 }
+
 // Функция для S-метра - получение десятичного логарифма уровня сигнала от FS
 /* Вызывается из user-mode программы */
 static void agc_reset(
@@ -3427,17 +3438,21 @@ static void agc_reset(
 	volatile agcstate_t * const st = & rxsmeterstate [pathi];
 	FLOAT_t m0 = agcp->mininput;
 	FLOAT_t m1;
+
 	global_disableIRQ();
 	st->agcfastcap = m0;
 	st->agcslowcap = m0;
 	global_enableIRQ();
+
 #if ! CTLSTYLE_V1D		// не Плата STM32F429I-DISCO с процессором STM32F429ZIT6 - на ней приема нет
 	for (;;)
 	{
 		local_delay_ms(1);
+
 		global_disableIRQ();
-		const FLOAT_t v = performagcresultslow(st);
+		const FLOAT_t v = agc_result_slow(st);
 		global_enableIRQ();
+
 		if (v != m0)
 		{
 			m1 = v;
@@ -3447,9 +3462,11 @@ static void agc_reset(
 	for (;;)
 	{
 		local_delay_ms(1);
+
 		global_disableIRQ();
-		const FLOAT_t v = performagcresultslow(st);
+		const FLOAT_t v = agc_result_slow(st);
 		global_enableIRQ();
+
 		if (v != m1)
 			break;
 	}
@@ -3466,10 +3483,10 @@ static FLOAT_t agc_forvard_getstreigthlog10(
 	volatile agcparams_t * const agcp = & rxsmeterparams;
 	volatile const agcstate_t * const st = & rxsmeterstate [pathi];
 
-	const FLOAT_t fltstrengthfast = performagcresultfast(st);	// измеритель уровня сигнала
-	const FLOAT_t fltstrengthslow = performagcresultslow(st);	// измеритель уровня сигнала
-	* tracemax = agccalcstrengthlog10(agcp, fltstrengthslow);
-	return agccalcstrengthlog10(agcp, fltstrengthfast);
+	const FLOAT_t fltstrengthfast = agc_result_fast(st);	// измеритель уровня сигнала
+	const FLOAT_t fltstrengthslow = agc_result_slow(st);	// измеритель уровня сигнала
+	* tracemax = agc_calcstrengthlog10(agcp, fltstrengthslow);
+	return agc_calcstrengthlog10(agcp, fltstrengthfast);
 }
 
 /* получить значение уровня сигнала в децибелах, отступая от upper */
@@ -3513,8 +3530,8 @@ static RAMFUNC FLOAT_t txmikeagc(FLOAT_t vi)
 		const FLOAT_t siglevel0 = FABSF(vi);
 		volatile agcstate_t * const st = & txagcstate;
 
-		performagc(agcp, st, agccalcstrength(agcp, siglevel0));	// измеритель уровня сигнала
-		const FLOAT_t gain = agccalcgain(agcp, performagcresultslow(st));
+		agc_perform(agcp, st, agccalcstrength_log(agcp, siglevel0));	// измеритель уровня сигнала
+		const FLOAT_t gain = agccalcgain_log(agcp, agc_result_slow(st));
 		vi *= gain;
 	}
 
@@ -3531,7 +3548,6 @@ static RAMFUNC FLOAT_t txmikeagc(FLOAT_t vi)
 
 	return vi;
 }
-
 
 /* получения признака переполнения АЦП микрофонного тракта - вызывается из user mode */
 uint_fast8_t dsp_getmikeadcoverflow(void)
@@ -5983,8 +5999,8 @@ rxparam_update(uint_fast8_t profile, uint_fast8_t pathi)
 	{
 		const volatile agcparams_t * const agcp = & rxsmeterparams;
 
-		const FLOAT_t upper = agccalcstrength(agcp, agcp->levelfence);
-		const FLOAT_t lower = agccalcstrength(agcp, agcp->mininput);
+		const FLOAT_t upper = agccalcstrength_log(agcp, agcp->levelfence);
+		const FLOAT_t lower = agccalcstrength_log(agcp, agcp->mininput);
 		manualsquelch [pathi] = (int) glob_squelch * (upper - lower) / SQUELCHMAX + lower;
 	}
 
