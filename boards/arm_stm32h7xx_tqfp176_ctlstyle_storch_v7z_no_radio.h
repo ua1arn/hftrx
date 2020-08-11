@@ -5,8 +5,7 @@
 // автор Гена Завидовский mgs2001@mail.ru
 // UA1ARN
 //
-// Трансивер с DSP обработкой "Аист" на процессоре
-// rmainunit_v5km0.pcb STM32H743IIT6, TFT 4.3", 2xUSB, SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
+// Плата evg_cimb@mail.ru TQFP208
 
 #ifndef ARM_STM32H7XX_TQFP176_CTLSTYLE_STORCH_V7_NO_RADIO_H_INCLUDED
 #define ARM_STM32H7XX_TQFP176_CTLSTYLE_STORCH_V7_NO_RADIO_H_INCLUDED 1
@@ -228,10 +227,10 @@
 	#define ENCRES_DEFAULT ENCRES_128
 	//#define ENCRES_DEFAULT ENCRES_24
 	#define WITHDIRECTFREQENER	1 //(! CTLSTYLE_SW2011ALL && ! CTLSTYLE_UA3DKC)
-	#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
+	//#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
 	//#define ENCODER_REVERSE	1	/* разводка на плате с перепутаными фазами от валкодера */
 	//#define ENCODER2_REVERSE	1	/* разводка на плате с перепутаными фазами от валкодера */
-	#define WITHENCODER2	1		/* есть второй валкодер */
+	//#define WITHENCODER2	1		/* есть второй валкодер */
 	/* Board hardware configuration */
 	//#define CODEC1_TYPE CODEC_TYPE_TLV320AIC23B
 	//#define CODEC_TYPE_TLV320AIC23B_USE_SPI	1
@@ -336,20 +335,20 @@
 
 	// +++ Эти строки можно отключать, уменьшая функциональность готового изделия
 	//#define WITHRFSG	1	/* включено управление ВЧ сигнал-генератором. */
-	#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
+	//#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
 	#if 0
 		/* TUNER & PA board 2*RD16 by avbelnn@yandex.ru */
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
 		#define SHORTSET8	1	
 	#endif
 
-	#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
+	//#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
 	//#define WITHTHERMOLEVEL	1	/* отображение температуры */
 
 	#define WITHIFSHIFT	1	/* используется IF SHIFT */
 	//#define WITHIFSHIFTOFFSET	(-250)	/* Начальное занчение IF SHIFT */
 	//#define WITHPBT		1	/* используется PBT (если LO3 есть) */
-	#define WITHCAT		1	/* используется CAT */
+	//#define WITHCAT		1	/* используется CAT */
 	//#define WITHDEBUG		1	/* Отладочная печать через COM-порт. Без CAT (WITHCAT) */
 	//#define WITHMODEM		1	/* Устройство работает как радиомодем с последовательным интерфейсом */
 	//#define WITHFREEDV	1	/* поддержка режима FreeDV - http://freedv.org/ */
@@ -375,7 +374,7 @@
 	//#define WITHPOTPOWER	1	/* регулятор мощности на потенциометре */
 	//#define WITHANTSELECT	1	// Управление переключением антенн
 
-	#define WITHMENU 	1	/* функциональность меню может быть отключена - если настраивать нечего */
+	//#define WITHMENU 	1	/* функциональность меню может быть отключена - если настраивать нечего */
 
 	//#define WITHONLYBANDS 1		/* Перестройка может быть ограничена любительскими диапазонами */
 	#define WITHBCBANDS		1		/* в таблице диапазонов присутствуют вещательные диапазоны */
@@ -434,10 +433,10 @@
 	#define IF3_FHAVE	( IF3_FMASK_0P5 | IF3_FMASK_3P1 /*| IF3_FMASK_6P0 | IF3_FMASK_8P0*/)
 
 	#define WITHCATEXT	1	/* Расширенный набор команд CAT */
-	#define WITHELKEY	1
-	#define WITHKBDENCODER 1	// перестройка частоты кнопками
-	#define WITHKEYBOARD 1	/* в данном устройстве есть клавиатура */
-	#define KEYBOARD_USE_ADC	1	/* на одной линии установлено  четыре  клавиши. на vref - 6.8K, далее 2.2К, 4.7К и 13K. */
+	//#define WITHELKEY	1
+	//#define WITHKBDENCODER 1	// перестройка частоты кнопками
+	//#define WITHKEYBOARD 1	/* в данном устройстве есть клавиатура */
+	//#define KEYBOARD_USE_ADC	1	/* на одной линии установлено  четыре  клавиши. на vref - 6.8K, далее 2.2К, 4.7К и 13K. */
 
 	#define VOLTLEVEL_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика напряжения
 	#define VOLTLEVEL_LOWER		10	// 1 kOhm - нижний резистор
@@ -449,7 +448,7 @@
 	#define THERMOSENSOR_DENOM	 	10			// миливольты к десятым долям градуса 2.98 volt = 25 Celsius
 
 
-	#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания и/или подсветки дисплея
+	//#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания и/или подсветки дисплея
 
 	// Назначения входов АЦП процессора.
 	enum 

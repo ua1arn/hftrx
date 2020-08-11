@@ -174,7 +174,7 @@ static uint_fast8_t glob_zoomxpow2;	/* уменьшение отображаем
 
 static uint_fast8_t global_showdbm = 1;	// Отображение уровня сигнала в dBm или S-memter (в зависимости от настроек)
 
-static uint_fast8_t global_smetertype;	/* выбор внешнего вида прибора - стрелочный или градусник */
+static uint_fast8_t global_smetertype = 1;	/* выбор внешнего вида прибора - стрелочный или градусник */
 
 //#define WIDEFREQ (TUNE_TOP > 100000000L)
 
