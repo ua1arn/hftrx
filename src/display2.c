@@ -7265,10 +7265,12 @@ static void display2_wfl_init(
 
 #endif /* WITHSPECTRUMWF && ! LCDMODE_HD44780 && ! LCDMODE_DUMMY */
 
+#if WITHSHOWSWRPWR
 uint_fast8_t display2_getswrmax(void)
 {
 	return SWRMAX;
 }
+#endif /* WITHSHOWSWRPWR */
 
 #define STMD 1
 
