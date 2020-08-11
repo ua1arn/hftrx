@@ -303,16 +303,17 @@ hwacc_fillrect_u8(
 
 	const unsigned t = GXADJ(dx) - w;
 	//buffer += (GXADJ(dx) * row) + col;
-	buffer = colmain_mem_at(buffer, dx, dy, col, row); // dest address
+	volatile uint8_t * tbuffer = colmain_mem_at(buffer, dx, dy, col, row); // dest address
 	while (h --)
 	{
 		//uint8_t * const startmem = buffer;
 
 		unsigned n = w;
 		while (n --)
-			* buffer ++ = color;
-		buffer += t;
+			* tbuffer ++ = color;
+		tbuffer += t;
 	}
+	arm_hardware_flush((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
 
 #endif
 }
@@ -438,14 +439,15 @@ hwacc_fillrect_u16(
 	// программная реализация
 	const unsigned t = GXADJ(dx) - w;
 	//buffer += (GXADJ(dx) * row) + col;
-	buffer = colmain_mem_at(buffer, dx, dy, col, row); // dest address
+	volatile uint16_t * tbuffer = colmain_mem_at(buffer, dx, dy, col, row); // dest address
 	while (h --)
 	{
 		unsigned n = w;
 		while (n --)
-			* buffer ++ = color;
-		buffer += t;
+			* tbuffer ++ = color;
+		tbuffer += t;
 	}
+	arm_hardware_flush((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
 
 #endif
 }
@@ -573,15 +575,15 @@ hwacc_fillrect_u24(
 
 	const unsigned t = GXADJ(dx) - w;
 	//buffer += (GXADJ(dx) * row) + col;
-	buffer = colmain_mem_at(buffer, dx, dy, col, row); // dest address
+	volatile PACKEDCOLORMAIN_T * tbuffer = colmain_mem_at(buffer, dx, dy, col, row); // dest address
 	while (h --)
 	{
 		//PACKEDCOLORMAIN_T * const startmem = buffer;
 
 		unsigned n = w;
 		while (n --)
-			* buffer ++ = color;
-		buffer += t;
+			* tbuffer ++ = color;
+		tbuffer += t;
 	}
 
 #endif
