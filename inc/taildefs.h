@@ -803,8 +803,8 @@ typedef enum
 
 	#define SPINLOCK_INIT { 0 }
 	#define SPINLOCK_INIT_EXEC 0
-	void spin_lock(spinlock_t *lock);
-	void spin_unlock(spinlock_t *lock);
+	void spin_lock(volatile spinlock_t *lock);
+	void spin_unlock(volatile spinlock_t *lock);
 
 #else /* WITHSMPSYSTEM */
 	/* Единственный процесор. */
@@ -815,7 +815,9 @@ typedef enum
 
 	#define SPINLOCK_INIT { 0 }
 	#define SPINLOCK_INIT_EXEC 0
-	#define SPINLOCK_t uint_fast8_t
+	typedef struct spinlock_tag {
+		volatile uint32_t lock;
+	} spinlock_t;
 	#define SPIN_LOCK(p) do { (void) p; } while (0)
 	#define SPIN_UNLOCK(p) do { (void) p; } while (0)
 

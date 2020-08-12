@@ -13217,7 +13217,7 @@ static void vectors_relocate(void)
 #if CPUSTYLE_ARM && WITHSMPSYSTEM
 
 // http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dai0321a/BIHEJCHB.html
-void spin_lock(spinlock_t *p)
+void spin_lock(volatile spinlock_t *p)
 {
 	// Note: __LDREXW and __STREXW are CMSIS functions
 	int status = 0;
@@ -13233,7 +13233,7 @@ void spin_lock(spinlock_t *p)
 
 }
 
-void spin_unlock(spinlock_t *p)
+void spin_unlock(volatile spinlock_t *p)
 {
 	// Note: __LDREXW and __STREXW are CMSIS functions
 	__DMB(); // Ensure memory operations completed before

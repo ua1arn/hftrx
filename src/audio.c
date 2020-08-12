@@ -1551,7 +1551,7 @@ agc_perform(const volatile agcparams_t * agcp, volatile agcstate_t * st, FLOAT_t
 	SPIN_UNLOCK(& st->lock);
 }
 
-static FLOAT_t agc_result_slow(const volatile agcstate_t * st)
+static FLOAT_t agc_result_slow(volatile agcstate_t * st)
 {
 	SPIN_LOCK(& st->lock);
 	const FLOAT_t v = FMAXF(st->agcfastcap, st->agcslowcap);	// разница после ИЛИ
@@ -1560,7 +1560,7 @@ static FLOAT_t agc_result_slow(const volatile agcstate_t * st)
 	return v;
 }
 
-static FLOAT_t agc_result_fast(const volatile agcstate_t * st)
+static FLOAT_t agc_result_fast(volatile agcstate_t * st)
 {
 	SPIN_LOCK(& st->lock);
 	const FLOAT_t v = st->agcfastcap;
@@ -3230,7 +3230,7 @@ static RAMDTCM FLOAT_t agclogof10 = 1;
 	
 static void agc_state_initialize(volatile agcstate_t * st, const volatile agcparams_t * agcp)
 {
-	st->lock = SPINLOCK_INIT_EXEC;
+	st->lock.lock = SPINLOCK_INIT_EXEC;
 	const FLOAT_t f0 = agcp->levelfence;
 	const FLOAT_t m0 = agcp->mininput;
 	const FLOAT_t siglevel = 0;
@@ -3482,7 +3482,7 @@ static FLOAT_t agc_forvard_getstreigthlog10(
 	)
 {
 	volatile agcparams_t * const agcp = & rxsmeterparams;
-	volatile const agcstate_t * const st = & rxsmeterstate [pathi];
+	volatile agcstate_t * const st = & rxsmeterstate [pathi];
 
 	const FLOAT_t fltstrengthfast = agc_result_fast(st);	// измеритель уровня сигнала
 	const FLOAT_t fltstrengthslow = agc_result_slow(st);	// измеритель уровня сигнала
