@@ -7256,8 +7256,7 @@ USBD_StatusTypeDef  USBD_StdItfReq(USBD_HandleTypeDef *pdev, USBD_SetupReqTypede
 			else
 			{
 #if CPUSTYLE_R7S721
-				// FIXME:
-				// Hack code!!!!
+				// FIXME: Hack code!!!!
 				if ((req->bmRequest & USB_REQ_TYPE_DIR) == 0)
 				{
 					((PCD_HandleTypeDef *) pdev->pData)->run_later_ctrl_comp = 1;
