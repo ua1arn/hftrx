@@ -470,4 +470,16 @@
 		#define IF3_FHAVE (IF3_FMASK_2P7 | IF3_FMASK_0P5)
 	#endif
 
+	/* коды входов коммутатора источников сигнала для УНЧ приёмника */
+	#define BOARD_DETECTOR_MUTE 0
+	#define BOARD_DETECTOR_SSB 	0
+	#define BOARD_DETECTOR_AM 	0
+	#define BOARD_DETECTOR_FM 	0
+	#define BOARD_DETECTOR_TUNE 0x00	/* конфигурация платы для режима TUNE (CWZ на передачу) */
+	/* коды фильтров второй ПЧ, выдаваемые на дешифраторы */
+	#define	BOARD_FILTERCODE_0	0
+	#define	BOARD_FILTERCODE_1	0
+	#define	BOARD_FILTERCODE_2	0
+	#define	BOARD_FILTERCODE_3	0
+
 #endif /* ARM_STM32F4XX_TQFP144_CPUSTYLE_32F429DISCO_H_INCLUDED */

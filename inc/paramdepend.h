@@ -2039,26 +2039,6 @@ extern "C" {
 	#define	BOARD_AGCCODE_ON		0x00
 	#define	BOARD_AGCCODE_OFF		0x01
 
-#elif CTLREGMODE24_UA3DKC
-
-	#define WITHPREAMPATT2_10DB		1	// Управление УВЧ и двухкаскадным аттенюатором
-	#define WITHAGCMODEONOFF	1	// АРУ вкл/выкл
-	/* коды входов коммутатора источников сигнала для УНЧ приёмника */
-	#define BOARD_DETECTOR_MUTE 0x02
-	#define BOARD_DETECTOR_SSB 0x00
-	#define BOARD_DETECTOR_AM 0x01
-	#define BOARD_DETECTOR_FM 0x03
-	#define BOARD_DETECTOR_TUNE 0x00	/* конфигурация платы для режима TUNE (CWZ на передачу) */
-
-	/* коды фильтров второй ПЧ, выдаваемые на дешифраторы */
-	#define	BOARD_FILTERCODE_0	0x00
-	#define	BOARD_FILTERCODE_1	0x01
-	#define	BOARD_FILTERCODE_2	0x02
-	#define	BOARD_FILTERCODE_3	0x03
-
-	#define	BOARD_AGCCODE_ON	0x00
-	#define	BOARD_AGCCODE_OFF	0x01
-
 #elif CTLREGMODE_V8A			// воронёнок
 
 	/* коды входов коммутатора источников сигнала для УНЧ приёмника */
@@ -2096,21 +2076,6 @@ extern "C" {
 		#define WITHAGCMODE5STAGES	1	// 4 скорости и выключенно
 	#endif /* WITHIF4DSP */
 
-#elif CTLSTYLE_V5
-
-	#define WITHPREAMPATT2_10DB		1	// Управление УВЧ и двухкаскадным аттенюатором
-
-	#define	BOARD_AGCCODE_0		0x00
-	#define	BOARD_AGCCODE_1		0x01
-	#define	BOARD_AGCCODE_2		0x02
-	#define	BOARD_AGCCODE_3		0x04
-	#define	BOARD_AGCCODE_OFF	0x08
-
-	#define	BOARD_AGCCODE_FAST	BOARD_AGCCODE_0
-	#define	BOARD_AGCCODE_MED	BOARD_AGCCODE_1
-	#define	BOARD_AGCCODE_SLOW	BOARD_AGCCODE_2
-	#define	BOARD_AGCCODE_LONG	BOARD_AGCCODE_3
-
 #elif (ATMEGA_CTLSTYLE_V7_H_INCLUDED || ARM_CTLSTYLE_V7_H_INCLUDED || ARM_CTLSTYLE_V7A_H_INCLUDED)
 
 	#define WITHPREAMPATT2_10DB		1	// Управление УВЧ и двухкаскадным аттенюатором
@@ -2126,20 +2091,6 @@ extern "C" {
 	#define	BOARD_AGCCODE_MED	BOARD_AGCCODE_1
 	#define	BOARD_AGCCODE_SLOW	BOARD_AGCCODE_2
 	#define	BOARD_AGCCODE_LONG	BOARD_AGCCODE_3
-
-#elif CTLREGSTYLE_DISCO32
-
-	/* коды входов коммутатора источников сигнала для УНЧ приёмника */
-	#define BOARD_DETECTOR_MUTE 0
-	#define BOARD_DETECTOR_SSB 	0
-	#define BOARD_DETECTOR_AM 	0
-	#define BOARD_DETECTOR_FM 	0
-	#define BOARD_DETECTOR_TUNE 0x00	/* конфигурация платы для режима TUNE (CWZ на передачу) */
-	/* коды фильтров второй ПЧ, выдаваемые на дешифраторы */
-	#define	BOARD_FILTERCODE_0	0
-	#define	BOARD_FILTERCODE_1	0
-	#define	BOARD_FILTERCODE_2	0
-	#define	BOARD_FILTERCODE_3	0
 
 #elif CTLREGMODE_NOCTLREG			// Отсутствующий регистр управления
 

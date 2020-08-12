@@ -147,7 +147,7 @@
 
 #define BOARD_FILTER_15P0_NFM		0x00	/* TODO: проверить, что надо для включения отдельного фильтра для ЧМ */
 
-	#define WITHAGCMODE5STAGES	1	// 4 скорости и выключенно 
+	#define WITHAGCMODE5STAGES	1	// 4 скорости и выключенно
 
 #if FQMODEL_64455_IF0P5 || FQMODEL_73050_IF0P5
 	//#define WITHMODESETFULL 1
@@ -197,5 +197,18 @@ enum
 #if KEYBOARD_USE_ADC
 	#define KI_COUNT 3	// количество используемых под клавиатуру входов АЦП
 #endif
+
+	#define WITHPREAMPATT2_10DB		1	// Управление УВЧ и двухкаскадным аттенюатором
+
+	#define	BOARD_AGCCODE_0		0x00
+	#define	BOARD_AGCCODE_1		0x01
+	#define	BOARD_AGCCODE_2		0x02
+	#define	BOARD_AGCCODE_3		0x04
+	#define	BOARD_AGCCODE_OFF	0x08
+
+	#define	BOARD_AGCCODE_FAST	BOARD_AGCCODE_0
+	#define	BOARD_AGCCODE_MED	BOARD_AGCCODE_1
+	#define	BOARD_AGCCODE_SLOW	BOARD_AGCCODE_2
+	#define	BOARD_AGCCODE_LONG	BOARD_AGCCODE_3
 
 #endif /* ATMEGA_CTLSTYLE_V5_H_INCLUDED */

@@ -35,6 +35,24 @@
 		#define IF3_MODEL IF3_TYPE_8868
 		#define CTLREGMODE24_UA3DKC	1		/* управляющий регистр 24 бит - для синтезатора UA3DKC	*/
 
+		#define WITHPREAMPATT2_10DB		1	// Управление УВЧ и двухкаскадным аттенюатором
+		#define WITHAGCMODEONOFF	1	// АРУ вкл/выкл
+		/* коды входов коммутатора источников сигнала для УНЧ приёмника */
+		#define BOARD_DETECTOR_MUTE 0x02
+		#define BOARD_DETECTOR_SSB 0x00
+		#define BOARD_DETECTOR_AM 0x01
+		#define BOARD_DETECTOR_FM 0x03
+		#define BOARD_DETECTOR_TUNE 0x00	/* конфигурация платы для режима TUNE (CWZ на передачу) */
+
+		/* коды фильтров второй ПЧ, выдаваемые на дешифраторы */
+		#define	BOARD_FILTERCODE_0	0x00
+		#define	BOARD_FILTERCODE_1	0x01
+		#define	BOARD_FILTERCODE_2	0x02
+		#define	BOARD_FILTERCODE_3	0x03
+
+		#define	BOARD_AGCCODE_ON	0x00
+		#define	BOARD_AGCCODE_OFF	0x01
+
 		/* Версии частотных схем - с преобразованием "вниз" */
 		#define FQMODEL_TRX8M		1	// Первая низкая ПЧ 8 МГц, 6 МГц, 5.5 МГц и другие
 		//#define FQMODEL_TRX500K		1	// Первая (и единственна) ПЧ 500 кГц
@@ -50,6 +68,24 @@
 		#define IF3_MODEL IF3_TYPE_8868
 		#define CTLREGMODE24_UA3DKC	1		/* управляющий регистр 24 бит - для синтезатора UA3DKC	*/
 
+		#define WITHPREAMPATT2_10DB		1	// Управление УВЧ и двухкаскадным аттенюатором
+		#define WITHAGCMODEONOFF	1	// АРУ вкл/выкл
+		/* коды входов коммутатора источников сигнала для УНЧ приёмника */
+		#define BOARD_DETECTOR_MUTE 0x02
+		#define BOARD_DETECTOR_SSB 0x00
+		#define BOARD_DETECTOR_AM 0x01
+		#define BOARD_DETECTOR_FM 0x03
+		#define BOARD_DETECTOR_TUNE 0x00	/* конфигурация платы для режима TUNE (CWZ на передачу) */
+
+		/* коды фильтров второй ПЧ, выдаваемые на дешифраторы */
+		#define	BOARD_FILTERCODE_0	0x00
+		#define	BOARD_FILTERCODE_1	0x01
+		#define	BOARD_FILTERCODE_2	0x02
+		#define	BOARD_FILTERCODE_3	0x03
+
+		#define	BOARD_AGCCODE_ON	0x00
+		#define	BOARD_AGCCODE_OFF	0x01
+
 		/* Версии частотных схем - с преобразованием "вниз" */
 		#define FQMODEL_TRX8M		1	// Первая низкая ПЧ 8 МГц, 6 МГц, 5.5 МГц и другие
 		//#define FQMODEL_TRX500K		1	// Первая (и единственна) ПЧ 500 кГц
@@ -61,7 +97,25 @@
 		#define DIRECT_66M0_X1	1	// в трансивере с индикатором 16*2
 		#define LCDMODE_WH1602	1	/* тип применяемого индикатора 16*2 */
 		#define IF3_MODEL IF3_TYPE_9000
-		#define CTLREGMODE24_UA3DKC	1		/* управляющий регистр 24 бит - для синтезатора UA3DKC	*/
+		#defines CTLREGMODE24_UA3DKC	1		/* управляющий регистр 24 бит - для синтезатора UA3DKC	*/
+
+		#define WITHPREAMPATT2_10DB		1	// Управление УВЧ и двухкаскадным аттенюатором
+		#define WITHAGCMODEONOFF	1	// АРУ вкл/выкл
+		/* коды входов коммутатора источников сигнала для УНЧ приёмника */
+		#define BOARD_DETECTOR_MUTE 0x02
+		#define BOARD_DETECTOR_SSB 0x00
+		#define BOARD_DETECTOR_AM 0x01
+		#define BOARD_DETECTOR_FM 0x03
+		#define BOARD_DETECTOR_TUNE 0x00	/* конфигурация платы для режима TUNE (CWZ на передачу) */
+
+		/* коды фильтров второй ПЧ, выдаваемые на дешифраторы */
+		#define	BOARD_FILTERCODE_0	0x00
+		#define	BOARD_FILTERCODE_1	0x01
+		#define	BOARD_FILTERCODE_2	0x02
+		#define	BOARD_FILTERCODE_3	0x03
+
+		#define	BOARD_AGCCODE_ON	0x00
+		#define	BOARD_AGCCODE_OFF	0x01
 
 		/* Версии частотных схем - с преобразованием "вниз" */
 		#define FQMODEL_TRX8M		1	// Первая низкая ПЧ 8 МГц, 6 МГц, 5.5 МГц и другие
