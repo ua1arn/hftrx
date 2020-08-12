@@ -44,11 +44,20 @@
 		#define PLL1DIVR	2
 
 		// PLL2_1600
+#if 0
 		#define PLL2DIVM	2	// ref2_ck = 12 MHz
 		#define PLL2DIVN	44	// 528 MHz
-		#define PLL2DIVP	2	// AXISS_CK div2=minimum 528/2 = 264 MHz PLL2 selected as AXI sub-system clock (pll2_p_ck)
-		#define PLL2DIVQ	1	// GPU clock divider = 528 MHz
+		#define PLL2DIVP	2	// AXISS_CK div2=minimum 528/2 = 264 MHz PLL2 selected as AXI sub-system clock (pll2_p_ck) - 266 MHz max for all CPU revisions
+		#define PLL2DIVQ	1	// GPU clock divider = 528 MHz - 533 MHz max for all CPU revisions
 		#define PLL2DIVR	1	// DDR clock divider = 528 MHz
+#else
+		/* bad boards DDR3 clock = 198 MHz */
+		#define PLL2DIVM	2	// ref2_ck = 12 MHz
+		#define PLL2DIVN	44	// 528 MHz
+		#define PLL2DIVP	2	// AXISS_CK div2=minimum 528/2 = 264 MHz PLL2 selected as AXI sub-system clock (pll2_p_ck) - 266 MHz max for all CPU revisions
+		#define PLL2DIVQ	1	// GPU clock divider = 528 MHz - 533 MHz max for all CPU revisions
+		#define PLL2DIVR	3	// DDR clock divider = 528 MHz
+#endif
 
 		// PLL3_800
 
@@ -202,8 +211,8 @@
 	//#define LCDMODE_V0	1	/* Обычная конфигурация без PIP с L8 на основном экране */
 	//#define LCDMODE_V1A	1	/* Обычная конфигурация с PIP на часть экрана, MAIN=RGB565, PIP=RGB565 */
 
-	#define LCDMODE_LQ043T3DX02K 1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 4.3" display */
-	//#define LCDMODE_AT070TN90 1	/* AT070TN90 panel (800*480) - 7" display */
+	//#define LCDMODE_LQ043T3DX02K 1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 4.3" display */
+	#define LCDMODE_AT070TN90 1	/* AT070TN90 panel (800*480) - 7" display */
 	//#define LCDMODE_AT070TNA2 1	/* AT070TNA2 panel (1024*600) - 7" display */
 
 	//#define LCDMODE_WH2002	1	/* тип применяемого индикатора 20*2, возможно вместе с LCDMODE_HARD_SPI */
@@ -392,7 +401,7 @@
 	// +++ Эти строки можно отключать, уменьшая функциональность готового изделия
 	//#define WITHRFSG	1	/* включено управление ВЧ сигнал-генератором. */
 	#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
-	#if 0
+	#if 1
 		/* TUNER & PA board 2*RD16 by avbelnn@yandex.ru */
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
 		#define SHORTSET8	1
