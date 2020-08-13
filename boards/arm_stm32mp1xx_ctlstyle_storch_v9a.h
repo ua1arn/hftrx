@@ -56,7 +56,7 @@
 		#define PLL2DIVN	44	// 528 MHz
 		#define PLL2DIVP	2	// AXISS_CK div2=minimum 528/2 = 264 MHz PLL2 selected as AXI sub-system clock (pll2_p_ck) - 266 MHz max for all CPU revisions
 		#define PLL2DIVQ	1	// GPU clock divider = 528 MHz - 533 MHz max for all CPU revisions
-		#define PLL2DIVR	3	// DDR clock divider = 528 MHz
+		#define PLL2DIVR	4	// DDR clock divider = 528 MHz
 #endif
 
 		// PLL3_800
