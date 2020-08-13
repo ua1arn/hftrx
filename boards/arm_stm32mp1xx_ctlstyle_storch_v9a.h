@@ -195,6 +195,7 @@
 	// --- Особые варианты расположения кнопок на клавиатуре
 	#define WITHSPLIT	1	/* управление режимами расстройки одной кнопкой */
 	//#define WITHSPLITEX	1	/* Трехкнопочное управление режимами расстройки */
+	//#define WITHSMPSYSTEM	1	/* разрешение поддержки SMP, Symmetric Multiprocessing */
 
 #if WITHISBOOTLOADER
 	#define LCDMODE_DUMMY	1
@@ -276,7 +277,6 @@
 	#define DDS1_CLK_DIV	1		/* Делитель опорной частоты перед подачей в DDS1 */
 	#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
 	//#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
-	//#define WITHSMPSYSTEM	1	/* разрешение поддержки SMP, Symmetric Multiprocessing */
 
 #else /* WITHISBOOTLOADER */
 
@@ -321,7 +321,6 @@
 
 	#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
 	#define WITHINTEGRATEDDSP		1	/* в программу включена инициализация и запуск DSP части. */
-	//#define WITHSMPSYSTEM	1	/* разрешение поддержки SMP, Symmetric Multiprocessing */
 
 	#define WITHIF4DSP	1			/*  "Дятел" */
 	#define WITHIFDACWIDTH	32		// 1 бит знак и 31 бит значащих
