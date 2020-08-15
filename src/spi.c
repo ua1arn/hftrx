@@ -846,7 +846,8 @@ static void spidf_write(const uint8_t * buff, uint_fast32_t size)
 {
 	while (size --)
 	{
-		while ((QUADSPI->SR & QUADSPI_SR_FLEVEL_Msk) == QUADSPI_SR_FLEVEL_Msk)
+		/* 16 means "FIFO full" */
+		while (((QUADSPI->SR & QUADSPI_SR_FLEVEL_Msk) >> QUADSPI_SR_FLEVEL_Pos) == 16)
 			;
 		* (volatile uint8_t *) & QUADSPI->DR = * buff ++;
 	}
