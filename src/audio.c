@@ -3696,7 +3696,7 @@ static RAMFUNC FLOAT_t preparevi(
 
 	case DSPCTL_MODE_TX_CW:
 		savemoni16stereo(0, 0);
-		return 0;	//txlevelfenceCW;	// постоянная составляющая с максимальным уровнем
+		return txlevelfenceCW;	// постоянная составляющая с максимальным уровнем
 
 	case DSPCTL_MODE_TX_DIGI:
 	case DSPCTL_MODE_TX_SSB:
@@ -3751,6 +3751,7 @@ static RAMFUNC FLOAT_t preparevi(
 		}
 	}
 	// В режиме приёма или bypass ничего не делаем.
+	savemoni16stereo(0, 0);
 	return 0;
 }
 
@@ -3774,6 +3775,7 @@ static RAMFUNC FLOAT32P_t baseband_modulator(
 #if WITHMODEM
 	case DSPCTL_MODE_TX_BPSK:
 		{
+			// add done inside processafadcsampleiq
 			const FLOAT32P_t vfb = scalepair(modem_get_tx_iq(getTxShapeNotComplete()), txlevelfenceBPSK * shape);
 	#if WITHMODEMIQLOOPBACK
 			modem_demod_iq(vfb);	// debug loopback
@@ -3783,12 +3785,6 @@ static RAMFUNC FLOAT32P_t baseband_modulator(
 #endif /* WITHMODEM */
 
 	case DSPCTL_MODE_TX_CW:
-		{
-			// vi - audio sample in range [- txlevelfence.. + txlevelfence]
-			const FLOAT32P_t vfb = scalepair(get_float_aflo_delta(0, pathi), txlevelfenceCW * shape);
-			return vfb;
-		}
-
 	case DSPCTL_MODE_TX_DIGI:
 	case DSPCTL_MODE_TX_SSB:
 	case DSPCTL_MODE_TX_FREEDV:
