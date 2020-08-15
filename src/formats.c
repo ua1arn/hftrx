@@ -40,7 +40,7 @@ static size_t
 safestrlen(register const char * s, size_t len)
 {
 	size_t n;
-
+	ASSERT(s != 0);
 	for (n = 0; n < len && * s != '\0'; ++ n, ++ s)
 		;
 	return n;
