@@ -313,7 +313,6 @@ hwacc_fillrect_u8(
 			* tbuffer ++ = color;
 		tbuffer += t;
 	}
-	arm_hardware_flush((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
 
 #endif
 }
@@ -447,7 +446,6 @@ hwacc_fillrect_u16(
 			* tbuffer ++ = color;
 		tbuffer += t;
 	}
-	arm_hardware_flush((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
 
 #endif
 }
