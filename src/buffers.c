@@ -206,8 +206,10 @@ int_fast32_t buffers_dmabuffer16cachesize(void)
 // I/Q data to FPGA or IF CODEC
 typedef ALIGNX_BEGIN struct voices32tx_tag
 {
+	void * tag2;
 	ALIGNX_BEGIN int32_t buff [DMABUFFSIZE32TX] ALIGNX_END;
 	ALIGNX_BEGIN LIST_ENTRY item ALIGNX_END;
+	void * tag3;
 } ALIGNX_END voice32tx_t;
 
 int_fast32_t buffers_dmabuffer32txcachesize(void)
@@ -387,7 +389,7 @@ static RAMDTCM SPINLOCK_t locklist8 = SPINLOCK_INIT;
 #if WITHBUFFERSDEBUG
 
 static volatile unsigned n1, n1wfm, n2, n3, n4, n5, n6;
-static volatile unsigned e1, e2, e3, e4, e5, e6, e7, purge16;
+static volatile unsigned e1, e2, e3, e4, e5, e6, e7, e8, purge16;
 static volatile unsigned nbadd, nbdel, nbzero;
 
 static volatile unsigned debugcount_ms10;	// с точностью 0.1 ms
@@ -440,10 +442,14 @@ void buffers_diagnostics(void)
 
 	LIST2PRINT(speexfree16);
 	LIST2PRINT(speexready16);
+	LIST2PRINT(voicesfree32tx);
+	LIST2PRINT(voicesready32tx);
+	debug_printf_P(PSTR("\n"));
 	LIST2PRINT(voicesfree16);
 	LIST3PRINT(voicesmike16);
 	LIST2PRINT(voicesphones16);
 	LIST2PRINT(voicesmoni16);
+	debug_printf_P(PSTR("\n"));
 
 	#if WITHUSBUACIN
 		#if WITHRTS192
@@ -467,8 +473,8 @@ void buffers_diagnostics(void)
 #endif
 
 #if 1 && WITHDEBUG && WITHINTEGRATEDDSP && WITHBUFFERSDEBUG
-	debug_printf_P(PSTR("n1=%u n1wfm=%u n2=%u n3=%u n4=%u n5=%u n6=%u\n"), n1, n1wfm, n2, n3, n4, n5, n6);
-	debug_printf_P(PSTR("e1=%u e2=%u e3=%u e4=%u e5=%u e6=%u e7=%u uacinalt=%d, purge16=%u\n"), e1, e2, e3, e4, e5, e6, e7, uacinalt, purge16);
+	debug_printf_P(PSTR("n1=%u n1wfm=%u n2=%u n3=%u n4=%u n5=%u n6=%u uacinalt=%d, purge16=%u\n"), n1, n1wfm, n2, n3, n4, n5, n6, uacinalt, purge16);
+	debug_printf_P(PSTR("e1=%u e2=%u e3=%u e4=%u e5=%u e6=%u e7=%u e8=%u\n"), e1, e2, e3, e4, e5, e6, e7, e8);
 
 	{
 		const unsigned ms10 = getresetval(& debugcount_ms10);
@@ -481,7 +487,7 @@ void buffers_diagnostics(void)
 		const unsigned tx32dac = getresetval(& debugcount_tx32dac);
 		const unsigned uacin = getresetval(& debugcount_uacin);
 
-		debug_printf_P(PSTR("uacout=%u, uacin=%u, mikeadc=%u, phonesdac=%u, rtsadc=%u rx32adc=%u rx32wfm=%u tx32dac=%u\n"), 
+		debug_printf_P(PSTR("FREQ: uacout=%u, uacin=%u, mikeadc=%u, phonesdac=%u, rtsadc=%u, rx32adc=%u, rx32wfm=%u, tx32dac=%u\n"),
 			uacout * 10000 / ms10, 
 			uacin * 10000 / ms10, 
 			mikeadc * 10000 / ms10, 
@@ -496,7 +502,6 @@ void buffers_diagnostics(void)
 }
 
 static RAMDTCM SPINLOCK_t locklist16 = SPINLOCK_INIT;
-static RAMDTCM SPINLOCK_t locklist16ststem = SPINLOCK_INIT;
 static RAMDTCM SPINLOCK_t locklist32 = SPINLOCK_INIT;
 
 #if WITHINTEGRATEDDSP
@@ -703,13 +708,15 @@ void buffers_initialize(void)
 
 #endif /* WITHUSBUACIN */
 
-	static ALIGNX_BEGIN RAM_D2 voice32tx_t voicesarray32tx [(DMABUFFSIZE32RX / DMABUFSTEP32RX) / (DMABUFFSIZE32TX / DMABUFSTEP32TX) + 4] ALIGNX_END;
+	static ALIGNX_BEGIN RAM_D2 voice32tx_t voicesarray32tx [6] ALIGNX_END;
 
 	InitializeListHead2(& voicesready32tx);	// список для выдачи на ЦАП
 	InitializeListHead2(& voicesfree32tx);	// Незаполненные
 	for (i = 0; i < (sizeof voicesarray32tx / sizeof voicesarray32tx [0]); ++ i)
 	{
 		voice32tx_t * const p = & voicesarray32tx [i];
+		p->tag2 = p;
+		p->tag3 = p;
 		InsertHeadList2(& voicesfree32tx, & p->item);
 	}
 
@@ -764,7 +771,7 @@ void buffers_initialize(void)
 	}
 #endif /* WITHMODEM */
 
-	static RAMDTCM denoise16_t speexarray16 [6];
+	static RAMDTCM denoise16_t speexarray16 [8];
 
 	InitializeListHead2(& speexfree16);	// Незаполненные
 	InitializeListHead2(& speexready16);	// Для обработки
@@ -1729,6 +1736,8 @@ RAMFUNC uintptr_t allocate_dmabuffer32tx(void)
 		PLIST_ENTRY t = RemoveTailList2(& voicesfree32tx);
 		voice32tx_t * const p = CONTAINING_RECORD(t, voice32tx_t, item);
 		SPIN_UNLOCK(& locklist32);
+		ASSERT(p->tag2 == p);
+		ASSERT(p->tag3 == p);
 		return (uintptr_t) & p->buff;
 	}
 	else if (! IsListEmpty2(& voicesready32tx))
@@ -1747,14 +1756,17 @@ RAMFUNC uintptr_t allocate_dmabuffer32tx(void)
 		PLIST_ENTRY t = RemoveTailList2(& voicesfree32tx);
 		voice32tx_t * const p = CONTAINING_RECORD(t, voice32tx_t, item);
 		SPIN_UNLOCK(& locklist32);
+		ASSERT(p->tag2 == p);
+		ASSERT(p->tag3 == p);
+#if WITHBUFFERSDEBUG
+		++ e8;
+#endif /* WITHBUFFERSDEBUG */
 		return (uintptr_t) & p->buff;
 	}
-	else
-	{
-		debug_printf_P(PSTR("allocate_dmabuffer32tx() failure\n"));
-		for (;;)
-			;
-	}
+	/* error path */
+	debug_printf_P(PSTR("allocate_dmabuffer32tx() failure\n"));
+	for (;;)
+		;
 	SPIN_UNLOCK(& locklist32);
 }
 
@@ -1858,6 +1870,8 @@ void RAMFUNC release_dmabuffer32tx(uintptr_t addr)
 	ASSERT(addr != 0);
 	SPIN_LOCK(& locklist32);
 	voice32tx_t * const p = CONTAINING_RECORD(addr, voice32tx_t, buff);
+	ASSERT(p->tag2 == p);
+	ASSERT(p->tag3 == p);
 	InsertHeadList2(& voicesfree32tx, & p->item);
 	SPIN_UNLOCK(& locklist32);
 }
