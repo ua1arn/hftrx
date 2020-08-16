@@ -20098,7 +20098,7 @@ void bootloader_detach(uintptr_t ip)
 	GIC_DisableDistributor();
 
 	unsigned i;
-	for (i = 0; i < 1020; ++ i)
+	for (i = 32; i < 1020; ++ i)
 		IRQ_Disable(i);
 #endif
 
