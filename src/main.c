@@ -5706,8 +5706,6 @@ enum
 	RJ_notused
 };
 
-#if WITHENCODER2
-
 struct enc2menu
 {
 	char label [10];
@@ -5816,6 +5814,8 @@ enc2menu_adjust(
 		enc2savemenuvalue(mp);
 	}
 }
+
+#if WITHENCODER2
 
 static const FLASHMEM struct enc2menu enc2menus [] =
 {
