@@ -9475,6 +9475,7 @@ lowlevel_stm32l0xx_pll_clock(void)
 void Undef_Handler(void)
 {
 	dbg_puts_impl_P(PSTR("UndefHandler trapped.\n"));
+	dbg_puts_impl_P((__get_MPIDR() & 0x03) ? PSTR("CPUID=1\n") : PSTR("CPUID=0\n"));
 	for (;;)
 		;
 }
@@ -9482,6 +9483,7 @@ void Undef_Handler(void)
 void SWI_Handler(void)
 {
 	dbg_puts_impl_P(PSTR("SWIHandler trapped.\n"));
+	dbg_puts_impl_P((__get_MPIDR() & 0x03) ? PSTR("CPUID=1\n") : PSTR("CPUID=0\n"));
 	for (;;)
 		;
 }
@@ -9490,6 +9492,7 @@ void SWI_Handler(void)
 void PAbort_Handler(void)
 {
 	dbg_puts_impl_P(PSTR("PAbortHandler trapped.\n"));
+	dbg_puts_impl_P((__get_MPIDR() & 0x03) ? PSTR("CPUID=1\n") : PSTR("CPUID=0\n"));
 	for (;;)
 		;
 }
@@ -9512,6 +9515,7 @@ void DAbort_Handler(void)
 {
 	const volatile uint32_t marker = 0xDEADBEEF;
 	dbg_puts_impl_P(PSTR("DAbort_Handler trapped.\n"));
+	dbg_puts_impl_P((__get_MPIDR() & 0x03) ? PSTR("CPUID=1\n") : PSTR("CPUID=0\n"));
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Warray-bounds"
 	debug_printf_P(PSTR("DFSR=%08lX, DFAR=%08lX, pc=%08lX\n"), __get_DFSR(),__get_DFAR(), (& marker) [2]);
@@ -9567,6 +9571,7 @@ void DAbort_Handler(void)
 void FIQ_Handler(void)
 {
 	dbg_puts_impl_P(PSTR("FIQHandler trapped.\n"));
+	dbg_puts_impl_P((__get_MPIDR() & 0x03) ? PSTR("CPUID=1\n") : PSTR("CPUID=0\n"));
 	for (;;)
 		;
 }
@@ -9574,6 +9579,7 @@ void FIQ_Handler(void)
 void Hyp_Handler(void)
 {
 	dbg_puts_impl_P(PSTR("Hyp_Handler trapped.\n"));
+	dbg_puts_impl_P((__get_MPIDR() & 0x03) ? PSTR("CPUID=1\n") : PSTR("CPUID=0\n"));
 	for (;;)
 		;
 }
