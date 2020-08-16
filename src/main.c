@@ -20094,10 +20094,12 @@ void bootloader_detach(uintptr_t ip)
 
 
 #if (__GIC_PRESENT == 1)
-	GIC_DisableInterface();
-	GIC_DisableDistributor();
+	// keep enabled foe CPU1 start
+	//GIC_DisableInterface();
+	//GIC_DisableDistributor();
 
 	unsigned i;
+	// 32 - skip SGI handlers (keep enabled foe CPU1 start).
 	for (i = 32; i < 1020; ++ i)
 		IRQ_Disable(i);
 #endif
