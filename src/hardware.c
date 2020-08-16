@@ -12473,7 +12473,7 @@ cpu_tms320f2833x_flash_waitstates(uint_fast8_t flashws, uint_fast8_t otpws)
  * mpidr determines the CPU to be turned on.
  * call by core 0 to activate core 1
  ******************************************************************************/
-static void stm32_pwr_domain_on(void)
+static void stm32_cpu1_start(void)
 {
 	PWR->CR1 |= PWR_CR1_DBP;	// 1: Write access to RTC and backup domain registers enabled.
 	(void) PWR->CR1;
@@ -12503,6 +12503,8 @@ static void stm32_pwr_domain_on(void)
 	while ((PWR->CR1 & PWR_CR1_DBP) != 0)
 		;
 
+	arm_hardware_flush_all();	// startup code should be copyed in to sysram for example.
+
 	/* Generate an IT to core 1 */
 	GIC_SendSGI(SGI8_IRQn, 0x01 << 1, 0x00);	// CPU1, filer=0
 }
@@ -12527,7 +12529,7 @@ void cpu_initialize(void)
 #if WITHSMPSYSTEM
 
 	//	SMP tests
-	stm32_pwr_domain_on();
+	stm32_cpu1_start();
 	local_delay_ms(400);
 	printcpustate();
 #endif /* WITHSMPSYSTEM */
