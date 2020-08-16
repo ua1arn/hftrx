@@ -74,7 +74,8 @@ void board_set_opowerlevel(uint_fast8_t n);	/* установить выходн
 
 void board_set_att(uint_fast8_t v);
 void board_set_antenna(uint_fast8_t v);
-void board_set_agc(uint_fast8_t n);
+void board_set_boardagc(uint_fast8_t n);
+void board_set_dspagc(uint_fast8_t n);
 void board_set_sleep(uint_fast8_t v);	/* перевести в режим минимального потребления */
 
 void board_set_maxlabdac(uint_fast16_t n);	/* значение на выходе ЦАП для увода частоты опорного генератора PLL */
@@ -91,7 +92,7 @@ void board_set_bandf3(uint_fast8_t n);	/* управление через раз
 void board_set_bcdfreq100k(uint_fast16_t bcdfreq);	/* Для выбора диапазона - частота с дискретностью 100 кГц */
 void board_set_pabias(uint_fast8_t n);	/* установить ток покоя выходного каскада передатчика */
 void board_set_bandfonhpf(uint_fast8_t n);	/* установить код выбора диапазонного фильтра, с которого включается ФВЧ перед УВЧ в SW20xx */
-void board_set_bandfonuhf(uint_fast8_t n);	/* Установить код диапазонного фильтра, на котором вкдючать UHF */
+void board_set_bandfonuhf(uint_fast8_t n);	/* Установить код диапазонного фильтра, на котором включать UHF */
 void board_set_if4lsb(uint_fast8_t v);	/* требуется для приемников прямого преобразования */
 //void board_set_fltsofter(uint_fast8_t n);/* Код управления сглаживанием скатов фильтра основной селекции на приёме */
 void board_set_narrow(uint_fast8_t v);	/* установка режима према телеграфа (НЧ) */
@@ -111,8 +112,9 @@ void board_set_dither(uint_fast8_t v);	/* управление зашумлен�
 void board_set_adcrand(uint_fast8_t v);	/* управление интерфейсом в LTC2208 */
 void board_set_dacscale(uint_fast8_t n);	/* Использование амплитуды сигнала с ЦАП передатчика - 0..100% */
 void board_set_gdigiscale(uint_fast16_t n);	/* Увеличение усиления при передаче в цифровых режимах 100..300% */
+void board_set_cwscale(uint_fast16_t n);	/* Уменьшение усиления при передаче в CW режимах 50..100% */
 void board_set_dac1(uint_fast8_t n);	/* подстройка опорного генератора */
-void board_set_bglight(uint_fast8_t n);	/* Включение подсветки дисплея */
+void board_set_bglight(uint_fast8_t dispoff, uint_fast8_t dispbright);	/* Включение подсветки дисплея */
 void board_set_kblight(uint_fast8_t v);	/* Включение подсветки клавиатуры */
 void board_set_poweron(uint_fast8_t v);	/* Включение удерхания схемы питания */
 void board_set_blfreq(uint_fast32_t n);	/* установка делителя для формирования рабочей частоты преобразователя подсветки */
@@ -144,6 +146,7 @@ void prog_dac1_a_value(uint_fast8_t v);
 void prog_dac1_b_value(uint_fast8_t v);
 void board_set_affilter(uint_fast8_t v);
 void board_set_loudspeaker(uint_fast8_t v);
+void board_set_dsploudspeaker(uint_fast8_t v);
 void board_set_digigainmax(uint_fast8_t v);		/* диапазон ручной регулировки цифрового усиления - максимальное значение */
 void board_set_gainnfmrx(int_fast16_t n);	/* дополнительное усиление по НЧ в режиме приёма NFM */
 void board_set_gvad605(uint_fast8_t v);		/* напряжение на AD605 (управление усилением тракта ПЧ */

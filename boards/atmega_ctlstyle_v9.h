@@ -189,12 +189,25 @@
 		PWRI = 0,		// Индикатор мощности передатчика
 		FWD = 4, REF = 5,	// SWR-meter
 	#endif
+
+		XTHERMOMRRIX = BOARD_ADCMRRIN(0),	// кеш - индекc не должен повторяться в конфигурации
+		PASENSEMRRIX = BOARD_ADCMRRIN(1),	// кеш - индекc не должен повторяться в конфигурации
+		REFMRRIX = BOARD_ADCMRRIN(2),
+		FWDMRRIX = BOARD_ADCMRRIN(3),
+		PWRMRRIX = FWDMRRIX,
+		VOLTMRRIX = BOARD_ADCMRRIN(4),	// кеш - индекc не должен повторяться в конфигурации
+		PASENSEMRRIX2 = BOARD_ADCMRRIN(5),		// кеш - индекc не должен повторяться в конфигурации
+		PAREFERMRRIX2 = BOARD_ADCMRRIN(6),		// кеш - индекc не должен повторяться в конфигурации
+
 		/* KI0 = 5, */ KI0 = 6, KI1 = 7	// клавиатура
 	};
 
 	#define KI_COUNT 2	// количество используемых под клавиатуру входов АЦП
 
 
-
+	#define WITHPOWERTRIMMAX 100	/* stub */
+	#define BOARD_NOTCH_OFF 0	/* stub */
+	#define BOARD_NOTCH_AUTO 1	/* stub */
+	#define BOARD_NOTCH_MANUAL 2	/* stub */
 
 #endif /* ATMEGA_CTLSTYLE_V9_H_INCLUDED */

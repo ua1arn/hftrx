@@ -11,9 +11,9 @@
 #ifndef ARM_STM32H7XX_TQFP176_CTLSTYLE_STORCH_V7_NO_RADIO_H_INCLUDED
 #define ARM_STM32H7XX_TQFP176_CTLSTYLE_STORCH_V7_NO_RADIO_H_INCLUDED 1
 
-	#if ! defined(STM32H743xx)
-		#error Wrong CPU selected. STM32H743xx expected
-	#endif /* ! defined(STM32F767xx) */
+	#if ! defined(STM32H743xx) && ! defined(STM32H745xx)
+		#error Wrong CPU selected. STM32H743xx or STM32H745xx expected
+	#endif /* ! defined(STM32H743xx) && ! defined(STM32H745xx) */
 
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */
 	#define WITHI2SCLOCKFROMPIN 1	// тактовая частота на SPI2 (I2S) подается с внешнего генератора, в процессор вводится через MCK сигнал интерфейса
@@ -134,7 +134,7 @@
 	#define WITHPOWERTRIM		1	// Имеется управление мощностью
 	#define WITHPOWERTRIMMIN	5	// Нижний предел регулировки (показываемый на дисплее)
 	#define WITHPOWERTRIMMAX	100	// Верхний предел регулировки (показываемый на дисплее)
-	#define WITHPOWERTRIMATU	50	// Значение для работы автотюнера
+	#define WITHPOWERTRIMATU	15	// Значение для работы автотюнера
 
 	//#define WITHPABIASTRIM		1	// имеется управление током оконечного каскада усидителя мощности передатчика
 	#define WITHPABIASMIN		0
@@ -492,10 +492,23 @@
 		FWD = 14, REF = 15,	// PC5	SWR-meter
 		PWRI = FWD,			// PC4
 	#endif /* WITHSWRMTR */
+
+		XTHERMOMRRIX = BOARD_ADCMRRIN(0),	// кеш - индекc не должен повторяться в конфигурации
+		PASENSEMRRIX = BOARD_ADCMRRIN(1),	// кеш - индекc не должен повторяться в конфигурации
+		REFMRRIX = BOARD_ADCMRRIN(2),
+		FWDMRRIX = BOARD_ADCMRRIN(3),
+		PWRMRRIX = FWDMRRIX,
+		VOLTMRRIX = BOARD_ADCMRRIN(4),	// кеш - индекc не должен повторяться в конфигурации
+		PASENSEMRRIX2 = BOARD_ADCMRRIN(5),		// кеш - индекc не должен повторяться в конфигурации
+		PAREFERMRRIX2 = BOARD_ADCMRRIN(6),		// кеш - индекc не должен повторяться в конфигурации
+
 		KI0 = 10, KI1 = 11, KI2 = 12, KI3 = 0, KI4 = 1	// клавиатура
 	};
 
 	#define KI_COUNT 5	// количество используемых под клавиатуру входов АЦП
 	#define KI_LIST	KI4, KI3, KI2, KI1, KI0,	// инициализаторы для функции перекодировки
+
+	#define BOARD_NOTCH_OFF		0	// stub
+	#define BOARD_NOTCH_MANUAL	1	// stub
 
 #endif /* ARM_STM32H7XX_TQFP176_CTLSTYLE_STORCH_V7_NO_RADIO_H_INCLUDED */

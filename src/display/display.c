@@ -13,6 +13,7 @@
 #include "display.h"
 #include "formats.h"
 #include "spi.h"	// hardware_spi_master_send_frame
+#include "display2.h"
 #include <string.h>
 
 #if LCDMODE_LTDC
@@ -23,7 +24,7 @@
 //#include "./byte2crun.h"
 //#endif /* ! LCDMODE_LTDC_L24 */
 
-//typedef PACKEDCOLORMAIN_T FRAMEBUFF_T [LCDMODE_MAIN_PAGES] [GXSIZE(DIM_SECOND, DIM_FIRST)];
+typedef PACKEDCOLORMAIN_T FRAMEBUFF_T [LCDMODE_MAIN_PAGES] [GXSIZE(DIM_SECOND, DIM_FIRST)];
 
 #if defined (SDRAM_BANK_ADDR) && LCDMODE_LTDCSDRAMBUFF && LCDMODE_LTDC
 	#define framebuff (* (FRAMEBUFF_T *) SDRAM_BANK_ADDR)
@@ -56,15 +57,32 @@
 		return fbfs [(mainphase + 1) % LCDMODE_MAIN_PAGES];
 	}
 
-
 	PACKEDCOLORMAIN_T *
 	colmain_fb_show(void)
 	{
 		return fbfs [(mainphase + 0) % LCDMODE_MAIN_PAGES];
 	}
 
-#elif LCDMODE_LTDC
+#elif WITHSDRAMHW && LCDMODE_LTDCSDRAMBUFF
 
+	void colmain_fb_next(void)
+	{
+	}
+
+	PACKEDCOLORMAIN_T *
+	colmain_fb_draw(void)
+	{
+		return & framebuff[0][0];
+	}
+
+
+	PACKEDCOLORMAIN_T *
+	colmain_fb_show(void)
+	{
+		return & framebuff[0][0];
+	}
+
+#else
 	RAMFRAMEBUFF ALIGNX_BEGIN PACKEDCOLORMAIN_T fbf [GXSIZE(DIM_SECOND, DIM_FIRST)] ALIGNX_END;
 
 	void colmain_fb_next(void)
@@ -83,8 +101,6 @@
 	{
 		return fbf;
 	}
-
-
 #endif /* LCDMODE_LTDC */
 
 
@@ -234,7 +250,7 @@ void display2_xltrgb24(COLOR24_T * xltable)
 #if defined (COLORPIP_SHADED)
 	int i;
 
-	PRINTF("display2_xltrgb24: init idexed colors\n");
+	PRINTF("display2_xltrgb24: init indexed colors\n");
 
 	for (i = 0; i < 256; ++ i)
 	{
@@ -1570,4 +1586,84 @@ void display_hardware_initialize(void)
 	#endif /* LCDMODE_HD44780 && (LCDMODE_SPI == 0) */
 #endif
 	debug_printf_P(PSTR("display_hardware_initialize done\n"));
+}
+
+// https://habr.com/ru/post/166317/
+
+//	Hue — тон, цикличная угловая координата.
+//	Value, Brightness — яркость, воспринимается как альфа-канал, при v=0 пиксель не светится,
+//	при v=17 — светится максимально ярко, в зависимости от H и S.
+//	Saturation. С отсутствием фона, значения  дадут не серый цвет, а белый разной яркости,
+//	поэтому параметр W=Smax-S можно называть Whiteness — он отражает степень «белизны» цвета.
+//	При W=0, S=Smax=15 цвет полностью определяется Hue, при S=0, W=Wmax=15 цвет пикселя
+//	будет белым.
+
+typedef struct {
+    uint8_t r;
+    uint8_t g;
+    uint8_t b;
+} RGB_t;
+
+typedef struct {
+    uint8_t h;
+    uint8_t s;
+    uint8_t v;
+} HSV_t;
+
+const uint8_t max_whiteness = 15;
+const uint8_t max_value = 17;
+
+enum
+{
+	sixth_hue = 16,
+	third_hue = sixth_hue * 2,
+	half_hue = sixth_hue * 3,
+	two_thirds_hue = sixth_hue * 4,
+	five_sixths_hue = sixth_hue * 5,
+	full_hue = sixth_hue * 6
+};
+
+RGB_t rgb(uint8_t r, uint8_t g, uint8_t b)
+{
+    return (RGB_t) { r, g, b };
+}
+
+HSV_t hsv(uint8_t h, uint8_t s, uint8_t v)
+{
+    return (HSV_t) { h, s, v };
+}
+
+RGB_t hsv2rgb(HSV_t hsv)
+{
+	const RGB_t black = { 0, 0, 0 };
+
+    if (hsv.v == 0) return black;
+
+    uint8_t high = hsv.v * max_whiteness;//channel with max value
+    if (hsv.s == 0) return rgb(high, high, high);
+
+    uint8_t W = max_whiteness - hsv.s;
+    uint8_t low = hsv.v * W;//channel with min value
+    uint8_t rising = low;
+    uint8_t falling = high;
+
+    const uint8_t h_after_sixth = hsv.h % sixth_hue;
+    if (h_after_sixth > 0)
+    {
+    	//not at primary color? ok, h_after_sixth = 1..sixth_hue - 1
+        const uint8_t z = hsv.s * (uint8_t) (hsv.v * h_after_sixth) / sixth_hue;
+        rising += z;
+        falling -= z + 1;//it's never 255, so ok
+    }
+
+    uint8_t H = hsv.h;
+    while (H >= full_hue)
+    	H -= full_hue;
+
+    if (H < sixth_hue) return rgb(high, rising, low);
+    if (H < third_hue) return rgb(falling, high, low);
+    if (H < half_hue) return rgb(low, high, rising);
+    if (H < two_thirds_hue) return rgb(low, falling, high);
+    if (H < five_sixths_hue) return rgb(rising, low, high);
+    return rgb(high, low, falling);
 }

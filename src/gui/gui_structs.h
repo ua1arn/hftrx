@@ -45,6 +45,15 @@ enum {
 };
 
 enum {
+	NO_PARENT_WINDOW = UINT8_MAX,
+};
+
+enum {
+	WINDOW_POSITION_AUTO,
+	WINDOW_POSITION_MANUAL
+};
+
+enum {
 	NAME_ARRAY_SIZE = 30,
 	TEXT_ARRAY_SIZE = 30,
 	MENU_ARRAY_SIZE = 30,
@@ -70,9 +79,9 @@ typedef struct {
 	uint8_t state;				// текущее состояние кнопки
 	uint8_t is_locked;			// признак фиксации кнопки
 	uint8_t is_long_press;		// разрешение обработки долгого нажатия
-	window_id_t parent;			// индекс окна, в котором будет отображаться кнопка
+	uint8_t parent;			// индекс окна, в котором будет отображаться кнопка
 	uint8_t visible;			// рисовать ли кнопку на экране
-	uintptr_t payload;
+	int32_t payload;
 	char name [NAME_ARRAY_SIZE];
 	char text [TEXT_ARRAY_SIZE]; // текст внутри кнопки, разделитель строк |, не более 2х строк
 } button_t;
@@ -86,7 +95,7 @@ typedef enum {
 typedef struct {
 	uint16_t x;
 	uint16_t y;
-	window_id_t parent;
+	uint8_t parent;
 	uint8_t state;
 	uint8_t is_trackable;
 	uint8_t visible;
@@ -110,7 +119,7 @@ typedef struct {
 	uint16_t x2_p;
 	uint16_t y2_p;
 	orientation_t orientation;
-	window_id_t parent;
+	uint8_t parent;
 	char name [NAME_ARRAY_SIZE];
 	uint8_t state;
 	uint8_t visible;
@@ -126,12 +135,12 @@ typedef enum {
 	ALIGN_CENTER_X 	= WITHGUIMAXX >> 1,					// вертикальное выравнивание по центру экрана
 	ALIGN_RIGHT_X 	= ALIGN_LEFT_X + ALIGN_CENTER_X,	// вертикальное выравнивание по центру правой половины экрана
 	ALIGN_Y 		= WITHGUIMAXY >> 1					// горизонтальное выравнивание всегда по центру экрана
-} align_t;
+} window_align_t;
 
 typedef struct {
-	const window_id_t window_id;// в окне будут отображаться элементы с соответствующим полем for_window
-	window_id_t parent_id;		// UINT8_MAX - нет parent window
-	align_t align_mode;			// вертикаль выравнивания окна
+	const uint8_t window_id;// в окне будут отображаться элементы с соответствующим полем for_window
+	uint8_t parent_id;		// UINT8_MAX - нет parent window
+	window_align_t align_mode;			// вертикаль выравнивания окна
 	uint16_t x1;
 	uint16_t y1;
 	uint16_t w;
@@ -150,39 +159,6 @@ typedef struct {
 } window_t;
 
 typedef struct {
-	int16_t rotate;			// признак поворота второго энкодера
-	uint8_t press;			// короткое нажание
-	uint8_t hold;			// длинное нажатие
-	uint8_t rotate_done;	// событие поворота от энкодера обработано, можно получать новые данные
-	uint8_t press_done;		// событие нажатия от энкодера обработано, можно получать новые данные
-} enc2_t;
-
-enum {
-	MENU_OFF,
-	MENU_GROUPS,
-	MENU_PARAMS,
-	MENU_VALS,
-	MENU_COUNT
-};
-
-typedef struct {
-	uint8_t first_id;			// первое вхождение номера метки уровня
-	uint8_t last_id;			// последнее вхождение номера метки уровня
-	uint8_t num_rows;			// число меток уровня
-	uint8_t count;				// число значений уровня
-	int8_t selected_str;		// выбранная строка уровня
-	int8_t selected_label;		// выбранная метка уровня
-	uint8_t add_id;				// номер строки уровня, отображаемой первой
-	menu_names_t menu_block [MENU_ARRAY_SIZE];	// массив значений уровня меню
-} menu_t;
-
-typedef struct {
-	char name [TEXT_ARRAY_SIZE];
-	uint16_t menupos;
-	uint8_t exitkey;
-} menu_by_name_t;
-
-typedef struct {
 	element_type_t type;		// тип элемента, поддерживающего реакцию на касания
 	window_t * win;
 	void * link;
@@ -198,7 +174,7 @@ typedef struct {
 	LIST_ENTRY item;
 } gui_element_t;
 
-enum { win_gui_count = 2 };
+enum { win_gui_count = 2 };		  // на экране не более 2х окон, одно из которых - основное на весь экран
 
 typedef struct {
 	uint16_t last_pressed_x; 	  // последняя точка касания экрана
@@ -213,7 +189,7 @@ typedef struct {
 	int16_t vector_move_x;	 	  // в т.ч. и за границами элемента, при state == PRESSED
 	int16_t vector_move_y;
 	uint8_t timer_1sec_updated;	  // для периодических обновлений состояния
-	window_id_t win[win_gui_count];	// на экране не более 2х окон, одно из которых - основное на весь экран
+	uint8_t win[win_gui_count];	// на экране не более 2х окон, одно из которых - основное на весь экран
 } gui_t;
 
 #endif /* WITHTOUCHGUI */

@@ -2039,26 +2039,6 @@ extern "C" {
 	#define	BOARD_AGCCODE_ON		0x00
 	#define	BOARD_AGCCODE_OFF		0x01
 
-#elif CTLREGMODE24_UA3DKC
-
-	#define WITHPREAMPATT2_10DB		1	// Управление УВЧ и двухкаскадным аттенюатором
-	#define WITHAGCMODEONOFF	1	// АРУ вкл/выкл
-	/* коды входов коммутатора источников сигнала для УНЧ приёмника */
-	#define BOARD_DETECTOR_MUTE 0x02
-	#define BOARD_DETECTOR_SSB 0x00
-	#define BOARD_DETECTOR_AM 0x01
-	#define BOARD_DETECTOR_FM 0x03
-	#define BOARD_DETECTOR_TUNE 0x00	/* конфигурация платы для режима TUNE (CWZ на передачу) */
-
-	/* коды фильтров второй ПЧ, выдаваемые на дешифраторы */
-	#define	BOARD_FILTERCODE_0	0x00
-	#define	BOARD_FILTERCODE_1	0x01
-	#define	BOARD_FILTERCODE_2	0x02
-	#define	BOARD_FILTERCODE_3	0x03
-
-	#define	BOARD_AGCCODE_ON	0x00
-	#define	BOARD_AGCCODE_OFF	0x01
-
 #elif CTLREGMODE_V8A			// воронёнок
 
 	/* коды входов коммутатора источников сигнала для УНЧ приёмника */
@@ -2096,21 +2076,6 @@ extern "C" {
 		#define WITHAGCMODE5STAGES	1	// 4 скорости и выключенно
 	#endif /* WITHIF4DSP */
 
-#elif CTLSTYLE_V5
-
-	#define WITHPREAMPATT2_10DB		1	// Управление УВЧ и двухкаскадным аттенюатором
-
-	#define	BOARD_AGCCODE_0		0x00
-	#define	BOARD_AGCCODE_1		0x01
-	#define	BOARD_AGCCODE_2		0x02
-	#define	BOARD_AGCCODE_3		0x04
-	#define	BOARD_AGCCODE_OFF	0x08
-
-	#define	BOARD_AGCCODE_FAST	BOARD_AGCCODE_0
-	#define	BOARD_AGCCODE_MED	BOARD_AGCCODE_1
-	#define	BOARD_AGCCODE_SLOW	BOARD_AGCCODE_2
-	#define	BOARD_AGCCODE_LONG	BOARD_AGCCODE_3
-
 #elif (ATMEGA_CTLSTYLE_V7_H_INCLUDED || ARM_CTLSTYLE_V7_H_INCLUDED || ARM_CTLSTYLE_V7A_H_INCLUDED)
 
 	#define WITHPREAMPATT2_10DB		1	// Управление УВЧ и двухкаскадным аттенюатором
@@ -2126,20 +2091,6 @@ extern "C" {
 	#define	BOARD_AGCCODE_MED	BOARD_AGCCODE_1
 	#define	BOARD_AGCCODE_SLOW	BOARD_AGCCODE_2
 	#define	BOARD_AGCCODE_LONG	BOARD_AGCCODE_3
-
-#elif CTLREGSTYLE_DISCO32
-
-	/* коды входов коммутатора источников сигнала для УНЧ приёмника */
-	#define BOARD_DETECTOR_MUTE 0
-	#define BOARD_DETECTOR_SSB 	0
-	#define BOARD_DETECTOR_AM 	0
-	#define BOARD_DETECTOR_FM 	0
-	#define BOARD_DETECTOR_TUNE 0x00	/* конфигурация платы для режима TUNE (CWZ на передачу) */
-	/* коды фильтров второй ПЧ, выдаваемые на дешифраторы */
-	#define	BOARD_FILTERCODE_0	0
-	#define	BOARD_FILTERCODE_1	0
-	#define	BOARD_FILTERCODE_2	0
-	#define	BOARD_FILTERCODE_3	0
 
 #elif CTLREGMODE_NOCTLREG			// Отсутствующий регистр управления
 
@@ -2158,7 +2109,7 @@ extern "C" {
 #else
 	//#error Undefined CTLREGMODE_xxx option
 #endif
-#define WITHHARDINTERLOCK (WITHNESTEDINTERRUPTS && (CPUSTYLE_ARM_CM7 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM0 || CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7))
+#define WITHHARDINTERLOCK (WITHNESTEDINTERRUPTS && (CPUSTYLE_ARM_CM7 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM0 || (__CORTEX_A != 0)))
 
 #ifndef WITHFLATMENU
 	#define WITHFLATMENU (CTLSTYLE_SW2011ALL && ! CPUSTYLE_ATMEGA_XXX4)
@@ -2184,20 +2135,32 @@ extern "C" {
 #if LCDMODE_V0
 	/* Обычная конфигурация без PIP с L8 на основном экране */
 	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
-	#define LCDMODE_MAIN_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит - RGB565. */
+	#define LCDMODE_MAIN_L8	1
 	//#define LCDMODE_MAIN_RGB565	1
 	#define LCDMODE_MAIN_PAGES	1
 	#define LCDMODE_PIXELSIZE 1
 
-	//#define LCDMODE_PIP_RGB565	1	/* используется PIP с форматом 16 бит - RGB565 */
-	//#define LCDMODE_PIP_L8	1	/* используется PIP с форматом 8 бит - индексные цвета */
+	//#define LCDMODE_PIP_L8	1
+	//#define LCDMODE_PIP_RGB565	1
 	//#define LCDMODE_PIP_PAGES	3
 
-	#define WITHFASTWATERFLOW 1
+	// 0..COLORPIP_BASE-1 - волопад
+	// COLORPIP_BASE..127 - надписи и элементы дизайна
+	// то же с кодом больше на 128 - затененные цвета для получения полупрозрачности
+	// 0..95 - палитра водопада
+	// 96..111 - норм цвета
+	// 112..127 - первая степень AA
+	// Заполнение палитры производится в display2_xltrgb24()
 
 	#define COLORPIP_SHADED 128
 	#define COLORPIP_ALIASED 16
 	#define COLORPIP_BASE 96	// should be match to PALETTESIZE
+
+	#define LCDMODE_MAIN_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит - RGB565. */
+	//#define LCDMODE_PIP_RGB565	1	/* используется PIP с форматом 16 бит - RGB565 */
+	//#define LCDMODE_PIP_L8	1	/* используется PIP с форматом 8 бит - индексные цвета */
+
+	#define WITHFASTWATERFLOW 1
 
 #elif LCDMODE_V1
 	#error Use LCDMODE_V2 instedd of LCDMODE_V1

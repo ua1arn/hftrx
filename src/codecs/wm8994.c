@@ -1002,9 +1002,14 @@ static uint_fast32_t wm8994_Init(uint_fast16_t DeviceAddr, uint_fast16_t OutputI
   /* AIF1 Word Length = 16-bits, AIF1 Format = I2S (Default Register Value) */
   wm8994_setreg(0x300, 0x4010);
   
-  /* slave mode */
-  wm8994_setreg(0x302, 0x0000);
-  
+	#if CODEC_TYPE_WM8994_MASTER
+	  /* master mode */
+	  wm8994_setreg(0x302, 1uL << 14);
+	#else /* CODEC_TYPE_WM8994_MASTER */
+	  /* slave mode */
+	  wm8994_setreg(0x302, 0x0000);
+	#endif /* CODEC_TYPE_WM8994_MASTER */
+
   /* Enable the DSP processing clock for AIF1, Enable the core clock */
   wm8994_setreg(0x208, 0x000A);
   

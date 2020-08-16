@@ -51,8 +51,8 @@
 	#define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
 
 	//#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
-	//#define WITHUSBCDC		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
-	//#define WITHUSBHWCDC_N	2	/* количество виртуальных последовательных портов */
+	//#define WITHUSBCDCACM		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
+	//#define WITHUSBCDCACM_N	2	/* количество виртуальных последовательных портов */
 	//#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
 	//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
 	//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
@@ -95,8 +95,8 @@
 
 	//#define WITHUAC2		1	/* UAC2 support */
 	#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
-	#define WITHUSBCDC		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
-	#define WITHUSBHWCDC_N	2	/* количество виртуальных последовательных портов */
+	#define WITHUSBCDCACM		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
+	#define WITHUSBCDCACM_N	2	/* количество виртуальных последовательных портов */
 	//#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
 	//#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
 	//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
@@ -659,6 +659,23 @@
 			arm_hardware_pio1_alternative((ainmask) << 8, R7S721_PIOALT_1);	/* P1_8..P1_15 - AN0..AN7 inputs */ \
 		} while (0)
 
+	#if LCDMODE_LQ043T3DX02K
+		#define WITHLCDBACKLIGHTOFF	1	// Имеется управление включением/выключением подсветки дисплея
+		#define WITHLCDBACKLIGHT	1	// Имеется управление яркостью дисплея
+		#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываемый на дисплее)
+		#define WITHLCDBACKLIGHTMAX	3	// Верхний предел регулировки (показываемый на дисплее)
+		#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
+	#elif LCDMODE_AT070TN90 || LCDMODE_AT070TNA2
+		#define WITHLCDBACKLIGHTOFF	1	// Имеется управление включением/выключением подсветки дисплея
+		#define WITHLCDBACKLIGHT	1	// Имеется управление яркостью дисплея
+		#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываемый на дисплее)
+		#define WITHLCDBACKLIGHTMAX	2	// Верхний предел регулировки (показываемый на дисплее)
+		#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
+	#else
+		/* Заглушка для работы без дисплея */
+		#define WITHLCDBACKLIGHTMIN	0
+	#endif
+
 	#define	HARDWARE_BL_INITIALIZE() do { \
 		const portholder_t enpins = (1U << 9); /* P7_9 */ \
 		const portholder_t blpins = (1U << 3) | (1U << 2); /* P7_3:P7_2 */ \
@@ -828,6 +845,7 @@
 
 	#define HARDWARE_USB0_INITIALIZE() do { \
 			arm_hardware_pio5_outputs(HARDWARE_VBUS_ON_MASK, 1 * HARDWARE_VBUS_ON_MASK);	/* P5_2 ~VBUS_ON = 1*/ \
+			local_delay_ms(200); \
 		} while (0)
 
 	#define HARDWARE_USB1_INITIALIZE() do { \

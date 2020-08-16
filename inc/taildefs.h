@@ -376,7 +376,7 @@ typedef enum
 
 #endif /* WITHCAT && WITHUART2HW && WITHCAT_USART2 */
 
-#if WITHCAT && WITHUSBCDC && WITHCAT_CDC
+#if WITHCAT && WITHUSBCDCACM && WITHCAT_CDC
 	// CAT функции работают через виртуальный USB последовательный порт
 	// Вызывается из user-mode программы
 	#define HARDWARE_CAT_INITIALIZE() do { \
@@ -428,10 +428,10 @@ typedef enum
 			cat2_sendchar(ctx); \
 		} while (0)
 
-#endif /* WITHCAT && WITHUSBCDC && WITHCAT_CDC */
+#endif /* WITHCAT && WITHUSBCDCACM && WITHCAT_CDC */
 
 
-#if WITHMODEM && WITHUSBCDC && WITHMODEM_CDC
+#if WITHMODEM && WITHUSBCDCACM && WITHMODEM_CDC
 	// Модемные функции работают через виртуальный USB последовательный порт
 	// Вызывается из user-mode программы
 	#define HARDWARE_MODEM_INITIALIZE() do { \
@@ -475,9 +475,9 @@ typedef enum
 			modem_sendchar(ctx); \
 		} while (0)
 
-#endif /* WITHMODEM && WITHUSBCDC && WITHCAT_CDC */
+#endif /* WITHMODEM && WITHUSBCDCACM && WITHCAT_CDC */
 
-#if WITHDEBUG && WITHUSBCDC && WITHDEBUG_CDC
+#if WITHDEBUG && WITHUSBCDCACM && WITHDEBUG_CDC
 	// Модемные функции работают через виртуальный USB последовательный порт
 	// Вызывается из user-mode программы при запрещённых прерываниях.
 	#define HARDWARE_DEBUG_INITIALIZE() do { \
@@ -525,7 +525,7 @@ typedef enum
 			debugusb_sendchar(ctx); \
 		} while (0)
 
-#endif /* WITHDEBUG && WITHUSBCDC && WITHDEBUG_CDC */
+#endif /* WITHDEBUG && WITHUSBCDCACM && WITHDEBUG_CDC */
 
 #if WITHUART1HW
 	// Заглушки, если есть последовательный порт #1, но нигде не используется.
@@ -669,7 +669,7 @@ typedef enum
 
 #endif /* WITHUART2HW */
 
-#if WITHUSBCDC
+#if WITHUSBCDCACM
 	// Заглушки, если есть виртуальный последовательный порт, но нигде не используется.
 	#if ! defined (HARDWARE_CDC_ONRXCHAR)
 		// вызывается из обработчика прерываний CDC
@@ -700,7 +700,7 @@ typedef enum
 			} while (0)
 	#endif /* ! defined (HARDWARE_CDC_ONTXCHAR) */
 
-#endif /* WITHUSBCDC */
+#endif /* WITHUSBCDCACM */
 
 #if defined (SPI_A2) && defined (SPI_A1) && defined (SPI_A0)
 	// Три вывода формируют адрес
@@ -800,10 +800,10 @@ typedef enum
 	typedef struct spinlock_tag {
 		volatile uint32_t lock;
 	} spinlock_t;
-
 	#define SPINLOCK_INIT { 0 }
-	void spin_lock(spinlock_t *lock);
-	void spin_unlock(spinlock_t *lock);
+	#define SPINLOCK_INIT_EXEC 0
+	void spin_lock(volatile spinlock_t *lock);
+	void spin_unlock(volatile spinlock_t *lock);
 
 #else /* WITHSMPSYSTEM */
 	/* Единственный процесор. */
@@ -813,7 +813,11 @@ typedef enum
 	#define TARGETCPU_EXTIO 0x01	// CPU #0
 
 	#define SPINLOCK_INIT { 0 }
-	#define SPINLOCK_t uint_fast8_t
+	#define SPINLOCK_INIT_EXEC 0
+	typedef struct spinlock_tag {
+		volatile uint32_t lock;
+	} spinlock_t;
+	#define SPINLOCK_t spinlock_t
 	#define SPIN_LOCK(p) do { (void) p; } while (0)
 	#define SPIN_UNLOCK(p) do { (void) p; } while (0)
 

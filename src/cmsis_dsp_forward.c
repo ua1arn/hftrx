@@ -24,7 +24,9 @@
 	#include "TransformFunctions/TransformFunctions.c"
 	//#include "ControllerFunctions/ControllerFunctions.c"
 	#include "FilteringFunctions/FilteringFunctions.c"
-	//#include "StatisticsFunctions/StatisticsFunctions.c"
+#if WITHAFSPECTRE
+	#include "StatisticsFunctions/StatisticsFunctions.c"
+#endif
 
 #endif  /* WITHINTEGRATEDDSP */
 

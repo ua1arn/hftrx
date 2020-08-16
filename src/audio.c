@@ -11,9 +11,7 @@
 #include "spi.h"
 #include "formats.h"	// for debug prints
 
-#include "codecs/tlv320aic23.h"	// константы управления усилением кодека
-#include "codecs/nau8822.h"
-#include "codecs/wm8994.h"
+#include "codecs.h"
 
 #include <limits.h>
 #include <string.h>
@@ -148,7 +146,8 @@ static uint_fast8_t 	glob_moniflag = 1;		/* Уровень сигнала сам
 static uint_fast8_t 	glob_subtonelevel = 0;	/* Уровень сигнала CTCSS в процентах - 0%..100% */
 static uint_fast8_t 	glob_amdepth = 30;		/* Глубина модуляции в АМ - 0..100% */
 static uint_fast8_t		glob_dacscale = 100;	/* На какую часть (в процентах) от полной амплитуды использцется ЦАП передатчика */
-static uint_fast16_t	glob_gdigiscale = 250;	/* Увеличение усиления при передаче в цифровых режимах 100..300% */
+static uint_fast16_t	glob_gdigiscale = 100;	/* Увеличение усиления при передаче в цифровых режимах 100..300% */
+static uint_fast16_t	glob_cwscale = 100;	/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 
 static uint_fast8_t 	glob_digigainmax = 96;
 static uint_fast8_t		glob_gvad605 = UINT8_MAX;	/* напряжение на AD605 (управление усилением тракта ПЧ */
@@ -167,6 +166,8 @@ static uint_fast8_t		glob_mainsubrxmode = BOARD_RXMAINSUB_A_A;	// Левый/п�
 
 static uint_fast8_t		glob_nfmdeviation100 = 75;	// 7.5 kHz максимальная девиация в NFM
 
+static uint_fast8_t 	glob_dspagc;
+static uint_fast8_t		glob_dsploudspeaker_off;
 
 #if WITHINTEGRATEDDSP
 
@@ -1367,13 +1368,14 @@ typedef struct agcstate
 	FLOAT_t  agcfastcap;	// разница после выпрямления
 	FLOAT_t  agcslowcap;	// разница после выпрямления
 	unsigned agchangticks;				// сколько сэмплов надо сохранять agcslowcap неизменным.
+	SPINLOCK_t lock /* = SPINLOCK_INIT */;
 } agcstate_t;
 
 typedef struct agcparams
 {
 	uint_fast8_t agcoff;	// признак отключения АРУ
 
-	// Временные паарметры АРУ
+	// Временные парметры АРУ
 
 	// постоянные времени цепи АРУ для реакции на импульсные помехи (быстрая АРУ).
 	FLOAT_t dischargespeedfast;	//0.02f;	// 1 - мгновенно, 0 - никогда
@@ -1429,7 +1431,7 @@ static void agc_parameters_update(volatile agcparams_t * const agcp, FLOAT_t gai
 {
 	const uint_fast8_t flatgain = glob_agcrate [pathi] == UINT8_MAX;
 
-	agcp->agcoff = (glob_agc == BOARD_AGCCODE_OFF);
+	agcp->agcoff = (glob_dspagc == BOARD_AGCCODE_OFF);
 
 	agcp->dischargespeedfast = MAKETAUIF((int) glob_agc_t4 [pathi] * (FLOAT_t) 0.001);	// в милисекундах
 
@@ -1503,8 +1505,10 @@ static void comp_parameters_update(volatile agcparams_t * const agcp, FLOAT_t ga
 // со всеми положенными задержками на срабатывание/отпускание
 
 static void
-performagc(const volatile agcparams_t * agcp, volatile agcstate_t * st, FLOAT_t sample)
+agc_perform(const volatile agcparams_t * agcp, volatile agcstate_t * st, FLOAT_t sample)
 {
+	SPIN_LOCK(& st->lock);
+
 	if (st->agcfastcap < sample)
 	{
 		// быстрая цепь АРУ
@@ -1544,16 +1548,25 @@ performagc(const volatile agcparams_t * agcp, volatile agcstate_t * st, FLOAT_t 
 		// не меняется значение
 		st->agchangticks = agcp->hungticks;
 	}
+	SPIN_UNLOCK(& st->lock);
 }
 
-static FLOAT_t performagcresultslow(const volatile agcstate_t * st)
+static FLOAT_t agc_result_slow(volatile agcstate_t * st)
 {
-	return FMAXF(st->agcfastcap, st->agcslowcap);	// разница после ИЛИ
+	SPIN_LOCK(& st->lock);
+	const FLOAT_t v = FMAXF(st->agcfastcap, st->agcslowcap);	// разница после ИЛИ
+	SPIN_UNLOCK(& st->lock);
+
+	return v;
 }
 
-static FLOAT_t performagcresultfast(const volatile agcstate_t * st)
+static FLOAT_t agc_result_fast(volatile agcstate_t * st)
 {
-	return st->agcfastcap;
+	SPIN_LOCK(& st->lock);
+	const FLOAT_t v = st->agcfastcap;
+	SPIN_UNLOCK(& st->lock);
+
+	return v;
 }
 
 
@@ -2732,13 +2745,13 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 		else
 		{
 			const int iCoefNum = Ntap_trxi_IQ;
-			const FLOAT_t * const dWindow = FIRCwnd_trxi_IQ;
+			const double * const dWindow = FIRCwndL_trxi_IQ;
 			double dCoeff [NtapCoeffs(iCoefNum)];	/* Use GCC extension */
 			//fir_design_lowpass_freq_scaledL(dCoeff, dWindow, iCoefNum, iCutHigh, dGain);	// с управлением крутизной скатов и нормированием усиления, с наложением окна
 			{
-				fir_design_lowpassL(dCoeff, iCoefNum, fir_design_normfreqL(iCutHigh));
+				fir_design_lowpassL(dCoeff, iCoefNum, fir_design_normfreqL(cutfreq));
 				if (dspmode == DSPCTL_MODE_RX_AM)
-					fir_design_adjust_rxL(FIRCoef_rx_SSB_IQ [spf], FIRCwndL_trxi_IQ, iCoefNum, 0);	// Формирование наклона АЧХ
+					fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 0, GAIN_1);	// Формирование наклона АЧХ
 				fir_design_applaywindowL(dCoeff, dWindow, iCoefNum);
 				fir_design_scaleL(dCoeff, iCoefNum, 1 / testgain_float_DCL(dCoeff, iCoefNum));
 			}
@@ -3217,6 +3230,7 @@ static RAMDTCM FLOAT_t agclogof10 = 1;
 	
 static void agc_state_initialize(volatile agcstate_t * st, const volatile agcparams_t * agcp)
 {
+	st->lock.lock = SPINLOCK_INIT_EXEC;
 	const FLOAT_t f0 = agcp->levelfence;
 	const FLOAT_t m0 = agcp->mininput;
 	const FLOAT_t siglevel = 0;
@@ -3230,9 +3244,14 @@ static void agc_state_initialize(volatile agcstate_t * st, const volatile agcpar
 	st->agcslowcap = caplevel;
 }
 
-// Для работы функции performagc требуется siglevel, больште значения которого
+// TODO: eliminate LOGF
+// are equal:
+//gain = valelout / adjsig * powf(10.0f, log10f(adjsig / valelin) * agcfactor);
+//gain = valelout / adjsig * powf(adjsig / valelin, agcfactor);
+
+// Для работы функции agc_perform требуется siglevel, больште значения которого
 // соответствуют большим уровням сигнала. может быть отрицательным
-static RAMFUNC FLOAT_t agccalcstrength(const volatile agcparams_t * const agcp, FLOAT_t siglevel)
+static RAMFUNC FLOAT_t agccalcstrength_log(const volatile agcparams_t * const agcp, FLOAT_t siglevel)
 {
 	const FLOAT_t f0 = agcp->levelfence;
 	const FLOAT_t m0 = agcp->mininput;
@@ -3245,7 +3264,7 @@ static RAMFUNC FLOAT_t agccalcstrength(const volatile agcparams_t * const agcp, 
 
 // По отфильтрованому в соответствии с заданными временныме параметрами показатлю
 // силы сигнала получаем требуемое усиление (в разах отношения напряжений).
-static RAMFUNC FLOAT_t agccalcgain(const volatile agcparams_t * const agcp, FLOAT_t streingth)
+static RAMFUNC FLOAT_t agccalcgain_log(const volatile agcparams_t * const agcp, FLOAT_t streingth)
 {
 	const FLOAT_t gain0 = POWF((FLOAT_t) M_E, streingth * agcp->agcfactor);
 	// реализация "спортивной" АРУ
@@ -3257,7 +3276,7 @@ static RAMFUNC FLOAT_t agccalcgain(const volatile agcparams_t * const agcp, FLOA
 
 // По отфильтрованому в соответствии с заданными временныме параметрами показатлю
 // силы сигнала получаем относительный уровень (логарифмированный)
-static RAMFUNC FLOAT_t agccalcstrengthlog10(const volatile agcparams_t * const agcp, FLOAT_t streingth)
+static RAMFUNC FLOAT_t agc_calcstrengthlog10(const volatile agcparams_t * const agcp, FLOAT_t streingth)
 {
 	return streingth / agclogof10;	// уже логарифмировано
 }
@@ -3370,18 +3389,18 @@ static RAMFUNC FLOAT_t agc_measure_float(
 	const volatile agcparams_t * const agcp = & rxagcparams [gwagcprofrx] [pathi];
 	volatile agcstate_t * const st = & rxagcstate [pathi];
 	//BEGIN_STAMP();
-	const FLOAT_t strength = agccalcstrength(agcp, siglevel0);	// получение логарифмического хначения уровня сигнала
+	const FLOAT_t strength = agccalcstrength_log(agcp, siglevel0);	// получение логарифмического хначения уровня сигнала
 	//END_STAMP();
 
 	// показ S-метра
-	performagc(& rxsmeterparams, & rxsmeterstate [pathi], strength);	// измеритель уровня сигнала
+	agc_perform(& rxsmeterparams, & rxsmeterstate [pathi], strength);	// измеритель уровня сигнала
 
 	//BEGIN_STAMP();
-	performagc(agcp, st, strength);	// измеритель уровня сигнала
+	agc_perform(agcp, st, strength);	// измеритель уровня сигнала
 	//END_STAMP();
 
 	END_STAMP3();
-	return performagcresultslow(st);
+	return agc_result_slow(st);
 }
 
 // АРУ вперёд для floaing-point тракта
@@ -3394,7 +3413,7 @@ static RAMFUNC FLOAT_t agc_getgain_float(
 	const volatile agcparams_t * const agcp = & rxagcparams [gwagcprofrx] [pathi];
 
 	//BEGIN_STAMP();
-	const FLOAT_t gain = agccalcgain(agcp, fltstrengthslow);
+	const FLOAT_t gain = agccalcgain_log(agcp, fltstrengthslow);
 	//END_STAMP();
 
 	return gain;
@@ -3409,6 +3428,7 @@ static RAMFUNC int agc_squelchopen(
 {
 	return fltstrengthslow > manualsquelch [pathi];
 }
+
 // Функция для S-метра - получение десятичного логарифма уровня сигнала от FS
 /* Вызывается из user-mode программы */
 static void agc_reset(
@@ -3419,17 +3439,21 @@ static void agc_reset(
 	volatile agcstate_t * const st = & rxsmeterstate [pathi];
 	FLOAT_t m0 = agcp->mininput;
 	FLOAT_t m1;
+
 	global_disableIRQ();
 	st->agcfastcap = m0;
 	st->agcslowcap = m0;
 	global_enableIRQ();
+
 #if ! CTLSTYLE_V1D		// не Плата STM32F429I-DISCO с процессором STM32F429ZIT6 - на ней приема нет
 	for (;;)
 	{
 		local_delay_ms(1);
+
 		global_disableIRQ();
-		const FLOAT_t v = performagcresultslow(st);
+		const FLOAT_t v = agc_result_slow(st);
 		global_enableIRQ();
+
 		if (v != m0)
 		{
 			m1 = v;
@@ -3439,9 +3463,11 @@ static void agc_reset(
 	for (;;)
 	{
 		local_delay_ms(1);
+
 		global_disableIRQ();
-		const FLOAT_t v = performagcresultslow(st);
+		const FLOAT_t v = agc_result_slow(st);
 		global_enableIRQ();
+
 		if (v != m1)
 			break;
 	}
@@ -3456,12 +3482,12 @@ static FLOAT_t agc_forvard_getstreigthlog10(
 	)
 {
 	volatile agcparams_t * const agcp = & rxsmeterparams;
-	volatile const agcstate_t * const st = & rxsmeterstate [pathi];
+	volatile agcstate_t * const st = & rxsmeterstate [pathi];
 
-	const FLOAT_t fltstrengthfast = performagcresultfast(st);	// измеритель уровня сигнала
-	const FLOAT_t fltstrengthslow = performagcresultslow(st);	// измеритель уровня сигнала
-	* tracemax = agccalcstrengthlog10(agcp, fltstrengthslow);
-	return agccalcstrengthlog10(agcp, fltstrengthfast);
+	const FLOAT_t fltstrengthfast = agc_result_fast(st);	// измеритель уровня сигнала
+	const FLOAT_t fltstrengthslow = agc_result_slow(st);	// измеритель уровня сигнала
+	* tracemax = agc_calcstrengthlog10(agcp, fltstrengthslow);
+	return agc_calcstrengthlog10(agcp, fltstrengthfast);
 }
 
 /* получить значение уровня сигнала в децибелах, отступая от upper */
@@ -3505,8 +3531,8 @@ static RAMFUNC FLOAT_t txmikeagc(FLOAT_t vi)
 		const FLOAT_t siglevel0 = FABSF(vi);
 		volatile agcstate_t * const st = & txagcstate;
 
-		performagc(agcp, st, agccalcstrength(agcp, siglevel0));	// измеритель уровня сигнала
-		const FLOAT_t gain = agccalcgain(agcp, performagcresultslow(st));
+		agc_perform(agcp, st, agccalcstrength_log(agcp, siglevel0));	// измеритель уровня сигнала
+		const FLOAT_t gain = agccalcgain_log(agcp, agc_result_slow(st));
 		vi *= gain;
 	}
 
@@ -3523,7 +3549,6 @@ static RAMFUNC FLOAT_t txmikeagc(FLOAT_t vi)
 
 	return vi;
 }
-
 
 /* получения признака переполнения АЦП микрофонного тракта - вызывается из user mode */
 uint_fast8_t dsp_getmikeadcoverflow(void)
@@ -3671,7 +3696,7 @@ static RAMFUNC FLOAT_t preparevi(
 
 	case DSPCTL_MODE_TX_CW:
 		savemoni16stereo(0, 0);
-		return 0;	//txlevelfenceCW;	// постоянная составляющая с максимальным уровнем
+		return txlevelfenceCW;	// постоянная составляющая с максимальным уровнем
 
 	case DSPCTL_MODE_TX_DIGI:
 	case DSPCTL_MODE_TX_SSB:
@@ -3726,6 +3751,7 @@ static RAMFUNC FLOAT_t preparevi(
 		}
 	}
 	// В режиме приёма или bypass ничего не делаем.
+	savemoni16stereo(0, 0);
 	return 0;
 }
 
@@ -3749,6 +3775,7 @@ static RAMFUNC FLOAT32P_t baseband_modulator(
 #if WITHMODEM
 	case DSPCTL_MODE_TX_BPSK:
 		{
+			// add done inside processafadcsampleiq
 			const FLOAT32P_t vfb = scalepair(modem_get_tx_iq(getTxShapeNotComplete()), txlevelfenceBPSK * shape);
 	#if WITHMODEMIQLOOPBACK
 			modem_demod_iq(vfb);	// debug loopback
@@ -3758,12 +3785,6 @@ static RAMFUNC FLOAT32P_t baseband_modulator(
 #endif /* WITHMODEM */
 
 	case DSPCTL_MODE_TX_CW:
-		{
-			// vi - audio sample in range [- txlevelfence.. + txlevelfence]
-			const FLOAT32P_t vfb = scalepair(get_float_aflo_delta(0, pathi), txlevelfenceCW * shape);
-			return vfb;
-		}
-
 	case DSPCTL_MODE_TX_DIGI:
 	case DSPCTL_MODE_TX_SSB:
 	case DSPCTL_MODE_TX_FREEDV:
@@ -4829,6 +4850,11 @@ static void printsigwnd(void)
 }
 #endif
 
+void apply_window_function(float32_t * v, uint_fast16_t size)
+{
+	arm_cmplx_mult_real_f32(v, wnd256, v, size);
+}
+
 // Нормирование уровня сигнала к шкале
 // возвращает значения от 0 до ymax включительно
 // 0 - минимальный сигнал, ymax - максимальный
@@ -4909,6 +4935,22 @@ static void fftzoom_filer_decimate(
 	arm_fir_decimate_f32(& c.fir_config, buffer, buffer, usedSize);
 }
 
+// децимация НЧ спектра для увеличения разрешения
+void fftzoom_x2(float32_t * buffer)
+{
+	const struct zoom_param * const prm = & zoom_params [0];
+	arm_fir_decimate_instance_f32 fir_config;
+	const unsigned usedSize = NORMALFFT * prm->zoom;
+
+	VERIFY(ARM_MATH_SUCCESS == arm_fir_decimate_init_f32(& fir_config,
+						prm->numTaps,
+						prm->zoom,          // Decimation factor
+						prm->pCoeffs,
+						zoomfft_st.fir_state,       	// Filter state variables
+						usedSize));
+
+	arm_fir_decimate_f32(& fir_config, buffer, buffer, usedSize);
+}
 
 static void
 make_cmplx(
@@ -4928,13 +4970,15 @@ make_cmplx(
 
 static int raster2fft(
 	int x,	// window pos
-	int dx	// width
+	int dx,	// width
+	int fftsize,	// размер буфера FFT (в бинах)
+	int visiblefftsize	// Часть буфера FFT, отобрааемая на экране (в бинах)
 	)
 {
 	const int xm = dx / 2;	// middle
 	const int delta = x - xm;	// delta in pixels
-	const int fftoffset = delta * ((int) NORMALFFT / 2 - 1) / xm;
-	return fftoffset < 0 ? ((int) NORMALFFT + fftoffset) : fftoffset;
+	const int fftoffset = delta * (visiblefftsize / 2 - 1) / xm;
+	return fftoffset < 0 ? (fftsize + fftoffset) : fftoffset;
 
 }
 
@@ -4986,10 +5030,12 @@ uint_fast8_t dsp_getspectrumrow(
 	arm_cfft_f32(FFTCONFIGSpectrum, zoomfft_st.cmplx_sig, 0, 1);	// forward transform
 	arm_cmplx_mag_f32(zoomfft_st.cmplx_sig, zoomfft_st.cmplx_sig, NORMALFFT);	/* Calculate magnitudes */
 
+	enum { visiblefftsize = (int_fast64_t) NORMALFFT * SPECTRUMWIDTH_MULT / SPECTRUMWIDTH_DENOM };
+	enum { fftsize = NORMALFFT };
+	static const FLOAT_t fftcoeff = (FLOAT_t) 1 / (int32_t) (NORMALFFT / 2);
 	for (x = 0; x < dx; ++ x)
 	{
-		static const FLOAT_t fftcoeff = (FLOAT_t) 1 / (int32_t) (NORMALFFT / 2);
-		const int fftpos = raster2fft(x, dx);
+		const int fftpos = raster2fft(x, dx, fftsize, visiblefftsize);
 		hbase [x] = zoomfft_st.cmplx_sig [fftpos] * fftcoeff;
 	}
 	return 1;
@@ -5702,7 +5748,7 @@ void RAMFUNC dsp_extbuffer32rx(const int32_t * buff)
 
 	#if WITHLOOPBACKTEST
 
-		const INT32P_t dual = loopbacktestaudio(vi, dspmodeA, shape);
+		const FLOAT32P_t dual = loopbacktestaudio(vi, dspmodeA, shape);
 		processafadcsample(dual, dspmodeA, shape, ctcss);	// обработка одного сэмпла с микрофона
 		//
 		// Тестирование источников и потребителей звука
@@ -5950,8 +5996,8 @@ rxparam_update(uint_fast8_t profile, uint_fast8_t pathi)
 	{
 		const volatile agcparams_t * const agcp = & rxsmeterparams;
 
-		const FLOAT_t upper = agccalcstrength(agcp, agcp->levelfence);
-		const FLOAT_t lower = agccalcstrength(agcp, agcp->mininput);
+		const FLOAT_t upper = agccalcstrength_log(agcp, agcp->levelfence);
+		const FLOAT_t lower = agccalcstrength_log(agcp, agcp->mininput);
 		manualsquelch [pathi] = (int) glob_squelch * (upper - lower) / SQUELCHMAX + lower;
 	}
 
@@ -5980,13 +6026,14 @@ txparam_update(uint_fast8_t profile)
 
 	const FLOAT_t c1MODES = (FLOAT_t) HARDWARE_DACSCALE;	// предотвращение переполнения
 	const FLOAT_t c1DIGI = c1MODES * (FLOAT_t) glob_gdigiscale / 100;
+	const FLOAT_t c1CW = c1MODES * (FLOAT_t) glob_cwscale / 100;
 
-	txlevelfenceAM = 	txlevelfence * c1MODES;	// Для режимов с lo6=0 - у которых нет подавления нерабочей боковой
+	txlevelfenceAM = 	txlevelfence * c1CW;	// Для режимов с lo6=0 - у которых нет подавления нерабочей боковой
 	txlevelfenceSSB = 	txlevelfence * c1MODES;
 	txlevelfenceBPSK = 	txlevelfence * c1MODES;
-	txlevelfenceNFM = 	txlevelfence * c1MODES;
-	txlevelfenceCW = 	txlevelfence * c1MODES;
-	txlevelfenceBPSK = 	txlevelfence * c1MODES;
+	txlevelfenceNFM = 	txlevelfence * c1CW;
+	txlevelfenceCW = 	txlevelfence * c1CW;
+	txlevelfenceBPSK = 	txlevelfence * c1CW;
 	txlevelfenceDIGI = 	txlevelfence * c1DIGI;
 
 	// Параметры АРУ микрофона
@@ -6187,7 +6234,7 @@ prog_dsplreg(void)
 	buff [DSPCTL_OFFSET_IFGAIN_HI] = glob_ifgain >> 8;
 	buff [DSPCTL_OFFSET_IFGAIN_LO] = glob_ifgain;
 	buff [DSPCTL_OFFSET_AFMUTE] = glob_afmute;	/* отключить звук в наушниках и динамиках */
-	buff [DSPCTL_OFFSET_AGCOFF] = (glob_agc == BOARD_AGCCODE_OFF);
+	buff [DSPCTL_OFFSET_AGCOFF] = (glob_dspagc == BOARD_AGCCODE_OFF);
 	buff [DSPCTL_OFFSET_MICLEVEL_HI] = glob_mik1level >> 8;
 	buff [DSPCTL_OFFSET_MICLEVEL_LO] = glob_mik1level;
 	buff [DSPCTL_OFFSET_AGC_T1] = glob_agc_t1;
@@ -6265,7 +6312,7 @@ prog_codec1reg(void)
 	const codec1if_t * const ifc1 = board_getaudiocodecif();
 
 	// also use glob_mik1level
-	ifc1->setvolume(glob_afgain, glob_afmute, glob_loudspeaker_off);
+	ifc1->setvolume(glob_afgain, glob_afmute, glob_dsploudspeaker_off);
 	ifc1->setlineinput(glob_lineinput, glob_mikebust20db, glob_mik1level, glob_lineamp);
 	ifc1->setprocparams(glob_mikeequal, glob_codec1_gains);	/* параметры обработки звука с микрофона (эхо, эквалайзер, ...) */
 
@@ -6604,6 +6651,16 @@ board_set_gdigiscale(uint_fast16_t n)	/* Увеличение усиления �
 }
 
 void
+board_set_cwscale(uint_fast16_t n)	/* Увеличение усиления при передаче в цифровых режимах 100..300% */
+{
+	if (glob_cwscale != n)
+	{
+		glob_cwscale = n;
+		board_dsp1regchanged();
+	}
+}
+
+void
 board_set_mik1level(uint_fast16_t n)	/* усиление микрофонного усилителя */
 {
 	if (glob_mik1level != n)
@@ -6935,6 +6992,30 @@ void board_set_mainsubrxmode(uint_fast8_t v)
 	glob_mainsubrxmode = v;
 }
 
+
+/*  */
+void
+board_set_dsploudspeaker(uint_fast8_t v)
+{
+	const uint_fast8_t n = v != 0;
+	if (glob_dsploudspeaker_off != n)
+	{
+		glob_dsploudspeaker_off = n;
+		board_codec1regchanged();
+	}
+}
+
+void
+board_set_dspagc(uint_fast8_t n)
+{
+	if (glob_dspagc != n)
+	{
+		glob_dspagc = n;
+		board_dsp1regchanged();
+	}
+}
+
+
 #if WITHSPISLAVE
 
 // вызывается из прерывания для обработки принятого блока данных
@@ -6944,7 +7025,8 @@ void hardware_spi_slave_callback(uint8_t * buff, uint_fast8_t len)
 	{
 		board_set_dspmodeA(buff [DSPCTL_OFFSET_MODEA]);
 		board_set_dspmodeB(buff [DSPCTL_OFFSET_MODEB]);
-		board_set_agc(buff [DSPCTL_OFFSET_AGCOFF] ? BOARD_AGCCODE_OFF : BOARD_AGCCODE_ON);
+		board_set_boardagc(buff [DSPCTL_OFFSET_AGCOFF] ? BOARD_AGCCODE_OFF : BOARD_AGCCODE_ON);
+		board_set_dspagc(buff [DSPCTL_OFFSET_AGCOFF] ? BOARD_AGCCODE_OFF : BOARD_AGCCODE_ON);
 #if ! WITHPOTIFGAIN
 		board_set_ifgain(buff [DSPCTL_OFFSET_IFGAIN_HI] * 256 + buff [DSPCTL_OFFSET_IFGAIN_LO]);
 #endif /* ! WITHPOTIFGAIN */

@@ -5,16 +5,15 @@
  * UA1ARN
 */
 
-
-#include "../inc/gpio.h"
-#include "../inc/spi.h"
 #include "hardware.h"
-#include "board.h"
-#include "audio.h"
-#include "formats.h"
 
 #if WITHUSBHW && WITHUSBDFU
 
+#include "gpio.h"
+#include "spi.h"
+#include "board.h"
+#include "audio.h"
+#include "formats.h"
 #include "usb_core.h"
 
 
@@ -76,7 +75,7 @@
 /* Other defines                                  */
 /**************************************************/
 /* Bit Detach capable = bit 3 in bmAttributes field */
-#define DFU_DETACH_MASK                (uint8_t)(1 << 4)
+#define DFU_DETACH_MASK                ((uint8_t)(1uL << 4))
 #define DFU_STATUS_DEPTH               (6)
 
 // INTERFACE_DFU_CONTROL bRequest codes
@@ -91,7 +90,7 @@ typedef enum
   DFU_ABORT
 } DFU_RequestTypeDef;
 
-static RAMDTCM uint8_t altinterfaces [INTERFACE_count];
+static RAMBIGDTCM uint8_t altinterfaces [INTERFACE_count];
 
 static uint_fast32_t ulmin32(uint_fast32_t a, uint_fast32_t b)
 {
@@ -141,7 +140,7 @@ typedef USBALIGN_BEGIN struct
 } USBALIGN_END USBD_DFU_HandleTypeDef;
 
 
-static USBD_DFU_HandleTypeDef gdfu;
+static RAMBIGDTCM USBD_DFU_HandleTypeDef gdfu;
 
 static USBD_StatusTypeDef  USBD_DFU_Init(USBD_HandleTypeDef *pdev, uint_fast8_t cfgidx);
 static USBD_StatusTypeDef  USBD_DFU_DeInit(USBD_HandleTypeDef *pdev, uint_fast8_t cfgidx);

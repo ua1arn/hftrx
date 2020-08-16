@@ -2643,7 +2643,7 @@ static unsigned fill_UAC2_function(uint_fast8_t fill, uint8_t * p, unsigned maxs
 
 #endif /* WITHUSBUAC */
 
-#if WITHUSBCDC
+#if WITHUSBCDCACM
 /* CDC IAD */
 
 // ISBLyzer: Interface Association Descriptor Abstract Control Model
@@ -2881,12 +2881,12 @@ static unsigned fill_CDCACM_function(uint_fast8_t fill, uint8_t * p, unsigned ma
 	unsigned offset;
 	unsigned n = 0;
 
-	for (offset = 0; offset < WITHUSBHWCDC_N; ++ offset)
+	for (offset = 0; offset < WITHUSBCDCACM_N; ++ offset)
 		n += fill_CDCACM_function_a(fill, p + n, maxsize - n, highspeed, offset);
 	return n;
 }
 
-#endif /* WITHUSBCDC */
+#endif /* WITHUSBCDCACM */
 
 #if WITHUSBCDCEEM
 
@@ -2909,7 +2909,7 @@ static unsigned CDCEEM_InterfaceAssociationDescriptor(
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = USB_INTERFACE_ASSOC_DESCRIPTOR_TYPE;	// bDescriptorType: IAD
-		* buff ++ = INTERFACE_CDCEEM_DATA_6;				// bFirstInterface
+		* buff ++ = INTERFACE_CDCEEM_DATA;				// bFirstInterface
 		* buff ++ = INTERFACE_CDCEEM_count;	// bInterfaceCount
 		* buff ++ = USB_DEVICE_CLASS_COMMUNICATIONS;	// bFunctionClass: CDC
 		* buff ++ = CDC_ETHERNET_EMULATION_MODEL;		// bFunctionSubClass - Ethernet Networking
@@ -3004,7 +3004,7 @@ static unsigned fill_CDCEEM_function(uint_fast8_t fill, uint8_t * p, unsigned ma
 	// InterfaceAssociationDescriptor требуется только для многоинтерфейсных
 	// Провда, там написано что iadclasscode_r10.pdf
 	n += CDCEEM_InterfaceAssociationDescriptor(fill, p + n, maxsize - n);	/* CDC EEM: Interface Association Descriptor Abstract Control Model */
-	n += CDCEEM_fill_24(fill, p + n, maxsize - n, INTERFACE_CDCEEM_DATA_6, 0x00, 2);	/* INTERFACE_CDCEEM_DATA_6 Data class interface descriptor */
+	n += CDCEEM_fill_24(fill, p + n, maxsize - n, INTERFACE_CDCEEM_DATA, 0x00, 2);	/* INTERFACE_CDCEEM_DATA Data class interface descriptor */
 	n += CDCEEM_fill_38(fill, p + n, maxsize - n, USB_ENDPOINT_IN(USBD_EP_CDCEEM_IN));	/* Endpoint Descriptor USBD_EP_CDCECM_IN In, Bulk, 64 bytes */
 	n += CDCEEM_fill_37(fill, p + n, maxsize - n, USB_ENDPOINT_OUT(USBD_EP_CDCEEM_OUT));	/* Endpoint Descriptor USBD_EP_CDCECM_OUT Out, Bulk, 64 bytes */
 
@@ -3030,7 +3030,7 @@ static unsigned CDCECM_InterfaceAssociationDescriptor(uint_fast8_t fill, uint8_t
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = USB_INTERFACE_ASSOC_DESCRIPTOR_TYPE;	// bDescriptorType: IAD
-		* buff ++ = INTERFACE_CDCECM_CONTROL_5;				// bFirstInterface
+		* buff ++ = INTERFACE_CDCECM_CONTROL;				// bFirstInterface
 		* buff ++ = INTERFACE_CDCECM_count;	// bInterfaceCount
 		* buff ++ = USB_DEVICE_CLASS_COMMUNICATIONS;	// bFunctionClass: CDC
 		* buff ++ = CDC_ETHERNET_NETWORKING_CONTROL_MODEL;						// bFunctionSubClass - Ethernet Networking
@@ -3054,7 +3054,7 @@ static unsigned CDCECM_InterfaceDescriptorControlIf(uint_fast8_t fill, uint8_t *
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = USB_INTERFACE_DESCRIPTOR_TYPE;  /* bDescriptorType: Interface */  /* Interface descriptor type */
-		* buff ++ = INTERFACE_CDCECM_CONTROL_5;   /* bInterfaceNumber: Number of Interface */
+		* buff ++ = INTERFACE_CDCECM_CONTROL;   /* bInterfaceNumber: Number of Interface */
 		* buff ++ = 0;		/* bAlternateSetting: Alternate setting  - zero-based index */
 		* buff ++ = 0x01;   /* bNumEndpoints: One endpoints used (interrupt type) */
 		* buff ++ = CDC_COMMUNICATION_INTERFACE_CLASS;   /* bInterfaceClass: Communication Interface Class */
@@ -3080,8 +3080,8 @@ static unsigned CDCECM_UnionFunctionalDescriptor(uint_fast8_t fill, uint8_t * bu
 		* buff ++ = length;						/* bFunctionLength */
 		* buff ++ = CS_INTERFACE;				/* bDescriptorType: CS_INTERFACE */
 		* buff ++ = CDC_UNION;						/* bDescriptorSubtype: Union func desc */
-		* buff ++ = INTERFACE_CDCECM_CONTROL_5;	/* bMasterInterface: Communication class interface -  Zero based index of the interface in this configuration (bInterfaceNum) */
-		* buff ++ = INTERFACE_CDCECM_DATA_6;	/* bSlaveInterface0: Data Class Interface -  Zero based index of the interface in this configuration (bInterfaceNum) */
+		* buff ++ = INTERFACE_CDCECM_CONTROL;	/* bMasterInterface: Communication class interface -  Zero based index of the interface in this configuration (bInterfaceNum) */
+		* buff ++ = INTERFACE_CDCECM_DATA;	/* bSlaveInterface0: Data Class Interface -  Zero based index of the interface in this configuration (bInterfaceNum) */
 	}
 	return length;
 }
@@ -3229,9 +3229,9 @@ static unsigned fill_CDCECM_function(uint_fast8_t fill, uint8_t * p, unsigned ma
 	n += CDCECM_EthernetNetworkingFunctionalDescriptor(fill, p + n, maxsize - n);	/* Union Functional Descriptor INTERFACE_CDC_CONTROL_3a & INTERFACE_CDC_DATA_4a */
 	n += CDCECM_fill_35(fill, p + n, maxsize - n, highspeed, USB_ENDPOINT_IN(USBD_EP_CDCECM_INT));	/* Endpoint Descriptor 86 6 In, Interrupt */
 
-	n += CDCECM_InterfaceDescriptorDataIf(fill, p + n, maxsize - n, INTERFACE_CDCECM_DATA_6, ialt ++, 0);	/* INTERFACE_CDCECM_DATA_6 Data class interface descriptor */
+	n += CDCECM_InterfaceDescriptorDataIf(fill, p + n, maxsize - n, INTERFACE_CDCECM_DATA, ialt ++, 0);	/* INTERFACE_CDCECM_DATA Data class interface descriptor */
 
-	n += CDCECM_InterfaceDescriptorDataIf(fill, p + n, maxsize - n, INTERFACE_CDCECM_DATA_6, ialt ++, 2);	/* INTERFACE_CDCECM_DATA_6 Data class interface descriptor */
+	n += CDCECM_InterfaceDescriptorDataIf(fill, p + n, maxsize - n, INTERFACE_CDCECM_DATA, ialt ++, 2);	/* INTERFACE_CDCECM_DATA Data class interface descriptor */
 	n += CDCECM_fill_37(fill, p + n, maxsize - n, USB_ENDPOINT_OUT(USBD_EP_CDCECM_OUT));	/* Endpoint Descriptor USBD_EP_CDCECM_OUT Out, Bulk, 64 bytes */
 	n += CDCECM_fill_38(fill, p + n, maxsize - n, USB_ENDPOINT_IN(USBD_EP_CDCECM_IN));	/* Endpoint Descriptor USBD_EP_CDCECM_IN In, Bulk, 64 bytes */
 
@@ -3256,7 +3256,7 @@ static unsigned RNDIS_InterfaceAssociationDescriptor(uint_fast8_t fill, uint8_t 
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = USB_INTERFACE_ASSOC_DESCRIPTOR_TYPE;	// bDescriptorType: IAD
-		* buff ++ = INTERFACE_RNDIS_CONTROL_5;				// bFirstInterface
+		* buff ++ = INTERFACE_RNDIS_CONTROL;				// bFirstInterface
 		* buff ++ = INTERFACE_RNDIS_count;	// bInterfaceCount
 		* buff ++ = USB_DEVICE_CLASS_WIRELESS_CONTROLLER;	// bFunctionClass: CDC
 		* buff ++ = 0x01;						// bFunctionSubClass - RF Controller
@@ -3282,7 +3282,7 @@ static unsigned RNDIS_InterfaceDescriptorControlIf(uint_fast8_t fill, uint8_t * 
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = USB_INTERFACE_DESCRIPTOR_TYPE;  /* bDescriptorType: Interface */  /* Interface descriptor type */
-		* buff ++ = INTERFACE_RNDIS_CONTROL_5;   /* bInterfaceNumber: Number of Interface */
+		* buff ++ = INTERFACE_RNDIS_CONTROL;   /* bInterfaceNumber: Number of Interface */
 		* buff ++ = 0;		/* bAlternateSetting: Alternate setting  - zero-based index */
 		* buff ++ = 0x01;   /* bNumEndpoints: One endpoints used (interrupt type) */
 		* buff ++ = USB_DEVICE_CLASS_WIRELESS_CONTROLLER;	/* bInterfaceClass: Wireless Controller */
@@ -3308,7 +3308,7 @@ static unsigned RNDIS_fill_32(uint_fast8_t fill, uint8_t * buff, unsigned maxsiz
 		* buff ++ = CS_INTERFACE;   /* bDescriptorType: CS_INTERFACE */
 		* buff ++ = 0x01;   /* bDescriptorSubtype: Call Management Func Desc */
 		* buff ++ = 0x00;   /* bmCapabilities: D0+D1 */
-		* buff ++ = INTERFACE_RNDIS_DATA_6;   /* bDataInterface: Zero based index of the interface in this configuration.(bInterfaceNum) */
+		* buff ++ = INTERFACE_RNDIS_DATA;   /* bDataInterface: Zero based index of the interface in this configuration.(bInterfaceNum) */
 	}
 	return length;
 }
@@ -3347,8 +3347,8 @@ static unsigned RNDIS_UnionFunctionalDescriptor(uint_fast8_t fill, uint8_t * buf
 		* buff ++ = length;						/* bFunctionLength */
 		* buff ++ = CS_INTERFACE;				/* bDescriptorType: CS_INTERFACE */
 		* buff ++ = CDC_UNION;						/* bDescriptorSubtype: Union func desc */
-		* buff ++ = INTERFACE_RNDIS_CONTROL_5;	/* bMasterInterface: Communication class interface -  Zero based index of the interface in this configuration (bInterfaceNum) */
-		* buff ++ = INTERFACE_RNDIS_DATA_6;	/* bSlaveInterface0: Data Class Interface -  Zero based index of the interface in this configuration (bInterfaceNum) */
+		* buff ++ = INTERFACE_RNDIS_CONTROL;	/* bMasterInterface: Communication class interface -  Zero based index of the interface in this configuration (bInterfaceNum) */
+		* buff ++ = INTERFACE_RNDIS_DATA;	/* bSlaveInterface0: Data Class Interface -  Zero based index of the interface in this configuration (bInterfaceNum) */
 	}
 	return length;
 }
@@ -3390,7 +3390,7 @@ static unsigned RNDIS_InterfaceDescriptorDataIf(uint_fast8_t fill, uint8_t * buf
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = USB_INTERFACE_DESCRIPTOR_TYPE;  /* bDescriptorType: */
-		* buff ++ = INTERFACE_RNDIS_DATA_6;			 /* bInterfaceNumber: Number of Interface */
+		* buff ++ = INTERFACE_RNDIS_DATA;			 /* bInterfaceNumber: Number of Interface */
 		* buff ++ = 0;		/* bAlternateSetting: Alternate setting  - zero-based index  */
 		* buff ++ = 0x02;   /* bNumEndpoints: Two endpoints used: data in and data out */
 		* buff ++ = CDC_DATA_INTERFACE_CLASS;   /* bInterfaceClass: CDC */
@@ -3492,7 +3492,7 @@ static unsigned HID_InterfaceDescriptorXXXX(uint_fast8_t fill, uint8_t * buff, u
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;								/* bLength */
 		* buff ++ = USB_INTERFACE_DESCRIPTOR_TYPE;		/* bDescriptorType: */
-		* buff ++ = INTERFACE_HID_CONTROL_7;			// bInterfaceNumber
+		* buff ++ = INTERFACE_HID_CONTROL;			// bInterfaceNumber
 		* buff ++ = 0x00;								/* bAlternateSetting */
 		* buff ++ = 0;//0x01;								/* bNumEndpoints */
 		* buff ++ = USB_DEVICE_CLASS_HUMAN_INTERFACE;   /* bInterfaceClass */
@@ -3980,18 +3980,14 @@ static unsigned fill_Configuration_compound(uint_fast8_t fill, uint8_t * p, unsi
 {
 	unsigned n = 0;
 
-#if WITHUSBRNDIS
-	n += fill_RNDIS_function(fill, p + n, maxsize - n, highspeed);
-#endif /* WITHUSBRNDIS */
-
-#if WITHUSBDFU && WITHMOVEDFU
+	#if WITHUSBDFU && WITHMOVEDFU
 	n += fill_DFU_function(fill, p + n, maxsize - n, highspeed);
 #endif /* WITHUSBDFU */
 
-#if WITHUSBCDC
-	/* создаем одно или несколько (WITHUSBHWCDC_N) устройств */
+#if WITHUSBCDCACM
+	/* создаем одно или несколько (WITHUSBCDCACM_N) устройств */
 	n += fill_CDCACM_function(fill, p + n, maxsize - n, highspeed);
-#endif /* WITHUSBCDC */
+#endif /* WITHUSBCDCACM */
 
 #if WITHUSBUAC
 	#if 0
@@ -4002,6 +3998,10 @@ static unsigned fill_Configuration_compound(uint_fast8_t fill, uint8_t * p, unsi
 		n += fill_UAC1_function(fill, p + n, maxsize - n, highspeed);
 	#endif /* WITHUAC2 */
 #endif /* WITHUSBUAC */
+
+#if WITHUSBRNDIS
+	n += fill_RNDIS_function(fill, p + n, maxsize - n, highspeed);
+#endif /* WITHUSBRNDIS */
 
 #if WITHUSBCDCEEM
 	n += fill_CDCEEM_function(fill, p + n, maxsize - n, highspeed);
@@ -4570,7 +4570,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 	}
 #endif /* WITHUSBDFU */
 
-#if WITHUSBCDC
+#if WITHUSBCDCACM
 	{
 		const uint_fast8_t ifc = INTERFACE_CDC_CONTROL_3a;
 		unsigned partlen;
@@ -4581,7 +4581,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 		ExtOsPropDescTbl [ifc].data = alldescbuffer + score;
 		score += partlen;
 	}
-#if WITHUSBHWCDC_N > 1
+#if WITHUSBCDCACM_N > 1
 	{
 		const uint_fast8_t ifc = INTERFACE_CDC_CONTROL_3b;
 		unsigned partlen;
@@ -4593,7 +4593,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 		score += partlen;
 	}
 #endif
-#endif /* WITHUSBCDC */
+#endif /* WITHUSBCDCACM */
 
 	if (HSdesc != 0)
 	{

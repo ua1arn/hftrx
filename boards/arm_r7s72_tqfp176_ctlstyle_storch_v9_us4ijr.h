@@ -180,18 +180,6 @@
 	// --- Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
 #endif
 
-#if LCDMODE_LQ043T3DX02K || LCDMODE_AT070TN90|| LCDMODE_AT070TNA2
-	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея
-	#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываемый на дисплее)
-	#define WITHLCDBACKLIGHTMAX	4	// Верхний предел регулировки (показываемый на дисплее)
-	#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
-#else
-	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея
-	#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываемый на дисплее)
-	#define WITHLCDBACKLIGHTMAX	3	// Верхний предел регулировки (показываемый на дисплее)
-	#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
-#endif
-
 	#define CTLREGMODE_STORCH_V9	1	/* TFT 4.3", 7" "Аист" с DSP и FPGA R7S721020VCFP, LVDS, дополнения для подключения трансвертора */
 
 #if WITHISBOOTLOADER
@@ -209,6 +197,11 @@
 	// +++ заглушки для плат с DSP обработкой
 	#define	BOARD_AGCCODE_ON	0
 	#define	BOARD_AGCCODE_OFF	0
+
+	// +++ заглушки для плат с DSP обработкой
+	#define BOARD_NOTCH_OFF		0
+	#define BOARD_NOTCH_MANUAL	0
+	#define BOARD_NOTCH_AUTO	0
 
 	/* коды фильтров второй ПЧ, выдаваемые на дешифраторы */
 	#define BOARD_FILTER_0P5		0	/* 0.5 or 0.3 kHz filter */
@@ -246,26 +239,12 @@
 #else /* WITHISBOOTLOADER */
 	// app
 
-
-	/* коды входов коммутатора источников сигнала для УНЧ приёмника */
-	#define BOARD_DETECTOR_SSB 	0		// Заглушка
-
-	// +++ заглушки для плат с DSP обработкой
-	#define	BOARD_AGCCODE_ON	0x00
-	#define	BOARD_AGCCODE_OFF	0x01
-
 	/* коды фильтров второй ПЧ, выдаваемые на дешифраторы */
 	#define BOARD_FILTER_0P5		1	/* 0.5 or 0.3 kHz filter */
 	#define BOARD_FILTER_3P1		0	/* 3.1 or 2.75 kHz filter */
 	#define BOARD_FILTER_6P0		0	/* 6.0 kHz filter */
 	#define BOARD_FILTER_8P0		0	/* 6.0 kHz filter */
 	// --- заглушки для плат с DSP обработкой
-
-	// +++ заглушки для плат с DSP обработкой
-	#define BOARD_NOTCH_OFF		0
-	#define BOARD_NOTCH_MANUAL	1
-	#define BOARD_NOTCH_AUTO	2
-	//#define WITHLMSAUTONOTCH	1	/* Использование AUTONOTCH	*/
 
 	//#define WITHRTS192	1		// Есть канал спектроанализатора - не забыть включить WITHSAI2HW
 	#define WITHRTS96		1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
@@ -445,7 +424,7 @@
 
 	#define WITHPOWERTRIMMIN	5	// Нижний предел регулировки (показываемый на дисплее)
 	#define WITHPOWERTRIMMAX	100	// Верхний предел регулировки (показываемый на дисплее)
-	#define WITHPOWERTRIMATU	50	// Значение для работы автотюнера
+	#define WITHPOWERTRIMATU	15	// Значение для работы автотюнера
 
 	#if 0
 		#define WITHUSBHEADSET 1	/* трансивер работает USB гарнитурой для компьютера - режим тестирования */
@@ -515,6 +494,7 @@
 
 		XTHERMOIX = BOARD_ADCX1IN(6),		// MCP3208 CH6 Exernal thermo sensor ST LM235Z
 
+		//#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
 		#define WITHVOLTLEVEL	1	/* отображение напряжения питания */
 		#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
 
@@ -534,6 +514,7 @@
 	#elif 0
 		// UA1CEI PA board: MCP3208 at targetext2 - P2_0 external SPI device (PA BOARD ADC)
 
+		//#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
 		#define WITHVOLTLEVEL	1	/* отображение напряжения питания */
 		//#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
 		#define WITHCURRLEVEL2	1	/* отображение тока оконечного каскада */
@@ -554,6 +535,7 @@
 	#else /* WITHAUTOTUNER_AVBELNN */
 		// QRP вариант - только 5 ватт на плате
 
+		//#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
 		#define WITHVOLTLEVEL	1	/* отображение напряжения питания */
 		#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
 

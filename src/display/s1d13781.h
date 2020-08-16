@@ -42,6 +42,7 @@
 		#define S1D_DISPLAY_BPP                 24
 		#define S1D_DISPLAY_SCANLINE_BYTES      (S1D_DISPLAY_WIDTH * 3)
 		#define S1D_PHYSICAL_VMEM_REQUIRED      391680L		// память без учёта PIP
+		#define LCDMODE_PIXELSIZE 3
 
 	#elif 1
 
@@ -49,6 +50,7 @@
 		#define S1D_DISPLAY_BPP                 16
 		#define S1D_DISPLAY_SCANLINE_BYTES      (S1D_DISPLAY_WIDTH * 2)
 		#define S1D_PHYSICAL_VMEM_REQUIRED      261120L		// память без учёта PIP
+		#define LCDMODE_PIXELSIZE 2
 
 	#else
 
@@ -56,6 +58,7 @@
 		#define S1D_DISPLAY_BPP                 8
 		#define S1D_DISPLAY_SCANLINE_BYTES      (S1D_DISPLAY_WIDTH * 1)
 		#define S1D_PHYSICAL_VMEM_REQUIRED      130560L		// память без учёта PIP
+		#define LCDMODE_PIXELSIZE 1
 
 	#endif
 

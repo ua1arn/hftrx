@@ -36,12 +36,12 @@
 //#define CTLSTYLE_RAVENDSP_V7	1	// V6 fixed Rmainunit_v5bm.pcb STM32F746ZET6
 //#define CTLSTYLE_STORCH_V1	1	// STM32F746ZET6, USB, SD-CARD, DUAL WATCH, NAU8822L и FPGA EP4CE22E22I7N
 //#define CTLSTYLE_STORCH_V2	1	// wide LCD interface, STM32F746ZET6, 2xUSB, SD-CARD, DUAL WATCH, NAU8822L и FPGA EP4CE22E22I7N,
-//#define CTLSTYLE_STORCH_V3	1	// Rmainunit_v5fm.pcb, Rmainunit_v5jm.pcb, Rmainunit_v5km.pcb STM32F767ZET6, 2xUSB, SD-CARD, 8-bit display interface, NAU8822L и FPGA EP4CE22E22I7N
+//#define CTLSTYLE_STORCH_V3	1	// Rmainunit  	_v5fm.pcb, Rmainunit_v5jm.pcb, Rmainunit_v5km.pcb STM32F767ZET6, 2xUSB, SD-CARD, 8-bit display interface, NAU8822L и FPGA EP4CE22E22I7N
 //#define CTLSTYLE_STORCH_V5	1	// Rmainunit_v5l.pcb STM32F767ZET6, 2xmini-USB, mini SD-CARD, 8-bit display interface, NAU8822L и FPGA EP4CE22E22I7N
 
 // Дисплей с фреймбуфером:
-//#define CTLSTYLE_STORCH_V6	1	// Rmainunit_v5la.pcb STM32H743IIT6, TFT 4.3", 2xmini-USB, mini SD-CARD, 8-bit display interface, NAU8822L и FPGA EP4CE22E22I7N
-#define CTLSTYLE_STORCH_V7	1	// rmainunit_v5km0.pcb, rmainunit_v5km1.pcb STM32H743IIT6, TFT 4.3", 2xUSB, SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
+#define CTLSTYLE_STORCH_V6	1	// Rmainunit_v5la.pcb STM32H743IIT6, TFT 4.3", 2xmini-USB, mini SD-CARD, 8-bit display interface, NAU8822L и FPGA EP4CE22E22I7N
+//#define CTLSTYLE_STORCH_V7	1	// rmainunit_v5km0.pcb, rmainunit_v5km1.pcb STM32H743IIT6, TFT 4.3", 2xUSB, SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
 //#define CTLSTYLE_STORCH_V8	1	// rmainunit_v5km2.pcb rmainunit_v5km3.pcb rmainunit_v5km4.pcb R7S721020VCFP, TFT 4.3" или 7", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N, AD9246BCPZ-125
 //#define CTLSTYLE_STORCH_V9	1	// rmainunit_v5km2.pcb rmainunit_v5km3.pcb rmainunit_v5km4.pcb R7S721020VCFP, TFT 4.3" или 7", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N, AD9246BCPZ-125
 
@@ -203,13 +203,18 @@
 	#include "boards/arm_stm32f4xx_tqfp144_cpustyle_storch_v5.h"	// Rmainunit_v5l.pcb (mini USBx2, wide display interface) - mini RX
 #elif CPUSTYLE_STM32H7XX && CTLSTYLE_STORCH_V6	// Rmainunit_v5la.pcb STM32H743IIT6, TFT 4.3", 2xmini-USB, mini SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
 	#include "boards/arm_stm32h7xx_tqfp176_ctlstyle_storch_v6.h"	// Rmainunit_v5la.pcb STM32H743IIT6, TFT 4.3", 2xmini-USB, mini SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
+	//#include "boards/arm_stm32h7xx_tqfp176_ctlstyle_storch_v6_idenis.h"	// Rmainunit_v5la.pcb STM32H743IIT6, TFT 4.3", 2xmini-USB, mini SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
 	//#include "boards/arm_stm32h7xx_tqfp176_ctlstyle_storch_v6_nodisplay.h".h"	// Rmainunit_v5la.pcb STM32H743IIT6, TFT 4.3", 2xmini-USB, mini SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
 	//#include "boards/arm_stm32h7xx_tqfp176_ctlstyle_storch_v6_radiolav.h"	// Rmainunit_v5la.pcb STM32H743IIT6, TFT 4.3", 2xmini-USB, mini SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
 	//#include "boards/arm_stm32h7xx_tqfp176_ctlstyle_storch_v6_UA1M.h"	// Rmainunit_v5la.pcb STM32H743IIT6, TFT 4.3", 2xmini-USB, mini SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
 	//#include "boards/arm_stm32h7xx_tqfp176_ctlstyle_storch_v6_RA1AGO.h"	// Rmainunit_v5la.pcb STM32H743IIT6, TFT 4.3", 2xmini-USB, mini SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32h7xx_tqfp176_cpustyle_storch_v6.h"	// Rmainunit_v5l.pcb (mini USBx2, wide display interface) - mini RX
-#elif CPUSTYLE_STM32H7XX && CTLSTYLE_STORCH_V7	// rmainunit_v5km0.pcb STM32H743IIT6, TFT 4.3", 2xUSB, SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
+#elif 0 && CPUSTYLE_STM32H7XX && CTLSTYLE_STORCH_V7	// rmainunit_v5km0.pcb STM32H743IIT6, TFT 4.3", 2xUSB, SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
+	#include "boards/arm_stm32h7xx_tqfp176_ctlstyle_storch_v7z_no_radio.h"	// rmainunit_v5km0.pcb, rmainunit_v5km1.pcb STM32H743IIT6, TFT 4.3", 2xmini-USB, mini SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
+	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
+	#include "boards/arm_stm32h7xx_tqfp176_cpustyle_storch_v7z.h"	// Rmainunit_v5l.pcb (mini USBx2, wide display interface) - mini RX
+#elif 1 && CPUSTYLE_STM32H7XX && CTLSTYLE_STORCH_V7	// rmainunit_v5km0.pcb STM32H743IIT6, TFT 4.3", 2xUSB, SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
 	#include "boards/arm_stm32h7xx_tqfp176_ctlstyle_storch_v7.h"	// rmainunit_v5km0.pcb, rmainunit_v5km1.pcb STM32H743IIT6, TFT 4.3", 2xmini-USB, mini SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
 	//#include "boards/arm_stm32h7xx_tqfp176_ctlstyle_storch_v7_ua1cei.h"	// rmainunit_v5km0.pcb, rmainunit_v5km1.pcb STM32H743IIT6, TFT 4.3", 2xmini-USB, mini SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
 	//#include "boards/arm_stm32h7xx_tqfp176_ctlstyle_storch_v7_oldcase.h"	// rmainunit_v5km0.pcb, rmainunit_v5km1.pcb STM32H743IIT6, TFT 4.3", 2xmini-USB, mini SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
@@ -218,16 +223,16 @@
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32h7xx_tqfp176_cpustyle_storch_v7.h"	// Rmainunit_v5l.pcb (mini USBx2, wide display interface) - mini RX
 #elif CPUSTYLE_R7S721 && CTLSTYLE_STORCH_V8	// rmainunit_v5km2.pcb R7S721020VCFP, TFT 4.3" or 7", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N, AD9246BCPZ-125
-	//#include "boards/arm_r7s72_tqfp176_ctlstyle_storch_v8.h"	// rmainunit_v5km2.pcb R7S721020VCFP, TFT 7", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
+	#include "boards/arm_r7s72_tqfp176_ctlstyle_storch_v8.h"	// rmainunit_v5km2.pcb R7S721020VCFP, TFT 7", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 	//#include "boards/arm_r7s72_tqfp176_ctlstyle_storch_v8_ra4asn.h"	// rmainunit_v5km2.pcb R7S721020VCFP, TFT 7", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
-	#include "boards/arm_r7s72_tqfp176_ctlstyle_storch_v8_us4ijr.h"	// us4ijr@gmail.com rmainunit_v5km2.pcb R7S721020VCFP, TFT 4.3", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
+	//#include "boards/arm_r7s72_tqfp176_ctlstyle_storch_v8_us4ijr.h"	// us4ijr@gmail.com rmainunit_v5km2.pcb R7S721020VCFP, TFT 4.3", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 	//#include "boards/arm_r7s72_tqfp176_ctlstyle_storch_v8_r4dz.h"	// rmainunit_v5km2.pcb R7S721020VCFP, TFT 4.3", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 	//#include "boards/arm_r7s72_tqfp176_ctlstyle_storch_v8_ua3reo.h"	// rmainunit_v5km2.pcb R7S721020VCFP, TFT 7", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_r7s72_tqfp176_cpustyle_storch_v8.h"	// rmainunit_v5km2.pcb (mini USBx2, wide display interface) - mini RX
 #elif CPUSTYLE_R7S721 && CTLSTYLE_STORCH_V9	// rmainunit_v5km5.pcb R7S721020VCFP, TFT 4.3" or 7", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N, AD9246BCPZ-125
-	//#include "boards/arm_r7s72_tqfp176_ctlstyle_storch_v9.h"	// rmainunit_v5km5.pcb R7S721020VCFP, TFT 7", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
-	#include "boards/arm_r7s72_tqfp176_ctlstyle_storch_v9_us4ijr.h"	// us4ijr@gmail.com rmainunit_v5km5.pcb R7S721020VCFP, TFT 4.3", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
+	#include "boards/arm_r7s72_tqfp176_ctlstyle_storch_v9.h"	// rmainunit_v5km5.pcb R7S721020VCFP, TFT 7", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
+	//#include "boards/arm_r7s72_tqfp176_ctlstyle_storch_v9_us4ijr.h"	// us4ijr@gmail.com rmainunit_v5km5.pcb R7S721020VCFP, TFT 4.3", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_r7s72_tqfp176_cpustyle_storch_v9.h"	// rmainunit_v5km5.pcb (mini USBx2, wide display interface) - mini RX
 #elif CPUSTYLE_STM32MP1 && CTLSTYLE_STORCH_V7	// rmainunit_v5km2.pcb R7S721020VCFP, TFT 4.3" or 7", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N, AD9246BCPZ-125
@@ -347,9 +352,11 @@
 	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32fxxx_tqfp100_cpustyle_v8c.h"	/* плата STM32F4DISCOVERY с процессором STM32F407VGT6	*/
 #elif CPUSTYLE_STM32F && CTLSTYLE_V3D
-	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_32F746G.h"	/* Плата STM32F746G-DISCO с процессором STM32F746NGH6	*/
+//	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_32F746G.h"	/* Плата STM32F746G-DISCO с процессором STM32F746NGH6	*/
+	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_32F746G_ra4asn.h"	/* Плата STM32F746G-DISCO с процессором STM32F746NGH6	+ FPGA board */
 	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */
-	#include "boards/arm_stm32f4xx_tqfp144_cpustyle_32F746G.h"	/* Плата STM32F746G-DISCO с процессором STM32F746NGH6	*/
+//	#include "boards/arm_stm32f4xx_tqfp144_cpustyle_32F746G.h"	/* Плата STM32F746G-DISCO с процессором STM32F746NGH6	*/
+	#include "boards/arm_stm32f4xx_tqfp144_cpustyle_32F746G_ra4asn.h"	/* Плата STM32F746G-DISCO с процессором STM32F746NGH6	+ FPGA board*/
 #elif CPUSTYLE_STM32F && CTLSTYLE_NUCLEO_V1	// Внешняя аудиоплата на базе NUCLEO-F767ZI с процессором STM32F767ZIT6  mb1137.pdf
 	#include "boards/arm_stm32f767_tqfp144_ctlstyle_nucleo.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */

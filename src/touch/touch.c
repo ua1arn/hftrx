@@ -79,19 +79,54 @@ board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
 }
 #endif /* defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_GT911) */
 
+#if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_FT5336)
+#include "ft5336.h"
+
+static TS_StateTypeDef ts_ft5336;
+
+uint_fast8_t
+board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
+{
+	static uint_fast16_t x = 0, y = 0;
+
+	ft5336_GetState(& ts_ft5336);
+
+	if (ts_ft5336.touchDetected)
+	{
+		* xr = ts_ft5336.touchX[0];
+		* yr = ts_ft5336.touchY[0];
+		return 1;
+	}
+	* xr = x;
+	* yr = y;
+	return 0;
+}
+
+#endif /* defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_FT5336) */
+
 #if defined (TSC1_TYPE)
 
 void board_tsc_initialize(void)
 {
-#if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_GT911)
+#if TSC1_TYPE == TSC_TYPE_GT911
 	if (gt911_initialize(GOODIX_I2C_ADDR_BA))
 		PRINTF("gt911 initialization succefful\n");
 	else
 		PRINTF("gt911 initialization error\n");
-#endif /* defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_GT911) */
+#endif /* TSC1_TYPE == TSC_TYPE_GT911 */
 
-#if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811)
+#if TSC1_TYPE == TSC_TYPE_STMPE811
 	stmpe811_initialize();
-#endif /* defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811) */
+#endif /* TSC1_TYPE == TSC_TYPE_STMPE811 */
+
+#if TSC1_TYPE == TSC_TYPE_FT5336
+	if (ft5336_Initialize(DIM_X, DIM_Y) == FT5336_I2C_INITIALIZED)
+		PRINTF("ft5336 initialization succefful\n");
+	else
+	{
+		PRINTF("ft5336 initialization error\n");
+		ASSERT(0);
+	}
+#endif /* TSC1_TYPE == TSC_TYPE_FT5336 */
 }
 #endif /* defined (TSC1_TYPE) */

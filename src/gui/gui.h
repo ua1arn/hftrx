@@ -3,6 +3,7 @@
 
 #include "hardware.h"
 #include "../display/display.h"
+#include "display2.h"
 
 #define GUIMINX					800							// минимальное разрешение для touch GUI
 #define GUIMINY					480
@@ -50,17 +51,33 @@ enum {
 	memory_cells_count = 20
 };
 
+typedef enum {
+	BAND_TYPE_HAM,
+	BAND_TYPE_BROADCAST
+} gui_band_type_t;
+
 typedef struct {
-	int_fast32_t freq;
-	int_fast8_t submode;
-} memory_t;
+	uint_fast32_t init_freq;
+	uint_fast8_t index;
+	gui_band_type_t type;
+	char name[10];
+} band_array_t;
 
 uint_fast8_t hamradio_get_multilinemenu_block_groups(menu_names_t * vals);
 uint_fast8_t hamradio_get_multilinemenu_block_params(menu_names_t * vals, uint_fast8_t index);
 void hamradio_get_multilinemenu_block_vals(menu_names_t * vals, uint_fast8_t index, uint_fast8_t cnt);
 const char * hamradio_gui_edit_menu_item(uint_fast8_t index, int_least16_t rotate);
+void hamradio_clean_memory_cells(uint_fast8_t i);
 void hamradio_save_memory_cells(uint_fast8_t i);
-void hamradio_load_memory_cells(memory_t * mc, uint_fast8_t i, uint_fast8_t set);
+uint_fast32_t hamradio_load_memory_cells(uint_fast8_t cell, uint_fast8_t set);
+uint_fast8_t hamradio_get_submode(void);
+const char * hamradio_get_submode_label(uint_fast8_t v);
+uint_fast8_t hamradio_load_mic_profile(uint_fast8_t cell, uint_fast8_t set);
+void hamradio_save_mic_profile(uint_fast8_t cell);
+void hamradio_clean_mic_profile(uint_fast8_t cell);
+uint_fast8_t hamradio_get_bands(band_array_t * bands);
+void hamradio_goto_band_by_freq(uint_fast32_t f);
+uint_fast8_t hamradio_check_current_freq_by_band(uint_fast8_t band);
 
 void gui_encoder2_menu(enc2_menu_t * enc2_menu);
 void gui_WM_walktrough(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx);

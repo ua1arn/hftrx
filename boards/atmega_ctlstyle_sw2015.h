@@ -248,4 +248,6 @@ enum
 #define KI_COUNT 2	// количество используемых под клавиатуру входов АЦП
 #define KI_LIST	KI1, KI0,	// инициализаторы для функции перекодировки
 
+#define WITHMAXPWRCALI		216	/* калибровочный параметр PWR-метра */
+
 #endif /* ATMEGA_CTLSTYLE_SW2015_H_INCLUDED */

@@ -400,6 +400,6 @@ enum
 #define WITHPOWERTRIM		1	// Имеется управление мощностью
 #define WITHPOWERTRIMMIN	5	// Нижний предел регулировки (показываемый на дисплее)
 #define WITHPOWERTRIMMAX	100	// Верхний предел регулировки (показываемый на дисплее)
-#define WITHPOWERTRIMATU	50	// Значение для работы автотюнера
+#define WITHPOWERTRIMATU	15	// Значение для работы автотюнера
 
 #endif /* ARM_STM32F4XX_TQFP100_CTLSTYLE_RAVEN_V1_H_INCLUDED */

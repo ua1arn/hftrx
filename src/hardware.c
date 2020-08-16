@@ -1145,6 +1145,30 @@ static void tickers_spool(void)
 	}
 }
 
+#if 0//WITHLWIP
+	#include "lwip/sys.h"
+	#include "lwip/timeouts.h"
+#endif /* WITHLWIP */
+
+
+static uint32_t sys_now_counter;
+
+/* прототип в lwip/sys.h
+ *
+ */
+/**
+ * @ingroup sys_time
+ * Returns the current time in milliseconds,
+ * may be the same as sys_jiffies or at least based on it.
+ * Don't care for wraparound, this is only used for time diffs.
+ * Not implementing this function means you cannot use some modules (e.g. TCP
+ * timestamps, internal timeouts for NO_SYS==1).
+ */
+uint32_t sys_now(void)
+{
+	return sys_now_counter;
+}
+
 /* Машинно-независимый обработчик прерываний. */
 // Функции с побочным эффектом - отсчитывание времени.
 // При возможности вызываются столько раз, сколько произошло таймерных прерываний.
@@ -1152,6 +1176,11 @@ static RAMFUNC void spool_systimerbundle1(void)
 {
 	static uint_fast16_t spool_1stickcount;
 	//beacon_255();
+
+	sys_now_counter += (1000 / TICKS_FREQUENCY);
+#if 0//WITHLWIP
+    sys_check_timeouts();
+#endif /* WITHLWIP */
 
 	enum { TICKS1000MS = NTICKS(1000) };
 	//spool_lfm();
@@ -8272,20 +8301,24 @@ stm32h7xx_pll_initialize(void)
 	// VOS0 (revidion V) - up to 480 MHz
 	// VOS1 (revidion Y and other) - up to 400 MHz
 
+#if defined PWR_CR3_SCUEN
 	/* Configure voltage regulator */
-	//Set the highest core voltage (Scale 1)
+	// Set the highest core voltage (Scale 1)
 	PWR->CR3 = PWR_CR3_LDOEN | PWR_CR3_SCUEN;
 	PWR->D3CR = (PWR->D3CR & ~ (PWR_D3CR_VOS)) |
 		PWR_D3CR_VOS_value |
-		//PWR_D3CR_VOS_0 * 3 |		// Rev Y: SCALE 0 1.218 mV VOS0
+		//PWR_D3CR_VOS_0 * 3 |		// Rev Y: SCALE 0 1.218 mV VOS0, same as Rev V
 		//PWR_D3CR_VOS_0 * 2 |		// Rev Y: SCALE 1 1.130 mV VOS1
 		//PWR_D3CR_VOS_0 * 1 |		// Rev Y: SCALE 2 1.064 mV VOS2
 		//PWR_D3CR_VOS_0 * 0 |		// Rev Y: SCALE 3 1.064 mV VOS3
 		0;
 	(void) PWR->D3CR;
-	//Wait for LDO ready
+	// Wait for LDO ready
 	while ((PWR->D3CR & PWR_D3CR_VOSRDY) == 0)
 		;
+#else
+	#warning LDO control should be implemented
+#endif
 
 	#if WITHCPUXOSC
 		// Внешний кварцевый генератор
@@ -11873,7 +11906,7 @@ sysintt_sdram_initialize(void)
 	/* В процессоре есть внешняя память - если уже в ней то не трогаем */
 	arm_hardware_sdram_initialize();
 
-#elif WITHSDRAMHW && CTLSTYLE_V1D
+#elif WITHSDRAMHW && (CTLSTYLE_V1D || CTLSTYLE_V3D)
 	/* В процессоре есть внешняя память - только данные */
 	arm_hardware_sdram_initialize();
 
@@ -12436,68 +12469,42 @@ cpu_tms320f2833x_flash_waitstates(uint_fast8_t flashws, uint_fast8_t otpws)
 #define BOOT_API_CORE1_BRANCH_ADDRESS_TAMP_BCK_REG_IDX		5U
 
 /*******************************************************************************
- * STM32MP1 TAMP
- ******************************************************************************/
-#define TAMP_BKP_REGISTER_BASE		(TAMP_BASE + 0x100uL)
-
-static inline uint32_t tamp_bkpr(uint32_t idx)
-{
-	return TAMP_BKP_REGISTER_BASE + (idx * 4);
-}
-
-
-static void
-mmio_write_32(uintptr_t addr, uint32_t value)
-{
-	volatile uint32_t * const reg = (volatile uint32_t * const) addr;
-	* reg = value;
-	(void) * reg;
-	ASSERT(* reg == value);
-}
-
-
-/*******************************************************************************
  * STM32MP1 handler called when a power domain is about to be turned on. The
  * mpidr determines the CPU to be turned on.
  * call by core 0 to activate core 1
  ******************************************************************************/
 static void stm32_pwr_domain_on(void)
 {
-	//unsigned long current_cpu_mpidr = read_mpidr_el1();
-	uint32_t bkpr_core1_addr =
-		tamp_bkpr(BOOT_API_CORE1_BRANCH_ADDRESS_TAMP_BCK_REG_IDX);
-	uint32_t bkpr_core1_magic =
-		tamp_bkpr(BOOT_API_CORE1_MAGIC_NUMBER_TAMP_BCK_REG_IDX);
-
-	//stm32mp_clk_enable(RTCAPB);
-
-	PWR->CR1 |= PWR_CR1_DBP;
+	PWR->CR1 |= PWR_CR1_DBP;	// 1: Write access to RTC and backup domain registers enabled.
+	(void) PWR->CR1;
 	while ((PWR->CR1 & PWR_CR1_DBP) == 0)
 		;
 
-	RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_RTCAPBEN;
-	(void) RCC->MP_APB5ENSETR;
-	RCC->MP_APB5LPENSETR = RCC_MC_APB5LPENSETR_RTCAPBLPEN;  // Включить тактирование
-	(void) RCC->MP_APB5LPENSETR;
+//	RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_RTCAPBEN;
+//	(void) RCC->MP_APB5ENSETR;
+//	RCC->MP_APB5LPENSETR = RCC_MC_APB5LPENSETR_RTCAPBLPEN;  // Включить тактирование
+//	(void) RCC->MP_APB5LPENSETR;
 
-	//cntfrq_core0 = read_cntfrq_el0();
+//	RCC->MP_AHB5ENSETR = RCC_MC_AHB5ENSETR_BKPSRAMEN;
+//	(void) RCC->MP_AHB5ENSETR;
+//	RCC->MP_AHB5LPENSETR = RCC_MC_AHB5LPENSETR_BKPSRAMLPEN;
+//	(void) RCC->MP_AHB5LPENSETR;
 
 	/* Write entrypoint in backup RAM register */
-	mmio_write_32(bkpr_core1_addr, (uintptr_t) Reset_CPU1_Handler);	// Invoke at SVC context
+	TAMP->BKP5R = (uintptr_t) Reset_CPU1_Handler;	// Invoke at SVC context
+	(void) TAMP->BKP5R;
 
 	/* Write magic number in backup register */
-	mmio_write_32(bkpr_core1_magic, BOOT_API_A7_CORE1_MAGIC_NUMBER);
+	TAMP->BKP4R = BOOT_API_A7_CORE1_MAGIC_NUMBER;
+	(void) TAMP->BKP4R;
 
-	//stm32mp_clk_disable(RTCAPB);
-//	RCC->MP_APB5ENCLRR = RCC_MC_APB5ENSETR_RTCAPBEN;
-//	(void) RCC->MP_APB5ENCLRR;
-//
-//	PWR->CR1 &= ~ PWR_CR1_DBP;
-//	while ((PWR->CR1 & PWR_CR1_DBP) != 0)
-//		;
+	PWR->CR1 &= ~ PWR_CR1_DBP;	// 0: Write access to RTC and backup domain registers disabled.
+	(void) PWR->CR1;
+	while ((PWR->CR1 & PWR_CR1_DBP) != 0)
+		;
 
 	/* Generate an IT to core 1 */
-	GIC_SendSGI(SGI8_IRQn, 0x02, 0x00);	// CPU1, filer=0
+	GIC_SendSGI(SGI8_IRQn, 0x01 << 1, 0x00);	// CPU1, filer=0
 }
 #endif /* WITHSMPSYSTEM */
 
@@ -13210,7 +13217,7 @@ static void vectors_relocate(void)
 #if CPUSTYLE_ARM && WITHSMPSYSTEM
 
 // http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dai0321a/BIHEJCHB.html
-void spin_lock(spinlock_t *p)
+void spin_lock(volatile spinlock_t *p)
 {
 	// Note: __LDREXW and __STREXW are CMSIS functions
 	int status = 0;
@@ -13226,7 +13233,7 @@ void spin_lock(spinlock_t *p)
 
 }
 
-void spin_unlock(spinlock_t *p)
+void spin_unlock(volatile spinlock_t *p)
 {
 	// Note: __LDREXW and __STREXW are CMSIS functions
 	__DMB(); // Ensure memory operations completed before

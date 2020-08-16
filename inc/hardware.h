@@ -158,6 +158,8 @@ extern "C" {
 	#define CPUSTYLE_STM32F		1		/* архитектура процессора STM32F */
 	#define CPUSTYLE_ARM_CM7	1		/* архитектура процессора CORTEX M7 */
 
+	#define CORE_CM7 1	/* for STM32H745 dual-core config */
+
 	#include "armcpu/stm32h7xx.h"
 
 	#define ALIGNX_BEGIN __attribute__ ((aligned(32)))
@@ -415,7 +417,6 @@ extern "C" {
 
 	// Renesas CPU
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
-	#define	CPUSTYLE_ARM_CA9	1
 
 	/* MCU Lineup */
 	#define TARGET_RZA1LC           (0x00200000)
@@ -461,7 +462,6 @@ extern "C" {
 
 	#define CORE_CA7	1
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
-	#define	CPUSTYLE_ARM_CA7	1
 
 	#include "armcpu/stm32mp1xx.h"
 	#include "irq_ctrl.h"
@@ -537,6 +537,7 @@ void hardware_adc_initialize(void);
 
 	#define FLASHMEM //__flash
 	#define NOINLINEAT // __attribute__((noinline))
+	#define strlen_P(s) strlen(s)
 
 	#if CPUSTYLE_R7S721
 		#define FLASHMEMINIT	__attribute__((section(".initdata"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
@@ -560,7 +561,7 @@ void hardware_adc_initialize(void);
 		#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
 		#define RAMFRAMEBUFF	__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
 		#define RAMDTCM			__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
-		#define RAMBIGDTCM		__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
+		#define RAMBIGDTCM		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 		#define RAMBIGDTCM_MDMA		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 		#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
 		#define RAMHEAP __attribute__((used, section(".heap"), aligned(64))) // memory used as heap zone
@@ -586,11 +587,11 @@ void hardware_adc_initialize(void);
 		#define RAMFUNC			 __attribute__((__section__(".itcm")))
 		#define RAMNOINIT_D1	//__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
 		#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
-		#define RAMFRAMEBUFF	//__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
+		#define RAMFRAMEBUFF	__attribute__((section(".sdram"))) /* размещение в памяти SRAM_D1 */
 		#define RAMDTCM			__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 		#define RAMBIGDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 		#define RAMBIGDTCM_MDMA		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
-		#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
+		#define RAMBIG			__attribute__((section(".sdram"))) /* размещение в памяти SRAM_D1 */
 		#define RAMHEAP __attribute__((used, section(".heap"), aligned(16))) // memory used as heap zone
 	#elif CPUSTYLE_STM32F4XX && (defined (STM32F429xx) || defined(STM32F407xx))
 		#define VTRATTR	__attribute__ ((section("vtable"), used, aligned(256 * 4)))
@@ -660,15 +661,17 @@ void hardware_adc_initialize(void);
 	#define FLASHMEM __flash
 	#define FLASHMEMINIT	__flash	/* не требуется быстрый доступ - например образ загружаемый в FPGA */
 	#define FLASHMEMINITFUNC	/* не требуется быстрый доступ - например образ загружаемый в FPGA */
-	#define RAMDTCM
 
 	#if (FLASHEND > 0x7FFF)	
 		// нет нужды экономить память FLASH
 		#define NOINLINEAT // __attribute__((noinline))
+		#define RAMFUNC_NONILINE // __attribute__((noinline))
 	#else
 		#define NOINLINEAT __attribute__((noinline))	// On small FLASH ATMega CPUs
+		#define RAMFUNC_NONILINE __attribute__((noinline))	// On small FLASH ATMega CPUs
 	#endif
-	#define RAMFUNC_NONILINE // __attribute__((__section__(".ramfunc"), noinline))  
+
+	#define RAMDTCM
 	#define RAMFUNC			 // __attribute__((__section__(".ramfunc")))  
 	#define RAMNOINIT_D1
 	#define RAMHEAP 		//__attribute__((used, section(".heap"))) // memory used as heap zone
@@ -916,6 +919,11 @@ calcdivround2(
 	#define HARDWARE_USBD_PIPE_RNDIS_OUT	12	// RNDIS OUT Данные RNDIS от компьютера в TRX
 	#define HARDWARE_USBD_PIPE_RNDIS_IN		13	// RNDIS IN Данные RNDIS в компьютер из TRX
 	#define HARDWARE_USBD_PIPE_RNDIS_INT	8	//
+
+	/* совпадает с RNDIS */
+	#define HARDWARE_USBD_PIPE_CDCEEM_OUT	12	// CDC EEM OUT Данные ком-порта от компьютера в TRX
+	#define HARDWARE_USBD_PIPE_CDCEEM_IN	13	// CDC EEM IN Данные ком-порта в компьютер из TRX
+
 #endif /* CPUSTYLE_R7S721 */
 
 #define CATPCOUNTSIZE (13)

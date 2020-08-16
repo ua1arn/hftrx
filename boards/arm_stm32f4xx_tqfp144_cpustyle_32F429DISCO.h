@@ -93,8 +93,8 @@ Free:
 	#define WITHUSBUACIN2		1	/* формируются три канала передачи звука */
 #endif /* WITHRTS96 */
 
-	#define WITHUSBCDC		1	/* использовать виртуальный последовательный порт на USB соединении */
-	#define WITHUSBHWCDC_N	1	/* количество виртуальных последовательных портов */
+	#define WITHUSBCDCACM		1	/* использовать виртуальный последовательный порт на USB соединении */
+	#define WITHUSBCDCACM_N	1	/* количество виртуальных последовательных портов */
 	//#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
 	//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
 
@@ -493,30 +493,6 @@ Free:
 		arm_hardware_pioe_altfn2(1U << 6, AF_SAI);			/* PE6 - SAI1_SD_A	(i2s data to codec)	*/ \
 	} while (0)
 #endif /* WITHSAI1HW */
-
-
-// Назначения входов АЦП процессора.
-enum 
-{ 
-#if WITHREFSENSOR
-	VREFIX = 17,		// Reference voltage
-#endif /* WITHREFSENSOR */
-//#if WITHTEMPSENSOR
-//	TEMPIX = 16,		// ADC1->CR2 |= ADC_CR2_TSVREFE;	// для тестов
-//#endif
-//#if WITHVOLTLEVEL 
-//	VOLTSOURCE = 0,		// Средняя точка делителя напряжения, для АКБ
-//#endif /* WITHVOLTLEVEL */
-
-//#if WITHSWRMTR
-//	PWRI = 0,
-//	FWD = 0, REF = 0,	// SWR-meter
-//#endif
-	KI0 = 5, KI1 = 13, KI2 = 15	// PA5, PC3, PC5 клавиатура
-};
-
-#define KI_COUNT 3	// количество используемых под клавиатуру входов АЦП
-#define KI_LIST	KI2, KI1, KI0,	// инициализаторы для функции перекодировки
 
 #if WITHUSBHW
 	/**USB_OTG_HS GPIO Configuration    

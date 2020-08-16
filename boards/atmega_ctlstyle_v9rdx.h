@@ -244,4 +244,6 @@ enum
 //#define KI_COUNT 3	// количество используемых под клавиатуру входов АЦП
 #define KI_COUNT 2	// количество используемых под клавиатуру входов АЦП
 
+#define WITHMAXPWRCALI		216	/* калибровочный параметр PWR-метра */
+
 #endif /* ATMEGA_CTLSTYLE_V9RDX_H_INCLUDED */

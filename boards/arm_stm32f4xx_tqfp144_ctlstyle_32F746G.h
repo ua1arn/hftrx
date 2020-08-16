@@ -104,6 +104,7 @@
 	#else
 		//#define DIRECT_125M0_X1		1	/* Тактовый генератор на плате 125.0 МГц */
 		#define DIRECT_122M88_X1	1	/* Тактовый генератор 122.880 МГц */
+		//#define DIRECT_96M_X1				1	/* Тактовый генератор 96 МГц */
 		#define BANDSELSTYLERE_UPCONV56M	1	/* Up-conversion with working band .030..56 MHz */
 	#endif
 	#define FQMODEL_FPGA		1	// FPGA + IQ over I2S
@@ -120,13 +121,6 @@
 	//#define WITHPABIASTRIM		1	// имеется управление током оконечного каскада усидителя мощности передатчика
 	#define WITHPABIASMIN		0
 	#define WITHPABIASMAX		255
-
-	/* коды входов коммутатора источников сигнала для УНЧ приёмника */
-	#define BOARD_DETECTOR_SSB 	0		// Заглушка
-
-	// +++ заглушки для плат с DSP обработкой
-	#define	BOARD_AGCCODE_ON	0x00
-	#define	BOARD_AGCCODE_OFF	0x01
 
 	/* коды фильтров второй ПЧ, выдаваемые на дешифраторы */
 	#define BOARD_FILTER_0P5		1	/* 0.5 or 0.3 kHz filter */
@@ -151,7 +145,9 @@
 
 	// +++ Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
 	//#define LCDMODE_HARD_SPI	1	/* LCD over SPI line */
-	#define LCDMODE_V0	1	/* Обычная конфигурация без PIP с L8 на основном экране */
+	#define LCDMODE_V2	1
+	#define LCDMODE_LTDCSDRAMBUFF	1	/* используется область внешнего SDRAM для хранения framebuffer */
+	//#define SDRAM_BANK_ADDR     ((uint32_t)0xC0000000)
 	//#define LCDMODE_WH2002	1	/* тип применяемого индикатора 20*2, возможно вместе с LCDMODE_HARD_SPI */
 	//#define LCDMODE_WH1602	1	/* тип применяемого индикатора 16*2 */
 	//#define LCDMODE_WH1604	1	/* тип применяемого индикатора 16*4 */
@@ -200,6 +196,7 @@
 	//#define CODEC_TYPE_WM8994_USE_SPI	1
 	//#define CODEC_TYPE_WM8994_USE_8KS	1	/* кодек работает с sample rate 8 kHz */
 	#define CODEC_TYPE_WM8994_USE_32BIT 1	/* кодек в формате 32 bit (иначе - 16 bit) */
+	#define CODEC_TYPE_WM8994_MASTER	1
 
 	//#define CODEC1_TYPE CODEC_TYPE_NAU8822L	// PH7 & PH8 I2C3
 	//#define CODEC_TYPE_NAU8822_USE_SPI	1
@@ -208,13 +205,13 @@
 	//#define WITHDTMFPROCESSING 1
 	//#define WITHBBOXMIKESRC BOARD_TXAUDIO_LINE
 
-	//#define CODEC2_TYPE	CODEC_TYPE_FPGAV1	/* квадратуры получаем от FPGA */
+	#define CODEC2_TYPE	CODEC_TYPE_FPGAV1	/* квадратуры получаем от FPGA */
 	//#define CODEC_TYPE_CS4272_USE_SPI	1		// codecboard v2.0
 	//#define CODEC_TYPE_CS4272_STANDALONE	1		// codecboard v3.0
 
-	#define WITHSAI1_FRAMEBITS 64	// Полный размер фрейма
+	#define WITHSAI1_FRAMEBITS 256	// Полный размер фрейма
 	#define WITHSAI2_FRAMEBITS 64	// Полный размер фрейма для двух квадратур по 24 бита - канал спектроанализатора
-	//#define WITHSAI1_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
+	#define WITHSAI1_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
 	#define WITHSAI2_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
 	//#define WITHI2S_FORMATI2S_PHILIPS 1	// Возможно использование при передаче данных в кодек, подключенный к наушникам и микрофону
 	//#define WITHI2S_FRAMEBITS 32	// Полный размер фрейма для двух каналов - канал кодека
@@ -222,26 +219,26 @@
 	//#define WITHI2SHWTXSLAVE	1		// Передающий канал I2S (наушники) используюся в SLAVE MODE
 	#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
 	#define WITHINTEGRATEDDSP		1	/* в программу включена инициализация и запуск DSP части. */
-	#define WITHIFDACWIDTH	16		// 1 бит знак и 31 бит значащих
-	#define WITHIFADCWIDTH	16		// 1 бит знак и 31 бит значащих
-	#define WITHAFADCWIDTH	16		// 1 бит знак и 15 бит значащих
-	#define WITHAFDACWIDTH	16		// 1 бит знак и 15 бит значащих
+	#define WITHIFDACWIDTH	32		// 1 бит знак и 31 бит значащих
+	#define WITHIFADCWIDTH	32		// 1 бит знак и 31 бит значащих
+	#define WITHAFADCWIDTH	32		// 1 бит знак и 15 бит значащих
+	#define WITHAFDACWIDTH	32		// 1 бит знак и 15 бит значащих
 	//#define WITHDACOUTDSPAGC		1	/* АРУ реализовано как выход ЦАП на аналоговую часть. */
 	//#define WITHEXTERNALDDSP		1	/* имеется управление внешней DSP платой. */
 	//#define WITHLOOPBACKTEST	1	/* прослушивание микрофонного входа, генераторов */
-	//#define WITHDSPEXTDDC 1			/* Квадратуры получаются внешней аппаратурой */
-	//#define WITHDSPEXTFIR 1			/* Фильтрация квадратур осуществляется внешней аппаратурой */
-	#define WITHDSPLOCALFIR 1		/* test: Фильтрация квадратур осуществляется процессором */
+	#define WITHDSPEXTDDC 1			/* Квадратуры получаются внешней аппаратурой */
+	#define WITHDSPEXTFIR 1			/* Фильтрация квадратур осуществляется внешней аппаратурой */
+	//#define WITHDSPLOCALFIR 1		/* test: Фильтрация квадратур осуществляется процессором */
 	#define WITHIF4DSP	1	// "Дятел"
 	//#define WITHUSESDCARD		1	// Включение поддержки SD CARD
 	//#define WITHUSEAUDIOREC		1	// Запись звука на SD CARD
 	//#define WITHUSEDUALWATCH	1	// Второй приемник
 	//#define WITHREVERB	1	// ревербератор в обработке микрофонного сигнала
 	#define WITHDACSTRAIGHT 1	/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
-	//#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
+	#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 	//#define WITHRTS192 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
-	#define WITHSUSBSPKONLY 1
-	#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
+	//#define WITHSUSBSPKONLY 1
+	//#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
 	#define BOARD_FFTZOOM_POW2MAX 1	// Возможные масштабы FFT x1, x2
 	//#define BOARD_FFTZOOM_POW2MAX 2	// Возможные масштабы FFT x1, x2, x4
 	//#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
@@ -292,13 +289,13 @@
 
 	// +++ Эти строки можно отключать, уменьшая функциональность готового изделия
 	//#define WITHRFSG	1	/* включено управление ВЧ сигнал-генератором. */
-	#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
+	//#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
 	//#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
-	#define WITHIFSHIFT	1	/* используется IF SHIFT */
+	//#define WITHIFSHIFT	1	/* используется IF SHIFT */
 	//#define WITHIFSHIFTOFFSET	(-250)	/* Начальное занчение IF SHIFT */
 	//#define WITHPBT		1	/* используется PBT (если LO3 есть) */
 	////#define WITHCAT		1	/* используется CAT */
-	//#define WITHDEBUG		1	/* Отладочная печать через COM-порт. */
+	#define WITHDEBUG		1	/* Отладочная печать через COM-порт. */
 	//#define WITHMODEM		1	/* Устройство работает как радиомодем с последовательным интерфейсом */
 	//#define WITHFREEDV	1	/* поддержка режима FreeDV - http://freedv.org/ */
 	//#define WITHNMEA		1	/* используется NMEA parser */
@@ -312,14 +309,14 @@
 	//#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
 	//#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
 	//#define WITHSWLMODE	1	/* поддержка запоминания множества частот в swl-mode */
-	#define WITHVIBROPLEX	1	/* возможность эмуляции передачи виброплексом */
-	#define WITHSPKMUTE		1	/* управление выключением динамика */
+	//#define WITHVIBROPLEX	1	/* возможность эмуляции передачи виброплексом */
+	//#define WITHSPKMUTE		1	/* управление выключением динамика */
 	// Есть ли регулировка параметров потенциометрами
 	////#define WITHPOTWPM		1	/* используется регулировка скорости передачи в телеграфе потенциометром */
 	//#define WITHPOTGAIN		1	/* регуляторы усиления на потенциометрах */
 	//#define WITHPOTPOWER	1	/* регулятор мощности на потенциометре */
 
-	#define WITHMENU 	1	/* функциональность меню может быть отключена - если настраивать нечего */
+	//#define WITHMENU 	1	/* функциональность меню может быть отключена - если настраивать нечего */
 
 	//#define WITHONLYBANDS 1		/* Перестройка может быть ограничена любительскими диапазонами */
 	//#define WITHBCBANDS	1		/* в таблице диапазонов присутствуют вещательные диапазоны */
@@ -327,15 +324,15 @@
 	//#define WITHLO1LEVELADJ		1	/* включено управление уровнем (амплитудой) LO1 */
 	//#define WITHLFM		1	/* LFM MODE */
 	//#define WITHTEMPSENSOR	1	/* отображение данных с датчика температуры */
-	#define WITHREFSENSOR	1		/* измерение по выделенному каналу АЦП опорного напряжения */
-	#define WITHDIRECTBANDS 1	/* Прямой переход к диапазонам по нажатиям на клавиатуре */
-	#define WITHSLEEPTIMER	1	/* выключить индикатор и вывод звука по истечениии указанного времени */
+	//#define WITHREFSENSOR	1		/* измерение по выделенному каналу АЦП опорного напряжения */
+	//#define WITHDIRECTBANDS 1	/* Прямой переход к диапазонам по нажатиям на клавиатуре */
+	//#define WITHSLEEPTIMER	1	/* выключить индикатор и вывод звука по истечениии указанного времени */
 	// --- Эти строки можно отключать, уменьшая функциональность готового изделия
 
 	//#define WITHPOWERTRIM		1	// Имеется управление мощностью
 	#define WITHPOWERTRIMMIN	5	// Нижний предел регулировки (показываемый на дисплее)
 	#define WITHPOWERTRIMMAX	100	// Верхний предел регулировки (показываемый на дисплее)
-	#define WITHPOWERTRIMATU	50	// Значение для работы автотюнера
+	#define WITHPOWERTRIMATU	15	// Значение для работы автотюнера
 
 	//#define LO1PHASES	1		/* Прямой синтез первого гетеродина двумя DDS с програмимруемым сдвигом фазы */
 	#define DEFPREAMPSTATE 	0	/* УВЧ по умолчанию включён (1) или выключен (0) */
@@ -351,15 +348,15 @@
 	//#define NVRAM_TYPE NVRAM_TYPE_AT25040A
 	//#define NVRAM_TYPE NVRAM_TYPE_AT25L16		// demo board with atxmega128a4u
 	//#define NVRAM_TYPE NVRAM_TYPE_AT25256A
-	#define NVRAM_TYPE NVRAM_TYPE_BKPSRAM	// Область памяти с батарейным питанием
-	//#define HARDWARE_IGNORENONVRAM	1		// отладка на платах где нет никакого NVRAM
+	//#define NVRAM_TYPE NVRAM_TYPE_BKPSRAM	// Область памяти с батарейным питанием
+	#define HARDWARE_IGNORENONVRAM	1		// отладка на платах где нет никакого NVRAM
 
 	// End of NVRAM definitions section
 	#define FTW_RESOLUTION 32	/* разрядность FTW выбранного DDS */
 
 	#define MODEL_DIRECT	1	/* использовать прямой синтез, а не гибридный */
 	/* Board hardware configuration */
-	//#define DDS1_TYPE DDS_TYPE_FPGAV1
+	#define DDS1_TYPE DDS_TYPE_FPGAV1
 	//#define PLL1_TYPE PLL_TYPE_SI570
 	//#define PLL1_FRACTIONAL_LENGTH	28	/* Si570: lower 28 bits is a fractional part */
 	//#define DDS1_TYPE DDS_TYPE_AD9951
@@ -368,6 +365,7 @@
 	//#define RTC1_TYPE RTC_TYPE_M41T81	/* ST M41T81M6 RTC clock chip with I2C interface */
 	#define RTC1_TYPE RTC_TYPE_STM32F4xx	/* STM32F4xx/STM32F7xx internal RTC peripherial */
 	//#define TSC1_TYPE TSC_TYPE_STMPE811	/* touch screen controller */
+	#define TSC1_TYPE TSC_TYPE_FT5336		/* FocalTech FT5336 touch screen controller */
 	//#define DAC1_TYPE	99999		/* наличие ЦАП для подстройки тактовой частоты */
 	//#define WITHRTCLSI 1	/* запуск LSI (без кварца) */
 
@@ -378,7 +376,7 @@
 	#define targetext1	SPI_CSEL_PG15 	/* external devices control */
 	#define targetext2	SPI_CSEL_PG15 	/* external devices control */
 	#define targetctl1	SPI_CSEL_PG7 	/* control register as a chain of registers */
-	#define targetfpga1	SPI_CSEL_PG1 	/* control register in FPGA */
+	#define targetfpga1	SPI_CSEL_PC7 	/* control register in FPGA */
 
 	#define targetlcd	targetext1 	/* LCD over SPI line devices control */ 
 	#define targetuc1608 targetext1	/* LCD with positive chip select signal	*/

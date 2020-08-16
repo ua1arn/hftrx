@@ -54,9 +54,9 @@ static uint_fast8_t dds3_profile;		/* информация о последнем
 ////////////////
 // board specific functions
 
-uint_fast8_t 	glob_agc;
+static uint_fast8_t 	glob_boardagc;
+static uint_fast8_t		glob_loudspeaker_off;
 static uint_fast8_t 	glob_opowerlevel = WITHPOWERTRIMMAX;	/* WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
-uint_fast8_t	glob_loudspeaker_off;
 
 static uint_fast8_t 	glob_tx;			// находимся в режиме передачи
 static uint_fast8_t 	glob_sleep;			// находимся в режиме минимального потребления
@@ -68,16 +68,12 @@ static uint_fast8_t 	glob_antenna;		// выбор антенны (0 - ANT1, 1 - 
 static uint_fast8_t 	glob_preamp;		// включение предусилителя (УВЧ) приёмника
 static uint_fast8_t 	glob_mikemute;		// отключить аудиовход балансного модулятора
 static uint_fast8_t 	glob_vox;
-#if WITHISBOOTLOADER
-	static uint_fast8_t 	glob_bglight = WITHLCDBACKLIGHTMIN;	// включаем дисплей для работы в тествх в hightests()
-#elif WITHLCDBACKLIGHT
-	static uint_fast8_t 	glob_bglight = WITHLCDBACKLIGHTMAX;	// включаем дисплей для работы в тествх в hightests()
-#else /* WITHISBOOTLOADER */
-	static uint_fast8_t 	glob_bglight;	// включаем дисплей для работы в тествх в hightests()
-#endif /* WITHISBOOTLOADER */
-#if WITHKBDBACKLIGHT
+
+
+static uint_fast8_t 	glob_bglight = WITHLCDBACKLIGHTMIN;	// включаем дисплей для работы в тествх в hightests()
+static uint_fast8_t 	glob_bglightoff = 1;	// выключаем дисплей
 static uint_fast8_t 	glob_kblight = 1;
-#endif /* WITHKBDBACKLIGHT */
+
 //#if WITHKEYBOARD
 static uint_fast8_t 	glob_poweron = 1;
 //#endif /* WITHKEYBOARD */
@@ -642,7 +638,7 @@ prog_gpioreg(void)
 
 	#if defined (HARDWARE_BL_SET)
 		// яркость подсветки
-		HARDWARE_BL_SET(WITHLCDBACKLIGHTMIN != glob_bglight, glob_bglight - (WITHLCDBACKLIGHTMIN + 1));
+		HARDWARE_BL_SET(! glob_bglightoff, glob_bglight - WITHLCDBACKLIGHTMIN);
 	#endif /* defined (HARDWARE_BL_SET) */
 
 	#if defined (HARDWARE_DAC_ALC)
@@ -955,8 +951,8 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBVAL(025, glob_filter, 3);	/* select IF filter, wrong order of bits */
 	RBVAL(020, 0x00, 5);	/* Unused outputs */
 
-	RBBIT(017, (glob_agc == BOARD_AGCCODE_OFF));		/* AGC OFF */
-	RBVAL(014, glob_agc, 3);	/* AGC code (delay) */
+	RBBIT(017, (glob_boardagc == BOARD_AGCCODE_OFF));		/* AGC OFF */
+	RBVAL(014, glob_boardagc, 3);	/* AGC code (delay) */
 	RBVAL(012, glob_tx ? BOARD_DETECTOR_MUTE : glob_af_input, 2);	/* AF input selection 0-ssb, 1-am, 2-mute, 3-fm */
 	RBBIT(011, glob_tx || fm);		/* AF_IF_FF - IF amp ad605 OFF in TX mode or in FM mode */
 	RBBIT(010, fm || am);				/* SSB_DET_DISABLE - switch lo4 off in AM and FM modes */
@@ -1663,7 +1659,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	rbtype_t rbbuff [3] = { 0 };
 
 	/* дополнительный регистр LTIYUR */
-	RBBIT(024, (glob_agc == BOARD_AGCCODE_OFF));			/* pin 04: AGC off */
+	RBBIT(024, (glob_boardagc == BOARD_AGCCODE_OFF));			/* pin 04: AGC off */
 	RBBIT(022, glob_loudspeaker_off);	/* pin 02: Speaker off */
 	RBBIT(021, glob_notchnarrow);		/* pin 01: notch in CW */
 	RBBIT(020, glob_notch);				/* pin 15: notch */
@@ -1811,7 +1807,7 @@ prog_ctrlreg(uint_fast8_t plane)
 
 	RBBIT(027, glob_tuner_type);		/* pin 07: TYPE OF TUNER 	*/
 	RBBIT(026, glob_loudspeaker_off);	/* pin 06: выключение динамика		*/
-	RBBIT(025, (glob_agc == BOARD_AGCCODE_OFF) || glob_tx);/* pin 05: agc off			*/
+	RBBIT(025, (glob_boardagc == BOARD_AGCCODE_OFF) || glob_tx);/* pin 05: agc off			*/
 	RBVAL(023, glob_att, 2);			/* pin 04, 05: 10 dB ATTENUATOR RELAYS POWER */
 	RBBIT(022, glob_preamp);			/* pin 03: D1: pin 01: RF amplifier */
 	RBBIT(021, glob_tx);				/* pin 01: D0: pin 15: TX mode: 1 - TX режим передачи */
@@ -1893,7 +1889,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBVAL(016, glob_tx ? BOARD_DETECTOR_MUTE : glob_af_input, 2);	/* AF input selection 0-ssb, 1-am, 2-mute, 3-fm */
 	RBBIT(015, glob_mikemute);				/* D5 */
 	RBBIT(014, glob_tx && glob_txcw);		/* D4 */
-	RBVAL(012, glob_agc, 2);				/* D2..D3: 02 03: AGC time */
+	RBVAL(012, glob_boardagc, 2);				/* D2..D3: 02 03: AGC time */
 	RBVAL(010, glob_filter, 2);				/* D0..D1: 15 01: und1 & und2 - номер фильтра ПЧ */
 
 	/* регистр управления (74HC595), расположенный на плате синтезатора */
@@ -1934,7 +1930,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBBIT(020, glob_mikemute);				/* D0 */
 	// DD8
 	RBVAL(016, glob_af_input, 2);			/* d6,d7: AF input selection 0-ssb, 1-am, 2-mute, 3-fm */
-	RBVAL(014, glob_agc, 2);				/* D4..D5: 02 03: AGC time */
+	RBVAL(014, glob_boardagc, 2);				/* D4..D5: 02 03: AGC time */
 	RBVAL(012, glob_filter, 2);				/* D2..D3: - номер фильтра ПЧ */
 	RBBIT(011, 0x00);						/* D1: LSCTL5 */
 	RBBIT(010, 0x00);						/* D0: LSCTL4 */
@@ -1985,9 +1981,9 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBBIT(014, glob_tx && glob_txcw);	/* */
 	RBBIT(013, glob_mikemute);		/* */
 	#if WITHAGCMODESLOWFAST
-		RBBIT(012, glob_agc);			/* D2: AGC time */
+		RBBIT(012, glob_boardagc);			/* D2: AGC time */
 	#elif WITHAGCMODEONOFF
-		RBBIT(012, (glob_agc == BOARD_AGCCODE_OFF));			/* D2: AGC OFFs */
+		RBBIT(012, (glob_boardagc == BOARD_AGCCODE_OFF));			/* D2: AGC OFFs */
 	#elif WITHAGCMODENONE
 		RBBIT(012, 0);			/* D2: spare */
 	#else
@@ -1996,7 +1992,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBVAL(010, glob_filter, 2);				/* D0,D1: 15 01: und1 & und2 - номер фильтра ПЧ */
 #else
 	// eugene.zhebrakoff@gmail.com
-	RBVAL(015, glob_agc, 3);		/* AGC delay time */
+	RBVAL(015, glob_boardagc, 3);		/* AGC delay time */
 	RBBIT(014, glob_tx && glob_txcw);	/* TX */
 	RBBIT(013, glob_bandf >= 5);			/* PA - bnd2 - signal * und4 */
 	RBBIT(012, glob_affilter);			/* Notch Filtr on-off * und3 */
@@ -2041,7 +2037,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBBIT(020, glob_mikemute);				/* D0 */
 	// DD8
 	RBVAL(016, glob_af_input, 2);			/* d6,d7: AF input selection 0-ssb, 1-am, 2-mute, 3-fm */
-	RBBIT(015, (glob_agc == BOARD_AGCCODE_OFF));				/* D5: AGC OFF */
+	RBBIT(015, (glob_boardagc == BOARD_AGCCODE_OFF));				/* D5: AGC OFF */
 	RBVAL(012, glob_filter, 3);				/* d2,d3,d4: фильтр ПЧ */
 	RBBIT(011, 0x00);						/* D1: LSCTL5 */
 	RBBIT(010, 0x00);						/* D0: LSCTL4 */
@@ -2205,7 +2201,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBBIT(020, glob_tx);							/* D0: pin 15: TX mode: 1 - TX режим передачи */
 
 	/* IC14 74HC595 */
-	RBVAL(016, glob_agc, 2);	/* D7..D6:  AGC code (delay) */
+	RBVAL(016, glob_boardagc, 2);	/* D7..D6:  AGC code (delay) */
 	RBBIT(015, glob_affilter);	/* D5 */
 	RBVAL(013, glob_af_input, 2);	/* D4..D3	*/
 	RBVAL(010, glob_filter, 3);	/* D2..D0 - IF filters code	*/
@@ -2277,7 +2273,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBBIT(027, am);					/* D7 */
 	RBBIT(026, fm);					/* D6 */
 	RBBIT(025, ssb);				/* D5 */
-	RBVAL(023, glob_agc, 2);		/* D7..D6: AGC code (delay) */
+	RBVAL(023, glob_boardagc, 2);		/* D7..D6: AGC code (delay) */
 	RBBIT(022, glob_tx);		/* D2 AF mute */
 	RBVAL(020, glob_af_input, 2);	/* D0 D1: AF input	*/
 
@@ -2329,7 +2325,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBBIT(027, am);					/* D7 */
 	RBBIT(026, fm);					/* D6 */
 	RBBIT(025, ssb);				/* D5 */
-	RBVAL(023, glob_agc, 2);		/* D7..D6: AGC code (delay) */
+	RBVAL(023, glob_boardagc, 2);		/* D7..D6: AGC code (delay) */
 	RBBIT(022, glob_af_input == BOARD_DETECTOR_MUTE);		/* D2 */
 	RBVAL(020, glob_af_input, 2);	/* D0 D1: AF input	*/
 
@@ -2380,7 +2376,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBBIT(027, am);					/* D7 */
 	RBBIT(026, fm);					/* D6 */
 	RBBIT(025, ssb);				/* D5 */
-	RBVAL(023, glob_agc, 2);		/* D7..D6: AGC code (delay) */
+	RBVAL(023, glob_boardagc, 2);		/* D7..D6: AGC code (delay) */
 	RBBIT(022, glob_af_input == BOARD_DETECTOR_MUTE);		/* D2 */
 	RBVAL(020, glob_af_input, 2);	/* D0 D1: AF input	*/
 
@@ -2472,7 +2468,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBBIT(0037, 0);							/* D7 UND */
 	RBVAL(0035, glob_af_input, 2);					/* D5,,D6 */
 	RBBIT(0034, glob_af_input == BOARD_DETECTOR_MUTE);					/* D4: pin 04: AF_MUTE */
-	RBVAL(0032, glob_agc, 2);			/* D2..D3: AGC code (delay) */
+	RBVAL(0032, glob_boardagc, 2);			/* D2..D3: AGC code (delay) */
 	RBBIT(0011, 0);						// D1: pin 01: IF FIL2
 	RBBIT(0030, 0);						// D0: pin 15: IF FIL1
 
@@ -2560,7 +2556,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBBIT(004, glob_tx && glob_txcw);				/* pin 4 */
 	RBBIT(003, glob_mikemute);						/* pin 3 */
 	RBBIT(002, glob_filter);						/* pin 2: 1: узкий фильтр */
-	RBBIT(001, glob_agc);						/* pin 1 AGC OFF */
+	RBBIT(001, glob_boardagc);						/* pin 1 AGC OFF */
 	RBBIT(000, ! glob_reset_n);					/* pin 15 in control register - ad9951 RESET */
 
 	spi_select(target, CTLREG_SPIMODE);
@@ -2619,7 +2615,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBBIT(004, glob_tx && glob_txcw);				/* pin 4 */
 	RBBIT(003, glob_mikemute);						/* pin 3 */
 	RBBIT(002, glob_filter);						/* pin 2: 1: узкий фильтр */
-	RBBIT(001, glob_agc);						/* pin 1 AGC OFF */
+	RBBIT(001, glob_boardagc);						/* pin 1 AGC OFF */
 	RBBIT(000, ! glob_reset_n);					/* pin 15 in control register - ad9951 RESET */
 
 	spi_select(target, CTLREG_SPIMODE);
@@ -2731,7 +2727,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBBIT(004, glob_tx && glob_txcw);				/* pin 4 */
 	RBBIT(003, glob_mikemute);						/* pin 3 */
 	RBBIT(002, glob_filter);						/* pin 2: 1: узкий фильтр */
-	RBBIT(001, glob_agc);						/* pin 1 AGC OFF */
+	RBBIT(001, glob_boardagc);						/* pin 1 AGC OFF */
 	RBBIT(000, ! glob_reset_n);					/* pin 15 in control register - ad9951 RESET */
 
 	spi_select(target, CTLREG_SPIMODE);
@@ -2821,7 +2817,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBVAL(006, bandmask >> 8, 2);	/* pin 06,07 выбор 9,8 диапазонного фильтра */
 	RBBIT(005, glob_att != 0);	/* pin 05 second stage (20 dB) atteuator on */
 	RBBIT(004, glob_preamp != 0);	/* pin 04: RF amplifier */
-	RBBIT(003, ! (glob_agc == BOARD_AGCCODE_OFF));	/* pin 03 - AGC ON */
+	RBBIT(003, ! (glob_boardagc == BOARD_AGCCODE_OFF));	/* pin 03 - AGC ON */
 	RBBIT(002, glob_notch);		/* pin 02 */
 	RBBIT(001, glob_filter == BOARD_FILTER_6P0);	/* pin 01 6 kHz filter */
 	RBBIT(000, ! glob_reset_n);		/* pin 15 in control register - ad9951 RESET */
@@ -2872,10 +2868,10 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBBIT(023, glob_tx);					/* d3: af_if_off  */
 	RBBIT(022, glob_tx ? 0x00 : am);		/* D2 AM detector ON */
 	RBBIT(021, glob_tx ? 0x00 : fm);		/* D1 FM detector ON */
-	RBBIT(020, (glob_agc == BOARD_AGCCODE_OFF));				/* D0: AGC OFF */
+	RBBIT(020, (glob_boardagc == BOARD_AGCCODE_OFF));				/* D0: AGC OFF */
 
 	// next 74HC596 - DD11
-	RBVAL(015, glob_agc, 3);	/* D7..D5:  AGC code (delay) */
+	RBVAL(015, glob_boardagc, 3);	/* D7..D5:  AGC code (delay) */
 	RBVAL(013, glob_tx ? BOARD_DETECTOR_MUTE : detector, 2);	/* D4..D3: AF input selection 0-ssb, 1-am, 2-mute, 3-fm */
 	RBBIT(012, glob_tx && glob_txcw);	 // pin 02: d2: ssb_mod_unbalance
 	RBBIT(011, glob_mikemute);		// pin 01: d1: mike_amp_mute
@@ -3856,7 +3852,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0103, ! (glob_tx && ! glob_autotune));	// HP/LP: 0: high power, 1: low power
 		RBBIT(0102, glob_tx);
 		RBBIT(0101, glob_fanflag);	// FAN
-
+		// 0100 is a bpf7
 		RBVAL(0072, 1U << glob_bandf2, 7);	// BPF7..BPF1 (fences: 2.4 MHz, 3.9 MHz, 7.4 MHz, 14.8 MHz, 22 MHz, 30 MHz, 50 MHz)
 		RBBIT(0071, glob_tuner_type);		// TY
 		RBBIT(0070, ! glob_tuner_bypass);	// в обесточенном состоянии - режим BYPASS
@@ -3980,7 +3976,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0113, ! (glob_tx && ! glob_autotune));	// HP/LP: 0: high power, 1: low power
 		RBBIT(0112, glob_tx);
 		RBBIT(0111, glob_fanflag);	// FAN
-
+		// 0110 is a bpf7
 		RBVAL(0102, 1U << glob_bandf2, 7);	// BPF7..BPF1 (fences: 2.4 MHz, 3.9 MHz, 7.4 MHz, 14.8 MHz, 22 MHz, 30 MHz, 50 MHz)
 		RBBIT(0101, glob_tuner_type);		// TY
 		RBBIT(0100, ! glob_tuner_bypass);	// в обесточенном состоянии - режим BYPASS
@@ -4073,7 +4069,6 @@ prog_ctrlreg(uint_fast8_t plane)
 
 	// registers chain control register
 	{
-		const uint_fast8_t lcdblcode = (glob_bglight - WITHLCDBACKLIGHTMIN);
 		//Current Output at Full Power A1 = 1, A0 = 1, VO = 0 ±500 ±380 ±350 ±320 mA min A
 		//Current Output at Power Cutback A1 = 1, A0 = 0, VO = 0 ±450 ±350 ±320 ±300 mA min A
 		//Current Output at Idle Power A1 = 0, A0 = 1, VO = 0 ±100 ±60 ±55 ±50 mA min A
@@ -4112,7 +4107,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0103, ! (glob_tx && ! glob_autotune));	// HP/LP: 0: high power, 1: low power
 		RBBIT(0102, glob_tx);
 		RBBIT(0101, glob_fanflag);	// FAN
-
+		// 0100 is a bpf7
 		RBVAL(0072, 1U << glob_bandf2, 7);	// BPF7..BPF1 (fences: 2.4 MHz, 3.9 MHz, 7.4 MHz, 14.8 MHz, 22 MHz, 30 MHz, 50 MHz)
 		RBBIT(0071, glob_tuner_type);		// TY
 		RBBIT(0070, ! glob_tuner_bypass);	// в обесточенном состоянии - режим BYPASS
@@ -4147,7 +4142,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0035, 0);			// D5: CTLSPARE2
 		RBBIT(0034, 0);			// D4: CTLSPARE1
 		RBBIT(0033, 0);			// D3: not used
-		RBBIT(0032, WITHLCDBACKLIGHTMIN != glob_bglight);			// D2: LCD_BL_ENABLE
+		RBBIT(0032, ! glob_bglightoff);			// D2: LCD_BL_ENABLE
 		RBBIT(0031, 0);			// D1: not used
 		RBBIT(0030, 0);			// D0: not used
 
@@ -4471,8 +4466,8 @@ prog_rxctrlreg(uint_fast8_t plane)
 	prog_bit(target, 0x00);	/* D1 unused output  */
 	prog_bit(target, 0x00);	/* D0 unused output  */
 
-	prog_bit(target, (glob_agc == BOARD_AGCCODE_OFF));		/* D7: AGC OFF */
-	prog_val(target, glob_agc, 3);	/* D4,D5,D6:  AGC code (delay) */
+	prog_bit(target, (glob_boardagc == BOARD_AGCCODE_OFF));		/* D7: AGC OFF */
+	prog_val(target, glob_boardagc, 3);	/* D4,D5,D6:  AGC code (delay) */
 	prog_val(target, glob_tx ? BOARD_DETECTOR_MUTE : glob_af_input, 2);	/* D2..D3: AF input selection 0-ssb, 1-am, 2-mute, 3-fm */
 	prog_bit(target, glob_tx);		/* D1: IF amp ad605 OFF in TX mode */
 	prog_bit(target, fm || am);	// D0: switch lo4 off in AM and FM modes
@@ -4546,8 +4541,8 @@ prog_rxctrlreg(uint_fast8_t plane)
 	prog_bit(target, 0x00);	/* D1 unused output  */
 	prog_bit(target, 0x00);	/* D0 unused output  */
 
-	prog_bit(target, (glob_agc == BOARD_AGCCODE_OFF));		/* D7: AGC OFF */
-	prog_val(target, glob_agc, 3);	/* D4,D5,D6:  AGC code (delay) */
+	prog_bit(target, (glob_boardagc == BOARD_AGCCODE_OFF));		/* D7: AGC OFF */
+	prog_val(target, glob_boardagc, 3);	/* D4,D5,D6:  AGC code (delay) */
 	prog_val(target, glob_tx ? BOARD_DETECTOR_MUTE : glob_af_input, 2);	/* D2..D3: AF input selection 0-ssb, 1-am, 2-mute, 3-fm */
 	prog_bit(target, glob_tx);		/* D1: IF amp ad605 OFF in TX mode */
 	prog_bit(target, fm || am);	// D0: switch lo4 off in AM and FM modes
@@ -4615,10 +4610,10 @@ prog_rxctrlreg(uint_fast8_t plane)
 	prog_bit(target, glob_tx);			/* D4: TX mode: 1 - TX режим передачи */
 	prog_bit(target, glob_tx ? 0x00 : am);		/* D3: AM DETECTOR POWER */
 	prog_bit(target, glob_tx ? 0x00 : fm);		/* D2: FM DETECTOR POWER */
-	prog_bit(target, (glob_agc == BOARD_AGCCODE_OFF));	/* D1: AGC OFF */
+	prog_bit(target, (glob_boardagc == BOARD_AGCCODE_OFF));	/* D1: AGC OFF */
 	prog_bit(target, 0x00);	/* D0 unused output  */
 
-	prog_val(target, glob_agc, 3);	/* D5,D6,D7:  AGC code (delay) */
+	prog_val(target, glob_boardagc, 3);	/* D5,D6,D7:  AGC code (delay) */
 	prog_val(target, glob_tx ? BOARD_DETECTOR_MUTE : glob_af_input, 2);	/* D3..D4: AF input selection 0-ssb, 1-am, 2-mute, 3-fm */
 	prog_bit(target, glob_tx && glob_txcw);	/* D2: DDB_MOD_UNBALANCE  */
 	prog_bit(target, glob_mikemute);	/* D1: MIKE_AMP_MUTE  */
@@ -4874,7 +4869,7 @@ board_set_bandfonhpf(uint_fast8_t n)
 	}
 }
 
-/* Установить код диапазонного фильтра, на котором вкдючать UHF */
+/* Установить код диапазонного фильтра, на котором включать UHF */
 void 
 board_set_bandfonuhf(uint_fast8_t n)
 {
@@ -4963,13 +4958,12 @@ board_set_nfmnbon(uint_fast8_t v)
 }
 
 void 
-board_set_agc(uint_fast8_t n)
+board_set_boardagc(uint_fast8_t n)
 {
-	if (glob_agc != n)
+	if (glob_boardagc != n)
 	{
-		glob_agc = n;
+		glob_boardagc = n;
 		board_ctlreg1changed();
-		board_dsp1regchanged();
 	}
 }
 
@@ -5094,11 +5088,12 @@ board_set_mikemute(uint_fast8_t v)
 
 /* включение подсветки дисплея */
 void
-board_set_bglight(uint_fast8_t n)
+board_set_bglight(uint_fast8_t dispoff, uint_fast8_t dispbright)
 {
-	if (glob_bglight != n)
+	if (glob_bglightoff != dispoff || glob_bglight != dispbright)
 	{
-		glob_bglight = n;
+		glob_bglightoff = dispoff;
+		glob_bglight = dispbright;
 		board_ctlreg1changed();
 	}
 }
@@ -5367,7 +5362,6 @@ board_set_loudspeaker(uint_fast8_t v)
 	{
 		glob_loudspeaker_off = n;
 		board_ctlreg1changed();
-		board_codec1regchanged();
 	}
 }
 
@@ -8882,7 +8876,7 @@ void hardware_cw_diagnostics(
 
 #endif
 
-#if WITHDEBUG && WITHUSBCDC && WITHDEBUG_CDC
+#if WITHDEBUG && WITHUSBCDCACM && WITHDEBUG_CDC
 
 
 // Очереди символов для обмена с host
@@ -9006,7 +9000,7 @@ void debugusb_initialize(void)
 {
 }
 
-#endif /* WITHDEBUG && WITHUSBCDC && WITHDEBUG_CDC */
+#endif /* WITHDEBUG && WITHUSBCDCACM && WITHDEBUG_CDC */
 
 // Read ADC MCP3204/MCP3208
 uint_fast16_t

@@ -414,8 +414,18 @@ typedef struct
 	#define	Ntap_rx_AUDIO	NtapValidate(241)
 
 #else /* WITHDSPLOCALFIR */
+
+	#if CPUSTYLE_STM32MP1
+
+		#define	Ntap_rx_AUDIO	NtapValidate(1023)
+		#define Ntap_tx_MIKE	NtapValidate(511)
+
+	#else /* CPUSTYLE_STM32MP1 */
+
 	#define	Ntap_rx_AUDIO	NtapValidate(511)
 	#define Ntap_tx_MIKE	NtapValidate(241)
+
+	#endif /* CPUSTYLE_STM32MP1 */
 	#if WITHNOSPEEX
 		////#define	Ntap_rx_AUDIO	NtapValidate(511)
 		////#define Ntap_tx_MIKE	NtapValidate(241)
@@ -661,6 +671,9 @@ void dsp_initialize(void);
 	int dsp_mag2y(FLOAT_t mag, int ymax, int_fast16_t topdb, int_fast16_t bottomdb);
 
 	void saveIQRTSxx(FLOAT_t iv, FLOAT_t qv);	// формирование отображения спектра
+
+	void apply_window_function(float32_t * v, uint_fast16_t size);
+	void fftzoom_x2(float32_t * buffer);
 
 #endif /* WITHINTEGRATEDDSP */
 

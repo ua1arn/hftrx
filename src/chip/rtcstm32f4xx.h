@@ -44,12 +44,14 @@ stm32f4xx_rtc_bdenable(void)
 #if CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX
 
 	PWR->CR |= PWR_CR_DBP;  
+	(void) PWR->CR;
 	while ((PWR->CR & PWR_CR_DBP) == 0)
 		;
 
 #else /* CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX */
 
 	PWR->CR1 |= PWR_CR1_DBP;  
+	(void) PWR->CR1;
 	while ((PWR->CR1 & PWR_CR1_DBP) == 0)
 		;
 
@@ -63,12 +65,14 @@ stm32f4xx_rtc_bddisable(void)
 #if CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX
 
 	PWR->CR &= ~ PWR_CR_DBP;	
+	(void) PWR->CR;
 	while ((PWR->CR & PWR_CR_DBP) != 0)
 		;
 
 #else /* CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX */
 
 	PWR->CR1 &= ~ PWR_CR1_DBP;	
+	(void) PWR->CR1;
 	while ((PWR->CR1 & PWR_CR1_DBP) != 0)
 		;
 

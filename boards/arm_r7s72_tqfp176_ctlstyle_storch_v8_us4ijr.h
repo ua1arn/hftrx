@@ -173,18 +173,6 @@
 	// --- Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
 #endif
 
-#if LCDMODE_LQ043T3DX02K || LCDMODE_AT070TN90|| LCDMODE_AT070TNA2
-	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея
-	#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываемый на дисплее)
-	#define WITHLCDBACKLIGHTMAX	4	// Верхний предел регулировки (показываемый на дисплее)
-	#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
-#else
-	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея
-	#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываемый на дисплее)
-	#define WITHLCDBACKLIGHTMAX	3	// Верхний предел регулировки (показываемый на дисплее)
-	#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
-#endif
-
 	#define CTLREGMODE_STORCH_V7	1	/* TFT 4.3" "Аист" с DSP и FPGA STM32H743IIT6 или R7S721020VCFP */
 
 #if WITHISBOOTLOADER
@@ -202,6 +190,10 @@
 	// +++ заглушки для плат с DSP обработкой
 	#define	BOARD_AGCCODE_ON	0
 	#define	BOARD_AGCCODE_OFF	0
+
+	#define BOARD_NOTCH_OFF		0
+	#define BOARD_NOTCH_MANUAL	0
+	#define BOARD_NOTCH_AUTO	0
 
 	/* коды фильтров второй ПЧ, выдаваемые на дешифраторы */
 	#define BOARD_FILTER_0P5		0	/* 0.5 or 0.3 kHz filter */
@@ -238,20 +230,6 @@
 
 #else /* WITHISBOOTLOADER */
 	// app
-
-
-	/* коды входов коммутатора источников сигнала для УНЧ приёмника */
-	#define BOARD_DETECTOR_SSB 	0		// Заглушка
-
-	// +++ заглушки для плат с DSP обработкой
-	#define	BOARD_AGCCODE_ON	0x00
-	#define	BOARD_AGCCODE_OFF	0x01
-
-	// +++ заглушки для плат с DSP обработкой
-	#define BOARD_NOTCH_OFF		0
-	#define BOARD_NOTCH_MANUAL	1
-	#define BOARD_NOTCH_AUTO	2
-	//#define WITHLMSAUTONOTCH	1	/* Использование AUTONOTCH	*/
 
 	/* коды фильтров второй ПЧ, выдаваемые на дешифраторы */
 	#define BOARD_FILTER_0P5		1	/* 0.5 or 0.3 kHz filter */
@@ -419,7 +397,7 @@
 
 	#define WITHPOWERTRIMMIN	5	// Нижний предел регулировки (показываемый на дисплее)
 	#define WITHPOWERTRIMMAX	100	// Верхний предел регулировки (показываемый на дисплее)
-	#define WITHPOWERTRIMATU	50	// Значение для работы автотюнера
+	#define WITHPOWERTRIMATU	15	// Значение для работы автотюнера
 
 	#if 0
 		#define WITHUSBHEADSET 1	/* трансивер работает USB гарнитурой для компьютера - режим тестирования */
@@ -502,11 +480,13 @@
 	#endif /* WITHSWRMTR */
 
 	#if WITHAUTOTUNER_AVBELNN
+		//#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
 		#define WITHCURRLEVEL_ACS712_30A 1	// PA current sense - ACS712ELCTR-30B-T chip
 		#if WITHCURRLEVEL
 			PASENSEIX = WPM_POTIX,		// PA1 PA current sense - ACS712-05 chip
 		#endif /* WITHCURRLEVEL */
 	#else /* WITHAUTOTUNER_AVBELNN */
+			//#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
 		#if WITHCURRLEVEL
 			PASENSEIX = 2,		// PA1 PA current sense - ACS712-05 chip
 		#endif /* WITHCURRLEVEL */

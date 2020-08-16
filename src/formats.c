@@ -14,7 +14,7 @@
 #include <ctype.h>
 
 // использование библиотечной функции форматного вывода вместо самописной
-//#define FORMATFROMLIBRARY (CPUSTYLE_ARM_CM7 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM0 /* || CPUSTYLE_ARM_CA9 */)
+//#define FORMATFROMLIBRARY (CPUSTYLE_ARM_CM7 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM0 /* || (__CORTEX_A != 0) */)
 
 #if ! FORMATFROMLIBRARY
 
@@ -40,7 +40,7 @@ static size_t
 safestrlen(register const char * s, size_t len)
 {
 	size_t n;
-
+	ASSERT(s != 0);
 	for (n = 0; n < len && * s != '\0'; ++ n, ++ s)
 		;
 	return n;

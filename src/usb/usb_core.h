@@ -492,6 +492,7 @@ typedef USBALIGN_BEGIN struct
   uint_fast32_t                total_length;
   uint_fast32_t                rem_length;
   uint_fast32_t                maxpacket;
+  uint_fast32_t is_used;
 } USBALIGN_END USBD_EndpointTypeDef;
 
 #define USBD_MAX_NUM_CLASSES 16
@@ -1446,8 +1447,10 @@ USBD_StatusTypeDef  USBD_CtlSendStatus(USBD_HandleTypeDef  *pdev);
 USBD_StatusTypeDef  USBD_Stop(USBD_HandleTypeDef *pdev);
 
 extern const USBD_ClassTypeDef USBD_CLASS_UAC;
-extern const USBD_ClassTypeDef USBD_CLASS_CDC;
+extern const USBD_ClassTypeDef USBD_CLASS_CDCACM;
 extern const USBD_ClassTypeDef USBD_CLASS_DFU;
+extern const USBD_ClassTypeDef USBD_CLASS_CDC_EEM;
+extern const USBD_ClassTypeDef USBD_CLASS_RNDIS;
 
 uint_fast16_t usbd_getuacinrtsmaxpacket(void);
 uint_fast16_t usbd_getuacinmaxpacket(void);
@@ -1574,5 +1577,8 @@ USBH_StatusTypeDef USBH_ClosePipe  (USBH_HandleTypeDef *phost,
 
 
 HAL_StatusTypeDef USB_DoPing(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t ch_num);
+
+void usb_polling(void);	/* LWIP support */
+void tcp_tmr(void);	/* LWIP support */
 
 #endif /* USB_USB_CORE_H_ */

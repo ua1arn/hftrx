@@ -51,8 +51,8 @@
 	#define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
 
 	//#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
-	//#define WITHUSBCDC		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
-	//#define WITHUSBHWCDC_N	2	/* количество виртуальных последовательных портов */
+	//#define WITHUSBCDCACM		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
+	//#define WITHUSBCDCACM_N	2	/* количество виртуальных последовательных портов */
 	//#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
 	//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
 	//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
@@ -66,6 +66,16 @@
 	//#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	*/
 	//#define WITHCPUDACHW	1	/* использование DAC - в renesas R7S72 нету */
 	#define WITHCPUADCHW 	1	/* использование ADC */
+
+	//#define WITHUART1HW	1	/* Используется периферийный контроллер последовательного порта #1 SCIF0 */
+	#define WITHUART2HW	1	/* Используется периферийный контроллер последовательного порта #2 SCIF3 */
+
+	//#define WITHCAT_USART2	1
+	#define WITHCAT_CDC			1	/* использовать виртуальный последовательный порт на USB соединении */
+	//#define WITHMODEM_CDC		1
+	#define WITHDEBUG_USART2	1
+	#define WITHMODEM_USART2	1
+	#define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
 
 	#define WITHI2SHW	1	/* Использование SSIF0 I2S 2*16 bit - аудио кодек */
 	#define WITHSAI1HW	1	/* Использование SSIF1 I2S 8*32 bit - FPGA IF codec */
@@ -83,28 +93,37 @@
 	// USB host parameters
 	//#define WITHUSBHW_HOST	(& USB200)	/* на этом устройстве поддерживается функциональность HOST	*/
 
-	//#define WITHUART1HW	1	/* Используется периферийный контроллер последовательного порта #1 SCIF0 */
-	#define WITHUART2HW	1	/* Используется периферийный контроллер последовательного порта #2 SCIF3 */
+	#if 1
+		// Обычный AUDIO + 2*CDC + DFU
+		//#define WITHUAC2		1	/* UAC2 support */
+		#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
+		#define WITHUSBCDCACM		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
+		#define WITHUSBCDCACM_N	2	/* количество виртуальных последовательных портов */
+		//#define WITHUSBHID		1	/* HID использовать Human Interface Device на USB соединении */
+		#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
+		//#define WITHMOVEDFU 1	// Переместить интерфейс DFU в область меньших номеров. Утилита dfu-util 0.9 не работает с DFU на интерфейсе с индексом 10
+		#define WITHUSBWCID	1
 
-	//#define WITHCAT_USART2	1
-	#define WITHCAT_CDC			1	/* использовать виртуальный последовательный порт на USB соединении */
-	//#define WITHMODEM_CDC		1
-	#define WITHDEBUG_USART2	1
-	#define WITHMODEM_USART2	1
-	#define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
+		//#define WITHLWIP 1
+		//#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
+		//#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
+		//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
 
-	//#define WITHUAC2		1	/* UAC2 support */
-	#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
-	#define WITHUSBCDC		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
-	#define WITHUSBHWCDC_N	2	/* количество виртуальных последовательных портов */
-	//#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
-	//#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
-	//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
-	//#define WITHUSBHID		1	/* HID использовать Human Interface Device на USB соединении */
-	#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
-	//#define WITHMOVEDFU 1	// Переместить интерфейс DFU в область меньших номеров. Утилита dfu-util 0.9 не работает с DFU на интерфейсе с индексом 10
-	#define WITHUSBWCID	1
+	#elif 1
+		// For TCI
+		//#define WITHUAC2		1	/* UAC2 support */
+		//#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
+		//#define WITHUSBCDCACM		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
+		//#define WITHUSBCDCACM_N	2	/* количество виртуальных последовательных портов */
+		#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
+		//#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
+		//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
+		//#define WITHUSBHID		1	/* HID использовать Human Interface Device на USB соединении */
+		#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
+		#define WITHMOVEDFU 1	// Переместить интерфейс DFU в область меньших номеров. Утилита dfu-util 0.9 не работает с DFU на интерфейсе с индексом 10
+		#define WITHUSBWCID	1
 
+	#endif
 #endif /* WITHISBOOTLOADER */
 
 //#define WRITEE_BIT				(1u << 12)	// RD/~WR  P3_12 - должен быть в "0" - как при записи - для управления буферами на шине данных LCD
@@ -658,6 +677,23 @@
 	#define HARDWARE_ADC_INITIALIZE(ainmask) do { \
 			arm_hardware_pio1_alternative((ainmask) << 8, R7S721_PIOALT_1);	/* P1_8..P1_15 - AN0..AN7 inputs */ \
 		} while (0)
+
+	#if LCDMODE_LQ043T3DX02K
+		#define WITHLCDBACKLIGHTOFF	1	// Имеется управление включением/выключением подсветки дисплея
+		#define WITHLCDBACKLIGHT	1	// Имеется управление яркостью дисплея
+		#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываемый на дисплее)
+		#define WITHLCDBACKLIGHTMAX	3	// Верхний предел регулировки (показываемый на дисплее)
+		#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
+	#elif LCDMODE_AT070TN90 || LCDMODE_AT070TNA2
+		#define WITHLCDBACKLIGHTOFF	1	// Имеется управление включением/выключением подсветки дисплея
+		#define WITHLCDBACKLIGHT	1	// Имеется управление яркостью дисплея
+		#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываемый на дисплее)
+		#define WITHLCDBACKLIGHTMAX	2	// Верхний предел регулировки (показываемый на дисплее)
+		#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
+	#else
+		/* Заглушка для работы без дисплея */
+		#define WITHLCDBACKLIGHTMIN	0
+	#endif
 
 	#define	HARDWARE_BL_INITIALIZE() do { \
 		const portholder_t enpins = (1U << 9); /* P7_9 */ \
