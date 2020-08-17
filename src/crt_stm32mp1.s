@@ -60,15 +60,14 @@
 	 STACKSIZEABT = 256
 	 STACKSIZEFIQ = 256
 	 STACKSIZEIRQ = 256
-	 STACKSIZESVC = 256
 	 STACKSIZEHYP = 256
 	 STACKSIZEMON = 256
 	 STACKSIZESYS = 256
 
-	 STACKSIZESVC = 4096
+	 STACKSIZESVC = 8192
   
 	.global __Vectors
-	.section .vectors,"ax"
+	.section .vectors, "ax"
 	.code 32
         
 /****************************************************************************/
@@ -318,7 +317,7 @@ ExitFunction:
 /****************************************************************************/
 /*                         Default interrupt handler                        */
 /****************************************************************************/
-	.section .itcm
+	.section .itcm, "ax"
    .code 32
 
 	.align 4, 0
@@ -374,6 +373,10 @@ IRQHandlerNested:
        SUBS    R15,R14,#0x0004         // return from interrupt
 		.endfunc
 
+	.section .init, "ax"
+	.code 32
+	.align 4, 0
+
     .func   Reset_CPU1_Handler
     /* invoked at ARM_MODE_SVC */
 Reset_CPU1_Handler:
@@ -422,7 +425,7 @@ Reset_CPU1_HandlerSleep:
 
 		.endfunc
 
-	.section .dtcm
+	.section .bss
 	.align 8
 	.space	STACKSIZEUND
 __stack_cpu0_und_end = .
@@ -430,8 +433,6 @@ __stack_cpu0_und_end = .
 __stack_cpu0_abt_end = .
 	.space	STACKSIZEFIQ
 __stack_cpu0_fiq_end = .
-	.space	STACKSIZEIRQ
-__stack_cpu0_irq_end = .
 	.space	STACKSIZESVC
 __stack_cpu0_svc_end = .
 	.space	STACKSIZEMON
@@ -440,18 +441,13 @@ __stack_cpu0_mon_end = .
 __stack_cpu0_hyp_end = .
 	.space	STACKSIZESYS
 __stack_cpu0_sys_end = .
-/*
-	.space	STACKSIZESVC
-__stack_cpu0_svc_end = .
-*/
+
 	.space	STACKSIZEUND
 __stack_cpu1_und_end = .
 	.space	STACKSIZEABT
 __stack_cpu1_abt_end = .
 	.space	STACKSIZEFIQ
 __stack_cpu1_fiq_end = .
-	.space	STACKSIZEIRQ
-__stack_cpu1_irq_end = .
 	.space	STACKSIZESVC
 __stack_cpu1_svc_end = .
 	.space	STACKSIZEMON
@@ -461,6 +457,17 @@ __stack_cpu1_hyp_end = .
 	.space	STACKSIZESYS
 __stack_cpu1_sys_end = .
 
+	.section .dtcm
+	.align 8
+	.space	STACKSIZEIRQ
+__stack_cpu0_irq_end = .
+
+	.space	STACKSIZEIRQ
+__stack_cpu1_irq_end = .
+/*
+	.space	STACKSIZESVC
+__stack_cpu0_svc_end = .
+*/
 	.space	STACKSIZESVC
 __stack_cpu1_svc_end = .
 
