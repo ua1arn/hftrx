@@ -13405,7 +13405,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL2("SPEC TX ", "TX Spectrum"), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,							/* разрешение или запрет раскраски спектра */
-		offsetof(struct nvmap, gcolorsp),
+		offsetof(struct nvmap, gtxloopback),
 		NULL,
 		& gtxloopback,
 		getzerobase, /* складывается со смещением и отображается */
