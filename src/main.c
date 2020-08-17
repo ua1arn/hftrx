@@ -8703,7 +8703,7 @@ updateboard(
 			board_set_wfshiftenable(gwfshiftenable);	/* разрешение или запрет сдвига водопада при изменении частоты */
 			board_set_spantialiasing(gspantialiasing); 	/* разрешение или запрет антиалиасинга спектра */
 			board_set_colorsp(gcolorsp);				/* разрешение или запрет раскраски спектра */
-			board_set_tx_loopback(gtxloopback);	/* включение спектроанализатора сигнала передачи */
+			board_set_tx_loopback(gtxloopback && gtx);	/* включение спектроанализатора сигнала передачи */
 		#endif /* WITHSPECTRUMWF */
 		board_set_showdbm(gshowdbm);		// Отображение уровня сигнала в dBm или S-memter (в зависимости от настроек)
 	#endif /* WITHIF4DSP */
