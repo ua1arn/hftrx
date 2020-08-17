@@ -4793,8 +4793,8 @@ uint_fast8_t hamradio_get_notchvalueXXX(int_fast32_t * p)
 */
 
 // Сэмплы для децимации
-static RAMBIGDTCM float32_t FFT_largebuffI [LARGEFFT * 2];
-static RAMBIGDTCM float32_t FFT_largebuffQ [LARGEFFT * 2];
+static RAMBIG float32_t FFT_largebuffI [LARGEFFT * 2];
+static RAMBIG float32_t FFT_largebuffQ [LARGEFFT * 2];
 static RAMDTCM uint_fast16_t fft_largelast;
 
 // формирование отображения спектра
@@ -4823,7 +4823,7 @@ static void buildsigwnd(void)
 
 #else
 
-static RAMBIGDTCM FLOAT_t wnd256 [NORMALFFT];
+static RAMBIG FLOAT_t wnd256 [NORMALFFT];
 
 static void buildsigwnd(void)
 {
