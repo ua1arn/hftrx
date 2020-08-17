@@ -2584,6 +2584,7 @@ struct nvmap
 	uint8_t gwfshiftenable; /* разрешение или запрет сдвига водопада при изменении частоты */
 	uint8_t gspantialiasing; /* разрешение или запрет антиалиасинга спектра */
 	uint8_t gcolorsp;		 /* разрешение или запрет раскраски спектра */
+	uint8_t gtxloopback;		 /* включение спектроанализатора сигнала передачи */
 #endif /* WITHSPECTRUMWF */
 	uint8_t gshowdbm;	/* Отображение уровня сигнала в dBm или S-memter */
 #if WITHBCBANDS
@@ -3259,6 +3260,7 @@ static const uint_fast8_t displaymodesfps = DISPLAYMODES_FPS;
 	static uint_fast8_t gwfshiftenable = 1; /* разрешение или запрет сдвига водопада при изменении частоты */
 	static uint_fast8_t gspantialiasing  = 1; /* разрешение или запрет антиалиасинга спектра */
 	static uint_fast8_t gcolorsp  = 0;		/* разрешение или запрет раскраски спектра */
+	static uint_fast8_t gtxloopback = 1;	/* включение спектроанализатора сигнала передачи */
 #endif /* WITHSPECTRUMWF */
 #if WITHLCDBACKLIGHT
 	#if WITHISBOOTLOADER 
@@ -8512,6 +8514,7 @@ updateboard(
 			//board_speech_set_mode(speechmode);
 			//board_speech_set_width(speechwidth);
 			seq_set_cw_enable(getmodetempl(txsubmode)->wbkin);	/* разрешение передачи CW */
+			board_set_tx_loopback(gtxloopback);	/* включение спектроанализатора сигнала передачи */
 		#endif /* WITHTX */
 
 
@@ -8692,10 +8695,10 @@ updateboard(
 		board_set_moniflag(gmoniflag);	/* glob_moniflag */
 		#if WITHSPECTRUMWF
 			board_set_fillspect(gfillspect);	/* заливать заполнением площадь под графиком спектра */
-			board_set_topdb(gtx ? WITHTOPDBMIN : gtopdb);		/* верхний предел FFT */
-			board_set_bottomdb(gtx ? WITHBOTTOMDBMAX : gbottomdb);		/* нижний предел FFT */
-			board_set_topdbwf(gtx ? WITHTOPDBMIN : gtopdbwf);		/* верхний предел FFT для водопада */
-			board_set_bottomdbwf(gtx ? WITHBOTTOMDBMAX : gbottomdbwf);		/* нижний предел FFT для водопада */
+			board_set_topdb(gtxloopback && gtx ? WITHTOPDBMIN : gtopdb);		/* верхний предел FFT */
+			board_set_bottomdb(gtxloopback && gtx ? WITHBOTTOMDBMAX : gbottomdb);		/* нижний предел FFT */
+			board_set_topdbwf(gtxloopback && gtx ? WITHTOPDBMIN : gtopdbwf);		/* верхний предел FFT для водопада */
+			board_set_bottomdbwf(gtxloopback && gtx ? WITHBOTTOMDBMAX : gbottomdbwf);		/* нижний предел FFT для водопада */
 			board_set_zoomxpow2(gzoomxpow2);	/* уменьшение отображаемого участка спектра */
 			board_set_wflevelsep(gwflevelsep);	/* чувствительность водопада регулируется отдельной парой параметров */
 			board_set_wfshiftenable(gwfshiftenable);	/* разрешение или запрет сдвига водопада при изменении частоты */
@@ -13396,6 +13399,15 @@ static const FLASHMEM struct menudef menutable [] =
 		offsetof(struct nvmap, gspantialiasing),
 		NULL,
 		& gspantialiasing,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		QLABEL2("SPEC TX ", "TX Spectrum"), 7, 3, RJ_YES,	ISTEP1,
+		ITEM_VALUE,
+		0, 1,							/* разрешение или запрет раскраски спектра */
+		offsetof(struct nvmap, gcolorsp),
+		NULL,
+		& gtxloopback,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #if (WITHSWRMTR || WITHSHOWSWRPWR)

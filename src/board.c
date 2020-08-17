@@ -60,6 +60,7 @@ static uint_fast8_t 	glob_opowerlevel = WITHPOWERTRIMMAX;	/* WITHPOWERTRIMMIN..W
 
 static uint_fast8_t 	glob_tx;			// находимся в режиме передачи
 static uint_fast8_t 	glob_sleep;			// находимся в режиме минимального потребления
+static uint_fast8_t 	glob_tx_loopback;		// заворот спектра передатчика в траки спектроанализатора
 static uint_fast8_t 	glob_af_input = BOARD_DETECTOR_SSB;		// код детектора - вид модуляции с которым работаем.
 static uint_fast8_t		glob_nfm;			// режим NFM
 static uint_fast8_t		glob_nfmnbon;		// режим NFM с шумоподавителем - SW2014FM
@@ -5046,6 +5047,18 @@ board_set_tx(uint_fast8_t v)
 	if (glob_tx != n)
 	{
 		glob_tx = n;
+		board_ctlreg1changed();
+	}
+}
+
+/* включение спектроанализатора сигнала передачи */
+void
+board_set_tx_loopback(uint_fast8_t v)
+{
+	const uint_fast8_t n = v != 0;
+	if (glob_tx_loopback != n)
+	{
+		glob_tx_loopback = n;
 		board_ctlreg1changed();
 	}
 }

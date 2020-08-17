@@ -70,6 +70,7 @@ void board_set_lctl1(uint_fast8_t v); // управление внешним с�
 
 
 void board_set_tx(uint_fast8_t v);	/* включение на передачу */
+void board_set_tx_loopback(uint_fast8_t v);	/* включение спектроанализатора сигнала передачи */
 void board_set_opowerlevel(uint_fast8_t n);	/* установить выходную мощность WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
 
 void board_set_att(uint_fast8_t v);
