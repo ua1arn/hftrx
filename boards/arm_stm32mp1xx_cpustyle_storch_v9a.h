@@ -627,8 +627,8 @@
 #endif /* WITHKEYBOARD */
 
 #if 1 // WITHTWISW
-	// I2C1_SDA	PB7
-	// I2C1_SCL	PB6
+	// I2C1_SDA	PB11
+	// I2C1_SCL	PD7
 	#define TARGET_TWI_TWCK		(1u << 7)		// PD7 I2C1_SCL
 	#define TARGET_TWI_TWCK_PIN		(GPIOD->IDR)
 	#define TARGET_TWI_TWCK_PORT_C(v) do { GPIOD->BSRR = BSRR_C(v); __DSB(); } while (0)
