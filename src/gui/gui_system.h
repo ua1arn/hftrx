@@ -6,6 +6,10 @@
 #if WITHTOUCHGUI
 #include "src/gui/gui_structs.h"
 
+#define GUI_MEM_ASSERT(v) do { if ((v == NULL)) { \
+		PRINTF(PSTR("%s: %d ('%s') - memory allocate failed!\n"), __FILE__, __LINE__, (# v)); \
+		for (;;) ; \
+		} } while (0)
 
 void * find_gui_element(element_type_t type, window_t * win, const char * name);
 uint_fast8_t get_label_width(const label_t * const lh);

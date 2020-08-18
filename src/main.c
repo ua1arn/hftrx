@@ -19375,6 +19375,19 @@ void hamradio_set_agc_slow(void)
 	updateboard (1, 0);
 }
 
+uint_fast8_t hamradio_get_agc_type(void)	// 0 - slow, 1 - fast
+{
+	const FLASHMEM struct modetempl * pamodetempl;
+	const uint_fast8_t asubmode = getasubmode(0);
+	pamodetempl = getmodetempl(asubmode);
+	const uint_fast8_t agcseti = pamodetempl->agcseti;
+
+	if (gagc [agcseti].release10 == 5)		// Как иначе вытянуть признак, пока не придумал. Надо переделать
+		return 0;
+	else
+		return 1;
+}
+
 uint_fast8_t hamradio_get_bp_type(void)
 {
 	const uint_fast8_t tx = hamradio_get_tx();

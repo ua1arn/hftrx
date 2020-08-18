@@ -23,6 +23,7 @@
 
 #include "src/gui/gui.h"
 #include "src/gui/gui_user.h"
+#include "src/gui/gui_system.h"
 #include "src/gui/gui_structs.h"
 #include "src/gui/gui_settings.h"
 
@@ -650,7 +651,7 @@ static void fill_button_bg_buf(btn_bg_t * v)
 	v->bg_disabled = 		(PACKEDCOLORMAIN_T *) malloc(s);
 
 	buf = v->bg_non_pressed;
-	ASSERT(buf != NULL);
+	GUI_MEM_ASSERT(buf);
 #if GUI_OLDBUTTONSTYLE
 	colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLOR_BUTTON_NON_LOCKED, 1);
 	colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORMAIN_GRAY, 0);
@@ -663,7 +664,7 @@ static void fill_button_bg_buf(btn_bg_t * v)
 #endif /* GUI_OLDBUTTONSTYLE */
 
 	buf = v->bg_pressed;
-	ASSERT(buf != NULL);
+	GUI_MEM_ASSERT(buf);
 #if GUI_OLDBUTTONSTYLE
 	colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLOR_BUTTON_PR_NON_LOCKED, 1);
 	colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORMAIN_GRAY, 0);
@@ -679,7 +680,7 @@ static void fill_button_bg_buf(btn_bg_t * v)
 #endif /* GUI_OLDBUTTONSTYLE */
 
 	buf = v->bg_locked;
-	ASSERT(buf != NULL);
+	GUI_MEM_ASSERT(buf);
 #if GUI_OLDBUTTONSTYLE
 	colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLOR_BUTTON_LOCKED, 1);
 	colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORMAIN_GRAY, 0);
@@ -692,7 +693,7 @@ static void fill_button_bg_buf(btn_bg_t * v)
 #endif /* GUI_OLDBUTTONSTYLE */
 
 	buf = v->bg_locked_pressed;
-	ASSERT(buf != NULL);
+	GUI_MEM_ASSERT(buf);
 #if GUI_OLDBUTTONSTYLE
 	colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLOR_BUTTON_PR_LOCKED, 1);
 	colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORMAIN_GRAY, 0);
@@ -708,7 +709,7 @@ static void fill_button_bg_buf(btn_bg_t * v)
 #endif /* GUI_OLDBUTTONSTYLE */
 
 	buf = v->bg_disabled;
-	ASSERT(buf != NULL);
+	GUI_MEM_ASSERT(buf);
 #if GUI_OLDBUTTONSTYLE
 	colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLOR_BUTTON_DISABLED, 1);
 	colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORMAIN_GRAY, 0);
