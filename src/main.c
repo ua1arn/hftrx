@@ -3936,7 +3936,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 	static uint_fast8_t gdigigainmax = 86;	/* диапазон ручной регулировки цифрового усиления - максимальное значение */
 	static uint_fast16_t gfsadcpower10 [2] =
 	{
-		(- 130) + FSADCPOWEROFFSET10,	// для соответствия HDSDR мощность, соответствующая full scale от IF ADC
+		(-  30) + FSADCPOWEROFFSET10,	// для соответствия HDSDR мощность, соответствующая full scale от IF ADC
 		(- 330) + FSADCPOWEROFFSET10,	// с конвертором
 	};
 #else /* CTLSTYLE_OLEG4Z_V1 */
