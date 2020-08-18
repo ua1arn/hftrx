@@ -3592,9 +3592,9 @@ enum
 	static uint_fast8_t gtxgate = 1;		/* разрешение драйвера и оконечного усилителя */
 	#if WITHVOX
 		static uint_fast8_t gvoxenable;	/* модифицируется через меню - автоматическое управление передатчиком (от голоса) */
-		static uint_fast8_t gvoxlevel = 100;	/* модифицируется через меню - усиление VOX */
-		static uint_fast8_t gavoxlevel = 0;	/* модифицируется через меню - усиление anti-VOX */
-		static uint_fast8_t voxdelay = 30;	/* модифицируется через меню - задержка отпускания VOX */
+		static uint_fast8_t gvoxlevel = 10;	/* модифицируется через меню - усиление VOX */
+		static uint_fast8_t gavoxlevel = 50;	/* модифицируется через меню - усиление anti-VOX */
+		static uint_fast8_t voxdelay = 70;	/* модифицируется через меню - задержка отпускания VOX */
 	#else /* WITHVOX */
 		enum { gvoxenable = 0 };	/* модифицируется через меню - автоматическое управление передатчиком (от голоса) */
 	#endif /* WITHVOX */
