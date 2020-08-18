@@ -3318,6 +3318,7 @@ uint_fast8_t hamradio_get_high_bp(int_least16_t rotate);
 uint_fast8_t hamradio_get_bp_type(void);
 void hamradio_set_agc_slow(void);
 void hamradio_set_agc_fast(void);
+uint_fast8_t hamradio_get_agc_type(void);
 void hamradio_disable_keyboard_redirect(void);
 void hamradio_enable_keyboard_redirect(void);
 uint_fast8_t hamradio_set_freq (uint_fast32_t freq);
