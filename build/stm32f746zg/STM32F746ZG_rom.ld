@@ -206,14 +206,14 @@ SECTIONS
         . = ALIGN(32);
         *(.framebuff*)
     . = ALIGN(32);
-    } > SDRAM
+    } > RAM
 
 	.noinit (NOLOAD):
 	{
 		. = ALIGN(32);
 		*(.noinit*)
 		. = ALIGN(32);
-	} > SDRAM
+	} > RAM
 	
 	.bss (NOLOAD):
 	{
@@ -223,7 +223,7 @@ SECTIONS
 		*(COMMON)
 		. = ALIGN(32);
 		__bss_end__ = .;
-	} > SDRAM
+	} > RAM
 
 	.heap (COPY):
 	{
@@ -232,7 +232,7 @@ SECTIONS
 		end = __end__;
 		KEEP(*(.heap*))
 		__HeapLimit = .;
-	} > SDRAM
+	} > RAM
 
 	/* .stack_dummy section doesn't contains any symbols. It is only
 	 * used for linker to calculate size of stack sections, and assign
