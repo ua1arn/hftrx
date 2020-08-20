@@ -197,7 +197,7 @@ SECTIONS
 		*(vtable*)
 		. = ALIGN(4);
 		__data3_end__ = .;
-	} > RAM
+	} > DTCM
 
 	. = __etext3 + __data3_end__ - __data3_start__;
 	
@@ -240,7 +240,7 @@ SECTIONS
 	.stack_dummy (COPY):
 	{
 		KEEP(*(.stack*))
-	} > RAM_D1
+	} > RAM
 
 	/* Set stack top to end of RAM, and stack limit move down by
 	 * size of stack_dummy section */
