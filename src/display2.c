@@ -1711,7 +1711,7 @@ static void display_pre3(
 	)
 {
 	const char FLASHMEM * const labels [1] = { hamradio_get_pre_value_P(), };
-	ASSERT(strlen(labels [0]) == 2);
+	ASSERT(strlen(labels [0]) == 3);
 	display2_text_P(x, y, labels, colors_1state, 0);
 }
 
