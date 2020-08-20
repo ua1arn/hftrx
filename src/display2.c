@@ -178,8 +178,6 @@ static uint_fast8_t global_smetertype = 1;	/* выбор внешнего вид
 
 //#define WIDEFREQ (TUNE_TOP > 100000000L)
 
-#if LCDMODE_LTDC
-
 uint_fast16_t normalize(
 	uint_fast16_t raw,
 	uint_fast16_t rawmin,
@@ -244,6 +242,9 @@ uint_fast16_t get_swr(uint_fast16_t swr_fullscale)
 		swr10 = (forward + reflected) * SWRMIN / (forward - reflected) - SWRMIN;
 	return swr10;
 }
+
+
+#if LCDMODE_LTDC
 
 enum {
 	SM_STATE_RX,
@@ -6953,7 +6954,7 @@ static void wfsetupnew(void)
 static void display_wfputrow(uint_fast16_t x, uint_fast16_t y, const PACKEDCOLORMAIN_T * p)
 {
 	colpip_to_main(
-			(uintptr_t) p, ALLDX * sizeof * p,
+			(uintptr_t) p, GXSIZE(ALLDX, 1) * sizeof * p,
 			p, ALLDX, 1, x, y);
 }
 
@@ -7148,7 +7149,7 @@ static void display2_waterfall(
 		uint_fast16_t x;
 		for (x = 0; x < ALLDX; ++ x)
 		{
-			colpip_point(colorpip, BUFDIM_X, BUFDIM_Y, x, y + WFY0, wfpalette [wfarray [(wfrow + y) % WFDY] [x]]);
+			colpip_point(colorpip, BUFDIM_X, BUFDIM_Y, x, y + WFY0, wfpalette [* colmain_mem_at(wfjarray, ALLDX, WFDY, x, (wfrow + y) % WFDY)]);
 		}
 	}
 
@@ -7174,7 +7175,9 @@ static void display2_colorbuff(
 	#if (LCDMODE_LTDC)
 
 	#else /* LCDMODE_LTDC */
-	colpip_to_main(getscratchwnd(), BUFDIM_X, BUFDIM_Y, GRID2X(x0), GRID2Y(y0));
+	colpip_to_main(
+			(uintptr_t) getscratchwnd(), sizeof (PACKEDCOLORMAIN_T) * GXSIZE(BUFDIM_X, BUFDIM_Y),
+			getscratchwnd(), BUFDIM_X, BUFDIM_Y, GRID2X(x0), GRID2Y(y0));
 	#endif /* LCDMODE_LTDC */
 
 #endif /* LCDMODE_S1D13781 */

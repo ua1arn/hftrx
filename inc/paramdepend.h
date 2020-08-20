@@ -1277,6 +1277,7 @@ extern "C" {
 	#define LCDMODE_COLORED	1
 	#define LCDMODE_RGB565 1	// старый дисплей
 	//#define LCDMODE_BGR565 1	// перевернутые цыета
+	#define LCDMODE_PIXELSIZE 2
 #endif /* LCDMODE_ST7735 */
 
 #if LCDMODE_ILI9341
@@ -1286,6 +1287,7 @@ extern "C" {
 	#define DIM_Y 240
 	#define LCDMODE_COLORED	1
 	#define LCDMODE_RGB565 1
+	#define LCDMODE_PIXELSIZE 2
 #endif
 
 #if LCDMODE_ILI8961
