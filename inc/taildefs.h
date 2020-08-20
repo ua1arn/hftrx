@@ -875,11 +875,11 @@ typedef enum
 	#define RAMFUNC			 __attribute__((__section__(".itcm")))
 	#define RAMNOINIT_D1	//__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
 	#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
-	#define RAMFRAMEBUFF	//__attribute__((section(".sdram"))) /* размещение в памяти SRAM_D1 */
+	#define RAMFRAMEBUFF	//__attribute__((section(".sdrabss"))) /* размещение в памяти SRAM_D1 */
 	#define RAMDTCM			__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 	#define RAMBIGDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIGDTCM_MDMA		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
-	#define RAMBIG			__attribute__((section(".sdram"))) /* размещение в памяти SRAM_D1 */
+	#define RAMBIG			__attribute__((section(".sdramdata"))) /* размещение в памяти SRAM_D1 */
 	#define RAMHEAP __attribute__((used, section(".heap"), aligned(16))) // memory used as heap zone
 #elif (CPUSTYLE_STM32F7XX)
 	#define VTRATTR	__attribute__ ((section("vtable"), used, aligned(256 * 4)))

@@ -211,7 +211,7 @@ SECTIONS
 	
 	__etext4 = .;
 
-	.sdramdata : AT (__etext3)
+	.sdramdata : AT (__etext4)
 	{
 		__data4_start__ = .;
 		. = ALIGN(4);

@@ -211,7 +211,7 @@ SECTIONS
 	
 	__etext4 = .;
 
-	.sdramdata : AT (__etext3)
+	.sdramd_data : AT (__etext4)
 	{
 		__data4_start__ = .;
 		. = ALIGN(4);
@@ -239,7 +239,7 @@ SECTIONS
 		__bss_end__ = .;
 	} > SDRAM
 
-	.sdrambss (NOLOAD):
+	.sdram_bss (NOLOAD):
 	{
 		. = ALIGN(32);
 		__bss2_start__ = .;
