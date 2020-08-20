@@ -7165,7 +7165,10 @@ void hardware_sdhost_initialize(void)
 	#pragma CODE_SECTION(local_delay_us, "ramfuncs")
 #endif /* CPUSTYPE_TMS320F2833X */
 
-void RAMFUNC_NONILINE local_delay_us(int timeUS)
+// Атрибут RAMFUNC_NONILINE убран, так как функция
+// используется в инициализации SDRAM на процессорах STM32F746.
+// TODO: перекалибровать для FLASH контроллеров.
+void /* RAMFUNC_NONILINE */ local_delay_us(int timeUS)
 {
 	#if CPUSTYLE_AT91SAM7S
 		const unsigned long top = timeUS * 175uL / (CPU_FREQ / 1000000);
