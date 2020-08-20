@@ -114,6 +114,11 @@ SECTIONS
 		LONG (__data3_start__)
 		LONG ((__data3_end__ - __data3_start__) / 4)
 		
+		/* .data in sdram */
+		LONG (__etext4)
+		LONG (__data4_start__)
+		LONG ((__data4_end__ - __data4_start__) / 4)
+		
 		__copy_table_end__ = .;
 	} > FLASH
 
@@ -128,6 +133,9 @@ SECTIONS
 		__zero_table_start__ = .;
 		LONG (__bss_start__)
 		LONG ((__bss_end__ - __bss_start__) / 4)
+		/* bss in sdram */
+		LONG (__bss2_start__)
+		LONG ((__bss2_end__ - __bss2_start__) / 4)
 		__zero_table_end__ = .;
 	} > FLASH
 	
@@ -201,14 +209,20 @@ SECTIONS
 
 	. = __etext3 + __data3_end__ - __data3_start__;
 	
-  	.sdram (NOLOAD):
-    {
-        . = ALIGN(32);
-        *(.framebuff*)
-    . = ALIGN(32);
-    } > RAM
+	__etext4 = .;
 
-	.noinit (NOLOAD):
+	.sdramdata : AT (__etext3)
+	{
+		__data4_start__ = .;
+		. = ALIGN(4);
+		*(.sdramdata*)
+		. = ALIGN(4);
+		__data4_end__ = .;
+	} > SDRAM
+
+	. = __etext4 + __data4_end__ - __data4_start__;
+	
+ 	.noinit (NOLOAD):
 	{
 		. = ALIGN(32);
 		*(.noinit*)
@@ -224,6 +238,15 @@ SECTIONS
 		. = ALIGN(32);
 		__bss_end__ = .;
 	} > RAM
+
+	.sdrambss (NOLOAD):
+	{
+		. = ALIGN(32);
+		__bss2_start__ = .;
+		*(.sdrambss*)
+		. = ALIGN(32);
+		__bss2_end__ = .;
+	} > SDRAM
 
 	.heap (COPY):
 	{
