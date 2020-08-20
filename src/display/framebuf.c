@@ -15,11 +15,9 @@
 #include "display.h"
 #include "formats.h"
 #include "spi.h"	// hardware_spi_master_send_frame
-#include <string.h>
-
 #include "display2.h"
-
 #include "fontmaps.h"
+#include <string.h>
 
 /*
 	Dead time value in the AXI clock cycle inserted between two consecutive accesses on
