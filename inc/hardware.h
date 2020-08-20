@@ -579,7 +579,7 @@ void hardware_adc_initialize(void);
 		#define RAMBIGDTCM_MDMA		__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 		#define RAMBIG			__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
 		#define RAMHEAP __attribute__((used, section(".heap"), aligned(16))) // memory used as heap zone
-	#elif (CPUSTYLE_STM32F7XX)
+	#elif (CPUSTYLE_STM32F7XX) && WITHSDRAMHW
 		#define VTRATTR	__attribute__ ((section("vtable"), used, aligned(256 * 4)))
 		#define FLASHMEMINIT	__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 		#define FLASHMEMINITFUNC	//__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
@@ -592,6 +592,20 @@ void hardware_adc_initialize(void);
 		#define RAMBIGDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 		#define RAMBIGDTCM_MDMA		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 		#define RAMBIG			__attribute__((section(".sdram"))) /* размещение в памяти SRAM_D1 */
+		#define RAMHEAP __attribute__((used, section(".heap"), aligned(16))) // memory used as heap zone
+	#elif (CPUSTYLE_STM32F7XX)
+		#define VTRATTR	__attribute__ ((section("vtable"), used, aligned(256 * 4)))
+		#define FLASHMEMINIT	__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
+		#define FLASHMEMINITFUNC	//__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
+		#define RAMFUNC_NONILINE __attribute__((noinline,__section__(".itcm")))  // удаление управления noinline добавило 2-3 процента быстродействия __attribute__((__section__(".ramfunc"), noinline))
+		#define RAMFUNC			 __attribute__((__section__(".itcm")))
+		#define RAMNOINIT_D1	//__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
+		#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
+		#define RAMFRAMEBUFF	__attribute__((section(".sdram"))) /* размещение в памяти SRAM_D1 */
+		#define RAMDTCM			__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
+		#define RAMBIGDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
+		#define RAMBIGDTCM_MDMA		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
+		#define RAMBIG			//__attribute__((section(".sdram"))) /* размещение в памяти SRAM_D1 */
 		#define RAMHEAP __attribute__((used, section(".heap"), aligned(16))) // memory used as heap zone
 	#elif CPUSTYLE_STM32F4XX && (defined (STM32F429xx) || defined(STM32F407xx))
 		#define VTRATTR	__attribute__ ((section("vtable"), used, aligned(256 * 4)))
