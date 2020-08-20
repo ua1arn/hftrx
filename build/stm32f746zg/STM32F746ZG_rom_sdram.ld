@@ -141,7 +141,7 @@ SECTIONS
 	
 	__etext = .;
 
-	.data : AT (__etext)
+	.data :
 	{
 		__data_start__ = .;
 		*(.data*)
@@ -172,13 +172,13 @@ SECTIONS
 		/* All data end */
 		__data_end__ = .;
 
-	} > SDRAM
+	} > SDRAM AT > FLASH
 
 	. = __etext + __data_end__ - __data_start__;
 
 	__etext2 = .;
 
-	.itcm : AT (__etext2)
+	.itcm :
 	{
 		__data2_start__ = .;
 		*(.itcm*)
@@ -190,13 +190,13 @@ SECTIONS
 
 		. = ALIGN(4);
 		__data2_end__ = .;
-	} > ITCM
+	} > ITCM AT > FLASH
 
 	. = __etext2 + __data2_end__ - __data2_start__;
 
 	__etext3 = .;
 
-	.dtcm : AT (__etext3)
+	.dtcm :
 	{
 		__data3_start__ = .;
 		. = ALIGN(4);
@@ -205,20 +205,20 @@ SECTIONS
 		*(vtable*)
 		. = ALIGN(4);
 		__data3_end__ = .;
-	} > DTCM
+	} > DTCM AT > FLASH
 
 	. = __etext3 + __data3_end__ - __data3_start__;
 	
 	__etext4 = .;
 
-	.sdramd_data : AT (__etext4)
+	.sdramd_data :
 	{
 		__data4_start__ = .;
 		. = ALIGN(4);
 		*(.sdramdata*)
 		. = ALIGN(4);
 		__data4_end__ = .;
-	} > SDRAM
+	} > SDRAM AT > FLASH
 
 	. = __etext4 + __data4_end__ - __data4_start__;
 	
