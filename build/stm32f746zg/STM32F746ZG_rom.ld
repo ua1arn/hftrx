@@ -164,7 +164,7 @@ SECTIONS
 		/* All data end */
 		__data_end__ = .;
 
-	} > DTCM
+	} > RAM
 
 	. = __etext + __data_end__ - __data_start__;
 
@@ -206,14 +206,14 @@ SECTIONS
         . = ALIGN(32);
         *(.framebuff*)
     . = ALIGN(32);
-    } > RAM
+    } > SDRAM
 
 	.noinit (NOLOAD):
 	{
 		. = ALIGN(32);
 		*(.noinit*)
 		. = ALIGN(32);
-	} > RAM
+	} > SDRAM
 	
 	.bss (NOLOAD):
 	{
@@ -223,7 +223,7 @@ SECTIONS
 		*(COMMON)
 		. = ALIGN(32);
 		__bss_end__ = .;
-	} > RAM
+	} > SDRAM
 
 	.heap (COPY):
 	{
@@ -232,7 +232,7 @@ SECTIONS
 		end = __end__;
 		KEEP(*(.heap*))
 		__HeapLimit = .;
-	} > RAM
+	} > SDRAM
 
 	/* .stack_dummy section doesn't contains any symbols. It is only
 	 * used for linker to calculate size of stack sections, and assign
@@ -249,5 +249,5 @@ SECTIONS
 	PROVIDE(__stack = __StackTop);
 
 	/* Check if data + heap + stack exceeds RAM limit */
-	ASSERT(__StackLimit >= __HeapLimit, "region RAM overflowed with stack")
+	/* ASSERT(__StackLimit >= __HeapLimit, "region RAM overflowed with stack") */
 }
