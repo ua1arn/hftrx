@@ -670,6 +670,7 @@ static void st7735_clear(COLORMAIN_T bg)
 	st7735_setcolor(COLORMAIN_WHITE, bg, bg);
 
 #if WITHSPIEXT16 && WITHSPIHWDMA
+	// в глубине вызовов будет испольщоваться st7735_colorbuf
 	enum { LNBURST = 1 };
 	static ALIGNX_BEGIN PACKEDCOLORPIP_T colorbuf [GXSIZE(DIM_X, LNBURST)] ALIGNX_END;
 	for (i = 0; i < sizeof colorbuf / sizeof colorbuf [0]; ++ i)
