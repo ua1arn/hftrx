@@ -5,23 +5,21 @@
 #include "../display/display.h"
 #include "display2.h"
 
-#define GUIMINX					800							// минимальное разрешение для touch GUI
-#define GUIMINY					480
-#define WITHGUIMAXX				DIM_X
-#define WITHGUIMAXY				DIM_Y
+#if DIM_X == 480 && DIM_Y == 272
+	#define WITHGUIMAXX				480						// для разрешения 480х272 используется мини-версия touch GUI
+	#define WITHGUIMAXY				272
+	#define WITHGUISTYLE_MINI		1
+	#define GUI_OLDBUTTONSTYLE		1						// Кнопки без закругления углов
+#elif DIM_X >= 800 && DIM_Y >= 480							// при разрешении больше чем 800х480 интерфейс будет сжат до 800х480.
+	#define WITHGUIMAXX				800
+	#define WITHGUIMAXY				480
+	#define WITHGUISTYLE_COMMON		1
+	#define GUI_TRANSPARENT_WINDOWS	1						// Прозрачный фон окон
+#endif
 
-#if (DIM_X < GUIMINX || DIM_Y < GUIMINY) && WITHTOUCHGUI	// не соблюдены минимальные требования к разрешению экрана
+
+#if (DIM_X < 480 || DIM_Y < 272) && WITHTOUCHGUI			// не соблюдены минимальные требования к разрешению экрана
 	#undef WITHTOUCHGUI										// для функционирования touch GUI
-#endif
-
-#if WITHGUIMAXX != GUIMINX									// дизайн GUI в данный момент только для 800х480,
-	#undef WITHGUIMAXX
-	#define WITHGUIMAXX 		GUIMINX
-#endif
-
-#if WITHGUIMAXY != GUIMINY									// при большем разрешении интерфейс будет сжат до 800х480.
-	#undef WITHGUIMAXY
-	#define WITHGUIMAXY 		GUIMINY
 #endif
 
 #if WITHTOUCHGUI
