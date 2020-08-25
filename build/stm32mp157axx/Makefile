@@ -162,7 +162,7 @@ app_run: $(PROJECT)_app.stm32
 	./dfu-util.exe --device ffff:0738 --alt 2 --detach
 
 flash: $(PROJECT)_app.stm32
-	./dfu-util.exe --device ffff:0738 --alt 0 --dfuse-address 0x70040000 --download $(PROJECT)_app.stm32
+	./dfu-util.exe --device ffff:0738 --alt 0 --dfuse-address 0x70080000 --download $(PROJECT)_app.stm32
 
 BOOT2: version $(OBJS) $(PROJECT)_boot.elf $(PROJECT)_boot.bin
 
@@ -178,7 +178,7 @@ $(PROJECT)_app.stm32: $(PROJECT)_app.bin
 	./stm32image.exe -l 0xC0000100 -e 0xC0000100 -s $(PROJECT)_app.bin -d $@
 	
 app.hex: $(PROJECT)_app.stm32
-	./bin2ihex -l 0x00040000 -s $(PROJECT)_app.stm32 >$@
+	./bin2ihex -l 0x00080000 -s $(PROJECT)_app.stm32 >$@
 
 
 $(OBJDIR)/%.o: %.c

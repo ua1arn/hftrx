@@ -11,6 +11,11 @@
 	</hex_block>
 	<hex_block>
 		<hex_filename>C:/user/SVN/hftrx/build/stm32mp157axx/boot.hex</hex_filename>
+		<hex_addressing>relative</hex_addressing>
+		<hex_offset>262144</hex_offset>
+	</hex_block>
+	<hex_block>
+		<hex_filename>C:/user/SVN/hftrx/build/stm32mp157axx/boot.hex</hex_filename>
 		<hex_addressing>absolute</hex_addressing>
 	</hex_block>
 	<version>6</version>
