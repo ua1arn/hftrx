@@ -437,9 +437,9 @@ extern "C" {
 
 	//#define TARGET_RZA1             (TARGET_RZA1L)	// перенесено в Makefile
 
-	#include "armcpu/Renesas_RZ_A1.h"
-	#include "armcpu/iodefine.h"
-	#include "armcpu/rza_io_regrw.h"
+	#include "armcpu/Renesas_RZ_A1.h"	// IRQs, some bitss
+	#include "armcpu/iodefine.h"		// peripherial registers
+	#include "armcpu/rza_io_regrw.h"	// iobitmasks
 
 	#include "irq_ctrl.h"
 
