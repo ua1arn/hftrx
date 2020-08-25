@@ -177,6 +177,7 @@ extern "C" {
 	#endif /* __ARM_NEON */
 
 	#define ARM_MATH_LOOPUNROLL 1
+	#define DISABLEFLOAT16 1
 
 	#include "arm_math.h"
 	#include "arm_const_structs.h"
@@ -205,6 +206,7 @@ extern "C" {
 	#endif /* __ARM_NEON */
 
 	#define ARM_MATH_LOOPUNROLL 1
+	#define DISABLEFLOAT16 1
 
 	#include "arm_math.h"
 	#include "arm_const_structs.h"
@@ -232,6 +234,7 @@ extern "C" {
 	#endif /* __ARM_NEON */
 
 	#define ARM_MATH_LOOPUNROLL 1
+	#define DISABLEFLOAT16 1
 
 	#include "arm_math.h"
 	#include "arm_const_structs.h"
@@ -255,6 +258,7 @@ extern "C" {
 	#endif /* __ARM_NEON */
 
 	#define ARM_MATH_LOOPUNROLL 1
+	#define DISABLEFLOAT16 1
 
 	#include "arm_math.h"
 	#include "arm_const_structs.h"
@@ -277,6 +281,7 @@ extern "C" {
 	#endif /* __ARM_NEON */
 
 	#define ARM_MATH_LOOPUNROLL 1
+	#define DISABLEFLOAT16 1
 
 	#include "arm_math.h"
 	#include "arm_const_structs.h"
@@ -299,6 +304,7 @@ extern "C" {
 	#endif /* __ARM_NEON */
 
 	#define ARM_MATH_LOOPUNROLL 1
+	#define DISABLEFLOAT16 1
 
 	#include "arm_math.h"
 	#include "arm_const_structs.h"
@@ -320,6 +326,7 @@ extern "C" {
 	#endif /* __ARM_NEON */
 
 	#define ARM_MATH_LOOPUNROLL 1
+	#define DISABLEFLOAT16 1
 
 	#include "arm_math.h"
 	#include "arm_const_structs.h"
@@ -340,6 +347,7 @@ extern "C" {
 	#endif /* __ARM_NEON */
 
 	#define ARM_MATH_LOOPUNROLL 1
+	#define DISABLEFLOAT16 1
 
 	#include "arm_math.h"
 	#include "arm_const_structs.h"
@@ -360,6 +368,7 @@ extern "C" {
 	#endif /* __ARM_NEON */
 
 	#define ARM_MATH_LOOPUNROLL 1
+	#define DISABLEFLOAT16 1
 
 	#include "arm_math.h"
 	#include "arm_const_structs.h"
@@ -379,6 +388,7 @@ extern "C" {
 	#endif /* __ARM_NEON */
 
 	#define ARM_MATH_LOOPUNROLL 1
+	#define DISABLEFLOAT16 1
 
 	#include "arm_math.h"
 	#include "arm_const_structs.h"
@@ -447,6 +457,7 @@ extern "C" {
 	#endif /* __ARM_NEON */
 
 	#define ARM_MATH_LOOPUNROLL 1
+	#define DISABLEFLOAT16 1
 
 	#include "arm_math.h"
 	#include "arm_const_structs.h"
@@ -478,6 +489,7 @@ extern "C" {
 		//#define ARM_MATH_NEON 1
 	#endif /* __ARM_NEON */
 	#define ARM_MATH_LOOPUNROLL 1
+	#define DISABLEFLOAT16 1
 
 	#include "arm_math.h"
 	#include "arm_const_structs.h"
