@@ -3472,11 +3472,15 @@ static void stm32mp1_ddr_init(struct ddr_info *priv,
 		mmio_read_32((uintptr_t)&priv->ctl->pctrl_1));
 }
 
-//#include "stm32mp15-mx_1G.dtsi"	// 64k*16
-#include "stm32mp15-mx_2G.dtsi"	// 128k*16
-//#include "stm32mp15-mx_4G.dtsi"		// 256k*16
-//#include "stm32mp15-mx_8G.dtsi"	// 512k*16
-
+#if DDR_FREQ <= 300000000uL
+	// less or equal 300 MHz
+	#include "stm32mp15-mx_300MHz_2G.dtsi"	// 128k*16
+#else
+	//#include "stm32mp15-mx_1G.dtsi"	// 64k*16
+	#include "stm32mp15-mx_2G.dtsi"	// 128k*16
+	//#include "stm32mp15-mx_4G.dtsi"		// 256k*16
+	//#include "stm32mp15-mx_8G.dtsi"	// 512k*16
+#endif
 // NT5CC128M16IP-DI BGA DDR3 NT5CC128M16IP DI
 void stm32mp1_ddr_get_config(struct stm32mp1_ddr_config * cfg)
 {
