@@ -12091,9 +12091,9 @@ SystemInit(void)
 
 static void printcpustate(void)
 {
-	const uint_fast32_t cpsr = __get_CPSR();
-	const uint_fast8_t cpuid = __get_MPIDR() & 0x03;
-	PRINTF(PSTR("CPU: VBAR=%p, TTBR0=%p, cpsr=%08lX, cpuid=%02X, sp=%p\n"), __get_VBAR(), __get_TTBR0(), cpsr, cpuid, & cpuid);
+	volatile uint_fast32_t vvv;
+	dbg_putchar('$');
+	PRINTF(PSTR("CPU%u: VBAR=%p, TTBR0=%p, cpsr=%08lX, sp=%p\n"), (unsigned) (__get_MPIDR() & 0x03),  __get_VBAR(), __get_TTBR0(), __get_CPSR(), & vvv);
 }
 
 static void arm_gic_initialize(void);
