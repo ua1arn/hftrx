@@ -204,8 +204,8 @@ void arm_hardware_mdma_initialize(void)
 	 * LTDC = AXI_M9.
 	 * MDMA = AXI_M7.
 	 */
-	//SYSCFG->ICNR |= SYSCFG_ICNR_AXI_M7;
-	//(void) SYSCFG->ICNR;
+	SYSCFG->ICNR |= SYSCFG_ICNR_AXI_M7;
+	(void) SYSCFG->ICNR;
 
 #elif CPUSTYLE_STM32H7XX
 	/* Enable the DMA2D Clock */
