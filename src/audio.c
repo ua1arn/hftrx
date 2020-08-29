@@ -3484,8 +3484,12 @@ static FLOAT_t agc_forvard_getstreigthlog10(
 	volatile agcparams_t * const agcp = & rxsmeterparams;
 	volatile agcstate_t * const st = & rxsmeterstate [pathi];
 
+	global_disableIRQ();
 	const FLOAT_t fltstrengthfast = agc_result_fast(st);	// измеритель уровня сигнала
+	global_enableIRQ();
+	global_disableIRQ();
 	const FLOAT_t fltstrengthslow = agc_result_slow(st);	// измеритель уровня сигнала
+	global_enableIRQ();
 	* tracemax = agc_calcstrengthlog10(agcp, fltstrengthslow);
 	return agc_calcstrengthlog10(agcp, fltstrengthfast);
 }
