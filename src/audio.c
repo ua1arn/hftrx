@@ -4888,7 +4888,7 @@ union states
 };
 
 
-#if (CPUSTYLE_R7S721 || CPUSTYLE_STM32MP1)
+#if (CPUSTYLE_R7S721 || 0)
 
 static uint16_t rbfimage0 [] =
 {

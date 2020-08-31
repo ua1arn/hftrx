@@ -6449,7 +6449,7 @@ static void board_fpga_loader_initialize(void)
 
 #if WITHFPGALOAD_PS
 
-#if ! (CPUSTYLE_R7S721 || CPUSTYLE_STM32MP1)
+#if ! (CPUSTYLE_R7S721 || 0)
 /* на процессоре renesas образ располагается в памяти, испольщуемой для хранений буферов DSP части */
 static const FLASHMEMINIT uint16_t rbfimage0 [] =
 {
