@@ -82,7 +82,7 @@ UADEFS =
 SRC = 
 
 # List ASM source files here
-#ASRC = crt_sam7s.S
+#ASRC = crt_sam7s.s
 ASRC =
 
 # List all user directories here

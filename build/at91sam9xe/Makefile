@@ -79,7 +79,7 @@ SRC =
 
 # List ASM source files here
 ASRC = \
- crt_sam7s.S
+ crt_sam7s.s
 
 # List all user directories here
 UINCDIR += ../.. ../../inc

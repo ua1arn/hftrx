@@ -97,7 +97,7 @@ CPPSRC +=
 
 # List ASM source files here
 ASRC += \
- $(SRCDIR)/crt_stm32mp1.S
+ $(SRCDIR)/crt_stm32mp1.s
 
 # List all user directories here
 UINCDIR += ../.. ../../inc
