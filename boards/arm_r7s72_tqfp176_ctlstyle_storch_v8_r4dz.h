@@ -177,35 +177,38 @@
 #if WITHISBOOTLOADER
 
 
-	#define CTLREGMODE_STORCH_V7	1	/* TFT 4.3" "Аист" с DSP и FPGA STM32H743IIT6 или R7S721020VCFP */
 	//#define CTLREGMODE_NOCTLREG 1
 	/* коды входов коммутатора источников сигнала для УНЧ приёмника */
 	#define BOARD_DETECTOR_SSB 	0		// Заглушка
 
 	#define BOARD_DETECTOR_FM	0
-	#define BOARD_DETECTOR_AM	0
-	#define BOARD_DETECTOR_MUTE	0
-	#define BOARD_DETECTOR_TUNE	0
+	#define BOARD_DETECTOR_AM	1
+	#define BOARD_DETECTOR_MUTE	2
+	#define BOARD_DETECTOR_TUNE	3
 
 	// +++ заглушки для плат с DSP обработкой
 	#define	BOARD_AGCCODE_ON	0
-	#define	BOARD_AGCCODE_OFF	0
-
-	#define BOARD_NOTCH_OFF		0
-	#define BOARD_NOTCH_MANUAL	0
-	#define BOARD_NOTCH_AUTO	1
+	#define	BOARD_AGCCODE_OFF	1
 
 	// +++ заглушки для плат с DSP обработкой
 	#define BOARD_NOTCH_OFF		0
-	#define BOARD_NOTCH_MANUAL	0
-	#define BOARD_NOTCH_AUTO	0
+	#define BOARD_NOTCH_MANUAL	1
+	#define BOARD_NOTCH_AUTO	2
+	//#define WITHLMSAUTONOTCH	1	/* Использование AUTONOTCH	*/
 
 	/* коды фильтров второй ПЧ, выдаваемые на дешифраторы */
 	#define BOARD_FILTER_0P5		0	/* 0.5 or 0.3 kHz filter */
-	#define BOARD_FILTER_3P1		0	/* 3.1 or 2.75 kHz filter */
+	#define BOARD_FILTER_3P1		1	/* 3.1 or 2.75 kHz filter */
 	//#define BOARD_FILTER_6P0		0	/* 6.0 kHz filter */
 	//#define BOARD_FILTER_8P0		0	/* 6.0 kHz filter */
 	// --- заглушки для плат с DSP обработкой
+
+	//#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
+	//#define WITHINTEGRATEDDSP		1	/* в программу включена инициализация и запуск DSP части. */
+	#define WITHIFDACWIDTH	32		// 1 бит знак и 31 бит значащих
+	#define WITHIFADCWIDTH	32		// 1 бит знак и 31 бит значащих
+	#define WITHAFADCWIDTH	16		// 1 бит знак и 15 бит значащих
+	#define WITHAFDACWIDTH	16		// 1 бит знак и 15 бит значащих
 	// --- Эти строки можно отключать, уменьшая функциональность готового изделия
 
 	#define WITHMODESETMIXONLY 1	// Use only product detector
