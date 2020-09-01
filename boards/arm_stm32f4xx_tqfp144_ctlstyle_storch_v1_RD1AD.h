@@ -8,13 +8,14 @@
 // STM32F746ZGT6 кодеком NAU8822L и FPGA EP4CE22E22I7N
 // с функцией DUAL WATCH, USB
 // Rmainunit_v5cm.pcb, Rmainunit_v5dm.pcb (USB)
+// RD1AD - версия без термодатчика - Rmainunit_v5cm.pcb
 
 #ifndef ARM_STM32F4XX_TQFP144_CTLSTYLE_STORCH_V1_RD1AD_H_INCLUDED
 #define ARM_STM32F4XX_TQFP144_CTLSTYLE_STORCH_V1_RD1AD_H_INCLUDED 1
 
-//	#if ! defined(STM32F746xx)
-//		#error Wrong CPU selected. STM32F746xx expected
-//	#endif /* ! defined(STM32F446xx) */
+	#if ! defined(STM32H743xx)
+		#error Wrong CPU selected. STM32H743xx expected
+	#endif /* ! defined(STM32F767xx) */
 
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */
 	#define WITHI2SCLOCKFROMPIN 1	// тактовая частота на SPI2 (I2S) подается с внешнего генератора, в процессор вводится через MCK сигнал интерфейса
@@ -282,13 +283,14 @@
 	//#define BOARD_FFTZOOM_POW2MAX 2	// Возможные масштабы FFT x1, x2, x4
 	//#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
 	//#define BOARD_FFTZOOM_POW2MAX 4	// Возможные масштабы FFT x1, x2, x4, x8, x16
-	#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
-	//#define WITHUSEDUALWATCH	1	// Второй приемник
-	//#define WITHREVERB	1	// ревербератор в обработке микрофонного сигнала
+	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
+	#define WITHUSEDUALWATCH	1	// Второй приемник
+	#define WITHREVERB	1	// ревербератор в обработке микрофонного сигнала
 	#define WITHDACSTRAIGHT 1	/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
 	//#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 	#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
 	#define WITHFASTWATERFLOW 1		/* хранение водопада в формате совпадающим с дисплеем */
+	#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
 
 	#if 0
 		#define WITHUSBHEADSET 1	/* трансивер работает USB гарнитурой для компьютера - режим тестирования */
