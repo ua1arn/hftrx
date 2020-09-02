@@ -274,8 +274,15 @@ static void gui_main_process(void)
 	{
 		uint_fast8_t interval_btn = 3;
 		uint_fast16_t x = 0;
+		ASSERT(win != NULL);
 		win->first_call = 0;
-		gui_enc2_menu->updated = 1;
+		// FIXME
+		ASSERT(gui_enc2_menu != NULL);
+		if (gui_enc2_menu != NULL)
+		{
+			gui_enc2_menu->updated = 1;
+
+		}
 
 		button_t buttons [] = {
 		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
