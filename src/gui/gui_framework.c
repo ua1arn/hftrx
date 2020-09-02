@@ -921,7 +921,7 @@ static void process_gui(void)
 		gui.last_pressed_x = tx;
 		gui.last_pressed_y = ty;
 		gui.is_touching_screen = 1;
-//		debug_printf_P(PSTR("last x/y=%d/%d\n"), gui.last_pressed_x, gui.last_pressed_y);
+//		PRINTF(PSTR("last x/y=%d/%d\n"), gui.last_pressed_x, gui.last_pressed_y);
 		update_gui_elements_list();
 	}
 	else
@@ -970,7 +970,7 @@ static void process_gui(void)
 			if (gui.vector_move_x != 0 || gui.vector_move_y != 0)
 			{
 				gui.is_tracking = 1;
-//				debug_printf_P(PSTR("move x: %d, move y: %d\n"), gui.vector_move_x, gui.vector_move_y);
+//				PRINTF(PSTR("move x: %d, move y: %d\n"), gui.vector_move_x, gui.vector_move_y);
 			}
 			p->state = PRESSED;
 			set_state_record(p);

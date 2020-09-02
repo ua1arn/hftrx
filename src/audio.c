@@ -250,10 +250,10 @@ static uint_fast8_t		glob_dsploudspeaker_off;
 	/* DSP speed test */
 	void dsp_speed_diagnostics(void)
 	{
-		//debug_printf_P(PSTR("data=%08lX,%08lX,%08lX,%08lX\n"), dd [0], dd [1], dd [2], dd [3]);
-		debug_printf_P(PSTR("dtcount=%" PRIuFAST32 ", dtmax=%" PRIuFAST32 ", dtlast=%" PRIuFAST32 ", "), dtcount, dtmax, dtlast);
-		debug_printf_P(PSTR("dtcount2=%" PRIuFAST32 ", dtmax2=%" PRIuFAST32 ", dtlast2=%" PRIuFAST32 ", "), dtcount2, dtmax2, dtlast2);
-		debug_printf_P(PSTR("dtcount3=%" PRIuFAST32 ", dtmax3=%" PRIuFAST32 ", dtlast3=%" PRIuFAST32 "\n"), dtcount3, dtmax3, dtlast3);
+		//PRINTF(PSTR("data=%08lX,%08lX,%08lX,%08lX\n"), dd [0], dd [1], dd [2], dd [3]);
+		PRINTF(PSTR("dtcount=%" PRIuFAST32 ", dtmax=%" PRIuFAST32 ", dtlast=%" PRIuFAST32 ", "), dtcount, dtmax, dtlast);
+		PRINTF(PSTR("dtcount2=%" PRIuFAST32 ", dtmax2=%" PRIuFAST32 ", dtlast2=%" PRIuFAST32 ", "), dtcount2, dtmax2, dtlast2);
+		PRINTF(PSTR("dtcount3=%" PRIuFAST32 ", dtmax3=%" PRIuFAST32 ", dtlast3=%" PRIuFAST32 "\n"), dtcount3, dtmax3, dtlast3);
 	}
 
 #else /* WITHDEBUG */
@@ -1422,7 +1422,7 @@ static void agc_parameters_initialize(volatile agcparams_t * agcp)
 	agcp->levelfence = rxlevelfence;
 	agcp->agcfactor = agc_calcagcfactor(10);
 
-	//debug_printf_P(PSTR("agc_parameters_initialize: dischargespeedfast=%f, chargespeedfast=%f\n"), agcp->dischargespeedfast, agcp->chargespeedfast);
+	//PRINTF(PSTR("agc_parameters_initialize: dischargespeedfast=%f, chargespeedfast=%f\n"), agcp->dischargespeedfast, agcp->chargespeedfast);
 }
 
 // Установка параметров АРУ приёмника
@@ -1444,7 +1444,7 @@ static void agc_parameters_update(volatile agcparams_t * const agcp, FLOAT_t gai
 	agcp->levelfence = rxlevelfence * (int) glob_agc_scale [pathi] * (FLOAT_t) 0.01;
 	agcp->agcfactor = flatgain ? (FLOAT_t) -1 : agc_calcagcfactor(glob_agcrate [pathi]);
 
-	//debug_printf_P(PSTR("agc_parameters_update: dischargespeedfast=%f, chargespeedfast=%f\n"), agcp->dischargespeedfast, agcp->chargespeedfast);
+	//PRINTF(PSTR("agc_parameters_update: dischargespeedfast=%f, chargespeedfast=%f\n"), agcp->dischargespeedfast, agcp->chargespeedfast);
 }
 
 // Установка параметров S-метра приёмника
@@ -1468,7 +1468,7 @@ static void agc_smeter_parameters_update(volatile agcparams_t * const agcp)
 	agcp->gainlimit = db2ratio(60);
 	agcp->agcfactor = (FLOAT_t) -1;
 
-	//debug_printf_P(PSTR("agc_parameters_update: dischargespeedfast=%f, chargespeedfast=%f\n"), agcp->dischargespeedfast, agcp->chargespeedfast);
+	//PRINTF(PSTR("agc_parameters_update: dischargespeedfast=%f, chargespeedfast=%f\n"), agcp->dischargespeedfast, agcp->chargespeedfast);
 }
 
 // Начальная установка параметров АРУ микрофонного тракта передатчика
@@ -2210,19 +2210,19 @@ static void fir_design_integers_passtrough(int_fast32_t *lCoeff, int iCoefNum, F
 // debug function
 static void writecoefs(const int_fast32_t * lCoeff, int iCoefNum)
 {
-	debug_printf_P(PSTR("# iCoefNum = %i\n"), iCoefNum);
+	PRINTF(PSTR("# iCoefNum = %i\n"), iCoefNum);
 	const int iHalfLen = (iCoefNum - 1) / 2;
 	int i;
 	for (i = 0; i <= iHalfLen; ++ i)
 	{
-		debug_printf_P(PSTR("%ld\n"), lCoeff [i]);
+		PRINTF(PSTR("%ld\n"), lCoeff [i]);
 	}
 	i -= 1;
 	for (; -- i >= 0; )
 	{
-		debug_printf_P(PSTR("%ld\n"), lCoeff [i]);
+		PRINTF(PSTR("%ld\n"), lCoeff [i]);
 	}
-	debug_printf_P(PSTR("# end\n"));
+	PRINTF(PSTR("# end\n"));
 }
 #endif
 
@@ -2696,11 +2696,11 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 	const FLOAT_t txfiltergain = 2;	// Для IQ фильтра можно так - для компенсации 0.5 усиления из-за перемножителя перед ним.
 #endif /* WITHDSPEXTDDC */
 
-	debug_printf_P(PSTR("audio_setup_wiver: fullbw6[%u]=%u\n"), (unsigned) pathi, (unsigned) fullbw6);
+	PRINTF(PSTR("audio_setup_wiver: fullbw6[%u]=%u\n"), (unsigned) pathi, (unsigned) fullbw6);
 
 	if (fullbw6 == INT16_MAX)
 	{
-		//debug_printf_P(PSTR("audio_setup_wiver: construct bypass glob_fullbw6=%u\n"), (unsigned) glob_fullbw6);
+		//PRINTF(PSTR("audio_setup_wiver: construct bypass glob_fullbw6=%u\n"), (unsigned) glob_fullbw6);
 	#if WITHDSPLOCALFIR
 		if (isdspmoderx(dspmode))
 			fir_design_passtrough(FIRCoef_rx_SSB_IQ [spf], Ntap_rx_SSB_IQ, rxfiltergain);
@@ -2714,7 +2714,7 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 	else
 	{
 		const int cutfreq = fullbw6 / 2;
-		//debug_printf_P(PSTR("audio_setup_wiver: construct filter glob_fullbw6=%u\n"), (unsigned) glob_fullbw6);
+		//PRINTF(PSTR("audio_setup_wiver: construct filter glob_fullbw6=%u\n"), (unsigned) glob_fullbw6);
 	#if WITHDSPLOCALFIR
 		if (isdspmoderx(dspmode))
 		{
@@ -3221,7 +3221,7 @@ static void modem_update(void)
 	modem_set_speed(glob_modem_speed100);
 	modem_set_mode(glob_modem_mode);
 
-	debug_printf_P(PSTR("modem_update: modem_speed100=%d.%02d, modem_mode=%d\n"), (int) (glob_modem_speed100 / 100), (int) (glob_modem_speed100 % 100), (int) glob_modem_mode);
+	PRINTF(PSTR("modem_update: modem_speed100=%d.%02d, modem_mode=%d\n"), (int) (glob_modem_speed100 / 100), (int) (glob_modem_speed100 % 100), (int) glob_modem_mode);
 #endif /* WITHMODEM */
 }
 ///////////////////////
@@ -4677,7 +4677,7 @@ int16_t Dtmf_receive (const int16_t * samples)
 
 void dtmftest(void)
 {
-	//debug_printf_P(PSTR("."));
+	//PRINTF(PSTR("."));
 	if (dtmfbi >= DTMF_STEPS)
 	{
 		long t = 0;
@@ -4688,7 +4688,7 @@ void dtmftest(void)
 		};
 		const int digit = Dtmf_receive(inp_samples);
 		/*
-		debug_printf_P("spectrum:[%8d %8d %8d %8d %8d %8d %8d %8d] ",
+		PRINTF("spectrum:[%8d %8d %8d %8d %8d %8d %8d %8d] ",
 				(int) (powS [0] * 10),
 				(int) (powS [1] * 10),
 				(int) (powS [2] * 10),
@@ -4703,19 +4703,19 @@ void dtmftest(void)
 		if (digit != DTMF_EMPTY)
 		{
 			if (digit >= (sizeof digits / sizeof digits [0]))
-				debug_printf_P(PSTR("dtmf: 0x%02x\n"), digit);
+				PRINTF(PSTR("dtmf: 0x%02x\n"), digit);
 			else
-				debug_printf_P(PSTR("dtmf: %c\n"), digit < 16 ? digits [digit] : 'Z');
+				PRINTF(PSTR("dtmf: %c\n"), digit < 16 ? digits [digit] : 'Z');
 		}
 		else
 		{
-			//debug_printf_P(PSTR("dtmf: none\n"));
+			//PRINTF(PSTR("dtmf: none\n"));
 		}
 		dtmfbi = 0;
 	}
 	else
 	{
-		//debug_printf_P(PSTR(":"));
+		//PRINTF(PSTR(":"));
 	}
 }
 
@@ -4840,17 +4840,17 @@ static void buildsigwnd(void)
 
 static void printsigwnd(void)
 {
-	debug_printf_P(PSTR("static const FLASHMEM FLOAT_t wnd256 [%u] =\n"), (unsigned) FFTSizeSpectrum);
-	debug_printf_P(PSTR("{\n"));
+	PRINTF(PSTR("static const FLASHMEM FLOAT_t wnd256 [%u] =\n"), (unsigned) FFTSizeSpectrum);
+	PRINTF(PSTR("{\n"));
 
 	int i;
 	for (i = 0; i < FFTSizeSpectrum; ++ i)
 	{
 		wnd256 [i] = fir_design_window(i, FFTSizeSpectrum, BOARD_WTYPE_SPECTRUM);
 		int el = ((i + 1) % 4) == 0;
-		debug_printf_P(PSTR("\t" "%+1.20f%s"), wnd256 [i], el ? ",\n" : ", ");
+		PRINTF(PSTR("\t" "%+1.20f%s"), wnd256 [i], el ? ",\n" : ", ");
 	}
-	debug_printf_P(PSTR("};\n"));
+	PRINTF(PSTR("};\n"));
 }
 #endif
 
@@ -6167,7 +6167,7 @@ void dsp_initialize(void)
 		float32x4_t v1 = vld1q_f32(vs);
 		float32x4_t v2 = vrev64q_f32(v1);
 		// output: neontest: 2 1 4 3
-		debug_printf_P(PSTR("neontest: %d %d %d %d\n"), (int) vgetq_lane_f32(v2, 0), (int) vgetq_lane_f32(v2, 1), (int) vgetq_lane_f32(v2, 2), (int) vgetq_lane_f32(v2, 3));
+		PRINTF(PSTR("neontest: %d %d %d %d\n"), (int) vgetq_lane_f32(v2, 0), (int) vgetq_lane_f32(v2, 1), (int) vgetq_lane_f32(v2, 2), (int) vgetq_lane_f32(v2, 3));
 	}
 #endif
 }

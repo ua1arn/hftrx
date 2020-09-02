@@ -6199,7 +6199,7 @@ void display_swrmeter(
 	// swr10 = 0..30 for swr 1..4
 	const uint_fast8_t mapleftval = display_mapbar(swr10, 0, fullscale, 0, swr10, fullscale);
 
-	//debug_printf_P(PSTR("swr10=%d, mapleftval=%d, fs=%d\n"), swr10, mapleftval, display_getmaxswrlimb());
+	//PRINTF(PSTR("swr10=%d, mapleftval=%d, fs=%d\n"), swr10, mapleftval, display_getmaxswrlimb());
 
 	colmain_setcolors(SWRCOLOR, BGCOLOR);
 
@@ -6236,7 +6236,7 @@ void display_modulationmeter_amv0(
 #if WITHBARS
 	const uint_fast8_t mapleftval = display_mapbar(value, 0, fullscale, 0, value, fullscale);
 
-	//debug_printf_P(PSTR("swr10=%d, mapleftval=%d, fs=%d\n"), swr10, mapleftval, display_getmaxswrlimb());
+	//PRINTF(PSTR("swr10=%d, mapleftval=%d, fs=%d\n"), swr10, mapleftval, display_getmaxswrlimb());
 
 	colmain_setcolors(SWRCOLOR, BGCOLOR);
 	display_at_P(display_bars_x_swr(x - 1, CHARS2GRID(0)), y, PSTR("M"));
@@ -6995,7 +6995,7 @@ static void display2_spectrum(
 				// Формирование графика
 
 				// формирование фона растра - верхняя часть графика (Шторка)
-				//debug_printf_P(PSTR("xl=%d xr=%d\n"), xleft, xright);
+				//PRINTF(PSTR("xl=%d xr=%d\n"), xleft, xright);
 				display_colorbuf_set_vline(colorpip, BUFDIM_X, BUFDIM_Y, x, SPY0, yv, inband ? COLORMAIN_SPECTRUMBG2 : COLORPIP_SPECTRUMBG);
 
 				// точку на границе

@@ -616,7 +616,7 @@ static int r820t_set_tf(r820t_priv_t *priv, uint32_t freq)
 
 int r820t_set_pll(r820t_priv_t *priv, uint32_t freq)
 {
-	debug_printf_P(PSTR("r820t_set_pll: freq=%u Hz (%u kHz)\n"), freq, freq / 1000);
+	PRINTF(PSTR("r820t_set_pll: freq=%u Hz (%u kHz)\n"), freq, freq / 1000);
 
 	uint32_t vco_freq;
 	int rc, i;
@@ -689,7 +689,7 @@ int r820t_set_pll(r820t_priv_t *priv, uint32_t freq)
 	if (rc < 0)
 		return rc;
 
-	debug_printf_P(PSTR("r820t_set_pll 3: data[5]={%02x, %02x, %02x, %02x, %02x };\n"), data[0],data[1],data[2],data[3],data[4]);
+	PRINTF(PSTR("r820t_set_pll 3: data[5]={%02x, %02x, %02x, %02x, %02x };\n"), data[0],data[1],data[2],data[3],data[4]);
 
 	vco_fine_tune = (data[4] & 0x30) >> 4;
 
@@ -706,7 +706,7 @@ int r820t_set_pll(r820t_priv_t *priv, uint32_t freq)
 	nint = vco_freq / (2 * pll_ref);
 	vco_fra = vco_freq - 2 * pll_ref * nint;
 
-	debug_printf_P(PSTR("r820t_set_pll: vco_freq=%u kHz (%u MHz)\n"), vco_freq, vco_freq / 1000);
+	PRINTF(PSTR("r820t_set_pll: vco_freq=%u kHz (%u MHz)\n"), vco_freq, vco_freq / 1000);
 
 	/* boundary spur prevention */
 	if (vco_fra < pll_ref / 64) {
@@ -721,7 +721,7 @@ int r820t_set_pll(r820t_priv_t *priv, uint32_t freq)
 	}
 
 	if (nint > 63) {
-		debug_printf_P("No valid PLL values for %u kHz!\n", freq);
+		PRINTF("No valid PLL values for %u kHz!\n", freq);
 		return -1;
 	}
 
@@ -753,7 +753,7 @@ int r820t_set_pll(r820t_priv_t *priv, uint32_t freq)
 		n_sdm = n_sdm << 1;
 	}
 
-	debug_printf_P(PSTR("freq %d kHz, pll ref %d%s, sdm=0x%04x\n"),
+	PRINTF(PSTR("freq %d kHz, pll ref %d%s, sdm=0x%04x\n"),
 		  freq, pll_ref, refdiv2 ? " / 2" : "", sdm);
 
 	rc = r820t_write_reg(priv, 0x16, sdm >> 8);
@@ -770,7 +770,7 @@ int r820t_set_pll(r820t_priv_t *priv, uint32_t freq)
 		rc = r820t_read(priv, data, 3);
 		if (rc < 0)
 			return rc;
-		debug_printf_P(PSTR("r820t_set_pll 4: data[3]={%02x, %02x, %02x };\n"), data[0],data[1],data[2]);
+		PRINTF(PSTR("r820t_set_pll 4: data[3]={%02x, %02x, %02x };\n"), data[0],data[1],data[2]);
 		if (data[2] & 0x40)
 			break;
 
@@ -788,7 +788,7 @@ int r820t_set_pll(r820t_priv_t *priv, uint32_t freq)
 	}
 
 	//priv->has_lock = 1;
-	debug_printf_P("r820t_set_pll: tuner has lock at frequency %d kHz\n", freq);
+	PRINTF("r820t_set_pll: tuner has lock at frequency %d kHz\n", freq);
 
 	/* set pll autotune = 8kHz */
 	rc = r820t_write_reg_mask(priv, 0x1a, 0x08, 0x08);
@@ -853,7 +853,7 @@ part of r820t_set_tv_standard()
 */
 int r820t_calibrate(r820t_priv_t *priv)
 {
-	  debug_printf_P(PSTR("r820t_calibrate: start\n"));
+	  PRINTF(PSTR("r820t_calibrate: start\n"));
   int i, rc, cal_code;
   uint8_t data [5];
 
@@ -903,12 +903,12 @@ int r820t_calibrate(r820t_priv_t *priv)
     cal_code = data[4] & 0x0f;
     if (cal_code && cal_code != 0x0f)
 	{
-	  debug_printf_P(PSTR("r820t_calibrate: okay\n"));
+	  PRINTF(PSTR("r820t_calibrate: okay\n"));
       return 0;
 	}
   }
 
-	debug_printf_P(PSTR("r820t_calibrate: error\n"));
+	PRINTF(PSTR("r820t_calibrate: error\n"));
   return -1;
 }
 
@@ -930,14 +930,14 @@ int r820t_init(r820t_priv_t *priv, const uint32_t if_freq)
   priv->freq = saved_freq;
   if (rc < 0)
   {
-	  debug_printf_P(PSTR("r820t_init: calibrate retray\n"));
+	  PRINTF(PSTR("r820t_init: calibrate retray\n"));
     saved_freq = priv->freq;
     r820t_calibrate(priv);
     priv->freq = saved_freq;
   }
   else
   {
-	  debug_printf_P(PSTR("r820t_init: calibrate okay\n"));
+	  PRINTF(PSTR("r820t_init: calibrate okay\n"));
   }
 
   /* Restore freq as it has been modified by r820t_calibrate() */
@@ -1072,12 +1072,12 @@ r820t_initialize(void)
 	i2c_read(& val, I2C_READ_ACK_NACK);	/* чтение первого и единственного байта ответа */
 	i2c_stop();
 
-	debug_printf_P(PSTR("r820t_initialize: signature=0x%02X (0x96 expected)\n"), r82xx_bitrev(val));
+	PRINTF(PSTR("r820t_initialize: signature=0x%02X (0x96 expected)\n"), r82xx_bitrev(val));
 
     //i2c_start(R820T_I2C_ADDR | I2C_READ);
 	//i2c_read(& val, I2C_READ_ACK_NACK);	/* чтение первого и единственного байта ответа */
 	//i2c_stop();
-	//debug_printf_P(PSTR("r820t_initialize2: signature=0x%02X (0x96 expected)\n"), r82xx_bitrev(val));
+	//PRINTF(PSTR("r820t_initialize2: signature=0x%02X (0x96 expected)\n"), r82xx_bitrev(val));
 }
 
 
@@ -1094,7 +1094,7 @@ r820t_update(void)
 	r820t_set_lna_agc(& r820t0, lnaagc);
 	r820t_set_mixer_agc(& r820t0, lnaagc);
 
-	debug_printf_P(PSTR("lna=%u, mixer=%u, vga=%u, lnaagc=%s, mixeragc=%s\n"),
+	PRINTF(PSTR("lna=%u, mixer=%u, vga=%u, lnaagc=%s, mixeragc=%s\n"),
 		lnagain, mixergain, vgagain, lnaagc ? "on" : "off", mixeragc ? "on" : "off");
 
 }

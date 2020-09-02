@@ -37,7 +37,7 @@ typedef struct listcnt
 } LIST_ENTRY2, * PLIST_ENTRY2;
 
 #define LIST2PRINT(name) do { \
-		debug_printf_P(PSTR(# name "[%3d] "), (int) name.Count); \
+		PRINTF(PSTR(# name "[%3d] "), (int) name.Count); \
 	} while (0)
 
 __STATIC_INLINE int
@@ -141,7 +141,7 @@ __STATIC_INLINE uint_fast8_t GetReadyList3(const LIST_ENTRY3 * ListHead)
 }
 
 #define LIST3PRINT(name) do { \
-		debug_printf_P(PSTR(# name "[%3d] "), (int) GetCountList3(& (name))); \
+		PRINTF(PSTR(# name "[%3d] "), (int) GetCountList3(& (name))); \
 	} while (0)
 
 #if 0
@@ -444,12 +444,12 @@ void buffers_diagnostics(void)
 	LIST2PRINT(speexready16);
 	LIST2PRINT(voicesfree32tx);
 	LIST2PRINT(voicesready32tx);
-	debug_printf_P(PSTR("\n"));
+	PRINTF(PSTR("\n"));
 	LIST2PRINT(voicesfree16);
 	LIST3PRINT(voicesmike16);
 	LIST2PRINT(voicesphones16);
 	LIST2PRINT(voicesmoni16);
-	debug_printf_P(PSTR("\n"));
+	PRINTF(PSTR("\n"));
 
 	#if WITHUSBUACIN
 		#if WITHRTS192
@@ -466,15 +466,15 @@ void buffers_diagnostics(void)
 		LIST3PRINT(resample16);
 	#endif /* WITHUSBUACOUT */
 
-	debug_printf_P(PSTR(" add=%u, del=%u, zero=%u, "), nbadd, nbdel, nbzero);
+	PRINTF(PSTR(" add=%u, del=%u, zero=%u, "), nbadd, nbdel, nbzero);
 		
-	debug_printf_P(PSTR("\n"));
+	PRINTF(PSTR("\n"));
 
 #endif
 
 #if 1 && WITHDEBUG && WITHINTEGRATEDDSP && WITHBUFFERSDEBUG
-	debug_printf_P(PSTR("n1=%u n1wfm=%u n2=%u n3=%u n4=%u n5=%u n6=%u uacinalt=%d, purge16=%u\n"), n1, n1wfm, n2, n3, n4, n5, n6, uacinalt, purge16);
-	debug_printf_P(PSTR("e1=%u e2=%u e3=%u e4=%u e5=%u e6=%u e7=%u e8=%u\n"), e1, e2, e3, e4, e5, e6, e7, e8);
+	PRINTF(PSTR("n1=%u n1wfm=%u n2=%u n3=%u n4=%u n5=%u n6=%u uacinalt=%d, purge16=%u\n"), n1, n1wfm, n2, n3, n4, n5, n6, uacinalt, purge16);
+	PRINTF(PSTR("e1=%u e2=%u e3=%u e4=%u e5=%u e6=%u e7=%u e8=%u\n"), e1, e2, e3, e4, e5, e6, e7, e8);
 
 	{
 		const unsigned ms10 = getresetval(& debugcount_ms10);
@@ -487,7 +487,7 @@ void buffers_diagnostics(void)
 		const unsigned tx32dac = getresetval(& debugcount_tx32dac);
 		const unsigned uacin = getresetval(& debugcount_uacin);
 
-		debug_printf_P(PSTR("FREQ: uacout=%u, uacin=%u, mikeadc=%u, phonesdac=%u, rtsadc=%u, rx32adc=%u, rx32wfm=%u, tx32dac=%u\n"),
+		PRINTF(PSTR("FREQ: uacout=%u, uacin=%u, mikeadc=%u, phonesdac=%u, rtsadc=%u, rx32adc=%u, rx32wfm=%u, tx32dac=%u\n"),
 			uacout * 10000 / ms10, 
 			uacin * 10000 / ms10, 
 			mikeadc * 10000 / ms10, 
@@ -567,7 +567,7 @@ denoise16_t * allocate_dmabuffer16denoise(void)
 #if WITHBUFFERSDEBUG
 	++ e7;
 #endif /* WITHBUFFERSDEBUG */
-	//debug_printf_P(PSTR("allocate_dmabuffer16denoise() failure\n"));
+	//PRINTF(PSTR("allocate_dmabuffer16denoise() failure\n"));
 	if (! IsListEmpty2(& speexready16))
 	{
 		PLIST_ENTRY t = RemoveTailList2(& speexready16);
@@ -576,7 +576,7 @@ denoise16_t * allocate_dmabuffer16denoise(void)
 		return p;
 	}
 	SPIN_UNLOCK(& speexlock);
-	debug_printf_P(PSTR("allocate_dmabuffer16denoise() failure\n"));
+	PRINTF(PSTR("allocate_dmabuffer16denoise() failure\n"));
 	ASSERT(0);
 	for (;;)
 		;
@@ -1764,7 +1764,7 @@ RAMFUNC uintptr_t allocate_dmabuffer32tx(void)
 		return (uintptr_t) & p->buff;
 	}
 	/* error path */
-	debug_printf_P(PSTR("allocate_dmabuffer32tx() failure\n"));
+	PRINTF(PSTR("allocate_dmabuffer32tx() failure\n"));
 	for (;;)
 		;
 	SPIN_UNLOCK(& locklist32);
@@ -1783,7 +1783,7 @@ RAMFUNC uintptr_t allocate_dmabuffer32rx(void)
 	}
 	else
 	{
-		debug_printf_P(PSTR("allocate_dmabuffer32rx() failure\n"));
+		PRINTF(PSTR("allocate_dmabuffer32rx() failure\n"));
 		for (;;)
 			;
 	}
@@ -1857,7 +1857,7 @@ RAMFUNC uintptr_t allocate_dmabuffer16(void)
 	else
 	{
 		SPIN_UNLOCK(& locklist16);
-		debug_printf_P(PSTR("allocate_dmabuffer16() failure\n"));
+		PRINTF(PSTR("allocate_dmabuffer16() failure\n"));
 		for (;;)
 			;
 	}
@@ -2183,7 +2183,7 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 			}
 			else
 			{
-				debug_printf_P(PSTR("allocate_dmabuffer96rts() failure\n"));
+				PRINTF(PSTR("allocate_dmabuffer96rts() failure\n"));
 				for (;;)
 					;
 			}
@@ -2329,7 +2329,7 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 			}
 			else
 			{
-				debug_printf_P(PSTR("allocate_dmabuffer192rts() failure\n"));
+				PRINTF(PSTR("allocate_dmabuffer192rts() failure\n"));
 				for (;;)
 					;
 			}
@@ -2442,7 +2442,7 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 		else
 		{
 			SPIN_UNLOCK(& locklist16);
-			debug_printf_P(PSTR("allocate_dmabufferuacin16() failure, uacinalt=%d\n"), uacinalt);
+			PRINTF(PSTR("allocate_dmabufferuacin16() failure, uacinalt=%d\n"), uacinalt);
 			for (;;)
 				;
 		}
@@ -2549,21 +2549,21 @@ void board_set_uacmike(uint_fast8_t v)
 void 
 buffers_set_uacinalt(uint_fast8_t v)	/* выбор альтернативной конфигурации для UAC IN interface */
 {
-	//debug_printf_P(PSTR("buffers_set_uacinalt: v=%d\n"), (int) v);
+	//PRINTF(PSTR("buffers_set_uacinalt: v=%d\n"), (int) v);
 	uacinalt = v;
 }
 
 void 
 buffers_set_uacinrtsalt(uint_fast8_t v)	/* выбор альтернативной конфигурации для UAC IN interface */
 {
-	//debug_printf_P(PSTR("buffers_set_uacinrtsalt: v=%d\n"), (int) v);
+	//PRINTF(PSTR("buffers_set_uacinrtsalt: v=%d\n"), (int) v);
 	uacinrtsalt = v;
 }
 
 void 
 buffers_set_uacoutalt(uint_fast8_t v)	/* выбор альтернативной конфигурации для UAC OUT interface */
 {
-	//debug_printf_P(PSTR("buffers_set_uacoutalt: v=%d\n"), (int) v);
+	//PRINTF(PSTR("buffers_set_uacoutalt: v=%d\n"), (int) v);
 	uacoutalt = v;
 }
 
@@ -2787,7 +2787,7 @@ void release_dmabufferx(uintptr_t addr)
 		return;
 
 	default:
-		debug_printf_P(PSTR("release_dmabufferx: wrong tag value: p=%p, %02X\n"), p, p->tag);
+		PRINTF(PSTR("release_dmabufferx: wrong tag value: p=%p, %02X\n"), p, p->tag);
 		for (;;)
 			;
 	}
@@ -2825,7 +2825,7 @@ uintptr_t getfilled_dmabufferx(uint_fast16_t * sizep)
 #endif /* ! WITHUSBUACIN2 */
 
 	default:
-		debug_printf_P(PSTR("getfilled_dmabufferx: uacinalt=%u\n"), uacinalt);
+		PRINTF(PSTR("getfilled_dmabufferx: uacinalt=%u\n"), uacinalt);
 		ASSERT(0);
 		return 0;
 	}
@@ -2861,7 +2861,7 @@ uintptr_t getfilled_dmabufferxrts(uint_fast16_t * sizep)
 #endif /* WITHUSBUACIN2 && WITHUSBHW */
 
 	default:
-		debug_printf_P(PSTR("getfilled_dmabufferxrts: uacinrtsalt=%u\n"), uacinrtsalt);
+		PRINTF(PSTR("getfilled_dmabufferxrts: uacinrtsalt=%u\n"), uacinrtsalt);
 		ASSERT(0);
 		return 0;
 	}

@@ -213,7 +213,7 @@ static void prog_rffc5071_regsetup(
 	spitarget_t target		/* addressing to chip */
 	)
 {
-	//debug_printf_P(PSTR("# rffc5071_init\n"));
+	//PRINTF(PSTR("# rffc5071_init\n"));
 	memcpy_P(rffc5071_regs, rffc5071_regs_default, sizeof(rffc5071_regs));
 	rffc5071_regs_dirty = 0x7fffffff;
 
@@ -229,7 +229,7 @@ void rffc5071_initialize(
 	spitarget_t target		/* addressing to chip */
 {
 	prog_rffc5071_regsetup(target);
-	//debug_printf_P(PSTR("# rffc5071_setup\n"));
+	//PRINTF(PSTR("# rffc5071_setup\n"));
 
 #if 0
 	/* initial setup */
@@ -295,20 +295,20 @@ void rffc5071_reg_write(
 
 
 void rffc5071_disable(void)  {
-	//debug_printf_P(PSTR("# rfc5071_disable\n"));
+	//PRINTF(PSTR("# rfc5071_disable\n"));
 	set_RFFC5071_ENBL(0);
 	rffc5071_regs_commit(target);
 }
 
 void rffc5071_enable(void)  {
-	//debug_printf_P(PSTR("# rfc5071_enable\n"));
+	//PRINTF(PSTR("# rfc5071_enable\n"));
 	set_RFFC5071_ENBL(1);
 	rffc5071_regs_commit(target);
 }
 
 
 void rffc5071_tx(int x) {
-	//debug_printf_P(PSTR("# rffc5071_tx\n"));
+	//PRINTF(PSTR("# rffc5071_tx\n"));
 	set_RFFC5071_ENBL(0);
 	set_RFFC5071_FULLD(0);
 	set_RFFC5071_MODE(1); /* mixer 2 used for both RX and TX */
@@ -316,7 +316,7 @@ void rffc5071_tx(int x) {
 }
 
 void rffc5071_rx(int x) {
-	//debug_printf_P(PSTR("# rfc5071_rx\n"));
+	//PRINTF(PSTR("# rfc5071_rx\n"));
 	set_RFFC5071_ENBL(0);
 	set_RFFC5071_FULLD(0);
 	set_RFFC5071_MODE(1); /* mixer 2 used for both RX and TX */
@@ -328,7 +328,7 @@ void rffc5071_rx(int x) {
  * current hardware designs do not support full-duplex operation.
  */
 void rffc5071_rxtx(void) {
-	//debug_printf_P(PSTR("# rfc5071_rxtx\n"));
+	//PRINTF(PSTR("# rfc5071_rxtx\n"));
 	set_RFFC5071_ENBL(0);
 	set_RFFC5071_FULLD(1); /* mixer 1 and mixer 2 (RXTX) */
 	rffc5071_regs_commit(target);
@@ -359,7 +359,7 @@ void rffc5071_config_synth_int(uint_fast16_t lo) {
 
 	const uint_fast32_t REF_FREQ = 144;		// 14.4 MHz
 	
-	//debug_printf_P(PSTR("# config_synth_int\n"));
+	//PRINTF(PSTR("# config_synth_int\n"));
 
 	/* Calculate n_lo */
 	const uint_fast8_t n_lo = rffc5071_calc_n_lo(lo);
@@ -390,7 +390,7 @@ void rffc5071_config_synth_int(uint_fast16_t lo) {
 #if 0 //WITHDEBUG	
 	const uint_fast64_t tune_freq_hz = (tmp_n * REF_FREQ * fbkdiv * FREQ_ONE_MHZ) / ((uint_fast64_t) lodiv << RFFC5071_FRACTIONAL_LENGTH);
 
-	debug_printf_P(PSTR("# lo=%ld n_lo=%d lodiv=%d fvco=%ld fbkdiv=%d n=%d tune_freq_khz=%ld\n"),
+	PRINTF(PSTR("# lo=%ld n_lo=%d lodiv=%d fvco=%ld fbkdiv=%d n=%d tune_freq_khz=%ld\n"),
 			(long) lo, n_lo, lodiv, (long) fvco, fbkdiv, n, (long)(tune_freq_hz / 1000));
 
 #endif /* WITHDEBUG */
@@ -463,13 +463,13 @@ static void rffc5071_test(
 	spitarget_t target
 	)
 {
-	//debug_printf_P(PSTR("rffc5071_test()\n"));
+	//PRINTF(PSTR("rffc5071_test()\n"));
 	uint_fast8_t r;
 	for (r = 0; r < RFFC5071_READBACK_REG; ++ r)
 	//for (;;)
 	{
 		uint_fast16_t v = rffc5071_spi_read(r);
-		debug_printf_P(PSTR("R%02X=%04X\n"), r, v);
+		PRINTF(PSTR("R%02X=%04X\n"), r, v);
 	}
 }
 */

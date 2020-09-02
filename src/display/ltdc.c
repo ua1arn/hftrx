@@ -228,7 +228,7 @@ void vdc5_update(
 		local_delay_ms(1);
 		if (-- count == 0)
 		{
-			debug_printf_P(PSTR("wait reg=%p %s mask=%08lX, stay=%08lX\n"), reg, label, mask, * reg & mask);
+			PRINTF(PSTR("wait reg=%p %s mask=%08lX, stay=%08lX\n"), reg, label, mask, * reg & mask);
 			return;
 		}
 	}
@@ -250,7 +250,7 @@ void vdc5_update(
 	(void) * (reg);	/* dummy read */ \
 	uint_fast32_t count = 1000; \
 	do { \
-		if (count -- == 0) {debug_printf_P(PSTR("wait %s/%d\n"), __FILE__, __LINE__); break; } \
+		if (count -- == 0) {PRINTF(PSTR("wait %s/%d\n"), __FILE__, __LINE__); break; } \
 		local_delay_ms(1); \
 	} while (((* (reg)) & mask) != 0); /* wait for bit chamge to zero */ \
 } while (0)
@@ -809,7 +809,7 @@ arm_hardware_ltdc_initialize(void)
 {
 	struct st_vdc5 * const vdc = & VDC50;
 
-	debug_printf_P(PSTR("arm_hardware_ltdc_initialize start, WIDTH=%d, HEIGHT=%d\n"), WIDTH, HEIGHT);
+	PRINTF(PSTR("arm_hardware_ltdc_initialize start, WIDTH=%d, HEIGHT=%d\n"), WIDTH, HEIGHT);
 	//const unsigned ROWSIZE = sizeof framebuff [0];	// размер одной строки в байтах
 
 
@@ -848,7 +848,7 @@ arm_hardware_ltdc_initialize(void)
 	arm_hardware_ltdc_pip_off();
 #endif /* LCDMODE_PIP_RGB565 || LCDMODE_PIP_L8 */
 
-	debug_printf_P(PSTR("arm_hardware_ltdc_initialize done\n"));
+	PRINTF(PSTR("arm_hardware_ltdc_initialize done\n"));
 }
 
 /* set bottom buffer start */
@@ -1395,12 +1395,12 @@ static void LCD_LayerInitPIP(
 void
 arm_hardware_ltdc_initialize(void)
 {
-	debug_printf_P(PSTR("arm_hardware_ltdc_initialize start, WIDTH=%d, HEIGHT=%d\n"), WIDTH, HEIGHT);
+	PRINTF(PSTR("arm_hardware_ltdc_initialize start, WIDTH=%d, HEIGHT=%d\n"), WIDTH, HEIGHT);
 
 	//const unsigned ROWSIZE = sizeof framebuff [0];	// размер одной строки в байтах
 	//const unsigned rowsize2 = (sizeof (PACKEDCOLOR_T) * DIM_SECOND);
 	//ASSERT(ROWSIZE == rowsize2);
-	//debug_printf_P(PSTR("arm_hardware_ltdc_initialize: framebuff=%p\n"), framebuff);
+	//PRINTF(PSTR("arm_hardware_ltdc_initialize: framebuff=%p\n"), framebuff);
 
 	/* Initialize the LCD */
 
@@ -1457,7 +1457,7 @@ arm_hardware_ltdc_initialize(void)
 	pipparams_t pipwnd;
 	display2_getpipparams(& pipwnd);
 
-	debug_printf_P(PSTR("arm_hardware_ltdc_initialize: pip: x/y=%u/%u, w/h=%u/%u\n"), pipwnd.x, pipwnd.y, pipwnd.w, pipwnd.h);
+	PRINTF(PSTR("arm_hardware_ltdc_initialize: pip: x/y=%u/%u, w/h=%u/%u\n"), pipwnd.x, pipwnd.y, pipwnd.w, pipwnd.h);
 #endif /* LCDMODE_PIP_RGB565 || LCDMODE_PIP_L8 */
 
 	LTDC_InitStruct.LTDC_HSPolarity = HSYNCNEG ? LTDC_HSPolarity_AL : LTDC_HSPolarity_AH;     
@@ -1564,7 +1564,7 @@ arm_hardware_ltdc_initialize(void)
 #if defined (BOARD_MODEVALUE)
 	HARDWARE_LTDC_SET_MODE(BOARD_MODEVALUE);
 #endif
-	debug_printf_P(PSTR("arm_hardware_ltdc_initialize done\n"));
+	PRINTF(PSTR("arm_hardware_ltdc_initialize done\n"));
 }
 
 /* set bottom buffer start */

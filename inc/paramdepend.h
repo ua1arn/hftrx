@@ -727,7 +727,7 @@ extern "C" {
 					if (__get_BASEPRI() != gARM_BASEPRI_ONLY_REALTIME) \
 					{ \
 						TP(); \
-						debug_printf_P(PSTR("system_enableIRQ: wrong __get_BASEPRI() value: %08lX\n"), __get_BASEPRI()); \
+						PRINTF(PSTR("system_enableIRQ: wrong __get_BASEPRI() value: %08lX\n"), __get_BASEPRI()); \
 						for (;;) ; \
 					} \
 					__set_BASEPRI(gARM_BASEPRI_ALL_ENABLED); \
@@ -736,7 +736,7 @@ extern "C" {
 					if (__get_BASEPRI() != gARM_BASEPRI_ALL_ENABLED) \
 					{ \
 						TP(); \
-						debug_printf_P(PSTR("system_disableIRQ: wrong __get_BASEPRI() value: %08lX\n"), __get_BASEPRI()); \
+						PRINTF(PSTR("system_disableIRQ: wrong __get_BASEPRI() value: %08lX\n"), __get_BASEPRI()); \
 						for (;;) ; \
 					} \
 					__set_BASEPRI(gARM_BASEPRI_ONLY_REALTIME); \
@@ -844,7 +844,7 @@ extern "C" {
 					if (GIC_GetInterfacePriorityMask() != gARM_BASEPRI_ONLY_REALTIME) \
 					{ \
 						TP(); \
-						debug_printf_P(PSTR("system_enableIRQ: wrong GIC_GetInterfacePriorityMask() value: %08lX\n"), GIC_GetInterfacePriorityMask()); \
+						PRINTF(PSTR("system_enableIRQ: wrong GIC_GetInterfacePriorityMask() value: %08lX\n"), GIC_GetInterfacePriorityMask()); \
 						for (;;) ; \
 					} \
 					GIC_SetInterfacePriorityMask(gARM_BASEPRI_ALL_ENABLED); \
@@ -853,7 +853,7 @@ extern "C" {
 					if (GIC_GetInterfacePriorityMask() != gARM_BASEPRI_ALL_ENABLED) \
 					{ \
 						TP(); \
-						debug_printf_P(PSTR("system_disableIRQ: wrong GIC_GetInterfacePriorityMask() value: %08lX\n"), GIC_GetInterfacePriorityMask()); \
+						PRINTF(PSTR("system_disableIRQ: wrong GIC_GetInterfacePriorityMask() value: %08lX\n"), GIC_GetInterfacePriorityMask()); \
 						for (;;) ; \
 					} \
 					GIC_SetInterfacePriorityMask(gARM_BASEPRI_ONLY_REALTIME); \

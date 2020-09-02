@@ -427,7 +427,7 @@ void board_rtc_getdatetime(
 /* возврат не-0 если требуется начальная загрузка значений */
 uint_fast8_t board_rtc_chip_initialize(void)
 {
-	debug_printf_P(PSTR("rtc_stm32f4xx_initialize\n"));
+	PRINTF(PSTR("rtc_stm32f4xx_initialize\n"));
 
 #if CPUSTYLE_STM32MP1
 	RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_RTCAPBEN;  // Включить тактирование
@@ -492,8 +492,8 @@ uint_fast8_t board_rtc_chip_initialize(void)
 
 	/* Установка начальных значений времени и даты */
 	const uint_fast8_t inits = board_rtc_get_inits();	// if year is zero
-	debug_printf_P(PSTR("rtc_stm32f4xx_initialize: INITS=%d\n"), inits);
-	debug_printf_P(PSTR("rtc_stm32f4xx_initialize: done\n"));
+	PRINTF(PSTR("rtc_stm32f4xx_initialize: INITS=%d\n"), inits);
+	PRINTF(PSTR("rtc_stm32f4xx_initialize: done\n"));
 
 	return inits;	/* возврат не-0 если требуется начальная загрузка значений */
 }

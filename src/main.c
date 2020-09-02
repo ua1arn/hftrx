@@ -4028,7 +4028,7 @@ typedef struct tunerstate
 
 static void board_set_tuner_group(void)
 {
-	//debug_printf_P(PSTR("tuner: CAP=%-3d, IND=%-3d, TYP=%d\n"), tunercap, tunerind, tunertype);
+	//PRINTF(PSTR("tuner: CAP=%-3d, IND=%-3d, TYP=%d\n"), tunercap, tunerind, tunertype);
 	// todo: добавить учет включенной антенны
 #if SHORTSET7 || SHORTSET8
 	board_set_tuner_C(logtable_cap [tunercap]);
@@ -4206,7 +4206,7 @@ static void auto_tune(void)
 	const uint_fast8_t addstepsCk = 15;
 #endif /* SHORTSET7 || SHORTSET8 */
 
-	//debug_printf_P(PSTR("auto_tune start\n"));
+	//PRINTF(PSTR("auto_tune start\n"));
 	// Попытка согласовать двумя схемами
 	for (tunertype = 0; tunertype < KSCH_COUNT; ++ tunertype)
 	{
@@ -4231,13 +4231,13 @@ static void auto_tune(void)
 	}
 	// Выбираем наилучший результат согласования
 	cshindex = findbestswr(statuses, sizeof statuses / sizeof statuses [0]);
-	//debug_printf_P(PSTR("auto_tune loop done\n"));
+	//PRINTF(PSTR("auto_tune loop done\n"));
 	// Устанавливаем аппаратуру в состояние при лучшем результате
 	tunertype = statuses [cshindex].tunertype;
 	tunerind = statuses [cshindex].tunerind;
 	tunercap = statuses [cshindex].tunercap;
 	updateboard_tuner();
-	//debug_printf_P(PSTR("auto_tune stop\n"));
+	//PRINTF(PSTR("auto_tune stop\n"));
 ////NoMoreTune:
 
 	save_i8(offsetof(struct nvmap, bands[b].tunercap), tunercap);
@@ -4365,12 +4365,12 @@ verifynvrampattern(void)
 {
 	//const uint_fast32_t c32a = restore_i32(RMT_SIGNATURE_BASE(0));
 	//const uint_fast32_t c32b = restore_i32(RMT_SIGNATURE_BASE(4));
-	//debug_printf_P(PSTR("verifynvrampattern: c32a=%08lX c32b=%08lX\n"), c32a, c32b);
+	//PRINTF(PSTR("verifynvrampattern: c32a=%08lX c32b=%08lX\n"), c32a, c32b);
 	uint_fast8_t i;
 	for (i = 0; i < (sizeof nvramsign - 1); ++ i)
 	{
 		const char c = restore_i8(RMT_SIGNATURE_BASE(i));
-		//debug_printf_P(PSTR("verifynvrampattern: pattern[%u]=%02X, mem=%02X\n"), i, (unsigned char) nvrampattern [i], (unsigned char) c);
+		//PRINTF(PSTR("verifynvrampattern: pattern[%u]=%02X, mem=%02X\n"), i, (unsigned char) nvrampattern [i], (unsigned char) c);
 		if (c != nvrampattern [i])
 		{
 			return 1;	/* есть отличие */
@@ -5449,7 +5449,7 @@ static void
 //NOINLINEAT
 savebandfreq(const vindex_t b, const uint_fast8_t bi)
 {
-	//debug_printf_P(PSTR("savebandfreq: b=%d, bi=%d, freq=%ld\n"), b, bi, (unsigned long) gfreqs [bi]);
+	//PRINTF(PSTR("savebandfreq: b=%d, bi=%d, freq=%ld\n"), b, bi, (unsigned long) gfreqs [bi]);
 	verifyband(b);
 
 	save_i32(RMT_BFREQ_BASE(b), gfreqs [bi]);	/* сохранить в области диапазона частоту */
@@ -5460,7 +5460,7 @@ static void
 //NOINLINEAT
 savebandstate(const vindex_t b, const uint_fast8_t bi)
 {
-	//debug_printf_P(PSTR("savebandstate: b=%d, bi=%d, freq=%ld\n"), b, bi, (unsigned long) gfreqs [bi]);
+	//PRINTF(PSTR("savebandstate: b=%d, bi=%d, freq=%ld\n"), b, bi, (unsigned long) gfreqs [bi]);
 	verifyband(b);
 
 	save_i8(RMT_MODEROW_BASE(b), gmoderows [bi]);
@@ -6388,7 +6388,7 @@ loadnewband(
 	ASSERT(bi < 2);
 
 	gfreqs [bi] = loadvfy32freq(b);
-	//debug_printf_P(PSTR("loadnewband: b=%d, bi=%d, freq=%ld\n"), b, bi, (unsigned long) gfreqs [bi]);
+	//PRINTF(PSTR("loadnewband: b=%d, bi=%d, freq=%ld\n"), b, bi, (unsigned long) gfreqs [bi]);
 #if WITHONLYBANDS
 	const vindex_t hb = getfreqband(gfreqs [bi]);
 	tune_bottom_active [bi] = get_band_bottom(hb);
@@ -8027,7 +8027,7 @@ void hardware_nonguiyield(void)
 static void printfreq(int_fast32_t freq)
 {
 	const ldiv_t v = ldiv(freq, 1000);
-	debug_printf_P(PSTR("%s%ld.%03ld"), (v.quot >= 0 && freq < 0) ? "-" : "", v.quot, freq < 0 ? - v.rem : v.rem);
+	PRINTF(PSTR("%s%ld.%03ld"), (v.quot >= 0 && freq < 0) ? "-" : "", v.quot, freq < 0 ? - v.rem : v.rem);
 }
 
 /* Получить частоту lo1 из частоты настройки */
@@ -8406,37 +8406,37 @@ updateboard(
 			{
 				const uint_fast8_t bi = getbankindex_pathi(pathi);
 				const int_fast32_t freq = gfreqs [bi];
-				debug_printf_P(submodes [asubmode].qlabel);
-				debug_printf_P(PSTR(" pathi=%d"), pathi);
-				debug_printf_P(PSTR(" f="));	printfreq(freq);
-				debug_printf_P(PSTR(" lo0="));	printfreq(freqlo0);
-				debug_printf_P(PSTR(" lo1="));	printfreq(synth_freq2lo1(freq, pathi));
-				debug_printf_P(PSTR(" pbt="));	printfreq(pbt);
-				debug_printf_P(PSTR(" ifshift="));	printfreq(ifshift);
-				debug_printf_P(PSTR(" bw="));	debug_printf_P(workfilter->labelf3);
-				debug_printf_P(PSTR(" dbw="));	debug_printf_P(hamradio_get_rxbw_value_P());
-				debug_printf_P(PSTR("\n"));
-				debug_printf_P(
+				PRINTF(submodes [asubmode].qlabel);
+				PRINTF(PSTR(" pathi=%d"), pathi);
+				PRINTF(PSTR(" f="));	printfreq(freq);
+				PRINTF(PSTR(" lo0="));	printfreq(freqlo0);
+				PRINTF(PSTR(" lo1="));	printfreq(synth_freq2lo1(freq, pathi));
+				PRINTF(PSTR(" pbt="));	printfreq(pbt);
+				PRINTF(PSTR(" ifshift="));	printfreq(ifshift);
+				PRINTF(PSTR(" bw="));	PRINTF(workfilter->labelf3);
+				PRINTF(PSTR(" dbw="));	PRINTF(hamradio_get_rxbw_value_P());
+				PRINTF(PSTR("\n"));
+				PRINTF(
 					PSTR("mixXlsbs[0]=%d, mixXlsbs[1]=%d, mixXlsbs[2]=%d, mixXlsbs[3]=%d, mixXlsbs[4]=%d, mixXlsbs[5]=%d, mixXlsbs[6]=%d dc=%d tx=%d\n"), 
 						mixXlsbs [0], mixXlsbs [1], mixXlsbs [2], mixXlsbs [3], mixXlsbs [4], mixXlsbs [5], mixXlsbs [6], dc, gtx
 					);
-				debug_printf_P(PSTR(" ["));	printfreq(synth_freq2lo1(freq, pathi));
-				debug_printf_P(PSTR("]if1="));	printfreq(freqif1);
-				debug_printf_P(PSTR(" ["));	printfreq(freqlo2);
-				debug_printf_P(PSTR("]if2="));	printfreq(freqif2);
-				debug_printf_P(PSTR(" ["));	printfreq(freqlo3);
-				debug_printf_P(PSTR("]if3="));	printfreq(freqif3);
+				PRINTF(PSTR(" ["));	printfreq(synth_freq2lo1(freq, pathi));
+				PRINTF(PSTR("]if1="));	printfreq(freqif1);
+				PRINTF(PSTR(" ["));	printfreq(freqlo2);
+				PRINTF(PSTR("]if2="));	printfreq(freqif2);
+				PRINTF(PSTR(" ["));	printfreq(freqlo3);
+				PRINTF(PSTR("]if3="));	printfreq(freqif3);
 
-				//debug_printf_P(PSTR("\n"));
+				//PRINTF(PSTR("\n"));
 
-				debug_printf_P(PSTR(" [lo4=%d*"), getlo4enable(amode, gtx));	printfreq(freqlo4);
-				debug_printf_P(PSTR("]if4="));	printfreq(freqif4);
-				debug_printf_P(PSTR(" ["));	printfreq(freqlo5);
-				debug_printf_P(PSTR("]if5="));	printfreq(freqif5);
-				debug_printf_P(PSTR(" ["));	printfreq(freqlo6);
-				debug_printf_P(PSTR("]if6="));	printfreq(freqif6);
+				PRINTF(PSTR(" [lo4=%d*"), getlo4enable(amode, gtx));	printfreq(freqlo4);
+				PRINTF(PSTR("]if4="));	printfreq(freqif4);
+				PRINTF(PSTR(" ["));	printfreq(freqlo5);
+				PRINTF(PSTR("]if5="));	printfreq(freqif5);
+				PRINTF(PSTR(" ["));	printfreq(freqlo6);
+				PRINTF(PSTR("]if6="));	printfreq(freqif6);
 
-				debug_printf_P(PSTR("\n"));
+				PRINTF(PSTR("\n"));
 			}
 
 	#endif /* WITHDEBUG */
@@ -9667,7 +9667,7 @@ uint_fast8_t hamradio_get_volt_value(void)
 		Vref_mV = WITHTARGETVREF;
 	const unsigned voltcalibr_mV = (Vref_mV * (VOLTLEVEL_UPPER + VOLTLEVEL_LOWER) + VOLTLEVEL_LOWER / 2) / VOLTLEVEL_LOWER;		// Напряжение fullscale - что показать при ADCVREF_CPU вольт на входе АЦП
 	const uint_fast16_t mv = board_getadc_filtered_u16(VOLTMRRIX, 0, voltcalibr_mV);
-	//debug_printf_P(PSTR("hamradio_get_volt_value: ref=%u, VrefmV=%u, v=%u, out=%u\n"), ref, Vref_mV, mv, (mv + 50) / 100);
+	//PRINTF(PSTR("hamradio_get_volt_value: ref=%u, VrefmV=%u, v=%u, out=%u\n"), ref, Vref_mV, mv, (mv + 50) / 100);
 	return (mv + 50) / 100;	// Приводим к десятым долям вольта
 
 #elif WITHREFSENSOR
@@ -9680,24 +9680,24 @@ uint_fast8_t hamradio_get_volt_value(void)
 		const unsigned Vref_mV = (uint_fast32_t) board_getadc_fsval(vrefi) * WITHREFSENSORVAL / ref;
 		const unsigned voltcalibr_mV = (Vref_mV * (VOLTLEVEL_UPPER + VOLTLEVEL_LOWER) + VOLTLEVEL_LOWER / 2) / VOLTLEVEL_LOWER;		// Напряжение fullscale - что показать при ADCVREF_CPU вольт на входе АЦП
 		const uint_fast16_t mv = board_getadc_filtered_u16(VOLTMRRIX, 0, voltcalibr_mV);
-		//debug_printf_P(PSTR("hamradio_get_volt_value: ref=%u, VrefmV=%u, v=%u, out=%u\n"), ref, Vref_mV, mv, (mv + 50) / 100);
+		//PRINTF(PSTR("hamradio_get_volt_value: ref=%u, VrefmV=%u, v=%u, out=%u\n"), ref, Vref_mV, mv, (mv + 50) / 100);
 		return (mv + 50) / 100;	// Приводим к десятым долям вольта
 	}
 	else
 	{
-		//debug_printf_P(PSTR("hamradio_get_volt_value: ref=%u\n"), ref);
+		//PRINTF(PSTR("hamradio_get_volt_value: ref=%u\n"), ref);
 		return UINT8_MAX;
 	}
 
 #elif CTLSTYLE_SW2011ALL
 
-	//debug_printf_P(PSTR("hamradio_get_volt_value: VOLTMRRIX=%u, voltcalibr100mV=%u\n"), board_getadc_unfiltered_truevalue(VOLTMRRIX), voltcalibr100mV);
+	//PRINTF(PSTR("hamradio_get_volt_value: VOLTMRRIX=%u, voltcalibr100mV=%u\n"), board_getadc_unfiltered_truevalue(VOLTMRRIX), voltcalibr100mV);
 	return board_getadc_unfiltered_u8(VOLTSOURCE, 0, voltcalibr100mV);
 
 #else /* WITHREFSENSOR */
 
 	// TODO: разобраться почему это не работает на SW20xx
-	//debug_printf_P(PSTR("hamradio_get_volt_value: VOLTMRRIX=%u, voltcalibr100mV=%u\n"), board_getadc_unfiltered_truevalue(VOLTMRRIX), voltcalibr100mV);
+	//PRINTF(PSTR("hamradio_get_volt_value: VOLTMRRIX=%u, voltcalibr100mV=%u\n"), board_getadc_unfiltered_truevalue(VOLTMRRIX), voltcalibr100mV);
 	return board_getadc_filtered_u8(VOLTMRRIX, 0, voltcalibr100mV);
 
 #endif /* WITHREFSENSOR */
@@ -9738,7 +9738,7 @@ int_fast16_t hamradio_get_temperature_value(void)
 	}
 	else
 	{
-		debug_printf_P(PSTR("hamradio_get_temperature_value: ref=%u\n"), ref);
+		PRINTF(PSTR("hamradio_get_temperature_value: ref=%u\n"), ref);
 		return 999;
 	}
 
@@ -10817,7 +10817,7 @@ void cat2_parsechar(uint_fast8_t c)
 	static RAMDTCM uint_fast8_t catp [CATPCOUNTSIZE];
 	static RAMDTCM uint_fast8_t catpcount;
 
-   // debug_printf_P(PSTR("c=%02x, catstatein=%d, c1=%02X, c2=%02X\n"), c, catstatein, catcommand1, catcommand2);
+   // PRINTF(PSTR("c=%02x, catstatein=%d, c1=%02X, c2=%02X\n"), c, catstatein, catcommand1, catcommand2);
 	switch (catstatein)
 	{
 	case CATSTATE_HALTED:
@@ -11832,7 +11832,7 @@ processcatmsg(
 	const uint8_t * catp	// массив символов
 	)
 {
-	//debug_printf_P(PSTR("processcatmsg: c1=%02X, c2=%02X, chp=%d, cp=%lu\n"), catcommand1, catcommand2, cathasparam, catparam);
+	//PRINTF(PSTR("processcatmsg: c1=%02X, c2=%02X, chp=%d, cp=%lu\n"), catcommand1, catcommand2, cathasparam, catparam);
 	#define match2(ch1, ch2) (catcommand1 == (ch1) && catcommand2 == (ch2))
 	uint_fast8_t rc = 0;
 	const uint_fast32_t catparam = catscanint(catp, catpcount);
@@ -12849,7 +12849,7 @@ processmessages(
 		{
 			// check MSGBUFFERSIZE8 valie
 			// 12 bytes as parameter
-			//debug_printf_P(PSTR("processmessages: MSGT_CAT\n"));
+			//PRINTF(PSTR("processmessages: MSGT_CAT\n"));
 			if (processcatmsg(buff [0], buff [1], buff [2], buff [8], buff + 9))
 				display_redrawfreqmodesbarsnow(inmenu, mp);			/* Обновление дисплея - всё, включая частоту */
 		}
@@ -12857,7 +12857,7 @@ processmessages(
 		break;
 
 	case MSGT_KEYB:
-		//debug_printf_P(PSTR("processmessages: MSGT_KEYB\n"));
+		//PRINTF(PSTR("processmessages: MSGT_KEYB\n"));
 		board_wakeup();
 		//if (board_wakeup() == 0)
 		{
@@ -16729,7 +16729,7 @@ modifysettings(
 		mp = & menutable [menupos];
 	}
 #if WITHDEBUG
-	debug_printf_P(PSTR("menu: ")); debug_printf_P(mp->qlabel); debug_printf_P(PSTR("\n")); 
+	PRINTF(PSTR("menu: ")); PRINTF(mp->qlabel); PRINTF(PSTR("\n"));
 #endif /* WITHDEBUG */
 	display2_redrawbarstimed(1, 1, mp);
 	encoder_clear();
@@ -16852,7 +16852,7 @@ modifysettings(
 #endif /* (NVRAM_TYPE != NVRAM_TYPE_CPUEEPROM) */
 
 #if WITHDEBUG
-				debug_printf_P(PSTR("menu: ")); debug_printf_P(mp->qlabel); debug_printf_P(PSTR("\n")); 
+				PRINTF(PSTR("menu: ")); PRINTF(mp->qlabel); PRINTF(PSTR("\n"));
 #endif /* WITHDEBUG */
 
 				display2_redrawbarstimed(1, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
@@ -17987,7 +17987,7 @@ lowinitialize(void)
 #if 0
 	{
 		const spitarget_t cs = targetfpga1;
-		debug_printf_P(PSTR("targetfpga1=%04lX\n"), (unsigned long) cs);
+		PRINTF(PSTR("targetfpga1=%04lX\n"), (unsigned long) cs);
 		dbg_puts_impl_P(PSTR("SPI send test started.\n"));
 		// Тестирование скорости передачи по SPI. На SCK должна быть частота SPISPEED
 		for (;;)
@@ -18040,7 +18040,7 @@ static void initialize2(void)
 
 	//hardware_cw_diagnostics(0, 1, 0);	// 'D'
 
-	debug_printf_P(PSTR("initialize2() started.\n"));
+	PRINTF(PSTR("initialize2() started.\n"));
 
 	display_reset();
 	display_initialize();
@@ -18051,15 +18051,15 @@ static void initialize2(void)
 		static const FLASHMEM char msg  [] = "KBD fault";
 
 		display_at_P(0, 0, msg);
-		debug_printf_P(PSTR("KBD fault\n"));
+		PRINTF(PSTR("KBD fault\n"));
 		for (;;)
 			;
 	}
-	debug_printf_P(PSTR("KBD ok\n"));
+	PRINTF(PSTR("KBD ok\n"));
 
 #if defined(NVRAM_TYPE) && (NVRAM_TYPE != NVRAM_TYPE_NOTHING)
 
-	//debug_printf_P(PSTR("initialize2(): NVRAM initialization started.\n"));
+	//PRINTF(PSTR("initialize2(): NVRAM initialization started.\n"));
 
 	mclearnvram = kbd_get_ishold(KIF_ERASE) != 0;
 	//extmenu = kbd_get_ishold(KIF_EXTMENU);
@@ -18101,13 +18101,13 @@ static void initialize2(void)
 
 #endif /* defined(NVRAM_TYPE) && (NVRAM_TYPE != NVRAM_TYPE_NOTHING) */
 
-	//debug_printf_P(PSTR("initialize2(): NVRAM initialization passed.\n"));
+	//PRINTF(PSTR("initialize2(): NVRAM initialization passed.\n"));
 
 #if HARDWARE_IGNORENONVRAM
 
 #elif NVRAM_TYPE == NVRAM_TYPE_FM25XXXX
 
-	//debug_printf_P(PSTR("initialize2(): NVRAM autodetection start.\n"));
+	//PRINTF(PSTR("initialize2(): NVRAM autodetection start.\n"));
 
 	uint_fast8_t ab = 0;
 	const uint_fast8_t ABMAX = 2;
@@ -18159,11 +18159,11 @@ static void initialize2(void)
 		if (ab >= ABMAX)
 		{
 			// в случае неправильно работающего NVRAM зависаем
-			debug_printf_P(PSTR("initialize2(): NVRAM initialization: wrong NVRAM pattern in any address sizes.\n"));
+			PRINTF(PSTR("initialize2(): NVRAM initialization: wrong NVRAM pattern in any address sizes.\n"));
 
 			display_menu_digit(0, 0, NVRAM_END + 1, 9, 0, 0);
 			display_at_P(0, 1, PSTR("NVRAM fault"));
-			debug_printf_P(PSTR("NVRAM fault1\n"));
+			PRINTF(PSTR("NVRAM fault1\n"));
 			for (;;)
 				;
 		}
@@ -18176,12 +18176,12 @@ static void initialize2(void)
 
 #else /* NVRAM_TYPE == NVRAM_TYPE_FM25XXXX */
 
-	//debug_printf_P(PSTR("initialize2(): NVRAM(BKPSRAM/CPU EEPROM/SPI MEMORY) initialization: verify NVRAM signature.\n"));
+	//PRINTF(PSTR("initialize2(): NVRAM(BKPSRAM/CPU EEPROM/SPI MEMORY) initialization: verify NVRAM signature.\n"));
 
 	if (verifynvramsignature())
 		mclearnvram = 2;
 
-	//debug_printf_P(PSTR("initialize2(): NVRAM initialization: work on NVRAM signature, mclearnvram=%d\n"), mclearnvram);
+	//PRINTF(PSTR("initialize2(): NVRAM initialization: work on NVRAM signature, mclearnvram=%d\n"), mclearnvram);
 
 	if (mclearnvram != 0)
 	{
@@ -18202,19 +18202,19 @@ static void initialize2(void)
 			display2_bgreset();
 		}
 		
-		//debug_printf_P(PSTR("initialize2(): NVRAM initialization: erase NVRAM.\n"));
+		//PRINTF(PSTR("initialize2(): NVRAM initialization: erase NVRAM.\n"));
 		/* стирание всей памяти */
 		uint_least16_t i;
 		for (i = 0; i < sizeof (struct nvmap); ++ i)
 			save_i8(i, 0xFF);
 
-		//debug_printf_P(PSTR("initialize2(): NVRAM initialization: write NVRAM pattern.\n"));
+		//PRINTF(PSTR("initialize2(): NVRAM initialization: write NVRAM pattern.\n"));
 		initnvrampattern();
-		//debug_printf_P(PSTR("initialize2(): NVRAM initialization: verify NVRAM pattern.\n"));
+		//PRINTF(PSTR("initialize2(): NVRAM initialization: verify NVRAM pattern.\n"));
 
 		if (verifynvrampattern())
 		{
-			debug_printf_P(PSTR("initialize2(): NVRAM initialization: wrong NVRAM pattern.\n"));
+			PRINTF(PSTR("initialize2(): NVRAM initialization: wrong NVRAM pattern.\n"));
 			// проверяем только что записанную сигнатуру
 			// в случае неправильно работающего NVRAM зависаем
 
@@ -18227,7 +18227,7 @@ static void initialize2(void)
 #if WITHMENU
 		defaultsettings();		/* загрузка в nvram установок по умолчанию */
 #endif //WITHMENU
-		//debug_printf_P(PSTR("initialize2(): NVRAM initialization: write NVRAM signature.\n"));
+		//PRINTF(PSTR("initialize2(): NVRAM initialization: write NVRAM signature.\n"));
 		initnvramsignature();
 		//extmenu = 1;	/* сразу включаем инженерный режим - без перезагрузки доступны все пункты */
 	}
@@ -18337,7 +18337,7 @@ hamradio_initialize(void)
 static void
 dspcontrol_mainloop(void)
 {
-	debug_printf_P(PSTR("dspcontrol_mainloop started.\n"));
+	PRINTF(PSTR("dspcontrol_mainloop started.\n"));
 
 	board_update();
 #if 0
@@ -18840,7 +18840,7 @@ hamradio_main_step(void)
 						break;
 		#if WITHWAVPLAYER || WITHSENDWAV
 					case 'p':
-						debug_printf_P(PSTR("Play test file\n"));
+						PRINTF(PSTR("Play test file\n"));
 						playwavfile("1.wav");
 						break;
 		#endif /* WITHWAVPLAYER */
@@ -18872,7 +18872,7 @@ hamradio_main_step(void)
 			} // end keyboard processing
 
 			//auto int marker;
-			//debug_printf_P(PSTR("M0:@%p %02x %08lx!\n"), & marker, INTC.ICCRPR, __get_CPSR());
+			//PRINTF(PSTR("M0:@%p %02x %08lx!\n"), & marker, INTC.ICCRPR, __get_CPSR());
 
 		
 			if (lockmode == 0)
@@ -20021,7 +20021,7 @@ static void local_gets(char * buff, size_t len)
 			}
 			if (pos != 0 && c == '\b')
 			{
-				debug_printf_P(PSTR("\b \b"));
+				PRINTF(PSTR("\b \b"));
 				-- pos;
 				continue;
 			}
@@ -20032,14 +20032,14 @@ static void local_gets(char * buff, size_t len)
 static void siggen_mainloop(void)
 {
 
-	debug_printf_P(PSTR("RF Signal generator\n"));
+	PRINTF(PSTR("RF Signal generator\n"));
 	uint_fast8_t tx = 0;
 	// signal-generator tests
 	board_set_attvalue(0);
 	updateboard(1, 0);
 	for (;;)
 	{
-		debug_printf_P(PSTR("Enter tx=%d, command (a#/g/n):\n"), tx);
+		PRINTF(PSTR("Enter tx=%d, command (a#/g/n):\n"), tx);
 		char buff [132];
 		local_gets(buff, sizeof buff / sizeof buff [0]);
 		char * cp = buff;
@@ -20051,7 +20051,7 @@ static void siggen_mainloop(void)
 			// set att value
 			++ cp;
 			unsigned long value = strtoul(cp, NULL, 10);
-			debug_printf_P(PSTR("RFSG ATT value: %lu\n"), value);
+			PRINTF(PSTR("RFSG ATT value: %lu\n"), value);
 			if (value < 63)
 			{
 				board_set_attvalue(value);
@@ -20060,13 +20060,13 @@ static void siggen_mainloop(void)
 			break;
 		case 'g':
 			// generaton on
-			debug_printf_P(PSTR("RFSG output ON\n"));
+			PRINTF(PSTR("RFSG output ON\n"));
 			tx = 1;
 			updateboard(1, 0);
 			break;
 		case 'n':
 			// generator off
-			debug_printf_P(PSTR("RFSG output OFF\n"));
+			PRINTF(PSTR("RFSG output OFF\n"));
 			tx = 0;
 			updateboard(1, 0);
 			break;

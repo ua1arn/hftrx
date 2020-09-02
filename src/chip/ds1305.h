@@ -233,7 +233,7 @@ void board_rtc_gettime(
 
 	ds1305_readbuff(b, sizeof b / sizeof b[0], r);
 
-	//debug_printf_P(PSTR("board_rtc_gettime: %02X:%02X:%02X\n"), b [0], b [1], b [2]);
+	//st7735_colorbuf(PSTR("board_rtc_gettime: %02X:%02X:%02X\n"), b [0], b [1], b [2]);
 
 	* secounds = ds1305_bcd2bin(b [0] & 0x7f, 0, 59);	// r=1
 	* minute = ds1305_bcd2bin(b [1] & 0x7f, 0, 59);	// r=2
@@ -301,7 +301,7 @@ uint_fast8_t board_rtc_chip_initialize(void)
 	// write protect
 	//ds1305_writebuff(b_WP, sizeof b_WP / sizeof b_WP [0], DS1305REG_CONTROL);
 
-	debug_printf_P(PSTR("board_rtc_chip_initialize: eosc=%d\n"), (int) eosc);
+	st7735_colorbuf(PSTR("board_rtc_chip_initialize: eosc=%d\n"), (int) eosc);
 	return eosc;
 }
 
