@@ -822,7 +822,7 @@ void display_showbuffer(
 	{
 		uint_fast8_t pos;
 		const GX_t * const p = buffer + lowhalf * MGADJ(dx);	// начало данных горизонтальной полосы в памяти
-		//debug_printf_P(PSTR("display_showbuffer: col=%d, row=%d, lowhalf=%d\n"), col, row, lowhalf);
+		//PRINTF(PSTR("display_showbuffer: col=%d, row=%d, lowhalf=%d\n"), col, row, lowhalf);
 		display_plotfrom(GRID2X(ycell), GRID2Y(xcell) + lowhalf * 8);		// курсор в начало первой строки
 		// выдача горизонтальной полосы
 		uint_fast16_t ypix;
@@ -1269,7 +1269,7 @@ void colpip_to_main(
 /* вызывается при запрещённых прерываниях. */
 void display_hardware_initialize(void)
 {
-	debug_printf_P(PSTR("display_hardware_initialize start\n"));
+	PRINTF(PSTR("display_hardware_initialize start\n"));
 
 
 #if WITHDMA2DHW
@@ -1301,7 +1301,7 @@ void display_hardware_initialize(void)
 		DISPLAY_BUS_INITIALIZE();	// see LCD_CONTROL_INITIALIZE, LCD_DATA_INITIALIZE_WRITE
 	#endif /* LCDMODE_HD44780 && (LCDMODE_SPI == 0) */
 #endif
-	debug_printf_P(PSTR("display_hardware_initialize done\n"));
+	PRINTF(PSTR("display_hardware_initialize done\n"));
 }
 
 // https://habr.com/ru/post/166317/
