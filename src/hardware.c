@@ -12452,7 +12452,7 @@ cpu_tms320f2833x_flash_waitstates(uint_fast8_t flashws, uint_fast8_t otpws)
 }
 #endif /* CPUSTYPE_TMS320F2833X */
 
-#if WITHSMPSYSTEM
+#if CPUSTYLE_STM32MP1
 
 
 /*
@@ -12517,7 +12517,7 @@ static void stm32_cpu1_start(void)
 	/* Generate an IT to core 1 */
 	GIC_SendSGI(SGI8_IRQn, 0x01 << 1, 0x00);	// CPU1, filer=0
 }
-#endif /* WITHSMPSYSTEM */
+#endif /* CPUSTYLE_STM32MP1 */
 
 // Вызывается из main
 void cpu_initialize(void)
