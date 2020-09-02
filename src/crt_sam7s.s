@@ -54,7 +54,7 @@
    I_BIT          = 0x80      /* disable IRQ when I bit is set */
    F_BIT          = 0x40      /* disable FIQ when F bit is set */
  
-	 STACKSIZE = 256
+	 STACKSIZE = 512
   
    .global __Vectors
    .section .vectors,"ax"

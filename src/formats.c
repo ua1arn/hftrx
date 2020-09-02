@@ -334,7 +334,7 @@ safestrcpy(char * dst, size_t blen, const char * src)
 
 void debug_printf_P(const FLASHMEM char *__restrict format, ... )
 {
-	char b [256];
+	char b [128];	// see stack sizes for interrupt handlers
 	va_list	ap;
 	va_start(ap, format);
 
