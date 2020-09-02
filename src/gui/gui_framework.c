@@ -645,10 +645,15 @@ static void fill_button_bg_buf(btn_bg_t * v)
 	size_t s = GXSIZE(w, h) * sizeof (PACKEDCOLORMAIN_T);
 
 	v->bg_non_pressed = 	(PACKEDCOLORMAIN_T *) malloc(s);
+	GUI_MEM_ASSERT(v->bg_non_pressed);
 	v->bg_pressed = 		(PACKEDCOLORMAIN_T *) malloc(s);
+	GUI_MEM_ASSERT(v->bg_pressed);
 	v->bg_locked = 			(PACKEDCOLORMAIN_T *) malloc(s);
+	GUI_MEM_ASSERT(v->bg_locked);
 	v->bg_locked_pressed = 	(PACKEDCOLORMAIN_T *) malloc(s);
+	GUI_MEM_ASSERT(v->bg_locked_pressed);
 	v->bg_disabled = 		(PACKEDCOLORMAIN_T *) malloc(s);
+	GUI_MEM_ASSERT(v->bg_disabled);
 
 	buf = v->bg_non_pressed;
 	GUI_MEM_ASSERT(buf);
