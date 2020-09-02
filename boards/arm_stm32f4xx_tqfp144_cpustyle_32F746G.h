@@ -59,7 +59,7 @@
 //#define WITHMODEM_CDC	1
 //#define WITHCAT_USART2		1
 //#define WITHDEBUG_CDC	1
-#define WITHDEBUG			1
+//#define WITHDEBUG			1
 #define WITHDEBUG_USART1	1
 //#define WITHNMEA_USART1		1	/* порт подключения GPS/GLONASS */
 
