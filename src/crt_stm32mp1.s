@@ -47,7 +47,7 @@
    ARM_MODE_SVC   = 0x13      /* Supervisor Interrupts Mode            		  */
    ARM_MODE_MON   = 0x16      /* Monitor Interrupts Mode (With Security Extensions) */
    ARM_MODE_ABORT = 0x17      /* Abort Processing memory Faults Mode          */
-   ARM_MODE_HYP	  = 0x1a      /* Hypervisor Interrupts Mode            		  */
+   ARM_MODE_HYP	  = 0x1A      /* Hypervisor Interrupts Mode            		  */
    ARM_MODE_UNDEF = 0x1B      /* Undefined Instructions Mode                  */
    ARM_MODE_SYS   = 0x1F      /* System Running in Priviledged Operating Mode */
    ARM_MODE_MASK  = 0x1F
@@ -433,8 +433,10 @@ __stack_cpu0_und_end = .
 __stack_cpu0_abt_end = .
 	.space	STACKSIZEFIQ
 __stack_cpu0_fiq_end = .
+/*
 	.space	STACKSIZESVC
 __stack_cpu0_svc_end = .
+*/
 	.space	STACKSIZEMON
 __stack_cpu0_mon_end = .
 	.space	STACKSIZEHYP
@@ -448,8 +450,6 @@ __stack_cpu1_und_end = .
 __stack_cpu1_abt_end = .
 	.space	STACKSIZEFIQ
 __stack_cpu1_fiq_end = .
-	.space	STACKSIZESVC
-__stack_cpu1_svc_end = .
 	.space	STACKSIZEMON
 __stack_cpu1_mon_end = .
 	.space	STACKSIZEHYP
@@ -464,10 +464,7 @@ __stack_cpu0_irq_end = .
 
 	.space	STACKSIZEIRQ
 __stack_cpu1_irq_end = .
-/*
-	.space	STACKSIZESVC
-__stack_cpu0_svc_end = .
-*/
+
 	.space	STACKSIZESVC
 __stack_cpu1_svc_end = .
 
