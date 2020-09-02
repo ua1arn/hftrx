@@ -12921,8 +12921,15 @@ int __attribute__((used)) (_write)(int fd, char * ptr, int len)
 	return (i);
 }
 
+#if CPUSTYLE_STM32MP1
 
-static RAMHEAP uint8_t heapplace [8 * 1024uL];
+	static RAMHEAP uint8_t heapplace [64 * 1024uL * 1024uL];
+
+#else /* CPUSTYLE_STM32MP1 */
+
+	static RAMHEAP uint8_t heapplace [8 * 1024uL];
+
+#endif /* CPUSTYLE_STM32MP1 */
 
 extern int __HeapBase;
 extern int __HeapLimit;
