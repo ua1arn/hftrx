@@ -1867,7 +1867,7 @@ RAMFUNC uintptr_t allocate_dmabuffer16(void)
 // передали буфер, считать свободным
 void RAMFUNC release_dmabuffer32tx(uintptr_t addr)
 {
-	ASSERT(addr != 0);
+	//ASSERT(addr != 0);
 	SPIN_LOCK(& locklist32);
 	voice32tx_t * const p = CONTAINING_RECORD(addr, voice32tx_t, buff);
 	ASSERT(p->tag2 == p);
@@ -1880,7 +1880,7 @@ void RAMFUNC release_dmabuffer32tx(uintptr_t addr)
 // передали буфер, считать свободным
 void RAMFUNC release_dmabuffer16(uintptr_t addr)
 {
-	ASSERT(addr != 0);
+	//ASSERT(addr != 0);
 	voice16_t * const p = CONTAINING_RECORD(addr, voice16_t, buff);
 	buffers_tonull16(p);
 }
@@ -1889,7 +1889,7 @@ void RAMFUNC release_dmabuffer16(uintptr_t addr)
 // обработать буфер после оцифровки AF ADC
 void RAMFUNC processing_dmabuffer16rx(uintptr_t addr)
 {
-	ASSERT(addr != 0);
+	//ASSERT(addr != 0);
 #if WITHBUFFERSDEBUG
 	++ n3;
 #endif /* WITHBUFFERSDEBUG */
@@ -1901,7 +1901,7 @@ void RAMFUNC processing_dmabuffer16rx(uintptr_t addr)
 // обработать буфер после приёма пакета с USB AUDIO
 void RAMFUNC processing_dmabuffer16rxuac(uintptr_t addr)
 {
-	ASSERT(addr != 0);
+	//ASSERT(addr != 0);
 #if WITHBUFFERSDEBUG
 	++ n2;
 #endif /* WITHBUFFERSDEBUG */
@@ -1914,7 +1914,7 @@ void RAMFUNC processing_dmabuffer16rxuac(uintptr_t addr)
 // Вызывается на ARM_REALTIME_PRIORITY уровне.
 void RAMFUNC processing_dmabuffer32rx(uintptr_t addr)
 {
-	////ASSERT(addr != 0);
+	//ASSERT(addr != 0);
 #if WITHBUFFERSDEBUG
 	++ n1;
 	// подсчёт скорости в сэмплах за секунду
@@ -1938,7 +1938,7 @@ void RAMFUNC processing_dmabuffer32rx(uintptr_t addr)
 
 void release_dmabuffer32rx(uintptr_t addr)
 {
-	////ASSERT(addr != 0);
+	//ASSERT(addr != 0);
 	voice32rx_t * const p = CONTAINING_RECORD(addr, voice32rx_t, buff);
 
 	SPIN_LOCK(& locklist32);
@@ -1953,7 +1953,7 @@ void release_dmabuffer32rx(uintptr_t addr)
 // Вызывается на ARM_REALTIME_PRIORITY уровне.
 void RAMFUNC processing_dmabuffer32wfm(uintptr_t addr)
 {
-	ASSERT(addr != 0);
+	//ASSERT(addr != 0);
 #if WITHBUFFERSDEBUG
 	++ n1wfm;
 	// подсчёт скорости в сэмплах за секунду
@@ -1967,7 +1967,7 @@ void RAMFUNC processing_dmabuffer32wfm(uintptr_t addr)
 // обработать буфер после оцифровки - канал спектроанализатора
 void RAMFUNC processing_dmabuffer32rts(uintptr_t addr)
 {
-	ASSERT(addr != 0);
+	//ASSERT(addr != 0);
 #if WITHBUFFERSDEBUG
 	++ n4;
 #endif /* WITHBUFFERSDEBUG */
@@ -2400,7 +2400,7 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 
 	void RAMFUNC release_dmabufferuacin16(uintptr_t addr)
 	{
-		ASSERT(addr != 0);
+		//ASSERT(addr != 0);
 		uacin16_t * const p = CONTAINING_RECORD(addr, uacin16_t, u.buff);
 		ASSERT(p->tag2 == p);
 		ASSERT(p->tag3 == p);
@@ -2766,7 +2766,7 @@ void uacout_buffer_save_realtime(const uint8_t * buff, uint_fast16_t size, uint_
 /* освободить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
 void release_dmabufferx(uintptr_t addr)
 {
-	ASSERT(addr != 0);
+	//ASSERT(addr != 0);
 	uacin16_t * const p = CONTAINING_RECORD(addr, uacin16_t, u.buff);
 	switch (p->tag)
 	{

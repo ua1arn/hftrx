@@ -10396,7 +10396,7 @@ void IRQ_Handler(void)
 	//dbg_putchar(hex [(irqn >> 8) & 0x0F]);
 	//dbg_putchar(hex [(irqn >> 4) & 0x0F]);
 	//dbg_putchar(hex [(irqn >> 0) & 0x0F]);
-	ASSERT(irqn != 0x3FC && irqn != 0x3FD);
+	////ASSERT(irqn != 0x3FC && irqn != 0x3FD);
 	IRQHandler_t const handler = IRQ_GetHandler(irqn);
 
 #if 0
