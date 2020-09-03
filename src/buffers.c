@@ -1914,7 +1914,7 @@ void RAMFUNC processing_dmabuffer16rxuac(uintptr_t addr)
 // Вызывается на ARM_REALTIME_PRIORITY уровне.
 void RAMFUNC processing_dmabuffer32rx(uintptr_t addr)
 {
-	ASSERT(addr != 0);
+	////ASSERT(addr != 0);
 #if WITHBUFFERSDEBUG
 	++ n1;
 	// подсчёт скорости в сэмплах за секунду
@@ -1938,7 +1938,7 @@ void RAMFUNC processing_dmabuffer32rx(uintptr_t addr)
 
 void release_dmabuffer32rx(uintptr_t addr)
 {
-	ASSERT(addr != 0);
+	////ASSERT(addr != 0);
 	voice32rx_t * const p = CONTAINING_RECORD(addr, voice32rx_t, buff);
 
 	SPIN_LOCK(& locklist32);
