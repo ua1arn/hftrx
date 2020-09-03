@@ -4793,6 +4793,7 @@ uint_fast8_t hamradio_get_notchvalueXXX(int_fast32_t * p)
 }
 */
 
+enum { NOVERLAP = 1 << WITHFFTOVERLAPPOW2 };	// Количество перекрывающися буферов FFT спектра
 // Сэмплы для децимации
 typedef struct fftbuff_tag
 {
@@ -4853,10 +4854,40 @@ uint_fast8_t  getfilled_fftbuffer(fftbuff_t * * dest)
 	return 0;
 }
 
+static fftbuff_t * pfill [NOVERLAP];
+
+// сохранение сэмпла для отображения спектра
+void saveIQRTSxx(FLOAT_t iv, FLOAT_t qv)
+{
+	unsigned i;
+	for (i = 0; i < NOVERLAP; ++ i)
+	{
+		fftbuff_t * * ppf = & pfill [i];
+
+		if (* ppf == NULL)
+		{
+			if (allocate_fftbuffer_low(ppf) == 0)
+				return;
+			(* ppf)->filled = 0;
+		}
+		fftbuff_t * pf = * ppf;
+
+
+		pf->largebuffI [pf->filled] = iv;
+		pf->largebuffQ [pf->filled] = qv;
+
+		if (++ pf->filled >= LARGEFFT)
+		{
+			saveready_fftbuffer_low(pf);
+			* ppf = NULL;
+		}
+	}
+}
+
 // вызывается при запрещенных прерываниях.
 void fftbuffer_initialize(void)
 {
-	static RAMBIG fftbuff_t fftbuffersarray [1 + 1];
+	static RAMBIG fftbuff_t fftbuffersarray [NOVERLAP + 1];
 	unsigned i;
 
 	InitializeListHead(& fftbuffree);	// Свободные
@@ -4866,26 +4897,16 @@ void fftbuffer_initialize(void)
 		InsertHeadList(& fftbuffree, & p->item);
 	}
 	InitializeListHead(& fftbufready);	// Для выдачи на дисплей
-}
-
-// формирование отображения спектра
-void saveIQRTSxx(FLOAT_t iv, FLOAT_t qv)
-{
-	static fftbuff_t * pf = NULL;
-	if (pf == NULL)
+	/* начальный запрос буферов заполнение выборок. */
+	for (i = 0; i < NOVERLAP; ++ i)
 	{
-		if (allocate_fftbuffer_low(& pf) == 0)
-			return;
-		pf->filled = 0;
-	}
-
-	pf->largebuffI [pf->filled] = iv;
-	pf->largebuffQ [pf->filled] = qv;
-
-	if (++ pf->filled >= LARGEFFT)
-	{
-		saveready_fftbuffer_low(pf);
-		pf = NULL;
+		fftbuff_t * * ppf = & pfill [i];
+		VERIFY(allocate_fftbuffer_low(ppf) != 0);
+		/* установка начальной позиции для заполнения со сдвигом. */
+		const unsigned filled = (i * LARGEFFT / NOVERLAP);
+		(* ppf)->filled = filled;
+		arm_fill_f32(0, (* ppf)->largebuffI, filled);
+		arm_fill_f32(0, (* ppf)->largebuffQ, filled);
 	}
 }
 
