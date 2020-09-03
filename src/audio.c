@@ -4782,7 +4782,7 @@ static RAMFUNC uint_fast8_t isneedmute(uint_fast8_t dspmode)
 	}
 }
 
-#if (WITHRTS96 || WITHRTS192) && ! WITHTRANSPARENTIQ
+#if WITHSPECTRUMWF && ! WITHTRANSPARENTIQ
 
 // Поддержка панорпамы и водопада
 /*
@@ -4811,7 +4811,7 @@ uint_fast8_t allocate_fftbuffer_low(fftbuff_t * * dest)
 {
 	if (! IsListEmpty(& fftbuffree))
 	{
-		PLIST_ENTRY t = RemoveTailList(& fftbuffree);
+		const PLIST_ENTRY t = RemoveTailList(& fftbuffree);
 		fftbuff_t * const p = CONTAINING_RECORD(t, fftbuff_t, item);
 		* dest = p;
 		return 1;
@@ -4819,7 +4819,7 @@ uint_fast8_t allocate_fftbuffer_low(fftbuff_t * * dest)
 	/* Начинаем отбрасывать самые старые в очереди готовых. */
 	if (! IsListEmpty(& fftbufready))
 	{
-		PLIST_ENTRY t = RemoveTailList(& fftbufready);
+		const PLIST_ENTRY t = RemoveTailList(& fftbufready);
 		fftbuff_t * const p = CONTAINING_RECORD(t, fftbuff_t, item);
 		* dest = p;
 		return 1;
@@ -4830,11 +4830,6 @@ uint_fast8_t allocate_fftbuffer_low(fftbuff_t * * dest)
 // realtime-mode function
 void saveready_fftbuffer_low(fftbuff_t * p)
 {
-//	if (! IsListEmpty(& fftbufready))
-//	{
-//		const PLIST_ENTRY t = RemoveTailList(& fftbufready);
-//		InsertHeadList(& fftbuffree, t);
-//	}
 	InsertHeadList(& fftbufready, & p->item);
 }
 
@@ -4852,7 +4847,7 @@ uint_fast8_t  getfilled_fftbuffer(fftbuff_t * * dest)
 	system_disableIRQ();
 	if (! IsListEmpty(& fftbufready))
 	{
-		PLIST_ENTRY t = RemoveTailList(& fftbufready);
+		const PLIST_ENTRY t = RemoveTailList(& fftbufready);
 		system_enableIRQ();
 		fftbuff_t * const p = CONTAINING_RECORD(t, fftbuff_t, item);
 		* dest = p;
@@ -4881,8 +4876,7 @@ void saveIQRTSxx(FLOAT_t iv, FLOAT_t qv)
 			}
 			(* ppf)->filled = 0;
 		}
-		fftbuff_t * pf = * ppf;
-
+		fftbuff_t * const pf = * ppf;
 
 		pf->largebuffI [pf->filled] = iv;
 		pf->largebuffQ [pf->filled] = qv;
@@ -4911,7 +4905,7 @@ void fftbuffer_initialize(void)
 	/* начальный запрос буферов заполнение выборок. */
 	for (i = 0; i < NOVERLAP; ++ i)
 	{
-		fftbuff_t * * ppf = & pfill [i];
+		fftbuff_t * * const ppf = & pfill [i];
 		VERIFY(allocate_fftbuffer_low(ppf) != 0);
 		/* установка начальной позиции для заполнения со сдвигом. */
 		const unsigned filled = (i * NORMALFFT / NOVERLAP);
@@ -5147,7 +5141,7 @@ dsp_rasterinitialize(void)
 	fftbuffer_initialize();
 }
 
-#else /* (WITHRTS96 || WITHRTS192) && ! WITHTRANSPARENTIQ */
+#else /* WITHSPECTRUMWF && ! WITHTRANSPARENTIQ */
 
 uint_fast8_t dsp_getspectrumrow(
 	FLOAT_t * const hbase,
@@ -5171,7 +5165,12 @@ int dsp_mag2y(FLOAT_t mag, int ymax, int_fast16_t topdb, int_fast16_t bottomdb)
 	return 0;
 }
 
-#endif /* (WITHRTS96 || WITHRTS192) && ! WITHTRANSPARENTIQ */
+// сохранение сэмпла для отображения спектра
+void saveIQRTSxx(FLOAT_t iv, FLOAT_t qv)
+{
+}
+
+#endif /* WITHSPECTRUMWF && ! WITHTRANSPARENTIQ */
 
 #if WITHDSPEXTDDC
 // использование данных о спектре, передаваемых в общем фрейме
@@ -6192,9 +6191,9 @@ void dsp_initialize(void)
 	//PRINTF("DMABUFFSIZE32RX=%d, DMABUFSTEP32RX=%d\n", (int) DMABUFFSIZE32RX, (int) DMABUFSTEP32RX);
 
 	//FFT_initialize();
-#if (WITHRTS96 || WITHRTS192) && ! WITHTRANSPARENTIQ
+#if WITHSPECTRUMWF && ! WITHTRANSPARENTIQ
 	dsp_rasterinitialize();
-#endif /* WITHRTS96 && ! WITHTRANSPARENTIQ */
+#endif /* WITHSPECTRUMWF && ! WITHTRANSPARENTIQ */
 
 	fir_design_windowbuff(FIRCwnd_tx_MIKE, Ntap_tx_MIKE);
 	fir_design_windowbuff(FIRCwnd_rx_AUDIO, Ntap_rx_AUDIO);
