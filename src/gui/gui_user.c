@@ -82,7 +82,7 @@ static uint_fast8_t swr_scan_stop = 0;			// флаг нажатия кнопки
 static uint_fast8_t * y_vals;					// массив КСВ в виде отсчетов по оси Y графика
 
 
-static enc2_menu_t * gui_enc2_menu;
+static enc2_menu_t gui_enc2_menu = { "", "", 0, 0, };
 static enc2_t encoder2 = { 0, 0, 1, };
 static enc2_stack_t enc2_stack;
 
@@ -276,13 +276,7 @@ static void gui_main_process(void)
 		uint_fast16_t x = 0;
 		ASSERT(win != NULL);
 		win->first_call = 0;
-		// FIXME
-		//ASSERT(gui_enc2_menu != NULL);
-		if (gui_enc2_menu != NULL)
-		{
-			gui_enc2_menu->updated = 1;
-
-		}
+		gui_enc2_menu.updated = 1;
 
 		static const button_t buttons [] = {
 		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
@@ -3553,13 +3547,20 @@ void gui_encoder2_menu (enc2_menu_t * enc2_menu)
 		close_window(DONT_OPEN_PARENT_WINDOW);
 		open_window(win);
 		footer_buttons_state(DISABLED, NULL);
-		gui_enc2_menu = enc2_menu;
+		memcpy(& gui_enc2_menu, enc2_menu, sizeof (gui_enc2_menu));
+		gui_enc2_menu.updated = 1;
 	}
-	else if (win->state == VISIBLE && enc2_menu->state == 0)
+	else if (win->state == VISIBLE)
 	{
-		close_window(DONT_OPEN_PARENT_WINDOW);
-		gui_enc2_menu = NULL;
-		footer_buttons_state(CANCELLED);
+		if (enc2_menu->state == 0)
+		{
+			close_window(DONT_OPEN_PARENT_WINDOW);
+			footer_buttons_state(CANCELLED);
+			return;
+		}
+
+		memcpy(& gui_enc2_menu, enc2_menu, sizeof (gui_enc2_menu));
+		gui_enc2_menu.updated = 1;
 	}
 }
 
@@ -3586,20 +3587,20 @@ static void window_enc2_process(void)
 		elements_state(win);
 	}
 
-	if (gui_enc2_menu->updated)
+	if (gui_enc2_menu.updated)
 	{
 		lbl_val = find_gui_element(TYPE_LABEL, win, "lbl_enc2_val");
-		strcpy(win->name, gui_enc2_menu->param);
+		strcpy(win->name, gui_enc2_menu.param);
 		remove_end_line_spaces(win->name);
 		calculate_window_position(win, WINDOW_POSITION_MANUAL, 0, window_title_height + get_label_height(lbl_val) * 2);
 
-		strcpy(lbl_val->text, gui_enc2_menu->val);
+		strcpy(lbl_val->text, gui_enc2_menu.val);
 		lbl_val->x = win->w / 2 - get_label_width(lbl_val) / 2;
 		lbl_val->y = row1_int;
-		lbl_val->color = gui_enc2_menu->state == 2 ? COLORMAIN_YELLOW : COLORMAIN_WHITE;
+		lbl_val->color = gui_enc2_menu.state == 2 ? COLORMAIN_YELLOW : COLORMAIN_WHITE;
 		lbl_val->visible = VISIBLE;
 
-		gui_enc2_menu->updated = 0;
+		gui_enc2_menu.updated = 0;
 		gui_timer_update(NULL);
 	}
 }
