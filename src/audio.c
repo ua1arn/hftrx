@@ -4816,17 +4816,25 @@ uint_fast8_t allocate_fftbuffer_low(fftbuff_t * * dest)
 		* dest = p;
 		return 1;
 	}
+	/* Начинаем отбрасывать самые старые в очереди готовых. */
+	if (! IsListEmpty(& fftbufready))
+	{
+		PLIST_ENTRY t = RemoveTailList(& fftbufready);
+		fftbuff_t * const p = CONTAINING_RECORD(t, fftbuff_t, item);
+		* dest = p;
+		return 1;
+	}
 	return 0;
 }
 
 // realtime-mode function
 void saveready_fftbuffer_low(fftbuff_t * p)
 {
-	if (! IsListEmpty(& fftbufready))
-	{
-		const PLIST_ENTRY t = RemoveTailList(& fftbufready);
-		InsertHeadList(& fftbuffree, t);
-	}
+//	if (! IsListEmpty(& fftbufready))
+//	{
+//		const PLIST_ENTRY t = RemoveTailList(& fftbufready);
+//		InsertHeadList(& fftbuffree, t);
+//	}
 	InsertHeadList(& fftbufready, & p->item);
 }
 
