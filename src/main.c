@@ -17859,9 +17859,6 @@ int dbg_getchar(char * r)
 
 int dbg_putchar(int c)
 {
-#if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM0 || CPUSTYLE_ARM_CM7
-	//ITM_SendChar(c);
-#endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM0 || CPUSTYLE_ARM_CM7 */
 	return c;
 }
 
