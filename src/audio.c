@@ -4797,19 +4797,25 @@ uint_fast8_t hamradio_get_notchvalueXXX(int_fast32_t * p)
 */
 
 // Сэмплы для децимации
-static RAMBIG float32_t FFT_largebuffI [LARGEFFT * 2];
-static RAMBIG float32_t FFT_largebuffQ [LARGEFFT * 2];
-static RAMDTCM uint_fast16_t fft_largelast;
+typedef struct fftbuff_tag
+{
+	float32_t FFT_largebuffI [LARGEFFT * 2];
+	float32_t FFT_largebuffQ [LARGEFFT * 2];
+	unsigned fft_largelast;
+} fftbuff_t;
+
+static RAMBIG fftbuff_t fftbuff0;
 
 // формирование отображения спектра
 void saveIQRTSxx(FLOAT_t iv, FLOAT_t qv)
 {
-	//const uint_fast8_t rxgate = getRxGate();
 	if (rendering == 0)
 	{
-		fft_largelast = (fft_largelast == 0) ? (LARGEFFT - 1) : (fft_largelast - 1);
-		FFT_largebuffI [fft_largelast] = FFT_largebuffI [fft_largelast + LARGEFFT] = iv;
-		FFT_largebuffQ [fft_largelast] = FFT_largebuffQ [fft_largelast + LARGEFFT] = qv;
+		fftbuff_t * const pf = & fftbuff0;
+
+		pf->fft_largelast = (pf->fft_largelast == 0) ? (LARGEFFT - 1) : (pf->fft_largelast - 1);
+		pf->FFT_largebuffI [pf->fft_largelast] = pf->FFT_largebuffI [pf->fft_largelast + LARGEFFT] = iv;
+		pf->FFT_largebuffQ [pf->fft_largelast] = pf->FFT_largebuffQ [pf->fft_largelast + LARGEFFT] = qv;
 		renderready = (renderready < LARGEFFT) ? (renderready + 1) : LARGEFFT;
 	}
 	else
@@ -5011,8 +5017,10 @@ uint_fast8_t dsp_getspectrumrow(
 		global_enableIRQ();
 	}
 
-	float32_t * const largesigI = & FFT_largebuffI [fft_largelast];
-	float32_t * const largesigQ = & FFT_largebuffQ [fft_largelast];
+	fftbuff_t * const pf = & fftbuff0;
+
+	float32_t * const largesigI = & pf->FFT_largebuffI [pf->fft_largelast];
+	float32_t * const largesigQ = & pf->FFT_largebuffQ [pf->fft_largelast];
 
 	if (zoompow2 > 0)
 	{
