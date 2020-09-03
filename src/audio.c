@@ -4867,7 +4867,10 @@ void saveIQRTSxx(FLOAT_t iv, FLOAT_t qv)
 		if (* ppf == NULL)
 		{
 			if (allocate_fftbuffer_low(ppf) == 0)
-				return;
+			{
+				TP();
+				continue;	/* обшибочная ситуация, нарушает фиксированный сдвиг переурытия буферов */
+			}
 			(* ppf)->filled = 0;
 		}
 		fftbuff_t * pf = * ppf;
