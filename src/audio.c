@@ -4785,9 +4785,6 @@ static RAMFUNC uint_fast8_t isneedmute(uint_fast8_t dspmode)
 #if (WITHRTS96 || WITHRTS192) && ! WITHTRANSPARENTIQ
 
 // Поддержка панорпамы и водопада
-
-static volatile uint_fast8_t rendering;
-static volatile uint_fast32_t renderready;
 /*
 uint_fast8_t hamradio_get_notchvalueXXX(int_fast32_t * p)
 {
@@ -4799,27 +4796,96 @@ uint_fast8_t hamradio_get_notchvalueXXX(int_fast32_t * p)
 // Сэмплы для децимации
 typedef struct fftbuff_tag
 {
-	float32_t FFT_largebuffI [LARGEFFT * 2];
-	float32_t FFT_largebuffQ [LARGEFFT * 2];
-	unsigned fft_largelast;
+	LIST_ENTRY item;
+	float32_t largebuffI [LARGEFFT];
+	float32_t largebuffQ [LARGEFFT];
+	unsigned filled;	// 0..LARGEFFT-1
 } fftbuff_t;
 
-static RAMBIG fftbuff_t fftbuff0;
+static LIST_ENTRY fftbuffree;
+static LIST_ENTRY fftbufready;
+
+// realtime-mode function
+uint_fast8_t allocate_fftbuffer_low(fftbuff_t * * dest)
+{
+	if (! IsListEmpty(& fftbuffree))
+	{
+		PLIST_ENTRY t = RemoveTailList(& fftbuffree);
+		fftbuff_t * const p = CONTAINING_RECORD(t, fftbuff_t, item);
+		* dest = p;
+		return 1;
+	}
+	return 0;
+}
+
+// realtime-mode function
+void saveready_fftbuffer_low(fftbuff_t * p)
+{
+	if (! IsListEmpty(& fftbufready))
+	{
+		const PLIST_ENTRY t = RemoveTailList(& fftbufready);
+		InsertHeadList(& fftbuffree, t);
+	}
+	InsertHeadList(& fftbufready, & p->item);
+}
+
+// user-mode function
+void release_fftbuffer(fftbuff_t * p)
+{
+	system_disableIRQ();
+	InsertHeadList(& fftbuffree, & p->item);
+	system_enableIRQ();
+}
+
+// user-mode function
+uint_fast8_t  getfilled_fftbuffer(fftbuff_t * * dest)
+{
+	system_disableIRQ();
+	if (! IsListEmpty(& fftbufready))
+	{
+		PLIST_ENTRY t = RemoveTailList(& fftbufready);
+		system_enableIRQ();
+		fftbuff_t * const p = CONTAINING_RECORD(t, fftbuff_t, item);
+		* dest = p;
+		return 1;
+	}
+	system_enableIRQ();
+	return 0;
+}
+
+// вызывается при запрещенных прерываниях.
+void fftbuffer_initialize(void)
+{
+	static RAMBIG fftbuff_t fftbuffersarray [1 + 1];
+	unsigned i;
+
+	InitializeListHead(& fftbuffree);	// Свободные
+	for (i = 0; i < (sizeof fftbuffersarray / sizeof fftbuffersarray [0]); ++ i)
+	{
+		fftbuff_t * const p = & fftbuffersarray [i];
+		InsertHeadList(& fftbuffree, & p->item);
+	}
+	InitializeListHead(& fftbufready);	// Для выдачи на дисплей
+}
 
 // формирование отображения спектра
 void saveIQRTSxx(FLOAT_t iv, FLOAT_t qv)
 {
-	if (rendering == 0)
+	static fftbuff_t * pf = NULL;
+	if (pf == NULL)
 	{
-		fftbuff_t * const pf = & fftbuff0;
-
-		pf->fft_largelast = (pf->fft_largelast == 0) ? (LARGEFFT - 1) : (pf->fft_largelast - 1);
-		pf->FFT_largebuffI [pf->fft_largelast] = pf->FFT_largebuffI [pf->fft_largelast + LARGEFFT] = iv;
-		pf->FFT_largebuffQ [pf->fft_largelast] = pf->FFT_largebuffQ [pf->fft_largelast + LARGEFFT] = qv;
-		renderready = (renderready < LARGEFFT) ? (renderready + 1) : LARGEFFT;
+		if (allocate_fftbuffer_low(& pf) == 0)
+			return;
+		pf->filled = 0;
 	}
-	else
+
+	pf->largebuffI [pf->filled] = iv;
+	pf->largebuffQ [pf->filled] = qv;
+
+	if (++ pf->filled >= LARGEFFT)
 	{
+		saveready_fftbuffer_low(pf);
+		pf = NULL;
 	}
 }
 
@@ -5004,23 +5070,13 @@ uint_fast8_t dsp_getspectrumrow(
 	uint_fast16_t i;
 	uint_fast16_t x;
 
-	// проверка, есть ли нужное количество данных для формирования спектра
-	global_disableIRQ();
-	if (renderready < needsize)
-	{
-		global_enableIRQ();
+	// проверка, есть ли накопленный буфер для формирования спектра
+	fftbuff_t * pf;
+	if (getfilled_fftbuffer(& pf) == 0)
 		return 0;
-	}
-	else
-	{
-		rendering = 1;	// запрет обновления буфера с исходными данными
-		global_enableIRQ();
-	}
 
-	fftbuff_t * const pf = & fftbuff0;
-
-	float32_t * const largesigI = & pf->FFT_largebuffI [pf->fft_largelast];
-	float32_t * const largesigQ = & pf->FFT_largebuffQ [pf->fft_largelast];
+	float32_t * const largesigI = pf->largebuffI;
+	float32_t * const largesigQ = pf->largebuffQ;
 
 	if (zoompow2 > 0)
 	{
@@ -5033,10 +5089,7 @@ uint_fast8_t dsp_getspectrumrow(
 	// Подготовить массив комплексных чисел для преобразования в частотную область
 	make_cmplx(zoomfft_st.cmplx_sig, NORMALFFT, largesigQ, largesigI);
 
-	global_disableIRQ();
-	renderready = 0;
-	rendering = 0;
-	global_enableIRQ();
+	release_fftbuffer(pf);
 
 	arm_cmplx_mult_real_f32(zoomfft_st.cmplx_sig, wnd256, zoomfft_st.cmplx_sig,  NORMALFFT);	// Применить оконную функцию к IQ буферу
 	arm_cfft_f32(FFTCONFIGSpectrum, zoomfft_st.cmplx_sig, 0, 1);	// forward transform
@@ -5059,6 +5112,7 @@ dsp_rasterinitialize(void)
 	buildsigwnd();
 	//printsigwnd();	// печать оконных коэффициентов для формирования таблицы во FLASH
 	//toplogdb = LOG10F((FLOAT_t) INT32_MAX / waterfalrange);
+	fftbuffer_initialize();
 }
 
 #else /* (WITHRTS96 || WITHRTS192) && ! WITHTRANSPARENTIQ */
