@@ -306,7 +306,7 @@ void close_all_windows(void)
 	footer_buttons_state(CANCELLED);
 	hamradio_set_lockmode(0);
 	hamradio_disable_keyboard_redirect();
-	gui_user_actions_ater_close_window();
+	gui_user_actions_after_close_window();
 }
 
 /* Освободить выделенную память в куче и обнулить счетчики элементов окна */
@@ -346,7 +346,7 @@ void close_window(uint_fast8_t parent) // 0 - не открывать parent win
 			pwin->first_call = 1;
 		}
 	}
-	gui_user_actions_ater_close_window();
+	gui_user_actions_after_close_window();
 }
 
 /* Открыть окно */

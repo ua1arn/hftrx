@@ -8,7 +8,7 @@
 #include "src/gui/gui.h"
 #include "src/gui/gui_structs.h"
 
-void gui_user_actions_ater_close_window(void);
+void gui_user_actions_after_close_window(void);
 
 #if WITHGUISTYLE_MINI
 

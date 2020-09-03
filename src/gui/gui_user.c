@@ -133,7 +133,7 @@ int_fast8_t pop_enc2_stack(void)
     return v;
 }
 
-void gui_user_actions_ater_close_window(void)
+void gui_user_actions_after_close_window(void)
 {
 	clean_enc2_stack();
 }

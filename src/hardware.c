@@ -11487,8 +11487,8 @@ ttb_accessbits(uintptr_t a, int ro)
 
 #if CPUSTYLE_R7S721020
 
-//	if (a == 0x00000000uL)
-//		return addrbase | TTB_PARA_NO_ACCESS;		// NULL pointers access trap
+	if (a == 0x00000000uL)
+		return addrbase | TTB_PARA_NO_ACCESS;		// NULL pointers access trap
 
 	if (a >= 0x18000000uL && a < 0x20000000uL)			//
 		return addrbase | TTB_PARA_NORMAL_CACHE(ro);
