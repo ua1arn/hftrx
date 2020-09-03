@@ -4914,7 +4914,7 @@ void fftbuffer_initialize(void)
 		fftbuff_t * * ppf = & pfill [i];
 		VERIFY(allocate_fftbuffer_low(ppf) != 0);
 		/* установка начальной позиции для заполнения со сдвигом. */
-		const unsigned filled = (i * LARGEFFT / NOVERLAP);
+		const unsigned filled = (i * NORMALFFT / NOVERLAP);
 		(* ppf)->filled = filled;
 		arm_fill_f32(0, (* ppf)->largebuffI, filled);
 		arm_fill_f32(0, (* ppf)->largebuffQ, filled);
