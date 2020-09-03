@@ -4898,7 +4898,7 @@ void saveIQRTSxx(FLOAT_t iv, FLOAT_t qv)
 // вызывается при запрещенных прерываниях.
 void fftbuffer_initialize(void)
 {
-	static RAMBIG fftbuff_t fftbuffersarray [NOVERLAP + 1];
+	static RAMBIG fftbuff_t fftbuffersarray [NOVERLAP * 2];
 	unsigned i;
 
 	InitializeListHead(& fftbuffree);	// Свободные
