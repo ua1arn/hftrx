@@ -346,7 +346,7 @@ IRQHandlerNested:
 		// save VFP/Neon data registers
 		VPUSH.F64	{q0-q7}
 
-		ldr		r0, =IRQ_Handler
+		ldr		r0, =IRQ_Handler_GICv1
 		mov		lr, pc
 		bx		r0     /* And jump... */
 		// restore VFP data registers

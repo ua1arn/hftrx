@@ -10387,8 +10387,10 @@ static void Userdef_INTC_Dummy_Interrupt(void)
 		;
 }
 
+#if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
+
 /* Вызывается из crt_r7s721.s со сброшенным флагом прерываний */
-void IRQ_Handler(void)
+void IRQ_Handler_GICv1(void)
 {
 	//dbg_putchar('/');
 	const IRQn_ID_t irqn = IRQ_GetActiveIRQ();
@@ -10406,7 +10408,7 @@ void IRQ_Handler(void)
 	//case PL310ERR_IRQn:
 	//	break;
 	default:
-		PRINTF(PSTR("IRQ_Handler: irq=%d, handler=%p\n"), (int) irqn, (void *) handler);
+		PRINTF(PSTR("IRQ_Handler_GICv1: irq=%d, handler=%p\n"), (int) irqn, (void *) handler);
 		break;
 	}
 #endif
@@ -10429,16 +10431,64 @@ void IRQ_Handler(void)
 	IRQ_EndOfInterrupt(irqn);
 }
 
+#define INT_ID_MASK		0x3ffuL
+/* Interrupt IDs reported by the HPPIR and IAR registers */
+#define PENDING_G1_INTID	1022uL
+/* Constant to indicate a spurious interrupt in all GIC versions */
+#define GIC_SPURIOUS_INTERRUPT		1023uL
+/*
+ * Constant passed to the interrupt handler in the 'id' field when the
+ * framework does not read the gic registers to determine the interrupt id.
+ */
+#define INTR_ID_UNAVAILABLE		0xFFFFFFFFuL
+
+/*******************************************************************************
+ * This function returns the id of the highest priority pending interrupt at
+ * the GIC cpu interface. GIC_SPURIOUS_INTERRUPT is returned when there is no
+ * interrupt pending.
+ ******************************************************************************/
+unsigned int gicv2_get_pending_interrupt_id(void)
+{
+	unsigned int id;
+
+	id = GICInterface->HPPIR & INT_ID_MASK;
+
+	/*
+	 * Find out which non-secure interrupt it is under the assumption that
+	 * the GICC_CTLR.AckCtl bit is 0.
+	 */
+	if (id == PENDING_G1_INTID)
+		id = GICInterface->AHPPIR & INT_ID_MASK;
+
+	return id;
+}
+
+/*
+ * This function returns the highest priority pending interrupt at
+ * the Interrupt controller
+ */
+uint32_t plat_ic_get_pending_interrupt_id(void)
+{
+	unsigned int id;
+
+	id = gicv2_get_pending_interrupt_id();
+	if (id == GIC_SPURIOUS_INTERRUPT)
+		return INTR_ID_UNAVAILABLE;
+
+	return id;
+}
+
 static RAMDTCM SPINLOCK_t giclock = SPINLOCK_INIT;
 //SPIN_LOCK(& giclock);
 //SPIN_UNLOCK(& giclock);
 
 /* Вызывается из crt_stm32mp1.s со сброшенным флагом прерываний */
-void IRQ_Handler_STM32MP1(void)
+// Sww ARM IHI 0048B.b document
+void IRQ_Handler_GICv2(void)
 {
-	/* const uint32_t icchpir = */ (void) GIC_GetHighPendingIRQ();	/* GICC_HPPIR */
-	const uint32_t icciar = GIC_AcknowledgePending();				/* GICC_IAR */
-	const IRQn_ID_t int_id = icciar & 0x03FF;
+	const uint_fast32_t gicc_hppir = plat_ic_get_pending_interrupt_id(); //GICInterface->HPPIR; //GIC_GetHighPendingIRQ();	/* GICC_HPPIR */
+	const uint_fast32_t gicc_iar = GICInterface->IAR; //GIC_AcknowledgePending();	/* GICC_IAR */
+	const IRQn_ID_t int_id = gicc_iar & 0x03FF;
 
 	// See R01UH0437EJ0200 Rev.2.00 7.8.3 Reading Interrupt ID Values from Interrupt Acknowledge Register (ICCIAR)
 	// IHI0048B_b_gic_architecture_specification.pdf
@@ -10446,7 +10496,9 @@ void IRQ_Handler_STM32MP1(void)
 
 	if (int_id >= 1020)
 	{
+		SPIN_LOCK(& giclock);
 		GIC_SetPriority(0, GIC_GetPriority(0));	// GICD_IPRIORITYRn(0) = GICD_IPRIORITYRn(0);
+		SPIN_UNLOCK(& giclock);
 
 	}
 	else if (int_id != 0 /*|| (INTC.ICDABR0 & 0x0001) != 0*/)
@@ -10469,11 +10521,14 @@ void IRQ_Handler_STM32MP1(void)
 		}
 
 	#endif /* WITHNESTEDINTERRUPTS */
-		GIC_EndInterrupt(int_id);	/* GICC_EOIR, INTC.ICCEOIR*/
+		//GIC_EndInterrupt(gicc_iar & 0x01FFF);	/* CPUID, EOINTID */
+		GICInterface->EOIR = gicc_iar & 0x01FFF; // * CPUID, EOINTID
 	}
 	else
 	{
+		SPIN_LOCK(& giclock);
 		GIC_SetPriority(0, GIC_GetPriority(0));	// GICD_IPRIORITYRn(0) = GICD_IPRIORITYRn(0);
+		SPIN_UNLOCK(& giclock);
 	}
 }
 
@@ -10554,6 +10609,8 @@ static void irq_modes_print(void)
 }
 
 #endif
+
+#endif /* defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U) */
 
 #if CPUSTYLE_R7S721
 
@@ -12548,7 +12605,7 @@ void cpu_initialize(void)
 	printcpustate();
 #endif /* WITHSMPSYSTEM */
 
-#if (__GIC_PRESENT == 1)
+#if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 	// GIC version diagnostics
 	//PRINTF("arm_gic_initialize: ICPIDR0=%08lX\n", ICPIDR0);	// ICPIDR0
 	//PRINTF("arm_gic_initialize: ICPIDR1=%08lX\n", ICPIDR1);	// ICPIDR1
@@ -12568,7 +12625,7 @@ void cpu_initialize(void)
 //	}
 //
 //	PRINTF("GICInterface->IIDR=%08lX, GICDistributor->IIDR=%08lX\n", (unsigned long) GICInterface->IIDR, (unsigned long) GIC_DistributorImplementer());
-#endif
+#endif /* defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U) */
 
 	//PRINTF("cpu_initialize\n");
 #if CPUSTYLE_STM32F1XX
@@ -12743,7 +12800,7 @@ void cpu_initialize(void)
 	vectors_relocate();
 	arm_cpu_CMx_initialize_NVIC();
 
-#elif (__GIC_PRESENT != 0)
+#elif defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 
 	arm_gic_initialize();
 
@@ -13352,6 +13409,7 @@ void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint
 	GIC_SetTarget(int_id, targetcpu);
 
 #if CPUSTYLE_STM32MP1
+	// peripheral (hardware) interrupts using the GIC 1-N model.
 	uint_fast32_t cfg = GIC_GetConfiguration(int_id);
 	cfg &= ~ 0x02;	/* Set level sensitive configuration */
 	cfg |= 0x01;	/* Set 1-N model - Only one processor handles this interrupt. */

@@ -900,8 +900,11 @@ void SWI_Handler(void);
 void PAbort_Handler(void);
 void DAbort_Handler(void);
 void FIQ_Handler(void);
-void IRQ_Handler(void);
 void Hyp_Handler(void);
+
+void IRQ_Handler_GICv1(void);
+void IRQ_Handler_GICv2(void);
+void IRQ_Handler(void);			// No GIC
 
 void Reset_CPU1_Handler(void);	// startup located function
 void Reset_CPUn_Handler(void);
