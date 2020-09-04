@@ -259,8 +259,8 @@
 	//#define WITHDSPLOCALFIR 1		/* test: Фильтрация квадратур осуществляется процессором */
 	#define WITHIF4DSP	1	// "Дятел"
 
-	#define WITHUSESDCARD		1	// Включение поддержки SD CARD
-	#define WITHUSEAUDIOREC		1	// Запись звука на SD CARD
+	//#define WITHUSESDCARD		1	// Включение поддержки SD CARD
+	//#define WITHUSEAUDIOREC		1	// Запись звука на SD CARD
 	//#define WITHUSEAUDIORECCLASSIC	1	// стандартный формат записи, без "дыр"
 	//#define WITHUSEAUDIOREC2CH	1	// Запись звука на SD CARD в стерео
 
