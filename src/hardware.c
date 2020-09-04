@@ -11535,7 +11535,7 @@ M_SIZE_IO_2     EQU     2550            ; [Area11] I/O area 2
 //#define	TTB_PARA_NORMAL_CACHE       0b_0000_0001_1101_1110_1110
 #define	TTB_PARA_NORMAL_CACHE(ro) TTB_PARA(TEXval_WBCACHE, Bval_WBCACHE, Cval_WBCACHE, DOMAINval, (ro) ? APROval : APRWval, 0)
 
-#define	TTB_PARA_NORMAL_DEVICE TTB_PARA(TEXval_DEVICE, Bval_DEVICE, Cval_DEVICE, DOMAINval, APRWval, 1)
+#define	TTB_PARA_DEVICE TTB_PARA(TEXval_DEVICE, Bval_DEVICE, Cval_DEVICE, DOMAINval, APRWval, 1)
 
 #define	TTB_PARA_NO_ACCESS 0
 
@@ -11558,22 +11558,22 @@ ttb_accessbits(uintptr_t a, int ro)
 	if (a >= 0x20000000uL && a < 0x20A00000uL)			// up to 10 MB
 		return addrbase | TTB_PARA_NORMAL_CACHE(ro);
 
-	return addrbase | TTB_PARA_NORMAL_DEVICE; //TTB_PARA_STRGLY;
+	return addrbase | TTB_PARA_STRGLY;
 
 #elif CPUSTYLE_STM32MP1
 
-	if (a >= 0x00000000uL && a < 0x10000000uL)			// BOOT
+	if (a < 0x10000000uL)			// BOOT
 		return addrbase | TTB_PARA_NO_ACCESS;			// NULL pointers access trap
 
 	if (a >= 0x20000000uL && a < 0x30000000uL)			// SYSRAM
 		return addrbase | TTB_PARA_NORMAL_CACHE(ro);
 
 	if (a >= 0x40000000uL && a < 0x60000000uL)			//  peripherials 1, peripherials 2
-		return addrbase | TTB_PARA_NORMAL_DEVICE;
+		return addrbase | TTB_PARA_STRGLY;
 	if (a >= 0xA0000000uL && a < 0xC0000000uL)			//  GIC
-		return addrbase | TTB_PARA_NORMAL_DEVICE;
+		return addrbase | TTB_PARA_STRGLY;
 	if (a >= 0xE0000000uL)								//  DEBUG
-		return addrbase | TTB_PARA_NORMAL_DEVICE;
+		return addrbase | TTB_PARA_STRGLY;
 
 	if (a >= 0x70000000uL && a < 0xA0000000uL)			//  QUADSPI, FMC NAND, ...
 		return addrbase | TTB_PARA_NORMAL_CACHE(ro);
@@ -12583,7 +12583,7 @@ static void stm32_cpu1_start(void)
 // Вызывается из main
 void cpu_initialize(void)
 {
-//	PRINTF("TTB_PARA_NORMAL_DEVICE=%08lX (xxx)\n", (unsigned long) TTB_PARA_NORMAL_DEVICE);
+//	PRINTF("TTB_PARA_DEVICE=%08lX (xxx)\n", (unsigned long) TTB_PARA_DEVICE);
 //	PRINTF("TTB_PARA_STRGLY=%08lX (0x00DE2)\n", (unsigned long) TTB_PARA_STRGLY);
 //	PRINTF("TTB_PARA_NORMAL_CACHE=%08lX (0x01DEEuL)\n", (unsigned long) TTB_PARA_NORMAL_CACHE);
 //	PRINTF("TTB_PARA_NORMAL_NOT_CACHE=%08lX (0x01DE2uL)\n", (unsigned long) TTB_PARA_NORMAL_NOT_CACHE);
