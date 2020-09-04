@@ -10523,7 +10523,7 @@ void IRQ_Handler_GICv2(void)
 
 	#endif /* WITHNESTEDINTERRUPTS */
 		//GIC_EndInterrupt(gicc_iar & 0x01FFF);	/* CPUID, EOINTID */
-		GICInterface->EOIR = gicc_iar; // * CPUID, EOINTID
+		GICInterface->EOIR = gicc_iar & 0x01FFF; // * CPUID, EOINTID
 	}
 	else
 	{
