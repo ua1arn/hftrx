@@ -192,7 +192,7 @@ static void r7s721_pio_onchangeinterrupt(
 		const IRQn_ID_t int_id = irqbase + bitpos;
 		IRQ_Disable(int_id);
 		GIC_SetConfiguration(int_id, edge ? GIC_CONFIG_EDGE : GIC_CONFIG_LEVEL);
-		arm_hardware_set_handler(int_id, vector, priority, tgcpu);
+		arm_hardware_set_handler(int_id, vector, priority, 0x01uL << 0);	// CPU#0 is only one
 	}
 }
 
