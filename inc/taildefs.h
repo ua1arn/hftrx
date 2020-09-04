@@ -790,7 +790,6 @@ typedef enum
 	#define TARGETCPU_SYSTEM (1u << 0)		// CPU #0
 	#define TARGETCPU_RT (1u << 0)			// CPU #0
 	#define TARGETCPU_OVRT (1u << 1)		// CPU #1
-	#define TARGETCPU_EXTIO (1u << 1)		// CPU #1
 
 
 	#define SPINLOCK_t spinlock_t
@@ -810,7 +809,6 @@ typedef enum
 	#define TARGETCPU_SYSTEM (1u << 0)		// CPU #0
 	#define TARGETCPU_RT (1u << 0)			// CPU #0
 	#define TARGETCPU_OVRT (1u << 0)		// CPU #0
-	#define TARGETCPU_EXTIO (1u << 0)		// CPU #0
 
 	#define SPINLOCK_INIT { 0 }
 	#define SPINLOCK_INIT_EXEC 0
