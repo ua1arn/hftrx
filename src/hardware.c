@@ -10479,8 +10479,6 @@ uint32_t plat_ic_get_pending_interrupt_id(void)
 }
 
 static RAMDTCM SPINLOCK_t giclock = SPINLOCK_INIT;
-//SPIN_LOCK(& giclock);
-//SPIN_UNLOCK(& giclock);
 
 /* Вызывается из crt_stm32mp1.s со сброшенным флагом прерываний */
 // Sww ARM IHI 0048B.b document
