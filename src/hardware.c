@@ -10487,8 +10487,9 @@ static RAMDTCM SPINLOCK_t giclock = SPINLOCK_INIT;
 void IRQ_Handler_GICv2(void)
 {
 	const uint_fast32_t gicc_hppir = plat_ic_get_pending_interrupt_id(); //GICInterface->HPPIR; //GIC_GetHighPendingIRQ();	/* GICC_HPPIR */
-	const uint_fast32_t gicc_iar = GICInterface->IAR; //GIC_AcknowledgePending();	/* GICC_IAR */
+	const uint_fast32_t gicc_iar = GICInterface->IAR; // CPUID, Interrupt ID
 	const IRQn_ID_t int_id = gicc_iar & 0x03FF;
+	//const IRQn_ID_t int_id = gicc_hppir & 0x03FF;
 
 	// See R01UH0437EJ0200 Rev.2.00 7.8.3 Reading Interrupt ID Values from Interrupt Acknowledge Register (ICCIAR)
 	// IHI0048B_b_gic_architecture_specification.pdf
@@ -10522,7 +10523,7 @@ void IRQ_Handler_GICv2(void)
 
 	#endif /* WITHNESTEDINTERRUPTS */
 		//GIC_EndInterrupt(gicc_iar & 0x01FFF);	/* CPUID, EOINTID */
-		GICInterface->EOIR = gicc_iar & 0x01FFF; // * CPUID, EOINTID
+		GICInterface->EOIR = gicc_iar; // * CPUID, EOINTID
 	}
 	else
 	{
