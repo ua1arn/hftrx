@@ -262,6 +262,7 @@
 	//#define WITHUSEAUDIOREC		1	// Запись звука на SD CARD
 	//#define WITHUSEAUDIORECCLASSIC	1	// стандартный формат записи, без "дыр"
 	//#define WITHUSEAUDIOREC2CH	1	// Запись звука на SD CARD в стерео
+	#define BOARD_FFTZOOM_POW2MAX 1	// Возможные масштабы FFT x1, x2
 
 	//#define WITHUSEDUALWATCH	1	// Второй приемник
 	//#define WITHREVERB	1	// ревербератор в обработке микрофонного сигнала
