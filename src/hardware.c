@@ -10387,6 +10387,7 @@ static void Userdef_INTC_Dummy_Interrupt(void)
 		;
 }
 
+/* Вызывается из crt_r7s721.s со сброшенным флагом прерываний */
 void IRQ_Handler(void)
 {
 	//dbg_putchar('/');
@@ -10428,13 +10429,16 @@ void IRQ_Handler(void)
 	IRQ_EndOfInterrupt(irqn);
 }
 
-#if 0
-/* Вызывается из crt_r7s721.s со сброшенным флагом прерываний */
-void IRQ_HandlerXXXXX(void)
+static RAMDTCM SPINLOCK_t giclock = SPINLOCK_INIT;
+//SPIN_LOCK(& giclock);
+//SPIN_UNLOCK(& giclock);
+
+/* Вызывается из crt_stm32mp1.s со сброшенным флагом прерываний */
+void IRQ_Handler_STM32MP1(void)
 {
-	/* const uint32_t icchpir = */ (void) GICC_HPPIR;	/* GICC_HPPIR */
-	const uint32_t icciar = GICC_IAR;				/* GICC_IAR */
-	const IRQn_ID_t int_id = icciar & INTC_ICCIAR_ACKINTID;
+	/* const uint32_t icchpir = */ (void) GIC_GetHighPendingIRQ();	/* GICC_HPPIR */
+	const uint32_t icciar = GIC_AcknowledgePending();				/* GICC_IAR */
+	const IRQn_ID_t int_id = icciar & 0x03FF;
 
 	// See R01UH0437EJ0200 Rev.2.00 7.8.3 Reading Interrupt ID Values from Interrupt Acknowledge Register (ICCIAR)
 	// IHI0048B_b_gic_architecture_specification.pdf
@@ -10442,9 +10446,10 @@ void IRQ_HandlerXXXXX(void)
 
 	if (int_id >= 1020)
 	{
-		GICD_IPRIORITYRn(0) = GICD_IPRIORITYRn(0);
+		GIC_SetPriority(0, GIC_GetPriority(0));	// GICD_IPRIORITYRn(0) = GICD_IPRIORITYRn(0);
+
 	}
-	else if (int_id != 0 || (INTC.ICDABR0 & 0x0001) != 0)
+	else if (int_id != 0 /*|| (INTC.ICDABR0 & 0x0001) != 0*/)
 	{
 		const IRQHandler_t f = IRQ_GetHandler(int_id);
 	#if WITHNESTEDINTERRUPTS
@@ -10464,14 +10469,14 @@ void IRQ_HandlerXXXXX(void)
 		}
 
 	#endif /* WITHNESTEDINTERRUPTS */
-		VERIFY(0 == IRQ_EndOfInterrupt(int_id));	/* GICC_EOIR, INTC.ICCEOIR*/
+		GIC_EndInterrupt(int_id);	/* GICC_EOIR, INTC.ICCEOIR*/
 	}
 	else
 	{
-		GICD_IPRIORITYRn(0) = GICD_IPRIORITYRn(0);
+		GIC_SetPriority(0, GIC_GetPriority(0));	// GICD_IPRIORITYRn(0) = GICD_IPRIORITYRn(0);
 	}
 }
-#endif
+
 
 #if 0
 
