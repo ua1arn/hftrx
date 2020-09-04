@@ -1,0 +1,90 @@
+=======================================================
+STM32MP1_v0r1: first release
+=======================================================
+	initial release, generated from IPXact
+ 
+supported IP:
+
+BSEC
+DELAYBLOCK
+DFSDM1
+DMAMUX1
+FDCAN2
+HDP
+MDMA
+RNG1
+RTC
+VREFBUF
+IWDG1
+
+=======================================================
+STM32MP1_v0r2: update
+=======================================================
+
+supported IP:
+
+DDRCTRL
+DDRPHYC
+TIM6
+TIM7
+IWDG1
+QUADSPI1
+RCC
+STGEN
+STGENR
+WILDCAT_PWR
+
+=======================================================
+STM32MP1_v0r3: update aligned with RM0436
+=======================================================
+
+aligned with RM0436: DocID029732 Rev 0.1 5 December 2017 
+  - missing vector table
+  - missing OTG registers 
+  - missing CPU registers 
+  - missing USB_OHCI and USB_EHCI  
+=======================================================
+STM32MP1_v1r1:  GENERATED from IP-XACT  
+=======================================================
+aligned with RM0436: RM0436 Rev 0.3_22 October 2018
+  - missing vector table (only available for: wwdg,exti,tamp,tzc,rcc)
+  - missing OTG registers 
+  - missing CPU registers 
+  - missing USB_OHCI and USB_EHCI 
+  - missing BKPSRAM  
+  - missing CANSRAM 
+adding support to:
+ AXIMC; TIM15; TIM16; TIM17; DLYBGS ; NVIC(IP)
+=======================================================
+STM32MP1_v1r2:  
+=======================================================
+renaming the SVD file from STM32MP157cxx --> STM32MP15xxx
+
+=======================================================
+STM32MP1_v1r3:  STM32MP157x_v1r3
+=======================================================
+renaming the SVD file from STM32MP15xxx --> STM32MP157x
+
+=======================================================
+STM32MP157x_v1r4    ticket 89486           06-07-2020
+=======================================================
+Adding disable condition to MP1 peripherals - MCU
+
+=======================================================
+STM32MP157x_v1r5                           16-07-2020
+=======================================================
+Validated against xsd checker
+
+=======================================================
+STM32MP157x_v1r6         Bug fix           31-08-2020
+=======================================================
+RM0436 Rev 4 _ February 2020
+
+#IP reorder alphabetically#
+
+Adding missing interrupts for all IPs
+Adding TIM12
+Renaming OTGHSFS1 into OTG
+Renaming UART4/5/7/8 into USART4/5/7/8
+LPTIM2 derived from LPTIM1
+RNG2 derived from RNG1
