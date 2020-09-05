@@ -279,23 +279,9 @@ enum interfaces_tag
 	INTERFACE_count				/* Значение для configuration descriptor */
 };
 
-#if WITHUSBCDCACM
-
-	#if WITHUSBCDCACM_N == 1
-
-	#elif WITHUSBCDCACM_N == 2
-		/* набор констант для второго VCP */
-		enum { USBD_EP_CDC_OUTb = USBD_EP_CDC_OUT + 1 };
-		enum { USBD_EP_CDC_INb = USBD_EP_CDC_IN + 1 };
-		enum { USBD_EP_CDC_INTb = USBD_EP_CDC_INT + 1 };
-
-		enum { INTERFACE_CDC_CONTROL_3b = INTERFACE_CDC_CONTROL_3a + 2, INTERFACE_CDC_DATA_4b };	/* CDC ACM control Interface */
-
-	#else
-		//#error Unsupported WITHUSBCDCACM_N
-	#endif
-
-#endif /* WITHUSBCDCACM */
+#define USBD_CDCACM_EP(base, offset) ((base) + (offset))
+#define USBD_CDCACM_OFFSET_BY_EP(ep, base) ((ep) - (base))
+#define USBD_CDCACM_IFC(base, offset) ((base) + (offset) * 2)
 
 #define INTERFACE_CDCACM_count 2	/* количество интерфейсов в одном CDC - control & data */
 #define INTERFACE_CDCEEM_count 1	/* количество интерфейсов в одном CDC EEM */
