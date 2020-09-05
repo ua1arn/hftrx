@@ -219,6 +219,34 @@ static void cdcXout_buffer_save(
 	}
 }
 
+/* проверка принадлежности номера интерфейса к набору CINTROL */
+static uint_fast8_t
+iscontrol(uint_fast8_t interfacev)
+{
+	unsigned offset;
+
+	for (offset = 0; offset < WITHUSBCDCACM_N; ++ offset)
+	{
+		if (interfacev == USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL_3a, offset))	// CDC control interface
+			return 1;
+	}
+	return 0;
+}
+
+/* проверка принадлежности номера интерфейса к набору DATA */
+static uint_fast8_t
+isdata(uint_fast8_t interfacev)
+{
+	unsigned offset;
+
+	for (offset = 0; offset < WITHUSBCDCACM_N; ++ offset)
+	{
+		if (interfacev == USBD_CDCACM_IFC(INTERFACE_CDC_DATA_4a, offset))	// CDC data interface
+			return 1;
+	}
+	return 0;
+}
+
 static USBD_StatusTypeDef USBD_CDC_DataOut(USBD_HandleTypeDef *pdev, uint_fast8_t epnum)
 {
 	if (epnum >= USBD_CDCACM_EP(USBD_EP_CDC_OUT, 0) && epnum < USBD_CDCACM_EP(USBD_EP_CDC_OUT, WITHUSBCDCACM_N))
@@ -242,7 +270,7 @@ static USBD_StatusTypeDef USBD_CDC_EP0_RxReady(USBD_HandleTypeDef *pdev)
 	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 
 	//PRINTF(PSTR("1 USBD_CDC_EP0_RxReady: interfacev=%u: bRequest=%u, wLength=%u\n"), interfacev, req->bRequest, req->wLength);
-	if (interfacev >= USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL_3a, 0) && interfacev < USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL_3a, WITHUSBCDCACM_N))
+	if (iscontrol(interfacev))
 	{
 		switch (req->bRequest)
 		{
@@ -269,7 +297,7 @@ static USBD_StatusTypeDef USBD_CDC_EP0_RxReady(USBD_HandleTypeDef *pdev)
 static USBD_StatusTypeDef USBD_CDC_DataIn(USBD_HandleTypeDef *pdev, uint_fast8_t epnum)
 {
 	//PRINTF("USBD_CDC_DataIn: epnum=%d\n", (int) epnum);
-	if (epnum >= USBD_CDCACM_EP(USBD_EP_CDC_IN, 0) && epnum < USBD_CDCACM_EP(USBD_EP_CDC_IN, WITHUSBCDCACM_N))
+	if (epnum >= (USBD_CDCACM_EP(USBD_EP_CDC_IN, 0) & 0x7F) && epnum < (USBD_CDCACM_EP(USBD_EP_CDC_IN, WITHUSBCDCACM_N) & 0x7F))
 	{
 		const unsigned offset = USBD_CDCACM_OFFSET_BY_EP(epnum, USBD_EP_CDC_IN) & 0x7F;
 #if 0
