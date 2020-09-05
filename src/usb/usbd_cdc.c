@@ -133,6 +133,11 @@ static RAMBIGDTCM USBALIGN_BEGIN uint8_t cdc_epXdatabuffout [USB_OTG_MAX_EP0_SIZ
 
 static RAMBIGDTCM uint_fast32_t dwDTERate [INTERFACE_count];
 
+#define MAIN_CDC_OFFSET 0
+#if WITHUSBCDCACM_N > 1
+	#define SECOND_CDC_OFFSET 1
+#endif /* WITHUSBCDCACM_N > 1 */
+
 /* управление по DTR происходит сразу, RTS только вместе со следующим DTR */
 /* хранимое значение после получения CDC_SET_CONTROL_LINE_STATE */
 /* Биты: RTS = 0x02, DTR = 0x01 */
@@ -140,39 +145,45 @@ static RAMBIGDTCM uint_fast32_t dwDTERate [INTERFACE_count];
 // Обычно используется для переключения на передачу (PTT)
 uint_fast8_t usbd_cdc1_getrts(void)
 {
+	const unsigned offset = MAIN_CDC_OFFSET;
 	return
-		((usb_cdc_control_state [USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL_3a, 0)] & CDC_ACTIVATE_CARRIER) != 0) ||
+		((usb_cdc_control_state [USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL_3a, offset)] & CDC_ACTIVATE_CARRIER) != 0) ||
 		0;
 }
 
 // Обычно используется для телеграфной манипуляции (KEYDOWN)
 uint_fast8_t usbd_cdc1_getdtr(void)
 {
+	const unsigned offset = MAIN_CDC_OFFSET;
 	return
-		((usb_cdc_control_state [USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL_3a, 0)] & CDC_DTE_PRESENT) != 0) ||
+		((usb_cdc_control_state [USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL_3a, offset)] & CDC_DTE_PRESENT) != 0) ||
 		0;
 }
 
 // Обычно используется для переключения на передачу (PTT)
 uint_fast8_t usbd_cdc2_getrts(void)
 {
-	const unsigned offset = 1;
-	return
 #if WITHUSBCDCACM_N > 1
+	const unsigned offset = SECOND_CDC_OFFSET;
+	return
 		((usb_cdc_control_state [USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL_3a, offset)] & CDC_ACTIVATE_CARRIER) != 0) ||
-#endif
 		0;
+#else /* WITHUSBCDCACM_N > 1 */
+	return 0;
+#endif /* WITHUSBCDCACM_N > 1 */
 }
 
 // Обычно используется для телеграфной манипуляции (KEYDOWN)
 uint_fast8_t usbd_cdc2_getdtr(void)
 {
-	const unsigned offset = 1;
-	return
 #if WITHUSBCDCACM_N > 1
+	const unsigned offset = SECOND_CDC_OFFSET;
+	return
 		((usb_cdc_control_state [USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL_3a, offset)] & CDC_DTE_PRESENT) != 0) ||
-#endif
 		0;
+#else /* WITHUSBCDCACM_N > 1 */
+	return 0;
+#endif /* WITHUSBCDCACM_N > 1 */
 }
 
 static RAMBIGDTCM volatile uint_fast8_t usbd_cdc_txenabled [WITHUSBCDCACM_N];	/* виртуальный флаг разрешения прерывания по готовности передатчика - HARDWARE_CDC_ONTXCHAR*/
@@ -180,7 +191,7 @@ static RAMBIGDTCM volatile uint_fast8_t usbd_cdc_txenabled [WITHUSBCDCACM_N];	/*
 /* Разрешение/запрещение прерывания по передаче символа */
 void usbd_cdc_enabletx(uint_fast8_t state)	/* вызывается из обработчика прерываний */
 {
-	const unsigned offset = 0;
+	const unsigned offset = MAIN_CDC_OFFSET;
 	usbd_cdc_txenabled [offset] = state;
 }
 
@@ -188,7 +199,7 @@ void usbd_cdc_enabletx(uint_fast8_t state)	/* вызывается из обра
 /* Разрешение/запрещение прерываний про приёму символа */
 void usbd_cdc_enablerx(uint_fast8_t state)	/* вызывается из обработчика прерываний */
 {
-	const unsigned offset = 0;
+	const unsigned offset = MAIN_CDC_OFFSET;
 	usbd_cdcX_rxenabled [offset] = state;
 }
 
@@ -196,7 +207,7 @@ void usbd_cdc_enablerx(uint_fast8_t state)	/* вызывается из обра
 void
 usbd_cdc_tx(void * ctx, uint_fast8_t c)
 {
-	const unsigned offset = 0;
+	const unsigned offset = MAIN_CDC_OFFSET;
 	USBD_HandleTypeDef * const pdev = ctx;
 	(void) ctx;
 	ASSERT(cdcXbuffinlevel  [offset] < VIRTUAL_COM_PORT_IN_DATA_SIZE);
@@ -221,7 +232,7 @@ static void cdcXout_buffer_save(
 
 /* проверка принадлежности номера интерфейса к набору CINTROL */
 static uint_fast8_t
-iscontrol(uint_fast8_t interfacev)
+usbd_cdc_iscontrol_ifc(uint_fast8_t interfacev)
 {
 	unsigned offset;
 
@@ -235,7 +246,7 @@ iscontrol(uint_fast8_t interfacev)
 
 /* проверка принадлежности номера интерфейса к набору DATA */
 static uint_fast8_t
-isdata(uint_fast8_t interfacev)
+usbd_cdc_isisdata_ifc(uint_fast8_t interfacev)
 {
 	unsigned offset;
 
@@ -270,7 +281,7 @@ static USBD_StatusTypeDef USBD_CDC_EP0_RxReady(USBD_HandleTypeDef *pdev)
 	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 
 	//PRINTF(PSTR("1 USBD_CDC_EP0_RxReady: interfacev=%u: bRequest=%u, wLength=%u\n"), interfacev, req->bRequest, req->wLength);
-	if (iscontrol(interfacev))
+	if (usbd_cdc_iscontrol_ifc(interfacev))
 	{
 		switch (req->bRequest)
 		{
@@ -328,7 +339,7 @@ static USBD_StatusTypeDef USBD_CDC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 		switch (req->bmRequest & USB_REQ_TYPE_MASK)
 		{
 		case USB_REQ_TYPE_CLASS:
-			if (iscontrol(interfacev))
+			if (usbd_cdc_iscontrol_ifc(interfacev))
 			{
 				switch (req->bRequest)
 				{
@@ -351,7 +362,7 @@ static USBD_StatusTypeDef USBD_CDC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 			break;
 
 		case USB_REQ_TYPE_STANDARD:
-			if (iscontrol(interfacev) || isdata(interfacev))
+			if (usbd_cdc_iscontrol_ifc(interfacev) || usbd_cdc_isisdata_ifc(interfacev))
 			{
 				switch (req->bRequest)
 				{
@@ -374,7 +385,7 @@ static USBD_StatusTypeDef USBD_CDC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 		switch (req->bmRequest & USB_REQ_TYPE_MASK)
 		{
 		case USB_REQ_TYPE_CLASS:
-			if (iscontrol(interfacev))
+			if (usbd_cdc_iscontrol_ifc(interfacev))
 			{
 				switch (req->bRequest)
 				{
@@ -405,7 +416,7 @@ static USBD_StatusTypeDef USBD_CDC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 			switch (req->bRequest)
 			{
 			case USB_REQ_SET_INTERFACE:
-				if (iscontrol(interfacev) || isdata(interfacev))
+				if (usbd_cdc_iscontrol_ifc(interfacev) || usbd_cdc_isisdata_ifc(interfacev))
 				{
 					// Only zero value here
 					//altinterfaces [interfacev] = LO_BYTE(req->wValue);

@@ -279,10 +279,6 @@ enum interfaces_tag
 	INTERFACE_count				/* Значение для configuration descriptor */
 };
 
-#define USBD_CDCACM_EP(base, offset) ((base) + (offset))
-#define USBD_CDCACM_OFFSET_BY_EP(ep, base) ((ep) - (base))
-#define USBD_CDCACM_IFC(base, offset) ((base) + (offset) * 2)
-
 #define INTERFACE_CDCACM_count 2	/* количество интерфейсов в одном CDC - control & data */
 #define INTERFACE_CDCEEM_count 1	/* количество интерфейсов в одном CDC EEM */
 #define INTERFACE_CDCECM_count 2	/* количество интерфейсов в одном CDC EEM */
@@ -291,6 +287,11 @@ enum interfaces_tag
 #define INTERFACE_DFU_count 1	/* количество интерфейсов в одном DFU */
 
 //#define INTERFACE_UAC_count (INTERFACE_AUDIO_last - INTERFACE_AUDIO_CONTROL_SPK)
+
+
+#define USBD_CDCACM_EP(base, offset) ((base) + (offset))
+#define USBD_CDCACM_OFFSET_BY_EP(ep, base) ((ep) - (base))
+#define USBD_CDCACM_IFC(base, offset) ((base) + (offset) * INTERFACE_CDCACM_count)
 
 #else /* WITHPLAINDESCROPTOR */
 
