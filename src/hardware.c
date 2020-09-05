@@ -12525,7 +12525,7 @@ cpu_tms320f2833x_flash_waitstates(uint_fast8_t flashws, uint_fast8_t otpws)
  * Constant to be stored in bakcup register
  * BOOT_API_MAGIC_NUMBER_TAMP_BCK_REG_IDX
  */
-#define BOOT_API_A7_CORE0_MAGIC_NUMBER				0xCA7FACE0U
+//#define BOOT_API_A7_CORE0_MAGIC_NUMBER				0xCA7FACE0U
 #define BOOT_API_A7_CORE1_MAGIC_NUMBER				0xCA7FACE1U
 
 /*
@@ -12533,14 +12533,14 @@ cpu_tms320f2833x_flash_waitstates(uint_fast8_t flashws, uint_fast8_t otpws)
  * This register is used to write a Magic Number in order to restart
  * Cortex A7 Core 1 and make it execute @ branch address from TAMP_BCK5R
  */
-#define BOOT_API_CORE1_MAGIC_NUMBER_TAMP_BCK_REG_IDX		4U
+//#define BOOT_API_CORE1_MAGIC_NUMBER_TAMP_BCK_REG_IDX		4U
 
 /*
  * TAMP_BCK5R register index
  * This register is used to contain the branch address of
  * Cortex A7 Core 1 when restarted by a TAMP_BCK4R magic number writing
  */
-#define BOOT_API_CORE1_BRANCH_ADDRESS_TAMP_BCK_REG_IDX		5U
+//#define BOOT_API_CORE1_BRANCH_ADDRESS_TAMP_BCK_REG_IDX		5U
 
 /*******************************************************************************
  * STM32MP1 handler called when a power domain is about to be turned on. The
