@@ -4805,13 +4805,16 @@ typedef struct fftbuff_tag
 
 static LIST_ENTRY fftbuffree;
 static LIST_ENTRY fftbufready;
+static RAMDTCM SPINLOCK_t fftlock = SPINLOCK_INIT;
 
 // realtime-mode function
 uint_fast8_t allocate_fftbuffer_low(fftbuff_t * * dest)
 {
+	SPIN_LOCK(& fftlock);
 	if (! IsListEmpty(& fftbuffree))
 	{
 		const PLIST_ENTRY t = RemoveTailList(& fftbuffree);
+		SPIN_UNLOCK(& fftlock);
 		fftbuff_t * const p = CONTAINING_RECORD(t, fftbuff_t, item);
 		* dest = p;
 		return 1;
@@ -4820,6 +4823,7 @@ uint_fast8_t allocate_fftbuffer_low(fftbuff_t * * dest)
 	if (! IsListEmpty(& fftbufready))
 	{
 		const PLIST_ENTRY t = RemoveTailList(& fftbufready);
+		SPIN_UNLOCK(& fftlock);
 		fftbuff_t * const p = CONTAINING_RECORD(t, fftbuff_t, item);
 		* dest = p;
 		return 1;
@@ -4830,14 +4834,18 @@ uint_fast8_t allocate_fftbuffer_low(fftbuff_t * * dest)
 // realtime-mode function
 void saveready_fftbuffer_low(fftbuff_t * p)
 {
+	SPIN_LOCK(& fftlock);
 	InsertHeadList(& fftbufready, & p->item);
+	SPIN_UNLOCK(& fftlock);
 }
 
 // user-mode function
 void release_fftbuffer(fftbuff_t * p)
 {
 	system_disableIRQ();
+	SPIN_LOCK(& fftlock);
 	InsertHeadList(& fftbuffree, & p->item);
+	SPIN_UNLOCK(& fftlock);
 	system_enableIRQ();
 }
 
@@ -4845,14 +4853,17 @@ void release_fftbuffer(fftbuff_t * p)
 uint_fast8_t  getfilled_fftbuffer(fftbuff_t * * dest)
 {
 	system_disableIRQ();
+	SPIN_LOCK(& fftlock);
 	if (! IsListEmpty(& fftbufready))
 	{
 		const PLIST_ENTRY t = RemoveTailList(& fftbufready);
+		SPIN_UNLOCK(& fftlock);
 		system_enableIRQ();
 		fftbuff_t * const p = CONTAINING_RECORD(t, fftbuff_t, item);
 		* dest = p;
 		return 1;
 	}
+	SPIN_UNLOCK(& fftlock);
 	system_enableIRQ();
 	return 0;
 }
@@ -4872,7 +4883,7 @@ void saveIQRTSxx(FLOAT_t iv, FLOAT_t qv)
 			if (allocate_fftbuffer_low(ppf) == 0)
 			{
 				TP();
-				continue;	/* обшибочная ситуация, нарушает фиксированный сдвиг переурытия буферов */
+				continue;	/* обшибочная ситуация, нарушает фиксированный сдвиг перекрытия буферов */
 			}
 			(* ppf)->filled = 0;
 		}
@@ -4908,7 +4919,7 @@ void fftbuffer_initialize(void)
 		fftbuff_t * * const ppf = & pfill [i];
 		VERIFY(allocate_fftbuffer_low(ppf) != 0);
 		/* установка начальной позиции для заполнения со сдвигом. */
-		const unsigned filled = (i * NORMALFFT / NOVERLAP);
+		const unsigned filled = (i * LARGEFFT / NOVERLAP);
 		(* ppf)->filled = filled;
 		arm_fill_f32(0, (* ppf)->largebuffI, filled);
 		arm_fill_f32(0, (* ppf)->largebuffQ, filled);
