@@ -302,7 +302,6 @@ static USBD_StatusTypeDef USBD_CDC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 		case USB_REQ_TYPE_CLASS:
 			switch (interfacev)
 			{
-
 			case USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL_3a, 0):	// CDC control interface
 #if WITHUSBCDCACM_N >= 2
 			case USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL_3a, 1):	// CDC control interface
@@ -342,7 +341,6 @@ static USBD_StatusTypeDef USBD_CDC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 		case USB_REQ_TYPE_STANDARD:
 			switch (interfacev)
 			{
-
 			case INTERFACE_CDC_CONTROL_3a:	// CDC control interface
 			case INTERFACE_CDC_DATA_4a:	// CDC data interface
 #if WITHUSBCDCACM_N >= 2
@@ -357,6 +355,7 @@ static USBD_StatusTypeDef USBD_CDC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 			case USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL_3a, 3):	// CDC control interface
 			case USBD_CDCACM_IFC(INTERFACE_CDC_DATA_4a, 3):	// CDC data interface
 #endif /* WITHUSBCDCACM_N >= 4 */
+				switch (req->bRequest)
 				{
 					case USB_REQ_GET_INTERFACE:
 					{
