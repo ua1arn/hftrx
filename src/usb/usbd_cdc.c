@@ -341,8 +341,8 @@ static USBD_StatusTypeDef USBD_CDC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 		case USB_REQ_TYPE_STANDARD:
 			switch (interfacev)
 			{
-			case INTERFACE_CDC_CONTROL_3a:	// CDC control interface
-			case INTERFACE_CDC_DATA_4a:	// CDC data interface
+			case USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL_3a, 0):	// CDC control interface
+			case USBD_CDCACM_IFC(INTERFACE_CDC_DATA_4a, 0):	// CDC data interface
 #if WITHUSBCDCACM_N >= 2
 			case USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL_3a, 1):	// CDC control interface
 			case USBD_CDCACM_IFC(INTERFACE_CDC_DATA_4a, 1):	// CDC data interface
@@ -378,21 +378,21 @@ static USBD_StatusTypeDef USBD_CDC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 		case USB_REQ_TYPE_CLASS:
 			switch (interfacev)
 			{
-			case INTERFACE_CDC_CONTROL_3a:	// CDC control interface
-#if WITHUSBCDCACM_N >= 2
+			case USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL_3a, 0):	// CDC control interface
+#if WITHUSBCDCACM_N > 1
 			case USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL_3a, 1):	// CDC control interface
-#endif /* WITHUSBCDCACM_N >= 2 */
-#if WITHUSBCDCACM_N >= 3
+#endif /* WITHUSBCDCACM_N > 1 */
+#if WITHUSBCDCACM_N > 2
 			case USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL_3a, 2):	// CDC control interface
-#endif /* WITHUSBCDCACM_N >= 3 */
-#if WITHUSBCDCACM_N >= 4
+#endif /* WITHUSBCDCACM_N > 2 */
+#if WITHUSBCDCACM_N > 3
 			case USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL_3a, 3):	// CDC control interface
-#endif /* WITHUSBCDCACM_N >= 4 */
+#endif /* WITHUSBCDCACM_N > 3 */
 				switch (req->bRequest)
 				{
 				case CDC_SET_CONTROL_LINE_STATE:
 					// Выполнение этого запроса не требует дополнительного чтения данных
-					//PRINTF(PSTR("USBD_CDC_Setup OUT: CDC_SET_CONTROL_LINE_STATE, wValue=%04X\n"), req->wValue);
+					PRINTF(PSTR("USBD_CDC_Setup OUT: CDC_SET_CONTROL_LINE_STATE, wValue=%04X\n"), req->wValue);
 					usb_cdc_control_state [interfacev] = req->wValue;
 					ASSERT(req->wLength == 0);
 					break;
