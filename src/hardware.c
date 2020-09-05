@@ -12159,6 +12159,8 @@ static void printcpustate(void)
 
 static void arm_gic_initialize(void);
 
+static RAMDTCM SPINLOCK_t cpu1init;
+
 void Reset_CPUn_Handler(void)
 {
 	sysinit_fpu_initialize();
@@ -12173,6 +12175,8 @@ void Reset_CPUn_Handler(void)
 
 	printcpustate();
 	__enable_irq();
+	SPIN_UNLOCK(& cpu1init);
+
 	// Idle loop
 	for (;;)
 	{
@@ -12237,7 +12241,7 @@ arm_cpu_CMx_initialize_NVIC(void)
 
 #endif /* (__CORTEX_M != 0) */
 
-#if (__CORTEX_A != 0)
+#if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 /* 
 	ARM IHI 0048B.b (IHI0048B_b_gic_architecture_specification.pdf).
 	4.3.11 Interrupt Priority Registers, GICD_IPRIORITYRn says:
@@ -12277,7 +12281,7 @@ arm_gic_initialize(void)
 #endif /* WITHNESTEDINTERRUPTS */
 }
 
-#endif /* (__CORTEX_A != 0) */
+#endif /* defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U) */
 
 #if CPUSTYLE_ATSAM3S
 
@@ -12550,15 +12554,15 @@ static void stm32_cpu1_start(void)
 	while ((PWR->CR1 & PWR_CR1_DBP) == 0)
 		;
 
-//	RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_RTCAPBEN;
-//	(void) RCC->MP_APB5ENSETR;
-//	RCC->MP_APB5LPENSETR = RCC_MC_APB5LPENSETR_RTCAPBLPEN;  // Включить тактирование
-//	(void) RCC->MP_APB5LPENSETR;
+	RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_RTCAPBEN;
+	(void) RCC->MP_APB5ENSETR;
+	RCC->MP_APB5LPENSETR = RCC_MC_APB5LPENSETR_RTCAPBLPEN;  // Включить тактирование
+	(void) RCC->MP_APB5LPENSETR;
 
-//	RCC->MP_AHB5ENSETR = RCC_MC_AHB5ENSETR_BKPSRAMEN;
-//	(void) RCC->MP_AHB5ENSETR;
-//	RCC->MP_AHB5LPENSETR = RCC_MC_AHB5LPENSETR_BKPSRAMLPEN;
-//	(void) RCC->MP_AHB5LPENSETR;
+	RCC->MP_AHB5ENSETR = RCC_MC_AHB5ENSETR_BKPSRAMEN;
+	(void) RCC->MP_AHB5ENSETR;
+	RCC->MP_AHB5LPENSETR = RCC_MC_AHB5LPENSETR_BKPSRAMLPEN;
+	(void) RCC->MP_AHB5LPENSETR;
 
 	/* Write entrypoint in backup RAM register */
 	TAMP->BKP5R = (uintptr_t) Reset_CPU1_Handler;	// Invoke at SVC context
@@ -12568,10 +12572,10 @@ static void stm32_cpu1_start(void)
 	TAMP->BKP4R = BOOT_API_A7_CORE1_MAGIC_NUMBER;
 	(void) TAMP->BKP4R;
 
-	PWR->CR1 &= ~ PWR_CR1_DBP;	// 0: Write access to RTC and backup domain registers disabled.
-	(void) PWR->CR1;
-	while ((PWR->CR1 & PWR_CR1_DBP) != 0)
-		;
+//	PWR->CR1 &= ~ PWR_CR1_DBP;	// 0: Write access to RTC and backup domain registers disabled.
+//	(void) PWR->CR1;
+//	while ((PWR->CR1 & PWR_CR1_DBP) != 0)
+//		;
 
 	arm_hardware_flush_all();	// startup code should be copyed in to sysram for example.
 
@@ -12598,10 +12602,12 @@ void cpu_initialize(void)
 
 #if WITHSMPSYSTEM
 
-	//	SMP tests
-	stm32_cpu1_start();
-	local_delay_ms(400);
 	printcpustate();
+	SPIN_LOCK(& cpu1init);
+	stm32_cpu1_start();
+	SPIN_LOCK(& cpu1init);
+	SPIN_UNLOCK(& cpu1init);
+
 #endif /* WITHSMPSYSTEM */
 
 #if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
