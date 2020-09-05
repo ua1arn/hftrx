@@ -328,61 +328,31 @@ static USBD_StatusTypeDef USBD_CDC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 		switch (req->bmRequest & USB_REQ_TYPE_MASK)
 		{
 		case USB_REQ_TYPE_CLASS:
-			switch (interfacev)
+			if (iscontrol(interfacev))
 			{
-			case USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL_3a, 0):	// CDC control interface
-#if WITHUSBCDCACM_N >= 2
-			case USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL_3a, 1):	// CDC control interface
-#endif /* WITHUSBCDCACM_N >= 2 */
-#if WITHUSBCDCACM_N >= 3
-			case USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL_3a, 2):	// CDC control interface
-#endif /* WITHUSBCDCACM_N >= 3 */
-#if WITHUSBCDCACM_N >= 4
-			case USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL_3a, 3):	// CDC control interface
-#endif /* WITHUSBCDCACM_N >= 4 */
+				switch (req->bRequest)
 				{
-					switch (req->bRequest)
-					{
-					case CDC_GET_LINE_CODING:
-						//PRINTF(PSTR("USBD_CDC_Setup IN: CDC_GET_LINE_CODING, dwDTERate=%lu\n"), (unsigned long) dwDTERate [interfacev]);
-						USBD_poke_u32(& buff [0], dwDTERate [interfacev]); // dwDTERate
-						buff [4] = 0;	// 1 stop bit
-						buff [5] = 0;	// parity=none
-						buff [6] = 8;	// bDataBits
+				case CDC_GET_LINE_CODING:
+					//PRINTF(PSTR("USBD_CDC_Setup IN: CDC_GET_LINE_CODING, dwDTERate=%lu\n"), (unsigned long) dwDTERate [interfacev]);
+					USBD_poke_u32(& buff [0], dwDTERate [interfacev]); // dwDTERate
+					buff [4] = 0;	// 1 stop bit
+					buff [5] = 0;	// parity=none
+					buff [6] = 8;	// bDataBits
 
-						USBD_CtlSendData(pdev, buff, ulmin16(7, req->wLength));
-						break;
+					USBD_CtlSendData(pdev, buff, ulmin16(7, req->wLength));
+					break;
 
-					default:
-						TP();
-						USBD_CtlError(pdev, req);
-						break;
-					}
+				default:
+					TP();
+					USBD_CtlError(pdev, req);
+					break;
 				}
-				break;
-
-			default:
-				break;
 			}
 			break;
 
 		case USB_REQ_TYPE_STANDARD:
-			switch (interfacev)
+			if (iscontrol(interfacev) || isdata(interfacev))
 			{
-			case USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL_3a, 0):	// CDC control interface
-			case USBD_CDCACM_IFC(INTERFACE_CDC_DATA_4a, 0):	// CDC data interface
-#if WITHUSBCDCACM_N >= 2
-			case USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL_3a, 1):	// CDC control interface
-			case USBD_CDCACM_IFC(INTERFACE_CDC_DATA_4a, 1):	// CDC data interface
-#endif /* WITHUSBCDCACM_N >= 2 */
-#if WITHUSBCDCACM_N >= 3
-			case USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL_3a, 2):	// CDC control interface
-			case USBD_CDCACM_IFC(INTERFACE_CDC_DATA_4a, 2):	// CDC data interface
-#endif /* WITHUSBCDCACM_N >= 3 */
-#if WITHUSBCDCACM_N >= 4
-			case USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL_3a, 3):	// CDC control interface
-			case USBD_CDCACM_IFC(INTERFACE_CDC_DATA_4a, 3):	// CDC data interface
-#endif /* WITHUSBCDCACM_N >= 4 */
 				switch (req->bRequest)
 				{
 					case USB_REQ_GET_INTERFACE:
@@ -404,23 +374,13 @@ static USBD_StatusTypeDef USBD_CDC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 		switch (req->bmRequest & USB_REQ_TYPE_MASK)
 		{
 		case USB_REQ_TYPE_CLASS:
-			switch (interfacev)
+			if (iscontrol(interfacev))
 			{
-			case USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL_3a, 0):	// CDC control interface
-#if WITHUSBCDCACM_N > 1
-			case USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL_3a, 1):	// CDC control interface
-#endif /* WITHUSBCDCACM_N > 1 */
-#if WITHUSBCDCACM_N > 2
-			case USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL_3a, 2):	// CDC control interface
-#endif /* WITHUSBCDCACM_N > 2 */
-#if WITHUSBCDCACM_N > 3
-			case USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL_3a, 3):	// CDC control interface
-#endif /* WITHUSBCDCACM_N > 3 */
 				switch (req->bRequest)
 				{
 				case CDC_SET_CONTROL_LINE_STATE:
 					// Выполнение этого запроса не требует дополнительного чтения данных
-					PRINTF(PSTR("USBD_CDC_Setup OUT: CDC_SET_CONTROL_LINE_STATE, wValue=%04X\n"), req->wValue);
+					//PRINTF(PSTR("USBD_CDC_Setup OUT: CDC_SET_CONTROL_LINE_STATE, wValue=%04X\n"), req->wValue);
 					usb_cdc_control_state [interfacev] = req->wValue;
 					ASSERT(req->wLength == 0);
 					break;
@@ -438,9 +398,6 @@ static USBD_StatusTypeDef USBD_CDC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 					USBD_CtlSendStatus(pdev);
 				}
 				break;
-
-			default:
-				break;
 			}
 			break;
 
@@ -448,32 +405,13 @@ static USBD_StatusTypeDef USBD_CDC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 			switch (req->bRequest)
 			{
 			case USB_REQ_SET_INTERFACE:
-				switch (interfacev)
+				if (iscontrol(interfacev) || isdata(interfacev))
 				{
-				case INTERFACE_CDC_CONTROL_3a:	// CDC control interface
-				case INTERFACE_CDC_DATA_4a:	// CDC data interface
-#if WITHUSBCDCACM_N >= 2
-				case USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL_3a, 1):	// CDC control interface
-				case USBD_CDCACM_IFC(INTERFACE_CDC_DATA_4a, 1):	// CDC data interface
-#endif /* WITHUSBCDCACM_N >= 2 */
-#if WITHUSBCDCACM_N >= 3
-				case USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL_3a, 2):	// CDC control interface
-				case USBD_CDCACM_IFC(INTERFACE_CDC_DATA_4a, 2):	// CDC data interface
-#endif /* WITHUSBCDCACM_N >= 3 */
-#if WITHUSBCDCACM_N >= 4
-				case USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL_3a, 3):	// CDC control interface
-				case USBD_CDCACM_IFC(INTERFACE_CDC_DATA_4a, 3):	// CDC data interface
-#endif /* WITHUSBCDCACM_N >= 4 */
 					// Only zero value here
 					//altinterfaces [interfacev] = LO_BYTE(req->wValue);
 					//PRINTF("USBD_CDC_Setup: CDC interface %d set to %d\n", (int) interfacev, (int) altinterfaces [interfacev]);
 					//bufers_set_cdcalt(altinterfaces [interfacev]);
 					USBD_CtlSendStatus(pdev);
-					break;
-
-				default:
-					// Другие интерфейсы - ничего не отправляем.
-					//TP();
 					break;
 				}
 			}
