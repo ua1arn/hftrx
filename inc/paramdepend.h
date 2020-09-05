@@ -717,10 +717,6 @@ extern "C" {
 		#define ARM_REALTIME_PRIORITY	((const uint32_t) gARM_REALTIME_PRIORITY)
 		#define ARM_SYSTEM_PRIORITY	((const uint32_t) gARM_SYSTEM_PRIORITY)
 
-		#define ASSERT_IRQL_ALL_ENABLED() ASSERT(1)
-		#define ASSERT_IRQL_SYSTEM() ASSERT(1)
-		#define ASSERT_IRQL_USER() ASSERT(1)
-
 		#if 0 && WITHDEBUG
 			// отладочная версия - контроль правильного контекста запрета/разрешения прерываний
 			#define system_enableIRQ() do { \
@@ -755,10 +751,6 @@ extern "C" {
 		#define system_enableIRQ() do { __enable_irq(); } while (0)
 		#define system_disableIRQ() do { __disable_irq(); } while (0)
 
-		#define ASSERT_IRQL_ALL_ENABLED() ASSERT(1)
-		#define ASSERT_IRQL_SYSTEM() ASSERT(1)
-		#define ASSERT_IRQL_USER() ASSERT(1)
-
 	#endif /* WITHNESTEDINTERRUPTS */
 
 	#define global_enableIRQ() do { __enable_irq(); } while (0)
@@ -780,10 +772,6 @@ extern "C" {
 
 	#define global_enableIRQ() do { sei(); } while (0)
 	#define global_disableIRQ() do { cli(); } while (0)
-
-	#define ASSERT_IRQL_ALL_ENABLED() ASSERT(1)
-	#define ASSERT_IRQL_SYSTEM() ASSERT(1)
-	#define ASSERT_IRQL_USER() ASSERT(1)
 
 #elif (__GIC_PRESENT == 1)
 
@@ -831,12 +819,6 @@ extern "C" {
 		#define ARM_OVERREALTIME_PRIORITY	((const uint32_t) gARM_OVERREALTIME_PRIORITY)
 		#define ARM_REALTIME_PRIORITY	((const uint32_t) gARM_REALTIME_PRIORITY)
 		#define ARM_SYSTEM_PRIORITY	((const uint32_t) gARM_SYSTEM_PRIORITY)
-
-		#define IS_RPR_SYSTEM() 1 //((GICC_RPR & 0xFF) == ARM_SYSTEM_PRIORITY)
-		#define IS_RPR_USER() 1 //((GICC_RPR & 0xFF) > ARM_SYSTEM_PRIORITY)
-
-		#define ASSERT_IRQL_SYSTEM() ASSERT(IS_RPR_SYSTEM())	/* executed from non-realtime interrupts */
-		#define ASSERT_IRQL_USER() ASSERT(IS_RPR_USER())	/* executed from user level */
 
 		#if 0 && WITHDEBUG
 			// отладочная версия - контроль правильного контекста запрета/разрешения прерываний
@@ -888,10 +870,6 @@ extern "C" {
 		#endif
 	#else /* WITHNESTEDINTERRUPTS */
 
-		#define ASSERT_IRQL_ALL_ENABLED() ASSERT(1)
-		#define ASSERT_IRQL_SYSTEM() ASSERT(1)
-		#define ASSERT_IRQL_USER() ASSERT(1)
-
 		#define ARM_OVERREALTIME_PRIORITY	0
 		#define ARM_REALTIME_PRIORITY	0
 		#define ARM_SYSTEM_PRIORITY		0
@@ -926,10 +904,6 @@ extern "C" {
 
 	unsigned RAMFUNC (system_enableIRQ)(void);
 	unsigned RAMFUNC (system_disableIRQ)(void);
-
-	#define ASSERT_IRQL_ALL_ENABLED() ASSERT(1)
-	#define ASSERT_IRQL_SYSTEM() ASSERT(1)
-	#define ASSERT_IRQL_USER() ASSERT(1)
 
 #endif /* CPUSTYLE_ARM_CM3 */
 

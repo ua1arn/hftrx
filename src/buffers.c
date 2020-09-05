@@ -523,7 +523,6 @@ static RAMDTCM SPINLOCK_t speexlock = SPINLOCK_INIT;
 // Буферы с принятымти от обработчиков прерываний сообщениями
 uint_fast8_t takespeexready_user(speexel_t * * dest)
 {
-	ASSERT_IRQL_USER();
 	global_disableIRQ();
 	SPIN_LOCK(& speexlock);
 	if (! IsListEmpty2(& speexready16))
@@ -543,7 +542,6 @@ uint_fast8_t takespeexready_user(speexel_t * * dest)
 // Освобождение обработанного буфера сообщения
 void releasespeexbuffer_user(speexel_t * t)
 {
-	ASSERT_IRQL_USER();
 	denoise16_t * const p = CONTAINING_RECORD(t, denoise16_t, buff);
 	global_disableIRQ();
 	SPIN_LOCK(& speexlock);
@@ -806,7 +804,6 @@ void buffers_initialize(void)
 // Буферы с принятымти от обработчиков прерываний сообщениями
 uint_fast8_t takemsgready_user(uint8_t * * dest)
 {
-	ASSERT_IRQL_USER();
 	system_disableIRQ();
 
 	SPIN_LOCK(& locklist8);
@@ -829,7 +826,6 @@ uint_fast8_t takemsgready_user(uint8_t * * dest)
 // Освобождение обработанного буфера сообщения
 void releasemsgbuffer_user(uint8_t * dest)
 {
-	ASSERT_IRQL_USER();
 	message_t * const p = CONTAINING_RECORD(dest, message_t, data);
 	ASSERT(p->tag2 == p);
 	ASSERT(p->tag3 == p);
@@ -843,7 +839,6 @@ void releasemsgbuffer_user(uint8_t * dest)
 // Буфер для формирования сообщения
 size_t takemsgbufferfree_low(uint8_t * * dest)
 {
-	ASSERT_IRQL_SYSTEM();
 	SPIN_LOCK(& locklist8);
 	if (! IsListEmpty(& msgsfree8))
 	{
@@ -862,7 +857,6 @@ size_t takemsgbufferfree_low(uint8_t * * dest)
 // поместить сообщение в очередь к исполнению
 void placesemsgbuffer_low(uint_fast8_t type, uint8_t * dest)
 {
-	ASSERT_IRQL_SYSTEM();
 	ASSERT(type != MSGT_EMPTY);
 	message_t * p = CONTAINING_RECORD(dest, message_t, data);
 	ASSERT(p->tag2 == p);
