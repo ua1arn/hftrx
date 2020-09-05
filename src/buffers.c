@@ -526,14 +526,9 @@ uint_fast8_t takespeexready_user(speexel_t * * dest)
 	ASSERT_IRQL_USER();
 	global_disableIRQ();
 	SPIN_LOCK(& speexlock);
-
-	//if (speexready16enable == 0)
-	//{
-	//	speexready16enable = speexready16.Count > 1;
-	//}
-	if (/*speexready16enable && */ ! IsListEmpty2(& speexready16))
+	if (! IsListEmpty2(& speexready16))
 	{
-		PLIST_ENTRY t = RemoveTailList2(& speexready16);
+		const PLIST_ENTRY t = RemoveTailList2(& speexready16);
 		SPIN_UNLOCK(& speexlock);
 		global_enableIRQ();
 		denoise16_t * const p = CONTAINING_RECORD(t, denoise16_t, item);
@@ -565,9 +560,9 @@ denoise16_t * allocate_dmabuffer16denoise(void)
 	SPIN_LOCK(& speexlock);
 	if (! IsListEmpty2(& speexfree16))
 	{
-		PLIST_ENTRY t = RemoveTailList2(& speexfree16);
-		denoise16_t * const p = CONTAINING_RECORD(t, denoise16_t, item);
+		const PLIST_ENTRY t = RemoveTailList2(& speexfree16);
 		SPIN_UNLOCK(& speexlock);
+		denoise16_t * const p = CONTAINING_RECORD(t, denoise16_t, item);
 		return p;
 	}
 #if WITHBUFFERSDEBUG
@@ -576,9 +571,9 @@ denoise16_t * allocate_dmabuffer16denoise(void)
 	//PRINTF(PSTR("allocate_dmabuffer16denoise() failure\n"));
 	if (! IsListEmpty2(& speexready16))
 	{
-		PLIST_ENTRY t = RemoveTailList2(& speexready16);
-		denoise16_t * const p = CONTAINING_RECORD(t, denoise16_t, item);
+		const PLIST_ENTRY t = RemoveTailList2(& speexready16);
 		SPIN_UNLOCK(& speexlock);
+		denoise16_t * const p = CONTAINING_RECORD(t, denoise16_t, item);
 		return p;
 	}
 	SPIN_UNLOCK(& speexlock);
@@ -1073,16 +1068,16 @@ RAMFUNC uint_fast8_t getsampmlemike(FLOAT32P_t * v)
 	static voice16_t * RAMDTCM p = NULL;
 	static RAMDTCM unsigned pos = 0;	// позиция по выходному количеству
 
-	SPIN_LOCK(& locklist16);
 	if (p == NULL)
 	{
+		SPIN_LOCK(& locklist16);
 		if (GetReadyList3(& voicesmike16))
 		{
 			PLIST_ENTRY t = RemoveTailList3(& voicesmike16);
+			SPIN_UNLOCK(& locklist16);
 			p = CONTAINING_RECORD(t, voice16_t, item);
 			ASSERT(p->tag2 == p);
 			ASSERT(p->tag3 == p);
-			SPIN_UNLOCK(& locklist16);
 			pos = 0;
 		}
 		else
@@ -1091,10 +1086,6 @@ RAMFUNC uint_fast8_t getsampmlemike(FLOAT32P_t * v)
 			SPIN_UNLOCK(& locklist16);
 			return 0;
 		}
-	}
-	else
-	{
-		SPIN_UNLOCK(& locklist16);
 	}
 	ASSERT(p->tag2 == p);
 	ASSERT(p->tag3 == p);
@@ -1118,14 +1109,14 @@ RAMFUNC uint_fast8_t getsampmlemoni(FLOAT32P_t * v)
 	static voice16_t * RAMDTCM p = NULL;
 	static RAMDTCM unsigned pos = 0;	// позиция по выходному количеству
 
-	SPIN_LOCK(& locklist16);
 	if (p == NULL)
 	{
+		SPIN_LOCK(& locklist16);
 		if (! IsListEmpty2(& voicesmoni16))
 		{
 			PLIST_ENTRY t = RemoveTailList2(& voicesmoni16);
-			p = CONTAINING_RECORD(t, voice16_t, item);
 			SPIN_UNLOCK(& locklist16);
+			p = CONTAINING_RECORD(t, voice16_t, item);
 			ASSERT(p->tag2 == p);
 			ASSERT(p->tag3 == p);
 			pos = 0;
@@ -1136,10 +1127,6 @@ RAMFUNC uint_fast8_t getsampmlemoni(FLOAT32P_t * v)
 			SPIN_UNLOCK(& locklist16);
 			return 0;
 		}
-	}
-	else
-	{
-		SPIN_UNLOCK(& locklist16);
 	}
 
 	ASSERT(p->tag2 == p);
