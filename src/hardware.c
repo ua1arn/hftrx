@@ -10469,15 +10469,18 @@ static RAMDTCM SPINLOCK_t giclock = SPINLOCK_INIT;
 // Sww ARM IHI 0048B.b document
 void IRQ_Handler_GICv2(void)
 {
-	// per-cpu
+	// per-cpu:
 	// GICC_AHPPIR
 	// GICC_HPPIR
 	// GICC_IAR
 	// GICC_EOIR
 	// GICC_BPR
 	// GICC_PMR
+	//
+	// global:
+	// GICD_IPRIORITYR
 
-	const uint_fast32_t gicc_hppir = gicv2_get_pending_interrupt_id(); //GICInterface->HPPIR; //GIC_GetHighPendingIRQ();	/* GICC_HPPIR */
+	//const uint_fast32_t gicc_hppir = gicv2_get_pending_interrupt_id(); //GICInterface->HPPIR; //GIC_GetHighPendingIRQ();	/* GICC_HPPIR */
 	const uint_fast32_t gicc_iar = GICInterface->IAR; // CPUID, Interrupt ID
 	const IRQn_ID_t int_id = gicc_iar & 0x03FF;
 	//const IRQn_ID_t int_id = gicc_hppir & 0x03FF;
@@ -10488,9 +10491,9 @@ void IRQ_Handler_GICv2(void)
 
 	if (int_id >= 1020)
 	{
-		SPIN_LOCK(& giclock);
-		GIC_SetPriority(0, GIC_GetPriority(0));	// GICD_IPRIORITYRn(0) = GICD_IPRIORITYRn(0);
-		SPIN_UNLOCK(& giclock);
+//		SPIN_LOCK(& giclock);
+//		GIC_SetPriority(0, GIC_GetPriority(0));	// GICD_IPRIORITYRn(0) = GICD_IPRIORITYRn(0);
+//		SPIN_UNLOCK(& giclock);
 
 	}
 	else if (int_id != 0 /*|| (INTC.ICDABR0 & 0x0001) != 0*/)
@@ -10518,9 +10521,9 @@ void IRQ_Handler_GICv2(void)
 	}
 	else
 	{
-		SPIN_LOCK(& giclock);
-		GIC_SetPriority(0, GIC_GetPriority(0));	// GICD_IPRIORITYRn(0) = GICD_IPRIORITYRn(0);
-		SPIN_UNLOCK(& giclock);
+//		SPIN_LOCK(& giclock);
+//		GIC_SetPriority(0, GIC_GetPriority(0));	// GICD_IPRIORITYRn(0) = GICD_IPRIORITYRn(0);
+//		SPIN_UNLOCK(& giclock);
 	}
 }
 
