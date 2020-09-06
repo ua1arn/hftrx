@@ -10480,10 +10480,9 @@ void IRQ_Handler_GICv2(void)
 	// global:
 	// GICD_IPRIORITYR
 
-	const uint_fast32_t gicc_hppir = gicv2_get_pending_interrupt_id(); //GICInterface->HPPIR; //GIC_GetHighPendingIRQ();	/* GICC_HPPIR */
+	//const uint_fast32_t gicc_hppir = gicv2_get_pending_interrupt_id(); //GICInterface->HPPIR; //GIC_GetHighPendingIRQ();	/* GICC_HPPIR */
 	const uint_fast32_t gicc_iar = GIC_AcknowledgePending(); // CPUID, Interrupt ID
 	const IRQn_ID_t int_id = gicc_iar & INT_ID_MASK;
-	//const IRQn_ID_t int_id = gicc_hppir & INT_ID_MASK;
 
 	// See R01UH0437EJ0200 Rev.2.00 7.8.3 Reading Interrupt ID Values from Interrupt Acknowledge Register (ICCIAR)
 	// IHI0048B_b_gic_architecture_specification.pdf
@@ -10496,9 +10495,10 @@ void IRQ_Handler_GICv2(void)
 //		SPIN_UNLOCK(& giclock);
 
 	}
-	else if (int_id != 0 /*|| (INTC.ICDABR0 & 0x0001) != 0*/)
+	else if (int_id != 0 /* || GIC_GetIRQStatus(0) != 0 */)
 	{
 		const IRQHandler_t f = IRQ_GetHandler(int_id);
+
 	#if WITHNESTEDINTERRUPTS
 
 		if (f != (IRQHandler_t) 0)
