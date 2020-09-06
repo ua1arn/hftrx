@@ -10463,28 +10463,13 @@ unsigned int gicv2_get_pending_interrupt_id(void)
 	return id;
 }
 
-/*
- * This function returns the highest priority pending interrupt at
- * the Interrupt controller
- */
-uint32_t plat_ic_get_pending_interrupt_id(void)
-{
-	unsigned int id;
-
-	id = gicv2_get_pending_interrupt_id();
-	if (id == GIC_SPURIOUS_INTERRUPT)
-		return INTR_ID_UNAVAILABLE;
-
-	return id;
-}
-
 static RAMDTCM SPINLOCK_t giclock = SPINLOCK_INIT;
 
 /* Вызывается из crt_stm32mp1.s со сброшенным флагом прерываний */
 // Sww ARM IHI 0048B.b document
 void IRQ_Handler_GICv2(void)
 {
-	const uint_fast32_t gicc_hppir = plat_ic_get_pending_interrupt_id(); //GICInterface->HPPIR; //GIC_GetHighPendingIRQ();	/* GICC_HPPIR */
+	const uint_fast32_t gicc_hppir = gicv2_get_pending_interrupt_id(); //GICInterface->HPPIR; //GIC_GetHighPendingIRQ();	/* GICC_HPPIR */
 	const uint_fast32_t gicc_iar = GICInterface->IAR; // CPUID, Interrupt ID
 	const IRQn_ID_t int_id = gicc_iar & 0x03FF;
 	//const IRQn_ID_t int_id = gicc_hppir & 0x03FF;
