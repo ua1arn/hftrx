@@ -687,7 +687,7 @@ void buffers_initialize(void)
 
 	#if WITHRTS96
 
-		RAMBIG static voice96rts_t voicesarray96rts [4];
+		static RAMBIG ALIGNX_BEGIN voice96rts_t voicesarray96rts [4] ALIGNX_END;
 
 		ASSERT(offsetof(uacin16_t, item) == offsetof(voice96rts_t, item));
 		ASSERT(offsetof(uacin16_t, u.buff) == offsetof(voice96rts_t, u.buff));
@@ -701,6 +701,7 @@ void buffers_initialize(void)
 			p->tag = BUFFTAG_RTS96;
 			p->tag2 = p;
 			p->tag3 = p;
+			PRINTF("Add p=%p, tag=%d, tag2=%p, tag3=%p\n", p, p->tag, p->tag2, p->tag3);
 			InsertHeadList2(& uacin96rtsfree, & p->item);
 		}
 
@@ -1258,6 +1259,7 @@ static uint_fast8_t isrts96(void)
 static RAMFUNC void
 buffers_savetouacin96rts(voice96rts_t * p)
 {
+	ASSERT(p->tag == BUFFTAG_RTS96);
 	ASSERT(p->tag2 == p);
 	ASSERT(p->tag3 == p);
 #if WITHBUFFERSDEBUG
@@ -1274,6 +1276,10 @@ buffers_savetouacin96rts(voice96rts_t * p)
 
 static void buffers_savetonull96rts(voice96rts_t * p)
 {
+	ASSERT(p->tag == BUFFTAG_RTS96);
+	ASSERT(p->tag2 == p);
+	ASSERT(p->tag3 == p);
+
 	SPIN_LOCK(& locklistrts);
 	InsertHeadList2(& uacin96rtsfree, & p->item);
 	SPIN_UNLOCK(& locklistrts);
@@ -2136,12 +2142,18 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 			SPIN_LOCK(& locklistrts);
 			if (! IsListEmpty2(& uacin96rtsfree))
 			{
-				PLIST_ENTRY t = RemoveTailList2(& uacin96rtsfree);
+				const PLIST_ENTRY t = RemoveTailList2(& uacin96rtsfree);
 				voice96rts_t * const p = CONTAINING_RECORD(t, voice96rts_t, item);
 				SPIN_UNLOCK(& locklistrts);
 			#if WITHBUFFERSDEBUG
 				++ n5;
 			#endif /* WITHBUFFERSDEBUG */
+				if (p->tag != BUFFTAG_RTS96)
+				{
+					PRINTF(" p=%p, tag=%d, tag2=%p, tag3=%p\n", p, p->tag, p->tag2, p->tag3);
+					//printhex(0, p->u.buff, sizeof p->u.buff);
+				}
+				ASSERT(p->tag == BUFFTAG_RTS96);
 				ASSERT(p->tag2 == p);
 				ASSERT(p->tag3 == p);
 				return (uintptr_t) & p->u.buff;
@@ -2155,6 +2167,15 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 				do
 				{
 					const PLIST_ENTRY t = RemoveTailList2(& uacin96rtsready);
+					voice96rts_t * const p = CONTAINING_RECORD(t, voice96rts_t, item);
+					if (p->tag != BUFFTAG_RTS96)
+					{
+						PRINTF(" p=%p, tag=%d, tag2=%p, tag3=%p\n", p, p->tag, p->tag2, p->tag3);
+						//printhex(0, p->u.buff, sizeof p->u.buff);
+					}
+					ASSERT(p->tag == BUFFTAG_RTS96);
+					ASSERT(p->tag2 == p);
+					ASSERT(p->tag3 == p);
 					InsertHeadList2(& uacin96rtsfree, t);
 				} while (-- n && ! IsListEmpty2(& uacin96rtsready));
 
@@ -2164,6 +2185,12 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 			#if WITHBUFFERSDEBUG
 				++ e5;
 			#endif /* WITHBUFFERSDEBUG */
+				if (p->tag != BUFFTAG_RTS96)
+				{
+					PRINTF(" p=%p, tag=%d, tag2=%p, tag3=%p\n", p, p->tag, p->tag2, p->tag3);
+					//printhex(0, p->u.buff, sizeof p->u.buff);
+				}
+				ASSERT(p->tag == BUFFTAG_RTS96);
 				ASSERT(p->tag2 == p);
 				ASSERT(p->tag3 == p);
 				return (uintptr_t) & p->u.buff;
@@ -2181,10 +2208,12 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 		// передали буфер, считать свободным
 		static void release_dmabuffer96rts(uintptr_t addr)
 		{
-			SPIN_LOCK(& locklistrts);
+			ASSERT(addr != 0);
 			voice96rts_t * const p = CONTAINING_RECORD(addr, voice96rts_t, u.buff);
+			ASSERT(p->tag == BUFFTAG_RTS96);
 			ASSERT(p->tag2 == p);
 			ASSERT(p->tag3 == p);
+			SPIN_LOCK(& locklistrts);
 			InsertHeadList2(& uacin96rtsfree, & p->item);
 			SPIN_UNLOCK(& locklistrts);
 		}
@@ -2200,6 +2229,12 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 				PLIST_ENTRY t = RemoveTailList2(& uacin96rtsready);
 				voice96rts_t * const p = CONTAINING_RECORD(t, voice96rts_t, item);
 				SPIN_UNLOCK(& locklistrts);
+				if (p->tag != BUFFTAG_RTS96)
+				{
+					PRINTF(" p=%p, tag=%d, tag2=%p, tag3=%p\n", p, p->tag, p->tag2, p->tag3);
+					//printhex(0, p->u.buff, sizeof p->u.buff);
+				}
+				ASSERT(p->tag == BUFFTAG_RTS96);
 				ASSERT(p->tag2 == p);
 				ASSERT(p->tag3 == p);
 				return (uintptr_t) & p->u.buff;
@@ -2225,6 +2260,7 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 				uint32_t addr = allocate_dmabuffer96rts();
 				p = CONTAINING_RECORD(addr, voice96rts_t, u.buff);
 				n = 0;
+				ASSERT(p->tag == BUFFTAG_RTS96);
 				ASSERT(p->tag2 == p);
 				ASSERT(p->tag3 == p);
 			}
@@ -2235,6 +2271,7 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 				return;
 			}
 
+			ASSERT(p->tag == BUFFTAG_RTS96);
 			ASSERT(p->tag2 == p);
 			ASSERT(p->tag3 == p);
 			ASSERT(DMABUFSTEP96RTS == 6);
@@ -2247,6 +2284,9 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 
 			if (n >= DMABUFFSIZE96RTS)
 			{
+				ASSERT(p->tag == BUFFTAG_RTS96);
+				ASSERT(p->tag2 == p);
+				ASSERT(p->tag3 == p);
 				buffers_savetouacin96rts(p);
 				p = NULL;
 			}
@@ -2282,6 +2322,7 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 				PLIST_ENTRY t = RemoveTailList2(& voicesfree192rts);
 				SPIN_UNLOCK(& locklistrts);
 				voice192rts_t * const p = CONTAINING_RECORD(t, voice192rts_t, item);
+				ASSERT(p->tag == BUFFTAG_RTS192);
 				ASSERT(p->tag2 == p);
 				ASSERT(p->tag3 == p);
 			#if WITHBUFFERSDEBUG
@@ -2299,6 +2340,7 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 				{
 					const PLIST_ENTRY t = RemoveTailList2(& uacin192rts);
 					voice192rts_t * const p = CONTAINING_RECORD(t, voice192rts_t, item);
+					ASSERT(p->tag == BUFFTAG_RTS192);
 					ASSERT(p->tag2 == p);
 					ASSERT(p->tag3 == p);
 					InsertHeadList2(& voicesfree192rts, t);
@@ -2307,6 +2349,7 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 				const PLIST_ENTRY t = RemoveTailList2(& voicesfree192rts);
 				SPIN_UNLOCK(& locklistrts);
 				voice192rts_t * const p = CONTAINING_RECORD(t, voice192rts_t, item);
+				ASSERT(p->tag == BUFFTAG_RTS192);
 				ASSERT(p->tag2 == p);
 				ASSERT(p->tag3 == p);
 			#if WITHBUFFERSDEBUG
@@ -2329,6 +2372,7 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 		{
 			SPIN_LOCK(& locklistrts);
 			voice192rts_t * const p = CONTAINING_RECORD(addr, voice192rts_t, u.buff);
+			ASSERT(p->tag == BUFFTAG_RTS192);
 			ASSERT(p->tag2 == p);
 			ASSERT(p->tag3 == p);
 			InsertHeadList2(& voicesfree192rts, & p->item);
@@ -2352,6 +2396,7 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 					return;
 				uint32_t addr = allocate_dmabuffer192rts();
 				p = CONTAINING_RECORD(addr, voice192rts_t, u.buff);
+				ASSERT(p->tag == BUFFTAG_RTS192);
 				ASSERT(p->tag2 == p);
 				ASSERT(p->tag3 == p);
 				n = 0;
@@ -2363,6 +2408,7 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 				return;
 			}
 
+			ASSERT(p->tag == BUFFTAG_RTS192);
 			ASSERT(p->tag2 == p);
 			ASSERT(p->tag3 == p);
 			p->u.buff [n ++] = ch0;	// sample value
@@ -2402,6 +2448,7 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 			PLIST_ENTRY t = RemoveTailList2(& uacinfree16);
 			SPIN_UNLOCK(& locklistuacin);
 			uacin16_t * const p = CONTAINING_RECORD(t, uacin16_t, item);
+			ASSERT(p->tag == BUFFTAG_UACIN16);
 			ASSERT(p->tag2 == p);
 			ASSERT(p->tag3 == p);
 			return (uintptr_t) & p->u.buff;
@@ -2422,6 +2469,7 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 			PLIST_ENTRY t = RemoveTailList2(& uacinfree16);
 			SPIN_UNLOCK(& locklistuacin);
 			uacin16_t * const p = CONTAINING_RECORD(t, uacin16_t, item);
+			ASSERT(p->tag == BUFFTAG_UACIN16);
 			ASSERT(p->tag2 == p);
 			ASSERT(p->tag3 == p);
 			return (uintptr_t) & p->u.buff;
@@ -2447,6 +2495,7 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 			PLIST_ENTRY t = RemoveTailList2(& uacinready16);
 			SPIN_UNLOCK(& locklistuacin);
 			uacin16_t * const p = CONTAINING_RECORD(t, uacin16_t, item);
+			ASSERT(p->tag == BUFFTAG_UACIN16);
 			ASSERT(p->tag2 == p);
 			ASSERT(p->tag3 == p);
 			return (uintptr_t) & p->u.buff;
@@ -2471,6 +2520,7 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 				return;
 			uintptr_t addr = allocate_dmabufferuacin16();
 			p = CONTAINING_RECORD(addr, uacin16_t, u.buff);
+			ASSERT(p->tag == BUFFTAG_UACIN16);
 			ASSERT(p->tag2 == p);
 			ASSERT(p->tag3 == p);
 			n = 0;
@@ -2482,6 +2532,7 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 			return;
 		}
 
+		ASSERT(p->tag == BUFFTAG_UACIN16);
 		ASSERT(p->tag2 == p);
 		ASSERT(p->tag3 == p);
 		p->u.buff [n + 0] = ch0;		// sample value
