@@ -5417,7 +5417,7 @@ static FLOAT_t mixmonitor(FLOAT_t shape, FLOAT_t sdtn, FLOAT_t moni)
 // перед передачей по DMA в аудиокодек
 //  Здесь ответвляются потоки в USB и для записи на SD CARD
 // realtime level
-void dsp_addsidetone(aubufv_t * buff)
+void dsp_addsidetone(aubufv_t * buff, int usebuf)
 {
 	enum { L, R };
 	ASSERT(buff != NULL);
@@ -5441,8 +5441,8 @@ void dsp_addsidetone(aubufv_t * buff)
 		const FLOAT_t moniL = AUDIO16TOAUB(mixmonitor(sdtnshape, sdtnv, moni.IV));
 		const FLOAT_t moniR = AUDIO16TOAUB(mixmonitor(sdtnshape, sdtnv, moni.QV));
 
-		FLOAT_t left = b [L];
-		FLOAT_t right = b [R];
+		FLOAT_t left = b [L] * usebuf;
+		FLOAT_t right = b [R] * usebuf;
 		//
 #if WITHWAVPLAYER
 		{

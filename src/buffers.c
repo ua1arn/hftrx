@@ -2016,19 +2016,20 @@ uintptr_t getfilled_dmabuffer16phones(void)
 	if (! IsListEmpty2(& voicesphones16))
 	{
 		PLIST_ENTRY t = RemoveTailList2(& voicesphones16);
-		voice16_t * const p = CONTAINING_RECORD(t, voice16_t, item);
 		SPIN_UNLOCK(& locklist16);
-		dsp_addsidetone(p->buff);
+		voice16_t * const p = CONTAINING_RECORD(t, voice16_t, item);
+		dsp_addsidetone(p->buff, 1);
 		return (uintptr_t) & p->buff;	// алрес для DMA
 	}
 	SPIN_UNLOCK(& locklist16);
+
 #if WITHBUFFERSDEBUG
 	++ e1;
 #endif /* WITHBUFFERSDEBUG */
+
 	const uintptr_t addr = allocate_dmabuffer16();
 	voice16_t * const p = CONTAINING_RECORD(addr, voice16_t, buff);
-	memset(p->buff, 0, sizeof p->buff);	// Заполнение "тишиной"
-	dsp_addsidetone(p->buff);
+	dsp_addsidetone(p->buff, 0); // Заполнение "тишиной"
 	return (uintptr_t) & p->buff;
 }
 
