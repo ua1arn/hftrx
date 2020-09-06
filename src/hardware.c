@@ -13313,16 +13313,25 @@ static void vectors_relocate(void)
 #if CPUSTYLE_ARM && WITHSMPSYSTEM
 
 // http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dai0321a/BIHEJCHB.html
-void spin_lock(volatile spinlock_t *p, const char * file, int line)
+void spin_lock(volatile spinlock_t * p, const char * file, int line)
 {
+	unsigned v = 0xFFFFFFF;
 	// Note: __LDREXW and __STREXW are CMSIS functions
 	int status = 0;
 	do
 	{
 		while (__LDREXW(& p->lock) != 0)// Wait until
 		{
+#if WITHDEBUG
 			//PRINTF("Wait %s(%d) ", file, line);
 			//PRINTF("%d(%d) ", (int) (__get_MPIDR() & 0x03), line);
+			if (-- v == 0)
+			{
+				PRINTF("Locked by %s(%d), wait at %s(%d)\n", p->file, p->line, file, line);
+				for (;;)
+					;
+			}
+#endif /* WITHDEBUG */
 		}
 		// Lock_Variable is free
 		status = __STREXW(1, & p->lock); // Try to set
@@ -13330,7 +13339,10 @@ void spin_lock(volatile spinlock_t *p, const char * file, int line)
 	} while (status != 0); //retry until lock successfully
 	__DMB();		// Do not start any other memory access
 	// until memory barrier is completed
-
+#if WITHDEBUG
+	p->file = file;
+	p->line = line;
+#endif /* WITHDEBUG */
 }
 
 void spin_unlock(volatile spinlock_t *p)
