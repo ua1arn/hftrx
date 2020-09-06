@@ -14380,6 +14380,7 @@ void board_ehci_initialize(void)
 //		(void) SYSCFG->ICNR;
 	}
 
+	TARGET_USBFS_VBUSON_SET(1);
 	// https://github.com/pdoane/osdev/blob/master/usb/ehci.c
 
 	// USBH_EHCI_HCICAPLENGTH == USB1_EHCI->HCCAPBASE
@@ -14412,6 +14413,17 @@ void board_ehci_initialize(void)
 //            }
 //        }
     }
+
+    static __attribute__((used, aligned(4096))) uint32_t tmpbuff [1024uL * 1024uL];
+
+	PRINTF("board_ehci_initialize: USBCMD=%08lX\n", (unsigned long) USB1_EHCI->USBCMD);
+	PRINTF("board_ehci_initialize: USBSTS=%08lX\n", (unsigned long) USB1_EHCI->USBSTS);
+	PRINTF("board_ehci_initialize: USBINTR=%08lX\n", (unsigned long) USB1_EHCI->USBINTR);
+	PRINTF("board_ehci_initialize: FRINDEX=%08lX\n", (unsigned long) USB1_EHCI->FRINDEX);
+	PRINTF("board_ehci_initialize: CTRLDSSEGMENT=%08lX\n", (unsigned long) USB1_EHCI->CTRLDSSEGMENT);
+	PRINTF("board_ehci_initialize: PERIODICLISTBASE=%08lX\n", (unsigned long) USB1_EHCI->PERIODICLISTBASE);
+	PRINTF("board_ehci_initialize: ASYNCLISTADDR=%08lX\n", (unsigned long) USB1_EHCI->ASYNCLISTADDR);
+	PRINTF("board_ehci_initialize: tmpbuff=%08lX\n", (unsigned long) & tmpbuff);
 
 
 //	USBH_EHCI_IRQn
