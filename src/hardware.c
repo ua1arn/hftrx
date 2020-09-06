@@ -10480,16 +10480,24 @@ void IRQ_Handler_GICv2(void)
 	// global:
 	// GICD_IPRIORITYR
 
+	//dbg_putchar('1');
 	//const uint_fast32_t gicc_hppir = gicv2_get_pending_interrupt_id(); //GICInterface->HPPIR; //GIC_GetHighPendingIRQ();	/* GICC_HPPIR */
-	const uint_fast32_t gicc_iar = GIC_AcknowledgePending(); // CPUID, Interrupt ID
+	const uint_fast32_t gicc_iar = GICInterface->IAR; // CPUID, Interrupt ID
 	const IRQn_ID_t int_id = gicc_iar & INT_ID_MASK;
 
-	// See R01UH0437EJ0200 Rev.2.00 7.8.3 Reading Interrupt ID Values from Interrupt Acknowledge Register (ICCIAR)
 	// IHI0048B_b_gic_architecture_specification.pdf
 	// See ARM IHI 0048B.b 3.4.2 Special interrupt numbers when a GIC supports interrupt grouping
 
+	if (int_id == 1022)
+	{
+		dbg_putchar('$');
+		for (;;) ;
+		//int_id = (gicc_iar = GICInterface->AIAR) & INT_ID_MASK;
+	}
+
 	if (int_id >= 1020)
 	{
+		//dbg_putchar('2');
 //		SPIN_LOCK(& giclock);
 //		GIC_SetPriority(0, GIC_GetPriority(0));	// GICD_IPRIORITYRn(0) = GICD_IPRIORITYRn(0);
 //		SPIN_UNLOCK(& giclock);
@@ -10503,9 +10511,11 @@ void IRQ_Handler_GICv2(void)
 
 		if (f != (IRQHandler_t) 0)
 		{
+			//dbg_putchar('3');
 			__enable_irq();						/* modify I bit in CPSR */
 			(* f)();	    /* Call interrupt handler */
 			__disable_irq();					/* modify I bit in CPSR */
+			//dbg_putchar('4');
 		}
 
 	#else /* WITHNESTEDINTERRUPTS */
@@ -10517,14 +10527,20 @@ void IRQ_Handler_GICv2(void)
 
 	#endif /* WITHNESTEDINTERRUPTS */
 
-		GIC_EndInterrupt(gicc_iar);	/* CPUID, EOINTID */
+		//dbg_putchar('5');
 	}
 	else
 	{
 //		SPIN_LOCK(& giclock);
 //		GIC_SetPriority(0, GIC_GetPriority(0));	// GICD_IPRIORITYRn(0) = GICD_IPRIORITYRn(0);
 //		SPIN_UNLOCK(& giclock);
+		dbg_putchar('6');
+		for (;;) ;
 	}
+	//dbg_putchar(' ');
+
+	//GIC_EndInterrupt(gicc_iar);	/* CPUID, EOINTID */
+	GICInterface->EOIR = gicc_iar;
 }
 
 
