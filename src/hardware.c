@@ -10469,6 +10469,14 @@ static RAMDTCM SPINLOCK_t giclock = SPINLOCK_INIT;
 // Sww ARM IHI 0048B.b document
 void IRQ_Handler_GICv2(void)
 {
+	// per-cpu
+	// GICC_AHPPIR
+	// GICC_HPPIR
+	// GICC_IAR
+	// GICC_EOIR
+	// GICC_BPR
+	// GICC_PMR
+
 	const uint_fast32_t gicc_hppir = gicv2_get_pending_interrupt_id(); //GICInterface->HPPIR; //GIC_GetHighPendingIRQ();	/* GICC_HPPIR */
 	const uint_fast32_t gicc_iar = GICInterface->IAR; // CPUID, Interrupt ID
 	const IRQn_ID_t int_id = gicc_iar & 0x03FF;
