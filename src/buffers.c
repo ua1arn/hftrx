@@ -38,6 +38,7 @@ typedef struct listcnt
 {
 	LIST_ENTRY item0;
 	unsigned Count;	// количество элментов в списке
+	SPINLOCK_t lock;
 } LIST_ENTRY2, * PLIST_ENTRY2;
 
 #define LIST2PRINT(name) do { \
@@ -55,6 +56,7 @@ IsListEmpty2(const LIST_ENTRY2 * ListHead)
 __STATIC_INLINE void
 InitializeListHead2(LIST_ENTRY2 * ListHead)
 {
+	ListHead->lock.lock = SPINLOCK_INIT_EXEC;
 	(ListHead)->Count = 0;
 	InitializeListHead(& (ListHead)->item0);
 }
@@ -62,18 +64,22 @@ InitializeListHead2(LIST_ENTRY2 * ListHead)
 __STATIC_INLINE void
 InsertHeadList2(PLIST_ENTRY2 ListHead, PLIST_ENTRY Entry)
 {
+	SPIN_LOCK(& ListHead->lock);
 	ASSERT(ListHead->item0.Flink != NULL && ListHead->item0.Blink != NULL);
 	(ListHead)->Count += 1;
 	InsertHeadList(& (ListHead)->item0, (Entry));
+	SPIN_UNLOCK(& ListHead->lock);
 }
 
 __STATIC_INLINE PLIST_ENTRY
 RemoveTailList2(PLIST_ENTRY2 ListHead)
 {
+	SPIN_LOCK(& ListHead->lock);
 	ASSERT(ListHead->item0.Flink != NULL && ListHead->item0.Blink != NULL);
 
 	(ListHead)->Count -= 1;
 	const PLIST_ENTRY t = RemoveTailList(& (ListHead)->item0);	/* прямо вернуть значение RemoveTailList нельзя - Microsoft сделал не совсем правильный макрос. Но по другому и не плучилось бы в стандартном языке C. */
+	SPIN_UNLOCK(& ListHead->lock);
 	return t;
 }
 
@@ -247,14 +253,18 @@ static RAMDTCM LIST_ENTRY3 resample16;		// буферы от USB для синх
 static RAMDTCM LIST_ENTRY2 voicesfree16;
 static RAMDTCM LIST_ENTRY2 voicesphones16;	// буферы, предназначенные для выдачи на наушники
 static RAMDTCM LIST_ENTRY2 voicesmoni16;	// буферы, предназначенные для звука самоконтроля
+static RAMDTCM SPINLOCK_t locklist16 = SPINLOCK_INIT;
 
 static RAMDTCM LIST_ENTRY2 voicesready32tx;	// буферы, предназначенные для выдачи на IF DAC
 static RAMDTCM LIST_ENTRY2 voicesfree32tx;
+static RAMDTCM SPINLOCK_t locklist32tx = SPINLOCK_INIT;
+
 static RAMDTCM LIST_ENTRY2 voicesfree32rx;
+static RAMDTCM SPINLOCK_t locklist32rx = SPINLOCK_INIT;
 
 static RAMDTCM LIST_ENTRY2 speexfree16;		// Свободные буферы
 static RAMDTCM LIST_ENTRY2 speexready16;	// Буферы для обработки speex
-//static int speexready16enable;
+static RAMDTCM SPINLOCK_t speexlock = SPINLOCK_INIT;
 
 static RAMDTCM volatile uint_fast8_t uacoutplayer = 0;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 static RAMDTCM volatile uint_fast8_t uacoutmike = 0;	/* на вход трансивера берутся аудиоданные с USB виртуальной платы, а не с микрофона */
@@ -337,7 +347,7 @@ static RAMDTCM SPINLOCK_t locklistrts = SPINLOCK_INIT;
 
 static RAMDTCM LIST_ENTRY2 uacinfree16;
 static RAMDTCM LIST_ENTRY2 uacinready16;	// Буферы для записи в вудиоканал USB к компьютер 2*16*24 kS/S
-static RAMDTCM SPINLOCK_t locklistuacin = SPINLOCK_INIT;
+static RAMDTCM SPINLOCK_t locklistuacin16 = SPINLOCK_INIT;
 
 #endif /* WITHUSBUACIN */
 
@@ -440,12 +450,6 @@ void buffers_diagnostics(void)
 {
 #if 1 && WITHDEBUG && WITHINTEGRATEDDSP && WITHBUFFERSDEBUG
 
-	/* Normal processing (with DIGI mode and RTS):
-	voicesfree16[  9] voicesmike16[  1] voicesphones16[  1] uacin96rtsfree[  5] uacin96rtsready[  0] uacin16[  0] resample16[  5]
-	voicesfree16[ 10] voicesmike16[  0] voicesphones16[  1] uacin96rtsfree[  6] uacin96rtsready[  0] uacin16[  0] resample16[  6]
-	voicesfree16[  9] voicesmike16[  0] voicesphones16[  1] uacin96rtsfree[  6] uacin96rtsready[  0] uacin16[  0] resample16[  6]
-	*/
-
 	LIST2PRINT(speexfree16);
 	LIST2PRINT(speexready16);
 	LIST2PRINT(voicesfree32tx);
@@ -507,9 +511,6 @@ void buffers_diagnostics(void)
 #endif
 }
 
-static RAMDTCM SPINLOCK_t locklist16 = SPINLOCK_INIT;
-static RAMDTCM SPINLOCK_t locklist32rx = SPINLOCK_INIT;
-static RAMDTCM SPINLOCK_t locklist32tx = SPINLOCK_INIT;
 
 #if WITHINTEGRATEDDSP
 
@@ -519,7 +520,6 @@ typedef ALIGNX_BEGIN struct denoise16
 	ALIGNX_BEGIN speexel_t buff [NTRX * FIRBUFSIZE] ALIGNX_END;
 } ALIGNX_END denoise16_t;
 
-static RAMDTCM SPINLOCK_t speexlock = SPINLOCK_INIT;
 
 // Буферы с принятымти от обработчиков прерываний сообщениями
 uint_fast8_t takespeexready_user(speexel_t * * dest)
@@ -1302,9 +1302,9 @@ buffers_savetouacin(uacin16_t * p)
 	// подсчёт скорости в сэмплах за секунду
 	debugcount_uacin += sizeof p->u.buff / sizeof p->u.buff [0] / DMABUFSTEPUACIN16;	// в буфере пары сэмплов по три байта
 #endif /* WITHBUFFERSDEBUG */
-	SPIN_LOCK(& locklistuacin);
+	SPIN_LOCK(& locklistuacin16);
 	InsertHeadList2(& uacinready16, & p->item);
-	SPIN_UNLOCK(& locklistuacin);
+	SPIN_UNLOCK(& locklistuacin16);
 
 	refreshDMA_uacin();		// если DMA  остановлено - начать обмен
 }
@@ -2426,9 +2426,9 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 	// Сохранить USB UAC IN буфер в никуда...
 	static RAMFUNC void buffers_tonulluacin(uacin16_t * p)
 	{
-		SPIN_LOCK(& locklistuacin);
+		SPIN_LOCK(& locklistuacin16);
 		InsertHeadList2(& uacinfree16, & p->item);
-		SPIN_UNLOCK(& locklistuacin);
+		SPIN_UNLOCK(& locklistuacin16);
 	}
 
 	void RAMFUNC release_dmabufferuacin16(uintptr_t addr)
@@ -2442,11 +2442,11 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 
 	RAMFUNC uintptr_t allocate_dmabufferuacin16(void)
 	{
-		SPIN_LOCK(& locklistuacin);
+		SPIN_LOCK(& locklistuacin16);
 		if (! IsListEmpty2(& uacinfree16))
 		{
 			PLIST_ENTRY t = RemoveTailList2(& uacinfree16);
-			SPIN_UNLOCK(& locklistuacin);
+			SPIN_UNLOCK(& locklistuacin16);
 			uacin16_t * const p = CONTAINING_RECORD(t, uacin16_t, item);
 			ASSERT(p->tag == BUFFTAG_UACIN16);
 			ASSERT(p->tag2 == p);
@@ -2467,7 +2467,7 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 			while (-- n && ! IsListEmpty2(& uacinready16));
 
 			PLIST_ENTRY t = RemoveTailList2(& uacinfree16);
-			SPIN_UNLOCK(& locklistuacin);
+			SPIN_UNLOCK(& locklistuacin16);
 			uacin16_t * const p = CONTAINING_RECORD(t, uacin16_t, item);
 			ASSERT(p->tag == BUFFTAG_UACIN16);
 			ASSERT(p->tag2 == p);
@@ -2476,7 +2476,7 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 		}
 		else
 		{
-			SPIN_UNLOCK(& locklistuacin);
+			SPIN_UNLOCK(& locklistuacin16);
 			PRINTF(PSTR("allocate_dmabufferuacin16() failure, uacinalt=%d\n"), uacinalt);
 			for (;;)
 				;
@@ -2489,18 +2489,18 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 	// Если в данный момент нет готового буфера, возврат 0
 	static uintptr_t getfilled_dmabuffer16uacin(void)
 	{
-		SPIN_LOCK(& locklistuacin);
+		SPIN_LOCK(& locklistuacin16);
 		if (! IsListEmpty2(& uacinready16))
 		{
 			PLIST_ENTRY t = RemoveTailList2(& uacinready16);
-			SPIN_UNLOCK(& locklistuacin);
+			SPIN_UNLOCK(& locklistuacin16);
 			uacin16_t * const p = CONTAINING_RECORD(t, uacin16_t, item);
 			ASSERT(p->tag == BUFFTAG_UACIN16);
 			ASSERT(p->tag2 == p);
 			ASSERT(p->tag3 == p);
 			return (uintptr_t) & p->u.buff;
 		}
-		SPIN_UNLOCK(& locklistuacin);
+		SPIN_UNLOCK(& locklistuacin16);
 		return 0;
 	}
 
