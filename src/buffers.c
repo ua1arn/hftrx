@@ -76,7 +76,8 @@ RemoveTailList2(PLIST_ENTRY2 ListHead)
 {
 	SPIN_LOCK(& ListHead->lock);
 	ASSERT(ListHead->item0.Flink != NULL && ListHead->item0.Blink != NULL);
-
+	ASSERT((ListHead)->Count != 0);
+	ASSERT(! IsListEmpty(& (ListHead)->item0));
 	(ListHead)->Count -= 1;
 	const PLIST_ENTRY t = RemoveTailList(& (ListHead)->item0);	/* прямо вернуть значение RemoveTailList нельзя - Microsoft сделал не совсем правильный макрос. Но по другому и не плучилось бы в стандартном языке C. */
 	SPIN_UNLOCK(& ListHead->lock);
@@ -134,7 +135,7 @@ InsertHeadList3(PLIST_ENTRY3 ListHead, PLIST_ENTRY Entry, uint_fast8_t forceRead
 __STATIC_INLINE PLIST_ENTRY
 RemoveTailList3(PLIST_ENTRY3 ListHead)
 {
-	const PLIST_ENTRY t = RemoveTailList2(& (ListHead)->item2);	/* прямо вернуть значение RemoveTailList нельзя - Microsoft сделал не совсем правильный макрос. Но по другому и не плучилось бы в стандартном языке C. */
+	const PLIST_ENTRY t = RemoveTailList2(& (ListHead)->item2);
 	(ListHead)->Rdy = fiforeadyupdate((ListHead)->Rdy, (ListHead)->item2.Count, (ListHead)->RdyLevel);
 	return t;
 }
