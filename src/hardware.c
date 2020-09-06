@@ -10451,7 +10451,7 @@ unsigned int gicv2_get_pending_interrupt_id(void)
 {
 	unsigned int id;
 
-	id = GICInterface->HPPIR & INT_ID_MASK;
+	id = GIC_GetHighPendingIRQ() & INT_ID_MASK;	// HIPPR
 
 	/*
 	 * Find out which non-secure interrupt it is under the assumption that
@@ -10480,10 +10480,10 @@ void IRQ_Handler_GICv2(void)
 	// global:
 	// GICD_IPRIORITYR
 
-	//const uint_fast32_t gicc_hppir = gicv2_get_pending_interrupt_id(); //GICInterface->HPPIR; //GIC_GetHighPendingIRQ();	/* GICC_HPPIR */
-	const uint_fast32_t gicc_iar = GICInterface->IAR; // CPUID, Interrupt ID
-	const IRQn_ID_t int_id = gicc_iar & 0x03FF;
-	//const IRQn_ID_t int_id = gicc_hppir & 0x03FF;
+	const uint_fast32_t gicc_hppir = gicv2_get_pending_interrupt_id(); //GICInterface->HPPIR; //GIC_GetHighPendingIRQ();	/* GICC_HPPIR */
+	const uint_fast32_t gicc_iar = GIC_AcknowledgePending(); // CPUID, Interrupt ID
+	const IRQn_ID_t int_id = gicc_iar & INT_ID_MASK;
+	//const IRQn_ID_t int_id = gicc_hppir & INT_ID_MASK;
 
 	// See R01UH0437EJ0200 Rev.2.00 7.8.3 Reading Interrupt ID Values from Interrupt Acknowledge Register (ICCIAR)
 	// IHI0048B_b_gic_architecture_specification.pdf
@@ -10516,8 +10516,8 @@ void IRQ_Handler_GICv2(void)
 		}
 
 	#endif /* WITHNESTEDINTERRUPTS */
-		//GIC_EndInterrupt(gicc_iar & 0x01FFF);	/* CPUID, EOINTID */
-		GICInterface->EOIR = gicc_iar & 0x01FFF; // * CPUID, EOINTID
+
+		GIC_EndInterrupt(gicc_iar);	/* CPUID, EOINTID */
 	}
 	else
 	{
