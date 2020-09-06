@@ -4842,29 +4842,29 @@ void saveready_fftbuffer_low(fftbuff_t * p)
 // user-mode function
 void release_fftbuffer(fftbuff_t * p)
 {
-	system_disableIRQ();
+	global_disableIRQ();
 	SPIN_LOCK(& fftlock);
 	InsertHeadList(& fftbuffree, & p->item);
 	SPIN_UNLOCK(& fftlock);
-	system_enableIRQ();
+	global_enableIRQ();
 }
 
 // user-mode function
 uint_fast8_t  getfilled_fftbuffer(fftbuff_t * * dest)
 {
-	system_disableIRQ();
+	global_disableIRQ();
 	SPIN_LOCK(& fftlock);
 	if (! IsListEmpty(& fftbufready))
 	{
 		const PLIST_ENTRY t = RemoveTailList(& fftbufready);
 		SPIN_UNLOCK(& fftlock);
-		system_enableIRQ();
+		global_enableIRQ();
 		fftbuff_t * const p = CONTAINING_RECORD(t, fftbuff_t, item);
 		* dest = p;
 		return 1;
 	}
 	SPIN_UNLOCK(& fftlock);
-	system_enableIRQ();
+	global_enableIRQ();
 	return 0;
 }
 
