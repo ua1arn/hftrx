@@ -36,34 +36,43 @@ enum
 /* отладочные врапперы для функций работы со списком - позволяют получить размер очереди */
 typedef struct listcnt
 {
+	unsigned long tag2;
 	LIST_ENTRY item0;
 	unsigned Count;	// количество элментов в списке
 	SPINLOCK_t lock;
+	unsigned long tag3;
 } LIST_ENTRY2, * PLIST_ENTRY2;
+
+#define LIST2TAG2 0xABBA1990uL
+#define LIST2TAG3 0xDEADBEEFuL
 
 #define LIST2PRINT(name) do { \
 		PRINTF(PSTR(# name "[%3d] "), (int) name.Count); \
 	} while (0)
 
+static void
+InitializeListHead2(LIST_ENTRY2 * ListHead)
+{
+	ListHead->tag2 = LIST2TAG2;
+	ListHead->tag3 = LIST2TAG3;
+	ListHead->lock.lock = SPINLOCK_INIT_EXEC;
+	(ListHead)->Count = 0;
+	InitializeListHead(& (ListHead)->item0);
+}
+
 static int
 IsListEmpty2(const LIST_ENTRY2 * ListHead)
 {
+	ASSERT(ListHead->tag2 == LIST2TAG2 && ListHead->tag3 == LIST2TAG3);
 	ASSERT(ListHead->item0.Flink != NULL && ListHead->item0.Blink != NULL);
 	return (ListHead)->Count == 0;
 	//return IsListEmpty(& (ListHead)->item0);
 }
 
 static void
-InitializeListHead2(LIST_ENTRY2 * ListHead)
-{
-	ListHead->lock.lock = SPINLOCK_INIT_EXEC;
-	(ListHead)->Count = 0;
-	InitializeListHead(& (ListHead)->item0);
-}
-
-static void
 InsertHeadList2(PLIST_ENTRY2 ListHead, PLIST_ENTRY Entry)
 {
+	ASSERT(ListHead->tag2 == LIST2TAG2 && ListHead->tag3 == LIST2TAG3);
 	SPIN_LOCK(& ListHead->lock);
 	ASSERT(ListHead->item0.Flink != NULL && ListHead->item0.Blink != NULL);
 	(ListHead)->Count += 1;
@@ -74,6 +83,7 @@ InsertHeadList2(PLIST_ENTRY2 ListHead, PLIST_ENTRY Entry)
 static PLIST_ENTRY
 RemoveTailList2(PLIST_ENTRY2 ListHead)
 {
+	ASSERT(ListHead->tag2 == LIST2TAG2 && ListHead->tag3 == LIST2TAG3);
 	SPIN_LOCK(& ListHead->lock);
 	ASSERT(ListHead->item0.Flink != NULL && ListHead->item0.Blink != NULL);
 	ASSERT((ListHead)->Count != 0);
@@ -86,6 +96,7 @@ RemoveTailList2(PLIST_ENTRY2 ListHead)
 
 static unsigned GetCountList2(LIST_ENTRY2 * ListHead)
 {
+	ASSERT(ListHead->tag2 == LIST2TAG2 && ListHead->tag3 == LIST2TAG3);
 	SPIN_LOCK(& ListHead->lock);
 	ASSERT(ListHead->item0.Flink != NULL && ListHead->item0.Blink != NULL);
 	const unsigned count = (ListHead)->Count;
