@@ -10490,9 +10490,6 @@ void IRQ_Handler_GICv2(void)
 
 	if (int_id == 1022)
 	{
-		dbg_putchar('$');
-		for (;;) ;
-		//int_id = (gicc_iar = GICInterface->AIAR) & INT_ID_MASK;
 	}
 
 	if (int_id >= 1020)
@@ -10511,11 +10508,15 @@ void IRQ_Handler_GICv2(void)
 
 		if (f != (IRQHandler_t) 0)
 		{
-			//dbg_putchar('3');
+//			static const char hex [16] = "0123456789ABCDEF";
+//			if ((int_id >> 8) & 0x0F)
+//				dbg_putchar(hex [(int_id >> 8) & 0x0F]);
+//			dbg_putchar(hex [(int_id >> 4) & 0x0F]);
+//			dbg_putchar(hex [(int_id >> 0) & 0x0F]);
 			__enable_irq();						/* modify I bit in CPSR */
 			(* f)();	    /* Call interrupt handler */
 			__disable_irq();					/* modify I bit in CPSR */
-			//dbg_putchar('4');
+			//dbg_putchar('_');
 		}
 
 	#else /* WITHNESTEDINTERRUPTS */
@@ -10534,8 +10535,6 @@ void IRQ_Handler_GICv2(void)
 //		SPIN_LOCK(& giclock);
 //		GIC_SetPriority(0, GIC_GetPriority(0));	// GICD_IPRIORITYRn(0) = GICD_IPRIORITYRn(0);
 //		SPIN_UNLOCK(& giclock);
-		dbg_putchar('6');
-		for (;;) ;
 	}
 	//dbg_putchar(' ');
 
