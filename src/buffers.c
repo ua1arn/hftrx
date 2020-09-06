@@ -45,7 +45,7 @@ typedef struct listcnt
 		PRINTF(PSTR(# name "[%3d] "), (int) name.Count); \
 	} while (0)
 
-__STATIC_INLINE int
+static int
 IsListEmpty2(const LIST_ENTRY2 * ListHead)
 {
 	ASSERT(ListHead->item0.Flink != NULL && ListHead->item0.Blink != NULL);
@@ -53,7 +53,7 @@ IsListEmpty2(const LIST_ENTRY2 * ListHead)
 	//return IsListEmpty(& (ListHead)->item0);
 }
 
-__STATIC_INLINE void
+static void
 InitializeListHead2(LIST_ENTRY2 * ListHead)
 {
 	ListHead->lock.lock = SPINLOCK_INIT_EXEC;
@@ -61,7 +61,7 @@ InitializeListHead2(LIST_ENTRY2 * ListHead)
 	InitializeListHead(& (ListHead)->item0);
 }
 
-__STATIC_INLINE void
+static void
 InsertHeadList2(PLIST_ENTRY2 ListHead, PLIST_ENTRY Entry)
 {
 	SPIN_LOCK(& ListHead->lock);
@@ -71,7 +71,7 @@ InsertHeadList2(PLIST_ENTRY2 ListHead, PLIST_ENTRY Entry)
 	SPIN_UNLOCK(& ListHead->lock);
 }
 
-__STATIC_INLINE PLIST_ENTRY
+static PLIST_ENTRY
 RemoveTailList2(PLIST_ENTRY2 ListHead)
 {
 	SPIN_LOCK(& ListHead->lock);
@@ -84,15 +84,17 @@ RemoveTailList2(PLIST_ENTRY2 ListHead)
 	return t;
 }
 
-__STATIC_INLINE unsigned GetCountList2(const LIST_ENTRY2 * ListHead)
+static unsigned GetCountList2(LIST_ENTRY2 * ListHead)
 {
+	SPIN_LOCK(& ListHead->lock);
 	ASSERT(ListHead->item0.Flink != NULL && ListHead->item0.Blink != NULL);
-
-	return (ListHead)->Count;
+	const unsigned count = (ListHead)->Count;
+	SPIN_UNLOCK(& ListHead->lock);
+	return count;
 }
 
 /* готовность буферов с "гистерезисом". */
-__STATIC_INLINE uint_fast8_t fiforeadyupdate(
+static uint_fast8_t fiforeadyupdate(
 	uint_fast8_t ready,		// текущее состояние готовности
 	unsigned Count,		// сколько элементов сейчас в очереди
 	unsigned normal		// граница включения готовности
@@ -110,13 +112,13 @@ typedef struct listcnt3
 	unsigned Rdy;		// количество элментов в списке
 } LIST_ENTRY3, * PLIST_ENTRY3;
 
-__STATIC_INLINE int
-IsListEmpty3(const LIST_ENTRY3 * ListHead)
+static int
+IsListEmpty3(LIST_ENTRY3 * ListHead)
 {
 	return IsListEmpty2(& (ListHead)->item2);
 }
 
-__STATIC_INLINE void
+static void
 InitializeListHead3(LIST_ENTRY3 * ListHead, unsigned RdyLevel)
 {
 	(ListHead)->Rdy = 0;
@@ -125,14 +127,14 @@ InitializeListHead3(LIST_ENTRY3 * ListHead, unsigned RdyLevel)
 }
 
 // forceReady - если в источнике данных закончился поток.
-__STATIC_INLINE void
+static void
 InsertHeadList3(PLIST_ENTRY3 ListHead, PLIST_ENTRY Entry, uint_fast8_t forceReady)
 {
 	InsertHeadList2(& (ListHead)->item2, (Entry));
 	(ListHead)->Rdy = forceReady || fiforeadyupdate((ListHead)->Rdy, (ListHead)->item2.Count, (ListHead)->RdyLevel);
 }
 
-__STATIC_INLINE PLIST_ENTRY
+static PLIST_ENTRY
 RemoveTailList3(PLIST_ENTRY3 ListHead)
 {
 	const PLIST_ENTRY t = RemoveTailList2(& (ListHead)->item2);
@@ -140,12 +142,12 @@ RemoveTailList3(PLIST_ENTRY3 ListHead)
 	return t;
 }
 
-__STATIC_INLINE unsigned GetCountList3(const LIST_ENTRY3 * ListHead)
+static unsigned GetCountList3(LIST_ENTRY3 * ListHead)
 {
 	return GetCountList2(& (ListHead)->item2);
 }
 
-__STATIC_INLINE uint_fast8_t GetReadyList3(const LIST_ENTRY3 * ListHead)
+static uint_fast8_t GetReadyList3(const LIST_ENTRY3 * ListHead)
 {
 	return (ListHead)->Rdy;
 }
