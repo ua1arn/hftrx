@@ -11679,6 +11679,11 @@ ttb_initialize(uint32_t (* accessbits)(uintptr_t a, int ro), uintptr_t textstart
 		textsize -= pagesize;
 		textstart += pagesize;
 	}
+
+#if 0//CPUSTYLE_STM32MP1 && ! WITHISBOOTLOADER
+	/* R/O for pages table. */
+	tlbbase [(uintptr_t) tlbbase / pagesize] = accessbits((uintptr_t) tlbbase, 1);
+#endif /* CPUSTYLE_STM32MP1 && ! WITHISBOOTLOADER */
 }
 
 // TODO: use MMU_TTSection. See also MMU_TTPage4k MMU_TTPage64k and MMU_CreateTranslationTable
