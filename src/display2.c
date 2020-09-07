@@ -7479,10 +7479,10 @@ validforredraw(
 }
 
 // Параметры state machine отображения
-static RAMDTCM uint8_t reqs [REDRM_count];		// запросы на отображение
-static RAMDTCM uint8_t subsets [REDRM_count];	// параметр прохода по списку отображения.
-static RAMDTCM uint8_t walkis [REDRM_count];	// индекс в списке параметров отображения в данном проходе
-static RAMDTCM uint_fast8_t keyi;					// запрос на отображение, выполняющийся сейчас.
+static uint8_t reqs [REDRM_count];		// запросы на отображение
+static uint8_t subsets [REDRM_count];	// параметр прохода по списку отображения.
+static uint8_t walkis [REDRM_count];	// индекс в списке параметров отображения в данном проходе
+static uint_fast8_t keyi;					// запрос на отображение, выполняющийся сейчас.
 
 #endif /* STMD */
 
