@@ -310,6 +310,8 @@ ExitFunction:
    nop
    b ExitFunction   
 
+   .ltorg
+
 	.align 4, 0
 	.ascii " DREAM RX project " __DATE__ " " __TIME__ " "
 	.align 4, 0
@@ -372,6 +374,7 @@ IRQHandlerNested:
        POP     {R0,LR}          // restore register context
        SUBS    R15,R14,#0x0004         // return from interrupt
 		.endfunc
+   .ltorg
 
 	.section .init, "ax"
 	.code 32
@@ -424,8 +427,9 @@ Reset_CPU1_HandlerSleep:
 	b     Reset_CPU1_HandlerSleep
 
 		.endfunc
+   .ltorg
 
-	.section .bss
+	.section .noinit
 	.align 8
 	.space	STACKSIZEUND
 __stack_cpu0_und_end = .
@@ -457,8 +461,6 @@ __stack_cpu1_hyp_end = .
 	.space	STACKSIZESYS
 __stack_cpu1_sys_end = .
 
-	.section .dtcm
-	.align 8
 	.space	STACKSIZEIRQ
 __stack_cpu0_irq_end = .
 
@@ -468,7 +470,6 @@ __stack_cpu1_irq_end = .
 	.space	STACKSIZESVC
 __stack_cpu1_svc_end = .
 
-   .ltorg
 /*** EOF ***/   
   
 
