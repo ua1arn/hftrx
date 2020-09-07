@@ -190,6 +190,7 @@ void elements_state (window_t * win)
 {
 	uint_fast8_t j = 0;
 	int debug_num = 0;
+
 	button_t * b = win->bh_ptr;
 	if (b != NULL)
 	{
@@ -209,6 +210,7 @@ void elements_state (window_t * win)
 			}
 			else
 			{
+				// кнопка close_button также учитывается при закрытии окна
 				debug_num --;
 				gui_element_count --;
 				bh->visible = NON_VISIBLE;
@@ -270,27 +272,30 @@ void elements_state (window_t * win)
 			}
 		}
 	}
-	// close button
-	if(win->is_close)
-	{
-		if (win->state)
-		{
-			ASSERT(gui_element_count < GUI_ELEMENTS_ARRAY_SIZE);
-			gui_elements [gui_element_count].link = (button_t *) & close_button;
-			gui_elements [gui_element_count].win = NULL;
-			gui_elements [gui_element_count].type = TYPE_CLOSE_BUTTON;
-			gui_element_count ++;
-			debug_num ++;
-		}
-		else
-		{
-			debug_num --;
-			gui_element_count --;
-			ASSERT(gui_element_count >= footer_buttons_count);
-		}
-	}
 
-//	PRINTF("%s %d gui_element_count: %d %+d\n", win->name, win->state, gui_element_count, debug_num);
+	if(win->is_close && win->state)										// инициализировать кнопку закрытия окна, если разрешено
+	{
+		win->bh_count++;
+		win->bh_ptr = realloc(win->bh_ptr, win->bh_count * sizeof(close_button));
+		button_t * bh_close = & win->bh_ptr [win->bh_count - 1];
+		memcpy(bh_close, & close_button, sizeof(close_button));			// копирование шаблона кнопки для последующего заполнения
+
+		bh_close->x1 = win->w - window_close_button_size + 1;
+		bh_close->y1 = 1;
+		bh_close->w = window_close_button_size - 3;
+		bh_close->h = window_close_button_size - 3;
+		bh_close->parent = win->window_id;
+		bh_close->visible = VISIBLE;
+		bh_close->state = CANCELLED;
+
+		ASSERT(gui_element_count < GUI_ELEMENTS_ARRAY_SIZE);
+		gui_elements [gui_element_count].link = bh_close;
+		gui_elements [gui_element_count].win = win;
+		gui_elements [gui_element_count].type = TYPE_CLOSE_BUTTON;
+		gui_element_count ++;
+		debug_num ++;
+	}
+//	PRINTF("line %d: %s gui_element_count: %d %+d\n", __LINE__, win->name, gui_element_count, debug_num);
 }
 
 /* Возврат id parent window */
@@ -422,7 +427,7 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 	}
 
 	win->w = xmax > title_length ? (xmax + edge_step) : (title_length + edge_step * 2);
-	win->w = (win->is_close && win->w < title_length + window_close_button_size * 2) ? win->w + window_close_button_size : win->w;
+	win->w = (win->is_close && win->w < title_length + window_close_button_size * 2) ? (win->w + window_close_button_size) : win->w;
 	win->h = ymax + edge_step;
 
 	win->y1 = ALIGN_Y - win->h / 2;
@@ -449,15 +454,7 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 		break;
 	}
 
-	if(win->is_close)		// инициализировать кнопку закрытия окна, если разрешено
-	{
-		close_button.x1 = win->x1 + win->w - window_close_button_size + 1;
-		close_button.y1 = win->y1 + 1;
-		close_button.w = window_close_button_size - 3;
-		close_button.h = window_close_button_size - 3;
-		close_button.visible = VISIBLE;
-		close_button.state = CANCELLED;
-	}
+	elements_state(win);
 }
 
 /* Передать менеджеру GUI код нажатой кнопки на клавиатуре */
@@ -747,7 +744,7 @@ static void update_gui_elements_list(void)
 	for (uint_fast8_t i = 0; i < gui_element_count; i ++)
 	{
 		gui_element_t * p = & gui_elements [i];
-		if (p->type == TYPE_BUTTON)
+		if (p->type == TYPE_BUTTON || p->type == TYPE_CLOSE_BUTTON)
 		{
 			button_t * bh = (button_t *) p->link;
 			p->x1 = bh->x1;
@@ -781,18 +778,6 @@ static void update_gui_elements_list(void)
 			p->state = sh->state;
 			p->visible = sh->visible;
 			p->is_trackable = 1;
-			p->is_long_press = 0;
-		}
-		else if (p->type == TYPE_CLOSE_BUTTON)
-		{
-			button_t * bh = & close_button;
-			p->x1 = bh->x1;
-			p->x2 = bh->x1 + bh->w;
-			p->y1 = bh->y1;
-			p->y2 = bh->y1 + bh->h;
-			p->state = bh->state;
-			p->visible = bh->visible;
-			p->is_trackable = 0;
 			p->is_long_press = 0;
 		}
 	}
@@ -1087,10 +1072,10 @@ void gui_WM_walktrough(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
 					}
 					else if (p->type == TYPE_CLOSE_BUTTON)
 					{
-						button_t * bh = & close_button;
-						colpip_rect(fr, DIM_X, DIM_Y, bh->x1, bh->y1, bh->x1 + bh->w,  bh->y1 + bh->h, COLORMAIN_BLACK, 0);
-						colmain_line(fr, DIM_X, DIM_Y, bh->x1, bh->y1, bh->x1 + bh->w, bh->y1 + bh->h, COLORMAIN_BLACK, 0);
-						colmain_line(fr, DIM_X, DIM_Y, bh->x1, bh->y1 + bh->h, bh->x1 + bh->w, bh->y1, COLORMAIN_BLACK, 0);
+						button_t * bh = (button_t *) p->link;
+						colpip_rect(fr, DIM_X, DIM_Y, win->x1 + bh->x1, win->y1 + bh->y1, win->x1 + bh->x1 + bh->w,  win->y1 + bh->y1 + bh->h, COLORMAIN_BLACK, 0);
+						colmain_line(fr, DIM_X, DIM_Y, win->x1 + bh->x1, win->y1 + bh->y1, win->x1 + bh->x1 + bh->w, win->y1 + bh->y1 + bh->h, COLORMAIN_BLACK, 0);
+						colmain_line(fr, DIM_X, DIM_Y, win->x1 + bh->x1, win->y1 + bh->y1 + bh->h, win->x1 + bh->x1 + bh->w, win->y1 + bh->y1, COLORMAIN_BLACK, 0);
 					}
 					else if (p->type == TYPE_LABEL)
 					{
@@ -1098,11 +1083,11 @@ void gui_WM_walktrough(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
 						if (lh->visible && lh->parent == win->window_id)
 						{
 							if (lh->font_size == FONT_LARGE)
-								colpip_string_tbg(fr, DIM_X, DIM_Y,  win->x1 +lh->x, win->y1 + lh->y, lh->text, lh->color);
+								colpip_string_tbg(fr, DIM_X, DIM_Y,  win->x1 + lh->x, win->y1 + lh->y, lh->text, lh->color);
 							else if (lh->font_size == FONT_MEDIUM)
-								colpip_string2_tbg(fr, DIM_X, DIM_Y, win->x1 +lh->x, win->y1 + lh->y, lh->text, lh->color);
+								colpip_string2_tbg(fr, DIM_X, DIM_Y, win->x1 + lh->x, win->y1 + lh->y, lh->text, lh->color);
 							else if (lh->font_size == FONT_SMALL)
-								colpip_string3_tbg(fr, DIM_X, DIM_Y, win->x1 +lh->x, win->y1 + lh->y, lh->text, lh->color);
+								colpip_string3_tbg(fr, DIM_X, DIM_Y, win->x1 + lh->x, win->y1 + lh->y, lh->text, lh->color);
 						}
 					}
 					else if (p->type == TYPE_SLIDER)

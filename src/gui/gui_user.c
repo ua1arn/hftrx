@@ -589,7 +589,7 @@ static void window_memory_process(void)
 				bh->payload = 1;
 			}
 		}
-		elements_state(win);
+
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 		return;
 	}
@@ -717,7 +717,6 @@ static void window_bands_process(void)
 			}
 		}
 
-		elements_state(win);
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 		return;
 	}
@@ -816,9 +815,9 @@ static void window_options_process(void)
 				y = y + bh->h + interval;
 			}
 		}
-		elements_state(win);
-		calculate_window_position(win, WINDOW_POSITION_AUTO);
+
 		hamradio_disable_keyboard_redirect();
+		calculate_window_position(win, WINDOW_POSITION_AUTO);
 		return;
 	}
 }
@@ -977,7 +976,6 @@ static void window_display_process(void)
 		bh = find_gui_element(TYPE_BUTTON, win, "btn_zoom");
 		local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("Zoom|x%d"), 1 << hamradio_get_gzoomxpow2());
 
-		elements_state(win);
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 		return;
 	}
@@ -1057,7 +1055,7 @@ static void window_utilites_process(void)
 				y = y + bh->h + interval;
 			}
 		}
-		elements_state(win);
+
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 		return;
 	}
@@ -1126,8 +1124,8 @@ static void window_mode_process(void)
 				y = row1_int + bh->h + interval;
 			}
 		}
+
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
-		elements_state(win);
 		return;
 	}
 }
@@ -1301,8 +1299,6 @@ static void window_af_process(void)
 		local_snprintf_P(lbl_high->text, ARRAY_SIZE(lbl_high->text), PSTR("%s: %4d "), str_high, val_high);
 
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
-		elements_state(win);
-
 		return;
 	}
 
@@ -1320,9 +1316,9 @@ static void window_af_process(void)
 		int16_t shift;
 
 		for(uint_fast8_t i = 0; i < win->lh_count; i ++)
-			win->lh_ptr[i].color = COLORMAIN_WHITE;
+			win->lh_ptr [i].color = COLORMAIN_WHITE;
 
-		win->lh_ptr[bp_t.select].color = COLORMAIN_YELLOW;
+		win->lh_ptr [bp_t.select].color = COLORMAIN_YELLOW;
 
 		switch(bp_t.select)
 		{
@@ -1432,7 +1428,6 @@ static void window_agc_process(void)
 		}
 
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
-		elements_state(win);
 		return;
 	}
 }
@@ -1526,7 +1521,6 @@ static void window_freq_process (void)
 		editfreq.key = BUTTON_CODE_DONE;
 
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
-		elements_state(win);
 		return;
 	}
 
@@ -1694,8 +1688,8 @@ static void window_swrscan_process(void)
 
 		xmax = col1_int + gr_w;
 		ymax = btn_swr_OK->y1 + btn_swr_OK->h;
+
 		calculate_window_position(win, WINDOW_POSITION_MANUAL, xmax, ymax);
-		elements_state(win);
 
 		i = 0;
 		y_vals = calloc(x1 - x0, sizeof(uint_fast8_t));
@@ -1854,7 +1848,6 @@ static void window_tx_process(void)
 				y = y + bh->h + interval;
 			}
 		}
-		calculate_window_position(win, WINDOW_POSITION_AUTO);
 
 #if WITHVOX
 		bh = find_gui_element(TYPE_BUTTON, win, "btn_tx_vox"); 						// vox on/off
@@ -1870,7 +1863,8 @@ static void window_tx_process(void)
 		bh = find_gui_element(TYPE_BUTTON, win, "btn_tx_vox_settings"); 			// reverb settings disable
 		bh->state = DISABLED;
 #endif /* WITHVOX */
-		elements_state(win);
+
+		calculate_window_position(win, WINDOW_POSITION_AUTO);
 		return;
 	}
 }
@@ -2036,7 +2030,6 @@ static void window_tx_vox_process(void)
 		lbl_avox_level_max->visible = VISIBLE;
 
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
-		elements_state(win);
 		return;
 	}
 
@@ -2170,7 +2163,6 @@ static void window_tx_power_process(void)
 		bh->visible = VISIBLE;
 
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
-		elements_state(win);
 		return;
 	}
 
@@ -2303,7 +2295,6 @@ static void window_audiosettings_process(void)
 				y = y + bh->h + interval;
 			}
 		}
-		calculate_window_position(win, WINDOW_POSITION_AUTO);
 
 #if WITHREVERB
 		bh = find_gui_element(TYPE_BUTTON, win, "btn_reverb"); 						// reverb on/off
@@ -2339,7 +2330,7 @@ static void window_audiosettings_process(void)
 		bh->state = DISABLED;
 #endif /* WITHAFCODEC1HAVEPROC */
 
-		elements_state(win);
+		calculate_window_position(win, WINDOW_POSITION_AUTO);
 		return;
 	}
 }
@@ -2465,7 +2456,6 @@ static void window_ap_reverb_process(void)
 		bh->visible = VISIBLE;
 
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
-		elements_state(win);
 		return;
 	}
 
@@ -2607,11 +2597,9 @@ static void window_ap_mic_eq_process(void)
 		btn_EQ_ok->y1 = sl->y + sl->size - btn_EQ_ok->h;
 		btn_EQ_ok->visible = VISIBLE;
 
-		calculate_window_position(win, WINDOW_POSITION_AUTO);
-		elements_state(win);
-
 		mid_y = win->y1 + sl->y + sl->size / 2;
 
+		calculate_window_position(win, WINDOW_POSITION_AUTO);
 		return;
 	}
 
@@ -2834,7 +2822,6 @@ static void window_ap_mic_process(void)
 		lbl_micAGC_max->visible = VISIBLE;
 
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
-		elements_state(win);
 		return;
 	}
 
@@ -2943,8 +2930,8 @@ static void window_ap_mic_prof_process(void)
 			local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("Profile %d|%s"), i + 1, cell_saved ? "saved" : "empty");
 			bh->payload = cell_saved;
 		}
+
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
-		elements_state(win);
 		return;
 	}
 }
@@ -3148,8 +3135,8 @@ static void window_menu_process(void)
 		ASSERT(lh != NULL);
 		xmax = lh->x + 100;
 		ymax = lh->y + get_label_height(lh);
+
 		calculate_window_position(win, WINDOW_POSITION_MANUAL, xmax, ymax);
-		elements_state(win);
 		return;
 	}
 
@@ -3464,8 +3451,6 @@ static void window_uif_process(void)
 		win->lh_ptr = malloc(labels_size);
 		GUI_MEM_ASSERT(win->lh_ptr);
 		memcpy(win->lh_ptr, labels, labels_size);
-
-		elements_state(win);
 	}
 
 	if (reinit)
@@ -3583,8 +3568,6 @@ static void window_enc2_process(void)
 		win->lh_ptr = malloc(labels_size);
 		GUI_MEM_ASSERT(win->lh_ptr);
 		memcpy(win->lh_ptr, labels, labels_size);
-
-		elements_state(win);
 	}
 
 	if (gui_enc2_menu.updated)
