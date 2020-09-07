@@ -11550,6 +11550,21 @@ M_SIZE_IO_2     EQU     2550            ; [Area11] I/O area 2
 
 #define	TTB_PARA_NO_ACCESS 0
 
+/*
+ * https://community.st.com/s/question/0D73W000000UagD/what-a-type-of-mmu-memory-regions-recommended-for-regions-with-peripheralsstronglyordered-or-device?s1oid=00Db0000000YtG6&s1nid=0DB0X000000DYbd&emkind=chatterCommentNotification&s1uid=0050X000007vtUt&emtm=1599464922440&fromEmail=1&s1ext=0&t=1599470826880
+ *
+ *
+ * PatrickF (ST Employee)
+
+2 hours ago
+Hello,
+
+"Device" should be used for all peripherals to get best performance.
+There is no rationale to use "Strongly-Ordered" with Cortex-A7
+(explanation should be found by deep analysis/understanding of various ARM documents).
+ *
+ *
+*/
 
 static uint32_t
 FLASHMEMINITFUNC
@@ -11569,7 +11584,7 @@ ttb_accessbits(uintptr_t a, int ro)
 	if (a >= 0x20000000uL && a < 0x20A00000uL)			// up to 10 MB
 		return addrbase | TTB_PARA_NORMAL_CACHE(ro);
 
-	return addrbase | TTB_PARA_STRGLY;
+	return addrbase | TTB_PARA_DEVICE;
 
 #elif CPUSTYLE_STM32MP1
 
@@ -11580,19 +11595,22 @@ ttb_accessbits(uintptr_t a, int ro)
 		return addrbase | TTB_PARA_NORMAL_CACHE(ro);
 
 	if (a >= 0x40000000uL && a < 0x60000000uL)			//  peripherials 1, peripherials 2
-		return addrbase | TTB_PARA_STRGLY;
-	if (a >= 0xA0000000uL && a < 0xC0000000uL)			//  GIC
-		return addrbase | TTB_PARA_STRGLY;
-	if (a >= 0xE0000000uL)								//  DEBUG
-		return addrbase | TTB_PARA_STRGLY;
+		return addrbase | TTB_PARA_DEVICE;
 
-	if (a >= 0x70000000uL && a < 0xA0000000uL)			//  QUADSPI, FMC NAND, ...
-		return addrbase | TTB_PARA_NORMAL_CACHE(ro);
 	if (a >= 0x60000000uL && a < 0x70000000uL)			//  FMC NOR
 		return addrbase | TTB_PARA_NORMAL_CACHE(ro);
 
+	if (a >= 0x70000000uL && a < 0xA0000000uL)			//  QUADSPI, FMC NAND, ...
+		return addrbase | TTB_PARA_NORMAL_CACHE(ro);
+
+	if (a >= 0xA0000000uL && a < 0xC0000000uL)			//  GIC
+		return addrbase | TTB_PARA_DEVICE;
+
 	if (a >= 0xC0000000uL && a < 0xE0000000uL)			// DDR memory
 		return addrbase | TTB_PARA_NORMAL_CACHE(ro);
+
+	if (a >= 0xE0000000uL)								//  DEBUG
+		return addrbase | TTB_PARA_DEVICE;
 
 	return addrbase | TTB_PARA_NO_ACCESS;
 
@@ -11680,8 +11698,8 @@ ttb_initialize(uint32_t (* accessbits)(uintptr_t a, int ro), uintptr_t textstart
 		textstart += pagesize;
 	}
 
-#if 0//CPUSTYLE_STM32MP1 && ! WITHISBOOTLOADER
-	/* R/O for pages table. */
+#if CPUSTYLE_STM32MP1 && ! WITHISBOOTLOADER
+	/* R/O for pages table. - 16 MB size. */
 	tlbbase [(uintptr_t) tlbbase / pagesize] = accessbits((uintptr_t) tlbbase, 1);
 #endif /* CPUSTYLE_STM32MP1 && ! WITHISBOOTLOADER */
 }
