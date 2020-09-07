@@ -9475,6 +9475,11 @@ lowlevel_stm32l0xx_pll_clock(void)
 
 #if (__CORTEX_A != 0)
 
+uint_fast8_t arm_hardware_cpuid(void)
+{
+	return __get_MPIDR() & 0x03;
+}
+
 //	MRC p15, 0, <Rt>, c6, c0, 2 ; Read IFAR into Rt
 //	MCR p15, 0, <Rt>, c6, c0, 2 ; Write Rt to IFAR
 
@@ -11575,6 +11580,7 @@ M_SIZE_IO_2     EQU     2550            ; [Area11] I/O area 2
 #define Bval_DEVICE			0x00	/* Non-shareable Device */
 #define Cval_DEVICE			0x00	/* Non-shareable Device */
 
+#define SHAREDval 1
 // See B3.5.2 in DDI0406C_C_arm_architecture_reference_manual.pdf
 
 
@@ -11588,7 +11594,7 @@ M_SIZE_IO_2     EQU     2550            ; [Area11] I/O area 2
 		(((AP) >> 0) & 0x03) * (1uL << 10) |	/* AP [1..0] */ \
 		(TEX) * (1uL << 12) |	/* TEX */ \
 		(((AP) >> 2) & 0x01) * (1uL << 15) |	/* AP[2] */ \
-		0 * (1uL << 16) |	/* S */ \
+		(SHAREDval) * (1uL << 16) |	/* S */ \
 		0 * (1uL << 17) |	/* nG */ \
 		0 * (1uL << 18) |	/* 0 */ \
 		0 * (1uL << 19) |	/* NS */ \

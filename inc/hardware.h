@@ -909,6 +909,8 @@ void IRQ_Handler(void);			// No GIC
 void Reset_CPU1_Handler(void);	// startup located function
 void Reset_CPUn_Handler(void);
 
+uint_fast8_t arm_hardware_cpuid(void);
+
 // Set interrupt vector wrappers
 void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint_fast8_t priority, uint_fast8_t targetcpu);
 void arm_hardware_set_handler_overrealtime(uint_fast16_t int_id, void (* handler)(void));
