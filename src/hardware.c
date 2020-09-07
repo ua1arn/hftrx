@@ -13413,6 +13413,7 @@ static void vectors_relocate(void)
 #if CPUSTYLE_ARM && WITHSMPSYSTEM
 
 // http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dai0321a/BIHEJCHB.html
+// Memory attribute SHARED required for ldrex.. and strex.. functionality
 void spin_lock(volatile spinlock_t * p, const char * file, int line)
 {
 	unsigned v = 0xFFFFFFF;

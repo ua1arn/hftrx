@@ -39,7 +39,6 @@ typedef struct listcnt
 	unsigned long tag2;
 	LIST_ENTRY item0;
 	unsigned Count;	// количество элментов в списке
-	SPINLOCK_t lock;
 	unsigned long tag3;
 } LIST_ENTRY2, * PLIST_ENTRY2;
 
@@ -55,7 +54,6 @@ InitializeListHead2(LIST_ENTRY2 * ListHead)
 {
 	ListHead->tag2 = LIST2TAG2;
 	ListHead->tag3 = LIST2TAG3;
-	ListHead->lock.lock = SPINLOCK_INIT_EXEC;
 	(ListHead)->Count = 0;
 	InitializeListHead(& (ListHead)->item0);
 }
@@ -73,34 +71,28 @@ static void
 InsertHeadList2(PLIST_ENTRY2 ListHead, PLIST_ENTRY Entry)
 {
 	ASSERT(ListHead->tag2 == LIST2TAG2 && ListHead->tag3 == LIST2TAG3);
-	SPIN_LOCK(& ListHead->lock);
 	ASSERT(ListHead->item0.Flink != NULL && ListHead->item0.Blink != NULL);
 	(ListHead)->Count += 1;
 	InsertHeadList(& (ListHead)->item0, (Entry));
-	SPIN_UNLOCK(& ListHead->lock);
 }
 
 static PLIST_ENTRY
 RemoveTailList2(PLIST_ENTRY2 ListHead)
 {
 	ASSERT(ListHead->tag2 == LIST2TAG2 && ListHead->tag3 == LIST2TAG3);
-	SPIN_LOCK(& ListHead->lock);
 	ASSERT(ListHead->item0.Flink != NULL && ListHead->item0.Blink != NULL);
 	ASSERT((ListHead)->Count != 0);
 	ASSERT(! IsListEmpty(& (ListHead)->item0));
 	(ListHead)->Count -= 1;
 	const PLIST_ENTRY t = RemoveTailList(& (ListHead)->item0);	/* прямо вернуть значение RemoveTailList нельзя - Microsoft сделал не совсем правильный макрос. Но по другому и не плучилось бы в стандартном языке C. */
-	SPIN_UNLOCK(& ListHead->lock);
 	return t;
 }
 
-static unsigned GetCountList2(LIST_ENTRY2 * ListHead)
+static unsigned GetCountList2(const LIST_ENTRY2 * ListHead)
 {
 	ASSERT(ListHead->tag2 == LIST2TAG2 && ListHead->tag3 == LIST2TAG3);
-	SPIN_LOCK(& ListHead->lock);
 	ASSERT(ListHead->item0.Flink != NULL && ListHead->item0.Blink != NULL);
 	const unsigned count = (ListHead)->Count;
-	SPIN_UNLOCK(& ListHead->lock);
 	return count;
 }
 
@@ -153,7 +145,7 @@ RemoveTailList3(PLIST_ENTRY3 ListHead)
 	return t;
 }
 
-static unsigned GetCountList3(LIST_ENTRY3 * ListHead)
+static unsigned GetCountList3(const LIST_ENTRY3 * ListHead)
 {
 	return GetCountList2(& (ListHead)->item2);
 }
