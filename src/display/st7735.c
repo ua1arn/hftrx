@@ -92,21 +92,6 @@ static void st7735_put_char_begin(void)
 #endif /* WITHSPIEXT16 */
 }
 
-static void st7735_put_char_end(void)
-{
-#if WITHSPIEXT16
-
-	prog_unselect(targetlcd);			/* Disable SPI */
-  #if WITHSPISW
-	hardware_spi_disconnect();
-  #endif /* WITHSPISW */
-#else /* WITHSPIEXT16 */
-
-	spi_unselect(targetlcd);		/* Disable SPI */
-
-#endif /* WITHSPIEXT16 */
-}
-
 
 #if WITHSPIEXT16
 	static COLORMAIN_T fgcolor, bkcolor, halfcolor;
@@ -404,6 +389,45 @@ st7735_pixelsmooth_p3(
 	return fg;
 }
 
+static void st7735_colorbuf(
+		const PACKEDCOLORMAIN_T * buffer,
+		uint_fast32_t len
+		)
+{
+	if (len >= 3)
+	{
+#if 0//WITHSPIEXT16 && WITHSPIHWDMA
+	hardware_spi_master_send_frame_16b(buffer, len);
+#else /* WITHSPIEXT16 */
+		st7735_colorpixel_p1(* buffer ++);
+		len -= 2;
+		while (len --)
+			st7735_colorpixel_p2(* buffer ++);
+		st7735_colorpixel_p3(* buffer ++);
+#endif /* WITHSPIEXT16 */
+	}
+	else if (len == 2)
+	{
+		st7735_colorpixel_p1(* buffer ++);
+		st7735_colorpixel_p3(* buffer ++);
+	}
+}
+
+static void st7735_put_char_end(void)
+{
+#if WITHSPIEXT16
+
+	prog_unselect(targetlcd);			/* Disable SPI */
+  #if WITHSPISW
+	hardware_spi_disconnect();
+  #endif /* WITHSPISW */
+#else /* WITHSPIEXT16 */
+
+	spi_unselect(targetlcd);		/* Disable SPI */
+
+#endif /* WITHSPIEXT16 */
+}
+
 // Выдать восемь цветных пикселей
 static void 
 //NOINLINEAT
@@ -646,6 +670,7 @@ static void st7735_clear(COLORMAIN_T bg)
 	st7735_setcolor(COLORMAIN_WHITE, bg, bg);
 
 #if WITHSPIEXT16 && WITHSPIHWDMA
+	// в глубине вызовов будет испольщоваться st7735_colorbuf
 	enum { LNBURST = 1 };
 	static ALIGNX_BEGIN PACKEDCOLORPIP_T colorbuf [GXSIZE(DIM_X, LNBURST)] ALIGNX_END;
 	for (i = 0; i < sizeof colorbuf / sizeof colorbuf [0]; ++ i)
@@ -654,7 +679,9 @@ static void st7735_clear(COLORMAIN_T bg)
 	}
 	for (i = 0; i < DIM_Y; i += LNBURST)
 	{
-		colpip_to_main(colorbuf, DIM_X, LNBURST, 0, i);
+		colpip_to_main(
+				(uintptr_t) colorbuf, sizeof colorbuf,
+				colorbuf, DIM_X, LNBURST, 0, i);
 	#if WITHINTEGRATEDDSP
 		audioproc_spool_user();		// решение проблем с прерыванием звука при стирании экрана
 	#endif /* WITHINTEGRATEDDSP */
@@ -802,26 +829,23 @@ void display_plot(
 	uint_fast16_t ypix
 	)
 {
-	uint_fast32_t len = GXSIZE(dx, dy);	// количество элементов
-#if WITHSPIEXT16 && WITHSPIHWDMA
+	const uint_fast16_t adjgx = GXADJ(dx);
+	uint_fast32_t memlen = GXSIZE(dx, dy);	// количество элементов
 	// Передача в индикатор по DMA
-	arm_hardware_flush((uintptr_t) buffer, len * sizeof (* buffer));	// количество байтов
-	hardware_spi_master_send_frame_16b(buffer, len);
-#else /* WITHSPIEXT16 */
-	if (len >= 3)
+	arm_hardware_flush((uintptr_t) buffer, memlen * sizeof (* buffer));	// количество байтов
+	if (dx != adjgx)
 	{
-		st7735_colorpixel_p1(* buffer ++);
-		len -= 2;
-		while (len --)
-			st7735_colorpixel_p2(* buffer ++);
-		st7735_colorpixel_p3(* buffer ++);
+		while (dy --)
+		{
+			/* в буфере есть неиспользуемые "хвосты" */
+			st7735_colorbuf(buffer, dx);
+			buffer += adjgx;
+		}
 	}
-	else if (len == 2)
+	else
 	{
-		st7735_colorpixel_p1(* buffer ++);
-		st7735_colorpixel_p3(* buffer ++);
+		st7735_colorbuf(buffer, memlen);
 	}
-#endif /* WITHSPIEXT16 */
 }
 
 

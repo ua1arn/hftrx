@@ -4,9 +4,21 @@
 #include "hardware.h"
 
 #if WITHTOUCHGUI
+
+#include "src/gui/gui.h"
 #include "src/gui/gui_structs.h"
 
-void gui_user_actions_ater_close_window(void);
+void gui_user_actions_after_close_window(void);
+
+#if WITHGUISTYLE_MINI
+
+enum {
+	WINDOW_MAIN,
+
+	WINDOWS_COUNT
+};
+
+#elif WITHGUISTYLE_COMMON
 
 enum {
 	WINDOW_MAIN,					// постоянно отображаемые кнопки внизу экрана
@@ -31,8 +43,11 @@ enum {
 	WINDOW_BANDS,
 	WINDOW_MEMORY,
 	WINDOW_DISPLAY,
+
 	WINDOWS_COUNT
 };
+
+#endif
 
 typedef struct {
 	uint8_t press;			// короткое нажание

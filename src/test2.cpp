@@ -10,10 +10,10 @@
 class tcl0 {
 public:
 	tcl0() {
-		debug_printf_P("*********** tcl0 @%p\n", this);
+		PRINTF("*********** tcl0 @%p\n", this);
 	}
 	~tcl0() {
-		debug_printf_P("----------- tcl0 @%p\n", this);
+		PRINTF("----------- tcl0 @%p\n", this);
 	}
 };
 

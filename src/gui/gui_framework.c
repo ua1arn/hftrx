@@ -23,6 +23,7 @@
 
 #include "src/gui/gui.h"
 #include "src/gui/gui_user.h"
+#include "src/gui/gui_system.h"
 #include "src/gui/gui_structs.h"
 #include "src/gui/gui_settings.h"
 
@@ -305,7 +306,7 @@ void close_all_windows(void)
 	footer_buttons_state(CANCELLED);
 	hamradio_set_lockmode(0);
 	hamradio_disable_keyboard_redirect();
-	gui_user_actions_ater_close_window();
+	gui_user_actions_after_close_window();
 }
 
 /* Освободить выделенную память в куче и обнулить счетчики элементов окна */
@@ -345,7 +346,7 @@ void close_window(uint_fast8_t parent) // 0 - не открывать parent win
 			pwin->first_call = 1;
 		}
 	}
-	gui_user_actions_ater_close_window();
+	gui_user_actions_after_close_window();
 }
 
 /* Открыть окно */
@@ -644,13 +645,18 @@ static void fill_button_bg_buf(btn_bg_t * v)
 	size_t s = GXSIZE(w, h) * sizeof (PACKEDCOLORMAIN_T);
 
 	v->bg_non_pressed = 	(PACKEDCOLORMAIN_T *) malloc(s);
+	GUI_MEM_ASSERT(v->bg_non_pressed);
 	v->bg_pressed = 		(PACKEDCOLORMAIN_T *) malloc(s);
+	GUI_MEM_ASSERT(v->bg_pressed);
 	v->bg_locked = 			(PACKEDCOLORMAIN_T *) malloc(s);
+	GUI_MEM_ASSERT(v->bg_locked);
 	v->bg_locked_pressed = 	(PACKEDCOLORMAIN_T *) malloc(s);
+	GUI_MEM_ASSERT(v->bg_locked_pressed);
 	v->bg_disabled = 		(PACKEDCOLORMAIN_T *) malloc(s);
+	GUI_MEM_ASSERT(v->bg_disabled);
 
 	buf = v->bg_non_pressed;
-	ASSERT(buf != NULL);
+	GUI_MEM_ASSERT(buf);
 #if GUI_OLDBUTTONSTYLE
 	colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLOR_BUTTON_NON_LOCKED, 1);
 	colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORMAIN_GRAY, 0);
@@ -663,7 +669,7 @@ static void fill_button_bg_buf(btn_bg_t * v)
 #endif /* GUI_OLDBUTTONSTYLE */
 
 	buf = v->bg_pressed;
-	ASSERT(buf != NULL);
+	GUI_MEM_ASSERT(buf);
 #if GUI_OLDBUTTONSTYLE
 	colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLOR_BUTTON_PR_NON_LOCKED, 1);
 	colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORMAIN_GRAY, 0);
@@ -679,7 +685,7 @@ static void fill_button_bg_buf(btn_bg_t * v)
 #endif /* GUI_OLDBUTTONSTYLE */
 
 	buf = v->bg_locked;
-	ASSERT(buf != NULL);
+	GUI_MEM_ASSERT(buf);
 #if GUI_OLDBUTTONSTYLE
 	colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLOR_BUTTON_LOCKED, 1);
 	colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORMAIN_GRAY, 0);
@@ -692,7 +698,7 @@ static void fill_button_bg_buf(btn_bg_t * v)
 #endif /* GUI_OLDBUTTONSTYLE */
 
 	buf = v->bg_locked_pressed;
-	ASSERT(buf != NULL);
+	GUI_MEM_ASSERT(buf);
 #if GUI_OLDBUTTONSTYLE
 	colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLOR_BUTTON_PR_LOCKED, 1);
 	colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORMAIN_GRAY, 0);
@@ -708,7 +714,7 @@ static void fill_button_bg_buf(btn_bg_t * v)
 #endif /* GUI_OLDBUTTONSTYLE */
 
 	buf = v->bg_disabled;
-	ASSERT(buf != NULL);
+	GUI_MEM_ASSERT(buf);
 #if GUI_OLDBUTTONSTYLE
 	colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLOR_BUTTON_DISABLED, 1);
 	colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORMAIN_GRAY, 0);
@@ -915,7 +921,7 @@ static void process_gui(void)
 		gui.last_pressed_x = tx;
 		gui.last_pressed_y = ty;
 		gui.is_touching_screen = 1;
-//		debug_printf_P(PSTR("last x/y=%d/%d\n"), gui.last_pressed_x, gui.last_pressed_y);
+//		PRINTF(PSTR("last x/y=%d/%d\n"), gui.last_pressed_x, gui.last_pressed_y);
 		update_gui_elements_list();
 	}
 	else
@@ -964,7 +970,7 @@ static void process_gui(void)
 			if (gui.vector_move_x != 0 || gui.vector_move_y != 0)
 			{
 				gui.is_tracking = 1;
-//				debug_printf_P(PSTR("move x: %d, move y: %d\n"), gui.vector_move_x, gui.vector_move_y);
+//				PRINTF(PSTR("move x: %d, move y: %d\n"), gui.vector_move_x, gui.vector_move_y);
 			}
 			p->state = PRESSED;
 			set_state_record(p);

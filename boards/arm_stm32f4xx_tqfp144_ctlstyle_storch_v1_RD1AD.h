@@ -8,13 +8,14 @@
 // STM32F746ZGT6 кодеком NAU8822L и FPGA EP4CE22E22I7N
 // с функцией DUAL WATCH, USB
 // Rmainunit_v5cm.pcb, Rmainunit_v5dm.pcb (USB)
+// RD1AD - версия без термодатчика - Rmainunit_v5cm.pcb
 
 #ifndef ARM_STM32F4XX_TQFP144_CTLSTYLE_STORCH_V1_RD1AD_H_INCLUDED
 #define ARM_STM32F4XX_TQFP144_CTLSTYLE_STORCH_V1_RD1AD_H_INCLUDED 1
 
-	#if ! defined(STM32F746xx)
-		#error Wrong CPU selected. STM32F746xx expected
-	#endif /* ! defined(STM32F446xx) */
+	#if ! defined(STM32H743xx)
+		#error Wrong CPU selected. STM32H743xx expected
+	#endif /* ! defined(STM32F767xx) */
 
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */
 	#define WITHI2SCLOCKFROMPIN 1	// тактовая частота на SPI2 (I2S) подается с внешнего генератора, в процессор вводится через MCK сигнал интерфейса
@@ -41,6 +42,20 @@
 			// normal operation frequency
 			#define REF1_MUL 192		// 2*192.000 MHz (192 <= PLLN <= 432)
 			#define HARDWARE_FLASH_LATENCY FLASH_ACR_LATENCY_5WS	// Задержка для работы с памятью 5 WS for 168 MHz at 3.3 volt
+		#elif CPUSTYLE_STM32H7XX && 0
+			// high  operation frequency - revision V
+			#define REF1_MUL 480		// 2*480.000 MHz (192 <= PLLN <= 432)
+			#define REF3_MUL 135		// 2*135.000 MHz (192 <= PLLN <= 432)
+			#define PWR_D3CR_VOS_value (PWR_D3CR_VOS_0 * 3)
+			#define HARDWARE_FLASH_LATENCY FLASH_ACR_LATENCY_4WS
+			#define PLL2_DIVP 4
+		#elif CPUSTYLE_STM32H7XX
+			// normal operation frequency - revision Y
+			#define REF1_MUL 384		// 2*384.000 MHz (192 <= PLLN <= 432)
+			#define REF3_MUL 135		// 2*135.000 MHz (192 <= PLLN <= 432)
+			#define PWR_D3CR_VOS_value (PWR_D3CR_VOS_0 * 3)
+			#define HARDWARE_FLASH_LATENCY FLASH_ACR_LATENCY_2WS
+			#define PLL2_DIVP 4
 		#endif
 
 	#elif 0
@@ -209,13 +224,14 @@
 	//#define LCDMODE_ST7565S_TOPDOWN	1	/* LCDMODE_ST7565S - перевернуть изображение (для выводов сверху) */
 	//#define LCDMODE_ILI9320	1	/* Индикатор 248*320 с контроллером ILI9320 */
 	#define LCDMODE_ILI9341	1	/* 320*240 SF-TC240T-9370-T с контроллером ILI9341 - STM32F4DISCO */
+	#define LCDMODE_HORFILL 1
 	//#define LCDMODE_ILI9341_TOPDOWN	1	/* LCDMODE_ILI9341 - перевернуть изображение (для выводов справа) */
 	//#define LCDMODE_LQ043T3DX02K 1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 display */
 	// --- Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
 
 	#define ENCRES_DEFAULT ENCRES_128
 	//#define ENCRES_DEFAULT ENCRES_24
-	#define WITHDIRECTFREQENER	1 //(! CTLSTYLE_SW2011ALL && ! CTLSTYLE_UA3DKC)
+	//#define WITHDIRECTFREQENER	1 //(! CTLSTYLE_SW2011ALL && ! CTLSTYLE_UA3DKC)
 	#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
 
 	/* Board hardware configuration */
@@ -262,19 +278,25 @@
 	//#define WITHUSEAUDIOREC		1	// Запись звука на SD CARD
 	//#define WITHUSEAUDIOREC2CH	1	// Запись звука на SD CARD в стерео
 
-	#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
-	//#define BOARD_FFTZOOM_POW2MAX 1	// Возможные масштабы FFT x1, x2
+	//#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
+	#define BOARD_FFTZOOM_POW2MAX 1	// Возможные масштабы FFT x1, x2
 	//#define BOARD_FFTZOOM_POW2MAX 2	// Возможные масштабы FFT x1, x2, x4
-	#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
+	//#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
 	//#define BOARD_FFTZOOM_POW2MAX 4	// Возможные масштабы FFT x1, x2, x4, x8, x16
-	#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
-	//#define WITHUSEDUALWATCH	1	// Второй приемник
-	#define WITHREVERB	1	// ревербератор в обработке микрофонного сигнала
-	#define WITHDACSTRAIGHT 1	/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
-	#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
-	#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
+	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
+	#define WITHUSEDUALWATCH	1	// Второй приемник
+	//#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
+	#define WITHREVERB	1			// ревербератор в обработке микрофонного сигнала
+	#define WITHDACSTRAIGHT 1		/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
+	#define WITHFQMETER	1			/* есть схема измерения опорной частоты, по внешнему PPS */
+	//#define WITHFASTWATERFLOW 1		/* хранение водопада в формате совпадающим с дисплеем */
+	#define WITHTXCWREDUCE	1		/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
 
 	#if 0
+		#define WITHUSBHEADSET 1	/* трансивер работает USB гарнитурой для компьютера - режим тестирования */
+		#define WITHBBOX	1	// Black Box mode - устройство без органов управления
+		#define WITHBBOXMIKESRC	BOARD_TXAUDIO_USB
+	#elif 0
 		#define WITHBBOX	1	// Black Box mode - устройство без органов управления
 		#define WITHBBOXFREQ	26985000L		// частота после включения
 		//#define WITHBBOXFREQ	(26985000L - 260)		// частота после включения - 135 коррекция частоты платы с  122.88 для попадания в приём платы с 100 МГц генератором без коррекции
@@ -422,7 +444,7 @@
 
 	#define WITHCATEXT	1	/* Расширенный набор команд CAT */
 	#define WITHELKEY	1
-	#define WITHKBDENCODER 1	// перестройка частоты кнопками
+	//#define WITHKBDENCODER 1	// перестройка частоты кнопками
 	#define WITHKEYBOARD 1	/* в данном устройстве есть клавиатура */
 	#define KEYBOARD_USE_ADC	1	/* на одной линии установлено  четыре  клавиши. на vref - 6.8K, далее 2.2К, 4.7К и 13K. */
 

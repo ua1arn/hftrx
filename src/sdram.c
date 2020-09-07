@@ -3472,11 +3472,15 @@ static void stm32mp1_ddr_init(struct ddr_info *priv,
 		mmio_read_32((uintptr_t)&priv->ctl->pctrl_1));
 }
 
-//#include "stm32mp15-mx_1G.dtsi"	// 64k*16
-#include "stm32mp15-mx_2G.dtsi"	// 128k*16
-//#include "stm32mp15-mx_4G.dtsi"		// 256k*16
-//#include "stm32mp15-mx_8G.dtsi"	// 512k*16
-
+#if DDR_FREQ <= 300000000uL
+	// less or equal 300 MHz
+	#include "stm32mp15-mx_300MHz_2G.dtsi"	// 128k*16
+#else
+	//#include "stm32mp15-mx_1G.dtsi"	// 64k*16
+	#include "stm32mp15-mx_2G.dtsi"	// 128k*16
+	//#include "stm32mp15-mx_4G.dtsi"		// 256k*16
+	//#include "stm32mp15-mx_8G.dtsi"	// 512k*16
+#endif
 // NT5CC128M16IP-DI BGA DDR3 NT5CC128M16IP DI
 void stm32mp1_ddr_get_config(struct stm32mp1_ddr_config * cfg)
 {
@@ -3965,6 +3969,15 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 #endif
 	//__set_SCTLR(__get_SCTLR() | SCTLR_C_Msk);
 	//PRINTF("TZC->INT_STATUS=%08lX\n", TZC->INT_STATUS);
+
+#if WITHDEBUG
+	{
+		unsigned size4 = config.info.size / 4;
+		volatile uint32_t * base4 = (volatile uint32_t *) STM32MP_DDR_BASE;
+		while (size4 --)
+			* base4 ++ = 0xABBA1998uL;
+	}
+#endif /* WITHDEBUG */
 
 	/* Software Self-Refresh mode (SSR) during DDR initilialization */
 	mmio_clrsetbits_32(RCC_BASE + RCC_DDRITFCR,

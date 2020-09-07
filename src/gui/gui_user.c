@@ -19,9 +19,10 @@
 #include "keyboard.h"
 #include "codecs.h"
 
-#if WITHTOUCHGUI
-
 #include "src/gui/gui.h"
+
+#if WITHTOUCHGUI && WITHGUISTYLE_COMMON		// версия GUI для разрешения 800х480
+
 #include "src/gui/gui_user.h"
 #include "src/gui/gui_system.h"
 #include "src/gui/gui_structs.h"
@@ -81,7 +82,7 @@ static uint_fast8_t swr_scan_stop = 0;			// флаг нажатия кнопки
 static uint_fast8_t * y_vals;					// массив КСВ в виде отсчетов по оси Y графика
 
 
-static enc2_menu_t * gui_enc2_menu;
+static enc2_menu_t gui_enc2_menu = { "", "", 0, 0, };
 static enc2_t encoder2 = { 0, 0, 1, };
 static enc2_stack_t enc2_stack;
 
@@ -99,6 +100,12 @@ window_t * get_win(uint8_t window_id)
 {
 	ASSERT(window_id < WINDOWS_COUNT);
 	return & windows [window_id];
+}
+
+void clean_enc2_stack(void)
+{
+	memset(enc2_stack.data, 0, sizeof(enc2_stack.data));
+	enc2_stack.size = 0;
 }
 
 void push_enc2_stack(const int_fast8_t value)
@@ -120,20 +127,13 @@ int_fast8_t pop_enc2_stack(void)
     do {
     	enc2_stack.size --;
     	v += enc2_stack.data [enc2_stack.size];
-
     } while (enc2_stack.size > 0);
 
-    memset(enc2_stack.data, 0, sizeof(enc2_stack.data));
+    clean_enc2_stack();
     return v;
 }
 
-void clean_enc2_stack(void)
-{
-	memset(enc2_stack.data, 0, sizeof(enc2_stack.data));
-	enc2_stack.size = 0;
-}
-
-void gui_user_actions_ater_close_window(void)
+void gui_user_actions_after_close_window(void)
 {
 	clean_enc2_stack();
 }
@@ -274,10 +274,11 @@ static void gui_main_process(void)
 	{
 		uint_fast8_t interval_btn = 3;
 		uint_fast16_t x = 0;
+		ASSERT(win != NULL);
 		win->first_call = 0;
-		gui_enc2_menu->updated = 1;
+		gui_enc2_menu.updated = 1;
 
-		button_t buttons [] = {
+		static const button_t buttons [] = {
 		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
 			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_Bands", 	"Bands", },
 			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_Memory",  	"Memory", },
@@ -292,7 +293,7 @@ static void gui_main_process(void)
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
 		win->bh_ptr = malloc(buttons_size);
-		ASSERT(win->bh_ptr != NULL);
+		GUI_MEM_ASSERT(win->bh_ptr);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
 		for (uint_fast8_t id = 0; id < win->bh_count; id ++)
@@ -390,7 +391,15 @@ static void gui_main_process(void)
 
 	current_place ++;	// 3
 
-	// пусто
+	// AGC
+	static int_fast8_t agc;
+	if (get_gui_1sec_timer())
+		agc = hamradio_get_agc_type();
+	xx = current_place * lbl_place_width + lbl_place_width / 2;
+	local_snprintf_P(buf, buflen, PSTR("AGC"));
+	colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, y1, buf, COLORMAIN_WHITE);
+	local_snprintf_P(buf, buflen, agc ? PSTR("fast") : PSTR("slow"));
+	colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, y2, buf, COLORMAIN_WHITE);
 
 	current_place ++;	// 4
 
@@ -525,7 +534,7 @@ static void window_memory_process(void)
 		uint_fast8_t interval = 6, col1_int = 20, row1_int = window_title_height + 20, row_count = 5;
 		win->first_call = 0;
 
-		button_t buttons [] = {
+		static const button_t buttons [] = {
 		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,     	 	payload,	 name, 		text
 			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, INT32_MAX, "btn_cell0", "---", },
 			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, INT32_MAX, "btn_cell1", "---", },
@@ -551,7 +560,7 @@ static void window_memory_process(void)
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
 		win->bh_ptr = malloc(buttons_size);
-		ASSERT(win->bh_ptr != NULL);
+		GUI_MEM_ASSERT(win->bh_ptr);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
 		x = col1_int;
@@ -612,7 +621,7 @@ static void window_bands_process(void)
 
 		uint_fast8_t bands_count = hamradio_get_bands(bands);
 
-		label_t labels [] = {
+		static const label_t labels [] = {
 		//    x, y,  parent, state, is_trackable, visible,  	name, 		Text, 				font_size, 	color, onClickHandler
 			{ 0, 0, WINDOW_BANDS, DISABLED,  0, NON_VISIBLE, "lbl_ham",   "HAM bands",		 FONT_LARGE, COLORMAIN_WHITE, },
 			{ 0, 0, WINDOW_BANDS, DISABLED,  0, NON_VISIBLE, "lbl_bcast", "Broadcast bands", FONT_LARGE, COLORMAIN_WHITE, },
@@ -620,13 +629,13 @@ static void window_bands_process(void)
 		win->lh_count = ARRAY_SIZE(labels);
 		uint_fast16_t labels_size = sizeof(labels);
 		win->lh_ptr = malloc(labels_size);
-		ASSERT(win->lh_ptr != NULL);
+		GUI_MEM_ASSERT(win->lh_ptr);
 		memcpy(win->lh_ptr, labels, labels_size);
 
 		win->bh_count = bands_count;
 		uint_fast16_t buttons_size = win->bh_count * sizeof (button_t);
 		win->bh_ptr = calloc(win->bh_count, sizeof (button_t));
-		ASSERT(win->bh_ptr != NULL);
+		GUI_MEM_ASSERT(win->bh_ptr);
 
 		lh1 = find_gui_element(TYPE_LABEL, win, "lbl_ham");
 		lh1->x = col1_int;
@@ -774,7 +783,7 @@ static void window_options_process(void)
 		uint_fast8_t interval = 6, col1_int = 20, row1_int = window_title_height + 20, row_count = 3;
 		win->first_call = 0;
 
-		button_t buttons [] = {
+		static const button_t buttons [] = {
 		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
 			{ 0, 0, 100, 44, buttons_options_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_OPTIONS, NON_VISIBLE, INT32_MAX, "btn_SysMenu",   "System|settings", },
 			{ 0, 0, 100, 44, buttons_options_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_OPTIONS, NON_VISIBLE, INT32_MAX, "btn_AUDsett",   "Audio|settings", },
@@ -786,7 +795,7 @@ static void window_options_process(void)
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
 		win->bh_ptr = malloc(buttons_size);
-		ASSERT(win->bh_ptr != NULL);
+		GUI_MEM_ASSERT(win->bh_ptr);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
 		x = col1_int;
@@ -861,10 +870,10 @@ static void window_display_process(void)
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
 		win->bh_ptr = malloc(buttons_size);
-		ASSERT(win->bh_ptr != NULL);
+		GUI_MEM_ASSERT(win->bh_ptr);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
-		label_t labels [] = {
+		static const label_t labels [] = {
 		//    x, y,  parent,     		state, is_trackable, visible,   name,    Text, font_size, 	color, 	onClickHandler
 			{ 0, 0,	WINDOW_DISPLAY,  DISABLED,  0, NON_VISIBLE, "lbl_bottomDB",		"Bottom DB: xxx", FONT_MEDIUM, COLORMAIN_WHITE, },
 			{ 0, 0,	WINDOW_DISPLAY,  DISABLED,  0, NON_VISIBLE, "lbl_topDB", 		"Top DB:    xxx", FONT_MEDIUM, COLORMAIN_WHITE, },
@@ -876,7 +885,7 @@ static void window_display_process(void)
 		win->lh_count = ARRAY_SIZE(labels);
 		uint_fast16_t labels_size = sizeof(labels);
 		win->lh_ptr = malloc(labels_size);
-		ASSERT(win->lh_ptr != NULL);
+		GUI_MEM_ASSERT(win->lh_ptr);
 		memcpy(win->lh_ptr, labels, labels_size);
 
 		slider_t sliders [] = {
@@ -886,7 +895,7 @@ static void window_display_process(void)
 		win->sh_count = ARRAY_SIZE(sliders);
 		uint_fast16_t sliders_size = sizeof(sliders);
 		win->sh_ptr = malloc(sliders_size);
-		ASSERT(win->sh_ptr != NULL);
+		GUI_MEM_ASSERT(win->sh_ptr);
 		memcpy(win->sh_ptr, sliders, sliders_size);
 
 		x = col1_int;
@@ -1027,7 +1036,7 @@ static void window_utilites_process(void)
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
 		win->bh_ptr = malloc(buttons_size);
-		ASSERT(win->bh_ptr != NULL);
+		GUI_MEM_ASSERT(win->bh_ptr);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
 		x = col1_int;
@@ -1083,7 +1092,7 @@ static void window_mode_process(void)
 		uint_fast8_t id_start, id_end;
 		win->first_call = 0;
 
-		button_t buttons [] = {
+		static const button_t buttons [] = {
 		//   x1, y1, w, h,  onClickHandler,      state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
 			{ 0, 0, 86, 44, buttons_mode_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_LSB, "btnModeLSB", "LSB", },
 			{ 0, 0, 86, 44, buttons_mode_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_CW,  "btnModeCW",  "CW", },
@@ -1097,7 +1106,7 @@ static void window_mode_process(void)
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
 		win->bh_ptr = malloc(buttons_size);
-		ASSERT(win->bh_ptr != NULL);
+		GUI_MEM_ASSERT(win->bh_ptr);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
 		x = col1_int;
@@ -1202,7 +1211,7 @@ static void window_af_process(void)
 		win->first_call = 0;
 		uint_fast8_t interval = 50, col1_int = 20;
 
-		button_t buttons [] = {
+		static const button_t buttons [] = {
 		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   visible,   payload,	 name, 		text
 			{ 0, 0, 40, 40, buttons_af_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_BP, NON_VISIBLE, -1, "btnlow-", 	"-", },
 			{ 0, 0, 40, 40, buttons_af_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_BP, NON_VISIBLE, 1,  "btnlow+", 	"+", },
@@ -1214,7 +1223,7 @@ static void window_af_process(void)
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
 		win->bh_ptr = malloc(buttons_size);
-		ASSERT(win->bh_ptr != NULL);
+		GUI_MEM_ASSERT(win->bh_ptr);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
 		label_t labels [] = {
@@ -1226,7 +1235,7 @@ static void window_af_process(void)
 		win->lh_count = ARRAY_SIZE(labels);
 		uint_fast16_t labels_size = sizeof(labels);
 		win->lh_ptr = malloc(labels_size);
-		ASSERT(win->lh_ptr != NULL);
+		GUI_MEM_ASSERT(win->lh_ptr);
 		memcpy(win->lh_ptr, labels, labels_size);
 
 		lbl_low = find_gui_element(TYPE_LABEL, win, "lbl_low");
@@ -1360,11 +1369,13 @@ static void buttons_agc_handler(void)
 		if (pressed_btn == btnAGCslow)
 		{
 			hamradio_set_agc_slow();
+			gui_timer_update(NULL);
 			close_all_windows();
 		}
 		else if (pressed_btn == btnAGCfast)
 		{
 			hamradio_set_agc_fast();
+			gui_timer_update(NULL);
 			close_all_windows();
 		}
 	}
@@ -1379,7 +1390,7 @@ static void window_agc_process(void)
 		uint_fast8_t interval = 6, col1_int = 20, row1_int = window_title_height + 20, row_count = 4;
 		win->first_call = 0;
 
-		button_t buttons [] = {
+		static const button_t buttons [] = {
 		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
 			{ 0, 0, 86, 44, buttons_agc_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AGC, NON_VISIBLE, INT32_MAX, "btnAGCslow", "AGC|slow", },
 			{ 0, 0, 86, 44, buttons_agc_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AGC, NON_VISIBLE, INT32_MAX, "btnAGCfast", "AGC|fast", },
@@ -1387,7 +1398,7 @@ static void window_agc_process(void)
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
 		win->bh_ptr = malloc(buttons_size);
-		ASSERT(win->bh_ptr != NULL);
+		GUI_MEM_ASSERT(win->bh_ptr);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
 		x = col1_int;
@@ -1408,6 +1419,18 @@ static void window_agc_process(void)
 				y = y + bh->h + interval;
 			}
 		}
+
+		if (hamradio_get_agc_type())
+		{
+			button_t * bh = find_gui_element(TYPE_BUTTON, win, "btnAGCfast");
+			bh->is_locked = BUTTON_LOCKED;
+		}
+		else
+		{
+			button_t * bh = find_gui_element(TYPE_BUTTON, win, "btnAGCslow");
+			bh->is_locked = BUTTON_LOCKED;
+		}
+
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 		elements_state(win);
 		return;
@@ -1438,7 +1461,7 @@ static void window_freq_process (void)
 		win->first_call = 0;
 		button_t * bh = NULL;
 
-		button_t buttons [] = {
+		static const button_t buttons [] = {
 		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
 			{ 0, 0, 50, 50, buttons_freq_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ, NON_VISIBLE, 1, 		 		"btnFreq1",  "1", },
 			{ 0, 0, 50, 50, buttons_freq_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ, NON_VISIBLE, 2, 		 		"btnFreq2",  "2", },
@@ -1456,7 +1479,7 @@ static void window_freq_process (void)
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
 		win->bh_ptr = malloc(buttons_size);
-		ASSERT(win->bh_ptr != NULL);
+		GUI_MEM_ASSERT(win->bh_ptr);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
 		label_t labels [] = {
@@ -1466,7 +1489,7 @@ static void window_freq_process (void)
 		win->lh_count = ARRAY_SIZE(labels);
 		uint_fast16_t labels_size = sizeof(labels);
 		win->lh_ptr = malloc(labels_size);
-		ASSERT(win->lh_ptr != NULL);
+		GUI_MEM_ASSERT(win->lh_ptr);
 		memcpy(win->lh_ptr, labels, labels_size);
 
 		x = col1_int;
@@ -1601,7 +1624,7 @@ static void window_swrscan_process(void)
 		win->first_call = 0;
 		button_t * bh = NULL;
 
-		button_t buttons [] = {
+		static const button_t buttons [] = {
 		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
 			{ 0, 0, 86, 44, buttons_swrscan_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_SWR_SCANNER, 	NON_VISIBLE, INT32_MAX,  "btn_swr_start", "Start", },
 			{ 0, 0, 86, 44, buttons_swrscan_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_SWR_SCANNER, 	NON_VISIBLE, INT32_MAX,  "btn_swr_OK", 	  "OK", },
@@ -1609,10 +1632,10 @@ static void window_swrscan_process(void)
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
 		win->bh_ptr = malloc(buttons_size);
-		ASSERT(win->bh_ptr != NULL);
+		GUI_MEM_ASSERT(win->bh_ptr);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
-		label_t labels [] = {
+		static const label_t labels [] = {
 		//    x, y,  parent,    state, is_trackable, visible,   name,   Text, font_size, 	color, 	 onClickHandler
 			{ 0, 0,	WINDOW_SWR_SCANNER, DISABLED,  0, NON_VISIBLE, "lbl_swr_bottom", "", FONT_SMALL, COLORMAIN_WHITE, },
 			{ 0, 0,	WINDOW_SWR_SCANNER, DISABLED,  0, NON_VISIBLE, "lbl_swr_top", 	 "", FONT_SMALL, COLORMAIN_WHITE, },
@@ -1621,7 +1644,7 @@ static void window_swrscan_process(void)
 		win->lh_count = ARRAY_SIZE(labels);
 		uint_fast16_t labels_size = sizeof(labels);
 		win->lh_ptr = malloc(labels_size);
-		ASSERT(win->lh_ptr != NULL);
+		GUI_MEM_ASSERT(win->lh_ptr);
 		memcpy(win->lh_ptr, labels, labels_size);
 
 		mid_w = col1_int + gr_w / 2;
@@ -1801,7 +1824,7 @@ static void window_tx_process(void)
 		button_t * bh = NULL;
 		win->first_call = 0;
 
-		button_t buttons [] = {
+		static const button_t buttons [] = {
 		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
 			{ 0, 0, 100, 44, buttons_tx_sett_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_TX_SETTINGS, 	NON_VISIBLE, INT32_MAX, "btn_tx_vox", 	 	 	"VOX|OFF", },
 			{ 0, 0, 100, 44, buttons_tx_sett_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_TX_SETTINGS, 	NON_VISIBLE, INT32_MAX, "btn_tx_vox_settings", 	"VOX|settings", },
@@ -1810,7 +1833,7 @@ static void window_tx_process(void)
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
 		win->bh_ptr = malloc(buttons_size);
-		ASSERT(win->bh_ptr != NULL);
+		GUI_MEM_ASSERT(win->bh_ptr);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
 		x = col1_int;
@@ -1889,10 +1912,10 @@ static void window_tx_vox_process(void)
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
 		win->bh_ptr = malloc(buttons_size);
-		ASSERT(win->bh_ptr != NULL);
+		GUI_MEM_ASSERT(win->bh_ptr);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
-		slider_t sliders [] = {
+		static const slider_t sliders [] = {
 			{ 0, 0, 0, 0, 0, 0, ORIENTATION_HORIZONTAL, WINDOW_TX_VOX_SETT, "sl_vox_delay",  CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
 			{ 0, 0, 0, 0, 0, 0, ORIENTATION_HORIZONTAL, WINDOW_TX_VOX_SETT, "sl_vox_level",  CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
 			{ 0, 0, 0, 0, 0, 0, ORIENTATION_HORIZONTAL, WINDOW_TX_VOX_SETT, "sl_avox_level", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
@@ -1900,10 +1923,10 @@ static void window_tx_vox_process(void)
 		win->sh_count = ARRAY_SIZE(sliders);
 		uint_fast16_t sliders_size = sizeof(sliders);
 		win->sh_ptr = malloc(sliders_size);
-		ASSERT(win->sh_ptr != NULL);
+		GUI_MEM_ASSERT(win->sh_ptr);
 		memcpy(win->sh_ptr, sliders, sliders_size);
 
-		label_t labels [] = {
+		static const label_t labels [] = {
 		//    x, y,  parent,  state, is_trackable, visible,   name,   Text, font_size, 	color, 	onClickHandler
 			{ 0, 0,	WINDOW_TX_VOX_SETT, DISABLED,  0, NON_VISIBLE, "lbl_vox_delay",    	 "", FONT_MEDIUM, COLORMAIN_WHITE, },
 			{ 0, 0,	WINDOW_TX_VOX_SETT, DISABLED,  0, NON_VISIBLE, "lbl_vox_level",    	 "", FONT_MEDIUM, COLORMAIN_WHITE, },
@@ -1918,7 +1941,7 @@ static void window_tx_vox_process(void)
 		win->lh_count = ARRAY_SIZE(labels);
 		uint_fast16_t labels_size = sizeof(labels);
 		win->lh_ptr = malloc(labels_size);
-		ASSERT(win->lh_ptr != NULL);
+		GUI_MEM_ASSERT(win->lh_ptr);
 		memcpy(win->lh_ptr, labels, labels_size);
 
 		hamradio_get_vox_delay_limits(& delay_min, & delay_max);
@@ -2076,27 +2099,27 @@ static void window_tx_power_process(void)
 		uint_fast8_t interval = 50, col1_int = 20;
 		win->first_call = 0;
 
-		button_t buttons [] = {
+		static const button_t buttons [] = {
 		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
 			{ 0, 0,  44, 44, buttons_tx_power_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_TX_POWER,  NON_VISIBLE, INT32_MAX, "btn_tx_pwr_OK", "OK", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
 		win->bh_ptr = malloc(buttons_size);
-		ASSERT(win->bh_ptr != NULL);
+		GUI_MEM_ASSERT(win->bh_ptr);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
-		slider_t sliders [] = {
+		static const slider_t sliders [] = {
 			{ 0, 0, 0, 0, 0, 0, ORIENTATION_HORIZONTAL, WINDOW_TX_POWER, "sl_pwr_level",   	   CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
 			{ 0, 0, 0, 0, 0, 0, ORIENTATION_HORIZONTAL, WINDOW_TX_POWER, "sl_pwr_tuner_level", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
 		};
 		win->sh_count = ARRAY_SIZE(sliders);
 		uint_fast16_t sliders_size = sizeof(sliders);
 		win->sh_ptr = malloc(sliders_size);
-		ASSERT(win->sh_ptr != NULL);
+		GUI_MEM_ASSERT(win->sh_ptr);
 		memcpy(win->sh_ptr, sliders, sliders_size);
 
-		label_t labels [] = {
+		static const label_t labels [] = {
 		//    x, y,  parent,  state, is_trackable, visible,   name,    Text, font_size, 	color, 		onClickHandler
 			{ 0, 0,	WINDOW_TX_POWER, DISABLED,  0, NON_VISIBLE, "lbl_tx_power",   "", FONT_MEDIUM, COLORMAIN_WHITE, },
 			{ 0, 0,	WINDOW_TX_POWER, DISABLED,  0, NON_VISIBLE, "lbl_tune_power", "", FONT_MEDIUM, COLORMAIN_WHITE, },
@@ -2104,7 +2127,7 @@ static void window_tx_power_process(void)
 		win->lh_count = ARRAY_SIZE(labels);
 		uint_fast16_t labels_size = sizeof(labels);
 		win->lh_ptr = malloc(labels_size);
-		ASSERT(win->lh_ptr != NULL);
+		GUI_MEM_ASSERT(win->lh_ptr);
 		memcpy(win->lh_ptr, labels, labels_size);
 
 		sl_pwr_level = find_gui_element(TYPE_SLIDER, win, "sl_pwr_level");
@@ -2245,7 +2268,7 @@ static void window_audiosettings_process(void)
 		button_t * bh = NULL;
 		win->first_call = 0;
 
-		button_t buttons [] = {
+		static const button_t buttons [] = {
 		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
 			{ 0, 0, 100, 44, buttons_audiosettings_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, 	NON_VISIBLE, INT32_MAX, "btn_reverb", 			"Reverb|OFF", },
 			{ 0, 0, 100, 44, buttons_audiosettings_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, 	NON_VISIBLE, INT32_MAX, "btn_mic_eq", 			"MIC EQ|OFF", },
@@ -2259,7 +2282,7 @@ static void window_audiosettings_process(void)
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
 		win->bh_ptr = malloc(buttons_size);
-		ASSERT(win->bh_ptr != NULL);
+		GUI_MEM_ASSERT(win->bh_ptr);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
 		x = col1_int;
@@ -2352,10 +2375,10 @@ static void window_ap_reverb_process(void)
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
 		win->bh_ptr = malloc(buttons_size);
-		ASSERT(win->bh_ptr != NULL);
+		GUI_MEM_ASSERT(win->bh_ptr);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
-		label_t labels [] = {
+		static const label_t labels [] = {
 		//    x, y,  parent,     		state, is_trackable, visible,   name,       		Text, font_size, 	color, 	onClickHandler
 			{ 0, 0,	WINDOW_AP_REVERB_SETT,  DISABLED,  0, NON_VISIBLE, "lbl_reverbDelay",		"", FONT_MEDIUM, COLORMAIN_WHITE, },
 			{ 0, 0,	WINDOW_AP_REVERB_SETT,  DISABLED,  0, NON_VISIBLE, "lbl_reverbLoss", 		"", FONT_MEDIUM, COLORMAIN_WHITE, },
@@ -2367,7 +2390,7 @@ static void window_ap_reverb_process(void)
 		win->lh_count = ARRAY_SIZE(labels);
 		uint_fast16_t labels_size = sizeof(labels);
 		win->lh_ptr = malloc(labels_size);
-		ASSERT(win->lh_ptr != NULL);
+		GUI_MEM_ASSERT(win->lh_ptr);
 		memcpy(win->lh_ptr, labels, labels_size);
 
 		slider_t sliders [] = {
@@ -2377,7 +2400,7 @@ static void window_ap_reverb_process(void)
 		win->sh_count = ARRAY_SIZE(sliders);
 		uint_fast16_t sliders_size = sizeof(sliders);
 		win->sh_ptr = malloc(sliders_size);
-		ASSERT(win->sh_ptr != NULL);
+		GUI_MEM_ASSERT(win->sh_ptr);
 		memcpy(win->sh_ptr, sliders, sliders_size);
 
 		label_t * lbl_reverbDelay_min = find_gui_element(TYPE_LABEL, win, "lbl_reverbDelay_min");
@@ -2497,17 +2520,17 @@ static void window_ap_mic_eq_process(void)
 		uint_fast8_t interval = 70, col1_int = 70, row1_int = window_title_height + 20;
 		win->first_call = 0;
 
-		button_t buttons [] = {
+		static const button_t buttons [] = {
 		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
 			{ 0, 0,  40, 40, buttons_ap_mic_eq_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_EQ, 	NON_VISIBLE, INT32_MAX, "btn_EQ_ok", "OK", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
 		win->bh_ptr = malloc(buttons_size);
-		ASSERT(win->bh_ptr != NULL);
+		GUI_MEM_ASSERT(win->bh_ptr);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
-		label_t labels [] = {
+		static const label_t labels [] = {
 		//    x, y,  parent, state, is_trackable, visible,   name,    Text, font_size, 	color, 	onClickHandler
 			{ 0, 0,	WINDOW_AP_MIC_EQ, DISABLED,  0, NON_VISIBLE, "lbl_eq0.08_val", 	"", FONT_LARGE, COLORMAIN_YELLOW, },
 			{ 0, 0,	WINDOW_AP_MIC_EQ, DISABLED,  0, NON_VISIBLE, "lbl_eq0.23_val", 	"", FONT_LARGE, COLORMAIN_YELLOW, },
@@ -2523,10 +2546,10 @@ static void window_ap_mic_eq_process(void)
 		win->lh_count = ARRAY_SIZE(labels);
 		uint_fast16_t labels_size = sizeof(labels);
 		win->lh_ptr = malloc(labels_size);
-		ASSERT(win->lh_ptr != NULL);
+		GUI_MEM_ASSERT(win->lh_ptr);
 		memcpy(win->lh_ptr, labels, labels_size);
 
-		slider_t sliders [] = {
+		static const slider_t sliders [] = {
 			{ 0, 0, 0, 0, 0, 0, ORIENTATION_VERTICAL, WINDOW_AP_MIC_EQ, "eq0.08", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
 			{ 0, 0, 0, 0, 0, 0, ORIENTATION_VERTICAL, WINDOW_AP_MIC_EQ, "eq0.23", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
 			{ 0, 0, 0, 0, 0, 0, ORIENTATION_VERTICAL, WINDOW_AP_MIC_EQ, "eq0.65", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
@@ -2536,7 +2559,7 @@ static void window_ap_mic_eq_process(void)
 		win->sh_count = ARRAY_SIZE(sliders);
 		uint_fast16_t sliders_size = sizeof(sliders);
 		win->sh_ptr = malloc(sliders_size);
-		ASSERT(win->sh_ptr != NULL);
+		GUI_MEM_ASSERT(win->sh_ptr);
 		memcpy(win->sh_ptr, sliders, sliders_size);
 
 		eq_base = hamradio_getequalizerbase();
@@ -2667,7 +2690,7 @@ static void window_ap_mic_process(void)
 		uint_fast8_t interval = 50, col1_int = 20;
 		win->first_call = 0;
 
-		button_t buttons [] = {
+		static const button_t buttons [] = {
 		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
 			{ 0, 0,  86, 44, buttons_ap_mic_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_SETT, NON_VISIBLE, INT32_MAX, "btn_mic_agc",   "AGC|OFF", },
 			{ 0, 0,  86, 44, buttons_ap_mic_process, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_SETT, NON_VISIBLE, INT32_MAX, "btn_mic_boost", "Boost|OFF", },
@@ -2676,10 +2699,10 @@ static void window_ap_mic_process(void)
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
 		win->bh_ptr = malloc(buttons_size);
-		ASSERT(win->bh_ptr != NULL);
+		GUI_MEM_ASSERT(win->bh_ptr);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
-		label_t labels [] = {
+		static const label_t labels [] = {
 		//    x, y,  parent,     		state, is_trackable, visible,   name,  	      Text, font_size, 	color,
 			{ 0, 0,	WINDOW_AP_MIC_SETT, DISABLED, 0, NON_VISIBLE, "lbl_micLevel", 	  "", FONT_MEDIUM, COLORMAIN_WHITE, },
 			{ 0, 0,	WINDOW_AP_MIC_SETT, DISABLED, 0, NON_VISIBLE, "lbl_micClip",  	  "", FONT_MEDIUM, COLORMAIN_WHITE, },
@@ -2694,10 +2717,10 @@ static void window_ap_mic_process(void)
 		win->lh_count = ARRAY_SIZE(labels);
 		uint_fast16_t labels_size = sizeof(labels);
 		win->lh_ptr = malloc(labels_size);
-		ASSERT(win->lh_ptr != NULL);
+		GUI_MEM_ASSERT(win->lh_ptr);
 		memcpy(win->lh_ptr, labels, labels_size);
 
-		slider_t sliders [] = {
+		static const slider_t sliders [] = {
 			{ 0, 0, 0, 0, 0, 0, ORIENTATION_HORIZONTAL, WINDOW_AP_MIC_SETT, "sl_micLevel", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
 			{ 0, 0, 0, 0, 0, 0, ORIENTATION_HORIZONTAL, WINDOW_AP_MIC_SETT, "sl_micClip",  CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
 			{ 0, 0, 0, 0, 0, 0, ORIENTATION_HORIZONTAL, WINDOW_AP_MIC_SETT, "sl_micAGC",   CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
@@ -2705,7 +2728,7 @@ static void window_ap_mic_process(void)
 		win->sh_count = ARRAY_SIZE(sliders);
 		uint_fast16_t sliders_size = sizeof(sliders);
 		win->sh_ptr = malloc(sliders_size);
-		ASSERT(win->sh_ptr != NULL);
+		GUI_MEM_ASSERT(win->sh_ptr);
 		memcpy(win->sh_ptr, sliders, sliders_size);
 
 		hamradio_get_mic_level_limits(& level_min, & level_max);
@@ -2887,7 +2910,7 @@ static void window_ap_mic_prof_process(void)
 		button_t * bh = NULL;
 		win->first_call = 0;
 
-		button_t buttons [] = {
+		static const button_t buttons [] = {
 		//   x1, y1, w, h,  onClickHandler,   				state,   	is_locked, is_long_press, parent,   	visible,      payload,	 	name, 				text
 			{ 0, 0, 100, 44, buttons_ap_mic_prof_process, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_AP_MIC_PROF, 	NON_VISIBLE, INT32_MAX, "btn_mic_profile_1", "", },
 			{ 0, 0, 100, 44, buttons_ap_mic_prof_process, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_AP_MIC_PROF, 	NON_VISIBLE, INT32_MAX, "btn_mic_profile_2", "", },
@@ -2896,7 +2919,7 @@ static void window_ap_mic_prof_process(void)
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
 		win->bh_ptr = malloc(buttons_size);
-		ASSERT(win->bh_ptr != NULL);
+		GUI_MEM_ASSERT(win->bh_ptr);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
 		x = col1_int;
@@ -2990,7 +3013,7 @@ static void window_menu_process(void)
 		uint_fast16_t xn, yn;
 		label_t * lh;
 
-		button_t buttons [] = {
+		static const button_t buttons [] = {
 		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
 			{ 0, 0, 40, 40, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, INT32_MAX, "btnSysMenu-", "-", },
 			{ 0, 0, 40, 40, buttons_menu_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, INT32_MAX, "btnSysMenu+", "+", },
@@ -2998,10 +3021,10 @@ static void window_menu_process(void)
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
 		win->bh_ptr = malloc(buttons_size);
-		ASSERT(win->bh_ptr != NULL);
+		GUI_MEM_ASSERT(win->bh_ptr);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
-		label_t labels [] = {
+		static const label_t labels [] = {
 		//    x, y,  parent,  state, is_trackable, visible,   name,  Text, font_size, 	color, 			onClickHandler
 			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group",  "", FONT_LARGE, COLORMAIN_WHITE, labels_menu_handler, },
 			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group",  "", FONT_LARGE, COLORMAIN_WHITE, labels_menu_handler, },
@@ -3025,7 +3048,7 @@ static void window_menu_process(void)
 		win->lh_count = ARRAY_SIZE(labels);
 		uint_fast16_t labels_size = sizeof(labels);
 		win->lh_ptr = malloc(labels_size);
-		ASSERT(win->lh_ptr != NULL);
+		GUI_MEM_ASSERT(win->lh_ptr);
 		memcpy(win->lh_ptr, labels, labels_size);
 
 		button_up = find_gui_element(TYPE_BUTTON, win, "btnSysMenu+");
@@ -3420,7 +3443,7 @@ static void window_uif_process(void)
 		win->first_call = 0;
 		reinit = 1;
 
-		button_t buttons [] = {
+		static const button_t buttons [] = {
 		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
 			{ 0, 0, 40, 40, buttons_uif_handler,  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UIF, NON_VISIBLE, INT32_MAX, "btnUIF-", "-", },
 			{ 0, 0, 40, 40, buttons_uif_handler,  CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UIF, NON_VISIBLE, INT32_MAX, "btnUIF+",  "+", },
@@ -3428,10 +3451,10 @@ static void window_uif_process(void)
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
 		win->bh_ptr = malloc(buttons_size);
-		ASSERT(win->bh_ptr != NULL);
+		GUI_MEM_ASSERT(win->bh_ptr);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
-		label_t labels [] = {
+		static const label_t labels [] = {
 		//    x, y,  parent,  state, is_trackable, visible,   name,  Text, font_size, 	color, 	 onClickHandler
 			{ 0, 0,	WINDOW_UIF,  DISABLED,  0, NON_VISIBLE, "lbl_uif_param", "", FONT_LARGE, COLORMAIN_WHITE, },
 			{ 0, 0,	WINDOW_UIF,  DISABLED,  0, NON_VISIBLE, "lbl_uif_val", 	 "", FONT_LARGE, COLORMAIN_WHITE, },
@@ -3439,7 +3462,7 @@ static void window_uif_process(void)
 		win->lh_count = ARRAY_SIZE(labels);
 		uint_fast16_t labels_size = sizeof(labels);
 		win->lh_ptr = malloc(labels_size);
-		ASSERT(win->lh_ptr != NULL);
+		GUI_MEM_ASSERT(win->lh_ptr);
 		memcpy(win->lh_ptr, labels, labels_size);
 
 		elements_state(win);
@@ -3524,13 +3547,20 @@ void gui_encoder2_menu (enc2_menu_t * enc2_menu)
 		close_window(DONT_OPEN_PARENT_WINDOW);
 		open_window(win);
 		footer_buttons_state(DISABLED, NULL);
-		gui_enc2_menu = enc2_menu;
+		memcpy(& gui_enc2_menu, enc2_menu, sizeof (gui_enc2_menu));
+		gui_enc2_menu.updated = 1;
 	}
-	else if (win->state == VISIBLE && enc2_menu->state == 0)
+	else if (win->state == VISIBLE)
 	{
-		close_window(DONT_OPEN_PARENT_WINDOW);
-		gui_enc2_menu = NULL;
-		footer_buttons_state(CANCELLED);
+		if (enc2_menu->state == 0)
+		{
+			close_window(DONT_OPEN_PARENT_WINDOW);
+			footer_buttons_state(CANCELLED);
+			return;
+		}
+
+		memcpy(& gui_enc2_menu, enc2_menu, sizeof (gui_enc2_menu));
+		gui_enc2_menu.updated = 1;
 	}
 }
 
@@ -3544,33 +3574,33 @@ static void window_enc2_process(void)
 	{
 		win->first_call = 0;
 
-		label_t labels [] = {
+		static const label_t labels [] = {
 		//    x, y,  parent,  state, is_trackable, visible,   name,   Text, font_size, 	color,  onClickHandler
 			{ 0, 0, WINDOW_ENC2,  DISABLED,  0, NON_VISIBLE, "lbl_enc2_val", "", FONT_LARGE, COLORMAIN_WHITE, },
 		};
 		win->lh_count = ARRAY_SIZE(labels);
 		uint_fast16_t labels_size = sizeof(labels);
 		win->lh_ptr = malloc(labels_size);
-		ASSERT(win->lh_ptr != NULL);
+		GUI_MEM_ASSERT(win->lh_ptr);
 		memcpy(win->lh_ptr, labels, labels_size);
 
 		elements_state(win);
 	}
 
-	if (gui_enc2_menu->updated)
+	if (gui_enc2_menu.updated)
 	{
 		lbl_val = find_gui_element(TYPE_LABEL, win, "lbl_enc2_val");
-		strcpy(win->name, gui_enc2_menu->param);
+		strcpy(win->name, gui_enc2_menu.param);
 		remove_end_line_spaces(win->name);
 		calculate_window_position(win, WINDOW_POSITION_MANUAL, 0, window_title_height + get_label_height(lbl_val) * 2);
 
-		strcpy(lbl_val->text, gui_enc2_menu->val);
+		strcpy(lbl_val->text, gui_enc2_menu.val);
 		lbl_val->x = win->w / 2 - get_label_width(lbl_val) / 2;
 		lbl_val->y = row1_int;
-		lbl_val->color = gui_enc2_menu->state == 2 ? COLORMAIN_YELLOW : COLORMAIN_WHITE;
+		lbl_val->color = gui_enc2_menu.state == 2 ? COLORMAIN_YELLOW : COLORMAIN_WHITE;
 		lbl_val->visible = VISIBLE;
 
-		gui_enc2_menu->updated = 0;
+		gui_enc2_menu.updated = 0;
 		gui_timer_update(NULL);
 	}
 }
@@ -3599,4 +3629,5 @@ void gui_open_sys_menu(void)
 }
 
 // *********************************************************************************************************************************************************************
-#endif /* WITHTOUCHGUI */
+
+#endif /* WITHTOUCHGUI && ! WITHGUISTYLE_MINI */

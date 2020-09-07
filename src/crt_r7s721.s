@@ -56,14 +56,14 @@
 	I_BIT          = 0x80      /* disable IRQ when I bit is set */
 	F_BIT          = 0x40      /* disable FIQ when F bit is set */
  
-	 STACKSIZEUND = 256
-	 STACKSIZEABT = 256
-	 STACKSIZEFIQ = 256
-	 STACKSIZEIRQ = 256
-	 STACKSIZESVC = 256
-	 STACKSIZEHYP = 256
-	 STACKSIZEMON = 256
-	 STACKSIZESYS = 256
+	 STACKSIZEUND = 512
+	 STACKSIZEABT = 512
+	 STACKSIZEFIQ = 512
+	 STACKSIZEIRQ = 512
+	 STACKSIZESVC = 512
+	 STACKSIZEHYP = 512
+	 STACKSIZEMON = 512
+	 STACKSIZESYS = 512
 
 	.global __Vectors
 	.section .vectors,"ax"
@@ -346,7 +346,7 @@ IRQHandlerNested:
 		// save VFP/Neon data registers
 		VPUSH.F64	{q0-q7}
 
-		ldr		r0, =IRQ_Handler
+		ldr		r0, =IRQ_Handler_GICv1
 		mov		lr, pc
 		bx		r0     /* And jump... */
 		// restore VFP data registers
@@ -370,9 +370,11 @@ IRQHandlerNested:
        POP     {R0,LR}          // restore register context
        SUBS    R15,R14,#0x0004         // return from interrupt
 		.endfunc
+   .ltorg
 
-	.bss
+	.section .noinit
 	.align 8
+
 	.space	STACKSIZEUND
 __stack_und_end = .
 	.space	STACKSIZEABT
@@ -390,7 +392,8 @@ __stack_hyp_end = .
 	.space	STACKSIZESYS
 __stack_sys_end = .
 
-   .ltorg
+	.word 0		/* fix non-zero size of this section */
+
 /*** EOF ***/   
   
 

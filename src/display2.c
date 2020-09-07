@@ -178,8 +178,6 @@ static uint_fast8_t global_smetertype = 1;	/* выбор внешнего вид
 
 //#define WIDEFREQ (TUNE_TOP > 100000000L)
 
-#if LCDMODE_LTDC
-
 uint_fast16_t normalize(
 	uint_fast16_t raw,
 	uint_fast16_t rawmin,
@@ -244,6 +242,9 @@ uint_fast16_t get_swr(uint_fast16_t swr_fullscale)
 		swr10 = (forward + reflected) * SWRMIN / (forward - reflected) - SWRMIN;
 	return swr10;
 }
+
+
+#if LCDMODE_LTDC
 
 enum {
 	SM_STATE_RX,
@@ -1710,7 +1711,7 @@ static void display_pre3(
 	)
 {
 	const char FLASHMEM * const labels [1] = { hamradio_get_pre_value_P(), };
-	ASSERT(strlen(labels [0]) == 2);
+	ASSERT(strlen(labels [0]) == 3);
 	display2_text_P(x, y, labels, colors_1state, 0);
 }
 
@@ -4852,7 +4853,186 @@ enum
 
 	#endif /* DSTYLE_UR3LMZMOD && WITHONEATTONEAMP */
 
-#elif DSTYLE_G_X480_Y272 && WITHSPECTRUMWF
+#elif DSTYLE_G_X480_Y272 && WITHSPECTRUMWF && (WITHTOUCHGUI && WITHGUISTYLE_MINI)
+
+	// TFT панель SONY PSP-1000
+	// 272/5 = 54, 480/16=30
+
+	#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
+		//					"012345678901234567890123"
+		#define SWRPWRMAP	"1   2   3   4  0% | 100%"
+		#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - значение на полной шкале
+	#else
+		//					"012345678901234567890123"
+		#define POWERMAP	"0    25    50   75   100"
+		#define SWRMAP		"1   |   2  |   3   |   4"	//
+		#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - значение на полной шкале
+	#endif
+	//						"012345678901234567890123"
+	#define SMETERMAP		"1  3  5  7  9 +20 +40 60"
+	enum
+	{
+		BDTH_ALLRX = 30,	// ширина зоны для отображение полосы на индикаторе
+		BDTH_ALLRXBARS = 24,	// ширина зоны для отображение полосы на индикаторе
+		BDTH_LEFTRX = 12,	// ширина индикатора баллов
+		BDTH_RIGHTRX = BDTH_ALLRXBARS - BDTH_LEFTRX,	// ширина индикатора плюсов
+		BDTH_SPACERX = 0,
+	#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
+		BDTH_ALLSWR = 13,
+		BDTH_SPACESWR = 2,
+		BDTH_ALLPWR = 9,
+		BDTH_SPACEPWR = 0,
+	#else /* WITHSHOWSWRPWR */
+		BDTH_ALLSWR = BDTH_ALLRXBARS,
+		BDTH_SPACESWR = BDTH_SPACERX,
+		BDTH_ALLPWR = BDTH_ALLRXBARS,
+		BDTH_SPACEPWR = BDTH_SPACERX,
+	#endif /* WITHSHOWSWRPWR */
+
+		BDCV_ALLRX = ROWS2GRID(22),	// количество строк (ячееек), отведенное под S-метр, панораму, иные отображения
+
+		/* совмещение на одном экрание водопада и панорамы */
+		BDCO_SPMRX = ROWS2GRID(0),	// смещение спектра по вертикали в ячейках от начала общего поля
+		BDCV_SPMRX = ROWS2GRID(12),	// вертикальный размер спектра в ячейках		};
+		BDCO_WFLRX = BDCV_SPMRX,	// смещение водопада по вертикали в ячейках от начала общего поля
+		BDCV_WFLRX = BDCV_ALLRX - BDCO_WFLRX	// вертикальный размер водопада в ячейках		};
+	};
+
+	enum
+	{
+		PATTERN_SPACE = 0x00,	/* очищаем место за SWR и PWR метром этим символом */
+		PATTERN_BAR_FULL = 0xFF,
+		PATTERN_BAR_HALF = 0x3c,
+		PATTERN_BAR_EMPTYFULL = 0x00,	//0x00
+		PATTERN_BAR_EMPTYHALF = 0x00	//0x00
+	};
+
+	/* совмещение на одном экрание водопада и панорамы */
+	enum
+	{
+		DPAGE0,					// Страница, в которой отображаются основные (или все)
+		DISPLC_MODCOUNT
+	};
+
+	enum
+	{
+		PG0 = REDRSUBSET(DPAGE0),
+		PGNOMEMU = PG0,
+		PGALL = PG0 | REDRSUBSET_MENU,
+		PGWFL = PG0,	// страница отображения водопада
+		PGSPE = PG0,	// страница отображения панорамы
+		PGSWR = PG0,	// страница отоюражения S-meter и SWR-meter
+		PGLATCH = PGALL | REDRSUBSET_SLEEP,	// страницы, на которых возможно отображение водопада или панорамы.
+		PGSLP = REDRSUBSET_SLEEP,
+		PGINI = REDRSUBSET_INIT,
+		PGunused
+	};
+
+	#if TUNE_TOP > 100000000uL
+		#define DISPLC_WIDTH	9	// количество цифр в отображении частоты
+	#else
+		#define DISPLC_WIDTH	8	// количество цифр в отображении частоты
+	#endif
+	#define DISPLC_RJ		0	// количество скрытых справа цифр в отображении частоты
+
+	#define MENU1ROW 20
+
+	// 272/5 = 54, 480/16=30
+	// Main frequency indicator 56 lines height = 12 cells
+	static const FLASHMEM struct dzone dzones [] =
+	{
+		{	0,	0,	display2_clearbg, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },
+		{	0,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
+		{	3,	0,	display2_ant5,		REDRM_MODE, PGALL, },
+		{	9,	0,	display2_att4,		REDRM_MODE, PGALL, },
+		{	14,	0,	display2_preovf3,	REDRM_BARS, PGALL, },
+		{	18,	0,	display_lockstate1,	REDRM_BARS, PGALL, },	// LOCK (*)
+
+	#if WITHENCODER2
+		{	21, 0,	display2_fnlabel9,	REDRM_MODE, PGALL, },	// FUNC item label
+		{	21,	4,	display2_fnvalue9,	REDRM_MODE, PGALL, },	// FUNC item value
+		{	25, 12,	display2_notch5,		REDRM_MODE, PGALL, },	// NOTCH on/off
+	#else /* WITHENCODER2 */
+		{	25, 0,	display2_notch5,		REDRM_MODE, PGALL, },	// FUNC item label
+		{	25,	4,	display2_notchfreq5,	REDRM_BARS, PGALL, },	// FUNC item value
+	#endif /* WITHENCODER2 */
+
+		{	26, 16,	display2_nr3,		REDRM_MODE, PGALL, },	// NR
+//		{	26,	16,	display2_agc3,		REDRM_MODE, PGALL, },	// AGC mode
+		{	26,	20,	display2_voxtune3,	REDRM_MODE, PGNOMEMU, },	// VOX
+
+		{	0,	4,	display2_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
+		{	21,	8,	display2_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
+		{	21,	12,	display2_rxbw3,		REDRM_MODE, PGALL, },	// 3.1 / 0,5 / WID / NAR
+		{	26,	8,	display2_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
+
+		{	0,	16,	display2_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
+		{	0,	16,	display2_mainsub3,	REDRM_MODE, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
+
+		{	5,	16,	display2_vfomode3,	REDRM_MODE, PGALL, },	// SPLIT - не очень нужно при наличии индикации на A/B (display2_mainsub3) яркостью.
+		{	9,	16,	display2_freqX_b,	REDRM_FRQB, PGALL, },	// SUB FREQ
+		{	21,	16,	display2_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
+
+#if 1
+		{	0,	20,	display2_legend,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы S-метра, PWR & SWR-метра
+		{	0,	24,	display2_bars,		REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
+		{	25, 24, display2_smeors5, 	REDRM_BARS, PGSWR, },	// уровень сигнала в баллах S или dBm
+
+		{	0,	28,	display2_wfl_init,	REDRM_INIS,	PGINI, },	// формирование палитры водопада
+		{	0,	28,	display2_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
+		{	0,	28,	display2_spectrum,	REDRM_BARS, PGSPE, },// подготовка изображения спектра
+		{	0,	28,	display2_waterfall,	REDRM_BARS, PGWFL, },// подготовка изображения водопада
+		{	0,	0,	gui_WM_walktrough,	REDRM_BARS,	PGWFL | PGSPE, },
+		{	0,	28,	display2_colorbuff,	REDRM_BARS,	PGWFL | PGSPE, },// Отображение водопада и/или спектра
+#else
+		{	0,	20,	display2_adctest,	REDRM_BARS, PGSWR, },	// ADC raw data print
+#endif
+
+		//{	0,	51,	display_samfreqdelta8, REDRM_BARS, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
+//		{	0,	51,	display_time5,		REDRM_BARS, PGALL,	},	// TIME
+//		{	6, 	51,	display2_atu3,		REDRM_MODE, PGALL, },	// TUNER state (optional)
+//		{	10, 51,	display2_byp3,		REDRM_MODE, PGALL, },	// TUNER BYPASS state (optional)
+//		{	14, 51,	display2_thermo5,	REDRM_VOLT, PGALL, },	// thermo sensor 20.7C
+//		{	19, 51,	display2_currlevel5, REDRM_VOLT, PGALL, },	// PA drain current d.dd without "A"
+//		{	25, 51,	display2_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
+	#if WITHAMHIGHKBDADJ
+		{	25, 51,	display_amfmhighcut5,REDRM_MODE, PGALL, },	// 13.70
+	#endif /* WITHAMHIGHKBDADJ */
+
+		// sleep mode display
+		{	5,	24,	display2_datetime12,	REDRM_BARS, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40
+		{	20, 24,	display2_voltlevelV5, REDRM_VOLT, PGSLP, },	// voltmeter with "V"
+
+	#if WITHMENU
+		{	1,	MENU1ROW,	display2_multilinemenu_block_groups,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
+		{	LABELW + 3,	MENU1ROW,	display2_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
+		{	LABELW * 2 + 4,	MENU1ROW,	display2_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
+	#endif /* WITHMENU */
+		{	0,	0,	display2_nextfb, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },
+	};
+
+#if WITHMENU
+	void display2_getmultimenu(multimenuwnd_t * p)
+	{
+		enum { YSTEP = 4 };		// количество ячеек разметки на одну строку меню
+		p->multilinemenu_max_rows = (51 - MENU1ROW) / YSTEP;
+		p->ystep = YSTEP;	// количество ячеек разметки на одну строку меню
+		p->reverse = 1;
+		p->valuew = 10;	/* количество текстовых символов занимаемых полем вывола значения в меню. */
+	}
+#endif /* WITHMENU */
+
+	/* получить координаты окна с панорамой и/или водопадом. */
+	void display2_getpipparams(pipparams_t * p)
+	{
+		p->x = 0; //GRID2X(0);	// позиция верхнего левого угла в пикселях
+		p->y = GRID2Y(28);	// позиция верхнего левого угла в пикселях
+		p->w = DIM_X; //GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
+		p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
+	}
+
+
+#elif DSTYLE_G_X480_Y272 && WITHSPECTRUMWF && ! WITHTOUCHGUI
 
 	// TFT панель SONY PSP-1000
 	// 272/5 = 54, 480/16=30
@@ -6019,7 +6199,7 @@ void display_swrmeter(
 	// swr10 = 0..30 for swr 1..4
 	const uint_fast8_t mapleftval = display_mapbar(swr10, 0, fullscale, 0, swr10, fullscale);
 
-	//debug_printf_P(PSTR("swr10=%d, mapleftval=%d, fs=%d\n"), swr10, mapleftval, display_getmaxswrlimb());
+	//PRINTF(PSTR("swr10=%d, mapleftval=%d, fs=%d\n"), swr10, mapleftval, display_getmaxswrlimb());
 
 	colmain_setcolors(SWRCOLOR, BGCOLOR);
 
@@ -6056,7 +6236,7 @@ void display_modulationmeter_amv0(
 #if WITHBARS
 	const uint_fast8_t mapleftval = display_mapbar(value, 0, fullscale, 0, value, fullscale);
 
-	//debug_printf_P(PSTR("swr10=%d, mapleftval=%d, fs=%d\n"), swr10, mapleftval, display_getmaxswrlimb());
+	//PRINTF(PSTR("swr10=%d, mapleftval=%d, fs=%d\n"), swr10, mapleftval, display_getmaxswrlimb());
 
 	colmain_setcolors(SWRCOLOR, BGCOLOR);
 	display_at_P(display_bars_x_swr(x - 1, CHARS2GRID(0)), y, PSTR("M"));
@@ -6815,7 +6995,7 @@ static void display2_spectrum(
 				// Формирование графика
 
 				// формирование фона растра - верхняя часть графика (Шторка)
-				//debug_printf_P(PSTR("xl=%d xr=%d\n"), xleft, xright);
+				//PRINTF(PSTR("xl=%d xr=%d\n"), xleft, xright);
 				display_colorbuf_set_vline(colorpip, BUFDIM_X, BUFDIM_Y, x, SPY0, yv, inband ? COLORMAIN_SPECTRUMBG2 : COLORPIP_SPECTRUMBG);
 
 				// точку на границе
@@ -6953,7 +7133,7 @@ static void wfsetupnew(void)
 static void display_wfputrow(uint_fast16_t x, uint_fast16_t y, const PACKEDCOLORMAIN_T * p)
 {
 	colpip_to_main(
-			(uintptr_t) p, ALLDX * sizeof * p,
+			(uintptr_t) p, GXSIZE(ALLDX, 1) * sizeof * p,
 			p, ALLDX, 1, x, y);
 }
 
@@ -7148,7 +7328,7 @@ static void display2_waterfall(
 		uint_fast16_t x;
 		for (x = 0; x < ALLDX; ++ x)
 		{
-			colpip_point(colorpip, BUFDIM_X, BUFDIM_Y, x, y + WFY0, wfpalette [wfarray [(wfrow + y) % WFDY] [x]]);
+			colpip_point(colorpip, BUFDIM_X, BUFDIM_Y, x, y + WFY0, wfpalette [* colmain_mem_at(wfjarray, ALLDX, WFDY, x, (wfrow + y) % WFDY)]);
 		}
 	}
 
@@ -7174,7 +7354,9 @@ static void display2_colorbuff(
 	#if (LCDMODE_LTDC)
 
 	#else /* LCDMODE_LTDC */
-	colpip_to_main(getscratchwnd(), BUFDIM_X, BUFDIM_Y, GRID2X(x0), GRID2Y(y0));
+	colpip_to_main(
+			(uintptr_t) getscratchwnd(), sizeof (PACKEDCOLORMAIN_T) * GXSIZE(BUFDIM_X, BUFDIM_Y),
+			getscratchwnd(), BUFDIM_X, BUFDIM_Y, GRID2X(x0), GRID2Y(y0));
 	#endif /* LCDMODE_LTDC */
 
 #endif /* LCDMODE_S1D13781 */
@@ -7297,10 +7479,10 @@ validforredraw(
 }
 
 // Параметры state machine отображения
-static RAMDTCM uint8_t reqs [REDRM_count];		// запросы на отображение
-static RAMDTCM uint8_t subsets [REDRM_count];	// параметр прохода по списку отображения.
-static RAMDTCM uint8_t walkis [REDRM_count];	// индекс в списке параметров отображения в данном проходе
-static RAMDTCM uint_fast8_t keyi;					// запрос на отображение, выполняющийся сейчас.
+static uint8_t reqs [REDRM_count];		// запросы на отображение
+static uint8_t subsets [REDRM_count];	// параметр прохода по списку отображения.
+static uint8_t walkis [REDRM_count];	// индекс в списке параметров отображения в данном проходе
+static uint_fast8_t keyi;					// запрос на отображение, выполняющийся сейчас.
 
 #endif /* STMD */
 
@@ -7346,6 +7528,7 @@ display_walktroughsteps(
 	uint_fast8_t subset
 	)
 {
+	ASSERT(key < REDRM_count);
 #if STMD
 
 	#if LCDMODE_MAIN_PAGES > 1
@@ -7399,6 +7582,7 @@ void display2_bgprocess(void)
 
 	for (;;)
 	{
+		ASSERT(keyi < REDRM_count);
 		if (reqs [keyi] != 0)
 			break;
 		keyi = (keyi == (REDRM_count - 1)) ? 0 : (keyi + 1);
@@ -7406,6 +7590,7 @@ void display2_bgprocess(void)
 			return;			// не нашли ни одного запроса
 	}
 
+	ASSERT(keyi < REDRM_count);
 	//return;
 	for (; walkis [keyi] < WALKCOUNT; ++ walkis [keyi])
 	{
@@ -7417,10 +7602,12 @@ void display2_bgprocess(void)
 		walkis [keyi] += 1;
 		break;
 	}
+	ASSERT(keyi < REDRM_count);
 	if (walkis [keyi] >= WALKCOUNT)
 	{
 		reqs [keyi] = 0;	// снять запрос на отображение данного типа элементов
 		keyi = (keyi == (REDRM_count - 1)) ? 0 : (keyi + 1);
+		ASSERT(keyi < REDRM_count);
 	}
 
 #endif /* STMD */

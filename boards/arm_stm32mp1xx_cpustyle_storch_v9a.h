@@ -92,10 +92,10 @@
 
 #else /* WITHISBOOTLOADER */
 
-	#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
-	//#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
+	//#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
+	#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
 	//#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */
-	//#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
+	#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
 
 	#define WITHMDMAHW		1	/* Использование MDMA для формирования изображений */
 	//#define WITHCPUDACHW	1	/* использование встроенного в процессор DAC */
@@ -107,7 +107,7 @@
 
 	#define WITHUSBHW_DEVICE	USB_OTG_HS	/* на этом устройстве поддерживается функциональность DEVICE	*/
 	#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод OTG_VBUS */
-	#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
+	//#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
 	//#define WITHUSBDEV_HIGHSPEEDULPI	1
 	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USB_DP2 & USB_DM2
 	//#define WITHUSBDEV_DMAENABLE 1
@@ -116,7 +116,7 @@
 	//#define USB_OTG_HS                   USB1_OTG_HS
 	//#define USB_OTG_FS                   USB2_OTG_FS
 
-	//#define WITHEHCIHW	1	/* USB_EHCI controller */
+	#define WITHEHCIHW	1	/* USB_EHCI controller */
 	//#define WITHUSBHW_HOST		USB_OTG_HS
 	#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB_DP2 & USB_DM2
 	//#define WITHUSBHOST_DMAENABLE 1
@@ -220,10 +220,10 @@
 		do { \
 			arm_hardware_piog_inputs(ENCODER_BITS); \
 			arm_hardware_piog_updown(ENCODER_BITS, 0); \
-			arm_hardware_piog_onchangeinterrupt(ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ARM_OVERREALTIME_PRIORITY); \
+			arm_hardware_piog_onchangeinterrupt(ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
 			arm_hardware_piog_inputs(ENCODER2_BITS); \
 			arm_hardware_piog_updown(ENCODER2_BITS, 0); \
-			arm_hardware_piog_onchangeinterrupt(0 * ENCODER2_BITS, ENCODER2_BITS, ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY); \
+			arm_hardware_piog_onchangeinterrupt(0 * ENCODER2_BITS, ENCODER2_BITS, ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
 		} while (0)
 
 #endif
@@ -627,8 +627,8 @@
 #endif /* WITHKEYBOARD */
 
 #if 1 // WITHTWISW
-	// I2C1_SDA	PB7
-	// I2C1_SCL	PB6
+	// I2C1_SDA	PB11
+	// I2C1_SCL	PD7
 	#define TARGET_TWI_TWCK		(1u << 7)		// PD7 I2C1_SCL
 	#define TARGET_TWI_TWCK_PIN		(GPIOD->IDR)
 	#define TARGET_TWI_TWCK_PORT_C(v) do { GPIOD->BSRR = BSRR_C(v); __DSB(); } while (0)
@@ -925,7 +925,7 @@
 
 	#define BOOTLOADER_FLASHSIZE (1024uL * 1024uL * 16)	// 16M FLASH CHIP
 	#define BOOTLOADER_SELFBASE QSPI_MEM_BASE	/* адрес где лежит во FLASH образ application */
-	#define BOOTLOADER_SELFSIZE (1024uL * 256)	// 256k
+	#define BOOTLOADER_SELFSIZE (1024uL * 512)	// 512k
 
 	#define BOOTLOADER_APPBASE (BOOTLOADER_SELFBASE + BOOTLOADER_SELFSIZE)	/* адрес где лежит во FLASH образ application */
 	#define BOOTLOADER_APPSIZE (BOOTLOADER_FLASHSIZE - BOOTLOADER_SELFSIZE)	// 2048 - 128
@@ -1032,6 +1032,7 @@
 			TXDISABLE_INITIALIZE(); \
 			TUNE_INITIALIZE(); \
 			BOARD_USERBOOT_INITIALIZE(); \
+			USBD_FS_INITIALIZE(); \
 		} while (0)
 
 #endif /* ARM_STM32MP1_LFBGA354_CPUSTYLE_STORCH_V9A_H_INCLUDED */

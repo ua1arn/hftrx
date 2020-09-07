@@ -357,7 +357,7 @@ static uint_fast8_t wave_startrecording(void)
 
 #endif /* defined (RTC1_TYPE) */
 
-	debug_printf_P(PSTR("Write wav file '%s'.\n"), fname);
+	PRINTF(PSTR("Write wav file '%s'.\n"), fname);
 
 	rc = write_wav_header(fname, dsp_get_sampleraterx());
 	wave_irecorded = 0;
@@ -404,14 +404,14 @@ static uint_fast8_t wave_nextblockrecording(void)
 		// Периодическая запись структур файла
 		if (1 && (wave_irecorded += n) >= RSYNLEN)
 		{
-			//debug_printf_P(PSTR("wave_nextblockrecording: force resync\n"));
+			//PRINTF(PSTR("wave_nextblockrecording: force resync\n"));
 			// Каждые 10 мегабайт
 			wave_irecorded = 0;
 			return 3;		// 3 - выполнить resync
 			//rc = write_wav_resync();
 			//if (rc != FR_OK)
 			//	return 1;	// 1 - ошибка - заканчиваем запись.
-			//debug_printf_P(PSTR("wave_nextblockrecording: resync okay\n"));
+			//PRINTF(PSTR("wave_nextblockrecording: resync okay\n"));
 		}
 		if (f_size(& wav_file) >= FILELEN)
 		{
@@ -464,7 +464,7 @@ void sdcardrecord(void)
 	switch (sdstate)
 	{
 	case SDSTATE_IDLE:
-		debug_printf_P(PSTR("sdcardrecord: start recording\n"));
+		PRINTF(PSTR("sdcardrecord: start recording\n"));
 		// Начинаем запись
 		if (waveMount() == 0)		/* Register volume work area (never fails) */
 			sdstate = SDSTATE_STARTREC;
@@ -481,7 +481,7 @@ void sdcardstop(void)	// функция "остановить запись"
 	case SDSTATE_RESYNC:
 	case SDSTATE_CONTRECORDING:
 		// Заканчиваем запись
-		debug_printf_P(PSTR("sdcardstop: stop recording\n"));
+		PRINTF(PSTR("sdcardstop: stop recording\n"));
 		wave_stoprecording();
 		sdstate = SDSTATE_UNMOUNT;
 		break;
@@ -504,11 +504,11 @@ void sdcardbgprocess(void)
 	switch (sdstate)
 	{
 	case SDSTATE_IDLE:
-		//debug_printf_P(PSTR("sdcardbgprocess: SDSTATE_IDLE\n"));
+		//PRINTF(PSTR("sdcardbgprocess: SDSTATE_IDLE\n"));
 		break;
 
 	case SDSTATE_RECORDING:
-		//debug_printf_P(PSTR("sdcardbgprocess: SDSTATE_RECORDING\n"));
+		//PRINTF(PSTR("sdcardbgprocess: SDSTATE_RECORDING\n"));
 		switch (wave_nextblockrecording())
 		{
 		default:
@@ -534,7 +534,7 @@ void sdcardbgprocess(void)
 		break;
 
 	case SDSTATE_RESYNC:
-		debug_printf_P(PSTR("sdcardbgprocess: SDSTATE_RESYNC\n"));
+		PRINTF(PSTR("sdcardbgprocess: SDSTATE_RESYNC\n"));
 		// выполнить resync
 		if (wave_resync() == 0)
 			sdstate = SDSTATE_RECORDING;
@@ -543,7 +543,7 @@ void sdcardbgprocess(void)
 		break;
 
 	case SDSTATE_BREAKCHUNK:
-		debug_printf_P(PSTR("sdcardbgprocess: SDSTATE_BREAKCHUNK\n"));
+		PRINTF(PSTR("sdcardbgprocess: SDSTATE_BREAKCHUNK\n"));
 		// Заканчиваем запись и начинаем следующий фрагмент
 		if (wave_stoprecording() == 0)
 			sdstate = SDSTATE_CONTRECORDING;
@@ -552,10 +552,10 @@ void sdcardbgprocess(void)
 		break;
 
 	case SDSTATE_CONTRECORDING:
-		debug_printf_P(PSTR("sdcardbgprocess: SDSTATE_CONTRECORDING\n"));
+		PRINTF(PSTR("sdcardbgprocess: SDSTATE_CONTRECORDING\n"));
 		if (wave_startrecording() != 0)
 		{
-			debug_printf_P(PSTR("sdcardbgprocess: wave_startrecording failure\n"));
+			PRINTF(PSTR("sdcardbgprocess: wave_startrecording failure\n"));
 			sdstate = SDSTATE_UNMOUNT;
 		}
 		else
@@ -563,22 +563,22 @@ void sdcardbgprocess(void)
 		break;
 
 	case SDSTATE_STOPRECORDING:
-		debug_printf_P(PSTR("sdcardbgprocess: SDSTATE_STOPRECORDING\n"));
+		PRINTF(PSTR("sdcardbgprocess: SDSTATE_STOPRECORDING\n"));
 		wave_stoprecording();
 		sdstate = SDSTATE_UNMOUNT;
 		break;
 
 	case SDSTATE_UNMOUNT:
-		debug_printf_P(PSTR("sdcardbgprocess: SDSTATE_UNMOUNT\n"));
+		PRINTF(PSTR("sdcardbgprocess: SDSTATE_UNMOUNT\n"));
 		waveUnmount();		/* Unregister volume work area (never fails) */
 		sdstate = SDSTATE_IDLE;
 		break;
 
 	case SDSTATE_STARTREC:
-		debug_printf_P(PSTR("sdcardbgprocess: SDSTATE_STARTREC\n"));
+		PRINTF(PSTR("sdcardbgprocess: SDSTATE_STARTREC\n"));
 		if (wave_startrecording() == 0)
 		{
-			debug_printf_P(PSTR("sdcardrecord: wave_startrecording success\n"));
+			PRINTF(PSTR("sdcardrecord: wave_startrecording success\n"));
 			sdstate = SDSTATE_RECORDING;
 
 			// Освобождаем несколько самых старых буферов для
@@ -596,7 +596,7 @@ void sdcardbgprocess(void)
 		else
 		{
 			sdstate = SDSTATE_UNMOUNT;
-			debug_printf_P(PSTR("sdcardrecord: wave_startrecording failure\n"));
+			PRINTF(PSTR("sdcardrecord: wave_startrecording failure\n"));
 		}
 		break;
 	}
@@ -610,15 +610,15 @@ void sdcardformat(void)
 	switch (sdstate)
 	{
 	case SDSTATE_IDLE:
-		debug_printf_P(PSTR("sdcardformat: start formatting\n"));
+		PRINTF(PSTR("sdcardformat: start formatting\n"));
 		rc = f_mkfs("0:", NULL, work, sizeof (work));
 		if (rc != FR_OK)
 		{
-			debug_printf_P(PSTR("sdcardformat: f_mkfs failure\n"));
+			PRINTF(PSTR("sdcardformat: f_mkfs failure\n"));
 		}
 		else
 		{
-			debug_printf_P(PSTR("sdcardformat: f_mkfs okay\n"));
+			PRINTF(PSTR("sdcardformat: f_mkfs okay\n"));
 		}
 		break;
 	}
@@ -629,8 +629,8 @@ void sdcardformat(void)
 
 #if WITHWAVPLAYER || WITHSENDWAV
 
-static FATFSALIGN_BEGIN RAMNOINIT_D1 FATFS Fatfs FATFSALIGN_END;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
-static FATFSALIGN_BEGIN RAMNOINIT_D1 FIL Fil FATFSALIGN_END;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
+static RAMNOINIT_D1 FATFSALIGN_BEGIN FATFS Fatfs FATFSALIGN_END;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
+static RAMNOINIT_D1 FATFSALIGN_BEGIN FIL Fil FATFSALIGN_END;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
 static RAMNOINIT_D1 FATFSALIGN_BEGIN uint8_t rbuff [FF_MAX_SS * 16] FATFSALIGN_END;		// буфер записи - при совпадении с _MAX_SS нельзя располагать в Cortex-M4 CCM
 static UINT ibr = 0;		//  количество считанных байтов
 static UINT ipos = 0;			// номер выводимого байта
@@ -670,7 +670,7 @@ void playwavstop(void)
 {
 	if (playfile)
 	{
-		debug_printf_P(PSTR("Stop active play file\n"));
+		PRINTF(PSTR("Stop active play file\n"));
 		f_close(& Fil);
 		playfile = 0;
 	}
@@ -682,7 +682,7 @@ void playwavfile(const char * filename)
 
 	if (playfile)
 	{
-		debug_printf_P(PSTR("Stop active play file\n"));
+		PRINTF(PSTR("Stop active play file\n"));
 		f_close(& Fil);
 		playfile = 0;
 	}
@@ -692,8 +692,8 @@ void playwavfile(const char * filename)
 	rc = f_open(& Fil, filename, FA_READ);
 	if (rc)
 	{
-		debug_printf_P(PSTR("Can not open file '%s'\n"), filename);
-		debug_printf_P(PSTR("Failed with rc=%u.\n"), rc);
+		PRINTF(PSTR("Can not open file '%s'\n"), filename);
+		PRINTF(PSTR("Failed with rc=%u.\n"), rc);
 		playfile = 0;
 		return;
 	}
@@ -702,15 +702,15 @@ void playwavfile(const char * filename)
 		rc = f_read(& Fil, & hdr0, sizeof hdr0, & ibr);	/* Read a chunk of file */
 		if (rc || ibr < sizeof hdr0)
 		{
-			debug_printf_P(PSTR("Can not check format of file '%s'\n"), filename);
-			debug_printf_P(PSTR("Failed with rc=%u.\n"), rc);
+			PRINTF(PSTR("Can not check format of file '%s'\n"), filename);
+			PRINTF(PSTR("Failed with rc=%u.\n"), rc);
 			playfile = 0;
 			rc = f_close(& Fil);
 			return;
 		}
 		if (memcmp(hdr0._fmt, "fmt ", 4) != 0 || hdr0.nChannels != 1 || hdr0.wBitsPerSample != 16 || hdr0.nSamplesPerSec != dsp_get_sampleraterx())
 		{
-			debug_printf_P(PSTR("Wrong format of file '%s'\n"), filename);
+			PRINTF(PSTR("Wrong format of file '%s'\n"), filename);
 			playfile = 0;
 			rc = f_close(& Fil);
 			return;
@@ -720,8 +720,8 @@ void playwavfile(const char * filename)
 		rc = f_lseek(& Fil, startdata);
 		if (rc)
 		{
-			debug_printf_P(PSTR("Can not seek to wav data of file '%s'\n"), filename);
-			debug_printf_P(PSTR("Failed with rc=%u.\n"), rc);
+			PRINTF(PSTR("Can not seek to wav data of file '%s'\n"), filename);
+			PRINTF(PSTR("Failed with rc=%u.\n"), rc);
 			playfile = 0;
 			rc = f_close(& Fil);
 			return;
@@ -730,7 +730,7 @@ void playwavfile(const char * filename)
 		rc = f_read(& Fil, rbuff + offs, sizeof rbuff - offs, & ibr);	/* Read a chunk of file */
 		if (rc || ! ibr)
 		{
-			debug_printf_P(PSTR("1-st read Failed with rc=%u.\n"), rc);
+			PRINTF(PSTR("1-st read Failed with rc=%u.\n"), rc);
 			playfile = 0;
 			rc = f_close(& Fil);
 			return;
@@ -773,12 +773,12 @@ void spoolplayfile(void)
 	{
 		playfile = 0;
 
-		debug_printf_P("End file play.\n");
+		PRINTF("End file play.\n");
 		rc = f_close(& Fil);
 		if (rc)
 		{
 			TP();
-			debug_printf_P(PSTR("Failed with rc=%u.\n"), rc);
+			PRINTF(PSTR("Failed with rc=%u.\n"), rc);
 			return;
 		}
 

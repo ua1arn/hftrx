@@ -740,87 +740,154 @@ typedef enum
 #endif
 
 
+
+typedef struct spinlock_tag {
+	volatile uint32_t lock;
 #if WITHDEBUG
-	#define TP() \
-		do { \
-			static const char this_file [] = __FILE__; \
-			PRINTF(PSTR("At %d in %s.\n"), __LINE__, this_file); \
-		} while(0)
-#else /* WITHDEBUG */
-	#define TP() do { } while(0)
+	const char * file;
+	int line;
 #endif /* WITHDEBUG */
+} spinlock_t;
 
-#if WITHDEBUG
-
-	#define PRINTF	debug_printf_P
-	#define ASSERT(v) do { if ((v) == 0) { \
-		PRINTF(PSTR("%s(%d): Assert '%s'\n"), __FILE__, __LINE__, (# v)); \
-		for (;;) ; \
-		} } while (0)
-
-	#define VERIFY(v) do { if ((v) == 0) { \
-		PRINTF(PSTR("%s(%d): Verify '%s'\n"), __FILE__, __LINE__, (# v)); \
-		for (;;) ; \
-		} } while (0)
-
-#define TRACE0(f)		do { PRINTF( PSTR(f)); } while (0)
-	#define TRACE1(f,a1)		do { PRINTF( PSTR(f),(a1)); } while (0)
-	#define TRACE2(f,a1,a2)		do { PRINTF( PSTR(f),(a1),(a2)); } while (0)
-	#define TRACE3(f,a1,a2,a3)	do { PRINTF( PSTR(f),(a1),(a2),(a3)); } while (0)
-	#define TRACE4(f,a1,a2,a3,a4)	do { PRINTF( PSTR(f),(a1),(a2),(a3),(a4)); } while (0)
-	#define TRACE5(f,a1,a2,a3,a4,a5) do { PRINTF( PSTR(f),(a1),(a2),(a3),(a4),(a5)); } while (0)
-
-#else /* WITHDEBUG */
-
-	#define PRINTF(...)	do {} while (0)
-	#define ASSERT(v) ((void) (0))
-	#define VERIFY(v) ((void) (v))
-
-	#define TRACE0(f)			do {} while (0)
-	#define TRACE1(f,a1)			do {} while (0)
-	#define TRACE2(f,a1,a2)			do {} while (0)
-	#define TRACE3(f,a1,a2,a3)		do {} while (0)
-	#define TRACE4(f,a1,a2,a3,a4)		do {} while (0)
-	#define TRACE5(f,a1,a2,a3,a4,a5)		do {} while (0)
-
-#endif /* WITHDEBUG */
+#define SPINLOCK_t spinlock_t
+#define SPINLOCK_INIT { 0 }
+#define SPINLOCK_INIT_EXEC 0
 
 #if WITHSMPSYSTEM
 	/* Пока привязка процессора обрабатывающего прерывание по приоритету. */
-	#define TARGETCPU_SYSTEM 0x01	// CPU #0
-	#define TARGETCPU_RT 0x01		// CPU #0
-	#define TARGETCPU_OVRT 0x02		// CPU #1
-	#define TARGETCPU_EXTIO 0x01	// CPU #0
+	#define TARGETCPU_SYSTEM (1u << 0)		// CPU #0
+	#define TARGETCPU_RT 	(1u << 0)		// CPU #0
+	#define TARGETCPU_OVRT 	(1u << 0)		// CPU #0
 
-
-	#define SPINLOCK_t spinlock_t
-	#define SPIN_LOCK(p) do { spin_lock(p); } while (0)
+	#define SPIN_LOCK(p) do { spin_lock(p, __FILE__, __LINE__); } while (0)
 	#define SPIN_UNLOCK(p) do { spin_unlock(p); } while (0)
 
-	typedef struct spinlock_tag {
-		volatile uint32_t lock;
-	} spinlock_t;
-	#define SPINLOCK_INIT { 0 }
-	#define SPINLOCK_INIT_EXEC 0
-	void spin_lock(volatile spinlock_t *lock);
-	void spin_unlock(volatile spinlock_t *lock);
+	void spin_lock(volatile spinlock_t * lock, const char * file, int line);
+	void spin_unlock(volatile spinlock_t * lock);
 
 #else /* WITHSMPSYSTEM */
 	/* Единственный процесор. */
-	#define TARGETCPU_SYSTEM 0x01	// CPU #0
-	#define TARGETCPU_RT 0x01		// CPU #0
-	#define TARGETCPU_OVRT 0x01		// CPU #0
-	#define TARGETCPU_EXTIO 0x01	// CPU #0
+	#define TARGETCPU_SYSTEM (1u << 0)		// CPU #0
+	#define TARGETCPU_RT (1u << 0)			// CPU #0
+	#define TARGETCPU_OVRT (1u << 0)		// CPU #0
 
-	#define SPINLOCK_INIT { 0 }
-	#define SPINLOCK_INIT_EXEC 0
-	typedef struct spinlock_tag {
-		volatile uint32_t lock;
-	} spinlock_t;
-	#define SPINLOCK_t spinlock_t
 	#define SPIN_LOCK(p) do { (void) p; } while (0)
 	#define SPIN_UNLOCK(p) do { (void) p; } while (0)
 
 #endif /* WITHSMPSYSTEM */
+
+#if CPUSTYLE_R7S721
+	#define FLASHMEMINIT	__attribute__((section(".initdata"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
+	#define FLASHMEMINITFUNC	__attribute__((section(".initfunc"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
+	#define RAMFUNC_NONILINE // __attribute__((__section__(".ramfunc"), noinline))
+	#define RAMFUNC			 // __attribute__((__section__(".ramfunc")))
+	#define RAMNOINIT_D1	__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
+	#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
+	#define RAMFRAMEBUFF	__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
+	#define RAMDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
+	#define RAMBIGDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
+	#define RAMBIGDTCM_MDMA	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
+	#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
+	#define RAMHEAP __attribute__((used, section(".heap"), aligned(64))) // memory used as heap zone
+#elif CPUSTYLE_STM32MP1
+	#define FLASHMEMINIT	//__attribute__((section(".initdata"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
+	#define FLASHMEMINITFUNC//	__attribute__((section(".initfunc"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
+	#define RAMFUNC_NONILINE __attribute__((__section__(".itcm"), noinline))
+	#define RAMFUNC			 __attribute__((__section__(".itcm")))
+	#define RAMNOINIT_D1	__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
+	#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
+	#define RAMFRAMEBUFF	__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
+	#define RAMDTCM			__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
+	#define RAMBIGDTCM		__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
+	#define RAMBIGDTCM_MDMA		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
+	#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
+	#define RAMHEAP __attribute__((used, section(".heap"), aligned(64))) // memory used as heap zone
+#elif (CPUSTYLE_STM32H7XX)
+	#define VTRATTR	__attribute__ ((section("vtable"), used, aligned(256 * 4)))
+	#define FLASHMEMINIT	__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
+	#define FLASHMEMINITFUNC	__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
+	#define RAMFUNC_NONILINE __attribute__((noinline,__section__(".itcm")))  // удаление управления noinline добавило 2-3 процента быстродействия __attribute__((__section__(".ramfunc"), noinline))
+	#define RAMFUNC			 __attribute__((__section__(".itcm")))
+	#define RAMNOINIT_D1	__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
+	#define RAM_D2			__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
+	#define RAMFRAMEBUFF	__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
+	#define RAMDTCM			__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
+	#define RAMBIGDTCM		__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
+	#define RAMBIGDTCM_MDMA		__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
+	#define RAMBIG			__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
+	#define RAMHEAP __attribute__((used, section(".heap"), aligned(16))) // memory used as heap zone
+#elif (CPUSTYLE_STM32F7XX) && WITHSDRAMHW
+//	#pragma name .data .sdramdata
+//	#pragma name .bss .sdrambss
+	#define VTRATTR	__attribute__ ((section("vtable"), used, aligned(256 * 4)))
+	#define FLASHMEMINIT	__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
+	#define FLASHMEMINITFUNC	//__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
+	#define RAMFUNC_NONILINE __attribute__((noinline,__section__(".itcm")))  // удаление управления noinline добавило 2-3 процента быстродействия __attribute__((__section__(".ramfunc"), noinline))
+	#define RAMFUNC			 __attribute__((__section__(".itcm")))
+	#define RAMNOINIT_D1	//__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
+	#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
+	#define RAMFRAMEBUFF	//__attribute__((section(".sdrabss"))) /* размещение в памяти SRAM_D1 */
+	#define RAMDTCM			__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
+	#define RAMBIGDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
+	#define RAMBIGDTCM_MDMA		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
+	#define RAMBIG			__attribute__((section(".sdramdata"))) /* размещение в памяти SRAM_D1 */
+	#define RAMHEAP __attribute__((used, section(".heap"), aligned(16))) // memory used as heap zone
+#elif (CPUSTYLE_STM32F7XX)
+	#define VTRATTR	__attribute__ ((section("vtable"), used, aligned(256 * 4)))
+	#define FLASHMEMINIT	__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
+	#define FLASHMEMINITFUNC	//__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
+	#define RAMFUNC_NONILINE __attribute__((noinline,__section__(".itcm")))  // удаление управления noinline добавило 2-3 процента быстродействия __attribute__((__section__(".ramfunc"), noinline))
+	#define RAMFUNC			 __attribute__((__section__(".itcm")))
+	#define RAMNOINIT_D1	//__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
+	#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
+	#define RAMFRAMEBUFF	//__attribute__((section(".sdram"))) /* размещение в памяти SRAM_D1 */
+	#define RAMDTCM			__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
+	#define RAMBIGDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
+	#define RAMBIGDTCM_MDMA		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
+	#define RAMBIG			//__attribute__((section(".sdram"))) /* размещение в памяти SRAM_D1 */
+	#define RAMHEAP __attribute__((used, section(".heap"), aligned(16))) // memory used as heap zone
+#elif CPUSTYLE_STM32F4XX && (defined (STM32F429xx) || defined(STM32F407xx))
+	#define VTRATTR	__attribute__ ((section("vtable"), used, aligned(256 * 4)))
+	#define FLASHMEMINIT	//__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
+	#define FLASHMEMINITFUNC	//__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
+	#define RAMFUNC_NONILINE  //__attribute__((__section__(".itcm"), noinline))
+	#define RAMFUNC			 // __attribute__((__section__(".itcm")))
+	#define RAMNOINIT_D1	//__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
+	#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
+	#define RAMFRAMEBUFF	//__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
+	#define RAMDTCM			__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
+	#define RAMBIGDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
+	#define RAMBIGDTCM_MDMA	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
+	#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
+	#define RAMHEAP __attribute__((used, section(".heap"), aligned(16))) // memory used as heap zone
+#elif CPUSTYLE_STM32F4XX
+	#define VTRATTR	__attribute__ ((section("vtable"), used, aligned(256 * 4)))
+	#define FLASHMEMINIT	//__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
+	#define FLASHMEMINITFUNC	//__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
+	#define RAMFUNC_NONILINE // __attribute__((__section__(".ramfunc"), noinline))
+	#define RAMFUNC			 // __attribute__((__section__(".ramfunc")))
+	#define RAMNOINIT_D1	//__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
+	#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
+	#define RAMFRAMEBUFF	//__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
+	#define RAMDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
+	#define RAMBIGDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
+	#define RAMBIGDTCM_MDMA	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
+	#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
+	#define RAMHEAP __attribute__((used, section(".heap"), aligned(16))) // memory used as heap zone
+#elif CPUSTYLE_ARM
+	#define VTRATTR	__attribute__ ((section("vtable"), used, aligned(256 * 4)))
+	#define FLASHMEMINIT	//__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
+	#define FLASHMEMINITFUNC	//__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
+	#define RAMFUNC_NONILINE __attribute__((noinline,__section__(".itcm")))  // удаление управления noinline добавило 2-3 процента быстродействия __attribute__((__section__(".ramfunc"), noinline))
+	#define RAMFUNC			 __attribute__((__section__(".itcm")))
+	#define RAMNOINIT_D1	//__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
+	#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
+	#define RAMFRAMEBUFF	//__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
+	#define RAMDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
+	#define RAMBIGDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
+	#define RAMBIGDTCM_MDMA	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
+	#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
+	#define RAMHEAP __attribute__((used, section(".heap"), aligned(16))) // memory used as heap zone
+#endif
 
 #endif /* TAILDEFS_H_INCLUDED */

@@ -2,14 +2,13 @@
 #define GUI_SETTINGS_H_INCLUDED
 
 #include "hardware.h"
+#include "src/gui/gui.h"
 
 #if WITHTOUCHGUI
 
 #define GUI_WINDOWBGCOLOR			2
 #define GUI_SLIDERLAYOUTCOLOR		100
 #define GUI_MENUSELECTCOLOR			109
-#define GUI_TRANSPARENT_WINDOWS		1		/* Прозрачный фон окон */
-//#define GUI_OLDBUTTONSTYLE			1   	/* Кнопки без закругления углов */
 
 enum {
 	sliders_width = 8,			// ширина шкалы слайдера

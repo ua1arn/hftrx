@@ -636,6 +636,7 @@ static USBD_StatusTypeDef USBD_DFU_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
     		//PRINTF(PSTR("1 USBD_DFU_Setup: bmRequest=%04X, bRequest=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
         break;
      }
+       break;
 
     default:
     	break;

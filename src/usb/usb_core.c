@@ -47,12 +47,13 @@ usbd_epaddr2pipe(uint_fast8_t ep_addr)
 	case USBD_EP_AUDIO_IN:	return HARDWARE_USBD_PIPE_ISOC_IN;
 #endif /* WITHUSBUAC */
 #if WITHUSBCDCACM
-	case USBD_EP_CDC_OUT:	return HARDWARE_USBD_PIPE_CDC_OUT;
-	case USBD_EP_CDC_IN:	return HARDWARE_USBD_PIPE_CDC_IN;
-	case USBD_EP_CDC_INT:	return HARDWARE_USBD_PIPE_CDC_INT;
-	case USBD_EP_CDC_OUTb:	return HARDWARE_USBD_PIPE_CDC_OUTb;
-	case USBD_EP_CDC_INb:	return HARDWARE_USBD_PIPE_CDC_INb;
-	case USBD_EP_CDC_INTb:	return HARDWARE_USBD_PIPE_CDC_INTb;
+	case USBD_CDCACM_EP(USBD_EP_CDC_OUT, 0):	return HARDWARE_USBD_PIPE_CDC_OUT;
+	case USBD_CDCACM_EP(USBD_EP_CDC_IN, 0):	return HARDWARE_USBD_PIPE_CDC_IN;
+	case USBD_CDCACM_EP(USBD_EP_CDC_INT, 0):	return HARDWARE_USBD_PIPE_CDC_INT;
+
+	case USBD_CDCACM_EP(USBD_EP_CDC_OUT, 1):	return HARDWARE_USBD_PIPE_CDC_OUTb;
+	case USBD_CDCACM_EP(USBD_EP_CDC_IN, 1):	return HARDWARE_USBD_PIPE_CDC_INb;
+	case USBD_CDCACM_EP(USBD_EP_CDC_INT, 1):	return HARDWARE_USBD_PIPE_CDC_INTb;
 #endif /* WITHUSBCDCACM */
 #if WITHUSBCDCEEM
 	case USBD_EP_CDCEEM_OUT:	return HARDWARE_USBD_PIPE_CDCEEM_OUT;
@@ -100,9 +101,10 @@ usbd_pipe2epaddr(uint_fast8_t pipe)
 	case HARDWARE_USBD_PIPE_CDC_OUT: return USBD_EP_CDC_OUT;
 	case HARDWARE_USBD_PIPE_CDC_IN: return USBD_EP_CDC_IN;
 	case HARDWARE_USBD_PIPE_CDC_INT: return USBD_EP_CDC_INT;
-	case HARDWARE_USBD_PIPE_CDC_OUTb: return USBD_EP_CDC_OUTb;
-	case HARDWARE_USBD_PIPE_CDC_INb: return USBD_EP_CDC_INb;
-	case HARDWARE_USBD_PIPE_CDC_INTb: return USBD_EP_CDC_INTb;
+
+	case HARDWARE_USBD_PIPE_CDC_OUTb: return USBD_CDCACM_EP(USBD_EP_CDC_OUT, 1);
+	case HARDWARE_USBD_PIPE_CDC_INb: return USBD_CDCACM_EP(USBD_EP_CDC_IN, 1);
+	case HARDWARE_USBD_PIPE_CDC_INTb: return USBD_CDCACM_EP(USBD_EP_CDC_INT, 1);
 #endif /* WITHUSBCDCACM */
 #if WITHUSBCDCEEM
 	case HARDWARE_USBD_PIPE_CDCEEM_OUT: return USBD_EP_CDCEEM_OUT;
@@ -1244,7 +1246,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 	{
 		// Данные CDC из компьютера в трансивер
 		const uint_fast8_t pipe = HARDWARE_USBD_PIPE_CDC_OUT;	// PIPE3
-		const uint_fast8_t epnum = USBD_EP_CDC_OUT;
+		const uint_fast8_t epnum = USBD_CDCACM_EP(USBD_EP_CDC_OUT, 0);
 		const uint_fast8_t dir = 0;
 		//PRINTF(PSTR("usbd_pipe_initialize: pipe=%u endpoint=%02X\n"), pipe, epnum);
 
@@ -1271,7 +1273,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 	{
 		// Данные CDC в компьютер из трансивера
 		const uint_fast8_t pipe = HARDWARE_USBD_PIPE_CDC_IN;	// PIPE4
-		const uint_fast8_t epnum = USBD_EP_CDC_IN;
+		const uint_fast8_t epnum = USBD_CDCACM_EP(USBD_EP_CDC_IN, 0);
 		const uint_fast8_t dir = 1;
 		//PRINTF(PSTR("usbd_pipe_initialize: pipe=%u endpoint=%02X\n"), pipe, epnum);
 
@@ -1298,7 +1300,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 	{
 		// Прерывание CDC в компьютер из трансивера
 		const uint_fast8_t pipe = HARDWARE_USBD_PIPE_CDC_INT;	// PIPE6
-		const uint_fast8_t epnum = USBD_EP_CDC_INT;
+		const uint_fast8_t epnum = USBD_CDCACM_EP(USBD_EP_CDC_INT, 0);
 		const uint_fast8_t dir = 1;
 		//PRINTF(PSTR("usbd_pipe_initialize: pipe=%u endpoint=%02X\n"), pipe, epnum);
 
@@ -1325,7 +1327,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 	{
 		// Данные CDC из компьютера в трансивер
 		const uint_fast8_t pipe = HARDWARE_USBD_PIPE_CDC_OUTb;	// PIPE14
-		const uint_fast8_t epnum = USBD_EP_CDC_OUTb;
+		const uint_fast8_t epnum = USBD_CDCACM_EP(USBD_EP_CDC_OUT, 1);
 		const uint_fast8_t dir = 0;
 		//PRINTF(PSTR("usbd_pipe_initialize: pipe=%u endpoint=%02X\n"), pipe, epnum);
 
@@ -1351,7 +1353,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 	{
 		// Данные CDC в компьютер из трансивера
 		const uint_fast8_t pipe = HARDWARE_USBD_PIPE_CDC_INb;	// PIPE15
-		const uint_fast8_t epnum = USBD_EP_CDC_INb;
+		const uint_fast8_t epnum = USBD_CDCACM_EP(USBD_EP_CDC_IN, 1);
 		const uint_fast8_t dir = 1;
 		//PRINTF(PSTR("usbd_pipe_initialize: pipe=%u endpoint=%02X\n"), pipe, epnum);
 
@@ -1377,7 +1379,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 	{
 		// Прерывание CDC в компьютер из трансивера
 		const uint_fast8_t pipe = HARDWARE_USBD_PIPE_CDC_INTb;	// PIPE7
-		const uint_fast8_t epnum = USBD_EP_CDC_INTb;
+		const uint_fast8_t epnum = USBD_CDCACM_EP(USBD_EP_CDC_INT, 1);
 		const uint_fast8_t dir = 1;
 		//PRINTF(PSTR("usbd_pipe_initialize: pipe=%u endpoint=%02X\n"), pipe, epnum);
 
@@ -6592,8 +6594,8 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 	for (i = 0; i < WITHUSBCDCACM_N; ++ i)
 	{
 		/* полнофункциональное устройство */
-		const uint_fast8_t pipe = (USBD_EP_CDC_IN + i) & 0x7F;
-		const uint_fast8_t pipeint = (USBD_EP_CDC_INT + i) & 0x7F;
+		const uint_fast8_t pipe = USBD_CDCACM_EP(USBD_EP_CDC_IN, i) & 0x7F;
+		const uint_fast8_t pipeint = USBD_CDCACM_EP(USBD_EP_CDC_INT, i) & 0x7F;
 		numoutendpoints += 1;
 		if (bigbuff == 0 && i > 0)
 		{
@@ -14378,6 +14380,7 @@ void board_ehci_initialize(void)
 //		(void) SYSCFG->ICNR;
 	}
 
+	TARGET_USBFS_VBUSON_SET(1);
 	// https://github.com/pdoane/osdev/blob/master/usb/ehci.c
 
 	// USBH_EHCI_HCICAPLENGTH == USB1_EHCI->HCCAPBASE
@@ -14410,6 +14413,17 @@ void board_ehci_initialize(void)
 //            }
 //        }
     }
+
+    static __attribute__((used, aligned(4096))) uint32_t tmpbuff [1024uL * 1024uL];
+
+	PRINTF("board_ehci_initialize: USBCMD=%08lX\n", (unsigned long) USB1_EHCI->USBCMD);
+	PRINTF("board_ehci_initialize: USBSTS=%08lX\n", (unsigned long) USB1_EHCI->USBSTS);
+	PRINTF("board_ehci_initialize: USBINTR=%08lX\n", (unsigned long) USB1_EHCI->USBINTR);
+	PRINTF("board_ehci_initialize: FRINDEX=%08lX\n", (unsigned long) USB1_EHCI->FRINDEX);
+	PRINTF("board_ehci_initialize: CTRLDSSEGMENT=%08lX\n", (unsigned long) USB1_EHCI->CTRLDSSEGMENT);
+	PRINTF("board_ehci_initialize: PERIODICLISTBASE=%08lX\n", (unsigned long) USB1_EHCI->PERIODICLISTBASE);
+	PRINTF("board_ehci_initialize: ASYNCLISTADDR=%08lX\n", (unsigned long) USB1_EHCI->ASYNCLISTADDR);
+	PRINTF("board_ehci_initialize: tmpbuff=%08lX\n", (unsigned long) & tmpbuff);
 
 
 //	USBH_EHCI_IRQn

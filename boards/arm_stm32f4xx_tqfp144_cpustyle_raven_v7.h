@@ -197,7 +197,7 @@
 		do { \
 			arm_hardware_piof_inputs(ENCODER_BITS); \
 			arm_hardware_piof_updown(ENCODER_BITS, 0); \
-			arm_hardware_piof_onchangeinterrupt(ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ARM_OVERREALTIME_PRIORITY); \
+			arm_hardware_piof_onchangeinterrupt(ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
 			arm_hardware_piof_inputs(ENCODER2_BITS); \
 			arm_hardware_piof_updown(ENCODER2_BITS, 0); \
 			arm_hardware_piof_onchangeinterrupt(0 * ENCODER2_BITS, ENCODER2_BITS, ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY); \

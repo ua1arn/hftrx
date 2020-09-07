@@ -336,7 +336,7 @@ static uint_fast8_t getbufferbit(uint_fast8_t col, uint_fast8_t row, uint_fast8_
 	case 1: return 2;
 	}
 
-	//debug_printf_P(PSTR("getbufferbit: col=%d, row=%d\n"), col, row);
+	//PRINTF(PSTR("getbufferbit: col=%d, row=%d\n"), col, row);
 
 	uint_fast8_t charrow = row % SMALLCHARH;
 	uint_fast8_t charcol = col % 8;
@@ -418,13 +418,13 @@ static void eink_dummyline(void)
 	spi_progval8_p1(target, 0x72);
 
 	while (eink_lcd_busy())
-		debug_printf_P(PSTR("eink: wait busy\n"));
+		PRINTF(PSTR("eink: wait busy\n"));
 	spi_progval8_p2(target, 0x00);
 	int n;
 	for (n = 0; n < 74; ++ n)
 	{
 		while (eink_lcd_busy())
-			debug_printf_P(PSTR("eink: wait busy\n"));
+			PRINTF(PSTR("eink: wait busy\n"));
 		spi_progval8_p2(target, 0x00);
 	}
 	spi_complete(target);
@@ -446,7 +446,7 @@ static void eink_displayimage(uint_fast8_t stage)
 		}
 		else
 		{
-			debug_printf_P(PSTR("eink: Feedback to System (14) - dc/dc is not started, state=%02x\n"), state);
+			PRINTF(PSTR("eink: Feedback to System (14) - dc/dc is not started, state=%02x\n"), state);
 		}
 	}	
 
@@ -480,7 +480,7 @@ static void eink_displayimage(uint_fast8_t stage)
 		for (col8 = 0; col8 < 25; ++ col8)
 		{
 			while (eink_lcd_busy())
-				debug_printf_P(PSTR("eink: wait busy\n"));
+				PRINTF(PSTR("eink: wait busy\n"));
 			spi_progval8_p2(target, getrow4byteseven(198 - col8 * 8, row, stage));
 		}
 		// Scan bytes
@@ -488,7 +488,7 @@ static void eink_displayimage(uint_fast8_t stage)
 		for (row4 = 0; row4 < 24; ++ row4)
 		{
 			while (eink_lcd_busy())
-				debug_printf_P(PSTR("eink: wait busy\n"));
+				PRINTF(PSTR("eink: wait busy\n"));
 			spi_progval8_p2(target, getscan4bytes(95 - row4 * 4, row, stage));
 		}
 		// send 26..50 (50 total) data byte
@@ -498,7 +498,7 @@ static void eink_displayimage(uint_fast8_t stage)
 		for (col8 = 0; col8 < 25; ++ col8)
 		{
 			while (eink_lcd_busy())
-				debug_printf_P(PSTR("eink: wait busy\n"));
+				PRINTF(PSTR("eink: wait busy\n"));
 			spi_progval8_p2(target, getrow4bytesodd(col8 * 8 + 1, row, stage));
 		}
 		//spi_progval8_p2(target, 0x00);	// border byte
@@ -513,7 +513,7 @@ static void eink_displayimage(uint_fast8_t stage)
 
 void eink_initialize(void)
 {
-	debug_printf_P(PSTR("eink test, SPISPEED=%ld\n"), (long) SPISPEED);
+	PRINTF(PSTR("eink test, SPISPEED=%ld\n"), (long) SPISPEED);
 
 	eink_lcd_on_border(1);
 	// Section 3: Power On G2 COG Driver
@@ -531,10 +531,10 @@ void eink_initialize(void)
 
 #if 1
 	// Section 4: Initialize G2 COG Driver
-	debug_printf_P(PSTR("eink: Section 4: Initialize G2 COG Driver\n"));
+	PRINTF(PSTR("eink: Section 4: Initialize G2 COG Driver\n"));
 	while (eink_lcd_busy() != 0)
 	{
-		debug_printf_P(PSTR("eink: wait busy\n"));
+		PRINTF(PSTR("eink: wait busy\n"));
 		//eink_lcd_toggle_border();
 		local_delay_ms(500);
 		++ w;
@@ -546,7 +546,7 @@ void eink_initialize(void)
 		const uint_fast8_t status = eink_read(0x0f);	// Check Breakage
 		if ((status & 0x80) != 0)
 		{
-			debug_printf_P(PSTR("eink: Check Breakage pass\n"));
+			PRINTF(PSTR("eink: Check Breakage pass\n"));
 			eink_write(0x0b, 0x02);	// Power Saving Mode
 
 			// Channel Select
@@ -579,7 +579,7 @@ void eink_initialize(void)
 			uint_fast8_t i;
 			for (i = 0; i < 4; ++ i)
 			{
-				debug_printf_P(PSTR("eink: Start chargepump\n"));
+				PRINTF(PSTR("eink: Start chargepump\n"));
 				eink_write(0x05, 0x01);	// Start chargepump positive V
 				eink_write(0x05, 0x03);	// Start chargepump neg voltage
 				eink_write(0x05, 0x0f);	// Set chargepump Vcom_Driver to ON
@@ -591,21 +591,21 @@ void eink_initialize(void)
 					goto sect4done;
 				}
 			}
-			debug_printf_P(PSTR("eink: Feedback to System (1), status=%02x\n"), status);
+			PRINTF(PSTR("eink: Feedback to System (1), status=%02x\n"), status);
 		}
 		else
 		{
-			debug_printf_P(PSTR("eink: Feedback to System (2)\n"));
+			PRINTF(PSTR("eink: Feedback to System (2)\n"));
 		}
 	}
 	else
 	{
-		debug_printf_P(PSTR("eink: Feedback to System (3)\n"));
+		PRINTF(PSTR("eink: Feedback to System (3)\n"));
 	}
 #endif
 sect4done:
 	eink_write(0x02, 0x40);	// Output enable to disable
-	debug_printf_P(PSTR("eink: Section 4: Initialize G2 COG Driver done\n"));
+	PRINTF(PSTR("eink: Section 4: Initialize G2 COG Driver done\n"));
 	eink_lcd_on_border(1);
 
 	for (;;)
@@ -620,7 +620,7 @@ sect4done:
 	eink_BWdummyline(0xaa);
 	eink_dummyline();
 	*/
-	debug_printf_P(PSTR("eink reset done, w = %d\n"), w);
+	PRINTF(PSTR("eink reset done, w = %d\n"), w);
 	for (;;)
 	{
 		//eink_lcd_toggle_border();
@@ -630,7 +630,7 @@ sect4done:
 		uint_fast8_t v2 = eink_read(0x02);
 		const uint_fast8_t status = eink_read(0x0f);	// Check DC/DC
 
-		debug_printf_P(PSTR("eink id=%02x.v2=%02x,status=%02x\n"), id, v2, status);
+		PRINTF(PSTR("eink id=%02x.v2=%02x,status=%02x\n"), id, v2, status);
 		if (id != 0xff)
 			break;
 	}
@@ -651,15 +651,15 @@ sect4done:
 		}
 		else
 		{
-			debug_printf_P(PSTR("eink: Feedback to System (4) - dc/dc is not started\n"));
+			PRINTF(PSTR("eink: Feedback to System (4) - dc/dc is not started\n"));
 		}
 	}
-	debug_printf_P(PSTR("eink test done, w = %d\n"), w);
+	PRINTF(PSTR("eink test done, w = %d\n"), w);
 	board_lcd_reset(0); 	// Pull RST pin down
 	board_update();
 	eink_lcd_discharge(1);		// 1=discharge
 	eink_lcd_pwron(0);
-	debug_printf_P(PSTR("eink reset\n"));
+	PRINTF(PSTR("eink reset\n"));
 }
 
 
@@ -2540,7 +2540,7 @@ void stage_handle_Base(uint8_t EPD_type_index, const uint8_t *image_ptr,long ima
 	uint32_t line_time=8;
 	uint8_t byte_array[LINE_BUFFER_DATA_SIZE];
 	
-	debug_printf_P(PSTR("stage_handle_Base: 1\n"));
+	PRINTF(PSTR("stage_handle_Base: 1\n"));
 								/** Stage 2: BLACK/WHITE image, Frame type */
 	if (stage_no==Stage2)
 	{
@@ -2551,7 +2551,7 @@ void stage_handle_Base(uint8_t EPD_type_index, const uint8_t *image_ptr,long ima
 		}
 		return;
 	}
-	debug_printf_P(PSTR("stage_handle_Base: 2\n"));
+	PRINTF(PSTR("stage_handle_Base: 2\n"));
 	/** Stage 1 & 3, Block type */
 	// The frame/block/step of Stage1 and Stage3 are default the same.
 	stage_init(EPD_type_index,
@@ -2559,7 +2559,7 @@ void stage_handle_Base(uint8_t EPD_type_index, const uint8_t *image_ptr,long ima
 				action__Waveform_param->stage1_block1,
 				action__Waveform_param->stage1_step1,
 				action__Waveform_param->stage1_frame1);
-	debug_printf_P(PSTR("stage_handle_Base: 3\n"));
+	PRINTF(PSTR("stage_handle_Base: 3\n"));
 	 /* Repeat number of frames */
    	 for (cycle = 0; cycle < (S_epd_v230.frame_cycle ); cycle++)
    	 {
@@ -2642,7 +2642,7 @@ void stage_handle_Base(uint8_t EPD_type_index, const uint8_t *image_ptr,long ima
 		check_poweroff();
 	   	 }
    	 }		
-	debug_printf_P(PSTR("stage_handle_Base: 4\n"));
+	PRINTF(PSTR("stage_handle_Base: 4\n"));
 }
 
 /**
@@ -2688,13 +2688,13 @@ void EPD_display_from_array_ptr (
 {	
 	_On_EPD_read_flash=NULL;		
 
-	debug_printf_P(PSTR("EPD_display_from_array_ptr: 1\n"));
+	PRINTF(PSTR("EPD_display_from_array_ptr: 1\n"));
 	stage_handle(EPD_type_index,new_image_ptr,Stage1,COG_parameters[EPD_type_index].horizontal_size);	
-	debug_printf_P(PSTR("EPD_display_from_array_ptr: 2\n"));
+	PRINTF(PSTR("EPD_display_from_array_ptr: 2\n"));
 	stage_handle(EPD_type_index,new_image_ptr,Stage2,COG_parameters[EPD_type_index].horizontal_size);	
-	debug_printf_P(PSTR("EPD_display_from_array_ptr: 3\n"));
+	PRINTF(PSTR("EPD_display_from_array_ptr: 3\n"));
 	stage_handle(EPD_type_index,new_image_ptr,Stage3,COG_parameters[EPD_type_index].horizontal_size);	
-	debug_printf_P(PSTR("EPD_display_from_array_ptr: 4\n"));
+	PRINTF(PSTR("EPD_display_from_array_ptr: 4\n"));
 }
 
 /**
@@ -2934,25 +2934,25 @@ void EPD_display_from_pointer(
 	const uint8_t *previous_image_ptr,
 	const uint8_t *new_image_ptr) {
 	/* Initialize EPD hardware */
-	debug_printf_P(PSTR("EPD_display_from_pointer: 1\n"));
+	PRINTF(PSTR("EPD_display_from_pointer: 1\n"));
 	EPD_init();
 	
 	/* Power on COG Driver */
-	debug_printf_P(PSTR("EPD_display_from_pointer: 2\n"));
+	PRINTF(PSTR("EPD_display_from_pointer: 2\n"));
 	EPD_power_on();
 	
 	/* Initialize COG Driver */
-	debug_printf_P(PSTR("EPD_display_from_pointer: 3\n"));
+	PRINTF(PSTR("EPD_display_from_pointer: 3\n"));
 	EPD_initialize_driver(EPD_type_index);
 	
 	/* Display image data on EPD from image array */
-	debug_printf_P(PSTR("EPD_display_from_pointer: 4\n"));
+	PRINTF(PSTR("EPD_display_from_pointer: 4\n"));
 	EPD_display_from_array_ptr(EPD_type_index,previous_image_ptr,new_image_ptr);
 	
 	/* Power off COG Driver */
-	debug_printf_P(PSTR("EPD_display_from_pointer: 5\n"));
+	PRINTF(PSTR("EPD_display_from_pointer: 5\n"));
 	EPD_power_off (EPD_type_index);
-	debug_printf_P(PSTR("EPD_display_from_pointer: 6\n"));
+	PRINTF(PSTR("EPD_display_from_pointer: 6\n"));
 }
 
 /**
@@ -3493,18 +3493,18 @@ static void printtextfile(const char * filename)
 	UINT i = 0;			// номер выводимого байта
 	
 	FRESULT rc;				/* Result code */
-	static FATFSALIGN_BEGIN RAMNOINIT_D1 FIL Fil FATFSALIGN_END;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
+	static RAMNOINIT_D1 FATFSALIGN_BEGIN FIL Fil FATFSALIGN_END;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
 	// чтение файла
 	rc = f_open(& Fil, filename, FA_READ);
 	if (rc) 
 	{
-		debug_printf_P(PSTR("Can not open file '%s'\n"), filename);
-		debug_printf_P(PSTR("Failed with rc=%u.\n"), rc);
+		PRINTF(PSTR("Can not open file '%s'\n"), filename);
+		PRINTF(PSTR("Failed with rc=%u.\n"), rc);
 		return;
 	}
 	
 	// печать тестового файла
-	debug_printf_P(PSTR("Type the file content: '%s'\n"), filename);
+	PRINTF(PSTR("Type the file content: '%s'\n"), filename);
 	for (;;)
 	{
 		char kbch;
@@ -3536,21 +3536,21 @@ static void printtextfile(const char * filename)
 		}
 	}
 
-	debug_printf_P(PSTR("read complete: %u bytes\n"), filepos);
+	PRINTF(PSTR("read complete: %u bytes\n"), filepos);
 
 	if (rc) 
 	{
 		TP();
-		debug_printf_P(PSTR("Failed with rc=%u.\n"), rc);
+		PRINTF(PSTR("Failed with rc=%u.\n"), rc);
 		return;
 	}
 
-	//debug_printf_P("\nClose the file.\n");
+	//PRINTF("\nClose the file.\n");
 	rc = f_close(& Fil);
 	if (rc) 
 	{
 		TP();
-		debug_printf_P(PSTR("Failed with rc=%u.\n"), rc);
+		PRINTF(PSTR("Failed with rc=%u.\n"), rc);
 		return;
 	}
 }
@@ -3573,14 +3573,14 @@ static uint_fast8_t rxqpeek(char * ch)
 // сохранение потока данных с CNC на флэшке
 static void dosaveserialport(const char * fname)
 {
-	static FATFSALIGN_BEGIN RAMNOINIT_D1 FIL Fil FATFSALIGN_END;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
+	static RAMNOINIT_D1 FATFSALIGN_BEGIN FIL Fil FATFSALIGN_END;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
 	unsigned i;
 	FRESULT rc;				/* Result code */
 
 	rc = f_open(& Fil, fname, FA_WRITE | FA_CREATE_ALWAYS);
 	if (rc)
 	{
-		debug_printf_P(PSTR("can not start recording\n"));
+		PRINTF(PSTR("can not start recording\n"));
 		return;	//die(rc);
 	}
 
@@ -3599,7 +3599,7 @@ static void dosaveserialport(const char * fname)
 		{
 			if (kbch == 0x1b)
 			{
-				debug_printf_P(PSTR("break recording\n"));
+				PRINTF(PSTR("break recording\n"));
 				break;
 			}
 		}
@@ -3626,7 +3626,7 @@ static void dosaveserialport(const char * fname)
 		if (rc != 0 || bw != i)
 		{
 			TP();
-			debug_printf_P(PSTR("Failed with rc=%u.\n"), rc);
+			PRINTF(PSTR("Failed with rc=%u.\n"), rc);
 			return;
 		}
 	}
@@ -3634,7 +3634,7 @@ static void dosaveserialport(const char * fname)
 	if (rc) 
 	{
 		TP();
-		debug_printf_P(PSTR("Failed with rc=%u.\n"), rc);
+		PRINTF(PSTR("Failed with rc=%u.\n"), rc);
 		return;
 	}
 }
@@ -3668,11 +3668,11 @@ unsigned USBD_poke_u32(uint8_t * buff, uint_fast32_t v);
 static void dosaveblocks(const char * fname)
 {
 	unsigned long long kbs = 0;
-	static FATFSALIGN_BEGIN RAMNOINIT_D1 FATFS Fatfs FATFSALIGN_END;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
-	static FATFSALIGN_BEGIN RAMNOINIT_D1 FIL Fil FATFSALIGN_END;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
+	static RAMNOINIT_D1 FATFSALIGN_BEGIN FATFS Fatfs FATFSALIGN_END;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
+	static RAMNOINIT_D1 FATFSALIGN_BEGIN FIL Fil FATFSALIGN_END;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
 	FRESULT rc;				/* Result code */
 
-	debug_printf_P(PSTR("FAT FS test - write file '%s'.\n"), fname);
+	PRINTF(PSTR("FAT FS test - write file '%s'.\n"), fname);
 	f_mount(& Fatfs, "", 0);		/* Register volume work area (never fails) */
 	memset(rbuff, 0xE5, sizeof rbuff);
 	static int i;
@@ -3787,7 +3787,7 @@ static void fb_print(const struct fb * p, int x, int y, int selected)
 		colmain_setcolors(COLOR_GOLD, selected ? COLOR_BLUE: COLOR_BLACK);
 		local_snprintf_P(buff, sizeof buff / sizeof buff [0], "%c   <dir>  %s", selected ? 'X' : ' ',
 			fn);
-		debug_printf_P(PSTR("   <dir>  %s\n"), p->fno.fname);
+		PRINTF(PSTR("   <dir>  %s\n"), p->fno.fname);
 	}
 	else
 	{
@@ -3797,7 +3797,7 @@ static void fb_print(const struct fb * p, int x, int y, int selected)
 			sizeof buff / sizeof buff [0],	// размер буфера
 			"%c%8lu  %s", selected ? '>' : ' ',
 			p->fno.fsize, fn);
-		debug_printf_P(PSTR("%8lu  %s\n"), p->fno.fsize, p->fno.fname);
+		PRINTF(PSTR("%8lu  %s\n"), p->fno.fsize, p->fno.fname);
 	}
 
 	//uint_fast8_t lowhalf = HALFCOUNT_SMALL2 - 1;
@@ -3821,7 +3821,7 @@ void displfiles_buff(const char* path)
     //fno.lfsize = sizeof lfn;
 #endif
 
-	debug_printf_P(PSTR("Open root directory.\n"));
+	PRINTF(PSTR("Open root directory.\n"));
     res = f_opendir(& dir, path);                       /* Open the directory */
     if (res == FR_OK) 
 	{
@@ -3849,7 +3849,7 @@ void displfiles_buff(const char* path)
 			else                                        /* It is a file. */
 			{
                 //printf("%s/%s\n", path, fn);
- 				debug_printf_P(PSTR("displfiles_buff: %9lu '%s'\n"), (unsigned long) pfno->fsize,  fn);
+ 				PRINTF(PSTR("displfiles_buff: %9lu '%s'\n"), (unsigned long) pfno->fsize,  fn);
 			}
         }
         //f_closedir(&dir);
@@ -3861,7 +3861,7 @@ static BYTE targetdrv = 0;
 static char mmcInitialize(void)
 {
 	DSTATUS st = disk_initialize (targetdrv);				/* Physical drive nmuber (0..) */
-	//debug_printf_P(PSTR("disk_initialize code=%02X\n"), st);
+	//PRINTF(PSTR("disk_initialize code=%02X\n"), st);
 	return st != RES_OK;
 }
 
@@ -3870,7 +3870,7 @@ static char mmcInitialize(void)
 static char mmcReadSector(uint_fast32_t sector, unsigned char *pBuffer)
 {
 	DSTATUS st = disk_read(targetdrv, pBuffer, sector, 1);
-	//debug_printf_P(PSTR("disk_read code=%02X\n"), st);
+	//PRINTF(PSTR("disk_read code=%02X\n"), st);
 	return st != RES_OK;
 }
 //#define 
@@ -3880,7 +3880,7 @@ static char mmcReadSector(uint_fast32_t sector, unsigned char *pBuffer)
 static char mmcWriteSector(uint_fast32_t sector, const unsigned char *pBuffer)
 {
 	DSTATUS st = disk_write(targetdrv, pBuffer, sector, 1);
-	//debug_printf_P(PSTR("disk_write code=%02X\n"), st);
+	//PRINTF(PSTR("disk_write code=%02X\n"), st);
 	return st != RES_OK;
 }
 
@@ -3898,10 +3898,10 @@ static void fatfs_test(void)
 	static RAMNOINIT_D1 FATFSALIGN_BEGIN unsigned char sectbuffr [MMC_SECTORSIZE] FATFSALIGN_END;
 	static RAMNOINIT_D1 FATFSALIGN_BEGIN unsigned char sectbuffw [MMC_SECTORSIZE] FATFSALIGN_END;
 
-	debug_printf_P(PSTR("Test SD card\n"));
+	PRINTF(PSTR("Test SD card\n"));
 	mmcInitialize();
 
-	debug_printf_P(PSTR("Enter command:\n"));
+	PRINTF(PSTR("Enter command:\n"));
 //test_disk();
 //print_opened_files();
 // SD CARD initializations done.
@@ -3918,46 +3918,46 @@ static void fatfs_test(void)
 			switch (c)
 			{
 			default:
-				debug_printf_P(PSTR("Undefined command letter with code 0x%02X\n"), (unsigned char) c);
+				PRINTF(PSTR("Undefined command letter with code 0x%02X\n"), (unsigned char) c);
 				break;
 
 			case 'x':
-				debug_printf_P(PSTR("SD CARD test done.\n"));
+				PRINTF(PSTR("SD CARD test done.\n"));
 				return;
 
 			case '1':
 				/* подготовка тестовых данных */
-				debug_printf_P(PSTR("Fill write buffer by 0xff\n"));
+				PRINTF(PSTR("Fill write buffer by 0xff\n"));
 				memset(sectbuffw, 0xff, MMC_SECTORSIZE);
 				break;
 
 			case '2':
 				/* подготовка тестовых данных */
-				debug_printf_P(PSTR("Fill write buffer by 0x00\n"));
+				PRINTF(PSTR("Fill write buffer by 0x00\n"));
 				memset(sectbuffw, 0x00, MMC_SECTORSIZE);
 				break;
 
 			case '3':
 				/* подготовка тестовых данных */
-				debug_printf_P(PSTR("Fill write buffer by 0x55\n"));
+				PRINTF(PSTR("Fill write buffer by 0x55\n"));
 				memset(sectbuffw, 0x55, MMC_SECTORSIZE);
 				break;
 
 			case '4':
 				/* подготовка тестовых данных */
-				debug_printf_P(PSTR("Fill write buffer by 0xaa\n"));
+				PRINTF(PSTR("Fill write buffer by 0xaa\n"));
 				memset(sectbuffw, 0xaa, MMC_SECTORSIZE);
 				break;
 
 			case 'c':
 				/* копирование данных */
-				debug_printf_P(PSTR("Copy read buffer to write buffer\n"));
+				PRINTF(PSTR("Copy read buffer to write buffer\n"));
 				memcpy(sectbuffw, sectbuffr, MMC_SECTORSIZE);
 				break;
 
 			case '5':
 				/* подготовка тестовых данных */
-				debug_printf_P(PSTR("Fill write buffer by text data\n"));
+				PRINTF(PSTR("Fill write buffer by text data\n"));
 				for (i = 0; i < 16; ++ i)
 				{
 					local_snprintf_P((char *) sectbuffw + i * 32, 32, PSTR("TEST DATA %9d"), testdataval ++);
@@ -3966,48 +3966,48 @@ static void fatfs_test(void)
 				break;
 
 			case 'r':
-				debug_printf_P(PSTR("Read SD card, sector = %lu\n"), lba_sector);
+				PRINTF(PSTR("Read SD card, sector = %lu\n"), lba_sector);
 				if (mmcReadSector(lba_sector, sectbuffr) != MMC_SUCCESS2)
-					debug_printf_P("Read error\n");
+					PRINTF("Read error\n");
 				else
 					printhex(0, sectbuffr, MMC_SECTORSIZE);
 				break;
 
 			case 'w':
 				/* запись тестовых данных */
-				debug_printf_P(PSTR("Write SD card, sector = %lu\n"), lba_sector);
+				PRINTF(PSTR("Write SD card, sector = %lu\n"), lba_sector);
 				if (mmcWriteSector(lba_sector, sectbuffw) != MMC_SUCCESS2)
-					debug_printf_P(PSTR("Write error\n"));
+					PRINTF(PSTR("Write error\n"));
 				else
-					debug_printf_P(PSTR("Write Okay\n"));
+					PRINTF(PSTR("Write Okay\n"));
 				break;
 
 			case 'v':
-				debug_printf_P(PSTR("Verify SD card, sector = %lu\n"), lba_sector);
+				PRINTF(PSTR("Verify SD card, sector = %lu\n"), lba_sector);
 				if (mmcReadSector(lba_sector, sectbuffr) != MMC_SUCCESS2)
-					debug_printf_P(PSTR("Read error\n"));
+					PRINTF(PSTR("Read error\n"));
 				else if (memcmp(sectbuffr, sectbuffw, MMC_SECTORSIZE) == 0)
-					debug_printf_P(PSTR("No errors\n"));
+					PRINTF(PSTR("No errors\n"));
 				else
-					debug_printf_P(PSTR("Different data\n"));
+					PRINTF(PSTR("Different data\n"));
 				break;
 
 			case 'n':
-				debug_printf_P(PSTR("Next sector (%lu) on SD card\n"), ++ lba_sector);
+				PRINTF(PSTR("Next sector (%lu) on SD card\n"), ++ lba_sector);
 				break;
 
 			case 'p':
-				debug_printf_P(PSTR("Previous sector (%lu) on SD card\n"), -- lba_sector);
+				PRINTF(PSTR("Previous sector (%lu) on SD card\n"), -- lba_sector);
 				break;
 
 			//case 'Q':
-			//	debug_printf_P(PSTR("Wait for ready\n"));
+			//	PRINTF(PSTR("Wait for ready\n"));
 			//	while (SD_ReadCardSize() == 0 && dbg_getchar(& c) == 0)
 					;
 			case 'q':
 				{
 					uint_fast64_t v = mmcCardSize();
-					debug_printf_P(PSTR("SD Card size = %lu KB (%lu MB) (%08lx:%08lx bytes)\n"), 
+					PRINTF(PSTR("SD Card size = %lu KB (%lu MB) (%08lx:%08lx bytes)\n"),
 						(unsigned long) (v / 1024), 
 						(unsigned long) (v / 1024 / 1024), 
 						(unsigned long) (v >> 32), 
@@ -4016,14 +4016,14 @@ static void fatfs_test(void)
 				}
 				break;
 			//case 'D':
-			//	debug_printf_P(PSTR("Wait for ready\n"));
+			//	PRINTF(PSTR("Wait for ready\n"));
 			//	while (mmcCardSize() == 0 && dbg_getchar(& c) == 0)
 			//		;
 			case 'd':
 				{
 					uint_fast64_t pos;
 					const uint_fast64_t v = mmcCardSize();
-					debug_printf_P(PSTR("Dump SD Card with size = %lu KB (%lu MB) (%08lx:%08lx bytes)\n"), 
+					PRINTF(PSTR("Dump SD Card with size = %lu KB (%lu MB) (%08lx:%08lx bytes)\n"),
 						(unsigned long) (v / 1024), 
 						(unsigned long) (v / 1024 / 1024), 
 						(unsigned long) (v >> 32), 
@@ -4043,7 +4043,7 @@ static void fatfs_test(void)
 						const unsigned long sector = pos / MMC_SECTORSIZE;
 						if (mmcReadSector(sector, sectbuffr) != MMC_SUCCESS2)
 						{
-							debug_printf_P(PSTR("Read error\n"));
+							PRINTF(PSTR("Read error\n"));
 						}
 						else
 						{
@@ -4051,7 +4051,7 @@ static void fatfs_test(void)
 							pos += MMC_SECTORSIZE;
 						}
 					}
-					debug_printf_P(PSTR("Done dumping.\n"));
+					PRINTF(PSTR("Done dumping.\n"));
 				}
 				break;
 
@@ -4060,7 +4060,7 @@ static void fatfs_test(void)
 				break;
 				
 			//case 't':
-			//	debug_printf_P("Card %s\n", mmcPing() ? "present" : "missing");
+			//	PRINTF("Card %s\n", mmcPing() ? "present" : "missing");
 			//	break;
 			}
 		}
@@ -4071,13 +4071,13 @@ static void fatfs_filesystest(void)
 {
 	FATFSALIGN_BEGIN BYTE work [FF_MAX_SS] FATFSALIGN_END;
 	FRESULT rc;  
-	static FATFSALIGN_BEGIN RAMNOINIT_D1 FATFS Fatfs FATFSALIGN_END;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
+	static RAMNOINIT_D1 FATFSALIGN_BEGIN FATFS Fatfs FATFSALIGN_END;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
 	static const char testfile [] = "readme.txt";
 	char testlog [FF_MAX_LFN + 1];
 	//int nlog = 0;
 
 	mmcInitialize();
-	debug_printf_P(PSTR("FAT FS test.\n"));
+	PRINTF(PSTR("FAT FS test.\n"));
 	f_mount(& Fatfs, "", 0);		/* Register volume work area (never fails) */
 
 	for (;;)
@@ -4088,13 +4088,13 @@ static void fatfs_filesystest(void)
 			switch (c)
 			{
 			default:
-				debug_printf_P(PSTR("Undefined command letter with code 0x%02X\n"), (unsigned char) c);
+				PRINTF(PSTR("Undefined command letter with code 0x%02X\n"), (unsigned char) c);
 				break;
 
 			case 'q':
 				{
 					uint_fast64_t v = mmcCardSize();
-					debug_printf_P(PSTR("SD Card size = %lu KB (%lu MB) (%08lx:%08lx bytes)\n"), 
+					PRINTF(PSTR("SD Card size = %lu KB (%lu MB) (%08lx:%08lx bytes)\n"),
 						(unsigned long) (v / 1024), 
 						(unsigned long) (v / 1024 / 1024), 
 						(unsigned long) (v >> 32), 
@@ -4109,34 +4109,34 @@ static void fatfs_filesystest(void)
 				
 			case 'x':
 				f_mount(NULL, "", 0);		/* Unregister volume work area (never fails) */
-				debug_printf_P(PSTR("FAT FS test done.\n"));
+				PRINTF(PSTR("FAT FS test done.\n"));
 				return;
 
 			case 'd':
-				debug_printf_P(PSTR("FAT FS test - display root directory.\n"));
+				PRINTF(PSTR("FAT FS test - display root directory.\n"));
 				f_mount(NULL, "", 0);		/* Unregister volume work area (never fails) */
 				f_mount(& Fatfs, "", 0);		/* Register volume work area (never fails) */
 				displfiles_buff("");	// Заполнение буфера имён файлов в памяти
 				break;
 
 			case 't':
-				debug_printf_P(PSTR("FAT FS test - print file '%s'.\n"), testfile);
+				PRINTF(PSTR("FAT FS test - print file '%s'.\n"), testfile);
 				f_mount(NULL, "", 0);		/* Unregister volume work area (never fails) */
 				f_mount(& Fatfs, "", 0);		/* Register volume work area (never fails) */
 				printtextfile(testfile);
 				break;
 
 			case 'F':
-				debug_printf_P(PSTR("FAT FS formatting.\n"));
+				PRINTF(PSTR("FAT FS formatting.\n"));
 				f_mount(NULL, "", 0);		/* Unregister volume work area (never fails) */
 				rc = f_mkfs("0:", NULL, work, sizeof (work));
 				if (rc != FR_OK)
 				{
-					debug_printf_P(PSTR("sdcardformat: f_mkfs failure\n"));
+					PRINTF(PSTR("sdcardformat: f_mkfs failure\n"));
 				}
 				else
 				{
-					debug_printf_P(PSTR("sdcardformat: f_mkfs okay\n"));
+					PRINTF(PSTR("sdcardformat: f_mkfs okay\n"));
 				}
 				f_mount(& Fatfs, "", 0);		/* Register volume work area (never fails) */
 				break;
@@ -4155,7 +4155,7 @@ static void fatfs_filesystest(void)
 						hardware_get_random(),
 						++ ser
 						);
-					debug_printf_P(PSTR("FAT FS test - write file '%s'.\n"), testlog);
+					PRINTF(PSTR("FAT FS test - write file '%s'.\n"), testlog);
 					f_mount(NULL, "", 0);		/* Unregister volume work area (never fails) */
 					f_mount(& Fatfs, "", 0);		/* Register volume work area (never fails) */
 					dosaveserialport(testlog);
@@ -4258,7 +4258,7 @@ static int timed_dataflash_read_status(
 		if ((dataflash_read_status(target) & 0x01) == 0)
 			return 0;
 	}
-	debug_printf_P(PSTR("DATAFLASH timeout error\n"));
+	PRINTF(PSTR("DATAFLASH timeout error\n"));
 	return 1;
 }
 
@@ -4272,7 +4272,7 @@ static int largetimed_dataflash_read_status(
 		if ((dataflash_read_status(target) & 0x01) == 0)
 			return 0;
 	}
-	debug_printf_P(PSTR("DATAFLASH erase timeout error\n"));
+	PRINTF(PSTR("DATAFLASH erase timeout error\n"));
 	return 1;
 }
 
@@ -4307,8 +4307,8 @@ static int testchipDATAFLASH(void)
 
 	spi_unselect(target);	/* done sending data to target chip */
 
-	debug_printf_P(PSTR("Read: ID = 0x%02X devId = 0x%02X%02X, mf_dlen=0x%02X\n"), mf_id, mf_devid1, mf_devid2, mf_dlen);
-	//debug_printf_P(PSTR("Need: ID = 0x%02X devId = 0x%02X%02X, mf_dlen=0x%02X\n"), 0x1f, 0x45, 0x01, 0x00);
+	PRINTF(PSTR("Read: ID = 0x%02X devId = 0x%02X%02X, mf_dlen=0x%02X\n"), mf_id, mf_devid1, mf_devid2, mf_dlen);
+	//PRINTF(PSTR("Need: ID = 0x%02X devId = 0x%02X%02X, mf_dlen=0x%02X\n"), 0x1f, 0x45, 0x01, 0x00);
 	return mf_id != 0x1f || mf_devid1 != 0x45 || mf_devid2 != 0x01 || mf_dlen != 0;
 }
 
@@ -4332,7 +4332,7 @@ static int eraseDATAFLASH(void)
 
 	if ((dataflash_read_status(target) & (0x01 << 5)) != 0)	// write error
 	{
-		debug_printf_P(PSTR("Erase error\n"));
+		PRINTF(PSTR("Erase error\n"));
 		return 1;
 	}
 	return 0;
@@ -4382,7 +4382,7 @@ static int writesinglepageDATAFLASH(unsigned long flashoffset, const unsigned ch
 {
 	spitarget_t target = targetdataflash;	/* addressing to chip */
 
-	//debug_printf_P(PSTR(" Prog to address %08lX %02X\n"), flashoffset, len);
+	//PRINTF(PSTR(" Prog to address %08lX %02X\n"), flashoffset, len);
 
 	spi_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
 	spi_progval8(target, 0x06);		/* write enable */
@@ -4409,7 +4409,7 @@ static int writesinglepageDATAFLASH(unsigned long flashoffset, const unsigned ch
 	if (timed_dataflash_read_status(target))
 		return 1;
 
-	//debug_printf_P(PSTR("Done programming\n"));
+	//PRINTF(PSTR("Done programming\n"));
 	return 0;
 }
 
@@ -4422,7 +4422,7 @@ static unsigned long ulmin(
 
 static int writeDATAFLASH(unsigned long flashoffset, const unsigned char * data, unsigned long len)
 {
-	//debug_printf_P(PSTR("Write to address %08lX %02X\n"), flashoffset, len);
+	//PRINTF(PSTR("Write to address %08lX %02X\n"), flashoffset, len);
 	while (len != 0)
 	{
 		unsigned long offset = flashoffset & 0xFF;
@@ -4445,7 +4445,7 @@ static int verifyDATAFLASH(unsigned long flashoffset, const unsigned char * data
 	unsigned char v;
 	spitarget_t target = targetdataflash;	/* addressing to chip */
 
-	//debug_printf_P(PSTR("Compare from address %08lX\n"), flashoffset);
+	//PRINTF(PSTR("Compare from address %08lX\n"), flashoffset);
 
 	spi_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
 	spi_progval8(target, 0x03);		/* sequential read block */
@@ -4461,7 +4461,7 @@ static int verifyDATAFLASH(unsigned long flashoffset, const unsigned char * data
 		v = spi_read_byte(target, 0xff);
 		if (v != data [count])
 		{
-			debug_printf_P(PSTR("Data mismatch at %08lx: read=%02x, expected=%02x\n"), flashoffset + count, v, data [count]);
+			PRINTF(PSTR("Data mismatch at %08lx: read=%02x, expected=%02x\n"), flashoffset + count, v, data [count]);
 			err = 1;
 			break;
 		}
@@ -4472,7 +4472,7 @@ static int verifyDATAFLASH(unsigned long flashoffset, const unsigned char * data
 	spi_unselect(target);	/* done sending data to target chip */
 
 	if (err)
-		debug_printf_P(PSTR("Done compare, have errors\n"));
+		PRINTF(PSTR("Done compare, have errors\n"));
 
 	return err;
 }
@@ -4497,17 +4497,17 @@ printhexDATAFLASH(unsigned long voffs, const unsigned char * buff, unsigned long
 	for (i = 0; i < rows; ++ i)
 	{
 		const int trl = ((length - 1) - i * 16) % 16 + 1;
-		debug_printf_P(PSTR("%08lX "), voffs + i * 16);
+		PRINTF(PSTR("%08lX "), voffs + i * 16);
 		for (j = 0; j < trl; ++ j)
-			debug_printf_P(PSTR(" %02X"), buff [i * 16 + j]);
+			PRINTF(PSTR(" %02X"), buff [i * 16 + j]);
 
-		debug_printf_P(PSTR("%*s"), (16 - trl) * 3, "");
+		PRINTF(PSTR("%*s"), (16 - trl) * 3, "");
 
-		debug_printf_P(PSTR("  "));
+		PRINTF(PSTR("  "));
 		for (j = 0; j < trl; ++ j)
-			debug_printf_P(PSTR("%c"), toprintcFLASH(buff [i * 16 + j]));
+			PRINTF(PSTR("%c"), toprintcFLASH(buff [i * 16 + j]));
 
-		debug_printf_P(PSTR("\n"));
+		PRINTF(PSTR("\n"));
 	}
 	return 0;
 }
@@ -4555,13 +4555,13 @@ static int parsehex(const TCHAR * filename, int (* usedata)(unsigned long addr, 
 	UINT i = 0;			// номер выводимого байта
 	
 	FRESULT rc;				/* Result code */
-	static FATFSALIGN_BEGIN RAMNOINIT_D1 FIL Fil FATFSALIGN_END;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
+	static RAMNOINIT_D1 FATFSALIGN_BEGIN FIL Fil FATFSALIGN_END;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
 	// чтение файла
 	rc = f_open(& Fil, filename, FA_READ);
 	if (rc) 
 	{
-		debug_printf_P(PSTR("Can not open file '%s'\n"), filename);
-		debug_printf_P(PSTR("Failed with rc=%u.\n"), rc);
+		PRINTF(PSTR("Can not open file '%s'\n"), filename);
+		PRINTF(PSTR("Failed with rc=%u.\n"), rc);
 		return 1;
 	}
 	for (;;)
@@ -4581,14 +4581,14 @@ static int parsehex(const TCHAR * filename, int (* usedata)(unsigned long addr, 
 			if (c == EOF)
 			{
 				if (hexstate != HSINIT)
-					debug_printf_P(PSTR("Incomplete file '%s'\n"), filename);
+					PRINTF(PSTR("Incomplete file '%s'\n"), filename);
 				break;
 			}
 			if (c == '\n' || c == '\r')
 			{
 				if (hexstate != HSINIT)
 				{
-					debug_printf_P(PSTR("Incomplete file '%s'\n"), filename);
+					PRINTF(PSTR("Incomplete file '%s'\n"), filename);
 					break;
 				}
 				continue;
@@ -4599,7 +4599,7 @@ static int parsehex(const TCHAR * filename, int (* usedata)(unsigned long addr, 
 			case HSINIT:
 				if (c != ':')
 				{
-					debug_printf_P(PSTR("Incomplete file '%s'\n"), filename);
+					PRINTF(PSTR("Incomplete file '%s'\n"), filename);
 					break;
 				}
 				hexstate = HSPARSELEN1;
@@ -4699,7 +4699,7 @@ static int parsehex(const TCHAR * filename, int (* usedata)(unsigned long addr, 
 
 				if ((ckscalc & 0xff) != 0)
 				{
-					debug_printf_P(PSTR("Wrong checksum in file '%s'\n"), filename);
+					PRINTF(PSTR("Wrong checksum in file '%s'\n"), filename);
 					break;
 				}
 				// Use data
@@ -4718,7 +4718,7 @@ static int parsehex(const TCHAR * filename, int (* usedata)(unsigned long addr, 
 
 				case 5:
 					// Start Linear Address
-					debug_printf_P(PSTR("Start Linear Address: %08lX\n"), body32);
+					PRINTF(PSTR("Start Linear Address: %08lX\n"), body32);
 					continue;
 
 				case 1:
@@ -4726,7 +4726,7 @@ static int parsehex(const TCHAR * filename, int (* usedata)(unsigned long addr, 
 					continue;
 
 				default:
-					debug_printf_P(PSTR("record with code %02X\n"), (unsigned) type);
+					PRINTF(PSTR("record with code %02X\n"), (unsigned) type);
 					break;
 				}
 				break;
@@ -4741,7 +4741,7 @@ static int parsehex(const TCHAR * filename, int (* usedata)(unsigned long addr, 
 		return 1;
 	}
 
-	//debug_printf_P("\nClose the file.\n");
+	//PRINTF("\nClose the file.\n");
 	rc = f_close(& Fil);
 	if (rc) 
 	{
@@ -4754,7 +4754,7 @@ static void
 fatfs_proghexfile(const char * hexfile)
 {
 	spi_hangon();
-	debug_printf_P(PSTR("SPI FLASH programmer\n"));
+	PRINTF(PSTR("SPI FLASH programmer\n"));
 	//parsehex(hexfile, printhexDATAFLASH);
 
 	// AT26DF081A chip write
@@ -4765,18 +4765,18 @@ fatfs_proghexfile(const char * hexfile)
 
 		do 
 		{
-			debug_printf_P(PSTR("Prepare...\n"));
+			PRINTF(PSTR("Prepare...\n"));
 			if (prepareDATAFLASH()) break;
-			debug_printf_P(PSTR("Erase...\n"));
+			PRINTF(PSTR("Erase...\n"));
 			if (eraseDATAFLASH()) break;
 			if (writeEnableDATAFLASH()) break;
 			if (parsehex(hexfile, writeDATAFLASH)) break;
-			debug_printf_P(PSTR("Programming...\n"));
+			PRINTF(PSTR("Programming...\n"));
 			if (writeDisableDATAFLASH()) break;
-			debug_printf_P(PSTR("Verify...\n"));
+			PRINTF(PSTR("Verify...\n"));
 			if (parsehex(hexfile, verifyDATAFLASH)) break;
 		} while (0);
-		debug_printf_P(PSTR("SPI FLASH programmer done\n"));
+		PRINTF(PSTR("SPI FLASH programmer done\n"));
 	}
 	spi_hangoff();	// после этого ничего не делаем - так как может опять включиться SPI - для работы с SD картой
 	for (;;)
@@ -4786,7 +4786,7 @@ fatfs_proghexfile(const char * hexfile)
 static void
 fatfs_progspi(void)
 {
-	static FATFSALIGN_BEGIN RAMNOINIT_D1 FATFS Fatfs FATFSALIGN_END;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
+	static RAMNOINIT_D1 FATFSALIGN_BEGIN FATFS Fatfs FATFSALIGN_END;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
 	f_mount(& Fatfs, "", 0);		/* Register volume work area (never fails) */
 	fatfs_proghexfile("tc1_r7s721_rom.hex");
 	f_mount(NULL, "", 0);		/* Unregister volume work area (never fails) */
@@ -4992,6 +4992,17 @@ static void serial_irq_loopback_test(void)
 // Периодически вызывается в главном цикле
 void looptests(void)
 {
+#if 0
+	// Failt handlers test
+	// Data abort test
+	* (int volatile *) 0x00000100 = 44;
+
+	// Preefetch abort test
+	typedef void (* pfn)(void);
+	const pfn p = (pfn) 0x30000000uL;
+	(p)();
+
+#endif
 #if WITHDTMFPROCESSING
 	dtmftest();
 #endif
@@ -5034,7 +5045,7 @@ void looptests(void)
 			// Average slope = 4.3
 			// Voltage at 25 °C = 1.43 V
 			const long celsius = (1430 - (v * Vref_mV / board_getadc_fsval(tempi))) / 430 + 2500;
-			debug_printf_P(PSTR("celsius=%3ld.%02ld\n"), celsius / 100, celsius % 100);
+			PRINTF(PSTR("celsius=%3ld.%02ld\n"), celsius / 100, celsius % 100);
 		}
 	}
 #endif
@@ -5088,7 +5099,7 @@ enum { MRES = 1ul << 2 };
 
 static void sdfault(void)
 {
-	debug_printf_P(PSTR("sdfault\n"));
+	PRINTF(PSTR("sdfault\n"));
 	arm_hardware_piog_outputs(MRES, MRES);
 	for (;;)
 		;
@@ -5310,7 +5321,7 @@ void hightests(void)
 #if 1 && defined (__GNUC__)
 	{
 
-		debug_printf_P(PSTR("__GNUC__=%d, __GNUC_MINOR__=%d\n"), (int) __GNUC__, (int) __GNUC_MINOR__);
+		PRINTF(PSTR("__GNUC__=%d, __GNUC_MINOR__=%d\n"), (int) __GNUC__, (int) __GNUC_MINOR__);
 	}
 #endif
 #if 0 && WITHDEBUG
@@ -5397,7 +5408,7 @@ void hightests(void)
 #endif
 #if 0
 	{
-		debug_printf_P(PSTR("PLL_FREQ=%lu Hz (%lu MHz)\n"), (unsigned long) PLL_FREQ, (unsigned long) PLL_FREQ / 1000000);
+		PRINTF(PSTR("PLL_FREQ=%lu Hz (%lu MHz)\n"), (unsigned long) PLL_FREQ, (unsigned long) PLL_FREQ / 1000000);
 	}
 #endif
 #if 0
@@ -5408,9 +5419,9 @@ void hightests(void)
 
 		static RAMNOINIT_D1 FATFSALIGN_BEGIN float Etalon [2048] FATFSALIGN_END;
 		static RAMNOINIT_D1 FATFSALIGN_BEGIN float TM [2048] FATFSALIGN_END;
-		static FATFSALIGN_BEGIN RAMNOINIT_D1 FIL WPFile FATFSALIGN_END;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
+		static RAMNOINIT_D1 FATFSALIGN_BEGIN FIL WPFile FATFSALIGN_END;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
 		static const char fmname [] = "tstdata.dat";
-		static FATFSALIGN_BEGIN RAMNOINIT_D1 FATFS wave_Fatfs FATFSALIGN_END;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
+		static RAMNOINIT_D1 FATFSALIGN_BEGIN FATFS wave_Fatfs FATFSALIGN_END;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
 	
 		int CountZap=0;
 		int LC=2048;
@@ -5425,7 +5436,7 @@ void hightests(void)
 		f_mount(& wave_Fatfs, "", 0);
 		for (CountZap = 0; CountZap < 1000; ++ CountZap, sdtick())
 		{
-			debug_printf_P(PSTR("CountZap %d\n"), CountZap);
+			PRINTF(PSTR("CountZap %d\n"), CountZap);
 			int i;
 			FRESULT rc;
 			UINT ByteWrite;
@@ -5475,16 +5486,16 @@ void hightests(void)
 #if 0 && __MPU_PRESENT
 	{
 		// Cortex Memory Protection Unit (MPU)
-		debug_printf_P(PSTR("MPU=%p\n"), MPU);
-		debug_printf_P(PSTR("MPU->TYPE=%08lX, MPU->CTRL=%08lX\n"), MPU->TYPE, MPU->CTRL);
+		PRINTF(PSTR("MPU=%p\n"), MPU);
+		PRINTF(PSTR("MPU->TYPE=%08lX, MPU->CTRL=%08lX\n"), MPU->TYPE, MPU->CTRL);
 		const uint_fast8_t n = (MPU->TYPE & MPU_TYPE_DREGION_Msk) >>MPU_TYPE_DREGION_Pos;
 		uint_fast8_t i;
 		for (i = 0; i < n; ++ i)
 		{
 			MPU->RNR = i;
-			debug_printf_P(PSTR("MPU->RNR=%08lX, MPU->RBAR=%08lX, MPU->RASR=%08lX "), MPU->RNR, MPU->RBAR, MPU->RASR);
+			PRINTF(PSTR("MPU->RNR=%08lX, MPU->RBAR=%08lX, MPU->RASR=%08lX "), MPU->RNR, MPU->RBAR, MPU->RASR);
 			const uint_fast32_t rasr = MPU->RASR;
-			debug_printf_P(PSTR("XN=%u,AP=%u,TEX=%u,S=%u,C=%u,B=%u,SRD=%u,SIZE=%u,ENABLE=%u\n"),
+			PRINTF(PSTR("XN=%u,AP=%u,TEX=%u,S=%u,C=%u,B=%u,SRD=%u,SIZE=%u,ENABLE=%u\n"),
 				((rasr & MPU_RASR_XN_Msk) >> MPU_RASR_XN_Pos),   	// DisableExec
 				((rasr & MPU_RASR_AP_Msk) >> MPU_RASR_AP_Pos),   	// AccessPermission
 				((rasr & MPU_RASR_TEX_Msk) >> MPU_RASR_TEX_Pos),  	// TypeExtField
@@ -5530,18 +5541,18 @@ void hightests(void)
 		char b [64];
 		
 		//snprintf(b, sizeof b / sizeof b [0], "%u\n", (unsigned) SCB_GetFPUType());
-		//debug_printf_P(PSTR("SCB_GetFPUType: %s"), b);
+		//PRINTF(PSTR("SCB_GetFPUType: %s"), b);
 
 		snprintf(b, sizeof b / sizeof b [0], "sqrt(2)=%1.23f\n", (double) 1.41421356237309504880);
-		debug_printf_P(PSTR("original: %s"), b);
+		PRINTF(PSTR("original: %s"), b);
 
 		double d = sqrt(2);
 		snprintf(b, sizeof b / sizeof b [0], "sqrt(2)=%1.23f\n", d);
-		debug_printf_P(PSTR("double: %s"), b);
+		PRINTF(PSTR("double: %s"), b);
 
 		float f = sqrtf(2);
 		snprintf(b, sizeof b / sizeof b [0], "sqrt(2)=%1.23f\n", f);
-		debug_printf_P(PSTR("float:  %s"), b);
+		PRINTF(PSTR("float:  %s"), b);
 	}
 #endif
 #if 0 && CTLSTYLE_V1V
@@ -5682,7 +5693,7 @@ void hightests(void)
 			DBX_0 = CHARS2GRID(0), 
 			DBY_1 = ROWS2GRID(topreserved)
 		};
-		debug_printf_P(PSTR("test: dx=%d, dy=%d\n"), dx, dy);
+		PRINTF(PSTR("test: dx=%d, dy=%d\n"), dx, dy);
 
 
 		/* отображение надписей самым маленьким шрифтом (8 точек) */
@@ -5782,7 +5793,7 @@ void hightests(void)
 #if 0 && WITHDEBUG
 	{
 		// тестирование приёма и передачи символов
-		debug_printf_P(PSTR("Serial port ECHO test.\n"));
+		PRINTF(PSTR("Serial port ECHO test.\n"));
 		for (;;)
 		{
 			char c;
@@ -5804,7 +5815,7 @@ void hightests(void)
 #endif
 #if 0
 	{
-		debug_printf_P(PSTR("FPU tests start.\n"));
+		PRINTF(PSTR("FPU tests start.\n"));
 		local_delay_ms(300);
 		//volatile int a = 10, b = 0;
 		//volatile int c = a / b;
@@ -5813,7 +5824,7 @@ void hightests(void)
 		{
 			const double a = i ? i : 1;
 			//const int ai = (int) (sin(a) * 1000);
-			debug_printf_P(PSTR("Hello! %lu, sqrt(%lu)=%lu\n"), i, (unsigned) a, (unsigned)( sqrt(a)*10));
+			PRINTF(PSTR("Hello! %lu, sqrt(%lu)=%lu\n"), i, (unsigned) a, (unsigned)( sqrt(a)*10));
 		}
 	}
 #endif
@@ -5858,12 +5869,12 @@ void hightests(void)
 #endif
 #if 0 && WITHDEBUG
 	{
-		debug_printf_P(PSTR("SD sensors test\n"));
+		PRINTF(PSTR("SD sensors test\n"));
 		// SD card sensors test
 		HARDWARE_SDIOSENSE_INITIALIZE();
 		for (;;)
 		{
-			debug_printf_P(PSTR("SD sensors: CD=%d, WP=%d\n"), HARDWARE_SDIOSENSE_CD(), HARDWARE_SDIOSENSE_WP());
+			PRINTF(PSTR("SD sensors: CD=%d, WP=%d\n"), HARDWARE_SDIOSENSE_CD(), HARDWARE_SDIOSENSE_WP());
 			local_delay_ms(50);
 		}
 	}
@@ -5908,18 +5919,18 @@ void hightests(void)
 			rc = f_mkfs("0:", NULL, work, sizeof (work));
 			if (rc != FR_OK)
 			{
-				debug_printf_P(PSTR("sdcardformat: f_mkfs failure, rc=0x%02X\n"), (int) rc);
+				PRINTF(PSTR("sdcardformat: f_mkfs failure, rc=0x%02X\n"), (int) rc);
 				return;
 			}
 			else
 			{
-				debug_printf_P(PSTR("sdcardformat: f_mkfs okay\n"));
+				PRINTF(PSTR("sdcardformat: f_mkfs okay\n"));
 			}
 
 		}
 		for (;;)
 		{
-			debug_printf_P(PSTR("Storage device test - %d bytes block.\n"), sizeof rbuff);
+			PRINTF(PSTR("Storage device test - %d bytes block.\n"), sizeof rbuff);
 			PRINTF("Storage device test\n");
 			fatfs_filesyspeedstest();
 			for (t = 0; t < 7000; t += 5)
@@ -5959,7 +5970,7 @@ void hightests(void)
 			const double a = i ? i : 1;
 			//const int ai = (int) (sin(a) * 1000);
 
-			debug_printf_P(PSTR("Hello! %lu, sqrt(%lu)=%lu\n"), i, (unsigned) a, (unsigned) sqrt(a));
+			PRINTF(PSTR("Hello! %lu, sqrt(%lu)=%lu\n"), i, (unsigned) a, (unsigned) sqrt(a));
 
 		}
 	}
@@ -6034,7 +6045,7 @@ void hightests(void)
 						if (++ segment >= MAXSEGMENT)
 							segment = 0;
 						LCD1x9_seg(segment, 1);
-						debug_printf_P(PSTR("seg = %d\n"), segment);
+						PRINTF(PSTR("seg = %d\n"), segment);
 						break;
 
 					case KBD_CODE_1:
@@ -6044,7 +6055,7 @@ void hightests(void)
 						else
 							-- segment;
 						LCD1x9_seg(segment, 1);
-						debug_printf_P(PSTR("seg = %d\n"), segment);
+						PRINTF(PSTR("seg = %d\n"), segment);
 						break;
 					}
 				}
@@ -6123,7 +6134,7 @@ void hightests(void)
 
 		EPD_display_init();
 		for(;;) {
-			debug_printf_P(PSTR("eink: loop start\n"));
+			PRINTF(PSTR("eink: loop start\n"));
 			/* User selects which EPD size to run demonstration by changing the
 			 * USE_EPD_Type in image_data.h
 			 * The Image data arrays for each EPD size are defined at image_data.c */
@@ -6150,7 +6161,7 @@ void hightests(void)
 			/* The interval of two images alternatively change is 10 seconds */
 			//local_delay_ms(10000);
 			local_delay_ms_spool(2000);
-			debug_printf_P(PSTR("eink: loop end\n"));
+			PRINTF(PSTR("eink: loop end\n"));
 		}
 	}
 #endif /* ARM_STM32L051_TQFP32_CPUSTYLE_V1_H_INCLUDED */
@@ -6159,7 +6170,7 @@ void hightests(void)
 		//hardware_tim21_initialize();
 		for (;;)
 		{
-			debug_printf_P(PSTR("TIM21 CNT=%08lX\n"), TIM21->CNT);
+			PRINTF(PSTR("TIM21 CNT=%08lX\n"), TIM21->CNT);
 		}
 	}
 #endif
@@ -6177,7 +6188,7 @@ void hightests(void)
 		TIM2->CR1 = TIM_CR1_CEN; /* включить таймер */
 		for (;;)
 		{
-			debug_printf_P(PSTR("TIM2:TIM5 CNT=%08lX:%08lX\n"), TIM2->CNT, TIM5->CNT);
+			PRINTF(PSTR("TIM2:TIM5 CNT=%08lX:%08lX\n"), TIM2->CNT, TIM5->CNT);
 		}
 	}
 #endif
@@ -6244,7 +6255,7 @@ void hightests(void)
 				uint_fast16_t x, y;
 				if (board_tsc_getxy(& x, & y))
 				{
-					debug_printf_P(PSTR("board_tsc_getxy: x=%5d, y=%5d\n"), x, y);
+					PRINTF(PSTR("board_tsc_getxy: x=%5d, y=%5d\n"), x, y);
 					colmain_fillrect(fr, DIM_X, DIM_Y, markerx, markery, gridx, gridy, COLORMAIN_BLACK);
 					markerx = x / gridx * gridx;
 					markery = y / gridy * gridy;
@@ -6285,7 +6296,7 @@ void hightests(void)
 				colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
 				display_at(buff, lowhalf);
 			} while (lowhalf --);
-			debug_printf_P(PSTR("CNT=%08lX\n"), i);
+			PRINTF(PSTR("CNT=%08lX\n"), i);
 		}
 	}
 	{
@@ -6323,7 +6334,7 @@ void hightests(void)
 #if 0 && WITHDEBUG
 	// NVRAM test
 	{
-		debug_printf_P(PSTR("NVRAM test started...\n"));
+		PRINTF(PSTR("NVRAM test started...\n"));
 		nvram_initialize();
 		unsigned char i = 0;
 		for (;; ++ i)
@@ -6334,7 +6345,7 @@ void hightests(void)
 			const uint_fast8_t v1 = restore_i8(10);
 			const uint_fast8_t v2 = restore_i8(20);
 			const uint_fast8_t v3 = restore_i8(30);
-			debug_printf_P(PSTR("v1=%02x, v2=%02x, v3=%02x (expected=%02x)\n"), v1, v2, v3, i);
+			PRINTF(PSTR("v1=%02x, v2=%02x, v3=%02x (expected=%02x)\n"), v1, v2, v3, i);
 			local_delay_ms(50);
 		}
 		for (;;)
@@ -6359,13 +6370,13 @@ void hightests(void)
 			//board_rtc_getdate(& year, & month, & day);
 			//board_rtc_gettime(& hour, & minute, & secounds);
 
-			//debug_printf_P(PSTR("%04d-%02d-%02d "), year, month, day);
-			//debug_printf_P(PSTR("%02d:%02d:%02d "), hour, minute, secounds);
+			//PRINTF(PSTR("%04d-%02d-%02d "), year, month, day);
+			//PRINTF(PSTR("%02d:%02d:%02d "), hour, minute, secounds);
 
 			board_rtc_getdatetime(& year, & month, & day, & hour, & minute, & secounds);
 
-			debug_printf_P(PSTR("%04d-%02d-%02d "), year, month, day);
-			debug_printf_P(PSTR("%02d:%02d:%02d\n"), hour, minute, secounds);
+			PRINTF(PSTR("%04d-%02d-%02d "), year, month, day);
+			PRINTF(PSTR("%02d:%02d:%02d\n"), hour, minute, secounds);
 
 			local_delay_ms(1250);
 			
@@ -6382,10 +6393,10 @@ void hightests(void)
 			for (i = 0; i < 8; ++ i)
 			{
 				//const uint_fast8_t i = AVOXIX; //KI2;
-				debug_printf_P(PSTR("ADC%d=%3d "), i, board_getadc_unfiltered_u8(i, 0, 255));
-				//debug_printf_P(PSTR("ADC%d=%3d "), i, board_getadc_unfiltered_truevalue(i));
+				PRINTF(PSTR("ADC%d=%3d "), i, board_getadc_unfiltered_u8(i, 0, 255));
+				//PRINTF(PSTR("ADC%d=%3d "), i, board_getadc_unfiltered_truevalue(i));
 			}
-			debug_printf_P(PSTR("\n"));
+			PRINTF(PSTR("\n"));
 		}
 	}
 #endif
@@ -6842,7 +6853,7 @@ void hightests(void)
 			system_enableIRQ();
 
 
-			debug_printf_P(PSTR("tune=%u, ptt=%u, elkey=%u\n"), tune1, ptt1, elkey);
+			PRINTF(PSTR("tune=%u, ptt=%u, elkey=%u\n"), tune1, ptt1, elkey);
 			continue;
 
 			display_gotoxy(0, 0);		// курсор в начало первой строки
@@ -6946,7 +6957,7 @@ void hightests(void)
 
 #if 0
 	{
-		debug_printf_P(PSTR("kbd_test2:\n"));
+		PRINTF(PSTR("kbd_test2:\n"));
 		// kbd_test2
 		// Показ условных номеров клавиш для создания новых матриц перекодировки
 		// и тестирования работоспособности клавиатуры.
@@ -6954,7 +6965,7 @@ void hightests(void)
 		int v = 0;
 		for (;;)
 		{
-			//debug_printf_P(PSTR("keyport = %02x\n"), (unsigned) KBD_TARGET_PIN);
+			//PRINTF(PSTR("keyport = %02x\n"), (unsigned) KBD_TARGET_PIN);
 			//continue;
 			
 			uint_fast8_t scancode;
@@ -6964,7 +6975,7 @@ void hightests(void)
 
 			if (scancode != KEYBOARD_NOKEY)
 			{
-				debug_printf_P(PSTR("keycode = %02x, %d\n"), (unsigned) scancode, v);
+				PRINTF(PSTR("keycode = %02x, %d\n"), (unsigned) scancode, v);
 				v = (v + 1) % 1000;
 			}
 			continue;
@@ -6986,14 +6997,14 @@ void hightests(void)
 		// показ кодов клавиш
 		enum { menuset = 0 };
 		int v = 0;
-		debug_printf_P(PSTR("kbd_test1:\n"));
+		PRINTF(PSTR("kbd_test1:\n"));
 		for (;;)
 		{
 			uint_fast8_t kbch, repeat;
 
 			if ((repeat = kbd_scan(& kbch)) != 0)
 			{
-				debug_printf_P(PSTR("kbch = %02x\n"), (unsigned) kbch);
+				PRINTF(PSTR("kbch = %02x\n"), (unsigned) kbch);
 				continue;
 				display2_dispfreq_a2(kbch * 1000UL + v, 255, 0, menuset);
 				v = (v + 10) % 1000;
@@ -7521,7 +7532,7 @@ void hardware_f051_dac_ch1_setvalue(uint_fast16_t v)
 		while (__STREXB(1, & p->lock));
 		if (r != 0)
 		{
-			debug_printf_P(PSTR("LOCK @%p %s already locked at %d in %s by %d in %s\n"), p, variable, line, file, p->line, p->file);
+			PRINTF(PSTR("LOCK @%p %s already locked at %d in %s by %d in %s\n"), p, variable, line, file, p->line, p->file);
 			for (;;)
 				;
 		}
@@ -7542,7 +7553,7 @@ void hardware_f051_dac_ch1_setvalue(uint_fast16_t v)
 		while (__STREXB(0, & p->lock));
 		if (r == 0)
 		{
-			debug_printf_P(PSTR("LOCK @%p %s already unlocked at %d in %s by %d in %s\n"), p, variable, line, file, p->line, p->file);
+			PRINTF(PSTR("LOCK @%p %s already unlocked at %d in %s by %d in %s\n"), p, variable, line, file, p->line, p->file);
 			for (;;)
 				;
 		}
@@ -7576,14 +7587,14 @@ static void r7s721_ostm0_interrupt_test(void)
 	LOCK(& locklist8);
 	auto int marker;
 	global_disableIRQ();
-	debug_printf_P(PSTR("  Sy:@%p INTCICCRPR=%02x cpsr=%08lx!\n"), & marker, INTCICCRPR, __get_CPSR());
+	PRINTF(PSTR("  Sy:@%p INTCICCRPR=%02x cpsr=%08lx!\n"), & marker, INTCICCRPR, __get_CPSR());
 	global_enableIRQ();
 
 	local_delay_ms(5);
 	local_delay_ms(5);
 
 	global_disableIRQ();
-	debug_printf_P(PSTR("  Sy: INTCICCRPR=%02x cpsr=%08lx.\n"), INTCICCRPR, __get_CPSR());
+	PRINTF(PSTR("  Sy: INTCICCRPR=%02x cpsr=%08lx.\n"), INTCICCRPR, __get_CPSR());
 	global_enableIRQ();
 	UNLOCK(& locklist8);
 }
@@ -7595,7 +7606,7 @@ static void r7s721_ostm1_interrupt_test(void)
 
 	auto int marker;
 	global_disableIRQ();
-	debug_printf_P(PSTR("    Rt:@%p INTCICCRPR=%02x cpsr=%08lx!\n"), & marker, INTCICCRPR, __get_CPSR());
+	PRINTF(PSTR("    Rt:@%p INTCICCRPR=%02x cpsr=%08lx!\n"), & marker, INTCICCRPR, __get_CPSR());
 	global_enableIRQ();
 
 	local_delay_ms(5);
@@ -7603,7 +7614,7 @@ static void r7s721_ostm1_interrupt_test(void)
 	local_delay_ms(5);
 
 	global_disableIRQ();
-	debug_printf_P(PSTR("    rt: INTCICCRPR=%02x cpsr=%08lx.\n"), INTCICCRPR, __get_CPSR());
+	PRINTF(PSTR("    rt: INTCICCRPR=%02x cpsr=%08lx.\n"), INTCICCRPR, __get_CPSR());
 	global_enableIRQ();
 
 	UNLOCK(& locklist16);
@@ -7616,14 +7627,14 @@ static void spool_encinterruptR(void)
 
 	auto int marker;
 	global_disableIRQ();
-	debug_printf_P(PSTR("    E:@%p INTCICCRPR=%02x cpsr=%08lx!\n"), & marker, INTCICCRPR, __get_CPSR());
+	PRINTF(PSTR("    E:@%p INTCICCRPR=%02x cpsr=%08lx!\n"), & marker, INTCICCRPR, __get_CPSR());
 	global_enableIRQ();
 
 	local_delay_ms(25);
 	local_delay_ms(5);
 
 	global_disableIRQ();
-	debug_printf_P(PSTR("    e:INTCICCRPR=%02x cpsr=%08lx.\n"), INTCICCRPR, __get_CPSR());
+	PRINTF(PSTR("    e:INTCICCRPR=%02x cpsr=%08lx.\n"), INTCICCRPR, __get_CPSR());
 	global_enableIRQ();
 
 	UNLOCK(& locklist16);
@@ -7631,13 +7642,13 @@ static void spool_encinterruptR(void)
 
 void xSWIHandler(void)
 {
-	debug_printf_P(PSTR("SWIHandler trapped.\n"));
+	PRINTF(PSTR("SWIHandler trapped.\n"));
 	global_enableIRQ();
 
 	for (;;)
 	{
 		global_disableIRQ();
-		debug_printf_P(PSTR("B: INTCICCRPR=%02x cpsr=%08lx*\n"), INTCICCRPR, __get_CPSR());
+		PRINTF(PSTR("B: INTCICCRPR=%02x cpsr=%08lx*\n"), INTCICCRPR, __get_CPSR());
 		global_enableIRQ();
 
 		local_delay_ms(20);
@@ -7661,8 +7672,8 @@ nestedirqtest(void)
 	//for (;;)
 	//	dbg_putchar(0xff);
 	// тестирование приёма и передачи символов
-	debug_printf_P(PSTR("INTCICCPMR=%02X\n"), INTCICCPMR);
-	debug_printf_P(PSTR("ECHO test. Press ESC for done.\n"));
+	PRINTF(PSTR("INTCICCPMR=%02X\n"), INTCICCPMR);
+	PRINTF(PSTR("ECHO test. Press ESC for done.\n"));
 	for (;1;)
 	{
 		char c;
@@ -7689,7 +7700,7 @@ nestedirqtest(void)
 		} while (0);
 	#endif
 #endif /* defined (ENCODER_BITS) */
-	debug_printf_P(PSTR("INTCICCRPR=%02x cpsr=%08lx* \n"), INTCICCRPR, __get_CPSR());
+	PRINTF(PSTR("INTCICCRPR=%02x cpsr=%08lx* \n"), INTCICCRPR, __get_CPSR());
 	//hw_swi();
 	global_enableIRQ();
 
@@ -7702,7 +7713,7 @@ nestedirqtest(void)
 		system_enableIRQ();
 
 		global_disableIRQ();
-		debug_printf_P(PSTR("iccrpr0=%02x, iccrpr1=%02x, INTCICCRPR=%02x cpsr=%08lx*\n"), iccrpr0, iccrpr1, INTCICCRPR, __get_CPSR());
+		PRINTF(PSTR("iccrpr0=%02x, iccrpr1=%02x, INTCICCRPR=%02x cpsr=%08lx*\n"), iccrpr0, iccrpr1, INTCICCRPR, __get_CPSR());
 		global_enableIRQ();
 
 		local_delay_ms(20);
@@ -7776,16 +7787,16 @@ void lowtests(void)
 		volatile static unsigned RAMFRAMEBUFF v7;
 		volatile static unsigned RAMBIG v8 = 7;
 
-		debug_printf_P(PSTR("Unititilalized SRAM=%08lX @%p\n"), v1, & v1);
-		debug_printf_P(PSTR("Ititilalized SRAM=%08lX @%p\n"), v2, & v2);
-		debug_printf_P(PSTR("Unititilalized RAMDTCM=%08lX @%p\n"), v3, & v3);
-		debug_printf_P(PSTR("Ititilalized RAMDTCM=%08lX @%p\n"), v4, & v4);
-		debug_printf_P(PSTR("Unititilalized RAMBIGDTCM=%08lX @%p\n"), v5, & v5);
-		debug_printf_P(PSTR("Ititilalized RAMBIGDTCM=%08lX @%p\n"), v6, & v6);
-		debug_printf_P(PSTR("Unititilalized RAMFRAMEBUFF=%08lX @%p\n"), v7, & v7);
-		debug_printf_P(PSTR("Ititilalized RAMFRAMEBUFF=%08lX @%p\n"), v8, & v8);
-		debug_printf_P(PSTR("RAMFUNC_NONILINE #1=%08lX @%p\n"), testramfunc(), testramfunc);
-		debug_printf_P(PSTR("RAMFUNC_NONILINE #2=%08lX @%p\n"), testramfunc2(), testramfunc2);
+		PRINTF(PSTR("Unititilalized SRAM=%08lX @%p\n"), v1, & v1);
+		PRINTF(PSTR("Ititilalized SRAM=%08lX @%p\n"), v2, & v2);
+		PRINTF(PSTR("Unititilalized RAMDTCM=%08lX @%p\n"), v3, & v3);
+		PRINTF(PSTR("Ititilalized RAMDTCM=%08lX @%p\n"), v4, & v4);
+		PRINTF(PSTR("Unititilalized RAMBIGDTCM=%08lX @%p\n"), v5, & v5);
+		PRINTF(PSTR("Ititilalized RAMBIGDTCM=%08lX @%p\n"), v6, & v6);
+		PRINTF(PSTR("Unititilalized RAMFRAMEBUFF=%08lX @%p\n"), v7, & v7);
+		PRINTF(PSTR("Ititilalized RAMFRAMEBUFF=%08lX @%p\n"), v8, & v8);
+		PRINTF(PSTR("RAMFUNC_NONILINE #1=%08lX @%p\n"), testramfunc(), testramfunc);
+		PRINTF(PSTR("RAMFUNC_NONILINE #2=%08lX @%p\n"), testramfunc2(), testramfunc2);
 	}
 #endif
 #if 0
@@ -7874,7 +7885,7 @@ void lowtests(void)
 
 
 		extern unsigned long __isr_vector__;
-		debug_printf_P(PSTR("__isr_vector__=%p\n"), & __isr_vector__);
+		PRINTF(PSTR("__isr_vector__=%p\n"), & __isr_vector__);
 		volatile int a = 10, b = 0;
 		volatile int c = a / b;
 		TP();
@@ -7885,7 +7896,7 @@ void lowtests(void)
 			const double a = i ? i : 1;
 			//const int ai = (int) (sin(a) * 1000);
 			TP();
-			debug_printf_P(PSTR("Hello! %lu, sqrt(%lu)=%lu\n"), i, (unsigned) a, (unsigned) sqrt(a));
+			PRINTF(PSTR("Hello! %lu, sqrt(%lu)=%lu\n"), i, (unsigned) a, (unsigned) sqrt(a));
 			TP();
 		}
 	}

@@ -282,6 +282,9 @@
 	#endif
 	//#define WITHMODEMIQLOOPBACK	1	/* модем получает собственные передаваемые квадратуры */
 
+#if 1
+	#define WITHTOUCHGUI		1
+#endif
 
 	// FPGA section
 	//#define WITHFPGAWAIT_AS	1	/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */

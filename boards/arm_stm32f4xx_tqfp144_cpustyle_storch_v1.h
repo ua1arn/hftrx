@@ -51,7 +51,7 @@
 #define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
 
 #define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
-#define WITHUSBUACIN2		1	/* формируются три канала передачи звука */
+//#define WITHUSBUACIN2		1	/* формируются три канала передачи звука */
 //#define WITHUABUACOUTAUDIO48MONO	1	/* для уменьшения размера буферов в endpoints */
 
 #define WITHUSBCDCACM		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
@@ -191,7 +191,7 @@
 			arm_hardware_piof_onchangeinterrupt(0 * ENCODER2_BITS, ENCODER2_BITS, ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY); \
 			arm_hardware_piof_inputs(ENCODER_BITS); \
 			arm_hardware_piof_updown(ENCODER_BITS, 0); \
-			arm_hardware_piof_onchangeinterrupt(ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ARM_OVERREALTIME_PRIORITY); \
+			arm_hardware_piof_onchangeinterrupt(ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
 		} while (0)
 
 #endif

@@ -11,9 +11,9 @@
 #ifndef ARM_STM32MP1_LFBGA354_CTLSTYLE_STORCH_V9A_H_INCLUDED
 #define ARM_STM32MP1_LFBGA354_CTLSTYLE_STORCH_V9A_H_INCLUDED 1
 
-	#if ! defined(STM32MP157Axx)
-		#error Wrong CPU selected. STM32MP157Axx expected
-	#endif /* ! defined(STM32MP157Axx) */
+	#if ! defined(STM32MP153Dxx)
+		#error Wrong CPU selected. STM32MP153Dxx expected
+	#endif /* ! defined(STM32MP153Dxx) */
 
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */
 	// в данной конфигурации I2S и SAI - в режиме SLAVE
@@ -37,26 +37,32 @@
 
 		// PLL1_1600
 		#define PLL1DIVM	2	// ref1_ck = 12 MHz
-		#define PLL1DIVN	54	// 12*54 = 648 MHz
-		//#define PLL1DIVN	66	// 12*66 = 792 MHz
+		//#define PLL1DIVN	54	// 12*54 = 648 MHz
+		#define PLL1DIVN	66	// 12*66 = 792 MHz
 		#define PLL1DIVP	1	// MPU
 		#define PLL1DIVQ	2
 		#define PLL1DIVR	2
 
 		// PLL2_1600
-#if 0
+#if 1
 		#define PLL2DIVM	2	// ref2_ck = 12 MHz
-		#define PLL2DIVN	44	// 528 MHz
+		#define PLL2DIVN	44	// 528 MHz Valid division rations for DIVN: between 25 and 100
 		#define PLL2DIVP	2	// AXISS_CK div2=minimum 528/2 = 264 MHz PLL2 selected as AXI sub-system clock (pll2_p_ck) - 266 MHz max for all CPU revisions
 		#define PLL2DIVQ	1	// GPU clock divider = 528 MHz - 533 MHz max for all CPU revisions
 		#define PLL2DIVR	1	// DDR clock divider = 528 MHz
-#else
-		/* bad boards DDR3 clock = 198 MHz */
+#elif 0
 		#define PLL2DIVM	2	// ref2_ck = 12 MHz
-		#define PLL2DIVN	44	// 528 MHz
+		#define PLL2DIVN	44	// 528 MHz Valid division rations for DIVN: between 25 and 100
 		#define PLL2DIVP	2	// AXISS_CK div2=minimum 528/2 = 264 MHz PLL2 selected as AXI sub-system clock (pll2_p_ck) - 266 MHz max for all CPU revisions
 		#define PLL2DIVQ	1	// GPU clock divider = 528 MHz - 533 MHz max for all CPU revisions
-		#define PLL2DIVR	4	// DDR clock divider = 528 MHz
+		#define PLL2DIVR	4	// DDR clock divider = 132 MHz
+#else
+		/* bad boards DDR3 clock = 300 MHz */
+		#define PLL2DIVM	2	// ref2_ck = 12 MHz
+		#define PLL2DIVN	50	// 600 MHz Valid division rations for DIVN: between 25 and 100
+		#define PLL2DIVP	3	// AXISS_CK div2=minimum 1056/4 = 200 MHz PLL2 selected as AXI sub-system clock (pll2_p_ck) - 266 MHz max for all CPU revisions
+		#define PLL2DIVQ	2	// GPU clock divider = 300 MHz - 533 MHz max for all CPU revisions
+		#define PLL2DIVR	2	// DDR clock divider = 300 MHz
 #endif
 
 		// PLL3_800
@@ -195,7 +201,6 @@
 	// --- Особые варианты расположения кнопок на клавиатуре
 	#define WITHSPLIT	1	/* управление режимами расстройки одной кнопкой */
 	//#define WITHSPLITEX	1	/* Трехкнопочное управление режимами расстройки */
-	//#define WITHSMPSYSTEM	1	/* разрешение поддержки SMP, Symmetric Multiprocessing */
 
 #if WITHISBOOTLOADER
 	#define LCDMODE_DUMMY	1
@@ -215,6 +220,7 @@
 	//#define LCDMODE_LQ043T3DX02K 1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 4.3" display */
 	#define LCDMODE_AT070TN90 1	/* AT070TN90 panel (800*480) - 7" display */
 	//#define LCDMODE_AT070TNA2 1	/* AT070TNA2 panel (1024*600) - 7" display */
+	#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
 
 	//#define LCDMODE_WH2002	1	/* тип применяемого индикатора 20*2, возможно вместе с LCDMODE_HARD_SPI */
 	//#define LCDMODE_WH1602	1	/* тип применяемого индикатора 16*2 */
@@ -257,6 +263,7 @@
 
 #if WITHISBOOTLOADER
 
+	//#define WITHSMPSYSTEM	1	/* разрешение поддержки SMP, Symmetric Multiprocessing */
 	// +++ заглушки для плат с DSP обработкой
 	#define	BOARD_AGCCODE_ON	0x00
 	#define	BOARD_AGCCODE_OFF	0x01
@@ -280,6 +287,7 @@
 
 #else /* WITHISBOOTLOADER */
 
+	#define WITHSMPSYSTEM	1	/* разрешение поддержки SMP, Symmetric Multiprocessing */
 	#define ENCRES_DEFAULT ENCRES_128
 	//#define ENCRES_DEFAULT ENCRES_24
 	#define WITHDIRECTFREQENER	1 //(! CTLSTYLE_SW2011ALL && ! CTLSTYLE_UA3DKC)
@@ -355,6 +363,7 @@
 	//#define WITHUSEAUDIORECCLASSIC	1	// стандартный формат записи, без "дыр"
 
 	#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
+	#define WITHFFTOVERLAPPOW2	2	/* Количество перекрывающися буферов FFT спектра (2^param). */
 	////*#define WITHRTS192 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 	#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
 
@@ -400,7 +409,7 @@
 	// +++ Эти строки можно отключать, уменьшая функциональность готового изделия
 	//#define WITHRFSG	1	/* включено управление ВЧ сигнал-генератором. */
 	#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
-	#if 1
+	#if 0
 		/* TUNER & PA board 2*RD16 by avbelnn@yandex.ru */
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
 		#define SHORTSET8	1
@@ -455,9 +464,9 @@
 
 	#if LCDMODE_AT070TNA2 || LCDMODE_AT070TN90
 		#if 0
-			#define WITHTOUCHGUI	1	/* тестирование работы с сенсорным экраном */
+			#define WITHTOUCHGUI		1
 			#define WITHALPHA			64
-			#define WITHENCODER2NOFREQ	1	/* второй валкодер не перестраивает частоту */
+			#define FORMATFROMLIBRARY 	1
 			#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 		#endif
 	#endif /* LCDMODE_AT070TNA2 || LCDMODE_AT070TN90 */
@@ -498,7 +507,7 @@
 	//#define DDS2_TYPE DDS_TYPE_AD9834
 	//#define RTC1_TYPE RTC_TYPE_M41T81	/* ST M41T81M6 RTC clock chip with I2C interface */
 	#define RTC1_TYPE RTC_TYPE_STM32F4xx	/* STM32F4xx/STM32F7xx internal RTC peripherial */
-	//#define TSC1_TYPE TSC_TYPE_STMPE811	/* touch screen controller */
+	#define TSC1_TYPE TSC_TYPE_STMPE811	/* touch screen controller */
 	//#define DAC1_TYPE	99999		/* наличие ЦАП для подстройки тактовой частоты */
 
 	#define DDS1_CLK_DIV	1		/* Делитель опорной частоты перед подачей в DDS1 */

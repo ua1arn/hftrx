@@ -250,10 +250,10 @@ static uint_fast8_t		glob_dsploudspeaker_off;
 	/* DSP speed test */
 	void dsp_speed_diagnostics(void)
 	{
-		//debug_printf_P(PSTR("data=%08lX,%08lX,%08lX,%08lX\n"), dd [0], dd [1], dd [2], dd [3]);
-		debug_printf_P(PSTR("dtcount=%" PRIuFAST32 ", dtmax=%" PRIuFAST32 ", dtlast=%" PRIuFAST32 ", "), dtcount, dtmax, dtlast);
-		debug_printf_P(PSTR("dtcount2=%" PRIuFAST32 ", dtmax2=%" PRIuFAST32 ", dtlast2=%" PRIuFAST32 ", "), dtcount2, dtmax2, dtlast2);
-		debug_printf_P(PSTR("dtcount3=%" PRIuFAST32 ", dtmax3=%" PRIuFAST32 ", dtlast3=%" PRIuFAST32 "\n"), dtcount3, dtmax3, dtlast3);
+		//PRINTF(PSTR("data=%08lX,%08lX,%08lX,%08lX\n"), dd [0], dd [1], dd [2], dd [3]);
+		PRINTF(PSTR("dtcount=%" PRIuFAST32 ", dtmax=%" PRIuFAST32 ", dtlast=%" PRIuFAST32 ", "), dtcount, dtmax, dtlast);
+		PRINTF(PSTR("dtcount2=%" PRIuFAST32 ", dtmax2=%" PRIuFAST32 ", dtlast2=%" PRIuFAST32 ", "), dtcount2, dtmax2, dtlast2);
+		PRINTF(PSTR("dtcount3=%" PRIuFAST32 ", dtmax3=%" PRIuFAST32 ", dtlast3=%" PRIuFAST32 "\n"), dtcount3, dtmax3, dtlast3);
 	}
 
 #else /* WITHDEBUG */
@@ -1422,7 +1422,7 @@ static void agc_parameters_initialize(volatile agcparams_t * agcp)
 	agcp->levelfence = rxlevelfence;
 	agcp->agcfactor = agc_calcagcfactor(10);
 
-	//debug_printf_P(PSTR("agc_parameters_initialize: dischargespeedfast=%f, chargespeedfast=%f\n"), agcp->dischargespeedfast, agcp->chargespeedfast);
+	//PRINTF(PSTR("agc_parameters_initialize: dischargespeedfast=%f, chargespeedfast=%f\n"), agcp->dischargespeedfast, agcp->chargespeedfast);
 }
 
 // Установка параметров АРУ приёмника
@@ -1444,7 +1444,7 @@ static void agc_parameters_update(volatile agcparams_t * const agcp, FLOAT_t gai
 	agcp->levelfence = rxlevelfence * (int) glob_agc_scale [pathi] * (FLOAT_t) 0.01;
 	agcp->agcfactor = flatgain ? (FLOAT_t) -1 : agc_calcagcfactor(glob_agcrate [pathi]);
 
-	//debug_printf_P(PSTR("agc_parameters_update: dischargespeedfast=%f, chargespeedfast=%f\n"), agcp->dischargespeedfast, agcp->chargespeedfast);
+	//PRINTF(PSTR("agc_parameters_update: dischargespeedfast=%f, chargespeedfast=%f\n"), agcp->dischargespeedfast, agcp->chargespeedfast);
 }
 
 // Установка параметров S-метра приёмника
@@ -1468,7 +1468,7 @@ static void agc_smeter_parameters_update(volatile agcparams_t * const agcp)
 	agcp->gainlimit = db2ratio(60);
 	agcp->agcfactor = (FLOAT_t) -1;
 
-	//debug_printf_P(PSTR("agc_parameters_update: dischargespeedfast=%f, chargespeedfast=%f\n"), agcp->dischargespeedfast, agcp->chargespeedfast);
+	//PRINTF(PSTR("agc_parameters_update: dischargespeedfast=%f, chargespeedfast=%f\n"), agcp->dischargespeedfast, agcp->chargespeedfast);
 }
 
 // Начальная установка параметров АРУ микрофонного тракта передатчика
@@ -2210,19 +2210,19 @@ static void fir_design_integers_passtrough(int_fast32_t *lCoeff, int iCoefNum, F
 // debug function
 static void writecoefs(const int_fast32_t * lCoeff, int iCoefNum)
 {
-	debug_printf_P(PSTR("# iCoefNum = %i\n"), iCoefNum);
+	PRINTF(PSTR("# iCoefNum = %i\n"), iCoefNum);
 	const int iHalfLen = (iCoefNum - 1) / 2;
 	int i;
 	for (i = 0; i <= iHalfLen; ++ i)
 	{
-		debug_printf_P(PSTR("%ld\n"), lCoeff [i]);
+		PRINTF(PSTR("%ld\n"), lCoeff [i]);
 	}
 	i -= 1;
 	for (; -- i >= 0; )
 	{
-		debug_printf_P(PSTR("%ld\n"), lCoeff [i]);
+		PRINTF(PSTR("%ld\n"), lCoeff [i]);
 	}
-	debug_printf_P(PSTR("# end\n"));
+	PRINTF(PSTR("# end\n"));
 }
 #endif
 
@@ -2696,11 +2696,11 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 	const FLOAT_t txfiltergain = 2;	// Для IQ фильтра можно так - для компенсации 0.5 усиления из-за перемножителя перед ним.
 #endif /* WITHDSPEXTDDC */
 
-	debug_printf_P(PSTR("audio_setup_wiver: fullbw6[%u]=%u\n"), (unsigned) pathi, (unsigned) fullbw6);
+	//PRINTF(PSTR("audio_setup_wiver: fullbw6[%u]=%u\n"), (unsigned) pathi, (unsigned) fullbw6);
 
 	if (fullbw6 == INT16_MAX)
 	{
-		//debug_printf_P(PSTR("audio_setup_wiver: construct bypass glob_fullbw6=%u\n"), (unsigned) glob_fullbw6);
+		//PRINTF(PSTR("audio_setup_wiver: construct bypass glob_fullbw6=%u\n"), (unsigned) glob_fullbw6);
 	#if WITHDSPLOCALFIR
 		if (isdspmoderx(dspmode))
 			fir_design_passtrough(FIRCoef_rx_SSB_IQ [spf], Ntap_rx_SSB_IQ, rxfiltergain);
@@ -2714,7 +2714,7 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 	else
 	{
 		const int cutfreq = fullbw6 / 2;
-		//debug_printf_P(PSTR("audio_setup_wiver: construct filter glob_fullbw6=%u\n"), (unsigned) glob_fullbw6);
+		//PRINTF(PSTR("audio_setup_wiver: construct filter glob_fullbw6=%u\n"), (unsigned) glob_fullbw6);
 	#if WITHDSPLOCALFIR
 		if (isdspmoderx(dspmode))
 		{
@@ -2871,7 +2871,7 @@ static void audio_update(const uint_fast8_t spf, uint_fast8_t pathi)
 #endif /* WITHSKIPUSERMODE */
 	debug_cleardtmax();		// сброс максимального значения в тесте производительности DSP
 
-#if 1
+#if 0
 	PRINTF("audio_update tx=%d [pathi=%d]: dsp_mode=%d, bw6=%d, lo6=%d, rx=%d..%d, tx=%d..%d\n",
 		(int) isdspmodetx(glob_dspmodes [pathi]),
 		(int) pathi, 
@@ -3221,7 +3221,7 @@ static void modem_update(void)
 	modem_set_speed(glob_modem_speed100);
 	modem_set_mode(glob_modem_mode);
 
-	debug_printf_P(PSTR("modem_update: modem_speed100=%d.%02d, modem_mode=%d\n"), (int) (glob_modem_speed100 / 100), (int) (glob_modem_speed100 % 100), (int) glob_modem_mode);
+	PRINTF(PSTR("modem_update: modem_speed100=%d.%02d, modem_mode=%d\n"), (int) (glob_modem_speed100 / 100), (int) (glob_modem_speed100 % 100), (int) glob_modem_mode);
 #endif /* WITHMODEM */
 }
 ///////////////////////
@@ -3484,8 +3484,12 @@ static FLOAT_t agc_forvard_getstreigthlog10(
 	volatile agcparams_t * const agcp = & rxsmeterparams;
 	volatile agcstate_t * const st = & rxsmeterstate [pathi];
 
+	global_disableIRQ();
 	const FLOAT_t fltstrengthfast = agc_result_fast(st);	// измеритель уровня сигнала
+	global_enableIRQ();
+	global_disableIRQ();
 	const FLOAT_t fltstrengthslow = agc_result_slow(st);	// измеритель уровня сигнала
+	global_enableIRQ();
 	* tracemax = agc_calcstrengthlog10(agcp, fltstrengthslow);
 	return agc_calcstrengthlog10(agcp, fltstrengthfast);
 }
@@ -4673,7 +4677,7 @@ int16_t Dtmf_receive (const int16_t * samples)
 
 void dtmftest(void)
 {
-	//debug_printf_P(PSTR("."));
+	//PRINTF(PSTR("."));
 	if (dtmfbi >= DTMF_STEPS)
 	{
 		long t = 0;
@@ -4684,7 +4688,7 @@ void dtmftest(void)
 		};
 		const int digit = Dtmf_receive(inp_samples);
 		/*
-		debug_printf_P("spectrum:[%8d %8d %8d %8d %8d %8d %8d %8d] ",
+		PRINTF("spectrum:[%8d %8d %8d %8d %8d %8d %8d %8d] ",
 				(int) (powS [0] * 10),
 				(int) (powS [1] * 10),
 				(int) (powS [2] * 10),
@@ -4699,19 +4703,19 @@ void dtmftest(void)
 		if (digit != DTMF_EMPTY)
 		{
 			if (digit >= (sizeof digits / sizeof digits [0]))
-				debug_printf_P(PSTR("dtmf: 0x%02x\n"), digit);
+				PRINTF(PSTR("dtmf: 0x%02x\n"), digit);
 			else
-				debug_printf_P(PSTR("dtmf: %c\n"), digit < 16 ? digits [digit] : 'Z');
+				PRINTF(PSTR("dtmf: %c\n"), digit < 16 ? digits [digit] : 'Z');
 		}
 		else
 		{
-			//debug_printf_P(PSTR("dtmf: none\n"));
+			//PRINTF(PSTR("dtmf: none\n"));
 		}
 		dtmfbi = 0;
 	}
 	else
 	{
-		//debug_printf_P(PSTR(":"));
+		//PRINTF(PSTR(":"));
 	}
 }
 
@@ -4778,12 +4782,9 @@ static RAMFUNC uint_fast8_t isneedmute(uint_fast8_t dspmode)
 	}
 }
 
-#if (WITHRTS96 || WITHRTS192) && ! WITHTRANSPARENTIQ
+#if WITHSPECTRUMWF && ! WITHTRANSPARENTIQ
 
 // Поддержка панорпамы и водопада
-
-static volatile uint_fast8_t rendering;
-static volatile uint_fast32_t renderready;
 /*
 uint_fast8_t hamradio_get_notchvalueXXX(int_fast32_t * p)
 {
@@ -4792,24 +4793,136 @@ uint_fast8_t hamradio_get_notchvalueXXX(int_fast32_t * p)
 }
 */
 
+enum { NOVERLAP = 1 << WITHFFTOVERLAPPOW2 };	// Количество перекрывающися буферов FFT спектра
 // Сэмплы для децимации
-static RAMBIGDTCM float32_t FFT_largebuffI [LARGEFFT * 2];
-static RAMBIGDTCM float32_t FFT_largebuffQ [LARGEFFT * 2];
-static RAMDTCM uint_fast16_t fft_largelast;
+typedef struct fftbuff_tag
+{
+	LIST_ENTRY item;
+	float32_t largebuffI [LARGEFFT];
+	float32_t largebuffQ [LARGEFFT];
+	unsigned filled;	// 0..LARGEFFT-1
+} fftbuff_t;
 
-// формирование отображения спектра
+static LIST_ENTRY fftbuffree;
+static LIST_ENTRY fftbufready;
+static RAMDTCM SPINLOCK_t fftlock = SPINLOCK_INIT;
+
+// realtime-mode function
+uint_fast8_t allocate_fftbuffer_low(fftbuff_t * * dest)
+{
+	SPIN_LOCK(& fftlock);
+	if (! IsListEmpty(& fftbuffree))
+	{
+		const PLIST_ENTRY t = RemoveTailList(& fftbuffree);
+		SPIN_UNLOCK(& fftlock);
+		fftbuff_t * const p = CONTAINING_RECORD(t, fftbuff_t, item);
+		* dest = p;
+		return 1;
+	}
+	/* Начинаем отбрасывать самые старые в очереди готовых. */
+	if (! IsListEmpty(& fftbufready))
+	{
+		const PLIST_ENTRY t = RemoveTailList(& fftbufready);
+		SPIN_UNLOCK(& fftlock);
+		fftbuff_t * const p = CONTAINING_RECORD(t, fftbuff_t, item);
+		* dest = p;
+		return 1;
+	}
+	return 0;
+}
+
+// realtime-mode function
+void saveready_fftbuffer_low(fftbuff_t * p)
+{
+	SPIN_LOCK(& fftlock);
+	InsertHeadList(& fftbufready, & p->item);
+	SPIN_UNLOCK(& fftlock);
+}
+
+// user-mode function
+void release_fftbuffer(fftbuff_t * p)
+{
+	global_disableIRQ();
+	SPIN_LOCK(& fftlock);
+	InsertHeadList(& fftbuffree, & p->item);
+	SPIN_UNLOCK(& fftlock);
+	global_enableIRQ();
+}
+
+// user-mode function
+uint_fast8_t  getfilled_fftbuffer(fftbuff_t * * dest)
+{
+	global_disableIRQ();
+	SPIN_LOCK(& fftlock);
+	if (! IsListEmpty(& fftbufready))
+	{
+		const PLIST_ENTRY t = RemoveTailList(& fftbufready);
+		SPIN_UNLOCK(& fftlock);
+		global_enableIRQ();
+		fftbuff_t * const p = CONTAINING_RECORD(t, fftbuff_t, item);
+		* dest = p;
+		return 1;
+	}
+	SPIN_UNLOCK(& fftlock);
+	global_enableIRQ();
+	return 0;
+}
+
+static fftbuff_t * pfill [NOVERLAP];
+
+// сохранение сэмпла для отображения спектра
 void saveIQRTSxx(FLOAT_t iv, FLOAT_t qv)
 {
-	//const uint_fast8_t rxgate = getRxGate();
-	if (rendering == 0)
+	unsigned i;
+	for (i = 0; i < NOVERLAP; ++ i)
 	{
-		fft_largelast = (fft_largelast == 0) ? (LARGEFFT - 1) : (fft_largelast - 1);
-		FFT_largebuffI [fft_largelast] = FFT_largebuffI [fft_largelast + LARGEFFT] = iv;
-		FFT_largebuffQ [fft_largelast] = FFT_largebuffQ [fft_largelast + LARGEFFT] = qv;
-		renderready = (renderready < LARGEFFT) ? (renderready + 1) : LARGEFFT;
+		fftbuff_t * * ppf = & pfill [i];
+
+		if (* ppf == NULL)
+		{
+			if (allocate_fftbuffer_low(ppf) == 0)
+			{
+				TP();
+				continue;	/* обшибочная ситуация, нарушает фиксированный сдвиг перекрытия буферов */
+			}
+			(* ppf)->filled = 0;
+		}
+		fftbuff_t * const pf = * ppf;
+
+		pf->largebuffI [pf->filled] = qv;
+		pf->largebuffQ [pf->filled] = iv;
+
+		if (++ pf->filled >= LARGEFFT)
+		{
+			saveready_fftbuffer_low(pf);
+			* ppf = NULL;
+		}
 	}
-	else
+}
+
+// вызывается при запрещенных прерываниях.
+void fftbuffer_initialize(void)
+{
+	static RAMBIG fftbuff_t fftbuffersarray [NOVERLAP * 2 + 1];
+	unsigned i;
+
+	InitializeListHead(& fftbuffree);	// Свободные
+	for (i = 0; i < (sizeof fftbuffersarray / sizeof fftbuffersarray [0]); ++ i)
 	{
+		fftbuff_t * const p = & fftbuffersarray [i];
+		InsertHeadList(& fftbuffree, & p->item);
+	}
+	InitializeListHead(& fftbufready);	// Для выдачи на дисплей
+	/* начальный запрос буферов заполнение выборок. */
+	for (i = 0; i < NOVERLAP; ++ i)
+	{
+		fftbuff_t * * const ppf = & pfill [i];
+		VERIFY(allocate_fftbuffer_low(ppf) != 0);
+		/* установка начальной позиции для заполнения со сдвигом. */
+		const unsigned filled = (i * LARGEFFT / NOVERLAP);
+		(* ppf)->filled = filled;
+		arm_fill_f32(0, (* ppf)->largebuffI, filled);
+		arm_fill_f32(0, (* ppf)->largebuffQ, filled);
 	}
 }
 
@@ -4823,7 +4936,7 @@ static void buildsigwnd(void)
 
 #else
 
-static RAMBIGDTCM FLOAT_t wnd256 [NORMALFFT];
+static RAMBIG FLOAT_t wnd256 [NORMALFFT];
 
 static void buildsigwnd(void)
 {
@@ -4836,17 +4949,17 @@ static void buildsigwnd(void)
 
 static void printsigwnd(void)
 {
-	debug_printf_P(PSTR("static const FLASHMEM FLOAT_t wnd256 [%u] =\n"), (unsigned) FFTSizeSpectrum);
-	debug_printf_P(PSTR("{\n"));
+	PRINTF(PSTR("static const FLASHMEM FLOAT_t wnd256 [%u] =\n"), (unsigned) FFTSizeSpectrum);
+	PRINTF(PSTR("{\n"));
 
 	int i;
 	for (i = 0; i < FFTSizeSpectrum; ++ i)
 	{
 		wnd256 [i] = fir_design_window(i, FFTSizeSpectrum, BOARD_WTYPE_SPECTRUM);
 		int el = ((i + 1) % 4) == 0;
-		debug_printf_P(PSTR("\t" "%+1.20f%s"), wnd256 [i], el ? ",\n" : ", ");
+		PRINTF(PSTR("\t" "%+1.20f%s"), wnd256 [i], el ? ",\n" : ", ");
 	}
-	debug_printf_P(PSTR("};\n"));
+	PRINTF(PSTR("};\n"));
 }
 #endif
 
@@ -4884,7 +4997,7 @@ union states
 };
 
 
-#if (CPUSTYLE_R7S721 || CPUSTYLE_STM32MP1)
+#if (CPUSTYLE_R7S721 || 0)
 
 static uint16_t rbfimage0 [] =
 {
@@ -4994,21 +5107,13 @@ uint_fast8_t dsp_getspectrumrow(
 	uint_fast16_t i;
 	uint_fast16_t x;
 
-	// проверка, есть ли нужное количество данных для формирования спектра
-	global_disableIRQ();
-	if (renderready < needsize)
-	{
-		global_enableIRQ();
+	// проверка, есть ли накопленный буфер для формирования спектра
+	fftbuff_t * pf;
+	if (getfilled_fftbuffer(& pf) == 0)
 		return 0;
-	}
-	else
-	{
-		rendering = 1;	// запрет обновления буфера с исходными данными
-		global_enableIRQ();
-	}
 
-	float32_t * const largesigI = & FFT_largebuffI [fft_largelast];
-	float32_t * const largesigQ = & FFT_largebuffQ [fft_largelast];
+	float32_t * const largesigI = pf->largebuffI;
+	float32_t * const largesigQ = pf->largebuffQ;
 
 	if (zoompow2 > 0)
 	{
@@ -5021,10 +5126,7 @@ uint_fast8_t dsp_getspectrumrow(
 	// Подготовить массив комплексных чисел для преобразования в частотную область
 	make_cmplx(zoomfft_st.cmplx_sig, NORMALFFT, largesigQ, largesigI);
 
-	global_disableIRQ();
-	renderready = 0;
-	rendering = 0;
-	global_enableIRQ();
+	release_fftbuffer(pf);
 
 	arm_cmplx_mult_real_f32(zoomfft_st.cmplx_sig, wnd256, zoomfft_st.cmplx_sig,  NORMALFFT);	// Применить оконную функцию к IQ буферу
 	arm_cfft_f32(FFTCONFIGSpectrum, zoomfft_st.cmplx_sig, 0, 1);	// forward transform
@@ -5047,9 +5149,10 @@ dsp_rasterinitialize(void)
 	buildsigwnd();
 	//printsigwnd();	// печать оконных коэффициентов для формирования таблицы во FLASH
 	//toplogdb = LOG10F((FLOAT_t) INT32_MAX / waterfalrange);
+	fftbuffer_initialize();
 }
 
-#else /* (WITHRTS96 || WITHRTS192) && ! WITHTRANSPARENTIQ */
+#else /* WITHSPECTRUMWF && ! WITHTRANSPARENTIQ */
 
 uint_fast8_t dsp_getspectrumrow(
 	FLOAT_t * const hbase,
@@ -5073,7 +5176,12 @@ int dsp_mag2y(FLOAT_t mag, int ymax, int_fast16_t topdb, int_fast16_t bottomdb)
 	return 0;
 }
 
-#endif /* (WITHRTS96 || WITHRTS192) && ! WITHTRANSPARENTIQ */
+// сохранение сэмпла для отображения спектра
+void saveIQRTSxx(FLOAT_t iv, FLOAT_t qv)
+{
+}
+
+#endif /* WITHSPECTRUMWF && ! WITHTRANSPARENTIQ */
 
 #if WITHDSPEXTDDC
 // использование данных о спектре, передаваемых в общем фрейме
@@ -5309,7 +5417,7 @@ static FLOAT_t mixmonitor(FLOAT_t shape, FLOAT_t sdtn, FLOAT_t moni)
 // перед передачей по DMA в аудиокодек
 //  Здесь ответвляются потоки в USB и для записи на SD CARD
 // realtime level
-void dsp_addsidetone(aubufv_t * buff)
+void dsp_addsidetone(aubufv_t * buff, int usebuf)
 {
 	enum { L, R };
 	ASSERT(buff != NULL);
@@ -5333,8 +5441,8 @@ void dsp_addsidetone(aubufv_t * buff)
 		const FLOAT_t moniL = AUDIO16TOAUB(mixmonitor(sdtnshape, sdtnv, moni.IV));
 		const FLOAT_t moniR = AUDIO16TOAUB(mixmonitor(sdtnshape, sdtnv, moni.QV));
 
-		FLOAT_t left = b [L];
-		FLOAT_t right = b [R];
+		FLOAT_t left = b [L] * usebuf;
+		FLOAT_t right = b [R] * usebuf;
 		//
 #if WITHWAVPLAYER
 		{
@@ -6094,9 +6202,9 @@ void dsp_initialize(void)
 	//PRINTF("DMABUFFSIZE32RX=%d, DMABUFSTEP32RX=%d\n", (int) DMABUFFSIZE32RX, (int) DMABUFSTEP32RX);
 
 	//FFT_initialize();
-#if (WITHRTS96 || WITHRTS192) && ! WITHTRANSPARENTIQ
+#if WITHSPECTRUMWF && ! WITHTRANSPARENTIQ
 	dsp_rasterinitialize();
-#endif /* WITHRTS96 && ! WITHTRANSPARENTIQ */
+#endif /* WITHSPECTRUMWF && ! WITHTRANSPARENTIQ */
 
 	fir_design_windowbuff(FIRCwnd_tx_MIKE, Ntap_tx_MIKE);
 	fir_design_windowbuff(FIRCwnd_rx_AUDIO, Ntap_rx_AUDIO);
@@ -6163,7 +6271,7 @@ void dsp_initialize(void)
 		float32x4_t v1 = vld1q_f32(vs);
 		float32x4_t v2 = vrev64q_f32(v1);
 		// output: neontest: 2 1 4 3
-		debug_printf_P(PSTR("neontest: %d %d %d %d\n"), (int) vgetq_lane_f32(v2, 0), (int) vgetq_lane_f32(v2, 1), (int) vgetq_lane_f32(v2, 2), (int) vgetq_lane_f32(v2, 3));
+		PRINTF(PSTR("neontest: %d %d %d %d\n"), (int) vgetq_lane_f32(v2, 0), (int) vgetq_lane_f32(v2, 1), (int) vgetq_lane_f32(v2, 2), (int) vgetq_lane_f32(v2, 3));
 	}
 #endif
 }

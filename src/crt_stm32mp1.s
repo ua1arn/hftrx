@@ -47,7 +47,7 @@
    ARM_MODE_SVC   = 0x13      /* Supervisor Interrupts Mode            		  */
    ARM_MODE_MON   = 0x16      /* Monitor Interrupts Mode (With Security Extensions) */
    ARM_MODE_ABORT = 0x17      /* Abort Processing memory Faults Mode          */
-   ARM_MODE_HYP	  = 0x1a      /* Hypervisor Interrupts Mode            		  */
+   ARM_MODE_HYP	  = 0x1A      /* Hypervisor Interrupts Mode            		  */
    ARM_MODE_UNDEF = 0x1B      /* Undefined Instructions Mode                  */
    ARM_MODE_SYS   = 0x1F      /* System Running in Priviledged Operating Mode */
    ARM_MODE_MASK  = 0x1F
@@ -56,19 +56,18 @@
 	I_BIT          = 0x80      /* disable IRQ when I bit is set */
 	F_BIT          = 0x40      /* disable FIQ when F bit is set */
  
-	 STACKSIZEUND = 256
-	 STACKSIZEABT = 256
-	 STACKSIZEFIQ = 256
-	 STACKSIZEIRQ = 256
-	 STACKSIZESVC = 256
-	 STACKSIZEHYP = 256
-	 STACKSIZEMON = 256
-	 STACKSIZESYS = 256
+	 STACKSIZEUND = 512
+	 STACKSIZEABT = 512
+	 STACKSIZEFIQ = 512
+	 STACKSIZEIRQ = 512
+	 STACKSIZEHYP = 512
+	 STACKSIZEMON = 512
+	 STACKSIZESYS = 512
 
-	 STACKSIZESVC = 4096
+	 STACKSIZESVC = 8192
   
 	.global __Vectors
-	.section .vectors,"ax"
+	.section .vectors, "ax"
 	.code 32
         
 /****************************************************************************/
@@ -311,6 +310,8 @@ ExitFunction:
    nop
    b ExitFunction   
 
+   .ltorg
+
 	.align 4, 0
 	.ascii " DREAM RX project " __DATE__ " " __TIME__ " "
 	.align 4, 0
@@ -318,7 +319,7 @@ ExitFunction:
 /****************************************************************************/
 /*                         Default interrupt handler                        */
 /****************************************************************************/
-	.section .itcm
+	.section .itcm, "ax"
    .code 32
 
 	.align 4, 0
@@ -349,7 +350,7 @@ IRQHandlerNested:
 		// save VFP/Neon data registers
 		VPUSH.F64	{q0-q7}
 
-		ldr		r0, =IRQ_Handler
+		ldr		r0, =IRQ_Handler_GICv2
 		mov		lr, pc
 		bx		r0     /* And jump... */
 		// restore VFP data registers
@@ -373,6 +374,11 @@ IRQHandlerNested:
        POP     {R0,LR}          // restore register context
        SUBS    R15,R14,#0x0004         // return from interrupt
 		.endfunc
+   .ltorg
+
+	.section .init, "ax"
+	.code 32
+	.align 4, 0
 
     .func   Reset_CPU1_Handler
     /* invoked at ARM_MODE_SVC */
@@ -421,39 +427,34 @@ Reset_CPU1_HandlerSleep:
 	b     Reset_CPU1_HandlerSleep
 
 		.endfunc
+   .ltorg
 
-	.section .dtcm
+	.section .noinit
 	.align 8
+
 	.space	STACKSIZEUND
 __stack_cpu0_und_end = .
 	.space	STACKSIZEABT
 __stack_cpu0_abt_end = .
 	.space	STACKSIZEFIQ
 __stack_cpu0_fiq_end = .
-	.space	STACKSIZEIRQ
-__stack_cpu0_irq_end = .
+/*
 	.space	STACKSIZESVC
 __stack_cpu0_svc_end = .
+*/
 	.space	STACKSIZEMON
 __stack_cpu0_mon_end = .
 	.space	STACKSIZEHYP
 __stack_cpu0_hyp_end = .
 	.space	STACKSIZESYS
 __stack_cpu0_sys_end = .
-/*
-	.space	STACKSIZESVC
-__stack_cpu0_svc_end = .
-*/
+
 	.space	STACKSIZEUND
 __stack_cpu1_und_end = .
 	.space	STACKSIZEABT
 __stack_cpu1_abt_end = .
 	.space	STACKSIZEFIQ
 __stack_cpu1_fiq_end = .
-	.space	STACKSIZEIRQ
-__stack_cpu1_irq_end = .
-	.space	STACKSIZESVC
-__stack_cpu1_svc_end = .
 	.space	STACKSIZEMON
 __stack_cpu1_mon_end = .
 	.space	STACKSIZEHYP
@@ -461,10 +462,17 @@ __stack_cpu1_hyp_end = .
 	.space	STACKSIZESYS
 __stack_cpu1_sys_end = .
 
+	.space	STACKSIZEIRQ
+__stack_cpu0_irq_end = .
+
+	.space	STACKSIZEIRQ
+__stack_cpu1_irq_end = .
+
 	.space	STACKSIZESVC
 __stack_cpu1_svc_end = .
 
-   .ltorg
+	.word 0		/* fix non-zero size of this section */
+
 /*** EOF ***/   
   
 

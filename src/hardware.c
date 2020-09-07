@@ -2695,7 +2695,7 @@ build_adc_mask(void)
 
 void hardware_adc_initialize(void)
 {
-	//debug_printf_P(PSTR("hardware_adc_initialize\n"));
+	//PRINTF(PSTR("hardware_adc_initialize\n"));
 
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
@@ -2955,7 +2955,7 @@ void hardware_adc_initialize(void)
 		0x0B,	// 1011: input ADC clock divided by 256
 	};
 	uint_fast8_t i;
-	//debug_printf_P(PSTR("hardware_adc_initialize: prei=%u, presc=0x%02X\n"), prei, presc [prei]);
+	//PRINTF(PSTR("hardware_adc_initialize: prei=%u, presc=0x%02X\n"), prei, presc [prei]);
 
 	// Power-on ADCs
 	for (i = 0; i < board_get_adcinputs(); ++ i)
@@ -3028,7 +3028,7 @@ void hardware_adc_initialize(void)
 
 		++ tcode;
 
-		//debug_printf_P(PSTR("ch=%u, time=%u, cycles=%u, tcode=%u\n"), adcmap->ch, adcmap->thold_uS01, cycles, tcode);
+		//PRINTF(PSTR("ch=%u, time=%u, cycles=%u, tcode=%u\n"), adcmap->ch, adcmap->thold_uS01, cycles, tcode);
 		if (adcmap->ch < 10)
 		{
 			uint_fast8_t shift = adcmap->ch * 3;
@@ -3124,7 +3124,7 @@ void hardware_adc_initialize(void)
 		0x03,	// 11: PCLK2 divided by 8
 	};
 	const uint_fast32_t cycles = NTICKSADC01(10);	// в десятых долях микросекунды
-	debug_printf_P(PSTR("hardware_adc_initialize: prei=%u, presc=0x%02X, cycles=%u\n"), prei, presc [prei], cycles);
+	PRINTF(PSTR("hardware_adc_initialize: prei=%u, presc=0x%02X, cycles=%u\n"), prei, presc [prei], cycles);
 
 	ADC->CCR = (ADC->CCR & ~ (ADC_CCR_ADCPRE | ADC_CCR_TSVREFE)) | 
 		presc [prei] * ADC_CCR_ADCPRE_0 |
@@ -3414,7 +3414,7 @@ void hardware_adc_initialize(void)
 	#error Undefined CPUSTYLE_XXX
 #endif
 
-	//debug_printf_P(PSTR("hardware_adc_initialize done\n"));
+	//PRINTF(PSTR("hardware_adc_initialize done\n"));
 }
 
 // хотя бы один вход (s-метр) есть.
@@ -4746,7 +4746,7 @@ void hardware_spi_master_setfreq(uint_fast8_t spispeedindex, int_fast32_t spispe
 	const uint_fast8_t prei = calcdivider(calcdivround_per_ck(spispeed), STM32F_SPIBR_WIDTH, STM32F_SPIBR_TAPS, & value, 1);
 	const uint_fast32_t cfg1baudrate = (prei * SPI_CFG1_MBR_0) & SPI_CFG1_MBR_Msk;
 	const uint_fast32_t cfg1 = cfg1baudrate;// | (SPI_CFG1_CRCSIZE_0 * 7);
-	//debug_printf_P(PSTR("hardware_spi_master_setfreq: prei=%u, value=%u, spispeed=%u\n"), prei, value, spispeed);
+	//PRINTF(PSTR("hardware_spi_master_setfreq: prei=%u, value=%u, spispeed=%u\n"), prei, value, spispeed);
 
 	spi_cfg1_val8w [spispeedindex] = cfg1 |
 		7 * SPI_CFG1_DSIZE_0 |
@@ -4806,7 +4806,7 @@ void hardware_spi_master_setfreq(uint_fast8_t spispeedindex, int_fast32_t spispe
 	//value = 29, prei = 3;	// 125 kHz
 	//value = 149, prei = 1;	// 100 kHz
 
-	//debug_printf_P(PSTR("hardware_spi_master_setfreq: prei=%u, value=%u, spispeed[%u]=%lu\n"), prei, value, spispeedindex, (unsigned long) spispeed);
+	//PRINTF(PSTR("hardware_spi_master_setfreq: prei=%u, value=%u, spispeed[%u]=%lu\n"), prei, value, spispeedindex, (unsigned long) spispeed);
 
 	const uint_fast8_t spcmd0 =	// Command Register (SPCMD)
 		(RSPIn_SPCMD0_BRDV & (prei << RSPIn_SPCMD0_BRDV_SHIFT)) |	// BRDV1..BRDV0 - Bit Rate Division Setting /1, /2, /4. /8
@@ -5319,7 +5319,7 @@ hardware_spi_master_send_frame_8bpartial(
 	/*
 	if (((uint32_t) buffer & 0xFF000000) == CCMDATARAM_BASE)
 	{
-		debug_printf_P(PSTR("hardware_spi_master_send_frame: use CCM\n"));
+		PRINTF(PSTR("hardware_spi_master_send_frame: use CCM\n"));
 		// Safe version
 		prog_spi_send_frame(target, buffer, size);
 		return;
@@ -5488,7 +5488,7 @@ hardware_spi_master_send_frame_16bpartial(
 	/*
 	if (((uint32_t) buffer & 0xFF000000) == CCMDATARAM_BASE)
 	{
-		debug_printf_P(PSTR("hardware_spi_master_send_frame: use CCM\n"));
+		PRINTF(PSTR("hardware_spi_master_send_frame: use CCM\n"));
 		// Safe version
 		prog_spi_send_frame(target, buffer, size);
 		return;
@@ -5650,7 +5650,7 @@ hardware_spi_master_read_frame_16bpartial(
 	/*
 	if (((uint32_t) buffer & 0xFF000000) == CCMDATARAM_BASE)
 	{
-		debug_printf_P(PSTR("hardware_spi_master_read_frame: use CCM\n"));
+		PRINTF(PSTR("hardware_spi_master_read_frame: use CCM\n"));
 		// Safe version
 		prog_spi_read_frame(target, buffer, size);
 		return;
@@ -5810,7 +5810,7 @@ hardware_spi_master_read_frame_8bpartial(
 	/*
 	if (((uint32_t) buffer & 0xFF000000) == CCMDATARAM_BASE)
 	{
-		debug_printf_P(PSTR("hardware_spi_master_read_frame: use CCM\n"));
+		PRINTF(PSTR("hardware_spi_master_read_frame: use CCM\n"));
 		// Safe version
 		prog_spi_read_frame(target, buffer, size);
 		return;
@@ -6107,7 +6107,7 @@ void hardware_spi_connect_b16(uint_fast8_t spispeedindex, spi_modes_t spimode)
 
 }
 
-portholder_t hardware_spi_complete_b16(void)	/* дождаться готовности */
+portholder_t RAMFUNC hardware_spi_complete_b16(void)	/* дождаться готовности */
 {
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
@@ -6152,7 +6152,7 @@ portholder_t hardware_spi_complete_b16(void)	/* дождаться готовн�
 #endif
 }
 
-static void hardware_spi_ready_b16_void(void)	/* дождаться готовности */
+static RAMFUNC void hardware_spi_ready_b16_void(void)	/* дождаться готовности */
 {
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
@@ -6199,7 +6199,7 @@ static void hardware_spi_ready_b16_void(void)	/* дождаться готовн
 /* передача первого байта в последовательности - Не проверяем готовность перед передачей,
    завершение передачи будут проверять другие.
 */
-void hardware_spi_b16_p1(
+void RAMFUNC hardware_spi_b16_p1(
 	portholder_t v		/* значениеслова для передачи */
 	)
 {
@@ -6234,7 +6234,7 @@ void hardware_spi_b16_p1(
 
 /* передача одного из средних байтов/слов в последовательности */
 /* дождаться готовности, передача байта */
-void hardware_spi_b16_p2(
+void RAMFUNC hardware_spi_b16_p2(
 	portholder_t v		/* значение байта для передачи */
 	)
 {
@@ -6243,7 +6243,7 @@ void hardware_spi_b16_p2(
 }
 
 /* передача байта/слова, возврат считанного */
-portholder_t hardware_spi_b16(
+portholder_t RAMFUNC hardware_spi_b16(
 	portholder_t v		/* значение байта для передачи */
 	)
 {
@@ -6911,7 +6911,7 @@ void hardware_lfm_setupdatefreq(unsigned ticksfreq)
 
 void hardware_sdhost_setbuswidth(uint_fast8_t use4bit)
 {
-	debug_printf_P(PSTR("hardware_sdhost_setbuswidth: use4bit=%u\n"), (unsigned) use4bit);
+	PRINTF(PSTR("hardware_sdhost_setbuswidth: use4bit=%u\n"), (unsigned) use4bit);
 
 #if ! WITHSDHCHW4BIT
 	use4bit = 0;
@@ -6949,16 +6949,16 @@ void hardware_sdhost_setspeed(unsigned long ticksfreq)
 	//unsigned long ticksfreq = 24000000uL;	// 24 MHz -> 16.666 MHz
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround_p1clock(ticksfreq), 0, (512 | 256 | 128 | 64 | 32 | 16 | 8 | 4 | 2), & value, 0);
-	debug_printf_P(PSTR("hardware_sdhost_setspeed: ticksfreq=%lu, prei=%lu\n"), (unsigned long) ticksfreq, (unsigned long) prei);
+	PRINTF(PSTR("hardware_sdhost_setspeed: ticksfreq=%lu, prei=%lu\n"), (unsigned long) ticksfreq, (unsigned long) prei);
 
 	while ((SDHI0.SD_INFO2 & (1uL << 13)) == 0)	// SCLKDIVEN
 	{
-		//debug_printf_P(PSTR("hardware_sdhost_setspeed: SCLKDIVEN set clock prohibited, SD_INFO2=%08lX\n"), SDHI0.SD_INFO2);
+		//PRINTF(PSTR("hardware_sdhost_setspeed: SCLKDIVEN set clock prohibited, SD_INFO2=%08lX\n"), SDHI0.SD_INFO2);
 		TP();
 	}
 	while ((SDHI0.SD_INFO2 & (1uL << 14)) != 0)	// CBSY
 	{
-		//debug_printf_P(PSTR("hardware_sdhost_setspeed: CBSY set clock prohibited, SD_INFO2=%08lX\n"), SDHI0.SD_INFO2);
+		//PRINTF(PSTR("hardware_sdhost_setspeed: CBSY set clock prohibited, SD_INFO2=%08lX\n"), SDHI0.SD_INFO2);
 		TP();
 	}
 
@@ -7016,8 +7016,8 @@ void hardware_sdhost_setspeed(unsigned long ticksfreq)
 	//const uint32_t stm32f4xx_48mhz = PLL_FREQ / stm32f7xx_pllq;
 	const unsigned value = ulmin(calcdivround2(SDMMCCLK, ticksfreq) - 2, 255);
 
-	//debug_printf_P(PSTR("hardware_sdhost_setspeed: stm32f7xx_pllq=%lu, freq=%lu\n"), (unsigned long) stm32f7xx_pllq, stm32f4xx_48mhz);
-	debug_printf_P(PSTR("hardware_sdhost_setspeed: CLKCR_CLKDIV=%lu\n"), (unsigned long) value);
+	//PRINTF(PSTR("hardware_sdhost_setspeed: stm32f7xx_pllq=%lu, freq=%lu\n"), (unsigned long) stm32f7xx_pllq, stm32f4xx_48mhz);
+	PRINTF(PSTR("hardware_sdhost_setspeed: CLKCR_CLKDIV=%lu\n"), (unsigned long) value);
 
 	SDMMC1->CLKCR = (SDMMC1->CLKCR & ~ (SDMMC_CLKCR_CLKDIV)) |
 		(value & SDMMC_CLKCR_CLKDIV);
@@ -7039,8 +7039,8 @@ void hardware_sdhost_setspeed(unsigned long ticksfreq)
 	//const uint32_t stm32f4xx_48mhz = PLL_FREQ / stm32h7xx_pllq;
 	const unsigned value = ulmin(calcdivround2(SDMMCCLK / 2, ticksfreq), 0x03FF);
 
-	debug_printf_P(PSTR("hardware_sdhost_setspeed: stm32h7xx_pllq=%lu, SDMMCCLK=%lu, PLL_FREQ=%lu\n"), (unsigned long) stm32h7xx_pllq, SDMMCCLK, PLL_FREQ);
-	debug_printf_P(PSTR("hardware_sdhost_setspeed: CLKCR_CLKDIV=%lu\n"), (unsigned long) value);
+	PRINTF(PSTR("hardware_sdhost_setspeed: stm32h7xx_pllq=%lu, SDMMCCLK=%lu, PLL_FREQ=%lu\n"), (unsigned long) stm32h7xx_pllq, SDMMCCLK, PLL_FREQ);
+	PRINTF(PSTR("hardware_sdhost_setspeed: CLKCR_CLKDIV=%lu\n"), (unsigned long) value);
 
 	SDMMC1->CLKCR = (SDMMC1->CLKCR & ~ (SDMMC_CLKCR_CLKDIV)) |
 		(value & SDMMC_CLKCR_CLKDIV);
@@ -7055,7 +7055,7 @@ void hardware_sdhost_setspeed(unsigned long ticksfreq)
 
 void r7s721_sdhi0_dma_handler(void)
 {
-	debug_printf_P(PSTR("r7s721_sdhi0_dma_handler trapped\n"));
+	PRINTF(PSTR("r7s721_sdhi0_dma_handler trapped\n"));
 	for (;;)
 		;
 }
@@ -7165,7 +7165,10 @@ void hardware_sdhost_initialize(void)
 	#pragma CODE_SECTION(local_delay_us, "ramfuncs")
 #endif /* CPUSTYPE_TMS320F2833X */
 
-void RAMFUNC_NONILINE local_delay_us(int timeUS)
+// Атрибут RAMFUNC_NONILINE убран, так как функция
+// используется в инициализации SDRAM на процессорах STM32F746.
+// TODO: перекалибровать для FLASH контроллеров.
+void /* RAMFUNC_NONILINE */ local_delay_us(int timeUS)
 {
 	#if CPUSTYLE_AT91SAM7S
 		const unsigned long top = timeUS * 175uL / (CPU_FREQ / 1000000);
@@ -7988,7 +7991,7 @@ stm32f4xx_pllsai_initialize(void)
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround_saifreq(display_getdotclock()), STM32F_LTDC_DIV_WIDTH, STM32F_LTDC_DIV_TAPS, & value, 0);
 	ASSERT(value >= 2);
-	debug_printf_P(PSTR("stm32f4xx_pllsai_initialize: value=%u, prei=%u\n"), value, prei);
+	PRINTF(PSTR("stm32f4xx_pllsai_initialize: value=%u, prei=%u\n"), value, prei);
 	// Настройка PLLSAI
 	// Частота сравнения та же самая, что и в основной PLL
 	// RCC_PLLSAICFGR_PLLSAIQ используется, если для SAI используется отдельная PLL - эта.
@@ -8218,7 +8221,7 @@ stm32f7xx_pllsai_initialize(void)
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround_saifreq(display_getdotclock()), STM32F_LTDC_DIV_WIDTH, STM32F_LTDC_DIV_TAPS, & value, 0);
 	ASSERT(value >= 2);
-	debug_printf_P(PSTR("stm32f7xx_pllsai_initialize: value=%u, prei=%u\n"), value, prei);
+	PRINTF(PSTR("stm32f7xx_pllsai_initialize: value=%u, prei=%u\n"), value, prei);
 
 
 	// Настройка PLLSAI
@@ -8261,7 +8264,7 @@ void hardware_set_dotclock(unsigned long dotfreq)
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround_saifreq(display_getdotclock()), STM32F_LTDC_DIV_WIDTH, STM32F_LTDC_DIV_TAPS, & value, 0);
 	ASSERT(value >= 2);
-	debug_printf_P(PSTR("stm32f7xx_pllsai_initialize: value=%u, prei=%u\n"), value, prei);
+	PRINTF(PSTR("stm32f7xx_pllsai_initialize: value=%u, prei=%u\n"), value, prei);
 }
 
 #endif /* WITHUSESAIPLL */
@@ -8597,7 +8600,7 @@ static void stm32h7xx_pllsai_initialize(void)
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround_saifreq(display_getdotclock()), STM32F_LTDC_DIV_WIDTH, STM32F_LTDC_DIV_TAPS, & value, 0);
 	ASSERT(value >= 2);
-	debug_printf_P(PSTR("stm32h7xx_pllsai_initialize: value=%u, prei=%u\n"), value, prei);
+	PRINTF(PSTR("stm32h7xx_pllsai_initialize: value=%u, prei=%u\n"), value, prei);
 
 	// Настройка PLLSAI
 	// Частота сравнения та же самая, что и в основной PLL
@@ -9472,9 +9475,36 @@ lowlevel_stm32l0xx_pll_clock(void)
 
 #if (__CORTEX_A != 0)
 
+//	MRC p15, 0, <Rt>, c6, c0, 2 ; Read IFAR into Rt
+//	MCR p15, 0, <Rt>, c6, c0, 2 ; Write Rt to IFAR
+
+/** \brief  Get IFAR
+\return		Instruction Fault Address register value
+*/
+__STATIC_FORCEINLINE uint32_t __get_IFAR(void)
+{
+	uint32_t result;
+	__get_CP(15, 0, result, 6, 0, 2);
+	return result;
+}
+
+//	MRC p15, 0, <Rt>, c6, c0, 0 ; Read DFAR into Rt
+//	MCR p15, 0, <Rt>, c6, c0, 0 ; Write Rt to DFAR
+
+/** \brief  Get DFAR
+\return		Data Fault Address register value
+*/
+__STATIC_FORCEINLINE uint32_t __get_DFAR(void)
+{
+	uint32_t result;
+	__get_CP(15, 0, result, 6, 0, 0);
+	return result;
+}
+
 void Undef_Handler(void)
 {
 	dbg_puts_impl_P(PSTR("UndefHandler trapped.\n"));
+	dbg_puts_impl_P((__get_MPIDR() & 0x03) ? PSTR("CPUID=1\n") : PSTR("CPUID=0\n"));
 	for (;;)
 		;
 }
@@ -9482,6 +9512,7 @@ void Undef_Handler(void)
 void SWI_Handler(void)
 {
 	dbg_puts_impl_P(PSTR("SWIHandler trapped.\n"));
+	dbg_puts_impl_P((__get_MPIDR() & 0x03) ? PSTR("CPUID=1\n") : PSTR("CPUID=0\n"));
 	for (;;)
 		;
 }
@@ -9489,32 +9520,12 @@ void SWI_Handler(void)
 // Prefetch Abort
 void PAbort_Handler(void)
 {
-	dbg_puts_impl_P(PSTR("PAbortHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-	//	MRC p15, 0, <Rt>, c6, c0, 0 ; Read DFAR into Rt
-	//	MCR p15, 0, <Rt>, c6, c0, 0 ; Write Rt to DFAR
-
-/** \brief  Get DFAR
-    \return               Data Fault Address register value
- */
-__STATIC_FORCEINLINE uint32_t __get_DFAR(void)
-{
-  uint32_t result;
-  __get_CP(15, 0, result, 6, 0, 0);
-  return result;
-}
-
-// Data Abort.
-void DAbort_Handler(void)
-{
 	const volatile uint32_t marker = 0xDEADBEEF;
-	dbg_puts_impl_P(PSTR("DAbort_Handler trapped.\n"));
+	dbg_puts_impl_P(PSTR("PAbort_Handler trapped.\n"));
+	dbg_puts_impl_P((__get_MPIDR() & 0x03) ? PSTR("CPUID=1\n") : PSTR("CPUID=0\n"));
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Warray-bounds"
-	debug_printf_P(PSTR("DFSR=%08lX, DFAR=%08lX, pc=%08lX\n"), __get_DFSR(),__get_DFAR(), (& marker) [2]);
+	PRINTF(PSTR("DFSR=%08lX, IFAR=%08lX, pc=%08lX, sp~%08lx\n"), __get_DFSR(), __get_IFAR(), (& marker) [2], (unsigned long) & marker);
 #pragma GCC diagnostic pop
 	const int WnR = (__get_DFSR() & (1uL << 11)) != 0;
 	const int Status = (__get_DFSR() & (0x0FuL << 0));
@@ -9535,25 +9546,83 @@ void DAbort_Handler(void)
 		14. 0bx10110 asynchronous external abort
 		15. 0b000010 debug event.
 	*/
-	debug_printf_P(PSTR(" WnR=%d, Status=%02X\n"), (int) WnR, (unsigned) Status);
+	PRINTF(PSTR(" WnR=%d, Status=%02X\n"), (int) WnR, (unsigned) Status);
 	switch (Status)
 	{
-	case 0x01: debug_printf_P(PSTR("alignment fault\n")); break;
-	case 0x04: debug_printf_P(PSTR("instruction cache maintenance fault\n")); break;
-	case 0x0C: debug_printf_P(PSTR("1st level translation, synchronous external abort\n")); break;
-	case 0x0E: debug_printf_P(PSTR("2nd level translation, synchronous external abort\n")); break;
-	case 0x05: debug_printf_P(PSTR("translation fault, section\n")); break;
-	case 0x07: debug_printf_P(PSTR("translation fault, page\n")); break;
-	case 0x03: debug_printf_P(PSTR("access flag fault, section\n")); break;
-	case 0x06: debug_printf_P(PSTR("access flag fault, page\n")); break;
-	case 0x09: debug_printf_P(PSTR("domain fault, section\n")); break;
-	case 0x0B: debug_printf_P(PSTR("domain fault, page\n")); break;
-	case 0x0D: debug_printf_P(PSTR("permission fault, section\n")); break;
-	case 0x0F: debug_printf_P(PSTR("permission fault, page\n")); break;
-	case 0x08: debug_printf_P(PSTR("synchronous external abort, nontranslation\n")); break;
-	case 0x16: debug_printf_P(PSTR("asynchronous external abort\n")); break;
-	case 0x02: debug_printf_P(PSTR("debug event.\n")); break;
-	default: debug_printf_P(PSTR("undefined Status=%02X\n"), Status); break;
+	case 0x01: PRINTF(PSTR("alignment fault\n")); break;
+	case 0x04: PRINTF(PSTR("instruction cache maintenance fault\n")); break;
+	case 0x0C: PRINTF(PSTR("1st level translation, synchronous external abort\n")); break;
+	case 0x0E: PRINTF(PSTR("2nd level translation, synchronous external abort\n")); break;
+	case 0x05: PRINTF(PSTR("translation fault, section\n")); break;
+	case 0x07: PRINTF(PSTR("translation fault, page\n")); break;
+	case 0x03: PRINTF(PSTR("access flag fault, section\n")); break;
+	case 0x06: PRINTF(PSTR("access flag fault, page\n")); break;
+	case 0x09: PRINTF(PSTR("domain fault, section\n")); break;
+	case 0x0B: PRINTF(PSTR("domain fault, page\n")); break;
+	case 0x0D: PRINTF(PSTR("permission fault, section\n")); break;
+	case 0x0F: PRINTF(PSTR("permission fault, page\n")); break;
+	case 0x08: PRINTF(PSTR("synchronous external abort, nontranslation\n")); break;
+	case 0x16: PRINTF(PSTR("asynchronous external abort\n")); break;
+	case 0x02: PRINTF(PSTR("debug event.\n")); break;
+	default: PRINTF(PSTR("undefined Status=%02X\n"), Status); break;
+	}
+//	unsigned i;
+//	for (i = 0; i < 8; ++ i)
+//	{
+//		PRINTF("marker [%2d] = %08lX\n", i, (& marker) [i]);
+//	}
+	for (;;)
+		;
+}
+
+// Data Abort.
+void DAbort_Handler(void)
+{
+	const volatile uint32_t marker = 0xDEADBEEF;
+	dbg_puts_impl_P(PSTR("DAbort_Handler trapped.\n"));
+	dbg_puts_impl_P((__get_MPIDR() & 0x03) ? PSTR("CPUID=1\n") : PSTR("CPUID=0\n"));
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Warray-bounds"
+	PRINTF(PSTR("DFSR=%08lX, DFAR=%08lX, pc=%08lX, sp~%08lx\n"), __get_DFSR(), __get_DFAR(), (& marker) [2], (unsigned long) & marker);
+#pragma GCC diagnostic pop
+	const int WnR = (__get_DFSR() & (1uL << 11)) != 0;
+	const int Status = (__get_DFSR() & (0x0FuL << 0));
+	/*
+		1. 0b000001 alignment fault
+		2. 0b000100 instruction cache maintenance fault
+		3. 0bx01100 1st level translation, synchronous external abort
+		4. 0bx01110 2nd level translation, synchronous external abort
+		5. 0b000101 translation fault, section
+		6. 0b000111 translation fault, page
+		7. 0b000011 access flag fault, section
+		8. 0b000110 access flag fault, page
+		9. 0b001001 domain fault, section
+		10. 0b001011 domain fault, page
+		11. 0b001101 permission fault, section
+		12. 0b001111 permission fault, page
+		13. 0bx01000 synchronous external abort, nontranslation
+		14. 0bx10110 asynchronous external abort
+		15. 0b000010 debug event.
+	*/
+	PRINTF(PSTR(" WnR=%d, Status=%02X\n"), (int) WnR, (unsigned) Status);
+	switch (Status)
+	{
+	case 0x01: PRINTF(PSTR("alignment fault\n")); break;
+	case 0x04: PRINTF(PSTR("instruction cache maintenance fault\n")); break;
+	case 0x0C: PRINTF(PSTR("1st level translation, synchronous external abort\n")); break;
+	case 0x0E: PRINTF(PSTR("2nd level translation, synchronous external abort\n")); break;
+	case 0x05: PRINTF(PSTR("translation fault, section\n")); break;
+	case 0x07: PRINTF(PSTR("translation fault, page\n")); break;
+	case 0x03: PRINTF(PSTR("access flag fault, section\n")); break;
+	case 0x06: PRINTF(PSTR("access flag fault, page\n")); break;
+	case 0x09: PRINTF(PSTR("domain fault, section\n")); break;
+	case 0x0B: PRINTF(PSTR("domain fault, page\n")); break;
+	case 0x0D: PRINTF(PSTR("permission fault, section\n")); break;
+	case 0x0F: PRINTF(PSTR("permission fault, page\n")); break;
+	case 0x08: PRINTF(PSTR("synchronous external abort, nontranslation\n")); break;
+	case 0x16: PRINTF(PSTR("asynchronous external abort\n")); break;
+	case 0x02: PRINTF(PSTR("debug event.\n")); break;
+	default: PRINTF(PSTR("undefined Status=%02X\n"), Status); break;
 	}
 //	unsigned i;
 //	for (i = 0; i < 8; ++ i)
@@ -9567,6 +9636,7 @@ void DAbort_Handler(void)
 void FIQ_Handler(void)
 {
 	dbg_puts_impl_P(PSTR("FIQHandler trapped.\n"));
+	dbg_puts_impl_P((__get_MPIDR() & 0x03) ? PSTR("CPUID=1\n") : PSTR("CPUID=0\n"));
 	for (;;)
 		;
 }
@@ -9574,6 +9644,7 @@ void FIQ_Handler(void)
 void Hyp_Handler(void)
 {
 	dbg_puts_impl_P(PSTR("Hyp_Handler trapped.\n"));
+	dbg_puts_impl_P((__get_MPIDR() & 0x03) ? PSTR("CPUID=1\n") : PSTR("CPUID=0\n"));
 	for (;;)
 		;
 }
@@ -9814,6 +9885,8 @@ uint_fast32_t cpu_getdebugticks(void)
 	{
 		uint32_t result;
 		// Read CCNT Register
+		//	MRC p15, 0, <Rt>, c9, c13, 0 : Read PMCCNTR into Rt
+		//	MCR p15, 0, <Rt>, c9, c13, 0 : Write Rt to PMCCNTR
 		//asm volatile ("MRC p15, 0, %0, c9, c13, 0\t\n": "=r"(value));  
 		__get_CP(15, 0, result, 9, 13, 0);
 		return(result);
@@ -10373,12 +10446,15 @@ void irqlog_print(void)
 static void Userdef_INTC_Dummy_Interrupt(void)
 {
 	const IRQn_ID_t irqn = IRQ_GetActiveIRQ();
-	debug_printf_P(PSTR("Userdef_INTC_Dummy_Interrupt(), irqn=%d\n"), (int) irqn);
+	PRINTF(PSTR("Userdef_INTC_Dummy_Interrupt(), irqn=%d\n"), (int) irqn);
 	for (;;)
 		;
 }
 
-void IRQ_Handler(void)
+#if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
+
+/* Вызывается из crt_r7s721.s со сброшенным флагом прерываний */
+void IRQ_Handler_GICv1(void)
 {
 	//dbg_putchar('/');
 	const IRQn_ID_t irqn = IRQ_GetActiveIRQ();
@@ -10387,7 +10463,7 @@ void IRQ_Handler(void)
 	//dbg_putchar(hex [(irqn >> 8) & 0x0F]);
 	//dbg_putchar(hex [(irqn >> 4) & 0x0F]);
 	//dbg_putchar(hex [(irqn >> 0) & 0x0F]);
-	ASSERT(irqn != 0x3FC && irqn != 0x3FD);
+	////ASSERT(irqn != 0x3FC && irqn != 0x3FD);
 	IRQHandler_t const handler = IRQ_GetHandler(irqn);
 
 #if 0
@@ -10396,7 +10472,7 @@ void IRQ_Handler(void)
 	//case PL310ERR_IRQn:
 	//	break;
 	default:
-		PRINTF(PSTR("IRQ_Handler: irq=%d, handler=%p\n"), (int) irqn, (void *) handler);
+		PRINTF(PSTR("IRQ_Handler_GICv1: irq=%d, handler=%p\n"), (int) irqn, (void *) handler);
 		break;
 	}
 #endif
@@ -10419,32 +10495,92 @@ void IRQ_Handler(void)
 	IRQ_EndOfInterrupt(irqn);
 }
 
-#if 0
-/* Вызывается из crt_r7s721.s со сброшенным флагом прерываний */
-void IRQ_HandlerXXXXX(void)
-{
-	/* const uint32_t icchpir = */ (void) GICC_HPPIR;	/* GICC_HPPIR */
-	const uint32_t icciar = GICC_IAR;				/* GICC_IAR */
-	const IRQn_ID_t int_id = icciar & INTC_ICCIAR_ACKINTID;
+#define INT_ID_MASK		0x3ffuL
+/* Interrupt IDs reported by the HPPIR and IAR registers */
+#define PENDING_G1_INTID	1022uL
+/* Constant to indicate a spurious interrupt in all GIC versions */
+#define GIC_SPURIOUS_INTERRUPT		1023uL
+/*
+ * Constant passed to the interrupt handler in the 'id' field when the
+ * framework does not read the gic registers to determine the interrupt id.
+ */
+#define INTR_ID_UNAVAILABLE		0xFFFFFFFFuL
 
-	// See R01UH0437EJ0200 Rev.2.00 7.8.3 Reading Interrupt ID Values from Interrupt Acknowledge Register (ICCIAR)
+/*******************************************************************************
+ * This function returns the id of the highest priority pending interrupt at
+ * the GIC cpu interface. GIC_SPURIOUS_INTERRUPT is returned when there is no
+ * interrupt pending.
+ ******************************************************************************/
+unsigned int gicv2_get_pending_interrupt_id(void)
+{
+	unsigned int id;
+
+	id = GIC_GetHighPendingIRQ() & INT_ID_MASK;	// HIPPR
+
+	/*
+	 * Find out which non-secure interrupt it is under the assumption that
+	 * the GICC_CTLR.AckCtl bit is 0.
+	 */
+	if (id == PENDING_G1_INTID)
+		id = GICInterface->AHPPIR & INT_ID_MASK;
+
+	return id;
+}
+
+static RAMDTCM SPINLOCK_t giclock = SPINLOCK_INIT;
+
+/* Вызывается из crt_stm32mp1.s со сброшенным флагом прерываний */
+// Sww ARM IHI 0048B.b document
+void IRQ_Handler_GICv2(void)
+{
+	// per-cpu:
+	// GICC_AHPPIR
+	// GICC_HPPIR
+	// GICC_IAR
+	// GICC_EOIR
+	// GICC_BPR
+	// GICC_PMR
+	//
+	// global:
+	// GICD_IPRIORITYR
+
+	//dbg_putchar('1');
+	//const uint_fast32_t gicc_hppir = gicv2_get_pending_interrupt_id(); //GICInterface->HPPIR; //GIC_GetHighPendingIRQ();	/* GICC_HPPIR */
+	const uint_fast32_t gicc_iar = GICInterface->IAR; // CPUID, Interrupt ID
+	const IRQn_ID_t int_id = gicc_iar & INT_ID_MASK;
+
 	// IHI0048B_b_gic_architecture_specification.pdf
 	// See ARM IHI 0048B.b 3.4.2 Special interrupt numbers when a GIC supports interrupt grouping
 
+	if (int_id == 1022)
+	{
+	}
+
 	if (int_id >= 1020)
 	{
-		GICD_IPRIORITYRn(0) = GICD_IPRIORITYRn(0);
+		//dbg_putchar('2');
+//		SPIN_LOCK(& giclock);
+//		GIC_SetPriority(0, GIC_GetPriority(0));	// GICD_IPRIORITYRn(0) = GICD_IPRIORITYRn(0);
+//		SPIN_UNLOCK(& giclock);
+
 	}
-	else if (int_id != 0 || (INTC.ICDABR0 & 0x0001) != 0)
+	else if (int_id != 0 /* || GIC_GetIRQStatus(0) != 0 */)
 	{
 		const IRQHandler_t f = IRQ_GetHandler(int_id);
+
 	#if WITHNESTEDINTERRUPTS
 
 		if (f != (IRQHandler_t) 0)
 		{
+//			static const char hex [16] = "0123456789ABCDEF";
+//			if ((int_id >> 8) & 0x0F)
+//				dbg_putchar(hex [(int_id >> 8) & 0x0F]);
+//			dbg_putchar(hex [(int_id >> 4) & 0x0F]);
+//			dbg_putchar(hex [(int_id >> 0) & 0x0F]);
 			__enable_irq();						/* modify I bit in CPSR */
 			(* f)();	    /* Call interrupt handler */
 			__disable_irq();					/* modify I bit in CPSR */
+			//dbg_putchar('_');
 		}
 
 	#else /* WITHNESTEDINTERRUPTS */
@@ -10455,14 +10591,21 @@ void IRQ_HandlerXXXXX(void)
 		}
 
 	#endif /* WITHNESTEDINTERRUPTS */
-		VERIFY(0 == IRQ_EndOfInterrupt(int_id));	/* GICC_EOIR, INTC.ICCEOIR*/
+
+		//dbg_putchar('5');
 	}
 	else
 	{
-		GICD_IPRIORITYRn(0) = GICD_IPRIORITYRn(0);
+//		SPIN_LOCK(& giclock);
+//		GIC_SetPriority(0, GIC_GetPriority(0));	// GICD_IPRIORITYRn(0) = GICD_IPRIORITYRn(0);
+//		SPIN_UNLOCK(& giclock);
 	}
+	//dbg_putchar(' ');
+
+	//GIC_EndInterrupt(gicc_iar);	/* CPUID, EOINTID */
+	GICInterface->EOIR = gicc_iar;
 }
-#endif
+
 
 #if 0
 
@@ -10534,12 +10677,14 @@ static void irq_modes_print(void)
     for (irqn = 0; irqn < IRQ_GIC_LINE_COUNT; ++ irqn)
     {
     	const uint32_t mode = IRQ_GetMode(irqn);
-    	debug_printf_P(PSTR("/* %3d %08lX */" "\t" "(%s | %s | %s | %s | %s)," "\n"), irqn, mode, mode_type(mode), mode_domain(mode), mode_cpu(mode), mode_trig(mode), mode_model(mode));
+    	PRINTF(PSTR("/* %3d %08lX */" "\t" "(%s | %s | %s | %s | %s)," "\n"), irqn, mode, mode_type(mode), mode_domain(mode), mode_cpu(mode), mode_trig(mode), mode_model(mode));
     }
 
 }
 
 #endif
+
+#endif /* defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U) */
 
 #if CPUSTYLE_R7S721
 
@@ -11459,59 +11604,77 @@ M_SIZE_IO_2     EQU     2550            ; [Area11] I/O area 2
 //; setting for Outer and inner not cache normal memory
 //#define	TTB_PARA_NORMAL_NOT_CACHE   0b_0000_0001_1101_1110_0010
 // not used
-#define	TTB_PARA_NORMAL_NOT_CACHE TTB_PARA(TEXval_NOCACHE, Bval_NOCACHE, Cval_NOCACHE, DOMAINval, APRWval, 0)
+#define	TTB_PARA_NORMAL_NOT_CACHE(ro, xn) TTB_PARA(TEXval_NOCACHE, Bval_NOCACHE, Cval_NOCACHE, DOMAINval, (ro) ? APROval : APRWval, (xn) != 0)
 
 //; setting for Outer and inner write back, write allocate normal memory (Cacheable)
 //#define	TTB_PARA_NORMAL_CACHE       0b_0000_0001_1101_1110_1110
-#define	TTB_PARA_NORMAL_CACHE(ro) TTB_PARA(TEXval_WBCACHE, Bval_WBCACHE, Cval_WBCACHE, DOMAINval, (ro) ? APROval : APRWval, 0)
+#define	TTB_PARA_NORMAL_CACHE(ro, xn) TTB_PARA(TEXval_WBCACHE, Bval_WBCACHE, Cval_WBCACHE, DOMAINval, (ro) ? APROval : APRWval, (xn) != 0)
 
-#define	TTB_PARA_NORMAL_DEVICE TTB_PARA(TEXval_DEVICE, Bval_DEVICE, Cval_DEVICE, DOMAINval, APRWval, 1)
+#define	TTB_PARA_DEVICE TTB_PARA(TEXval_DEVICE, Bval_DEVICE, Cval_DEVICE, DOMAINval, APRWval, 1 /* XN=1 */)
 
 #define	TTB_PARA_NO_ACCESS 0
 
+/*
+ * https://community.st.com/s/question/0D73W000000UagD/what-a-type-of-mmu-memory-regions-recommended-for-regions-with-peripheralsstronglyordered-or-device?s1oid=00Db0000000YtG6&s1nid=0DB0X000000DYbd&emkind=chatterCommentNotification&s1uid=0050X000007vtUt&emtm=1599464922440&fromEmail=1&s1ext=0&t=1599470826880
+ *
+ *
+ * PatrickF (ST Employee)
+
+2 hours ago
+Hello,
+
+"Device" should be used for all peripherals to get best performance.
+There is no rationale to use "Strongly-Ordered" with Cortex-A7
+(explanation should be found by deep analysis/understanding of various ARM documents).
+ *
+ *
+*/
 
 static uint32_t
 FLASHMEMINITFUNC
-ttb_accessbits(uintptr_t a, int ro)
+ttb_accessbits(uintptr_t a, int ro, int xn)
 {
 	const uint32_t addrbase = a & 0xFFF00000uL;
 
 #if CPUSTYLE_R7S721020
 
-//	if (a == 0x00000000uL)
-//		return addrbase | TTB_PARA_NO_ACCESS;		// NULL pointers access trap
+	if (a == 0x00000000uL)
+		return addrbase | TTB_PARA_NO_ACCESS;		// NULL pointers access trap
 
 	if (a >= 0x18000000uL && a < 0x20000000uL)			//
-		return addrbase | TTB_PARA_NORMAL_CACHE(ro);
+		return addrbase | TTB_PARA_NORMAL_CACHE(ro, 0);
 	if (a >= 0x00000000uL && a < 0x00A00000uL)			// up to 10 MB
-		return addrbase | TTB_PARA_NORMAL_CACHE(ro);
+		return addrbase | TTB_PARA_NORMAL_CACHE(ro, 0);
 	if (a >= 0x20000000uL && a < 0x20A00000uL)			// up to 10 MB
-		return addrbase | TTB_PARA_NORMAL_CACHE(ro);
+		return addrbase | TTB_PARA_NORMAL_CACHE(ro, 0);
 
-	return addrbase | TTB_PARA_NORMAL_DEVICE; //TTB_PARA_STRGLY;
+	return addrbase | TTB_PARA_DEVICE;
 
 #elif CPUSTYLE_STM32MP1
 
-	if (a >= 0x00000000uL && a < 0x10000000uL)			// BOOT
+	if (a < 0x10000000uL)			// BOOT
 		return addrbase | TTB_PARA_NO_ACCESS;			// NULL pointers access trap
 
 	if (a >= 0x20000000uL && a < 0x30000000uL)			// SYSRAM
-		return addrbase | TTB_PARA_NORMAL_CACHE(ro);
+		return addrbase | TTB_PARA_NORMAL_CACHE(ro, 0);
 
 	if (a >= 0x40000000uL && a < 0x60000000uL)			//  peripherials 1, peripherials 2
-		return addrbase | TTB_PARA_NORMAL_DEVICE;
-	if (a >= 0xA0000000uL && a < 0xC0000000uL)			//  GIC
-		return addrbase | TTB_PARA_NORMAL_DEVICE;
-	if (a >= 0xE0000000uL)								//  DEBUG
-		return addrbase | TTB_PARA_NORMAL_DEVICE;
+		return addrbase | TTB_PARA_DEVICE;
+
+	if (a >= 0x60000000uL && a < 0x70000000uL)			//  FMC NOR
+		return addrbase | TTB_PARA_NORMAL_CACHE(ro, 0);
 
 	if (a >= 0x70000000uL && a < 0xA0000000uL)			//  QUADSPI, FMC NAND, ...
-		return addrbase | TTB_PARA_NORMAL_CACHE(ro);
-	if (a >= 0x60000000uL && a < 0x70000000uL)			//  FMC NOR
-		return addrbase | TTB_PARA_NORMAL_CACHE(ro);
+		return addrbase | TTB_PARA_NORMAL_CACHE(ro, 0);
+
+	if (a >= 0xA0000000uL && a < 0xC0000000uL)			//  GIC
+		return addrbase | TTB_PARA_DEVICE;
 
 	if (a >= 0xC0000000uL && a < 0xE0000000uL)			// DDR memory
-		return addrbase | TTB_PARA_NORMAL_CACHE(ro);
+		return addrbase | TTB_PARA_NORMAL_CACHE(ro, 0);
+
+	if (a >= 0xE0000000uL)								//  DEBUG
+		return addrbase | TTB_PARA_DEVICE;
 
 	return addrbase | TTB_PARA_NO_ACCESS;
 
@@ -11579,7 +11742,7 @@ sysinit_ttbr_initialize(void)
 }
 
 static void FLASHMEMINITFUNC
-ttb_initialize(uint32_t (* accessbits)(uintptr_t a, int ro), uintptr_t textstart, uint_fast32_t textsize)
+ttb_initialize(uint32_t (* accessbits)(uintptr_t a, int ro, int xn), uintptr_t textstart, uint_fast32_t textsize)
 {
 	extern volatile uint32_t __TTB_BASE;		// получено из скрипта линкера
 	volatile uint32_t * const tlbbase = & __TTB_BASE;
@@ -11588,16 +11751,21 @@ ttb_initialize(uint32_t (* accessbits)(uintptr_t a, int ro), uintptr_t textstart
 
 	for (i = 0; i < 4096; ++ i)
 	{
-		const uintptr_t address = (uint32_t) i << 20;
-		tlbbase [i] =  accessbits(address, 0);
+		const uintptr_t address = (uintptr_t) i << 20;
+		tlbbase [i] =  accessbits(address, 0, 0);
 	}
 	/* Установить R/O атрибуты для указанной области */
 	while (textsize >= pagesize)
 	{
-		tlbbase [textstart / pagesize] =  accessbits(textstart, 0 * 1);
+		tlbbase [textstart / pagesize] =  accessbits(textstart, 0 * 1, 0);
 		textsize -= pagesize;
 		textstart += pagesize;
 	}
+
+#if CPUSTYLE_STM32MP1 && ! WITHISBOOTLOADER
+	/* R/O, XN for pages table. - 16 MB size. */
+	tlbbase [(uintptr_t) tlbbase / pagesize] = accessbits((uintptr_t) tlbbase, 1, 1);
+#endif /* CPUSTYLE_STM32MP1 && ! WITHISBOOTLOADER */
 }
 
 // TODO: use MMU_TTSection. See also MMU_TTPage4k MMU_TTPage64k and MMU_CreateTranslationTable
@@ -12027,7 +12195,7 @@ sysinit_mmu_initialize(void)
 		const int passoc0 = countbits2(assoc0);
 		const uint32_t maxsets0 = (ccsidr0 >> 13) & 0x7FFF;
 		const uint32_t linesize0 = 4uL << (((ccsidr0 >> 0) & 0x07) + 2);
-		debug_printf_P(PSTR("cpu_initialize1: level=%d, passoc=%d, assoc=%u, maxsets=%u, data cache row size = %u\n"), leveli, passoc0, assoc0, maxsets0, linesize0);
+		PRINTF(PSTR("cpu_initialize1: level=%d, passoc=%d, assoc=%u, maxsets=%u, data cache row size = %u\n"), leveli, passoc0, assoc0, maxsets0, linesize0);
 
 		__set_CSSELR(leveli * 2 + 1);	// instruction cache select
 		const uint32_t ccsidr1 = __get_CCSIDR();
@@ -12035,7 +12203,7 @@ sysinit_mmu_initialize(void)
 		const int passoc1 = countbits2(assoc1);
 		const uint32_t maxsets1 = (ccsidr1 >> 13) & 0x7FFF;
 		const uint32_t linesize1 = 4uL << (((ccsidr1 >> 0) & 0x07) + 2);
-		debug_printf_P(PSTR("cpu_initialize1: level=%d, passoc=%d, assoc=%u, maxsets=%u, instr cache row size = %u\n"), leveli, passoc1, assoc1, maxsets1, linesize1);
+		PRINTF(PSTR("cpu_initialize1: level=%d, passoc=%d, assoc=%u, maxsets=%u, instr cache row size = %u\n"), leveli, passoc1, assoc1, maxsets1, linesize1);
 	}
 #endif /* WITHDEBUG */
 
@@ -12082,12 +12250,14 @@ SystemInit(void)
 
 static void printcpustate(void)
 {
-	const uint_fast32_t cpsr = __get_CPSR();
-	const uint_fast8_t cpuid = __get_MPIDR() & 0x03;
-	PRINTF(PSTR("CPU: VBAR=%p, TTBR0=%p, cpsr=%08lX, cpuid=%02X, sp=%p\n"), __get_VBAR(), __get_TTBR0(), cpsr, cpuid, & cpuid);
+	volatile uint_fast32_t vvv;
+	dbg_putchar('$');
+	PRINTF(PSTR("CPU%u: VBAR=%p, TTBR0=%p, cpsr=%08lX, sp=%p\n"), (unsigned) (__get_MPIDR() & 0x03),  __get_VBAR(), __get_TTBR0(), __get_CPSR(), & vvv);
 }
 
 static void arm_gic_initialize(void);
+
+static RAMDTCM SPINLOCK_t cpu1init;
 
 void Reset_CPUn_Handler(void)
 {
@@ -12103,6 +12273,8 @@ void Reset_CPUn_Handler(void)
 
 	printcpustate();
 	__enable_irq();
+	SPIN_UNLOCK(& cpu1init);
+
 	// Idle loop
 	for (;;)
 	{
@@ -12167,7 +12339,7 @@ arm_cpu_CMx_initialize_NVIC(void)
 
 #endif /* (__CORTEX_M != 0) */
 
-#if (__CORTEX_A != 0)
+#if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 /* 
 	ARM IHI 0048B.b (IHI0048B_b_gic_architecture_specification.pdf).
 	4.3.11 Interrupt Priority Registers, GICD_IPRIORITYRn says:
@@ -12207,7 +12379,7 @@ arm_gic_initialize(void)
 #endif /* WITHNESTEDINTERRUPTS */
 }
 
-#endif /* (__CORTEX_A != 0) */
+#endif /* defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U) */
 
 #if CPUSTYLE_ATSAM3S
 
@@ -12443,7 +12615,7 @@ cpu_tms320f2833x_flash_waitstates(uint_fast8_t flashws, uint_fast8_t otpws)
 }
 #endif /* CPUSTYPE_TMS320F2833X */
 
-#if WITHSMPSYSTEM
+#if CPUSTYLE_STM32MP1
 
 
 /*
@@ -12451,7 +12623,7 @@ cpu_tms320f2833x_flash_waitstates(uint_fast8_t flashws, uint_fast8_t otpws)
  * Constant to be stored in bakcup register
  * BOOT_API_MAGIC_NUMBER_TAMP_BCK_REG_IDX
  */
-#define BOOT_API_A7_CORE0_MAGIC_NUMBER				0xCA7FACE0U
+//#define BOOT_API_A7_CORE0_MAGIC_NUMBER				0xCA7FACE0U
 #define BOOT_API_A7_CORE1_MAGIC_NUMBER				0xCA7FACE1U
 
 /*
@@ -12459,36 +12631,36 @@ cpu_tms320f2833x_flash_waitstates(uint_fast8_t flashws, uint_fast8_t otpws)
  * This register is used to write a Magic Number in order to restart
  * Cortex A7 Core 1 and make it execute @ branch address from TAMP_BCK5R
  */
-#define BOOT_API_CORE1_MAGIC_NUMBER_TAMP_BCK_REG_IDX		4U
+//#define BOOT_API_CORE1_MAGIC_NUMBER_TAMP_BCK_REG_IDX		4U
 
 /*
  * TAMP_BCK5R register index
  * This register is used to contain the branch address of
  * Cortex A7 Core 1 when restarted by a TAMP_BCK4R magic number writing
  */
-#define BOOT_API_CORE1_BRANCH_ADDRESS_TAMP_BCK_REG_IDX		5U
+//#define BOOT_API_CORE1_BRANCH_ADDRESS_TAMP_BCK_REG_IDX		5U
 
 /*******************************************************************************
  * STM32MP1 handler called when a power domain is about to be turned on. The
  * mpidr determines the CPU to be turned on.
  * call by core 0 to activate core 1
  ******************************************************************************/
-static void stm32_pwr_domain_on(void)
+static void stm32_cpu1_start(void)
 {
 	PWR->CR1 |= PWR_CR1_DBP;	// 1: Write access to RTC and backup domain registers enabled.
 	(void) PWR->CR1;
 	while ((PWR->CR1 & PWR_CR1_DBP) == 0)
 		;
 
-//	RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_RTCAPBEN;
-//	(void) RCC->MP_APB5ENSETR;
-//	RCC->MP_APB5LPENSETR = RCC_MC_APB5LPENSETR_RTCAPBLPEN;  // Включить тактирование
-//	(void) RCC->MP_APB5LPENSETR;
+	RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_RTCAPBEN;
+	(void) RCC->MP_APB5ENSETR;
+	RCC->MP_APB5LPENSETR = RCC_MC_APB5LPENSETR_RTCAPBLPEN;  // Включить тактирование
+	(void) RCC->MP_APB5LPENSETR;
 
-//	RCC->MP_AHB5ENSETR = RCC_MC_AHB5ENSETR_BKPSRAMEN;
-//	(void) RCC->MP_AHB5ENSETR;
-//	RCC->MP_AHB5LPENSETR = RCC_MC_AHB5LPENSETR_BKPSRAMLPEN;
-//	(void) RCC->MP_AHB5LPENSETR;
+	RCC->MP_AHB5ENSETR = RCC_MC_AHB5ENSETR_BKPSRAMEN;
+	(void) RCC->MP_AHB5ENSETR;
+	RCC->MP_AHB5LPENSETR = RCC_MC_AHB5LPENSETR_BKPSRAMLPEN;
+	(void) RCC->MP_AHB5LPENSETR;
 
 	/* Write entrypoint in backup RAM register */
 	TAMP->BKP5R = (uintptr_t) Reset_CPU1_Handler;	// Invoke at SVC context
@@ -12498,41 +12670,45 @@ static void stm32_pwr_domain_on(void)
 	TAMP->BKP4R = BOOT_API_A7_CORE1_MAGIC_NUMBER;
 	(void) TAMP->BKP4R;
 
-	PWR->CR1 &= ~ PWR_CR1_DBP;	// 0: Write access to RTC and backup domain registers disabled.
-	(void) PWR->CR1;
-	while ((PWR->CR1 & PWR_CR1_DBP) != 0)
-		;
+//	PWR->CR1 &= ~ PWR_CR1_DBP;	// 0: Write access to RTC and backup domain registers disabled.
+//	(void) PWR->CR1;
+//	while ((PWR->CR1 & PWR_CR1_DBP) != 0)
+//		;
+
+	arm_hardware_flush_all();	// startup code should be copyed in to sysram for example.
 
 	/* Generate an IT to core 1 */
 	GIC_SendSGI(SGI8_IRQn, 0x01 << 1, 0x00);	// CPU1, filer=0
 }
-#endif /* WITHSMPSYSTEM */
+#endif /* CPUSTYLE_STM32MP1 */
 
 // Вызывается из main
 void cpu_initialize(void)
 {
-//	PRINTF("TTB_PARA_NORMAL_DEVICE=%08lX (xxx)\n", (unsigned long) TTB_PARA_NORMAL_DEVICE);
+//	PRINTF("TTB_PARA_DEVICE=%08lX (xxx)\n", (unsigned long) TTB_PARA_DEVICE);
 //	PRINTF("TTB_PARA_STRGLY=%08lX (0x00DE2)\n", (unsigned long) TTB_PARA_STRGLY);
 //	PRINTF("TTB_PARA_NORMAL_CACHE=%08lX (0x01DEEuL)\n", (unsigned long) TTB_PARA_NORMAL_CACHE);
 //	PRINTF("TTB_PARA_NORMAL_NOT_CACHE=%08lX (0x01DE2uL)\n", (unsigned long) TTB_PARA_NORMAL_NOT_CACHE);
 
 //	extern unsigned long __etext, __bss_start__, __bss_end__, __data_end__, __data_start__, __stack, __Vectors;
 //
-//	debug_printf_P(PSTR("cpu_initialize1: CP15=%08lX, __data_start__=%p\n"), __get_SCTLR(), & __data_start__);
-//	debug_printf_P(PSTR("__etext=%p, __bss_start__=%p, __bss_end__=%p, __data_start__=%p, __data_end__=%p\n"), & __etext, & __bss_start__, & __bss_end__, & __data_start__, & __data_end__);
-//	debug_printf_P(PSTR("__stack=%p, SystemInit=%p, __Vectors=%p\n"), & __stack, SystemInit, & __Vectors);
+//	PRINTF(PSTR("cpu_initialize1: CP15=%08lX, __data_start__=%p\n"), __get_SCTLR(), & __data_start__);
+//	PRINTF(PSTR("__etext=%p, __bss_start__=%p, __bss_end__=%p, __data_start__=%p, __data_end__=%p\n"), & __etext, & __bss_start__, & __bss_end__, & __data_start__, & __data_end__);
+//	PRINTF(PSTR("__stack=%p, SystemInit=%p, __Vectors=%p\n"), & __stack, SystemInit, & __Vectors);
 
 //	ca9_ca7_cache_diag();	// print
 
 #if WITHSMPSYSTEM
 
-	//	SMP tests
-	stm32_pwr_domain_on();
-	local_delay_ms(400);
 	printcpustate();
+	SPIN_LOCK(& cpu1init);
+	stm32_cpu1_start();
+	SPIN_LOCK(& cpu1init);
+	SPIN_UNLOCK(& cpu1init);
+
 #endif /* WITHSMPSYSTEM */
 
-#if (__GIC_PRESENT == 1)
+#if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 	// GIC version diagnostics
 	//PRINTF("arm_gic_initialize: ICPIDR0=%08lX\n", ICPIDR0);	// ICPIDR0
 	//PRINTF("arm_gic_initialize: ICPIDR1=%08lX\n", ICPIDR1);	// ICPIDR1
@@ -12552,7 +12728,7 @@ void cpu_initialize(void)
 //	}
 //
 //	PRINTF("GICInterface->IIDR=%08lX, GICDistributor->IIDR=%08lX\n", (unsigned long) GICInterface->IIDR, (unsigned long) GIC_DistributorImplementer());
-#endif
+#endif /* defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U) */
 
 	//PRINTF("cpu_initialize\n");
 #if CPUSTYLE_STM32F1XX
@@ -12727,7 +12903,7 @@ void cpu_initialize(void)
 	vectors_relocate();
 	arm_cpu_CMx_initialize_NVIC();
 
-#elif (__GIC_PRESENT != 0)
+#elif defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 
 	arm_gic_initialize();
 
@@ -12910,8 +13086,15 @@ int __attribute__((used)) (_write)(int fd, char * ptr, int len)
 	return (i);
 }
 
+#if CPUSTYLE_STM32MP1
 
-static RAMHEAP uint8_t heapplace [8 * 1024uL];
+	static RAMHEAP uint8_t heapplace [64 * 1024uL * 1024uL];
+
+#else /* CPUSTYLE_STM32MP1 */
+
+	static RAMHEAP uint8_t heapplace [8 * 1024uL];
+
+#endif /* CPUSTYLE_STM32MP1 */
 
 extern int __HeapBase;
 extern int __HeapLimit;
@@ -12926,7 +13109,7 @@ caddr_t __attribute__((used)) (_sbrk)(int incr)
 		heap = (char *) &__HeapBase;
 	}
 
-	//debug_printf_P(PSTR("_sbrk: incr=%X, new heap=%X, & __HeapBase=%p, & __HeapLimit=%p\n"), incr, heap + incr, & __HeapBase, & __HeapLimit);
+	//PRINTF(PSTR("_sbrk: incr=%X, new heap=%X, & __HeapBase=%p, & __HeapLimit=%p\n"), incr, heap + incr, & __HeapBase, & __HeapLimit);
 
 	prev_heap = heap;
 
@@ -12978,7 +13161,7 @@ int __attribute__((used)) (_getpid)(int id)
 /* Initialize segments */
 void Default_Handler(void)
 {
-	debug_printf_P(PSTR("Default_Handler trapped, ICSR=%08lX (IRQn=%u).\n"), SCB->ICSR, (SCB->ICSR & 0xFF) - 16);
+	PRINTF(PSTR("Default_Handler trapped, ICSR=%08lX (IRQn=%u).\n"), SCB->ICSR, (SCB->ICSR & 0xFF) - 16);
 	for (;;)
 		;
 }
@@ -13014,21 +13197,21 @@ volatile uint32_t psr;// Регистр статуса программы.
     psr = pulFaultStackAddress [7];
 
 
-	debug_printf_P(PSTR("HardFault_Handler trapped.\n"));
- 	debug_printf_P(PSTR(" CPUID=%08lx\n"), SCB->CPUID);
-	debug_printf_P(PSTR(" HFSR=%08lx\n"), SCB->HFSR);
-	debug_printf_P(PSTR(" CFSR=%08lx\n"), SCB->CFSR);
-	debug_printf_P(PSTR(" BFAR=%08lx\n"), SCB->BFAR);
+	PRINTF(PSTR("HardFault_Handler trapped.\n"));
+ 	PRINTF(PSTR(" CPUID=%08lx\n"), SCB->CPUID);
+	PRINTF(PSTR(" HFSR=%08lx\n"), SCB->HFSR);
+	PRINTF(PSTR(" CFSR=%08lx\n"), SCB->CFSR);
+	PRINTF(PSTR(" BFAR=%08lx\n"), SCB->BFAR);
 
-	debug_printf_P(PSTR(" R0=%08lx\n"), r0);
-	debug_printf_P(PSTR(" R1=%08lx\n"), r1);
-	debug_printf_P(PSTR(" R2=%08lx\n"), r2);
-	debug_printf_P(PSTR(" R3=%08lx\n"), r3);
+	PRINTF(PSTR(" R0=%08lx\n"), r0);
+	PRINTF(PSTR(" R1=%08lx\n"), r1);
+	PRINTF(PSTR(" R2=%08lx\n"), r2);
+	PRINTF(PSTR(" R3=%08lx\n"), r3);
 
-	debug_printf_P(PSTR(" R12=%08lx\n"), r12);
-	debug_printf_P(PSTR(" LR=%08lx\n"), lr);
-	debug_printf_P(PSTR(" PC=%08lx\n"), pc);
-	debug_printf_P(PSTR(" PSR=%08lx\n"), psr);
+	PRINTF(PSTR(" R12=%08lx\n"), r12);
+	PRINTF(PSTR(" LR=%08lx\n"), lr);
+	PRINTF(PSTR(" PC=%08lx\n"), pc);
+	PRINTF(PSTR(" PSR=%08lx\n"), psr);
 
     // Когда мы добрались до этой строки, то в переменных содержатся значения регистров.
     for( ;; )
@@ -13069,8 +13252,8 @@ HardFault_Handler(void)
 
 #elif CPUSTYLE_ARM_CM0
 
-	debug_printf_P(PSTR("HardFault_Handler trapped.\n"));
-	debug_printf_P(PSTR(" CPUID=%08lx\n"), SCB->CPUID);
+	PRINTF(PSTR("HardFault_Handler trapped.\n"));
+	PRINTF(PSTR(" CPUID=%08lx\n"), SCB->CPUID);
 
 #else
 
@@ -13078,8 +13261,8 @@ HardFault_Handler(void)
 	dbg_putchar('K');
 
 #endif
-	//debug_printf_P(PSTR("HardFault_Handler trapped. HFSR=%08lx\n"), SCB->HFSR);
-	//debug_printf_P(PSTR("HardFault_Handler trapped"));
+	//PRINTF(PSTR("HardFault_Handler trapped. HFSR=%08lx\n"), SCB->HFSR);
+	//PRINTF(PSTR("HardFault_Handler trapped"));
 	//return;
 	//if ((SCB->HFSR & SCB_HFSR_FORCED_Msk) != 0)
 	//{
@@ -13095,7 +13278,7 @@ HardFault_Handler(void)
 void
 NMI_Handler(void)
 {
-	debug_printf_P(PSTR("NMI_Handler trapped\n"));
+	PRINTF(PSTR("NMI_Handler trapped\n"));
 	for (;;)
 		; // WDT->WDT_CR = WDT_CR_WDRSTT | WDT_CR_KEY(0xA5);
 }
@@ -13103,7 +13286,7 @@ NMI_Handler(void)
 void
 MemManage_Handler(void)
 {
-	debug_printf_P(PSTR("MemManage_Handler trapped\n"));
+	PRINTF(PSTR("MemManage_Handler trapped\n"));
 	for (;;)
 		;
 }
@@ -13111,7 +13294,7 @@ MemManage_Handler(void)
 void
 BusFault_Handler(void)
 {
-	debug_printf_P(PSTR("BusFault_Handler trapped\n"));
+	PRINTF(PSTR("BusFault_Handler trapped\n"));
 	for (;;)
 		;
 }
@@ -13119,7 +13302,7 @@ BusFault_Handler(void)
 void
 UsageFault_Handler(void)
 {
-	debug_printf_P(PSTR("UsageFault_Handler trapped\n"));
+	PRINTF(PSTR("UsageFault_Handler trapped\n"));
 	for (;;)
 		;
 }
@@ -13127,7 +13310,7 @@ UsageFault_Handler(void)
 void
 SVC_Handler(void)
 {
-	debug_printf_P(PSTR("SVC_Handler trapped\n"));
+	PRINTF(PSTR("SVC_Handler trapped\n"));
 	for (;;)
 		;
 }
@@ -13135,7 +13318,7 @@ SVC_Handler(void)
 void
 DebugMon_Handler(void)
 {
-	debug_printf_P(PSTR("DebugMon_Handler trapped\n"));
+	PRINTF(PSTR("DebugMon_Handler trapped\n"));
 	for (;;)
 		;
 }
@@ -13143,7 +13326,7 @@ DebugMon_Handler(void)
 void
 PendSV_Handler(void)
 {
-	debug_printf_P(PSTR("PendSV_Handler trapped\n"));
+	PRINTF(PSTR("PendSV_Handler trapped\n"));
 	for (;;)
 		;
 }
@@ -13198,7 +13381,7 @@ static void vectors_relocate(void)
 {
 	unsigned i;
 
-	//debug_printf_P(PSTR("SCB->VTOR=%08lX\n"), SCB->VTOR);
+	//PRINTF(PSTR("SCB->VTOR=%08lX\n"), SCB->VTOR);
 	memcpy((void *) ramVectors, __Vectors, NVIC_USER_IRQ_OFFSET * 4);
 	for (i = NVIC_USER_IRQ_OFFSET; i < (sizeof ramVectors / sizeof ramVectors [0]); ++ i)
 	{
@@ -13207,7 +13390,7 @@ static void vectors_relocate(void)
 	SCB->VTOR = (uint32_t) & ramVectors;
 
 	// Отладочная печать тут еще недопустима.
-	//debug_printf_P(PSTR("SCB->VTOR=%08lX\n"), SCB->VTOR);
+	//PRINTF(PSTR("SCB->VTOR=%08lX\n"), SCB->VTOR);
 	//ASSERT(memcmp((void *) ramVectors, __Vectors, NVIC_USER_IRQ_OFFSET * 4) == 0);
 	//ASSERT(SCB->VTOR == (uint32_t) & ramVectors);
 }
@@ -13217,20 +13400,36 @@ static void vectors_relocate(void)
 #if CPUSTYLE_ARM && WITHSMPSYSTEM
 
 // http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dai0321a/BIHEJCHB.html
-void spin_lock(volatile spinlock_t *p)
+void spin_lock(volatile spinlock_t * p, const char * file, int line)
 {
+	unsigned v = 0xFFFFFFF;
 	// Note: __LDREXW and __STREXW are CMSIS functions
 	int status = 0;
-	do {
+	do
+	{
 		while (__LDREXW(& p->lock) != 0)// Wait until
-			;
+		{
+#if WITHDEBUG
+			//PRINTF("Wait %s(%d) ", file, line);
+			//PRINTF("%d(%d) ", (int) (__get_MPIDR() & 0x03), line);
+			if (-- v == 0)
+			{
+				PRINTF("Locked by %s(%d), wait at %s(%d)\n", p->file, p->line, file, line);
+				for (;;)
+					;
+			}
+#endif /* WITHDEBUG */
+		}
 		// Lock_Variable is free
 		status = __STREXW(1, & p->lock); // Try to set
 	// Lock_Variable
 	} while (status != 0); //retry until lock successfully
 	__DMB();		// Do not start any other memory access
 	// until memory barrier is completed
-
+#if WITHDEBUG
+	p->file = file;
+	p->line = line;
+#endif /* WITHDEBUG */
 }
 
 void spin_unlock(volatile spinlock_t *p)
@@ -13265,7 +13464,7 @@ static void lock_impl(volatile LOCK_T * p, int line, const char * file, const ch
 	while (__STREXB(1, & p->lock));
 	if (r != 0)
 	{
-		debug_printf_P(PSTR("LOCK @%p %s already locked at %d in %s by %d in %s\n"), p, variable, line, file, p->line, p->file);
+		PRINTF(PSTR("LOCK @%p %s already locked at %d in %s by %d in %s\n"), p, variable, line, file, p->line, p->file);
 		for (;;)
 			;
 	}
@@ -13286,7 +13485,7 @@ static void unlock_impl(volatile LOCK_T * p, int line, const char * file, const 
 	while (__STREXB(0, & p->lock));
 	if (r == 0)
 	{
-		debug_printf_P(PSTR("LOCK @%p %s already unlocked at %d in %s by %d in %s\n"), p, variable, line, file, p->line, p->file);
+		PRINTF(PSTR("LOCK @%p %s already unlocked at %d in %s by %d in %s\n"), p, variable, line, file, p->line, p->file);
 		for (;;)
 			;
 	}
@@ -13329,6 +13528,7 @@ void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint
 	GIC_SetTarget(int_id, targetcpu);
 
 #if CPUSTYLE_STM32MP1
+	// peripheral (hardware) interrupts using the GIC 1-N model.
 	uint_fast32_t cfg = GIC_GetConfiguration(int_id);
 	cfg &= ~ 0x02;	/* Set level sensitive configuration */
 	cfg |= 0x01;	/* Set 1-N model - Only one processor handles this interrupt. */

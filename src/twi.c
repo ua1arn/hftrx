@@ -491,7 +491,7 @@ static uint_fast8_t i2c_waitforevent(uint_fast32_t event)
 		if ((sr2 & (I2C_SR1_BERR | I2C_SR1_ARLO | I2C_SR1_AF | I2C_SR1_OVR | I2C_SR1_PECERR | I2C_SR1_TIMEOUT)) != 0)
 			break;
 	}
-	debug_printf_P(PSTR("i2c_waitforevent timeout (event=%" PRIxFAST32 ")\n"), event);
+	PRINTF(PSTR("i2c_waitforevent timeout (event=%" PRIxFAST32 ")\n"), event);
 	//for (;;)
 	//	;
 	return 1;
@@ -569,7 +569,7 @@ b:
 
 void i2c_read(uint8_t *data, uint_fast8_t ack_type)
 {
-	//debug_printf_P(PSTR("i2c_read trapped\n"));
+	//PRINTF(PSTR("i2c_read trapped\n"));
 	//for (;;)
 	//	;
 	//TP();
@@ -828,17 +828,17 @@ static uint_fast8_t i2c_waittxready(void)
 			break;
 		if ((isr & I2C_ISR_TIMEOUT) != 0)
 		{
-			debug_printf_P(PSTR("i2c_waittxready: bus error ISR: I2C_ISR_TIMEOUT\n"));
+			PRINTF(PSTR("i2c_waittxready: bus error ISR: I2C_ISR_TIMEOUT\n"));
 			I2C1->ICR = I2C_ICR_TIMOUTCF;
 			return 1;
 		}
 		if ((isr & I2C_ISR_NACKF) != 0)
 		{
-			debug_printf_P(PSTR("i2c_waittxready: bus error ISR: I2C_ISR_NACKF\n"));
+			PRINTF(PSTR("i2c_waittxready: bus error ISR: I2C_ISR_NACKF\n"));
 			I2C1->ICR = I2C_ICR_NACKCF;
 			return 1;
 		}
-		//debug_printf_P(PSTR("i2c_waittxready: waiting: ISR=%08lX\n"), isr);
+		//PRINTF(PSTR("i2c_waittxready: waiting: ISR=%08lX\n"), isr);
 	}
 	return 0;
 }
@@ -852,17 +852,17 @@ static uint_fast8_t i2c_waitrxready(void)
 			break;
 		if ((isr & I2C_ISR_TIMEOUT) != 0)
 		{
-			debug_printf_P(PSTR("i2c_waitrxready: bus error ISR: I2C_ISR_TIMEOUT\n"));
+			PRINTF(PSTR("i2c_waitrxready: bus error ISR: I2C_ISR_TIMEOUT\n"));
 			I2C1->ICR = I2C_ICR_TIMOUTCF;
 			return 1;
 		}
 		if ((isr & I2C_ISR_NACKF) != 0)
 		{
-			debug_printf_P(PSTR("i2c_waitrxready: bus error ISR: I2C_ISR_NACKF\n"));
+			PRINTF(PSTR("i2c_waitrxready: bus error ISR: I2C_ISR_NACKF\n"));
 			I2C1->ICR = I2C_ICR_NACKCF;
 			return 1;
 		}
-		debug_printf_P(PSTR("i2c_waitrxready: waiting: ISR=%08lX\n"), isr);
+		PRINTF(PSTR("i2c_waitrxready: waiting: ISR=%08lX\n"), isr);
 	}
 	return 0;
 }
@@ -907,11 +907,11 @@ void i2c_start(
 
 	// Ожидание окончания формирования START CONDITION и передачи адреса
 	while ((I2C1->CR2 & I2C_CR2_START) != 0)
-		; //debug_printf_P(PSTR("i2c_start: waiting, address=%02x\n"), address);
+		; //PRINTF(PSTR("i2c_start: waiting, address=%02x\n"), address);
 
 	if ((I2C1->ISR & (I2C_ISR_NACKF | I2C_ISR_TIMEOUT)) != 0)
 	{
-		debug_printf_P(PSTR("i2c_start: bus error ISR: %08lx\n"), I2C1->ISR);
+		PRINTF(PSTR("i2c_start: bus error ISR: %08lx\n"), I2C1->ISR);
 		I2C1->ICR = (I2C_ICR_NACKCF | I2C_ICR_TIMOUTCF);
 	}
 	i2c_sended = 0;
@@ -926,14 +926,14 @@ static void i2cmakestop(void)
 		0;
 	// Wait until the stop condition was automagically sent
 	while ((I2C1->ISR & I2C_ISR_STOPF) == 0)
-		; //debug_printf_P(PSTR("i2cmakestop: waiting\n"));
+		; //PRINTF(PSTR("i2cmakestop: waiting\n"));
 	// Reset the STOPF bit
 	I2C1->ICR = I2C_ICR_STOPCF;
 }
 
 void i2c_read(uint8_t *data, uint_fast8_t ack_type)
 {
-	//debug_printf_P(PSTR("i2c_read: ack_type=%08lX\n"), ack_type);
+	//PRINTF(PSTR("i2c_read: ack_type=%08lX\n"), ack_type);
 	switch (ack_type)
 	{
 	case I2C_READ_ACK_NACK:	/* чтение первого и единственного байта ответа */
@@ -984,7 +984,7 @@ void i2c_read(uint8_t *data, uint_fast8_t ack_type)
 		break;
 
 	}
-	//debug_printf_P(PSTR("i2c_read done: ack_type=%08lX\n"), ack_type);
+	//PRINTF(PSTR("i2c_read done: ack_type=%08lX\n"), ack_type);
 }
 
 void i2c_write(

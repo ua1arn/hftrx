@@ -62,12 +62,12 @@
 		#define USB_FUNCTION_PRODUCT_ID	0x0750
 	#endif /* WITHUSBDFU && WITHMOVEDFU */
 
-	#define PRODUCTSTR "Storch TRX Bootloader"
+	#define PRODUCTSTR "Storch Bootloader"
 	#define BUILD_ID 1	// модификатор serial number
 	#define USB_FUNCTION_RELEASE_NO	0x0000
 
 #elif WITHUSBUAC && WITHUSBUACIN2
-	#define PRODUCTSTR "Storch TRX"
+	#define PRODUCTSTR "Storch"
 
 	#if WITHUSBDFU && WITHMOVEDFU
 		#define USB_FUNCTION_PRODUCT_ID	0x073B
@@ -86,7 +86,7 @@
 		#define USB_FUNCTION_RELEASE_NO	0x0104
 	#endif
 #else /* WITHUSBUAC && WITHUSBUACIN2 */
-	#define PRODUCTSTR "Storch TRX"
+	#define PRODUCTSTR "Storch"
 
 	#if WITHUSBDFU && WITHMOVEDFU
 		#define USB_FUNCTION_PRODUCT_ID	0x073C
@@ -114,10 +114,11 @@ enum
 	STRING_ID_2, /* Product */
 	STRING_ID_3, /* SerialNumber */
 
+#if WITHUSBCDCACM
 	// USB CDC strings
 	STRING_ID_4a, /*  */
-	STRING_ID_4b, /*  */
-
+	STRING_ID_4x = (STRING_ID_4a + WITHUSBCDCACM_N - 1),
+#endif /* WITHUSBCDCACM */
 	STRING_ID_5,
 	STRING_ID_5a,
 	STRING_ID_MACADDRESS,	// iMacAddress
@@ -165,17 +166,16 @@ static const struct stringtempl strtemplates [] =
 {
 	{ STRING_ID_1, "MicroGenSF", },		// Manufacturer
 	{ STRING_ID_2, PRODUCTSTR, },	// Product
-	{ STRING_ID_4a, PRODUCTSTR " CAT", },
-	{ STRING_ID_4b, PRODUCTSTR " CTL", },
+
 	{ STRING_ID_5, PRODUCTSTR " CDC EEM", },
 	{ STRING_ID_5a, PRODUCTSTR " CDC ECM", },
 	{ STRING_ID_RNDIS, PRODUCTSTR " Remote NDIS", },
 
-	{ STRING_ID_DFU, "Storch DFU Device", },
+	{ STRING_ID_DFU, PRODUCTSTR " DFU Device", },
 
-	{ STRING_ID_a0, "Storch RX Voice", },		// tag for Interface Descriptor 0/0 Audio
-	{ STRING_ID_a1, "Storch RX Spectrum", },	// tag for Interface Descriptor 0/0 Audio
-	{ STRING_ID_a2, "Storch TX Voice", },		// tag for Interface Descriptor 0/0 Audio
+	{ STRING_ID_a0, PRODUCTSTR " RX Voice", },		// tag for Interface Descriptor 0/0 Audio
+	{ STRING_ID_a1, PRODUCTSTR " RX Spectrum", },	// tag for Interface Descriptor 0/0 Audio
+	{ STRING_ID_a2, PRODUCTSTR " TX Voice", },		// tag for Interface Descriptor 0/0 Audio
 
 	//{ STRING_ID_b, "xxx_id11", },	// tag for USB Speaker Audio Feature Unit Descriptor
 
@@ -2855,9 +2855,9 @@ static unsigned CDCACM_fill_38(uint_fast8_t fill, uint8_t * buff, unsigned maxsi
 static unsigned fill_CDCACM_function_a(uint_fast8_t fill, uint8_t * p, unsigned maxsize, int highspeed, uint_fast8_t offset)
 {
 	unsigned n = 0;
-	const uint8_t inep = USBD_EP_CDC_IN + offset;
-	const uint8_t outnep = USBD_EP_CDC_OUT + offset;
-	const uint8_t intnep = USBD_EP_CDC_INT + offset;
+	const uint8_t inep = USBD_CDCACM_EP(USBD_EP_CDC_IN, offset);
+	const uint8_t outnep = USBD_CDCACM_EP(USBD_EP_CDC_OUT, offset);
+	const uint8_t intnep =USBD_CDCACM_EP(USBD_EP_CDC_INT, offset);
 
 	// CDC
 	n += CDCACM_InterfaceAssociationDescriptor_a(fill, p + n, maxsize - n, offset);	/* CDC: Interface Association Descriptor Abstract Control Model */
@@ -4441,6 +4441,7 @@ uint_fast8_t usbd_get_stringsdesc_count(void)
 void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 {
 	unsigned score = 0;
+	unsigned offset;
 
 	static const struct
 	{
@@ -4571,28 +4572,20 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 #endif /* WITHUSBDFU */
 
 #if WITHUSBCDCACM
+	for (offset = 0; offset < WITHUSBCDCACM_N; ++ offset)
 	{
-		const uint_fast8_t ifc = INTERFACE_CDC_CONTROL_3a;
+		const uint_fast8_t ifc = USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL_3a, offset);
 		unsigned partlen;
+		char label [32];
+
+		local_snprintf_P(label, ARRAY_SIZE(label), PSTR(PRODUCTSTR " Serial Port #%d"), offset + 1);
 		// Device Qualifier
 		score += fill_align4(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
-		partlen = fill_extprop_descriptor(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, "Label", "Storch CAT");
+		partlen = fill_extprop_descriptor(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, "Label", label);
 		ExtOsPropDescTbl [ifc].size = partlen;
 		ExtOsPropDescTbl [ifc].data = alldescbuffer + score;
 		score += partlen;
 	}
-#if WITHUSBCDCACM_N > 1
-	{
-		const uint_fast8_t ifc = INTERFACE_CDC_CONTROL_3b;
-		unsigned partlen;
-		// Device Qualifier
-		score += fill_align4(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
-		partlen = fill_extprop_descriptor(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, "Label", "Storch CTL");
-		ExtOsPropDescTbl [ifc].size = partlen;
-		ExtOsPropDescTbl [ifc].data = alldescbuffer + score;
-		score += partlen;
-	}
-#endif
 #endif /* WITHUSBCDCACM */
 
 	if (HSdesc != 0)
@@ -4680,6 +4673,24 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 			StringDescrTbl [id].data = alldescbuffer + score;
 			score += partlen;
 		}
+
+	#if WITHUSBCDCACM
+		/* Формирование названий VCP */
+		unsigned offset;
+		for (offset = 0; offset < WITHUSBCDCACM_N; ++ offset)
+		{
+			const uint_fast8_t id = STRING_ID_4a + offset;
+			char label [32];
+			local_snprintf_P(label, ARRAY_SIZE(label), PSTR(PRODUCTSTR " Serial Port #%d"), offset + 1);
+
+			score += fill_align4(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
+			partlen = fill_string_descriptor(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, label);
+			StringDescrTbl [id].size = partlen;
+			StringDescrTbl [id].data = alldescbuffer + score;
+			score += partlen;
+		}
+	#endif /* WITHUSBCDCACM */
+
 	}
 
 #if WITHUSBHID
@@ -4831,7 +4842,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 #endif /* CPUSTYLE_STM32F && defined(UID_BASE) */
 
 	arm_hardware_flush_invalidate((uintptr_t) alldescbuffer, score);
-	debug_printf_P(PSTR("usbd_descriptors_initialize: total length=%u at %p\n"), score, alldescbuffer);
+	PRINTF(PSTR("usbd_descriptors_initialize: total length=%u at %p\n"), score, alldescbuffer);
 }
 
 

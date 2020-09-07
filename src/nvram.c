@@ -368,7 +368,7 @@ ui16min(uint_least16_t a, uint_least16_t b)
 
 void nvram_initialize(void)
 {
-	//debug_printf_P(PSTR("nvram_initialize\n"));
+	//PRINTF(PSTR("nvram_initialize\n"));
 #if (NVRAM_TYPE == NVRAM_TYPE_BKPSRAM)
 
 	#if CPUSTYLE_STM32MP1
@@ -423,7 +423,7 @@ void nvram_initialize(void)
 	eeprom_initialize(targetnvram);
 
 #endif /* NVRAM_TYPE != NVRAM_TYPE_CPUEEPROM */
-	//debug_printf_P(PSTR("nvram_initialize: done\n"));
+	//PRINTF(PSTR("nvram_initialize: done\n"));
 }
 
 //static uint8_t simnvram [NVRAM_END + 1];
