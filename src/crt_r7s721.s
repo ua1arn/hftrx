@@ -370,9 +370,11 @@ IRQHandlerNested:
        POP     {R0,LR}          // restore register context
        SUBS    R15,R14,#0x0004         // return from interrupt
 		.endfunc
+   .ltorg
 
-	.bss
+	.section .noinit
 	.align 8
+
 	.space	STACKSIZEUND
 __stack_und_end = .
 	.space	STACKSIZEABT
@@ -390,7 +392,8 @@ __stack_hyp_end = .
 	.space	STACKSIZESYS
 __stack_sys_end = .
 
-   .ltorg
+	.word 0		/* fix non-zero size of this section */
+
 /*** EOF ***/   
   
 

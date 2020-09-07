@@ -280,8 +280,9 @@ DAbort_Handler:
 FIQ_Handler:
    b FIQ_Handler
 
-	.bss
+	.section .noinit
 	.align 8
+
 	.space	STACKSIZE
 __stack_und_end = .
 	.space	STACKSIZE
@@ -290,6 +291,8 @@ __stack_abt_end = .
 __stack_fiq_end = .
 	.space	STACKSIZE
 __stack_irq_end = .
+
+	.word 0		/* fix non-zero size of this section */
 /****************************************************************************/
 /*                         Default interrupt handler                        */
 /****************************************************************************/

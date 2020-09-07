@@ -431,6 +431,7 @@ Reset_CPU1_HandlerSleep:
 
 	.section .noinit
 	.align 8
+
 	.space	STACKSIZEUND
 __stack_cpu0_und_end = .
 	.space	STACKSIZEABT
@@ -469,6 +470,8 @@ __stack_cpu1_irq_end = .
 
 	.space	STACKSIZESVC
 __stack_cpu1_svc_end = .
+
+	.word 0		/* fix non-zero size of this section */
 
 /*** EOF ***/   
   
