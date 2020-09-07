@@ -4992,6 +4992,17 @@ static void serial_irq_loopback_test(void)
 // Периодически вызывается в главном цикле
 void looptests(void)
 {
+#if 0
+	// Failt handlers test
+	// Data abort test
+	* (int volatile *) 0x00000100 = 44;
+
+	// Preefetch abort test
+	typedef void (* pfn)(void);
+	const pfn p = (pfn) 0x30000000uL;
+	(p)();
+
+#endif
 #if WITHDTMFPROCESSING
 	dtmftest();
 #endif

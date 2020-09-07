@@ -9475,6 +9475,32 @@ lowlevel_stm32l0xx_pll_clock(void)
 
 #if (__CORTEX_A != 0)
 
+//	MRC p15, 0, <Rt>, c6, c0, 2 ; Read IFAR into Rt
+//	MCR p15, 0, <Rt>, c6, c0, 2 ; Write Rt to IFAR
+
+/** \brief  Get IFAR
+\return		Instruction Fault Address register value
+*/
+__STATIC_FORCEINLINE uint32_t __get_IFAR(void)
+{
+	uint32_t result;
+	__get_CP(15, 0, result, 6, 0, 2);
+	return result;
+}
+
+//	MRC p15, 0, <Rt>, c6, c0, 0 ; Read DFAR into Rt
+//	MCR p15, 0, <Rt>, c6, c0, 0 ; Write Rt to DFAR
+
+/** \brief  Get DFAR
+\return		Data Fault Address register value
+*/
+__STATIC_FORCEINLINE uint32_t __get_DFAR(void)
+{
+	uint32_t result;
+	__get_CP(15, 0, result, 6, 0, 0);
+	return result;
+}
+
 void Undef_Handler(void)
 {
 	dbg_puts_impl_P(PSTR("UndefHandler trapped.\n"));
@@ -9494,23 +9520,59 @@ void SWI_Handler(void)
 // Prefetch Abort
 void PAbort_Handler(void)
 {
-	dbg_puts_impl_P(PSTR("PAbortHandler trapped.\n"));
+	const volatile uint32_t marker = 0xDEADBEEF;
+	dbg_puts_impl_P(PSTR("PAbort_Handler trapped.\n"));
 	dbg_puts_impl_P((__get_MPIDR() & 0x03) ? PSTR("CPUID=1\n") : PSTR("CPUID=0\n"));
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Warray-bounds"
+	PRINTF(PSTR("DFSR=%08lX, IFAR=%08lX, pc=%08lX, sp~%08lx\n"), __get_DFSR(), __get_IFAR(), (& marker) [2], (unsigned long) & marker);
+#pragma GCC diagnostic pop
+	const int WnR = (__get_DFSR() & (1uL << 11)) != 0;
+	const int Status = (__get_DFSR() & (0x0FuL << 0));
+	/*
+		1. 0b000001 alignment fault
+		2. 0b000100 instruction cache maintenance fault
+		3. 0bx01100 1st level translation, synchronous external abort
+		4. 0bx01110 2nd level translation, synchronous external abort
+		5. 0b000101 translation fault, section
+		6. 0b000111 translation fault, page
+		7. 0b000011 access flag fault, section
+		8. 0b000110 access flag fault, page
+		9. 0b001001 domain fault, section
+		10. 0b001011 domain fault, page
+		11. 0b001101 permission fault, section
+		12. 0b001111 permission fault, page
+		13. 0bx01000 synchronous external abort, nontranslation
+		14. 0bx10110 asynchronous external abort
+		15. 0b000010 debug event.
+	*/
+	PRINTF(PSTR(" WnR=%d, Status=%02X\n"), (int) WnR, (unsigned) Status);
+	switch (Status)
+	{
+	case 0x01: PRINTF(PSTR("alignment fault\n")); break;
+	case 0x04: PRINTF(PSTR("instruction cache maintenance fault\n")); break;
+	case 0x0C: PRINTF(PSTR("1st level translation, synchronous external abort\n")); break;
+	case 0x0E: PRINTF(PSTR("2nd level translation, synchronous external abort\n")); break;
+	case 0x05: PRINTF(PSTR("translation fault, section\n")); break;
+	case 0x07: PRINTF(PSTR("translation fault, page\n")); break;
+	case 0x03: PRINTF(PSTR("access flag fault, section\n")); break;
+	case 0x06: PRINTF(PSTR("access flag fault, page\n")); break;
+	case 0x09: PRINTF(PSTR("domain fault, section\n")); break;
+	case 0x0B: PRINTF(PSTR("domain fault, page\n")); break;
+	case 0x0D: PRINTF(PSTR("permission fault, section\n")); break;
+	case 0x0F: PRINTF(PSTR("permission fault, page\n")); break;
+	case 0x08: PRINTF(PSTR("synchronous external abort, nontranslation\n")); break;
+	case 0x16: PRINTF(PSTR("asynchronous external abort\n")); break;
+	case 0x02: PRINTF(PSTR("debug event.\n")); break;
+	default: PRINTF(PSTR("undefined Status=%02X\n"), Status); break;
+	}
+//	unsigned i;
+//	for (i = 0; i < 8; ++ i)
+//	{
+//		PRINTF("marker [%2d] = %08lX\n", i, (& marker) [i]);
+//	}
 	for (;;)
 		;
-}
-
-	//	MRC p15, 0, <Rt>, c6, c0, 0 ; Read DFAR into Rt
-	//	MCR p15, 0, <Rt>, c6, c0, 0 ; Write Rt to DFAR
-
-/** \brief  Get DFAR
-    \return               Data Fault Address register value
- */
-__STATIC_FORCEINLINE uint32_t __get_DFAR(void)
-{
-  uint32_t result;
-  __get_CP(15, 0, result, 6, 0, 0);
-  return result;
 }
 
 // Data Abort.
@@ -9521,7 +9583,7 @@ void DAbort_Handler(void)
 	dbg_puts_impl_P((__get_MPIDR() & 0x03) ? PSTR("CPUID=1\n") : PSTR("CPUID=0\n"));
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Warray-bounds"
-	PRINTF(PSTR("DFSR=%08lX, DFAR=%08lX, pc=%08lX\n"), __get_DFSR(),__get_DFAR(), (& marker) [2]);
+	PRINTF(PSTR("DFSR=%08lX, DFAR=%08lX, pc=%08lX, sp~%08lx\n"), __get_DFSR(), __get_DFAR(), (& marker) [2], (unsigned long) & marker);
 #pragma GCC diagnostic pop
 	const int WnR = (__get_DFSR() & (1uL << 11)) != 0;
 	const int Status = (__get_DFSR() & (0x0FuL << 0));
@@ -9823,6 +9885,8 @@ uint_fast32_t cpu_getdebugticks(void)
 	{
 		uint32_t result;
 		// Read CCNT Register
+		//	MRC p15, 0, <Rt>, c9, c13, 0 : Read PMCCNTR into Rt
+		//	MCR p15, 0, <Rt>, c9, c13, 0 : Write Rt to PMCCNTR
 		//asm volatile ("MRC p15, 0, %0, c9, c13, 0\t\n": "=r"(value));  
 		__get_CP(15, 0, result, 9, 13, 0);
 		return(result);
