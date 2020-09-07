@@ -3978,7 +3978,7 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 			* base4 ++ = 0xABBA1998uL;
 	}
 #endif /* WITHDEBUG */
-	s
+
 	/* Software Self-Refresh mode (SSR) during DDR initilialization */
 	mmio_clrsetbits_32(RCC_BASE + RCC_DDRITFCR,
 			   RCC_DDRITFCR_DDRCKMOD_Msk,
