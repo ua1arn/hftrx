@@ -740,51 +740,6 @@ typedef enum
 #endif
 
 
-#if WITHDEBUG
-	#define TP() \
-		do { \
-			static const char this_file [] = __FILE__; \
-			PRINTF(PSTR("At %d in %s.\n"), __LINE__, this_file); \
-		} while(0)
-#else /* WITHDEBUG */
-	#define TP() do { } while(0)
-#endif /* WITHDEBUG */
-
-#if WITHDEBUG
-
-	#define PRINTF	debug_printf_P
-	#define ASSERT(v) do { if ((v) == 0) { \
-		PRINTF(PSTR("%s(%d): Assert '%s'\n"), __FILE__, __LINE__, (# v)); \
-		for (;;) ; \
-		} } while (0)
-
-	#define VERIFY(v) do { if ((v) == 0) { \
-		PRINTF(PSTR("%s(%d): Verify '%s'\n"), __FILE__, __LINE__, (# v)); \
-		for (;;) ; \
-		} } while (0)
-
-	#define TRACE0(f)		do { PRINTF( PSTR(f)); } while (0)
-	#define TRACE1(f,a1)		do { PRINTF( PSTR(f),(a1)); } while (0)
-	#define TRACE2(f,a1,a2)		do { PRINTF( PSTR(f),(a1),(a2)); } while (0)
-	#define TRACE3(f,a1,a2,a3)	do { PRINTF( PSTR(f),(a1),(a2),(a3)); } while (0)
-	#define TRACE4(f,a1,a2,a3,a4)	do { PRINTF( PSTR(f),(a1),(a2),(a3),(a4)); } while (0)
-	#define TRACE5(f,a1,a2,a3,a4,a5) do { PRINTF( PSTR(f),(a1),(a2),(a3),(a4),(a5)); } while (0)
-
-#else /* WITHDEBUG */
-
-	#define PRINTF(...)	do {} while (0)
-	#define ASSERT(v) ((void) (0))
-	#define VERIFY(v) ((void) (v))
-
-	#define TRACE0(f)			do {} while (0)
-	#define TRACE1(f,a1)			do {} while (0)
-	#define TRACE2(f,a1,a2)			do {} while (0)
-	#define TRACE3(f,a1,a2,a3)		do {} while (0)
-	#define TRACE4(f,a1,a2,a3,a4)		do {} while (0)
-	#define TRACE5(f,a1,a2,a3,a4,a5)		do {} while (0)
-
-#endif /* WITHDEBUG */
-
 
 typedef struct spinlock_tag {
 	volatile uint32_t lock;
@@ -820,8 +775,6 @@ typedef struct spinlock_tag {
 	#define SPIN_UNLOCK(p) do { (void) p; } while (0)
 
 #endif /* WITHSMPSYSTEM */
-
-
 
 #if CPUSTYLE_R7S721
 	#define FLASHMEMINIT	__attribute__((section(".initdata"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */

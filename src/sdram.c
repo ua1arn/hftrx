@@ -3970,6 +3970,11 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 	//__set_SCTLR(__get_SCTLR() | SCTLR_C_Msk);
 	//PRINTF("TZC->INT_STATUS=%08lX\n", TZC->INT_STATUS);
 
+	unsigned size4 = config.info.size / 4;
+	volatile uint32_t * base4 = (volatile uint32_t *) STM32MP_DDR_BASE;
+	while (size4 --)
+		* base4 ++ = 0xABBA1998uL;
+
 	/* Software Self-Refresh mode (SSR) during DDR initilialization */
 	mmio_clrsetbits_32(RCC_BASE + RCC_DDRITFCR,
 			   RCC_DDRITFCR_DDRCKMOD_Msk,

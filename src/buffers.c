@@ -5,6 +5,7 @@
 // UA1ARN
 //
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
+#include "formats.h"	// for debug prints
 
 //#define WITHBUFFERSDEBUG WITHDEBUG
 //#undef SPIN_LOCK
@@ -15,7 +16,6 @@
 #if WITHINTEGRATEDDSP
 
 #include "list.h"
-#include "formats.h"	// for debug prints
 #include "audio.h"
 #include "usb/usb200.h"
 #include "usb/usbch9.h"
