@@ -760,9 +760,11 @@ typedef struct spinlock_tag {
 	#define TARGETCPU_OVRT 	(1u << 0)		// CPU #0
 
 	#define SPIN_LOCK(p) do { spin_lock(p, __FILE__, __LINE__); } while (0)
+	#define SPIN_LOCK2(p, f, l) do { spin_lock2(p, (f), (l)); } while (0)
 	#define SPIN_UNLOCK(p) do { spin_unlock(p); } while (0)
 
 	void spin_lock(volatile spinlock_t * lock, const char * file, int line);
+	void spin_lock2(volatile spinlock_t * lock, const char * file, int line);
 	void spin_unlock(volatile spinlock_t * lock);
 
 #else /* WITHSMPSYSTEM */
