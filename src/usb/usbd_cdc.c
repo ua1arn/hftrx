@@ -138,49 +138,67 @@ static RAMBIGDTCM uint_fast32_t dwDTERate [INTERFACE_count];
 	#define SECOND_CDC_OFFSET 1
 #endif /* WITHUSBCDCACM_N > 1 */
 
+static SPINLOCK_t catlock = SPINLOCK_INIT;
+
 /* управление по DTR происходит сразу, RTS только вместе со следующим DTR */
 /* хранимое значение после получения CDC_SET_CONTROL_LINE_STATE */
 /* Биты: RTS = 0x02, DTR = 0x01 */
 
 // Обычно используется для переключения на передачу (PTT)
+// вызывается в конексте system interrupt
 uint_fast8_t usbd_cdc1_getrts(void)
 {
 	const unsigned offset = MAIN_CDC_OFFSET;
-	return
+	SPIN_LOCK(& catlock);
+	const uint_fast8_t state =
 		((usb_cdc_control_state [USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL_3a, offset)] & CDC_ACTIVATE_CARRIER) != 0) ||
 		0;
+	SPIN_UNLOCK(& catlock);
+	return state;
 }
 
 // Обычно используется для телеграфной манипуляции (KEYDOWN)
+// вызывается в конексте system interrupt
 uint_fast8_t usbd_cdc1_getdtr(void)
 {
 	const unsigned offset = MAIN_CDC_OFFSET;
-	return
+	SPIN_LOCK(& catlock);
+	const uint_fast8_t state =
 		((usb_cdc_control_state [USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL_3a, offset)] & CDC_DTE_PRESENT) != 0) ||
 		0;
+	SPIN_UNLOCK(& catlock);
+	return state;
 }
 
 // Обычно используется для переключения на передачу (PTT)
+// вызывается в конексте system interrupt
 uint_fast8_t usbd_cdc2_getrts(void)
 {
 #if WITHUSBCDCACM_N > 1
 	const unsigned offset = SECOND_CDC_OFFSET;
-	return
+	SPIN_LOCK(& catlock);
+	const uint_fast8_t state =
 		((usb_cdc_control_state [USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL_3a, offset)] & CDC_ACTIVATE_CARRIER) != 0) ||
 		0;
+	SPIN_UNLOCK(& catlock);
+	return state;
 #else /* WITHUSBCDCACM_N > 1 */
 	return 0;
 #endif /* WITHUSBCDCACM_N > 1 */
 }
 
 // Обычно используется для телеграфной манипуляции (KEYDOWN)
+// вызывается в конексте system interrupt
 uint_fast8_t usbd_cdc2_getdtr(void)
 {
 #if WITHUSBCDCACM_N > 1
 	const unsigned offset = SECOND_CDC_OFFSET;
-	return
+	SPIN_LOCK(& catlock);
+	const uint_fast8_t state =
 		((usb_cdc_control_state [USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL_3a, offset)] & CDC_DTE_PRESENT) != 0) ||
 		0;
+	SPIN_UNLOCK(& catlock);
+	return state;
 #else /* WITHUSBCDCACM_N > 1 */
 	return 0;
 #endif /* WITHUSBCDCACM_N > 1 */
@@ -192,7 +210,9 @@ static RAMBIGDTCM volatile uint_fast8_t usbd_cdc_txenabled [WITHUSBCDCACM_N];	/*
 void usbd_cdc_enabletx(uint_fast8_t state)	/* вызывается из обработчика прерываний */
 {
 	const unsigned offset = MAIN_CDC_OFFSET;
+	SPIN_LOCK(& catlock);
 	usbd_cdc_txenabled [offset] = state;
+	SPIN_UNLOCK(& catlock);
 }
 
 /* вызывается из обработчика прерываний или при запрещённых прерываниях. */
@@ -200,7 +220,9 @@ void usbd_cdc_enabletx(uint_fast8_t state)	/* вызывается из обра
 void usbd_cdc_enablerx(uint_fast8_t state)	/* вызывается из обработчика прерываний */
 {
 	const unsigned offset = MAIN_CDC_OFFSET;
+	SPIN_LOCK(& catlock);
 	usbd_cdcX_rxenabled [offset] = state;
+	SPIN_UNLOCK(& catlock);
 }
 
 /* передача символа после прерывания о готовности передатчика - вызывается из HARDWARE_CDC_ONTXCHAR */
@@ -210,8 +232,10 @@ usbd_cdc_tx(void * ctx, uint_fast8_t c)
 	const unsigned offset = MAIN_CDC_OFFSET;
 	USBD_HandleTypeDef * const pdev = ctx;
 	(void) ctx;
+	SPIN_LOCK(& catlock);
 	ASSERT(cdcXbuffinlevel  [offset] < VIRTUAL_COM_PORT_IN_DATA_SIZE);
 	cdcXbuffin [offset] [cdcXbuffinlevel [offset] ++] = c;
+	SPIN_UNLOCK(& catlock);
 }
 
 /* использование буфера принятых данных */
@@ -308,9 +332,10 @@ static USBD_StatusTypeDef USBD_CDC_EP0_RxReady(USBD_HandleTypeDef *pdev)
 static USBD_StatusTypeDef USBD_CDC_DataIn(USBD_HandleTypeDef *pdev, uint_fast8_t epnum)
 {
 	//PRINTF("USBD_CDC_DataIn: epnum=%d\n", (int) epnum);
-	if (epnum >= (USBD_CDCACM_EP(USBD_EP_CDC_IN, 0) & 0x7F) && epnum < (USBD_CDCACM_EP(USBD_EP_CDC_IN, WITHUSBCDCACM_N) & 0x7F))
+	if (USB_ENDPOINT_IN(epnum) >= USBD_CDCACM_EP(USBD_EP_CDC_IN, 0) && USB_ENDPOINT_IN(epnum) < USBD_CDCACM_EP(USBD_EP_CDC_IN, WITHUSBCDCACM_N))
 	{
-		const unsigned offset = USBD_CDCACM_OFFSET_BY_EP(epnum, USBD_EP_CDC_IN) & 0x7F;
+		const unsigned offset = USBD_CDCACM_OFFSET_BY_EP(USB_ENDPOINT_IN(epnum), USBD_EP_CDC_IN);
+		ASSERT(offset < WITHUSBCDCACM_N);
 #if 0
 		// test usb tx fifo initialization
 		#define TLENNNN (VIRTUAL_COM_PORT_IN_DATA_SIZE - 0)

@@ -11622,6 +11622,8 @@ cat_get_ptt(void)
 {
 	if (catprocenable != 0)
 	{
+		system_disableIRQ();
+
 		const uint_fast8_t dtr1 = HARDWARE_CAT_GET_DTR() && cat1dtrenable;
 		const uint_fast8_t rts1 = HARDWARE_CAT_GET_RTS() && cat1rtsenable;
 		const uint_fast8_t r1 = (cat1txdtr ? dtr1 : rts1);
@@ -11632,6 +11634,8 @@ cat_get_ptt(void)
 #else
 		enum { r2 = 0 };
 #endif
+		system_enableIRQ();
+
 		return (catstatetx != 0) || r1 || r2;	// catstatetx - это по текстовым командам
 	}
 	return 0;
@@ -11647,6 +11651,8 @@ uint_fast8_t cat_get_keydown(void)
 #if WITHELKEY
 	if (catprocenable != 0)
 	{
+		system_disableIRQ();
+
 		const uint_fast8_t dtr1 = HARDWARE_CAT_GET_DTR() && cat1dtrenable;
 		const uint_fast8_t rts1 = HARDWARE_CAT_GET_RTS() && cat1rtsenable;
 		const uint_fast8_t r1 = ! cat1txdtr ? dtr1 : rts1;
@@ -11657,6 +11663,9 @@ uint_fast8_t cat_get_keydown(void)
 #else
 		enum { r2 = 0 };
 #endif
+
+		system_enableIRQ();
+
 		return r1 || r2;
 	}
 #endif /* WITHELKEY */
