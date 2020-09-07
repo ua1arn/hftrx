@@ -11632,7 +11632,7 @@ There is no rationale to use "Strongly-Ordered" with Cortex-A7
 
 static uint32_t
 FLASHMEMINITFUNC
-ttb_accessbits(uintptr_t a, int ro)
+ttb_accessbits(uintptr_t a, int ro, int xn)
 {
 	const uint32_t addrbase = a & 0xFFF00000uL;
 
@@ -11742,7 +11742,7 @@ sysinit_ttbr_initialize(void)
 }
 
 static void FLASHMEMINITFUNC
-ttb_initialize(uint32_t (* accessbits)(uintptr_t a, int ro), uintptr_t textstart, uint_fast32_t textsize)
+ttb_initialize(uint32_t (* accessbits)(uintptr_t a, int ro, int xn), uintptr_t textstart, uint_fast32_t textsize)
 {
 	extern volatile uint32_t __TTB_BASE;		// получено из скрипта линкера
 	volatile uint32_t * const tlbbase = & __TTB_BASE;
@@ -11751,20 +11751,20 @@ ttb_initialize(uint32_t (* accessbits)(uintptr_t a, int ro), uintptr_t textstart
 
 	for (i = 0; i < 4096; ++ i)
 	{
-		const uintptr_t address = (uint32_t) i << 20;
-		tlbbase [i] =  accessbits(address, 0);
+		const uintptr_t address = (uintptr_t) i << 20;
+		tlbbase [i] =  accessbits(address, 0, 0);
 	}
 	/* Установить R/O атрибуты для указанной области */
 	while (textsize >= pagesize)
 	{
-		tlbbase [textstart / pagesize] =  accessbits(textstart, 0 * 1);
+		tlbbase [textstart / pagesize] =  accessbits(textstart, 0 * 1, 0);
 		textsize -= pagesize;
 		textstart += pagesize;
 	}
 
 #if CPUSTYLE_STM32MP1 && ! WITHISBOOTLOADER
-	/* R/O for pages table. - 16 MB size. */
-	tlbbase [(uintptr_t) tlbbase / pagesize] = accessbits((uintptr_t) tlbbase, 1);
+	/* R/O, XN for pages table. - 16 MB size. */
+	tlbbase [(uintptr_t) tlbbase / pagesize] = accessbits((uintptr_t) tlbbase, 1, 1);
 #endif /* CPUSTYLE_STM32MP1 && ! WITHISBOOTLOADER */
 }
 
