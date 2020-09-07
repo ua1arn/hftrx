@@ -11580,11 +11580,18 @@ M_SIZE_IO_2     EQU     2550            ; [Area11] I/O area 2
 #define Bval_DEVICE			0x00	/* Non-shareable Device */
 #define Cval_DEVICE			0x00	/* Non-shareable Device */
 
-#define SHAREDval 1
+#if WITHSMPSYSTEM
+	#define SHAREDval 1		// required for ldrex.. and strex.. functionality
+#else /* WITHSMPSYSTEM */
+	#define SHAREDval 0
+#endif /* WITHSMPSYSTEM */
+
+#define NoSHAREDval 0
+
 // See B3.5.2 in DDI0406C_C_arm_architecture_reference_manual.pdf
 
 
-#define	TTB_PARA(TEX, B, C, DOMAIN, AP, XN) ( \
+#define	TTB_PARA(TEX, B, C, DOMAIN, SHARED, AP, XN) ( \
 		(SECTIONval) * (1uL << 0) |	/* 0b10, Section or Supersection */ \
 		(B) * (1uL << 2) |	/* B */ \
 		(C) * (1uL << 3) |	/* C */ \
@@ -11594,7 +11601,7 @@ M_SIZE_IO_2     EQU     2550            ; [Area11] I/O area 2
 		(((AP) >> 0) & 0x03) * (1uL << 10) |	/* AP [1..0] */ \
 		(TEX) * (1uL << 12) |	/* TEX */ \
 		(((AP) >> 2) & 0x01) * (1uL << 15) |	/* AP[2] */ \
-		(SHAREDval) * (1uL << 16) |	/* S */ \
+		(SHARED) * (1uL << 16) |	/* S */ \
 		0 * (1uL << 17) |	/* nG */ \
 		0 * (1uL << 18) |	/* 0 */ \
 		0 * (1uL << 19) |	/* NS */ \
@@ -11604,19 +11611,19 @@ M_SIZE_IO_2     EQU     2550            ; [Area11] I/O area 2
 //; setting for Strongly-ordered memory
 //#define	TTB_PARA_STRGLY             0b_0000_0000_1101_1110_0010
 // not used
-#define	TTB_PARA_STRGLY TTB_PARA(TEXval_STGORD, Bval_STGORD, Cval_STGORD, DOMAINval, APRWval, 1)
+#define	TTB_PARA_STRGLY TTB_PARA(TEXval_STGORD, Bval_STGORD, Cval_STGORD, DOMAINval, NoSHAREDval, APRWval, 1)
 
 
 //; setting for Outer and inner not cache normal memory
 //#define	TTB_PARA_NORMAL_NOT_CACHE   0b_0000_0001_1101_1110_0010
 // not used
-#define	TTB_PARA_NORMAL_NOT_CACHE(ro, xn) TTB_PARA(TEXval_NOCACHE, Bval_NOCACHE, Cval_NOCACHE, DOMAINval, (ro) ? APROval : APRWval, (xn) != 0)
+#define	TTB_PARA_NORMAL_NOT_CACHE(ro, xn) TTB_PARA(TEXval_NOCACHE, Bval_NOCACHE, Cval_NOCACHE, DOMAINval, SHAREDval, (ro) ? APROval : APRWval, (xn) != 0)
 
 //; setting for Outer and inner write back, write allocate normal memory (Cacheable)
 //#define	TTB_PARA_NORMAL_CACHE       0b_0000_0001_1101_1110_1110
-#define	TTB_PARA_NORMAL_CACHE(ro, xn) TTB_PARA(TEXval_WBCACHE, Bval_WBCACHE, Cval_WBCACHE, DOMAINval, (ro) ? APROval : APRWval, (xn) != 0)
+#define	TTB_PARA_NORMAL_CACHE(ro, xn) TTB_PARA(TEXval_WBCACHE, Bval_WBCACHE, Cval_WBCACHE, DOMAINval, SHAREDval, (ro) ? APROval : APRWval, (xn) != 0)
 
-#define	TTB_PARA_DEVICE TTB_PARA(TEXval_DEVICE, Bval_DEVICE, Cval_DEVICE, DOMAINval, APRWval, 1 /* XN=1 */)
+#define	TTB_PARA_DEVICE TTB_PARA(TEXval_DEVICE, Bval_DEVICE, Cval_DEVICE, DOMAINval, NoSHAREDval, APRWval, 1 /* XN=1 */)
 
 #define	TTB_PARA_NO_ACCESS 0
 
