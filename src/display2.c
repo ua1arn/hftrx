@@ -7528,6 +7528,7 @@ display_walktroughsteps(
 	uint_fast8_t subset
 	)
 {
+	ASSERT(key < REDRM_count);
 #if STMD
 
 	#if LCDMODE_MAIN_PAGES > 1
@@ -7581,6 +7582,7 @@ void display2_bgprocess(void)
 
 	for (;;)
 	{
+		ASSERT(keyi < REDRM_count);
 		if (reqs [keyi] != 0)
 			break;
 		keyi = (keyi == (REDRM_count - 1)) ? 0 : (keyi + 1);
@@ -7588,6 +7590,7 @@ void display2_bgprocess(void)
 			return;			// не нашли ни одного запроса
 	}
 
+	ASSERT(keyi < REDRM_count);
 	//return;
 	for (; walkis [keyi] < WALKCOUNT; ++ walkis [keyi])
 	{
@@ -7599,10 +7602,12 @@ void display2_bgprocess(void)
 		walkis [keyi] += 1;
 		break;
 	}
+	ASSERT(keyi < REDRM_count);
 	if (walkis [keyi] >= WALKCOUNT)
 	{
 		reqs [keyi] = 0;	// снять запрос на отображение данного типа элементов
 		keyi = (keyi == (REDRM_count - 1)) ? 0 : (keyi + 1);
+		ASSERT(keyi < REDRM_count);
 	}
 
 #endif /* STMD */
