@@ -41,7 +41,7 @@ typedef struct listcnt
 	unsigned Count;	// количество элментов в списке
 	SPINLOCK_t lock2;
 	unsigned long tag3;
-} LIST_ENTRY2, * PLIST_ENTRY2;
+} LIST_HEAD2, * PLIST_HEAD2;
 
 #define LIST2TAG2 0xABBA1990uL
 #define LIST2TAG3 0xDEADBEEFuL
@@ -51,7 +51,7 @@ typedef struct listcnt
 	} while (0)
 
 static void
-InitializeListHead2(LIST_ENTRY2 * ListHead)
+InitializeListHead2(LIST_HEAD2 * ListHead)
 {
 	ListHead->tag2 = LIST2TAG2;
 	ListHead->tag3 = LIST2TAG3;
@@ -61,7 +61,7 @@ InitializeListHead2(LIST_ENTRY2 * ListHead)
 }
 
 static int
-IsListEmpty2(LIST_ENTRY2 * ListHead, const char * file, int line)
+IsListEmpty2(LIST_HEAD2 * ListHead, const char * file, int line)
 {
 	SPIN_LOCK2(& ListHead->lock2, file, line);
 	ASSERT(ListHead->tag2 == LIST2TAG2 && ListHead->tag3 == LIST2TAG3);
@@ -72,7 +72,7 @@ IsListEmpty2(LIST_ENTRY2 * ListHead, const char * file, int line)
 }
 
 static void
-(InsertHeadList2)(PLIST_ENTRY2 ListHead, PLIST_ENTRY Entry, const char * file, int line)
+(InsertHeadList2)(PLIST_HEAD2 ListHead, PLIST_ENTRY Entry, const char * file, int line)
 {
 	ASSERT(ListHead->tag2 == LIST2TAG2 && ListHead->tag3 == LIST2TAG3);
 	SPIN_LOCK2(& ListHead->lock2, file, line);
@@ -83,7 +83,7 @@ static void
 }
 
 static PLIST_ENTRY
-(RemoveTailList2)(PLIST_ENTRY2 ListHead, const char * file, int line)
+(RemoveTailList2)(PLIST_HEAD2 ListHead, const char * file, int line)
 {
 	ASSERT(ListHead->tag2 == LIST2TAG2 && ListHead->tag3 == LIST2TAG3);
 	SPIN_LOCK2(& ListHead->lock2, file, line);
@@ -96,7 +96,7 @@ static PLIST_ENTRY
 	return t;
 }
 
-static unsigned GetCountList2(LIST_ENTRY2 * ListHead, const char * file, int line)
+static unsigned GetCountList2(LIST_HEAD2 * ListHead, const char * file, int line)
 {
 	ASSERT(ListHead->tag2 == LIST2TAG2 && ListHead->tag3 == LIST2TAG3);
 	SPIN_LOCK2(& ListHead->lock2, file, line);
@@ -125,19 +125,19 @@ static uint_fast8_t fiforeadyupdate(
 /* отладочные врапперы для функций работы со списком - позволяют получить размер очереди */
 typedef struct listcnt3
 {
-	LIST_ENTRY2 item2;
+	LIST_HEAD2 item2;
 	unsigned RdyLevel;	// Требуемое количество
 	unsigned Rdy;		// количество элментов в списке
-} LIST_ENTRY3, * PLIST_ENTRY3;
+} LIST_HEAD3, * PLIST_HEAD3;
 
 static int
-IsListEmpty3(LIST_ENTRY3 * ListHead)
+IsListEmpty3(LIST_HEAD3 * ListHead)
 {
 	return IsListEmpty2(& (ListHead)->item2);
 }
 
 static void
-InitializeListHead3(LIST_ENTRY3 * ListHead, unsigned RdyLevel)
+InitializeListHead3(LIST_HEAD3 * ListHead, unsigned RdyLevel)
 {
 	(ListHead)->Rdy = 0;
 	(ListHead)->RdyLevel = RdyLevel;
@@ -146,26 +146,26 @@ InitializeListHead3(LIST_ENTRY3 * ListHead, unsigned RdyLevel)
 
 // forceReady - если в источнике данных закончился поток.
 static void
-InsertHeadList3(PLIST_ENTRY3 ListHead, PLIST_ENTRY Entry, uint_fast8_t forceReady)
+InsertHeadList3(PLIST_HEAD3 ListHead, PLIST_ENTRY Entry, uint_fast8_t forceReady)
 {
 	InsertHeadList2(& (ListHead)->item2, (Entry));
 	(ListHead)->Rdy = forceReady || fiforeadyupdate((ListHead)->Rdy, (ListHead)->item2.Count, (ListHead)->RdyLevel);
 }
 
 static PLIST_ENTRY
-RemoveTailList3(PLIST_ENTRY3 ListHead)
+RemoveTailList3(PLIST_HEAD3 ListHead)
 {
 	const PLIST_ENTRY t = RemoveTailList2(& (ListHead)->item2);
 	(ListHead)->Rdy = fiforeadyupdate((ListHead)->Rdy, (ListHead)->item2.Count, (ListHead)->RdyLevel);
 	return t;
 }
 
-static unsigned GetCountList3(LIST_ENTRY3 * ListHead)
+static unsigned GetCountList3(LIST_HEAD3 * ListHead)
 {
 	return GetCountList2(& (ListHead)->item2);
 }
 
-static uint_fast8_t GetReadyList3(const LIST_ENTRY3 * ListHead)
+static uint_fast8_t GetReadyList3(const LIST_HEAD3 * ListHead)
 {
 	return (ListHead)->Rdy;
 }
@@ -206,7 +206,7 @@ void vfyalign4(void * p)
 	ASSERT(((uintptr_t) p & 0x03) == 0);
 }
 
-void vfylist(LIST_ENTRY2 * head)
+void vfylist(LIST_HEAD2 * head)
 {
 	LIST_ENTRY * list = & head->item0;
 	LIST_ENTRY * t;
@@ -268,23 +268,23 @@ enum { CNT32RX = DMABUFFSIZE32RX / DMABUFSTEP32RX };
 //enum { PHONESLEVELx = CNT16 / CNT32RX };
 enum { PHONESLEVEL = 8 };
 
-static RAMDTCM LIST_ENTRY3 voicesmike16;	// буферы с оцифрованными звуками с микрофона/Line in
-static RAMDTCM LIST_ENTRY3 resample16;		// буферы от USB для синхронизации
+static RAMDTCM LIST_HEAD3 voicesmike16;	// буферы с оцифрованными звуками с микрофона/Line in
+static RAMDTCM LIST_HEAD3 resample16;		// буферы от USB для синхронизации
 
-static RAMDTCM LIST_ENTRY2 voicesfree16;
-static RAMDTCM LIST_ENTRY2 voicesphones16;	// буферы, предназначенные для выдачи на наушники
-static RAMDTCM LIST_ENTRY2 voicesmoni16;	// буферы, предназначенные для звука самоконтроля
+static RAMDTCM LIST_HEAD2 voicesfree16;
+static RAMDTCM LIST_HEAD2 voicesphones16;	// буферы, предназначенные для выдачи на наушники
+static RAMDTCM LIST_HEAD2 voicesmoni16;	// буферы, предназначенные для звука самоконтроля
 static RAMDTCM SPINLOCK_t locklist16 = SPINLOCK_INIT;
 
-static RAMDTCM LIST_ENTRY2 voicesready32tx;	// буферы, предназначенные для выдачи на IF DAC
-static RAMDTCM LIST_ENTRY2 voicesfree32tx;
+static RAMDTCM LIST_HEAD2 voicesready32tx;	// буферы, предназначенные для выдачи на IF DAC
+static RAMDTCM LIST_HEAD2 voicesfree32tx;
 static RAMDTCM SPINLOCK_t locklist32tx = SPINLOCK_INIT;
 
-static RAMDTCM LIST_ENTRY2 voicesfree32rx;
+static RAMDTCM LIST_HEAD2 voicesfree32rx;
 static RAMDTCM SPINLOCK_t locklist32rx = SPINLOCK_INIT;
 
-static RAMDTCM LIST_ENTRY2 speexfree16;		// Свободные буферы
-static RAMDTCM LIST_ENTRY2 speexready16;	// Буферы для обработки speex
+static RAMDTCM LIST_HEAD2 speexfree16;		// Свободные буферы
+static RAMDTCM LIST_HEAD2 speexready16;	// Буферы для обработки speex
 static RAMDTCM SPINLOCK_t speexlock = SPINLOCK_INIT;
 
 static RAMDTCM volatile uint_fast8_t uacoutplayer = 0;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
@@ -334,8 +334,8 @@ int_fast32_t buffers_dmabufferuacin16cachesize(void)
 		return (DMABUFFSIZE192RTS + DCACHEROWSIZE - 1) / DCACHEROWSIZE * DCACHEROWSIZE;
 	}
 
-	static RAMDTCM LIST_ENTRY2 voicesfree192rts;
-	static RAMDTCM LIST_ENTRY2 uacin192rts;	// Буферы для записи в вудиоканал USB к компьютеру спектра, 2*32*192 kS/S
+	static RAMDTCM LIST_HEAD2 voicesfree192rts;
+	static RAMDTCM LIST_HEAD2 uacin192rts;	// Буферы для записи в вудиоканал USB к компьютеру спектра, 2*32*192 kS/S
 
 #endif /* WITHRTS192 */
 
@@ -359,15 +359,15 @@ int_fast32_t buffers_dmabufferuacin16cachesize(void)
 		return (DMABUFFSIZE96RTS + DCACHEROWSIZE - 1) / DCACHEROWSIZE * DCACHEROWSIZE;
 	}
 
-	static RAMDTCM LIST_ENTRY2 uacin96rtsfree;
-	static RAMDTCM LIST_ENTRY2 uacin96rtsready;	// Буферы для записи в вудиоканал USB к компьютер спектра, 2*32*192 kS/S
+	static RAMDTCM LIST_HEAD2 uacin96rtsfree;
+	static RAMDTCM LIST_HEAD2 uacin96rtsready;	// Буферы для записи в вудиоканал USB к компьютер спектра, 2*32*192 kS/S
 
 #endif /* WITHRTS96 */
 
 static RAMDTCM SPINLOCK_t locklistrts = SPINLOCK_INIT;
 
-static RAMDTCM LIST_ENTRY2 uacinfree16;
-static RAMDTCM LIST_ENTRY2 uacinready16;	// Буферы для записи в вудиоканал USB к компьютер 2*16*24 kS/S
+static RAMDTCM LIST_HEAD2 uacinfree16;
+static RAMDTCM LIST_HEAD2 uacinready16;	// Буферы для записи в вудиоканал USB к компьютер 2*16*24 kS/S
 static RAMDTCM SPINLOCK_t locklistuacin16 = SPINLOCK_INIT;
 
 #endif /* WITHUSBUACIN */
@@ -384,8 +384,8 @@ typedef ALIGNX_BEGIN struct records16
 	unsigned topdata;	// index after last element
 } ALIGNX_END records16_t;
 
-static RAMDTCM LIST_ENTRY2 recordsfree16;		// Свободные буферы
-static RAMDTCM LIST_ENTRY2 recordsready16;	// Буферы для записи на SD CARD
+static RAMDTCM LIST_HEAD2 recordsfree16;		// Свободные буферы
+static RAMDTCM LIST_HEAD2 recordsready16;	// Буферы для записи на SD CARD
 
 static RAMDTCM volatile unsigned recdropped;
 static RAMDTCM volatile unsigned recbuffered;
@@ -402,8 +402,8 @@ typedef struct modems8
 	uint8_t buff [MODEMBUFFERSIZE8];
 } modems8_t;
 
-static RAMDTCM LIST_ENTRY2 modemsfree8;		// Свободные буферы
-static RAMDTCM LIST_ENTRY2 modemsrx8;	// Буферы с принятымти через модем данными
+static RAMDTCM LIST_HEAD2 modemsfree8;		// Свободные буферы
+static RAMDTCM LIST_HEAD2 modemsrx8;	// Буферы с принятымти через модем данными
 //static LIST_ENTRY modemstx8;	// Буферы с данными для передачи через модем
 
 #endif /* WITHMODEM */
@@ -421,7 +421,7 @@ typedef struct message
 
 static RAMDTCM LIST_ENTRY msgsfree8;		// Свободные буферы
 static RAMDTCM LIST_ENTRY msgsready8;		// Заполненные - готовые к обработке
-static RAMDTCM SPINLOCK_t locklist8 = SPINLOCK_INIT;
+static RAMDTCM SPINLOCK_t locklistmsg8 = SPINLOCK_INIT;
 
 #if WITHBUFFERSDEBUG
 
@@ -664,6 +664,7 @@ void buffers_initialize(void)
 		p->tag3 = p;
 		InsertHeadList2(& voicesfree16, & p->item);
 	}
+	SPINLOCK_INITIALIZE(& locklist16);
 
 #if WITHUSBUACIN
 
@@ -680,6 +681,7 @@ void buffers_initialize(void)
 		p->tag3 = p;
 		InsertHeadList2(& uacinfree16, & p->item);
 	}
+	SPINLOCK_INITIALIZE(& locklistuacin16);
 
 	//ASSERT((DMABUFFSIZEUACIN16 % HARDWARE_RTSDMABYTES) == 0);
 	ASSERT((DMABUFFSIZE192RTS % HARDWARE_RTSDMABYTES) == 0);
@@ -727,6 +729,7 @@ void buffers_initialize(void)
 		}
 
 	#endif /* WITHRTS192 */
+	SPINLOCK_INITIALIZE(& locklistrts);
 
 #endif /* WITHUSBUACIN */
 
@@ -741,6 +744,7 @@ void buffers_initialize(void)
 		p->tag3 = p;
 		InsertHeadList2(& voicesfree32tx, & p->item);
 	}
+	SPINLOCK_INITIALIZE(& locklist32tx);
 
     static ALIGN1K_BEGIN RAM_D2 voice32rx_t voicesarray32rx [6] ALIGN1K_END;	// без WFM надо 2
 
@@ -750,6 +754,7 @@ void buffers_initialize(void)
 		voice32rx_t * const p = & voicesarray32rx [i];
 		InsertHeadList2(& voicesfree32rx, & p->item);
 	}
+	SPINLOCK_INITIALIZE(& locklist32rx);
 
 #if WITHUSEAUDIOREC
 
@@ -803,6 +808,7 @@ void buffers_initialize(void)
 		denoise16_t * const p = & speexarray16 [i];
 		InsertHeadList2(& speexfree16, & p->item);
 	}
+	SPINLOCK_INITIALIZE(& speexlock);
 
 #endif /* WITHINTEGRATEDDSP */
 
@@ -820,6 +826,7 @@ void buffers_initialize(void)
 		//InitializeListHead2(& p->item);
 		InsertHeadList(& msgsfree8, & p->item);
 	}
+	SPINLOCK_INITIALIZE(& locklistmsg8);
 }
 
 /* Cообщения от уровня обработчиков прерываний к user-level функциям. */
@@ -829,18 +836,18 @@ uint_fast8_t takemsgready_user(uint8_t * * dest)
 {
 	system_disableIRQ();
 
-	SPIN_LOCK(& locklist8);
+	SPIN_LOCK(& locklistmsg8);
 	if (! IsListEmpty(& msgsready8))
 	{
 		PLIST_ENTRY t = RemoveTailList(& msgsready8);
-		SPIN_UNLOCK(& locklist8);
+		SPIN_UNLOCK(& locklistmsg8);
 		system_enableIRQ();
 		message_t * const p = CONTAINING_RECORD(t, message_t, item);
 		* dest = p->data;
 		ASSERT(p->type != MSGT_EMPTY);
 		return p->type;
 	}
-	SPIN_UNLOCK(& locklist8);
+	SPIN_UNLOCK(& locklistmsg8);
 	system_enableIRQ();
 	return MSGT_EMPTY;
 }
@@ -853,27 +860,27 @@ void releasemsgbuffer_user(uint8_t * dest)
 	ASSERT(p->tag2 == p);
 	ASSERT(p->tag3 == p);
 	system_disableIRQ();
-	SPIN_LOCK(& locklist8);
+	SPIN_LOCK(& locklistmsg8);
 	InsertHeadList(& msgsfree8, & p->item);
-	SPIN_UNLOCK(& locklist8);
+	SPIN_UNLOCK(& locklistmsg8);
 	system_enableIRQ();
 }
 
 // Буфер для формирования сообщения
 size_t takemsgbufferfree_low(uint8_t * * dest)
 {
-	SPIN_LOCK(& locklist8);
+	SPIN_LOCK(& locklistmsg8);
 	if (! IsListEmpty(& msgsfree8))
 	{
 		PLIST_ENTRY t = RemoveTailList(& msgsfree8);
-		SPIN_UNLOCK(& locklist8);
+		SPIN_UNLOCK(& locklistmsg8);
 		message_t * const p = CONTAINING_RECORD(t, message_t, item);
 		ASSERT(p->tag2 == p);
 		ASSERT(p->tag3 == p);
 		* dest = p->data;
 		return (MSGBUFFERSIZE8 * sizeof p->data [0]);
 	}
-	SPIN_UNLOCK(& locklist8);
+	SPIN_UNLOCK(& locklistmsg8);
 	return 0;
 }
 
@@ -885,15 +892,15 @@ void placesemsgbuffer_low(uint_fast8_t type, uint8_t * dest)
 	ASSERT(p->tag2 == p);
 	ASSERT(p->tag3 == p);
 	p->type = type;
-	SPIN_LOCK(& locklist8);
+	SPIN_LOCK(& locklistmsg8);
 	InsertHeadList(& msgsready8, & p->item);
-	SPIN_UNLOCK(& locklist8);
+	SPIN_UNLOCK(& locklistmsg8);
 }
 
 #if WITHINTEGRATEDDSP
 
 // Оставить в указанной очереди не более PHONESLEVEL буферов
-static void buffers_purge16(LIST_ENTRY2 * list)
+static void buffers_purge16(LIST_HEAD2 * list)
 {
 	return;
 	if (GetCountList2(list) > PHONESLEVEL * 3)
@@ -1372,14 +1379,10 @@ static RAMFUNC unsigned getsamplemsuacout(
 		else
 		{
 			PLIST_ENTRY t = RemoveTailList3(& resample16);
-
 			p = CONTAINING_RECORD(t, voice16_t, item);
-			SPIN_UNLOCK(& locklist16);
-			
 			if (GetReadyList3(& resample16) == 0)
 				skipsense = SKIPPED;
 			const uint_fast8_t valid = GetReadyList3(& resample16) && skipsense == 0;
-
 			skipsense = (skipsense == 0) ? SKIPPED : skipsense - 1;
 
 			const unsigned LOW = RESAMPLE16NORMAL - (SKIPPED * 1);
@@ -1387,6 +1390,7 @@ static RAMFUNC unsigned getsamplemsuacout(
 
 			if (valid && GetCountList3(& resample16) <= LOW)
 			{
+				SPIN_UNLOCK(& locklist16);
 				// добавляется один сэмпл к выходному потоку раз в SKIPPED блоков
 #if WITHBUFFERSDEBUG
 				++ nbadd;
@@ -1417,6 +1421,7 @@ static RAMFUNC unsigned getsamplemsuacout(
 			}
 			else if (valid && GetCountList3(& resample16) >= HIGH)
 			{
+				SPIN_UNLOCK(& locklist16);
 #if WITHBUFFERSDEBUG
 				++ nbdel;
 #endif /* WITHBUFFERSDEBUG */
@@ -1427,6 +1432,7 @@ static RAMFUNC unsigned getsamplemsuacout(
 			}
 			else
 			{
+				SPIN_UNLOCK(& locklist16);
 				// Ресэмплинг не требуется или нет запаса входных данных
 				part = NPARTS - 1;
 				datas [part] = & p->buff [0];
@@ -1883,10 +1889,10 @@ RAMFUNC uintptr_t allocate_dmabuffer16(void)
 void RAMFUNC release_dmabuffer32tx(uintptr_t addr)
 {
 	//ASSERT(addr != 0);
-	SPIN_LOCK(& locklist32tx);
 	voice32tx_t * const p = CONTAINING_RECORD(addr, voice32tx_t, buff);
 	ASSERT(p->tag2 == p);
 	ASSERT(p->tag3 == p);
+	SPIN_LOCK(& locklist32tx);
 	InsertHeadList2(& voicesfree32tx, & p->item);
 	SPIN_UNLOCK(& locklist32tx);
 }
