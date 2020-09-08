@@ -754,7 +754,7 @@ void display2_init_af_spectre(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)		//
 	afsp.y = smeter_params.y + SM_BG_H - 10;
 	afsp.w = smeter_params.ge - smeter_params.gs;
 	afsp.h = 40;
-	afsp.visiblefftsize = 95;
+	afsp.visiblefftsize = NORMALFFT / 6;
 	afsp.step = afsp.w / afsp.visiblefftsize;
 	afsp.is_ready = 0;
 }
