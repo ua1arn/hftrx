@@ -23,6 +23,11 @@ char * safestrcpy(char * dst, size_t blen, const char * src);
 
 void printhex(unsigned long voffs, const unsigned char * buff, unsigned length);
 
+// spool-based functions for debug
+int dbg_puts_impl_P(const FLASHMEM char * s);
+int dbg_puts_impl(const char * s);
+int dbg_putchar(int c);
+int dbg_getchar(char * r);
 
 #if WITHDEBUG
 	#define TP() \
@@ -68,14 +73,6 @@ void printhex(unsigned long voffs, const unsigned char * buff, unsigned length);
 	#define TRACE5(f,a1,a2,a3,a4,a5)		do {} while (0)
 
 #endif /* WITHDEBUG */
-
-// spool-based functions for debug
-int dbg_puts_impl_P(const FLASHMEM char * s);
-int dbg_puts_impl(const char * s);
-int dbg_putchar(int c);
-int dbg_getchar(char * r);
-
-
 
 #if WITHDEBUG && WITHUART1HW && WITHDEBUG_USART1
 	// Отладочные функции работают через USART1
