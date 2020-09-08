@@ -718,10 +718,10 @@ typedef struct {
 	float32_t max_val;
 	uint_fast16_t x;
 	uint_fast16_t y;
-	uint_fast8_t w;
-	uint_fast8_t h;
+	uint_fast16_t w;
+	uint_fast16_t h;
 	uint_fast16_t visiblefftsize;
-	uint_fast8_t step;
+	uint_fast16_t step;
 } afsp_t;
 
 static afsp_t afsp;
@@ -785,7 +785,9 @@ void display2_af_spectre(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
 	{
 		for (uint_fast16_t i = 3; i < afsp.w; i ++)
 		{
-			uint_fast16_t fftpos = FIRBUFSIZE - round(i / afsp.step);
+			ASSERT(i < ARRAY_SIZE(y_old_array));
+			uint_fast16_t fftpos = FIRBUFSIZE - roundf(i / afsp.step);
+			ASSERT(fftpos < ARRAY_SIZE(afsp.fft_buf));
 			const FLOAT_t val = normalize(afsp.fft_buf [fftpos], 0, afsp.max_val, afsp.h);
 			const FLOAT_t yy = y_old_array [i] * (FLOAT_t) 0.8 + (FLOAT_t) 0.2 * val;
 			y_old_array [i] = yy;
