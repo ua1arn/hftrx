@@ -465,13 +465,14 @@
 	#if LCDMODE_AT070TNA2 || LCDMODE_AT070TN90
 		#if 0
 			#define WITHTOUCHGUI		1
-			//#define WITHAFSPECTRE		1
+			#define WITHAFSPECTRE		1
 			#define WITHALPHA			64
 			#define FORMATFROMLIBRARY 	1
 			#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 		#endif
 	#endif /* LCDMODE_AT070TNA2 || LCDMODE_AT070TN90 */
 	//#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
+	#define WITHAFSPECTRE		1
 
 	//#define LO1PHASES	1		/* Прямой синтез первого гетеродина двумя DDS с програмимруемым сдвигом фазы */
 	#define WITHFANTIMER	1	/* выключающийся по таймеру вентилятор в усилителе мощности */
