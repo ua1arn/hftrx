@@ -787,7 +787,7 @@ void display2_af_spectre(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
 		{
 			uint_fast16_t fftpos = FIRBUFSIZE - round(i / afsp.step);
 			const FLOAT_t val = normalize(afsp.fft_buf [fftpos], 0, afsp.max_val, afsp.h);
-			const FLOAT_t yy = y_old_array [i] * 0.8 + 0.2 * val;
+			const FLOAT_t yy = y_old_array [i] * (FLOAT_t) 0.8 + (FLOAT_t) 0.2 * val;
 			y_old_array [i] = yy;
 			colmain_line(fr, DIM_X, DIM_Y, afsp.x + i - 3, afsp.y - yy, afsp.x + i - 3, afsp.y, COLORMAIN_YELLOW, 0);
 		}

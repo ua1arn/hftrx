@@ -7946,8 +7946,6 @@ static void processingonebuff(uint_fast8_t pathi, lmsnrstate_t * const nrp, spee
 #endif /* WITHNOSPEEX */
 }
 
-void afsp_save_sample(FLOAT_t v);
-
 // user-mode processing
 void
 audioproc_spool_user(void)
@@ -7975,8 +7973,8 @@ audioproc_spool_user(void)
 	  #endif /* WITHUSEDUALWATCH */
 
 	#if WITHAFSPECTRE
-			afsp_save_sample(lmsnrstates [0].outsp [i]);
-	#endif
+			afsp_save_sample(lmsnrstates [0].outsp [i]); /* RX A */
+	#endif /* WITHAFSPECTRE */
 		}
 		// Освобождаем буфер
 		releasespeexbuffer_user(p);

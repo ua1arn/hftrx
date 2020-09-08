@@ -287,7 +287,7 @@
 
 #else /* WITHISBOOTLOADER */
 
-	//#define WITHSMPSYSTEM	1	/* разрешение поддержки SMP, Symmetric Multiprocessing */
+	#define WITHSMPSYSTEM	1	/* разрешение поддержки SMP, Symmetric Multiprocessing */
 	#define ENCRES_DEFAULT ENCRES_128
 	//#define ENCRES_DEFAULT ENCRES_24
 	#define WITHDIRECTFREQENER	1 //(! CTLSTYLE_SW2011ALL && ! CTLSTYLE_UA3DKC)
@@ -465,6 +465,7 @@
 	#if LCDMODE_AT070TNA2 || LCDMODE_AT070TN90
 		#if 0
 			#define WITHTOUCHGUI		1
+			//#define WITHAFSPECTRE		1
 			#define WITHALPHA			64
 			#define FORMATFROMLIBRARY 	1
 			#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
