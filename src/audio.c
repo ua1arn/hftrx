@@ -4965,6 +4965,8 @@ static void printsigwnd(void)
 
 void apply_window_function(float32_t * v, uint_fast16_t size)
 {
+	ASSERT(size == NORMALFFT);
+	ASSERT(size == ARRAY_SIZE(wnd256));
 	arm_cmplx_mult_real_f32(v, wnd256, v, size);
 }
 
