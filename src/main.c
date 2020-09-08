@@ -16680,6 +16680,9 @@ void display2_menu_valxx(
 		{
 			const FLASHMEM char * msg;
 #if CPUSTYLE_STM32MP1
+			RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_BSECEN;
+			(void) RCC->MP_APB5ENSETR;
+
 			unsigned rpn = ((* (volatile uint32_t *) RPN_BASE) & RPN_ID_Msk) >> RPN_ID_Pos;
 			switch (rpn)
 			{
