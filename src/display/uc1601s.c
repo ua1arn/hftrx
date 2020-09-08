@@ -10,8 +10,8 @@
 #include "display.h"
 #include <stdint.h>
 
-#include "./display.h"
-#include "./formats.h"
+#include "display.h"
+#include "formats.h"
 
 #if LCDMODE_UC1601
 

@@ -711,17 +711,22 @@ display2_smeter15(
 
 #if WITHAFSPECTRE
 
+enum
+{
+	NORMALFFT = FFTSizeSpectrum			// размер буфера для отображения
+};
+
 typedef struct {
-	float32_t raw_buf [FIRBUFSIZE * 4];
-	float32_t fft_buf [FIRBUFSIZE * 2];
+	float32_t raw_buf [NORMALFFT * 2];		// Для последующей децимации /2
+	float32_t fft_buf [NORMALFFT * 2];
 	uint_fast8_t is_ready;
 	float32_t max_val;
 	uint_fast16_t x;
 	uint_fast16_t y;
-	uint_fast8_t w;
-	uint_fast8_t h;
+	uint_fast16_t w;
+	uint_fast16_t h;
 	uint_fast16_t visiblefftsize;
-	uint_fast8_t step;
+	uint_fast16_t step;
 } afsp_t;
 
 static afsp_t afsp;
@@ -736,7 +741,7 @@ void afsp_save_sample(float32_t v)
 		i ++;
 	}
 
-	if (i >= FIRBUFSIZE)
+	if (i >= ARRAY_SIZE(afsp.raw_buf))
 	{
 		afsp.is_ready = 1;
 		i = 0;
@@ -749,7 +754,7 @@ void display2_init_af_spectre(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)		//
 	afsp.y = smeter_params.y + SM_BG_H - 10;
 	afsp.w = smeter_params.ge - smeter_params.gs;
 	afsp.h = 40;
-	afsp.visiblefftsize = 95;
+	afsp.visiblefftsize = NORMALFFT / 6;
 	afsp.step = afsp.w / afsp.visiblefftsize;
 	afsp.is_ready = 0;
 }
@@ -762,17 +767,17 @@ void display2_latch_af_spectre(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
 		afsp.is_ready = 0;
 
 		fftzoom_x2(afsp.raw_buf);
-
-		for (uint_fast16_t i = 0; i < FIRBUFSIZE; i ++)
+		// осьалась половина буфера
+		for (uint_fast16_t i = 0; i < NORMALFFT; i ++)
 		{
 			afsp.fft_buf [i * 2 + 0] = afsp.raw_buf [i];
 			afsp.fft_buf [i * 2 + 1] = 0;
 		}
 
-		apply_window_function(afsp.fft_buf, FIRBUFSIZE);
+		apply_window_function(afsp.fft_buf, NORMALFFT);
 		arm_cfft_f32(FFTCONFIGSpectrum, afsp.fft_buf, 0, 1);
-		arm_cmplx_mag_f32(afsp.fft_buf, afsp.fft_buf, FIRBUFSIZE);
-		arm_max_no_idx_f32(afsp.fft_buf, FIRBUFSIZE, & afsp.max_val);
+		arm_cmplx_mag_f32(afsp.fft_buf, afsp.fft_buf, NORMALFFT);		//
+		arm_max_no_idx_f32(afsp.fft_buf, NORMALFFT, & afsp.max_val);	// поиск в первой половине
 	}
 }
 
@@ -785,9 +790,11 @@ void display2_af_spectre(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
 	{
 		for (uint_fast16_t i = 3; i < afsp.w; i ++)
 		{
-			uint_fast16_t fftpos = FIRBUFSIZE - round(i / afsp.step);
+			ASSERT(i < ARRAY_SIZE(y_old_array));
+			const uint_fast16_t fftpos = NORMALFFT - roundf(i / afsp.step);
+			ASSERT(fftpos < ARRAY_SIZE(afsp.fft_buf));
 			const FLOAT_t val = normalize(afsp.fft_buf [fftpos], 0, afsp.max_val, afsp.h);
-			const FLOAT_t yy = y_old_array [i] * 0.8 + 0.2 * val;
+			const FLOAT_t yy = y_old_array [i] * (FLOAT_t) 0.8 + (FLOAT_t) 0.2 * val;
 			y_old_array [i] = yy;
 			colmain_line(fr, DIM_X, DIM_Y, afsp.x + i - 3, afsp.y - yy, afsp.x + i - 3, afsp.y, COLORMAIN_YELLOW, 0);
 		}

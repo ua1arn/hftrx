@@ -170,7 +170,7 @@ SECTIONS
 	.noinit :
 	{
 		. = ALIGN(32);
-		*(.noinit)
+		KEEP(*(.noinit))
 		. = ALIGN(32);
 	} > RAM
 

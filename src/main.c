@@ -7946,8 +7946,6 @@ static void processingonebuff(uint_fast8_t pathi, lmsnrstate_t * const nrp, spee
 #endif /* WITHNOSPEEX */
 }
 
-void afsp_save_sample(FLOAT_t v);
-
 // user-mode processing
 void
 audioproc_spool_user(void)
@@ -7975,8 +7973,8 @@ audioproc_spool_user(void)
 	  #endif /* WITHUSEDUALWATCH */
 
 	#if WITHAFSPECTRE
-			afsp_save_sample(lmsnrstates [0].outsp [i]);
-	#endif
+			afsp_save_sample(lmsnrstates [0].outsp [i]); /* RX A */
+	#endif /* WITHAFSPECTRE */
 		}
 		// Освобождаем буфер
 		releasespeexbuffer_user(p);
@@ -16680,8 +16678,27 @@ void display2_menu_valxx(
 
 	case RJ_CPUTYPE:
 		{
-			static const FLASHMEM char msg [] = "CPUxxx";
+			const FLASHMEM char * msg;
+#if CPUSTYLE_STM32MP1
+			RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_BSECEN;
+			(void) RCC->MP_APB5ENSETR;
 
+			unsigned rpn = ((* (volatile uint32_t *) RPN_BASE) & RPN_ID_Msk) >> RPN_ID_Pos;
+			switch (rpn)
+			{
+			case 0x24: 	msg = PSTR("STM32MP153Cx"); break;
+			case 0x25: 	msg = PSTR("STM32MP153Ax"); break;
+			case 0xA4: 	msg = PSTR("STM32MP153Fx"); break;
+			case 0xA5: 	msg = PSTR("STM32MP153Dx"); break;
+			case 0x00: 	msg = PSTR("STM32MP157Cx"); break;
+			case 0x01: 	msg = PSTR("STM32MP157Ax"); break;
+			case 0x80: 	msg = PSTR("STM32MP157Fx"); break;
+			case 0x81:	msg = PSTR("STM32MP157Dx"); break;
+			default: 	msg = PSTR("STM32MP15xxx"); break;
+			}
+#else
+			msg = PSTR("CPUxxx");
+#endif
 			width = VALUEW;
 			comma = strlen_P(msg);
 			display_menu_string_P(x, y, msg, width, comma);
@@ -17820,68 +17837,6 @@ processkeyboard(uint_fast8_t kbch)
 }
 
 #endif /* WITHKEYBOARD */
-
-
-#if WITHDEBUG
-
-int dbg_getchar(char * r)
-{
-	return HARDWARE_DEBUG_GETCHAR(r);
-}
-
-int dbg_putchar(int c)
-{
-	if (c == '\n')
-		dbg_putchar('\r');
-
-	while (HARDWARE_DEBUG_PUTCHAR(c) == 0)
-		;
-	return c;
-}
-
-int dbg_puts_impl_P(const FLASHMEM char * s)
-{
-	char c;
-	while ((c = * s ++) != '\0')
-	{
-		dbg_putchar(c);
-	}
-	return 0;
-}
-
-int dbg_puts_impl(const char * s)
-{
-	char c;
-	while ((c = * s ++) != '\0')
-	{
-		dbg_putchar(c);
-	}
-	return 0;
-}
-
-#else /* WITHDEBUG */
-
-int dbg_getchar(char * r)
-{
-	return 0;
-}
-
-int dbg_putchar(int c)
-{
-	return c;
-}
-
-int dbg_puts_impl_P(const FLASHMEM char * s)
-{
-	(void) s;
-	return 0;
-}
-int dbg_puts_impl(const char * s)
-{
-	(void) s;
-	return 0;
-}
-#endif /* WITHDEBUG */
 
 /* вызывается при запрещённых прерываниях. */
 static void 

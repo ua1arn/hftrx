@@ -127,11 +127,11 @@ SECTIONS
 	.data : AT (__etext)
 	{
 		__data_start__ = .;
-		*(vtable)
+		KEEP(*(vtable))
 		. = ALIGN(4);
-		*(.data*)
+		KEEP(*(.data*))
 		. = ALIGN(4);
-		*(.dtcm*)
+		KEEP(*(.dtcm*))
 	   . = ALIGN(4);	/* two lines added by ua1arn */
 		*(.ramfunc)
 
@@ -176,7 +176,7 @@ SECTIONS
 	.noinit :
 	{
 		. = ALIGN(32);
-		*(.noinit)
+		KEEP(*(.noinit))
 		. = ALIGN(32);
 	} > RAM
 

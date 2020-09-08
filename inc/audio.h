@@ -727,7 +727,7 @@ typedef struct codec2if_tag
 
 const codec2if_t * board_getfpgacodecif(void);		// получить интерфейс управления кодеком для получения данных о радиосигнале
 
-/* +++ UAC OUT data save */
+/* +++ UAC OUT data save - использование данных от компьютера. */
 void uacout_buffer_initialize(void);
 void uacout_buffer_start(void);
 void uacout_buffer_stop(void);
@@ -738,6 +738,9 @@ void uacout_buffer_save_realtime(const uint8_t * buff, uint_fast16_t size, uint_
  * Возврат 0, если нет ничего для воспроизведения.
  */
 uint_fast8_t takewavsample(FLOAT32P_t * rv, uint_fast8_t suspend);
+
+
+void afsp_save_sample(FLOAT_t v);
 
 #ifdef __cplusplus
 }

@@ -938,9 +938,14 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 	RCC->APB2ENR |= RCC_APB2ENR_USART1EN; // Включение тактирования USART1.
 	(void) RCC->APB2ENR;
 
+	USART1->CR1 = 0;
+
 #if WITHUARTFIFO
 	USART1->CR1 |= USART_CR1_FIFOEN_Msk;
+#else /* WITHUARTFIFO */
+	USART1->CR1 &= ~ USART_CR1_FIFOEN_Msk;
 #endif /* WITHUARTFIFO */
+
 	USART1->CR1 |= (USART_CR1_RE | USART_CR1_TE); // Transmitter Enable & Receiver Enables
 
 	HARDWARE_USART1_INITIALIZE();	/* Присоединить периферию к выводам */
@@ -1137,11 +1142,19 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 
 	RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_USART1EN; // Включение тактирования USART1.
 	(void) RCC->MP_APB5ENSETR;
+	RCC->APB5RSTSETR = RCC_APB5RSTSETR_USART1RST; // Установить сброс USART1.
+	(void) RCC->APB5RSTSETR;
+	RCC->APB5RSTCLRR = RCC_APB5RSTCLRR_USART1RST; // Снять брос USART1.
+	(void) RCC->APB5RSTCLRR;
 
+	USART1->CR1 = 0;
 
 #if WITHUARTFIFO
 	USART1->CR1 |= USART_CR1_FIFOEN_Msk;
+#else /* WITHUARTFIFO */
+	USART1->CR1 &= ~ USART_CR1_FIFOEN_Msk;
 #endif /* WITHUARTFIFO */
+
 	USART1->CR1 |= (USART_CR1_RE | USART_CR1_TE); // Transmitter Enable & Receiver Enables
 
 	HARDWARE_USART1_INITIALIZE();	/* Присоединить периферию к выводам */
@@ -1999,9 +2012,14 @@ void hardware_uart2_initialize(uint_fast8_t debug)
 	RCC->APB1LENR |= RCC_APB1LENR_USART2EN; // Включение тактирования USART2.
 	(void) RCC->APB1LENR;
 
+	USART2->CR1 = 0;
+
 #if WITHUARTFIFO
 	USART2->CR1 |= USART_CR1_FIFOEN_Msk;
+#else /* WITHUARTFIFO */
+	USART2->CR1 &= ~ USART_CR1_FIFOEN_Msk;
 #endif /* WITHUARTFIFO */
+
 	USART2->CR1 |= (USART_CR1_RE | USART_CR1_TE); // Transmitter Enable & Receiver Enables
 
 	HARDWARE_USART2_INITIALIZE();	/* Присоединить периферию к выводам */
@@ -2211,11 +2229,19 @@ xxxx!;
 
 	RCC->MP_APB1ENSETR = RCC_MC_APB1ENSETR_USART2EN; // Включение тактирования USART2.
 	(void) RCC->MP_APB1ENSETR;
+	RCC->APB1RSTSETR = RCC_APB1RSTSETR_USART2RST; // Установить сброс USART2.
+	(void) RCC->APB1RSTSETR;
+	RCC->APB1RSTCLRR = RCC_APB1RSTCLRR_USART2RST; // Снять брос USART2.
+	(void) RCC->APB1RSTCLRR;
 
+	USART2->CR1 = 0;
 
 #if WITHUARTFIFO
 	USART2->CR1 |= USART_CR1_FIFOEN_Msk;
+#else /* WITHUARTFIFO */
+	USART2->CR1 &= ~ USART_CR1_FIFOEN_Msk;
 #endif /* WITHUARTFIFO */
+
 	USART2->CR1 |= (USART_CR1_RE | USART_CR1_TE); // Transmitter Enable & Receiver Enables
 
 	HARDWARE_USART2_INITIALIZE();	/* Присоединить периферию к выводам */

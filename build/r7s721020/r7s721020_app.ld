@@ -126,8 +126,8 @@ SECTIONS
 
 		KEEP(*(.eh_frame*))
 
-		*(vtable)
-		*(.data*)
+		KEEP(*(vtable))
+		KEEP(*(.data*))
 	   . = ALIGN(4);	/* one line added by ua1arn */
 
 		. = ALIGN(4);
@@ -171,14 +171,14 @@ SECTIONS
 	.noinit :
 	{
 		. = ALIGN(32);
-		*(.noinit)
+		KEEP(*(.noinit))
 		. = ALIGN(32);
 	} > RAM
 
 	.vram :
 	{
 		. = ALIGN(32);
-		*(.framebuff)
+		KEEP(*(.framebuff))
 		. = ALIGN(32);
 	} > RAM
 

@@ -5324,6 +5324,34 @@ void hightests(void)
 		PRINTF(PSTR("__GNUC__=%d, __GNUC_MINOR__=%d\n"), (int) __GNUC__, (int) __GNUC_MINOR__);
 	}
 #endif
+#if CPUSTYLE_STM32MP1
+	{
+
+		RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_BSECEN;
+		(void) RCC->MP_APB5ENSETR;
+	//	0x24: STM32MP153Cx
+	//	0x25: STM32MP153Ax
+	//	0xA4: STM32MP153Fx
+	//	0xA5: STM32MP153Dx
+	//	0x00: STM32MP157Cx
+	//	0x01: STM32MP157Ax
+	//	0x80: STM32MP157Fx
+	//	0x81: STM32MP157Dx
+		unsigned rpn = ((* (volatile uint32_t *) RPN_BASE) & RPN_ID_Msk) >> RPN_ID_Pos;
+		switch (rpn)
+		{
+		case 0x24: PRINTF(PSTR("STM32MP153Cx\n")); break;
+		case 0x25: PRINTF(PSTR("STM32MP153Ax\n")); break;
+		case 0xA4: PRINTF(PSTR("STM32MP153Fx\n")); break;
+		case 0xA5: PRINTF(PSTR("STM32MP153Dx\n")); break;
+		case 0x00: PRINTF(PSTR("STM32MP157Cx\n")); break;
+		case 0x01: PRINTF(PSTR("STM32MP157Ax\n")); break;
+		case 0x80: PRINTF(PSTR("STM32MP157Fx\n")); break;
+		case 0x81: PRINTF(PSTR("STM32MP157Dx\n")); break;
+		default: PRINTF(PSTR("STN32MP1 RPN=%02X\n"), rpn); break;
+		}
+	}
+#endif
 #if 0 && WITHDEBUG
 	{
 		// FPU speed test

@@ -716,12 +716,6 @@ uint_fast8_t debugusb_getchar(char * cp); /* приём символа, если
 void debugusb_parsechar(uint_fast8_t c);	/* вызывается из обработчика прерываний */
 void debugusb_sendchar(void * ctx);			/* вызывается из обработчика прерываний */
 
-// spool-based functions for debug
-int dbg_puts_impl_P(const FLASHMEM char * s);
-int dbg_puts_impl(const char * s);
-int dbg_putchar(int c);
-int dbg_getchar(char * r);
-
 /* TWI (I2C) interface */
 #define I2C_RETRIES 3	/* количество повторов */
 void i2c_initialize(void);
