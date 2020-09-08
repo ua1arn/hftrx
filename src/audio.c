@@ -4800,12 +4800,11 @@ typedef struct fftbuff_tag
 	LIST_ENTRY item;
 	float32_t largebuffI [LARGEFFT];
 	float32_t largebuffQ [LARGEFFT];
-	unsigned filled;	// 0..LARGEFFT-1
 } fftbuff_t;
 
 static LIST_ENTRY fftbuffree;
 static LIST_ENTRY fftbufready;
-static RAMDTCM SPINLOCK_t fftlock = SPINLOCK_INIT;
+static RAMDTCM SPINLOCK_t fftlock;
 
 // realtime-mode function
 uint_fast8_t allocate_fftbuffer_low(fftbuff_t * * dest)
@@ -4869,6 +4868,7 @@ uint_fast8_t  getfilled_fftbuffer(fftbuff_t * * dest)
 }
 
 static fftbuff_t * pfill [NOVERLAP];
+static unsigned filleds [NOVERLAP]; // 0..LARGEFFT-1
 
 // сохранение сэмпла для отображения спектра
 void saveIQRTSxx(FLOAT_t iv, FLOAT_t qv)
@@ -4885,14 +4885,14 @@ void saveIQRTSxx(FLOAT_t iv, FLOAT_t qv)
 				TP();
 				continue;	/* обшибочная ситуация, нарушает фиксированный сдвиг перекрытия буферов */
 			}
-			(* ppf)->filled = 0;
+			filleds [i] = 0;
 		}
 		fftbuff_t * const pf = * ppf;
 
-		pf->largebuffI [pf->filled] = qv;
-		pf->largebuffQ [pf->filled] = iv;
+		pf->largebuffI [filleds [i]] = qv;
+		pf->largebuffQ [filleds [i]] = iv;
 
-		if (++ pf->filled >= LARGEFFT)
+		if (++ filleds [i] >= LARGEFFT)
 		{
 			saveready_fftbuffer_low(pf);
 			* ppf = NULL;
@@ -4920,10 +4920,11 @@ void fftbuffer_initialize(void)
 		VERIFY(allocate_fftbuffer_low(ppf) != 0);
 		/* установка начальной позиции для заполнения со сдвигом. */
 		const unsigned filled = (i * LARGEFFT / NOVERLAP);
-		(* ppf)->filled = filled;
+		filleds [i] = filled;
 		arm_fill_f32(0, (* ppf)->largebuffI, filled);
 		arm_fill_f32(0, (* ppf)->largebuffQ, filled);
 	}
+	SPINLOCK_INITIALIZE(& fftlock);
 }
 
 #if 0
