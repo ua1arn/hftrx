@@ -751,7 +751,7 @@ typedef struct spinlock_tag {
 
 #define SPINLOCK_t spinlock_t
 #define SPINLOCK_INIT { 0 }
-#define SPINLOCK_INIT_EXEC 0
+#define SPINLOCK_INITIALIZE(p) do { (p)->lock = 0; } while (0)
 
 #if WITHSMPSYSTEM
 	/* Пока привязка процессора обрабатывающего прерывание по приоритету. */
@@ -760,8 +760,15 @@ typedef struct spinlock_tag {
 	#define TARGETCPU_OVRT 	(1u << 0)		// CPU #0
 
 	#define SPIN_LOCK(p) do { spin_lock(p, __FILE__, __LINE__); } while (0)
-	#define SPIN_LOCK2(p, f, l) do { spin_lock2(p, (f), (l)); } while (0)
 	#define SPIN_UNLOCK(p) do { spin_unlock(p); } while (0)
+
+#if 1
+	#define SPIN_LOCK2(p, f, l) do { spin_lock2(p, (f), (l)); } while (0)
+	#define SPIN_UNLOCK2(p) do { spin_unlock(p); } while (0)
+#else
+	#define SPIN_LOCK2(p, f, l) do { } while (0)
+	#define SPIN_UNLOCK2(p) do { } while (0)
+#endif
 
 	void spin_lock(volatile spinlock_t * lock, const char * file, int line);
 	void spin_lock2(volatile spinlock_t * lock, const char * file, int line);

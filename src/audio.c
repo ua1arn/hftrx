@@ -3230,7 +3230,7 @@ static RAMDTCM FLOAT_t agclogof10 = 1;
 	
 static void agc_state_initialize(volatile agcstate_t * st, const volatile agcparams_t * agcp)
 {
-	st->lock.lock = SPINLOCK_INIT_EXEC;
+	SPINLOCK_INITIALIZE(& st->lock);
 	const FLOAT_t f0 = agcp->levelfence;
 	const FLOAT_t m0 = agcp->mininput;
 	const FLOAT_t siglevel = 0;

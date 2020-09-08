@@ -55,7 +55,7 @@ InitializeListHead2(LIST_ENTRY2 * ListHead)
 {
 	ListHead->tag2 = LIST2TAG2;
 	ListHead->tag3 = LIST2TAG3;
-	ListHead->lock2.lock = SPINLOCK_INIT_EXEC;
+	SPINLOCK_INITIALIZE(& ListHead->lock2);
 	(ListHead)->Count = 0;
 	InitializeListHead(& (ListHead)->item0);
 }
@@ -67,7 +67,7 @@ IsListEmpty2(LIST_ENTRY2 * ListHead, const char * file, int line)
 	ASSERT(ListHead->tag2 == LIST2TAG2 && ListHead->tag3 == LIST2TAG3);
 	ASSERT(ListHead->item0.Flink != NULL && ListHead->item0.Blink != NULL);
 	const int v = (ListHead)->Count == 0;
-	SPIN_UNLOCK(& ListHead->lock2);
+	SPIN_UNLOCK2(& ListHead->lock2);
 	return v;
 }
 
@@ -79,7 +79,7 @@ static void
 	ASSERT(ListHead->item0.Flink != NULL && ListHead->item0.Blink != NULL);
 	(ListHead)->Count += 1;
 	InsertHeadList(& (ListHead)->item0, (Entry));
-	SPIN_UNLOCK(& ListHead->lock2);
+	SPIN_UNLOCK2(& ListHead->lock2);
 }
 
 static PLIST_ENTRY
@@ -92,7 +92,7 @@ static PLIST_ENTRY
 	ASSERT(! IsListEmpty(& (ListHead)->item0));
 	(ListHead)->Count -= 1;
 	const PLIST_ENTRY t = RemoveTailList(& (ListHead)->item0);	/* прямо вернуть значение RemoveTailList нельзя - Microsoft сделал не совсем правильный макрос. Но по другому и не плучилось бы в стандартном языке C. */
-	SPIN_UNLOCK(& ListHead->lock2);
+	SPIN_UNLOCK2(& ListHead->lock2);
 	return t;
 }
 
@@ -102,7 +102,7 @@ static unsigned GetCountList2(LIST_ENTRY2 * ListHead, const char * file, int lin
 	SPIN_LOCK2(& ListHead->lock2, file, line);
 	ASSERT(ListHead->item0.Flink != NULL && ListHead->item0.Blink != NULL);
 	const unsigned count = (ListHead)->Count;
-	SPIN_UNLOCK(& ListHead->lock2);
+	SPIN_UNLOCK2(& ListHead->lock2);
 	return count;
 }
 
