@@ -16678,8 +16678,24 @@ void display2_menu_valxx(
 
 	case RJ_CPUTYPE:
 		{
-			static const FLASHMEM char msg [] = "CPUxxx";
-
+			const FLASHMEM char * msg;
+#if CPUSTYLE_STM32MP1
+			unsigned rpn = ((* (volatile uint32_t *) RPN_BASE) & RPN_ID_Msk) >> RPN_ID_Pos;
+			switch (rpn)
+			{
+			case 0x24: 	msg = PSTR("STM32MP153Cx"); break;
+			case 0x25: 	msg = PSTR("STM32MP153Ax"); break;
+			case 0xA4: 	msg = PSTR("STM32MP153Fx"); break;
+			case 0xA5: 	msg = PSTR("STM32MP153Dx"); break;
+			case 0x00: 	msg = PSTR("STM32MP157Cx"); break;
+			case 0x01: 	msg = PSTR("STM32MP157Ax"); break;
+			case 0x80: 	msg = PSTR("STM32MP157Fx"); break;
+			case 0x81:	msg = PSTR("STM32MP157Dx"); break;
+			default: 	msg = PSTR("STM32MP15xxx"); break;
+			}
+#else
+			msg = PSTR("CPUxxx");
+#endif
 			width = VALUEW;
 			comma = strlen_P(msg);
 			display_menu_string_P(x, y, msg, width, comma);
