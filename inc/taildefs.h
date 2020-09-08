@@ -782,7 +782,7 @@ typedef struct spinlock_tag {
 
 	#define SPIN_LOCK(p) do { (void) p; } while (0)
 	#define SPIN_UNLOCK(p) do { (void) p; } while (0)
-	#define SPIN_LOCK2(p) do { (void) p; } while (0)
+	#define SPIN_LOCK2(p, f, l) do { (void) p; } while (0)
 	#define SPIN_UNLOCK2(p) do { (void) p; } while (0)
 
 #endif /* WITHSMPSYSTEM */
