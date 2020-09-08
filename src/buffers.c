@@ -1247,9 +1247,9 @@ buffers_savetouacin192rts(voice192rts_t * p)
 	debugcount_rtsadc += sizeof p->buff / sizeof p->buff [0] / DMABUFSTEP192RTS;	// в буфере пары сэмплов по четыре байта
 #endif /* WITHBUFFERSDEBUG */
 
-	SPIN_LOCK(& locklist16);
+	SPIN_LOCK(& locklistrts);
 	InsertHeadList2(& uacin192rts, & p->item);
-	SPIN_UNLOCK(& locklist16);
+	SPIN_UNLOCK(& locklistrts);
 
 	refreshDMA_uacin();		// если DMA  остановлено - начать обмен
 }
@@ -1258,9 +1258,9 @@ static void buffers_savetonull192rts(voice192rts_t * p)
 {
 	ASSERT(p->tag2 == p);
 	ASSERT(p->tag3 == p);
-	SPIN_LOCK(& locklist16);
+	SPIN_LOCK(& locklistrts);
 	InsertHeadList2(& voicesfree192rts, & p->item);
-	SPIN_UNLOCK(& locklist16);
+	SPIN_UNLOCK(& locklistrts);
 }
 
 
@@ -2397,11 +2397,11 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 		// передали буфер, считать свободным
 		static void release_dmabuffer192rts(uint32_t addr)
 		{
-			SPIN_LOCK(& locklistrts);
 			voice192rts_t * const p = CONTAINING_RECORD(addr, voice192rts_t, u.buff);
 			ASSERT(p->tag == BUFFTAG_RTS192);
 			ASSERT(p->tag2 == p);
 			ASSERT(p->tag3 == p);
+			SPIN_LOCK(& locklistrts);
 			InsertHeadList2(& voicesfree192rts, & p->item);
 			SPIN_UNLOCK(& locklistrts);
 		}
