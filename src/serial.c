@@ -1142,6 +1142,10 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 
 	RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_USART1EN; // Включение тактирования USART1.
 	(void) RCC->MP_APB5ENSETR;
+	RCC->APB5RSTSETR = RCC_APB5RSTSETR_USART1RST; // Установить сброс USART1.
+	(void) RCC->APB5RSTSETR;
+	RCC->APB5RSTCLRR = RCC_APB5RSTCLRR_USART1RST; // Снять брос USART1.
+	(void) RCC->APB5RSTCLRR;
 
 	USART1->CR1 = 0;
 
@@ -2225,6 +2229,10 @@ xxxx!;
 
 	RCC->MP_APB1ENSETR = RCC_MC_APB1ENSETR_USART2EN; // Включение тактирования USART2.
 	(void) RCC->MP_APB1ENSETR;
+	RCC->APB1RSTSETR = RCC_APB1RSTSETR_USART2RST; // Установить сброс USART2.
+	(void) RCC->APB1RSTSETR;
+	RCC->APB1RSTCLRR = RCC_APB1RSTCLRR_USART2RST; // Снять брос USART2.
+	(void) RCC->APB1RSTCLRR;
 
 	USART2->CR1 = 0;
 
