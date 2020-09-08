@@ -177,9 +177,9 @@ SECTIONS
 		__Vectors_End = .;
 		__Vectors_Size = __Vectors_End - __Vectors;
 		. = ALIGN(64);
-		*(.itcm*)
+		KEEP(*(.itcm*))
 		. = ALIGN(64);
-		*(.dtcm*)
+		KEEP(*(.dtcm*))
 		__data2_end__ = .;
 	} > SYSRAM
 
@@ -198,14 +198,14 @@ SECTIONS
 	.noinit :
 	{
 		. = ALIGN(32);
-		*(.noinit*)
+		KEEP(*(.noinit*))
 		. = ALIGN(32);
 	} > RAM
 
 	.vram :
 	{
 		. = ALIGN(64);
-		*(.framebuff*)
+		KEEP(*(.framebuff*))
 	} > RAM
 
 	.heap (COPY):
