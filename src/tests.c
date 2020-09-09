@@ -5337,7 +5337,7 @@ void hightests(void)
 	//	0x01: STM32MP157Ax
 	//	0x80: STM32MP157Fx
 	//	0x81: STM32MP157Dx
-		unsigned rpn = ((* (volatile uint32_t *) RPN_BASE) & RPN_ID_Msk) >> RPN_ID_Pos;
+		const unsigned rpn = ((* (volatile uint32_t *) RPN_BASE) & RPN_ID_Msk) >> RPN_ID_Pos;
 		switch (rpn)
 		{
 		case 0x24: PRINTF(PSTR("STM32MP153Cx\n")); break;

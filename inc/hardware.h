@@ -915,6 +915,7 @@ void audioproc_spool_user(void);	// вызывать при выполнении
 
 void hardware_set_dotclock(unsigned long dotfreq);
 void hardware_nonguiyield(void);
+uint_fast8_t stm32mp1_overdrived(void);	// return 1 if CPU supports 800 MHz clock
 
 uint_fast32_t display_getdotclock(void);
 

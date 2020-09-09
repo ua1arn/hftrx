@@ -7192,10 +7192,9 @@ void /* RAMFUNC_NONILINE */ local_delay_us(int timeUS)
 		const unsigned long top = timeUS * 11000uL / (CPU_FREQ / 1000000);
 	#elif CPUSTYLE_R7S721
 		const unsigned long top = timeUS * 13800uL / (CPU_FREQ / 1000000);
-	#elif CPUSTYLE_STM32MP1 && CPU_FREQ <= 650000000uL
-		// калибровано для 650 МГц процессора
-		const unsigned long top = timeUS * 52500uL / (CPU_FREQ / 1000000);
 	#elif CPUSTYLE_STM32MP1
+		// калибровано для 650 МГц процессора
+		//const unsigned long top = timeUS * 52500uL / (CPU_FREQ / 1000000);
 		// калибровано для 800 МГц процессора
 		const unsigned long top = timeUS * 72500uL / (CPU_FREQ / 1000000);
 	#elif CPUSTYPE_TMS320F2833X && 1 // RAM code
@@ -9906,7 +9905,18 @@ static void vectors_relocate(void);
 
 #if CPUSTYLE_STM32MP1
 
-void stm32mp1_pll_initialize(void)
+// return 1 if CPU supports 800 MHz clock
+uint_fast8_t stm32mp1_overdrived(void)
+{
+	RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_BSECEN;
+	(void) RCC->MP_APB5ENSETR;
+
+	const unsigned rpn = ((* (volatile uint32_t *) RPN_BASE) & RPN_ID_Msk) >> RPN_ID_Pos;
+	return (rpn & 0x80) != 0;
+}
+
+
+static void stm32mp1_pll_initialize(void)
 {
 
 	//return;

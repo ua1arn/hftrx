@@ -37,11 +37,13 @@
 
 		// PLL1_1600
 		#define PLL1DIVM	2	// ref1_ck = 12 MHz
-		//#define PLL1DIVN	54	// 12*54 = 648 MHz
-		#define PLL1DIVN	66	// 12*66 = 792 MHz
 		#define PLL1DIVP	1	// MPU
 		#define PLL1DIVQ	2
 		#define PLL1DIVR	2
+
+		//#define PLL1DIVN	54	// 12*54 = 648 MHz
+		//#define PLL1DIVN	66	// 12*66 = 792 MHz
+		#define PLL1DIVN	(stm32mp1_overdrived() ? 66 : 54)	// Auto select
 
 		// PLL2_1600
 #if 1

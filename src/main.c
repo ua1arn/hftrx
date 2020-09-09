@@ -6732,9 +6732,9 @@ static const FLASHMEM uint_fast8_t catbr2int [] =
 	19200uL / BRSCALE,	// 19200
 	38400uL / BRSCALE,	// 38400
 	57600uL / BRSCALE,	// 57600
-#if CPU_FREQ >= 10000000
+//#if CPU_FREQ >= 10000000
 	115200uL / BRSCALE,	// 115200
-#endif /* CPUSTYLE_ARM */
+//#endif /* CPUSTYLE_ARM */
 };
 
 
@@ -16683,7 +16683,7 @@ void display2_menu_valxx(
 			RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_BSECEN;
 			(void) RCC->MP_APB5ENSETR;
 
-			unsigned rpn = ((* (volatile uint32_t *) RPN_BASE) & RPN_ID_Msk) >> RPN_ID_Pos;
+			const unsigned rpn = ((* (volatile uint32_t *) RPN_BASE) & RPN_ID_Msk) >> RPN_ID_Pos;
 			switch (rpn)
 			{
 			case 0x24: 	msg = PSTR("STM32MP153Cx"); break;
