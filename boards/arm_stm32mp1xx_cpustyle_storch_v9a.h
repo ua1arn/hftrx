@@ -825,6 +825,7 @@
 	#else
 		/* Заглушка для работы без дисплея */
 		#define WITHLCDBACKLIGHTMIN	0
+		#define WITHLCDBACKLIGHTMAX	2	// Верхний предел регулировки (показываемый на дисплее)
 	#endif
 
 	/* BL0: PA14. BL1: PA15 */
