@@ -372,6 +372,7 @@ void display_set_contrast(uint_fast8_t v);
 
 /* индивидуальные функции драйвера дисплея - реализованы в соответствующем из файлов */
 void display_clear(void);
+void display_flush(void);	// для framebufer дисплеев - вытолкнуть кэш память
 void colmain_setcolors(COLORMAIN_T fg, COLORMAIN_T bg);
 void colmain_setcolors3(COLORMAIN_T fg, COLORMAIN_T bg, COLORMAIN_T bgfg);	// bgfg - цвет для отрисовки антиалиасинга
 

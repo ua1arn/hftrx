@@ -1600,7 +1600,19 @@ void arm_hardware_ltdc_main_set(uintptr_t p)
 #endif
 	LAYER_MAIN->CFBAR = p;
 	LAYER_MAIN->CR |= LTDC_LxCR_LEN;
-	LTDC->SRCR = LTDC_SRCR_VBR;	/* Vertical Blanking Reload. */
+	LTDC->SRCR = LTDC_SRCR_VBR_Msk;	/* Vertical Blanking Reload. */
+}
+/* Set MAIN frame buffer address. */
+void arm_hardware_ltdc_main_setimmed(uintptr_t p)
+{
+#if 0
+	/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
+	while ((LTDC->SRCR & LTDC_SRCR_VBR) != 0)
+		hardware_nonguiyield();
+#endif
+	LAYER_MAIN->CFBAR = p;
+	LAYER_MAIN->CR |= LTDC_LxCR_LEN;
+	LTDC->SRCR = LTDC_SRCR_IMR_Msk;	/* Vertical Blanking Reload. */
 }
 
 #endif /* CPUSTYLE_STM32F || CPUSTYLE_STM32MP1 */

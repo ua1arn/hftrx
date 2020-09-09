@@ -304,6 +304,12 @@ void display_clear(void)
 	display_fillrect(0, 0, DIM_X, DIM_Y, bg);
 }
 
+// для framebufer дисплеев - вытолкнуть кэш память
+void display_flush(void)
+{
+	arm_hardware_ltdc_main_setimmed((uintptr_t) colmain_fb_draw());
+}
+
 void display_plotstart(
 	uint_fast16_t dy	// Высота окна источника в пикселях
 	)

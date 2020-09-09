@@ -85,7 +85,12 @@ mdma_getbus(uintptr_t addr)
 #elif CPUSTYLE_STM32MP1 && CORE_CA7
 	// SYSMEM
 	// DDRCTRL
-	return 0;
+	/*
+	 * 0: The system/AXI bus is used on channel x.
+	 * 1: The AHB bus/TCM is used on channel x.
+	 */
+	addr &= 0xFF000000uL;
+	return (addr == 0x00000000uL || addr == 0x20000000uL);
 
 #elif CPUSTYLE_STM32MP1 && CORE_CM4
 	#error M4 core not supported

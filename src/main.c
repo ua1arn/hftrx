@@ -18011,7 +18011,12 @@ static void initialize2(void)
 	{
 		static const FLASHMEM char msg  [] = "KBD fault";
 
+		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
+		board_update();
+
 		display_at_P(0, 0, msg);
+		display_flush();
+
 		PRINTF(PSTR("KBD fault\n"));
 		for (;;)
 			;
@@ -18032,8 +18037,12 @@ static void initialize2(void)
 		static const FLASHMEM char msg  [] = "TOO LARGE nvmap";
 		void wrong_NVRAM_END(void);
 
+		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
+		board_update();
+
 		display_menu_digit(0, 0, sizeof (struct nvmap), 9, 0, 0);
 		display_at_P(0, 1, msg);
+		display_flush();
 
 		wrong_NVRAM_END();
 		//hardware_cw_diagnostics(0, 0, 0);	// 'S'
@@ -18091,7 +18100,11 @@ static void initialize2(void)
 		{
 			uint_fast8_t kbch;
 
+			board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
+			board_update();
+
 			display_at_P(0, 0, PSTR("ERASE: Press SPL"));
+			display_flush();
 
 			for (;;)
 			{
@@ -18122,8 +18135,13 @@ static void initialize2(void)
 			// в случае неправильно работающего NVRAM зависаем
 			PRINTF(PSTR("initialize2(): NVRAM initialization: wrong NVRAM pattern in any address sizes.\n"));
 
+			board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
+			board_update();
+
 			display_menu_digit(0, 0, NVRAM_END + 1, 9, 0, 0);
 			display_at_P(0, 1, PSTR("NVRAM fault"));
+			display_flush();
+
 			PRINTF(PSTR("NVRAM fault1\n"));
 			for (;;)
 				;
@@ -18150,7 +18168,11 @@ static void initialize2(void)
 		{
 			uint_fast8_t kbch;
 
+			board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
+			board_update();
+
 			display_at_P(0, 0, PSTR("ERASE: Press SPL"));
+			display_flush();
 
 			for (;;)
 			{
@@ -18179,8 +18201,13 @@ static void initialize2(void)
 			// проверяем только что записанную сигнатуру
 			// в случае неправильно работающего NVRAM зависаем
 
+			board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
+			board_update();
+
 			display_menu_digit(0, 1, NVRAM_END + 1, 9, 0, 0);
 			display_at_P(0, 1, PSTR("NVRAM fault"));
+			display_flush();
+
 			for (;;)
 				;
 		}

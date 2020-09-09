@@ -709,6 +709,11 @@ display_clear(void)
 	ili9225_clear(bg);
 }
 
+// для framebufer дисплеев - вытолкнуть кэш память
+void display_flush(void)
+{
+}
+
 void
 colmain_setcolors(COLORMAIN_T fg, COLORMAIN_T bg)
 {

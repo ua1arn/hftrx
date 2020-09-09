@@ -672,6 +672,11 @@ display_clear(void)
 	hd44780_clear();
 }
 
+// для framebufer дисплеев - вытолкнуть кэш память
+void display_flush(void)
+{
+}
+
 void
 //NOINLINEAT
 colmain_setcolors(COLORMAIN_T fg, COLORMAIN_T bg)

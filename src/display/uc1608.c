@@ -207,6 +207,11 @@ display_clear(void)
 	uc1608_put_char_end();
 }
 
+// для framebufer дисплеев - вытолкнуть кэш память
+void display_flush(void)
+{
+}
+
 void
 colmain_setcolors(COLORMAIN_T fg, COLORMAIN_T bg)
 {
