@@ -867,6 +867,7 @@ extern "C" {
 	#pragma GCC diagnostic ignored "-Wunused-function"
 	#pragma GCC diagnostic ignored "-Wunused-variable"
 	#pragma GCC diagnostic ignored "-Wunused-const-variable"
+	#pragma GCC diagnostic error "-Wwrite-strings"
 	#define __ALIGN4_END    __attribute__ ((aligned (4)))
 	#define __ALIGN4_BEGIN         
 	#define ATTRPACKED __attribute__ ((packed))
