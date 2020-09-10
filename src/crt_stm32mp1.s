@@ -376,6 +376,7 @@ IRQHandlerNested:
 	LDMIA   SP!, {R0, LR}
 	MSR     SPSR_cxsf, LR
 	LDMIA   SP!, {PC}^
+
 	.endfunc
    .ltorg
 
