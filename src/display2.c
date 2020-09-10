@@ -849,7 +849,7 @@ display2_nextfb(
 
 	colmain_fb_next();
 	ASSERT(((uintptr_t) colmain_fb_show() % DCACHEROWSIZE) == 0);
-	arm_hardware_flush((uintptr_t) colmain_fb_show(), (uint_fast32_t) DIM_X * DIM_Y * sizeof (PACKEDCOLORMAIN_T));
+	arm_hardware_flush((uintptr_t) colmain_fb_show(), (uint_fast32_t) GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T));
 	arm_hardware_ltdc_main_set((uintptr_t) colmain_fb_show());
 
 #endif /* WITHLTDCHW && LCDMODE_LTDC && ! (LCDMODE_PIP_RGB565 || LCDMODE_PIP_L8) */

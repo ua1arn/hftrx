@@ -6257,7 +6257,7 @@ void hightests(void)
 			}
 		}
 
-		arm_hardware_flush((uintptr_t) fr, (uint_fast32_t) DIM_X * DIM_Y * sizeof (PACKEDCOLORMAIN_T));
+		arm_hardware_flush((uintptr_t) fr, (uint_fast32_t) GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T));
 		arm_hardware_ltdc_main_set((uintptr_t) fr);
 		for (;;)
 			;
@@ -6295,7 +6295,7 @@ void hightests(void)
 				}
 				local_delay_ms(10);
 
-				arm_hardware_flush((uintptr_t) fr, (uint_fast32_t) DIM_X * DIM_Y * sizeof (PACKEDCOLORMAIN_T));
+				arm_hardware_flush((uintptr_t) fr, (uint_fast32_t) GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T));
 				arm_hardware_ltdc_main_set((uintptr_t) fr);
 			}
 
