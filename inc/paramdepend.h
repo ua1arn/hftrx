@@ -700,7 +700,7 @@ extern "C" {
 
 #endif
 
-#if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7 || CPUSTYLE_ARM_CM0
+#if defined (__NVIC_PRIO_BITS)
 
 	#if WITHNESTEDINTERRUPTS
 
@@ -717,30 +717,8 @@ extern "C" {
 		#define ARM_REALTIME_PRIORITY	((const uint32_t) gARM_REALTIME_PRIORITY)
 		#define ARM_SYSTEM_PRIORITY	((const uint32_t) gARM_SYSTEM_PRIORITY)
 
-		#if 0 && WITHDEBUG
-			// отладочная версия - контроль правильного контекста запрета/разрешения прерываний
-			#define system_enableIRQ() do { \
-					if (__get_BASEPRI() != gARM_BASEPRI_ONLY_REALTIME) \
-					{ \
-						TP(); \
-						PRINTF(PSTR("system_enableIRQ: wrong __get_BASEPRI() value: %08lX\n"), __get_BASEPRI()); \
-						for (;;) ; \
-					} \
-					__set_BASEPRI(gARM_BASEPRI_ALL_ENABLED); \
-				} while (0)
-			#define system_disableIRQ() do { \
-					if (__get_BASEPRI() != gARM_BASEPRI_ALL_ENABLED) \
-					{ \
-						TP(); \
-						PRINTF(PSTR("system_disableIRQ: wrong __get_BASEPRI() value: %08lX\n"), __get_BASEPRI()); \
-						for (;;) ; \
-					} \
-					__set_BASEPRI(gARM_BASEPRI_ONLY_REALTIME); \
-				} while (0)
-		#else
-			#define system_enableIRQ() do { __set_BASEPRI(gARM_BASEPRI_ALL_ENABLED); } while (0)	// разрешены все
-			#define system_disableIRQ() do { __set_BASEPRI(gARM_BASEPRI_ONLY_REALTIME); } while (0) // разрешены только realtime
-		#endif
+		#define system_enableIRQ() do { __set_BASEPRI(gARM_BASEPRI_ALL_ENABLED); } while (0)	// разрешены все
+		#define system_disableIRQ() do { __set_BASEPRI(gARM_BASEPRI_ONLY_REALTIME); } while (0) // разрешены только realtime
 		
 	#else /* WITHNESTEDINTERRUPTS */
 
@@ -820,27 +798,6 @@ extern "C" {
 		#define ARM_REALTIME_PRIORITY	((const uint32_t) gARM_REALTIME_PRIORITY)
 		#define ARM_SYSTEM_PRIORITY	((const uint32_t) gARM_SYSTEM_PRIORITY)
 
-		#if 0 && WITHDEBUG
-			// отладочная версия - контроль правильного контекста запрета/разрешения прерываний
-			#define system_enableIRQ() do { \
-					if (GIC_GetInterfacePriorityMask() != gARM_BASEPRI_ONLY_REALTIME) \
-					{ \
-						TP(); \
-						PRINTF(PSTR("system_enableIRQ: wrong GIC_GetInterfacePriorityMask() value: %08lX\n"), GIC_GetInterfacePriorityMask()); \
-						for (;;) ; \
-					} \
-					GIC_SetInterfacePriorityMask(gARM_BASEPRI_ALL_ENABLED); \
-				} while (0)
-			#define system_disableIRQ() do { \
-					if (GIC_GetInterfacePriorityMask() != gARM_BASEPRI_ALL_ENABLED) \
-					{ \
-						TP(); \
-						PRINTF(PSTR("system_disableIRQ: wrong GIC_GetInterfacePriorityMask() value: %08lX\n"), GIC_GetInterfacePriorityMask()); \
-						for (;;) ; \
-					} \
-					GIC_SetInterfacePriorityMask(gARM_BASEPRI_ONLY_REALTIME); \
-				} while (0)
-		#else
 		// разрешены все
 		#define system_enableIRQ() do { \
 				/*ASSERT(RUNNING_PRI == 0x1F); */\
@@ -867,7 +824,6 @@ extern "C" {
 			__disable_irq(); \
 		} while (0)
 
-		#endif
 	#else /* WITHNESTEDINTERRUPTS */
 
 		#define ARM_OVERREALTIME_PRIORITY	0
@@ -896,14 +852,11 @@ extern "C" {
 	//#define ARM_REALTIME_PRIORITY	(0)
 	//#define ARM_SYSTEM_PRIORITY	(0)
 
-	unsigned (system_disableIRQ)(void);
-	unsigned (system_enableIRQ)(void);
+	void (system_disableIRQ)(void);
+	void (system_enableIRQ)(void);
 
 	#define global_enableIRQ() do { (system_enableIRQ)(); } while (0)
 	#define global_disableIRQ() do { (system_disableIRQ)(); } while (0)
-
-	unsigned RAMFUNC (system_enableIRQ)(void);
-	unsigned RAMFUNC (system_disableIRQ)(void);
 
 #endif /* CPUSTYLE_ARM_CM3 */
 
@@ -964,83 +917,39 @@ extern "C" {
 
 #define DAC_TYPE_AD5260		36		// 256-positions potentiometer
 
-#define CODEC_TYPE_FPGAV1		37	// квадратуры получаем от FPGA
-#define CODEC_TYPE_TLV320AIC23B	38	// TI TLV320AIC23B
-#define CODEC_TYPE_CS4272		39	// CS CS4272
-#define CODEC_TYPE_NAU8822L		40	// NUVOTON NAU8822L
-#define CODEC_TYPE_WM8994		41	// CIRRUS LOGIC WM8994ECS/R
+#define CODEC_TYPE_FPGAV1		40	// квадратуры получаем от FPGA
+#define CODEC_TYPE_TLV320AIC23B	41	// TI TLV320AIC23B
+#define CODEC_TYPE_CS4272		42	// CS CS4272
+#define CODEC_TYPE_NAU8822L		43	// NUVOTON NAU8822L
+#define CODEC_TYPE_WM8994		44	// CIRRUS LOGIC WM8994ECS/R
 
-#define RTC_TYPE_DS1305		42	/* MAXIM DS1305EN RTC clock chip with SPI interface */
-#define RTC_TYPE_DS1307		43	/* MAXIM DS1307/DS3231 RTC clock chip with I2C interface */
-#define RTC_TYPE_M41T81		44	/* ST M41T81M6/M41T81SM6F RTC clock chip with I2C interface */
-#define RTC_TYPE_STM32F4xx	45	/* STM32F4xx internal RTC peripherial */
-#define RTC_TYPE_STM32F0xx	46	/* STM32F0xx internal RTC peripherial */
-#define RTC_TYPE_STM32L0xx	47	/* STM32L0xx internal RTC peripherial */
+#define RTC_TYPE_DS1305		50	/* MAXIM DS1305EN RTC clock chip with SPI interface */
+#define RTC_TYPE_DS1307		51	/* MAXIM DS1307/DS3231 RTC clock chip with I2C interface */
+#define RTC_TYPE_M41T81		52	/* ST M41T81M6/M41T81SM6F RTC clock chip with I2C interface */
+#define RTC_TYPE_STM32F4xx	53	/* STM32F4xx internal RTC peripherial */
+#define RTC_TYPE_STM32F0xx	54	/* STM32F0xx internal RTC peripherial */
+#define RTC_TYPE_STM32L0xx	55	/* STM32L0xx internal RTC peripherial */
 
-#define TSC_TYPE_TSC2046	48	// Resistive touch screen controller TI TSC2046
-#define TSC_TYPE_STMPE811	49	// Resistive touch screen controller ST STMPE811
+#define TSC_TYPE_TSC2046	60	// Resistive touch screen controller TI TSC2046
+#define TSC_TYPE_STMPE811	61	// Resistive touch screen controller ST STMPE811
+#define TSC_TYPE_GT911		62	// Capasitive touch screen controller Goodix GT911
 
 // Start of NVRAM definitions section
 // NOTE: DO NOT USE any types of FLASH memory chips, only EEPROM or FRAM chips are supported.
 // поддерживаются только FRAM или EEPROM. FLASH не поддерживаются.
-#define NVRAM_TYPE_FM25XXXX		50	/* SERIAL FRAM AUTODETECT	*/
-#define NVRAM_TYPE_FM25L04		51	/* SERIAL FRAM 4KBit	*/
-#define NVRAM_TYPE_FM25L16		52	/* SERIAL FRAM 16Kbit	*/
-#define NVRAM_TYPE_FM25L64		53	/* SERIAL FRAM 64Kbit	*/
-#define NVRAM_TYPE_FM25L256		54	/* SERIAL FRAM 256KBit	*/
+#define NVRAM_TYPE_FM25XXXX		70	/* SERIAL FRAM AUTODETECT	*/
+#define NVRAM_TYPE_FM25L04		71	/* SERIAL FRAM 4KBit	*/
+#define NVRAM_TYPE_FM25L16		72	/* SERIAL FRAM 16Kbit	*/
+#define NVRAM_TYPE_FM25L64		73	/* SERIAL FRAM 64Kbit	*/
+#define NVRAM_TYPE_FM25L256		74	/* SERIAL FRAM 256KBit	*/
 
-#define NVRAM_TYPE_AT25040A		55	/* SERIAL EEPROM 4KBit	*/
-#define NVRAM_TYPE_AT25L16		56	/* SERIAL EEPROM 16Kbit	*/
-#define NVRAM_TYPE_AT25256A		57	/* SERIAL EEPROM 256KBit	*/
+#define NVRAM_TYPE_AT25040A		75	/* SERIAL EEPROM 4KBit	*/
+#define NVRAM_TYPE_AT25L16		76	/* SERIAL EEPROM 16Kbit	*/
+#define NVRAM_TYPE_AT25256A		77	/* SERIAL EEPROM 256KBit	*/
 
-#define NVRAM_TYPE_CPUEEPROM		58	/* EEPROM память процессора */
-#define	NVRAM_TYPE_BKPSRAM			59	/* Backup SRAM */
-#define	NVRAM_TYPE_NOTHING			60	/* вообще отсутствует */
-
-#define TSC_TYPE_GT911		61	// Capasitive touch screen controller Goodix GT911     <- возможна ли перенумерация дефайнов?
-
-#define IF3_TYPE_DCRX	1
-#define IF3_TYPE_128	2
-#define IF3_TYPE_200	3
-#define IF3_TYPE_215	4
-#define IF3_TYPE_455	5
-#define IF3_TYPE_500	6
-#define IF3_TYPE_5000	7
-#define IF3_TYPE_5500	8
-#define IF3_TYPE_5645	9	// Drake R-4C and Drake T-4XC (Drake Twins) - 5645 kHz
-#define IF3_TYPE_6000	10
-#define IF3_TYPE_8000	11
-#define IF3_TYPE_8192	12
-#define IF3_TYPE_8215	13	// кварцевые фильтры от  трансивера FT-747 - 8215 kHz
-#define IF3_TYPE_8868	14
-#define IF3_TYPE_9045	15
-#define IF3_TYPE_9000	16
-#define IF3_TYPE_10000	17
-#define IF3_TYPE_10700	18
-#define IF3_TYPE_CUSTOM	19	// параметры частот задаются отдельными define, вынесеными в board\*_cylstyle_*.h
-#define IF3_TYPE_BYPASS	20
-#define IF3_TYPE_6000_SW2015	21	// слегка другая частота верхнего ската
-#define IF3_TYPE_5250	22
-
-/* все возможные фильтры. Не ноль соответствующем бите IF3_FMASK разрешает включение/выключение данного фильтра. */
-#define IF3_FMASK_0P3	(1U << 0)	/* наличие фильтра 0.3 кГц	*/
-#define IF3_FMASK_0P5	(1U << 1)	/* наличие фильтра 0.5 кГц	*/
-#define IF3_FMASK_1P0	(1U << 2)	/* наличие фильтра 1.0 кГц	*/
-#define IF3_FMASK_1P5	(1U << 3)	/* наличие фильтра 1.5 кГц	*/
-#define IF3_FMASK_1P8	(1U << 4)	/* наличие фильтра 1.8 кГц	*/
-#define IF3_FMASK_2P1	(1U << 5)	/* наличие фильтра 2.1 кГц	*/
-#define IF3_FMASK_2P4	(1U << 6)	/* наличие фильтра 2.4 кГц	*/
-#define IF3_FMASK_2P7	(1U << 7)	/* наличие фильтра 2.7 кГц	*/
-#define IF3_FMASK_3P1	(1U << 8)	/* наличие фильтра 3.1 кГц	*/
-#define IF3_FMASK_6P0	(1U << 9)	/* наличие фильтра 6.0 кГц	*/
-#define IF3_FMASK_7P8	(1U << 10)	/* наличие фильтра 7.8 кГц	*/
-#define IF3_FMASK_8P0	(1U << 11)	/* наличие фильтра 8.0 кГц	*/
-#define IF3_FMASK_9P0	(1U << 12)	/* наличие фильтра 9.0 кГц	*/
-#define IF3_FMASK_15P0	(1U << 13)	/* наличие фильтра 15.0 кГц	*/
-#define IF3_FMASK_17P0	(1U << 14)	/* наличие фильтра 17.0 кГц	*/
-#define IF3_FMASK_120P0	(1U << 15)	/* наличие фильтра 120 кГц	*/
-
-
+#define NVRAM_TYPE_CPUEEPROM		78	/* EEPROM память процессора */
+#define	NVRAM_TYPE_BKPSRAM			79	/* Backup SRAM */
+#define	NVRAM_TYPE_NOTHING			80	/* вообще отсутствует */
 
 #if defined (NVRAM_END)
 	#error NVRAM_END already defined

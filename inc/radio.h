@@ -3254,6 +3254,49 @@ void spool_0p128(void);	// OPERA support
 #endif /* HYBRID_DDS_ATTINY2313 */
 
 
+#define IF3_TYPE_DCRX	1
+#define IF3_TYPE_128	2
+#define IF3_TYPE_200	3
+#define IF3_TYPE_215	4
+#define IF3_TYPE_455	5
+#define IF3_TYPE_500	6
+#define IF3_TYPE_5000	7
+#define IF3_TYPE_5500	8
+#define IF3_TYPE_5645	9	// Drake R-4C and Drake T-4XC (Drake Twins) - 5645 kHz
+#define IF3_TYPE_6000	10
+#define IF3_TYPE_8000	11
+#define IF3_TYPE_8192	12
+#define IF3_TYPE_8215	13	// кварцевые фильтры от  трансивера FT-747 - 8215 kHz
+#define IF3_TYPE_8868	14
+#define IF3_TYPE_9045	15
+#define IF3_TYPE_9000	16
+#define IF3_TYPE_10000	17
+#define IF3_TYPE_10700	18
+#define IF3_TYPE_CUSTOM	19	// параметры частот задаются отдельными define, вынесеными в board\*_cylstyle_*.h
+#define IF3_TYPE_BYPASS	20
+#define IF3_TYPE_6000_SW2015	21	// слегка другая частота верхнего ската
+#define IF3_TYPE_5250	22
+
+/* все возможные фильтры. Не ноль соответствующем бите IF3_FMASK разрешает включение/выключение данного фильтра. */
+#define IF3_FMASK_0P3	(1U << 0)	/* наличие фильтра 0.3 кГц	*/
+#define IF3_FMASK_0P5	(1U << 1)	/* наличие фильтра 0.5 кГц	*/
+#define IF3_FMASK_1P0	(1U << 2)	/* наличие фильтра 1.0 кГц	*/
+#define IF3_FMASK_1P5	(1U << 3)	/* наличие фильтра 1.5 кГц	*/
+#define IF3_FMASK_1P8	(1U << 4)	/* наличие фильтра 1.8 кГц	*/
+#define IF3_FMASK_2P1	(1U << 5)	/* наличие фильтра 2.1 кГц	*/
+#define IF3_FMASK_2P4	(1U << 6)	/* наличие фильтра 2.4 кГц	*/
+#define IF3_FMASK_2P7	(1U << 7)	/* наличие фильтра 2.7 кГц	*/
+#define IF3_FMASK_3P1	(1U << 8)	/* наличие фильтра 3.1 кГц	*/
+#define IF3_FMASK_6P0	(1U << 9)	/* наличие фильтра 6.0 кГц	*/
+#define IF3_FMASK_7P8	(1U << 10)	/* наличие фильтра 7.8 кГц	*/
+#define IF3_FMASK_8P0	(1U << 11)	/* наличие фильтра 8.0 кГц	*/
+#define IF3_FMASK_9P0	(1U << 12)	/* наличие фильтра 9.0 кГц	*/
+#define IF3_FMASK_15P0	(1U << 13)	/* наличие фильтра 15.0 кГц	*/
+#define IF3_FMASK_17P0	(1U << 14)	/* наличие фильтра 17.0 кГц	*/
+#define IF3_FMASK_120P0	(1U << 15)	/* наличие фильтра 120 кГц	*/
+
+
+
 extern uint_fast8_t s9level;		/* уровни калибровки S-метра */
 extern uint_fast8_t s9delta;		// 9 баллов - 8 интервалов - по 6 децибел каждый
 extern uint_fast8_t s9_60_delta;		// 60 dB
