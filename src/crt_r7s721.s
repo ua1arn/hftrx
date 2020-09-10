@@ -327,49 +327,54 @@ ExitFunction:
     .func   IRQHandlerNested
 IRQHandlerNested:
 
-       PUSH    {R0,LR}          // save register context
-       MRS     LR, SPSR                // Copy SPSR_irq to LR
-       PUSH    {R0,LR}                    // Save SPSR_irq
-       MSR     CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT         // Disable IRQ (Svc Mode)
-       PUSH    {r1-r3, r4, r12, lr}                    // Save LR
 
-		// save VFP/Neon FPSCR register
-		// save VFP/Neon FPEXC register
-		FMRX	R0, FPSCR
-		FMRX	LR, FPEXC
-		PUSH	{R0, LR}
+	/* save interrupt context on the stack to allow nesting */
+	SUB		LR, LR, #4
+	STMFD   SP!, {LR}
+	MRS     LR, SPSR
+	STMFD   SP!, {R0, LR}
+
+    MSR     CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT
+	STMFD   SP!, {R1-R3, R4, R12, LR}
 
 #if __ARM_NEON == 1
-		// save Neon data registers
-		VPUSH.F64	{q8-q15}
+	// save neon data registers
+	VPUSH.F64	{Q8-Q15}
 #endif /* __ARM_NEON == 1 */
-		// save VFP/Neon data registers
-		VPUSH.F64	{q0-q7}
+	// save vfp/neon data registers
+	VPUSH.F64	{Q0-Q7}
 
-		ldr		r0, =IRQ_Handler_GICv1
-		mov		lr, pc
-		bx		r0     /* And jump... */
-		// restore VFP data registers
-		VPOP.F64   {q0-q7}
+	// save VFP/Neon FPSCR register
+	// save VFP/Neon FPEXC register
+	FMRX	R0, FPSCR
+	FMRX	LR, FPEXC
+	PUSH	{R0, LR}
+
+	LDR		R2, =IRQ_Handler_GICv1
+	MOV		LR, PC
+	BX		R2     /* and jump... */
+
+	// restore VFP/Neon FPEXC register
+	// restore VFP/Neon FPSCR register
+	POP		{R0, LR}
+	FMXR	FPEXC, LR
+	FMXR	FPSCR, R0
+
+	// restore vfp data registers
+	VPOP.F64   {Q0-Q7}
 #if __ARM_NEON == 1
-		// restore VFP/Neon data registers
-		VPOP.F64	{q8-q15}
+	// restore vfp/neon data registers
+	VPOP.F64	{Q8-Q15}
 #endif /* __ARM_NEON == 1 */
 
-		// restore VFP/Neon FPEXC register
-		// restore VFP/Neon FPSCR register
-		POP		{R0, LR}
-		FMXR	FPEXC, LR
-		FMXR	FPSCR, R0
+	LDMIA   SP!, {R1-R3, R4, R12, LR}
+    MSR     CPSR_c, #ARM_MODE_IRQ | I_BIT | F_BIT
 
-       POP     {r1-r3, r4, r12, lr}                    // Restore LR
-       MSR     CPSR_c, #ARM_MODE_IRQ  | I_BIT  // Disable IRQ (IRQ Mode)
-       POP     {R0,LR}                    // Restore SPSR_irq to LR
-       MSR     SPSR_cxsf, LR           // Copy LR to SPSR_irq
+	LDMIA   SP!, {R0, LR}
+	MSR     SPSR_cxsf, LR
+	LDMIA   SP!, {PC}^
 
-       POP     {R0,LR}          // restore register context
-       SUBS    R15,R14,#0x0004         // return from interrupt
-		.endfunc
+	.endfunc
    .ltorg
 
 	.section .noinit
