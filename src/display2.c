@@ -276,8 +276,6 @@ typedef ALIGNX_BEGIN PACKEDCOLORMAIN_T smeter_bg_t [GXSIZE(SM_BG_W, SM_BG_H)] AL
 static smeter_bg_t smeter_bg[SM_STATE_COUNT]; 	// 0 - rx, 1 - tx
 
 typedef struct {
-	uint_fast16_t x;
-	uint_fast16_t y;
 	uint_fast16_t gs;
 	uint_fast16_t gm;
 	uint_fast16_t ge;
@@ -289,6 +287,7 @@ typedef struct {
 	uint_fast8_t step2;
 	uint_fast8_t step3;
 } smeter_params_t;
+
 static smeter_params_t smeter_params;
 
 void display2_set_smetertype(uint_fast8_t v)
@@ -306,9 +305,6 @@ display2_smeter15_init(
 {
 	const uint_fast8_t halfsect = 30;
 	const int stripewidth = 12; //16;
-
-	smeter_params.x = GRID2X(xgrid);
-	smeter_params.y = GRID2Y(ygrid);
 
 	if (glob_smetertype == SMETER_TYPE_DIAL)
 	{
@@ -740,8 +736,6 @@ typedef struct {
 	float32_t fft_buf [NORMALFFT * 2];
 	uint_fast8_t is_ready;
 	float32_t max_val;
-	uint_fast16_t x;
-	uint_fast16_t y;
 	uint_fast16_t w;
 	uint_fast16_t h;
 	uint_fast16_t visiblefftsize;
@@ -767,10 +761,9 @@ void afsp_save_sample(float32_t v)
 	}
 }
 
-void display2_init_af_spectre(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)		// вызывать после инициализации s-meter
+static void
+display2_init_af_spectre(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)		// вызывать после инициализации s-meter
 {
-	afsp.x = smeter_params.x + smeter_params.gs;
-	afsp.y = smeter_params.y + SM_BG_H - 10;
 	afsp.w = smeter_params.ge - smeter_params.gs;
 	afsp.h = 40;
 	afsp.visiblefftsize = NORMALFFT / 6;
@@ -778,15 +771,17 @@ void display2_init_af_spectre(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)		//
 	afsp.is_ready = 0;
 }
 
-void display2_latch_af_spectre(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
+static void
+display2_latch_af_spectre(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)
 {
+
 	static uint_fast8_t j = 0;
 	if (afsp.is_ready && ! hamradio_get_tx())
 	{
 		afsp.is_ready = 0;
 
 		fftzoom_x2(afsp.raw_buf);
-		// осьалась половина буфера
+		// осталась половина буфера
 		for (uint_fast16_t i = 0; i < NORMALFFT; i ++)
 		{
 			afsp.fft_buf [i * 2 + 0] = afsp.raw_buf [i];
@@ -800,8 +795,14 @@ void display2_latch_af_spectre(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
 	}
 }
 
-void display2_af_spectre(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
+static void
+display2_af_spectre(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)
 {
+	const uint_fast16_t x0 = GRID2X(xgrid);
+	const uint_fast16_t y0 = GRID2Y(ygrid);
+
+	const uint_fast16_t afsp_x = x0 + smeter_params.gs;
+	const uint_fast16_t afsp_y = y0 + SM_BG_H - 10;
 
 	switch (glob_smetertype)
 	{
@@ -820,8 +821,8 @@ void display2_af_spectre(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
 				const FLOAT_t yy = y_old_array [i] * (FLOAT_t) 0.8 + (FLOAT_t) 0.2 * val;
 				y_old_array [i] = yy;
 				colmain_line(fr, DIM_X, DIM_Y,
-						afsp.x + i - 3, afsp.y - yy,
-						afsp.x + i - 3, afsp.y,
+						afsp_x + i - 3, afsp_y - yy,
+						afsp_x + i - 3, afsp_y,
 						COLORMAIN_YELLOW, 0);
 			}
 		}
@@ -5503,8 +5504,15 @@ enum
 		{	45, 0,	display2_notch5,		REDRM_MODE, PGALL, },	// NOTCH on/off
 		{	47, 15,	display2_voxtune3,	REDRM_MODE, PGALL, },	// VOX
 		{	47, 5,	display2_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
+
 		{    0, 4,  display2_smeter15_init,REDRM_INIS, PGINI, },	//  Инициализация стрелочного прибора
 		{    0, 4,  display2_smeter15, 	REDRM_BARS, PGALL, },	// Изображение стрелочного прибора
+#if WITHAFSPECTRE
+		{	0,	4,	display2_init_af_spectre,	REDRM_INIS, PGINI, },
+		{	0,	4,	display2_latch_af_spectre,	REDRM_BARS,	PGLATCH, },
+		{	0,	4,	display2_af_spectre,		REDRM_BARS, PGSPE, },
+#endif /* WITHAFSPECTRE */
+
 		{   47, 20, display2_bkin3,		REDRM_MODE, PGALL, },
 	#if WITHENCODER2
 //		{	41, 0,	display2_fnlabel9,	REDRM_MODE, PGALL, },	// FUNC item label
@@ -5544,11 +5552,6 @@ enum
 		{	0,	DLES,	display2_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 		{	0,	DLES,	display2_spectrum,	REDRM_BARS, PGSPE, },// подготовка изображения спектра
 		{	0,	DLES,	display2_waterfall,	REDRM_BARS, PGWFL, },// подготовка изображения водопада
-#if WITHAFSPECTRE
-		{	0,	DLES,	display2_init_af_spectre,	REDRM_INIS, PGINI, },
-		{	0,	DLES,	display2_latch_af_spectre,	REDRM_BARS,	PGLATCH, },
-		{	0,	DLES,	display2_af_spectre,		REDRM_BARS, PGSPE, },
-#endif /* WITHAFSPECTRE */
 		{	0,	DLES,	gui_WM_walktrough,	REDRM_BARS, PGSPE, },
 		{	0,	DLES,	display2_colorbuff,	REDRM_BARS,	PGWFL | PGSPE, },// Отображение водопада и/или спектра
 	#endif /* WITHSPECTRUMWF */
@@ -5680,9 +5683,9 @@ enum
 		{   0, 	4,  display2_smeter15_init,REDRM_INIS, PGINI, },	//  Инициализация стрелочного прибора
 		{   0, 	4,	display2_smeter15, 	REDRM_BARS, PGALL, },	// Изображение стрелочного прибора
 #if WITHAFSPECTRE
-		{	0,	DLES,	display2_init_af_spectre,	REDRM_INIS, PGINI, },
-		{	0,	DLES,	display2_latch_af_spectre,	REDRM_BARS,	PGLATCH, },
-		{	0,	DLES,	display2_af_spectre,		REDRM_BARS, PGSPE, },
+		{	0,	4,	display2_init_af_spectre,	REDRM_INIS, PGINI, },
+		{	0,	4,	display2_latch_af_spectre,	REDRM_BARS,	PGLATCH, },
+		{	0,	4,	display2_af_spectre,		REDRM_BARS, PGSPE, },
 #endif /* WITHAFSPECTRE */
 
 		{	15,	6,	display2_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
