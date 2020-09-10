@@ -13434,17 +13434,17 @@ static void vectors_relocate(void)
 // Memory attribute SHARED required for ldrex.. and strex.. functionality
 void spin_lock(volatile spinlock_t * p, const char * file, int line)
 {
+#if WITHDEBUG
 	unsigned v = 0xFFFFFFF;
+#endif /* WITHDEBUG */
 	// Note: __LDREXW and __STREXW are CMSIS functions
-	int status = 0;
+	int status;
 	do
 	{
 		while (__LDREXW(& p->lock) != 0)// Wait until
 		{
-			__NOP();	// !!!! strange, but no stable work without this line...
+			__NOP();	// !!!! strange, but unstable work without this line...
 #if WITHDEBUG
-			//PRINTF("Wait %s(%d) ", file, line);
-			//PRINTF("%d(%d) ", (int) (__get_MPIDR() & 0x03), line);
 			if (-- v == 0)
 			{
 				PRINTF("Locked by %s(%d), wait at %s(%d)\n", p->file, p->line, file, line);
@@ -13470,18 +13470,14 @@ void spin_lock(volatile spinlock_t * p, const char * file, int line)
 // Memory attribute SHARED required for ldrex.. and strex.. functionality
 void spin_lock2(volatile spinlock_t * p, const char * file, int line)
 {
-	//unsigned v = 0xFFFFFFF;
 	// Note: __LDREXW and __STREXW are CMSIS functions
-	int status = 0;
+	int status;
 	do
 	{
 		while (__LDREXW(& p->lock) != 0)// Wait until
 		{
-			__NOP();	// !!!! strange, but no stable work without this line...
+			__NOP();	// !!!! strange, but unstable work without this line...
 #if WITHDEBUG
-			//PRINTF("Wait %s(%d) ", file, line);
-			//PRINTF("%d(%d) ", (int) (__get_MPIDR() & 0x03), line);
-			//if (-- v == 0)
 			{
 				PRINTF("Locked2 by %s(%d), wait at %s(%d)\n", p->file, p->line, file, line);
 				for (;;)
