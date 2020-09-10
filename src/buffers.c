@@ -39,7 +39,7 @@ typedef struct listcnt
 	unsigned long tag2;
 	LIST_ENTRY item0;
 	unsigned Count;	// количество элментов в списке
-	SPINLOCK_t lock2;
+	//SPINLOCK_t lock2;
 	unsigned long tag3;
 } LIST_HEAD2, * PLIST_HEAD2;
 
@@ -55,61 +55,61 @@ InitializeListHead2(LIST_HEAD2 * ListHead)
 {
 	ListHead->tag2 = LIST2TAG2;
 	ListHead->tag3 = LIST2TAG3;
-	SPINLOCK_INITIALIZE(& ListHead->lock2);
+	//SPINLOCK_INITIALIZE(& ListHead->lock2);
 	(ListHead)->Count = 0;
 	InitializeListHead(& (ListHead)->item0);
 }
 
 static int
-IsListEmpty2(LIST_HEAD2 * ListHead, const char * file, int line)
+IsListEmpty2(LIST_HEAD2 * ListHead/*, const char * file, int line*/)
 {
-	SPIN_LOCK2(& ListHead->lock2, file, line);
+	//SPIN_LOCK2(& ListHead->lock2, file, line);
 	ASSERT(ListHead->tag2 == LIST2TAG2 && ListHead->tag3 == LIST2TAG3);
 	ASSERT(ListHead->item0.Flink != NULL && ListHead->item0.Blink != NULL);
 	const int v = (ListHead)->Count == 0;
-	SPIN_UNLOCK2(& ListHead->lock2);
+	//SPIN_UNLOCK2(& ListHead->lock2);
 	return v;
 }
 
 static void
-(InsertHeadList2)(PLIST_HEAD2 ListHead, PLIST_ENTRY Entry, const char * file, int line)
+(InsertHeadList2)(PLIST_HEAD2 ListHead, PLIST_ENTRY Entry/*, const char * file, int line*/)
 {
 	ASSERT(ListHead->tag2 == LIST2TAG2 && ListHead->tag3 == LIST2TAG3);
-	SPIN_LOCK2(& ListHead->lock2, file, line);
+	//SPIN_LOCK2(& ListHead->lock2, file, line);
 	ASSERT(ListHead->item0.Flink != NULL && ListHead->item0.Blink != NULL);
 	(ListHead)->Count += 1;
 	InsertHeadList(& (ListHead)->item0, (Entry));
-	SPIN_UNLOCK2(& ListHead->lock2);
+	//SPIN_UNLOCK2(& ListHead->lock2);
 }
 
 static PLIST_ENTRY
-(RemoveTailList2)(PLIST_HEAD2 ListHead, const char * file, int line)
+(RemoveTailList2)(PLIST_HEAD2 ListHead/*, const char * file, int line*/)
 {
 	ASSERT(ListHead->tag2 == LIST2TAG2 && ListHead->tag3 == LIST2TAG3);
-	SPIN_LOCK2(& ListHead->lock2, file, line);
+	//SPIN_LOCK2(& ListHead->lock2, file, line);
 	ASSERT(ListHead->item0.Flink != NULL && ListHead->item0.Blink != NULL);
 	ASSERT((ListHead)->Count != 0);
 	ASSERT(! IsListEmpty(& (ListHead)->item0));
 	(ListHead)->Count -= 1;
 	const PLIST_ENTRY t = RemoveTailList(& (ListHead)->item0);	/* прямо вернуть значение RemoveTailList нельзя - Microsoft сделал не совсем правильный макрос. Но по другому и не плучилось бы в стандартном языке C. */
-	SPIN_UNLOCK2(& ListHead->lock2);
+	//SPIN_UNLOCK2(& ListHead->lock2);
 	return t;
 }
 
-static unsigned GetCountList2(LIST_HEAD2 * ListHead, const char * file, int line)
+static unsigned GetCountList2(LIST_HEAD2 * ListHead/*, const char * file, int line*/)
 {
 	ASSERT(ListHead->tag2 == LIST2TAG2 && ListHead->tag3 == LIST2TAG3);
-	SPIN_LOCK2(& ListHead->lock2, file, line);
+	//SPIN_LOCK2(& ListHead->lock2, file, line);
 	ASSERT(ListHead->item0.Flink != NULL && ListHead->item0.Blink != NULL);
 	const unsigned count = (ListHead)->Count;
-	SPIN_UNLOCK2(& ListHead->lock2);
+	//SPIN_UNLOCK2(& ListHead->lock2);
 	return count;
 }
 
-#define InsertHeadList2(h, e) (InsertHeadList2)((h), (e), __FILE__, __LINE__)
-#define RemoveTailList2(h) (RemoveTailList2)((h), __FILE__, __LINE__)
-#define GetCountList2(h) (GetCountList2)((h), __FILE__, __LINE__)
-#define IsListEmpty2(h) (IsListEmpty2)((h), __FILE__, __LINE__)
+//#define InsertHeadList2(h, e) (InsertHeadList2)((h), (e), __FILE__, __LINE__)
+//#define RemoveTailList2(h) (RemoveTailList2)((h), __FILE__, __LINE__)
+//#define GetCountList2(h) (GetCountList2)((h), __FILE__, __LINE__)
+//#define IsListEmpty2(h) (IsListEmpty2)((h), __FILE__, __LINE__)
 
 /* готовность буферов с "гистерезисом". */
 static uint_fast8_t fiforeadyupdate(
