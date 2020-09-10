@@ -13441,7 +13441,7 @@ void spin_lock(volatile spinlock_t * p, const char * file, int line)
 	{
 		while (__LDREXW(& p->lock) != 0)// Wait until
 		{
-			__NOP();	// !!!! strange, but no stamke work without this line...
+			__NOP();	// !!!! strange, but no stable work without this line...
 #if WITHDEBUG
 			//PRINTF("Wait %s(%d) ", file, line);
 			//PRINTF("%d(%d) ", (int) (__get_MPIDR() & 0x03), line);
@@ -13477,7 +13477,7 @@ void spin_lock2(volatile spinlock_t * p, const char * file, int line)
 	{
 		while (__LDREXW(& p->lock) != 0)// Wait until
 		{
-			__NOP();	// !!!! strange, but no stamke work without this line...
+			__NOP();	// !!!! strange, but no stable work without this line...
 #if WITHDEBUG
 			//PRINTF("Wait %s(%d) ", file, line);
 			//PRINTF("%d(%d) ", (int) (__get_MPIDR() & 0x03), line);
