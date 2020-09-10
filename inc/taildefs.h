@@ -135,7 +135,7 @@ typedef struct spinlock_tag {
 //#endif
 
 	void spin_lock(volatile spinlock_t * lock, const char * file, int line);
-	void spin_lock2(volatile spinlock_t * lock, const char * file, int line);
+	//void spin_lock2(volatile spinlock_t * lock, const char * file, int line);
 	void spin_unlock(volatile spinlock_t * lock);
 
 #else /* WITHSMPSYSTEM */

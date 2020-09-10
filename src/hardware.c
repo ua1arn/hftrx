@@ -13441,6 +13441,7 @@ void spin_lock(volatile spinlock_t * p, const char * file, int line)
 	{
 		while (__LDREXW(& p->lock) != 0)// Wait until
 		{
+			__NOP();	// !!!! strange, but no stamke work without this line...
 #if WITHDEBUG
 			//PRINTF("Wait %s(%d) ", file, line);
 			//PRINTF("%d(%d) ", (int) (__get_MPIDR() & 0x03), line);
@@ -13463,6 +13464,7 @@ void spin_lock(volatile spinlock_t * p, const char * file, int line)
 	p->line = line;
 #endif /* WITHDEBUG */
 }
+/*
 
 // http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dai0321a/BIHEJCHB.html
 // Memory attribute SHARED required for ldrex.. and strex.. functionality
@@ -13475,6 +13477,7 @@ void spin_lock2(volatile spinlock_t * p, const char * file, int line)
 	{
 		while (__LDREXW(& p->lock) != 0)// Wait until
 		{
+			__NOP();	// !!!! strange, but no stamke work without this line...
 #if WITHDEBUG
 			//PRINTF("Wait %s(%d) ", file, line);
 			//PRINTF("%d(%d) ", (int) (__get_MPIDR() & 0x03), line);
@@ -13484,7 +13487,7 @@ void spin_lock2(volatile spinlock_t * p, const char * file, int line)
 				for (;;)
 					;
 			}
-#endif /* WITHDEBUG */
+#endif  WITHDEBUG
 		}
 		// Lock_Variable is free
 		status = __STREXW(1, & p->lock); // Try to set
@@ -13495,8 +13498,9 @@ void spin_lock2(volatile spinlock_t * p, const char * file, int line)
 #if WITHDEBUG
 	p->file = file;
 	p->line = line;
-#endif /* WITHDEBUG */
+#endif  WITHDEBUG
 }
+*/
 
 void spin_unlock(volatile spinlock_t *p)
 {

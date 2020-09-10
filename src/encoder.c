@@ -103,8 +103,10 @@ static int safegetposition1(void)
 #if WITHHARDINTERLOCK
 	uint32_t r;
 	do
+	{
 		r = __LDREXW(& position1);
-	while (__STREXW(0, & position1));
+		__NOP();
+	} while (__STREXW(0, & position1));
 	return (int32_t) r;
 
 #else /* WITHHARDINTERLOCK */
@@ -122,8 +124,10 @@ static int safegetposition2(void)
 #if WITHHARDINTERLOCK
 	uint32_t r;
 	do
+	{
 		r = __LDREXW(& position2);
-	while (__STREXW(0, & position2));
+		__NOP();
+	} while (__STREXW(0, & position2));
 	return (int32_t) r;
 
 #else /* WITHHARDINTERLOCK */
