@@ -191,9 +191,9 @@ static int_fast16_t glob_bottomdbwf = 137;	/* нижний предел FFT */
 static uint_fast8_t glob_wflevelsep;	/* чувствительность водопада регулируется отдельной парой параметров */
 static uint_fast8_t glob_zoomxpow2;	/* уменьшение отображаемого участка спектра - horisontal magnification power of two */
 
-static uint_fast8_t global_showdbm = 1;	// Отображение уровня сигнала в dBm или S-memter (в зависимости от настроек)
+static uint_fast8_t glob_showdbm = 1;	// Отображение уровня сигнала в dBm или S-memter (в зависимости от настроек)
 
-static uint_fast8_t global_smetertype = 1;	/* выбор внешнего вида прибора - стрелочный или градусник */
+static uint_fast8_t glob_smetertype = SMETER_TYPE_DIAL;	/* выбор внешнего вида прибора - стрелочный или градусник */
 
 //#define WIDEFREQ (TUNE_TOP > 100000000L)
 
@@ -294,7 +294,7 @@ static smeter_params_t smeter_params;
 void display2_set_smetertype(uint_fast8_t v)
 {
 	ASSERT(v < SMETER_TYPE_COUNT);
-	global_smetertype = v;
+	glob_smetertype = v;
 }
 
 void
@@ -310,8 +310,9 @@ display2_smeter15_init(
 	smeter_params.x = GRID2X(xgrid);
 	smeter_params.y = GRID2Y(ygrid);
 
-	if(global_smetertype)	// SMETER_TYPE_DIAL
+	if (glob_smetertype == SMETER_TYPE_DIAL)
 	{
+		// SMETER_TYPE_DIAL
 		smeter_params.gm = 270;
 		smeter_params.gs = smeter_params.gm - halfsect;
 		smeter_params.ge = smeter_params.gm + halfsect;
@@ -324,8 +325,9 @@ display2_smeter15_init(
 		smeter_params.step3 = 20;	// swr
 
 	}
-	else					// SMETER_TYPE_BARS
+	else
 	{
+		// SMETER_TYPE_BARS
 		smeter_params.gs = 20;
 		smeter_params.ge = 220;
 		smeter_params.gm = 240 / 2;
@@ -396,7 +398,7 @@ display2_smeter15_init(
 	unsigned p;
 	unsigned i;
 
-	switch (global_smetertype)
+	switch (glob_smetertype)
 	{
 
 	case SMETER_TYPE_DIAL:
@@ -571,10 +573,10 @@ display2_smeter15(
 	static uint_fast8_t first_tx = 0;
 
 	static uint_fast8_t old_type = 0;
-	if (old_type != global_smetertype)
+	if (old_type != glob_smetertype)
 	{
 		display2_smeter15_init(0, 0, NULL);
-		old_type = global_smetertype;
+		old_type = glob_smetertype;
 	}
 
 	int gp = smeter_params.gs, gv = smeter_params.gs, gv_trace = smeter_params.gs, gswr = smeter_params.gs;
@@ -594,10 +596,8 @@ display2_smeter15(
 			gswr_smooth = smeter_params.gs;
 		}
 
-		uint_fast16_t power;
-
-		power = board_getadc_unfiltered_truevalue(PWRMRRIX);	// без возможных тормозов на SPI при чтении
-		gp = smeter_params.gs + normalize(power, 0, maxpwrcali << 4, smeter_params.ge - smeter_params.gs);
+		const adcvalholder_t power = board_getadc_unfiltered_truevalue(PWRMRRIX);	// без возможных тормозов на SPI при чтении
+		gp = smeter_params.gs + normalize(power, 0, maxpwrcali * 16, smeter_params.ge - smeter_params.gs);
 
 		// todo: get_swr(swr_fullscale) - использщовать MRRxxx.
 		// Для тюнера и измерений не голдится, для показа - без торомозов.
@@ -630,7 +630,7 @@ display2_smeter15(
 		first_tx = 1;
 	}
 
-	switch (global_smetertype)
+	switch (glob_smetertype)
 	{
 
 	case SMETER_TYPE_DIAL:
@@ -802,21 +802,27 @@ void display2_latch_af_spectre(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
 
 void display2_af_spectre(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
 {
-	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
-	static uint_fast8_t y_old_array [FIRBUFSIZE];
 
-	if (! hamradio_get_tx())
+	switch (glob_smetertype)
 	{
-		for (uint_fast16_t i = 3; i < afsp.w; i ++)
+	case SMETER_TYPE_BARS:
+		if (! hamradio_get_tx())
 		{
-			ASSERT(i < ARRAY_SIZE(y_old_array));
-			const uint_fast16_t fftpos = NORMALFFT - roundf(i / afsp.step);
-			ASSERT(fftpos < ARRAY_SIZE(afsp.fft_buf));
-			const FLOAT_t val = normalize(afsp.fft_buf [fftpos], 0, afsp.max_val, afsp.h);
-			const FLOAT_t yy = y_old_array [i] * (FLOAT_t) 0.8 + (FLOAT_t) 0.2 * val;
-			y_old_array [i] = yy;
-			colmain_line(fr, DIM_X, DIM_Y, afsp.x + i - 3, afsp.y - yy, afsp.x + i - 3, afsp.y, COLORMAIN_YELLOW, 0);
+			PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
+			static uint_fast8_t y_old_array [FIRBUFSIZE];
+
+			for (uint_fast16_t i = 3; i < afsp.w; i ++)
+			{
+				ASSERT(i < ARRAY_SIZE(y_old_array));
+				const uint_fast16_t fftpos = NORMALFFT - roundf(i / afsp.step);
+				ASSERT(fftpos < ARRAY_SIZE(afsp.fft_buf));
+				const FLOAT_t val = normalize(afsp.fft_buf [fftpos], 0, afsp.max_val, afsp.h);
+				const FLOAT_t yy = y_old_array [i] * (FLOAT_t) 0.8 + (FLOAT_t) 0.2 * val;
+				y_old_array [i] = yy;
+				colmain_line(fr, DIM_X, DIM_Y, afsp.x + i - 3, afsp.y - yy, afsp.x + i - 3, afsp.y, COLORMAIN_YELLOW, 0);
+			}
 		}
+		break;
 	}
 }
 
@@ -2235,7 +2241,7 @@ static void display2_smeors5(
 	dctx_t * pctx
 	)
 {
-	if (global_showdbm != 0)
+	if (glob_showdbm != 0)
 	{
 		display2_siglevel4(x, y, pctx);
 	}
@@ -5670,6 +5676,12 @@ enum
 
 		{   0, 	4,  display2_smeter15_init,REDRM_INIS, PGINI, },	//  Инициализация стрелочного прибора
 		{   0, 	4,	display2_smeter15, 	REDRM_BARS, PGALL, },	// Изображение стрелочного прибора
+#if WITHAFSPECTRE
+		{	0,	DLES,	display2_init_af_spectre,	REDRM_INIS, PGINI, },
+		{	0,	DLES,	display2_latch_af_spectre,	REDRM_BARS,	PGLATCH, },
+		{	0,	DLES,	display2_af_spectre,		REDRM_BARS, PGSPE, },
+#endif /* WITHAFSPECTRE */
+
 		{	15,	6,	display2_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
 
 		{	41, 0,	display2_fnlabel9,	REDRM_MODE, PGALL, },	// FUNC item label
@@ -5710,11 +5722,6 @@ enum
 		{	0,	DLES,	display2_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 		{	0,	DLES,	display2_spectrum,	REDRM_BARS, PGSPE, },// подготовка изображения спектра
 		{	0,	DLES,	display2_waterfall,	REDRM_BARS, PGWFL, },// подготовка изображения водопада
-#if WITHAFSPECTRE
-		{	0,	DLES,	display2_init_af_spectre,	REDRM_INIS, PGINI, },
-		{	0,	DLES,	display2_latch_af_spectre,	REDRM_BARS,	PGLATCH, },
-		{	0,	DLES,	display2_af_spectre,		REDRM_BARS, PGSPE, },
-#endif /* WITHAFSPECTRE */
 		{	0,	DLES,	display2_colorbuff,	REDRM_BARS,	PGWFL | PGSPE, },// Отображение водопада и/или спектра
 
 		{	0,	DLE1,	display2_datetime12,	REDRM_BARS, PGALL,	},	// DATE&TIME Jan-01 13:40
@@ -7880,7 +7887,7 @@ board_set_wflevelsep(uint_fast8_t v)
 void
 board_set_showdbm(uint_fast8_t v)
 {
-	global_showdbm = v != 0;
+	glob_showdbm = v != 0;
 }
 
 
