@@ -44,13 +44,6 @@ void display2_smeter15(
 	dctx_t * pctx
 	);
 
-void
-display2_smeter15_init(
-	uint_fast8_t xgrid,
-	uint_fast8_t ygrid,
-	dctx_t * pctx
-	);
-
 // FUNC item label
 void display2_fnlabel9(
 	uint_fast8_t x,

@@ -296,11 +296,10 @@ void display2_set_smetertype(uint_fast8_t v)
 	glob_smetertype = v;
 }
 
-void
-display2_smeter15_init(
+static void
+display2_smeter15_setuplayout(
 	uint_fast8_t xgrid,
-	uint_fast8_t ygrid,
-	dctx_t * pctx
+	uint_fast8_t ygrid
 	)
 {
 	const uint_fast8_t halfsect = 30;
@@ -547,6 +546,15 @@ display2_smeter15_init(
 	}
 }
 
+static void
+display2_smeter15_init(
+	uint_fast8_t xgrid,
+	uint_fast8_t ygrid,
+	dctx_t * pctx
+	)
+{
+}
+
 // ширина занимаемого места - 15 ячеек (240/16 = 15)
 void
 display2_smeter15(
@@ -555,6 +563,13 @@ display2_smeter15(
 	dctx_t * pctx
 	)
 {
+	static uint_fast8_t inited;
+	if (inited == 0)
+	{
+		display2_smeter15_setuplayout(xgrid, ygrid);
+		inited = 1;
+	}
+
 	/* получение координат прямоугольника с изображением */
 	const uint_fast16_t width = SM_BG_W;
 	const uint_fast16_t height = SM_BG_H;
@@ -571,7 +586,7 @@ display2_smeter15(
 	static uint_fast8_t old_type = 0;
 	if (old_type != glob_smetertype)
 	{
-		display2_smeter15_init(0, 0, NULL);
+		display2_smeter15_setuplayout(xgrid, ygrid);
 		old_type = glob_smetertype;
 	}
 
