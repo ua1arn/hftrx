@@ -305,32 +305,37 @@ display2_smeter15_setuplayout(
 	const uint_fast8_t halfsect = 30;
 	const int stripewidth = 12; //16;
 
-	if (glob_smetertype == SMETER_TYPE_DIAL)
+	switch (glob_smetertype)
 	{
-		// SMETER_TYPE_DIAL
-		smeter_params.gm = 270;
-		smeter_params.gs = smeter_params.gm - halfsect;
-		smeter_params.ge = smeter_params.gm + halfsect;
-		smeter_params.rv1 = 7 * GRID2Y(3);
-		smeter_params.rv2 = smeter_params.rv1 - 3 * GRID2Y(3);
-		smeter_params.r1 = 7 * GRID2Y(3) - 8;	//350;
-		smeter_params.r2 = smeter_params.r1 - stripewidth;
-		smeter_params.step1 = 3;	// шаг для оцифровки S
-		smeter_params.step2 = 4;	// шаг для оцифровки плюсов
-		smeter_params.step3 = 20;	// swr
+	case SMETER_TYPE_DIAL:
+		{
+			smeter_params.gm = 270;
+			smeter_params.gs = smeter_params.gm - halfsect;
+			smeter_params.ge = smeter_params.gm + halfsect;
+			smeter_params.rv1 = 7 * GRID2Y(3);
+			smeter_params.rv2 = smeter_params.rv1 - 3 * GRID2Y(3);
+			smeter_params.r1 = 7 * GRID2Y(3) - 8;	//350;
+			smeter_params.r2 = smeter_params.r1 - stripewidth;
+			smeter_params.step1 = 3;	// шаг для оцифровки S
+			smeter_params.step2 = 4;	// шаг для оцифровки плюсов
+			smeter_params.step3 = 20;	// swr
 
-	}
-	else
-	{
-		// SMETER_TYPE_BARS
-		smeter_params.gs = 20;
-		smeter_params.ge = 220;
-		smeter_params.gm = 240 / 2;
-		smeter_params.step1 = 10;	// шаг для оцифровки S
-		smeter_params.step2 = 14;	// шаг для оцифровки плюсов
-		smeter_params.step3 = 67;	// swr
-		smeter_params.r1 = SM_BG_H / 4;					// горизонталь первой шкалы
-		smeter_params.r2 = SM_BG_H - smeter_params.r1; 	// горизонталь второй шкалы
+		}
+		break;
+
+	default:
+	case SMETER_TYPE_BARS:
+		{
+			smeter_params.gs = 20;
+			smeter_params.ge = 220;
+			smeter_params.gm = 240 / 2;
+			smeter_params.step1 = 10;	// шаг для оцифровки S
+			smeter_params.step2 = 14;	// шаг для оцифровки плюсов
+			smeter_params.step3 = 67;	// swr
+			smeter_params.r1 = SM_BG_H / 4;					// горизонталь первой шкалы
+			smeter_params.r2 = SM_BG_H - smeter_params.r1; 	// горизонталь второй шкалы
+		}
+		break;
 	}
 
 	const int markersTX_pwr [] =
