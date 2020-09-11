@@ -365,7 +365,10 @@
 	//#define WITHUSEAUDIORECCLASSIC	1	// стандартный формат записи, без "дыр"
 
 	#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
-	#define WITHFFTOVERLAPPOW2	2	/* Количество перекрывающися буферов FFT спектра (2^param). */
+	#define WITHFFTOVERLAPPOW2	4	/* Количество перекрывающися буферов FFT спектра (2^param). */
+	//#define WITHDISPLAY_FPS		25
+	#define WITHDISPLAYSWR_FPS	25
+
 	////*#define WITHRTS192 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 	#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
 
