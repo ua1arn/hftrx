@@ -740,8 +740,10 @@ typedef struct {
 	uint_fast16_t h;
 	uint_fast16_t visiblefftsize;
 	uint_fast16_t step;
+	uint_fast16_t y_old_array [FIRBUFSIZE];
 } afsp_t;
 
+enum { AFSP_OFFSET = 3 };
 static afsp_t afsp;
 
 void afsp_save_sample(float32_t v)
@@ -792,6 +794,16 @@ display2_latch_af_spectre(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)
 		arm_cfft_f32(FFTCONFIGSpectrum, afsp.fft_buf, 0, 1);
 		arm_cmplx_mag_f32(afsp.fft_buf, afsp.fft_buf, NORMALFFT);		//
 		arm_max_no_idx_f32(afsp.fft_buf, NORMALFFT, & afsp.max_val);	// поиск в первой половине
+
+		for (unsigned i = AFSP_OFFSET; i < afsp.w; i ++)
+		{
+			ASSERT(i < ARRAY_SIZE(afsp.y_old_array));
+			const uint_fast16_t fftpos = NORMALFFT - roundf(i / afsp.step);
+			ASSERT(fftpos < ARRAY_SIZE(afsp.fft_buf));
+			const FLOAT_t val = normalize(afsp.fft_buf [fftpos], 0, afsp.max_val, afsp.h);
+			const FLOAT_t yy = afsp.y_old_array [i] * (FLOAT_t) 0.8 + (FLOAT_t) 0.2 * val;
+			afsp.y_old_array [i] = yy;
+		}
 	}
 }
 
@@ -810,19 +822,14 @@ display2_af_spectre(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)
 		if (! hamradio_get_tx())
 		{
 			PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
-			static uint_fast8_t y_old_array [FIRBUFSIZE];
 
-			for (unsigned i = 3; i < afsp.w; i ++)
+			for (unsigned i = AFSP_OFFSET; i < afsp.w; i ++)
 			{
-				ASSERT(i < ARRAY_SIZE(y_old_array));
-				const uint_fast16_t fftpos = NORMALFFT - roundf(i / afsp.step);
-				ASSERT(fftpos < ARRAY_SIZE(afsp.fft_buf));
-				const FLOAT_t val = normalize(afsp.fft_buf [fftpos], 0, afsp.max_val, afsp.h);
-				const FLOAT_t yy = y_old_array [i] * (FLOAT_t) 0.8 + (FLOAT_t) 0.2 * val;
-				y_old_array [i] = yy;
+				const uint_fast16_t yy = afsp.y_old_array [i];	// filtered values
+				// TODO: нормирование к размерам перенести сюда, фильтровать не координаты а мощности.
 				colmain_line(fr, DIM_X, DIM_Y,
-						afsp_x + i - 3, afsp_y - yy,
-						afsp_x + i - 3, afsp_y,
+						afsp_x + i - AFSP_OFFSET, afsp_y - yy,
+						afsp_x + i - AFSP_OFFSET, afsp_y,
 						COLORMAIN_YELLOW, 0);
 			}
 		}
