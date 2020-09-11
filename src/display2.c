@@ -742,13 +742,13 @@ typedef struct {
 enum { AFSP_OFFSET = 3 };
 static afsp_t afsp;
 
-void afsp_save_sample(float32_t v)
+void afsp_save_sample(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 {
 	static uint_fast16_t i = 0;
 
 	if (afsp.is_ready == 0)
 	{
-		afsp.raw_buf [i] = v;
+		afsp.raw_buf [i] = ch0;
 		i ++;
 	}
 

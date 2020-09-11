@@ -561,7 +561,7 @@ void savemodemtxbuffer(uint8_t * dest, unsigned size_t);	// Готов буфе�
 void releasemodembuffer(uint8_t * dest);
 void releasemodembuffer_low(uint8_t * dest);
 
-void savesampleout16stereo_user(FLOAT_t ch0, FLOAT_t ch1);
+void savesampleout16stereo_user(void * ctx, FLOAT_t ch0, FLOAT_t ch1);
 void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1);
 void savemoni16stereo(FLOAT_t ch0, FLOAT_t ch1);
 void savesampleout32stereo(int_fast32_t ch0, int_fast32_t ch1);
@@ -740,7 +740,27 @@ void uacout_buffer_save_realtime(const uint8_t * buff, uint_fast16_t size, uint_
 uint_fast8_t takewavsample(FLOAT32P_t * rv, uint_fast8_t suspend);
 
 
-void afsp_save_sample(FLOAT_t v);
+void afsp_save_sample(void * ctx, FLOAT_t ch0, FLOAT_t ch1);
+
+typedef struct subscribefloat_tag
+{
+	LIST_ENTRY item;
+	void * ctx;
+	void (* cb)(void * ctx, FLOAT_t ch0, FLOAT_t ch1);
+} subscribefloat_t;
+
+typedef struct subscribefint_tag
+{
+	LIST_ENTRY item;
+	void * ctx;
+	void (* cb)(void * ctx, int_fast32_t ch0, int_fast32_t ch1);
+} subscribefint32_t;
+
+void deliveryfloat(LIST_ENTRY * head, FLOAT_t ch0, FLOAT_t ch1);
+void subscribefloat(LIST_ENTRY * head, subscribefloat_t * target, void * ctx, void (* pfn)(void * ctx, FLOAT_t ch0, FLOAT_t ch1));
+
+void deliveryint(LIST_ENTRY * head, int_fast32_t ch0, int_fast32_t ch1);
+void subscribeint(LIST_ENTRY * head, subscribefint32_t * target, void * ctx, void (* pfn)(void * ctx, int_fast32_t ch0, int_fast32_t ch1));
 
 #ifdef __cplusplus
 }

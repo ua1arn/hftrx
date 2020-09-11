@@ -2099,7 +2099,7 @@ void savesampleout32stereo(int_fast32_t ch0, int_fast32_t ch1)
 //////////////////////////////////////////
 // Поэлементное заполнение буфера AF DAC
 
-void savesampleout16stereo_user(FLOAT_t ch0, FLOAT_t ch1)
+void savesampleout16stereo_user(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 {
 	enum { L, R };
 	// если есть инициализированный канал для выдачи звука
@@ -2940,6 +2940,42 @@ void release_dmabufferxrts(uintptr_t addr)	/* освободить буфер о
 #endif /* WITHUSBUACIN2 */
 
 #endif /* WITHUSBUAC */
+
+
+void deliveryfloat(LIST_ENTRY * head, FLOAT_t ch0, FLOAT_t ch1)
+{
+	PLIST_ENTRY t;
+	for (t = head->Blink; t != head; t = t->Blink)
+	{
+		subscribefloat_t * const p = CONTAINING_RECORD(t, subscribefloat_t, item);
+		(p->cb)(p->ctx, ch0, ch1);
+	}
+}
+
+void subscribefloat(LIST_ENTRY * head, subscribefloat_t * target, void * ctx, void (* pfn)(void * ctx, FLOAT_t ch0, FLOAT_t ch1))
+{
+	target->cb = pfn;
+	target->ctx = ctx;
+	InsertHeadList(head, & target->item);
+}
+
+void deliveryint(LIST_ENTRY * head, int_fast32_t ch0, int_fast32_t ch1)
+{
+	PLIST_ENTRY t;
+	for (t = head->Blink; t != head; t = t->Blink)
+	{
+		subscribefint32_t * const p = CONTAINING_RECORD(t, subscribefint32_t, item);
+		(p->cb)(p->ctx, ch0, ch1);
+	}
+}
+
+void subscribeint(LIST_ENTRY * head, subscribefint32_t * target, void * ctx, void (* pfn)(void * ctx, int_fast32_t ch0, int_fast32_t ch1))
+{
+	target->cb = pfn;
+	target->ctx = ctx;
+	InsertHeadList(head, & target->item);
+}
+
 
 #endif /* WITHINTEGRATEDDSP */
 

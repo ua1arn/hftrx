@@ -7967,13 +7967,17 @@ audioproc_spool_user(void)
 		for (i = 0; i < FIRBUFSIZE; ++ i)
 		{
 	  #if WITHUSEDUALWATCH
-			savesampleout16stereo_user(lmsnrstates [0].outsp [i], lmsnrstates [1].outsp [i]);	// to AUDIO codec
+			savesampleout16stereo_user(NULL, lmsnrstates [0].outsp [i], lmsnrstates [1].outsp [i]);	// to AUDIO codec
 	  #else /* WITHUSEDUALWATCH */
-			savesampleout16stereo_user(lmsnrstates [0].outsp [i], lmsnrstates [0].outsp [i]);	// to AUDIO codec
+			savesampleout16stereo_user(NULL, lmsnrstates [0].outsp [i], lmsnrstates [0].outsp [i]);	// to AUDIO codec
 	  #endif /* WITHUSEDUALWATCH */
 
 	#if WITHAFSPECTRE
-			afsp_save_sample(lmsnrstates [0].outsp [i]); /* RX A */
+		#if WITHUSEDUALWATCH
+			afsp_save_sample(NULL, lmsnrstates [0].outsp [i], lmsnrstates [1].outsp [i]);	// to AUDIO spectrum display
+		#else /* WITHUSEDUALWATCH */
+			afsp_save_sample(NULL, lmsnrstates [0].outsp [i], lmsnrstates [0].outsp [i]);	// to AUDIO spectrum display
+		#endif /* WITHUSEDUALWATCH */
 	#endif /* WITHAFSPECTRE */
 		}
 		// Освобождаем буфер
