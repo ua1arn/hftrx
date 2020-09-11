@@ -365,6 +365,7 @@ int_fast32_t buffers_dmabufferuacin16cachesize(void)
 #endif /* WITHRTS96 */
 
 static RAMDTCM SPINLOCK_t locklistrts = SPINLOCK_INIT;
+static subscribeint32_t uacinrtssubscribe;
 
 static RAMDTCM LIST_HEAD2 uacinfree16;
 static RAMDTCM LIST_HEAD2 uacinready16;	// Буферы для записи в вудиоканал USB к компьютер 2*16*24 kS/S
@@ -632,12 +633,17 @@ void savesampleout16tospeex(speexel_t ch0, speexel_t ch1)
 }
 #endif /* WITHINTEGRATEDDSP */
 
+deliverylist_t rtstargetsint;
+
 // инициализация системы буферов
 void buffers_initialize(void)
 {
 #if WITHBUFFERSDEBUG
 	ticker_initialize(& buffticker, 1, buffers_spool, NULL);
 #endif /* WITHBUFFERSDEBUG */
+
+	deliverylist_initialize(& rtstargetsint);
+
 	unsigned i;
 
 #if WITHINTEGRATEDDSP
@@ -705,6 +711,7 @@ void buffers_initialize(void)
 			p->tag3 = p;
 			InsertHeadList2(& voicesfree192rts, & p->item);
 		}
+		subscribeint(& rtstargetsint, & uacinrtssubscribe, NULL, savesampleout192stereo);
 
 	#endif /* WITHRTS192 */
 
@@ -727,6 +734,7 @@ void buffers_initialize(void)
 			PRINTF("Add p=%p, tag=%d, tag2=%p, tag3=%p\n", p, p->tag, p->tag2, p->tag3);
 			InsertHeadList2(& uacin96rtsfree, & p->item);
 		}
+		subscribeint(& rtstargetsint, & uacinrtssubscribe, NULL, savesampleout96stereo);
 
 	#endif /* WITHRTS192 */
 	SPINLOCK_INITIALIZE(& locklistrts);
@@ -1999,7 +2007,7 @@ void RAMFUNC processing_dmabuffer32rts(uintptr_t addr)
 	for (i = 0; i < DMABUFFSIZE192RTS; i += DMABUFSTEP192RTS)
 	{
 		const int32_t * const b = (const int32_t *) & p->u.buff [i];
-		saveIQRTSxx(b [0], b [1]);
+		saveIQRTSxx(NULL, b [0], b [1]);
 	}
 #endif /* ! WITHTRANSPARENTIQ */
 
@@ -2274,7 +2282,7 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 
 		// Вызывается из ARM_REALTIME_PRIORITY обработчика прерывания
 		// vl, vr: 32 bit, signed - преобразуем к требуемому формату для передачи по USB здесь.
-		void savesampleout96stereo(int_fast32_t ch0, int_fast32_t ch1)
+		void savesampleout96stereo(void * ctx, int_fast32_t ch0, int_fast32_t ch1)
 		{
 			// если есть инициализированный канал для выдачи звука
 			static voice96rts_t * RAMDTCM p = NULL;
@@ -2411,7 +2419,7 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 
 		// Вызывается из ARM_REALTIME_PRIORITY обработчика прерывания
 		// vl, vr: 32 bit, signed - преобразуем к требуемому формату для передачи по USB здесь.
-		void savesampleout192stereo(int_fast32_t ch0, int_fast32_t ch1)
+		void savesampleout192stereo(void * ctx, int_fast32_t ch0, int_fast32_t ch1)
 		{
 			// если есть инициализированный канал для выдачи звука
 			static voice192rts_t * RAMDTCM p = NULL;
@@ -2578,11 +2586,11 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 
 #else /* WITHUSBUAC */
 
-void savesampleout96stereo(int_fast32_t ch0, int_fast32_t ch1)
+void savesampleout96stereo(void * ctx, int_fast32_t ch0, int_fast32_t ch1)
 {
 }
 
-void savesampleout192stereo(int_fast32_t ch0, int_fast32_t ch1)
+void savesampleout192stereo(void * ctx, int_fast32_t ch0, int_fast32_t ch1)
 {
 }
 
@@ -2942,40 +2950,71 @@ void release_dmabufferxrts(uintptr_t addr)	/* освободить буфер о
 #endif /* WITHUSBUAC */
 
 
-void deliveryfloat(LIST_ENTRY * head, FLOAT_t ch0, FLOAT_t ch1)
+void deliveryfloat(deliverylist_t * list, FLOAT_t ch0, FLOAT_t ch1)
 {
 	PLIST_ENTRY t;
-	for (t = head->Blink; t != head; t = t->Blink)
+	for (t = list->head.Blink; t != & list->head; t = t->Blink)
 	{
 		subscribefloat_t * const p = CONTAINING_RECORD(t, subscribefloat_t, item);
 		(p->cb)(p->ctx, ch0, ch1);
 	}
 }
 
-void subscribefloat(LIST_ENTRY * head, subscribefloat_t * target, void * ctx, void (* pfn)(void * ctx, FLOAT_t ch0, FLOAT_t ch1))
-{
-	target->cb = pfn;
-	target->ctx = ctx;
-	InsertHeadList(head, & target->item);
-}
-
-void deliveryint(LIST_ENTRY * head, int_fast32_t ch0, int_fast32_t ch1)
+void deliveryint(deliverylist_t * list, int_fast32_t ch0, int_fast32_t ch1)
 {
 	PLIST_ENTRY t;
-	for (t = head->Blink; t != head; t = t->Blink)
+	for (t = list->head.Blink; t != & list->head; t = t->Blink)
 	{
-		subscribefint32_t * const p = CONTAINING_RECORD(t, subscribefint32_t, item);
+		subscribeint32_t * const p = CONTAINING_RECORD(t, subscribeint32_t, item);
 		(p->cb)(p->ctx, ch0, ch1);
 	}
 }
 
-void subscribeint(LIST_ENTRY * head, subscribefint32_t * target, void * ctx, void (* pfn)(void * ctx, int_fast32_t ch0, int_fast32_t ch1))
+void subscribefloat(deliverylist_t * list, subscribefloat_t * target, void * ctx, void (* pfn)(void * ctx, FLOAT_t ch0, FLOAT_t ch1))
 {
 	target->cb = pfn;
 	target->ctx = ctx;
-	InsertHeadList(head, & target->item);
+	SPIN_LOCK(& list->listlock);
+	InsertHeadList(& list->head, & target->item);
+	SPIN_UNLOCK(& list->listlock);
 }
 
+void subscribeint(deliverylist_t * list, subscribeint32_t * target, void * ctx, void (* pfn)(void * ctx, int_fast32_t ch0, int_fast32_t ch1))
+{
+	target->cb = pfn;
+	target->ctx = ctx;
+	SPIN_LOCK(& list->listlock);
+	InsertHeadList(& list->head, & target->item);
+	SPIN_UNLOCK(& list->listlock);
+}
+
+void subscribefloat_user(deliverylist_t * list, subscribefloat_t * target, void * ctx, void (* pfn)(void * ctx, FLOAT_t ch0, FLOAT_t ch1))
+{
+	target->cb = pfn;
+	target->ctx = ctx;
+	global_disableIRQ();
+	SPIN_LOCK(& list->listlock);
+	InsertHeadList(& list->head, & target->item);
+	SPIN_UNLOCK(& list->listlock);
+	global_enableIRQ();
+}
+
+void subscribeint_user(deliverylist_t * list, subscribeint32_t * target, void * ctx, void (* pfn)(void * ctx, int_fast32_t ch0, int_fast32_t ch1))
+{
+	target->cb = pfn;
+	target->ctx = ctx;
+	global_disableIRQ();
+	SPIN_LOCK(& list->listlock);
+	InsertHeadList(& list->head, & target->item);
+	SPIN_UNLOCK(& list->listlock);
+	global_enableIRQ();
+}
+
+void deliverylist_initialize(deliverylist_t * list)
+{
+	InitializeListHead(& list->head);
+	SPINLOCK_INITIALIZE(& list->listlock);
+}
 
 #endif /* WITHINTEGRATEDDSP */
 

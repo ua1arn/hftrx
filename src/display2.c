@@ -6656,7 +6656,7 @@ static int_fast16_t wfhscroll;			// сдвиг по шоризонтали (от
 static uint_fast16_t wfvscroll;			// сдвиг по вертикали (в рабочем направлении) для водопада.
 static uint_fast8_t wfclear;			// стирание всей областии отображение водопада.
 
-// Код взят из проекта Malamute
+
 static void
 display2_wfl_init(
 	uint_fast8_t xgrid,
@@ -6664,6 +6664,20 @@ display2_wfl_init(
 	dctx_t * pctx
 	)
 {
+
+
+	static subscribeint32_t wfl_register;
+
+	{
+		static int inited;
+		ASSERT(inited == 0);	// Only one pass supported
+		inited = 1;
+	}
+
+	subscribeint_user(& rtstargetsint, & wfl_register, NULL, saveIQRTSxx);
+
+
+	// Код взят из проекта Malamute
 	//PRINTF("wfpalette_initialize: main=%d, pip=%d, PALETTESIZE=%d, LCDMODE_MAIN_PAGES=%d\n", sizeof (PACKEDCOLORMAIN_T), sizeof (PACKEDCOLORMAIN_T), PALETTESIZE, LCDMODE_MAIN_PAGES);
 	int i;
 	if (PALETTESIZE == 256)
@@ -7673,8 +7687,11 @@ void display2_bgreset(void)
 	}
 	keyi = 0;
 #endif /* STMD */
+}
 
-	// параметр key игнорируеся обычно, но для сдучая старых дисплеев выделен особенный
+void display2_initialize(void)
+{
+	// параметр key игнорируеся обычно, но для случая старых дисплеев выделен особенный
 	display_walktrough(REDRM_INIS, REDRSUBSET_INIT, NULL);
 }
 

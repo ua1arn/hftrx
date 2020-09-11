@@ -4871,7 +4871,7 @@ static fftbuff_t * pfill [NOVERLAP];
 static unsigned filleds [NOVERLAP]; // 0..LARGEFFT-1
 
 // сохранение сэмпла для отображения спектра
-void saveIQRTSxx(FLOAT_t iv, FLOAT_t qv)
+void saveIQRTSxx(void * ctx, int_fast32_t iv, int_fast32_t qv)
 {
 	unsigned i;
 	for (i = 0; i < NOVERLAP; ++ i)
@@ -4903,7 +4903,7 @@ void saveIQRTSxx(FLOAT_t iv, FLOAT_t qv)
 // вызывается при запрещенных прерываниях.
 void fftbuffer_initialize(void)
 {
-	static RAMBIG fftbuff_t fftbuffersarray [NOVERLAP * 2 + 1];
+	static RAMBIG fftbuff_t fftbuffersarray [NOVERLAP * 3];
 	unsigned i;
 
 	InitializeListHead(& fftbuffree);	// Свободные
@@ -5180,70 +5180,48 @@ int dsp_mag2y(FLOAT_t mag, int ymax, int_fast16_t topdb, int_fast16_t bottomdb)
 }
 
 // сохранение сэмпла для отображения спектра
-void saveIQRTSxx(FLOAT_t iv, FLOAT_t qv)
+void saveIQRTSxx(void * ctx, int_fast32_t iv, int_fast32_t qv)
 {
 }
 
 #endif /* WITHSPECTRUMWF && ! WITHTRANSPARENTIQ */
-
+//
 #if WITHDSPEXTDDC
 // использование данных о спектре, передаваемых в общем фрейме
 static void RAMFUNC 
 saverts96(const int32_t * buff)
 {
-#if WITHRTS96 && ! WITHTRANSPARENTIQ
-#if WITHUSBHW && WITHUSBUAC
-	// если используется конвертор на Rafael Micro R820T - требуется инверсия спектра
-	if (glob_swapiq != glob_swaprts)
-	{
-		savesampleout96stereo(
-			buff [DMABUF32RTS0Q],	// previous
-			buff [DMABUF32RTS0I]
-			);	
-		savesampleout96stereo(
-			buff [DMABUF32RTS1Q],	// current
-			buff [DMABUF32RTS1I]
-			);	
-	}
-	else
-	{
-		savesampleout96stereo(
-			buff [DMABUF32RTS0I],	// previous
-			buff [DMABUF32RTS0Q]
-			);	
-		savesampleout96stereo(
-			buff [DMABUF32RTS1I],	// current
-			buff [DMABUF32RTS1Q]
-			);	
-	}
-#endif /* WITHUSBHW && WITHUSBUAC */
+	// use deliveryint or deliveryfloat
+	// savesampleout96stereo saveIQRTSxx
 
 	// формирование отображения спектра
 	// если используется конвертор на Rafael Micro R820T - требуется инверсия спектра
 	if (glob_swaprts != 0)
 	{
-		saveIQRTSxx(
+		deliveryint(
+			& rtstargetsint,
 			buff [DMABUF32RTS0Q],	// previous
 			buff [DMABUF32RTS0I]
 			);	
-		saveIQRTSxx(
+		deliveryint(
+			& rtstargetsint,
 			buff [DMABUF32RTS1Q],	// current
 			buff [DMABUF32RTS1I]
 			);	
 	}
 	else
 	{
-		saveIQRTSxx(
+		deliveryint(
+			& rtstargetsint,
 			buff [DMABUF32RTS0I],	// previous
 			buff [DMABUF32RTS0Q]
 			);	
-		saveIQRTSxx(
+		deliveryint(
+			& rtstargetsint,
 			buff [DMABUF32RTS1I],	// current
 			buff [DMABUF32RTS1Q]
 			);	
 	}
-
-#endif /* WITHRTS96 && ! WITHTRANSPARENTIQ */
 }
 
 #endif /* WITHDSPEXTDDC */

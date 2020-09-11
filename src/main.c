@@ -18009,6 +18009,8 @@ static void initialize2(void)
 
 	display_reset();
 	display_initialize();
+
+	display2_initialize();
 	display2_bgreset();
 
 	if (keyboard_test() == 0)

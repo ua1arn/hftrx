@@ -565,8 +565,8 @@ void savesampleout16stereo_user(void * ctx, FLOAT_t ch0, FLOAT_t ch1);
 void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1);
 void savemoni16stereo(FLOAT_t ch0, FLOAT_t ch1);
 void savesampleout32stereo(int_fast32_t ch0, int_fast32_t ch1);
-void savesampleout96stereo(int_fast32_t ch0, int_fast32_t ch1);
-void savesampleout192stereo(int_fast32_t ch0, int_fast32_t ch1);
+void savesampleout96stereo(void * ctx, int_fast32_t ch0, int_fast32_t ch1);
+void savesampleout192stereo(void * ctx, int_fast32_t ch0, int_fast32_t ch1);
 
 #if WITHINTEGRATEDDSP
 	#include "src/speex/arch.h"
@@ -670,7 +670,7 @@ void dsp_initialize(void);
 	// 0 - минимальный сигнал, ymax - максимальный
 	int dsp_mag2y(FLOAT_t mag, int ymax, int_fast16_t topdb, int_fast16_t bottomdb);
 
-	void saveIQRTSxx(FLOAT_t iv, FLOAT_t qv);	// формирование отображения спектра
+	void saveIQRTSxx(void * ctx, int_fast32_t iv, int_fast32_t qv);	// формирование отображения спектра
 
 	void apply_window_function(float32_t * v, uint_fast16_t size);
 	void fftzoom_x2(float32_t * buffer);
@@ -754,13 +754,26 @@ typedef struct subscribefint_tag
 	LIST_ENTRY item;
 	void * ctx;
 	void (* cb)(void * ctx, int_fast32_t ch0, int_fast32_t ch1);
-} subscribefint32_t;
+} subscribeint32_t;
 
-void deliveryfloat(LIST_ENTRY * head, FLOAT_t ch0, FLOAT_t ch1);
-void subscribefloat(LIST_ENTRY * head, subscribefloat_t * target, void * ctx, void (* pfn)(void * ctx, FLOAT_t ch0, FLOAT_t ch1));
+typedef struct deliverylist_tag
+{
+	LIST_ENTRY head;
+	SPINLOCK_t listlock;
+} deliverylist_t;
 
-void deliveryint(LIST_ENTRY * head, int_fast32_t ch0, int_fast32_t ch1);
-void subscribeint(LIST_ENTRY * head, subscribefint32_t * target, void * ctx, void (* pfn)(void * ctx, int_fast32_t ch0, int_fast32_t ch1));
+void deliverylist_initialize(deliverylist_t * list);
+
+void deliveryfloat(deliverylist_t * head, FLOAT_t ch0, FLOAT_t ch1);
+void deliveryint(deliverylist_t * head, int_fast32_t ch0, int_fast32_t ch1);
+
+void subscribefloat_user(deliverylist_t * head, subscribefloat_t * target, void * ctx, void (* pfn)(void * ctx, FLOAT_t ch0, FLOAT_t ch1));
+void subscribeint_user(deliverylist_t * head, subscribeint32_t * target, void * ctx, void (* pfn)(void * ctx, int_fast32_t ch0, int_fast32_t ch1));
+
+void subscribefloat(deliverylist_t * head, subscribefloat_t * target, void * ctx, void (* pfn)(void * ctx, FLOAT_t ch0, FLOAT_t ch1));
+void subscribeint(deliverylist_t * head, subscribeint32_t * target, void * ctx, void (* pfn)(void * ctx, int_fast32_t ch0, int_fast32_t ch1));
+
+extern deliverylist_t rtstargetsint;
 
 #ifdef __cplusplus
 }

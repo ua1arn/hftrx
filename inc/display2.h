@@ -131,6 +131,7 @@ uint_fast8_t display_getfreqformat(uint_fast8_t * prjv);	// получить п�
 
 void display2_bgprocess(void);	// выполнение шагов state machine отображения дисплея
 void display2_bgreset(void);	// сброс state machine отображения дисплея
+void display2_initialize(void);	//
 
 void display2_dispfreq_a2(
 	uint_fast32_t freq,
