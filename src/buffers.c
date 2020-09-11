@@ -631,9 +631,10 @@ void savesampleout16tospeex(speexel_t ch0, speexel_t ch1)
 		p = NULL;
 	}
 }
-#endif /* WITHINTEGRATEDDSP */
 
 deliverylist_t rtstargetsint;
+
+#endif /* WITHINTEGRATEDDSP */
 
 // инициализация системы буферов
 void buffers_initialize(void)
@@ -642,11 +643,11 @@ void buffers_initialize(void)
 	ticker_initialize(& buffticker, 1, buffers_spool, NULL);
 #endif /* WITHBUFFERSDEBUG */
 
-	deliverylist_initialize(& rtstargetsint);
-
 	unsigned i;
 
 #if WITHINTEGRATEDDSP
+
+	deliverylist_initialize(& rtstargetsint);
 
 	#if WITHUSBUAC
 		/* буферы требуются для ресэмплера */
