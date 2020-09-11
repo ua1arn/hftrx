@@ -296,16 +296,17 @@ void display2_set_smetertype(uint_fast8_t v)
 }
 
 static void
-display2_smeter15_setuplayout(
+display2_smeter15_layout(
 	uint_fast8_t xgrid,
 	uint_fast8_t ygrid,
-	smeter_params_t * smpr
+	smeter_params_t * const smpr,
+	uint_fast8_t gsmetertype
 	)
 {
 	const uint_fast8_t halfsect = 30;
 	const int stripewidth = 12; //16;
 
-	switch (glob_smetertype)
+	switch (gsmetertype)
 	{
 	case SMETER_TYPE_DIAL:
 		{
@@ -398,7 +399,7 @@ display2_smeter15_setuplayout(
 	unsigned p;
 	unsigned i;
 
-	switch (glob_smetertype)
+	switch (gsmetertype)
 	{
 
 	case SMETER_TYPE_DIAL:
@@ -552,6 +553,25 @@ display2_smeter15_setuplayout(
 	}
 }
 
+
+static smeter_params_t smprms [SMETER_TYPE_COUNT];
+static uint_fast8_t smprmsinited;
+
+static void display2_smeter15_iiii(
+	uint_fast8_t xgrid,
+	uint_fast8_t ygrid
+	)
+{
+	uint_fast8_t i;
+	if (smprmsinited)
+		return;
+	for (i = 0; i < SMETER_TYPE_COUNT; ++ i)
+	{
+		display2_smeter15_layout(xgrid, ygrid, & smprms [i], i);
+	}
+	smprmsinited = 1;
+}
+
 static void
 display2_smeter15_init(
 	uint_fast8_t xgrid,
@@ -575,10 +595,9 @@ display2_smeter15(
 	dctx_t * pctx
 	)
 {
-	smeter_params_t smprm;
-	smeter_params_t * const smpr = & smprm;
+	smeter_params_t * const smpr = & smprms [glob_smetertype];
 
-	display2_smeter15_setuplayout(xgrid, ygrid, & smprm);
+	display2_smeter15_iiii(xgrid, ygrid);
 
 	/* получение координат прямоугольника с изображением */
 	const uint_fast16_t width = SM_BG_W;
@@ -595,7 +614,7 @@ display2_smeter15(
 
 	int gp = smpr->gs, gv = smpr->gs, gv_trace = smpr->gs, gswr = smpr->gs;
 
-	//colpip_rect(colmain_fb_draw(), DIM_X, DIM_Y, x0, y0 - 8, x0 + width - 1, y0 + height - 1 + 15, DESIGNCOLORSTATE, 0);
+	//colpip_rect(colmain_fb_draw(), DIM_X, DIM_Y, x0, y0, x0 + width - 1, y0 + height - 1, COLORMAIN_GREEN, 1);
 
 	if (is_tx)
 	{
@@ -614,7 +633,7 @@ display2_smeter15(
 		gp = smpr->gs + normalize(power, 0, maxpwrcali * 16, smpr->ge - smpr->gs);
 
 		// todo: get_swr(swr_fullscale) - использщовать MRRxxx.
-		// Для тюнера и измерений не голдится, для показа - без торомозов.
+		// Для тюнера и измерений не годится, для показа - без торомозов.
 		const uint_fast16_t swr_fullscale = (SWRMIN * 40 / 10) - SWRMIN;	// количество рисок в шкале ииндикатора
 		gswr = smpr->gs + normalize(get_swr(swr_fullscale), 0, swr_fullscale, smpr->ge - smpr->gs);
 
@@ -750,11 +769,7 @@ typedef struct {
 	float32_t fft_buf [NORMALFFT * 2];
 	uint_fast8_t is_ready;
 	float32_t max_val;
-	uint_fast16_t w;
-	uint_fast16_t h;
-	uint_fast16_t visiblefftsize;
-	uint_fast16_t step;
-	uint_fast16_t y_old_array [FIRBUFSIZE];
+	uint_fast16_t y_old_array [NORMALFFT];
 } afsp_t;
 
 enum { AFSP_OFFSET = 3 };
@@ -764,6 +779,7 @@ void afsp_save_sample(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 {
 	static uint_fast16_t i = 0;
 
+	ASSERT(i < ARRAY_SIZE(afsp.raw_buf));
 	if (afsp.is_ready == 0)
 	{
 		afsp.raw_buf [i] = ch0;
@@ -787,24 +803,21 @@ display2_init_af_spectre(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)	
 		ASSERT(inited == 0);	// Only one pass supported
 		inited = 1;
 	}
-
-	smeter_params_t smprm;
-	smeter_params_t * const smpr = & smprm;
-	display2_smeter15_setuplayout(xgrid, ygrid, & smprm);
-
-	afsp.w = smpr->ge - smpr->gs;
-	afsp.h = 40;
-	afsp.visiblefftsize = NORMALFFT / 6;
-	afsp.step = afsp.w / afsp.visiblefftsize;
 	afsp.is_ready = 0;
 }
 
 static void
 display2_latch_af_spectre(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)
 {
-	if (afsp.is_ready && ! hamradio_get_tx())
+	if (afsp.is_ready)
 	{
-		afsp.is_ready = 0;
+
+		smeter_params_t * const smpr = & smprms [glob_smetertype];
+		display2_smeter15_iiii(xgrid, ygrid);
+
+		const uint_fast16_t afsp_visiblefftsize = NORMALFFT / 6;
+		const uint_fast16_t afsp_w = smpr->ge - smpr->gs;
+		const uint_fast16_t afsp_step = afsp_w / afsp_visiblefftsize;
 
 		fftzoom_x2(afsp.raw_buf);
 		// осталась половина буфера
@@ -819,45 +832,50 @@ display2_latch_af_spectre(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)
 		arm_cmplx_mag_f32(afsp.fft_buf, afsp.fft_buf, NORMALFFT);		//
 		arm_max_no_idx_f32(afsp.fft_buf, NORMALFFT, & afsp.max_val);	// поиск в первой половине
 
-		for (unsigned i = AFSP_OFFSET; i < afsp.w; i ++)
+		for (unsigned i = AFSP_OFFSET; i < afsp_w; i ++)
 		{
-			ASSERT(i < ARRAY_SIZE(afsp.y_old_array));
-			const uint_fast16_t fftpos = NORMALFFT - roundf(i / afsp.step);
+			const uint_fast16_t fftpos = NORMALFFT - roundf(i / afsp_step);
 			ASSERT(fftpos < ARRAY_SIZE(afsp.fft_buf));
-			const FLOAT_t val = normalize(afsp.fft_buf [fftpos], 0, afsp.max_val, afsp.h);
-			const FLOAT_t yy = afsp.y_old_array [i] * (FLOAT_t) 0.8 + (FLOAT_t) 0.2 * val;
-			afsp.y_old_array [i] = yy;
+			// фильтровать тут. Нормировать к размеру в отображении
+			afsp.y_old_array [i] = afsp.y_old_array [i] * (FLOAT_t) 0.8 + (FLOAT_t) 0.2 * afsp.fft_buf [fftpos];
 		}
+
+		afsp.is_ready = 0;
 	}
 }
 
 static void
 display2_af_spectre(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)
 {
-	smeter_params_t smprm;
-	smeter_params_t * const smpr = & smprm;
-	display2_smeter15_setuplayout(xgrid, ygrid, & smprm);
-	const uint_fast16_t x0 = GRID2X(xgrid);
-	const uint_fast16_t y0 = GRID2Y(ygrid);
-
-	const uint_fast16_t afsp_x = x0 + smpr->gs;
-	const uint_fast16_t afsp_y = y0 + SM_BG_H - 10;
+	display2_smeter15_iiii(xgrid, ygrid);
 
 	switch (glob_smetertype)
 	{
 	case SMETER_TYPE_BARS:
-		if (! hamradio_get_tx())
 		{
-			PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
-
-			for (unsigned i = AFSP_OFFSET; i < afsp.w; i ++)
+			if (! hamradio_get_tx())
 			{
-				const uint_fast16_t yy = afsp.y_old_array [i];	// filtered values
-				// TODO: нормирование к размерам перенести сюда, фильтровать не координаты а мощности.
-				colmain_line(fr, DIM_X, DIM_Y,
-						afsp_x + i - AFSP_OFFSET, afsp_y - yy,
-						afsp_x + i - AFSP_OFFSET, afsp_y,
-						COLORMAIN_YELLOW, 0);
+				display2_smeter15_iiii(xgrid, ygrid);
+
+				PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
+				smeter_params_t * const smpr = & smprms [glob_smetertype];
+				const uint_fast16_t x0 = GRID2X(xgrid);
+				const uint_fast16_t y0 = GRID2Y(ygrid);
+
+				const uint_fast16_t afsp_x = x0 + smpr->gs;
+				const uint_fast16_t afsp_y = y0 + SM_BG_H - 10;
+				const uint_fast16_t afsp_w = smpr->ge - smpr->gs;
+				const uint_fast16_t afsp_h = 40;
+
+				for (unsigned i = AFSP_OFFSET; i < afsp_w; i ++)
+				{
+					const uint_fast16_t yy = normalize(afsp.y_old_array [i], 0, afsp.max_val, afsp_h);
+
+					colmain_line(fr, DIM_X, DIM_Y,
+							afsp_x + i - AFSP_OFFSET, afsp_y - yy,
+							afsp_x + i - AFSP_OFFSET, afsp_y,
+							COLORMAIN_YELLOW, 0);
+				}
 			}
 		}
 		break;
