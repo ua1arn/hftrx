@@ -585,6 +585,8 @@ display2_smeter15_init(
 		ASSERT(inited == 0);	// Only one pass supported
 		inited = 1;
 	}
+
+	display2_smeter15_iiii(xgrid, ygrid);
 }
 
 // ширина занимаемого места - 15 ячеек (240/16 = 15)
@@ -596,8 +598,6 @@ display2_smeter15(
 	)
 {
 	smeter_params_t * const smpr = & smprms [glob_smetertype];
-
-	display2_smeter15_iiii(xgrid, ygrid);
 
 	/* получение координат прямоугольника с изображением */
 	const uint_fast16_t width = SM_BG_W;
@@ -804,6 +804,7 @@ display2_init_af_spectre(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)	
 		inited = 1;
 	}
 	afsp.is_ready = 0;
+	display2_smeter15_iiii(xgrid, ygrid);
 }
 
 static void
@@ -813,7 +814,6 @@ display2_latch_af_spectre(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)
 	{
 
 		smeter_params_t * const smpr = & smprms [glob_smetertype];
-		display2_smeter15_iiii(xgrid, ygrid);
 
 		const uint_fast16_t afsp_visiblefftsize = NORMALFFT / 6;
 		const uint_fast16_t afsp_w = smpr->ge - smpr->gs;
