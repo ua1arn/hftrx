@@ -788,8 +788,6 @@ display2_init_af_spectre(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)	
 static void
 display2_latch_af_spectre(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)
 {
-
-	static uint_fast8_t j = 0;
 	if (afsp.is_ready && ! hamradio_get_tx())
 	{
 		afsp.is_ready = 0;
