@@ -559,10 +559,16 @@ display2_smeter15_init(
 	dctx_t * pctx
 	)
 {
+
+	{
+		static int inited;
+		ASSERT(inited == 0);	// Only one pass supported
+		inited = 1;
+	}
 }
 
 // ширина занимаемого места - 15 ячеек (240/16 = 15)
-void
+static void
 display2_smeter15(
 	uint_fast8_t xgrid,
 	uint_fast8_t ygrid,
@@ -570,7 +576,7 @@ display2_smeter15(
 	)
 {
 	smeter_params_t smprm;
-	smeter_params_t * smpr = & smprm;
+	smeter_params_t * const smpr = & smprm;
 
 	display2_smeter15_setuplayout(xgrid, ygrid, & smprm);
 
@@ -774,8 +780,16 @@ void afsp_save_sample(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 static void
 display2_init_af_spectre(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)		// вызывать после инициализации s-meter
 {
+	//static subscribeint32_t afspectreregister;
+
+	{
+		static int inited;
+		ASSERT(inited == 0);	// Only one pass supported
+		inited = 1;
+	}
+
 	smeter_params_t smprm;
-	smeter_params_t * smpr = & smprm;
+	smeter_params_t * const smpr = & smprm;
 	display2_smeter15_setuplayout(xgrid, ygrid, & smprm);
 
 	afsp.w = smpr->ge - smpr->gs;
@@ -821,7 +835,7 @@ static void
 display2_af_spectre(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)
 {
 	smeter_params_t smprm;
-	smeter_params_t * smpr = & smprm;
+	smeter_params_t * const smpr = & smprm;
 	display2_smeter15_setuplayout(xgrid, ygrid, & smprm);
 	const uint_fast16_t x0 = GRID2X(xgrid);
 	const uint_fast16_t y0 = GRID2Y(ygrid);
@@ -846,6 +860,9 @@ display2_af_spectre(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)
 						COLORMAIN_YELLOW, 0);
 			}
 		}
+		break;
+
+	default:
 		break;
 	}
 }
@@ -5792,7 +5809,8 @@ enum
 
 
 #elif DSTYLE_G_X800_Y480 && 1	//&& WITHSPECTRUMWF
-	// вариант без сенсорного экрана
+	// вариант без сенсорного экрана и без offscreen composition
+	// Для тестирования на минимальном объеме памяти.
 	// TFT панель AT070TN90
 	// 480/5 = 96, 800/16=50
 
@@ -6683,7 +6701,7 @@ display2_wfl_init(
 {
 
 
-	static subscribeint32_t wfl_register;
+	static subscribeint32_t rtsregister;
 
 	{
 		static int inited;
@@ -6691,7 +6709,7 @@ display2_wfl_init(
 		inited = 1;
 	}
 
-	subscribeint_user(& rtstargetsint, & wfl_register, NULL, saveIQRTSxx);
+	subscribeint_user(& rtstargetsint, & rtsregister, NULL, saveIQRTSxx);
 
 
 	// Код взят из проекта Malamute

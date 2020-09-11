@@ -38,12 +38,6 @@ typedef struct dctx_tag
 	const void * pv;
 } dctx_t;
 
-void display2_smeter15(
-	uint_fast8_t x,
-	uint_fast8_t y,
-	dctx_t * pctx
-	);
-
 // FUNC item label
 void display2_fnlabel9(
 	uint_fast8_t x,
