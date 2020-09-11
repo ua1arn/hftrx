@@ -722,10 +722,6 @@ display2_smeter15(
 	}
 }
 
-#endif /* LCDMODE_LTDC */
-
-#if WITHAFSPECTRE
-
 enum
 {
 	NORMALFFT = FFTSizeSpectrum			// размер буфера для отображения
@@ -837,7 +833,7 @@ display2_af_spectre(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)
 	}
 }
 
-#endif /* WITHAFSPECTRE */
+#endif /* LCDMODE_LTDC */
 
 // очистка фона
 static void
