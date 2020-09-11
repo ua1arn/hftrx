@@ -483,6 +483,7 @@ display2_smeter15_setuplayout(
 
 		break;
 
+	default:
 	case SMETER_TYPE_BARS:
 
 		bg = smeter_bg [SM_STATE_TX];
