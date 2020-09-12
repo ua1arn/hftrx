@@ -1555,7 +1555,7 @@ static void window_freq_process (void)
 			break;
 
 		default:
-			if (editfreq.num < 5)
+			if (editfreq.num < 6)
 			{
 				editfreq.val  = editfreq.val * 10 + editfreq.key;
 				if (editfreq.val)

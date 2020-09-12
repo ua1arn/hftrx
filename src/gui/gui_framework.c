@@ -275,25 +275,27 @@ void elements_state (window_t * win)
 
 	if(win->is_close && win->state)										// инициализировать кнопку закрытия окна, если разрешено
 	{
-		win->bh_count++;
-		win->bh_ptr = realloc(win->bh_ptr, win->bh_count * sizeof(close_button));
-		button_t * bh_close = & win->bh_ptr [win->bh_count - 1];
-		memcpy(bh_close, & close_button, sizeof(close_button));			// копирование шаблона кнопки для последующего заполнения
-
-		bh_close->x1 = win->w - window_close_button_size + 1;
-		bh_close->y1 = 1;
-		bh_close->w = window_close_button_size - 3;
-		bh_close->h = window_close_button_size - 3;
-		bh_close->parent = win->window_id;
-		bh_close->visible = VISIBLE;
-		bh_close->state = CANCELLED;
-
-		ASSERT(gui_element_count < GUI_ELEMENTS_ARRAY_SIZE);
-		gui_elements [gui_element_count].link = bh_close;
-		gui_elements [gui_element_count].win = win;
-		gui_elements [gui_element_count].type = TYPE_CLOSE_BUTTON;
-		gui_element_count ++;
-		debug_num ++;
+//		win->bh_count++;
+//		win->bh_ptr = realloc(win->bh_ptr, win->bh_count * sizeof(close_button));
+//		button_t * bh_close = & win->bh_ptr [win->bh_count - 1];
+//		memcpy(bh_close, & close_button, sizeof(close_button));			// копирование шаблона кнопки для последующего заполнения
+//
+//		bh_close->x1 = win->w - window_close_button_size + 1;
+//		bh_close->y1 = 1;
+//		bh_close->w = window_close_button_size - 3;
+//		bh_close->h = window_close_button_size - 3;
+//		bh_close->parent = win->window_id;
+//		bh_close->visible = VISIBLE;
+//		bh_close->state = CANCELLED;
+//		ASSERT(bh_close->x1 + bh_close->w < WITHGUIMAXX);
+//		ASSERT(bh_close->y1 + bh_close->h < WITHGUIMAXY);
+//
+//		ASSERT(gui_element_count < GUI_ELEMENTS_ARRAY_SIZE);
+//		gui_elements [gui_element_count].link = bh_close;
+//		gui_elements [gui_element_count].win = win;
+//		gui_elements [gui_element_count].type = TYPE_CLOSE_BUTTON;
+//		gui_element_count ++;
+//		debug_num ++;
 	}
 //	PRINTF("line %d: %s gui_element_count: %d %+d\n", __LINE__, win->name, gui_element_count, debug_num);
 }
@@ -394,6 +396,8 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 				button_t * bh = & win->bh_ptr [i];
 				xmax = (xmax > bh->x1 + bh->w) ? xmax : (bh->x1 + bh->w);
 				ymax = (ymax > bh->y1 + bh->h) ? ymax : (bh->y1 + bh->h);
+				ASSERT(xmax < WITHGUIMAXX);
+				ASSERT(ymax < WITHGUIMAXY);
 			}
 		}
 
@@ -404,6 +408,8 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 				label_t * lh = & win->lh_ptr [i];
 				xmax = (xmax > lh->x + get_label_width(lh)) ? xmax : (lh->x + get_label_width(lh));
 				ymax = (ymax > lh->y + get_label_height(lh)) ? ymax : (lh->y + get_label_height(lh));
+				ASSERT(xmax < WITHGUIMAXX);
+				ASSERT(ymax < WITHGUIMAXY);
 			}
 		}
 
@@ -422,6 +428,8 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 					xmax = (xmax > sh->x + sliders_w * 2) ? xmax : (sh->x + sliders_w * 2);
 					ymax = (ymax > sh->y + sh->size + sliders_h) ? ymax : (sh->y + sh->size + sliders_h);
 				}
+				ASSERT(xmax < WITHGUIMAXX);
+				ASSERT(ymax < WITHGUIMAXY);
 			}
 		}
 	}
@@ -453,6 +461,9 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 		win->x1 = ALIGN_CENTER_X - win->w / 2;
 		break;
 	}
+
+	ASSERT(win->x1 + win->w < WITHGUIMAXX);
+	ASSERT(win->y1 + win->h < WITHGUIMAXY);
 
 	elements_state(win);
 }
