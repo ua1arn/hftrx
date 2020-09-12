@@ -1430,8 +1430,8 @@ arm_hardware_ltdc_initialize(void)
 
 	/* Enable the LTDC Clock */
 	RCC->MP_APB4ENSETR = RCC_MP_APB4ENSETR_LTDCEN;	/* LTDC clock enable */
-	/* Enable the LTDC Clock in low-power mode */
 	(void) RCC->MP_APB4ENSETR;
+	/* Enable the LTDC Clock in low-power mode */
 	RCC->MP_APB4LPENSETR = RCC_MP_APB4LPENSETR_LTDCLPEN;	/* LTDC clock enable */
 	(void) RCC->MP_APB4LPENSETR;
 
