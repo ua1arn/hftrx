@@ -364,6 +364,26 @@ extern "C" {
 
 	#endif
 
+enum
+{
+	BOARD_WTYPE_BLACKMAN_HARRIS,
+	BOARD_WTYPE_BLACKMAN_HARRIS_MOD,
+	BOARD_WTYPE_BLACKMAN_HARRIS_3TERM,
+	BOARD_WTYPE_BLACKMAN_HARRIS_3TERM_MOD,
+	BOARD_WTYPE_BLACKMAN_HARRIS_7TERM,
+	BOARD_WTYPE_BLACKMAN_NUTTALL,
+	BOARD_WTYPE_HAMMING,
+	BOARD_WTYPE_HANN,
+	BOARD_WTYPE_RECTANGULAR,
+	//
+	BOARD_WTYPE_count
+};
+
+#define BOARD_WTYPE_FILTERS BOARD_WTYPE_BLACKMAN_HARRIS_MOD
+#define BOARD_WTYPE_SPECTRUM BOARD_WTYPE_BLACKMAN_HARRIS_3TERM //BOARD_WTYPE_HAMMING
+
+FLOAT_t fir_design_window(int iCnt, int iCoefNum, int wtype); // Calculate window function (blackman-harris, hamming, rectangular)
+
 
 /* from "C Language Algorithms for Digital Signal Processing"
    by Paul M. Embree and Bruce Kimble, Prentice Hall, 1991 */
