@@ -2661,7 +2661,7 @@ static unsigned CDCACM_InterfaceAssociationDescriptor_a(uint_fast8_t fill, uint8
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = USB_INTERFACE_ASSOC_DESCRIPTOR_TYPE;	// bDescriptorType: IAD
-		* buff ++ = IUSBD_CDCACM_IFC(INTERFACE_CDC_CONTROL_3a, offset);	// bFirstInterface
+		* buff ++ = USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL_3a, offset);	// bFirstInterface
 		* buff ++ = INTERFACE_CDCACM_count;	// bInterfaceCount
 		* buff ++ = USB_DEVICE_CLASS_COMMUNICATIONS;	// bFunctionClass: CDC
 		* buff ++ = CDC_ABSTRACT_CONTROL_MODEL;			// bFunctionSubClass
