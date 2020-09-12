@@ -276,7 +276,7 @@ enum {
 enum { SM_BG_W = GRID2X(15), SM_BG_H = GRID2Y(20) };
 
 typedef ALIGNX_BEGIN PACKEDCOLORMAIN_T smeter_bg_t [GXSIZE(SM_BG_W, SM_BG_H)] ALIGNX_END;
-static smeter_bg_t smeter_bg[SM_STATE_COUNT]; 	// 0 - rx, 1 - tx
+static smeter_bg_t smeter_bg [SMETER_TYPE_COUNT][SM_STATE_COUNT];
 
 typedef struct {
 	uint_fast16_t gs;
@@ -291,6 +291,7 @@ typedef struct {
 	uint_fast8_t step3;
 } smeter_params_t;
 
+static smeter_params_t smprms [SMETER_TYPE_COUNT];
 
 void display2_set_smetertype(uint_fast8_t v)
 {
@@ -302,14 +303,15 @@ static void
 display2_smeter15_layout(
 	uint_fast8_t xgrid,
 	uint_fast8_t ygrid,
-	smeter_params_t * const smpr,
-	uint_fast8_t gsmetertype
+	uint_fast8_t smetertype
 	)
 {
 	const uint_fast8_t halfsect = 30;
 	const int stripewidth = 12; //16;
 
-	switch (gsmetertype)
+	smeter_params_t * const smpr = & smprms [smetertype];
+
+	switch (smetertype)
 	{
 	case SMETER_TYPE_DIAL:
 		{
@@ -323,7 +325,6 @@ display2_smeter15_layout(
 			smpr->step1 = 3;	// шаг для оцифровки S
 			smpr->step2 = 4;	// шаг для оцифровки плюсов
 			smpr->step3 = 20;	// swr
-
 		}
 		break;
 
@@ -402,12 +403,12 @@ display2_smeter15_layout(
 	unsigned p;
 	unsigned i;
 
-	switch (gsmetertype)
+	switch (smetertype)
 	{
 
 	case SMETER_TYPE_DIAL:
 
-		bg = smeter_bg [SM_STATE_TX];
+		bg = smeter_bg [SMETER_TYPE_DIAL][SM_STATE_TX];
 		colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORMAIN_BLACK, 1);
 
 		for (p = 0, i = 0; i < ARRAY_SIZE(markersTX_pwr); ++ i, p += 10)
@@ -445,7 +446,7 @@ display2_smeter15_layout(
 		display_segm_buf(bg, SM_BG_W, SM_BG_H, xb, yb, smpr->gm, smpr->ge, smpr->r1, 1, smeter, 1, 1);
 		display_segm_buf(bg, SM_BG_W, SM_BG_H, xb, yb, smpr->gs, smpr->ge, smpr->r2, 1, COLORMAIN_WHITE, 1, 1);
 
-		bg = smeter_bg [SM_STATE_RX];
+		bg = smeter_bg [SMETER_TYPE_DIAL][SM_STATE_RX];
 		colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORMAIN_BLACK, 1);
 
 		for (p = 1, i = 0; i < ARRAY_SIZE(markers); ++ i, p += 2)
@@ -490,7 +491,7 @@ display2_smeter15_layout(
 	default:
 	case SMETER_TYPE_BARS:
 
-		bg = smeter_bg [SM_STATE_TX];
+		bg = smeter_bg [SMETER_TYPE_BARS][SM_STATE_TX];
 		colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORMAIN_BLACK, 1);
 //		colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORMAIN_WHITE, 0);
 //		colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H / 2, COLORMAIN_WHITE, 0);
@@ -518,7 +519,7 @@ display2_smeter15_layout(
 			colpip_string3_tbg(bg, SM_BG_W, SM_BG_H, markersTX_swr [i] - strwidth3(buf2) / 2, smpr->r2 + 12, buf2, COLORMAIN_YELLOW);
 		}
 
-		bg = smeter_bg [SM_STATE_RX];
+		bg = smeter_bg [SMETER_TYPE_BARS][SM_STATE_RX];
 		colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORMAIN_BLACK, 1);
 //		colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORMAIN_WHITE, 0);
 //		colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H / 2, COLORMAIN_WHITE, 0);
@@ -556,24 +557,7 @@ display2_smeter15_layout(
 	}
 }
 
-
-static smeter_params_t smprms [SMETER_TYPE_COUNT];
 static uint_fast8_t smprmsinited;
-
-static void display2_smeter15_iiii(
-	uint_fast8_t xgrid,
-	uint_fast8_t ygrid
-	)
-{
-	uint_fast8_t i;
-	if (smprmsinited)
-		return;
-	for (i = 0; i < SMETER_TYPE_COUNT; ++ i)
-	{
-		display2_smeter15_layout(xgrid, ygrid, & smprms [i], glob_smetertype);
-	}
-	smprmsinited = 1;
-}
 
 static void
 display2_smeter15_init(
@@ -591,7 +575,14 @@ display2_smeter15_init(
 	}
 #endif /* WITHDEBUG */
 
-	display2_smeter15_iiii(xgrid, ygrid);
+	if (smprmsinited)
+			return;
+
+	for (uint_fast8_t i = 0; i < SMETER_TYPE_COUNT; ++ i)
+	{
+		display2_smeter15_layout(xgrid, ygrid, i);
+	}
+	smprmsinited = 1;
 }
 
 // ширина занимаемого места - 15 ячеек (240/16 = 15)
@@ -612,14 +603,6 @@ display2_smeter15(
 	const int dial_shift = GRID2Y(2);
 	const int xc = x0 + width / 2;
 	const int yc = y0 + 120 + dial_shift;
-
-	static uint_fast8_t old_type = SMETER_TYPE_COUNT;
-	if (old_type != glob_smetertype)
-	{
-		old_type = glob_smetertype;
-		smprmsinited = 0;
-		display2_smeter15_iiii(0, 0);
-	}
 
 	const uint_fast8_t is_tx = hamradio_get_tx();
 	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
@@ -687,8 +670,8 @@ display2_smeter15(
 			colpip_plot(
 					(uintptr_t) fr, GXSIZE(DIM_X, DIM_Y),
 					fr, DIM_X, DIM_Y, x0, y0 + dial_shift,
-					(uintptr_t) smeter_bg [SM_STATE_TX], GXSIZE(SM_BG_W, SM_BG_H),
-					smeter_bg [SM_STATE_TX], SM_BG_W, SM_BG_H - dial_shift);
+					(uintptr_t) smeter_bg [SMETER_TYPE_DIAL][SM_STATE_TX], GXSIZE(SM_BG_W, SM_BG_H),
+					smeter_bg [SMETER_TYPE_DIAL][SM_STATE_TX], SM_BG_W, SM_BG_H - dial_shift);
 
 			if (gswr > smpr->gs)
 			{
@@ -714,8 +697,8 @@ display2_smeter15(
 			colpip_plot(
 					(uintptr_t) fr, GXSIZE(DIM_X, DIM_Y),
 					fr, DIM_X, DIM_Y, x0, y0 + dial_shift,
-					(uintptr_t) smeter_bg [SM_STATE_RX], GXSIZE(SM_BG_W, SM_BG_H),
-					smeter_bg [SM_STATE_RX], SM_BG_W, SM_BG_H - dial_shift);
+					(uintptr_t) smeter_bg [SMETER_TYPE_DIAL][SM_STATE_RX], GXSIZE(SM_BG_W, SM_BG_H),
+					smeter_bg [SMETER_TYPE_DIAL][SM_STATE_RX], SM_BG_W, SM_BG_H - dial_shift);
 
 			{
 				// Рисование peak value (риска)
@@ -743,8 +726,8 @@ display2_smeter15(
 			colpip_plot(
 					(uintptr_t) fr, GXSIZE(DIM_X, DIM_Y),
 					fr, DIM_X, DIM_Y, x0, y0,
-					(uintptr_t) smeter_bg [SM_STATE_TX], GXSIZE(SM_BG_W, SM_BG_H),
-					smeter_bg [SM_STATE_TX], SM_BG_W, SM_BG_H);
+					(uintptr_t) smeter_bg [SMETER_TYPE_BARS][SM_STATE_TX], GXSIZE(SM_BG_W, SM_BG_H),
+					smeter_bg [SMETER_TYPE_BARS][SM_STATE_TX], SM_BG_W, SM_BG_H);
 
 			if(gp > smpr->gs)
 				colpip_rect(fr, DIM_X, DIM_Y, x0 + smpr->gs, y0 + smpr->r1 + 5, x0 + gp, y0 + smpr->r1 + 20, COLORMAIN_GREEN, 1);
@@ -757,8 +740,8 @@ display2_smeter15(
 			colpip_plot(
 					(uintptr_t) fr, GXSIZE(DIM_X, DIM_Y),
 					fr, DIM_X, DIM_Y, x0, y0,
-					(uintptr_t) smeter_bg [SM_STATE_RX], GXSIZE(SM_BG_W, SM_BG_H),
-					smeter_bg [SM_STATE_RX], SM_BG_W, SM_BG_H
+					(uintptr_t) smeter_bg [SMETER_TYPE_BARS][SM_STATE_RX], GXSIZE(SM_BG_W, SM_BG_H),
+					smeter_bg [SMETER_TYPE_BARS][SM_STATE_RX], SM_BG_W, SM_BG_H
 					);
 
 			if(gv > smpr->gs)
@@ -826,6 +809,12 @@ typedef struct {
 	uint_fast8_t is_ready;
 	float32_t max_val;
 	uint_fast16_t y_array [NORMALFFT];
+	uint_fast16_t x;
+	uint_fast16_t y;
+	uint_fast16_t w;
+	uint_fast16_t h;
+	uint_fast16_t visiblefftsize;
+	uint_fast16_t step;
 } afsp_t;
 
 enum { AFSP_OFFSET = 3 };
@@ -850,7 +839,7 @@ void afsp_save_sample(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 }
 
 static void
-display2_init_af_spectre(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)		// вызывать после инициализации s-meter
+display2_init_af_spectre(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)		// вызывать после display2_smeter15_init
 {
 	//static subscribeint32_t afspectreregister;
 
@@ -862,8 +851,15 @@ display2_init_af_spectre(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)	
 	}
 #endif /* WITHDEBUG */
 
+	smeter_params_t * const smpr = & smprms [SMETER_TYPE_BARS];		// отображение НЧ спектра только для режима s-метра BARS
+
+	afsp.x = GRID2X(xgrid) + smpr->gs;
+	afsp.y = GRID2Y(ygrid) + SM_BG_H - 10;
+	afsp.w = smpr->ge - smpr->gs;
+	afsp.h = 40;
+	afsp.visiblefftsize = NORMALFFT / 6;
+	afsp.step = afsp.w / afsp.visiblefftsize;
 	afsp.is_ready = 0;
-	display2_smeter15_iiii(xgrid, ygrid);
 }
 
 static void
@@ -871,9 +867,6 @@ display2_latch_af_spectre(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)
 {
 	if (afsp.is_ready)
 	{
-
-		smeter_params_t * const smpr = & smprms [glob_smetertype];
-
 		fftzoom_x2(afsp.raw_buf);
 		// осталась половина буфера
 		for (uint_fast16_t i = 0; i < NORMALFFT; i ++)
@@ -887,6 +880,14 @@ display2_latch_af_spectre(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)
 		arm_cmplx_mag_f32(afsp.fft_buf, afsp.fft_buf, NORMALFFT);		//
 		arm_max_no_idx_f32(afsp.fft_buf, NORMALFFT, & afsp.max_val);	// поиск в первой половине
 
+		for (unsigned i = AFSP_OFFSET; i < afsp.w; i ++)
+		{
+			const uint_fast16_t fftpos = NORMALFFT - roundf(i / afsp.step);
+			ASSERT(fftpos < ARRAY_SIZE(afsp.fft_buf));
+			const uint_fast16_t y_norm = normalize(afsp.fft_buf [fftpos], 0, afsp.max_val, afsp.h - 1);
+			afsp.y_array [i] = afsp.y_array [i] * (FLOAT_t) 0.6 + (FLOAT_t) 0.4 * y_norm;
+		}
+
 		afsp.is_ready = 0;
 	}
 }
@@ -894,39 +895,19 @@ display2_latch_af_spectre(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)
 static void
 display2_af_spectre(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)
 {
-	display2_smeter15_iiii(xgrid, ygrid);
-
 	switch (glob_smetertype)
 	{
 	case SMETER_TYPE_BARS:
 		{
 			if (! hamradio_get_tx())
 			{
-				display2_smeter15_iiii(xgrid, ygrid);
-
 				PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
-				smeter_params_t * const smpr = & smprms [glob_smetertype];
-				const uint_fast16_t x0 = GRID2X(xgrid);
-				const uint_fast16_t y0 = GRID2Y(ygrid);
 
-				const uint_fast16_t afsp_x = x0 + smpr->gs;
-				const uint_fast16_t afsp_y = y0 + SM_BG_H - 10;
-				const uint_fast16_t afsp_w = smpr->ge - smpr->gs;
-				const uint_fast16_t afsp_h = 40;
-				const uint_fast16_t afsp_visiblefftsize = NORMALFFT / 6;
-				const uint_fast16_t afsp_step = afsp_w / afsp_visiblefftsize;
-
-				for (unsigned i = AFSP_OFFSET; i < afsp_w; i ++)
+				for (unsigned i = AFSP_OFFSET; i < afsp.w; i ++)
 				{
-					const uint_fast16_t fftpos = NORMALFFT - roundf(i / afsp_step);
-					ASSERT(fftpos < ARRAY_SIZE(afsp.fft_buf));
-					const uint_fast16_t y_norm = normalize(afsp.fft_buf [fftpos], 0, afsp.max_val, afsp_h - 1);
-
-					afsp.y_array [i] = afsp.y_array [i] * (FLOAT_t) 0.6 + (FLOAT_t) 0.4 * y_norm;
-
 					colmain_line(fr, DIM_X, DIM_Y,
-							afsp_x + i - AFSP_OFFSET, afsp_y - afsp.y_array [i],
-							afsp_x + i - AFSP_OFFSET, afsp_y,
+							afsp.x + i - AFSP_OFFSET, afsp.y - afsp.y_array [i],
+							afsp.x + i - AFSP_OFFSET, afsp.y,
 							COLORMAIN_YELLOW, 0);
 				}
 			}
