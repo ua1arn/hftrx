@@ -6910,6 +6910,11 @@ uint_fast8_t allocate_fftbuffer_low(fftbuff_t * * dest)
 void saveready_fftbuffer_low(fftbuff_t * p)
 {
 	SPIN_LOCK(& fftlock);
+	while (! IsListEmpty(& fftbufready))
+	{
+		const PLIST_ENTRY t = RemoveTailList(& fftbufready);
+		InsertHeadList(& fftbuffree, t);
+	}
 	InsertHeadList(& fftbufready, & p->item);
 	SPIN_UNLOCK(& fftlock);
 }
