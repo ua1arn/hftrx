@@ -197,6 +197,9 @@ static uint_fast8_t glob_smetertype = SMETER_TYPE_DIAL;	/* выбор внешн
 
 //#define WIDEFREQ (TUNE_TOP > 100000000L)
 
+static void fftzoom_x2(float32_t * buffer);
+
+
 uint_fast16_t normalize(
 	uint_fast16_t raw,
 	uint_fast16_t rawmin,
@@ -777,6 +780,44 @@ enum
 };
 
 
+#if 0
+
+#include "wnd256.h"
+
+static void buildsigwnd(void)
+{
+}
+
+#else
+
+static RAMBIG FLOAT_t wnd256 [NORMALFFT];
+
+static void buildsigwnd(void)
+{
+	int i;
+	for (i = 0; i < FFTSizeSpectrum; ++ i)
+	{
+		wnd256 [i] = fir_design_window(i, FFTSizeSpectrum, BOARD_WTYPE_SPECTRUM);
+	}
+}
+
+static void printsigwnd(void)
+{
+	PRINTF(PSTR("static const FLASHMEM FLOAT_t wnd256 [%u] =\n"), (unsigned) FFTSizeSpectrum);
+	PRINTF(PSTR("{\n"));
+
+	int i;
+	for (i = 0; i < FFTSizeSpectrum; ++ i)
+	{
+		wnd256 [i] = fir_design_window(i, FFTSizeSpectrum, BOARD_WTYPE_SPECTRUM);
+		int el = ((i + 1) % 4) == 0;
+		PRINTF(PSTR("\t" "%+1.20f%s"), wnd256 [i], el ? ",\n" : ", ");
+	}
+	PRINTF(PSTR("};\n"));
+}
+#endif
+
+
 typedef struct {
 	float32_t raw_buf [NORMALFFT * 2];		// Для последующей децимации /2
 	float32_t fft_buf [NORMALFFT * 2];
@@ -840,7 +881,7 @@ display2_latch_af_spectre(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)
 			afsp.fft_buf [i * 2 + 1] = 0;
 		}
 
-		apply_window_function(afsp.fft_buf, NORMALFFT);
+		arm_cmplx_mult_real_f32(afsp.fft_buf, wnd256, afsp.fft_buf, NORMALFFT); // apply_window_function
 		arm_cfft_f32(FFTCONFIGSpectrum, afsp.fft_buf, 0, 1);
 		arm_cmplx_mag_f32(afsp.fft_buf, afsp.fft_buf, NORMALFFT);		//
 		arm_max_no_idx_f32(afsp.fft_buf, NORMALFFT, & afsp.max_val);	// поиск в первой половине
@@ -6901,7 +6942,8 @@ static fftbuff_t * pfill [NOVERLAP];
 static unsigned filleds [NOVERLAP]; // 0..LARGEFFT-1
 
 // сохранение сэмпла для отображения спектра
-void saveIQRTSxx(void * ctx, int_fast32_t iv, int_fast32_t qv)
+static void
+saveIQRTSxx(void * ctx, int_fast32_t iv, int_fast32_t qv)
 {
 	unsigned i;
 	for (i = 0; i < NOVERLAP; ++ i)
@@ -6956,51 +6998,6 @@ void fftbuffer_initialize(void)
 	}
 	SPINLOCK_INITIALIZE(& fftlock);
 }
-
-#if 0
-
-#include "wnd256.h"
-
-static void buildsigwnd(void)
-{
-}
-
-#else
-
-static RAMBIG FLOAT_t wnd256 [NORMALFFT];
-
-static void buildsigwnd(void)
-{
-	int i;
-	for (i = 0; i < FFTSizeSpectrum; ++ i)
-	{
-		wnd256 [i] = fir_design_window(i, FFTSizeSpectrum, BOARD_WTYPE_SPECTRUM);
-	}
-}
-
-static void printsigwnd(void)
-{
-	PRINTF(PSTR("static const FLASHMEM FLOAT_t wnd256 [%u] =\n"), (unsigned) FFTSizeSpectrum);
-	PRINTF(PSTR("{\n"));
-
-	int i;
-	for (i = 0; i < FFTSizeSpectrum; ++ i)
-	{
-		wnd256 [i] = fir_design_window(i, FFTSizeSpectrum, BOARD_WTYPE_SPECTRUM);
-		int el = ((i + 1) % 4) == 0;
-		PRINTF(PSTR("\t" "%+1.20f%s"), wnd256 [i], el ? ",\n" : ", ");
-	}
-	PRINTF(PSTR("};\n"));
-}
-#endif
-
-void apply_window_function(float32_t * v, uint_fast16_t size)
-{
-	ASSERT(size == NORMALFFT);
-	ASSERT(size == ARRAY_SIZE(wnd256));
-	arm_cmplx_mult_real_f32(v, wnd256, v, size);
-}
-
 
 union states
 {
@@ -7063,7 +7060,7 @@ static void fftzoom_filer_decimate(
 }
 
 // децимация НЧ спектра для увеличения разрешения
-void fftzoom_x2(float32_t * buffer)
+static void fftzoom_x2(float32_t * buffer)
 {
 	const struct zoom_param * const prm = & zoom_params [0];
 	arm_fir_decimate_instance_f32 fir_config;

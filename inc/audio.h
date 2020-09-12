@@ -690,11 +690,6 @@ void dsp_initialize(void);
 	// 0 - минимальный сигнал, ymax - максимальный
 	int dsp_mag2y(FLOAT_t mag, int ymax, int_fast16_t topdb, int_fast16_t bottomdb);
 
-	void saveIQRTSxx(void * ctx, int_fast32_t iv, int_fast32_t qv);	// формирование отображения спектра
-
-	void apply_window_function(float32_t * v, uint_fast16_t size);
-	void fftzoom_x2(float32_t * buffer);
-
 #endif /* WITHINTEGRATEDDSP */
 
 int_fast32_t dsp_get_ifreq(void);		/* Получить значение входной ПЧ для обработки DSP */
