@@ -1939,17 +1939,20 @@ static void fir_design_bandpass(FLOAT_t * dCoeff, int iCoefNum, FLOAT_t fCutLow,
 static void fir_design_applaywindow(FLOAT_t *dCoeff, const FLOAT_t *dWindow, int iCoefNum)
 {
 	const int j = NtapCoeffs(iCoefNum);
-	int iCnt;
-	for (iCnt = 0; iCnt < j; iCnt ++)
-	{
-		dCoeff [iCnt] *= dWindow [iCnt];
-	}
+	arm_mult_f32(dCoeff, dWindow, dCoeff, j);
+
+//	int iCnt;
+//	for (iCnt = 0; iCnt < j; iCnt ++)
+//	{
+//		dCoeff [iCnt] *= dWindow [iCnt];
+//	}
 }
 
 // Наложение оконной функции
 static void fir_design_applaywindowL(double *dCoeff, const double *dWindow, int iCoefNum)
 {
 	const int j = NtapCoeffs(iCoefNum);
+	//arm_mult_f64(dCoeff, dWindow, dCoeff, j);
 	int iCnt;
 	for (iCnt = 0; iCnt < j; iCnt ++)
 	{
