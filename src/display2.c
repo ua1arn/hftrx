@@ -567,7 +567,7 @@ static void display2_smeter15_iiii(
 		return;
 	for (i = 0; i < SMETER_TYPE_COUNT; ++ i)
 	{
-		display2_smeter15_layout(xgrid, ygrid, & smprms [i], i);
+		display2_smeter15_layout(xgrid, ygrid, & smprms [i], glob_smetertype);
 	}
 	smprmsinited = 1;
 }
@@ -607,6 +607,14 @@ display2_smeter15(
 	const int dial_shift = GRID2Y(2);
 	const int xc = x0 + width / 2;
 	const int yc = y0 + 120 + dial_shift;
+
+	static uint_fast8_t old_type = SMETER_TYPE_COUNT;
+	if (old_type != glob_smetertype)
+	{
+		old_type = glob_smetertype;
+		smprmsinited = 0;
+		display2_smeter15_iiii(0, 0);
+	}
 
 	const uint_fast8_t is_tx = hamradio_get_tx();
 	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
