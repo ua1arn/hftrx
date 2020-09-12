@@ -7108,7 +7108,8 @@ static int raster2fft(
 
 // Копрование информации о спектре с текущую строку буфера
 // преобразование к пикселям растра
-uint_fast8_t dsp_getspectrumrow(
+static uint_fast8_t
+dsp_getspectrumrow(
 	FLOAT_t * const hbase,	// Буфер амплитуд
 	uint_fast16_t dx,		// X width (pixels) of display window
 	uint_fast8_t zoompow2	// horisontal magnification power of two
