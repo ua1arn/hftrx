@@ -825,7 +825,7 @@ typedef struct {
 	float32_t fft_buf [NORMALFFT * 2];
 	uint_fast8_t is_ready;
 	float32_t max_val;
-	uint_fast16_t y_old_array [NORMALFFT];
+	uint_fast16_t y_array [NORMALFFT];
 } afsp_t;
 
 enum { AFSP_OFFSET = 3 };
@@ -874,10 +874,6 @@ display2_latch_af_spectre(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)
 
 		smeter_params_t * const smpr = & smprms [glob_smetertype];
 
-		const uint_fast16_t afsp_visiblefftsize = NORMALFFT / 6;
-		const uint_fast16_t afsp_w = smpr->ge - smpr->gs;
-		const uint_fast16_t afsp_step = afsp_w / afsp_visiblefftsize;
-
 		fftzoom_x2(afsp.raw_buf);
 		// осталась половина буфера
 		for (uint_fast16_t i = 0; i < NORMALFFT; i ++)
@@ -890,14 +886,6 @@ display2_latch_af_spectre(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)
 		arm_cfft_f32(FFTCONFIGSpectrum, afsp.fft_buf, 0, 1);
 		arm_cmplx_mag_f32(afsp.fft_buf, afsp.fft_buf, NORMALFFT);		//
 		arm_max_no_idx_f32(afsp.fft_buf, NORMALFFT, & afsp.max_val);	// поиск в первой половине
-
-		for (unsigned i = AFSP_OFFSET; i < afsp_w; i ++)
-		{
-			const uint_fast16_t fftpos = NORMALFFT - roundf(i / afsp_step);
-			ASSERT(fftpos < ARRAY_SIZE(afsp.fft_buf));
-			// фильтровать тут. Нормировать к размеру в отображении
-			afsp.y_old_array [i] = afsp.y_old_array [i] * (FLOAT_t) 0.8 + (FLOAT_t) 0.2 * afsp.fft_buf [fftpos];
-		}
 
 		afsp.is_ready = 0;
 	}
@@ -925,13 +913,19 @@ display2_af_spectre(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)
 				const uint_fast16_t afsp_y = y0 + SM_BG_H - 10;
 				const uint_fast16_t afsp_w = smpr->ge - smpr->gs;
 				const uint_fast16_t afsp_h = 40;
+				const uint_fast16_t afsp_visiblefftsize = NORMALFFT / 6;
+				const uint_fast16_t afsp_step = afsp_w / afsp_visiblefftsize;
 
 				for (unsigned i = AFSP_OFFSET; i < afsp_w; i ++)
 				{
-					const uint_fast16_t yy = normalize(afsp.y_old_array [i], 0, afsp.max_val, afsp_h - 1);
+					const uint_fast16_t fftpos = NORMALFFT - roundf(i / afsp_step);
+					ASSERT(fftpos < ARRAY_SIZE(afsp.fft_buf));
+					const uint_fast16_t y_norm = normalize(afsp.fft_buf [fftpos], 0, afsp.max_val, afsp_h - 1);
+
+					afsp.y_array [i] = afsp.y_array [i] * (FLOAT_t) 0.6 + (FLOAT_t) 0.4 * y_norm;
 
 					colmain_line(fr, DIM_X, DIM_Y,
-							afsp_x + i - AFSP_OFFSET, afsp_y - yy,
+							afsp_x + i - AFSP_OFFSET, afsp_y - afsp.y_array [i],
 							afsp_x + i - AFSP_OFFSET, afsp_y,
 							COLORMAIN_YELLOW, 0);
 				}
