@@ -3836,6 +3836,11 @@ prog_ctrlreg(uint_fast8_t plane)
 		};
 		const spitarget_t target = targetctl1;
 
+#if XVTR_NYQ1
+		const uint_fast8_t xvrtr = bandf_calc_getxvrtr(glob_bandf);
+		glob_txgate = xvrtr ? 0 : glob_txgate;
+#endif /* XVTR_NYQ1 */
+
 		rbtype_t rbbuff [9] = { 0 };
 		const uint_fast8_t txgated = glob_tx && glob_txgate;
 
@@ -3909,7 +3914,10 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0003, lcdblcode & 0x02);		/* D3	- LCD backlight  - removed in LVDS version*/
 		RBBIT(0002, lcdblcode & 0x02);		/* D2	- LCD backlight  - removed in LVDS version*/
 		RBBIT(0001, lcdblcode & 0x01);		/* D2:D1 - LCD backlight  - removed in LVDS version*/
-#if WITHKBDBACKLIGHT
+
+#if XVTR_NYQ1
+		RBBIT(0000, xvrtr);					/* D0: transverter enable */
+#elif WITHKBDBACKLIGHT
 		RBBIT(0000, glob_kblight);			/* D0: keyboard backlight */
 #endif /* WITHKBDBACKLIGHT */
 
