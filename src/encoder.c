@@ -58,6 +58,17 @@ static RAMDTCM int8_t graydecoder [4][4] =
 	},
 };
 
+#undef SPIN_LOCK
+#undef SPIN_UNLOCK
+#undef SPIN_LOCK2
+#undef SPIN_UNLOCK2
+
+#define SPIN_LOCK(p) do { (void) p; } while (0)
+#define SPIN_UNLOCK(p) do { (void) p; } while (0)
+#define SPIN_LOCK2(p, f, l) do { (void) p; } while (0)
+#define SPIN_UNLOCK2(p) do { (void) p; } while (0)
+
+
 static RAMDTCM SPINLOCK_t enc1lock = SPINLOCK_INIT;
 static RAMDTCM SPINLOCK_t enc2lock = SPINLOCK_INIT;
 
