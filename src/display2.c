@@ -583,11 +583,13 @@ display2_smeter15_init(
 	)
 {
 
+#if WITHDEBUG
 	{
 		static int inited;
 		ASSERT(inited == 0);	// Only one pass supported
 		inited = 1;
 	}
+#endif /* WITHDEBUG */
 
 	display2_smeter15_iiii(xgrid, ygrid);
 }
@@ -852,11 +854,14 @@ display2_init_af_spectre(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)	
 {
 	//static subscribeint32_t afspectreregister;
 
+#if WITHDEBUG
 	{
 		static int inited;
 		ASSERT(inited == 0);	// Only one pass supported
 		inited = 1;
 	}
+#endif /* WITHDEBUG */
+
 	afsp.is_ready = 0;
 	display2_smeter15_iiii(xgrid, ygrid);
 }
@@ -7178,11 +7183,13 @@ display2_wfl_init(
 
 	static subscribeint32_t rtsregister;
 
+#if WITHDEBUG
 	{
 		static int inited;
 		ASSERT(inited == 0);	// Only one pass supported
 		inited = 1;
 	}
+#endif /* WITHDEBUG */
 
 	buildsigwnd();
 	//printsigwnd();	// печать оконных коэффициентов для формирования таблицы во FLASH
