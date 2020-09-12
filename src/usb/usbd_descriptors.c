@@ -2857,7 +2857,7 @@ static unsigned fill_CDCACM_function_a(uint_fast8_t fill, uint8_t * p, unsigned 
 	unsigned n = 0;
 	const uint8_t inep = USBD_CDCACM_EP(USBD_EP_CDC_IN, offset);
 	const uint8_t outnep = USBD_CDCACM_EP(USBD_EP_CDC_OUT, offset);
-	const uint8_t intnep =USBD_CDCACM_EP(USBD_EP_CDC_INT, offset);
+	const uint8_t intnep = USBD_CDCACM_EP(USBD_EP_CDC_INT, offset);
 
 	// CDC
 	n += CDCACM_InterfaceAssociationDescriptor_a(fill, p + n, maxsize - n, offset);	/* CDC: Interface Association Descriptor Abstract Control Model */
