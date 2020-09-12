@@ -2008,11 +2008,14 @@ void RAMFUNC processing_dmabuffer32rts(uintptr_t addr)
 	for (i = 0; i < DMABUFFSIZE192RTS; i += DMABUFSTEP192RTS)
 	{
 		const int32_t * const b = (const int32_t *) & p->u.buff [i];
-		saveIQRTSxx(NULL, b [0], b [1]);
+
+        //saveIQRTSxx(NULL, b [0], b [1]);
+        deliveryint(& rtstargetsint, b [0], b [1]);
 	}
 #endif /* ! WITHTRANSPARENTIQ */
 
-	buffers_savetouacin192rts(p);
+	//sbuffers_savetouacin192rts(p);
+	buffers_savetonull192rts(p);
 }
 #endif /* WITHRTS192 */
 
