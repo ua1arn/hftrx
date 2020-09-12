@@ -2689,7 +2689,7 @@ static unsigned CDCACM_InterfaceDescriptorControlIf_a(uint_fast8_t fill, uint8_t
 		* buff ++ = bNumEndpoints;   /* bNumEndpoints: One endpoints used (interrupt type) */
 		* buff ++ = CDC_COMMUNICATION_INTERFACE_CLASS;   /* bInterfaceClass: Communication Interface Class */
 		* buff ++ = CDC_ABSTRACT_CONTROL_MODEL;   /* bInterfaceSubClass: Abstract Control Model */
-		* buff ++ = CDC_PROTOCOL_COMMON_AT_COMMANDS;   /* bInterfaceProtocol: Common AT commands */
+		* buff ++ = 0x00; //CDC_PROTOCOL_COMMON_AT_COMMANDS;   /* bInterfaceProtocol: Common AT commands */
 		* buff ++ = STRING_ID_0;   /* iInterface */
 	}
 	return length;
