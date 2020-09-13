@@ -581,8 +581,6 @@ void savemodemtxbuffer(uint8_t * dest, unsigned size_t);	// Готов буфе�
 void releasemodembuffer(uint8_t * dest);
 void releasemodembuffer_low(uint8_t * dest);
 
-void savesampleout16stereo_user(void * ctx, FLOAT_t ch0, FLOAT_t ch1);
-void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1);
 void savemoni16stereo(FLOAT_t ch0, FLOAT_t ch1);
 void savesampleout32stereo(int_fast32_t ch0, int_fast32_t ch1);
 void savesampleout96stereo(void * ctx, int_fast32_t ch0, int_fast32_t ch1);
@@ -601,7 +599,6 @@ void savesampleout192stereo(void * ctx, int_fast32_t ch0, int_fast32_t ch1);
 	#endif /* WITHNOSPEEX */
 	uint_fast8_t takespeexready_user(speexel_t * * dest);
 	void releasespeexbuffer_user(speexel_t * t);
-	void savesampleout16tospeex(speexel_t ch0, speexel_t ch1);
 #endif /* WITHINTEGRATEDDSP */
 
 
@@ -747,9 +744,6 @@ void uacout_buffer_save_realtime(const uint8_t * buff, uint_fast16_t size, uint_
  */
 uint_fast8_t takewavsample(FLOAT32P_t * rv, uint_fast8_t suspend);
 
-
-void afsp_save_sample(void * ctx, FLOAT_t ch0, FLOAT_t ch1);
-
 typedef struct subscribefloat_tag
 {
 	LIST_ENTRY item;
@@ -781,7 +775,9 @@ void subscribeint_user(deliverylist_t * head, subscribeint32_t * target, void * 
 void subscribefloat(deliverylist_t * head, subscribefloat_t * target, void * ctx, void (* pfn)(void * ctx, FLOAT_t ch0, FLOAT_t ch1));
 void subscribeint(deliverylist_t * head, subscribeint32_t * target, void * ctx, void (* pfn)(void * ctx, int_fast32_t ch0, int_fast32_t ch1));
 
-extern deliverylist_t rtstargetsint;
+extern deliverylist_t rtstargetsint;	// выход обработчика DMA приема от FPGA
+extern deliverylist_t afoutfloat_user;	// выход sppeex и фильтра
+extern deliverylist_t afoutfloat;	// выход приемника
 
 #ifdef __cplusplus
 }

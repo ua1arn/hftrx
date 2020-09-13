@@ -293,6 +293,9 @@ static RAMDTCM volatile uint_fast8_t uacinalt = UACINALT_NONE;		/* выбор а
 static RAMDTCM volatile uint_fast8_t uacinrtsalt = UACINRTSALT_NONE;		/* выбор альтернативной конфигурации для RTS UAC IN interface */
 static RAMDTCM volatile uint_fast8_t uacoutalt;
 
+static void savesampleout16stereo_user(void * ctx, FLOAT_t ch0, FLOAT_t ch1);
+static void savesampleout16stereo(void * ctx, FLOAT_t ch0, FLOAT_t ch1);
+
 #if WITHUSBUACIN
 
 // USB AUDIO IN
@@ -605,7 +608,8 @@ denoise16_t * allocate_dmabuffer16denoise(void)
 	return 0;
 }
 
-void savesampleout16tospeex(speexel_t ch0, speexel_t ch1)
+static void
+savesampleout16tospeex(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 {
 	static denoise16_t * p = NULL;
 	static unsigned n;
@@ -632,7 +636,9 @@ void savesampleout16tospeex(speexel_t ch0, speexel_t ch1)
 	}
 }
 
-deliverylist_t rtstargetsint;
+deliverylist_t rtstargetsint;	// выход обработчика DMA приема от FPGA
+deliverylist_t afoutfloat_user;	// выход sppeex и фильтра
+deliverylist_t afoutfloat;	// выход приемника
 
 #endif /* WITHINTEGRATEDDSP */
 
@@ -648,6 +654,23 @@ void buffers_initialize(void)
 #if WITHINTEGRATEDDSP
 
 	deliverylist_initialize(& rtstargetsint);
+	deliverylist_initialize(& afoutfloat_user);
+	deliverylist_initialize(& afoutfloat);
+
+	static subscribefloat_t afsample16reregister_user;
+	subscribefloat_user(& afoutfloat_user, & afsample16reregister_user, NULL, savesampleout16stereo_user);
+
+#if WITHSKIPUSERMODE
+
+	static subscribefloat_t afsample16reregister;
+	subscribefloat_user(& afoutfloat, & afsample16reregister, NULL, savesampleout16stereo);
+
+#else /* WITHSKIPUSERMODE */
+
+	static subscribefloat_t afsample16reregister;
+	subscribefloat_user(& afoutfloat, & afsample16reregister, NULL, savesampleout16tospeex);
+
+#endif /* WITHSKIPUSERMODE */
 
 	#if WITHUSBUAC
 		/* буферы требуются для ресэмплера */
@@ -2111,7 +2134,7 @@ void savesampleout32stereo(int_fast32_t ch0, int_fast32_t ch1)
 //////////////////////////////////////////
 // Поэлементное заполнение буфера AF DAC
 
-void savesampleout16stereo_user(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
+static void savesampleout16stereo_user(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 {
 	enum { L, R };
 	// если есть инициализированный канал для выдачи звука
@@ -2143,7 +2166,7 @@ void savesampleout16stereo_user(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 	}
 }
 
-void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
+static void savesampleout16stereo(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 {
 	enum { L, R };
 	// если есть инициализированный канал для выдачи звука
@@ -2957,21 +2980,25 @@ void release_dmabufferxrts(uintptr_t addr)	/* освободить буфер о
 void deliveryfloat(deliverylist_t * list, FLOAT_t ch0, FLOAT_t ch1)
 {
 	PLIST_ENTRY t;
+	SPIN_LOCK(& list->listlock);
 	for (t = list->head.Blink; t != & list->head; t = t->Blink)
 	{
 		subscribefloat_t * const p = CONTAINING_RECORD(t, subscribefloat_t, item);
 		(p->cb)(p->ctx, ch0, ch1);
 	}
+	SPIN_UNLOCK(& list->listlock);
 }
 
 void deliveryint(deliverylist_t * list, int_fast32_t ch0, int_fast32_t ch1)
 {
 	PLIST_ENTRY t;
+	SPIN_LOCK(& list->listlock);
 	for (t = list->head.Blink; t != & list->head; t = t->Blink)
 	{
 		subscribeint32_t * const p = CONTAINING_RECORD(t, subscribeint32_t, item);
 		(p->cb)(p->ctx, ch0, ch1);
 	}
+	SPIN_UNLOCK(& list->listlock);
 }
 
 void subscribefloat(deliverylist_t * list, subscribefloat_t * target, void * ctx, void (* pfn)(void * ctx, FLOAT_t ch0, FLOAT_t ch1))

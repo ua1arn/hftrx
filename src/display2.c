@@ -820,7 +820,9 @@ typedef struct {
 enum { AFSP_OFFSET = 3 };
 static afsp_t afsp;
 
-void afsp_save_sample(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
+// user-mode context function
+static void
+afsp_save_sample(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 {
 	static uint_fast16_t i = 0;
 
@@ -841,7 +843,7 @@ void afsp_save_sample(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 static void
 display2_init_af_spectre(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)		// вызывать после display2_smeter15_init
 {
-	//static subscribeint32_t afspectreregister;
+	static subscribefloat_t afspectreregister;
 
 #if WITHDEBUG
 	{
@@ -860,6 +862,8 @@ display2_init_af_spectre(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)	
 	afsp.visiblefftsize = NORMALFFT / 6;
 	afsp.step = afsp.w / afsp.visiblefftsize;
 	afsp.is_ready = 0;
+
+	subscribefloat_user(& afoutfloat_user, & afspectreregister, NULL, afsp_save_sample);
 }
 
 static void

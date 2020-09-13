@@ -4817,13 +4817,13 @@ static void save16demod(FLOAT_t ch0, FLOAT_t ch1)
 	#if WITHUSEDUALWATCH
 		const FLOAT32P_t i = { { ch0, ch1, }, };
 		const FLOAT32P_t o = filter_fir_rx_AUDIO_Pair2(i);
-		savesampleout16stereo(o.IV, o.QV);
+		deliveryfloat(& afoutfloat, o.IV, o.QV);
 	#else /* WITHUSEDUALWATCH */
 		const FLOAT_t o = filter_fir_rx_AUDIO_A(ch0);
-		savesampleout16stereo(o, o);
+		deliveryfloat(& afoutfloat, o, o);
 	#endif /* WITHUSEDUALWATCH */
 #else /* WITHSKIPUSERMODE */
-	savesampleout16tospeex(ch0, ch1);	// через user-level обработчик
+		deliveryfloat(& afoutfloat, ch0, ch1);
 #endif /* WITHSKIPUSERMODE */
 }
 

@@ -7966,19 +7966,11 @@ audioproc_spool_user(void)
 		unsigned i;
 		for (i = 0; i < FIRBUFSIZE; ++ i)
 		{
-	  #if WITHUSEDUALWATCH
-			savesampleout16stereo_user(NULL, lmsnrstates [0].outsp [i], lmsnrstates [1].outsp [i]);	// to AUDIO codec
-	  #else /* WITHUSEDUALWATCH */
-			savesampleout16stereo_user(NULL, lmsnrstates [0].outsp [i], lmsnrstates [0].outsp [i]);	// to AUDIO codec
-	  #endif /* WITHUSEDUALWATCH */
-
-	#if WITHAFSPECTRE
-		#if WITHUSEDUALWATCH
-			afsp_save_sample(NULL, lmsnrstates [0].outsp [i], lmsnrstates [1].outsp [i]);	// to AUDIO spectrum display
-		#else /* WITHUSEDUALWATCH */
-			afsp_save_sample(NULL, lmsnrstates [0].outsp [i], lmsnrstates [0].outsp [i]);	// to AUDIO spectrum display
-		#endif /* WITHUSEDUALWATCH */
-	#endif /* WITHAFSPECTRE */
+	#if WITHUSEDUALWATCH
+			deliveryfloat(& afoutfloat_user, lmsnrstates [0].outsp [i], lmsnrstates [1].outsp [i]);	// to AUDIO codec
+	#else /* WITHUSEDUALWATCH */
+			deliveryfloat(& afoutfloat_user, lmsnrstates [0].outsp [i], lmsnrstates [0].outsp [i]);	// to AUDIO codec
+	#endif /* WITHUSEDUALWATCH */
 		}
 		// Освобождаем буфер
 		releasespeexbuffer_user(p);
