@@ -8871,9 +8871,7 @@ updateboard(
 	#endif /* WITHTX */
 	}
 
-#if (WITHSWRMTR || WITHSHOWSWRPWR) && LCDMODE_LTDC
 	display2_set_smetertype(gsmetertype);
-#endif /* (WITHSWRMTR || WITHSHOWSWRPWR) && LCDMODE_LTDC */
 
 	/* после всех перенастроек включаем передатчик */
 #if WITHTX
