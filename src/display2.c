@@ -566,15 +566,6 @@ display2_smeter15_init(
 	dctx_t * pctx
 	)
 {
-
-#if WITHDEBUG
-	{
-		static int inited;
-		ASSERT(inited == 0);	// Only one pass supported
-		inited = 1;
-	}
-#endif /* WITHDEBUG */
-
 	if (smprmsinited)
 			return;
 
@@ -844,15 +835,6 @@ static void
 display2_init_af_spectre(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)		// вызывать после display2_smeter15_init
 {
 	static subscribefloat_t afspectreregister;
-
-#if WITHDEBUG
-	{
-		static int inited;
-		ASSERT(inited == 0);	// Only one pass supported
-		inited = 1;
-	}
-#endif /* WITHDEBUG */
-
 	smeter_params_t * const smpr = & smprms [SMETER_TYPE_BARS];		// отображение НЧ спектра только для режима s-метра BARS
 
 	afsp.x = GRID2X(xgrid) + smpr->gs;
@@ -7167,14 +7149,6 @@ display2_wfl_init(
 
 	static subscribeint32_t rtsregister;
 
-#if WITHDEBUG
-	{
-		static int inited;
-		ASSERT(inited == 0);	// Only one pass supported
-		inited = 1;
-	}
-#endif /* WITHDEBUG */
-
 	buildsigwnd();
 	//printsigwnd();	// печать оконных коэффициентов для формирования таблицы во FLASH
 	//toplogdb = LOG10F((FLOAT_t) INT32_MAX / waterfalrange);
@@ -8197,6 +8171,15 @@ void display2_bgreset(void)
 
 void display2_initialize(void)
 {
+
+#if WITHDEBUG
+	{
+		static int inited;
+		ASSERT(inited == 0);	// Only one pass supported
+		inited = 1;
+	}
+#endif /* WITHDEBUG */
+
 	// параметр key игнорируеся обычно, но для случая старых дисплеев выделен особенный
 	display_walktrough(REDRM_INIS, REDRSUBSET_INIT, NULL);
 }
