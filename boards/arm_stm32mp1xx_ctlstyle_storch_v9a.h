@@ -470,12 +470,12 @@
 	#if LCDMODE_AT070TNA2 || LCDMODE_AT070TN90
 		#if 0
 			#define WITHTOUCHGUI		1
-			#define WITHAFSPECTRE		1
+			#define WITHAFSPECTRE		1	/* показ спктра прослушиваемого НЧ сигнала. */
 			#define WITHALPHA			64
 			#define FORMATFROMLIBRARY 	1
 			#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 		#endif
-		#define WITHAFSPECTRE		1
+		#define WITHAFSPECTRE		1	/* показ спктра прослушиваемого НЧ сигнала. */
 	#endif /* LCDMODE_AT070TNA2 || LCDMODE_AT070TN90 */
 	//#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 
