@@ -504,6 +504,8 @@ static void buttons_memory_handler(void)
 		if (btn_cell->payload)
 		{
 			hamradio_load_memory_cells(cell_id, 1);
+			close_window(DONT_OPEN_PARENT_WINDOW);
+			footer_buttons_state(CANCELLED);
 		}
 	}
 
@@ -2865,6 +2867,8 @@ static void buttons_ap_mic_prof_process(void)
 		if (btn_profile->payload)
 		{
 			hamradio_load_mic_profile(profile_id, 1);
+			close_window(DONT_OPEN_PARENT_WINDOW);
+			footer_buttons_state(CANCELLED);
 		}
 	}
 

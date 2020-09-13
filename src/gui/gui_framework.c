@@ -185,6 +185,7 @@ void footer_buttons_state (uint_fast8_t state, ...)
 	}
 }
 
+//todo: добавить признак инициализированности элементов и учитывать его при закрытии окна
 /* Установка статуса элементов после инициализации */
 void elements_state (window_t * win)
 {
@@ -210,7 +211,6 @@ void elements_state (window_t * win)
 			}
 			else
 			{
-				// кнопка close_button также учитывается при закрытии окна
 				debug_num --;
 				gui_element_count --;
 				bh->visible = NON_VISIBLE;
@@ -273,29 +273,33 @@ void elements_state (window_t * win)
 		}
 	}
 
-	if(win->is_close && win->state)										// инициализировать кнопку закрытия окна, если разрешено
+	// инициализировать системную кнопку закрытия окна, если разрешено
+	if(win->is_close)
 	{
-//		win->bh_count++;
-//		win->bh_ptr = realloc(win->bh_ptr, win->bh_count * sizeof(close_button));
-//		button_t * bh_close = & win->bh_ptr [win->bh_count - 1];
-//		memcpy(bh_close, & close_button, sizeof(close_button));			// копирование шаблона кнопки для последующего заполнения
-//
-//		bh_close->x1 = win->w - window_close_button_size + 1;
-//		bh_close->y1 = 1;
-//		bh_close->w = window_close_button_size - 3;
-//		bh_close->h = window_close_button_size - 3;
-//		bh_close->parent = win->window_id;
-//		bh_close->visible = VISIBLE;
-//		bh_close->state = CANCELLED;
-//		ASSERT(bh_close->x1 + bh_close->w < WITHGUIMAXX);
-//		ASSERT(bh_close->y1 + bh_close->h < WITHGUIMAXY);
-//
-//		ASSERT(gui_element_count < GUI_ELEMENTS_ARRAY_SIZE);
-//		gui_elements [gui_element_count].link = bh_close;
-//		gui_elements [gui_element_count].win = win;
-//		gui_elements [gui_element_count].type = TYPE_CLOSE_BUTTON;
-//		gui_element_count ++;
-//		debug_num ++;
+		if (win->state)
+		{
+			close_button.x1 = win->w - window_close_button_size + 1;
+			close_button.y1 = 1;
+			close_button.w = window_close_button_size - 3;
+			close_button.h = window_close_button_size - 3;
+			close_button.parent = win->window_id;
+			close_button.visible = VISIBLE;
+			close_button.state = CANCELLED;
+
+			ASSERT(gui_element_count < GUI_ELEMENTS_ARRAY_SIZE);
+			gui_elements [gui_element_count].link = (button_t *) & close_button;
+			gui_elements [gui_element_count].win = win;
+			gui_elements [gui_element_count].type = TYPE_CLOSE_BUTTON;
+			gui_element_count ++;
+			debug_num ++;
+		}
+		else
+		{
+			debug_num --;
+			gui_element_count --;
+			close_button.visible = NON_VISIBLE;
+			ASSERT(gui_element_count >= footer_buttons_count);
+		}
 	}
 //	PRINTF("line %d: %s gui_element_count: %d %+d\n", __LINE__, win->name, gui_element_count, debug_num);
 }
@@ -506,7 +510,6 @@ static void draw_button(const button_t * const bh)
 	static const char delimeters [] = "|";
 	uint_fast16_t x1 = win->x1 + bh->x1;
 	uint_fast16_t y1 = win->y1 + bh->y1;
-
 
 	btn_bg_t * b1 = NULL;
 	do {
