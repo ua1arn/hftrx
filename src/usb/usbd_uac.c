@@ -220,6 +220,7 @@ static unsigned USBD_UAC1_FeatureUnit_req(
 	// CS=2: Volume supports CUR, MIN, MAX, and RES (2 byte)
 	const uint_fast8_t val8 = req->wLength == 1 ? buff [0] : UINT8_MAX;
 	const uint_fast16_t val16 =  req->wLength == 2 ? buff [1] * 256 + buff [0] : UINT16_MAX;
+	//PRINTF(PSTR("USBD_UAC1_FeatureUnit_req: AUDIO_REQUEST_SET_CUR: interfacev=%u,  terminal=%u, CS=%d, CN=%d, value=%d\n"), interfacev, terminalID, CS, CN, val8);
 	if (CS == AUDIO_MUTE_CONTROL)
 	{
 		// Mute control
@@ -258,6 +259,10 @@ static unsigned USBD_UAC1_FeatureUnit_req(
 			//PRINTF(PSTR("USBD_UAC1_FeatureUnit_req: AUDIO_REQUEST_GET_RES: interfacev=%u,  terminal=%u, CS=%d, CN=%d, \n"), interfacev, terminalID, CS, CN);
 			return ulmin16(USBD_poke_u16(buff, 1), req->wLength);
 		}
+	}
+	else
+	{
+		PRINTF(PSTR("X USBD_UAC1_FeatureUnit_req: interfacev=%u,  terminal=%u, CS=%d, CN=%d, value=%d\n"), interfacev, terminalID, CS, CN, val8);
 	}
 	TP();
 	return 0;
@@ -628,14 +633,15 @@ static USBD_StatusTypeDef USBD_UAC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 				{
 				default:
 					TP();
-					PRINTF(PSTR("USBD_UAC_Setup: USB_REQ_TYPE_CLASS bRequest=%02X interfacev=%d, value=%d\n"), (unsigned) req->bRequest, (int) interfacev, (int) LO_BYTE(req->wValue));
+					//PRINTF(PSTR("USBD_UAC_Setup: OUT: USB_REQ_TYPE_CLASS bRequest=%02X interfacev=%d, value=%d, wIndex=%04X, length=%d\n"), (unsigned) req->bRequest, (int) interfacev, (int) LO_BYTE(req->wValue), (unsigned) req->wIndex, (int) req->wLength);
 					break;
 
 				case 0x01:
 					// class request with code 0x01
 					// USB_REQ_CLEAR_FEATURE ???
+					// set parameters to feature unit!!!
 					TP();
-					PRINTF(PSTR("USBD_UAC_Setup: USB_REQ_TYPE_CLASS bRequest=%02X interfacev=%d, value=%d\n"), (unsigned) req->bRequest, (int) interfacev, (int) LO_BYTE(req->wValue));
+					PRINTF(PSTR("USBD_UAC_Setup: OUT: USB_REQ_TYPE_CLASS bRequest=%02X interfacev=%d, value=%d, wIndex=%04X, length=%d\n"), (unsigned) req->bRequest, (int) interfacev, (int) LO_BYTE(req->wValue), (unsigned) req->wIndex, (int) req->wLength);
 					break;
 				}
 				/* все запросы этого класса устройств */
@@ -720,7 +726,7 @@ static USBD_StatusTypeDef USBD_UAC_EP0_RxReady(USBD_HandleTypeDef *pdev)
 
 	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 
-	//PRINTF(PSTR("1 USBD_XXX_EP0_RxReady: interfacev=%u: bRequest=%u, wLength=%u\n"), interfacev, req->bRequest, req->wLength);
+	//PRINTF(PSTR("1 USBD_XXX_EP0_RxReady: interfacev=%u: bRequest=%u, wIndex=%04X, wValue=%04X, wLength=%u\n"), interfacev, req->bRequest, req->wIndex, req->wValue, req->wLength);
 	switch (interfacev)
 	{
 #if WITHUSBUACIN2
@@ -729,7 +735,9 @@ static USBD_StatusTypeDef USBD_UAC_EP0_RxReady(USBD_HandleTypeDef *pdev)
 	case INTERFACE_AUDIO_CONTROL_MIKE:	// AUDIO control interface
 	case INTERFACE_AUDIO_CONTROL_SPK:	// AUDIO control interface
 		{
+			//PRINTF(PSTR("2 USBD_XXX_EP0_RxReady: interfacev=%u: bRequest=%u, wIndex=%04X, wValue=%04X, wLength=%u\n"), interfacev, req->bRequest, req->wIndex, req->wValue, req->wLength);
 			const uint_fast8_t terminalID = HI_BYTE(req->wIndex);
+
 			switch (terminalID)
 			{
 			case TERMINAL_ID_FU1_IN + 0 * MAX_TERMINALS_IN_INTERFACE:
