@@ -7094,8 +7094,9 @@ dsp_getspectrumrow(
 	if (getfilled_fftbuffer(& pf) == 0)
 		return 0;
 
-	float32_t * const largesigI = pf->largebuffI;
-	float32_t * const largesigQ = pf->largebuffQ;
+	const unsigned usedsize = NORMALFFT << zoompow2;
+	float32_t * const largesigI = pf->largebuffI + LARGEFFT - usedsize;
+	float32_t * const largesigQ = pf->largebuffQ + LARGEFFT - usedsize;
 
 	if (zoompow2 > 0)
 	{
