@@ -8871,7 +8871,9 @@ updateboard(
 	#endif /* WITHTX */
 	}
 
+#if (WITHSWRMTR || WITHSHOWSWRPWR)
 	display2_set_smetertype(gsmetertype);
+#endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
 
 	/* после всех перенастроек включаем передатчик */
 #if WITHTX
