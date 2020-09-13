@@ -770,6 +770,8 @@ void colmain_putpixel(
 	COLORMAIN_T color
 	)
 {
+	ASSERT(x < dx);
+	ASSERT(y < dy);
 	PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, x, y);
 	#if LCDMODE_LTDC_L24
 		tgr->r = color >> 16;
@@ -814,6 +816,10 @@ void colmain_line(
 	int antialiasing
 	)
 {
+	ASSERT(xn < bx);
+	ASSERT(xk < bx);
+	ASSERT(yn < by);
+	ASSERT(yn < by);
 	int  dx, dy, s, sx, sy, kl, incr1, incr2;
 	char swap;
 	const COLORMAIN_T sc = getshadedcolor(color, DEFAULT_ALPHA);
