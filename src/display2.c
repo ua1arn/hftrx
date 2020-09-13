@@ -748,11 +748,11 @@ display2_smeter15(
 
 enum
 {
-
+	NOVERLAP = 1 << WITHFFTOVERLAPPOW2,		// Количество перекрывающися буферов FFT спектра
 	BOARD_FFTZOOM_MAX = (1 << BOARD_FFTZOOM_POW2MAX),
-	LARGEFFT = FFTSizeSpectrum * BOARD_FFTZOOM_MAX,	// размер буфера для децимации
 
-	NORMALFFT = FFTSizeSpectrum			// размер буфера для отображения
+	LARGEFFT = FFTSizeSpectrum * BOARD_FFTZOOM_MAX,	// размер буфера для децимации
+	NORMALFFT = FFTSizeSpectrum				// размер буфера для отображения
 };
 
 
@@ -6830,7 +6830,6 @@ static const struct zoom_param zoom_params [BOARD_FFTZOOM_POW2MAX] =
 #endif
 };
 
-enum { NOVERLAP = 1 << WITHFFTOVERLAPPOW2 };	// Количество перекрывающися буферов FFT спектра
 // Сэмплы для децимации
 typedef struct fftbuff_tag
 {
