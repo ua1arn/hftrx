@@ -26,8 +26,8 @@
 
 #if CPUSTYLE_R7S721 && WITHUSBUAC
 	// на RENESAS для работы с изохронными ендпоинтами используется DMA
-	//#define WITHDMAHW_UACIN 1		// при этой опции после пересоединения USB кабеля отвалтвается поток IN
-	#define WITHDMAHW_UACOUT 1	// Устойчиво работает - но пропуск пакетов
+	//#define WITHDMAHW_UACIN 1		// при этой опции после пересоединения USB кабеля отваливается поток IN
+	//#define WITHDMAHW_UACOUT 1	// Устойчиво работает - но пропуск пакетов
 #endif /* CPUSTYLE_R7S721 */
 
 #if CPUSTYLE_R7S721
