@@ -795,11 +795,11 @@ static void printsigwnd(void)
 
 
 typedef struct {
-	float32_t raw_buf [NORMALFFT * 2];		// Для последующей децимации /2
-	float32_t fft_buf [NORMALFFT * 2];
+	float32_t raw_buf [FFTSizeSpectrum * 2];		// Для последующей децимации /2
+	float32_t fft_buf [FFTSizeSpectrum * 2];
 	uint_fast8_t is_ready;
 	float32_t max_val;
-	uint_fast16_t y_array [NORMALFFT];
+	float32_t val_array [DIM_X];
 	uint_fast16_t x;
 	uint_fast16_t y;
 	uint_fast16_t w;
@@ -841,7 +841,7 @@ display2_init_af_spectre(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)	
 	afsp.y = GRID2Y(ygrid) + SM_BG_H - 10;
 	afsp.w = smpr->ge - smpr->gs;
 	afsp.h = 40;
-	afsp.visiblefftsize = NORMALFFT / 6;
+	afsp.visiblefftsize = FFTSizeSpectrum / 6;
 	afsp.step = afsp.w / afsp.visiblefftsize;
 	afsp.is_ready = 0;
 
@@ -855,24 +855,25 @@ display2_latch_af_spectre(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)
 	{
 		fftzoom_x2(afsp.raw_buf);
 		// осталась половина буфера
-		for (uint_fast16_t i = 0; i < NORMALFFT; i ++)
+		for (uint_fast16_t i = 0; i < FFTSizeSpectrum; i ++)
 		{
 			afsp.fft_buf [i * 2 + 0] = afsp.raw_buf [i];
 			afsp.fft_buf [i * 2 + 1] = 0;
 		}
 
-		arm_cmplx_mult_real_f32(afsp.fft_buf, wnd256, afsp.fft_buf, NORMALFFT); // apply_window_function
+		arm_cmplx_mult_real_f32(afsp.fft_buf, wnd256, afsp.fft_buf, FFTSizeSpectrum); // apply window function
 		arm_cfft_f32(FFTCONFIGSpectrum, afsp.fft_buf, 0, 1);
-		arm_cmplx_mag_f32(afsp.fft_buf, afsp.fft_buf, NORMALFFT);		//
-		arm_max_no_idx_f32(afsp.fft_buf, NORMALFFT, & afsp.max_val);	// поиск в первой половине
+		arm_cmplx_mag_f32(afsp.fft_buf, afsp.fft_buf, FFTSizeSpectrum);
 
+		ASSERT(afsp.w <= ARRAY_SIZE(afsp.val_array));
 		for (unsigned i = AFSP_OFFSET; i < afsp.w; i ++)
 		{
-			const uint_fast16_t fftpos = NORMALFFT - roundf(i / afsp.step);
+			const uint_fast16_t fftpos = FFTSizeSpectrum - roundf((FLOAT_t) i / afsp.step);
 			ASSERT(fftpos < ARRAY_SIZE(afsp.fft_buf));
-			const uint_fast16_t y_norm = normalize(afsp.fft_buf [fftpos], 0, afsp.max_val, afsp.h - 1);
-			afsp.y_array [i] = afsp.y_array [i] * (FLOAT_t) 0.6 + (FLOAT_t) 0.4 * y_norm;
+			afsp.val_array [i] = afsp.val_array [i] * (FLOAT_t) 0.6 + (FLOAT_t) 0.4 * afsp.fft_buf [fftpos];
 		}
+		arm_max_no_idx_f32(afsp.val_array, afsp.w, & afsp.max_val);	// поиск в отображаемой части
+		afsp.max_val = FMAXF(afsp.max_val, 1);
 
 		afsp.is_ready = 0;
 	}
@@ -889,17 +890,15 @@ display2_af_spectre(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)
 			{
 				PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
 
+				ASSERT(afsp.w <= ARRAY_SIZE(afsp.val_array));
 				for (unsigned i = AFSP_OFFSET; i < afsp.w; i ++)
 				{
-					ASSERT(i < ARRAY_SIZE(afsp.y_array));
-					ASSERT(afsp.y >= afsp.y_array [i]);
-					if (afsp.y >= afsp.y_array [i])
-					{
-						colmain_line(fr, DIM_X, DIM_Y,
-								afsp.x + i - AFSP_OFFSET, afsp.y - afsp.y_array [i],
-								afsp.x + i - AFSP_OFFSET, afsp.y,
-								COLORMAIN_YELLOW, 0);
-					}
+					const uint_fast16_t y_norm = normalize(afsp.val_array [i], 0, afsp.max_val, afsp.h - 2) + 1;
+					ASSERT(y_norm <= afsp.h);
+					ASSERT(afsp.y >= y_norm);
+					display_colorbuf_set_vline(fr, DIM_X, DIM_Y,
+							afsp.x + i - AFSP_OFFSET, afsp.y - y_norm, y_norm,
+							COLORMAIN_YELLOW);
 				}
 			}
 		}
