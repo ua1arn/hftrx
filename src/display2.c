@@ -891,6 +891,7 @@ display2_af_spectre(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)
 
 				for (unsigned i = AFSP_OFFSET; i < afsp.w; i ++)
 				{
+					ASSERT(i < ARRAY_SIZE(afsp.y_array));
 					ASSERT(afsp.y >= afsp.y_array [i]);
 					if (afsp.y >= afsp.y_array [i])
 					{
