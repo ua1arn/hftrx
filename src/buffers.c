@@ -755,7 +755,7 @@ void buffers_initialize(void)
 			p->tag = BUFFTAG_RTS96;
 			p->tag2 = p;
 			p->tag3 = p;
-			PRINTF("Add p=%p, tag=%d, tag2=%p, tag3=%p\n", p, p->tag, p->tag2, p->tag3);
+			//PRINTF("Add p=%p, tag=%d, tag2=%p, tag3=%p\n", p, p->tag, p->tag2, p->tag3);
 			InsertHeadList2(& uacin96rtsfree, & p->item);
 		}
 		subscribeint(& rtstargetsint, & uacinrtssubscribe, NULL, savesampleout96stereo);
