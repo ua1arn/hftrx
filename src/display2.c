@@ -893,10 +893,19 @@ display2_af_spectre(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)
 				ASSERT(afsp.w <= ARRAY_SIZE(afsp.val_array));
 				for (unsigned i = AFSP_OFFSET; i < afsp.w; i ++)
 				{
+					unsigned v1 = afsp.val_array [i];
+					unsigned mv = afsp.max_val;
+					//global_disableIRQ();
 					const uint_fast16_t y_norm = normalize(afsp.val_array [i], 0, afsp.max_val, afsp.h - 2) + 1;
+					const uint_fast16_t y_norm2 = normalize(v1, 0, mv, afsp.h - 2) + 1;
+					//global_enableIRQ();
 					if (afsp.y < y_norm)
 					{
-						PRINTF("afsp.val_array [i]=%f, afsp.max_val=%f, afsp.h=%d, y_norm=%d\n", afsp.val_array [i], afsp.max_val, (int) afsp.h, (int) y_norm);
+						PRINTF("1 afsp.val_array [i]=%f, v1=%u, afsp.max_val=%f, mv=%u, afsp.h=%d, y_norm=%d\n", afsp.val_array [i], v1, afsp.max_val, mv, (int) afsp.h, (int) y_norm);
+					}
+					if (y_norm2 != y_norm)
+					{
+						PRINTF("2 afsp.val_array [i]=%f, v1=%u, afsp.max_val=%f, mv=%u, afsp.h=%d, y_norm=%d\n", afsp.val_array [i], v1, afsp.max_val, mv, (int) afsp.h, (int) y_norm);
 					}
 					ASSERT(y_norm <= afsp.h);
 					ASSERT(afsp.y >= y_norm);
