@@ -330,7 +330,7 @@
 	#define WITHI2SHWTXSLAVE	1		// Передающий канал I2S (наушники) используюся в SLAVE MODE
 	//#define WITHSAI1HWTXRXMASTER	1		// SAI1 work in MASTER mode
 
-	#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
+	//#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
 	#define WITHINTEGRATEDDSP		1	/* в программу включена инициализация и запуск DSP части. */
 
 	#define WITHIF4DSP	1			/*  "Дятел" */
