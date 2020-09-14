@@ -353,7 +353,7 @@ IRQHandlerNested:
 	FMRX	LR, FPEXC
 	PUSH	{R0, LR}
 
-	LDR		R2, =IRQ_Handler_GIC
+	LDR		R2, =IRQ_Handler_GICv1
 	MOV		LR, PC
 	BX		R2     /* and jump... */
 
