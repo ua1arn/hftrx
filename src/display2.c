@@ -894,6 +894,10 @@ display2_af_spectre(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)
 				for (unsigned i = AFSP_OFFSET; i < afsp.w; i ++)
 				{
 					const uint_fast16_t y_norm = normalize(afsp.val_array [i], 0, afsp.max_val, afsp.h - 2) + 1;
+					if (y_norm > afsp.h)
+					{
+						PRINTF("afsp.val_array [i]=%f, afsp.max_val=%f, afsp.h=%d, y_norm=%d\n", afsp.val_array [i], afsp.max_val, (int) afsp.h, (int) y_norm);
+					}
 					ASSERT(y_norm <= afsp.h);
 					ASSERT(afsp.y >= y_norm);
 					display_colorbuf_set_vline(fr, DIM_X, DIM_Y,
