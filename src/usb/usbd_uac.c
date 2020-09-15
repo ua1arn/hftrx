@@ -640,8 +640,8 @@ static USBD_StatusTypeDef USBD_UAC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 					// class request with code 0x01
 					// USB_REQ_CLEAR_FEATURE ???
 					// set parameters to feature unit!!!
-					TP();
-					PRINTF(PSTR("USBD_UAC_Setup: OUT: USB_REQ_TYPE_CLASS bRequest=%02X interfacev=%d, value=%d, wIndex=%04X, length=%d\n"), (unsigned) req->bRequest, (int) interfacev, (int) LO_BYTE(req->wValue), (unsigned) req->wIndex, (int) req->wLength);
+					//TP();
+					//PRINTF(PSTR("USBD_UAC_Setup: OUT: USB_REQ_TYPE_CLASS bRequest=%02X interfacev=%d, value=%d, wIndex=%04X, length=%d\n"), (unsigned) req->bRequest, (int) interfacev, (int) LO_BYTE(req->wValue), (unsigned) req->wIndex, (int) req->wLength);
 					break;
 				}
 				/* все запросы этого класса устройств */
