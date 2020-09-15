@@ -3399,6 +3399,13 @@ static FLOAT_t agc_forvard_getstreigthlog10(
 	return agc_calcstrengthlog10(agcp, fltstrengthfast);
 }
 
+static int computeslevel(
+	FLOAT_t dbFS	// десятичный логарифм уровня сигнала от FS
+	)
+{
+	return (dbFS * 200 + (glob_fsadcpower10 + 5)) / 10;
+}
+
 /* получить значение уровня сигнала в децибелах, отступая от upper */
 /* -73.01dBm == 50 uV rms == S9 */
 /* Вызывается из user-mode программы */
@@ -3409,8 +3416,8 @@ dsp_getsmeter(uint_fast8_t * tracemax, uint_fast8_t lower, uint_fast8_t upper, u
 	//if (clean != 0)
 	//	agc_reset(pathi);
 	FLOAT_t tmaxf;
-	int level = upper + (int) (agc_forvard_getstreigthlog10(& tmaxf, pathi) * 200 + (glob_fsadcpower10 + 5)) / 10;	// преобразование в децибелы и отступаем от правой границы шкалы
-	int tmax = upper + (int) (tmaxf * 200 + (glob_fsadcpower10 + 5)) / 10;
+	int level = upper + computeslevel(agc_forvard_getstreigthlog10(& tmaxf, pathi));
+	int tmax = upper + computeslevel(tmaxf);
 
 	if (tmax > (int) upper)
 		tmax = upper;
