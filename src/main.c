@@ -1985,7 +1985,7 @@ static const char * const bandlabels [BANDGROUP_COUNT] =
 		uint32_t init;
 		uint8_t defsubmode_bandset;
 		uint8_t	bandgroup;
-		char label[8];
+		char label [8];
 	};
 
 	#define BMF(a) (a)		/* получение инициализационного элемента */
@@ -2592,7 +2592,7 @@ struct nvmap
 #endif /* WITHSPECTRUMWF */
 	uint8_t gshowdbm;	/* Отображение уровня сигнала в dBm или S-memter */
 #if WITHBCBANDS
-	uint8_t bandsetbcast;	/* Broadcasting radio bands */
+	uint8_t gbandsetbcast;	/* Broadcasting radio bands */
 #endif /* WITHBCBANDS */
 	uint8_t bandset11m;	/* CB radio band */
 #if TUNE_6MBAND
@@ -3201,7 +3201,7 @@ static uint_fast8_t gusefast;
 #endif /* WITHWARCBANDS */
 
 //static uint_fast8_t bandsetham = 1;	/* HAM radio bands */
-static uint_fast8_t bandsetbcast = 0;	/* Broadcast radio bands */
+static uint_fast8_t gbandsetbcast = 0;	/* Broadcast radio bands */
 static uint_fast8_t bandset11m;
 #if TUNE_6MBAND
 static uint_fast8_t bandset6m = 1;	/* используется ли диапазон 6 метров */
@@ -4903,7 +4903,8 @@ uint_fast8_t hamradio_get_amfm_highcut10_value(uint_fast8_t * flag)
 static uint_fast8_t
 //NOINLINEAT
 existingband(
-	uint_fast8_t b	// код диапазона
+	uint_fast8_t b,	// код диапазона
+	uint_fast8_t bandsetbcast
 	)
 {
 	const uint_fast8_t bandset = get_band_bandset(b);
@@ -4931,21 +4932,21 @@ existingband(
 		return bandset11m;
 #if TUNE_6MBAND
 	case BANDSETF_6M:
-		return bandset6m && ! bandsetbcast;		// используется или нет - определяется меню
+		return bandset6m && ! bandsetbcast;		// используется или нет - определяется параметром
 #endif /* TUNE_6MBAND */
 #if TUNE_4MBAND
 	case BANDSETF_4M:
-		return bandset4m && ! bandsetbcast;		// используется или нет - определяется меню
+		return bandset4m && ! bandsetbcast;		// используется или нет - определяется параметром
 #endif /* TUNE_4MBAND */
 
 	// 144 и 430 разрешаются одним пунктом в меню.
 #if TUNE_2MBAND
 	case BANDSETF_2M:
-		return bandset2m && ! bandsetbcast;		// используется или нет - определяется меню
+		return bandset2m && ! bandsetbcast;		// используется или нет - определяется параметром
 #endif /* TUNE_2MBAND */
 #if TUNE_07MBAND
 	case BANDSETF_07M:
-		return bandset2m && ! bandsetbcast;		// используется или нет - определяется меню
+		return bandset2m && ! bandsetbcast;		// используется или нет - определяется параметром
 #endif /* TUNE_2MBAND */
 	}
 }
@@ -4977,7 +4978,7 @@ getfreqband(const uint_fast32_t freq)
 
 	for (i = 0; i < (sizeof bandsmap / sizeof bandsmap [0]); ++ i)
 	{
-		if (! existingband(i))	// диапазон в данной конфигурации не используется
+		if (! existingband(i, gbandsetbcast))	// диапазон в данной конфигурации не используется
 			continue;
 		if (get_band_bottom(i) <= freq && get_band_top(i) > freq)
 			return i;
@@ -4996,7 +4997,7 @@ getnexthband(const uint_fast32_t freq)
 
 	for (i = 0; i < HBANDS_COUNT; ++ i)
 	{
-		if (! existingband(i))	// диапазон в данной конфигурации не используется
+		if (! existingband(i, gbandsetbcast))	// диапазон в данной конфигурации не используется
 			continue;
 		if (get_band_top(i) > freq)
 			return i;
@@ -5019,7 +5020,7 @@ getnextbandingroup(const vindex_t b, const uint_fast8_t bandgroup)
 	do
 	{
 		i = i == HIGH ? LOW : (i + 1);	// переход к следующему диапазону
-		if (! existingband(i))	// диапазон в данной конфигурации не используется
+		if (! existingband(i, gbandsetbcast))	// диапазон в данной конфигурации не используется
 			continue;
 		if (bandsmap [i].bandgroup == bandgroup)
 			break;			// диапазон той же группы
@@ -5038,7 +5039,7 @@ getprevhband(const uint_fast32_t freq)
 
 	for (i = 0; i < HBANDS_COUNT; ++ i)
 	{
-		if (! existingband(i))	// диапазон в данной конфигурации не используется
+		if (! existingband(i, gbandsetbcast))	// диапазон в данной конфигурации не используется
 			continue;
 		if (get_band_bottom(i) > freq)
 		{
@@ -5049,7 +5050,7 @@ getprevhband(const uint_fast32_t freq)
 	// возврат только допустимых диапазонов.
 	do
 		i = calc_prev(i, 0, HBANDS_COUNT - 1);
-	while (! existingband(i));
+	while (! existingband(i, gbandsetbcast));
 	return i;
 }
 
@@ -5106,7 +5107,7 @@ getnext_ham_band(
 			/* текущая частота относится к любительским диапазонам */
 			do
 				b = calc_next(b, 0, HBANDS_COUNT - 1);
-			while (! existingband(b));
+			while (! existingband(b, gbandsetbcast));
 			continue;
 		}
 		if (b == XBANDS_BASE0)
@@ -5180,7 +5181,7 @@ getprev_ham_band(
 			/* текущая частота относится к любительским диапазонам */
 			do
 				b = calc_prev(b, 0, HBANDS_COUNT - 1);
-			while (! existingband(b));
+			while (! existingband(b, gbandsetbcast));
 			continue;
 		}
 		if (b == (XBANDS_BASE0))
@@ -5972,7 +5973,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		RJ_UNSIGNED,		// rj
 		ISTEP1,		/* spectrum range */
 		80, 160,	/* диапазон отображаемых значений */
-		offsetof(struct nvmap, bands[0].gbottomdb),
+		offsetof(struct nvmap, bands [0].gbottomdb),
 		nvramoffs_band,
 		NULL,
 		& gbottomdb,
@@ -5984,7 +5985,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		RJ_POW2,		// rj
 		ISTEP1,		/* spectrum range */
 		0, BOARD_FFTZOOM_POW2MAX,	/* масштаб панорамы */
-		offsetof(struct nvmap, bands[0].gzoomxpow2),
+		offsetof(struct nvmap, bands [0].gzoomxpow2),
 		nvramoffs_band,
 		NULL,
 		& gzoomxpow2,
@@ -9374,14 +9375,14 @@ uif_key_lockencoder(void)
 static void
 uif_key_genham(void)
 {
-	bandsetbcast = calc_next(bandsetbcast, 0, 1);
-	save_i8(offsetof(struct nvmap, bandsetbcast), bandsetbcast);
+	gbandsetbcast = calc_next(gbandsetbcast, 0, 1);
+	save_i8(offsetof(struct nvmap, gbandsetbcast), gbandsetbcast);
 	updateboard(1, 0);
 }
 
 uint_fast8_t hamradio_get_genham_value(void)
 {
-	return bandsetbcast;
+	return gbandsetbcast;
 }
 
 #endif /* WITHBCBANDS */
@@ -15812,9 +15813,9 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		QLABEL("BAND BC "), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
-		offsetof(struct nvmap, bandsetbcast),
+		offsetof(struct nvmap, gbandsetbcast),
 		NULL,
-		& bandsetbcast,
+		& gbandsetbcast,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #endif /* WITHBCBANDS */
@@ -19742,8 +19743,7 @@ uint_fast8_t hamradio_get_bands(band_array_t * bands)
 
 	for (uint_fast8_t i = 0; i < HBANDS_COUNT; i++)
 	{
-		uint_fast8_t bandset = get_band_bandset(i);
-		if (bandset == BANDSETF_HAM || bandset == BANDSETF_2M)
+		if (existingband(i, 0))		// check for HAM bands
 		{
 			band_array_t * b = & bands [count];
 			const char * l = get_band_label(i);
@@ -19757,7 +19757,7 @@ uint_fast8_t hamradio_get_bands(band_array_t * bands)
 			}
 			else
 			{
-				local_snprintf_P(b->name, ARRAY_SIZE(b->name), PSTR("%dk"), b->init_freq / 1000);
+				local_snprintf_P(b->name, ARRAY_SIZE(b->name), PSTR("%ldk"), (long) (b->init_freq / 1000));
 			}
 
 			count ++;
@@ -19766,8 +19766,7 @@ uint_fast8_t hamradio_get_bands(band_array_t * bands)
 
 	for (uint_fast8_t i = 0; i < HBANDS_COUNT; i++)
 	{
-		uint_fast8_t bandset = get_band_bandset(i);
-		if (bandset == BANDSETF_BCAST || bandset == BANDSETF_ALL)
+		if (existingband(i, 1))		// check for broadcast bands
 		{
 			band_array_t * b = & bands [count];
 			const char * l = get_band_label(i);
@@ -19781,7 +19780,7 @@ uint_fast8_t hamradio_get_bands(band_array_t * bands)
 			}
 			else
 			{
-				local_snprintf_P(b->name, ARRAY_SIZE(b->name), PSTR("%dk"), b->init_freq / 1000);
+				local_snprintf_P(b->name, ARRAY_SIZE(b->name), PSTR("%ldk"), (long) (b->init_freq / 1000));
 			}
 			count ++;
 		}
@@ -19840,7 +19839,7 @@ void hamradio_set_gzoomxpow2(uint_fast8_t v)
 	ASSERT(v <= BOARD_FFTZOOM_POW2MAX);
 	gzoomxpow2 = v;
 	// сохранение зависит от текущего диапазона
-	save_i8(nvramoffs_band(offsetof(struct nvmap, bands[0].gzoomxpow2)), gzoomxpow2);
+	save_i8(nvramoffs_band(offsetof(struct nvmap, bands [0].gzoomxpow2)), gzoomxpow2);
 	updateboard(1, 0);
 }
 
@@ -19861,8 +19860,8 @@ void hamradio_set_gtopdb(uint_fast8_t v)
 	gtopdb = v;
 	gtopdbwf = v;
 	// сохранение зависит от текущего диапазона
-	save_i8(nvramoffs_band(offsetof(struct nvmap, bands[0].gtopdb)), gtopdb);
-	save_i8(nvramoffs_band(offsetof(struct nvmap, bands[0].gtopdbwf)), gtopdbwf);
+	save_i8(nvramoffs_band(offsetof(struct nvmap, bands [0].gtopdb)), gtopdb);
+	save_i8(nvramoffs_band(offsetof(struct nvmap, bands [0].gtopdbwf)), gtopdbwf);
 	updateboard(1, 0);
 }
 
@@ -19883,8 +19882,8 @@ void hamradio_set_gbottomdb(uint_fast8_t v)
 	gbottomdb = v;
 	gbottomdbwf = v;
 	// сохранение зависит от текущего диапазона
-	save_i8(nvramoffs_band(offsetof(struct nvmap, bands[0].gbottomdb)), gbottomdb);
-	save_i8(nvramoffs_band(offsetof(struct nvmap, bands[0].gbottomdbwf)), gbottomdbwf);
+	save_i8(nvramoffs_band(offsetof(struct nvmap, bands [0].gbottomdb)), gbottomdb);
+	save_i8(nvramoffs_band(offsetof(struct nvmap, bands [0].gbottomdbwf)), gbottomdbwf);
 	updateboard(1, 0);
 }
 
