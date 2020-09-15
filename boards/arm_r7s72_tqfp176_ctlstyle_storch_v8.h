@@ -101,6 +101,7 @@
 	#define LCDMODE_AT070TN90 1	/* AT070TN90 panel (800*480) - 7" display */
 
 	#define LCDMODE_V2	1	/* только главный экран с тремя видеобуферами, без PIP */
+	//#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
 
 	//#define WITHFLATLINK 1	/* Работа с TFT панелью через SN75LVDS83B	*/
 	//#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
@@ -378,6 +379,8 @@
 		#endif
 		#define WITHAFSPECTRE		1	/* показ спктра прослушиваемого НЧ сигнала. */
 	#endif /* LCDMODE_AT070TNA2 || LCDMODE_AT070TN90 */
+//	#define FORMATFROMLIBRARY 	1
+//	#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 	// --- Эти строки можно отключать, уменьшая функциональность готового изделия
 
 	#define WITHMODESETFULLNFM 1
