@@ -901,11 +901,11 @@ display2_af_spectre(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)
 					//global_enableIRQ();
 					if (afsp.y < y_norm)
 					{
-						PRINTF("1 afsp.val_array [i]=%f, v1=%u, afsp.max_val=%f, mv=%u, afsp.h=%d, y_norm=%d\n", afsp.val_array [i], v1, afsp.max_val, mv, (int) afsp.h, (int) y_norm);
+						//PRINTF("1 afsp.val_array [i]=%f, v1=%u, afsp.max_val=%f, mv=%u, afsp.h=%d, y_norm=%d\n", afsp.val_array [i], v1, afsp.max_val, mv, (int) afsp.h, (int) y_norm);
 					}
 					if (y_norm2 != y_norm)
 					{
-						PRINTF("2 afsp.val_array [i]=%f, v1=%u, afsp.max_val=%f, mv=%u, afsp.h=%d, y_norm=%d\n", afsp.val_array [i], v1, afsp.max_val, mv, (int) afsp.h, (int) y_norm);
+						//PRINTF("2 afsp.val_array [i]=%f, v1=%u, afsp.max_val=%f, mv=%u, afsp.h=%d, y_norm=%d\n", afsp.val_array [i], v1, afsp.max_val, mv, (int) afsp.h, (int) y_norm);
 					}
 					ASSERT(y_norm <= afsp.h);
 					ASSERT(afsp.y >= y_norm);
