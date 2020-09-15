@@ -798,18 +798,50 @@ typedef struct {
 	float32_t raw_buf [FFTSizeSpectrum * 2];		// Для последующей децимации /2
 	float32_t fft_buf [FFTSizeSpectrum * 2];
 	uint_fast8_t is_ready;
-	float32_t max_val;
-	float32_t val_array [DIM_X];
 	uint_fast16_t x;
 	uint_fast16_t y;
 	uint_fast16_t w;
 	uint_fast16_t h;
-	uint_fast16_t visiblefftsize;
-	uint_fast16_t step;
+	unsigned leftfftpos;	// нижняя частота (номер бина) отлбражаемая на экране
+	unsigned rightfftpos;	// последний бин буфера FFT, отобрааемый на экране (включитеоьно)
+	float32_t max_val;
+	float32_t val_array [DIM_X];
 } afsp_t;
 
 enum { AFSP_OFFSET = 3 };
 static afsp_t afsp;
+
+// перевод позиции в окне в номер бина - отображение с нулевой частотой в центре окна
+static int raster2fft(
+	int x,	// window pos
+	int dx,	// width
+	int fftsize,	// размер буфера FFT (в бинах)
+	int visiblefftsize	// Часть буфера FFT, отобрааемая на экране (в бинах)
+	)
+{
+	const int xm = dx / 2;	// middle
+	const int delta = x - xm;	// delta in pixels
+	const int fftoffset = delta * (visiblefftsize / 2 - 1) / xm;
+	return fftoffset < 0 ? (fftsize + fftoffset) : fftoffset;
+}
+
+// перевести частоту в позицию бина результата FFT децимированного спектра
+static int freq2fft_af(int freq)
+{
+	return freq * FFTSizeSpectrum / dsp_get_samplerateuacin_audio48();
+}
+
+// перевод позиции в окне в номер бина - отображение с нулевой частотой в левой стороне окна
+static int raster2fftsingle(
+	int x,	// window pos
+	int dx,	// width
+	int leftfft,	// начало буфера FFT, отобрааемое на экране (в бинах)
+	int rightfft	// последний бин буфера FFT, отобрааемый на экране (включитеоьно)
+	)
+{
+	ASSERT(leftfft < rightfft);
+	return x * (rightfft - leftfft) / dx + leftfft;
+}
 
 // user-mode context function
 static void
@@ -841,8 +873,8 @@ display2_init_af_spectre(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)	
 	afsp.y = GRID2Y(ygrid) + SM_BG_H - 10;
 	afsp.w = smpr->ge - smpr->gs;
 	afsp.h = 40;
-	afsp.visiblefftsize = FFTSizeSpectrum / 6;
-	afsp.step = afsp.w / afsp.visiblefftsize;
+	afsp.leftfftpos = freq2fft_af(100);	// нижняя частота отображения
+	afsp.rightfftpos = freq2fft_af(8000);	// верхняя частота отображения
 	afsp.is_ready = 0;
 
 	subscribefloat_user(& afoutfloat_user, & afspectreregister, NULL, afsp_save_sample);
@@ -860,22 +892,22 @@ display2_latch_af_spectre(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)
 			afsp.fft_buf [i * 2 + 0] = afsp.raw_buf [i];
 			afsp.fft_buf [i * 2 + 1] = 0;
 		}
+		afsp.is_ready = 0;	// буфер больше не нужен... но он заполняется так же в user mode
 
 		arm_cmplx_mult_real_f32(afsp.fft_buf, wnd256, afsp.fft_buf, FFTSizeSpectrum); // apply window function
 		arm_cfft_f32(FFTCONFIGSpectrum, afsp.fft_buf, 0, 1);
 		arm_cmplx_mag_f32(afsp.fft_buf, afsp.fft_buf, FFTSizeSpectrum);
 
 		ASSERT(afsp.w <= ARRAY_SIZE(afsp.val_array));
-		for (unsigned i = AFSP_OFFSET; i < afsp.w; i ++)
+		for (unsigned x = 0; x < afsp.w; x ++)
 		{
-			const uint_fast16_t fftpos = FFTSizeSpectrum - roundf((FLOAT_t) i / afsp.step);
+			const uint_fast16_t fftpos = raster2fftsingle(x, afsp.w, afsp.leftfftpos, afsp.rightfftpos);
 			ASSERT(fftpos < ARRAY_SIZE(afsp.fft_buf));
-			afsp.val_array [i] = afsp.val_array [i] * (FLOAT_t) 0.6 + (FLOAT_t) 0.4 * afsp.fft_buf [fftpos];
+			afsp.val_array [x] = afsp.val_array [x] * (FLOAT_t) 0.6 + (FLOAT_t) 0.4 * afsp.fft_buf [fftpos];
 		}
 		arm_max_no_idx_f32(afsp.val_array, afsp.w, & afsp.max_val);	// поиск в отображаемой части
 		afsp.max_val = FMAXF(afsp.max_val, 1);
 
-		afsp.is_ready = 0;
 	}
 }
 
@@ -891,28 +923,15 @@ display2_af_spectre(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)
 				PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
 
 				ASSERT(afsp.w <= ARRAY_SIZE(afsp.val_array));
-				for (unsigned i = AFSP_OFFSET; i < afsp.w; i ++)
+				for (unsigned x = 0; x < afsp.w; x ++)
 				{
-					unsigned v1 = afsp.val_array [i];
-					unsigned mv = afsp.max_val;
-					//global_disableIRQ();
-					const uint_fast16_t y_norm = normalize(afsp.val_array [i], 0, afsp.max_val, afsp.h - 2) + 1;
-					const uint_fast16_t y_norm2 = normalize(v1, 0, mv, afsp.h - 2) + 1;
-					//global_enableIRQ();
-					if (afsp.y < y_norm)
-					{
-						//PRINTF("1 afsp.val_array [i]=%f, v1=%u, afsp.max_val=%f, mv=%u, afsp.h=%d, y_norm=%d\n", afsp.val_array [i], v1, afsp.max_val, mv, (int) afsp.h, (int) y_norm);
-					}
-					if (y_norm2 != y_norm)
-					{
-						//PRINTF("2 afsp.val_array [i]=%f, v1=%u, afsp.max_val=%f, mv=%u, afsp.h=%d, y_norm=%d\n", afsp.val_array [i], v1, afsp.max_val, mv, (int) afsp.h, (int) y_norm);
-					}
+					const uint_fast16_t y_norm = normalize(afsp.val_array [x], 0, afsp.max_val, afsp.h - 2) + 1;
 					ASSERT(y_norm <= afsp.h);
 					ASSERT(afsp.y >= y_norm);
 					if (afsp.y >= y_norm)
 					{
 						display_colorbuf_set_vline(fr, DIM_X, DIM_Y,
-								afsp.x + i - AFSP_OFFSET, afsp.y - y_norm, y_norm,
+								afsp.x + x, afsp.y - y_norm, y_norm,
 								COLORMAIN_YELLOW);
 					}
 				}
@@ -7080,20 +7099,6 @@ make_cmplx(
 		dst [1] = * imgev ++;
 		dst += 2;
 	}
-}
-
-static int raster2fft(
-	int x,	// window pos
-	int dx,	// width
-	int fftsize,	// размер буфера FFT (в бинах)
-	int visiblefftsize	// Часть буфера FFT, отобрааемая на экране (в бинах)
-	)
-{
-	const int xm = dx / 2;	// middle
-	const int delta = x - xm;	// delta in pixels
-	const int fftoffset = delta * (visiblefftsize / 2 - 1) / xm;
-	return fftoffset < 0 ? (fftsize + fftoffset) : fftoffset;
-
 }
 
 // Копрование информации о спектре с текущую строку буфера
