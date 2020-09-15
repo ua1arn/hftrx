@@ -112,7 +112,7 @@ Reset_Handler7:
 
 	/* Mask interrupts */
     mov   	lr, #0
-	cpsid   iaf
+	cpsid   if
 	mrc     p15, 0, r0, c0, c0, 5      /* Read MPIDR */
 	ands    r0, r0, #3
 gotosleep:
@@ -122,35 +122,35 @@ gotosleep:
   /*
     * Setup a stack for each mode
     */    
-   msr   CPSR, #ARM_MODE_UNDEF | I_BIT | F_BIT   /* 0x1b Undefined Instruction Mode */
+   msr   CPSR_c, #ARM_MODE_UNDEF | I_BIT | F_BIT   /* 0x1b Undefined Instruction Mode */
    ldr   sp, =__stack_cpu0_und_end
    mov   lr, #0
    
-   msr   CPSR, #ARM_MODE_ABORT | I_BIT | F_BIT   /* 0x17 Abort Mode */
+   msr   CPSR_c, #ARM_MODE_ABORT | I_BIT | F_BIT   /* 0x17 Abort Mode */
    ldr   sp, =__stack_cpu0_abt_end
    mov   lr, #0
    
-   msr   CPSR, #ARM_MODE_FIQ | I_BIT | F_BIT     /* 0x11 FIQ Mode */
+   msr   CPSR_c, #ARM_MODE_FIQ | I_BIT | F_BIT     /* 0x11 FIQ Mode */
    ldr   sp, =__stack_cpu0_fiq_end
    mov   lr, #0
    
-   msr   CPSR, #ARM_MODE_IRQ | I_BIT | F_BIT     /* 0x12 IRQ Mode */
+   msr   CPSR_c, #ARM_MODE_IRQ | I_BIT | F_BIT     /* 0x12 IRQ Mode */
    ldr   sp, =__stack_cpu0_irq_end
    mov   lr, #0
 
-   msr   CPSR, #ARM_MODE_MON | I_BIT | F_BIT     /* 0x16 Monitor Mode */
+   msr   CPSR_c, #ARM_MODE_MON | I_BIT | F_BIT     /* 0x16 Monitor Mode */
    ldr   sp, =__stack_cpu0_mon_end
    mov   lr, #0
 
-   msr   CPSR, #ARM_MODE_HYP | I_BIT | F_BIT     /* 0x1B Hypervisor Mode */
+   msr   CPSR_c, #ARM_MODE_HYP | I_BIT | F_BIT     /* 0x1B Hypervisor Mode */
    ldr   sp, =__stack_cpu0_hyp_end
    mov   lr, #0
 
-   msr   CPSR, #ARM_MODE_SYS | I_BIT | F_BIT     /* 0x1F Priviledged Operating Mode */
+   msr   CPSR_c, #ARM_MODE_SYS | I_BIT | F_BIT     /* 0x1F Priviledged Operating Mode */
    ldr   sp, =__stack_cpu0_sys_end
    mov   lr, #0
 
-   msr   CPSR, #ARM_MODE_SVC | I_BIT | F_BIT     /* 0x13 Supervisor Mode */
+   msr   CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT     /* 0x13 Supervisor Mode */
    ldr   sp, =__stack
    mov   lr, #0
 
@@ -319,7 +319,7 @@ ExitFunction:
 /****************************************************************************/
 /*                         Default interrupt handler                        */
 /****************************************************************************/
-	.section .itcm, "ax"
+	.section .text
    .code 32
 
 	.align 4, 0
@@ -337,7 +337,7 @@ IRQHandlerNested:
 	MRS     LR, SPSR
 	STMFD   SP!, {R0, LR}
 
-    MSR     CPSR, #ARM_MODE_SVC | I_BIT | F_BIT
+    MSR     CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT
 	STMFD   SP!, {R1-R3, R4, R12, LR}
 
 #if __ARM_NEON == 1
@@ -371,10 +371,10 @@ IRQHandlerNested:
 #endif /* __ARM_NEON == 1 */
 
 	LDMIA   SP!, {R1-R3, R4, R12, LR}
-    MSR     CPSR, #ARM_MODE_IRQ | I_BIT | F_BIT
+    MSR     CPSR_c, #ARM_MODE_IRQ | I_BIT | F_BIT
 
 	LDMIA   SP!, {R0, LR}
-	MSR     SPSR, LR
+	MSR     SPSR_cxsf, LR
 	LDMIA   SP!, {PC}^
 
 	.endfunc
@@ -390,35 +390,35 @@ Reset_CPU1_Handler:
   /*
     * Setup a stack for each mode
     */
-   msr   CPSR, #ARM_MODE_UNDEF | I_BIT | F_BIT   /* 0x1b Undefined Instruction Mode */
+   msr   CPSR_c, #ARM_MODE_UNDEF | I_BIT | F_BIT   /* 0x1b Undefined Instruction Mode */
    ldr   sp, =__stack_cpu1_und_end
    mov   lr, #0
 
-   msr   CPSR, #ARM_MODE_ABORT | I_BIT | F_BIT   /* 0x17 Abort Mode */
+   msr   CPSR_c, #ARM_MODE_ABORT | I_BIT | F_BIT   /* 0x17 Abort Mode */
    ldr   sp, =__stack_cpu1_abt_end
    mov   lr, #0
 
-   msr   CPSR, #ARM_MODE_FIQ | I_BIT | F_BIT     /* 0x11 FIQ Mode */
+   msr   CPSR_c, #ARM_MODE_FIQ | I_BIT | F_BIT     /* 0x11 FIQ Mode */
    ldr   sp, =__stack_cpu1_fiq_end
    mov   lr, #0
 
-   msr   CPSR, #ARM_MODE_IRQ | I_BIT | F_BIT     /* 0x12 IRQ Mode */
+   msr   CPSR_c, #ARM_MODE_IRQ | I_BIT | F_BIT     /* 0x12 IRQ Mode */
    ldr   sp, =__stack_cpu1_irq_end
    mov   lr, #0
 
-   msr   CPSR, #ARM_MODE_MON | I_BIT | F_BIT     /* 0x16 Monitor Mode */
+   msr   CPSR_c, #ARM_MODE_MON | I_BIT | F_BIT     /* 0x16 Monitor Mode */
    ldr   sp, =__stack_cpu1_mon_end
    mov   lr, #0
 
-   msr   CPSR, #ARM_MODE_HYP | I_BIT | F_BIT     /* 0x1B Hypervisor Mode */
+   msr   CPSR_c, #ARM_MODE_HYP | I_BIT | F_BIT     /* 0x1B Hypervisor Mode */
    ldr   sp, =__stack_cpu1_hyp_end
    mov   lr, #0
 
-   msr   CPSR, #ARM_MODE_SYS | I_BIT | F_BIT     /* 0x1F Priviledged Operating Mode */
+   msr   CPSR_c, #ARM_MODE_SYS | I_BIT | F_BIT     /* 0x1F Priviledged Operating Mode */
    ldr   sp, =__stack_cpu1_sys_end
    mov   lr, #0
 
-	msr   CPSR, #ARM_MODE_SVC | I_BIT | F_BIT     /* 0x13 Supervisor Mode */
+	msr   CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT     /* 0x13 Supervisor Mode */
 	ldr   sp, =__stack_cpu1_svc_end
 	mov   lr, #0
 

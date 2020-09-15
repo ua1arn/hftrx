@@ -103,7 +103,7 @@ CPPSRC +=
 
 # List ASM source files here
 ASRC += \
- $(SRCDIR)/crt_r7s721.s
+ $(SRCDIR)/crt_CortexA.s
 
 # List all user directories here
 UINCDIR += ../.. ../../inc

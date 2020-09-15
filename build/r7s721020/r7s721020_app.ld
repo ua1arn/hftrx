@@ -171,14 +171,14 @@ SECTIONS
 	.noinit :
 	{
 		. = ALIGN(32);
-		KEEP(*(.noinit))
+		KEEP(*(.noinit*))
 		. = ALIGN(32);
 	} > RAM
 
 	.vram :
 	{
 		. = ALIGN(32);
-		KEEP(*(.framebuff))
+		KEEP(*(.framebuff*))
 		. = ALIGN(32);
 	} > RAM
 
