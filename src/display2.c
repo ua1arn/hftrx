@@ -195,6 +195,9 @@ static uint_fast8_t glob_showdbm = 1;	// Отображение уровня с�
 
 static uint_fast8_t glob_smetertype = SMETER_TYPE_DIAL;	/* выбор внешнего вида прибора - стрелочный или градусник */
 
+static int_fast16_t glob_afspeclow = 300;	// нижняя частота отображения спектроанализатора
+static int_fast16_t glob_afspechigh = 3400;	// верхняя частота отображения спектроанализатора
+
 //#define WIDEFREQ (TUNE_TOP > 100000000L)
 
 static void fftzoom_x2(float32_t * buffer);
@@ -802,8 +805,6 @@ typedef struct {
 	uint_fast16_t y;
 	uint_fast16_t w;
 	uint_fast16_t h;
-	unsigned leftfftpos;	// нижняя частота (номер бина) отлбражаемая на экране
-	unsigned rightfftpos;	// последний бин буфера FFT, отобрааемый на экране (включитеоьно)
 	float32_t max_val;
 	float32_t val_array [DIM_X];
 } afsp_t;
@@ -864,7 +865,7 @@ afsp_save_sample(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 }
 
 static void
-display2_init_af_spectre(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)		// вызывать после display2_smeter15_init
+display2_af_spectre15_init(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)		// вызывать после display2_smeter15_init
 {
 	static subscribefloat_t afspectreregister;
 	smeter_params_t * const smpr = & smprms [SMETER_TYPE_BARS];		// отображение НЧ спектра только для режима s-метра BARS
@@ -873,18 +874,19 @@ display2_init_af_spectre(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)	
 	afsp.y = GRID2Y(ygrid) + SM_BG_H - 10;
 	afsp.w = smpr->ge - smpr->gs;
 	afsp.h = 40;
-	afsp.leftfftpos = freq2fft_af(100);	// нижняя частота отображения
-	afsp.rightfftpos = freq2fft_af(8000);	// верхняя частота отображения
 	afsp.is_ready = 0;
 
 	subscribefloat_user(& afoutfloat_user, & afspectreregister, NULL, afsp_save_sample);
 }
 
 static void
-display2_latch_af_spectre(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)
+display2_af_spectre15_latch(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)
 {
 	if (afsp.is_ready)
 	{
+		const unsigned leftfftpos = freq2fft_af(glob_afspeclow);	// нижняя частота (номер бина) отлбражаемая на экране
+		const unsigned rightfftpos = freq2fft_af(glob_afspechigh);	// последний бин буфера FFT, отобрааемый на экране (включитеоьно)
+
 		fftzoom_x2(afsp.raw_buf);
 		// осталась половина буфера
 		for (uint_fast16_t i = 0; i < FFTSizeSpectrum; i ++)
@@ -901,7 +903,7 @@ display2_latch_af_spectre(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)
 		ASSERT(afsp.w <= ARRAY_SIZE(afsp.val_array));
 		for (unsigned x = 0; x < afsp.w; x ++)
 		{
-			const uint_fast16_t fftpos = raster2fftsingle(x, afsp.w, afsp.leftfftpos, afsp.rightfftpos);
+			const uint_fast16_t fftpos = raster2fftsingle(x, afsp.w, leftfftpos, rightfftpos);
 			ASSERT(fftpos < ARRAY_SIZE(afsp.fft_buf));
 			afsp.val_array [x] = afsp.val_array [x] * (FLOAT_t) 0.6 + (FLOAT_t) 0.4 * afsp.fft_buf [fftpos];
 		}
@@ -912,7 +914,7 @@ display2_latch_af_spectre(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)
 }
 
 static void
-display2_af_spectre(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)
+display2_af_spectre15(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)
 {
 	switch (glob_smetertype)
 	{
@@ -5622,9 +5624,9 @@ enum
 		{    0, 4,  display2_smeter15_init,REDRM_INIS, PGINI, },	//  Инициализация стрелочного прибора
 		{    0, 4,  display2_smeter15, 	REDRM_BARS, PGALL, },	// Изображение стрелочного прибора
 #if WITHAFSPECTRE
-		{	0,	4,	display2_init_af_spectre,	REDRM_INIS, PGINI, },
-		{	0,	4,	display2_latch_af_spectre,	REDRM_BARS,	PGLATCH, },
-		{	0,	4,	display2_af_spectre,		REDRM_BARS, PGSPE, },
+		{	0,	4,	display2_af_spectre15_init,	REDRM_INIS, PGINI, },
+		{	0,	4,	display2_af_spectre15_latch,	REDRM_BARS,	PGLATCH, },
+		{	0,	4,	display2_af_spectre15,		REDRM_BARS, PGSPE, },
 #endif /* WITHAFSPECTRE */
 
 		{   47, 20, display2_bkin3,		REDRM_MODE, PGALL, },
@@ -5797,9 +5799,9 @@ enum
 		{   0, 	4,  display2_smeter15_init,REDRM_INIS, PGINI, },	//  Инициализация стрелочного прибора
 		{   0, 	4,	display2_smeter15, 	REDRM_BARS, PGALL, },	// Изображение стрелочного прибора
 #if WITHAFSPECTRE
-		{	0,	4,	display2_init_af_spectre,	REDRM_INIS, PGINI, },
-		{	0,	4,	display2_latch_af_spectre,	REDRM_BARS,	PGLATCH, },
-		{	0,	4,	display2_af_spectre,		REDRM_BARS, PGSPE, },
+		{	0,	4,	display2_af_spectre15_init,	REDRM_INIS, PGINI, },
+		{	0,	4,	display2_af_spectre15_latch,	REDRM_BARS,	PGLATCH, },
+		{	0,	4,	display2_af_spectre15,		REDRM_BARS, PGSPE, },
 #endif /* WITHAFSPECTRE */
 
 		{	15,	6,	display2_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
@@ -8351,86 +8353,6 @@ uint_fast8_t display_getfreqformat(
 	return DISPLC_WIDTH;
 }
 
-// Установка параметров отображения
-/* разрешение или запрет сдвига водопада при изменении частоты */
-void
-board_set_wfshiftenable(uint_fast8_t v)
-{
-	glob_wfshiftenable = v != 0;
-}
-
-/* разрешение или запрет антиалиасинга спектра */
-void
-board_set_spantialiasing(uint_fast8_t v)
-{
-	glob_spantialiasing = v != 0;
-}
-
-/* разрешение или запрет раскраски спектра */
-void
-board_set_colorsp(uint_fast8_t v)
-{
-	glob_colorsp = v != 0;
-}
-
-/* заливать заполнением площадь под графиком спектра */
-void
-board_set_fillspect(uint_fast8_t v)
-{
-	glob_fillspect = v != 0;
-}
-
-/* верхний предел FFT - spectrum */
-void
-board_set_topdb(int_fast16_t v)
-{
-	glob_topdb = v;
-}
-
-/* нижний предел FFT - spectrum */
-void
-board_set_bottomdb(int_fast16_t v)
-{
-	glob_bottomdb = v;
-}
-
-/* верхний предел FFT - waterflow */
-void
-board_set_topdbwf(int_fast16_t v)
-{
-	glob_topdbwf = v;
-}
-
-/* нижний предел FFT - waterflow*/
-void
-board_set_bottomdbwf(int_fast16_t v)
-{
-	glob_bottomdbwf = v;
-}
-
-/* уменьшение отображаемого участка спектра */
-// horisontal magnification power of two
-void
-board_set_zoomxpow2(uint_fast8_t v)
-{
-	glob_zoomxpow2 = v;
-}
-
-/* чувствительность водопада регулируется отдельной парой параметров */
-void
-board_set_wflevelsep(uint_fast8_t v)
-{
-	glob_wflevelsep = v != 0;
-}
-
-// Отображение уровня сигнала в dBm или S-memter (в зависимости от настроек)
-void
-board_set_showdbm(uint_fast8_t v)
-{
-	glob_showdbm = v != 0;
-}
-
-
 // S-METER
 /* отображение S-метра на приёме или передаче */
 // Функция вызывается из display2.c
@@ -8713,3 +8635,96 @@ void colmain_rounded_rect(
 }
 
 #endif /* LCDMODE_LTDC */
+
+// Установка параметров отображения
+/* разрешение или запрет сдвига водопада при изменении частоты */
+void
+board_set_wfshiftenable(uint_fast8_t v)
+{
+	glob_wfshiftenable = v != 0;
+}
+
+/* разрешение или запрет антиалиасинга спектра */
+void
+board_set_spantialiasing(uint_fast8_t v)
+{
+	glob_spantialiasing = v != 0;
+}
+
+/* разрешение или запрет раскраски спектра */
+void
+board_set_colorsp(uint_fast8_t v)
+{
+	glob_colorsp = v != 0;
+}
+
+/* заливать заполнением площадь под графиком спектра */
+void
+board_set_fillspect(uint_fast8_t v)
+{
+	glob_fillspect = v != 0;
+}
+
+/* верхний предел FFT - spectrum */
+void
+board_set_topdb(int_fast16_t v)
+{
+	glob_topdb = v;
+}
+
+/* нижний предел FFT - spectrum */
+void
+board_set_bottomdb(int_fast16_t v)
+{
+	glob_bottomdb = v;
+}
+
+/* верхний предел FFT - waterflow */
+void
+board_set_topdbwf(int_fast16_t v)
+{
+	glob_topdbwf = v;
+}
+
+/* нижний предел FFT - waterflow*/
+void
+board_set_bottomdbwf(int_fast16_t v)
+{
+	glob_bottomdbwf = v;
+}
+
+/* уменьшение отображаемого участка спектра */
+// horisontal magnification power of two
+void
+board_set_zoomxpow2(uint_fast8_t v)
+{
+	glob_zoomxpow2 = v;
+}
+
+/* чувствительность водопада регулируется отдельной парой параметров */
+void
+board_set_wflevelsep(uint_fast8_t v)
+{
+	glob_wflevelsep = v != 0;
+}
+
+// Отображение уровня сигнала в dBm или S-memter (в зависимости от настроек)
+void
+board_set_showdbm(uint_fast8_t v)
+{
+	glob_showdbm = v != 0;
+}
+
+// нижняя частота отображения спектроанализатора
+void
+board_set_afspeclow(int_fast16_t v)
+{
+	glob_afspeclow = v;
+}
+
+// верхняя частота отображения спектроанализатора
+void
+board_set_afspechigh(int_fast16_t v)
+{
+	glob_afspechigh = v;
+}

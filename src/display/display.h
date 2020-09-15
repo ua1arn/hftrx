@@ -822,6 +822,8 @@ void board_set_wfshiftenable(uint_fast8_t v);	   /* разрешение или 
 void board_set_spantialiasing(uint_fast8_t v); /* разрешение или запрет антиалиасинга спектра */
 void board_set_colorsp(uint_fast8_t v);			/* разрешение или запрет раскраски спектра */
 void board_set_showdbm(uint_fast8_t v);	// Отображение уровня сигнала в dBm или S-memter (в зависимости от настроек)
+void board_set_afspeclow(int_fast16_t v);	// нижняя частота отображения спектроанализатора
+void board_set_afspechigh(int_fast16_t v);	// верхняя частота отображения спектроанализатора
 
 PACKEDCOLORMAIN_T * colmain_fb_draw(void);	// буфер для построения изображения
 PACKEDCOLORMAIN_T * colmain_fb_show(void);	// буфер для отображения

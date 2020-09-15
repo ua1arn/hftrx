@@ -3265,6 +3265,8 @@ static const uint_fast8_t displaymodesfps = DISPLAYMODES_FPS;
 	static uint_fast8_t gspantialiasing  = 1; /* разрешение или запрет антиалиасинга спектра */
 	static uint_fast8_t gcolorsp  = 0;		/* разрешение или запрет раскраски спектра */
 	static uint_fast8_t gtxloopback = 1;	/* включение спектроанализатора сигнала передачи */
+	static int_fast16_t gafspeclow = 300;	// нижняя частота отображения спектроанализатора
+	static int_fast16_t gafspechigh = 8000;	// верхняя частота отображения спектроанализатора
 #endif /* WITHSPECTRUMWF */
 #if WITHLCDBACKLIGHT
 	#if WITHISBOOTLOADER 
@@ -8703,6 +8705,8 @@ updateboard(
 			board_set_spantialiasing(gspantialiasing); 	/* разрешение или запрет антиалиасинга спектра */
 			board_set_colorsp(gcolorsp);				/* разрешение или запрет раскраски спектра */
 			board_set_tx_loopback(gtxloopback && gtx);	/* включение спектроанализатора сигнала передачи */
+			board_set_afspeclow(gafspeclow);	// нижняя частота отображения спектроанализатора
+			board_set_afspechigh(gafspechigh);	// верхняя частота отображения спектроанализатора
 		#endif /* WITHSPECTRUMWF */
 		board_set_showdbm(gshowdbm);		// Отображение уровня сигнала в dBm или S-memter (в зависимости от настроек)
 	#endif /* WITHIF4DSP */
