@@ -336,13 +336,11 @@ IRQHandlerNested:
     MSR     CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT
 	STMFD   SP!, {R1-R3, R4, R9, R12, LR}
 
-#if __ARM_NEON == 1
-	// save neon data registers
-	VPUSH.F64	{Q8-Q15}
-#endif /* __ARM_NEON == 1 */
-	// save vfp/neon data registers
-	VPUSH.F64	{Q0-Q7}
+	// Although FPSID is a read-only register, software
+	// can perform a VMSR to the FPSID to force Floating-point serialization,
+	VMSR	FPSID, LR
 
+	// A VMRS or VMSR instruction that accesses the FPSCR acts as a Floating-point exception barrier
 	// save VFP/Neon FPSCR register
 	VMRS	LR, FPSCR
 	PUSH	{LR}
@@ -350,16 +348,16 @@ IRQHandlerNested:
 	VMRS	LR, FPEXC
 	PUSH	{LR}
 
+#if __ARM_NEON == 1
+	// save neon data registers
+	VPUSH.F64	{Q8-Q15}
+#endif /* __ARM_NEON == 1 */
+	// save vfp/neon data registers
+	VPUSH.F64	{Q0-Q7}
+
 	LDR		R2, =IRQ_Handler_GICv1
 	MOV		LR, PC
 	BX		R2     /* and jump... */
-
-	// restore VFP/Neon FPEXC register
-	POP		{LR}
-	VMSR	FPEXC, LR
-	// restore VFP/Neon FPSCR register
-	POP		{LR}
-	VMSR	FPSCR, LR
 
 	// restore vfp data registers
 	VPOP.F64   {Q0-Q7}
@@ -367,6 +365,13 @@ IRQHandlerNested:
 	// restore vfp/neon data registers
 	VPOP.F64	{Q8-Q15}
 #endif /* __ARM_NEON == 1 */
+
+	// restore VFP/Neon FPEXC register
+	POP		{LR}
+	VMSR	FPEXC, LR
+	// restore VFP/Neon FPSCR register
+	POP		{LR}
+	VMSR	FPSCR, LR
 
 	LDMIA   SP!, {R1-R3, R4, R9, R12, LR}
     MSR     CPSR_c, #ARM_MODE_IRQ | I_BIT | F_BIT
