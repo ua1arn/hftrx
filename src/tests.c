@@ -5353,6 +5353,14 @@ void hightests(void)
 		PRINTF(PSTR("__GNUC__=%d, __GNUC_MINOR__=%d\n"), (int) __GNUC__, (int) __GNUC_MINOR__);
 	}
 #endif
+#if 1 && (__CORTEX_A != 0)
+	{
+
+		PRINTF(PSTR("FPEXC=%08lX\n"), (unsigned long) __get_FPEXC());
+		__set_FPEXC(__get_FPEXC() | 0x80000000uL);
+		PRINTF(PSTR("FPEXC=%08lX\n"), (unsigned long) __get_FPEXC());
+	}
+#endif
 #if CPUSTYLE_STM32MP1
 	{
 
