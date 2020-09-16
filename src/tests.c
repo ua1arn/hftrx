@@ -4993,6 +4993,35 @@ static void serial_irq_loopback_test(void)
 void looptests(void)
 {
 #if 0
+	{
+		// вычисления с плавающей точкой
+		//
+		//				   1.4142135623730950488016887242096981L
+		// #define M_SQRT2  1.41421356237309504880
+
+		//original: sqrt(2)=1.41421356237309514547462
+		//double:   sqrt(2)=1.41421356237309514547462
+		//float:    sqrt(2)=1.41421353816986083984375
+		char b [64];
+
+		//snprintf(b, sizeof b / sizeof b [0], "%u\n", (unsigned) SCB_GetFPUType());
+		//PRINTF(PSTR("SCB_GetFPUType: %s"), b);
+
+		snprintf(b, sizeof b / sizeof b [0], "sqrt(2)=%1.23f\n", (double) 1.41421356237309504880);
+		PRINTF(PSTR("original: %s"), b);
+
+		volatile double d0 = 2;
+		volatile double d = sqrt(d0);
+		snprintf(b, sizeof b / sizeof b [0], "sqrt(2)=%1.23f\n", d);
+		PRINTF(PSTR("double:   %s"), b);
+
+		volatile float f0 = 2;
+		volatile float f = sqrtf(f0);
+		snprintf(b, sizeof b / sizeof b [0], "sqrt(2)=%1.23f\n", f);
+		PRINTF(PSTR("float:    %s"), b);
+	}
+#endif
+#if 0
 	// Failt handlers test
 	// Data abort test
 	* (int volatile *) 0x00000100 = 44;
@@ -5574,13 +5603,15 @@ void hightests(void)
 		snprintf(b, sizeof b / sizeof b [0], "sqrt(2)=%1.23f\n", (double) 1.41421356237309504880);
 		PRINTF(PSTR("original: %s"), b);
 
-		double d = sqrt(2);
+		volatile double d0 = 2;
+		volatile double d = sqrt(d0);
 		snprintf(b, sizeof b / sizeof b [0], "sqrt(2)=%1.23f\n", d);
-		PRINTF(PSTR("double: %s"), b);
+		PRINTF(PSTR("double:   %s"), b);
 
-		float f = sqrtf(2);
+		volatile float f0 = 2;
+		volatile float f = sqrtf(f0);
 		snprintf(b, sizeof b / sizeof b [0], "sqrt(2)=%1.23f\n", f);
-		PRINTF(PSTR("float:  %s"), b);
+		PRINTF(PSTR("float:    %s"), b);
 	}
 #endif
 #if 0 && CTLSTYLE_V1V
