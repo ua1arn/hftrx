@@ -363,6 +363,10 @@ IRQHandlerNested:
 	MOV		LR, PC
 	BX		R2     /* and jump... */
 
+	// A VMRS or VMSR instruction that accesses the FPSCR acts as a Floating-point exception barrier
+	// save VFP/Neon FPSCR register
+	VMRS	LR, FPSCR
+
 	// restore vfp data registers
 	VPOP.F64   {Q0-Q7}
 #if __ARM_NEON == 1
