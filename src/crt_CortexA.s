@@ -340,6 +340,13 @@ IRQHandlerNested:
     MSR     CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT
 	STMFD   SP!, {R1-R3, R4, R9, R12, LR}
 
+	VMRS	R0, FPEXC
+	AND	R0, #0xBFFFFFFF		// reset FPEXC.EN
+	VMSR	FPEXC, R0
+	//VMRS	R0, FPEXC
+	ORR	R0, #0x40000000		// set FPEXC.EN
+	VMSR	FPEXC, R0
+
 	// Although FPSID is a read-only register, software
 	// can perform a VMSR to the FPSID to force Floating-point serialization,
 	VMRS	LR, FPSID
