@@ -338,7 +338,7 @@ static void free_win_ptr (window_t * win)
 }
 
 /* Установка признака видимости окна */
-void close_window(uint_fast8_t parent) // 0 - не открывать parent window, 1 - открыть
+void close_window(uint_fast8_t parent_action) // 0 - не открывать parent window, 1 - открыть
 {
 	if(gui.win [1] != NO_PARENT_WINDOW)
 	{
@@ -348,7 +348,7 @@ void close_window(uint_fast8_t parent) // 0 - не открывать parent win
 		free_win_ptr(win);
 		gui.win [1] = NO_PARENT_WINDOW;
 
-		if (win->parent_id != NO_PARENT_WINDOW && parent)	// При закрытии child window открыть parent window, если есть и если разрешено
+		if (win->parent_id != NO_PARENT_WINDOW && parent_action)	// При закрытии child window открыть parent window, если есть и если разрешено
 		{
 			window_t * pwin = get_win(win->parent_id);
 			pwin->state = VISIBLE;
@@ -356,8 +356,8 @@ void close_window(uint_fast8_t parent) // 0 - не открывать parent win
 			free_win_ptr(pwin);
 			pwin->first_call = 1;
 		}
+		gui_user_actions_after_close_window();
 	}
-	gui_user_actions_after_close_window();
 }
 
 /* Открыть окно */

@@ -615,7 +615,7 @@ static void window_bands_process(void)
 
 	if (win->first_call)
 	{
-		uint_fast16_t x = 0, y = 0;
+		uint_fast16_t x = 0, y = 0, max_x = 0;
 		uint_fast8_t interval = 6, col1_int = 20, row1_int = window_title_height + 20, row_count = 3, i = 0;
 		button_t * bh = NULL;
 		label_t * lh1 = NULL, * lh2 = NULL;
@@ -664,6 +664,8 @@ static void window_bands_process(void)
 			bh->parent = WINDOW_BANDS;
 			bh->payload = bands [i].init_freq;
 
+			max_x = (bh->x1 + bh->w > max_x) ? (bh->x1 + bh->w) : max_x;
+
 			char * div = strchr(bands [i].name, ' ');
 			if(div)
 				memcpy(div, "|", 1);
@@ -684,7 +686,7 @@ static void window_bands_process(void)
 		}
 
 		lh2 = find_gui_element(TYPE_LABEL, win, "lbl_bcast");
-		lh2->x = bh->x1 + bh->w + 50;
+		lh2->x = max_x + 50;
 		lh2->y = row1_int;
 		lh2->visible = VISIBLE;
 
@@ -3555,13 +3557,14 @@ void gui_encoder2_menu (enc2_menu_t * enc2_menu)
 
 static void window_enc2_process(void)
 {
-	static label_t * lbl_param,  * lbl_val;
+	static label_t * lbl_val;
 	window_t * win = get_win(WINDOW_ENC2);
 	uint_fast8_t row1_int = window_title_height + 20;
 
 	if (win->first_call)
 	{
 		win->first_call = 0;
+		static const uint_fast8_t win_width = 170;
 
 		static const label_t labels [] = {
 		//    x, y,  parent,  state, is_trackable, visible,   name,   Text, font_size, 	color,  onClickHandler
@@ -3572,14 +3575,16 @@ static void window_enc2_process(void)
 		win->lh_ptr = malloc(labels_size);
 		GUI_MEM_ASSERT(win->lh_ptr);
 		memcpy(win->lh_ptr, labels, labels_size);
+
+		lbl_val = find_gui_element(TYPE_LABEL, win, "lbl_enc2_val");
+		calculate_window_position(win, WINDOW_POSITION_MANUAL, win_width, window_title_height + get_label_height(lbl_val) * 2);
 	}
 
 	if (gui_enc2_menu.updated)
 	{
-		lbl_val = find_gui_element(TYPE_LABEL, win, "lbl_enc2_val");
+
 		strcpy(win->name, gui_enc2_menu.param);
 		remove_end_line_spaces(win->name);
-		calculate_window_position(win, WINDOW_POSITION_MANUAL, 0, window_title_height + get_label_height(lbl_val) * 2);
 
 		strcpy(lbl_val->text, gui_enc2_menu.val);
 		lbl_val->x = win->w / 2 - get_label_width(lbl_val) / 2;
