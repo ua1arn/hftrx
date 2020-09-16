@@ -339,14 +339,14 @@ IRQHandlerNested:
 
     MSR     CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT
 	STMFD   SP!, {R1-R3, R4, R9, R12, LR}
-
+/*
 	VMRS	R0, FPEXC
 	AND	R0, #0xBFFFFFFF		// reset FPEXC.EN
 	VMSR	FPEXC, R0
 	//VMRS	R0, FPEXC
 	ORR	R0, #0x40000000		// set FPEXC.EN
 	VMSR	FPEXC, R0
-
+*/
 	// Although FPSID is a read-only register, software
 	// can perform a VMSR to the FPSID to force Floating-point serialization,
 	VMRS	LR, FPSID
@@ -360,46 +360,45 @@ IRQHandlerNested:
 	// save VFP/Neon FPEXC register
 	VMRS	R0, FPEXC
 
-	TST	R0, #0x80000000		// check FPEXC.EX
-	BEQ skipPUSH
-	VMRS	LR, FPINST
-	PUSH	{LR}
-	VMRS	LR, FPINST2
-	PUSH	{LR}
-skipPUSH:
+	TST		R0, #0x80000000		// check FPEXC.EX
+	//BEQ skipPUSH
+	VMRSNE	LR, FPINST
+	PUSHNE	{LR}
+	VMRSNE	LR, FPINST2
+	PUSHNE	{LR}
+//skipPUSH:
 	PUSH {R0}	// FPEXC
 
 #if __ARM_NEON == 1
 	// save neon data registers
-	VPUSH.F64	{Q8-Q15}
+	VPUSH.F32	{D16-D31}
 #endif /* __ARM_NEON == 1 */
 	// save vfp/neon data registers
-	VPUSH.F64	{Q0-Q7}
+	VPUSH.F32	{D0-D15}
 
 	LDR		R2, =IRQ_Handler_GICv1
 	MOV		LR, PC
 	BX		R2     /* and jump... */
 
 	// A VMRS or VMSR instruction that accesses the FPSCR acts as a Floating-point exception barrier
-	// save VFP/Neon FPSCR register
 	VMRS	LR, FPSCR
 
 	// restore vfp data registers
-	VPOP.F64   {Q0-Q7}
+	VPOP.F32   {D0-D15}
 #if __ARM_NEON == 1
 	// restore vfp/neon data registers
-	VPOP.F64	{Q8-Q15}
+	VPOP.F32	{D16-D31}
 #endif /* __ARM_NEON == 1 */
 
 	// restore VFP/Neon FPEXC register
-	POP {R0}	// FPEXC
-	TST	R0, #0x80000000	// check FPEXC.EX
-	BEQ skipPOP
-	POP		{LR}
-	VMSR	FPINST2, LR
-	POP		{LR}
-	VMSR	FPINST, LR
-skipPOP:
+	POP 	{R0}	// FPEXC
+	TST		R0, #0x80000000	// check FPEXC.EX
+	//BEQ skipPOP
+	POPNE 	{LR}
+	VMSRNE	FPINST2, LR
+	POPNE 	{LR}
+	VMSRNE 	FPINST, LR
+//skipPOP:
 	// restore VFP/Neon FPEXC register
 	VMSR	FPEXC, R0
 	// restore VFP/Neon FPSCR register
