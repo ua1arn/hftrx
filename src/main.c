@@ -4960,7 +4960,7 @@ existingbandsingle(
 	uint_fast8_t bandsetbcast
 	)
 {
-	if (existingband(b, 0) == existingband(b, 1))
+	if (existingband(b, 0) && existingband(b, 1))
 		return bandsetbcast;	// BANDSETF_ALL
 	return existingband(b, bandsetbcast);
 }
