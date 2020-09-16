@@ -5411,6 +5411,12 @@ void hightests(void)
 			// R7S721 @360 MHz with NEON:
 			// cplxmla & cplxmlasave: 0.7 kHz
 
+			// stm32mp1 @800, -mcpu=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4-d16  : 1.85 kHz
+			// stm32mp1 @800, -mcpu=cortex-a7 -mfloat-abi=hard -mfpu=neon -mfpu=vfpv4-d16 : 1.85 kHz
+			// stm32mp1 @800, -mcpu=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4-d16 -mfpu=neon : 2.65 kHz
+			// stm32mp1 @800, -mcpu=cortex-a7 -mfloat-abi=hard -mfpu=neon : 2.65 kHz
+
+
 			cplxmla(src, dst, refv,  FFTZS);
 			cplxmlasave(dst, FFTZS);
 
@@ -5422,6 +5428,7 @@ void hightests(void)
 	#else /* CPUSTYLE_R7S721 */
 				(GPIOA)->BSRR = BSRR_S(mask);
 	#endif /* CPUSTYLE_R7S721 */
+				//BOARD_BLINK_SETSTATE(1);
 			}
 			else
 			{
@@ -5431,6 +5438,7 @@ void hightests(void)
 		#else /* CPUSTYLE_R7S721 */
 					(GPIOA)->BSRR = BSRR_C(mask);
 		#endif /* CPUSTYLE_R7S721 */
+				//BOARD_BLINK_SETSTATE(0);
 			}
 		}
 
