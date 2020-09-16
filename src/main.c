@@ -4953,7 +4953,17 @@ existingband(
 	}
 }
 
-
+static uint_fast8_t
+//NOINLINEAT
+existingbandsingle(
+	uint_fast8_t b,	// код диапазона
+	uint_fast8_t bandsetbcast
+	)
+{
+	if (existingband(b, 0) == existingband(b, 1))
+		return bandsetbcast;	// BANDSETF_ALL
+	return existingband(b, bandsetbcast);
+}
 
 static void 
 //NOINLINEAT
@@ -19747,7 +19757,7 @@ uint_fast8_t hamradio_get_bands(band_array_t * bands)
 
 	for (uint_fast8_t i = 0; i < HBANDS_COUNT; i++)
 	{
-		if (existingband(i, 0))		// check for HAM bands
+		if (existingbandsingle(i, 0))		// check for HAM bands
 		{
 			band_array_t * b = & bands [count];
 			const char * l = get_band_label(i);
@@ -19770,7 +19780,7 @@ uint_fast8_t hamradio_get_bands(band_array_t * bands)
 
 	for (uint_fast8_t i = 0; i < HBANDS_COUNT; i++)
 	{
-		if (existingband(i, 1))		// check for broadcast bands
+		if (existingbandsingle(i, 1))		// check for broadcast bands
 		{
 			band_array_t * b = & bands [count];
 			const char * l = get_band_label(i);
