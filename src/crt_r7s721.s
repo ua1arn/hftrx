@@ -345,8 +345,8 @@ IRQHandlerNested:
 	VMRS	LR, FPSCR
 	PUSH	{LR}
 	// save VFP/Neon FPEXC register
-	VMRS	LR, FPEXC
-	PUSH	{LR}
+	//VMRS	LR, FPEXC
+	//PUSH	{LR}
 
 #if __ARM_NEON == 1
 	// save neon data registers
@@ -367,8 +367,8 @@ IRQHandlerNested:
 #endif /* __ARM_NEON == 1 */
 
 	// restore VFP/Neon FPEXC register
-	POP		{LR}
-	VMSR	FPEXC, LR
+	//POP		{LR}
+	//VMSR	FPEXC, LR
 	// restore VFP/Neon FPSCR register
 	POP		{LR}
 	VMSR	FPSCR, LR
