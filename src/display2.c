@@ -200,7 +200,7 @@ static int_fast16_t glob_afspechigh = 3400;	// верхняя частота о�
 
 //#define WIDEFREQ (TUNE_TOP > 100000000L)
 
-static void fftzoom_x2(float32_t * buffer);
+static void fftzoom_af(float32_t * buffer, unsigned zoompow2);
 
 
 uint_fast16_t normalize(
@@ -796,6 +796,11 @@ static void printsigwnd(void)
 }
 #endif
 
+enum
+{
+	AFSP_DECIMATIONPOW2 = 1,		// x2
+	AFSP_DECIMATION = (1 << AFSP_DECIMATIONPOW2)
+};
 
 typedef struct {
 	float32_t raw_buf [FFTSizeSpectrum * 2];		// Для последующей децимации /2
@@ -809,7 +814,6 @@ typedef struct {
 	float32_t val_array [DIM_X];
 } afsp_t;
 
-enum { AFSP_OFFSET = 3 };
 static afsp_t afsp;
 
 // перевод позиции в окне в номер бина - отображение с нулевой частотой в центре окна
@@ -829,7 +833,7 @@ static int raster2fft(
 // перевести частоту в позицию бина результата FFT децимированного спектра
 static int freq2fft_af(int freq)
 {
-	return freq * FFTSizeSpectrum / dsp_get_samplerateuacin_audio48();
+	return AFSP_DECIMATION * freq * FFTSizeSpectrum / dsp_get_samplerateuacin_audio48();
 }
 
 // перевод позиции в окне в номер бина - отображение с нулевой частотой в левой стороне окна
@@ -889,7 +893,7 @@ display2_af_spectre15_latch(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pct
 		const unsigned leftfftpos = freq2fft_af(glob_afspeclow);	// нижняя частота (номер бина) отлбражаемая на экране
 		const unsigned rightfftpos = freq2fft_af(glob_afspechigh);	// последний бин буфера FFT, отобрааемый на экране (включитеоьно)
 
-		fftzoom_x2(afsp.raw_buf);
+		fftzoom_af(afsp.raw_buf, AFSP_DECIMATIONPOW2);
 		// осталась половина буфера
 		for (uint_fast16_t i = 0; i < FFTSizeSpectrum; i ++)
 		{
@@ -7073,20 +7077,23 @@ static void fftzoom_filer_decimate(
 }
 
 // децимация НЧ спектра для увеличения разрешения
-static void fftzoom_x2(float32_t * buffer)
+static void fftzoom_af(float32_t * buffer, unsigned zoompow2)
 {
-	const struct zoom_param * const prm = & zoom_params [0];
-	arm_fir_decimate_instance_f32 fir_config;
-	const unsigned usedSize = NORMALFFT * prm->zoom;
+	if (zoompow2 != 0)
+	{
+		const struct zoom_param * const prm = & zoom_params [zoompow2 - 1];
+		arm_fir_decimate_instance_f32 fir_config;
+		const unsigned usedSize = NORMALFFT * prm->zoom;
 
-	VERIFY(ARM_MATH_SUCCESS == arm_fir_decimate_init_f32(& fir_config,
-						prm->numTaps,
-						prm->zoom,          // Decimation factor
-						prm->pCoeffs,
-						zoomfft_st.fir_state,       	// Filter state variables
-						usedSize));
+		VERIFY(ARM_MATH_SUCCESS == arm_fir_decimate_init_f32(& fir_config,
+							prm->numTaps,
+							prm->zoom,          // Decimation factor
+							prm->pCoeffs,
+							zoomfft_st.fir_state,       	// Filter state variables
+							usedSize));
 
-	arm_fir_decimate_f32(& fir_config, buffer, buffer, usedSize);
+		arm_fir_decimate_f32(& fir_config, buffer, buffer, usedSize);
+	}
 }
 
 static void
