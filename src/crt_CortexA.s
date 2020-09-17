@@ -338,7 +338,7 @@ IRQHandlerNested:
 	STMFD   SP!, {R0, LR}
 
     MSR     CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT
-	STMFD   SP!, {R1-R3, R4, R9, R12, LR}
+	STMFD   SP!, {R1-R12, LR}
 /*
 	VMRS	R0, FPEXC
 	AND	R0, #0xBFFFFFFF		// reset FPEXC.EN
@@ -407,11 +407,12 @@ IRQHandlerNested:
 	POP		{LR}
 	VMSR	FPSID, LR
 
-	LDMIA   SP!, {R1-R3, R4, R9, R12, LR}
+	LDMIA   SP!, {R1-R12, LR}
     MSR     CPSR_c, #ARM_MODE_IRQ | I_BIT | F_BIT
 
 	LDMIA   SP!, {R0, LR}
 	MSR     SPSR_cxsf, LR
+	ISB
 	LDMIA   SP!, {PC}^
 
 	.endfunc
