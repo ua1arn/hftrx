@@ -5017,8 +5017,6 @@ getnexthband(const uint_fast32_t freq)
 	return LOW;
 }
 
-
-#if	WITHDIRECTBANDS
 /* получить номер любительского диспазона, следующего в группе. Если в группе больше нет ни одного диапазона,
  вернуть номер текущего.
  */
@@ -5086,6 +5084,7 @@ getnext_ham_band(
 		xnext [i] = getnexthband(f);		// получить номер диапазона с большей частотой
 		xprev [i] = getprevhband(f);		// получить номер диапазона с меньшей частотой
 	}
+	PRINTF("getnext_ham_band: b=%d(%d), xsel[0]=%d, xsel[1]=%d, xnext[0]=%d, xnext[0]=%d, xprev[0]=%d, xprev[0]=%d\n", b, XBANDS_COUNT, xsel[0], xsel[1], xnext[0], xnext[1], xprev[0], xprev[1]);
 
 	do
 	{
@@ -5160,6 +5159,7 @@ getprev_ham_band(
 		xnext [i] = getnexthband(f);		// получить номер диапазона с большей частотой
 		xprev [i] = getprevhband(f);		// получить номер диапазона с меньшей частотой
 	}
+	PRINTF("getprev_ham_band: b=%d(%d), xsel[0]=%d, xsel[1]=%d, xnext[0]=%d, xnext[0]=%d, xprev[0]=%d, xprev[0]=%d\n", b, XBANDS_COUNT, xsel[0], xsel[1], xnext[0], xnext[1], xprev[0], xprev[1]);
 
 	do
 	{
