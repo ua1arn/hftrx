@@ -112,12 +112,12 @@ SECTIONS
 		__zero_table_end__ = .;
 	} > RAM
 
-	__etext = .;
+	/* __etext = .; */
 
 	.data : /*AT (__etext)*/
 	{
-		. = ALIGN(64);
 		__data_start__ = .;
+		. = ALIGN(64);
 
 		/* .ctors */
 		*crtbegin.o(.ctors)
@@ -163,6 +163,7 @@ SECTIONS
 
 		KEEP(*(.jcr*))
 		/* All data end */
+		. = ALIGN(64);
 		__data_end__ = .;
 
 	} > RAM
@@ -171,8 +172,8 @@ SECTIONS
 
 	.sysram : AT (__etext2)
 	{
-		. = ALIGN(32);
 		__data2_start__ = .;
+		. = ALIGN(32);
 		KEEP(*(.vectors))
 		__Vectors_End = .;
 		__Vectors_Size = __Vectors_End - __Vectors;
@@ -180,6 +181,7 @@ SECTIONS
 		KEEP(*(.itcm*))
 		. = ALIGN(64);
 		KEEP(*(.dtcm*))
+		. = ALIGN(32);
 		__data2_end__ = .;
 	} > SYSRAM
 
@@ -188,10 +190,11 @@ SECTIONS
 
 	.bss :
 	{
-		. = ALIGN(32);
 		__bss_start__ = .;
+		. = ALIGN(32);
 		*(.bss*)
 		*(COMMON)
+		. = ALIGN(32);
 		__bss_end__ = .;
 	} > RAM
 
