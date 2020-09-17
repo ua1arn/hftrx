@@ -296,12 +296,6 @@ typedef struct {
 
 static smeter_params_t smprms [SMETER_TYPE_COUNT];
 
-void display2_set_smetertype(uint_fast8_t v)
-{
-	ASSERT(v < SMETER_TYPE_COUNT);
-	glob_smetertype = v;
-}
-
 static void
 display2_smeter15_layout(
 	uint_fast8_t xgrid,
@@ -8736,4 +8730,10 @@ void
 board_set_afspechigh(int_fast16_t v)
 {
 	glob_afspechigh = v;
+}
+
+void display2_set_smetertype(uint_fast8_t v)
+{
+	ASSERT(v < SMETER_TYPE_COUNT);
+	glob_smetertype = v;
 }
