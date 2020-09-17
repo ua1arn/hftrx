@@ -5037,7 +5037,6 @@ getnextbandingroup(const vindex_t b, const uint_fast8_t bandgroup)
 	} while (i != b);
 	return i;
 }
-#endif	/* WITHDIRECTBANDS */
 
 /* получить номер диапазона с меньшей частотой, на который переходить.
   Если нет подходящих, возврат high */
@@ -5084,7 +5083,7 @@ getnext_ham_band(
 		xnext [i] = getnexthband(f);		// получить номер диапазона с большей частотой
 		xprev [i] = getprevhband(f);		// получить номер диапазона с меньшей частотой
 	}
-	PRINTF("getnext_ham_band: b=%d(%d), xsel[0]=%d, xsel[1]=%d, xnext[0]=%d, xnext[0]=%d, xprev[0]=%d, xprev[0]=%d\n", b, XBANDS_COUNT, xsel[0], xsel[1], xnext[0], xnext[1], xprev[0], xprev[1]);
+	PRINTF("getnext_ham_band: b=%d(%d), xsel[0]=%d, xsel[1]=%d, xnext[0]=%d, xnext[0]=%d, xprev[0]=%d, xprev[0]=%d\n", b, XBANDS_BASE0, xsel[0], xsel[1], xnext[0], xnext[1], xprev[0], xprev[1]);
 
 	do
 	{
@@ -5159,7 +5158,7 @@ getprev_ham_band(
 		xnext [i] = getnexthband(f);		// получить номер диапазона с большей частотой
 		xprev [i] = getprevhband(f);		// получить номер диапазона с меньшей частотой
 	}
-	PRINTF("getprev_ham_band: b=%d(%d), xsel[0]=%d, xsel[1]=%d, xnext[0]=%d, xnext[0]=%d, xprev[0]=%d, xprev[0]=%d\n", b, XBANDS_COUNT, xsel[0], xsel[1], xnext[0], xnext[1], xprev[0], xprev[1]);
+	PRINTF("getprev_ham_band: b=%d(%d), xsel[0]=%d, xsel[1]=%d, xnext[0]=%d, xnext[0]=%d, xprev[0]=%d, xprev[0]=%d\n", b, XBANDS_BASE0, xsel[0], xsel[1], xnext[0], xnext[1], xprev[0], xprev[1]);
 
 	do
 	{
