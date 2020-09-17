@@ -39,7 +39,7 @@ typedef PACKEDCOLORMAIN_T FRAMEBUFF_T [LCDMODE_MAIN_PAGES] [GXSIZE(DIM_SECOND, D
 	RAMFRAMEBUFF ALIGNX_BEGIN PACKEDCOLORMAIN_T fbf0 [GXSIZE(DIM_SECOND, DIM_FIRST)] ALIGNX_END;
 	RAMFRAMEBUFF ALIGNX_BEGIN PACKEDCOLORMAIN_T fbf1 [GXSIZE(DIM_SECOND, DIM_FIRST)] ALIGNX_END;
 	RAMFRAMEBUFF ALIGNX_BEGIN PACKEDCOLORMAIN_T fbf2 [GXSIZE(DIM_SECOND, DIM_FIRST)] ALIGNX_END;
-	static PACKEDCOLORMAIN_T * const fbfs [LCDMODE_MAIN_PAGES] =
+	static PACKEDCOLORMAIN_T * const fbfs [] =
 	{
 			fbf0, fbf1, fbf2,
 	};
@@ -48,19 +48,19 @@ typedef PACKEDCOLORMAIN_T FRAMEBUFF_T [LCDMODE_MAIN_PAGES] [GXSIZE(DIM_SECOND, D
 
 	void colmain_fb_next(void)
 	{
-		mainphase = (mainphase + 1) % LCDMODE_MAIN_PAGES;
+		mainphase = (mainphase + 1) % ARRAY_SIZE(fbfs);
 	}
 
 	PACKEDCOLORMAIN_T *
 	colmain_fb_draw(void)
 	{
-		return fbfs [(mainphase + 1) % LCDMODE_MAIN_PAGES];
+		return fbfs [(mainphase + 1) % ARRAY_SIZE(fbfs)];
 	}
 
 	PACKEDCOLORMAIN_T *
 	colmain_fb_show(void)
 	{
-		return fbfs [(mainphase + 0) % LCDMODE_MAIN_PAGES];
+		return fbfs [(mainphase + 0) % ARRAY_SIZE(fbfs)];
 	}
 
 #elif WITHSDRAMHW && LCDMODE_LTDCSDRAMBUFF
