@@ -876,6 +876,8 @@ display2_af_spectre15_init(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx
 	afsp.h = 40;
 	afsp.is_ready = 0;
 
+	buildsigwnd();
+
 	subscribefloat_user(& afoutfloat_user, & afspectreregister, NULL, afsp_save_sample);
 }
 
