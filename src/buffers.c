@@ -248,11 +248,11 @@ int_fast32_t buffers_dmabuffer32txcachesize(void)
 }
 
 // I/Q data from FPGA or IF CODEC
-typedef ALIGN1K_BEGIN struct voices32rx_tag
+typedef ALIGNX_BEGIN struct voices32rx_tag
 {
-	ALIGN1K_BEGIN int32_t buff [DMABUFFSIZE32RX] ALIGN1K_END;
+	ALIGNX_BEGIN int32_t buff [DMABUFFSIZE32RX] ALIGNX_END;
 	ALIGNX_BEGIN LIST_ENTRY item ALIGNX_END;
-} ALIGN1K_END voice32rx_t;
+} ALIGNX_END voice32rx_t;
 // исправляемая погрешность = 0.02% - один сэмпл добавить/убрать на 5000 сэмплов
 
 int_fast32_t buffers_dmabuffer32rxcachesize(void)
@@ -778,7 +778,7 @@ void buffers_initialize(void)
 	}
 	SPINLOCK_INITIALIZE(& locklist32tx);
 
-    static ALIGN1K_BEGIN RAM_D2 voice32rx_t voicesarray32rx [6] ALIGN1K_END;	// без WFM надо 2
+    static ALIGNX_BEGIN RAM_D2 voice32rx_t voicesarray32rx [6] ALIGNX_END;	// без WFM надо 2
 
 	InitializeListHead2(& voicesfree32rx);	// Незаполненные
 	for (i = 0; i < (sizeof voicesarray32rx / sizeof voicesarray32rx [0]); ++ i)

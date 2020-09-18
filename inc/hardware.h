@@ -482,8 +482,6 @@ extern "C" {
 
 	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
 	#define ALIGNX_END /* nothing */
-	#define ALIGN1K_BEGIN __attribute__ ((aligned(1024)))
-	#define ALIGN1K_END /* nothing */
 
 	#if __ARM_NEON
 		//#define ARM_MATH_NEON 1
