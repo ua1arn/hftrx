@@ -5124,7 +5124,7 @@ getnext_ham_band(
 			//TP();
 			/* обработка ситуацию "из обзорного - в обзорный диапазон",
 			если запомненная частота нового обзорного диапазона не попадает на выделенный диапазон */
-			b = 0;
+			b = HBANDS_COUNT - 1;
 			do
 				b = calc_next(b, 0, HBANDS_COUNT - 1);
 			while (! existingband(b, gbandsetbcast));
