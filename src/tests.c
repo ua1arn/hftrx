@@ -5353,7 +5353,7 @@ void hightests(void)
 		PRINTF(PSTR("__GNUC__=%d, __GNUC_MINOR__=%d\n"), (int) __GNUC__, (int) __GNUC_MINOR__);
 	}
 #endif
-#if 1 && (__CORTEX_A != 0)
+#if 0 && (__CORTEX_A != 0)
 	{
 
 		PRINTF(PSTR("FPEXC=%08lX\n"), (unsigned long) __get_FPEXC());
@@ -5361,7 +5361,17 @@ void hightests(void)
 		PRINTF(PSTR("FPEXC=%08lX\n"), (unsigned long) __get_FPEXC());
 	}
 #endif
-#if CPUSTYLE_STM32MP1
+#if 0 && CPUSTYLE_STM32MP1
+	{
+		//	This register is used by the MPU to check the reset source. This register is updated by the
+		//	BOOTROM code, after a power-on reset (por_rst), a system reset (nreset), or an exit from
+		//	Standby or CStandby.
+		PRINTF(PSTR("MP_RSTSCLRR=%08lX\n"), (unsigned long) RCC->MP_RSTSCLRR);
+		RCC->MP_RSTSCLRR = RCC->MP_RSTSCLRR;
+		PRINTF(PSTR("MP_RSTSCLRR=%08lX\n"), (unsigned long) RCC->MP_RSTSCLRR);
+	}
+#endif
+#if 0 && CPUSTYLE_STM32MP1
 	{
 
 		RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_BSECEN;
