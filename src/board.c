@@ -639,7 +639,7 @@ prog_gpioreg(void)
 
 	#if defined (HARDWARE_BL_SET)
 		// яркость подсветки
-		HARDWARE_BL_SET(! glob_bglightoff, glob_bglight - WITHLCDBACKLIGHTMIN);
+		HARDWARE_BL_SET(! glob_bglightoff, glob_bglight);
 	#endif /* defined (HARDWARE_BL_SET) */
 
 	#if defined (HARDWARE_DAC_ALC)

@@ -818,13 +818,13 @@
 		#define WITHLCDBACKLIGHT	1	// Имеется управление яркостью дисплея
 		#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываемый на дисплее)
 		#define WITHLCDBACKLIGHTMAX	3	// Верхний предел регулировки (показываемый на дисплее)
-		#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
+		//#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
 	#elif LCDMODE_AT070TN90 || LCDMODE_AT070TNA2
 		#define WITHLCDBACKLIGHTOFF	1	// Имеется управление включением/выключением подсветки дисплея
 		#define WITHLCDBACKLIGHT	1	// Имеется управление яркостью дисплея
-		#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываемый на дисплее)
-		#define WITHLCDBACKLIGHTMAX	2	// Верхний предел регулировки (показываемый на дисплее)
-		#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
+		#define WITHLCDBACKLIGHTMIN	1	// Нижний предел регулировки (показываемый на дисплее)
+		#define WITHLCDBACKLIGHTMAX	3	// Верхний предел регулировки (показываемый на дисплее)
+		//#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
 	#else
 		/* Заглушка для работы без дисплея */
 		#define WITHLCDBACKLIGHTMIN	0
@@ -836,21 +836,18 @@
 		const portholder_t BLpins = (1U << 15) | (1U << 14); /* PA15:PA14 */ \
 		const portholder_t ENmask = 0 * (1U << 1); /* PF1 - not in this hardware  */ \
 		arm_hardware_pioa_opendrain(BLpins, 0); \
-		arm_hardware_piof_opendrain(ENmask, 0 * ENmask); \
 		} while (0)
 
 	/* установка яркости и включение/выключение преобразователя подсветки */
 	/* BL0: PA14. BL1: PA15 */
 	#define HARDWARE_BL_SET(en, level) do { \
+		const portholder_t Vlevel = (level) & 0x03; \
 		const portholder_t ENmask = 0 * (1U << 1); /* PF1 - not in this hardware */ \
 		const portholder_t BLpins = (1U << 15) | (1U << 14); /* PA15:PA14 */ \
-		const portholder_t BLinitialstate = (~ (level) & 0x03) << 14; \
-		GPIOF->BSRR = \
-			((en) ? BSRR_S(ENmask) : BSRR_C(ENmask)) | /* backlight control on/off */ \
-			0; \
+		const portholder_t BLstate = (~ Vlevel) << 14; \
 		GPIOA->BSRR = \
-			BSRR_S((BLinitialstate) & (BLpins)) | /* set bits */ \
-			BSRR_C(~ (BLinitialstate) & (BLpins)) | /* reset bits */ \
+			BSRR_S((BLstate) & (BLpins)) | /* set bits */ \
+			BSRR_C(~ (BLstate) & (BLpins)) | /* reset bits */ \
 			0; \
 		__DSB(); \
 	} while (0)
@@ -1002,26 +999,28 @@
 
 	#endif /* WIHSPIDFSW || WIHSPIDFHW */
 
-	#define BOARD_BLINK_BITS (1uL << 13)	// PA13 - RED LED LD5 on DK1/DK2 MB1272.pdf
-	//#define BOARD_BLINK_BITS (1uL << 14)	// PA14 - GREEN LED LD5 on DK1/DK2 MB1272.pdf
-	//#define BOARD_BLINK_BITS (1uL << 14)	// PD14 - LED on small board
-	//#define BOARD_BLINK_BITS (1uL << 11)	// PI11 - LED1# on PanGu board
-	//#define BOARD_BLINK_BITS (1uL << 11)	// PH6 - LED2# on PanGu board
+	#define BOARD_BLINK_BIT (1uL << 13)	// PA13 - led on Storch board
+	//#define BOARD_BLINK_BIT (1uL << 13)	// PA13 - RED LED LD5 on DK1/DK2 MB1272.pdf
+	//#define BOARD_BLINK_BIT (1uL << 14)	// PA14 - GREEN LED LD5 on DK1/DK2 MB1272.pdf
+	//#define BOARD_BLINK_BIT (1uL << 14)	// PD14 - LED on small board
+	//#define BOARD_BLINK_BIT (1uL << 11)	// PI11 - LED1# on PanGu board
+	//#define BOARD_BLINK_BIT (1uL << 11)	// PH6 - LED2# on PanGu board
 
 	#define BOARD_BLINK_INITIALIZE() do { \
-			arm_hardware_pioa_outputs(BOARD_BLINK_BITS, 1 * BOARD_BLINK_BITS); \
+			arm_hardware_pioa_outputs(BOARD_BLINK_BIT, 1 * BOARD_BLINK_BIT); \
 		} while (0)
 	#define BOARD_BLINK_SETSTATE(state) do { \
 			if (state) \
-				(GPIOA)->BSRR = BSRR_C(BOARD_BLINK_BITS); \
+				(GPIOA)->BSRR = BSRR_C(BOARD_BLINK_BIT); \
 			else \
-				(GPIOA)->BSRR = BSRR_S(BOARD_BLINK_BITS); \
+				(GPIOA)->BSRR = BSRR_S(BOARD_BLINK_BIT); \
 		} while (0)
 
 	/* запрос на вход в режим загрузчика */
-	#define BOARD_IS_USERBOOT() (((GPIOB->IDR) & (1uL << 1)) == 0)
+	#define BOARD_USERBOOT_BIT	(1uL << 1)	/* PB1: ~USER_BOOT */
+	#define BOARD_IS_USERBOOT() (((GPIOB->IDR) & BOARD_USERBOOT_BIT) == 0)
 	#define BOARD_USERBOOT_INITIALIZE() do { \
-		arm_hardware_piob_inputs(1uL << 1); /* PB1: ~USER_BOOT */ \
+		arm_hardware_piob_inputs(BOARD_USERBOOT_BIT); /* set as input with pull-up */ \
 		} while (0)
 
 	/* макроопределение, которое должно включить в себя все инициализации */
