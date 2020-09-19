@@ -2529,22 +2529,22 @@ struct nvmap
 	uint8_t gcontrast;		/* Контрастность LCD */
 #endif /* defined (DEFAULT_LCD_CONTRAST) */
 #if WITHLCDBACKLIGHT
-	uint8_t bglight;
+	uint8_t gbglight;
 #endif /* WITHLCDBACKLIGHT */
 #if WITHDCDCFREQCTL
 	//uint16_t dcdcrefdiv;
 #endif /* WITHDCDCFREQCTL */
 #if WITHKBDBACKLIGHT
-	uint8_t kblight;
+	uint8_t gkblight;
 #endif /* WITHKBDBACKLIGHT */
 #if WITHLCDBACKLIGHT || WITHKBDBACKLIGHT
-	uint8_t dimmtime;
+	uint8_t gdimmtime;
 #endif /* WITHLCDBACKLIGHT || WITHKBDBACKLIGHT */
 #if WITHFANTIMER
-	uint8_t fanpatime;
+	uint8_t gfanpatime;
 #endif /* WITHFANTIMER */
 #if WITHSLEEPTIMER
-	uint8_t sleeptime;
+	uint8_t gsleeptime;
 #endif /* WITHSLEEPTIMER */
 #if LCDMODE_COLORED
 	//uint8_t gbluebgnd;
@@ -2580,8 +2580,8 @@ struct nvmap
 	uint8_t userfsg;
 #endif /* WITHRFSG */
 
-	uint8_t displayfreqsfps;		/* скорость обновления индикатора частоты */
-	uint8_t displaybarsfps;	/* скорость обновления S-метра */
+	uint8_t gdisplayfreqsfps;		/* скорость обновления индикатора частоты */
+	uint8_t gdisplaybarsfps;	/* скорость обновления S-метра */
 #if WITHSPECTRUMWF
 	uint8_t gfillspect;
 	uint8_t gwflevelsep;	/* чувствительность водопада регулируется отдельной парой параметров */
@@ -3244,14 +3244,14 @@ static uint_fast8_t alignmode;		/* режимы для настройки апп
 
 static const uint_fast8_t displaymodesfps = DISPLAYMODES_FPS;
 #if defined (WITHDISPLAY_FPS)
-	static uint_fast8_t displayfreqsfps = WITHDISPLAY_FPS;
+	static uint_fast8_t gdisplayfreqsfps = WITHDISPLAY_FPS;
 #else
-	static uint_fast8_t displayfreqsfps = DISPLAY_FPS;
+	static uint_fast8_t gdisplayfreqsfps = DISPLAY_FPS;
 #endif /* WITHDISPLAY_FPS */
 #if defined (WITHDISPLAYSWR_FPS)
-	static uint_fast8_t displaybarsfps = WITHDISPLAYSWR_FPS;
+	static uint_fast8_t gdisplaybarsfps = WITHDISPLAYSWR_FPS;
 #else
-	static uint_fast8_t displaybarsfps = DISPLAYSWR_FPS;
+	static uint_fast8_t gdisplaybarsfps = DISPLAYSWR_FPS;
 #endif /* WITHDISPLAYSWR_FPS */
 #if WITHSPECTRUMWF
 	static uint_fast8_t gfillspect;
@@ -3265,23 +3265,23 @@ static const uint_fast8_t displaymodesfps = DISPLAYMODES_FPS;
 	static uint_fast8_t gspantialiasing  = 1; /* разрешение или запрет антиалиасинга спектра */
 	static uint_fast8_t gcolorsp  = 0;		/* разрешение или запрет раскраски спектра */
 	static uint_fast8_t gtxloopback = 1;	/* включение спектроанализатора сигнала передачи */
-	static int_fast16_t gafspeclow = 300;	// нижняя частота отображения спектроанализатора
-	static int_fast16_t gafspechigh = 8000;	// верхняя частота отображения спектроанализатора
+	static int_fast16_t gafspeclow = 100;	// нижняя частота отображения спектроанализатора
+	static int_fast16_t gafspechigh = 4000;	// верхняя частота отображения спектроанализатора
 #endif /* WITHSPECTRUMWF */
 #if WITHLCDBACKLIGHT
 	#if WITHISBOOTLOADER 
-		static uint_fast8_t bglight = WITHLCDBACKLIGHTMIN;
+		static uint_fast8_t gbglight = WITHLCDBACKLIGHTMIN;
 	#else /* WITHISBOOTLOADER */
-		static uint_fast8_t bglight = WITHLCDBACKLIGHTMAX;
+		static uint_fast8_t gbglight = WITHLCDBACKLIGHTMAX;
 	#endif /* WITHISBOOTLOADER */
 #else /* WITHLCDBACKLIGHT */
-	enum { bglight = 0 };
+	enum { gbglight = 0 };
 #endif /* WITHLCDBACKLIGHT */
 
 #if WITHKBDBACKLIGHT
-	static uint_fast8_t kblight /* = 1 */;
+	static uint_fast8_t gkblight /* = 1 */;
 #else /* WITHKBDBACKLIGHT */
-	enum { kblight = 0 };
+	enum { gkblight = 0 };
 #endif /* WITHKBDBACKLIGHT */
 
 #if WITHPWBUTTON	/* Наличие схемы электронного включения питания */
@@ -4655,7 +4655,7 @@ static void cat_answer_forming(void);
 
 #if WITHLCDBACKLIGHT || WITHKBDBACKLIGHT
 
-static uint_fast8_t dimmtime;	/* количество секунд до гашения индикатора, 0 - не гасим. Регулируется из меню. */
+static uint_fast8_t gdimmtime;	/* количество секунд до гашения индикатора, 0 - не гасим. Регулируется из меню. */
 static uint_fast8_t dimmcount;
 static uint_fast8_t dimmflagch;	/* не-0: изменилось состояние dimmflag */
 
@@ -4664,7 +4664,7 @@ static uint_fast8_t dimmflagch;	/* не-0: изменилось состояни
 #if WITHFANTIMER
 
 #define FANPATIMEMAX	240
-static uint_fast8_t fanpatime = 15;	/* количество секунд до выключения вентилятора после передачи, 0 - не гасим. Регулируется из меню. */
+static uint_fast8_t gfanpatime = 15;	/* количество секунд до выключения вентилятора после передачи, 0 - не гасим. Регулируется из меню. */
 static uint_fast8_t fanpacount = FANPATIMEMAX;
 static uint_fast8_t fanpaflag = 1;	/* не-0: выключить ыентилятор. */
 static uint_fast8_t fanpaflagch;	/* не-0: изменилось состояние fanpaflag */
@@ -4674,7 +4674,7 @@ static uint_fast8_t fanpaflagch;	/* не-0: изменилось состоян�
 
 #if WITHSLEEPTIMER
 
-static uint_fast8_t sleeptime;	/* количество минут до выключения, 0 - не выключаем. Регулируется из меню. */
+static uint_fast8_t gsleeptime;	/* количество минут до выключения, 0 - не выключаем. Регулируется из меню. */
 static uint_fast16_t sleepcount;	/* счетчик в секундах */
 static uint_fast8_t sleepflagch;	/* не-0: изменилось состояние sleepflag */
 
@@ -8877,10 +8877,10 @@ updateboard(
 		board_set_blfreq(bldividerout);
 	#endif /* WITHDCDCFREQCTL */
 	#if WITHLCDBACKLIGHT
-		board_set_bglight(dimmflag || sleepflag || dimmmode, bglight);		/* подсветка дисплея  */
+		board_set_bglight(dimmflag || sleepflag || dimmmode, gbglight);		/* подсветка дисплея  */
 	#endif /* WITHLCDBACKLIGHT */
 	#if WITHKBDBACKLIGHT
-		board_set_kblight((dimmflag || sleepflag || dimmmode) ? 0 : kblight);			/* подсвтка клавиатуры */
+		board_set_kblight((dimmflag || sleepflag || dimmmode) ? 0 : gkblight);			/* подсвтка клавиатуры */
 	#endif /* WITHKBDBACKLIGHT */
 	#if WITHPWBUTTON
 		board_set_poweron(gpoweronhold);
@@ -10454,7 +10454,7 @@ display_refreshenabled_freqs(void)
 static void
 display_refreshperformed_freqs(void)
 {
-	const uint_fast8_t n = NTICKS(1000 / displayfreqsfps);	// 50 ms - обновление с частотой 20 герц
+	const uint_fast8_t n = NTICKS(1000 / gdisplayfreqsfps);	// 50 ms - обновление с частотой 20 герц
 
 	system_disableIRQ();
 	counterupdatedfreqs = n;
@@ -10514,7 +10514,7 @@ display_refresenabled_bars(void)
 static void
 display_refreshperformed_bars(void)
 {
-	const uint_fast8_t n = NTICKS(1000 / displaybarsfps);	// 50 ms - обновление с частотой 20 герц
+	const uint_fast8_t n = NTICKS(1000 / gdisplaybarsfps);	// 50 ms - обновление с частотой 20 герц
 
 	system_disableIRQ();
 	counterupdatebars = n;
@@ -12798,7 +12798,7 @@ static void dpc_1stimer(void * arg)
 		}
 #endif /* WITHWAVPLAYER || WITHSENDWAV */
 #if WITHLCDBACKLIGHT || WITHKBDBACKLIGHT
-		if (dimmtime == 0)
+		if (gdimmtime == 0)
 		{
 			// Функция выключена
 			if (dimmflag != 0)
@@ -12810,7 +12810,7 @@ static void dpc_1stimer(void * arg)
 		}
 		else if (dimmflag == 0)		// ещё не выключили
 		{
-			if (++ dimmcount >= dimmtime)
+			if (++ dimmcount >= gdimmtime)
 			{
 				dimmflag = 1;
 				dimmflagch = 1;		// запрос на обновление состояния аппаратуры из user mode программы
@@ -12818,7 +12818,7 @@ static void dpc_1stimer(void * arg)
 		}
 #endif /* WITHLCDBACKLIGHT || WITHKBDBACKLIGHT */
 #if WITHFANTIMER
-		if (gtx != 0 || fanpatime == 0)
+		if (gtx != 0 || gfanpatime == 0)
 		{
 			if (fanpaflag != 0)	
 			{
@@ -12829,7 +12829,7 @@ static void dpc_1stimer(void * arg)
 		}
 		else if (fanpaflag == 0)		// ещё не выключили
 		{
-			if (++ fanpacount >= fanpatime)
+			if (++ fanpacount >= gfanpatime)
 			{
 				fanpaflag = 1;
 				fanpaflagch = 1;		// запрос на обновление состояния аппаратуры из user mode программы
@@ -12837,7 +12837,7 @@ static void dpc_1stimer(void * arg)
 		}
 #endif /* WITHFANTIMER */
 #if WITHSLEEPTIMER
-		if (sleeptime == 0)
+		if (gsleeptime == 0)
 		{
 			// Функция выключена
 			if (sleepflag != 0)
@@ -12849,7 +12849,7 @@ static void dpc_1stimer(void * arg)
 		}
 		else if (sleepflag == 0)		// ещё не выключили
 		{
-			if (++ sleepcount >= sleeptime * 60)
+			if (++ sleepcount >= gsleeptime * 60)
 			{
 				sleepflag = 1;
 				sleepflagch = 1;		// запрос на обновление состояния аппаратуры из user mode программы
@@ -13353,9 +13353,9 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL2("LCD LIGH", "TFT Backlight"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		WITHLCDBACKLIGHTMIN, WITHLCDBACKLIGHTMAX, 
-		offsetof(struct nvmap, bglight),
+		offsetof(struct nvmap, gbglight),
 		NULL,
-		& bglight,
+		& gbglight,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #endif /* WITHLCDBACKLIGHT */
@@ -13364,9 +13364,9 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("KBD LIGH"), 8, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
-		offsetof(struct nvmap, kblight),
+		offsetof(struct nvmap, gkblight),
 		NULL,
-		& kblight,
+		& gkblight,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #endif /* WITHKBDBACKLIGHT */
@@ -13375,9 +13375,9 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL2("DIMM TIM", "Dimmer Time"), 7, 0, 0,	ISTEP5,
 		ITEM_VALUE,
 		0, 240, 
-		offsetof(struct nvmap, dimmtime),
+		offsetof(struct nvmap, gdimmtime),
 		NULL,
-		& dimmtime,
+		& gdimmtime,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #endif /* WITHKBDBACKLIGHT */
@@ -13386,9 +13386,9 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL2("SLEEPTIM", "Sleep Time"), 7, 0, 0,	ISTEP5,
 		ITEM_VALUE,
 		0, 240, 
-		offsetof(struct nvmap, sleeptime),
+		offsetof(struct nvmap, gsleeptime),
 		NULL,
-		& sleeptime,
+		& gsleeptime,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #endif /* WITHSLEEPTIMER */
@@ -13417,9 +13417,9 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("FREQ FPS"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		4, 25,							/* частота обновления показаний частоты от 5 до 25 раз в секунду */
-		offsetof(struct nvmap, displayfreqsfps),
+		offsetof(struct nvmap, gdisplayfreqsfps),
 		NULL,
-		& displayfreqsfps,
+		& gdisplayfreqsfps,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #if WITHBARS
@@ -13427,9 +13427,9 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("BARS FPS"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		4, 40,							/* частота обновления барграфов от 5 до 40 раз в секунду */
-		offsetof(struct nvmap, displaybarsfps),
+		offsetof(struct nvmap, gdisplaybarsfps),
 		NULL,
-		& displaybarsfps,
+		& gdisplaybarsfps,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #endif /* WITHBARS */
@@ -15507,9 +15507,9 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		QLABEL("FAN TIME"), 7, 0, 0,	ISTEP5,
 		ITEM_VALUE,
 		0, FANPATIMEMAX,
-		offsetof(struct nvmap, fanpatime),
+		offsetof(struct nvmap, gfanpatime),
 		NULL,
-		& fanpatime,
+		& gfanpatime,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #endif /* WITHFANTIMER */
@@ -20299,7 +20299,7 @@ void bootloader_deffereddetach(void * arg)
 
 static void bootloader_mainloop(void)
 {
-	board_set_bglight(1, bglight);	// выключить подсветку
+	board_set_bglight(1, gbglight);	// выключить подсветку
 	board_update();
 	//printhex(BOOTLOADER_RAMAREA, (void *) BOOTLOADER_RAMAREA, 64);
 	//local_delay_ms(1000);
