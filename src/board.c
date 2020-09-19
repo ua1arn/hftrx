@@ -3838,6 +3838,7 @@ prog_ctrlreg(uint_fast8_t plane)
 
 #if XVTR_NYQ1
 		const uint_fast8_t xvrtr = bandf_calc_getxvrtr(glob_bandf);
+		enum { bandf_xvrtr = 6 }		// Номер ДПФ для ПЧ трансвертера
 		glob_txgate = xvrtr ? 0 : glob_txgate;
 #endif /* XVTR_NYQ1 */
 
@@ -3888,7 +3889,11 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBVAL(0040, 1U << glob_bandf2, 7);		// D0..D6: band select бит выбора диапазонного фильтра передатчика
 
 		// DD20 SN74HC595PW в управлении диапазонными фильтрами приёмника
+#if XVTR_NYQ1
+		RBVAL(0031, glob_tx ? 0 : (1U << (xvrtr ? bandf_xvrtr : glob_bandf)) >> 1, 7);		// D1: 1, D7..D1: band select бит выбора диапазонного фильтра приёмника
+#else
 		RBVAL(0031, glob_tx ? 0 : (1U << glob_bandf) >> 1, 7);		// D1: 1, D7..D1: band select бит выбора диапазонного фильтра приёмника
+#endif /* XVTR_NYQ1 */
 		RBBIT(0030, txgated);		// D0: включение подачи смещения на выходной каскад усилителя мощности
 
 		// DD19 SN74HC595PW в управлении диапазонными фильтрами приёмника
