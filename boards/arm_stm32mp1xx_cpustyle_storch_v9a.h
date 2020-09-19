@@ -833,25 +833,24 @@
 
 	/* BL0: PA14. BL1: PA15 */
 	#define	HARDWARE_BL_INITIALIZE() do { \
-		const portholder_t opins = (1U << 15) | (1U << 14); /* PA15:PA14 */ \
-		const portholder_t enmask = 0 * (1U << 1); /* PF1 */ \
-		arm_hardware_pioa_opendrain(opins, 0); \
-		arm_hardware_piof_opendrain(enmask, 0 * enmask); \
+		const portholder_t BLpins = (1U << 15) | (1U << 14); /* PA15:PA14 */ \
+		const portholder_t ENmask = 0 * (1U << 1); /* PF1 - not in this hardware  */ \
+		arm_hardware_pioa_opendrain(BLpins, 0); \
+		arm_hardware_piof_opendrain(ENmask, 0 * ENmask); \
 		} while (0)
 
 	/* установка яркости и включение/выключение преобразователя подсветки */
 	/* BL0: PA14. BL1: PA15 */
 	#define HARDWARE_BL_SET(en, level) do { \
-		const portholder_t enmask = 0 * (1U << 1); /* PF1 */ \
-		const portholder_t opins = (1U << 15) | (1U << 14); /* PA15:PA14 */ \
-		const portholder_t initialstate = (~ (level) & 0x03) << 14; \
+		const portholder_t ENmask = 0 * (1U << 1); /* PF1 - not in this hardware */ \
+		const portholder_t BLpins = (1U << 15) | (1U << 14); /* PA15:PA14 */ \
+		const portholder_t BLinitialstate = (~ (level) & 0x03) << 14; \
 		GPIOF->BSRR = \
-			((en) ? BSRR_S(enmask) : BSRR_C(enmask)) | /* backlight control on/off */ \
+			((en) ? BSRR_S(ENmask) : BSRR_C(ENmask)) | /* backlight control on/off */ \
 			0; \
 		GPIOA->BSRR = \
-			((en) ? BSRR_S(enmask) : BSRR_C(enmask)) | /* backlight control on/off */ \
-			BSRR_S((initialstate) & (opins)) | /* set bits */ \
-			BSRR_C(~ (initialstate) & (opins)) | /* reset bits */ \
+			BSRR_S((BLinitialstate) & (BLpins)) | /* set bits */ \
+			BSRR_C(~ (BLinitialstate) & (BLpins)) | /* reset bits */ \
 			0; \
 		__DSB(); \
 	} while (0)
