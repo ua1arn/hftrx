@@ -34,8 +34,8 @@ OBJDIR2 = obj
 OBJDIR = ./$(OBJDIR2)
 
 # Define optimisation level here
-OPT = -Og
-LTO = -flto
+OPT = -Ofast
+#LTO = -flto
 
 # This product incorporates the ARM dual-core Cortex-A7 MPCore, where the IP version is xxxx.
 CORE = -mcpu=cortex-a7
