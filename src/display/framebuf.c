@@ -1802,7 +1802,7 @@ COLORPIP_T getshadedcolor(
 
 	return dot |= COLORPIP_SHADED;
 
-#elif LCDMODE_PIP_RGB565
+#elif LCDMODE_MAIN_RGB565
 
 	if (dot == COLORPIP_BLACK)
 	{
