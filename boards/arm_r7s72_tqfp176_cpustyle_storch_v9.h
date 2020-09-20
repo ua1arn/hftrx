@@ -77,7 +77,7 @@
 	#define WITHMODEM_USART2	1
 	#define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
 
-	#define WITHI2SHW	1	/* Использование SSIF0 I2S 2*16 bit - аудио кодек */
+	#define WITHI2SHW		1	/* Использование SSIF0 I2S 2*32 (2*16) bit - аудио кодек */
 	#define WITHSAI1HW	1	/* Использование SSIF1 I2S 8*32 bit - FPGA IF codec */
 	#if WITHRTS192
 		#define WITHSAI2HW	1	/* Использование SSIF2 I2S 2*32 (2*32) bit - FPGA панорама	*/
