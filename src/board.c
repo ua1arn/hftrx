@@ -3838,12 +3838,13 @@ prog_ctrlreg(uint_fast8_t plane)
 
 #if XVTR_NYQ1
 		const uint_fast8_t xvrtr = bandf_calc_getxvrtr(glob_bandf);
-		enum { bandf_xvrtr = 6 }		// Номер ДПФ для ПЧ трансвертера
-		glob_txgate = xvrtr ? 0 : glob_txgate;
+		enum { bandf_xvrtr = 6 };		// Номер ДПФ для ПЧ трансвертера
+		const uint_fast8_t txgated = glob_tx && (xvrtr ? 0 : glob_txgate);
+#else /* XVTR_NYQ1 */
+		const uint_fast8_t txgated = glob_tx && glob_txgate;
 #endif /* XVTR_NYQ1 */
 
 		rbtype_t rbbuff [9] = { 0 };
-		const uint_fast8_t txgated = glob_tx && glob_txgate;
 
 #if WITHAUTOTUNER
 	#if WITHAUTOTUNER_AVBELNN
