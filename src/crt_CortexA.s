@@ -359,8 +359,8 @@ IRQHandlerNested:
 	PUSH	{LR}
 	// save VFP/Neon FPEXC register
 	VMRS	R0, FPEXC
-
-	TST		R0, #0x80000000		// check FPEXC.EX
+    ldr     LR, =0x80000000 //check FPEXC.EX
+	TST		R0, LR		// check FPEXC.EX
 	//BEQ skipPUSH
 	VMRSNE	LR, FPINST
 	PUSHNE	{LR}
@@ -391,8 +391,9 @@ IRQHandlerNested:
 #endif /* __ARM_NEON == 1 */
 
 	// restore VFP/Neon FPEXC register
+    ldr     LR, =0x80000000 //check FPEXC.EX
 	POP 	{R0}	// FPEXC
-	TST		R0, #0x80000000	// check FPEXC.EX
+	TST		R0, LR	// check FPEXC.EX
 	//BEQ skipPOP
 	POPNE 	{LR}
 	VMSRNE	FPINST2, LR

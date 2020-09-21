@@ -12083,9 +12083,9 @@ sysinit_fpu_initialize(void)
 #elif (__CORTEX_A != 0)
 
 	// FPU
-	vfp_access_enable();
-	arm_hardware_VFPEnable();
-	//__FPU_Enable();
+	//vfp_access_enable();
+	//arm_hardware_VFPEnable();
+	__FPU_Enable();
 
 #endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7 */
 }
