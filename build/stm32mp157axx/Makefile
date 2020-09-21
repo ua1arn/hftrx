@@ -37,7 +37,8 @@ OBJDIR = ./$(OBJDIR2)
 OPT = -Og
 #LTO = -flto
 
-# This product incorporates the ARM dual-core Cortex-A7 MPCore, where the IP version is xxxx.
+# This product incorporates the ARM dual-core Cortex-A7 MPCore, where the IP version is r0p5
+# debug architecture ARMv7.1.
 CORE = -mcpu=cortex-a7
 CORE += -mfloat-abi=hard
 #CORE += -mcpu=cortex-a7
