@@ -5192,9 +5192,9 @@ static void BarTest(void)
 {
 	board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 	board_update();
-
+	int forever = 0;
 	unsigned n = 20000;
-	for (;n --;)
+	for (;forever || n --;)
 	{                    /* Until user enters a key...   */
 		const int r = local_randomgr(256);
 		const int g = local_randomgr(256);
