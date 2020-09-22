@@ -200,7 +200,7 @@ static int_fast16_t glob_afspechigh = 3400;	// верхняя частота о�
 
 //#define WIDEFREQ (TUNE_TOP > 100000000L)
 
-static void fftzoom_af(float32_t * buffer, unsigned zoompow2);
+static void fftzoom_af(float32_t * buffer, unsigned zoompow2, unsigned normalFFT);
 
 
 uint_fast16_t normalize(
@@ -890,7 +890,7 @@ display2_af_spectre15_latch(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pct
 		const unsigned leftfftpos = freq2fft_af(glob_afspeclow);	// нижняя частота (номер бина) отлбражаемая на экране
 		const unsigned rightfftpos = freq2fft_af(glob_afspechigh);	// последний бин буфера FFT, отобрааемый на экране (включитеоьно)
 
-		fftzoom_af(afsp.raw_buf, AFSP_DECIMATIONPOW2);
+		fftzoom_af(afsp.raw_buf, AFSP_DECIMATIONPOW2, FFTSizeSpectrum);
 		// осталась половина буфера
 
 		arm_mult_f32(afsp.raw_buf, wnd256, afsp.raw_buf, FFTSizeSpectrum); // apply window function
@@ -7068,13 +7068,13 @@ static void fftzoom_filer_decimate(
 }
 
 // децимация НЧ спектра для увеличения разрешения
-static void fftzoom_af(float32_t * buffer, unsigned zoompow2)
+static void fftzoom_af(float32_t * buffer, unsigned zoompow2, unsigned normalFFT)
 {
 	if (zoompow2 != 0)
 	{
 		const struct zoom_param * const prm = & zoom_params [zoompow2 - 1];
 		arm_fir_decimate_instance_f32 fir_config;
-		const unsigned usedSize = NORMALFFT * prm->zoom;
+		const unsigned usedSize = normalFFT * prm->zoom;
 
 		VERIFY(ARM_MATH_SUCCESS == arm_fir_decimate_init_f32(& fir_config,
 							prm->numTaps,
