@@ -73,7 +73,7 @@
 #elif CPUSTYLE_STM32MP1
 
 	#define FFTSizeFiltersM 10
-	#define FFTSizeSpectrumM 10
+	#define FFTSizeSpectrumM 11
 
 #else
 
@@ -84,7 +84,7 @@
 
 // Обображение спектра и волопада
 #define FFTSizeSpectrum (1 << (FFTSizeSpectrumM))
-// Используется при формировании корректированной АЧХ звука. Должно быть размером достаточным влезли используемые фильтры
+// Используется при формировании корректированной АЧХ звука. Должно быть размером достаточным, чтобы влезли используемые фильтры
 #define FFTSizeFilters (1 << (FFTSizeFiltersM))
 
 #define SPEEXNN (FFTSizeFilters / 2)
