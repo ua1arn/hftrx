@@ -9653,28 +9653,6 @@ void Hyp_Handler(void)
 		;
 }
 
-static void arm_hardware_VFPEnable(void)
-{
-	const uint32_t VFPEnable = 0x40000000uL;
-
-	__asm volatile( "FMXR 	FPEXC, %0" :: "r" (VFPEnable) );
-}
-
-
-#define CPACC_FULL(n)		(3uL << ((n) * 2))
-#define CPACC_SVC(n)		(1uL << ((n) * 2))
-#define CPACC_DISABLE(n)	(0uL << ((n) * 2))
-
-
-static void vfp_access_enable(void)
-{
-	unsigned int access = __get_CPACR();
-
-	/*
-	 * Enable full access to VFP (cp10 and cp11)
-	 */
-	__set_CPACR(access | CPACC_FULL(10) | CPACC_FULL(11));
-}
 #endif /* (__CORTEX_A != 0) */
 
 #if CPUSTYLE_ARM_CM7

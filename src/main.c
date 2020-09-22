@@ -10424,7 +10424,7 @@ display_refreshperformed_wpm(void)
 	system_enableIRQ();
 }
 
-// Проверка разрешения обновления дисплея (индикация частоты).
+// Проверка разрешения обновления дисплея (индикация напряжения/тока).
 static uint_fast8_t
 display_refreshenabled_voltage(void)
 {
