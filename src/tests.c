@@ -5190,6 +5190,9 @@ static int local_randomgr( int num )
 
 static void BarTest(void)
 {
+	board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
+	board_update();
+
 	unsigned n = 20000;
 	for (;n --;)
 	{                    /* Until user enters a key...   */
@@ -5205,17 +5208,29 @@ static void BarTest(void)
 		int y2 = local_randomgr(DIM_Y);
 
 		display_solidbar(x, y, x2, y2, color);
+		display_flush();
 		//local_delay_ms(50);
 	}
 
 	//getch();             /* Pause for user's response    */
 }
 
+void display_line(
+		int x1, int y1,
+		int x2, int y2,
+		COLORMAIN_T color)
+{
+	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
+	colmain_line(fr, DIM_X, DIM_Y, x1, y1, x2, y2, color, 0);
+}
 
 
 static  void
 GrideTest(void)
 {
+	board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
+	board_update();
+
 	int     xm, ym, xm4, ym4;
 	int xm1, ym1;
 	unsigned long col1, col20, col21, col22, col23, col3;
@@ -5270,6 +5285,7 @@ GrideTest(void)
 	display_line(0,  ym, 0,  0,  col3);
 	display_line(0,  0,  xm, ym, col3);
 	display_line(0,  ym, xm, 0,  col3);
+	display_flush();
 
 	//getch();
 
