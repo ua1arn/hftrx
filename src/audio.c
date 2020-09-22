@@ -1054,6 +1054,10 @@ static FLOAT_t getmaxresponce(void)
 
 static void imp_response(const FLOAT_t *dCoeff, int iCoefNum) 
 {
+	arm_cfft_instance_f32 fftinstance;
+
+	VERIFY(ARM_MATH_SUCCESS == arm_cfft_init_f32(& fftinstance, FFTSizeFilters));
+
 	const int iHalfLen = (iCoefNum - 1) / 2;
 	int i;
 
@@ -1089,7 +1093,7 @@ static void imp_response(const FLOAT_t *dCoeff, int iCoefNum)
 
 
   /* Process the data through the CFFT/CIFFT module */
-	arm_cfft_f32(FFTCONFIGFilters, (float *) Sig, 0, 1);
+	arm_cfft_f32(& fftinstance, (float *) Sig, 0, 1);
 
 
 	//arm_cmplx_mag_squared_f32(sg, MagArr, MagLen);
@@ -1129,6 +1133,9 @@ static void fir_design_applaywindowL(double *dCoeff, const double *dWindow, int 
 // scale: общий масштаб изменения АЧХ
 static void correctspectrumcomplex(int_fast8_t targetdb)
 {
+	arm_cfft_instance_f32 fftinstance;
+
+	VERIFY(ARM_MATH_SUCCESS == arm_cfft_init_f32(& fftinstance, FFTSizeFilters));
 #if 1
 	const FLOAT_t slope = db2ratio(targetdb);
 	// Центр симметрии Sig - ячейка с индексом FFTSizeFilters / 2
@@ -1176,7 +1183,7 @@ static void correctspectrumcomplex(int_fast8_t targetdb)
 	// Construct FIR coefficients from frequency response
 	//IFFT(Sig, FFTSizeFilters, FFTSizeFiltersM); 
   /* Process the data through the CFFT/CIFFT module */
-	arm_cfft_f32(FFTCONFIGFilters, (float *) Sig, !0, 1);	// inverse FFT
+	arm_cfft_f32(& fftinstance, (float *) Sig, !0, 1);	// inverse FFT
 	//dofft((COMPLEX_t *) sg, FFTSizeM, w);
 
 

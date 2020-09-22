@@ -798,7 +798,7 @@ enum
 
 typedef struct {
 	float32_t raw_buf [FFTSizeSpectrum * 2];		// Для последующей децимации /2
-	float32_t fft_buf [FFTSizeSpectrum * 2];
+	float32_t fft_buf [FFTSizeSpectrum * 2];		// комплексные числа
 	uint_fast8_t is_ready;
 	uint_fast16_t x;
 	uint_fast16_t y;
@@ -806,6 +806,7 @@ typedef struct {
 	uint_fast16_t h;
 	float32_t max_val;
 	float32_t val_array [DIM_X];
+	arm_rfft_fast_instance_f32 instance;
 } afsp_t;
 
 static afsp_t afsp;
@@ -874,6 +875,8 @@ display2_af_spectre15_init(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx
 	afsp.h = 40;
 	afsp.is_ready = 0;
 
+	VERIFY(ARM_MATH_SUCCESS == arm_rfft_fast_init_f32(& afsp.instance, FFTSizeSpectrum));
+
 	buildsigwnd();
 
 	subscribefloat_user(& afoutfloat_user, & afspectreregister, NULL, afsp_save_sample);
@@ -889,15 +892,10 @@ display2_af_spectre15_latch(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pct
 
 		fftzoom_af(afsp.raw_buf, AFSP_DECIMATIONPOW2);
 		// осталась половина буфера
-		for (uint_fast16_t i = 0; i < FFTSizeSpectrum; i ++)
-		{
-			afsp.fft_buf [i * 2 + 0] = afsp.raw_buf [i];
-			afsp.fft_buf [i * 2 + 1] = 0;
-		}
-		afsp.is_ready = 0;	// буфер больше не нужен... но он заполняется так же в user mode
 
-		arm_cmplx_mult_real_f32(afsp.fft_buf, wnd256, afsp.fft_buf, FFTSizeSpectrum); // apply window function
-		arm_cfft_f32(FFTCONFIGSpectrum, afsp.fft_buf, 0, 1);
+		//arm_cmplx_mult_real_f32(afsp.fft_buf, wnd256, afsp.fft_buf, FFTSizeSpectrum); // apply window function
+		arm_rfft_fast_f32(& afsp.instance, afsp.raw_buf, afsp.fft_buf, 0); // 0-прямое, 1-обратное
+		afsp.is_ready = 0;	// буфер больше не нужен... но он заполняется так же в user mode
 		arm_cmplx_mag_f32(afsp.fft_buf, afsp.fft_buf, FFTSizeSpectrum);
 
 		ASSERT(afsp.w <= ARRAY_SIZE(afsp.val_array));
@@ -7018,6 +7016,8 @@ union states
 	uint16_t rbfimage_dummy [1];	// для предотвращения ругнаи компилятора на приведение типов
 };
 
+static arm_cfft_instance_f32 fftinstance;
+
 
 #if (CPUSTYLE_R7S721 || 0)
 
@@ -7142,7 +7142,7 @@ dsp_getspectrumrow(
 	release_fftbuffer(pf);
 
 	arm_cmplx_mult_real_f32(zoomfft_st.cmplx_sig, wnd256, zoomfft_st.cmplx_sig,  NORMALFFT);	// Применить оконную функцию к IQ буферу
-	arm_cfft_f32(FFTCONFIGSpectrum, zoomfft_st.cmplx_sig, 0, 1);	// forward transform
+	arm_cfft_f32(& fftinstance, zoomfft_st.cmplx_sig, 0, 1);	// forward transform
 	arm_cmplx_mag_f32(zoomfft_st.cmplx_sig, zoomfft_st.cmplx_sig, NORMALFFT);	/* Calculate magnitudes */
 
 	enum { visiblefftsize = (int_fast64_t) NORMALFFT * SPECTRUMWIDTH_MULT / SPECTRUMWIDTH_DENOM };
@@ -7179,6 +7179,7 @@ display2_wfl_init(
 
 	static subscribeint32_t rtsregister;
 
+	VERIFY(ARM_MATH_SUCCESS == arm_cfft_init_f32(& fftinstance, FFTSizeSpectrum));
 	buildsigwnd();
 	//printsigwnd();	// печать оконных коэффициентов для формирования таблицы во FLASH
 	//toplogdb = LOG10F((FLOAT_t) INT32_MAX / waterfalrange);
