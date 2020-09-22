@@ -893,7 +893,7 @@ display2_af_spectre15_latch(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pct
 		fftzoom_af(afsp.raw_buf, AFSP_DECIMATIONPOW2);
 		// осталась половина буфера
 
-		//arm_cmplx_mult_real_f32(afsp.fft_buf, wnd256, afsp.fft_buf, FFTSizeSpectrum); // apply window function
+		arm_mult_f32(afsp.raw_buf, wnd256, afsp.raw_buf, FFTSizeSpectrum); // apply window function
 		arm_rfft_fast_f32(& afsp.instance, afsp.raw_buf, afsp.fft_buf, 0); // 0-прямое, 1-обратное
 		afsp.is_ready = 0;	// буфер больше не нужен... но он заполняется так же в user mode
 		arm_cmplx_mag_f32(afsp.fft_buf, afsp.fft_buf, FFTSizeSpectrum);
@@ -7016,9 +7016,6 @@ union states
 	uint16_t rbfimage_dummy [1];	// для предотвращения ругнаи компилятора на приведение типов
 };
 
-static arm_cfft_instance_f32 fftinstance;
-
-
 #if (CPUSTYLE_R7S721 || 0)
 
 static uint16_t rbfimage0 [] =
@@ -7118,6 +7115,7 @@ dsp_getspectrumrow(
 	const uint_fast32_t needsize = ((uint_fast32_t) NORMALFFT << zoompow2);
 	uint_fast16_t i;
 	uint_fast16_t x;
+	arm_cfft_instance_f32 fftinstance;
 
 	// проверка, есть ли накопленный буфер для формирования спектра
 	fftbuff_t * pf;
@@ -7142,6 +7140,7 @@ dsp_getspectrumrow(
 	release_fftbuffer(pf);
 
 	arm_cmplx_mult_real_f32(zoomfft_st.cmplx_sig, wnd256, zoomfft_st.cmplx_sig,  NORMALFFT);	// Применить оконную функцию к IQ буферу
+	VERIFY(ARM_MATH_SUCCESS == arm_cfft_init_f32(& fftinstance, NORMALFFT));
 	arm_cfft_f32(& fftinstance, zoomfft_st.cmplx_sig, 0, 1);	// forward transform
 	arm_cmplx_mag_f32(zoomfft_st.cmplx_sig, zoomfft_st.cmplx_sig, NORMALFFT);	/* Calculate magnitudes */
 
@@ -7179,7 +7178,6 @@ display2_wfl_init(
 
 	static subscribeint32_t rtsregister;
 
-	VERIFY(ARM_MATH_SUCCESS == arm_cfft_init_f32(& fftinstance, FFTSizeSpectrum));
 	buildsigwnd();
 	//printsigwnd();	// печать оконных коэффициентов для формирования таблицы во FLASH
 	//toplogdb = LOG10F((FLOAT_t) INT32_MAX / waterfalrange);
