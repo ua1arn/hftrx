@@ -752,7 +752,7 @@ enum
 	NORMALFFT = FFTSizeSpectrum				// размер буфера для отображения
 };
 
-static RAMBIG FLOAT_t ifspec_wndfn [NORMALFFT];
+static RAMBIG FLOAT_t ifspec_wndfn [FFTSizeAfSpectrum];
 
 static void buildsigwndifspec(void)
 {
