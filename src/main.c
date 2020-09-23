@@ -27,6 +27,119 @@
 #include <ctype.h>
 #include <math.h>
 
+// Определения для работ по оптимизации быстродействия
+#if WITHDEBUG && 0
+
+	// stm32f746, no dualwatch:
+	//	dtcount=0, dtmax=0, dtlast=0, dtcount2=41807716, dtmax2=1244, dtlast2=739, dtcount3=41806755, dtmax3=1446, dtlast3=916
+	// R7S721xxx, Neon, dualwatch:
+	//	dtcount=0, dtmax=0, dtlast=0, dtcount2=15890107, dtmax2=1119, dtlast2=590, dtcount3=31778668, dtmax3=1169, dtlast3=723
+	// R7S721xxx, no Neon, dualwatch:
+	// dtcount=0, dtmax=0, dtlast=0, dtcount2=184728, dtmax2=1461, dtlast2=911, dtcount3=367872, dtmax3=1169, dtlast3=713
+
+	static volatile uint_fast32_t dtmax = 0, dtlast = 0, dtcount = 0;
+	static volatile uint_fast32_t dtmax2 = 0, dtlast2 = 0, dtcount2 = 0;
+	static volatile uint_fast32_t dtmax3 = 0, dtlast3 = 0, dtcount3 = 0;
+	static uint_fast32_t perft = 0;
+	static uint_fast32_t perft2 = 0;
+	static uint_fast32_t perft3 = 0;
+
+	static void debug_cleardtmax(void)
+	{
+		dtmax = 0;
+		dtmax2 = 0;
+		dtmax3 = 0;
+	}
+
+	#define BEGIN_STAMP() do { \
+			perft = cpu_getdebugticks(); \
+		} while (0)
+
+	#define END_STAMP() do { \
+			const uint_fast32_t t2 = cpu_getdebugticks(); \
+			if (perft < t2) \
+			{ \
+				const uint_fast32_t vdt = t2 - perft; \
+				dtlast = vdt; /* текущее значение длительности */ \
+				if (vdt > dtmax) \
+					dtmax = vdt; /* максимальное значение длительности */ \
+				++ dtcount; \
+			} \
+		} while (0)
+
+	#define BEGIN_STAMP2() do { \
+			perft2 = cpu_getdebugticks(); \
+		} while (0)
+
+	#define END_STAMP2() do { \
+			const uint_fast32_t t2 = cpu_getdebugticks(); \
+			if (perft2 < t2) \
+			{ \
+				const uint_fast32_t vdt = t2 - perft2; \
+				dtlast2 = vdt; /* текущее значение длительности */ \
+				if (vdt > dtmax2) \
+					dtmax2 = vdt; /* максимальное значение длительности */ \
+				++ dtcount2; \
+			} \
+		} while (0)
+
+	#define BEGIN_STAMP3() do { \
+			perft3 = cpu_getdebugticks(); \
+		} while (0)
+
+	#define END_STAMP3() do { \
+			const uint_fast32_t t2 = cpu_getdebugticks(); \
+			if (perft3 < t2) \
+			{ \
+				const uint_fast32_t vdt = t2 - perft3; \
+				dtlast3 = vdt; /* текущее значение длительности */ \
+				if (vdt > dtmax3) \
+					dtmax3 = vdt; /* максимальное значение длительности */ \
+				++ dtcount3; \
+			} \
+		} while (0)
+
+
+	//static uint32_t dd [4];
+	/* DSP speed test */
+	void main_speed_diagnostics(void)
+	{
+		//PRINTF(PSTR("data=%08lX,%08lX,%08lX,%08lX\n"), dd [0], dd [1], dd [2], dd [3]);
+		PRINTF(PSTR("dtcount=%" PRIuFAST32 ", dtmax=%" PRIuFAST32 ", dtlast=%" PRIuFAST32 ", "), dtcount, dtmax, dtlast);
+		PRINTF(PSTR("dtcount2=%" PRIuFAST32 ", dtmax2=%" PRIuFAST32 ", dtlast2=%" PRIuFAST32 ", "), dtcount2, dtmax2, dtlast2);
+		PRINTF(PSTR("dtcount3=%" PRIuFAST32 ", dtmax3=%" PRIuFAST32 ", dtlast3=%" PRIuFAST32 "\n"), dtcount3, dtmax3, dtlast3);
+	}
+
+#else /* WITHDEBUG */
+
+	#define BEGIN_STAMP() do { \
+		} while (0)
+
+	#define END_STAMP() do { \
+		} while (0)
+
+	#define BEGIN_STAMP2() do { \
+		} while (0)
+
+	#define END_STAMP2() do { \
+		} while (0)
+
+	#define BEGIN_STAMP3() do { \
+		} while (0)
+
+	#define END_STAMP3() do { \
+		} while (0)
+
+	static void debug_cleardtmax(void)
+	{
+	}
+
+	void main_speed_diagnostics(void)
+	{
+	}
+
+#endif /* WITHDEBUG */
+
 #if WITHRFSG
 	#error WITHRFSG now not supported
 #endif /* WITHRFSG */
@@ -8028,7 +8141,9 @@ static void processingonebuff(uint_fast8_t pathi, lmsnrstate_t * const nrp, spee
 	if (denoise)
 	{
 		// Filtering and denoise.
+		BEGIN_STAMP();
 		arm_fir_f32(& nrp->fir_instance, p, nrp->wire1, FIRBUFSIZE);
+		END_STAMP();
 		if (anotch && pathi == 0)
 			hamradio_autonotch_process(nrp->wire1);
 #if WITHLEAKYLMSANR
@@ -8052,7 +8167,9 @@ static void processingonebuff(uint_fast8_t pathi, lmsnrstate_t * const nrp, spee
 		// Filtering only.
 		ASSERT(p != NULL);
 		ASSERT(nrp->wire1 != NULL);
+		BEGIN_STAMP();
 		arm_fir_f32(& nrp->fir_instance, p, nrp->wire1, FIRBUFSIZE);
+		END_STAMP();
 		if (anotch && pathi == 0)
 			hamradio_autonotch_process(nrp->wire1);
 		nrp->outsp = nrp->wire1;
@@ -10533,7 +10650,7 @@ display2_redrawbarstimed(
 	if (immed || display_refresenabled_bars())
 	{
 		/* быстро меняющиеся значения с частым опорсом */
-		looptests();		// Периодически вызывается в главном цикле - тесты
+		main_speed_diagnostics();
 		/* +++ переписываем значения из возможно внешних АЦП в кеш значений */
 	#if WITHSWRMTR
 		board_adc_store_data(PWRMRRIX, board_getadc_unfiltered_truevalue(PWRI));
@@ -10559,6 +10676,7 @@ display2_redrawbarstimed(
 
 	if (immed || display_refreshenabled_voltage())
 	{
+		looptests();		// Периодически вызывается в главном цикле - тесты
 		/* медленно меняющиеся значения с редким опорсом */
 		/* +++ переписываем значения из возможно внешних АЦП в кеш значений */
 	#if WITHTHERMOLEVEL
