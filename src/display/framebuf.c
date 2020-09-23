@@ -309,17 +309,12 @@ hwacc_fillrect_u8(
 #else
 	// программная реализация
 
-	const unsigned t = GXADJ(dx) - w;
-	//buffer += (GXADJ(dx) * row) + col;
-	volatile uint8_t * tbuffer = colmain_mem_at(buffer, dx, dy, col, row); // dest address
+	const unsigned dxadj = GXADJ(dx);
+	uint8_t * tbuffer = colmain_mem_at(buffer, dx, dy, col, row); // dest address
 	while (h --)
 	{
-		//uint8_t * const startmem = buffer;
-
-		unsigned n = w;
-		while (n --)
-			* tbuffer ++ = color;
-		tbuffer += t;
+		memset(tbuffer, color, w);
+		tbuffer += dxadj;
 	}
 
 #endif
