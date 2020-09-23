@@ -11552,21 +11552,37 @@ M_SIZE_IO_2     EQU     2550            ; [Area11] I/O area 2
 #define SECTIONval	0x02
 
 /* Table B3-10 TEX, C, and B encodings when TRE == 0 */
-#define TEXval_STGORD		0x00	/* Strongly-ordered */
-#define Bval_STGORD			0x00	/* Strongly-ordered */
-#define Cval_STGORD			0x00	/* Strongly-ordered */
 
-#define TEXval_WBCACHE		0x01	/* Outer and Inner Write-Back, Write-Allocate */
-#define Bval_WBCACHE		0x01	/* Outer and Inner Write-Back, Write-Allocate */
-#define Cval_WBCACHE		0x01	/* Outer and Inner Write-Back, Write-Allocate */
+#define TEXval_STGORD		0x00	/* Strongly-ordered, shareable */
+#define Bval_STGORD			0x00	/* Strongly-ordered, shareable */
+#define Cval_STGORD			0x00	/* Strongly-ordered, shareable */
 
-#define TEXval_NOCACHE		0x01	/* Outer and Inner Non-cacheable */
-#define Bval_NOCACHE		0x00	/* Outer and Inner Non-cacheable */
-#define Cval_NOCACHE		0x00	/* Outer and Inner Non-cacheable */
+#if 0///CPUSTYLE_STM32MP1
+	// for debug: no Write-Allocate
+	#define TEXval_WBCACHE		0x00	/* Outer and Inner Write-Back, no Write-Allocate */
+	#define Bval_WBCACHE		0x01	/* Outer and Inner Write-Back, no Write-Allocate */
+	#define Cval_WBCACHE		0x01	/* Outer and Inner Write-Back, no Write-Allocate */
+#else /* CPUSTYLE_STM32MP1 */
+	#define TEXval_WBCACHE		0x01	/* Outer and Inner Write-Back, Write-Allocate */
+	#define Bval_WBCACHE		0x01	/* Outer and Inner Write-Back, Write-Allocate */
+	#define Cval_WBCACHE		0x01	/* Outer and Inner Write-Back, Write-Allocate */
+#endif /* CPUSTYLE_STM32MP1 */
 
-#define TEXval_DEVICE		0x02	/* Non-shareable Device */
-#define Bval_DEVICE			0x00	/* Non-shareable Device */
-#define Cval_DEVICE			0x00	/* Non-shareable Device */
+#define TEXval_NOCACHE		0x01	/* Outer and Inner Non-cacheable, S bit */
+#define Bval_NOCACHE		0x00	/* Outer and Inner Non-cacheable, S bit */
+#define Cval_NOCACHE		0x00	/* Outer and Inner Non-cacheable, S bit */
+
+#if 0
+	// test
+	#define TEXval_DEVICE		0x00	/* Shareable Device */
+	#define Bval_DEVICE			0x00	/* Shareable Device */
+	#define Cval_DEVICE			0x01	/* Shareable Device */
+#else
+	// normal
+	#define TEXval_DEVICE		0x02	/* Non-shareable Device */
+	#define Bval_DEVICE			0x00	/* Non-shareable Device */
+	#define Cval_DEVICE			0x00	/* Non-shareable Device */
+#endif
 
 #if WITHSMPSYSTEM
 	#define SHAREDval 1		// required for ldrex.. and strex.. functionality
@@ -11599,13 +11615,12 @@ M_SIZE_IO_2     EQU     2550            ; [Area11] I/O area 2
 //; setting for Strongly-ordered memory
 //#define	TTB_PARA_STRGLY             0b_0000_0000_1101_1110_0010
 // not used
-#define	TTB_PARA_STRGLY TTB_PARA(TEXval_STGORD, Bval_STGORD, Cval_STGORD, DOMAINval, NoSHAREDval, APRWval, 1)
+#define	TTB_PARA_STRGLY TTB_PARA(TEXval_STGORD, Bval_STGORD, Cval_STGORD, DOMAINval, 0 /* Shareable mot depend of this bit */, APRWval, 1)
 
 
 //; setting for Outer and inner not cache normal memory
-//#define	TTB_PARA_NORMAL_NOT_CACHE   0b_0000_0001_1101_1110_0010
 // not used
-#define	TTB_PARA_NORMAL_NOT_CACHE(ro, xn) TTB_PARA(TEXval_NOCACHE, Bval_NOCACHE, Cval_NOCACHE, DOMAINval, SHAREDval, (ro) ? APROval : APRWval, (xn) != 0)
+//#define	TTB_PARA_NORMAL_NOT_CACHE(ro, xn) TTB_PARA(TEXval_NOCACHE, Bval_NOCACHE, Cval_NOCACHE, DOMAINval, SHAREDval, (ro) ? APROval : APRWval, (xn) != 0)
 
 //; setting for Outer and inner write back, write allocate normal memory (Cacheable)
 //#define	TTB_PARA_NORMAL_CACHE       0b_0000_0001_1101_1110_1110
@@ -12262,6 +12277,13 @@ static RAMDTCM SPINLOCK_t cpu1init;
 
 void Reset_CPUn_Handler(void)
 {
+#if (__CORTEX_A == 7U) || (__CORTEX_A == 9U)
+	// set the ACTLR.SMP
+//	__set_ACTLR(__get_ACTLR() | ACTLR_SMP_Msk);
+//	__ISB();
+//	__DSB();
+#endif /* (__CORTEX_A == 7U) || (__CORTEX_A == 9U) */
+
 	sysinit_fpu_initialize();
 	sysinit_vbar_initialize();		// interrupt vectors relocate
 	sysinit_ttbr_initialize();		// TODO: убрать работу с L2 для второго процессора - Загрузка TTBR, инвалидация кеш памяти и включение MMU
@@ -12709,11 +12731,28 @@ void cpu_initialize(void)
 
 #if WITHSMPSYSTEM
 
+#if (__CORTEX_A == 7U) || (__CORTEX_A == 9U)
+	// set the ACTLR.SMP
+//	__set_ACTLR(__get_ACTLR() | ACTLR_SMP_Msk);
+//	__ISB();
+//	__DSB();
+#endif /* (__CORTEX_A == 7U) || (__CORTEX_A == 9U) */
+
 	printcpustate();
 	SPIN_LOCK(& cpu1init);
 	stm32_cpu1_start();
 	SPIN_LOCK(& cpu1init);
 	SPIN_UNLOCK(& cpu1init);
+
+#else /* WITHSMPSYSTEM */
+	printcpustate();
+#if (__CORTEX_A == 7U) || (__CORTEX_A == 9U)
+	// clearing the ACTLR.SMP
+//	__set_ACTLR(__get_ACTLR() & ~ ACTLR_SMP_Msk);
+//	__ISB();
+//	__DSB();
+#endif /* (__CORTEX_A == 7U) || (__CORTEX_A == 9U) */
+	printcpustate();
 
 #endif /* WITHSMPSYSTEM */
 
