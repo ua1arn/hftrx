@@ -5170,14 +5170,14 @@ static void display_solidbar(
 
 // Получение псевдослучайныз чисел.
 // 0 .. num-1
-static int local_randomgr( int num )
+static int local_randomgr(unsigned long num)
 {
 
-	static unsigned long rand_val = 123456UL;
+	static unsigned long rand_val = 123456uL;
 
 	if (rand_val & 0x80000000UL)
 		rand_val = (rand_val << 1);
-	else	rand_val = (rand_val << 1) ^0x201051UL;
+	else	rand_val = (rand_val << 1) ^ 0x201051uL;
 
 	return (rand_val % num);
 
