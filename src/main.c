@@ -20254,9 +20254,11 @@ void bootloader_detach(uintptr_t ip)
 	//GIC_DisableInterface();
 	//GIC_DisableDistributor();
 
+	// Get ITLinesNumber
+	const unsigned n = ((GIC_DistributorInfo() & 0x1f) + 1) * 32;
 	unsigned i;
 	// 32 - skip SGI handlers (keep enabled foe CPU1 start).
-	for (i = 32; i < 1020; ++ i)
+	for (i = 32; i < n; ++ i)
 		IRQ_Disable(i);
 #endif
 
