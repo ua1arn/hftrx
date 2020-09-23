@@ -1577,6 +1577,7 @@ void arm_hardware_ltdc_pip_set(uintptr_t p)
 		hardware_nonguiyield();
 #endif
 	LAYER_PIP->CFBAR = p;
+	(void) LAYER_PIP->CFBAR;
 	LAYER_PIP->CR |= LTDC_LxCR_LEN;
 	LTDC->SRCR = LTDC_SRCR_VBR;	/* Vertical Blanking Reload. */
 }
@@ -1599,6 +1600,7 @@ void arm_hardware_ltdc_main_set(uintptr_t p)
 		hardware_nonguiyield();
 #endif
 	LAYER_MAIN->CFBAR = p;
+	(void) LAYER_MAIN->CFBAR;
 	LAYER_MAIN->CR |= LTDC_LxCR_LEN;
 	LTDC->SRCR = LTDC_SRCR_VBR_Msk;	/* Vertical Blanking Reload. */
 }
