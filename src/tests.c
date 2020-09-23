@@ -5215,7 +5215,7 @@ static void BarTest(void)
 	//getch();             /* Pause for user's response    */
 }
 
-void display_line(
+static void display_line(
 		int x1, int y1,
 		int x2, int y2,
 		COLORMAIN_T color)

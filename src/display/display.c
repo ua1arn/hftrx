@@ -126,11 +126,7 @@ display_fillrect(
 	COLORMAIN_T color
 	)
 {
-	PACKEDCOLORMAIN_T * const buffer = colmain_fb_draw();
-	const uint_fast16_t dx = DIM_X;
-	const uint_fast16_t dy = DIM_Y;
-
-	colmain_fillrect(buffer, dx, dy, x, y, w, h, color);
+	colmain_fillrect(colmain_fb_draw(), DIM_X, DIM_Y, x, y, w, h, color);
 }
 
 #endif /* LCDMODE_LTDC */
@@ -301,7 +297,9 @@ void colmain_setcolors3(COLORMAIN_T fg, COLORMAIN_T bg, COLORMAIN_T fgbg)
 void display_clear(void)
 {
 	const COLORMAIN_T bg = display_getbgcolor();
-	display_fillrect(0, 0, DIM_X, DIM_Y, bg);
+	PACKEDCOLORMAIN_T * const buffer = colmain_fb_draw();
+
+	colmain_fillrect(buffer, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, bg);
 }
 
 // для framebufer дисплеев - вытолкнуть кэш память
