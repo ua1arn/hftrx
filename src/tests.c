@@ -5215,16 +5215,6 @@ static void BarTest(void)
 	//getch();             /* Pause for user's response    */
 }
 
-static void display_line(
-		int x1, int y1,
-		int x2, int y2,
-		COLORMAIN_T color)
-{
-	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
-	colmain_line(fr, DIM_X, DIM_Y, x1, y1, x2, y2, color, 0);
-}
-
-
 static  void
 GrideTest(void)
 {

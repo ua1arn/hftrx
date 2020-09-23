@@ -129,6 +129,19 @@ display_fillrect(
 	colmain_fillrect(colmain_fb_draw(), DIM_X, DIM_Y, x, y, w, h, color);
 }
 
+/* рисование линии на основном экране произвольным цветом
+*/
+void
+display_line(
+	int x1, int y1,
+	int x2, int y2,
+	COLORMAIN_T color
+	)
+{
+	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
+	colmain_line(fr, DIM_X, DIM_Y, x1, y1, x2, y2, color, 0);
+}
+
 #endif /* LCDMODE_LTDC */
 
 /* копирование содержимого окна с перекрытием для водопада */

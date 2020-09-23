@@ -666,6 +666,14 @@ display_fillrect(
 	uint_fast16_t w, uint_fast16_t h, 	// размеры в пикселях
 	COLORMAIN_T color
 	);
+/* рисование линии на основном экране произвольным цветом
+*/
+void
+display_line(
+	int x1, int y1,
+	int x2, int y2,
+	COLORMAIN_T color
+	);
 
 /* заполнение прямоугольника в буфере произвольным цветом
 */
