@@ -8411,7 +8411,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 	    /* Handle RxQLevel Interrupt */
 	    if (__HAL_PCD_GET_FLAG(hpcd, USB_OTG_GINTSTS_RXFLVL))
 	    {
-	      USB_MASK_INTERRUPT(hpcd->Instance, USB_OTG_GINTSTS_RXFLVL); //mgs:????
+	      USB_MASK_INTERRUPT(hpcd->Instance, USB_OTG_GINTMSK_RXFLVLM); //mgs:????
 	      const uint_fast32_t grxstsp = USBx->GRXSTSP;
 	      USB_OTG_EPTypeDef * const ep = & hpcd->OUT_ep [(grxstsp & USB_OTG_GRXSTSP_EPNUM_Msk) >> USB_OTG_GRXSTSP_EPNUM_Pos];
 
@@ -8438,7 +8438,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 	        USB_ReadPacket(USBx, (uint8_t *) hpcd->PSetup, 8);
 	        ep->xfer_count += bcnt;
 	      }
-	      USB_UNMASK_INTERRUPT(hpcd->Instance, USB_OTG_GINTSTS_RXFLVL); //mgs:????
+	      USB_UNMASK_INTERRUPT(hpcd->Instance, USB_OTG_GINTMSK_RXFLVLM); //mgs:????
 	    }
 
 		/* OUT endpoints interrupts */
@@ -13471,7 +13471,7 @@ static void HCD_Port_IRQHandler(HCD_HandleTypeDef *hhcd)
   {
     if ((hprt0 & USB_OTG_HPRT_PCSTS) == USB_OTG_HPRT_PCSTS)
     {
-      USB_MASK_INTERRUPT(hhcd->Instance, USB_OTG_GINTSTS_DISCINT);
+      USB_MASK_INTERRUPT(hhcd->Instance, USB_OTG_GINTMSK_DISCINT);
       HAL_HCD_Connect_Callback(hhcd);
     }
     hprt0_dup  |= USB_OTG_HPRT_PCDET;
@@ -13507,7 +13507,7 @@ static void HCD_Port_IRQHandler(HCD_HandleTypeDef *hhcd)
 
       if (hhcd->Init.pcd_speed == PCD_SPEED_HIGH)
       {
-        USB_UNMASK_INTERRUPT(hhcd->Instance, USB_OTG_GINTSTS_DISCINT);
+        USB_UNMASK_INTERRUPT(hhcd->Instance, USB_OTG_GINTMSK_DISCINT);
       }
     }
     else
@@ -13516,7 +13516,7 @@ static void HCD_Port_IRQHandler(HCD_HandleTypeDef *hhcd)
       USBx_HPRT0 &= ~(USB_OTG_HPRT_PENA | USB_OTG_HPRT_PCDET |
         USB_OTG_HPRT_PENCHNG | USB_OTG_HPRT_POCCHNG );
 
-      USB_UNMASK_INTERRUPT(hhcd->Instance, USB_OTG_GINTSTS_DISCINT);
+      USB_UNMASK_INTERRUPT(hhcd->Instance, USB_OTG_GINTMSK_DISCINT);
     }
   }
 
@@ -13957,11 +13957,11 @@ void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 		/* Handle Rx Queue Level Interrupts */
 		if(__HAL_HCD_GET_FLAG(hhcd, USB_OTG_GINTSTS_RXFLVL))
 		{
-			USB_MASK_INTERRUPT(hhcd->Instance, USB_OTG_GINTSTS_RXFLVL);
+			USB_MASK_INTERRUPT(hhcd->Instance, USB_OTG_GINTMSK_RXFLVLM);
 
 			HCD_RXQLVL_IRQHandler (hhcd);
 
-			USB_UNMASK_INTERRUPT(hhcd->Instance, USB_OTG_GINTSTS_RXFLVL);
+			USB_UNMASK_INTERRUPT(hhcd->Instance, USB_OTG_GINTMSK_RXFLVLM);
 		}
 	}
 }
