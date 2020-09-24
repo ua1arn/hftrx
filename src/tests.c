@@ -5375,6 +5375,7 @@ void hightests(void)
 		PRINTF(PSTR("MP_RSTSCLRR=%08lX\n"), (unsigned long) RCC->MP_RSTSCLRR);
 		RCC->MP_RSTSCLRR = RCC->MP_RSTSCLRR;
 		PRINTF(PSTR("MP_RSTSCLRR=%08lX\n"), (unsigned long) RCC->MP_RSTSCLRR);
+		PRINTF(PSTR("ACTLR=%08lX\n"), (unsigned long) __get_ACTLR());
 	}
 #endif
 #if 0 && CPUSTYLE_STM32MP1
