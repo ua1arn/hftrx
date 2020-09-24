@@ -175,7 +175,7 @@ static void display2_legend_tx(
 	// полностью частота до килогерц
 	static int_fast16_t glob_gridstep = 10000; //1 * glob_griddigit;	// 10, 20. 50 kHz - шаг сетки для рисования
 	static int_fast16_t glob_griddigit = 1000;	// 1 kHz - шаг сетки
-	static int glob_gridwc = 6;
+	static int glob_gridwc = 1;
 	static int_fast32_t glob_gridmod = INT32_MAX;	// 10 ^ glob_gridwc
 	static char FLASHMEM  gridfmt_2 [] = "%*ld";
 #else
@@ -7342,7 +7342,6 @@ display_colorgrid_xor(
 				char buf2 [16];
 				uint_fast16_t freqw;	// ширина строки со значением частоты
 				local_snprintf_P(buf2, ARRAY_SIZE(buf2), gridfmt_2, glob_gridwc, (long) ((f0 + df) / glob_griddigit % glob_gridmod));
-				ASSERT(strlen(buf2) == (glob_gridwc + 1));
 				freqw = strwidth3(buf2);
 				if (xmarker > freqw / 2 && xmarker < (ALLDX - freqw / 2))
 				{
@@ -7387,7 +7386,6 @@ display_colorgrid_set(
 				char buf2 [16];
 				uint_fast16_t freqw;	// ширина строки со значением частоты
 				local_snprintf_P(buf2, ARRAY_SIZE(buf2), gridfmt_2, glob_gridwc, (long) ((f0 + df) / glob_griddigit % glob_gridmod));
-				ASSERT(strlen(buf2) == (glob_gridwc + 1));
 				freqw = strwidth3(buf2);
 				if (xmarker > freqw / 2 && xmarker < (ALLDX - freqw / 2))
 				{
@@ -7638,10 +7636,10 @@ static void wflshiftleft(uint_fast16_t pixels)
 
 	for (y = 0; y < WFROWS; ++ y)
 	{
-		if (y == wfrow)
-		{
-			continue;
-		}
+//		if (y == wfrow)
+//		{
+//			continue;
+//		}
 		memmove(
 				colmain_mem_at(wfjarray, ALLDX, WFROWS, 0, y),
 				colmain_mem_at(wfjarray, ALLDX, WFROWS, pixels, y),
@@ -7674,10 +7672,10 @@ static void wflshiftright(uint_fast16_t pixels)
 
 	for (y = 0; y < WFROWS; ++ y)
 	{
-		if (y == wfrow)
-		{
-			continue;
-		}
+//		if (y == wfrow)
+//		{
+//			continue;
+//		}
 		memmove(
 				colmain_mem_at(wfjarray, ALLDX, WFROWS, pixels, y),
 				colmain_mem_at(wfjarray, ALLDX, WFROWS, 0, y),
@@ -7720,29 +7718,6 @@ static void display2_latchwaterfall(
 	(void) x0;
 	(void) y0;
 	(void) pctx;
-
-	// запоминание информации спектра для спектрограммы
-	if (! dsp_getspectrumrow(spavgarray, ALLDX, glob_zoomxpow2))
-		return;	// еще нет новых данных.
-
-#if (! LCDMODE_S1D13781_NHWACCEL && LCDMODE_S1D13781)
-#else
-	wfrow = (wfrow == 0) ? (WFDY - 1) : (wfrow - 1);
-#endif
-
-	// запоминание информации спектра для водопада
-	for (x = 0; x < ALLDX; ++ x)
-	{
-		// для водопада
-		const int val = dsp_mag2y(filter_waterfall(x), PALETTESIZE - 1, glob_wflevelsep ? glob_topdbwf : glob_topdb, glob_wflevelsep ? glob_bottomdbwf : glob_bottomdb); // возвращает значения от 0 до dy включительно
-	#if LCDMODE_MAIN_L8
-		colmain_putpixel(wfjarray, ALLDX, WFROWS, x, wfrow, val);	// запись в буфер водопада индекса палитры
-	#else /* LCDMODE_MAIN_L8 */
-		ASSERT(val >= 0);
-		ASSERT(val < ARRAY_SIZE(wfpalette));
-		colmain_putpixel(wfjarray, ALLDX, WFROWS, x, wfrow, wfpalette [val]);	// запись в буфер водопада цветовой точки
-	#endif /* LCDMODE_MAIN_L8 */
-	}
 
 	// Сдвиг изображения при необходимости (перестройка/переклбчение диапащонов или масштаба).
 	const uint_fast8_t pathi = 0;	// RX A
@@ -7795,6 +7770,31 @@ static void display2_latchwaterfall(
 			hclear = 1;
 		}
 	}
+
+
+	// запоминание информации спектра для спектрограммы
+	if (! dsp_getspectrumrow(spavgarray, ALLDX, glob_zoomxpow2))
+		return;	// еще нет новых данных.
+
+#if (! LCDMODE_S1D13781_NHWACCEL && LCDMODE_S1D13781)
+#else
+	wfrow = (wfrow == 0) ? (WFDY - 1) : (wfrow - 1);
+#endif
+
+	// запоминание информации спектра для водопада
+	for (x = 0; x < ALLDX; ++ x)
+	{
+		// для водопада
+		const int val = dsp_mag2y(filter_waterfall(x), PALETTESIZE - 1, glob_wflevelsep ? glob_topdbwf : glob_topdb, glob_wflevelsep ? glob_bottomdbwf : glob_bottomdb); // возвращает значения от 0 до dy включительно
+	#if LCDMODE_MAIN_L8
+		colmain_putpixel(wfjarray, ALLDX, WFROWS, x, wfrow, val);	// запись в буфер водопада индекса палитры
+	#else /* LCDMODE_MAIN_L8 */
+		ASSERT(val >= 0);
+		ASSERT(val < ARRAY_SIZE(wfpalette));
+		colmain_putpixel(wfjarray, ALLDX, WFROWS, x, wfrow, wfpalette [val]);	// запись в буфер водопада цветовой точки
+	#endif /* LCDMODE_MAIN_L8 */
+	}
+
 	wffreqpix = f0pix;
 	wfzoompow2 = glob_zoomxpow2;
 	wfhscroll += hscroll;
