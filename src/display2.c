@@ -171,11 +171,19 @@ static void display2_legend_tx(
 
 // Параметры отображения спектра и водопада
 
-static int_fast16_t glob_griddigit = 10000;	// 10 kHz - шаг сетки
-static int glob_gridwc = 2;
-static int_fast16_t glob_gridmod = 100;	// 10 ^ glob_gridwc
-static int_fast16_t glob_gridstep = 10000; //1 * glob_griddigit;	// 10, 20. 50 kHz - шаг сетки
-
+#if 0
+	static int_fast16_t glob_gridstep = 10000; //1 * glob_griddigit;	// 10, 20. 50 kHz - шаг сетки для рисования
+	static int_fast16_t glob_griddigit = 10000;	// 10 kHz - шаг сетки
+	static int glob_gridwc = 2;
+	static int_fast16_t glob_gridmod = 100;	// 10 ^ glob_gridwc
+	static char FLASHMEM  gridfmt [] = ".%0*d";
+#else
+	static int_fast16_t glob_gridstep = 10000; //1 * glob_griddigit;	// 10, 20. 50 kHz - шаг сетки для рисования
+	static int_fast16_t glob_griddigit = 10000;	// 10 kHz - шаг сетки
+	static int glob_gridwc = 2;
+	static int_fast16_t glob_gridmod = 100;	// 10 ^ glob_gridwc
+	static char FLASHMEM  gridfmt [] = ".%0*d";
+#endif
 
 // waterfall/spectrum parameters
 static uint_fast8_t glob_fillspect;	/* заливать заполнением площадь под графиком спектра */
@@ -7331,7 +7339,7 @@ display_colorgrid_xor(
 			{
 				char buf2 [16];
 				uint_fast16_t freqw;	// ширина строки со значением частоты
-				local_snprintf_P(buf2, ARRAY_SIZE(buf2), ".%0*d", glob_gridwc, (int) ((f0 + df) / glob_griddigit % glob_gridmod));
+				local_snprintf_P(buf2, ARRAY_SIZE(buf2), gridfmt, glob_gridwc, (int) ((f0 + df) / glob_griddigit % glob_gridmod));
 				ASSERT(strlen(buf2) == (glob_gridwc + 1));
 				freqw = strwidth3(buf2);
 				if (xmarker > freqw / 2 && xmarker < (ALLDX - freqw / 2))
@@ -7376,7 +7384,7 @@ display_colorgrid_set(
 			{
 				char buf2 [16];
 				uint_fast16_t freqw;	// ширина строки со значением частоты
-				local_snprintf_P(buf2, ARRAY_SIZE(buf2), ".%0*d", glob_gridwc, (int) ((f0 + df) / glob_griddigit % glob_gridmod));
+				local_snprintf_P(buf2, ARRAY_SIZE(buf2), gridfmt, glob_gridwc, (int) ((f0 + df) / glob_griddigit % glob_gridmod));
 				ASSERT(strlen(buf2) == (glob_gridwc + 1));
 				freqw = strwidth3(buf2);
 				if (xmarker > freqw / 2 && xmarker < (ALLDX - freqw / 2))
