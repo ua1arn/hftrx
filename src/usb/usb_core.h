@@ -1011,14 +1011,14 @@ HAL_StatusTypeDef HAL_PCD_DeActivateRemoteWakeup(PCD_HandleTypeDef *hpcd);
 #define __HAL_PCD_DISABLE(h)                  do { USB_DisableGlobalInt((h)->Instance); } while (0)
 
 #define __HAL_HCD_GET_FLAG(h, intr)      ((USB_ReadInterrupts((h)->Instance) & (intr)) == (intr))
-#define __HAL_HCD_CLEAR_FLAG(h, intr)    do { (((h)->Instance->GINTSTS) = (intr)); } while (0)
+#define __HAL_HCD_CLEAR_FLAG(h, intr)    do { (((h)->Instance->GINTSTS) = (intr)); (void) (h)->Instance->GINTSTS; } while (0)
 #define __HAL_HCD_IS_INVALID_INTERRUPT(h)         (USB_ReadInterrupts((h)->Instance) == 0)
 
 #define __HAL_HCD_CLEAR_HC_INT(chnum, intr)  do { USBx_HC(chnum)->HCINT = (intr); } while (0)
-#define __HAL_HCD_MASK_HALT_HC_INT(chnum)             do { USBx_HC(chnum)->HCINTMSK &= ~ USB_OTG_HCINTMSK_CHHM; } while (0)
-#define __HAL_HCD_UNMASK_HALT_HC_INT(chnum)           do { USBx_HC(chnum)->HCINTMSK |= USB_OTG_HCINTMSK_CHHM; } while (0)
-#define __HAL_HCD_MASK_ACK_HC_INT(chnum)              do { USBx_HC(chnum)->HCINTMSK &= ~ USB_OTG_HCINTMSK_ACKM; } while (0)
-#define __HAL_HCD_UNMASK_ACK_HC_INT(chnum)            do { USBx_HC(chnum)->HCINTMSK |= USB_OTG_HCINTMSK_ACKM; } while (0)
+#define __HAL_HCD_MASK_HALT_HC_INT(chnum)             do { USBx_HC(chnum)->HCINTMSK &= ~ USB_OTG_HCINTMSK_CHHM; (void) USBx_HC(chnum)->HCINTMSK; } while (0)
+#define __HAL_HCD_UNMASK_HALT_HC_INT(chnum)           do { USBx_HC(chnum)->HCINTMSK |= USB_OTG_HCINTMSK_CHHM; (void) USBx_HC(chnum)->HCINTMSK; } while (0)
+#define __HAL_HCD_MASK_ACK_HC_INT(chnum)              do { USBx_HC(chnum)->HCINTMSK &= ~ USB_OTG_HCINTMSK_ACKM; (void) USBx_HC(chnum)->HCINTMSK; } while (0)
+#define __HAL_HCD_UNMASK_ACK_HC_INT(chnum)            do { USBx_HC(chnum)->HCINTMSK |= USB_OTG_HCINTMSK_ACKM; (void) USBx_HC(chnum)->HCINTMSK; } while (0)
 
 
 /** @defgroup HCD_Exported_Functions_Group1 Initialization and de-initialization functions
