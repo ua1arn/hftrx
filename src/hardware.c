@@ -4567,6 +4567,8 @@ void hardware_spi_master_initialize(void)
 
 	RCC->MP_APB2ENSETR = RCC_MC_APB2ENSETR_SPI1EN; // подать тактирование
 	(void) RCC->MP_APB2ENSETR;
+	RCC->MP_APB2LPENSETR = RCC_MC_APB2LPENSETR_SPI1LPEN; // подать тактирование
+	(void) RCC->MP_APB2LPENSETR;
 	/* настраиваем в режиме disconnect */
 	SPIIO_INITIALIZE();
 
@@ -9888,6 +9890,8 @@ uint_fast8_t stm32mp1_overdrived(void)
 {
 	RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_BSECEN;
 	(void) RCC->MP_APB5ENSETR;
+	RCC->MP_APB5LPENSETR = RCC_MC_APB5LPENSETR_BSECLPEN;
+	(void) RCC->MP_APB5LPENSETR;
 
 	const unsigned rpn = ((* (volatile uint32_t *) RPN_BASE) & RPN_ID_Msk) >> RPN_ID_Pos;
 	return (rpn & 0x80) != 0;
