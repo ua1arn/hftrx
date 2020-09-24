@@ -174,17 +174,17 @@ static void display2_legend_tx(
 #if 0
 	// полностью частота до килогерц
 	static int_fast16_t glob_gridstep = 10000; //1 * glob_griddigit;	// 10, 20. 50 kHz - шаг сетки для рисования
-	static int_fast16_t glob_griddigit = 1000;	// 1 kHz - шаг сетки
-	static int glob_gridwc = 1;
-	static int_fast32_t glob_gridmod = INT32_MAX;	// 10 ^ glob_gridwc
-	static char FLASHMEM  gridfmt_2 [] = "%*ld";
+	static const int_fast16_t glob_griddigit = 1000;	// 1 kHz - точность отображения частоты на сетке
+	static const int glob_gridwc = 1;
+	static const int_fast32_t glob_gridmod = INT32_MAX;	// 10 ^ glob_gridwc
+	static const char FLASHMEM  gridfmt_2 [] = "%*ld";
 #else
 	// Дестки килогерц без мегагерц
 	static int_fast16_t glob_gridstep = 10000; //1 * glob_griddigit;	// 10, 20. 50 kHz - шаг сетки для рисования
-	static int_fast16_t glob_griddigit = 10000;	// 10 kHz - шаг сетки
-	static int glob_gridwc = 2;
-	static int_fast32_t glob_gridmod = 1;	// 10 ^ glob_gridwc
-	static char FLASHMEM  gridfmt_2 [] = ".%0*ld";
+	static const int_fast16_t glob_griddigit = 10000;	// 10 kHz - точность отображения частоты на сетке
+	static const int glob_gridwc = 2;
+	static const int_fast32_t glob_gridmod = 1;	// 10 ^ glob_gridwc
+	static const char FLASHMEM  gridfmt_2 [] = ".%0*ld";
 #endif
 
 // waterfall/spectrum parameters
