@@ -1579,6 +1579,7 @@ void arm_hardware_ltdc_pip_set(uintptr_t p)
 	LAYER_PIP->CFBAR = p;
 	(void) LAYER_PIP->CFBAR;
 	LAYER_PIP->CR |= LTDC_LxCR_LEN;
+	(void) LAYER_PIP->CR;
 	LTDC->SRCR = LTDC_SRCR_VBR;	/* Vertical Blanking Reload. */
 }
 
@@ -1586,6 +1587,7 @@ void arm_hardware_ltdc_pip_set(uintptr_t p)
 void arm_hardware_ltdc_pip_off(void)
 {
 	LAYER_PIP->CR &= ~ LTDC_LxCR_LEN;
+	(void) LAYER_PIP->CR;
 	LTDC->SRCR = LTDC_SRCR_VBR;	/* Vertical Blanking Reload. */
 }
 
@@ -1602,6 +1604,7 @@ void arm_hardware_ltdc_main_set(uintptr_t p)
 	LAYER_MAIN->CFBAR = p;
 	(void) LAYER_MAIN->CFBAR;
 	LAYER_MAIN->CR |= LTDC_LxCR_LEN;
+	(void) LAYER_MAIN->CR;
 	LTDC->SRCR = LTDC_SRCR_VBR_Msk;	/* Vertical Blanking Reload. */
 }
 
