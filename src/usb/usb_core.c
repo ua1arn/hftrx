@@ -4672,6 +4672,34 @@ void USB_ReadPacket(USB_OTG_GlobalTypeDef *USBx, uint8_t *dest, uint_fast16_t le
 
 #else
 
+static void rdfifo32(uint8_t * dst, const volatile uint32_t * src, unsigned n)
+{
+	while (n --)
+	{
+		const uint32_t v = * src;
+		dst [0] = v >> 0;
+		dst [1] = v >> 8;
+		dst [2] = v >> 16;
+		dst [3] = v >> 24;
+		dst += 4;
+	}
+}
+
+static void wrfifo32(volatile uint32_t * dst, const uint8_t * src, unsigned n)
+{
+	while (n --)
+	{
+		const uint32_t v =
+			((uint32_t) src [0] << 0) |
+			((uint32_t) src [1] << 8) |
+			((uint32_t) src [2] << 16) |
+			((uint32_t) src [3] << 24) |
+			0;
+		* dst = v;
+		src += 4;
+	}
+}
+
 /**
   * @brief  USB_WritePacket : Writes a packet into the Tx FIFO associated
   *         with the EP/channel
@@ -4699,6 +4727,8 @@ void USB_WritePacket(USB_OTG_GlobalTypeDef *USBx, const uint8_t * data, uint_fas
 		uint_fast16_t count32b = (size + 3) / 4;
 		const uint32_t * data32 = (const uint32_t *) data;
 		volatile uint32_t * const txfifo32 = & USBx_DFIFO(tx_fifo_num);
+		wrfifo32(txfifo32, data, count32b);
+		return;
 
 		for (; count32b >= 16; count32b -= 16)
 		{
@@ -4735,7 +4765,6 @@ void USB_WritePacket(USB_OTG_GlobalTypeDef *USBx, const uint8_t * data, uint_fas
 		}
 	}
 }
-
 /**
   * @brief  USB_ReadPacket : read a packet from the Tx FIFO associated
   *         with the EP/channel
@@ -4755,6 +4784,8 @@ void USB_ReadPacket(USB_OTG_GlobalTypeDef *USBx, uint8_t * dest, uint_fast16_t l
 	uint32_t * dest32 = (uint32_t *) dest;
 	const volatile uint32_t * const rxfifo32 = & USBx_DFIFO(0);
 	ASSERT(dest != NULL || len == 0);
+	rdfifo32(dest, rxfifo32, count32b);
+	return;
 	for (; count32b >= 16; count32b -= 16)
 	{
 		* dest32 ++ = * rxfifo32;
