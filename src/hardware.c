@@ -12733,14 +12733,14 @@ void cpu_initialize(void)
 
 //	ca9_ca7_cache_diag();	// print
 
+#if (__CORTEX_A == 7U) || (__CORTEX_A == 9U)
 #if WITHSMPSYSTEM
 
-#if (__CORTEX_A == 7U) || (__CORTEX_A == 9U)
 	// set the ACTLR.SMP
+	// STM32MP1: already set
 //	__set_ACTLR(__get_ACTLR() | ACTLR_SMP_Msk);
 //	__ISB();
 //	__DSB();
-#endif /* (__CORTEX_A == 7U) || (__CORTEX_A == 9U) */
 
 	printcpustate();
 	SPIN_LOCK(& cpu1init);
@@ -12750,15 +12750,9 @@ void cpu_initialize(void)
 
 #else /* WITHSMPSYSTEM */
 	printcpustate();
-#if (__CORTEX_A == 7U) || (__CORTEX_A == 9U)
-	// clearing the ACTLR.SMP
-//	__set_ACTLR(__get_ACTLR() & ~ ACTLR_SMP_Msk);
-//	__ISB();
-//	__DSB();
-#endif /* (__CORTEX_A == 7U) || (__CORTEX_A == 9U) */
-	printcpustate();
 
 #endif /* WITHSMPSYSTEM */
+#endif /* (__CORTEX_A == 7U) || (__CORTEX_A == 9U) */
 
 #if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 	// GIC version diagnostics
