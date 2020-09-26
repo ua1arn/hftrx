@@ -367,9 +367,9 @@
 	//#define WITHUSEAUDIORECCLASSIC	1	// стандартный формат записи, без "дыр"
 
 	#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
-	#define WITHFFTOVERLAPPOW2	4	/* Количество перекрывающися буферов FFT спектра (2^param). */
-	#define WITHFFTSIZEWIDE 2048		/* Отображение спектра и волопада */
-	#define WITHFFTSIZEAF 	512		/* Отображение спектра НЧ сигнвлв */
+	#define WITHFFTOVERLAPPOW2	5		/* Количество перекрывающися буферов FFT спектра (2^param). */
+	#define WITHFFTSIZEWIDE 	2048	/* Отображение спектра и волопада */
+	#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
 	//#define WITHDISPLAY_FPS		25
 	#define WITHDISPLAYSWR_FPS	25
 
