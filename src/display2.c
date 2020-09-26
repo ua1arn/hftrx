@@ -758,30 +758,30 @@ enum
 	NOVERLAP = 1 << WITHFFTOVERLAPPOW2,		// Количество перекрывающися буферов FFT спектра
 	BOARD_FFTZOOM_MAX = (1 << BOARD_FFTZOOM_POW2MAX),
 
-	LARGEFFT = FFTSizeSpectrum * BOARD_FFTZOOM_MAX,	// размер буфера для децимации
-	NORMALFFT = FFTSizeSpectrum				// размер буфера для отображения
+	LARGEFFT = WITHFFTSIZEWIDE * BOARD_FFTZOOM_MAX,	// размер буфера для децимации
+	NORMALFFT = WITHFFTSIZEWIDE				// размер буфера для отображения
 };
 
-static RAMBIG FLOAT_t ifspec_wndfn [FFTSizeSpectrum];
+static RAMBIG FLOAT_t ifspec_wndfn [WITHFFTSIZEWIDE];
 
 static void buildsigwndifspec(void)
 {
 	int i;
-	for (i = 0; i < FFTSizeSpectrum; ++ i)
+	for (i = 0; i < WITHFFTSIZEWIDE; ++ i)
 	{
-		ifspec_wndfn [i] = fir_design_window(i, FFTSizeSpectrum, BOARD_WTYPE_SPECTRUM);
+		ifspec_wndfn [i] = fir_design_window(i, WITHFFTSIZEWIDE, BOARD_WTYPE_SPECTRUM);
 	}
 }
 
 static void printsigwnd(void)
 {
-	PRINTF(PSTR("static const FLASHMEM FLOAT_t ifspec_wndfn [%u] =\n"), (unsigned) FFTSizeSpectrum);
+	PRINTF(PSTR("static const FLASHMEM FLOAT_t ifspec_wndfn [%u] =\n"), (unsigned) WITHFFTSIZEWIDE);
 	PRINTF(PSTR("{\n"));
 
 	int i;
-	for (i = 0; i < FFTSizeSpectrum; ++ i)
+	for (i = 0; i < WITHFFTSIZEWIDE; ++ i)
 	{
-		ifspec_wndfn [i] = fir_design_window(i, FFTSizeSpectrum, BOARD_WTYPE_SPECTRUM);
+		ifspec_wndfn [i] = fir_design_window(i, WITHFFTSIZEWIDE, BOARD_WTYPE_SPECTRUM);
 		int el = ((i + 1) % 4) == 0;
 		PRINTF(PSTR("\t" "%+1.20f%s"), ifspec_wndfn [i], el ? ",\n" : ", ");
 	}
@@ -791,14 +791,12 @@ static void printsigwnd(void)
 enum
 {
 	AFSP_DECIMATIONPOW2 = 1,		// x2
-	AFSP_DECIMATION = (1 << AFSP_DECIMATIONPOW2),
-
-	FFTSizeAfSpectrum = 512
+	AFSP_DECIMATION = (1 << AFSP_DECIMATIONPOW2)
 };
 
 typedef struct {
-	float32_t raw_buf [FFTSizeAfSpectrum * AFSP_DECIMATION];		// Для последующей децимации /2
-	float32_t fft_buf [FFTSizeAfSpectrum * 2];		// комплексные числа
+	float32_t raw_buf [WITHFFTSIZEAF * AFSP_DECIMATION];		// Для последующей децимации /2
+	float32_t fft_buf [WITHFFTSIZEAF * 2];		// комплексные числа
 	uint_fast8_t is_ready;
 	uint_fast16_t x;
 	uint_fast16_t y;
@@ -811,7 +809,7 @@ typedef struct {
 
 static afsp_t afsp;
 
-static RAMBIG FLOAT_t afspec_wndfn [FFTSizeAfSpectrum];
+static RAMBIG FLOAT_t afspec_wndfn [WITHFFTSIZEAF];
 
 // перевод позиции в окне в номер бина - отображение с нулевой частотой в центре окна
 static int raster2fft(
@@ -830,7 +828,7 @@ static int raster2fft(
 // перевести частоту в позицию бина результата FFT децимированного спектра
 static int freq2fft_af(int freq)
 {
-	return AFSP_DECIMATION * freq * FFTSizeAfSpectrum / dsp_get_samplerateuacin_audio48();
+	return AFSP_DECIMATION * freq * WITHFFTSIZEAF / dsp_get_samplerateuacin_audio48();
 }
 
 // перевод позиции в окне в номер бина - отображение с нулевой частотой в левой стороне окна
@@ -877,12 +875,12 @@ display2_af_spectre15_init(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx
 	afsp.h = 40;
 	afsp.is_ready = 0;
 
-	VERIFY(ARM_MATH_SUCCESS == arm_rfft_fast_init_f32(& afsp.instance, FFTSizeAfSpectrum));
+	VERIFY(ARM_MATH_SUCCESS == arm_rfft_fast_init_f32(& afsp.instance, WITHFFTSIZEAF));
 
 	int i;
-	for (i = 0; i < FFTSizeAfSpectrum; ++ i)
+	for (i = 0; i < WITHFFTSIZEAF; ++ i)
 	{
-		afspec_wndfn [i] = fir_design_window(i, FFTSizeAfSpectrum, BOARD_WTYPE_SPECTRUM);
+		afspec_wndfn [i] = fir_design_window(i, WITHFFTSIZEAF, BOARD_WTYPE_SPECTRUM);
 	}
 
 	subscribefloat_user(& afoutfloat_user, & afspectreregister, NULL, afsp_save_sample);
@@ -896,13 +894,13 @@ display2_af_spectre15_latch(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pct
 		const unsigned leftfftpos = freq2fft_af(glob_afspeclow);	// нижняя частота (номер бина) отлбражаемая на экране
 		const unsigned rightfftpos = freq2fft_af(glob_afspechigh);	// последний бин буфера FFT, отобрааемый на экране (включитеоьно)
 
-		fftzoom_af(afsp.raw_buf, AFSP_DECIMATIONPOW2, FFTSizeAfSpectrum);
+		fftzoom_af(afsp.raw_buf, AFSP_DECIMATIONPOW2, WITHFFTSIZEAF);
 		// осталась половина буфера
 
-		arm_mult_f32(afsp.raw_buf, ifspec_wndfn, afsp.raw_buf, FFTSizeAfSpectrum); // apply window function
+		arm_mult_f32(afsp.raw_buf, ifspec_wndfn, afsp.raw_buf, WITHFFTSIZEAF); // apply window function
 		arm_rfft_fast_f32(& afsp.instance, afsp.raw_buf, afsp.fft_buf, 0); // 0-прямое, 1-обратное
 		afsp.is_ready = 0;	// буфер больше не нужен... но он заполняется так же в user mode
-		arm_cmplx_mag_f32(afsp.fft_buf, afsp.fft_buf, FFTSizeAfSpectrum);
+		arm_cmplx_mag_f32(afsp.fft_buf, afsp.fft_buf, WITHFFTSIZEAF);
 
 		ASSERT(afsp.w <= ARRAY_SIZE(afsp.val_array));
 		for (unsigned x = 0; x < afsp.w; x ++)

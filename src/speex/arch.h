@@ -35,57 +35,9 @@
 #ifndef ARCH_H
 #define ARCH_H
 
-#if CPUSTYLE_R7S721 && WITHNOSPEEX
-	// No speex
-	#define FFTSizeFiltersM 10
-	#define FFTSizeSpectrumM 9
 
-#elif CPUSTYLE_R7S721 && ! WITHNOSPEEX
-	// With speex
-	#define FFTSizeFiltersM 10
-	#define FFTSizeSpectrumM 9
-
-#elif CPUSTYLE_STM32H7XX && WITHNOSPEEX
-	// No speex
-	#define FFTSizeFiltersM 10
-	#define FFTSizeSpectrumM 9
-
-#elif CPUSTYLE_STM32H7XX && ! WITHNOSPEEX
-	// With speex
-	#define FFTSizeFiltersM 10
-	#define FFTSizeSpectrumM 9
-
-#elif CPUSTYLE_STM32F7XX && WITHNOSPEEX
-	// No speex
-	#define FFTSizeFiltersM 10
-	#define FFTSizeSpectrumM 9
-
-#elif CPUSTYLE_STM32F7XX && ! WITHNOSPEEX
-	// With speex
-	#define FFTSizeFiltersM 10
-	#define FFTSizeSpectrumM 9
-
-#elif CPUSTYLE_STM32F4XX
-
-	#define FFTSizeFiltersM 10
-	#define FFTSizeSpectrumM 8
-
-#elif CPUSTYLE_STM32MP1
-
-	#define FFTSizeFiltersM 10
-	#define FFTSizeSpectrumM 11
-
-#else
-
-	#define FFTSizeFiltersM 10
-	#define FFTSizeSpectrumM 8
-
-#endif
-
-// Обображение спектра и волопада
-#define FFTSizeSpectrum (1 << (FFTSizeSpectrumM))
 // Используется при формировании корректированной АЧХ звука. Должно быть размером достаточным, чтобы влезли используемые фильтры
-#define FFTSizeFilters (1 << (FFTSizeFiltersM))
+#define FFTSizeFilters 1024
 
 #define SPEEXNN (FFTSizeFilters / 2)
 

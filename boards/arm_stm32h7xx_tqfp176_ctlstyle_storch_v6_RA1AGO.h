@@ -285,6 +285,8 @@
 
 	#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 	#define WITHFFTOVERLAPPOW2	0	/* Количество перекрывающися буферов FFT спектра (2^param). */
+	#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */
+	#define WITHFFTSIZEAF 	512		/* Отображение спектра НЧ сигнвлв */
 	//#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
 	#define BOARD_FFTZOOM_POW2MAX 1	// Возможные масштабы FFT x1, x2, x4, x8
 	//#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
