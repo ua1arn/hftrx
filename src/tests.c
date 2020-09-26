@@ -5347,6 +5347,39 @@ static void RAMFUNC_NONILINE cplxmlasave(cplxf *d, int len) {
 
 #endif
 
+#if (__CORTEX_A != 0)
+
+static void disableAllIRQs(void)
+{
+	IRQ_Disable(43);	// DMA1_Stream0_IRQn
+	IRQ_Disable(47);	// DMA1_Stream4_IRQn
+	IRQ_Disable(89);	// DMA2_Stream1_IRQn
+	IRQ_Disable(100);	// DMA2_Stream5_IRQn
+//	IRQ_Disable(106);	// USBH_OHCI_IRQn
+//	IRQ_Disable(107);	// USBH_EHCI_IRQn
+	IRQ_Disable(82);	// TIM5_IRQn systick
+//	IRQ_Disable(61);	// TIM3_IRQn elkey
+	IRQ_Disable(99);	// EXTI9_IRQn
+	IRQ_Disable(109);	// EXTI13_IRQn
+	IRQ_Disable(50);	// ADC1_IRQn
+	IRQ_Disable(122);	// ADC2_IRQn
+	IRQ_Disable(130);	// OTG_IRQn
+
+	// Get ITLinesNumber
+	const unsigned n = ((GIC_DistributorInfo() & 0x1f) + 1) * 32;
+	unsigned i;
+	// 32 - skip SGI handlers (keep enabled for CPU1 start).
+	for (i = 32; i < n; ++ i)
+	{
+		if (IRQ_GetEnableState(i))
+			PRINTF("disableAllIRQs: active=%u // IRQ_Disable(%u); \n", i, i);
+		//IRQ_Disable(i);
+	}
+	PRINTF("disableAllIRQs: n=%u\n", n);
+
+}
+#endif /* (__CORTEX_A != 0) */
+
 void hightests(void)
 {
 #if WITHLTDCHW && LCDMODE_LTDC
@@ -6287,6 +6320,7 @@ void hightests(void)
 #if 0 && LCDMODE_COLORED && ! DSTYLE_G_DUMMY
 	{
 		display2_bgreset();
+		disableAllIRQs();
 		//GrideTest();
 		BarTest();
 	}
