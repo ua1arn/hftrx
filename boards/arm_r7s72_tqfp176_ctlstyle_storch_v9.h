@@ -245,7 +245,7 @@
 	#define BOARD_DETECTOR_SSB 	0		// Заглушка
 
 	/* коды фильтров второй ПЧ, выдаваемые на дешифраторы */
-	#define BOARD_FILTER_0P5		1	/* 0.5 or 0.3 kHz filter */
+	#define BOARD_FILTER_0P5		0	/* 0.5 or 0.3 kHz filter */
 	#define BOARD_FILTER_3P1		0	/* 3.1 or 2.75 kHz filter */
 	#define BOARD_FILTER_6P0		0	/* 6.0 kHz filter */
 	#define BOARD_FILTER_8P0		0	/* 6.0 kHz filter */
@@ -253,10 +253,9 @@
 
 	//#define WITHRTS192	1		// Есть канал спектроанализатора - не забыть включить WITHSAI2HW
 	#define WITHRTS96		1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
-	#define WITHFFTOVERLAPPOW2	1	/* Количество перекрывающися буферов FFT спектра (2^param). */
-	#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */
-	#define WITHFFTSIZEAF 	512		/* Отображение спектра НЧ сигнвлв */
 	#if LCDMODE_AT070TNA2 || LCDMODE_AT070TN90
+		#define WITHFFTSIZEWIDE 1024	/* Отображение спектра и волопада */
+		#define WITHFFTOVERLAPPOW2	1	/* Количество перекрывающися буферов FFT спектра (2^param). */
 		#if 0
 			#define WITHTOUCHGUI		1
 			#define WITHAFSPECTRE		1	/* показ спктра прослушиваемого НЧ сигнала. */
@@ -264,7 +263,11 @@
 			#define FORMATFROMLIBRARY 	1
 			#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 		#endif
-		#define WITHAFSPECTRE		1	/* показ спктра прослушиваемого НЧ сигнала. */
+		#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
+		#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
+	#elif LCDMODE_LQ043T3DX02K
+		#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */
+		#define WITHFFTOVERLAPPOW2	2	/* Количество перекрывающися буферов FFT спектра (2^param). */
 	#endif /* LCDMODE_AT070TNA2 || LCDMODE_AT070TN90 */
 
 	#define ENCRES_DEFAULT ENCRES_128
@@ -330,7 +333,7 @@
 	#define CODEC2_TYPE	CODEC_TYPE_FPGAV1	/* квадратуры получаем от FPGA */
 
 	#define WITHI2S_FORMATI2S_PHILIPS 1	// Возможно использование при передаче данных в кодек, подключенный к наушникам и микрофону
-	#define WITHI2S_FRAMEBITS 64	// Полный размер фрейма для двух каналов - канал кодека
+	#define WITHI2S_FRAMEBITS 32	// Полный размер фрейма для двух каналов - канал кодека
 	//#define CODEC_TYPE_NAU8822_MASTER 1	// кодек формирует синхронизацию
 
 	#define WITHSAI1_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
