@@ -788,6 +788,8 @@ static void printsigwnd(void)
 	PRINTF(PSTR("};\n"));
 }
 
+#if WITHAFSPECTRE
+
 enum
 {
 	AFSP_DECIMATIONPOW2 = 1,		// x2
@@ -947,6 +949,8 @@ display2_af_spectre15(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)
 		break;
 	}
 }
+
+#endif /* WITHAFSPECTRE */
 
 #endif /* LCDMODE_LTDC */
 
