@@ -813,20 +813,6 @@ static afsp_t afsp;
 
 static RAMBIG FLOAT_t afspec_wndfn [WITHFFTSIZEAF];
 
-// перевод позиции в окне в номер бина - отображение с нулевой частотой в центре окна
-static int raster2fft(
-	int x,	// window pos
-	int dx,	// width
-	int fftsize,	// размер буфера FFT (в бинах)
-	int visiblefftsize	// Часть буфера FFT, отобрааемая на экране (в бинах)
-	)
-{
-	const int xm = dx / 2;	// middle
-	const int delta = x - xm;	// delta in pixels
-	const int fftoffset = delta * (visiblefftsize / 2 - 1) / xm;
-	return fftoffset < 0 ? (fftsize + fftoffset) : fftoffset;
-}
-
 // перевести частоту в позицию бина результата FFT децимированного спектра
 static int freq2fft_af(int freq)
 {
@@ -7109,6 +7095,20 @@ make_cmplx(
 		dst [1] = * imgev ++;
 		dst += 2;
 	}
+}
+
+// перевод позиции в окне в номер бина - отображение с нулевой частотой в центре окна
+static int raster2fft(
+	int x,	// window pos
+	int dx,	// width
+	int fftsize,	// размер буфера FFT (в бинах)
+	int visiblefftsize	// Часть буфера FFT, отобрааемая на экране (в бинах)
+	)
+{
+	const int xm = dx / 2;	// middle
+	const int delta = x - xm;	// delta in pixels
+	const int fftoffset = delta * (visiblefftsize / 2 - 1) / xm;
+	return fftoffset < 0 ? (fftsize + fftoffset) : fftoffset;
 }
 
 // Копрование информации о спектре с текущую строку буфера
