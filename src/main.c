@@ -20124,6 +20124,28 @@ void hamradio_set_gbottomdb(uint_fast8_t v)
 
 #endif /* WITHSPECTRUMWF */
 
+const char * hamradio_get_att_value(void)
+{
+	const uint_fast8_t bi = getbankindex_tx(gtx);
+	return attmodes [gatts [bi]].label;
+}
+
+const char * hamradio_get_preamp_value(void)
+{
+	const uint_fast8_t bi = getbankindex_tx(gtx);
+	return pampmodes [gatts [bi]].label;
+}
+
+void hamradio_change_att(void)
+{
+	uif_key_click_attenuator();
+}
+
+void hamradio_change_preamp(void)
+{
+	uif_key_click_pamp();
+}
+
 // основной цикл программы при работе в режиме любительского премника
 static void
 hamradio_mainloop(void)

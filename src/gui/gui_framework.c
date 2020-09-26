@@ -492,12 +492,34 @@ void remove_end_line_spaces(char * str)
 	size_t i = strlen(str);
 	if (i == 0)
 		return;
+
 	for (; -- i > 0;)
 	{
 		if (str [i] != ' ')
 			break;
 	}
 	str [i + 1] = '\0';
+}
+
+/* Удаление пробелов в начале строки */
+const char * remove_start_line_spaces(const char * str)
+{
+	size_t len = strlen(str);
+	uint_fast8_t i = 0;
+
+	if (len == 0)
+		return NULL;
+
+	for (; i < len; i ++)
+	{
+		if (str[i] != ' ')
+			break;
+	}
+
+	if (i >= len)
+		return NULL;
+	else
+		return str + i;
 }
 
 /* Отрисовка кнопки */

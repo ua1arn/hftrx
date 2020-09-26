@@ -3422,6 +3422,10 @@ void hamradio_set_gmutespkr(uint_fast8_t v);
 #endif /* WITHSPKMUTE */
 
 uint_fast8_t hamradio_verify_freq_bands(uint_fast32_t freq, uint_fast32_t * bottom, uint_fast32_t * top);
+const char * hamradio_get_att_value(void);
+const char * hamradio_get_preamp_value(void);
+void hamradio_change_att(void);
+void hamradio_change_preamp(void);
 
 /* выбор внешнего вида прибора - стрелочный или градусник */
 enum
