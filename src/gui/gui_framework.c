@@ -689,7 +689,6 @@ static void fill_button_bg_buf(btn_bg_t * v)
 	GUI_MEM_ASSERT(v->bg_disabled);
 
 	buf = v->bg_non_pressed;
-	GUI_MEM_ASSERT(buf);
 #if GUI_OLDBUTTONSTYLE
 	colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLOR_BUTTON_NON_LOCKED, 1);
 	colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORMAIN_GRAY, 0);
@@ -702,7 +701,6 @@ static void fill_button_bg_buf(btn_bg_t * v)
 #endif /* GUI_OLDBUTTONSTYLE */
 
 	buf = v->bg_pressed;
-	GUI_MEM_ASSERT(buf);
 #if GUI_OLDBUTTONSTYLE
 	colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLOR_BUTTON_PR_NON_LOCKED, 1);
 	colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORMAIN_GRAY, 0);
@@ -718,7 +716,6 @@ static void fill_button_bg_buf(btn_bg_t * v)
 #endif /* GUI_OLDBUTTONSTYLE */
 
 	buf = v->bg_locked;
-	GUI_MEM_ASSERT(buf);
 #if GUI_OLDBUTTONSTYLE
 	colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLOR_BUTTON_LOCKED, 1);
 	colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORMAIN_GRAY, 0);
@@ -731,7 +728,6 @@ static void fill_button_bg_buf(btn_bg_t * v)
 #endif /* GUI_OLDBUTTONSTYLE */
 
 	buf = v->bg_locked_pressed;
-	GUI_MEM_ASSERT(buf);
 #if GUI_OLDBUTTONSTYLE
 	colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLOR_BUTTON_PR_LOCKED, 1);
 	colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORMAIN_GRAY, 0);
@@ -747,7 +743,6 @@ static void fill_button_bg_buf(btn_bg_t * v)
 #endif /* GUI_OLDBUTTONSTYLE */
 
 	buf = v->bg_disabled;
-	GUI_MEM_ASSERT(buf);
 #if GUI_OLDBUTTONSTYLE
 	colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLOR_BUTTON_DISABLED, 1);
 	colpip_rect(buf, w, h, 0, 0, w - 1, h - 1, COLORMAIN_GRAY, 0);

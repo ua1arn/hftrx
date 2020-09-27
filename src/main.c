@@ -20133,7 +20133,7 @@ const char * hamradio_get_att_value(void)
 const char * hamradio_get_preamp_value(void)
 {
 	const uint_fast8_t bi = getbankindex_tx(gtx);
-	return pampmodes [gatts [bi]].label;
+	return pampmodes [gpamps [bi]].label;
 }
 
 void hamradio_change_att(void)
