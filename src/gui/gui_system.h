@@ -21,6 +21,7 @@ void close_all_windows(void);
 void calculate_window_position(window_t * win, uint_fast8_t mode, ...);
 void elements_state (window_t * win);
 void remove_end_line_spaces(char * str);
+const char * remove_start_line_spaces(const char * str);
 void reset_tracking(void);
 uint_fast8_t is_short_pressed(void);
 uint_fast8_t is_long_pressed(void);

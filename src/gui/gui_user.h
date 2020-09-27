@@ -38,11 +38,12 @@ enum {
 	WINDOW_TX_SETTINGS,				// настройки, относящиеся к режиму передачи
 	WINDOW_TX_VOX_SETT,				// настройки VOX
 	WINDOW_TX_POWER,				// выходная мощность
-	WINDOW_OPTIONS,
-	WINDOW_UTILS,
-	WINDOW_BANDS,
-	WINDOW_MEMORY,
-	WINDOW_DISPLAY,
+	WINDOW_OPTIONS,					// различные настройки
+	WINDOW_UTILS,					// измерения и т.д.
+	WINDOW_BANDS,					// выбор диапазона
+	WINDOW_MEMORY,					// ячейки памяти
+	WINDOW_DISPLAY,					// настройки отображения
+	WINDOW_RECEIVE,					// настройки приема
 
 	WINDOWS_COUNT
 };
