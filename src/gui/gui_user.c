@@ -138,6 +138,7 @@ int_fast8_t pop_enc2_stack(void)
 void gui_user_actions_after_close_window(void)
 {
 	clean_enc2_stack();
+	hamradio_disable_encoder2_redirect();
 }
 
 // *********************************************************************************************************************************************************************
@@ -763,6 +764,7 @@ static void buttons_options_handler(void)
 		{
 			window_t * win = get_win(WINDOW_MENU);
 			open_window(win);
+			hamradio_enable_encoder2_redirect();
 		}
 		else if (pressed_btn == btn_Display)
 		{
@@ -3486,11 +3488,13 @@ void gui_uif_editmenu(const char * name, uint_fast16_t menupos, uint_fast8_t exi
 		strcpy(menu_uif.name, name);
 		menu_uif.menupos = menupos;
 		menu_uif.exitkey = exitkey;
+		hamradio_enable_encoder2_redirect();
 	}
 	else if (win->state == VISIBLE)
 	{
 		close_window(DONT_OPEN_PARENT_WINDOW);
 		footer_buttons_state(CANCELLED);
+		hamradio_disable_encoder2_redirect();
 	}
 }
 
@@ -3525,6 +3529,7 @@ static void window_uif_process(void)
 	{
 		win->first_call = 0;
 		reinit = 1;
+		static const uint_fast8_t win_width = 170;
 
 		static const button_t buttons [] = {
 		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
@@ -3539,7 +3544,6 @@ static void window_uif_process(void)
 
 		static const label_t labels [] = {
 		//    x, y,  parent,  state, is_trackable, visible,   name,  Text, font_size, 	color, 	 onClickHandler
-			{ 0, 0,	WINDOW_UIF,  DISABLED,  0, NON_VISIBLE, "lbl_uif_param", "", FONT_LARGE, COLORMAIN_WHITE, },
 			{ 0, 0,	WINDOW_UIF,  DISABLED,  0, NON_VISIBLE, "lbl_uif_val", 	 "", FONT_LARGE, COLORMAIN_WHITE, },
 		};
 		win->lh_count = ARRAY_SIZE(labels);
@@ -3547,6 +3551,9 @@ static void window_uif_process(void)
 		win->lh_ptr = malloc(labels_size);
 		GUI_MEM_ASSERT(win->lh_ptr);
 		memcpy(win->lh_ptr, labels, labels_size);
+
+		label_t * lbl_uif_val = find_gui_element(TYPE_LABEL, win, "lbl_uif_val");
+		calculate_window_position(win, WINDOW_POSITION_MANUAL, win_width, window_title_height + get_label_height(lbl_uif_val) * 4);
 	}
 
 	if (reinit)
@@ -3575,8 +3582,6 @@ static void window_uif_process(void)
 		lbl_uif_val->x = window_center_x - get_label_width(lbl_uif_val) / 2;
 		lbl_uif_val->y = row1_int + button_up->h / 2 - get_label_height(lbl_uif_val) / 2;
 		lbl_uif_val->visible = VISIBLE;
-
-		calculate_window_position(win, WINDOW_POSITION_AUTO);
 
 		hamradio_enable_keyboard_redirect();
 		return;

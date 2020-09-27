@@ -3344,6 +3344,8 @@ void hamradio_set_agc_fast(void);
 uint_fast8_t hamradio_get_agc_type(void);
 void hamradio_disable_keyboard_redirect(void);
 void hamradio_enable_keyboard_redirect(void);
+void hamradio_disable_encoder2_redirect (void);
+void hamradio_enable_encoder2_redirect (void);
 uint_fast8_t hamradio_set_freq (uint_fast32_t freq);
 void hamradio_set_lockmode (uint_fast8_t lock);
 int_fast16_t hamradio_if_shift(int_fast8_t step);

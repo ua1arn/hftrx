@@ -149,6 +149,7 @@ static uint_fast8_t keyboard_redirect = 0;	// перенаправление к�
 static char menuw [20];						// буфер для вывода значений системного меню
 static enc2_menu_t enc2_menu;
 static uint_fast8_t band_no_check = 0;
+static uint_fast8_t encoder2_redirect = 0;
 #endif /* WITHTOUCHGUI */
 
 static uint_fast32_t 
@@ -6419,6 +6420,11 @@ uif_encoder2_rotate(
 {
 	if (nrotate == 0)
 		return 0;
+
+#if WITHTOUCHGUI
+	if (encoder2_redirect)
+		return 0;
+#endif
 
 	switch (enc2state)
 	{
@@ -19589,6 +19595,16 @@ void hamradio_disable_keyboard_redirect (void)
 void hamradio_enable_keyboard_redirect (void)
 {
 	keyboard_redirect = 1;
+}
+
+void hamradio_disable_encoder2_redirect (void)
+{
+	encoder2_redirect = 0;
+}
+
+void hamradio_enable_encoder2_redirect (void)
+{
+	encoder2_redirect = 1;
 }
 
 //todo: добавить учет текущего режима
