@@ -522,37 +522,36 @@ static void window_memory_process(void)
 		uint_fast8_t interval = 6, col1_int = 20, row1_int = window_title_height + 20, row_count = 5;
 		win->first_call = 0;
 
-		static const button_t buttons [] = {
-		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,     	 	payload,	 name, 		text
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, INT32_MAX, "btn_cell0", "---", },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, INT32_MAX, "btn_cell1", "---", },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, INT32_MAX, "btn_cell2", "---", },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, INT32_MAX, "btn_cell3", "---", },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, INT32_MAX, "btn_cell4", "---", },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, INT32_MAX, "btn_cell5", "---", },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, INT32_MAX, "btn_cell6", "---", },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, INT32_MAX, "btn_cell7", "---", },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, INT32_MAX, "btn_cell8", "---", },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, INT32_MAX, "btn_cell9", "---", },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, INT32_MAX, "btn_cell10", "---", },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, INT32_MAX, "btn_cell11", "---", },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, INT32_MAX, "btn_cell12", "---", },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, INT32_MAX, "btn_cell13", "---", },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, INT32_MAX, "btn_cell14", "---", },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, INT32_MAX, "btn_cell15", "---", },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, INT32_MAX, "btn_cell16", "---", },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, INT32_MAX, "btn_cell17", "---", },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, INT32_MAX, "btn_cell18", "---", },
-			{ 0, 0, 100, 44, buttons_memory_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MEMORY, NON_VISIBLE, INT32_MAX, "btn_cell19", "---", },
-		};
-		win->bh_count = ARRAY_SIZE(buttons);
-		uint_fast16_t buttons_size = sizeof(buttons);
+		win->bh_count = memory_cells_count;
+		uint_fast16_t buttons_size = win->bh_count * sizeof (button_t);
 		win->bh_ptr = malloc(buttons_size);
 		GUI_MEM_ASSERT(win->bh_ptr);
-		memcpy(win->bh_ptr, buttons, buttons_size);
+
+		label_t labels [] = {
+		//    x, y,  parent, state, is_trackable, visible,  	name, 	Text, 	font_size, 	color,
+			{ 0, 0, WINDOW_MEMORY, DISABLED,  0, NON_VISIBLE, "lbl_note1", "",  FONT_MEDIUM, COLORMAIN_WHITE, },
+			{ 0, 0, WINDOW_MEMORY, DISABLED,  0, NON_VISIBLE, "lbl_note2", "",  FONT_MEDIUM, COLORMAIN_WHITE, },
+		};
+		win->lh_count = ARRAY_SIZE(labels);
+		uint_fast16_t labels_size = sizeof(labels);
+		win->lh_ptr = malloc(labels_size);
+		GUI_MEM_ASSERT(win->lh_ptr);
+		memcpy(win->lh_ptr, labels, labels_size);
+
+		label_t * lh1 = find_gui_element(TYPE_LABEL, win, "lbl_note1");
+		lh1->x = col1_int;
+		lh1->y = row1_int;
+		lh1->visible = VISIBLE;
+		local_snprintf_P(lh1->text, ARRAY_SIZE(lh1->text), PSTR("Long press on empty cell - sa"));
+
+		label_t * lh2 = find_gui_element(TYPE_LABEL, win, "lbl_note2");
+		lh2->x = lh1->x + get_label_width(lh1);
+		lh2->y = row1_int;
+		lh2->visible = VISIBLE;
+		local_snprintf_P(lh2->text, ARRAY_SIZE(lh2->text), PSTR("ve, on saved cell - clean"));
 
 		x = col1_int;
-		y = row1_int;
+		y = lh2->y + get_label_height(lh2) * 2;
 
 		for (uint_fast8_t i = 0, r = 1; i < win->bh_count; i ++, r ++)
 		{
@@ -560,7 +559,13 @@ static void window_memory_process(void)
 			bh->x1 = x;
 			bh->y1 = y;
 			bh->visible = VISIBLE;
-			bh->payload = 0;
+			bh->w = 100;
+			bh->h = 44;
+			bh->onClickHandler = buttons_memory_handler;
+			bh->state = CANCELLED;
+			bh->parent = WINDOW_MEMORY;
+			bh->is_long_press = 1;
+			bh->is_locked = BUTTON_NON_LOCKED;
 
 			x = x + interval + bh->w;
 			if (r >= row_count)
@@ -575,6 +580,11 @@ static void window_memory_process(void)
 			{
 				local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("%dk"), freq / 1000);
 				bh->payload = 1;
+			}
+			else
+			{
+				local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("---"));
+				bh->payload = 0;
 			}
 		}
 
