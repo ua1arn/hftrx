@@ -250,7 +250,7 @@
 	//#define WITHRTS192	1		// Есть канал спектроанализатора - не забыть включить WITHSAI2HW
 	#define WITHRTS96		1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 	#if LCDMODE_AT070TNA2 || LCDMODE_AT070TN90
-		#define WITHFFTSIZEWIDE 1024	/* Отображение спектра и волопада */
+		#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */
 		#define WITHFFTOVERLAPPOW2	1	/* Количество перекрывающися буферов FFT спектра (2^param). */
 		#if 0
 			#define WITHTOUCHGUI		1
