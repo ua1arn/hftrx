@@ -17,8 +17,95 @@
 #include "ff.h"	
 #include "diskio.h"		/* FatFs lower layer API */
 
-#include "src/display/display.h"	/* используем функцию получения рабочей частоты */
-//#include "audio.h"
+#if WITHUSERAMDISK
+
+static uint8_t ramdiskbuff [(uint_fast64_t) WITHUSERAMDISKSIZEKB * 1024 / FF_MAX_SS][FF_MAX_SS];
+
+// for _USE_MKFS
+static
+DRESULT RAMDISK_Get_Block_Size (
+	BYTE drv,		/* Physical drive nmuber (0..) */
+	DWORD  *buff	/* Data buffer to store read data */
+	)
+{
+	* buff = FF_MAX_SS;
+	return RES_OK;
+}
+
+// for _USE_MKFS
+static
+DRESULT RAMDISK_Get_Sector_Count (
+	BYTE drv,		/* Physical drive nmuber (0..) */
+	DWORD  *buff	/* Data buffer to store read data */
+	)
+{
+	//PRINTF(PSTR("RAMDISK_Get_Sector_Count: drv=%d\n"), (int) drv);
+	* buff = (uint_fast64_t) WITHUSERAMDISKSIZEKB * 1024 / FF_MAX_SS;
+	return RES_OK;
+}
+
+/* запись буферизированных данных на носитель */
+static
+DRESULT RAMDISK_Sync(BYTE drv)
+{
+	return RES_OK;
+}
+
+static
+DSTATUS RAMDISK_Initialize (
+	BYTE drv				/* Physical drive nmuber (0..) */
+)
+{
+	return 0;
+}
+
+
+static
+DSTATUS RAMDISK_Status (
+	BYTE drv		/* Physical drive nmuber (0..) */
+)
+{
+	return 0;
+}
+
+// write a size Byte big block beginning at the address.
+static
+DRESULT RAMDISK_disk_write(
+	BYTE drv,			/* Physical drive nmuber (0..) */
+	const BYTE *buff,	/* Data to be written */
+	DWORD sector,		/* Sector address (LBA) */
+	UINT count			/* Number of sectors to write */
+	)
+{
+	memcpy(ramdiskbuff [sector], buff, count * FF_MAX_SS);
+	return RES_OK;
+}
+
+// read a size Byte big block beginning at the address.
+static
+DRESULT RAMDISK_disk_read(
+	BYTE drv,			/* Physical drive nmuber (0..) */
+	BYTE *buff,		/* Data buffer to store read data */
+	DWORD sector,	/* Sector address (LBA) */
+	UINT count		/* Number of sectors to read */
+	)
+{
+	memcpy(buff, ramdiskbuff [sector], count * FF_MAX_SS);
+	return RES_OK;
+}
+
+const struct drvfunc RAMDISK_drvfunc =
+{
+	RAMDISK_Initialize,
+	RAMDISK_Status,
+	RAMDISK_Sync,
+	RAMDISK_disk_write,
+	RAMDISK_disk_read,
+	RAMDISK_Get_Sector_Count,
+	RAMDISK_Get_Block_Size,
+};
+
+#endif /* WITHUSERAMDISK */
 
 static const struct drvfunc * const drvfuncs [] =
 {
@@ -31,6 +118,9 @@ static const struct drvfunc * const drvfuncs [] =
 #if WITHUSEUSBFLASH
 	& USBH_drvfunc,
 #endif /* WITHUSEUSBFLASH */
+#if WITHUSERAMDISK
+	& RAMDISK_drvfunc,
+#endif /* WITHUSERAMDISK */
 };
 /*
 	TODO:
