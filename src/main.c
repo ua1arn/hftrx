@@ -18503,6 +18503,22 @@ hamradio_initialize(void)
 #if WITHUSESDCARD
 	sdcardhw_initialize();
 #endif /* WITHUSESDCARD */
+#if WITHUSERAMDISK
+	{
+		ALIGNX_BEGIN BYTE work [FF_MAX_SS] ALIGNX_END;
+		FRESULT rc;
+		PRINTF(PSTR("ramdisk: start formatting\n"));
+		rc = f_mkfs("0:", NULL, work, sizeof (work));
+		if (rc != FR_OK)
+		{
+			PRINTF(PSTR("ramdisk: f_mkfs failure\n"));
+		}
+		else
+		{
+			PRINTF(PSTR("ramdisk: f_mkfs okay\n"));
+		}
+	}
+#endif
 #if WITHUSEAUDIOREC
 	sdcardinitialize();			// перевод state machine в начальное состояние
 #endif /* WITHUSEAUDIOREC */
