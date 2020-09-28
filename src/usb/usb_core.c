@@ -14447,7 +14447,12 @@ void board_ehci_initialize(void)
 //        }
     }
 
-    static __attribute__((used, aligned(4096))) uint32_t tmpbuff [1024uL * 1024uL];
+    static __attribute__((used, aligned(4096))) uint32_t asyncbuff [1024uL * 1024uL];
+    static __attribute__((used, aligned(4096))) uint32_t framesbuff [1024uL * 1024uL];
+
+    USB1_EHCI->ASYNCLISTADDR = (uintptr_t) asyncbuff;
+    USB1_EHCI->PERIODICLISTBASE = (uintptr_t) framesbuff;
+    USB1_EHCI->CTRLDSSEGMENT = 0x00000000;
 
 	PRINTF("board_ehci_initialize: USBCMD=%08lX\n", (unsigned long) USB1_EHCI->USBCMD);
 	PRINTF("board_ehci_initialize: USBSTS=%08lX\n", (unsigned long) USB1_EHCI->USBSTS);
@@ -14456,7 +14461,7 @@ void board_ehci_initialize(void)
 	PRINTF("board_ehci_initialize: CTRLDSSEGMENT=%08lX\n", (unsigned long) USB1_EHCI->CTRLDSSEGMENT);
 	PRINTF("board_ehci_initialize: PERIODICLISTBASE=%08lX\n", (unsigned long) USB1_EHCI->PERIODICLISTBASE);
 	PRINTF("board_ehci_initialize: ASYNCLISTADDR=%08lX\n", (unsigned long) USB1_EHCI->ASYNCLISTADDR);
-	PRINTF("board_ehci_initialize: tmpbuff=%08lX\n", (unsigned long) & tmpbuff);
+	//PRINTF("board_ehci_initialize: asyncbuff=%08lX\n", (unsigned long) & asyncbuff);
 
 
 //	USBH_EHCI_IRQn
