@@ -19,7 +19,9 @@
 
 #if WITHUSERAMDISK
 
-static uint8_t ramdiskbuff [(uint_fast64_t) WITHUSERAMDISKSIZEKB * 1024 / FF_MAX_SS][FF_MAX_SS];
+static ALIGNX_BEGIN
+	uint8_t ramdiskbuff [(uint_fast64_t) WITHUSERAMDISKSIZEKB * 1024 / FF_MAX_SS][FF_MAX_SS]
+	ALIGNX_END;
 
 // for _USE_MKFS
 static
