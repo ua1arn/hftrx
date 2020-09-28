@@ -4014,7 +4014,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 	static uint_fast8_t gnfmdeviation = 55;	/* Девиация при передаче в NFM - в сотнях герц */
 
 	/*  Использование амплитуды сигнала с ЦАП передатчика - 0..100% */
-	static uint_fast8_t gdacscale = 80;	/* настраивается под прегруз драйвера. */
+	static uint_fast8_t gdacscale = 50;	/* настраивается под прегруз драйвера. */
 #endif /* WITHTX */
 
 
