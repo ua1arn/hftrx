@@ -17512,12 +17512,14 @@ process_key_menuset_common(uint_fast8_t kbch)
 #if WITHENCODER2
 	#if WITHTOUCHGUI
 		case KBD_ENC2_PRESS:
-			gui_set_encoder2_state (KBD_ENC2_PRESS);
-			uif_encoder2_press();
+			gui_set_encoder2_state(KBD_ENC2_PRESS);
+			if (! encoder2_redirect)
+				uif_encoder2_press();
 			return 0;
 		case KBD_ENC2_HOLD:
-			gui_set_encoder2_state (KBD_ENC2_HOLD);
-			uif_encoder2_hold();
+			gui_set_encoder2_state(KBD_ENC2_HOLD);
+			if (! encoder2_redirect)
+				uif_encoder2_hold();
 			return 0;
 	#else
 		case KBD_ENC2_PRESS:
@@ -19603,22 +19605,22 @@ uint_fast8_t hamradio_get_autonotch(void)
 
 #if WITHTOUCHGUI
 
-void hamradio_disable_keyboard_redirect (void)
+void hamradio_disable_keyboard_redirect(void)
 {
 	keyboard_redirect = 0;
 }
 
-void hamradio_enable_keyboard_redirect (void)
+void hamradio_enable_keyboard_redirect(void)
 {
 	keyboard_redirect = 1;
 }
 
-void hamradio_disable_encoder2_redirect (void)
+void hamradio_disable_encoder2_redirect(void)
 {
 	encoder2_redirect = 0;
 }
 
-void hamradio_enable_encoder2_redirect (void)
+void hamradio_enable_encoder2_redirect(void)
 {
 	encoder2_redirect = 1;
 }
