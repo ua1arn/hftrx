@@ -143,17 +143,18 @@ void gui_user_actions_after_close_window(void)
 
 static void btn_main_handler(void)
 {
+	window_t * winMain = get_win(WINDOW_MAIN);
+	button_t * pressed_btn = get_selected_button();
+	button_t * btn_Bands = find_gui_element(TYPE_BUTTON, winMain, "btn_Bands");
+	button_t * btn_Memory = find_gui_element(TYPE_BUTTON, winMain, "btn_Memory");
+	button_t * btn_Options = find_gui_element(TYPE_BUTTON, winMain, "btn_Options");
+	button_t * btn_ANotch = find_gui_element(TYPE_BUTTON, winMain, "btn_ANotch");
+	button_t * btn_speaker = find_gui_element(TYPE_BUTTON, winMain, "btn_speaker");
+	button_t * btn_Receive = find_gui_element(TYPE_BUTTON, winMain, "btn_Receive");
+	button_t * btn_txrx = find_gui_element(TYPE_BUTTON, winMain, "btn_txrx");
+
 	if (is_short_pressed())
 	{
-		window_t * winMain = get_win(WINDOW_MAIN);
-		button_t * pressed_btn = get_selected_button();
-		button_t * btn_Bands = find_gui_element(TYPE_BUTTON, winMain, "btn_Bands");
-		button_t * btn_Memory = find_gui_element(TYPE_BUTTON, winMain, "btn_Memory");
-		button_t * btn_Options = find_gui_element(TYPE_BUTTON, winMain, "btn_Options");
-		button_t * btn_ANotch = find_gui_element(TYPE_BUTTON, winMain, "btn_ANotch");
-		button_t * btn_speaker = find_gui_element(TYPE_BUTTON, winMain, "btn_speaker");
-		button_t * btn_Receive = find_gui_element(TYPE_BUTTON, winMain, "btn_Receive");
-
 		if (pressed_btn == btn_ANotch)
 		{
 			btn_ANotch->is_locked = hamradio_get_autonotch() ? BUTTON_NON_LOCKED : BUTTON_LOCKED;
@@ -225,6 +226,36 @@ static void btn_main_handler(void)
 				footer_buttons_state(DISABLED, btn_Receive);
 			}
 		}
+		else if (pressed_btn == btn_txrx)
+		{
+			btn_txrx->is_locked = hamradio_moxmode(1) ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
+			local_snprintf_P(btn_txrx->text, ARRAY_SIZE(btn_txrx->text), PSTR("%s"), btn_txrx->is_locked ? "TX" : "RX");
+		}
+	}
+
+	if (is_long_pressed())
+	{
+		if (pressed_btn == btn_txrx)
+		{
+			uint_fast8_t tune = hamradio_tunemode(1);
+			uint_fast8_t mox = hamradio_moxmode(0);
+
+			if (tune)
+			{
+				btn_txrx->is_locked = BUTTON_LOCKED;
+				local_snprintf_P(btn_txrx->text, ARRAY_SIZE(btn_txrx->text), PSTR("TX|tune"));
+			}
+			else if (! tune && mox)
+			{
+				btn_txrx->is_locked = BUTTON_LOCKED;
+				local_snprintf_P(btn_txrx->text, ARRAY_SIZE(btn_txrx->text), PSTR("TX"));
+			}
+			else if (! tune && ! mox)
+			{
+				btn_txrx->is_locked = BUTTON_NON_LOCKED;
+				local_snprintf_P(btn_txrx->text, ARRAY_SIZE(btn_txrx->text), PSTR("RX"));
+			}
+		}
 	}
 }
 
@@ -249,7 +280,8 @@ static void gui_main_process(void)
 		gui_enc2_menu.updated = 1;
 
 		static const button_t buttons [] = {
-		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
+		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   visible,      payload,	 name, 			text
+			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_txrx", 	"RX", },
 			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_Bands", 	"Bands", },
 			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_Memory",  	"Memory", },
 			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_Receive", 	"Receive|options", },
@@ -257,7 +289,6 @@ static void gui_main_process(void)
 			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_speaker", 	"Speaker|on air", },
 			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_1",  	 	"", },
 			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_2", 		"", },
-			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_3", 		"", },
 			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_Options", 	"Options", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);

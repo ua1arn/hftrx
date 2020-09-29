@@ -20180,6 +20180,20 @@ void hamradio_change_preamp(void)
 	uif_key_click_pamp();
 }
 
+uint_fast8_t hamradio_moxmode(uint_fast8_t v)
+{
+	if (v)
+		uif_key_tuneoff();
+	return moxmode;
+}
+
+uint_fast8_t hamradio_tunemode(uint_fast8_t v)
+{
+	if (v)
+		uif_key_tune();
+	return tunemode;
+}
+
 // основной цикл программы при работе в режиме любительского премника
 static void
 hamradio_mainloop(void)

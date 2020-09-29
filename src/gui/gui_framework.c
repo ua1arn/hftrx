@@ -387,8 +387,8 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 	if (mode)					// WINDOW_POSITION_MANUAL
 	{
 		va_start(arg, mode);
-		xmax = va_arg(arg, uint_fast8_t);
-		ymax = va_arg(arg, uint_fast8_t);
+		xmax = va_arg(arg, uint_fast16_t);
+		ymax = va_arg(arg, uint_fast16_t);
 		va_end(arg);
 	}
 	else						// WINDOW_POSITION_AUTO
