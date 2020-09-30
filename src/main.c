@@ -20180,6 +20180,8 @@ void hamradio_change_preamp(void)
 	uif_key_click_pamp();
 }
 
+#if WITHTX
+
 uint_fast8_t hamradio_moxmode(uint_fast8_t v)
 {
 	if (v)
@@ -20193,6 +20195,8 @@ uint_fast8_t hamradio_tunemode(uint_fast8_t v)
 		uif_key_tune();
 	return tunemode;
 }
+
+#endif /* WITHTX */
 
 // основной цикл программы при работе в режиме любительского премника
 static void

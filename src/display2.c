@@ -260,6 +260,7 @@ uint_fast16_t normalize3(
 		return normalize(raw - rawmid, 0, rawmax - rawmid, range2 - range1) + range1;
 }
 
+#if WITHTX
 
 uint_fast16_t get_swr(uint_fast16_t swr_fullscale)
 {
@@ -278,6 +279,7 @@ uint_fast16_t get_swr(uint_fast16_t swr_fullscale)
 	return swr10;
 }
 
+#endif /* WITHTX */
 
 #if LCDMODE_LTDC
 

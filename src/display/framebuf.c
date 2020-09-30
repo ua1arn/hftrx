@@ -1712,6 +1712,7 @@ display_string3_at_xy(uint_fast16_t x, uint_fast16_t y, const char * __restrict 
 #endif /* SMALLCHARH3 */
 
 
+#if ! LCDMODE_DUMMY
 
 // Установить прозрачность для прямоугольника
 void display_transparency(
@@ -1751,6 +1752,7 @@ void display_transparency(
 #endif
 }
 
+#endif /* ! LCDMODE_DUMMY */
 
 static uint_fast8_t scalecolor(
 	uint_fast8_t cv,	// color component value
