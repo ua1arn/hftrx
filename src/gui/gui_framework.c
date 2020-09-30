@@ -42,10 +42,39 @@ static btn_bg_t btn_bg [] = {
 };
 enum { BG_COUNT = ARRAY_SIZE(btn_bg) };
 
+static wm_stack_t wm;
 static gui_t gui = { 0, 0, KBD_CODE_MAX, TYPE_DUMMY, NULL, CANCELLED, 0, 0, 0, 0, 0, 1, };
 static gui_element_t gui_elements [GUI_ELEMENTS_ARRAY_SIZE];
 static uint_fast8_t gui_element_count = 0;
 static button_t close_button = { 0, 0, 0, 0, close_all_windows, CANCELLED, BUTTON_NON_LOCKED, 0, NO_PARENT_WINDOW, NON_VISIBLE, UINTPTR_MAX, "btn_close", "", };
+
+uint_fast8_t push_wm_stack(element_type_t type, uint_fast8_t parent_id, char * name, uint_fast8_t action)
+{
+	if (wm.size >= wm_stack_size)
+		return 0;					// стек переполнен, ошибка
+
+	wm.data [wm.size].type = type;
+	wm.data [wm.size].parent_id = parent_id;
+	wm.data [wm.size].action = action;
+	strcpy(wm.data [wm.size].name, name);
+	wm.size ++;
+
+	return 1;
+}
+
+uint_fast8_t pop_wm_stack(element_type_t * type, uint_fast8_t * parent_id, char * name, uint_fast8_t * action)
+{
+	if (wm.size == 0)
+		return 0;					// стек пустой
+
+	wm.size --;
+	* type = wm.data [wm.size].type;
+	* parent_id = wm.data [wm.size].parent_id;
+	* action = wm.data [wm.size].action;
+	strcpy(name, wm.data [wm.size].name);
+
+	return 1;
+}
 
 /* Обновить секундный таймер GUI */
 void gui_timer_update(void * arg)
@@ -891,7 +920,11 @@ static void set_state_record(gui_element_t * val)
 			gui.selected_link = val;
 			bh->state = val->state;
 			if (bh->state == RELEASED || bh->state == LONG_PRESSED)
+			{
 				bh->onClickHandler();
+				if (! push_wm_stack(TYPE_BUTTON, bh->parent, bh->name, bh->state))
+					PRINTF("WM stack: full!\n");
+			}
 			break;
 
 		case TYPE_LABEL:
@@ -901,7 +934,11 @@ static void set_state_record(gui_element_t * val)
 			gui.selected_link = val;
 			lh->state = val->state;
 			if (lh->onClickHandler && lh->state == RELEASED)
+			{
 				lh->onClickHandler();
+				if (! push_wm_stack(TYPE_LABEL, lh->parent, lh->name, lh->state))
+					PRINTF("WM stack: full!\n");
+			}
 			break;
 
 		case TYPE_SLIDER:
@@ -1058,6 +1095,19 @@ void gui_WM_walktrough(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
 	{
 		if (gui.win [i] == NO_PARENT_WINDOW)
 			break;
+
+#if 1
+		element_type_t type;
+		uint_fast8_t parent;
+		char name [20];
+		uint_fast8_t action;
+
+		if (pop_wm_stack(& type, & parent, name, & action))
+			PRINTF("WM stack: type - %d, parent - %d, name - %s, action - %d\n", type, parent, name, action);
+//		else
+//			PRINTF("WM stack: empty\n");
+
+#endif
 
 		const window_t * const win = get_win(gui.win [i]);
 		uint_fast8_t f = win->first_call;

@@ -192,5 +192,19 @@ typedef struct {
 	uint8_t win[win_gui_count];	// на экране не более 2х окон, одно из которых - основное на весь экран
 } gui_t;
 
+enum { wm_stack_size = 5 };			// размер буфера сообщений WM
+
+typedef struct {
+	element_type_t type;			// тип элемента
+	uint8_t parent_id;				// id окна
+	char name [NAME_ARRAY_SIZE];	// имя элемента
+	uint8_t action;					// состояние элемента
+} wm_data_t;
+
+typedef struct wm_stack_tag {		// очередь сообщений окнам от WM о взаимодействии с элементами GUI
+	wm_data_t data[wm_stack_size];
+    size_t size;
+} wm_stack_t;
+
 #endif /* WITHTOUCHGUI */
 #endif /* GUI_STRUCTS_H_INCLUDED */
