@@ -494,40 +494,6 @@ static void gui_main_process(void)
 
 // *********************************************************************************************************************************************************************
 
-static void buttons_memory_handler(void)
-{
-
-	button_t * btn_cell =  get_selected_button();
-	uint_fast8_t cell_id = get_selected_element_pos();
-
-	if (is_short_pressed())
-	{
-		if (btn_cell->payload)
-		{
-			hamradio_load_memory_cells(cell_id, 1);
-			close_window(DONT_OPEN_PARENT_WINDOW);
-			footer_buttons_state(CANCELLED);
-		}
-	}
-
-	if (is_long_pressed())
-	{
-		if (btn_cell->payload)
-		{
-			btn_cell->payload = 0;
-			hamradio_clean_memory_cells(cell_id);
-			local_snprintf_P(btn_cell->text, ARRAY_SIZE(btn_cell->text), PSTR("---"));
-		}
-		else
-		{
-			btn_cell->payload = 1;
-			uint_fast32_t freq = hamradio_get_freq_rx();
-			local_snprintf_P(btn_cell->text, ARRAY_SIZE(btn_cell->text), PSTR("%dk"), freq / 1000);
-			hamradio_save_memory_cells(cell_id);
-		}
-	}
-}
-
 static void window_memory_process(void)
 {
 	window_t * win = get_win(WINDOW_MEMORY);
@@ -566,11 +532,12 @@ static void window_memory_process(void)
 			bh->visible = VISIBLE;
 			bh->w = 100;
 			bh->h = 44;
-			bh->onClickHandler = buttons_memory_handler;
+			bh->onClickHandler = NULL;
 			bh->state = CANCELLED;
 			bh->parent = WINDOW_MEMORY;
 			bh->is_long_press = 1;
 			bh->is_locked = BUTTON_NON_LOCKED;
+			local_snprintf_P(bh->name, ARRAY_SIZE(bh->name), PSTR("btn_memory_%02d"), i);
 
 			x = x + interval + bh->w;
 			if (r >= row_count)
@@ -607,6 +574,47 @@ static void window_memory_process(void)
 
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 		return;
+	}
+
+	wm_message_t message = check_wm_stack();
+	if (message == WM_MESSAGE_TOUCH)
+	{
+		uint_fast8_t type;
+		uintptr_t ptr;
+
+		pop_wm_stack(& type, & ptr);
+
+		if (type == TYPE_BUTTON)
+		{
+			button_t * bh = (button_t *) ptr;
+			uint_fast8_t cell_id = get_selected_element_pos();
+
+			if (bh->state == CANCELLED)
+			{
+				if (bh->payload)
+				{
+					hamradio_load_memory_cells(cell_id, 1);
+					close_window(DONT_OPEN_PARENT_WINDOW);
+					footer_buttons_state(CANCELLED);
+				}
+			}
+			else if (bh->state == LONG_PRESSED)
+			{
+				if (bh->payload)
+				{
+					bh->payload = 0;
+					hamradio_clean_memory_cells(cell_id);
+					local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("---"));
+				}
+				else
+				{
+					bh->payload = 1;
+					uint_fast32_t freq = hamradio_get_freq_rx();
+					local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("%dk"), freq / 1000);
+					hamradio_save_memory_cells(cell_id);
+				}
+			}
+		}
 	}
 }
 
@@ -2533,9 +2541,8 @@ static void window_ap_mic_eq_process(void)
 		btn_EQ_ok->y1 = sl->y + sl->size - btn_EQ_ok->h;
 		btn_EQ_ok->visible = VISIBLE;
 
-		mid_y = win->y1 + sl->y + sl->size / 2;
-
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
+		mid_y = win->y1 + sl->y + sl->size / 2;						//todo: абсолютные координаты! переделать
 		return;
 	}
 

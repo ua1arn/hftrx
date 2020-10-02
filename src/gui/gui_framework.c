@@ -48,30 +48,75 @@ static gui_element_t gui_elements [GUI_ELEMENTS_ARRAY_SIZE];
 static uint_fast8_t gui_element_count = 0;
 static button_t close_button = { 0, 0, 0, 0, close_all_windows, CANCELLED, BUTTON_NON_LOCKED, 0, NO_PARENT_WINDOW, NON_VISIBLE, UINTPTR_MAX, "btn_close", "", };
 
-uint_fast8_t push_wm_stack(element_type_t type, uint_fast8_t parent_id, char * name, uint_fast8_t action)
+// WM_MESSAGE_TOUCH:  element_type type, uintptr_t element_ptr
+// WM_MESSAGE_UPDATE: nothing
+uint_fast8_t push_wm_stack(wm_message_t message, ...)
 {
-	if (wm.size >= wm_stack_size)
+	if (wm.size >= wm_max_stack_size)
 		return 0;					// стек переполнен, ошибка
 
-	wm.data [wm.size].type = type;
-	wm.data [wm.size].parent_id = parent_id;
-	wm.data [wm.size].action = action;
-	strcpy(wm.data [wm.size].name, name);
-	wm.size ++;
+	va_list arg;
 
-	return 1;
+	switch (message)
+	{
+	case WM_MESSAGE_TOUCH:
+
+		va_start(arg, message);
+
+		wm.data [wm.size].message = WM_MESSAGE_TOUCH;
+		wm.data [wm.size].type = va_arg(arg, uint_fast8_t);
+		wm.data [wm.size].ptr = va_arg(arg, uintptr_t);
+
+		va_end(arg);
+		wm.size ++;
+
+		return 1;
+		break;
+
+	case WM_MESSAGE_UPDATE:
+
+		wm.data [wm.size].message = WM_MESSAGE_UPDATE;
+		wm.data [wm.size].type = UINT8_MAX;
+		wm.data [wm.size].ptr = UINTPTR_MAX;
+
+		wm.size ++;
+
+		return 1;
+		break;
+
+	case WM_NO_MESSAGE:
+	default:
+		return 0;
+		break;
+	}
+
+	PRINTF("push_wm_stack: no valid type of messages found\n");
+	ASSERT(0);
+	return 0;
 }
 
-uint_fast8_t pop_wm_stack(element_type_t * type, uint_fast8_t * parent_id, char * name, uint_fast8_t * action)
+wm_message_t check_wm_stack(void)
+{
+	if (wm.size)
+		return wm.data [wm.size - 1].message;
+	else
+		return WM_NO_MESSAGE;				// стек пустой
+}
+
+void clean_wm_stack(void)
+{
+	wm.size = 0;
+}
+
+uint_fast8_t pop_wm_stack(uint_fast8_t * type, uintptr_t * ptr)
 {
 	if (wm.size == 0)
-		return 0;					// стек пустой
+		return 0;							// стек пустой
 
 	wm.size --;
+
 	* type = wm.data [wm.size].type;
-	* parent_id = wm.data [wm.size].parent_id;
-	* action = wm.data [wm.size].action;
-	strcpy(name, wm.data [wm.size].name);
+	* ptr = wm.data [wm.size].ptr;
 
 	return 1;
 }
@@ -499,6 +544,7 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 	ASSERT(win->y1 + win->h < WITHGUIMAXY);
 
 	elements_state(win);
+	clean_wm_stack();	// временная мера, пока все окна не перейдут на использование буфера сообщений от WM
 }
 
 /* Передать менеджеру GUI код нажатой кнопки на клавиатуре */
@@ -921,8 +967,10 @@ static void set_state_record(gui_element_t * val)
 			bh->state = val->state;
 			if (bh->state == RELEASED || bh->state == LONG_PRESSED)
 			{
-				bh->onClickHandler();
-				if (! push_wm_stack(TYPE_BUTTON, bh->parent, bh->name, bh->state))
+				if (bh->onClickHandler)
+					bh->onClickHandler();
+
+				if (! push_wm_stack(WM_MESSAGE_TOUCH, TYPE_BUTTON, bh))
 					PRINTF("WM stack: full!\n");
 			}
 			break;
@@ -935,8 +983,11 @@ static void set_state_record(gui_element_t * val)
 			lh->state = val->state;
 			if (lh->onClickHandler && lh->state == RELEASED)
 			{
+				if (lh->onClickHandler)
+					lh->onClickHandler();
+
 				lh->onClickHandler();
-				if (! push_wm_stack(TYPE_LABEL, lh->parent, lh->name, lh->state))
+				if (! push_wm_stack(WM_MESSAGE_TOUCH, TYPE_LABEL, lh))
 					PRINTF("WM stack: full!\n");
 			}
 			break;
@@ -1096,17 +1147,22 @@ void gui_WM_walktrough(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
 		if (gui.win [i] == NO_PARENT_WINDOW)
 			break;
 
-#if 1
-		element_type_t type;
-		uint_fast8_t parent;
-		char name [20];
-		uint_fast8_t action;
+#if 0
+		wm_message_t message = check_wm_stack();
+		if (message == WM_MESSAGE_TOUCH)
+		{
+			uint_fast8_t type;
+			uintptr_t h;
 
-		if (pop_wm_stack(& type, & parent, name, & action))
-			PRINTF("WM stack: type - %d, parent - %d, name - %s, action - %d\n", type, parent, name, action);
-//		else
-//			PRINTF("WM stack: empty\n");
+			pop_wm_stack(& type, & h);
 
+			if (type == TYPE_BUTTON)
+			{
+				button_t * bh = (button_t *) h;
+				PRINTF("wm_stack button: name - %s, state - %d\n", bh->name, bh->state);
+			}
+
+		}
 #endif
 
 		const window_t * const win = get_win(gui.win [i]);
