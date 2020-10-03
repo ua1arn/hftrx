@@ -1295,6 +1295,10 @@ static RAMFUNC void stm32fxxx_pinirq(portholder_t pr)
 			TIM3->SR = ~ TIM_SR_UIF;	// clear UIF interrupt request
 			spool_elkeybundle();
 		}
+		else
+		{
+			ASSERT(0);
+		}
 	}
 	#endif /* WITHELKEY */
 
@@ -1307,6 +1311,10 @@ static RAMFUNC void stm32fxxx_pinirq(portholder_t pr)
 			TIM5->SR = ~ TIM_SR_UIF;	// clear UIF interrupt request
 			spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
 			spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
+		}
+		else
+		{
+			ASSERT(0);
 		}
 	}
 
