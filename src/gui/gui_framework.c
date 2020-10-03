@@ -49,7 +49,7 @@ static uint_fast8_t gui_element_count = 0;
 static button_t close_button = { 0, 0, 0, 0, close_all_windows, CANCELLED, BUTTON_NON_LOCKED, 0, NO_PARENT_WINDOW, NON_VISIBLE, UINTPTR_MAX, "btn_close", "", };
 
 // WM_MESSAGE_TOUCH:  element_type type, uintptr_t element_ptr
-// WM_MESSAGE_UPDATE: uintptr_t window_ptr
+// WM_MESSAGE_UPDATE: nothing
 uint_fast8_t push_wm_stack(window_t * win, wm_message_t message, ...)
 {
 	if (win->queue.size >= wm_max_stack_size)

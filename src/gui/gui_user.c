@@ -243,25 +243,25 @@ static void gui_main_process(void)
 
 			if (bh->state == CANCELLED)					// обработка короткого нажатия
 			{
-				window_t * winMain = get_win(WINDOW_MAIN);
-				button_t * btn_Bands = find_gui_element(TYPE_BUTTON, winMain, "btn_Bands");
-				button_t * btn_Memory = find_gui_element(TYPE_BUTTON, winMain, "btn_Memory");
-				button_t * btn_Options = find_gui_element(TYPE_BUTTON, winMain, "btn_Options");
-				button_t * btn_ANotch = find_gui_element(TYPE_BUTTON, winMain, "btn_ANotch");
-				button_t * btn_speaker = find_gui_element(TYPE_BUTTON, winMain, "btn_speaker");
-				button_t * btn_Receive = find_gui_element(TYPE_BUTTON, winMain, "btn_Receive");
-				button_t * btn_txrx = find_gui_element(TYPE_BUTTON, winMain, "btn_txrx");
+				button_t * btn_Bands = find_gui_element(TYPE_BUTTON, win, "btn_Bands");
+				button_t * btn_Memory = find_gui_element(TYPE_BUTTON, win, "btn_Memory");
+				button_t * btn_Options = find_gui_element(TYPE_BUTTON, win, "btn_Options");
+				button_t * btn_ANotch = find_gui_element(TYPE_BUTTON, win, "btn_ANotch");
+				button_t * btn_speaker = find_gui_element(TYPE_BUTTON, win, "btn_speaker");
+				button_t * btn_Receive = find_gui_element(TYPE_BUTTON, win, "btn_Receive");
+				button_t * btn_txrx = find_gui_element(TYPE_BUTTON, win, "btn_txrx");
 
 				if (bh == btn_ANotch)
 				{
-					btn_ANotch->is_locked = hamradio_get_autonotch() ? BUTTON_NON_LOCKED : BUTTON_LOCKED;
-					hamradio_set_autonotch(btn_ANotch->is_locked);
+					btn_ANotch->payload = hamradio_get_autonotch() ? 0 : 1;
+					hamradio_set_autonotch(btn_ANotch->payload);
+					update = 1;
 				}
 				else if (bh == btn_speaker)
 				{
-					btn_speaker->is_locked = hamradio_get_gmutespkr() ? BUTTON_NON_LOCKED : BUTTON_LOCKED;
-					local_snprintf_P(btn_speaker->text, ARRAY_SIZE(btn_speaker->text), PSTR("Speaker|%s"), btn_speaker->is_locked ? "muted" : "on air");
-					hamradio_set_gmutespkr(btn_speaker->is_locked);
+					btn_speaker->payload = hamradio_get_gmutespkr() ? 0 : 1;
+					hamradio_set_gmutespkr(btn_speaker->payload);
+					update = 1;
 				}
 				else if (bh == btn_Bands)
 				{
@@ -325,35 +325,18 @@ static void gui_main_process(void)
 				}
 				else if (bh == btn_txrx)
 				{
-					btn_txrx->is_locked = hamradio_moxmode(1) ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
-					local_snprintf_P(btn_txrx->text, ARRAY_SIZE(btn_txrx->text), PSTR("%s"), btn_txrx->is_locked ? "TX" : "RX");
+					hamradio_moxmode(1);
+					update = 1;
 				}
 			}
 			else if (bh->state == LONG_PRESSED)			// обработка длинного нажатия
 			{
-				window_t * winMain = get_win(WINDOW_MAIN);
-				button_t * btn_txrx = find_gui_element(TYPE_BUTTON, winMain, "btn_txrx");
+				button_t * btn_txrx = find_gui_element(TYPE_BUTTON, win, "btn_txrx");
 
 				if (bh == btn_txrx)
 				{
-					uint_fast8_t tune = hamradio_tunemode(1);
-					uint_fast8_t mox = hamradio_moxmode(0);
-
-					if (tune)
-					{
-						btn_txrx->is_locked = BUTTON_LOCKED;
-						local_snprintf_P(btn_txrx->text, ARRAY_SIZE(btn_txrx->text), PSTR("TX|tune"));
-					}
-					else if (! tune && mox)
-					{
-						btn_txrx->is_locked = BUTTON_LOCKED;
-						local_snprintf_P(btn_txrx->text, ARRAY_SIZE(btn_txrx->text), PSTR("TX"));
-					}
-					else if (! tune && ! mox)
-					{
-						btn_txrx->is_locked = BUTTON_NON_LOCKED;
-						local_snprintf_P(btn_txrx->text, ARRAY_SIZE(btn_txrx->text), PSTR("RX"));
-					}
+					hamradio_tunemode(1);
+					update = 1;
 				}
 			}
 		}
@@ -362,6 +345,36 @@ static void gui_main_process(void)
 	{
 		pop_wm_stack(win, NULL, NULL);
 		update = 1;
+	}
+
+	if (update)											// обновление состояния элементов при действиях с ними, а также при запросах из базовой системы
+	{
+		button_t * btn_ANotch = find_gui_element(TYPE_BUTTON, win, "btn_ANotch");
+		btn_ANotch->is_locked = hamradio_get_autonotch() ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
+
+		button_t * btn_speaker = find_gui_element(TYPE_BUTTON, win, "btn_speaker");
+		btn_speaker->is_locked = hamradio_get_gmutespkr() ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
+		local_snprintf_P(btn_speaker->text, ARRAY_SIZE(btn_speaker->text), PSTR("Speaker|%s"), btn_speaker->is_locked ? "muted" : "on air");
+
+		button_t * btn_txrx = find_gui_element(TYPE_BUTTON, win, "btn_txrx");
+		uint_fast8_t tune = hamradio_tunemode(0);
+		uint_fast8_t mox = hamradio_moxmode(0);
+
+		if (tune)
+		{
+			btn_txrx->is_locked = BUTTON_LOCKED;
+			local_snprintf_P(btn_txrx->text, ARRAY_SIZE(btn_txrx->text), PSTR("TX|tune"));
+		}
+		else if (! tune && mox)
+		{
+			btn_txrx->is_locked = BUTTON_LOCKED;
+			local_snprintf_P(btn_txrx->text, ARRAY_SIZE(btn_txrx->text), PSTR("TX"));
+		}
+		else if (! tune && ! mox)
+		{
+			btn_txrx->is_locked = BUTTON_NON_LOCKED;
+			local_snprintf_P(btn_txrx->text, ARRAY_SIZE(btn_txrx->text), PSTR("RX"));
+		}
 	}
 
 	// разметка инфобара
