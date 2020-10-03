@@ -36,10 +36,10 @@ button_t * get_selected_button(void);
 label_t * get_selected_label(void);
 slider_t * get_selected_slider(void);
 
-uint_fast8_t push_wm_stack(wm_message_t message, ...);
-wm_message_t check_wm_stack(void);
-void clean_wm_stack(void);
-uint_fast8_t pop_wm_stack(uint_fast8_t * type, uintptr_t * ptr);
+uint_fast8_t push_wm_stack(window_t * win, wm_message_t message, ...);
+wm_message_t check_wm_stack(window_t * win);
+void clean_wm_stack(window_t * win);
+uint_fast8_t pop_wm_stack(window_t * win, uint_fast8_t * type, uintptr_t * ptr);
 
 #endif /* WITHTOUCHGUI */
 #endif /* GUI_USER_H_INCLUDED */

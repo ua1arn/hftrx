@@ -71,25 +71,25 @@ typedef struct {
 } btn_bg_t;
 
 typedef struct {
-	uint16_t x1;				// координаты от начала экрана
+	uint16_t x1;					// координаты от начала экрана
 	uint16_t y1;
 	uint16_t w;
 	uint16_t h;
 	void(*onClickHandler) (void);	// обработчик события RELEASED
-	uint8_t state;				// текущее состояние кнопки
-	uint8_t is_locked;			// признак фиксации кнопки
-	uint8_t is_long_press;		// разрешение обработки долгого нажатия
-	uint8_t parent;			// индекс окна, в котором будет отображаться кнопка
-	uint8_t visible;			// рисовать ли кнопку на экране
+	uint8_t state;					// текущее состояние кнопки
+	uint8_t is_locked;				// признак фиксации кнопки
+	uint8_t is_long_press;			// разрешение обработки долгого нажатия
+	uint8_t parent;					// индекс окна, в котором будет отображаться кнопка
+	uint8_t visible;				// рисовать ли кнопку на экране
 	int32_t payload;
 	char name [NAME_ARRAY_SIZE];
-	char text [TEXT_ARRAY_SIZE]; // текст внутри кнопки, разделитель строк |, не более 2х строк
+	char text [TEXT_ARRAY_SIZE]; 	// текст внутри кнопки, разделитель строк |, не более 2х строк
 } button_t;
 
 typedef enum {
-	FONT_LARGE,		// S1D13781_smallfont_LTDC
-	FONT_MEDIUM,	// S1D13781_smallfont2_LTDC
-	FONT_SMALL		// S1D13781_smallfont3_LTDC
+	FONT_LARGE,						// S1D13781_smallfont_LTDC
+	FONT_MEDIUM,					// S1D13781_smallfont2_LTDC
+	FONT_SMALL						// S1D13781_smallfont3_LTDC
 } font_size_t;
 
 typedef struct {
@@ -114,8 +114,8 @@ typedef enum  {
 typedef struct {
 	uint16_t x;
 	uint16_t y;
-	uint16_t x1_p;			// координаты ползунка
-	uint16_t y1_p;			// для update_touch_list_list
+	uint16_t x1_p;					// координаты ползунка
+	uint16_t y1_p;					// для update_touch_list_list
 	uint16_t x2_p;
 	uint16_t y2_p;
 	orientation_t orientation;
@@ -123,10 +123,10 @@ typedef struct {
 	char name [NAME_ARRAY_SIZE];
 	uint8_t state;
 	uint8_t visible;
-	uint16_t size;			// длина шкалы в пикселях
-	uint8_t value;			// 0..100 %
-	uint8_t value_old;		// для перерасчетов при изменении значения
-	uint16_t value_p;		// в пикселях от начала шкалы
+	uint16_t size;					// длина шкалы в пикселях
+	uint8_t value;					// 0..100 %
+	uint8_t value_old;				// для перерасчетов при изменении значения
+	uint16_t value_p;				// в пикселях от начала шкалы
 	float step;
 } slider_t;
 
@@ -137,84 +137,81 @@ typedef enum {
 	ALIGN_Y 		= WITHGUIMAXY >> 1					// горизонтальное выравнивание всегда по центру экрана
 } window_align_t;
 
-typedef struct {
-	const uint8_t window_id;// в окне будут отображаться элементы с соответствующим полем for_window
-	uint8_t parent_id;		// UINT8_MAX - нет parent window
-	window_align_t align_mode;			// вертикаль выравнивания окна
-	uint16_t x1;
-	uint16_t y1;
-	uint16_t w;
-	uint16_t h;
-	char name[NAME_ARRAY_SIZE];	// текст, выводимый в заголовке окна
-	uint8_t state;
-	uint8_t first_call;			// признак первого вызова для различных инициализаций
-	uint8_t is_close;			// разрешение или запрет вывода кнопки закрытия окна
-	void (*onVisibleProcess) (void);
-	button_t * bh_ptr;			// указатели на массивы оконных элементов
-	uint8_t bh_count;
-	label_t * lh_ptr;
-	uint8_t lh_count;
-	slider_t * sh_ptr;
-	uint8_t sh_count;
-} window_t;
-
-typedef struct {
-	element_type_t type;		// тип элемента, поддерживающего реакцию на касания
-	window_t * win;
-	void * link;
-	uint8_t pos;
-	uint8_t state;				// текущее состояние элемента
-	uint8_t visible;			// текущая видимость элемента
-	uint8_t is_trackable;		// поддерживает ли элемент возврат относительных координат перемещения точки нажатия
-	uint8_t is_long_press;		// разрешение обработки долгого нажатия
-	uint16_t x1;				// координаты окна
-	uint16_t y1;
-	uint16_t x2;
-	uint16_t y2;
-	LIST_ENTRY item;
-} gui_element_t;
-
-enum { win_gui_count = 2 };		  // на экране не более 2х окон, одно из которых - основное на весь экран
-
-typedef struct {
-	uint16_t last_pressed_x; 	  // последняя точка касания экрана
-	uint16_t last_pressed_y;
-	uint8_t kbd_code;
-	element_type_t selected_type; // тип последнего выбранного элемента
-	gui_element_t * selected_link;	  // ссылка на выбранный элемент
-	uint8_t state;				  // последнее состояние
-	uint8_t is_touching_screen;   // есть ли касание экрана в данный момент
-	uint8_t is_after_touch; 	  // есть ли касание экрана после выхода точки касания из элемента (при is_tracking == 0)
-	uint8_t is_tracking;		  // получение относительных координат точки перемещения нажатия
-	int16_t vector_move_x;	 	  // в т.ч. и за границами элемента, при state == PRESSED
-	int16_t vector_move_y;
-	uint8_t timer_1sec_updated;	  // для периодических обновлений состояния
-	uint8_t win[win_gui_count];	// на экране не более 2х окон, одно из которых - основное на весь экран
-} gui_t;
+enum {
+	win_gui_count = 2,		 		// на экране не более 2х окон, одно из которых - основное на весь экран
+	wm_max_stack_size = 5			// размер буфера сообщений WM
+};
 
 typedef enum {
 	WM_NO_MESSAGE,
-	WM_MESSAGE_UPDATE,				// запрос на обновление состояния элементов
+	WM_MESSAGE_UPDATE,				// запрос на обновление состояния элементов GUI в зависимости от состояния базовой системы
 	WM_MESSAGE_TOUCH				// необходима реакция на действия с элементами
 } wm_message_t;
-
-enum {
-	wm_max_stack_size = 5			// размер буфера сообщений WM
-};
 
 typedef struct {
 	wm_message_t message;			// тип сообщения
 	element_type_t type;			// тип элемента
 	uintptr_t ptr;
-//	uint8_t parent_id;				// id окна
-//	char name [NAME_ARRAY_SIZE];	// имя элемента
-//	uint8_t action;					// состояние элемента
 } wm_data_t;
 
 typedef struct wm_stack_tag {		// очередь сообщений окнам от WM о взаимодействии с элементами GUI
 	wm_data_t data[wm_max_stack_size];
     size_t size;
-} wm_stack_t;
+} wm_queue_t;
+
+typedef struct {
+	const uint8_t window_id;		// в окне будут отображаться элементы с соответствующим полем for_window
+	uint8_t parent_id;				// UINT8_MAX - нет parent window
+	window_align_t align_mode;		// вертикаль выравнивания окна
+	uint16_t x1;
+	uint16_t y1;
+	uint16_t w;
+	uint16_t h;
+	char name[NAME_ARRAY_SIZE];		// текст, выводимый в заголовке окна
+	uint8_t state;
+	uint8_t first_call;				// признак первого вызова для различных инициализаций
+	uint8_t is_close;				// разрешение или запрет вывода кнопки закрытия окна
+	uint8_t is_need_update;			// наличие в окне элементов, состояние которых зависит от базовой системы
+	void (*onVisibleProcess) (void);
+	button_t * bh_ptr;				// указатели на массивы оконных элементов
+	uint8_t bh_count;
+	label_t * lh_ptr;
+	uint8_t lh_count;
+	slider_t * sh_ptr;
+	uint8_t sh_count;
+	wm_queue_t queue;
+} window_t;
+
+typedef struct {
+	element_type_t type;			// тип элемента, поддерживающего реакцию на касания
+	window_t * win;
+	void * link;
+	uint8_t pos;
+	uint8_t state;					// текущее состояние элемента
+	uint8_t visible;				// текущая видимость элемента
+	uint8_t is_trackable;			// поддерживает ли элемент возврат относительных координат перемещения точки нажатия
+	uint8_t is_long_press;			// разрешение обработки долгого нажатия
+	uint16_t x1;					// координаты окна
+	uint16_t y1;
+	uint16_t x2;
+	uint16_t y2;
+} gui_element_t;
+
+typedef struct {
+	uint16_t last_pressed_x; 	  	// последняя точка касания экрана
+	uint16_t last_pressed_y;
+	uint8_t kbd_code;
+	element_type_t selected_type; 	// тип последнего выбранного элемента
+	gui_element_t * selected_link;	// ссылка на выбранный элемент
+	uint8_t state;				  	// последнее состояние
+	uint8_t is_touching_screen;   	// есть ли касание экрана в данный момент
+	uint8_t is_after_touch; 	  	// есть ли касание экрана после выхода точки касания из элемента (при is_tracking == 0)
+	uint8_t is_tracking;		  	// получение относительных координат точки перемещения нажатия
+	int16_t vector_move_x;	 	  	// в т.ч. и за границами элемента, при state == PRESSED
+	int16_t vector_move_y;
+	uint8_t timer_1sec_updated;	  	// для периодических обновлений состояния
+	uint8_t win[win_gui_count];		// на экране не более 2х окон, одно из которых - основное на весь экран
+} gui_t;
 
 #endif /* WITHTOUCHGUI */
 #endif /* GUI_STRUCTS_H_INCLUDED */

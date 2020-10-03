@@ -33,6 +33,7 @@ static void update_gui_elements_list(void);
 window_t * get_win(uint8_t window_id);
 void close_window(uint_fast8_t parent);
 void close_all_windows(void);
+uint_fast8_t check_for_parent_window(void);
 
 static btn_bg_t btn_bg [] = {
 	{ 100, 44, },
@@ -42,17 +43,16 @@ static btn_bg_t btn_bg [] = {
 };
 enum { BG_COUNT = ARRAY_SIZE(btn_bg) };
 
-static wm_stack_t wm;
 static gui_t gui = { 0, 0, KBD_CODE_MAX, TYPE_DUMMY, NULL, CANCELLED, 0, 0, 0, 0, 0, 1, };
 static gui_element_t gui_elements [GUI_ELEMENTS_ARRAY_SIZE];
 static uint_fast8_t gui_element_count = 0;
 static button_t close_button = { 0, 0, 0, 0, close_all_windows, CANCELLED, BUTTON_NON_LOCKED, 0, NO_PARENT_WINDOW, NON_VISIBLE, UINTPTR_MAX, "btn_close", "", };
 
 // WM_MESSAGE_TOUCH:  element_type type, uintptr_t element_ptr
-// WM_MESSAGE_UPDATE: nothing
-uint_fast8_t push_wm_stack(wm_message_t message, ...)
+// WM_MESSAGE_UPDATE: uintptr_t window_ptr
+uint_fast8_t push_wm_stack(window_t * win, wm_message_t message, ...)
 {
-	if (wm.size >= wm_max_stack_size)
+	if (win->queue.size >= wm_max_stack_size)
 		return 0;					// стек переполнен, ошибка
 
 	va_list arg;
@@ -63,23 +63,23 @@ uint_fast8_t push_wm_stack(wm_message_t message, ...)
 
 		va_start(arg, message);
 
-		wm.data [wm.size].message = WM_MESSAGE_TOUCH;
-		wm.data [wm.size].type = va_arg(arg, uint_fast8_t);
-		wm.data [wm.size].ptr = va_arg(arg, uintptr_t);
+		win->queue.data [win->queue.size].message = WM_MESSAGE_TOUCH;
+		win->queue.data [win->queue.size].type = va_arg(arg, uint_fast8_t);
+		win->queue.data [win->queue.size].ptr = va_arg(arg, uintptr_t);
 
 		va_end(arg);
-		wm.size ++;
+		win->queue.size ++;
 
 		return 1;
 		break;
 
 	case WM_MESSAGE_UPDATE:
 
-		wm.data [wm.size].message = WM_MESSAGE_UPDATE;
-		wm.data [wm.size].type = UINT8_MAX;
-		wm.data [wm.size].ptr = UINTPTR_MAX;
+		win->queue.data [win->queue.size].message = WM_MESSAGE_UPDATE;
+		win->queue.data [win->queue.size].type = UINT8_MAX;
+		win->queue.data [win->queue.size].ptr = UINTPTR_MAX;
 
-		wm.size ++;
+		win->queue.size ++;
 
 		return 1;
 		break;
@@ -95,36 +95,47 @@ uint_fast8_t push_wm_stack(wm_message_t message, ...)
 	return 0;
 }
 
-wm_message_t check_wm_stack(void)
+wm_message_t check_wm_stack(window_t * win)
 {
-	if (wm.size)
-		return wm.data [wm.size - 1].message;
+	if (win->queue.size)
+		return win->queue.data [win->queue.size - 1].message;
 	else
 		return WM_NO_MESSAGE;				// стек пустой
 }
 
-void clean_wm_stack(void)
+void clean_wm_stack(window_t * win)
 {
-	wm.size = 0;
+	win->queue.size = 0;
 }
 
-uint_fast8_t pop_wm_stack(uint_fast8_t * type, uintptr_t * ptr)
+uint_fast8_t pop_wm_stack(window_t * win, uint_fast8_t * type, uintptr_t * ptr)
 {
-	if (wm.size == 0)
+	if (! win->queue.size)
 		return 0;							// стек пустой
 
-	wm.size --;
+	win->queue.size --;
 
-	* type = wm.data [wm.size].type;
-	* ptr = wm.data [wm.size].ptr;
+	if (type && ptr)
+	{
+		* type = win->queue.data [win->queue.size].type;
+		* ptr = win->queue.data [win->queue.size].ptr;
+	}
 
 	return 1;
 }
 
-/* Обновить секундный таймер GUI */
-void gui_timer_update(void * arg)
+/* Запрос на обновление состояния элементов GUI */
+void gui_update(void * arg)
 {
-	gui.timer_1sec_updated = 1;
+	gui.timer_1sec_updated = 1;								// удалить после перехода на WM messages
+	push_wm_stack(get_win(WINDOW_MAIN), WM_MESSAGE_UPDATE);	// главное окно всегда нужно обновлять
+
+	if (check_for_parent_window() != NO_PARENT_WINDOW)		// если открыто второе окно,
+	{
+		window_t * win2 = get_win(gui.win [1]);
+		if (win2->is_need_update)							// и если оно имеет статус обновляемого,
+			push_wm_stack(win2, WM_MESSAGE_UPDATE);			// добавить сообщение на обновление
+	}
 }
 
 /* Получить состояние таймера GUI */
@@ -544,7 +555,7 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 	ASSERT(win->y1 + win->h < WITHGUIMAXY);
 
 	elements_state(win);
-	clean_wm_stack();	// временная мера, пока все окна не перейдут на использование буфера сообщений от WM
+	clean_wm_stack(win);	// временная мера, пока все окна не перейдут на использование буфера сообщений от WM
 }
 
 /* Передать менеджеру GUI код нажатой кнопки на клавиатуре */
@@ -970,7 +981,7 @@ static void set_state_record(gui_element_t * val)
 				if (bh->onClickHandler)
 					bh->onClickHandler();
 
-				if (! push_wm_stack(WM_MESSAGE_TOUCH, TYPE_BUTTON, bh))
+				if (! push_wm_stack(val->win, WM_MESSAGE_TOUCH, TYPE_BUTTON, bh))
 					PRINTF("WM stack: full!\n");
 			}
 			break;
@@ -987,7 +998,7 @@ static void set_state_record(gui_element_t * val)
 					lh->onClickHandler();
 
 				lh->onClickHandler();
-				if (! push_wm_stack(WM_MESSAGE_TOUCH, TYPE_LABEL, lh))
+				if (! push_wm_stack(val->win, WM_MESSAGE_TOUCH, TYPE_LABEL, lh))
 					PRINTF("WM stack: full!\n");
 			}
 			break;

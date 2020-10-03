@@ -9119,6 +9119,10 @@ updateboard(
 	board_set_tx(gtx);		/* в конце выдаём сигнал разрешения передачи */
 	board_update();		/* вывести забуферированные изменения в регистры */
 #endif /* WITHTX */
+
+#if WITHTOUCHGUI
+	gui_update(NULL);
+#endif /* WITHTOUCHGUI */
 }
 
 ///////////////////////////
@@ -13196,7 +13200,7 @@ void spool_secound(void)
 {
 	board_dpc(dpc_1stimer, NULL);
 #if WITHTOUCHGUI
-	board_dpc(gui_timer_update, NULL);
+	board_dpc(gui_update, NULL);
 #endif /*WITHTOUCHGUI */
 }
 

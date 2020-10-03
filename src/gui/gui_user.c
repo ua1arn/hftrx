@@ -52,29 +52,29 @@ static void window_display_process(void);
 static void window_receive_process(void);
 
 static window_t windows [] = {
-//     window_id,   		 parent_id, 			align_mode,     x1, y1, w, h,   title,     		is_show, first_call, is_close, onVisibleProcess
-	{ WINDOW_MAIN, 			 NO_PARENT_WINDOW, 		ALIGN_LEFT_X,	0, 0, 0, 0, "",  	   	   			 NON_VISIBLE, 0, 0, gui_main_process, },
-	{ WINDOW_MODES, 		 WINDOW_RECEIVE, 		ALIGN_CENTER_X, 0, 0, 0, 0, "Select mode", 			 NON_VISIBLE, 0, 1, window_mode_process, },
-	{ WINDOW_AF,    		 WINDOW_RECEIVE,		ALIGN_CENTER_X, 0, 0, 0, 0, "AF settings",    		 NON_VISIBLE, 0, 1, window_af_process, },
-	{ WINDOW_FREQ,  		 WINDOW_OPTIONS,		ALIGN_CENTER_X, 0, 0, 0, 0, "Freq:", 	   			 NON_VISIBLE, 0, 1, window_freq_process, },
-	{ WINDOW_MENU,  		 WINDOW_OPTIONS,		ALIGN_CENTER_X, 0, 0, 0, 0, "Settings",	   		 	 NON_VISIBLE, 0, 1, window_menu_process, },
-	{ WINDOW_ENC2, 			 NO_PARENT_WINDOW, 		ALIGN_RIGHT_X, 	0, 0, 0, 0, "",  			 		 NON_VISIBLE, 0, 0, window_enc2_process, },
-	{ WINDOW_UIF, 			 NO_PARENT_WINDOW, 		ALIGN_LEFT_X, 	0, 0, 0, 0, "",   		   	 		 NON_VISIBLE, 0, 0, window_uif_process, },
-	{ WINDOW_SWR_SCANNER,	 WINDOW_UTILS, 			ALIGN_CENTER_X, 0, 0, 0, 0, "SWR band scanner",		 NON_VISIBLE, 0, 0, window_swrscan_process, },
-	{ WINDOW_AUDIOSETTINGS,  WINDOW_OPTIONS,		ALIGN_CENTER_X, 0, 0, 0, 0, "Audio settings", 		 NON_VISIBLE, 0, 1, window_audiosettings_process, },
-	{ WINDOW_AP_MIC_EQ, 	 WINDOW_AUDIOSETTINGS, 	ALIGN_CENTER_X, 0, 0, 0, 0, "MIC TX equalizer",		 NON_VISIBLE, 0, 1, window_ap_mic_eq_process, },
-	{ WINDOW_AP_REVERB_SETT, WINDOW_AUDIOSETTINGS, 	ALIGN_CENTER_X, 0, 0, 0, 0, "Reverberator settings", NON_VISIBLE, 0, 1, window_ap_reverb_process, },
-	{ WINDOW_AP_MIC_SETT, 	 WINDOW_AUDIOSETTINGS, 	ALIGN_CENTER_X, 0, 0, 0, 0, "Microphone settings", 	 NON_VISIBLE, 0, 1, window_ap_mic_process, },
-	{ WINDOW_AP_MIC_PROF, 	 WINDOW_AUDIOSETTINGS, 	ALIGN_CENTER_X, 0, 0, 0, 0, "Microphone profiles", 	 NON_VISIBLE, 0, 1, window_ap_mic_prof_process, },
-	{ WINDOW_TX_SETTINGS, 	 WINDOW_OPTIONS, 		ALIGN_CENTER_X, 0, 0, 0, 0, "Transmit settings", 	 NON_VISIBLE, 0, 1, window_tx_process, },
-	{ WINDOW_TX_VOX_SETT, 	 WINDOW_TX_SETTINGS, 	ALIGN_CENTER_X, 0, 0, 0, 0, "VOX settings", 	 	 NON_VISIBLE, 0, 1, window_tx_vox_process, },
-	{ WINDOW_TX_POWER, 		 WINDOW_TX_SETTINGS, 	ALIGN_CENTER_X, 0, 0, 0, 0, "TX power", 	 	 	 NON_VISIBLE, 0, 1, window_tx_power_process, },
-	{ WINDOW_OPTIONS, 		 NO_PARENT_WINDOW, 		ALIGN_CENTER_X,	0, 0, 0, 0, "Options",  	   	   	 NON_VISIBLE, 0, 1, window_options_process, },
-	{ WINDOW_UTILS, 		 WINDOW_OPTIONS,		ALIGN_CENTER_X,	0, 0, 0, 0, "Utilites",  	   	   	 NON_VISIBLE, 0, 1, window_utilites_process, },
-	{ WINDOW_BANDS, 		 NO_PARENT_WINDOW,		ALIGN_CENTER_X,	0, 0, 0, 0, "Bands",  	   	   	 	 NON_VISIBLE, 0, 1, window_bands_process, },
-	{ WINDOW_MEMORY, 		 NO_PARENT_WINDOW,		ALIGN_CENTER_X,	0, 0, 0, 0, "Memory",  	   	   	 	 NON_VISIBLE, 0, 1, window_memory_process, },
-	{ WINDOW_DISPLAY, 		 WINDOW_OPTIONS,		ALIGN_CENTER_X,	0, 0, 0, 0, "Display settings",  	 NON_VISIBLE, 0, 1, window_display_process, },
-	{ WINDOW_RECEIVE, 		 NO_PARENT_WINDOW, 		ALIGN_CENTER_X, 0, 0, 0, 0, "Receive settings", 	 NON_VISIBLE, 0, 0, window_receive_process, },
+//     window_id,   		 parent_id, 			align_mode,     x1, y1, w, h,   title,     		is_show, first_call, is_close, is_need_update, onVisibleProcess
+	{ WINDOW_MAIN, 			 NO_PARENT_WINDOW, 		ALIGN_LEFT_X,	0, 0, 0, 0, "",  	   	   			 NON_VISIBLE, 0,	0, 		1, 		gui_main_process, },
+	{ WINDOW_MODES, 		 WINDOW_RECEIVE, 		ALIGN_CENTER_X, 0, 0, 0, 0, "Select mode", 			 NON_VISIBLE, 0, 	1, 		0, 		window_mode_process, },
+	{ WINDOW_AF,    		 WINDOW_RECEIVE,		ALIGN_CENTER_X, 0, 0, 0, 0, "AF settings",    		 NON_VISIBLE, 0, 	1, 		0, 		window_af_process, },
+	{ WINDOW_FREQ,  		 WINDOW_OPTIONS,		ALIGN_CENTER_X, 0, 0, 0, 0, "Freq:", 	   			 NON_VISIBLE, 0, 	1, 		0, 		window_freq_process, },
+	{ WINDOW_MENU,  		 WINDOW_OPTIONS,		ALIGN_CENTER_X, 0, 0, 0, 0, "Settings",	   		 	 NON_VISIBLE, 0, 	1, 		0, 		window_menu_process, },
+	{ WINDOW_ENC2, 			 NO_PARENT_WINDOW, 		ALIGN_RIGHT_X, 	0, 0, 0, 0, "",  			 		 NON_VISIBLE, 0, 	0, 		0, 		window_enc2_process, },
+	{ WINDOW_UIF, 			 NO_PARENT_WINDOW, 		ALIGN_LEFT_X, 	0, 0, 0, 0, "",   		   	 		 NON_VISIBLE, 0, 	0, 		0, 		window_uif_process, },
+	{ WINDOW_SWR_SCANNER,	 WINDOW_UTILS, 			ALIGN_CENTER_X, 0, 0, 0, 0, "SWR band scanner",		 NON_VISIBLE, 0, 	0, 		0, 		window_swrscan_process, },
+	{ WINDOW_AUDIOSETTINGS,  WINDOW_OPTIONS,		ALIGN_CENTER_X, 0, 0, 0, 0, "Audio settings", 		 NON_VISIBLE, 0, 	1, 		0, 		window_audiosettings_process, },
+	{ WINDOW_AP_MIC_EQ, 	 WINDOW_AUDIOSETTINGS, 	ALIGN_CENTER_X, 0, 0, 0, 0, "MIC TX equalizer",		 NON_VISIBLE, 0, 	1, 		0, 		window_ap_mic_eq_process, },
+	{ WINDOW_AP_REVERB_SETT, WINDOW_AUDIOSETTINGS, 	ALIGN_CENTER_X, 0, 0, 0, 0, "Reverberator settings", NON_VISIBLE, 0, 	1, 		0, 		window_ap_reverb_process, },
+	{ WINDOW_AP_MIC_SETT, 	 WINDOW_AUDIOSETTINGS, 	ALIGN_CENTER_X, 0, 0, 0, 0, "Microphone settings", 	 NON_VISIBLE, 0, 	1, 		0, 		window_ap_mic_process, },
+	{ WINDOW_AP_MIC_PROF, 	 WINDOW_AUDIOSETTINGS, 	ALIGN_CENTER_X, 0, 0, 0, 0, "Microphone profiles", 	 NON_VISIBLE, 0, 	1, 		0, 		window_ap_mic_prof_process, },
+	{ WINDOW_TX_SETTINGS, 	 WINDOW_OPTIONS, 		ALIGN_CENTER_X, 0, 0, 0, 0, "Transmit settings", 	 NON_VISIBLE, 0, 	1, 		0, 		window_tx_process, },
+	{ WINDOW_TX_VOX_SETT, 	 WINDOW_TX_SETTINGS, 	ALIGN_CENTER_X, 0, 0, 0, 0, "VOX settings", 	 	 NON_VISIBLE, 0, 	1, 		0, 		window_tx_vox_process, },
+	{ WINDOW_TX_POWER, 		 WINDOW_TX_SETTINGS, 	ALIGN_CENTER_X, 0, 0, 0, 0, "TX power", 	 	 	 NON_VISIBLE, 0, 	1, 		0, 		window_tx_power_process, },
+	{ WINDOW_OPTIONS, 		 NO_PARENT_WINDOW, 		ALIGN_CENTER_X,	0, 0, 0, 0, "Options",  	   	   	 NON_VISIBLE, 0, 	1, 		0, 		window_options_process, },
+	{ WINDOW_UTILS, 		 WINDOW_OPTIONS,		ALIGN_CENTER_X,	0, 0, 0, 0, "Utilites",  	   	   	 NON_VISIBLE, 0, 	1, 		0, 		window_utilites_process, },
+	{ WINDOW_BANDS, 		 NO_PARENT_WINDOW,		ALIGN_CENTER_X,	0, 0, 0, 0, "Bands",  	   	   	 	 NON_VISIBLE, 0, 	1, 		0, 		window_bands_process, },
+	{ WINDOW_MEMORY, 		 NO_PARENT_WINDOW,		ALIGN_CENTER_X,	0, 0, 0, 0, "Memory",  	   	   	 	 NON_VISIBLE, 0, 	1, 		0, 		window_memory_process, },
+	{ WINDOW_DISPLAY, 		 WINDOW_OPTIONS,		ALIGN_CENTER_X,	0, 0, 0, 0, "Display settings",  	 NON_VISIBLE, 0, 	1, 		0, 		window_display_process, },
+	{ WINDOW_RECEIVE, 		 NO_PARENT_WINDOW, 		ALIGN_CENTER_X, 0, 0, 0, 0, "Receive settings", 	 NON_VISIBLE, 0, 	0, 		0, 		window_receive_process, },
 };
 
 static uint_fast8_t swr_scan_enable = 0;		// флаг разрешения сканирования КСВ
@@ -141,124 +141,6 @@ void gui_user_actions_after_close_window(void)
 
 // *********************************************************************************************************************************************************************
 
-static void btn_main_handler(void)
-{
-	window_t * winMain = get_win(WINDOW_MAIN);
-	button_t * pressed_btn = get_selected_button();
-	button_t * btn_Bands = find_gui_element(TYPE_BUTTON, winMain, "btn_Bands");
-	button_t * btn_Memory = find_gui_element(TYPE_BUTTON, winMain, "btn_Memory");
-	button_t * btn_Options = find_gui_element(TYPE_BUTTON, winMain, "btn_Options");
-	button_t * btn_ANotch = find_gui_element(TYPE_BUTTON, winMain, "btn_ANotch");
-	button_t * btn_speaker = find_gui_element(TYPE_BUTTON, winMain, "btn_speaker");
-	button_t * btn_Receive = find_gui_element(TYPE_BUTTON, winMain, "btn_Receive");
-	button_t * btn_txrx = find_gui_element(TYPE_BUTTON, winMain, "btn_txrx");
-
-	if (is_short_pressed())
-	{
-		if (pressed_btn == btn_ANotch)
-		{
-			btn_ANotch->is_locked = hamradio_get_autonotch() ? BUTTON_NON_LOCKED : BUTTON_LOCKED;
-			hamradio_set_autonotch(btn_ANotch->is_locked);
-		}
-		else if (pressed_btn == btn_speaker)
-		{
-			btn_speaker->is_locked = hamradio_get_gmutespkr() ? BUTTON_NON_LOCKED : BUTTON_LOCKED;
-			local_snprintf_P(btn_speaker->text, ARRAY_SIZE(btn_speaker->text), PSTR("Speaker|%s"), btn_speaker->is_locked ? "muted" : "on air");
-			hamradio_set_gmutespkr(btn_speaker->is_locked);
-		}
-		else if (pressed_btn == btn_Bands)
-		{
-			window_t * win = get_win(WINDOW_BANDS);
-			if (win->state == NON_VISIBLE)
-			{
-				open_window(win);
-				footer_buttons_state(DISABLED, btn_Bands);
-			}
-			else
-			{
-				close_window(OPEN_PARENT_WINDOW);
-				footer_buttons_state(CANCELLED);
-			}
-		}
-		else if (pressed_btn == btn_Memory)
-		{
-			window_t * win = get_win(WINDOW_MEMORY);
-			if (win->state == NON_VISIBLE)
-			{
-				open_window(win);
-				footer_buttons_state(DISABLED, btn_Memory);
-			}
-			else
-			{
-				close_window(OPEN_PARENT_WINDOW);
-				footer_buttons_state(CANCELLED);
-			}
-		}
-		else if (pressed_btn == btn_Options)
-		{
-			if (check_for_parent_window() != NO_PARENT_WINDOW)
-			{
-				close_window(OPEN_PARENT_WINDOW);
-				footer_buttons_state(CANCELLED);
-				hamradio_set_lockmode(0);
-				hamradio_disable_keyboard_redirect();
-			}
-			else
-			{
-				window_t * win = get_win(WINDOW_OPTIONS);
-				open_window(win);
-				footer_buttons_state(DISABLED, btn_Options);
-			}
-		}
-		else if (pressed_btn == btn_Receive)
-		{
-			if (check_for_parent_window() != NO_PARENT_WINDOW)
-			{
-				close_window(OPEN_PARENT_WINDOW);
-				footer_buttons_state(CANCELLED);
-				hamradio_set_lockmode(0);
-				hamradio_disable_keyboard_redirect();
-			}
-			else
-			{
-				window_t * win = get_win(WINDOW_RECEIVE);
-				open_window(win);
-				footer_buttons_state(DISABLED, btn_Receive);
-			}
-		}
-		else if (pressed_btn == btn_txrx)
-		{
-			btn_txrx->is_locked = hamradio_moxmode(1) ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
-			local_snprintf_P(btn_txrx->text, ARRAY_SIZE(btn_txrx->text), PSTR("%s"), btn_txrx->is_locked ? "TX" : "RX");
-		}
-	}
-
-	if (is_long_pressed())
-	{
-		if (pressed_btn == btn_txrx)
-		{
-			uint_fast8_t tune = hamradio_tunemode(1);
-			uint_fast8_t mox = hamradio_moxmode(0);
-
-			if (tune)
-			{
-				btn_txrx->is_locked = BUTTON_LOCKED;
-				local_snprintf_P(btn_txrx->text, ARRAY_SIZE(btn_txrx->text), PSTR("TX|tune"));
-			}
-			else if (! tune && mox)
-			{
-				btn_txrx->is_locked = BUTTON_LOCKED;
-				local_snprintf_P(btn_txrx->text, ARRAY_SIZE(btn_txrx->text), PSTR("TX"));
-			}
-			else if (! tune && ! mox)
-			{
-				btn_txrx->is_locked = BUTTON_NON_LOCKED;
-				local_snprintf_P(btn_txrx->text, ARRAY_SIZE(btn_txrx->text), PSTR("RX"));
-			}
-		}
-	}
-}
-
 static void gui_main_process(void)
 {
 	window_t * win = get_win(WINDOW_MAIN);
@@ -270,6 +152,7 @@ static void gui_main_process(void)
 	const uint_fast8_t num_places = 8;
 	const uint_fast8_t lbl_place_width = 100;
 	const uint_fast16_t x_width = lbl_place_width * 2 - 6;
+	uint_fast8_t update = 0;
 
 	if (win->first_call)
 	{
@@ -281,15 +164,15 @@ static void gui_main_process(void)
 
 		static const button_t buttons [] = {
 		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   visible,      payload,	 name, 			text
-			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_txrx", 	"RX", },
-			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_Bands", 	"Bands", },
-			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_Memory",  	"Memory", },
-			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_Receive", 	"Receive|options", },
-			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_ANotch", 	"Auto|Notch", },
-			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_speaker", 	"Speaker|on air", },
-			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_1",  	 	"", },
-			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_2", 		"", },
-			{ 0, 0, 86, 44, btn_main_handler, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_Options", 	"Options", },
+			{ 0, 0, 86, 44, NULL, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_txrx", 	"RX", },
+			{ 0, 0, 86, 44, NULL, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_Bands", 	"Bands", },
+			{ 0, 0, 86, 44, NULL, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_Memory",  	"Memory", },
+			{ 0, 0, 86, 44, NULL, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_Receive", 	"Receive|options", },
+			{ 0, 0, 86, 44, NULL, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_ANotch", 	"Auto|Notch", },
+			{ 0, 0, 86, 44, NULL, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_speaker", 	"Speaker|on air", },
+			{ 0, 0, 86, 44, NULL, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_1",  	 	"", },
+			{ 0, 0, 86, 44, NULL, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_2", 		"", },
+			{ 0, 0, 86, 44, NULL, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_Options", 	"Options", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -345,6 +228,142 @@ static void gui_main_process(void)
 		}
 	}
 
+	wm_message_t message = check_wm_stack(win);
+
+	if (message == WM_MESSAGE_TOUCH)
+	{
+		uintptr_t ptr;
+		uint_fast8_t type;
+		pop_wm_stack(win, & type, & ptr);
+
+		if (type == TYPE_BUTTON)						// запрос на действия с кнопками
+		{
+			button_t * bh = (button_t *) ptr;
+			uint_fast8_t cell_id = get_selected_element_pos();
+
+			if (bh->state == CANCELLED)					// обработка короткого нажатия
+			{
+				window_t * winMain = get_win(WINDOW_MAIN);
+				button_t * btn_Bands = find_gui_element(TYPE_BUTTON, winMain, "btn_Bands");
+				button_t * btn_Memory = find_gui_element(TYPE_BUTTON, winMain, "btn_Memory");
+				button_t * btn_Options = find_gui_element(TYPE_BUTTON, winMain, "btn_Options");
+				button_t * btn_ANotch = find_gui_element(TYPE_BUTTON, winMain, "btn_ANotch");
+				button_t * btn_speaker = find_gui_element(TYPE_BUTTON, winMain, "btn_speaker");
+				button_t * btn_Receive = find_gui_element(TYPE_BUTTON, winMain, "btn_Receive");
+				button_t * btn_txrx = find_gui_element(TYPE_BUTTON, winMain, "btn_txrx");
+
+				if (bh == btn_ANotch)
+				{
+					btn_ANotch->is_locked = hamradio_get_autonotch() ? BUTTON_NON_LOCKED : BUTTON_LOCKED;
+					hamradio_set_autonotch(btn_ANotch->is_locked);
+				}
+				else if (bh == btn_speaker)
+				{
+					btn_speaker->is_locked = hamradio_get_gmutespkr() ? BUTTON_NON_LOCKED : BUTTON_LOCKED;
+					local_snprintf_P(btn_speaker->text, ARRAY_SIZE(btn_speaker->text), PSTR("Speaker|%s"), btn_speaker->is_locked ? "muted" : "on air");
+					hamradio_set_gmutespkr(btn_speaker->is_locked);
+				}
+				else if (bh == btn_Bands)
+				{
+					window_t * win = get_win(WINDOW_BANDS);
+					if (win->state == NON_VISIBLE)
+					{
+						open_window(win);
+						footer_buttons_state(DISABLED, btn_Bands);
+					}
+					else
+					{
+						close_window(OPEN_PARENT_WINDOW);
+						footer_buttons_state(CANCELLED);
+					}
+				}
+				else if (bh == btn_Memory)
+				{
+					window_t * win = get_win(WINDOW_MEMORY);
+					if (win->state == NON_VISIBLE)
+					{
+						open_window(win);
+						footer_buttons_state(DISABLED, btn_Memory);
+					}
+					else
+					{
+						close_window(OPEN_PARENT_WINDOW);
+						footer_buttons_state(CANCELLED);
+					}
+				}
+				else if (bh == btn_Options)
+				{
+					if (check_for_parent_window() != NO_PARENT_WINDOW)
+					{
+						close_window(OPEN_PARENT_WINDOW);
+						footer_buttons_state(CANCELLED);
+						hamradio_set_lockmode(0);
+						hamradio_disable_keyboard_redirect();
+					}
+					else
+					{
+						window_t * win = get_win(WINDOW_OPTIONS);
+						open_window(win);
+						footer_buttons_state(DISABLED, btn_Options);
+					}
+				}
+				else if (bh == btn_Receive)
+				{
+					if (check_for_parent_window() != NO_PARENT_WINDOW)
+					{
+						close_window(OPEN_PARENT_WINDOW);
+						footer_buttons_state(CANCELLED);
+						hamradio_set_lockmode(0);
+						hamradio_disable_keyboard_redirect();
+					}
+					else
+					{
+						window_t * win = get_win(WINDOW_RECEIVE);
+						open_window(win);
+						footer_buttons_state(DISABLED, btn_Receive);
+					}
+				}
+				else if (bh == btn_txrx)
+				{
+					btn_txrx->is_locked = hamradio_moxmode(1) ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
+					local_snprintf_P(btn_txrx->text, ARRAY_SIZE(btn_txrx->text), PSTR("%s"), btn_txrx->is_locked ? "TX" : "RX");
+				}
+			}
+			else if (bh->state == LONG_PRESSED)			// обработка длинного нажатия
+			{
+				window_t * winMain = get_win(WINDOW_MAIN);
+				button_t * btn_txrx = find_gui_element(TYPE_BUTTON, winMain, "btn_txrx");
+
+				if (bh == btn_txrx)
+				{
+					uint_fast8_t tune = hamradio_tunemode(1);
+					uint_fast8_t mox = hamradio_moxmode(0);
+
+					if (tune)
+					{
+						btn_txrx->is_locked = BUTTON_LOCKED;
+						local_snprintf_P(btn_txrx->text, ARRAY_SIZE(btn_txrx->text), PSTR("TX|tune"));
+					}
+					else if (! tune && mox)
+					{
+						btn_txrx->is_locked = BUTTON_LOCKED;
+						local_snprintf_P(btn_txrx->text, ARRAY_SIZE(btn_txrx->text), PSTR("TX"));
+					}
+					else if (! tune && ! mox)
+					{
+						btn_txrx->is_locked = BUTTON_NON_LOCKED;
+						local_snprintf_P(btn_txrx->text, ARRAY_SIZE(btn_txrx->text), PSTR("RX"));
+					}
+				}
+			}
+		}
+	}
+	else if (message == WM_MESSAGE_UPDATE)				// обработка запроса на обновление состояния
+	{
+		pop_wm_stack(win, NULL, NULL);
+		update = 1;
+	}
+
 	// разметка инфобара
 	for(uint_fast8_t i = 1; i < num_places; i++)
 	{
@@ -354,7 +373,7 @@ static void gui_main_process(void)
 
 	// параметры полосы пропускания фильтра
 	static uint_fast8_t bp_type, bp_low, bp_high;
-	if (get_gui_1sec_timer())
+	if (update)
 	{
 		bp_high = hamradio_get_high_bp(0);
 		bp_low = hamradio_get_low_bp(0) * 10;
@@ -374,7 +393,7 @@ static void gui_main_process(void)
 
 	// значение сдвига частоты
 	static int_fast16_t if_shift;
-	if (get_gui_1sec_timer())
+	if (update)
 		if_shift = hamradio_if_shift(0);
 	xx = current_place * lbl_place_width + lbl_place_width / 2;
 	if (if_shift)
@@ -394,7 +413,7 @@ static void gui_main_process(void)
 
 	// AGC
 	static int_fast8_t agc;
-	if (get_gui_1sec_timer())
+	if (update)
 		agc = hamradio_get_agc_type();
 	xx = current_place * lbl_place_width + lbl_place_width / 2;
 	local_snprintf_P(buf, buflen, PSTR("AGC"));
@@ -415,7 +434,7 @@ static void gui_main_process(void)
 	// ширина панорамы
 #if WITHIF4DSP
 	static int_fast32_t z;
-	if (get_gui_1sec_timer())
+	if (update)
 		z = display_zoomedbw() / 1000;
 	local_snprintf_P(buf, buflen, PSTR("SPAN"));
 	xx = current_place * lbl_place_width + lbl_place_width / 2;
@@ -429,7 +448,7 @@ static void gui_main_process(void)
 	// напряжение питания
 #if WITHVOLTLEVEL
 	static ldiv_t v;
-	if (get_gui_1sec_timer())
+	if (update)
 		v = ldiv(hamradio_get_volt_value(), 10);
 	local_snprintf_P(buf, buflen, PSTR("%d.%1dV"), v.quot, v.rem);
 	xx = current_place * lbl_place_width + lbl_place_width / 2;
@@ -441,7 +460,7 @@ static void gui_main_process(void)
 	if (hamradio_get_tx())
 	{
 		static int_fast16_t drain;
-		if (get_gui_1sec_timer())
+		if (update)
 		{
 			drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (может быть отрицательным)
 			if (drain < 0)
@@ -489,6 +508,8 @@ static void gui_main_process(void)
 //			PRINTF("%s\n", buf);		// пока вывод в консоль
 //		}
 //	#endif /* WITHTHERMOLEVEL */
+
+
 
 }
 
@@ -576,13 +597,13 @@ static void window_memory_process(void)
 		return;
 	}
 
-	wm_message_t message = check_wm_stack();
+	wm_message_t message = check_wm_stack(win);
 	if (message == WM_MESSAGE_TOUCH)
 	{
 		uint_fast8_t type;
 		uintptr_t ptr;
 
-		pop_wm_stack(& type, & ptr);
+		pop_wm_stack(win, & type, & ptr);
 
 		if (type == TYPE_BUTTON)
 		{
@@ -1101,7 +1122,7 @@ static void buttons_mode_handler(void)
 
 		close_window(OPEN_PARENT_WINDOW);
 		footer_buttons_state(CANCELLED);
-		gui_timer_update(NULL);
+		gui_update(NULL);
 	}
 }
 
@@ -1338,7 +1359,7 @@ static void window_af_process(void)
 	if (bp_t.updated)
 	{
 		bp_t.updated = 0;
-		gui_timer_update(NULL);
+		gui_update(NULL);
 		int16_t shift;
 
 		for(uint_fast8_t i = 0; i < win->lh_count; i ++)
@@ -3546,7 +3567,7 @@ static void window_uif_process(void)
 	{
 		hamradio_gui_edit_menu_item(menu_uif.menupos, rotate);
 		reinit = 1;
-		gui_timer_update(NULL);
+		gui_update(NULL);
 	}
 
 	uint_fast8_t keyb_code = get_gui_keyb_code();
@@ -3642,7 +3663,7 @@ static void window_enc2_process(void)
 		lbl_val->visible = VISIBLE;
 
 		gui_enc2_menu.updated = 0;
-		gui_timer_update(NULL);
+		gui_update(NULL);
 	}
 }
 
