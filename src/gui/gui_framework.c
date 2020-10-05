@@ -47,23 +47,55 @@ static gui_t gui = { 0, 0, KBD_CODE_MAX, TYPE_DUMMY, NULL, CANCELLED, 0, 0, 0, 0
 static gui_element_t gui_elements [GUI_ELEMENTS_ARRAY_SIZE];
 static uint_fast8_t gui_element_count = 0;
 static button_t close_button = { 0, 0, 0, 0, close_all_windows, CANCELLED, BUTTON_NON_LOCKED, 0, NO_PARENT_WINDOW, NON_VISIBLE, UINTPTR_MAX, "btn_close", "", };
+static enc2_stack_t enc2_stack;
 
-// WM_MESSAGE_TOUCH:  element_type type, uintptr_t element_ptr
-// WM_MESSAGE_UPDATE: nothing
-uint_fast8_t push_wm_stack(window_t * win, wm_message_t message, ...)
+void clean_enc2_stack(void)
 {
-	if (win->queue.size >= wm_max_stack_size)
-		return 0;					// стек переполнен, ошибка
+	memset(enc2_stack.data, 0, sizeof(enc2_stack.data));
+	enc2_stack.size = 0;
+}
+
+void push_enc2_stack(const int_fast8_t value)
+{
+    if (enc2_stack.size >= ENC2_STACK_SIZE)
+        return;
+
+    enc2_stack.data [enc2_stack.size] = value;
+    enc2_stack.size ++;
+}
+
+int_fast8_t pop_enc2_stack(void)
+{
+    if (enc2_stack.size == 0)
+        return 0;
+
+    // суммирование содержимого стека перед возвращением
+    int_fast8_t v = 0;
+    do {
+    	enc2_stack.size --;
+    	v += enc2_stack.data [enc2_stack.size];
+    } while (enc2_stack.size > 0);
+
+    clean_enc2_stack();
+    return v;
+}
+
+// WM_MESSAGE_ACTION: element_type type, uintptr_t element_ptr
+// WM_MESSAGE_UPDATE: nothing
+uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
+{
+	if (win->queue.size >= WM_MAX_QUEUE_SIZE)
+		return 0;					// очередь переполнена, ошибка
 
 	va_list arg;
 
 	switch (message)
 	{
-	case WM_MESSAGE_TOUCH:
+	case WM_MESSAGE_ACTION:
 
 		va_start(arg, message);
 
-		win->queue.data [win->queue.size].message = WM_MESSAGE_TOUCH;
+		win->queue.data [win->queue.size].message = WM_MESSAGE_ACTION;
 		win->queue.data [win->queue.size].type = va_arg(arg, uint_fast8_t);
 		win->queue.data [win->queue.size].ptr = va_arg(arg, uintptr_t);
 
@@ -75,11 +107,14 @@ uint_fast8_t push_wm_stack(window_t * win, wm_message_t message, ...)
 
 	case WM_MESSAGE_UPDATE:
 
-		win->queue.data [win->queue.size].message = WM_MESSAGE_UPDATE;
-		win->queue.data [win->queue.size].type = UINT8_MAX;
-		win->queue.data [win->queue.size].ptr = UINTPTR_MAX;
+		if (win->queue.data [win->queue.size - 1].message != WM_MESSAGE_UPDATE)		// удаление дублей сообщения WM_MESSAGE_UPDATE
+		{
+			win->queue.data [win->queue.size].message = WM_MESSAGE_UPDATE;
+			win->queue.data [win->queue.size].type = UINT8_MAX;
+			win->queue.data [win->queue.size].ptr = UINTPTR_MAX;
 
-		win->queue.size ++;
+			win->queue.size ++;
+		}
 
 		return 1;
 		break;
@@ -90,51 +125,49 @@ uint_fast8_t push_wm_stack(window_t * win, wm_message_t message, ...)
 		break;
 	}
 
-	PRINTF("push_wm_stack: no valid type of messages found\n");
+	PRINTF("put_to_wm_queue: no valid type of messages found\n");
 	ASSERT(0);
 	return 0;
 }
 
-wm_message_t check_wm_stack(window_t * win)
-{
-	if (win->queue.size)
-		return win->queue.data [win->queue.size - 1].message;
-	else
-		return WM_NO_MESSAGE;				// стек пустой
-}
 
 void clean_wm_stack(window_t * win)
 {
 	win->queue.size = 0;
 }
 
-uint_fast8_t pop_wm_stack(window_t * win, uint_fast8_t * type, uintptr_t * ptr)
+wm_message_t get_from_wm_queue(window_t * win, ...) //uint_fast8_t * type, uintptr_t * ptr)
 {
 	if (! win->queue.size)
-		return 0;							// стек пустой
+		return WM_NO_MESSAGE;							// очередь сообщений пустая
 
+	va_list arg;
 	win->queue.size --;
 
-	if (type && ptr)
+	if (win->queue.data [win->queue.size].message == WM_MESSAGE_ACTION)
 	{
-		* type = win->queue.data [win->queue.size].type;
-		* ptr = win->queue.data [win->queue.size].ptr;
+		va_start(arg, win);
+
+		* va_arg(arg, uint_fast8_t *) = win->queue.data [win->queue.size].type;
+		* va_arg(arg, uintptr_t *) = win->queue.data [win->queue.size].ptr;
+
+		va_end(arg);
 	}
 
-	return 1;
+	return win->queue.data [win->queue.size].message;
 }
 
 /* Запрос на обновление состояния элементов GUI */
 void gui_update(void * arg)
 {
-	gui.timer_1sec_updated = 1;								// удалить после перехода на WM messages
-	push_wm_stack(get_win(WINDOW_MAIN), WM_MESSAGE_UPDATE);	// главное окно всегда нужно обновлять
+	gui.timer_1sec_updated = 1;								// todo: удалить после перехода на очередь сообщений
+	put_to_wm_queue(get_win(WINDOW_MAIN), WM_MESSAGE_UPDATE);	// главное окно всегда нужно обновлять
 
 	if (check_for_parent_window() != NO_PARENT_WINDOW)		// если открыто второе окно,
 	{
 		window_t * win2 = get_win(gui.win [1]);
 		if (win2->is_need_update)							// и если оно имеет статус обновляемого,
-			push_wm_stack(win2, WM_MESSAGE_UPDATE);			// добавить сообщение на обновление
+			put_to_wm_queue(win2, WM_MESSAGE_UPDATE);			// добавить сообщение на обновление в очередь
 	}
 }
 
@@ -981,7 +1014,7 @@ static void set_state_record(gui_element_t * val)
 				if (bh->onClickHandler)
 					bh->onClickHandler();
 
-				if (! push_wm_stack(val->win, WM_MESSAGE_TOUCH, TYPE_BUTTON, bh))
+				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_BUTTON, bh))
 					PRINTF("WM stack: full!\n");
 			}
 			break;
@@ -998,7 +1031,7 @@ static void set_state_record(gui_element_t * val)
 					lh->onClickHandler();
 
 				lh->onClickHandler();
-				if (! push_wm_stack(val->win, WM_MESSAGE_TOUCH, TYPE_LABEL, lh))
+				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_LABEL, lh))
 					PRINTF("WM stack: full!\n");
 			}
 			break;
@@ -1010,11 +1043,15 @@ static void set_state_record(gui_element_t * val)
 			gui.selected_link = val;
 			sh->state = val->state;
 			if (sh->state == PRESSED)
+			{
 				slider_process(sh);
+				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_SLIDER, sh))
+					PRINTF("WM stack: full!\n");
+			}
 			break;
 
 		default:
-			PRINTF("set_state_record: undefined type/n");
+			PRINTF("set_state_record: undefined type\n");
 			ASSERT(0);
 			break;
 	}
@@ -1153,28 +1190,10 @@ void gui_WM_walktrough(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
 
 	process_gui();
 
-	for(uint_fast8_t i = 0; i < win_gui_count; i ++)
+	for(uint_fast8_t i = 0; i < WIN_GUI_COUNT; i ++)
 	{
 		if (gui.win [i] == NO_PARENT_WINDOW)
 			break;
-
-#if 0
-		wm_message_t message = check_wm_stack();
-		if (message == WM_MESSAGE_TOUCH)
-		{
-			uint_fast8_t type;
-			uintptr_t h;
-
-			pop_wm_stack(& type, & h);
-
-			if (type == TYPE_BUTTON)
-			{
-				button_t * bh = (button_t *) h;
-				PRINTF("wm_stack button: name - %s, state - %d\n", bh->name, bh->state);
-			}
-
-		}
-#endif
 
 		const window_t * const win = get_win(gui.win [i]);
 		uint_fast8_t f = win->first_call;

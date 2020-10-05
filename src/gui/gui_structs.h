@@ -138,14 +138,14 @@ typedef enum {
 } window_align_t;
 
 enum {
-	win_gui_count = 2,		 		// на экране не более 2х окон, одно из которых - основное на весь экран
-	wm_max_stack_size = 5			// размер буфера сообщений WM
+	WIN_GUI_COUNT = 2,		 		// на экране не более 2х окон, одно из которых - основное на весь экран
+	WM_MAX_QUEUE_SIZE = 5			// размер очереди сообщений WM
 };
 
 typedef enum {
 	WM_NO_MESSAGE,
 	WM_MESSAGE_UPDATE,				// запрос на обновление состояния элементов GUI в зависимости от состояния базовой системы
-	WM_MESSAGE_TOUCH				// необходима реакция на действия с элементами
+	WM_MESSAGE_ACTION				// необходима реакция на действия с элементами
 } wm_message_t;
 
 typedef struct {
@@ -154,8 +154,8 @@ typedef struct {
 	uintptr_t ptr;
 } wm_data_t;
 
-typedef struct wm_stack_tag {		// очередь сообщений окнам от WM о взаимодействии с элементами GUI
-	wm_data_t data[wm_max_stack_size];
+typedef struct {					// очередь сообщений окнам от WM о взаимодействии с элементами GUI
+	wm_data_t data[WM_MAX_QUEUE_SIZE];
     size_t size;
 } wm_queue_t;
 
@@ -210,7 +210,7 @@ typedef struct {
 	int16_t vector_move_x;	 	  	// в т.ч. и за границами элемента, при state == PRESSED
 	int16_t vector_move_y;
 	uint8_t timer_1sec_updated;	  	// для периодических обновлений состояния
-	uint8_t win[win_gui_count];		// на экране не более 2х окон, одно из которых - основное на весь экран
+	uint8_t win[WIN_GUI_COUNT];		// на экране не более 2х окон, одно из которых - основное на весь экран
 } gui_t;
 
 #endif /* WITHTOUCHGUI */
