@@ -1541,7 +1541,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 		uint_fast8_t i;
 		//PRINTF(PSTR("HAL_PCD_IRQHandler trapped - BRDY, BRDYSTS=0x%04X\n"), USBx->BRDYSTS);
 		const uint_fast16_t brdysts = USBx->BRDYSTS & USBx->BRDYENB;	// BRDY Interrupt Status Register
-		USBx->BRDYSTS = ~ brdysts;
+		USBx->BRDYSTS = ~ brdysts;	// 2. When BRDYM is 0, clearing this bit should be done before accessing the FIFO.
 
 		if ((brdysts & (1U << 0)) != 0)		// PIPE0 - DCP
 		{
@@ -1800,32 +1800,25 @@ void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 	if ((intsts0msk & USB_INTSTS0_BRDY) != 0)	// BRDY
 	{
 		uint_fast8_t i;
-		PRINTF(PSTR("HAL_HCD_IRQHandler trapped - BRDY, BRDYSTS=0x%04X\n"), USBx->BRDYSTS);
 		const uint_fast16_t brdysts = USBx->BRDYSTS & USBx->BRDYENB;	// BRDY Interrupt Status Register
-		USBx->BRDYSTS = ~ brdysts;
-		if (brdysts == 1)
-		{
-				static uint8_t tbuff [64];
-			  	unsigned bcnt;
-			  	if (USB_ReadPacketNec(USBx, 0, tbuff, ARRAY_SIZE(tbuff), & bcnt) == 0)
-			  	{
-			  		ASSERT(bcnt != 0);
-			  		printhex(0, tbuff, bcnt);
-			  	}
-			  	else
-			  	{
-			  		PRINTF("no packet\n");
-			  	}
-			  	USBx->BRDYENB &= ~ 0x01;
-		}
+		PRINTF(PSTR("HAL_HCD_IRQHandler trapped - BRDY, BRDYSTS=0x%04X, brdysts=0x%04X\n"), USBx->BRDYSTS, brdysts);
+		USBx->BRDYSTS = ~ brdysts;	// 2. When BRDYM is 0, clearing this bit should be done before accessing the FIFO.
 		if ((brdysts & (1U << 0)) != 0)		// PIPE0 - DCP
 		{
 			HCD_HCTypeDef * const hc = & hhcd->hc [0];
 		  	unsigned bcnt;
 		  	if (USB_ReadPacketNec(USBx, 0, hc->xfer_buff, hc->xfer_len - hc->xfer_count, & bcnt) == 0)
 		  	{
-		  		hc->xfer_buff += bcnt;
-		  		hc->xfer_count += bcnt;
+		  		if (bcnt == 0)
+		  		{
+		  			PRINTF("NO DATA\n");
+		  		}
+		  		else
+		  		{
+			  		printhex(0, hc->xfer_buff, bcnt);	// DEBUG
+			  		hc->xfer_buff += bcnt;
+			  		hc->xfer_count += bcnt;
+		  		}
 				//HAL_PCD_DataOutStageCallback(hpcd, ep->num);	// start next transfer
 		  	}
 		  	else
@@ -1833,6 +1826,7 @@ void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 		  		TP();
 		  		//control_stall(pdev);
 		  	}
+			USBx->CFIFOCTR = USB_CFIFOCTR_BCLR;	// BCLR
 		}
 #if 0
 
@@ -2860,7 +2854,7 @@ HAL_StatusTypeDef USB_HostInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgTyp
 	(void) USBx->SYSCFG0;
 
 	USBx->SOFCFG =
-		//USB_SOFCFG_BRDYM |	// BRDYM
+		USB_SOFCFG_BRDYM |	// BRDYM
 		0;
 
 	USBx->SYSCFG0 = (USBx->SYSCFG0 & ~ (USB_SYSCFG_DPRPU | USB_SYSCFG_DRPD)) |
