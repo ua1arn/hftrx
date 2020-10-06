@@ -2884,18 +2884,20 @@ HAL_StatusTypeDef USB_HC_Init(
   *   before clearing the reset bit.
   */
 // вызывается только для HOST
+// See https://git.um.si/grega.mocnik/mbed-os-ext/blob/master/Connectivity/features/unsupported/USBHost/targets/TARGET_RENESAS/TARGET_VK_RZ_A1H/usb1/src/host/usb1_host_usbsig.c
+
 HAL_StatusTypeDef USB_ResetPort(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t status)
 {
 	// status 0: reset off, 1: reset on
 	if (status)
 	{
-		USBx->DVSTCTR0 &= ~ USB_DVSTCTR0_UACT;
-		(void) USBx->DVSTCTR0;
-
-		USBx->DCPCTR |= USB_DCPCTR_SUREQCLR;
 
 		USBx->DVSTCTR0 |= USB_DVSTCTR0_USBRST;
 		(void) USBx->DVSTCTR0;
+		USBx->DVSTCTR0 &= ~ USB_DVSTCTR0_UACT;
+		(void) USBx->DVSTCTR0;
+//
+//		USBx->DCPCTR |= USB_DCPCTR_SUREQCLR;
 	}
 	else
 	{
