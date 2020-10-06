@@ -2518,6 +2518,7 @@ HAL_StatusTypeDef USB_HC_StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_HCTypeDe
 	uint16_t max_hc_pkt_count = 256;
 	uint32_t tmpreg = 0;
 
+	//+++sack: не влияет
 	const uint_fast8_t pipe = 0;
 	volatile uint16_t * const PIPEnCTR = get_pipectr_reg(USBx, pipe);
 	volatile uint16_t * const PIPEnTRE = get_pipetre_reg(USBx, pipe);
@@ -2525,6 +2526,7 @@ HAL_StatusTypeDef USB_HC_StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_HCTypeDe
 
 	USBx->DVSTCTR0 |= USB_DVSTCTR0_UACT;
 	(void) USBx->DVSTCTR0;
+	//---sack: не влияет
 
 	if (hc->usbh_otg_speed == USB_OTG_SPEED_HIGH)
 	{
@@ -2752,11 +2754,13 @@ HAL_StatusTypeDef USB_HC_Init(
 	/* Clear old interrupt conditions for this host channel. */
 	////USBx_HC(ch_num)->HCINT = 0xFFFFFFFF;
 
+//+++sack: не влияет
 //	USBx->INTSTS1 = (uint16_t) ~ USB_INTSTS1_SIGN;
 //	USBx->INTSTS1 = (uint16_t) ~ USB_INTSTS1_SACK;
 	USBx->NRDYSTS = (uint16_t) ~ (1uL << pipe);
 	USBx->BEMPSTS = (uint16_t) ~ (1uL << pipe);
 	USBx->BRDYSTS = (uint16_t) ~ (1uL << pipe);
+//---sack: не влияет
 
 	/* Enable channel interrupts required for this transfer. */
 	switch (ep_type)
@@ -2853,6 +2857,10 @@ HAL_StatusTypeDef USB_HC_Init(
 	    //USBx_HC(ch_num)->HCCHAR |= USB_OTG_HCCHAR_ODDFRM ;
 	  }
 
+///+++sack: не помогает
+//	USBx->DVSTCTR0 |= USB_DVSTCTR0_UACT;
+//	(void) USBx->DVSTCTR0;
+///---sack: не помогает
 
 	* PIPEnCTR = 0x0000;	// NAK
 	while ((* PIPEnCTR & (USB_PIPEnCTR_1_5_PBUSY | USB_PIPEnCTR_1_5_CSSTS)) != 0)	// PBUSY, CSSTS
