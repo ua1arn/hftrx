@@ -10436,14 +10436,14 @@ USBH_StatusTypeDef  USBH_LL_DriverVBUS(USBH_HandleTypeDef *phost, uint_fast8_t s
 	{
 		/* Drive high Charge pump */
 		/* ToDo: Add IOE driver control */
-		board_set_usbflashpoweron(1);
+		board_set_usbhostvbuson(1);
 		board_update();
 	}
 	else
 	{
 		/* Drive low Charge pump */
 		/* ToDo: Add IOE driver control */
-		board_set_usbflashpoweron(0);
+		board_set_usbhostvbuson(0);
 		board_update();
 	}
 	HARDWARE_DELAY_MS(200);

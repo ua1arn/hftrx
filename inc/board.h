@@ -141,7 +141,7 @@ void board_set_i2s_enable(uint_fast8_t v);	/* разрешение генера�
 void board_set_stage1level(uint_fast8_t v);		/* управление током первого каскада усиления hermes */
 void board_set_stage2level(uint_fast8_t v);		/* управление током второго каскада усиления hermes */
 void board_set_sdcardpoweron(uint_fast8_t n);	/* не-0: включить питание SD CARD */
-void board_set_usbflashpoweron(uint_fast8_t n);	/* не-0: включить питание USB FLASH */
+void board_set_usbhostvbuson(uint_fast8_t n);	/* не-0: включить питание USB FLASH */
 void board_set_attvalue(uint_fast8_t v);		/* установить значение аттенюатора сигнал-генератора */
 void prog_dac1_a_value(uint_fast8_t v);
 void prog_dac1_b_value(uint_fast8_t v);

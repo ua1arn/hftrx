@@ -137,7 +137,7 @@ static uint_fast8_t		glob_stage1level = 2;	/* index of code for A1..A0 of OPA267
 static uint_fast8_t		glob_stage2level = 2;	/* index of code for A1..A0 of OPA2674I-14D in stage 2 */
 
 static uint_fast8_t		glob_sdcardpoweron;	/* не-0: включить питание SD CARD */
-static uint_fast8_t		glob_usbflashpoweron;/* не-0: включить питание USB FLASH */
+static uint_fast8_t		glob_hostvbuson;/* не-0: включить питание USB FLASH */
 static uint_fast8_t 	glob_user1;
 static uint_fast8_t 	glob_user2;
 static uint_fast8_t 	glob_user3;
@@ -632,10 +632,10 @@ prog_gpioreg(void)
 		HARDWARE_SDIOPOWER_SET(glob_sdcardpoweron);
 	#endif /* defined (HARDWARE_SDIOPOWER_SET) */
 
-	#if defined (TARGET_USBFS_VBUSON_SET) && defined (WITHUSBHW_HOST)
+	#if defined (TARGET_USBFS_VBUSON_SET)
 		// USB FLASH POWER ENABLE BIT
-		TARGET_USBFS_VBUSON_SET(glob_usbflashpoweron);
-	#endif /* defined (TARGET_USBFS_VBUSON_SET) && defined (WITHUSBHW_HOST) */
+		TARGET_USBFS_VBUSON_SET(glob_hostvbuson);
+	#endif /* defined (TARGET_USBFS_VBUSON_SET) */
 
 	#if defined (HARDWARE_BL_SET)
 		// яркость подсветки
@@ -5639,12 +5639,12 @@ board_set_sdcardpoweron(uint_fast8_t v)
 }
 
 void
-board_set_usbflashpoweron(uint_fast8_t v)
+board_set_usbhostvbuson(uint_fast8_t v)
 {
 	const uint_fast8_t n = v != 0;
-	if (glob_usbflashpoweron != n)
+	if (glob_hostvbuson != n)
 	{
-		glob_usbflashpoweron = n;
+		glob_hostvbuson = n;
 		board_ctlreg1changed();
 	}
 }
