@@ -10992,8 +10992,7 @@ USBH_StatusTypeDef  USBH_LL_Init(USBH_HandleTypeDef *phost)
 
 #if CPUSTYLE_R7S721
 	hhcd_USB_OTG.Init.Host_channels = 16;
-	hhcd_USB_OTG.Init.pcd_speed = PCD_SPEED_HIGH;
-	//hhcd_USB_OTG.Init.pcd_speed = PCD_SPEED_FULL;
+	hhcd_USB_OTG.Init.pcd_speed = PCD_SPEED_FULL; //PCD_SPEED_HIGH; При high не происходит SACK
 	hhcd_USB_OTG.Init.dma_enable = USB_DISABLE;
 	hhcd_USB_OTG.Init.phy_itface = HCD_PHY_EMBEDDED;
 
@@ -11014,7 +11013,6 @@ USBH_StatusTypeDef  USBH_LL_Init(USBH_HandleTypeDef *phost)
 	#else /* WITHUSBHOST_HIGHSPEEDULPI */
 		hhcd_USB_OTG.Init.phy_itface = USB_OTG_EMBEDDED_PHY;
 	#endif /* WITHUSBHOST_HIGHSPEEDULPI */
-
 
 #else /* CPUSTYLE_R7S721 */
 	hhcd_USB_OTG.Init.Host_channels = 16;
