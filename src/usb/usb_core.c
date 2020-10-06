@@ -2862,6 +2862,7 @@ HAL_StatusTypeDef USB_ResetPort(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t status
 HAL_StatusTypeDef USB_HostInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgTypeDef * cfg)
 {
 	uint_fast8_t i;
+	const uint_fast8_t HS = cfg->pcd_speed == PCD_SPEED_HIGH;
 
 	USBx->SYSCFG0 &= ~ USB_SYSCFG_USBE;	// USBE 0: USB module operation is disabled.
 	(void) USBx->SYSCFG0;
@@ -2869,6 +2870,8 @@ HAL_StatusTypeDef USB_HostInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgTyp
 	USBx->SOFCFG =
 		USB_SOFCFG_BRDYM |	// BRDYM
 		0;
+	USBx->SYSCFG0 = (USBx->SYSCFG0 & ~ (USB_SYSCFG_HSE)) |
+			0;
 
 	USBx->SYSCFG0 = (USBx->SYSCFG0 & ~ (USB_SYSCFG_DPRPU | USB_SYSCFG_DRPD)) |
 			0 * USB_SYSCFG_DPRPU |	// DPRPU 0: Pulling up the D+ line is disabled.
@@ -2880,8 +2883,7 @@ HAL_StatusTypeDef USB_HostInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgTyp
 	(void) USBx->SYSCFG0;
 
 	USBx->SYSCFG0 = (USBx->SYSCFG0 & ~ (USB_SYSCFG_HSE)) |
-			(cfg->pcd_speed == PCD_SPEED_HIGH) * USB_SYSCFG_HSE |	// HSE
-			//(1) * USB_SYSCFG_HSE |	// HSE
+			HS * USB_SYSCFG_HSE |	// HSE
 			0;
 	(void) USBx->SYSCFG0;
 
@@ -2925,10 +2927,11 @@ HAL_StatusTypeDef USB_HostInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgTyp
 		volatile uint16_t * const DEVADDn = (& USBx->DEVADD0) + i;
 
 		* DEVADDn = (* DEVADDn & ~ (USB_DEVADDn_USBSPD | USB_DEVADDn_HUBPORT | USB_DEVADDn_UPPHUB)) |
-			(((cfg->pcd_speed == PCD_SPEED_HIGH) ? 0x03 : 0x02) << USB_DEVADDn_USBSPD_SHIFT) |
+			((HS ? 0x03 : 0x02) << USB_DEVADDn_USBSPD_SHIFT) |
 			(0x00 << USB_DEVADDn_HUBPORT_SHIFT) |
 			(0x00 << USB_DEVADDn_UPPHUB_SHIFT) |
 			0;
+		(void) * DEVADDn;
 	}
 	return HAL_OK;
 }
