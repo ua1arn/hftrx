@@ -1800,8 +1800,8 @@ void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 	if ((intsts0msk & USB_INTSTS0_BRDY) != 0)	// BRDY
 	{
 		uint_fast8_t i;
+		//PRINTF(PSTR("1 HAL_HCD_IRQHandler trapped - BRDY, BRDYSTS=0x%04X\n"), USBx->BRDYSTS);
 		const uint_fast16_t brdysts = USBx->BRDYSTS & USBx->BRDYENB;	// BRDY Interrupt Status Register
-		PRINTF(PSTR("HAL_HCD_IRQHandler trapped - BRDY, BRDYSTS=0x%04X, brdysts=0x%04X\n"), USBx->BRDYSTS, brdysts);
 		USBx->BRDYSTS = ~ brdysts;	// 2. When BRDYM is 0, clearing this bit should be done before accessing the FIFO.
 		if ((brdysts & (1U << 0)) != 0)		// PIPE0 - DCP
 		{
@@ -1811,7 +1811,7 @@ void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 		  	{
 		  		if (bcnt == 0)
 		  		{
-		  			PRINTF("NO DATA\n");
+		  			//PRINTF("NO DATA\n");
 		  		}
 		  		else
 		  		{
@@ -11562,7 +11562,7 @@ USBH_StatusTypeDef  USBH_LL_Connect(USBH_HandleTypeDef *phost)
 	switch (phost->gState)
 	{
 	case HOST_IDLE:
-		PRINTF(PSTR("USBH_LL_Connect at HOST_IDLE\n"));
+		//PRINTF(PSTR("USBH_LL_Connect at HOST_IDLE\n"));
 		phost->device.is_connected = 1;
 
 		if (phost->pUser != NULL)
@@ -11572,7 +11572,7 @@ USBH_StatusTypeDef  USBH_LL_Connect(USBH_HandleTypeDef *phost)
 		break;
 
 	case HOST_DEV_WAIT_FOR_ATTACHMENT:
-		PRINTF(PSTR("USBH_LL_Connect at HOST_DEV_WAIT_FOR_ATTACHMENT\n"));
+		//PRINTF(PSTR("USBH_LL_Connect at HOST_DEV_WAIT_FOR_ATTACHMENT\n"));
 		phost->gState = HOST_DEV_BEFORE_ATTACHED;
 		break;
 
@@ -13148,13 +13148,13 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
 		break;
 
 	case HOST_DEV_BUS_RESET_ON:
-		PRINTF(PSTR("USBH_Process: HOST_DEV_BUS_RESET_ON\n"));
+		//PRINTF(PSTR("USBH_Process: HOST_DEV_BUS_RESET_ON\n"));
 		USBH_LL_ResetPort(phost, 1);
 		USBH_ProcessDelay(phost, HOST_DEV_BUS_RESET_OFF, 50);
 		break;
 
 	case HOST_DEV_BUS_RESET_OFF:
-		PRINTF(PSTR("USBH_Process: HOST_DEV_BUS_RESET_OFF\n"));
+		//PRINTF(PSTR("USBH_Process: HOST_DEV_BUS_RESET_OFF\n"));
 		USBH_LL_ResetPort(phost, 0);
 
 	#if (USBH_USE_OS == 1)
@@ -13169,7 +13169,7 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
 		break;
 
 	case HOST_DEV_WAIT_FOR_ATTACHMENT:
-		PRINTF(PSTR("USBH_Process: HOST_DEV_WAIT_FOR_ATTACHMENT\n"));
+		//PRINTF(PSTR("USBH_Process: HOST_DEV_WAIT_FOR_ATTACHMENT\n"));
 		break;
 
 	case HOST_DEV_BEFORE_ATTACHED:
@@ -13180,7 +13180,7 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
 		break;
 
 	case HOST_DEV_ATTACHED:
-		  PRINTF(PSTR("USBH_Process: HOST_DEV_ATTACHED\n"));
+		  //PRINTF(PSTR("USBH_Process: HOST_DEV_ATTACHED\n"));
 		/* после таймаута */
 		phost->device.usb_otg_speed = USBH_LL_GetSpeed(phost);
 
