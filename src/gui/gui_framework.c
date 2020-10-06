@@ -80,7 +80,7 @@ int_fast8_t pop_enc2_stack(void)
     return v;
 }
 
-// WM_MESSAGE_ACTION: element_type type, uintptr_t element_ptr
+// WM_MESSAGE_ACTION: element_type type, uintptr_t element_ptr, uint_fast8_t action
 // WM_MESSAGE_UPDATE: nothing
 uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 {
@@ -98,6 +98,7 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 		win->queue.data [win->queue.size].message = WM_MESSAGE_ACTION;
 		win->queue.data [win->queue.size].type = va_arg(arg, uint_fast8_t);
 		win->queue.data [win->queue.size].ptr = va_arg(arg, uintptr_t);
+		win->queue.data [win->queue.size].action = va_arg(arg, uint_fast8_t);
 
 		va_end(arg);
 		win->queue.size ++;
@@ -112,6 +113,7 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 			win->queue.data [win->queue.size].message = WM_MESSAGE_UPDATE;
 			win->queue.data [win->queue.size].type = UINT8_MAX;
 			win->queue.data [win->queue.size].ptr = UINTPTR_MAX;
+			win->queue.data [win->queue.size].action = UINT8_MAX;
 
 			win->queue.size ++;
 		}
@@ -136,7 +138,7 @@ void clean_wm_stack(window_t * win)
 	win->queue.size = 0;
 }
 
-wm_message_t get_from_wm_queue(window_t * win, ...) //uint_fast8_t * type, uintptr_t * ptr)
+wm_message_t get_from_wm_queue(window_t * win, ...)
 {
 	if (! win->queue.size)
 		return WM_NO_MESSAGE;							// очередь сообщений пустая
@@ -149,7 +151,8 @@ wm_message_t get_from_wm_queue(window_t * win, ...) //uint_fast8_t * type, uintp
 		va_start(arg, win);
 
 		* va_arg(arg, uint_fast8_t *) = win->queue.data [win->queue.size].type;
-		* va_arg(arg, uintptr_t *) = win->queue.data [win->queue.size].ptr;
+		* va_arg(arg, uintptr_t *) = 	win->queue.data [win->queue.size].ptr;
+		* va_arg(arg, uint_fast8_t *) = win->queue.data [win->queue.size].action;
 
 		va_end(arg);
 	}
@@ -1014,7 +1017,7 @@ static void set_state_record(gui_element_t * val)
 				if (bh->onClickHandler)
 					bh->onClickHandler();
 
-				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_BUTTON, bh))
+				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_BUTTON, bh, bh->state == LONG_PRESSED ? LONG_PRESSED : PRESSED))
 					PRINTF("WM stack: full!\n");
 			}
 			break;
@@ -1031,7 +1034,7 @@ static void set_state_record(gui_element_t * val)
 					lh->onClickHandler();
 
 				lh->onClickHandler();
-				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_LABEL, lh))
+				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_LABEL, lh, gui.is_tracking ? MOVING : PRESSED))
 					PRINTF("WM stack: full!\n");
 			}
 			break;
@@ -1045,7 +1048,7 @@ static void set_state_record(gui_element_t * val)
 			if (sh->state == PRESSED)
 			{
 				slider_process(sh);
-				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_SLIDER, sh))
+				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_SLIDER, sh, PRESSED))
 					PRINTF("WM stack: full!\n");
 			}
 			break;
@@ -1240,9 +1243,12 @@ void gui_WM_walktrough(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
 					else if (p->type == TYPE_CLOSE_BUTTON)
 					{
 						button_t * bh = (button_t *) p->link;
-						colpip_rect(fr, DIM_X, DIM_Y, win->x1 + bh->x1, win->y1 + bh->y1, win->x1 + bh->x1 + bh->w,  win->y1 + bh->y1 + bh->h, COLORMAIN_BLACK, 0);
-						colmain_line(fr, DIM_X, DIM_Y, win->x1 + bh->x1, win->y1 + bh->y1, win->x1 + bh->x1 + bh->w, win->y1 + bh->y1 + bh->h, COLORMAIN_BLACK, 0);
-						colmain_line(fr, DIM_X, DIM_Y, win->x1 + bh->x1, win->y1 + bh->y1 + bh->h, win->x1 + bh->x1 + bh->w, win->y1 + bh->y1, COLORMAIN_BLACK, 0);
+						if (bh->visible && bh->parent == win->window_id)
+						{
+							colpip_rect(fr, DIM_X, DIM_Y, win->x1 + bh->x1, win->y1 + bh->y1, win->x1 + bh->x1 + bh->w,  win->y1 + bh->y1 + bh->h, COLORMAIN_BLACK, 0);
+							colmain_line(fr, DIM_X, DIM_Y, win->x1 + bh->x1, win->y1 + bh->y1, win->x1 + bh->x1 + bh->w, win->y1 + bh->y1 + bh->h, COLORMAIN_BLACK, 0);
+							colmain_line(fr, DIM_X, DIM_Y, win->x1 + bh->x1, win->y1 + bh->y1 + bh->h, win->x1 + bh->x1 + bh->w, win->y1 + bh->y1, COLORMAIN_BLACK, 0);
+						}
 					}
 					else if (p->type == TYPE_LABEL)
 					{

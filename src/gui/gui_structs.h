@@ -7,6 +7,12 @@
 
 #include "src/gui/gui_settings.h"
 
+#define IS_BUTTON_PRESS		type == TYPE_BUTTON && action == PRESSED
+#define IS_BUTTON_LONG_PRESS	type == TYPE_BUTTON && action == LONG_PRESSED
+#define IS_SLIDER_MOVE			type == TYPE_SLIDER && action == PRESSED
+#define IS_LABEL_PRESS			type == TYPE_BUTTON && action == PRESSED
+#define IS_LABEL_MOVE			type == TYPE_BUTTON && action == MOVING
+
 typedef enum {
 	TYPE_DUMMY,
 	TYPE_BUTTON,
@@ -20,7 +26,8 @@ enum {
 	RELEASED,						// отпущено после нажатия внутри элемента
 	CANCELLED,						// первоначальное состояние или отпущено после нажатия вне элемента
 	DISABLED,						// заблокировано для нажатия
-	LONG_PRESSED
+	LONG_PRESSED,
+	MOVING
 };
 
 enum {
@@ -152,6 +159,7 @@ typedef struct {
 	wm_message_t message;			// тип сообщения
 	element_type_t type;			// тип элемента
 	uintptr_t ptr;
+	uint_fast8_t action;
 } wm_data_t;
 
 typedef struct {					// очередь сообщений окнам от WM о взаимодействии с элементами GUI
