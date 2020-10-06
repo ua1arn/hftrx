@@ -1820,6 +1820,9 @@ void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 			  		hc->xfer_count += bcnt;
 		  		}
 				//HAL_PCD_DataOutStageCallback(hpcd, ep->num);	// start next transfer
+		  		hc->toggle_in ^= 1;
+		  		hc->state = HC_XFRC;
+		  		hc->urb_state  = URB_DONE;
 		  	}
 		  	else
 		  	{
@@ -1892,6 +1895,11 @@ void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 		USBx->INTSTS1 = (uint16_t) ~ USB_INTSTS1_SIGN;
 		PRINTF(PSTR("HAL_HCD_IRQHandler trapped - SIGN\n"));
 		//HAL_HCD_Connect_Callback(hhcd);
+
+	    hhcd->hc[1].state = HC_XFRC;
+	    hhcd->hc[1].ErrCnt = 1;
+	    hhcd->hc[1].toggle_in ^= 1;
+	     hhcd->hc[1].urb_state  = URB_DONE;
 	}
 	if ((intsts1msk & USB_INTSTS1_SACK) != 0)	// SACK
 	{
@@ -1900,6 +1908,11 @@ void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 		//HAL_HCD_Connect_Callback(hhcd);
 		//int err = USB_WritePacketNec(USBx, 0, NULL, 0);	// pipe=0: DCP
 		//ASSERT(err == 0);
+
+	    hhcd->hc[1].state = HC_XFRC;
+	    hhcd->hc[1].ErrCnt = 0;
+	    hhcd->hc[1].toggle_in ^= 1;
+	     hhcd->hc[1].urb_state  = URB_DONE;
 	}
 }
 
@@ -11598,11 +11611,11 @@ USBH_StatusTypeDef  USBH_LL_Disconnect(USBH_HandleTypeDef *phost)
 	switch (phost->gState)
 	{
 	case HOST_DEV_BEFORE_ATTACHED:
-		PRINTF(PSTR("USBH_LL_Disconnect at HOST_DEV_BEFORE_ATTACHED\n"));
+		//PRINTF(PSTR("USBH_LL_Disconnect at HOST_DEV_BEFORE_ATTACHED\n"));
 		return USBH_OK;
 
 	default:
-		PRINTF(PSTR("USBH_LL_Disconnect at phost->gState=%d\n"), (int) phost->gState);
+		//PRINTF(PSTR("USBH_LL_Disconnect at phost->gState=%d\n"), (int) phost->gState);
 		break;
 	}
 	/*Stop Host */
