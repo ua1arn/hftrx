@@ -2680,13 +2680,13 @@ HAL_StatusTypeDef USB_HC_Init(
 	/* Clear old interrupt conditions for this host channel. */
 	////USBx_HC(ch_num)->HCINT = 0xFFFFFFFF;
 
-//+++sack: не влияет
-//	USBx->INTSTS1 = (uint16_t) ~ USB_INTSTS1_SIGN;
-//	USBx->INTSTS1 = (uint16_t) ~ USB_INTSTS1_SACK;
-	USBx->NRDYSTS = (uint16_t) ~ (1uL << pipe);
-	USBx->BEMPSTS = (uint16_t) ~ (1uL << pipe);
-	USBx->BRDYSTS = (uint16_t) ~ (1uL << pipe);
-//---sack: не влияет
+////+++sack: не влияет
+////	USBx->INTSTS1 = (uint16_t) ~ USB_INTSTS1_SIGN;
+////	USBx->INTSTS1 = (uint16_t) ~ USB_INTSTS1_SACK;
+//	USBx->NRDYSTS = (uint16_t) ~ (1uL << pipe);
+//	USBx->BEMPSTS = (uint16_t) ~ (1uL << pipe);
+//	USBx->BRDYSTS = (uint16_t) ~ (1uL << pipe);
+////---sack: не влияет
 
 	/* Enable channel interrupts required for this transfer. */
 	switch (ep_type)
