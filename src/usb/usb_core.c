@@ -5,16 +5,17 @@
 // UA1ARN
 //
 
-#include "src/gui/gui.h"
 #include "hardware.h"
 #include "board.h"
 #include "audio.h"
-
-#include "src/display/display.h"
 #include "formats.h"
+#include "gpio.h"
+
+#include "src/gui/gui.h"
+#include "src/display/display.h"
+
 #include <string.h>
 
-#include "gpio.h"
 
 #if WITHUSBHW
 
@@ -4775,6 +4776,7 @@ void USB_WritePacket(USB_OTG_GlobalTypeDef *USBx, const uint8_t * data, uint_fas
 		}
 	}
 }
+
 /**
   * @brief  USB_ReadPacket : read a packet from the Tx FIFO associated
   *         with the EP/channel
@@ -8420,6 +8422,10 @@ static HAL_StatusTypeDef PCD_WriteEmptyTxFifo(PCD_HandleTypeDef *hpcd, uint32_t 
 	ASSERT(i < 2);
 	return HAL_OK;
 }
+
+
+#define USB_OTG_CORE_ID_310A          0x4F54310A
+#define USB_OTG_CORE_ID_320A          0x4F54320A
 
 /**
   * @brief  Handle PCD interrupt request.
