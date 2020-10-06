@@ -1887,16 +1887,30 @@ void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 		PRINTF(PSTR("HAL_HCD_IRQHandler trapped - BRDY, BRDYSTS=0x%04X\n"), USBx->BRDYSTS);
 		const uint_fast16_t brdysts = USBx->BRDYSTS & USBx->BRDYENB;	// BRDY Interrupt Status Register
 		USBx->BRDYSTS = ~ brdysts;
-#if 0
+		if (brdysts == 1)
+		{
+				static uint8_t tbuff [64];
+			  	unsigned bcnt;
+			  	if (USB_ReadPacketNec(USBx, 0, tbuff, ARRAY_SIZE(tbuff), & bcnt) == 0)
+			  	{
+			  		ASSERT(bcnt != 0);
+			  		printhex(0, tbuff, bcnt);
+			  	}
+			  	else
+			  	{
+			  		PRINTF("no packet\n");
+			  	}
+			  	USBx->BRDYENB &= ~ 0x01;
+		}
 		if ((brdysts & (1U << 0)) != 0)		// PIPE0 - DCP
 		{
-			USB_OTG_EPTypeDef * const ep = & hpcd->OUT_ep [0];
+			HCD_HCTypeDef * const hc = & hhcd->hc [0];
 		  	unsigned bcnt;
-		  	if (USB_ReadPacketNec(USBx, 0, ep->xfer_buff, ep->xfer_len - ep->xfer_count, & bcnt) == 0)
+		  	if (USB_ReadPacketNec(USBx, 0, hc->xfer_buff, hc->xfer_len - hc->xfer_count, & bcnt) == 0)
 		  	{
-				ep->xfer_buff += bcnt;
-				ep->xfer_count += bcnt;
-				HAL_PCD_DataOutStageCallback(hpcd, ep->num);	// start next transfer
+		  		hc->xfer_buff += bcnt;
+		  		hc->xfer_count += bcnt;
+				//HAL_PCD_DataOutStageCallback(hpcd, ep->num);	// start next transfer
 		  	}
 		  	else
 		  	{
@@ -1904,6 +1918,7 @@ void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 		  		//control_stall(pdev);
 		  	}
 		}
+#if 0
 
 		for (i = 1; i < 16; ++ i)
 		{
@@ -1913,9 +1928,9 @@ void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 				const uint_fast8_t epnt = usbd_pipe2epaddr(pipe);
 				if ((epnt & 0x80) != 0)
 				{
-					USB_OTG_EPTypeDef * const ep = & hpcd->IN_ep [epnt & 0x7F];
-					ASSERT(ep->xfer_len == 0 || ep->xfer_buff != NULL);
-					ep->xfer_buff += ep->maxpacket;
+					HCD_HCTypeDef * const hc = & hhcd->hc [0];
+					ASSERT(hc->xfer_len == 0 || hc->xfer_buff != NULL);
+					hc->xfer_buff += hc->maxpacket;
 					HAL_PCD_DataInStageCallback(hpcd, 0x7f & epnt);
 				}
 				else
