@@ -7,11 +7,11 @@
 
 #include "src/gui/gui_settings.h"
 
-#define IS_BUTTON_PRESS		type == TYPE_BUTTON && action == PRESSED
+#define IS_BUTTON_PRESS			type == TYPE_BUTTON && action == PRESSED
 #define IS_BUTTON_LONG_PRESS	type == TYPE_BUTTON && action == LONG_PRESSED
 #define IS_SLIDER_MOVE			type == TYPE_SLIDER && action == PRESSED
-#define IS_LABEL_PRESS			type == TYPE_BUTTON && action == PRESSED
-#define IS_LABEL_MOVE			type == TYPE_BUTTON && action == MOVING
+#define IS_LABEL_PRESS			type == TYPE_LABEL && action == PRESSED
+#define IS_LABEL_MOVE			type == TYPE_LABEL && action == MOVING
 
 typedef enum {
 	TYPE_DUMMY,
@@ -82,7 +82,6 @@ typedef struct {
 	uint16_t y1;
 	uint16_t w;
 	uint16_t h;
-	void(*onClickHandler) (void);	// обработчик события RELEASED
 	uint8_t state;					// текущее состояние кнопки
 	uint8_t is_locked;				// признак фиксации кнопки
 	uint8_t is_long_press;			// разрешение обработки долгого нажатия
@@ -110,7 +109,6 @@ typedef struct {
 	char text [TEXT_ARRAY_SIZE];
 	font_size_t font_size;
 	PACKEDCOLORMAIN_T color;
-	void (*onClickHandler) (void);
 } label_t;
 
 typedef enum  {

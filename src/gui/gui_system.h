@@ -23,18 +23,11 @@ void elements_state (window_t * win);
 void remove_end_line_spaces(char * str);
 const char * remove_start_line_spaces(const char * str);
 void reset_tracking(void);
-uint_fast8_t is_short_pressed(void);
-uint_fast8_t is_long_pressed(void);
-uint_fast8_t is_moving_label(void);
-uint_fast8_t is_moving_slider(void);
 uint_fast8_t check_for_parent_window(void);
 uint_fast8_t get_gui_1sec_timer(void);
 uint_fast8_t get_selected_element_pos(void);
 uint_fast8_t get_gui_keyb_code(void);
 void get_gui_tracking(int_fast8_t * x, int_fast8_t * y);
-button_t * get_selected_button(void);
-label_t * get_selected_label(void);
-slider_t * get_selected_slider(void);
 
 void clean_enc2_stack(void);
 void push_enc2_stack(const int_fast8_t value);

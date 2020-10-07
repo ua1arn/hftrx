@@ -46,7 +46,7 @@ enum { BG_COUNT = ARRAY_SIZE(btn_bg) };
 static gui_t gui = { 0, 0, KBD_CODE_MAX, TYPE_DUMMY, NULL, CANCELLED, 0, 0, 0, 0, 0, 1, };
 static gui_element_t gui_elements [GUI_ELEMENTS_ARRAY_SIZE];
 static uint_fast8_t gui_element_count = 0;
-static button_t close_button = { 0, 0, 0, 0, close_all_windows, CANCELLED, BUTTON_NON_LOCKED, 0, NO_PARENT_WINDOW, NON_VISIBLE, UINTPTR_MAX, "btn_close", "", };
+static button_t close_button = { 0, 0, 0, 0, CANCELLED, BUTTON_NON_LOCKED, 0, NO_PARENT_WINDOW, NON_VISIBLE, UINTPTR_MAX, "btn_close", "", };
 static enc2_stack_t enc2_stack;
 
 void clean_enc2_stack(void)
@@ -945,54 +945,6 @@ static void slider_process(slider_t * sl)
 	reset_tracking();
 }
 
-/* Возврат признака короткого нажатия кнопки */
-uint_fast8_t is_short_pressed(void)
-{
-	return gui.selected_type == TYPE_BUTTON && gui.state == RELEASED;
-}
-
-/* Возврат признака длинного нажатия кнопки */
-uint_fast8_t is_long_pressed(void)
-{
-	return gui.selected_type == TYPE_BUTTON && gui.state == LONG_PRESSED;
-}
-
-button_t * get_selected_button(void)
-{
-	if (gui.selected_type == TYPE_BUTTON)
-		return (button_t *) gui.selected_link->link;
-	else
-		return NULL;
-}
-
-label_t * get_selected_label(void)
-{
-	if (gui.selected_type == TYPE_LABEL)
-		return (label_t *) gui.selected_link->link;
-	else
-		return NULL;
-}
-
-slider_t * get_selected_slider(void)
-{
-	if (gui.selected_type == TYPE_SLIDER)
-		return (slider_t *) gui.selected_link->link;
-	else
-		return NULL;
-}
-
-/* Возврат признака перемещения слайдера */
-uint_fast8_t is_moving_slider(void)
-{
-	return gui.selected_type == TYPE_SLIDER && gui.is_tracking;
-}
-
-/* Возврат признака перемещения метки */
-uint_fast8_t is_moving_label(void)
-{
-	return gui.selected_type == TYPE_LABEL && gui.is_tracking;
-}
-
 /* Возврат позиции однотипного элемента */
 uint_fast8_t get_selected_element_pos(void)
 {
@@ -1005,8 +957,11 @@ static void set_state_record(gui_element_t * val)
 	ASSERT(val != NULL);
 	switch (val->type)
 	{
-		case TYPE_BUTTON:
 		case TYPE_CLOSE_BUTTON:
+			close_all_windows();
+			break;
+
+		case TYPE_BUTTON:
 			ASSERT(val->link != NULL);
 			button_t * bh = (button_t *) val->link;
 			gui.selected_type = TYPE_BUTTON;
@@ -1014,11 +969,8 @@ static void set_state_record(gui_element_t * val)
 			bh->state = val->state;
 			if (bh->state == RELEASED || bh->state == LONG_PRESSED)
 			{
-				if (bh->onClickHandler)
-					bh->onClickHandler();
-
 				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_BUTTON, bh, bh->state == LONG_PRESSED ? LONG_PRESSED : PRESSED))
-					PRINTF("WM stack: full!\n");
+					PRINTF("WM stack on window '%s' full!\n", val->win->name);
 			}
 			break;
 
@@ -1028,14 +980,15 @@ static void set_state_record(gui_element_t * val)
 			gui.selected_type = TYPE_LABEL;
 			gui.selected_link = val;
 			lh->state = val->state;
-			if (lh->onClickHandler && lh->state == RELEASED)
+			if (lh->state == RELEASED)
 			{
-				if (lh->onClickHandler)
-					lh->onClickHandler();
-
-				lh->onClickHandler();
-				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_LABEL, lh, gui.is_tracking ? MOVING : PRESSED))
-					PRINTF("WM stack: full!\n");
+				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_LABEL, lh, PRESSED))
+					PRINTF("WM stack on window '%s' full!\n", val->win->name);
+			}
+			else if (lh->state == PRESSED && lh->is_trackable)
+			{
+				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_LABEL, lh, MOVING))
+					PRINTF("WM stack on window '%s' full!\n", val->win->name);
 			}
 			break;
 
@@ -1049,7 +1002,7 @@ static void set_state_record(gui_element_t * val)
 			{
 				slider_process(sh);
 				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_SLIDER, sh, PRESSED))
-					PRINTF("WM stack: full!\n");
+					PRINTF("WM stack on window '%s' full!\n", val->win->name);
 			}
 			break;
 
