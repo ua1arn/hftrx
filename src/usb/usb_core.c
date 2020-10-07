@@ -2869,7 +2869,7 @@ HAL_StatusTypeDef USB_ResetPort(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t status
 
 HAL_StatusTypeDef USB_HostInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgTypeDef * cfg)
 {
-	uint_fast8_t i;
+	unsigned i;
 	const uint_fast8_t HS = cfg->pcd_speed == PCD_SPEED_HIGH;
 
 	USBx->SYSCFG0 &= ~ USB_SYSCFG_USBE;	// USBE 0: USB module operation is disabled.
@@ -2941,6 +2941,7 @@ HAL_StatusTypeDef USB_HostInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgTyp
 			(0x00 << USB_DEVADDn_UPPHUB_SHIFT) |
 			0;
 		(void) * DEVADDn;
+		//PRINTF("USB_HostInit: DEVADD%X=%04x\n", i, (unsigned) * DEVADDn);
 	}
 	return HAL_OK;
 }
@@ -3199,7 +3200,7 @@ HAL_StatusTypeDef USB_CoreInit(USB_OTG_GlobalTypeDef * USBx, const USB_OTG_CfgTy
   */
 HAL_StatusTypeDef USB_DevInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgTypeDef * cfg)
 {
-	uint_fast8_t i;
+	unsigned i;
 
 	USBx->SYSCFG0 &= ~ USB_SYSCFG_USBE;	// USBE 0: USB module operation is disabled.
 	(void) USBx->SYSCFG0;
