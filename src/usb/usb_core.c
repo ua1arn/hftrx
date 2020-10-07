@@ -1806,9 +1806,12 @@ void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 		USBx->BRDYSTS = ~ brdysts;	// 2. When BRDYM is 0, clearing this bit should be done before accessing the FIFO.
 		if ((brdysts & (1U << 0)) != 0)		// PIPE0 - DCP
 		{
-			HCD_HCTypeDef * const hc = & hhcd->hc [0];
+			USBH_HandleTypeDef * const phost = hhcd->pData;
+
+			HCD_HCTypeDef * const hc = & hhcd->hc [phost->Control.pipe_in];
+			//HCD_HCTypeDef * const hc = & hhcd->hc [0];
 		  	unsigned bcnt;
-		  	if (USB_ReadPacketNec(USBx, 0, hc->xfer_buff, hc->xfer_len - hc->xfer_count, & bcnt) == 0)
+		  	if (USB_ReadPacketNec(USBx, hc->ch_num, hc->xfer_buff, hc->xfer_len - hc->xfer_count, & bcnt) == 0)
 		  	{
 		  		if (bcnt == 0)
 		  		{
@@ -1816,7 +1819,7 @@ void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 		  		}
 		  		else
 		  		{
-			  		printhex(0, hc->xfer_buff, bcnt);	// DEBUG
+			  		printhex((uintptr_t) hc->xfer_buff, hc->xfer_buff, bcnt);	// DEBUG
 			  		hc->xfer_buff += bcnt;
 			  		hc->xfer_count += bcnt;
 		  		}
@@ -1900,7 +1903,7 @@ void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 	    hhcd->hc[1].state = HC_XFRC;
 	    hhcd->hc[1].ErrCnt = 1;
 	    hhcd->hc[1].toggle_in ^= 1;
-	     hhcd->hc[1].urb_state  = URB_DONE;
+	    hhcd->hc[1].urb_state  = URB_DONE;
 	}
 	if ((intsts1msk & USB_INTSTS1_SACK) != 0)	// SACK
 	{
@@ -1913,7 +1916,7 @@ void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 	    hhcd->hc[1].state = HC_XFRC;
 	    hhcd->hc[1].ErrCnt = 0;
 	    hhcd->hc[1].toggle_in ^= 1;
-	     hhcd->hc[1].urb_state  = URB_DONE;
+	    hhcd->hc[1].urb_state  = URB_DONE;
 	}
 }
 
@@ -2459,7 +2462,7 @@ HAL_StatusTypeDef USB_EPStartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDef
 
 HAL_StatusTypeDef USB_HC_StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_HCTypeDef *hc, uint_fast8_t dma)
 {
-	PRINTF("USB_HC_StartXfer, ep_is_in=%d, ch_num=%d, ep_num=%d, xfer_len=%d\n", (int) hc->ep_is_in, (int) hc->ch_num, (int) hc->ep_num, (int) hc->xfer_len);
+	PRINTF("USB_HC_StartXfer, xfer_buff=%p, ep_is_in=%d, ch_num=%d, ep_num=%d, xfer_len=%d\n", hc->xfer_buff, (int) hc->ep_is_in, (int) hc->ch_num, (int) hc->ep_num, (int) hc->xfer_len);
 	ASSERT(dma == 0);
 	uint8_t  is_oddframe;
 	uint16_t num_packets = 0;
@@ -2540,10 +2543,12 @@ HAL_StatusTypeDef USB_HC_StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_HCTypeDe
 	  /* make sure to set the correct ep direction */
 	  if (hc->ep_is_in)
 	  {
+		  // foom device to host (read)
 		  ////* tmpreg |= USB_OTG_HCCHAR_EPDIR;
 	  }
 	  else
 	  {
+		  // foom host to device (write)
 		  ////* tmpreg &= ~USB_OTG_HCCHAR_EPDIR;
 	  }
 
@@ -2555,6 +2560,7 @@ HAL_StatusTypeDef USB_HC_StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_HCTypeDe
 		////uint16_t len_words = 0;
 	    if ((hc->ep_is_in == 0) && (hc->xfer_len > 0))
 	    {
+			  // foom host to device (write)
 	      switch(hc->ep_type)
 	      {
 	        /* Non periodic transfer */
@@ -2588,13 +2594,16 @@ HAL_StatusTypeDef USB_HC_StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_HCTypeDe
 
 	      if (hc->ep_num == 0)
 	      {
+	    	  const unsigned devsel = 0x00;
 
 	    		USB_Setup_TypeDef * const pSetup = (USB_Setup_TypeDef *) hc->xfer_buff;
+
+	    		USBx->DCPCTR |= USB_DCPCTR_SUREQCLR;
 	    		ASSERT(hc->xfer_len >= 8);
 	    		ASSERT((USBx->DCPCTR & USB_DCPCTR_SUREQ) == 0);
 
 				PRINTF("USB_HC_StartXfer: DCPMAXP=%08lX, dev_addr=%d, bmRequestType=%02X, bRequest=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n",
-						USBx->DCPMAXP,
+						(unsigned long) USBx->DCPMAXP,
 						(int) hc->dev_addr,
 						pSetup->b.bmRequestType, pSetup->b.bRequest, pSetup->b.wValue.w, pSetup->b.wIndex.w, pSetup->b.wLength.w);
 
@@ -2609,18 +2618,23 @@ HAL_StatusTypeDef USB_HC_StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_HCTypeDe
 						(pSetup->b.wLength.w << USB_USBLENG_SHIFT) & USB_USBLENG;
 
 				USBx->DCPMAXP = (USBx->DCPMAXP & ~ (USB_DCPMAXP_DEVSEL | USB_DCPMAXP_MXPS)) |
-						((0x00 << USB_DCPMAXP_DEVSEL_SHIFT) & USB_DCPMAXP_DEVSEL) |	// DEVADD0 used
+						((devsel << USB_DCPMAXP_DEVSEL_SHIFT) & USB_DCPMAXP_DEVSEL) |	// DEVADD0 used
 						((64 << USB_DCPMAXP_MXPS_SHIFT) & USB_DCPMAXP_MXPS) |
 						0;
 
+				// не влияет
 				USBx->DCPCTR |= USB_DCPCTR_SQCLR;	// DATA0 as answer
 				//USBx->DCPCTR |= USB_DCPCTR_SQSET;	// DATA1 as answer
 
-				USBx->DCPCFG &= ~ USB_DCPCFG_DIR;
-				//USBx->DCPCFG |= USB_DCPCFG_DIR;
+				// влияет
+				// direction of data stage and status stage for control transfers
+				USBx->DCPCFG &= ~ USB_DCPCFG_DIR;	// 0: Data receiving direction
+				//USBx->DCPCFG |= USB_DCPCFG_DIR;	// 1: Data transmitting direction
 
-				//USBx->DCPCTR |= USB_DCPCTR_SUREQCLR;
 				USBx->DCPCTR |= USB_DCPCTR_SUREQ;
+
+				//hc->xfer_buff += 8;		// size of USB_Setup_TypeDef
+				//PRINTF("USB_HC_StartXfer: DCPMAXP=%08lX\n", (unsigned long) USBx->DCPMAXP);
 	      }
 	      else
 	      {
@@ -2628,6 +2642,7 @@ HAL_StatusTypeDef USB_HC_StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_HCTypeDe
 			  //USB_WritePacket(USBx, hc->xfer_buff, hc->ch_num, hc->xfer_len, 0);
 			  TP();
 			  USB_WritePacketNec(USBx, hc->ch_num, hc->xfer_buff, hc->xfer_len);
+				//hc->xfer_buff += hc->xfer_len;		//
 	      }
 	    }
 	  }
@@ -4882,6 +4897,7 @@ HAL_StatusTypeDef USB_HC_StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_HCTypeDe
   {
     if ((hc->ep_is_in == 0) && (hc->xfer_len > 0))
     {
+	  // foom host to device (write)
 	  uint16_t len_words = 0;
 
       switch(hc->ep_type)
@@ -11368,11 +11384,16 @@ uint8_t USBH_AllocPipe  (USBH_HandleTypeDef *phost, uint8_t ep_addr)
 {
   uint16_t pipe;
 
-  pipe = USBH_GetFreePipe(phost);
+#if defined (TARGET_RZA1)
+  if (ep_addr & 0x7F)
+	  pipe = USBH_GetFreePipe(phost);
+  else
+	  pipe = 0;
+#endif /* defined (TARGET_RZA1) */
 
   if (pipe != 0xFFFF)
   {
-	phost->Pipes[pipe] = 0x8000 | ep_addr;
+	phost->Pipes [pipe] = 0x8000 | ep_addr;
   }
   return pipe;
 }
