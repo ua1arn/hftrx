@@ -1001,8 +1001,8 @@ static uint_fast8_t USB_ReadPacketNec(PCD_TypeDef * const USBx, uint_fast8_t pip
 
 	//PRINTF(PSTR("USB_ReadPacketNec: pipe=%d, data=%p, size=%d\n"), (int) pipe, data, (int) size);
 	USBx->CFIFOSEL =
-		(pipe << USB_CFIFOSEL_CURPIPE_SHIFT) |	// CURPIPE 0000: DCP
-		(mbw << USB_CFIFOSEL_MBW_SHIFT) |	// MBW 00: 8-bit width
+		((pipe << USB_CFIFOSEL_CURPIPE_SHIFT) & USB_CFIFOSEL_CURPIPE) |	// CURPIPE 0000: DCP
+		((mbw << USB_CFIFOSEL_MBW_SHIFT) & USB_CFIFOSEL_MBW) |	// MBW 00: 8-bit width
 		0;
 
 	if (usbd_wait_fifo(USBx, pipe, USBD_FRDY_COUNT_READ))
@@ -1077,7 +1077,7 @@ USB_WritePacketNec(PCD_TypeDef * const USBx, uint_fast8_t pipe, const uint8_t * 
 	}
 
 	const uint_fast16_t cfifosel =
-		(pipe << USB_CFIFOSEL_CURPIPE_SHIFT) |	// CURPIPE 0000: DCP
+		((pipe << USB_CFIFOSEL_CURPIPE_SHIFT) & USB_CFIFOSEL_CURPIPE) |	// CURPIPE 0000: DCP
 		(0x01 << USB_CFIFOSEL_ISEL_SHIFT_) * (pipe == 0) |	// ISEL 1: Writing to the buffer memory is selected (for DCP)
 		0;
 
@@ -1240,7 +1240,8 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 		usbd_handler_brdy: после инициализации появляется для тех pipe, у которых dir=0 (read direction)
 	*/
 	{
-		USBx->DCPMAXP = (USB_OTG_MAX_EP0_SIZE << USB_DCPMAXP_MXPS_SHIFT);
+		USBx->DCPMAXP =
+				(USB_OTG_MAX_EP0_SIZE << USB_DCPMAXP_MXPS_SHIFT) & USB_DCPMAXP_MXPS;
 	}
 	unsigned bufnumb64 = 0x10;
 #if WITHUSBCDCACM
@@ -2598,17 +2599,18 @@ HAL_StatusTypeDef USB_HC_StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_HCTypeDe
 						pSetup->b.bmRequestType, pSetup->b.bRequest, pSetup->b.wValue.w, pSetup->b.wIndex.w, pSetup->b.wLength.w);
 
 				USBx->USBREQ =
-						(pSetup->b.bRequest << USB_USBREQ_BREQUEST_SHIFT) |
-						(pSetup->b.bmRequestType << USB_USBREQ_BMREQUESTTYPE_SHIFT);
+						((pSetup->b.bRequest << USB_USBREQ_BREQUEST_SHIFT) & USB_USBREQ_BREQUEST) |
+						((pSetup->b.bmRequestType << USB_USBREQ_BMREQUESTTYPE_SHIFT) & USB_USBREQ_BMREQUESTTYPE);
 				USBx->USBVAL =
-						(pSetup->b.wValue.w << USB_USBVAL_SHIFT);
+						(pSetup->b.wValue.w << USB_USBVAL_SHIFT) & USB_USBVAL;
 				USBx->USBINDX =
-						(pSetup->b.wIndex.w << USB_USBINDX_SHIFT);
+						(pSetup->b.wIndex.w << USB_USBINDX_SHIFT) & USB_USBINDX;
 				USBx->USBLENG =
-						(pSetup->b.wLength.w << USB_USBLENG_SHIFT);
+						(pSetup->b.wLength.w << USB_USBLENG_SHIFT) & USB_USBLENG;
 
-				USBx->DCPMAXP = (USBx->DCPMAXP & ~ (USB_DCPMAXP_DEVSEL)) |
-						(0x00 << USB_DCPMAXP_DEVSEL_SHIFT) |	// DEVADD0 used
+				USBx->DCPMAXP = (USBx->DCPMAXP & ~ (USB_DCPMAXP_DEVSEL | USB_DCPMAXP_MXPS)) |
+						((0x00 << USB_DCPMAXP_DEVSEL_SHIFT) & USB_DCPMAXP_DEVSEL) |	// DEVADD0 used
+						((64 << USB_DCPMAXP_MXPS_SHIFT) & USB_DCPMAXP_MXPS) |
 						0;
 
 				USBx->DCPCTR |= USB_DCPCTR_SQCLR;	// DATA0 as answer
