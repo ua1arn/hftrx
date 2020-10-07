@@ -2934,8 +2934,9 @@ HAL_StatusTypeDef USB_HostInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgTyp
 	{
 		volatile uint16_t * const DEVADDn = (& USBx->DEVADD0) + i;
 
-		* DEVADDn = (* DEVADDn & ~ (USB_DEVADDn_USBSPD | USB_DEVADDn_HUBPORT | USB_DEVADDn_UPPHUB)) |
-			((HS ? 0x03 : 0x02) << USB_DEVADDn_USBSPD_SHIFT) |
+		// Reserved bits: The write value should always be 0.
+		* DEVADDn =
+			((1 ? 0x03 : 0x02) << USB_DEVADDn_USBSPD_SHIFT) |
 			(0x00 << USB_DEVADDn_HUBPORT_SHIFT) |
 			(0x00 << USB_DEVADDn_UPPHUB_SHIFT) |
 			0;
@@ -3243,7 +3244,9 @@ HAL_StatusTypeDef USB_DevInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgType
 	{
 		volatile uint16_t * const DEVADDn = (& USBx->DEVADD0) + i;
 
+		// Reserved bits: The write value should always be 0.
 		* DEVADDn = 0;
+		(void) * DEVADDn;
 	}
 
 	return HAL_OK;
