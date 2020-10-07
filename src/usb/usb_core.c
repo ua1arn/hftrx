@@ -2013,6 +2013,10 @@ uint32_t USB_GetCurrentFrame(USB_OTG_GlobalTypeDef *USBx)
   */
 uint32_t USB_GetHostSpeed(USB_OTG_GlobalTypeDef *USBx)
 {
+	// 1xx: Reset handshake in progress
+	while (((USBx->DVSTCTR0 & USB_DVSTCTR0_RHST) >> USB_DVSTCTR0_RHST_SHIFT) & 0x04)
+		;
+
 	switch ((USBx->DVSTCTR0 & USB_DVSTCTR0_RHST) >> USB_DVSTCTR0_RHST_SHIFT)
 	{
 	case 0x01:
@@ -2026,6 +2030,31 @@ uint32_t USB_GetHostSpeed(USB_OTG_GlobalTypeDef *USBx)
 	}
 }
 
+/**
+  * @brief  USB_GetDevSpeed :Return the Dev Speed
+  * @param  USBx : Selected device
+  * @retval speed : device speed
+  *          This parameter can be one of these values:
+  *            @arg USB_OTG_SPEED_HIGH: High speed mode
+  *            @arg USB_OTG_SPEED_FULL: Full speed mode
+  *            @arg USB_OTG_SPEED_LOW: Low speed mode
+  */
+uint_fast8_t USB_GetDevSpeed(USB_OTG_GlobalTypeDef *USBx)
+{
+	// 100: Reset handshake in progress
+	while (((USBx->DVSTCTR0 & USB_DVSTCTR0_RHST) >> USB_DVSTCTR0_RHST_SHIFT) == 0x04)
+		;
+
+	switch ((USBx->DVSTCTR0 & USB_DVSTCTR0_RHST) >> USB_DVSTCTR0_RHST_SHIFT)
+	{
+	case 0x02:
+		return USB_OTG_SPEED_FULL;
+	case 0x03:
+		return USB_OTG_SPEED_HIGH;
+	default:
+		return USB_OTG_SPEED_LOW;
+	}
+}
 
 /**
   * @brief  USB_DriveVbus : activate or de-activate vbus
@@ -2323,27 +2352,6 @@ HAL_StatusTypeDef  USB_DevConnect (USB_OTG_GlobalTypeDef *USBx)
 	HARDWARE_DELAY_MS(3);
 
 	return HAL_OK;
-}
-/**
-  * @brief  USB_GetDevSpeed :Return the Dev Speed
-  * @param  USBx : Selected device
-  * @retval speed : device speed
-  *          This parameter can be one of these values:
-  *            @arg USB_OTG_SPEED_HIGH: High speed mode
-  *            @arg USB_OTG_SPEED_FULL: Full speed mode
-  *            @arg USB_OTG_SPEED_LOW: Low speed mode
-  */
-uint_fast8_t USB_GetDevSpeed(USB_OTG_GlobalTypeDef *USBx)
-{
-	switch ((USBx->DVSTCTR0 & USB_DVSTCTR0_RHST) >> USB_DVSTCTR0_RHST_SHIFT)
-	{
-	case 0x02:
-		return USB_OTG_SPEED_FULL;
-	case 0x03:
-		return USB_OTG_SPEED_HIGH;
-	default:
-		return USB_OTG_SPEED_LOW;
-	}
 }
 
 /**
