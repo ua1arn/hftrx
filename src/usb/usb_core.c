@@ -1539,6 +1539,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 	}
 	if ((intsts0msk & USB_INTSTS0_BRDY) != 0)	// BRDY
 	{
+		// device
 		uint_fast8_t i;
 		//PRINTF(PSTR("HAL_PCD_IRQHandler trapped - BRDY, BRDYSTS=0x%04X\n"), USBx->BRDYSTS);
 		const uint_fast16_t brdysts = USBx->BRDYSTS & USBx->BRDYENB;	// BRDY Interrupt Status Register
@@ -1800,6 +1801,7 @@ void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 	}
 	if ((intsts0msk & USB_INTSTS0_BRDY) != 0)	// BRDY
 	{
+		// host
 		uint_fast8_t i;
 		//PRINTF(PSTR("1 HAL_HCD_IRQHandler trapped - BRDY, BRDYSTS=0x%04X\n"), USBx->BRDYSTS);
 		const uint_fast16_t brdysts = USBx->BRDYSTS & USBx->BRDYENB;	// BRDY Interrupt Status Register
@@ -1807,7 +1809,6 @@ void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 		if ((brdysts & (1U << 0)) != 0)		// PIPE0 - DCP
 		{
 			USBH_HandleTypeDef * const phost = hhcd->pData;
-
 			HCD_HCTypeDef * const hc = & hhcd->hc [phost->Control.pipe_in];
 			//HCD_HCTypeDef * const hc = & hhcd->hc [0];
 		  	unsigned bcnt;
@@ -1820,8 +1821,8 @@ void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 		  		else
 		  		{
 			  		printhex((uintptr_t) hc->xfer_buff, hc->xfer_buff, bcnt);	// DEBUG
-			  		hc->xfer_buff += bcnt;
-			  		hc->xfer_count += bcnt;
+			  		//hc->xfer_buff += bcnt;
+			  		//hc->xfer_count += bcnt;
 		  		}
 				//HAL_PCD_DataOutStageCallback(hpcd, ep->num);	// start next transfer
 		  		hc->toggle_in ^= 1;
@@ -1835,6 +1836,7 @@ void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 		  	}
 			USBx->CFIFOCTR = USB_CFIFOCTR_BCLR;	// BCLR
 		}
+
 #if 0
 
 		for (i = 1; i < 16; ++ i)
@@ -1900,10 +1902,13 @@ void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 		PRINTF(PSTR("HAL_HCD_IRQHandler trapped - SIGN\n"));
 		//HAL_HCD_Connect_Callback(hhcd);
 
-	    hhcd->hc[1].state = HC_XFRC;
-	    hhcd->hc[1].ErrCnt = 1;
-	    hhcd->hc[1].toggle_in ^= 1;
-	    hhcd->hc[1].urb_state  = URB_DONE;
+		USBH_HandleTypeDef * const phost = hhcd->pData;
+		HCD_HCTypeDef * const hc = & hhcd->hc [phost->Control.pipe_out];
+
+	    hc->state = HC_XFRC;
+	    hc->ErrCnt = 1;
+	    hc->toggle_in ^= 1;
+	    hc->urb_state  = URB_DONE;
 	}
 	if ((intsts1msk & USB_INTSTS1_SACK) != 0)	// SACK
 	{
@@ -1912,11 +1917,15 @@ void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 		//HAL_HCD_Connect_Callback(hhcd);
 		//int err = USB_WritePacketNec(USBx, 0, NULL, 0);	// pipe=0: DCP
 		//ASSERT(err == 0);
+		//HAL_HCD_Connect_Callback(hhcd);
 
-	    hhcd->hc[1].state = HC_XFRC;
-	    hhcd->hc[1].ErrCnt = 0;
-	    hhcd->hc[1].toggle_in ^= 1;
-	    hhcd->hc[1].urb_state  = URB_DONE;
+		USBH_HandleTypeDef * const phost = hhcd->pData;
+		HCD_HCTypeDef * const hc = & hhcd->hc [phost->Control.pipe_out];
+
+	    hc->state = HC_XFRC;
+	    hc->ErrCnt = 0;
+	    hc->toggle_in ^= 1;
+	    hc->urb_state  = URB_DONE;
 	}
 }
 
@@ -2895,6 +2904,8 @@ HAL_StatusTypeDef USB_HostInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgTyp
 	USBx->SOFCFG =
 		USB_SOFCFG_BRDYM |	// BRDYM
 		0;
+	(void) USBx->SOFCFG;
+
 	USBx->SYSCFG0 = (USBx->SYSCFG0 & ~ (USB_SYSCFG_HSE)) |
 			0;
 
