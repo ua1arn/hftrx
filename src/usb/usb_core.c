@@ -13451,7 +13451,7 @@ static void HCD_RXQLVL_IRQHandler(HCD_HandleTypeDef *hhcd)
 	{
 	case GRXSTS_PKTSTS_IN:
 		/* Read the data into the host buffer. */
-		if ((pktcnt > 0) && (hhcd->hc [channelnum].xfer_buff != (void *)0))
+		if ((pktcnt > 0) && (hhcd->hc [channelnum].xfer_buff != NULL))
 		{
 
 			ASSERT(hhcd->hc [channelnum].xfer_buff != NULL);
