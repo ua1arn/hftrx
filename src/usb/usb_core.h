@@ -675,10 +675,11 @@ typedef enum
 	HOST_DEV_BUS_RESET_OFF,
 	HOST_DEV_WAIT_FOR_ATTACHMENT,
 	HOST_DEV_BEFORE_ATTACHED,
+	HOST_DEV_ATTACHED_WAITSPEED,
 	HOST_DEV_ATTACHED,
-	HOST_DEV_DISCONNECTED,		// 6
+	HOST_DEV_DISCONNECTED,		// 7
 	HOST_DETECT_DEVICE_SPEED,
-	HOST_ENUMERATION,			// 8
+	HOST_ENUMERATION,			// 9
 	HOST_CLASS_REQUEST,
 	HOST_INPUT,
 	HOST_SET_CONFIGURATION,
@@ -1393,6 +1394,7 @@ HAL_StatusTypeDef USB_InitFSLSPClkSel(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t 
 HAL_StatusTypeDef USB_ResetPort(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t state);
 HAL_StatusTypeDef USB_DriveVbus(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t state);
 uint32_t  USB_GetHostSpeed(USB_OTG_GlobalTypeDef *USBx);
+uint_fast8_t USB_GetHostSpeedReady(USB_OTG_GlobalTypeDef *USBx);
 
 #define  USB_DISABLE   0
 #define  USB_ENABLE    1

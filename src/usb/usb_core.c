@@ -2014,6 +2014,11 @@ uint32_t USB_GetCurrentFrame(USB_OTG_GlobalTypeDef *USBx)
 	return fn;
 }
 
+uint_fast8_t USB_GetHostSpeedReady(USB_OTG_GlobalTypeDef *USBx)
+{
+	// 1xx: Reset handshake in progress
+	return (((USBx->DVSTCTR0 & USB_DVSTCTR0_RHST) >> USB_DVSTCTR0_RHST_SHIFT) & 0x04) == 0;
+}
 
 /**
   * @brief  Return Host Core speed
@@ -2866,14 +2871,12 @@ HAL_StatusTypeDef USB_ResetPort(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t status
 		(void) USBx->DVSTCTR0;
 		USBx->DVSTCTR0 = (USBx->DVSTCTR0 & vbits) & ~ USB_DVSTCTR0_UACT;
 		(void) USBx->DVSTCTR0;
-//
-//		USBx->DCPCTR |= USB_DCPCTR_SUREQCLR;
 	}
 	else
 	{
-		USBx->DVSTCTR0 = (USBx->DVSTCTR0 & vbits) & ~ USB_DVSTCTR0_USBRST;
-		(void) USBx->DVSTCTR0;
 		USBx->DVSTCTR0 = (USBx->DVSTCTR0 & vbits) | USB_DVSTCTR0_UACT;
+		(void) USBx->DVSTCTR0;
+		USBx->DVSTCTR0 = (USBx->DVSTCTR0 & vbits) & ~ USB_DVSTCTR0_USBRST;
 		(void) USBx->DVSTCTR0;
 	}
 
@@ -5476,6 +5479,11 @@ HAL_StatusTypeDef USB_DriveVbus (USB_OTG_GlobalTypeDef *USBx, uint_fast8_t state
     (void) USBx_HPRT0;
   }
   return HAL_OK;
+}
+
+uint_fast8_t USB_GetHostSpeedReady(USB_OTG_GlobalTypeDef *USBx)
+{
+	return 1;
 }
 
 /**
@@ -10340,6 +10348,11 @@ uint32_t HAL_HCD_GetCurrentSpeed(HCD_HandleTypeDef *hhcd)
   return (USB_GetHostSpeed(hhcd->Instance));
 }
 
+uint_fast8_t HAL_HCD_GetCurrentSpeedReady(HCD_HandleTypeDef *hhcd)
+{
+  return (USB_GetHostSpeedReady(hhcd->Instance));
+}
+
 /**
   * @brief  USBH_LL_Start
   *         Start the Low Level portion of the Host driver.
@@ -10404,6 +10417,11 @@ USBH_StatusTypeDef  USBH_LL_Stop (USBH_HandleTypeDef *phost)
     break;
   }
   return usb_status;
+}
+
+uint_fast8_t USBH_LL_GetSpeedReady(USBH_HandleTypeDef *phost)
+{
+	return HAL_HCD_GetCurrentSpeedReady(phost->pData);
 }
 
 /**
@@ -13237,7 +13255,13 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
 		// в этом состоянии игнорируем disconnect - возникает при старте устройства с установленным USB устройством
 		  //PRINTF(PSTR("USBH_Process: HOST_DEV_BEFORE_ATTACHED\n"));
 		/* Wait for 100 ms after Reset */
-		USBH_ProcessDelay(phost, HOST_DEV_ATTACHED, 100);
+		USBH_ProcessDelay(phost, HOST_DEV_ATTACHED_WAITSPEED, 100);
+		break;
+
+	case HOST_DEV_ATTACHED_WAITSPEED:
+		// Ожидаем пока не завершится процесс выясненеия скорости, на которой может работать device.
+		if (USBH_LL_GetSpeedReady(phost))
+			phost->gState = HOST_DEV_ATTACHED;
 		break;
 
 	case HOST_DEV_ATTACHED:
