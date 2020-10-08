@@ -11396,10 +11396,13 @@ uint8_t USBH_AllocPipe  (USBH_HandleTypeDef *phost, uint8_t ep_addr)
   uint16_t pipe;
 
 #if defined (TARGET_RZA1)
+  // TODO: use different mechanism
   if (ep_addr & 0x7F)
 	  pipe = USBH_GetFreePipe(phost);
   else
 	  pipe = 0;
+#else /* defined (TARGET_RZA1) */
+  pipe = USBH_GetFreePipe(phost);
 #endif /* defined (TARGET_RZA1) */
 
   if (pipe != 0xFFFF)
