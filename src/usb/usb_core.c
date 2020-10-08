@@ -1812,7 +1812,7 @@ void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 			HCD_HCTypeDef * const hc = & hhcd->hc [phost->Control.pipe_in];
 			//HCD_HCTypeDef * const hc = & hhcd->hc [0];
 		  	unsigned bcnt;
-		  	if (USB_ReadPacketNec(USBx, hc->ch_num, hc->xfer_buff, hc->xfer_len - hc->xfer_count, & bcnt) == 0)
+		  	if (USB_ReadPacketNec(USBx, 0/*hc->ch_num*/, hc->xfer_buff, hc->xfer_len - hc->xfer_count, & bcnt) == 0)
 		  	{
 		  		if (bcnt == 0)
 		  		{
@@ -2601,7 +2601,7 @@ HAL_StatusTypeDef USB_HC_StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_HCTypeDe
 	        break;
 	      }
 
-	      if (hc->ep_num == 0)
+	      if ((hc->ep_num & 0x7F) == 0)
 	      {
 	    	  const unsigned devsel = 0x00;
 
