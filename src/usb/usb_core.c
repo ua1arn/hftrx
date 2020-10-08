@@ -2865,6 +2865,8 @@ HAL_StatusTypeDef USB_ResetPort(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t status
 			0;
 
 	// status 0: reset off, 1: reset on
+	PRINTF("USB_ResetPort: status=%u\n", (unsigned) status);
+
 	if (status)
 	{
 		USBx->DVSTCTR0 = (USBx->DVSTCTR0 & vbits) | USB_DVSTCTR0_USBRST;
