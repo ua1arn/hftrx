@@ -2478,15 +2478,10 @@ HAL_StatusTypeDef USB_HC_StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_HCTypeDe
 	uint16_t max_hc_pkt_count = 256;
 	uint32_t tmpreg = 0;
 
-	//+++sack: не влияет
 	const uint_fast8_t pipe = 0;
 	volatile uint16_t * const PIPEnCTR = get_pipectr_reg(USBx, pipe);
 	volatile uint16_t * const PIPEnTRE = get_pipetre_reg(USBx, pipe);
 	volatile uint16_t * const PIPEnTRN = get_pipetrn_reg(USBx, pipe);
-
-	USBx->DVSTCTR0 |= USB_DVSTCTR0_UACT;
-	(void) USBx->DVSTCTR0;
-	//---sack: не влияет
 
 	if (hc->usbh_otg_speed == USB_OTG_SPEED_HIGH)
 	{
@@ -2830,11 +2825,6 @@ HAL_StatusTypeDef USB_HC_Init(
 	    //USBx_HC(ch_num)->HCCHAR |= USB_OTG_HCCHAR_ODDFRM ;
 	  }
 
-///+++sack: не помогает
-//	USBx->DVSTCTR0 |= USB_DVSTCTR0_UACT;
-//	(void) USBx->DVSTCTR0;
-///---sack: не помогает
-
 	* PIPEnCTR = 0x0000;	// NAK
 	while ((* PIPEnCTR & (USB_PIPEnCTR_1_5_PBUSY | USB_PIPEnCTR_1_5_CSSTS)) != 0)	// PBUSY, CSSTS
 		;
@@ -2861,24 +2851,30 @@ HAL_StatusTypeDef USB_HC_Init(
 
 HAL_StatusTypeDef USB_ResetPort(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t status)
 {
+	const portholder_t vbits =
+			USB_DVSTCTR0_WKUP |
+			USB_DVSTCTR0_RWUPE |
+			USB_DVSTCTR0_USBRST |
+			USB_DVSTCTR0_RESUME |
+			USB_DVSTCTR0_UACT |
+			0;
+
 	// status 0: reset off, 1: reset on
 	if (status)
 	{
-
-		USBx->DVSTCTR0 |= USB_DVSTCTR0_USBRST;
+		USBx->DVSTCTR0 = (USBx->DVSTCTR0 & vbits) | USB_DVSTCTR0_USBRST;
 		(void) USBx->DVSTCTR0;
-		USBx->DVSTCTR0 &= ~ USB_DVSTCTR0_UACT;
+		USBx->DVSTCTR0 = (USBx->DVSTCTR0 & vbits) & ~ USB_DVSTCTR0_UACT;
 		(void) USBx->DVSTCTR0;
 //
 //		USBx->DCPCTR |= USB_DCPCTR_SUREQCLR;
 	}
 	else
 	{
-		USBx->DVSTCTR0 &= ~ USB_DVSTCTR0_USBRST;
+		USBx->DVSTCTR0 = (USBx->DVSTCTR0 & vbits) & ~ USB_DVSTCTR0_USBRST;
 		(void) USBx->DVSTCTR0;
-
-//		USBx->DVSTCTR0 |= USB_DVSTCTR0_UACT;
-//		(void) USBx->DVSTCTR0;
+		USBx->DVSTCTR0 = (USBx->DVSTCTR0 & vbits) | USB_DVSTCTR0_UACT;
+		(void) USBx->DVSTCTR0;
 	}
 
 	return HAL_OK;
