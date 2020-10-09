@@ -2831,14 +2831,21 @@ HAL_StatusTypeDef USB_HC_Init(
 	  }
 
 	* PIPEnCTR = 0x0000;	// NAK
+	(void) * PIPEnCTR;
 	while ((* PIPEnCTR & (USB_PIPEnCTR_1_5_PBUSY | USB_PIPEnCTR_1_5_CSSTS)) != 0)	// PBUSY, CSSTS
 		;
 
 	* PIPEnCTR = USB_PIPEnCTR_1_5_SQCLR;
 
+	/* тут pipe не готова принимать данные */
+
 	* PIPEnCTR = 0x0003;	// NAK->STALL
+	(void) * PIPEnCTR;
 	* PIPEnCTR = 0x0002;	// NAK->STALL
+	(void) * PIPEnCTR;
 	* PIPEnCTR = 0x0001;	// STALL->BUF
+	(void) * PIPEnCTR;
+	/* тут уже да */
 
 	return HAL_OK;
 }
