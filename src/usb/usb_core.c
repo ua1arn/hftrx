@@ -968,9 +968,17 @@ static void set_pid(PCD_TypeDef * const USBx, uint_fast8_t pipe, uint_fast8_t ne
 #define USBD_FRDY_COUNT_WRITE 10
 #define USBD_FRDY_COUNT_READ 10
 
-static uint_fast8_t usbd_wait_fifo(PCD_TypeDef * const USBx, uint_fast8_t pipe, unsigned waitcnt)
+static uint_fast8_t usbd_wait_fifo(
+		PCD_TypeDef * const USBx,
+		uint_fast8_t pipe, 	// expected pipe
+		uint_fast8_t isel,	// expected isel: 1: Writing to the DCP buffer memory is selected
+		unsigned waitcnt
+		)
 {
-	while ((USBx->CFIFOSEL & USB_CFIFOSEL_CURPIPE) != (pipe << USB_CFIFOSEL_CURPIPE_SHIFT) || (USBx->CFIFOCTR & USB_CFIFOCTR_FRDY) == 0)	// FRDY
+	while (
+			(USBx->CFIFOSEL & USB_CFIFOSEL_ISEL_) != (isel << USB_CFIFOSEL_ISEL_SHIFT_) ||
+			(USBx->CFIFOSEL & USB_CFIFOSEL_CURPIPE) != (pipe << USB_CFIFOSEL_CURPIPE_SHIFT) ||
+			(USBx->CFIFOCTR & USB_CFIFOCTR_FRDY) == 0)	// FRDY
 	{
 		local_delay_us(1);
 		if (-- waitcnt == 0)
@@ -1005,7 +1013,7 @@ static uint_fast8_t USB_ReadPacketNec(PCD_TypeDef * const USBx, uint_fast8_t pip
 		((mbw << USB_CFIFOSEL_MBW_SHIFT) & USB_CFIFOSEL_MBW) |	// MBW 00: 8-bit width
 		0;
 
-	if (usbd_wait_fifo(USBx, pipe, USBD_FRDY_COUNT_READ))
+	if (usbd_wait_fifo(USBx, pipe, 0, USBD_FRDY_COUNT_READ))
 	{
 		PRINTF(PSTR("USB_ReadPacketNec: usbd_wait_fifo error, pipe=%d, USBx->CFIFOSEL=%08lX\n"), (int) pipe, (unsigned long) USBx->CFIFOSEL);
 		return 1;	// error
@@ -1082,7 +1090,7 @@ USB_WritePacketNec(PCD_TypeDef * const USBx, uint_fast8_t pipe, const uint8_t * 
 		0;
 
 	USBx->CFIFOSEL = cfifosel | (0x02 << USB_CFIFOSEL_MBW_SHIFT);	// MBW 10: 32-bit width
-	if (usbd_wait_fifo(USBx, pipe, USBD_FRDY_COUNT_WRITE))
+	if (usbd_wait_fifo(USBx, pipe, (pipe == 0), USBD_FRDY_COUNT_WRITE))
 	{
 		PRINTF(PSTR("USB_WritePacketNec: usbd_wait_fifo error, USBx->CFIFOSEL=%08lX\n"), (unsigned long) USBx->CFIFOSEL);
 		return 1;	// error
@@ -1808,11 +1816,12 @@ void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 		USBx->BRDYSTS = ~ brdysts;	// 2. When BRDYM is 0, clearing this bit should be done before accessing the FIFO.
 		if ((brdysts & (1U << 0)) != 0)		// PIPE0 - DCP
 		{
+			const uint_fast8_t pipe = 0;
 			USBH_HandleTypeDef * const phost = hhcd->pData;
 			HCD_HCTypeDef * const hc = & hhcd->hc [phost->Control.pipe_in];
 			//HCD_HCTypeDef * const hc = & hhcd->hc [0];
 		  	unsigned bcnt;
-		  	if (USB_ReadPacketNec(USBx, 0/*hc->ch_num*/, hc->xfer_buff, hc->xfer_len - hc->xfer_count, & bcnt) == 0)
+		  	if (USB_ReadPacketNec(USBx, pipe, hc->xfer_buff, hc->xfer_len - hc->xfer_count, & bcnt) == 0)
 		  	{
 		  		if (bcnt == 0)
 		  		{
@@ -1828,13 +1837,13 @@ void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 		  		hc->toggle_in ^= 1;
 		  		hc->state = HC_XFRC;
 		  		hc->urb_state  = URB_DONE;
+				USBx->CFIFOCTR = USB_CFIFOCTR_BCLR;	// BCLR
 		  	}
 		  	else
 		  	{
 		  		TP();
 		  		//control_stall(pdev);
 		  	}
-			USBx->CFIFOCTR = USB_CFIFOCTR_BCLR;	// BCLR
 		}
 
 #if 0
