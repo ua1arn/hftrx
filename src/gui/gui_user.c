@@ -77,21 +77,9 @@ static window_t windows [] = {
 	{ WINDOW_RECEIVE, 		 NO_PARENT_WINDOW, 		ALIGN_CENTER_X, 0, 0, 0, 0, "Receive settings", 	 NON_VISIBLE, 0, 	1, 		1, 		window_receive_process, },
 };
 
-static uint_fast8_t swr_scan_enable = 0;		// флаг разрешения сканирования КСВ
-static uint_fast8_t swr_scan_stop = 0;			// флаг нажатия кнопки Stop во время сканирования
-static uint_fast8_t * y_vals;					// массив КСВ в виде отсчетов по оси Y графика
-
 static enc2_menu_t gui_enc2_menu = { "", "", 0, 0, };
 static enc2_t encoder2 = { 0, 0, 1, };
-
 static menu_by_name_t menu_uif;
-static menu_t menu [MENU_COUNT];
-static uint_fast8_t menu_label_touched = 0;
-static uint_fast8_t menu_level;
-
-static band_array_t bands [30];
-static editfreq_t editfreq;
-static bp_var_t bp_t;
 
 /* Возврат ссылки на окно */
 window_t * get_win(uint8_t window_id)
@@ -102,7 +90,6 @@ window_t * get_win(uint8_t window_id)
 
 void gui_user_actions_after_close_window(void)
 {
-	clean_enc2_stack();
 	hamradio_disable_encoder2_redirect();
 }
 
@@ -115,7 +102,7 @@ static void gui_main_process(void)
 	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
 	char buf [TEXT_ARRAY_SIZE];
 	const uint_fast8_t buflen = ARRAY_SIZE(buf);
-	uint_fast16_t yt, xt, y1 = 125, y2 = 145, current_place = 0, xx;
+	uint_fast16_t y1 = 125, y2 = 145, current_place = 0, xx;
 	const uint_fast8_t num_places = 8;
 	const uint_fast8_t lbl_place_width = 100;
 	const uint_fast16_t x_width = lbl_place_width * 2 - 6;
@@ -128,18 +115,18 @@ static void gui_main_process(void)
 		ASSERT(win != NULL);
 		win->first_call = 0;
 		gui_enc2_menu.updated = 1;
+		update = 1;
 
 		static const button_t buttons [] = {
-		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   visible,      payload,	 name, 			text
-			{ 0, 0, 86, 44, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_txrx", 	"RX", },
-			{ 0, 0, 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_Bands", 	"Bands", },
-			{ 0, 0, 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_Memory",  	"Memory", },
-			{ 0, 0, 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_Receive", 	"Receive|options", },
-			{ 0, 0, 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_ANotch", 	"Auto|Notch", },
-			{ 0, 0, 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_speaker", 	"Speaker|on air", },
-			{ 0, 0, 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_1",  	 	"", },
-			{ 0, 0, 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_2", 		"", },
-			{ 0, 0, 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_Options", 	"Options", },
+			{ 0, 0, 86, 44, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_txrx", 	 "RX", },
+			{ 0, 0, 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_Bands", 	 "Bands", },
+			{ 0, 0, 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_Memory",  "Memory", },
+			{ 0, 0, 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_Receive", "Receive|options", },
+			{ 0, 0, 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_ANotch",  "Auto|Notch", },
+			{ 0, 0, 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_speaker", "Speaker|on air", },
+			{ 0, 0, 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_1",  	 "", },
+			{ 0, 0, 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_2", 		 "", },
+			{ 0, 0, 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_Options", "Options", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -157,37 +144,10 @@ static void gui_main_process(void)
 		}
 
 		elements_state(win);
-
-		button_t * btn_ANotch = find_gui_element(TYPE_BUTTON, win, "btn_ANotch");
-		btn_ANotch->is_locked = hamradio_get_autonotch() ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
-
-		button_t * bh = find_gui_element(TYPE_BUTTON, win, "btn_speaker");
-		bh->is_locked = hamradio_get_gmutespkr();
-		local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("Speaker|%s"), bh->is_locked ? "muted" : "on air");
 	}
 
-	// если не открыто 2-е окно, 2-й энкодер подстраивает частоту с округлением 500 гц от текущего значения
-	if (check_for_parent_window() == NO_PARENT_WINDOW)
-	{
-		int_fast8_t rotate = pop_enc2_stack();
-		if (rotate != 0)
-		{
-			uint_fast16_t step = 500;
-			uint32_t freq = hamradio_get_freq_rx();
-			uint16_t f_rem = freq % step;
-
-			if (rotate > 0)
-			{
-				hamradio_set_freq(freq + (step - f_rem));
-			}
-			else if (rotate < 0)
-			{
-				hamradio_set_freq(freq - (f_rem ? f_rem : step));
-			}
-		}
-	}
-
-	uint_fast8_t type, action;
+	uint_fast8_t type;
+	int_fast8_t action;
 	uintptr_t ptr;
 	switch (get_from_wm_queue(win, & type, & ptr, & action))
 	{
@@ -298,6 +258,23 @@ static void gui_main_process(void)
 	case WM_MESSAGE_UPDATE:
 
 		update = 1;
+		break;
+
+	case WM_MESSAGE_ENC2_ROTATE:	// если не открыто 2-е окно, 2-й энкодер подстраивает частоту с округлением 500 гц от текущего значения
+	{
+		uint_fast16_t step = 500;
+		uint32_t freq = hamradio_get_freq_rx();
+		uint16_t f_rem = freq % step;
+
+		if (action > 0)
+		{
+			hamradio_set_freq(freq + (step - f_rem) * abs(action));
+		}
+		else if (action < 0)
+		{
+			hamradio_set_freq(freq - (f_rem ? f_rem : step) * abs(action));
+		}
+	}
 		break;
 
 	default:
@@ -499,7 +476,6 @@ static void window_memory_process(void)
 		GUI_MEM_ASSERT(win->bh_ptr);
 
 		label_t labels [] = {
-		//    x, y,  parent, state, is_trackable, visible,  	name, 	Text, 	font_size, 	color,
 			{ 0, 0, WINDOW_MEMORY, DISABLED,  0, NON_VISIBLE, "lbl_note1", "",  FONT_MEDIUM, COLORMAIN_WHITE, },
 			{ 0, 0, WINDOW_MEMORY, DISABLED,  0, NON_VISIBLE, "lbl_note2", "",  FONT_MEDIUM, COLORMAIN_WHITE, },
 		};
@@ -564,7 +540,8 @@ static void window_memory_process(void)
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type, action;
+	uint_fast8_t type;
+	int_fast8_t action;
 	uintptr_t ptr;
 	switch (get_from_wm_queue(win, & type, & ptr, & action))
 	{
@@ -621,19 +598,18 @@ static void window_memory_process(void)
 static void window_bands_process(void)
 {
 	window_t * win = get_win(WINDOW_BANDS);
+	static band_array_t bands [30];
 
 	if (win->first_call)
 	{
 		uint_fast16_t x = 0, y = 0, max_x = 0;
 		uint_fast8_t interval = 6, col1_int = 20, row1_int = window_title_height + 20, row_count = 3, i = 0;
 		button_t * bh = NULL;
-		label_t * lh1 = NULL, * lh2 = NULL;
 		win->first_call = 0;
 
 		uint_fast8_t bands_count = hamradio_get_bands(bands);
 
 		static const label_t labels [] = {
-		//    x, y,  parent, state, is_trackable, visible,  	name, 		Text, 				font_size, 	color, onClickHandler
 			{ 0, 0, WINDOW_BANDS, DISABLED,  0, NON_VISIBLE, "lbl_ham",   "HAM bands",		 FONT_LARGE, COLORMAIN_WHITE, },
 			{ 0, 0, WINDOW_BANDS, DISABLED,  0, NON_VISIBLE, "lbl_bcast", "Broadcast bands", FONT_LARGE, COLORMAIN_WHITE, },
 		};
@@ -648,7 +624,7 @@ static void window_bands_process(void)
 		win->bh_ptr = calloc(win->bh_count, sizeof (button_t));
 		GUI_MEM_ASSERT(win->bh_ptr);
 
-		lh1 = find_gui_element(TYPE_LABEL, win, "lbl_ham");
+		label_t * lh1 = find_gui_element(TYPE_LABEL, win, "lbl_ham");
 		lh1->x = col1_int;
 		lh1->y = row1_int;
 		lh1->visible = VISIBLE;
@@ -693,7 +669,7 @@ static void window_bands_process(void)
 			}
 		}
 
-		lh2 = find_gui_element(TYPE_LABEL, win, "lbl_bcast");
+		label_t * lh2 = find_gui_element(TYPE_LABEL, win, "lbl_bcast");
 		lh2->x = max_x + 50;
 		lh2->y = row1_int;
 		lh2->visible = VISIBLE;
@@ -731,7 +707,8 @@ static void window_bands_process(void)
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type, action;
+	uint_fast8_t type;
+	int_fast8_t action;
 	uintptr_t ptr;
 	switch (get_from_wm_queue(win, & type, & ptr, & action))
 	{
@@ -768,7 +745,6 @@ static void window_options_process(void)
 		win->first_call = 0;
 
 		static const button_t buttons [] = {
-		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
 			{ 0, 0, 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_OPTIONS, NON_VISIBLE, INT32_MAX, "btn_SysMenu", "System|settings", },
 			{ 0, 0, 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_OPTIONS, NON_VISIBLE, INT32_MAX, "btn_AUDsett", "Audio|settings", },
 			{ 0, 0, 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_OPTIONS, NON_VISIBLE, INT32_MAX, "btn_TXsett",  "Transmit|settings", },
@@ -805,7 +781,8 @@ static void window_options_process(void)
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type, action;
+	uint_fast8_t type;
+	int_fast8_t action;
 	uintptr_t ptr;
 	switch (get_from_wm_queue(win, & type, & ptr, & action))
 	{
@@ -884,7 +861,6 @@ static void window_display_process(void)
 		update = 1;
 
 		button_t buttons [] = {
-		//   x1, y1, w, h, onClickHandler, state, is_locked, is_long_press, parent, visible, payload, name, text
 			{ 0, 0, 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_DISPLAY, NON_VISIBLE, INT32_MAX, "btn_colorsp", "Colored|spectrum", },
 			{ 0, 0, 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_DISPLAY, NON_VISIBLE, INT32_MAX, "btn_zoom",    "", },
 		};
@@ -895,7 +871,6 @@ static void window_display_process(void)
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
 		static const label_t labels [] = {
-		//    x, y,  parent,     		state, is_trackable, visible,   name,       Text, 				font_size, 		color,
 			{ 0, 0,	WINDOW_DISPLAY,  DISABLED,  0, NON_VISIBLE, "lbl_bottomDB",		"Bottom DB: xxx", 	FONT_MEDIUM, COLORMAIN_WHITE, },
 			{ 0, 0,	WINDOW_DISPLAY,  DISABLED,  0, NON_VISIBLE, "lbl_topDB", 		"Top DB:    xxx", 	FONT_MEDIUM, COLORMAIN_WHITE, },
 			{ 0, 0,	WINDOW_DISPLAY,  DISABLED,  0, NON_VISIBLE, "lbl_bottomDB_min",	"xxx", 				FONT_SMALL,  COLORMAIN_WHITE, },
@@ -995,7 +970,8 @@ static void window_display_process(void)
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type, action;
+	uint_fast8_t type;
+	int_fast8_t action;
 	uintptr_t ptr;
 	switch (get_from_wm_queue(win, & type, & ptr, & action))
 	{
@@ -1071,9 +1047,7 @@ static void window_utilites_process(void)
 		win->first_call = 0;
 
 		button_t buttons [] = {
-		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
 			{ 0, 0, 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UTILS, NON_VISIBLE, INT32_MAX, "btn_SWRscan", "SWR|scanner", },
-
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -1103,7 +1077,8 @@ static void window_utilites_process(void)
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type, action;
+	uint_fast8_t type;
+	int_fast8_t action;
 	uintptr_t ptr;
 	switch (get_from_wm_queue(win, & type, & ptr, & action))
 	{
@@ -1144,7 +1119,6 @@ static void window_mode_process(void)
 		win->first_call = 0;
 
 		static const button_t buttons [] = {
-		//   x1, y1, w, h,  onClickHandler, state, is_locked, is_long_press, parent, visible, payload, name, text
 			{ 0, 0, 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_LSB, "btnModeLSB", "LSB", },
 			{ 0, 0, 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_CW,  "btnModeCW",  "CW", },
 			{ 0, 0, 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_AM,  "btnModeAM",  "AM", },
@@ -1181,7 +1155,8 @@ static void window_mode_process(void)
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type, action;
+	uint_fast8_t type;
+	int_fast8_t action;
 	uintptr_t ptr;
 	switch (get_from_wm_queue(win, & type, & ptr, & action))
 	{
@@ -1214,6 +1189,7 @@ static void window_af_process(void)
 {
 	window_t * win = get_win(WINDOW_AF);
 	static label_t * lbl_low = NULL, * lbl_high = NULL, * lbl_ifshift = NULL;
+	static bp_var_t bp_t;
 
 	if (win->first_call)
 	{
@@ -1223,7 +1199,6 @@ static void window_af_process(void)
 		bp_t.updated = 1;
 
 		static const button_t buttons [] = {
-		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   visible,   payload,	 name, 		text
 			{ 0, 0, 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AF, NON_VISIBLE, -1, "btnlow-", 	"-", },
 			{ 0, 0, 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AF, NON_VISIBLE, 1,  "btnlow+", 	"+", },
 			{ 0, 0, 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AF, NON_VISIBLE, -1, "btnhigh-", 	"-", },
@@ -1238,7 +1213,6 @@ static void window_af_process(void)
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
 		label_t labels [] = {
-		//    x, y,  parent, state, is_trackable, visible,  name, 			Text, 				font_size, 	color,
 			{ 0, 0, WINDOW_AF, CANCELLED,  0, NON_VISIBLE, "lbl_low",     "Low  cut : **** ",  FONT_MEDIUM, COLORMAIN_YELLOW, },
 			{ 0, 0, WINDOW_AF, CANCELLED,  0, NON_VISIBLE, "lbl_high",    "High cut : **** ",  FONT_MEDIUM, COLORMAIN_WHITE,  },
 			{ 0, 0, WINDOW_AF, CANCELLED,  0, NON_VISIBLE, "lbl_ifshift", "IF shift : **** ",  FONT_MEDIUM, COLORMAIN_WHITE,  },
@@ -1289,7 +1263,8 @@ static void window_af_process(void)
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type, action;
+	uint_fast8_t type;
+	int_fast8_t action;
 	uintptr_t ptr;
 	switch (get_from_wm_queue(win, & type, & ptr, & action))
 	{
@@ -1340,6 +1315,12 @@ static void window_af_process(void)
 		}
 		break;
 
+	case WM_MESSAGE_ENC2_ROTATE:
+
+		bp_t.change = action;
+		bp_t.updated = 1;
+		break;
+
 	case WM_MESSAGE_UPDATE:
 
 		bp_t.change = 0;
@@ -1350,13 +1331,6 @@ static void window_af_process(void)
 	default:
 
 		break;
-	}
-
-	int_fast8_t rotate = pop_enc2_stack();
-	if (rotate != 0)
-	{
-		bp_t.updated = 1;
-		bp_t.change = rotate;
 	}
 
 	if (bp_t.updated)
@@ -1400,6 +1374,7 @@ static void window_af_process(void)
 static void window_freq_process (void)
 {
 	static label_t * lbl_freq;
+	static editfreq_t editfreq;
 	window_t * win = get_win(WINDOW_FREQ);
 
 	if (win->first_call)
@@ -1410,7 +1385,6 @@ static void window_freq_process (void)
 		button_t * bh = NULL;
 
 		static const button_t buttons [] = {
-		//   x1, y1, w, h,  onClickHandler, state, is_locked, is_long_press, parent, visible, payload, name, text
 			{ 0, 0, 50, 50, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ, NON_VISIBLE, 1, 		 		"btnFreq1",  "1", },
 			{ 0, 0, 50, 50, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ, NON_VISIBLE, 2, 		 		"btnFreq2",  "2", },
 			{ 0, 0, 50, 50, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ, NON_VISIBLE, 3, 		 		"btnFreq3",  "3", },
@@ -1431,7 +1405,6 @@ static void window_freq_process (void)
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
 		label_t labels [] = {
-		//    x, y,  parent, state, is_trackable, visible, name, Text, font_size, 	color, onClickHandler
 			{ 0, 0,	WINDOW_FREQ, DISABLED, 0, NON_VISIBLE, "lbl_freq_val", "", FONT_LARGE, COLORMAIN_WHITE, },
 		};
 		win->lh_count = ARRAY_SIZE(labels);
@@ -1476,7 +1449,8 @@ static void window_freq_process (void)
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type, action;
+	uint_fast8_t type;
+	int_fast8_t action;
 	uintptr_t ptr;
 	switch (get_from_wm_queue(win, & type, & ptr, & action))
 	{
@@ -1556,6 +1530,9 @@ static void window_swrscan_process(void)
 	static button_t * btn_swr_start, * btn_Options, * btn_swr_OK;
 	static uint_fast8_t backup_power;
 	static uint_fast8_t swr_scan_done = 0, is_swr_scanning = 0;
+	static uint_fast8_t swr_scan_enable = 0;		// флаг разрешения сканирования КСВ
+	static uint_fast8_t swr_scan_stop = 0;			// флаг нажатия кнопки Stop во время сканирования
+	static uint_fast8_t * y_vals;					// массив КСВ в виде отсчетов по оси Y графика
 	window_t * win = get_win(WINDOW_SWR_SCANNER);
 	uint_fast8_t averageFactor = 3;
 
@@ -1566,7 +1543,6 @@ static void window_swrscan_process(void)
 		button_t * bh = NULL;
 
 		static const button_t buttons [] = {
-		//   x1, y1, w, h,  onClickHandler, state, is_locked, is_long_press, parent, visible, payload, name, text
 			{ 0, 0, 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_SWR_SCANNER, 	NON_VISIBLE, INT32_MAX,  "btn_swr_start", "Start", },
 			{ 0, 0, 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_SWR_SCANNER, 	NON_VISIBLE, INT32_MAX,  "btn_swr_OK", 	  "OK", },
 		};
@@ -1577,7 +1553,6 @@ static void window_swrscan_process(void)
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
 		static const label_t labels [] = {
-		//    x, y,  parent,    state, is_trackable, visible,   name,   Text, font_size, 	color, 	 onClickHandler
 			{ 0, 0,	WINDOW_SWR_SCANNER, DISABLED,  0, NON_VISIBLE, "lbl_swr_bottom", "", FONT_SMALL, COLORMAIN_WHITE, },
 			{ 0, 0,	WINDOW_SWR_SCANNER, DISABLED,  0, NON_VISIBLE, "lbl_swr_top", 	 "", FONT_SMALL, COLORMAIN_WHITE, },
 			{ 0, 0,	WINDOW_SWR_SCANNER, DISABLED,  0, NON_VISIBLE, "lbl_swr_error",  "", FONT_MEDIUM, COLORMAIN_WHITE, },
@@ -1645,7 +1620,8 @@ static void window_swrscan_process(void)
 		swr_scan_stop = 0;
 	}
 
-	uint_fast8_t type, action;
+	uint_fast8_t type;
+	int_fast8_t action;
 	uintptr_t ptr;
 	switch (get_from_wm_queue(win, & type, & ptr, & action))
 	{
@@ -1774,7 +1750,6 @@ static void window_tx_process(void)
 		update = 1;
 
 		static const button_t buttons [] = {
-		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
 			{ 0, 0, 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_TX_SETTINGS, 	NON_VISIBLE, INT32_MAX, "btn_tx_vox", 	 	 	"VOX|OFF", },
 			{ 0, 0, 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_TX_SETTINGS, 	NON_VISIBLE, INT32_MAX, "btn_tx_vox_settings", 	"VOX|settings", },
 			{ 0, 0, 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_TX_SETTINGS, 	NON_VISIBLE, INT32_MAX, "btn_tx_power", 	 	"TX power", },
@@ -1807,7 +1782,8 @@ static void window_tx_process(void)
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type, action;
+	uint_fast8_t type;
+	int_fast8_t action;
 	uintptr_t ptr;
 	switch (get_from_wm_queue(win, & type, & ptr, & action))
 	{
@@ -1876,7 +1852,6 @@ static void window_tx_vox_process(void)
 		win->first_call = 0;
 
 		button_t buttons [] = {
-		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
 			{ 0, 0,  44, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_TX_VOX_SETT, NON_VISIBLE, INT32_MAX, "btn_tx_vox_OK", "OK", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
@@ -1897,7 +1872,6 @@ static void window_tx_vox_process(void)
 		memcpy(win->sh_ptr, sliders, sliders_size);
 
 		static const label_t labels [] = {
-		//    x, y,  parent,  state, is_trackable, visible,   name,   Text, font_size, 	color, 	onClickHandler
 			{ 0, 0,	WINDOW_TX_VOX_SETT, DISABLED,  0, NON_VISIBLE, "lbl_vox_delay",    	 "", FONT_MEDIUM, COLORMAIN_WHITE, },
 			{ 0, 0,	WINDOW_TX_VOX_SETT, DISABLED,  0, NON_VISIBLE, "lbl_vox_level",    	 "", FONT_MEDIUM, COLORMAIN_WHITE, },
 			{ 0, 0,	WINDOW_TX_VOX_SETT, DISABLED,  0, NON_VISIBLE, "lbl_avox_level",   	 "", FONT_MEDIUM, COLORMAIN_WHITE, },
@@ -2008,7 +1982,8 @@ static void window_tx_vox_process(void)
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type, action;
+	uint_fast8_t type;
+	int_fast8_t action;
 	uintptr_t ptr;
 	switch (get_from_wm_queue(win, & type, & ptr, & action))
 	{
@@ -2077,7 +2052,6 @@ static void window_tx_power_process(void)
 		win->first_call = 0;
 
 		static const button_t buttons [] = {
-		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
 			{ 0, 0,  44, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_TX_POWER,  NON_VISIBLE, INT32_MAX, "btn_tx_pwr_OK", "OK", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
@@ -2097,7 +2071,6 @@ static void window_tx_power_process(void)
 		memcpy(win->sh_ptr, sliders, sliders_size);
 
 		static const label_t labels [] = {
-		//    x, y,  parent,  state, is_trackable, visible,   name,    Text, font_size, 	color, 		onClickHandler
 			{ 0, 0,	WINDOW_TX_POWER, DISABLED,  0, NON_VISIBLE, "lbl_tx_power",   "", FONT_MEDIUM, COLORMAIN_WHITE, },
 			{ 0, 0,	WINDOW_TX_POWER, DISABLED,  0, NON_VISIBLE, "lbl_tune_power", "", FONT_MEDIUM, COLORMAIN_WHITE, },
 		};
@@ -2149,7 +2122,8 @@ static void window_tx_power_process(void)
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type, action;
+	uint_fast8_t type;
+	int_fast8_t action;
 	uintptr_t ptr;
 	switch (get_from_wm_queue(win, & type, & ptr, & action))
 	{
@@ -2208,7 +2182,6 @@ static void window_audiosettings_process(void)
 		update = 1;
 
 		static const button_t buttons [] = {
-		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
 			{ 0, 0, 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, INT32_MAX, "btn_reverb", 		 "Reverb|OFF", },
 			{ 0, 0, 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, INT32_MAX, "btn_mic_eq", 		 "MIC EQ|OFF", },
 			{ 0, 0, 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, INT32_MAX, "btn_mic_profiles", 	 "MIC|profiles", },
@@ -2246,7 +2219,8 @@ static void window_audiosettings_process(void)
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type, action;
+	uint_fast8_t type;
+	int_fast8_t action;
 	uintptr_t ptr;
 	switch (get_from_wm_queue(win, & type, & ptr, & action))
 	{
@@ -2350,7 +2324,6 @@ static void window_ap_reverb_process(void)
 		win->first_call = 0;
 
 		button_t buttons [] = {
-		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
 			{ 0, 0,  40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_REVERB_SETT,	NON_VISIBLE, INT32_MAX, "btn_REVs_ok", "OK", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
@@ -2360,7 +2333,6 @@ static void window_ap_reverb_process(void)
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
 		static const label_t labels [] = {
-		//    x, y,  parent,     		state, is_trackable, visible,   name,       		Text, font_size, 	color, 	onClickHandler
 			{ 0, 0,	WINDOW_AP_REVERB_SETT,  DISABLED,  0, NON_VISIBLE, "lbl_reverbDelay",		"", FONT_MEDIUM, COLORMAIN_WHITE, },
 			{ 0, 0,	WINDOW_AP_REVERB_SETT,  DISABLED,  0, NON_VISIBLE, "lbl_reverbLoss", 		"", FONT_MEDIUM, COLORMAIN_WHITE, },
 			{ 0, 0,	WINDOW_AP_REVERB_SETT,  DISABLED,  0, NON_VISIBLE, "lbl_reverbDelay_min", 	"", FONT_SMALL, COLORMAIN_WHITE, },
@@ -2448,7 +2420,8 @@ static void window_ap_reverb_process(void)
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type, action;
+	uint_fast8_t type;
+	int_fast8_t action;
 	uintptr_t ptr;
 	switch (get_from_wm_queue(win, & type, & ptr, & action))
 	{
@@ -2507,7 +2480,6 @@ static void window_ap_mic_eq_process(void)
 		win->first_call = 0;
 
 		static const button_t buttons [] = {
-		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
 			{ 0, 0,  40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_EQ, 	NON_VISIBLE, INT32_MAX, "btn_EQ_ok", "OK", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
@@ -2517,7 +2489,6 @@ static void window_ap_mic_eq_process(void)
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
 		static const label_t labels [] = {
-		//    x, y,  parent, state, is_trackable, visible,   name,    Text, font_size, 	color, 	onClickHandler
 			{ 0, 0,	WINDOW_AP_MIC_EQ, DISABLED,  0, NON_VISIBLE, "lbl_eq0.08_val", 	"", FONT_LARGE, COLORMAIN_YELLOW, },
 			{ 0, 0,	WINDOW_AP_MIC_EQ, DISABLED,  0, NON_VISIBLE, "lbl_eq0.23_val", 	"", FONT_LARGE, COLORMAIN_YELLOW, },
 			{ 0, 0,	WINDOW_AP_MIC_EQ, DISABLED,  0, NON_VISIBLE, "lbl_eq0.65_val",  "", FONT_LARGE, COLORMAIN_YELLOW, },
@@ -2598,7 +2569,8 @@ static void window_ap_mic_eq_process(void)
 		mid_y = win->y1 + sl->y + sl->size / 2;						//todo: абсолютные координаты! переделать
 	}
 
-	uint_fast8_t type, action;
+	uint_fast8_t type;
+	int_fast8_t action;
 	uintptr_t ptr;
 	switch (get_from_wm_queue(win, & type, & ptr, & action))
 	{
@@ -2662,7 +2634,6 @@ static void window_ap_mic_process(void)
 		win->first_call = 0;
 
 		static const button_t buttons [] = {
-		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
 			{ 0, 0,  86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_SETT, NON_VISIBLE, INT32_MAX, "btn_mic_agc",   "AGC|OFF", },
 			{ 0, 0,  86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_SETT, NON_VISIBLE, INT32_MAX, "btn_mic_boost", "Boost|OFF", },
 			{ 0, 0,  86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_SETT, NON_VISIBLE, INT32_MAX, "btn_mic_OK",    "OK", },
@@ -2674,7 +2645,6 @@ static void window_ap_mic_process(void)
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
 		static const label_t labels [] = {
-		//    x, y,  parent,     		state, is_trackable, visible,   name,  	      Text, font_size, 	color,
 			{ 0, 0,	WINDOW_AP_MIC_SETT, DISABLED, 0, NON_VISIBLE, "lbl_micLevel", 	  "", FONT_MEDIUM, COLORMAIN_WHITE, },
 			{ 0, 0,	WINDOW_AP_MIC_SETT, DISABLED, 0, NON_VISIBLE, "lbl_micClip",  	  "", FONT_MEDIUM, COLORMAIN_WHITE, },
 			{ 0, 0,	WINDOW_AP_MIC_SETT, DISABLED, 0, NON_VISIBLE, "lbl_micAGC",   	  "", FONT_MEDIUM, COLORMAIN_WHITE, },
@@ -2807,7 +2777,8 @@ static void window_ap_mic_process(void)
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type, action;
+	uint_fast8_t type;
+	int_fast8_t action;
 	uintptr_t ptr;
 	switch (get_from_wm_queue(win, & type, & ptr, & action))
 	{
@@ -2883,7 +2854,6 @@ static void window_ap_mic_prof_process(void)
 		win->first_call = 0;
 
 		static const button_t buttons [] = {
-		//   x1, y1, w, h,  onClickHandler,   				state,   	is_locked, is_long_press, parent,   	visible,      payload,	 	name, 				text
 			{ 0, 0, 100, 44, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_AP_MIC_PROF, 	NON_VISIBLE, INT32_MAX, "btn_mic_profile_1", "", },
 			{ 0, 0, 100, 44, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_AP_MIC_PROF, 	NON_VISIBLE, INT32_MAX, "btn_mic_profile_2", "", },
 			{ 0, 0, 100, 44, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_AP_MIC_PROF, 	NON_VISIBLE, INT32_MAX, "btn_mic_profile_3", "", },
@@ -2919,7 +2889,8 @@ static void window_ap_mic_prof_process(void)
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type, action;
+	uint_fast8_t type;
+	int_fast8_t action;
 	uintptr_t ptr;
 	switch (get_from_wm_queue(win, & type, & ptr, & action))
 	{
@@ -2972,8 +2943,11 @@ static void window_menu_process(void)
 	uint_fast8_t int_cols = 230, int_rows = 35, is_moving_label = 0;
 	static button_t * button_up = NULL, * button_down = NULL;
 	window_t * win = get_win(WINDOW_MENU);
-	int_fast8_t move_x, move_y;
+	int_fast8_t move_x = 0, move_y = 0, rotate = 0;
 	static label_t * selected_label = NULL;
+	static uint_fast8_t menu_label_touched = 0;
+	static uint_fast8_t menu_level;
+	static menu_t menu [MENU_COUNT];
 
 	if (win->first_call)
 	{
@@ -2986,7 +2960,6 @@ static void window_menu_process(void)
 		label_t * lh;
 
 		static const button_t buttons [] = {
-		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
 			{ 0, 0, 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, -1, "btnSysMenu-", "-", },
 			{ 0, 0, 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, 1, "btnSysMenu+", "+", },
 		};
@@ -2997,7 +2970,6 @@ static void window_menu_process(void)
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
 		static const label_t labels [] = {
-		//    x, y,  parent,  state, is_trackable, visible,   name,  Text, font_size, 	color,
 			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group",  "", FONT_LARGE, COLORMAIN_WHITE, },
 			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group",  "", FONT_LARGE, COLORMAIN_WHITE, },
 			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group",  "", FONT_LARGE, COLORMAIN_WHITE, },
@@ -3125,7 +3097,8 @@ static void window_menu_process(void)
 		calculate_window_position(win, WINDOW_POSITION_MANUAL, xmax, ymax);
 	}
 
-	uint_fast8_t type, action;
+	uint_fast8_t type;
+	int_fast8_t action;
 	uintptr_t ptr;
 	switch (get_from_wm_queue(win, & type, & ptr, & action))
 	{
@@ -3134,7 +3107,7 @@ static void window_menu_process(void)
 		if (IS_BUTTON_PRESS)
 		{
 			button_t * bh = (button_t *) ptr;
-			push_enc2_stack(bh->payload);
+			put_to_wm_queue(win, WM_MESSAGE_ENC2_ROTATE, bh->payload);
 		}
 		else if ((IS_LABEL_PRESS) || (IS_LABEL_MOVE))
 		{
@@ -3161,6 +3134,11 @@ static void window_menu_process(void)
 
 			is_moving_label = IS_LABEL_MOVE;
 		}
+		break;
+
+	case WM_MESSAGE_ENC2_ROTATE:
+
+		rotate = action;
 		break;
 
 	case WM_MESSAGE_UPDATE:
@@ -3315,7 +3293,6 @@ static void window_menu_process(void)
 			menu_level = MENU_GROUPS;
 	}
 
-	int_fast8_t rotate = pop_enc2_stack();
 	if (rotate != 0 && menu_level == MENU_VALS)
 	{
 		menu [MENU_PARAMS].selected_str = menu [MENU_PARAMS].selected_label + menu [MENU_PARAMS].add_id;
@@ -3422,7 +3399,6 @@ static void window_receive_process(void)
 		update = 1;
 
 		static const button_t buttons [] = {
-		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
 			{ 0, 0, 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_RECEIVE, NON_VISIBLE, INT32_MAX, "btn_att",    "", },
 			{ 0, 0, 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_RECEIVE, NON_VISIBLE, INT32_MAX, "btn_AGC", 	 "", },
 			{ 0, 0, 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_RECEIVE, NON_VISIBLE, INT32_MAX, "btn_mode", 	 "Mode", },
@@ -3458,7 +3434,8 @@ static void window_receive_process(void)
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type, action;
+	uint_fast8_t type;
+	int_fast8_t action;
 	uintptr_t ptr;
 	switch (get_from_wm_queue(win, & type, & ptr, & action))
 	{
@@ -3556,6 +3533,7 @@ static void window_uif_process(void)
 	static uint_fast16_t window_center_x;
 	static uint_fast8_t reinit = 0;
 	window_t * win = get_win(WINDOW_UIF);
+	int_fast8_t rotate = 0;
 
 	if (win->first_call)
 	{
@@ -3564,7 +3542,6 @@ static void window_uif_process(void)
 		static const uint_fast8_t win_width = 170;
 
 		static const button_t buttons [] = {
-		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
 			{ 0, 0, 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UIF, NON_VISIBLE, -1, "btnUIF-", "-", },
 			{ 0, 0, 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UIF, NON_VISIBLE, 1, "btnUIF+",  "+", },
 		};
@@ -3575,7 +3552,6 @@ static void window_uif_process(void)
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
 		static const label_t labels [] = {
-		//    x, y,  parent,  state, is_trackable, visible,   name,  Text, font_size, 	color, 	 onClickHandler
 			{ 0, 0,	WINDOW_UIF,  DISABLED,  0, NON_VISIBLE, "lbl_uif_val", 	 "", FONT_LARGE, COLORMAIN_WHITE, },
 		};
 		win->lh_count = ARRAY_SIZE(labels);
@@ -3588,7 +3564,8 @@ static void window_uif_process(void)
 		calculate_window_position(win, WINDOW_POSITION_MANUAL, win_width, window_title_height + get_label_height(lbl_uif_val) * 4);
 	}
 
-	uint_fast8_t type, action;
+	uint_fast8_t type;
+	int_fast8_t action;
 	uintptr_t ptr;
 	switch (get_from_wm_queue(win, & type, & ptr, & action))
 	{
@@ -3597,8 +3574,13 @@ static void window_uif_process(void)
 		if (IS_BUTTON_PRESS)
 		{
 			button_t * bh = (button_t *) ptr;
-			push_enc2_stack(bh->payload);
+			put_to_wm_queue(win, WM_MESSAGE_ENC2_ROTATE, bh->payload);
 		}
+		break;
+
+	case WM_MESSAGE_ENC2_ROTATE:
+
+		rotate = action;
 		break;
 
 	case WM_MESSAGE_UPDATE:
@@ -3639,7 +3621,6 @@ static void window_uif_process(void)
 		return;
 	}
 
-	int_fast8_t rotate = pop_enc2_stack();
 	if (rotate != 0)
 	{
 		hamradio_gui_edit_menu_item(menu_uif.menupos, rotate);
@@ -3661,12 +3642,6 @@ static void window_uif_process(void)
 }
 
 // *********************************************************************************************************************************************************************
-
-void gui_check_encoder2 (int_least16_t rotate)
-{
-	if (rotate != 0)
-		push_enc2_stack(rotate);
-}
 
 void gui_set_encoder2_state (uint_fast8_t code)
 {
@@ -3715,7 +3690,6 @@ static void window_enc2_process(void)
 		static const uint_fast8_t win_width = 170;
 
 		static const label_t labels [] = {
-		//    x, y,  parent,  state, is_trackable, visible,   name,   Text, font_size, 	color,  onClickHandler
 			{ 0, 0, WINDOW_ENC2,  DISABLED,  0, NON_VISIBLE, "lbl_enc2_val", "", FONT_LARGE, COLORMAIN_WHITE, },
 		};
 		win->lh_count = ARRAY_SIZE(labels);

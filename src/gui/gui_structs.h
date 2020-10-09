@@ -150,14 +150,15 @@ enum {
 typedef enum {
 	WM_NO_MESSAGE,
 	WM_MESSAGE_UPDATE,				// запрос на обновление состояния элементов GUI в зависимости от состояния базовой системы
-	WM_MESSAGE_ACTION				// необходима реакция на действия с элементами
+	WM_MESSAGE_ACTION,				// необходима реакция на действия с элементами
+	WM_MESSAGE_ENC2_ROTATE			// необходима обработка результата вращения 2-го энкодера
 } wm_message_t;
 
 typedef struct {
 	wm_message_t message;			// тип сообщения
 	element_type_t type;			// тип элемента
 	uintptr_t ptr;
-	uint_fast8_t action;
+	int_fast8_t action;
 } wm_data_t;
 
 typedef struct {					// очередь сообщений окнам от WM о взаимодействии с элементами GUI
@@ -215,7 +216,6 @@ typedef struct {
 	uint8_t is_tracking;		  	// получение относительных координат точки перемещения нажатия
 	int16_t vector_move_x;	 	  	// в т.ч. и за границами элемента, при state == PRESSED
 	int16_t vector_move_y;
-	uint8_t timer_1sec_updated;	  	// для периодических обновлений состояния
 	uint8_t win[WIN_GUI_COUNT];		// на экране не более 2х окон, одно из которых - основное на весь экран
 } gui_t;
 

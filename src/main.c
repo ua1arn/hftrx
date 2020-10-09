@@ -19172,7 +19172,7 @@ hamradio_main_step(void)
 				}
 			}
 #if WITHTOUCHGUI && WITHENCODER2
-				gui_check_encoder2(nrotate2);
+			gui_set_encoder2_rotate(nrotate2);
 #endif /* WITHTOUCHGUI && WITHENCODER2 */
 		}
 		break;
@@ -19821,7 +19821,7 @@ void hamradio_get_multilinemenu_block_vals(menu_names_t * vals, uint_fast8_t ind
 	}
 }
 
-const char * hamradio_gui_edit_menu_item(uint_fast8_t index, int_least16_t rotate)
+const char * hamradio_gui_edit_menu_item(uint_fast8_t index, int_fast8_t rotate)
 {
 	const FLASHMEM struct menudef * const mp = & menutable [index];
 	if (rotate != 0 && ismenukind(mp, ITEM_VALUE))

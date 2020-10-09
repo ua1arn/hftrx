@@ -55,13 +55,6 @@ typedef struct {
 	uint8_t press_done;		// событие нажатия от энкодера обработано, можно получать новые данные
 } enc2_t;
 
-#define ENC2_STACK_SIZE	10
-
-typedef struct enc2_stack_tag {
-    int_fast8_t data[ENC2_STACK_SIZE];
-    size_t size;
-} enc2_stack_t;
-
 enum {
 	MENU_OFF,
 	MENU_GROUPS,
