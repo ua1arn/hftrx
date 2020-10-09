@@ -1248,8 +1248,12 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 		usbd_handler_brdy: после инициализации появляется для тех pipe, у которых dir=0 (read direction)
 	*/
 	{
+		USBx->DCPCFG =
+				0x0000;
 		USBx->DCPMAXP =
 				(USB_OTG_MAX_EP0_SIZE << USB_DCPMAXP_MXPS_SHIFT) & USB_DCPMAXP_MXPS;
+		USBx->DCPCTR &= ~ USB_DCPCTR_PID;
+		USBx->DCPCTR = 0;
 	}
 	unsigned bufnumb64 = 0x10;
 #if WITHUSBCDCACM
@@ -1682,7 +1686,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 	}
 	if (hpcd->run_later_ctrl_comp != 0)
 	{
-		USBx->DCPCTR &= USB_DCPCTR_PID;
+		USBx->DCPCTR &= ~ USB_DCPCTR_PID;
 		USBx->DCPCTR |= DEVDRV_USBF_PID_BUF;	// CCPL
 		USBx->DCPCTR |= USB_DCPCTR_CCPL;	// CCPL
 	}
