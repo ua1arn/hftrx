@@ -178,7 +178,6 @@ typedef struct {
 	uint8_t state;
 	uint8_t first_call;				// признак первого вызова для различных инициализаций
 	uint8_t is_close;				// разрешение или запрет вывода кнопки закрытия окна
-	uint8_t is_need_update;			// наличие в окне элементов, состояние которых зависит от базовой системы
 	void (*onVisibleProcess) (void);
 	button_t * bh_ptr;				// указатели на массивы оконных элементов
 	uint8_t bh_count;

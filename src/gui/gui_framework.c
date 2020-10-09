@@ -172,7 +172,7 @@ wm_message_t get_from_wm_queue(window_t * win, ...)
 
 		* va_arg(arg, uint_fast8_t *) = win->queue.data [win->queue.size].type;
 		* va_arg(arg, uintptr_t *) = 	win->queue.data [win->queue.size].ptr;
-		* va_arg(arg, int_fast8_t *) = win->queue.data [win->queue.size].action;
+		* va_arg(arg, int_fast8_t *) =  win->queue.data [win->queue.size].action;
 
 		va_end(arg);
 	}
@@ -185,11 +185,10 @@ void gui_update(void * arg)
 {
 	put_to_wm_queue(get_win(WINDOW_MAIN), WM_MESSAGE_UPDATE);	// главное окно всегда нужно обновлять
 
-	if (check_for_parent_window() != NO_PARENT_WINDOW)		// если открыто второе окно,
+	uint_fast8_t win2 = check_for_parent_window();
+	if (win2 != NO_PARENT_WINDOW)								// если открыто второе окно,
 	{
-		window_t * win2 = get_win(gui.win [1]);
-		if (win2->is_need_update)							// и если оно имеет статус обновляемого,
-			put_to_wm_queue(win2, WM_MESSAGE_UPDATE);			// добавить сообщение на обновление в очередь
+		put_to_wm_queue(get_win(win2), WM_MESSAGE_UPDATE);		// добавить сообщение на обновление в его очередь
 	}
 }
 
