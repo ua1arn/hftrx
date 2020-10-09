@@ -2033,7 +2033,7 @@ uint32_t USB_GetHostSpeed(USB_OTG_GlobalTypeDef *USBx)
 {
 	// 1xx: Reset handshake in progress
 	while (((USBx->DVSTCTR0 & USB_DVSTCTR0_RHST) >> USB_DVSTCTR0_RHST_SHIFT) & 0x04)
-		;
+		dbg_putchar('^');
 
 	switch ((USBx->DVSTCTR0 & USB_DVSTCTR0_RHST) >> USB_DVSTCTR0_RHST_SHIFT)
 	{
@@ -2061,7 +2061,7 @@ uint_fast8_t USB_GetDevSpeed(USB_OTG_GlobalTypeDef *USBx)
 {
 	// 100: Reset handshake in progress
 	while (((USBx->DVSTCTR0 & USB_DVSTCTR0_RHST) >> USB_DVSTCTR0_RHST_SHIFT) == 0x04)
-		;
+		dbg_putchar('^');
 
 	switch ((USBx->DVSTCTR0 & USB_DVSTCTR0_RHST) >> USB_DVSTCTR0_RHST_SHIFT)
 	{
@@ -2871,11 +2871,19 @@ HAL_StatusTypeDef USB_ResetPort(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t status
 	{
 		USBx->DVSTCTR0 = (USBx->DVSTCTR0 & vbits) | USB_DVSTCTR0_USBRST;
 		(void) USBx->DVSTCTR0;
+		// Надо бы дождаться... Но виснем
+//		while ((USBx->SYSSTS0 & USB_SYSSTS0_HTACT) != 0)
+//			;
 		USBx->DVSTCTR0 = (USBx->DVSTCTR0 & vbits) & ~ USB_DVSTCTR0_UACT;
 		(void) USBx->DVSTCTR0;
 	}
 	else
 	{
+//		USBx->SYSCFG0 = (USBx->SYSCFG0 & ~ (USB_SYSCFG_HSE)) |
+//				0 * USB_SYSCFG_HSE |	// HSE
+//				0;
+//		(void) USBx->SYSCFG0;
+
 		USBx->DVSTCTR0 = (USBx->DVSTCTR0 & vbits) | USB_DVSTCTR0_UACT;
 		(void) USBx->DVSTCTR0;
 		USBx->DVSTCTR0 = (USBx->DVSTCTR0 & vbits) & ~ USB_DVSTCTR0_USBRST;
@@ -13264,6 +13272,8 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
 		// Ожидаем пока не завершится процесс выясненеия скорости, на которой может работать device.
 		if (USBH_LL_GetSpeedReady(phost))
 			phost->gState = HOST_DEV_ATTACHED;
+		else
+			dbg_putchar('^');
 		break;
 
 	case HOST_DEV_ATTACHED:
