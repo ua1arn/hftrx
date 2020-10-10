@@ -1841,7 +1841,6 @@ void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 		  		hc->toggle_in ^= 1;
 		  		hc->state = HC_XFRC;
 		  		hc->urb_state  = URB_DONE;
-				USBx->CFIFOCTR = USB_CFIFOCTR_BCLR;	// BCLR
 		  	}
 		  	else
 		  	{
