@@ -99,9 +99,9 @@ usbd_pipe2epaddr(uint_fast8_t pipe)
 	case HARDWARE_USBD_PIPE_ISOC_IN: return USBD_EP_AUDIO_IN;
 #endif /* WITHUSBUAC */
 #if WITHUSBCDCACM
-	case HARDWARE_USBD_PIPE_CDC_OUT: return USBD_EP_CDC_OUT;
-	case HARDWARE_USBD_PIPE_CDC_IN: return USBD_EP_CDC_IN;
-	case HARDWARE_USBD_PIPE_CDC_INT: return USBD_EP_CDC_INT;
+	case HARDWARE_USBD_PIPE_CDC_OUT: return USBD_CDCACM_EP(USBD_EP_CDC_OUT, 0);
+	case HARDWARE_USBD_PIPE_CDC_IN: return USBD_CDCACM_EP(USBD_EP_CDC_IN, 0);
+	case HARDWARE_USBD_PIPE_CDC_INT: return USBD_CDCACM_EP(USBD_EP_CDC_INT, 0);
 
 	case HARDWARE_USBD_PIPE_CDC_OUTb: return USBD_CDCACM_EP(USBD_EP_CDC_OUT, 1);
 	case HARDWARE_USBD_PIPE_CDC_INb: return USBD_CDCACM_EP(USBD_EP_CDC_IN, 1);
@@ -975,7 +975,9 @@ static uint_fast8_t usbd_wait_fifo(
 		unsigned waitcnt
 		)
 {
+	volatile uint16_t * const PIPEnCTR = get_pipectr_reg(USBx, pipe);
 	while (
+			(* PIPEnCTR & USB_DCPCTR_BSTS) == 0 ||
 			(USBx->CFIFOSEL & USB_CFIFOSEL_ISEL_) != (isel << USB_CFIFOSEL_ISEL_SHIFT_) ||
 			(USBx->CFIFOSEL & USB_CFIFOSEL_CURPIPE) != (pipe << USB_CFIFOSEL_CURPIPE_SHIFT) ||
 			(USBx->CFIFOCTR & USB_CFIFOCTR_FRDY) == 0)	// FRDY
@@ -1006,13 +1008,11 @@ static uint_fast8_t USB_ReadPacketNec(PCD_TypeDef * const USBx, uint_fast8_t pip
 		mbw = 0x00;	// MBW 00: 8-bit width
 		break;
 	}
-
 	//PRINTF(PSTR("USB_ReadPacketNec: pipe=%d, data=%p, size=%d\n"), (int) pipe, data, (int) size);
 	USBx->CFIFOSEL =
 		((pipe << USB_CFIFOSEL_CURPIPE_SHIFT) & USB_CFIFOSEL_CURPIPE) |	// CURPIPE 0000: DCP
 		((mbw << USB_CFIFOSEL_MBW_SHIFT) & USB_CFIFOSEL_MBW) |	// MBW 00: 8-bit width
 		0;
-
 	if (usbd_wait_fifo(USBx, pipe, 0, USBD_FRDY_COUNT_READ))
 	{
 		PRINTF(PSTR("USB_ReadPacketNec: usbd_wait_fifo error, pipe=%d, USBx->CFIFOSEL=%08lX\n"), (int) pipe, (unsigned long) USBx->CFIFOSEL);
@@ -2614,7 +2614,7 @@ HAL_StatusTypeDef USB_HC_StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_HCTypeDe
 	        break;
 	      }
 
-	      if ((hc->ep_num & 0x7F) == 0)
+	      if (pipe == 0 && hc->xfer_len >= 8)
 	      {
 	    	  const unsigned devsel = 0x00;
 
@@ -2649,9 +2649,19 @@ HAL_StatusTypeDef USB_HC_StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_HCTypeDe
 				//USBx->DCPCTR |= USB_DCPCTR_SQSET;	// DATA1 as answer
 
 				// влияет
-				// direction of data stage and status stage for control transfers
-				USBx->DCPCFG &= ~ USB_DCPCFG_DIR;	// 0: Data receiving direction
-				//USBx->DCPCFG |= USB_DCPCFG_DIR;	// 1: Data transmitting direction
+				if (hc->xfer_len > 8)
+				{
+					// direction of data stage and status stage for control transfers
+					// 1: Data transmitting direction
+					// 0: Data receiving direction
+					USBx->DCPCFG = USB_DCPCFG_DIR;
+				}
+				else
+				{
+					//USBx->DCPCFG = 0x80; //USB_DCPCFG_SHTNAK;	// Pipe disabled at the end of transfer
+					USBx->DCPCFG = 0x0000;
+				}
+				USB_WritePacketNec(USBx, pipe, NULL, 0);	// ?
 
 				USBx->DCPCTR |= USB_DCPCTR_SUREQ;
 
@@ -2663,7 +2673,7 @@ HAL_StatusTypeDef USB_HC_StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_HCTypeDe
 			  /* Write packet into the Tx FIFO. */
 			  //USB_WritePacket(USBx, hc->xfer_buff, hc->ch_num, hc->xfer_len, 0);
 			  TP();
-			  USB_WritePacketNec(USBx, hc->ch_num, hc->xfer_buff, hc->xfer_len);
+			  USB_WritePacketNec(USBx, pipe, hc->xfer_buff, hc->xfer_len);
 				//hc->xfer_buff += hc->xfer_len;		//
 	      }
 	    }
