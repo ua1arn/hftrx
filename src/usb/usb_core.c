@@ -6659,13 +6659,13 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 #endif /* WITHUSBUAC */
 
 #if WITHUSBCDCACM
-	for (i = offset; offset < WITHUSBCDCACM_N; ++ offset)
+	for (offset = 0; offset < WITHUSBCDCACM_N; ++ offset)
 	{
 		/* полнофункциональное устройство */
 		const uint_fast8_t pipe = USBD_CDCACM_EP(USBD_EP_CDC_IN, offset) & 0x7F;
 		const uint_fast8_t pipeint = USBD_CDCACM_EP(USBD_EP_CDC_INT, offset) & 0x7F;
 		numoutendpoints += 1;
-		if (bigbuff == 0 && i > 0)
+		if (bigbuff == 0 && offset > 0)
 		{
 			// на маленьких контроллерах только первый USB CDC может обмениваться данными
 			USBx->DIEPTXF [pipe - 1] = usbd_makeTXFSIZ(last4dummy, size4dummy);
@@ -8447,10 +8447,6 @@ static HAL_StatusTypeDef PCD_WriteEmptyTxFifo(PCD_HandleTypeDef *hpcd, uint32_t 
 	ASSERT(i < 2);
 	return HAL_OK;
 }
-
-
-#define USB_OTG_CORE_ID_310A          0x4F54310A
-#define USB_OTG_CORE_ID_320A          0x4F54320A
 
 /**
   * @brief  Handle PCD interrupt request.
