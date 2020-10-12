@@ -8090,10 +8090,8 @@ typedef struct
 
 static RAMBIGDTCM LMSData_t lmsData0;
 
-static void hamradio_autonotch_init(void)
+static void hamradio_autonotch_init(LMSData_t * const lmsd)
 {
-	LMSData_t * const lmsd = & lmsData0;
-	// Initialize
 	const float32_t mu = log10f(((5 + 1.0f) / 1500.0f) + 1.0f);
 	//const float32_t mu = 0.0001f;		// UA3REO value
 	arm_lms_norm_init_f32(& lmsd->lms2Norm_instance, AUTONOTCH_NUMTAPS, lmsd->lms2NormCoeff_f32, lmsd->lms2StateF32, mu, FIRBUFSIZE);
@@ -8104,13 +8102,13 @@ static void hamradio_autonotch_init(void)
 }
 
 // TODO: учесть возмодность работы двух каналов приёма
-static void hamradio_autonotch_process(float32_t * notchbuffer)
+static void hamradio_autonotch_process(LMSData_t * const lmsd, float32_t * notchbuffer)
 {
-	LMSData_t * const lmsd = & lmsData0;
-
 	float32_t diag;
 	arm_mean_f32(lmsd->lms2_reference, AUTONOTCH_BUFFER_SIZE, & diag);
-	if (__isnanf(diag))
+	float32_t diag2;
+	arm_mean_f32(lmsd->lms2NormCoeff_f32, AUTONOTCH_NUMTAPS, & diag2);
+	if (__isnanf(diag) || __isinff(diag) || __isnanf(diag2) || __isinff(diag2))
 	{
 		arm_fill_f32(0, lmsd->lms2_reference, AUTONOTCH_BUFFER_SIZE);
 		arm_fill_f32(0, lmsd->lms2NormCoeff_f32, AUTONOTCH_NUMTAPS);
@@ -8163,7 +8161,7 @@ static void processingonebuff(uint_fast8_t pathi, lmsnrstate_t * const nrp, spee
 		arm_fir_f32(& nrp->fir_instance, p, nrp->wire1, FIRBUFSIZE);
 		END_STAMP();
 		if (anotch && pathi == 0)
-			hamradio_autonotch_process(nrp->wire1);
+			hamradio_autonotch_process(& lmsData0, nrp->wire1);
 #if WITHLEAKYLMSANR
 		if (pathi == 0)
 			AudioDriver_LeakyLmsNr(nrp->wire1, nrp->wire1, FIRBUFSIZE, 0);
@@ -8189,7 +8187,7 @@ static void processingonebuff(uint_fast8_t pathi, lmsnrstate_t * const nrp, spee
 		arm_fir_f32(& nrp->fir_instance, p, nrp->wire1, FIRBUFSIZE);
 		END_STAMP();
 		if (anotch && pathi == 0)
-			hamradio_autonotch_process(nrp->wire1);
+			hamradio_autonotch_process(& lmsData0, nrp->wire1);
 		nrp->outsp = nrp->wire1;
 	}
 #endif /* WITHNOSPEEX */
@@ -18548,7 +18546,7 @@ hamradio_initialize(void)
 #if WITHINTEGRATEDDSP	/* в программу включена инициализация и запуск DSP части. */
 	dsp_initialize();		// цифровая обработка подготавливается
 	InitNoiseReduction();
-	hamradio_autonotch_init();
+	hamradio_autonotch_init(& lmsData0);
 #endif /* WITHINTEGRATEDDSP */
 
 #if WITHI2SHW
