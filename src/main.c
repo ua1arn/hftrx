@@ -8083,7 +8083,7 @@ typedef struct
     arm_lms_instance_f32	    lms2_instance;
     float32_t	                lms2StateF32 [AUTONOTCH_STATE_ARRAY_SIZE];
     float32_t	                lms2NormCoeff_f32 [AUTONOTCH_NUMTAPS];
-    float32_t	                lms2_nr_delay [AUTONOTCH_BUFFER_SIZE];
+    float32_t	                lms2_reference [AUTONOTCH_BUFFER_SIZE];
     unsigned 					reference_index_old;
     unsigned 					reference_index_new;
 } LMSData_t;
@@ -8093,20 +8093,32 @@ static RAMBIGDTCM LMSData_t lmsData0;
 static void hamradio_autonotch_init(void)
 {
 	LMSData_t * const lmsd = & lmsData0;
+	// Initialize
 	const float32_t mu = log10f(((5 + 1.0f) / 1500.0f) + 1.0f);
+	//const float32_t mu = 0.0001f;		// UA3REO value
 	arm_lms_norm_init_f32(& lmsd->lms2Norm_instance, AUTONOTCH_NUMTAPS, lmsd->lms2NormCoeff_f32, lmsd->lms2StateF32, mu, FIRBUFSIZE);
-	arm_fill_f32(0, lmsd->lms2_nr_delay, AUTONOTCH_BUFFER_SIZE);
+	arm_fill_f32(0, lmsd->lms2_reference, AUTONOTCH_BUFFER_SIZE);
 	arm_fill_f32(0, lmsd->lms2NormCoeff_f32, AUTONOTCH_NUMTAPS);
 	lmsd->reference_index_old = 0;
-	lmsd->reference_index_new = 0;
+	lmsd->reference_index_new = FIRBUFSIZE;
 }
 
 // TODO: учесть возмодность работы двух каналов приёма
 static void hamradio_autonotch_process(float32_t * notchbuffer)
 {
 	LMSData_t * const lmsd = & lmsData0;
-	arm_copy_f32(notchbuffer, & lmsd->lms2_nr_delay [lmsd->reference_index_new], FIRBUFSIZE);
-	arm_lms_norm_f32(& lmsd->lms2Norm_instance, notchbuffer, & lmsd->lms2_nr_delay [lmsd->reference_index_old], lmsd->errsig2, notchbuffer, FIRBUFSIZE);
+
+	float32_t diag;
+	arm_mean_f32(lmsd->lms2_reference, AUTONOTCH_BUFFER_SIZE, & diag);
+	if (__isnanf(diag))
+	{
+		arm_fill_f32(0, lmsd->lms2_reference, AUTONOTCH_BUFFER_SIZE);
+		arm_fill_f32(0, lmsd->lms2NormCoeff_f32, AUTONOTCH_NUMTAPS);
+		lmsd->reference_index_old = 0;
+		lmsd->reference_index_new = FIRBUFSIZE;
+	}
+	arm_copy_f32(notchbuffer, & lmsd->lms2_reference [lmsd->reference_index_new], FIRBUFSIZE);
+	arm_lms_norm_f32(& lmsd->lms2Norm_instance, notchbuffer, & lmsd->lms2_reference [lmsd->reference_index_old], lmsd->errsig2, notchbuffer, FIRBUFSIZE);
 	lmsd->reference_index_old += FIRBUFSIZE;
 	lmsd->reference_index_new = lmsd->reference_index_old + FIRBUFSIZE;
 	lmsd->reference_index_old %= AUTONOTCH_BUFFER_SIZE;
