@@ -9918,6 +9918,38 @@ static void stm32mp1_pll_initialize(void)
 	RCC->TZCR &= ~ (RCC_TZCR_MCKPROT);
 	//RCC->TZCR &= ~ (RCC_TZCR_TZEN);
 
+	// compensation cell enable
+	if (1)
+	{
+		/* SYSCFG clock enable */
+		RCC->MP_APB3ENSETR = RCC_MC_APB3ENSETR_SYSCFGEN;
+		(void) RCC->MP_APB3ENSETR;
+		RCC->MP_APB3LPENSETR = RCC_MC_APB3LPENSETR_SYSCFGLPEN;
+		(void) RCC->MP_APB3LPENSETR;
+
+		// CSI ON (The CSI oscillator must be enabled and ready (controlled in RCC) before MPU_EN could be set to 1)
+		RCC->OCENSETR = RCC_OCENSETR_CSION;
+		(void) RCC->OCENSETR;
+		while ((RCC->OCRDYR & RCC_OCRDYR_CSIRDY) == 0)
+			;
+
+		SYSCFG->CMPCR = (SYSCFG->CMPCR & SYSCFG_CMPCR_SW_CTRL_Msk) |
+			//(1uL << SYSCFG_CMPCR_SW_CTRL_Pos) |	// 1: IO compensation values come from RANSRC[3:0] and RAPSRC[3:0]
+			(0uL << SYSCFG_CMPCR_SW_CTRL_Pos) |	// 0: IO compensation values come from ANSRC[3:0] and APSRC[3:0]
+			0;
+
+		// IO compoensation cell enable
+		SYSCFG->CMPENSETR = SYSCFG_CMPENSETR_MPU_EN;
+		(void) SYSCFG->CMPENSETR;
+
+		while ((SYSCFG->CMPCR & SYSCFG_CMPCR_READY_Msk) == 0)
+			;
+
+	//	SYSCFG->CMPCR = (SYSCFG->CMPCR & ~ (SYSCFG_CMPCR_SW_CTRL)) |
+	//			ss |
+	//			0;
+	}
+
 	// переключение на HSI на всякий случай перед программированием PLL
 	// HSI ON
 	RCC->OCENSETR = RCC_OCENSETR_HSION;
