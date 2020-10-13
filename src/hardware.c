@@ -9921,6 +9921,12 @@ static void stm32mp1_pll_initialize(void)
 	// compensation cell enable
 	if (1)
 	{
+	//	Sequence to enable IO compensation:
+	//	1. Ensure the CSI oscillator is enabled and ready (in RCC)
+	//	2. Set SYSCFG_CMPENSETR.MCU_EN or MPU_EN=1
+	//	3. Wait SYSCFG_CMPCR.READY = 1
+	//	4. Set SYSCFG_CMPCR.SW_CTRL = 0
+
 		/* SYSCFG clock enable */
 		RCC->MP_APB3ENSETR = RCC_MC_APB3ENSETR_SYSCFGEN;
 		(void) RCC->MP_APB3ENSETR;
@@ -9933,11 +9939,6 @@ static void stm32mp1_pll_initialize(void)
 		while ((RCC->OCRDYR & RCC_OCRDYR_CSIRDY) == 0)
 			;
 
-		SYSCFG->CMPCR = (SYSCFG->CMPCR & SYSCFG_CMPCR_SW_CTRL_Msk) |
-			//(1uL << SYSCFG_CMPCR_SW_CTRL_Pos) |	// 1: IO compensation values come from RANSRC[3:0] and RAPSRC[3:0]
-			(0uL << SYSCFG_CMPCR_SW_CTRL_Pos) |	// 0: IO compensation values come from ANSRC[3:0] and APSRC[3:0]
-			0;
-
 		// IO compoensation cell enable
 		SYSCFG->CMPENSETR = SYSCFG_CMPENSETR_MPU_EN;
 		(void) SYSCFG->CMPENSETR;
@@ -9945,9 +9946,10 @@ static void stm32mp1_pll_initialize(void)
 		while ((SYSCFG->CMPCR & SYSCFG_CMPCR_READY_Msk) == 0)
 			;
 
-	//	SYSCFG->CMPCR = (SYSCFG->CMPCR & ~ (SYSCFG_CMPCR_SW_CTRL)) |
-	//			ss |
-	//			0;
+		SYSCFG->CMPCR = (SYSCFG->CMPCR & SYSCFG_CMPCR_SW_CTRL_Msk) |
+			//(1uL << SYSCFG_CMPCR_SW_CTRL_Pos) |	// 1: IO compensation values come from RANSRC[3:0] and RAPSRC[3:0]
+			(0uL << SYSCFG_CMPCR_SW_CTRL_Pos) |	// 0: IO compensation values come from ANSRC[3:0] and APSRC[3:0]
+			0;
 	}
 
 	// переключение на HSI на всякий случай перед программированием PLL
