@@ -3790,38 +3790,50 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 		RCC->MP_APB5LPENSETR = RCC_MC_APB5LPENSETR_TZC2LPEN;
 		(void) RCC->MP_APB5LPENSETR;
 
-		const uint_fast8_t lastfilrer = (TZC->BUILD_CONFIG >> 24) & 0x03;
-		const uint_fast32_t mask = (1uL << (lastfilrer + 1)) - 1;
-		TZC->GATE_KEEPER |= mask;	// Gate open request
+        // 0x01001F08
+		// no_of_filters=1 - Two filter units.
+		// address_width=31 - 32 bits.
+		// no_of_regions=8 - Nine regions.
+        PRINTF("TZC->BUILD_CONFIG=%08lX\n", TZC->BUILD_CONFIG);
+        PRINTF("TZC->ACTION=%08lX\n", TZC->ACTION);
+        PRINTF("TZC->GATE_KEEPER=%08lX\n", TZC->GATE_KEEPER);
+
+		TZC->ACTION = 0x00;
+		(void) TZC->ACTION;
+		const uint_fast8_t lastfilter = (TZC->BUILD_CONFIG >> 24) & 0x03;
+		const uint_fast32_t mask = (1uL << (lastfilter + 1)) - 1;
+		TZC->GATE_KEEPER = mask;	// Gate open request
 		(void) TZC->GATE_KEEPER;
+		// Check open status
 		while (((TZC->GATE_KEEPER >> 16) & mask) != mask)
 			;
 		TZC->REG_ATTRIBUTESO |= 0xC0000000;	// All (read and write) permitted
 		(void) TZC->REG_ATTRIBUTESO;
-		TZC->REG_ID_ACCESSO = 0xFFFFFFFF; // permits read and write non-secure to the region for all NSAIDs
+		TZC->REG_ID_ACCESSO = 0xFFFFFFFF; // NSAID_WR_EN[15:0], NSAID_RD_EN[15:0] - permits read and write non-secure to the region for all NSAIDs
 		(void) TZC->REG_ID_ACCESSO;
+        //PRINTF("TZC->REG_ID_ACCESSO=%08lX\n", TZC->REG_ID_ACCESSO);
+        //PRINTF("TZC->REG_ATTRIBUTESO=%08lX\n", TZC->REG_ATTRIBUTESO);
 	}
 	if (1)
 	{
-        // 0x01001F08
-        //PRINTF("TZC->BUILD_CONFIG=%08lX\n", TZC->BUILD_CONFIG);
-        //PRINTF("TZC->ACTION=%08lX\n", TZC->ACTION);
 
-        const uint_fast8_t lastregion = TZC->BUILD_CONFIG & 0x0f;
+        const uint_fast8_t lastregion = TZC->BUILD_CONFIG & 0x1f;
         uint_fast8_t i;
         for (i = 1; i <= lastregion; ++ i)
         {
             volatile uint32_t * const REG_ATTRIBUTESx = & TZC->REG_ATTRIBUTESO + (i * 8);
-            //volatile uint32_t * const REG_BASE_LOWx = & TZC->REG_BASE_LOWO + (i * 8);
-            //volatile uint32_t * const REG_BASE_HIGHx = & TZC->REG_BASE_HIGHO + (i * 8);
-            //volatile uint32_t * const REG_TOP_LOWx = & TZC->REG_TOP_LOWO + (i * 8);
-            //volatile uint32_t * const REG_TOP_HIGHx = & TZC->REG_TOP_HIGHO + (i * 8);
+            volatile uint32_t * const REG_ID_ACCESSx = & TZC->REG_ID_ACCESSO + (i * 8);
+            volatile uint32_t * const REG_BASE_LOWx = & TZC->REG_BASE_LOWO + (i * 8);
+            volatile uint32_t * const REG_BASE_HIGHx = & TZC->REG_BASE_HIGHO + (i * 8);
+            volatile uint32_t * const REG_TOP_LOWx = & TZC->REG_TOP_LOWO + (i * 8);
+            volatile uint32_t * const REG_TOP_HIGHx = & TZC->REG_TOP_HIGHO + (i * 8);
 
             //PRINTF("TZC->REG_BASE_LOW%d=%08lX ", i, * REG_BASE_LOWx);
             //PRINTF("REG_BASE_HIGH%d=%08lX ", i, * REG_BASE_HIGHx);
             //PRINTF("REG_TOP_LOW%d=%08lX ", i, * REG_TOP_LOWx);
             //PRINTF("REG_TOP_HIGH%d=%08lX ", i, * REG_TOP_HIGHx);
             //PRINTF("REG_ATTRIBUTES%d=%08lX\n", i, * REG_ATTRIBUTESx);
+            //PRINTF("REG_ID_ACCESS%d=%08lX\n", i, * REG_ID_ACCESSx);
 
              * REG_ATTRIBUTESx &= ~ 0x03uL;
 
