@@ -81,7 +81,6 @@ void gui_encoder2_menu(enc2_menu_t * enc2_menu);
 void gui_WM_walktrough(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx);
 void gui_initialize(void);
 void gui_set_encoder2_rotate(int_fast8_t rotate);
-void gui_set_encoder2_state(uint_fast8_t code);
 void gui_put_keyb_code(uint_fast8_t kbch);
 void gui_uif_editmenu(const char * name, uint_fast16_t menupos, uint_fast8_t exitkey);
 void gui_open_sys_menu(void);

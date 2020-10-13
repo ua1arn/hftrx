@@ -17526,12 +17526,12 @@ process_key_menuset_common(uint_fast8_t kbch)
 #if WITHENCODER2
 	#if WITHTOUCHGUI
 		case KBD_ENC2_PRESS:
-			gui_set_encoder2_state(KBD_ENC2_PRESS);
+			gui_put_keyb_code(KBD_ENC2_PRESS);
 			if (! encoder2_redirect)
 				uif_encoder2_press();
 			return 0;
 		case KBD_ENC2_HOLD:
-			gui_set_encoder2_state(KBD_ENC2_HOLD);
+			gui_put_keyb_code(KBD_ENC2_HOLD);
 			if (! encoder2_redirect)
 				uif_encoder2_hold();
 			return 0;

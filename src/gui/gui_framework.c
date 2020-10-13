@@ -43,7 +43,7 @@ static btn_bg_t btn_bg [] = {
 };
 enum { BG_COUNT = ARRAY_SIZE(btn_bg) };
 
-static gui_t gui = { 0, 0, KBD_CODE_MAX, TYPE_DUMMY, NULL, CANCELLED, 0, 0, 0, 0, 0, };
+static gui_t gui = { 0, 0, TYPE_DUMMY, NULL, CANCELLED, 0, 0, 0, 0, 0, };
 static gui_element_t gui_elements [GUI_ELEMENTS_ARRAY_SIZE];
 static uint_fast8_t gui_element_count = 0;
 static button_t close_button = { 0, 0, 0, 0, CANCELLED, BUTTON_NON_LOCKED, 0, NO_PARENT_WINDOW, NON_VISIBLE, UINTPTR_MAX, "btn_close", "", };
@@ -60,9 +60,10 @@ void gui_set_encoder2_rotate (int_fast8_t rotate)
 	}
 }
 
-// WM_MESSAGE_ACTION: element_type type, uintptr_t element_ptr, uint_fast8_t action
+// WM_MESSAGE_ACTION: 		element_type type, uintptr_t element_ptr, uint_fast8_t action
 // WM_MESSAGE_ENC2_ROTATE : int_fast8_t rotate
-// WM_MESSAGE_UPDATE: nothing
+// WM_MESSAGE_KEYB_CODE:	int_fast8_t keyb_code
+// WM_MESSAGE_UPDATE: 		nothing
 uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 {
 	if (win->queue.size >= WM_MAX_QUEUE_SIZE)
@@ -80,9 +81,9 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 		win->queue.data [win->queue.size].type = va_arg(arg, uint_fast8_t);
 		win->queue.data [win->queue.size].ptr = va_arg(arg, uintptr_t);
 		win->queue.data [win->queue.size].action = va_arg(arg, int_fast8_t);
+		win->queue.size ++;
 
 		va_end(arg);
-		win->queue.size ++;
 
 		return 1;
 		break;
@@ -93,7 +94,12 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 		int_fast8_t r = va_arg(arg, int_fast8_t);
 		va_end(arg);
 
-		if (! win->queue.size)		// если очередь пустая, добавить сообщение
+		uint_fast8_t ind = win->queue.size ? (win->queue.size - 1) : 0;
+		if (win->queue.data [ind].message == WM_MESSAGE_ENC2_ROTATE)
+		{
+			win->queue.data [ind].action += r;
+		}
+		else
 		{
 			win->queue.data [win->queue.size].message = WM_MESSAGE_ENC2_ROTATE;
 			win->queue.data [win->queue.size].type = UINT8_MAX;
@@ -101,27 +107,21 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 			win->queue.data [win->queue.size].action = r;
 			win->queue.size ++;
 		}
-		else						// иначе попытаться найти предыдущее собщение и объединить старое и новое с суммированием
-		{
-			uint_fast8_t prev_ind = win->queue.size - 1;
-			while ((win->queue.data [prev_ind --].message != WM_MESSAGE_ENC2_ROTATE) || prev_ind == 0);
 
-			if (prev_ind)
-			{
-				win->queue.data [prev_ind + 1].message = WM_MESSAGE_ENC2_ROTATE;
-				win->queue.data [prev_ind + 1].type = UINT8_MAX;
-				win->queue.data [prev_ind + 1].ptr = UINTPTR_MAX;
-				win->queue.data [prev_ind + 1].action += r;
-			}
-			else
-			{
-				win->queue.data [win->queue.size].message = WM_MESSAGE_ENC2_ROTATE;
-				win->queue.data [win->queue.size].type = UINT8_MAX;
-				win->queue.data [win->queue.size].ptr = UINTPTR_MAX;
-				win->queue.data [win->queue.size].action = r;
-				win->queue.size ++;
-			}
-		}
+		return 1;
+		break;
+
+	case WM_MESSAGE_KEYB_CODE:
+
+		va_start(arg, message);
+
+		win->queue.data [win->queue.size].message = WM_MESSAGE_KEYB_CODE;
+		win->queue.data [win->queue.size].type = UINT8_MAX;
+		win->queue.data [win->queue.size].ptr = UINTPTR_MAX;
+		win->queue.data [win->queue.size].action = va_arg(arg, int_fast8_t);
+		win->queue.size ++;
+
+		va_end(arg);
 
 		return 1;
 		break;
@@ -134,7 +134,6 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 			win->queue.data [win->queue.size].type = UINT8_MAX;
 			win->queue.data [win->queue.size].ptr = UINTPTR_MAX;
 			win->queue.data [win->queue.size].action = INT8_MAX;
-
 			win->queue.size ++;
 		}
 
@@ -150,12 +149,6 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 	PRINTF("put_to_wm_queue: no valid type of messages found\n");
 	ASSERT(0);
 	return 0;
-}
-
-
-void clean_wm_stack(window_t * win)
-{
-	win->queue.size = 0;
 }
 
 wm_message_t get_from_wm_queue(window_t * win, ...)
@@ -177,7 +170,14 @@ wm_message_t get_from_wm_queue(window_t * win, ...)
 		va_end(arg);
 	}
 
-	return win->queue.data [win->queue.size].message;
+	wm_message_t m = win->queue.data [win->queue.size].message;
+
+	win->queue.data [win->queue.size].message = 0;
+	win->queue.data [win->queue.size].type = 0;
+	win->queue.data [win->queue.size].ptr = 0;
+	win->queue.data [win->queue.size].action = 0;
+
+	return m;
 }
 
 /* Запрос на обновление состояния элементов GUI */
@@ -603,21 +603,16 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 	ASSERT(win->y1 + win->h < WITHGUIMAXY);
 
 	elements_state(win);
-	clean_wm_stack(win);	// временная мера, пока все окна не перейдут на использование буфера сообщений от WM
 }
 
 /* Передать менеджеру GUI код нажатой кнопки на клавиатуре */
 void gui_put_keyb_code (uint_fast8_t kbch)
 {
-	gui.kbd_code = gui.kbd_code == KBD_CODE_MAX ? kbch : gui.kbd_code;
-}
-
-/* Получить переданный код аппаратной кнопки */
-uint_fast8_t get_gui_keyb_code(void)
-{
-	uint_fast8_t code = gui.kbd_code;
-	gui.kbd_code = KBD_CODE_MAX;
-	return code;
+	// перенаправить код нажатой аппаратной кнопки в активное окно
+	if (check_for_parent_window() == NO_PARENT_WINDOW)
+		put_to_wm_queue(get_win(WINDOW_MAIN), WM_MESSAGE_KEYB_CODE, kbch);
+	else
+		put_to_wm_queue(get_win(gui.win [1]), WM_MESSAGE_KEYB_CODE, kbch);
 }
 
 /* Удаление пробелов в конце строки */

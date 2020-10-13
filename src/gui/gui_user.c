@@ -78,7 +78,6 @@ static window_t windows [] = {
 };
 
 static enc2_menu_t gui_enc2_menu = { "", "", 0, 0, };
-static enc2_t encoder2 = { 0, 0, 1, };
 static menu_by_name_t menu_uif;
 
 /* Возврат ссылки на окно */
@@ -1353,13 +1352,14 @@ static void window_af_process(void)
 		for(uint_fast8_t i = 0; i < win->lh_count; i ++)
 			win->lh_ptr [i].color = COLORMAIN_WHITE;
 
+		ASSERT(bp_t.select < win->lh_count);
 		win->lh_ptr [bp_t.select].color = COLORMAIN_YELLOW;
 
-		uint_fast8_t val_low = hamradio_get_low_bp(bp_t.select == TYPE_BP_LOW ? bp_t.change * 5 : 0);
-		local_snprintf_P(lbl_low->text, ARRAY_SIZE(lbl_low->text), PSTR("%s: %4d "), str_low, val_low * 10);
+		uint_fast8_t val_low = hamradio_get_low_bp(bp_t.select == TYPE_BP_LOW ? (bp_t.change * 5) : 0);
+		local_snprintf_P(lbl_low->text, ARRAY_SIZE(lbl_low->text), PSTR("%s: %4d"), str_low, val_low * 10);
 
 		uint_fast8_t val_high = hamradio_get_high_bp(bp_t.select == TYPE_BP_HIGH ? bp_t.change : 0) * (bp_type ? 100 : 10);
-		local_snprintf_P(lbl_high->text, ARRAY_SIZE(lbl_high->text), PSTR("%s: %4d "), str_high, val_high);
+		local_snprintf_P(lbl_high->text, ARRAY_SIZE(lbl_high->text), PSTR("%s: %4d"), str_high, val_high);
 
 		int16_t shift = hamradio_if_shift(bp_t.select == TYPE_IF_SHIFT ? bp_t.change : 0);
 		if (shift)
@@ -2946,7 +2946,7 @@ static void window_menu_process(void)
 	int_fast8_t move_x = 0, move_y = 0, rotate = 0;
 	static label_t * selected_label = NULL;
 	static uint_fast8_t menu_label_touched = 0;
-	static uint_fast8_t menu_level;
+	static uint_fast8_t menu_level, enc2_code = KBD_CODE_MAX;
 	static menu_t menu [MENU_COUNT];
 
 	if (win->first_call)
@@ -3141,6 +3141,11 @@ static void window_menu_process(void)
 		rotate = action;
 		break;
 
+	case WM_MESSAGE_KEYB_CODE:
+
+		enc2_code = action;
+		break;
+
 	case WM_MESSAGE_UPDATE:
 	case WM_NO_MESSAGE:
 	default:
@@ -3194,17 +3199,17 @@ static void window_menu_process(void)
 		reset_tracking();
 	}
 
-	if (! encoder2.press_done || menu_label_touched || menu_is_scrolling)
+	if (enc2_code != KBD_CODE_MAX || menu_label_touched || menu_is_scrolling)
 	{
 		// выход из режима редактирования параметра  - краткое или длинное нажатие на энкодер
-		if (encoder2.press && menu_level == MENU_VALS)
+		if (enc2_code == KBD_ENC2_PRESS && menu_level == MENU_VALS)
 		{
 			menu_level = MENU_PARAMS;
-			encoder2.press = 0;
+			enc2_code = KBD_CODE_MAX;
 		}
-		if (encoder2.press)
+		if (enc2_code == KBD_ENC2_PRESS)
 			menu_level = ++menu_level > MENU_VALS ? MENU_VALS : menu_level;
-		if (encoder2.hold)
+		if (enc2_code == KBD_ENC2_HOLD)
 		{
 			menu_level = --menu_level == MENU_OFF ? MENU_OFF : menu_level;
 			if (menu_level == MENU_GROUPS)
@@ -3278,9 +3283,7 @@ static void window_menu_process(void)
 			}
 		}
 
-		encoder2.press = 0;
-		encoder2.hold = 0;
-		encoder2.press_done = 1;
+		enc2_code = KBD_CODE_MAX;
 	}
 
 	if (menu_level == MENU_OFF)
@@ -3583,6 +3586,18 @@ static void window_uif_process(void)
 		rotate = action;
 		break;
 
+	case WM_MESSAGE_KEYB_CODE:
+
+		if (action == menu_uif.exitkey)
+		{
+			hamradio_disable_keyboard_redirect();
+			close_window(DONT_OPEN_PARENT_WINDOW);
+			footer_buttons_state(CANCELLED);
+			return;
+		}
+
+		break;
+
 	case WM_MESSAGE_UPDATE:
 	case WM_NO_MESSAGE:
 	default:
@@ -3627,30 +3642,9 @@ static void window_uif_process(void)
 		reinit = 1;
 		gui_update(NULL);
 	}
-
-	uint_fast8_t keyb_code = get_gui_keyb_code();
-	if (keyb_code != KBD_CODE_MAX)
-	{
-		if (keyb_code == menu_uif.exitkey)
-		{
-			hamradio_disable_keyboard_redirect();
-			close_window(DONT_OPEN_PARENT_WINDOW);
-			footer_buttons_state(CANCELLED);
-			return;
-		}
-	}
 }
 
 // *********************************************************************************************************************************************************************
-
-void gui_set_encoder2_state (uint_fast8_t code)
-{
-	if (code == KBD_ENC2_PRESS)
-		encoder2.press = 1;
-	if (code == KBD_ENC2_HOLD)
-		encoder2.hold = 1;
-	encoder2.press_done = 0;
-}
 
 void gui_encoder2_menu (enc2_menu_t * enc2_menu)
 {

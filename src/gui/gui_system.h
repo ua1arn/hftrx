@@ -25,11 +25,9 @@ const char * remove_start_line_spaces(const char * str);
 void reset_tracking(void);
 uint_fast8_t check_for_parent_window(void);
 uint_fast8_t get_selected_element_pos(void);
-uint_fast8_t get_gui_keyb_code(void);
 void get_gui_tracking(int_fast8_t * x, int_fast8_t * y);
 
 uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...);
-void clean_wm_stack(window_t * win);
 wm_message_t get_from_wm_queue(window_t * win, ...);
 
 #endif /* WITHTOUCHGUI */

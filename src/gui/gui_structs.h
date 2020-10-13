@@ -151,7 +151,8 @@ typedef enum {
 	WM_NO_MESSAGE,
 	WM_MESSAGE_UPDATE,				// запрос на обновление состояния элементов GUI в зависимости от состояния базовой системы
 	WM_MESSAGE_ACTION,				// необходима реакция на действия с элементами
-	WM_MESSAGE_ENC2_ROTATE			// необходима обработка результата вращения 2-го энкодера
+	WM_MESSAGE_ENC2_ROTATE,			// необходима обработка результата вращения 2-го энкодера
+	WM_MESSAGE_KEYB_CODE			// необходима обработка переданного кода аппаратной кнопки
 } wm_message_t;
 
 typedef struct {
@@ -206,7 +207,6 @@ typedef struct {
 typedef struct {
 	uint16_t last_pressed_x; 	  	// последняя точка касания экрана
 	uint16_t last_pressed_y;
-	uint8_t kbd_code;
 	element_type_t selected_type; 	// тип последнего выбранного элемента
 	gui_element_t * selected_link;	// ссылка на выбранный элемент
 	uint8_t state;				  	// последнее состояние
