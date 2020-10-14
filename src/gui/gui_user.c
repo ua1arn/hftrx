@@ -277,7 +277,6 @@ static void gui_main_process(void)
 		break;
 
 	default:
-	case WM_NO_MESSAGE:
 
 		break;
 	}
@@ -551,7 +550,7 @@ static void window_memory_process(void)
 			if (IS_BUTTON_PRESS)
 			{
 				button_t * bh = (button_t *) ptr;
-				uint_fast8_t cell_id = get_selected_element_pos();
+				uint_fast8_t cell_id = get_element_index(win, TYPE_BUTTON, bh);
 
 				if (bh->payload)
 				{
@@ -564,7 +563,7 @@ static void window_memory_process(void)
 			else if (IS_BUTTON_LONG_PRESS)
 			{
 				button_t * bh = (button_t *) ptr;
-				uint_fast8_t cell_id = get_selected_element_pos();
+				uint_fast8_t cell_id = get_element_index(win, TYPE_BUTTON, bh);
 
 				if (bh->payload)
 				{
@@ -584,9 +583,7 @@ static void window_memory_process(void)
 
 		break;
 
-			case WM_MESSAGE_UPDATE:
-			case WM_NO_MESSAGE:
-			default:
+	default:
 
 		break;
 	}
@@ -722,8 +719,6 @@ static void window_bands_process(void)
 		}
 		break;
 
-	case WM_MESSAGE_UPDATE:
-	case WM_NO_MESSAGE:
 	default:
 
 		break;
@@ -833,8 +828,6 @@ static void window_options_process(void)
 		}
 		break;
 
-	case WM_MESSAGE_UPDATE:
-	case WM_NO_MESSAGE:
 	default:
 
 		break;
@@ -1019,7 +1012,6 @@ static void window_display_process(void)
 		break;
 
 	default:
-	case WM_NO_MESSAGE:
 
 		break;
 	}
@@ -1096,8 +1088,6 @@ static void window_utilites_process(void)
 		}
 		break;
 
-	case WM_MESSAGE_UPDATE:
-	case WM_NO_MESSAGE:
 	default:
 
 		break;
@@ -1174,8 +1164,6 @@ static void window_mode_process(void)
 		}
 		break;
 
-	case WM_MESSAGE_UPDATE:
-	case WM_NO_MESSAGE:
 	default:
 
 		break;
@@ -1326,7 +1314,6 @@ static void window_af_process(void)
 		bp_t.updated = 1;
 		break;
 
-	case WM_NO_MESSAGE:
 	default:
 
 		break;
@@ -1463,8 +1450,6 @@ static void window_freq_process (void)
 		}
 		break;
 
-	case WM_MESSAGE_UPDATE:
-	case WM_NO_MESSAGE:
 	default:
 
 		break;
@@ -1650,8 +1635,6 @@ static void window_swrscan_process(void)
 		}
 		break;
 
-	case WM_MESSAGE_UPDATE:
-	case WM_NO_MESSAGE:
 	default:
 
 		break;
@@ -1817,8 +1800,6 @@ static void window_tx_process(void)
 		}
 		break;
 
-	case WM_MESSAGE_UPDATE:
-	case WM_NO_MESSAGE:
 	default:
 
 		break;
@@ -2025,8 +2006,6 @@ static void window_tx_vox_process(void)
 		}
 		break;
 
-	case WM_MESSAGE_UPDATE:
-	case WM_NO_MESSAGE:
 	default:
 
 		break;
@@ -2158,8 +2137,6 @@ static void window_tx_power_process(void)
 		}
 		break;
 
-	case WM_MESSAGE_UPDATE:
-	case WM_NO_MESSAGE:
 	default:
 
 		break;
@@ -2279,8 +2256,6 @@ static void window_audiosettings_process(void)
 		}
 		break;
 
-	case WM_MESSAGE_UPDATE:
-	case WM_NO_MESSAGE:
 	default:
 
 		break;
@@ -2451,8 +2426,6 @@ static void window_ap_reverb_process(void)
 		}
 		break;
 
-	case WM_MESSAGE_UPDATE:
-	case WM_NO_MESSAGE:
 	default:
 
 		break;
@@ -2584,7 +2557,7 @@ static void window_ap_mic_eq_process(void)
 		else if (IS_SLIDER_MOVE)
 		{
 			slider_t * sh = (slider_t *) ptr;
-			uint_fast8_t id = get_selected_element_pos();
+			uint_fast8_t id = get_element_index(win, TYPE_SLIDER, sh);
 
 			hamradio_set_gmikeequalizerparams(id, normalize(sh->value, 100, 0, eq_limit));
 
@@ -2595,8 +2568,6 @@ static void window_ap_mic_eq_process(void)
 		}
 		break;
 
-	case WM_MESSAGE_UPDATE:
-	case WM_NO_MESSAGE:
 	default:
 
 		break;
@@ -2833,8 +2804,6 @@ static void window_ap_mic_process(void)
 		}
 		break;
 
-	case WM_MESSAGE_UPDATE:
-	case WM_NO_MESSAGE:
 	default:
 
 		break;
@@ -2899,7 +2868,7 @@ static void window_ap_mic_prof_process(void)
 		if (IS_BUTTON_PRESS)
 		{
 			button_t * bh = (button_t *) ptr;
-			uint_fast8_t profile_id = get_selected_element_pos();
+			uint_fast8_t profile_id = get_element_index(win, TYPE_BUTTON, bh);
 			if (bh->payload)
 			{
 				hamradio_load_mic_profile(profile_id, 1);
@@ -2911,7 +2880,7 @@ static void window_ap_mic_prof_process(void)
 		else if (IS_BUTTON_LONG_PRESS)
 		{
 			button_t * bh = (button_t *) ptr;
-			uint_fast8_t profile_id = get_selected_element_pos();
+			uint_fast8_t profile_id = get_element_index(win, TYPE_BUTTON, bh);
 			if (bh->payload)
 			{
 				hamradio_clean_mic_profile(profile_id);
@@ -2927,8 +2896,6 @@ static void window_ap_mic_prof_process(void)
 		}
 		break;
 
-	case WM_MESSAGE_UPDATE:
-	case WM_NO_MESSAGE:
 	default:
 
 		break;
@@ -3114,19 +3081,19 @@ static void window_menu_process(void)
 			selected_label = (label_t *) ptr;
 			if (strcmp(selected_label->name, "lbl_group") == 0)
 			{
-				menu [MENU_GROUPS].selected_label = get_selected_element_pos() % (menu [MENU_GROUPS].num_rows + 1);
+				menu [MENU_GROUPS].selected_label = get_element_index(win, TYPE_LABEL, selected_label) % (menu [MENU_GROUPS].num_rows + 1);
 				menu_label_touched = 1;
 				menu_level = MENU_GROUPS;
 			}
 			else if (strcmp(selected_label->name, "lbl_params") == 0)
 			{
-				menu [MENU_PARAMS].selected_label = get_selected_element_pos() % (menu [MENU_GROUPS].num_rows + 1);
+				menu [MENU_PARAMS].selected_label = get_element_index(win, TYPE_LABEL, selected_label) % (menu [MENU_GROUPS].num_rows + 1);
 				menu_label_touched = 1;
 				menu_level = MENU_PARAMS;
 			}
 			else if (strcmp(selected_label->name, "lbl_vals") == 0)
 			{
-				menu [MENU_VALS].selected_label = get_selected_element_pos() % (menu [MENU_GROUPS].num_rows + 1);
+				menu [MENU_VALS].selected_label = get_element_index(win, TYPE_LABEL, selected_label) % (menu [MENU_GROUPS].num_rows + 1);
 				menu [MENU_PARAMS].selected_label = menu [MENU_VALS].selected_label;
 				menu_label_touched = 1;
 				menu_level = MENU_VALS;
@@ -3146,8 +3113,6 @@ static void window_menu_process(void)
 		enc2_code = action;
 		break;
 
-	case WM_MESSAGE_UPDATE:
-	case WM_NO_MESSAGE:
 	default:
 
 		break;
@@ -3485,7 +3450,6 @@ static void window_receive_process(void)
 		update = 1;
 		break;
 
-	case WM_NO_MESSAGE:
 	default:
 
 		break;
@@ -3598,8 +3562,6 @@ static void window_uif_process(void)
 
 		break;
 
-	case WM_MESSAGE_UPDATE:
-	case WM_NO_MESSAGE:
 	default:
 
 		break;
