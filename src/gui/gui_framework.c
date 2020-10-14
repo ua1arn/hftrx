@@ -32,6 +32,7 @@
 static void update_gui_elements_list(void);
 window_t * get_win(uint8_t window_id);
 void close_window(uint_fast8_t parent);
+void open_window(window_t * win);
 void close_all_windows(void);
 uint_fast8_t check_for_parent_window(void);
 
@@ -94,9 +95,9 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 		int_fast8_t r = va_arg(arg, int_fast8_t);
 		va_end(arg);
 
-		uint_fast8_t ind = win->queue.size ? (win->queue.size - 1) : 0;
-		if (win->queue.data [ind].message == WM_MESSAGE_ENC2_ROTATE)
-		{
+		uint_fast8_t ind = win->queue.size ? (win->queue.size - 1) : 0;				// если первое в очереди сообщение - WM_MESSAGE_ENC2_ROTATE,
+		if (win->queue.data [ind].message == WM_MESSAGE_ENC2_ROTATE)				// просуммировать текущее и новое значения поворота,
+		{																			// иначе добавить новое сообщение
 			win->queue.data [ind].action += r;
 		}
 		else
@@ -172,7 +173,7 @@ wm_message_t get_from_wm_queue(window_t * win, ...)
 
 	wm_message_t m = win->queue.data [win->queue.size].message;
 
-	win->queue.data [win->queue.size].message = 0;
+	win->queue.data [win->queue.size].message = 0;		// очистить текущую запись
 	win->queue.data [win->queue.size].type = 0;
 	win->queue.data [win->queue.size].ptr = 0;
 	win->queue.data [win->queue.size].action = 0;
@@ -483,11 +484,7 @@ void close_window(uint_fast8_t parent_action) // 0 - не открывать par
 
 		if (win->parent_id != NO_PARENT_WINDOW && parent_action)	// При закрытии child window открыть parent window, если есть и если разрешено
 		{
-			window_t * pwin = get_win(win->parent_id);
-			pwin->state = VISIBLE;
-			gui.win [1] = pwin->window_id;
-			free_win_ptr(pwin);
-			pwin->first_call = 1;
+			open_window(get_win(win->parent_id));
 		}
 		gui_user_actions_after_close_window();
 	}
@@ -496,15 +493,13 @@ void close_window(uint_fast8_t parent_action) // 0 - не открывать par
 /* Открыть окно */
 void open_window(window_t * win)
 {
-	win->state = VISIBLE;
-	win->first_call = 1;
 	if (win->parent_id != NO_PARENT_WINDOW && gui.win [1] == win->parent_id)	// Если открыто parent window, закрыть его и оставить child window
 	{
-		window_t * pwin = get_win(win->parent_id);
-		pwin->state = NON_VISIBLE;
-		elements_state(pwin);
-		free_win_ptr(pwin);
+		close_window(0);
 	}
+
+	win->state = VISIBLE;
+	win->first_call = 1;
 	gui.win [1] = win->window_id;
 }
 
@@ -515,10 +510,10 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 	uint_fast8_t edge_step = 20;
 	uint_fast8_t title_length = strlen(win->name) * SMALLCHARW;
 	uint_fast16_t xmax = 0, ymax = 0;
-	va_list arg;
 
 	if (mode)					// WINDOW_POSITION_MANUAL
 	{
+		va_list arg;
 		va_start(arg, mode);
 		xmax = va_arg(arg, uint_fast16_t);
 		ymax = va_arg(arg, uint_fast16_t);
@@ -907,10 +902,10 @@ static void update_gui_elements_list(void)
 		if (p->type == TYPE_BUTTON || p->type == TYPE_CLOSE_BUTTON)
 		{
 			button_t * bh = (button_t *) p->link;
-			p->x1 = bh->x1;
-			p->x2 = bh->x1 + bh->w;
-			p->y1 = bh->y1;
-			p->y2 = bh->y1 + bh->h;
+			p->x1 = (bh->x1 - touch_area_enlarge) < 0 ? 0 : (bh->x1 - touch_area_enlarge);
+			p->x2 = (bh->x1 + bh->w + touch_area_enlarge) > WITHGUIMAXX ? WITHGUIMAXX : (bh->x1 + bh->w + touch_area_enlarge);
+			p->y1 = (bh->y1 - touch_area_enlarge) < 0 ? 0 : (bh->y1 - touch_area_enlarge);
+			p->y2 = (bh->y1 + bh->h + touch_area_enlarge) > WITHGUIMAXY ? WITHGUIMAXY : (bh->y1 + bh->h + touch_area_enlarge);
 			p->state = bh->state;
 			p->visible = bh->visible;
 			p->is_trackable = 0;
@@ -919,10 +914,10 @@ static void update_gui_elements_list(void)
 		else if (p->type == TYPE_LABEL)
 		{
 			label_t * lh = (label_t *) p->link;
-			p->x1 = lh->x;
-			p->x2 = lh->x + get_label_width(lh);
-			p->y1 = lh->y - get_label_height(lh);
-			p->y2 = lh->y + get_label_height(lh) * 2;
+			p->x1 = (lh->x - touch_area_enlarge) < 0 ? 0 : (lh->x - touch_area_enlarge);
+			p->x2 = (lh->x + get_label_width(lh) + touch_area_enlarge) > WITHGUIMAXX ? WITHGUIMAXX : (lh->x + get_label_width(lh) + touch_area_enlarge);
+			p->y1 = (lh->y - get_label_height(lh) - touch_area_enlarge) < 0 ? 0 : (lh->y - get_label_height(lh) - touch_area_enlarge);
+			p->y2 = (lh->y + get_label_height(lh) * 2 + touch_area_enlarge) > WITHGUIMAXY ? WITHGUIMAXY : (lh->y + get_label_height(lh) * 2 + touch_area_enlarge);
 			p->state = lh->state;
 			p->visible = lh->visible;
 			p->is_trackable = lh->is_trackable;
@@ -931,10 +926,10 @@ static void update_gui_elements_list(void)
 		else if (p->type == TYPE_SLIDER)
 		{
 			slider_t * sh = (slider_t *) p->link;
-			p->x1 = sh->x1_p;
-			p->x2 = sh->x2_p;
-			p->y1 = sh->y1_p;
-			p->y2 = sh->y2_p;
+			p->x1 = (sh->x1_p - touch_area_enlarge) < 0 ? 0 : (sh->x1_p - touch_area_enlarge);
+			p->x2 = (sh->x2_p + touch_area_enlarge) > WITHGUIMAXX ? WITHGUIMAXX : (sh->x2_p + touch_area_enlarge);
+			p->y1 = (sh->y1_p - touch_area_enlarge) < 0 ? 0 : (sh->y1_p - touch_area_enlarge);
+			p->y2 = (sh->y2_p + touch_area_enlarge) > WITHGUIMAXY ? WITHGUIMAXY : (sh->y2_p + touch_area_enlarge);
 			p->state = sh->state;
 			p->visible = sh->visible;
 			p->is_trackable = 1;

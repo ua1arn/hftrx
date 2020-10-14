@@ -191,14 +191,14 @@ typedef struct {
 
 typedef struct {
 	element_type_t type;			// тип элемента, поддерживающего реакцию на касания
-	window_t * win;
-	void * link;
-	uint8_t pos;
+	window_t * win;					// указатель на parent window
+	void * link;					// указатель на запись массива окна с описанием элемента
+	uint8_t pos;					// порядковый номер элемента
 	uint8_t state;					// текущее состояние элемента
 	uint8_t visible;				// текущая видимость элемента
 	uint8_t is_trackable;			// поддерживает ли элемент возврат относительных координат перемещения точки нажатия
 	uint8_t is_long_press;			// разрешение обработки долгого нажатия
-	uint16_t x1;					// координаты окна
+	uint16_t x1;					// координаты области реакции на касание элемента
 	uint16_t y1;
 	uint16_t x2;
 	uint16_t y2;

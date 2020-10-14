@@ -19,6 +19,7 @@ enum {
 	window_close_button_size = window_title_height,
 	window_title_indent = 20,	// горизонтальный отступ заголовка
 	footer_buttons_count = 9,
+	touch_area_enlarge = 5,		// увеличение области вокруг элементов для упрощения попадания по мелким элементам
 };
 
 #if defined (GUI_OLDBUTTONSTYLE)
