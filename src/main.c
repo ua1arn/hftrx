@@ -5936,6 +5936,7 @@ enum
 	RJ_SMETER,		/* выбор внешнего вида прибора - стрелочный или градусник */
 	RJ_NOTCH,		/* тип NOTCH фильтра - MANUAL/AUTO */
 	RJ_CPUTYPE,		/* текст типа процессора */
+	RJ_COMPILED,		/* текст даты компиляции */
 	//
 	RJ_notused
 };
@@ -16224,6 +16225,15 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		NULL,
 		getcpufreqbase,
 	},
+	{
+		QLABEL("COMPILED"), 7, 0, RJ_COMPILED, 	ISTEP1,	// тип процессора
+		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+		0, 0,
+		MENUNONVRAM,
+		& gzero,
+		NULL,
+		getzerobase,
+	},
 };
 
 /* входит ли данный пункт меню в группу разрешенных для показа */
@@ -16951,6 +16961,15 @@ void display2_menu_valxx(
 #else
 			msg = PSTR("CPUxxx");
 #endif
+			width = VALUEW;
+			comma = strlen_P(msg);
+			display_menu_string_P(x, y, msg, width, comma);
+		}
+		break;
+
+	case RJ_COMPILED:
+		{
+			static const FLASHMEM char msg [] = __DATE__ " " __TIME__;
 			width = VALUEW;
 			comma = strlen_P(msg);
 			display_menu_string_P(x, y, msg, width, comma);
