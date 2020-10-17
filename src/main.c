@@ -13600,7 +13600,7 @@ static const FLASHMEM struct menudef menutable [] =
 		0, 1,							/* дизайн спектра под 3DSS Yaesu */
 		offsetof(struct nvmap, g3dss_slyle),
 		NULL,
-		& gcolorsp,
+		& g3dss_slyle,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
