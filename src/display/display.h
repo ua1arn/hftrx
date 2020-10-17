@@ -819,23 +819,24 @@ void colmain_putpixel(
 
 void display_at_xy(uint_fast16_t x, uint_fast16_t y, const char * s);
 
-void board_set_topdb(int_fast16_t v);	/* верхний предел FFT */
-void board_set_bottomdb(int_fast16_t v);	/* нижний предел FFT */
-void board_set_topdbwf(int_fast16_t v);	/* верхний предел FFT */
-void board_set_bottomdbwf(int_fast16_t v);	/* нижний предел FFT */
-void board_set_zoomxpow2(uint_fast8_t v);	/* уменьшение отображаемого участка спектра */
-void board_set_fillspect(uint_fast8_t v); /* заливать заполнением площадь под графиком спектра */
-void board_set_wflevelsep(uint_fast8_t v); /* чувствительность водопада регулируется отдельной парой параметров */
-void board_set_wfshiftenable(uint_fast8_t v);	   /* разрешение или запрет сдвига водопада при изменении частоты */
-void board_set_spantialiasing(uint_fast8_t v); /* разрешение или запрет антиалиасинга спектра */
+void board_set_topdb(int_fast16_t v);			/* верхний предел FFT */
+void board_set_bottomdb(int_fast16_t v);		/* нижний предел FFT */
+void board_set_topdbwf(int_fast16_t v);			/* верхний предел FFT */
+void board_set_bottomdbwf(int_fast16_t v);		/* нижний предел FFT */
+void board_set_zoomxpow2(uint_fast8_t v);		/* уменьшение отображаемого участка спектра */
+void board_set_fillspect(uint_fast8_t v); 		/* заливать заполнением площадь под графиком спектра */
+void board_set_wflevelsep(uint_fast8_t v); 		/* чувствительность водопада регулируется отдельной парой параметров */
+void board_set_wfshiftenable(uint_fast8_t v);	/* разрешение или запрет сдвига водопада при изменении частоты */
+void board_set_spantialiasing(uint_fast8_t v); 	/* разрешение или запрет антиалиасинга спектра */
+void board_set_3dss_style(uint_fast8_t v);		/* дизайн спектра под 3DSS Yaesu */
 void board_set_colorsp(uint_fast8_t v);			/* разрешение или запрет раскраски спектра */
-void board_set_showdbm(uint_fast8_t v);	// Отображение уровня сигнала в dBm или S-memter (в зависимости от настроек)
-void board_set_afspeclow(int_fast16_t v);	// нижняя частота отображения спектроанализатора
-void board_set_afspechigh(int_fast16_t v);	// верхняя частота отображения спектроанализатора
+void board_set_showdbm(uint_fast8_t v);			// Отображение уровня сигнала в dBm или S-memter (в зависимости от настроек)
+void board_set_afspeclow(int_fast16_t v);		// нижняя частота отображения спектроанализатора
+void board_set_afspechigh(int_fast16_t v);		// верхняя частота отображения спектроанализатора
 
-PACKEDCOLORMAIN_T * colmain_fb_draw(void);	// буфер для построения изображения
-PACKEDCOLORMAIN_T * colmain_fb_show(void);	// буфер для отображения
-void colmain_fb_next(void);		// прерключиться на использование следующего фреймбуфера.
+PACKEDCOLORMAIN_T * colmain_fb_draw(void);		// буфер для построения изображения
+PACKEDCOLORMAIN_T * colmain_fb_show(void);		// буфер для отображения
+void colmain_fb_next(void);						// переключиться на использование следующего фреймбуфера.
 
 #if WITHALPHA
 #define DEFAULT_ALPHA WITHALPHA
