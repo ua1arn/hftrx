@@ -3365,6 +3365,8 @@ void hamradio_set_gtopdb(uint_fast8_t v);
 void hamradio_get_gbottomdb_limits(uint_fast8_t * min, uint_fast8_t * max);
 uint_fast8_t hamradio_get_gbottomdb(void);
 void hamradio_set_gbottomdb(uint_fast8_t v);
+uint_fast8_t hamradio_get_3dss(void);
+void hamradio_set_3dss(uint_fast8_t v);
 
 #if WITHREVERB
 void hamradio_set_greverb(uint_fast8_t v);

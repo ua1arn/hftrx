@@ -188,20 +188,21 @@ static void display2_legend_tx(
 #endif
 
 // waterfall/spectrum parameters
-static uint_fast8_t glob_fillspect;	/* заливать заполнением площадь под графиком спектра */
-static uint_fast8_t glob_wfshiftenable;	/* разрешение или запрет сдвига водопада при изменении частоты */
+static uint_fast8_t glob_fillspect;			/* заливать заполнением площадь под графиком спектра */
+static uint_fast8_t glob_wfshiftenable;		/* разрешение или запрет сдвига водопада при изменении частоты */
+static uint_fast8_t glob_3dss_style;		/* дизайн спектра под 3DSS Yaesu */
 static uint_fast8_t glob_spantialiasing;	/* разрешение или запрет антиалиасинга спектра */
-static uint_fast8_t glob_colorsp;	/* разрешение или запрет раскраски спектра */
+static uint_fast8_t glob_colorsp;			/* разрешение или запрет раскраски спектра */
 
-static int_fast16_t glob_topdb = 30;	/* верхний предел FFT */
+static int_fast16_t glob_topdb = 30;		/* верхний предел FFT */
 static int_fast16_t glob_bottomdb = 130;	/* нижний предел FFT */
 
-static int_fast16_t glob_topdbwf = 0;	/* верхний предел FFT */
+static int_fast16_t glob_topdbwf = 0;		/* верхний предел FFT */
 static int_fast16_t glob_bottomdbwf = 137;	/* нижний предел FFT */
-static uint_fast8_t glob_wflevelsep;	/* чувствительность водопада регулируется отдельной парой параметров */
-static uint_fast8_t glob_zoomxpow2;	/* уменьшение отображаемого участка спектра - horisontal magnification power of two */
+static uint_fast8_t glob_wflevelsep;		/* чувствительность водопада регулируется отдельной парой параметров */
+static uint_fast8_t glob_zoomxpow2;			/* уменьшение отображаемого участка спектра - horisontal magnification power of two */
 
-static uint_fast8_t glob_showdbm = 1;	// Отображение уровня сигнала в dBm или S-memter (в зависимости от настроек)
+static uint_fast8_t glob_showdbm = 1;		// Отображение уровня сигнала в dBm или S-memter (в зависимости от настроек)
 
 static uint_fast8_t glob_smetertype = SMETER_TYPE_DIAL;	/* выбор внешнего вида прибора - стрелочный или градусник */
 
@@ -8658,9 +8659,17 @@ board_set_wfshiftenable(uint_fast8_t v)
 
 /* разрешение или запрет антиалиасинга спектра */
 void
-board_set_spantialiasing(uint_fast8_t v)
+board_set_spantialiasing(uint_fast16_t v)
 {
 	glob_spantialiasing = v != 0;
+}
+
+/* дизайн спектра под 3DSS Yaesu */
+void
+board_set_3dss_style(uint_fast8_t v)
+{
+	glob_3dss_style = v != 0;
+	PRINTF("glob_3dss_style - %d\n", glob_3dss_style);
 }
 
 /* разрешение или запрет раскраски спектра */
