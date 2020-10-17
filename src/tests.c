@@ -6373,32 +6373,32 @@ void hightests(void)
 		display2_bgreset();
 		colmain_setcolors(COLORMAIN_WHITE, COLORMAIN_BLACK);
 
-			// touch screen test
-			for (;;)
+		// touch screen test
+		for (;;)
+		{
+			PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
+			char msg [64];
+			uint_fast16_t x, y;
+			if (board_tsc_getxy(& x, & y))
 			{
-				PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
-
-				uint_fast16_t x, y;
-				if (board_tsc_getxy(& x, & y))
-				{
-					PRINTF(PSTR("board_tsc_getxy: x=%5d, y=%5d\n"), x, y);
-					colmain_fillrect(fr, DIM_X, DIM_Y, markerx, markery, gridx, gridy, COLORMAIN_BLACK);
-					markerx = x / gridx * gridx;
-					markery = y / gridy * gridy;
-					colmain_fillrect(fr, DIM_X, DIM_Y, markerx, markery, gridx, gridy, COLORMAIN_WHITE);
-					display_at(22, 26,"Pressed");
-				} else {
-					display_at(22, 26,"       ");
-					colmain_fillrect(fr, DIM_X, DIM_Y, markerx, markery, gridx, gridy, COLORMAIN_BLACK);
-				}
-				local_delay_ms(10);
-
-				arm_hardware_flush((uintptr_t) fr, (uint_fast32_t) GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T));
-				arm_hardware_ltdc_main_set((uintptr_t) fr);
+				PRINTF(PSTR("board_tsc_getxy: x=%5d, y=%5d\n"), (int) x, (int) y);
+				local_snprintf_P(msg, ARRAY_SIZE(msg), PSTR("x=%5d, y=%5d"), (int) x, (int) y);
+				colmain_fillrect(fr, DIM_X, DIM_Y, markerx, markery, gridx, gridy, COLORMAIN_BLACK);
+				markerx = x / gridx * gridx;
+				markery = y / gridy * gridy;
+				colmain_fillrect(fr, DIM_X, DIM_Y, markerx, markery, gridx, gridy, COLORMAIN_WHITE);
+			} else {
+				memset(msg, ' ', 63);
+				msg [63] = '\0';
+				colmain_fillrect(fr, DIM_X, DIM_Y, markerx, markery, gridx, gridy, COLORMAIN_BLACK);
 			}
+			display_at(22, 26, msg);
+			local_delay_ms(10);
 
+			arm_hardware_flush((uintptr_t) fr, (uint_fast32_t) GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T));
+			arm_hardware_ltdc_main_set((uintptr_t) fr);
 		}
-
+	}
 #endif
 #if 0 && (CTLSTYLE_V1E || CTLSTYLE_V1F)
 	{
