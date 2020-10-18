@@ -7563,6 +7563,7 @@ static void display2_spectrum(
 			for (uint_fast8_t i = max_3dss_step; i > 0; i --)
 			{
 				uint_fast16_t y0 = spy + SPDY - 1 - i * y_step;
+				ylast = y0;
 
 				for (x = 0; x < ALLDX; ++ x)
 				{
