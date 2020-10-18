@@ -7416,14 +7416,15 @@ static ALIGNX_BEGIN GX_t spectmonoscr [MGSIZE(ALLDX, SPDY)] ALIGNX_END;
 #endif /* HHWMG */
 
 enum {
-	max_3dss_step = 20,
-	y_step = 5,
-	max_counter_3dss = 5,
+	max_3dss_step = 25,
+	y_step = 3,
+	max_delay_3dss = 1,
 	half_alldx = ALLDX / 2
 };
 
 static int16_t array_3dss [max_3dss_step] [ALLDX];
 static uint_fast8_t current_3dss_step = 0;
+static uint_fast8_t delay_3dss = max_delay_3dss;
 
 // подготовка изображения спектра
 static void display2_spectrum(
@@ -7560,29 +7561,31 @@ static void display2_spectrum(
 		{
 			uint_fast8_t draw_step = current_3dss_step;
 
-			for (uint_fast8_t i = max_3dss_step; i > 0; i --)
+			for (uint_fast8_t i = max_3dss_step - 1; i > 0; i --)
 			{
 				uint_fast16_t y0 = spy + SPDY - 1 - i * y_step;
+				uint_fast16_t range = half_alldx - i * y_step;
 				ylast = y0;
 
 				for (x = 0; x < ALLDX; ++ x)
 				{
 					uint_fast16_t x1;
 					if (x <= half_alldx)
-						x1 = half_alldx - normalize(half_alldx - x, 0, half_alldx, half_alldx - i * y_step);
+						x1 = half_alldx - normalize(half_alldx - x, 0, half_alldx, range);
 					else
-						x1 = half_alldx + normalize(x, half_alldx, ALLDX, half_alldx - i * y_step);
+						x1 = half_alldx + normalize(x, half_alldx, ALLDX, range);
 
 					int_fast16_t y1 = y0 - array_3dss [draw_step] [x];
 					y1 = y1 < 0 ? 0 : y1;
 
 					if (x1)
-						colmain_line(colorpip, BUFDIM_X, BUFDIM_Y, x1 - 1, ylast, x1, y1, y0 - y1, 0);
+						colmain_line(colorpip, BUFDIM_X, BUFDIM_Y, x1 - 1, ylast, x1, y1, color_scale [y0 - y1], 0);
 
 					ylast = y1;
 				}
 				draw_step = (draw_step + 1) % max_3dss_step;
 			}
+			delay_3dss = (delay_3dss + 1) % max_delay_3dss;
 		}
 
 		for (x = 0; x < ALLDX; ++ x)
@@ -7623,7 +7626,8 @@ static void display2_spectrum(
 				colmain_line(colorpip, BUFDIM_X, BUFDIM_Y, x - 1, ylast, x, ynew, COLORPIP_SPECTRUMLINE, glob_colorsp ? 0 : glob_spantialiasing);
 			ylast = ynew;
 		}
-			current_3dss_step = (current_3dss_step + 1) % max_3dss_step;
+			if (! delay_3dss)
+				current_3dss_step = (current_3dss_step + 1) % max_3dss_step;
 	}
 
 #endif
