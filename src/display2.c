@@ -7421,7 +7421,8 @@ enum {
 	max_counter_3dss = 5,
 	half_alldx = ALLDX / 2
 };
-static uint_fast8_t array_3dss [max_3dss_step][ALLDX];
+
+static int16_t array_3dss [max_3dss_step] [ALLDX];
 static uint_fast8_t current_3dss_step = 0;
 
 // подготовка изображения спектра
@@ -7571,7 +7572,7 @@ static void display2_spectrum(
 					else
 						x1 = half_alldx + normalize(x, half_alldx, ALLDX, half_alldx - i * y_step);
 
-					int_fast16_t y1 = y0 - array_3dss [draw_step][x];
+					int_fast16_t y1 = y0 - array_3dss [draw_step] [x];
 					y1 = y1 < 0 ? 0 : y1;
 
 					if (x1)
@@ -7586,9 +7587,9 @@ static void display2_spectrum(
 		for (x = 0; x < ALLDX; ++ x)
 		{
 			// ломанная
-			uint_fast16_t val = dsp_mag2y(filter_spectrum(x), SPDY - 1, glob_topdb, glob_bottomdb);
+			int val = dsp_mag2y(filter_spectrum(x), SPDY - 1, glob_topdb, glob_bottomdb);
 			uint_fast16_t ynew = spy + SPDY - 1 - val;
-			array_3dss [current_3dss_step][x] = val;
+			array_3dss [current_3dss_step] [x] = val;
 
 			if (glob_colorsp || glob_3dss_style)
 			{
