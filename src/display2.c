@@ -7414,6 +7414,16 @@ display_colorgrid_set(
 #if HHWMG
 static ALIGNX_BEGIN GX_t spectmonoscr [MGSIZE(ALLDX, SPDY)] ALIGNX_END;
 #endif /* HHWMG */
+
+enum {
+	max_3dss_step = 20,
+	y_step = 5,
+	max_counter_3dss = 5,
+	half_alldx = ALLDX / 2
+};
+static uint_fast8_t array_3dss [max_3dss_step][ALLDX];
+static uint_fast8_t current_3dss_step = 0;
+
 // подготовка изображения спектра
 static void display2_spectrum(
 	uint_fast8_t x0, 
@@ -7544,10 +7554,42 @@ static void display2_spectrum(
 		}
 		uint_fast16_t x;
 		display_colorgrid_set(colorpip, spy, SPDY, f0, bw);	// отрисовка маркеров частот
+
+		if (glob_3dss_style)
+		{
+			uint_fast8_t draw_step = current_3dss_step;
+
+			for (uint_fast8_t i = max_3dss_step; i > 0; i --)
+			{
+				uint_fast16_t y0 = spy + SPDY - 1 - i * y_step;
+
+				for (x = 0; x < ALLDX; ++ x)
+				{
+					uint_fast16_t x1;
+					if (x <= half_alldx)
+						x1 = half_alldx - normalize(half_alldx - x, 0, half_alldx, half_alldx - i * y_step);
+					else
+						x1 = half_alldx + normalize(x, half_alldx, ALLDX, half_alldx - i * y_step);
+
+					int_fast16_t y1 = y0 - array_3dss [draw_step][x];
+					y1 = y1 < 0 ? 0 : y1;
+
+					if (x1)
+						colmain_line(colorpip, BUFDIM_X, BUFDIM_Y, x1 - 1, ylast, x1, y1, y0 - y1, 0);
+
+					ylast = y1;
+				}
+				draw_step = (draw_step + 1) % max_3dss_step;
+			}
+		}
+
 		for (x = 0; x < ALLDX; ++ x)
 		{
 			// ломанная
-			uint_fast16_t ynew = spy + SPDY - 1 - dsp_mag2y(filter_spectrum(x), SPDY - 1, glob_topdb, glob_bottomdb);
+			uint_fast16_t val = dsp_mag2y(filter_spectrum(x), SPDY - 1, glob_topdb, glob_bottomdb);
+			uint_fast16_t ynew = spy + SPDY - 1 - val;
+			array_3dss [current_3dss_step][x] = val;
+
 			if (glob_colorsp || glob_3dss_style)
 			{
 				/* раскрашенный спектр */
@@ -7579,6 +7621,7 @@ static void display2_spectrum(
 				colmain_line(colorpip, BUFDIM_X, BUFDIM_Y, x - 1, ylast, x, ynew, COLORPIP_SPECTRUMLINE, glob_colorsp ? 0 : glob_spantialiasing);
 			ylast = ynew;
 		}
+			current_3dss_step = (current_3dss_step + 1) % max_3dss_step;
 	}
 
 #endif
