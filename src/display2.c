@@ -7628,7 +7628,7 @@ static void display2_spectrum(
 
 						for (uint_fast16_t dy = y0, j = 0; dy > y1; dy --, j ++)
 						{
-							ASSERT(j < PALETTESIZE - 1);
+							ASSERT(j < SPDY);
 							colpip_point(colorpip, BUFDIM_X, BUFDIM_Y, x1, dy, color_scale [j]);
 						}
 					}
