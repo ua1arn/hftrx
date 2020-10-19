@@ -181,6 +181,11 @@ wm_message_t get_from_wm_queue(window_t * win, ...)
 	return m;
 }
 
+void clean_wm_queue (window_t * win)
+{
+	win->queue.size = 0;
+	memset(win->queue.data, 0, sizeof win->queue.data);
+}
 /* Запрос на обновление состояния элементов GUI */
 void gui_update(void * arg)
 {
@@ -430,6 +435,7 @@ void elements_state (window_t * win)
 		}
 	}
 //	PRINTF("line %d: %s gui_element_count: %d %+d\n", __LINE__, win->name, gui_element_count, debug_num);
+	clean_wm_queue(win);
 }
 
 /* Возврат id parent window */
@@ -951,6 +957,7 @@ uint_fast8_t get_element_index(window_t * win, element_type_t type, void * eh)
 	{
 	case TYPE_BUTTON:
 	{
+		ASSERT((button_t *) eh > win->bh_ptr);
 		uint_fast8_t index = ((button_t *) eh - win->bh_ptr);
 		ASSERT(index < win->bh_count);
 		return index;
@@ -959,6 +966,7 @@ uint_fast8_t get_element_index(window_t * win, element_type_t type, void * eh)
 
 	case TYPE_LABEL:
 	{
+		ASSERT((label_t *) eh > win->lh_ptr);
 		uint_fast8_t index = ((label_t *) eh - win->lh_ptr);
 		ASSERT(index < win->lh_count);
 		return index;
@@ -967,6 +975,7 @@ uint_fast8_t get_element_index(window_t * win, element_type_t type, void * eh)
 
 	case TYPE_SLIDER:
 	{
+		ASSERT((slider_t *) eh > win->sh_ptr);
 		uint_fast8_t index = ((slider_t *) eh - win->sh_ptr);
 		ASSERT(index < win->sh_count);
 		return index;

@@ -24,6 +24,8 @@
 
 #if WITHTOUCHGUI
 
+#define FOOTER_HEIGHT			50							// высота нижнего ряда кнопок
+
 #if ! defined WITHUSEMALLOC									// необходима поддержка динамического управления памятью
 	#define WITHUSEMALLOC		1
 #endif /* ! defined WITHUSEMALLOC */
