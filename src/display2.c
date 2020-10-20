@@ -7627,7 +7627,7 @@ static void display2_spectrum(
 			uint_fast8_t draw_step = (current_3dss_step + 1) % MAX_3DSS_STEP;
 			uint_fast16_t ylast_sp = 0;
 
-			for (int_fast8_t i = MAX_3DSS_STEP; i >= 0; i --)
+			for (int_fast8_t i = MAX_3DSS_STEP - 1; i >= 0; i --)
 			{
 				uint_fast16_t y0 = spy - 1 - i * Y_STEP;
 				uint_fast16_t range = HALF_ALLDX - 1 - i * Y_STEP;

@@ -128,8 +128,9 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 		break;
 
 	case WM_MESSAGE_UPDATE:
-
-		if (win->queue.data [win->queue.size - 1].message != WM_MESSAGE_UPDATE)		// предотвращение дублей сообщения WM_MESSAGE_UPDATE
+	{
+		uint_fast8_t ind = win->queue.size ? (win->queue.size - 1) : 0;
+		if (win->queue.data [ind].message != WM_MESSAGE_UPDATE)		// предотвращение дублей сообщения WM_MESSAGE_UPDATE
 		{
 			win->queue.data [win->queue.size].message = WM_MESSAGE_UPDATE;
 			win->queue.data [win->queue.size].type = UINT8_MAX;
@@ -137,7 +138,7 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 			win->queue.data [win->queue.size].action = INT8_MAX;
 			win->queue.size ++;
 		}
-
+	}
 		return 1;
 		break;
 
@@ -160,16 +161,16 @@ wm_message_t get_from_wm_queue(window_t * win, ...)
 	va_list arg;
 	win->queue.size --;
 
-	if (win->queue.data [win->queue.size].message != WM_MESSAGE_UPDATE)
-	{
-		va_start(arg, win);
+	va_start(arg, win);
 
-		* va_arg(arg, uint_fast8_t *) = win->queue.data [win->queue.size].type;
-		* va_arg(arg, uintptr_t *) = 	win->queue.data [win->queue.size].ptr;
-		* va_arg(arg, int_fast8_t *) =  win->queue.data [win->queue.size].action;
+	* va_arg(arg, uint_fast8_t *) = win->queue.data [win->queue.size].type;
+	* va_arg(arg, uintptr_t *) = 	win->queue.data [win->queue.size].ptr;
+	* va_arg(arg, int_fast8_t *) =  win->queue.data [win->queue.size].action;
 
-		va_end(arg);
-	}
+	va_end(arg);
+
+//	if (win->window_id != WINDOW_MAIN)
+//		PRINTF("get_from_wm_queue: win - %s, message - %d, size - %d\n", win->name, win->queue.data [win->queue.size].message, win->queue.size);
 
 	wm_message_t m = win->queue.data [win->queue.size].message;
 

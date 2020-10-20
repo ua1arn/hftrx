@@ -2917,7 +2917,7 @@ static void window_ap_mic_prof_process(void)
 static void window_menu_process(void)
 {
 	static uint_fast8_t menu_is_scrolling = 0;
-	uint_fast8_t int_cols = 230, int_rows = 35, is_moving_label = 0;
+	uint_fast8_t int_col2 = 180, int_col3 = 230, int_rows = 35, is_moving_label = 0;
 	static button_t * button_up = NULL, * button_down = NULL;
 	window_t * win = get_win(WINDOW_MENU);
 	int_fast8_t move_x = 0, move_y = 0, rotate = 0;
@@ -3033,7 +3033,7 @@ static void window_menu_process(void)
 		}
 
 		menu [MENU_PARAMS].count = hamradio_get_multilinemenu_block_params(menu [MENU_PARAMS].menu_block, menu [MENU_GROUPS].menu_block [menu [MENU_GROUPS].selected_str].index) - 1;
-		xn += int_cols;
+		xn += int_col2;
 		yn = row1_int;
 		for(i = 0; i <= menu [MENU_PARAMS].num_rows; i++)
 		{
@@ -3048,7 +3048,7 @@ static void window_menu_process(void)
 
 		menu [MENU_VALS].count = menu [MENU_PARAMS].count < menu [MENU_VALS].num_rows ? menu [MENU_PARAMS].count : menu [MENU_VALS].num_rows;
 		hamradio_get_multilinemenu_block_vals(menu [MENU_VALS].menu_block, menu [MENU_PARAMS].menu_block [menu [MENU_PARAMS].selected_str].index, menu [MENU_VALS].count);
-		xn += int_cols;
+		xn += int_col3;
 		yn = row1_int;
 		for(lh = NULL, i = 0; i <= menu [MENU_VALS].num_rows; i ++)
 		{
@@ -3336,7 +3336,7 @@ static void window_menu_process(void)
 			if (i > menu [MENU_PARAMS].count)
 				continue;
 			strcpy(lp->text, menu [MENU_PARAMS].menu_block [i + menu [MENU_PARAMS].add_id].name);
-			strcpy(lv->text, menu [MENU_VALS].menu_block [i].name);
+			strncpy(lv->text, menu [MENU_VALS].menu_block [i].name, 15);
 			lp->color = i == menu [MENU_PARAMS].selected_label && menu_level > MENU_GROUPS ? COLORMAIN_BLACK : COLORMAIN_WHITE;
 			lp->visible = VISIBLE;
 			lp->state = CANCELLED;
@@ -3352,12 +3352,12 @@ static void window_menu_process(void)
 	case MENU_PARAMS:
 	case MENU_VALS:
 		lh = & win->lh_ptr [menu [MENU_PARAMS].first_id + menu [MENU_PARAMS].selected_label];
-		colpip_rect(colmain_fb_draw(), DIM_X, DIM_Y, win->x1 + lh->x - 5, win->y1 + lh->y - 5, win->x1 + lh->x + int_cols - 20,
+		colpip_rect(colmain_fb_draw(), DIM_X, DIM_Y, win->x1 + lh->x - 5, win->y1 + lh->y - 5, win->x1 + lh->x + int_col3 - 20,
 				win->y1 + lh->y + get_label_height(lh) + 5, GUI_MENUSELECTCOLOR, 1);
 
 	case MENU_GROUPS:
 		lh = & win->lh_ptr [menu [MENU_GROUPS].first_id + menu [MENU_GROUPS].selected_label];
-		colpip_rect(colmain_fb_draw(), DIM_X, DIM_Y, win->x1 + lh->x - 5, win->y1 + lh->y - 5, win->x1 + lh->x + int_cols - 20,
+		colpip_rect(colmain_fb_draw(), DIM_X, DIM_Y, win->x1 + lh->x - 5, win->y1 + lh->y - 5, win->x1 + lh->x + int_col2 - 20,
 				win->y1 + lh->y + get_label_height(lh) + 5, GUI_MENUSELECTCOLOR, 1);
 	}
 }

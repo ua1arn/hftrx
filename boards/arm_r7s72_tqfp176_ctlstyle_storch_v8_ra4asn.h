@@ -357,7 +357,6 @@
 
 	#define WITHTOUCHGUI		1
 	#define WITHALPHA			64
-	#define FORMATFROMLIBRARY 	1
 
 	#define WITHAFSPECTRE		1
 

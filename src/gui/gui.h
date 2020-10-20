@@ -35,6 +35,8 @@
 	#define WITHGUIHEAP 		(80 * 1024uL)
 #endif /* ! defined WITHGUIHEAP || WITHGUIHEAP < (80 * 1024uL) */
 
+#define FORMATFROMLIBRARY 	1
+
 typedef struct {
 	char name[20];
 	uint_fast8_t index;

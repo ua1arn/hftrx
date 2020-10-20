@@ -320,8 +320,7 @@ safestrcpy(char * dst, size_t blen, const char * src)
 {
 	ASSERT(dst != NULL);
 	ASSERT(src != NULL);
-	ASSERT(strlen(src) < blen);
-	return strcpy(dst, src);
+	return strncpy(dst, src, blen);
 }
 
 #if WITHDEBUG
