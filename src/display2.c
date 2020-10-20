@@ -7646,30 +7646,25 @@ static void display2_spectrum(
 						}
 
 						if (x != 0)
-							colmain_line(colorpip, BUFDIM_X, BUFDIM_Y, x - 1, ylast_sp, x, ynew, COLORPIP_SPECTRUMLINE, 0);
+						{
+							colmain_line(colorpip, BUFDIM_X, BUFDIM_Y, x - 1, ylast_sp + 3, x, ynew + 3, COLORMAIN_WHITE, 0);
+							colmain_line(colorpip, BUFDIM_X, BUFDIM_Y, x - 1, ylast_sp, x, ynew, COLORMAIN_BLACK, 0);
+						}
 
 						ylast_sp = ynew;
 					}
 					else
 					{
-						int_fast16_t x1;
+						static uint_fast16_t yz;
+						uint_fast16_t x1, y1 = y0 - array_3dss [draw_step] [x];
+
 						if (x <= HALF_ALLDX)
 							x1 = HALF_ALLDX - normalize(HALF_ALLDX - x, 0, HALF_ALLDX, range);
 						else
 							x1 = HALF_ALLDX + normalize(x, HALF_ALLDX, ALLDX - 1, range);
 
-						x1 = x1 < 0 ? 0 : x1;
-						x1 = x1 > ALLDX - 1 ? ALLDX - 1 : x1;
-
-						ASSERT(draw_step >= 0 || draw_step < MAX_3DSS_STEP);
-						ASSERT(x >= 0 || x < ALLDX);
-						int_fast16_t y1 = y0 - array_3dss [draw_step] [x];
-						y1 = y1 < 0 ? 0 : y1;
-						y1 = y1 > ALLDY - 1 ? ALLDY - 1 : y1;
-
 						for (uint_fast16_t dy = y0, j = 0; dy > y1; dy --, j ++)
 						{
-							ASSERT(j < SPDY);
 							colpip_point(colorpip, BUFDIM_X, BUFDIM_Y, x1, dy, color_scale [j]);
 						}
 					}
