@@ -7457,18 +7457,63 @@ static ALIGNX_BEGIN GX_t spectmonoscr [MGSIZE(ALLDX, SPDY)] ALIGNX_END;
 #endif /* HHWMG */
 
 enum {
-	max_3dss_step = 20,
-	y_step = 5,
-	max_delay_3dss = 3,
-	half_alldx = ALLDX / 2,
-	SPY_3DSS = (ALLDY - max_3dss_step * y_step) / 2,
+	MAX_3DSS_STEP = 20,
+	Y_STEP = 5,
+	MAX_DELAY_3DSS = 3,
+	HALF_ALLDX = ALLDX / 2,
+	SPY_3DSS = (ALLDY - MAX_3DSS_STEP * Y_STEP) / 2,
 	SPY_3DSS_H = SPY_3DSS / 3
 };
 
-static int16_t array_3dss [max_3dss_step] [ALLDX];
+static uint8_t array_3dss [MAX_3DSS_STEP] [ALLDX];
 static uint_fast8_t current_3dss_step = 0;
-static uint_fast8_t delay_3dss = max_delay_3dss;
-static uint_fast8_t clear_3dss;
+static uint_fast8_t delay_3dss = MAX_DELAY_3DSS;
+static uint_fast8_t glob_clear_3dss;
+static int_fast16_t glob_shift_3dss;
+
+static void shift_3dss_left(uint_fast16_t pixels)
+{
+	uint_fast16_t y;
+
+	if (pixels == 0)
+		return;
+
+	for (y = 0; y < MAX_3DSS_STEP; ++ y)
+	{
+		memmove(
+				colmain_mem_at((PACKEDCOLORMAIN_T *) array_3dss, ALLDX, MAX_3DSS_STEP, 0, y),
+				colmain_mem_at((PACKEDCOLORMAIN_T *) array_3dss, ALLDX, MAX_3DSS_STEP, pixels, y),
+				(ALLDX - pixels) * sizeof array_3dss [0] [0]
+		);
+		memset(
+				colmain_mem_at((PACKEDCOLORMAIN_T *) array_3dss, ALLDX, MAX_3DSS_STEP, ALLDX - pixels, y),
+				0x00,
+				pixels * sizeof array_3dss [0] [0]
+		);
+	}
+}
+
+static void shift_3dss_right(uint_fast16_t pixels)
+{
+	uint_fast16_t y;
+
+	if (pixels == 0)
+		return;
+
+	for (y = 0; y < MAX_3DSS_STEP; ++ y)
+	{
+		memmove(
+				colmain_mem_at((PACKEDCOLORMAIN_T *) array_3dss, ALLDX, MAX_3DSS_STEP, pixels, y),
+				colmain_mem_at((PACKEDCOLORMAIN_T *) array_3dss, ALLDX, MAX_3DSS_STEP, 0, y),
+				(ALLDX - pixels) * sizeof array_3dss [0] [0]
+		);
+		memset(
+				colmain_mem_at((PACKEDCOLORMAIN_T *) array_3dss, ALLDX, MAX_3DSS_STEP, 0, y),
+				0x00,
+				pixels * sizeof array_3dss [0] [0]
+		);
+	}
+}
 
 // подготовка изображения спектра
 static void display2_spectrum(
@@ -7563,33 +7608,29 @@ static void display2_spectrum(
 		const uint_fast8_t pathi = 0;	// RX A
 		const uint_fast32_t f0 = hamradio_get_freq_pathi(pathi);	/* frequency at middle of spectrum */
 		const int_fast32_t bw = display_zoomedbw();
-		uint_fast16_t xleft = deltafreq2x(f0, hamradio_getleft_bp(pathi), bw, ALLDX);	// левый край шторки
-		uint_fast16_t xright = deltafreq2x(f0, hamradio_getright_bp(pathi), bw, ALLDX);	// правый край шторки
-
-		if (xleft > xright)
-			xleft = 0;
-		if (xright == xleft)
-			xright = xleft + 1;
-		if (xright >= ALLDX)
-			xright = ALLDX - 1;
-
-		const uint_fast16_t xrightv = xright + 1;	// рисуем от xleft до xright включительно
 
 		if (glob_3dss_style)
 		{
-			if (clear_3dss)
+			if (glob_clear_3dss)
 			{
-				clear_3dss = 0;
+				glob_clear_3dss = 0;
 				memset(array_3dss, 0x00, sizeof array_3dss);
 			}
 
-			uint_fast8_t draw_step = (current_3dss_step + 1) % max_3dss_step;
+			if (glob_shift_3dss < 0)
+				shift_3dss_left(- glob_shift_3dss);
+			else if (glob_shift_3dss > 0)
+				shift_3dss_right(glob_shift_3dss);
+
+			glob_shift_3dss = 0;
+
+			uint_fast8_t draw_step = (current_3dss_step + 1) % MAX_3DSS_STEP;
 			uint_fast16_t ylast_sp = 0;
 
-			for (int_fast8_t i = max_3dss_step - 1; i >= 0; i --)
+			for (int_fast8_t i = MAX_3DSS_STEP; i >= 0; i --)
 			{
-				uint_fast16_t y0 = spy - 1 - i * y_step;
-				uint_fast16_t range = half_alldx - 1 - i * y_step;
+				uint_fast16_t y0 = spy - 1 - i * Y_STEP;
+				uint_fast16_t range = HALF_ALLDX - 1 - i * Y_STEP;
 
 				for (uint_fast16_t x = 0; x < ALLDX; ++ x)
 				{
@@ -7612,15 +7653,15 @@ static void display2_spectrum(
 					else
 					{
 						int_fast16_t x1;
-						if (x <= half_alldx)
-							x1 = half_alldx - normalize(half_alldx - x, 0, half_alldx, range);
+						if (x <= HALF_ALLDX)
+							x1 = HALF_ALLDX - normalize(HALF_ALLDX - x, 0, HALF_ALLDX, range);
 						else
-							x1 = half_alldx + normalize(x, half_alldx, ALLDX - 1, range);
+							x1 = HALF_ALLDX + normalize(x, HALF_ALLDX, ALLDX - 1, range);
 
 						x1 = x1 < 0 ? 0 : x1;
 						x1 = x1 > ALLDX - 1 ? ALLDX - 1 : x1;
 
-						ASSERT(draw_step >= 0 || draw_step < max_3dss_step);
+						ASSERT(draw_step >= 0 || draw_step < MAX_3DSS_STEP);
 						ASSERT(x >= 0 || x < ALLDX);
 						int_fast16_t y1 = y0 - array_3dss [draw_step] [x];
 						y1 = y1 < 0 ? 0 : y1;
@@ -7633,16 +7674,28 @@ static void display2_spectrum(
 						}
 					}
 				}
-				draw_step = (draw_step + 1) % max_3dss_step;
+				draw_step = (draw_step + 1) % MAX_3DSS_STEP;
 			}
-			delay_3dss = (delay_3dss + 1) % max_delay_3dss;
+			delay_3dss = (delay_3dss + 1) % MAX_DELAY_3DSS;
 			if (! delay_3dss)
-				current_3dss_step = (current_3dss_step + 1) % max_3dss_step;
+				current_3dss_step = (current_3dss_step + 1) % MAX_3DSS_STEP;
 
 			display_colorgrid_3dss(colorpip, spy - SPY_3DSS_H, SPY_3DSS_H, f0, bw);
 		}
 		else
 		{
+			uint_fast16_t xleft = deltafreq2x(f0, hamradio_getleft_bp(pathi), bw, ALLDX);	// левый край шторки
+			uint_fast16_t xright = deltafreq2x(f0, hamradio_getright_bp(pathi), bw, ALLDX);	// правый край шторки
+
+			if (xleft > xright)
+				xleft = 0;
+			if (xright == xleft)
+				xright = xleft + 1;
+			if (xright >= ALLDX)
+				xright = ALLDX - 1;
+
+			const uint_fast16_t xrightv = xright + 1;	// рисуем от xleft до xright включительно
+
 			/* рисуем спектр ломанной линией */
 			/* стираем старый фон, рисуем прямоугольник полосы пропускания */
 			if (ALLDX / (xrightv - xleft) > 8)
@@ -7871,12 +7924,13 @@ static void display2_latchwaterfall(
 			// нужно сохрянять часть старого изображения
 			// в строке wfrow - новое
 			wflshiftright(hscroll);
+			glob_shift_3dss = hscroll;
 		}
 		else
 		{
 			wfsetupnew(); // стираем целиком старое изображение водопада. в строке 0 - новое
 			hclear = 1;
-			clear_3dss = 1;
+			glob_clear_3dss = 1;
 		}
 	}
 	else if (wffreqpix < f0pix && glob_wfshiftenable)
@@ -7889,12 +7943,13 @@ static void display2_latchwaterfall(
 			// нужно сохрянять часть старого изображения
 			// в строке wfrow - новое
 			wflshiftleft(- hscroll);
+			glob_shift_3dss = hscroll;
 		}
 		else
 		{
 			wfsetupnew(); // стираем целиком старое изображение водопада. в строке 0 - новое
 			hclear = 1;
-			clear_3dss = 1;
+			glob_clear_3dss = 1;
 		}
 	}
 
