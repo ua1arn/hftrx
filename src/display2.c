@@ -7465,55 +7465,8 @@ enum {
 	SPY_3DSS_H = SPY_3DSS / 3
 };
 
-static uint8_t array_3dss [MAX_3DSS_STEP] [ALLDX];
 static uint_fast8_t current_3dss_step = 0;
 static uint_fast8_t delay_3dss = MAX_DELAY_3DSS;
-static uint_fast8_t glob_clear_3dss;
-static int_fast16_t glob_shift_3dss;
-
-static void shift_3dss_left(uint_fast16_t pixels)
-{
-	uint_fast16_t y;
-
-	if (pixels == 0)
-		return;
-
-	for (y = 0; y < MAX_3DSS_STEP; ++ y)
-	{
-		memmove(
-				colmain_mem_at((PACKEDCOLORMAIN_T *) array_3dss, ALLDX, MAX_3DSS_STEP, 0, y),
-				colmain_mem_at((PACKEDCOLORMAIN_T *) array_3dss, ALLDX, MAX_3DSS_STEP, pixels, y),
-				(ALLDX - pixels) * sizeof array_3dss [0] [0]
-		);
-		memset(
-				colmain_mem_at((PACKEDCOLORMAIN_T *) array_3dss, ALLDX, MAX_3DSS_STEP, ALLDX - pixels, y),
-				0x00,
-				pixels * sizeof array_3dss [0] [0]
-		);
-	}
-}
-
-static void shift_3dss_right(uint_fast16_t pixels)
-{
-	uint_fast16_t y;
-
-	if (pixels == 0)
-		return;
-
-	for (y = 0; y < MAX_3DSS_STEP; ++ y)
-	{
-		memmove(
-				colmain_mem_at((PACKEDCOLORMAIN_T *) array_3dss, ALLDX, MAX_3DSS_STEP, pixels, y),
-				colmain_mem_at((PACKEDCOLORMAIN_T *) array_3dss, ALLDX, MAX_3DSS_STEP, 0, y),
-				(ALLDX - pixels) * sizeof array_3dss [0] [0]
-		);
-		memset(
-				colmain_mem_at((PACKEDCOLORMAIN_T *) array_3dss, ALLDX, MAX_3DSS_STEP, 0, y),
-				0x00,
-				pixels * sizeof array_3dss [0] [0]
-		);
-	}
-}
 
 // подготовка изображения спектра
 static void display2_spectrum(
@@ -7611,19 +7564,6 @@ static void display2_spectrum(
 
 		if (glob_3dss_style)
 		{
-			if (glob_clear_3dss)
-			{
-				glob_clear_3dss = 0;
-				memset(array_3dss, 0x00, sizeof array_3dss);
-			}
-
-			if (glob_shift_3dss < 0)
-				shift_3dss_left(- glob_shift_3dss);
-			else if (glob_shift_3dss > 0)
-				shift_3dss_right(glob_shift_3dss);
-
-			glob_shift_3dss = 0;
-
 			uint_fast8_t draw_step = (current_3dss_step + 1) % MAX_3DSS_STEP;
 			uint_fast16_t ylast_sp = 0;
 
@@ -7638,7 +7578,7 @@ static void display2_spectrum(
 					{
 						int val = dsp_mag2y(filter_spectrum(x), SPY_3DSS - 1, glob_topdb, glob_bottomdb);
 						uint_fast16_t ynew = spy - 1 - val;
-						array_3dss [current_3dss_step] [x] = val;
+						wfjarray [current_3dss_step * GXADJ(ALLDX) + x] = val;
 
 						for (uint_fast16_t dy = spy - 1, j = 0; dy > ynew; dy --, j ++)
 						{
@@ -7656,7 +7596,7 @@ static void display2_spectrum(
 					else
 					{
 						static uint_fast16_t yz;
-						uint_fast16_t x1, y1 = y0 - array_3dss [draw_step] [x];
+						uint_fast16_t x1, y1 = y0 - wfjarray [draw_step * GXADJ(ALLDX) + x];
 
 						if (x <= HALF_ALLDX)
 							x1 = HALF_ALLDX - normalize(HALF_ALLDX - x, 0, HALF_ALLDX, range);
@@ -7736,7 +7676,7 @@ static void display2_spectrum(
 					const uint_fast8_t inband = (x >= xleft && x <= xright);	// в полосе пропускания приемника = "шторка"
 					display_colorbuf_set_vline(colorpip, BUFDIM_X, BUFDIM_Y, x, SPY0, ynew, inband ? COLORMAIN_SPECTRUMBG2 : COLORPIP_SPECTRUMBG);
 
-									// точку на границе
+					// точку на границе
 					if (ynew < SPDY)
 					{
 						colpip_point(colorpip, BUFDIM_X, BUFDIM_Y, x, ynew + SPY0, DESIGNCOLOR_SPECTRUMFENCE);
@@ -7751,7 +7691,9 @@ static void display2_spectrum(
 				}
 
 				if (x != 0 && (! glob_fillspect || glob_colorsp))
+				{
 					colmain_line(colorpip, BUFDIM_X, BUFDIM_Y, x - 1, ylast, x, ynew, COLORPIP_SPECTRUMLINE, glob_colorsp ? 0 : glob_spantialiasing);
+				}
 				ylast = ynew;
 			}
 		}
@@ -7796,6 +7738,7 @@ static void wfl_avg_clear(void)
 static void wflshiftleft(uint_fast16_t pixels)
 {
 	uint_fast16_t y;
+	uint_fast8_t rows = glob_3dss_style ? MAX_3DSS_STEP : WFROWS;
 
 	if (pixels == 0)
 		return;
@@ -7807,19 +7750,19 @@ static void wflshiftleft(uint_fast16_t pixels)
 	memmove(& Yold_wtf [0], & Yold_wtf [pixels], (ALLDX - pixels) * sizeof Yold_wtf [0]);
 	memset(& Yold_wtf [ALLDX - pixels], 0x00, pixels * sizeof Yold_wtf[0]);
 
-	for (y = 0; y < WFROWS; ++ y)
+	for (y = 0; y < rows; ++ y)
 	{
 //		if (y == wfrow)
 //		{
 //			continue;
 //		}
 		memmove(
-				colmain_mem_at(wfjarray, ALLDX, WFROWS, 0, y),
-				colmain_mem_at(wfjarray, ALLDX, WFROWS, pixels, y),
+				colmain_mem_at(wfjarray, ALLDX, rows, 0, y),
+				colmain_mem_at(wfjarray, ALLDX, rows, pixels, y),
 				(ALLDX - pixels) * sizeof wfjarray [0]
 		);
 		memset(
-				colmain_mem_at(wfjarray, ALLDX, WFROWS, ALLDX - pixels, y),
+				colmain_mem_at(wfjarray, ALLDX, rows, ALLDX - pixels, y),
 				0x00,
 				pixels * sizeof wfjarray [0]
 		);
@@ -7832,6 +7775,7 @@ static void wflshiftleft(uint_fast16_t pixels)
 static void wflshiftright(uint_fast16_t pixels)
 {
 	uint_fast16_t y;
+	uint_fast8_t rows = glob_3dss_style ? MAX_3DSS_STEP : WFROWS;
 
 	if (pixels == 0)
 		return;
@@ -7843,19 +7787,20 @@ static void wflshiftright(uint_fast16_t pixels)
 	memmove(& Yold_wtf [pixels], &Yold_wtf [0], (ALLDX - pixels) * sizeof Yold_wtf [0]);
 	memset(& Yold_wtf [0], 0x00, pixels * sizeof Yold_wtf [0]);
 
-	for (y = 0; y < WFROWS; ++ y)
+
+	for (y = 0; y < rows; ++ y)
 	{
 //		if (y == wfrow)
 //		{
 //			continue;
 //		}
 		memmove(
-				colmain_mem_at(wfjarray, ALLDX, WFROWS, pixels, y),
-				colmain_mem_at(wfjarray, ALLDX, WFROWS, 0, y),
+				colmain_mem_at(wfjarray, ALLDX, rows, pixels, y),
+				colmain_mem_at(wfjarray, ALLDX, rows, 0, y),
 				(ALLDX - pixels) * sizeof wfjarray [0]
 		);
 		memset(
-				colmain_mem_at(wfjarray, ALLDX, WFROWS, 0, y),
+				colmain_mem_at(wfjarray, ALLDX, rows, 0, y),
 				0x00,
 				pixels * sizeof wfjarray [0]
 		);
@@ -7919,13 +7864,11 @@ static void display2_latchwaterfall(
 			// нужно сохрянять часть старого изображения
 			// в строке wfrow - новое
 			wflshiftright(hscroll);
-			glob_shift_3dss = hscroll;
 		}
 		else
 		{
 			wfsetupnew(); // стираем целиком старое изображение водопада. в строке 0 - новое
 			hclear = 1;
-			glob_clear_3dss = 1;
 		}
 	}
 	else if (wffreqpix < f0pix && glob_wfshiftenable)
@@ -7938,16 +7881,13 @@ static void display2_latchwaterfall(
 			// нужно сохрянять часть старого изображения
 			// в строке wfrow - новое
 			wflshiftleft(- hscroll);
-			glob_shift_3dss = hscroll;
 		}
 		else
 		{
 			wfsetupnew(); // стираем целиком старое изображение водопада. в строке 0 - новое
 			hclear = 1;
-			glob_clear_3dss = 1;
 		}
 	}
-
 
 	// запоминание информации спектра для спектрограммы
 	if (! dsp_getspectrumrow(spavgarray, ALLDX, glob_zoomxpow2))
@@ -7958,18 +7898,21 @@ static void display2_latchwaterfall(
 	wfrow = (wfrow == 0) ? (WFDY - 1) : (wfrow - 1);
 #endif
 
-	// запоминание информации спектра для водопада
-	for (x = 0; x < ALLDX; ++ x)
+	if (! glob_3dss_style)
 	{
-		// для водопада
-		const int val = dsp_mag2y(filter_waterfall(x), PALETTESIZE - 1, glob_wflevelsep ? glob_topdbwf : glob_topdb, glob_wflevelsep ? glob_bottomdbwf : glob_bottomdb); // возвращает значения от 0 до dy включительно
-	#if LCDMODE_MAIN_L8
-		colmain_putpixel(wfjarray, ALLDX, WFROWS, x, wfrow, val);	// запись в буфер водопада индекса палитры
-	#else /* LCDMODE_MAIN_L8 */
-		ASSERT(val >= 0);
-		ASSERT(val < ARRAY_SIZE(wfpalette));
-		colmain_putpixel(wfjarray, ALLDX, WFROWS, x, wfrow, wfpalette [val]);	// запись в буфер водопада цветовой точки
-	#endif /* LCDMODE_MAIN_L8 */
+		// запоминание информации спектра для водопада
+		for (x = 0; x < ALLDX; ++ x)
+		{
+			// для водопада
+			const int val = dsp_mag2y(filter_waterfall(x), PALETTESIZE - 1, glob_wflevelsep ? glob_topdbwf : glob_topdb, glob_wflevelsep ? glob_bottomdbwf : glob_bottomdb); // возвращает значения от 0 до dy включительно
+		#if LCDMODE_MAIN_L8
+			colmain_putpixel(wfjarray, ALLDX, WFROWS, x, wfrow, val);	// запись в буфер водопада индекса палитры
+		#else /* LCDMODE_MAIN_L8 */
+			ASSERT(val >= 0);
+			ASSERT(val < ARRAY_SIZE(wfpalette));
+			colmain_putpixel(wfjarray, ALLDX, WFROWS, x, wfrow, wfpalette [val]);	// запись в буфер водопада цветовой точки
+		#endif /* LCDMODE_MAIN_L8 */
+		}
 	}
 
 	wffreqpix = f0pix;
@@ -8842,7 +8785,14 @@ board_set_spantialiasing(uint_fast16_t v)
 void
 board_set_3dss_style(uint_fast8_t v)
 {
+	static uint_fast8_t old_state = UINT8_MAX;
 	glob_3dss_style = v != 0;
+
+	if (old_state != glob_3dss_style)		// при переключении стилей отображения очищать общий буфер
+	{
+		wfsetupnew();
+		old_state = glob_3dss_style;
+	}
 }
 
 /* разрешение или запрет раскраски спектра */
