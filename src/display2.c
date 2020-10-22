@@ -8785,13 +8785,12 @@ board_set_spantialiasing(uint_fast16_t v)
 void
 board_set_3dss_style(uint_fast8_t v)
 {
-	static uint_fast8_t old_state = UINT8_MAX;
-	glob_3dss_style = v != 0;
+	const uint_fast8_t n = v != 0;
 
-	if (old_state != glob_3dss_style)		// при переключении стилей отображения очищать общий буфер
+	if (glob_3dss_style != n)
 	{
-		wfsetupnew();
-		old_state = glob_3dss_style;
+		glob_3dss_style = n;
+		wfsetupnew();	// при переключении стилей отображения очищать общий буфер
 	}
 }
 
