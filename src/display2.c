@@ -7177,7 +7177,6 @@ static int_fast16_t wfhscroll;			// сдвиг по шоризонтали (от
 static uint_fast16_t wfvscroll;			// сдвиг по вертикали (в рабочем направлении) для водопада.
 static uint_fast8_t wfclear;			// стирание всей областии отображение водопада.
 
-
 static void
 display2_wfl_init(
 	uint_fast8_t xgrid,
@@ -7185,8 +7184,6 @@ display2_wfl_init(
 	dctx_t * pctx
 	)
 {
-
-
 	static subscribeint32_t rtsregister;
 
 	buildsigwndifspec();
@@ -7195,7 +7192,6 @@ display2_wfl_init(
 	fftbuffer_initialize();
 
 	subscribeint_user(& rtstargetsint, & rtsregister, NULL, saveIQRTSxx);
-
 
 	// Код взят из проекта Malamute
 	//PRINTF("wfpalette_initialize: main=%d, pip=%d, PALETTESIZE=%d, LCDMODE_MAIN_PAGES=%d\n", sizeof (PACKEDCOLORMAIN_T), sizeof (PACKEDCOLORMAIN_T), PALETTESIZE, LCDMODE_MAIN_PAGES);
@@ -7461,8 +7457,8 @@ enum {
 	Y_STEP = 5,
 	MAX_DELAY_3DSS = 3,
 	HALF_ALLDX = ALLDX / 2,
-	SPY_3DSS = (ALLDY - MAX_3DSS_STEP * Y_STEP) / 2,
-	SPY_3DSS_H = SPY_3DSS / 3
+	SPY_3DSS = SPDY,
+	SPY_3DSS_H = SPY_3DSS / 4
 };
 
 static uint_fast8_t current_3dss_step = 0;
@@ -7569,7 +7565,7 @@ static void display2_spectrum(
 
 			for (int_fast8_t i = MAX_3DSS_STEP - 1; i >= 0; i --)
 			{
-				uint_fast16_t y0 = spy - 1 - i * Y_STEP;
+				uint_fast16_t y0 = spy - 5 - i * Y_STEP;
 				uint_fast16_t range = HALF_ALLDX - 1 - i * Y_STEP;
 
 				for (uint_fast16_t x = 0; x < ALLDX; ++ x)
@@ -7615,7 +7611,7 @@ static void display2_spectrum(
 			if (! delay_3dss)
 				current_3dss_step = (current_3dss_step + 1) % MAX_3DSS_STEP;
 
-			display_colorgrid_3dss(colorpip, spy - SPY_3DSS_H, SPY_3DSS_H, f0, bw);
+			display_colorgrid_3dss(colorpip, spy - SPY_3DSS_H + 3, SPY_3DSS_H, f0, bw);
 		}
 		else
 		{
