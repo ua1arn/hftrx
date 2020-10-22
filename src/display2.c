@@ -7578,7 +7578,7 @@ static void display2_spectrum(
 					{
 						int val = dsp_mag2y(filter_spectrum(x), SPY_3DSS - 1, glob_topdb, glob_bottomdb);
 						uint_fast16_t ynew = spy - 1 - val;
-						wfjarray [current_3dss_step * GXADJ(ALLDX) + x] = val;
+						* colmain_mem_at(wfjarray, ALLDX, MAX_3DSS_STEP, x, current_3dss_step) = val;
 
 						for (uint_fast16_t dy = spy - 1, j = 0; dy > ynew; dy --, j ++)
 						{
@@ -7596,7 +7596,7 @@ static void display2_spectrum(
 					else
 					{
 						static uint_fast16_t yz;
-						uint_fast16_t x1, y1 = y0 - wfjarray [draw_step * GXADJ(ALLDX) + x];
+						uint_fast16_t x1, y1 = y0 - * colmain_mem_at(wfjarray, ALLDX, MAX_3DSS_STEP, x, draw_step);
 
 						if (x <= HALF_ALLDX)
 							x1 = HALF_ALLDX - normalize(HALF_ALLDX - x, 0, HALF_ALLDX, range);
