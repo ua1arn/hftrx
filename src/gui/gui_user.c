@@ -853,9 +853,8 @@ static void window_display_process(void)
 		update = 1;
 
 		button_t buttons [] = {
-			{ 0, 0, 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_DISPLAY, NON_VISIBLE, INT32_MAX, "btn_colorsp", "Colored|spectrum", },
-			{ 0, 0, 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_DISPLAY, NON_VISIBLE, INT32_MAX, "btn_zoom",    "", },
-			{ 0, 0, 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_DISPLAY, NON_VISIBLE, INT32_MAX, "btn_3dss",    "3DSS", },
+			{ 0, 0, 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_DISPLAY, NON_VISIBLE, INT32_MAX, "btn_zoom", "", },
+			{ 0, 0, 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_DISPLAY, NON_VISIBLE, INT32_MAX, "btn_view", "", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -973,18 +972,12 @@ static void window_display_process(void)
 		if (IS_BUTTON_PRESS)
 		{
 			button_t * bh = (button_t *) ptr;
-			button_t * btn_colorsp = find_gui_element(TYPE_BUTTON, win, "btn_colorsp");
+			button_t * btn_view = find_gui_element(TYPE_BUTTON, win, "btn_view");
 			button_t * btn_zoom = find_gui_element(TYPE_BUTTON, win, "btn_zoom");
-			button_t * btn_3dss = find_gui_element(TYPE_BUTTON, win, "btn_3dss");
 
-			if (bh == btn_colorsp)
+			if (bh == btn_view)
 			{
-//				hamradio_set_gcolorsp(! hamradio_get_gcolorsp());
-				update = 1;
-			}
-			if (bh == btn_3dss)
-			{
-//				hamradio_set_3dss(! hamradio_get_3dss());
+				hamradio_change_view_style(1);
 				update = 1;
 			}
 			else if (bh == btn_zoom)
@@ -1025,11 +1018,9 @@ static void window_display_process(void)
 
 	if (update)
 	{
-//		button_t * btn_3dss = find_gui_element(TYPE_BUTTON, win, "btn_3dss");
-//		btn_3dss->is_locked = hamradio_get_3dss();
-//
-//		button_t * btn_colorsp = find_gui_element(TYPE_BUTTON, win, "btn_colorsp");
-//		btn_colorsp->is_locked = hamradio_get_gcolorsp();
+		button_t * btn_view = find_gui_element(TYPE_BUTTON, win, "btn_view");
+		local_snprintf_P(btn_view->text, ARRAY_SIZE(btn_view->text), PSTR("View|%s"), hamradio_change_view_style(0));
+		remove_end_line_spaces(btn_view->text);
 
 		button_t * btn_zoom = find_gui_element(TYPE_BUTTON, win, "btn_zoom");
 		local_snprintf_P(btn_zoom->text, ARRAY_SIZE(btn_zoom->text), PSTR("Zoom|x%d"), 1 << hamradio_get_gzoomxpow2());

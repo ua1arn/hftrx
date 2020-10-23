@@ -13565,8 +13565,8 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, VIEW_COUNT - 1,				/* стиль отображения спектра и панорамы */
 		offsetof(struct nvmap, gviewstyle),
-		& gviewstyle,
 		NULL,
+		& gviewstyle,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
@@ -20095,16 +20095,41 @@ uint_fast8_t hamradio_get_gsmetertype(void)
 #endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
 
 #if WITHSPECTRUMWF
-uint_fast8_t hamradio_get_gcolorsp(void)
+const char * hamradio_change_view_style(uint_fast8_t v)
 {
-	return 0; //gcolorsp;
-}
+	uint_fast16_t menupos;
+	const char * name = "VIEW STL";
 
-void hamradio_set_gcolorsp(uint_fast8_t v)
-{
-//	gcolorsp = v != 0;
-//	save_i8(offsetof(struct nvmap, gcolorsp), gcolorsp);
-//	updateboard(1, 0);
+	for (menupos = 0; menupos < MENUROW_COUNT; ++ menupos)
+	{
+		const FLASHMEM struct menudef * const mp = & menutable [menupos];
+		if ((mp->qspecial & ITEM_VALUE) == 0)
+			continue;
+
+		if (! strcmp(name, mp->qlabel))
+			break;
+	}
+
+	const FLASHMEM struct menudef * const mp = & menutable [menupos];
+
+	if (v)
+	{
+		uint_fast8_t * const pv8 = mp->qpval8;
+		* pv8 = (* pv8 + 1) % (mp->qupper + 1);
+		gviewstyle = * pv8;
+		updateboard(1, 0);
+	}
+
+#if (NVRAM_TYPE != NVRAM_TYPE_CPUEEPROM)
+		savemenuvalue(mp);		/* сохраняем отредактированное значение */
+#endif
+
+	dctx_t dctx;
+	dctx.type = DCTX_MENU;
+	dctx.pv = mp;
+	display2_menu_valxx(0, 0, & dctx);
+
+	return menuw;
 }
 
 uint_fast8_t hamradio_get_gzoomxpow2(void)
