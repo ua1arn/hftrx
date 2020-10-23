@@ -146,11 +146,11 @@
 
 #if WITHTOUCHGUI
 static uint_fast8_t keyboard_redirect = 0;	// перенаправление кодов кнопок в менеджер gui
-static char menuw [20];						// буфер для вывода значений системного меню
 static enc2_menu_t enc2_menu;
 static uint_fast8_t band_no_check = 0;
 static uint_fast8_t encoder2_redirect = 0;
 #endif /* WITHTOUCHGUI */
+static char menuw [20];						// буфер для вывода значений системного меню
 
 static uint_fast32_t 
 //NOINLINEAT
