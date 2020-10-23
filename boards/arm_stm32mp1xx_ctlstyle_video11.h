@@ -295,10 +295,10 @@
 	#define ENCRES_DEFAULT ENCRES_128
 	//#define ENCRES_DEFAULT ENCRES_24
 	#define WITHDIRECTFREQENER	1 //(! CTLSTYLE_SW2011ALL && ! CTLSTYLE_UA3DKC)
-	#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
+	//#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
 	//#define ENCODER_REVERSE	1	/* разводка на плате с перепутаными фазами от валкодера */
 	//#define ENCODER2_REVERSE	1	/* разводка на плате с перепутаными фазами от валкодера */
-	#define WITHENCODER2	1		/* есть второй валкодер */
+	//#define WITHENCODER2	1		/* есть второй валкодер */
 	#define BOARD_ENCODER2_DIVIDE 4		/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
 	/* Board hardware configuration */
 	//#define CODEC1_TYPE CODEC_TYPE_TLV320AIC23B
@@ -529,10 +529,10 @@
 	//#define WITHWFM	1			/* используется WFM */
 
 	#define WITHCATEXT	1	/* Расширенный набор команд CAT */
-	#define WITHELKEY	1
+	//#define WITHELKEY	1
 	//#define WITHKBDENCODER 1	// перестройка частоты кнопками
-	#define WITHKEYBOARD 1	/* в данном устройстве есть клавиатура */
-	#define KEYBOARD_USE_ADC	1	/* на одной линии установлено  четыре  клавиши. на vref - 6.8K, далее 2.2К, 4.7К и 13K. */
+	//#define WITHKEYBOARD 1	/* в данном устройстве есть клавиатура */
+	//#define KEYBOARD_USE_ADC	1	/* на одной линии установлено  четыре  клавиши. на vref - 6.8K, далее 2.2К, 4.7К и 13K. */
 
 	// ST LM235Z
 	#define THERMOSENSOR_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика температуры
