@@ -9029,6 +9029,8 @@ void debugusb_initialize(void)
 
 #endif /* WITHDEBUG && WITHUSBCDCACM && WITHDEBUG_CDC */
 
+#if WITHSPIHW || WITHSPISW
+
 // Read ADC MCP3204/MCP3208
 uint_fast16_t
 mcp3208_read(
@@ -9093,4 +9095,5 @@ mcp3208_read(
 	* valid = ((rv >> (LSBPOS + 12)) & 0x01) == 0;
 	return (rv >> LSBPOS) & 0xFFF;
 }
+#endif /* WITHSPIHW || WITHSPISW */
 
