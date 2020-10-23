@@ -46,9 +46,6 @@
 		LEFTMARGIN = HSYNC + HBP,	/* horizontal delay before DE start */
 		TOPMARGIN = VSYNC + VBP,	/* vertical delay before DE start */
 
-		HFULL = HSYNC + HBP + WIDTH + HFP,	/* horizontal full period */
-		VFULL = VSYNC + VBP + HEIGHT + VFP,	/* vertical full period */
-
 		// MODE: DE/SYNC mode select.
 		// DE MODE: MODE="1", VS and HS must pull high.
 		// SYNC MODE: MODE="0". DE must be grounded
@@ -85,9 +82,6 @@
 		/* Accumulated parameters for this display */
 		LEFTMARGIN = 46,		/* horizontal blanking EXACTLY */
 		TOPMARGIN = 23,			/* vertical blanking EXACTLY */
-
-		HFULL = LEFTMARGIN + WIDTH + HFP,	/* horizontal full period */
-		VFULL = TOPMARGIN + HEIGHT + VFP,	/* vertical full period */
 
 		// MODE: DE/SYNC mode select.
 		// DE MODE: MODE="1", VS and HS must pull high.
@@ -128,9 +122,6 @@
 		LEFTMARGIN = 160,		/* horizontal blanking EXACTLY */
 		TOPMARGIN = 23,			/* vertical blanking EXACTLY */
 
-		HFULL = LEFTMARGIN + WIDTH + HFP,	/* horizontal full period */
-		VFULL = TOPMARGIN + HEIGHT + VFP,	/* vertical full period */
-
 		// MODE: DE/SYNC mode select.
 		// DE MODE: MODE="1", VS and HS must pull high.
 		// SYNC MODE: MODE="0". DE must be grounded
@@ -163,9 +154,6 @@
 		LEFTMARGIN = HSYNC + HBP,	/* horizontal delay before DE start */
 		TOPMARGIN = VSYNC + VBP,	/* vertical delay before DE start */
 
-		HFULL = HSYNC + HBP + WIDTH + HFP,	/* horizontal full period */
-		VFULL = VSYNC + VBP + HEIGHT + VFP,	/* vertical full period */
-
 		VSYNCNEG = 1,			/* Negative polarity required for VSYNC signal */
 		HSYNCNEG = 1,			/* Negative polarity required for HSYNC signal */
 		DENEG = 0,				/* DE polarity: (normal: DE is 0 while sync) */
@@ -195,9 +183,6 @@
 		/* Accumulated parameters for this display */
 		LEFTMARGIN = HSYNC + HBP,	/* horizontal delay before DE start */
 		TOPMARGIN = VSYNC + VBP,	/* vertical delay before DE start */
-
-		HFULL = HSYNC + HBP + WIDTH + HFP,	/* horizontal full period */
-		VFULL = VSYNC + VBP + HEIGHT + VFP,	/* vertical full period */
 
 		VSYNCNEG = 1,			/* Negative polarity required for VSYNC signal */
 		HSYNCNEG = 1,			/* Negative polarity required for HSYNC signal */
@@ -229,9 +214,6 @@
 		LEFTMARGIN = 46,		/* horizontal blanking EXACTLY */
 		TOPMARGIN = 23,			/* vertical blanking EXACTLY */
 
-		HFULL = LEFTMARGIN + WIDTH + HFP,	/* horizontal full period */
-		VFULL = TOPMARGIN + HEIGHT + VFP,	/* vertical full period */
-
 		// MODE: DE/SYNC mode select.
 		// DE MODE: MODE="1", VS and HS must pull high.
 		// SYNC MODE: MODE="0". DE must be grounded
@@ -251,6 +233,12 @@
 	#define LTDC_DOTCLK	3000000uL	// частота пикселей при работе с интерфейсом RGB
 
 #endif
+
+enum
+{
+	HFULL = LEFTMARGIN + WIDTH + HFP,	/* horizontal full period */
+	VFULL = TOPMARGIN + HEIGHT + VFP	/* vertical full period */
+};
 
 #if CPUSTYLE_R7S721
 
