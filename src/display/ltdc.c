@@ -508,6 +508,28 @@ static void vdc5fb_init_graphics(struct st_vdc5 * const vdc)
 
 //#endif /* LCDMODE_PIP_L8 || LCDMODE_PIP_RGB565 */
 }
+/* Palette reload */
+static void vdc5fb_L8_palette(struct st_vdc5 * const vdc)
+{
+#define     VDC5_CH0_GR0_CLUT_TBL           (*(volatile uint32_t*)0xFCFF6000)
+//#define     VDC5_CH0_GR1_CLUT_TBL           (*(volatile uint32_t*)0xFCFF6400)
+#define     VDC5_CH0_GR2_CLUT_TBL           (*(volatile uint32_t*)0xFCFF6800)
+#define     VDC5_CH0_GR3_CLUT_TBL           (*(volatile uint32_t*)0xFCFF6C00)
+	// Таблица используемой при отображении палитры
+	COLOR24_T xltrgb24 [256];
+	display2_xltrgb24(xltrgb24);
+#if LCDMODE_MAIN_L8
+	SETREG32_CK(& vdc->GR2_CLUT, 1, 16, 0x00);			// GR2_CLT_SEL
+	VDC5_fillLUT_L8(& VDC5_CH0_GR2_CLUT_TBL, xltrgb24);
+	SETREG32_CK(& vdc->GR2_CLUT, 1, 16, 0x01);			// GR2_CLT_SEL
+#endif /* LCDMODE_PIP_L8 */
+#if LCDMODE_PIP_L8
+	// PIP on GR3
+	SETREG32_CK(& vdc->GR3_CLUT_INT, 1, 16, 0x00);			// GR3_CLT_SEL
+	VDC5_fillLUT_L8(& VDC5_CH0_GR3_CLUT_TBL, xltrgb24);
+	SETREG32_CK(& vdc->GR3_CLUT_INT, 1, 16, 0x01);			// GR3_CLT_SEL
+#endif /* LCDMODE_PIP_L8 */
+}
 
 static void vdc5fb_init_outcnt(struct st_vdc5 * const vdc)
 {
@@ -849,6 +871,13 @@ arm_hardware_ltdc_initialize(void)
 #endif /* LCDMODE_PIP_RGB565 || LCDMODE_PIP_L8 */
 
 	PRINTF(PSTR("arm_hardware_ltdc_initialize done\n"));
+}
+
+/* Palette reload */
+void arm_hardware_ltdc_L8_palette(void)
+{
+	struct st_vdc5 * const vdc = & VDC50;
+	vdc5fb_L8_palette(vdc);
 }
 
 /* set bottom buffer start */
@@ -1591,7 +1620,24 @@ void arm_hardware_ltdc_pip_off(void)
 	LTDC->SRCR = LTDC_SRCR_VBR;	/* Vertical Blanking Reload. */
 }
 
-//
+/* Palette reload */
+void arm_hardware_ltdc_L8_palette(void)
+{
+	// Таблица используемой при отображении палитры
+	COLOR24_T xltrgb24 [256];
+	display2_xltrgb24(xltrgb24);
+#if LCDMODE_MAIN_L8
+	fillLUT_L8(LAYER_MAIN, xltrgb24);	// загрузка палитры - имеет смысл до Reload
+	/* LTDC reload configuration */
+	LTDC->SRCR = LTDC_SRCR_IMR;	/* Immediately Reload. */
+#endif /* LCDMODE_PIP_L8 */
+#if LCDMODE_PIP_L8
+	/* LTDC reload configuration */
+	LTDC->SRCR = LTDC_SRCR_IMR;	/* Immediately Reload. */
+	fillLUT_L8(LAYER_PIP, xltrgb24);	// загрузка палитры - имеет смысл до Reload
+#endif /* LCDMODE_PIP_L8 */
+}
+//LCDMODE_MAIN_L8
 
 /* Set MAIN frame buffer address. */
 void arm_hardware_ltdc_main_set(uintptr_t p)

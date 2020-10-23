@@ -1307,7 +1307,7 @@ void display_hardware_initialize(void)
 	arm_hardware_ltdc_initialize();
 	colmain_setcolors(COLORMAIN_WHITE, COLORMAIN_BLACK);
 	arm_hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
-
+	arm_hardware_ltdc_L8_palette();
 #endif /* WITHLTDCHW */
 
 #if LCDMODE_HARD_SPI
@@ -1323,6 +1323,13 @@ void display_hardware_initialize(void)
 	PRINTF(PSTR("display_hardware_initialize done\n"));
 }
 
+// Palette reload
+void display_palette(void)
+{
+#if WITHLTDCHW
+	arm_hardware_ltdc_L8_palette();
+#endif /* WITHLTDCHW */
+}
 // https://habr.com/ru/post/166317/
 
 //	Hue — тон, цикличная угловая координата.

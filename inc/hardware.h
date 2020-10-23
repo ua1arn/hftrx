@@ -726,6 +726,7 @@ void arm_hardware_ltdc_initialize(void);	// LCD-TFT Controller (LTDC) with frame
 void arm_hardware_ltdc_main_set(uintptr_t addr);	// Set MAIN frame buffer address.
 void arm_hardware_ltdc_pip_set(uintptr_t addr);	// Set PIP frame buffer address.
 void arm_hardware_ltdc_pip_off(void);	// Turn PIP off (main layer only).
+void arm_hardware_ltdc_L8_palette(void);	// Palette reload
 
 uint_fast8_t usbd_cdc1_getrts(void);
 uint_fast8_t usbd_cdc1_getdtr(void);

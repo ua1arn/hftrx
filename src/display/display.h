@@ -383,6 +383,7 @@ void display_reset(void);				/* вызывается при разрешённы
 void display_initialize(void);			/* вызывается при разрешённых прерываниях. */
 void display_discharge(void);			/* вызывается при разрешённых прерываниях. */
 void display_set_contrast(uint_fast8_t v);
+void display_palette(void);				// Palette reload
 
 /* индивидуальные функции драйвера дисплея - реализованы в соответствующем из файлов */
 void display_clear(void);
