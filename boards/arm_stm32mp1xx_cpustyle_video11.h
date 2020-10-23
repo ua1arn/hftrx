@@ -148,6 +148,11 @@
 	#define WITHMOVEDFU 1	// Переместить интерфейс DFU в область меньших номеров. Утилита dfu-util 0.9 не работает с DFU на интерфейсе с индексом 10
 	#define WITHUSBWCID	1
 
+	#define BOARD_AGCCODE_ON 0
+	#define BOARD_AGCCODE_OFF 0
+	#define BOARD_NOTCH_MANUAL 0
+	#define BOARD_NOTCH_OFF 0
+
 #endif /* WITHISBOOTLOADER */
 
 

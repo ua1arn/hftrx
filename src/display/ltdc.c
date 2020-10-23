@@ -206,6 +206,46 @@
 	};
 	#define LTDC_DOTCLK	3000000uL	// частота пикселей при работе с интерфейсом RGB
 
+#elif LCDMODE_H497TLB01P4
+	/* 720xRGBx1280 - 5" AMOELD Panel */
+	enum
+	{
+		WIDTH = 720,			/* LCD PIXEL WIDTH            */
+		HEIGHT = 1280,			/* LCD PIXEL HEIGHT           */
+		/**
+		  * @brief  AT070TN90 Timing
+		  * MODE=0 (DE)
+		  * When selected DE mode, VSYNC & HSYNC must pulled HIGH
+		  * MODE=1 (SYNC)
+		  * When selected sync mode, de must be grounded.
+		  */
+		HSYNC = 40,				/* Horizontal synchronization 1..40 */
+		HFP = 210,				/* Horizontal front porch  16..354   */
+
+		VSYNC = 20,				/* Vertical synchronization 1..20  */
+		VFP = 22,				/* Vertical front porch  7..147     */
+
+		/* Accumulated parameters for this display */
+		LEFTMARGIN = 46,		/* horizontal blanking EXACTLY */
+		TOPMARGIN = 23,			/* vertical blanking EXACTLY */
+
+		HFULL = LEFTMARGIN + WIDTH + HFP,	/* horizontal full period */
+		VFULL = TOPMARGIN + HEIGHT + VFP,	/* vertical full period */
+
+		// MODE: DE/SYNC mode select.
+		// DE MODE: MODE="1", VS and HS must pull high.
+		// SYNC MODE: MODE="0". DE must be grounded
+		VSYNCNEG = 1,			/* Negative polarity required for VSYNC signal */
+		HSYNCNEG = 1,			/* Negative polarity required for HSYNC signal */
+		DENEG = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
+#if WITHLCDDEMODE
+		BOARD_DEMODE = 1		/* 0: static signal, 1: DE controlled */
+#else /* WITHLCDSYNCMODE */
+		BOARD_DEMODE = 0		/* 0: static signal, 1: DE controlled */
+#endif /* WITHLCDSYNCMODE */
+	};
+	#define LTDC_DOTCLK	30000000uL	// частота пикселей при работе с интерфейсом RGB
+
 #else
 	#error Unsupported LCDMODE_xxx
 	#define LTDC_DOTCLK	3000000uL	// частота пикселей при работе с интерфейсом RGB

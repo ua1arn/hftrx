@@ -1054,6 +1054,14 @@ extern "C" {
 	#define LCDMODE_HORFILL	1
 #endif /* LCDMODE_AT070TNA2 */
 
+#if LCDMODE_H497TLB01P4	/* 720xRGBx1280 - 5" AMOELD Panel */
+	#define LCDMODE_SPI_RN 1 // эти дисплеи требуют только RESET
+	#define DIM_X 720
+	#define DIM_Y 1280
+	#define LCDMODE_COLORED	1
+	#define LCDMODE_HORFILL	1
+#endif /* LCDMODE_AT070TNA2 */
+
 #if LCDMODE_S1D13781		/* PSP-1000 with S1D113780 */
 	#define LCDMODE_HARD_SPI	1	/* SPI interface */
 	#define LCDMODE_SPI_RN	1	/* SPI only, with Reset, no Address need */
@@ -1226,6 +1234,13 @@ extern "C" {
 #elif DIM_X == 1024 && DIM_Y == 600
 	#define DSTYLE_G_X800_Y480	1	/* AT070TN90 panel (800*480) - 7" display */
 	//#define DSTYLE_G_X1024_Y600	1	/* AT070TNA2 panel (1024*600) - 7" display */
+	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
+	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
+	#define GRID2X(cellsx) ((cellsx) * 16)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
+	#define GRID2Y(cellsy) ((cellsy) * 5)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
+
+#elif DIM_X == 720 && DIM_Y == 1280
+	#define DSTYLE_G_X480_Y272	1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 display */
 	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
 	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
 	#define GRID2X(cellsx) ((cellsx) * 16)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */

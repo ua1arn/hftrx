@@ -220,8 +220,9 @@
 	//#define LCDMODE_V0	1	/* Обычная конфигурация без PIP с L8 на основном экране */
 	//#define LCDMODE_V1A	1	/* Обычная конфигурация с PIP на часть экрана, MAIN=RGB565, PIP=RGB565 */
 
+	#define LCDMODE_H497TLB01P4 1	/* 720xRGBx1280 - 5" AMOELD Panel */
 	//#define LCDMODE_LQ043T3DX02K 1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 4.3" display */
-	#define LCDMODE_AT070TN90 1	/* AT070TN90 panel (800*480) - 7" display */
+	//#define LCDMODE_AT070TN90 1	/* AT070TN90 panel (800*480) - 7" display */
 	//#define LCDMODE_AT070TNA2 1	/* AT070TNA2 panel (1024*600) - 7" display */
 	#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
 
@@ -274,7 +275,7 @@
 	#define BOARD_DETECTOR_AM 	0		// Заглушка
 	#define BOARD_DETECTOR_FM 	0		// Заглушка
 	#define BOARD_DETECTOR_MUTE 	0		// Заглушка
-	#define BOARD_DETECTOR_TUNE 	0		// Заглушка
+	//#define BOARD_DETECTOR_TUNE 	0		// Заглушка
 
 	// +++ заглушки для плат с DSP обработкой
 	#define BOARD_NOTCH_OFF		0
@@ -549,7 +550,7 @@
 	/* фильтры, для которых стоит признак HAVE */
 	#define IF3_FHAVE	( IF3_FMASK_0P5 | IF3_FMASK_3P1 /*| IF3_FMASK_6P0 | IF3_FMASK_8P0*/)
 
-	#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания и/или подсветки дисплея
+	//#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания и/или подсветки дисплея
 
 	#define VOLTLEVEL_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика напряжения
 	#define VOLTLEVEL_LOWER		10	// 1 kOhm - нижний резистор
@@ -654,10 +655,5 @@
 
 	#define KI_COUNT 5	// количество используемых под клавиатуру входов АЦП
 	#define KI_LIST	KI4, KI3, KI2, KI1, KI0,	// инициализаторы для функции перекодировки
-
-#define BOARD_AGCCODE_ON 0
-#define BOARD_AGCCODE_OFF 0
-#define BOARD_NOTCH_MANUAL 0
-#define BOARD_NOTCH_OFF 0
 
 #endif /* ARM_STM32MP1_LFBGA354_CTLSTYLE_STORCH_V9A_H_INCLUDED */
