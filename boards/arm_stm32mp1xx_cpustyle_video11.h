@@ -16,7 +16,7 @@
 //#define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
 //#define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
 //#define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
-#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
+//#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
 
 //#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
@@ -48,10 +48,10 @@
 	//#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
 	#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
 	//#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */
-	#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
+	//#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
 
 	#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
-	//#define WITHSDRAM_PMC1	1	/* power management chip */
+	#define WITHSDRAM_PMC1	1	/* power management chip */
 
 	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHGPUHW	1	/* Graphic processor unit */
@@ -119,7 +119,7 @@
 	//#define USB_OTG_HS                   USB1_OTG_HS
 	//#define USB_OTG_FS                   USB2_OTG_FS
 
-	#define WITHEHCIHW	1	/* USB_EHCI controller */
+	#define WITHEHCIHW	1	/* USB_EHCI controllefr */
 	//#define WITHUSBHW_HOST		USB_OTG_HS
 	#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB_DP2 & USB_DM2
 	//#define WITHUSBHOST_DMAENABLE 1
@@ -607,7 +607,7 @@
 // WITHUART2HW
 #define HARDWARE_UART4_INITIALIZE() do { \
 		const uint_fast32_t TXMASK = (1uL << 13); /* PA13: TX DATA line (2 MHz) */ \
-		const uint_fast32_t RXMASK = 0 * (1uL << 6); /* PD6: RX DATA line (2 MHz) - pull-up RX data */  \
+		const uint_fast32_t RXMASK = (0 * 1uL << 6); /* PD6: RX DATA line (2 MHz) - pull-up RX data */  \
 		arm_hardware_pioa_altfn50(TXMASK, AF_USART4); \
 		arm_hardware_pioa_altfn50(RXMASK, AF_USART4); \
 		arm_hardware_pioa_updown(RXMASK, 0); \
@@ -646,30 +646,30 @@
 #if 1 // WITHTWISW
 	// I2C1_SDA	PB11
 	// I2C1_SCL	PD7
-	#define TARGET_TWI_TWCK		(1u << 7)		// PD7 I2C1_SCL
-	#define TARGET_TWI_TWCK_PIN		(GPIOD->IDR)
-	#define TARGET_TWI_TWCK_PORT_C(v) do { GPIOD->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define TARGET_TWI_TWCK_PORT_S(v) do { GPIOD->BSRR = BSRR_S(v); __DSB(); } while (0)
+	#define TARGET_TWI_TWCK		(1u << 4)		// PZ4 I2C2_SCL
+	#define TARGET_TWI_TWCK_PIN		(GPIOZ->IDR)
+	#define TARGET_TWI_TWCK_PORT_C(v) do { GPIOZ->BSRR = BSRR_C(v); __DSB(); } while (0)
+	#define TARGET_TWI_TWCK_PORT_S(v) do { GPIOZ->BSRR = BSRR_S(v); __DSB(); } while (0)
 
-	#define TARGET_TWI_TWD		(1u << 11)		// PB11 I2C1_SDA
-	#define TARGET_TWI_TWD_PIN		(GPIOB->IDR)
-	#define TARGET_TWI_TWD_PORT_C(v) do { GPIOB->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define TARGET_TWI_TWD_PORT_S(v) do { GPIOB->BSRR = BSRR_S(v); __DSB(); } while (0)
+	#define TARGET_TWI_TWD		(1u << 5)		// PZ5 I2C2_SDA
+	#define TARGET_TWI_TWD_PIN		(GPIOZ->IDR)
+	#define TARGET_TWI_TWD_PORT_C(v) do { GPIOZ->BSRR = BSRR_C(v); __DSB(); } while (0)
+	#define TARGET_TWI_TWD_PORT_S(v) do { GPIOZ->BSRR = BSRR_S(v); __DSB(); } while (0)
 
 	// Инициализация битов портов ввода-вывода для программной реализации I2C
 	#define	TWISOFT_INITIALIZE() do { \
-			arm_hardware_piod_opendrain(TARGET_TWI_TWCK, TARGET_TWI_TWCK); /* SCL */ \
-			arm_hardware_piob_opendrain(TARGET_TWI_TWD, TARGET_TWI_TWD);  	/* SDA */ \
+			arm_hardware_pioz_opendrain(TARGET_TWI_TWCK, TARGET_TWI_TWCK); /* SCL */ \
+			arm_hardware_pioz_opendrain(TARGET_TWI_TWD, TARGET_TWI_TWD);  	/* SDA */ \
 		} while (0) 
 	#define	TWISOFT_DEINITIALIZE() do { \
-			arm_hardware_piod_inputs(TARGET_TWI_TWCK); 	/* SCL */ \
-			arm_hardware_piob_inputs(TARGET_TWI_TWD);	/* SDA */ \
+			arm_hardware_pioz_inputs(TARGET_TWI_TWCK); 	/* SCL */ \
+			arm_hardware_pioz_inputs(TARGET_TWI_TWD);	/* SDA */ \
 		} while (0)
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
 	#define	TWIHARD_INITIALIZE() do { \
-			arm_hardware_piod_periphopendrain_altfn2(TARGET_TWI_TWCK, AF_I2C1);	/* I2C1_SCL AF=4 */ \
-			arm_hardware_piob_periphopendrain_altfn2(TARGET_TWI_TWD, AF_I2C1);	/* I2C1_SDA AF=4 */ \
+			arm_hardware_pioz_periphopendrain_altfn2(TARGET_TWI_TWCK, AF_I2C2);	/* I2C1_SCL AF=4 */ \
+			arm_hardware_pioz_periphopendrain_altfn2(TARGET_TWI_TWD, AF_I2C2);	/* I2C1_SDA AF=4 */ \
 		} while (0) 
 
 
@@ -739,7 +739,7 @@
 #if 1
 	/* получение состояния переполнения АЦП */
 	#define TARGET_FPGA_OVF_INPUT		(GPIOC->IDR)
-	#define TARGET_FPGA_OVF_BIT			(1u << 8)	// PC8
+	#define TARGET_FPGA_OVF_BIT			(0 * 1u << 8)	// PC8
 	#define TARGET_FPGA_OVF_GET			((TARGET_FPGA_OVF_INPUT & TARGET_FPGA_OVF_BIT) == 0)	// 1 - overflow active
 	#define TARGET_FPGA_OVF_INITIALIZE() do { \
 				arm_hardware_pioc_inputs(TARGET_FPGA_OVF_BIT); \
@@ -847,7 +847,7 @@
 
 	/* BL0: PA14. BL1: PA15 */
 	#define	HARDWARE_BL_INITIALIZE() do { \
-		const portholder_t BLpins = (1U << 15) | (1U << 14); /* PA15:PA14 */ \
+		const portholder_t BLpins = 0 * (1U << 15) | (1U << 14); /* PA15:PA14 */ \
 		const portholder_t ENmask = 0 * (1U << 1); /* PF1 - not in this hardware  */ \
 		arm_hardware_pioa_opendrain(BLpins, 0); \
 		} while (0)
@@ -857,7 +857,7 @@
 	#define HARDWARE_BL_SET(en, level) do { \
 		const portholder_t Vlevel = (level) & 0x03; \
 		const portholder_t ENmask = 0 * (1U << 1); /* PF1 - not in this hardware */ \
-		const portholder_t BLpins = (1U << 15) | (1U << 14); /* PA15:PA14 */ \
+		const portholder_t BLpins = 0 * (1U << 15) | (1U << 14); /* PA15:PA14 */ \
 		const portholder_t BLstate = (~ Vlevel) << 14; \
 		GPIOA->BSRR = \
 			BSRR_S((BLstate) & (BLpins)) | /* set bits */ \
@@ -949,21 +949,29 @@
 	#define USBD_DFU_FLASH_XFER_SIZE 256	// match to (Q)SPI FLASH MEMORY page size
 	#define USBD_DFU_FLASHNAME "W25Q128JV"
 
-	/* Выводы соединения с QSPI BOOT NOR FLASH */
-	#define SPDIF_MISO_BIT (1u << 9)	// PF9	QUADSPI_BK1_IO1
-	#define SPDIF_MOSI_BIT (1u << 8)	// PF8	QUADSPI_BK1_IO0
-	#define SPDIF_SCLK_BIT (1u << 10)	// PF10	QUADSPI_CLK
-	#define SPDIF_NCS_BIT (1u << 6)		// PB6	QUADSPI_BK1_NCS
+	#if WIHSPIDFSW || WIHSPIDFHW
+		/* Выводы соединения с QSPI BOOT NOR FLASH */
+		#define SPDIF_MISO_BIT (0 * 1u << 9)	// PF9	QUADSPI_BK1_IO1
+		#define SPDIF_MOSI_BIT (0 * 1u << 8)	// PF8	QUADSPI_BK1_IO0
+		#define SPDIF_SCLK_BIT (0 * 1u << 10)	// PF10	QUADSPI_CLK
+		#define SPDIF_NCS_BIT (0 * 1u << 6)		// PB6	QUADSPI_BK1_NCS
 
-	#define SPDIF_D2_BIT (1u << 7)		// PF7	QUADSPI_BK1_IO2
-	#define SPDIF_D3_BIT (1u << 6)		// PF6	QUADSPI_BK1_IO3
-	/* Отсоединить процессор от BOOT ROM - для возможности работы внешнего программатора. */
-	#define SPIDF_HANGOFF() do { \
-			arm_hardware_piob_inputs(SPDIF_NCS_BIT); \
-			arm_hardware_piof_inputs(SPDIF_SCLK_BIT); \
-			arm_hardware_piof_inputs(SPDIF_MOSI_BIT); \
-			arm_hardware_piof_inputs(SPDIF_MISO_BIT); \
-		} while (0)
+		#define SPDIF_D2_BIT (0 * 1u << 7)		// PF7	QUADSPI_BK1_IO2
+		#define SPDIF_D3_BIT (0 * 1u << 6)		// PF6	QUADSPI_BK1_IO3
+
+		/* Отсоединить процессор от BOOT ROM - для возможности работы внешнего программатора. */
+		#define SPIDF_HANGOFF() do { \
+				arm_hardware_piob_inputs(SPDIF_NCS_BIT); \
+				arm_hardware_piof_inputs(SPDIF_SCLK_BIT); \
+				arm_hardware_piof_inputs(SPDIF_MOSI_BIT); \
+				arm_hardware_piof_inputs(SPDIF_MISO_BIT); \
+			} while (0)
+	#else /* WIHSPIDFSW || WIHSPIDFHW */
+		/* Отсоединить процессор от BOOT ROM - для возможности работы внешнего программатора. */
+		#define SPIDF_HANGOFF() do { \
+			} while (0)
+
+	#endif /* WIHSPIDFSW || WIHSPIDFHW */
 
 	#if WIHSPIDFSW || WIHSPIDFHW
 
@@ -1013,7 +1021,7 @@
 
 	#endif /* WIHSPIDFSW || WIHSPIDFHW */
 
-	#define BOARD_BLINK_BIT (1uL << 13)	// PA13 - led on Storch board
+	#define BOARD_BLINK_BIT 0 //(1uL << 13)	// PA13 - led on Storch board
 	//#define BOARD_BLINK_BIT (1uL << 13)	// PA13 - RED LED LD5 on DK1/DK2 MB1272.pdf
 	//#define BOARD_BLINK_BIT (1uL << 14)	// PA14 - GREEN LED LD5 on DK1/DK2 MB1272.pdf
 	//#define BOARD_BLINK_BIT (1uL << 14)	// PD14 - LED on small board

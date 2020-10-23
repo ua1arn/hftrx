@@ -204,6 +204,12 @@ void arm_hardware_piok_outputs2m(unsigned long opins, unsigned long initialstate
 void arm_hardware_piok_outputs50m(unsigned long opins, unsigned long initialstate);
 void arm_hardware_piok_opendrain(unsigned long opins, unsigned long initialstate);
 
+void arm_hardware_pioz_inputs(unsigned long ipins);
+void arm_hardware_pioz_outputs(unsigned long opins, unsigned long initialstate);
+void arm_hardware_pioz_outputs2m(unsigned long opins, unsigned long initialstate);
+void arm_hardware_pioz_outputs50m(unsigned long opins, unsigned long initialstate);
+void arm_hardware_pioz_opendrain(unsigned long opins, unsigned long initialstate);
+
 void arm_hardware_pioa_peripha(unsigned long pins);		// выводы присоединены к periph A
 void arm_hardware_pioa_periphb(unsigned long pins);		// выводы присоединены к periph B
 void arm_hardware_pioa_periphc(unsigned long pins);		// выводы присоединены к periph C
