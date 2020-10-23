@@ -486,7 +486,7 @@ static void window_memory_process(void)
 
 		x = col1_int;
 		y = row1_int;
-		button_t * bh;
+		button_t * bh = NULL;
 
 		for (uint_fast8_t i = 0, r = 1; i < win->bh_count; i ++, r ++)
 		{
@@ -523,6 +523,7 @@ static void window_memory_process(void)
 			}
 		}
 
+		ASSERT(bh != NULL);
 		label_t * lbl_note1 = find_gui_element(TYPE_LABEL, win, "lbl_note1");
 		lbl_note1->x = col1_int;
 		lbl_note1->y = bh->y1 + bh->h + get_label_height(lbl_note1);
