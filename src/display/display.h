@@ -18,8 +18,8 @@ extern "C" {
 
 typedef uint_fast16_t COLOR565_T;
 typedef uint16_t PACKEDCOLOR565_T;
-typedef uint_fast32_t COLOR24_T;
 // RRRRRRR.GGGGGGGG.BBBBBBBB
+typedef uint_fast32_t COLOR24_T;
 #define COLOR24(red, green, blue) \
 	(  (unsigned long) \
 		(	\
@@ -35,6 +35,20 @@ typedef uint_fast32_t COLOR24_T;
 #define COLOR24_B(v) (((v) >> 0) & 0xFF)
 
 #define COLOR24_KEY	COLOR24(0xA0, 0, 0xA0)	// Цвет для прозрачных пикселей
+
+enum gradient_style
+{
+	GRADIENT_BLUE_YELLOW_RED,		// blue -> yellow -> red
+	GRADIENT_BLACK_YELLOW_RED,		// black -> yellow -> red
+	GRADIENT_BLACK_YELLOW_GREEN,	// black -> yellow -> green
+	GRADIENT_BLACK_RED,				// black -> red
+	GRADIENT_BLACK_GREEN,			// black -> green
+	GRADIENT_BLACK_BLUE,			// black -> blue
+	GRADIENT_BLACK_WHITE			// black -> white
+};
+
+COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
+
 
 #if LCDMODE_UC1601
 

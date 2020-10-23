@@ -49,6 +49,154 @@
 
 #endif /* LCDMODE_LTDC */
 
+static uint_fast8_t glob_colorstyle = GRADIENT_BLUE_YELLOW_RED;
+
+// построение цветных градиентов от UA3REO
+// get color from signal strength
+// Get FFT color warmth (blue to red)
+COLOR24_T colorgradient(unsigned pos, unsigned maxpos)
+{
+	uint_fast8_t red = 0;
+	uint_fast8_t green = 0;
+	uint_fast8_t blue = 0;
+	//blue -> yellow -> red
+	if (glob_colorstyle == GRADIENT_BLUE_YELLOW_RED)
+	{
+		// r g b
+		// 0 0 0
+		// 0 0 255
+		// 255 255 0
+		// 255 0 0
+		// contrast of each of the 3 zones, the total should be 1.0f
+		const float32_t contrast1 = 0.1f;
+		const float32_t contrast2 = 0.4f;
+		const float32_t contrast3 = 0.5f;
+
+		if (pos < maxpos * contrast1)
+		{
+			blue = (uint_fast8_t) (pos * 255 / (maxpos * contrast1));
+		}
+		else if (pos < maxpos * (contrast1 + contrast2))
+		{
+			green = (uint_fast8_t) ((pos - maxpos * contrast1) * 255 / ((maxpos - maxpos * contrast1) * (contrast1 + contrast2)));
+			red = green;
+			blue = 255 - green;
+		}
+		else
+		{
+			red = 255;
+			blue = 0;
+			green = (uint_fast8_t) (255 - (pos - (maxpos * (contrast1 + contrast2))) * 255 / ((maxpos - (maxpos * (contrast1 + contrast2))) * (contrast1 + contrast2 + contrast3)));
+		}
+		return COLOR24(red, green, blue);
+	}
+	//black -> yellow -> red
+	if (glob_colorstyle == GRADIENT_BLACK_YELLOW_RED)
+	{
+		// r g b
+		// 0 0 0
+		// 255 255 0
+		// 255 0 0
+		// contrast of each of the 2 zones, the total should be 1.0f
+		const float32_t contrast1 = 0.5f;
+		const float32_t contrast2 = 0.5f;
+
+		if (pos < maxpos * contrast1)
+		{
+			red = (uint_fast8_t) (pos * 255 / (maxpos * contrast1));
+			green = (uint_fast8_t) (pos * 255 / (maxpos * contrast1));
+			blue = 0;
+		}
+		else
+		{
+			red = 255;
+			blue = 0;
+			green = (uint_fast8_t) (255 - (pos - (maxpos * (contrast1))) * 255 / ((maxpos - (maxpos * (contrast1))) * (contrast1 + contrast2)));
+		}
+		return COLOR24(red, green, blue);
+	}
+	//black -> yellow -> green
+	if (glob_colorstyle == GRADIENT_BLACK_YELLOW_GREEN)
+	{
+		// r g b
+		// 0 0 0
+		// 255 255 0
+		// 0 255 0
+		// contrast of each of the 2 zones, the total should be 1.0f
+		const float32_t contrast1 = 0.5f;
+		const float32_t contrast2 = 0.5f;
+
+		if (pos < maxpos * contrast1)
+		{
+			red = (uint_fast8_t) (pos * 255 / (maxpos * contrast1));
+			green = (uint_fast8_t) (pos * 255 / (maxpos * contrast1));
+			blue = 0;
+		}
+		else
+		{
+			green = 255;
+			blue = 0;
+			red = (uint_fast8_t) (255 - (pos - (maxpos * (contrast1))) * 255 / ((maxpos - (maxpos * (contrast1))) * (contrast1 + contrast2)));
+		}
+		return COLOR24(red, green, blue);
+	}
+	//black -> red
+	if (glob_colorstyle == GRADIENT_BLACK_RED)
+	{
+		// r g b
+		// 0 0 0
+		// 255 0 0
+
+		if (pos <= maxpos)
+		{
+			red = (uint_fast8_t) (pos * 255 / maxpos);
+		}
+		return COLOR24(red, green, blue);
+	}
+	//black -> green
+	if (glob_colorstyle == GRADIENT_BLACK_GREEN)
+	{
+		// r g b
+		// 0 0 0
+		// 0 255 0
+
+		if (pos <= maxpos)
+		{
+			green = (uint_fast8_t) (pos * 255 / maxpos);
+		}
+		return COLOR24(red, green, blue);
+	}
+	//black -> blue
+	if (glob_colorstyle == GRADIENT_BLACK_BLUE)
+	{
+		// r g b
+		// 0 0 0
+		// 0 0 255
+
+		if (pos <= maxpos)
+		{
+			blue = (uint_fast8_t) (pos * 255 / maxpos);
+		}
+		return COLOR24(red, green, blue);
+	}
+	//black -> white
+	if (glob_colorstyle == GRADIENT_BLACK_WHITE)
+	{
+		// r g b
+		// 0 0 0
+		// 255 255 255
+
+		if (pos <= maxpos)
+		{
+			red = (uint_fast8_t) (pos * 255 / maxpos);
+			green = red;
+			blue = red;
+		}
+		return COLOR24(red, green, blue);
+	}
+	//unknown
+	return COLOR24(255, 255, 255);
+}
 
 
 /* стркутура хранит цвета элементов дизайна. Возмодно треите поле - для анталиасингового формирования изображения */
@@ -7201,46 +7349,11 @@ display2_wfl_init(
 #if ! defined (COLORPIP_SHADED)
 		// Init 256 colors palette
 		ASSERT(PALETTESIZE == 256);
-		// PALETTESIZE == 256
-		int a = 0;
-		// a = 0
-		for (i = 0; i < 64; ++ i)
+		for (i = 0; i < PALETTESIZE; ++ i)
 		{
-			// для i = 0..15 результат формулы = ноль
-			wfpalette [a + i] = TFTRGB565(0, 0, (int) (powf((float) 0.0625 * i, 4)));	// проверить результат перед попыткой применить целочисленные вычисления!
+			const COLOR24_T c = colorgradient(i, PALETTESIZE - 1));
+			wfpalette [i] = TFTRGB565(COLOR24_R(c), COLOR24_G(c), COLOR24_B(c));
 		}
-		a += i;
-		// a = 64
-		for (i = 0; i < 32; ++ i)
-		{
-			wfpalette [a + i] = TFTRGB565(0, i * 8, 255);
-		}
-		a += i;
-		// a = 96
-		for (i = 0; i < 32; ++ i)
-		{
-			wfpalette [a + i] = TFTRGB565(0, 255, 255 - i * 8);
-		}
-		a += i;
-		// a = 128
-		for (i = 0; i < 32; ++ i)
-		{
-			wfpalette [a + i] = TFTRGB565(i * 8, 255, 0);
-		}
-		a += i;
-		// a = 160
-		for (i = 0; i < 64; ++ i)
-		{
-			wfpalette [a + i] = TFTRGB565(255, 255 - i * 4, 0);
-		}
-		a += i;
-		// a = 224
-		for (i = 0; i < 32; ++ i)
-		{
-			wfpalette [a + i] = TFTRGB565(255, 0, i * 8);
-		}
-		a += i;
-		// a = 256
 #endif /* !  defined (COLORPIP_SHADED) */
 	}
 

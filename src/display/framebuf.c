@@ -1869,46 +1869,10 @@ void display2_xltrgb24(COLOR24_T * xltable)
 
 	// часть цветов с 0-го индекса используется в отображении водопада
 	// остальные в дизайне
-	// PALETTESIZE == 96
-	int a = 0;
-	// a = 0
-	for (i = 0; i < 16; ++ i)
+	for (i = 0; i < COLORPIP_BASE; ++ i)
 	{
-		fillpair_xltrgb24(xltable, a + i, COLOR24(0, 0, scalecolor(i, 15, 255)));	// проверить результат перед попыткой применить целочисленные вычисления!
+		fillpair_xltrgb24(xltable, i, colorgradient(i, COLORPIP_BASE - 1));
 	}
-	a += i;
-	// a = 16
-	for (i = 0; i < 16; ++ i)
-	{
-		fillpair_xltrgb24(xltable, a + i, COLOR24(0, scalecolor(i, 15, 255), 255));
-	}
-	a += i;
-	// a = 32
-	for (i = 0; i < 16; ++ i)
-	{
-		fillpair_xltrgb24(xltable, a + i, COLOR24(0, 255, 255 - scalecolor(i, 15, 255)));
-	}
-	a += i;
-	// a = 48
-	for (i = 0; i < 16; ++ i)
-	{
-		fillpair_xltrgb24(xltable, a + i, COLOR24(scalecolor(i, 15, 255), 255, 0));
-	}
-	a += i;
-	// a = 64
-	for (i = 0; i < 16; ++ i)
-	{
-		fillpair_xltrgb24(xltable, a + i, COLOR24(255, 255 - scalecolor(i, 15, 255), 0));
-	}
-	a += i;
-	// a = 80
-	for (i = 0; i < 16; ++ i)
-	{
-		fillpair_xltrgb24(xltable, a + i, COLOR24(255, 0, scalecolor(i, 15, 255)));
-	}
-	a += i;
-	// a = 96
-	ASSERT(a == COLORPIP_BASE);
 
 #if 0
 	{
