@@ -582,7 +582,7 @@
 #endif /* WITHSPIHW || WITHSPISW */
 
 // WITHUART1HW
-#define HARDWARE_USART1_INITIALIZE() do { \
+#define HARDWARE_UART1_INITIALIZE() do { \
 		const uint_fast32_t TXMASK = 0 * (1uL << 11); /* PG11: TX DATA line (2 MHz) */ \
 		const uint_fast32_t RXMASK = 0 * (1uL << 2); /* PB2: RX DATA line (2 MHz) - pull-up RX data */  \
 		arm_hardware_piog_altfn2(TXMASK, AF_USART1); /* AF4 */ \
@@ -591,7 +591,7 @@
 	} while (0)
 
 // WITHUART2HW
-#define HARDWARE_USART2_INITIALIZE() do { \
+#define HARDWARE_UART2_INITIALIZE() do { \
 		const uint_fast32_t TXMASK = (1uL << 5); /* PD5: TX DATA line (2 MHz) */ \
 		const uint_fast32_t RXMASK = (1uL << 6); /* PD6: RX DATA line (2 MHz) - pull-up RX data */  \
 		arm_hardware_piod_altfn50(TXMASK, AF_USART2); \

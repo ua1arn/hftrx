@@ -386,13 +386,13 @@
 #endif
 
 	#if HARDWARE_ARM_USEUSART0
-		#define HARDWARE_USART1_INITIALIZE() do { \
+		#define HARDWARE_UART1_INITIALIZE() do { \
 			arm_hardware_pioa_inputs(AT91C_PA5_RXD0); \
 			arm_hardware_pioa_outputs(AT91C_PA6_TXD0, AT91C_PA6_TXD0); \
 			arm_hardware_pioa_peripha(AT91C_PA5_RXD0 | AT91C_PA6_TXD0); \
 			} while (0)
 	#elif HARDWARE_ARM_USEUSART1
-		#define HARDWARE_USART2_INITIALIZE() do { \
+		#define HARDWARE_UART2_INITIALIZE() do { \
 			arm_hardware_pioa_inputs(AT91C_PA21_RXD1); \
 			arm_hardware_pioa_outputs(AT91C_PA22_TXD1, AT91C_PA22_TXD1); \
 			arm_hardware_pioa_peripha(AT91C_PA21_RXD1 | AT91C_PA22_TXD1); \

@@ -336,7 +336,7 @@
 	#define HARDWARE_SPI_DISCONNECT_MOSI() do { \
 			arm_hardware_piob_outputs(SPI_MOSI_BIT, SPI_MOSI_BIT);	/* PIO enable for MOSI bit (SD CARD read support)  */ \
 		} while (0)
-	#define HARDWARE_USART1_INITIALIZE() do { \
+	#define HARDWARE_UART1_INITIALIZE() do { \
 			arm_hardware_pioa_altfn2((1U << 9), 255);	/* TX DATA line (2 MHz) */ \
 			arm_hardware_pioa_inputs((1U << 10));		/* RX data line */ \
 			arm_hardware_pioa_updown((1U << 10), 0);	/* pull-up RX data */ \
@@ -369,7 +369,7 @@
 	#define HARDWARE_SPI_DISCONNECT_MOSI() do { \
 			arm_hardware_piob_outputs(SPI_MOSI_BIT, SPI_MOSI_BIT);	/* PIO enable for MOSI bit (SD CARD read support)  */ \
 		} while (0)
-	#define HARDWARE_USART1_INITIALIZE() do { \
+	#define HARDWARE_UART1_INITIALIZE() do { \
 			arm_hardware_pioa_altfn2((1U << 9) | (1U << 10), 7 /* AF_USART1 */); /* TX DATA line (2 MHz), RX data line */ \
 			arm_hardware_pioa_updown((1U << 10), 0);	/* pull-up RX data */ \
 		} while (0)

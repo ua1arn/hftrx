@@ -84,9 +84,9 @@ int dbg_getchar(char * r);
 			hardware_uart1_set_speed(baudrate); \
 		} while (0)
 	#define HARDWARE_DEBUG_PUTCHAR(c) \
-		(hardware_usart1_putchar(c))
+		(hardware_uart1_putchar(c))
 	#define HARDWARE_DEBUG_GETCHAR(pc) \
-		(hardware_usart1_getchar(pc))
+		(hardware_uart1_getchar(pc))
 
 	// вызывается из обработчика прерываний UART1
 	// с принятым символом
@@ -116,9 +116,9 @@ int dbg_getchar(char * r);
 			hardware_uart1_set_speed(baudrate); \
 		} while (0)
 	#define HARDWARE_DEBUGSIRQ_PUTCHAR(c) \
-		(hardware_usart1_putchar(c))
+		(hardware_uart1_putchar(c))
 	#define HARDWARE_DEBUGSIRQ_GETCHAR(pc) \
-		(hardware_usart1_getchar(pc))
+		(hardware_uart1_getchar(pc))
 	// вызывается из state machie протокола CAT или NMEA (в прерываниях)
 	// для передачи символа
 	#define HARDWARE_DEBUGSIRQ_TX(ctx, c) do { \
@@ -162,9 +162,9 @@ int dbg_getchar(char * r);
 			hardware_uart2_set_speed(baudrate); \
 		} while (0)
 	#define HARDWARE_DEBUG_PUTCHAR(c) \
-		(hardware_usart2_putchar(c))
+		(hardware_uart2_putchar(c))
 	#define HARDWARE_DEBUG_GETCHAR(pc) \
-		(hardware_usart2_getchar(pc))
+		(hardware_uart2_getchar(pc))
 
 	// вызывается из обработчика прерываний USART2
 	// с принятым символом
@@ -179,6 +179,37 @@ int dbg_getchar(char * r);
 	// по готовности передатчика
 	#define HARDWARE_UART2_ONTXCHAR(ctx) do { \
 			hardware_uart2_enabletx(0); \
+		} while (0)
+
+#endif /* WITHDEBUG && WITHUART2HW && WITHDEBUG_USART2 */
+
+#if WITHDEBUG && WITHUART4HW && WITHDEBUG_USART4
+	// Отладочные функции работают через USART2
+	// Вызывается из user-mode программы при запрещённых прерываниях.
+	#define HARDWARE_DEBUG_INITIALIZE() do { \
+			hardware_uart4_initialize(1); \
+		} while (0)
+	#define HARDWARE_DEBUG_SET_SPEED(baudrate) do { \
+			hardware_uart4_set_speed(baudrate); \
+		} while (0)
+	#define HARDWARE_DEBUG_PUTCHAR(c) \
+		(hardware_uart4_putchar(c))
+	#define HARDWARE_DEBUG_GETCHAR(pc) \
+		(hardware_uart4_getchar(pc))
+
+	// вызывается из обработчика прерываний USART2
+	// с принятым символом
+	#define HARDWARE_UART4_ONRXCHAR(c) do { \
+			(void) (c); \
+			hardware_uart4_enablerx(1); \
+		} while (0)
+	// вызывается из обработчика прерываний USART2
+	#define HARDWARE_UART4_ONOVERFLOW() do { \
+		} while (0)
+	// вызывается из обработчика прерываний USART2
+	// по готовности передатчика
+	#define HARDWARE_UART4_ONTXCHAR(ctx) do { \
+			hardware_uart4_enabletx(0); \
 		} while (0)
 
 #endif /* WITHDEBUG && WITHUART2HW && WITHDEBUG_USART2 */

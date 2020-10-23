@@ -354,14 +354,14 @@
 #endif /* (WITHNMEA && WITHNMEA_USART1) */
 
 #if WITHUART1HW
-	#define HARDWARE_USART1_INITIALIZE() do { \
+	#define HARDWARE_UART1_INITIALIZE() do { \
 			arm_hardware_pio6_alternative(1U << 14, R7S721_PIOALT_5);	/* P6_14: RXD0: RX DATA line */ \
 			arm_hardware_pio6_alternative(1U << 15, R7S721_PIOALT_5);	/* P6_15: TXD0: TX DATA line */ \
 		} while (0)
 #endif /* WITHUART1HW */
 
 #if WITHUART2HW
-	#define HARDWARE_USART2_INITIALIZE() do { \
+	#define HARDWARE_UART2_INITIALIZE() do { \
 			arm_hardware_pio7_alternative(1U << 10, R7S721_PIOALT_5);	/* P7_10: RXD3: RX DATA line */ \
 			arm_hardware_pio7_alternative(1U << 11, R7S721_PIOALT_5);	/* P7_11: TXD3: TX DATA line */ \
 		} while (0)
