@@ -979,12 +979,12 @@ static void window_display_process(void)
 
 			if (bh == btn_colorsp)
 			{
-				hamradio_set_gcolorsp(! hamradio_get_gcolorsp());
+//				hamradio_set_gcolorsp(! hamradio_get_gcolorsp());
 				update = 1;
 			}
 			if (bh == btn_3dss)
 			{
-				hamradio_set_3dss(! hamradio_get_3dss());
+//				hamradio_set_3dss(! hamradio_get_3dss());
 				update = 1;
 			}
 			else if (bh == btn_zoom)
@@ -1025,11 +1025,11 @@ static void window_display_process(void)
 
 	if (update)
 	{
-		button_t * btn_3dss = find_gui_element(TYPE_BUTTON, win, "btn_3dss");
-		btn_3dss->is_locked = hamradio_get_3dss();
-
-		button_t * btn_colorsp = find_gui_element(TYPE_BUTTON, win, "btn_colorsp");
-		btn_colorsp->is_locked = hamradio_get_gcolorsp();
+//		button_t * btn_3dss = find_gui_element(TYPE_BUTTON, win, "btn_3dss");
+//		btn_3dss->is_locked = hamradio_get_3dss();
+//
+//		button_t * btn_colorsp = find_gui_element(TYPE_BUTTON, win, "btn_colorsp");
+//		btn_colorsp->is_locked = hamradio_get_gcolorsp();
 
 		button_t * btn_zoom = find_gui_element(TYPE_BUTTON, win, "btn_zoom");
 		local_snprintf_P(btn_zoom->text, ARRAY_SIZE(btn_zoom->text), PSTR("Zoom|x%d"), 1 << hamradio_get_gzoomxpow2());

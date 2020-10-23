@@ -838,12 +838,8 @@ void board_set_bottomdb(int_fast16_t v);		/* нижний предел FFT */
 void board_set_topdbwf(int_fast16_t v);			/* верхний предел FFT */
 void board_set_bottomdbwf(int_fast16_t v);		/* нижний предел FFT */
 void board_set_zoomxpow2(uint_fast8_t v);		/* уменьшение отображаемого участка спектра */
-void board_set_fillspect(uint_fast8_t v); 		/* заливать заполнением площадь под графиком спектра */
 void board_set_wflevelsep(uint_fast8_t v); 		/* чувствительность водопада регулируется отдельной парой параметров */
-void board_set_wfshiftenable(uint_fast8_t v);	/* разрешение или запрет сдвига водопада при изменении частоты */
-void board_set_spantialiasing(uint_fast8_t v); 	/* разрешение или запрет антиалиасинга спектра */
-void board_set_3dss_style(uint_fast8_t v);		/* дизайн спектра под 3DSS Yaesu */
-void board_set_colorsp(uint_fast8_t v);			/* разрешение или запрет раскраски спектра */
+void board_set_view_style(uint_fast8_t v);		/* стиль отображения спектра и панорамы */
 void board_set_showdbm(uint_fast8_t v);			// Отображение уровня сигнала в dBm или S-memter (в зависимости от настроек)
 void board_set_afspeclow(int_fast16_t v);		// нижняя частота отображения спектроанализатора
 void board_set_afspechigh(int_fast16_t v);		// верхняя частота отображения спектроанализатора

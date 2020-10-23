@@ -2697,12 +2697,8 @@ struct nvmap
 	uint8_t gdisplayfreqsfps;		/* скорость обновления индикатора частоты */
 	uint8_t gdisplaybarsfps;	/* скорость обновления S-метра */
 #if WITHSPECTRUMWF
-	uint8_t gfillspect;
+	uint8_t gviewstyle;		/* стиль отображения спектра и панорамы */
 	uint8_t gwflevelsep;	/* чувствительность водопада регулируется отдельной парой параметров */
-	uint8_t gwfshiftenable; /* разрешение или запрет сдвига водопада при изменении частоты */
-	uint8_t gspantialiasing; /* разрешение или запрет антиалиасинга спектра */
-	uint8_t gcolorsp;		 /* разрешение или запрет раскраски спектра */
-	uint8_t g3dss_slyle;	 /* дизайн спектра под 3DSS Yaesu */
 	uint8_t gtxloopback;		 /* включение спектроанализатора сигнала передачи */
 #endif /* WITHSPECTRUMWF */
 	uint8_t gshowdbm;	/* Отображение уровня сигнала в dBm или S-memter */
@@ -3369,17 +3365,13 @@ static const uint_fast8_t displaymodesfps = DISPLAYMODES_FPS;
 	static uint_fast8_t gdisplaybarsfps = DISPLAYSWR_FPS;
 #endif /* WITHDISPLAYSWR_FPS */
 #if WITHSPECTRUMWF
-	static uint_fast8_t gfillspect;
+	static uint_fast8_t gviewstyle = VIEW_LINE;		/* стиль отображения спектра и панорамы */
 	static uint_fast8_t gtopdb = WITHTOPDBDEFAULT;	/* верхний предел FFT */
 	static uint_fast8_t gbottomdb = WITHBOTTOMDBDEFAULT;	/* нижний предел FFT */
 	static uint_fast8_t gtopdbwf = WITHTOPDBDEFAULT;	/* верхний предел FFT waterflow*/
 	static uint_fast8_t gbottomdbwf = WITHBOTTOMDBDEFAULT;	/* нижний предел FFT waterflow */
 	static uint_fast8_t gwflevelsep;	/* чувствительность водопада регулируется отдельной парой параметров */
 	static uint_fast8_t gzoomxpow2;		/* степень двойки - состояние растягиваия спектра (уменьшение наблюдаемой полосы частот) */
-	static uint_fast8_t gwfshiftenable = 1; /* разрешение или запрет сдвига водопада при изменении частоты */
-	static uint_fast8_t gspantialiasing  = 1; /* разрешение или запрет антиалиасинга спектра */
-	static uint_fast8_t gcolorsp  = 0;		/* разрешение или запрет раскраски спектра */
-	static uint_fast8_t g3dss_slyle = 0;			/* дизайн спектра под 3DSS Yaesu */
 	static uint_fast8_t gtxloopback = 1;	/* включение спектроанализатора сигнала передачи */
 	static int_fast16_t gafspeclow = 100;	// нижняя частота отображения спектроанализатора
 	static int_fast16_t gafspechigh = 4000;	// верхняя частота отображения спектроанализатора
@@ -5938,6 +5930,7 @@ enum
 	RJ_SMETER,		/* выбор внешнего вида прибора - стрелочный или градусник */
 	RJ_NOTCH,		/* тип NOTCH фильтра - MANUAL/AUTO */
 	RJ_CPUTYPE,		/* текст типа процессора */
+	RJ_VIEW,		/* стиль отображения спектра и панорамы */
 	RJ_COMPILED,		/* текст даты компиляции */
 	//
 	RJ_notused
@@ -7937,11 +7930,6 @@ static lmsnrstate_t lmsnrstates [NTRX];
 	#endif /* ! WITHNOSPEEX */
 
 	#if WITHTOUCHGUI
-
-		#if ! defined WITHGUIHEAP
-			#define WITHGUIHEAP (1024uL)
-		#endif /* ! defined WITHGUIHEAP */
-
 		static RAMHEAP uint8_t guiheap [ROUNDUP64(WITHGUIHEAP)];
 	#endif /* WITHTOUCHGUI */
 
@@ -8941,17 +8929,13 @@ updateboard(
 		board_set_sidetonelevel(gsidetonelevel);	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
 		board_set_moniflag(gmoniflag);	/* glob_moniflag */
 		#if WITHSPECTRUMWF
-			board_set_fillspect(gfillspect);	/* заливать заполнением площадь под графиком спектра */
 			board_set_topdb(gtxloopback && gtx ? WITHTOPDBMIN : gtopdb);		/* верхний предел FFT */
 			board_set_bottomdb(gtxloopback && gtx ? WITHBOTTOMDBMAX : gbottomdb);		/* нижний предел FFT */
 			board_set_topdbwf(gtxloopback && gtx ? WITHTOPDBMIN : gtopdbwf);		/* верхний предел FFT для водопада */
 			board_set_bottomdbwf(gtxloopback && gtx ? WITHBOTTOMDBMAX : gbottomdbwf);		/* нижний предел FFT для водопада */
 			board_set_zoomxpow2(gzoomxpow2);	/* уменьшение отображаемого участка спектра */
 			board_set_wflevelsep(gwflevelsep);	/* чувствительность водопада регулируется отдельной парой параметров */
-			board_set_wfshiftenable(gwfshiftenable);	/* разрешение или запрет сдвига водопада при изменении частоты */
-			board_set_spantialiasing(gspantialiasing); 	/* разрешение или запрет антиалиасинга спектра */
-			board_set_3dss_style(g3dss_slyle);			/* дизайн спектра под 3DSS Yaesu */
-			board_set_colorsp(gcolorsp);				/* разрешение или запрет раскраски спектра */
+			board_set_view_style(gviewstyle);			/* стиль отображения спектра и панорамы */
 			board_set_tx_loopback(gtxloopback && gtx);	/* включение спектроанализатора сигнала передачи */
 			board_set_afspeclow(gafspeclow);	// нижняя частота отображения спектроанализатора
 			board_set_afspechigh(gafspechigh);	// верхняя частота отображения спектроанализатора
@@ -13577,30 +13561,12 @@ static const FLASHMEM struct menudef menutable [] =
 #endif /* WITHBARS */
 #if WITHSPECTRUMWF
 	{
-		QLABEL("FILL SPE"), 7, 3, RJ_YES,	ISTEP1,
+		QLABEL2("VIEW STL", "View style"), 7, 5, RJ_VIEW, ISTEP1,
 		ITEM_VALUE,
-		0, 1,							/* отказ от заполнения */
-		offsetof(struct nvmap, gfillspect),
+		0, VIEW_COUNT - 1,				/* стиль отображения спектра и панорамы */
+		offsetof(struct nvmap, gviewstyle),
+		& gviewstyle,
 		NULL,
-		& gfillspect,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL2("SPEC CLR", "Color Spectrum"), 7, 3, RJ_YES,	ISTEP1,
-		ITEM_VALUE,
-		0, 1,							/* разрешение или запрет раскраски спектра */
-		offsetof(struct nvmap, gcolorsp),
-		NULL,
-		& gcolorsp,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL2("3DSS STL", "3DSS Style"), 7, 3, RJ_YES,	ISTEP1,
-		ITEM_VALUE,
-		0, 1,							/* дизайн спектра под 3DSS Yaesu */
-		offsetof(struct nvmap, g3dss_slyle),
-		NULL,
-		& g3dss_slyle,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
@@ -13655,24 +13621,6 @@ static const FLASHMEM struct menudef menutable [] =
 		MENUNONVRAM,
 		NULL,
 		& gzoomxpow2,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("WF shift"), 7, 3, RJ_YES,	ISTEP1,
-		ITEM_VALUE,
-		0, 1,							/* разрешение или запрет сдвига водопада при изменении частоты */
-		offsetof(struct nvmap, gwfshiftenable),
-		NULL,
-		& gwfshiftenable,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL2("SPEC AA ", "Spectrum AA"), 7, 3, RJ_YES,	ISTEP1,
-		ITEM_VALUE,
-		0, 1,							/* разрешение или запрет антиалиасинга спектра */
-		offsetof(struct nvmap, gspantialiasing),
-		NULL,
-		& gspantialiasing,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
@@ -16988,6 +16936,22 @@ void display2_menu_valxx(
 		}
 		break;
 
+	case RJ_VIEW:
+		{
+			/* стиль отображения спектра и панорамы */
+			static const FLASHMEM char msg [][6] =
+			{
+				"LINE ",
+				"FILL ",
+				"COLOR",
+				"3DSS ",
+			};
+
+			width = VALUEW;
+			display_menu_string_P(x, y, msg [value], width, comma);
+		}
+		break;
+
 	default:
 		if (width & WSIGNFLAG)
 			width = (VALUEW - 1) | WSIGNFLAG;
@@ -20133,26 +20097,14 @@ uint_fast8_t hamradio_get_gsmetertype(void)
 #if WITHSPECTRUMWF
 uint_fast8_t hamradio_get_gcolorsp(void)
 {
-	return gcolorsp;
+	return 0; //gcolorsp;
 }
 
 void hamradio_set_gcolorsp(uint_fast8_t v)
 {
-	gcolorsp = v != 0;
-	save_i8(offsetof(struct nvmap, gcolorsp), gcolorsp);
-	updateboard(1, 0);
-}
-
-uint_fast8_t hamradio_get_3dss(void)
-{
-	return g3dss_slyle;
-}
-
-void hamradio_set_3dss(uint_fast8_t v)
-{
-	g3dss_slyle = v != 0;
-	save_i8(offsetof(struct nvmap, g3dss_slyle), g3dss_slyle);
-	updateboard(1, 0);
+//	gcolorsp = v != 0;
+//	save_i8(offsetof(struct nvmap, gcolorsp), gcolorsp);
+//	updateboard(1, 0);
 }
 
 uint_fast8_t hamradio_get_gzoomxpow2(void)

@@ -336,11 +336,7 @@ static void display2_legend_tx(
 #endif
 
 // waterfall/spectrum parameters
-static uint_fast8_t glob_fillspect;			/* заливать заполнением площадь под графиком спектра */
-static uint_fast8_t glob_wfshiftenable;		/* разрешение или запрет сдвига водопада при изменении частоты */
-static uint_fast8_t glob_3dss_style;		/* дизайн спектра под 3DSS Yaesu */
-static uint_fast8_t glob_spantialiasing;	/* разрешение или запрет антиалиасинга спектра */
-static uint_fast8_t glob_colorsp;			/* разрешение или запрет раскраски спектра */
+static uint_fast8_t glob_view_style;		/* стиль отображения спектра и панорамы */
 
 static int_fast16_t glob_topdb = 30;		/* верхний предел FFT */
 static int_fast16_t glob_bottomdb = 130;	/* нижний предел FFT */
@@ -7671,7 +7667,7 @@ static void display2_spectrum(
 		const uint_fast32_t f0 = hamradio_get_freq_pathi(pathi);	/* frequency at middle of spectrum */
 		const int_fast32_t bw = display_zoomedbw();
 
-		if (glob_3dss_style)
+		if (glob_view_style == VIEW_3DSS)
 		{
 			uint_fast8_t draw_step = (current_3dss_step + 1) % MAX_3DSS_STEP;
 			uint_fast16_t ylast_sp = 0;
@@ -7772,7 +7768,7 @@ static void display2_spectrum(
 				int val = dsp_mag2y(filter_spectrum(x), SPDY - 1, glob_topdb, glob_bottomdb);
 				uint_fast16_t ynew = SPY0 + SPDY - 1 - val;
 
-				if (glob_colorsp)
+				if (glob_view_style == VIEW_COLOR)
 				{
 					/* раскрашенный спектр */
 					for (uint_fast16_t dy = SPY0 + SPDY - 1, i = 0; dy > ynew; dy --, i ++)
@@ -7780,7 +7776,7 @@ static void display2_spectrum(
 						colpip_point(colorpip, BUFDIM_X, BUFDIM_Y, x, dy, color_scale [i]);
 					}
 				}
-				else if (glob_fillspect) // залитый зеленым спектр
+				else if (glob_view_style == VIEW_FILL) // залитый зеленым спектр
 				{
 					const uint_fast8_t inband = (x >= xleft && x <= xright);	// в полосе пропускания приемника = "шторка"
 					display_colorbuf_set_vline(colorpip, BUFDIM_X, BUFDIM_Y, x, SPY0, ynew, inband ? COLORMAIN_SPECTRUMBG2 : COLORPIP_SPECTRUMBG);
@@ -7799,9 +7795,9 @@ static void display2_spectrum(
 					}
 				}
 
-				if (x != 0 && (! glob_fillspect || glob_colorsp))
+				if (x != 0)
 				{
-					colmain_line(colorpip, BUFDIM_X, BUFDIM_Y, x - 1, ylast, x, ynew, COLORPIP_SPECTRUMLINE, glob_colorsp ? 0 : glob_spantialiasing);
+					colmain_line(colorpip, BUFDIM_X, BUFDIM_Y, x - 1, ylast, x, ynew, COLORPIP_SPECTRUMLINE, 1);
 				}
 				ylast = ynew;
 			}
@@ -7847,7 +7843,7 @@ static void wfl_avg_clear(void)
 static void wflshiftleft(uint_fast16_t pixels)
 {
 	uint_fast16_t y;
-	uint_fast8_t rows = glob_3dss_style ? MAX_3DSS_STEP : WFROWS;
+	uint_fast8_t rows = glob_view_style == VIEW_3DSS ? MAX_3DSS_STEP : WFROWS;
 
 	if (pixels == 0)
 		return;
@@ -7884,7 +7880,7 @@ static void wflshiftleft(uint_fast16_t pixels)
 static void wflshiftright(uint_fast16_t pixels)
 {
 	uint_fast16_t y;
-	uint_fast8_t rows = glob_3dss_style ? MAX_3DSS_STEP : WFROWS;
+	uint_fast8_t rows = glob_view_style == VIEW_3DSS ? MAX_3DSS_STEP : WFROWS;
 
 	if (pixels == 0)
 		return;
@@ -7963,7 +7959,7 @@ static void display2_latchwaterfall(
 	{
 		// не менялась частота (в видимых пикселях)
 	}
-	else if (wffreqpix > f0pix && glob_wfshiftenable)
+	else if (wffreqpix > f0pix)
 	{
 		// частота уменьшилась - надо сдвигать картинку вправо
 		const uint_fast32_t deltapix = wffreqpix - f0pix;
@@ -7980,7 +7976,7 @@ static void display2_latchwaterfall(
 			hclear = 1;
 		}
 	}
-	else if (wffreqpix < f0pix && glob_wfshiftenable)
+	else if (wffreqpix < f0pix)
 	{
 		// частота увеличилась - надо сдвигать картинку влево
 		const uint_fast32_t deltapix = f0pix - wffreqpix;
@@ -8007,7 +8003,7 @@ static void display2_latchwaterfall(
 	wfrow = (wfrow == 0) ? (WFDY - 1) : (wfrow - 1);
 #endif
 
-	if (! glob_3dss_style)
+	if (glob_view_style != VIEW_3DSS)
 	{
 		// запоминание информации спектра для водопада
 		for (x = 0; x < ALLDX; ++ x)
@@ -8088,7 +8084,7 @@ static void display2_waterfall(
 	#if ! LCDMODE_HORFILL
 		#error LCDMODE_HORFILL must be defined
 	#endif /* ! LCDMODE_HORFILL */
-	if (! glob_3dss_style)
+	if (glob_view_style != VIEW_3DSS)
 	{
 		PACKEDCOLORMAIN_T * const colorpip = getscratchwnd();
 		const uint_fast16_t p1h = WFDY - wfrow;	// высота верхней части в результируюшем изображении
@@ -8876,45 +8872,17 @@ void colmain_rounded_rect(
 #endif /* LCDMODE_LTDC */
 
 // Установка параметров отображения
-/* разрешение или запрет сдвига водопада при изменении частоты */
-void
-board_set_wfshiftenable(uint_fast8_t v)
-{
-	glob_wfshiftenable = v != 0;
-}
-
-/* разрешение или запрет антиалиасинга спектра */
-void
-board_set_spantialiasing(uint_fast16_t v)
-{
-	glob_spantialiasing = v != 0;
-}
-
 /* дизайн спектра под 3DSS Yaesu */
 void
-board_set_3dss_style(uint_fast8_t v)
+board_set_view_style(uint_fast8_t v)
 {
-	const uint_fast8_t n = v != 0;
+	const uint_fast8_t n = v;
 
-	if (glob_3dss_style != n)
+	if (glob_view_style != n)
 	{
-		glob_3dss_style = n;
+		glob_view_style = n;
 		wfsetupnew();	// при переключении стилей отображения очищать общий буфер
 	}
-}
-
-/* разрешение или запрет раскраски спектра */
-void
-board_set_colorsp(uint_fast8_t v)
-{
-	glob_colorsp = v != 0;
-}
-
-/* заливать заполнением площадь под графиком спектра */
-void
-board_set_fillspect(uint_fast8_t v)
-{
-	glob_fillspect = v != 0;
 }
 
 /* верхний предел FFT - spectrum */
