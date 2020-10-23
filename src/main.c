@@ -18466,6 +18466,7 @@ static void initialize2(void)
 #if WITHMENU
 		defaultsettings();		/* загрузка в nvram установок по умолчанию */
 #endif //WITHMENU
+
 		//PRINTF(PSTR("initialize2(): NVRAM initialization: write NVRAM signature.\n"));
 		initnvramsignature();
 		//extmenu = 1;	/* сразу включаем инженерный режим - без перезагрузки доступны все пункты */
@@ -19634,6 +19635,7 @@ void hamradio_enable_encoder2_redirect(void)
 	encoder2_redirect = 1;
 }
 
+#if WITHIF4DSP
 //todo: добавить учет текущего режима
 void hamradio_set_agc_fast(void)
 {
@@ -19759,6 +19761,8 @@ uint_fast8_t hamradio_get_high_bp(int_least16_t rotate)
 	}
 	return high;
 }
+
+#endif /* WITHIF4DSP */
 
 #if WITHMENU
 uint_fast8_t hamradio_get_multilinemenu_block_groups(menu_names_t * vals)

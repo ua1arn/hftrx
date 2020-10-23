@@ -426,7 +426,7 @@ uint_fast16_t get_swr(uint_fast16_t swr_fullscale)
 
 #endif /* WITHTX */
 
-#if LCDMODE_LTDC
+#if LCDMODE_LTDC && WITHBARS
 
 enum {
 	SM_STATE_RX,
@@ -5934,9 +5934,10 @@ enum
 		{	26,	0,	display2_ant5,		REDRM_MODE, PGALL, },
 		{	32,	0,	display2_att4,		REDRM_MODE, PGALL, },
 		{	37,	0,	display2_preovf3,	REDRM_BARS, PGALL, },
-
+#if WITHBARS
 		{   0, 	4,  display2_smeter15_init,REDRM_INIS, PGINI, },	//  Инициализация стрелочного прибора
 		{   0, 	4,	display2_smeter15, 	REDRM_BARS, PGALL, },	// Изображение стрелочного прибора
+#endif /* WITHBARS */
 #if WITHAFSPECTRE
 		{	0,	4,	display2_af_spectre15_init,	REDRM_INIS, PGINI, },
 		{	0,	4,	display2_af_spectre15_latch,	REDRM_BARS,	PGLATCH, },
@@ -8876,6 +8877,7 @@ void colmain_rounded_rect(
 void
 board_set_view_style(uint_fast8_t v)
 {
+#if WITHINTEGRATEDDSP
 	const uint_fast8_t n = v;
 
 	if (glob_view_style != n)
@@ -8883,6 +8885,7 @@ board_set_view_style(uint_fast8_t v)
 		glob_view_style = n;
 		wfsetupnew();	// при переключении стилей отображения очищать общий буфер
 	}
+#endif /* WITHINTEGRATEDDSP */
 }
 
 /* верхний предел FFT - spectrum */
