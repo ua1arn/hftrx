@@ -897,8 +897,8 @@
 	/* управление состоянием сигнала DISP панели */
 	/* demode values: 0: static signal, 1: DE controlled */
 	#define HARDWARE_LTDC_SET_DISP(demode, state) do { \
-		const uint32_t VSmask = (1U << 4); 	/* PA4 - VSYNC */ \
-		const uint32_t DEmask = (1U << 13); /* PE13 */ \
+		const uint32_t VSmask = (0 * 1U << 4); 	/* PA4 - VSYNC */ \
+		const uint32_t DEmask = (0 * 1U << 13); /* PE13 */ \
 		if (demode != 0) break; \
 		/* while ((GPIOA->IDR & VSmask) != 0) ; */ /* схема синхронизации стоит на плате дисплея. дождаться 0 */ \
 		/* while ((GPIOA->IDR & VSmask) == 0) ; */ /* дождаться 1 */ \
@@ -906,7 +906,7 @@
 	} while (0)
 	/* управление состоянием сигнала MODE 7" панели */
 	#define HARDWARE_LTDC_SET_MODE(state) do { \
-		const uint32_t MODEmask = (1U << 3); /* PD3 - MODEmask */ \
+		const uint32_t MODEmask = (0 * 1U << 3); /* PD3 - MODEmask */ \
 		arm_hardware_piod_outputs(MODEmask, (state != 0) * MODEmask); /* PF4 MODE=state */ \
 	} while (0)
 #endif /* LCDMODE_LTDC */
@@ -1003,21 +1003,16 @@
 
 	#endif /* WIHSPIDFSW || WIHSPIDFHW */
 
-	#define BOARD_BLINK_BIT 0 //(1uL << 13)	// PA13 - led on Storch board
-	//#define BOARD_BLINK_BIT (1uL << 13)	// PA13 - RED LED LD5 on DK1/DK2 MB1272.pdf
-	//#define BOARD_BLINK_BIT (1uL << 14)	// PA14 - GREEN LED LD5 on DK1/DK2 MB1272.pdf
-	//#define BOARD_BLINK_BIT (1uL << 14)	// PD14 - LED on small board
-	//#define BOARD_BLINK_BIT (1uL << 11)	// PI11 - LED1# on PanGu board
-	//#define BOARD_BLINK_BIT (1uL << 11)	// PH6 - LED2# on PanGu board
+	#define BOARD_BLINK_BIT (1uL << 11)	// PD11 - led HL2 to ground
 
 	#define BOARD_BLINK_INITIALIZE() do { \
-			arm_hardware_pioa_outputs(BOARD_BLINK_BIT, 1 * BOARD_BLINK_BIT); \
+			arm_hardware_piod_outputs(BOARD_BLINK_BIT, 1 * BOARD_BLINK_BIT); \
 		} while (0)
 	#define BOARD_BLINK_SETSTATE(state) do { \
 			if (state) \
-				(GPIOA)->BSRR = BSRR_C(BOARD_BLINK_BIT); \
+				(GPIOD)->BSRR = BSRR_C(BOARD_BLINK_BIT); \
 			else \
-				(GPIOA)->BSRR = BSRR_S(BOARD_BLINK_BIT); \
+				(GPIOD)->BSRR = BSRR_S(BOARD_BLINK_BIT); \
 		} while (0)
 
 	/* запрос на вход в режим загрузчика */
