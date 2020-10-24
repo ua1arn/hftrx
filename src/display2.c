@@ -49,7 +49,12 @@
 
 #endif /* LCDMODE_LTDC */
 
-static uint_fast8_t glob_colorstyle = GRADIENT_BLUE_YELLOW_RED;
+#if COLORSTYLE_RED
+	static uint_fast8_t glob_colorstyle = GRADIENT_BLACK_RED;
+#else /* COLORSTYLE_RED */
+	static uint_fast8_t glob_colorstyle = GRADIENT_BLUE_YELLOW_RED;
+#endif /* COLORSTYLE_RED */
+
 
 // построение цветных градиентов от UA3REO
 // get color from signal strength
