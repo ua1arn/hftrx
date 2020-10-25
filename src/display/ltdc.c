@@ -192,9 +192,10 @@
 	#define LTDC_DOTCLK	3000000uL	// частота пикселей при работе с интерфейсом RGB
 
 #elif LCDMODE_H497TLB01P4
-	/* 720xRGBx1280 - 5" AMOELD Panel */
+	/* 720xRGBx1280 - 5" AMOELD Panel H497TLB01.4 */
 	// See also:
 	// https://github.com/bbelos/rk3188-kernel/blob/master/drivers/video/rockchip/transmitter/tc358768.c
+	// https://github.com/tanish2k09/venom_kernel_aio_otfp/blob/master/drivers/input/touchscreen/mediatek/S3202/synaptics_dsx_i2c.c
 	enum
 	{
 		WIDTH = 720,			/* LCD PIXEL WIDTH            */
