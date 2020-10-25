@@ -591,11 +591,11 @@
 
 // WITHUART2HW
 #define HARDWARE_UART4_INITIALIZE() do { \
-		const uint_fast32_t TXMASK = (1uL << 13); /* PA13: TX DATA line (2 MHz) */ \
-		const uint_fast32_t RXMASK = (0 * 1uL << 6); /* PD6: RX DATA line (2 MHz) - pull-up RX data */  \
-		arm_hardware_pioa_altfn50(TXMASK, AF_USART4); \
-		arm_hardware_pioa_altfn50(RXMASK, AF_USART4); \
-		arm_hardware_pioa_updown(RXMASK, 0); \
+		const uint_fast32_t TXMASK = (1uL << 11); /* PG11: TX DATA line (2 MHz) */ \
+		const uint_fast32_t RXMASK = (1uL << 2); /* PB2: RX DATA line (2 MHz) - pull-up RX data */  \
+		arm_hardware_piog_altfn50(TXMASK, 6); /* AF6 */ \
+		arm_hardware_piob_altfn50(RXMASK, 8); /* AF8 */ \
+		arm_hardware_piob_updown(RXMASK, 0); \
 	} while (0)
 
 #if WITHKEYBOARD
@@ -1003,21 +1003,22 @@
 
 	#endif /* WIHSPIDFSW || WIHSPIDFHW */
 
-	#define BOARD_BLINK_BIT (1uL << 11)	// PD11 - led HL2 to ground
+	//#define BOARD_BLINK_BIT (1uL << 11)	// PD11 - led HL2 to ground
+	#define BOARD_BLINK_BIT (1uL << 13)	// PA13 - led HL2 to ground
 
 	#define BOARD_BLINK_INITIALIZE() do { \
-			arm_hardware_piod_outputs(BOARD_BLINK_BIT, 1 * BOARD_BLINK_BIT); \
+			arm_hardware_pioa_outputs(BOARD_BLINK_BIT, 0 * BOARD_BLINK_BIT); \
 		} while (0)
 	#define BOARD_BLINK_SETSTATE(state) do { \
 			if (state) \
-				(GPIOD)->BSRR = BSRR_C(BOARD_BLINK_BIT); \
+				(GPIOA)->BSRR = BSRR_C(BOARD_BLINK_BIT); \
 			else \
-				(GPIOD)->BSRR = BSRR_S(BOARD_BLINK_BIT); \
+				(GPIOA)->BSRR = BSRR_S(BOARD_BLINK_BIT); \
 		} while (0)
 
 	/* запрос на вход в режим загрузчика */
-	#define BOARD_USERBOOT_BIT	(1uL << 1)	/* PB1: ~USER_BOOT */
-	#define BOARD_IS_USERBOOT() (((GPIOB->IDR) & BOARD_USERBOOT_BIT) == 0)
+	#define BOARD_USERBOOT_BIT	0//(1uL << 1)	/* PB1: ~USER_BOOT */
+	#define BOARD_IS_USERBOOT() (1) //(((GPIOB->IDR) & BOARD_USERBOOT_BIT) == 0)
 	#define BOARD_USERBOOT_INITIALIZE() do { \
 		arm_hardware_piob_inputs(BOARD_USERBOOT_BIT); /* set as input with pull-up */ \
 		} while (0)
