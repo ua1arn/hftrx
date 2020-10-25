@@ -193,6 +193,8 @@
 
 #elif LCDMODE_H497TLB01P4
 	/* 720xRGBx1280 - 5" AMOELD Panel */
+	// See also:
+	// https://github.com/bbelos/rk3188-kernel/blob/master/drivers/video/rockchip/transmitter/tc358768.c
 	enum
 	{
 		WIDTH = 720,			/* LCD PIXEL WIDTH            */
@@ -204,15 +206,17 @@
 		  * MODE=1 (SYNC)
 		  * When selected sync mode, de must be grounded.
 		  */
-		HSYNC = 40,				/* Horizontal synchronization 1..40 */
-		HFP = 210,				/* Horizontal front porch  16..354   */
+		HSYNC = 5,				/* Horizontal synchronization 1..40 */
+		HBP = 11,				/* Horizontal back porch      */
+		HFP = 16,				/* Horizontal front porch  16..354   */
 
-		VSYNC = 20,				/* Vertical synchronization 1..20  */
-		VFP = 22,				/* Vertical front porch  7..147     */
+		VSYNC = 5,				/* Vertical synchronization 1..20  */
+		VBP = 11,					/* Vertical back porch        */
+		VFP = 16,				/* Vertical front porch  7..147     */
 
 		/* Accumulated parameters for this display */
-		LEFTMARGIN = 46,		/* horizontal blanking EXACTLY */
-		TOPMARGIN = 23,			/* vertical blanking EXACTLY */
+		LEFTMARGIN = HSYNC + HBP,	/* horizontal delay before DE start */
+		TOPMARGIN = VSYNC + VBP,	/* vertical delay before DE start */
 
 		// MODE: DE/SYNC mode select.
 		// DE MODE: MODE="1", VS and HS must pull high.
@@ -226,7 +230,7 @@
 		BOARD_DEMODE = 0		/* 0: static signal, 1: DE controlled */
 #endif /* WITHLCDSYNCMODE */
 	};
-	#define LTDC_DOTCLK	30000000uL	// частота пикселей при работе с интерфейсом RGB
+	#define LTDC_DOTCLK	48000000uL	// частота пикселей при работе с интерфейсом RGB
 
 #else
 	#error Unsupported LCDMODE_xxx
