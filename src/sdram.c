@@ -3078,6 +3078,7 @@ static int stpmic1_get_version(unsigned long *version)
 static int initialize_pmic_i2c(void)
 {
 
+	i2c_initialize();
 	return 1;
 }
 
