@@ -3075,10 +3075,36 @@ static int stpmic1_get_version(unsigned long *version)
 }
 
 
+
+uint_fast32_t tc358768_rd_reg_32bits(unsigned i2caddr, unsigned register_id)
+{
+
+	//unsigned i2caddr = 0x72;
+
+
+	uint8_t v0, v1, v2, v3;
+
+	i2c_start(i2caddr | 0x00);
+	i2c_write_withrestart(register_id);
+	i2c_start(i2caddr | 0x01);
+	i2c_read(& v0, I2C_READ_ACK_1);	// ||
+	i2c_read(& v1, I2C_READ_ACK);	// ||
+	i2c_read(& v2, I2C_READ_ACK);	// ||
+	i2c_read(& v3, I2C_READ_NACK);	// ||
+
+	return
+			(((unsigned long) v3) << 24) |
+			(((unsigned long) v2) << 16) |
+			(((unsigned long) v1) << 8) |
+			(((unsigned long) v0) << 0) |
+			0;
+}
+
 static int initialize_pmic_i2c(void)
 {
 
 	i2c_initialize();
+
 	return 1;
 }
 
@@ -3225,17 +3251,164 @@ int pmic_ddr_power_init(enum ddr_type ddr_type)
 	return 0;
 }
 
+
+// LDO1 = 1.8 Volt
+// LDO6 = 1.0 Volt
+// LDO2 = 3.3 Volt
+
+int toshiba_ddr_power_init(void)
+{
+	{
+		uint8_t read_val;
+		int status;
+		// LDO1 = 1.8 Volt
+		status = stpmic1_register_read(LDO1_CONTROL_REG, &read_val);
+		if (status != 0) {
+			return status;
+		}
+
+		read_val &= ~ 0x01;	// enable
+
+		status = stpmic1_register_write(LDO1_CONTROL_REG, read_val);
+		if (status != 0) {
+			return status;
+		}
+
+		status = stpmic1_regulator_voltage_set("ldo1", 1800);
+		if (status != 0) {
+			return status;
+		}
+
+		status = stpmic1_regulator_enable("ldo1");
+		if (status != 0) {
+			return status;
+		}
+
+		local_delay_ms(STPMIC1_DEFAULT_START_UP_DELAY_MS);
+	}
+
+	{
+		uint8_t read_val;
+		int status;
+		// LDO6 = 1.2 Volt (toshiba supplay)
+		status = stpmic1_register_read(LDO6_CONTROL_REG, &read_val);
+		if (status != 0) {
+			return status;
+		}
+
+		read_val &= ~ 0x01;	// enable
+
+		status = stpmic1_register_write(LDO6_CONTROL_REG, read_val);
+		if (status != 0) {
+			return status;
+		}
+
+		status = stpmic1_regulator_voltage_set("ldo6", 1200);
+		if (status != 0) {
+			return status;
+		}
+
+		status = stpmic1_regulator_enable("ldo6");
+		if (status != 0) {
+			return status;
+		}
+
+		local_delay_ms(STPMIC1_DEFAULT_START_UP_DELAY_MS);
+	}
+
+	{
+		uint8_t read_val;
+		int status;
+		// LDO2 = 3.3 Volt
+		status = stpmic1_register_read(LDO2_CONTROL_REG, &read_val);
+		if (status != 0) {
+			return status;
+		}
+
+		read_val &= ~ 0x01;	// enable
+
+		status = stpmic1_register_write(LDO2_CONTROL_REG, read_val);
+		if (status != 0) {
+			return status;
+		}
+
+		status = stpmic1_regulator_voltage_set("ldo2", 3300);
+		if (status != 0) {
+			return status;
+		}
+
+		status = stpmic1_regulator_enable("ldo2");
+		if (status != 0) {
+			return status;
+		}
+
+		local_delay_ms(STPMIC1_DEFAULT_START_UP_DELAY_MS);
+	}
+	{
+		uint8_t read_val;
+		int status;
+		status = stpmic1_regulator_disable("ldo5");
+		if (status != 0) {
+			return status;
+		}
+	}
+
+	return 0;
+}
+
 #endif /* WITHSDRAM_PMC1 */
 
 static int board_ddr_power_init(enum ddr_type ddr_type)
 {
 #if WITHSDRAM_PMC1
 	pmic_ddr_power_init(ddr_type);
+	if (toshiba_ddr_power_init())
+		PRINTF("TOSHIBE power init failure\n");
+	stpmic1_dump_regulators();
 #endif /* WITHSDRAM_PMC1 */
 //	if (dt_pmic_status() > 0) {
 //		return pmic_ddr_power_init(ddr_type);
 //	}
 
+	const portholder_t TE = (1uL << 7);	// PC7 (TE) - panel pin 29 Sync signal from driver IC
+	const portholder_t OTP_PWR = (1uL << 7);	// PD7 (CTRL - OTP_PWR) - panel pin 30
+	arm_hardware_pioc_inputs(TE);
+	arm_hardware_piod_outputs(OTP_PWR, 0 * OTP_PWR);
+	// active low
+	const portholder_t RESET = (1uL << 1);	// PD1 = RESX_18 - pin  28
+	arm_hardware_piod_outputs(RESET, 0 * RESET);
+	local_delay_ms(5);
+	arm_hardware_piod_outputs(RESET, 1 * RESET);
+
+	// TP_RESX - activelow
+	const portholder_t TP_RESX = (1uL << 0);	// PG0 - TP_RESX_18 - pin 03
+	arm_hardware_piog_outputs(TP_RESX, 0 * TP_RESX);
+	local_delay_ms(5);
+	arm_hardware_piog_outputs(TP_RESX, 1 * TP_RESX);
+	local_delay_ms(300);
+
+
+	// TC358768AXBG conrol
+	const portholder_t Video_RST = (1uL << 10);	// PA10
+	const portholder_t Video_MODE = (1uL << 14);	// PF14
+
+	arm_hardware_piof_outputs(Video_MODE, 0 * Video_MODE);
+	arm_hardware_pioa_outputs(Video_RST, 0 * Video_RST);
+	local_delay_ms(5);
+	arm_hardware_pioa_outputs(Video_RST, 1 * Video_RST);
+	local_delay_ms(100);
+
+
+	unsigned i;
+	for (i = 1; i < 127; ++ i)
+	{
+		// TC358768AXBG
+		PRINTF("addr %02X: ID=%08lX\n", i, tc358768_rd_reg_32bits(i * 2, 0));
+	}
+	unsigned i2 = 0x0e;
+	// addr 0E: ID=02000144
+	// TC358768AXBG
+	PRINTF("TC358768AXBG: addr %02X: ID=%08lX\n", i2, tc358768_rd_reg_32bits(i2 * 2, 0));
 	return 0;
 }
 
@@ -3478,8 +3651,8 @@ static void stm32mp1_ddr_init(struct ddr_info *priv,
 	#include "stm32mp15-mx_300MHz_2G.dtsi"	// 128k*16
 #else
 	//#include "stm32mp15-mx_1G.dtsi"	// 64k*16
-	#include "stm32mp15-mx_2G.dtsi"	// 128k*16
-	//#include "stm32mp15-mx_4G.dtsi"		// 256k*16
+	//#include "stm32mp15-mx_2G.dtsi"	// 128k*16
+	#include "stm32mp15-mx_4G.dtsi"		// 256k*16
 	//#include "stm32mp15-mx_8G.dtsi"	// 512k*16
 #endif
 // NT5CC128M16IP-DI BGA DDR3 NT5CC128M16IP DI
