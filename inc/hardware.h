@@ -709,18 +709,30 @@ void debugusb_sendchar(void * ctx);			/* вызывается из обрабо�
 /* TWI (I2C) interface */
 #define I2C_RETRIES 3	/* количество повторов */
 void i2c_initialize(void);
-void i2c_start(uint_fast8_t address);
 
+void i2c_start(uint_fast8_t address);
 void i2c_read(uint8_t * pdata, uint_fast8_t acknak);
+
+// Работа со вторым каналом I2C
+void i2c2_start(uint_fast8_t address);
+void i2c2_read(uint8_t * pdata, uint_fast8_t acknak);
+
 
 #define I2C_READ_ACK 0  // i2c_read parameter
 #define I2C_READ_ACK_1 1  // i2c_read parameter
 #define I2C_READ_NACK 2		// ack_type - last parameterr in read block
 #define I2C_READ_ACK_NACK 3		// чтение первого и единственного байта по I2C
+
 void i2c_write(uint_fast8_t data);
 void i2c_write_withrestart(uint_fast8_t data);	// запись, после чего restart
 void i2c_waitsend(void);	// Вызвать после последнего i2c_write()
 void i2c_stop(void);
+
+// Работа со вторым каналом I2C
+void i2c2_write(uint_fast8_t data);
+void i2c2_write_withrestart(uint_fast8_t data);	// запись, после чего restart
+void i2c2_waitsend(void);	// Вызвать после последнего i2c_write()
+void i2c2_stop(void);
 
 void hardware_twi_master_configure(void);
 
