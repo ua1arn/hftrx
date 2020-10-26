@@ -45,8 +45,8 @@
 
 #if WITHISBOOTLOADER
 
-	//#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
-	#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
+	#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
+	//#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
 	//#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */
 	//#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
 
@@ -625,8 +625,8 @@
 #endif /* WITHKEYBOARD */
 
 #if 1 // WITHTWISW
-	// I2C1_SDA	PB11
-	// I2C1_SCL	PD7
+	// PZ4 I2C2_SCL
+	// PZ5 I2C2_SDA
 	#define TARGET_TWI_TWCK		(1u << 4)		// PZ4 I2C2_SCL
 	#define TARGET_TWI_TWCK_PIN		(GPIOZ->IDR)
 	#define TARGET_TWI_TWCK_PORT_C(v) do { GPIOZ->BSRR = BSRR_C(v); __DSB(); } while (0)
@@ -641,7 +641,7 @@
 	#define	TWISOFT_INITIALIZE() do { \
 			arm_hardware_pioz_opendrain(TARGET_TWI_TWCK, TARGET_TWI_TWCK); /* SCL */ \
 			arm_hardware_pioz_opendrain(TARGET_TWI_TWD, TARGET_TWI_TWD);  	/* SDA */ \
-		} while (0) 
+		} while (0)
 	#define	TWISOFT_DEINITIALIZE() do { \
 			arm_hardware_pioz_inputs(TARGET_TWI_TWCK); 	/* SCL */ \
 			arm_hardware_pioz_inputs(TARGET_TWI_TWD);	/* SDA */ \
@@ -649,8 +649,37 @@
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
 	#define	TWIHARD_INITIALIZE() do { \
-			arm_hardware_pioz_periphopendrain_altfn2(TARGET_TWI_TWCK, AF_I2C2);	/* I2C1_SCL AF=4 */ \
-			arm_hardware_pioz_periphopendrain_altfn2(TARGET_TWI_TWD, AF_I2C2);	/* I2C1_SDA AF=4 */ \
+			arm_hardware_pioz_periphopendrain_altfn2(TARGET_TWI_TWCK, xxAF_I2C2);	/* I2C1_SCL AF=? */ \
+			arm_hardware_pioz_periphopendrain_altfn2(TARGET_TWI_TWD, xxAF_I2C2);	/* I2C1_SDA AF=? */ \
+		} while (0)
+
+	// LSM6DS3
+	// PD12 I2C1_SCL
+	// PF15 I2C1_SDA
+	#define TARGET_TWI2_TWCK		(1u << 12)		// PD12 I2C1_SCL
+	#define TARGET_TWI2_TWCK_PIN		(GPIOD->IDR)
+	#define TARGET_TWI2_TWCK_PORT_C(v) do { GPIOD->BSRR = BSRR_C(v); __DSB(); } while (0)
+	#define TARGET_TWI2_TWCK_PORT_S(v) do { GPIOD->BSRR = BSRR_S(v); __DSB(); } while (0)
+
+	#define TARGET_TWI2_TWD		(1u << 15)		// PF15 I2C1_SDA
+	#define TARGET_TWI2_TWD_PIN		(GPIOF->IDR)
+	#define TARGET_TWI2_TWD_PORT_C(v) do { GPIOF->BSRR = BSRR_C(v); __DSB(); } while (0)
+	#define TARGET_TWI2_TWD_PORT_S(v) do { GPIOF->BSRR = BSRR_S(v); __DSB(); } while (0)
+
+	// Инициализация битов портов ввода-вывода для программной реализации I2C
+	#define	TWISOFT2_INITIALIZE() do { \
+			arm_hardware_piod_opendrain(TARGET_TWI2_TWCK, TARGET_TWI2_TWCK); /* SCL */ \
+			arm_hardware_piof_opendrain(TARGET_TWI2_TWD, TARGET_TWI2_TWD);  	/* SDA */ \
+		} while (0) 
+	#define	TWISOFT2_DEINITIALIZE() do { \
+			arm_hardware_piod_inputs(TARGET_TWI_TWCK); 	/* SCL */ \
+			arm_hardware_piof_inputs(TARGET_TWI_TWD);	/* SDA */ \
+		} while (0)
+	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
+	// присоединение выводов к периферийному устройству
+	#define	TWIHARD2_INITIALIZE() do { \
+			arm_hardware_piod_periphopendrain_altfn2(TARGET_TWI2_TWCK, xxAF_I2C2);	/* PD12 I2C1_SCL AF=? */ \
+			arm_hardware_pioz_periphopendrain_altfn2(TARGET_TWI2_TWD, xxAF_I2C2);	/* PF15 I2C1_SDA AF=4 */ \
 		} while (0) 
 
 

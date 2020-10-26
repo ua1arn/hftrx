@@ -34,6 +34,15 @@
 	#define GET_TWCK() ((TARGET_TWI_TWCK_PIN & TARGET_TWI_TWCK) != 0)
 	#define GET_TWD() ((TARGET_TWI_TWD_PIN & TARGET_TWI_TWD) != 0)
 
+	/* второй канал I2C */
+	#define SET2_TWCK() do { TARGET_TWI2_TWCK_PORT_S(TARGET_TWI2_TWCK); hardware_spi_io_delay(); } while (0)	// SCL = 1
+	#define CLR2_TWCK() do { TARGET_TWI2_TWCK_PORT_C(TARGET_TWI2_TWCK); hardware_spi_io_delay(); } while (0)	// SCL = 0
+	#define SET2_TWD() do { TARGET_TWI2_TWD_PORT_S(TARGET_TWI2_TWD); hardware_spi_io_delay(); } while (0)	// SDA = 1
+	#define CLR2_TWD() do { TARGET_TWI2_TWD_PORT_C(TARGET_TWI2_TWD); hardware_spi_io_delay(); } while (0)	// SDA = 0
+
+	#define GET2_TWCK() ((TARGET_TWI2_TWCK_PIN & TARGET_TWI2_TWCK) != 0)
+	#define GET2_TWD() ((TARGET_TWI2_TWD_PIN & TARGET_TWI2_TWD) != 0)
+
 #else
 	#error Undefined CPUSTYLE_xxx
 #endif
