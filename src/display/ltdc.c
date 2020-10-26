@@ -1854,14 +1854,375 @@ tc358768_wr_reg_32bits(unsigned long value)
     i2c_stop();
 }
 
-static void tc358768_write(
+
+struct tc358768_drv_data
+{
+	int dev;
+	unsigned fbd, prd, frs;
+	unsigned bitclk;
+};
+
+struct tc358768_drv_data dev0;
+
+static int tc358768_write(
+	struct tc358768_drv_data *ddata,
 	unsigned int reg,
 	unsigned int val
 	)
 {
-	tc358768_wr_reg_32bits((unsigned long) reg << 16 | val);
+	const unsigned i2caddr = TC358768_I2C_ADDR;
+
+	if (reg < 0x100 || reg >= 0x600)
+	{
+		// 16-bit register
+		i2c_start(i2caddr | 0x00);
+		i2c_write(reg >> 8);		// addres hi
+		i2c_write(reg >> 0);		// addres lo
+		i2c_write(val >> 8);		// data hi
+		i2c_write(val >> 0);		// data lo
+		i2c_waitsend();
+	    i2c_stop();
+	}
+	else
+	{
+		// 32-bit register
+		i2c_start(i2caddr | 0x00);
+		i2c_write(reg >> 8);		// addres hi
+		i2c_write(reg >> 0);		// addres lo
+		i2c_write(val >> 24);		// data hi
+		i2c_write(val >> 16);		// data lo
+		i2c_waitsend();
+	    i2c_stop();
+	}
+	return 0;
 }
 
+static int tc358768_read(
+	struct tc358768_drv_data *ddata,
+	unsigned int reg,
+	unsigned int * val
+	)
+{
+	const unsigned i2caddr = TC358768_I2C_ADDR;
+
+	if (reg < 0x100 || reg >= 0x600)
+	{
+		// 16-bit register
+
+		uint8_t v1, v2;
+
+		i2c_start(i2caddr | 0x00);
+		i2c_write(reg >> 8);
+		i2c_write_withrestart(reg >> 0);
+		i2c_start(i2caddr | 0x01);
+		i2c_read(& v1, I2C_READ_ACK_1);	// ||
+		i2c_read(& v2, I2C_READ_NACK);	// ||
+
+		* val =
+				(((unsigned long) v1) << 8) |
+				(((unsigned long) v2) << 0) |
+				0;
+	}
+	else
+	{
+		// 32-bit register
+
+		uint8_t v1, v2, v3, v4;
+
+		i2c_start(i2caddr | 0x00);
+		i2c_write(reg >> 8);
+		i2c_write_withrestart(reg >> 0);
+		i2c_start(i2caddr | 0x01);
+		i2c_read(& v1, I2C_READ_ACK_1);	// ||
+		i2c_read(& v2, I2C_READ_ACK);	// ||
+		i2c_read(& v3, I2C_READ_ACK);	// ||
+		i2c_read(& v4, I2C_READ_NACK);	// ||
+
+		* val =
+				(((unsigned long) v1) << 8) |
+				(((unsigned long) v2) << 0) |
+				(((unsigned long) v3) << 24) |
+				(((unsigned long) v4) << 16) |
+				0;
+	}
+
+	return 0;
+}
+
+static int tc358768_update_bits(struct tc358768_drv_data *ddata,
+	unsigned int reg, unsigned int mask, unsigned int val)
+{
+	int ret;
+	unsigned int tmp, orig;
+
+	ret = tc358768_read(ddata, reg, &orig);
+	if (ret != 0)
+		return ret;
+
+	tmp = orig & ~mask;
+	tmp |= val & mask;
+
+	//dev_dbg(ddata->dev, "UPD \t%04x\t%08x -> %08x\n", reg, orig, tmp);
+
+	if (tmp != orig)
+		ret = tc358768_write(ddata, reg, tmp);
+
+	return ret;
+}
+
+
+static int tc358768_dsi_xfer_short(struct tc358768_drv_data *ddata,
+	uint8_t data_id, uint8_t data0, uint8_t data1)
+{
+	const uint8_t packet_type = 0x10; /* DSI Short Packet */
+	const uint8_t word_count = 0;
+
+	tc358768_write(ddata, TC358768_DSICMD_TYPE,
+		(packet_type << 8) | data_id);
+	tc358768_write(ddata, TC358768_DSICMD_WC, (word_count & 0xf));
+	tc358768_write(ddata, TC358768_DSICMD_WD0, (data1 << 8) | data0);
+	tc358768_write(ddata, TC358768_DSICMD_TX, 1); /* start transfer */
+
+	return 0;
+}
+
+static void tc358768_sw_reset(struct tc358768_drv_data *ddata)
+{
+	/* Assert Reset */
+	tc358768_write(ddata, TC358768_SYSCTL, 1);
+	/* Release Reset, Exit Sleep */
+	tc358768_write(ddata, TC358768_SYSCTL, 0);
+}
+
+#define REFCLK 25000000uL
+#define DSI_NDL 4
+#define DPI_NDL 24
+
+static uint32_t local_ulmin(uint32_t a, uint32_t b) { return a < b ? a : b; }
+static uint32_t local_ulmax(uint32_t a, uint32_t b) { return a > b ? a : b; }
+static uint64_t div_u64(uint64_t a, uint64_t b) { return a / b; }
+
+static uint32_t tc358768_pll_to_pclk(struct tc358768_drv_data *ddata, uint32_t pll)
+{
+	uint32_t byteclk;
+
+	byteclk = pll / 2 / 4;
+
+	return (uint32_t)div_u64((uint64_t)byteclk * 8 *DSI_NDL,
+		DPI_NDL);
+}
+
+static uint32_t tc358768_pclk_to_pll(struct tc358768_drv_data *ddata, uint32_t pclk)
+{
+	uint32_t byteclk;
+
+	byteclk = (uint32_t)div_u64((uint64_t)pclk * DPI_NDL,
+		8 *DSI_NDL);
+
+	return byteclk * 4 * 2;
+}
+
+static int tc358768_calc_pll(struct tc358768_drv_data *ddata)
+{
+	static const unsigned frs_limits[] = {
+		1000000000, 500000000, 250000000, 125000000, 62500000
+	};
+	unsigned fbd, prd, frs;
+	uint32_t target_pll;
+	unsigned long refclk;
+	unsigned i;
+	uint32_t max_pll, min_pll;
+
+	uint32_t best_diff, best_pll, best_prd, best_fbd;
+
+	target_pll = tc358768_pclk_to_pll(ddata, LTDC_DOTCLK);
+
+	/* pll_clk = RefClk * [(FBD + 1)/ (PRD + 1)] * [1 / (2^FRS)] */
+
+	frs = UINT_MAX;
+
+	for (i = 0; i < ARRAY_SIZE(frs_limits) - 1; ++i) {
+		if (target_pll < frs_limits[i] && target_pll >= frs_limits[i + 1]) {
+			frs = i;
+			max_pll = frs_limits[i];
+			min_pll = frs_limits[i + 1];
+			break;
+		}
+	}
+
+	if (frs == UINT_MAX)
+		return -1;
+
+	//refclk = clk_get_rate(REFCLK);
+	refclk = (REFCLK);
+
+	best_pll = best_prd = best_fbd = 0;
+	best_diff = UINT_MAX;
+
+	for (prd = 0; prd < 16; ++prd) {
+		uint32_t divisor = (prd + 1) * (1 << frs);
+
+		for (fbd = 0; fbd < 512; ++fbd) {
+			uint32_t pll, diff;
+
+			pll = (uint32_t)div_u64((uint64_t)refclk * (fbd + 1), divisor);
+
+			if (pll >= max_pll || pll < min_pll)
+				continue;
+
+			diff = local_ulmax(pll, target_pll) - local_ulmin(pll, target_pll);
+
+			if (diff < best_diff) {
+				best_diff = diff;
+				best_pll = pll;
+				best_prd = prd;
+				best_fbd = fbd;
+			}
+
+			if (best_diff == 0)
+				break;
+		}
+
+		if (best_diff == 0)
+			break;
+	}
+
+	if (best_diff == UINT_MAX) {
+		//dev_err(ddata->dev, "could not find suitable PLL setup\n");
+		return -1;
+	}
+
+	ddata->fbd = best_fbd;
+	ddata->prd = best_prd;
+	ddata->frs = frs;
+	ddata->bitclk = best_pll / 2;
+
+	return 0;
+}
+
+static void tc358768_setup_pll(struct tc358768_drv_data *ddata)
+{
+	unsigned fbd, prd, frs;
+
+	fbd = ddata->fbd;
+	prd = ddata->prd;
+	frs = ddata->frs;
+
+	PRINTF("PLL: refclk %lu, fbd %u, prd %u, frs %u\n",
+		(REFCLK), fbd, prd, frs);
+
+	PRINTF("PLL: %u, BitClk %u, ByteClk %u, pclk %u\n",
+		ddata->bitclk * 2, ddata->bitclk, ddata->bitclk / 4,
+		tc358768_pll_to_pclk(ddata, ddata->bitclk * 2));
+
+	/* PRD[15:12] FBD[8:0] */
+	tc358768_write(ddata, TC358768_PLLCTL0, (prd << 12) | fbd);
+
+	/* FRS[11:10] LBWS[9:8] CKEN[4] RESETB[1] EN[0] */
+	tc358768_write(ddata, TC358768_PLLCTL1,
+		(frs << 10) | (0x2 << 8) | (0 << 4) | (1 << 1) | (1 << 0));
+
+	/* wait for lock */
+	local_delay_ms(5);
+
+	/* FRS[11:10] LBWS[9:8] CKEN[4] RESETB[1] EN[0] */
+	tc358768_write(ddata, TC358768_PLLCTL1,
+		(frs << 10) | (0x2 << 8) | (1 << 4) | (1 << 1) | (1 << 0));
+}
+
+static void tc358768_power_on(struct tc358768_drv_data *ddata)
+{
+	//const struct omap_video_timings *t = &ddata->videomode;
+
+	tc358768_sw_reset(ddata);
+
+	tc358768_setup_pll(ddata);
+
+	/* VSDly[9:0] */
+	tc358768_write(ddata, TC358768_VSDLY, 1);
+	/* PDFormat[7:4] spmode_en[3] rdswap_en[2] dsitx_en[1] txdt_en[0] */
+	tc358768_write(ddata, TC358768_DATAFMT, (0x3 << 4) | (1 << 2) | (1 << 1) | (1 << 0));
+	/* dsitx_dt[7:0] 3e = Packed Pixel Stream, 24-bit RGB, 8-8-8 Format*/
+	tc358768_write(ddata, TC358768_DSITX_DT, 0x003e);
+
+	/* Enable D-PHY (HiZ->LP11) */
+	tc358768_write(ddata, TC358768_CLW_CNTRL, 0x0000);
+	tc358768_write(ddata, TC358768_D0W_CNTRL, 0x0000);
+	tc358768_write(ddata, TC358768_D1W_CNTRL, 0x0000);
+	tc358768_write(ddata, TC358768_D2W_CNTRL, 0x0000);
+	tc358768_write(ddata, TC358768_D3W_CNTRL, 0x0000);
+
+	/* DSI Timings */
+	/* LP11 = 100 us for D-PHY Rx Init */
+	tc358768_write(ddata, TC358768_LINEINITCNT,	0x00002c88);
+	tc358768_write(ddata, TC358768_LPTXTIMECNT,	0x00000005);
+	tc358768_write(ddata, TC358768_TCLK_HEADERCNT,	0x00001f06);
+	tc358768_write(ddata, TC358768_TCLK_TRAILCNT,	0x00000003);
+	tc358768_write(ddata, TC358768_THS_HEADERCNT,	0x00000606);
+	tc358768_write(ddata, TC358768_TWAKEUP,		0x00004a88);
+	tc358768_write(ddata, TC358768_TCLK_POSTCNT,	0x0000000b);
+	tc358768_write(ddata, TC358768_THS_TRAILCNT,	0x00000004);
+	tc358768_write(ddata, TC358768_HSTXVREGEN,	0x0000001f);
+
+	/* CONTCLKMODE[0] */
+	tc358768_write(ddata, TC358768_TXOPTIONCNTRL, 0x1);
+	/* TXTAGOCNT[26:16] RXTASURECNT[10:0] */
+	tc358768_write(ddata, TC358768_BTACNTRL1, (0x5 << 16) | (0x5));
+	/* START[0] */
+	tc358768_write(ddata, TC358768_STARTCNTRL, 0x1);
+
+	/* DSI Tx Timing Control */
+
+	/* Set event mode */
+	tc358768_write(ddata, TC358768_DSI_EVENT, 1);
+
+	/* vsw (+ vbp) */
+	tc358768_write(ddata, TC358768_DSI_VSW, TOPMARGIN);
+	/* vbp (not used in event mode) */
+	tc358768_write(ddata, TC358768_DSI_VBPR, 0);
+	/* vact */
+	tc358768_write(ddata, TC358768_DSI_VACT, HEIGHT);
+
+	/* (hsw + hbp) * byteclk * ndl / pclk */
+	tc358768_write(ddata, TC358768_DSI_HSW,
+		(uint32_t)div_u64(LEFTMARGIN * ((uint64_t)ddata->bitclk / 4) *DSI_NDL, LTDC_DOTCLK)
+		);
+	/* hbp (not used in event mode) */
+	tc358768_write(ddata, TC358768_DSI_HBPR, 0);
+	/* hact (bytes) */
+	tc358768_write(ddata, TC358768_DSI_HACT, WIDTH * 3);
+
+	/* Start DSI Tx */
+	tc358768_write(ddata, TC358768_DSI_START, 0x1);
+
+	/* SET, DSI_Control, 0xa7 */
+	/* 0xa7 = HS | CONTCLK | 4-datalines | EoTDisable */
+	tc358768_write(ddata, TC358768_DSI_CONFW, (5<<29) | (0x3 << 24) | 0xa7);
+	/* CLEAR, DSI_Control, 0x8001 */
+	/* 0x8001 = DSIMode */
+	tc358768_write(ddata, TC358768_DSI_CONFW, (6<<29) | (0x3 << 24) | 0x8000);
+
+	/* clear FrmStop and RstPtr */
+	tc358768_update_bits(ddata, TC358768_PP_MISC, 0x3 << 14, 0);
+
+	/* set PP_en */
+	tc358768_update_bits(ddata, TC358768_CONFCTL, 1 << 6, 1 << 6);
+}
+
+static void tc358768_power_off(struct tc358768_drv_data *ddata)
+{
+	/* set FrmStop */
+	tc358768_update_bits(ddata, TC358768_PP_MISC, 1 << 15, 1 << 15);
+
+	/* wait at least for one frame */
+	local_delay_ms(50);
+
+	/* clear PP_en */
+	tc358768_update_bits(ddata, TC358768_CONFCTL, 1 << 6, 0);
+
+	/* set RstPtr */
+	tc358768_update_bits(ddata, TC358768_PP_MISC, 1 << 14, 1 << 14);
+}
 void tc_print(uint32_t addr) {
 	PRINTF("+++++++++++addr->%04x: %04x\n", addr, tc358768_rd_reg_32bits(addr));
 }
@@ -2113,6 +2474,9 @@ int tc358768_get_id(void) {
 
 void tc358768_initialize(void)
 {
+	struct tc358768_drv_data * ddata = & dev0;
+
+	dev0.bitclk = 800000000uL;
 	if (toshiba_ddr_power_init())
 	{
 		PRINTF("TC358768 power init failure\n");
@@ -2162,26 +2526,33 @@ void tc358768_initialize(void)
 	// TC358778XBG
 
 	// Reset
-	tc358768_write(TC358768_SYSCTL, 0x001);
-	tc358768_write(TC358768_SYSCTL, 0x000);
+	tc358768_write(ddata, TC358768_SYSCTL, 0x001);
+	tc358768_write(ddata, TC358768_SYSCTL, 0x000);
 
 	PRINTF("TC358778XBG: Chip and Revision ID=%08lX\n", tc358768_rd_reg_32bits(TC358768_CHIPID));
 	PRINTF("TC358778XBG: System Control Register=%08lX\n", tc358768_rd_reg_32bits(TC358768_SYSCTL));
 	PRINTF("TC358778XBG: Input Control Register=%08lX\n", tc358768_rd_reg_32bits(TC358768_CONFCTL));
 	PRINTF("TC358778XBG: Data Format Control Register=%08lX\n", tc358768_rd_reg_32bits(TC358768_DATAFMT));
-	tc358768_write(TC358768_DATAFMT, 0x0300);
+	tc358768_write(ddata, TC358768_DATAFMT, 0x0300);
 	local_delay_ms(100);
 	PRINTF("TC358778XBG: Data Format Control Register=%08lX\n", tc358768_rd_reg_32bits(TC358768_DATAFMT));
 
 	PRINTF("TC358778XBG: PLL Control Register 0=%08lX\n", tc358768_rd_reg_32bits(TC358768_PLLCTL0));
 
-	tc358768_write(TC358768_DSI_VSW, VSYNC);
-	tc358768_write(TC358768_DSI_VBPR, VBP);
-	tc358768_write(TC358768_DSI_VACT, HEIGHT);
+	tc358768_write(ddata, TC358768_DSI_VSW, VSYNC);
+	tc358768_write(ddata, TC358768_DSI_VBPR, VBP);
+	tc358768_write(ddata, TC358768_DSI_VACT, HEIGHT);
 
-	tc358768_write(TC358768_DSI_HSW, HSYNC);
-	tc358768_write(TC358768_DSI_HBPR, HBP);
-	tc358768_write(TC358768_DSI_HACT, WIDTH);
+	tc358768_write(ddata, TC358768_DSI_HSW, HSYNC);
+	tc358768_write(ddata, TC358768_DSI_HBPR, HBP);
+	tc358768_write(ddata, TC358768_DSI_HACT, WIDTH);
+
+	PRINTF("TC358778XBG: vact=%ld\n", tc358768_rd_reg_32bits(TC358768_DSI_VACT));
+	PRINTF("TC358778XBG: hact=%ld\n", tc358768_rd_reg_32bits(TC358768_DSI_HACT));
+
+	tc358768_calc_pll(ddata);
+
+	tc358768_power_on(ddata);
 
 	PRINTF("TC358778XBG: vact=%ld\n", tc358768_rd_reg_32bits(TC358768_DSI_VACT));
 	PRINTF("TC358778XBG: hact=%ld\n", tc358768_rd_reg_32bits(TC358768_DSI_HACT));
