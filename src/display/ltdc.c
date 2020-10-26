@@ -18,6 +18,10 @@
 #include "formats.h"	// for debug prints
 #include "gpio.h"
 
+#if LCDMODETX_TC358778XBG
+#include "mipi_dsi.h"
+#endif /* LCDMODETX_TC358778XBG */
+
 #if WITHLTDCHW
 
 #if LCDMODE_LQ043T3DX02K
@@ -1703,6 +1707,486 @@ uint_fast32_t display_getdotclock(void)
 
 #endif /* WITHLTDCHW */
 
+#if LCDMODETX_TC358778XBG
+
+// See:
+//	http://www.staroceans.org/projects/beagleboard/drivers/gpu/drm/omapdrm/displays/encoder-tc358768.c
+
+/* Global (16-bit addressable) */
+#define TC358768_CHIPID			0x0000
+#define TC358768_SYSCTL			0x0002
+#define TC358768_CONFCTL		0x0004	// Input Control Register
+#define TC358768_VSDLY			0x0006
+#define TC358768_DATAFMT		0x0008
+#define TC358768_GPIOEN			0x000E
+#define TC358768_GPIODIR		0x0010
+#define TC358768_GPIOIN			0x0012
+#define TC358768_GPIOOUT		0x0014
+#define TC358768_PLLCTL0		0x0016
+#define TC358768_PLLCTL1		0x0018
+#define TC358768_CMDBYTE		0x0022
+#define TC358768_PP_MISC		0x0032
+#define TC358768_DSITX_DT		0x0050
+#define TC358768_FIFOSTATUS		0x00F8
+
+/* Debug (16-bit addressable) */
+#define TC358768_VBUFCTRL		0x00E0
+#define TC358768_DBG_WIDTH		0x00E2
+#define TC358768_DBG_VBLANK		0x00E4
+#define TC358768_DBG_DATA		0x00E8
+
+/* TX PHY (32-bit addressable) */
+#define TC358768_CLW_DPHYCONTTX		0x0100
+#define TC358768_D0W_DPHYCONTTX		0x0104
+#define TC358768_D1W_DPHYCONTTX		0x0108
+#define TC358768_D2W_DPHYCONTTX		0x010C
+#define TC358768_D3W_DPHYCONTTX		0x0110
+#define TC358768_CLW_CNTRL		0x0140
+#define TC358768_D0W_CNTRL		0x0144
+#define TC358768_D1W_CNTRL		0x0148
+#define TC358768_D2W_CNTRL		0x014C
+#define TC358768_D3W_CNTRL		0x0150
+
+/* TX PPI (32-bit addressable) */
+#define TC358768_STARTCNTRL		0x0204
+#define TC358768_DSITXSTATUS		0x0208
+#define TC358768_LINEINITCNT		0x0210
+#define TC358768_LPTXTIMECNT		0x0214
+#define TC358768_TCLK_HEADERCNT		0x0218
+#define TC358768_TCLK_TRAILCNT		0x021C
+#define TC358768_THS_HEADERCNT		0x0220
+#define TC358768_TWAKEUP		0x0224
+#define TC358768_TCLK_POSTCNT		0x0228
+#define TC358768_THS_TRAILCNT		0x022C
+#define TC358768_HSTXVREGCNT		0x0230
+#define TC358768_HSTXVREGEN		0x0234
+#define TC358768_TXOPTIONCNTRL		0x0238
+#define TC358768_BTACNTRL1		0x023C
+
+/* TX CTRL (32-bit addressable) */
+#define TC358768_DSI_STATUS		0x0410
+#define TC358768_DSI_INT		0x0414
+#define TC358768_DSICMD_RXFIFO		0x0430
+#define TC358768_DSI_ACKERR		0x0434
+#define TC358768_DSI_RXERR		0x0440
+#define TC358768_DSI_ERR		0x044C
+#define TC358768_DSI_CONFW		0x0500
+#define TC358768_DSI_RESET		0x0504
+#define TC358768_DSI_INT_CLR		0x050C
+#define TC358768_DSI_START		0x0518
+
+/* DSITX CTRL (16-bit addressable) */
+#define TC358768_DSICMD_TX		0x0600
+#define TC358768_DSICMD_TYPE		0x0602
+#define TC358768_DSICMD_WC		0x0604
+#define TC358768_DSICMD_WD0		0x0610
+#define TC358768_DSICMD_WD1		0x0612
+#define TC358768_DSICMD_WD2		0x0614
+#define TC358768_DSICMD_WD3		0x0616
+#define TC358768_DSI_EVENT		0x0620
+#define TC358768_DSI_VSW		0x0622
+#define TC358768_DSI_VBPR		0x0624
+#define TC358768_DSI_VACT		0x0626
+#define TC358768_DSI_HSW		0x0628
+#define TC358768_DSI_HBPR		0x062A
+#define TC358768_DSI_HACT		0x062C
+
+
+uint_fast32_t any_rd_reg_32bits(unsigned i2caddr, unsigned register_id)
+{
+
+	//unsigned i2caddr = 0x72;
+
+
+	uint8_t v0, v1, v2, v3;
+
+	i2c_start(i2caddr | 0x00);
+	i2c_write_withrestart(register_id);
+	i2c_start(i2caddr | 0x01);
+	i2c_read(& v0, I2C_READ_ACK_1);	// ||
+	i2c_read(& v1, I2C_READ_ACK);	// ||
+	i2c_read(& v2, I2C_READ_ACK);	// ||
+	i2c_read(& v3, I2C_READ_NACK);	// ||
+
+	return
+			(((unsigned long) v3) << 24) |
+			(((unsigned long) v2) << 16) |
+			(((unsigned long) v1) << 8) |
+			(((unsigned long) v0) << 0) |
+			0;
+}
+
+#define TC358768_I2C_ADDR (0x0E * 2)
+
+unsigned long
+tc358768_rd_reg_32bits(unsigned register_id)
+{
+	const unsigned i2caddr = TC358768_I2C_ADDR;
+
+	uint8_t v1, v2, v3, v4;
+
+	i2c_start(i2caddr | 0x00);
+	i2c_write(register_id >> 8);
+	i2c_write_withrestart(register_id >> 0);
+	i2c_start(i2caddr | 0x01);
+	i2c_read(& v1, I2C_READ_ACK_1);	// ||
+	i2c_read(& v2, I2C_READ_ACK);	// ||
+	i2c_read(& v3, I2C_READ_ACK);	// ||
+	i2c_read(& v4, I2C_READ_NACK);	// ||
+
+	return
+			(((unsigned long) v1) << 8) |
+			(((unsigned long) v2) << 0) |
+			0;
+}
+
+void
+tc358768_wr_reg_32bits(unsigned long value)
+{
+	const unsigned i2caddr = TC358768_I2C_ADDR;
+
+	i2c_start(i2caddr | 0x00);
+	i2c_write(value >> 24);		// addres hi
+	i2c_write(value >> 16);		// addres lo
+	i2c_write(value >> 8);		// data hi
+	i2c_write(value >> 0);		// data lo
+	i2c_waitsend();
+    i2c_stop();
+}
+
+static void tc358768_write(
+	unsigned int reg,
+	unsigned int val
+	)
+{
+	tc358768_wr_reg_32bits((unsigned long) reg << 16 | val);
+}
+
+void tc_print(uint32_t addr) {
+	PRINTF("+++++++++++addr->%04x: %04x\n", addr, tc358768_rd_reg_32bits(addr));
+}
+
+#define tc358768_wr_regs_32bits(reg_array)  _tc358768_wr_regs_32bits(reg_array, ARRAY_SIZE(reg_array))
+int _tc358768_wr_regs_32bits(unsigned int reg_array[], uint32_t n) {
+
+	int i = 0;
+	PRINTF("%s:%d\n", __func__, n);
+	for(i = 0; i < n; i++) {
+		if(reg_array[i] < 0x00020000) {
+		    if(reg_array[i] < 20000)
+		    	local_delay_us(reg_array[i]);
+		    else {
+		    	local_delay_ms(reg_array[i]/1000);
+		    }
+		} else {
+			tc358768_wr_reg_32bits(reg_array[i]);
+		}
+	}
+	return 0;
+}
+
+int tc358768_command_tx_less8bytes(unsigned char type, unsigned char *regs, uint32_t n) {
+	int i = 0;
+	unsigned int command[] = {
+			0x06020000,
+			0x06040000,
+			0x06100000,
+			0x06120000,
+			0x06140000,
+			0x06160000,
+	};
+
+	if(n <= 2)
+		command[0] |= 0x1000;   //short packet
+	else {
+		command[0] |= 0x4000;   //long packet
+		command[1] |= n;		//word count byte
+	}
+	command[0] |= type;         //data type
+
+	//PRINTF("*cmd:\n");
+	//PRINTF("0x%08x\n", command[0]);
+	//PRINTF("0x%08x\n", command[1]);
+
+	for(i = 0; i < (n + 1)/2; i++) {
+		command[i+2] |= regs[i*2];
+		if((i*2 + 1) < n)
+			command[i+2] |= regs[i*2 + 1] << 8;
+		PRINTF("0x%08x\n", command[i+2]);
+	}
+
+	_tc358768_wr_regs_32bits(command, (n + 1)/2 + 2);
+	tc358768_wr_reg_32bits(0x06000001);   //Packet Transfer
+	//wait until packet is out
+	i = 100;
+	while(tc358768_rd_reg_32bits(0x0600) & 0x01) {
+		if(i-- == 0)
+			break;
+		tc_print(0x0600);
+	}
+	//local_delay_us(50);
+	return 0;
+}
+
+int tc358768_command_tx_more8bytes_hs(unsigned char type, unsigned char regs[], uint32_t n) {
+
+	int i = 0;
+	unsigned int dbg_data = 0x00E80000, temp = 0;
+	unsigned int command[] = {
+			0x05000080,    //HS data 4 lane, EOT is added
+			0x0502A300,
+			0x00080001,
+			0x00500000,    //Data ID setting
+			0x00220000,    //Transmission byte count= byte
+			0x00E08000,	   //Enable I2C/SPI write to VB
+			0x00E20048,    //Total word count = 0x48 (max 0xFFF). This value should be adjusted considering trade off between transmission time and transmission start/stop time delay
+			0x00E4007F,    //Vertical blank line = 0x7F
+	};
+
+
+	command[3] |= type;        //data type
+	command[4] |= n & 0xffff;           //Transmission byte count
+
+	tc358768_wr_regs_32bits(command);
+
+	for(i = 0; i < (n + 1)/2; i++) {
+		temp = dbg_data | regs[i*2];
+		if((i*2 + 1) < n)
+			temp |= (regs[i*2 + 1] << 8);
+		//PRINTF("0x%08x\n", temp);
+		tc358768_wr_reg_32bits(temp);
+	}
+	if((n % 4 == 1) ||  (n % 4 == 2))     //4 bytes align
+		tc358768_wr_reg_32bits(dbg_data);
+
+	tc358768_wr_reg_32bits(0x00E0C000);     //Start command transmisison
+	tc358768_wr_reg_32bits(0x00E00000);	 //Stop command transmission. This setting should be done just after above setting to prevent multiple output
+	local_delay_us(200);
+	//Re-Initialize
+	//tc358768_wr_regs_32bits(re_initialize);
+	return 0;
+}
+
+//low power mode only for tc358768a
+int tc358768_command_tx_more8bytes_lp(unsigned char type, unsigned char regs[], uint32_t n) {
+
+	int i = 0;
+	unsigned int dbg_data = 0x00E80000, temp = 0;
+	unsigned int command[] = {
+			0x00080001,
+			0x00500000,    //Data ID setting
+			0x00220000,    //Transmission byte count= byte
+			0x00E08000,	   //Enable I2C/SPI write to VB
+	};
+
+	command[1] |= type;        //data type
+	command[2] |= n & 0xffff;           //Transmission byte count
+
+	tc358768_wr_regs_32bits(command);
+
+	for(i = 0; i < (n + 1)/2; i++) {
+		temp = dbg_data | regs[i*2];
+		if((i*2 + 1) < n)
+			temp |= (regs[i*2 + 1] << 8);
+		//PRINTF("0x%08x\n", temp);
+		tc358768_wr_reg_32bits(temp);
+
+	}
+	if((n % 4 == 1) ||  (n % 4 == 2))     //4 bytes align
+		tc358768_wr_reg_32bits(dbg_data);
+
+	tc358768_wr_reg_32bits(0x00E0E000);     //Start command transmisison
+	local_delay_us(1000);
+	tc358768_wr_reg_32bits(0x00E02000);	 //Keep Mask High to prevent short packets send out
+	tc358768_wr_reg_32bits(0x00E00000);	 //Stop command transmission. This setting should be done just after above setting to prevent multiple output
+	local_delay_us(10);
+	return 0;
+}
+
+int _tc358768_send_packet(unsigned char type, unsigned char regs[], uint32_t n) {
+
+	if(n <= 8) {
+		tc358768_command_tx_less8bytes(type, regs, n);
+	} else {
+		//tc358768_command_tx_more8bytes_hs(type, regs, n);
+		tc358768_command_tx_more8bytes_lp(type, regs, n);
+	}
+	return 0;
+}
+
+int tc358768_send_packet(unsigned char type, unsigned char regs[], uint32_t n) {
+	return _tc358768_send_packet(type, regs, n);
+}
+
+
+/*
+The DCS is separated into two functional areas: the User Command Set and the Manufacturer Command
+Set. Each command is an eight-bit code with 00h to AFh assigned to the User Command Set and all other
+codes assigned to the Manufacturer Command Set.
+*/
+int _mipi_dsi_send_dcs_packet(unsigned char regs[], uint32_t n) {
+
+	unsigned char type = 0;
+	if(n == 1) {
+		type = DTYPE_DCS_SWRITE_0P;
+	} else if (n == 2) {
+		type = DTYPE_DCS_SWRITE_1P;
+	} else if (n > 2) {
+		type = DTYPE_DCS_LWRITE;
+	}
+	_tc358768_send_packet(type, regs, n);
+	return 0;
+}
+
+int mipi_dsi_send_dcs_packet(unsigned char regs[], uint32_t n) {
+	return _mipi_dsi_send_dcs_packet(regs, n);
+}
+
+
+int _tc358768_rd_lcd_regs(unsigned char type, char comd, int size, unsigned char* buf) {
+
+	unsigned char regs[8];
+	uint32_t count = 0, data30, data32;
+	regs[0] = size;
+	regs[1] = 0;
+	tc358768_command_tx_less8bytes(0x37, regs, 2);
+	tc358768_wr_reg_32bits(0x05040010);
+	tc358768_wr_reg_32bits(0x05060000);
+	regs[0] = comd;
+	tc358768_command_tx_less8bytes(type, regs, 1);
+
+	while (!(tc358768_rd_reg_32bits(0x0410) & 0x20)){
+		PRINTF("error 0x0410:%04x\n", tc358768_rd_reg_32bits(0x0410));
+		local_delay_ms(1);
+		if(count++ > 10) {
+			break;
+		}
+	}
+
+	data30 = tc358768_rd_reg_32bits(0x0430);	  //data id , word count[0:7]
+	//PRINTF("0x0430:%04x\n", data30);
+	data32 = tc358768_rd_reg_32bits(0x0432);	  //word count[8:15]  ECC
+	//PRINTF("0x0432:%04x\n", data32);
+
+	while(size > 0) {
+		data30 = tc358768_rd_reg_32bits(0x0430);
+		//PRINTF("0x0430:%04x\n", data30);
+		data32 = tc358768_rd_reg_32bits(0x0432);
+		//PRINTF("0x0432:%04x\n", data32);
+
+		if(size-- > 0)
+			*buf++ = (uint8_t)data30;
+		else
+			break;
+		if(size-- > 0)
+			*buf++ = (uint8_t) (data30 >> 8);
+		else
+			break;
+		if(size-- > 0) {
+			*buf++ = (uint8_t)data32;
+			if(size-- > 0)
+				*buf++ = (uint8_t) (data32 >> 8);
+		}
+	}
+
+	data30 = tc358768_rd_reg_32bits(0x0430);
+	//PRINTF("0x0430:%04x\n", data30);
+	data32 = tc358768_rd_reg_32bits(0x0432);
+	//PRINTF("0x0432:%04x\n", data32);
+	return 0;
+}
+
+int mipi_dsi_read_dcs_packet(unsigned char *data, uint32_t n) {
+	//DCS READ
+	_tc358768_rd_lcd_regs(0x06, *data, n, data);
+	return 0;
+}
+
+int tc358768_get_id(void) {
+
+	int id = -1;
+
+	//tc358768_power_up();
+	id = tc358768_rd_reg_32bits(0);
+	return id;
+}
+
+void tc358768_initialize(void)
+{
+	if (toshiba_ddr_power_init())
+	{
+		PRINTF("TC358768 power init failure\n");
+		return;
+	}
+	//stpmic1_dump_regulators();
+	// See also:
+	// https://github.com/bbelos/rk3188-kernel/blob/master/drivers/video/rockchip/transmitter/tc358768.c
+
+	const portholder_t TE = (1uL << 7);	// PC7 (TE) - panel pin 29 Sync signal from driver IC
+	const portholder_t OTP_PWR = (1uL << 7);	// PD7 (CTRL - OTP_PWR) - panel pin 30
+	arm_hardware_pioc_inputs(TE);
+	arm_hardware_piod_outputs(OTP_PWR, 0 * OTP_PWR);
+	// active low
+	const portholder_t RESET = (1uL << 1);	// PD1 = RESX_18 - pin  28
+	arm_hardware_piod_outputs(RESET, 0 * RESET);
+	local_delay_ms(5);
+	arm_hardware_piod_outputs(RESET, 1 * RESET);
+
+	// TP_RESX - activelow
+	const portholder_t TP_RESX = (1uL << 0);	// PG0 - TP_RESX_18 - pin 03
+	arm_hardware_piog_outputs(TP_RESX, 0 * TP_RESX);
+	local_delay_ms(5);
+	arm_hardware_piog_outputs(TP_RESX, 1 * TP_RESX);
+
+
+	// TC358778XBG conrol
+	const portholder_t Video_RST = (1uL << 10);	// PA10
+	const portholder_t Video_MODE = (1uL << 14);	// PF14: Video_MODE: 0: test, 1: normal
+
+	arm_hardware_piof_outputs(Video_MODE, 1 * Video_MODE);
+	arm_hardware_pioa_outputs(Video_RST, 0 * Video_RST);
+	local_delay_ms(5);
+	arm_hardware_pioa_outputs(Video_RST, 1 * Video_RST);
+
+	local_delay_ms(300);
+
+//
+//	unsigned i;
+//	for (i = 1; i < 127; ++ i)
+//	{
+//		// TC358778XBG
+//		PRINTF("addr %02X: ID=%08lX\n", i, any_rd_reg_32bits(i * 2, 0));
+//	}
+
+	// addr 0E: ID=02000144
+	// TC358778XBG
+
+	// Reset
+	tc358768_write(TC358768_SYSCTL, 0x001);
+	tc358768_write(TC358768_SYSCTL, 0x000);
+
+	PRINTF("TC358778XBG: Chip and Revision ID=%08lX\n", tc358768_rd_reg_32bits(TC358768_CHIPID));
+	PRINTF("TC358778XBG: System Control Register=%08lX\n", tc358768_rd_reg_32bits(TC358768_SYSCTL));
+	PRINTF("TC358778XBG: Input Control Register=%08lX\n", tc358768_rd_reg_32bits(TC358768_CONFCTL));
+	PRINTF("TC358778XBG: Data Format Control Register=%08lX\n", tc358768_rd_reg_32bits(TC358768_DATAFMT));
+	tc358768_write(TC358768_DATAFMT, 0x0300);
+	local_delay_ms(100);
+	PRINTF("TC358778XBG: Data Format Control Register=%08lX\n", tc358768_rd_reg_32bits(TC358768_DATAFMT));
+
+	PRINTF("TC358778XBG: PLL Control Register 0=%08lX\n", tc358768_rd_reg_32bits(TC358768_PLLCTL0));
+
+	tc358768_write(TC358768_DSI_VSW, VSYNC);
+	tc358768_write(TC358768_DSI_VBPR, VBP);
+	tc358768_write(TC358768_DSI_VACT, HEIGHT);
+
+	tc358768_write(TC358768_DSI_HSW, HSYNC);
+	tc358768_write(TC358768_DSI_HBPR, HBP);
+	tc358768_write(TC358768_DSI_HACT, WIDTH);
+
+	PRINTF("TC358778XBG: vact=%ld\n", tc358768_rd_reg_32bits(TC358768_DSI_VACT));
+	PRINTF("TC358778XBG: hact=%ld\n", tc358768_rd_reg_32bits(TC358768_DSI_HACT));
+}
+#endif /* LCDMODETX_TC358778XBG */
 
 #if WITHGPUHW
 

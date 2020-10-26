@@ -385,6 +385,8 @@ void display_discharge(void);			/* вызывается при разрешён�
 void display_set_contrast(uint_fast8_t v);
 void display_palette(void);				// Palette reload
 
+void tc358768_initialize(void);
+
 /* индивидуальные функции драйвера дисплея - реализованы в соответствующем из файлов */
 void display_clear(void);
 void display_flush(void);	// для framebufer дисплеев - вытолкнуть кэш память
