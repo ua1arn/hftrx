@@ -5190,6 +5190,7 @@ static int local_randomgr(unsigned long num)
 
 static void BarTest(void)
 {
+	PRINTF("BarTest\n");
 	board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 	board_update();
 	int forever = 0;
