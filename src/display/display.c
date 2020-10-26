@@ -1281,6 +1281,88 @@ void colpip_to_main(
 
 #endif /*  */
 
+#if LCDMODETX_TC358778XBG
+
+
+
+uint_fast32_t tc358768_rd_reg_32bits(unsigned i2caddr, unsigned register_id)
+{
+
+	//unsigned i2caddr = 0x72;
+
+
+	uint8_t v0, v1, v2, v3;
+
+	i2c_start(i2caddr | 0x00);
+	i2c_write_withrestart(register_id);
+	i2c_start(i2caddr | 0x01);
+	i2c_read(& v0, I2C_READ_ACK_1);	// ||
+	i2c_read(& v1, I2C_READ_ACK);	// ||
+	i2c_read(& v2, I2C_READ_ACK);	// ||
+	i2c_read(& v3, I2C_READ_NACK);	// ||
+
+	return
+			(((unsigned long) v3) << 24) |
+			(((unsigned long) v2) << 16) |
+			(((unsigned long) v1) << 8) |
+			(((unsigned long) v0) << 0) |
+			0;
+}
+
+static void toshibatx(void)
+{
+	if (toshiba_ddr_power_init())
+	{
+		PRINTF("TOSHIBE power init failure\n");
+		return;
+	}
+	stpmic1_dump_regulators();
+	// See also:
+	// https://github.com/bbelos/rk3188-kernel/blob/master/drivers/video/rockchip/transmitter/tc358768.c
+
+	const portholder_t TE = (1uL << 7);	// PC7 (TE) - panel pin 29 Sync signal from driver IC
+	const portholder_t OTP_PWR = (1uL << 7);	// PD7 (CTRL - OTP_PWR) - panel pin 30
+	arm_hardware_pioc_inputs(TE);
+	arm_hardware_piod_outputs(OTP_PWR, 0 * OTP_PWR);
+	// active low
+	const portholder_t RESET = (1uL << 1);	// PD1 = RESX_18 - pin  28
+	arm_hardware_piod_outputs(RESET, 0 * RESET);
+	local_delay_ms(5);
+	arm_hardware_piod_outputs(RESET, 1 * RESET);
+
+	// TP_RESX - activelow
+	const portholder_t TP_RESX = (1uL << 0);	// PG0 - TP_RESX_18 - pin 03
+	arm_hardware_piog_outputs(TP_RESX, 0 * TP_RESX);
+	local_delay_ms(5);
+	arm_hardware_piog_outputs(TP_RESX, 1 * TP_RESX);
+	local_delay_ms(300);
+
+
+	// TC358778XBG conrol
+	const portholder_t Video_RST = (1uL << 10);	// PA10
+	const portholder_t Video_MODE = (1uL << 14);	// PF14
+
+	arm_hardware_piof_outputs(Video_MODE, 0 * Video_MODE);
+	arm_hardware_pioa_outputs(Video_RST, 0 * Video_RST);
+	local_delay_ms(5);
+	arm_hardware_pioa_outputs(Video_RST, 1 * Video_RST);
+	local_delay_ms(100);
+
+
+	unsigned i;
+	for (i = 1; i < 127; ++ i)
+	{
+		// TC358778XBG
+		PRINTF("addr %02X: ID=%08lX\n", i, tc358768_rd_reg_32bits(i * 2, 0));
+	}
+	unsigned i2 = 0x0e;
+	// addr 0E: ID=02000144
+	// TC358778XBG
+	PRINTF("TC358778XBG: addr %02X: ID=%08lX\n", i2, tc358768_rd_reg_32bits(i2 * 2, 0));
+
+}
+#endif /* LCDMODETX_TC358778XBG */
+
 /*
  * настройка портов для последующей работы с дополнительными (кроме последовательного канала)
  * сигналами дисплея.
@@ -1320,6 +1402,10 @@ void display_hardware_initialize(void)
 		DISPLAY_BUS_INITIALIZE();	// see LCD_CONTROL_INITIALIZE, LCD_DATA_INITIALIZE_WRITE
 	#endif /* LCDMODE_HD44780 && (LCDMODE_SPI == 0) */
 #endif
+
+#if LCDMODETX_TC358778XBG
+	toshibatx();
+#endif /* LCDMODETX_TC358778XBG */
 	PRINTF(PSTR("display_hardware_initialize done\n"));
 }
 

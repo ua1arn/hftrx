@@ -910,6 +910,8 @@ uint_fast8_t stm32mp1_overdrived(void);	// return 1 if CPU supports 800 MHz cloc
 
 uint_fast32_t display_getdotclock(void);
 
+int toshiba_ddr_power_init(void);
+void stpmic1_dump_regulators(void);
 
 #define USBALIGN_BEGIN __attribute__ ((aligned (64)))
 #define USBALIGN_END /* nothing */

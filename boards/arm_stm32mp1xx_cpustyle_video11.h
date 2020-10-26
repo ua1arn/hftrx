@@ -53,7 +53,8 @@
 	#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
 	#define WITHSDRAM_PMC1	1	/* power management chip */
 
-	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
+	#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
+	//#define WITHMDMAHW		1	/* Использование MDMA для формирования изображений */
 	//#define WITHGPUHW	1	/* Graphic processor unit */
 	//#define WITHEHCIHW	1	/* USB_EHCI controller */
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
@@ -1032,17 +1033,22 @@
 
 	#endif /* WIHSPIDFSW || WIHSPIDFHW */
 
-	//#define BOARD_BLINK_BIT (1uL << 11)	// PD11 - led HL2 to ground
-	#define BOARD_BLINK_BIT (1uL << 13)	// PA13 - led HL2 to ground
+	#define BOARD_BLINK1_BIT (1uL << 13)	// PA13 - led HL2 to ground
+	#define BOARD_BLINK2_BIT (1uL << 11)	// PD11 - led HL2 to ground
 
 	#define BOARD_BLINK_INITIALIZE() do { \
-			arm_hardware_pioa_outputs(BOARD_BLINK_BIT, 0 * BOARD_BLINK_BIT); \
+		arm_hardware_pioa_outputs(BOARD_BLINK1_BIT, 0 * BOARD_BLINK1_BIT); \
+		arm_hardware_piod_outputs(BOARD_BLINK2_BIT, 0 * BOARD_BLINK2_BIT); \
 		} while (0)
 	#define BOARD_BLINK_SETSTATE(state) do { \
-			if (state) \
-				(GPIOA)->BSRR = BSRR_C(BOARD_BLINK_BIT); \
-			else \
-				(GPIOA)->BSRR = BSRR_S(BOARD_BLINK_BIT); \
+		if (state) \
+			(GPIOA)->BSRR = BSRR_C(BOARD_BLINK1_BIT); \
+		else \
+			(GPIOA)->BSRR = BSRR_S(BOARD_BLINK1_BIT); \
+		if (state) \
+			(GPIOD)->BSRR = BSRR_C(BOARD_BLINK2_BIT); \
+		else \
+			(GPIOD)->BSRR = BSRR_S(BOARD_BLINK2_BIT); \
 		} while (0)
 
 	/* запрос на вход в режим загрузчика */

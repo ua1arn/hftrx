@@ -206,7 +206,13 @@
 	//#define WITHSPLITEX	1	/* Трехкнопочное управление режимами расстройки */
 
 #if WITHISBOOTLOADER
-	#define LCDMODE_DUMMY	1
+	//#define LCDMODE_DUMMY	1
+
+	#define LCDMODE_LTDCSDRAMBUFF	1
+	#define SDRAM_BANK_ADDR	0xC0000000uL
+	#define LCDMODE_V0	1	/* Обычная конфигурация без PIP с L8 на основном экране */
+	#define LCDMODE_H497TLB01P4 1	/* 720xRGBx1280 - 5" AMOELD Panel H497TLB01.4 */
+	#define LCDMODETX_TC358778XBG 1	/* Toshiba TC358778XBG chip */
 
 #else /* WITHISBOOTLOADER */
 	// +++ Одна из этих строк определяет тип дисплея, для которого компилируется прошивка

@@ -3045,7 +3045,7 @@ static int stpmic1_register_update(uint8_t register_id, uint8_t value, uint8_t m
 	return stpmic1_register_write(register_id, val);
 }
 
-static void stpmic1_dump_regulators(void)
+void stpmic1_dump_regulators(void)
 {
 	uint32_t i;
 
@@ -3074,31 +3074,6 @@ static int stpmic1_get_version(unsigned long *version)
 	return 0;
 }
 
-
-
-uint_fast32_t tc358768_rd_reg_32bits(unsigned i2caddr, unsigned register_id)
-{
-
-	//unsigned i2caddr = 0x72;
-
-
-	uint8_t v0, v1, v2, v3;
-
-	i2c_start(i2caddr | 0x00);
-	i2c_write_withrestart(register_id);
-	i2c_start(i2caddr | 0x01);
-	i2c_read(& v0, I2C_READ_ACK_1);	// ||
-	i2c_read(& v1, I2C_READ_ACK);	// ||
-	i2c_read(& v2, I2C_READ_ACK);	// ||
-	i2c_read(& v3, I2C_READ_NACK);	// ||
-
-	return
-			(((unsigned long) v3) << 24) |
-			(((unsigned long) v2) << 16) |
-			(((unsigned long) v1) << 8) |
-			(((unsigned long) v0) << 0) |
-			0;
-}
 
 static int initialize_pmic_i2c(void)
 {
@@ -3361,54 +3336,12 @@ int toshiba_ddr_power_init(void)
 static int board_ddr_power_init(enum ddr_type ddr_type)
 {
 #if WITHSDRAM_PMC1
-	pmic_ddr_power_init(ddr_type);
-	if (toshiba_ddr_power_init())
-		PRINTF("TOSHIBE power init failure\n");
-	stpmic1_dump_regulators();
+	if (pmic_ddr_power_init(ddr_type))
+		PRINTF("ddr power init failure\n");
 #endif /* WITHSDRAM_PMC1 */
 //	if (dt_pmic_status() > 0) {
 //		return pmic_ddr_power_init(ddr_type);
 //	}
-
-	const portholder_t TE = (1uL << 7);	// PC7 (TE) - panel pin 29 Sync signal from driver IC
-	const portholder_t OTP_PWR = (1uL << 7);	// PD7 (CTRL - OTP_PWR) - panel pin 30
-	arm_hardware_pioc_inputs(TE);
-	arm_hardware_piod_outputs(OTP_PWR, 0 * OTP_PWR);
-	// active low
-	const portholder_t RESET = (1uL << 1);	// PD1 = RESX_18 - pin  28
-	arm_hardware_piod_outputs(RESET, 0 * RESET);
-	local_delay_ms(5);
-	arm_hardware_piod_outputs(RESET, 1 * RESET);
-
-	// TP_RESX - activelow
-	const portholder_t TP_RESX = (1uL << 0);	// PG0 - TP_RESX_18 - pin 03
-	arm_hardware_piog_outputs(TP_RESX, 0 * TP_RESX);
-	local_delay_ms(5);
-	arm_hardware_piog_outputs(TP_RESX, 1 * TP_RESX);
-	local_delay_ms(300);
-
-
-	// TC358768AXBG conrol
-	const portholder_t Video_RST = (1uL << 10);	// PA10
-	const portholder_t Video_MODE = (1uL << 14);	// PF14
-
-	arm_hardware_piof_outputs(Video_MODE, 0 * Video_MODE);
-	arm_hardware_pioa_outputs(Video_RST, 0 * Video_RST);
-	local_delay_ms(5);
-	arm_hardware_pioa_outputs(Video_RST, 1 * Video_RST);
-	local_delay_ms(100);
-
-
-	unsigned i;
-	for (i = 1; i < 127; ++ i)
-	{
-		// TC358768AXBG
-		PRINTF("addr %02X: ID=%08lX\n", i, tc358768_rd_reg_32bits(i * 2, 0));
-	}
-	unsigned i2 = 0x0e;
-	// addr 0E: ID=02000144
-	// TC358768AXBG
-	PRINTF("TC358768AXBG: addr %02X: ID=%08lX\n", i2, tc358768_rd_reg_32bits(i2 * 2, 0));
 	return 0;
 }
 
@@ -4171,6 +4104,8 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 			   (0) << RCC_DDRITFCR_DDRCKMOD_Pos);
 
 	PRINTF("arm_hardware_sdram_initialize done\n");
+
+
 }
 
 #endif
