@@ -1055,7 +1055,7 @@ extern "C" {
 #endif /* LCDMODE_AT070TNA2 */
 
 #if LCDMODE_H497TLB01P4	/* 720xRGBx1280 - 5" AMOELD Panel H497TLB01.4 */
-	#define LCDMODE_SPI_RN 1 // эти дисплеи требуют только RESET
+	//#define LCDMODE_SPI_RN 1 // эти дисплеи требуют только RESET
 	#define DIM_X 720
 	#define DIM_Y 1280
 	#define LCDMODE_COLORED	1

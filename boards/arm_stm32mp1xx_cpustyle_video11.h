@@ -886,9 +886,6 @@
 	};
 	/* demode values: 0: static signal, 1: DE controlled */
 	#define HARDWARE_LTDC_INITIALIZE(xdemode) do { \
-		const uint32_t VMODEmask = (1U << 14); /* PF14 - A9 ball TC358778XBG - Video_MODE: 0: work, 1: test */ \
-		/* test mode */ \
-		arm_hardware_piof_outputs(VMODEmask, VMODEmask);	/* PD3 MODEmask=state */ \
 		/* Bit clock */ \
 		arm_hardware_piog_altfn50((1U << 7), GPIO_AF_LTDC14);		/* CLK PG7 */ \
 		/* Synchronisation signals */ \
