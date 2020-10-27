@@ -31,7 +31,7 @@
 	// Варианты конфигурации тактирования
 	// ref1_ck, ref2_ck - 8..16 MHz
 	// PLL1, PLL2 VCOs
-	#if 1
+	#if 0
 		#define WITHCPUXTAL 24000000uL	/* На процессоре установлен кварц 24.000 МГц */
 		//#define WITHCPUXOSC 24000000uL	/* На процессоре установлен генератор 24.000 МГц */
 
@@ -84,9 +84,9 @@
 		#define PLL1DIVP	1	// MPU
 		#define PLL1DIVQ	2
 		#define PLL1DIVR	2
-		//#define PLL1DIVN	50	// x25..x100: 12.8 * 50 = 640 MHz
+		#define PLL1DIVN	50	// x25..x100: 12.8 * 50 = 640 MHz
 		//#define PLL1DIVN	62	// x25..x100: 12.8 * 62 = 793.6 MHz
-		#define PLL1DIVN	(stm32mp1_overdrived() ? 62 : 50)	// Auto select
+		//#define PLL1DIVN	(stm32mp1_overdrived() ? 62 : 50)	// Auto select
 
 #if 1
 		// PLL2_1600
