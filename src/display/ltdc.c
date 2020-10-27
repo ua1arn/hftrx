@@ -2621,17 +2621,17 @@ void tc358768_initialize(void)
 
 	local_delay_ms(300);
 
-//
-//	unsigned i;
-//	for (i = 1; i < 127; ++ i)
-//	{
-//		// TC358778XBG
-//		PRINTF("addr %02X: ID=%08lX\n", i, any_rd_reg_32bits(i * 2, 0));
-//	}
+
+	unsigned i;
+	for (i = 1; i < 127; ++ i)
+	{
+		// TC358778XBG
+		PRINTF("addr %02X: ID=%08lX\n", i, any_rd_reg_32bits(i * 2, 0));
+	}
 
 	// addr 0E: ID=02000144
 	// TC358778XBG
-
+#if 0
 	// Reset
 	tc358768_write(ddata, TC358768_SYSCTL, 0x001);
 	tc358768_write(ddata, TC358768_SYSCTL, 0x000);
@@ -2656,7 +2656,9 @@ void tc358768_initialize(void)
 
 	PRINTF("TC358778XBG: vact=%ld\n", tc358768_rd_reg_32bits(TC358768_DSI_VACT));
 	PRINTF("TC358778XBG: hact=%ld\n", tc358768_rd_reg_32bits(TC358768_DSI_HACT));
+#endif
 
+	PRINTF("TC358778XBG: Chip and Revision ID=%08lX\n", tc358768_rd_reg_32bits(TC358768_CHIPID));
 	tc358768_calc_pll(ddata);
 
 	tc358768_power_on(ddata);
@@ -2672,6 +2674,16 @@ void tc358768_initialize(void)
 		tscprint();
 	}
 #endif
+	static uint8_t sleepout [] = { 0x11, 0x00, };
+	static uint8_t displon [] = { 0x29, 0x00, };
+
+
+	local_delay_ms(200);
+	mipi_dsi_send_dcs_packet(sleepout, ARRAY_SIZE(sleepout));
+	local_delay_ms(200);
+	mipi_dsi_send_dcs_packet(displon, ARRAY_SIZE(displon));
+	local_delay_ms(200);
+
 }
 
 #endif /* LCDMODETX_TC358778XBG */
