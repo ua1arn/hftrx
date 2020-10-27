@@ -2104,9 +2104,9 @@ static void tc358768_setup_pll(struct tc358768_drv_data *ddata)
 {
 	unsigned fbd, prd, frs;
 
-	fbd = ddata->fbd;
-	prd = ddata->prd;
-	frs = ddata->frs;
+	fbd = ddata->fbd;	// Feedback divider setting
+	prd = ddata->prd;	// Input divider setting
+	frs = ddata->frs;	// Frequency range setting (post divider)
 
 	PRINTF("PLL: refclk %lu, fbd %u, prd %u, frs %u\n",
 		(REFCLK), fbd, prd, frs);
@@ -2472,6 +2472,71 @@ int tc358768_get_id(void) {
 	return id;
 }
 
+
+#define TSC_I2C_ADDR (0x20 * 2)
+
+void tscinit(void)
+{
+	const unsigned i2caddr = TSC_I2C_ADDR;
+
+
+	i2c_start(i2caddr | 0x00);
+	i2c_write(0xFF);		// set page addr
+	i2c_write(0x00);		// page #0
+	i2c_waitsend();
+    i2c_stop();
+}
+
+void tscid(void)
+{
+	const unsigned i2caddr = TSC_I2C_ADDR;
+
+	uint8_t v0;
+
+	i2c_start(i2caddr | 0x00);
+	i2c_write_withrestart(0xE1);	//  Manufacturer ID register
+	i2c_start(i2caddr | 0x01);
+	i2c_read(& v0, I2C_READ_ACK_NACK);	// ||	The Manufacturer ID register always returns data $01.
+
+	PRINTF("tsc id=%08lX (expected 0x01)\n", v0);
+}
+
+void tscprint(void)
+{
+	const unsigned i2caddr = TSC_I2C_ADDR;
+
+
+	uint8_t v0, v1, v2, v3, v4, v5, v6, v7;
+
+	i2c_start(i2caddr | 0x00);
+	i2c_write_withrestart(0x06);	// Address=0x0006 is used to read coordinate.
+	i2c_start(i2caddr | 0x01);
+	i2c_read(& v0, I2C_READ_ACK_1);	// ||
+	i2c_read(& v1, I2C_READ_ACK);	// ||
+	i2c_read(& v2, I2C_READ_ACK);	// ||
+	i2c_read(& v3, I2C_READ_ACK);	// ||
+	i2c_read(& v4, I2C_READ_ACK);	// ||
+	i2c_read(& v5, I2C_READ_ACK);	// ||
+	i2c_read(& v6, I2C_READ_ACK);	// ||
+	i2c_read(& v7, I2C_READ_NACK);	// ||
+
+	unsigned vz1 =
+			(((unsigned long) v3) << 24) |
+			(((unsigned long) v2) << 16) |
+			(((unsigned long) v1) << 8) |
+			(((unsigned long) v0) << 0) |
+			0;
+
+	unsigned vz2 =
+			(((unsigned long) v7) << 24) |
+			(((unsigned long) v6) << 16) |
+			(((unsigned long) v5) << 8) |
+			(((unsigned long) v4) << 0) |
+			0;
+
+	PRINTF("tsc=%08lX %08lX ", vz1, vz2);
+}
+
 void tc358768_initialize(void)
 {
 	struct tc358768_drv_data * ddata = & dev0;
@@ -2489,7 +2554,7 @@ void tc358768_initialize(void)
 	const portholder_t TE = (1uL << 7);	// PC7 (TE) - panel pin 29 Sync signal from driver IC
 	const portholder_t OTP_PWR = (1uL << 7);	// PD7 (CTRL - OTP_PWR) - panel pin 30
 	arm_hardware_pioc_inputs(TE);
-	arm_hardware_piod_outputs(OTP_PWR, 0 * OTP_PWR);
+	arm_hardware_piod_outputs(OTP_PWR, 1 * OTP_PWR);
 	// active low
 	const portholder_t RESET = (1uL << 1);	// PD1 = RESX_18 - pin  28
 	arm_hardware_piod_outputs(RESET, 0 * RESET);
@@ -2556,7 +2621,17 @@ void tc358768_initialize(void)
 
 	PRINTF("TC358778XBG: vact=%ld\n", tc358768_rd_reg_32bits(TC358768_DSI_VACT));
 	PRINTF("TC358778XBG: hact=%ld\n", tc358768_rd_reg_32bits(TC358768_DSI_HACT));
+
+#if 1
+	tscinit();
+	tscid();
+	for (;0;)
+	{
+		tscprint();
+	}
+#endif
 }
+
 #endif /* LCDMODETX_TC358778XBG */
 
 #if WITHGPUHW
