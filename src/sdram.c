@@ -3228,7 +3228,7 @@ int pmic_ddr_power_init(enum ddr_type ddr_type)
 
 
 // LDO1 = 1.8 Volt
-// LDO6 = 1.0 Volt
+// LDO6 = 1.2 Volt
 // LDO2 = 3.3 Volt
 
 int toshiba_ddr_power_init(void)
