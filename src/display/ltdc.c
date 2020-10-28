@@ -200,6 +200,8 @@
 	// See also:
 	// https://github.com/bbelos/rk3188-kernel/blob/master/drivers/video/rockchip/transmitter/tc358768.c
 	// https://github.com/tanish2k09/venom_kernel_aio_otfp/blob/master/drivers/input/touchscreen/mediatek/S3202/synaptics_dsx_i2c.c
+	// https://stash.phytec.com/projects/TIRTOS/repos/vps-phytec/raw/src/boards/src/bsp_boardPriv.h?at=e8b92520f41e6523301d120dae15db975ad6d0da
+	//https://code.ihub.org.cn/projects/825/repositories/874/file_edit_page?file_name=am57xx-idk-common.dtsi&path=arch%2Farm%2Fboot%2Fdts%2Fam57xx-idk-common.dtsi&rev=master
 	enum
 	{
 		WIDTH = 720,			/* LCD PIXEL WIDTH            */
@@ -235,7 +237,7 @@
 		BOARD_DEMODE = 0		/* 0: static signal, 1: DE controlled */
 #endif /* WITHLCDSYNCMODE */
 	};
-	#define LTDC_DOTCLK	60000000uL	// частота пикселей при работе с интерфейсом RGB
+	#define LTDC_DOTCLK	57153600UL	// частота пикселей при работе с интерфейсом RGB
 
 #else
 	#error Unsupported LCDMODE_xxx
@@ -2246,7 +2248,7 @@ int _tc358768_wr_regs_32bits(unsigned int reg_array[], uint32_t n) {
 	return 0;
 }
 
-int tc358768_command_tx_less8bytes(unsigned char type, unsigned char *regs, uint32_t n) {
+int tc358768_command_tx_less8bytes(unsigned char type, const unsigned char *regs, uint32_t n) {
 	int i = 0;
 	unsigned int command[] = {
 			0x06020000,
@@ -2329,7 +2331,7 @@ int tc358768_command_tx_more8bytes_hs(unsigned char type, unsigned char regs[], 
 }
 
 //low power mode only for tc358768a
-int tc358768_command_tx_more8bytes_lp(unsigned char type, unsigned char regs[], uint32_t n) {
+int tc358768_command_tx_more8bytes_lp(unsigned char type, const unsigned char regs[], uint32_t n) {
 
 	int i = 0;
 	unsigned int dbg_data = 0x00E80000, temp = 0;
@@ -2364,7 +2366,7 @@ int tc358768_command_tx_more8bytes_lp(unsigned char type, unsigned char regs[], 
 	return 0;
 }
 
-int _tc358768_send_packet(unsigned char type, unsigned char regs[], uint32_t n) {
+int _tc358768_send_packet(unsigned char type, const unsigned char regs[], uint32_t n) {
 
 	if(n <= 8) {
 		tc358768_command_tx_less8bytes(type, regs, n);
@@ -2385,7 +2387,7 @@ The DCS is separated into two functional areas: the User Command Set and the Man
 Set. Each command is an eight-bit code with 00h to AFh assigned to the User Command Set and all other
 codes assigned to the Manufacturer Command Set.
 */
-int _mipi_dsi_send_dcs_packet(unsigned char regs[], uint32_t n) {
+int _mipi_dsi_send_dcs_packet(const unsigned char regs[], uint32_t n) {
 
 	unsigned char type = 0;
 	if(n == 1) {
@@ -2399,7 +2401,7 @@ int _mipi_dsi_send_dcs_packet(unsigned char regs[], uint32_t n) {
 	return 0;
 }
 
-int mipi_dsi_send_dcs_packet(unsigned char regs[], uint32_t n) {
+int mipi_dsi_send_dcs_packet(const unsigned char regs[], uint32_t n) {
 	return _mipi_dsi_send_dcs_packet(regs, n);
 }
 
@@ -2539,7 +2541,7 @@ void tscprint(void)
 /*
  *
  *
-
+static uint8_t bigon [] =
 1, 5, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00,
 2, 3, 0xB0, 0x00, 0x10, 0x10,
 3, 1, 0xBA, 0x60,
@@ -2579,6 +2581,78 @@ void tscprint(void)
 
  *
  */
+static uint8_t bigon [] =
+{
+	5, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00,
+	3, 0xB0, 0x00, 0x10, 0x10,
+	1, 0xBA, 0x60,
+	7, 0xBB, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	8, 0xC0, 0xC0, 0x04, 0x00, 0x20, 0x02, 0xE4, 0xE1, 0xC0,
+	8, 0xC1, 0xC0, 0x04, 0x00, 0x20, 0x04, 0xE4, 0xE1, 0xC0,
+	5, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x02,
+	5, 0xEA, 0x7F, 0x20, 0x00, 0x00, 0x00,
+	1, 0xCA, 0x04,
+	1, 0xE1, 0x00,
+	1, 0xE2, 0x0A,
+	1, 0xE3, 0x40,
+	4, 0xE7, 0x00, 0x00, 0x00, 0x00,
+	8, 0xED, 0x48, 0x00, 0xE0, 0x13, 0x08, 0x00, 0x91, 0x08,
+	6, 0xFD, 0x00, 0x08, 0x1C, 0x00, 0x00, 0x01,
+	11, 0xC3, 0x11, 0x24, 0x04, 0x0A, 0x02, 0x04, 0x00, 0x1C, 0x10, 0xF0, 0x00,
+	5, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x03,
+	1, 0xE0, 0x00,
+	6, 0xF1, 0x00, 0x00, 0x00, 0x00, 0x00, 0x15,
+	1, 0xF6, 0x08,
+	5, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x05,
+	5, 0xC3, 0x00, 0x10, 0x50, 0x50, 0x50,
+	2, 0xC4, 0x00, 0x14,
+	1, 0xC9, 0x04,
+	5, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x01,
+	3, 0xB0, 0x06, 0x06, 0x06,
+	3, 0xB1, 0x14, 0x14, 0x14,
+	3, 0xB2, 0x00, 0x00, 0x00,
+	3, 0xB4, 0x66, 0x66, 0x66,
+	3, 0xB5, 0x44, 0x44, 0x44,
+	3, 0xB6, 0x54, 0x54, 0x54,
+	3, 0xB7, 0x24, 0x24, 0x24,
+	3, 0xB9, 0x04, 0x04, 0x04,
+	3, 0xBA, 0x14, 0x14, 0x14,
+	3, 0xBE, 0x22, 0x38, 0x78,
+	1, 0x35, 0x00,
+
+	0,
+};
+
+
+/*
+	panel {
+		compatible = "samsung,s6e8aa0";
+		reg = <0>;
+		vdd3-supply = <&vcclcd_reg>;
+		vci-supply = <&vlcd_reg>;
+		reset-gpios = <&gpy4 5 0>;
+		power-on-delay= <50>;
+		reset-delay = <100>;
+		init-delay = <100>;
+		panel-width-mm = <58>;
+		panel-height-mm = <103>;
+		flip-horizontal;
+		flip-vertical;
+		display-timings {
+			timing0: timing-0 {
+				clock-frequency = <57153600>;
+				hactive = <720>;
+				vactive = <1280>;
+				hfront-porch = <5>;
+				hback-porch = <5>;
+				hsync-len = <5>;
+				vfront-porch = <16>;
+				vback-porch = <11>;
+				vsync-len = <5>;
+			};
+		};
+	};
+*/
 void tc358768_initialize(void)
 {
 	struct tc358768_drv_data * ddata = & dev0;
@@ -2592,6 +2666,9 @@ void tc358768_initialize(void)
 	//stpmic1_dump_regulators();
 	// See also:
 	// https://github.com/bbelos/rk3188-kernel/blob/master/drivers/video/rockchip/transmitter/tc358768.c
+	// https://coral.googlesource.com/linux-imx/+/refs/heads/alpha/arch/arm64/boot/dts/freescale/fsl-imx8mq-evk-dcss-rm67191.dts
+	// https://developer.toradex.com/knowledge-base/display-output-resolution-and-timings-linux
+	// https://code.woboq.org/linux/linux/Documentation/devicetree/bindings/display/panel/samsung,s6e8aa0.txt.html
 
 	const portholder_t TE = (1uL << 7);	// PC7 (TE) - panel pin 29 Sync signal from driver IC
 	const portholder_t OTP_PWR = (1uL << 7);	// PD7 (CTRL - OTP_PWR) - panel pin 30
@@ -2621,7 +2698,9 @@ void tc358768_initialize(void)
 
 	local_delay_ms(300);
 
-
+//	x-gpios = <&gpioa 10 GPIO_ACTIVE_HIGH>; /* Video_RST */
+//	x-gpios = <&gpiof 14 GPIO_ACTIVE_HIGH>; /* Video_MODE: 0: test, 1: normal */
+//
 	unsigned i;
 	for (i = 1; i < 127; ++ i)
 	{
@@ -2683,6 +2762,17 @@ void tc358768_initialize(void)
 	local_delay_ms(200);
 	mipi_dsi_send_dcs_packet(displon, ARRAY_SIZE(displon));
 	local_delay_ms(200);
+
+	const uint8_t * pv = bigon;
+	for (;;)
+	{
+		const uint8_t maxv = * pv;
+		if (maxv == 0)
+			break;
+		mipi_dsi_send_dcs_packet(pv + 1, maxv + 1);
+		local_delay_ms(5);
+		pv += maxv + 2;
+	}
 
 }
 
