@@ -5140,7 +5140,7 @@ static void sdtick(void)
 }
 #endif
 
-#if LCDMODE_COLORED && ! DSTYLE_G_DUMMY && 0
+#if LCDMODE_COLORED && ! DSTYLE_G_DUMMY && 1
 
 
 
@@ -5194,7 +5194,7 @@ static void BarTest(void)
 
 	board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 	board_update();
-	int forever = 0;
+	int forever = 1;
 	unsigned n = 20000;
 	for (;forever || n --;)
 	{                    /* Until user enters a key...   */
@@ -6351,7 +6351,7 @@ void hightests(void)
 		}
 	}
 #endif
-#if 0 && LCDMODE_COLORED && ! DSTYLE_G_DUMMY
+#if 1 && LCDMODE_COLORED && ! DSTYLE_G_DUMMY
 	{
 		display2_bgreset();
 		for (;;)
