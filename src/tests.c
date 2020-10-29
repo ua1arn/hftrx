@@ -5381,6 +5381,28 @@ static void disableAllIRQs(void)
 }
 #endif /* (__CORTEX_A != 0) */
 
+#if (WITHTWIHW || WITHTWISW)
+static uint_fast32_t any_rd_reg_32bits(uint_fast8_t i2caddr, uint_fast8_t register_id)
+{
+	uint8_t v0, v1, v2, v3;
+
+	i2c_start(i2caddr | 0x00);
+	i2c_write_withrestart(register_id);
+	i2c_start(i2caddr | 0x01);
+	i2c_read(& v0, I2C_READ_ACK_1);	// ||
+	i2c_read(& v1, I2C_READ_ACK);	// ||
+	i2c_read(& v2, I2C_READ_ACK);	// ||
+	i2c_read(& v3, I2C_READ_NACK);	// ||
+
+	return
+			(((unsigned long) v3) << 24) |
+			(((unsigned long) v2) << 16) |
+			(((unsigned long) v1) << 8) |
+			(((unsigned long) v0) << 0) |
+			0;
+}
+#endif
+
 void hightests(void)
 {
 #if WITHLTDCHW && LCDMODE_LTDC
@@ -5399,6 +5421,15 @@ void hightests(void)
 		PRINTF(PSTR("FPEXC=%08lX\n"), (unsigned long) __get_FPEXC());
 		__set_FPEXC(__get_FPEXC() | 0x80000000uL);
 		PRINTF(PSTR("FPEXC=%08lX\n"), (unsigned long) __get_FPEXC());
+	}
+#endif
+#if 0 && (WITHTWIHW || WITHTWISW)
+	{
+		unsigned i;
+		for (i = 1; i < 127; ++ i)
+		{
+			PRINTF("I2C 7-bit addr %02X: ID=%08lX\n", i, any_rd_reg_32bits(i * 2, 0));
+		}
 	}
 #endif
 #if 0 && CPUSTYLE_STM32MP1
