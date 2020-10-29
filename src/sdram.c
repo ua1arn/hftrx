@@ -3098,7 +3098,7 @@ static void initialize_pmic(void)
 	}
 
 	INFO("PMIC version = 0x%02lx\n", pmic_version);
-	stpmic1_dump_regulators();
+	//stpmic1_dump_regulators();
 
 #if defined(IMAGE_BL2)
 	if (dt_pmic_configure_boot_on_regulators() != 0) {
@@ -3387,7 +3387,7 @@ static void stm32mp1_ddr_init(struct ddr_info *priv,
 		panic();
 	}
 
-	//stpmic1_dump_regulators();
+	stpmic1_dump_regulators();
 
 	VERBOSE("name = %s\n", config->info.name);
 	VERBOSE("speed = %d kHz\n", config->info.speed);
