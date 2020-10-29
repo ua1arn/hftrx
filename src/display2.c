@@ -7584,7 +7584,7 @@ static uint_fast8_t delay_3dss = MAX_DELAY_3DSS;
 
 static void init_depth_map_3dss(void)
 {
-	uint8_t * depth_map_3dss = DEPTH_MAP_3DSS_DEFAULT;
+	PACKEDCOLORMAIN_T * depth_map_3dss = DEPTH_MAP_3DSS_DEFAULT;
 
 	for (int_fast8_t i = MAX_3DSS_STEP - 1; i >= 0; i --)
 	{
@@ -7599,9 +7599,9 @@ static void init_depth_map_3dss(void)
 			else
 				x1 = HALF_ALLDX + normalize(x, HALF_ALLDX, ALLDX - 1, range);
 
-			* depth_map_3dss = x1 & UINT8_MAX;
+			* depth_map_3dss = (x1 >> 0) & UINT8_MAX;
 			depth_map_3dss ++;
-			* depth_map_3dss = x1 >> 8;
+			* depth_map_3dss = (x1 >> 8) & UINT8_MAX;
 			depth_map_3dss ++;
 		}
 	}
@@ -7705,14 +7705,16 @@ static void display2_spectrum(
 		{
 			uint_fast8_t draw_step = (current_3dss_step + 1) % MAX_3DSS_STEP;
 			uint_fast8_t ylast_sp = 0;
-			uint8_t * depth_map_3dss = DEPTH_MAP_3DSS_DEFAULT;
-			uint8_t * y_env = SP_CONTRAST_Y_DEFAULT;
+			PACKEDCOLORMAIN_T * depth_map_3dss = DEPTH_MAP_3DSS_DEFAULT;
+			PACKEDCOLORMAIN_T * y_env = SP_CONTRAST_Y_DEFAULT;
+			int i;
 
-			for (int_fast8_t i = MAX_3DSS_STEP - 1; i >= 0; i --)
+			for (i = MAX_3DSS_STEP - 1; i >= 0; i --)
 			{
 				uint_fast8_t y0 = spy - 5 - i * Y_STEP;
+				uint_fast16_t x;
 
-				for (uint_fast16_t x = 0; x < ALLDX; ++ x)
+				for (x = 0; x < ALLDX; ++ x)
 				{
 					if (i == 0)
 					{
@@ -7739,8 +7741,10 @@ static void display2_spectrum(
 						x1 |= (* depth_map_3dss ++) << 8;
 
 						uint_fast8_t y1 = y0 - * colmain_mem_at(wfjarray, ALLDX, MAX_3DSS_STEP, x, draw_step);
+						uint_fast16_t dy;
+						uint_fast16_t j;
 
-						for (uint_fast16_t dy = y0, j = 0; dy > y1; dy --, j ++)
+						for (dy = y0, j = 0; dy > y1; dy --, j ++)
 						{
 							colpip_point(colorpip, BUFDIM_X, BUFDIM_Y, x1, dy, color_scale [j]);
 						}
