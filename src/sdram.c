@@ -3108,7 +3108,7 @@ static void initialize_pmic(void)
 }
 
 
-int pmic_ddr_power_init(enum ddr_type ddr_type)
+static int pmic_ddr_power_init(enum ddr_type ddr_type)
 {
 	int buck3_at_1v8 = 0;
 	uint8_t read_val;
@@ -3387,7 +3387,9 @@ static void stm32mp1_ddr_init(struct ddr_info *priv,
 		panic();
 	}
 
+#if WITHSDRAM_PMC1
 	stpmic1_dump_regulators();
+#endif /* WITHSDRAM_PMC1 */
 
 	VERBOSE("name = %s\n", config->info.name);
 	VERBOSE("speed = %d kHz\n", config->info.speed);
