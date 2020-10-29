@@ -7576,8 +7576,35 @@ enum {
 	SPY_3DSS_H = SPY_3DSS / 4
 };
 
+#define DEPTH_MAP_3DSS_DEFAULT	colmain_mem_at(wfjarray, ALLDX, WFDY, 0, MAX_3DSS_STEP + 1)
+
 static uint_fast8_t current_3dss_step = 0;
 static uint_fast8_t delay_3dss = MAX_DELAY_3DSS;
+
+static void init_depth_map_3dss(void)
+{
+	uint8_t * depth_map_3dss = DEPTH_MAP_3DSS_DEFAULT;
+
+	for (int_fast8_t i = MAX_3DSS_STEP - 1; i >= 0; i --)
+	{
+		uint_fast16_t range = HALF_ALLDX - 1 - i * Y_STEP;
+
+		for (uint_fast16_t x = 0; x < ALLDX; ++ x)
+		{
+			uint_fast16_t x1;
+
+			if (x <= HALF_ALLDX)
+				x1 = HALF_ALLDX - normalize(HALF_ALLDX - x, 0, HALF_ALLDX, range);
+			else
+				x1 = HALF_ALLDX + normalize(x, HALF_ALLDX, ALLDX - 1, range);
+
+			* depth_map_3dss = x1 & UINT8_MAX;
+			depth_map_3dss ++;
+			* depth_map_3dss = x1 >> 8;
+			depth_map_3dss ++;
+		}
+	}
+}
 
 // подготовка изображения спектра
 static void display2_spectrum(
@@ -7677,6 +7704,7 @@ static void display2_spectrum(
 		{
 			uint_fast8_t draw_step = (current_3dss_step + 1) % MAX_3DSS_STEP;
 			uint_fast16_t ylast_sp = 0;
+			uint8_t * depth_map_3dss = DEPTH_MAP_3DSS_DEFAULT;
 
 			for (int_fast8_t i = MAX_3DSS_STEP - 1; i >= 0; i --)
 			{
@@ -7706,13 +7734,10 @@ static void display2_spectrum(
 					}
 					else
 					{
-						static uint_fast16_t yz;
-						uint_fast16_t x1, y1 = y0 - * colmain_mem_at(wfjarray, ALLDX, MAX_3DSS_STEP, x, draw_step);
+						uint_fast16_t x1 = * depth_map_3dss ++;
+						x1 |= (* depth_map_3dss ++) << 8;
 
-						if (x <= HALF_ALLDX)
-							x1 = HALF_ALLDX - normalize(HALF_ALLDX - x, 0, HALF_ALLDX, range);
-						else
-							x1 = HALF_ALLDX + normalize(x, HALF_ALLDX, ALLDX - 1, range);
+						uint_fast16_t y1 = y0 - * colmain_mem_at(wfjarray, ALLDX, MAX_3DSS_STEP, x, draw_step);
 
 						for (uint_fast16_t dy = y0, j = 0; dy > y1; dy --, j ++)
 						{
@@ -7818,13 +7843,14 @@ static void display2_spectrum(
 static void wflclear(void)
 {
 	uint_fast16_t y;
+	uint_fast8_t rows = glob_view_style == VIEW_3DSS ? MAX_3DSS_STEP : WFROWS;
 
-	for (y = 0; y < WFROWS; ++ y)
+	for (y = 0; y < rows; ++ y)
 	{
 		if (y == wfrow)
 			continue;
 		memset(
-				colmain_mem_at(wfjarray, ALLDX, WFROWS, 0, y),
+				colmain_mem_at(wfjarray, ALLDX, rows, 0, y),
 				0x00,
 				ALLDX * sizeof wfjarray [0]
 		);
@@ -8889,6 +8915,9 @@ board_set_view_style(uint_fast8_t v)
 	{
 		glob_view_style = n;
 		wfsetupnew();	// при переключении стилей отображения очищать общий буфер
+
+		if (glob_view_style == VIEW_3DSS)
+			init_depth_map_3dss();
 	}
 #endif /* WITHINTEGRATEDDSP */
 }
