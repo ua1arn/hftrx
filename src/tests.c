@@ -5140,7 +5140,7 @@ static void sdtick(void)
 }
 #endif
 
-#if LCDMODE_COLORED && ! DSTYLE_G_DUMMY && 0
+#if LCDMODE_COLORED && ! DSTYLE_G_DUMMY && 1
 
 
 
@@ -5191,6 +5191,7 @@ static int local_randomgr(unsigned long num)
 static void BarTest(void)
 {
 	PRINTF("BarTest\n");
+
 	board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 	board_update();
 	int forever = 0;
@@ -5210,15 +5211,16 @@ static void BarTest(void)
 
 		display_solidbar(x, y, x2, y2, color);
 		display_flush();
-		//local_delay_ms(50);
+		local_delay_ms(50);
 	}
 
 	//getch();             /* Pause for user's response    */
 }
 
 static  void
-GrideTest(void)
+GridTest(void)
 {
+	PRINTF("GridTest\n");
 	board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 	board_update();
 
@@ -5278,7 +5280,7 @@ GrideTest(void)
 	display_line(0,  ym, xm, 0,  col3);
 	display_flush();
 
-	//getch();
+	local_delay_ms((300));
 
 }
 
@@ -6349,12 +6351,15 @@ void hightests(void)
 		}
 	}
 #endif
-#if 0 && LCDMODE_COLORED && ! DSTYLE_G_DUMMY
+#if 1 && LCDMODE_COLORED && ! DSTYLE_G_DUMMY
 	{
 		display2_bgreset();
-		disableAllIRQs();
-		//GrideTest();
-		BarTest();
+		for (;;)
+		{
+			//disableAllIRQs();
+			GridTest();
+			BarTest();
+		}
 	}
 #endif
 #if 0 && WITHLTDCHW && LCDMODE_COLORED && ! DSTYLE_G_DUMMY
