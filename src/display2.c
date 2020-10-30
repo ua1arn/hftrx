@@ -7568,8 +7568,8 @@ static ALIGNX_BEGIN GX_t spectmonoscr [MGSIZE(ALLDX, SPDY)] ALIGNX_END;
 #endif /* HHWMG */
 
 enum {
-	MAX_3DSS_STEP = 20,
-	Y_STEP = 5,
+	MAX_3DSS_STEP = 30,
+	Y_STEP = 3,
 	MAX_DELAY_3DSS = 3,
 	HALF_ALLDX = ALLDX / 2,
 	SPY_3DSS = SPDY,
@@ -7578,9 +7578,6 @@ enum {
 
 #define DEPTH_MAP_3DSS_DEFAULT	colmain_mem_at(wfjarray, ALLDX, WFDY, 0, MAX_3DSS_STEP + 1)
 #define SP_CONTRAST_Y_DEFAULT	colmain_mem_at(wfjarray, ALLDX, WFDY, 0, MAX_3DSS_STEP * 3 + 1)
-
-static uint_fast8_t current_3dss_step = 0;
-static uint_fast8_t delay_3dss = MAX_DELAY_3DSS;
 
 static void init_depth_map_3dss(void)
 {
@@ -7703,6 +7700,9 @@ static void display2_spectrum(
 
 		if (glob_view_style == VIEW_3DSS)
 		{
+			static uint_fast8_t current_3dss_step = 0;
+			static uint_fast8_t delay_3dss = MAX_DELAY_3DSS;
+
 			uint_fast8_t draw_step = (current_3dss_step + 1) % MAX_3DSS_STEP;
 			uint_fast8_t ylast_sp = 0;
 			PACKEDCOLORMAIN_T * depth_map_3dss = DEPTH_MAP_3DSS_DEFAULT;
