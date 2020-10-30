@@ -2202,14 +2202,14 @@ static void tc358768_power_off(struct tc358768_drv_data *ddata)
 	tc358768_update_bits(ddata, TC358768_PP_MISC, 1 << 14, 1 << 14);
 }
 void tc_print(uint32_t addr) {
-	PRINTF("+++++++++++addr->%04x: %04x\n", addr, tc358768_rd_reg_16bits(addr));
+	//PRINTF("+++++++++++addr->%04x: %04x\n", addr, tc358768_rd_reg_16bits(addr));
 }
 
 #define tc358768_wr_regs_32bits(reg_array)  _tc358768_wr_regs_32bits(reg_array, ARRAY_SIZE(reg_array))
 int _tc358768_wr_regs_32bits(unsigned int reg_array[], uint32_t n) {
 
 	int i = 0;
-	PRINTF("%s:%d\n", __func__, n);
+	//PRINTF("%s:%d\n", __func__, n);
 	for(i = 0; i < n; i++) {
 		if(reg_array[i] < 0x00020000) {
 		    if(reg_array[i] < 20000)
@@ -2251,7 +2251,7 @@ int tc358768_command_tx_less8bytes(unsigned char type, const unsigned char *regs
 		command[i+2] |= regs[i*2];
 		if((i*2 + 1) < n)
 			command[i+2] |= regs[i*2 + 1] << 8;
-		PRINTF("0x%08x\n", command[i+2]);
+		//PRINTF("0x%08x\n", command[i+2]);
 	}
 
 	_tc358768_wr_regs_32bits(command, (n + 1)/2 + 2);
