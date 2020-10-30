@@ -7720,16 +7720,17 @@ static void display2_spectrum(
 					{
 						int val = dsp_mag2y(filter_spectrum(x), SPY_3DSS - 1, glob_topdb, glob_bottomdb);
 						uint_fast16_t ynew = spy - 1 - val;
+						uint_fast16_t dy, j;
 						* colmain_mem_at(wfjarray, ALLDX, MAX_3DSS_STEP, x, current_3dss_step) = val;
 
-						for (uint_fast16_t dy = spy - 1, j = 0; dy > ynew; dy --, j ++)
+						for (dy = spy - 1, j = 0; dy > ynew; dy --, j ++)
 						{
 							colpip_point(colorpip, BUFDIM_X, BUFDIM_Y, x, dy, color_scale [j]);
 						}
 
 						if (x)
 						{
-							colmain_line(colorpip, BUFDIM_X, BUFDIM_Y, x - 1, ylast_sp, x, ynew, COLORMAIN_BLACK, 0);
+							colmain_line(colorpip, BUFDIM_X, BUFDIM_Y, x - 1, ylast_sp, x, ynew, COLORMAIN_BLACK, 1);
 						}
 
 						* y_env ++ = ynew + 2;
@@ -7737,17 +7738,23 @@ static void display2_spectrum(
 					}
 					else
 					{
-						uint_fast16_t x1 = * depth_map_3dss ++;
-						x1 |= (* depth_map_3dss ++) << 8;
+						static uint_fast16_t x_old = 0;
 
-						uint_fast8_t y1 = y0 - * colmain_mem_at(wfjarray, ALLDX, MAX_3DSS_STEP, x, draw_step);
-						uint_fast16_t dy;
-						uint_fast16_t j;
+						uint_fast16_t x_d = * depth_map_3dss ++;
+						x_d |= (* depth_map_3dss ++) << 8;
 
-						for (dy = y0, j = 0; dy > y1; dy --, j ++)
+						/* предотвращение отрисовки по ранее закрашенной области*/
+						if (x_old != x_d)
 						{
-							colpip_point(colorpip, BUFDIM_X, BUFDIM_Y, x1, dy, color_scale [j]);
+							uint_fast8_t y1 = y0 - * colmain_mem_at(wfjarray, ALLDX, MAX_3DSS_STEP, x, draw_step);
+							uint_fast8_t h = y0 - y1;		// высота пика
+
+							for (; h > 0; h --)
+							{
+								colpip_point(colorpip, BUFDIM_X, BUFDIM_Y, x_d, y0 - h, color_scale [h]);
+							}
 						}
+						x_old = x_d;
 					}
 				}
 				draw_step = (draw_step + 1) % MAX_3DSS_STEP;
