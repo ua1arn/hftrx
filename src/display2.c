@@ -7568,8 +7568,8 @@ static ALIGNX_BEGIN GX_t spectmonoscr [MGSIZE(ALLDX, SPDY)] ALIGNX_END;
 #endif /* HHWMG */
 
 enum {
-	MAX_3DSS_STEP = 20,
-	Y_STEP = 5,
+	MAX_3DSS_STEP = 30,
+	Y_STEP = 3,
 	MAX_DELAY_3DSS = 3,
 	HALF_ALLDX = ALLDX / 2,
 	SPY_3DSS = SPDY,
@@ -7578,9 +7578,6 @@ enum {
 
 #define DEPTH_MAP_3DSS_DEFAULT	colmain_mem_at(wfjarray, ALLDX, WFDY, 0, MAX_3DSS_STEP + 1)
 #define SP_CONTRAST_Y_DEFAULT	colmain_mem_at(wfjarray, ALLDX, WFDY, 0, MAX_3DSS_STEP * 3 + 1)
-
-static uint_fast8_t current_3dss_step = 0;
-static uint_fast8_t delay_3dss = MAX_DELAY_3DSS;
 
 static void init_depth_map_3dss(void)
 {
@@ -7688,9 +7685,9 @@ static void display2_spectrum(
 	(void) pctx;
 
 #if WITHTOUCHGUI
-	const uint_fast8_t spy = ALLDY - FOOTER_HEIGHT - 15;
+	const uint_fast16_t spy = ALLDY - FOOTER_HEIGHT - 15;
 #else
-	const uint_fast8_t spy = ALLDY - 15;
+	const uint_fast16_t spy = ALLDY - 15;
 #endif
 
 	// Спектр на цветных дисплеях, не поддерживающих ускоренного
@@ -7703,15 +7700,18 @@ static void display2_spectrum(
 
 		if (glob_view_style == VIEW_3DSS)
 		{
+			static uint_fast8_t current_3dss_step = 0;
+			static uint_fast8_t delay_3dss = MAX_DELAY_3DSS;
+
 			uint_fast8_t draw_step = (current_3dss_step + 1) % MAX_3DSS_STEP;
-			uint_fast8_t ylast_sp = 0;
+			uint_fast16_t ylast_sp = 0;
 			PACKEDCOLORMAIN_T * depth_map_3dss = DEPTH_MAP_3DSS_DEFAULT;
 			PACKEDCOLORMAIN_T * y_env = SP_CONTRAST_Y_DEFAULT;
 			int i;
 
 			for (i = MAX_3DSS_STEP - 1; i >= 0; i --)
 			{
-				uint_fast8_t y0 = spy - 5 - i * Y_STEP;
+				uint_fast16_t y0 = spy - 5 - i * Y_STEP;
 				uint_fast16_t x;
 
 				for (x = 0; x < ALLDX; ++ x)
@@ -7720,34 +7720,45 @@ static void display2_spectrum(
 					{
 						int val = dsp_mag2y(filter_spectrum(x), SPY_3DSS - 1, glob_topdb, glob_bottomdb);
 						uint_fast16_t ynew = spy - 1 - val;
+						uint_fast16_t dy, j;
 						* colmain_mem_at(wfjarray, ALLDX, MAX_3DSS_STEP, x, current_3dss_step) = val;
 
-						for (uint_fast16_t dy = spy - 1, j = 0; dy > ynew; dy --, j ++)
+						for (dy = spy - 1, j = 0; dy > ynew; dy --, j ++)
 						{
 							colpip_point(colorpip, BUFDIM_X, BUFDIM_Y, x, dy, color_scale [j]);
 						}
 
 						if (x)
 						{
-							colmain_line(colorpip, BUFDIM_X, BUFDIM_Y, x - 1, ylast_sp, x, ynew, COLORMAIN_BLACK, 0);
+							colmain_line(colorpip, BUFDIM_X, BUFDIM_Y, x - 1, ylast_sp, x, ynew, COLORMAIN_BLACK, 1);
 						}
 
-						* y_env ++ = ynew + 2;
+						* y_env = ((ynew + 2) >> 0) & UINT8_MAX;
+						y_env ++;
+						* y_env = ((ynew + 2) >> 8) & UINT8_MAX;
+						y_env ++;
+
 						ylast_sp = ynew;
 					}
 					else
 					{
-						uint_fast16_t x1 = * depth_map_3dss ++;
-						x1 |= (* depth_map_3dss ++) << 8;
+						static uint_fast16_t x_old = 0;
 
-						uint_fast8_t y1 = y0 - * colmain_mem_at(wfjarray, ALLDX, MAX_3DSS_STEP, x, draw_step);
-						uint_fast16_t dy;
-						uint_fast16_t j;
+						uint_fast16_t x_d = * depth_map_3dss ++;
+						x_d |= (* depth_map_3dss ++) << 8;
 
-						for (dy = y0, j = 0; dy > y1; dy --, j ++)
+						/* предотвращение отрисовки по ранее закрашенной области*/
+						if (x_old != x_d)
 						{
-							colpip_point(colorpip, BUFDIM_X, BUFDIM_Y, x1, dy, color_scale [j]);
+							uint_fast16_t y1 = y0 - * colmain_mem_at(wfjarray, ALLDX, MAX_3DSS_STEP, x, draw_step);
+							uint_fast8_t h = y0 - y1;		// высота пика
+
+							for (; h > 0; h --)
+							{
+								colpip_point(colorpip, BUFDIM_X, BUFDIM_Y, x_d, y0 - h, color_scale [h]);
+							}
 						}
+						x_old = x_d;
 					}
 				}
 				draw_step = (draw_step + 1) % MAX_3DSS_STEP;
@@ -7761,10 +7772,13 @@ static void display2_spectrum(
 			ylast_sp = spy;
 			for (uint_fast16_t x = 0; x < ALLDX; ++ x)
 			{
-				if (x)
-					colmain_line(colorpip, BUFDIM_X, BUFDIM_Y, x - 1, ylast_sp, x, * y_env, COLORMAIN_WHITE, 0);
+				uint_fast16_t y1 = * y_env ++;
+				y1 |= (* y_env ++) << 8;
 
-				ylast_sp = * y_env ++;
+				if (x)
+					colmain_line(colorpip, BUFDIM_X, BUFDIM_Y, x - 1, ylast_sp, x, y1, COLORMAIN_WHITE, 0);
+
+				ylast_sp = y1;
 			}
 
 			display_colorgrid_3dss(colorpip, spy - SPY_3DSS_H + 3, SPY_3DSS_H, f0, bw);
@@ -7815,9 +7829,8 @@ static void display2_spectrum(
 				int val = dsp_mag2y(filter_spectrum(x), SPDY - 1, glob_topdb, glob_bottomdb);
 				uint_fast16_t ynew = SPY0 + SPDY - 1 - val;
 
-				if (glob_view_style == VIEW_COLOR)
+				if (glob_view_style == VIEW_COLOR) 		// раскрашенный цветовым градиентом спектр
 				{
-					/* раскрашенный спектр */
 					for (uint_fast16_t dy = SPY0 + SPDY - 1, i = 0; dy > ynew; dy --, i ++)
 					{
 						colpip_point(colorpip, BUFDIM_X, BUFDIM_Y, x, dy, color_scale [i]);
@@ -7825,21 +7838,7 @@ static void display2_spectrum(
 				}
 				else if (glob_view_style == VIEW_FILL) // залитый зеленым спектр
 				{
-					const uint_fast8_t inband = (x >= xleft && x <= xright);	// в полосе пропускания приемника = "шторка"
-					display_colorbuf_set_vline(colorpip, BUFDIM_X, BUFDIM_Y, x, SPY0, ynew, inband ? COLORMAIN_SPECTRUMBG2 : COLORPIP_SPECTRUMBG);
-
-					// точку на границе
-					if (ynew < SPDY)
-					{
-						colpip_point(colorpip, BUFDIM_X, BUFDIM_Y, x, ynew + SPY0, DESIGNCOLOR_SPECTRUMFENCE);
-
-						// Нижняя часть экрана
-						const int yb = ynew + 1;
-						if (yb < SPDY)
-						{
-							display_colorbuf_set_vline(colorpip, BUFDIM_X, BUFDIM_Y, x, yb + SPY0, SPDY - yb, COLORPIP_SPECTRUMFG);
-						}
-					}
+					display_colorbuf_set_vline(colorpip, BUFDIM_X, BUFDIM_Y, x, ynew + SPY0, SPDY - ynew, COLORPIP_SPECTRUMFG);
 				}
 
 				if (x)

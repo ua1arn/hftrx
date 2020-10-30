@@ -3365,7 +3365,11 @@ static const uint_fast8_t displaymodesfps = DISPLAYMODES_FPS;
 	static uint_fast8_t gdisplaybarsfps = DISPLAYSWR_FPS;
 #endif /* WITHDISPLAYSWR_FPS */
 #if WITHSPECTRUMWF
+#if defined (WITHDEFAULTVIEW)
+	static uint_fast8_t gviewstyle = WITHDEFAULTVIEW;
+#else
 	static uint_fast8_t gviewstyle = VIEW_LINE;		/* стиль отображения спектра и панорамы */
+#endif
 	static uint_fast8_t gtopdb = WITHTOPDBDEFAULT;	/* верхний предел FFT */
 	static uint_fast8_t gbottomdb = WITHBOTTOMDBDEFAULT;	/* нижний предел FFT */
 	static uint_fast8_t gtopdbwf = WITHTOPDBDEFAULT;	/* верхний предел FFT waterflow*/
