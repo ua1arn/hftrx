@@ -1581,5 +1581,11 @@ void bootloader_readimage(unsigned long flashoffset, uint8_t * dest, unsigned Le
 	spidf_uninitialize();
 }
 
+#else /* WIHSPIDFHW || WIHSPIDFSW */
+
+void bootloader_readimage(unsigned long flashoffset, uint8_t * dest, unsigned Len)
+{
+}
+
 
 #endif /* WIHSPIDFHW || WIHSPIDFSW */
