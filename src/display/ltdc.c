@@ -1856,8 +1856,8 @@ static int tc358768_write(
 		i2c_start(i2caddr | 0x00);
 		i2c_write(reg >> 8);		// addres hi
 		i2c_write(reg >> 0);		// addres lo
-		i2c_write(val >> 8);		// data hi
-		i2c_write(val >> 0);		// data lo
+		i2c_write(val >> 8);		// data 15..8
+		i2c_write(val >> 0);		// data 7..0
 		i2c_waitsend();
 	    i2c_stop();
 	}
@@ -1867,8 +1867,10 @@ static int tc358768_write(
 		i2c_start(i2caddr | 0x00);
 		i2c_write(reg >> 8);		// addres hi
 		i2c_write(reg >> 0);		// addres lo
-		i2c_write(val >> 24);		// data hi
-		i2c_write(val >> 16);		// data lo
+		i2c_write(val >> 8);		// data 15..8
+		i2c_write(val >> 0);		// data 7..0
+		i2c_write(val >> 24);		// data 31..24
+		i2c_write(val >> 16);		// data 23..16
 		i2c_waitsend();
 	    i2c_stop();
 	}
@@ -2066,7 +2068,7 @@ static int tc358768_calc_pll(struct tc358768_drv_data *ddata)
 	}
 
 	if (best_diff == UINT_MAX) {
-		//dev_err(ddata->dev, "could not find suitable PLL setup\n");
+		//PRINTF("could not find suitable PLL setup\n");
 		return -1;
 	}
 
@@ -2163,7 +2165,7 @@ static void tc358768_power_on(struct tc358768_drv_data *ddata)
 
 	/* (hsw + hbp) * byteclk * ndl / pclk */
 	tc358768_write(ddata, TC358768_DSI_HSW,
-		(uint32_t)div_u64(LEFTMARGIN * ((uint64_t)ddata->bitclk / 4) *DSI_NDL, LTDC_DOTCLK)
+		(uint32_t)div_u64(LEFTMARGIN * ((uint64_t)ddata->bitclk / 4) * DSI_NDL, LTDC_DOTCLK)
 		);
 	/* hbp (not used in event mode) */
 	tc358768_write(ddata, TC358768_DSI_HBPR, 0);
@@ -2630,7 +2632,6 @@ static uint8_t bigon [] =
 	};
 */
 
-#if 0
 /*
  * MIPI CMD
  */
@@ -2654,6 +2655,8 @@ enum {
 	DCS_LW_TX,
 };
 
+struct comipfb_info ;
+
 extern int mipi_dsih_gen_wr_cmd(struct comipfb_info *fbi, uint8_t vc, uint8_t* params, uint16_t param_length);
 extern int mipi_dsih_dcs_wr_cmd(struct comipfb_info *fbi, uint8_t vc, uint8_t* params, uint16_t param_length);
 extern uint16_t mipi_dsih_dcs_rd_cmd(struct comipfb_info *fbi, uint8_t vc, uint8_t command, uint8_t bytes_to_read, uint8_t* read_buffer);
@@ -2662,10 +2665,258 @@ extern int mipi_dsih_gen_wr_packet(struct comipfb_info *fbi, uint8_t vc, uint8_t
 
 static struct comipfb_info *fs_fbi;
 
-static u8 mipi_read_buff[30];
+static uint8_t mipi_read_buff[30];
 
 
-#define ROW_LINE 20
+#define ROW_LINE 64
+
+#define COMIPFB_HSYNC_HIGH_ACT		(0x03)
+#define COMIPFB_VSYNC_HIGH_ACT		(0x04)
+
+#define MIPI_VIDEO_MODE 		(0x05)
+#define MIPI_COMMAND_MODE 		(0x06)
+
+#define ARRAY_AND_SIZE(x)		(uint8_t *)(x), ARRAY_SIZE(x)
+
+/*display prefer and ce*/
+#define PREFER_INIT			(0)
+#define PREFER_WARM			(1)
+#define PREFER_NATURE			(2)
+#define PREFER_COOL			(3)
+
+#define CE_BRIGHT 			(12)
+#define CE_VELVIA			(11)
+#define CE_STANDARD			(10)
+
+
+enum {
+	DCS_CMD = 2,
+	GEN_CMD,
+	SW_PACK0,
+	SW_PACK1,
+	SW_PACK2,
+	LW_PACK,
+	SHUTDOWN_SW_PACK,
+};
+
+/*Device flags*/
+#define	PREFER_CMD_SEND_MONOLITHIC	(0x00000001)
+#define	CE_CMD_SEND_MONOLITHIC		(0x00000002)
+
+#define RESUME_WITH_PREFER		(0x00000010)
+#define RESUME_WITH_CE			(0x00000020)
+
+
+/**
+ * Video stream type
+ */
+typedef enum {
+	VIDEO_NON_BURST_WITH_SYNC_PULSES = 0,
+	VIDEO_NON_BURST_WITH_SYNC_EVENTS,	// hs_freq and pck should be multipe
+	VIDEO_BURST_WITH_SYNC_PULSES,
+}dsih_video_mode_t;
+
+#ifdef CONFIG_FBCON_DRAW_PANIC_TEXT
+extern int kpanic_in_progress;
+#endif
+
+struct comipfb_dev_cmds {
+	unsigned char *cmds;
+	unsigned short n_pack;
+	unsigned short n_cmds;
+};
+
+struct bl_cmds {
+	struct comipfb_dev_cmds bl_cmd;
+	unsigned int brightness_bit;
+};
+
+struct mipi_color_bits {
+	unsigned int color_bits; // must be set !!
+	unsigned int is_18bit_loosely; // optional
+};
+
+struct rw_timeout {
+	unsigned int hs_rd_to_cnt;
+	unsigned int lp_rd_to_cnt;
+	unsigned int hs_wr_to_cnt;
+	unsigned int lp_wr_to_cnt;
+	unsigned int bta_to_cnt;
+};
+
+struct video_mode_info {
+	unsigned int hsync;	/* Horizontal Synchronization, unit : pclk. */
+	unsigned int hbp;	/* Horizontal Back Porch, unit : pclk. */
+	unsigned int hfp;	/* Horizontal Front Porch, unit : pclk. */
+	unsigned int vsync;	/* Vertical Synchronization, unit : line. */
+	unsigned int vbp;	/* Vertical Back Porch, unit : line. */
+	unsigned int vfp;	/* Vertical Front Porch, unit : line. */
+	unsigned int sync_pol;
+	unsigned int lp_cmd_en:1;
+	unsigned int frame_bta_ack:1;
+	unsigned int lp_hfp_en:1; // default should be 1
+	unsigned int lp_hbp_en:1;
+	unsigned int lp_vact_en:1;
+	unsigned int lp_vfp_en:1;
+	unsigned int lp_vbp_en:1;
+	unsigned int lp_vsa_en:1;
+	dsih_video_mode_t mipi_trans_type; /* burst or no burst*/
+};
+
+struct command_mode_info {
+	unsigned int tear_fx_en:1;
+	unsigned int ack_rqst_en:1;
+	unsigned int gen_sw_0p_tx:1;	// default should be 1
+	unsigned int gen_sw_1p_tx:1;	// default should be 1
+	unsigned int gen_sw_2p_tx:1;	// default should be 1
+	unsigned int gen_sr_0p_tx:1;	// default should be 1
+	unsigned int gen_sr_1p_tx:1;	// default should be 1
+	unsigned int gen_sr_2p_tx:1;	// default should be 1
+	unsigned int gen_lw_tx:1;		// default should be 1
+	unsigned int dcs_sw_0p_tx:1;	// default should be 1
+	unsigned int dcs_sw_1p_tx:1;	// default should be 1
+	unsigned int dcs_sr_0p_tx:1;	// default should be 1
+	unsigned int dcs_lw_tx:1;		// default should be 1
+	unsigned int max_rd_pkt_size:1;	// default should be 1
+	struct rw_timeout timeout;
+};
+
+struct external_info {
+	unsigned char crc_rx_en:1;
+	unsigned char ecc_rx_en:1;
+	unsigned char eotp_rx_en:1;
+	unsigned char eotp_tx_en:1;
+	unsigned int dev_read_time;	//HSBYTECLK is danwe
+};
+
+struct phy_time_info {
+	unsigned char lpx;
+	//unsigned char clk_lpx;
+	unsigned char clk_tprepare;
+	unsigned char clk_hs_zero;
+	unsigned char clk_hs_trail;
+	unsigned char clk_hs_exit;
+	unsigned char clk_hs_post;
+
+	//unsigned char data_lpx;
+	unsigned char data_tprepare;
+	unsigned char data_hs_zero;
+	unsigned char data_hs_trail;
+	unsigned char data_hs_exit;
+	unsigned char data_hs_post;
+};
+
+struct te_info {
+	unsigned int te_source;
+	unsigned int te_trigger_mode;
+	unsigned int te_en;
+	unsigned int te_sync_en; // In command mode should set 1,  video should set 0
+	unsigned int te_cps;	// te count per second
+};
+
+struct comipfb_dev_timing_mipi {
+	unsigned int hs_freq; /*PHY output freq, bytes KHZ*/
+	unsigned int lp_freq; /*default is 10MHZ*/
+	unsigned int no_lanes; /*lane numbers*/
+	unsigned int display_mode; //video mode or command mode.
+	unsigned int auto_stop_clklane_en;
+	unsigned int im_pin_val; /*IM PIN val, if use gpio_im, default config is 1  ?? */
+	struct mipi_color_bits color_mode; /*color bits*/
+	struct video_mode_info videomode_info;
+	struct command_mode_info commandmode_info;
+	struct phy_time_info phytime_info;
+	struct te_info teinfo;
+	struct external_info ext_info;
+};
+
+struct common_id_info {
+	unsigned char pack_type;
+	unsigned char id[6];
+	unsigned char id_count;
+	unsigned char cmd;
+};
+
+struct comipfb_id_info {
+	unsigned char num_id_info;
+	struct common_id_info *id_info;
+	struct comipfb_dev_cmds prepare_cmd;
+};
+
+struct prefer_ce_info {
+	int type;
+	struct comipfb_dev_cmds cmds;
+};
+
+struct comipfb_prefer_ce {
+	int types;
+	struct prefer_ce_info *info;
+};
+
+struct comipfb_dev {
+	const char* name;	/* Device name. */
+	unsigned int interface_info;//interface infomation  MIPI or RGB
+	unsigned int lcd_id;
+	unsigned int refresh_en;	/* Refresh enable. */
+	unsigned int pclk;		/* Pixel clock in HZ. */
+	unsigned int bpp;		/* Bits per pixel. */
+	unsigned int xres;		/* Device resolution. */
+	unsigned int yres;
+	unsigned int width;		/* Width of device in mm. */
+	unsigned int height;		/* Height of device in mm. */
+	unsigned int flags;		/* Device flags. */
+	unsigned int auto_fps;		/* auto adjust frame rate flag*/
+	union {
+		//struct comipfb_dev_timing_rgb rgb;
+		struct comipfb_dev_timing_mipi mipi;
+	} timing;
+
+	struct comipfb_id_info panel_id_info;
+	struct comipfb_id_info esd_id_info;
+	struct comipfb_dev_cmds cmds_init;
+	struct comipfb_dev_cmds cmds_suspend;
+	struct comipfb_dev_cmds cmds_resume;
+	struct comipfb_dev_cmds cmds_pre_suspend;
+	struct bl_cmds backlight_info;
+
+	struct comipfb_prefer_ce resume_prefer_info;
+	struct comipfb_prefer_ce display_prefer_info;
+	struct comipfb_prefer_ce display_ce_info;
+	int init_last;		/*when resume, send gamma/ce cmd before init cmd*/
+
+	int (*power)(struct comipfb_info *fbi, int onoff);
+	int (*reset)(struct comipfb_info *fbi);
+	int (*suspend)(struct comipfb_info *fbi);
+	int (*resume)(struct comipfb_info *fbi);
+};
+
+
+#define ENTER_ULPS	0x01
+#define EXIT_ULPS	0x02
+
+struct comipfb_info;
+struct comipfb_dev_cmds;
+
+struct comipfb_if {
+	int (*init)(struct comipfb_info *fbi);
+	int (*exit)(struct comipfb_info *fbi);
+	int (*suspend)(struct comipfb_info *fbi);
+	int (*resume)(struct comipfb_info *fbi);
+	int (*dev_cmd)(struct comipfb_info *fbi, struct comipfb_dev_cmds *cmds);
+	void (*bl_change)(struct comipfb_info *fbi, int val);
+};
+extern struct comipfb_if comipfb_if_mipi;
+extern struct comipfb_if* comipfb_if_get(struct comipfb_info *fbi);
+extern int comipfb_if_mipi_dev_cmds(struct comipfb_info *fbi, struct comipfb_dev_cmds *cmds);
+//extern int comipfb_if_mipi_init(struct comipfb_info *fbi);
+
+struct device_attribute;
+struct device;
+
+extern int comipfb_dev_register(struct comipfb_dev* dev);
+extern int comipfb_dev_unregister(struct comipfb_dev* dev);
+extern struct comipfb_dev* comipfb_dev_get(struct comipfb_info *fbi);
+
+#if 0
 
 static ssize_t mipi_read_store(struct device *dev, struct device_attribute *attr,
 								const char *buf, size_t count)
@@ -2676,43 +2927,44 @@ static ssize_t mipi_read_store(struct device *dev, struct device_attribute *attr
 
 	memset(&mipi_read_buff, 0x0, ARRAY_SIZE(mipi_read_buff));
 
-	mipi_dsih_gen_wr_packet(fs_fbi, 0, 0x37, (u8 *)&read_count, 1);
+	mipi_dsih_gen_wr_packet(fs_fbi, 0, 0x37, (uint8_t *)&read_count, 1);
 	if (cmd_type == 1)
-		mipi_dsih_dcs_rd_cmd(fs_fbi, 0, (u8)read_cmd, (u8)read_count,
-			(u8 *)&mipi_read_buff);
+		mipi_dsih_dcs_rd_cmd(fs_fbi, 0, (uint8_t)read_cmd, (uint8_t)read_count,
+			(uint8_t *)&mipi_read_buff);
 	else if (cmd_type == 0)
-		mipi_dsih_gen_rd_cmd(fs_fbi, 0, (u8 *)&read_cmd, 1, (u8)read_count,
-			(u8 *)&mipi_read_buff);
+		mipi_dsih_gen_rd_cmd(fs_fbi, 0, (uint8_t *)&read_cmd, 1, (uint8_t)read_count,
+			(uint8_t *)&mipi_read_buff);
 
 	return count;
 }
+//
+//static ssize_t mipi_read_show(struct device *dev, struct device_attribute *attr, char *buf)
+//{
+//	return snprintf(buf,
+//			PAGE_SIZE,
+//			"buf[0]=0x%x, buf[1]=0x%x, buf[2]=0x%x, buf[3]=0x%x, buf[4]=0x%x\n",
+//			mipi_read_buff[0],
+//			mipi_read_buff[1],
+//			mipi_read_buff[2],
+//			mipi_read_buff[3],
+//			mipi_read_buff[4]);
+//}
 
-static ssize_t mipi_read_show(struct device *dev, struct device_attribute *attr, char *buf)
-{
-	return snprintf(buf,
-			PAGE_SIZE,
-			"buf[0]=0x%x, buf[1]=0x%x, buf[2]=0x%x, buf[3]=0x%x, buf[4]=0x%x\n",
-			mipi_read_buff[0],
-			mipi_read_buff[1],
-			mipi_read_buff[2],
-			mipi_read_buff[3],
-			mipi_read_buff[4]);
-}
+//DEVICE_ATTR(mipi_read, S_IRUGO | S_IWUSR, mipi_read_show, mipi_read_store);
+//
+//void comipfb_sysfs_add_read(struct device *dev)
+//{
+//	device_create_file(dev, &dev_attr_mipi_read);
+//}
+//
+//void comipfb_sysfs_remove_read(struct device *dev)
+//{
+//	device_remove_file(dev, &dev_attr_mipi_read);
+//}
 
-DEVICE_ATTR(mipi_read, S_IRUGO | S_IWUSR, mipi_read_show, mipi_read_store);
-
-void comipfb_sysfs_add_read(struct device *dev)
-{
-	device_create_file(dev, &dev_attr_mipi_read);
-}
-
-void comipfb_sysfs_remove_read(struct device *dev)
-{
-	device_remove_file(dev, &dev_attr_mipi_read);
-}
-
-EXPORT_SYMBOL(comipfb_sysfs_remove_read);
-EXPORT_SYMBOL(comipfb_sysfs_add_read);
+#define KERN_ERR "panel: "
+//EXPORT_SYMBOL(comipfb_sysfs_remove_read);
+//EXPORT_SYMBOL(comipfb_sysfs_add_read);
 
 /*
  *
@@ -2720,19 +2972,19 @@ EXPORT_SYMBOL(comipfb_sysfs_add_read);
  */
 static int comipfb_mipi_mode_change(struct comipfb_info *fbi)
 {
-	int gpio_im, gpio_val;
-	struct comipfb_dev_timing_mipi *mipi;
-
-	mipi = &(fbi->cdev->timing.mipi);
-
-	if (fbi != NULL) {
-		gpio_im = fbi->pdata->gpio_im;
-		gpio_val = mipi->im_pin_val;
-		if (gpio_im >= 0) {
-			gpio_request(gpio_im, "LCD IM");
-			gpio_direction_output(gpio_im, gpio_val);
-		}
-	}
+//	int gpio_im, gpio_val;
+//	struct comipfb_dev_timing_mipi *mipi;
+//
+//	mipi = &(fbi->cdev->timing.mipi);
+//
+//	if (fbi != NULL) {
+//		gpio_im = fbi->pdata->gpio_im;
+//		gpio_val = mipi->im_pin_val;
+//		if (gpio_im >= 0) {
+//			gpio_request(gpio_im, "LCD IM");
+//			gpio_direction_output(gpio_im, gpio_val);
+//		}
+//	}
 	return 0;
 }
 
@@ -2743,43 +2995,43 @@ int comipfb_if_mipi_dev_cmds(struct comipfb_info *fbi, struct comipfb_dev_cmds *
 	unsigned char *p;
 
 	if (!cmds) {
-		dev_err(fbi->dev, "cmds null\n");
-		return -EINVAL;
+		PRINTF("cmds null\n");
+		return -(1);
 	}
 	if (!cmds->n_pack || !cmds->cmds) {
-		dev_err(fbi->dev, "cmds null\n");
-		return -EINVAL;
+		PRINTF("cmds null\n");
+		return -(1);
 	}
 	for (loop = 0; loop < cmds->n_pack; loop++) {
 		p = cmds->cmds + loop * ROW_LINE;
 		if (p[1] == DCS_CMD)
-			ret = mipi_dsih_dcs_wr_cmd(fbi, 0, &(p[2]), (u16)p[3]);
+			ret = mipi_dsih_dcs_wr_cmd(fbi, 0, &(p[2]), (uint16_t)p[3]);
 		else if (p[1] == GEN_CMD)
-			ret = mipi_dsih_gen_wr_cmd(fbi, 0, &(p[2]), (u16)p[3]);
+			ret = mipi_dsih_gen_wr_cmd(fbi, 0, &(p[2]), (uint16_t)p[3]);
 		if (ret < 0) {
-			dev_err(fbi->dev,"*MIPI send command failed !!*\n");
+			PRINTF("*MIPI send command failed !!*\n");
 			return ret;
 		}
 		if (p[0] > 0) {
 #ifdef CONFIG_FBCON_DRAW_PANIC_TEXT
 			if (unlikely(kpanic_in_progress == 1)) {
 				if (p[0] == 0xff)
-					mdelay(200);
+					local_delay_ms(200);
 				else
-					mdelay(p[0]);
+					local_delay_ms(p[0]);
 			}
 			else {
 
 				if (p[0] == 0xff)
-					msleep(200);
+					local_delay_ms(200);
 				else
-					msleep(p[0]);
+					local_delay_ms(p[0]);
 			}
 #else
 			if (p[0] == 0xff)
-				msleep(200);
+				local_delay_ms(200);
 			else
-				msleep(p[0]);
+				local_delay_ms(p[0]);
 #endif
 
 		}
@@ -2794,9 +3046,9 @@ void comipfb_if_mipi_reset(struct comipfb_info *fbi)
 	int check_times = 3;
 	int i = 0;
 
-	mipi = &(fbi->cdev->timing.mipi);
+	//mipi = &(fbi->cdev->timing.mipi);
 
-	switch (mipi->no_lanes) {
+	switch (4) //(mipi->no_lanes) {
 		case 1:
 			stop_status = 0x10;
 			break;
@@ -2816,11 +3068,11 @@ void comipfb_if_mipi_reset(struct comipfb_info *fbi)
 	for (i = 0; i < check_times; i++) {
 		if ((mipi_dsih_dphy_get_status(fbi) & stop_status) == stop_status)
 			break;
-		udelay(5);
+		local_delay_us(5);
 	}
 
-	mipi_dsih_hal_power(fbi, 0);
-	mipi_dsih_hal_power(fbi, 1);
+//	mipi_dsih_hal_power(fbi, 0);
+//	mipi_dsih_hal_power(fbi, 1);
 }
 
 static int comipfb_if_mipi_init(struct comipfb_info *fbi)
@@ -2836,7 +3088,7 @@ static int comipfb_if_mipi_init(struct comipfb_info *fbi)
 	comipfb_mipi_mode_change(fbi);
 
 	mipi_dsih_dphy_enable_hs_clk(fbi, 1);
-	mdelay(5);
+	local_delay_ms(5);
 
 	if (mipi->display_mode == MIPI_VIDEO_MODE)
 		mipi_dsih_hal_mode_config(fbi, 1);
@@ -2864,14 +3116,14 @@ static int comipfb_if_mipi_init(struct comipfb_info *fbi)
 	}
 	if (fbi->cdev->init_last)
 		ret = comipfb_if_mipi_dev_cmds(fbi, &fbi->cdev->cmds_init);
-	msleep(10);
+	local_delay_ms(10);
 
 	if (mipi->display_mode == MIPI_VIDEO_MODE) {
 		mipi_dsih_hal_mode_config(fbi, 0);
 	}else
 		mipi_dsih_hal_dcs_wr_tx_type(fbi, 3, 0);
 
-	mdelay(5);
+	local_delay_ms(5);
 	mipi_dsih_dphy_enable_hs_clk(fbi, 1);
 
 	return ret;
@@ -2879,30 +3131,30 @@ static int comipfb_if_mipi_init(struct comipfb_info *fbi)
 
 static int comipfb_if_mipi_exit(struct comipfb_info *fbi)
 {
-	int gpio_im = fbi->pdata->gpio_im;
-	if (gpio_im >= 0)
-		gpio_free(gpio_im);
-
+//	int gpio_im = fbi->pdata->gpio_im;
+//	if (gpio_im >= 0)
+//		gpio_free(gpio_im);
+//
 	return 0;
 }
 
 static int comipfb_if_mipi_suspend(struct comipfb_info *fbi)
 {
 	int ret = 0;
-
-	if(fbi->cdev->suspend)
-		ret = fbi->cdev->suspend(fbi);
-
+//
+//	if(fbi->cdev->suspend)
+//		ret = fbi->cdev->suspend(fbi);
+//
 	return ret;
 }
 
 static int comipfb_if_mipi_resume(struct comipfb_info *fbi)
 {
 	int ret = 0;
-
-	if(fbi->cdev->resume)
-		ret = fbi->cdev->resume(fbi);
-
+//
+//	if(fbi->cdev->resume)
+//		ret = fbi->cdev->resume(fbi);
+//
 	return ret;
 }
 
@@ -2912,7 +3164,7 @@ static void comipfb_if_mipi_bl_change(struct comipfb_info *fbi, int val)
 	struct comipfb_dev_cmds *lcd_backlight_cmd;
 
 	if (fbi == NULL) {
-		printk(KERN_ERR "%s ,fbi is NULL",__func__);
+		PRINTF(KERN_ERR "%s ,fbi is NULL",__func__);
 		return ;
 	}
 
@@ -2943,7 +3195,7 @@ static int comipfb_if_mipi_read_lcm_id(struct comipfb_info *fbi , struct comipfb
 	unsigned char rd_cnt=0,lp_cnt=0;
 	unsigned char cmd;
 	unsigned char *id_val;
-	u8 lcm_id[8] = {0};
+	uint8_t lcm_id [8] = {0};
 	int i, ret = 0;
 
 	/*ready to read id*/
@@ -2961,14 +3213,14 @@ static int comipfb_if_mipi_read_lcm_id(struct comipfb_info *fbi , struct comipfb
 		} else if (cur_id_info->id_info[lp_cnt].pack_type == GEN_CMD) {
 			ret = mipi_dsih_gen_rd_cmd(fbi, 0, &cmd, 1, rd_cnt, lcm_id);
 		}
-		ret = strncmp(lcm_id, id_val, rd_cnt);
+		ret = strncmp((void *) lcm_id, (void *) id_val, rd_cnt);
 		if (ret) {
-			printk("request:");
+			PRINTF("request:");
 			for (i = 0; i< rd_cnt; i++)
-				printk("0x%x,", id_val[i]);
-			printk(" read:");
+				PRINTF("0x%x,", id_val[i]);
+			PRINTF(" read:");
 			for (i = 0; i< rd_cnt; i++)
-				printk("0x%x,", lcm_id[i]);
+				PRINTF("0x%x,", lcm_id[i]);
 			return -1;
 		}
 		lp_cnt++;
@@ -2986,7 +3238,7 @@ int comipfb_if_mipi_esd_read_ic(struct comipfb_info *fbi )
 	check_result = comipfb_if_mipi_read_lcm_id( fbi , &(fbi->cdev->esd_id_info));
 
 	if (check_result) {
-		printk("lcd esd read id failed \n");
+		PRINTF("lcd esd read id failed \n");
 		return -1;
 	} else {
 		return 0;
@@ -3016,7 +3268,7 @@ int comipfb_read_lcm_id(struct comipfb_info *fbi, void *dev)
 	if (fbi->cdev->power)
 		fbi->cdev->power(fbi, 0);
 	if ( check_result ) {
-		printk("read lcm id failed \n");
+		PRINTF("read lcm id failed \n");
 		return -1;
 	} else {
 		return 0;
@@ -3038,8 +3290,8 @@ int comipfb_display_prefer_ce_set(struct comipfb_info *fbi, struct comipfb_prefe
 	}
 
 	if (cnt == prefer_ce->types) {
-		dev_err(fbi->dev, "mode %d not supported\n", mode);
-		return -EINVAL;
+		PRINTF("mode %d not supported\n", mode);
+		return -(1);
 	}
 
 	//dev_info(fbi->dev, "sending cmds : type = %d\n", info->type);//for debug
@@ -3058,19 +3310,19 @@ int comipfb_display_prefer_set(struct comipfb_info *fbi, int mode)
 
 	if (prefer->types == 0) {
 		dev_info(fbi->dev, "%s do not support prefer set\n", fbi->cdev->name);
-		return -EINVAL;
+		return -(1);
 	}
 
 	dev_flags = fbi->cdev->flags;
 	/*cmds must be send continuous and cannot be interrupted*/
 	if (dev_flags & PREFER_CMD_SEND_MONOLITHIC)
-		spin_lock_irqsave(&cmd_lock, flags);
+		;//spin_lock_irqsave(&cmd_lock, flags);
 	ret = comipfb_display_prefer_ce_set(fbi, prefer, mode);
 	if (dev_flags & PREFER_CMD_SEND_MONOLITHIC)
-		spin_unlock_irqrestore(&cmd_lock, flags);
+		;//spin_unlock_irqrestore(&cmd_lock, flags);
 
 	if (ret)
-		dev_err(fbi->dev, "set display prefer %d failed\n", mode);
+		PRINTF("set display prefer %d failed\n", mode);
 
 	/*update current prefer mode, when resume from suspend, should check and send cmd if need*/
 	fbi->display_prefer = mode;
@@ -3087,19 +3339,19 @@ int comipfb_display_ce_set(struct comipfb_info *fbi, int mode)
 
 	if (ce->types == 0) {
 		dev_info(fbi->dev, "%s do not support ce set\n", fbi->cdev->name);
-		return -EINVAL;
+		return -(1);
 	}
 
 	dev_flags = fbi->cdev->flags;
 	/*cmds must be send continuous and cannot be interrupted*/
 	if (dev_flags & CE_CMD_SEND_MONOLITHIC)
-		spin_lock_irqsave(&cmd_lock, flags);
+		;//spin_lock_irqsave(&cmd_lock, flags);
 	ret = comipfb_display_prefer_ce_set(fbi, ce, mode);
 	if (dev_flags & CE_CMD_SEND_MONOLITHIC)
-		spin_unlock_irqrestore(&cmd_lock, flags);
+		;//spin_unlock_irqrestore(&cmd_lock, flags);
 
 	if (ret)
-		dev_err(fbi->dev, "set display ce %d failed\n", mode);
+		PRINTF("set display ce %d failed\n", mode);
 
 	/*update current ce mode, when resume from suspend, should check and send cmd if need*/
 	fbi->display_ce = mode;
@@ -3107,7 +3359,7 @@ int comipfb_display_ce_set(struct comipfb_info *fbi, int mode)
 	return ret;
 }
 
-static struct comipfb_if comipfb_if_mipi = {
+struct comipfb_if comipfb_if_mipi = {
         .init           = comipfb_if_mipi_init,
         .exit           = comipfb_if_mipi_exit,
         .suspend        = comipfb_if_mipi_suspend,
@@ -3161,6 +3413,8 @@ typedef enum {
 	COLOR_CODE_24BIT,				//PACKET RGB888
 	COLOR_CODE_MAX,
 }dsih_color_coding_t;
+
+#endif
 
 static uint8_t oled_cmds_init[][ROW_LINE] = {
 	{0x00, DCS_CMD, LW_PACK, 0x08, 0x06, 0x00, 0xf0, 0x55, 0xaa, 0x52, 0x08, 0x00}
@@ -3256,79 +3510,85 @@ static uint8_t oled_pre_read_id[][ROW_LINE] = {
 	{0x00, DCS_CMD, SW_PACK2, 0x02, 0xFE, 0xF4},
 	{0x00, DCS_CMD, SW_PACK1, 0x01, 0xFF},
 };
+
+
+#if 0
+
+
 static struct common_id_info oled_common_id_info[] = {
 	{DCS_CMD, {0x83, 0x94, 0x1A}, 3, 0x04},
 };
 static struct common_id_info oled_common_esd_info[] = {
 	{DCS_CMD, {0x1C}, 1, 0x0A},
 };
+
 static int oled_auo_rm69052_power(struct comipfb_info *fbi, int onoff)
 {
-	int gpio_rst = fbi->pdata->gpio_rst;
+//	int gpio_rst = fbi->pdata->gpio_rst;
+//
+//	if (gpio_rst < 0) {
+//		pr_err("no reset pin found\n");
+//		return -ENXIO;
+//	}
+//
+//	gpio_request(gpio_rst, "OLED Reset");
 
-	if (gpio_rst < 0) {
-		pr_err("no reset pin found\n");
-		return -ENXIO;
-	}
-
-	gpio_request(gpio_rst, "OLED Reset");
-
-	if (onoff) {
-		//change init code delay
-		gpio_direction_output(gpio_rst, 0);
-		pmic_voltage_set(PMIC_POWER_LCD_CORE, 0, PMIC_POWER_VOLTAGE_ENABLE);
-		local_delay_ms(50);
-		pmic_voltage_set(PMIC_POWER_LCD_IO, 0, PMIC_POWER_VOLTAGE_ENABLE);
-		local_delay_ms(100);
-		gpio_direction_output(gpio_rst, 1);
-		local_delay_ms(180);
-	} else {
-		gpio_direction_output(gpio_rst, 0);
-		pmic_voltage_set(PMIC_POWER_LCD_CORE, 0, PMIC_POWER_VOLTAGE_DISABLE);
-		pmic_voltage_set(PMIC_POWER_LCD_IO, 0, PMIC_POWER_VOLTAGE_DISABLE);
-		local_delay_ms(10);
-	}
-
-	gpio_free(gpio_rst);
+//	if (onoff) {
+//		//change init code delay
+//		gpio_direction_output(gpio_rst, 0);
+//		pmic_voltage_set(PMIC_POWER_LCD_CORE, 0, PMIC_POWER_VOLTAGE_ENABLE);
+//		local_delay_ms(50);
+//		pmic_voltage_set(PMIC_POWER_LCD_IO, 0, PMIC_POWER_VOLTAGE_ENABLE);
+//		local_delay_ms(100);
+//		gpio_direction_output(gpio_rst, 1);
+//		local_delay_ms(180);
+//	} else {
+//		gpio_direction_output(gpio_rst, 0);
+//		pmic_voltage_set(PMIC_POWER_LCD_CORE, 0, PMIC_POWER_VOLTAGE_DISABLE);
+//		pmic_voltage_set(PMIC_POWER_LCD_IO, 0, PMIC_POWER_VOLTAGE_DISABLE);
+//		local_delay_ms(10);
+//	}
+//
+//	gpio_free(gpio_rst);
 
 	return 0;
 }
 
 static int oled_auo_rm69052_reset(struct comipfb_info *fbi)
 {
-	int gpio_rst = fbi->pdata->gpio_rst;
-
-	if (gpio_rst >= 0) {
-		gpio_request(gpio_rst, "OLED Reset");
-		gpio_direction_output(gpio_rst, 1);
-		local_delay_ms(10);
-		gpio_direction_output(gpio_rst, 0);
-		local_delay_ms(10);
-		gpio_direction_output(gpio_rst, 1);
-		local_delay_ms(180);
-		gpio_free(gpio_rst);
-	}
+//	int gpio_rst = fbi->pdata->gpio_rst;
+//
+//	if (gpio_rst >= 0) {
+//		gpio_request(gpio_rst, "OLED Reset");
+//		gpio_direction_output(gpio_rst, 1);
+//		local_delay_ms(10);
+//		gpio_direction_output(gpio_rst, 0);
+//		local_delay_ms(10);
+//		gpio_direction_output(gpio_rst, 1);
+//		local_delay_ms(180);
+//		gpio_free(gpio_rst);
+//	}
 	return 0;
 }
 
 static int oled_auo_rm69052_suspend(struct comipfb_info *fbi)
 {
 	int ret=0;
-	struct comipfb_dev_timing_mipi *mipi;
-
-	mipi = &(fbi->cdev->timing.mipi);
-
-	if (mipi->display_mode == MIPI_VIDEO_MODE) {
-		mipi_dsih_hal_mode_config(fbi, 1);
-	}
-
-	comipfb_if_mipi_dev_cmds(fbi, &fbi->cdev->cmds_suspend);
-
-	local_delay_ms(20);
-	mipi_dsih_dphy_enable_hs_clk(fbi, 0);
-
-	mipi_dsih_dphy_reset(fbi, 0);
-	mipi_dsih_dphy_shutdown(fbi, 0);
+//	struct comipfb_dev_timing_mipi *mipi;
+//
+//	mipi = &(fbi->cdev->timing.mipi);
+//
+//	if (mipi->display_mode == MIPI_VIDEO_MODE) {
+//		mipi_dsih_hal_mode_config(fbi, 1);
+//	}
+//
+//	comipfb_if_mipi_dev_cmds(fbi, &fbi->cdev->cmds_suspend);
+//
+//	local_delay_ms(20);
+//	mipi_dsih_dphy_enable_hs_clk(fbi, 0);
+//
+//	mipi_dsih_dphy_reset(fbi, 0);
+//	mipi_dsih_dphy_shutdown(fbi, 0);
 
 	return ret;
 }
@@ -3336,26 +3596,26 @@ static int oled_auo_rm69052_suspend(struct comipfb_info *fbi)
 static int oled_auo_rm69052_resume(struct comipfb_info *fbi)
 {
 	int ret=0;
-	struct comipfb_dev_timing_mipi *mipi;
-
-	mipi = &(fbi->cdev->timing.mipi);
-
-	mipi_dsih_dphy_shutdown(fbi, 1);
-	mipi_dsih_dphy_reset(fbi, 1);
-
-	//if (fbi->cdev->reset)
-	//	fbi->cdev->reset(fbi);
-
-	if (!(fbi->pdata->flags & COMIPFB_SLEEP_POWEROFF))
-		ret = comipfb_if_mipi_dev_cmds(fbi, &fbi->cdev->cmds_resume);
-	else
-		ret = comipfb_if_mipi_dev_cmds(fbi, &fbi->cdev->cmds_init);
-
-	msleep(20);
-	if (mipi->display_mode == MIPI_VIDEO_MODE) {
-		mipi_dsih_hal_mode_config(fbi, 0);
-	}
-	mipi_dsih_dphy_enable_hs_clk(fbi, 1);
+//	struct comipfb_dev_timing_mipi *mipi;
+//
+//	mipi = &(fbi->cdev->timing.mipi);
+//
+//	mipi_dsih_dphy_shutdown(fbi, 1);
+//	mipi_dsih_dphy_reset(fbi, 1);
+//
+//	//if (fbi->cdev->reset)
+//	//	fbi->cdev->reset(fbi);
+//
+//	if (!(fbi->pdata->flags & COMIPFB_SLEEP_POWEROFF))
+//		ret = comipfb_if_mipi_dev_cmds(fbi, &fbi->cdev->cmds_resume);
+//	else
+//		ret = comipfb_if_mipi_dev_cmds(fbi, &fbi->cdev->cmds_init);
+//
+//	local_delay_ms(20);
+//	if (mipi->display_mode == MIPI_VIDEO_MODE) {
+//		mipi_dsih_hal_mode_config(fbi, 0);
+//	}
+//	mipi_dsih_dphy_enable_hs_clk(fbi, 1);
 
 	return ret;
 }
@@ -3431,11 +3691,11 @@ struct comipfb_dev oled_auo_rm69052_dev = {
 //	},
 //#endif
 };
-
-static int __init oled_auo_rm69052_init(void)
-{
-	return comipfb_dev_register(&oled_auo_rm69052_dev);
-}
+//
+//static int __init oled_auo_rm69052_init(void)
+//{
+//	return comipfb_dev_register(&oled_auo_rm69052_dev);
+//}
 
 #endif
 
@@ -3518,6 +3778,8 @@ void tc358768_initialize(void)
 	PRINTF("TC358778XBG: hact=%ld\n", tc358768_rd_reg_16bits(TC358768_DSI_HACT));
 #endif
 
+	PRINTF("TC358778XBG: Data Format Control Register=%08lX\n", tc358768_rd_reg_16bits(TC358768_DATAFMT));
+
 	PRINTF("TC358778XBG: Chip and Revision ID=%04lX\n", tc358768_rd_reg_16bits(TC358768_CHIPID));
 	tc358768_calc_pll(ddata);
 
@@ -3540,6 +3802,7 @@ void tc358768_initialize(void)
 
 	static uint8_t sleepout [] = { 0x11, 0x00, };
 	static uint8_t displon [] = { 0x29, 0x00, };
+	static uint8_t readid [] = { 0x29, 0x00, };
 
 
 	local_delay_ms(200);
