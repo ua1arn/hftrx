@@ -1838,9 +1838,18 @@ struct tc358768_drv_data
 	int dev;
 	unsigned fbd, prd, frs;
 	unsigned bitclk;
+
+	unsigned dsi_ndl;	// 4
+	unsigned dpi_ndl;	// 24
+	unsigned long refclk;
 };
 
-struct tc358768_drv_data dev0;
+struct tc358768_drv_data dev0 =
+{
+		.refclk = 25000000uL,
+		.dpi_ndl = 24,
+		.dsi_ndl = 4
+};
 
 static int tc358768_write(
 	struct tc358768_drv_data *ddata,
@@ -1978,9 +1987,10 @@ static void tc358768_sw_reset(struct tc358768_drv_data *ddata)
 #define DSI_NDL 4
 #define DPI_NDL 24
 
-static uint32_t local_ulmin(uint32_t a, uint32_t b) { return a < b ? a : b; }
-static uint32_t local_ulmax(uint32_t a, uint32_t b) { return a > b ? a : b; }
+static uint32_t local_min(uint32_t a, uint32_t b) { return a < b ? a : b; }
+static uint32_t local_max(uint32_t a, uint32_t b) { return a > b ? a : b; }
 static uint64_t div_u64(uint64_t a, uint64_t b) { return a / b; }
+
 
 static uint32_t tc358768_pll_to_pclk(struct tc358768_drv_data *ddata, uint32_t pll)
 {
@@ -1988,23 +1998,47 @@ static uint32_t tc358768_pll_to_pclk(struct tc358768_drv_data *ddata, uint32_t p
 
 	byteclk = pll / 2 / 4;
 
-	return (uint32_t)div_u64((uint64_t)byteclk * 8 *DSI_NDL,
-		DPI_NDL);
+	return (uint32_t)div_u64((uint64_t)byteclk * 8 * ddata->dsi_ndl,
+		ddata->dpi_ndl);
 }
 
 static uint32_t tc358768_pclk_to_pll(struct tc358768_drv_data *ddata, uint32_t pclk)
 {
 	uint32_t byteclk;
 
-	byteclk = (uint32_t)div_u64((uint64_t)pclk * DPI_NDL,
-		8 *DSI_NDL);
+	byteclk = (uint32_t)div_u64((uint64_t)pclk * ddata->dpi_ndl,
+		8 * ddata->dsi_ndl);
 
 	return byteclk * 4 * 2;
 }
 
+struct omap_video_timings
+{
+	unsigned vsw;
+	unsigned hsw;
+	unsigned vbp;
+	unsigned hbp;
+	unsigned y_res;
+	unsigned x_res;
+	unsigned long pixelclock;
+};
+
+struct omap_video_timings timings0 = {
+		.vsw = VSYNC,
+		.hsw = HSYNC,
+		.vbp = VBP,
+		.hbp = HBP,
+		.y_res = HEIGHT,
+		.x_res = WIDTH,
+		.pixelclock = LTDC_DOTCLK
+};
+
+unsigned long clk_get_rate(unsigned long v) { return v; }
+
 static int tc358768_calc_pll(struct tc358768_drv_data *ddata)
 {
-	static const unsigned frs_limits[] = {
+	const struct omap_video_timings *t = & timings0;
+	const unsigned frs_limits[] = {
 		1000000000, 500000000, 250000000, 125000000, 62500000
 	};
 	unsigned fbd, prd, frs;
@@ -2015,7 +2049,7 @@ static int tc358768_calc_pll(struct tc358768_drv_data *ddata)
 
 	uint32_t best_diff, best_pll, best_prd, best_fbd;
 
-	target_pll = tc358768_pclk_to_pll(ddata, LTDC_DOTCLK);
+	target_pll = tc358768_pclk_to_pll(ddata, t->pixelclock);
 
 	/* pll_clk = RefClk * [(FBD + 1)/ (PRD + 1)] * [1 / (2^FRS)] */
 
@@ -2031,10 +2065,9 @@ static int tc358768_calc_pll(struct tc358768_drv_data *ddata)
 	}
 
 	if (frs == UINT_MAX)
-		return -1;
+		return -(1);
 
-	//refclk = clk_get_rate(REFCLK);
-	refclk = (REFCLK);
+	refclk = clk_get_rate(ddata->refclk);
 
 	best_pll = best_prd = best_fbd = 0;
 	best_diff = UINT_MAX;
@@ -2050,7 +2083,7 @@ static int tc358768_calc_pll(struct tc358768_drv_data *ddata)
 			if (pll >= max_pll || pll < min_pll)
 				continue;
 
-			diff = local_ulmax(pll, target_pll) - local_ulmin(pll, target_pll);
+			diff = local_max(pll, target_pll) - local_min(pll, target_pll);
 
 			if (diff < best_diff) {
 				best_diff = diff;
@@ -2068,8 +2101,8 @@ static int tc358768_calc_pll(struct tc358768_drv_data *ddata)
 	}
 
 	if (best_diff == UINT_MAX) {
-		//PRINTF("could not find suitable PLL setup\n");
-		return -1;
+		PRINTF("could not find suitable PLL setup\n");
+		return -(1);
 	}
 
 	ddata->fbd = best_fbd;
@@ -2112,7 +2145,7 @@ static void tc358768_setup_pll(struct tc358768_drv_data *ddata)
 
 static void tc358768_power_on(struct tc358768_drv_data *ddata)
 {
-	//const struct omap_video_timings *t = &ddata->videomode;
+	const struct omap_video_timings *t = & timings0;
 
 	tc358768_sw_reset(ddata);
 
@@ -2157,20 +2190,19 @@ static void tc358768_power_on(struct tc358768_drv_data *ddata)
 	tc358768_write(ddata, TC358768_DSI_EVENT, 1);
 
 	/* vsw (+ vbp) */
-	tc358768_write(ddata, TC358768_DSI_VSW, TOPMARGIN);
+	tc358768_write(ddata, TC358768_DSI_VSW, t->vsw + t->vbp);
 	/* vbp (not used in event mode) */
 	tc358768_write(ddata, TC358768_DSI_VBPR, 0);
 	/* vact */
-	tc358768_write(ddata, TC358768_DSI_VACT, HEIGHT);
+	tc358768_write(ddata, TC358768_DSI_VACT, t->y_res);
 
 	/* (hsw + hbp) * byteclk * ndl / pclk */
 	tc358768_write(ddata, TC358768_DSI_HSW,
-		(uint32_t)div_u64(LEFTMARGIN * ((uint64_t)ddata->bitclk / 4) * DSI_NDL, LTDC_DOTCLK)
-		);
+		(uint32_t)div_u64((t->hsw + t->hbp) * ((uint64_t)ddata->bitclk / 4) * ddata->dsi_ndl, t->pixelclock));
 	/* hbp (not used in event mode) */
 	tc358768_write(ddata, TC358768_DSI_HBPR, 0);
 	/* hact (bytes) */
-	tc358768_write(ddata, TC358768_DSI_HACT, WIDTH * 3);
+	tc358768_write(ddata, TC358768_DSI_HACT, t->x_res * 3);
 
 	/* Start DSI Tx */
 	tc358768_write(ddata, TC358768_DSI_START, 0x1);
@@ -2203,6 +2235,7 @@ static void tc358768_power_off(struct tc358768_drv_data *ddata)
 	/* set RstPtr */
 	tc358768_update_bits(ddata, TC358768_PP_MISC, 1 << 14, 1 << 14);
 }
+
 void tc_print(uint32_t addr) {
 	PRINTF("+++++++++++addr->%04x: %04x\n", addr, tc358768_rd_reg_16bits(addr));
 }
@@ -2280,7 +2313,7 @@ int tc358768_command_tx_more8bytes_hs(unsigned char type, unsigned char regs[], 
 			0x00500000,    //Data ID setting
 			0x00220000,    //Transmission byte count= byte
 			0x00E08000,	   //Enable I2C/SPI write to VB
-			0x00E20048,    //Total word count = 0x48 (max 0xFFF). This value should be adjusted considering trade off between transmission time and transmission start/stop time delay
+			0x00E20048,    //Total word count = 0x48 (local_max 0xFFF). This value should be adjusted considering trade off between transmission time and transmission start/stop time delay
 			0x00E4007F,    //Vertical blank line = 0x7F
 	};
 
@@ -3703,7 +3736,6 @@ void tc358768_initialize(void)
 {
 	struct tc358768_drv_data * ddata = & dev0;
 
-	dev0.bitclk = 55000000; //171484375uL;
 	if (toshiba_ddr_power_init())
 	{
 		PRINTF("TC358768 power init failure\n");
@@ -3787,8 +3819,12 @@ void tc358768_initialize(void)
 
 	PRINTF("TC358778XBG: Chip and Revision ID=%04lX\n", tc358768_rd_reg_16bits(TC358768_CHIPID));
 
-	//PRINTF("TC358778XBG: vact=%ld\n", tc358768_rd_reg_16bits(TC358768_DSI_VACT));
-	//PRINTF("TC358778XBG: hact=%ld\n", tc358768_rd_reg_16bits(TC358768_DSI_HACT));
+	PRINTF("TC358778XBG: TC358768_DSI_VSW=%ld\n", tc358768_rd_reg_16bits(TC358768_DSI_VSW));
+	PRINTF("TC358778XBG: TC358768_DSI_VBPR=%ld\n", tc358768_rd_reg_16bits(TC358768_DSI_VBPR));
+	PRINTF("TC358778XBG: TC358768_DSI_VACT=%ld\n", tc358768_rd_reg_16bits(TC358768_DSI_VACT));
+	PRINTF("TC358778XBG: TC358768_DSI_HSW=%ld\n", tc358768_rd_reg_16bits(TC358768_DSI_HSW));
+	PRINTF("TC358778XBG: TC358768_DSI_HBPR=%ld\n", tc358768_rd_reg_16bits(TC358768_DSI_HBPR));
+	PRINTF("TC358778XBG: TC358768_DSI_HACT=%ld\n", tc358768_rd_reg_16bits(TC358768_DSI_HACT));
 
 	tscinit();
 	tscid();
