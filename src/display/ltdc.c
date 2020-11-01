@@ -2215,9 +2215,9 @@ int _tc358768_wr_regs_32bits(unsigned int reg_array[], uint32_t n) {
 	for(i = 0; i < n; i++) {
 		if(reg_array[i] < 0x00020000) {
 		    if(reg_array[i] < 20000)
-		    	local_delay_us(reg_array[i]);
+		    	local_delay_us(2*reg_array[i]);
 		    else {
-		    	local_delay_ms(reg_array[i]/1000);
+		    	local_delay_ms(2*reg_array[i]/1000);
 		    }
 		} else {
 			tc358768_wr_reg_32bits(reg_array[i]);
@@ -2259,11 +2259,11 @@ int tc358768_command_tx_less8bytes(unsigned char type, const unsigned char *regs
 	_tc358768_wr_regs_32bits(command, (n + 1)/2 + 2);
 	tc358768_wr_reg_32bits(0x06000001);   //Packet Transfer
 	//wait until packet is out
-	i = 100;
-	while(tc358768_rd_reg_16bits(0x0600) & 0x01) {
+	i = 1000;
+	while(tc358768_rd_reg_16bits(TC358768_DSICMD_TX) & 0x01) {
 		if(i-- == 0)
 			break;
-		tc_print(0x0600);
+		tc_print(TC358768_DSICMD_TX);
 	}
 	//local_delay_us(50);
 	return 0;
@@ -2302,7 +2302,7 @@ int tc358768_command_tx_more8bytes_hs(unsigned char type, unsigned char regs[], 
 
 	tc358768_wr_reg_32bits(0x00E0C000);     //Start command transmisison
 	tc358768_wr_reg_32bits(0x00E00000);	 //Stop command transmission. This setting should be done just after above setting to prevent multiple output
-	local_delay_us(200);
+	local_delay_us(2*200);
 	//Re-Initialize
 	//tc358768_wr_regs_32bits(re_initialize);
 	return 0;
@@ -2337,10 +2337,10 @@ int tc358768_command_tx_more8bytes_lp(unsigned char type, const unsigned char re
 		tc358768_wr_reg_32bits(dbg_data);
 
 	tc358768_wr_reg_32bits(0x00E0E000);     //Start command transmisison
-	local_delay_us(1000);
+	local_delay_us(2*1000);
 	tc358768_wr_reg_32bits(0x00E02000);	 //Keep Mask High to prevent short packets send out
 	tc358768_wr_reg_32bits(0x00E00000);	 //Stop command transmission. This setting should be done just after above setting to prevent multiple output
-	local_delay_us(10);
+	local_delay_us(2*10);
 	return 0;
 }
 
@@ -2398,7 +2398,7 @@ int _tc358768_rd_lcd_regs(unsigned char type, char comd, int size, unsigned char
 
 	while (!(tc358768_rd_reg_16bits(0x0410) & 0x20)){
 		PRINTF("error 0x0410:%04x\n", tc358768_rd_reg_16bits(0x0410));
-		local_delay_ms(1);
+		local_delay_ms(2*1);
 		if(count++ > 10) {
 			break;
 		}
@@ -3068,7 +3068,7 @@ void comipfb_if_mipi_reset(struct comipfb_info *fbi)
 	for (i = 0; i < check_times; i++) {
 		if ((mipi_dsih_dphy_get_status(fbi) & stop_status) == stop_status)
 			break;
-		local_delay_us(5);
+		local_delay_us(2*5);
 	}
 
 //	mipi_dsih_hal_power(fbi, 0);
@@ -3703,7 +3703,7 @@ void tc358768_initialize(void)
 {
 	struct tc358768_drv_data * ddata = & dev0;
 
-	dev0.bitclk = 800000000uL;
+	dev0.bitclk = 55000000; //171484375uL;
 	if (toshiba_ddr_power_init())
 	{
 		PRINTF("TC358768 power init failure\n");
@@ -3719,7 +3719,7 @@ void tc358768_initialize(void)
 	const portholder_t TE = (1uL << 7);	// PC7 (TE) - panel pin 29 Sync signal from driver IC
 	const portholder_t OTP_PWR = (1uL << 7);	// PD7 (CTRL - OTP_PWR) - panel pin 30
 	arm_hardware_pioc_inputs(TE);
-	arm_hardware_piod_outputs(OTP_PWR, 0 * OTP_PWR);
+	arm_hardware_piod_outputs(OTP_PWR, 1 * OTP_PWR);
 	// active low
 	const portholder_t RESET = (1uL << 1);	// PD1 = RESX_18 - pin  28
 	arm_hardware_piod_outputs(RESET, 0 * RESET);
@@ -3740,7 +3740,7 @@ void tc358768_initialize(void)
 	const portholder_t Video_RST = (1uL << 10);	// PA10
 	const portholder_t Video_MODE = (1uL << 14);	// PF14: Video_MODE: 0: test, 1: normal
 
-	arm_hardware_piof_outputs(Video_MODE, 1 * Video_MODE);
+	arm_hardware_piof_outputs(Video_MODE, Video_MODE);
 	arm_hardware_pioa_outputs(Video_RST, 0 * Video_RST);
 	local_delay_ms(5);
 	arm_hardware_pioa_outputs(Video_RST, 1 * Video_RST);
@@ -3777,13 +3777,15 @@ void tc358768_initialize(void)
 	PRINTF("TC358778XBG: vact=%ld\n", tc358768_rd_reg_16bits(TC358768_DSI_VACT));
 	PRINTF("TC358778XBG: hact=%ld\n", tc358768_rd_reg_16bits(TC358768_DSI_HACT));
 #endif
+	tc358768_calc_pll(ddata);
+
+	tc358768_power_off(ddata);
+
+	tc358768_power_on(ddata);
 
 	PRINTF("TC358778XBG: Data Format Control Register=%08lX\n", tc358768_rd_reg_16bits(TC358768_DATAFMT));
 
 	PRINTF("TC358778XBG: Chip and Revision ID=%04lX\n", tc358768_rd_reg_16bits(TC358768_CHIPID));
-	tc358768_calc_pll(ddata);
-
-	tc358768_power_on(ddata);
 
 	//PRINTF("TC358778XBG: vact=%ld\n", tc358768_rd_reg_16bits(TC358768_DSI_VACT));
 	//PRINTF("TC358778XBG: hact=%ld\n", tc358768_rd_reg_16bits(TC358768_DSI_HACT));
@@ -3802,13 +3804,15 @@ void tc358768_initialize(void)
 
 	static uint8_t sleepout [] = { 0x11, 0x00, };
 	static uint8_t displon [] = { 0x29, 0x00, };
-	static uint8_t readid [] = { 0x29, 0x00, };
+	//static uint8_t readid [] = { 0x29, 0x00, };
 
 
-	local_delay_ms(200);
+	TP();
 	mipi_dsi_send_dcs_packet(sleepout, ARRAY_SIZE(sleepout));
 	local_delay_ms(200);
+	TP();
 	mipi_dsi_send_dcs_packet(displon, ARRAY_SIZE(displon));
+	TP();
 	local_delay_ms(200);
 
 	const uint8_t * pv = bigon;
@@ -3818,11 +3822,42 @@ void tc358768_initialize(void)
 		if (maxv == 0)
 			break;
 		mipi_dsi_send_dcs_packet(pv + 1, maxv + 1);
-		local_delay_ms(25);
+		local_delay_ms(100);
 		pv += maxv + 2;
+		PRINTF("e\n");
 	}
+	TP();
+	mipi_dsi_send_dcs_packet(sleepout, ARRAY_SIZE(sleepout));
+	local_delay_ms(200);
+	TP();
+	mipi_dsi_send_dcs_packet(displon, ARRAY_SIZE(displon));
+	TP();
+	local_delay_ms(200);
+
 	PRINTF("display on\n");
 
+#if 0
+//	To stop TC358768A/TC358778 (video):
+//	1 Set FrmStop to 1’b1, wait for at least one frame time for TC358768A to stop properly
+//	2 Clear PP_En to 1’b0
+//	3 Set RstPtr to 1’b1
+//	4 Stop Video to TC358768A (optional)
+	/* set FrmStop */
+	tc358768_update_bits(ddata, TC358768_PP_MISC, 1 << 15, 1 << 15);
+	/* wait at least for one frame */
+	local_delay_ms(50);
+	/* clear PP_en */
+	tc358768_update_bits(ddata, TC358768_CONFCTL, 1 << 6, 0);
+	/* set RstPtr */
+	tc358768_update_bits(ddata, TC358768_PP_MISC, 1 << 14, 1 << 14);
+
+
++++++++
+//	To re start TC358768A/TC358778 (video):
+//	1 Start Video to TC358768A
+//	2 Clear RstPtr and FrmStop
+	tc358768_update_bits(ddata, TC358768_PP_MISC, 1 << 14, 0);
+#endif
 }
 
 #endif /* LCDMODETX_TC358778XBG */
