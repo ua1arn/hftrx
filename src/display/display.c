@@ -1302,10 +1302,6 @@ void display_hardware_initialize(void)
 
 #endif /* WITHMDMAHW */
 
-#if LCDMODETX_TC358778XBG
-	tc358768_initialize();
-#endif /* LCDMODETX_TC358778XBG */
-
 #if WITHLTDCHW
 	// STM32xxx LCD-TFT Controller (LTDC)
 	// RENESAS Video Display Controller 5
@@ -1314,6 +1310,10 @@ void display_hardware_initialize(void)
 	arm_hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
 	arm_hardware_ltdc_L8_palette();
 #endif /* WITHLTDCHW */
+
+#if LCDMODETX_TC358778XBG
+	tc358768_initialize();
+#endif /* LCDMODETX_TC358778XBG */
 
 #if LCDMODE_HARD_SPI
 #elif LCDMODE_HARD_I2C

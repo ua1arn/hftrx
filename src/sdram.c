@@ -3390,7 +3390,7 @@ static void stm32mp1_ddr_init(struct ddr_info *priv,
 	}
 
 #if WITHSDRAM_PMC1
-	stpmic1_dump_regulators();
+	//stpmic1_dump_regulators();
 #endif /* WITHSDRAM_PMC1 */
 
 	VERBOSE("name = %s\n", config->info.name);
