@@ -1315,6 +1315,8 @@ void display_hardware_initialize(void)
 	tc358768_initialize();
 #endif /* LCDMODETX_TC358778XBG */
 
+	panel_initialize();
+
 #if LCDMODE_HARD_SPI
 #elif LCDMODE_HARD_I2C
 #elif LCDMODE_LTDC

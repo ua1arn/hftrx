@@ -1965,16 +1965,16 @@ struct tc358768_drv_data
 	unsigned fbd, prd, frs;
 	unsigned bitclk;
 
-	unsigned dsi_ndl;	// 4
-	unsigned dpi_ndl;	// 24
+	unsigned dsi_lanes;	// 4
+	unsigned pd_lines;	// 24
 	unsigned long refclk;
 };
 
 struct tc358768_drv_data dev0 =
 {
 		.refclk = 25000000uL,
-		.dpi_ndl = 24,
-		.dsi_ndl = 4
+		.pd_lines = 24,
+		.dsi_lanes = 4
 };
 
 static int tc358768_write(
@@ -2118,24 +2118,14 @@ static uint32_t local_max(uint32_t a, uint32_t b) { return a > b ? a : b; }
 static uint64_t div_u64(uint64_t a, uint64_t b) { return a / b; }
 
 
-static uint32_t tc358768_pll_to_pclk(struct tc358768_drv_data *ddata, uint32_t pll)
+static uint32_t tc358768_pll_to_pclk(struct tc358768_drv_data *priv, uint32_t pll_clk)
 {
-	uint32_t byteclk;
-
-	byteclk = pll / 2 / 4;
-
-	return (uint32_t)div_u64((uint64_t)byteclk * 8 * ddata->dsi_ndl,
-		ddata->dpi_ndl);
+	return (uint32_t)div_u64((uint64_t)pll_clk * priv->dsi_lanes, priv->pd_lines);
 }
 
-static uint32_t tc358768_pclk_to_pll(struct tc358768_drv_data *ddata, uint32_t pclk)
+static uint32_t tc358768_pclk_to_pll(struct tc358768_drv_data *priv, uint32_t pclk)
 {
-	uint32_t byteclk;
-
-	byteclk = (uint32_t)div_u64((uint64_t)pclk * ddata->dpi_ndl,
-		8 * ddata->dsi_ndl);
-
-	return byteclk * 4 * 2;
+	return (uint32_t)div_u64((uint64_t)pclk * priv->pd_lines, priv->dsi_lanes);
 }
 
 struct omap_video_timings
@@ -2164,7 +2154,7 @@ unsigned long clk_get_rate(unsigned long v) { return v; }
 static int tc358768_calc_pll(struct tc358768_drv_data *ddata)
 {
 	const struct omap_video_timings *t = & timings0;
-	const unsigned frs_limits[] = {
+	static const unsigned frs_limits[] = {
 		1000000000, 500000000, 250000000, 125000000, 62500000
 	};
 	unsigned fbd, prd, frs;
@@ -2324,7 +2314,7 @@ static void tc358768_power_on(struct tc358768_drv_data *ddata)
 
 	/* (hsw + hbp) * byteclk * ndl / pclk */
 	tc358768_write(ddata, TC358768_DSI_HSW,
-		(uint32_t)div_u64((t->hsw + t->hbp) * ((uint64_t)ddata->bitclk / 4) * ddata->dsi_ndl, t->pixelclock));
+		(uint32_t)div_u64((t->hsw + t->hbp) * ((uint64_t)ddata->bitclk / 4) * ddata->dsi_lanes, t->pixelclock));
 	/* hbp (not used in event mode) */
 	tc358768_write(ddata, TC358768_DSI_HBPR, 0);
 	/* hact (bytes) */
@@ -3952,6 +3942,10 @@ void tc358768_initialize(void)
 	PRINTF("TC358778XBG: TC358768_DSI_HBPR=%ld\n", tc358768_rd_reg_16bits(TC358768_DSI_HBPR));
 	PRINTF("TC358778XBG: TC358768_DSI_HACT=%ld\n", tc358768_rd_reg_16bits(TC358768_DSI_HACT));
 
+}
+
+void panel_initialize(void)
+{
 	tscinit();
 	tscid();
 	for (;0;)

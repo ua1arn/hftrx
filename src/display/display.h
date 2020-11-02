@@ -386,6 +386,7 @@ void display_set_contrast(uint_fast8_t v);
 void display_palette(void);				// Palette reload
 
 void tc358768_initialize(void);
+void panel_initialize(void);
 
 /* индивидуальные функции драйвера дисплея - реализованы в соответствующем из файлов */
 void display_clear(void);

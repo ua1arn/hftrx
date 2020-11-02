@@ -45,7 +45,7 @@
 
 #if WITHISBOOTLOADER
 
-	#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
+	//#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
 	//#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
 	//#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */
 	//#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
@@ -57,43 +57,44 @@
 	//#define WITHMDMAHW		1	/* Использование MDMA для формирования изображений */
 	//#define WITHGPUHW	1	/* Graphic processor unit */
 	//#define WITHEHCIHW	1	/* USB_EHCI controller */
-	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
+	#if 0
+		#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 
-	#define WITHUSBHW_DEVICE	USB_OTG_HS	/* на этом устройстве поддерживается функциональность DEVICE	*/
-	#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод OTG_VBUS */
-	#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
-	//#define WITHUSBDEV_HIGHSPEEDULPI	1
-	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USBH_HS_DP & USBH_HS_DM
-	//#define WITHUSBDEV_DMAENABLE 1
+		#define WITHUSBHW_DEVICE	USB_OTG_HS	/* на этом устройстве поддерживается функциональность DEVICE	*/
+		#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод OTG_VBUS */
+		#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
+		//#define WITHUSBDEV_HIGHSPEEDULPI	1
+		#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USBH_HS_DP & USBH_HS_DM
+		//#define WITHUSBDEV_DMAENABLE 1
 
-	/* For H7 exist: Legacy defines */
-	//#define USB_OTG_HS                   USB1_OTG_HS
-	//#define USB_OTG_FS                   USB2_OTG_FS
+		/* For H7 exist: Legacy defines */
+		//#define USB_OTG_HS                   USB1_OTG_HS
+		//#define USB_OTG_FS                   USB2_OTG_FS
 
-	//#define WITHUSBHW_HOST		USB_OTG_HS
-	#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB_DP2 & USB_DM2
-	//#define WITHUSBHOST_DMAENABLE 1
+		//#define WITHUSBHW_HOST		USB_OTG_HS
+		#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB_DP2 & USB_DM2
+		//#define WITHUSBHOST_DMAENABLE 1
 
 
-	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
-	#define WITHMODEM_CDC	1
+		#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
+		#define WITHMODEM_CDC	1
 
-	//#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
-	//#define WITHUSBUACIN2		1	/* формируются три канала передачи звука */
-	//#define WITHUABUACOUTAUDIO48MONO	1	/* для уменьшения размера буферов в endpoints */
+		//#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
+		//#define WITHUSBUACIN2		1	/* формируются три канала передачи звука */
+		//#define WITHUABUACOUTAUDIO48MONO	1	/* для уменьшения размера буферов в endpoints */
 
-	//#define WITHUSBCDCACM		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
-	//#define WITHUSBCDCACM_N	1	/* количество виртуальных последовательных портов */
-	//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
-	#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
-	#define WITHMOVEDFU 1	// Переместить интерфейс DFU в область меньших номеров. Утилита dfu-util 0.9 не работает с DFU на интерфейсе с индексом 10
-	#define WITHUSBWCID	1
+		//#define WITHUSBCDCACM		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
+		//#define WITHUSBCDCACM_N	1	/* количество виртуальных последовательных портов */
+		//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
+		#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
+		#define WITHMOVEDFU 1	// Переместить интерфейс DFU в область меньших номеров. Утилита dfu-util 0.9 не работает с DFU на интерфейсе с индексом 10
+		#define WITHUSBWCID	1
 
-	//#define WITHLWIP 1
-	//#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
-	//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
-	//#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
-
+		//#define WITHLWIP 1
+		//#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
+		//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
+		//#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
+	#endif
 #else /* WITHISBOOTLOADER */
 
 	//#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
@@ -780,10 +781,11 @@
 		} while (0)
 #endif /* WITHCPUADCHW */
 
-#if WITHUSBHW
 	#define TARGET_USBFS_VBUSON_PORT_C(v)	do { GPIOD->BSRR = BSRR_C(v); __DSB(); } while (0)
 	#define TARGET_USBFS_VBUSON_PORT_S(v)	do { GPIOD->BSRR = BSRR_S(v); __DSB(); } while (0)
-	#define TARGET_USBFS_VBUSON_BIT (1uL << 2)	// PD2 - нулём включение питания для device
+	#define TARGET_USBFS_VBUSON_BIT 0//(1uL << 2)	// PD2 - нулём включение питания для device
+
+#if WITHUSBHW
 	/**USB_OTG_FS GPIO Configuration    
 	PA9     ------> USB_OTG_FS_VBUS
 	PA10     ------> USB_OTG_FS_ID
@@ -813,6 +815,11 @@
 
 	#define	USBD_HS_ULPI_INITIALIZE() do { \
 		} while (0)
+#else /* WITHUSBHW */
+	#define	USBD_FS_INITIALIZE() do { \
+		arm_hardware_piod_outputs(TARGET_USBFS_VBUSON_BIT, TARGET_USBFS_VBUSON_BIT); /* PD2 */ \
+		} while (0)
+
 #endif /* WITHUSBHW */
 
 #if WITHDCDCFREQCTL
