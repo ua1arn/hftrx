@@ -1980,7 +1980,7 @@ struct tc358768_drv_data dev0 =
 static int tc358768_write(
 	struct tc358768_drv_data *ddata,
 	unsigned int reg,
-	unsigned int val
+	unsigned long val
 	)
 {
 	const unsigned i2caddr = TC358768_I2C_ADDR;
@@ -2015,7 +2015,7 @@ static int tc358768_write(
 static int tc358768_read(
 	struct tc358768_drv_data *ddata,
 	unsigned int reg,
-	unsigned int * val
+	unsigned long * val
 	)
 {
 	const unsigned i2caddr = TC358768_I2C_ADDR;
@@ -2068,7 +2068,7 @@ static int tc358768_update_bits(struct tc358768_drv_data *ddata,
 	unsigned int reg, unsigned int mask, unsigned int val)
 {
 	int ret;
-	unsigned int tmp, orig;
+	unsigned long tmp, orig;
 
 	ret = tc358768_read(ddata, reg, &orig);
 	if (ret != 0)
@@ -2221,6 +2221,12 @@ static int tc358768_calc_pll(struct tc358768_drv_data *ddata)
 		return -(1);
 	}
 
+//	best_prd = 17; //9;
+//	frs = 3;
+//	best_fbd = 200;
+//	uint32_t divisor = (best_prd + 1) * (1 << frs);
+//	best_pll = (uint32_t)div_u64((uint64_t)refclk * (best_fbd + 1), divisor);
+//
 	ddata->fbd = best_fbd;
 	ddata->prd = best_prd;
 	ddata->frs = frs;
@@ -2314,7 +2320,8 @@ static void tc358768_power_on(struct tc358768_drv_data *ddata)
 
 	/* (hsw + hbp) * byteclk * ndl / pclk */
 	tc358768_write(ddata, TC358768_DSI_HSW,
-		(uint32_t)div_u64((t->hsw + t->hbp) * ((uint64_t)ddata->bitclk / 4) * ddata->dsi_lanes, t->pixelclock));
+		(uint32_t) div_u64((t->hsw + t->hbp) * ((uint64_t) ddata->bitclk / 4) * ddata->dsi_lanes, t->pixelclock));
+
 	/* hbp (not used in event mode) */
 	tc358768_write(ddata, TC358768_DSI_HBPR, 0);
 	/* hact (bytes) */
