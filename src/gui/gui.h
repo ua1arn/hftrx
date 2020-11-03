@@ -7,13 +7,12 @@
 
 #if (DIM_X < 800 || DIM_Y < 480) && WITHTOUCHGUI		// не соблюдены минимальные требования к разрешению экрана
 	#undef WITHTOUCHGUI									// для функционирования touch GUI
-#else
-	#define WITHGUIMAXX			800						// при разрешении больше чем 800х480 интерфейс будет сжат до 800х480.
-	#define WITHGUIMAXY			480
 #endif
 
 #if WITHTOUCHGUI
 
+#define WITHGUIMAXX				800						// при разрешении больше чем 800х480 интерфейс будет сжат до 800х480.
+#define WITHGUIMAXY				480
 #define FOOTER_HEIGHT			50						// высота нижнего ряда кнопок
 #define FORMATFROMLIBRARY 		1
 

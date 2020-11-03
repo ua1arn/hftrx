@@ -37,8 +37,6 @@ enum {
 	WINDOWS_COUNT
 };
 
-#endif /* WITHTOUCHGUI */
-
 enum {
 	MENU_OFF,
 	MENU_GROUPS,
@@ -77,4 +75,5 @@ typedef struct {
 	int8_t change;
 } bp_var_t;
 
+#endif /* WITHTOUCHGUI */
 #endif /* GUI_USER_H_INCLUDED */
