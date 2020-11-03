@@ -37,7 +37,7 @@ enum {
 	WINDOWS_COUNT
 };
 
-#endif
+#endif /* WITHTOUCHGUI */
 
 enum {
 	MENU_OFF,

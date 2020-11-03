@@ -7,11 +7,11 @@
 
 #include "src/gui/gui_settings.h"
 
-#define IS_BUTTON_PRESS			type == TYPE_BUTTON && action == PRESSED
-#define IS_BUTTON_LONG_PRESS	type == TYPE_BUTTON && action == LONG_PRESSED
-#define IS_SLIDER_MOVE			type == TYPE_SLIDER && action == PRESSED
-#define IS_LABEL_PRESS			type == TYPE_LABEL && action == PRESSED
-#define IS_LABEL_MOVE			type == TYPE_LABEL && action == MOVING
+#define IS_BUTTON_PRESS			(type == TYPE_BUTTON && action == PRESSED)
+#define IS_BUTTON_LONG_PRESS	(type == TYPE_BUTTON && action == LONG_PRESSED)
+#define IS_SLIDER_MOVE			(type == TYPE_SLIDER && action == PRESSED)
+#define IS_LABEL_PRESS			(type == TYPE_LABEL && action == PRESSED)
+#define IS_LABEL_MOVE			(type == TYPE_LABEL && action == MOVING)
 
 typedef enum {
 	TYPE_DUMMY,
@@ -136,10 +136,10 @@ typedef struct {
 } slider_t;
 
 typedef enum {
-	ALIGN_LEFT_X 	= WITHGUIMAXX >> 2,					// вертикальное выравнивание по центру левой половины экрана
-	ALIGN_CENTER_X 	= WITHGUIMAXX >> 1,					// вертикальное выравнивание по центру экрана
+	ALIGN_LEFT_X 	= WITHGUIMAXX / 4,					// вертикальное выравнивание по центру левой половины экрана
+	ALIGN_CENTER_X 	= WITHGUIMAXX / 2,					// вертикальное выравнивание по центру экрана
 	ALIGN_RIGHT_X 	= ALIGN_LEFT_X + ALIGN_CENTER_X,	// вертикальное выравнивание по центру правой половины экрана
-	ALIGN_Y 		= WITHGUIMAXY >> 1					// горизонтальное выравнивание всегда по центру экрана
+	ALIGN_Y 		= WITHGUIMAXY / 2					// горизонтальное выравнивание всегда по центру экрана
 } window_align_t;
 
 enum {
