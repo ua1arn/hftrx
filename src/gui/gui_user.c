@@ -21,7 +21,7 @@
 
 #include "src/gui/gui.h"
 
-#if WITHTOUCHGUI && WITHGUISTYLE_COMMON		// версия GUI для разрешения 800х480
+#if WITHTOUCHGUI
 
 #include "src/gui/gui_user.h"
 #include "src/gui/gui_system.h"
@@ -3702,4 +3702,4 @@ void gui_open_sys_menu(void)
 
 // *********************************************************************************************************************************************************************
 
-#endif /* WITHTOUCHGUI && ! WITHGUISTYLE_MINI */
+#endif /* WITHTOUCHGUI */

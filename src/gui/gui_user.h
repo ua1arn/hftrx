@@ -10,16 +10,6 @@
 
 void gui_user_actions_after_close_window(void);
 
-#if WITHGUISTYLE_MINI
-
-enum {
-	WINDOW_MAIN,
-
-	WINDOWS_COUNT
-};
-
-#elif WITHGUISTYLE_COMMON
-
 enum {
 	WINDOW_MAIN,					// постоянно отображаемые кнопки внизу экрана
 	WINDOW_MODES,					// переключение режимов работы, видов модуляции
@@ -49,17 +39,12 @@ enum {
 
 #endif
 
-typedef struct {
-	uint8_t press;			// короткое нажание
-	uint8_t hold;			// длинное нажатие
-	uint8_t press_done;		// событие нажатия от энкодера обработано, можно получать новые данные
-} enc2_t;
-
 enum {
 	MENU_OFF,
 	MENU_GROUPS,
 	MENU_PARAMS,
 	MENU_VALS,
+
 	MENU_COUNT
 };
 
@@ -92,5 +77,4 @@ typedef struct {
 	int8_t change;
 } bp_var_t;
 
-#endif /* WITHTOUCHGUI */
 #endif /* GUI_USER_H_INCLUDED */
