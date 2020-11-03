@@ -2154,7 +2154,7 @@ unsigned long clk_get_rate(unsigned long v) { return v; }
 static int tc358768_calc_pll(struct tc358768_drv_data *ddata)
 {
 	const struct omap_video_timings *t = & timings0;
-	static const unsigned frs_limits[] = {
+	static const unsigned long frs_limits[] = {
 		1000000000, 500000000, 250000000, 125000000, 62500000
 	};
 	unsigned fbd, prd, frs;
