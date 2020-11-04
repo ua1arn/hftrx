@@ -45,7 +45,7 @@
 
 #if WITHISBOOTLOADER
 
-	#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
+	//#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
 	//#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
 	//#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */
 	//#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
@@ -57,43 +57,44 @@
 	//#define WITHMDMAHW		1	/* Использование MDMA для формирования изображений */
 	//#define WITHGPUHW	1	/* Graphic processor unit */
 	//#define WITHEHCIHW	1	/* USB_EHCI controller */
-	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
+	#if 0
+		#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 
-	#define WITHUSBHW_DEVICE	USB_OTG_HS	/* на этом устройстве поддерживается функциональность DEVICE	*/
-	#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод OTG_VBUS */
-	#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
-	//#define WITHUSBDEV_HIGHSPEEDULPI	1
-	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USBH_HS_DP & USBH_HS_DM
-	//#define WITHUSBDEV_DMAENABLE 1
+		#define WITHUSBHW_DEVICE	USB_OTG_HS	/* на этом устройстве поддерживается функциональность DEVICE	*/
+		#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод OTG_VBUS */
+		#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
+		//#define WITHUSBDEV_HIGHSPEEDULPI	1
+		#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USBH_HS_DP & USBH_HS_DM
+		//#define WITHUSBDEV_DMAENABLE 1
 
-	/* For H7 exist: Legacy defines */
-	//#define USB_OTG_HS                   USB1_OTG_HS
-	//#define USB_OTG_FS                   USB2_OTG_FS
+		/* For H7 exist: Legacy defines */
+		//#define USB_OTG_HS                   USB1_OTG_HS
+		//#define USB_OTG_FS                   USB2_OTG_FS
 
-	//#define WITHUSBHW_HOST		USB_OTG_HS
-	#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB_DP2 & USB_DM2
-	//#define WITHUSBHOST_DMAENABLE 1
+		//#define WITHUSBHW_HOST		USB_OTG_HS
+		#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB_DP2 & USB_DM2
+		//#define WITHUSBHOST_DMAENABLE 1
 
 
-	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
-	#define WITHMODEM_CDC	1
+		#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
+		#define WITHMODEM_CDC	1
 
-	//#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
-	//#define WITHUSBUACIN2		1	/* формируются три канала передачи звука */
-	//#define WITHUABUACOUTAUDIO48MONO	1	/* для уменьшения размера буферов в endpoints */
+		//#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
+		//#define WITHUSBUACIN2		1	/* формируются три канала передачи звука */
+		//#define WITHUABUACOUTAUDIO48MONO	1	/* для уменьшения размера буферов в endpoints */
 
-	//#define WITHUSBCDCACM		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
-	//#define WITHUSBCDCACM_N	1	/* количество виртуальных последовательных портов */
-	//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
-	#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
-	#define WITHMOVEDFU 1	// Переместить интерфейс DFU в область меньших номеров. Утилита dfu-util 0.9 не работает с DFU на интерфейсе с индексом 10
-	#define WITHUSBWCID	1
+		//#define WITHUSBCDCACM		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
+		//#define WITHUSBCDCACM_N	1	/* количество виртуальных последовательных портов */
+		//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
+		#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
+		#define WITHMOVEDFU 1	// Переместить интерфейс DFU в область меньших номеров. Утилита dfu-util 0.9 не работает с DFU на интерфейсе с индексом 10
+		#define WITHUSBWCID	1
 
-	//#define WITHLWIP 1
-	//#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
-	//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
-	//#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
-
+		//#define WITHLWIP 1
+		//#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
+		//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
+		//#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
+	#endif
 #else /* WITHISBOOTLOADER */
 
 	//#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
@@ -780,10 +781,11 @@
 		} while (0)
 #endif /* WITHCPUADCHW */
 
-#if WITHUSBHW
 	#define TARGET_USBFS_VBUSON_PORT_C(v)	do { GPIOD->BSRR = BSRR_C(v); __DSB(); } while (0)
 	#define TARGET_USBFS_VBUSON_PORT_S(v)	do { GPIOD->BSRR = BSRR_S(v); __DSB(); } while (0)
-	#define TARGET_USBFS_VBUSON_BIT (1uL << 2)	// PD2 - нулём включение питания для device
+	#define TARGET_USBFS_VBUSON_BIT 0//(1uL << 2)	// PD2 - нулём включение питания для device
+
+#if WITHUSBHW
 	/**USB_OTG_FS GPIO Configuration    
 	PA9     ------> USB_OTG_FS_VBUS
 	PA10     ------> USB_OTG_FS_ID
@@ -813,6 +815,11 @@
 
 	#define	USBD_HS_ULPI_INITIALIZE() do { \
 		} while (0)
+#else /* WITHUSBHW */
+	#define	USBD_FS_INITIALIZE() do { \
+		arm_hardware_piod_outputs(TARGET_USBFS_VBUSON_BIT, TARGET_USBFS_VBUSON_BIT); /* PD2 */ \
+		} while (0)
+
 #endif /* WITHUSBHW */
 
 #if WITHDCDCFREQCTL
@@ -919,6 +926,33 @@
 		arm_hardware_pioa_altfn50((1U << 3), GPIO_AF_LTDC14);		/* PA3 LTDC_B5 */ \
 		arm_hardware_piob_altfn50((1U << 8), GPIO_AF_LTDC14);		/* PB8 LTDC_B6 */ \
 		arm_hardware_piod_altfn50((1U << 8), GPIO_AF_LTDC14);		/* PD8 LTDC_B7 */ \
+		/* RED */ \
+		arm_hardware_pioh_outputs((1U << 2), 1 * 0xFFFF);		/* PH2 LTDC_R0 */ \
+		arm_hardware_pioh_outputs((1U << 3), 1 * 0xFFFF);		/* PH3 LTDC_R1 */ \
+		arm_hardware_pioh_outputs((1U << 8), 1 * 0xFFFF);		/* PH8 LTDC_R2 */ \
+		arm_hardware_pioh_outputs((1U << 9), 1 * 0xFFFF);		/* PH9 LTDC_R3 */ \
+		arm_hardware_pioh_outputs((1U << 10), 1 * 0xFFFF);		/* PH10 LTDC_R4 */ \
+		arm_hardware_pioc_outputs((1U << 0), 1 * 0xFFFF);		/* PC0 LTDC_R5 */ \
+		arm_hardware_pioh_outputs((1U << 12), 1 * 0xFFFF);		/* PH12 LTDC_R6 */ \
+		arm_hardware_pioe_outputs((1U << 15), 1 * 0xFFFF);		/* PE15 LTDC_R7 */ \
+		/* GREEN */ \
+		arm_hardware_pioe_outputs((1U << 5), 1 * 0xFFFF);		/* PE5 LTDC_G0 */ \
+		arm_hardware_pioe_outputs((1U << 6), 1 * 0xFFFF);		/* PE6 LTDC_G1 */ \
+		arm_hardware_pioh_outputs((1U << 13), 1 * 0xFFFF);		/* PH13 LTDC_G2 */ \
+		arm_hardware_pioh_outputs((1U << 14), 1 * 0xFFFF);		/* PH14 LTDC_G3 */ \
+		arm_hardware_pioh_outputs((1U << 15), 1 * 0xFFFF);		/* PH15 LTDC_G4 */ \
+		arm_hardware_pioi_outputs((1U << 0), 1 * 0xFFFF);		/* PI0 LTDC_G5 */ \
+		arm_hardware_pioi_outputs((1U << 1), 1 * 0xFFFF);		/* PI1 LTDC_G6 */ \
+		arm_hardware_pioi_outputs((1U << 2), 1 * 0xFFFF);		/* PI2 LTDC_G7 */ \
+		/* BLUE */ \
+		arm_hardware_piod_outputs((1U << 9), 1 * 0xFFFF);		/* PD9 LTDC_B0 */ \
+		arm_hardware_piog_outputs((1U << 12), 1 * 0xFFFF);		/* PG12 LTDC_B1 */ \
+		arm_hardware_piog_outputs((1U << 10), 1 * 0xFFFF);		/* PG10 LTDC_B2 */ \
+		arm_hardware_piod_outputs((1U << 10), 1 * 0xFFFF);		/* PD10 LTDC_B3 */ \
+		arm_hardware_pioi_outputs((1U << 4), 1 * 0xFFFF);		/* PI4 LTDC_B4 */ \
+		arm_hardware_pioa_outputs((1U << 3), 1 * 0xFFFF);		/* PA3 LTDC_B5 */ \
+		arm_hardware_piob_outputs((1U << 8), 1 * 0xFFFF);		/* PB8 LTDC_B6 */ \
+		arm_hardware_piod_outputs((1U << 8), 1 * 0xFFFF);		/* PD8 LTDC_B7 */ \
 	} while (0)
 
 	/* управление состоянием сигнала DISP панели */

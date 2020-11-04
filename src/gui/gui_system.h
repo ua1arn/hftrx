@@ -28,7 +28,7 @@ uint_fast8_t get_element_index(window_t * win, element_type_t type, void * eh);
 void get_gui_tracking(int_fast8_t * x, int_fast8_t * y);
 
 uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...);
-wm_message_t get_from_wm_queue(window_t * win, ...);
+wm_message_t get_from_wm_queue(window_t * win, uint_fast8_t * type, uintptr_t * ptr, int_fast8_t * action);
 
 #endif /* WITHTOUCHGUI */
 #endif /* GUI_USER_H_INCLUDED */

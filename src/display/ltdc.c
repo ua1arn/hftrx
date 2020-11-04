@@ -1794,40 +1794,196 @@ uint_fast32_t display_getdotclock(void)
 #define TC358768_DSI_HACT		0x062C
 
 
+/* MIPI DSI Processor-to-Peripheral transaction types */
+enum {
+	MIPI_DSI_V_SYNC_START				= 0x01,
+	MIPI_DSI_V_SYNC_END				= 0x11,
+	MIPI_DSI_H_SYNC_START				= 0x21,
+	MIPI_DSI_H_SYNC_END				= 0x31,
+
+	MIPI_DSI_COLOR_MODE_OFF				= 0x02,
+	MIPI_DSI_COLOR_MODE_ON				= 0x12,
+	MIPI_DSI_SHUTDOWN_PERIPHERAL			= 0x22,
+	MIPI_DSI_TURN_ON_PERIPHERAL			= 0x32,
+
+	MIPI_DSI_GENERIC_SHORT_WRITE_0_PARAM		= 0x03,
+	MIPI_DSI_GENERIC_SHORT_WRITE_1_PARAM		= 0x13,
+	MIPI_DSI_GENERIC_SHORT_WRITE_2_PARAM		= 0x23,
+
+	MIPI_DSI_GENERIC_READ_REQUEST_0_PARAM		= 0x04,
+	MIPI_DSI_GENERIC_READ_REQUEST_1_PARAM		= 0x14,
+	MIPI_DSI_GENERIC_READ_REQUEST_2_PARAM		= 0x24,
+
+	MIPI_DSI_DCS_SHORT_WRITE			= 0x05,
+	MIPI_DSI_DCS_SHORT_WRITE_PARAM			= 0x15,
+
+	MIPI_DSI_DCS_READ				= 0x06,
+
+	MIPI_DSI_DCS_COMPRESSION_MODE                   = 0x07,
+	MIPI_DSI_PPS_LONG_WRITE                         = 0x0A,
+
+	MIPI_DSI_SET_MAXIMUM_RETURN_PACKET_SIZE		= 0x37,
+
+	MIPI_DSI_END_OF_TRANSMISSION			= 0x08,
+
+	MIPI_DSI_NULL_PACKET				= 0x09,
+	MIPI_DSI_BLANKING_PACKET			= 0x19,
+	MIPI_DSI_GENERIC_LONG_WRITE			= 0x29,
+	MIPI_DSI_DCS_LONG_WRITE				= 0x39,
+
+	MIPI_DSI_LOOSELY_PACKED_PIXEL_STREAM_YCBCR20	= 0x0c,
+	MIPI_DSI_PACKED_PIXEL_STREAM_YCBCR24		= 0x1c,
+	MIPI_DSI_PACKED_PIXEL_STREAM_YCBCR16		= 0x2c,
+
+	MIPI_DSI_PACKED_PIXEL_STREAM_30			= 0x0d,
+	MIPI_DSI_PACKED_PIXEL_STREAM_36			= 0x1d,
+	MIPI_DSI_PACKED_PIXEL_STREAM_YCBCR12		= 0x3d,
+
+	MIPI_DSI_PACKED_PIXEL_STREAM_16			= 0x0e,
+	MIPI_DSI_PACKED_PIXEL_STREAM_18			= 0x1e,
+	MIPI_DSI_PIXEL_STREAM_3BYTE_18			= 0x2e,
+	MIPI_DSI_PACKED_PIXEL_STREAM_24			= 0x3e,
+};
+
+/* MIPI DSI Peripheral-to-Processor transaction types */
+enum {
+	MIPI_DSI_RX_ACKNOWLEDGE_AND_ERROR_REPORT	= 0x02,
+	MIPI_DSI_RX_END_OF_TRANSMISSION			= 0x08,
+	MIPI_DSI_RX_GENERIC_SHORT_READ_RESPONSE_1BYTE	= 0x11,
+	MIPI_DSI_RX_GENERIC_SHORT_READ_RESPONSE_2BYTE	= 0x12,
+	MIPI_DSI_RX_GENERIC_LONG_READ_RESPONSE		= 0x1a,
+	MIPI_DSI_RX_DCS_LONG_READ_RESPONSE		= 0x1c,
+	MIPI_DSI_RX_DCS_SHORT_READ_RESPONSE_1BYTE	= 0x21,
+	MIPI_DSI_RX_DCS_SHORT_READ_RESPONSE_2BYTE	= 0x22,
+};
+
+/* MIPI DCS commands */
+enum {
+	MIPI_DCS_NOP			= 0x00,
+	MIPI_DCS_SOFT_RESET		= 0x01,
+	MIPI_DCS_GET_DISPLAY_ID		= 0x04,
+	MIPI_DCS_GET_RED_CHANNEL	= 0x06,
+	MIPI_DCS_GET_GREEN_CHANNEL	= 0x07,
+	MIPI_DCS_GET_BLUE_CHANNEL	= 0x08,
+	MIPI_DCS_GET_DISPLAY_STATUS	= 0x09,
+	MIPI_DCS_GET_POWER_MODE		= 0x0A,
+	MIPI_DCS_GET_ADDRESS_MODE	= 0x0B,
+	MIPI_DCS_GET_PIXEL_FORMAT	= 0x0C,
+	MIPI_DCS_GET_DISPLAY_MODE	= 0x0D,
+	MIPI_DCS_GET_SIGNAL_MODE	= 0x0E,
+	MIPI_DCS_GET_DIAGNOSTIC_RESULT	= 0x0F,
+	MIPI_DCS_ENTER_SLEEP_MODE	= 0x10,
+	MIPI_DCS_EXIT_SLEEP_MODE	= 0x11,
+	MIPI_DCS_ENTER_PARTIAL_MODE	= 0x12,
+	MIPI_DCS_ENTER_NORMAL_MODE	= 0x13,
+	MIPI_DCS_EXIT_INVERT_MODE	= 0x20,
+	MIPI_DCS_ENTER_INVERT_MODE	= 0x21,
+	MIPI_DCS_SET_GAMMA_CURVE	= 0x26,
+	MIPI_DCS_SET_DISPLAY_OFF	= 0x28,
+	MIPI_DCS_SET_DISPLAY_ON		= 0x29,
+	MIPI_DCS_SET_COLUMN_ADDRESS	= 0x2A,
+	MIPI_DCS_SET_PAGE_ADDRESS	= 0x2B,
+	MIPI_DCS_WRITE_MEMORY_START	= 0x2C,
+	MIPI_DCS_WRITE_LUT		= 0x2D,
+	MIPI_DCS_READ_MEMORY_START	= 0x2E,
+	MIPI_DCS_SET_PARTIAL_AREA	= 0x30,
+	MIPI_DCS_SET_SCROLL_AREA	= 0x33,
+	MIPI_DCS_SET_TEAR_OFF		= 0x34,
+	MIPI_DCS_SET_TEAR_ON		= 0x35,
+	MIPI_DCS_SET_ADDRESS_MODE	= 0x36,
+	MIPI_DCS_SET_SCROLL_START	= 0x37,
+	MIPI_DCS_EXIT_IDLE_MODE		= 0x38,
+	MIPI_DCS_ENTER_IDLE_MODE	= 0x39,
+	MIPI_DCS_SET_PIXEL_FORMAT	= 0x3A,
+	MIPI_DCS_WRITE_MEMORY_CONTINUE	= 0x3C,
+	MIPI_DCS_READ_MEMORY_CONTINUE	= 0x3E,
+	MIPI_DCS_SET_TEAR_SCANLINE	= 0x44,
+	MIPI_DCS_GET_SCANLINE		= 0x45,
+	MIPI_DCS_SET_DISPLAY_BRIGHTNESS = 0x51,		/* MIPI DCS 1.3 */
+	MIPI_DCS_GET_DISPLAY_BRIGHTNESS = 0x52,		/* MIPI DCS 1.3 */
+	MIPI_DCS_WRITE_CONTROL_DISPLAY  = 0x53,		/* MIPI DCS 1.3 */
+	MIPI_DCS_GET_CONTROL_DISPLAY	= 0x54,		/* MIPI DCS 1.3 */
+	MIPI_DCS_WRITE_POWER_SAVE	= 0x55,		/* MIPI DCS 1.3 */
+	MIPI_DCS_GET_POWER_SAVE		= 0x56,		/* MIPI DCS 1.3 */
+	MIPI_DCS_SET_CABC_MIN_BRIGHTNESS = 0x5E,	/* MIPI DCS 1.3 */
+	MIPI_DCS_GET_CABC_MIN_BRIGHTNESS = 0x5F,	/* MIPI DCS 1.3 */
+	MIPI_DCS_READ_DDB_START		= 0xA1,
+	MIPI_DCS_READ_DDB_CONTINUE	= 0xA8,
+};
+
+/* MIPI DCS pixel formats */
+#define MIPI_DCS_PIXEL_FMT_24BIT	7
+#define MIPI_DCS_PIXEL_FMT_18BIT	6
+#define MIPI_DCS_PIXEL_FMT_16BIT	5
+#define MIPI_DCS_PIXEL_FMT_12BIT	3
+#define MIPI_DCS_PIXEL_FMT_8BIT		2
+#define MIPI_DCS_PIXEL_FMT_3BIT		1
+
+
 #define TC358768_I2C_ADDR (0x0E * 2)
 
 unsigned long
-tc358768_rd_reg_16bits(unsigned register_id)
+tc358768_rd_reg_16or32bits(unsigned register_id)
 {
 	const unsigned i2caddr = TC358768_I2C_ADDR;
 
-	uint8_t v1, v2, v3, v4;
+	const int v16bit = (register_id < 0x100 || register_id >= 0x600);
 
-	i2c_start(i2caddr | 0x00);
-	i2c_write(register_id >> 8);
-	i2c_write_withrestart(register_id >> 0);
-	i2c_start(i2caddr | 0x01);
-	i2c_read(& v1, I2C_READ_ACK_1);	// ||
-	i2c_read(& v2, I2C_READ_ACK);	// ||
-	i2c_read(& v3, I2C_READ_ACK);	// ||
-	i2c_read(& v4, I2C_READ_NACK);	// ||
+	if (v16bit)
+	{
+		uint8_t v1, v2;
 
-	return
-			(((unsigned long) v1) << 8) |
-			(((unsigned long) v2) << 0) |
-			0;
+		i2c_start(i2caddr | 0x00);
+		i2c_write(register_id >> 8);
+		i2c_write_withrestart(register_id >> 0);
+		i2c_start(i2caddr | 0x01);
+		i2c_read(& v1, I2C_READ_ACK_1);	// ||
+		i2c_read(& v2, I2C_READ_NACK);	// ||
+
+		return
+				(((unsigned long) v1) << 8) |
+				(((unsigned long) v2) << 0) |
+				0;
+	}
+	else
+	{
+		uint8_t v1, v2, v3, v4;
+
+		i2c_start(i2caddr | 0x00);
+		i2c_write(register_id >> 8);
+		i2c_write_withrestart(register_id >> 0);
+		i2c_start(i2caddr | 0x01);
+		i2c_read(& v1, I2C_READ_ACK_1);	// ||
+		i2c_read(& v2, I2C_READ_ACK);	// ||
+		i2c_read(& v3, I2C_READ_ACK);	// ||
+		i2c_read(& v4, I2C_READ_NACK);	// ||
+
+		return
+				(((unsigned long) v1) << 8) |
+				(((unsigned long) v2) << 0) |
+				(((unsigned long) v3) << 24) |
+				(((unsigned long) v4) << 16) |
+				0;
+	}
 }
 
 void
-tc358768_wr_reg_32bits(unsigned long value)
+tc358768_wr_reg_16bits(unsigned long value)
 {
 	const unsigned i2caddr = TC358768_I2C_ADDR;
+	const unsigned register_id = value >> 16;
+	const int v16bit = (register_id < 0x100 || register_id >= 0x600);
 
 	i2c_start(i2caddr | 0x00);
-	i2c_write(value >> 24);		// addres hi
-	i2c_write(value >> 16);		// addres lo
+	i2c_write(register_id >> 8);		// addres hi
+	i2c_write(register_id >> 0);		// addres lo
 	i2c_write(value >> 8);		// data hi
 	i2c_write(value >> 0);		// data lo
+	if (v16bit)
+	{
+		i2c_write(0x00);
+		i2c_write(0x00);
+	}
 	i2c_waitsend();
     i2c_stop();
 }
@@ -1838,14 +1994,23 @@ struct tc358768_drv_data
 	int dev;
 	unsigned fbd, prd, frs;
 	unsigned bitclk;
+
+	unsigned dsi_lanes;	// 4
+	unsigned pd_lines;	// 24
+	unsigned long refclk;
 };
 
-struct tc358768_drv_data dev0;
+struct tc358768_drv_data dev0 =
+{
+		.refclk = 25000000uL,
+		.pd_lines = 24,
+		.dsi_lanes = 4
+};
 
 static int tc358768_write(
 	struct tc358768_drv_data *ddata,
 	unsigned int reg,
-	unsigned int val
+	unsigned long val
 	)
 {
 	const unsigned i2caddr = TC358768_I2C_ADDR;
@@ -1856,8 +2021,8 @@ static int tc358768_write(
 		i2c_start(i2caddr | 0x00);
 		i2c_write(reg >> 8);		// addres hi
 		i2c_write(reg >> 0);		// addres lo
-		i2c_write(val >> 8);		// data hi
-		i2c_write(val >> 0);		// data lo
+		i2c_write(val >> 8);		// data 15..8
+		i2c_write(val >> 0);		// data 7..0
 		i2c_waitsend();
 	    i2c_stop();
 	}
@@ -1867,8 +2032,10 @@ static int tc358768_write(
 		i2c_start(i2caddr | 0x00);
 		i2c_write(reg >> 8);		// addres hi
 		i2c_write(reg >> 0);		// addres lo
-		i2c_write(val >> 24);		// data hi
-		i2c_write(val >> 16);		// data lo
+		i2c_write(val >> 8);		// data 15..8
+		i2c_write(val >> 0);		// data 7..0
+		i2c_write(val >> 24);		// data 31..24
+		i2c_write(val >> 16);		// data 23..16
 		i2c_waitsend();
 	    i2c_stop();
 	}
@@ -1878,7 +2045,7 @@ static int tc358768_write(
 static int tc358768_read(
 	struct tc358768_drv_data *ddata,
 	unsigned int reg,
-	unsigned int * val
+	unsigned long * val
 	)
 {
 	const unsigned i2caddr = TC358768_I2C_ADDR;
@@ -1931,7 +2098,7 @@ static int tc358768_update_bits(struct tc358768_drv_data *ddata,
 	unsigned int reg, unsigned int mask, unsigned int val)
 {
 	int ret;
-	unsigned int tmp, orig;
+	unsigned long tmp, orig;
 
 	ret = tc358768_read(ddata, reg, &orig);
 	if (ret != 0)
@@ -1976,33 +2143,48 @@ static void tc358768_sw_reset(struct tc358768_drv_data *ddata)
 #define DSI_NDL 4
 #define DPI_NDL 24
 
-static uint32_t local_ulmin(uint32_t a, uint32_t b) { return a < b ? a : b; }
-static uint32_t local_ulmax(uint32_t a, uint32_t b) { return a > b ? a : b; }
+static uint32_t local_min(uint32_t a, uint32_t b) { return a < b ? a : b; }
+static uint32_t local_max(uint32_t a, uint32_t b) { return a > b ? a : b; }
 static uint64_t div_u64(uint64_t a, uint64_t b) { return a / b; }
 
-static uint32_t tc358768_pll_to_pclk(struct tc358768_drv_data *ddata, uint32_t pll)
+
+static uint32_t tc358768_pll_to_pclk(struct tc358768_drv_data *priv, uint32_t pll_clk)
 {
-	uint32_t byteclk;
-
-	byteclk = pll / 2 / 4;
-
-	return (uint32_t)div_u64((uint64_t)byteclk * 8 *DSI_NDL,
-		DPI_NDL);
+	return (uint32_t)div_u64((uint64_t)pll_clk * priv->dsi_lanes, priv->pd_lines);
 }
 
-static uint32_t tc358768_pclk_to_pll(struct tc358768_drv_data *ddata, uint32_t pclk)
+static uint32_t tc358768_pclk_to_pll(struct tc358768_drv_data *priv, uint32_t pclk)
 {
-	uint32_t byteclk;
-
-	byteclk = (uint32_t)div_u64((uint64_t)pclk * DPI_NDL,
-		8 *DSI_NDL);
-
-	return byteclk * 4 * 2;
+	return (uint32_t)div_u64((uint64_t)pclk * priv->pd_lines, priv->dsi_lanes);
 }
+
+struct omap_video_timings
+{
+	unsigned vsw;
+	unsigned hsw;
+	unsigned vbp;
+	unsigned hbp;
+	unsigned y_res;
+	unsigned x_res;
+	unsigned long pixelclock;
+};
+
+struct omap_video_timings timings0 = {
+		.vsw = VSYNC,
+		.hsw = HSYNC,
+		.vbp = VBP,
+		.hbp = HBP,
+		.y_res = HEIGHT,
+		.x_res = WIDTH,
+		.pixelclock = LTDC_DOTCLK
+};
+
+unsigned long clk_get_rate(unsigned long v) { return v; }
 
 static int tc358768_calc_pll(struct tc358768_drv_data *ddata)
 {
-	static const unsigned frs_limits[] = {
+	const struct omap_video_timings *t = & timings0;
+	static const unsigned long frs_limits[] = {
 		1000000000, 500000000, 250000000, 125000000, 62500000
 	};
 	unsigned fbd, prd, frs;
@@ -2013,7 +2195,7 @@ static int tc358768_calc_pll(struct tc358768_drv_data *ddata)
 
 	uint32_t best_diff, best_pll, best_prd, best_fbd;
 
-	target_pll = tc358768_pclk_to_pll(ddata, LTDC_DOTCLK);
+	target_pll = tc358768_pclk_to_pll(ddata, t->pixelclock);
 
 	/* pll_clk = RefClk * [(FBD + 1)/ (PRD + 1)] * [1 / (2^FRS)] */
 
@@ -2029,10 +2211,9 @@ static int tc358768_calc_pll(struct tc358768_drv_data *ddata)
 	}
 
 	if (frs == UINT_MAX)
-		return -1;
+		return -(1);
 
-	//refclk = clk_get_rate(REFCLK);
-	refclk = (REFCLK);
+	refclk = clk_get_rate(ddata->refclk);
 
 	best_pll = best_prd = best_fbd = 0;
 	best_diff = UINT_MAX;
@@ -2048,7 +2229,7 @@ static int tc358768_calc_pll(struct tc358768_drv_data *ddata)
 			if (pll >= max_pll || pll < min_pll)
 				continue;
 
-			diff = local_ulmax(pll, target_pll) - local_ulmin(pll, target_pll);
+			diff = local_max(pll, target_pll) - local_min(pll, target_pll);
 
 			if (diff < best_diff) {
 				best_diff = diff;
@@ -2066,10 +2247,16 @@ static int tc358768_calc_pll(struct tc358768_drv_data *ddata)
 	}
 
 	if (best_diff == UINT_MAX) {
-		//dev_err(ddata->dev, "could not find suitable PLL setup\n");
-		return -1;
+		PRINTF("could not find suitable PLL setup\n");
+		return -(1);
 	}
 
+//	best_prd = 17; //9;
+//	frs = 3;
+//	best_fbd = 200;
+//	uint32_t divisor = (best_prd + 1) * (1 << frs);
+//	best_pll = (uint32_t)div_u64((uint64_t)refclk * (best_fbd + 1), divisor);
+//
 	ddata->fbd = best_fbd;
 	ddata->prd = best_prd;
 	ddata->frs = frs;
@@ -2110,7 +2297,7 @@ static void tc358768_setup_pll(struct tc358768_drv_data *ddata)
 
 static void tc358768_power_on(struct tc358768_drv_data *ddata)
 {
-	//const struct omap_video_timings *t = &ddata->videomode;
+	const struct omap_video_timings *t = & timings0;
 
 	tc358768_sw_reset(ddata);
 
@@ -2155,20 +2342,20 @@ static void tc358768_power_on(struct tc358768_drv_data *ddata)
 	tc358768_write(ddata, TC358768_DSI_EVENT, 1);
 
 	/* vsw (+ vbp) */
-	tc358768_write(ddata, TC358768_DSI_VSW, TOPMARGIN);
+	tc358768_write(ddata, TC358768_DSI_VSW, t->vsw + t->vbp);
 	/* vbp (not used in event mode) */
 	tc358768_write(ddata, TC358768_DSI_VBPR, 0);
 	/* vact */
-	tc358768_write(ddata, TC358768_DSI_VACT, HEIGHT);
+	tc358768_write(ddata, TC358768_DSI_VACT, t->y_res);
 
 	/* (hsw + hbp) * byteclk * ndl / pclk */
 	tc358768_write(ddata, TC358768_DSI_HSW,
-		(uint32_t)div_u64(LEFTMARGIN * ((uint64_t)ddata->bitclk / 4) *DSI_NDL, LTDC_DOTCLK)
-		);
+		(uint32_t) div_u64((t->hsw + t->hbp) * ((uint64_t) ddata->bitclk / 4) * ddata->dsi_lanes, t->pixelclock));
+
 	/* hbp (not used in event mode) */
 	tc358768_write(ddata, TC358768_DSI_HBPR, 0);
 	/* hact (bytes) */
-	tc358768_write(ddata, TC358768_DSI_HACT, WIDTH * 3);
+	tc358768_write(ddata, TC358768_DSI_HACT, t->x_res * 3);
 
 	/* Start DSI Tx */
 	tc358768_write(ddata, TC358768_DSI_START, 0x1);
@@ -2201,24 +2388,25 @@ static void tc358768_power_off(struct tc358768_drv_data *ddata)
 	/* set RstPtr */
 	tc358768_update_bits(ddata, TC358768_PP_MISC, 1 << 14, 1 << 14);
 }
+
 void tc_print(uint32_t addr) {
-	PRINTF("+++++++++++addr->%04x: %04x\n", addr, tc358768_rd_reg_16bits(addr));
+	//PRINTF("+++++++++++addr->%04x: %04x\n", addr, tc358768_rd_reg_16or32bits(addr));
 }
 
 #define tc358768_wr_regs_32bits(reg_array)  _tc358768_wr_regs_32bits(reg_array, ARRAY_SIZE(reg_array))
 int _tc358768_wr_regs_32bits(unsigned int reg_array[], uint32_t n) {
 
 	int i = 0;
-	PRINTF("%s:%d\n", __func__, n);
+	//PRINTF("%s:%d\n", __func__, n);
 	for(i = 0; i < n; i++) {
 		if(reg_array[i] < 0x00020000) {
 		    if(reg_array[i] < 20000)
-		    	local_delay_us(reg_array[i]);
+		    	local_delay_us(2*reg_array[i]);
 		    else {
-		    	local_delay_ms(reg_array[i]/1000);
+		    	local_delay_ms(2*reg_array[i]/1000);
 		    }
 		} else {
-			tc358768_wr_reg_32bits(reg_array[i]);
+			tc358768_wr_reg_16bits(reg_array[i]);
 		}
 	}
 	return 0;
@@ -2251,17 +2439,17 @@ int tc358768_command_tx_less8bytes(unsigned char type, const unsigned char *regs
 		command[i+2] |= regs[i*2];
 		if((i*2 + 1) < n)
 			command[i+2] |= regs[i*2 + 1] << 8;
-		PRINTF("0x%08x\n", command[i+2]);
+		//PRINTF("0x%08x\n", command[i+2]);
 	}
 
 	_tc358768_wr_regs_32bits(command, (n + 1)/2 + 2);
-	tc358768_wr_reg_32bits(0x06000001);   //Packet Transfer
+	tc358768_wr_reg_16bits(0x06000001);   //Packet Transfer
 	//wait until packet is out
-	i = 100;
-	while(tc358768_rd_reg_16bits(0x0600) & 0x01) {
+	i = 1000;
+	while(tc358768_rd_reg_16or32bits(TC358768_DSICMD_TX) & 0x01) {
 		if(i-- == 0)
 			break;
-		tc_print(0x0600);
+		tc_print(TC358768_DSICMD_TX);
 	}
 	//local_delay_us(50);
 	return 0;
@@ -2278,7 +2466,7 @@ int tc358768_command_tx_more8bytes_hs(unsigned char type, unsigned char regs[], 
 			0x00500000,    //Data ID setting
 			0x00220000,    //Transmission byte count= byte
 			0x00E08000,	   //Enable I2C/SPI write to VB
-			0x00E20048,    //Total word count = 0x48 (max 0xFFF). This value should be adjusted considering trade off between transmission time and transmission start/stop time delay
+			0x00E20048,    //Total word count = 0x48 (local_max 0xFFF). This value should be adjusted considering trade off between transmission time and transmission start/stop time delay
 			0x00E4007F,    //Vertical blank line = 0x7F
 	};
 
@@ -2293,14 +2481,14 @@ int tc358768_command_tx_more8bytes_hs(unsigned char type, unsigned char regs[], 
 		if((i*2 + 1) < n)
 			temp |= (regs[i*2 + 1] << 8);
 		//PRINTF("0x%08x\n", temp);
-		tc358768_wr_reg_32bits(temp);
+		tc358768_wr_reg_16bits(temp);
 	}
 	if((n % 4 == 1) ||  (n % 4 == 2))     //4 bytes align
-		tc358768_wr_reg_32bits(dbg_data);
+		tc358768_wr_reg_16bits(dbg_data);
 
-	tc358768_wr_reg_32bits(0x00E0C000);     //Start command transmisison
-	tc358768_wr_reg_32bits(0x00E00000);	 //Stop command transmission. This setting should be done just after above setting to prevent multiple output
-	local_delay_us(200);
+	tc358768_wr_reg_16bits(0x00E0C000);     //Start command transmisison
+	tc358768_wr_reg_16bits(0x00E00000);	 //Stop command transmission. This setting should be done just after above setting to prevent multiple output
+	local_delay_us(2*200);
 	//Re-Initialize
 	//tc358768_wr_regs_32bits(re_initialize);
 	return 0;
@@ -2328,17 +2516,17 @@ int tc358768_command_tx_more8bytes_lp(unsigned char type, const unsigned char re
 		if((i*2 + 1) < n)
 			temp |= (regs[i*2 + 1] << 8);
 		//PRINTF("0x%08x\n", temp);
-		tc358768_wr_reg_32bits(temp);
+		tc358768_wr_reg_16bits(temp);
 
 	}
 	if((n % 4 == 1) ||  (n % 4 == 2))     //4 bytes align
-		tc358768_wr_reg_32bits(dbg_data);
+		tc358768_wr_reg_16bits(dbg_data);
 
-	tc358768_wr_reg_32bits(0x00E0E000);     //Start command transmisison
-	local_delay_us(1000);
-	tc358768_wr_reg_32bits(0x00E02000);	 //Keep Mask High to prevent short packets send out
-	tc358768_wr_reg_32bits(0x00E00000);	 //Stop command transmission. This setting should be done just after above setting to prevent multiple output
-	local_delay_us(10);
+	tc358768_wr_reg_16bits(0x00E0E000);     //Start command transmisison
+	local_delay_us(2*1000);
+	tc358768_wr_reg_16bits(0x00E02000);	 //Keep Mask High to prevent short packets send out
+	tc358768_wr_reg_16bits(0x00E00000);	 //Stop command transmission. This setting should be done just after above setting to prevent multiple output
+	local_delay_us(2*10);
 	return 0;
 }
 
@@ -2389,28 +2577,28 @@ int _tc358768_rd_lcd_regs(unsigned char type, char comd, int size, unsigned char
 	regs[0] = size;
 	regs[1] = 0;
 	tc358768_command_tx_less8bytes(0x37, regs, 2);
-	tc358768_wr_reg_32bits(0x05040010);
-	tc358768_wr_reg_32bits(0x05060000);
+	tc358768_wr_reg_16bits(0x05040010);
+	tc358768_wr_reg_16bits(0x05060000);
 	regs[0] = comd;
 	tc358768_command_tx_less8bytes(type, regs, 1);
 
-	while (!(tc358768_rd_reg_16bits(0x0410) & 0x20)){
-		PRINTF("error 0x0410:%04x\n", tc358768_rd_reg_16bits(0x0410));
-		local_delay_ms(1);
+	while (!(tc358768_rd_reg_16or32bits(0x0410) & 0x20)){
+		PRINTF("error 0x0410:%04x\n", tc358768_rd_reg_16or32bits(0x0410));
+		local_delay_ms(2*1);
 		if(count++ > 10) {
 			break;
 		}
 	}
 
-	data30 = tc358768_rd_reg_16bits(0x0430);	  //data id , word count[0:7]
+	data30 = tc358768_rd_reg_16or32bits(0x0430);	  //data id , word count[0:7]
 	//PRINTF("0x0430:%04x\n", data30);
-	data32 = tc358768_rd_reg_16bits(0x0432);	  //word count[8:15]  ECC
+	data32 = tc358768_rd_reg_16or32bits(0x0432);	  //word count[8:15]  ECC
 	//PRINTF("0x0432:%04x\n", data32);
 
 	while(size > 0) {
-		data30 = tc358768_rd_reg_16bits(0x0430);
+		data30 = tc358768_rd_reg_16or32bits(0x0430);
 		//PRINTF("0x0430:%04x\n", data30);
-		data32 = tc358768_rd_reg_16bits(0x0432);
+		data32 = tc358768_rd_reg_16or32bits(0x0432);
 		//PRINTF("0x0432:%04x\n", data32);
 
 		if(size-- > 0)
@@ -2428,9 +2616,9 @@ int _tc358768_rd_lcd_regs(unsigned char type, char comd, int size, unsigned char
 		}
 	}
 
-	data30 = tc358768_rd_reg_16bits(0x0430);
+	data30 = tc358768_rd_reg_16or32bits(0x0430);
 	//PRINTF("0x0430:%04x\n", data30);
-	data32 = tc358768_rd_reg_16bits(0x0432);
+	data32 = tc358768_rd_reg_16or32bits(0x0432);
 	//PRINTF("0x0432:%04x\n", data32);
 	return 0;
 }
@@ -2446,7 +2634,7 @@ int tc358768_get_id(void) {
 	int id = -1;
 
 	//tc358768_power_up();
-	id = tc358768_rd_reg_16bits(0);
+	id = tc358768_rd_reg_16or32bits(0);
 	return id;
 }
 
@@ -2629,17 +2817,1084 @@ static uint8_t bigon [] =
 		};
 	};
 */
+
+/*
+ * MIPI CMD
+ */
+enum {
+	MIPI_GEN_CMD = 0,
+	MIPI_DCS_CMD,
+};
+
+enum {
+	GEN_SW_0P_TX = 1,
+	GEN_SW_1P_TX,
+	GEN_SW_2P_TX,
+	GEN_SR_0P_TX,
+	GEN_SR_1P_TX,
+	GEN_SR_2P_TX,
+	DCS_SW_0P_TX,
+	DCS_SW_1P_TX,
+	DCS_SR_0P_TX,
+	MAX_RD_PKT_SIZE,
+	GEN_LW_TX,
+	DCS_LW_TX,
+};
+
+struct comipfb_info ;
+
+extern int mipi_dsih_gen_wr_cmd(struct comipfb_info *fbi, uint8_t vc, uint8_t* params, uint16_t param_length);
+extern int mipi_dsih_dcs_wr_cmd(struct comipfb_info *fbi, uint8_t vc, uint8_t* params, uint16_t param_length);
+extern uint16_t mipi_dsih_dcs_rd_cmd(struct comipfb_info *fbi, uint8_t vc, uint8_t command, uint8_t bytes_to_read, uint8_t* read_buffer);
+extern uint16_t mipi_dsih_gen_rd_cmd(struct comipfb_info *fbi, uint8_t vc, uint8_t* params, uint16_t param_length, uint8_t bytes_to_read, uint8_t* read_buffer);
+extern int mipi_dsih_gen_wr_packet(struct comipfb_info *fbi, uint8_t vc, uint8_t data_type, uint8_t* params, uint16_t param_length);
+
+static struct comipfb_info *fs_fbi;
+
+static uint8_t mipi_read_buff[30];
+
+
+#define ROW_LINE 64
+
+#define COMIPFB_HSYNC_HIGH_ACT		(0x03)
+#define COMIPFB_VSYNC_HIGH_ACT		(0x04)
+
+#define MIPI_VIDEO_MODE 		(0x05)
+#define MIPI_COMMAND_MODE 		(0x06)
+
+#define ARRAY_AND_SIZE(x)		(uint8_t *)(x), ARRAY_SIZE(x)
+
+/*display prefer and ce*/
+#define PREFER_INIT			(0)
+#define PREFER_WARM			(1)
+#define PREFER_NATURE			(2)
+#define PREFER_COOL			(3)
+
+#define CE_BRIGHT 			(12)
+#define CE_VELVIA			(11)
+#define CE_STANDARD			(10)
+
+
+enum {
+	DCS_CMD = 2,
+	GEN_CMD,
+	SW_PACK0,
+	SW_PACK1,
+	SW_PACK2,
+	LW_PACK,
+	SHUTDOWN_SW_PACK,
+};
+
+/*Device flags*/
+#define	PREFER_CMD_SEND_MONOLITHIC	(0x00000001)
+#define	CE_CMD_SEND_MONOLITHIC		(0x00000002)
+
+#define RESUME_WITH_PREFER		(0x00000010)
+#define RESUME_WITH_CE			(0x00000020)
+
+
+/**
+ * Video stream type
+ */
+typedef enum {
+	VIDEO_NON_BURST_WITH_SYNC_PULSES = 0,
+	VIDEO_NON_BURST_WITH_SYNC_EVENTS,	// hs_freq and pck should be multipe
+	VIDEO_BURST_WITH_SYNC_PULSES,
+}dsih_video_mode_t;
+
+#ifdef CONFIG_FBCON_DRAW_PANIC_TEXT
+extern int kpanic_in_progress;
+#endif
+
+struct comipfb_dev_cmds {
+	unsigned char *cmds;
+	unsigned short n_pack;
+	unsigned short n_cmds;
+};
+
+struct bl_cmds {
+	struct comipfb_dev_cmds bl_cmd;
+	unsigned int brightness_bit;
+};
+
+struct mipi_color_bits {
+	unsigned int color_bits; // must be set !!
+	unsigned int is_18bit_loosely; // optional
+};
+
+struct rw_timeout {
+	unsigned int hs_rd_to_cnt;
+	unsigned int lp_rd_to_cnt;
+	unsigned int hs_wr_to_cnt;
+	unsigned int lp_wr_to_cnt;
+	unsigned int bta_to_cnt;
+};
+
+struct video_mode_info {
+	unsigned int hsync;	/* Horizontal Synchronization, unit : pclk. */
+	unsigned int hbp;	/* Horizontal Back Porch, unit : pclk. */
+	unsigned int hfp;	/* Horizontal Front Porch, unit : pclk. */
+	unsigned int vsync;	/* Vertical Synchronization, unit : line. */
+	unsigned int vbp;	/* Vertical Back Porch, unit : line. */
+	unsigned int vfp;	/* Vertical Front Porch, unit : line. */
+	unsigned int sync_pol;
+	unsigned int lp_cmd_en:1;
+	unsigned int frame_bta_ack:1;
+	unsigned int lp_hfp_en:1; // default should be 1
+	unsigned int lp_hbp_en:1;
+	unsigned int lp_vact_en:1;
+	unsigned int lp_vfp_en:1;
+	unsigned int lp_vbp_en:1;
+	unsigned int lp_vsa_en:1;
+	dsih_video_mode_t mipi_trans_type; /* burst or no burst*/
+};
+
+struct command_mode_info {
+	unsigned int tear_fx_en:1;
+	unsigned int ack_rqst_en:1;
+	unsigned int gen_sw_0p_tx:1;	// default should be 1
+	unsigned int gen_sw_1p_tx:1;	// default should be 1
+	unsigned int gen_sw_2p_tx:1;	// default should be 1
+	unsigned int gen_sr_0p_tx:1;	// default should be 1
+	unsigned int gen_sr_1p_tx:1;	// default should be 1
+	unsigned int gen_sr_2p_tx:1;	// default should be 1
+	unsigned int gen_lw_tx:1;		// default should be 1
+	unsigned int dcs_sw_0p_tx:1;	// default should be 1
+	unsigned int dcs_sw_1p_tx:1;	// default should be 1
+	unsigned int dcs_sr_0p_tx:1;	// default should be 1
+	unsigned int dcs_lw_tx:1;		// default should be 1
+	unsigned int max_rd_pkt_size:1;	// default should be 1
+	struct rw_timeout timeout;
+};
+
+struct external_info {
+	unsigned char crc_rx_en:1;
+	unsigned char ecc_rx_en:1;
+	unsigned char eotp_rx_en:1;
+	unsigned char eotp_tx_en:1;
+	unsigned int dev_read_time;	//HSBYTECLK is danwe
+};
+
+struct phy_time_info {
+	unsigned char lpx;
+	//unsigned char clk_lpx;
+	unsigned char clk_tprepare;
+	unsigned char clk_hs_zero;
+	unsigned char clk_hs_trail;
+	unsigned char clk_hs_exit;
+	unsigned char clk_hs_post;
+
+	//unsigned char data_lpx;
+	unsigned char data_tprepare;
+	unsigned char data_hs_zero;
+	unsigned char data_hs_trail;
+	unsigned char data_hs_exit;
+	unsigned char data_hs_post;
+};
+
+struct te_info {
+	unsigned int te_source;
+	unsigned int te_trigger_mode;
+	unsigned int te_en;
+	unsigned int te_sync_en; // In command mode should set 1,  video should set 0
+	unsigned int te_cps;	// te count per second
+};
+
+struct comipfb_dev_timing_mipi {
+	unsigned int hs_freq; /*PHY output freq, bytes KHZ*/
+	unsigned int lp_freq; /*default is 10MHZ*/
+	unsigned int no_lanes; /*lane numbers*/
+	unsigned int display_mode; //video mode or command mode.
+	unsigned int auto_stop_clklane_en;
+	unsigned int im_pin_val; /*IM PIN val, if use gpio_im, default config is 1  ?? */
+	struct mipi_color_bits color_mode; /*color bits*/
+	struct video_mode_info videomode_info;
+	struct command_mode_info commandmode_info;
+	struct phy_time_info phytime_info;
+	struct te_info teinfo;
+	struct external_info ext_info;
+};
+
+struct common_id_info {
+	unsigned char pack_type;
+	unsigned char id[6];
+	unsigned char id_count;
+	unsigned char cmd;
+};
+
+struct comipfb_id_info {
+	unsigned char num_id_info;
+	struct common_id_info *id_info;
+	struct comipfb_dev_cmds prepare_cmd;
+};
+
+struct prefer_ce_info {
+	int type;
+	struct comipfb_dev_cmds cmds;
+};
+
+struct comipfb_prefer_ce {
+	int types;
+	struct prefer_ce_info *info;
+};
+
+struct comipfb_dev {
+	const char* name;	/* Device name. */
+	unsigned int interface_info;//interface infomation  MIPI or RGB
+	unsigned int lcd_id;
+	unsigned int refresh_en;	/* Refresh enable. */
+	unsigned int pclk;		/* Pixel clock in HZ. */
+	unsigned int bpp;		/* Bits per pixel. */
+	unsigned int xres;		/* Device resolution. */
+	unsigned int yres;
+	unsigned int width;		/* Width of device in mm. */
+	unsigned int height;		/* Height of device in mm. */
+	unsigned int flags;		/* Device flags. */
+	unsigned int auto_fps;		/* auto adjust frame rate flag*/
+	union {
+		//struct comipfb_dev_timing_rgb rgb;
+		struct comipfb_dev_timing_mipi mipi;
+	} timing;
+
+	struct comipfb_id_info panel_id_info;
+	struct comipfb_id_info esd_id_info;
+	struct comipfb_dev_cmds cmds_init;
+	struct comipfb_dev_cmds cmds_suspend;
+	struct comipfb_dev_cmds cmds_resume;
+	struct comipfb_dev_cmds cmds_pre_suspend;
+	struct bl_cmds backlight_info;
+
+	struct comipfb_prefer_ce resume_prefer_info;
+	struct comipfb_prefer_ce display_prefer_info;
+	struct comipfb_prefer_ce display_ce_info;
+	int init_last;		/*when resume, send gamma/ce cmd before init cmd*/
+
+	int (*power)(struct comipfb_info *fbi, int onoff);
+	int (*reset)(struct comipfb_info *fbi);
+	int (*suspend)(struct comipfb_info *fbi);
+	int (*resume)(struct comipfb_info *fbi);
+};
+
+
+#define ENTER_ULPS	0x01
+#define EXIT_ULPS	0x02
+
+struct comipfb_info;
+struct comipfb_dev_cmds;
+
+struct comipfb_if {
+	int (*init)(struct comipfb_info *fbi);
+	int (*exit)(struct comipfb_info *fbi);
+	int (*suspend)(struct comipfb_info *fbi);
+	int (*resume)(struct comipfb_info *fbi);
+	int (*dev_cmd)(struct comipfb_info *fbi, struct comipfb_dev_cmds *cmds);
+	void (*bl_change)(struct comipfb_info *fbi, int val);
+};
+extern struct comipfb_if comipfb_if_mipi;
+extern struct comipfb_if* comipfb_if_get(struct comipfb_info *fbi);
+extern int comipfb_if_mipi_dev_cmds(struct comipfb_info *fbi, struct comipfb_dev_cmds *cmds);
+//extern int comipfb_if_mipi_init(struct comipfb_info *fbi);
+
+struct device_attribute;
+struct device;
+
+extern int comipfb_dev_register(struct comipfb_dev* dev);
+extern int comipfb_dev_unregister(struct comipfb_dev* dev);
+extern struct comipfb_dev* comipfb_dev_get(struct comipfb_info *fbi);
+
+#if 0
+
+static ssize_t mipi_read_store(struct device *dev, struct device_attribute *attr,
+								const char *buf, size_t count)
+{
+	int cmd_type, read_cmd, read_count;
+
+	sscanf(buf,"%x%x%x", &cmd_type, &read_cmd, &read_count);
+
+	memset(&mipi_read_buff, 0x0, ARRAY_SIZE(mipi_read_buff));
+
+	mipi_dsih_gen_wr_packet(fs_fbi, 0, 0x37, (uint8_t *)&read_count, 1);
+	if (cmd_type == 1)
+		mipi_dsih_dcs_rd_cmd(fs_fbi, 0, (uint8_t)read_cmd, (uint8_t)read_count,
+			(uint8_t *)&mipi_read_buff);
+	else if (cmd_type == 0)
+		mipi_dsih_gen_rd_cmd(fs_fbi, 0, (uint8_t *)&read_cmd, 1, (uint8_t)read_count,
+			(uint8_t *)&mipi_read_buff);
+
+	return count;
+}
+//
+//static ssize_t mipi_read_show(struct device *dev, struct device_attribute *attr, char *buf)
+//{
+//	return snprintf(buf,
+//			PAGE_SIZE,
+//			"buf[0]=0x%x, buf[1]=0x%x, buf[2]=0x%x, buf[3]=0x%x, buf[4]=0x%x\n",
+//			mipi_read_buff[0],
+//			mipi_read_buff[1],
+//			mipi_read_buff[2],
+//			mipi_read_buff[3],
+//			mipi_read_buff[4]);
+//}
+
+//DEVICE_ATTR(mipi_read, S_IRUGO | S_IWUSR, mipi_read_show, mipi_read_store);
+//
+//void comipfb_sysfs_add_read(struct device *dev)
+//{
+//	device_create_file(dev, &dev_attr_mipi_read);
+//}
+//
+//void comipfb_sysfs_remove_read(struct device *dev)
+//{
+//	device_remove_file(dev, &dev_attr_mipi_read);
+//}
+
+#define KERN_ERR "panel: "
+//EXPORT_SYMBOL(comipfb_sysfs_remove_read);
+//EXPORT_SYMBOL(comipfb_sysfs_add_read);
+
+/*
+ *
+ * MIPI interface
+ */
+static int comipfb_mipi_mode_change(struct comipfb_info *fbi)
+{
+//	int gpio_im, gpio_val;
+//	struct comipfb_dev_timing_mipi *mipi;
+//
+//	mipi = &(fbi->cdev->timing.mipi);
+//
+//	if (fbi != NULL) {
+//		gpio_im = fbi->pdata->gpio_im;
+//		gpio_val = mipi->im_pin_val;
+//		if (gpio_im >= 0) {
+//			gpio_request(gpio_im, "LCD IM");
+//			gpio_direction_output(gpio_im, gpio_val);
+//		}
+//	}
+	return 0;
+}
+
+int comipfb_if_mipi_dev_cmds(struct comipfb_info *fbi, struct comipfb_dev_cmds *cmds)
+{
+	int ret = 0;
+	int loop = 0;
+	unsigned char *p;
+
+	if (!cmds) {
+		PRINTF("cmds null\n");
+		return -(1);
+	}
+	if (!cmds->n_pack || !cmds->cmds) {
+		PRINTF("cmds null\n");
+		return -(1);
+	}
+	for (loop = 0; loop < cmds->n_pack; loop++) {
+		p = cmds->cmds + loop * ROW_LINE;
+		if (p[1] == DCS_CMD)
+			ret = mipi_dsih_dcs_wr_cmd(fbi, 0, &(p[2]), (uint16_t)p[3]);
+		else if (p[1] == GEN_CMD)
+			ret = mipi_dsih_gen_wr_cmd(fbi, 0, &(p[2]), (uint16_t)p[3]);
+		if (ret < 0) {
+			PRINTF("*MIPI send command failed !!*\n");
+			return ret;
+		}
+		if (p[0] > 0) {
+#ifdef CONFIG_FBCON_DRAW_PANIC_TEXT
+			if (unlikely(kpanic_in_progress == 1)) {
+				if (p[0] == 0xff)
+					local_delay_ms(200);
+				else
+					local_delay_ms(p[0]);
+			}
+			else {
+
+				if (p[0] == 0xff)
+					local_delay_ms(200);
+				else
+					local_delay_ms(p[0]);
+			}
+#else
+			if (p[0] == 0xff)
+				local_delay_ms(200);
+			else
+				local_delay_ms(p[0]);
+#endif
+
+		}
+	}
+	return ret;
+}
+
+void comipfb_if_mipi_reset(struct comipfb_info *fbi)
+{
+	struct comipfb_dev_timing_mipi *mipi;
+	int stop_status = 0;
+	int check_times = 3;
+	int i = 0;
+
+	//mipi = &(fbi->cdev->timing.mipi);
+
+	switch (4) //(mipi->no_lanes) {
+		case 1:
+			stop_status = 0x10;
+			break;
+		case 2:
+			stop_status = 0x90;
+			break;
+		case 3:
+			stop_status = 0x290;
+			break;
+		case 4:
+			stop_status = 0xa90;
+			break;
+		default:
+			break;
+	}
+
+	for (i = 0; i < check_times; i++) {
+		if ((mipi_dsih_dphy_get_status(fbi) & stop_status) == stop_status)
+			break;
+		local_delay_us(2*5);
+	}
+
+//	mipi_dsih_hal_power(fbi, 0);
+//	mipi_dsih_hal_power(fbi, 1);
+}
+
+static int comipfb_if_mipi_init(struct comipfb_info *fbi)
+{
+	int ret = 0;
+	struct comipfb_dev_timing_mipi *mipi;
+	unsigned int dev_flags;
+
+	fs_fbi = fbi;
+
+	mipi = &(fbi->cdev->timing.mipi);
+
+	comipfb_mipi_mode_change(fbi);
+
+	mipi_dsih_dphy_enable_hs_clk(fbi, 1);
+	local_delay_ms(5);
+
+	if (mipi->display_mode == MIPI_VIDEO_MODE)
+		mipi_dsih_hal_mode_config(fbi, 1);
+
+	mipi_dsih_dphy_enable_hs_clk(fbi, 0);
+	/* Reset device. */
+	if (!(fbi->cdev->power)) {
+		if (fbi->cdev->reset)
+			fbi->cdev->reset(fbi);
+	}
+
+	if (!fbi->cdev->init_last)
+		ret = comipfb_if_mipi_dev_cmds(fbi, &fbi->cdev->cmds_init);
+
+	dev_flags = fbi->cdev->flags;
+	if ((fbi->display_prefer != 0) && (dev_flags & RESUME_WITH_PREFER)) {
+		ret = comipfb_display_prefer_set(fbi, fbi->display_prefer);
+		if (ret)
+			dev_warn(fbi->dev, "set prefer within resume failed\n");
+	}
+	if ((fbi->display_ce != 0) && (dev_flags & RESUME_WITH_CE)) {
+		ret = comipfb_display_ce_set(fbi, fbi->display_ce);
+		if (ret)
+			dev_warn(fbi->dev, "set ce within resume failed\n");
+	}
+	if (fbi->cdev->init_last)
+		ret = comipfb_if_mipi_dev_cmds(fbi, &fbi->cdev->cmds_init);
+	local_delay_ms(10);
+
+	if (mipi->display_mode == MIPI_VIDEO_MODE) {
+		mipi_dsih_hal_mode_config(fbi, 0);
+	}else
+		mipi_dsih_hal_dcs_wr_tx_type(fbi, 3, 0);
+
+	local_delay_ms(5);
+	mipi_dsih_dphy_enable_hs_clk(fbi, 1);
+
+	return ret;
+}
+
+static int comipfb_if_mipi_exit(struct comipfb_info *fbi)
+{
+//	int gpio_im = fbi->pdata->gpio_im;
+//	if (gpio_im >= 0)
+//		gpio_free(gpio_im);
+//
+	return 0;
+}
+
+static int comipfb_if_mipi_suspend(struct comipfb_info *fbi)
+{
+	int ret = 0;
+//
+//	if(fbi->cdev->suspend)
+//		ret = fbi->cdev->suspend(fbi);
+//
+	return ret;
+}
+
+static int comipfb_if_mipi_resume(struct comipfb_info *fbi)
+{
+	int ret = 0;
+//
+//	if(fbi->cdev->resume)
+//		ret = fbi->cdev->resume(fbi);
+//
+	return ret;
+}
+
+static void comipfb_if_mipi_bl_change(struct comipfb_info *fbi, int val)
+{
+	unsigned int bit;
+	struct comipfb_dev_cmds *lcd_backlight_cmd;
+
+	if (fbi == NULL) {
+		PRINTF(KERN_ERR "%s ,fbi is NULL",__func__);
+		return ;
+	}
+
+	bit = fbi->cdev->backlight_info.brightness_bit;
+ 	lcd_backlight_cmd = &(fbi->cdev->backlight_info.bl_cmd);
+	lcd_backlight_cmd->cmds[bit] = (unsigned char)val;
+	comipfb_if_mipi_dev_cmds(fbi, lcd_backlight_cmd);
+}
+
+static unsigned char te_cmds[][10] = {
+/****TE command***/
+        {0x00, DCS_CMD, SW_PACK2, 0x02, 0x35, 0x00},
+};
+
+static void comipfb_if_mipi_te_trigger(struct comipfb_info *fbi)
+{
+	struct comipfb_dev_cmds te_pkt;
+
+	te_pkt.cmds = (unsigned char *)te_cmds;
+	te_pkt.n_pack = 1;
+
+	comipfb_if_mipi_dev_cmds(fbi, &te_pkt);
+}
+
+
+static int comipfb_if_mipi_read_lcm_id(struct comipfb_info *fbi , struct comipfb_id_info *cur_id_info)
+{
+	unsigned char rd_cnt=0,lp_cnt=0;
+	unsigned char cmd;
+	unsigned char *id_val;
+	uint8_t lcm_id [8] = {0};
+	int i, ret = 0;
+
+	/*ready to read id*/
+	if(cur_id_info->prepare_cmd.cmds)
+		comipfb_if_mipi_dev_cmds(fbi, &(cur_id_info->prepare_cmd));
+
+	while (lp_cnt < cur_id_info->num_id_info) {
+		cmd = cur_id_info->id_info[lp_cnt].cmd;
+		rd_cnt = cur_id_info->id_info[lp_cnt].id_count;
+		id_val = cur_id_info->id_info[lp_cnt].id;
+
+		mipi_dsih_gen_wr_packet(fbi, 0, 0x37, &rd_cnt, 1);
+		if (cur_id_info->id_info[lp_cnt].pack_type == DCS_CMD) {
+			ret = mipi_dsih_dcs_rd_cmd(fbi, 0, cmd, rd_cnt, lcm_id);
+		} else if (cur_id_info->id_info[lp_cnt].pack_type == GEN_CMD) {
+			ret = mipi_dsih_gen_rd_cmd(fbi, 0, &cmd, 1, rd_cnt, lcm_id);
+		}
+		ret = strncmp((void *) lcm_id, (void *) id_val, rd_cnt);
+		if (ret) {
+			PRINTF("request:");
+			for (i = 0; i< rd_cnt; i++)
+				PRINTF("0x%x,", id_val[i]);
+			PRINTF(" read:");
+			for (i = 0; i< rd_cnt; i++)
+				PRINTF("0x%x,", lcm_id[i]);
+			return -1;
+		}
+		lp_cnt++;
+	}
+	return 0;
+}
+
+int comipfb_if_mipi_esd_read_ic(struct comipfb_info *fbi )
+{
+	int check_result;
+
+	if (!fbi)
+		return 0;
+
+	check_result = comipfb_if_mipi_read_lcm_id( fbi , &(fbi->cdev->esd_id_info));
+
+	if (check_result) {
+		PRINTF("lcd esd read id failed \n");
+		return -1;
+	} else {
+		return 0;
+	}
+}
+
+int comipfb_read_lcm_id(struct comipfb_info *fbi, void *dev)
+{
+	static int check_result, common_pwup = 0;
+		struct comipfb_dev *lcm_dev = (struct comipfb_dev *)dev;
+
+	fbi->cdev = lcm_dev;
+
+	/*power on LCM and reset*/
+	if (fbi->cdev->power)
+		fbi->cdev->power(fbi, 1);
+	else {
+		if ((!common_pwup) && fbi->pdata->power) {
+			fbi->pdata->power(1);
+			common_pwup = 1;
+		}
+		if (fbi->cdev->reset)
+			fbi->cdev->reset(fbi);
+	}
+	check_result = comipfb_if_mipi_read_lcm_id(fbi, &(lcm_dev->panel_id_info));
+
+	if (fbi->cdev->power)
+		fbi->cdev->power(fbi, 0);
+	if ( check_result ) {
+		PRINTF("read lcm id failed \n");
+		return -1;
+	} else {
+		return 0;
+	}
+}
+//static DEFINE_SPINLOCK(cmd_lock);
+int comipfb_display_prefer_ce_set(struct comipfb_info *fbi, struct comipfb_prefer_ce *prefer_ce, int mode)
+{
+	struct prefer_ce_info *info = prefer_ce->info;
+	int cnt = 0;
+	int ret = 0;
+
+	while (cnt < prefer_ce->types) {
+		if (info->type == mode) {
+			break;
+		}
+		info++;
+		cnt++;
+	}
+
+	if (cnt == prefer_ce->types) {
+		PRINTF("mode %d not supported\n", mode);
+		return -(1);
+	}
+
+	//dev_info(fbi->dev, "sending cmds : type = %d\n", info->type);//for debug
+	ret = comipfb_if_mipi_dev_cmds(fbi, &info->cmds);
+
+	return ret;
+
+}
+
+int comipfb_display_prefer_set(struct comipfb_info *fbi, int mode)
+{
+	struct comipfb_prefer_ce *prefer = &fbi->cdev->display_prefer_info;
+	unsigned int dev_flags;
+	unsigned long flags;
+	int ret = 0;
+
+	if (prefer->types == 0) {
+		dev_info(fbi->dev, "%s do not support prefer set\n", fbi->cdev->name);
+		return -(1);
+	}
+
+	dev_flags = fbi->cdev->flags;
+	/*cmds must be send continuous and cannot be interrupted*/
+	if (dev_flags & PREFER_CMD_SEND_MONOLITHIC)
+		;//spin_lock_irqsave(&cmd_lock, flags);
+	ret = comipfb_display_prefer_ce_set(fbi, prefer, mode);
+	if (dev_flags & PREFER_CMD_SEND_MONOLITHIC)
+		;//spin_unlock_irqrestore(&cmd_lock, flags);
+
+	if (ret)
+		PRINTF("set display prefer %d failed\n", mode);
+
+	/*update current prefer mode, when resume from suspend, should check and send cmd if need*/
+	fbi->display_prefer = mode;
+
+	return ret;
+}
+
+int comipfb_display_ce_set(struct comipfb_info *fbi, int mode)
+{
+	struct comipfb_prefer_ce *ce = &fbi->cdev->display_ce_info;
+	unsigned int dev_flags;
+	unsigned long flags;
+	int ret = 0;
+
+	if (ce->types == 0) {
+		dev_info(fbi->dev, "%s do not support ce set\n", fbi->cdev->name);
+		return -(1);
+	}
+
+	dev_flags = fbi->cdev->flags;
+	/*cmds must be send continuous and cannot be interrupted*/
+	if (dev_flags & CE_CMD_SEND_MONOLITHIC)
+		;//spin_lock_irqsave(&cmd_lock, flags);
+	ret = comipfb_display_prefer_ce_set(fbi, ce, mode);
+	if (dev_flags & CE_CMD_SEND_MONOLITHIC)
+		;//spin_unlock_irqrestore(&cmd_lock, flags);
+
+	if (ret)
+		PRINTF("set display ce %d failed\n", mode);
+
+	/*update current ce mode, when resume from suspend, should check and send cmd if need*/
+	fbi->display_ce = mode;
+
+	return ret;
+}
+
+struct comipfb_if comipfb_if_mipi = {
+        .init           = comipfb_if_mipi_init,
+        .exit           = comipfb_if_mipi_exit,
+        .suspend        = comipfb_if_mipi_suspend,
+        .resume         = comipfb_if_mipi_resume,
+        .dev_cmd        = comipfb_if_mipi_dev_cmds,
+	.bl_change	= comipfb_if_mipi_bl_change,
+	.te_trigger = comipfb_if_mipi_te_trigger,
+};
+
+struct comipfb_if* comipfb_if_get(struct comipfb_info *fbi)
+{
+
+	switch (fbi->cdev->interface_info) {
+		case COMIPFB_MIPI_IF:
+			return &comipfb_if_mipi;
+		default:
+			return NULL;
+	}
+}
+
+
+#define MIPI_TIME_X1000000 1000000
+
+#define DSIH_PIXEL_TOLERANCE	2
+#define DSIH_FIFO_ACTIVE_WAIT	2000	/*20us * 2000 = 40ms, cross two frame time*/
+#define PRECISION_FACTOR 		1000
+#define NULL_PACKET_OVERHEAD 	6
+#define MAX_NULL_SIZE			1023
+#define MAX_RD_COUNT			1000	/*prevent dead loop*/
+
+#if defined(CONFIG_CPU_LC1813)
+/* Reference clock frequency divided by Input Frequency Division Ratio LIMITS */
+#define DPHY_DIV_UPPER_LIMIT	800000
+#define DPHY_DIV_LOWER_LIMIT	1000
+#define MIN_OUTPUT_FREQ			80
+#elif defined(CONFIG_CPU_LC1860)
+/* Reference clock frequency divided by Input Frequency Division Ratio LIMITS */
+#define DPHY_DIV_UPPER_LIMIT	40000
+#define DPHY_DIV_LOWER_LIMIT	5000
+#define MIN_OUTPUT_FREQ			80
+#endif
+/**
+ * Color coding type (depth and pixel configuration)
+ */
+typedef enum {
+	COLOR_CODE_16BIT_CONFIG1 = 0,	//PACKET RGB565
+	COLOR_CODE_16BIT_CONFIG2,		//UNPACKET RGB565
+	COLOR_CODE_16BIT_CONFIG3,		//UNPACKET RGB565
+	COLOR_CODE_18BIT_CONFIG1,		//PACKET RGB666
+	COLOR_CODE_18BIT_CONFIG2,		//UNPACKET RGB666
+	COLOR_CODE_24BIT,				//PACKET RGB888
+	COLOR_CODE_MAX,
+}dsih_color_coding_t;
+
+#endif
+
+static uint8_t oled_cmds_init[][ROW_LINE] = {
+	{0x00, DCS_CMD, LW_PACK, 0x08, 0x06, 0x00, 0xf0, 0x55, 0xaa, 0x52, 0x08, 0x00}
+	,{0x00, DCS_CMD, LW_PACK, 0x06, 0x04, 0x00, 0xb0, 0x00, 0x10, 0x10}
+	,{0x00, DCS_CMD, SW_PACK2, 0x02, 0xba, 0x60}
+	,{0x00, DCS_CMD, LW_PACK, 0x0a, 0x08, 0x00, 0xbb, 0x77, 0x77, 0x77, 0x77, 0x77, 0x77, 0x77}
+	,{0x00, DCS_CMD, LW_PACK, 0x08, 0x06, 0x00, 0xf0, 0x55, 0xaa, 0x52, 0x08, 0x02}
+	,{0x00, DCS_CMD, SW_PACK2, 0x02, 0xca, 0x04}
+	,{0x00, DCS_CMD, SW_PACK2, 0x02, 0xe1, 0x00}
+	,{0x00, DCS_CMD, SW_PACK2, 0x02, 0xe2, 0x0a}
+	,{0x00, DCS_CMD, SW_PACK2, 0x02, 0xe3, 0x40}
+	,{0x00, DCS_CMD, LW_PACK, 0x07, 0x05, 0x00, 0xe7, 0x00, 0x00, 0x00, 0x00}
+	,{0x00, DCS_CMD, LW_PACK, 0x0b, 0x09, 0x00, 0xed, 0x48, 0x00, 0xe0, 0x13, 0x08, 0x00, 0x91, 0x08}
+	,{0x00, DCS_CMD, LW_PACK, 0x09, 0x07, 0x00, 0xfd, 0x00, 0x08, 0x1c, 0x00, 0x00, 0x01}
+	,{0x00, DCS_CMD, LW_PACK, 0x0e, 0x0c, 0x00, 0xc3, 0x11, 0x24, 0x04, 0x0a, 0x02, 0x04, 0x00, 0x1c, 0x10, 0xf0, 0x00}
+	,{0x00, DCS_CMD, LW_PACK, 0x08, 0x06, 0x00, 0xf0, 0x55, 0xaa, 0x52, 0x08, 0x03}
+	,{0x00, DCS_CMD, SW_PACK2, 0x02, 0xe0, 0x00}
+	,{0x00, DCS_CMD, LW_PACK, 0x09, 0x07, 0x00, 0xf1, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01}
+	,{0x00, DCS_CMD, SW_PACK2, 0x02, 0xf6, 0x08}
+
+	,{0x00, DCS_CMD, LW_PACK, 0x08, 0x06, 0x00, 0xf0, 0x55, 0xaa, 0x52, 0x08, 0x05}
+	,{0x00, DCS_CMD, LW_PACK, 0x05, 0x03, 0x00, 0xc4, 0x00, 0x14}
+	,{0x00, DCS_CMD, SW_PACK2, 0x02, 0xc9, 0x04}
+
+	,{0x00, DCS_CMD, LW_PACK, 0x08, 0x06, 0x00, 0xf0, 0x55, 0xaa, 0x52, 0x08, 0x01}
+	,{0x00, DCS_CMD, LW_PACK, 0x06, 0x04, 0x00, 0xb0, 0x06, 0x06, 0x06}
+	,{0x00, DCS_CMD, LW_PACK, 0x06, 0x04, 0x00, 0xb1, 0x14, 0x14, 0x14}
+	,{0x00, DCS_CMD, LW_PACK, 0x06, 0x04, 0x00, 0xb2, 0x00, 0x00, 0x00}
+	,{0x00, DCS_CMD, LW_PACK, 0x06, 0x04, 0x00, 0xb4, 0x66, 0x66, 0x66}
+	,{0x00, DCS_CMD, LW_PACK, 0x06, 0x04, 0x00, 0xb5, 0x46, 0x46, 0x46}
+	,{0x00, DCS_CMD, LW_PACK, 0x06, 0x04, 0x00, 0xb6, 0x54, 0x54, 0x54}
+	,{0x00, DCS_CMD, LW_PACK, 0x06, 0x04, 0x00, 0xb7, 0x24, 0x24, 0x24}
+	,{0x00, DCS_CMD, LW_PACK, 0x06, 0x04, 0x00, 0xb9, 0x04, 0x04, 0x04}
+	,{0x00, DCS_CMD, LW_PACK, 0x06, 0x04, 0x00, 0xba, 0x14, 0x14, 0x14}
+	,{0x80, DCS_CMD, LW_PACK, 0x06, 0x04, 0x00, 0xbe, 0x22, 0x38, 0x78}
+	,{0x80, DCS_CMD, SW_PACK2, 0x02, 0x35, 0x00}
+
+	//add by yuanzheng
+	,{0x80, DCS_CMD, SW_PACK1, 0x01, 0x11}
+	,{0x80, DCS_CMD, SW_PACK1, 0x01, 0x29}
+};
+
+static uint8_t oled_cmds_suspend[][ROW_LINE] = {
+	{0x0A, DCS_CMD, SW_PACK1, 0x01, 0x28},
+	{0x78, DCS_CMD, SW_PACK1, 0x01, 0x10},
+};
+
+static uint8_t oled_cmds_resume[][ROW_LINE] = {
+//	{0x00, DCS_CMD, LW_PACK, 0x08, 0x06, 0x00, 0xf0, 0x55, 0xaa, 0x52, 0x08, 0x00}
+//	,{0x00, DCS_CMD, LW_PACK, 0x06, 0x04, 0x00, 0xb0, 0x00, 0x10, 0x10}
+//	,{0x00, DCS_CMD, SW_PACK2, 0x02, 0xba, 0x60}
+//	,{0x00, DCS_CMD, LW_PACK, 0x0a, 0x08, 0x00, 0xbb, 0x77, 0x77, 0x77, 0x77, 0x77, 0x77, 0x77}
+//	,{0x00, DCS_CMD, LW_PACK, 0x08, 0x06, 0x00, 0xf0, 0x55, 0xaa, 0x52, 0x08, 0x02}
+//	,{0x00, DCS_CMD, SW_PACK2, 0x02, 0xca, 0x04}
+//	,{0x00, DCS_CMD, SW_PACK2, 0x02, 0xe1, 0x00}
+//	,{0x00, DCS_CMD, SW_PACK2, 0x02, 0xe2, 0x0a}
+//	,{0x00, DCS_CMD, SW_PACK2, 0x02, 0xe3, 0x40}
+//	,{0x00, DCS_CMD, LW_PACK, 0x07, 0x05, 0x00, 0xe7, 0x00, 0x00, 0x00, 0x00}
+//	,{0x00, DCS_CMD, LW_PACK, 0x0b, 0x09, 0x00, 0xed, 0x48, 0x00, 0xe0, 0x13, 0x08, 0x00, 0x91, 0x08}
+//	,{0x00, DCS_CMD, LW_PACK, 0x09, 0x07, 0x00, 0xfd, 0x00, 0x08, 0x1c, 0x00, 0x00, 0x01}
+//	,{0x00, DCS_CMD, LW_PACK, 0x0e, 0x0c, 0x00, 0xc3, 0x11, 0x24, 0x04, 0x0a, 0x02, 0x04, 0x00, 0x1c, 0x10, 0xf0, 0x00}
+//	,{0x00, DCS_CMD, LW_PACK, 0x08, 0x06, 0x00, 0xf0, 0x55, 0xaa, 0x52, 0x08, 0x03}
+//	,{0x00, DCS_CMD, SW_PACK2, 0x02, 0xe0, 0x00}
+//	,{0x00, DCS_CMD, LW_PACK, 0x09, 0x07, 0x00, 0xf1, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01}
+//	,{0x00, DCS_CMD, SW_PACK2, 0x02, 0xf6, 0x08}
+//
+//	,{0x00, DCS_CMD, LW_PACK, 0x08, 0x06, 0x00, 0xf0, 0x55, 0xaa, 0x52, 0x08, 0x05}
+//	,{0x00, DCS_CMD, LW_PACK, 0x05, 0x03, 0x00, 0xc4, 0x00, 0x14}
+//	,{0x00, DCS_CMD, SW_PACK2, 0x02, 0xc9, 0x04}
+//
+//	,{0x00, DCS_CMD, LW_PACK, 0x08, 0x06, 0x00, 0xf0, 0x55, 0xaa, 0x52, 0x08, 0x01}
+//	,{0x00, DCS_CMD, LW_PACK, 0x06, 0x04, 0x00, 0xb0, 0x06, 0x06, 0x06}
+//	,{0x00, DCS_CMD, LW_PACK, 0x06, 0x04, 0x00, 0xb1, 0x14, 0x14, 0x14}
+//	,{0x00, DCS_CMD, LW_PACK, 0x06, 0x04, 0x00, 0xb2, 0x00, 0x00, 0x00}
+//	,{0x00, DCS_CMD, LW_PACK, 0x06, 0x04, 0x00, 0xb4, 0x66, 0x66, 0x66}
+//	,{0x00, DCS_CMD, LW_PACK, 0x06, 0x04, 0x00, 0xb5, 0x46, 0x46, 0x46}
+//	,{0x00, DCS_CMD, LW_PACK, 0x06, 0x04, 0x00, 0xb6, 0x54, 0x54, 0x54}
+//	,{0x00, DCS_CMD, LW_PACK, 0x06, 0x04, 0x00, 0xb7, 0x24, 0x24, 0x24}
+//	,{0x00, DCS_CMD, LW_PACK, 0x06, 0x04, 0x00, 0xb9, 0x04, 0x04, 0x04}
+//	,{0x00, DCS_CMD, LW_PACK, 0x06, 0x04, 0x00, 0xba, 0x14, 0x14, 0x14}
+//	,{0x00, DCS_CMD, LW_PACK, 0x06, 0x04, 0x00, 0xbe, 0x22, 0x38, 0x78}
+//	,{0x00, DCS_CMD, SW_PACK2, 0x02, 0x35, 0x00}
+
+	//add by yuanzheng
+	{0x80, DCS_CMD, SW_PACK1, 0x01, 0x11}
+	,{0x00, DCS_CMD, SW_PACK1, 0x01, 0x29}
+};
+
+static uint8_t oled_pre_read_id[][ROW_LINE] = {
+	//{0x00, DCS_CMD, LW_PACK, 0x06, 0x04, 0x00, 0xB9, 0xFF, 0x83, 0x94},
+	//{0x00, DCS_CMD, LW_PACK, 0x10, 0x0E, 0x00, 0xBA, 0x33, 0x83, 0xA8, 0xAD, 0xB6, 0x00, 0x00, 0x40, 0x10, 0xFF, 0x0F, 0x00, 0x80},
+	{0x00, DCS_CMD, LW_PACK, 0x06, 0x04, 0x00, 0xB9, 0xFF, 0x83, 0x94},
+	{0x00, DCS_CMD, SW_PACK2, 0x02, 0xFE, 0xF4},
+	{0x00, DCS_CMD, SW_PACK1, 0x01, 0xFF},
+};
+
+
+#if 0
+
+
+static struct common_id_info oled_common_id_info[] = {
+	{DCS_CMD, {0x83, 0x94, 0x1A}, 3, 0x04},
+};
+static struct common_id_info oled_common_esd_info[] = {
+	{DCS_CMD, {0x1C}, 1, 0x0A},
+};
+
+static int oled_auo_rm69052_power(struct comipfb_info *fbi, int onoff)
+{
+//	int gpio_rst = fbi->pdata->gpio_rst;
+//
+//	if (gpio_rst < 0) {
+//		pr_err("no reset pin found\n");
+//		return -ENXIO;
+//	}
+//
+//	gpio_request(gpio_rst, "OLED Reset");
+
+//	if (onoff) {
+//		//change init code delay
+//		gpio_direction_output(gpio_rst, 0);
+//		pmic_voltage_set(PMIC_POWER_LCD_CORE, 0, PMIC_POWER_VOLTAGE_ENABLE);
+//		local_delay_ms(50);
+//		pmic_voltage_set(PMIC_POWER_LCD_IO, 0, PMIC_POWER_VOLTAGE_ENABLE);
+//		local_delay_ms(100);
+//		gpio_direction_output(gpio_rst, 1);
+//		local_delay_ms(180);
+//	} else {
+//		gpio_direction_output(gpio_rst, 0);
+//		pmic_voltage_set(PMIC_POWER_LCD_CORE, 0, PMIC_POWER_VOLTAGE_DISABLE);
+//		pmic_voltage_set(PMIC_POWER_LCD_IO, 0, PMIC_POWER_VOLTAGE_DISABLE);
+//		local_delay_ms(10);
+//	}
+//
+//	gpio_free(gpio_rst);
+
+	return 0;
+}
+
+static int oled_auo_rm69052_reset(struct comipfb_info *fbi)
+{
+//	int gpio_rst = fbi->pdata->gpio_rst;
+//
+//	if (gpio_rst >= 0) {
+//		gpio_request(gpio_rst, "OLED Reset");
+//		gpio_direction_output(gpio_rst, 1);
+//		local_delay_ms(10);
+//		gpio_direction_output(gpio_rst, 0);
+//		local_delay_ms(10);
+//		gpio_direction_output(gpio_rst, 1);
+//		local_delay_ms(180);
+//		gpio_free(gpio_rst);
+//	}
+	return 0;
+}
+
+static int oled_auo_rm69052_suspend(struct comipfb_info *fbi)
+{
+	int ret=0;
+//	struct comipfb_dev_timing_mipi *mipi;
+//
+//	mipi = &(fbi->cdev->timing.mipi);
+//
+//	if (mipi->display_mode == MIPI_VIDEO_MODE) {
+//		mipi_dsih_hal_mode_config(fbi, 1);
+//	}
+//
+//	comipfb_if_mipi_dev_cmds(fbi, &fbi->cdev->cmds_suspend);
+//
+//	local_delay_ms(20);
+//	mipi_dsih_dphy_enable_hs_clk(fbi, 0);
+//
+//	mipi_dsih_dphy_reset(fbi, 0);
+//	mipi_dsih_dphy_shutdown(fbi, 0);
+
+	return ret;
+}
+
+static int oled_auo_rm69052_resume(struct comipfb_info *fbi)
+{
+	int ret=0;
+//	struct comipfb_dev_timing_mipi *mipi;
+//
+//	mipi = &(fbi->cdev->timing.mipi);
+//
+//	mipi_dsih_dphy_shutdown(fbi, 1);
+//	mipi_dsih_dphy_reset(fbi, 1);
+//
+//	//if (fbi->cdev->reset)
+//	//	fbi->cdev->reset(fbi);
+//
+//	if (!(fbi->pdata->flags & COMIPFB_SLEEP_POWEROFF))
+//		ret = comipfb_if_mipi_dev_cmds(fbi, &fbi->cdev->cmds_resume);
+//	else
+//		ret = comipfb_if_mipi_dev_cmds(fbi, &fbi->cdev->cmds_init);
+//
+//	local_delay_ms(20);
+//	if (mipi->display_mode == MIPI_VIDEO_MODE) {
+//		mipi_dsih_hal_mode_config(fbi, 0);
+//	}
+//	mipi_dsih_dphy_enable_hs_clk(fbi, 1);
+
+	return ret;
+}
+
+/*frame rate 57*/
+struct comipfb_dev oled_auo_rm69052_dev = {
+	.name = "oled_auo_rm69052",
+	.interface_info = COMIPFB_MIPI_IF,
+	.lcd_id = OLED_ID_AUO_RM69052,	//OLED_ID_AUO_RM69052
+	.refresh_en = 1,
+	.bpp = 32,
+	.xres = 720,
+	.yres = 1280,
+	.flags = 0,
+	.pclk = 60000000,
+	.timing = {
+		.mipi = {
+			.hs_freq = 52000,
+			.lp_freq = 13000,		//KHZ
+			.no_lanes = 4,
+			.display_mode = MIPI_VIDEO_MODE,
+			.im_pin_val = 1,
+			.color_mode = {
+				.color_bits = COLOR_CODE_24BIT,
+			},
+			.videomode_info = {
+				.hsync = 5,
+				.hbp = 11,
+				.hfp = 16,
+				.vsync = 5,
+				.vbp = 11,
+				.vfp = 16,
+				.sync_pol = COMIPFB_VSYNC_HIGH_ACT,
+				.lp_cmd_en = 1,
+				.lp_hfp_en = 1,
+				.lp_hbp_en = 1,
+				.lp_vact_en = 1,
+				.lp_vfp_en = 1,
+				.lp_vbp_en = 1,
+				.lp_vsa_en = 1,
+				.mipi_trans_type = VIDEO_BURST_WITH_SYNC_PULSES,	//VIDEO_BURST_WITH_SYNC_PULSES,VIDEO_NON_BURST_WITH_SYNC_EVENTS,VIDEO_NON_BURST_WITH_SYNC_PULSES
+			},
+			.phytime_info = {
+				.clk_tprepare = 3, //HSBYTECLK
+			},
+			.teinfo = {
+				.te_source = 1, //external signal
+				.te_trigger_mode = 0,
+				.te_en = 0,
+				.te_sync_en = 0,
+			},
+			.ext_info = {
+				.eotp_tx_en = 0,
+			},
+		},
+	},
+//	.panel_id_info = {
+//		.id_info = oled_common_id_info,
+//		.num_id_info = 1,
+//		.prepare_cmd = {ARRAY_AND_SIZE(oled_pre_read_id)},
+//	},
+	.cmds_init = {ARRAY_AND_SIZE(oled_cmds_init)},
+	.cmds_suspend = {ARRAY_AND_SIZE(oled_cmds_suspend)},
+	.cmds_resume = {ARRAY_AND_SIZE(oled_cmds_resume)},
+	.power = oled_auo_rm69052_power,
+	.reset = oled_auo_rm69052_reset,
+	.suspend = oled_auo_rm69052_suspend,
+	.resume = oled_auo_rm69052_resume,
+//#ifdef CONFIG_FB_COMIP_ESD
+//	.esd_id_info = {
+//		.id_info = oled_common_esd_info,
+//		.num_id_info = 1,
+//	},
+//#endif
+};
+//
+//static int __init oled_auo_rm69052_init(void)
+//{
+//	return comipfb_dev_register(&oled_auo_rm69052_dev);
+//}
+
+#endif
+
 void tc358768_initialize(void)
 {
 	struct tc358768_drv_data * ddata = & dev0;
 
-	dev0.bitclk = 800000000uL;
 	if (toshiba_ddr_power_init())
 	{
 		PRINTF("TC358768 power init failure\n");
 		return;
 	}
-	stpmic1_dump_regulators();
+	//stpmic1_dump_regulators();
 	// See also:
 	// https://github.com/bbelos/rk3188-kernel/blob/master/drivers/video/rockchip/transmitter/tc358768.c
 	// https://coral.googlesource.com/linux-imx/+/refs/heads/alpha/arch/arm64/boot/dts/freescale/fsl-imx8mq-evk-dcss-rm67191.dts
@@ -2670,11 +3925,11 @@ void tc358768_initialize(void)
 	const portholder_t Video_RST = (1uL << 10);	// PA10
 	const portholder_t Video_MODE = (1uL << 14);	// PF14: Video_MODE: 0: test, 1: normal
 
-	arm_hardware_piof_outputs(Video_MODE, 1 * Video_MODE);
+	arm_hardware_piof_outputs(Video_MODE, Video_MODE);
 	arm_hardware_pioa_outputs(Video_RST, 0 * Video_RST);
 	local_delay_ms(5);
 	arm_hardware_pioa_outputs(Video_RST, 1 * Video_RST);
-	PRINTF("TC358778XBG reset off\n");
+	//PRINTF("TC358778XBG reset off\n");
 
 	local_delay_ms(300);
 
@@ -2686,15 +3941,15 @@ void tc358768_initialize(void)
 	tc358768_write(ddata, TC358768_SYSCTL, 0x001);
 	tc358768_write(ddata, TC358768_SYSCTL, 0x000);
 
-	PRINTF("TC358778XBG: Chip and Revision ID=%08lX\n", tc358768_rd_reg_16bits(TC358768_CHIPID));
-	PRINTF("TC358778XBG: System Control Register=%08lX\n", tc358768_rd_reg_16bits(TC358768_SYSCTL));
-	PRINTF("TC358778XBG: Input Control Register=%08lX\n", tc358768_rd_reg_16bits(TC358768_CONFCTL));
-	PRINTF("TC358778XBG: Data Format Control Register=%08lX\n", tc358768_rd_reg_16bits(TC358768_DATAFMT));
+	PRINTF("TC358778XBG: Chip and Revision ID=%08lX\n", tc358768_rd_reg_16or32bits(TC358768_CHIPID));
+	PRINTF("TC358778XBG: System Control Register=%08lX\n", tc358768_rd_reg_16or32bits(TC358768_SYSCTL));
+	PRINTF("TC358778XBG: Input Control Register=%08lX\n", tc358768_rd_reg_16or32bits(TC358768_CONFCTL));
+	PRINTF("TC358778XBG: Data Format Control Register=%08lX\n", tc358768_rd_reg_16or32bits(TC358768_DATAFMT));
 	tc358768_write(ddata, TC358768_DATAFMT, 0x0300);
 	local_delay_ms(100);
-	PRINTF("TC358778XBG: Data Format Control Register=%08lX\n", tc358768_rd_reg_16bits(TC358768_DATAFMT));
+	PRINTF("TC358778XBG: Data Format Control Register=%08lX\n", tc358768_rd_reg_16or32bits(TC358768_DATAFMT));
 
-	PRINTF("TC358778XBG: PLL Control Register 0=%08lX\n", tc358768_rd_reg_16bits(TC358768_PLLCTL0));
+	PRINTF("TC358778XBG: PLL Control Register 0=%08lX\n", tc358768_rd_reg_16or32bits(TC358768_PLLCTL0));
 
 	tc358768_write(ddata, TC358768_DSI_VSW, VSYNC);
 	tc358768_write(ddata, TC358768_DSI_VBPR, VBP);
@@ -2704,36 +3959,58 @@ void tc358768_initialize(void)
 	tc358768_write(ddata, TC358768_DSI_HBPR, HBP);
 	tc358768_write(ddata, TC358768_DSI_HACT, WIDTH);
 
-	PRINTF("TC358778XBG: vact=%ld\n", tc358768_rd_reg_16bits(TC358768_DSI_VACT));
-	PRINTF("TC358778XBG: hact=%ld\n", tc358768_rd_reg_16bits(TC358768_DSI_HACT));
+	PRINTF("TC358778XBG: vact=%ld\n", tc358768_rd_reg_16or32bits(TC358768_DSI_VACT));
+	PRINTF("TC358778XBG: hact=%ld\n", tc358768_rd_reg_16or32bits(TC358768_DSI_HACT));
 #endif
 
-	PRINTF("TC358778XBG: Chip and Revision ID=%04lX\n", tc358768_rd_reg_16bits(TC358768_CHIPID));
+	dev0.refclk = hardware_get_dotclock(LTDC_DOTCLK) / 4;
+	dev0.refclk = 25000000uL;
+	timings0.pixelclock = hardware_get_dotclock(LTDC_DOTCLK);
+
 	tc358768_calc_pll(ddata);
+
+	tc358768_power_off(ddata);
 
 	tc358768_power_on(ddata);
 
-	PRINTF("TC358778XBG: vact=%ld\n", tc358768_rd_reg_16bits(TC358768_DSI_VACT));
-	PRINTF("TC358778XBG: hact=%ld\n", tc358768_rd_reg_16bits(TC358768_DSI_HACT));
+	PRINTF("TC358778XBG: Data Format Control Register=%08lX\n", tc358768_rd_reg_16or32bits(TC358768_DATAFMT));
 
-#if 1
+	PRINTF("TC358778XBG: Chip and Revision ID=%04lX\n", tc358768_rd_reg_16or32bits(TC358768_CHIPID));
+
+	PRINTF("TC358778XBG: TC358768_DSI_VSW=%ld\n", tc358768_rd_reg_16or32bits(TC358768_DSI_VSW));
+	PRINTF("TC358778XBG: TC358768_DSI_VBPR=%ld\n", tc358768_rd_reg_16or32bits(TC358768_DSI_VBPR));
+	PRINTF("TC358778XBG: TC358768_DSI_VACT=%ld\n", tc358768_rd_reg_16or32bits(TC358768_DSI_VACT));
+	PRINTF("TC358778XBG: TC358768_DSI_HSW=%ld\n", tc358768_rd_reg_16or32bits(TC358768_DSI_HSW));
+	PRINTF("TC358778XBG: TC358768_DSI_HBPR=%ld\n", tc358768_rd_reg_16or32bits(TC358768_DSI_HBPR));
+	PRINTF("TC358778XBG: TC358768_DSI_HACT=%ld\n", tc358768_rd_reg_16or32bits(TC358768_DSI_HACT));
+
+}
+
+void panel_initialize(void)
+{
 	tscinit();
 	tscid();
 	for (;0;)
 	{
 		tscprint();
 	}
-#endif
 
 	// RM69052 chip
+	// also:
+	// https://github.com/1667450061/bak/blob/d5c37db8a9254783755b7bfb6823f32474febff8/arch/arm/plat-lc/drivers/video/comipfb2/oled_auo_rm69052.c
+	// https://discuss.96boards.org/t/display-problem-on-dsi-panel/1855
+
 	static uint8_t sleepout [] = { 0x11, 0x00, };
 	static uint8_t displon [] = { 0x29, 0x00, };
+	//static uint8_t readid [] = { 0x29, 0x00, };
 
 
-	local_delay_ms(200);
+	TP();
 	mipi_dsi_send_dcs_packet(sleepout, ARRAY_SIZE(sleepout));
 	local_delay_ms(200);
+	TP();
 	mipi_dsi_send_dcs_packet(displon, ARRAY_SIZE(displon));
+	TP();
 	local_delay_ms(200);
 
 	const uint8_t * pv = bigon;
@@ -2743,11 +4020,42 @@ void tc358768_initialize(void)
 		if (maxv == 0)
 			break;
 		mipi_dsi_send_dcs_packet(pv + 1, maxv + 1);
-		local_delay_ms(25);
+		local_delay_ms(100);
 		pv += maxv + 2;
+		//PRINTF("e\n");
 	}
+	TP();
+	mipi_dsi_send_dcs_packet(sleepout, ARRAY_SIZE(sleepout));
+	local_delay_ms(200);
+	TP();
+	mipi_dsi_send_dcs_packet(displon, ARRAY_SIZE(displon));
+	TP();
+	local_delay_ms(200);
+
 	PRINTF("display on\n");
 
+#if 0
+//	To stop TC358768A/TC358778 (video):
+//	1 Set FrmStop to 1’b1, wait for at least one frame time for TC358768A to stop properly
+//	2 Clear PP_En to 1’b0
+//	3 Set RstPtr to 1’b1
+//	4 Stop Video to TC358768A (optional)
+	/* set FrmStop */
+	tc358768_update_bits(ddata, TC358768_PP_MISC, 1 << 15, 1 << 15);
+	/* wait at least for one frame */
+	local_delay_ms(50);
+	/* clear PP_en */
+	tc358768_update_bits(ddata, TC358768_CONFCTL, 1 << 6, 0);
+	/* set RstPtr */
+	tc358768_update_bits(ddata, TC358768_PP_MISC, 1 << 14, 1 << 14);
+
+
++++++++
+//	To re start TC358768A/TC358778 (video):
+//	1 Start Video to TC358768A
+//	2 Clear RstPtr and FrmStop
+	tc358768_update_bits(ddata, TC358768_PP_MISC, 1 << 14, 0);
+#endif
 }
 
 #endif /* LCDMODETX_TC358778XBG */

@@ -978,13 +978,15 @@ mmio_clrsetbits_32(uintptr_t addr, uint32_t cmask, uint32_t smask)
 
 ////////////////////////
 
-#define VERBOSE PRINTF
+//#define VERBOSE PRINTF
+#define VERBOSE(...) // PRINTF
 #define ERROR PRINTF
 #define INFO PRINTF
 
 static void panic(void)
 {
 	PRINTF("sdram: panic.\n");
+	return;
 	for (;;)
 		;
 }
@@ -3052,7 +3054,7 @@ void stpmic1_dump_regulators(void)
 	for (i = 0U; i < MAX_REGUL; i++) {
 		const char *name __unused = regulators_table[i].dt_node_name;
 
-		VERBOSE("PMIC regul %s: %sable, %d mV\n",
+		PRINTF("PMIC regul %s: %sable, %d mV\n",
 			name,
 			stpmic1_is_regulator_enabled(name) ? "en" : "dis",
 			stpmic1_regulator_voltage_get(name));
@@ -3097,7 +3099,7 @@ static void initialize_pmic(void)
 		panic();
 	}
 
-	INFO("PMIC version = 0x%02lx\n", pmic_version);
+	PRINTF("PMIC version = 0x%02lx\n", pmic_version);
 	//stpmic1_dump_regulators();
 
 #if defined(IMAGE_BL2)
@@ -3388,7 +3390,7 @@ static void stm32mp1_ddr_init(struct ddr_info *priv,
 	}
 
 #if WITHSDRAM_PMC1
-	stpmic1_dump_regulators();
+	//stpmic1_dump_regulators();
 #endif /* WITHSDRAM_PMC1 */
 
 	VERBOSE("name = %s\n", config->info.name);
@@ -3586,8 +3588,8 @@ static void stm32mp1_ddr_init(struct ddr_info *priv,
 	#include "stm32mp15-mx_300MHz_2G.dtsi"	// 128k*16
 #else
 	//#include "stm32mp15-mx_1G.dtsi"	// 64k*16
-	#include "stm32mp15-mx_2G.dtsi"	// 128k*16
-	//#include "stm32mp15-mx_4G.dtsi"		// 256k*16
+	//#include "stm32mp15-mx_2G.dtsi"	// 128k*16
+	#include "stm32mp15-mx_4G.dtsi"		// 256k*16
 	//#include "stm32mp15-mx_8G.dtsi"	// 512k*16
 #endif
 // NT5CC128M16IP-DI BGA DDR3 NT5CC128M16IP DI
@@ -3851,7 +3853,7 @@ static void ddr_check_progress(uint32_t addr)
 
 static uint32_t ddr_check_rand(unsigned long sizeee)
 {
-	typedef uint32_t test_t;
+	typedef uint16_t test_t;
 	const uint32_t sizeN = sizeee / sizeof (test_t);
 	volatile test_t * const p = (volatile test_t *) STM32MP_DDR_BASE;
 	uint32_t i;
@@ -3903,9 +3905,9 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 		// no_of_filters=1 - Two filter units.
 		// address_width=31 - 32 bits.
 		// no_of_regions=8 - Nine regions.
-        PRINTF("TZC->BUILD_CONFIG=%08lX\n", TZC->BUILD_CONFIG);
-        PRINTF("TZC->ACTION=%08lX\n", TZC->ACTION);
-        PRINTF("TZC->GATE_KEEPER=%08lX\n", TZC->GATE_KEEPER);
+        //PRINTF("TZC->BUILD_CONFIG=%08lX\n", TZC->BUILD_CONFIG);
+        //PRINTF("TZC->ACTION=%08lX\n", TZC->ACTION);
+        //PRINTF("TZC->GATE_KEEPER=%08lX\n", TZC->GATE_KEEPER);
 
 		TZC->ACTION = 0x00;
 		(void) TZC->ACTION;
@@ -4046,14 +4048,14 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 	}
 	INFO("Memory size = 0x%x (%d MB)\n", uret, uret / (1024U * 1024U));
 
-#if 0
+#if 1
 	// Бесконечный тест памяти.
 	PRINTF("DDR memory tests:\n");
 #if defined (BOARD_BLINK_INITIALIZE)
 	BOARD_BLINK_INITIALIZE();
 #endif /* defined (BOARD_BLINK_INITIALIZE) */
 
-	for (;;)
+	//for (;;)
 	{
 		PRINTF("rand_val = %08lX ", (unsigned long) rand_val);
 
@@ -4075,7 +4077,7 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 			      uret, config.info.size);
 			panic();
 		}
-		int partfortest = 1;
+		int partfortest = 128;
 		uret = ddr_check_rand(config.info.size / partfortest);
 		if (uret != (config.info.size / partfortest)) {
 			ERROR("DDR random test: 0x%08x does not match DT config: 0x%08x\n",
