@@ -50,7 +50,7 @@
 	//#define FQMODEL_70200		1	// 1-st if = 70.2 MHz, 2-nd IF-200 kHz
 
 	#define FQMODEL_FPGA		1	// FPGA + IQ over I2S
-	//#define XVTR_NYQ1			1	// Support Nyquist-style frequency conversion
+	#define XVTR_NYQ1			1	// Support Nyquist-style frequency conversion
 	#if 0
 		#define DIRECT_80M0_X1		1	/* Тактовый генератор на плате 80.0 МГц */
 		#define BANDSELSTYLERE_UPCONV56M_36M	1	/* Up-conversion with working band .030..36 MHz */
@@ -92,7 +92,7 @@
 
 	#define LCDMODE_LQ043T3DX02K 1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 display */
 
-	#define LCDMODE_V2	1	/* только главный экран с тремя видеобуферами, без PIP */
+	#define LCDMODE_V2	1	/* только главный экран с тремя видеобуферами, L8, без PIP */
 
 	//#define WITHFLATLINK 1	/* Работа с TFT панелью через SN75LVDS83B	*/
 
@@ -100,7 +100,7 @@
 
 	#define LCDMODE_AT070TN90 1	/* AT070TN90 panel (800*480) - 7" display */
 
-	#define LCDMODE_V2	1	/* только главный экран с тремя видеобуферами, без PIP */
+	#define LCDMODE_V2	1	/* только главный экран с тремя видеобуферами, L8, без PIP */
 
 	//#define WITHFLATLINK 1	/* Работа с TFT панелью через SN75LVDS83B	*/
 	#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
@@ -247,6 +247,8 @@
 
 	//#define WITHRTS192	1		// Есть канал спектроанализатора - не забыть включить WITHSAI2HW
 	#define WITHRTS96		1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
+	#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */
+	#define WITHFFTSIZEAF 	512		/* Отображение спектра НЧ сигнвлв */
 	#define WITHFFTOVERLAPPOW2	1	/* Количество перекрывающися буферов FFT спектра (2^param). */
 
 	#define ENCRES_DEFAULT ENCRES_400
@@ -280,7 +282,6 @@
 	//#define WITHIFSHIFTOFFSET	(-250)	/* Начальное занчение IF SHIFT */
 	//#define WITHPBT		1	/* используется PBT (если LO3 есть) */
 	#define WITHCAT			1	/* используется CAT (через USB CDC) */
-	#define WITHDEBUG		1	/* Отладочная печать через COM-порт. */
 	//#define WITHNMEA		1	/* используется NMEA parser */
 	//#define WITHMODEM		1	/* Устройство работает как радиомодем с последовательным интерфейсом */
 	//#define WITHFREEDV	1	/* поддержка режима FreeDV - http://freedv.org/ */
@@ -348,6 +349,8 @@
 
 	#define WITHBARS		1	/* отображение S-метра и SWR-метра */
 
+	#define WITHDEFAULTVIEW		VIEW_3DSS
+
 	#define WITHDISPLAY_FPS		25
 	#define WITHDISPLAYSWR_FPS	25
 
@@ -356,7 +359,6 @@
 
 	#define WITHTOUCHGUI		1
 	#define WITHALPHA			64
-	#define FORMATFROMLIBRARY 	1
 
 	#define WITHAFSPECTRE		1
 
@@ -390,7 +392,7 @@
 
 	//#define WITHONLYBANDS 1		/* Перестройка может быть ограничена любительскими диапазонами */
 	//#define WITHBCBANDS	1		/* в таблице диапазонов присутствуют вещательные диапазоны */
-	#define WITHWARCBANDS	1	/* В таблице диапазонов присутствуют HF WARC диапазоны */
+	//#define WITHWARCBANDS	1	/* В таблице диапазонов присутствуют HF WARC диапазоны */
 	//#define WITHLFM		1	/* LFM MODE */
 	//#define WITHTEMPSENSOR	1	/* отображение данных с датчика температуры */
 	#define WITHDIRECTBANDS 1	/* Прямой переход к диапазонам по нажатиям на клавиатуре */

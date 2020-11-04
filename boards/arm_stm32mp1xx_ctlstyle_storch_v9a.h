@@ -37,11 +37,13 @@
 
 		// PLL1_1600
 		#define PLL1DIVM	2	// ref1_ck = 12 MHz
-		//#define PLL1DIVN	54	// 12*54 = 648 MHz
-		#define PLL1DIVN	66	// 12*66 = 792 MHz
 		#define PLL1DIVP	1	// MPU
 		#define PLL1DIVQ	2
 		#define PLL1DIVR	2
+
+		//#define PLL1DIVN	54	// 12*54 = 648 MHz
+		//#define PLL1DIVN	66	// 12*66 = 792 MHz
+		#define PLL1DIVN	(stm32mp1_overdrived() ? 66 : 54)	// Auto select
 
 		// PLL2_1600
 #if 1
@@ -79,11 +81,12 @@
 		// HSI version (HSI=64 MHz)
 		// PLL1_1600
 		#define PLL1DIVM	5	// ref1_ck = 12.8 MHz
-		#define PLL1DIVN	50	// x25..x100: 12.8 * 50 = 640 MHz
-		//#define PLL1DIVN	62	// x25..x100: 12.8 * 62 = 793.6 MHz
 		#define PLL1DIVP	1	// MPU
 		#define PLL1DIVQ	2
 		#define PLL1DIVR	2
+		//#define PLL1DIVN	50	// x25..x100: 12.8 * 50 = 640 MHz
+		//#define PLL1DIVN	62	// x25..x100: 12.8 * 62 = 793.6 MHz
+		#define PLL1DIVN	(stm32mp1_overdrived() ? 62 : 50)	// Auto select
 
 #if 1
 		// PLL2_1600
@@ -282,12 +285,12 @@
 	#define HARDWARE_IGNORENONVRAM	1		// отладка на платах где нет никакого NVRAM
 
 	#define DDS1_CLK_DIV	1		/* Делитель опорной частоты перед подачей в DDS1 */
+	//#define WITHSMPSYSTEM	1	/* разрешение поддержки SMP, Symmetric Multiprocessing */
 	#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
 	//#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 
 #else /* WITHISBOOTLOADER */
 
-	#define WITHSMPSYSTEM	1	/* разрешение поддержки SMP, Symmetric Multiprocessing */
 	#define ENCRES_DEFAULT ENCRES_128
 	//#define ENCRES_DEFAULT ENCRES_24
 	#define WITHDIRECTFREQENER	1 //(! CTLSTYLE_SW2011ALL && ! CTLSTYLE_UA3DKC)
@@ -327,6 +330,7 @@
 	#define WITHI2SHWTXSLAVE	1		// Передающий канал I2S (наушники) используюся в SLAVE MODE
 	//#define WITHSAI1HWTXRXMASTER	1		// SAI1 work in MASTER mode
 
+	#define WITHSMPSYSTEM	1	/* разрешение поддержки SMP, Symmetric Multiprocessing */
 	#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
 	#define WITHINTEGRATEDDSP		1	/* в программу включена инициализация и запуск DSP части. */
 
@@ -357,13 +361,20 @@
 
 	//#define WITHUSESDCARD		1	// Включение поддержки SD CARD
 	//#define WITHUSEUSBFLASH		1	// Включение поддержки USB memory stick
+	//#define WITHUSERAMDISK			1			// создание FATFS диска в озу
+	//#define WITHUSERAMDISKSIZEKB	(192uL * 1024)	// размр в килобайтах FATFS диска в озу
 
 	//#define WITHUSEAUDIOREC		1	// Запись звука на SD CARD
 	//#define WITHUSEAUDIOREC2CH	1	// Запись звука на SD CARD в стерео
 	//#define WITHUSEAUDIORECCLASSIC	1	// стандартный формат записи, без "дыр"
 
 	#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
-	#define WITHFFTOVERLAPPOW2	2	/* Количество перекрывающися буферов FFT спектра (2^param). */
+	#define WITHFFTOVERLAPPOW2	5		/* Количество перекрывающися буферов FFT спектра (2^param). */
+	#define WITHFFTSIZEWIDE 	1024	/* Отображение спектра и волопада */
+	#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
+	//#define WITHDISPLAY_FPS		25
+	#define WITHDISPLAYSWR_FPS	25
+
 	////*#define WITHRTS192 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 	#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
 
@@ -409,7 +420,7 @@
 	// +++ Эти строки можно отключать, уменьшая функциональность готового изделия
 	//#define WITHRFSG	1	/* включено управление ВЧ сигнал-генератором. */
 	#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
-	#if 0
+	#if 1
 		/* TUNER & PA board 2*RD16 by avbelnn@yandex.ru */
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
 		#define SHORTSET8	1
@@ -465,14 +476,14 @@
 	#if LCDMODE_AT070TNA2 || LCDMODE_AT070TN90
 		#if 0
 			#define WITHTOUCHGUI		1
-			#define WITHAFSPECTRE		1
+			#define WITHAFSPECTRE		1	/* показ спктра прослушиваемого НЧ сигнала. */
 			#define WITHALPHA			64
 			#define FORMATFROMLIBRARY 	1
 			#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 		#endif
+		#define WITHAFSPECTRE		1	/* показ спктра прослушиваемого НЧ сигнала. */
 	#endif /* LCDMODE_AT070TNA2 || LCDMODE_AT070TN90 */
 	//#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
-	#define WITHAFSPECTRE		1
 
 	//#define LO1PHASES	1		/* Прямой синтез первого гетеродина двумя DDS с програмимруемым сдвигом фазы */
 	#define WITHFANTIMER	1	/* выключающийся по таймеру вентилятор в усилителе мощности */

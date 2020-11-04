@@ -293,7 +293,7 @@
 		} while (0)
 #endif
 
-#define HARDWARE_USART2_INITIALIZE() do { \
+#define HARDWARE_UART2_INITIALIZE() do { \
 		arm_hardware_pioa_altfn2((1uL << 2) | (1uL << 3), AF_USART2); /* PA2: TX DATA line (2 MHz), PA3: RX data line */ \
 		arm_hardware_pioa_updown((1uL << 3), 0);	/* PA3: pull-up RX data */ \
 	} while (0)

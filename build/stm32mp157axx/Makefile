@@ -37,10 +37,12 @@ OBJDIR = ./$(OBJDIR2)
 OPT = -Ofast
 LTO = -flto
 
-# This product incorporates the ARM dual-core Cortex-A7 MPCore, where the IP version is xxxx.
-CORE = -mcpu=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4-d16
-#CORE = -mfloat-abi=hard -mfpu=vfpv4-d16
+# This product incorporates the ARM dual-core Cortex-A7 MPCore, where the IP version is r0p5
+# debug architecture ARMv7.1.
+CORE = -mcpu=cortex-a7
+CORE += -mfloat-abi=hard
 #CORE += -mcpu=cortex-a7
+#CORE += -mfpu=vfpv4-d16
 CORE += -mfpu=neon
 
 # List all default C defines here, like -D_DEBUG=1
@@ -52,6 +54,7 @@ DADEFS = -D__ASSEMBLY__=1
 DINCDIR = \
 	$(CMSISDIR)/Core_A/Include \
 	$(CMSISDIR)/DSP/Include \
+	$(CMSISDIR)/DSP/ComputeLibrary/Include \
 	$(CMSISDIR)/Core_A/Source \
 	$(CMSISDIR)/DSP/Source \
 	$(CMSISDIR)/DSP/PrivateInclude \
@@ -97,7 +100,7 @@ CPPSRC +=
 
 # List ASM source files here
 ASRC += \
- $(SRCDIR)/crt_stm32mp1.s
+ $(SRCDIR)/crt_CortexA.s
 
 # List all user directories here
 UINCDIR += ../.. ../../inc

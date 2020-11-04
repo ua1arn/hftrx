@@ -119,23 +119,23 @@ typedef struct spinlock_tag {
 
 #if WITHSMPSYSTEM
 	/* Пока привязка процессора обрабатывающего прерывание по приоритету. */
-	#define TARGETCPU_SYSTEM (1u << 1)		// CPU #1
-	#define TARGETCPU_RT 	(1u << 0)		// CPU #0
-	#define TARGETCPU_OVRT 	(1u << 1)		// CPU #1
+	#define TARGETCPU_SYSTEM (1u << 0)		// CPU #0
+	#define TARGETCPU_RT 	(1u << 1)		// CPU #1
+	#define TARGETCPU_OVRT 	(1u << 0)		// CPU #0
 
 	#define SPIN_LOCK(p) do { spin_lock(p, __FILE__, __LINE__); } while (0)
 	#define SPIN_UNLOCK(p) do { spin_unlock(p); } while (0)
 
-#if 1
-	#define SPIN_LOCK2(p, f, l) do { spin_lock2(p, (f), (l)); } while (0)
-	#define SPIN_UNLOCK2(p) do { spin_unlock(p); } while (0)
-#else
-	#define SPIN_LOCK2(p, f, l) do { } while (0)
-	#define SPIN_UNLOCK2(p) do { } while (0)
-#endif
+//#if 0
+//	#define SPIN_LOCK2(p, f, l) do { spin_lock2(p, (f), (l)); } while (0)
+//	#define SPIN_UNLOCK2(p) do { spin_unlock(p); } while (0)
+//#else
+//	#define SPIN_LOCK2(p, f, l) do { } while (0)
+//	#define SPIN_UNLOCK2(p) do { } while (0)
+//#endif
 
 	void spin_lock(volatile spinlock_t * lock, const char * file, int line);
-	void spin_lock2(volatile spinlock_t * lock, const char * file, int line);
+	//void spin_lock2(volatile spinlock_t * lock, const char * file, int line);
 	void spin_unlock(volatile spinlock_t * lock);
 
 #else /* WITHSMPSYSTEM */
@@ -167,13 +167,13 @@ typedef struct spinlock_tag {
 #elif CPUSTYLE_STM32MP1
 	#define FLASHMEMINIT	//__attribute__((section(".initdata"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 	#define FLASHMEMINITFUNC//	__attribute__((section(".initfunc"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
-	#define RAMFUNC_NONILINE __attribute__((__section__(".itcm"), noinline))
-	#define RAMFUNC			 __attribute__((__section__(".itcm")))
-	#define RAMNOINIT_D1	__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
+	#define RAMFUNC_NONILINE ////__attribute__((__section__(".itcm"), noinline))
+	#define RAMFUNC			 ////__attribute__((__section__(".itcm")))
+	#define RAMNOINIT_D1	////__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
 	#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
-	#define RAMFRAMEBUFF	__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
-	#define RAMDTCM			__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
-	#define RAMBIGDTCM		__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
+	#define RAMFRAMEBUFF	////__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
+	#define RAMDTCM			////__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
+	#define RAMBIGDTCM		////__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIGDTCM_MDMA		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
 	#define RAMHEAP __attribute__((used, section(".heap"), aligned(64))) // memory used as heap zone

@@ -58,26 +58,6 @@ typedef uint_least64_t phase_t;
 #define WITHBOTTOMDBDEFAULT 130
 #endif /* WITHBOTTOMDBVAL */
 
-enum
-{
-	BOARD_WTYPE_BLACKMAN_HARRIS,
-	BOARD_WTYPE_BLACKMAN_HARRIS_MOD,
-	BOARD_WTYPE_BLACKMAN_HARRIS_3TERM,
-	BOARD_WTYPE_BLACKMAN_HARRIS_3TERM_MOD,
-	BOARD_WTYPE_BLACKMAN_HARRIS_7TERM,
-	BOARD_WTYPE_BLACKMAN_NUTTALL,
-	BOARD_WTYPE_HAMMING,
-	BOARD_WTYPE_HANN,
-	BOARD_WTYPE_RECTANGULAR,
-	//
-	BOARD_WTYPE_count
-};
-
-#define BOARD_WTYPE_FILTERS BOARD_WTYPE_BLACKMAN_HARRIS_MOD
-#define BOARD_WTYPE_SPECTRUM BOARD_WTYPE_BLACKMAN_HARRIS_3TERM //BOARD_WTYPE_HAMMING
-
-
-
 #if defined (IF3_MODEL) && (IF3_MODEL == IF3_TYPE_DCRX) 
 	#if WITHIFSHIFT
 		#error Can not be defined WITHIFSHIFT together with FQMODEL_DCTRX
@@ -3254,6 +3234,49 @@ void spool_0p128(void);	// OPERA support
 #endif /* HYBRID_DDS_ATTINY2313 */
 
 
+#define IF3_TYPE_DCRX	1
+#define IF3_TYPE_128	2
+#define IF3_TYPE_200	3
+#define IF3_TYPE_215	4
+#define IF3_TYPE_455	5
+#define IF3_TYPE_500	6
+#define IF3_TYPE_5000	7
+#define IF3_TYPE_5500	8
+#define IF3_TYPE_5645	9	// Drake R-4C and Drake T-4XC (Drake Twins) - 5645 kHz
+#define IF3_TYPE_6000	10
+#define IF3_TYPE_8000	11
+#define IF3_TYPE_8192	12
+#define IF3_TYPE_8215	13	// кварцевые фильтры от  трансивера FT-747 - 8215 kHz
+#define IF3_TYPE_8868	14
+#define IF3_TYPE_9045	15
+#define IF3_TYPE_9000	16
+#define IF3_TYPE_10000	17
+#define IF3_TYPE_10700	18
+#define IF3_TYPE_CUSTOM	19	// параметры частот задаются отдельными define, вынесеными в board\*_cylstyle_*.h
+#define IF3_TYPE_BYPASS	20
+#define IF3_TYPE_6000_SW2015	21	// слегка другая частота верхнего ската
+#define IF3_TYPE_5250	22
+
+/* все возможные фильтры. Не ноль соответствующем бите IF3_FMASK разрешает включение/выключение данного фильтра. */
+#define IF3_FMASK_0P3	(1U << 0)	/* наличие фильтра 0.3 кГц	*/
+#define IF3_FMASK_0P5	(1U << 1)	/* наличие фильтра 0.5 кГц	*/
+#define IF3_FMASK_1P0	(1U << 2)	/* наличие фильтра 1.0 кГц	*/
+#define IF3_FMASK_1P5	(1U << 3)	/* наличие фильтра 1.5 кГц	*/
+#define IF3_FMASK_1P8	(1U << 4)	/* наличие фильтра 1.8 кГц	*/
+#define IF3_FMASK_2P1	(1U << 5)	/* наличие фильтра 2.1 кГц	*/
+#define IF3_FMASK_2P4	(1U << 6)	/* наличие фильтра 2.4 кГц	*/
+#define IF3_FMASK_2P7	(1U << 7)	/* наличие фильтра 2.7 кГц	*/
+#define IF3_FMASK_3P1	(1U << 8)	/* наличие фильтра 3.1 кГц	*/
+#define IF3_FMASK_6P0	(1U << 9)	/* наличие фильтра 6.0 кГц	*/
+#define IF3_FMASK_7P8	(1U << 10)	/* наличие фильтра 7.8 кГц	*/
+#define IF3_FMASK_8P0	(1U << 11)	/* наличие фильтра 8.0 кГц	*/
+#define IF3_FMASK_9P0	(1U << 12)	/* наличие фильтра 9.0 кГц	*/
+#define IF3_FMASK_15P0	(1U << 13)	/* наличие фильтра 15.0 кГц	*/
+#define IF3_FMASK_17P0	(1U << 14)	/* наличие фильтра 17.0 кГц	*/
+#define IF3_FMASK_120P0	(1U << 15)	/* наличие фильтра 120 кГц	*/
+
+
+
 extern uint_fast8_t s9level;		/* уровни калибровки S-метра */
 extern uint_fast8_t s9delta;		// 9 баллов - 8 интервалов - по 6 децибел каждый
 extern uint_fast8_t s9_60_delta;		// 60 dB
@@ -3321,6 +3344,8 @@ void hamradio_set_agc_fast(void);
 uint_fast8_t hamradio_get_agc_type(void);
 void hamradio_disable_keyboard_redirect(void);
 void hamradio_enable_keyboard_redirect(void);
+void hamradio_disable_encoder2_redirect (void);
+void hamradio_enable_encoder2_redirect (void);
 uint_fast8_t hamradio_set_freq (uint_fast32_t freq);
 void hamradio_set_lockmode (uint_fast8_t lock);
 int_fast16_t hamradio_if_shift(int_fast8_t step);
@@ -3330,8 +3355,6 @@ void hamradio_set_gmikeequalizer(uint_fast8_t v);
 uint_fast8_t hamradio_get_gmikeequalizerparams(uint_fast8_t i);
 void hamradio_set_gmikeequalizerparams(uint_fast8_t i, uint_fast8_t v);
 int_fast32_t hamradio_getequalizerbase(void);
-uint_fast8_t hamradio_get_gcolorsp(void);
-void hamradio_set_gcolorsp(uint_fast8_t v);
 uint_fast8_t hamradio_get_gzoomxpow2(void);
 void hamradio_set_gzoomxpow2(uint_fast8_t v);
 void hamradio_get_gtopdb_limits(uint_fast8_t * min, uint_fast8_t * max);
@@ -3340,6 +3363,7 @@ void hamradio_set_gtopdb(uint_fast8_t v);
 void hamradio_get_gbottomdb_limits(uint_fast8_t * min, uint_fast8_t * max);
 uint_fast8_t hamradio_get_gbottomdb(void);
 void hamradio_set_gbottomdb(uint_fast8_t v);
+const char * hamradio_change_view_style(uint_fast8_t v);
 
 #if WITHREVERB
 void hamradio_set_greverb(uint_fast8_t v);
@@ -3352,8 +3376,10 @@ void hamradio_set_reverb_delay(uint_fast8_t v);
 void hamradio_set_reverb_loss(uint_fast8_t v);
 #endif /* WITHREVERB */
 
-void hamradio_set_autonotch(uint_fast8_t v);
-uint_fast8_t hamradio_get_autonotch(void);
+uint_fast8_t hamradio_get_gnotch(void);
+void hamradio_set_gnotch(uint_fast8_t v);
+uint_fast8_t hamradio_get_gnotchtype(void);
+void hamradio_set_gnotchtype(uint_fast8_t v);
 void hamradio_set_gmoniflag(uint_fast8_t v);
 uint_fast8_t hamradio_get_gmoniflag(void);
 uint_fast8_t hamradio_get_gmikebust20db(void);
@@ -3399,6 +3425,12 @@ void hamradio_set_gmutespkr(uint_fast8_t v);
 #endif /* WITHSPKMUTE */
 
 uint_fast8_t hamradio_verify_freq_bands(uint_fast32_t freq, uint_fast32_t * bottom, uint_fast32_t * top);
+const char * hamradio_get_att_value(void);
+const char * hamradio_get_preamp_value(void);
+void hamradio_change_att(void);
+void hamradio_change_preamp(void);
+uint_fast8_t hamradio_moxmode(uint_fast8_t v);
+uint_fast8_t hamradio_tunemode(uint_fast8_t v);
 
 /* выбор внешнего вида прибора - стрелочный или градусник */
 enum
@@ -3406,6 +3438,16 @@ enum
 	SMETER_TYPE_BARS,
 	SMETER_TYPE_DIAL,
 	SMETER_TYPE_COUNT
+};
+
+/* стиль отображения спектра и панорамы */
+enum
+{
+	VIEW_LINE,		// ломаная линия
+	VIEW_FILL,		// залитый зеленым спектр
+	VIEW_COLOR,		// раскрашенный цветовым градиентом спектр
+	VIEW_3DSS,		// дизайн панорамы под 3DSS Yaesu
+	VIEW_COUNT
 };
 
 /* Управление частичной полосоц отображением спектра/волопада */

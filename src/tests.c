@@ -4993,6 +4993,35 @@ static void serial_irq_loopback_test(void)
 void looptests(void)
 {
 #if 0
+	{
+		// вычисления с плавающей точкой
+		//
+		//				   1.4142135623730950488016887242096981L
+		// #define M_SQRT2  1.41421356237309504880
+
+		//original: sqrt(2)=1.41421356237309514547462
+		//double:   sqrt(2)=1.41421356237309514547462
+		//float:    sqrt(2)=1.41421353816986083984375
+		char b [64];
+
+		//snprintf(b, sizeof b / sizeof b [0], "%u\n", (unsigned) SCB_GetFPUType());
+		//PRINTF(PSTR("SCB_GetFPUType: %s"), b);
+
+		snprintf(b, sizeof b / sizeof b [0], "sqrt(2)=%1.23f\n", (double) 1.41421356237309504880);
+		PRINTF(PSTR("original: %s"), b);
+
+		volatile double d0 = 2;
+		volatile double d = sqrt(d0);
+		snprintf(b, sizeof b / sizeof b [0], "sqrt(2)=%1.23f\n", d);
+		PRINTF(PSTR("double:   %s"), b);
+
+		volatile float f0 = 2;
+		volatile float f = sqrtf(f0);
+		snprintf(b, sizeof b / sizeof b [0], "sqrt(2)=%1.23f\n", f);
+		PRINTF(PSTR("float:    %s"), b);
+	}
+#endif
+#if 0
 	// Failt handlers test
 	// Data abort test
 	* (int volatile *) 0x00000100 = 44;
@@ -5111,7 +5140,7 @@ static void sdtick(void)
 }
 #endif
 
-#if LCDMODE_COLORED && ! DSTYLE_G_DUMMY && 0
+#if LCDMODE_COLORED && ! DSTYLE_G_DUMMY && 1
 
 
 
@@ -5141,14 +5170,14 @@ static void display_solidbar(
 
 // Получение псевдослучайныз чисел.
 // 0 .. num-1
-static int local_randomgr( int num )
+static int local_randomgr(unsigned long num)
 {
 
-	static unsigned long rand_val = 123456UL;
+	static unsigned long rand_val = 123456uL;
 
 	if (rand_val & 0x80000000UL)
 		rand_val = (rand_val << 1);
-	else	rand_val = (rand_val << 1) ^0x201051UL;
+	else	rand_val = (rand_val << 1) ^ 0x201051uL;
 
 	return (rand_val % num);
 
@@ -5161,8 +5190,13 @@ static int local_randomgr( int num )
 
 static void BarTest(void)
 {
-	unsigned n = 20000;
-	for (;n --;)
+	//PRINTF("BarTest\n");
+
+	board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
+	board_update();
+	int forever = 0;
+	unsigned n = 2000;
+	for (;forever || n --;)
 	{                    /* Until user enters a key...   */
 		const int r = local_randomgr(256);
 		const int g = local_randomgr(256);
@@ -5176,17 +5210,20 @@ static void BarTest(void)
 		int y2 = local_randomgr(DIM_Y);
 
 		display_solidbar(x, y, x2, y2, color);
-		//local_delay_ms(50);
+		display_flush();
+		local_delay_ms(5);
 	}
 
 	//getch();             /* Pause for user's response    */
 }
 
-
-
 static  void
-GrideTest(void)
+GridTest(void)
 {
+	PRINTF("GridTest\n");
+	board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
+	board_update();
+
 	int     xm, ym, xm4, ym4;
 	int xm1, ym1;
 	unsigned long col1, col20, col21, col22, col23, col3;
@@ -5241,8 +5278,9 @@ GrideTest(void)
 	display_line(0,  ym, 0,  0,  col3);
 	display_line(0,  0,  xm, ym, col3);
 	display_line(0,  ym, xm, 0,  col3);
+	display_flush();
 
-	//getch();
+	local_delay_ms((300));
 
 }
 
@@ -5312,6 +5350,61 @@ static void RAMFUNC_NONILINE cplxmlasave(cplxf *d, int len) {
 
 #endif
 
+#if (__CORTEX_A != 0)
+
+static void disableAllIRQs(void)
+{
+	IRQ_Disable(43);	// DMA1_Stream0_IRQn
+	IRQ_Disable(47);	// DMA1_Stream4_IRQn
+	IRQ_Disable(89);	// DMA2_Stream1_IRQn
+	IRQ_Disable(100);	// DMA2_Stream5_IRQn
+//	IRQ_Disable(106);	// USBH_OHCI_IRQn
+//	IRQ_Disable(107);	// USBH_EHCI_IRQn
+	IRQ_Disable(82);	// TIM5_IRQn systick
+//	IRQ_Disable(61);	// TIM3_IRQn elkey
+	IRQ_Disable(99);	// EXTI9_IRQn
+	IRQ_Disable(109);	// EXTI13_IRQn
+	IRQ_Disable(50);	// ADC1_IRQn
+	IRQ_Disable(122);	// ADC2_IRQn
+	IRQ_Disable(130);	// OTG_IRQn
+
+	// Get ITLinesNumber
+	const unsigned n = ((GIC_DistributorInfo() & 0x1f) + 1) * 32;
+	unsigned i;
+	// 32 - skip SGI handlers (keep enabled for CPU1 start).
+	for (i = 32; i < n; ++ i)
+	{
+		if (IRQ_GetEnableState(i))
+			PRINTF("disableAllIRQs: active=%u // IRQ_Disable(%u); \n", i, i);
+		//IRQ_Disable(i);
+	}
+	PRINTF("disableAllIRQs: n=%u\n", n);
+
+}
+#endif /* (__CORTEX_A != 0) */
+
+#if (WITHTWIHW || WITHTWISW)
+static uint_fast32_t any_rd_reg_32bits(uint_fast8_t i2caddr, uint_fast8_t register_id)
+{
+	uint8_t v0, v1, v2, v3;
+
+	i2c_start(i2caddr | 0x00);
+	i2c_write_withrestart(register_id);
+	i2c_start(i2caddr | 0x01);
+	i2c_read(& v0, I2C_READ_ACK_1);	// ||
+	i2c_read(& v1, I2C_READ_ACK);	// ||
+	i2c_read(& v2, I2C_READ_ACK);	// ||
+	i2c_read(& v3, I2C_READ_NACK);	// ||
+
+	return
+			(((unsigned long) v3) << 24) |
+			(((unsigned long) v2) << 16) |
+			(((unsigned long) v1) << 8) |
+			(((unsigned long) v0) << 0) |
+			0;
+}
+#endif
+
 void hightests(void)
 {
 #if WITHLTDCHW && LCDMODE_LTDC
@@ -5324,7 +5417,35 @@ void hightests(void)
 		PRINTF(PSTR("__GNUC__=%d, __GNUC_MINOR__=%d\n"), (int) __GNUC__, (int) __GNUC_MINOR__);
 	}
 #endif
-#if CPUSTYLE_STM32MP1
+#if 0 && (__CORTEX_A != 0)
+	{
+
+		PRINTF(PSTR("FPEXC=%08lX\n"), (unsigned long) __get_FPEXC());
+		__set_FPEXC(__get_FPEXC() | 0x80000000uL);
+		PRINTF(PSTR("FPEXC=%08lX\n"), (unsigned long) __get_FPEXC());
+	}
+#endif
+#if 0 && (WITHTWIHW || WITHTWISW)
+	{
+		unsigned i;
+		for (i = 1; i < 127; ++ i)
+		{
+			PRINTF("I2C 7-bit addr %02X: ID=%08lX\n", i, any_rd_reg_32bits(i * 2, 0));
+		}
+	}
+#endif
+#if 0 && CPUSTYLE_STM32MP1
+	{
+		//	This register is used by the MPU to check the reset source. This register is updated by the
+		//	BOOTROM code, after a power-on reset (por_rst), a system reset (nreset), or an exit from
+		//	Standby or CStandby.
+		PRINTF(PSTR("MP_RSTSCLRR=%08lX\n"), (unsigned long) RCC->MP_RSTSCLRR);
+		RCC->MP_RSTSCLRR = RCC->MP_RSTSCLRR;
+		PRINTF(PSTR("MP_RSTSCLRR=%08lX\n"), (unsigned long) RCC->MP_RSTSCLRR);
+		PRINTF(PSTR("ACTLR=%08lX\n"), (unsigned long) __get_ACTLR());
+	}
+#endif
+#if 0 && CPUSTYLE_STM32MP1
 	{
 
 		RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_BSECEN;
@@ -5337,7 +5458,7 @@ void hightests(void)
 	//	0x01: STM32MP157Ax
 	//	0x80: STM32MP157Fx
 	//	0x81: STM32MP157Dx
-		unsigned rpn = ((* (volatile uint32_t *) RPN_BASE) & RPN_ID_Msk) >> RPN_ID_Pos;
+		const unsigned rpn = ((* (volatile uint32_t *) RPN_BASE) & RPN_ID_Msk) >> RPN_ID_Pos;
 		switch (rpn)
 		{
 		case 0x24: PRINTF(PSTR("STM32MP153Cx\n")); break;
@@ -5382,6 +5503,12 @@ void hightests(void)
 			// R7S721 @360 MHz with NEON:
 			// cplxmla & cplxmlasave: 0.7 kHz
 
+			// stm32mp1 @800, -mcpu=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4-d16  : 1.85 kHz
+			// stm32mp1 @800, -mcpu=cortex-a7 -mfloat-abi=hard -mfpu=neon -mfpu=vfpv4-d16 : 1.85 kHz
+			// stm32mp1 @800, -mcpu=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4-d16 -mfpu=neon : 2.65 kHz
+			// stm32mp1 @800, -mcpu=cortex-a7 -mfloat-abi=hard -mfpu=neon : 2.65 kHz
+
+
 			cplxmla(src, dst, refv,  FFTZS);
 			cplxmlasave(dst, FFTZS);
 
@@ -5393,6 +5520,7 @@ void hightests(void)
 	#else /* CPUSTYLE_R7S721 */
 				(GPIOA)->BSRR = BSRR_S(mask);
 	#endif /* CPUSTYLE_R7S721 */
+				//BOARD_BLINK_SETSTATE(1);
 			}
 			else
 			{
@@ -5402,6 +5530,7 @@ void hightests(void)
 		#else /* CPUSTYLE_R7S721 */
 					(GPIOA)->BSRR = BSRR_C(mask);
 		#endif /* CPUSTYLE_R7S721 */
+				//BOARD_BLINK_SETSTATE(0);
 			}
 		}
 
@@ -5574,13 +5703,15 @@ void hightests(void)
 		snprintf(b, sizeof b / sizeof b [0], "sqrt(2)=%1.23f\n", (double) 1.41421356237309504880);
 		PRINTF(PSTR("original: %s"), b);
 
-		double d = sqrt(2);
+		volatile double d0 = 2;
+		volatile double d = sqrt(d0);
 		snprintf(b, sizeof b / sizeof b [0], "sqrt(2)=%1.23f\n", d);
-		PRINTF(PSTR("double: %s"), b);
+		PRINTF(PSTR("double:   %s"), b);
 
-		float f = sqrtf(2);
+		volatile float f0 = 2;
+		volatile float f = sqrtf(f0);
 		snprintf(b, sizeof b / sizeof b [0], "sqrt(2)=%1.23f\n", f);
-		PRINTF(PSTR("float:  %s"), b);
+		PRINTF(PSTR("float:    %s"), b);
 	}
 #endif
 #if 0 && CTLSTYLE_V1V
@@ -6220,11 +6351,17 @@ void hightests(void)
 		}
 	}
 #endif
-#if 0 && LCDMODE_COLORED && ! DSTYLE_G_DUMMY
+#if 1 && LCDMODE_COLORED && ! DSTYLE_G_DUMMY
 	{
+		unsigned cnt;
 		display2_bgreset();
-		//GrideTest();
-		BarTest();
+		for (cnt = 0; ; ++ cnt)
+		{
+			//disableAllIRQs();
+			//GridTest();
+			BarTest();
+			PRINTF("BarTest: %u\n", cnt);
+		}
 	}
 #endif
 #if 0 && WITHLTDCHW && LCDMODE_COLORED && ! DSTYLE_G_DUMMY
@@ -6257,7 +6394,7 @@ void hightests(void)
 			}
 		}
 
-		arm_hardware_flush((uintptr_t) fr, (uint_fast32_t) DIM_X * DIM_Y * sizeof (PACKEDCOLORMAIN_T));
+		arm_hardware_flush((uintptr_t) fr, (uint_fast32_t) GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T));
 		arm_hardware_ltdc_main_set((uintptr_t) fr);
 		for (;;)
 			;
@@ -6275,32 +6412,32 @@ void hightests(void)
 		display2_bgreset();
 		colmain_setcolors(COLORMAIN_WHITE, COLORMAIN_BLACK);
 
-			// touch screen test
-			for (;;)
+		// touch screen test
+		for (;;)
+		{
+			PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
+			char msg [64];
+			uint_fast16_t x, y;
+			if (board_tsc_getxy(& x, & y))
 			{
-				PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
-
-				uint_fast16_t x, y;
-				if (board_tsc_getxy(& x, & y))
-				{
-					PRINTF(PSTR("board_tsc_getxy: x=%5d, y=%5d\n"), x, y);
-					colmain_fillrect(fr, DIM_X, DIM_Y, markerx, markery, gridx, gridy, COLORMAIN_BLACK);
-					markerx = x / gridx * gridx;
-					markery = y / gridy * gridy;
-					colmain_fillrect(fr, DIM_X, DIM_Y, markerx, markery, gridx, gridy, COLORMAIN_WHITE);
-					display_at(22, 26,"Pressed");
-				} else {
-					display_at(22, 26,"       ");
-					colmain_fillrect(fr, DIM_X, DIM_Y, markerx, markery, gridx, gridy, COLORMAIN_BLACK);
-				}
-				local_delay_ms(10);
-
-				arm_hardware_flush((uintptr_t) fr, (uint_fast32_t) DIM_X * DIM_Y * sizeof (PACKEDCOLORMAIN_T));
-				arm_hardware_ltdc_main_set((uintptr_t) fr);
+				PRINTF(PSTR("board_tsc_getxy: x=%5d, y=%5d\n"), (int) x, (int) y);
+				local_snprintf_P(msg, ARRAY_SIZE(msg), PSTR("x=%5d, y=%5d"), (int) x, (int) y);
+				colmain_fillrect(fr, DIM_X, DIM_Y, markerx, markery, gridx, gridy, COLORMAIN_BLACK);
+				markerx = x / gridx * gridx;
+				markery = y / gridy * gridy;
+				colmain_fillrect(fr, DIM_X, DIM_Y, markerx, markery, gridx, gridy, COLORMAIN_WHITE);
+			} else {
+				memset(msg, ' ', 63);
+				msg [63] = '\0';
+				colmain_fillrect(fr, DIM_X, DIM_Y, markerx, markery, gridx, gridy, COLORMAIN_BLACK);
 			}
+			display_at(22, 26, msg);
+			local_delay_ms(10);
 
+			arm_hardware_flush((uintptr_t) fr, (uint_fast32_t) GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T));
+			arm_hardware_ltdc_main_set((uintptr_t) fr);
 		}
-
+	}
 #endif
 #if 0 && (CTLSTYLE_V1E || CTLSTYLE_V1F)
 	{

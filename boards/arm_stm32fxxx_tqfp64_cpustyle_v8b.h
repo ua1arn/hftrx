@@ -41,7 +41,7 @@
 		//#define WITHUART2HW	1	/* Выход через PA2 Используется периферийный контроллер последовательного порта #2 */
 		//#define WITHDEBUG_USART2	1
 		//#define WITHNMEA_USART2		1
-		#define HARDWARE_USART2_INITIALIZE() do { \
+		#define HARDWARE_UART2_INITIALIZE() do { \
 				arm_hardware_pioa_altfn2((1U << 2), AF_USART2); /* PA2: TX DATA line (2 MHz) */ \
 			} while (0)
 	#endif
@@ -56,7 +56,7 @@
 	#define WITHNMEA_USART1		1
 
 	#if 0
-		#define HARDWARE_USART1_INITIALIZE() do { \
+		#define HARDWARE_UART1_INITIALIZE() do { \
 				arm_hardware_pioa_altfn2((1U << 9) | (1U << 10), AF_USART1); /* PA9: TX DATA line (2 MHz), PA10: RX data line */ \
 				arm_hardware_pioa_updown((1U << 10), 0);	/* PA10: pull-up RX data */ \
 			} while (0)
@@ -384,7 +384,7 @@
 	#define HARDWARE_SPI_DISCONNECT_MOSI() do { \
 			arm_hardware_piob_outputs(SPI_MOSI_BIT, SPI_MOSI_BIT);	/* PIO enable for MOSI bit (SD CARD read support)  */ \
 		} while (0)
-	#define HARDWARE_USART1_INITIALIZE() do { \
+	#define HARDWARE_UART1_INITIALIZE() do { \
 			arm_hardware_pioa_altfn2((1U << 9), 255);	/* TX DATA line (2 MHz) */ \
 			arm_hardware_pioa_inputs((1U << 10));		/* RX data line */ \
 			arm_hardware_pioa_updown((1U << 10), 0);	/* pull-up RX data */ \
@@ -417,7 +417,7 @@
 	#define HARDWARE_SPI_DISCONNECT_MOSI() do { \
 			arm_hardware_piob_outputs(SPI_MOSI_BIT, SPI_MOSI_BIT);	/* PIO enable for MOSI bit (SD CARD read support)  */ \
 		} while (0)
-	#define HARDWARE_USART1_INITIALIZE() do { \
+	#define HARDWARE_UART1_INITIALIZE() do { \
 			arm_hardware_pioa_altfn2((1U << 9) | (1U << 10), 7 /* AF_USART1 */); /* TX DATA line (2 MHz), RX data line */ \
 			arm_hardware_pioa_updown((1U << 10), 0);	/* pull-up RX data */ \
 		} while (0)

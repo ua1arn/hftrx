@@ -302,6 +302,11 @@ display_clear(void)
 	lph88_clear(bg);
 }
 
+// для framebufer дисплеев - вытолкнуть кэш память
+void display_flush(void)
+{
+}
+
 void
 //NOINLINEAT
 colmain_setcolors(COLORMAIN_T fg, COLORMAIN_T bg)

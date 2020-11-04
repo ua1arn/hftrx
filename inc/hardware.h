@@ -164,8 +164,6 @@ extern "C" {
 
 	#define ALIGNX_BEGIN __attribute__ ((aligned(32)))
 	#define ALIGNX_END /* nothing */
-	#define ALIGN1K_BEGIN __attribute__ ((aligned(1024)))
-	#define ALIGN1K_END /* nothing */
 
 	//#define DCACHEROWSIZE __SCB_DCACHE_LINE_SIZE  //32U /*!< Cortex-M7 cache line size is fixed to 32 bytes (8 words). See also register SCB_CCSIDR */
 	//#define ICACHEROWSIZE __SCB_ICACHE_LINE_SIZE  //32U /*!< Cortex-M7 cache line size is fixed to 32 bytes (8 words). See also register SCB_CCSIDR */
@@ -191,10 +189,8 @@ extern "C" {
 
 	#include "armcpu/stm32f7xx.h"
 
-	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
+	#define ALIGNX_BEGIN __attribute__ ((aligned(32)))
 	#define ALIGNX_END /* nothing */
-	#define ALIGN1K_BEGIN __attribute__ ((aligned(1024)))
-	#define ALIGN1K_END /* nothing */
 
 	//#define DCACHEROWSIZE __SCB_DCACHE_LINE_SIZE  //32U /*!< Cortex-M7 cache line size is fixed to 32 bytes (8 words). See also register SCB_CCSIDR */
 	//#define ICACHEROWSIZE __SCB_ICACHE_LINE_SIZE  //32U /*!< Cortex-M7 cache line size is fixed to 32 bytes (8 words). See also register SCB_CCSIDR */
@@ -219,10 +215,8 @@ extern "C" {
 
 	#include "armcpu/stm32f4xx.h"
 
-	#define ALIGNX_BEGIN __attribute__ ((aligned(16)))
+	#define ALIGNX_BEGIN __attribute__ ((aligned(4)))
 	#define ALIGNX_END /* nothing */
-	#define ALIGN1K_BEGIN __attribute__ ((aligned(1024)))
-	#define ALIGN1K_END /* nothing */
 
 	//#define DCACHEROWSIZE __SCB_DCACHE_LINE_SIZE  //32U /*!< Cortex-M7 cache line size is fixed to 32 bytes (8 words). See also register SCB_CCSIDR */
 	//#define ICACHEROWSIZE __SCB_ICACHE_LINE_SIZE  //32U /*!< Cortex-M7 cache line size is fixed to 32 bytes (8 words). See also register SCB_CCSIDR */
@@ -248,10 +242,8 @@ extern "C" {
 	// STM32F303VC processors
 	#include "armcpu/stm32f30x.h"
 
-	#define ALIGNX_BEGIN __attribute__ ((aligned(16)))
+	#define ALIGNX_BEGIN __attribute__ ((aligned(4)))
 	#define ALIGNX_END /* nothing */
-	#define ALIGN1K_BEGIN __attribute__ ((aligned(1024)))
-	#define ALIGN1K_END /* nothing */
 
 	#if __ARM_NEON
 		#define ARM_MATH_NEON 1
@@ -271,10 +263,8 @@ extern "C" {
 
 	#include "armcpu/stm32f1xx.h"
 
-	#define ALIGNX_BEGIN __attribute__ ((aligned(16)))
+	#define ALIGNX_BEGIN __attribute__ ((aligned(4)))
 	#define ALIGNX_END /* nothing */
-	#define ALIGN1K_BEGIN __attribute__ ((aligned(1024)))
-	#define ALIGN1K_END /* nothing */
 
 	#if __ARM_NEON
 		#define ARM_MATH_NEON 1
@@ -294,10 +284,8 @@ extern "C" {
 	
 	#include "armcpu/stm32f0xx.h"
 
-	#define ALIGNX_BEGIN __attribute__ ((aligned(16)))
+	#define ALIGNX_BEGIN __attribute__ ((aligned(4)))
 	#define ALIGNX_END /* nothing */
-	#define ALIGN1K_BEGIN __attribute__ ((aligned(1024)))
-	#define ALIGN1K_END /* nothing */
 
 	#if __ARM_NEON
 		#define ARM_MATH_NEON 1
@@ -316,10 +304,8 @@ extern "C" {
 	#define CPUSTYLE_ARM_CM0	1		/* архитектура процессора CORTEX M0 */
 	#include "armcpu/stm32l0xx.h"
 
-	#define ALIGNX_BEGIN __attribute__ ((aligned(16)))
+	#define ALIGNX_BEGIN __attribute__ ((aligned(4)))
 	#define ALIGNX_END /* nothing */
-	#define ALIGN1K_BEGIN __attribute__ ((aligned(1024)))
-	#define ALIGN1K_END /* nothing */
 
 	#if __ARM_NEON
 		#define ARM_MATH_NEON 1
@@ -449,8 +435,6 @@ extern "C" {
 
 	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
 	#define ALIGNX_END /* nothing */
-	#define ALIGN1K_BEGIN __attribute__ ((aligned(1024)))
-	#define ALIGN1K_END /* nothing */
 
 	#if __ARM_NEON
 		//#define ARM_MATH_NEON 1
@@ -482,8 +466,6 @@ extern "C" {
 
 	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
 	#define ALIGNX_END /* nothing */
-	#define ALIGN1K_BEGIN __attribute__ ((aligned(1024)))
-	#define ALIGN1K_END /* nothing */
 
 	#if __ARM_NEON
 		//#define ARM_MATH_NEON 1
@@ -694,16 +676,24 @@ void hardware_uart1_set_speed(uint_fast32_t baudrate);
 void hardware_uart1_tx(void * ctx, uint_fast8_t c);	/* передача символа после прерывания о готовности передатчика */
 void hardware_uart1_enabletx(uint_fast8_t state);	/* вызывается из обработчика прерываний */
 void hardware_uart1_enablerx(uint_fast8_t state);	/* вызывается из обработчика прерываний */
-uint_fast8_t hardware_usart1_putchar(uint_fast8_t c);/* передача символа если готов порт */
-uint_fast8_t hardware_usart1_getchar(char * cp); /* приём символа, если готов порт */
+uint_fast8_t hardware_uart1_putchar(uint_fast8_t c);/* передача символа если готов порт */
+uint_fast8_t hardware_uart1_getchar(char * cp); /* приём символа, если готов порт */
 
 void hardware_uart2_initialize(uint_fast8_t debug);
 void hardware_uart2_set_speed(uint_fast32_t baudrate);
 void hardware_uart2_tx(void * ctx, uint_fast8_t c);	/* передача символа после прерывания о готовности передатчика */
 void hardware_uart2_enabletx(uint_fast8_t state);	/* вызывается из обработчика прерываний */
 void hardware_uart2_enablerx(uint_fast8_t state);	/* вызывается из обработчика прерываний */
-uint_fast8_t hardware_usart2_putchar(uint_fast8_t c);/* передача символа если готов порт */
-uint_fast8_t hardware_usart2_getchar(char * cp); /* приём символа, если готов порт */
+uint_fast8_t hardware_uart2_putchar(uint_fast8_t c);/* передача символа если готов порт */
+uint_fast8_t hardware_uart2_getchar(char * cp); /* приём символа, если готов порт */
+
+void hardware_uart4_initialize(uint_fast8_t debug);
+void hardware_uart4_set_speed(uint_fast32_t baudrate);
+void hardware_uart4_tx(void * ctx, uint_fast8_t c);	/* передача символа после прерывания о готовности передатчика */
+void hardware_uart4_enabletx(uint_fast8_t state);	/* вызывается из обработчика прерываний */
+void hardware_uart4_enablerx(uint_fast8_t state);	/* вызывается из обработчика прерываний */
+uint_fast8_t hardware_uart4_putchar(uint_fast8_t c);/* передача символа если готов порт */
+uint_fast8_t hardware_uart4_getchar(char * cp); /* приём символа, если готов порт */
 
 void usbd_cdc_tx(void * ctx, uint_fast8_t c);			/* передача символа после прерывания о готовности передатчика - вызывается из HARDWARE_CDC_ONTXCHAR */
 void usbd_cdc_enabletx(uint_fast8_t state);	/* вызывается из обработчика прерываний */
@@ -719,18 +709,30 @@ void debugusb_sendchar(void * ctx);			/* вызывается из обрабо�
 /* TWI (I2C) interface */
 #define I2C_RETRIES 3	/* количество повторов */
 void i2c_initialize(void);
-void i2c_start(uint_fast8_t address);
 
+void i2c_start(uint_fast8_t address);
 void i2c_read(uint8_t * pdata, uint_fast8_t acknak);
+
+// Работа со вторым каналом I2C
+void i2c2_start(uint_fast8_t address);
+void i2c2_read(uint8_t * pdata, uint_fast8_t acknak);
+
 
 #define I2C_READ_ACK 0  // i2c_read parameter
 #define I2C_READ_ACK_1 1  // i2c_read parameter
 #define I2C_READ_NACK 2		// ack_type - last parameterr in read block
 #define I2C_READ_ACK_NACK 3		// чтение первого и единственного байта по I2C
+
 void i2c_write(uint_fast8_t data);
 void i2c_write_withrestart(uint_fast8_t data);	// запись, после чего restart
 void i2c_waitsend(void);	// Вызвать после последнего i2c_write()
 void i2c_stop(void);
+
+// Работа со вторым каналом I2C
+void i2c2_write(uint_fast8_t data);
+void i2c2_write_withrestart(uint_fast8_t data);	// запись, после чего restart
+void i2c2_waitsend(void);	// Вызвать после последнего i2c_write()
+void i2c2_stop(void);
 
 void hardware_twi_master_configure(void);
 
@@ -744,6 +746,7 @@ void arm_hardware_ltdc_initialize(void);	// LCD-TFT Controller (LTDC) with frame
 void arm_hardware_ltdc_main_set(uintptr_t addr);	// Set MAIN frame buffer address.
 void arm_hardware_ltdc_pip_set(uintptr_t addr);	// Set PIP frame buffer address.
 void arm_hardware_ltdc_pip_off(void);	// Turn PIP off (main layer only).
+void arm_hardware_ltdc_L8_palette(void);	// Palette reload
 
 uint_fast8_t usbd_cdc1_getrts(void);
 uint_fast8_t usbd_cdc1_getdtr(void);
@@ -914,10 +917,14 @@ void arm_hardware_set_handler_system(uint_fast16_t int_id, void (* handler)(void
 void audioproc_spool_user(void);	// вызывать при выполнении длительных операций
 
 void hardware_set_dotclock(unsigned long dotfreq);
+unsigned long hardware_get_dotclock(unsigned long dotfreq);
 void hardware_nonguiyield(void);
+uint_fast8_t stm32mp1_overdrived(void);	// return 1 if CPU supports 800 MHz clock
 
 uint_fast32_t display_getdotclock(void);
 
+int toshiba_ddr_power_init(void);
+void stpmic1_dump_regulators(void);
 
 #define USBALIGN_BEGIN __attribute__ ((aligned (64)))
 #define USBALIGN_END /* nothing */

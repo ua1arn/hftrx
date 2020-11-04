@@ -39,7 +39,7 @@ typedef PACKEDCOLORMAIN_T FRAMEBUFF_T [LCDMODE_MAIN_PAGES] [GXSIZE(DIM_SECOND, D
 	RAMFRAMEBUFF ALIGNX_BEGIN PACKEDCOLORMAIN_T fbf0 [GXSIZE(DIM_SECOND, DIM_FIRST)] ALIGNX_END;
 	RAMFRAMEBUFF ALIGNX_BEGIN PACKEDCOLORMAIN_T fbf1 [GXSIZE(DIM_SECOND, DIM_FIRST)] ALIGNX_END;
 	RAMFRAMEBUFF ALIGNX_BEGIN PACKEDCOLORMAIN_T fbf2 [GXSIZE(DIM_SECOND, DIM_FIRST)] ALIGNX_END;
-	static PACKEDCOLORMAIN_T * const fbfs [LCDMODE_MAIN_PAGES] =
+	static PACKEDCOLORMAIN_T * const fbfs [] =
 	{
 			fbf0, fbf1, fbf2,
 	};
@@ -48,19 +48,19 @@ typedef PACKEDCOLORMAIN_T FRAMEBUFF_T [LCDMODE_MAIN_PAGES] [GXSIZE(DIM_SECOND, D
 
 	void colmain_fb_next(void)
 	{
-		mainphase = (mainphase + 1) % LCDMODE_MAIN_PAGES;
+		mainphase = (mainphase + 1) % ARRAY_SIZE(fbfs);
 	}
 
 	PACKEDCOLORMAIN_T *
 	colmain_fb_draw(void)
 	{
-		return fbfs [(mainphase + 1) % LCDMODE_MAIN_PAGES];
+		return fbfs [(mainphase + 1) % ARRAY_SIZE(fbfs)];
 	}
 
 	PACKEDCOLORMAIN_T *
 	colmain_fb_show(void)
 	{
-		return fbfs [(mainphase + 0) % LCDMODE_MAIN_PAGES];
+		return fbfs [(mainphase + 0) % ARRAY_SIZE(fbfs)];
 	}
 
 #elif WITHSDRAMHW && LCDMODE_LTDCSDRAMBUFF
@@ -126,11 +126,20 @@ display_fillrect(
 	COLORMAIN_T color
 	)
 {
-	PACKEDCOLORMAIN_T * const buffer = colmain_fb_draw();
-	const uint_fast16_t dx = DIM_X;
-	const uint_fast16_t dy = DIM_Y;
+	colmain_fillrect(colmain_fb_draw(), DIM_X, DIM_Y, x, y, w, h, color);
+}
 
-	colmain_fillrect(buffer, dx, dy, x, y, w, h, color);
+/* рисование линии на основном экране произвольным цветом
+*/
+void
+display_line(
+	int x1, int y1,
+	int x2, int y2,
+	COLORMAIN_T color
+	)
+{
+	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
+	colmain_line(fr, DIM_X, DIM_Y, x1, y1, x2, y2, color, 0);
 }
 
 #endif /* LCDMODE_LTDC */
@@ -301,7 +310,17 @@ void colmain_setcolors3(COLORMAIN_T fg, COLORMAIN_T bg, COLORMAIN_T fgbg)
 void display_clear(void)
 {
 	const COLORMAIN_T bg = display_getbgcolor();
-	display_fillrect(0, 0, DIM_X, DIM_Y, bg);
+	PACKEDCOLORMAIN_T * const buffer = colmain_fb_draw();
+
+	colmain_fillrect(buffer, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, bg);
+}
+
+// для framebufer дисплеев - вытолкнуть кэш память
+void display_flush(void)
+{
+	const uintptr_t frame = (uintptr_t) colmain_fb_draw();
+	arm_hardware_flush(frame, (uint_fast32_t) GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T));
+	arm_hardware_ltdc_main_set(frame);
 }
 
 void display_plotstart(
@@ -649,7 +668,7 @@ void display_wrdata_end(void)
 }
 
 
-#if LCDMODE_LQ043T3DX02K || LCDMODE_AT070TN90 || LCDMODE_AT070TNA2
+#if LCDMODE_LQ043T3DX02K || LCDMODE_AT070TN90 || LCDMODE_AT070TNA2 || LCDMODE_H497TLB01P4
 
 // заглушки
 
@@ -1282,14 +1301,21 @@ void display_hardware_initialize(void)
 	arm_hardware_mdma_initialize();
 
 #endif /* WITHMDMAHW */
+
 #if WITHLTDCHW
 	// STM32xxx LCD-TFT Controller (LTDC)
 	// RENESAS Video Display Controller 5
 	arm_hardware_ltdc_initialize();
 	colmain_setcolors(COLORMAIN_WHITE, COLORMAIN_BLACK);
 	arm_hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
-
+	arm_hardware_ltdc_L8_palette();
 #endif /* WITHLTDCHW */
+
+#if LCDMODETX_TC358778XBG
+	tc358768_initialize();
+	panel_initialize();
+#endif /* LCDMODETX_TC358778XBG */
+
 
 #if LCDMODE_HARD_SPI
 #elif LCDMODE_HARD_I2C
@@ -1304,6 +1330,13 @@ void display_hardware_initialize(void)
 	PRINTF(PSTR("display_hardware_initialize done\n"));
 }
 
+// Palette reload
+void display_palette(void)
+{
+#if WITHLTDCHW
+	arm_hardware_ltdc_L8_palette();
+#endif /* WITHLTDCHW */
+}
 // https://habr.com/ru/post/166317/
 
 //	Hue — тон, цикличная угловая координата.

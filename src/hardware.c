@@ -887,6 +887,173 @@ hardware_uart2_set_speed(uint_fast32_t baudrate)
 
 #endif /* WITHUART2HW */
 
+
+#if WITHUART4HW
+
+void
+hardware_uart4_set_speed(uint_fast32_t baudrate)
+{
+#if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
+
+	#if HARDWARE_ARM_USEUSART0
+		// Использование автоматического расчёта предделителя
+		unsigned value;
+		const uint_fast8_t prei = calcdivider(calcdivround(baudrate), ATSAM3S_USART_BRGR_WIDTH, ATSAM3S_USART_BRGR_TAPS, & value, 0);
+		USART0->US_BRGR = value;
+		if (prei == 0)
+		{
+			USART0->US_MR |= US_MR_OVER;
+		}
+		else
+		{
+			USART0->US_MR &= ~ US_MR_OVER;
+		}
+	#elif HARDWARE_ARM_USEUSART1
+		// Использование автоматического расчёта предделителя
+		unsigned value;
+		const uint_fast8_t prei = calcdivider(calcdivround(baudrate), ATSAM3S_USART_BRGR_WIDTH, ATSAM3S_USART_BRGR_TAPS, & value, 0);
+		USART1->US_BRGR = value;
+		if (prei == 0)
+		{
+			USART1->US_MR |= US_MR_OVER;
+		}
+		else
+		{
+			USART1->US_MR &= ~ US_MR_OVER;
+		}
+
+	#elif HARDWARE_ARM_USEUART0
+		// Использование автоматического расчёта предделителя
+		unsigned value;
+		calcdivider(calcdivround(baudrate), ATSAM3S_UART_BRGR_WIDTH, ATSAM3S_UART_BRGR_TAPS, & value, 0);
+		UART0->UART_BRGR = value;
+	#elif HARDWARE_ARM_USEUART1
+		// Использование автоматического расчёта предделителя
+		unsigned value;
+		calcdivider(calcdivround(baudrate), ATSAM3S_UART_BRGR_WIDTH, ATSAM3S_UART_BRGR_TAPS, & value, 0);
+		UART1->UART_BRGR = value;
+	#else	/* HARDWARE_ARM_USExxx */
+		#error Wrong HARDWARE_ARM_USExxx value
+	#endif
+
+#elif CPUSTYLE_AT91SAM7S
+
+	// Использование автоматического расчёта предделителя
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(calcdivround(baudrate), AT91SAM7_USART_BRGR_WIDTH, AT91SAM7_USART_BRGR_TAPS, & value, 0);
+
+	#if HARDWARE_ARM_USEUSART0
+		AT91C_BASE_US0->US_BRGR = value;
+		if (prei == 0)
+		{
+			AT91C_BASE_US0->US_MR |= AT91C_US_OVER;
+		}
+		else
+		{
+			AT91C_BASE_US0->US_MR &= ~ AT91C_US_OVER;
+		}
+	#elif HARDWARE_ARM_USEUSART1
+		AT91C_BASE_US1->US_BRGR = value;
+		if (prei == 0)
+		{
+			AT91C_BASE_US1->US_MR |= AT91C_US_OVER;
+		}
+		else
+		{
+			AT91C_BASE_US1->US_MR &= ~ AT91C_US_OVER;
+		}
+	#else	/* HARDWARE_ARM_USExxx */
+		#error Wrong HARDWARE_ARM_USExxx value
+	#endif
+
+#elif CPUSTYLE_ATMEGA_XXX4
+
+	// Использование автоматического расчёта предделителя
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(calcdivround(baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
+
+	if (prei == 0)
+		UCSR1A |= (1U << U2X1);
+	else
+		UCSR1A &= ~ (1U << U2X1);
+
+	UBRR1 = value;	/* Значение получено уже уменьшенное на 1 */
+
+
+#elif CPUSTYLE_ATMEGA128
+
+	// Использование автоматического расчёта предделителя
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(calcdivround(baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
+
+	if (prei == 0)
+		UCSR1A |= (1U << U2X1);
+	else
+		UCSR1A &= ~ (1U << U2X1);
+
+	UBRR1H = (value >> 8) & 0xff;	/* Значение получено уже уменьшенное на 1 */
+	UBRR1L = value & 0xff;
+
+#elif CPUSTYLE_ATMEGA
+
+	#error WITHUART2HW not supported with CPUSTYLE_ATMEGA
+
+#elif CPUSTYLE_ATXMEGAXXXA4
+
+	// Использование автоматического расчёта предделителя
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(calcdivround(baudrate), ATXMEGA_UBR_WIDTH, ATXMEGA_UBR_TAPS, & value, 1);
+	if (prei == 0)
+		USARTE1.CTRLB |= USART_CLK2X_bm;
+	else
+		USARTE1.CTRLB &= ~USART_CLK2X_bm;
+	// todo: проверить требование к порядку обращения к портам
+	USARTE1.BAUDCTRLA = (value & 0xff);	/* Значение получено уже уменьшенное на 1 */
+	USARTE1.BAUDCTRLB = (ATXMEGA_UBR_BSEL << 4) | ((value >> 8) & 0x0f);
+
+#elif CPUSTYLE_STM32MP1
+
+	// uart4 on xxx
+
+	UART4->BRR = calcdivround2(HSIFREQ, baudrate);		// младшие 4 бита - это дробная часть.
+
+#elif CPUSTYLE_STM32F
+
+	// uart2 on apb1
+
+	USART2->BRR = calcdivround_pclk1(baudrate);		// младшие 4 бита - это дробная часть.
+
+#elif CPUSTYPE_TMS320F2833X
+
+	const unsigned long lspclk = CPU_FREQ / 4;
+	const unsigned long brr = (lspclk / 8) / baudrate;	// @ CPU_FREQ = 100 MHz, 9600 can not be programmed
+
+	SCIBHBAUD = (brr - 1) >> 8;		// write 8 bits, not 16
+	SCIBLBAUD = (brr - 1) >> 0;
+
+#elif CPUSTYLE_R7S721
+
+	// Использование автоматического расчёта предделителя
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(calcdivround_p1clock(baudrate), R7S721_SCIF_SCBRR_WIDTH, R7S721_SCIF_SCBRR_TAPS, & value, 1);
+
+	SCIF3.SCSMR = (SCIF3.SCSMR & ~ 0x03) |
+		scemr_scsmr [prei].scsmr |	// prescaler: 0: /1, 1: /4, 2: /16, 3: /64
+		0;
+	SCIF3.SCEMR = (SCIF3.SCEMR & ~ (0x80 | 0x01)) |
+		0 * 0x80 |						// BGDM
+		scemr_scsmr [prei].scemr |	// ABCS = 8/16 clocks per bit
+		0;
+	SCIF3.SCBRR = value;	/* Bit rate register */
+
+#else
+	#error Undefined CPUSTYLE_XXX
+#endif
+
+}
+
+#endif /* WITHUART4HW */
+
 #if WITHTWIHW
 
 void hardware_twi_master_configure(void)
@@ -1295,6 +1462,10 @@ static RAMFUNC void stm32fxxx_pinirq(portholder_t pr)
 			TIM3->SR = ~ TIM_SR_UIF;	// clear UIF interrupt request
 			spool_elkeybundle();
 		}
+		else
+		{
+			ASSERT(0);
+		}
 	}
 	#endif /* WITHELKEY */
 
@@ -1307,6 +1478,10 @@ static RAMFUNC void stm32fxxx_pinirq(portholder_t pr)
 			TIM5->SR = ~ TIM_SR_UIF;	// clear UIF interrupt request
 			spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
 			spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
+		}
+		else
+		{
+			ASSERT(0);
 		}
 	}
 
@@ -4567,6 +4742,8 @@ void hardware_spi_master_initialize(void)
 
 	RCC->MP_APB2ENSETR = RCC_MC_APB2ENSETR_SPI1EN; // подать тактирование
 	(void) RCC->MP_APB2ENSETR;
+	RCC->MP_APB2LPENSETR = RCC_MC_APB2LPENSETR_SPI1LPEN; // подать тактирование
+	(void) RCC->MP_APB2LPENSETR;
 	/* настраиваем в режиме disconnect */
 	SPIIO_INITIALIZE();
 
@@ -7192,10 +7369,9 @@ void /* RAMFUNC_NONILINE */ local_delay_us(int timeUS)
 		const unsigned long top = timeUS * 11000uL / (CPU_FREQ / 1000000);
 	#elif CPUSTYLE_R7S721
 		const unsigned long top = timeUS * 13800uL / (CPU_FREQ / 1000000);
-	#elif CPUSTYLE_STM32MP1 && CPU_FREQ <= 650000000uL
-		// калибровано для 650 МГц процессора
-		const unsigned long top = timeUS * 52500uL / (CPU_FREQ / 1000000);
 	#elif CPUSTYLE_STM32MP1
+		// калибровано для 650 МГц процессора
+		//const unsigned long top = timeUS * 52500uL / (CPU_FREQ / 1000000);
 		// калибровано для 800 МГц процессора
 		const unsigned long top = timeUS * 72500uL / (CPU_FREQ / 1000000);
 	#elif CPUSTYPE_TMS320F2833X && 1 // RAM code
@@ -9654,28 +9830,6 @@ void Hyp_Handler(void)
 		;
 }
 
-static void arm_hardware_VFPEnable(void)
-{
-	const uint32_t VFPEnable = 0x40000000uL;
-
-	__asm volatile( "FMXR 	FPEXC, %0" :: "r" (VFPEnable) );
-}
-
-
-#define CPACC_FULL(n)		(3uL << ((n) * 2))
-#define CPACC_SVC(n)		(1uL << ((n) * 2))
-#define CPACC_DISABLE(n)	(0uL << ((n) * 2))
-
-
-static void vfp_access_enable(void)
-{
-	unsigned int access = __get_CPACR();
-
-	/*
-	 * Enable full access to VFP (cp10 and cp11)
-	 */
-	__set_CPACR(access | CPACC_FULL(10) | CPACC_FULL(11));
-}
 #endif /* (__CORTEX_A != 0) */
 
 #if CPUSTYLE_ARM_CM7
@@ -9906,7 +10060,20 @@ static void vectors_relocate(void);
 
 #if CPUSTYLE_STM32MP1
 
-void stm32mp1_pll_initialize(void)
+// return 1 if CPU supports 800 MHz clock
+uint_fast8_t stm32mp1_overdrived(void)
+{
+	RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_BSECEN;
+	(void) RCC->MP_APB5ENSETR;
+	RCC->MP_APB5LPENSETR = RCC_MC_APB5LPENSETR_BSECLPEN;
+	(void) RCC->MP_APB5LPENSETR;
+
+	const unsigned rpn = ((* (volatile uint32_t *) RPN_BASE) & RPN_ID_Msk) >> RPN_ID_Pos;
+	return (rpn & 0x80) != 0;
+}
+
+
+static void stm32mp1_pll_initialize(void)
 {
 
 	//return;
@@ -9917,6 +10084,40 @@ void stm32mp1_pll_initialize(void)
 	//(void) RCC->MP_APB5ENSETR;
 	RCC->TZCR &= ~ (RCC_TZCR_MCKPROT);
 	//RCC->TZCR &= ~ (RCC_TZCR_TZEN);
+
+	// compensation cell enable
+	if (1)
+	{
+	//	Sequence to enable IO compensation:
+	//	1. Ensure the CSI oscillator is enabled and ready (in RCC)
+	//	2. Set SYSCFG_CMPENSETR.MCU_EN or MPU_EN=1
+	//	3. Wait SYSCFG_CMPCR.READY = 1
+	//	4. Set SYSCFG_CMPCR.SW_CTRL = 0
+
+		/* SYSCFG clock enable */
+		RCC->MP_APB3ENSETR = RCC_MC_APB3ENSETR_SYSCFGEN;
+		(void) RCC->MP_APB3ENSETR;
+		RCC->MP_APB3LPENSETR = RCC_MC_APB3LPENSETR_SYSCFGLPEN;
+		(void) RCC->MP_APB3LPENSETR;
+
+		// CSI ON (The CSI oscillator must be enabled and ready (controlled in RCC) before MPU_EN could be set to 1)
+		RCC->OCENSETR = RCC_OCENSETR_CSION;
+		(void) RCC->OCENSETR;
+		while ((RCC->OCRDYR & RCC_OCRDYR_CSIRDY) == 0)
+			;
+
+		// IO compoensation cell enable
+		SYSCFG->CMPENSETR = SYSCFG_CMPENSETR_MPU_EN;
+		(void) SYSCFG->CMPENSETR;
+
+		while ((SYSCFG->CMPCR & SYSCFG_CMPCR_READY_Msk) == 0)
+			;
+
+		SYSCFG->CMPCR = (SYSCFG->CMPCR & SYSCFG_CMPCR_SW_CTRL_Msk) |
+			//(1uL << SYSCFG_CMPCR_SW_CTRL_Pos) |	// 1: IO compensation values come from RANSRC[3:0] and RAPSRC[3:0]
+			(0uL << SYSCFG_CMPCR_SW_CTRL_Pos) |	// 0: IO compensation values come from ANSRC[3:0] and APSRC[3:0]
+			0;
+	}
 
 	// переключение на HSI на всякий случай перед программированием PLL
 	// HSI ON
@@ -10385,6 +10586,11 @@ void hardware_set_dotclock(unsigned long dotfreq)
 		;
 }
 
+unsigned long hardware_get_dotclock(unsigned long dotfreq)
+{
+	const uint32_t pll4divq = calcdivround2(PLL4_FREQ, dotfreq);
+	return PLL4_FREQ / pll4divq;
+}
 #endif /* CPUSTYLE_STM32MP1 */
 
 #if 0
@@ -11564,21 +11770,37 @@ M_SIZE_IO_2     EQU     2550            ; [Area11] I/O area 2
 #define SECTIONval	0x02
 
 /* Table B3-10 TEX, C, and B encodings when TRE == 0 */
-#define TEXval_STGORD		0x00	/* Strongly-ordered */
-#define Bval_STGORD			0x00	/* Strongly-ordered */
-#define Cval_STGORD			0x00	/* Strongly-ordered */
 
-#define TEXval_WBCACHE		0x01	/* Outer and Inner Write-Back, Write-Allocate */
-#define Bval_WBCACHE		0x01	/* Outer and Inner Write-Back, Write-Allocate */
-#define Cval_WBCACHE		0x01	/* Outer and Inner Write-Back, Write-Allocate */
+#define TEXval_STGORD		0x00	/* Strongly-ordered, shareable */
+#define Bval_STGORD			0x00	/* Strongly-ordered, shareable */
+#define Cval_STGORD			0x00	/* Strongly-ordered, shareable */
 
-#define TEXval_NOCACHE		0x01	/* Outer and Inner Non-cacheable */
-#define Bval_NOCACHE		0x00	/* Outer and Inner Non-cacheable */
-#define Cval_NOCACHE		0x00	/* Outer and Inner Non-cacheable */
+#if 0///CPUSTYLE_STM32MP1
+	// for debug: no Write-Allocate
+	#define TEXval_WBCACHE		0x00	/* Outer and Inner Write-Back, no Write-Allocate */
+	#define Bval_WBCACHE		0x01	/* Outer and Inner Write-Back, no Write-Allocate */
+	#define Cval_WBCACHE		0x01	/* Outer and Inner Write-Back, no Write-Allocate */
+#else /* CPUSTYLE_STM32MP1 */
+	#define TEXval_WBCACHE		0x01	/* Outer and Inner Write-Back, Write-Allocate */
+	#define Bval_WBCACHE		0x01	/* Outer and Inner Write-Back, Write-Allocate */
+	#define Cval_WBCACHE		0x01	/* Outer and Inner Write-Back, Write-Allocate */
+#endif /* CPUSTYLE_STM32MP1 */
 
-#define TEXval_DEVICE		0x02	/* Non-shareable Device */
-#define Bval_DEVICE			0x00	/* Non-shareable Device */
-#define Cval_DEVICE			0x00	/* Non-shareable Device */
+#define TEXval_NOCACHE		0x01	/* Outer and Inner Non-cacheable, S bit */
+#define Bval_NOCACHE		0x00	/* Outer and Inner Non-cacheable, S bit */
+#define Cval_NOCACHE		0x00	/* Outer and Inner Non-cacheable, S bit */
+
+#if 0
+	// test
+	#define TEXval_DEVICE		0x00	/* Shareable Device */
+	#define Bval_DEVICE			0x00	/* Shareable Device */
+	#define Cval_DEVICE			0x01	/* Shareable Device */
+#else
+	// normal
+	#define TEXval_DEVICE		0x02	/* Non-shareable Device */
+	#define Bval_DEVICE			0x00	/* Non-shareable Device */
+	#define Cval_DEVICE			0x00	/* Non-shareable Device */
+#endif
 
 #if WITHSMPSYSTEM
 	#define SHAREDval 1		// required for ldrex.. and strex.. functionality
@@ -11611,13 +11833,12 @@ M_SIZE_IO_2     EQU     2550            ; [Area11] I/O area 2
 //; setting for Strongly-ordered memory
 //#define	TTB_PARA_STRGLY             0b_0000_0000_1101_1110_0010
 // not used
-#define	TTB_PARA_STRGLY TTB_PARA(TEXval_STGORD, Bval_STGORD, Cval_STGORD, DOMAINval, NoSHAREDval, APRWval, 1)
+#define	TTB_PARA_STRGLY TTB_PARA(TEXval_STGORD, Bval_STGORD, Cval_STGORD, DOMAINval, 0 /* Shareable mot depend of this bit */, APRWval, 1)
 
 
 //; setting for Outer and inner not cache normal memory
-//#define	TTB_PARA_NORMAL_NOT_CACHE   0b_0000_0001_1101_1110_0010
 // not used
-#define	TTB_PARA_NORMAL_NOT_CACHE(ro, xn) TTB_PARA(TEXval_NOCACHE, Bval_NOCACHE, Cval_NOCACHE, DOMAINval, SHAREDval, (ro) ? APROval : APRWval, (xn) != 0)
+//#define	TTB_PARA_NORMAL_NOT_CACHE(ro, xn) TTB_PARA(TEXval_NOCACHE, Bval_NOCACHE, Cval_NOCACHE, DOMAINval, SHAREDval, (ro) ? APROval : APRWval, (xn) != 0)
 
 //; setting for Outer and inner write back, write allocate normal memory (Cacheable)
 //#define	TTB_PARA_NORMAL_CACHE       0b_0000_0001_1101_1110_1110
@@ -12073,9 +12294,9 @@ sysinit_fpu_initialize(void)
 #elif (__CORTEX_A != 0)
 
 	// FPU
-	vfp_access_enable();
-	arm_hardware_VFPEnable();
-	//__FPU_Enable();
+	//vfp_access_enable();
+	//arm_hardware_VFPEnable();
+	__FPU_Enable();
 
 #endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7 */
 }
@@ -12265,7 +12486,7 @@ static void printcpustate(void)
 {
 	volatile uint_fast32_t vvv;
 	dbg_putchar('$');
-	PRINTF(PSTR("CPU%u: VBAR=%p, TTBR0=%p, cpsr=%08lX, sp=%p\n"), (unsigned) (__get_MPIDR() & 0x03),  __get_VBAR(), __get_TTBR0(), __get_CPSR(), & vvv);
+	PRINTF(PSTR("CPU%u: VBAR=%p, TTBR0=%p, cpsr=%08lX, SCTLR=%08lX, ACTLR=%08lX, sp=%p\n"), (unsigned) (__get_MPIDR() & 0x03),  (unsigned long) __get_VBAR(), (unsigned long) __get_TTBR0(), (unsigned long) __get_CPSR(), (unsigned long) __get_SCTLR(), (unsigned long) __get_ACTLR(), & vvv);
 }
 
 static void arm_gic_initialize(void);
@@ -12274,6 +12495,13 @@ static RAMDTCM SPINLOCK_t cpu1init;
 
 void Reset_CPUn_Handler(void)
 {
+#if (__CORTEX_A == 7U) || (__CORTEX_A == 9U)
+	// set the ACTLR.SMP
+//	__set_ACTLR(__get_ACTLR() | ACTLR_SMP_Msk);
+//	__ISB();
+//	__DSB();
+#endif /* (__CORTEX_A == 7U) || (__CORTEX_A == 9U) */
+
 	sysinit_fpu_initialize();
 	sysinit_vbar_initialize();		// interrupt vectors relocate
 	sysinit_ttbr_initialize();		// TODO: убрать работу с L2 для второго процессора - Загрузка TTBR, инвалидация кеш памяти и включение MMU
@@ -12283,6 +12511,14 @@ void Reset_CPUn_Handler(void)
 //#if WITHNESTEDINTERRUPTS
 //	GIC_SetInterfacePriorityMask(gARM_BASEPRI_ALL_ENABLED);
 //#endif /* WITHNESTEDINTERRUPTS */
+
+	L1C_EnableCaches();
+	L1C_EnableBTAC();
+	//__set_ACTLR(__get_ACTLR() | ACTLR_L1PE_Msk);	// Enable Dside prefetch
+	#if (__L2C_PRESENT == 1)
+	  // Enable Level 2 Cache
+	  L2C_Enable();
+	#endif
 
 	printcpustate();
 	__enable_irq();
@@ -12711,7 +12947,14 @@ void cpu_initialize(void)
 
 //	ca9_ca7_cache_diag();	// print
 
+#if (__CORTEX_A == 7U) || (__CORTEX_A == 9U)
 #if WITHSMPSYSTEM
+
+	// set the ACTLR.SMP
+	// STM32MP1: already set
+//	__set_ACTLR(__get_ACTLR() | ACTLR_SMP_Msk);
+//	__ISB();
+//	__DSB();
 
 	printcpustate();
 	SPIN_LOCK(& cpu1init);
@@ -12719,7 +12962,11 @@ void cpu_initialize(void)
 	SPIN_LOCK(& cpu1init);
 	SPIN_UNLOCK(& cpu1init);
 
+#else /* WITHSMPSYSTEM */
+	printcpustate();
+
 #endif /* WITHSMPSYSTEM */
+#endif /* (__CORTEX_A == 7U) || (__CORTEX_A == 9U) */
 
 #if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 	// GIC version diagnostics
@@ -12898,6 +13145,7 @@ void cpu_initialize(void)
 	CPG.STBCR7 &= ~ CPG_STBCR7_MSTP71;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module runs.
 	(void) CPG.STBCR7;			/* Dummy read */
 	USB200.SYSCFG0 |= USB_SYSCFG_UCKSEL; // UCKSEL 1: The 12-MHz EXTAL clock is selected.
+	(void) USB200.SYSCFG0;			/* Dummy read */
 	local_delay_ms(2);	// required 1 ms delay - see R01UH0437EJ0200 Rev.2.00 28.4.1 System Control and Oscillation Control
 	CPG.STBCR7 |= CPG_STBCR7_MSTP71;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module halts.
 	CPG.STBCR7 |= CPG_STBCR7_MSTP70;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module halts.
@@ -12905,6 +13153,7 @@ void cpu_initialize(void)
 	CPG.STBCR7 &= ~ CPG_STBCR7_MSTP70;	// Module Stop 70 0: Channel 1 of the USB 2.0 host/function module runs.
 	(void) CPG.STBCR7;			/* Dummy read */
 	USB201.SYSCFG0 |= USB_SYSCFG_UCKSEL; // UCKSEL 1: The 12-MHz EXTAL clock is selected.
+	(void) USB201.SYSCFG0;			/* Dummy read */
 	local_delay_ms(2);	// required 1 ms delay - see R01UH0437EJ0200 Rev.2.00 28.4.1 System Control and Oscillation Control
 	CPG.STBCR7 |= CPG_STBCR7_MSTP70;	// Module Stop 70 0: Channel 1 of the USB 2.0 host/function module halts.
 
@@ -13416,16 +13665,17 @@ static void vectors_relocate(void)
 // Memory attribute SHARED required for ldrex.. and strex.. functionality
 void spin_lock(volatile spinlock_t * p, const char * file, int line)
 {
+#if WITHDEBUG
 	unsigned v = 0xFFFFFFF;
+#endif /* WITHDEBUG */
 	// Note: __LDREXW and __STREXW are CMSIS functions
-	int status = 0;
+	int status;
 	do
 	{
 		while (__LDREXW(& p->lock) != 0)// Wait until
 		{
+			__NOP();	// !!!! strange, but unstable work without this line...
 #if WITHDEBUG
-			//PRINTF("Wait %s(%d) ", file, line);
-			//PRINTF("%d(%d) ", (int) (__get_MPIDR() & 0x03), line);
 			if (-- v == 0)
 			{
 				PRINTF("Locked by %s(%d), wait at %s(%d)\n", p->file, p->line, file, line);
@@ -13445,28 +13695,26 @@ void spin_lock(volatile spinlock_t * p, const char * file, int line)
 	p->line = line;
 #endif /* WITHDEBUG */
 }
+/*
 
 // http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dai0321a/BIHEJCHB.html
 // Memory attribute SHARED required for ldrex.. and strex.. functionality
 void spin_lock2(volatile spinlock_t * p, const char * file, int line)
 {
-	//unsigned v = 0xFFFFFFF;
 	// Note: __LDREXW and __STREXW are CMSIS functions
-	int status = 0;
+	int status;
 	do
 	{
 		while (__LDREXW(& p->lock) != 0)// Wait until
 		{
+			__NOP();	// !!!! strange, but unstable work without this line...
 #if WITHDEBUG
-			//PRINTF("Wait %s(%d) ", file, line);
-			//PRINTF("%d(%d) ", (int) (__get_MPIDR() & 0x03), line);
-			//if (-- v == 0)
 			{
 				PRINTF("Locked2 by %s(%d), wait at %s(%d)\n", p->file, p->line, file, line);
 				for (;;)
 					;
 			}
-#endif /* WITHDEBUG */
+#endif  WITHDEBUG
 		}
 		// Lock_Variable is free
 		status = __STREXW(1, & p->lock); // Try to set
@@ -13477,8 +13725,9 @@ void spin_lock2(volatile spinlock_t * p, const char * file, int line)
 #if WITHDEBUG
 	p->file = file;
 	p->line = line;
-#endif /* WITHDEBUG */
+#endif  WITHDEBUG
 }
+*/
 
 void spin_unlock(volatile spinlock_t *p)
 {

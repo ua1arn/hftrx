@@ -510,13 +510,13 @@
 	} while (0)
 
 /* PA9, PB7 Используется периферийный контроллер последовательного порта #1 */
-#define HARDWARE_USART1_INITIALIZE() do { \
+#define HARDWARE_UART1_INITIALIZE() do { \
 		arm_hardware_pioa_altfn2((1U << 9), AF_USART1); /* PA9: TX DATA line (2 MHz) */ \
 		arm_hardware_piob_altfn2((1U << 7), AF_USART1); /* PB7: RX DATA line (2 MHz) */ \
 		arm_hardware_piob_updown((1U << 7), 0);	/* PB7: pull-up RX data */ \
 	} while (0)
 
-#define HARDWARE_USART2_INITIALIZE() do { \
+#define HARDWARE_UART2_INITIALIZE() do { \
 	} while (0)
 
 #define HARDWARE_SIDETONE_INITIALIZE() do { \

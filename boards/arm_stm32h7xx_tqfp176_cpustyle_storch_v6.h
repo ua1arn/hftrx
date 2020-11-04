@@ -546,14 +546,14 @@
 			arm_hardware_piob_outputs(SPI_MOSI_BIT, SPI_MOSI_BIT);	/* PIO enable for MOSI bit (SD CARD read support)  */ \
 		} while (0)
 
-	#define HARDWARE_USART1_INITIALIZE() do { \
+	#define HARDWARE_UART1_INITIALIZE() do { \
 			const uint_fast32_t TXMASK = (1uL << 9); /* PA9: TX DATA line (2 MHz) */ \
 			const uint_fast32_t RXMASK = (1uL << 10); /* PA10: RX DATA line (2 MHz) - pull-up RX data */  \
 			arm_hardware_pioa_altfn2(TXMASK, AF_USART1);  \
 			arm_hardware_pioa_altfn2(RXMASK, AF_USART1);  \
 			arm_hardware_pioa_updown(RXMASK, 0); \
 		} while (0)
-	#define HARDWARE_USART2_INITIALIZE() do { \
+	#define HARDWARE_UART2_INITIALIZE() do { \
 			const uint_fast32_t TXMASK = (1uL << 5); /* PD5: TX DATA line (2 MHz) */ \
 			const uint_fast32_t RXMASK = (1uL << 6); /* PD6: RX DATA line (2 MHz) - pull-up RX data */  \
 			arm_hardware_piod_altfn2(TXMASK, AF_USART2); \
@@ -720,13 +720,13 @@
 		#define WITHLCDBACKLIGHT	1	// Имеется управление яркостью дисплея
 		#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываемый на дисплее)
 		#define WITHLCDBACKLIGHTMAX	3	// Верхний предел регулировки (показываемый на дисплее)
-		#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
+		//#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
 	#elif LCDMODE_AT070TN90 || LCDMODE_AT070TNA2
 		#define WITHLCDBACKLIGHTOFF	1	// Имеется управление включением/выключением подсветки дисплея
 		#define WITHLCDBACKLIGHT	1	// Имеется управление яркостью дисплея
 		#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываемый на дисплее)
 		#define WITHLCDBACKLIGHTMAX	2	// Верхний предел регулировки (показываемый на дисплее)
-		#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
+		//#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
 	#else
 		/* Заглушка для работы без дисплея */
 		#define WITHLCDBACKLIGHTMIN	0

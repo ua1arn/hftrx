@@ -137,7 +137,7 @@ static uint_fast8_t		glob_stage1level = 2;	/* index of code for A1..A0 of OPA267
 static uint_fast8_t		glob_stage2level = 2;	/* index of code for A1..A0 of OPA2674I-14D in stage 2 */
 
 static uint_fast8_t		glob_sdcardpoweron;	/* не-0: включить питание SD CARD */
-static uint_fast8_t		glob_usbflashpoweron;/* не-0: включить питание USB FLASH */
+static uint_fast8_t		glob_hostvbuson;/* не-0: включить питание USB FLASH */
 static uint_fast8_t 	glob_user1;
 static uint_fast8_t 	glob_user2;
 static uint_fast8_t 	glob_user3;
@@ -632,14 +632,14 @@ prog_gpioreg(void)
 		HARDWARE_SDIOPOWER_SET(glob_sdcardpoweron);
 	#endif /* defined (HARDWARE_SDIOPOWER_SET) */
 
-	#if defined (TARGET_USBFS_VBUSON_SET) && defined (WITHUSBHW_HOST)
+	#if defined (TARGET_USBFS_VBUSON_SET)
 		// USB FLASH POWER ENABLE BIT
-		TARGET_USBFS_VBUSON_SET(glob_usbflashpoweron);
-	#endif /* defined (TARGET_USBFS_VBUSON_SET) && defined (WITHUSBHW_HOST) */
+		TARGET_USBFS_VBUSON_SET(glob_hostvbuson);
+	#endif /* defined (TARGET_USBFS_VBUSON_SET) */
 
 	#if defined (HARDWARE_BL_SET)
 		// яркость подсветки
-		HARDWARE_BL_SET(! glob_bglightoff, glob_bglight - WITHLCDBACKLIGHTMIN);
+		HARDWARE_BL_SET(! glob_bglightoff, glob_bglight);
 	#endif /* defined (HARDWARE_BL_SET) */
 
 	#if defined (HARDWARE_DAC_ALC)
@@ -3836,8 +3836,15 @@ prog_ctrlreg(uint_fast8_t plane)
 		};
 		const spitarget_t target = targetctl1;
 
-		rbtype_t rbbuff [9] = { 0 };
+#if XVTR_NYQ1
+		const uint_fast8_t xvrtr = bandf_calc_getxvrtr(glob_bandf);
+		enum { bandf_xvrtr = 6 };		// Номер ДПФ для ПЧ трансвертера
+		const uint_fast8_t txgated = glob_tx && (xvrtr ? 0 : glob_txgate);
+#else /* XVTR_NYQ1 */
 		const uint_fast8_t txgated = glob_tx && glob_txgate;
+#endif /* XVTR_NYQ1 */
+
+		rbtype_t rbbuff [9] = { 0 };
 
 #if WITHAUTOTUNER
 	#if WITHAUTOTUNER_AVBELNN
@@ -3883,7 +3890,11 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBVAL(0040, 1U << glob_bandf2, 7);		// D0..D6: band select бит выбора диапазонного фильтра передатчика
 
 		// DD20 SN74HC595PW в управлении диапазонными фильтрами приёмника
+#if XVTR_NYQ1
+		RBVAL(0031, glob_tx ? 0 : (1U << (xvrtr ? bandf_xvrtr : glob_bandf)) >> 1, 7);		// D1: 1, D7..D1: band select бит выбора диапазонного фильтра приёмника
+#else
 		RBVAL(0031, glob_tx ? 0 : (1U << glob_bandf) >> 1, 7);		// D1: 1, D7..D1: band select бит выбора диапазонного фильтра приёмника
+#endif /* XVTR_NYQ1 */
 		RBBIT(0030, txgated);		// D0: включение подачи смещения на выходной каскад усилителя мощности
 
 		// DD19 SN74HC595PW в управлении диапазонными фильтрами приёмника
@@ -3909,7 +3920,10 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0003, lcdblcode & 0x02);		/* D3	- LCD backlight  - removed in LVDS version*/
 		RBBIT(0002, lcdblcode & 0x02);		/* D2	- LCD backlight  - removed in LVDS version*/
 		RBBIT(0001, lcdblcode & 0x01);		/* D2:D1 - LCD backlight  - removed in LVDS version*/
-#if WITHKBDBACKLIGHT
+
+#if XVTR_NYQ1
+		RBBIT(0000, xvrtr);					/* D0: transverter enable */
+#elif WITHKBDBACKLIGHT
 		RBBIT(0000, glob_kblight);			/* D0: keyboard backlight */
 #endif /* WITHKBDBACKLIGHT */
 
@@ -5625,12 +5639,12 @@ board_set_sdcardpoweron(uint_fast8_t v)
 }
 
 void
-board_set_usbflashpoweron(uint_fast8_t v)
+board_set_usbhostvbuson(uint_fast8_t v)
 {
 	const uint_fast8_t n = v != 0;
-	if (glob_usbflashpoweron != n)
+	if (glob_hostvbuson != n)
 	{
-		glob_usbflashpoweron = n;
+		glob_hostvbuson = n;
 		board_ctlreg1changed();
 	}
 }
@@ -9015,6 +9029,8 @@ void debugusb_initialize(void)
 
 #endif /* WITHDEBUG && WITHUSBCDCACM && WITHDEBUG_CDC */
 
+#if WITHSPIHW || WITHSPISW
+
 // Read ADC MCP3204/MCP3208
 uint_fast16_t
 mcp3208_read(
@@ -9079,4 +9095,5 @@ mcp3208_read(
 	* valid = ((rv >> (LSBPOS + 12)) & 0x01) == 0;
 	return (rv >> LSBPOS) & 0xFFF;
 }
+#endif /* WITHSPIHW || WITHSPISW */
 

@@ -2661,11 +2661,11 @@ static unsigned CDCACM_InterfaceAssociationDescriptor_a(uint_fast8_t fill, uint8
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = USB_INTERFACE_ASSOC_DESCRIPTOR_TYPE;	// bDescriptorType: IAD
-		* buff ++ = INTERFACE_CDC_CONTROL_3a + offset * INTERFACE_CDCACM_count;	// bFirstInterface
+		* buff ++ = USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL_3a, offset);	// bFirstInterface
 		* buff ++ = INTERFACE_CDCACM_count;	// bInterfaceCount
 		* buff ++ = USB_DEVICE_CLASS_COMMUNICATIONS;	// bFunctionClass: CDC
 		* buff ++ = CDC_ABSTRACT_CONTROL_MODEL;			// bFunctionSubClass
-		* buff ++ = CDC_PROTOCOL_COMMON_AT_COMMANDS;	// bFunctionProtocol
+		* buff ++ = 0x00; //CDC_PROTOCOL_COMMON_AT_COMMANDS;	// bFunctionProtocol
 		* buff ++ = STRING_ID_4a + offset;				// iFunction - Storch HF TRX CAT - появляется, если сделать не тот bFunctionSubClass
 	}
 	return length;
@@ -2684,12 +2684,12 @@ static unsigned CDCACM_InterfaceDescriptorControlIf_a(uint_fast8_t fill, uint8_t
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = USB_INTERFACE_DESCRIPTOR_TYPE;  /* bDescriptorType: Interface */  /* Interface descriptor type */
-		* buff ++ = INTERFACE_CDC_CONTROL_3a + offset * INTERFACE_CDCACM_count;   /* bInterfaceNumber: Number of Interface */
+		* buff ++ = USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL_3a, offset);   /* bInterfaceNumber: Number of Interface */
 		* buff ++ = 0;		/* bAlternateSetting: Alternate setting  - zero-based index */
 		* buff ++ = bNumEndpoints;   /* bNumEndpoints: One endpoints used (interrupt type) */
 		* buff ++ = CDC_COMMUNICATION_INTERFACE_CLASS;   /* bInterfaceClass: Communication Interface Class */
 		* buff ++ = CDC_ABSTRACT_CONTROL_MODEL;   /* bInterfaceSubClass: Abstract Control Model */
-		* buff ++ = CDC_PROTOCOL_COMMON_AT_COMMANDS;   /* bInterfaceProtocol: Common AT commands */
+		* buff ++ = 0x00; //CDC_PROTOCOL_COMMON_AT_COMMANDS;   /* bInterfaceProtocol: Common AT commands */
 		* buff ++ = STRING_ID_0;   /* iInterface */
 	}
 	return length;
@@ -2710,7 +2710,7 @@ static unsigned CDCACM_fill_32_a(uint_fast8_t fill, uint8_t * buff, unsigned max
 		* buff ++ = CS_INTERFACE;   /* bDescriptorType: CS_INTERFACE */
 		* buff ++ = 0x01;   /* bDescriptorSubtype: Call Management Func Desc */
 		* buff ++ = 0x00;   /* bmCapabilities: D0+D1 */
-		* buff ++ = INTERFACE_CDC_DATA_4a + offset * INTERFACE_CDCACM_count;   /* bDataInterface: Zero based index of the interface in this configuration.(bInterfaceNum) */
+		* buff ++ = USBD_CDCACM_IFC(INTERFACE_CDC_DATA_4a, offset);   /* bDataInterface: Zero based index of the interface in this configuration.(bInterfaceNum) */
 	}
 	return length;
 }
@@ -2729,8 +2729,8 @@ static unsigned CDC_UnionFunctionalDescriptor_a(uint_fast8_t fill, uint8_t * buf
 		* buff ++ = length;						/* bFunctionLength */
 		* buff ++ = CS_INTERFACE;				/* bDescriptorType: CS_INTERFACE */
 		* buff ++ = CDC_UNION;						/* bDescriptorSubtype: Union func desc */
-		* buff ++ = INTERFACE_CDC_CONTROL_3a + offset * INTERFACE_CDCACM_count;	/* bMasterInterface: Communication class interface -  Zero based index of the interface in this configuration (bInterfaceNum) */
-		* buff ++ = INTERFACE_CDC_DATA_4a + offset * INTERFACE_CDCACM_count;		/* bSlaveInterface0: Data Class Interface -  Zero based index of the interface in this configuration (bInterfaceNum) */
+		* buff ++ = USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL_3a, offset);	/* bMasterInterface: Communication class interface -  Zero based index of the interface in this configuration (bInterfaceNum) */
+		* buff ++ = USBD_CDCACM_IFC(INTERFACE_CDC_DATA_4a, offset);		/* bSlaveInterface0: Data Class Interface -  Zero based index of the interface in this configuration (bInterfaceNum) */
 	}
 	return length;
 }
@@ -2752,7 +2752,7 @@ static unsigned CDCACM_InterfaceDescriptorDataIf_a(
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = USB_INTERFACE_DESCRIPTOR_TYPE;  /* bDescriptorType: */
-		* buff ++ = INTERFACE_CDC_DATA_4a + offset * INTERFACE_CDCACM_count;   /* bInterfaceNumber: Number of Interface */
+		* buff ++ = USBD_CDCACM_IFC(INTERFACE_CDC_DATA_4a, offset);   /* bInterfaceNumber: Number of Interface */
 		* buff ++ = bAlternateSetting;		/* bAlternateSetting: Alternate setting  - zero-based index  */
 		* buff ++ = bNumEndpoints;   /* bNumEndpoints: Two endpoints used: data in and data out */
 		* buff ++ = CDC_DATA_INTERFACE_CLASS;   /* bInterfaceClass: CDC */
@@ -2857,7 +2857,7 @@ static unsigned fill_CDCACM_function_a(uint_fast8_t fill, uint8_t * p, unsigned 
 	unsigned n = 0;
 	const uint8_t inep = USBD_CDCACM_EP(USBD_EP_CDC_IN, offset);
 	const uint8_t outnep = USBD_CDCACM_EP(USBD_EP_CDC_OUT, offset);
-	const uint8_t intnep =USBD_CDCACM_EP(USBD_EP_CDC_INT, offset);
+	const uint8_t intnep = USBD_CDCACM_EP(USBD_EP_CDC_INT, offset);
 
 	// CDC
 	n += CDCACM_InterfaceAssociationDescriptor_a(fill, p + n, maxsize - n, offset);	/* CDC: Interface Association Descriptor Abstract Control Model */

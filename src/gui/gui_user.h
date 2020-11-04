@@ -10,21 +10,10 @@
 
 void gui_user_actions_after_close_window(void);
 
-#if WITHGUISTYLE_MINI
-
-enum {
-	WINDOW_MAIN,
-
-	WINDOWS_COUNT
-};
-
-#elif WITHGUISTYLE_COMMON
-
 enum {
 	WINDOW_MAIN,					// постоянно отображаемые кнопки внизу экрана
 	WINDOW_MODES,					// переключение режимов работы, видов модуляции
-	WINDOW_BP,						// регулировка полосы пропускания фильтров выбранного режима
-	WINDOW_AGC,						// выбор пресетов настроек АРУ для текущего режима модуляции
+	WINDOW_AF,						// регулировка полосы пропускания фильтров выбранного режима
 	WINDOW_FREQ,					// прямой ввод частоты
 	WINDOW_MENU,					// системное меню
 	WINDOW_ENC2,					// быстрое меню по нажатию 2-го энкодера
@@ -38,35 +27,23 @@ enum {
 	WINDOW_TX_SETTINGS,				// настройки, относящиеся к режиму передачи
 	WINDOW_TX_VOX_SETT,				// настройки VOX
 	WINDOW_TX_POWER,				// выходная мощность
-	WINDOW_OPTIONS,
-	WINDOW_UTILS,
-	WINDOW_BANDS,
-	WINDOW_MEMORY,
-	WINDOW_DISPLAY,
+	WINDOW_OPTIONS,					// различные настройки
+	WINDOW_UTILS,					// измерения и т.д.
+	WINDOW_BANDS,					// выбор диапазона
+	WINDOW_MEMORY,					// ячейки памяти
+	WINDOW_DISPLAY,					// настройки отображения
+	WINDOW_RECEIVE,					// настройки приема
+	WINDOW_NOTCH,					// ручной режекторый фильтр
 
 	WINDOWS_COUNT
 };
-
-#endif
-
-typedef struct {
-	uint8_t press;			// короткое нажание
-	uint8_t hold;			// длинное нажатие
-	uint8_t press_done;		// событие нажатия от энкодера обработано, можно получать новые данные
-} enc2_t;
-
-#define ENC2_STACK_SIZE	10
-
-typedef struct enc2_stack_tag {
-    int_fast8_t data[ENC2_STACK_SIZE];
-    size_t size;
-} enc2_stack_t;
 
 enum {
 	MENU_OFF,
 	MENU_GROUPS,
 	MENU_PARAMS,
 	MENU_VALS,
+
 	MENU_COUNT
 };
 
@@ -87,17 +64,24 @@ typedef struct {
 	uint8_t exitkey;
 } menu_by_name_t;
 
-typedef enum {
+enum {
 	TYPE_BP_LOW,
 	TYPE_BP_HIGH,
 	TYPE_IF_SHIFT
-} bp_select_t;
+};
+
+enum {
+	TYPE_NOTCH_FREQ,
+	TYPE_NOTCH_WIDTH
+};
 
 typedef struct {
 	uint_fast8_t updated;
-	bp_select_t select;
+	uint_fast8_t select;
 	int8_t change;
 } bp_var_t;
+
+typedef bp_var_t notch_var_t;
 
 #endif /* WITHTOUCHGUI */
 #endif /* GUI_USER_H_INCLUDED */

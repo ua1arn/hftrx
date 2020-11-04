@@ -27,16 +27,130 @@
 #include <ctype.h>
 #include <math.h>
 
+// Определения для работ по оптимизации быстродействия
+#if WITHDEBUG && 0
+
+	// stm32f746, no dualwatch:
+	//	dtcount=0, dtmax=0, dtlast=0, dtcount2=41807716, dtmax2=1244, dtlast2=739, dtcount3=41806755, dtmax3=1446, dtlast3=916
+	// R7S721xxx, Neon, dualwatch:
+	//	dtcount=0, dtmax=0, dtlast=0, dtcount2=15890107, dtmax2=1119, dtlast2=590, dtcount3=31778668, dtmax3=1169, dtlast3=723
+	// R7S721xxx, no Neon, dualwatch:
+	// dtcount=0, dtmax=0, dtlast=0, dtcount2=184728, dtmax2=1461, dtlast2=911, dtcount3=367872, dtmax3=1169, dtlast3=713
+
+	static volatile uint_fast32_t dtmax = 0, dtlast = 0, dtcount = 0;
+	static volatile uint_fast32_t dtmax2 = 0, dtlast2 = 0, dtcount2 = 0;
+	static volatile uint_fast32_t dtmax3 = 0, dtlast3 = 0, dtcount3 = 0;
+	static uint_fast32_t perft = 0;
+	static uint_fast32_t perft2 = 0;
+	static uint_fast32_t perft3 = 0;
+
+	static void debug_cleardtmax(void)
+	{
+		dtmax = 0;
+		dtmax2 = 0;
+		dtmax3 = 0;
+	}
+
+	#define BEGIN_STAMP() do { \
+			perft = cpu_getdebugticks(); \
+		} while (0)
+
+	#define END_STAMP() do { \
+			const uint_fast32_t t2 = cpu_getdebugticks(); \
+			if (perft < t2) \
+			{ \
+				const uint_fast32_t vdt = t2 - perft; \
+				dtlast = vdt; /* текущее значение длительности */ \
+				if (vdt > dtmax) \
+					dtmax = vdt; /* максимальное значение длительности */ \
+				++ dtcount; \
+			} \
+		} while (0)
+
+	#define BEGIN_STAMP2() do { \
+			perft2 = cpu_getdebugticks(); \
+		} while (0)
+
+	#define END_STAMP2() do { \
+			const uint_fast32_t t2 = cpu_getdebugticks(); \
+			if (perft2 < t2) \
+			{ \
+				const uint_fast32_t vdt = t2 - perft2; \
+				dtlast2 = vdt; /* текущее значение длительности */ \
+				if (vdt > dtmax2) \
+					dtmax2 = vdt; /* максимальное значение длительности */ \
+				++ dtcount2; \
+			} \
+		} while (0)
+
+	#define BEGIN_STAMP3() do { \
+			perft3 = cpu_getdebugticks(); \
+		} while (0)
+
+	#define END_STAMP3() do { \
+			const uint_fast32_t t2 = cpu_getdebugticks(); \
+			if (perft3 < t2) \
+			{ \
+				const uint_fast32_t vdt = t2 - perft3; \
+				dtlast3 = vdt; /* текущее значение длительности */ \
+				if (vdt > dtmax3) \
+					dtmax3 = vdt; /* максимальное значение длительности */ \
+				++ dtcount3; \
+			} \
+		} while (0)
+
+
+	//static uint32_t dd [4];
+	/* DSP speed test */
+	void main_speed_diagnostics(void)
+	{
+		//PRINTF(PSTR("data=%08lX,%08lX,%08lX,%08lX\n"), dd [0], dd [1], dd [2], dd [3]);
+		PRINTF(PSTR("dtcount=%" PRIuFAST32 ", dtmax=%" PRIuFAST32 ", dtlast=%" PRIuFAST32 ", "), dtcount, dtmax, dtlast);
+		PRINTF(PSTR("dtcount2=%" PRIuFAST32 ", dtmax2=%" PRIuFAST32 ", dtlast2=%" PRIuFAST32 ", "), dtcount2, dtmax2, dtlast2);
+		PRINTF(PSTR("dtcount3=%" PRIuFAST32 ", dtmax3=%" PRIuFAST32 ", dtlast3=%" PRIuFAST32 "\n"), dtcount3, dtmax3, dtlast3);
+	}
+
+#else /* WITHDEBUG */
+
+	#define BEGIN_STAMP() do { \
+		} while (0)
+
+	#define END_STAMP() do { \
+		} while (0)
+
+	#define BEGIN_STAMP2() do { \
+		} while (0)
+
+	#define END_STAMP2() do { \
+		} while (0)
+
+	#define BEGIN_STAMP3() do { \
+		} while (0)
+
+	#define END_STAMP3() do { \
+		} while (0)
+
+	static void debug_cleardtmax(void)
+	{
+	}
+
+	void main_speed_diagnostics(void)
+	{
+	}
+
+#endif /* WITHDEBUG */
+
 #if WITHRFSG
 	#error WITHRFSG now not supported
 #endif /* WITHRFSG */
 
 #if WITHTOUCHGUI
 static uint_fast8_t keyboard_redirect = 0;	// перенаправление кодов кнопок в менеджер gui
-static char menuw [20];						// буфер для вывода значений системного меню
 static enc2_menu_t enc2_menu;
 static uint_fast8_t band_no_check = 0;
+static uint_fast8_t encoder2_redirect = 0;
 #endif /* WITHTOUCHGUI */
+static char menuw [20];						// буфер для вывода значений системного меню
 
 static uint_fast32_t 
 //NOINLINEAT
@@ -1178,9 +1292,9 @@ struct afsetitempl
 	#define AGC_RATE_DIGI	AGC_RATE_FLAT //(UINT8_MAX - 1)
 	#define AGC_RATE_DRM	AGC_RATE_FLAT //(UINT8_MAX - 1)
 #else /* CTLSTYLE_OLEG4Z_V1 */
-	#define AGC_RATE_SSB	10
-	#define AGC_RATE_DIGI	3
-	#define AGC_RATE_DRM	20
+	#define AGC_RATE_SSB	20
+	#define AGC_RATE_DIGI	6
+	#define AGC_RATE_DRM	6
 #endif /* CTLSTYLE_OLEG4Z_V1 */
 
 static FLASHMEM const struct afsetitempl aft [AGCSETI_COUNT] =
@@ -1985,7 +2099,7 @@ static const char * const bandlabels [BANDGROUP_COUNT] =
 		uint32_t init;
 		uint8_t defsubmode_bandset;
 		uint8_t	bandgroup;
-		char label[8];
+		char label [8];
 	};
 
 	#define BMF(a) (a)		/* получение инициализационного элемента */
@@ -2095,26 +2209,26 @@ static FLASHMEM struct bandrange  const bandsmap [] =
 	{ BMF(26965000L - BANDPAD), BMF(27405000L + BANDPAD), 	BMF(27120000L), 	BANDMAPSUBMODE_USB | BANDSETF_CB, 		BANDGROUP_COUNT, "CB", },		/* Citizens Band 26.9650 MHz to 27.4050 MHz (40 channels) */
 
 	/* next three sections - one band - "ten". */
-	{ BMF(28000000L - BANDPAD), BMF(28320000L), 			BMF(28000000L), 	BANDMAPSUBMODE_CW | BANDSETF_HAM, 		BANDGROUP_28MHZ, "10M CW", },	/* CW */
-	{ BMF(28320000L), 			BMF(29200000L), 			BMF(28500000L), 	BANDMAPSUBMODE_USB | BANDSETF_HAM, 		BANDGROUP_28MHZ, "10M SSB", },	/* SSB */
-	{ BMF(29200000L), 			BMF(29700000L + BANDPAD),	BMF(29600000L), 	BANDMAPSUBMODE_USB | BANDSETF_HAM, 		BANDGROUP_28MHZ, "10M FM", },	/* FM */
+	{ BMF(28000000L - BANDPAD), BMF(28320000L), 			BMF(28000000L), 	BANDMAPSUBMODE_CW | BANDSETF_HAM, 		BANDGROUP_28MHZ, "28M CW", },	/* CW */
+	{ BMF(28320000L), 			BMF(29200000L), 			BMF(28500000L), 	BANDMAPSUBMODE_USB | BANDSETF_HAM, 		BANDGROUP_28MHZ, "28M SSB", },	/* SSB */
+	{ BMF(29200000L), 			BMF(29700000L + BANDPAD),	BMF(29600000L), 	BANDMAPSUBMODE_USB | BANDSETF_HAM, 		BANDGROUP_28MHZ, "28M FM", },	/* FM */
 #endif
 
 #if TUNE_6MBAND
-	{ BMF(50000000L - BANDPAD), BMF(54000000L + BANDPAD), 	BMF(50100000L), 	BANDMAPSUBMODE_USB | BANDSETF_6M, 		BANDGROUP_COUNT, "", },			/* 6 meters HAM band */
+	{ BMF(50000000L - BANDPAD), BMF(54000000L + BANDPAD), 	BMF(50100000L), 	BANDMAPSUBMODE_USB | BANDSETF_6M, 		BANDGROUP_COUNT, "50M SSB", },			/* 6 meters HAM band */
 #endif /* TUNE_6MBAND */
 
 #if TUNE_4MBAND
-	{ BMF(70000000L - BANDPAD),	BMF(70050000L), 			BMF(70000000L), 	BANDMAPSUBMODE_CW | BANDSETF_4M, 		BANDGROUP_70MHZ, "", },			/* CW */
-	{ BMF(70050000L), 			BMF(70300000L), 			BMF(70050000L), 	BANDMAPSUBMODE_USB | BANDSETF_4M, 		BANDGROUP_70MHZ, "", },			/* SSB */
-	{ BMF(70300000L), 			BMF(70500000L + BANDPAD),	BMF(70300000L), 	BANDMAPSUBMODE_USB | BANDSETF_4M, 		BANDGROUP_70MHZ, "", },			/* FM */
+	{ BMF(70000000L - BANDPAD),	BMF(70050000L), 			BMF(70000000L), 	BANDMAPSUBMODE_CW | BANDSETF_4M, 		BANDGROUP_70MHZ, "70M CW", },			/* CW */
+	{ BMF(70050000L), 			BMF(70300000L), 			BMF(70050000L), 	BANDMAPSUBMODE_USB | BANDSETF_4M, 		BANDGROUP_70MHZ, "70M SSB", },			/* SSB */
+	{ BMF(70300000L), 			BMF(70500000L + BANDPAD),	BMF(70300000L), 	BANDMAPSUBMODE_USB | BANDSETF_4M, 		BANDGROUP_70MHZ, "70M FM", },			/* FM */
 #endif /* TUNE_4MBAND */
 
 #if TUNE_2MBAND
 	/* next three sections - one band - "2 meter". */
-	{ BMF(144000000L - BANDPAD),BMF(144200000), 			BMF(144050000L), 	BANDMAPSUBMODE_CW | BANDSETF_2M, 		BANDGROUP_144MHZ, "", },		/* CW */
-	{ BMF(144200000L), 			BMF(145000000L), 			BMF(144300000L), 	BANDMAPSUBMODE_USB | BANDSETF_2M, 		BANDGROUP_144MHZ, "", },		/* SSB */
-	{ BMF(144500000L), 			BMF(146000000L + BANDPAD),	BMF(145550000L), 	BANDMAPSUBMODE_USB | BANDSETF_2M, 		BANDGROUP_144MHZ, "", },		/* FM */
+	{ BMF(144000000L - BANDPAD),BMF(144200000), 			BMF(144050000L), 	BANDMAPSUBMODE_CW | BANDSETF_2M, 		BANDGROUP_144MHZ, "144M CW", },		/* CW */
+	{ BMF(144200000L), 			BMF(145000000L), 			BMF(144300000L), 	BANDMAPSUBMODE_USB | BANDSETF_2M, 		BANDGROUP_144MHZ, "144M SSB", },		/* SSB */
+	{ BMF(144500000L), 			BMF(146000000L + BANDPAD),	BMF(145500000L), 	BANDMAPSUBMODE_USB | BANDSETF_2M, 		BANDGROUP_144MHZ, "144M FM", },		/* FM */
 #endif /* TUNE_2MBAND */
 
 #if TUNE_07MBAND
@@ -2529,22 +2643,22 @@ struct nvmap
 	uint8_t gcontrast;		/* Контрастность LCD */
 #endif /* defined (DEFAULT_LCD_CONTRAST) */
 #if WITHLCDBACKLIGHT
-	uint8_t bglight;
+	uint8_t gbglight;
 #endif /* WITHLCDBACKLIGHT */
 #if WITHDCDCFREQCTL
 	//uint16_t dcdcrefdiv;
 #endif /* WITHDCDCFREQCTL */
 #if WITHKBDBACKLIGHT
-	uint8_t kblight;
+	uint8_t gkblight;
 #endif /* WITHKBDBACKLIGHT */
 #if WITHLCDBACKLIGHT || WITHKBDBACKLIGHT
-	uint8_t dimmtime;
+	uint8_t gdimmtime;
 #endif /* WITHLCDBACKLIGHT || WITHKBDBACKLIGHT */
 #if WITHFANTIMER
-	uint8_t fanpatime;
+	uint8_t gfanpatime;
 #endif /* WITHFANTIMER */
 #if WITHSLEEPTIMER
-	uint8_t sleeptime;
+	uint8_t gsleeptime;
 #endif /* WITHSLEEPTIMER */
 #if LCDMODE_COLORED
 	//uint8_t gbluebgnd;
@@ -2580,19 +2694,16 @@ struct nvmap
 	uint8_t userfsg;
 #endif /* WITHRFSG */
 
-	uint8_t displayfreqsfps;		/* скорость обновления индикатора частоты */
-	uint8_t displaybarsfps;	/* скорость обновления S-метра */
+	uint8_t gdisplayfreqsfps;		/* скорость обновления индикатора частоты */
+	uint8_t gdisplaybarsfps;	/* скорость обновления S-метра */
 #if WITHSPECTRUMWF
-	uint8_t gfillspect;
+	uint8_t gviewstyle;		/* стиль отображения спектра и панорамы */
 	uint8_t gwflevelsep;	/* чувствительность водопада регулируется отдельной парой параметров */
-	uint8_t gwfshiftenable; /* разрешение или запрет сдвига водопада при изменении частоты */
-	uint8_t gspantialiasing; /* разрешение или запрет антиалиасинга спектра */
-	uint8_t gcolorsp;		 /* разрешение или запрет раскраски спектра */
 	uint8_t gtxloopback;		 /* включение спектроанализатора сигнала передачи */
 #endif /* WITHSPECTRUMWF */
 	uint8_t gshowdbm;	/* Отображение уровня сигнала в dBm или S-memter */
 #if WITHBCBANDS
-	uint8_t bandsetbcast;	/* Broadcasting radio bands */
+	uint8_t gbandsetbcast;	/* Broadcasting radio bands */
 #endif /* WITHBCBANDS */
 	uint8_t bandset11m;	/* CB radio band */
 #if TUNE_6MBAND
@@ -3201,7 +3312,7 @@ static uint_fast8_t gusefast;
 #endif /* WITHWARCBANDS */
 
 //static uint_fast8_t bandsetham = 1;	/* HAM radio bands */
-static uint_fast8_t bandsetbcast = 0;	/* Broadcast radio bands */
+static uint_fast8_t gbandsetbcast = 0;	/* Broadcast radio bands */
 static uint_fast8_t bandset11m;
 #if TUNE_6MBAND
 static uint_fast8_t bandset6m = 1;	/* используется ли диапазон 6 метров */
@@ -3244,42 +3355,45 @@ static uint_fast8_t alignmode;		/* режимы для настройки апп
 
 static const uint_fast8_t displaymodesfps = DISPLAYMODES_FPS;
 #if defined (WITHDISPLAY_FPS)
-	static uint_fast8_t displayfreqsfps = WITHDISPLAY_FPS;
+	static uint_fast8_t gdisplayfreqsfps = WITHDISPLAY_FPS;
 #else
-	static uint_fast8_t displayfreqsfps = DISPLAY_FPS;
+	static uint_fast8_t gdisplayfreqsfps = DISPLAY_FPS;
 #endif /* WITHDISPLAY_FPS */
 #if defined (WITHDISPLAYSWR_FPS)
-	static uint_fast8_t displaybarsfps = WITHDISPLAYSWR_FPS;
+	static uint_fast8_t gdisplaybarsfps = WITHDISPLAYSWR_FPS;
 #else
-	static uint_fast8_t displaybarsfps = DISPLAYSWR_FPS;
+	static uint_fast8_t gdisplaybarsfps = DISPLAYSWR_FPS;
 #endif /* WITHDISPLAYSWR_FPS */
 #if WITHSPECTRUMWF
-	static uint_fast8_t gfillspect;
+#if defined (WITHDEFAULTVIEW)
+	static uint_fast8_t gviewstyle = WITHDEFAULTVIEW;
+#else
+	static uint_fast8_t gviewstyle = VIEW_LINE;		/* стиль отображения спектра и панорамы */
+#endif
 	static uint_fast8_t gtopdb = WITHTOPDBDEFAULT;	/* верхний предел FFT */
 	static uint_fast8_t gbottomdb = WITHBOTTOMDBDEFAULT;	/* нижний предел FFT */
 	static uint_fast8_t gtopdbwf = WITHTOPDBDEFAULT;	/* верхний предел FFT waterflow*/
 	static uint_fast8_t gbottomdbwf = WITHBOTTOMDBDEFAULT;	/* нижний предел FFT waterflow */
 	static uint_fast8_t gwflevelsep;	/* чувствительность водопада регулируется отдельной парой параметров */
 	static uint_fast8_t gzoomxpow2;		/* степень двойки - состояние растягиваия спектра (уменьшение наблюдаемой полосы частот) */
-	static uint_fast8_t gwfshiftenable = 1; /* разрешение или запрет сдвига водопада при изменении частоты */
-	static uint_fast8_t gspantialiasing  = 1; /* разрешение или запрет антиалиасинга спектра */
-	static uint_fast8_t gcolorsp  = 0;		/* разрешение или запрет раскраски спектра */
 	static uint_fast8_t gtxloopback = 1;	/* включение спектроанализатора сигнала передачи */
+	static int_fast16_t gafspeclow = 100;	// нижняя частота отображения спектроанализатора
+	static int_fast16_t gafspechigh = 4000;	// верхняя частота отображения спектроанализатора
 #endif /* WITHSPECTRUMWF */
 #if WITHLCDBACKLIGHT
 	#if WITHISBOOTLOADER 
-		static uint_fast8_t bglight = WITHLCDBACKLIGHTMIN;
+		static uint_fast8_t gbglight = WITHLCDBACKLIGHTMIN;
 	#else /* WITHISBOOTLOADER */
-		static uint_fast8_t bglight = WITHLCDBACKLIGHTMAX;
+		static uint_fast8_t gbglight = WITHLCDBACKLIGHTMAX;
 	#endif /* WITHISBOOTLOADER */
 #else /* WITHLCDBACKLIGHT */
-	enum { bglight = 0 };
+	enum { gbglight = 0 };
 #endif /* WITHLCDBACKLIGHT */
 
 #if WITHKBDBACKLIGHT
-	static uint_fast8_t kblight /* = 1 */;
+	static uint_fast8_t gkblight /* = 1 */;
 #else /* WITHKBDBACKLIGHT */
-	enum { kblight = 0 };
+	enum { gkblight = 0 };
 #endif /* WITHKBDBACKLIGHT */
 
 #if WITHPWBUTTON	/* Наличие схемы электронного включения питания */
@@ -3898,7 +4012,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 	static uint_fast8_t gnfmdeviation = 55;	/* Девиация при передаче в NFM - в сотнях герц */
 
 	/*  Использование амплитуды сигнала с ЦАП передатчика - 0..100% */
-	static uint_fast8_t gdacscale = 80;	/* настраивается под прегруз драйвера. */
+	static uint_fast8_t gdacscale = 50;	/* настраивается под прегруз драйвера. */
 #endif /* WITHTX */
 
 
@@ -4653,7 +4767,7 @@ static void cat_answer_forming(void);
 
 #if WITHLCDBACKLIGHT || WITHKBDBACKLIGHT
 
-static uint_fast8_t dimmtime;	/* количество секунд до гашения индикатора, 0 - не гасим. Регулируется из меню. */
+static uint_fast8_t gdimmtime;	/* количество секунд до гашения индикатора, 0 - не гасим. Регулируется из меню. */
 static uint_fast8_t dimmcount;
 static uint_fast8_t dimmflagch;	/* не-0: изменилось состояние dimmflag */
 
@@ -4662,7 +4776,7 @@ static uint_fast8_t dimmflagch;	/* не-0: изменилось состояни
 #if WITHFANTIMER
 
 #define FANPATIMEMAX	240
-static uint_fast8_t fanpatime = 15;	/* количество секунд до выключения вентилятора после передачи, 0 - не гасим. Регулируется из меню. */
+static uint_fast8_t gfanpatime = 15;	/* количество секунд до выключения вентилятора после передачи, 0 - не гасим. Регулируется из меню. */
 static uint_fast8_t fanpacount = FANPATIMEMAX;
 static uint_fast8_t fanpaflag = 1;	/* не-0: выключить ыентилятор. */
 static uint_fast8_t fanpaflagch;	/* не-0: изменилось состояние fanpaflag */
@@ -4672,7 +4786,7 @@ static uint_fast8_t fanpaflagch;	/* не-0: изменилось состоян�
 
 #if WITHSLEEPTIMER
 
-static uint_fast8_t sleeptime;	/* количество минут до выключения, 0 - не выключаем. Регулируется из меню. */
+static uint_fast8_t gsleeptime;	/* количество минут до выключения, 0 - не выключаем. Регулируется из меню. */
 static uint_fast16_t sleepcount;	/* счетчик в секундах */
 static uint_fast8_t sleepflagch;	/* не-0: изменилось состояние sleepflag */
 
@@ -4903,7 +5017,8 @@ uint_fast8_t hamradio_get_amfm_highcut10_value(uint_fast8_t * flag)
 static uint_fast8_t
 //NOINLINEAT
 existingband(
-	uint_fast8_t b	// код диапазона
+	uint_fast8_t b,	// код диапазона
+	uint_fast8_t bandsetbcast
 	)
 {
 	const uint_fast8_t bandset = get_band_bandset(b);
@@ -4931,26 +5046,36 @@ existingband(
 		return bandset11m;
 #if TUNE_6MBAND
 	case BANDSETF_6M:
-		return bandset6m && ! bandsetbcast;		// используется или нет - определяется меню
+		return bandset6m && ! bandsetbcast;		// используется или нет - определяется параметром
 #endif /* TUNE_6MBAND */
 #if TUNE_4MBAND
 	case BANDSETF_4M:
-		return bandset4m && ! bandsetbcast;		// используется или нет - определяется меню
+		return bandset4m && ! bandsetbcast;		// используется или нет - определяется параметром
 #endif /* TUNE_4MBAND */
 
 	// 144 и 430 разрешаются одним пунктом в меню.
 #if TUNE_2MBAND
 	case BANDSETF_2M:
-		return bandset2m && ! bandsetbcast;		// используется или нет - определяется меню
+		return bandset2m && ! bandsetbcast;		// используется или нет - определяется параметром
 #endif /* TUNE_2MBAND */
 #if TUNE_07MBAND
 	case BANDSETF_07M:
-		return bandset2m && ! bandsetbcast;		// используется или нет - определяется меню
+		return bandset2m && ! bandsetbcast;		// используется или нет - определяется параметром
 #endif /* TUNE_2MBAND */
 	}
 }
 
-
+static uint_fast8_t
+//NOINLINEAT
+existingbandsingle(
+	uint_fast8_t b,	// код диапазона
+	uint_fast8_t bandsetbcast
+	)
+{
+	if (existingband(b, 0) && existingband(b, 1))
+		return bandsetbcast;	// BANDSETF_ALL
+	return existingband(b, bandsetbcast);
+}
 
 static void 
 //NOINLINEAT
@@ -4977,7 +5102,7 @@ getfreqband(const uint_fast32_t freq)
 
 	for (i = 0; i < (sizeof bandsmap / sizeof bandsmap [0]); ++ i)
 	{
-		if (! existingband(i))	// диапазон в данной конфигурации не используется
+		if (! existingband(i, gbandsetbcast))	// диапазон в данной конфигурации не используется
 			continue;
 		if (get_band_bottom(i) <= freq && get_band_top(i) > freq)
 			return i;
@@ -4996,7 +5121,7 @@ getnexthband(const uint_fast32_t freq)
 
 	for (i = 0; i < HBANDS_COUNT; ++ i)
 	{
-		if (! existingband(i))	// диапазон в данной конфигурации не используется
+		if (! existingband(i, gbandsetbcast))	// диапазон в данной конфигурации не используется
 			continue;
 		if (get_band_top(i) > freq)
 			return i;
@@ -5004,8 +5129,6 @@ getnexthband(const uint_fast32_t freq)
 	return LOW;
 }
 
-
-#if	WITHDIRECTBANDS
 /* получить номер любительского диспазона, следующего в группе. Если в группе больше нет ни одного диапазона,
  вернуть номер текущего.
  */
@@ -5019,14 +5142,13 @@ getnextbandingroup(const vindex_t b, const uint_fast8_t bandgroup)
 	do
 	{
 		i = i == HIGH ? LOW : (i + 1);	// переход к следующему диапазону
-		if (! existingband(i))	// диапазон в данной конфигурации не используется
+		if (! existingband(i, gbandsetbcast))	// диапазон в данной конфигурации не используется
 			continue;
 		if (bandsmap [i].bandgroup == bandgroup)
 			break;			// диапазон той же группы
 	} while (i != b);
 	return i;
 }
-#endif	/* WITHDIRECTBANDS */
 
 /* получить номер диапазона с меньшей частотой, на который переходить.
   Если нет подходящих, возврат high */
@@ -5038,7 +5160,7 @@ getprevhband(const uint_fast32_t freq)
 
 	for (i = 0; i < HBANDS_COUNT; ++ i)
 	{
-		if (! existingband(i))	// диапазон в данной конфигурации не используется
+		if (! existingband(i, gbandsetbcast))	// диапазон в данной конфигурации не используется
 			continue;
 		if (get_band_bottom(i) > freq)
 		{
@@ -5049,7 +5171,7 @@ getprevhband(const uint_fast32_t freq)
 	// возврат только допустимых диапазонов.
 	do
 		i = calc_prev(i, 0, HBANDS_COUNT - 1);
-	while (! existingband(i));
+	while (! existingband(i, gbandsetbcast));
 	return i;
 }
 
@@ -5061,34 +5183,80 @@ getnext_ham_band(
 	const uint_fast32_t freq
 	)
 {
-	uint_fast8_t i;
+	uint_fast8_t xi;
 	vindex_t xsel [XBANDS_COUNT];
 	vindex_t xnext [XBANDS_COUNT];
 	vindex_t xprev [XBANDS_COUNT];
 
-	for (i = 0; i < XBANDS_COUNT; ++ i)
+	for (xi = 0; xi < XBANDS_COUNT; ++ xi)
 	{
-		const uint_fast32_t f = loadvfy32freq(XBANDS_BASE0 + i);	// частота в обзорном диапазоне
-		xsel [i] = getfreqband(f);			// не принадлежит ли частота какому-то диапазону
-		xnext [i] = getnexthband(f);		// получить номер диапазона с большей частотой
-		xprev [i] = getprevhband(f);		// получить номер диапазона с меньшей частотой
+		const uint_fast32_t f = loadvfy32freq(XBANDS_BASE0 + xi);	// частота в обзорном диапазоне
+		xsel [xi] = getfreqband(f);			// не принадлежит ли частота какому-то диапазону
+		xnext [xi] = getnexthband(f);		// получить номер диапазона с большей частотой
+		xprev [xi] = getprevhband(f);		// получить номер диапазона с меньшей частотой
 	}
+//	PRINTF("getnext_ham_band: b=%d(%d), xsel[0]=%d, xsel[1]=%d, xnext[0]=%d, xnext[1]=%d, xprev[0]=%d, xprev[1]=%d\n",
+//			b, XBANDS_BASE0, xsel[0], xsel[1], xnext[0], xnext[1], xprev[0], xprev[1]);
 
 	do
 	{
+		// 147M - 120 kHz
+		// getnext_ham_band: b=37(36), xsel[0]=36, xsel[1]=37, xnext[0]=0, xnext[1]=0, xprev[0]=35, xprev[1]=35
+		// getnext_ham_band: b=35(36), xsel[0]=36, xsel[1]=37, xnext[0]=0, xnext[1]=0, xprev[0]=35, xprev[1]=35
+		//
 		if (
-			b == XBANDS_BASE0 && 
-			xprev [0] == xprev [1] && 
+			b == XBANDS_BASE1 &&
+			xsel [0] == XBANDS_BASE0 &&
+			xsel [1] == XBANDS_BASE1 &&
+			xnext [0] == 0 &&
+			xnext [1] == 0 &&
+			xprev [0] == (HBANDS_COUNT - 1) &&
+			xprev [1] == (HBANDS_COUNT - 1) &&
+			1)
+		{
+			//TP();
+			/* обработка ситуацию "из обзорного - в обзорный диапазон",
+			если запомненная частота нового обзорного диапазона не попадает на выделенный диапазон */
+			b = XBANDS_BASE0;
+			continue;
+		}
+		// 120 kHz -> 225 kHz
+		// getnext_ham_band: b=36(36,36), xsel[0]=36, xsel[1]=37, xnext[0]=0, xnext[1]=0, xprev[0]=35, xprev[1]=35
+		//
+		if (
+			b == XBANDS_BASE0 &&
+			xsel [0] == XBANDS_BASE0 &&
+			xsel [1] == XBANDS_BASE1 &&
+			xnext [0] == 0 &&
+			xnext [1] == 0 &&
+			xprev [0] == (HBANDS_COUNT - 1) &&
+			xprev [1] == (HBANDS_COUNT - 1) &&
+			1)
+		{
+			//TP();
+			/* обработка ситуацию "из обзорного - в обзорный диапазон",
+			если запомненная частота нового обзорного диапазона не попадает на выделенный диапазон */
+			b = HBANDS_COUNT - 1;
+			do
+				b = calc_next(b, 0, HBANDS_COUNT - 1);
+			while (! existingband(b, gbandsetbcast));
+			continue;
+		}
+		if (
+			b == XBANDS_BASE0 &&
+			xprev [0] == xprev [1] &&
 			xnext [0] == xnext [1] && 
 			xsel [1] >= HBANDS_COUNT)
 		{
-			/* обработка ситуацию "из обзорного - в обзорный диапазон",
+			//TP();
+			/* обработка ситуацию "из обзорного - в выделенный диапазон",
 			если запомненная частота нового обзорного диапазона не попадает на выделенный диапазон */
 			b = XBANDS_BASE1;
 			continue;
 		}
 		if (b == xprev [0] && xsel [0] >= HBANDS_COUNT)
 		{
+			//TP();
 			// текущая является предшествующей для xfreq [0]
 			/* переходим в обзорный диапазон 0 */
 			b = XBANDS_BASE0;
@@ -5096,6 +5264,7 @@ getnext_ham_band(
 		}
 		if (b == xprev [1] && xsel [1] >= HBANDS_COUNT)
 		{
+			//TP();
 			// текущая является предшествующей для xfreq [1]
 			/* переходим в обзорный диапазон 1 */
 			b = XBANDS_BASE1;
@@ -5103,27 +5272,32 @@ getnext_ham_band(
 		}
 		if (b < HBANDS_COUNT)
 		{
+			//TP();
 			/* текущая частота относится к любительским диапазонам */
 			do
 				b = calc_next(b, 0, HBANDS_COUNT - 1);
-			while (! existingband(b));
+			while (! existingband(b, gbandsetbcast));
 			continue;
 		}
 		if (b == XBANDS_BASE0)
 		{
+			//TP();
 			// текущая частота - обзорный 0
 			b = xnext [0];
 			continue;
 		}
 		if (b == XBANDS_BASE1)
 		{
+			//TP();
 			// текущая частота - обзорный 1
 			b = xnext [1];
 			continue;
 		}
 
+		//TP();
 		b = getnexthband(freq);
 	} while (0);
+	//PRINTF("exit b=%d\n", b);
 	return b;
 }
 
@@ -5135,21 +5309,65 @@ getprev_ham_band(
 	const uint_fast32_t freq
 	)
 {
-	uint_fast8_t i;
+	uint_fast8_t xi;
 	vindex_t xsel [XBANDS_COUNT];
 	vindex_t xnext [XBANDS_COUNT];
 	vindex_t xprev [XBANDS_COUNT];
 
-	for (i = 0; i < XBANDS_COUNT; ++ i)
+	for (xi = 0; xi < XBANDS_COUNT; ++ xi)
 	{
-		const uint_fast32_t f = loadvfy32freq(XBANDS_BASE0 + i);	// частота в обзорном диапазоне
-		xsel [i] = getfreqband(f);			// не принадлежит ли частота какому-то диапазону
-		xnext [i] = getnexthband(f);		// получить номер диапазона с большей частотой
-		xprev [i] = getprevhband(f);		// получить номер диапазона с меньшей частотой
+		const uint_fast32_t f = loadvfy32freq(XBANDS_BASE0 + xi);	// частота в обзорном диапазоне
+		xsel [xi] = getfreqband(f);			// не принадлежит ли частота какому-то диапазону
+		xnext [xi] = getnexthband(f);		// получить номер диапазона с большей частотой
+		xprev [xi] = getprevhband(f);		// получить номер диапазона с меньшей частотой
 	}
+//	PRINTF("getprev_ham_band: b=%d(%d), xsel[0]=%d, xsel[1]=%d, xnext[0]=%d, xnext[1]=%d, xprev[0]=%d, xprev[1]=%d\n",
+//			b, XBANDS_BASE0, xsel[0], xsel[1], xnext[0], xnext[1], xprev[0], xprev[1]);
 
 	do
 	{
+		// 120 kHz -> 147 MHz
+		// getprev_ham_band: b=36(36), xsel[0]=36, xsel[1]=37, xnext[0]=0, xnext[1]=0, xprev[0]=35, xprev[1]=35
+		//
+		if (
+			b == XBANDS_BASE0 &&
+			xsel [0] == XBANDS_BASE0 &&
+			xsel [1] == XBANDS_BASE1 &&
+			xnext [0] == 0 &&
+			xnext [1] == 0 &&
+			xprev [0] == (HBANDS_COUNT - 1) &&
+			xprev [1] == (HBANDS_COUNT - 1) &&
+			1)
+		{
+			//TP();
+			/* обработка ситуацию "из обзорного - в обзорный диапазон",
+			если запомненная частота нового обзорного диапазона не попадает на выделенный диапазон */
+			b = XBANDS_BASE1;
+			continue;
+		}
+		// 147 MHz -> 145 MHz
+		// getnext_ham_band: b=36(36,36), xsel[0]=36, xsel[1]=37, xnext[0]=0, xnext[1]=0, xprev[0]=35, xprev[1]=35
+		//
+		if (
+			b == XBANDS_BASE1 &&
+			xsel [0] == XBANDS_BASE0 &&
+			xsel [1] == XBANDS_BASE1 &&
+			xnext [0] == 0 &&
+			xnext [1] == 0 &&
+			xprev [0] == (HBANDS_COUNT - 1) &&
+			xprev [1] == (HBANDS_COUNT - 1) &&
+			1)
+		{
+			//TP();
+			/* обработка ситуацию "из обзорного - в выделенный диапазон",
+			если запомненная частота нового обзорного диапазона не попадает на выделенный диапазон */
+			b = 0;
+			do
+				b = calc_prev(b, 0, HBANDS_COUNT - 1);
+			while (! existingband(b, gbandsetbcast));
+			continue;
+			continue;
+		}
 		if (
 			b == XBANDS_BASE1 && 
 			xprev [0] == xprev [1] && 
@@ -5157,6 +5375,7 @@ getprev_ham_band(
 			xsel [0] >= HBANDS_COUNT
 			)
 		{
+			//TP();
 			/* обработка ситуацию "из обзорного - в обзорный диапазон",
 			если запомненная частота нового обзорного диапазона не попадает на выделенный диапазон */
 			b = XBANDS_BASE0;
@@ -5165,39 +5384,46 @@ getprev_ham_band(
 		}
 		if (b == xnext [0] && xsel [0] >= HBANDS_COUNT)
 		{
+			//TP();
 			/* переходим в обзорный диапазон 0 */
 			b = XBANDS_BASE0;
 			continue;
 		}
 		if (b == xnext [1] && xsel [1] >= HBANDS_COUNT)
 		{
+			//TP();
 			/* переходим в обзорный диапазон 1 */
 			b = XBANDS_BASE1;
 			continue;
 		}
 		if (b < HBANDS_COUNT)
 		{
+			//TP();
 			/* текущая частота относится к любительским диапазонам */
 			do
 				b = calc_prev(b, 0, HBANDS_COUNT - 1);
-			while (! existingband(b));
+			while (! existingband(b, gbandsetbcast));
 			continue;
 		}
 		if (b == (XBANDS_BASE0))
 		{
+			//TP();
 			// текущая частота - обзорный 0
 			b = xprev [0];
 			continue;
 		}
 		if (b == (XBANDS_BASE1))
 		{
+			//TP();
 			// текущая частота - обзорный 1
 			b = xprev [1];
 			continue;
 		}
 
+		//TP();
 		b = getprevhband(freq);
 	} while (0);
+	//PRINTF("exit b=%d\n", b);
 	return b;
 }
 
@@ -5708,6 +5934,8 @@ enum
 	RJ_SMETER,		/* выбор внешнего вида прибора - стрелочный или градусник */
 	RJ_NOTCH,		/* тип NOTCH фильтра - MANUAL/AUTO */
 	RJ_CPUTYPE,		/* текст типа процессора */
+	RJ_VIEW,		/* стиль отображения спектра и панорамы */
+	RJ_COMPILED,		/* текст даты компиляции */
 	//
 	RJ_notused
 };
@@ -5972,7 +6200,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		RJ_UNSIGNED,		// rj
 		ISTEP1,		/* spectrum range */
 		80, 160,	/* диапазон отображаемых значений */
-		offsetof(struct nvmap, bands[0].gbottomdb),
+		offsetof(struct nvmap, bands [0].gbottomdb),
 		nvramoffs_band,
 		NULL,
 		& gbottomdb,
@@ -5984,7 +6212,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		RJ_POW2,		// rj
 		ISTEP1,		/* spectrum range */
 		0, BOARD_FFTZOOM_POW2MAX,	/* масштаб панорамы */
-		offsetof(struct nvmap, bands[0].gzoomxpow2),
+		offsetof(struct nvmap, bands [0].gzoomxpow2),
 		nvramoffs_band,
 		NULL,
 		& gzoomxpow2,
@@ -6192,6 +6420,11 @@ uif_encoder2_rotate(
 {
 	if (nrotate == 0)
 		return 0;
+
+#if WITHTOUCHGUI
+	if (encoder2_redirect)
+		return 0;
+#endif
 
 	switch (enc2state)
 	{
@@ -6732,9 +6965,9 @@ static const FLASHMEM uint_fast8_t catbr2int [] =
 	19200uL / BRSCALE,	// 19200
 	38400uL / BRSCALE,	// 38400
 	57600uL / BRSCALE,	// 57600
-#if CPU_FREQ >= 10000000
+//#if CPU_FREQ >= 10000000
 	115200uL / BRSCALE,	// 115200
-#endif /* CPUSTYLE_ARM */
+//#endif /* CPUSTYLE_ARM */
 };
 
 
@@ -7701,11 +7934,6 @@ static lmsnrstate_t lmsnrstates [NTRX];
 	#endif /* ! WITHNOSPEEX */
 
 	#if WITHTOUCHGUI
-
-		#if ! defined WITHGUIHEAP
-			#define WITHGUIHEAP (1024uL)
-		#endif /* ! defined WITHGUIHEAP */
-
 		static RAMHEAP uint8_t guiheap [ROUNDUP64(WITHGUIHEAP)];
 	#endif /* WITHTOUCHGUI */
 
@@ -7850,30 +8078,40 @@ typedef struct
     arm_lms_instance_f32	    lms2_instance;
     float32_t	                lms2StateF32 [AUTONOTCH_STATE_ARRAY_SIZE];
     float32_t	                lms2NormCoeff_f32 [AUTONOTCH_NUMTAPS];
-    float32_t	                lms2_nr_delay [AUTONOTCH_BUFFER_SIZE];
+    float32_t	                lms2_reference [AUTONOTCH_BUFFER_SIZE];
     unsigned 					reference_index_old;
     unsigned 					reference_index_new;
 } LMSData_t;
 
 static RAMBIGDTCM LMSData_t lmsData0;
 
-static void hamradio_autonotch_init(void)
+static void hamradio_autonotch_init(LMSData_t * const lmsd)
 {
-	LMSData_t * const lmsd = & lmsData0;
 	const float32_t mu = log10f(((5 + 1.0f) / 1500.0f) + 1.0f);
+	//const float32_t mu = 0.0001f;		// UA3REO value
 	arm_lms_norm_init_f32(& lmsd->lms2Norm_instance, AUTONOTCH_NUMTAPS, lmsd->lms2NormCoeff_f32, lmsd->lms2StateF32, mu, FIRBUFSIZE);
-	arm_fill_f32(0, lmsd->lms2_nr_delay, AUTONOTCH_BUFFER_SIZE);
+	arm_fill_f32(0, lmsd->lms2_reference, AUTONOTCH_BUFFER_SIZE);
 	arm_fill_f32(0, lmsd->lms2NormCoeff_f32, AUTONOTCH_NUMTAPS);
 	lmsd->reference_index_old = 0;
-	lmsd->reference_index_new = 0;
+	lmsd->reference_index_new = FIRBUFSIZE;
 }
 
 // TODO: учесть возмодность работы двух каналов приёма
-static void hamradio_autonotch_process(float32_t * notchbuffer)
+static void hamradio_autonotch_process(LMSData_t * const lmsd, float32_t * notchbuffer)
 {
-	LMSData_t * const lmsd = & lmsData0;
-	arm_copy_f32(notchbuffer, & lmsd->lms2_nr_delay [lmsd->reference_index_new], FIRBUFSIZE);
-	arm_lms_norm_f32(& lmsd->lms2Norm_instance, notchbuffer, & lmsd->lms2_nr_delay [lmsd->reference_index_old], lmsd->errsig2, notchbuffer, FIRBUFSIZE);
+	float32_t diag;
+	arm_mean_f32(lmsd->lms2_reference, AUTONOTCH_BUFFER_SIZE, & diag);
+	float32_t diag2;
+	arm_mean_f32(lmsd->lms2NormCoeff_f32, AUTONOTCH_NUMTAPS, & diag2);
+	if (__isnanf(diag) || __isinff(diag) || __isnanf(diag2) || __isinff(diag2))
+	{
+		arm_fill_f32(0, lmsd->lms2_reference, AUTONOTCH_BUFFER_SIZE);
+		arm_fill_f32(0, lmsd->lms2NormCoeff_f32, AUTONOTCH_NUMTAPS);
+		lmsd->reference_index_old = 0;
+		lmsd->reference_index_new = FIRBUFSIZE;
+	}
+	arm_copy_f32(notchbuffer, & lmsd->lms2_reference [lmsd->reference_index_new], FIRBUFSIZE);
+	arm_lms_norm_f32(& lmsd->lms2Norm_instance, notchbuffer, & lmsd->lms2_reference [lmsd->reference_index_old], lmsd->errsig2, notchbuffer, FIRBUFSIZE);
 	lmsd->reference_index_old += FIRBUFSIZE;
 	lmsd->reference_index_new = lmsd->reference_index_old + FIRBUFSIZE;
 	lmsd->reference_index_old %= AUTONOTCH_BUFFER_SIZE;
@@ -7914,9 +8152,11 @@ static void processingonebuff(uint_fast8_t pathi, lmsnrstate_t * const nrp, spee
 	if (denoise)
 	{
 		// Filtering and denoise.
+		BEGIN_STAMP();
 		arm_fir_f32(& nrp->fir_instance, p, nrp->wire1, FIRBUFSIZE);
+		END_STAMP();
 		if (anotch && pathi == 0)
-			hamradio_autonotch_process(nrp->wire1);
+			hamradio_autonotch_process(& lmsData0, nrp->wire1);
 #if WITHLEAKYLMSANR
 		if (pathi == 0)
 			AudioDriver_LeakyLmsNr(nrp->wire1, nrp->wire1, FIRBUFSIZE, 0);
@@ -7938,9 +8178,11 @@ static void processingonebuff(uint_fast8_t pathi, lmsnrstate_t * const nrp, spee
 		// Filtering only.
 		ASSERT(p != NULL);
 		ASSERT(nrp->wire1 != NULL);
+		BEGIN_STAMP();
 		arm_fir_f32(& nrp->fir_instance, p, nrp->wire1, FIRBUFSIZE);
+		END_STAMP();
 		if (anotch && pathi == 0)
-			hamradio_autonotch_process(nrp->wire1);
+			hamradio_autonotch_process(& lmsData0, nrp->wire1);
 		nrp->outsp = nrp->wire1;
 	}
 #endif /* WITHNOSPEEX */
@@ -7966,15 +8208,11 @@ audioproc_spool_user(void)
 		unsigned i;
 		for (i = 0; i < FIRBUFSIZE; ++ i)
 		{
-	  #if WITHUSEDUALWATCH
-			savesampleout16stereo_user(lmsnrstates [0].outsp [i], lmsnrstates [1].outsp [i]);	// to AUDIO codec
-	  #else /* WITHUSEDUALWATCH */
-			savesampleout16stereo_user(lmsnrstates [0].outsp [i], lmsnrstates [0].outsp [i]);	// to AUDIO codec
-	  #endif /* WITHUSEDUALWATCH */
-
-	#if WITHAFSPECTRE
-			afsp_save_sample(lmsnrstates [0].outsp [i]); /* RX A */
-	#endif /* WITHAFSPECTRE */
+	#if WITHUSEDUALWATCH
+			deliveryfloat(& afoutfloat_user, lmsnrstates [0].outsp [i], lmsnrstates [1].outsp [i]);	// to AUDIO codec
+	#else /* WITHUSEDUALWATCH */
+			deliveryfloat(& afoutfloat_user, lmsnrstates [0].outsp [i], lmsnrstates [0].outsp [i]);	// to AUDIO codec
+	#endif /* WITHUSEDUALWATCH */
 		}
 		// Освобождаем буфер
 		releasespeexbuffer_user(p);
@@ -8695,17 +8933,16 @@ updateboard(
 		board_set_sidetonelevel(gsidetonelevel);	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
 		board_set_moniflag(gmoniflag);	/* glob_moniflag */
 		#if WITHSPECTRUMWF
-			board_set_fillspect(gfillspect);	/* заливать заполнением площадь под графиком спектра */
 			board_set_topdb(gtxloopback && gtx ? WITHTOPDBMIN : gtopdb);		/* верхний предел FFT */
 			board_set_bottomdb(gtxloopback && gtx ? WITHBOTTOMDBMAX : gbottomdb);		/* нижний предел FFT */
 			board_set_topdbwf(gtxloopback && gtx ? WITHTOPDBMIN : gtopdbwf);		/* верхний предел FFT для водопада */
 			board_set_bottomdbwf(gtxloopback && gtx ? WITHBOTTOMDBMAX : gbottomdbwf);		/* нижний предел FFT для водопада */
 			board_set_zoomxpow2(gzoomxpow2);	/* уменьшение отображаемого участка спектра */
 			board_set_wflevelsep(gwflevelsep);	/* чувствительность водопада регулируется отдельной парой параметров */
-			board_set_wfshiftenable(gwfshiftenable);	/* разрешение или запрет сдвига водопада при изменении частоты */
-			board_set_spantialiasing(gspantialiasing); 	/* разрешение или запрет антиалиасинга спектра */
-			board_set_colorsp(gcolorsp);				/* разрешение или запрет раскраски спектра */
+			board_set_view_style(gviewstyle);			/* стиль отображения спектра и панорамы */
 			board_set_tx_loopback(gtxloopback && gtx);	/* включение спектроанализатора сигнала передачи */
+			board_set_afspeclow(gafspeclow);	// нижняя частота отображения спектроанализатора
+			board_set_afspechigh(gafspechigh);	// верхняя частота отображения спектроанализатора
 		#endif /* WITHSPECTRUMWF */
 		board_set_showdbm(gshowdbm);		// Отображение уровня сигнала в dBm или S-memter (в зависимости от настроек)
 	#endif /* WITHIF4DSP */
@@ -8765,10 +9002,10 @@ updateboard(
 		board_set_blfreq(bldividerout);
 	#endif /* WITHDCDCFREQCTL */
 	#if WITHLCDBACKLIGHT
-		board_set_bglight(dimmflag || sleepflag || dimmmode, bglight);		/* подсветка дисплея  */
+		board_set_bglight(dimmflag || sleepflag || dimmmode, gbglight);		/* подсветка дисплея  */
 	#endif /* WITHLCDBACKLIGHT */
 	#if WITHKBDBACKLIGHT
-		board_set_kblight((dimmflag || sleepflag || dimmmode) ? 0 : kblight);			/* подсвтка клавиатуры */
+		board_set_kblight((dimmflag || sleepflag || dimmmode) ? 0 : gkblight);			/* подсвтка клавиатуры */
 	#endif /* WITHKBDBACKLIGHT */
 	#if WITHPWBUTTON
 		board_set_poweron(gpoweronhold);
@@ -8875,15 +9112,19 @@ updateboard(
 	#endif /* WITHTX */
 	}
 
-#if (WITHSWRMTR || WITHSHOWSWRPWR) && LCDMODE_LTDC
+#if (WITHSWRMTR || WITHSHOWSWRPWR)
 	display2_set_smetertype(gsmetertype);
-#endif /* (WITHSWRMTR || WITHSHOWSWRPWR) && LCDMODE_LTDC */
+#endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
 
 	/* после всех перенастроек включаем передатчик */
 #if WITHTX
 	board_set_tx(gtx);		/* в конце выдаём сигнал разрешения передачи */
 	board_update();		/* вывести забуферированные изменения в регистры */
 #endif /* WITHTX */
+
+#if WITHTOUCHGUI
+	gui_update(NULL);
+#endif /* WITHTOUCHGUI */
 }
 
 ///////////////////////////
@@ -9378,14 +9619,14 @@ uif_key_lockencoder(void)
 static void
 uif_key_genham(void)
 {
-	bandsetbcast = calc_next(bandsetbcast, 0, 1);
-	save_i8(offsetof(struct nvmap, bandsetbcast), bandsetbcast);
+	gbandsetbcast = calc_next(gbandsetbcast, 0, 1);
+	save_i8(offsetof(struct nvmap, gbandsetbcast), gbandsetbcast);
 	updateboard(1, 0);
 }
 
 uint_fast8_t hamradio_get_genham_value(void)
 {
-	return bandsetbcast;
+	return gbandsetbcast;
 }
 
 #endif /* WITHBCBANDS */
@@ -10312,7 +10553,7 @@ display_refreshperformed_wpm(void)
 	system_enableIRQ();
 }
 
-// Проверка разрешения обновления дисплея (индикация частоты).
+// Проверка разрешения обновления дисплея (индикация напряжения/тока).
 static uint_fast8_t
 display_refreshenabled_voltage(void)
 {
@@ -10342,7 +10583,7 @@ display_refreshenabled_freqs(void)
 static void
 display_refreshperformed_freqs(void)
 {
-	const uint_fast8_t n = NTICKS(1000 / displayfreqsfps);	// 50 ms - обновление с частотой 20 герц
+	const uint_fast8_t n = NTICKS(1000 / gdisplayfreqsfps);	// 50 ms - обновление с частотой 20 герц
 
 	system_disableIRQ();
 	counterupdatedfreqs = n;
@@ -10402,7 +10643,7 @@ display_refresenabled_bars(void)
 static void
 display_refreshperformed_bars(void)
 {
-	const uint_fast8_t n = NTICKS(1000 / displaybarsfps);	// 50 ms - обновление с частотой 20 герц
+	const uint_fast8_t n = NTICKS(1000 / gdisplaybarsfps);	// 50 ms - обновление с частотой 20 герц
 
 	system_disableIRQ();
 	counterupdatebars = n;
@@ -10421,7 +10662,7 @@ display2_redrawbarstimed(
 	if (immed || display_refresenabled_bars())
 	{
 		/* быстро меняющиеся значения с частым опорсом */
-		looptests();		// Периодически вызывается в главном цикле - тесты
+		main_speed_diagnostics();
 		/* +++ переписываем значения из возможно внешних АЦП в кеш значений */
 	#if WITHSWRMTR
 		board_adc_store_data(PWRMRRIX, board_getadc_unfiltered_truevalue(PWRI));
@@ -10447,6 +10688,7 @@ display2_redrawbarstimed(
 
 	if (immed || display_refreshenabled_voltage())
 	{
+		looptests();		// Периодически вызывается в главном цикле - тесты
 		/* медленно меняющиеся значения с редким опорсом */
 		/* +++ переписываем значения из возможно внешних АЦП в кеш значений */
 	#if WITHTHERMOLEVEL
@@ -12686,7 +12928,7 @@ static void dpc_1stimer(void * arg)
 		}
 #endif /* WITHWAVPLAYER || WITHSENDWAV */
 #if WITHLCDBACKLIGHT || WITHKBDBACKLIGHT
-		if (dimmtime == 0)
+		if (gdimmtime == 0)
 		{
 			// Функция выключена
 			if (dimmflag != 0)
@@ -12698,7 +12940,7 @@ static void dpc_1stimer(void * arg)
 		}
 		else if (dimmflag == 0)		// ещё не выключили
 		{
-			if (++ dimmcount >= dimmtime)
+			if (++ dimmcount >= gdimmtime)
 			{
 				dimmflag = 1;
 				dimmflagch = 1;		// запрос на обновление состояния аппаратуры из user mode программы
@@ -12706,7 +12948,7 @@ static void dpc_1stimer(void * arg)
 		}
 #endif /* WITHLCDBACKLIGHT || WITHKBDBACKLIGHT */
 #if WITHFANTIMER
-		if (gtx != 0 || fanpatime == 0)
+		if (gtx != 0 || gfanpatime == 0)
 		{
 			if (fanpaflag != 0)	
 			{
@@ -12717,7 +12959,7 @@ static void dpc_1stimer(void * arg)
 		}
 		else if (fanpaflag == 0)		// ещё не выключили
 		{
-			if (++ fanpacount >= fanpatime)
+			if (++ fanpacount >= gfanpatime)
 			{
 				fanpaflag = 1;
 				fanpaflagch = 1;		// запрос на обновление состояния аппаратуры из user mode программы
@@ -12725,7 +12967,7 @@ static void dpc_1stimer(void * arg)
 		}
 #endif /* WITHFANTIMER */
 #if WITHSLEEPTIMER
-		if (sleeptime == 0)
+		if (gsleeptime == 0)
 		{
 			// Функция выключена
 			if (sleepflag != 0)
@@ -12737,7 +12979,7 @@ static void dpc_1stimer(void * arg)
 		}
 		else if (sleepflag == 0)		// ещё не выключили
 		{
-			if (++ sleepcount >= sleeptime * 60)
+			if (++ sleepcount >= gsleeptime * 60)
 			{
 				sleepflag = 1;
 				sleepflagch = 1;		// запрос на обновление состояния аппаратуры из user mode программы
@@ -12960,7 +13202,7 @@ void spool_secound(void)
 {
 	board_dpc(dpc_1stimer, NULL);
 #if WITHTOUCHGUI
-	board_dpc(gui_timer_update, NULL);
+	board_dpc(gui_update, NULL);
 #endif /*WITHTOUCHGUI */
 }
 
@@ -13241,9 +13483,9 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL2("LCD LIGH", "TFT Backlight"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		WITHLCDBACKLIGHTMIN, WITHLCDBACKLIGHTMAX, 
-		offsetof(struct nvmap, bglight),
+		offsetof(struct nvmap, gbglight),
 		NULL,
-		& bglight,
+		& gbglight,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #endif /* WITHLCDBACKLIGHT */
@@ -13252,9 +13494,9 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("KBD LIGH"), 8, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
-		offsetof(struct nvmap, kblight),
+		offsetof(struct nvmap, gkblight),
 		NULL,
-		& kblight,
+		& gkblight,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #endif /* WITHKBDBACKLIGHT */
@@ -13263,9 +13505,9 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL2("DIMM TIM", "Dimmer Time"), 7, 0, 0,	ISTEP5,
 		ITEM_VALUE,
 		0, 240, 
-		offsetof(struct nvmap, dimmtime),
+		offsetof(struct nvmap, gdimmtime),
 		NULL,
-		& dimmtime,
+		& gdimmtime,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #endif /* WITHKBDBACKLIGHT */
@@ -13274,9 +13516,9 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL2("SLEEPTIM", "Sleep Time"), 7, 0, 0,	ISTEP5,
 		ITEM_VALUE,
 		0, 240, 
-		offsetof(struct nvmap, sleeptime),
+		offsetof(struct nvmap, gsleeptime),
 		NULL,
-		& sleeptime,
+		& gsleeptime,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #endif /* WITHSLEEPTIMER */
@@ -13305,9 +13547,9 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("FREQ FPS"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		4, 25,							/* частота обновления показаний частоты от 5 до 25 раз в секунду */
-		offsetof(struct nvmap, displayfreqsfps),
+		offsetof(struct nvmap, gdisplayfreqsfps),
 		NULL,
-		& displayfreqsfps,
+		& gdisplayfreqsfps,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #if WITHBARS
@@ -13315,29 +13557,20 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("BARS FPS"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		4, 40,							/* частота обновления барграфов от 5 до 40 раз в секунду */
-		offsetof(struct nvmap, displaybarsfps),
+		offsetof(struct nvmap, gdisplaybarsfps),
 		NULL,
-		& displaybarsfps,
+		& gdisplaybarsfps,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #endif /* WITHBARS */
 #if WITHSPECTRUMWF
 	{
-		QLABEL("FILL SPE"), 7, 3, RJ_YES,	ISTEP1,
+		QLABEL2("VIEW STL", "View style"), 7, 5, RJ_VIEW, ISTEP1,
 		ITEM_VALUE,
-		0, 1,							/* отказ от заполнения */
-		offsetof(struct nvmap, gfillspect),
+		0, VIEW_COUNT - 1,				/* стиль отображения спектра и панорамы */
+		offsetof(struct nvmap, gviewstyle),
 		NULL,
-		& gfillspect,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL2("SPEC CLR", "Color Spectrum"), 7, 3, RJ_YES,	ISTEP1,
-		ITEM_VALUE,
-		0, 1,							/* разрешение или запрет раскраски спектра */
-		offsetof(struct nvmap, gcolorsp),
-		NULL,
-		& gcolorsp,
+		& gviewstyle,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
@@ -13392,24 +13625,6 @@ static const FLASHMEM struct menudef menutable [] =
 		MENUNONVRAM,
 		NULL,
 		& gzoomxpow2,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("WF shift"), 7, 3, RJ_YES,	ISTEP1,
-		ITEM_VALUE,
-		0, 1,							/* разрешение или запрет сдвига водопада при изменении частоты */
-		offsetof(struct nvmap, gwfshiftenable),
-		NULL,
-		& gwfshiftenable,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL2("SPEC AA ", "Spectrum AA"), 7, 3, RJ_YES,	ISTEP1,
-		ITEM_VALUE,
-		0, 1,							/* разрешение или запрет антиалиасинга спектра */
-		offsetof(struct nvmap, gspantialiasing),
-		NULL,
-		& gspantialiasing,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
@@ -15395,9 +15610,9 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		QLABEL("FAN TIME"), 7, 0, 0,	ISTEP5,
 		ITEM_VALUE,
 		0, FANPATIMEMAX,
-		offsetof(struct nvmap, fanpatime),
+		offsetof(struct nvmap, gfanpatime),
 		NULL,
-		& fanpatime,
+		& gfanpatime,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #endif /* WITHFANTIMER */
@@ -15816,9 +16031,9 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		QLABEL("BAND BC "), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
-		offsetof(struct nvmap, bandsetbcast),
+		offsetof(struct nvmap, gbandsetbcast),
 		NULL,
-		& bandsetbcast,
+		& gbandsetbcast,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #endif /* WITHBCBANDS */
@@ -15973,6 +16188,15 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		& gzero,
 		NULL,
 		getcpufreqbase,
+	},
+	{
+		QLABEL("COMPILED"), 7, 0, RJ_COMPILED, 	ISTEP1,	// тип процессора
+		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+		0, 0,
+		MENUNONVRAM,
+		& gzero,
+		NULL,
+		getzerobase,
 	},
 };
 
@@ -16682,8 +16906,10 @@ void display2_menu_valxx(
 #if CPUSTYLE_STM32MP1
 			RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_BSECEN;
 			(void) RCC->MP_APB5ENSETR;
+			RCC->MP_APB5LPENSETR = RCC_MC_APB5LPENSETR_BSECLPEN;
+			(void) RCC->MP_APB5LPENSETR;
 
-			unsigned rpn = ((* (volatile uint32_t *) RPN_BASE) & RPN_ID_Msk) >> RPN_ID_Pos;
+			const unsigned rpn = ((* (volatile uint32_t *) RPN_BASE) & RPN_ID_Msk) >> RPN_ID_Pos;
 			switch (rpn)
 			{
 			case 0x24: 	msg = PSTR("STM32MP153Cx"); break;
@@ -16702,6 +16928,31 @@ void display2_menu_valxx(
 			width = VALUEW;
 			comma = strlen_P(msg);
 			display_menu_string_P(x, y, msg, width, comma);
+		}
+		break;
+
+	case RJ_COMPILED:
+		{
+			static const FLASHMEM char msg [] = __DATE__ " " __TIME__;
+			width = VALUEW;
+			comma = strlen_P(msg);
+			display_menu_string_P(x, y, msg, width, comma);
+		}
+		break;
+
+	case RJ_VIEW:
+		{
+			/* стиль отображения спектра и панорамы */
+			static const FLASHMEM char msg [][6] =
+			{
+				"LINE ",
+				"FILL ",
+				"COLOR",
+				"3DSS ",
+			};
+
+			width = VALUEW;
+			display_menu_string_P(x, y, msg [value], width, comma);
 		}
 		break;
 
@@ -17274,12 +17525,14 @@ process_key_menuset_common(uint_fast8_t kbch)
 #if WITHENCODER2
 	#if WITHTOUCHGUI
 		case KBD_ENC2_PRESS:
-			gui_set_encoder2_state (KBD_ENC2_PRESS);
-			uif_encoder2_press();
+			gui_put_keyb_code(KBD_ENC2_PRESS);
+			if (! encoder2_redirect)
+				uif_encoder2_press();
 			return 0;
 		case KBD_ENC2_HOLD:
-			gui_set_encoder2_state (KBD_ENC2_HOLD);
-			uif_encoder2_hold();
+			gui_put_keyb_code(KBD_ENC2_HOLD);
+			if (! encoder2_redirect)
+				uif_encoder2_hold();
 			return 0;
 	#else
 		case KBD_ENC2_PRESS:
@@ -18005,13 +18258,20 @@ static void initialize2(void)
 
 	display_reset();
 	display_initialize();
+
+	display2_initialize();
 	display2_bgreset();
 
 	if (keyboard_test() == 0)
 	{
 		static const FLASHMEM char msg  [] = "KBD fault";
 
+		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
+		board_update();
+
 		display_at_P(0, 0, msg);
+		display_flush();
+
 		PRINTF(PSTR("KBD fault\n"));
 		for (;;)
 			;
@@ -18032,8 +18292,12 @@ static void initialize2(void)
 		static const FLASHMEM char msg  [] = "TOO LARGE nvmap";
 		void wrong_NVRAM_END(void);
 
+		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
+		board_update();
+
 		display_menu_digit(0, 0, sizeof (struct nvmap), 9, 0, 0);
 		display_at_P(0, 1, msg);
+		display_flush();
 
 		wrong_NVRAM_END();
 		//hardware_cw_diagnostics(0, 0, 0);	// 'S'
@@ -18091,7 +18355,11 @@ static void initialize2(void)
 		{
 			uint_fast8_t kbch;
 
+			board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
+			board_update();
+
 			display_at_P(0, 0, PSTR("ERASE: Press SPL"));
+			display_flush();
 
 			for (;;)
 			{
@@ -18122,8 +18390,13 @@ static void initialize2(void)
 			// в случае неправильно работающего NVRAM зависаем
 			PRINTF(PSTR("initialize2(): NVRAM initialization: wrong NVRAM pattern in any address sizes.\n"));
 
+			board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
+			board_update();
+
 			display_menu_digit(0, 0, NVRAM_END + 1, 9, 0, 0);
 			display_at_P(0, 1, PSTR("NVRAM fault"));
+			display_flush();
+
 			PRINTF(PSTR("NVRAM fault1\n"));
 			for (;;)
 				;
@@ -18150,7 +18423,11 @@ static void initialize2(void)
 		{
 			uint_fast8_t kbch;
 
+			board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
+			board_update();
+
 			display_at_P(0, 0, PSTR("ERASE: Press SPL"));
+			display_flush();
 
 			for (;;)
 			{
@@ -18179,8 +18456,13 @@ static void initialize2(void)
 			// проверяем только что записанную сигнатуру
 			// в случае неправильно работающего NVRAM зависаем
 
+			board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
+			board_update();
+
 			display_menu_digit(0, 1, NVRAM_END + 1, 9, 0, 0);
 			display_at_P(0, 1, PSTR("NVRAM fault"));
+			display_flush();
+
 			for (;;)
 				;
 		}
@@ -18188,6 +18470,7 @@ static void initialize2(void)
 #if WITHMENU
 		defaultsettings();		/* загрузка в nvram установок по умолчанию */
 #endif //WITHMENU
+
 		//PRINTF(PSTR("initialize2(): NVRAM initialization: write NVRAM signature.\n"));
 		initnvramsignature();
 		//extmenu = 1;	/* сразу включаем инженерный режим - без перезагрузки доступны все пункты */
@@ -18236,6 +18519,22 @@ hamradio_initialize(void)
 #if WITHUSESDCARD
 	sdcardhw_initialize();
 #endif /* WITHUSESDCARD */
+#if WITHUSERAMDISK
+	{
+		ALIGNX_BEGIN BYTE work [FF_MAX_SS] ALIGNX_END;
+		FRESULT rc;
+		PRINTF(PSTR("ramdisk: start formatting\n"));
+		rc = f_mkfs("0:", NULL, work, sizeof (work));
+		if (rc != FR_OK)
+		{
+			PRINTF(PSTR("ramdisk: f_mkfs failure\n"));
+		}
+		else
+		{
+			PRINTF(PSTR("ramdisk: f_mkfs okay\n"));
+		}
+	}
+#endif
 #if WITHUSEAUDIOREC
 	sdcardinitialize();			// перевод state machine в начальное состояние
 #endif /* WITHUSEAUDIOREC */
@@ -18247,7 +18546,7 @@ hamradio_initialize(void)
 #if WITHINTEGRATEDDSP	/* в программу включена инициализация и запуск DSP части. */
 	dsp_initialize();		// цифровая обработка подготавливается
 	InitNoiseReduction();
-	hamradio_autonotch_init();
+	hamradio_autonotch_init(& lmsData0);
 #endif /* WITHINTEGRATEDDSP */
 
 #if WITHI2SHW
@@ -18883,7 +19182,7 @@ hamradio_main_step(void)
 				}
 			}
 #if WITHTOUCHGUI && WITHENCODER2
-				gui_check_encoder2(nrotate2);
+			gui_set_encoder2_rotate(nrotate2);
 #endif /* WITHTOUCHGUI && WITHENCODER2 */
 		}
 		break;
@@ -19316,20 +19615,51 @@ uint_fast8_t hamradio_get_autonotch(void)
 	return gnotch && notchmodes [gnotchtype].code == BOARD_NOTCH_AUTO;
 }
 
+uint_fast8_t hamradio_get_gnotch(void)
+{
+	return gnotch;
+}
+
+void hamradio_set_gnotch(uint_fast8_t v)
+{
+	gnotch = v != 0;
+}
+
+uint_fast8_t hamradio_get_gnotchtype(void)
+{
+	return notchmodes [gnotchtype].code;
+}
+
+void hamradio_set_gnotchtype(uint_fast8_t v)
+{
+	gnotchtype = v;
+}
+
 #endif /* WITHNOTCHFREQ */
 
 #if WITHTOUCHGUI
 
-void hamradio_disable_keyboard_redirect (void)
+void hamradio_disable_keyboard_redirect(void)
 {
 	keyboard_redirect = 0;
 }
 
-void hamradio_enable_keyboard_redirect (void)
+void hamradio_enable_keyboard_redirect(void)
 {
 	keyboard_redirect = 1;
 }
 
+void hamradio_disable_encoder2_redirect(void)
+{
+	encoder2_redirect = 0;
+}
+
+void hamradio_enable_encoder2_redirect(void)
+{
+	encoder2_redirect = 1;
+}
+
+#if WITHIF4DSP
 //todo: добавить учет текущего режима
 void hamradio_set_agc_fast(void)
 {
@@ -19456,6 +19786,8 @@ uint_fast8_t hamradio_get_high_bp(int_least16_t rotate)
 	return high;
 }
 
+#endif /* WITHIF4DSP */
+
 #if WITHMENU
 uint_fast8_t hamradio_get_multilinemenu_block_groups(menu_names_t * vals)
 {
@@ -19522,7 +19854,7 @@ void hamradio_get_multilinemenu_block_vals(menu_names_t * vals, uint_fast8_t ind
 	}
 }
 
-const char * hamradio_gui_edit_menu_item(uint_fast8_t index, int_least16_t rotate)
+const char * hamradio_gui_edit_menu_item(uint_fast8_t index, int_fast8_t rotate)
 {
 	const FLASHMEM struct menudef * const mp = & menutable [index];
 	if (rotate != 0 && ismenukind(mp, ITEM_VALUE))
@@ -19717,8 +20049,7 @@ uint_fast8_t hamradio_get_bands(band_array_t * bands)
 
 	for (uint_fast8_t i = 0; i < HBANDS_COUNT; i++)
 	{
-		uint_fast8_t bandset = get_band_bandset(i);
-		if (bandset == BANDSETF_HAM)
+		if (existingbandsingle(i, 0))		// check for HAM bands
 		{
 			band_array_t * b = & bands [count];
 			const char * l = get_band_label(i);
@@ -19732,7 +20063,7 @@ uint_fast8_t hamradio_get_bands(band_array_t * bands)
 			}
 			else
 			{
-				local_snprintf_P(b->name, ARRAY_SIZE(b->name), PSTR("%dk"), b->init_freq / 1000);
+				local_snprintf_P(b->name, ARRAY_SIZE(b->name), PSTR("%ldk"), (long) (b->init_freq / 1000));
 			}
 
 			count ++;
@@ -19741,8 +20072,7 @@ uint_fast8_t hamradio_get_bands(band_array_t * bands)
 
 	for (uint_fast8_t i = 0; i < HBANDS_COUNT; i++)
 	{
-		uint_fast8_t bandset = get_band_bandset(i);
-		if (bandset == BANDSETF_BCAST || bandset == BANDSETF_ALL)
+		if (existingbandsingle(i, 1))		// check for broadcast bands
 		{
 			band_array_t * b = & bands [count];
 			const char * l = get_band_label(i);
@@ -19756,7 +20086,7 @@ uint_fast8_t hamradio_get_bands(band_array_t * bands)
 			}
 			else
 			{
-				local_snprintf_P(b->name, ARRAY_SIZE(b->name), PSTR("%dk"), b->init_freq / 1000);
+				local_snprintf_P(b->name, ARRAY_SIZE(b->name), PSTR("%ldk"), (long) (b->init_freq / 1000));
 			}
 			count ++;
 		}
@@ -19793,16 +20123,41 @@ uint_fast8_t hamradio_get_gsmetertype(void)
 #endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
 
 #if WITHSPECTRUMWF
-uint_fast8_t hamradio_get_gcolorsp(void)
+const char * hamradio_change_view_style(uint_fast8_t v)
 {
-	return gcolorsp;
-}
+	uint_fast16_t menupos;
+	const char * name = "VIEW STL";
 
-void hamradio_set_gcolorsp(uint_fast8_t v)
-{
-	gcolorsp = v != 0;
-	save_i8(offsetof(struct nvmap, gcolorsp), gcolorsp);
-	updateboard(1, 0);
+	for (menupos = 0; menupos < MENUROW_COUNT; ++ menupos)
+	{
+		const FLASHMEM struct menudef * const mp = & menutable [menupos];
+		if ((mp->qspecial & ITEM_VALUE) == 0)
+			continue;
+
+		if (! strcmp(name, mp->qlabel))
+			break;
+	}
+
+	const FLASHMEM struct menudef * const mp = & menutable [menupos];
+
+	if (v)
+	{
+		uint_fast8_t * const pv8 = mp->qpval8;
+		* pv8 = (* pv8 + 1) % (mp->qupper + 1);
+		gviewstyle = * pv8;
+		updateboard(1, 0);
+	}
+
+#if (NVRAM_TYPE != NVRAM_TYPE_CPUEEPROM)
+		savemenuvalue(mp);		/* сохраняем отредактированное значение */
+#endif
+
+	dctx_t dctx;
+	dctx.type = DCTX_MENU;
+	dctx.pv = mp;
+	display2_menu_valxx(0, 0, & dctx);
+
+	return menuw;
 }
 
 uint_fast8_t hamradio_get_gzoomxpow2(void)
@@ -19815,7 +20170,7 @@ void hamradio_set_gzoomxpow2(uint_fast8_t v)
 	ASSERT(v <= BOARD_FFTZOOM_POW2MAX);
 	gzoomxpow2 = v;
 	// сохранение зависит от текущего диапазона
-	save_i8(nvramoffs_band(offsetof(struct nvmap, bands[0].gzoomxpow2)), gzoomxpow2);
+	save_i8(nvramoffs_band(offsetof(struct nvmap, bands [0].gzoomxpow2)), gzoomxpow2);
 	updateboard(1, 0);
 }
 
@@ -19836,8 +20191,8 @@ void hamradio_set_gtopdb(uint_fast8_t v)
 	gtopdb = v;
 	gtopdbwf = v;
 	// сохранение зависит от текущего диапазона
-	save_i8(nvramoffs_band(offsetof(struct nvmap, bands[0].gtopdb)), gtopdb);
-	save_i8(nvramoffs_band(offsetof(struct nvmap, bands[0].gtopdbwf)), gtopdbwf);
+	save_i8(nvramoffs_band(offsetof(struct nvmap, bands [0].gtopdb)), gtopdb);
+	save_i8(nvramoffs_band(offsetof(struct nvmap, bands [0].gtopdbwf)), gtopdbwf);
 	updateboard(1, 0);
 }
 
@@ -19858,12 +20213,52 @@ void hamradio_set_gbottomdb(uint_fast8_t v)
 	gbottomdb = v;
 	gbottomdbwf = v;
 	// сохранение зависит от текущего диапазона
-	save_i8(nvramoffs_band(offsetof(struct nvmap, bands[0].gbottomdb)), gbottomdb);
-	save_i8(nvramoffs_band(offsetof(struct nvmap, bands[0].gbottomdbwf)), gbottomdbwf);
+	save_i8(nvramoffs_band(offsetof(struct nvmap, bands [0].gbottomdb)), gbottomdb);
+	save_i8(nvramoffs_band(offsetof(struct nvmap, bands [0].gbottomdbwf)), gbottomdbwf);
 	updateboard(1, 0);
 }
 
 #endif /* WITHSPECTRUMWF */
+
+const char * hamradio_get_att_value(void)
+{
+	const uint_fast8_t bi = getbankindex_tx(gtx);
+	return attmodes [gatts [bi]].label;
+}
+
+const char * hamradio_get_preamp_value(void)
+{
+	const uint_fast8_t bi = getbankindex_tx(gtx);
+	return pampmodes [gpamps [bi]].label;
+}
+
+void hamradio_change_att(void)
+{
+	uif_key_click_attenuator();
+}
+
+void hamradio_change_preamp(void)
+{
+	uif_key_click_pamp();
+}
+
+#if WITHTX
+
+uint_fast8_t hamradio_moxmode(uint_fast8_t v)
+{
+	if (v)
+		uif_key_tuneoff();
+	return moxmode;
+}
+
+uint_fast8_t hamradio_tunemode(uint_fast8_t v)
+{
+	if (v)
+		uif_key_tune();
+	return tunemode;
+}
+
+#endif /* WITHTX */
 
 // основной цикл программы при работе в режиме любительского премника
 static void
@@ -20115,10 +20510,14 @@ void bootloader_detach(uintptr_t ip)
 	//GIC_DisableInterface();
 	//GIC_DisableDistributor();
 
-	unsigned i;
-	// 32 - skip SGI handlers (keep enabled foe CPU1 start).
-	for (i = 32; i < 1020; ++ i)
-		IRQ_Disable(i);
+	{
+		// Get ITLinesNumber
+		const unsigned n = ((GIC_DistributorInfo() & 0x1f) + 1) * 32;
+		unsigned i;
+		// 32 - skip SGI handlers (keep enabled for CPU1 start).
+		for (i = 32; i < n; ++ i)
+			IRQ_Disable(i);
+	}
 #endif
 
 #if (__CORTEX_A != 0)
@@ -20160,7 +20559,7 @@ void bootloader_deffereddetach(void * arg)
 
 static void bootloader_mainloop(void)
 {
-	board_set_bglight(1, bglight);	// выключить подсветку
+	board_set_bglight(1, gbglight);	// выключить подсветку
 	board_update();
 	//printhex(BOOTLOADER_RAMAREA, (void *) BOOTLOADER_RAMAREA, 64);
 	//local_delay_ms(1000);

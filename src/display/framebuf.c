@@ -81,11 +81,18 @@ mdma_getbus(uintptr_t addr)
 #if CPUSTYLE_STM32H7XX
 	addr &= 0xFF000000uL;
 	return (addr == 0x00000000uL || addr == 0x20000000uL);
+
 #elif CPUSTYLE_STM32MP1 && CORE_CA7
 	// SYSMEM
 	// DDRCTRL
-	return 0;
-#elif CPUSTYLE_STM32MP1 && ! CORE_CA7
+	/*
+	 * 0: The system/AXI bus is used on channel x.
+	 * 1: The AHB bus/TCM is used on channel x.
+	 */
+	addr &= 0xFF000000uL;
+	return (addr == 0x00000000uL || addr == 0x20000000uL);
+
+#elif CPUSTYLE_STM32MP1 && CORE_CM4
 	#error M4 core not supported
 	/*
 	 * 0: The system/AXI bus is used on channel x.
@@ -93,8 +100,10 @@ mdma_getbus(uintptr_t addr)
 	 */
 	addr &= 0xFF000000uL;
 	return (addr == 0x00000000uL || addr == 0x20000000uL);
+
 #else
 	return 0;
+
 #endif
 }
 
@@ -300,17 +309,12 @@ hwacc_fillrect_u8(
 #else
 	// программная реализация
 
-	const unsigned t = GXADJ(dx) - w;
-	//buffer += (GXADJ(dx) * row) + col;
-	volatile uint8_t * tbuffer = colmain_mem_at(buffer, dx, dy, col, row); // dest address
+	const unsigned dxadj = GXADJ(dx);
+	uint8_t * tbuffer = colmain_mem_at(buffer, dx, dy, col, row); // dest address
 	while (h --)
 	{
-		//uint8_t * const startmem = buffer;
-
-		unsigned n = w;
-		while (n --)
-			* tbuffer ++ = color;
-		tbuffer += t;
+		memset(tbuffer, color, w);
+		tbuffer += dxadj;
 	}
 
 #endif
@@ -761,6 +765,8 @@ void colmain_putpixel(
 	COLORMAIN_T color
 	)
 {
+	ASSERT(x < dx);
+	ASSERT(y < dy);
 	PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, x, y);
 	#if LCDMODE_LTDC_L24
 		tgr->r = color >> 16;
@@ -805,6 +811,10 @@ void colmain_line(
 	int antialiasing
 	)
 {
+	ASSERT(xn < bx);
+	ASSERT(xk < bx);
+	ASSERT(yn < by);
+	ASSERT(yn < by);
 	int  dx, dy, s, sx, sy, kl, incr1, incr2;
 	char swap;
 	const COLORMAIN_T sc = getshadedcolor(color, DEFAULT_ALPHA);
@@ -1702,6 +1712,7 @@ display_string3_at_xy(uint_fast16_t x, uint_fast16_t y, const char * __restrict 
 #endif /* SMALLCHARH3 */
 
 
+#if ! LCDMODE_DUMMY
 
 // Установить прозрачность для прямоугольника
 void display_transparency(
@@ -1741,6 +1752,7 @@ void display_transparency(
 #endif
 }
 
+#endif /* ! LCDMODE_DUMMY */
 
 static uint_fast8_t scalecolor(
 	uint_fast8_t cv,	// color component value
@@ -1787,7 +1799,7 @@ COLORPIP_T getshadedcolor(
 
 	return dot |= COLORPIP_SHADED;
 
-#elif LCDMODE_PIP_RGB565
+#elif LCDMODE_MAIN_RGB565
 
 	if (dot == COLORPIP_BLACK)
 	{
@@ -1857,46 +1869,10 @@ void display2_xltrgb24(COLOR24_T * xltable)
 
 	// часть цветов с 0-го индекса используется в отображении водопада
 	// остальные в дизайне
-	// PALETTESIZE == 96
-	int a = 0;
-	// a = 0
-	for (i = 0; i < 16; ++ i)
+	for (i = 0; i < COLORPIP_BASE; ++ i)
 	{
-		fillpair_xltrgb24(xltable, a + i, COLOR24(0, 0, scalecolor(i, 15, 255)));	// проверить результат перед попыткой применить целочисленные вычисления!
+		fillpair_xltrgb24(xltable, i, colorgradient(i, COLORPIP_BASE - 1));
 	}
-	a += i;
-	// a = 16
-	for (i = 0; i < 16; ++ i)
-	{
-		fillpair_xltrgb24(xltable, a + i, COLOR24(0, scalecolor(i, 15, 255), 255));
-	}
-	a += i;
-	// a = 32
-	for (i = 0; i < 16; ++ i)
-	{
-		fillpair_xltrgb24(xltable, a + i, COLOR24(0, 255, 255 - scalecolor(i, 15, 255)));
-	}
-	a += i;
-	// a = 48
-	for (i = 0; i < 16; ++ i)
-	{
-		fillpair_xltrgb24(xltable, a + i, COLOR24(scalecolor(i, 15, 255), 255, 0));
-	}
-	a += i;
-	// a = 64
-	for (i = 0; i < 16; ++ i)
-	{
-		fillpair_xltrgb24(xltable, a + i, COLOR24(255, 255 - scalecolor(i, 15, 255), 0));
-	}
-	a += i;
-	// a = 80
-	for (i = 0; i < 16; ++ i)
-	{
-		fillpair_xltrgb24(xltable, a + i, COLOR24(255, 0, scalecolor(i, 15, 255)));
-	}
-	a += i;
-	// a = 96
-	ASSERT(a == COLORPIP_BASE);
 
 #if 0
 	{

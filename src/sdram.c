@@ -978,13 +978,15 @@ mmio_clrsetbits_32(uintptr_t addr, uint32_t cmask, uint32_t smask)
 
 ////////////////////////
 
-#define VERBOSE PRINTF
+//#define VERBOSE PRINTF
+#define VERBOSE(...) // PRINTF
 #define ERROR PRINTF
 #define INFO PRINTF
 
 static void panic(void)
 {
 	PRINTF("sdram: panic.\n");
+	return;
 	for (;;)
 		;
 }
@@ -3045,14 +3047,14 @@ static int stpmic1_register_update(uint8_t register_id, uint8_t value, uint8_t m
 	return stpmic1_register_write(register_id, val);
 }
 
-static void stpmic1_dump_regulators(void)
+void stpmic1_dump_regulators(void)
 {
 	uint32_t i;
 
 	for (i = 0U; i < MAX_REGUL; i++) {
 		const char *name __unused = regulators_table[i].dt_node_name;
 
-		VERBOSE("PMIC regul %s: %sable, %d mV\n",
+		PRINTF("PMIC regul %s: %sable, %d mV\n",
 			name,
 			stpmic1_is_regulator_enabled(name) ? "en" : "dis",
 			stpmic1_regulator_voltage_get(name));
@@ -3078,6 +3080,8 @@ static int stpmic1_get_version(unsigned long *version)
 static int initialize_pmic_i2c(void)
 {
 
+	i2c_initialize();
+
 	return 1;
 }
 
@@ -3095,8 +3099,8 @@ static void initialize_pmic(void)
 		panic();
 	}
 
-	INFO("PMIC version = 0x%02lx\n", pmic_version);
-	stpmic1_dump_regulators();
+	PRINTF("PMIC version = 0x%02lx\n", pmic_version);
+	//stpmic1_dump_regulators();
 
 #if defined(IMAGE_BL2)
 	if (dt_pmic_configure_boot_on_regulators() != 0) {
@@ -3106,7 +3110,7 @@ static void initialize_pmic(void)
 }
 
 
-int pmic_ddr_power_init(enum ddr_type ddr_type)
+static int pmic_ddr_power_init(enum ddr_type ddr_type)
 {
 	int buck3_at_1v8 = 0;
 	uint8_t read_val;
@@ -3224,17 +3228,122 @@ int pmic_ddr_power_init(enum ddr_type ddr_type)
 	return 0;
 }
 
+
+// LDO1 = 1.8 Volt
+// LDO6 = 1.2 Volt
+// LDO2 = 3.3 Volt
+
+int toshiba_ddr_power_init(void)
+{
+	{
+		uint8_t read_val;
+		int status;
+		// LDO1 = 1.8 Volt
+		status = stpmic1_register_read(LDO1_CONTROL_REG, &read_val);
+		if (status != 0) {
+			return status;
+		}
+
+		read_val &= ~ 0x01;	// enable
+
+		status = stpmic1_register_write(LDO1_CONTROL_REG, read_val);
+		if (status != 0) {
+			return status;
+		}
+
+		status = stpmic1_regulator_voltage_set("ldo1", 1800);
+		if (status != 0) {
+			return status;
+		}
+
+		status = stpmic1_regulator_enable("ldo1");
+		if (status != 0) {
+			return status;
+		}
+
+		local_delay_ms(STPMIC1_DEFAULT_START_UP_DELAY_MS);
+	}
+
+	{
+		uint8_t read_val;
+		int status;
+		// LDO6 = 1.2 Volt (toshiba supplay)
+		status = stpmic1_register_read(LDO6_CONTROL_REG, &read_val);
+		if (status != 0) {
+			return status;
+		}
+
+		read_val &= ~ 0x01;	// enable
+
+		status = stpmic1_register_write(LDO6_CONTROL_REG, read_val);
+		if (status != 0) {
+			return status;
+		}
+
+		status = stpmic1_regulator_voltage_set("ldo6", 1200);
+		if (status != 0) {
+			return status;
+		}
+
+		status = stpmic1_regulator_enable("ldo6");
+		if (status != 0) {
+			return status;
+		}
+
+		local_delay_ms(STPMIC1_DEFAULT_START_UP_DELAY_MS);
+	}
+
+	{
+		uint8_t read_val;
+		int status;
+		// LDO2 = 3.3 Volt
+		status = stpmic1_register_read(LDO2_CONTROL_REG, &read_val);
+		if (status != 0) {
+			return status;
+		}
+
+		read_val &= ~ 0x01;	// enable
+
+		status = stpmic1_register_write(LDO2_CONTROL_REG, read_val);
+		if (status != 0) {
+			return status;
+		}
+
+		status = stpmic1_regulator_voltage_set("ldo2", 3300);
+		if (status != 0) {
+			return status;
+		}
+
+		status = stpmic1_regulator_enable("ldo2");
+		if (status != 0) {
+			return status;
+		}
+
+		local_delay_ms(STPMIC1_DEFAULT_START_UP_DELAY_MS);
+	}
+	{
+		uint8_t read_val;
+		int status;
+		status = stpmic1_regulator_disable("ldo5");
+		if (status != 0) {
+			return status;
+		}
+	}
+
+	return 0;
+}
+
 #endif /* WITHSDRAM_PMC1 */
 
 static int board_ddr_power_init(enum ddr_type ddr_type)
 {
 #if WITHSDRAM_PMC1
-	pmic_ddr_power_init(ddr_type);
+	if (pmic_ddr_power_init(ddr_type))
+		PRINTF("ddr power init failure\n");
 #endif /* WITHSDRAM_PMC1 */
 //	if (dt_pmic_status() > 0) {
 //		return pmic_ddr_power_init(ddr_type);
 //	}
-
 	return 0;
 }
 
@@ -3280,7 +3389,9 @@ static void stm32mp1_ddr_init(struct ddr_info *priv,
 		panic();
 	}
 
+#if WITHSDRAM_PMC1
 	//stpmic1_dump_regulators();
+#endif /* WITHSDRAM_PMC1 */
 
 	VERBOSE("name = %s\n", config->info.name);
 	VERBOSE("speed = %d kHz\n", config->info.speed);
@@ -3477,8 +3588,8 @@ static void stm32mp1_ddr_init(struct ddr_info *priv,
 	#include "stm32mp15-mx_300MHz_2G.dtsi"	// 128k*16
 #else
 	//#include "stm32mp15-mx_1G.dtsi"	// 64k*16
-	#include "stm32mp15-mx_2G.dtsi"	// 128k*16
-	//#include "stm32mp15-mx_4G.dtsi"		// 256k*16
+	//#include "stm32mp15-mx_2G.dtsi"	// 128k*16
+	#include "stm32mp15-mx_4G.dtsi"		// 256k*16
 	//#include "stm32mp15-mx_8G.dtsi"	// 512k*16
 #endif
 // NT5CC128M16IP-DI BGA DDR3 NT5CC128M16IP DI
@@ -3742,7 +3853,7 @@ static void ddr_check_progress(uint32_t addr)
 
 static uint32_t ddr_check_rand(unsigned long sizeee)
 {
-	typedef uint32_t test_t;
+	typedef uint16_t test_t;
 	const uint32_t sizeN = sizeee / sizeof (test_t);
 	volatile test_t * const p = (volatile test_t *) STM32MP_DDR_BASE;
 	uint32_t i;
@@ -3790,38 +3901,50 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 		RCC->MP_APB5LPENSETR = RCC_MC_APB5LPENSETR_TZC2LPEN;
 		(void) RCC->MP_APB5LPENSETR;
 
-		const uint_fast8_t lastfilrer = (TZC->BUILD_CONFIG >> 24) & 0x03;
-		const uint_fast32_t mask = (1uL << (lastfilrer + 1)) - 1;
-		TZC->GATE_KEEPER |= mask;	// Gate open request
+        // 0x01001F08
+		// no_of_filters=1 - Two filter units.
+		// address_width=31 - 32 bits.
+		// no_of_regions=8 - Nine regions.
+        //PRINTF("TZC->BUILD_CONFIG=%08lX\n", TZC->BUILD_CONFIG);
+        //PRINTF("TZC->ACTION=%08lX\n", TZC->ACTION);
+        //PRINTF("TZC->GATE_KEEPER=%08lX\n", TZC->GATE_KEEPER);
+
+		TZC->ACTION = 0x00;
+		(void) TZC->ACTION;
+		const uint_fast8_t lastfilter = (TZC->BUILD_CONFIG >> 24) & 0x03;
+		const uint_fast32_t mask = (1uL << (lastfilter + 1)) - 1;
+		TZC->GATE_KEEPER = mask;	// Gate open request
 		(void) TZC->GATE_KEEPER;
+		// Check open status
 		while (((TZC->GATE_KEEPER >> 16) & mask) != mask)
 			;
 		TZC->REG_ATTRIBUTESO |= 0xC0000000;	// All (read and write) permitted
 		(void) TZC->REG_ATTRIBUTESO;
-		TZC->REG_ID_ACCESSO = 0xFFFFFFFF; // permits read and write non-secure to the region for all NSAIDs
+		TZC->REG_ID_ACCESSO = 0xFFFFFFFF; // NSAID_WR_EN[15:0], NSAID_RD_EN[15:0] - permits read and write non-secure to the region for all NSAIDs
 		(void) TZC->REG_ID_ACCESSO;
+        //PRINTF("TZC->REG_ID_ACCESSO=%08lX\n", TZC->REG_ID_ACCESSO);
+        //PRINTF("TZC->REG_ATTRIBUTESO=%08lX\n", TZC->REG_ATTRIBUTESO);
 	}
 	if (1)
 	{
-        // 0x01001F08
-        //PRINTF("TZC->BUILD_CONFIG=%08lX\n", TZC->BUILD_CONFIG);
-        //PRINTF("TZC->ACTION=%08lX\n", TZC->ACTION);
 
-        const uint_fast8_t lastregion = TZC->BUILD_CONFIG & 0x0f;
+        const uint_fast8_t lastregion = TZC->BUILD_CONFIG & 0x1f;
         uint_fast8_t i;
         for (i = 1; i <= lastregion; ++ i)
         {
             volatile uint32_t * const REG_ATTRIBUTESx = & TZC->REG_ATTRIBUTESO + (i * 8);
-            //volatile uint32_t * const REG_BASE_LOWx = & TZC->REG_BASE_LOWO + (i * 8);
-            //volatile uint32_t * const REG_BASE_HIGHx = & TZC->REG_BASE_HIGHO + (i * 8);
-            //volatile uint32_t * const REG_TOP_LOWx = & TZC->REG_TOP_LOWO + (i * 8);
-            //volatile uint32_t * const REG_TOP_HIGHx = & TZC->REG_TOP_HIGHO + (i * 8);
+            volatile uint32_t * const REG_ID_ACCESSx = & TZC->REG_ID_ACCESSO + (i * 8);
+            volatile uint32_t * const REG_BASE_LOWx = & TZC->REG_BASE_LOWO + (i * 8);
+            volatile uint32_t * const REG_BASE_HIGHx = & TZC->REG_BASE_HIGHO + (i * 8);
+            volatile uint32_t * const REG_TOP_LOWx = & TZC->REG_TOP_LOWO + (i * 8);
+            volatile uint32_t * const REG_TOP_HIGHx = & TZC->REG_TOP_HIGHO + (i * 8);
 
             //PRINTF("TZC->REG_BASE_LOW%d=%08lX ", i, * REG_BASE_LOWx);
             //PRINTF("REG_BASE_HIGH%d=%08lX ", i, * REG_BASE_HIGHx);
             //PRINTF("REG_TOP_LOW%d=%08lX ", i, * REG_TOP_LOWx);
             //PRINTF("REG_TOP_HIGH%d=%08lX ", i, * REG_TOP_HIGHx);
             //PRINTF("REG_ATTRIBUTES%d=%08lX\n", i, * REG_ATTRIBUTESx);
+            //PRINTF("REG_ID_ACCESS%d=%08lX\n", i, * REG_ID_ACCESSx);
 
              * REG_ATTRIBUTESx &= ~ 0x03uL;
 
@@ -3925,14 +4048,14 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 	}
 	INFO("Memory size = 0x%x (%d MB)\n", uret, uret / (1024U * 1024U));
 
-#if 0
+#if 1
 	// Бесконечный тест памяти.
 	PRINTF("DDR memory tests:\n");
 #if defined (BOARD_BLINK_INITIALIZE)
 	BOARD_BLINK_INITIALIZE();
 #endif /* defined (BOARD_BLINK_INITIALIZE) */
 
-	for (;;)
+	//for (;;)
 	{
 		PRINTF("rand_val = %08lX ", (unsigned long) rand_val);
 
@@ -3954,7 +4077,7 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 			      uret, config.info.size);
 			panic();
 		}
-		int partfortest = 1;
+		int partfortest = 128;
 		uret = ddr_check_rand(config.info.size / partfortest);
 		if (uret != (config.info.size / partfortest)) {
 			ERROR("DDR random test: 0x%08x does not match DT config: 0x%08x\n",
@@ -3985,6 +4108,8 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 			   (0) << RCC_DDRITFCR_DDRCKMOD_Pos);
 
 	PRINTF("arm_hardware_sdram_initialize done\n");
+
+
 }
 
 #endif

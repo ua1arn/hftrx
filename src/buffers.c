@@ -39,7 +39,7 @@ typedef struct listcnt
 	unsigned long tag2;
 	LIST_ENTRY item0;
 	unsigned Count;	// количество элментов в списке
-	SPINLOCK_t lock2;
+	//SPINLOCK_t lock2;
 	unsigned long tag3;
 } LIST_HEAD2, * PLIST_HEAD2;
 
@@ -55,61 +55,61 @@ InitializeListHead2(LIST_HEAD2 * ListHead)
 {
 	ListHead->tag2 = LIST2TAG2;
 	ListHead->tag3 = LIST2TAG3;
-	SPINLOCK_INITIALIZE(& ListHead->lock2);
+	//SPINLOCK_INITIALIZE(& ListHead->lock2);
 	(ListHead)->Count = 0;
 	InitializeListHead(& (ListHead)->item0);
 }
 
 static int
-IsListEmpty2(LIST_HEAD2 * ListHead, const char * file, int line)
+IsListEmpty2(LIST_HEAD2 * ListHead/*, const char * file, int line*/)
 {
-	SPIN_LOCK2(& ListHead->lock2, file, line);
+	//SPIN_LOCK2(& ListHead->lock2, file, line);
 	ASSERT(ListHead->tag2 == LIST2TAG2 && ListHead->tag3 == LIST2TAG3);
 	ASSERT(ListHead->item0.Flink != NULL && ListHead->item0.Blink != NULL);
 	const int v = (ListHead)->Count == 0;
-	SPIN_UNLOCK2(& ListHead->lock2);
+	//SPIN_UNLOCK2(& ListHead->lock2);
 	return v;
 }
 
 static void
-(InsertHeadList2)(PLIST_HEAD2 ListHead, PLIST_ENTRY Entry, const char * file, int line)
+(InsertHeadList2)(PLIST_HEAD2 ListHead, PLIST_ENTRY Entry/*, const char * file, int line*/)
 {
 	ASSERT(ListHead->tag2 == LIST2TAG2 && ListHead->tag3 == LIST2TAG3);
-	SPIN_LOCK2(& ListHead->lock2, file, line);
+	//SPIN_LOCK2(& ListHead->lock2, file, line);
 	ASSERT(ListHead->item0.Flink != NULL && ListHead->item0.Blink != NULL);
 	(ListHead)->Count += 1;
 	InsertHeadList(& (ListHead)->item0, (Entry));
-	SPIN_UNLOCK2(& ListHead->lock2);
+	//SPIN_UNLOCK2(& ListHead->lock2);
 }
 
 static PLIST_ENTRY
-(RemoveTailList2)(PLIST_HEAD2 ListHead, const char * file, int line)
+(RemoveTailList2)(PLIST_HEAD2 ListHead/*, const char * file, int line*/)
 {
 	ASSERT(ListHead->tag2 == LIST2TAG2 && ListHead->tag3 == LIST2TAG3);
-	SPIN_LOCK2(& ListHead->lock2, file, line);
+	//SPIN_LOCK2(& ListHead->lock2, file, line);
 	ASSERT(ListHead->item0.Flink != NULL && ListHead->item0.Blink != NULL);
 	ASSERT((ListHead)->Count != 0);
 	ASSERT(! IsListEmpty(& (ListHead)->item0));
 	(ListHead)->Count -= 1;
 	const PLIST_ENTRY t = RemoveTailList(& (ListHead)->item0);	/* прямо вернуть значение RemoveTailList нельзя - Microsoft сделал не совсем правильный макрос. Но по другому и не плучилось бы в стандартном языке C. */
-	SPIN_UNLOCK2(& ListHead->lock2);
+	//SPIN_UNLOCK2(& ListHead->lock2);
 	return t;
 }
 
-static unsigned GetCountList2(LIST_HEAD2 * ListHead, const char * file, int line)
+static unsigned GetCountList2(LIST_HEAD2 * ListHead/*, const char * file, int line*/)
 {
 	ASSERT(ListHead->tag2 == LIST2TAG2 && ListHead->tag3 == LIST2TAG3);
-	SPIN_LOCK2(& ListHead->lock2, file, line);
+	//SPIN_LOCK2(& ListHead->lock2, file, line);
 	ASSERT(ListHead->item0.Flink != NULL && ListHead->item0.Blink != NULL);
 	const unsigned count = (ListHead)->Count;
-	SPIN_UNLOCK2(& ListHead->lock2);
+	//SPIN_UNLOCK2(& ListHead->lock2);
 	return count;
 }
 
-#define InsertHeadList2(h, e) (InsertHeadList2)((h), (e), __FILE__, __LINE__)
-#define RemoveTailList2(h) (RemoveTailList2)((h), __FILE__, __LINE__)
-#define GetCountList2(h) (GetCountList2)((h), __FILE__, __LINE__)
-#define IsListEmpty2(h) (IsListEmpty2)((h), __FILE__, __LINE__)
+//#define InsertHeadList2(h, e) (InsertHeadList2)((h), (e), __FILE__, __LINE__)
+//#define RemoveTailList2(h) (RemoveTailList2)((h), __FILE__, __LINE__)
+//#define GetCountList2(h) (GetCountList2)((h), __FILE__, __LINE__)
+//#define IsListEmpty2(h) (IsListEmpty2)((h), __FILE__, __LINE__)
 
 /* готовность буферов с "гистерезисом". */
 static uint_fast8_t fiforeadyupdate(
@@ -248,11 +248,11 @@ int_fast32_t buffers_dmabuffer32txcachesize(void)
 }
 
 // I/Q data from FPGA or IF CODEC
-typedef ALIGN1K_BEGIN struct voices32rx_tag
+typedef ALIGNX_BEGIN struct voices32rx_tag
 {
-	ALIGN1K_BEGIN int32_t buff [DMABUFFSIZE32RX] ALIGN1K_END;
+	ALIGNX_BEGIN int32_t buff [DMABUFFSIZE32RX] ALIGNX_END;
 	ALIGNX_BEGIN LIST_ENTRY item ALIGNX_END;
-} ALIGN1K_END voice32rx_t;
+} ALIGNX_END voice32rx_t;
 // исправляемая погрешность = 0.02% - один сэмпл добавить/убрать на 5000 сэмплов
 
 int_fast32_t buffers_dmabuffer32rxcachesize(void)
@@ -292,6 +292,9 @@ static RAMDTCM volatile uint_fast8_t uacoutmike = 0;	/* на вход транс
 static RAMDTCM volatile uint_fast8_t uacinalt = UACINALT_NONE;		/* выбор альтернативной конфигурации для UAC IN interface */
 static RAMDTCM volatile uint_fast8_t uacinrtsalt = UACINRTSALT_NONE;		/* выбор альтернативной конфигурации для RTS UAC IN interface */
 static RAMDTCM volatile uint_fast8_t uacoutalt;
+
+static void savesampleout16stereo_user(void * ctx, FLOAT_t ch0, FLOAT_t ch1);
+static void savesampleout16stereo(void * ctx, FLOAT_t ch0, FLOAT_t ch1);
 
 #if WITHUSBUACIN
 
@@ -365,6 +368,7 @@ int_fast32_t buffers_dmabufferuacin16cachesize(void)
 #endif /* WITHRTS96 */
 
 static RAMDTCM SPINLOCK_t locklistrts = SPINLOCK_INIT;
+static subscribeint32_t uacinrtssubscribe;
 
 static RAMDTCM LIST_HEAD2 uacinfree16;
 static RAMDTCM LIST_HEAD2 uacinready16;	// Буферы для записи в вудиоканал USB к компьютер 2*16*24 kS/S
@@ -604,7 +608,8 @@ denoise16_t * allocate_dmabuffer16denoise(void)
 	return 0;
 }
 
-void savesampleout16tospeex(speexel_t ch0, speexel_t ch1)
+static void
+savesampleout16tospeex(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 {
 	static denoise16_t * p = NULL;
 	static unsigned n;
@@ -630,6 +635,11 @@ void savesampleout16tospeex(speexel_t ch0, speexel_t ch1)
 		p = NULL;
 	}
 }
+
+deliverylist_t rtstargetsint;	// выход обработчика DMA приема от FPGA
+deliverylist_t afoutfloat_user;	// выход sppeex и фильтра
+deliverylist_t afoutfloat;	// выход приемника
+
 #endif /* WITHINTEGRATEDDSP */
 
 // инициализация системы буферов
@@ -638,9 +648,29 @@ void buffers_initialize(void)
 #if WITHBUFFERSDEBUG
 	ticker_initialize(& buffticker, 1, buffers_spool, NULL);
 #endif /* WITHBUFFERSDEBUG */
+
 	unsigned i;
 
 #if WITHINTEGRATEDDSP
+
+	deliverylist_initialize(& rtstargetsint);
+	deliverylist_initialize(& afoutfloat_user);
+	deliverylist_initialize(& afoutfloat);
+
+	static subscribefloat_t afsample16reregister_user;
+	subscribefloat_user(& afoutfloat_user, & afsample16reregister_user, NULL, savesampleout16stereo_user);
+
+#if WITHSKIPUSERMODE
+
+	static subscribefloat_t afsample16reregister;
+	subscribefloat_user(& afoutfloat, & afsample16reregister, NULL, savesampleout16stereo);
+
+#else /* WITHSKIPUSERMODE */
+
+	static subscribefloat_t afsample16reregister;
+	subscribefloat_user(& afoutfloat, & afsample16reregister, NULL, savesampleout16tospeex);
+
+#endif /* WITHSKIPUSERMODE */
 
 	#if WITHUSBUAC
 		/* буферы требуются для ресэмплера */
@@ -705,6 +735,7 @@ void buffers_initialize(void)
 			p->tag3 = p;
 			InsertHeadList2(& voicesfree192rts, & p->item);
 		}
+		subscribeint(& rtstargetsint, & uacinrtssubscribe, NULL, savesampleout192stereo);
 
 	#endif /* WITHRTS192 */
 
@@ -724,9 +755,10 @@ void buffers_initialize(void)
 			p->tag = BUFFTAG_RTS96;
 			p->tag2 = p;
 			p->tag3 = p;
-			PRINTF("Add p=%p, tag=%d, tag2=%p, tag3=%p\n", p, p->tag, p->tag2, p->tag3);
+			//PRINTF("Add p=%p, tag=%d, tag2=%p, tag3=%p\n", p, p->tag, p->tag2, p->tag3);
 			InsertHeadList2(& uacin96rtsfree, & p->item);
 		}
+		subscribeint(& rtstargetsint, & uacinrtssubscribe, NULL, savesampleout96stereo);
 
 	#endif /* WITHRTS192 */
 	SPINLOCK_INITIALIZE(& locklistrts);
@@ -746,7 +778,7 @@ void buffers_initialize(void)
 	}
 	SPINLOCK_INITIALIZE(& locklist32tx);
 
-    static ALIGN1K_BEGIN RAM_D2 voice32rx_t voicesarray32rx [6] ALIGN1K_END;	// без WFM надо 2
+    static ALIGNX_BEGIN RAM_D2 voice32rx_t voicesarray32rx [6] ALIGNX_END;	// без WFM надо 2
 
 	InitializeListHead2(& voicesfree32rx);	// Незаполненные
 	for (i = 0; i < (sizeof voicesarray32rx / sizeof voicesarray32rx [0]); ++ i)
@@ -1999,11 +2031,14 @@ void RAMFUNC processing_dmabuffer32rts(uintptr_t addr)
 	for (i = 0; i < DMABUFFSIZE192RTS; i += DMABUFSTEP192RTS)
 	{
 		const int32_t * const b = (const int32_t *) & p->u.buff [i];
-		saveIQRTSxx(b [0], b [1]);
+
+        //saveIQRTSxx(NULL, b [0], b [1]);
+        deliveryint(& rtstargetsint, b [0], b [1]);
 	}
 #endif /* ! WITHTRANSPARENTIQ */
 
-	buffers_savetouacin192rts(p);
+	//sbuffers_savetouacin192rts(p);
+	buffers_savetonull192rts(p);
 }
 #endif /* WITHRTS192 */
 
@@ -2099,7 +2134,7 @@ void savesampleout32stereo(int_fast32_t ch0, int_fast32_t ch1)
 //////////////////////////////////////////
 // Поэлементное заполнение буфера AF DAC
 
-void savesampleout16stereo_user(FLOAT_t ch0, FLOAT_t ch1)
+static void savesampleout16stereo_user(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 {
 	enum { L, R };
 	// если есть инициализированный канал для выдачи звука
@@ -2131,7 +2166,7 @@ void savesampleout16stereo_user(FLOAT_t ch0, FLOAT_t ch1)
 	}
 }
 
-void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
+static void savesampleout16stereo(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 {
 	enum { L, R };
 	// если есть инициализированный канал для выдачи звука
@@ -2274,7 +2309,7 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 
 		// Вызывается из ARM_REALTIME_PRIORITY обработчика прерывания
 		// vl, vr: 32 bit, signed - преобразуем к требуемому формату для передачи по USB здесь.
-		void savesampleout96stereo(int_fast32_t ch0, int_fast32_t ch1)
+		void savesampleout96stereo(void * ctx, int_fast32_t ch0, int_fast32_t ch1)
 		{
 			// если есть инициализированный канал для выдачи звука
 			static voice96rts_t * RAMDTCM p = NULL;
@@ -2411,7 +2446,7 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 
 		// Вызывается из ARM_REALTIME_PRIORITY обработчика прерывания
 		// vl, vr: 32 bit, signed - преобразуем к требуемому формату для передачи по USB здесь.
-		void savesampleout192stereo(int_fast32_t ch0, int_fast32_t ch1)
+		void savesampleout192stereo(void * ctx, int_fast32_t ch0, int_fast32_t ch1)
 		{
 			// если есть инициализированный канал для выдачи звука
 			static voice192rts_t * RAMDTCM p = NULL;
@@ -2578,11 +2613,11 @@ void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1)
 
 #else /* WITHUSBUAC */
 
-void savesampleout96stereo(int_fast32_t ch0, int_fast32_t ch1)
+void savesampleout96stereo(void * ctx, int_fast32_t ch0, int_fast32_t ch1)
 {
 }
 
-void savesampleout192stereo(int_fast32_t ch0, int_fast32_t ch1)
+void savesampleout192stereo(void * ctx, int_fast32_t ch0, int_fast32_t ch1)
 {
 }
 
@@ -2940,6 +2975,77 @@ void release_dmabufferxrts(uintptr_t addr)	/* освободить буфер о
 #endif /* WITHUSBUACIN2 */
 
 #endif /* WITHUSBUAC */
+
+
+void deliveryfloat(deliverylist_t * list, FLOAT_t ch0, FLOAT_t ch1)
+{
+	PLIST_ENTRY t;
+	SPIN_LOCK(& list->listlock);
+	for (t = list->head.Blink; t != & list->head; t = t->Blink)
+	{
+		subscribefloat_t * const p = CONTAINING_RECORD(t, subscribefloat_t, item);
+		(p->cb)(p->ctx, ch0, ch1);
+	}
+	SPIN_UNLOCK(& list->listlock);
+}
+
+void deliveryint(deliverylist_t * list, int_fast32_t ch0, int_fast32_t ch1)
+{
+	PLIST_ENTRY t;
+	SPIN_LOCK(& list->listlock);
+	for (t = list->head.Blink; t != & list->head; t = t->Blink)
+	{
+		subscribeint32_t * const p = CONTAINING_RECORD(t, subscribeint32_t, item);
+		(p->cb)(p->ctx, ch0, ch1);
+	}
+	SPIN_UNLOCK(& list->listlock);
+}
+
+void subscribefloat(deliverylist_t * list, subscribefloat_t * target, void * ctx, void (* pfn)(void * ctx, FLOAT_t ch0, FLOAT_t ch1))
+{
+	target->cb = pfn;
+	target->ctx = ctx;
+	SPIN_LOCK(& list->listlock);
+	InsertHeadList(& list->head, & target->item);
+	SPIN_UNLOCK(& list->listlock);
+}
+
+void subscribeint(deliverylist_t * list, subscribeint32_t * target, void * ctx, void (* pfn)(void * ctx, int_fast32_t ch0, int_fast32_t ch1))
+{
+	target->cb = pfn;
+	target->ctx = ctx;
+	SPIN_LOCK(& list->listlock);
+	InsertHeadList(& list->head, & target->item);
+	SPIN_UNLOCK(& list->listlock);
+}
+
+void subscribefloat_user(deliverylist_t * list, subscribefloat_t * target, void * ctx, void (* pfn)(void * ctx, FLOAT_t ch0, FLOAT_t ch1))
+{
+	target->cb = pfn;
+	target->ctx = ctx;
+	global_disableIRQ();
+	SPIN_LOCK(& list->listlock);
+	InsertHeadList(& list->head, & target->item);
+	SPIN_UNLOCK(& list->listlock);
+	global_enableIRQ();
+}
+
+void subscribeint_user(deliverylist_t * list, subscribeint32_t * target, void * ctx, void (* pfn)(void * ctx, int_fast32_t ch0, int_fast32_t ch1))
+{
+	target->cb = pfn;
+	target->ctx = ctx;
+	global_disableIRQ();
+	SPIN_LOCK(& list->listlock);
+	InsertHeadList(& list->head, & target->item);
+	SPIN_UNLOCK(& list->listlock);
+	global_enableIRQ();
+}
+
+void deliverylist_initialize(deliverylist_t * list)
+{
+	InitializeListHead(& list->head);
+	SPINLOCK_INITIALIZE(& list->listlock);
+}
 
 #endif /* WITHINTEGRATEDDSP */
 
