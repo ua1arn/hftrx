@@ -1923,37 +1923,67 @@ enum {
 #define TC358768_I2C_ADDR (0x0E * 2)
 
 unsigned long
-tc358768_rd_reg_16bits(unsigned register_id)
+tc358768_rd_reg_16or32bits(unsigned register_id)
 {
 	const unsigned i2caddr = TC358768_I2C_ADDR;
 
-	uint8_t v1, v2, v3, v4;
+	const int v16bit = (register_id < 0x100 || register_id >= 0x600);
 
-	i2c_start(i2caddr | 0x00);
-	i2c_write(register_id >> 8);
-	i2c_write_withrestart(register_id >> 0);
-	i2c_start(i2caddr | 0x01);
-	i2c_read(& v1, I2C_READ_ACK_1);	// ||
-	i2c_read(& v2, I2C_READ_ACK);	// ||
-	i2c_read(& v3, I2C_READ_ACK);	// ||
-	i2c_read(& v4, I2C_READ_NACK);	// ||
+	if (v16bit)
+	{
+		uint8_t v1, v2;
 
-	return
-			(((unsigned long) v1) << 8) |
-			(((unsigned long) v2) << 0) |
-			0;
+		i2c_start(i2caddr | 0x00);
+		i2c_write(register_id >> 8);
+		i2c_write_withrestart(register_id >> 0);
+		i2c_start(i2caddr | 0x01);
+		i2c_read(& v1, I2C_READ_ACK_1);	// ||
+		i2c_read(& v2, I2C_READ_NACK);	// ||
+
+		return
+				(((unsigned long) v1) << 8) |
+				(((unsigned long) v2) << 0) |
+				0;
+	}
+	else
+	{
+		uint8_t v1, v2, v3, v4;
+
+		i2c_start(i2caddr | 0x00);
+		i2c_write(register_id >> 8);
+		i2c_write_withrestart(register_id >> 0);
+		i2c_start(i2caddr | 0x01);
+		i2c_read(& v1, I2C_READ_ACK_1);	// ||
+		i2c_read(& v2, I2C_READ_ACK);	// ||
+		i2c_read(& v3, I2C_READ_ACK);	// ||
+		i2c_read(& v4, I2C_READ_NACK);	// ||
+
+		return
+				(((unsigned long) v1) << 8) |
+				(((unsigned long) v2) << 0) |
+				(((unsigned long) v3) << 24) |
+				(((unsigned long) v4) << 16) |
+				0;
+	}
 }
 
 void
-tc358768_wr_reg_32bits(unsigned long value)
+tc358768_wr_reg_16bits(unsigned long value)
 {
 	const unsigned i2caddr = TC358768_I2C_ADDR;
+	const unsigned register_id = value >> 16;
+	const int v16bit = (register_id < 0x100 || register_id >= 0x600);
 
 	i2c_start(i2caddr | 0x00);
-	i2c_write(value >> 24);		// addres hi
-	i2c_write(value >> 16);		// addres lo
+	i2c_write(register_id >> 8);		// addres hi
+	i2c_write(register_id >> 0);		// addres lo
 	i2c_write(value >> 8);		// data hi
 	i2c_write(value >> 0);		// data lo
+	if (v16bit)
+	{
+		i2c_write(0x00);
+		i2c_write(0x00);
+	}
 	i2c_waitsend();
     i2c_stop();
 }
@@ -2360,7 +2390,7 @@ static void tc358768_power_off(struct tc358768_drv_data *ddata)
 }
 
 void tc_print(uint32_t addr) {
-	PRINTF("+++++++++++addr->%04x: %04x\n", addr, tc358768_rd_reg_16bits(addr));
+	//PRINTF("+++++++++++addr->%04x: %04x\n", addr, tc358768_rd_reg_16or32bits(addr));
 }
 
 #define tc358768_wr_regs_32bits(reg_array)  _tc358768_wr_regs_32bits(reg_array, ARRAY_SIZE(reg_array))
@@ -2376,7 +2406,7 @@ int _tc358768_wr_regs_32bits(unsigned int reg_array[], uint32_t n) {
 		    	local_delay_ms(2*reg_array[i]/1000);
 		    }
 		} else {
-			tc358768_wr_reg_32bits(reg_array[i]);
+			tc358768_wr_reg_16bits(reg_array[i]);
 		}
 	}
 	return 0;
@@ -2413,10 +2443,10 @@ int tc358768_command_tx_less8bytes(unsigned char type, const unsigned char *regs
 	}
 
 	_tc358768_wr_regs_32bits(command, (n + 1)/2 + 2);
-	tc358768_wr_reg_32bits(0x06000001);   //Packet Transfer
+	tc358768_wr_reg_16bits(0x06000001);   //Packet Transfer
 	//wait until packet is out
 	i = 1000;
-	while(tc358768_rd_reg_16bits(TC358768_DSICMD_TX) & 0x01) {
+	while(tc358768_rd_reg_16or32bits(TC358768_DSICMD_TX) & 0x01) {
 		if(i-- == 0)
 			break;
 		tc_print(TC358768_DSICMD_TX);
@@ -2451,13 +2481,13 @@ int tc358768_command_tx_more8bytes_hs(unsigned char type, unsigned char regs[], 
 		if((i*2 + 1) < n)
 			temp |= (regs[i*2 + 1] << 8);
 		//PRINTF("0x%08x\n", temp);
-		tc358768_wr_reg_32bits(temp);
+		tc358768_wr_reg_16bits(temp);
 	}
 	if((n % 4 == 1) ||  (n % 4 == 2))     //4 bytes align
-		tc358768_wr_reg_32bits(dbg_data);
+		tc358768_wr_reg_16bits(dbg_data);
 
-	tc358768_wr_reg_32bits(0x00E0C000);     //Start command transmisison
-	tc358768_wr_reg_32bits(0x00E00000);	 //Stop command transmission. This setting should be done just after above setting to prevent multiple output
+	tc358768_wr_reg_16bits(0x00E0C000);     //Start command transmisison
+	tc358768_wr_reg_16bits(0x00E00000);	 //Stop command transmission. This setting should be done just after above setting to prevent multiple output
 	local_delay_us(2*200);
 	//Re-Initialize
 	//tc358768_wr_regs_32bits(re_initialize);
@@ -2486,16 +2516,16 @@ int tc358768_command_tx_more8bytes_lp(unsigned char type, const unsigned char re
 		if((i*2 + 1) < n)
 			temp |= (regs[i*2 + 1] << 8);
 		//PRINTF("0x%08x\n", temp);
-		tc358768_wr_reg_32bits(temp);
+		tc358768_wr_reg_16bits(temp);
 
 	}
 	if((n % 4 == 1) ||  (n % 4 == 2))     //4 bytes align
-		tc358768_wr_reg_32bits(dbg_data);
+		tc358768_wr_reg_16bits(dbg_data);
 
-	tc358768_wr_reg_32bits(0x00E0E000);     //Start command transmisison
+	tc358768_wr_reg_16bits(0x00E0E000);     //Start command transmisison
 	local_delay_us(2*1000);
-	tc358768_wr_reg_32bits(0x00E02000);	 //Keep Mask High to prevent short packets send out
-	tc358768_wr_reg_32bits(0x00E00000);	 //Stop command transmission. This setting should be done just after above setting to prevent multiple output
+	tc358768_wr_reg_16bits(0x00E02000);	 //Keep Mask High to prevent short packets send out
+	tc358768_wr_reg_16bits(0x00E00000);	 //Stop command transmission. This setting should be done just after above setting to prevent multiple output
 	local_delay_us(2*10);
 	return 0;
 }
@@ -2547,28 +2577,28 @@ int _tc358768_rd_lcd_regs(unsigned char type, char comd, int size, unsigned char
 	regs[0] = size;
 	regs[1] = 0;
 	tc358768_command_tx_less8bytes(0x37, regs, 2);
-	tc358768_wr_reg_32bits(0x05040010);
-	tc358768_wr_reg_32bits(0x05060000);
+	tc358768_wr_reg_16bits(0x05040010);
+	tc358768_wr_reg_16bits(0x05060000);
 	regs[0] = comd;
 	tc358768_command_tx_less8bytes(type, regs, 1);
 
-	while (!(tc358768_rd_reg_16bits(0x0410) & 0x20)){
-		PRINTF("error 0x0410:%04x\n", tc358768_rd_reg_16bits(0x0410));
+	while (!(tc358768_rd_reg_16or32bits(0x0410) & 0x20)){
+		PRINTF("error 0x0410:%04x\n", tc358768_rd_reg_16or32bits(0x0410));
 		local_delay_ms(2*1);
 		if(count++ > 10) {
 			break;
 		}
 	}
 
-	data30 = tc358768_rd_reg_16bits(0x0430);	  //data id , word count[0:7]
+	data30 = tc358768_rd_reg_16or32bits(0x0430);	  //data id , word count[0:7]
 	//PRINTF("0x0430:%04x\n", data30);
-	data32 = tc358768_rd_reg_16bits(0x0432);	  //word count[8:15]  ECC
+	data32 = tc358768_rd_reg_16or32bits(0x0432);	  //word count[8:15]  ECC
 	//PRINTF("0x0432:%04x\n", data32);
 
 	while(size > 0) {
-		data30 = tc358768_rd_reg_16bits(0x0430);
+		data30 = tc358768_rd_reg_16or32bits(0x0430);
 		//PRINTF("0x0430:%04x\n", data30);
-		data32 = tc358768_rd_reg_16bits(0x0432);
+		data32 = tc358768_rd_reg_16or32bits(0x0432);
 		//PRINTF("0x0432:%04x\n", data32);
 
 		if(size-- > 0)
@@ -2586,9 +2616,9 @@ int _tc358768_rd_lcd_regs(unsigned char type, char comd, int size, unsigned char
 		}
 	}
 
-	data30 = tc358768_rd_reg_16bits(0x0430);
+	data30 = tc358768_rd_reg_16or32bits(0x0430);
 	//PRINTF("0x0430:%04x\n", data30);
-	data32 = tc358768_rd_reg_16bits(0x0432);
+	data32 = tc358768_rd_reg_16or32bits(0x0432);
 	//PRINTF("0x0432:%04x\n", data32);
 	return 0;
 }
@@ -2604,7 +2634,7 @@ int tc358768_get_id(void) {
 	int id = -1;
 
 	//tc358768_power_up();
-	id = tc358768_rd_reg_16bits(0);
+	id = tc358768_rd_reg_16or32bits(0);
 	return id;
 }
 
@@ -3911,15 +3941,15 @@ void tc358768_initialize(void)
 	tc358768_write(ddata, TC358768_SYSCTL, 0x001);
 	tc358768_write(ddata, TC358768_SYSCTL, 0x000);
 
-	PRINTF("TC358778XBG: Chip and Revision ID=%08lX\n", tc358768_rd_reg_16bits(TC358768_CHIPID));
-	PRINTF("TC358778XBG: System Control Register=%08lX\n", tc358768_rd_reg_16bits(TC358768_SYSCTL));
-	PRINTF("TC358778XBG: Input Control Register=%08lX\n", tc358768_rd_reg_16bits(TC358768_CONFCTL));
-	PRINTF("TC358778XBG: Data Format Control Register=%08lX\n", tc358768_rd_reg_16bits(TC358768_DATAFMT));
+	PRINTF("TC358778XBG: Chip and Revision ID=%08lX\n", tc358768_rd_reg_16or32bits(TC358768_CHIPID));
+	PRINTF("TC358778XBG: System Control Register=%08lX\n", tc358768_rd_reg_16or32bits(TC358768_SYSCTL));
+	PRINTF("TC358778XBG: Input Control Register=%08lX\n", tc358768_rd_reg_16or32bits(TC358768_CONFCTL));
+	PRINTF("TC358778XBG: Data Format Control Register=%08lX\n", tc358768_rd_reg_16or32bits(TC358768_DATAFMT));
 	tc358768_write(ddata, TC358768_DATAFMT, 0x0300);
 	local_delay_ms(100);
-	PRINTF("TC358778XBG: Data Format Control Register=%08lX\n", tc358768_rd_reg_16bits(TC358768_DATAFMT));
+	PRINTF("TC358778XBG: Data Format Control Register=%08lX\n", tc358768_rd_reg_16or32bits(TC358768_DATAFMT));
 
-	PRINTF("TC358778XBG: PLL Control Register 0=%08lX\n", tc358768_rd_reg_16bits(TC358768_PLLCTL0));
+	PRINTF("TC358778XBG: PLL Control Register 0=%08lX\n", tc358768_rd_reg_16or32bits(TC358768_PLLCTL0));
 
 	tc358768_write(ddata, TC358768_DSI_VSW, VSYNC);
 	tc358768_write(ddata, TC358768_DSI_VBPR, VBP);
@@ -3929,25 +3959,30 @@ void tc358768_initialize(void)
 	tc358768_write(ddata, TC358768_DSI_HBPR, HBP);
 	tc358768_write(ddata, TC358768_DSI_HACT, WIDTH);
 
-	PRINTF("TC358778XBG: vact=%ld\n", tc358768_rd_reg_16bits(TC358768_DSI_VACT));
-	PRINTF("TC358778XBG: hact=%ld\n", tc358768_rd_reg_16bits(TC358768_DSI_HACT));
+	PRINTF("TC358778XBG: vact=%ld\n", tc358768_rd_reg_16or32bits(TC358768_DSI_VACT));
+	PRINTF("TC358778XBG: hact=%ld\n", tc358768_rd_reg_16or32bits(TC358768_DSI_HACT));
 #endif
+
+	dev0.refclk = hardware_get_dotclock(LTDC_DOTCLK) / 4;
+	dev0.refclk = 25000000uL;
+	timings0.pixelclock = hardware_get_dotclock(LTDC_DOTCLK);
+
 	tc358768_calc_pll(ddata);
 
 	tc358768_power_off(ddata);
 
 	tc358768_power_on(ddata);
 
-	PRINTF("TC358778XBG: Data Format Control Register=%08lX\n", tc358768_rd_reg_16bits(TC358768_DATAFMT));
+	PRINTF("TC358778XBG: Data Format Control Register=%08lX\n", tc358768_rd_reg_16or32bits(TC358768_DATAFMT));
 
-	PRINTF("TC358778XBG: Chip and Revision ID=%04lX\n", tc358768_rd_reg_16bits(TC358768_CHIPID));
+	PRINTF("TC358778XBG: Chip and Revision ID=%04lX\n", tc358768_rd_reg_16or32bits(TC358768_CHIPID));
 
-	PRINTF("TC358778XBG: TC358768_DSI_VSW=%ld\n", tc358768_rd_reg_16bits(TC358768_DSI_VSW));
-	PRINTF("TC358778XBG: TC358768_DSI_VBPR=%ld\n", tc358768_rd_reg_16bits(TC358768_DSI_VBPR));
-	PRINTF("TC358778XBG: TC358768_DSI_VACT=%ld\n", tc358768_rd_reg_16bits(TC358768_DSI_VACT));
-	PRINTF("TC358778XBG: TC358768_DSI_HSW=%ld\n", tc358768_rd_reg_16bits(TC358768_DSI_HSW));
-	PRINTF("TC358778XBG: TC358768_DSI_HBPR=%ld\n", tc358768_rd_reg_16bits(TC358768_DSI_HBPR));
-	PRINTF("TC358778XBG: TC358768_DSI_HACT=%ld\n", tc358768_rd_reg_16bits(TC358768_DSI_HACT));
+	PRINTF("TC358778XBG: TC358768_DSI_VSW=%ld\n", tc358768_rd_reg_16or32bits(TC358768_DSI_VSW));
+	PRINTF("TC358778XBG: TC358768_DSI_VBPR=%ld\n", tc358768_rd_reg_16or32bits(TC358768_DSI_VBPR));
+	PRINTF("TC358778XBG: TC358768_DSI_VACT=%ld\n", tc358768_rd_reg_16or32bits(TC358768_DSI_VACT));
+	PRINTF("TC358778XBG: TC358768_DSI_HSW=%ld\n", tc358768_rd_reg_16or32bits(TC358768_DSI_HSW));
+	PRINTF("TC358778XBG: TC358768_DSI_HBPR=%ld\n", tc358768_rd_reg_16or32bits(TC358768_DSI_HBPR));
+	PRINTF("TC358778XBG: TC358768_DSI_HACT=%ld\n", tc358768_rd_reg_16or32bits(TC358768_DSI_HACT));
 
 }
 
@@ -3987,7 +4022,7 @@ void panel_initialize(void)
 		mipi_dsi_send_dcs_packet(pv + 1, maxv + 1);
 		local_delay_ms(100);
 		pv += maxv + 2;
-		PRINTF("e\n");
+		//PRINTF("e\n");
 	}
 	TP();
 	mipi_dsi_send_dcs_packet(sleepout, ARRAY_SIZE(sleepout));

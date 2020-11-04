@@ -5190,12 +5190,12 @@ static int local_randomgr(unsigned long num)
 
 static void BarTest(void)
 {
-	PRINTF("BarTest\n");
+	//PRINTF("BarTest\n");
 
 	board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 	board_update();
-	int forever = 1;
-	unsigned n = 20000;
+	int forever = 0;
+	unsigned n = 2000;
 	for (;forever || n --;)
 	{                    /* Until user enters a key...   */
 		const int r = local_randomgr(256);
@@ -5211,7 +5211,7 @@ static void BarTest(void)
 
 		display_solidbar(x, y, x2, y2, color);
 		display_flush();
-		local_delay_ms(50);
+		local_delay_ms(5);
 	}
 
 	//getch();             /* Pause for user's response    */
@@ -6353,12 +6353,14 @@ void hightests(void)
 #endif
 #if 1 && LCDMODE_COLORED && ! DSTYLE_G_DUMMY
 	{
+		unsigned cnt;
 		display2_bgreset();
-		for (;;)
+		for (cnt = 0; ; ++ cnt)
 		{
 			//disableAllIRQs();
 			//GridTest();
 			BarTest();
+			PRINTF("BarTest: %u\n", cnt);
 		}
 	}
 #endif
