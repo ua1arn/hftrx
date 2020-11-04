@@ -153,21 +153,16 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 	return 0;
 }
 
-wm_message_t get_from_wm_queue(window_t * win, ...)
+wm_message_t get_from_wm_queue(window_t * win, uint_fast8_t * type, uintptr_t * ptr, int_fast8_t * action)
 {
 	if (! win->queue.size)
 		return WM_NO_MESSAGE;							// очередь сообщений пустая
 
-	va_list arg;
 	win->queue.size --;
 
-	va_start(arg, win);
-
-	* va_arg(arg, uint_fast8_t *) = win->queue.data [win->queue.size].type;
-	* va_arg(arg, uintptr_t *) = 	win->queue.data [win->queue.size].ptr;
-	* va_arg(arg, int_fast8_t *) =  win->queue.data [win->queue.size].action;
-
-	va_end(arg);
+	* type = win->queue.data [win->queue.size].type;
+	* ptr = win->queue.data [win->queue.size].ptr;
+	* action = win->queue.data [win->queue.size].action;
 
 //	if (win->window_id != WINDOW_MAIN)
 //		PRINTF("get_from_wm_queue: win - %s, message - %d, size - %d\n", win->name, win->queue.data [win->queue.size].message, win->queue.size);
