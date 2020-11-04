@@ -917,6 +917,7 @@ void arm_hardware_set_handler_system(uint_fast16_t int_id, void (* handler)(void
 void audioproc_spool_user(void);	// вызывать при выполнении длительных операций
 
 void hardware_set_dotclock(unsigned long dotfreq);
+unsigned long hardware_get_dotclock(unsigned long dotfreq);
 void hardware_nonguiyield(void);
 uint_fast8_t stm32mp1_overdrived(void);	// return 1 if CPU supports 800 MHz clock
 
