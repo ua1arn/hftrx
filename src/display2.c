@@ -7568,8 +7568,8 @@ static ALIGNX_BEGIN GX_t spectmonoscr [MGSIZE(ALLDX, SPDY)] ALIGNX_END;
 #endif /* HHWMG */
 
 enum {
-	MAX_3DSS_STEP = 30,
-	Y_STEP = 3,
+	MAX_3DSS_STEP = 20,
+	Y_STEP = 5,
 	MAX_DELAY_3DSS = 3,
 	HALF_ALLDX = ALLDX / 2,
 	SPY_3DSS = SPDY,
