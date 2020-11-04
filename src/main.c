@@ -19615,6 +19615,26 @@ uint_fast8_t hamradio_get_autonotch(void)
 	return gnotch && notchmodes [gnotchtype].code == BOARD_NOTCH_AUTO;
 }
 
+uint_fast8_t hamradio_get_gnotch(void)
+{
+	return gnotch;
+}
+
+void hamradio_set_gnotch(uint_fast8_t v)
+{
+	gnotch = v != 0;
+}
+
+uint_fast8_t hamradio_get_gnotchtype(void)
+{
+	return notchmodes [gnotchtype].code;
+}
+
+void hamradio_set_gnotchtype(uint_fast8_t v)
+{
+	gnotchtype = v;
+}
+
 #endif /* WITHNOTCHFREQ */
 
 #if WITHTOUCHGUI

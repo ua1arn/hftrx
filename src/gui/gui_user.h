@@ -33,6 +33,7 @@ enum {
 	WINDOW_MEMORY,					// ячейки памяти
 	WINDOW_DISPLAY,					// настройки отображения
 	WINDOW_RECEIVE,					// настройки приема
+	WINDOW_NOTCH,					// ручной режекторый фильтр
 
 	WINDOWS_COUNT
 };
@@ -63,17 +64,24 @@ typedef struct {
 	uint8_t exitkey;
 } menu_by_name_t;
 
-typedef enum {
+enum {
 	TYPE_BP_LOW,
 	TYPE_BP_HIGH,
 	TYPE_IF_SHIFT
-} bp_select_t;
+};
+
+enum {
+	TYPE_NOTCH_FREQ,
+	TYPE_NOTCH_WIDTH
+};
 
 typedef struct {
 	uint_fast8_t updated;
-	bp_select_t select;
+	uint_fast8_t select;
 	int8_t change;
 } bp_var_t;
+
+typedef bp_var_t notch_var_t;
 
 #endif /* WITHTOUCHGUI */
 #endif /* GUI_USER_H_INCLUDED */
