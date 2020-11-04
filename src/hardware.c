@@ -10586,6 +10586,11 @@ void hardware_set_dotclock(unsigned long dotfreq)
 		;
 }
 
+unsigned long hardware_get_dotclock(unsigned long dotfreq)
+{
+	const uint32_t pll4divq = calcdivround2(PLL4_FREQ, dotfreq);
+	return PLL4_FREQ / pll4divq;
+}
 #endif /* CPUSTYLE_STM32MP1 */
 
 #if 0
