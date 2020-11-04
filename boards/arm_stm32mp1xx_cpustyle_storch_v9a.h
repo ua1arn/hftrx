@@ -32,8 +32,11 @@
 //#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 
 //#define WITHUART1HW	1	/* PA9, PA10 Используется периферийный контроллер последовательного порта #1 */
-#define WITHUART2HW	1	/* PD5, PD6 Используется периферийный контроллер последовательного порта #2 */
-#define WITHUARTFIFO	1	/* испольование FIFO */
+
+#if WITHDEBUG
+	#define WITHUART2HW	1	/* PD5, PD6 Используется периферийный контроллер последовательного порта #2 */
+	#define WITHUARTFIFO	1	/* испольование FIFO */
+#endif /* WITHDEBUG */
 
 //#define WITHCAT_USART1		1
 #define WITHDEBUG_USART2	1
@@ -92,10 +95,10 @@
 
 #else /* WITHISBOOTLOADER */
 
-	#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
-	//#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
+	//#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
+	#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
 	//#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */
-	//#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
+	#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
 
 	#define WITHMDMAHW		1	/* Использование MDMA для формирования изображений */
 	//#define WITHCPUDACHW	1	/* использование встроенного в процессор DAC */
@@ -107,7 +110,7 @@
 
 	#define WITHUSBHW_DEVICE	USB_OTG_HS	/* на этом устройстве поддерживается функциональность DEVICE	*/
 	#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод OTG_VBUS */
-	#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
+	//#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
 	//#define WITHUSBDEV_HIGHSPEEDULPI	1
 	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USB_DP2 & USB_DM2
 	//#define WITHUSBDEV_DMAENABLE 1
@@ -116,7 +119,7 @@
 	//#define USB_OTG_HS                   USB1_OTG_HS
 	//#define USB_OTG_FS                   USB2_OTG_FS
 
-	//#define WITHEHCIHW	1	/* USB_EHCI controller */
+	#define WITHEHCIHW	1	/* USB_EHCI controller */
 	//#define WITHUSBHW_HOST		USB_OTG_HS
 	#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB_DP2 & USB_DM2
 	//#define WITHUSBHOST_DMAENABLE 1
@@ -220,10 +223,10 @@
 		do { \
 			arm_hardware_piog_inputs(ENCODER_BITS); \
 			arm_hardware_piog_updown(ENCODER_BITS, 0); \
-			arm_hardware_piog_onchangeinterrupt(ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ARM_OVERREALTIME_PRIORITY); \
+			arm_hardware_piog_onchangeinterrupt(ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
 			arm_hardware_piog_inputs(ENCODER2_BITS); \
 			arm_hardware_piog_updown(ENCODER2_BITS, 0); \
-			arm_hardware_piog_onchangeinterrupt(0 * ENCODER2_BITS, ENCODER2_BITS, ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY); \
+			arm_hardware_piog_onchangeinterrupt(0 * ENCODER2_BITS, ENCODER2_BITS, ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
 		} while (0)
 
 #endif
@@ -579,7 +582,7 @@
 #endif /* WITHSPIHW || WITHSPISW */
 
 // WITHUART1HW
-#define HARDWARE_USART1_INITIALIZE() do { \
+#define HARDWARE_UART1_INITIALIZE() do { \
 		const uint_fast32_t TXMASK = 0 * (1uL << 11); /* PG11: TX DATA line (2 MHz) */ \
 		const uint_fast32_t RXMASK = 0 * (1uL << 2); /* PB2: RX DATA line (2 MHz) - pull-up RX data */  \
 		arm_hardware_piog_altfn2(TXMASK, AF_USART1); /* AF4 */ \
@@ -588,7 +591,7 @@
 	} while (0)
 
 // WITHUART2HW
-#define HARDWARE_USART2_INITIALIZE() do { \
+#define HARDWARE_UART2_INITIALIZE() do { \
 		const uint_fast32_t TXMASK = (1uL << 5); /* PD5: TX DATA line (2 MHz) */ \
 		const uint_fast32_t RXMASK = (1uL << 6); /* PD6: RX DATA line (2 MHz) - pull-up RX data */  \
 		arm_hardware_piod_altfn50(TXMASK, AF_USART2); \
@@ -627,8 +630,8 @@
 #endif /* WITHKEYBOARD */
 
 #if 1 // WITHTWISW
-	// I2C1_SDA	PB7
-	// I2C1_SCL	PB6
+	// I2C1_SDA	PB11
+	// I2C1_SCL	PD7
 	#define TARGET_TWI_TWCK		(1u << 7)		// PD7 I2C1_SCL
 	#define TARGET_TWI_TWCK_PIN		(GPIOD->IDR)
 	#define TARGET_TWI_TWCK_PORT_C(v) do { GPIOD->BSRR = BSRR_C(v); __DSB(); } while (0)
@@ -815,39 +818,36 @@
 		#define WITHLCDBACKLIGHT	1	// Имеется управление яркостью дисплея
 		#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываемый на дисплее)
 		#define WITHLCDBACKLIGHTMAX	3	// Верхний предел регулировки (показываемый на дисплее)
-		#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
+		//#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
 	#elif LCDMODE_AT070TN90 || LCDMODE_AT070TNA2
 		#define WITHLCDBACKLIGHTOFF	1	// Имеется управление включением/выключением подсветки дисплея
 		#define WITHLCDBACKLIGHT	1	// Имеется управление яркостью дисплея
-		#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываемый на дисплее)
-		#define WITHLCDBACKLIGHTMAX	2	// Верхний предел регулировки (показываемый на дисплее)
-		#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
+		#define WITHLCDBACKLIGHTMIN	1	// Нижний предел регулировки (показываемый на дисплее)
+		#define WITHLCDBACKLIGHTMAX	3	// Верхний предел регулировки (показываемый на дисплее)
+		//#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
 	#else
 		/* Заглушка для работы без дисплея */
 		#define WITHLCDBACKLIGHTMIN	0
+		#define WITHLCDBACKLIGHTMAX	2	// Верхний предел регулировки (показываемый на дисплее)
 	#endif
 
 	/* BL0: PA14. BL1: PA15 */
 	#define	HARDWARE_BL_INITIALIZE() do { \
-		const portholder_t opins = (1U << 15) | (1U << 14); /* PA15:PA14 */ \
-		const portholder_t enmask = 0 * (1U << 1); /* PF1 */ \
-		arm_hardware_pioa_opendrain(opins, 0); \
-		arm_hardware_piof_opendrain(enmask, 0 * enmask); \
+		const portholder_t BLpins = (1U << 15) | (1U << 14); /* PA15:PA14 */ \
+		const portholder_t ENmask = 0 * (1U << 1); /* PF1 - not in this hardware  */ \
+		arm_hardware_pioa_opendrain(BLpins, 0); \
 		} while (0)
 
 	/* установка яркости и включение/выключение преобразователя подсветки */
 	/* BL0: PA14. BL1: PA15 */
 	#define HARDWARE_BL_SET(en, level) do { \
-		const portholder_t enmask = 0 * (1U << 1); /* PF1 */ \
-		const portholder_t opins = (1U << 15) | (1U << 14); /* PA15:PA14 */ \
-		const portholder_t initialstate = (~ (level) & 0x03) << 14; \
-		GPIOF->BSRR = \
-			((en) ? BSRR_S(enmask) : BSRR_C(enmask)) | /* backlight control on/off */ \
-			0; \
+		const portholder_t Vlevel = (level) & 0x03; \
+		const portholder_t ENmask = 0 * (1U << 1); /* PF1 - not in this hardware */ \
+		const portholder_t BLpins = (1U << 15) | (1U << 14); /* PA15:PA14 */ \
+		const portholder_t BLstate = (~ Vlevel) << 14; \
 		GPIOA->BSRR = \
-			((en) ? BSRR_S(enmask) : BSRR_C(enmask)) | /* backlight control on/off */ \
-			BSRR_S((initialstate) & (opins)) | /* set bits */ \
-			BSRR_C(~ (initialstate) & (opins)) | /* reset bits */ \
+			BSRR_S((BLstate) & (BLpins)) | /* set bits */ \
+			BSRR_C(~ (BLstate) & (BLpins)) | /* reset bits */ \
 			0; \
 		__DSB(); \
 	} while (0)
@@ -925,7 +925,7 @@
 
 	#define BOOTLOADER_FLASHSIZE (1024uL * 1024uL * 16)	// 16M FLASH CHIP
 	#define BOOTLOADER_SELFBASE QSPI_MEM_BASE	/* адрес где лежит во FLASH образ application */
-	#define BOOTLOADER_SELFSIZE (1024uL * 256)	// 256k
+	#define BOOTLOADER_SELFSIZE (1024uL * 512)	// 512k
 
 	#define BOOTLOADER_APPBASE (BOOTLOADER_SELFBASE + BOOTLOADER_SELFSIZE)	/* адрес где лежит во FLASH образ application */
 	#define BOOTLOADER_APPSIZE (BOOTLOADER_FLASHSIZE - BOOTLOADER_SELFSIZE)	// 2048 - 128
@@ -999,26 +999,28 @@
 
 	#endif /* WIHSPIDFSW || WIHSPIDFHW */
 
-	#define BOARD_BLINK_BITS (1uL << 13)	// PA13 - RED LED LD5 on DK1/DK2 MB1272.pdf
-	//#define BOARD_BLINK_BITS (1uL << 14)	// PA14 - GREEN LED LD5 on DK1/DK2 MB1272.pdf
-	//#define BOARD_BLINK_BITS (1uL << 14)	// PD14 - LED on small board
-	//#define BOARD_BLINK_BITS (1uL << 11)	// PI11 - LED1# on PanGu board
-	//#define BOARD_BLINK_BITS (1uL << 11)	// PH6 - LED2# on PanGu board
+	#define BOARD_BLINK_BIT (1uL << 13)	// PA13 - led on Storch board
+	//#define BOARD_BLINK_BIT (1uL << 13)	// PA13 - RED LED LD5 on DK1/DK2 MB1272.pdf
+	//#define BOARD_BLINK_BIT (1uL << 14)	// PA14 - GREEN LED LD5 on DK1/DK2 MB1272.pdf
+	//#define BOARD_BLINK_BIT (1uL << 14)	// PD14 - LED on small board
+	//#define BOARD_BLINK_BIT (1uL << 11)	// PI11 - LED1# on PanGu board
+	//#define BOARD_BLINK_BIT (1uL << 11)	// PH6 - LED2# on PanGu board
 
 	#define BOARD_BLINK_INITIALIZE() do { \
-			arm_hardware_pioa_outputs(BOARD_BLINK_BITS, 1 * BOARD_BLINK_BITS); \
+			arm_hardware_pioa_outputs(BOARD_BLINK_BIT, 1 * BOARD_BLINK_BIT); \
 		} while (0)
 	#define BOARD_BLINK_SETSTATE(state) do { \
 			if (state) \
-				(GPIOA)->BSRR = BSRR_C(BOARD_BLINK_BITS); \
+				(GPIOA)->BSRR = BSRR_C(BOARD_BLINK_BIT); \
 			else \
-				(GPIOA)->BSRR = BSRR_S(BOARD_BLINK_BITS); \
+				(GPIOA)->BSRR = BSRR_S(BOARD_BLINK_BIT); \
 		} while (0)
 
 	/* запрос на вход в режим загрузчика */
-	#define BOARD_IS_USERBOOT() (((GPIOB->IDR) & (1uL << 1)) == 0)
+	#define BOARD_USERBOOT_BIT	(1uL << 1)	/* PB1: ~USER_BOOT */
+	#define BOARD_IS_USERBOOT() (((GPIOB->IDR) & BOARD_USERBOOT_BIT) == 0)
 	#define BOARD_USERBOOT_INITIALIZE() do { \
-		arm_hardware_piob_inputs(1uL << 1); /* PB1: ~USER_BOOT */ \
+		arm_hardware_piob_inputs(BOARD_USERBOOT_BIT); /* set as input with pull-up */ \
 		} while (0)
 
 	/* макроопределение, которое должно включить в себя все инициализации */
@@ -1032,6 +1034,7 @@
 			TXDISABLE_INITIALIZE(); \
 			TUNE_INITIALIZE(); \
 			BOARD_USERBOOT_INITIALIZE(); \
+			USBD_FS_INITIALIZE(); \
 		} while (0)
 
 #endif /* ARM_STM32MP1_LFBGA354_CPUSTYLE_STORCH_V9A_H_INCLUDED */

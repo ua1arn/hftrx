@@ -204,6 +204,12 @@ void arm_hardware_piok_outputs2m(unsigned long opins, unsigned long initialstate
 void arm_hardware_piok_outputs50m(unsigned long opins, unsigned long initialstate);
 void arm_hardware_piok_opendrain(unsigned long opins, unsigned long initialstate);
 
+void arm_hardware_pioz_inputs(unsigned long ipins);
+void arm_hardware_pioz_outputs(unsigned long opins, unsigned long initialstate);
+void arm_hardware_pioz_outputs2m(unsigned long opins, unsigned long initialstate);
+void arm_hardware_pioz_outputs50m(unsigned long opins, unsigned long initialstate);
+void arm_hardware_pioz_opendrain(unsigned long opins, unsigned long initialstate);
+
 void arm_hardware_pioa_peripha(unsigned long pins);		// выводы присоединены к periph A
 void arm_hardware_pioa_periphb(unsigned long pins);		// выводы присоединены к periph B
 void arm_hardware_pioa_periphc(unsigned long pins);		// выводы присоединены к periph C
@@ -216,17 +222,17 @@ void arm_hardware_piob_periphd(unsigned long pins);		// выводы присо�
 void arm_hardware_pioa_only(unsigned long pins);		// выводы присоединены к PIO
 void arm_hardware_piob_only(unsigned long pins);		// выводы присоединены к PIO
 
-void arm_hardware_pioa_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority);
-void arm_hardware_piob_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority);
-void arm_hardware_pioc_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority);
-void arm_hardware_piod_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority);
-void arm_hardware_pioe_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority);
-void arm_hardware_piof_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority);
-void arm_hardware_piog_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority);
-void arm_hardware_pioh_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority);
-void arm_hardware_pioi_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority);
-void arm_hardware_pioj_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority);
-void arm_hardware_piok_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority);
+void arm_hardware_pioa_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority, uint32_t tgcpu);
+void arm_hardware_piob_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority, uint32_t tgcpu);
+void arm_hardware_pioc_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority, uint32_t tgcpu);
+void arm_hardware_piod_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority, uint32_t tgcpu);
+void arm_hardware_pioe_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority, uint32_t tgcpu);
+void arm_hardware_piof_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority, uint32_t tgcpu);
+void arm_hardware_piog_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority, uint32_t tgcpu);
+void arm_hardware_pioh_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority, uint32_t tgcpu);
+void arm_hardware_pioi_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority, uint32_t tgcpu);
+void arm_hardware_pioj_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority, uint32_t tgcpu);
+void arm_hardware_piok_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority, uint32_t tgcpu);
 
 void arm_hardware_pioa_altfn2(unsigned long opins, unsigned af);
 void arm_hardware_piob_altfn2(unsigned long opins, unsigned af);

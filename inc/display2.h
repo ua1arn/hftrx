@@ -38,19 +38,6 @@ typedef struct dctx_tag
 	const void * pv;
 } dctx_t;
 
-void display2_smeter15(
-	uint_fast8_t x,
-	uint_fast8_t y,
-	dctx_t * pctx
-	);
-
-void
-display2_smeter15_init(
-	uint_fast8_t xgrid,
-	uint_fast8_t ygrid,
-	dctx_t * pctx
-	);
-
 // FUNC item label
 void display2_fnlabel9(
 	uint_fast8_t x,
@@ -131,6 +118,7 @@ uint_fast8_t display_getfreqformat(uint_fast8_t * prjv);	// получить п�
 
 void display2_bgprocess(void);	// выполнение шагов state machine отображения дисплея
 void display2_bgreset(void);	// сброс state machine отображения дисплея
+void display2_initialize(void);	//
 
 void display2_dispfreq_a2(
 	uint_fast32_t freq,

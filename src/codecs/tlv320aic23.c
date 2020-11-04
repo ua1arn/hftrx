@@ -7,8 +7,8 @@
 #include "hardware.h"
 #include "board.h"
 
-#include "./formats.h"
-#include "../inc/spi.h"
+#include "formats.h"
+#include "spi.h"
 
 #if defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_TLV320AIC23B)
 //

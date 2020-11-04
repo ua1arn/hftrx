@@ -320,8 +320,7 @@ safestrcpy(char * dst, size_t blen, const char * src)
 {
 	ASSERT(dst != NULL);
 	ASSERT(src != NULL);
-	ASSERT(strlen(src) < blen);
-	return strcpy(dst, src);
+	return strncpy(dst, src, blen);
 }
 
 #if WITHDEBUG
@@ -334,7 +333,7 @@ safestrcpy(char * dst, size_t blen, const char * src)
 
 void debug_printf_P(const FLASHMEM char *__restrict format, ... )
 {
-	char b [256];
+	char b [128];	// see stack sizes for interrupt handlers
 	va_list	ap;
 	va_start(ap, format);
 
@@ -412,5 +411,67 @@ void debug_printf_P(const FLASHMEM char *format, ... )
 void
 printhex(unsigned long voffs, const unsigned char * buff, unsigned length)
 {
+}
+#endif /* WITHDEBUG */
+
+
+#if WITHDEBUG
+
+int dbg_getchar(char * r)
+{
+	return HARDWARE_DEBUG_GETCHAR(r);
+}
+
+int dbg_putchar(int c)
+{
+	if (c == '\n')
+		dbg_putchar('\r');
+
+	while (HARDWARE_DEBUG_PUTCHAR(c) == 0)
+		;
+	return c;
+}
+
+int dbg_puts_impl_P(const FLASHMEM char * s)
+{
+	char c;
+	while ((c = * s ++) != '\0')
+	{
+		dbg_putchar(c);
+	}
+	return 0;
+}
+
+int dbg_puts_impl(const char * s)
+{
+	char c;
+	while ((c = * s ++) != '\0')
+	{
+		dbg_putchar(c);
+	}
+	return 0;
+}
+
+#else /* WITHDEBUG */
+
+int dbg_getchar(char * r)
+{
+	return 0;
+}
+
+int dbg_putchar(int c)
+{
+	return c;
+}
+
+int dbg_puts_impl_P(const FLASHMEM char * s)
+{
+	(void) s;
+	return 0;
+}
+int dbg_puts_impl(const char * s)
+{
+	(void) s;
+	return 0;
 }
 #endif /* WITHDEBUG */

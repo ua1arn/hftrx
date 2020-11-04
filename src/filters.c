@@ -2067,7 +2067,7 @@ getrxfilter(
 	if (GFA_SIZE == 0)
 	{
 		void wrong_GFA_SIZE(void);
-		//debug_printf_P(PSTR("getfilter: wrong configuration GFA_SIZE=%d\n"), GFA_SIZE);
+		//PRINTF(PSTR("getfilter: wrong configuration GFA_SIZE=%d\n"), GFA_SIZE);
 		wrong_GFA_SIZE();
 		return gfa [0];
 	}
@@ -2094,7 +2094,7 @@ gettxfilter(
 	if (GFA_SIZE == 0)
 	{
 		void wrong_GFA_SIZE(void);
-		//debug_printf_P(PSTR("getfilter: wrong configuration GFA_SIZE=%d\n"), GFA_SIZE);
+		//PRINTF(PSTR("getfilter: wrong configuration GFA_SIZE=%d\n"), GFA_SIZE);
 		wrong_GFA_SIZE();
 		return gfa [0];
 	}

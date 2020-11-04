@@ -18,8 +18,8 @@ extern "C" {
 
 typedef uint_fast16_t COLOR565_T;
 typedef uint16_t PACKEDCOLOR565_T;
-typedef uint_fast32_t COLOR24_T;
 // RRRRRRR.GGGGGGGG.BBBBBBBB
+typedef uint_fast32_t COLOR24_T;
 #define COLOR24(red, green, blue) \
 	(  (unsigned long) \
 		(	\
@@ -35,6 +35,20 @@ typedef uint_fast32_t COLOR24_T;
 #define COLOR24_B(v) (((v) >> 0) & 0xFF)
 
 #define COLOR24_KEY	COLOR24(0xA0, 0, 0xA0)	// Цвет для прозрачных пикселей
+
+enum gradient_style
+{
+	GRADIENT_BLUE_YELLOW_RED,		// blue -> yellow -> red
+	GRADIENT_BLACK_YELLOW_RED,		// black -> yellow -> red
+	GRADIENT_BLACK_YELLOW_GREEN,	// black -> yellow -> green
+	GRADIENT_BLACK_RED,				// black -> red
+	GRADIENT_BLACK_GREEN,			// black -> green
+	GRADIENT_BLACK_BLUE,			// black -> blue
+	GRADIENT_BLACK_WHITE			// black -> white
+};
+
+COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
+
 
 #if LCDMODE_UC1601
 
@@ -109,7 +123,7 @@ typedef uint_fast32_t COLOR24_T;
 
 	#define DEFAULT_LCD_CONTRAST	255
 
-#elif LCDMODE_S1D13781 || LCDMODE_LQ043T3DX02K || LCDMODE_AT070TN90 || LCDMODE_AT070TNA2
+#elif LCDMODE_S1D13781 || LCDMODE_LQ043T3DX02K || LCDMODE_AT070TN90 || LCDMODE_AT070TNA2 || LCDMODE_H497TLB01P4
 
 	#include "s1d13781.h"
 
@@ -369,9 +383,13 @@ void display_reset(void);				/* вызывается при разрешённы
 void display_initialize(void);			/* вызывается при разрешённых прерываниях. */
 void display_discharge(void);			/* вызывается при разрешённых прерываниях. */
 void display_set_contrast(uint_fast8_t v);
+void display_palette(void);				// Palette reload
+
+void tc358768_initialize(void);
 
 /* индивидуальные функции драйвера дисплея - реализованы в соответствующем из файлов */
 void display_clear(void);
+void display_flush(void);	// для framebufer дисплеев - вытолкнуть кэш память
 void colmain_setcolors(COLORMAIN_T fg, COLORMAIN_T bg);
 void colmain_setcolors3(COLORMAIN_T fg, COLORMAIN_T bg, COLORMAIN_T bgfg);	// bgfg - цвет для отрисовки антиалиасинга
 
@@ -665,6 +683,14 @@ display_fillrect(
 	uint_fast16_t w, uint_fast16_t h, 	// размеры в пикселях
 	COLORMAIN_T color
 	);
+/* рисование линии на основном экране произвольным цветом
+*/
+void
+display_line(
+	int x1, int y1,
+	int x2, int y2,
+	COLORMAIN_T color
+	);
 
 /* заполнение прямоугольника в буфере произвольным цветом
 */
@@ -810,21 +836,20 @@ void colmain_putpixel(
 
 void display_at_xy(uint_fast16_t x, uint_fast16_t y, const char * s);
 
-void board_set_topdb(int_fast16_t v);	/* верхний предел FFT */
-void board_set_bottomdb(int_fast16_t v);	/* нижний предел FFT */
-void board_set_topdbwf(int_fast16_t v);	/* верхний предел FFT */
-void board_set_bottomdbwf(int_fast16_t v);	/* нижний предел FFT */
-void board_set_zoomxpow2(uint_fast8_t v);	/* уменьшение отображаемого участка спектра */
-void board_set_fillspect(uint_fast8_t v); /* заливать заполнением площадь под графиком спектра */
-void board_set_wflevelsep(uint_fast8_t v); /* чувствительность водопада регулируется отдельной парой параметров */
-void board_set_wfshiftenable(uint_fast8_t v);	   /* разрешение или запрет сдвига водопада при изменении частоты */
-void board_set_spantialiasing(uint_fast8_t v); /* разрешение или запрет антиалиасинга спектра */
-void board_set_colorsp(uint_fast8_t v);			/* разрешение или запрет раскраски спектра */
-void board_set_showdbm(uint_fast8_t v);	// Отображение уровня сигнала в dBm или S-memter (в зависимости от настроек)
+void board_set_topdb(int_fast16_t v);			/* верхний предел FFT */
+void board_set_bottomdb(int_fast16_t v);		/* нижний предел FFT */
+void board_set_topdbwf(int_fast16_t v);			/* верхний предел FFT */
+void board_set_bottomdbwf(int_fast16_t v);		/* нижний предел FFT */
+void board_set_zoomxpow2(uint_fast8_t v);		/* уменьшение отображаемого участка спектра */
+void board_set_wflevelsep(uint_fast8_t v); 		/* чувствительность водопада регулируется отдельной парой параметров */
+void board_set_view_style(uint_fast8_t v);		/* стиль отображения спектра и панорамы */
+void board_set_showdbm(uint_fast8_t v);			// Отображение уровня сигнала в dBm или S-memter (в зависимости от настроек)
+void board_set_afspeclow(int_fast16_t v);		// нижняя частота отображения спектроанализатора
+void board_set_afspechigh(int_fast16_t v);		// верхняя частота отображения спектроанализатора
 
-PACKEDCOLORMAIN_T * colmain_fb_draw(void);	// буфер для построения изображения
-PACKEDCOLORMAIN_T * colmain_fb_show(void);	// буфер для отображения
-void colmain_fb_next(void);		// прерключиться на использование следующего фреймбуфера.
+PACKEDCOLORMAIN_T * colmain_fb_draw(void);		// буфер для построения изображения
+PACKEDCOLORMAIN_T * colmain_fb_show(void);		// буфер для отображения
+void colmain_fb_next(void);						// переключиться на использование следующего фреймбуфера.
 
 #if WITHALPHA
 #define DEFAULT_ALPHA WITHALPHA

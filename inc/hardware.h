@@ -164,8 +164,6 @@ extern "C" {
 
 	#define ALIGNX_BEGIN __attribute__ ((aligned(32)))
 	#define ALIGNX_END /* nothing */
-	#define ALIGN1K_BEGIN __attribute__ ((aligned(1024)))
-	#define ALIGN1K_END /* nothing */
 
 	//#define DCACHEROWSIZE __SCB_DCACHE_LINE_SIZE  //32U /*!< Cortex-M7 cache line size is fixed to 32 bytes (8 words). See also register SCB_CCSIDR */
 	//#define ICACHEROWSIZE __SCB_ICACHE_LINE_SIZE  //32U /*!< Cortex-M7 cache line size is fixed to 32 bytes (8 words). See also register SCB_CCSIDR */
@@ -177,6 +175,7 @@ extern "C" {
 	#endif /* __ARM_NEON */
 
 	#define ARM_MATH_LOOPUNROLL 1
+	#define DISABLEFLOAT16 1
 
 	#include "arm_math.h"
 	#include "arm_const_structs.h"
@@ -190,10 +189,8 @@ extern "C" {
 
 	#include "armcpu/stm32f7xx.h"
 
-	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
+	#define ALIGNX_BEGIN __attribute__ ((aligned(32)))
 	#define ALIGNX_END /* nothing */
-	#define ALIGN1K_BEGIN __attribute__ ((aligned(1024)))
-	#define ALIGN1K_END /* nothing */
 
 	//#define DCACHEROWSIZE __SCB_DCACHE_LINE_SIZE  //32U /*!< Cortex-M7 cache line size is fixed to 32 bytes (8 words). See also register SCB_CCSIDR */
 	//#define ICACHEROWSIZE __SCB_ICACHE_LINE_SIZE  //32U /*!< Cortex-M7 cache line size is fixed to 32 bytes (8 words). See also register SCB_CCSIDR */
@@ -205,6 +202,7 @@ extern "C" {
 	#endif /* __ARM_NEON */
 
 	#define ARM_MATH_LOOPUNROLL 1
+	#define DISABLEFLOAT16 1
 
 	#include "arm_math.h"
 	#include "arm_const_structs.h"
@@ -217,10 +215,8 @@ extern "C" {
 
 	#include "armcpu/stm32f4xx.h"
 
-	#define ALIGNX_BEGIN __attribute__ ((aligned(16)))
+	#define ALIGNX_BEGIN __attribute__ ((aligned(4)))
 	#define ALIGNX_END /* nothing */
-	#define ALIGN1K_BEGIN __attribute__ ((aligned(1024)))
-	#define ALIGN1K_END /* nothing */
 
 	//#define DCACHEROWSIZE __SCB_DCACHE_LINE_SIZE  //32U /*!< Cortex-M7 cache line size is fixed to 32 bytes (8 words). See also register SCB_CCSIDR */
 	//#define ICACHEROWSIZE __SCB_ICACHE_LINE_SIZE  //32U /*!< Cortex-M7 cache line size is fixed to 32 bytes (8 words). See also register SCB_CCSIDR */
@@ -232,6 +228,7 @@ extern "C" {
 	#endif /* __ARM_NEON */
 
 	#define ARM_MATH_LOOPUNROLL 1
+	#define DISABLEFLOAT16 1
 
 	#include "arm_math.h"
 	#include "arm_const_structs.h"
@@ -245,16 +242,15 @@ extern "C" {
 	// STM32F303VC processors
 	#include "armcpu/stm32f30x.h"
 
-	#define ALIGNX_BEGIN __attribute__ ((aligned(16)))
+	#define ALIGNX_BEGIN __attribute__ ((aligned(4)))
 	#define ALIGNX_END /* nothing */
-	#define ALIGN1K_BEGIN __attribute__ ((aligned(1024)))
-	#define ALIGN1K_END /* nothing */
 
 	#if __ARM_NEON
 		#define ARM_MATH_NEON 1
 	#endif /* __ARM_NEON */
 
 	#define ARM_MATH_LOOPUNROLL 1
+	#define DISABLEFLOAT16 1
 
 	#include "arm_math.h"
 	#include "arm_const_structs.h"
@@ -267,16 +263,15 @@ extern "C" {
 
 	#include "armcpu/stm32f1xx.h"
 
-	#define ALIGNX_BEGIN __attribute__ ((aligned(16)))
+	#define ALIGNX_BEGIN __attribute__ ((aligned(4)))
 	#define ALIGNX_END /* nothing */
-	#define ALIGN1K_BEGIN __attribute__ ((aligned(1024)))
-	#define ALIGN1K_END /* nothing */
 
 	#if __ARM_NEON
 		#define ARM_MATH_NEON 1
 	#endif /* __ARM_NEON */
 
 	#define ARM_MATH_LOOPUNROLL 1
+	#define DISABLEFLOAT16 1
 
 	#include "arm_math.h"
 	#include "arm_const_structs.h"
@@ -289,16 +284,15 @@ extern "C" {
 	
 	#include "armcpu/stm32f0xx.h"
 
-	#define ALIGNX_BEGIN __attribute__ ((aligned(16)))
+	#define ALIGNX_BEGIN __attribute__ ((aligned(4)))
 	#define ALIGNX_END /* nothing */
-	#define ALIGN1K_BEGIN __attribute__ ((aligned(1024)))
-	#define ALIGN1K_END /* nothing */
 
 	#if __ARM_NEON
 		#define ARM_MATH_NEON 1
 	#endif /* __ARM_NEON */
 
 	#define ARM_MATH_LOOPUNROLL 1
+	#define DISABLEFLOAT16 1
 
 	#include "arm_math.h"
 	#include "arm_const_structs.h"
@@ -310,16 +304,15 @@ extern "C" {
 	#define CPUSTYLE_ARM_CM0	1		/* архитектура процессора CORTEX M0 */
 	#include "armcpu/stm32l0xx.h"
 
-	#define ALIGNX_BEGIN __attribute__ ((aligned(16)))
+	#define ALIGNX_BEGIN __attribute__ ((aligned(4)))
 	#define ALIGNX_END /* nothing */
-	#define ALIGN1K_BEGIN __attribute__ ((aligned(1024)))
-	#define ALIGN1K_END /* nothing */
 
 	#if __ARM_NEON
 		#define ARM_MATH_NEON 1
 	#endif /* __ARM_NEON */
 
 	#define ARM_MATH_LOOPUNROLL 1
+	#define DISABLEFLOAT16 1
 
 	#include "arm_math.h"
 	#include "arm_const_structs.h"
@@ -340,6 +333,7 @@ extern "C" {
 	#endif /* __ARM_NEON */
 
 	#define ARM_MATH_LOOPUNROLL 1
+	#define DISABLEFLOAT16 1
 
 	#include "arm_math.h"
 	#include "arm_const_structs.h"
@@ -360,6 +354,7 @@ extern "C" {
 	#endif /* __ARM_NEON */
 
 	#define ARM_MATH_LOOPUNROLL 1
+	#define DISABLEFLOAT16 1
 
 	#include "arm_math.h"
 	#include "arm_const_structs.h"
@@ -379,6 +374,7 @@ extern "C" {
 	#endif /* __ARM_NEON */
 
 	#define ARM_MATH_LOOPUNROLL 1
+	#define DISABLEFLOAT16 1
 
 	#include "arm_math.h"
 	#include "arm_const_structs.h"
@@ -427,9 +423,9 @@ extern "C" {
 
 	//#define TARGET_RZA1             (TARGET_RZA1L)	// перенесено в Makefile
 
-	#include "armcpu/Renesas_RZ_A1.h"
-	#include "armcpu/iodefine.h"
-	#include "armcpu/rza_io_regrw.h"
+	#include "armcpu/Renesas_RZ_A1.h"	// IRQs, some bitss
+	#include "armcpu/iodefine.h"		// peripherial registers
+	#include "armcpu/rza_io_regrw.h"	// iobitmasks
 
 	#include "irq_ctrl.h"
 
@@ -439,14 +435,13 @@ extern "C" {
 
 	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
 	#define ALIGNX_END /* nothing */
-	#define ALIGN1K_BEGIN __attribute__ ((aligned(1024)))
-	#define ALIGN1K_END /* nothing */
 
 	#if __ARM_NEON
 		//#define ARM_MATH_NEON 1
 	#endif /* __ARM_NEON */
 
 	#define ARM_MATH_LOOPUNROLL 1
+	#define DISABLEFLOAT16 1
 
 	#include "arm_math.h"
 	#include "arm_const_structs.h"
@@ -471,13 +466,12 @@ extern "C" {
 
 	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
 	#define ALIGNX_END /* nothing */
-	#define ALIGN1K_BEGIN __attribute__ ((aligned(1024)))
-	#define ALIGN1K_END /* nothing */
 
 	#if __ARM_NEON
 		//#define ARM_MATH_NEON 1
 	#endif /* __ARM_NEON */
 	#define ARM_MATH_LOOPUNROLL 1
+	#define DISABLEFLOAT16 1
 
 	#include "arm_math.h"
 	#include "arm_const_structs.h"
@@ -539,111 +533,13 @@ void hardware_adc_initialize(void);
 	#define NOINLINEAT // __attribute__((noinline))
 	#define strlen_P(s) strlen(s)
 
-	#if CPUSTYLE_R7S721
-		#define FLASHMEMINIT	__attribute__((section(".initdata"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
-		#define FLASHMEMINITFUNC	__attribute__((section(".initfunc"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
-		#define RAMFUNC_NONILINE // __attribute__((__section__(".ramfunc"), noinline))
-		#define RAMFUNC			 // __attribute__((__section__(".ramfunc")))
-		#define RAMNOINIT_D1	__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
-		#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
-		#define RAMFRAMEBUFF	__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
-		#define RAMDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
-		#define RAMBIGDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
-		#define RAMBIGDTCM_MDMA	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
-		#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
-		#define RAMHEAP __attribute__((used, section(".heap"), aligned(64))) // memory used as heap zone
-	#elif CPUSTYLE_STM32MP1
-		#define FLASHMEMINIT	//__attribute__((section(".initdata"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
-		#define FLASHMEMINITFUNC//	__attribute__((section(".initfunc"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
-		#define RAMFUNC_NONILINE __attribute__((__section__(".itcm"), noinline))
-		#define RAMFUNC			 __attribute__((__section__(".itcm")))
-		#define RAMNOINIT_D1	__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
-		#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
-		#define RAMFRAMEBUFF	__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
-		#define RAMDTCM			__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
-		#define RAMBIGDTCM		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
-		#define RAMBIGDTCM_MDMA		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
-		#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
-		#define RAMHEAP __attribute__((used, section(".heap"), aligned(64))) // memory used as heap zone
-	#elif (CPUSTYLE_STM32H7XX)
-		#define VTRATTR	__attribute__ ((section("vtable"), used, aligned(256 * 4)))
-		#define FLASHMEMINIT	__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
-		#define FLASHMEMINITFUNC	__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
-		#define RAMFUNC_NONILINE __attribute__((noinline,__section__(".itcm")))  // удаление управления noinline добавило 2-3 процента быстродействия __attribute__((__section__(".ramfunc"), noinline))
-		#define RAMFUNC			 __attribute__((__section__(".itcm")))
-		#define RAMNOINIT_D1	__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
-		#define RAM_D2			__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
-		#define RAMFRAMEBUFF	__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
-		#define RAMDTCM			__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
-		#define RAMBIGDTCM		__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
-		#define RAMBIGDTCM_MDMA		__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
-		#define RAMBIG			__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
-		#define RAMHEAP __attribute__((used, section(".heap"), aligned(16))) // memory used as heap zone
-	#elif (CPUSTYLE_STM32F7XX)
-		#define VTRATTR	__attribute__ ((section("vtable"), used, aligned(256 * 4)))
-		#define FLASHMEMINIT	__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
-		#define FLASHMEMINITFUNC	//__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
-		#define RAMFUNC_NONILINE __attribute__((noinline,__section__(".itcm")))  // удаление управления noinline добавило 2-3 процента быстродействия __attribute__((__section__(".ramfunc"), noinline))
-		#define RAMFUNC			 __attribute__((__section__(".itcm")))
-		#define RAMNOINIT_D1	//__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
-		#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
-		#define RAMFRAMEBUFF	__attribute__((section(".sdram"))) /* размещение в памяти SRAM_D1 */
-		#define RAMDTCM			__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
-		#define RAMBIGDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
-		#define RAMBIGDTCM_MDMA		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
-		#define RAMBIG			__attribute__((section(".sdram"))) /* размещение в памяти SRAM_D1 */
-		#define RAMHEAP __attribute__((used, section(".heap"), aligned(16))) // memory used as heap zone
-	#elif CPUSTYLE_STM32F4XX && (defined (STM32F429xx) || defined(STM32F407xx))
-		#define VTRATTR	__attribute__ ((section("vtable"), used, aligned(256 * 4)))
-		#define FLASHMEMINIT	//__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
-		#define FLASHMEMINITFUNC	//__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
-		#define RAMFUNC_NONILINE  //__attribute__((__section__(".itcm"), noinline))
-		#define RAMFUNC			 // __attribute__((__section__(".itcm")))
-		#define RAMNOINIT_D1	//__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
-		#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
-		#define RAMFRAMEBUFF	//__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
-		#define RAMDTCM			__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
-		#define RAMBIGDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
-		#define RAMBIGDTCM_MDMA	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
-		#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
-		#define RAMHEAP __attribute__((used, section(".heap"), aligned(16))) // memory used as heap zone
-	#elif CPUSTYLE_STM32F4XX
-		#define VTRATTR	__attribute__ ((section("vtable"), used, aligned(256 * 4)))
-		#define FLASHMEMINIT	//__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
-		#define FLASHMEMINITFUNC	//__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
-		#define RAMFUNC_NONILINE // __attribute__((__section__(".ramfunc"), noinline))  
-		#define RAMFUNC			 // __attribute__((__section__(".ramfunc")))  
-		#define RAMNOINIT_D1	//__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
-		#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
-		#define RAMFRAMEBUFF	//__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
-		#define RAMDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
-		#define RAMBIGDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
-		#define RAMBIGDTCM_MDMA	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
-		#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
-		#define RAMHEAP __attribute__((used, section(".heap"), aligned(16))) // memory used as heap zone
-	#else
-		#define VTRATTR	__attribute__ ((section("vtable"), used, aligned(256 * 4)))
-		#define FLASHMEMINIT	//__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
-		#define FLASHMEMINITFUNC	//__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
-		#define RAMFUNC_NONILINE __attribute__((noinline,__section__(".itcm")))  // удаление управления noinline добавило 2-3 процента быстродействия __attribute__((__section__(".ramfunc"), noinline))
-		#define RAMFUNC			 __attribute__((__section__(".itcm")))
-		#define RAMNOINIT_D1	//__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
-		#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
-		#define RAMFRAMEBUFF	//__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
-		#define RAMDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
-		#define RAMBIGDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
-		#define RAMBIGDTCM_MDMA	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
-		#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
-		#define RAMHEAP __attribute__((used, section(".heap"), aligned(16))) // memory used as heap zone
-	#endif
-
 	#define ATTRWEAK __attribute__ ((weak))
 	// Use __attribute__ ((weak, alias("Default_Handler")))
 
 	#define PSTR(s) (s)
 	//#define PSTR(s) (__extension__({static const char __c[] FLASHMEM = (s); &__c[0];}))
 
-	void RAMFUNC local_delay_us(int timeUS);
+	void local_delay_us(int timeUS);
 	void local_delay_ms(int timeMS);
 
 #elif CPUSTYLE_ATMEGA || CPUSTYLE_ATXMEGA
@@ -780,16 +676,24 @@ void hardware_uart1_set_speed(uint_fast32_t baudrate);
 void hardware_uart1_tx(void * ctx, uint_fast8_t c);	/* передача символа после прерывания о готовности передатчика */
 void hardware_uart1_enabletx(uint_fast8_t state);	/* вызывается из обработчика прерываний */
 void hardware_uart1_enablerx(uint_fast8_t state);	/* вызывается из обработчика прерываний */
-uint_fast8_t hardware_usart1_putchar(uint_fast8_t c);/* передача символа если готов порт */
-uint_fast8_t hardware_usart1_getchar(char * cp); /* приём символа, если готов порт */
+uint_fast8_t hardware_uart1_putchar(uint_fast8_t c);/* передача символа если готов порт */
+uint_fast8_t hardware_uart1_getchar(char * cp); /* приём символа, если готов порт */
 
 void hardware_uart2_initialize(uint_fast8_t debug);
 void hardware_uart2_set_speed(uint_fast32_t baudrate);
 void hardware_uart2_tx(void * ctx, uint_fast8_t c);	/* передача символа после прерывания о готовности передатчика */
 void hardware_uart2_enabletx(uint_fast8_t state);	/* вызывается из обработчика прерываний */
 void hardware_uart2_enablerx(uint_fast8_t state);	/* вызывается из обработчика прерываний */
-uint_fast8_t hardware_usart2_putchar(uint_fast8_t c);/* передача символа если готов порт */
-uint_fast8_t hardware_usart2_getchar(char * cp); /* приём символа, если готов порт */
+uint_fast8_t hardware_uart2_putchar(uint_fast8_t c);/* передача символа если готов порт */
+uint_fast8_t hardware_uart2_getchar(char * cp); /* приём символа, если готов порт */
+
+void hardware_uart4_initialize(uint_fast8_t debug);
+void hardware_uart4_set_speed(uint_fast32_t baudrate);
+void hardware_uart4_tx(void * ctx, uint_fast8_t c);	/* передача символа после прерывания о готовности передатчика */
+void hardware_uart4_enabletx(uint_fast8_t state);	/* вызывается из обработчика прерываний */
+void hardware_uart4_enablerx(uint_fast8_t state);	/* вызывается из обработчика прерываний */
+uint_fast8_t hardware_uart4_putchar(uint_fast8_t c);/* передача символа если готов порт */
+uint_fast8_t hardware_uart4_getchar(char * cp); /* приём символа, если готов порт */
 
 void usbd_cdc_tx(void * ctx, uint_fast8_t c);			/* передача символа после прерывания о готовности передатчика - вызывается из HARDWARE_CDC_ONTXCHAR */
 void usbd_cdc_enabletx(uint_fast8_t state);	/* вызывается из обработчика прерываний */
@@ -802,27 +706,33 @@ uint_fast8_t debugusb_getchar(char * cp); /* приём символа, если
 void debugusb_parsechar(uint_fast8_t c);	/* вызывается из обработчика прерываний */
 void debugusb_sendchar(void * ctx);			/* вызывается из обработчика прерываний */
 
-// spool-based functions for debug
-int dbg_puts_impl_P(const FLASHMEM char * s);
-int dbg_puts_impl(const char * s);
-int dbg_putchar(int c);
-int dbg_getchar(char * r);
-
 /* TWI (I2C) interface */
 #define I2C_RETRIES 3	/* количество повторов */
 void i2c_initialize(void);
-void i2c_start(uint_fast8_t address);
 
+void i2c_start(uint_fast8_t address);
 void i2c_read(uint8_t * pdata, uint_fast8_t acknak);
+
+// Работа со вторым каналом I2C
+void i2c2_start(uint_fast8_t address);
+void i2c2_read(uint8_t * pdata, uint_fast8_t acknak);
+
 
 #define I2C_READ_ACK 0  // i2c_read parameter
 #define I2C_READ_ACK_1 1  // i2c_read parameter
 #define I2C_READ_NACK 2		// ack_type - last parameterr in read block
 #define I2C_READ_ACK_NACK 3		// чтение первого и единственного байта по I2C
+
 void i2c_write(uint_fast8_t data);
 void i2c_write_withrestart(uint_fast8_t data);	// запись, после чего restart
 void i2c_waitsend(void);	// Вызвать после последнего i2c_write()
 void i2c_stop(void);
+
+// Работа со вторым каналом I2C
+void i2c2_write(uint_fast8_t data);
+void i2c2_write_withrestart(uint_fast8_t data);	// запись, после чего restart
+void i2c2_waitsend(void);	// Вызвать после последнего i2c_write()
+void i2c2_stop(void);
 
 void hardware_twi_master_configure(void);
 
@@ -836,6 +746,7 @@ void arm_hardware_ltdc_initialize(void);	// LCD-TFT Controller (LTDC) with frame
 void arm_hardware_ltdc_main_set(uintptr_t addr);	// Set MAIN frame buffer address.
 void arm_hardware_ltdc_pip_set(uintptr_t addr);	// Set PIP frame buffer address.
 void arm_hardware_ltdc_pip_off(void);	// Turn PIP off (main layer only).
+void arm_hardware_ltdc_L8_palette(void);	// Palette reload
 
 uint_fast8_t usbd_cdc1_getrts(void);
 uint_fast8_t usbd_cdc1_getdtr(void);
@@ -986,11 +897,16 @@ void SWI_Handler(void);
 void PAbort_Handler(void);
 void DAbort_Handler(void);
 void FIQ_Handler(void);
-void IRQ_Handler(void);
 void Hyp_Handler(void);
+
+void IRQ_Handler_GICv1(void);
+void IRQ_Handler_GICv2(void);
+void IRQ_Handler(void);			// No GIC
 
 void Reset_CPU1_Handler(void);	// startup located function
 void Reset_CPUn_Handler(void);
+
+uint_fast8_t arm_hardware_cpuid(void);
 
 // Set interrupt vector wrappers
 void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint_fast8_t priority, uint_fast8_t targetcpu);
@@ -1001,10 +917,14 @@ void arm_hardware_set_handler_system(uint_fast16_t int_id, void (* handler)(void
 void audioproc_spool_user(void);	// вызывать при выполнении длительных операций
 
 void hardware_set_dotclock(unsigned long dotfreq);
+unsigned long hardware_get_dotclock(unsigned long dotfreq);
 void hardware_nonguiyield(void);
+uint_fast8_t stm32mp1_overdrived(void);	// return 1 if CPU supports 800 MHz clock
 
 uint_fast32_t display_getdotclock(void);
 
+int toshiba_ddr_power_init(void);
+void stpmic1_dump_regulators(void);
 
 #define USBALIGN_BEGIN __attribute__ ((aligned (64)))
 #define USBALIGN_END /* nothing */

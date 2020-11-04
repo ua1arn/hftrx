@@ -192,7 +192,7 @@ static void r7s721_pio_onchangeinterrupt(
 		const IRQn_ID_t int_id = irqbase + bitpos;
 		IRQ_Disable(int_id);
 		GIC_SetConfiguration(int_id, edge ? GIC_CONFIG_EDGE : GIC_CONFIG_LEVEL);
-		arm_hardware_set_handler(int_id, vector, priority, TARGETCPU_EXTIO);
+		arm_hardware_set_handler(int_id, vector, priority, 0x01uL << 0);	// CPU#0 is only one
 	}
 }
 
@@ -607,7 +607,7 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 		const IRQn_ID_t int_id = IRQ0_IRQn + irq;
 		IRQ_Disable(int_id);
 		GIC_SetConfiguration(int_id, GIC_CONFIG_LEVEL);
-		arm_hardware_set_handler(int_id, r7s721_IRQn_IRQHandler, priority, TARGETCPU_EXTIO);
+		arm_hardware_set_handler(int_id, r7s721_IRQn_IRQHandler, priority, 0x01uL << 0);	// CPU#0 is only one
 	}
 }
 
@@ -670,7 +670,7 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 		RCC->APB2ENR |= RCC_APB2ENR_AFIOEN;     //включить тактирование альтернативных функций
 		__DSB();
 
-		const uint_fast8_t targetcpu = TARGETCPU_EXTIO;
+		const uint_fast8_t targetcpu = tgcpu;
 	#if 1
 		{
 			const portholder_t bitpos0 = power4((ipins >> 0) & 0x0f);
@@ -4160,6 +4160,122 @@ arm_hardware_pioh_opendrain(unsigned long opins, unsigned long initialstate)
 }
 #endif /* defined (GPIOH) */
 
+
+#if defined (GPIOZ)
+
+
+/* Установка режима - вывод, с ограничением скорости (на STM32) 10 МГц	*/
+void
+arm_hardware_pioz_outputs(unsigned long opins, unsigned long initialstate)
+{
+#if CPUSTYLE_STM32F1XX && defined (RCC_APB2ENR_IOPKEN)
+
+	RCC->APB2ENR |= RCC_APB2ENR_IOPZEN;	/* I/O port Z clock enable */
+	__DSB();
+	// Установка начального состояния GPIOZ
+	arm_stm32f4xx_hardware_pio_setstate(GPIOK, opins, initialstate);
+	// Установка режима выводов
+	arm_stm32f10x_hardware_pio_prog(GPIOZ, opins, 0, 1);	/* Установить CNF=0 и MODE=1 для указанных битов */
+
+#elif (CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX)
+
+	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOZEN;	/* I/O port Z clock enable */
+	(void) RCC->AHB1ENR;
+	// Установка начального состояния битов
+	arm_stm32f4xx_hardware_pio_setstate(GPIOZ, opins, initialstate);
+	// Установка режима выводов
+	stm32f30x_pioX_prog(GPIOZ, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
+
+#elif (CPUSTYLE_STM32H7XX)
+
+	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOZEN;	/* I/O port Z clock enable */
+	__DSB();
+	// Установка начального состояния битов
+	arm_stm32f4xx_hardware_pio_setstate(GPIOZ, opins, initialstate);
+	// Установка режима выводов
+	stm32f30x_pioX_prog(GPIOZ, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
+
+#elif (CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX) && defined (RCC_AHBENR_GPIOKEN)
+
+	RCC->AHBENR |= RCC_AHBENR_GPIOZEN;	/* I/O port Z clock enable */
+	__DSB();
+	// Установка начального состояния битов
+	//GPIOG->BSRR = (GPIO_BSRR_BS_0 * (initialstate & opins)) | (GPIO_BSRR_BR_0 * (~ initialstate & opins));
+	arm_stm32f4xx_hardware_pio_setstate(GPIOZ, opins, initialstate);
+	// Установка режима выводов
+	stm32f30x_pioX_prog(GPIOZ, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
+
+#elif CPUSTYLE_STM32MP1
+
+	RCC->MP_AHB5ENSETR = RCC_MC_AHB5ENSETR_GPIOZEN;	/* I/O port Z clock enable */
+	(void) RCC->MP_AHB5ENSETR;
+	// Установка начального состояния битов
+	arm_stm32f4xx_hardware_pio_setstate(GPIOZ, opins, initialstate);
+	// Установка режима выводов
+	stm32mp1_pioX_prog(GPIOZ, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
+
+#else
+	#error Undefined CPUSTYLE_XXX
+
+#endif
+}
+
+
+void
+arm_hardware_pioz_opendrain(unsigned long opins, unsigned long initialstate)
+{
+#if CPUSTYLE_STM32F1XX && defined (RCC_APB2ENR_IOPHEN)
+
+	RCC->APB2ENR |= RCC_APB2ENR_IOPZEN;	/* I/O port Z clock enable */
+	__DSB();
+	// Установка начального состояния битов
+	arm_stm32f4xx_hardware_pio_setstate(GPIOZ, opins, initialstate);
+	// Установка режима выводов
+	arm_stm32f10x_hardware_pio_prog(GPIOZ, opins, 1, 2);	/* CNF=2, MODE=2: Open drain, Max. output speed 2 MHz */
+
+#elif (CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX)
+
+	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOZEN;	/* I/O port Z clock enable */
+	(void) RCC->AHB1ENR;
+	// Установка начального состояния битов
+	arm_stm32f4xx_hardware_pio_setstate(GPIOZ, opins, initialstate);
+	// Установка режима выводов
+	stm32f30x_pioX_prog(GPIOZ, opins, STM32F_GPIO_MODE_GPIO, 0, 0, 1);	/* mode, speed, pupdr, typer */
+
+#elif (CPUSTYLE_STM32H7XX)
+
+	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOZEN;	/* I/O port Z clock enable */
+	__DSB();
+	// Установка начального состояния битов
+	arm_stm32f4xx_hardware_pio_setstate(GPIOZ, opins, initialstate);
+	// Установка режима выводов
+	stm32f30x_pioX_prog(GPIOZ, opins, STM32F_GPIO_MODE_GPIO, 0, 0, 1);	/* mode, speed, pupdr, typer */
+
+#elif (CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX) && defined (RCC_AHBENR_GPIOHEN)
+
+	RCC->AHBENR |= RCC_AHBENR_GPIOZEN;	/* I/O port Z clock enable */
+	__DSB();
+	// Установка начального состояния битов
+	arm_stm32f4xx_hardware_pio_setstate(GPIOZ, opins, initialstate);
+	// Установка режима выводов
+	stm32f30x_pioX_prog(GPIOZ, opins, STM32F_GPIO_MODE_GPIO, 0, 0, 1);	/* mode, speed, pupdr, typer */
+
+#elif CPUSTYLE_STM32MP1
+
+	RCC->MP_AHB5ENSETR = RCC_MC_AHB5ENSETR_GPIOZEN;	/* I/O port Z clock enable */
+	(void) RCC->MP_AHB5ENSETR;
+	// Установка начального состояния битов
+	arm_stm32f4xx_hardware_pio_setstate(GPIOZ, opins, initialstate);
+	// Установка режима выводов
+	stm32mp1_pioX_prog(GPIOZ, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_2M, 0, 1);	/* mode, speed, pupdr, typer */
+
+#else
+	#error Undefined CPUSTYLE_XXX
+
+#endif
+}
+#endif /* defined (GPIOZ) */
+
 // выводы присоединены к periph A (Atmel specific)
 void arm_hardware_pioa_peripha(unsigned long pins)
 {
@@ -7197,7 +7313,7 @@ arm_hardware_piok_updownoff(unsigned long ipins)
 // эти функции не меняют программирование выводов (на ввод или на вывод),
 // только подключают прерывания. Требуется иногда прерывания по переходу выводов присоединённых к периферии.
 void 
-arm_hardware_pioa_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority)
+arm_hardware_pioa_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority, uint32_t tgcpu)
 {
 #if CPUSTYLE_AT91SAM7S
 
@@ -7220,19 +7336,19 @@ arm_hardware_pioa_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 	(void) PIOA->PIO_ISR; // consume interrupt request
 	PIOA->PIO_IER = (ipins);	// interrupt on change pin enable
 
-	arm_hardware_set_handler(PIOA_IRQn, PIOA_IRQHandler, priority, TARGETCPU_EXTIO);
+	arm_hardware_set_handler(PIOA_IRQn, PIOA_IRQHandler, priority, tgcpu);
 
 #elif CPUSTYLE_STM32F1XX
 
-	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PA, priority, TARGETCPU_EXTIO);	// PORT A
+	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PA, priority, tgcpu);	// PORT A
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 
-	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PA, priority, TARGETCPU_EXTIO);	// PORT A
+	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PA, priority, tgcpu);	// PORT A
 
 #elif CPUSTYLE_STM32MP1
 
-	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PA, priority, TARGETCPU_EXTIO);	// PORT A
+	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PA, priority, tgcpu);	// PORT A
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -7243,7 +7359,7 @@ arm_hardware_pioa_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 // эти функции не меняют программирование выводов (на ввод или на вывод),
 // только подключают прерывания. Требуется иногда прерывания по переходу выводов присоединённых к периферии.
 void 
-arm_hardware_piob_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority)
+arm_hardware_piob_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority, uint32_t tgcpu)
 {
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
@@ -7251,19 +7367,19 @@ arm_hardware_piob_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 	(void) PIOB->PIO_ISR; // consume interrupt request
 	PIOB->PIO_IER = (ipins);	// interrupt on change pin enable
 
-	arm_hardware_set_handler(PIOB_IRQn, PIOB_IRQHandler, priority, TARGETCPU_EXTIO);
+	arm_hardware_set_handler(PIOB_IRQn, PIOB_IRQHandler, priority, tgcpu);
 
 #elif CPUSTYLE_STM32F1XX
 
-	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PB, priority, TARGETCPU_EXTIO);	// PORT B
+	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PB, priority, tgcpu);	// PORT B
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 
-	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PB, priority, TARGETCPU_EXTIO);	// PORT B
+	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PB, priority, tgcpu);	// PORT B
 
 #elif CPUSTYLE_STM32MP1
 
-	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PB, priority, TARGETCPU_EXTIO);	// PORT B
+	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PB, priority, tgcpu);	// PORT B
 
 #elif CPUSTYLE_AT91SAM7S
 
@@ -7279,7 +7395,7 @@ arm_hardware_piob_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 // эти функции не меняют программирование выводов (на ввод или на вывод),
 // только подключают прерывания. Требуется иногда прерывания по переходу выводов присоединённых к периферии.
 void 
-arm_hardware_pioc_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority)
+arm_hardware_pioc_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority, uint32_t tgcpu)
 {
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
@@ -7287,19 +7403,19 @@ arm_hardware_pioc_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 	(void) PIOC->PIO_ISR; // consume interrupt request
 	PIOC->PIO_IER = (ipins);	// interrupt on change pin enable
 
-	arm_hardware_set_handler(PIOC_IRQn, PIOC_IRQHandler, priority, TARGETCPU_EXTIO);
+	arm_hardware_set_handler(PIOC_IRQn, PIOC_IRQHandler, priority, tgcpu);
 
 #elif CPUSTYLE_STM32F1XX
 
-	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PC, priority, TARGETCPU_EXTIO);	// PORT C
+	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PC, priority, tgcpu);	// PORT C
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 
-	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PC, priority, TARGETCPU_EXTIO);	// PORT C
+	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PC, priority, tgcpu);	// PORT C
 
 #elif CPUSTYLE_STM32MP1
 
-	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PC, priority, TARGETCPU_EXTIO);	// PORT C
+	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PC, priority, tgcpu);	// PORT C
 
 #elif CPUSTYLE_AT91SAM7S
 
@@ -7315,7 +7431,7 @@ arm_hardware_pioc_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 // эти функции не меняют программирование выводов (на ввод или на вывод),
 // только подключают прерывания. Требуется иногда прерывания по переходу выводов присоединённых к периферии.
 void 
-arm_hardware_piod_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority)
+arm_hardware_piod_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority, uint32_t tgcpu)
 {
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
@@ -7323,19 +7439,19 @@ arm_hardware_piod_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 	(void) PIOD->PIO_ISR; // consume interrupt request
 	PIOD->PIO_IER = (ipins);	// interrupt on change pin enable
 
-	arm_hardware_set_handler(PIOD_IRQn, PIOD_IRQHandler, priority, TARGETCPU_EXTIO);
+	arm_hardware_set_handler(PIOD_IRQn, PIOD_IRQHandler, priority, tgcpu);
 
 #elif CPUSTYLE_STM32F1XX
 
-	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PD, priority, TARGETCPU_EXTIO);	// PORT D
+	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PD, priority, tgcpu);	// PORT D
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 
-	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PD, priority, TARGETCPU_EXTIO);	// PORT D
+	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PD, priority, tgcpu);	// PORT D
 
 #elif CPUSTYLE_STM32MP1
 
-	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PD, priority, TARGETCPU_EXTIO);	// PORTD
+	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PD, priority, tgcpu);	// PORTD
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -7349,7 +7465,7 @@ arm_hardware_piod_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 // эти функции не меняют программирование выводов (на ввод или на вывод),
 // только подключают прерывания. Требуется иногда прерывания по переходу выводов присоединённых к периферии.
 void 
-arm_hardware_pioe_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority)
+arm_hardware_pioe_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority, uint32_t tgcpu)
 {
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
@@ -7357,19 +7473,19 @@ arm_hardware_pioe_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 	(void) PIOE->PIO_ISR; // consume interrupt request
 	PIOE->PIO_IER = (ipins);	// interrupt on change pin enable
 
-	arm_hardware_set_handler(PIOE_IRQn, PIOE_IRQHandler, priority, TARGETCPU_EXTIO);
+	arm_hardware_set_handler(PIOE_IRQn, PIOE_IRQHandler, priority, tgcpu);
 
 #elif CPUSTYLE_STM32F1XX
 
-	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PE, priority, TARGETCPU_EXTIO);	// PORT E
+	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PE, priority, tgcpu);	// PORT E
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 
-	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PE, priority, TARGETCPU_EXTIO);	// PORT E
+	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PE, priority, tgcpu);	// PORT E
 
 #elif CPUSTYLE_STM32MP1
 
-	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PE, priority, TARGETCPU_EXTIO);	// PORT E
+	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PE, priority, tgcpu);	// PORT E
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -7383,7 +7499,7 @@ arm_hardware_pioe_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 // эти функции не меняют программирование выводов (на ввод или на вывод),
 // только подключают прерывания. Требуется иногда прерывания по переходу выводов присоединённых к периферии.
 void 
-arm_hardware_piof_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority)
+arm_hardware_piof_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority, uint32_t tgcpu)
 {
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
@@ -7391,19 +7507,19 @@ arm_hardware_piof_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 	(void) PIOF->PIO_ISR; // consume interrupt request
 	PIOF->PIO_IER = (ipins);	// interrupt on change pin enable
 
-	arm_hardware_set_handler(PIOF_IRQn, PIOF_IRQHandler, priority, TARGETCPU_EXTIO);
+	arm_hardware_set_handler(PIOF_IRQn, PIOF_IRQHandler, priority, tgcpu);
 
 #elif CPUSTYLE_STM32F1XX
 
-	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PF, priority, TARGETCPU_EXTIO);	// PORT F
+	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PF, priority, tgcpu);	// PORT F
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 
-	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PF, priority, TARGETCPU_EXTIO);	// PORT F
+	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PF, priority, tgcpu);	// PORT F
 
 #elif CPUSTYLE_STM32MP1
 
-	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PF, priority, TARGETCPU_EXTIO);	// PORT F
+	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PF, priority, tgcpu);	// PORT F
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -7416,7 +7532,7 @@ arm_hardware_piof_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 // эти функции не меняют программирование выводов (на ввод или на вывод),
 // только подключают прерывания. Требуется иногда прерывания по переходу выводов присоединённых к периферии.
 void 
-arm_hardware_piog_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority)
+arm_hardware_piog_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority, uint32_t tgcpu)
 {
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
@@ -7424,19 +7540,19 @@ arm_hardware_piog_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 	(void) PIOG->PIO_ISR; // consume interrupt request
 	PIOG->PIO_IER = (ipins);	// interrupt on change pin enable
 
-	arm_hardware_set_handler(PIOG_IRQn, PIOG_IRQHandler, priority, TARGETCPU_EXTIO);
+	arm_hardware_set_handler(PIOG_IRQn, PIOG_IRQHandler, priority, tgcpu);
 
 #elif CPUSTYLE_STM32F1XX
 
-	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PG, priority, TARGETCPU_EXTIO);	// PORT G
+	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PG, priority, tgcpu);	// PORT G
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 
-	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PG, priority, TARGETCPU_EXTIO);	// PORT G
+	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PG, priority, tgcpu);	// PORT G
 
 #elif CPUSTYLE_STM32MP1
 
-	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PG, priority, TARGETCPU_EXTIO);	// PORT G
+	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PG, priority, tgcpu);	// PORT G
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -7450,19 +7566,19 @@ arm_hardware_piog_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 // эти функции не меняют программирование выводов (на ввод или на вывод),
 // только подключают прерывания. Требуется иногда прерывания по переходу выводов присоединённых к периферии.
 void 
-arm_hardware_pioh_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority)
+arm_hardware_pioh_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority, uint32_t tgcpu)
 {
 #if CPUSTYLE_STM32F1XX
 
-	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PH, priority, TARGETCPU_EXTIO);	// PORT H
+	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PH, priority, tgcpu);	// PORT H
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 
-	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PH, priority, TARGETCPU_EXTIO);	// PORT H
+	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PH, priority, tgcpu);	// PORT H
 
 #elif CPUSTYLE_STM32MP1
 
-	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PH, priority, TARGETCPU_EXTIO);	// PORT H
+	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PH, priority, tgcpu);	// PORT H
 
 #else
 	#error Undefined CPUSTYLE_XXX

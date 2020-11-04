@@ -75,7 +75,9 @@ SRCDIR = ../../src
 PROJECT = tc1_stm32f746zg
 
 # Define linker script file here
-LDSCRIPT_ROM = ./STM32F746ZG_rom.ld
+#LDSCRIPT_ROM = ./STM32F746ZG_rom.ld
+LDSCRIPT_ROM = ./STM32F746ZG_rom_sdram.ld
+
 LDSCRIPT_RAM = ./STM32F746ZG_ram.ld
 
 # List all user C define here, like -D_DEBUG=1

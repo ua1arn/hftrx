@@ -132,7 +132,7 @@ SECTIONS
 	
 	__etext = .;
 
-	.data : AT (__etext)
+	.data :
 	{
 		__data_start__ = .;
 		*(vtable*)
@@ -167,13 +167,13 @@ SECTIONS
 		/* All data end */
 		__data_end__ = .;
 
-	} > DTCMRAM
+	} > DTCMRAM AT > FLASH
 
 	. = __etext + __data_end__ - __data_start__;
 
 	__etext2 = .;
 
-	.itcm : AT (__etext2)
+	.itcm :
 	{
 		__data2_start__ = .;
 		*(.itcm*)
@@ -185,20 +185,20 @@ SECTIONS
 
 		. = ALIGN(4);
 		__data2_end__ = .;
-	} > ITCMRAM
+	} > ITCMRAM AT > FLASH
 
 	. = __etext2 + __data2_end__ - __data2_start__;
 
 	__etext3 = .;
 
-	.ram_d1 : AT (__etext3)
+	.ram_d1 :
 	{
 		__data3_start__ = .;
 		*(.ram_d1)
 		*(.ram_d1.*)
 		. = ALIGN(4);
 		__data3_end__ = .;
-	} > RAM_D1
+	} > RAM_D1 AT > FLASH
 
 	. = __etext3 + __data3_end__ - __data3_start__;
 
@@ -234,7 +234,7 @@ SECTIONS
 	.stack_dummy (COPY):
 	{
 		KEEP(*(.stack*))
-	} > RAM_D1
+	} > RAM_D3
 
 	/* Set stack top to end of RAM, and stack limit move down by
 	 * size of stack_dummy section */

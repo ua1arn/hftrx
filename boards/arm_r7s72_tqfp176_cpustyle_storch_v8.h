@@ -67,7 +67,7 @@
 	//#define WITHCPUDACHW	1	/* использование DAC - в renesas R7S72 нету */
 	#define WITHCPUADCHW 	1	/* использование ADC */
 
-	#define WITHI2SHW	1	/* Использование SSIF0 I2S 2*16 bit - аудио кодек */
+	#define WITHI2SHW	1	/* Использование SSIF0 I2S 2*32 (2*16) bit - аудио кодек */
 	#define WITHSAI1HW	1	/* Использование SSIF1 I2S 8*32 bit - FPGA IF codec */
 	#if WITHRTS192
 		#define WITHSAI2HW	1	/* Использование SSIF2 I2S 2*32 (2*32) bit - FPGA панорама	*/
@@ -354,14 +354,14 @@
 #endif /* (WITHNMEA && WITHNMEA_USART1) */
 
 #if WITHUART1HW
-	#define HARDWARE_USART1_INITIALIZE() do { \
+	#define HARDWARE_UART1_INITIALIZE() do { \
 			arm_hardware_pio6_alternative(1U << 14, R7S721_PIOALT_5);	/* P6_14: RXD0: RX DATA line */ \
 			arm_hardware_pio6_alternative(1U << 15, R7S721_PIOALT_5);	/* P6_15: TXD0: TX DATA line */ \
 		} while (0)
 #endif /* WITHUART1HW */
 
 #if WITHUART2HW
-	#define HARDWARE_USART2_INITIALIZE() do { \
+	#define HARDWARE_UART2_INITIALIZE() do { \
 			arm_hardware_pio7_alternative(1U << 10, R7S721_PIOALT_5);	/* P7_10: RXD3: RX DATA line */ \
 			arm_hardware_pio7_alternative(1U << 11, R7S721_PIOALT_5);	/* P7_11: TXD3: TX DATA line */ \
 		} while (0)
@@ -664,16 +664,17 @@
 		#define WITHLCDBACKLIGHT	1	// Имеется управление яркостью дисплея
 		#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываемый на дисплее)
 		#define WITHLCDBACKLIGHTMAX	3	// Верхний предел регулировки (показываемый на дисплее)
-		#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
+		//#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
 	#elif LCDMODE_AT070TN90 || LCDMODE_AT070TNA2
 		#define WITHLCDBACKLIGHTOFF	1	// Имеется управление включением/выключением подсветки дисплея
 		#define WITHLCDBACKLIGHT	1	// Имеется управление яркостью дисплея
 		#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываемый на дисплее)
 		#define WITHLCDBACKLIGHTMAX	2	// Верхний предел регулировки (показываемый на дисплее)
-		#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
+		//#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
 	#else
 		/* Заглушка для работы без дисплея */
 		#define WITHLCDBACKLIGHTMIN	0
+		#define WITHLCDBACKLIGHTMAX	2	// Верхний предел регулировки (показываемый на дисплее)
 	#endif
 
 	#define	HARDWARE_BL_INITIALIZE() do { \

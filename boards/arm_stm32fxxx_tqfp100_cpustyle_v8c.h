@@ -182,7 +182,7 @@
 		do { \
 			arm_hardware_pioe_inputs(ENCODER_BITS); \
 			arm_hardware_pioe_updown(ENCODER_BITS, 0); \
-			arm_hardware_pioe_onchangeinterrupt(ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ARM_OVERREALTIME_PRIORITY); \
+			arm_hardware_pioe_onchangeinterrupt(ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
 			arm_hardware_pioe_inputs(ENCODER2_BITS); \
 			arm_hardware_pioe_updown(ENCODER2_BITS, 0); \
 			arm_hardware_pioe_onchangeinterrupt(0 * ENCODER2_BITS, ENCODER2_BITS, ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY); \
@@ -293,7 +293,7 @@
 		} while (0)
 #endif
 
-#define HARDWARE_USART2_INITIALIZE() do { \
+#define HARDWARE_UART2_INITIALIZE() do { \
 		arm_hardware_pioa_altfn2((1uL << 2) | (1uL << 3), AF_USART2); /* PA2: TX DATA line (2 MHz), PA3: RX data line */ \
 		arm_hardware_pioa_updown((1uL << 3), 0);	/* PA3: pull-up RX data */ \
 	} while (0)

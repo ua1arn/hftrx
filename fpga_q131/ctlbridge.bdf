@@ -146,6 +146,7 @@ applicable agreement for further details.
 		(line (pt 82 8)(pt 78 12))
 		(line (pt 78 12)(pt 82 8))
 	)
+	(annotation_block (location)(rect 912 440 968 456))
 )
 (pin
 	(output)
@@ -178,6 +179,7 @@ applicable agreement for further details.
 		(line (pt 82 8)(pt 78 12))
 		(line (pt 78 12)(pt 82 8))
 	)
+	(annotation_block (location)(rect 912 376 960 392))
 )
 (pin
 	(output)
@@ -344,6 +346,22 @@ applicable agreement for further details.
 	(rect 736 968 912 984)
 	(text "OUTPUT" (rect 1 0 39 10)(font "Arial" (font_size 6)))
 	(text "adcoffset[15..0]" (rect 90 0 170 12)(font "Arial" ))
+	(pt 0 8)
+	(drawing
+		(line (pt 0 8)(pt 52 8))
+		(line (pt 52 4)(pt 78 4))
+		(line (pt 52 12)(pt 78 12))
+		(line (pt 52 12)(pt 52 4))
+		(line (pt 78 4)(pt 82 8))
+		(line (pt 82 8)(pt 78 12))
+		(line (pt 78 12)(pt 82 8))
+	)
+)
+(pin
+	(output)
+	(rect 736 1048 912 1064)
+	(text "OUTPUT" (rect 1 0 39 10)(font "Arial" (font_size 6)))
+	(text "tx_loopback" (rect 90 0 149 12)(font "Arial" ))
 	(pt 0 8)
 	(drawing
 		(line (pt 0 8)(pt 52 8))
@@ -852,6 +870,30 @@ applicable agreement for further details.
 		(line (pt 14 25)(pt 32 16))
 	)
 )
+(symbol
+	(rect 496 1040 544 1072)
+	(text "WIRE" (rect 1 0 24 10)(font "Arial" (font_size 6)))
+	(text "inst99" (rect 3 21 32 33)(font "Arial" ))
+	(port
+		(pt 0 16)
+		(input)
+		(text "IN" (rect 2 7 13 19)(font "Courier New" (bold))(invisible))
+		(text "IN" (rect 2 7 13 19)(font "Courier New" (bold))(invisible))
+		(line (pt 0 16)(pt 14 16))
+	)
+	(port
+		(pt 48 16)
+		(output)
+		(text "OUT" (rect 32 7 49 19)(font "Courier New" (bold))(invisible))
+		(text "OUT" (rect 32 7 49 19)(font "Courier New" (bold))(invisible))
+		(line (pt 32 16)(pt 48 16))
+	)
+	(drawing
+		(line (pt 14 7)(pt 32 16))
+		(line (pt 14 25)(pt 14 7))
+		(line (pt 14 25)(pt 32 16))
+	)
+)
 (connector
 	(text "SPIDATA[31..0]" (rect 232 240 309 252)(font "Arial" ))
 	(pt 240 256)
@@ -1155,7 +1197,21 @@ applicable agreement for further details.
 	(bus)
 )
 (connector
+	(pt 544 1056)
+	(pt 736 1056)
+)
+(connector
+	(text "SPIDATA[25]" (rect 410 1040 474 1052)(font "Arial" ))
+	(pt 360 1056)
+	(pt 496 1056)
+)
+(connector
 	(pt 360 896)
+	(pt 360 1056)
+	(bus)
+)
+(connector
+	(pt 360 1056)
 	(pt 360 1112)
 	(bus)
 )
@@ -1178,3 +1234,4 @@ applicable agreement for further details.
 (junction (pt 608 560))
 (junction (pt 608 496))
 (junction (pt 360 896))
+(junction (pt 360 1056))

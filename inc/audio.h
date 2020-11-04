@@ -364,6 +364,26 @@ extern "C" {
 
 	#endif
 
+enum
+{
+	BOARD_WTYPE_BLACKMAN_HARRIS,
+	BOARD_WTYPE_BLACKMAN_HARRIS_MOD,
+	BOARD_WTYPE_BLACKMAN_HARRIS_3TERM,
+	BOARD_WTYPE_BLACKMAN_HARRIS_3TERM_MOD,
+	BOARD_WTYPE_BLACKMAN_HARRIS_7TERM,
+	BOARD_WTYPE_BLACKMAN_NUTTALL,
+	BOARD_WTYPE_HAMMING,
+	BOARD_WTYPE_HANN,
+	BOARD_WTYPE_RECTANGULAR,
+	//
+	BOARD_WTYPE_count
+};
+
+#define BOARD_WTYPE_FILTERS BOARD_WTYPE_BLACKMAN_HARRIS_MOD
+#define BOARD_WTYPE_SPECTRUM BOARD_WTYPE_BLACKMAN_HARRIS_3TERM //BOARD_WTYPE_HAMMING
+
+FLOAT_t fir_design_window(int iCnt, int iCoefNum, int wtype); // Calculate window function (blackman-harris, hamming, rectangular)
+
 
 /* from "C Language Algorithms for Digital Signal Processing"
    by Paul M. Embree and Bruce Kimble, Prentice Hall, 1991 */
@@ -519,7 +539,7 @@ uintptr_t getfilled_dmabuffer16phones(void);
 
 void dsp_extbuffer32rx(const int32_t * buff);	// RX
 void dsp_extbuffer32wfm(const int32_t * buff);	// RX
-void dsp_addsidetone(aubufv_t * buff);			// перед передачей по DMA в аудиокодек
+void dsp_addsidetone(aubufv_t * buff, int usebuf);			// перед передачей по DMA в аудиокодек
 
 void processing_dmabuffer16rx(uintptr_t addr);	// обработать буфер после оцифровки AF ADC
 void processing_dmabuffer16rxuac(uintptr_t addr);	// обработать буфер после приёма пакета с USB AUDIO
@@ -561,12 +581,10 @@ void savemodemtxbuffer(uint8_t * dest, unsigned size_t);	// Готов буфе�
 void releasemodembuffer(uint8_t * dest);
 void releasemodembuffer_low(uint8_t * dest);
 
-void savesampleout16stereo_user(FLOAT_t ch0, FLOAT_t ch1);
-void savesampleout16stereo(FLOAT_t ch0, FLOAT_t ch1);
 void savemoni16stereo(FLOAT_t ch0, FLOAT_t ch1);
 void savesampleout32stereo(int_fast32_t ch0, int_fast32_t ch1);
-void savesampleout96stereo(int_fast32_t ch0, int_fast32_t ch1);
-void savesampleout192stereo(int_fast32_t ch0, int_fast32_t ch1);
+void savesampleout96stereo(void * ctx, int_fast32_t ch0, int_fast32_t ch1);
+void savesampleout192stereo(void * ctx, int_fast32_t ch0, int_fast32_t ch1);
 
 #if WITHINTEGRATEDDSP
 	#include "src/speex/arch.h"
@@ -581,7 +599,6 @@ void savesampleout192stereo(int_fast32_t ch0, int_fast32_t ch1);
 	#endif /* WITHNOSPEEX */
 	uint_fast8_t takespeexready_user(speexel_t * * dest);
 	void releasespeexbuffer_user(speexel_t * t);
-	void savesampleout16tospeex(speexel_t ch0, speexel_t ch1);
 #endif /* WITHINTEGRATEDDSP */
 
 
@@ -657,23 +674,11 @@ void board_set_uacmike(uint_fast8_t v);	/* на вход трансивера б
 void dsp_initialize(void);
 
 #if WITHINTEGRATEDDSP
-	// Копрование информации о спектре в текущую строку буфера
-	// преобразование к пикселям растра
-	uint_fast8_t dsp_getspectrumrow(
-		FLOAT_t * const hbase,
-		uint_fast16_t dx,	// pixel X width (pixels) of display window
-		uint_fast8_t zoompow2	// horisontal magnification power of two
-		);
 
 	// Нормирование уровня сигнала к шкале
 	// возвращает значения от 0 до ymax включительно
 	// 0 - минимальный сигнал, ymax - максимальный
 	int dsp_mag2y(FLOAT_t mag, int ymax, int_fast16_t topdb, int_fast16_t bottomdb);
-
-	void saveIQRTSxx(FLOAT_t iv, FLOAT_t qv);	// формирование отображения спектра
-
-	void apply_window_function(float32_t * v, uint_fast16_t size);
-	void fftzoom_x2(float32_t * buffer);
 
 #endif /* WITHINTEGRATEDDSP */
 
@@ -727,7 +732,7 @@ typedef struct codec2if_tag
 
 const codec2if_t * board_getfpgacodecif(void);		// получить интерфейс управления кодеком для получения данных о радиосигнале
 
-/* +++ UAC OUT data save */
+/* +++ UAC OUT data save - использование данных от компьютера. */
 void uacout_buffer_initialize(void);
 void uacout_buffer_start(void);
 void uacout_buffer_stop(void);
@@ -738,6 +743,41 @@ void uacout_buffer_save_realtime(const uint8_t * buff, uint_fast16_t size, uint_
  * Возврат 0, если нет ничего для воспроизведения.
  */
 uint_fast8_t takewavsample(FLOAT32P_t * rv, uint_fast8_t suspend);
+
+typedef struct subscribefloat_tag
+{
+	LIST_ENTRY item;
+	void * ctx;
+	void (* cb)(void * ctx, FLOAT_t ch0, FLOAT_t ch1);
+} subscribefloat_t;
+
+typedef struct subscribefint_tag
+{
+	LIST_ENTRY item;
+	void * ctx;
+	void (* cb)(void * ctx, int_fast32_t ch0, int_fast32_t ch1);
+} subscribeint32_t;
+
+typedef struct deliverylist_tag
+{
+	LIST_ENTRY head;
+	SPINLOCK_t listlock;
+} deliverylist_t;
+
+void deliverylist_initialize(deliverylist_t * list);
+
+void deliveryfloat(deliverylist_t * head, FLOAT_t ch0, FLOAT_t ch1);
+void deliveryint(deliverylist_t * head, int_fast32_t ch0, int_fast32_t ch1);
+
+void subscribefloat_user(deliverylist_t * head, subscribefloat_t * target, void * ctx, void (* pfn)(void * ctx, FLOAT_t ch0, FLOAT_t ch1));
+void subscribeint_user(deliverylist_t * head, subscribeint32_t * target, void * ctx, void (* pfn)(void * ctx, int_fast32_t ch0, int_fast32_t ch1));
+
+void subscribefloat(deliverylist_t * head, subscribefloat_t * target, void * ctx, void (* pfn)(void * ctx, FLOAT_t ch0, FLOAT_t ch1));
+void subscribeint(deliverylist_t * head, subscribeint32_t * target, void * ctx, void (* pfn)(void * ctx, int_fast32_t ch0, int_fast32_t ch1));
+
+extern deliverylist_t rtstargetsint;	// выход обработчика DMA приема от FPGA
+extern deliverylist_t afoutfloat_user;	// выход sppeex и фильтра
+extern deliverylist_t afoutfloat;	// выход приемника
 
 #ifdef __cplusplus
 }

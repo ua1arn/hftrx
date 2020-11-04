@@ -835,7 +835,7 @@ static void spidf_read(uint8_t * buff, uint_fast32_t size)
 {
 	while (size --)
 	{
-		while ((QUADSPI->SR & QUADSPI_SR_FLEVEL_Msk) == 0)
+		while ((QUADSPI->SR & QUADSPI_SR_FTF_Msk) == 0)
 			;
 		* buff ++ = * (volatile uint8_t *) & QUADSPI->DR;
 	}
@@ -846,8 +846,7 @@ static void spidf_write(const uint8_t * buff, uint_fast32_t size)
 {
 	while (size --)
 	{
-		/* 16 means "FIFO full" */
-		while (((QUADSPI->SR & QUADSPI_SR_FLEVEL_Msk) >> QUADSPI_SR_FLEVEL_Pos) == 16)
+		while ((QUADSPI->SR & QUADSPI_SR_FTF_Msk) == 0)
 			;
 		* (volatile uint8_t *) & QUADSPI->DR = * buff ++;
 	}
@@ -859,7 +858,7 @@ static uint_fast8_t spidf_verify(const uint8_t * buff, uint_fast32_t size)
 	uint_fast8_t err = 0;
 	while (size --)
 	{
-		while ((QUADSPI->SR & QUADSPI_SR_FLEVEL_Msk) == 0)
+		while ((QUADSPI->SR & QUADSPI_SR_FTF_Msk) == 0)
 			;
 		err |= * buff ++ != * (volatile uint8_t *) & QUADSPI->DR;
 	}
@@ -909,10 +908,15 @@ static void spidf_iostart(
 
 	//QUADSPI->AR = address;
 	QUADSPI->DLR = size ? (size - 1) : 0;
+	(void) QUADSPI->DLR;
 
 	//PRINTF("QUADSPI->DR=%08x\n", QUADSPI->DR);
 	QUADSPI->FCR = QUADSPI_FCR_CTCF_Msk;	// Clear Transfer Complete Flag
+	(void) QUADSPI->FCR;
 	QUADSPI->FCR = QUADSPI_FCR_CTEF_Msk;	// Clear Transfer Error Flag
+	(void) QUADSPI->FCR;
+
+	ASSERT((QUADSPI->SR & QUADSPI_SR_BUSY_Msk) == 0);
 
 	QUADSPI->CCR =
 		//(0 << QUADSPI_CCR_DDRM_Pos) |	// 0: DDR Mode disabled
@@ -920,7 +924,6 @@ static void spidf_iostart(
 		//(0 << QUADSPI_CCR_FRCM_Pos) |	// 0: Normal mode
 		//(0 << QUADSPI_CCR_SIOO_Pos) |	// 0: Send instruction on every transaction
 		((direction ? 0x00uL : 0x01uL) << QUADSPI_CCR_FMODE_Pos) |	// 01: Indirect read mode, 00: Indirect write mode
-		//(0x00 << QUADSPI_CCR_FMODE_Pos) |	//
 		(size != 0) * (bw << QUADSPI_CCR_DMODE_Pos) |	// 01: Data on a single line
 		((ml * ndummy) << QUADSPI_CCR_DCYC_Pos) |	// This field defines the duration of the dummy phase (1..31).
 		//0 * (bw << QUADSPI_CCR_ABSIZE_Pos) |	// 00: 8-bit alternate byte
@@ -931,11 +934,14 @@ static void spidf_iostart(
 		((uint_fast32_t) cmd << QUADSPI_CCR_INSTRUCTION_Pos) |	// Instruction to be send to the external SPI device.
 		0;
 
+	ASSERT(((QUADSPI->CCR & QUADSPI_CCR_INSTRUCTION_Msk) >> QUADSPI_CCR_INSTRUCTION_Pos) == cmd);
+
 	if ((QUADSPI->CCR & QUADSPI_CCR_ADMODE_Msk) != 0)
 	{
 		// Initiate operation
 		QUADSPI->AR = address & 0x00FFFFFF;	// В indirect режимах адрес должен быть в допустимых для указанного при ините размера памяти
 		//PRINTF("spidf_iostart QUADSPI->AR=%08lX, QUADSPI->SR=%08lX\n", QUADSPI->AR, QUADSPI->SR);
+		(void) QUADSPI->AR;
 	}
 }
 
@@ -952,7 +958,10 @@ void spidf_initialize(void)
 	//PRINTF("QUADSPI->IPIDR=%08x\n", QUADSPI->IPIDR);
 
 	QUADSPI->CR &= ~ QUADSPI_CR_EN_Msk;
+	(void) QUADSPI->CR;
+
 	QUADSPI->CCR = 0;
+	(void) QUADSPI->CCR;
 
 	QUADSPI->DCR = ((QUADSPI->DCR & ~ (QUADSPI_DCR_FSIZE_Msk | QUADSPI_DCR_CSHT_Msk | QUADSPI_DCR_CKMODE_Msk))) |
 		(23 << QUADSPI_DCR_FSIZE_Pos) |	// FSIZE+1 is effectively the number of address bits required to address the Flash memory.
@@ -960,11 +969,16 @@ void spidf_initialize(void)
 		//(0 << QUADSPI_DCR_CKMODE_Pos) |	// 0: CLK must stay low while nCS is high (chip select released). This is referred to as mode 0.
 		(1 << QUADSPI_DCR_CKMODE_Pos) |	// 1: CLK must stay high while nCS is high (chip select released). This is referred to as mode 3.
 		0;
+	(void) QUADSPI->DCR;
 
-	QUADSPI->CR = ((QUADSPI->CR & ~ (QUADSPI_CR_PRESCALER_Msk))) |
-		(0x00 << QUADSPI_CR_PRESCALER_Pos) | // 1: FCLK = Fquadspi_ker_ck/2
+	QUADSPI->CR = ((QUADSPI->CR & ~ (QUADSPI_CR_PRESCALER_Msk | QUADSPI_CR_FTHRES_Msk))) |
+		(0x00uL << QUADSPI_CR_FTHRES_Pos) | // FIFO threshold level - one byte
+		(0x00uL << QUADSPI_CR_PRESCALER_Pos) | // 1: FCLK = Fquadspi_ker_ck/2
 		0;
+	(void) QUADSPI->CR;
+
 	QUADSPI->CR |= QUADSPI_CR_EN_Msk;
+	(void) QUADSPI->CR;
 }
 
 void spidf_uninitialize(void)

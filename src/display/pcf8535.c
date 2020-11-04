@@ -10,8 +10,8 @@
 #include "display.h"
 #include <stdint.h>
 
-#include "./display.h"
-#include "./formats.h"
+#include "display.h"
+#include "formats.h"
 
 #if LCDMODE_PCF8535 || LCDMODE_PCF8531
 
@@ -481,6 +481,11 @@ void
 display_clear(void)
 {
 	pcf8535_clear();
+}
+
+// для framebufer дисплеев - вытолкнуть кэш память
+void display_flush(void)
+{
 }
 
 void

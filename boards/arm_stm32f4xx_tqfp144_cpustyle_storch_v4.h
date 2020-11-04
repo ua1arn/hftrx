@@ -210,7 +210,7 @@
 		do { \
 			arm_hardware_piog_inputs(ENCODER_BITS); \
 			arm_hardware_piog_updown(ENCODER_BITS, 0); \
-			arm_hardware_piog_onchangeinterrupt(ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ARM_OVERREALTIME_PRIORITY); \
+			arm_hardware_piog_onchangeinterrupt(ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
 			arm_hardware_piog_inputs(ENCODER2_BITS); \
 			arm_hardware_piog_updown(ENCODER2_BITS, 0); \
 			arm_hardware_piog_onchangeinterrupt(0 * ENCODER2_BITS, ENCODER2_BITS, ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY); \
@@ -463,11 +463,11 @@
 			arm_hardware_piob_outputs(SPI_MOSI_BIT, SPI_MOSI_BIT);	/* PIO enable for MOSI bit (SD CARD read support)  */ \
 		} while (0)
 
-	#define HARDWARE_USART1_INITIALIZE() do { \
+	#define HARDWARE_UART1_INITIALIZE() do { \
 			arm_hardware_pioa_altfn2((1U << 9) | (1U << 10), AF_USART1); /* PA9: TX DATA line (2 MHz), PA10: RX data line */ \
 			arm_hardware_pioa_updown((1U << 10), 0);	/* PA10: pull-up RX data */ \
 		} while (0)
-	#define HARDWARE_USART2_INITIALIZE() do { \
+	#define HARDWARE_UART2_INITIALIZE() do { \
 			arm_hardware_piod_altfn2((1U << 5) | (1U << 6), AF_USART2); /* PD5: TX DATA line (2 MHz), PD6: RX data line */ \
 			arm_hardware_piod_updown((1U << 6), 0);	/* PD6: pull-up RX data */ \
 		} while (0)

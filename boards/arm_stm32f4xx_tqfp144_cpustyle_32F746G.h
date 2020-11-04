@@ -59,7 +59,7 @@
 //#define WITHMODEM_CDC	1
 //#define WITHCAT_USART2		1
 //#define WITHDEBUG_CDC	1
-#define WITHDEBUG			1
+//#define WITHDEBUG			1
 #define WITHDEBUG_USART1	1
 //#define WITHNMEA_USART1		1	/* порт подключения GPS/GLONASS */
 
@@ -201,7 +201,7 @@
 		do { \
 			arm_hardware_piof_inputs(ENCODER_BITS); \
 			arm_hardware_piof_updown(ENCODER_BITS, 0); \
-			arm_hardware_piof_onchangeinterrupt(ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ARM_OVERREALTIME_PRIORITY); \
+			arm_hardware_piof_onchangeinterrupt(ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
 			arm_hardware_piof_inputs(ENCODER2_BITS); \
 			arm_hardware_piof_updown(ENCODER2_BITS, 0); \
 			arm_hardware_piof_onchangeinterrupt(0 * ENCODER2_BITS, ENCODER2_BITS, ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY); \
@@ -510,13 +510,13 @@
 	} while (0)
 
 /* PA9, PB7 Используется периферийный контроллер последовательного порта #1 */
-#define HARDWARE_USART1_INITIALIZE() do { \
+#define HARDWARE_UART1_INITIALIZE() do { \
 		arm_hardware_pioa_altfn2((1U << 9), AF_USART1); /* PA9: TX DATA line (2 MHz) */ \
 		arm_hardware_piob_altfn2((1U << 7), AF_USART1); /* PB7: RX DATA line (2 MHz) */ \
 		arm_hardware_piob_updown((1U << 7), 0);	/* PB7: pull-up RX data */ \
 	} while (0)
 
-#define HARDWARE_USART2_INITIALIZE() do { \
+#define HARDWARE_UART2_INITIALIZE() do { \
 	} while (0)
 
 #define HARDWARE_SIDETONE_INITIALIZE() do { \

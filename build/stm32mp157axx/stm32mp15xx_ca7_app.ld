@@ -15,11 +15,11 @@
 MEMORY
 {
   FLASH (rx) 	: ORIGIN = 0x70000000, LENGTH = 4M		/* W25Q32FVZPIG */
-  RAM (rwx) 	: ORIGIN = 0xC0000100, LENGTH = 0x07FFFF00 	/* half of DDR3 single chip NT5CC128M16IP-DI */
-  SYSRAM (rwx)	: ORIGIN = 0x2FFC2500, LENGTH = 0x00039B00	/* SYSRAM - 256k - 16k - 9k - 256 B */
-  TTB (rwx)  	: ORIGIN = 0x2FFFC000, LENGTH = 16k		/* last 16 kB SYSRAM for TTB */
-  SRAM (rwx)  	: ORIGIN = 0x20000000, LENGTH = 384k	/* Cortex-M4 memories */
-  SRAM2 (rwx)  	: ORIGIN = 0x30000000, LENGTH = 96k		/* Cortex-M4 memories visible for Cortex-A7*/
+  RAM (rwx) 	: ORIGIN = 0xC0000100, LENGTH = 0x0EFFFF00 	/* DDR3 single chip NT5CC128M16IP-DI 256M - 16M - 256 B*/
+  TTB (rwx)  	: ORIGIN = 0xCF000000, LENGTH = 16M			/* last 16 MB DDR3 RAM for TTB */
+  SYSRAM (rwx)	: ORIGIN = 0x2FFC2500, LENGTH = 0x0003DB00	/* SYSRAM - 256 k - 9 k - 256 B */
+  SRAM (rwx)  	: ORIGIN = 0x20000000, LENGTH = 384k		/* Cortex-M4 memories */
+  SRAM2 (rwx)  	: ORIGIN = 0x30000000, LENGTH = 96k			/* Cortex-M4 memories visible for Cortex-A7*/
 }
 
 /* Library configurations */
@@ -112,12 +112,12 @@ SECTIONS
 		__zero_table_end__ = .;
 	} > RAM
 
-	__etext = .;
+	/* __etext = .; */
 
 	.data : /*AT (__etext)*/
 	{
-		. = ALIGN(64);
 		__data_start__ = .;
+		. = ALIGN(64);
 
 		/* .ctors */
 		*crtbegin.o(.ctors)
@@ -163,6 +163,7 @@ SECTIONS
 
 		KEEP(*(.jcr*))
 		/* All data end */
+		. = ALIGN(64);
 		__data_end__ = .;
 
 	} > RAM
@@ -171,15 +172,16 @@ SECTIONS
 
 	.sysram : AT (__etext2)
 	{
-		. = ALIGN(32);
 		__data2_start__ = .;
+		. = ALIGN(32);
 		KEEP(*(.vectors))
 		__Vectors_End = .;
 		__Vectors_Size = __Vectors_End - __Vectors;
 		. = ALIGN(64);
-		*(.itcm*)
+		KEEP(*(.itcm*))
 		. = ALIGN(64);
-		*(.dtcm*)
+		KEEP(*(.dtcm*))
+		. = ALIGN(32);
 		__data2_end__ = .;
 	} > SYSRAM
 
@@ -188,24 +190,25 @@ SECTIONS
 
 	.bss :
 	{
-		. = ALIGN(32);
 		__bss_start__ = .;
+		. = ALIGN(32);
 		*(.bss*)
 		*(COMMON)
+		. = ALIGN(32);
 		__bss_end__ = .;
 	} > RAM
 
 	.noinit :
 	{
 		. = ALIGN(32);
-		*(.noinit*)
+		KEEP(*(.noinit*))
 		. = ALIGN(32);
 	} > RAM
 
 	.vram :
 	{
 		. = ALIGN(64);
-		*(.framebuff*)
+		KEEP(*(.framebuff*))
 	} > RAM
 
 	.heap (COPY):

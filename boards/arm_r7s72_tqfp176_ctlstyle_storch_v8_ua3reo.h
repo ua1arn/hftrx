@@ -90,7 +90,7 @@
 
 	#define LCDMODE_LQ043T3DX02K 1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 display */
 
-	#define LCDMODE_V2	1	/* только главный экран с тремя видеобуферами, без PIP */
+	#define LCDMODE_V2	1	/* только главный экран с тремя видеобуферами, L8, без PIP */
 
 	//#define WITHFLATLINK 1	/* Работа с TFT панелью через SN75LVDS83B	*/
 
@@ -99,7 +99,7 @@
 	#define LCDMODE_AT070TN90 1	/* AT070TN90 panel (800*480) - 7" display */
 
 
-	#define LCDMODE_V2	1	/* только главный экран с тремя видеобуферами, без PIP */
+	#define LCDMODE_V2	1	/* только главный экран с тремя видеобуферами, L8, без PIP */
 
 	//#define WITHFLATLINK 1	/* Работа с TFT панелью через SN75LVDS83B	*/
 	//#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
@@ -108,7 +108,7 @@
 
 	#define LCDMODE_AT070TNA2 1	/* AT070TNA2 panel (1024*600) - 7" display */
 
-	#define LCDMODE_V2	1	/* только главный экран с тремя видеобуферами, без PIP */
+	#define LCDMODE_V2	1	/* только главный экран с тремя видеобуферами, L8, без PIP */
 
 	#define WITHFLATLINK 1	/* Работа с TFT панелью через SN75LVDS83B	*/
 
@@ -180,28 +180,28 @@
 #if WITHISBOOTLOADER
 
 
-	#define CTLREGMODE_STORCH_V7	1	/* TFT 4.3" "Аист" с DSP и FPGA STM32H743IIT6 или R7S721020VCFP */
 	//#define CTLREGMODE_NOCTLREG 1
 	/* коды входов коммутатора источников сигнала для УНЧ приёмника */
 	#define BOARD_DETECTOR_SSB 	0		// Заглушка
 
 	#define BOARD_DETECTOR_FM	0
-	#define BOARD_DETECTOR_AM	0
-	#define BOARD_DETECTOR_MUTE	0
-	#define BOARD_DETECTOR_TUNE	0
+	#define BOARD_DETECTOR_AM	1
+	#define BOARD_DETECTOR_MUTE	2
+	#define BOARD_DETECTOR_TUNE	3
 
 	// +++ заглушки для плат с DSP обработкой
 	#define	BOARD_AGCCODE_ON	0
-	#define	BOARD_AGCCODE_OFF	0
+	#define	BOARD_AGCCODE_OFF	1
 
 	// +++ заглушки для плат с DSP обработкой
 	#define BOARD_NOTCH_OFF		0
-	#define BOARD_NOTCH_MANUAL	0
-	#define BOARD_NOTCH_AUTO	0
+	#define BOARD_NOTCH_MANUAL	1
+	#define BOARD_NOTCH_AUTO	2
+	//#define WITHLMSAUTONOTCH	1	/* Использование AUTONOTCH	*/
 
 	/* коды фильтров второй ПЧ, выдаваемые на дешифраторы */
 	#define BOARD_FILTER_0P5		0	/* 0.5 or 0.3 kHz filter */
-	#define BOARD_FILTER_3P1		0	/* 3.1 or 2.75 kHz filter */
+	#define BOARD_FILTER_3P1		1	/* 3.1 or 2.75 kHz filter */
 	//#define BOARD_FILTER_6P0		0	/* 6.0 kHz filter */
 	//#define BOARD_FILTER_8P0		0	/* 6.0 kHz filter */
 	// --- заглушки для плат с DSP обработкой
@@ -246,6 +246,19 @@
 
 	//#define WITHRTS192	1		// Есть канал спектроанализатора - не забыть включить WITHSAI2HW
 	#define WITHRTS96		1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
+	#define WITHFFTOVERLAPPOW2	1	/* Количество перекрывающися буферов FFT спектра (2^param). */
+	#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */
+	#define WITHFFTSIZEAF 	512		/* Отображение спектра НЧ сигнвлв */
+	#if LCDMODE_AT070TNA2 || LCDMODE_AT070TN90
+		#if 0
+			#define WITHTOUCHGUI		1
+			#define WITHAFSPECTRE		1	/* показ спктра прослушиваемого НЧ сигнала. */
+			#define WITHALPHA			64
+			#define FORMATFROMLIBRARY 	1
+			#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
+		#endif
+		#define WITHAFSPECTRE		1	/* показ спктра прослушиваемого НЧ сигнала. */
+	#endif /* LCDMODE_AT070TNA2 || LCDMODE_AT070TN90 */
 
 	#define ENCRES_DEFAULT ENCRES_600
 	#define ENCDIV_DEFAULT	4
@@ -275,7 +288,6 @@
 	//#define WITHIFSHIFTOFFSET	(-250)	/* Начальное занчение IF SHIFT */
 	//#define WITHPBT		1	/* используется PBT (если LO3 есть) */
 	#define WITHCAT			1	/* используется CAT (через USB CDC) */
-	//#define WITHDEBUG		1	/* Отладочная печать через COM-порт. */
 	//#define WITHNMEA		1	/* используется NMEA parser */
 	//#define WITHMODEM		1	/* Устройство работает как радиомодем с последовательным интерфейсом */
 	//#define WITHFREEDV	1	/* поддержка режима FreeDV - http://freedv.org/ */

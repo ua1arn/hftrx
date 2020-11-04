@@ -15,10 +15,9 @@
 #include "display.h"
 #include "formats.h"
 #include "spi.h"	// hardware_spi_master_send_frame
-#include <string.h>
-
-
+#include "display2.h"
 #include "fontmaps.h"
+#include <string.h>
 
 /*
 	Dead time value in the AXI clock cycle inserted between two consecutive accesses on
@@ -82,11 +81,18 @@ mdma_getbus(uintptr_t addr)
 #if CPUSTYLE_STM32H7XX
 	addr &= 0xFF000000uL;
 	return (addr == 0x00000000uL || addr == 0x20000000uL);
+
 #elif CPUSTYLE_STM32MP1 && CORE_CA7
 	// SYSMEM
 	// DDRCTRL
-	return 0;
-#elif CPUSTYLE_STM32MP1 && ! CORE_CA7
+	/*
+	 * 0: The system/AXI bus is used on channel x.
+	 * 1: The AHB bus/TCM is used on channel x.
+	 */
+	addr &= 0xFF000000uL;
+	return (addr == 0x00000000uL || addr == 0x20000000uL);
+
+#elif CPUSTYLE_STM32MP1 && CORE_CM4
 	#error M4 core not supported
 	/*
 	 * 0: The system/AXI bus is used on channel x.
@@ -94,8 +100,10 @@ mdma_getbus(uintptr_t addr)
 	 */
 	addr &= 0xFF000000uL;
 	return (addr == 0x00000000uL || addr == 0x20000000uL);
+
 #else
 	return 0;
+
 #endif
 }
 
@@ -205,8 +213,8 @@ void arm_hardware_mdma_initialize(void)
 	 * LTDC = AXI_M9.
 	 * MDMA = AXI_M7.
 	 */
-	//SYSCFG->ICNR |= SYSCFG_ICNR_AXI_M7;
-	//(void) SYSCFG->ICNR;
+	SYSCFG->ICNR |= SYSCFG_ICNR_AXI_M7;
+	(void) SYSCFG->ICNR;
 
 #elif CPUSTYLE_STM32H7XX
 	/* Enable the DMA2D Clock */
@@ -301,17 +309,12 @@ hwacc_fillrect_u8(
 #else
 	// программная реализация
 
-	const unsigned t = GXADJ(dx) - w;
-	//buffer += (GXADJ(dx) * row) + col;
-	volatile uint8_t * tbuffer = colmain_mem_at(buffer, dx, dy, col, row); // dest address
+	const unsigned dxadj = GXADJ(dx);
+	uint8_t * tbuffer = colmain_mem_at(buffer, dx, dy, col, row); // dest address
 	while (h --)
 	{
-		//uint8_t * const startmem = buffer;
-
-		unsigned n = w;
-		while (n --)
-			* tbuffer ++ = color;
-		tbuffer += t;
+		memset(tbuffer, color, w);
+		tbuffer += dxadj;
 	}
 
 #endif
@@ -762,6 +765,8 @@ void colmain_putpixel(
 	COLORMAIN_T color
 	)
 {
+	ASSERT(x < dx);
+	ASSERT(y < dy);
 	PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, x, y);
 	#if LCDMODE_LTDC_L24
 		tgr->r = color >> 16;
@@ -806,6 +811,10 @@ void colmain_line(
 	int antialiasing
 	)
 {
+	ASSERT(xn < bx);
+	ASSERT(xk < bx);
+	ASSERT(yn < by);
+	ASSERT(yn < by);
 	int  dx, dy, s, sx, sy, kl, incr1, incr2;
 	char swap;
 	const COLORMAIN_T sc = getshadedcolor(color, DEFAULT_ALPHA);
@@ -1701,4 +1710,255 @@ display_string3_at_xy(uint_fast16_t x, uint_fast16_t y, const char * __restrict 
 }
 
 #endif /* SMALLCHARH3 */
+
+
+#if ! LCDMODE_DUMMY
+
+// Установить прозрачность для прямоугольника
+void display_transparency(
+	uint_fast16_t x1, uint_fast16_t y1,
+	uint_fast16_t x2, uint_fast16_t y2,
+	uint_fast8_t alpha	// на сколько затемнять цвета (0 - чёрный, 255 - без изменений)
+	)
+{
+	PACKEDCOLORMAIN_T * const buffer = colmain_fb_draw();
+	const uint_fast16_t dx = DIM_X;
+	const uint_fast16_t dy = DIM_Y;
+#if 1
+	uint_fast16_t y;
+
+	for (y = y1; y <= y2; y ++)
+	{
+		uint_fast16_t x;
+		const uint_fast32_t yt = (uint_fast32_t) GXADJ(dx) * y;
+		//ASSERT(y < dy);
+		for (x = x1; x <= x2; x ++)
+		{
+			//ASSERT(x < dx);
+			buffer [yt + x] = getshadedcolor(buffer [yt + x], alpha);
+		}
+	}
+#else
+	uint_fast16_t y;
+
+	for (y = y1; y <= y2; y ++)
+	{
+		for (uint_fast16_t x = x1; x <= x2; x ++)
+		{
+			PACKEDCOLORMAIN_T * const p = colmain_mem_at(buffer, dx, dy, x, y);
+			* p = getshadedcolor(* p, alpha);
+		}
+	}
+#endif
+}
+
+#endif /* ! LCDMODE_DUMMY */
+
+static uint_fast8_t scalecolor(
+	uint_fast8_t cv,	// color component value
+	uint_fast8_t maxv,	// maximal color component value
+	uint_fast8_t rmaxv	// resulting maximal color component value
+	)
+{
+	return (cv * rmaxv) / maxv;
+}
+
+/* модифицировать цвет в RGB24 */
+static COLOR24_T
+color24_shaded(
+	COLOR24_T dot,
+	uint_fast8_t alpha	// на сколько затемнять цвета (0 - чёрный, 255 - без изменений)
+	)
+{
+	//return dot;	// test
+	if (dot == 0)
+		return COLOR24(alpha >> 2, alpha >> 2, alpha >> 2);
+	const uint_fast8_t r = scalecolor((dot >> 16) & 0xFF, 255, alpha);
+	const uint_fast8_t g = scalecolor((dot >> 8) & 0xFF, 255, alpha);
+	const uint_fast8_t b = scalecolor((dot >> 0) & 0xFF, 255, alpha);
+	return COLOR24(r, g, b);
+}
+
+/* модифицировать цвет в RGB24 */
+static COLOR24_T
+color24_aliased(
+	COLOR24_T dot
+	)
+{
+	return color24_shaded(dot, DEFAULT_ALPHA);	// test
+}
+
+
+/* модифицировать цвет */
+COLORPIP_T getshadedcolor(
+	COLORPIP_T dot, // исходный цвет
+	uint_fast8_t alpha	// на сколько затемнять цвета (0 - чёрный, 255 - без изменений)
+	)
+{
+#if defined (COLORPIP_SHADED)
+
+	return dot |= COLORPIP_SHADED;
+
+#elif LCDMODE_MAIN_RGB565
+
+	if (dot == COLORPIP_BLACK)
+	{
+		return TFTRGB565(alpha, alpha, alpha); // back gray
+	}
+	else
+	{
+		const uint_fast8_t r = ((dot >> 11) & 0x001f) * 8;	// result in 0..255
+		const uint_fast8_t g = ((dot >> 5) & 0x003f) * 4;	// result in 0..255
+		const uint_fast8_t b = ((dot >> 0) & 0x001f) * 8;	// result in 0..255
+
+		const COLOR24_T c = color24_shaded(COLOR24(r, g, b), alpha);
+		return TFTRGB565((c >> 16) & 0xFF, (c >> 8) & 0xFF, (c >> 0) & 0xFF);
+	}
+
+#elif LCDMODE_PIP_RGB24
+
+	if (dot == COLORPIP_BLACK)
+	{
+		return COLOR24(alpha, alpha, alpha); // back gray
+	}
+	else
+	{
+		return color24_shaded(dot, alpha);
+	}
+
+
+
+#else /*  */
+	//#warning LCDMODE_PIP_L8 or LCDMODE_PIP_RGB565 not defined
+	return dot;
+
+#endif /* LCDMODE_PIP_L8 */
+}
+
+#if defined (COLORPIP_SHADED)
+
+static void fillpair_xltrgb24(COLOR24_T * xltable, unsigned i, COLOR24_T c)
+{
+	ASSERT(i < 128);
+	xltable [i] = c;
+	xltable [i | COLORPIP_SHADED] = color24_shaded(c, DEFAULT_ALPHA);
+}
+
+static void fillfour_xltrgb24(COLOR24_T * xltable, unsigned i, COLOR24_T c)
+{
+	ASSERT(i < 128 - 16);
+	xltable [i] = c;
+	xltable [i | COLORPIP_SHADED] = color24_shaded(c, DEFAULT_ALPHA);
+	xltable [i | COLORPIP_ALIASED] =  color24_aliased(c);
+	xltable [i | COLORPIP_SHADED | COLORPIP_ALIASED] = color24_aliased(color24_shaded(c, DEFAULT_ALPHA));
+}
+
+#endif /* defined (COLORPIP_SHADED) */
+
+void display2_xltrgb24(COLOR24_T * xltable)
+{
+#if defined (COLORPIP_SHADED)
+	int i;
+
+	PRINTF("display2_xltrgb24: init indexed colors\n");
+
+	for (i = 0; i < 256; ++ i)
+	{
+		xltable [i] = COLOR24(255, 0, 0);
+	}
+
+	// часть цветов с 0-го индекса используется в отображении водопада
+	// остальные в дизайне
+	for (i = 0; i < COLORPIP_BASE; ++ i)
+	{
+		fillpair_xltrgb24(xltable, i, colorgradient(i, COLORPIP_BASE - 1));
+	}
+
+#if 0
+	{
+		/* тестовое заполнение палитры для проверки целостности сигналов к TFT
+		 * Используется совместно с test: вывод палитры на экран
+		 */
+		enum { TESTSIZE = 64 };
+		for (i = 0; i < 256; ++ i)
+		{
+			xltable [i] = COLOR24(0, 0, 0);
+		}
+
+	#if 0
+		/* RED */
+		for (i = 0; i < TESTSIZE; ++ i)
+		{
+			uint_fast8_t c = scalecolor(i, TESTSIZE - 1, 255);
+			fillpair_xltrgb24(xltable, i, COLOR24(1 * c, 0 * c, 0 * c));	// проверить результат перед попыткой применить целочисленные вычисления!
+		}
+	#elif 0
+		/* GREEN */
+		for (i = 0; i < TESTSIZE; ++ i)
+		{
+			uint_fast8_t c = scalecolor(i, TESTSIZE - 1, 255);
+			fillpair_xltrgb24(xltable, i, COLOR24(0 * c, 1 * c, 0 * c));	// проверить результат перед попыткой применить целочисленные вычисления!
+		}
+	#else
+		/* BLUE */
+		for (i = 0; i < TESTSIZE; ++ i)
+		{
+			uint_fast8_t c = scalecolor(i, TESTSIZE - 1, 255);
+			fillpair_xltrgb24(xltable, i, COLOR24(0 * c, 0 * c, 1 * c));	// проверить результат перед попыткой применить целочисленные вычисления!
+		}
+	#endif
+	}
+#endif
+	// Цвета используемые в дизайне
+
+	fillfour_xltrgb24(xltable, COLORPIP_YELLOW    	, COLOR24(0xFF, 0xFF, 0x00));
+	fillfour_xltrgb24(xltable, COLORPIP_ORANGE    	, COLOR24(0xFF, 0xA5, 0x00));
+	fillfour_xltrgb24(xltable, COLORPIP_BLACK     	, COLOR24(0x00, 0x00, 0x00));
+	fillfour_xltrgb24(xltable, COLORPIP_WHITE     	, COLOR24(0xFF, 0xFF, 0xFF));
+	fillfour_xltrgb24(xltable, COLORPIP_GRAY      	, COLOR24(0x60, 0x60, 0x60));
+	fillfour_xltrgb24(xltable, COLORPIP_DARKGREEN 	, COLOR24(0x00, 0x80, 0x00));
+	fillfour_xltrgb24(xltable, COLORPIP_BLUE      	, COLOR24(0x00, 0x00, 0xFF));
+	fillfour_xltrgb24(xltable, COLORPIP_GREEN     	, COLOR24(0x00, 0xFF, 0x00));
+	fillfour_xltrgb24(xltable, COLORPIP_RED       	, COLOR24(0xFF, 0x00, 0x00));
+
+	fillfour_xltrgb24(xltable, COLORPIP_LOCKED	  	, COLOR24(0x3C, 0x3C, 0x00));
+	// код (COLORPIP_BASE + 15) освободися. GUI_MENUSELECTCOLOR?
+
+#if COLORSTYLE_ATS52
+	// new (for ats52)
+	fillfour_xltrgb24(xltable, COLORPIP_GRIDCOLOR		, COLOR24(0x80, 0x00, 0x00));		//COLOR_GRAY - center marker
+	fillfour_xltrgb24(xltable, COLORPIP_GRIDCOLOR2		, COLOR24(0x60, 0x60, 0x60));		//COLOR_DARKRED - other markers
+	fillfour_xltrgb24(xltable, COLORPIP_SPECTRUMBG		, COLOR24(0x00, 0x40, 0x40));		// фон спектра вне полосы пропускания
+	fillfour_xltrgb24(xltable, COLORMAIN_SPECTRUMBG2	, COLOR24(0x00, 0x80, 0x80));		// фон спектра - полоса пропускания приемника
+	fillfour_xltrgb24(xltable, COLORPIP_SPECTRUMFG		, COLOR24(0x00, 0xFF, 0x00));		//COLOR_GREEN
+
+#else /* COLORSTYLE_ATS52 */
+	// old
+	fillfour_xltrgb24(xltable, COLORPIP_GRIDCOLOR      	, COLOR24(0x80, 0x80, 0x00));        //COLOR_GRAY - center marker
+	fillfour_xltrgb24(xltable, COLORPIP_GRIDCOLOR2     	, COLOR24(0x80, 0x00, 0x00));        //COLOR_DARKRED - other markers
+	fillfour_xltrgb24(xltable, COLORPIP_SPECTRUMBG     	, COLOR24(0x00, 0x00, 0x00));            // фон спектра вне полосы пропускания
+	fillfour_xltrgb24(xltable, COLORMAIN_SPECTRUMBG2   	, COLOR24(0x00, 0x80, 0x80));        // фон спектра - полоса пропускания приемника
+	fillfour_xltrgb24(xltable, COLORPIP_SPECTRUMFG		, COLOR24(0x00, 0xFF, 0x00));		//COLOR_GREEN
+
+#endif /* COLORSTYLE_ATS52 */
+
+#elif LCDMODE_COLORED && ! LCDMODE_DUMMY	/* LCDMODE_MAIN_L8 && LCDMODE_PIP_L8 */
+	PRINTF("display2_xltrgb24: init RRRRRGGG GGGBBBBB colos\n");
+	// Обычная таблица - все цвета могут быть использованы как индекс
+	// Водопад отображается без использования инлдексов цветов
+	int i;
+
+	for (i = 0; i < 256; ++ i)
+	{
+		uint_fast8_t r = ((i & 0xe0) << 0) | ((i & 0xe0) >> 3) | ((i & 0xe0) >> 6);		// 3 bit red
+		uint_fast8_t g = ((i & 0x1c) << 3) | ((i & 0x1c) << 0) | ((i & 0x1c) >> 3) ;	// 3 bit green
+		uint_fast8_t b = ((i & 0x03) << 6) | ((i & 0x03) << 4) | ((i & 0x03) << 2) | ((i & 0x03) << 0);	// 2 bit blue
+		xltable [i] = COLOR24(r, g, b);
+	}
+
+#else
+	#warning Monochrome display without indexing colors
+#endif /* LCDMODE_MAIN_L8 && LCDMODE_PIP_L8 */
+}
+
 

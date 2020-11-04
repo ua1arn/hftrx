@@ -174,7 +174,7 @@ Free:
 		do { \
 			arm_hardware_piob_inputs(ENCODER_BITS); \
 			arm_hardware_piob_updown(ENCODER_BITS, 0); \
-			arm_hardware_piob_onchangeinterrupt(ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ARM_OVERREALTIME_PRIORITY); \
+			arm_hardware_piob_onchangeinterrupt(ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
 		} while (0)
 
 #endif
@@ -567,7 +567,7 @@ Free:
 	#endif /* LCDMODE_LTDC */
 
 	#if WITHUART1HW
-		#define HARDWARE_USART1_INITIALIZE() do { \
+		#define HARDWARE_UART1_INITIALIZE() do { \
 				arm_hardware_pioa_altfn2((1U << 9) | (1U << 10), AF_USART1); /* PA9: TX DATA line (2 MHz), PA10: RX data line */ \
 				arm_hardware_pioa_updown((1U << 10), 0);	/* PA10: pull-up RX data */ \
 			} while (0)

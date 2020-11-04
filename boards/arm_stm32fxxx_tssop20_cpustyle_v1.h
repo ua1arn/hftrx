@@ -168,7 +168,7 @@
 		do { \
 			arm_hardware_pioa_inputs(ENCODER_BITS); \
 			arm_hardware_pioa_updown(ENCODER_BITS, 0); \
-			arm_hardware_pioa_onchangeinterrupt(ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ARM_OVERREALTIME_PRIORITY); \
+			arm_hardware_pioa_onchangeinterrupt(ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
 		} while (0)
 
 #endif
@@ -438,7 +438,7 @@
 		arm_hardware_pioa_outputs(SPI_MOSI_BIT, SPI_MOSI_BIT);	/* PIO enable for MOSI bit (SD CARD read support)  */ \
 	} while (0)
 
-#define HARDWARE_USART1_INITIALIZE() do { \
+#define HARDWARE_UART1_INITIALIZE() do { \
 		arm_hardware_pioa_altfn2((1U << 9) | (1U << 10), 0 /* AF_0 */); /* PA9: TX DATA line (2 MHz), PA10: RX data line */ \
 	} while (0)
 

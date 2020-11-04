@@ -24,6 +24,14 @@
 	#define GET_TWCK() ((TARGET_TWI_TWCK_PIN & TARGET_TWI_TWCK) != 0)
 	#define GET_TWD() ((TARGET_TWI_TWD_PIN & TARGET_TWI_TWD) != 0)
 
+	#define SET2_TWCK() do { TARGET_TWI2_TWCK_DDR &= ~ TARGET_TWI2_TWCK; hardware_spi_io_delay(); } while (0)	// SCL = 1
+	#define CLR2_TWCK() do { TARGET_TWI2_TWCK_DDR |= TARGET_TWI2_TWCK; hardware_spi_io_delay(); } while (0)	// SCL = 0
+	#define SET2_TWD() do { TARGET_TWI2_TWD_DDR &= ~ TARGET_TWI2_TWD;  hardware_spi_io_delay(); } while (0)	// SDA = 1
+	#define CLR2_TWD() do { TARGET_TWI2_TWD_DDR |= TARGET_TWI2_TWD; hardware_spi_io_delay(); } while (0)	// SDA = 0
+
+	#define GET2_TWCK() ((TARGET_TWI2_TWCK_PIN & TARGET_TWI2_TWCK) != 0)
+	#define GET2_TWD() ((TARGET_TWI2_TWD_PIN & TARGET_TWI2_TWD) != 0)
+
 #elif CPUSTYLE_ARM || CPUSTYLE_ATXMEGA
 
 	#define SET_TWCK() do { TARGET_TWI_TWCK_PORT_S(TARGET_TWI_TWCK); hardware_spi_io_delay(); } while (0)	// SCL = 1
@@ -33,6 +41,15 @@
 
 	#define GET_TWCK() ((TARGET_TWI_TWCK_PIN & TARGET_TWI_TWCK) != 0)
 	#define GET_TWD() ((TARGET_TWI_TWD_PIN & TARGET_TWI_TWD) != 0)
+
+	/* второй канал I2C */
+	#define SET2_TWCK() do { TARGET_TWI2_TWCK_PORT_S(TARGET_TWI2_TWCK); hardware_spi_io_delay(); } while (0)	// SCL = 1
+	#define CLR2_TWCK() do { TARGET_TWI2_TWCK_PORT_C(TARGET_TWI2_TWCK); hardware_spi_io_delay(); } while (0)	// SCL = 0
+	#define SET2_TWD() do { TARGET_TWI2_TWD_PORT_S(TARGET_TWI2_TWD); hardware_spi_io_delay(); } while (0)	// SDA = 1
+	#define CLR2_TWD() do { TARGET_TWI2_TWD_PORT_C(TARGET_TWI2_TWD); hardware_spi_io_delay(); } while (0)	// SDA = 0
+
+	#define GET2_TWCK() ((TARGET_TWI2_TWCK_PIN & TARGET_TWI2_TWCK) != 0)
+	#define GET2_TWD() ((TARGET_TWI2_TWD_PIN & TARGET_TWI2_TWD) != 0)
 
 #else
 	#error Undefined CPUSTYLE_xxx
@@ -491,7 +508,7 @@ static uint_fast8_t i2c_waitforevent(uint_fast32_t event)
 		if ((sr2 & (I2C_SR1_BERR | I2C_SR1_ARLO | I2C_SR1_AF | I2C_SR1_OVR | I2C_SR1_PECERR | I2C_SR1_TIMEOUT)) != 0)
 			break;
 	}
-	debug_printf_P(PSTR("i2c_waitforevent timeout (event=%" PRIxFAST32 ")\n"), event);
+	PRINTF(PSTR("i2c_waitforevent timeout (event=%" PRIxFAST32 ")\n"), event);
 	//for (;;)
 	//	;
 	return 1;
@@ -569,7 +586,7 @@ b:
 
 void i2c_read(uint8_t *data, uint_fast8_t ack_type)
 {
-	//debug_printf_P(PSTR("i2c_read trapped\n"));
+	//PRINTF(PSTR("i2c_read trapped\n"));
 	//for (;;)
 	//	;
 	//TP();
@@ -828,17 +845,17 @@ static uint_fast8_t i2c_waittxready(void)
 			break;
 		if ((isr & I2C_ISR_TIMEOUT) != 0)
 		{
-			debug_printf_P(PSTR("i2c_waittxready: bus error ISR: I2C_ISR_TIMEOUT\n"));
+			PRINTF(PSTR("i2c_waittxready: bus error ISR: I2C_ISR_TIMEOUT\n"));
 			I2C1->ICR = I2C_ICR_TIMOUTCF;
 			return 1;
 		}
 		if ((isr & I2C_ISR_NACKF) != 0)
 		{
-			debug_printf_P(PSTR("i2c_waittxready: bus error ISR: I2C_ISR_NACKF\n"));
+			PRINTF(PSTR("i2c_waittxready: bus error ISR: I2C_ISR_NACKF\n"));
 			I2C1->ICR = I2C_ICR_NACKCF;
 			return 1;
 		}
-		//debug_printf_P(PSTR("i2c_waittxready: waiting: ISR=%08lX\n"), isr);
+		//PRINTF(PSTR("i2c_waittxready: waiting: ISR=%08lX\n"), isr);
 	}
 	return 0;
 }
@@ -852,17 +869,17 @@ static uint_fast8_t i2c_waitrxready(void)
 			break;
 		if ((isr & I2C_ISR_TIMEOUT) != 0)
 		{
-			debug_printf_P(PSTR("i2c_waitrxready: bus error ISR: I2C_ISR_TIMEOUT\n"));
+			PRINTF(PSTR("i2c_waitrxready: bus error ISR: I2C_ISR_TIMEOUT\n"));
 			I2C1->ICR = I2C_ICR_TIMOUTCF;
 			return 1;
 		}
 		if ((isr & I2C_ISR_NACKF) != 0)
 		{
-			debug_printf_P(PSTR("i2c_waitrxready: bus error ISR: I2C_ISR_NACKF\n"));
+			PRINTF(PSTR("i2c_waitrxready: bus error ISR: I2C_ISR_NACKF\n"));
 			I2C1->ICR = I2C_ICR_NACKCF;
 			return 1;
 		}
-		debug_printf_P(PSTR("i2c_waitrxready: waiting: ISR=%08lX\n"), isr);
+		PRINTF(PSTR("i2c_waitrxready: waiting: ISR=%08lX\n"), isr);
 	}
 	return 0;
 }
@@ -907,11 +924,11 @@ void i2c_start(
 
 	// Ожидание окончания формирования START CONDITION и передачи адреса
 	while ((I2C1->CR2 & I2C_CR2_START) != 0)
-		; //debug_printf_P(PSTR("i2c_start: waiting, address=%02x\n"), address);
+		; //PRINTF(PSTR("i2c_start: waiting, address=%02x\n"), address);
 
 	if ((I2C1->ISR & (I2C_ISR_NACKF | I2C_ISR_TIMEOUT)) != 0)
 	{
-		debug_printf_P(PSTR("i2c_start: bus error ISR: %08lx\n"), I2C1->ISR);
+		PRINTF(PSTR("i2c_start: bus error ISR: %08lx\n"), I2C1->ISR);
 		I2C1->ICR = (I2C_ICR_NACKCF | I2C_ICR_TIMOUTCF);
 	}
 	i2c_sended = 0;
@@ -926,14 +943,14 @@ static void i2cmakestop(void)
 		0;
 	// Wait until the stop condition was automagically sent
 	while ((I2C1->ISR & I2C_ISR_STOPF) == 0)
-		; //debug_printf_P(PSTR("i2cmakestop: waiting\n"));
+		; //PRINTF(PSTR("i2cmakestop: waiting\n"));
 	// Reset the STOPF bit
 	I2C1->ICR = I2C_ICR_STOPCF;
 }
 
 void i2c_read(uint8_t *data, uint_fast8_t ack_type)
 {
-	//debug_printf_P(PSTR("i2c_read: ack_type=%08lX\n"), ack_type);
+	//PRINTF(PSTR("i2c_read: ack_type=%08lX\n"), ack_type);
 	switch (ack_type)
 	{
 	case I2C_READ_ACK_NACK:	/* чтение первого и единственного байта ответа */
@@ -984,7 +1001,7 @@ void i2c_read(uint8_t *data, uint_fast8_t ack_type)
 		break;
 
 	}
-	//debug_printf_P(PSTR("i2c_read done: ack_type=%08lX\n"), ack_type);
+	//PRINTF(PSTR("i2c_read done: ack_type=%08lX\n"), ack_type);
 }
 
 void i2c_write(
@@ -1413,6 +1430,7 @@ void i2c_initialize(void)
 	// программирование выводов, управляющих I2C
 	TWISOFT_INITIALIZE();
 
+
 #if 0
 	uint_fast8_t i;
 	// release I2C bus
@@ -1435,6 +1453,16 @@ void i2c_initialize(void)
 	i2c_dly();
 	SET_TWCK();
 	i2c_dly();
+
+#ifdef TWISOFT2_INITIALIZE
+
+	TWISOFT2_INITIALIZE();
+
+	SET2_TWD();
+	i2c_dly();
+	SET2_TWCK();
+	i2c_dly();
+#endif
 }
 
 
@@ -1570,6 +1598,97 @@ void i2c_write(uint_fast8_t d)
 	i2c_write(data);
 	i2c_waitsend();
 }
+
+#ifdef TWISOFT2_INITIALIZE
+
+
+//The following 4 functions provide the primitive start, stop, read and write sequences.
+// All I2C transactions can be built up from these.
+
+// i2c start bit sequence
+// negative edge on SD while SCL is HIGH
+void i2c2_start(uint_fast8_t address)
+{
+
+	SET2_TWD();	//SDA = 1;
+	i2c_dly();
+	SET2_TWCK();	//SCL = 1;
+	i2c_dly();
+	CLR2_TWD();	//SDA = 0;// negative edge on SCL
+	i2c_dly();
+	CLR2_TWCK();	//SCL = 0;
+	i2c_dly();
+
+	i2c2_write(address);
+	//return 0;
+}
+
+// Вызвать после последнего i2c_write()
+void i2c2_waitsend(void)
+{
+
+}
+
+// i2c stop bit sequence
+void i2c2_stop(void)
+{
+	CLR2_TWD();//SDA = 0;
+	i2c_dly();
+	SET2_TWCK();//SCL = 1;
+	i2c_dly();
+	SET2_TWD();//SDA = 1;
+	i2c_dly();
+
+}
+
+void i2c2_write(uint_fast8_t d)
+{
+	uint_fast8_t x;
+	//char b;
+	for (x = 8; x != 0; x --)
+	{
+		if (d & 0x80)
+		{
+			//SDA = 1;
+			SET2_TWD();
+		}
+		else
+		{
+			//SDA = 0;
+			CLR2_TWD();
+		}
+		/* Формирование импульса на SCL */
+		i2c_dly();
+		//SCL = 1;
+		SET2_TWCK();
+		d <<= 1;
+		//SCL = 0;
+		i2c_dly();
+		CLR2_TWCK();
+		i2c_dly();
+	}
+
+	//SDA = 1;
+	SET2_TWD();
+    i2c_dly();
+	//SCL = 1;
+	SET2_TWCK();
+	i2c_dly();
+	//b = SDA_IN;          // possible ACK bit
+	//b = 0;
+	//SCL = 0;
+	CLR2_TWCK();
+	i2c_dly();
+	//return b;
+}
+
+// запись, после чего restart
+/* char */ void i2c2_write_withrestart(uint_fast8_t data)
+{
+	i2c2_write(data);
+	i2c2_waitsend();
+}
+#endif
 
 #endif /* WITHTWISW */
 

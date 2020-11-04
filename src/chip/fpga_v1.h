@@ -113,6 +113,7 @@ prog_fpga_ctrlreg(
 
 	RBVAL8(040, FPGA_DECODE_CTLREG);
 
+	RBBIT(25, glob_tx_loopback);				/* b25: tx_loopback - включение спектроанализатора сигнала передачи */
 	RBVAL(16, glob_adcoffset, 9);			/* b24..b16: adcoffset - смещение для выходного сигнала с АЦП */
 	RBBIT(15, glob_mode_wfm);				/* b15: mode_wfm - разрешение передачи в DSP квадратур 192 кГц */
 	RBBIT(14, glob_tx_bpsk_enable);			/* b14: tx_bpsk_enable - разрешение прямого формирования модуляции в FPGA */

@@ -9,7 +9,7 @@ MEMORY
 	DTCM (rwx) :		ORIGIN = 0x20000000, LENGTH = 64k	/* DTCM = RAMDTCM_BASE */
 	RAM (rwx)  :		ORIGIN = 0x20010000, LENGTH = 256k	/* was: 240k SRAM = SRAM1_BASE (240k) */
 	/*RAM2 (rwx)  :		ORIGIN = 0x2004C000, LENGTH = 64k	 SRAM = SRAM2_BASE (64k) */
-  SDRAM  (rwx)  :		ORIGIN = 0xC0000000, LENGTH = 8192k	/* MT48LC4M32B2 */
+  	SDRAM  (rwx)  :		ORIGIN = 0xC0000000, LENGTH = 8192k	/* MT48LC4M32B2 */
 }
 
 /* Library configurations */
@@ -51,26 +51,34 @@ ENTRY(Reset_Handler)
 
 SECTIONS
 {
-  .sdram (NOLOAD):
-	{
-		. = ALIGN(32);
-		*(.framebuff*)
-    . = ALIGN(32);
-	} > SDRAM
-  
 	.text :
 	{
-		. = ALIGN(32);
 		KEEP(*(.vectors))
 		__Vectors_End = .;
 		__Vectors_Size = __Vectors_End - __Vectors;
-		
-		. = ALIGN(4);
-		KEEP(*(.init))
-		KEEP(*(.initfunc))
-		KEEP(*(.initdata))
-		KEEP(*(.fini))
+
 		*(.text*)
+
+		KEEP(*(.init))
+		KEEP(*(.fini))
+
+		/* .ctors */
+		*crtbegin.o(.ctors)
+		*crtbegin?.o(.ctors)
+		*(EXCLUDE_FILE(*crtend?.o *crtend.o) .ctors)
+		*(SORT(.ctors.*))
+		*(.ctors)
+
+		/* .dtors */
+ 		*crtbegin.o(.dtors)
+ 		*crtbegin?.o(.dtors)
+ 		*(EXCLUDE_FILE(*crtend?.o *crtend.o) .dtors)
+ 		*(SORT(.dtors.*))
+ 		*(.dtors)
+
+		*(.rodata*)
+
+		KEEP(*(.eh_frame*))
 	} > FLASH
 
 	.ARM.extab :
@@ -93,16 +101,27 @@ SECTIONS
 	{
 		. = ALIGN(4);
 		__copy_table_start__ = .;
-  /*
+		
 		LONG (__etext)
 		LONG (__data_start__)
-		LONG (__data_end__ - __data_start__)
+		LONG ((__data_end__ - __data_start__) / 4)
+		
 		LONG (__etext2)
 		LONG (__data2_start__)
-		LONG (__data2_end__ - __data2_start__)
-	*/		
+		LONG ((__data2_end__ - __data2_start__) / 4)
+		
+		LONG (__etext3)
+		LONG (__data3_start__)
+		LONG ((__data3_end__ - __data3_start__) / 4)
+		
+		/* .data in sdram */
+		LONG (__etext4)
+		LONG (__data4_start__)
+		LONG ((__data4_end__ - __data4_start__) / 4)
+		
 		__copy_table_end__ = .;
 	} > FLASH
+
 
 	/* To clear multiple BSS sections,
 	 * uncomment .zero.table section and,
@@ -113,61 +132,19 @@ SECTIONS
 		. = ALIGN(4);
 		__zero_table_start__ = .;
 		LONG (__bss_start__)
-		LONG (__bss_end__ - __bss_start__)
-	/*
+		LONG ((__bss_end__ - __bss_start__) / 4)
+		/* bss in sdram */
 		LONG (__bss2_start__)
-		LONG (__bss2_end__ - __bss2_start__)
-	*/
+		LONG ((__bss2_end__ - __bss2_start__) / 4)
 		__zero_table_end__ = .;
 	} > FLASH
+	
+	__etext = .;
 
-	.dtcm :
-	{
-		*(vtable)
-		. = ALIGN(4);
-		*(.dtcm*)
-		. = ALIGN(4);	/* may be 32 */
-		/* All data end */
-	} > DTCM
-
-
-	.itcm :
-	{
-		*(.itcm*)
-		*(.text.__ieee754_logf)
-		*(.text.__ieee754_powf)
-		*(.text.__ieee754_rem_pio2f)
-		*(.text.__ieee754_sqrtf)
-		*(.text.__kernel_rem_pio2f)
-
-		. = ALIGN(4);	/* may be 32 */
-	} > ITCM
-  
 	.data :
 	{
 		__data_start__ = .;
-
-		/* .ctors */
-		*crtbegin.o(.ctors)
-		*crtbegin?.o(.ctors)
-		*(EXCLUDE_FILE(*crtend?.o *crtend.o) .ctors)
-		*(SORT(.ctors.*))
-		*(.ctors)
-
-		/* .dtors */
- 		*crtbegin.o(.dtors)
- 		*crtbegin?.o(.dtors)
- 		*(EXCLUDE_FILE(*crtend?.o *crtend.o) .dtors)
- 		*(SORT(.dtors.*))
- 		*(.dtors)
-
-		*(.rodata*)
-
-		KEEP(*(.eh_frame*))
-
-		*(vtable)
 		*(.data*)
-	   . = ALIGN(4);	/* one line added by ua1arn */
 
 		. = ALIGN(4);
 		/* preinit data */
@@ -191,11 +168,67 @@ SECTIONS
 		PROVIDE_HIDDEN (__fini_array_end = .);
 
 		KEEP(*(.jcr*))
-		. = ALIGN(32);
+		. = ALIGN(4);
 		/* All data end */
 		__data_end__ = .;
-	} > RAM
 
+	} > RAM AT > FLASH
+
+    . = __etext + __data_end__ - __data_start__;
+    
+    __etext2 = .;
+
+	.itcm :
+	{
+		__data2_start__ = .;
+		*(.itcm*)
+		*(.text.__ieee754_logf)
+		*(.text.__ieee754_powf)
+		*(.text.__ieee754_rem_pio2f)
+		*(.text.__ieee754_sqrtf)
+		*(.text.__kernel_rem_pio2f)
+
+		. = ALIGN(4);
+		__data2_end__ = .;
+	} > ITCM AT > FLASH
+
+    . = __etext2 + __data2_end__ - __data2_start__;
+    
+	__etext3 = .;
+
+	.dtcm :
+	{
+		__data3_start__ = .;
+		. = ALIGN(4);
+		*(.dtcm*)
+		. = ALIGN(4);
+		*(vtable*)
+		. = ALIGN(4);
+		__data3_end__ = .;
+	} > DTCM  AT > FLASH
+
+    . = __etext3 + __data3_end__ - __data3_start__;
+    
+	__etext4 = .;
+
+	.sdramdata :
+	{
+		__data4_start__ = .;
+		. = ALIGN(4);
+		*(.sdramdata*)
+		. = ALIGN(4);
+		__data4_end__ = .;
+	} > SDRAM  AT > FLASH
+
+	. = __etext4 + __data4_end__ - __data4_start__;
+	
+ 	.noinit (NOLOAD):
+	{
+		. = ALIGN(32);
+		*(.noinit*)
+		. = ALIGN(32);
+	} > RAM
+	
 	.bss (NOLOAD):
 	{
 		. = ALIGN(32);
@@ -204,14 +237,25 @@ SECTIONS
 		*(COMMON)
 		. = ALIGN(32);
 		__bss_end__ = .;
+	} > RAM
+
+	.sdrambss (NOLOAD):
+	{
+		. = ALIGN(32);
+		__bss2_start__ = .;
+		*(.sdrambss*)
+		. = ALIGN(32);
+		__bss2_end__ = .;
 	} > SDRAM
 
-	.heap (NOLOAD):
+	.heap (COPY):
 	{
 		__HeapBase = .;
+		__end__ = .;
+		end = __end__;
 		KEEP(*(.heap*))
 		__HeapLimit = .;
-	} > SDRAM
+	} > RAM
 
 	/* .stack_dummy section doesn't contains any symbols. It is only
 	 * used for linker to calculate size of stack sections, and assign
@@ -219,14 +263,14 @@ SECTIONS
 	.stack_dummy (COPY):
 	{
 		KEEP(*(.stack*))
-	} > DTCM /*RAM*/
+	} > RAM
 
 	/* Set stack top to end of RAM, and stack limit move down by
 	 * size of stack_dummy section */
-	__StackTop = ORIGIN(DTCM) + LENGTH(DTCM);	/* was: RAM */
+	__StackTop = ORIGIN(RAM) + LENGTH(RAM);
 	__StackLimit = __StackTop - SIZEOF(.stack_dummy);
 	PROVIDE(__stack = __StackTop);
 
 	/* Check if data + heap + stack exceeds RAM limit */
-	/*ASSERT(__StackLimit >= __HeapLimit, "region RAM overflowed with stack") */
+	/* ASSERT(__StackLimit >= __HeapLimit, "region RAM overflowed with stack") */
 }

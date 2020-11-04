@@ -37,10 +37,12 @@ OBJDIR = ./$(OBJDIR2)
 OPT = -Ofast
 LTO = -flto
 
-# This product incorporates the ARM dual-core Cortex-A7 MPCore, where the IP version is xxxx.
-CORE = -mcpu=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4-d16
-#CORE = -mfloat-abi=hard -mfpu=vfpv4-d16
+# This product incorporates the ARM dual-core Cortex-A7 MPCore, where the IP version is r0p5
+# debug architecture ARMv7.1.
+CORE = -mcpu=cortex-a7
+CORE += -mfloat-abi=hard
 #CORE += -mcpu=cortex-a7
+#CORE += -mfpu=vfpv4-d16
 CORE += -mfpu=neon
 
 # List all default C defines here, like -D_DEBUG=1
@@ -52,6 +54,7 @@ DADEFS = -D__ASSEMBLY__=1
 DINCDIR = \
 	$(CMSISDIR)/Core_A/Include \
 	$(CMSISDIR)/DSP/Include \
+	$(CMSISDIR)/DSP/ComputeLibrary/Include \
 	$(CMSISDIR)/Core_A/Source \
 	$(CMSISDIR)/DSP/Source \
 	$(CMSISDIR)/DSP/PrivateInclude \
@@ -84,7 +87,7 @@ LDSCRIPT_BOOT = ./stm32mp15xx_ca7_boot.ld
 LDSCRIPT_APP = ./stm32mp15xx_ca7_app.ld
 
 # List all user C define here, like -D_DEBUG=1
-UDEFS = -DNDEBUG=1 -DCPUSTYLE_STM32MP1=1 -DSTM32MP157Axx=1
+UDEFS = -DNDEBUG=1 -DCPUSTYLE_STM32MP1=1 -DSTM32MP153Dxx=1
 
 # Define ASM defines here
 UADEFS = 
@@ -97,7 +100,7 @@ CPPSRC +=
 
 # List ASM source files here
 ASRC += \
- $(SRCDIR)/crt_stm32mp1.s
+ $(SRCDIR)/crt_CortexA.s
 
 # List all user directories here
 UINCDIR += ../.. ../../inc
@@ -162,7 +165,7 @@ app_run: $(PROJECT)_app.stm32
 	./dfu-util.exe --device ffff:0738 --alt 2 --detach
 
 flash: $(PROJECT)_app.stm32
-	./dfu-util.exe --device ffff:0738 --alt 0 --dfuse-address 0x70040000 --download $(PROJECT)_app.stm32
+	./dfu-util.exe --device ffff:0738 --alt 0 --dfuse-address 0x70080000 --download $(PROJECT)_app.stm32
 
 BOOT2: version $(OBJS) $(PROJECT)_boot.elf $(PROJECT)_boot.bin
 
@@ -178,7 +181,7 @@ $(PROJECT)_app.stm32: $(PROJECT)_app.bin
 	./stm32image.exe -l 0xC0000100 -e 0xC0000100 -s $(PROJECT)_app.bin -d $@
 	
 app.hex: $(PROJECT)_app.stm32
-	./bin2ihex -l 0x00040000 -s $(PROJECT)_app.stm32 >$@
+	./bin2ihex -l 0x00080000 -s $(PROJECT)_app.stm32 >$@
 
 
 $(OBJDIR)/%.o: %.c

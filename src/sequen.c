@@ -254,7 +254,7 @@ static void keyqueuein(uint_fast8_t v)
 	else
 	{
 #if WITHDEBUG
-		debug_printf_P(PSTR("keyqueuein(%d) to full buffer, seqstate=%s\n"), v, seqnames [seqstate]);
+		PRINTF(PSTR("keyqueuein(%d) to full buffer, seqstate=%s\n"), v, seqnames [seqstate]);
 #endif /* WITHDEBUG */
 	}
 }

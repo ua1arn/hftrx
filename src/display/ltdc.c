@@ -18,6 +18,10 @@
 #include "formats.h"	// for debug prints
 #include "gpio.h"
 
+#if LCDMODETX_TC358778XBG
+#include "mipi_dsi.h"
+#endif /* LCDMODETX_TC358778XBG */
+
 #if WITHLTDCHW
 
 #if LCDMODE_LQ043T3DX02K
@@ -45,9 +49,6 @@
 		/* Accumulated parameters for this display */
 		LEFTMARGIN = HSYNC + HBP,	/* horizontal delay before DE start */
 		TOPMARGIN = VSYNC + VBP,	/* vertical delay before DE start */
-
-		HFULL = HSYNC + HBP + WIDTH + HFP,	/* horizontal full period */
-		VFULL = VSYNC + VBP + HEIGHT + VFP,	/* vertical full period */
 
 		// MODE: DE/SYNC mode select.
 		// DE MODE: MODE="1", VS and HS must pull high.
@@ -85,9 +86,6 @@
 		/* Accumulated parameters for this display */
 		LEFTMARGIN = 46,		/* horizontal blanking EXACTLY */
 		TOPMARGIN = 23,			/* vertical blanking EXACTLY */
-
-		HFULL = LEFTMARGIN + WIDTH + HFP,	/* horizontal full period */
-		VFULL = TOPMARGIN + HEIGHT + VFP,	/* vertical full period */
 
 		// MODE: DE/SYNC mode select.
 		// DE MODE: MODE="1", VS and HS must pull high.
@@ -128,9 +126,6 @@
 		LEFTMARGIN = 160,		/* horizontal blanking EXACTLY */
 		TOPMARGIN = 23,			/* vertical blanking EXACTLY */
 
-		HFULL = LEFTMARGIN + WIDTH + HFP,	/* horizontal full period */
-		VFULL = TOPMARGIN + HEIGHT + VFP,	/* vertical full period */
-
 		// MODE: DE/SYNC mode select.
 		// DE MODE: MODE="1", VS and HS must pull high.
 		// SYNC MODE: MODE="0". DE must be grounded
@@ -163,9 +158,6 @@
 		LEFTMARGIN = HSYNC + HBP,	/* horizontal delay before DE start */
 		TOPMARGIN = VSYNC + VBP,	/* vertical delay before DE start */
 
-		HFULL = HSYNC + HBP + WIDTH + HFP,	/* horizontal full period */
-		VFULL = VSYNC + VBP + HEIGHT + VFP,	/* vertical full period */
-
 		VSYNCNEG = 1,			/* Negative polarity required for VSYNC signal */
 		HSYNCNEG = 1,			/* Negative polarity required for HSYNC signal */
 		DENEG = 0,				/* DE polarity: (normal: DE is 0 while sync) */
@@ -196,9 +188,6 @@
 		LEFTMARGIN = HSYNC + HBP,	/* horizontal delay before DE start */
 		TOPMARGIN = VSYNC + VBP,	/* vertical delay before DE start */
 
-		HFULL = HSYNC + HBP + WIDTH + HFP,	/* horizontal full period */
-		VFULL = VSYNC + VBP + HEIGHT + VFP,	/* vertical full period */
-
 		VSYNCNEG = 1,			/* Negative polarity required for VSYNC signal */
 		HSYNCNEG = 1,			/* Negative polarity required for HSYNC signal */
 		DENEG = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
@@ -206,11 +195,61 @@
 	};
 	#define LTDC_DOTCLK	3000000uL	// частота пикселей при работе с интерфейсом RGB
 
+#elif LCDMODE_H497TLB01P4
+	/* 720xRGBx1280 - 5" AMOELD Panel H497TLB01.4 */
+	// See also:
+	// https://github.com/bbelos/rk3188-kernel/blob/master/drivers/video/rockchip/transmitter/tc358768.c
+	// https://github.com/tanish2k09/venom_kernel_aio_otfp/blob/master/drivers/input/touchscreen/mediatek/S3202/synaptics_dsx_i2c.c
+	// https://stash.phytec.com/projects/TIRTOS/repos/vps-phytec/raw/src/boards/src/bsp_boardPriv.h?at=e8b92520f41e6523301d120dae15db975ad6d0da
+	//https://code.ihub.org.cn/projects/825/repositories/874/file_edit_page?file_name=am57xx-idk-common.dtsi&path=arch%2Farm%2Fboot%2Fdts%2Fam57xx-idk-common.dtsi&rev=master
+	enum
+	{
+		WIDTH = 720,			/* LCD PIXEL WIDTH            */
+		HEIGHT = 1280,			/* LCD PIXEL HEIGHT           */
+		/**
+		  * @brief  AT070TN90 Timing
+		  * MODE=0 (DE)
+		  * When selected DE mode, VSYNC & HSYNC must pulled HIGH
+		  * MODE=1 (SYNC)
+		  * When selected sync mode, de must be grounded.
+		  */
+		HSYNC = 5,				/* Horizontal synchronization 1..40 */
+		HBP = 11,				/* Horizontal back porch      */
+		HFP = 16,				/* Horizontal front porch  16..354   */
+
+		VSYNC = 5,				/* Vertical synchronization 1..20  */
+		VBP = 11,					/* Vertical back porch        */
+		VFP = 16,				/* Vertical front porch  7..147     */
+
+		/* Accumulated parameters for this display */
+		LEFTMARGIN = HSYNC + HBP,	/* horizontal delay before DE start */
+		TOPMARGIN = VSYNC + VBP,	/* vertical delay before DE start */
+
+		// MODE: DE/SYNC mode select.
+		// DE MODE: MODE="1", VS and HS must pull high.
+		// SYNC MODE: MODE="0". DE must be grounded
+		VSYNCNEG = 1,			/* Negative polarity required for VSYNC signal */
+		HSYNCNEG = 1,			/* Negative polarity required for HSYNC signal */
+		DENEG = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
+#if WITHLCDDEMODE
+		BOARD_DEMODE = 1		/* 0: static signal, 1: DE controlled */
+#else /* WITHLCDSYNCMODE */
+		BOARD_DEMODE = 0		/* 0: static signal, 1: DE controlled */
+#endif /* WITHLCDSYNCMODE */
+	};
+	#define LTDC_DOTCLK	57153600UL	// частота пикселей при работе с интерфейсом RGB
+
 #else
 	#error Unsupported LCDMODE_xxx
 	#define LTDC_DOTCLK	3000000uL	// частота пикселей при работе с интерфейсом RGB
 
 #endif
+
+enum
+{
+	HFULL = LEFTMARGIN + WIDTH + HFP,	/* horizontal full period */
+	VFULL = TOPMARGIN + HEIGHT + VFP	/* vertical full period */
+};
 
 #if CPUSTYLE_R7S721
 
@@ -228,7 +267,7 @@ void vdc5_update(
 		local_delay_ms(1);
 		if (-- count == 0)
 		{
-			debug_printf_P(PSTR("wait reg=%p %s mask=%08lX, stay=%08lX\n"), reg, label, mask, * reg & mask);
+			PRINTF(PSTR("wait reg=%p %s mask=%08lX, stay=%08lX\n"), reg, label, mask, * reg & mask);
 			return;
 		}
 	}
@@ -250,7 +289,7 @@ void vdc5_update(
 	(void) * (reg);	/* dummy read */ \
 	uint_fast32_t count = 1000; \
 	do { \
-		if (count -- == 0) {debug_printf_P(PSTR("wait %s/%d\n"), __FILE__, __LINE__); break; } \
+		if (count -- == 0) {PRINTF(PSTR("wait %s/%d\n"), __FILE__, __LINE__); break; } \
 		local_delay_ms(1); \
 	} while (((* (reg)) & mask) != 0); /* wait for bit chamge to zero */ \
 } while (0)
@@ -507,6 +546,28 @@ static void vdc5fb_init_graphics(struct st_vdc5 * const vdc)
 	SETREG32_CK(& vdc->GR3_AB3, 11, 0, pipwnd.w);			// GR3_GRC_HW
 
 //#endif /* LCDMODE_PIP_L8 || LCDMODE_PIP_RGB565 */
+}
+/* Palette reload */
+static void vdc5fb_L8_palette(struct st_vdc5 * const vdc)
+{
+#define     VDC5_CH0_GR0_CLUT_TBL           (*(volatile uint32_t*)0xFCFF6000)
+//#define     VDC5_CH0_GR1_CLUT_TBL           (*(volatile uint32_t*)0xFCFF6400)
+#define     VDC5_CH0_GR2_CLUT_TBL           (*(volatile uint32_t*)0xFCFF6800)
+#define     VDC5_CH0_GR3_CLUT_TBL           (*(volatile uint32_t*)0xFCFF6C00)
+	// Таблица используемой при отображении палитры
+	COLOR24_T xltrgb24 [256];
+	display2_xltrgb24(xltrgb24);
+#if LCDMODE_MAIN_L8
+	SETREG32_CK(& vdc->GR2_CLUT, 1, 16, 0x00);			// GR2_CLT_SEL
+	VDC5_fillLUT_L8(& VDC5_CH0_GR2_CLUT_TBL, xltrgb24);
+	SETREG32_CK(& vdc->GR2_CLUT, 1, 16, 0x01);			// GR2_CLT_SEL
+#endif /* LCDMODE_PIP_L8 */
+#if LCDMODE_PIP_L8
+	// PIP on GR3
+	SETREG32_CK(& vdc->GR3_CLUT_INT, 1, 16, 0x00);			// GR3_CLT_SEL
+	VDC5_fillLUT_L8(& VDC5_CH0_GR3_CLUT_TBL, xltrgb24);
+	SETREG32_CK(& vdc->GR3_CLUT_INT, 1, 16, 0x01);			// GR3_CLT_SEL
+#endif /* LCDMODE_PIP_L8 */
 }
 
 static void vdc5fb_init_outcnt(struct st_vdc5 * const vdc)
@@ -809,7 +870,7 @@ arm_hardware_ltdc_initialize(void)
 {
 	struct st_vdc5 * const vdc = & VDC50;
 
-	debug_printf_P(PSTR("arm_hardware_ltdc_initialize start, WIDTH=%d, HEIGHT=%d\n"), WIDTH, HEIGHT);
+	PRINTF(PSTR("arm_hardware_ltdc_initialize start, WIDTH=%d, HEIGHT=%d\n"), WIDTH, HEIGHT);
 	//const unsigned ROWSIZE = sizeof framebuff [0];	// размер одной строки в байтах
 
 
@@ -848,7 +909,14 @@ arm_hardware_ltdc_initialize(void)
 	arm_hardware_ltdc_pip_off();
 #endif /* LCDMODE_PIP_RGB565 || LCDMODE_PIP_L8 */
 
-	debug_printf_P(PSTR("arm_hardware_ltdc_initialize done\n"));
+	PRINTF(PSTR("arm_hardware_ltdc_initialize done\n"));
+}
+
+/* Palette reload */
+void arm_hardware_ltdc_L8_palette(void)
+{
+	struct st_vdc5 * const vdc = & VDC50;
+	vdc5fb_L8_palette(vdc);
 }
 
 /* set bottom buffer start */
@@ -1395,12 +1463,12 @@ static void LCD_LayerInitPIP(
 void
 arm_hardware_ltdc_initialize(void)
 {
-	debug_printf_P(PSTR("arm_hardware_ltdc_initialize start, WIDTH=%d, HEIGHT=%d\n"), WIDTH, HEIGHT);
+	PRINTF(PSTR("arm_hardware_ltdc_initialize start, WIDTH=%d, HEIGHT=%d\n"), WIDTH, HEIGHT);
 
 	//const unsigned ROWSIZE = sizeof framebuff [0];	// размер одной строки в байтах
 	//const unsigned rowsize2 = (sizeof (PACKEDCOLOR_T) * DIM_SECOND);
 	//ASSERT(ROWSIZE == rowsize2);
-	//debug_printf_P(PSTR("arm_hardware_ltdc_initialize: framebuff=%p\n"), framebuff);
+	//PRINTF(PSTR("arm_hardware_ltdc_initialize: framebuff=%p\n"), framebuff);
 
 	/* Initialize the LCD */
 
@@ -1424,14 +1492,14 @@ arm_hardware_ltdc_initialize(void)
 		 * LTDC = AXI_M9.
 		 * MDMA = AXI_M7.
 		 */
-//		SYSCFG->ICNR |= SYSCFG_ICNR_AXI_M9;
-//		(void) SYSCFG->ICNR;
+		SYSCFG->ICNR |= SYSCFG_ICNR_AXI_M9;
+		(void) SYSCFG->ICNR;
 	}
 
 	/* Enable the LTDC Clock */
 	RCC->MP_APB4ENSETR = RCC_MP_APB4ENSETR_LTDCEN;	/* LTDC clock enable */
-	/* Enable the LTDC Clock in low-power mode */
 	(void) RCC->MP_APB4ENSETR;
+	/* Enable the LTDC Clock in low-power mode */
 	RCC->MP_APB4LPENSETR = RCC_MP_APB4LPENSETR_LTDCLPEN;	/* LTDC clock enable */
 	(void) RCC->MP_APB4LPENSETR;
 
@@ -1457,7 +1525,7 @@ arm_hardware_ltdc_initialize(void)
 	pipparams_t pipwnd;
 	display2_getpipparams(& pipwnd);
 
-	debug_printf_P(PSTR("arm_hardware_ltdc_initialize: pip: x/y=%u/%u, w/h=%u/%u\n"), pipwnd.x, pipwnd.y, pipwnd.w, pipwnd.h);
+	PRINTF(PSTR("arm_hardware_ltdc_initialize: pip: x/y=%u/%u, w/h=%u/%u\n"), pipwnd.x, pipwnd.y, pipwnd.w, pipwnd.h);
 #endif /* LCDMODE_PIP_RGB565 || LCDMODE_PIP_L8 */
 
 	LTDC_InitStruct.LTDC_HSPolarity = HSYNCNEG ? LTDC_HSPolarity_AL : LTDC_HSPolarity_AH;     
@@ -1564,7 +1632,7 @@ arm_hardware_ltdc_initialize(void)
 #if defined (BOARD_MODEVALUE)
 	HARDWARE_LTDC_SET_MODE(BOARD_MODEVALUE);
 #endif
-	debug_printf_P(PSTR("arm_hardware_ltdc_initialize done\n"));
+	PRINTF(PSTR("arm_hardware_ltdc_initialize done\n"));
 }
 
 /* set bottom buffer start */
@@ -1577,7 +1645,9 @@ void arm_hardware_ltdc_pip_set(uintptr_t p)
 		hardware_nonguiyield();
 #endif
 	LAYER_PIP->CFBAR = p;
+	(void) LAYER_PIP->CFBAR;
 	LAYER_PIP->CR |= LTDC_LxCR_LEN;
+	(void) LAYER_PIP->CR;
 	LTDC->SRCR = LTDC_SRCR_VBR;	/* Vertical Blanking Reload. */
 }
 
@@ -1585,10 +1655,28 @@ void arm_hardware_ltdc_pip_set(uintptr_t p)
 void arm_hardware_ltdc_pip_off(void)
 {
 	LAYER_PIP->CR &= ~ LTDC_LxCR_LEN;
+	(void) LAYER_PIP->CR;
 	LTDC->SRCR = LTDC_SRCR_VBR;	/* Vertical Blanking Reload. */
 }
 
-//
+/* Palette reload */
+void arm_hardware_ltdc_L8_palette(void)
+{
+	// Таблица используемой при отображении палитры
+	COLOR24_T xltrgb24 [256];
+	display2_xltrgb24(xltrgb24);
+#if LCDMODE_MAIN_L8
+	fillLUT_L8(LAYER_MAIN, xltrgb24);	// загрузка палитры - имеет смысл до Reload
+	/* LTDC reload configuration */
+	LTDC->SRCR = LTDC_SRCR_IMR;	/* Immediately Reload. */
+#endif /* LCDMODE_PIP_L8 */
+#if LCDMODE_PIP_L8
+	/* LTDC reload configuration */
+	LTDC->SRCR = LTDC_SRCR_IMR;	/* Immediately Reload. */
+	fillLUT_L8(LAYER_PIP, xltrgb24);	// загрузка палитры - имеет смысл до Reload
+#endif /* LCDMODE_PIP_L8 */
+}
+//LCDMODE_MAIN_L8
 
 /* Set MAIN frame buffer address. */
 void arm_hardware_ltdc_main_set(uintptr_t p)
@@ -1599,8 +1687,10 @@ void arm_hardware_ltdc_main_set(uintptr_t p)
 		hardware_nonguiyield();
 #endif
 	LAYER_MAIN->CFBAR = p;
+	(void) LAYER_MAIN->CFBAR;
 	LAYER_MAIN->CR |= LTDC_LxCR_LEN;
-	LTDC->SRCR = LTDC_SRCR_VBR;	/* Vertical Blanking Reload. */
+	(void) LAYER_MAIN->CR;
+	LTDC->SRCR = LTDC_SRCR_VBR_Msk;	/* Vertical Blanking Reload. */
 }
 
 #endif /* CPUSTYLE_STM32F || CPUSTYLE_STM32MP1 */
@@ -1619,6 +1709,1048 @@ uint_fast32_t display_getdotclock(void)
 
 #endif /* WITHLTDCHW */
 
+#if LCDMODETX_TC358778XBG
+
+// See:
+//	http://www.staroceans.org/projects/beagleboard/drivers/gpu/drm/omapdrm/displays/encoder-tc358768.c
+
+/* Global (16-bit addressable) */
+#define TC358768_CHIPID			0x0000
+#define TC358768_SYSCTL			0x0002
+#define TC358768_CONFCTL		0x0004	// Input Control Register
+#define TC358768_VSDLY			0x0006
+#define TC358768_DATAFMT		0x0008
+#define TC358768_GPIOEN			0x000E
+#define TC358768_GPIODIR		0x0010
+#define TC358768_GPIOIN			0x0012
+#define TC358768_GPIOOUT		0x0014
+#define TC358768_PLLCTL0		0x0016
+#define TC358768_PLLCTL1		0x0018
+#define TC358768_CMDBYTE		0x0022
+#define TC358768_PP_MISC		0x0032
+#define TC358768_DSITX_DT		0x0050
+#define TC358768_FIFOSTATUS		0x00F8
+
+/* Debug (16-bit addressable) */
+#define TC358768_VBUFCTRL		0x00E0
+#define TC358768_DBG_WIDTH		0x00E2
+#define TC358768_DBG_VBLANK		0x00E4
+#define TC358768_DBG_DATA		0x00E8
+
+/* TX PHY (32-bit addressable) */
+#define TC358768_CLW_DPHYCONTTX		0x0100
+#define TC358768_D0W_DPHYCONTTX		0x0104
+#define TC358768_D1W_DPHYCONTTX		0x0108
+#define TC358768_D2W_DPHYCONTTX		0x010C
+#define TC358768_D3W_DPHYCONTTX		0x0110
+#define TC358768_CLW_CNTRL		0x0140
+#define TC358768_D0W_CNTRL		0x0144
+#define TC358768_D1W_CNTRL		0x0148
+#define TC358768_D2W_CNTRL		0x014C
+#define TC358768_D3W_CNTRL		0x0150
+
+/* TX PPI (32-bit addressable) */
+#define TC358768_STARTCNTRL		0x0204
+#define TC358768_DSITXSTATUS		0x0208
+#define TC358768_LINEINITCNT		0x0210
+#define TC358768_LPTXTIMECNT		0x0214
+#define TC358768_TCLK_HEADERCNT		0x0218
+#define TC358768_TCLK_TRAILCNT		0x021C
+#define TC358768_THS_HEADERCNT		0x0220
+#define TC358768_TWAKEUP		0x0224
+#define TC358768_TCLK_POSTCNT		0x0228
+#define TC358768_THS_TRAILCNT		0x022C
+#define TC358768_HSTXVREGCNT		0x0230
+#define TC358768_HSTXVREGEN		0x0234
+#define TC358768_TXOPTIONCNTRL		0x0238
+#define TC358768_BTACNTRL1		0x023C
+
+/* TX CTRL (32-bit addressable) */
+#define TC358768_DSI_STATUS		0x0410
+#define TC358768_DSI_INT		0x0414
+#define TC358768_DSICMD_RXFIFO		0x0430
+#define TC358768_DSI_ACKERR		0x0434
+#define TC358768_DSI_RXERR		0x0440
+#define TC358768_DSI_ERR		0x044C
+#define TC358768_DSI_CONFW		0x0500
+#define TC358768_DSI_RESET		0x0504
+#define TC358768_DSI_INT_CLR		0x050C
+#define TC358768_DSI_START		0x0518
+
+/* DSITX CTRL (16-bit addressable) */
+#define TC358768_DSICMD_TX		0x0600
+#define TC358768_DSICMD_TYPE		0x0602
+#define TC358768_DSICMD_WC		0x0604
+#define TC358768_DSICMD_WD0		0x0610
+#define TC358768_DSICMD_WD1		0x0612
+#define TC358768_DSICMD_WD2		0x0614
+#define TC358768_DSICMD_WD3		0x0616
+#define TC358768_DSI_EVENT		0x0620
+#define TC358768_DSI_VSW		0x0622
+#define TC358768_DSI_VBPR		0x0624
+#define TC358768_DSI_VACT		0x0626
+#define TC358768_DSI_HSW		0x0628
+#define TC358768_DSI_HBPR		0x062A
+#define TC358768_DSI_HACT		0x062C
+
+
+#define TC358768_I2C_ADDR (0x0E * 2)
+
+unsigned long
+tc358768_rd_reg_16bits(unsigned register_id)
+{
+	const unsigned i2caddr = TC358768_I2C_ADDR;
+
+	uint8_t v1, v2, v3, v4;
+
+	i2c_start(i2caddr | 0x00);
+	i2c_write(register_id >> 8);
+	i2c_write_withrestart(register_id >> 0);
+	i2c_start(i2caddr | 0x01);
+	i2c_read(& v1, I2C_READ_ACK_1);	// ||
+	i2c_read(& v2, I2C_READ_ACK);	// ||
+	i2c_read(& v3, I2C_READ_ACK);	// ||
+	i2c_read(& v4, I2C_READ_NACK);	// ||
+
+	return
+			(((unsigned long) v1) << 8) |
+			(((unsigned long) v2) << 0) |
+			0;
+}
+
+void
+tc358768_wr_reg_32bits(unsigned long value)
+{
+	const unsigned i2caddr = TC358768_I2C_ADDR;
+
+	i2c_start(i2caddr | 0x00);
+	i2c_write(value >> 24);		// addres hi
+	i2c_write(value >> 16);		// addres lo
+	i2c_write(value >> 8);		// data hi
+	i2c_write(value >> 0);		// data lo
+	i2c_waitsend();
+    i2c_stop();
+}
+
+
+struct tc358768_drv_data
+{
+	int dev;
+	unsigned fbd, prd, frs;
+	unsigned bitclk;
+};
+
+struct tc358768_drv_data dev0;
+
+static int tc358768_write(
+	struct tc358768_drv_data *ddata,
+	unsigned int reg,
+	unsigned int val
+	)
+{
+	const unsigned i2caddr = TC358768_I2C_ADDR;
+
+	if (reg < 0x100 || reg >= 0x600)
+	{
+		// 16-bit register
+		i2c_start(i2caddr | 0x00);
+		i2c_write(reg >> 8);		// addres hi
+		i2c_write(reg >> 0);		// addres lo
+		i2c_write(val >> 8);		// data hi
+		i2c_write(val >> 0);		// data lo
+		i2c_waitsend();
+	    i2c_stop();
+	}
+	else
+	{
+		// 32-bit register
+		i2c_start(i2caddr | 0x00);
+		i2c_write(reg >> 8);		// addres hi
+		i2c_write(reg >> 0);		// addres lo
+		i2c_write(val >> 24);		// data hi
+		i2c_write(val >> 16);		// data lo
+		i2c_waitsend();
+	    i2c_stop();
+	}
+	return 0;
+}
+
+static int tc358768_read(
+	struct tc358768_drv_data *ddata,
+	unsigned int reg,
+	unsigned int * val
+	)
+{
+	const unsigned i2caddr = TC358768_I2C_ADDR;
+
+	if (reg < 0x100 || reg >= 0x600)
+	{
+		// 16-bit register
+
+		uint8_t v1, v2;
+
+		i2c_start(i2caddr | 0x00);
+		i2c_write(reg >> 8);
+		i2c_write_withrestart(reg >> 0);
+		i2c_start(i2caddr | 0x01);
+		i2c_read(& v1, I2C_READ_ACK_1);	// ||
+		i2c_read(& v2, I2C_READ_NACK);	// ||
+
+		* val =
+				(((unsigned long) v1) << 8) |
+				(((unsigned long) v2) << 0) |
+				0;
+	}
+	else
+	{
+		// 32-bit register
+
+		uint8_t v1, v2, v3, v4;
+
+		i2c_start(i2caddr | 0x00);
+		i2c_write(reg >> 8);
+		i2c_write_withrestart(reg >> 0);
+		i2c_start(i2caddr | 0x01);
+		i2c_read(& v1, I2C_READ_ACK_1);	// ||
+		i2c_read(& v2, I2C_READ_ACK);	// ||
+		i2c_read(& v3, I2C_READ_ACK);	// ||
+		i2c_read(& v4, I2C_READ_NACK);	// ||
+
+		* val =
+				(((unsigned long) v1) << 8) |
+				(((unsigned long) v2) << 0) |
+				(((unsigned long) v3) << 24) |
+				(((unsigned long) v4) << 16) |
+				0;
+	}
+
+	return 0;
+}
+
+static int tc358768_update_bits(struct tc358768_drv_data *ddata,
+	unsigned int reg, unsigned int mask, unsigned int val)
+{
+	int ret;
+	unsigned int tmp, orig;
+
+	ret = tc358768_read(ddata, reg, &orig);
+	if (ret != 0)
+		return ret;
+
+	tmp = orig & ~mask;
+	tmp |= val & mask;
+
+	//dev_dbg(ddata->dev, "UPD \t%04x\t%08x -> %08x\n", reg, orig, tmp);
+
+	if (tmp != orig)
+		ret = tc358768_write(ddata, reg, tmp);
+
+	return ret;
+}
+
+
+static int tc358768_dsi_xfer_short(struct tc358768_drv_data *ddata,
+	uint8_t data_id, uint8_t data0, uint8_t data1)
+{
+	const uint8_t packet_type = 0x10; /* DSI Short Packet */
+	const uint8_t word_count = 0;
+
+	tc358768_write(ddata, TC358768_DSICMD_TYPE,
+		(packet_type << 8) | data_id);
+	tc358768_write(ddata, TC358768_DSICMD_WC, (word_count & 0xf));
+	tc358768_write(ddata, TC358768_DSICMD_WD0, (data1 << 8) | data0);
+	tc358768_write(ddata, TC358768_DSICMD_TX, 1); /* start transfer */
+
+	return 0;
+}
+
+static void tc358768_sw_reset(struct tc358768_drv_data *ddata)
+{
+	/* Assert Reset */
+	tc358768_write(ddata, TC358768_SYSCTL, 1);
+	/* Release Reset, Exit Sleep */
+	tc358768_write(ddata, TC358768_SYSCTL, 0);
+}
+
+#define REFCLK 25000000uL
+#define DSI_NDL 4
+#define DPI_NDL 24
+
+static uint32_t local_ulmin(uint32_t a, uint32_t b) { return a < b ? a : b; }
+static uint32_t local_ulmax(uint32_t a, uint32_t b) { return a > b ? a : b; }
+static uint64_t div_u64(uint64_t a, uint64_t b) { return a / b; }
+
+static uint32_t tc358768_pll_to_pclk(struct tc358768_drv_data *ddata, uint32_t pll)
+{
+	uint32_t byteclk;
+
+	byteclk = pll / 2 / 4;
+
+	return (uint32_t)div_u64((uint64_t)byteclk * 8 *DSI_NDL,
+		DPI_NDL);
+}
+
+static uint32_t tc358768_pclk_to_pll(struct tc358768_drv_data *ddata, uint32_t pclk)
+{
+	uint32_t byteclk;
+
+	byteclk = (uint32_t)div_u64((uint64_t)pclk * DPI_NDL,
+		8 *DSI_NDL);
+
+	return byteclk * 4 * 2;
+}
+
+static int tc358768_calc_pll(struct tc358768_drv_data *ddata)
+{
+	static const unsigned frs_limits[] = {
+		1000000000, 500000000, 250000000, 125000000, 62500000
+	};
+	unsigned fbd, prd, frs;
+	uint32_t target_pll;
+	unsigned long refclk;
+	unsigned i;
+	uint32_t max_pll, min_pll;
+
+	uint32_t best_diff, best_pll, best_prd, best_fbd;
+
+	target_pll = tc358768_pclk_to_pll(ddata, LTDC_DOTCLK);
+
+	/* pll_clk = RefClk * [(FBD + 1)/ (PRD + 1)] * [1 / (2^FRS)] */
+
+	frs = UINT_MAX;
+
+	for (i = 0; i < ARRAY_SIZE(frs_limits) - 1; ++i) {
+		if (target_pll < frs_limits[i] && target_pll >= frs_limits[i + 1]) {
+			frs = i;
+			max_pll = frs_limits[i];
+			min_pll = frs_limits[i + 1];
+			break;
+		}
+	}
+
+	if (frs == UINT_MAX)
+		return -1;
+
+	//refclk = clk_get_rate(REFCLK);
+	refclk = (REFCLK);
+
+	best_pll = best_prd = best_fbd = 0;
+	best_diff = UINT_MAX;
+
+	for (prd = 0; prd < 16; ++prd) {
+		uint32_t divisor = (prd + 1) * (1 << frs);
+
+		for (fbd = 0; fbd < 512; ++fbd) {
+			uint32_t pll, diff;
+
+			pll = (uint32_t)div_u64((uint64_t)refclk * (fbd + 1), divisor);
+
+			if (pll >= max_pll || pll < min_pll)
+				continue;
+
+			diff = local_ulmax(pll, target_pll) - local_ulmin(pll, target_pll);
+
+			if (diff < best_diff) {
+				best_diff = diff;
+				best_pll = pll;
+				best_prd = prd;
+				best_fbd = fbd;
+			}
+
+			if (best_diff == 0)
+				break;
+		}
+
+		if (best_diff == 0)
+			break;
+	}
+
+	if (best_diff == UINT_MAX) {
+		//dev_err(ddata->dev, "could not find suitable PLL setup\n");
+		return -1;
+	}
+
+	ddata->fbd = best_fbd;
+	ddata->prd = best_prd;
+	ddata->frs = frs;
+	ddata->bitclk = best_pll / 2;
+
+	return 0;
+}
+
+static void tc358768_setup_pll(struct tc358768_drv_data *ddata)
+{
+	unsigned fbd, prd, frs;
+
+	fbd = ddata->fbd;	// Feedback divider setting
+	prd = ddata->prd;	// Input divider setting
+	frs = ddata->frs;	// Frequency range setting (post divider)
+
+	PRINTF("PLL: refclk %lu, fbd %u, prd %u, frs %u\n",
+		(REFCLK), fbd, prd, frs);
+
+	PRINTF("PLL: %u, BitClk %u, ByteClk %u, pclk %u\n",
+		ddata->bitclk * 2, ddata->bitclk, ddata->bitclk / 4,
+		tc358768_pll_to_pclk(ddata, ddata->bitclk * 2));
+
+	/* PRD[15:12] FBD[8:0] */
+	tc358768_write(ddata, TC358768_PLLCTL0, (prd << 12) | fbd);
+
+	/* FRS[11:10] LBWS[9:8] CKEN[4] RESETB[1] EN[0] */
+	tc358768_write(ddata, TC358768_PLLCTL1,
+		(frs << 10) | (0x2 << 8) | (0 << 4) | (1 << 1) | (1 << 0));
+
+	/* wait for lock */
+	local_delay_ms(5);
+
+	/* FRS[11:10] LBWS[9:8] CKEN[4] RESETB[1] EN[0] */
+	tc358768_write(ddata, TC358768_PLLCTL1,
+		(frs << 10) | (0x2 << 8) | (1 << 4) | (1 << 1) | (1 << 0));
+}
+
+static void tc358768_power_on(struct tc358768_drv_data *ddata)
+{
+	//const struct omap_video_timings *t = &ddata->videomode;
+
+	tc358768_sw_reset(ddata);
+
+	tc358768_setup_pll(ddata);
+
+	/* VSDly[9:0] */
+	tc358768_write(ddata, TC358768_VSDLY, 1);
+	/* PDFormat[7:4] spmode_en[3] rdswap_en[2] dsitx_en[1] txdt_en[0] */
+	tc358768_write(ddata, TC358768_DATAFMT, (0x3 << 4) | (1 << 2) | (1 << 1) | (1 << 0));
+	/* dsitx_dt[7:0] 3e = Packed Pixel Stream, 24-bit RGB, 8-8-8 Format*/
+	tc358768_write(ddata, TC358768_DSITX_DT, 0x003e);
+
+	/* Enable D-PHY (HiZ->LP11) */
+	tc358768_write(ddata, TC358768_CLW_CNTRL, 0x0000);
+	tc358768_write(ddata, TC358768_D0W_CNTRL, 0x0000);
+	tc358768_write(ddata, TC358768_D1W_CNTRL, 0x0000);
+	tc358768_write(ddata, TC358768_D2W_CNTRL, 0x0000);
+	tc358768_write(ddata, TC358768_D3W_CNTRL, 0x0000);
+
+	/* DSI Timings */
+	/* LP11 = 100 us for D-PHY Rx Init */
+	tc358768_write(ddata, TC358768_LINEINITCNT,	0x00002c88);
+	tc358768_write(ddata, TC358768_LPTXTIMECNT,	0x00000005);
+	tc358768_write(ddata, TC358768_TCLK_HEADERCNT,	0x00001f06);
+	tc358768_write(ddata, TC358768_TCLK_TRAILCNT,	0x00000003);
+	tc358768_write(ddata, TC358768_THS_HEADERCNT,	0x00000606);
+	tc358768_write(ddata, TC358768_TWAKEUP,		0x00004a88);
+	tc358768_write(ddata, TC358768_TCLK_POSTCNT,	0x0000000b);
+	tc358768_write(ddata, TC358768_THS_TRAILCNT,	0x00000004);
+	tc358768_write(ddata, TC358768_HSTXVREGEN,	0x0000001f);
+
+	/* CONTCLKMODE[0] */
+	tc358768_write(ddata, TC358768_TXOPTIONCNTRL, 0x1);
+	/* TXTAGOCNT[26:16] RXTASURECNT[10:0] */
+	tc358768_write(ddata, TC358768_BTACNTRL1, (0x5 << 16) | (0x5));
+	/* START[0] */
+	tc358768_write(ddata, TC358768_STARTCNTRL, 0x1);
+
+	/* DSI Tx Timing Control */
+
+	/* Set event mode */
+	tc358768_write(ddata, TC358768_DSI_EVENT, 1);
+
+	/* vsw (+ vbp) */
+	tc358768_write(ddata, TC358768_DSI_VSW, TOPMARGIN);
+	/* vbp (not used in event mode) */
+	tc358768_write(ddata, TC358768_DSI_VBPR, 0);
+	/* vact */
+	tc358768_write(ddata, TC358768_DSI_VACT, HEIGHT);
+
+	/* (hsw + hbp) * byteclk * ndl / pclk */
+	tc358768_write(ddata, TC358768_DSI_HSW,
+		(uint32_t)div_u64(LEFTMARGIN * ((uint64_t)ddata->bitclk / 4) *DSI_NDL, LTDC_DOTCLK)
+		);
+	/* hbp (not used in event mode) */
+	tc358768_write(ddata, TC358768_DSI_HBPR, 0);
+	/* hact (bytes) */
+	tc358768_write(ddata, TC358768_DSI_HACT, WIDTH * 3);
+
+	/* Start DSI Tx */
+	tc358768_write(ddata, TC358768_DSI_START, 0x1);
+
+	/* SET, DSI_Control, 0xa7 */
+	/* 0xa7 = HS | CONTCLK | 4-datalines | EoTDisable */
+	tc358768_write(ddata, TC358768_DSI_CONFW, (5<<29) | (0x3 << 24) | 0xa7);
+	/* CLEAR, DSI_Control, 0x8001 */
+	/* 0x8001 = DSIMode */
+	tc358768_write(ddata, TC358768_DSI_CONFW, (6<<29) | (0x3 << 24) | 0x8000);
+
+	/* clear FrmStop and RstPtr */
+	tc358768_update_bits(ddata, TC358768_PP_MISC, 0x3 << 14, 0);
+
+	/* set PP_en */
+	tc358768_update_bits(ddata, TC358768_CONFCTL, 1 << 6, 1 << 6);
+}
+
+static void tc358768_power_off(struct tc358768_drv_data *ddata)
+{
+	/* set FrmStop */
+	tc358768_update_bits(ddata, TC358768_PP_MISC, 1 << 15, 1 << 15);
+
+	/* wait at least for one frame */
+	local_delay_ms(50);
+
+	/* clear PP_en */
+	tc358768_update_bits(ddata, TC358768_CONFCTL, 1 << 6, 0);
+
+	/* set RstPtr */
+	tc358768_update_bits(ddata, TC358768_PP_MISC, 1 << 14, 1 << 14);
+}
+void tc_print(uint32_t addr) {
+	PRINTF("+++++++++++addr->%04x: %04x\n", addr, tc358768_rd_reg_16bits(addr));
+}
+
+#define tc358768_wr_regs_32bits(reg_array)  _tc358768_wr_regs_32bits(reg_array, ARRAY_SIZE(reg_array))
+int _tc358768_wr_regs_32bits(unsigned int reg_array[], uint32_t n) {
+
+	int i = 0;
+	PRINTF("%s:%d\n", __func__, n);
+	for(i = 0; i < n; i++) {
+		if(reg_array[i] < 0x00020000) {
+		    if(reg_array[i] < 20000)
+		    	local_delay_us(reg_array[i]);
+		    else {
+		    	local_delay_ms(reg_array[i]/1000);
+		    }
+		} else {
+			tc358768_wr_reg_32bits(reg_array[i]);
+		}
+	}
+	return 0;
+}
+
+int tc358768_command_tx_less8bytes(unsigned char type, const unsigned char *regs, uint32_t n) {
+	int i = 0;
+	unsigned int command[] = {
+			0x06020000,
+			0x06040000,
+			0x06100000,
+			0x06120000,
+			0x06140000,
+			0x06160000,
+	};
+
+	if(n <= 2)
+		command[0] |= 0x1000;   //short packet
+	else {
+		command[0] |= 0x4000;   //long packet
+		command[1] |= n;		//word count byte
+	}
+	command[0] |= type;         //data type
+
+	//PRINTF("*cmd:\n");
+	//PRINTF("0x%08x\n", command[0]);
+	//PRINTF("0x%08x\n", command[1]);
+
+	for(i = 0; i < (n + 1)/2; i++) {
+		command[i+2] |= regs[i*2];
+		if((i*2 + 1) < n)
+			command[i+2] |= regs[i*2 + 1] << 8;
+		PRINTF("0x%08x\n", command[i+2]);
+	}
+
+	_tc358768_wr_regs_32bits(command, (n + 1)/2 + 2);
+	tc358768_wr_reg_32bits(0x06000001);   //Packet Transfer
+	//wait until packet is out
+	i = 100;
+	while(tc358768_rd_reg_16bits(0x0600) & 0x01) {
+		if(i-- == 0)
+			break;
+		tc_print(0x0600);
+	}
+	//local_delay_us(50);
+	return 0;
+}
+
+int tc358768_command_tx_more8bytes_hs(unsigned char type, unsigned char regs[], uint32_t n) {
+
+	int i = 0;
+	unsigned int dbg_data = 0x00E80000, temp = 0;
+	unsigned int command[] = {
+			0x05000080,    //HS data 4 lane, EOT is added
+			0x0502A300,
+			0x00080001,
+			0x00500000,    //Data ID setting
+			0x00220000,    //Transmission byte count= byte
+			0x00E08000,	   //Enable I2C/SPI write to VB
+			0x00E20048,    //Total word count = 0x48 (max 0xFFF). This value should be adjusted considering trade off between transmission time and transmission start/stop time delay
+			0x00E4007F,    //Vertical blank line = 0x7F
+	};
+
+
+	command[3] |= type;        //data type
+	command[4] |= n & 0xffff;           //Transmission byte count
+
+	tc358768_wr_regs_32bits(command);
+
+	for(i = 0; i < (n + 1)/2; i++) {
+		temp = dbg_data | regs[i*2];
+		if((i*2 + 1) < n)
+			temp |= (regs[i*2 + 1] << 8);
+		//PRINTF("0x%08x\n", temp);
+		tc358768_wr_reg_32bits(temp);
+	}
+	if((n % 4 == 1) ||  (n % 4 == 2))     //4 bytes align
+		tc358768_wr_reg_32bits(dbg_data);
+
+	tc358768_wr_reg_32bits(0x00E0C000);     //Start command transmisison
+	tc358768_wr_reg_32bits(0x00E00000);	 //Stop command transmission. This setting should be done just after above setting to prevent multiple output
+	local_delay_us(200);
+	//Re-Initialize
+	//tc358768_wr_regs_32bits(re_initialize);
+	return 0;
+}
+
+//low power mode only for tc358768a
+int tc358768_command_tx_more8bytes_lp(unsigned char type, const unsigned char regs[], uint32_t n) {
+
+	int i = 0;
+	unsigned int dbg_data = 0x00E80000, temp = 0;
+	unsigned int command[] = {
+			0x00080001,
+			0x00500000,    //Data ID setting
+			0x00220000,    //Transmission byte count= byte
+			0x00E08000,	   //Enable I2C/SPI write to VB
+	};
+
+	command[1] |= type;        //data type
+	command[2] |= n & 0xffff;           //Transmission byte count
+
+	tc358768_wr_regs_32bits(command);
+
+	for(i = 0; i < (n + 1)/2; i++) {
+		temp = dbg_data | regs[i*2];
+		if((i*2 + 1) < n)
+			temp |= (regs[i*2 + 1] << 8);
+		//PRINTF("0x%08x\n", temp);
+		tc358768_wr_reg_32bits(temp);
+
+	}
+	if((n % 4 == 1) ||  (n % 4 == 2))     //4 bytes align
+		tc358768_wr_reg_32bits(dbg_data);
+
+	tc358768_wr_reg_32bits(0x00E0E000);     //Start command transmisison
+	local_delay_us(1000);
+	tc358768_wr_reg_32bits(0x00E02000);	 //Keep Mask High to prevent short packets send out
+	tc358768_wr_reg_32bits(0x00E00000);	 //Stop command transmission. This setting should be done just after above setting to prevent multiple output
+	local_delay_us(10);
+	return 0;
+}
+
+int _tc358768_send_packet(unsigned char type, const unsigned char regs[], uint32_t n) {
+
+	if(n <= 8) {
+		tc358768_command_tx_less8bytes(type, regs, n);
+	} else {
+		//tc358768_command_tx_more8bytes_hs(type, regs, n);
+		tc358768_command_tx_more8bytes_lp(type, regs, n);
+	}
+	return 0;
+}
+
+int tc358768_send_packet(unsigned char type, unsigned char regs[], uint32_t n) {
+	return _tc358768_send_packet(type, regs, n);
+}
+
+
+/*
+The DCS is separated into two functional areas: the User Command Set and the Manufacturer Command
+Set. Each command is an eight-bit code with 00h to AFh assigned to the User Command Set and all other
+codes assigned to the Manufacturer Command Set.
+*/
+int _mipi_dsi_send_dcs_packet(const unsigned char regs[], uint32_t n) {
+
+	unsigned char type = 0;
+	if(n == 1) {
+		type = DTYPE_DCS_SWRITE_0P;
+	} else if (n == 2) {
+		type = DTYPE_DCS_SWRITE_1P;
+	} else if (n > 2) {
+		type = DTYPE_DCS_LWRITE;
+	}
+	_tc358768_send_packet(type, regs, n);
+	return 0;
+}
+
+int mipi_dsi_send_dcs_packet(const unsigned char regs[], uint32_t n) {
+	return _mipi_dsi_send_dcs_packet(regs, n);
+}
+
+
+int _tc358768_rd_lcd_regs(unsigned char type, char comd, int size, unsigned char* buf) {
+
+	unsigned char regs[8];
+	uint32_t count = 0, data30, data32;
+	regs[0] = size;
+	regs[1] = 0;
+	tc358768_command_tx_less8bytes(0x37, regs, 2);
+	tc358768_wr_reg_32bits(0x05040010);
+	tc358768_wr_reg_32bits(0x05060000);
+	regs[0] = comd;
+	tc358768_command_tx_less8bytes(type, regs, 1);
+
+	while (!(tc358768_rd_reg_16bits(0x0410) & 0x20)){
+		PRINTF("error 0x0410:%04x\n", tc358768_rd_reg_16bits(0x0410));
+		local_delay_ms(1);
+		if(count++ > 10) {
+			break;
+		}
+	}
+
+	data30 = tc358768_rd_reg_16bits(0x0430);	  //data id , word count[0:7]
+	//PRINTF("0x0430:%04x\n", data30);
+	data32 = tc358768_rd_reg_16bits(0x0432);	  //word count[8:15]  ECC
+	//PRINTF("0x0432:%04x\n", data32);
+
+	while(size > 0) {
+		data30 = tc358768_rd_reg_16bits(0x0430);
+		//PRINTF("0x0430:%04x\n", data30);
+		data32 = tc358768_rd_reg_16bits(0x0432);
+		//PRINTF("0x0432:%04x\n", data32);
+
+		if(size-- > 0)
+			*buf++ = (uint8_t)data30;
+		else
+			break;
+		if(size-- > 0)
+			*buf++ = (uint8_t) (data30 >> 8);
+		else
+			break;
+		if(size-- > 0) {
+			*buf++ = (uint8_t)data32;
+			if(size-- > 0)
+				*buf++ = (uint8_t) (data32 >> 8);
+		}
+	}
+
+	data30 = tc358768_rd_reg_16bits(0x0430);
+	//PRINTF("0x0430:%04x\n", data30);
+	data32 = tc358768_rd_reg_16bits(0x0432);
+	//PRINTF("0x0432:%04x\n", data32);
+	return 0;
+}
+
+int mipi_dsi_read_dcs_packet(unsigned char *data, uint32_t n) {
+	//DCS READ
+	_tc358768_rd_lcd_regs(0x06, *data, n, data);
+	return 0;
+}
+
+int tc358768_get_id(void) {
+
+	int id = -1;
+
+	//tc358768_power_up();
+	id = tc358768_rd_reg_16bits(0);
+	return id;
+}
+
+
+#define TSC_I2C_ADDR (0x20 * 2)
+
+void tscinit(void)
+{
+	const unsigned i2caddr = TSC_I2C_ADDR;
+
+
+	i2c_start(i2caddr | 0x00);
+	i2c_write(0xFF);		// set page addr
+	i2c_write(0x00);		// page #0
+	i2c_waitsend();
+    i2c_stop();
+}
+
+void tscid(void)
+{
+	const unsigned i2caddr = TSC_I2C_ADDR;
+
+	uint8_t v0;
+
+	i2c_start(i2caddr | 0x00);
+	i2c_write_withrestart(0xE1);	//  Manufacturer ID register
+	i2c_start(i2caddr | 0x01);
+	i2c_read(& v0, I2C_READ_ACK_NACK);	// ||	The Manufacturer ID register always returns data $01.
+
+	PRINTF("tsc id=%08lX (expected 0x01)\n", v0);
+}
+
+void tscprint(void)
+{
+	const unsigned i2caddr = TSC_I2C_ADDR;
+
+
+	uint8_t v0, v1, v2, v3, v4, v5, v6, v7;
+
+	i2c_start(i2caddr | 0x00);
+	i2c_write_withrestart(0x06);	// Address=0x0006 is used to read coordinate.
+	i2c_start(i2caddr | 0x01);
+	i2c_read(& v0, I2C_READ_ACK_1);	// ||
+	i2c_read(& v1, I2C_READ_ACK);	// ||
+	i2c_read(& v2, I2C_READ_ACK);	// ||
+	i2c_read(& v3, I2C_READ_ACK);	// ||
+	i2c_read(& v4, I2C_READ_ACK);	// ||
+	i2c_read(& v5, I2C_READ_ACK);	// ||
+	i2c_read(& v6, I2C_READ_ACK);	// ||
+	i2c_read(& v7, I2C_READ_NACK);	// ||
+
+	unsigned vz1 =
+			(((unsigned long) v3) << 24) |
+			(((unsigned long) v2) << 16) |
+			(((unsigned long) v1) << 8) |
+			(((unsigned long) v0) << 0) |
+			0;
+
+	unsigned vz2 =
+			(((unsigned long) v7) << 24) |
+			(((unsigned long) v6) << 16) |
+			(((unsigned long) v5) << 8) |
+			(((unsigned long) v4) << 0) |
+			0;
+
+	PRINTF("tsc=%08lX %08lX ", vz1, vz2);
+}
+/*
+ *
+ *
+static uint8_t bigon [] =
+1, 5, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00,
+2, 3, 0xB0, 0x00, 0x10, 0x10,
+3, 1, 0xBA, 0x60,
+4, 7, 0xBB, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+5, 8, 0xC0, 0xC0, 0x04, 0x00, 0x20, 0x02, 0xE4, 0xE1, 0xC0,
+6, 8, 0xC1, 0xC0, 0x04, 0x00, 0x20, 0x04, 0xE4, 0xE1, 0xC0,
+7, 5, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x02,
+8, 5, 0xEA, 0x7F, 0x20, 0x00,, 0x00, 0x00,
+9, 1, 0xCA, 0x04,
+10, 1, 0xE1, 0x00,
+11, 1, 0xE2, 0x0A,
+12, 1, 0xE3, 0x40,
+13, 4, 0xE7, 0x00, 0x00, 0x00, 0x00,
+14, 8, 0xED, 0x48, 0x00, 0xE0, 0x13, 0x08, 0x00, 0x91, 0x08,
+15, 6, 0xFD, 0x00, 0x08, 0x1C, 0x00, 0x00, 0x01,
+16, 11, 0xC3, 0x11, 0x24, 0x04, 0x0A, 0x02, 0x04, 0x00, 0x1C, 0x10, 0xF0, 0x00
+17, 5, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x03,
+18, 1, 0xE0, 0x00,
+19, 6, 0xF1, 0x00, 0x00, 0x00, 0x00, 0x00, 0x15,
+20, 1, 0xF6, 0x08,
+21, 5, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x05,
+22, 5, 0xC3, 0x00, 0x10, 0x50, 0x50, 0x50,
+23, 2, 0xC4, 0x00, 0x14,
+24, 1, 0xC9, 0x04,
+25, 5, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x01,
+26, 3, 0xB0, 0x06, 0x06, 0x06,
+27, 3, 0xB1, 0x14, 0x14, 0x14,
+28, 3, 0xB2, 0x00, 0x00, 0x00,
+29, 3, 0xB4, 0x66, 0x66, 0x66,
+30, 3, 0xB5, 0x44, 0x44, 0x44,
+31, 3, 0xB6, 0x54, 0x54, 0x54,
+32, 3, 0xB7, 0x24, 0x24, 0x24,
+33, 3, 0xB9, 0x04, 0x04, 0x04,
+34, 3, 0xBA, 0x14, 0x14, 0x14,
+35, 3, 0xBE, 0x22, 0x38, 0x78,
+36, 1, 0x35, 0x00,
+
+ *
+ */
+static uint8_t bigon [] =
+{
+	5, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00,
+	3, 0xB0, 0x00, 0x10, 0x10,
+	1, 0xBA, 0x60,
+	7, 0xBB, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	8, 0xC0, 0xC0, 0x04, 0x00, 0x20, 0x02, 0xE4, 0xE1, 0xC0,
+	8, 0xC1, 0xC0, 0x04, 0x00, 0x20, 0x04, 0xE4, 0xE1, 0xC0,
+	5, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x02,
+	5, 0xEA, 0x7F, 0x20, 0x00, 0x00, 0x00,
+	1, 0xCA, 0x04,
+	1, 0xE1, 0x00,
+	1, 0xE2, 0x0A,
+	1, 0xE3, 0x40,
+	4, 0xE7, 0x00, 0x00, 0x00, 0x00,
+	8, 0xED, 0x48, 0x00, 0xE0, 0x13, 0x08, 0x00, 0x91, 0x08,
+	6, 0xFD, 0x00, 0x08, 0x1C, 0x00, 0x00, 0x01,
+	11, 0xC3, 0x11, 0x24, 0x04, 0x0A, 0x02, 0x04, 0x00, 0x1C, 0x10, 0xF0, 0x00,
+	5, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x03,
+	1, 0xE0, 0x00,
+	6, 0xF1, 0x00, 0x00, 0x00, 0x00, 0x00, 0x15,
+	1, 0xF6, 0x08,
+	5, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x05,
+	5, 0xC3, 0x00, 0x10, 0x50, 0x50, 0x50,
+	2, 0xC4, 0x00, 0x14,
+	1, 0xC9, 0x04,
+	5, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x01,
+	3, 0xB0, 0x06, 0x06, 0x06,
+	3, 0xB1, 0x14, 0x14, 0x14,
+	3, 0xB2, 0x00, 0x00, 0x00,
+	3, 0xB4, 0x66, 0x66, 0x66,
+	3, 0xB5, 0x44, 0x44, 0x44,
+	3, 0xB6, 0x54, 0x54, 0x54,
+	3, 0xB7, 0x24, 0x24, 0x24,
+	3, 0xB9, 0x04, 0x04, 0x04,
+	3, 0xBA, 0x14, 0x14, 0x14,
+	3, 0xBE, 0x22, 0x38, 0x78,
+	1, 0x35, 0x00,
+
+	0,
+};
+
+
+/*
+	panel {
+		compatible = "samsung,s6e8aa0";
+		reg = <0>;
+		vdd3-supply = <&vcclcd_reg>;
+		vci-supply = <&vlcd_reg>;
+		reset-gpios = <&gpy4 5 0>;
+		power-on-delay= <50>;
+		reset-delay = <100>;
+		init-delay = <100>;
+		panel-width-mm = <58>;
+		panel-height-mm = <103>;
+		flip-horizontal;
+		flip-vertical;
+		display-timings {
+			timing0: timing-0 {
+				clock-frequency = <57153600>;
+				hactive = <720>;
+				vactive = <1280>;
+				hfront-porch = <5>;
+				hback-porch = <5>;
+				hsync-len = <5>;
+				vfront-porch = <16>;
+				vback-porch = <11>;
+				vsync-len = <5>;
+			};
+		};
+	};
+*/
+void tc358768_initialize(void)
+{
+	struct tc358768_drv_data * ddata = & dev0;
+
+	dev0.bitclk = 800000000uL;
+	if (toshiba_ddr_power_init())
+	{
+		PRINTF("TC358768 power init failure\n");
+		return;
+	}
+	stpmic1_dump_regulators();
+	// See also:
+	// https://github.com/bbelos/rk3188-kernel/blob/master/drivers/video/rockchip/transmitter/tc358768.c
+	// https://coral.googlesource.com/linux-imx/+/refs/heads/alpha/arch/arm64/boot/dts/freescale/fsl-imx8mq-evk-dcss-rm67191.dts
+	// https://developer.toradex.com/knowledge-base/display-output-resolution-and-timings-linux
+	// https://code.woboq.org/linux/linux/Documentation/devicetree/bindings/display/panel/samsung,s6e8aa0.txt.html
+
+	const portholder_t TE = (1uL << 7);	// PC7 (TE) - panel pin 29 Sync signal from driver IC
+	const portholder_t OTP_PWR = (1uL << 7);	// PD7 (CTRL - OTP_PWR) - panel pin 30
+	arm_hardware_pioc_inputs(TE);
+	arm_hardware_piod_outputs(OTP_PWR, 1 * OTP_PWR);
+	// active low
+	const portholder_t RESET = (1uL << 1);	// PD1 = RESX_18 - pin  28
+	arm_hardware_piod_outputs(RESET, 0 * RESET);
+	local_delay_ms(5);
+	arm_hardware_piod_outputs(RESET, 1 * RESET);
+
+	// TP_RESX - active low
+	//	x-gpios = <&gpiog 0 GPIO_ACTIVE_HIGH>; /* TP_RESX_18 */
+	const portholder_t TP_RESX = (1uL << 0);	// PG0 - TP_RESX_18 - pin 03
+	arm_hardware_piog_outputs(TP_RESX, 0 * TP_RESX);
+	local_delay_ms(5);
+	arm_hardware_piog_outputs(TP_RESX, 1 * TP_RESX);
+
+
+	// TC358778XBG conrol
+	//	x-gpios = <&gpioa 10 GPIO_ACTIVE_HIGH>; /* Video_RST */
+	//	x-gpios = <&gpiof 14 GPIO_ACTIVE_HIGH>; /* Video_MODE: 0: test, 1: normal */
+	const portholder_t Video_RST = (1uL << 10);	// PA10
+	const portholder_t Video_MODE = (1uL << 14);	// PF14: Video_MODE: 0: test, 1: normal
+
+	arm_hardware_piof_outputs(Video_MODE, 1 * Video_MODE);
+	arm_hardware_pioa_outputs(Video_RST, 0 * Video_RST);
+	local_delay_ms(5);
+	arm_hardware_pioa_outputs(Video_RST, 1 * Video_RST);
+	PRINTF("TC358778XBG reset off\n");
+
+	local_delay_ms(300);
+
+//
+	// addr 0E: ID=02000144
+	// TC358778XBG
+#if 0
+	// Reset
+	tc358768_write(ddata, TC358768_SYSCTL, 0x001);
+	tc358768_write(ddata, TC358768_SYSCTL, 0x000);
+
+	PRINTF("TC358778XBG: Chip and Revision ID=%08lX\n", tc358768_rd_reg_16bits(TC358768_CHIPID));
+	PRINTF("TC358778XBG: System Control Register=%08lX\n", tc358768_rd_reg_16bits(TC358768_SYSCTL));
+	PRINTF("TC358778XBG: Input Control Register=%08lX\n", tc358768_rd_reg_16bits(TC358768_CONFCTL));
+	PRINTF("TC358778XBG: Data Format Control Register=%08lX\n", tc358768_rd_reg_16bits(TC358768_DATAFMT));
+	tc358768_write(ddata, TC358768_DATAFMT, 0x0300);
+	local_delay_ms(100);
+	PRINTF("TC358778XBG: Data Format Control Register=%08lX\n", tc358768_rd_reg_16bits(TC358768_DATAFMT));
+
+	PRINTF("TC358778XBG: PLL Control Register 0=%08lX\n", tc358768_rd_reg_16bits(TC358768_PLLCTL0));
+
+	tc358768_write(ddata, TC358768_DSI_VSW, VSYNC);
+	tc358768_write(ddata, TC358768_DSI_VBPR, VBP);
+	tc358768_write(ddata, TC358768_DSI_VACT, HEIGHT);
+
+	tc358768_write(ddata, TC358768_DSI_HSW, HSYNC);
+	tc358768_write(ddata, TC358768_DSI_HBPR, HBP);
+	tc358768_write(ddata, TC358768_DSI_HACT, WIDTH);
+
+	PRINTF("TC358778XBG: vact=%ld\n", tc358768_rd_reg_16bits(TC358768_DSI_VACT));
+	PRINTF("TC358778XBG: hact=%ld\n", tc358768_rd_reg_16bits(TC358768_DSI_HACT));
+#endif
+
+	PRINTF("TC358778XBG: Chip and Revision ID=%04lX\n", tc358768_rd_reg_16bits(TC358768_CHIPID));
+	tc358768_calc_pll(ddata);
+
+	tc358768_power_on(ddata);
+
+	PRINTF("TC358778XBG: vact=%ld\n", tc358768_rd_reg_16bits(TC358768_DSI_VACT));
+	PRINTF("TC358778XBG: hact=%ld\n", tc358768_rd_reg_16bits(TC358768_DSI_HACT));
+
+#if 1
+	tscinit();
+	tscid();
+	for (;0;)
+	{
+		tscprint();
+	}
+#endif
+
+	// RM69052 chip
+	static uint8_t sleepout [] = { 0x11, 0x00, };
+	static uint8_t displon [] = { 0x29, 0x00, };
+
+
+	local_delay_ms(200);
+	mipi_dsi_send_dcs_packet(sleepout, ARRAY_SIZE(sleepout));
+	local_delay_ms(200);
+	mipi_dsi_send_dcs_packet(displon, ARRAY_SIZE(displon));
+	local_delay_ms(200);
+
+	const uint8_t * pv = bigon;
+	for (;;)
+	{
+		const uint8_t maxv = * pv;
+		if (maxv == 0)
+			break;
+		mipi_dsi_send_dcs_packet(pv + 1, maxv + 1);
+		local_delay_ms(25);
+		pv += maxv + 2;
+	}
+	PRINTF("display on\n");
+
+}
+
+#endif /* LCDMODETX_TC358778XBG */
 
 #if WITHGPUHW
 
@@ -1631,10 +2763,6 @@ void board_gpu_initialize(void)
 	(void) RCC->MP_AHB6ENSETR;
 	RCC->MP_AHB6LPENSETR = RCC_MC_AHB6LPENSETR_GPULPEN;
 	(void) RCC->MP_AHB6LPENSETR;
-
-	// USBH_EHCI_HCICAPLENGTH == USB1_EHCI->HCCAPBASE
-	// USBH_EHCI_HCSPARAMS == USB1_EHCI->HCSPARAMS
-	// USBH_EHCI_HCCPARAMS == USB1_EHCI->HCCPARAMS
 
 	PRINTF("board_gpu_initialize: PRODUCTID=%08lX\n", (unsigned long) GPU->PRODUCTID);
 
