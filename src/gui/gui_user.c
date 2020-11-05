@@ -76,7 +76,7 @@ static window_t windows [] = {
 	{ WINDOW_MEMORY, 		 NO_PARENT_WINDOW,		ALIGN_CENTER_X,	0, 0, 0, 0, "Memory",  	   	   	 	 NON_VISIBLE, 0, 1, window_memory_process, },
 	{ WINDOW_DISPLAY, 		 WINDOW_OPTIONS,		ALIGN_CENTER_X,	0, 0, 0, 0, "Display settings",  	 NON_VISIBLE, 0, 1, window_display_process, },
 	{ WINDOW_RECEIVE, 		 NO_PARENT_WINDOW, 		ALIGN_CENTER_X, 0, 0, 0, 0, "Receive settings", 	 NON_VISIBLE, 0, 1, window_receive_process, },
-	{ WINDOW_NOTCH, 		 NO_PARENT_WINDOW, 		ALIGN_CENTER_X, 0, 0, 0, 0, "Notch settings", 	 	 NON_VISIBLE, 0, 1, window_notch_process, },
+	{ WINDOW_NOTCH, 		 NO_PARENT_WINDOW, 		ALIGN_CENTER_X, 0, 0, 0, 0, "Notch", 	 	 		 NON_VISIBLE, 0, 1, window_notch_process, },
 };
 
 static enc2_menu_t gui_enc2_menu = { "", "", 0, 0, };
@@ -257,8 +257,16 @@ static void gui_main_process(void)
 			else if (bh == btn_notch)
 			{
 				window_t * win = get_win(WINDOW_NOTCH);
-				open_window(win);
-				footer_buttons_state(DISABLED, btn_notch);
+				if (win->state == NON_VISIBLE)
+				{
+					open_window(win);
+					footer_buttons_state(DISABLED, btn_notch);
+				}
+				else
+				{
+					close_window(OPEN_PARENT_WINDOW);
+					footer_buttons_state(CANCELLED);
+				}
 			}
 		}
 		break;
@@ -3509,7 +3517,6 @@ static void window_receive_process(void)
 static void window_notch_process(void)
 {
 	window_t * win = get_win(WINDOW_NOTCH);
-	static label_t * lbl_freq = NULL, * lbl_width = NULL;
 	static notch_var_t notch;
 
 	if (win->first_call)
@@ -3520,10 +3527,12 @@ static void window_notch_process(void)
 		notch.updated = 1;
 
 		static const button_t buttons [] = {
-			{ 0, 0, 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_NOTCH, NON_VISIBLE, -1, "btnfreq-", 	"-", },
-			{ 0, 0, 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_NOTCH, NON_VISIBLE, 1,  "btnfreq+", 	"+", },
-			{ 0, 0, 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_NOTCH, NON_VISIBLE, -1, "btnwidth-", 	"-", },
-			{ 0, 0, 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_NOTCH, NON_VISIBLE, 1,  "btnwidth+", 	"+", },
+			{ 0, 0, 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_NOTCH, NON_VISIBLE, -1, "btnfreq-",  "-", },
+			{ 0, 0, 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_NOTCH, NON_VISIBLE, 1,  "btnfreq+",  "+", },
+			{ 0, 0, 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_NOTCH, NON_VISIBLE, -1, "btnwidth-", "-", },
+			{ 0, 0, 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_NOTCH, NON_VISIBLE, 1,  "btnwidth+", "+", },
+			{ 0, 0, 80, 35, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_NOTCH, NON_VISIBLE, 0,  "btnAuto",   "Auto", },
+			{ 0, 0, 80, 35, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_NOTCH, NON_VISIBLE, 1,  "btnManual", "Manual", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -3532,8 +3541,9 @@ static void window_notch_process(void)
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
 		label_t labels [] = {
-			{ 0, 0, WINDOW_NOTCH, CANCELLED,  0, NON_VISIBLE, "lbl_freq",     "Low  cut : **** ",  FONT_MEDIUM, COLORMAIN_YELLOW, },
-			{ 0, 0, WINDOW_NOTCH, CANCELLED,  0, NON_VISIBLE, "lbl_width",    "High cut : **** ",  FONT_MEDIUM, COLORMAIN_WHITE,  },
+			{ 0, 0, WINDOW_NOTCH, CANCELLED, 0, NON_VISIBLE, "lbl_freq",  "Freq:  *******",  FONT_MEDIUM, COLORMAIN_YELLOW, },
+			{ 0, 0, WINDOW_NOTCH, CANCELLED, 0, NON_VISIBLE, "lbl_width", "Width: *******",  FONT_MEDIUM, COLORMAIN_WHITE,  },
+			{ 0, 0, WINDOW_NOTCH, CANCELLED, 0, NON_VISIBLE, "lbl_type",  "Type: ",  		FONT_MEDIUM, COLORMAIN_WHITE,  },
 		};
 		win->lh_count = ARRAY_SIZE(labels);
 		uint_fast16_t labels_size = sizeof(labels);
@@ -3541,10 +3551,9 @@ static void window_notch_process(void)
 		GUI_MEM_ASSERT(win->lh_ptr);
 		memcpy(win->lh_ptr, labels, labels_size);
 
-		lbl_freq = find_gui_element(TYPE_LABEL, win, "lbl_freq");
-		lbl_width = find_gui_element(TYPE_LABEL, win, "lbl_width");
-
-		button_t * bh = & win->bh_ptr [0];
+		label_t * lbl_freq = find_gui_element(TYPE_LABEL, win, "lbl_freq");
+		label_t * lbl_width = find_gui_element(TYPE_LABEL, win, "lbl_width");
+		label_t * lbl_type = find_gui_element(TYPE_LABEL, win, "lbl_type");
 
 		lbl_freq->x = col1_int;
 		lbl_freq->y = interval;
@@ -3554,24 +3563,43 @@ static void window_notch_process(void)
 		lbl_width->y = lbl_freq->y + interval;
 		lbl_width->visible = VISIBLE;
 
+		lbl_type->x = lbl_width->x;
+		lbl_type->y = lbl_width->y + interval;
+		lbl_type->visible = VISIBLE;
+
+		button_t * btnfreqm = find_gui_element(TYPE_BUTTON, win, "btnfreq-");
+		button_t * btnfreqp = find_gui_element(TYPE_BUTTON, win, "btnfreq+");
+		button_t * btnwidthm = find_gui_element(TYPE_BUTTON, win, "btnwidth-");
+		button_t * btnwidthp = find_gui_element(TYPE_BUTTON, win, "btnwidth+");
+		button_t * btnAuto = find_gui_element(TYPE_BUTTON, win, "btnAuto");
+		button_t * btnManual = find_gui_element(TYPE_BUTTON, win, "btnManual");
+
 		uint_fast16_t x = lbl_freq->x + get_label_width(lbl_freq);
-		uint_fast16_t y = lbl_freq->y + get_label_height(lbl_freq) / 2 - bh->h / 2;
+		uint_fast16_t y = lbl_freq->y + get_label_height(lbl_freq) / 2 - btnfreqm->h / 2;
 
-		for (uint_fast8_t i = 0, r = 1; i < win->bh_count; i ++, r ++)
-		{
-			bh = & win->bh_ptr [i];
-			bh->x1 = x;
-			bh->y1 = y;
-			bh->visible = VISIBLE;
+		btnfreqm->x1 = x;
+		btnfreqm->y1 = y;
+		btnfreqm->visible = VISIBLE;
 
-			x = x + bh->w + 10;
-			if (r >= 2)
-			{
-				r = 0;
-				x = lbl_freq->x + get_label_width(lbl_freq);
-				y = y + interval;
-			}
-		}
+		btnfreqp->x1 = btnfreqm->x1 + btnfreqm->w + 10;
+		btnfreqp->y1 = y;
+		btnfreqp->visible = VISIBLE;
+
+		btnwidthm->x1 = btnfreqm->x1;
+		btnwidthm->y1 = btnfreqm->y1 + interval;
+		btnwidthm->visible = VISIBLE;
+
+		btnwidthp->x1 = btnfreqp->x1;
+		btnwidthp->y1 = btnwidthm->y1;
+		btnwidthp->visible = VISIBLE;
+
+		btnAuto->x1 = lbl_type->x + get_label_width(lbl_type);
+		btnAuto->y1 = lbl_type->y + get_label_height(lbl_type) / 2 - btnAuto->h / 2;
+		btnAuto->visible = VISIBLE;
+
+		btnManual->x1 = btnAuto->x1 + btnAuto->w + 10;
+		btnManual->y1 = btnAuto->y1;
+		btnManual->visible = VISIBLE;
 
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
@@ -3590,6 +3618,8 @@ static void window_notch_process(void)
 			button_t * btnfreqp = find_gui_element(TYPE_BUTTON, win, "btnfreq+");
 			button_t * btnwidthm = find_gui_element(TYPE_BUTTON, win, "btnwidth-");
 			button_t * btnwidthp = find_gui_element(TYPE_BUTTON, win, "btnwidth+");
+			button_t * btnAuto = find_gui_element(TYPE_BUTTON, win, "btnAuto");
+			button_t * btnManual = find_gui_element(TYPE_BUTTON, win, "btnManual");
 
 			if (bh == btnfreqm || bh == btnfreqp)
 			{
@@ -3603,10 +3633,18 @@ static void window_notch_process(void)
 				notch.change = bh->payload;
 				notch.updated = 1;
 			}
+			else if (bh == btnManual || bh == btnAuto)
+			{
+				hamradio_set_gnotchtype(bh->payload);
+				notch.change = 0;
+				notch.updated = 1;
+			}
 		}
 		else if (IS_LABEL_PRESS)
 		{
 			label_t * lh = (label_t *) ptr;
+			label_t * lbl_freq = find_gui_element(TYPE_LABEL, win, "lbl_freq");
+			label_t * lbl_width = find_gui_element(TYPE_LABEL, win, "lbl_width");
 
 			if (lh == lbl_freq)
 				notch.select = TYPE_NOTCH_FREQ;
@@ -3637,20 +3675,12 @@ static void window_notch_process(void)
 
 	if (notch.updated)
 	{
-		notch.updated = 0;
+		button_t * btnAuto = find_gui_element(TYPE_BUTTON, win, "btnAuto");
+		button_t * btnManual = find_gui_element(TYPE_BUTTON, win, "btnManual");
+		label_t * lbl_freq = find_gui_element(TYPE_LABEL, win, "lbl_freq");
+		label_t * lbl_width = find_gui_element(TYPE_LABEL, win, "lbl_width");
 
-//		char str_low [TEXT_ARRAY_SIZE], str_high [TEXT_ARRAY_SIZE];
-//		uint_fast8_t notchype = hamradio_get_notchype();
-//		if (notchype)						// BWSET_WIDE
-//		{
-//			strcpy(str_low,  "Low  cut ");
-//			strcpy(str_high, "High cut ");
-//		}
-//		else								// BWSET_NARROW
-//		{
-//			strcpy(str_low,  "Width    ");
-//			strcpy(str_high, "Pitch    ");
-//		}
+		notch.updated = 0;
 
 		for(uint_fast8_t i = 0; i < win->lh_count; i ++)
 			win->lh_ptr [i].color = COLORMAIN_WHITE;
@@ -3658,11 +3688,12 @@ static void window_notch_process(void)
 		ASSERT(notch.select < win->lh_count);
 		win->lh_ptr [notch.select].color = COLORMAIN_YELLOW;
 
-//		uint_fast8_t val_low = hamradio_get_low_bp(notch.select == TYPE_BP_LOW ? (notch.change * 5) : 0);
-		local_snprintf_P(lbl_freq->text, ARRAY_SIZE(lbl_freq->text), PSTR("Freq:"));
+		uint_fast8_t type = hamradio_get_gnotchtype();
+		btnAuto->is_locked = type == BOARD_NOTCH_AUTO ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
+		btnManual->is_locked = type == BOARD_NOTCH_MANUAL ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
 
-//		uint_fast8_t val_high = hamradio_get_high_bp(notch.select == TYPE_BP_HIGH ? notch.change : 0) * (notchype ? 100 : 10);
-		local_snprintf_P(lbl_width->text, ARRAY_SIZE(lbl_width->text), PSTR("Width:"));
+		local_snprintf_P(lbl_freq->text, ARRAY_SIZE(lbl_freq->text), PSTR("Freq:%5d Hz"), hamradio_notch_freq(notch.select == TYPE_NOTCH_FREQ ? notch.change : 0));
+		local_snprintf_P(lbl_width->text, ARRAY_SIZE(lbl_width->text), PSTR("Width:%4d Hz"), hamradio_notch_width(notch.select == TYPE_NOTCH_WIDTH ? notch.change : 0));
 	}
 }
 

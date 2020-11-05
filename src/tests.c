@@ -5140,7 +5140,7 @@ static void sdtick(void)
 }
 #endif
 
-#if LCDMODE_COLORED && ! DSTYLE_G_DUMMY && 1
+#if LCDMODE_COLORED && ! DSTYLE_G_DUMMY && 0
 
 
 
@@ -6351,7 +6351,7 @@ void hightests(void)
 		}
 	}
 #endif
-#if 1 && LCDMODE_COLORED && ! DSTYLE_G_DUMMY
+#if 0 && LCDMODE_COLORED && ! DSTYLE_G_DUMMY
 	{
 		unsigned cnt;
 		display2_bgreset();

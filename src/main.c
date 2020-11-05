@@ -14467,7 +14467,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	{
 		QLABEL("NTCH WDT"), 7, 0, 0,	ISTEP50,		/* полоса режекции NOTCH. */
 		ITEM_VALUE,
-		100, 1000,
+		WITHNOTCHWIDTHMIN, WITHNOTCHWIDTHMAX,
 		offsetof(struct nvmap, gnotchwidth),	/* полоса режекции NOTCH */
 		& gnotchwidth.value,
 		NULL,
@@ -19593,28 +19593,6 @@ uint_fast8_t hamradio_set_freq(uint_fast32_t freq)
 
 #if WITHNOTCHFREQ
 
-void hamradio_set_autonotch(uint_fast8_t v)
-{
-	static uint_fast8_t old_type = 0;
-
-	gnotch = v != 0;
-	if (v)
-	{
-		old_type = gnotchtype;
-		gnotchtype = 0;
-	}
-	else
-	{
-		gnotchtype = old_type;
-	}
-	board_set_notch_mode(gnotch == 0 ? BOARD_NOTCH_OFF : notchmodes [gnotchtype].code);
-}
-
-uint_fast8_t hamradio_get_autonotch(void)
-{
-	return gnotch && notchmodes [gnotchtype].code == BOARD_NOTCH_AUTO;
-}
-
 uint_fast8_t hamradio_get_gnotch(void)
 {
 	return gnotch;
@@ -19623,6 +19601,7 @@ uint_fast8_t hamradio_get_gnotch(void)
 void hamradio_set_gnotch(uint_fast8_t v)
 {
 	gnotch = v != 0;
+	updateboard(1, 0);
 }
 
 uint_fast8_t hamradio_get_gnotchtype(void)
@@ -19633,6 +19612,43 @@ uint_fast8_t hamradio_get_gnotchtype(void)
 void hamradio_set_gnotchtype(uint_fast8_t v)
 {
 	gnotchtype = v;
+	updateboard(1, 0);
+}
+
+uint_fast16_t hamradio_notch_freq(int_fast8_t step)
+{
+	if (step != 0)
+	{
+		uint_fast16_t val = gnotchfreq.value + step * ISTEP50;
+
+		if (val < WITHNOTCHFREQMIN)
+			val = WITHNOTCHFREQMIN;
+
+		if (val > WITHNOTCHFREQMAX)
+			val = WITHNOTCHFREQMAX;
+
+		gnotchfreq.value = val;
+		updateboard(1, 0);
+	}
+	return gnotchfreq.value;
+}
+
+uint_fast16_t hamradio_notch_width(int_fast8_t step)
+{
+	if (step != 0)
+	{
+		uint_fast16_t val = gnotchwidth.value + step * ISTEP50;
+
+		if (val < WITHNOTCHWIDTHMIN)
+			val = WITHNOTCHWIDTHMIN;
+
+		if (val > WITHNOTCHWIDTHMAX)
+			val = WITHNOTCHWIDTHMAX;
+
+		gnotchwidth.value = val;
+		updateboard(1, 0);
+	}
+	return gnotchwidth.value;
 }
 
 #endif /* WITHNOTCHFREQ */
