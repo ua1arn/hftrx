@@ -11,6 +11,21 @@
 #include "formats.h"
 #include "gpio.h"
 
+static void
+tsc_interrupt_handler(void)
+{
+	TP();
+}
+
+/* Назначить обработчик прерывания по единичному уровню для выхода прерываний от контроллера тачскрина */
+static void
+tsc_interrupt_sethandler(void)
+{
+	const portholder_t INMASK = 1uL << 3;	// P5_3
+	arm_hardware_pio5_inputs(INMASK);
+	arm_hardware_pio5_onchangeinterrupt(INMASK, 0, ARM_SYSTEM_PRIORITY, tsc_interrupt_handler);	// P5_3 interrupt, level-sensitive
+}
+
 #if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811)
 #include "stmpe811.h"
 
@@ -40,21 +55,6 @@ board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
 	* xr = x;
 	* yr = y;
 	return 0;
-}
-
-static void
-stmpe811_handler(void)
-{
-	TP();
-}
-
-/* Назначить обработчик прерывания по единичному уровню для выхода прерываний от ST STMPE811 */
-static void
-stmpe811_sethandler(void)
-{
-	const portholder_t INMASK = 1uL << 1;	// JP0_1
-	arm_hardware_jpio0_inputs(INMASK);
-	arm_hardware_piojp0_onchangeinterrupt(INMASK, 0, ARM_SYSTEM_PRIORITY, stmpe811_handler);	// JP0_1 interrupt, level-sensitive
 }
 
 #endif /* defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811) */
@@ -110,7 +110,10 @@ void board_tsc_initialize(void)
 {
 #if TSC1_TYPE == TSC_TYPE_GT911
 	if (gt911_initialize(GOODIX_I2C_ADDR_BA))
+	{
+//		tsc_interrupt_sethandler();
 		PRINTF("gt911 initialization succefful\n");
+	}
 	else
 		PRINTF("gt911 initialization error\n");
 #endif /* TSC1_TYPE == TSC_TYPE_GT911 */

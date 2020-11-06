@@ -4,6 +4,13 @@
 #include "hardware.h"
 #include "gt911structs.h"
 
+#define GT911_INT_ON_RESET()	do { \
+		const portholder_t MASK = 1uL << 3;	/* P5_3 */ \
+		arm_hardware_pio5_outputs(MASK, 0 * MASK);	 \
+		local_delay_ms(10); \
+		arm_hardware_pio5_inputs(MASK); \
+	} while (0)
+
 #define GOODIX_OK   0
 #define GT911_ID	0x39313100	// "911\0"
 

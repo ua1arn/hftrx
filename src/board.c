@@ -692,6 +692,11 @@ board_gpio_init(void)
 		LS020_RESET_INITIALIZE();
 	#endif /* LS020_RESET */
 
+	// TSC RESET
+	#if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_GT911)
+		GT911_INT_ON_RESET();
+	#endif
+
 	// DDS RESET
 	#if TARGET_DDSRESET_BIT
 		TARGET_DDSRESET_INITIALIZE();
