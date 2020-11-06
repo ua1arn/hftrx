@@ -1883,7 +1883,7 @@ static const filter_t * const FLASHMEM gfa [] =
 #endif /*  */
 #if (IF3_FMASK & IF3_FMASK_3P1)
 		& fi_3p1,
-	#if WITHTX && WITHSAMEBFO == 0
+	#if WITHTX && WITHSAMEBFO == 0 && (IF3_MODEL != IF3_TYPE_DCRX)
 		& fi_3p1_tx,
 	#endif /*  */
 #endif /*  */

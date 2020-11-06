@@ -8,7 +8,8 @@
 #ifndef DISPLAY_FONTMAPS_H_INCLUDED
 #define DISPLAY_FONTMAPS_H_INCLUDED
 
-#if LCDMODE_DUMMY
+#if LCDMODE_DUMMY || LCDMODE_HD44780
+	// Дисплеи, не требующие растров знакогенераторов
 
 #elif LCDMODE_UC1601
 

@@ -10,7 +10,7 @@
 #include "display.h"
 #include <stdint.h>
 
-#include "../inc/spi.h"
+#include "spi.h"
 #include "display.h"
 #include "formats.h"
 

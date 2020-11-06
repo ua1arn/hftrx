@@ -276,9 +276,23 @@ enum
 	SMETERIX = 0,	// S-meter
 	PWRI = 4, 
 	FWD = 4, REF = 3,	// SWR-meter
+
+	XTHERMOMRRIX = BOARD_ADCMRRIN(0),	// кеш - индекc не должен повторяться в конфигурации
+	PASENSEMRRIX = BOARD_ADCMRRIN(1),	// кеш - индекc не должен повторяться в конфигурации
+	REFMRRIX = BOARD_ADCMRRIN(2),
+	FWDMRRIX = BOARD_ADCMRRIN(3),
+	PWRMRRIX = FWDMRRIX,
+	VOLTMRRIX = BOARD_ADCMRRIN(4),	// кеш - индекc не должен повторяться в конфигурации
+
 	KI0 = 5, KI1 = 6, KI2 = 7	// клавиатура
 };
 #define KI_COUNT 3	// количество используемых под клавиатуру входов АЦП
 #define KI_LIST	KI2, KI1, KI0,	// инициализаторы для функции перекодировки
+
+#define WITHLCDBACKLIGHTMIN 0
+#define WITHLCDBACKLIGHTMAX 1
+#define WITHPOWERTRIMMAX 100
+#define BOARD_NOTCH_MANUAL 0
+#define BOARD_NOTCH_OFF 0
 
 #endif /* ATMEGA_CTL_UA3DKC_H_INCLUDED */
