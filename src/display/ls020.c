@@ -122,7 +122,7 @@ ls020_pix8(
 }
 
 // Вызов этой функции только внутри display_wrdata_begin() и 	display_wrdata_end();
-static uint_fast8_t ls020_put_char_small(uint_fast8_t xpix, uint_fast8_t ypix, char cc)
+static uint_fast8_t ls020_put_char_small(uint_fast8_t xpix, char cc)
 {
 	const uint_fast8_t c = smallfont_decode((unsigned char) cc);
 	enum { NBYTES = (sizeof ls020_smallfont [0] / sizeof ls020_smallfont [0][0]) };
@@ -139,7 +139,7 @@ static uint_fast8_t ls020_put_char_small(uint_fast8_t xpix, uint_fast8_t ypix, c
 
 // Вызов этой функции только внутри display_wrdata_begin() и 	display_wrdata_end();
 
-static uint_fast8_t ls020_put_char_big(uint_fast8_t xpix, uint_fast8_t ypix, char cc)
+static uint_fast8_t ls020_put_char_big(uint_fast8_t xpix, char cc)
 {
 	enum { NBV = (BIGCHARH / 8) }; // сколько байтов в одной вертикали
 	uint_fast8_t i = NBV * ((cc == '.' || cc == '#') ? 12 : 0);	// начальная колонка знакогенератора, откуда начинать.
@@ -157,7 +157,7 @@ static uint_fast8_t ls020_put_char_big(uint_fast8_t xpix, uint_fast8_t ypix, cha
 
 // Вызов этой функции только внутри display_wrdata_begin() и 	display_wrdata_end();
 
-static uint_fast8_t ls020_put_char_half(uint_fast8_t xpix, uint_fast8_t ypix, char cc)
+static uint_fast8_t ls020_put_char_half(uint_fast8_t xpix, char cc)
 {
 	uint_fast8_t i = 0;
     const uint_fast8_t c = bigfont_decode((unsigned char) cc);
@@ -524,13 +524,13 @@ display_barcolumn(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t pattern)
 uint_fast16_t
 display_put_char_big(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf)
 {
-	return ls020_put_char_big(xpix, ypix, c);
+	return ls020_put_char_big(xpix, c);
 }
 
 uint_fast16_t
 display_put_char_half(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf)
 {
-	return ls020_put_char_half(xpix, ypix, c);
+	return ls020_put_char_half(xpix, c);
 }
 
 
@@ -539,7 +539,7 @@ display_put_char_half(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, ui
 uint_fast16_t
 display_put_char_small(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf)
 {
-	return ls020_put_char_small(xpix, ypix, c);
+	return ls020_put_char_small(xpix, c);
 }
 // Координаты в пикселях
 void display_plotfrom(uint_fast16_t x, uint_fast16_t y)
