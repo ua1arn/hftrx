@@ -43,6 +43,12 @@
 	#define	BOARD_AGCCODE_LONG	BOARD_AGCCODE_3
 	#define WITHAGCMODE4STAGES	1	// 4 скорости. выключенно не бывает
 
+	#define BOARD_NOTCH_MANUAL 0
+	#define WITHLCDBACKLIGHTMIN 0
+	#define WITHLCDBACKLIGHTMAX 1
+	#define WITHPOWERTRIMMAX 1
+	#define BOARD_NOTCH_OFF 0
+
 	#define	FONTSTYLE_ITALIC	1	//
 	#define DSTYLE_UR3LMZMOD	1
 
@@ -225,6 +231,14 @@
 		SMETERIX = 0,	// S-meter
 		PWRI = 3, 
 		FWD = 3, REF = 2,	// SWR-meter
+
+		XTHERMOMRRIX = BOARD_ADCMRRIN(0),	// кеш - индекc не должен повторяться в конфигурации
+		PASENSEMRRIX = BOARD_ADCMRRIN(1),	// кеш - индекc не должен повторяться в конфигурации
+		REFMRRIX = BOARD_ADCMRRIN(2),
+		FWDMRRIX = BOARD_ADCMRRIN(3),
+		PWRMRRIX = FWDMRRIX,
+		VOLTMRRIX = BOARD_ADCMRRIN(4),	// кеш - индекc не должен повторяться в конфигурации
+
 		KI0 = 4, KI1 = 5, KI2 = 6, KI3 = 7	// клавиатура
 	};
 	#define KI_COUNT 4	// количество используемых под клавиатуру входов АЦП
@@ -233,10 +247,10 @@
 	#define VOLTLEVEL_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика напряжения
 	#define VOLTLEVEL_LOWER		10	// 1.0 kOhm - нижний резистор
 
-
 	/* Первая ПЧ - 64455, вторая - 500/455 кГц */
 
 	/* Описание структуры преобразований частоты в тракте */
+	#define LO0_SIDE	LOCODE_INVALID	/* при отсутствующем конверторе - на нём нет инверсии спектра */
 	//#define LO1_SIDE	LOCODE_UPPER	/* При преобразовании на этом гетеродине происходит инверсия спектра */
 	#define LO1_SIDE_F(freq) (((freq) < 64455000UL) ? LOCODE_UPPER : LOCODE_LOWER)	/* сторона зависит от рабочей частоты */
 	#define LO2_SIDE	LOCODE_LOWER	/* При преобразовании на этом гетеродине нет инверсии спектра */
