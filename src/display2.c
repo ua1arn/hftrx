@@ -55,7 +55,7 @@
 	static uint_fast8_t glob_colorstyle = GRADIENT_BLUE_YELLOW_RED;
 #endif /* COLORSTYLE_RED */
 
-
+#if WITHSPECTRUMWF
 // построение цветных градиентов от UA3REO
 // get color from signal strength
 // Get FFT color warmth (blue to red)
@@ -202,6 +202,12 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos)
 	//unknown
 	return COLOR24(255, 255, 255);
 }
+#else /* WITHSPECTRUMWF */
+COLOR24_T colorgradient(unsigned pos, unsigned maxpos)
+{
+	return COLOR24(255, 255, 255);
+}
+#endif /* WITHSPECTRUMWF */
 
 
 /* стркутура хранит цвета элементов дизайна. Возмодно треите поле - для анталиасингового формирования изображения */
@@ -360,8 +366,9 @@ static int_fast16_t glob_afspechigh = 3400;	// верхняя частота о�
 
 //#define WIDEFREQ (TUNE_TOP > 100000000L)
 
+#if WITHSPECTRUMWF
 static void fftzoom_af(float32_t * buffer, unsigned zoompow2, unsigned normalFFT);
-
+#endif /* WITHSPECTRUMWF */
 
 uint_fast16_t normalize(
 	uint_fast16_t raw,

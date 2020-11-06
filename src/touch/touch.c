@@ -16,6 +16,8 @@ tsc_interrupt_handler(void)
 {
 	TP();
 }
+// TSC RESET
+#if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_GT911)
 
 /* Назначить обработчик прерывания по единичному уровню для выхода прерываний от контроллера тачскрина */
 static void
@@ -25,6 +27,8 @@ tsc_interrupt_sethandler(void)
 	arm_hardware_pio5_inputs(INMASK);
 	arm_hardware_pio5_onchangeinterrupt(INMASK, 0, ARM_SYSTEM_PRIORITY, tsc_interrupt_handler);	// P5_3 interrupt, level-sensitive
 }
+
+#endif
 
 #if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811)
 #include "stmpe811.h"
