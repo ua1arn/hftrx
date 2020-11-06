@@ -8708,7 +8708,7 @@ display2_bars_amv0(
 	)
 {
 #if WITHBARS
-	if (gtx)
+	if (hamradio_get_tx())
 	{
 #if WITHTX
 	#if (WITHSWRMTR || WITHSHOWSWRPWR)
