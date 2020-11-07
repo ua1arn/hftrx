@@ -4,13 +4,6 @@
 #include "hardware.h"
 #include "gt911structs.h"
 
-#define GT911_INT_ON_RESET()	do { \
-		const portholder_t MASK = 1uL << 3;	/* P5_3 */ \
-		arm_hardware_pio5_outputs(MASK, 0 * MASK);	 \
-		local_delay_ms(10); \
-		arm_hardware_pio5_inputs(MASK); \
-	} while (0)
-
 #define GOODIX_OK   0
 #define GT911_ID	0x39313100	// "911\0"
 
@@ -98,7 +91,7 @@
 #define MAX_CONTACTS_LOC  5
 #define TRIGGER_LOC 6
 
-uint_fast8_t gt911_initialize(uint_fast8_t addr);
+uint_fast8_t gt911_initialize(void);
 uint_fast8_t gt911_getXY(uint_fast16_t * xt, uint_fast16_t * yt);
 
 #endif /* GT911_H_INCLUDED */
