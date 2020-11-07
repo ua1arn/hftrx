@@ -68,7 +68,6 @@
 #define GOODIX_READ_VENDOR_ID   0x814A
 
 #define GOODIX_READ_COORD_ADDR	0x814E
-#define GOODIX_READ_1ST_POINT	0x8150
 
 /* Commands for REG_COMMAND */
 //0: read coordinate state
