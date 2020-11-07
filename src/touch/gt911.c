@@ -47,25 +47,22 @@ void gt911_read(uint_fast16_t reg, uint8_t * buf, size_t len)
 uint16_t gt911_readInput(GTPoint * point)
 {
 	uint_fast8_t touch_num, buf_state;
-	uint8_t buf;
+	uint8_t buf [4];
+	uint8_t tmp;
 
-	gt911_read(GOODIX_READ_COORD_ADDR, & buf, 1);
-	buf_state = buf >> 7;
+	gt911_read(GOODIX_READ_COORD_ADDR, & tmp, 1);
+	buf_state = tmp >> 7;
 
-	if (!buf_state)
+	if (! buf_state)
 		return 0;
 
-	touch_num = buf & 0x7f;
+	touch_num = tmp & 0x7f;
 	if (touch_num > 0)
-	{ 										/* получение координат первой точки касания */
-		gt911_read(0x8150, & buf, 1);
-		point->x = buf;
-		gt911_read(0x8151, & buf, 1);
-		point->x |= buf << 8;
-		gt911_read(0x8152, & buf, 1);
-		point->y = buf;
-		gt911_read(0x8153, & buf, 1);
-		point->y |= buf << 8;
+	{
+		/* получение координат первой точки касания */
+		gt911_read(GOODIX_READ_1ST_POINT, buf, 4);
+		point->x = (buf [0] << 0) | (buf [1] << 8);
+		point->y = (buf [2] << 0) | (buf [3] << 8);
 	}
 	gt911_set_reg(GOODIX_READ_COORD_ADDR);
 	i2c_write(0);
@@ -80,7 +77,7 @@ uint_fast8_t gt911_calcChecksum(uint8_t * buf, uint_fast8_t len)
 		ccsum += buf [i];
 	}
 	//ccsum %= 256;
-	ccsum = (~ccsum) + 1;
+	ccsum = (~ ccsum) + 1;
 	return ccsum & 0xFF;
 }
 
