@@ -4134,14 +4134,14 @@ void hardware_uart7_initialize(uint_fast8_t debug)
 	#elif HARDWARE_ARM_USEUART1
 
 		// enable the clock of UART1
-		PMC->PMC_PCER0 = 1UL << ID_UART1;
+		PMC->PMC_PCER0 = 1UL << ID_UART7;
 
-		HARDWARE_UART4_INITIALIZE();	/* Присоединить периферию к выводам */
+		HARDWARE_UART7_INITIALIZE();	/* Присоединить периферию к выводам */
 
 		// reset the UART
-		UART1->UART_CR = UART_CR_RSTRX | UART_CR_RSTTX | UART_CR_RXDIS | UART_CR_TXDIS;
+		UART7->UART_CR = UART_CR_RSTRX | UART_CR_RSTTX | UART_CR_RXDIS | UART_CR_TXDIS;
 		// set serial line mode
-		UART1->UART_MR =
+		UART7->UART_MR =
 			UART_MR_CHMODE_NORMAL |// Normal Mode
 			//UART_MR_USCLKS_MCK |   // Clock = MCK
 			//UART_MR_CHRL_8_BIT |
@@ -4149,14 +4149,14 @@ void hardware_uart7_initialize(uint_fast8_t debug)
 			//UART_MR_NBSTOP_1_BIT |
 			0;
 
-		UART1->UART_IDR = (UART_IDR_RXRDY | UART_IDR_TXRDY);
+		UART7->UART_IDR = (UART_IDR_RXRDY | UART_IDR_TXRDY);
 
 		if (debug == 0)
 		{
-			serial_set_handler(UART1_IRQn, & UART1_IRQHandler);
+			serial_set_handler(UART7_IRQn, & UART7_IRQHandler);
 		}
 
-		UART1->UART_CR = UART_CR_RXEN | UART_CR_TXEN;	// разрешаем приёмник и передатчик.
+		UART7->UART_CR = UART_CR_RXEN | UART_CR_TXEN;	// разрешаем приёмник и передатчик.
 
 	#else	/* HARDWARE_ARM_USExxx */
 		#error Wrong HARDWARE_ARM_USExxx value
@@ -4205,7 +4205,7 @@ void hardware_uart7_initialize(uint_fast8_t debug)
 		serial_set_handler(UART7_IRQn, & UART7_IRQHandler);
 	}
 
-	UART4->CR1 |= USART_CR1_UE; // Включение UART4.
+	UART7->CR1 |= USART_CR1_UE; // Включение UART4.
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX
 
@@ -4214,7 +4214,7 @@ void hardware_uart7_initialize(uint_fast8_t debug)
 
 	UART7->CR1 |= (USART_CR1_RE | USART_CR1_TE); // Transmitter Enable & Receiver Enables
 
-	HARDWARE_UART4_INITIALIZE();	/* Присоединить периферию к выводам */
+	HARDWARE_UART7_INITIALIZE();	/* Присоединить периферию к выводам */
 
 	if (debug == 0)
 	{
@@ -4229,7 +4229,7 @@ void hardware_uart7_initialize(uint_fast8_t debug)
 		// enable the clock of USART0
 		AT91C_BASE_PMC->PMC_PCER = 1UL << AT91C_ID_US0;
 
-		HARDWARE_UART4_INITIALIZE();	/* Присоединить периферию к выводам */
+		HARDWARE_UART7_INITIALIZE();	/* Присоединить периферию к выводам */
 
 		// disable I/O pullup
 		// reset the UART
@@ -4264,7 +4264,7 @@ void hardware_uart7_initialize(uint_fast8_t debug)
 		// enable the clock of UART4
 		AT91C_BASE_PMC->PMC_PCER = 1UL << AT91C_ID_US1;
 
-		HARDWARE_UART4_INITIALIZE();	/* Присоединить периферию к выводам */
+		HARDWARE_UART7_INITIALIZE();	/* Присоединить периферию к выводам */
 
 		// enable uart pins on PIO
 		AT91C_BASE_PIOA->PIO_ASR = AT91C_PA21_RXD1 | AT91C_PA22_TXD1; // assigns the 2 I/O lines to peripheral A function
@@ -4326,7 +4326,7 @@ xxxx!;
 
 #elif CPUSTYLE_ATMEGA32
 
-	#error WITHUART2HW with CPUSTYLE_ATMEGA not supported
+	#error WITHUART7HW with CPUSTYLE_ATMEGA not supported
 
 #elif CPUSTYPE_TMS320F2833X
 xxxx!;
@@ -4397,7 +4397,7 @@ xxxx!;
 	   serial_set_handler(SCIFRXI3_IRQn, SCIFRXI3_IRQHandler);
 	   serial_set_handler(SCIFTXI3_IRQn, SCIFTXI3_IRQHandler);
 	}
-	HARDWARE_UART4_INITIALIZE();	/* Присоединить периферию к выводам */
+	HARDWARE_UART7_INITIALIZE();	/* Присоединить периферию к выводам */
 
 	SCIF3.SCSCR |= 0x0030;	// TE RE - SCIF3 transmitting and receiving operations are enabled */
 
@@ -4422,7 +4422,7 @@ xxxx!;
 
 	UART7->CR1 |= (USART_CR1_RE | USART_CR1_TE); // Transmitter Enable & Receiver Enables
 
-	HARDWARE_UART4_INITIALIZE();	/* Присоединить периферию к выводам */
+	HARDWARE_UART7_INITIALIZE();	/* Присоединить периферию к выводам */
 
 	if (debug == 0)
 	{
