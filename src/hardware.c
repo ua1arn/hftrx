@@ -1054,6 +1054,173 @@ hardware_uart4_set_speed(uint_fast32_t baudrate)
 
 #endif /* WITHUART4HW */
 
+
+#if WITHUART7HW
+
+void
+hardware_uart7_set_speed(uint_fast32_t baudrate)
+{
+#if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
+
+	#if HARDWARE_ARM_USEUSART0
+		// Использование автоматического расчёта предделителя
+		unsigned value;
+		const uint_fast8_t prei = calcdivider(calcdivround(baudrate), ATSAM3S_USART_BRGR_WIDTH, ATSAM3S_USART_BRGR_TAPS, & value, 0);
+		USART0->US_BRGR = value;
+		if (prei == 0)
+		{
+			USART0->US_MR |= US_MR_OVER;
+		}
+		else
+		{
+			USART0->US_MR &= ~ US_MR_OVER;
+		}
+	#elif HARDWARE_ARM_USEUSART1
+		// Использование автоматического расчёта предделителя
+		unsigned value;
+		const uint_fast8_t prei = calcdivider(calcdivround(baudrate), ATSAM3S_USART_BRGR_WIDTH, ATSAM3S_USART_BRGR_TAPS, & value, 0);
+		USART1->US_BRGR = value;
+		if (prei == 0)
+		{
+			USART1->US_MR |= US_MR_OVER;
+		}
+		else
+		{
+			USART1->US_MR &= ~ US_MR_OVER;
+		}
+
+	#elif HARDWARE_ARM_USEUART0
+		// Использование автоматического расчёта предделителя
+		unsigned value;
+		calcdivider(calcdivround(baudrate), ATSAM3S_UART_BRGR_WIDTH, ATSAM3S_UART_BRGR_TAPS, & value, 0);
+		UART0->UART_BRGR = value;
+	#elif HARDWARE_ARM_USEUART1
+		// Использование автоматического расчёта предделителя
+		unsigned value;
+		calcdivider(calcdivround(baudrate), ATSAM3S_UART_BRGR_WIDTH, ATSAM3S_UART_BRGR_TAPS, & value, 0);
+		UART1->UART_BRGR = value;
+	#else	/* HARDWARE_ARM_USExxx */
+		#error Wrong HARDWARE_ARM_USExxx value
+	#endif
+
+#elif CPUSTYLE_AT91SAM7S
+
+	// Использование автоматического расчёта предделителя
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(calcdivround(baudrate), AT91SAM7_USART_BRGR_WIDTH, AT91SAM7_USART_BRGR_TAPS, & value, 0);
+
+	#if HARDWARE_ARM_USEUSART0
+		AT91C_BASE_US0->US_BRGR = value;
+		if (prei == 0)
+		{
+			AT91C_BASE_US0->US_MR |= AT91C_US_OVER;
+		}
+		else
+		{
+			AT91C_BASE_US0->US_MR &= ~ AT91C_US_OVER;
+		}
+	#elif HARDWARE_ARM_USEUSART1
+		AT91C_BASE_US1->US_BRGR = value;
+		if (prei == 0)
+		{
+			AT91C_BASE_US1->US_MR |= AT91C_US_OVER;
+		}
+		else
+		{
+			AT91C_BASE_US1->US_MR &= ~ AT91C_US_OVER;
+		}
+	#else	/* HARDWARE_ARM_USExxx */
+		#error Wrong HARDWARE_ARM_USExxx value
+	#endif
+
+#elif CPUSTYLE_ATMEGA_XXX4
+
+	// Использование автоматического расчёта предделителя
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(calcdivround(baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
+
+	if (prei == 0)
+		UCSR1A |= (1U << U2X1);
+	else
+		UCSR1A &= ~ (1U << U2X1);
+
+	UBRR1 = value;	/* Значение получено уже уменьшенное на 1 */
+
+
+#elif CPUSTYLE_ATMEGA128
+
+	// Использование автоматического расчёта предделителя
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(calcdivround(baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
+
+	if (prei == 0)
+		UCSR1A |= (1U << U2X1);
+	else
+		UCSR1A &= ~ (1U << U2X1);
+
+	UBRR1H = (value >> 8) & 0xff;	/* Значение получено уже уменьшенное на 1 */
+	UBRR1L = value & 0xff;
+
+#elif CPUSTYLE_ATMEGA
+
+	#error WITHUART2HW not supported with CPUSTYLE_ATMEGA
+
+#elif CPUSTYLE_ATXMEGAXXXA4
+
+	// Использование автоматического расчёта предделителя
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(calcdivround(baudrate), ATXMEGA_UBR_WIDTH, ATXMEGA_UBR_TAPS, & value, 1);
+	if (prei == 0)
+		USARTE1.CTRLB |= USART_CLK2X_bm;
+	else
+		USARTE1.CTRLB &= ~USART_CLK2X_bm;
+	// todo: проверить требование к порядку обращения к портам
+	USARTE1.BAUDCTRLA = (value & 0xff);	/* Значение получено уже уменьшенное на 1 */
+	USARTE1.BAUDCTRLB = (ATXMEGA_UBR_BSEL << 4) | ((value >> 8) & 0x0f);
+
+#elif CPUSTYLE_STM32MP1
+
+	// uart4 on xxx
+
+	UART7->BRR = calcdivround2(HSIFREQ, baudrate);		// младшие 4 бита - это дробная часть.
+
+#elif CPUSTYLE_STM32F
+
+	// uart2 on apb1
+
+	USART2->BRR = calcdivround_pclk1(baudrate);		// младшие 4 бита - это дробная часть.
+
+#elif CPUSTYPE_TMS320F2833X
+
+	const unsigned long lspclk = CPU_FREQ / 4;
+	const unsigned long brr = (lspclk / 8) / baudrate;	// @ CPU_FREQ = 100 MHz, 9600 can not be programmed
+
+	SCIBHBAUD = (brr - 1) >> 8;		// write 8 bits, not 16
+	SCIBLBAUD = (brr - 1) >> 0;
+
+#elif CPUSTYLE_R7S721
+
+	// Использование автоматического расчёта предделителя
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(calcdivround_p1clock(baudrate), R7S721_SCIF_SCBRR_WIDTH, R7S721_SCIF_SCBRR_TAPS, & value, 1);
+
+	SCIF3.SCSMR = (SCIF3.SCSMR & ~ 0x03) |
+		scemr_scsmr [prei].scsmr |	// prescaler: 0: /1, 1: /4, 2: /16, 3: /64
+		0;
+	SCIF3.SCEMR = (SCIF3.SCEMR & ~ (0x80 | 0x01)) |
+		0 * 0x80 |						// BGDM
+		scemr_scsmr [prei].scemr |	// ABCS = 8/16 clocks per bit
+		0;
+	SCIF3.SCBRR = value;	/* Bit rate register */
+
+#else
+	#error Undefined CPUSTYLE_XXX
+#endif
+
+}
+
+#endif /* WITHUART7HW */
+
 #if WITHTWIHW
 
 void hardware_twi_master_configure(void)
@@ -10437,6 +10604,20 @@ static void stm32mp1_pll_initialize(void)
 		0;
 	(void) RCC->UART24CKSELR;
 #endif /* WITHUART2HW */
+
+#if 1//WITHUART7HW
+	// usart7
+	//0x0: pclk1 clock selected as kernel peripheral clock (default after reset)
+	//0x1: pll4_q_ck clock selected as kernel peripheral clock
+	//0x2: hsi_ker_ck clock selected as kernel peripheral clock
+	//0x3: csi_ker_ck clock selected as kernel peripheral clock
+	//0x4: hse_ker_ck clock selected as kernel peripheral clock
+	RCC->UART78CKSELR = (RCC->UART78CKSELR & ~ (RCC_UART78CKSELR_UART78SRC_Msk)) |
+		(0x02 << RCC_UART24CKSELR_UART24SRC_Pos) |	// hsi_ker_ck
+		//(0x00 << RCC_UART24CKSELR_UART24SRC_Pos) |	// pclk1
+		0;
+	(void) RCC->UART78CKSELR;
+#endif /* WITHUART7HW */
 
 #if WITHSPIHW
 	//0x0: pll4_p_ck clock selected as kernel peripheral clock (default after reset)
