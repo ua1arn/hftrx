@@ -15,6 +15,7 @@
 #include "board.h"
 
 #include "display.h"
+#include "display2.h"
 #include <stdint.h>
 
 #include "spi.h"
@@ -121,7 +122,7 @@ ls020_pix8(
 }
 
 // Вызов этой функции только внутри display_wrdata_begin() и 	display_wrdata_end();
-static void ls020_put_char_small(char cc)
+static uint_fast8_t ls020_put_char_small(uint_fast8_t xpix, char cc)
 {
 	const uint_fast8_t c = smallfont_decode((unsigned char) cc);
 	enum { NBYTES = (sizeof ls020_smallfont [0] / sizeof ls020_smallfont [0][0]) };
@@ -132,12 +133,13 @@ static void ls020_put_char_small(char cc)
 	{
 		ls020_pix8(p [i]);
 	}
+	return xpix + NBYTES;
 }
 
 
 // Вызов этой функции только внутри display_wrdata_begin() и 	display_wrdata_end();
 
-static void ls020_put_char_big(char cc)
+static uint_fast8_t ls020_put_char_big(uint_fast8_t xpix, char cc)
 {
 	enum { NBV = (BIGCHARH / 8) }; // сколько байтов в одной вертикали
 	uint_fast8_t i = NBV * ((cc == '.' || cc == '#') ? 12 : 0);	// начальная колонка знакогенератора, откуда начинать.
@@ -148,12 +150,14 @@ static void ls020_put_char_big(char cc)
 	for (; i < NBYTES; ++ i)
 	{
 		ls020_pix8(p [i]);
+		++ xpix;
 	}
+	return xpix;
 }
 
 // Вызов этой функции только внутри display_wrdata_begin() и 	display_wrdata_end();
 
-static void ls020_put_char_half(char cc)
+static uint_fast8_t ls020_put_char_half(uint_fast8_t xpix, char cc)
 {
 	uint_fast8_t i = 0;
     const uint_fast8_t c = bigfont_decode((unsigned char) cc);
@@ -163,6 +167,7 @@ static void ls020_put_char_half(char cc)
 	{
 		ls020_pix8(p [i]);
 	}
+	return xpix + NBYTES;
 }
 
 
@@ -238,12 +243,27 @@ static void ls020_set_addr_column(uint_fast8_t x1, uint_fast8_t y1)
 }
 
 
+//uint8_t x = h * CHAR_W;
+//uint8_t y = DIM_Y - 5 - (v * CHAR_H);
+
+static void
+ls020_gotoxy(uint_fast8_t xcell, uint_fast8_t ycell)
+{
+#if	LCDMODE_LS020_TOPDOWN
+	// Перевёрнутое изображение
+	ls020_set_addr_column(xcell * CHAR_W, (DIM_Y - 1) - ycell * CHAR_H); // Rotate 180 degrees
+#else /* LCDMODE_LS020_TOPDOWN */
+	// прямое изображение
+	ls020_set_addr_column((DIM_X - 1) - (xcell * CHAR_W), ycell * CHAR_H); // Rotate 180 degrees
+#endif /* LCDMODE_LS020_TOPDOWN */
+}
+
 static void ls020_clear(COLORMAIN_T bg)
 {
 	unsigned i;
 
-	ls020_setcolor(COLOR_WHITE, bg);
-	display_gotoxy(0, 0);
+	ls020_setcolor(COLORMAIN_WHITE, bg);
+	ls020_gotoxy(0, 0);
 	ls020_set_windowh(DIM_Y);
 
 	ls020_put_char_begin();
@@ -441,11 +461,14 @@ void colmain_setcolors3(COLORMAIN_T fg, COLORMAIN_T bg, COLORMAIN_T fgbg)
 	colmain_setcolors(fg, bg);
 }
 
-void
-display_wrdata_begin(void)
+uint_fast16_t
+display_wrdata_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
 {
+	ls020_gotoxy(xcell, ycell);
 	ls020_set_windowh(SMALLCHARH);
 	ls020_put_char_begin();
+	* yp = GRID2Y(ycell);
+	return GRID2X(xcell);
 }
 
 void
@@ -454,11 +477,14 @@ display_wrdata_end(void)
 	ls020_put_char_end();
 }
 
-void
-display_wrdatabar_begin(void)
+uint_fast16_t
+display_wrdatabar_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
 {
+	ls020_gotoxy(xcell, ycell);
 	ls020_set_windowh(CHAR_H * 1);
 	ls020_put_char_begin();
+	* yp = GRID2Y(ycell);
+	return GRID2X(xcell);
 }
 
 void
@@ -468,11 +494,14 @@ display_wrdatabar_end(void)
 }
 
 
-void
-display_wrdatabig_begin(void)
+uint_fast16_t
+display_wrdatabig_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
 {
+	ls020_gotoxy(xcell, ycell);
 	ls020_set_windowh(BIGCHARH);	// same as HALFCHARH
 	ls020_put_char_begin();
+	* yp = GRID2Y(ycell);
+	return GRID2X(xcell);
 }
 
 
@@ -492,40 +521,25 @@ display_barcolumn(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t pattern)
 	return xpix + 1;
 }
 
-void
-display_put_char_big(uint_fast8_t c, uint_fast8_t lowhalf)
+uint_fast16_t
+display_put_char_big(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf)
 {
-	ls020_put_char_big(c);
+	return ls020_put_char_big(xpix, c);
 }
 
-void
-display_put_char_half(uint_fast8_t c, uint_fast8_t lowhalf)
+uint_fast16_t
+display_put_char_half(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf)
 {
-	ls020_put_char_half(c);
+	return ls020_put_char_half(xpix, c);
 }
 
 
 // Вызов этой функции только внутри display_wrdata_begin() и display_wrdata_end();
 // Используется при выводе на графический ндикатор, если ТРЕБУЕТСЯ переключать полосы отображения
-void
-display_put_char_small(uint_fast8_t c, uint_fast8_t lowhalf)
+uint_fast16_t
+display_put_char_small(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf)
 {
-	ls020_put_char_small(c);
-}
-
-	//uint8_t x = h * CHAR_W;
-	//uint8_t y = DIM_Y - 5 - (v * CHAR_H);
-
-void
-display_gotoxy(uint_fast8_t x, uint_fast8_t y)
-{
-#if	LCDMODE_LS020_TOPDOWN
-	// Перевёрнутое изображение
-	ls020_set_addr_column(x * CHAR_W, (DIM_Y - 1) - y * CHAR_H); // Rotate 180 degrees
-#else /* LCDMODE_LS020_TOPDOWN */
-	// прямое изображение
-	ls020_set_addr_column((DIM_X - 1) - (x * CHAR_W), y * CHAR_H); // Rotate 180 degrees
-#endif /* LCDMODE_LS020_TOPDOWN */
+	return ls020_put_char_small(xpix, c);
 }
 // Координаты в пикселях
 void display_plotfrom(uint_fast16_t x, uint_fast16_t y)

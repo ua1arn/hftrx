@@ -77,12 +77,19 @@ board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
 	* yr = y;
 	return 0;
 }
+
 #endif /* defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_GT911) */
 
 #if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_FT5336)
 #include "ft5336.h"
 
 static TS_StateTypeDef ts_ft5336;
+
+static void
+tsc_interrupt_handler(void)
+{
+	TP();
+}
 
 uint_fast8_t
 board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
@@ -109,8 +116,8 @@ board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
 void board_tsc_initialize(void)
 {
 #if TSC1_TYPE == TSC_TYPE_GT911
-	if (gt911_initialize(GOODIX_I2C_ADDR_BA))
-		PRINTF("gt911 initialization succefful\n");
+	if (gt911_initialize())
+		PRINTF("gt911 initialization successful\n");
 	else
 		PRINTF("gt911 initialization error\n");
 #endif /* TSC1_TYPE == TSC_TYPE_GT911 */
@@ -121,7 +128,7 @@ void board_tsc_initialize(void)
 
 #if TSC1_TYPE == TSC_TYPE_FT5336
 	if (ft5336_Initialize(DIM_X, DIM_Y) == FT5336_I2C_INITIALIZED)
-		PRINTF("ft5336 initialization succefful\n");
+		PRINTF("ft5336 initialization successful\n");
 	else
 	{
 		PRINTF("ft5336 initialization error\n");

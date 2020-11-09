@@ -414,6 +414,48 @@ int dbg_getchar(char * r);
 
 #endif /* WITHCAT && WITHUART2HW && WITHCAT_USART2 */
 
+#if WITHUART7HW
+	// CAT7 функции работают через UART7
+	// Вызывается из user-mode программы
+	#define HARDWARE_CAT7_INITIALIZE() do { \
+			hardware_uart7_initialize(0); \
+		} while (0)
+	// Вызывается из user-mode программы
+	#define HARDWARE_CAT7_SET_SPEED(baudrate) do { \
+			hardware_uart7_set_speed(baudrate); \
+		} while (0)
+	// вызывается из state machie протокола CAT или NMEA (в прерываниях)
+	// для управления разрешением последующих вызовов прерывания
+	#define HARDWARE_CAT7_ENABLETX(v) do { \
+			hardware_uart7_enabletx(v); \
+		} while (0)
+	// вызывается из state machie протокола CAT или NMEA (в прерываниях)
+	// для управления разрешением последующих вызовов прерывания
+	#define HARDWARE_CAT7_ENABLERX(v) do { \
+			hardware_uart7_enablerx(v); \
+		} while (0)
+	// вызывается из state machie протокола CAT или NMEA (в прерываниях)
+	// для передачи символа
+	#define HARDWARE_CAT7_TX(ctx, c) do { \
+			hardware_uart7_tx((ctx), (c)); \
+		} while (0)
+	// вызывается из обработчика прерываний UART7
+	// с принятым символом
+	#define HARDWARE_UART7_ONRXCHAR(c) do { \
+			cat7_parsechar(c); \
+		} while (0)
+	// вызывается из обработчика прерываний UART7
+	#define HARDWARE_UART7_ONOVERFLOW() do { \
+			cat7_rxoverflow(); \
+		} while (0)
+	// вызывается из обработчика прерываний UART7
+	// по готовности передатчика
+	#define HARDWARE_UART7_ONTXCHAR(ctx) do { \
+			cat7_sendchar(ctx); \
+		} while (0)
+
+#endif /* WITHUART7HW */
+
 #if WITHCAT && WITHUSBCDCACM && WITHCAT_CDC
 	// CAT функции работают через виртуальный USB последовательный порт
 	// Вызывается из user-mode программы

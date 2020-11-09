@@ -6392,6 +6392,71 @@ board_set_afresponcetx(int_fast8_t v)
 }
 
 #if defined(CODEC1_TYPE) && WITHAFCODEC1HAVEPROC
+
+#define EQ_STAGES				1
+#define BIQUAD_COEFF_IN_STAGE 	5
+
+float32_t EQ_RX_LOW_FILTER_State [2 * EQ_STAGES] = { 0 };
+float32_t EQ_RX_MID_FILTER_State [2 * EQ_STAGES] = { 0 };
+float32_t EQ_RX_HIG_FILTER_State [2 * EQ_STAGES] = { 0 };
+float32_t EQ_RX_LOW_FILTER_Coeffs [BIQUAD_COEFF_IN_STAGE * EQ_STAGES] = { 0 };
+float32_t EQ_RX_MID_FILTER_Coeffs [BIQUAD_COEFF_IN_STAGE * EQ_STAGES] = { 0 };
+float32_t EQ_RX_HIG_FILTER_Coeffs [BIQUAD_COEFF_IN_STAGE * EQ_STAGES] = { 0 };
+
+arm_biquad_cascade_df2T_instance_f32 EQ_RX_LOW_FILTER = { EQ_STAGES, EQ_RX_LOW_FILTER_State, EQ_RX_LOW_FILTER_Coeffs };
+arm_biquad_cascade_df2T_instance_f32 EQ_RX_MID_FILTER = { EQ_STAGES, EQ_RX_MID_FILTER_State, EQ_RX_MID_FILTER_Coeffs };
+arm_biquad_cascade_df2T_instance_f32 EQ_RX_HIG_FILTER = { EQ_STAGES, EQ_RX_HIG_FILTER_State, EQ_RX_HIG_FILTER_Coeffs };
+
+void calcBiquad(uint32_t Fc, uint32_t Fs, float32_t Q, float32_t peakGain, float32_t *outCoeffs)
+{
+    float32_t a0, a1, a2, b1, b2, norm;
+
+    float32_t V = powf(10.0f, fabsf(peakGain) / 20.0f);
+    float32_t K = tanf(PI * Fc / Fs);
+    if (peakGain >= 0.0f)
+    {
+        norm = 1.0f / (1.0f + 1.0f / Q * K + K * K);
+        a0 = (1.0f + V / Q * K + K * K) * norm;
+        a1 = 2.0f * (K * K - 1.0f) * norm;
+        a2 = (1.0f - V / Q * K + K * K) * norm;
+        b1 = a1;
+        b2 = (1.0f - 1.0f / Q * K + K * K) * norm;
+    }
+    else
+    {
+        norm = 1.0f / (1.0f + V / Q * K + K * K);
+        a0 = (1.0f + 1.0f / Q * K + K * K) * norm;
+        a1 = 2.0f * (K * K - 1.0f) * norm;
+        a2 = (1.0f - 1.0f / Q * K + K * K) * norm;
+        b1 = a1;
+        b2 = (1.0f - V / Q * K + K * K) * norm;
+    }
+
+    //save coefficients
+    outCoeffs[0] = a0;
+    outCoeffs[1] = a1;
+    outCoeffs[2] = a2;
+    outCoeffs[3] = -b1;
+    outCoeffs[4] = -b2;
+}
+
+void audio_rx_equalizer_init(void)
+{
+    calcBiquad(400, ARMI2SRATE, 0.5f, glob_codec1_gains [2] - 12.0f, EQ_RX_LOW_FILTER_Coeffs);
+    calcBiquad(1900, ARMI2SRATE, 1.5f, glob_codec1_gains [3] - 12.0f, EQ_RX_MID_FILTER_Coeffs);
+    calcBiquad(3300, ARMI2SRATE, 1.5f, glob_codec1_gains [4] - 12.0f, EQ_RX_HIG_FILTER_Coeffs);
+}
+
+void audio_rx_equalizer(float32_t *buffer, uint16_t size)
+{
+	if (glob_mikeequal)
+	{
+		arm_biquad_cascade_df2T_f32(& EQ_RX_LOW_FILTER, buffer, buffer, size);
+		arm_biquad_cascade_df2T_f32(& EQ_RX_MID_FILTER, buffer, buffer, size);
+		arm_biquad_cascade_df2T_f32(& EQ_RX_HIG_FILTER, buffer, buffer, size);
+	}
+}
+
 // включение обработки сигнала с микрофона (эффекты, эквалайзер, ...)
 void
 board_set_mikeequal(uint_fast8_t n)
@@ -6412,6 +6477,8 @@ void board_set_mikeequalparams(const uint_fast8_t * p)
 	{
 		memcpy(glob_codec1_gains, p, sizeof glob_codec1_gains);
 		board_codec1regchanged();
+
+		audio_rx_equalizer_init();
 	}
 
 }
@@ -6607,7 +6674,6 @@ board_set_dspagc(uint_fast8_t n)
 		board_dsp1regchanged();
 	}
 }
-
 
 #if WITHSPISLAVE
 

@@ -91,7 +91,7 @@
 #define MAX_CONTACTS_LOC  5
 #define TRIGGER_LOC 6
 
-uint_fast8_t gt911_initialize(uint_fast8_t addr);
+uint_fast8_t gt911_initialize(void);
 uint_fast8_t gt911_getXY(uint_fast16_t * xt, uint_fast16_t * yt);
 
 #endif /* GT911_H_INCLUDED */

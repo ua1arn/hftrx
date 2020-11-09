@@ -44,6 +44,9 @@ typedef uint_least64_t phase_t;
 #define WITHNOTCHFREQMIN	300
 #define WITHNOTCHFREQMAX	5000
 
+#define WITHNOTCHWIDTHMIN	100
+#define WITHNOTCHWIDTHMAX	1000
+
 /* параметры отображения панорамы */
 #define WITHTOPDBMIN 0
 #define WITHTOPDBMAX 60
@@ -3376,6 +3379,8 @@ void hamradio_set_reverb_delay(uint_fast8_t v);
 void hamradio_set_reverb_loss(uint_fast8_t v);
 #endif /* WITHREVERB */
 
+uint_fast16_t hamradio_notch_freq(int_fast8_t step);
+uint_fast16_t hamradio_notch_width(int_fast8_t step);
 uint_fast8_t hamradio_get_gnotch(void);
 void hamradio_set_gnotch(uint_fast8_t v);
 uint_fast8_t hamradio_get_gnotchtype(void);

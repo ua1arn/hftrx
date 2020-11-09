@@ -11,6 +11,9 @@
 //
 
 #include "hardware.h"
+
+#if ! (LCDMODE_DUMMY || LCDMODE_HD44780)
+
 #include "board.h"
 #include "display.h"
 #include "formats.h"
@@ -1712,7 +1715,7 @@ display_string3_at_xy(uint_fast16_t x, uint_fast16_t y, const char * __restrict 
 #endif /* SMALLCHARH3 */
 
 
-#if ! LCDMODE_DUMMY
+#if LCDMODE_COLORED
 
 // Установить прозрачность для прямоугольника
 void display_transparency(
@@ -1751,8 +1754,6 @@ void display_transparency(
 	}
 #endif
 }
-
-#endif /* ! LCDMODE_DUMMY */
 
 static uint_fast8_t scalecolor(
 	uint_fast8_t cv,	// color component value
@@ -1855,17 +1856,20 @@ static void fillfour_xltrgb24(COLOR24_T * xltable, unsigned i, COLOR24_T c)
 
 #endif /* defined (COLORPIP_SHADED) */
 
+#endif /* LCDMODE_COLORED */
+
 void display2_xltrgb24(COLOR24_T * xltable)
 {
-#if defined (COLORPIP_SHADED)
-	int i;
+	unsigned i;
 
 	PRINTF("display2_xltrgb24: init indexed colors\n");
 
 	for (i = 0; i < 256; ++ i)
 	{
-		xltable [i] = COLOR24(255, 0, 0);
+		xltable [i] = COLOR24(i, i, i);
 	}
+
+#if defined (COLORPIP_SHADED)
 
 	// часть цветов с 0-го индекса используется в отображении водопада
 	// остальные в дизайне
@@ -1946,7 +1950,6 @@ void display2_xltrgb24(COLOR24_T * xltable)
 	PRINTF("display2_xltrgb24: init RRRRRGGG GGGBBBBB colos\n");
 	// Обычная таблица - все цвета могут быть использованы как индекс
 	// Водопад отображается без использования инлдексов цветов
-	int i;
 
 	for (i = 0; i < 256; ++ i)
 	{
@@ -1962,3 +1965,4 @@ void display2_xltrgb24(COLOR24_T * xltable)
 }
 
 
+#endif /* ! (LCDMODE_DUMMY || LCDMODE_HD44780) */

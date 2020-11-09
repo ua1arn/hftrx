@@ -690,11 +690,12 @@ void colmain_setcolors3(COLORMAIN_T fg, COLORMAIN_T bg, COLORMAIN_T fgbg)
 	colmain_setcolors(fg, bg);
 }
 
-
-void
-display_wrdata_begin(void)
+uint_fast16_t display_wrdata_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
 {
+	display_gotoxy(xcell, ycell);
 	hd44780_put_char_begin();	/* Выдать CSB при использовании SPI интерфейса и два бита о записи данных */
+	* yp = GRID2Y(ycell);
+	return GRID2X(xcell);
 }
 
 void
@@ -703,21 +704,21 @@ display_wrdata_end(void)
 	hd44780_put_char_end();
 }
 
-void
-display_wrdatabar_begin(void)
+uint_fast16_t display_wrdatabar_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
 {
+	return display_wrdata_begin(xcell, ycell, yp);
 }
 
 void
 display_wrdatabar_end(void)
 {
+	return display_wrdata_end();
 }
 
 
-void
-display_wrdatabig_begin(void)
+uint_fast16_t display_wrdatabig_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
 {
-	hd44780_put_char_begin();	/* Выдать CSB при использовании SPI интерфейса и два бита о записи данных */
+	return display_wrdata_begin(xcell, ycell, yp);	/* Выдать CSB при использовании SPI интерфейса и два бита о записи данных */
 }
 
 
@@ -734,38 +735,39 @@ uint_fast16_t
 display_barcolumn(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t pattern)
 {
 	hd44780_bar_column(pattern);
+	return xpix + 2;
+}
+
+uint_fast16_t display_put_char_big(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf)
+{
+	(void) lowhalf;
+	hd44780_wrdata_fast(c);
 	return xpix + 1;
 }
 
-void
-display_put_char_big(uint_fast8_t c, uint_fast8_t lowhalf)
+uint_fast16_t
+display_put_char_half(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf)
 {
 	(void) lowhalf;
 	hd44780_wrdata_fast(c);
-}
-
-void
-display_put_char_half(uint_fast8_t c, uint_fast8_t lowhalf)
-{
-	(void) lowhalf;
-	hd44780_wrdata_fast(c);
+	return xpix + 1;
 }
 
 
 // Вызов этой функции только внутри display_wrdata_begin() и display_wrdata_end();
 // Используется при выводе на графический ндикатор, если ТРЕБУЕТСЯ переключать полосы отображения
-void
-display_put_char_small(uint_fast8_t c, uint_fast8_t lowhalf)
+uint_fast16_t display_put_char_small(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf)
 {
 	(void) lowhalf;
 	hd44780_wrdata_fast(c);
+	return xpix + 2;
 }
 
 // самый маленький шрифт
 // stub function
-void display_wrdata2_begin(void)
+uint_fast16_t display_wrdata2_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
 {
-	display_wrdata_begin();
+	return display_wrdata_begin(xcell, ycell, yp);
 }
 // stub function
 void display_wrdata2_end(void)
@@ -773,9 +775,9 @@ void display_wrdata2_end(void)
 	display_wrdata_end();
 }
 // stub function
-void display_put_char_small2(uint_fast8_t c, uint_fast8_t lowhalf)
+uint_fast16_t display_put_char_small2(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf)
 {
-	display_put_char_small(c, lowhalf);
+	return display_put_char_small(xpix, ypix, c, lowhalf);
 }
 
 void

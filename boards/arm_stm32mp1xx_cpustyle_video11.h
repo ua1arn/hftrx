@@ -35,6 +35,7 @@
 
 #if WITHDEBUG
 	#define WITHUART4HW	1	/* PD5, PD6 Используется периферийный контроллер последовательного порта #2 */
+	#define WITHUART7HW	1	/* RX PB3, TX PB4 Используется периферийный контроллер последовательного порта #2 */
 	//#define WITHUARTFIFO	1	/* испольование FIFO */
 #endif /* WITHDEBUG */
 
@@ -597,6 +598,15 @@
 		const uint_fast32_t RXMASK = (1uL << 2); /* PB2: RX DATA line (2 MHz) - pull-up RX data */  \
 		arm_hardware_piog_altfn50(TXMASK, 6); /* AF6 */ \
 		arm_hardware_piob_altfn50(RXMASK, 8); /* AF8 */ \
+		arm_hardware_piob_updown(RXMASK, 0); \
+	} while (0)
+
+// WITHUART7HW
+#define HARDWARE_UART7_INITIALIZE() do { \
+		const uint_fast32_t TXMASK = (1uL << 4); /* PB4: AF13 TX DATA line (2 MHz) */ \
+		const uint_fast32_t RXMASK = (1uL << 3); /* PB3: AF13 RX DATA line (2 MHz) - pull-up RX data */  \
+		arm_hardware_piob_altfn50(TXMASK, 13); /* AF13 */ \
+		arm_hardware_piob_altfn50(RXMASK, 13); /* AF13 */ \
 		arm_hardware_piob_updown(RXMASK, 0); \
 	} while (0)
 
