@@ -8119,6 +8119,7 @@ static void hamradio_autonotch_process(LMSData_t * const lmsd, float32_t * notch
 }
 #endif /* WITHLMSAUTONOTCH */
 
+void audio_rx_equalizer(float32_t *buffer, uint16_t size);
 // обработка и сохранение в savesampleout16stereo_user()
 static void processingonebuff(uint_fast8_t pathi, lmsnrstate_t * const nrp, speexel_t * p)
 {
@@ -8183,6 +8184,10 @@ static void processingonebuff(uint_fast8_t pathi, lmsnrstate_t * const nrp, spee
 		END_STAMP();
 		if (anotch && pathi == 0)
 			hamradio_autonotch_process(& lmsData0, nrp->wire1);
+#if (1)
+		audio_rx_equalizer(nrp->wire1, FIRBUFSIZE);
+#endif
+
 		nrp->outsp = nrp->wire1;
 	}
 #endif /* WITHNOSPEEX */

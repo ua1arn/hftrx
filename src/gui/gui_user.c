@@ -2594,7 +2594,7 @@ static void window_ap_mic_eq_process(void)
 
 		if (IS_BUTTON_PRESS)
 		{
-			close_window(DONT_OPEN_PARENT_WINDOW);
+			close_all_windows();
 			return;
 		}
 		else if (IS_SLIDER_MOVE)
