@@ -5417,6 +5417,14 @@ void hightests(void)
 		PRINTF(PSTR("__GNUC__=%d, __GNUC_MINOR__=%d\n"), (int) __GNUC__, (int) __GNUC_MINOR__);
 	}
 #endif
+#if 0 && WITHOPENVG
+	{
+
+		init((NativeWindowType) NULL);
+		render(DIM_X, DIM_Y);
+		deinit();
+	}
+#endif
 #if 0 && (__CORTEX_A != 0)
 	{
 

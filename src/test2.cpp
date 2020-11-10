@@ -1,11 +1,14 @@
-#if 0
 
 #include <new>
 #include <stdio.h>
 #include <stddef.h>
 
+#include <cxxabi.h>
+
 #include "hardware.h"
 #include "formats.h"
+
+#if 0
 
 class tcl0 {
 public:
@@ -42,6 +45,8 @@ void cpptest() {
 
 }
 
+#endif
+
 // Taken from https://wiki.osdev.org/C++#The_Operators_.27new.27_and_.27delete.27
 
 void *operator new(size_t size) {
@@ -58,6 +63,25 @@ void operator delete(void *p) {
 
 void operator delete[](void *p) {
 	free(p);
+}
+
+std::bad_alloc::~bad_alloc()
+{
+	ASSERT(0);
+	for (;;)
+		;
+}
+
+std::exception::~exception()
+{
+	ASSERT(0);
+	for (;;)
+		;
+}
+
+const char* std::bad_alloc::what() const
+{
+	return NULL;
 }
 
 extern "C" {
@@ -78,6 +102,54 @@ extern "C" {
 
 	}
 
-}
+	// See: https://habr.com/ru/post/279151/
+	// See: https://github.com/shuobeige11/rn-web/blob/aace070ad8c064b762d7ac96bad8657baabb30b1/third-party/folly-2016.09.26.00/folly/experimental/exception_tracer/ExceptionTracerLib.cpp
 
-#endif
+	void __cxa_begin_catch()
+	{
+	    //printf("begin FTW\n");
+	}
+
+	void __cxa_end_catch()
+	{
+	    //printf("end FTW\n");
+	}
+
+	void __cxa_rethrow()
+	{
+		ASSERT(0);
+		for (;;)
+			;
+	}
+	void __cxa_throw_bad_array_length()
+	{
+		ASSERT(0);
+		for (;;)
+			;
+	}
+
+	void __cxa_throw_bad_array_new_length()
+	{
+		ASSERT(0);
+		for (;;)
+			;
+	}
+
+	void __cxa_throw(
+	    void* thrownException,
+	    std::type_info* type,
+	    void (*destructor)(void*))
+	{
+		ASSERT(0);
+		for (;;)
+			;
+	}
+
+	void * __cxa_allocate_exception(size_t thrown_size) throw()
+	{
+		ASSERT(0);
+		for (;;)
+			;
+		return NULL;
+	}
+}

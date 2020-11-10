@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include <assert.h>
 
 // использование библиотечной функции форматного вывода вместо самописной
 //#define FORMATFROMLIBRARY (CPUSTYLE_ARM_CM7 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM0 /* || (__CORTEX_A != 0) */)
@@ -475,3 +476,16 @@ int dbg_puts_impl(const char * s)
 	return 0;
 }
 #endif /* WITHDEBUG */
+
+
+void __assert (const char * file, int line, const char * msg)
+{
+	for (;;)
+		;
+}
+
+void __assert_func (const char * file, int line, const char * func, const char * msg)
+{
+	for (;;)
+		;
+}
