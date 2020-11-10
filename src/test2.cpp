@@ -49,6 +49,8 @@ void cpptest() {
 
 // Taken from https://wiki.osdev.org/C++#The_Operators_.27new.27_and_.27delete.27
 
+#if WITHUSEMALLOC
+
 void *operator new(size_t size) {
 	return malloc(size);
 }
@@ -64,6 +66,8 @@ void operator delete(void *p) {
 void operator delete[](void *p) {
 	free(p);
 }
+
+#endif /* WITHUSEMALLOC */
 
 std::bad_alloc::~bad_alloc()
 {
