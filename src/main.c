@@ -8205,9 +8205,9 @@ static void processingonebuff(uint_fast8_t pathi, lmsnrstate_t * const nrp, spee
 		END_STAMP();
 		if (anotch && pathi == 0)
 			hamradio_autonotch_process(& lmsData0, nrp->wire1);
-#if (1)
+#if WITHAFEQUALIZER
 		audio_rx_equalizer(nrp->wire1, FIRBUFSIZE);
-#endif
+#endif /* WITHAFEQUALIZER */
 
 		nrp->outsp = nrp->wire1;
 	}
