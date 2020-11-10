@@ -978,8 +978,8 @@ mmio_clrsetbits_32(uintptr_t addr, uint32_t cmask, uint32_t smask)
 
 ////////////////////////
 
-//#define VERBOSE PRINTF
-#define VERBOSE(...) // PRINTF
+#define VERBOSE PRINTF
+//#define VERBOSE(...) // PRINTF
 #define ERROR PRINTF
 #define INFO PRINTF
 
@@ -4053,7 +4053,7 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 	}
 	INFO("Memory size = 0x%x (%d MB)\n", uret, uret / (1024U * 1024U));
 
-#if 1
+#if 0
 	// Бесконечный тест памяти.
 	PRINTF("DDR memory tests:\n");
 #if defined (BOARD_BLINK_INITIALIZE)
