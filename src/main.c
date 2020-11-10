@@ -2788,7 +2788,13 @@ struct nvmap
 		uint8_t gmikeequalizer;	// включение обработки сигнала с микрофона (эффекты, эквалайзер, ...)
 		uint8_t gmikeequalizerparams [HARDWARE_CODEC1_NPROCPARAMS];	// Эквалайзер 80Hz 230Hz 650Hz 	1.8kHz 5.3kHz
 	#endif /* WITHAFCODEC1HAVEPROC */
-
+	#if WITHAFEQUALIZER
+		uint8_t	ggrpafeq;
+		uint8_t geqtx;	// эквалайзер в режиме передачи
+		uint8_t geqrx;	// эквалайзер в режиме приема
+		uint8_t geqtxparams [AF_EQUALIZER_BANDS];
+		uint8_t geqrxparams [AF_EQUALIZER_BANDS];
+	#endif /* #if WITHAFEQUALIZER */
 	struct micproc gmicprocs [NMICPROFILES];
 	uint8_t txaprofile [TXAPROFIG_count];	/* параметры обработки звука перед модулятором */
 #endif /* WITHIF4DSP */
@@ -3583,6 +3589,23 @@ enum
 			EQUALIZERBASE, EQUALIZERBASE, EQUALIZERBASE, EQUALIZERBASE, EQUALIZERBASE
 		};
 	#endif /* WITHAFCODEC1HAVEPROC */
+	#if WITHAFEQUALIZER
+		int_fast32_t getafequalizerbase(void)
+		{
+			return - AF_EQUALIZER_BASE;
+		}
+
+		static uint_fast8_t geqtx;
+		static uint_fast8_t geqrx;
+		static uint_fast8_t geqtxparams [AF_EQUALIZER_BANDS] =
+		{
+			AF_EQUALIZER_BASE, AF_EQUALIZER_BASE, AF_EQUALIZER_BASE
+		};
+		static uint_fast8_t geqrxparams [AF_EQUALIZER_BANDS] =
+		{
+			AF_EQUALIZER_BASE, AF_EQUALIZER_BASE, AF_EQUALIZER_BASE
+		};
+	#endif /* WITHAFEQUALIZER */
 	static uint_fast8_t gagcoff;
 #else /* WITHIF4DSP */
 	static const uint_fast8_t gagcoff = 0;
@@ -5853,7 +5876,6 @@ agcseti_load(void)
 	}
 }
 
-
 /* чтение из NVRAM параметров профилей обработки сигнала перед модулятором */
 static void micproc_load(void)
 {
@@ -5893,7 +5915,6 @@ static void micproc_load(void)
 }
 
 #endif /* WITHIF4DSP */
-
 
 ///////////////////////////
 //
@@ -8951,6 +8972,13 @@ updateboard(
 		#endif /* WITHSPECTRUMWF */
 		board_set_showdbm(gshowdbm);		// Отображение уровня сигнала в dBm или S-memter (в зависимости от настроек)
 	#endif /* WITHIF4DSP */
+
+	#if WITHAFEQUALIZER
+		board_set_equalizer_rx(geqrx);
+		board_set_equalizer_tx(geqtx);
+		board_set_equalizer_rx_gains(geqrxparams);
+		board_set_equalizer_tx_gains(geqtxparams);
+	#endif /* WITHAFEQUALIZER */
 
 	#if WITHTX
 		#if defined (CODEC1_TYPE) && WITHAFCODEC1HAVEPROC
@@ -15178,7 +15206,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	{
 		QLABEL("MIC LEVL"), 7, 0, 0,	ISTEP1,		/* подстройка усиления микрофонного усилителя через меню. */
 		ITEM_VALUE,
-		WITHMIKEINGAINMIN, WITHMIKEINGAINMAX, 
+		WITHMIKEINGAINMIN, WITHMIKEINGAINMAX,
 		offsetof(struct nvmap, mik1level),	/* усиление микрофонного усилителя */
 		& mik1level,
 		NULL,
@@ -15189,7 +15217,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	{
 		QLABEL("SD RECRD"), 8, 3, RJ_ON,	ISTEP1,		/* автоматически начинаем запись на SD CARD при включении */
 		ITEM_VALUE,
-		0, 1, 
+		0, 1,
 		offsetof(struct nvmap, recmode),
 		NULL,
 		& recmode,
@@ -15200,7 +15228,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #if WITHUSBUAC
 	{
 		QLABEL("PLAY USB"), 7, 3, RJ_YES,	ISTEP1,
-		ITEM_VALUE,	
+		ITEM_VALUE,
 		0, 1, 					/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 		offsetof(struct nvmap, guacplayer),
 		NULL,
@@ -15210,7 +15238,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	#if WITHRTS96 || WITHRTS192 || WITHTRANSPARENTIQ
 	{
 		QLABEL("I/Q SWAP"), 7, 3, RJ_YES,	ISTEP1,
-		ITEM_VALUE,	
+		ITEM_VALUE,
 		0, 1, 					/* Поменять местами I и Q сэмплы в потоке RTS96 */
 		offsetof(struct nvmap, gswapiq),
 		NULL,
@@ -15220,6 +15248,89 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	#endif /* WITHRTS96 || WITHRTS192 || WITHTRANSPARENTIQ */
 #endif /* WITHUSBUAC */
 #endif /* WITHIF4DSP */
+#if WITHAFEQUALIZER
+	{
+		QLABEL2("", "AF Equalizer"), 0, 0, 0, 0,
+		ITEM_GROUP,
+		0, 0,
+		offsetof(struct nvmap, ggrpafeq),
+		NULL,
+		NULL,
+		NULL,
+	},
+	{
+		QLABEL2("", "RX Equalizer"), 8, 3, RJ_ON,	ISTEP1,
+		ITEM_VALUE,
+		0, 1,
+		offsetof(struct nvmap, geqrx),
+		NULL,
+		& geqrx,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		QLABEL2("", "RX EQ 400 Hz"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
+		ITEM_VALUE,
+		0, AF_EQUALIZER_BASE * 2,
+		offsetof(struct nvmap, geqrxparams [0]),
+		NULL,
+		& geqrxparams [0],
+		getafequalizerbase,
+	},
+	{
+		QLABEL2("", "RX EQ 1500 Hz"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
+		ITEM_VALUE,
+		0, AF_EQUALIZER_BASE * 2,
+		offsetof(struct nvmap, geqrxparams [1]),
+		NULL,
+		& geqrxparams [1],
+		getafequalizerbase,
+	},
+	{
+		QLABEL2("", "RX EQ 2700 Hz"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
+		ITEM_VALUE,
+		0, AF_EQUALIZER_BASE * 2,
+		offsetof(struct nvmap, geqrxparams [2]),
+		NULL,
+		& geqrxparams [2],
+		getafequalizerbase,
+	},
+	{
+		QLABEL2("", "TX Equalizer"), 8, 3, RJ_ON,	ISTEP1,
+		ITEM_VALUE,
+		0, 1,
+		offsetof(struct nvmap, geqtx),
+		NULL,
+		& geqtx,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		QLABEL2("", "TX EQ 400 Hz"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
+		ITEM_VALUE,
+		0, AF_EQUALIZER_BASE * 2,
+		offsetof(struct nvmap, geqtxparams [0]),
+		NULL,
+		& geqtxparams [0],
+		getafequalizerbase,
+	},
+	{
+		QLABEL2("", "TX EQ 1500 Hz"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
+		ITEM_VALUE,
+		0, AF_EQUALIZER_BASE * 2,
+		offsetof(struct nvmap, geqtxparams [1]),
+		NULL,
+		& geqtxparams [1],
+		getafequalizerbase,
+	},
+	{
+		QLABEL2("", "TX EQ 2700 Hz"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
+		ITEM_VALUE,
+		0, AF_EQUALIZER_BASE * 2,
+		offsetof(struct nvmap, geqtxparams [2]),
+		NULL,
+		& geqtxparams [2],
+		getafequalizerbase,
+	},
+#endif /* WITHAFEQUALIZER */
 #if WITHIF4DSP
 #if ! WITHFLATMENU
 	{

@@ -45,8 +45,6 @@ void cpptest() {
 
 }
 
-#endif
-
 // Taken from https://wiki.osdev.org/C++#The_Operators_.27new.27_and_.27delete.27
 
 #if WITHUSEMALLOC
@@ -157,3 +155,4 @@ extern "C" {
 		return NULL;
 	}
 }
+#endif

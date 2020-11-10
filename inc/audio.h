@@ -779,6 +779,24 @@ extern deliverylist_t rtstargetsint;	// выход обработчика DMA п
 extern deliverylist_t afoutfloat_user;	// выход sppeex и фильтра
 extern deliverylist_t afoutfloat;	// выход приемника
 
+#if WITHAFEQUALIZER
+
+enum {
+	AF_EQUALIZER_BANDS = 3,		// число полос
+	AF_EQUALIZER_BASE = 8,		// предел регулировки
+	AF_EQUALIZER_LOW = 400,		// частота нижней полосы
+	AF_EQUALIZER_MID = 1500,	// частота средней полосы
+	AF_EQUALIZER_HIGH = 2700	// частота верхней полосы
+};
+
+int_fast32_t getafequalizerbase(void);
+void board_set_equalizer_rx(uint_fast8_t n);
+void board_set_equalizer_tx(uint_fast8_t n);
+void board_set_equalizer_rx_gains(const uint_fast8_t * p);
+void board_set_equalizer_tx_gains(const uint_fast8_t * p);
+
+#endif /* WITHAFEQUALIZER */
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
