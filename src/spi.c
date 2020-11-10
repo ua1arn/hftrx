@@ -1277,7 +1277,7 @@ uint_fast8_t dataflash_read_status(void)
 
 int timed_dataflash_read_status(void)
 {
-	unsigned long w = 4000000;
+	unsigned long w = 400000;
 	while (w --)
 	{
 		if ((dataflash_read_status() & 0x01) == 0)
@@ -1289,7 +1289,7 @@ int timed_dataflash_read_status(void)
 
 static int largetimed_dataflash_read_status(void)
 {
-	unsigned long w = 40000000;
+	unsigned long w = 4000000;
 	while (w --)
 	{
 		if ((dataflash_read_status() & 0x01) == 0)
