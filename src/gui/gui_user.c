@@ -401,13 +401,6 @@ static void gui_main_process(void)
 
 	current_place ++;	// 4
 
-	// пусто
-
-	current_place ++;	// 5
-
-	// пусто
-
-	current_place ++;	// 6
 
 	// ширина панорамы
 	{
@@ -423,7 +416,7 @@ static void gui_main_process(void)
 #endif /* WITHIF4DSP */
 	}
 
-	current_place ++;	// 7
+	current_place ++;	// 5
 
 	// напряжение питания
 	{
@@ -469,7 +462,7 @@ static void gui_main_process(void)
 #endif /* WITHCURRLEVEL */
 	}
 
-	current_place ++;	// 8
+	current_place ++;	// 6
 
 	// текущее время
 	{
@@ -484,6 +477,14 @@ static void gui_main_process(void)
 		colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, y2, buf, COLORMAIN_WHITE);
 #endif 	/* defined (RTC1_TYPE) */
 	}
+
+	current_place ++;	// 7
+
+	// пусто
+
+	current_place ++;	// 8
+
+	// тут будет перенос из быстрого меню для оперативной работы
 
 	{
 	#if WITHTHERMOLEVEL	// температура выходных транзисторов (при передаче)
@@ -3863,7 +3864,6 @@ void gui_encoder2_menu (enc2_menu_t * enc2_menu)
 
 static void window_enc2_process(void)
 {
-	static label_t * lbl_val;
 	window_t * win = get_win(WINDOW_ENC2);
 	uint_fast8_t row1_int = window_title_height + 20;
 
@@ -3871,6 +3871,15 @@ static void window_enc2_process(void)
 	{
 		win->first_call = 0;
 		static const uint_fast8_t win_width = 170;
+
+		static const button_t buttons [] = {
+			{ 0, 0, 80, 35, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_ENC2, NON_VISIBLE, 0, "btn_Operate", "Operate", },
+		};
+		win->bh_count = ARRAY_SIZE(buttons);
+		uint_fast16_t buttons_size = sizeof(buttons);
+		win->bh_ptr = malloc(buttons_size);
+		GUI_MEM_ASSERT(win->bh_ptr);
+		memcpy(win->bh_ptr, buttons, buttons_size);
 
 		static const label_t labels [] = {
 			{ 0, 0, WINDOW_ENC2,  DISABLED,  0, NON_VISIBLE, "lbl_enc2_val", "", FONT_LARGE, COLORMAIN_WHITE, },
@@ -3881,8 +3890,14 @@ static void window_enc2_process(void)
 		GUI_MEM_ASSERT(win->lh_ptr);
 		memcpy(win->lh_ptr, labels, labels_size);
 
-		lbl_val = find_gui_element(TYPE_LABEL, win, "lbl_enc2_val");
-		calculate_window_position(win, WINDOW_POSITION_MANUAL, win_width, window_title_height + get_label_height(lbl_val) * 2);
+		label_t * lbl_val = find_gui_element(TYPE_LABEL, win, "lbl_enc2_val");
+		button_t * bh = find_gui_element(TYPE_BUTTON, win, "btn_Operate");
+
+		bh->x1 = 0;
+		bh->y1 = row1_int + get_label_height(lbl_val) + 15;
+		bh->visible = VISIBLE;
+
+		calculate_window_position(win, WINDOW_POSITION_MANUAL, win_width, bh->y1 + bh->h);
 	}
 
 	if (gui_enc2_menu.updated)
@@ -3891,11 +3906,16 @@ static void window_enc2_process(void)
 		strcpy(win->name, gui_enc2_menu.param);
 		remove_end_line_spaces(win->name);
 
+		label_t * lbl_val = find_gui_element(TYPE_LABEL, win, "lbl_enc2_val");
+		button_t * bh = find_gui_element(TYPE_BUTTON, win, "btn_Operate");
+
 		strcpy(lbl_val->text, gui_enc2_menu.val);
 		lbl_val->x = win->w / 2 - get_label_width(lbl_val) / 2;
 		lbl_val->y = row1_int;
 		lbl_val->color = gui_enc2_menu.state == 2 ? COLORMAIN_YELLOW : COLORMAIN_WHITE;
 		lbl_val->visible = VISIBLE;
+
+		bh->x1 = lbl_val->x + get_label_width(lbl_val) / 2 - bh->w / 2;
 
 		gui_enc2_menu.updated = 0;
 		gui_update(NULL);
