@@ -5376,7 +5376,7 @@ static void disableAllIRQs(void)
 	{
 		if (IRQ_GetEnableState(i))
 			PRINTF("disableAllIRQs: active=%u // IRQ_Disable(%u); \n", i, i);
-		//IRQ_Disable(i);
+		IRQ_Disable(i);
 	}
 	PRINTF("disableAllIRQs: n=%u\n", n);
 
@@ -6746,9 +6746,9 @@ void hightests(void)
 	{
 		unsigned cnt;
 		display2_bgreset();
+		//disableAllIRQs();
 		for (cnt = 0; ; ++ cnt)
 		{
-			//disableAllIRQs();
 			//GridTest();
 			BarTest();
 			PRINTF("BarTest: %u\n", cnt);
