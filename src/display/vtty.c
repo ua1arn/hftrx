@@ -20,8 +20,8 @@
 
 enum { VTTY_COLS = 64 };
 enum { VTTY_ROWS = 24 };
-enum { VTTY_CHARPIX = SMALLCHARW };	// количество точек на один стимвол текста
-enum { VTTY_ROWSPIX = SMALLCHARH + 4 };	// количество точек на одну строку текста
+enum { VTTY_CHARPIX = SMALLCHARW };	// количество пикселей по горизонтали на один символ текста
+enum { VTTY_ROWSPIX = SMALLCHARH + 5 };	// количество пикселей по вертикали на одну строку текста
 enum { VTTY_DX = VTTY_COLS * VTTY_CHARPIX, VTTY_DY = VTTY_ROWS * VTTY_ROWSPIX };
 
 
@@ -32,7 +32,7 @@ enum { VTTY_DX = VTTY_COLS * VTTY_CHARPIX, VTTY_DY = VTTY_ROWS * VTTY_ROWSPIX };
 typedef struct vtty_tag
 {
 	PACKEDCOLORMAIN_T fb [GXSIZE(VTTY_DX, VTTY_DY)];
-	unsigned scroll;	// делит экран для ускорения скролл 0..VTTY_ROWS-1
+	unsigned scroll;	// эта строка отображается верхней в целевом прямоугольнике. 0..VTTY_ROWS-1
 	unsigned row;		// 0..VTTY_ROWS-1
 	unsigned col;		// 0..VTTY_COLS-1
 } vtty_t;
@@ -65,14 +65,34 @@ void display_vtty_show(
 {
 	PACKEDCOLORMAIN_T * const tfb = colmain_fb_draw();
 	vtty_t * const vt = & vtty0;
-
-	// отрисовываем буфер пока без прокрутки
-	colpip_plot(
-			(uintptr_t) tfb, GXSIZE(DIM_X, DIM_Y),
-			tfb, DIM_X, DIM_Y, x, y,
-			(uintptr_t) vt->fb, GXSIZE(VTTY_DX, VTTY_DY),	// папаметры для clean
-			colmain_mem_at(vt->fb, VTTY_DX, VTTY_DY, 0, 0),	// начальный адрес источника
-			VTTY_DX, VTTY_DY);	// размеры источника
+	enum { H = VTTY_ROWSPIX };
+	// координаты верхней части в целевом виждеобуяере
+	const uint_fast16_t tgy1 = 0;
+	const uint_fast16_t tgh1 = (VTTY_ROWS - vt->scroll) * H;
+	// координаты нижней части в целевом виждеобуяере
+	const uint_fast16_t tgh2 = vt->scroll * H;
+	const uint_fast16_t tgy2 = tgh1;
+	// отрисовываем буфер двумя кусками
+	if (1)
+	{
+		// верхняя часть целевого растра (начиная со scroll в видеобуфере терминала)
+		colpip_plot(
+				(uintptr_t) tfb, GXSIZE(DIM_X, DIM_Y),
+				tfb, DIM_X, DIM_Y, x, y + tgy1,
+				(uintptr_t) vt->fb, GXSIZE(VTTY_DX, VTTY_DY),	// папаметры для clean
+				colmain_mem_at(vt->fb, VTTY_DX, VTTY_DY, 0, tgh2),	// начальный адрес источника
+				VTTY_DX, tgh1);	// размеры источника
+	}
+	if (tgh2 != 0)
+	{
+		// нижняя часть
+		colpip_plot(
+				(uintptr_t) tfb, 0 * GXSIZE(DIM_X, DIM_Y),
+				tfb, DIM_X, DIM_Y, x, y + tgy2,
+				(uintptr_t) vt->fb, 0 * GXSIZE(VTTY_DX, VTTY_DY),	// папаметры для clean
+				colmain_mem_at(vt->fb, VTTY_DX, VTTY_DY, 0, tgh1),	// начальный адрес источника
+				VTTY_DX, tgh2);	// размеры источника
+	}
 }
 
 static void display_vtty_scrollup(
@@ -80,12 +100,14 @@ static void display_vtty_scrollup(
 	int nlines
 	)
 {
-	vt->scroll = (vt->scroll + nlines) % VTTY_ROWS;
+	// очищаем видеобуфер
 	colmain_fillrect(
 			vt->fb, VTTY_DX, VTTY_DY,
 			0, (vt->row + vt->scroll) % VTTY_ROWS * VTTY_ROWSPIX,
 			VTTY_DX, nlines * VTTY_ROWSPIX,
-			VTTY_BG);	// очищаем видеобуфер
+			VTTY_BG);
+	// перемещаем начало.
+	vt->scroll = (vt->scroll + nlines) % VTTY_ROWS;
 }
 
 static void display_vtty_cout(
