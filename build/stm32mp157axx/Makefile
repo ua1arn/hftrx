@@ -34,8 +34,13 @@ OBJDIR2 = obj
 OBJDIR = ./$(OBJDIR2)
 
 # Define optimisation level here
+ifeq "bootloader" "xxx bootloader"
 OPT = -Ofast
 LTO = -flto
+else
+OPT = -Og
+LTO =
+endif
 
 # This product incorporates the ARM dual-core Cortex-A7 MPCore, where the IP version is r0p5
 # debug architecture ARMv7.1.
@@ -211,9 +216,9 @@ $(OBJDIR)/%.o: %.s
 	$(BIN) $< $@
 
 clean: version
-	-rm -fR $(OBJDIR)
-	-rm -f $(PROJECT)_boot.elf $(PROJECT)_boot.map
-	-rm -f $(PROJECT)_app.elf $(PROJECT)_app.map
+	-$(RM) -R $(OBJDIR)
+	-$(RM) $(PROJECT)_boot.elf $(PROJECT)_boot.map
+	-$(RM) $(PROJECT)_app.elf $(PROJECT)_app.map
 
 version:
 	$(CC) --version
