@@ -11,6 +11,8 @@
 
 #include "hardware.h"
 
+#if LCDMODE_LTDC
+
 #include "display.h"
 #include "display2.h"
 #include <stdint.h>
@@ -179,3 +181,5 @@ void display_vtty_printf(const char * format, ...)
 		display_vtty_putchar(b [i]);
 	va_end(ap);
 }
+
+#endif /* LCDMODE_LTDC */
