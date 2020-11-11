@@ -48,6 +48,7 @@ CORE = -mcpu=cortex-a9
 CORE += -mfloat-abi=hard 
 CORE += -mfpu=vfpv3-d16
 #CORE += -mfpu=neon
+#CORE += -mlong-calls
 
 # List all default C defines here, like -D_DEBUG=1
 DDEFS = 
@@ -142,7 +143,6 @@ MCFLAGS = $(CORE) -fno-math-errno -funroll-loops -fgraphite-identity -ffunction-
 #ASFLAGS = $(MCFLAGS) $(OPT) $(LTO) -g -gdwarf-2 -Wa,-amhls=$(<:.s=.lst) $(ADEFS)
 ASFLAGS = $(MCFLAGS) $(OPT) $(LTO) -g -gdwarf-2 $(ADEFS)
 #CPFLAGS = $(MCFLAGS) $(OPT) $(LTO) -gdwarf-2 -mthumb-interwork -fomit-frame-pointer -Wall -fverbose-asm -Wa,-ahlms=$(<:.c=.lst) $(DEFS)
-#CPFLAGS = $(MCFLAGS) $(OPT) $(LTO) -gdwarf-2 -mlong-calls -fomit-frame-pointer -Wall $(DEFS)
 CPFLAGS = $(MCFLAGS) $(OPT) $(LTO) -gdwarf-2 -fomit-frame-pointer -Wall $(DEFS) $(MAKE_DEFINES)
 
 LDFLAGS_BOOT = $(MCFLAGS) $(LTO) $(OPT) -nostartfiles -T$(LDSCRIPT_BOOT) -Wl,-Map=$(PROJECT)_boot.map,--cref $(LIBDIR)
@@ -216,9 +216,9 @@ $(OBJDIR)/%.o: %.s
 	$(BIN) $< $@
 
 clean: version
-	-rm -fR $(OBJDIR)
-	-rm -f $(PROJECT)_boot.elf $(PROJECT)_boot.map
-	-rm -f $(PROJECT)_app.elf $(PROJECT)_app.map
+	-$(RM) -R $(OBJDIR)
+	-$(RM) $(PROJECT)_boot.elf $(PROJECT)_boot.map
+	-$(RM) $(PROJECT)_app.elf $(PROJECT)_app.map
 
 version:
 	$(CC) --version
