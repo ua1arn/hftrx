@@ -674,8 +674,11 @@ void display_bar(
 	);
 
 void display_at(uint_fast8_t x, uint_fast8_t y, const char * s);		// Выдача строки из ОЗУ в указанное место экрана.
+void display_x2_at(uint_fast8_t x, uint_fast8_t y, const char * s);		// Выдача строки из ОЗУ в указанное место экрана.
 void display_at_P(uint_fast8_t x, uint_fast8_t y, const FLASHMEM char * s); // Выдача строки из ПЗУ в указанное место экрана.
 
+int s3402_get_coord(unsigned * x, unsigned * y);
+int s3402_get_id(void);
 /* заполнение прямоугольника на основном экране произвольным цветом
 */
 void
@@ -971,6 +974,7 @@ void display_vtty_show(
 	uint_fast16_t x,
 	uint_fast16_t y
 	);
+void display_vtty_printf(const char * format, ...);
 
 #ifdef __cplusplus
 }

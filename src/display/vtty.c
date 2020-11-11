@@ -15,7 +15,10 @@
 #include "display2.h"
 #include <stdint.h>
 #include <string.h>
+#include <stdio.h>
+#include <stdarg.h>
 
+#include "formats.h"
 #include "fontmaps.h"
 
 enum { VTTY_COLS = 64 };
@@ -31,7 +34,11 @@ enum { VTTY_DX = VTTY_COLS * VTTY_CHARPIX, VTTY_DY = VTTY_ROWS * VTTY_ROWSPIX };
 
 typedef struct vtty_tag
 {
+#if LCDMODE_LTDCSDRAMBUFF
+	PACKEDCOLORMAIN_T * fb;
+#else
 	PACKEDCOLORMAIN_T fb [GXSIZE(VTTY_DX, VTTY_DY)];
+#endif
 	unsigned scroll;	// эта строка отображается верхней в целевом прямоугольнике. 0..VTTY_ROWS-1
 	unsigned row;		// 0..VTTY_ROWS-1
 	unsigned col;		// 0..VTTY_COLS-1
@@ -46,10 +53,14 @@ void display_vtty_show(
 	uint_fast16_t x,
 	uint_fast16_t y
 	);
+void display_vtty_printf(const char * format, ...);
 
 void display_vtty_initialize(void)
 {
 	vtty_t * const vt = & vtty0;
+#if LCDMODE_LTDCSDRAMBUFF
+	vt->fb = (PACKEDCOLORMAIN_T *) (SDRAM_BANK_ADDR + 24uL * 1024 * 1024);
+#endif
 	vt->scroll = 0;
 	vt->row = 0;
 	vt->col = 0;
@@ -158,3 +169,13 @@ int display_vtty_putchar(char ch)
 	return (unsigned char) ch;
 }
 
+void display_vtty_printf(const char * format, ...)
+{
+	char b [128];	// see stack sizes for interrupt handlers
+	va_list	ap;
+	va_start(ap, format);
+	const int n = local_vsnprintf_P(b, sizeof b / sizeof b [0], format, ap);
+	for (int i = 0; i < n; ++ i)
+		display_vtty_putchar(b [i]);
+	va_end(ap);
+}

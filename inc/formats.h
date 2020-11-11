@@ -16,6 +16,7 @@ extern "C" {
 #endif /* __cplusplus */
 
 uint_fast8_t local_snprintf_P( char * __restrict buffer, uint_fast8_t count, const FLASHMEM char * __restrict format, ... );
+uint_fast8_t local_vsnprintf_P( char * __restrict buffer, uint_fast8_t count, const FLASHMEM char * __restrict format, va_list ap );
 // Отладочная печать
 void debug_printf_P(const FLASHMEM char * __restrict format, ... );
 
