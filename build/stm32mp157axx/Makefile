@@ -34,8 +34,13 @@ OBJDIR2 = obj
 OBJDIR = ./$(OBJDIR2)
 
 # Define optimisation level here
+ifeq "bootloader" "all"
 OPT = -Ofast
 LTO = -flto
+else
+OPT = -Og
+#LTO = -flto
+endif
 
 # This product incorporates the ARM dual-core Cortex-A7 MPCore, where the IP version is r0p5
 # debug architecture ARMv7.1.
@@ -44,7 +49,7 @@ CORE += -mfloat-abi=hard
 #CORE += -mcpu=cortex-a7
 #CORE += -mfpu=vfpv4-d16
 CORE += -mfpu=neon
-CORE += -mlong-calls
+#CORE += -mlong-calls
 
 # List all default C defines here, like -D_DEBUG=1
 DDEFS = 
