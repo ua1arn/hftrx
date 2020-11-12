@@ -43,7 +43,6 @@ static void window_ap_mic_process(void);
 static void window_ap_mic_prof_process(void);
 static void window_menu_process(void);
 static void window_uif_process(void);
-static void window_enc2_process(void);
 static void window_options_process(void);
 static void window_utilites_process(void);
 static void window_bands_process(void);
@@ -59,7 +58,6 @@ static window_t windows [] = {
 	{ WINDOW_AF,    		 WINDOW_RECEIVE,		ALIGN_CENTER_X, 0, 0, 0, 0, "AF settings",    		 NON_VISIBLE, 0, 1, window_af_process, },
 	{ WINDOW_FREQ,  		 WINDOW_OPTIONS,		ALIGN_CENTER_X, 0, 0, 0, 0, "Freq:", 	   			 NON_VISIBLE, 0, 1, window_freq_process, },
 	{ WINDOW_MENU,  		 WINDOW_OPTIONS,		ALIGN_CENTER_X, 0, 0, 0, 0, "Settings",	   		 	 NON_VISIBLE, 0, 1, window_menu_process, },
-	{ WINDOW_ENC2, 			 NO_PARENT_WINDOW, 		ALIGN_RIGHT_X, 	0, 0, 0, 0, "",  			 		 NON_VISIBLE, 0, 0, window_enc2_process, },
 	{ WINDOW_UIF, 			 NO_PARENT_WINDOW, 		ALIGN_LEFT_X, 	0, 0, 0, 0, "",   		   	 		 NON_VISIBLE, 0, 0, window_uif_process, },
 	{ WINDOW_SWR_SCANNER,	 WINDOW_UTILS, 			ALIGN_CENTER_X, 0, 0, 0, 0, "SWR band scanner",		 NON_VISIBLE, 0, 0, window_swrscan_process, },
 	{ WINDOW_AUDIOSETTINGS,  WINDOW_OPTIONS,		ALIGN_CENTER_X, 0, 0, 0, 0, "Audio settings", 		 NON_VISIBLE, 0, 1, window_audiosettings_process, },
@@ -375,7 +373,7 @@ static void gui_main_process(void)
 		{
 			local_snprintf_P(buf, buflen, PSTR("IF shift"));
 			colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, y1, buf, COLORMAIN_WHITE);
-			local_snprintf_P(buf, buflen, if_shift == 0 ? PSTR("%d") : PSTR("%+dk"), if_shift);
+			local_snprintf_P(buf, buflen, if_shift == 0 ? PSTR("%d") : PSTR("%+d Hz"), if_shift);
 			colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, y2, buf, COLORMAIN_WHITE);
 		}
 		else
@@ -484,7 +482,26 @@ static void gui_main_process(void)
 
 	current_place ++;	// 8
 
-	// тут будет перенос из быстрого меню для оперативной работы
+	// быстрое меню 2-го энкодера
+	{
+		if (gui_enc2_menu.state)
+		{
+			local_snprintf_P(buf, buflen, PSTR("%s"), gui_enc2_menu.param);
+			remove_end_line_spaces(buf);
+			xx = current_place * lbl_place_width + lbl_place_width / 2;
+			colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, y1, buf, COLORMAIN_WHITE);
+			local_snprintf_P(buf, buflen, PSTR("%s"), gui_enc2_menu.val);
+			remove_end_line_spaces(buf);
+			COLORPIP_T color_lbl = gui_enc2_menu.state == 2 ? COLORMAIN_YELLOW : COLORMAIN_WHITE;
+			colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, y2, buf, color_lbl);
+		}
+		else
+		{
+			local_snprintf_P(buf, buflen, PSTR("------"));
+			xx = current_place * lbl_place_width + lbl_place_width / 2;
+			colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, y1 + (y2 - y1) / 2, buf, COLORMAIN_WHITE);
+		}
+	}
 
 	{
 	#if WITHTHERMOLEVEL	// температура выходных транзисторов (при передаче)
@@ -1291,6 +1308,7 @@ static void window_af_process(void)
 			}
 		}
 
+		hamradio_enable_encoder2_redirect();
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
@@ -3838,88 +3856,8 @@ static void window_uif_process(void)
 
 void gui_encoder2_menu (enc2_menu_t * enc2_menu)
 {
-	window_t * win = get_win(WINDOW_ENC2);
-
-	if (check_for_parent_window() == NO_PARENT_WINDOW && enc2_menu->state != 0)
-	{
-		close_window(DONT_OPEN_PARENT_WINDOW);
-		open_window(win);
-		footer_buttons_state(DISABLED, NULL);
-		memcpy(& gui_enc2_menu, enc2_menu, sizeof (gui_enc2_menu));
-		gui_enc2_menu.updated = 1;
-	}
-	else if (win->state == VISIBLE)
-	{
-		if (enc2_menu->state == 0)
-		{
-			close_window(DONT_OPEN_PARENT_WINDOW);
-			footer_buttons_state(CANCELLED);
-			return;
-		}
-
-		memcpy(& gui_enc2_menu, enc2_menu, sizeof (gui_enc2_menu));
-		gui_enc2_menu.updated = 1;
-	}
-}
-
-static void window_enc2_process(void)
-{
-	window_t * win = get_win(WINDOW_ENC2);
-	uint_fast8_t row1_int = window_title_height + 20;
-
-	if (win->first_call)
-	{
-		win->first_call = 0;
-		static const uint_fast8_t win_width = 170;
-
-		static const button_t buttons [] = {
-			{ 0, 0, 80, 35, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_ENC2, NON_VISIBLE, 0, "btn_Operate", "Operate", },
-		};
-		win->bh_count = ARRAY_SIZE(buttons);
-		uint_fast16_t buttons_size = sizeof(buttons);
-		win->bh_ptr = malloc(buttons_size);
-		GUI_MEM_ASSERT(win->bh_ptr);
-		memcpy(win->bh_ptr, buttons, buttons_size);
-
-		static const label_t labels [] = {
-			{ 0, 0, WINDOW_ENC2,  DISABLED,  0, NON_VISIBLE, "lbl_enc2_val", "", FONT_LARGE, COLORMAIN_WHITE, },
-		};
-		win->lh_count = ARRAY_SIZE(labels);
-		uint_fast16_t labels_size = sizeof(labels);
-		win->lh_ptr = malloc(labels_size);
-		GUI_MEM_ASSERT(win->lh_ptr);
-		memcpy(win->lh_ptr, labels, labels_size);
-
-		label_t * lbl_val = find_gui_element(TYPE_LABEL, win, "lbl_enc2_val");
-		button_t * bh = find_gui_element(TYPE_BUTTON, win, "btn_Operate");
-
-		bh->x1 = 0;
-		bh->y1 = row1_int + get_label_height(lbl_val) + 15;
-		bh->visible = VISIBLE;
-
-		calculate_window_position(win, WINDOW_POSITION_MANUAL, win_width, bh->y1 + bh->h);
-	}
-
-	if (gui_enc2_menu.updated)
-	{
-
-		strcpy(win->name, gui_enc2_menu.param);
-		remove_end_line_spaces(win->name);
-
-		label_t * lbl_val = find_gui_element(TYPE_LABEL, win, "lbl_enc2_val");
-		button_t * bh = find_gui_element(TYPE_BUTTON, win, "btn_Operate");
-
-		strcpy(lbl_val->text, gui_enc2_menu.val);
-		lbl_val->x = win->w / 2 - get_label_width(lbl_val) / 2;
-		lbl_val->y = row1_int;
-		lbl_val->color = gui_enc2_menu.state == 2 ? COLORMAIN_YELLOW : COLORMAIN_WHITE;
-		lbl_val->visible = VISIBLE;
-
-		bh->x1 = lbl_val->x + get_label_width(lbl_val) / 2 - bh->w / 2;
-
-		gui_enc2_menu.updated = 0;
-		gui_update(NULL);
-	}
+	memcpy(& gui_enc2_menu, enc2_menu, sizeof (gui_enc2_menu));
+	gui_enc2_menu.updated = 1;
 }
 
 // *********************************************************************************************************************************************************************

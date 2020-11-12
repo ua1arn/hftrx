@@ -18705,6 +18705,13 @@ hamradio_initialize(void)
 
 #if WITHTOUCHGUI
 	gui_initialize();
+
+	const char FLASHMEM * const text = enc2menu_label_P(enc2pos);
+	safestrcpy(enc2_menu.param, ARRAY_SIZE(enc2_menu.param), text);
+	enc2menu_value(enc2pos, INT_MAX, enc2_menu.val, ARRAY_SIZE(enc2_menu.val));
+	enc2_menu.updated = 1;
+	enc2_menu.state = enc2state;
+	gui_encoder2_menu(& enc2_menu);
 #endif /* WITHTOUCHGUI */
 }
 
