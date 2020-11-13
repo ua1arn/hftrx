@@ -145,7 +145,7 @@ extern "C" {
 			;
 	}
 
-	void ATTRNORETURN __cxa_call_unexpected (void*)
+	void ATTRNORETURN __attribute__ ((used)) __cxa_call_unexpected (void*)
 	{
 		ASSERT(0);
 		for (;;)
@@ -171,8 +171,8 @@ extern "C" {
 		return NULL;
 	}
 
-	void __gxx_personality_v0(void)
+	int __gxx_personality_v0(void)
 	{
-
+		return 0;
 	}
 }
