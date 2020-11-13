@@ -34,7 +34,8 @@ OBJDIR2 = obj
 OBJDIR = ./$(OBJDIR2)
 
 # Define optimisation level here
-ifeq "bootloader" "all"
+# ony -Og for app
+ifeq "bootloader" "all bootloader"
 OPT = -Ofast
 LTO = -flto
 else
@@ -230,5 +231,8 @@ version:
 -include $(wildcard $(OBJDIR)/*/*.d)
 -include $(wildcard $(OBJDIR)/*/*/*.d)
 -include $(wildcard $(OBJDIR)/*/*/*/*.d)
+-include $(wildcard $(OBJDIR)/*/*/*/*/*.d)
+-include $(wildcard $(OBJDIR)/*/*/*/*/*/*.d)
+-include $(wildcard $(OBJDIR)/*/*/*/*/*/*/*.d)
 
 # *** EOF ***
