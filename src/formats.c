@@ -501,13 +501,13 @@ int dbg_puts_impl(const char * s)
 #endif /* WITHDEBUG */
 
 
-void __assert (const char * file, int line, const char * msg)
+void ATTRNORETURN __attribute__ ((used)) (__assert) (const char * file, int line, const char * msg)
 {
 	for (;;)
 		;
 }
 
-void __assert_func (const char * file, int line, const char * func, const char * msg)
+void ATTRNORETURN __attribute__ ((used)) (__assert_func) (const char * file, int line, const char * func, const char * msg)
 {
 	for (;;)
 		;

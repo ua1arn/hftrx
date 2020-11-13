@@ -871,6 +871,7 @@ extern "C" {
 	#define __ALIGN4_END    __attribute__ ((aligned (4)))
 	#define __ALIGN4_BEGIN         
 	#define ATTRPACKED __attribute__ ((packed))
+	#define ATTRNORETURN __attribute__ ((__noreturn__))
 	#define KEYWORDPACKED __packed
 #else                           
 	#if defined   (__CC_ARM)      /* ARM Compiler */
@@ -2202,6 +2203,29 @@ extern "C" {
 #if WITHDEBUG && WITHISBOOTLOADER && CPUSTYLE_R7S721
 	#error WITHDEBUG and WITHISBOOTLOADER can not be used in same time for CPUSTYLE_R7S721
 #endif /* WITHDEBUG && WITHISBOOTLOADER && CPUSTYLE_R7S721 */
+
+
+#if (DIM_X < 800 || DIM_Y < 480) && WITHTOUCHGUI		// не соблюдены минимальные требования к разрешению экрана
+	#undef WITHTOUCHGUI									// для функционирования touch GUI
+#endif
+
+#if WITHTOUCHGUI
+
+#define WITHGUIMAXX				800						// при разрешении больше чем 800х480 интерфейс будет сжат до 800х480.
+#define WITHGUIMAXY				480
+#define FOOTER_HEIGHT			50						// высота нижнего ряда кнопок
+#define FORMATFROMLIBRARY 		1
+
+#if ! defined WITHUSEMALLOC								// необходима поддержка динамического управления памятью
+	#define WITHUSEMALLOC		1
+#endif /* ! defined WITHUSEMALLOC */
+
+#if ! defined WITHGUIHEAP || WITHGUIHEAP < (80 * 1024uL)
+	#undef WITHGUIHEAP
+	#define WITHGUIHEAP 		(80 * 1024uL)			// требуемый размер кучи для touch GUI
+#endif /* ! defined WITHGUIHEAP || WITHGUIHEAP < (80 * 1024uL) */
+
+#endif /* WITHTOUCHGUI */
 
 #ifdef __cplusplus
 }

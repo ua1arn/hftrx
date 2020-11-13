@@ -16,7 +16,6 @@
 #include "formats.h"	// for debug prints
 #include "gpio.h"
 #include "spi.h"
-#include "gui/gui.h"
 
 static unsigned long ulmin(
 	unsigned long a,
@@ -13448,11 +13447,6 @@ void _fini(void)
 		;
 }
 
-void __gxx_personality_v0(void)
-{
-
-}
-
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
@@ -14044,8 +14038,3 @@ void arm_hardware_set_handler_system(uint_fast16_t int_id, void (* handler)(void
 }
 
 #endif /* CPUSTYLE_ARM */
-
-
-// hack for eliminate exception handling unwinding code
-//
-//char __attribute__ ((used)) __aeabi_unwind_cpp_pr0 [0];

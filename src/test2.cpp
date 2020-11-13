@@ -7,7 +7,6 @@
 
 #include "hardware.h"
 #include "formats.h"
-#include "gui/gui.h"
 
 #if 0
 
@@ -67,16 +66,7 @@ void operator delete[](void *p) {
 	free(p);
 }
 
-#endif /* WITHUSEMALLOC */
-
 std::bad_alloc::~bad_alloc()
-{
-	ASSERT(0);
-	for (;;)
-		;
-}
-
-std::exception::~exception()
 {
 	ASSERT(0);
 	for (;;)
@@ -87,6 +77,21 @@ const char* std::bad_alloc::what() const
 {
 	return NULL;
 }
+
+const char* std::exception::what() const
+{
+	return NULL;
+}
+
+std::exception::~exception()
+{
+	ASSERT(0);
+	for (;;)
+		;
+}
+
+#endif /* WITHUSEMALLOC */
+
 
 extern "C" {
 
@@ -155,5 +160,10 @@ extern "C" {
 		for (;;)
 			;
 		return NULL;
+	}
+
+	void __gxx_personality_v0(void)
+	{
+
 	}
 }
