@@ -7,6 +7,7 @@
 
 #include "hardware.h"
 #include "formats.h"
+#include "gui/gui.h"
 
 #if 0
 
@@ -44,6 +45,7 @@ void cpptest() {
 	p4->~tcl0();
 
 }
+#endif
 
 // Taken from https://wiki.osdev.org/C++#The_Operators_.27new.27_and_.27delete.27
 
@@ -155,4 +157,3 @@ extern "C" {
 		return NULL;
 	}
 }
-#endif
