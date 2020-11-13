@@ -104,7 +104,6 @@ static void gui_main_process(void)
 	uint_fast16_t y1 = 125, y2 = 145, current_place = 0, xx;
 	const uint_fast8_t num_places = 8;
 	const uint_fast8_t lbl_place_width = 100;
-	const uint_fast16_t x_width = lbl_place_width * 2 - 6;
 	uint_fast8_t update = 0;
 
 	if (win->first_call)
@@ -165,14 +164,12 @@ static void gui_main_process(void)
 
 			if (bh == btn_notch)
 			{
-				btn_notch->payload = hamradio_get_gnotch() ? 0 : 1;
-				hamradio_set_gnotch(btn_notch->payload);
+				hamradio_set_gnotch(! hamradio_get_gnotch());
 				update = 1;
 			}
 			else if (bh == btn_speaker)
 			{
-				btn_speaker->payload = hamradio_get_gmutespkr() ? 0 : 1;
-				hamradio_set_gmutespkr(btn_speaker->payload);
+				hamradio_set_gmutespkr(! hamradio_get_gmutespkr());
 				update = 1;
 			}
 			else if (bh == btn_Bands)
