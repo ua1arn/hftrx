@@ -50,7 +50,7 @@ CORE += -mfloat-abi=hard
 #CORE += -mcpu=cortex-a7
 #CORE += -mfpu=vfpv4-d16
 CORE += -mfpu=neon
-#CORE += -mlong-calls
+CORE += -mlong-calls
 
 # List all default C defines here, like -D_DEBUG=1
 DDEFS = 
