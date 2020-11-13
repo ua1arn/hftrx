@@ -111,6 +111,7 @@ extern "C" {
 
 	}
 
+	// See: https://libcxxabi.llvm.org/spec.html
 	// See: https://habr.com/ru/post/279151/
 	// See: https://github.com/shuobeige11/rn-web/blob/aace070ad8c064b762d7ac96bad8657baabb30b1/third-party/folly-2016.09.26.00/folly/experimental/exception_tracer/ExceptionTracerLib.cpp
 
@@ -124,25 +125,33 @@ extern "C" {
 	    //printf("end FTW\n");
 	}
 
-	void __cxa_rethrow()
+	void ATTRNORETURN __cxa_rethrow()
 	{
 		ASSERT(0);
 		for (;;)
 			;
 	}
-	void __cxa_throw_bad_array_length()
+	void ATTRNORETURN __cxa_throw_bad_array_length()
 	{
 		ASSERT(0);
 		for (;;)
 			;
 	}
 
-	void __cxa_throw_bad_array_new_length()
+	void ATTRNORETURN __cxa_throw_bad_array_new_length()
 	{
 		ASSERT(0);
 		for (;;)
 			;
 	}
+
+	void ATTRNORETURN __cxa_call_unexpected (void*)
+	{
+		ASSERT(0);
+		for (;;)
+			;
+	}
+
 
 	void __cxa_throw(
 	    void* thrownException,
