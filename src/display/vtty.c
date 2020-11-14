@@ -11,7 +11,7 @@
 
 #include "hardware.h"
 
-#if ! LCDMODE_DUMMY
+#if ! LCDMODE_DUMMY && LCDMODE_LTDC
 
 #include "display.h"
 #include "display2.h"
@@ -240,4 +240,4 @@ void display_vtty_printf(const char * format, ...)
 		display_vtty_putchar(b [i]);
 }
 
-#endif /* ! LCDMODE_DUMMY */
+#endif /* ! ! LCDMODE_DUMMY && LCDMODE_LTDC */
