@@ -2242,7 +2242,7 @@ static uint_fast8_t revbits7L(uint_fast8_t v)
 	return r;
 }
 
-// 24-bit control register + DAC + tuner for RA4YBO
+// 24-bit control register + DAC + 8 bit tuner for RA4YBO
 static void 
 //NOINLINEAT
 prog_ctrlreg(uint_fast8_t plane)
@@ -2253,16 +2253,58 @@ prog_ctrlreg(uint_fast8_t plane)
 	const uint_fast8_t ssb = glob_af_input == BOARD_DETECTOR_SSB;	// SSB mode activated
 	const uint_fast8_t am = glob_af_input == BOARD_DETECTOR_AM;	// AM mode activated
 
-	rbtype_t rbbuff [7] = { 0 };
+	const uint_fast8_t Cx = glob_tuner_bypass ? 0 : glob_tuner_C;
+	const uint_fast8_t Lx = glob_tuner_bypass ? 0 : glob_tuner_L;
+
+	const uint_fast8_t c1500p = (Cx & 0x80) != 0;
+	const uint_fast8_t c700p = (Cx & 0x40) != 0;
+	const uint_fast8_t c360p = (Cx & 0x20) != 0;
+	const uint_fast8_t c180p = (Cx & 0x10) != 0;
+	const uint_fast8_t c82p = (Cx & 0x08) != 0;
+	const uint_fast8_t c39p = (Cx & 0x04) != 0;
+	const uint_fast8_t c20p = (Cx & 0x02) != 0;
+	const uint_fast8_t c10p = (Cx & 0x01) != 0;
+
+	const uint_fast8_t L10uH = (Lx & 0x80) != 0;
+	const uint_fast8_t L5uH = (Lx & 0x40) != 0;
+	const uint_fast8_t L2p5uH = (Lx & 0x20) != 0;
+	const uint_fast8_t L1p25uH = (Lx & 0x10) != 0;
+	const uint_fast8_t L0p65uH = (Lx & 0x08) != 0;
+	const uint_fast8_t L0p3uH = (Lx & 0x04) != 0;
+	const uint_fast8_t L0p15uH = (Lx & 0x02) != 0;
+	const uint_fast8_t L0p08H = (Lx & 0x01) != 0;
+
+	rbtype_t rbbuff [9] = { 0 };
 
 	
 	/* +++ Управление согласующим устройством */
-	/* регистр управления наборной индуктивностью. */
-	RBVAL(052, glob_tuner_bypass ? 0 : revbits7L(glob_tuner_L), 7);			/* Inductors tuner bank 	*/
-	RBBIT(051, ! glob_tuner_bypass);		// pin 15: обход СУ
-	/* регистр управления массивом конденсаторов */
-	RBVAL(042, glob_tuner_bypass ? 0 : (revbits8(glob_tuner_C) >> 1), 7);/* Capacitors tuner bank 	*/
-	RBBIT(041, glob_tuner_bypass ? 0 : glob_tuner_type);		/* pin 15: TYPE OF TUNER 	*/
+
+	RBBIT(070, 0);		// IC3 pin 7: nc
+	RBBIT(067, 0);		// IC3 pin 6: nc
+	RBBIT(066, 0);		// IC3 pin 5: nc
+	RBBIT(065, 0);		// IC3 pin 4: nc
+	RBBIT(064, c1500p);		// IC3 pin 3: nc
+	RBBIT(063, c700p);		// IC3 pin 2: nc
+	RBBIT(062, c360p);		// IC3 pin 1: nc
+	RBBIT(061, 0);		// IC3 pin 15: nc
+
+	RBBIT(060, c180p);		// IC2 pin 7: nc
+	RBBIT(057, c82p);		// IC2 pin 6: nc
+	RBBIT(056, c39p);		// IC2 pin 5: nc
+	RBBIT(055, c20p);		// IC2 pin 4: nc
+	RBBIT(054, c10p);		// IC2 pin 3: nc
+	RBBIT(053, glob_tuner_bypass ? 0 : glob_tuner_type);		// IC2 pin 2: nc
+	RBBIT(052, L10uH);		// IC2 pin 1: nc
+	//RBBIT(051, 0);			// IC2 pin 15: nc
+
+	RBBIT(050, L5uH);		// IC1 pin 7: nc
+	RBBIT(047, L2p5uH);		// IC1 pin 6: nc
+	RBBIT(046, L1p25uH);	// IC1 pin 5: nc
+	RBBIT(045, L0p65uH);	// IC1 pin 4: nc
+	RBBIT(044, L0p3uH);		// IC1 pin 3: nc
+	RBBIT(043, L0p15uH);	// IC1 pin 2: nc
+	RBBIT(042, L0p08H);		// IC1 pin 1: nc
+	//RBBIT(041, 0);			// IC1 pin 15: nc
 	/* --- Управление согласующим устройством */
 
 	/* IC7 AD5262 */
