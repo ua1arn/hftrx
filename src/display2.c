@@ -825,9 +825,9 @@ display2_smeter15(
 		{
 			// TX state
 			colpip_plot(
-					(uintptr_t) fr, GXSIZE(DIM_X, DIM_Y),
+					(uintptr_t) fr, GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T),
 					fr, DIM_X, DIM_Y, x0, y0 + dial_shift,
-					(uintptr_t) smeter_bg [SMETER_TYPE_DIAL][SM_STATE_TX], GXSIZE(SM_BG_W, SM_BG_H),
+					(uintptr_t) smeter_bg [SMETER_TYPE_DIAL][SM_STATE_TX], GXSIZE(SM_BG_W, SM_BG_H) * sizeof (PACKEDCOLORMAIN_T),
 					smeter_bg [SMETER_TYPE_DIAL][SM_STATE_TX], SM_BG_W, SM_BG_H - dial_shift);
 
 			if (gswr > smpr->gs)
@@ -852,9 +852,9 @@ display2_smeter15(
 		{
 			// RX state
 			colpip_plot(
-					(uintptr_t) fr, GXSIZE(DIM_X, DIM_Y),
+					(uintptr_t) fr, GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T),
 					fr, DIM_X, DIM_Y, x0, y0 + dial_shift,
-					(uintptr_t) smeter_bg [SMETER_TYPE_DIAL][SM_STATE_RX], GXSIZE(SM_BG_W, SM_BG_H),
+					(uintptr_t) smeter_bg [SMETER_TYPE_DIAL][SM_STATE_RX], GXSIZE(SM_BG_W, SM_BG_H) * sizeof (PACKEDCOLORMAIN_T),
 					smeter_bg [SMETER_TYPE_DIAL][SM_STATE_RX], SM_BG_W, SM_BG_H - dial_shift);
 
 			{
@@ -881,9 +881,9 @@ display2_smeter15(
 		if (is_tx)
 		{
 			colpip_plot(
-					(uintptr_t) fr, GXSIZE(DIM_X, DIM_Y),
+					(uintptr_t) fr, GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T),
 					fr, DIM_X, DIM_Y, x0, y0,
-					(uintptr_t) smeter_bg [SMETER_TYPE_BARS][SM_STATE_TX], GXSIZE(SM_BG_W, SM_BG_H),
+					(uintptr_t) smeter_bg [SMETER_TYPE_BARS][SM_STATE_TX], GXSIZE(SM_BG_W, SM_BG_H) * sizeof (PACKEDCOLORMAIN_T),
 					smeter_bg [SMETER_TYPE_BARS][SM_STATE_TX], SM_BG_W, SM_BG_H);
 
 			if(gp > smpr->gs)
@@ -895,9 +895,9 @@ display2_smeter15(
 		else
 		{
 			colpip_plot(
-					(uintptr_t) fr, GXSIZE(DIM_X, DIM_Y),
+					(uintptr_t) fr, GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T),
 					fr, DIM_X, DIM_Y, x0, y0,
-					(uintptr_t) smeter_bg [SMETER_TYPE_BARS][SM_STATE_RX], GXSIZE(SM_BG_W, SM_BG_H),
+					(uintptr_t) smeter_bg [SMETER_TYPE_BARS][SM_STATE_RX], GXSIZE(SM_BG_W, SM_BG_H) * sizeof (PACKEDCOLORMAIN_T),
 					smeter_bg [SMETER_TYPE_BARS][SM_STATE_RX], SM_BG_W, SM_BG_H
 					);
 
@@ -8149,7 +8149,7 @@ static void display2_waterfall(
 		{
 			/* перенос свежей части растра */
 			colpip_plot(
-					(uintptr_t) colorpip, GXSIZE(BUFDIM_X, BUFDIM_Y),
+					(uintptr_t) colorpip, GXSIZE(BUFDIM_X, BUFDIM_Y) * sizeof (PACKEDCOLORMAIN_T),
 					colorpip, BUFDIM_X, BUFDIM_Y, 0, p1y,
 					(uintptr_t) wfjarray, sizeof (* wfjarray) * GXSIZE(ALLDX, WFROWS),	// папаметры для clean
 					colmain_mem_at(wfjarray, ALLDX, WFROWS, 0, wfrow),	// начальный адрес источника
@@ -8159,9 +8159,9 @@ static void display2_waterfall(
 		{
 			/* перенос старой части растра */
 			colpip_plot(
-					(uintptr_t) colorpip, 0,
+					(uintptr_t) colorpip, 0 * sizeof (PACKEDCOLORMAIN_T),
 					colorpip, BUFDIM_X, BUFDIM_Y, 0, p2y,
-					(uintptr_t) wfjarray, 0,	// размер области 0 - ранее уже вызывали clean
+					(uintptr_t) wfjarray, 0 * sizeof (* wfjarray) * GXSIZE(ALLDX, WFROWS),	// размер области 0 - ранее уже вызывали clean
 					colmain_mem_at(wfjarray, ALLDX, WFROWS, 0, 0),	// начальный адрес источника
 					ALLDX, p2h);	// размеры источника
 		}
