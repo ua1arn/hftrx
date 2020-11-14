@@ -501,6 +501,8 @@ int dbg_puts_impl(const char * s)
 #endif /* WITHDEBUG */
 
 
+#if CPUSTYLE_ARM
+
 void ATTRNORETURN __attribute__ ((used)) (__assert) (const char * file, int line, const char * msg)
 {
 	for (;;)
@@ -512,3 +514,6 @@ void ATTRNORETURN __attribute__ ((used)) (__assert_func) (const char * file, int
 	for (;;)
 		;
 }
+
+#endif /* CPUSTYLE_ARM */
+
