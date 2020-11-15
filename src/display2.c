@@ -6852,10 +6852,11 @@ static FLOAT_t filter_spectrum(
 	return Y;
 }
 
+enum { ADD_Y_3DSS = 12 };
 #if defined (COLORPIP_SHADED)
 
 	/* быстрое отображение водопада (но требует больше памяти) */
-	static ALIGNX_BEGIN RAMFRAMEBUFF PACKEDCOLORMAIN_T wfjarray [GXSIZE(ALLDX, WFDY)] ALIGNX_END;	// массив "водопада"
+	static ALIGNX_BEGIN RAMFRAMEBUFF PACKEDCOLORMAIN_T wfjarray [GXSIZE(ALLDX, WFDY + ADD_Y_3DSS)] ALIGNX_END;	// массив "водопада"
 	enum { WFROWS = WFDY };
 
 	enum { PALETTESIZE = COLORPIP_BASE };
@@ -6882,7 +6883,7 @@ static FLOAT_t filter_spectrum(
 #elif WITHFASTWATERFLOW
 
 	/* быстрое отображение водопада (но требует больше памяти) */
-	static ALIGNX_BEGIN RAMFRAMEBUFF PACKEDCOLORMAIN_T wfjarray [GXSIZE(ALLDX, WFDY)] ALIGNX_END;	// массив "водопада"
+	static ALIGNX_BEGIN RAMFRAMEBUFF PACKEDCOLORMAIN_T wfjarray [GXSIZE(ALLDX, WFDY + ADD_Y_3DSS)] ALIGNX_END;	// массив "водопада"
 	enum { WFROWS = WFDY };
 
 	enum { PALETTESIZE = 256 };
@@ -7575,22 +7576,39 @@ static ALIGNX_BEGIN GX_t spectmonoscr [MGSIZE(ALLDX, SPDY)] ALIGNX_END;
 #endif /* HHWMG */
 
 enum {
-	MAX_3DSS_STEP = 20,
-	Y_STEP = 5,
-	MAX_DELAY_3DSS = 3,
+	MAX_3DSS_STEP = 43,
+	Y_STEP = 2,
+	MAX_DELAY_3DSS = 1,
 	HALF_ALLDX = ALLDX / 2,
 	SPY_3DSS = SPDY,
 	SPY_3DSS_H = SPY_3DSS / 4
 };
 
-#define DEPTH_MAP_3DSS_DEFAULT	colmain_mem_at(wfjarray, ALLDX, WFDY, 0, MAX_3DSS_STEP + 1)
-#define SP_CONTRAST_Y_DEFAULT	colmain_mem_at(wfjarray, ALLDX, WFDY, 0, MAX_3DSS_STEP * 3 + 1)
+#define DEPTH_MAP_3DSS_DEFAULT	colmain_mem_at(wfjarray, ALLDX, WFDY + ADD_Y_3DSS, 0, MAX_3DSS_STEP + 1)
+#define SP_CONTRAST_Y_DEFAULT	colmain_mem_at(wfjarray, ALLDX, WFDY + ADD_Y_3DSS, 0, MAX_3DSS_STEP * 3 + 1)
+
+uint_fast16_t calcprev(uint_fast16_t v, uint_fast16_t lim)
+{
+	if (v)
+		return -- v;
+	else
+		return lim - 1;
+}
+
+uint_fast16_t calcnext(uint_fast16_t v, uint_fast16_t lim)
+{
+	v ++;
+	if (v >= lim)
+		return 0;
+	else
+		return v;
+}
 
 static void init_depth_map_3dss(void)
 {
 	PACKEDCOLORMAIN_T * depth_map_3dss = DEPTH_MAP_3DSS_DEFAULT;
 
-	for (int_fast8_t i = MAX_3DSS_STEP - 1; i >= 0; i --)
+	for (int_fast8_t i = 0; i < MAX_3DSS_STEP; i ++)
 	{
 		uint_fast16_t range = HALF_ALLDX - 1 - i * Y_STEP;
 
@@ -7710,13 +7728,13 @@ static void display2_spectrum(
 			static uint_fast8_t current_3dss_step = 0;
 			static uint_fast8_t delay_3dss = MAX_DELAY_3DSS;
 
-			uint_fast8_t draw_step = (current_3dss_step + 1) % MAX_3DSS_STEP;
+			uint_fast8_t draw_step = calcprev(current_3dss_step, MAX_3DSS_STEP);
 			uint_fast16_t ylast_sp = 0;
 			PACKEDCOLORMAIN_T * depth_map_3dss = DEPTH_MAP_3DSS_DEFAULT;
 			PACKEDCOLORMAIN_T * y_env = SP_CONTRAST_Y_DEFAULT;
 			int i;
 
-			for (i = MAX_3DSS_STEP - 1; i >= 0; i --)
+			for (int_fast8_t i = 0; i < MAX_3DSS_STEP - 1; i ++)
 			{
 				uint_fast16_t y0 = spy - 5 - i * Y_STEP;
 				uint_fast16_t x;
@@ -7740,9 +7758,9 @@ static void display2_spectrum(
 							colmain_line(colorpip, BUFDIM_X, BUFDIM_Y, x - 1, ylast_sp, x, ynew, COLORMAIN_BLACK, 1);
 						}
 
-						* y_env = ((ynew + 2) >> 0) & UINT8_MAX;
+						* y_env = ((ynew - 2) >> 0) & UINT8_MAX;
 						y_env ++;
-						* y_env = ((ynew + 2) >> 8) & UINT8_MAX;
+						* y_env = ((ynew - 2) >> 8) & UINT8_MAX;
 						y_env ++;
 
 						ylast_sp = ynew;
@@ -7754,7 +7772,6 @@ static void display2_spectrum(
 						uint_fast16_t x_d = * depth_map_3dss ++;
 						x_d |= (* depth_map_3dss ++) << 8;
 
-						/* предотвращение отрисовки по ранее закрашенной области*/
 						if (x_old != x_d)
 						{
 							uint_fast16_t y1 = y0 - * colmain_mem_at(wfjarray, ALLDX, MAX_3DSS_STEP, x, draw_step);
@@ -7762,17 +7779,22 @@ static void display2_spectrum(
 
 							for (; h > 0; h --)
 							{
+								/* предотвращение отрисовки по ранее закрашенной области*/
+								if (* colmain_mem_at(colorpip, BUFDIM_X, BUFDIM_Y, x_d, y0 - h) != COLORMAIN_BLACK)
+									break;
+
 								colpip_point(colorpip, BUFDIM_X, BUFDIM_Y, x_d, y0 - h, color_scale [h]);
 							}
+							x_old = x_d;
 						}
-						x_old = x_d;
 					}
 				}
-				draw_step = (draw_step + 1) % MAX_3DSS_STEP;
+				draw_step = calcprev(draw_step, MAX_3DSS_STEP);
 			}
-			delay_3dss = (delay_3dss + 1) % MAX_DELAY_3DSS;
+			delay_3dss = calcnext(delay_3dss, MAX_DELAY_3DSS);
+
 			if (! delay_3dss)
-				current_3dss_step = (current_3dss_step + 1) % MAX_3DSS_STEP;
+				current_3dss_step = calcnext(current_3dss_step, MAX_3DSS_STEP);
 
 			// увеличение контрастности спектра на фоне панорамы
 			y_env = SP_CONTRAST_Y_DEFAULT;
