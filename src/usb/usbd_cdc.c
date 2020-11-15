@@ -250,7 +250,7 @@ static void cdcXout_buffer_save(
 
 	for (i = 0; usbd_cdcX_rxenabled [offset] && i < length; ++ i)
 	{
-		HARDWARE_CDC_ONRXCHAR(data [i]);
+		HARDWARE_CDC_ONRXCHAR(offset, data [i]);
 	}
 }
 
@@ -280,21 +280,6 @@ usbd_cdc_isisdata_ifc(uint_fast8_t interfacev)
 			return 1;
 	}
 	return 0;
-}
-
-static USBD_StatusTypeDef USBD_CDC_DataOut(USBD_HandleTypeDef *pdev, uint_fast8_t epnum)
-{
-	if (epnum >= USBD_CDCACM_EP(USBD_EP_CDC_OUT, 0) && epnum < USBD_CDCACM_EP(USBD_EP_CDC_OUT, WITHUSBCDCACM_N))
-	{
-		const unsigned offset = USBD_CDCACM_OFFSET_BY_EP(epnum, USBD_EP_CDC_OUT);
-		/* CDC EP OUT */
-		// use CDC data
-		cdcXout_buffer_save(cdcXbuffout [offset], USBD_LL_GetRxDataSize(pdev, epnum), offset);	/* использование буфера принятых данных */
-		//memcpy(cdc1buffin, cdc1buffout, cdc1buffinlevel = USBD_LL_GetRxDataSize(pdev, epnum));
-		/* Prepare Out endpoint to receive next cdc data packet */
-		USBD_LL_PrepareReceive(pdev, USB_ENDPOINT_OUT(epnum), cdcXbuffout [offset], VIRTUAL_COM_PORT_OUT_DATA_SIZE);
-	}
-	return USBD_OK;
 }
 
 // При возврате из этой функции в usbd_core.c происходит вызов USBD_CtlSendStatus
@@ -345,10 +330,25 @@ static USBD_StatusTypeDef USBD_CDC_DataIn(USBD_HandleTypeDef *pdev, uint_fast8_t
 #endif
 		while (usbd_cdc_txenabled [offset] && (cdcXbuffinlevel [offset] < ARRAY_SIZE(cdcXbuffin [offset])))
 		{
-			HARDWARE_CDC_ONTXCHAR(pdev);	// при отсутствии данных usbd_cdc_txenabled устанавливается в 0
+			HARDWARE_CDC_ONTXCHAR(offset, pdev);	// при отсутствии данных usbd_cdc_txenabled устанавливается в 0
 		}
 		USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), cdcXbuffin [offset], cdcXbuffinlevel [offset]);
 		cdcXbuffinlevel [offset] = 0;
+	}
+	return USBD_OK;
+}
+
+static USBD_StatusTypeDef USBD_CDC_DataOut(USBD_HandleTypeDef *pdev, uint_fast8_t epnum)
+{
+	if (epnum >= USBD_CDCACM_EP(USBD_EP_CDC_OUT, 0) && epnum < USBD_CDCACM_EP(USBD_EP_CDC_OUT, WITHUSBCDCACM_N))
+	{
+		const unsigned offset = USBD_CDCACM_OFFSET_BY_EP(epnum, USBD_EP_CDC_OUT);
+		/* CDC EP OUT */
+		// use CDC data
+		cdcXout_buffer_save(cdcXbuffout [offset], USBD_LL_GetRxDataSize(pdev, epnum), offset);	/* использование буфера принятых данных */
+		//memcpy(cdc1buffin, cdc1buffout, cdc1buffinlevel = USBD_LL_GetRxDataSize(pdev, epnum));
+		/* Prepare Out endpoint to receive next cdc data packet */
+		USBD_LL_PrepareReceive(pdev, USB_ENDPOINT_OUT(epnum), cdcXbuffout [offset], VIRTUAL_COM_PORT_OUT_DATA_SIZE);
 	}
 	return USBD_OK;
 }

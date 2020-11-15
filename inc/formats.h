@@ -491,12 +491,8 @@ int dbg_getchar(char * r);
 
 	// вызывается из обработчика прерываний CDC
 	// с принятым символом
-	#define HARDWARE_CDC_ONRXCHAR(c) do { \
+	#define HARDWARE_CDC_ONRXCHAR(offset, c) do { \
 			cat2_parsechar(c); \
-		} while (0)
-	// вызывается из обработчика прерываний CDC
-	#define HARDWARE_CDC_ONOVERFLOW() do { \
-			cat2_rxoverflow(); \
 		} while (0)
 	// вызывается из обработчика прерываний CDC
 	// произошёл разрыв связи при работе по USB CDC
@@ -505,7 +501,7 @@ int dbg_getchar(char * r);
 		} while (0)
 	// вызывается из обработчика прерываний CDC
 	// по готовности передатчика
-	#define HARDWARE_CDC_ONTXCHAR(ctx) do { \
+	#define HARDWARE_CDC_ONTXCHAR(offset, ctx) do { \
 			cat2_sendchar(ctx); \
 		} while (0)
 
@@ -538,12 +534,8 @@ int dbg_getchar(char * r);
 
 	// вызывается из обработчика прерываний CDC
 	// с принятым символом
-	#define HARDWARE_CDC_ONRXCHAR(c) do { \
+	#define HARDWARE_CDC_ONRXCHAR(offset, c) do { \
 			modem_parsechar(c); \
-		} while (0)
-	// вызывается из обработчика прерываний CDC
-	#define HARDWARE_CDC_ONOVERFLOW() do { \
-			modem_rxoverflow(); \
 		} while (0)
 	// вызывается из обработчика прерываний CDC
 	// произошёл разрыв связи при работе по USB CDC
@@ -552,7 +544,7 @@ int dbg_getchar(char * r);
 		} while (0)
 	// вызывается из обработчика прерываний CDC
 	// по готовности передатчика
-	#define HARDWARE_CDC_ONTXCHAR(ctx) do { \
+	#define HARDWARE_CDC_ONTXCHAR(offset, ctx) do { \
 			modem_sendchar(ctx); \
 		} while (0)
 
@@ -590,11 +582,8 @@ int dbg_getchar(char * r);
 
 	// вызывается из обработчика прерываний CDC
 	// с принятым символом
-	#define HARDWARE_CDC_ONRXCHAR(c) do { \
+	#define HARDWARE_CDC_ONRXCHAR(offset, c) do { \
 			debugusb_parsechar(c); \
-		} while (0)
-	// вызывается из обработчика прерываний CDC
-	#define HARDWARE_CDC_ONOVERFLOW() do { \
 		} while (0)
 	// вызывается из обработчика прерываний CDC
 	// произошёл разрыв связи при работе по USB CDC
@@ -602,7 +591,7 @@ int dbg_getchar(char * r);
 		} while (0)
 	// вызывается из обработчика прерываний CDC
 	// по готовности передатчика
-	#define HARDWARE_CDC_ONTXCHAR(ctx) do { \
+	#define HARDWARE_CDC_ONTXCHAR(offset, ctx) do { \
 			debugusb_sendchar(ctx); \
 		} while (0)
 
@@ -755,7 +744,7 @@ int dbg_getchar(char * r);
 	#if ! defined (HARDWARE_CDC_ONRXCHAR)
 		// вызывается из обработчика прерываний CDC
 		// с принятым символом
-		#define HARDWARE_CDC_ONRXCHAR(c) do { \
+		#define HARDWARE_CDC_ONRXCHAR(offset, c) do { \
 				(void) (c); \
 				usbd_cdc_enablerx(1); \
 			} while (0)
@@ -766,17 +755,10 @@ int dbg_getchar(char * r);
 		#define HARDWARE_CDC_ONDISCONNECT() do { \
 			} while (0)
 	#endif /* ! defined (HARDWARE_CDC_ONDISCONNECT) */
-	#if ! defined (HARDWARE_CDC_ONOVERFLOW)
-		// вызывается из обработчика прерываний CDC
-		#define HARDWARE_CDC_ONOVERFLOW() do { \
-				usbd_cdc_enablerx(1); \
-			} while (0)
-	#endif /* ! defined (HARDWARE_CDC_ONOVERFLOW) */
-
 	#if ! defined (HARDWARE_CDC_ONTXCHAR)
 		// вызывается из обработчика прерываний CDC
 		// по готовности передатчика
-		#define HARDWARE_CDC_ONTXCHAR(ctx) do { \
+		#define HARDWARE_CDC_ONTXCHAR(offset, ctx) do { \
 				usbd_cdc_enabletx(0); \
 			} while (0)
 	#endif /* ! defined (HARDWARE_CDC_ONTXCHAR) */
