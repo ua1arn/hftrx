@@ -943,48 +943,6 @@ static void slider_process(slider_t * sl)
 	reset_tracking();
 }
 
-/* Возврат позиции однотипного элемента */
-uint_fast8_t get_element_index(window_t * win, element_type_t type, void * eh)
-{
-	ASSERT(win != NULL);
-	ASSERT(eh != NULL);
-
-	switch (type)
-	{
-	case TYPE_BUTTON:
-	{
-		ASSERT((button_t *) eh > win->bh_ptr);
-		uint_fast8_t index = ((button_t *) eh - win->bh_ptr);
-		ASSERT(index < win->bh_count);
-		return index;
-	}
-		break;
-
-	case TYPE_LABEL:
-	{
-		ASSERT((label_t *) eh > win->lh_ptr);
-		uint_fast8_t index = ((label_t *) eh - win->lh_ptr);
-		ASSERT(index < win->lh_count);
-		return index;
-	}
-		break;
-
-	case TYPE_SLIDER:
-	{
-		ASSERT((slider_t *) eh > win->sh_ptr);
-		uint_fast8_t index = ((slider_t *) eh - win->sh_ptr);
-		ASSERT(index < win->sh_count);
-		return index;
-	}
-		break;
-
-	default:
-
-		return UINT8_MAX;
-		break;
-	}
-}
-
 /* Селектор запуска функций обработки событий */
 static void set_state_record(gui_element_t * val)
 {

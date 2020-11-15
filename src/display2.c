@@ -7755,7 +7755,7 @@ static void display2_spectrum(
 
 						if (x)
 						{
-							colmain_line(colorpip, BUFDIM_X, BUFDIM_Y, x - 1, ylast_sp, x, ynew, COLORMAIN_BLACK, 1);
+							colmain_line(colorpip, BUFDIM_X, BUFDIM_Y, x - 1, ylast_sp, x, ynew, COLORMAIN_WHITE, 1);
 						}
 
 						* y_env = ((ynew - 2) >> 0) & UINT8_MAX;
@@ -7805,7 +7805,7 @@ static void display2_spectrum(
 				y1 |= (* y_env ++) << 8;
 
 				if (x)
-					colmain_line(colorpip, BUFDIM_X, BUFDIM_Y, x - 1, ylast_sp, x, y1, COLORMAIN_WHITE, 0);
+					colmain_line(colorpip, BUFDIM_X, BUFDIM_Y, x - 1, ylast_sp, x, y1, COLORMAIN_BLACK, 0);
 
 				ylast_sp = y1;
 			}

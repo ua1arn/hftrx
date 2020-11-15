@@ -555,6 +555,7 @@ static void window_memory_process(void)
 			bh->h = 44;
 			bh->state = CANCELLED;
 			bh->parent = WINDOW_MEMORY;
+			bh->index = i;
 			bh->is_long_press = 1;
 			bh->is_locked = BUTTON_NON_LOCKED;
 			local_snprintf_P(bh->name, ARRAY_SIZE(bh->name), PSTR("btn_memory_%02d"), i);
@@ -608,7 +609,7 @@ static void window_memory_process(void)
 			if (IS_BUTTON_PRESS)
 			{
 				button_t * bh = (button_t *) ptr;
-				uint_fast8_t cell_id = get_element_index(win, TYPE_BUTTON, bh);
+				uint_fast8_t cell_id = bh->index;
 
 				if (bh->payload)
 				{
@@ -621,7 +622,7 @@ static void window_memory_process(void)
 			else if (IS_BUTTON_LONG_PRESS)
 			{
 				button_t * bh = (button_t *) ptr;
-				uint_fast8_t cell_id = get_element_index(win, TYPE_BUTTON, bh);
+				uint_fast8_t cell_id = bh->index;
 
 				if (bh->payload)
 				{
@@ -2548,11 +2549,11 @@ static void window_ap_mic_eq_process(void)
 		memcpy(win->lh_ptr, labels, labels_size);
 
 		static const slider_t sliders [] = {
-			{ 0, 0, 0, 0, 0, 0, ORIENTATION_VERTICAL, WINDOW_AP_MIC_EQ, "eq0.08", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
-			{ 0, 0, 0, 0, 0, 0, ORIENTATION_VERTICAL, WINDOW_AP_MIC_EQ, "eq0.23", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
-			{ 0, 0, 0, 0, 0, 0, ORIENTATION_VERTICAL, WINDOW_AP_MIC_EQ, "eq0.65", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
-			{ 0, 0, 0, 0, 0, 0, ORIENTATION_VERTICAL, WINDOW_AP_MIC_EQ, "eq1.8",  CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
-			{ 0, 0, 0, 0, 0, 0, ORIENTATION_VERTICAL, WINDOW_AP_MIC_EQ, "eq5.3",  CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
+			{ 0, 0, 0, 0, 0, 0, ORIENTATION_VERTICAL, WINDOW_AP_MIC_EQ, "eq0.08", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, 0, },
+			{ 0, 0, 0, 0, 0, 0, ORIENTATION_VERTICAL, WINDOW_AP_MIC_EQ, "eq0.23", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, 1, },
+			{ 0, 0, 0, 0, 0, 0, ORIENTATION_VERTICAL, WINDOW_AP_MIC_EQ, "eq0.65", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, 2, },
+			{ 0, 0, 0, 0, 0, 0, ORIENTATION_VERTICAL, WINDOW_AP_MIC_EQ, "eq1.8",  CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, 3, },
+			{ 0, 0, 0, 0, 0, 0, ORIENTATION_VERTICAL, WINDOW_AP_MIC_EQ, "eq5.3",  CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, 4, },
 		};
 		win->sh_count = ARRAY_SIZE(sliders);
 		uint_fast16_t sliders_size = sizeof(sliders);
@@ -2625,7 +2626,7 @@ static void window_ap_mic_eq_process(void)
 		else if (IS_SLIDER_MOVE)
 		{
 			slider_t * sh = (slider_t *) ptr;
-			uint_fast8_t id = get_element_index(win, TYPE_SLIDER, sh);
+			uint_fast8_t id = sh->index;
 
 			hamradio_set_gmikeequalizerparams(id, normalize(sh->value, 100, 0, eq_limit));
 
@@ -2891,9 +2892,9 @@ static void window_ap_mic_prof_process(void)
 		win->first_call = 0;
 
 		static const button_t buttons [] = {
-			{ 0, 0, 100, 44, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_AP_MIC_PROF, 	NON_VISIBLE, INT32_MAX, "btn_mic_profile_1", "", },
-			{ 0, 0, 100, 44, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_AP_MIC_PROF, 	NON_VISIBLE, INT32_MAX, "btn_mic_profile_2", "", },
-			{ 0, 0, 100, 44, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_AP_MIC_PROF, 	NON_VISIBLE, INT32_MAX, "btn_mic_profile_3", "", },
+			{ 0, 0, 100, 44, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_AP_MIC_PROF, 	NON_VISIBLE, INT32_MAX, "btn_mic_profile_1", "", 0, },
+			{ 0, 0, 100, 44, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_AP_MIC_PROF, 	NON_VISIBLE, INT32_MAX, "btn_mic_profile_2", "", 1, },
+			{ 0, 0, 100, 44, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_AP_MIC_PROF, 	NON_VISIBLE, INT32_MAX, "btn_mic_profile_3", "", 2, },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -2936,7 +2937,7 @@ static void window_ap_mic_prof_process(void)
 		if (IS_BUTTON_PRESS)
 		{
 			button_t * bh = (button_t *) ptr;
-			uint_fast8_t profile_id = get_element_index(win, TYPE_BUTTON, bh);
+			uint_fast8_t profile_id = bh->index;
 			if (bh->payload)
 			{
 				hamradio_load_mic_profile(profile_id, 1);
@@ -2948,7 +2949,7 @@ static void window_ap_mic_prof_process(void)
 		else if (IS_BUTTON_LONG_PRESS)
 		{
 			button_t * bh = (button_t *) ptr;
-			uint_fast8_t profile_id = get_element_index(win, TYPE_BUTTON, bh);
+			uint_fast8_t profile_id = bh->index;
 			if (bh->payload)
 			{
 				hamradio_clean_mic_profile(profile_id);
@@ -2996,7 +2997,7 @@ static void window_menu_process(void)
 
 		static const button_t buttons [] = {
 			{ 0, 0, 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, -1, "btn_SysMenu-", "-", },
-			{ 0, 0, 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, 1, "btnS_ysMenu+", "+", },
+			{ 0, 0, 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, 1, "btn_SysMenu+", "+", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -3005,24 +3006,24 @@ static void window_menu_process(void)
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
 		static const label_t labels [] = {
-			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group",  "", FONT_LARGE, COLORMAIN_WHITE, },
-			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group",  "", FONT_LARGE, COLORMAIN_WHITE, },
-			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group",  "", FONT_LARGE, COLORMAIN_WHITE, },
-			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group",  "", FONT_LARGE, COLORMAIN_WHITE, },
-			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group",  "", FONT_LARGE, COLORMAIN_WHITE, },
-			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group",  "", FONT_LARGE, COLORMAIN_WHITE, },
-			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", FONT_LARGE, COLORMAIN_WHITE, },
-			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", FONT_LARGE, COLORMAIN_WHITE, },
-			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", FONT_LARGE, COLORMAIN_WHITE, },
-			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", FONT_LARGE, COLORMAIN_WHITE, },
-			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", FONT_LARGE, COLORMAIN_WHITE, },
-			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", FONT_LARGE, COLORMAIN_WHITE, },
-			{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals",   "", FONT_LARGE, COLORMAIN_WHITE, },
-			{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals",   "", FONT_LARGE, COLORMAIN_WHITE, },
-			{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals",   "", FONT_LARGE, COLORMAIN_WHITE, },
-			{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals",   "", FONT_LARGE, COLORMAIN_WHITE, },
-			{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals",   "", FONT_LARGE, COLORMAIN_WHITE, },
-			{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals",   "", FONT_LARGE, COLORMAIN_WHITE, },
+			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group",  "", FONT_LARGE, COLORMAIN_WHITE, 0, },
+			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group",  "", FONT_LARGE, COLORMAIN_WHITE, 1, },
+			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group",  "", FONT_LARGE, COLORMAIN_WHITE, 2, },
+			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group",  "", FONT_LARGE, COLORMAIN_WHITE, 3, },
+			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group",  "", FONT_LARGE, COLORMAIN_WHITE, 4, },
+			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group",  "", FONT_LARGE, COLORMAIN_WHITE, 5, },
+			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", FONT_LARGE, COLORMAIN_WHITE, 0, },
+			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", FONT_LARGE, COLORMAIN_WHITE, 1, },
+			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", FONT_LARGE, COLORMAIN_WHITE, 2, },
+			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", FONT_LARGE, COLORMAIN_WHITE, 3, },
+			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", FONT_LARGE, COLORMAIN_WHITE, 4, },
+			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", FONT_LARGE, COLORMAIN_WHITE, 5, },
+			{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals",   "", FONT_LARGE, COLORMAIN_WHITE, 0, },
+			{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals",   "", FONT_LARGE, COLORMAIN_WHITE, 1, },
+			{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals",   "", FONT_LARGE, COLORMAIN_WHITE, 2, },
+			{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals",   "", FONT_LARGE, COLORMAIN_WHITE, 3, },
+			{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals",   "", FONT_LARGE, COLORMAIN_WHITE, 4, },
+			{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals",   "", FONT_LARGE, COLORMAIN_WHITE, 5, },
 		};
 		win->lh_count = ARRAY_SIZE(labels);
 		uint_fast16_t labels_size = sizeof(labels);
@@ -3046,40 +3047,40 @@ static void window_menu_process(void)
 		menu [MENU_VALS].selected_label = 0;
 
 		menu [MENU_GROUPS].first_id = 0;
-		for (i = 0; i < win->lh_count; i++)
+		for (i = 0; i < win->lh_count; i ++)
 		{
 			lh = & win->lh_ptr [i];
 			if (strcmp(lh->name, "lbl_group"))
 				break;
 		}
 
-		menu [MENU_GROUPS].last_id = --i;
+		menu [MENU_GROUPS].last_id = -- i;
 		menu [MENU_GROUPS].num_rows = menu [MENU_GROUPS].last_id - menu [MENU_GROUPS].first_id;
 
-		menu [MENU_PARAMS].first_id = ++i;
-		for (; i < win->lh_count; i++)
+		menu [MENU_PARAMS].first_id = ++ i;
+		for (; i < win->lh_count; i ++)
 		{
 			lh = & win->lh_ptr [i];
 			if (strcmp(lh->name, "lbl_params"))
 				break;
 		}
-		menu [MENU_PARAMS].last_id = --i;
+		menu [MENU_PARAMS].last_id = -- i;
 		menu [MENU_PARAMS].num_rows = menu [MENU_PARAMS].last_id - menu [MENU_PARAMS].first_id;
 
-		menu [MENU_VALS].first_id = ++i;
-		for (; i < win->lh_count; i++)
+		menu [MENU_VALS].first_id = ++ i;
+		for (; i < win->lh_count; i ++)
 		{
 			lh = & win->lh_ptr [i];
 			if (strcmp(lh->name, "lbl_vals"))
 				break;
 		}
-		menu [MENU_VALS].last_id = --i;
+		menu [MENU_VALS].last_id = -- i;
 		menu [MENU_VALS].num_rows = menu [MENU_VALS].last_id - menu [MENU_VALS].first_id;
 
 		menu [MENU_GROUPS].count = hamradio_get_multilinemenu_block_groups(menu [MENU_GROUPS].menu_block) - 1;
 		xn = col1_int;
 		yn = row1_int;
-		for(i = 0; i <= menu [MENU_GROUPS].num_rows; i++)
+		for(i = 0; i <= menu [MENU_GROUPS].num_rows; i ++)
 		{
 			lh = & win->lh_ptr [menu [MENU_GROUPS].first_id + i];
 			strcpy(lh->text, menu [MENU_GROUPS].menu_block [i + menu [MENU_GROUPS].add_id].name);
@@ -3093,7 +3094,7 @@ static void window_menu_process(void)
 		menu [MENU_PARAMS].count = hamradio_get_multilinemenu_block_params(menu [MENU_PARAMS].menu_block, menu [MENU_GROUPS].menu_block [menu [MENU_GROUPS].selected_str].index) - 1;
 		xn += int_col2;
 		yn = row1_int;
-		for(i = 0; i <= menu [MENU_PARAMS].num_rows; i++)
+		for(i = 0; i <= menu [MENU_PARAMS].num_rows; i ++)
 		{
 			lh = & win->lh_ptr [menu [MENU_PARAMS].first_id + i];
 			strcpy(lh->text, menu [MENU_PARAMS].menu_block [i + menu [MENU_PARAMS].add_id].name);
@@ -3149,19 +3150,19 @@ static void window_menu_process(void)
 			selected_label = (label_t *) ptr;
 			if (strcmp(selected_label->name, "lbl_group") == 0)
 			{
-				menu [MENU_GROUPS].selected_label = get_element_index(win, TYPE_LABEL, selected_label) % (menu [MENU_GROUPS].num_rows + 1);
+				menu [MENU_GROUPS].selected_label = selected_label->index;
 				menu_label_touched = 1;
 				menu_level = MENU_GROUPS;
 			}
 			else if (strcmp(selected_label->name, "lbl_params") == 0)
 			{
-				menu [MENU_PARAMS].selected_label = get_element_index(win, TYPE_LABEL, selected_label) % (menu [MENU_GROUPS].num_rows + 1);
+				menu [MENU_PARAMS].selected_label = selected_label->index;
 				menu_label_touched = 1;
 				menu_level = MENU_PARAMS;
 			}
 			else if (strcmp(selected_label->name, "lbl_vals") == 0)
 			{
-				menu [MENU_VALS].selected_label = get_element_index(win, TYPE_LABEL, selected_label) % (menu [MENU_GROUPS].num_rows + 1);
+				menu [MENU_VALS].selected_label = selected_label->index;
 				menu [MENU_PARAMS].selected_label = menu [MENU_VALS].selected_label;
 				menu_label_touched = 1;
 				menu_level = MENU_VALS;
