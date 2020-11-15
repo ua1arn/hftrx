@@ -3701,8 +3701,8 @@ static void window_notch_process(void)
 
 	if (notch.updated)
 	{
-		button_t * btnAuto = find_gui_element(TYPE_BUTTON, win, "btnAuto");
-		button_t * btnManual = find_gui_element(TYPE_BUTTON, win, "btnManual");
+		button_t * btn_Auto = find_gui_element(TYPE_BUTTON, win, "btn_Auto");
+		button_t * btn_Manual = find_gui_element(TYPE_BUTTON, win, "btn_Manual");
 		label_t * lbl_freq = find_gui_element(TYPE_LABEL, win, "lbl_freq");
 		label_t * lbl_width = find_gui_element(TYPE_LABEL, win, "lbl_width");
 
@@ -3715,8 +3715,8 @@ static void window_notch_process(void)
 		win->lh_ptr [notch.select].color = COLORMAIN_YELLOW;
 
 		uint_fast8_t type = hamradio_get_gnotchtype();
-		btnAuto->is_locked = type == BOARD_NOTCH_AUTO ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
-		btnManual->is_locked = type == BOARD_NOTCH_MANUAL ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
+		btn_Auto->is_locked = type == BOARD_NOTCH_AUTO ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
+		btn_Manual->is_locked = type == BOARD_NOTCH_MANUAL ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
 
 		local_snprintf_P(lbl_freq->text, ARRAY_SIZE(lbl_freq->text), PSTR("Freq:%5d Hz"), hamradio_notch_freq(notch.select == TYPE_NOTCH_FREQ ? notch.change : 0));
 		local_snprintf_P(lbl_width->text, ARRAY_SIZE(lbl_width->text), PSTR("Width:%4d Hz"), hamradio_notch_width(notch.select == TYPE_NOTCH_WIDTH ? notch.change : 0));
