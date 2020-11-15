@@ -46,7 +46,7 @@ typedef struct vtty_tag
 	unsigned col;		// 0..VTTY_COLS-1
 } vtty_t;
 
-static ALIGNX_BEGIN vtty_t vtty0 ALIGNX_END;
+static RAMFRAMEBUFF ALIGNX_BEGIN vtty_t vtty0 ALIGNX_END;
 
 void display_vtty_initialize(void);
 int display_vtty_putchar(char ch);
@@ -176,7 +176,8 @@ static void display_vtty_scrollup(
 
 static void display_vtty_cout(
 	vtty_t * const vt,
-	char ch)
+	char ch
+	)
 {
 	ASSERT(vt->scroll < VTTY_ROWS);
 	ASSERT(vt->row < VTTY_ROWS);
@@ -196,11 +197,10 @@ static void display_vtty_cout(
 
 	default:
 		{
-			char str [2] = { ch, '\0' };
-			colpip_string_tbg(
+			colpip_string_count(
 					vt->fb, VTTY_DX, VTTY_DY,
 					vt->col * VTTY_CHARPIX, (vt->row + vt->scroll) % VTTY_ROWS * VTTY_ROWSPIX,
-					str, VTTY_FG);
+					VTTY_FG, & ch, 1);
 
 			if (++ vt->col >= VTTY_COLS)
 			{

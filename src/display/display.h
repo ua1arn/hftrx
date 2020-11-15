@@ -580,6 +580,19 @@ colpip_string_tbg(
 // Используется при выводе на графический индикатор,
 // transparent background - не меняем цвет фона.
 void
+colpip_string_count(
+	PACKEDCOLORPIP_T * buffer,
+	uint_fast16_t dx,
+	uint_fast16_t dy,
+	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	COLORPIP_T fg,		// цвет вывода текста
+	const char * s,		// строка для вывода
+	size_t len			// количество символов
+	);
+// Используется при выводе на графический индикатор,
+// transparent background - не меняем цвет фона.
+void
 colpip_string2_tbg(
 	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,
