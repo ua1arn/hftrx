@@ -1443,6 +1443,31 @@ static uint_fast16_t RAMFUNC_NONILINE ltdcpip_horizontal_put_char_small_tbg(
 	return x + width;
 }
 
+// возвращаем на сколько пикселей вправо занимет отрисованный символ
+// Фон не трогаем
+// return new x coordinate
+static uint_fast16_t RAMFUNC_NONILINE ltdcpip_horizontal_x2_put_char_small_tbg(
+	PACKEDCOLORPIP_T * __restrict buffer,
+	uint_fast16_t dx,
+	uint_fast16_t dy,
+	uint_fast16_t x,
+	uint_fast16_t y,
+	char cc,
+	COLOR565_T fg
+	)
+{
+	const uint_fast8_t width = SMALLCHARW;
+	const uint_fast8_t c = smallfont_decode((unsigned char) cc);
+	uint_fast8_t cgrow;
+	for (cgrow = 0; cgrow < SMALLCHARH; ++ cgrow)
+	{
+		PACKEDCOLORMAIN_T * const tgr0 = colmain_mem_at(buffer, dx, dy, x, y + cgrow * 2 + 0);
+		ltdcmain_horizontal_pixels_tbg(tgr0, S1D13781_smallfont_LTDC [c] [cgrow], width, fg);
+		PACKEDCOLORMAIN_T * const tgr1 = colmain_mem_at(buffer, dx, dy, x, y + cgrow * 2 + 1);
+		ltdcmain_horizontal_pixels_tbg(tgr1, S1D13781_smallfont_LTDC [c] [cgrow], width, fg);
+	}
+	return x + width;
+}
 #endif /* defined (SMALLCHARW) */
 
 #if SMALLCHARW2
@@ -1517,9 +1542,30 @@ colpip_string_tbg(
 	char c;
 
 	ASSERT(s != NULL);
-	while((c = * s ++) != '\0')
+	while ((c = * s ++) != '\0')
 	{
 		x = ltdcpip_horizontal_put_char_small_tbg(buffer, dx, dy, x, y, c, fg);
+	}
+}
+// Используется при выводе на графический индикатор,
+// transparent background - не меняем цвет фона.
+void
+colpip_string_x2_tbg(
+	PACKEDCOLORPIP_T * __restrict buffer,
+	uint_fast16_t dx,
+	uint_fast16_t dy,
+	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	const char * s,
+	COLORPIP_T fg		// цвет вывода текста
+	)
+{
+	char c;
+
+	ASSERT(s != NULL);
+	while ((c = * s ++) != '\0')
+	{
+		x = ltdcpip_horizontal_x2_put_char_small_tbg(buffer, dx, dy, x, y, c, fg);
 	}
 }
 
@@ -1544,6 +1590,27 @@ colpip_string_count(
 		x = ltdcpip_horizontal_put_char_small_tbg(buffer, dx, dy, x, y, c, fg);
 	}
 }
+// Используется при выводе на графический индикатор,
+// transparent background - не меняем цвет фона.
+void
+colpip_string_x2_count(
+	PACKEDCOLORPIP_T * buffer,
+	uint_fast16_t dx,
+	uint_fast16_t dy,
+	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	COLORPIP_T fg,		// цвет вывода текста
+	const char * s,		// строка для вывода
+	size_t len			// количество символов
+	)
+{
+	ASSERT(s != NULL);
+	while (len --)
+	{
+		const char c = * s ++;
+		x = ltdcpip_horizontal_x2_put_char_small_tbg(buffer, dx, dy, x, y, c, fg);
+	}
+}
 #endif /* defined (SMALLCHARW) */
 
 #if defined (SMALLCHARW2)
@@ -1563,7 +1630,7 @@ colpip_string2_tbg(
 {
 	char c;
 	ASSERT(s != NULL);
-	while((c = * s ++) != '\0')
+	while ((c = * s ++) != '\0')
 	{
 		x = ltdcpip_horizontal_put_char_small2_tbg(buffer, dx, dy, x, y, c, fg);
 	}
@@ -1597,7 +1664,7 @@ colpip_string3_tbg(
 	char c;
 
 	ASSERT(s != NULL);
-	while((c = * s ++) != '\0')
+	while ((c = * s ++) != '\0')
 	{
 		x = ltdcpip_horizontal_put_char_small3_tbg(buffer, dx, dy, x, y, c, fg);
 	}
@@ -1702,7 +1769,7 @@ display_string3(uint_fast16_t x, uint_fast16_t y, const char * s, uint_fast8_t l
 	char c;
 //	ltdc_secondoffs = 0;
 //	ltdc_h = SMALLCHARH3;
-	while((c = * s ++) != '\0')
+	while ((c = * s ++) != '\0')
 		x = ltdc_horizontal_put_char_small3(buffer, dx, dy, x, y, c);
 }
 
@@ -1719,7 +1786,7 @@ colmain_string3_at_xy(
 	char c;
 //	ltdc_secondoffs = 0;
 //	ltdc_h = SMALLCHARH3;
-	while((c = * s ++) != '\0')
+	while ((c = * s ++) != '\0')
 		x = ltdc_horizontal_put_char_small3(buffer, dx, dy, x, y, c);
 }
 
