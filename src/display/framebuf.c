@@ -1393,6 +1393,43 @@ static void RAMFUNC ltdcmain_horizontal_pixels_tbg(
 	}
 }
 
+// функции работы с colorbuffer не занимаются выталкиванеим кэш-памяти
+// Фон не трогаем
+// удвоенный по ширине растр
+static void RAMFUNC ltdcmain_horizontal_x2_pixels_tbg(
+	PACKEDCOLORMAIN_T * __restrict tgr,		// target raster
+	const FLASHMEM uint8_t * __restrict raster,
+	uint_fast16_t width,	// number of bits (start from LSB first byte in raster)
+	COLORPIP_T fg
+	)
+{
+	uint_fast16_t w = width;
+
+	for (; w >= 8; w -= 8, tgr += 16)
+	{
+		const uint_fast8_t v = * raster ++;
+		if (v & 0x01)	{ tgr [ 0] = tgr [ 1] = fg; }
+		if (v & 0x02)	{ tgr [ 2] = tgr [ 3] = fg; }
+		if (v & 0x04)	{ tgr [ 4] = tgr [ 5] = fg; }
+		if (v & 0x08)	{ tgr [ 6] = tgr [ 7] = fg; }
+		if (v & 0x10)	{ tgr [ 8] = tgr [ 9] = fg; }
+		if (v & 0x20)	{ tgr [10] = tgr [11] = fg; }
+		if (v & 0x40)	{ tgr [12] = tgr [13] = fg; }
+		if (v & 0x80)	{ tgr [14] = tgr [15] = fg; }
+	}
+	if (w != 0)
+	{
+		uint_fast8_t vlast = * raster;
+		do
+		{
+			if (vlast & 0x01)
+				tgr [ 0] = tgr [ 1] = fg;
+			tgr += 2;
+			vlast >>= 1;
+		} while (-- w);
+	}
+}
+
 #if 0//SMALLCHARW
 // return new x coordinate
 static uint_fast16_t
@@ -1462,11 +1499,11 @@ static uint_fast16_t RAMFUNC_NONILINE ltdcpip_horizontal_x2_put_char_small_tbg(
 	for (cgrow = 0; cgrow < SMALLCHARH; ++ cgrow)
 	{
 		PACKEDCOLORMAIN_T * const tgr0 = colmain_mem_at(buffer, dx, dy, x, y + cgrow * 2 + 0);
-		ltdcmain_horizontal_pixels_tbg(tgr0, S1D13781_smallfont_LTDC [c] [cgrow], width, fg);
+		ltdcmain_horizontal_x2_pixels_tbg(tgr0, S1D13781_smallfont_LTDC [c] [cgrow], width, fg);
 		PACKEDCOLORMAIN_T * const tgr1 = colmain_mem_at(buffer, dx, dy, x, y + cgrow * 2 + 1);
-		ltdcmain_horizontal_pixels_tbg(tgr1, S1D13781_smallfont_LTDC [c] [cgrow], width, fg);
+		ltdcmain_horizontal_x2_pixels_tbg(tgr1, S1D13781_smallfont_LTDC [c] [cgrow], width, fg);
 	}
-	return x + width;
+	return x + width * 2;
 }
 #endif /* defined (SMALLCHARW) */
 
