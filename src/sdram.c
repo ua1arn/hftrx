@@ -3993,7 +3993,7 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 #define CTL_PARAM(x) PARAM("st,ctl-"#x, c_##x)
 #define PHY_PARAM(x) PARAM("st,phy-"#x, p_##x)
 
-	const struct {
+	static const struct {
 		const char *name; /* Name in DT */
 		const uint32_t offset; /* Offset in config struct */
 		const uint32_t size;   /* Size of parameters */
