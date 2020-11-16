@@ -280,9 +280,9 @@ static const COLORPAIR_T colors_1freq [1] =
 	{	DESIGNBIGCOLOR,	LABELBACK,	},
 };
 
-// Тестовая функция - прототип для элементов отобраэения
+// Тестовая функция - прототип для элементов отображения
 static void
-display2_ratext(
+display2_testvidget(
 	uint_fast8_t xcell,
 	uint_fast8_t ycell,
 	dctx_t * pctx
