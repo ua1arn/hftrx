@@ -1181,7 +1181,7 @@ struct stm32mp1_ddrctl {
 	uint32_t pcfgqos1_1;	/* 0x548 Read QoS Configuration 1 */
 	uint32_t pcfgwqos0_1;	/* 0x54c Write QoS Configuration 0 */
 	uint32_t pcfgwqos1_1;	/* 0x550 Write QoS Configuration 1 */
-} __packed;
+} KEYWORDPACKED;
 
 /* DDR Physical Interface Control (DDRPHYC) registers*/
 struct stm32mp1_ddrphy {
@@ -1271,7 +1271,7 @@ struct stm32mp1_ddrphy {
 	uint32_t dx3dllcr;	/* 0x28c Byte lane 3 DLL Control */
 	uint32_t dx3dqtr;	/* 0x290 Byte lane 3 DQ Timing */
 	uint32_t dx3dqstr;	/* 0x294 Byte lane 3 QS Timing */
-} __packed;
+} KEYWORDPACKED;
 
 struct stm32mp1_ddr_size {
 	uint64_t base;
