@@ -280,6 +280,24 @@ static const COLORPAIR_T colors_1freq [1] =
 	{	DESIGNBIGCOLOR,	LABELBACK,	},
 };
 
+// Тестовая функция - прототип для элементов отобраэения
+static void
+display2_ratext(
+	uint_fast8_t xcell,
+	uint_fast8_t ycell,
+	dctx_t * pctx
+	)
+{
+	const uint_fast16_t x = GRID2X(xcell);
+	const uint_fast16_t y = GRID2X(ycell);
+	//colmain_fillrect(colmain_fb_draw(), DIM_X, DIM_Y, x, y, 100, 100, COLORMAIN_GREEN);
+
+	colpip_string_tbg(colmain_fb_draw(), DIM_X, DIM_Y, x, y + 0, "Hello", COLORMAIN_WHITE);
+	colpip_string_x2_tbg(colmain_fb_draw(), DIM_X, DIM_Y, x, y + 20, "Test", COLORMAIN_WHITE);
+	colpip_string_tbg(colmain_fb_draw(), DIM_X, DIM_Y, x, y + 50, "Test", COLORMAIN_WHITE);
+
+}
+
 // todo: switch off -Wunused-function
 
 // формирование данных спектра для последующего отображения
