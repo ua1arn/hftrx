@@ -3451,7 +3451,9 @@ enum
 	VIEW_LINE,		// ломаная линия
 	VIEW_FILL,		// залитый зеленым спектр
 	VIEW_COLOR,		// раскрашенный цветовым градиентом спектр
+#if WITHVIEW_3DSS
 	VIEW_3DSS,		// дизайн панорамы под 3DSS Yaesu
+#endif /* WITHVIEW_3DSS */
 	VIEW_COUNT
 };
 

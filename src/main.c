@@ -17064,7 +17064,9 @@ void display2_menu_valxx(
 				"LINE ",
 				"FILL ",
 				"COLOR",
+#if WITHVIEW_3DSS
 				"3DSS ",
+#endif /* WITHVIEW_3DSS */
 			};
 
 			width = VALUEW;

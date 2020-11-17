@@ -7589,10 +7589,7 @@ display_colorgrid_3dss(
 
 #define HHWMG ((! LCDMODE_S1D13781_NHWACCEL && LCDMODE_S1D13781) || LCDMODE_UC1608 || LCDMODE_UC1601)
 
-#if HHWMG
-static ALIGNX_BEGIN GX_t spectmonoscr [MGSIZE(ALLDX, SPDY)] ALIGNX_END;
-#endif /* HHWMG */
-
+#if WITHVIEW_3DSS
 enum {
 	MAX_3DSS_STEP = 43,
 	Y_STEP = 2,
@@ -7604,23 +7601,6 @@ enum {
 
 #define DEPTH_MAP_3DSS_DEFAULT	colmain_mem_at(wfjarray, ALLDX, WFDY + ADD_Y_3DSS, 0, MAX_3DSS_STEP + 1)
 #define SP_CONTRAST_Y_DEFAULT	colmain_mem_at(wfjarray, ALLDX, WFDY + ADD_Y_3DSS, 0, MAX_3DSS_STEP * 3 + 1)
-
-uint_fast16_t calcprev(uint_fast16_t v, uint_fast16_t lim)
-{
-	if (v)
-		return -- v;
-	else
-		return lim - 1;
-}
-
-uint_fast16_t calcnext(uint_fast16_t v, uint_fast16_t lim)
-{
-	v ++;
-	if (v >= lim)
-		return 0;
-	else
-		return v;
-}
 
 static void init_depth_map_3dss(void)
 {
@@ -7645,6 +7625,28 @@ static void init_depth_map_3dss(void)
 			depth_map_3dss ++;
 		}
 	}
+}
+#endif /* WITHVIEW_3DSS */
+
+#if HHWMG
+static ALIGNX_BEGIN GX_t spectmonoscr [MGSIZE(ALLDX, SPDY)] ALIGNX_END;
+#endif /* HHWMG */
+
+uint_fast16_t calcprev(uint_fast16_t v, uint_fast16_t lim)
+{
+	if (v)
+		return -- v;
+	else
+		return lim - 1;
+}
+
+uint_fast16_t calcnext(uint_fast16_t v, uint_fast16_t lim)
+{
+	v ++;
+	if (v >= lim)
+		return 0;
+	else
+		return v;
 }
 
 // подготовка изображения спектра
@@ -7741,6 +7743,7 @@ static void display2_spectrum(
 		const uint_fast32_t f0 = hamradio_get_freq_pathi(pathi);	/* frequency at middle of spectrum */
 		const int_fast32_t bw = display_zoomedbw();
 
+#if WITHVIEW_3DSS
 		if (glob_view_style == VIEW_3DSS)
 		{
 			static uint_fast8_t current_3dss_step = 0;
@@ -7831,6 +7834,7 @@ static void display2_spectrum(
 			display_colorgrid_3dss(colorpip, spy - SPY_3DSS_H + 3, SPY_3DSS_H, f0, bw);
 		}
 		else
+#endif /* WITHVIEW_3DSS */
 		{
 			uint_fast16_t xleft = deltafreq2x(f0, hamradio_getleft_bp(pathi), bw, ALLDX);	// левый край шторки
 			uint_fast16_t xright = deltafreq2x(f0, hamradio_getright_bp(pathi), bw, ALLDX);	// правый край шторки
@@ -7905,7 +7909,11 @@ static void display2_spectrum(
 static void wflclear(void)
 {
 	uint_fast16_t y;
+#if WITHVIEW_3DSS
 	uint_fast8_t rows = glob_view_style == VIEW_3DSS ? MAX_3DSS_STEP : WFROWS;
+#else
+	uint_fast8_t rows = WFROWS;
+#endif /* WITHVIEW_3DSS */
 
 	for (y = 0; y < rows; ++ y)
 	{
@@ -7937,7 +7945,11 @@ static void wfl_avg_clear(void)
 static void wflshiftleft(uint_fast16_t pixels)
 {
 	uint_fast16_t y;
+#if WITHVIEW_3DSS
 	uint_fast8_t rows = glob_view_style == VIEW_3DSS ? MAX_3DSS_STEP : WFROWS;
+#else
+	uint_fast8_t rows = WFROWS;
+#endif /* WITHVIEW_3DSS */
 
 	if (pixels == 0)
 		return;
@@ -7974,7 +7986,11 @@ static void wflshiftleft(uint_fast16_t pixels)
 static void wflshiftright(uint_fast16_t pixels)
 {
 	uint_fast16_t y;
+#if WITHVIEW_3DSS
 	uint_fast8_t rows = glob_view_style == VIEW_3DSS ? MAX_3DSS_STEP : WFROWS;
+#else
+	uint_fast8_t rows = WFROWS;
+#endif /* WITHVIEW_3DSS */
 
 	if (pixels == 0)
 		return;
@@ -8097,7 +8113,9 @@ static void display2_latchwaterfall(
 	wfrow = (wfrow == 0) ? (WFDY - 1) : (wfrow - 1);
 #endif
 
+#if WITHVIEW_3DSS
 	if (glob_view_style != VIEW_3DSS)
+#endif /* WITHVIEW_3DSS */
 	{
 		// запоминание информации спектра для водопада
 		for (x = 0; x < ALLDX; ++ x)
@@ -8178,7 +8196,10 @@ static void display2_waterfall(
 	#if ! LCDMODE_HORFILL
 		#error LCDMODE_HORFILL must be defined
 	#endif /* ! LCDMODE_HORFILL */
+
+#if WITHVIEW_3DSS
 	if (glob_view_style != VIEW_3DSS)
+#endif /* WITHVIEW_3DSS */
 	{
 		PACKEDCOLORMAIN_T * const colorpip = getscratchwnd();
 		const uint_fast16_t p1h = WFDY - wfrow;	// высота верхней части в результируюшем изображении
@@ -8978,8 +8999,10 @@ board_set_view_style(uint_fast8_t v)
 		glob_view_style = n;
 		wfsetupnew();	// при переключении стилей отображения очищать общий буфер
 
+#if WITHVIEW_3DSS
 		if (glob_view_style == VIEW_3DSS)
 			init_depth_map_3dss();
+#endif /* WITHVIEW_3DSS */
 	}
 #endif /* WITHINTEGRATEDDSP */
 }

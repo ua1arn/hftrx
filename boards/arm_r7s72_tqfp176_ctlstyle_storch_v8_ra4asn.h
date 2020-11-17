@@ -349,6 +349,7 @@
 
 	#define WITHBARS		1	/* отображение S-метра и SWR-метра */
 
+	#define WITHVIEW_3DSS		1
 	#define WITHDEFAULTVIEW		VIEW_3DSS
 
 	#define WITHDISPLAY_FPS		25
