@@ -2699,110 +2699,6 @@ int tc358768_get_id(void) {
 }
 
 
-#define TSC_I2C_ADDR (0x20 * 2)
-
-void s3402_init(void)
-{
-	const unsigned i2caddr = TSC_I2C_ADDR;
-
-
-	i2c_start(i2caddr | 0x00);
-	i2c_write(0xFF);		// set page addr
-	i2c_write(0x00);		// page #0
-	i2c_waitsend();
-    i2c_stop();
-}
-
-int s3402_get_id(void)
-{
-	const unsigned i2caddr = TSC_I2C_ADDR;
-
-	uint8_t v0;
-
-	i2c_start(i2caddr | 0x00);
-	i2c_write_withrestart(0xE1);	//  Manufacturer ID register
-	i2c_start(i2caddr | 0x01);
-	i2c_read(& v0, I2C_READ_ACK_NACK);	// ||	The Manufacturer ID register always returns data $01.
-
-	PRINTF("tsc id=%08lX (expected 0x01)\n", v0);
-
-	return v0;
-}
-
-void tscprint(void)
-{
-	const unsigned i2caddr = TSC_I2C_ADDR;
-
-
-	uint8_t v0, v1, v2, v3, v4, v5, v6, v7;
-
-	i2c_start(i2caddr | 0x00);
-	i2c_write_withrestart(0x06);	// Address=0x0006 is used to read coordinate.
-	i2c_start(i2caddr | 0x01);
-	i2c_read(& v0, I2C_READ_ACK_1);	// ||
-	i2c_read(& v1, I2C_READ_ACK);	// ||
-	i2c_read(& v2, I2C_READ_ACK);	// ||
-	i2c_read(& v3, I2C_READ_ACK);	// ||
-	i2c_read(& v4, I2C_READ_ACK);	// ||
-	i2c_read(& v5, I2C_READ_ACK);	// ||
-	i2c_read(& v6, I2C_READ_ACK);	// ||
-	i2c_read(& v7, I2C_READ_NACK);	// ||
-
-	unsigned vz1 =
-			(((unsigned long) v3) << 24) |
-			(((unsigned long) v2) << 16) |
-			(((unsigned long) v1) << 8) |
-			(((unsigned long) v0) << 0) |
-			0;
-
-	unsigned vz2 =
-			(((unsigned long) v7) << 24) |
-			(((unsigned long) v6) << 16) |
-			(((unsigned long) v5) << 8) |
-			(((unsigned long) v4) << 0) |
-			0;
-
-	if (vz1 == 0 && vz2 == 0)
-		return;
-
-	PRINTF("tsc=%08lX %08lX\n", vz1, vz2);
-}
-
-// center: 		9E 01 79 01  00 03 05 02
-// left up: 	29 00 32 01  00 05 05 00
-// cright up:	29 02 BE 01  00 05 05 00
-// Left down: 	D0 00 26 01  00 05 05 04
-// Right down: 	E6 02 93 01  00 03 04 04
-
-int s3402_get_coord(unsigned * px, unsigned * py)
-{
-	const unsigned i2caddr = TSC_I2C_ADDR;
-
-
-	uint8_t v0, v1, v2, v3, v4, v5, v6, v7;
-
-	i2c_start(i2caddr | 0x00);
-	i2c_write_withrestart(0x06);	// Address=0x0006 is used to read coordinate.
-	i2c_start(i2caddr | 0x01);
-	i2c_read(& v0, I2C_READ_ACK_1);	// ||
-	i2c_read(& v1, I2C_READ_ACK);	// ||
-	i2c_read(& v2, I2C_READ_ACK);	// ||
-	i2c_read(& v3, I2C_READ_ACK);	// ||
-	i2c_read(& v4, I2C_READ_ACK);	// ||
-	i2c_read(& v5, I2C_READ_ACK);	// ||
-	i2c_read(& v6, I2C_READ_ACK);	// ||
-	i2c_read(& v7, I2C_READ_NACK);	// ||
-
-	if (v0 != 0)
-	{
-		* px = v1 + v2 * 256;
-		* py = v3 + v4 * 256;
-		return 1;
-	}
-	return 0;
-}
-
-
 /*
 	panel {
 		compatible = "samsung,s6e8aa0";
@@ -3926,12 +3822,6 @@ void tc358768_initialize(void)
 	local_delay_ms(5);
 	arm_hardware_piod_outputs(RESET, 1 * RESET);
 
-	// TP_RESX - active low
-	//	x-gpios = <&gpiog 0 GPIO_ACTIVE_HIGH>; /* TP_RESX_18 */
-	const portholder_t TP_RESX = (1uL << 0);	// PG0 - TP_RESX_18 - pin 03
-	arm_hardware_piog_outputs(TP_RESX, 0 * TP_RESX);
-	local_delay_ms(5);
-	arm_hardware_piog_outputs(TP_RESX, 1 * TP_RESX);
 
 
 	// TC358778XBG conrol
@@ -4132,11 +4022,6 @@ void panel_initialize(void)
 
 	s3402_init();
 	s3402_get_id();
-	for (;0;)
-	{
-		tscprint();
-	}
-
 }
 
 #endif /* LCDMODETX_TC358778XBG */
