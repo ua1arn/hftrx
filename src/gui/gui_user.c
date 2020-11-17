@@ -50,6 +50,7 @@ static void window_memory_process(void);
 static void window_display_process(void);
 static void window_receive_process(void);
 static void window_notch_process(void);
+static void window_gui_settings_process(void);
 
 static window_t windows [] = {
 //     window_id,   		 parent_id, 			align_mode,     x1, y1, w, h,   title,     		is_show, first_call, is_close, onVisibleProcess
@@ -75,10 +76,19 @@ static window_t windows [] = {
 	{ WINDOW_DISPLAY, 		 WINDOW_OPTIONS,		ALIGN_CENTER_X,	0, 0, 0, 0, "Display settings",  	 NON_VISIBLE, 0, 1, window_display_process, },
 	{ WINDOW_RECEIVE, 		 NO_PARENT_WINDOW, 		ALIGN_CENTER_X, 0, 0, 0, 0, "Receive settings", 	 NON_VISIBLE, 0, 1, window_receive_process, },
 	{ WINDOW_NOTCH, 		 NO_PARENT_WINDOW, 		ALIGN_CENTER_X, 0, 0, 0, 0, "Notch", 	 	 		 NON_VISIBLE, 0, 1, window_notch_process, },
+	{ WINDOW_GUI_SETTINGS, 	 WINDOW_OPTIONS, 		ALIGN_CENTER_X, 0, 0, 0, 0, "GUI settings",	 		 NON_VISIBLE, 0, 1, window_gui_settings_process, },
 };
 
 static enc2_menu_t gui_enc2_menu = { "", "", 0, 0, };
 static menu_by_name_t menu_uif;
+static uint_fast8_t enc2step_pos = 1;
+
+enc2step_t enc2step [] = {
+	{ 100, "100 Hz", },
+	{ 500, "500 Hz", },
+};
+
+enum { enc2step_vals = ARRAY_SIZE(enc2step) };
 
 /* Возврат ссылки на окно */
 window_t * get_win(uint8_t window_id)
@@ -274,7 +284,7 @@ static void gui_main_process(void)
 
 	case WM_MESSAGE_ENC2_ROTATE:	// если не открыто 2-е окно, 2-й энкодер подстраивает частоту с округлением 500 гц от текущего значения
 	{
-		uint_fast16_t step = 500;
+		uint_fast16_t step = enc2step [enc2step_pos].step;
 		uint32_t freq = hamradio_get_freq_rx();
 		uint16_t f_rem = freq % step;
 
@@ -819,6 +829,7 @@ static void window_options_process(void)
 			{ 0, 0, 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_OPTIONS, NON_VISIBLE, INT32_MAX, "btn_AUDsett", "Audio|settings", },
 			{ 0, 0, 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_OPTIONS, NON_VISIBLE, INT32_MAX, "btn_TXsett",  "Transmit|settings", },
 			{ 0, 0, 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_OPTIONS, NON_VISIBLE, INT32_MAX, "btn_Display", "Display|settings", },
+			{ 0, 0, 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_OPTIONS, NON_VISIBLE, INT32_MAX, "btn_gui",   	 "GUI|settings", },
 			{ 0, 0, 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_OPTIONS, NON_VISIBLE, INT32_MAX, "btn_Utils",   "Utils", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
@@ -860,15 +871,21 @@ static void window_options_process(void)
 		if (IS_BUTTON_PRESS)
 		{
 			button_t * bh = (button_t *) ptr;
+			button_t * btn_gui = find_gui_element(TYPE_BUTTON, win, "btn_gui");
+			button_t * btn_Utils = find_gui_element(TYPE_BUTTON, win, "btn_Utils");
 			button_t * btn_TXsett = find_gui_element(TYPE_BUTTON, win, "btn_TXsett");
 			button_t * btn_AUDsett = find_gui_element(TYPE_BUTTON, win, "btn_AUDsett");
 			button_t * btn_SysMenu = find_gui_element(TYPE_BUTTON, win, "btn_SysMenu");
-			button_t * btn_Utils = find_gui_element(TYPE_BUTTON, win, "btn_Utils");
 			button_t * btn_Display = find_gui_element(TYPE_BUTTON, win, "btn_Display");
 
 			if (bh == btn_Utils)
 			{
 				window_t * win = get_win(WINDOW_UTILS);
+				open_window(win);
+			}
+			else if (bh == btn_gui)
+			{
+				window_t * win = get_win(WINDOW_GUI_SETTINGS);
 				open_window(win);
 			}
 			else if (bh == btn_TXsett)
@@ -3720,6 +3737,84 @@ static void window_notch_process(void)
 
 		local_snprintf_P(lbl_freq->text, ARRAY_SIZE(lbl_freq->text), PSTR("Freq:%5d Hz"), hamradio_notch_freq(notch.select == TYPE_NOTCH_FREQ ? notch.change : 0));
 		local_snprintf_P(lbl_width->text, ARRAY_SIZE(lbl_width->text), PSTR("Width:%4d Hz"), hamradio_notch_width(notch.select == TYPE_NOTCH_WIDTH ? notch.change : 0));
+	}
+}
+
+// *********************************************************************************************************************************************************************
+
+static void window_gui_settings_process(void)
+{
+	window_t * win = get_win(WINDOW_GUI_SETTINGS);
+	uint_fast8_t update = 0;
+
+	if (win->first_call)
+	{
+		uint_fast16_t x = 0, y = 0;
+		uint_fast8_t interval = 6, col1_int = 20, row1_int = window_title_height + 20, row_count = 4;
+		win->first_call = 0;
+
+		button_t buttons [] = {
+			{ 0, 0, 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_GUI_SETTINGS, NON_VISIBLE, INT32_MAX, "btn_enc2_step", "", },
+		};
+		win->bh_count = ARRAY_SIZE(buttons);
+		uint_fast16_t buttons_size = sizeof(buttons);
+		win->bh_ptr = malloc(buttons_size);
+		GUI_MEM_ASSERT(win->bh_ptr);
+		memcpy(win->bh_ptr, buttons, buttons_size);
+
+		x = col1_int;
+		y = row1_int;
+
+		for (uint_fast8_t i = 0, r = 1; i < win->bh_count; i ++, r ++)
+		{
+			button_t * bh = & win->bh_ptr [i];
+			bh->x1 = x;
+			bh->y1 = y;
+			bh->visible = VISIBLE;
+
+			x = x + interval + bh->w;
+			if (r >= row_count)
+			{
+				r = 0;
+				x = col1_int;
+				y = y + bh->h + interval;
+			}
+		}
+
+		update = 1;
+		calculate_window_position(win, WINDOW_POSITION_AUTO);
+	}
+
+	uint_fast8_t type;
+	int_fast8_t action;
+	uintptr_t ptr;
+	switch (get_from_wm_queue(win, & type, & ptr, & action))
+	{
+	case WM_MESSAGE_ACTION:
+
+		if (IS_BUTTON_PRESS)
+		{
+			button_t * bh = (button_t *) ptr;
+			button_t * btn_enc2_step = find_gui_element(TYPE_BUTTON, win, "btn_enc2_step");
+
+			if (bh == btn_enc2_step)
+			{
+				enc2step_pos = (enc2step_pos + 1 ) % enc2step_vals;
+				update = 1;
+			}
+		}
+		break;
+
+	default:
+
+		break;
+	}
+
+	if (update)
+	{
+		update = 0;
+		button_t * btn_enc2_step = find_gui_element(TYPE_BUTTON, win, "btn_enc2_step");
+		local_snprintf_P(btn_enc2_step->text, ARRAY_SIZE(btn_enc2_step->text), PSTR("Enc2 step|%s"), enc2step [enc2step_pos].label);
 	}
 }
 

@@ -33,6 +33,7 @@ enum {
 	WINDOW_DISPLAY,					// настройки отображения
 	WINDOW_RECEIVE,					// настройки приема
 	WINDOW_NOTCH,					// ручной режекторый фильтр
+	WINDOW_GUI_SETTINGS,				// настройки интерфейса GUI
 
 	WINDOWS_COUNT
 };
@@ -81,6 +82,11 @@ typedef struct {
 } bp_var_t;
 
 typedef bp_var_t notch_var_t;
+
+typedef struct {
+	uint_fast16_t step;
+	char label [10];
+} enc2step_t;
 
 #endif /* WITHTOUCHGUI */
 #endif /* GUI_USER_H_INCLUDED */
