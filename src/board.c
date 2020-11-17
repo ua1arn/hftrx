@@ -2226,22 +2226,6 @@ prog_ctrlreg(uint_fast8_t plane)
 
 #define BOARD_NPLANES	2	/* в данной конфигурации присутствует цифровой потенциометр со "слоями" */
 
-// Разворот битов в регистре управления индуктивностью
-static uint_fast8_t revbits7L(uint_fast8_t v)
-{
-	uint_fast8_t r = 0;
-
-	if ((v & 0x01) != 0)	r |= (1U << 1);		// 0.1 uH
-	if ((v & 0x02) != 0)	r |= (1U << 2);		// 0.2 uH	
-	if ((v & 0x04) != 0)	r |= (1U << 5);		// 0.5 uH	
-	if ((v & 0x08) != 0)	r |= (1U << 6);		// 1.0 uH	
-	if ((v & 0x10) != 0)	r |= (1U << 4);		// 2.0 uH
-	if ((v & 0x20) != 0)	r |= (1U << 3);		// 5.0 uH	
-	if ((v & 0x40) != 0)	r |= (1U << 0);		// 10 uH	
-
-	return r;
-}
-
 // 24-bit control register + DAC + 8 bit tuner for RA4YBO
 static void 
 //NOINLINEAT
@@ -2286,7 +2270,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBBIT(064, c1500p);		// IC3 pin 3: nc
 	RBBIT(063, c700p);		// IC3 pin 2: nc
 	RBBIT(062, c360p);		// IC3 pin 1: nc
-	RBBIT(061, 0);		// IC3 pin 15: nc
+	//RBBIT(061, 0);		// IC3 pin 15: nc
 
 	RBBIT(060, c180p);		// IC2 pin 7: nc
 	RBBIT(057, c82p);		// IC2 pin 6: nc
