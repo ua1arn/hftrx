@@ -88,7 +88,7 @@
 		//#define PLL1DIVN	62	// x25..x100: 12.8 * 62 = 793.6 MHz
 		//#define PLL1DIVN	(stm32mp1_overdrived() ? 62 : 50)	// Auto select
 
-#if 1
+#if 0
 		// PLL2_1600
 		#define PLL2DIVM	5	// ref2_ck = 12.8 MHz
 		#define PLL2DIVN	41	// 12.8 * 41 = 524.8 MHz
@@ -98,10 +98,10 @@
 #else
 		// PLL2_1600
 		#define PLL2DIVM	5	// ref2_ck = 12.8 MHz
-		#define PLL2DIVN	61//41	// 12.8 * 41 = 524.8 MHz
+		#define PLL2DIVN	46//41	// 12.8 * 46 = 588.8 MHz
 		#define PLL2DIVP	3//2	// div2=minimum PLL2 selected as AXI sub-system clock (pll2_p_ck)
 		#define PLL2DIVQ	2//1	// GPU clock divider
-		#define PLL2DIVR	3//1	// DDR clock divider
+		#define PLL2DIVR	2//1	// DDR clock divider
 #endif
 
 		// PLL3_800
@@ -208,9 +208,10 @@
 #if WITHISBOOTLOADER
 	//#define LCDMODE_DUMMY	1
 
-	#define LCDMODE_LTDCSDRAMBUFF	1
-	#define SDRAM_BANK_ADDR	0xC0000000uL
-	#define LCDMODE_V0	1	/* Обычная конфигурация без PIP с L8 на основном экране */
+	//#define LCDMODE_LTDCSDRAMBUFF	1
+	//#define SDRAM_BANK_ADDR	0xC0000000uL
+	//#define LCDMODE_V0	1	/* Обычная конфигурация без PIP с L8 на основном экране */
+	#define LCDMODE_V2A	1	/* только главный экран с тремя видеобуферами RGB565, без PIP */
 	#define LCDMODE_H497TLB01P4 1	/* 720xRGBx1280 - 5" AMOELD Panel H497TLB01.4 */
 	#define LCDMODETX_TC358778XBG 1	/* Toshiba TC358778XBG chip */
 
@@ -273,7 +274,7 @@
 
 #if WITHISBOOTLOADER
 
-	#define WITHSMPSYSTEM	1	/* разрешение поддержки SMP, Symmetric Multiprocessing */
+	//#define WITHSMPSYSTEM	1	/* разрешение поддержки SMP, Symmetric Multiprocessing */
 	// +++ заглушки для плат с DSP обработкой
 	#define	BOARD_AGCCODE_ON	0x00
 	#define	BOARD_AGCCODE_OFF	0x01
@@ -293,8 +294,10 @@
 
 	#define DDS1_CLK_DIV	1		/* Делитель опорной частоты перед подачей в DDS1 */
 	//#define WITHSMPSYSTEM	1	/* разрешение поддержки SMP, Symmetric Multiprocessing */
-	#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
-	//#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
+	//#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
+	#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
+	#define RTC1_TYPE RTC_TYPE_STM32F4xx	/* STM32F4xx/STM32F7xx internal RTC peripherial */
+	#define TSC1_TYPE TSC_TYPE_S3402	/* Capasitive touch screen controller S3402 (on panel H497TLB01.4) */
 
 #else /* WITHISBOOTLOADER */
 
