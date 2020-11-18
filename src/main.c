@@ -20405,10 +20405,11 @@ uint_fast8_t hamradio_tunemode(uint_fast8_t v)
 
 #endif /* WITHTX */
 
+#if WITHTOUCHGUI
 void hamradio_load_gui_settings(void * ptr)
 {
 	nvramaddress_t offset = offsetof(struct nvmap, gui_nvram);
-	size_t gui_nvram_size = sizeof(struct gui_nvram_t);
+	size_t gui_nvram_size = sizeof (struct gui_nvram_t);
 
 	for (uint_fast8_t i = 0; i < gui_nvram_size; i ++)
 	{
@@ -20419,10 +20420,10 @@ void hamradio_load_gui_settings(void * ptr)
 	}
 }
 
-void hamradio_save_gui_settings(void * ptr)
+void hamradio_save_gui_settings(const void * ptr)
 {
 	nvramaddress_t offset = offsetof(struct nvmap, gui_nvram);
-	size_t gui_nvram_size = sizeof(struct gui_nvram_t);
+	size_t gui_nvram_size = sizeof (struct gui_nvram_t);
 	uint_fast8_t buf;
 
 	for (uint_fast8_t i = 0; i < gui_nvram_size; i ++)
@@ -20433,6 +20434,7 @@ void hamradio_save_gui_settings(void * ptr)
 		offset ++;
 	}
 }
+#endif /* WITHTOUCHGUI */
 
 // основной цикл программы при работе в режиме любительского премника
 static void
