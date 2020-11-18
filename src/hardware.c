@@ -7365,7 +7365,32 @@ void hardware_sdhost_setspeed(unsigned long ticksfreq)
 	SDMMC1->CLKCR = (SDMMC1->CLKCR & ~ (SDMMC_CLKCR_CLKDIV)) |
 		(value & SDMMC_CLKCR_CLKDIV);
 
-#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
+#elif CPUSTYLE_STM32H7XX
+
+	//RCC->DCKCFGR2 = (RCC->DCKCFGR2 & ~ (RCC_DCKCFGR2_SDMMC1SEL)) |
+	//	0 * RCC_DCKCFGR2_SDMMC1SEL |	// 0: 48 MHz clock is selected as SDMMC clock
+	//	0;
+
+	const uint_fast32_t stm32h7xx_pllq = stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
+	// Использование автоматического расчёта делителя
+	// PLLQ: Main PLL (PLL) division factor for USB OTG FS, SDIO and random number generator clocks
+	// Should be 48 MHz or less for SDIO and 48 MHz with small tolerance.
+	// See RCC_PLLCFGR_PLLQ usage
+	const uint32_t SDMMCCLK = PLL_FREQ / stm32h7xx_pllq;;
+	// Использование автоматического расчёта делителя
+	// Источником тактирования SDMMC сейчас установлен внутренний генератор 48 МГц
+	//const uint32_t stm32f4xx_48mhz = PLL_FREQ / stm32h7xx_pllq;
+	const unsigned value = ulmin(calcdivround2(SDMMCCLK / 2, ticksfreq), 0x03FF);
+
+	PRINTF(PSTR("hardware_sdhost_setspeed: stm32h7xx_pllq=%lu, SDMMCCLK=%lu, PLL_FREQ=%lu\n"), (unsigned long) stm32h7xx_pllq, SDMMCCLK, PLL_FREQ);
+	PRINTF(PSTR("hardware_sdhost_setspeed: CLKCR_CLKDIV=%lu\n"), (unsigned long) value);
+
+	SDMMC1->CLKCR = (SDMMC1->CLKCR & ~ (SDMMC_CLKCR_CLKDIV_Msk)) |
+		((value << SDMMC_CLKCR_CLKDIV_Pos) & SDMMC_CLKCR_CLKDIV_Msk);
+
+
+
+#elif CPUSTYLE_STM32MP1
 
 	//RCC->DCKCFGR2 = (RCC->DCKCFGR2 & ~ (RCC_DCKCFGR2_SDMMC1SEL)) |
 	//	0 * RCC_DCKCFGR2_SDMMC1SEL |	// 0: 48 MHz clock is selected as SDMMC clock
@@ -7385,8 +7410,8 @@ void hardware_sdhost_setspeed(unsigned long ticksfreq)
 	//PRINTF(PSTR("hardware_sdhost_setspeed: stm32h7xx_pllq=%lu, SDMMCCLK=%lu, PLL_FREQ=%lu\n"), (unsigned long) stm32h7xx_pllq, SDMMCCLK, PLL_FREQ);
 	PRINTF(PSTR("hardware_sdhost_setspeed: CLKCR_CLKDIV=%lu\n"), (unsigned long) value);
 
-	SDMMC1->CLKCR = (SDMMC1->CLKCR & ~ (SDMMC_CLKCR_CLKDIV)) |
-		(value & SDMMC_CLKCR_CLKDIV);
+	SDMMC1->CLKCR = (SDMMC1->CLKCR & ~ (SDMMC_CLKCR_CLKDIV_Msk)) |
+		((value << SDMMC_CLKCR_CLKDIV_Pos) & SDMMC_CLKCR_CLKDIV_Msk);
 
 
 #else
