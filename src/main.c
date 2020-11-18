@@ -20314,8 +20314,8 @@ void hamradio_set_gzoomxpow2(uint_fast8_t v)
 {
 	ASSERT(v <= BOARD_FFTZOOM_POW2MAX);
 	gzoomxpow2 = v;
-	// сохранение зависит от текущего диапазона
-	save_i8(nvramoffs_band(offsetof(struct nvmap, bands [0].gzoomxpow2)), gzoomxpow2);
+	vindex_t bn = getfreqband(hamradio_get_freq_rx());
+	save_i8(nvramoffs_band(offsetof(struct nvmap, bands [bn].gzoomxpow2)), gzoomxpow2);
 	updateboard(1, 0);
 }
 
@@ -20335,9 +20335,9 @@ void hamradio_set_gtopdb(uint_fast8_t v)
 	ASSERT(v >= WITHTOPDBMIN && v <= WITHTOPDBMAX);
 	gtopdb = v;
 	gtopdbwf = v;
-	// сохранение зависит от текущего диапазона
-	save_i8(nvramoffs_band(offsetof(struct nvmap, bands [0].gtopdb)), gtopdb);
-	save_i8(nvramoffs_band(offsetof(struct nvmap, bands [0].gtopdbwf)), gtopdbwf);
+	vindex_t bn = getfreqband(hamradio_get_freq_rx());
+	save_i8(nvramoffs_band(offsetof(struct nvmap, bands [bn].gtopdb)), gtopdb);
+	save_i8(nvramoffs_band(offsetof(struct nvmap, bands [bn].gtopdbwf)), gtopdbwf);
 	updateboard(1, 0);
 }
 
@@ -20357,9 +20357,9 @@ void hamradio_set_gbottomdb(uint_fast8_t v)
 	ASSERT(v >= WITHBOTTOMDBMIN && v <= WITHBOTTOMDBMAX);
 	gbottomdb = v;
 	gbottomdbwf = v;
-	// сохранение зависит от текущего диапазона
-	save_i8(nvramoffs_band(offsetof(struct nvmap, bands [0].gbottomdb)), gbottomdb);
-	save_i8(nvramoffs_band(offsetof(struct nvmap, bands [0].gbottomdbwf)), gbottomdbwf);
+	vindex_t bn = getfreqband(hamradio_get_freq_rx());
+	save_i8(nvramoffs_band(offsetof(struct nvmap, bands [bn].gbottomdb)), gbottomdb);
+	save_i8(nvramoffs_band(offsetof(struct nvmap, bands [bn].gbottomdbwf)), gbottomdbwf);
 	updateboard(1, 0);
 }
 
