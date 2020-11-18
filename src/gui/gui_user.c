@@ -81,14 +81,19 @@ static window_t windows [] = {
 
 static enc2_menu_t gui_enc2_menu = { "", "", 0, 0, };
 static menu_by_name_t menu_uif;
-static uint_fast8_t enc2step_pos = 1;
 
 enc2step_t enc2step [] = {
 	{ 100, "100 Hz", },
 	{ 500, "500 Hz", },
 };
 
+struct gui_nvram_t gui_nvram;
+
 enum { enc2step_vals = ARRAY_SIZE(enc2step) };
+
+enum {
+	enc2step_default = 1,
+};
 
 /* Возврат ссылки на окно */
 window_t * get_win(uint8_t window_id)
@@ -100,6 +105,19 @@ window_t * get_win(uint8_t window_id)
 void gui_user_actions_after_close_window(void)
 {
 	hamradio_disable_encoder2_redirect();
+}
+
+void load_settings(void)
+{
+	hamradio_load_gui_settings(& gui_nvram);
+
+	if (gui_nvram.enc2step_pos == 255)
+		gui_nvram.enc2step_pos = enc2step_default;
+}
+
+void save_settings(void)
+{
+	hamradio_save_gui_settings(& gui_nvram);
 }
 
 // *********************************************************************************************************************************************************************
@@ -151,6 +169,7 @@ static void gui_main_process(void)
 			x = x + interval_btn + bh->w;
 		}
 
+		load_settings();
 		elements_state(win);
 	}
 
@@ -284,7 +303,7 @@ static void gui_main_process(void)
 
 	case WM_MESSAGE_ENC2_ROTATE:	// если не открыто 2-е окно, 2-й энкодер подстраивает частоту с округлением 500 гц от текущего значения
 	{
-		uint_fast16_t step = enc2step [enc2step_pos].step;
+		uint_fast16_t step = enc2step [gui_nvram.enc2step_pos].step;
 		uint32_t freq = hamradio_get_freq_rx();
 		uint16_t f_rem = freq % step;
 
@@ -3799,7 +3818,8 @@ static void window_gui_settings_process(void)
 
 			if (bh == btn_enc2_step)
 			{
-				enc2step_pos = (enc2step_pos + 1 ) % enc2step_vals;
+				gui_nvram.enc2step_pos = (gui_nvram.enc2step_pos + 1 ) % enc2step_vals;
+				save_settings();
 				update = 1;
 			}
 		}
@@ -3814,7 +3834,7 @@ static void window_gui_settings_process(void)
 	{
 		update = 0;
 		button_t * btn_enc2_step = find_gui_element(TYPE_BUTTON, win, "btn_enc2_step");
-		local_snprintf_P(btn_enc2_step->text, ARRAY_SIZE(btn_enc2_step->text), PSTR("Enc2 step|%s"), enc2step [enc2step_pos].label);
+		local_snprintf_P(btn_enc2_step->text, ARRAY_SIZE(btn_enc2_step->text), PSTR("Enc2 step|%s"), enc2step [gui_nvram.enc2step_pos].label);
 	}
 }
 

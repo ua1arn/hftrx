@@ -3104,9 +3104,13 @@ filter_t fi_2p0_455 =
 	uint8_t	bandgroup [BANDGROUP_COUNT];	/* последний диапазон в группе, куда был переход по кнопке диапазона (индекс в bands). */
 #endif	/* WITHDIRECTBANDS */
 
-#if WITHTOUCHGUI && WITHAFCODEC1HAVEPROC
-	struct micprof_cell micprof_cells [NMICPROFCELLS];	/* ячейки памяти профилей микрофона */
-#endif /*  WITHTOUCHGUI && WITHAFCODEC1HAVEPROC */
+#if WITHTOUCHGUI
+	struct gui_nvram_t gui_nvram;
+
+	#if WITHAFCODEC1HAVEPROC
+		struct micprof_cell micprof_cells [NMICPROFCELLS];	/* ячейки памяти профилей микрофона */
+	#endif /* WITHAFCODEC1HAVEPROC */
+#endif /*  WITHTOUCHGUI */
 	uint8_t signature [sizeof nvramsign - 1];	/* сигнатура соответствия версии программы и содержимого NVRAM */
 } ATTRPACKED;	// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
 
@@ -20400,6 +20404,35 @@ uint_fast8_t hamradio_tunemode(uint_fast8_t v)
 }
 
 #endif /* WITHTX */
+
+void hamradio_load_gui_settings(void * ptr)
+{
+	nvramaddress_t offset = offsetof(struct nvmap, gui_nvram);
+	size_t gui_nvram_size = sizeof(struct gui_nvram_t);
+
+	for (uint_fast8_t i = 0; i < gui_nvram_size; i ++)
+	{
+		uint_fast8_t v = restore_i8(offset);
+		memcpy(ptr, & v, 1);
+		ptr ++;
+		offset ++;
+	}
+}
+
+void hamradio_save_gui_settings(void * ptr)
+{
+	nvramaddress_t offset = offsetof(struct nvmap, gui_nvram);
+	size_t gui_nvram_size = sizeof(struct gui_nvram_t);
+	uint_fast8_t buf;
+
+	for (uint_fast8_t i = 0; i < gui_nvram_size; i ++)
+	{
+		memcpy(& buf, ptr, 1);
+		save_i8(offset, buf);
+		ptr ++;
+		offset ++;
+	}
+}
 
 // основной цикл программы при работе в режиме любительского премника
 static void
