@@ -942,22 +942,28 @@ static void window_options_process(void)
 static void window_display_process(void)
 {
 	window_t * win = get_win(WINDOW_DISPLAY);
-	static slider_t * sl_bottomDB = NULL, * sl_topDB = NULL;
-	static label_t * lbl_topDB = NULL, * lbl_bottomDB = NULL;
-	static uint_fast8_t bottomDB_min = 0, bottomDB_max = 0, topDB_min = 0, topDB_max = 0;
-	uint_fast8_t update = 0;
+	static display_var_t display_t;
 
 	if (win->first_call)
 	{
 		uint_fast16_t x = 0, y = 0;
-		uint_fast8_t interval = 6, col1_int = 20, row1_int = window_title_height + 20, row_count = 4;
-		label_t * lbl_bottomDB_min = NULL, * lbl_bottomDB_max = NULL, * lbl_topDB_min = NULL, * lbl_topDB_max = NULL;
+		uint_fast8_t interval = 50, col1_int = 20, row1_int = window_title_height + 20;
 		win->first_call = 0;
-		update = 1;
+		display_t.change = 0;
+		display_t.updated = 1;
 
 		button_t buttons [] = {
 			{ 0, 0, 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_DISPLAY, NON_VISIBLE, INT32_MAX, "btn_zoom", "", },
 			{ 0, 0, 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_DISPLAY, NON_VISIBLE, INT32_MAX, "btn_view", "", },
+			{ 0, 0, 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_DISPLAY, NON_VISIBLE, INT32_MAX, "btn_params", "", },
+			{ 0, 0, 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_DISPLAY, NON_VISIBLE, -1, "btn_topSP_m", 	"-", },
+			{ 0, 0, 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_DISPLAY, NON_VISIBLE, 1,  "btn_topSP_p", 	"+", },
+			{ 0, 0, 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_DISPLAY, NON_VISIBLE, -1, "btn_bottomSP_m", "-", },
+			{ 0, 0, 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_DISPLAY, NON_VISIBLE, 1,  "btn_bottomSP_p", "+", },
+			{ 0, 0, 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_DISPLAY, NON_VISIBLE, -1, "btn_topWF_m", 	"-", },
+			{ 0, 0, 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_DISPLAY, NON_VISIBLE, 1,  "btn_topWF_p", 	"+", },
+			{ 0, 0, 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_DISPLAY, NON_VISIBLE, -1, "btn_bottomWF_m", "-", },
+			{ 0, 0, 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_DISPLAY, NON_VISIBLE, 1,  "btn_bottomWF_p", "+", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -966,12 +972,12 @@ static void window_display_process(void)
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
 		static const label_t labels [] = {
-			{ 0, 0,	WINDOW_DISPLAY,  DISABLED,  0, NON_VISIBLE, "lbl_bottomDB",		"Bottom DB: xxx", 	FONT_MEDIUM, COLORMAIN_WHITE, },
-			{ 0, 0,	WINDOW_DISPLAY,  DISABLED,  0, NON_VISIBLE, "lbl_topDB", 		"Top DB:    xxx", 	FONT_MEDIUM, COLORMAIN_WHITE, },
-			{ 0, 0,	WINDOW_DISPLAY,  DISABLED,  0, NON_VISIBLE, "lbl_bottomDB_min",	"xxx", 				FONT_SMALL,  COLORMAIN_WHITE, },
-			{ 0, 0,	WINDOW_DISPLAY,  DISABLED,  0, NON_VISIBLE, "lbl_bottomDB_max",	"xxx", 				FONT_SMALL,  COLORMAIN_WHITE, },
-			{ 0, 0,	WINDOW_DISPLAY,  DISABLED,  0, NON_VISIBLE, "lbl_topDB_min", 	"xxx", 				FONT_SMALL,  COLORMAIN_WHITE, },
-			{ 0, 0,	WINDOW_DISPLAY,  DISABLED,  0, NON_VISIBLE, "lbl_topDB_max", 	"xxx", 				FONT_SMALL,  COLORMAIN_WHITE, },
+			{ 0, 0,	WINDOW_DISPLAY, CANCELLED, 0, NON_VISIBLE, "lbl_topSP",    "Top    : xxx db", FONT_MEDIUM, COLORMAIN_WHITE, TYPE_DISPLAY_SP_TOP, },
+			{ 0, 0,	WINDOW_DISPLAY, CANCELLED, 0, NON_VISIBLE, "lbl_bottomSP", "Bottom : xxx db", FONT_MEDIUM, COLORMAIN_WHITE, TYPE_DISPLAY_SP_BOTTOM, },
+			{ 0, 0,	WINDOW_DISPLAY, CANCELLED, 0, NON_VISIBLE, "lbl_topWF",    "Top    : xxx db", FONT_MEDIUM, COLORMAIN_WHITE, TYPE_DISPLAY_WF_TOP, },
+			{ 0, 0,	WINDOW_DISPLAY, CANCELLED, 0, NON_VISIBLE, "lbl_bottomWF", "Bottom : xxx db", FONT_MEDIUM, COLORMAIN_WHITE, TYPE_DISPLAY_WF_BOTTOM, },
+			{ 0, 0,	WINDOW_DISPLAY, DISABLED,  0, NON_VISIBLE, "lbl_sp",	   "Spectrum", 		  FONT_LARGE,  COLORMAIN_WHITE, },
+			{ 0, 0,	WINDOW_DISPLAY, DISABLED,  0, NON_VISIBLE, "lbl_wf", 	   "Waterfall", 	  FONT_LARGE,  COLORMAIN_WHITE, },
 		};
 		win->lh_count = ARRAY_SIZE(labels);
 		uint_fast16_t labels_size = sizeof(labels);
@@ -979,89 +985,81 @@ static void window_display_process(void)
 		GUI_MEM_ASSERT(win->lh_ptr);
 		memcpy(win->lh_ptr, labels, labels_size);
 
-		slider_t sliders [] = {
-			{ 0, 0, 0, 0, 0, 0, ORIENTATION_HORIZONTAL, WINDOW_DISPLAY, "sl_bottomDB", CANCELLED, NON_VISIBLE, 300, 50, 255, 0, 3, },
-			{ 0, 0, 0, 0, 0, 0, ORIENTATION_HORIZONTAL, WINDOW_DISPLAY, "sl_topDB",    CANCELLED, NON_VISIBLE, 300, 50, 255, 0, 3, },
-		};
-		win->sh_count = ARRAY_SIZE(sliders);
-		uint_fast16_t sliders_size = sizeof(sliders);
-		win->sh_ptr = malloc(sliders_size);
-		GUI_MEM_ASSERT(win->sh_ptr);
-		memcpy(win->sh_ptr, sliders, sliders_size);
+		label_t * lbl_sp = find_gui_element(TYPE_LABEL, win, "lbl_sp");
+		label_t * lbl_wf = find_gui_element(TYPE_LABEL, win, "lbl_wf");
+		label_t * lbl_topSP = find_gui_element(TYPE_LABEL, win, "lbl_topSP");
+		label_t * lbl_bottomSP = find_gui_element(TYPE_LABEL, win, "lbl_bottomSP");
+		label_t * lbl_topWF = find_gui_element(TYPE_LABEL, win, "lbl_topWF");
+		label_t * lbl_bottomWF = find_gui_element(TYPE_LABEL, win, "lbl_bottomWF");
 
-		x = col1_int;
-		y = row1_int;
+		button_t * btn_bottomSP_m = find_gui_element(TYPE_BUTTON, win, "btn_bottomSP_m");
+		button_t * btn_bottomSP_p = find_gui_element(TYPE_BUTTON, win, "btn_bottomSP_p");
+		button_t * btn_topSP_m = find_gui_element(TYPE_BUTTON, win, "btn_topSP_m");
+		button_t * btn_topSP_p = find_gui_element(TYPE_BUTTON, win, "btn_topSP_p");
+		button_t * btn_bottomWF_m = find_gui_element(TYPE_BUTTON, win, "btn_bottomWF_m");
+		button_t * btn_bottomWF_p = find_gui_element(TYPE_BUTTON, win, "btn_bottomWF_p");
+		button_t * btn_topWF_m = find_gui_element(TYPE_BUTTON, win, "btn_topWF_m");
+		button_t * btn_topWF_p = find_gui_element(TYPE_BUTTON, win, "btn_topWF_p");
 
-		hamradio_get_gtopdb_limits(& topDB_min, & topDB_max);
-		hamradio_get_gbottomdb_limits(& bottomDB_min, & bottomDB_max);
+		button_t * btn_zoom = find_gui_element(TYPE_BUTTON, win, "btn_zoom");
+		button_t * btn_view = find_gui_element(TYPE_BUTTON, win, "btn_view");
+		button_t * btn_params = find_gui_element(TYPE_BUTTON, win, "btn_params");
 
-		lbl_bottomDB_min = find_gui_element(TYPE_LABEL, win, "lbl_bottomDB_min");
-		lbl_bottomDB_max = find_gui_element(TYPE_LABEL, win, "lbl_bottomDB_max");
-		lbl_topDB_min = find_gui_element(TYPE_LABEL, win, "lbl_topDB_min");
-		lbl_topDB_max = find_gui_element(TYPE_LABEL, win, "lbl_topDB_max");
+		lbl_sp->y = row1_int;
+		lbl_sp->visible = VISIBLE;
+		lbl_topSP->x = col1_int;
+		lbl_topSP->y = lbl_sp->y + interval;
+		lbl_topSP->visible = VISIBLE;
+		lbl_bottomSP->x = lbl_topSP->x;
+		lbl_bottomSP->y = lbl_topSP->y + interval;
+		lbl_bottomSP->visible = VISIBLE;
+		btn_topSP_m->x1 = lbl_topSP->x + get_label_width(lbl_topSP) + 10;
+		btn_topSP_m->y1 = lbl_topSP->y + get_label_height(lbl_topSP) / 2 - btn_topSP_m->h / 2;
+		btn_topSP_m->visible = VISIBLE;
+		btn_topSP_p->x1 = btn_topSP_m->x1 + btn_topSP_m->w + 10;
+		btn_topSP_p->y1 = btn_topSP_m->y1;
+		btn_topSP_p->visible = VISIBLE;
+		btn_bottomSP_m->x1 = btn_topSP_m->x1;
+		btn_bottomSP_m->y1 = lbl_bottomSP->y + get_label_height(lbl_bottomSP) / 2 - btn_bottomSP_m->h / 2;
+		btn_bottomSP_m->visible = VISIBLE;
+		btn_bottomSP_p->x1 = btn_bottomSP_m->x1 + btn_bottomSP_m->w + 10;
+		btn_bottomSP_p->y1 = btn_bottomSP_m->y1;
+		btn_bottomSP_p->visible = VISIBLE;
+		lbl_sp->x = (lbl_topSP->x + btn_topSP_p->x1 + btn_topSP_p->w) / 2 - get_label_width(lbl_sp) / 2;
 
-		lbl_topDB = find_gui_element(TYPE_LABEL, win, "lbl_topDB");
-		lbl_topDB->x = x;
-		lbl_topDB->y = y;
-		local_snprintf_P(lbl_topDB->text, ARRAY_SIZE(lbl_topDB->text), PSTR("Top DB:    %3d"), hamradio_get_gtopdb());
-		lbl_topDB->visible = VISIBLE;
+		lbl_topWF->x = btn_topSP_p->x1 + btn_topSP_p->w + interval / 2;
+		lbl_topWF->y = lbl_topSP->y;
+		lbl_topWF->visible = VISIBLE;
+		lbl_bottomWF->x = lbl_topWF->x;
+		lbl_bottomWF->y = lbl_topWF->y + interval;
+		lbl_bottomWF->visible = VISIBLE;
+		btn_topWF_m->x1 = lbl_topWF->x + get_label_width(lbl_topWF) + 10;
+		btn_topWF_m->y1 = lbl_topWF->y + get_label_height(lbl_topWF) / 2 - btn_topWF_m->h / 2;
+		btn_topWF_m->visible = VISIBLE;
+		btn_topWF_p->x1 = btn_topWF_m->x1 + btn_topWF_m->w + 10;
+		btn_topWF_p->y1 = btn_topWF_m->y1;
+		btn_topWF_p->visible = VISIBLE;
+		btn_bottomWF_m->x1 = btn_topWF_m->x1;
+		btn_bottomWF_m->y1 = lbl_bottomWF->y + get_label_height(lbl_bottomWF) / 2 - btn_bottomWF_m->h / 2;
+		btn_bottomWF_m->visible = VISIBLE;
+		btn_bottomWF_p->x1 = btn_bottomWF_m->x1 + btn_bottomWF_m->w + 10;
+		btn_bottomWF_p->y1 = btn_bottomWF_m->y1;
+		btn_bottomWF_p->visible = VISIBLE;
+		lbl_wf->x = (lbl_topWF->x + btn_topWF_p->x1 + btn_topWF_p->w) / 2 - get_label_width(lbl_wf) / 2;
+		lbl_wf->y = lbl_sp->y;
+		lbl_wf->visible = VISIBLE;
 
-		sl_topDB = find_gui_element(TYPE_SLIDER, win, "sl_topDB");
-		sl_topDB->x = lbl_topDB->x + get_label_width(lbl_topDB) + interval * 3;
-		sl_topDB->y = y;
-		sl_topDB->value = normalize(hamradio_get_gtopdb(), topDB_min, topDB_max, 100);
-		sl_topDB->visible = VISIBLE;
+		btn_view->x1 = (lbl_sp->x + lbl_wf->x + get_label_width(lbl_wf)) / 2 - btn_view->w / 2;
+		btn_view->y1 = btn_bottomWF_p->y1 + btn_bottomWF_p->h + interval / 2;
+		btn_view->visible = VISIBLE;
+		btn_params->x1 = btn_view->x1 + btn_view->w + interval / 2;
+		btn_params->y1 = btn_view->y1;
+		btn_params->visible = VISIBLE;
+		btn_zoom->x1 = btn_view->x1 - btn_zoom->w - interval / 2;
+		btn_zoom->y1 = btn_view->y1;
+		btn_zoom->visible = VISIBLE;
 
-		lbl_bottomDB = find_gui_element(TYPE_LABEL, win, "lbl_bottomDB");
-		lbl_bottomDB->x = x;
-		lbl_bottomDB->y = sl_topDB->y + sliders_h * 3;
-		local_snprintf_P(lbl_bottomDB->text, ARRAY_SIZE(lbl_bottomDB->text), PSTR("Bottom DB: %3d"), hamradio_get_gbottomdb());
-		lbl_bottomDB->visible = VISIBLE;
-
-		sl_bottomDB = find_gui_element(TYPE_SLIDER, win, "sl_bottomDB");
-		sl_bottomDB->x = sl_topDB->x;
-		sl_bottomDB->y = lbl_bottomDB->y;
-		sl_bottomDB->value = normalize(hamradio_get_gbottomdb(), bottomDB_min, bottomDB_max, 100);
-		sl_bottomDB->visible = VISIBLE;
-
-		local_snprintf_P(lbl_topDB_min->text, ARRAY_SIZE(lbl_topDB_min->text), PSTR("%d"), topDB_min);
-		lbl_topDB_min->x = sl_topDB->x - get_label_width(lbl_topDB_min) / 2;
-		lbl_topDB_min->y = sl_topDB->y + get_label_height(lbl_topDB_min) * 3;
-		lbl_topDB_min->visible = VISIBLE;
-
-		local_snprintf_P(lbl_topDB_max->text, ARRAY_SIZE(lbl_topDB_max->text), PSTR("%d"), topDB_max);
-		lbl_topDB_max->x = sl_topDB->x + sl_topDB->size - get_label_width(lbl_topDB_max) / 2;
-		lbl_topDB_max->y = sl_topDB->y + get_label_height(lbl_topDB_max) * 3;
-		lbl_topDB_max->visible = VISIBLE;
-
-		local_snprintf_P(lbl_bottomDB_min->text, ARRAY_SIZE(lbl_bottomDB_min->text), PSTR("%d"), bottomDB_min);
-		lbl_bottomDB_min->x = sl_bottomDB->x - get_label_width(lbl_bottomDB_min) / 2;
-		lbl_bottomDB_min->y = sl_bottomDB->y + get_label_height(lbl_bottomDB_min) * 3;
-		lbl_bottomDB_min->visible = VISIBLE;
-
-		local_snprintf_P(lbl_bottomDB_max->text, ARRAY_SIZE(lbl_bottomDB_max->text), PSTR("%d"), bottomDB_max);
-		lbl_bottomDB_max->x = sl_bottomDB->x + sl_bottomDB->size - get_label_width(lbl_bottomDB_max) / 2;
-		lbl_bottomDB_max->y = sl_bottomDB->y + get_label_height(lbl_bottomDB_max) * 3;
-		lbl_bottomDB_max->visible = VISIBLE;
-
-		y = sl_bottomDB->y + sliders_h * 3;
-
-		for (uint_fast8_t i = 0, r = 1; i < win->bh_count; i ++, r ++)
-		{
-			button_t * bh = & win->bh_ptr [i];
-			bh->x1 = x;
-			bh->y1 = y;
-			bh->visible = VISIBLE;
-
-			x = x + interval + bh->w;
-			if (r >= row_count)
-			{
-				r = 0;
-				x = col1_int;
-				y = y + bh->h + interval;
-			}
-		}
-
+		hamradio_enable_encoder2_redirect();
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
@@ -1075,43 +1073,77 @@ static void window_display_process(void)
 		if (IS_BUTTON_PRESS)
 		{
 			button_t * bh = (button_t *) ptr;
-			button_t * btn_view = find_gui_element(TYPE_BUTTON, win, "btn_view");
+			button_t * btn_bottomSP_m = find_gui_element(TYPE_BUTTON, win, "btn_bottomSP_m");
+			button_t * btn_bottomSP_p = find_gui_element(TYPE_BUTTON, win, "btn_bottomSP_p");
+			button_t * btn_topSP_m = find_gui_element(TYPE_BUTTON, win, "btn_topSP_m");
+			button_t * btn_topSP_p = find_gui_element(TYPE_BUTTON, win, "btn_topSP_p");
+			button_t * btn_bottomWF_m = find_gui_element(TYPE_BUTTON, win, "btn_bottomWF_m");
+			button_t * btn_bottomWF_p = find_gui_element(TYPE_BUTTON, win, "btn_bottomWF_p");
+			button_t * btn_topWF_m = find_gui_element(TYPE_BUTTON, win, "btn_topWF_m");
+			button_t * btn_topWF_p = find_gui_element(TYPE_BUTTON, win, "btn_topWF_p");
 			button_t * btn_zoom = find_gui_element(TYPE_BUTTON, win, "btn_zoom");
+			button_t * btn_view = find_gui_element(TYPE_BUTTON, win, "btn_view");
+			button_t * btn_params = find_gui_element(TYPE_BUTTON, win, "btn_params");
 
 			if (bh == btn_view)
 			{
 				hamradio_change_view_style(1);
-				update = 1;
+				display_t.updated = 1;
 			}
 			else if (bh == btn_zoom)
 			{
 				uint_fast8_t z = (hamradio_get_gzoomxpow2() + 1) % (BOARD_FFTZOOM_POW2MAX + 1);
 				hamradio_set_gzoomxpow2(z);
-				update = 1;
+				display_t.updated = 1;
+			}
+			else if (bh == btn_params)
+			{
+				hamradio_set_gwflevelsep(! hamradio_get_gwflevelsep());
+				display_t.updated = 1;
+			}
+			else if (bh == btn_topSP_m || bh == btn_topSP_p)
+			{
+				hamradio_gtopdbsp(bh->payload);
+				display_t.updated = 1;
+			}
+			else if (bh == btn_bottomSP_m || bh == btn_bottomSP_p)
+			{
+				hamradio_gbottomdbsp(bh->payload);
+				display_t.updated = 1;
+			}
+			else if (bh == btn_topWF_m || bh == btn_topWF_p)
+			{
+				hamradio_gtopdbwf(bh->payload);
+				display_t.updated = 1;
+			}
+			else if (bh == btn_bottomWF_m || bh == btn_bottomWF_p)
+			{
+				hamradio_gbottomdbwf(bh->payload);
+				display_t.updated = 1;
 			}
 		}
-		else if (IS_SLIDER_MOVE)
+		else if (IS_LABEL_PRESS)
 		{
-			slider_t * sl = (slider_t *) ptr;
+			label_t * lh = (label_t *) ptr;
 
-			if (sl == sl_bottomDB)
-			{
-				uint_fast16_t v = bottomDB_min + normalize(sl->value, 0, 100, bottomDB_max - bottomDB_min);
-				hamradio_set_gbottomdb(v);
-				local_snprintf_P(lbl_bottomDB->text, ARRAY_SIZE(lbl_bottomDB->text), PSTR("Bottom DB: %3d"), v);
-			}
-			else if (sl == sl_topDB)
-			{
-				uint_fast16_t v = topDB_min + normalize(sl->value, 0, 100, topDB_max - topDB_min);
-				hamradio_set_gtopdb(v);
-				local_snprintf_P(lbl_topDB->text, ARRAY_SIZE(lbl_topDB->text), PSTR("Top DB:    %3d"), hamradio_get_gtopdb());
-			}
+			display_t.select = lh->index;
+			display_t.change = 0;
+			display_t.updated = 1;
 		}
+
+		break;
+
+	case WM_MESSAGE_ENC2_ROTATE:
+
+		display_t.change = action;
+		display_t.updated = 1;
+
 		break;
 
 	case WM_MESSAGE_UPDATE:
 
-		update = 1;
+		display_t.updated = 1;
+		display_t.change = 0;
 		break;
 
 	default:
@@ -1119,14 +1151,44 @@ static void window_display_process(void)
 		break;
 	}
 
-	if (update)
+	if (display_t.updated)
 	{
+		display_t.updated = 0;
+
 		button_t * btn_view = find_gui_element(TYPE_BUTTON, win, "btn_view");
 		local_snprintf_P(btn_view->text, ARRAY_SIZE(btn_view->text), PSTR("View|%s"), hamradio_change_view_style(0));
 		remove_end_line_spaces(btn_view->text);
 
 		button_t * btn_zoom = find_gui_element(TYPE_BUTTON, win, "btn_zoom");
 		local_snprintf_P(btn_zoom->text, ARRAY_SIZE(btn_zoom->text), PSTR("Zoom|x%d"), 1 << hamradio_get_gzoomxpow2());
+
+		button_t * btn_params = find_gui_element(TYPE_BUTTON, win, "btn_params");
+		local_snprintf_P(btn_params->text, ARRAY_SIZE(btn_params->text), PSTR("WF params|%s"), hamradio_get_gwflevelsep() ? "separate" : "from SP");
+
+		for(uint_fast8_t i = 0; i < win->lh_count; i ++)
+			win->lh_ptr [i].color = COLORMAIN_WHITE;
+
+		ASSERT(display_t.select < win->lh_count);
+		win->lh_ptr [display_t.select].color = COLORMAIN_YELLOW;
+
+		label_t * lbl_topSP = find_gui_element(TYPE_LABEL, win, "lbl_topSP");
+		label_t * lbl_bottomSP = find_gui_element(TYPE_LABEL, win, "lbl_bottomSP");
+		label_t * lbl_topWF = find_gui_element(TYPE_LABEL, win, "lbl_topWF");
+		label_t * lbl_bottomWF = find_gui_element(TYPE_LABEL, win, "lbl_bottomWF");
+
+		local_snprintf_P(lbl_topSP->text, ARRAY_SIZE(lbl_topSP->text), PSTR("Top    : %3d db"),
+				hamradio_gtopdbsp(display_t.select == TYPE_DISPLAY_SP_TOP ? display_t.change : 0));
+
+		local_snprintf_P(lbl_bottomSP->text, ARRAY_SIZE(lbl_bottomSP->text), PSTR("Bottom : %3d db"),
+				hamradio_gbottomdbsp(display_t.select == TYPE_DISPLAY_SP_BOTTOM ? display_t.change : 0));
+
+		local_snprintf_P(lbl_topWF->text, ARRAY_SIZE(lbl_topWF->text), PSTR("Top    : %3d db"),
+				hamradio_gtopdbwf(display_t.select == TYPE_DISPLAY_WF_TOP ? display_t.change : 0));
+
+		local_snprintf_P(lbl_bottomWF->text, ARRAY_SIZE(lbl_bottomWF->text), PSTR("Bottom : %3d db"),
+				hamradio_gbottomdbwf(display_t.select == TYPE_DISPLAY_WF_BOTTOM ? display_t.change : 0));
+
+		display_t.change = 0;
 	}
 }
 

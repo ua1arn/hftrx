@@ -20319,48 +20319,80 @@ void hamradio_set_gzoomxpow2(uint_fast8_t v)
 	updateboard(1, 0);
 }
 
-void hamradio_get_gtopdb_limits(uint_fast8_t * min, uint_fast8_t * max)
+uint_fast8_t hamradio_get_gwflevelsep(void)
 {
-	* min = WITHTOPDBMIN;
-	* max = WITHTOPDBMAX;
+	return gwflevelsep;
 }
 
-uint_fast8_t hamradio_get_gtopdb(void)
+void hamradio_set_gwflevelsep(uint_fast8_t v)
 {
+	gwflevelsep = v != 0;
+	save_i8(offsetof(struct nvmap, gwflevelsep), gwflevelsep);
+	updateboard(1, 0);
+}
+
+uint_fast8_t hamradio_gtopdbsp(int_fast8_t v)
+{
+	if (v > 0)
+		gtopdb = calc_next(gtopdb, WITHTOPDBMIN, WITHTOPDBMAX);
+	else if (v < 0)
+		gtopdb = calc_prev(gtopdb, WITHTOPDBMIN, WITHTOPDBMAX);
+
+	if (v != 0)
+	{
+		save_i8(nvramoffs_band(offsetof(struct nvmap, bands [0].gtopdb)), gtopdb);
+		updateboard(1, 0);
+	}
+
 	return gtopdb;
 }
 
-void hamradio_set_gtopdb(uint_fast8_t v)
+uint_fast8_t hamradio_gbottomdbsp(int_fast8_t v)
 {
-	ASSERT(v >= WITHTOPDBMIN && v <= WITHTOPDBMAX);
-	gtopdb = v;
-	gtopdbwf = v;
-	// сохранение зависит от текущего диапазона
-	save_i8(nvramoffs_band(offsetof(struct nvmap, bands [0].gtopdb)), gtopdb);
-	save_i8(nvramoffs_band(offsetof(struct nvmap, bands [0].gtopdbwf)), gtopdbwf);
-	updateboard(1, 0);
-}
+	if (v > 0)
+		gbottomdb = calc_next(gbottomdb, WITHBOTTOMDBMIN, WITHBOTTOMDBMAX);
+	else if (v < 0)
+		gbottomdb = calc_prev(gbottomdb, WITHBOTTOMDBMIN, WITHBOTTOMDBMAX);
 
-void hamradio_get_gbottomdb_limits(uint_fast8_t * min, uint_fast8_t * max)
-{
-	* min = WITHBOTTOMDBMIN;
-	* max = WITHBOTTOMDBMAX;
-}
+	if (v != 0)
+	{
+		save_i8(nvramoffs_band(offsetof(struct nvmap, bands [0].gbottomdb)), gbottomdb);
+		updateboard(1, 0);
+	}
 
-uint_fast8_t hamradio_get_gbottomdb(void)
-{
 	return gbottomdb;
 }
 
-void hamradio_set_gbottomdb(uint_fast8_t v)
+uint_fast8_t hamradio_gtopdbwf(int_fast8_t v)
 {
-	ASSERT(v >= WITHBOTTOMDBMIN && v <= WITHBOTTOMDBMAX);
-	gbottomdb = v;
-	gbottomdbwf = v;
-	// сохранение зависит от текущего диапазона
-	save_i8(nvramoffs_band(offsetof(struct nvmap, bands [0].gbottomdb)), gbottomdb);
-	save_i8(nvramoffs_band(offsetof(struct nvmap, bands [0].gbottomdbwf)), gbottomdbwf);
-	updateboard(1, 0);
+	if (v > 0)
+		gtopdbwf = calc_next(gtopdbwf, WITHTOPDBMIN, WITHTOPDBMAX);
+	else if (v < 0)
+		gtopdbwf = calc_prev(gtopdbwf, WITHTOPDBMIN, WITHTOPDBMAX);
+
+	if (v != 0)
+	{
+		save_i8(nvramoffs_band(offsetof(struct nvmap, bands [0].gtopdbwf)), gtopdbwf);
+		updateboard(1, 0);
+	}
+
+	return gtopdbwf;
+}
+
+uint_fast8_t hamradio_gbottomdbwf(int_fast8_t v)
+{
+	if (v > 0)
+		gbottomdbwf = calc_next(gbottomdbwf, WITHBOTTOMDBMIN, WITHBOTTOMDBMAX);
+	else if (v < 0)
+		gbottomdbwf = calc_prev(gbottomdbwf, WITHBOTTOMDBMIN, WITHBOTTOMDBMAX);
+
+	if (v != 0)
+	{
+		save_i8(nvramoffs_band(offsetof(struct nvmap, bands [0].gbottomdbwf)), gbottomdbwf);
+		updateboard(1, 0);
+	}
+
+	return gbottomdbwf;
 }
 
 #endif /* WITHSPECTRUMWF */

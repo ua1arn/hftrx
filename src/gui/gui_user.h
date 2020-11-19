@@ -75,6 +75,13 @@ enum {
 	TYPE_NOTCH_WIDTH
 };
 
+enum {
+	TYPE_DISPLAY_SP_TOP,
+	TYPE_DISPLAY_SP_BOTTOM,
+	TYPE_DISPLAY_WF_TOP,
+	TYPE_DISPLAY_WF_BOTTOM
+};
+
 typedef struct {
 	uint_fast8_t updated;
 	uint_fast8_t select;
@@ -82,6 +89,7 @@ typedef struct {
 } bp_var_t;
 
 typedef bp_var_t notch_var_t;
+typedef bp_var_t display_var_t;
 
 typedef struct {
 	uint_fast16_t step;

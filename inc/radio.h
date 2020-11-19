@@ -3360,12 +3360,12 @@ void hamradio_set_gmikeequalizerparams(uint_fast8_t i, uint_fast8_t v);
 int_fast32_t hamradio_getequalizerbase(void);
 uint_fast8_t hamradio_get_gzoomxpow2(void);
 void hamradio_set_gzoomxpow2(uint_fast8_t v);
-void hamradio_get_gtopdb_limits(uint_fast8_t * min, uint_fast8_t * max);
-uint_fast8_t hamradio_get_gtopdb(void);
-void hamradio_set_gtopdb(uint_fast8_t v);
-void hamradio_get_gbottomdb_limits(uint_fast8_t * min, uint_fast8_t * max);
-uint_fast8_t hamradio_get_gbottomdb(void);
-void hamradio_set_gbottomdb(uint_fast8_t v);
+uint_fast8_t hamradio_get_gwflevelsep(void);
+void hamradio_set_gwflevelsep(uint_fast8_t v);
+uint_fast8_t hamradio_gtopdbsp(int_fast8_t v);
+uint_fast8_t hamradio_gbottomdbsp(int_fast8_t v);
+uint_fast8_t hamradio_gtopdbwf(int_fast8_t v);
+uint_fast8_t hamradio_gbottomdbwf(int_fast8_t v);
 const char * hamradio_change_view_style(uint_fast8_t v);
 
 #if WITHREVERB
