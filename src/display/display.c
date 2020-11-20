@@ -89,6 +89,11 @@ typedef PACKEDCOLORMAIN_T FRAMEBUFF_T [LCDMODE_MAIN_PAGES] [GXSIZE(DIM_SECOND, D
 		return & framebuff[0][0];
 	}
 
+	void colmain_fb_initialize(void)
+	{
+		memset(framebuff, 0, sizeof framebuff);
+	}
+
 #else
 	RAMFRAMEBUFF ALIGNX_BEGIN PACKEDCOLORMAIN_T fbf [GXSIZE(DIM_SECOND, DIM_FIRST)] ALIGNX_END;
 
@@ -108,6 +113,12 @@ typedef PACKEDCOLORMAIN_T FRAMEBUFF_T [LCDMODE_MAIN_PAGES] [GXSIZE(DIM_SECOND, D
 	{
 		return fbf;
 	}
+
+	void colmain_fb_initialize(void)
+	{
+		memset(fbf, 0, sizeof fbf);
+	}
+
 #endif /* LCDMODE_LTDC */
 
 #if LCDMODE_LTDC

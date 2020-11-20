@@ -7,7 +7,7 @@
 
 #include "hardware.h"
 
-#if ! LCDMODE_DUMMY
+#if ! LCDMODE_DUMMY && LCDMODE_LTDC
 
 #include "display.h"
 #include "display2.h"
@@ -18,9 +18,6 @@
 
 #include "formats.h"
 #include "fontmaps.h"
-
-#include "src/syslib_pc/conio.h"
-#include "src/syslib_pc/x_getch.h"
 
 #if DIM_X == 720
 	enum { VTTYx2_CHARPIX = SMALLCHARW * 2 };	// количество пикселей по горизонтали на один символ текста
@@ -325,6 +322,20 @@ int display_vtty_x2_maxy(void)
 	return VTTYx2_ROWS;
 }
 
+struct text_info {                      /* текущие условия отображения */
+    char    winleft;                    /* левая координата окна */
+    char    wintop;                     /* верхняя координата окна */
+    char    winright;                   /* правая координата окна */
+    char    winbottom;                  /* нижняя координата окна */
+    char    attribute;                  /* цвет фона и цвет символа */
+    char    normattr;                   /* = 0х0f фон BLACK и цвет WHITE */
+    char    currmode;                   /* текущий видеорежим */
+    char    screenheight;               /* вертикальный размер экрана */
+    char    screenwidth;                /* горизонтальный размер экрана */
+    char    curx;                       /* горизонтальная позиция курсора */
+    char    cury;                       /* вертикальная позиция курсора */
+};
+
 void    gettextinfo (struct text_info *r)
 {
 	vtty_x2_t * const vt = & vtty_x2_0;
@@ -417,6 +428,12 @@ void puttext(int left, int top, int right, int bottom, void *source)
 	}
 }
 
+void    gotoxy(int x, int y)
+{
+	display_vtty_x2_gotoxy(x + gwinleft - 2, y + gwintop - 2);
+}
+
+
 void    clrscr(void)
 {
 	vtty_x2_t * const vt = & vtty_x2_0;
@@ -458,11 +475,6 @@ void    window(int left, int top, int right, int bottom)
 	gotoxy(1, 1);
 }
 
-void    gotoxy(int x, int y)
-{
-	display_vtty_x2_gotoxy(x + gwinleft - 2, y + gwintop - 2);
-}
-
 void    _setcursortype (int cur_t)
 {
 
@@ -475,9 +487,6 @@ int     putch (int c)
 	return c;
 }
 
-//void    scroll_ON (void);
-//void    scroll_OFF (void);
-
 int     cputs (const char *str)
 {
 	vtty_x2_t * const vt = & vtty_x2_0;
@@ -487,5 +496,4 @@ int     cputs (const char *str)
 	return 0;
 }
 
-
-#endif /* ! LCDMODE_DUMMY */
+#endif /* ! LCDMODE_DUMMY && LCDMODE_LTDC */
