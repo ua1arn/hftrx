@@ -17,6 +17,7 @@
 
 #include "formats.h"	// for debug prints
 #include "gpio.h"
+#include "src/touch/touch.h"
 
 #if LCDMODETX_TC358778XBG
 #include "mipi_dsi.h"
@@ -912,6 +913,14 @@ arm_hardware_ltdc_initialize(void)
 	PRINTF(PSTR("arm_hardware_ltdc_initialize done\n"));
 }
 
+void
+arm_hardware_ltdc_deinitialize(void)
+{
+	/* ---- Stop clock to the video display controller 5  ---- */
+	CPG.STBCR9 |= CPG_STBCR9_MSTP91;	// Module Stop 91 0: The video display controller 5 runs.
+	(void) CPG.STBCR9;			/* Dummy read */
+}
+
 /* Palette reload */
 void arm_hardware_ltdc_L8_palette(void)
 {
@@ -1633,6 +1642,21 @@ arm_hardware_ltdc_initialize(void)
 	HARDWARE_LTDC_SET_MODE(BOARD_MODEVALUE);
 #endif
 	PRINTF(PSTR("arm_hardware_ltdc_initialize done\n"));
+}
+
+void
+arm_hardware_ltdc_deinitialize(void)
+{
+	LAYER_MAIN->CR &= ~ LTDC_LxCR_LEN;
+	(void) LAYER_MAIN->CR;
+	LTDC->SRCR = LTDC_SRCR_IMR_Msk;	/* Vertical Blanking Reload. */
+
+	/* Enable the LTDC Clock */
+	RCC->MP_APB4ENCLRR = RCC_MP_APB4ENCLRR_LTDCEN;	/* LTDC clock enable */
+	(void) RCC->MP_APB4ENCLRR;
+	/* Enable the LTDC Clock in low-power mode */
+	RCC->MP_APB4LPENCLRR = RCC_MP_APB4LPENCLRR_LTDCLPEN;	/* LTDC clock enable */
+	(void) RCC->MP_APB4LPENCLRR;
 }
 
 /* set bottom buffer start */
@@ -3796,15 +3820,30 @@ struct comipfb_dev oled_auo_rm69052_dev = {
 
 #endif
 
+void tc358768_deinitialize(void)
+{
+	struct tc358768_drv_data * ddata = & dev0;
+
+	tc358768_power_off(ddata);
+	tc358768_sw_reset(ddata);
+
+	const portholder_t Video_RST = (1uL << 10);	// PA10
+	const portholder_t Video_MODE = (1uL << 14);	// PF14: Video_MODE: 0: test, 1: normal
+
+	arm_hardware_piof_outputs(Video_MODE, Video_MODE);
+	arm_hardware_pioa_outputs(Video_RST, 1 * Video_RST);
+	local_delay_ms(5);
+}
+
 void tc358768_initialize(void)
 {
 	struct tc358768_drv_data * ddata = & dev0;
 
-	if (toshiba_ddr_power_init())
-	{
-		PRINTF("TC358768 power init failure\n");
-		return;
-	}
+//	if (toshiba_ddr_power_init())
+//	{
+//		PRINTF("TC358768 power init failure\n");
+//		return;
+//	}
 	//stpmic1_dump_regulators();
 	// See also:
 	// https://github.com/bbelos/rk3188-kernel/blob/master/drivers/video/rockchip/transmitter/tc358768.c
@@ -4022,6 +4061,17 @@ void panel_initialize(void)
 
 	s3402_init();
 	s3402_get_id();
+}
+
+void panel_deinitialize(void)
+{
+	static uint8_t sleep [] = { 0x10, 0x00, };
+	static uint8_t disploff [] = { 0x28, 0x00, };
+
+	mipi_dsi_send_dcs_packet(disploff, ARRAY_SIZE(disploff));
+	local_delay_ms(10);
+	mipi_dsi_send_dcs_packet(sleep, ARRAY_SIZE(sleep));
+	local_delay_ms(20);
 }
 
 #endif /* LCDMODETX_TC358778XBG */

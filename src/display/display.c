@@ -63,6 +63,13 @@ typedef PACKEDCOLORMAIN_T FRAMEBUFF_T [LCDMODE_MAIN_PAGES] [GXSIZE(DIM_SECOND, D
 		return fbfs [(mainphase + 0) % ARRAY_SIZE(fbfs)];
 	}
 
+	void colmain_fb_initialize(void)
+	{
+		memset(fbf0, 0, sizeof fbf0);
+		memset(fbf1, 0, sizeof fbf1);
+		memset(fbf2, 0, sizeof fbf2);
+	}
+
 #elif WITHSDRAMHW && LCDMODE_LTDCSDRAMBUFF
 
 	void colmain_fb_next(void)
@@ -1303,6 +1310,8 @@ void display_hardware_initialize(void)
 #endif /* WITHMDMAHW */
 
 #if WITHLTDCHW
+
+	colmain_fb_initialize();
 	// STM32xxx LCD-TFT Controller (LTDC)
 	// RENESAS Video Display Controller 5
 	arm_hardware_ltdc_initialize();

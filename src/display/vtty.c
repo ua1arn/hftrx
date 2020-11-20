@@ -25,8 +25,13 @@
 
 enum { VTTY_CHARPIX = SMALLCHARW };	// количество пикселей по горизонтали на один символ текста
 enum { VTTY_ROWSPIX = SMALLCHARH + 2 };	// количество пикселей по вертикали на одну строку текста
-enum { VTTY_COLS = DIM_X / VTTY_CHARPIX };
-enum { VTTY_ROWS = (DIM_Y - 20) / VTTY_ROWSPIX };
+#if DIM_X == 720
+	enum { VTTY_COLS = (DIM_X - 16) / VTTY_CHARPIX };
+	enum { VTTY_ROWS = 41 /*(DIM_Y - 20) / VTTY_ROWSPIX */};
+#else
+	enum { VTTY_COLS = (DIM_X - 0) / VTTY_CHARPIX };
+	enum { VTTY_ROWS = (DIM_Y - 20) / VTTY_ROWSPIX};
+#endif
 enum { VTTY_DX = VTTY_COLS * VTTY_CHARPIX, VTTY_DY = VTTY_ROWS * VTTY_ROWSPIX };
 
 
@@ -36,11 +41,7 @@ enum { VTTY_DX = VTTY_COLS * VTTY_CHARPIX, VTTY_DY = VTTY_ROWS * VTTY_ROWSPIX };
 
 typedef struct vtty_tag
 {
-#if LCDMODE_LTDCSDRAMBUFF
-	PACKEDCOLORMAIN_T * fb;
-#else
 	ALIGNX_BEGIN PACKEDCOLORMAIN_T fb [GXSIZE(VTTY_DX, VTTY_DY)] ALIGNX_END;
-#endif
 	unsigned scroll;	// эта строка отображается верхней в целевом прямоугольнике. 0..VTTY_ROWS-1
 	unsigned row;		// 0..VTTY_ROWS-1
 	unsigned col;		// 0..VTTY_COLS-1
@@ -64,12 +65,12 @@ void display2_vtty(
 void display_vtty_clrscr(void);
 void display_vtty_gotoxy(unsigned x, unsigned y);
 
+int display_vtty_maxx(void);
+int display_vtty_maxy(void);
+
 void display_vtty_initialize(void)
 {
 	vtty_t * const vt = & vtty0;
-#if LCDMODE_LTDCSDRAMBUFF
-	vt->fb = (PACKEDCOLORMAIN_T *) (SDRAM_BANK_ADDR + 24uL * 1024 * 1024);
-#endif
 	vt->scroll = 0;
 	vt->row = 0;
 	vt->col = 0;
@@ -134,9 +135,9 @@ void display_vtty_show(
 	{
 		// нижняя часть
 		colpip_plot(
-				(uintptr_t) tfb, 0 * GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T),
+				(uintptr_t) tfb, 1 * GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T),
 				tfb, DIM_X, DIM_Y, x, y + tgy2,
-				(uintptr_t) vt->fb, 0 * GXSIZE(VTTY_DX, VTTY_DY) * sizeof (PACKEDCOLORMAIN_T),	// параметры для clean
+				(uintptr_t) vt->fb, 1 * GXSIZE(VTTY_DX, VTTY_DY) * sizeof (PACKEDCOLORMAIN_T),	// параметры для clean
 				colmain_mem_at(vt->fb, VTTY_DX, VTTY_DY, 0, 0),	// начальный адрес источника
 				VTTY_DX, tgh2);	// размеры источника
 	}
@@ -240,4 +241,14 @@ void display_vtty_printf(const char * format, ...)
 		display_vtty_putchar(b [i]);
 }
 
-#endif /* ! ! LCDMODE_DUMMY && LCDMODE_LTDC */
+int display_vtty_maxx(void)
+{
+	return VTTY_COLS;
+}
+
+int display_vtty_maxy(void)
+{
+	return VTTY_ROWS;
+}
+
+#endif /* ! LCDMODE_DUMMY */

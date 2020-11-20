@@ -1183,6 +1183,34 @@ void hwaccel_copy(
 #endif
 }
 
+// копирование буфера с поворотом вправо на 90 градусов (четверть оборота).
+void hwaccel_ra90(
+	PACKEDCOLORPIP_T * __restrict tbuffer,
+	uint_fast16_t tdx,	// размер получателя
+	uint_fast16_t tdy,
+	uint_fast16_t tx,	// горизонтальная координата пикселя (0..dx-1) слева направо - в исходном нижний
+	uint_fast16_t ty,	// вертикальная координата пикселя (0..dy-1) сверху вниз - в исходном левый
+	const PACKEDCOLORPIP_T * __restrict sbuffer,
+	uint_fast16_t sdx,	// размер источника
+	uint_fast16_t sdy
+	)
+{
+	if (sdx == 0 || sdy == 0)
+		return;
+
+	uint_fast16_t x;	// x получателя
+	for (x = 0; x < sdy; ++ x)
+	{
+		uint_fast16_t y;	// y получателя
+		for (y = 0; y < sdx; ++ y)
+		{
+			const COLORPIP_T pixel = * colmain_mem_at((PACKEDCOLORMAIN_T *) sbuffer, sdx, sdy, y, sdy - 1 - x);	// выборка из исхолного битмапа
+			* colmain_mem_at(tbuffer, tdx, tdy, tx + x, ty + y) = pixel;
+		}
+	}
+}
+
+
 // Routine to draw a line in the RGB565 color to the LCD.
 // The line is drawn from (xmin,ymin) to (xmax,ymax).
 // The algorithm used to draw the line is "Bresenham's line
@@ -1607,6 +1635,34 @@ colpip_string_x2_tbg(
 }
 
 // Используется при выводе на графический индикатор,
+// с поворотом
+void
+colpip_string_x2ra90_tbg(
+	PACKEDCOLORPIP_T * __restrict buffer,
+	uint_fast16_t dx,
+	uint_fast16_t dy,
+	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	const char * s,
+	COLORPIP_T fg,		// цвет вывода текста
+	COLORPIP_T bg		// цвет фона
+	)
+{
+	char c;
+	enum { TDX = SMALLCHARW * 2, TDY = SMALLCHARH * 2 };
+	static RAMFRAMEBUFF ALIGNX_BEGIN PACKEDCOLORPIP_T scratch [GXSIZE(TDX, TDY)] ALIGNX_END;
+
+	ASSERT(s != NULL);
+	while ((c = * s ++) != '\0')
+	{
+		colpip_fillrect(scratch, TDX, TDY, 0, 0, TDX, TDY, bg);
+		ltdcpip_horizontal_x2_put_char_small_tbg(scratch, TDX, TDY, 0, 0, c, fg);
+		hwaccel_ra90(buffer, dx, dy, x, y, scratch, TDX, TDY);
+		y += TDX;
+	}
+}
+
+// Используется при выводе на графический индикатор,
 // transparent background - не меняем цвет фона.
 void
 colpip_string_count(
@@ -1628,7 +1684,6 @@ colpip_string_count(
 	}
 }
 // Используется при выводе на графический индикатор,
-// transparent background - не меняем цвет фона.
 void
 colpip_string_x2_count(
 	PACKEDCOLORPIP_T * buffer,
@@ -1646,6 +1701,35 @@ colpip_string_x2_count(
 	{
 		const char c = * s ++;
 		x = ltdcpip_horizontal_x2_put_char_small_tbg(buffer, dx, dy, x, y, c, fg);
+	}
+}
+
+// Используется при выводе на графический индикатор,
+// transparent background - не меняем цвет фона.
+void
+colpip_string_x2ra90_count(
+	PACKEDCOLORPIP_T * buffer,
+	uint_fast16_t dx,
+	uint_fast16_t dy,
+	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	COLORPIP_T fg,		// цвет вывода текста
+	COLORPIP_T bg,		// цвет вывода текста
+	const char * s,		// строка для вывода
+	size_t len			// количество символов
+	)
+{
+	enum { TDX = SMALLCHARW * 2, TDY = SMALLCHARH * 2 };
+	static RAMFRAMEBUFF ALIGNX_BEGIN PACKEDCOLORPIP_T scratch [GXSIZE(TDX, TDY)] ALIGNX_END;
+
+	ASSERT(s != NULL);
+	while (len --)
+	{
+		const char c = * s ++;
+		colpip_fillrect(scratch, TDX, TDY, 0, 0, TDX, TDY, bg);
+		ltdcpip_horizontal_x2_put_char_small_tbg(scratch, TDX, TDY, 0, 0, c, fg);
+		hwaccel_ra90(buffer, dx, dy, x, y, scratch, TDX, TDY);
+		y += TDX;
 	}
 }
 #endif /* defined (SMALLCHARW) */
@@ -1769,6 +1853,48 @@ void colpip_plot(
 		dstinvalidateaddr, dstinvalidatesize,	// target area clean invalidate parameters
 		colmain_mem_at(dst, tdx, tdy, x, y), tdx, tdy,
 		srcinvalidateaddr, srcinvalidatesize,	// параметры clean источника
+		src, sdx, sdy
+		);
+#endif /* LCDMODE_HORFILL */
+}
+
+// скоприовать прямоугольник с типом пикселей соответствующим pip
+// с поворотом вправо на 90 градусов
+void colpip_plot_ra90(
+	uintptr_t dstinvalidateaddr,	// параметры clean invalidate получателя
+	int_fast32_t dstinvalidatesize,
+	PACKEDCOLORPIP_T * dst,	// получатель
+	uint_fast16_t tdx,	// получатель Размеры окна в пикселях
+	uint_fast16_t tdy,	// получатель
+	uint_fast16_t x,	// получатель Позиция
+	uint_fast16_t y,	// получатель
+	uintptr_t srcinvalidateaddr,	// параметры clean источника
+	int_fast32_t srcinvalidatesize,
+	const PACKEDCOLORPIP_T * src, 	// источник
+	uint_fast16_t sdx,	// источник Размеры окна в пикселях
+	uint_fast16_t sdy	// источник
+	)
+{
+	ASSERT(src != NULL);
+	ASSERT(dst != NULL);
+	ASSERT(tdx >= sdx);
+	ASSERT(tdy >= sdy);
+
+	//ASSERT(((uintptr_t) src % DCACHEROWSIZE) == 0);	// TODO: добавиль парамтр для flush исходного растра
+#if LCDMODE_HORFILL
+	hwaccel_ra90(
+		//dstinvalidateaddr, dstinvalidatesize,	// target area clean invalidate parameters
+		dst, tdx, tdy,
+		x, y,
+		//srcinvalidateaddr, srcinvalidatesize,	// параметры clean источника
+		src, sdx, sdy
+		);
+#else /* LCDMODE_HORFILL */
+	hwaccel_ra90(
+		//dstinvalidateaddr, dstinvalidatesize,	// target area clean invalidate parameters
+		dst, tdx, tdy,
+		x, y,
+		//srcinvalidateaddr, srcinvalidatesize,	// параметры clean источника
 		src, sdx, sdy
 		);
 #endif /* LCDMODE_HORFILL */

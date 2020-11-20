@@ -386,7 +386,9 @@ void display_set_contrast(uint_fast8_t v);
 void display_palette(void);				// Palette reload
 
 void tc358768_initialize(void);
+void tc358768_deinitialize(void);
 void panel_initialize(void);
+void panel_deinitialize(void);
 
 /* индивидуальные функции драйвера дисплея - реализованы в соответствующем из файлов */
 void display_clear(void);
@@ -592,6 +594,19 @@ colpip_string_x2_tbg(
 // Используется при выводе на графический индикатор,
 // transparent background - не меняем цвет фона.
 void
+colpip_string_x2ra90_tbg(
+	PACKEDCOLORPIP_T * buffer,
+	uint_fast16_t dx,
+	uint_fast16_t dy,
+	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	const char * s,
+	COLORPIP_T fg,		// цвет вывода текста
+	COLORPIP_T bg		// цвет фона
+	);
+// Используется при выводе на графический индикатор,
+// transparent background - не меняем цвет фона.
+void
 colpip_string_count(
 	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,
@@ -603,7 +618,6 @@ colpip_string_count(
 	size_t len			// количество символов
 	);
 // Используется при выводе на графический индикатор,
-// transparent background - не меняем цвет фона.
 void
 colpip_string_x2_count(
 	PACKEDCOLORPIP_T * buffer,
@@ -612,6 +626,19 @@ colpip_string_x2_count(
 	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
 	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
 	COLORPIP_T fg,		// цвет вывода текста
+	const char * s,		// строка для вывода
+	size_t len			// количество символов
+	);
+// Используется при выводе на графический индикатор,
+void
+colpip_string_x2ra90_count(
+	PACKEDCOLORPIP_T * buffer,
+	uint_fast16_t dx,
+	uint_fast16_t dy,
+	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	COLORPIP_T fg,		// цвет вывода текста
+	COLORPIP_T bg,		// цвет вывода текста
 	const char * s,		// строка для вывода
 	size_t len			// количество символов
 	);
@@ -714,9 +741,6 @@ void display_bar(
 void display_at(uint_fast8_t x, uint_fast8_t y, const char * s);		// Выдача строки из ОЗУ в указанное место экрана.
 void display_x2_at(uint_fast8_t x, uint_fast8_t y, const char * s);		// Выдача строки из ОЗУ в указанное место экрана.
 void display_at_P(uint_fast8_t x, uint_fast8_t y, const FLASHMEM char * s); // Выдача строки из ПЗУ в указанное место экрана.
-
-int s3402_get_coord(unsigned * x, unsigned * y);
-int s3402_get_id(void);
 /* заполнение прямоугольника на основном экране произвольным цветом
 */
 void
@@ -760,6 +784,22 @@ void colpip_plot(
 	const PACKEDCOLORPIP_T * buffer, 	// источник
 	uint_fast16_t dx,	// источник Размеры окна в пикселях
 	uint_fast16_t dy	// источник
+	);
+// скоприовать прямоугольник с типом пикселей соответствующим pip
+// с поворотом вправо на 90 градусов
+void colpip_plot_ra90(
+	uintptr_t dstinvalidateaddr,	// параметры clean invalidate получателя
+	int_fast32_t dstinvalidatesize,
+	PACKEDCOLORPIP_T * dst,	// получатель
+	uint_fast16_t tdx,	// получатель Размеры окна в пикселях
+	uint_fast16_t tdy,	// получатель
+	uint_fast16_t x,	// получатель Позиция
+	uint_fast16_t y,	// получатель
+	uintptr_t srcinvalidateaddr,	// параметры clean источника
+	int_fast32_t srcinvalidatesize,
+	const PACKEDCOLORPIP_T * src, 	// источник
+	uint_fast16_t sdx,	// источник Размеры окна в пикселях
+	uint_fast16_t sdy	// источник
 	);
 
 void
@@ -892,6 +932,7 @@ void board_set_afspechigh(int_fast16_t v);		// верхняя частота о�
 PACKEDCOLORMAIN_T * colmain_fb_draw(void);		// буфер для построения изображения
 PACKEDCOLORMAIN_T * colmain_fb_show(void);		// буфер для отображения
 void colmain_fb_next(void);						// переключиться на использование следующего фреймбуфера.
+void colmain_fb_initialize(void);
 
 #if WITHALPHA
 #define DEFAULT_ALPHA WITHALPHA
@@ -912,6 +953,18 @@ void hwaccel_copy(
 	const PACKEDCOLORMAIN_T * src,
 	uint_fast16_t sdx,	// ширина буфера
 	uint_fast16_t sdy	// высота буфера
+	);
+
+// копирование буфера с поворотом вправо на 90 градусов (четверть оборота).
+void hwaccel_ra90(
+	PACKEDCOLORPIP_T * __restrict tbuffer,
+	uint_fast16_t tdx,	// размер получателя
+	uint_fast16_t tdy,
+	uint_fast16_t tx,	// горизонтальная координата пикселя (0..dx-1) слева направо - в исходном нижний
+	uint_fast16_t ty,	// вертикальная координата пикселя (0..dy-1) сверху вниз - в исходном левый
+	const PACKEDCOLORPIP_T * __restrict sbuffer,
+	uint_fast16_t sdx,	// размер источника
+	uint_fast16_t sdy
 	);
 
 // для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
@@ -1013,6 +1066,29 @@ void display_vtty_show(
 	uint_fast16_t y
 	);
 void display_vtty_printf(const char * format, ...);
+
+int display_vtty_maxx(void);
+int display_vtty_maxy(void);
+void display_vtty_gotoxy(unsigned x, unsigned y);
+
+void display_vtty_x2_initialize(void);
+int display_vtty_x2_putchar(char ch);
+// копирование растра в видеобуфер отображения
+void display_vtty_x2_show(
+	uint_fast16_t x,
+	uint_fast16_t y
+	);
+// копирование растра в видеобуфер отображения
+// с поворотом вправо на 90 градусов
+void display_vtty_x2_show_ra90(
+	uint_fast16_t x,
+	uint_fast16_t y
+	);
+void display_vtty_x2_printf(const char * format, ...);
+
+int display_vtty_x2_maxx(void);
+int display_vtty_x2_maxy(void);
+void display_vtty_x2_gotoxy(unsigned x, unsigned y);
 
 #ifdef __cplusplus
 }
