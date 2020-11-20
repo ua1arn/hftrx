@@ -1341,7 +1341,6 @@ static void window_mode_process(void)
 static void window_af_process(void)
 {
 	window_t * win = get_win(WINDOW_AF);
-	static label_t * lbl_low = NULL, * lbl_high = NULL, * lbl_ifshift = NULL;
 	static bp_var_t bp_t;
 
 	if (win->first_call)
@@ -1352,12 +1351,14 @@ static void window_af_process(void)
 		bp_t.updated = 1;
 
 		static const button_t buttons [] = {
-			{ 0, 0, 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AF, NON_VISIBLE, -1, "btn_low-", 	"-", },
-			{ 0, 0, 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AF, NON_VISIBLE, 1,  "btn_low+", 	"+", },
-			{ 0, 0, 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AF, NON_VISIBLE, -1, "btn_high-", 	"-", },
-			{ 0, 0, 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AF, NON_VISIBLE, 1,  "btn_high+", 	"+", },
-			{ 0, 0, 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AF, NON_VISIBLE, -1, "btn_ifshift-", "-", },
-			{ 0, 0, 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AF, NON_VISIBLE, 1,  "btn_ifshift+", "+", },
+			{ 0, 0, 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AF, NON_VISIBLE, -1, "btn_low_m", 	"-", },
+			{ 0, 0, 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AF, NON_VISIBLE, 1,  "btn_low_p", 	"+", },
+			{ 0, 0, 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AF, NON_VISIBLE, -1, "btn_high_m", 	"-", },
+			{ 0, 0, 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AF, NON_VISIBLE, 1,  "btn_high_p", 	"+", },
+			{ 0, 0, 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AF, NON_VISIBLE, -1, "btn_afr_m", 	"-", },
+			{ 0, 0, 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AF, NON_VISIBLE, 1,  "btn_afr_p", 	"+", },
+			{ 0, 0, 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AF, NON_VISIBLE, -1, "btn_ifshift_m", "-", },
+			{ 0, 0, 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AF, NON_VISIBLE, 1,  "btn_ifshift_p", "+", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -1366,9 +1367,10 @@ static void window_af_process(void)
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
 		label_t labels [] = {
-			{ 0, 0, WINDOW_AF, CANCELLED,  0, NON_VISIBLE, "lbl_low",     "Low  cut : **** ",  FONT_MEDIUM, COLORMAIN_YELLOW, },
-			{ 0, 0, WINDOW_AF, CANCELLED,  0, NON_VISIBLE, "lbl_high",    "High cut : **** ",  FONT_MEDIUM, COLORMAIN_WHITE,  },
-			{ 0, 0, WINDOW_AF, CANCELLED,  0, NON_VISIBLE, "lbl_ifshift", "IF shift : **** ",  FONT_MEDIUM, COLORMAIN_WHITE,  },
+			{ 0, 0, WINDOW_AF, CANCELLED, 0, NON_VISIBLE, "lbl_low",     "Low  cut : **** ", FONT_MEDIUM, COLORMAIN_WHITE, TYPE_BP_LOW, },
+			{ 0, 0, WINDOW_AF, CANCELLED, 0, NON_VISIBLE, "lbl_high",    "High cut : **** ", FONT_MEDIUM, COLORMAIN_WHITE, TYPE_BP_HIGH, },
+			{ 0, 0, WINDOW_AF, CANCELLED, 0, NON_VISIBLE, "lbl_afr",     "AFR      : **** ", FONT_MEDIUM, COLORMAIN_WHITE, TYPE_AFR, },
+			{ 0, 0, WINDOW_AF, CANCELLED, 0, NON_VISIBLE, "lbl_ifshift", "IF shift : **** ", FONT_MEDIUM, COLORMAIN_WHITE, TYPE_IF_SHIFT, },
 		};
 		win->lh_count = ARRAY_SIZE(labels);
 		uint_fast16_t labels_size = sizeof(labels);
@@ -1376,9 +1378,10 @@ static void window_af_process(void)
 		GUI_MEM_ASSERT(win->lh_ptr);
 		memcpy(win->lh_ptr, labels, labels_size);
 
-		lbl_low = find_gui_element(TYPE_LABEL, win, "lbl_low");
-		lbl_high = find_gui_element(TYPE_LABEL, win, "lbl_high");
-		lbl_ifshift = find_gui_element(TYPE_LABEL, win, "lbl_ifshift");
+		label_t * lbl_low = find_gui_element(TYPE_LABEL, win, "lbl_low");
+		label_t * lbl_high = find_gui_element(TYPE_LABEL, win, "lbl_high");
+		label_t * lbl_afr = find_gui_element(TYPE_LABEL, win, "lbl_afr");
+		label_t * lbl_ifshift = find_gui_element(TYPE_LABEL, win, "lbl_ifshift");
 
 		button_t * bh = & win->bh_ptr [0];
 
@@ -1390,8 +1393,12 @@ static void window_af_process(void)
 		lbl_high->y = lbl_low->y + interval;
 		lbl_high->visible = VISIBLE;
 
-		lbl_ifshift->x = lbl_high->x;
-		lbl_ifshift->y = lbl_high->y + interval;
+		lbl_afr->x = lbl_high->x;
+		lbl_afr->y = lbl_high->y + interval;
+		lbl_afr->visible = VISIBLE;
+
+		lbl_ifshift->x = lbl_afr->x;
+		lbl_ifshift->y = lbl_afr->y + interval;
 		lbl_ifshift->visible = VISIBLE;
 
 		uint_fast16_t x = lbl_low->x + get_label_width(lbl_low);
@@ -1427,26 +1434,34 @@ static void window_af_process(void)
 		if (IS_BUTTON_PRESS)
 		{
 			button_t * bh = (button_t *) ptr;
-			button_t * btn_lowm = find_gui_element(TYPE_BUTTON, win, "btn_low-");
-			button_t * btn_lowp = find_gui_element(TYPE_BUTTON, win, "btn_low+");
-			button_t * btn_highm = find_gui_element(TYPE_BUTTON, win, "btn_high-");
-			button_t * btn_highp = find_gui_element(TYPE_BUTTON, win, "btn_high+");
-			button_t * btn_ifshiftm = find_gui_element(TYPE_BUTTON, win, "btn_ifshift-");
-			button_t * btn_ifshiftp = find_gui_element(TYPE_BUTTON, win, "btn_ifshift+");
+			button_t * btn_low_m = find_gui_element(TYPE_BUTTON, win, "btn_low_m");
+			button_t * btn_low_p = find_gui_element(TYPE_BUTTON, win, "btn_low_p");
+			button_t * btn_high_m = find_gui_element(TYPE_BUTTON, win, "btn_high_m");
+			button_t * btn_high_p = find_gui_element(TYPE_BUTTON, win, "btn_high_p");
+			button_t * btn_afr_m = find_gui_element(TYPE_BUTTON, win, "btn_afr_m");
+			button_t * btn_afr_p = find_gui_element(TYPE_BUTTON, win, "btn_afr_p");
+			button_t * btn_ifshift_m = find_gui_element(TYPE_BUTTON, win, "btn_ifshift_m");
+			button_t * btn_ifshift_p = find_gui_element(TYPE_BUTTON, win, "btn_ifshift_p");
 
-			if (bh == btn_lowm || bh == btn_lowp)
+			if (bh == btn_low_m || bh == btn_low_p)
 			{
 				bp_t.select = TYPE_BP_LOW;
 				bp_t.change = bh->payload;
 				bp_t.updated = 1;
 			}
-			else if (bh == btn_highm || bh == btn_highp)
+			else if (bh == btn_high_m || bh == btn_high_p)
 			{
 				bp_t.select = TYPE_BP_HIGH;
 				bp_t.change = bh->payload;
 				bp_t.updated = 1;
 			}
-			else if (bh == btn_ifshiftm || bh == btn_ifshiftp)
+			else if (bh == btn_afr_m || bh == btn_afr_p)
+			{
+				bp_t.select = TYPE_AFR;
+				bp_t.change = bh->payload;
+				bp_t.updated = 1;
+			}
+			else if (bh == btn_ifshift_m || bh == btn_ifshift_p)
 			{
 				bp_t.select = TYPE_IF_SHIFT;
 				bp_t.change = bh->payload;
@@ -1456,14 +1471,7 @@ static void window_af_process(void)
 		else if (IS_LABEL_PRESS)
 		{
 			label_t * lh = (label_t *) ptr;
-
-			if (lh == lbl_low)
-				bp_t.select = TYPE_BP_LOW;
-			else if (lh == lbl_high)
-				bp_t.select = TYPE_BP_HIGH;
-			else if (lh == lbl_ifshift)
-				bp_t.select = TYPE_IF_SHIFT;
-
+			bp_t.select = lh->index;
 			bp_t.change = 0;
 			bp_t.updated = 1;
 		}
@@ -1509,17 +1517,27 @@ static void window_af_process(void)
 		ASSERT(bp_t.select < win->lh_count);
 		win->lh_ptr [bp_t.select].color = COLORMAIN_YELLOW;
 
+		label_t * lbl_low = find_gui_element(TYPE_LABEL, win, "lbl_low");
+		label_t * lbl_high = find_gui_element(TYPE_LABEL, win, "lbl_high");
+		label_t * lbl_afr = find_gui_element(TYPE_LABEL, win, "lbl_afr");
+		label_t * lbl_ifshift = find_gui_element(TYPE_LABEL, win, "lbl_ifshift");
+
 		uint_fast8_t val_low = hamradio_get_low_bp(bp_t.select == TYPE_BP_LOW ? (bp_t.change * 5) : 0);
 		local_snprintf_P(lbl_low->text, ARRAY_SIZE(lbl_low->text), PSTR("%s: %4d"), str_low, val_low * 10);
 
 		uint_fast8_t val_high = hamradio_get_high_bp(bp_t.select == TYPE_BP_HIGH ? bp_t.change : 0) * (bp_type ? 100 : 10);
 		local_snprintf_P(lbl_high->text, ARRAY_SIZE(lbl_high->text), PSTR("%s: %4d"), str_high, val_high);
 
+		local_snprintf_P(lbl_afr->text, ARRAY_SIZE(lbl_afr->text), PSTR("AFR      : %+4d "),
+				hamradio_afresponce(bp_t.select == TYPE_AFR ? bp_t.change : 0));
+
 		int16_t shift = hamradio_if_shift(bp_t.select == TYPE_IF_SHIFT ? bp_t.change : 0);
 		if (shift)
 			local_snprintf_P(lbl_ifshift->text, ARRAY_SIZE(lbl_ifshift->text), PSTR("IF shift :%+5d"), shift);
 		else
 			local_snprintf_P(lbl_ifshift->text, ARRAY_SIZE(lbl_ifshift->text), PSTR("IF shift :  OFF"));
+
+		bp_t.change = 0;
 	}
 }
 

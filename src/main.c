@@ -19931,6 +19931,29 @@ uint_fast8_t hamradio_get_high_bp(int_least16_t rotate)
 	return high;
 }
 
+int_fast8_t hamradio_afresponce(int_fast8_t v)
+{
+	const uint_fast8_t tx = hamradio_get_tx();
+	const uint_fast8_t asubmode = getasubmode(0);
+	const uint_fast8_t amode = submodes [asubmode].mode;
+	const uint_fast8_t bwseti = mdt [amode].bwsetis [tx];
+	const uint_fast8_t pos = bwsetpos [bwseti];
+	bwprop_t * p = bwsetsc [bwseti].prop [pos];
+
+	if (v > 0)
+		p->afresponce = calc_next(p->afresponce, AFRESPONCEMIN, AFRESPONCEMAX);
+	else if (v < 0)
+		p->afresponce = calc_prev(p->afresponce, AFRESPONCEMIN, AFRESPONCEMAX);
+
+	if (v != 0)
+	{
+		save_i8(RMT_BWPROPSAFRESPONCE_BASE(bwseti), p->afresponce);
+		updateboard(1, 0);
+	}
+
+	return p->afresponce + getafresponcebase();
+}
+
 #endif /* WITHIF4DSP */
 
 #if WITHMENU
