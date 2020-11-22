@@ -30,18 +30,24 @@ BIN  = $(CP) -O binary -R .noinit -R .bss -R .vram -R .heap
 CMSISDIR = ../../../CMSIS_5/CMSIS
 LWIPDIR = ../../src/lwip-1.4.1/src
 
-OBJDIR2 = obj
-OBJDIR = ./$(OBJDIR2)
 
 # Define optimisation level here
 # ony -Og for app
-ifeq "bootloader" "c bootloader"
+ifeq "bootloader" "1 bootloader"
+
 OPT = -Ofast
 LTO = -flto
+OBJDIR2 = objboot
+
 else
+
 OPT = -Og
 #LTO = -flto
+OBJDIR2 = objapp
+
 endif
+
+OBJDIR = ./$(OBJDIR2)
 
 # This product incorporates the ARM dual-core Cortex-A7 MPCore, where the IP version is r0p5
 # debug architecture ARMv7.1.
