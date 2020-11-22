@@ -5,8 +5,8 @@
 // UA1ARN
 //
 
-#include "gui/gui.h"
 #include "hardware.h"
+#include "gui/gui.h"
 #include "synthcalcs.h"
 #include "board.h"
 #include "keyboard.h"
@@ -17646,6 +17646,15 @@ uif_key_click_menubyname(const char * name, uint_fast8_t exitkey)
 #endif /* WITHTOUCHGUI */
 }
 
+static struct menudef recPopUp [] =
+{
+		{
+
+		}
+};
+
+static struct menudef * thisPopUp = recPopUp;
+static size_t sizePopUp = ARRAY_SIZE(recPopUp);
 
 // всплывающее меню
 void display2_popup(
