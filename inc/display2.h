@@ -184,6 +184,13 @@ display2_adctest(
 	dctx_t * pctx
 	);
 
+// всплывающее меню
+void display2_popup(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	);
+
 // Вызывается из display2.c (версия для CTLSTYLE_RA4YBO_AM0)
 void
 display2_bars_amv0(

@@ -5964,6 +5964,9 @@ enum
 		{	26,	0,	display2_ant5,		REDRM_MODE, PGALL, },
 		{	32,	0,	display2_att4,		REDRM_MODE, PGALL, },
 		{	37,	0,	display2_preovf3,	REDRM_BARS, PGALL, },
+#if WITHMENU
+		{	1, 5,	display2_popup,		REDRM_MODE, PG0, },
+#endif /* WITHMENU */
 #if WITHBARS
 		{   0, 	4,  display2_smeter15_init,REDRM_INIS, PGINI, },	//  Инициализация стрелочного прибора
 		{   0, 	4,	display2_smeter15, 	REDRM_BARS, PGALL, },	// Изображение стрелочного прибора

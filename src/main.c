@@ -17646,6 +17646,17 @@ uif_key_click_menubyname(const char * name, uint_fast8_t exitkey)
 #endif /* WITHTOUCHGUI */
 }
 
+
+// всплывающее меню
+void display2_popup(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+
+}
+
 #else // WITHMENU
 
 static void 
