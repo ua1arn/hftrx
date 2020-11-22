@@ -17646,24 +17646,107 @@ uif_key_click_menubyname(const char * name, uint_fast8_t exitkey)
 #endif /* WITHTOUCHGUI */
 }
 
-static struct menudef recPopUp [] =
+static const struct menudef notchPopUp [] =
 {
-		{
-
-		}
+#if WITHNOTCHFREQ
+	{
+		QLABEL("NOTCH   "), 0, 0, 0, 0,
+		ITEM_GROUP,
+		0, 0,
+		offsetof(struct nvmap, ggrpnotch),
+		nvramoffs0,
+		NULL,
+		NULL,
+		NULL,
+	},
+	{
+		QLABEL("NOTCH   "), 8, 3, RJ_NOTCH,	ISTEP1,		/* управление режимом NOTCH */
+		ITEM_VALUE,
+		0, NOTCHMODE_COUNT - 1,
+		RMT_NOTCHTYPE_BASE,							/* управление режимом NOTCH */
+		nvramoffs0,
+		NULL,
+		& gnotchtype,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	#if ! WITHPOTNOTCH
+	{
+		QLABEL("NTCH FRQ"), 7, 2, 1,	ISTEP50,		/* управление частотой NOTCH. */
+		ITEM_VALUE,
+		WITHNOTCHFREQMIN, WITHNOTCHFREQMAX,
+		offsetof(struct nvmap, gnotchfreq),	/* центральная частота NOTCH */
+		nvramoffs0,
+		& gnotchfreq.value,
+		NULL,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		QLABEL("NTCH WDT"), 7, 0, 0,	ISTEP50,		/* полоса режекции NOTCH. */
+		ITEM_VALUE,
+		WITHNOTCHWIDTHMIN, WITHNOTCHWIDTHMAX,
+		offsetof(struct nvmap, gnotchwidth),	/* полоса режекции NOTCH */
+		nvramoffs0,
+		& gnotchwidth.value,
+		NULL,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	#endif /* ! WITHPOTNOTCH */
+#elif WITHNOTCHONOFF
+#if ! WITHFLATMENU
+	{
+		QLABEL("NOTCH   "), 0, 0, 0, 0,
+		ITEM_GROUP,
+		0, 0,
+		offsetof(struct nvmap, ggrpnotch),
+		nvramoffs0,
+		NULL,
+		NULL,
+		NULL,
+	},
+#endif /* ! WITHFLATMENU */
+	{
+		QLABEL("NOTCH   "), 8, 3, RJ_ON,	ISTEP1,		/* управление режимом NOTCH */
+		ITEM_VALUE,
+		0, NOTCHMODE_COUNT - 1,
+		RMT_NOTCH_BASE,							/* управление режимом NOTCH */
+		nvramoffs0,
+		NULL,
+		& gnotch,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+#endif /* WITHNOTCHFREQ */
 };
 
-static struct menudef * thisPopUp = recPopUp;
-static size_t sizePopUp = ARRAY_SIZE(recPopUp);
+static const FLASHMEM struct menudef * thisPopUp = notchPopUp;
+static size_t sizePopUp = ARRAY_SIZE(notchPopUp);
 
 // всплывающее меню
 void display2_popup(
-	uint_fast8_t x,
-	uint_fast8_t y,
+	uint_fast8_t xcell,
+	uint_fast8_t ycell,
 	dctx_t * pctx
 	)
 {
 
+	if (thisPopUp == NULL)
+		return;
+	multimenuwnd_t mw;
+	unsigned i;
+
+	display2_getmultimenu(& mw);
+	const uint_fast16_t x = GRID2X(xcell);
+	const uint_fast16_t y = GRID2Y(ycell);
+	const uint_fast16_t w = GRID2X(LABELW);
+	const uint_fast16_t h = GRID2Y(mw.ystep) * sizePopUp;
+
+	//display_fillrect(x, y, w, h, COLORMAIN_DARKGREEN);	// Фон
+
+	for (i = 0; i < sizePopUp; ++ i)
+	{
+		const FLASHMEM struct menudef * const mp = thisPopUp + i;
+
+		//menu
+	}
 }
 
 #else // WITHMENU

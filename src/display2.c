@@ -5964,18 +5964,15 @@ enum
 		{	26,	0,	display2_ant5,		REDRM_MODE, PGALL, },
 		{	32,	0,	display2_att4,		REDRM_MODE, PGALL, },
 		{	37,	0,	display2_preovf3,	REDRM_BARS, PGALL, },
-//#if WITHMENU
-		{	1, 5,	display2_popup,		REDRM_MODE, PG0, },
-//#endif /* WITHMENU */
-#if WITHBARS
+	#if WITHBARS
 		{   0, 	4,  display2_smeter15_init,REDRM_INIS, PGINI, },	//  Инициализация стрелочного прибора
 		{   0, 	4,	display2_smeter15, 	REDRM_BARS, PGALL, },	// Изображение стрелочного прибора
-#endif /* WITHBARS */
-#if WITHAFSPECTRE
+	#endif /* WITHBARS */
+	#if WITHAFSPECTRE
 		{	0,	4,	display2_af_spectre15_init,	REDRM_INIS, PGINI, },
 		{	0,	4,	display2_af_spectre15_latch,	REDRM_BARS,	PGLATCH, },
 		{	0,	4,	display2_af_spectre15,		REDRM_BARS, PGSPE, },
-#endif /* WITHAFSPECTRE */
+	#endif /* WITHAFSPECTRE */
 
 		{	15,	6,	display2_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
 
@@ -6025,15 +6022,18 @@ enum
 		//{	28, DLE1,	display2_usbsts3,		REDRM_BARS, PGALL, },	// USB host status
 		//{	28, DLE1,	display_freqmeter10, REDRM_BARS, PGALL, },	// измеренная частота опоры
 
-//	#if WITHMENU
+	#if WITHMENU
 		{	3,				DLES,	display2_multilinemenu_block_groups,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
 		{	LABELW + 5,		DLES,	display2_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
 		{	LABELW*2 + 6,	DLES,	display2_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
-//	#endif /* WITHMENU */
+	#endif /* WITHMENU */
 
 		// sleep mode display
 		{	5,	25,	display2_datetime12,	REDRM_BARS, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40
 		{	20, 25,	display2_voltlevelV5, REDRM_VOLT, PGSLP, },	// voltmeter with "V"
+	#if WITHMENU
+		{	15, 25,	display2_popup,		REDRM_MODE, PG0, },	// Всплывающие меню. В конце массива для перекрытия всего что под ним
+	#endif /* WITHMENU */
 
 		/* общий для всех режимов элемент */
 		{	0,	0,	display2_nextfb, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },
