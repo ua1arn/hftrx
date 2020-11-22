@@ -35,7 +35,7 @@ OBJDIR = ./$(OBJDIR2)
 
 # Define optimisation level here
 # ony -Og for app
-ifeq "bootloader" "all bootloader"
+ifeq "bootloader" "c bootloader"
 OPT = -Ofast
 LTO = -flto
 else
