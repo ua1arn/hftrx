@@ -405,21 +405,23 @@ toprintc(int c)
 void
 printhex(unsigned long voffs, const unsigned char * buff, unsigned length)
 {
+	enum { ROWSIZE = 16 };
 	unsigned i, j;
-	unsigned rows = (length + 15) / 16;
+	unsigned rows = (length + ROWSIZE - 1) / ROWSIZE;
 
 	for (i = 0; i < rows; ++ i)
 	{
-		const int trl = ((length - 1) - i * 16) % 16 + 1;
-		debug_printf_P(PSTR("%08lX "), voffs + i * 16);
+		const int remaining = length - i * ROWSIZE;
+		const int trl = (ROWSIZE < remaining) ? ROWSIZE : remaining;
+		debug_printf_P(PSTR("%08lX "), voffs + i * ROWSIZE);
 		for (j = 0; j < trl; ++ j)
-			debug_printf_P(PSTR(" %02X"), buff [i * 16 + j]);
+			debug_printf_P(PSTR(" %02X"), buff [i * ROWSIZE + j]);
 
 		debug_printf_P(PSTR("%*s"), (16 - trl) * 3, "");
 
 		debug_printf_P(PSTR("  "));
 		for (j = 0; j < trl; ++ j)
-			debug_printf_P(PSTR("%c"), toprintc(buff [i * 16 + j]));
+			debug_printf_P(PSTR("%c"), toprintc(buff [i * ROWSIZE + j]));
 
 		debug_printf_P(PSTR("\n"));
 	}
