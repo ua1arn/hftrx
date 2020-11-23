@@ -12,8 +12,6 @@
 
 #include "hardware.h"
 
-#if ! (LCDMODE_DUMMY || LCDMODE_HD44780)
-
 #include "board.h"
 #include "display.h"
 #include "formats.h"
@@ -238,8 +236,10 @@ void arm_hardware_mdma_initialize(void)
 
 #endif /* WITHMDMAHW */
 
+#if ! (LCDMODE_DUMMY || LCDMODE_HD44780)
+
 #if LCDMODE_PIXELSIZE == 1
-// Функция получает координаты и работает над буфером в горищонталтной ориентации.
+// Функция получает координаты и работает над буфером в горизонтальной ориентации.
 static void
 hwacc_fillrect_u8(
 	uint8_t * __restrict buffer,
@@ -326,7 +326,7 @@ hwacc_fillrect_u8(
 #endif /* LCDMODE_PIXELSIZE == 1 */
 
 #if LCDMODE_PIXELSIZE == 2
-// Функция получает координаты и работает над буфером в горищонталтной ориентации.
+// Функция получает координаты и работает над буфером в горизонтальной ориентации.
 static void
 hwacc_fillrect_u16(
 	uint16_t * __restrict buffer,
@@ -459,7 +459,7 @@ hwacc_fillrect_u16(
 #endif
 
 #if LCDMODE_PIXELSIZE == 3
-// Функция получает координаты и работает над буфером в горищонталтной ориентации.
+// Функция получает координаты и работает над буфером в горизонтальной ориентации.
 static void
 hwacc_fillrect_u24(
 	PACKEDCOLORMAIN_T * __restrict buffer,

@@ -9000,9 +9000,9 @@ board_set_view_style(uint_fast8_t v)
 	if (glob_view_style != n)
 	{
 		glob_view_style = n;
+#if WITHVIEW_3DSS
 		wfsetupnew();	// при переключении стилей отображения очищать общий буфер
 
-#if WITHVIEW_3DSS
 		if (glob_view_style == VIEW_3DSS)
 			init_depth_map_3dss();
 #endif /* WITHVIEW_3DSS */
