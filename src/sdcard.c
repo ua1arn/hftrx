@@ -794,12 +794,11 @@ WaitEvents(events_t e, int type)
 		{
 			sd_event_xx = 0;
 			system_enableIRQ();
-			SDMMC1->MASK = 0;
 			return EV_SD_READY;
 		}
 		system_enableIRQ();
 	}
-	SDMMC1->MASK = 0;
+	PRINTF("WaitEvents: timeout\n");
 	return EV_SD_ERROR;
 }
 
