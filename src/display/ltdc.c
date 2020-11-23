@@ -1647,9 +1647,18 @@ arm_hardware_ltdc_initialize(void)
 void
 arm_hardware_ltdc_deinitialize(void)
 {
+	LAYER_PIP->CR &= ~ LTDC_LxCR_LEN;
+	(void) LAYER_PIP->CR;
 	LAYER_MAIN->CR &= ~ LTDC_LxCR_LEN;
 	(void) LAYER_MAIN->CR;
 	LTDC->SRCR = LTDC_SRCR_IMR_Msk;	/* Vertical Blanking Reload. */
+
+#if CPUSTYLE_STM32H7XX
+	/* Enable the LTDC Clock */
+	RCC->APB3ENR &= ~ RCC_APB3ENR_LTDCEN;	/* LTDC clock enable */
+	(void) RCC->APB3ENR;
+
+#elif CPUSTYLE_STM32MP1
 
 	/* Enable the LTDC Clock */
 	RCC->MP_APB4ENCLRR = RCC_MP_APB4ENCLRR_LTDCEN;	/* LTDC clock enable */
@@ -1657,6 +1666,13 @@ arm_hardware_ltdc_deinitialize(void)
 	/* Enable the LTDC Clock in low-power mode */
 	RCC->MP_APB4LPENCLRR = RCC_MP_APB4LPENCLRR_LTDCLPEN;	/* LTDC clock enable */
 	(void) RCC->MP_APB4LPENCLRR;
+
+#else /* CPUSTYLE_STM32H7XX */
+	/* Enable the LTDC Clock */
+	RCC->APB2ENR &= ~ RCC_APB2ENR_LTDCEN;	/* LTDC clock enable */
+	(void) RCC->APB2ENR;
+
+#endif /* CPUSTYLE_STM32H7XX */
 }
 
 /* set bottom buffer start */
