@@ -820,9 +820,9 @@ void /*__attribute__((interrupt)) */ SDMMC1_IRQHandler(void)
       //We have finished the command execution
       e |= EV_SD_READY;
       SDMMC1->MASK &= ~ (SDMMC_STA_CMDREND | SDMMC_STA_CMDSENT);
-      SDMMC1->ICR |= (SDMMC_STA_CMDREND | SDMMC_STA_CMDSENT);
+      SDMMC1->ICR = (SDMMC_ICR_CMDRENDC | SDMMC_ICR_CMDSENTC);
    }
-   uint32_t fdata = (f & (SDMMC_STA_DATAEND | SDMMC_STA_DBCKEND | SDMMC_STA_DCRCFAIL | SDMMC_STA_DTIMEOUT));
+   const uint_fast32_t fdata = f & (SDMMC_STA_DATAEND | SDMMC_STA_DBCKEND | SDMMC_STA_DCRCFAIL | SDMMC_STA_DTIMEOUT);
    if (fdata)
    {
       //We have finished the data send/receive
