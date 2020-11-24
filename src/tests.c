@@ -3891,7 +3891,7 @@ static uint_fast64_t mmcCardSize(void)
 	return st != RES_OK ? 0 : (uint_fast64_t) v * MMC_SECTORSIZE;
 }
 
-static void fatfs_test(void)
+static void diskio_test(void)
 {
 	const unsigned long MMC_SUCCESS2 = 0x00;
 	unsigned long lba_sector = 0;
@@ -4067,7 +4067,7 @@ static void fatfs_test(void)
 	}
 }
 
-static void fatfs_filesystest(void)
+static void fatfs_filesystest(int speedtest)
 {
 	FATFSALIGN_BEGIN BYTE work [FF_MAX_SS] FATFSALIGN_END;
 	FRESULT rc;  
@@ -4163,6 +4163,7 @@ static void fatfs_filesystest(void)
 				break;
 
 			case 'W':
+				if (speedtest)
 				{
 					uint_fast16_t year;
 					uint_fast8_t month, day;
@@ -6432,7 +6433,13 @@ void hightests(void)
 #if 0 && WITHDEBUG && WITHUSEAUDIOREC
 	// SD CARD low level functions test
 	{
-		fatfs_test();
+		diskio_test();
+	}
+#endif
+#if 0 && WITHDEBUG && WITHUSEAUDIOREC
+	// SD CARD FatFs functions test
+	{
+		fatfs_filesystest(0);
 	}
 #endif
 #if 0 && WITHDEBUG && WITHUSEAUDIOREC
@@ -6499,13 +6506,13 @@ void hightests(void)
 		system_disableIRQ();
 		ticker_initialize(& test_recordticker, 1, test_recodspool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 		system_enableIRQ();
-		fatfs_filesystest();
+		fatfs_filesystest(1);
 	}
 #endif
 #if 0 && WITHDEBUG && WITHUSEAUDIOREC
 	// Автономный программатор SPI flash memory
 	{
-		//fatfs_test();
+		//diskio_test();
 		////mmcCardSize();
 		////mmcCardSize();
 		fatfs_progspi();
