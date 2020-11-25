@@ -3585,19 +3585,31 @@ static void stm32mp1_ddr_init(struct ddr_info *priv,
 
 #if DDR_FREQ <= 300000000uL
 	// less or equal 300 MHz
-	//#include "stm32mp15-mx_300MHz_1G.dtsi"	// 64k*16
-	#include "stm32mp15-mx_300MHz_2G.dtsi"	// 128k*16
-	//#include "stm32mp15-mx_300MHz_4G.dtsi"	// 256k*16
-	//#include "stm32mp15-mx_300MHz_8G.dtsi"	// 512k*16
-
+	#if WITHHWDDR3_1GBIT
+		#include "stm32mp15-mx_300MHz_1G.dtsi"	// 64k*16
+	#elif WITHHWDDR3_2GBIT
+		#include "stm32mp15-mx_300MHz_2G.dtsi"	// 128k*16
+	#elif WITHHWDDR3_4GBIT
+		#include "stm32mp15-mx_300MHz_4G.dtsi"	// 256k*16
+	#elif WITHHWDDR3_8GBIT
+		#include "stm32mp15-mx_300MHz_8G.dtsi"	// 512k*16
+	#else
+		#error Please select DDR3 chip size
+	#endif
 #else
-	//#include "stm32mp15-mx_1G.dtsi"	// 64k*16
-	#include "stm32mp15-mx_2G.dtsi"	// 128k*16
-	//#include "stm32mp15-mx_4G.dtsi"		// 256k*16
-	//#include "stm32mp15-mx_8G.dtsi"	// 512k*16
-
+	#if WITHHWDDR3_1GBIT
+		#include "stm32mp15-mx_1G.dtsi"	// 64k*16
+	#elif WITHHWDDR3_2GBIT
+		#include "stm32mp15-mx_2G.dtsi"	// 128k*16
+	#elif WITHHWDDR3_4GBIT
+		#include "stm32mp15-mx_4G.dtsi"		// 256k*16
+	#elif WITHHWDDR3_8GBIT
+		#include "stm32mp15-mx_8G.dtsi"	// 512k*16
+	#else
+		#error Please select DDR3 chip size
+	#endif
 #endif
-// NT5CC128M16IP-DI BGA DDR3 NT5CC128M16IP DI
+
 void stm32mp1_ddr_get_config(struct stm32mp1_ddr_config * cfg)
 {
 	cfg->info.speed = DDR_MEM_SPEED; // kHz
