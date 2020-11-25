@@ -866,8 +866,8 @@
 #if LCDMODE_LTDC
 	enum
 	{
-		GPIO_AF_LTDC14xx = 14,  /* LCD-TFT Alternate Function mapping */
-		GPIO_AF_LTDC9xx = 9,  /* LCD-TFT Alternate Function mapping */
+		GPIO_AF_LTDC14 = 14,  /* LCD-TFT Alternate Function mapping */
+		//GPIO_AF_LTDC9 = 9,  /* LCD-TFT Alternate Function mapping */
 		//GPIO_AF_LTDC3 = 3  /* LCD-TFT Alternate Function mapping */
 	};
 	/* demode values: 0: static signal, 1: DE controlled */
@@ -877,7 +877,7 @@
 		const uint32_t HSmask = (1U << 12); 	/* PI12 - HSYNC */ \
 		const uint32_t VSmask = (1U << 13); 	/* PI13 - VSYNC */ \
 		/* Bit clock */ \
-		arm_hardware_pioi_altfn50((1U << 7), GPIO_AF_LTDC14x);		/* CLK PI14 */ \
+		arm_hardware_pioi_altfn50((1U << 7), GPIO_AF_LTDC14);		/* CLK PI14 */ \
 		/* Control */ \
 		arm_hardware_piod_outputs(MODEmask, (demode != 0) * MODEmask);	/* PD3 MODEmask=state */ \
 		/* Synchronisation signals in SYNC mode */ \
@@ -911,10 +911,10 @@
 		arm_hardware_pioj_altfn50((1U << 13), GPIO_AF_LTDC14);		/* PJ13 B1 */ \
 		arm_hardware_pioj_altfn50((1U << 14), GPIO_AF_LTDC14);		/* PJ14 B2 */ \
 		arm_hardware_pioj_altfn50((1U << 15), GPIO_AF_LTDC14);		/* PJ15 B3 */ \
-		arm_hardware_piok_altfn50((1U << 4), GPIO_AF_LTDC14x);		/* PK3 B4 */ \
-		arm_hardware_piok_altfn50((1U << 5), GPIO_AF_LTDC14x);		/* PK4 B5 */ \
-		arm_hardware_piok_altfn50((1U << 6), GPIO_AF_LTDC14x);		/* PK5 B6 */ \
-		arm_hardware_piok_altfn50((1U << 7), GPIO_AF_LTDC14x);		/* PK6 B7 */ \
+		arm_hardware_piok_altfn50((1U << 4), GPIO_AF_LTDC14);		/* PK3 B4 */ \
+		arm_hardware_piok_altfn50((1U << 5), GPIO_AF_LTDC14);		/* PK4 B5 */ \
+		arm_hardware_piok_altfn50((1U << 6), GPIO_AF_LTDC14);		/* PK5 B6 */ \
+		arm_hardware_piok_altfn50((1U << 7), GPIO_AF_LTDC14);		/* PK6 B7 */ \
 	} while (0)
 
 	/* управление состоянием сигнала DISP панели */
