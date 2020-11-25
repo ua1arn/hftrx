@@ -5801,6 +5801,13 @@ void hightests(void)
 		PRINTF(PSTR("__GNUC__=%d, __GNUC_MINOR__=%d\n"), (int) __GNUC__, (int) __GNUC_MINOR__);
 	}
 #endif
+#if 0 && WITHDEBUG
+	{
+		const time_t t = time(NULL);
+
+		PRINTF("sizeof time_t == %u, t = %lu\n", sizeof (time_t), (unsigned long) t);
+	}
+#endif
 #if 0 && WITHOPENVG
 	{
 
