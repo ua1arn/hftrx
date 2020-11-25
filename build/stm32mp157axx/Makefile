@@ -33,7 +33,7 @@ LWIPDIR = ../../src/lwip-1.4.1/src
 
 # Define optimisation level here
 # ony -Og for app
-ifeq "bootloader" "1 bootloader"
+ifeq "bootloader" "no bootloader"
 
 OPT = -Ofast
 LTO = -flto
