@@ -641,32 +641,61 @@
 #endif /* WITHKEYBOARD */
 
 #if 1 // WITHTWISW
-	// I2C1_SDA	PB11
-	// I2C1_SCL	PD7
-	#define TARGET_TWI_TWCK		(1u << 7)		// PD7 I2C1_SCL
-	#define TARGET_TWI_TWCK_PIN		(GPIOD->IDR)
-	#define TARGET_TWI_TWCK_PORT_C(v) do { GPIOD->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define TARGET_TWI_TWCK_PORT_S(v) do { GPIOD->BSRR = BSRR_S(v); __DSB(); } while (0)
+	// PH4 I2C2_SCL
+	// PH5 I2C2_SDA
+	#define TARGET_TWI_TWCK		(1u << 4)		// PH4 I2C2_SCL
+	#define TARGET_TWI_TWCK_PIN		(GPIOH->IDR)
+	#define TARGET_TWI_TWCK_PORT_C(v) do { GPIOH->BSRR = BSRR_C(v); __DSB(); } while (0)
+	#define TARGET_TWI_TWCK_PORT_S(v) do { GPIOH->BSRR = BSRR_S(v); __DSB(); } while (0)
 
-	#define TARGET_TWI_TWD		(1u << 11)		// PB11 I2C1_SDA
-	#define TARGET_TWI_TWD_PIN		(GPIOB->IDR)
-	#define TARGET_TWI_TWD_PORT_C(v) do { GPIOB->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define TARGET_TWI_TWD_PORT_S(v) do { GPIOB->BSRR = BSRR_S(v); __DSB(); } while (0)
+	#define TARGET_TWI_TWD		(1u << 5)		// PH5 I2C2_SDA
+	#define TARGET_TWI_TWD_PIN		(GPIOH->IDR)
+	#define TARGET_TWI_TWD_PORT_C(v) do { GPIOH->BSRR = BSRR_C(v); __DSB(); } while (0)
+	#define TARGET_TWI_TWD_PORT_S(v) do { GPIOH->BSRR = BSRR_S(v); __DSB(); } while (0)
 
 	// Инициализация битов портов ввода-вывода для программной реализации I2C
 	#define	TWISOFT_INITIALIZE() do { \
-			arm_hardware_piod_opendrain(TARGET_TWI_TWCK, TARGET_TWI_TWCK); /* SCL */ \
-			arm_hardware_piob_opendrain(TARGET_TWI_TWD, TARGET_TWI_TWD);  	/* SDA */ \
-		} while (0) 
+			arm_hardware_pioh_opendrain(TARGET_TWI_TWCK, TARGET_TWI_TWCK); /* PH4 I2C2_SCL */ \
+			arm_hardware_pioh_opendrain(TARGET_TWI_TWD, TARGET_TWI_TWD);  	/* PH5 I2C2_SDA */ \
+		} while (0)
 	#define	TWISOFT_DEINITIALIZE() do { \
-			arm_hardware_piod_inputs(TARGET_TWI_TWCK); 	/* SCL */ \
-			arm_hardware_piob_inputs(TARGET_TWI_TWD);	/* SDA */ \
+			arm_hardware_pioh_inputs(TARGET_TWI_TWCK); 	/* PH4 I2C2_SCL */ \
+			arm_hardware_pioh_inputs(TARGET_TWI_TWD);	/* PH5 I2C2_SDA */ \
 		} while (0)
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
 	#define	TWIHARD_INITIALIZE() do { \
-			arm_hardware_piod_periphopendrain_altfn2(TARGET_TWI_TWCK, AF_I2C1);	/* I2C1_SCL AF=4 */ \
-			arm_hardware_piob_periphopendrain_altfn2(TARGET_TWI_TWD, AF_I2C1);	/* I2C1_SDA AF=4 */ \
+			arm_hardware_pioh_periphopendrain_altfn2(TARGET_TWI_TWCK, 4);	/* PH4 I2C2_SCL AF4 */ \
+			arm_hardware_pioh_periphopendrain_altfn2(TARGET_TWI_TWD, 4);	/* PH5 I2C2_SDA AF4 */ \
+		} while (0)
+
+	// DCMI (J26), HDMI (U13 SII9022ACNU), AUDIO CODEC (U16, CS42L51-CNZR)
+	// PA11 I2C5_SCL
+	// PA12 I2C5_SDA
+	#define TARGET_TWI2_TWCK	(1u << 12)		// PA11 I2C5_SCL
+	#define TARGET_TWI2_TWCK_PIN		(GPIOA->IDR)
+	#define TARGET_TWI2_TWCK_PORT_C(v) do { GPIOA->BSRR = BSRR_C(v); __DSB(); } while (0)
+	#define TARGET_TWI2_TWCK_PORT_S(v) do { GPIOA->BSRR = BSRR_S(v); __DSB(); } while (0)
+
+	#define TARGET_TWI2_TWD		(1u << 15)		// PA12 I2C5_SDA
+	#define TARGET_TWI2_TWD_PIN		(GPIOA->IDR)
+	#define TARGET_TWI2_TWD_PORT_C(v) do { GPIOA->BSRR = BSRR_C(v); __DSB(); } while (0)
+	#define TARGET_TWI2_TWD_PORT_S(v) do { GPIOA->BSRR = BSRR_S(v); __DSB(); } while (0)
+
+	// Инициализация битов портов ввода-вывода для программной реализации I2C
+	#define	TWISOFT2_INITIALIZE() do { \
+			arm_hardware_pioa_opendrain(TARGET_TWI2_TWCK, TARGET_TWI2_TWCK); /* PA11 I2C5_SCL */ \
+			arm_hardware_pioa_opendrain(TARGET_TWI2_TWD, TARGET_TWI2_TWD);  	/* PA12 I2C5_SDA */ \
+		} while (0) 
+	#define	TWISOFT2_DEINITIALIZE() do { \
+			arm_hardware_pioa_inputs(TARGET_TWI_TWCK); 	/* PA11 I2C5_SCL */ \
+			arm_hardware_pioa_inputs(TARGET_TWI_TWD);	/* PA12 I2C5_SDA */ \
+		} while (0)
+	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
+	// присоединение выводов к периферийному устройству
+	#define	TWIHARD2_INITIALIZE() do { \
+			arm_hardware_pioa_periphopendrain_altfn2(TARGET_TWI2_TWCK, 4);	/* PA11 I2C5_SCL AF4 */ \
+			arm_hardware_pioa_periphopendrain_altfn2(TARGET_TWI2_TWD, 4);	/* PA12 I2C5_SDA AF4 */ \
 		} while (0) 
 
 
