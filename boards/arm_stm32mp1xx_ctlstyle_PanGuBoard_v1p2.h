@@ -168,7 +168,8 @@
 
 	// --- вариации прошивки, специфические для разных частот
 
-	#define CTLREGMODE_STORCH_V9A	1	/* STM32MP157, дополнения для подключения трансвертора */
+	//#define CTLREGMODE_STORCH_V9A	1	/* STM32MP157, дополнения для подключения трансвертора */
+	#define CTLREGMODE_NOCTLREG	1	/* PanGu Board */
 
 	#define WITHPOWERTRIMMIN	5	// Нижний предел регулировки (показываемый на дисплее)
 	#define WITHPOWERTRIMMAX	100	// Верхний предел регулировки (показываемый на дисплее)
@@ -271,10 +272,10 @@
 	#define	BOARD_AGCCODE_ON	0x00
 	#define	BOARD_AGCCODE_OFF	0x01
 
-	#define BOARD_DETECTOR_AM 	0		// Заглушка
-	#define BOARD_DETECTOR_FM 	0		// Заглушка
-	#define BOARD_DETECTOR_MUTE 	0		// Заглушка
-	#define BOARD_DETECTOR_TUNE 	0		// Заглушка
+//	#define BOARD_DETECTOR_AM 	0		// Заглушка
+//	#define BOARD_DETECTOR_FM 	0		// Заглушка
+//	#define BOARD_DETECTOR_MUTE 	0		// Заглушка
+//	#define BOARD_DETECTOR_TUNE 	0		// Заглушка
 
 	// +++ заглушки для плат с DSP обработкой
 	#define BOARD_NOTCH_OFF		0
@@ -292,13 +293,27 @@
 
 #else /* WITHISBOOTLOADER */
 
+	// +++ заглушки для плат с DSP обработкой
+	#define	BOARD_AGCCODE_ON	0x00
+	#define	BOARD_AGCCODE_OFF	0x01
+
+//	#define BOARD_DETECTOR_AM 	0		// Заглушка
+//	#define BOARD_DETECTOR_FM 	0		// Заглушка
+//	#define BOARD_DETECTOR_MUTE 	0		// Заглушка
+//	#define BOARD_DETECTOR_TUNE 	0		// Заглушка
+
+	// +++ заглушки для плат с DSP обработкой
+	#define BOARD_NOTCH_OFF		0
+	//#define BOARD_NOTCH_MANUAL	0
+	//#define BOARD_NOTCH_AUTO	0
+
 	#define ENCRES_DEFAULT ENCRES_128
 	//#define ENCRES_DEFAULT ENCRES_24
 	#define WITHDIRECTFREQENER	1 //(! CTLSTYLE_SW2011ALL && ! CTLSTYLE_UA3DKC)
-	#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
+	//#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
 	//#define ENCODER_REVERSE	1	/* разводка на плате с перепутаными фазами от валкодера */
 	//#define ENCODER2_REVERSE	1	/* разводка на плате с перепутаными фазами от валкодера */
-	#define WITHENCODER2	1		/* есть второй валкодер */
+	//#define WITHENCODER2	1		/* есть второй валкодер */
 	#define BOARD_ENCODER2_DIVIDE 4		/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
 	/* Board hardware configuration */
 	//#define CODEC1_TYPE CODEC_TYPE_TLV320AIC23B
@@ -308,14 +323,14 @@
 	//#define CODEC_TYPE_WM8731_USE_SPI	1
 	//#define CODEC_TYPE_WM8731_USE_8KS	1	/* кодек работает с sample rate 8 kHz */
 
-	#define CODEC1_TYPE CODEC_TYPE_NAU8822L
+	//#define CODEC1_TYPE CODEC_TYPE_NAU8822L
 	#define CODEC_TYPE_NAU8822_USE_SPI	1
 	//#define CODEC_TYPE_NAU8822_USE_8KS	1	/* кодек работает с sample rate 8 kHz */
 
 	//#define WITHDTMFPROCESSING 1
 	//#define WITHBBOXMIKESRC BOARD_TXAUDIO_LINE
 
-	#define CODEC2_TYPE	CODEC_TYPE_FPGAV1	/* квадратуры получаем от FPGA */
+	//#define CODEC2_TYPE	CODEC_TYPE_FPGAV1	/* квадратуры получаем от FPGA */
 	//#define CODEC_TYPE_CS4272_USE_SPI	1		// codecboard v2.0
 	//#define CODEC_TYPE_CS4272_STANDALONE	1		// codecboard v3.0
 
@@ -343,7 +358,7 @@
 	//#define WITHDACOUTDSPAGC		1	/* АРУ реализовано как выход ЦАП на аналоговую часть. */
 	//#define WITHEXTERNALDDSP		1	/* имеется управление внешней DSP платой. */
 	#define WITHDSPEXTDDC 1			/* Квадратуры получаются внешней аппаратурой */
-	#define WITHDSPEXTFIR 1			/* Фильтрация квадратур осуществляется внешней аппаратурой */
+	//#define WITHDSPEXTFIR 1			/* Фильтрация квадратур осуществляется внешней аппаратурой */
 	//#define WITHDSPLOCALFIR 1		/* test: Фильтрация квадратур осуществляется процессором */
 	#define WITHDACSTRAIGHT 1		/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
 	#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
@@ -379,7 +394,7 @@
 	#define WITHVIEW_3DSS		1
 
 	////*#define WITHRTS192 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
-	#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
+	//#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
 
 	#if 0
 		#define WITHUSBHEADSET 1	/* трансивер работает USB гарнитурой для компьютера - режим тестирования */
@@ -422,8 +437,8 @@
 
 	// +++ Эти строки можно отключать, уменьшая функциональность готового изделия
 	//#define WITHRFSG	1	/* включено управление ВЧ сигнал-генератором. */
-	#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
-	#if 1
+	//#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
+	#if 0
 		/* TUNER & PA board 2*RD16 by avbelnn@yandex.ru */
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
 		#define SHORTSET8	1
@@ -452,19 +467,19 @@
 	#endif /* WITHTX */
 	//#define WITHPWRMTR	1	/* Индикатор выходной мощности или */
 	//#define WITHPWRLIN	1	/* Индикатор выходной мощности показывает напряжение а не мощность */
-	#define WITHBARS		1	/* отображение S-метра и SWR-метра */
+	//#define WITHBARS		1	/* отображение S-метра и SWR-метра */
 	//#define WITHSWLMODE	1	/* поддержка запоминания множества частот в swl-mode */
 	#define WITHVIBROPLEX	1	/* возможность эмуляции передачи виброплексом */
 	#define WITHSPKMUTE		1	/* управление выключением динамика */
 	#define WITHDATAMODE	1	/* управление с клавиатуры передачей с USB AUDIO канала */
 	// Есть ли регулировка параметров потенциометрами
 	////#define WITHPOTWPM		1	/* используется регулировка скорости передачи в телеграфе потенциометром */
-	#define WITHPOTIFGAIN		1	/* регуляторы усиления ПЧ на потенциометрах */
-	#define WITHPOTAFGAIN		1	/* регуляторы усиления НЧ на потенциометрах */
+	//#define WITHPOTIFGAIN		1	/* регуляторы усиления ПЧ на потенциометрах */
+	//#define WITHPOTAFGAIN		1	/* регуляторы усиления НЧ на потенциометрах */
 	//#define WITHPOTPOWER	1	/* регулятор мощности на потенциометре */
 	//#define WITHANTSELECT	1	// Управление переключением антенн
 
-	#define WITHMENU 	1	/* функциональность меню может быть отключена - если настраивать нечего */
+	//#define WITHMENU 	1	/* функциональность меню может быть отключена - если настраивать нечего */
 
 	//#define WITHONLYBANDS 1		/* Перестройка может быть ограничена любительскими диапазонами */
 	//#define WITHBCBANDS		1		/* в таблице диапазонов присутствуют вещательные диапазоны */
@@ -484,7 +499,7 @@
 			#define FORMATFROMLIBRARY 	1
 			#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 		#endif
-		#define WITHAFSPECTRE		1	/* показ спктра прослушиваемого НЧ сигнала. */
+		//#define WITHAFSPECTRE		1	/* показ спктра прослушиваемого НЧ сигнала. */
 	#endif /* LCDMODE_AT070TNA2 || LCDMODE_AT070TN90 */
 	//#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 	//#define WITHOPENVG	1		/* Использоывние OpenVG (khronos.org) */
@@ -492,7 +507,7 @@
 	#define WITHFANTIMER	1	/* выключающийся по таймеру вентилятор в усилителе мощности */
 	#define WITHSLEEPTIMER	1	/* выключить индикатор и вывод звука по истечениии указанного времени */
 
-	#define WITHPOWERTRIM		1	// Имеется управление мощностью
+	//#define WITHPOWERTRIM		1	// Имеется управление мощностью
 	//#define WITHPABIASTRIM		1	// имеется управление током оконечного каскада усидителя мощности передатчика
 
 	/* что за память настроек и частот используется в контроллере */
@@ -515,7 +530,7 @@
 
 	#define MODEL_DIRECT	1	/* использовать прямой синтез, а не гибридный */
 	/* Board hardware configuration */
-	#define DDS1_TYPE DDS_TYPE_FPGAV1
+	//#define DDS1_TYPE DDS_TYPE_FPGAV1
 	//#define PLL1_TYPE PLL_TYPE_SI570
 	//#define PLL1_FRACTIONAL_LENGTH	28	/* Si570: lower 28 bits is a fractional part */
 	//#define DDS1_TYPE DDS_TYPE_AD9951
@@ -533,8 +548,8 @@
 	#define WITHCATEXT	1	/* Расширенный набор команд CAT */
 	//#define WITHELKEY	1
 	//#define WITHKBDENCODER 1	// перестройка частоты кнопками
-	#define WITHKEYBOARD 1	/* в данном устройстве есть клавиатура */
-	#define KEYBOARD_USE_ADC	1	/* на одной линии установлено  четыре  клавиши. на vref - 6.8K, далее 2.2К, 4.7К и 13K. */
+	//#define WITHKEYBOARD 1	/* в данном устройстве есть клавиатура */
+	//#define KEYBOARD_USE_ADC	1	/* на одной линии установлено  четыре  клавиши. на vref - 6.8K, далее 2.2К, 4.7К и 13K. */
 
 	// ST LM235Z
 	#define THERMOSENSOR_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика температуры

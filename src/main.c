@@ -7766,7 +7766,7 @@ static uint_fast8_t getlo4div(
 
 // speex
 
-#if WITHIF4DSP
+#if WITHINTEGRATEDDSP
 
 
 #ifdef WITHLEAKYLMSANR
@@ -8249,7 +8249,7 @@ audioproc_spool_user(void)
 	}
 }
 
-#else /* WITHIF4DSP */
+#else /* WITHINTEGRATEDDSP */
 
 /* поддержка компиляции без Link Time Optimization */
 void *speex_alloc (int size)
@@ -8277,7 +8277,7 @@ FLOAT_t local_log(FLOAT_t x)
 	return 0;
 }
 
-#endif /* WITHIF4DSP */
+#endif /* WITHINTEGRATEDDSP */
 
 /* функция вызывается при ожидании опросом разного рода событий связанных с аппаартурой,
  * в том числе наступление следующего кадра.
@@ -9912,14 +9912,14 @@ const FLASHMEM char * hamradio_get_notchtype5_P(void)
 
 #endif /* WITHNOTCHONOFF || WITHNOTCHFREQ  */
 
-#if WITHIF4DSP
+#if WITHINTEGRATEDDSP
 // NR ON/OFF
 uint_fast8_t hamradio_get_nrvalue(int_fast32_t * p)
 {
 	* p = gnoisereductvl;
 	return gnoisereducts [gmode] != 0;
 }
-#endif /* WITHIF4DSP */
+#endif /* WITHINTEGRATEDDSP */
 
 // текущее состояние TUNE
 uint_fast8_t hamradio_get_tunemodevalue(void)
@@ -20676,7 +20676,7 @@ uint_fast8_t hamradio_get_gsmetertype(void)
 }
 #endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
 
-#if WITHSPECTRUMWF
+#if WITHSPECTRUMWF && WITHMENU
 const char * hamradio_change_view_style(uint_fast8_t v)
 {
 	uint_fast16_t menupos;
@@ -20804,7 +20804,7 @@ uint_fast8_t hamradio_gbottomdbwf(int_fast8_t v)
 	return gbottomdbwf;
 }
 
-#endif /* WITHSPECTRUMWF */
+#endif /* WITHSPECTRUMWF && WITHMENU */
 
 const char * hamradio_get_att_value(void)
 {

@@ -16,7 +16,7 @@
 //#define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
 //#define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
 //#define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
-#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
+//#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
 
 //#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
@@ -236,27 +236,27 @@
 	// Инициализируются I2S2 в дуплексном режиме.
 	#define I2S2HW_INITIALIZE() do { \
 		SPI2->CFG2 |= SPI_CFG2_IOSWP; \
-		arm_hardware_piob_altfn2(1uL << 12,	AF_SPI2); /* PB12 I2S2_WS	*/ \
-		arm_hardware_piob_updown(0, 1uL << 12); \
-		arm_hardware_piob_altfn2(1uL << 13,	AF_SPI2); /* PB13 I2S2_CK	*/ \
-		arm_hardware_piob_updown(0, 1uL << 13); \
-		arm_hardware_piob_altfn2(1uL << 15,	AF_SPI2); /* PB15 I2S2_SDO - передача */ \
-		arm_hardware_piob_updown(0, 1uL << 15); \
-		arm_hardware_piob_altfn2(1uL << 14,	AF_SPI2); /* PB14 I2S2_SDI, - приём от кодека */ \
-		arm_hardware_piob_updown(0, 1uL << 14); \
+		arm_hardware_piob_altfn2(0 * 1uL << 12,	AF_SPI2); /* PB12 I2S2_WS	*/ \
+		arm_hardware_piob_updown(0, 0 * 1uL << 12); \
+		arm_hardware_piob_altfn2(0 * 1uL << 13,	AF_SPI2); /* PB13 I2S2_CK	*/ \
+		arm_hardware_piob_updown(0, 0 * 1uL << 13); \
+		arm_hardware_piob_altfn2(0 * 1uL << 15,	AF_SPI2); /* PB15 I2S2_SDO - передача */ \
+		arm_hardware_piob_updown(0, 0 * 1uL << 15); \
+		arm_hardware_piob_altfn2(0 * 1uL << 14,	AF_SPI2); /* PB14 I2S2_SDI, - приём от кодека */ \
+		arm_hardware_piob_updown(0, 0 * 1uL << 14); \
 	} while (0)
 #endif /* WITHI2SHW */
 
 	// для предотвращения треска от оставшегося инициализщированным кодека
 	#define I2S2HW_POOLDOWN() do { \
-		arm_hardware_piob_inputs(1uL << 12); /* PB12 I2S2_WS	*/ \
-		arm_hardware_piob_updown(0, 1uL << 12); \
-		arm_hardware_piob_inputs(1uL << 13); /* PB13 I2S2_CK	*/ \
-		arm_hardware_piob_updown(0, 1uL << 13); \
-		arm_hardware_piob_inputs(1uL << 15); /* PB15 I2S2_SDO - передача */ \
-		arm_hardware_piob_updown(0, 1uL << 15); \
-		arm_hardware_piob_inputs(1uL << 14); /* PB14 I2S2_SDI, - приём от кодека */ \
-		arm_hardware_piob_updown(0, 1uL << 14); \
+		arm_hardware_piob_inputs(0 * 1uL << 12); /* PB12 I2S2_WS	*/ \
+		arm_hardware_piob_updown(0, 0 * 1uL << 12); \
+		arm_hardware_piob_inputs(0 * 1uL << 13); /* PB13 I2S2_CK	*/ \
+		arm_hardware_piob_updown(0, 0 * 1uL << 13); \
+		arm_hardware_piob_inputs(0 * 1uL << 15); /* PB15 I2S2_SDO - передача */ \
+		arm_hardware_piob_updown(0, 0 * 1uL << 15); \
+		arm_hardware_piob_inputs(0 * 1uL << 14); /* PB14 I2S2_SDI, - приём от кодека */ \
+		arm_hardware_piob_updown(0, 0 * 1uL << 14); \
 	} while (0)
 
 #if WITHSAI1HW
@@ -265,11 +265,11 @@
 	 */
 	#define SAI1HW_INITIALIZE()	do { \
 		/*arm_hardware_pioe_altfn20(1uL << 2, AF_SAI); */	/* PE2 - SAI1_MCK_A - 12.288 MHz	*/ \
-		arm_hardware_pioe_altfn2(1uL << 4,	AF_SAI);			/* PE4 - SAI1_FS_A	- 48 kHz	*/ \
-		arm_hardware_pioe_altfn20(1uL << 5,	AF_SAI);			/* PE5 - SAI1_SCK_A	*/ \
-		arm_hardware_pioe_altfn2(1uL << 6,	AF_SAI);			/* PE6 - SAI1_SD_A	(i2s data to codec)	*/ \
-		arm_hardware_pioe_altfn2(1uL << 3,	AF_SAI);			/* PE3 - SAI1_SD_B	(i2s data from codec)	*/ \
-		arm_hardware_pioe_updown(1uL << 3, 0); \
+		arm_hardware_pioe_altfn2(0 * 1uL << 4,	AF_SAI);			/* PE4 - SAI1_FS_A	- 48 kHz	*/ \
+		arm_hardware_pioe_altfn20(0 * 1uL << 5,	AF_SAI);			/* PE5 - SAI1_SCK_A	*/ \
+		arm_hardware_pioe_altfn2(0 * 1uL << 6,	AF_SAI);			/* PE6 - SAI1_SD_A	(i2s data to codec)	*/ \
+		arm_hardware_pioe_altfn2(0 * 1uL << 3,	AF_SAI);			/* PE3 - SAI1_SD_B	(i2s data from codec)	*/ \
+		arm_hardware_pioe_updown(0 * 1uL << 3, 0); \
 	} while (0)
 #endif /* WITHSAI1HW */
 
@@ -279,7 +279,7 @@
 	из внешних сигналов требуется только SAI2_SD_A
 	*/
 	#define SAI2HW_INITIALIZE()	do { \
-		arm_hardware_pioe_altfn2(1uL << 11, AF_SAI2);	/* PE11 - SAI2_SD_B	(i2s data from FPGA)	*/ \
+		arm_hardware_pioe_altfn2(0 * 1uL << 11, AF_SAI2);	/* PE11 - SAI2_SD_B	(i2s data from FPGA)	*/ \
 	} while (0)
 #endif /* WITHSAI1HW */
 
@@ -287,9 +287,9 @@
 	/*
 	*/
 	#define SAI3HW_INITIALIZE()	do { \
-		arm_hardware_piod_altfn50(1uL << 12, AF_SAI2); 		/* PD12 - SAI2_FS_A	- WS from FPGA	*/ \
-		arm_hardware_piod_altfn50(1uL << 13, AF_SAI2); 		/* PD13 - SAI2_SCK_A	*/ \
-		arm_hardware_pioe_altfn50(1uL << 11, AF_SAI2);		/* PE11 - SAI2_SD_B	(i2s data from FPGA)	*/ \
+		arm_hardware_piod_altfn50(0 * 1uL << 12, AF_SAI2); 		/* PD12 - SAI2_FS_A	- WS from FPGA	*/ \
+		arm_hardware_piod_altfn50(0 * 1uL << 13, AF_SAI2); 		/* PD13 - SAI2_SCK_A	*/ \
+		arm_hardware_pioe_altfn50(0 * 1uL << 11, AF_SAI2);		/* PE11 - SAI2_SD_B	(i2s data from FPGA)	*/ \
 	} while (0)
 #endif /* WITHSAI1HW */
 
@@ -386,8 +386,8 @@
 		} while (0)
 	#endif /* WITHSDHCHW4BIT */
 
-	#define HARDWARE_SDIO_WP_BIT	(1U << 8)	/* PG8 - SDIO_WP */
-	#define HARDWARE_SDIO_CD_BIT	(1U << 7)	/* PG7 - SDIO_SENSE */
+	#define HARDWARE_SDIO_WP_BIT	0//(1U << 8)	/* PG8 - SDIO_WP */
+	#define HARDWARE_SDIO_CD_BIT	0//(1U << 7)	/* PG7 - SDIO_SENSE */
 
 	#define HARDWARE_SDIOSENSE_INITIALIZE()	do { \
 			arm_hardware_piog_inputs(HARDWARE_SDIO_WP_BIT); /* PD1 - SDIO_WP */ \
@@ -396,8 +396,8 @@
 			arm_hardware_piog_updown(HARDWARE_SDIO_CD_BIT, 0); \
 	} while (0)
 
-	#define HARDWARE_SDIOSENSE_CD() ((GPIOG->IDR & HARDWARE_SDIO_CD_BIT) == 0)	/* получить состояние датчика CARD PRESENT */
-	#define HARDWARE_SDIOSENSE_WP() ((GPIOG->IDR & HARDWARE_SDIO_WP_BIT) != 0)	/* получить состояние датчика CARD WRITE PROTECT */
+	#define HARDWARE_SDIOSENSE_CD() 1//((GPIOG->IDR & HARDWARE_SDIO_CD_BIT) == 0)	/* получить состояние датчика CARD PRESENT */
+	#define HARDWARE_SDIOSENSE_WP() 0//((GPIOG->IDR & HARDWARE_SDIO_WP_BIT) != 0)	/* получить состояние датчика CARD WRITE PROTECT */
 
 	#define HARDWARE_SDIOPOWER_C(v)	do { GPIOC->BSRR = BSRR_C(v); __DSB(); } while (0)
 	#define HARDWARE_SDIOPOWER_S(v)	do { GPIOC->BSRR = BSRR_S(v); __DSB(); } while (0)

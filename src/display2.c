@@ -456,6 +456,43 @@ uint_fast16_t get_swr(uint_fast16_t swr_fullscale)
 
 #endif /* WITHTX */
 
+#if WITHINTEGRATEDDSP
+enum
+{
+	NOVERLAP = 1 << WITHFFTOVERLAPPOW2,		// Количество перекрывающися буферов FFT спектра
+	BOARD_FFTZOOM_MAX = (1 << BOARD_FFTZOOM_POW2MAX),
+
+	LARGEFFT = WITHFFTSIZEWIDE * BOARD_FFTZOOM_MAX,	// размер буфера для децимации
+	NORMALFFT = WITHFFTSIZEWIDE				// размер буфера для отображения
+};
+
+static RAMBIG FLOAT_t ifspec_wndfn [WITHFFTSIZEWIDE];
+
+static void buildsigwndifspec(void)
+{
+	int i;
+	for (i = 0; i < WITHFFTSIZEWIDE; ++ i)
+	{
+		ifspec_wndfn [i] = fir_design_window(i, WITHFFTSIZEWIDE, BOARD_WTYPE_SPECTRUM);
+	}
+}
+
+static void printsigwnd(void)
+{
+	PRINTF(PSTR("static const FLASHMEM FLOAT_t ifspec_wndfn [%u] =\n"), (unsigned) WITHFFTSIZEWIDE);
+	PRINTF(PSTR("{\n"));
+
+	int i;
+	for (i = 0; i < WITHFFTSIZEWIDE; ++ i)
+	{
+		ifspec_wndfn [i] = fir_design_window(i, WITHFFTSIZEWIDE, BOARD_WTYPE_SPECTRUM);
+		int el = ((i + 1) % 4) == 0;
+		PRINTF(PSTR("\t" "%+1.20f%s"), ifspec_wndfn [i], el ? ",\n" : ", ");
+	}
+	PRINTF(PSTR("};\n"));
+}
+#endif /* WITHINTEGRATEDDSP */
+
 #if LCDMODE_LTDC && WITHBARS
 
 enum {
@@ -928,41 +965,6 @@ display2_smeter15(
 
 		break;
 	}
-}
-
-enum
-{
-	NOVERLAP = 1 << WITHFFTOVERLAPPOW2,		// Количество перекрывающися буферов FFT спектра
-	BOARD_FFTZOOM_MAX = (1 << BOARD_FFTZOOM_POW2MAX),
-
-	LARGEFFT = WITHFFTSIZEWIDE * BOARD_FFTZOOM_MAX,	// размер буфера для децимации
-	NORMALFFT = WITHFFTSIZEWIDE				// размер буфера для отображения
-};
-
-static RAMBIG FLOAT_t ifspec_wndfn [WITHFFTSIZEWIDE];
-
-static void buildsigwndifspec(void)
-{
-	int i;
-	for (i = 0; i < WITHFFTSIZEWIDE; ++ i)
-	{
-		ifspec_wndfn [i] = fir_design_window(i, WITHFFTSIZEWIDE, BOARD_WTYPE_SPECTRUM);
-	}
-}
-
-static void printsigwnd(void)
-{
-	PRINTF(PSTR("static const FLASHMEM FLOAT_t ifspec_wndfn [%u] =\n"), (unsigned) WITHFFTSIZEWIDE);
-	PRINTF(PSTR("{\n"));
-
-	int i;
-	for (i = 0; i < WITHFFTSIZEWIDE; ++ i)
-	{
-		ifspec_wndfn [i] = fir_design_window(i, WITHFFTSIZEWIDE, BOARD_WTYPE_SPECTRUM);
-		int el = ((i + 1) % 4) == 0;
-		PRINTF(PSTR("\t" "%+1.20f%s"), ifspec_wndfn [i], el ? ",\n" : ", ");
-	}
-	PRINTF(PSTR("};\n"));
 }
 
 #if WITHAFSPECTRE
