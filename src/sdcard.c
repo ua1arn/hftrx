@@ -144,8 +144,8 @@ static uint_fast64_t sdhost_sdcard_parse_CSD(const uint8_t * bv)
 	// Обработка информациолнного блока (Code length is 128 bits = 16 bytes)
 	//
 	const uint_fast8_t csdv = array_get_bits(bv, 128, 127, 2);	//  [127:126] - csd structure version
-	PRINTF(PSTR("CSD version=0x%02x\n"), csdv);
-	PRINTF(PSTR("CSD TRAN_SPEED = %d (0x%02x)\n"), array_get_bits(bv, 128, 103, 8), array_get_bits(bv, 128, 103, 8));	// [103:96]
+//	PRINTF(PSTR("CSD version=0x%02x\n"), csdv);
+//	PRINTF(PSTR("CSD TRAN_SPEED=%d (0x%02x)\n"), array_get_bits(bv, 128, 103, 8), array_get_bits(bv, 128, 103, 8));	// [103:96]
 
 	switch (csdv)
 	{	
@@ -2200,6 +2200,8 @@ DRESULT SD_disk_write(
 	}
 #endif /* CPUSTYLE_STM32H7XX */
 
+	sector += USERFIRSTSBLOCK;
+
 	enum { txmode = 1 };
 	//return SDWriteBlock(sector, buff, count);
 	//if ((uintptr_t) buff & 0x1F)
@@ -2364,6 +2366,7 @@ DRESULT SD_disk_read(
 	UINT count		/* Number of sectors to read */
 	)
 {
+	sector += USERFIRSTSBLOCK;
 	enum { txmode = 0 };
 	//if ((uintptr_t) buff & 0x1F)
 	//{
@@ -2855,9 +2858,14 @@ DRESULT SD_Get_Sector_Count (
 	DWORD  *buff	/* Data buffer to store read data */
 	)
 {
-	//PRINTF(PSTR("SD_Get_Sector_Count: drv=%d\n"), (int) drv);
-	* buff = SD_ReadCardSize() / FF_MAX_SS;
-	return RES_OK;
+	uint_fast32_t val = SD_ReadCardSize() / FF_MAX_SS;
+	if (val > USERFIRSTSBLOCK)
+	{
+		//PRINTF(PSTR("SD_Get_Sector_Count: drv=%d\n"), (int) drv);
+		* buff = val - USERFIRSTSBLOCK;
+		return RES_OK;
+	}
+	return RES_ERROR;
 }
 
 /* запись буферизированных данных на носитель */

@@ -298,5 +298,5 @@
 /*--- End of configuration options ---*/
 //#include "hardware.h"	// �� ������ �������� FATFSALIGN_BEGIN/FATFSALIGN_END � �������� �������� _MAX_SS ����.
 
-#define FATFSALIGN_BEGIN __attribute__ ((aligned (32)))
+#define FATFSALIGN_BEGIN __attribute__ ((aligned (64)))
 #define FATFSALIGN_END /* nothing */
