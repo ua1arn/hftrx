@@ -98,6 +98,73 @@
 #define CDC_SERIAL_STATE_TX_CARRIER             (1 << 1)  // state of transmission carrier
 #define CDC_SERIAL_STATE_RX_CARRIER             (1 << 0)  // state of receiver carrier
 
+/*
+ *
+ *
+ */
+
+typedef union _UsbSetupPacket_t
+{
+  uint8_t Data[8];
+  struct {
+	  uint8_t  mRequestType;
+    uint8_t             bRequest;
+    uint16_t        wValue;
+    uint16_t        wIndex;
+    uint16_t        wLength;
+  };
+} UsbSetupPacket_t, * pUsbSetupPacket_t;
+#pragma pack()
+typedef union _SerialState_t
+{
+  uint16_t Data;
+  struct
+  {
+    uint16_t  bRxCarrier  : 1;	// D0
+    uint16_t  bTxCarrier  : 1;	// D1
+    uint16_t  bBreak      : 1;	// D2
+    uint16_t  bRingSignal : 1;	// D3
+    uint16_t  bFraming    : 1;	// D4
+    uint16_t  bParity     : 1;	// D5
+    uint16_t  bOverRun    : 1;	// D5
+    uint16_t              : 9;
+  };
+} SerialState_t, *pSerialState_t;
+
+typedef struct _SerialStatePacket_t
+{
+  UsbSetupPacket_t UsbSetupPacket;
+  SerialState_t    SerialState;
+} SerialStatePacket_t, *pSerialStatePacket_t;
+
+static uint8_t sendState [WITHUSBCDCACM_N] [10];
+
+static void notify(uint_fast8_t offset, uint_fast16_t state)
+{
+	const uint_fast8_t ifc = USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL_3a, offset);
+	const uint_fast16_t wLength = 2;
+	uint8_t * p = sendState [offset];
+
+//	USB_Setup_TypeDef * const pSetup = (USB_Setup_TypeDef *) p;
+
+//	pSetup->b.bmRequestType = 0xA1;
+//	pSetup->b.bRequest = 0x20;	// SERIAL_STATE
+//	pSetup->b.wValue.w = 0;
+//	pSetup->b.wIndex.w = ifc;
+//	pSetup->b.wLength.w = 2;
+
+	p [0] = 0xA1; // bmRequestType
+	p [1] = 0x20; // bRequest SERIAL_STATE
+	p [2] = LO_BYTE(0);	// wValue
+	p [3] = HI_BYTE(0);
+	p [4] = LO_BYTE(ifc);		// wIndex
+	p [5] = HI_BYTE(ifc);
+	p [6] = LO_BYTE(wLength);	// wLength
+	p [7] = HI_BYTE(wLength);
+	p [8] = LO_BYTE(state);		// data
+	p [9] = HI_BYTE(state);
+}
+
 // Состояние - выбранные альтернативные конфигурации по каждому интерфейсу USB configuration descriptor
 //static RAMBIGDTCM uint8_t altinterfaces [INTERFACE_count];
 
