@@ -475,9 +475,9 @@ static USBD_StatusTypeDef USBD_CDC_Init(USBD_HandleTypeDef *pdev, uint_fast8_t c
  		USBD_LL_Transmit(pdev, USBD_CDCACM_EP(USBD_EP_CDC_IN, offset), NULL, 0);
 	     /* cdc Open EP OUT */
 		USBD_LL_OpenEP(pdev, USBD_CDCACM_EP(USBD_EP_CDC_OUT, offset), USBD_EP_TYPE_BULK, VIRTUAL_COM_PORT_OUT_DATA_SIZE);
-		/* CDC Open EP interrupt */
-		USBD_LL_OpenEP(pdev, USBD_CDCACM_EP(USBD_EP_CDC_INT, offset), USBD_EP_TYPE_INTR, VIRTUAL_COM_PORT_INT_SIZE);
 	}
+	/* CDC Open EP interrupt */
+	USBD_LL_OpenEP(pdev, USBD_EP_CDC_INTSHARED, USBD_EP_TYPE_INTR, VIRTUAL_COM_PORT_INT_SIZE);
 
  	for (offset = 0; offset < WITHUSBCDCACM_N; ++ offset)
 	{
@@ -495,11 +495,11 @@ static USBD_StatusTypeDef USBD_CDC_DeInit(USBD_HandleTypeDef *pdev, uint_fast8_t
 {
 	uint_fast8_t offset;
 
+	USBD_LL_CloseEP(pdev, USBD_EP_CDC_INTSHARED);
  	for (offset = 0; offset < WITHUSBCDCACM_N; ++ offset)
 	{
 		USBD_LL_CloseEP(pdev, USBD_CDCACM_EP(USBD_EP_CDC_IN, offset));
 		USBD_LL_CloseEP(pdev, USBD_CDCACM_EP(USBD_EP_CDC_OUT, offset));
-		USBD_LL_CloseEP(pdev, USBD_CDCACM_EP(USBD_EP_CDC_INT, offset));
 	}
 
 	HARDWARE_CDC_ONDISCONNECT();
