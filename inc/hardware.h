@@ -835,12 +835,11 @@ calcdivround2(
 	//  Renesas parameters
 	#define HARDWARE_USBD_PIPE_ISOC_OUT	1	// ISOC OUT Аудиоданные от компьютера в TRX - D0FIFOB0
 	#define HARDWARE_USBD_PIPE_ISOC_IN	2	// ISOC IN Аудиоданные в компьютер из TRX - D0FIFOB1
+	#define HARDWARE_USBD_PIPE_CDC_INT	6	// CDC ACM shared interrupt endpoint
 	#define HARDWARE_USBD_PIPE_CDC_OUT	3	// CDC OUT Данные ком-порта от компьютера в TRX
 	#define HARDWARE_USBD_PIPE_CDC_IN	4	// CDC IN Данные ком-порта в компьютер из TRX
 	#define HARDWARE_USBD_PIPE_CDC_OUTb	14	// CDC OUT - без передачи данных
 	#define HARDWARE_USBD_PIPE_CDC_INb	15	// CDC IN - без передачи данных
-	#define HARDWARE_USBD_PIPE_CDC_INT	6	//
-	#define HARDWARE_USBD_PIPE_CDC_INTb	7	//
 	#define HARDWARE_USBD_PIPE_RNDIS_OUT	12	// RNDIS OUT Данные RNDIS от компьютера в TRX
 	#define HARDWARE_USBD_PIPE_RNDIS_IN		13	// RNDIS IN Данные RNDIS в компьютер из TRX
 	#define HARDWARE_USBD_PIPE_RNDIS_INT	8	//
