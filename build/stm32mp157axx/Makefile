@@ -31,10 +31,19 @@ CMSISDIR = ../../../CMSIS_5/CMSIS
 LWIPDIR = ../../src/lwip-1.4.1/src
 
 
+# This product incorporates the ARM dual-core Cortex-A7 MPCore, where the IP version is r0p5
+# debug architecture ARMv7.1.
+CORE = -mcpu=cortex-a7
+CORE += -mfloat-abi=hard
+#CORE += -mcpu=cortex-a7
+#CORE += -mfpu=vfpv4-d16
+CORE += -mfpu=neon
+
 # Define optimisation level here
 # ony -Og for app
-ifeq "bootloader" "no bootloader"
+ifeq "bootloader" "bootloader"
 
+CORE += -mlong-calls
 OPT = -Ofast
 LTO = -flto
 OBJDIR2 = objboot
@@ -49,15 +58,6 @@ OBJDIR2 = objapp
 endif
 
 OBJDIR = ./$(OBJDIR2)
-
-# This product incorporates the ARM dual-core Cortex-A7 MPCore, where the IP version is r0p5
-# debug architecture ARMv7.1.
-CORE = -mcpu=cortex-a7
-CORE += -mfloat-abi=hard
-#CORE += -mcpu=cortex-a7
-#CORE += -mfpu=vfpv4-d16
-CORE += -mfpu=neon
-CORE += -mlong-calls
 
 # List all default C defines here, like -D_DEBUG=1
 DDEFS = 
