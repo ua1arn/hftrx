@@ -41,7 +41,7 @@ CORE += -mfpu=neon
 
 # Define optimisation level here
 # ony -Og for app
-ifeq "bootloader" "bootloader"
+ifeq "bootloader" "1 bootloader"
 
 CORE += -mlong-calls
 OPT = -Ofast
