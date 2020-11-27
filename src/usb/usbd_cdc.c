@@ -390,16 +390,31 @@ static USBD_StatusTypeDef USBD_CDC_DataIn(USBD_HandleTypeDef *pdev, uint_fast8_t
 		ASSERT(offset < WITHUSBCDCACM_N);
 #if 0
 		// test usb tx fifo initialization
-		#define TLENNNN (VIRTUAL_COM_PORT_IN_DATA_SIZE - 0)
+		enum { TLENNNN = (VIRTUAL_COM_PORT_IN_DATA_SIZE - 0) };
 		memset(cdcXbuffin [offset], '$', TLENNNN);
 		USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), cdcXbuffin [offset], TLENNNN);
 #else
-		while (usbd_cdc_txenabled [offset] && (cdcXbuffinlevel [offset] < ARRAY_SIZE(cdcXbuffin [offset])))
+		switch (offset)
 		{
-			HARDWARE_CDC_ONTXCHAR(offset, pdev);	// при отсутствии данных usbd_cdc_txenabled устанавливается в 0
+		case MAIN_CDC_OFFSET:
+			while (usbd_cdc_txenabled [offset] && (cdcXbuffinlevel [offset] < ARRAY_SIZE(cdcXbuffin [offset])))
+			{
+				HARDWARE_CDC_ONTXCHAR(offset, pdev);	// при отсутствии данных usbd_cdc_txenabled устанавливается в 0
+			}
+			USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), cdcXbuffin [offset], cdcXbuffinlevel [offset]);
+			cdcXbuffinlevel [offset] = 0;
+			break;
+		default:
+			{
+				// test usb tx fifo initialization
+				//enum { TLENNNN = (VIRTUAL_COM_PORT_IN_DATA_SIZE - 0) };
+				static const char pattern [] = "Ok! ";
+				enum { TLENNNN = ARRAY_SIZE(pattern) - 1};
+				memcpy(cdcXbuffin [offset], pattern, TLENNNN);
+				USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), cdcXbuffin [offset], TLENNNN);
+			}
+			break;
 		}
-		USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), cdcXbuffin [offset], cdcXbuffinlevel [offset]);
-		cdcXbuffinlevel [offset] = 0;
 #endif
 	}
 	return USBD_OK;
