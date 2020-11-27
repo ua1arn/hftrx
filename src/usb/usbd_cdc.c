@@ -326,13 +326,14 @@ static USBD_StatusTypeDef USBD_CDC_DataIn(USBD_HandleTypeDef *pdev, uint_fast8_t
 		#define TLENNNN (VIRTUAL_COM_PORT_IN_DATA_SIZE - 0)
 		memset(cdcXbuffin [offset], '$', TLENNNN);
 		USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), cdcXbuffin [offset], TLENNNN);
-#endif
+#else
 		while (usbd_cdc_txenabled [offset] && (cdcXbuffinlevel [offset] < ARRAY_SIZE(cdcXbuffin [offset])))
 		{
 			HARDWARE_CDC_ONTXCHAR(offset, pdev);	// при отсутствии данных usbd_cdc_txenabled устанавливается в 0
 		}
 		USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), cdcXbuffin [offset], cdcXbuffinlevel [offset]);
 		cdcXbuffinlevel [offset] = 0;
+#endif
 	}
 	return USBD_OK;
 }
