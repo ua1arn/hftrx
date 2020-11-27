@@ -326,7 +326,6 @@ static USBD_StatusTypeDef USBD_CDC_DataIn(USBD_HandleTypeDef *pdev, uint_fast8_t
 		#define TLENNNN (VIRTUAL_COM_PORT_IN_DATA_SIZE - 0)
 		memset(cdcXbuffin [offset], '$', TLENNNN);
 		USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), cdcXbuffin [offset], TLENNNN);
-		break;
 #endif
 		while (usbd_cdc_txenabled [offset] && (cdcXbuffinlevel [offset] < ARRAY_SIZE(cdcXbuffin [offset])))
 		{
