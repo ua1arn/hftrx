@@ -8556,6 +8556,9 @@ updateboard(
 
 	if (full2)
 	{
+#if WITHTOUCHGUI
+		gui_update(NULL);
+#endif /* WITHTOUCHGUI */
 
 		/* Полная перенастройка. Изменился режим (или одно из значений hint). */
 		if (gtx == 0)
@@ -9198,10 +9201,6 @@ updateboard(
 	board_set_tx(gtx);		/* в конце выдаём сигнал разрешения передачи */
 	board_update();		/* вывести забуферированные изменения в регистры */
 #endif /* WITHTX */
-
-#if WITHTOUCHGUI
-	gui_update(NULL);
-#endif /* WITHTOUCHGUI */
 }
 
 ///////////////////////////
