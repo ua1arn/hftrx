@@ -109,5 +109,9 @@
 	//#endif /* WITHPOTAFGAIN */
 #endif /* defined (CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L) */
 
+void nau8822_setreg(
+	uint_fast8_t regv,			/* 7 bit value */
+	uint_fast16_t datav			/* 9 bit value */
+	);
 #endif	/* NAU8822_H_INCLUDED */
 
