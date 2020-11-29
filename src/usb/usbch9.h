@@ -43,9 +43,9 @@ enum
 #endif /* WITHUSBUAC */
 
 #if WITHUSBCDCACM
-	USBD_EP_CDC_IN,		// CDC IN Данные ком-порта в компьютер из TRX
-	USBD_EP_CDC_INlast = USBD_EP_CDC_IN + WITHUSBCDCACM_N - 1,
-	USBD_EP_CDC_INTSHARED,	// Shared EP: CDC INT События ком-порта в компьютер из TRX
+	USBD_EP_CDCACM_IN,		// CDC IN Данные ком-порта в компьютер из TRX
+	USBD_EP_CDCACM_INlast = USBD_EP_CDCACM_IN + WITHUSBCDCACM_N - 1,
+	USBD_EP_CDCACM_INTSHARED,	// Shared EP: CDC INT События ком-порта в компьютер из TRX
 #endif /* WITHUSBCDCACM */
 
 #if WITHUSBCDCEEM
@@ -86,8 +86,8 @@ enum
 #endif /* WITHUSBUAC */
 
 #if WITHUSBCDCACM
-	USBD_EP_CDC_OUT,	// CDC OUT Данные ком-порта от компьютера в TRX
-	USBD_EP_CDC_OUTlast = USBD_EP_CDC_OUT + WITHUSBCDCACM_N - 1,
+	USBD_EP_CDCACM_OUT,	// CDC OUT Данные ком-порта от компьютера в TRX
+	USBD_EP_CDCACM_OUTlast = USBD_EP_CDCACM_OUT + WITHUSBCDCACM_N - 1,
 #endif /* WITHUSBCDCACM */
 
 #if WITHUSBCDCEEM

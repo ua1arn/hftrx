@@ -2855,9 +2855,9 @@ static unsigned CDCACM_fill_38(uint_fast8_t fill, uint8_t * buff, unsigned maxsi
 static unsigned fill_CDCACM_function_a(uint_fast8_t fill, uint8_t * p, unsigned maxsize, int highspeed, uint_fast8_t offset)
 {
 	unsigned n = 0;
-	const uint8_t inep = USBD_CDCACM_EP(USBD_EP_CDC_IN, offset);
-	const uint8_t outnep = USBD_CDCACM_EP(USBD_EP_CDC_OUT, offset);
-	const uint8_t intnep = USBD_EP_CDC_INTSHARED;
+	const uint8_t inep = USBD_CDCACM_EP(USBD_EP_CDCACM_IN, offset);
+	const uint8_t outnep = USBD_CDCACM_EP(USBD_EP_CDCACM_OUT, offset);
+	const uint8_t intnep = USBD_EP_CDCACM_INTSHARED;
 
 	// CDC
 	n += CDCACM_InterfaceAssociationDescriptor_a(fill, p + n, maxsize - n, offset);	/* CDC: Interface Association Descriptor Abstract Control Model */
@@ -2869,8 +2869,8 @@ static unsigned fill_CDCACM_function_a(uint_fast8_t fill, uint8_t * p, unsigned 
 	n += CDCACM_fill_35(fill, p + n, maxsize - n, highspeed, USB_ENDPOINT_IN(intnep));	/* Endpoint Descriptor 86 6 In, Interrupt */
 
 	n += CDCACM_InterfaceDescriptorDataIf_a(fill, p + n, maxsize - n, 0x00, 2, offset);	/* INTERFACE_CDC_DATA_4a Data class interface descriptor */
-	n += CDCACM_fill_37(fill, p + n, maxsize - n, USB_ENDPOINT_OUT(outnep));	/* Endpoint Descriptor USBD_EP_CDC_OUT Out, Bulk, 64 bytes */
-	n += CDCACM_fill_38(fill, p + n, maxsize - n, USB_ENDPOINT_IN(inep));	/* Endpoint Descriptor USBD_EP_CDC_IN In, Bulk, 64 bytes */
+	n += CDCACM_fill_37(fill, p + n, maxsize - n, USB_ENDPOINT_OUT(outnep));	/* Endpoint Descriptor USBD_EP_CDCACM_OUT Out, Bulk, 64 bytes */
+	n += CDCACM_fill_38(fill, p + n, maxsize - n, USB_ENDPOINT_IN(inep));	/* Endpoint Descriptor USBD_EP_CDCACM_IN In, Bulk, 64 bytes */
 
 	return n;
 }
