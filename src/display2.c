@@ -7801,7 +7801,8 @@ static void display2_spectrum(
 						if (x_old != x_d)
 						{
 							uint_fast16_t y1 = y0 - * colmain_mem_at(wfjarray, ALLDX, MAX_3DSS_STEP, x, draw_step);
-							uint_fast8_t h = y0 - y1;		// высота пика
+							int_fast8_t h = y0 - y1 - i / 2;		// высота пика
+							h = h < 0 ? 0 : h;
 
 							for (; h > 0; h --)
 							{
