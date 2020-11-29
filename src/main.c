@@ -2667,6 +2667,13 @@ struct nvmap
 #if WITHMIC1LEVEL
 	uint16_t mik1level;
 #endif /* WITHMIC1LEVEL */
+#if defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L)
+	uint8_t ALCNEN;// = 0;	// ALC noise gate function control bit
+	uint8_t ALCNTH;// = 0;	// ALC noise gate threshold level
+	uint8_t ALCEN;// = 1;	// only left channel ALC enabled
+	uint8_t ALCMXGAIN;// = 7;	// Set maximum gain limit for PGA volume setting changes under ALC control
+	uint8_t ALCMNGAIN;// = 0;	// Set minimum gain value limit for PGA volume setting changes under ALC control
+#endif /* defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L) */
 #if WITHTX
 	uint8_t	ggrptxparams; // последний посещённый пункт группы
 	//uint8_t gfitx;		/* номер используемого фильтра на передачу */
@@ -4026,6 +4033,13 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 #if WITHMIC1LEVEL
 	static uint_fast16_t mik1level = WITHMIKEINGAINMAX;
 #endif /* WITHMIC1LEVEL */
+#if defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L)
+	uint_fast8_t ALCNEN = 0;	// ALC noise gate function control bit
+	uint_fast8_t ALCNTH = 0;	// ALC noise gate threshold level
+	uint_fast8_t ALCEN = 0;	// only left channel ALC enabled
+	uint_fast8_t ALCMXGAIN = 7;	// Set maximum gain limit for PGA volume setting changes under ALC control
+	uint_fast8_t ALCMNGAIN = 0;	// Set minimum gain value limit for PGA volume setting changes under ALC control
+#endif /* defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L) */
 #if WITHIF4DSP
 #if WITHTX
 	#if WITHTXCWREDUCE
@@ -9087,6 +9101,32 @@ updateboard(
 		board_set_dac1(dac1level);	/* подстройка частоты опорного генератора */
 	#endif /* defined (DAC1_TYPE) */
 
+#if defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L)
+		{
+			// nau8822 experements
+
+			// ALC
+//			unsigned ALCEN = 0;	// only left channel ALC enabled
+//			unsigned ALCMXGAIN = 7;	// Set maximum gain limit for PGA volume setting changes under ALC control
+//			unsigned ALCMNGAIN = 0;	// Set minimum gain value limit for PGA volume setting changes under ALC control
+			unsigned alcctl1 =
+					((ALCEN ? 0x02 : 0x00) << 7) |	// only left channel ALC enabled
+					(ALCMXGAIN << 3) |
+					(ALCMNGAIN << 0) |
+					0;
+			nau8822_setreg(NAU8822_ALC_CONTROL_1, alcctl1);
+
+			// Noise gate
+//			unsigned ALCNEN = 0;	// ALC noise gate function control bit
+//			unsigned ALCNTH = 0;	// ALC noise gate threshold level
+			unsigned ngctl1 =
+					(1 << 4) |	// reserved
+					(ALCNEN << 3) |
+					(ALCNTH << 0) |
+					0;
+			nau8822_setreg(NAU8822_NOISE_GATE, ngctl1);
+		}
+#endif /* defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L) */
 		board_update();		/* вывести забуферированные изменения в регистры */
 	} // full2 != 0
 	
@@ -15391,6 +15431,63 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #endif /* ITHMIC1LEVEL */
+#if defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L)
+//	unsigned ALCNEN = 0;	// ALC noise gate function control bit
+//	unsigned ALCNTH = 0;	// ALC noise gate threshold level
+//	unsigned ALCEN = 1;	// only left channel ALC enabled
+//	unsigned ALCMXGAIN = 7;	// Set maximum gain limit for PGA volume setting changes under ALC control
+//	unsigned ALCMNGAIN = 0;	// Set minimum gain value limit for PGA volume setting changes under ALC control
+	{
+		QLABEL("ALC NCEN"), 7, 0, RJ_ON,	ISTEP1,		/* ALC noise gate function control bit. */
+		ITEM_VALUE,
+		0, 1,
+		offsetof(struct nvmap, ALCNEN),	/* ALC noise gate function control bit */
+		nvramoffs0,
+		NULL,
+		& ALCNEN,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		QLABEL("ALCNTH  "), 7, 0, 0,	ISTEP1,		/* ALC noise gate threshold level. */
+		ITEM_VALUE,
+		0, 7,
+		offsetof(struct nvmap, ALCNTH),	/* ALC noise gate threshold level */
+		nvramoffs0,
+		NULL,
+		& ALCNTH,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		QLABEL("ALC EN   "), 7, 0, RJ_ON,	ISTEP1,		/* ALC enabled. */
+		ITEM_VALUE,
+		0, 1,
+		offsetof(struct nvmap, ALCEN),	/* ALC enabled */
+		nvramoffs0,
+		NULL,
+		& ALCEN,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		QLABEL("ALCMXGAN"), 7, 0, 0,	ISTEP1,		/* Set maximum gain limit for PGA volume setting changes under ALC control. */
+		ITEM_VALUE,
+		0, 7,
+		offsetof(struct nvmap, ALCMXGAIN),	/* Set maximum gain limit for PGA volume setting changes under ALC control */
+		nvramoffs0,
+		NULL,
+		& ALCMXGAIN,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		QLABEL("ALCMNGAN"), 7, 0, 0,	ISTEP1,		/* Set minimum gain value limit for PGA volume setting changes under ALC contro. */
+		ITEM_VALUE,
+		0, 7,
+		offsetof(struct nvmap, ALCMNGAIN),	/* Set minimum gain value limit for PGA volume setting changes under ALC contro */
+		nvramoffs0,
+		NULL,
+		& ALCMNGAIN,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+#endif /* defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L) */
 #if WITHUSEAUDIOREC
 	{
 		QLABEL("SD RECRD"), 8, 3, RJ_ON,	ISTEP1,		/* автоматически начинаем запись на SD CARD при включении */

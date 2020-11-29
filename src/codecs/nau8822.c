@@ -42,7 +42,7 @@
  This mode is a 16-bit transaction consisting of a 7-bit Control Register Address, 
  and 9-bits of control register data.
 */
-static void nau8822_setreg(
+void nau8822_setreg(
 	uint_fast8_t regv,			/* 7 bit value */
 	uint_fast16_t datav			/* 9 bit value */
 	)
