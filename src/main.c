@@ -15439,7 +15439,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 //	unsigned ALCMXGAIN = 7;	// Set maximum gain limit for PGA volume setting changes under ALC control
 //	unsigned ALCMNGAIN = 0;	// Set minimum gain value limit for PGA volume setting changes under ALC control
 	{
-		QLABEL("ALCNEN  "), 7, 0, RJ_ON,	ISTEP1,		/* ALC noise gate function control bit. */
+		QLABEL("ALC NCEN"), 7, 0, RJ_ON,	ISTEP1,		/* ALC noise gate function control bit. */
 		ITEM_VALUE,
 		0, 1,
 		offsetof(struct nvmap, ALCNEN),	/* ALC noise gate function control bit */
@@ -15459,13 +15459,13 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		QLABEL("ALCEN   "), 7, 0, RJ_ON,	ISTEP1,		/* ALC enabled. */
+		QLABEL("ALC EN   "), 7, 0, RJ_ON,	ISTEP1,		/* ALC enabled. */
 		ITEM_VALUE,
 		0, 1,
-		offsetof(struct nvmap, mik1level),	/* ALC enabled */
+		offsetof(struct nvmap, ALCEN),	/* ALC enabled */
 		nvramoffs0,
 		NULL,
-		& mik1level,
+		& ALCEN,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
