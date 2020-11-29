@@ -45,9 +45,7 @@ enum
 #if WITHUSBCDCACM
 	USBD_EP_CDC_IN,		// CDC IN Данные ком-порта в компьютер из TRX
 	USBD_EP_CDC_INlast = USBD_EP_CDC_IN + WITHUSBCDCACM_N - 1,
-
-	USBD_EP_CDC_INT,	// CDC INT События ком-порта в компьютер из TRX
-	USBD_EP_CDC_INTlast = USBD_EP_CDC_INT + WITHUSBCDCACM_N - 1,
+	USBD_EP_CDC_INTSHARED,	// Shared EP: CDC INT События ком-порта в компьютер из TRX
 #endif /* WITHUSBCDCACM */
 
 #if WITHUSBCDCEEM

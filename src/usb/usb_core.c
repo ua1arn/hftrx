@@ -48,13 +48,11 @@ usbd_epaddr2pipe(uint_fast8_t ep_addr)
 	case USBD_EP_AUDIO_IN:	return HARDWARE_USBD_PIPE_ISOC_IN;
 #endif /* WITHUSBUAC */
 #if WITHUSBCDCACM
+	case USBD_EP_CDC_INTSHARED:				return HARDWARE_USBD_PIPE_CDC_INT;	// Shared EP
 	case USBD_CDCACM_EP(USBD_EP_CDC_OUT, 0):	return HARDWARE_USBD_PIPE_CDC_OUT;
 	case USBD_CDCACM_EP(USBD_EP_CDC_IN, 0):	return HARDWARE_USBD_PIPE_CDC_IN;
-	case USBD_CDCACM_EP(USBD_EP_CDC_INT, 0):	return HARDWARE_USBD_PIPE_CDC_INT;
-
 	case USBD_CDCACM_EP(USBD_EP_CDC_OUT, 1):	return HARDWARE_USBD_PIPE_CDC_OUTb;
 	case USBD_CDCACM_EP(USBD_EP_CDC_IN, 1):	return HARDWARE_USBD_PIPE_CDC_INb;
-	case USBD_CDCACM_EP(USBD_EP_CDC_INT, 1):	return HARDWARE_USBD_PIPE_CDC_INTb;
 #endif /* WITHUSBCDCACM */
 #if WITHUSBCDCEEM
 	case USBD_EP_CDCEEM_OUT:	return HARDWARE_USBD_PIPE_CDCEEM_OUT;
@@ -99,13 +97,14 @@ usbd_pipe2epaddr(uint_fast8_t pipe)
 	case HARDWARE_USBD_PIPE_ISOC_IN: return USBD_EP_AUDIO_IN;
 #endif /* WITHUSBUAC */
 #if WITHUSBCDCACM
+	case HARDWARE_USBD_PIPE_CDC_INT: return USBD_EP_CDC_INTSHARED;
+
 	case HARDWARE_USBD_PIPE_CDC_OUT: return USBD_CDCACM_EP(USBD_EP_CDC_OUT, 0);
 	case HARDWARE_USBD_PIPE_CDC_IN: return USBD_CDCACM_EP(USBD_EP_CDC_IN, 0);
-	case HARDWARE_USBD_PIPE_CDC_INT: return USBD_CDCACM_EP(USBD_EP_CDC_INT, 0);
 
 	case HARDWARE_USBD_PIPE_CDC_OUTb: return USBD_CDCACM_EP(USBD_EP_CDC_OUT, 1);
 	case HARDWARE_USBD_PIPE_CDC_INb: return USBD_CDCACM_EP(USBD_EP_CDC_IN, 1);
-	case HARDWARE_USBD_PIPE_CDC_INTb: return USBD_CDCACM_EP(USBD_EP_CDC_INT, 1);
+
 #endif /* WITHUSBCDCACM */
 #if WITHUSBCDCEEM
 	case HARDWARE_USBD_PIPE_CDCEEM_OUT: return USBD_EP_CDCEEM_OUT;
@@ -1257,6 +1256,30 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 	}
 	unsigned bufnumb64 = 0x10;
 #if WITHUSBCDCACM
+	{
+		// Прерывание CDC в компьютер из трансивера
+		const uint_fast8_t epnum = USBD_EP_CDC_INTSHARED;
+		const uint_fast8_t pipe = usbd_epaddr2pipe(epnum);
+		const uint_fast8_t dir = 1;
+		//PRINTF(PSTR("usbd_pipe_initialize: pipe=%u endpoint=%02X\n"), pipe, epnum);
+
+		USBx->PIPESEL = pipe << USB_PIPESEL_PIPESEL_SHIFT;
+		while ((USBx->PIPESEL & USB_PIPESEL_PIPESEL) != (pipe << USB_PIPESEL_PIPESEL_SHIFT))
+			;
+		USBx->PIPECFG =
+			(0x0F & epnum) * (1u << USB_PIPECFG_EPNUM_SHIFT) |		// EPNUM endpoint
+			dir * (1u << USB_PIPECFG_DIR_SHIFT) |		// DIR 1: Transmitting direction 0: Receiving direction
+			2 * (1u << USB_PIPECFG_TYPE_SHIFT) |		// TYPE 2: Interrupt transfer
+			0 * USB_PIPECFG_DBLB |		// DBLB - для interrupt должен быть 0
+			0;
+		const unsigned bufsize64 = (VIRTUAL_COM_PORT_INT_SIZE + 63) / 64;
+		USBx->PIPEBUF = ((bufsize64 - 1) << USB_PIPEBUF_BUFSIZE_SHIFT) | (bufnumb64 << USB_PIPEBUF_BUFNMB_SHIFT);
+		USBx->PIPEMAXP = VIRTUAL_COM_PORT_INT_SIZE << USB_PIPEMAXP_MXPS_SHIFT;
+		bufnumb64 += bufsize64 * 1; // * 2 for DBLB
+		ASSERT(bufnumb64 <= 0x100);
+
+		USBx->PIPESEL = 0;
+	}
 	for (offset = 0; offset < WITHUSBCDCACM_N; ++ offset)
 	{
 		{
@@ -1303,30 +1326,6 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 			USBx->PIPEBUF = ((bufsize64 - 1) << USB_PIPEBUF_BUFSIZE_SHIFT) | (bufnumb64 << USB_PIPEBUF_BUFNMB_SHIFT);
 			USBx->PIPEMAXP = VIRTUAL_COM_PORT_IN_DATA_SIZE << USB_PIPEMAXP_MXPS_SHIFT;
 			bufnumb64 += bufsize64 * 2; // * 2 for DBLB
-			ASSERT(bufnumb64 <= 0x100);
-
-			USBx->PIPESEL = 0;
-		}
-		{
-			// Прерывание CDC в компьютер из трансивера
-			const uint_fast8_t epnum = USBD_CDCACM_EP(USBD_EP_CDC_INT, offset);
-			const uint_fast8_t pipe = usbd_epaddr2pipe(epnum);
-			const uint_fast8_t dir = 1;
-			//PRINTF(PSTR("usbd_pipe_initialize: pipe=%u endpoint=%02X\n"), pipe, epnum);
-
-			USBx->PIPESEL = pipe << USB_PIPESEL_PIPESEL_SHIFT;
-			while ((USBx->PIPESEL & USB_PIPESEL_PIPESEL) != (pipe << USB_PIPESEL_PIPESEL_SHIFT))
-				;
-			USBx->PIPECFG =
-				(0x0F & epnum) * (1u << USB_PIPECFG_EPNUM_SHIFT) |		// EPNUM endpoint
-				dir * (1u << USB_PIPECFG_DIR_SHIFT) |		// DIR 1: Transmitting direction 0: Receiving direction
-				2 * (1u << USB_PIPECFG_TYPE_SHIFT) |		// TYPE 2: Interrupt transfer
-				0 * USB_PIPECFG_DBLB |		// DBLB - для interrupt должен быть 0
-				0;
-			const unsigned bufsize64 = (VIRTUAL_COM_PORT_INT_SIZE + 63) / 64;
-			USBx->PIPEBUF = ((bufsize64 - 1) << USB_PIPEBUF_BUFSIZE_SHIFT) | (bufnumb64 << USB_PIPEBUF_BUFNMB_SHIFT);
-			USBx->PIPEMAXP = VIRTUAL_COM_PORT_INT_SIZE << USB_PIPEMAXP_MXPS_SHIFT;
-			bufnumb64 += bufsize64 * 1; // * 2 for DBLB
 			ASSERT(bufnumb64 <= 0x100);
 
 			USBx->PIPESEL = 0;
@@ -6659,17 +6658,19 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 #endif /* WITHUSBUAC */
 
 #if WITHUSBCDCACM
+	{
+		const uint_fast8_t pipeint = USBD_EP_CDC_INTSHARED & 0x7F;
+		USBx->DIEPTXF [pipeint - 1] = usbd_makeTXFSIZ(last4dummy, size4dummy);
+	}
 	for (offset = 0; offset < WITHUSBCDCACM_N; ++ offset)
 	{
 		/* полнофункциональное устройство */
 		const uint_fast8_t pipe = USBD_CDCACM_EP(USBD_EP_CDC_IN, offset) & 0x7F;
-		const uint_fast8_t pipeint = USBD_CDCACM_EP(USBD_EP_CDC_INT, offset) & 0x7F;
 		numoutendpoints += 1;
 		if (bigbuff == 0 && offset > 0)
 		{
 			// на маленьких контроллерах только первый USB CDC может обмениваться данными
 			USBx->DIEPTXF [pipe - 1] = usbd_makeTXFSIZ(last4dummy, size4dummy);
-			USBx->DIEPTXF [pipeint - 1] = usbd_makeTXFSIZ(last4dummy, size4dummy);
 
 		}
 		else
@@ -6693,7 +6694,6 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 			ASSERT(last4 >= size4);
 			last4 -= size4;
 			USBx->DIEPTXF [pipe - 1] = usbd_makeTXFSIZ(last4, size4);
-			USBx->DIEPTXF [pipeint - 1] = usbd_makeTXFSIZ(last4dummy, size4dummy);
 			PRINTF(PSTR("usbd_fifo_initialize4 CDC %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
 		}
 	}
