@@ -42,7 +42,7 @@
 	#define MDMA_CTCR_xSIZE_MAIN			0x00	// 1 byte
 	////#define DMA2D_OPFCCR_CM_VALUE	(x * DMA2D_OPFCCR_CM_0)	/* not supported */
 
-#elif LCDMODE_MAIN_RGB888
+#elif LCDMODE_MAIN_ARGB888
 	#define DMA2D_FGPFCCR_CM_VALUE_MAINxxxx	(0 * DMA2D_FGPFCCR_CM_0)	/* 0: ARGB888 */
 	#define MDMA_CTCR_xSIZE_MAIN			0x02	// 10: Word (32-bit)
 	////#define DMA2D_OPFCCR_CM_VALUE	(x * DMA2D_OPFCCR_CM_0)	/* not supported */
@@ -867,7 +867,7 @@ void colpip_fillrect(
 	#elif LCDMODE_MAIN_L24
 		hwacc_fillrect_u24(buffer, dx, dy, x, y, w, h, color);
 
-	#elif LCDMODE_MAIN_RGB888
+	#elif LCDMODE_MAIN_ARGB888
 		hwacc_fillrect_u32(buffer, dx, dy, x, y, w, h, color);
 
 	#endif
@@ -892,7 +892,7 @@ void colpip_fillrect(
 	#elif LCDMODE_MAIN_L24
 		hwacc_fillrect_u24((buffer, dy, dx, y, x, h, w, color);
 
-	#elif LCDMODE_MAIN_RGB888
+	#elif LCDMODE_MAIN_ARGB888
 		hwacc_fillrect_u32((buffer, dy, dx, y, x, h, w, color);
 
 	#endif
@@ -1133,7 +1133,7 @@ void colpip_fill(
 	#elif LCDMODE_MAIN_L24
 		hwacc_fillrect_u24(buffer, dx, dy, 0, 0, dx, dy, color);
 
-	#elif LCDMODE_MAIN_RGB888
+	#elif LCDMODE_MAIN_ARGB888
 		hwacc_fillrect_u32(buffer, dx, dy, 0, 0, dx, dy, color);
 
 	#endif
@@ -1158,7 +1158,7 @@ void colpip_fill(
 	#elif LCDMODE_MAIN_L24
 		hwacc_fillrect_u24(buffer, dy, dx, 0, 0, dy, dx, color);
 
-	#elif LCDMODE_MAIN_RGB888
+	#elif LCDMODE_MAIN_ARGB888
 		hwacc_fillrect_u32(buffer, dy, dx, 0, 0, dy, dx, color);
 
 	#endif
@@ -1489,7 +1489,7 @@ colmain_fillrect(
 		hwacc_fillrect_u8(buffer, dx, dy, x, y, w, h, fgcolor);
 	#elif LCDMODE_LTDC_L24
 		hwacc_fillrect_u24(buffer, dx, dy, x, y, w, h, fgcolor);
-	#elif LCDMODE_MAIN_RGB888
+	#elif LCDMODE_MAIN_ARGB888
 		hwacc_fillrect_u32(buffer, dx, dy, x, y, w, h, fgcolor);
 	#else
 		hwacc_fillrect_u16(buffer, dx, dy, x, y, w, h, fgcolor);
@@ -1501,7 +1501,7 @@ colmain_fillrect(
 		hwacc_fillrect_u8(buffer, dy, dx, y, x, h, w, fgcolor);
 	#elif LCDMODE_LTDC_L24
 		hwacc_fillrect_u24(buffer, dy, dx, y, x, h, w, fgcolor);
-	#elif LCDMODE_MAIN_RGB888
+	#elif LCDMODE_MAIN_ARGB888
 		hwacc_fillrect_u32(buffer, dy, dx, y, x, h, w, fgcolor);
 	#else
 		hwacc_fillrect_u16(buffer, dy, dx, y, x, h, w, fgcolor);
@@ -2221,7 +2221,7 @@ COLORPIP_T getshadedcolor(
 		return TFTRGB565((c >> 16) & 0xFF, (c >> 8) & 0xFF, (c >> 0) & 0xFF);
 	}
 
-	#elif LCDMODE_MAIN_RGB888
+	#elif LCDMODE_MAIN_ARGB888
 
 	if (dot == COLORPIP_BLACK)
 	{

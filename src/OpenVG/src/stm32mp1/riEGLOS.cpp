@@ -170,7 +170,7 @@ void OSBlitToWindow(void* context, const Drawable* drawable)
 		VGImageFormat f = VG_sRGB_565;
 		if(isBigEndian())
 			f = VG_sBGR_565;
-	#elif LCDMODE_MAIN_RGB888
+	#elif LCDMODE_MAIN_ARGB888
 		VGImageFormat f = VG_sXBGR_8888;
 		 if(isBigEndian())
 			 f = VG_sRGBX_8888;

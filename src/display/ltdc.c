@@ -1588,7 +1588,7 @@ arm_hardware_ltdc_initialize(void)
 
 	LCD_LayerInit(LAYER_MAIN, LEFTMARGIN, TOPMARGIN, & mainwnd, LTDC_Pixelformat_L8, 1, sizeof (PACKEDCOLORMAIN_T));
 
-#elif LCDMODE_MAIN_RGB888
+#elif LCDMODE_MAIN_ARGB888
 
 	/* Без палитры */
 	LCD_LayerInit(LAYER_MAIN, LEFTMARGIN, TOPMARGIN, & mainwnd, LTDC_Pixelformat_ARGB8888, 1, sizeof (PACKEDCOLORMAIN_T));

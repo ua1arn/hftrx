@@ -308,7 +308,7 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 				) \
 			)
 
-	#elif LCDMODE_MAIN_RGB888
+	#elif LCDMODE_MAIN_ARGB888
 
 		//#define LCDMODE_RGB565 1
 		typedef uint_fast32_t COLORMAIN_T;
