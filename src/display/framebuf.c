@@ -71,13 +71,14 @@
 
 #endif /* LCDMODE_MAIN_L8 */
 
-#define DMA2D_FGPFCCR_CM_VALUE_L24	(1 * DMA2D_FGPFCCR_CM_0)	/* 0001: RGB888 */
-#define DMA2D_FGPFCCR_CM_VALUE_L16	(2 * DMA2D_FGPFCCR_CM_0)	/* 0010: RGB565 */
-#define DMA2D_FGPFCCR_CM_VALUE_L8	(5 * DMA2D_FGPFCCR_CM_0)	/* 0101: L8 */
+//#define DMA2D_FGPFCCR_CM_VALUE_L24	(1 * DMA2D_FGPFCCR_CM_0)	/* 0001: RGB888 */
+//#define DMA2D_FGPFCCR_CM_VALUE_L16	(2 * DMA2D_FGPFCCR_CM_0)	/* 0010: RGB565 */
+//#define DMA2D_FGPFCCR_CM_VALUE_L8	(5 * DMA2D_FGPFCCR_CM_0)	/* 0101: L8 */
 
-#define MDMA_CTCR_xSIZE_U16			0x01	// 2 byte
-#define MDMA_CTCR_xSIZE_U8			0x00	// 1 byte
-#define MDMA_CTCR_xSIZE_RGB565		0x01	// 2 byte
+//#define MDMA_CTCR_xSIZE_U32			0x02	// 4 byte
+//#define MDMA_CTCR_xSIZE_U16			0x01	// 2 byte
+//#define MDMA_CTCR_xSIZE_U8			0x00	// 1 byte
+//#define MDMA_CTCR_xSIZE_RGB565		0x01	// 2 byte
 
 #if WITHMDMAHW
 
@@ -617,11 +618,10 @@ hwacc_fillrect_u32(
 	enum { PIXEL_SIZE = sizeof * buffer };
 	enum { PIXEL_SIZE_CODE = 2 };	// word (32-bit)
 
-
 #if WITHMDMAHW
 	// MDMA implementation
 
-	ALIGNX_BEGIN volatile uint16_t tgcolor ALIGNX_END;	/* значение цвета для заполнения области памяти */
+	ALIGNX_BEGIN volatile uint32_t tgcolor ALIGNX_END;	/* значение цвета для заполнения области памяти */
 	tgcolor = color;
 
 	arm_hardware_flush((uintptr_t) & tgcolor, sizeof tgcolor);
@@ -717,7 +717,7 @@ hwacc_fillrect_u32(
 	// программная реализация
 	const unsigned t = GXADJ(dx) - w;
 	//buffer += (GXADJ(dx) * row) + col;
-	volatile uint16_t * tbuffer = colmain_mem_at(buffer, dx, dy, col, row); // dest address
+	volatile uint32_t * tbuffer = colmain_mem_at(buffer, dx, dy, col, row); // dest address
 	while (h --)
 	{
 		unsigned n = w;
