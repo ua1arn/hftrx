@@ -5477,7 +5477,7 @@ EGLConfig			eglconfig;
 EGLSurface			eglsurface;
 EGLContext			eglcontext;
 
-#if 1
+#if 0
 
 #include "tiger.h"
 
@@ -5805,7 +5805,79 @@ void deinit(void)
 	eglReleaseThread();
 }
 
+// See https://github.com/Ajou-Khronies/OpenVG_tutorital_examples/blob/14d30f9a26cb5ed70ccb136bef7b229c8a51c444/samples/Chapter13/Sample_13_03/Sample_13_03.c
+#if 0
+{
+    VGPath path;
+
+    VGfloat clear[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+    vgSetfv( VG_CLEAR_COLOR, 4, clear );
+    vgClear( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT );
+
+    path = vgCreatePath(VG_PATH_FORMAT_STANDARD, VG_PATH_DATATYPE_F, 1, 0, 0, 0, VG_PATH_CAPABILITY_ALL );
+
+    vguRect( path, 40.5f, 40.5f, 160.0f, 100.0f );
+    vguRect( path, 40.0f, 180.0f, 160.0f, 100.0f );
+
+    vgDrawPath( path, VG_STROKE_PATH );
+
+    vgDestroyPath( path );
+}
+#endif
+
 void rendertest(int w, int h)
+{
+	static const float clearColor[4] = {0,1,0,1};
+	//		float scaleX = w / (tigerMaxX - tigerMinX);
+	//		float scaleY = h / (tigerMaxY - tigerMinY);
+	//		float scale = fminf(scaleX, scaleY);
+	//		PRINTF("render: scaleX=%f, scaleY=%f\n", scaleX, scaleY);
+
+	eglSwapBuffers(egldisplay, eglsurface);	//force EGL to recognize resize
+
+	vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_BETTER);
+	//vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_NONANTIALIASED);
+	//vgSeti(VG_FILL_RULE, VG_NON_ZERO);
+
+	vgSeti(VG_PIXEL_LAYOUT, VG_PIXEL_LAYOUT_RGB_HORIZONTAL);
+	//vgSeti(VG_SCREEN_LAYOUT, );
+
+	VGPath path;
+    VGPaint fillPaint, strokePaint;
+    static const VGubyte segments[] = { VG_MOVE_TO_ABS, VG_LINE_TO_ABS, VG_LINE_TO_ABS,
+                           VG_LINE_TO_ABS, VG_LINE_TO_ABS, VG_CLOSE_PATH };
+    static const VGfloat coords[] = { 120.0f, 260.0f, 61.2f, 79.1f, 215.1f, 190.9f, 24.8f, 190.9f, 178.8f, 79.1f };
+    static const VGfloat clear[4] = { 0, 0, 0, 1 };
+    static const VGfloat fillColor[4] = { 0.0f, 0.0f, 1.0f, 1.0f };
+    static const VGfloat strokeColor[4] = { 1.0f, 0.0f, 0.0f, 1.0f };
+
+    vgSetfv( VG_CLEAR_COLOR, 4, clear );
+    vgSetf( VG_STROKE_LINE_WIDTH, 8.0f );
+    vgClear( 0, 0, w, h );
+    fillPaint = vgCreatePaint();
+    strokePaint = vgCreatePaint();
+    path = vgCreatePath(VG_PATH_FORMAT_STANDARD, VG_PATH_DATATYPE_F,1.0f, 0.0f, 0, 0, VG_PATH_CAPABILITY_ALL);
+    vgAppendPathData( path, 6, segments, coords );
+    vgSeti( VG_FILL_RULE, VG_EVEN_ODD ); // OR VG_NON_ZERO
+    vgSetPaint(fillPaint, VG_FILL_PATH );
+    vgSetPaint(strokePaint, VG_STROKE_PATH );
+
+
+    vgSetParameterfv( fillPaint, VG_PAINT_COLOR, 4, fillColor);
+    vgSetParameterfv( strokePaint, VG_PAINT_COLOR, 4, strokeColor);
+
+	VERIFY(VGU_NO_ERROR == vguRoundRect(path, 300, 100, 100, 100, 10, 10));
+    vgDrawPath( path, (VG_FILL_PATH | VG_STROKE_PATH) );
+    vgDestroyPath( path );
+    vgDestroyPaint( fillPaint );
+    vgDestroyPaint( strokePaint );
+
+	eglSwapBuffers(egldisplay, eglsurface);
+	assert(eglGetError() == EGL_SUCCESS);
+
+}
+
+void rendertestx(int w, int h)
 {
 	static const float clearColor[4] = {0,1,0,1};
 	//		float scaleX = w / (tigerMaxX - tigerMinX);
@@ -5825,19 +5897,28 @@ void rendertest(int w, int h)
 	vgSetfv(VG_CLEAR_COLOR, 4, clearColor);
 	vgClear(0, 0, w, h);
 
+	VGPaint paint = vgCreatePaint();
+
+	static const float drawColorRed[4] = {1,0,0,1};
+	vgSetParameterfv(paint, VG_PAINT_COLOR, 4, drawColorRed);
+	//vgSetColor(paint, VGuint rgba)
+
 	VGPath path = vgCreatePath(VG_PATH_FORMAT_STANDARD, VG_PATH_DATATYPE_S_16 /*VG_PATH_DATATYPE_F */, 1.0f, 0.0f, 0, 0, (unsigned int)VG_PATH_CAPABILITY_ALL);
 
-	static const float drawColorRed[4] = {1,0,0,1 * 1};
+	//static const float drawColorRed[4] = {1,0,0,1};
 	vgSetfv(VG_TILE_FILL_COLOR, 4, drawColorRed);
 	VERIFY(VGU_NO_ERROR == vguRect(path, 0, 0, 100, 100));
 
-	static const float drawColorGreen[4] = {0,1,0,1 * 1};
+	static const float drawColorGreen[4] = {0,1,0,1};
 	vgSetfv(VG_TILE_FILL_COLOR, 4, drawColorGreen);
 	VERIFY(VGU_NO_ERROR == vguRoundRect(path, 100, 100, 100, 100, 10, 10));
 
-	vgDrawPath(path, VG_FILL_PATH);
+	vgDrawPath(path, VG_STROKE_PATH);	// VG_STROKE_PATH - линиями
+	vgDrawPath(path, VG_FILL_PATH);	// VG_FILL_PATH - заполняя
 
 	vgDestroyPath(path);
+
+	vgDestroyPaint(paint);
 	//		vgLoadIdentity();
 	//		vgScale(scale, scale);
 	//		vgTranslate(- tigerMinX, -tigerMinY + 0.5f * (h / scale - (tigerMaxY - tigerMinY)));
@@ -5883,13 +5964,13 @@ void hightests(void)
 		TP();
 		init((NativeWindowType) NULL);
 		TP();
-#if 0
+	#if 0
 		tiger = PS_construct(tigerCommands, tigerCommandCount, tigerPoints, tigerPointCount);
 		render(DIM_X, DIM_Y);
 		PS_destruct(tiger);
-#else
+	#else
 		rendertest(DIM_X, DIM_Y);
-#endif
+	#endif
 		TP();
 		// wait for press any key
 		for (;;)
