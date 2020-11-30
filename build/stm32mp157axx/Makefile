@@ -30,7 +30,7 @@ BIN  = $(CP) -O binary -R .noinit -R .bss -R .vram -R .heap
 
 CMSISDIR = ../../../CMSIS_5/CMSIS
 LWIPDIR = ../../src/lwip-1.4.1/src
-# see usage of preprocessor HG_FLAT_INCLUDES symbol
+# see usage of preprocessor HG_FLAT_INCLUDES and EGL_STATIC_LIBRARY symbol
 OPENVGDIR = ../../src/OpenVG
 
 
@@ -46,8 +46,8 @@ CORE += -mfpu=neon
 # ony -Og for app
 ifeq "bootloader" "1 bootloader"
 
-CORE += -mlong-calls
-OPT = -Ofast
+#
+OPT = -Os
 LTO = -flto
 OBJDIR2 = objboot
 UDEFS += -DWITHISBOOTLOADER
@@ -55,7 +55,6 @@ UDEFS += -DWITHISBOOTLOADER
 else
 
 OPT = -Og
-#LTO = -flto
 OBJDIR2 = objapp
 
 endif
