@@ -30,9 +30,7 @@
  * \note
   *//*-------------------------------------------------------------------*/
 
-#include "board.h"
-
-#if WITHOPENVG
+#if 0
 
 #include "egl.h"
 #include "riImage.h"
