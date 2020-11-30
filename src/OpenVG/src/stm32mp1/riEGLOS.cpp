@@ -171,9 +171,9 @@ void OSBlitToWindow(void* context, const Drawable* drawable)
 		if(isBigEndian())
 			f = VG_sBGR_565;
 	#elif LCDMODE_MAIN_ARGB888
-		VGImageFormat f = VG_sXBGR_8888;
+		VGImageFormat f = VG_sARGB_8888;	// 4-th byte alpha value
 		 if(isBigEndian())
-			 f = VG_sRGBX_8888;
+			 f = VG_sBGRA_8888;
 	#elif LCDMODE_MAIN_L8
 		VGImageFormat f = VG_lL_8;
 	#else
