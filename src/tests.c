@@ -5795,20 +5795,22 @@ void rendertest(int w, int h)
 
 		eglSwapBuffers(egldisplay, eglsurface);	//force EGL to recognize resize
 
-		vgSeti(VG_IMAGE_QUALITY, VG_IMAGE_QUALITY_FASTER);
+		//vgSeti(VG_IMAGE_QUALITY, VG_IMAGE_QUALITY_NONANTIALIASED);
+		vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_NONANTIALIASED);
+		//vgSeti(VG_FILL_RULE, VG_NON_ZERO);
 
 		vgSetfv(VG_CLEAR_COLOR, 4, clearColor);
 		vgClear(0, 0, w, h);
 
 		VGPath path = vgCreatePath(VG_PATH_FORMAT_STANDARD, VG_PATH_DATATYPE_F, 1.0f, 0.0f, 0, 0, (unsigned int)VG_PATH_CAPABILITY_ALL);
 
-		float drawColorRed[4] = {1,0,0,1 * 0};
+		float drawColorRed[4] = {1,0,0,1 * 1};
 		vgSetfv(VG_TILE_FILL_COLOR, 4, drawColorRed);
 		vguRect(path, 0, 0, 100, 100);
 
-		float drawColorGreen[4] = {0,1,0,1 * 0};
+		float drawColorGreen[4] = {0,1,0,1 * 1};
 		vgSetfv(VG_TILE_FILL_COLOR, 4, drawColorGreen);
-		vguRect(path, 100, 100, 100, 100);
+		vguRoundRect(path, 100, 100, 100, 100, 10, 10);
 
 		vgDrawPath(path, VG_FILL_PATH);
 
