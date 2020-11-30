@@ -5449,7 +5449,7 @@ static uint_fast32_t any_rd_reg_32bits(uint_fast8_t i2caddr, uint_fast8_t regist
 #include <string.h>
 #define UNREF(X) ((void)(X))
 
-#if 1 //ifdef HG_FLAT_INCLUDES
+#ifdef HG_FLAT_INCLUDES
 #	include "openvg.h"
 #	include "vgu.h"
 #	include "egl.h"
@@ -5808,12 +5808,16 @@ void hightests(void)
 		PRINTF("sizeof time_t == %u, t = %lu\n", sizeof (time_t), (unsigned long) t);
 	}
 #endif
-#if 0 && WITHOPENVG
+#if 1 && WITHOPENVG
 	{
+		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
+		board_update();
 
 		init((NativeWindowType) NULL);
 		render(DIM_X, DIM_Y);
+		local_delay_ms(250);
 		deinit();
+		local_delay_ms(250);
 	}
 #endif
 #if 0 && (__CORTEX_A != 0)
