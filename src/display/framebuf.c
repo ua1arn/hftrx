@@ -151,11 +151,9 @@ mdma_getburst(uint_fast16_t tlen, uint_fast8_t bus, uint_fast8_t xinc)
 static void
 mdma_stop_unused(void)
 {
-#if WITHMDMAHW
 	MDMA_CH->CCR &= ~ MDMA_CCR_EN_Msk;
 	while ((MDMA_CH->CCR & MDMA_CCR_EN_Msk) != 0)
 		;
-#endif /* WITHMDMAHW */
 }
 
 /* запустить пересылку и дождаться завершения. */
@@ -309,7 +307,7 @@ hwacc_fillrect_u8(
 
 	mdma_startandwait();
 
-#else
+#else /* WITHMDMAHW */
 	// программная реализация
 
 	const unsigned dxadj = GXADJ(dx);
@@ -320,7 +318,7 @@ hwacc_fillrect_u8(
 		tbuffer += dxadj;
 	}
 
-#endif
+#endif /* WITHMDMAHW */
 }
 
 #endif /* LCDMODE_PIXELSIZE == 1 */
@@ -440,7 +438,7 @@ hwacc_fillrect_u16(
 	ASSERT((DMA2D->ISR & DMA2D_ISR_TEIF) == 0);	// Transfer Error
 
 
-#else
+#else /* WITHMDMAHW, WITHDMA2DHW */
 	// программная реализация
 	const unsigned t = GXADJ(dx) - w;
 	//buffer += (GXADJ(dx) * row) + col;
@@ -453,7 +451,7 @@ hwacc_fillrect_u16(
 		tbuffer += t;
 	}
 
-#endif
+#endif /* WITHMDMAHW, WITHDMA2DHW */
 }
 
 #endif
