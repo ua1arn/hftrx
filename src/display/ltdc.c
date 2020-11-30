@@ -1588,6 +1588,11 @@ arm_hardware_ltdc_initialize(void)
 
 	LCD_LayerInit(LAYER_MAIN, LEFTMARGIN, TOPMARGIN, & mainwnd, LTDC_Pixelformat_L8, 1, sizeof (PACKEDCOLORMAIN_T));
 
+#elif LCDMODE_MAIN_RGB888
+
+	/* Без палитры */
+	LCD_LayerInit(LAYER_MAIN, LEFTMARGIN, TOPMARGIN, & mainwnd, LTDC_Pixelformat_ARGB8888, 1, sizeof (PACKEDCOLORMAIN_T));
+
 #else
 	/* Без палитры */
 	LCD_LayerInit(LAYER_MAIN, LEFTMARGIN, TOPMARGIN, & mainwnd, LTDC_Pixelformat_RGB565, 1, sizeof (PACKEDCOLORMAIN_T));
@@ -1608,6 +1613,14 @@ arm_hardware_ltdc_initialize(void)
 
 	// Bottom layer
 	LCD_LayerInit(LAYER_PIP, LEFTMARGIN, TOPMARGIN, & pipwnd, LTDC_Pixelformat_RGB565, 1, sizeof (PACKEDCOLORPIP_T));
+	LCD_LayerInitPIP(LAYER_PIP);	// довести инициализацию
+
+#elif LCDMODE_PIP_RGB888
+
+	LCD_LayerInitMain(LAYER_MAIN);	// довести инициализацию
+
+	// Bottom layer
+	LCD_LayerInit(LAYER_PIP, LEFTMARGIN, TOPMARGIN, & pipwnd, LTDC_Pixelformat_ARGB8888, 1, sizeof (PACKEDCOLORPIP_T));
 	LCD_LayerInitPIP(LAYER_PIP);	// довести инициализацию
 
 #endif /* LCDMODE_PIP_RGB565 */

@@ -166,13 +166,18 @@ void OSBlitToWindow(void* context, const Drawable* drawable)
 		ctx->tmpHeight = drawable->getHeight();
 		int w = drawable->getWidth();
 		int h = drawable->getHeight();
-        VGImageFormat f = VG_sRGB_565;
-        if(isBigEndian())
-            f = VG_sBGR_565;
-        f = VG_sRGB_565;
-        vgReadPixels(fr, w*sizeof (PACKEDCOLORMAIN_T), f, 0, 0, w, h);
+	#if LCDMODE_MAIN_RGB565
+		VGImageFormat f = VG_sRGB_565;
+		if(isBigEndian())
+			f = VG_sBGR_565;
+	#elif LCDMODE_MAIN_RGB888
+        VGImageFormat f = VG_sXBGR_8888;
+         if(isBigEndian())
+             f = VG_sRGBX_8888;
+	#endif
+         vgReadPixels(fr, w*sizeof (PACKEDCOLORMAIN_T), f, 0, 0, w, h);
 		display_flush();
-		PRINTF("OSBlitToWindow: tmpWidth=%d, tmpHeight=%d\n", ctx->tmpWidth, ctx->tmpHeight);
+		//PRINTF("OSBlitToWindow: tmpWidth=%d, tmpHeight=%d\n", ctx->tmpWidth, ctx->tmpHeight);
 		//display_fillrect(x, y, x2 - x, y2 - y, color);
     }
 }
