@@ -37,6 +37,9 @@
 #include "egl.h"
 #include "riImage.h"
 
+#include "src/display/display.h"
+#include "display2.h"
+
 namespace OpenVGRI
 {
 
@@ -145,14 +148,32 @@ void OSGetWindowSize(const void* context, int& width, int& height)
     }
 }
 
+static bool isBigEndian()
+{
+	static const RIuint32 v = 0x12345678u;
+	const RIuint8* p = (const RIuint8*)&v;
+	RI_ASSERT (*p == (RIuint8)0x12u || *p == (RIuint8)0x78u);
+	return (*p == (RIuint8)(0x12)) ? true : false;
+}
+
 void OSBlitToWindow(void* context, const Drawable* drawable)
 {
     OSWindowContext* ctx = (OSWindowContext*)context;
     if(ctx)
     {
+		PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
 		ctx->tmpWidth = drawable->getWidth();
 		ctx->tmpHeight = drawable->getHeight();
+		int w = drawable->getWidth();
+		int h = drawable->getHeight();
+        VGImageFormat f = VG_sRGB_565;
+        if(isBigEndian())
+            f = VG_sBGR_565;
+        f = VG_sRGB_565;
+        vgReadPixels(fr, w*sizeof(unsigned int), f, 0, 0, w, h);
+		display_flush();
 		PRINTF("OSBlitToWindow: tmpWidth=%d, tmpHeight=%d\n", ctx->tmpWidth, ctx->tmpHeight);
+		//display_fillrect(x, y, x2 - x, y2 - y, color);
     }
 }
 

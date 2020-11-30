@@ -5814,16 +5814,19 @@ void hightests(void)
 		board_update();
 		TP();
 		init((NativeWindowType) NULL);
-		display_flush();
 		TP();
 		render(DIM_X, DIM_Y);
-		display_flush();
 		TP();
-		local_delay_ms(250);
+		for (;;)
+		{
+			char c;
+			if (dbg_getchar(& c))
+			{
+				break;
+			}
+		}
 		deinit();
-		display_flush();
 		TP();
-		local_delay_ms(250);
 	}
 #endif
 #if 0 && (__CORTEX_A != 0)
