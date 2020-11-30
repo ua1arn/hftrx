@@ -950,7 +950,6 @@ void board_set_afspeclow(int_fast16_t v);		// нижняя частота ото
 void board_set_afspechigh(int_fast16_t v);		// верхняя частота отображения спектроанализатора
 
 PACKEDCOLORMAIN_T * colmain_fb_draw(void);		// буфер для построения изображения
-PACKEDCOLORMAIN_T * colmain_fb_show(void);		// буфер для отображения
 void colmain_fb_next(void);						// переключиться на использование следующего фреймбуфера.
 void colmain_fb_initialize(void);
 

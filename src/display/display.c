@@ -47,13 +47,7 @@ typedef PACKEDCOLORMAIN_T FRAMEBUFF_T [LCDMODE_MAIN_PAGES] [GXSIZE(DIM_SECOND, D
 	PACKEDCOLORMAIN_T *
 	colmain_fb_draw(void)
 	{
-		return fbfX [(mainphase + 1) % ARRAY_SIZE(fbfX)];
-	}
-
-	PACKEDCOLORMAIN_T *
-	colmain_fb_show(void)
-	{
-		return fbfX [(mainphase + 0) % ARRAY_SIZE(fbfX)];
+		return fbfX [mainphase];
 	}
 
 	void colmain_fb_initialize(void)
@@ -75,13 +69,6 @@ typedef PACKEDCOLORMAIN_T FRAMEBUFF_T [LCDMODE_MAIN_PAGES] [GXSIZE(DIM_SECOND, D
 		return & framebuff[0][0];
 	}
 
-
-	PACKEDCOLORMAIN_T *
-	colmain_fb_show(void)
-	{
-		return & framebuff[0][0];
-	}
-
 	void colmain_fb_initialize(void)
 	{
 		memset(framebuff, 0, sizeof framebuff);
@@ -96,13 +83,6 @@ typedef PACKEDCOLORMAIN_T FRAMEBUFF_T [LCDMODE_MAIN_PAGES] [GXSIZE(DIM_SECOND, D
 
 	PACKEDCOLORMAIN_T *
 	colmain_fb_draw(void)
-	{
-		return fbf;
-	}
-
-
-	PACKEDCOLORMAIN_T *
-	colmain_fb_show(void)
 	{
 		return fbf;
 	}
