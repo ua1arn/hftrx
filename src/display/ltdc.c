@@ -1363,7 +1363,7 @@ static void LCD_LayerInit(
 	/* Pixel Format configuration*/
 	LTDC_Layer_InitStruct.LTDC_PixelFormat = LTDC_PixelFormat;
 	/* Alpha constant (255 totally opaque = непрозрачный) */
-	LTDC_Layer_InitStruct.LTDC_ConstantAlpha = 255; 
+	LTDC_Layer_InitStruct.LTDC_ConstantAlpha = 255;
 	/* Default Color configuration (configure A,R,G,B component values) */          
 	LTDC_Layer_InitStruct.LTDC_DefaultColor = 0; // transparent=прозрачный black color. outside active layer area
 	/* Configure blending factors */       
