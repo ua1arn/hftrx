@@ -5472,6 +5472,13 @@ static uint_fast32_t any_rd_reg_32bits(uint_fast8_t i2caddr, uint_fast8_t regist
 #	include "EGL/egl.h"
 #endif
 
+EGLDisplay			egldisplay;
+EGLConfig			eglconfig;
+EGLSurface			eglsurface;
+EGLContext			eglcontext;
+
+#if 0
+
 #include "tiger.h"
 
 /*--------------------------------------------------------------*/
@@ -5479,10 +5486,6 @@ static uint_fast32_t any_rd_reg_32bits(uint_fast8_t i2caddr, uint_fast8_t regist
 const float			aspectRatio = 612.0f / 792.0f;
 int					renderWidth = 0;
 int					renderHeight = 0;
-EGLDisplay			egldisplay;
-EGLConfig			eglconfig;
-EGLSurface			eglsurface;
-EGLContext			eglcontext;
 
 /*--------------------------------------------------------------*/
 
@@ -5732,6 +5735,9 @@ void render(int w, int h)
 		float scaleY = h / (tigerMaxY - tigerMinY);
 		float scale = fminf(scaleX, scaleY);
 
+		//vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_BETTER);
+		//vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_NONANTIALIASED);
+
 		eglSwapBuffers(egldisplay, eglsurface);	//force EGL to recognize resize
 
 		vgSetfv(VG_CLEAR_COLOR, 4, clearColor);
@@ -5752,16 +5758,17 @@ void render(int w, int h)
 	assert(eglGetError() == EGL_SUCCESS);
 }
 
+#endif /* tiger */
 /*--------------------------------------------------------------*/
 
 void init(NativeWindowType window)
 {
 	static const EGLint s_configAttribs[] =
 	{
-		EGL_RED_SIZE,		5,
-		EGL_GREEN_SIZE, 	6,
-		EGL_BLUE_SIZE,		5,
-		EGL_ALPHA_SIZE, 	0,
+		EGL_RED_SIZE,		8,
+		EGL_GREEN_SIZE, 	8,
+		EGL_BLUE_SIZE,		8,
+		EGL_ALPHA_SIZE, 	8,
 		EGL_LUMINANCE_SIZE, EGL_DONT_CARE,			//EGL_DONT_CARE
 		EGL_SURFACE_TYPE,	EGL_WINDOW_BIT,
 		EGL_SAMPLES,		1,
@@ -5800,45 +5807,45 @@ void deinit(void)
 
 void rendertest(int w, int h)
 {
-		float clearColor[4] = {0,1,0,1};
-//		float scaleX = w / (tigerMaxX - tigerMinX);
-//		float scaleY = h / (tigerMaxY - tigerMinY);
-//		float scale = fminf(scaleX, scaleY);
-//		PRINTF("render: scaleX=%f, scaleY=%f\n", scaleX, scaleY);
+	static const float clearColor[4] = {0,1,0,1};
+	//		float scaleX = w / (tigerMaxX - tigerMinX);
+	//		float scaleY = h / (tigerMaxY - tigerMinY);
+	//		float scale = fminf(scaleX, scaleY);
+	//		PRINTF("render: scaleX=%f, scaleY=%f\n", scaleX, scaleY);
 
-		eglSwapBuffers(egldisplay, eglsurface);	//force EGL to recognize resize
+	eglSwapBuffers(egldisplay, eglsurface);	//force EGL to recognize resize
 
-		//vgSeti(VG_IMAGE_QUALITY, VG_IMAGE_QUALITY_NONANTIALIASED);
-		vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_NONANTIALIASED);
-		//vgSeti(VG_FILL_RULE, VG_NON_ZERO);
+	vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_BETTER);
+	//vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_NONANTIALIASED);
+	//vgSeti(VG_FILL_RULE, VG_NON_ZERO);
 
-		vgSeti(VG_PIXEL_LAYOUT, VG_PIXEL_LAYOUT_RGB_HORIZONTAL);
-		//vgSeti(VG_SCREEN_LAYOUT, );
+	vgSeti(VG_PIXEL_LAYOUT, VG_PIXEL_LAYOUT_RGB_HORIZONTAL);
+	//vgSeti(VG_SCREEN_LAYOUT, );
 
-		vgSetfv(VG_CLEAR_COLOR, 4, clearColor);
-		vgClear(0, 0, w, h);
+	vgSetfv(VG_CLEAR_COLOR, 4, clearColor);
+	vgClear(0, 0, w, h);
 
-		VGPath path = vgCreatePath(VG_PATH_FORMAT_STANDARD, VG_PATH_DATATYPE_F, 1.0f, 0.0f, 0, 0, (unsigned int)VG_PATH_CAPABILITY_ALL);
+	VGPath path = vgCreatePath(VG_PATH_FORMAT_STANDARD, VG_PATH_DATATYPE_S_16 /*VG_PATH_DATATYPE_F */, 1.0f, 0.0f, 0, 0, (unsigned int)VG_PATH_CAPABILITY_ALL);
 
-		float drawColorRed[4] = {1,0,0,1 * 1};
-		vgSetfv(VG_TILE_FILL_COLOR, 4, drawColorRed);
-		VERIFY(VGU_NO_ERROR == vguRect(path, 0, 0, 100, 100));
+	static const float drawColorRed[4] = {1,0,0,1 * 1};
+	vgSetfv(VG_TILE_FILL_COLOR, 4, drawColorRed);
+	VERIFY(VGU_NO_ERROR == vguRect(path, 0, 0, 100, 100));
 
-		float drawColorGreen[4] = {0,1,0,1 * 1};
-		vgSetfv(VG_TILE_FILL_COLOR, 4, drawColorGreen);
-		VERIFY(VGU_NO_ERROR == vguRoundRect(path, 100, 100, 100, 100, 10, 10));
+	static const float drawColorGreen[4] = {0,1,0,1 * 1};
+	vgSetfv(VG_TILE_FILL_COLOR, 4, drawColorGreen);
+	VERIFY(VGU_NO_ERROR == vguRoundRect(path, 100, 100, 100, 100, 10, 10));
 
-		vgDrawPath(path, VG_FILL_PATH);
+	vgDrawPath(path, VG_FILL_PATH);
 
-		vgDestroyPath(path);
-//		vgLoadIdentity();
-//		vgScale(scale, scale);
-//		vgTranslate(- tigerMinX, -tigerMinY + 0.5f * (h / scale - (tigerMaxY - tigerMinY)));
-//		//vgTranslate(-tigerMinX + 0.5f * (w / scale - (tigerMaxX - tigerMinX)), -tigerMinY + 0.5f * (h / scale - (tigerMaxY - tigerMinY)));
-//		//vgTranslate(-tigerMinX, tigerMinY);
-//		//vgRotate(30);
-//		PS_render(tiger);
-//		assert(vgGetError() == VG_NO_ERROR);
+	vgDestroyPath(path);
+	//		vgLoadIdentity();
+	//		vgScale(scale, scale);
+	//		vgTranslate(- tigerMinX, -tigerMinY + 0.5f * (h / scale - (tigerMaxY - tigerMinY)));
+	//		//vgTranslate(-tigerMinX + 0.5f * (w / scale - (tigerMaxX - tigerMinX)), -tigerMinY + 0.5f * (h / scale - (tigerMaxY - tigerMinY)));
+	//		//vgTranslate(-tigerMinX, tigerMinY);
+	//		//vgRotate(30);
+	//		PS_render(tiger);
+	//		assert(vgGetError() == VG_NO_ERROR);
 
 
 	eglSwapBuffers(egldisplay, eglsurface);
@@ -5876,7 +5883,7 @@ void hightests(void)
 		TP();
 		init((NativeWindowType) NULL);
 		TP();
-#if 1
+#if 0
 		tiger = PS_construct(tigerCommands, tigerCommandCount, tigerPoints, tigerPointCount);
 		render(DIM_X, DIM_Y);
 		PS_destruct(tiger);
