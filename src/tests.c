@@ -5730,7 +5730,7 @@ void render(int w, int h)
 		float clearColor[4] = {1,1,1,1};
 		float scaleX = w / (tigerMaxX - tigerMinX);
 		float scaleY = h / (tigerMaxY - tigerMinY);
-		float scale = fmaxf(scaleX, scaleY);
+		float scale = fminf(scaleX, scaleY);
 
 		eglSwapBuffers(egldisplay, eglsurface);	//force EGL to recognize resize
 
@@ -5812,6 +5812,9 @@ void rendertest(int w, int h)
 		vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_NONANTIALIASED);
 		//vgSeti(VG_FILL_RULE, VG_NON_ZERO);
 
+		vgSeti(VG_PIXEL_LAYOUT, VG_PIXEL_LAYOUT_RGB_HORIZONTAL);
+		//vgSeti(VG_SCREEN_LAYOUT, );
+
 		vgSetfv(VG_CLEAR_COLOR, 4, clearColor);
 		vgClear(0, 0, w, h);
 
@@ -5819,11 +5822,11 @@ void rendertest(int w, int h)
 
 		float drawColorRed[4] = {1,0,0,1 * 1};
 		vgSetfv(VG_TILE_FILL_COLOR, 4, drawColorRed);
-		vguRect(path, 0, 0, 100, 100);
+		VERIFY(VGU_NO_ERROR == vguRect(path, 0, 0, 100, 100));
 
 		float drawColorGreen[4] = {0,1,0,1 * 1};
 		vgSetfv(VG_TILE_FILL_COLOR, 4, drawColorGreen);
-		vguRoundRect(path, 100, 100, 100, 100, 10, 10);
+		VERIFY(VGU_NO_ERROR == vguRoundRect(path, 100, 100, 100, 100, 10, 10));
 
 		vgDrawPath(path, VG_FILL_PATH);
 
@@ -5866,14 +5869,14 @@ void hightests(void)
 		PRINTF("sizeof time_t == %u, t = %lu\n", sizeof (time_t), (unsigned long) t);
 	}
 #endif
-#if 0 && WITHOPENVG
+#if 1 && WITHOPENVG
 	{
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 		board_update();
 		TP();
 		init((NativeWindowType) NULL);
 		TP();
-#if 0
+#if 1
 		tiger = PS_construct(tigerCommands, tigerCommandCount, tigerPoints, tigerPointCount);
 		render(DIM_X, DIM_Y);
 		PS_destruct(tiger);
