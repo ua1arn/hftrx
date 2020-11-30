@@ -316,11 +316,11 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 
 		// RRRR.RGGG.GGGB.BBBB
 		#define TFTRGB(red, green, blue) \
-			(  (uint_fast16_t) \
+			(  (uint_fast32_t) \
 				(	\
-					(((uint_fast16_t) (red) << 16) &   0xFF0000)  | \
-					(((uint_fast16_t) (green) << 8) & 0xFF00) | \
-					(((uint_fast16_t) (blue) >> 0) &  0x00F) \
+					(((uint_fast32_t) (red) << 16) &   0xFF0000)  | \
+					(((uint_fast32_t) (green) << 8) & 0xFF00) | \
+					(((uint_fast32_t) (blue) >> 0) &  0x00F) \
 				) \
 			)
 

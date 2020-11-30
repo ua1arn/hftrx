@@ -42,6 +42,11 @@
 	#define MDMA_CTCR_xSIZE_MAIN			0x00	// 1 byte
 	////#define DMA2D_OPFCCR_CM_VALUE	(x * DMA2D_OPFCCR_CM_0)	/* not supported */
 
+#elif LCDMODE_MAIN_RGB888
+	#define DMA2D_FGPFCCR_CM_VALUE_MAINxxxx	(0 * DMA2D_FGPFCCR_CM_0)	/* 0: ARGB888 */
+	#define MDMA_CTCR_xSIZE_MAIN			0x02	// 10: Word (32-bit)
+	////#define DMA2D_OPFCCR_CM_VALUE	(x * DMA2D_OPFCCR_CM_0)	/* not supported */
+
 #else /* LCDMODE_MAIN_L8 */
 	#define DMA2D_FGPFCCR_CM_VALUE_MAIN	(2 * DMA2D_FGPFCCR_CM_0)	/* 0010: RGB565 */
 	//#define DMA2D_OPFCCR_CM_VALUE_MAIN	(2 * DMA2D_OPFCCR_CM_0)	/* 010: RGB565 */
