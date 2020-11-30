@@ -170,7 +170,7 @@ void OSBlitToWindow(void* context, const Drawable* drawable)
         if(isBigEndian())
             f = VG_sBGR_565;
         f = VG_sRGB_565;
-        vgReadPixels(fr, w*sizeof(unsigned int), f, 0, 0, w, h);
+        vgReadPixels(fr, w*sizeof (PACKEDCOLORMAIN_T), f, 0, 0, w, h);
 		display_flush();
 		PRINTF("OSBlitToWindow: tmpWidth=%d, tmpHeight=%d\n", ctx->tmpWidth, ctx->tmpHeight);
 		//display_fillrect(x, y, x2 - x, y2 - y, color);
