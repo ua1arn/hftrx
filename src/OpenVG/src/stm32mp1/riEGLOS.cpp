@@ -32,7 +32,7 @@
 
 #include "hardware.h"
 
-#if WITHOPENVG
+#if 1//WITHOPENVG
 
 #include "egl.h"
 #include "riImage.h"
