@@ -9,6 +9,7 @@
 #include "formats.h"
 
 #if 0
+// Тест конструкторов глобальных объектов
 
 class tcl0 {
 public:
@@ -20,9 +21,9 @@ public:
 	}
 };
 
-//static class tcl0 gltest;
-//static RAMDTCM class tcl0 gltest2;
-//static RAMBIG class tcl0 gltest3;
+static class tcl0 gltest;
+static RAMDTCM class tcl0 gltest2;
+static RAMBIG class tcl0 gltest3;
 
 static RAMDTCM char xxxx [32];
 
@@ -48,7 +49,10 @@ void cpptest() {
 
 // Taken from https://wiki.osdev.org/C++#The_Operators_.27new.27_and_.27delete.27
 
-#if WITHUSEMALLOC
+#if 0// WITHUSEMALLOC
+// при использовании компилятора g++ вместо gcc этот код не требуется
+// Скорее всего благодаря ключу -lstdc++
+// see https://stackoverflow.com/questions/172587/what-is-the-difference-between-g-and-gcc
 
 void *operator new(size_t size) {
 	return malloc(size);
@@ -92,6 +96,10 @@ std::exception::~exception()
 
 #endif /* WITHUSEMALLOC */
 
+#if 0
+// при использовании компилятора g++ вместо gcc этот код не требуется
+// Скорее всего благодаря ключу -lstdc++
+// see https://stackoverflow.com/questions/172587/what-is-the-difference-between-g-and-gcc
 
 extern "C" {
 
@@ -123,6 +131,11 @@ extern "C" {
 	void __cxa_end_catch()
 	{
 	    //printf("end FTW\n");
+	}
+
+	void __cxa_end_cleanup()
+	{
+
 	}
 
 	void ATTRNORETURN __cxa_rethrow()
@@ -176,3 +189,4 @@ extern "C" {
 		return 0;
 	}
 }
+#endif

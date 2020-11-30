@@ -58,7 +58,7 @@ SECTIONS
 	.text :
 	{
 		. = ALIGN(32);
-		KEEP(*(.init*))
+		KEEP(*(.init))
 		KEEP(*(.initfunc*))
 		KEEP(*(.initdata*))
 		KEEP(*(.fini))
@@ -138,7 +138,6 @@ SECTIONS
 		KEEP(*(.eh_frame*))
 
 		*(.data*)
-	   . = ALIGN(4);	/* one line added by ua1arn */
 
 		. = ALIGN(4);
 		/* preinit data */
