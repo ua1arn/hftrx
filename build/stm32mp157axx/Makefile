@@ -41,6 +41,7 @@ CORE += -mfloat-abi=hard
 #CORE += -mcpu=cortex-a7
 #CORE += -mfpu=vfpv4-d16
 CORE += -mfpu=neon
+#CORE += -mlong-calls
 
 # Define optimisation level here
 # ony -Og for app
@@ -50,7 +51,7 @@ ifeq "bootloader" "1 bootloader"
 OPT = -Os
 LTO = -flto
 OBJDIR2 = objboot
-UDEFS += -DWITHISBOOTLOADER
+UDEFS += -D"WITHISBOOTLOADER"
 
 else
 
@@ -107,7 +108,7 @@ LDSCRIPT_BOOT = ./stm32mp15xx_ca7_boot.ld
 LDSCRIPT_APP = ./stm32mp15xx_ca7_app.ld
 
 # List all user C define here, like -D_DEBUG=1
-UDEFS += -DNDEBUG=1 -DCPUSTYLE_STM32MP1=1 -DSTM32MP153Dxx=1 -DEGL_STATIC_LIBRARY=1
+UDEFS += -D"NDEBUG"=1 -D"CPUSTYLE_STM32MP1"=1 -D"STM32MP153Dxx"=1 -D"EGL_STATIC_LIBRARY"=1
 
 # Define ASM defines here
 UADEFS = 

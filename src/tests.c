@@ -5715,7 +5715,9 @@ void render(int w, int h)
 	if(renderWidth != w || renderHeight != h)
 	{
 		float clearColor[4] = {1,1,1,1};
-		float scale = w / (tigerMaxX - tigerMinX);
+		float scaleX = w / (tigerMaxX - tigerMinX);
+		float scaleY = h / (tigerMaxY - tigerMinY);
+		float scale = fmaxf(scaleX, scaleY);
 
 		eglSwapBuffers(egldisplay, eglsurface);	//force EGL to recognize resize
 
@@ -5743,10 +5745,10 @@ void init(NativeWindowType window)
 {
 	static const EGLint s_configAttribs[] =
 	{
-		EGL_RED_SIZE,		8,
-		EGL_GREEN_SIZE, 	8,
-		EGL_BLUE_SIZE,		8,
-		EGL_ALPHA_SIZE, 	8,
+		EGL_RED_SIZE,		5,
+		EGL_GREEN_SIZE, 	6,
+		EGL_BLUE_SIZE,		5,
+		EGL_ALPHA_SIZE, 	0,
 		EGL_LUMINANCE_SIZE, EGL_DONT_CARE,			//EGL_DONT_CARE
 		EGL_SURFACE_TYPE,	EGL_WINDOW_BIT,
 		EGL_SAMPLES,		1,
@@ -5770,19 +5772,60 @@ void init(NativeWindowType window)
 	eglMakeCurrent(egldisplay, eglsurface, eglsurface, eglcontext);
 	assert(eglGetError() == EGL_SUCCESS);
 
-	tiger = PS_construct(tigerCommands, tigerCommandCount, tigerPoints, tigerPointCount);
 }
 
 /*--------------------------------------------------------------*/
 
 void deinit(void)
 {
-	PS_destruct(tiger);
 	eglMakeCurrent(egldisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
 	assert(eglGetError() == EGL_SUCCESS);
 	eglTerminate(egldisplay);
 	assert(eglGetError() == EGL_SUCCESS);
 	eglReleaseThread();
+}
+
+void rendertest(int w, int h)
+{
+		float clearColor[4] = {0,1,0,1};
+//		float scaleX = w / (tigerMaxX - tigerMinX);
+//		float scaleY = h / (tigerMaxY - tigerMinY);
+//		float scale = fminf(scaleX, scaleY);
+//		PRINTF("render: scaleX=%f, scaleY=%f\n", scaleX, scaleY);
+
+		eglSwapBuffers(egldisplay, eglsurface);	//force EGL to recognize resize
+
+		vgSeti(VG_IMAGE_QUALITY, VG_IMAGE_QUALITY_FASTER);
+
+		vgSetfv(VG_CLEAR_COLOR, 4, clearColor);
+		vgClear(0, 0, w, h);
+
+		VGPath path = vgCreatePath(VG_PATH_FORMAT_STANDARD, VG_PATH_DATATYPE_F, 1.0f, 0.0f, 0, 0, (unsigned int)VG_PATH_CAPABILITY_ALL);
+
+		float drawColorRed[4] = {1,0,0,1 * 0};
+		vgSetfv(VG_TILE_FILL_COLOR, 4, drawColorRed);
+		vguRect(path, 0, 0, 100, 100);
+
+		float drawColorGreen[4] = {0,1,0,1 * 0};
+		vgSetfv(VG_TILE_FILL_COLOR, 4, drawColorGreen);
+		vguRect(path, 100, 100, 100, 100);
+
+		vgDrawPath(path, VG_FILL_PATH);
+
+		vgDestroyPath(path);
+//		vgLoadIdentity();
+//		vgScale(scale, scale);
+//		vgTranslate(- tigerMinX, -tigerMinY + 0.5f * (h / scale - (tigerMaxY - tigerMinY)));
+//		//vgTranslate(-tigerMinX + 0.5f * (w / scale - (tigerMaxX - tigerMinX)), -tigerMinY + 0.5f * (h / scale - (tigerMaxY - tigerMinY)));
+//		//vgTranslate(-tigerMinX, tigerMinY);
+//		//vgRotate(30);
+//		PS_render(tiger);
+//		assert(vgGetError() == VG_NO_ERROR);
+
+
+	eglSwapBuffers(egldisplay, eglsurface);
+	assert(eglGetError() == EGL_SUCCESS);
+
 }
 
 /*--------------------------------------------------------------*/
@@ -5815,12 +5858,20 @@ void hightests(void)
 		TP();
 		init((NativeWindowType) NULL);
 		TP();
+#if 0
+		tiger = PS_construct(tigerCommands, tigerCommandCount, tigerPoints, tigerPointCount);
 		render(DIM_X, DIM_Y);
+		PS_destruct(tiger);
+#else
+		rendertest(DIM_X, DIM_Y);
+#endif
 		TP();
+		// wait for press any key
 		for (;;)
 		{
-			char c;
-			if (dbg_getchar(& c))
+			uint_fast8_t kbch, repeat;
+
+			if ((repeat = kbd_scan(& kbch)) != 0)
 			{
 				break;
 			}
