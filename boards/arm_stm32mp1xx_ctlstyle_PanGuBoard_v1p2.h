@@ -502,8 +502,11 @@
 		#endif
 		//#define WITHAFSPECTRE		1	/* показ спктра прослушиваемого НЧ сигнала. */
 	#endif /* LCDMODE_AT070TNA2 || LCDMODE_AT070TN90 */
-	//#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
-	//#define WITHOPENVG	1		/* Использоывние OpenVG (khronos.org) */
+	#if 0
+		#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
+		#define WITHOPENVG	1		/* Использоывние OpenVG (khronos.org) - -fexceptions required */
+		#define FORMATFROMLIBRARY 	1	/* поддержка печати плавающей точки */
+	#endif
 	//#define LO1PHASES	1		/* Прямой синтез первого гетеродина двумя DDS с програмимруемым сдвигом фазы */
 	#define WITHFANTIMER	1	/* выключающийся по таймеру вентилятор в усилителе мощности */
 	#define WITHSLEEPTIMER	1	/* выключить индикатор и вывод звука по истечениии указанного времени */

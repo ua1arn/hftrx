@@ -5477,7 +5477,7 @@ EGLConfig			eglconfig;
 EGLSurface			eglsurface;
 EGLContext			eglcontext;
 
-#if 0
+#if 1
 
 #include "tiger.h"
 

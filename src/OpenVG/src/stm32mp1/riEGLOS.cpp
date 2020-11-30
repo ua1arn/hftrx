@@ -30,7 +30,7 @@
  * \note
   *//*-------------------------------------------------------------------*/
 
-#include "board.h"
+#include "hardware.h"
 
 #if WITHOPENVG
 
@@ -175,11 +175,11 @@ void OSBlitToWindow(void* context, const Drawable* drawable)
 		 if(isBigEndian())
 			 f = VG_sBGRA_8888;
 	#elif LCDMODE_MAIN_L8
-		VGImageFormat f = VG_lL_8;
+		VGImageFormat f = VG_sL_8;
 	#else
 		#error Unsupported video format
 	#endif
-		vgReadPixels(fr, w*sizeof (PACKEDCOLORMAIN_T), f, 0, 0, w, h);
+		vgReadPixels(fr, w * sizeof (* fr), f, 0, 0, w, h);
 		display_flush();
 		//PRINTF("OSBlitToWindow: tmpWidth=%d, tmpHeight=%d\n", ctx->tmpWidth, ctx->tmpHeight);
 		//display_fillrect(x, y, x2 - x, y2 - y, color);

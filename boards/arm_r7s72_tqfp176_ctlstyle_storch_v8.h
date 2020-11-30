@@ -101,8 +101,8 @@
 
 	#define LCDMODE_AT070TN90 1	/* AT070TN90 panel (800*480) - 7" display */
 
-	//#define LCDMODE_V2	1	/* только главный экран с тремя видеобуферами, L8, без PIP */
-	#define LCDMODE_V2B 1	/* только главный экран 16 бит (одна страница), без PIP */
+	#define LCDMODE_V2	1	/* только главный экран с тремя видеобуферами, L8, без PIP */
+	//#define LCDMODE_V2B 1	/* только главный экран 16 бит (одна страница), без PIP */
 
 	//#define WITHFLATLINK 1	/* Работа с TFT панелью через SN75LVDS83B	*/
 	//#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
@@ -390,9 +390,11 @@
 		#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
 		#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
 	#endif /* LCDMODE_AT070TNA2 || LCDMODE_AT070TN90 */
-	#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
-	#define WITHOPENVG	1		/* Использоывние OpenVG (khronos.org) - -fexceptions required */
-	#define FORMATFROMLIBRARY 	1	/* поддержка печати плавающей точки */
+	#if 1
+		#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
+		#define WITHOPENVG	1		/* Использоывние OpenVG (khronos.org) - -fexceptions required */
+		#define FORMATFROMLIBRARY 	1	/* поддержка печати плавающей точки */
+	#endif
 	// --- Эти строки можно отключать, уменьшая функциональность готового изделия
 
 	#define WITHMODESETFULLNFM 1

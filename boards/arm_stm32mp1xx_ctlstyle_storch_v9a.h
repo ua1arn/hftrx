@@ -493,9 +493,11 @@
 	#define WITHDIRECTBANDS 1	/* Прямой переход к диапазонам по нажатиям на клавиатуре */
 	// --- Эти строки можно отключать, уменьшая функциональность готового изделия
 
-	#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
-	#define WITHOPENVG	1		/* Использоывние OpenVG (khronos.org) - -fexceptions required */
-	#define FORMATFROMLIBRARY 	1	/* поддержка печати плавающей точки */
+	#if 1
+		#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
+		#define WITHOPENVG	1		/* Использоывние OpenVG (khronos.org) - -fexceptions required */
+		#define FORMATFROMLIBRARY 	1	/* поддержка печати плавающей точки */
+	#endif
 	//#define LO1PHASES	1		/* Прямой синтез первого гетеродина двумя DDS с програмимруемым сдвигом фазы */
 	#define WITHFANTIMER	1	/* выключающийся по таймеру вентилятор в усилителе мощности */
 	#define WITHSLEEPTIMER	1	/* выключить индикатор и вывод звука по истечениии указанного времени */
