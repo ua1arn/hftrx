@@ -21,10 +21,10 @@
 #include "spi.h"
 #include "gpio.h"
 
-#if WITHUSEAUDIOREC
+#if WITHUSEFATFS
 	#include "fatfs/ff.h"
 	#include "sdcard.h"
-#endif /* WITHUSEAUDIOREC */
+#endif /* WITHUSEFATFS */
 
 #include <string.h>
 #include <ctype.h>
@@ -3453,7 +3453,7 @@ static const uint8_t pe2014 [] =
 
 #endif /* ARM_STM32L051_TQFP32_CPUSTYLE_V1_H_INCLUDED */
 
-#if 1 && WITHDEBUG && WITHUSEAUDIOREC
+#if 1 && WITHDEBUG && WITHUSEFATFS
 
 struct fb
 {
@@ -3662,7 +3662,17 @@ static void test_recodstart(void)
 	system_enableIRQ();
 }
 
-unsigned USBD_poke_u32(uint8_t * buff, uint_fast32_t v);
+#if 0
+/* записать в буфер для ответа 32-бит значение */
+unsigned USBD_poke_u32X(uint8_t * buff, uint_fast32_t v)
+{
+	buff [0] = LO_BYTE(v);
+	buff [1] = HI_BYTE(v);
+	buff [2] = HI_24BY(v);
+	buff [3] = HI_32BY(v);
+
+	return 4;
+}
 
 // сохранение потока данных большими блоками
 static void dosaveblocks(const char * fname)
@@ -3676,7 +3686,7 @@ static void dosaveblocks(const char * fname)
 	f_mount(& Fatfs, "", 0);		/* Register volume work area (never fails) */
 	memset(rbuff, 0xE5, sizeof rbuff);
 	static int i;
-	USBD_poke_u32(rbuff, ++ i);
+	USBD_poke_u32X(rbuff, ++ i);
 	rc = f_open(& Fil, fname, FA_WRITE | FA_CREATE_ALWAYS);
 	if (rc)
 	{
@@ -3762,6 +3772,7 @@ static void dosaveblocks(const char * fname)
 		PRINTF("Write speed %ld kB/S\n", (long) (kbs / 1000 / 60));
 	}
 }
+#endif
 
 #if 0
 
@@ -4161,7 +4172,7 @@ static void fatfs_filesystest(int speedtest)
 					dosaveserialport(testlog);
 				}
 				break;
-
+#if 0
 			case 'W':
 				if (speedtest)
 				{
@@ -4181,11 +4192,12 @@ static void fatfs_filesystest(int speedtest)
 					dosaveblocks(testlog);
 				}
 				break;
+#endif
 			}
 		}
 	}
 }
-
+#if 0
 static void fatfs_filesyspeedstest(void)
 {
 	uint_fast16_t year;
@@ -4208,6 +4220,7 @@ static void fatfs_filesyspeedstest(void)
 		);
 	dosaveblocks(testlog);
 }
+#endif
 
 #endif /* WITHDEBUG && WITHUSEAUDIOREC */
 
@@ -5389,8 +5402,8 @@ static uint_fast32_t any_rd_reg_32bits(uint_fast8_t i2caddr, uint_fast8_t regist
 {
 	uint8_t v0, v1, v2, v3;
 
-	i2c_start(i2caddr | 0x00);
-	i2c_write_withrestart(register_id);
+	//i2c_start(i2caddr | 0x00);
+	//i2c_write_withrestart(register_id);
 	i2c_start(i2caddr | 0x01);
 	i2c_read(& v0, I2C_READ_ACK_1);	// ||
 	i2c_read(& v1, I2C_READ_ACK);	// ||
@@ -5853,7 +5866,7 @@ void hightests(void)
 		PRINTF("sizeof time_t == %u, t = %lu\n", sizeof (time_t), (unsigned long) t);
 	}
 #endif
-#if 1 && WITHOPENVG
+#if 0 && WITHOPENVG
 	{
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 		board_update();
@@ -6503,19 +6516,19 @@ void hightests(void)
 		}
 	}
 #endif
-#if 0 && WITHDEBUG && WITHUSEAUDIOREC
+#if 0 && WITHDEBUG && WITHUSEFATFS
 	// SD CARD low level functions test
 	{
 		diskio_test();
 	}
 #endif
-#if 0 && WITHDEBUG && WITHUSEAUDIOREC
+#if 0 && WITHDEBUG && WITHUSEFATFS
 	// SD CARD FatFs functions test
 	{
 		fatfs_filesystest(0);
 	}
 #endif
-#if 0 && WITHDEBUG && WITHUSEAUDIOREC
+#if 0 && WITHDEBUG && WITHUSEFATFS
 	// SD CARD file system level functions test
 	// no interactive
 	{
@@ -6582,7 +6595,7 @@ void hightests(void)
 		fatfs_filesystest(1);
 	}
 #endif
-#if 0 && WITHDEBUG && WITHUSEAUDIOREC
+#if 0 && WITHDEBUG && WITHUSEFATFS
 	// Автономный программатор SPI flash memory
 	{
 		//diskio_test();
