@@ -33,41 +33,41 @@ typedef PACKEDCOLORMAIN_T FRAMEBUFF_T [LCDMODE_MAIN_PAGES] [GXSIZE(DIM_SECOND, D
 	//extern FRAMEBUFF_T framebuff0;	//L8 (8-bit Luminance or CLUT)
 #endif /* defined (SDRAM_BANK_ADDR) && LCDMODE_LTDCSDRAMBUFF && LCDMODE_LTDC */
 
-#if ! defined (SDRAM_BANK_ADDR) && LCDMODE_MAIN_PAGES == 3
+#if ! defined (SDRAM_BANK_ADDR) // && LCDMODE_MAIN_PAGES == 3
 	// буфер экрана
 	//RAMFRAMEBUFF ALIGNX_BEGIN FRAMEBUFF_T framebuff0 ALIGNX_END;
-	RAMFRAMEBUFF ALIGNX_BEGIN PACKEDCOLORMAIN_T fbf0 [GXSIZE(DIM_SECOND, DIM_FIRST)] ALIGNX_END;
-	RAMFRAMEBUFF ALIGNX_BEGIN PACKEDCOLORMAIN_T fbf1 [GXSIZE(DIM_SECOND, DIM_FIRST)] ALIGNX_END;
-	RAMFRAMEBUFF ALIGNX_BEGIN PACKEDCOLORMAIN_T fbf2 [GXSIZE(DIM_SECOND, DIM_FIRST)] ALIGNX_END;
-	static PACKEDCOLORMAIN_T * const fbfs [] =
-	{
-			fbf0, fbf1, fbf2,
-	};
+	RAMFRAMEBUFF ALIGNX_BEGIN PACKEDCOLORMAIN_T fbfX [LCDMODE_MAIN_PAGES] [GXSIZE(DIM_SECOND, DIM_FIRST)] ALIGNX_END;
+//	RAMFRAMEBUFF ALIGNX_BEGIN PACKEDCOLORMAIN_T fbf1 [GXSIZE(DIM_SECOND, DIM_FIRST)] ALIGNX_END;
+//	RAMFRAMEBUFF ALIGNX_BEGIN PACKEDCOLORMAIN_T fbf2 [GXSIZE(DIM_SECOND, DIM_FIRST)] ALIGNX_END;
+//	static PACKEDCOLORMAIN_T * const fbfs [] =
+//	{
+//			fbf0, fbf1, fbf2,
+//	};
 
 	static uint_fast8_t mainphase;
 
 	void colmain_fb_next(void)
 	{
-		mainphase = (mainphase + 1) % ARRAY_SIZE(fbfs);
+		mainphase = (mainphase + 1) % ARRAY_SIZE(fbfX);
 	}
 
 	PACKEDCOLORMAIN_T *
 	colmain_fb_draw(void)
 	{
-		return fbfs [(mainphase + 1) % ARRAY_SIZE(fbfs)];
+		return fbfX [(mainphase + 1) % ARRAY_SIZE(fbfX)];
 	}
 
 	PACKEDCOLORMAIN_T *
 	colmain_fb_show(void)
 	{
-		return fbfs [(mainphase + 0) % ARRAY_SIZE(fbfs)];
+		return fbfX [(mainphase + 0) % ARRAY_SIZE(fbfX)];
 	}
 
 	void colmain_fb_initialize(void)
 	{
-		memset(fbf0, 0, sizeof fbf0);
-		memset(fbf1, 0, sizeof fbf1);
-		memset(fbf2, 0, sizeof fbf2);
+		unsigned i;
+		for (i = 0; i < LCDMODE_MAIN_PAGES; ++ i)
+			memset(fbfX [i], 0, sizeof fbfX [0]);
 	}
 
 #elif WITHSDRAMHW && LCDMODE_LTDCSDRAMBUFF
