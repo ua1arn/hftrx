@@ -5812,11 +5812,17 @@ void hightests(void)
 	{
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 		board_update();
-
+		TP();
 		init((NativeWindowType) NULL);
+		display_flush();
+		TP();
 		render(DIM_X, DIM_Y);
+		display_flush();
+		TP();
 		local_delay_ms(250);
 		deinit();
+		display_flush();
+		TP();
 		local_delay_ms(250);
 	}
 #endif

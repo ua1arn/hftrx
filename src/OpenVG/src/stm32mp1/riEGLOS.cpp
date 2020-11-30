@@ -106,8 +106,8 @@ void* OSCreateWindowContext(EGLNativeWindowType window)
 	{
 		return NULL;
 	}
-    ctx->tmpWidth = 0;
-    ctx->tmpHeight = 0;
+    ctx->tmpWidth = DIM_X;
+    ctx->tmpHeight = DIM_Y;
     return ctx;
 }
 
@@ -150,8 +150,9 @@ void OSBlitToWindow(void* context, const Drawable* drawable)
     OSWindowContext* ctx = (OSWindowContext*)context;
     if(ctx)
     {
-        ctx->tmpWidth = drawable->getWidth();
-        ctx->tmpHeight = drawable->getHeight();
+		ctx->tmpWidth = drawable->getWidth();
+		ctx->tmpHeight = drawable->getHeight();
+		PRINTF("OSBlitToWindow: tmpWidth=%d, tmpHeight=%d\n", ctx->tmpWidth, ctx->tmpHeight);
     }
 }
 
