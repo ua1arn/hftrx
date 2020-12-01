@@ -5154,7 +5154,7 @@ static void sdtick(void)
 }
 #endif
 
-#if LCDMODE_COLORED && ! DSTYLE_G_DUMMY && 0
+#if LCDMODE_COLORED && ! DSTYLE_G_DUMMY && 1
 
 
 
@@ -5494,15 +5494,58 @@ EGLConfig			eglconfig;
 EGLSurface			eglsurface;
 EGLContext			eglcontext;
 
-#if 0
+
+void openvg_init(NativeWindowType window)
+{
+	static const EGLint s_configAttribs[] =
+	{
+		EGL_RED_SIZE,		8,
+		EGL_GREEN_SIZE, 	8,
+		EGL_BLUE_SIZE,		8,
+		EGL_ALPHA_SIZE, 	8,
+		EGL_LUMINANCE_SIZE, EGL_DONT_CARE,			//EGL_DONT_CARE
+		EGL_SURFACE_TYPE,	EGL_WINDOW_BIT,
+		EGL_SAMPLES,		1,
+		EGL_NONE
+	};
+	EGLint numconfigs;
+
+	egldisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+	eglInitialize(egldisplay, NULL, NULL);
+	ASSERT(eglGetError() == EGL_SUCCESS);
+	eglBindAPI(EGL_OPENVG_API);
+
+	eglChooseConfig(egldisplay, s_configAttribs, &eglconfig, 1, &numconfigs);
+	ASSERT(eglGetError() == EGL_SUCCESS);
+	ASSERT(numconfigs == 1);
+
+	eglsurface = eglCreateWindowSurface(egldisplay, eglconfig, window, NULL);
+	ASSERT(eglGetError() == EGL_SUCCESS);
+	eglcontext = eglCreateContext(egldisplay, eglconfig, NULL, NULL);
+	ASSERT(eglGetError() == EGL_SUCCESS);
+	eglMakeCurrent(egldisplay, eglsurface, eglsurface, eglcontext);
+	ASSERT(eglGetError() == EGL_SUCCESS);
+
+}
+
+/*--------------------------------------------------------------*/
+
+void openvg_deinit(void)
+{
+	eglMakeCurrent(egldisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+	ASSERT(eglGetError() == EGL_SUCCESS);
+	eglTerminate(egldisplay);
+	ASSERT(eglGetError() == EGL_SUCCESS);
+	eglReleaseThread();
+}
+
+#if 1
 
 #include "tiger.h"
 
 /*--------------------------------------------------------------*/
 
-const float			aspectRatio = 612.0f / 792.0f;
-int					renderWidth = 0;
-int					renderHeight = 0;
+static const float			aspectRatio = 612.0f / 792.0f;
 
 /*--------------------------------------------------------------*/
 
@@ -5525,7 +5568,7 @@ typedef struct
 	int					m_numPaths;
 } PS;
 
-PS* PS_construct(const char* commands, int commandCount, const float* points, int pointCount)
+static PS* PS_construct(const char* commands, int commandCount, const float* points, int pointCount)
 {
 	PS* ps = (PS*)malloc(sizeof(PS));
 	int p = 0;
@@ -5542,7 +5585,7 @@ PS* PS_construct(const char* commands, int commandCount, const float* points, in
 		c += 4;
 		p += 8;
 		elements = (int)points[p++];
-		assert(elements > 0);
+		ASSERT(elements > 0);
 		if(elements > maxElements)
 			maxElements = elements;
 		for(e=0;e<elements;e++)
@@ -5554,7 +5597,7 @@ PS* PS_construct(const char* commands, int commandCount, const float* points, in
 			case 'C': p += 6; break;
 			case 'E': break;
 			default:
-				assert(0);		//unknown command
+				ASSERT(0);		//unknown command
 			}
 			c++;
 		}
@@ -5589,7 +5632,7 @@ PS* PS_construct(const char* commands, int commandCount, const float* points, in
 			paintMode |= VG_FILL_PATH;
 			break;
 		default:
-			assert(0);		//unknown command
+			ASSERT(0);		//unknown command
 		}
 		c++;
 
@@ -5602,7 +5645,7 @@ PS* PS_construct(const char* commands, int commandCount, const float* points, in
 			paintMode |= VG_STROKE_PATH;
 			break;
 		default:
-			assert(0);		//unknown command
+			ASSERT(0);		//unknown command
 		}
 		ps->m_paths[i].m_paintMode = (VGPaintMode)paintMode;
 		c++;
@@ -5620,7 +5663,7 @@ PS* PS_construct(const char* commands, int commandCount, const float* points, in
 			ps->m_paths[i].m_capStyle = VG_CAP_SQUARE;
 			break;
 		default:
-			assert(0);		//unknown command
+			ASSERT(0);		//unknown command
 		}
 		c++;
 
@@ -5637,7 +5680,7 @@ PS* PS_construct(const char* commands, int commandCount, const float* points, in
 			ps->m_paths[i].m_joinStyle = VG_JOIN_BEVEL;
 			break;
 		default:
-			assert(0);		//unknown command
+			ASSERT(0);		//unknown command
 		}
 		c++;
 
@@ -5665,7 +5708,7 @@ PS* PS_construct(const char* commands, int commandCount, const float* points, in
 		//read number of elements
 
 		elements = (int)points[p++];
-		assert(elements > 0);
+		ASSERT(elements > 0);
 		startp = p;
 		for(e=0;e<elements;e++)
 		{
@@ -5687,7 +5730,7 @@ PS* PS_construct(const char* commands, int commandCount, const float* points, in
 				cmd[e] = VG_CLOSE_PATH;
 				break;
 			default:
-				assert(0);		//unknown command
+				ASSERT(0);		//unknown command
 			}
 			c++;
 		}
@@ -5700,10 +5743,10 @@ PS* PS_construct(const char* commands, int commandCount, const float* points, in
 	return ps;
 }
 
-void PS_destruct(PS* ps)
+static void PS_destruct(PS* ps)
 {
 	int i;
-	assert(ps);
+	ASSERT(ps);
 	for(i=0;i<ps->m_numPaths;i++)
 	{
 		vgDestroyPaint(ps->m_paths[i].m_fillPaint);
@@ -5714,10 +5757,10 @@ void PS_destruct(PS* ps)
 	free(ps);
 }
 
-void PS_render(PS* ps)
+static void PS_render(PS* ps)
 {
 	int i;
-	assert(ps);
+	ASSERT(ps);
 	vgSeti(VG_BLEND_MODE, VG_BLEND_SRC_OVER);
 
 	for(i=0;i<ps->m_numPaths;i++)
@@ -5736,7 +5779,7 @@ void PS_render(PS* ps)
 
 		vgDrawPath(ps->m_paths[i].m_path, ps->m_paths[i].m_paintMode);
 	}
-	assert(vgGetError() == VG_NO_ERROR);
+	ASSERT(vgGetError() == VG_NO_ERROR);
 }
 
 PS* tiger = NULL;
@@ -5745,82 +5788,32 @@ PS* tiger = NULL;
 
 void render(int w, int h)
 {
-	if(renderWidth != w || renderHeight != h)
-	{
-		float clearColor[4] = {1,1,1,1};
-		float scaleX = w / (tigerMaxX - tigerMinX);
-		float scaleY = h / (tigerMaxY - tigerMinY);
-		float scale = fminf(scaleX, scaleY);
+	float clearColor[4] = {1,1,1,1};
+	float scaleX = w / (tigerMaxX - tigerMinX);
+	float scaleY = h / (tigerMaxY - tigerMinY);
+	float scale = fminf(scaleX, scaleY);
 
-		//vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_BETTER);
-		//vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_NONANTIALIASED);
+	//vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_BETTER);
+	//vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_NONANTIALIASED);
 
-		eglSwapBuffers(egldisplay, eglsurface);	//force EGL to recognize resize
+	eglSwapBuffers(egldisplay, eglsurface);	//force EGL to recognize resize
 
-		vgSetfv(VG_CLEAR_COLOR, 4, clearColor);
-		vgClear(0, 0, w, h);
+	vgSetfv(VG_CLEAR_COLOR, 4, clearColor);
+	vgClear(0, 0, w, h);
 
-		vgLoadIdentity();
-		vgScale(scale, scale);
-		vgTranslate(-tigerMinX, -tigerMinY + 0.5f * (h / scale - (tigerMaxY - tigerMinY)));
+	vgLoadIdentity();
+	vgScale(scale, scale);
+	vgTranslate(-tigerMinX, -tigerMinY + 0.5f * (h / scale - (tigerMaxY - tigerMinY)));
 
-		PS_render(tiger);
-		assert(vgGetError() == VG_NO_ERROR);
-
-		renderWidth = w;
-		renderHeight = h;
-	}
+	PS_render(tiger);
+	ASSERT(vgGetError() == VG_NO_ERROR);
 
 	eglSwapBuffers(egldisplay, eglsurface);
-	assert(eglGetError() == EGL_SUCCESS);
+	ASSERT(eglGetError() == EGL_SUCCESS);
 }
 
 #endif /* tiger */
 /*--------------------------------------------------------------*/
-
-void init(NativeWindowType window)
-{
-	static const EGLint s_configAttribs[] =
-	{
-		EGL_RED_SIZE,		8,
-		EGL_GREEN_SIZE, 	8,
-		EGL_BLUE_SIZE,		8,
-		EGL_ALPHA_SIZE, 	8,
-		EGL_LUMINANCE_SIZE, EGL_DONT_CARE,			//EGL_DONT_CARE
-		EGL_SURFACE_TYPE,	EGL_WINDOW_BIT,
-		EGL_SAMPLES,		1,
-		EGL_NONE
-	};
-	EGLint numconfigs;
-
-	egldisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-	eglInitialize(egldisplay, NULL, NULL);
-	assert(eglGetError() == EGL_SUCCESS);
-	eglBindAPI(EGL_OPENVG_API);
-
-	eglChooseConfig(egldisplay, s_configAttribs, &eglconfig, 1, &numconfigs);
-	assert(eglGetError() == EGL_SUCCESS);
-	assert(numconfigs == 1);
-
-	eglsurface = eglCreateWindowSurface(egldisplay, eglconfig, window, NULL);
-	assert(eglGetError() == EGL_SUCCESS);
-	eglcontext = eglCreateContext(egldisplay, eglconfig, NULL, NULL);
-	assert(eglGetError() == EGL_SUCCESS);
-	eglMakeCurrent(egldisplay, eglsurface, eglsurface, eglcontext);
-	assert(eglGetError() == EGL_SUCCESS);
-
-}
-
-/*--------------------------------------------------------------*/
-
-void deinit(void)
-{
-	eglMakeCurrent(egldisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
-	assert(eglGetError() == EGL_SUCCESS);
-	eglTerminate(egldisplay);
-	assert(eglGetError() == EGL_SUCCESS);
-	eglReleaseThread();
-}
 
 // See https://github.com/Ajou-Khronies/OpenVG_tutorital_examples/blob/14d30f9a26cb5ed70ccb136bef7b229c8a51c444/samples/Chapter13/Sample_13_03/Sample_13_03.c
 #if 0
@@ -5863,12 +5856,12 @@ void rendertest(int w, int h)
     VGPaint fillPaint, strokePaint;
     static const VGubyte segments[] = { VG_MOVE_TO_ABS, VG_LINE_TO_ABS, VG_LINE_TO_ABS,
                            VG_LINE_TO_ABS, VG_LINE_TO_ABS, VG_CLOSE_PATH };
-    static const VGfloat coords[] = { 120.0f, 260.0f, 61.2f, 79.1f, 215.1f, 190.9f, 24.8f, 190.9f, 178.8f, 79.1f };
-    static const VGfloat clear[4] = { 0, 0, 0, 1 };
-    static const VGfloat fillColor[4] = { 0.0f, 0.0f, 1.0f, 1.0f };
-    static const VGfloat strokeColor[4] = { 1.0f, 0.0f, 0.0f, 1.0f };
+    static const VGfloat coords [] = { 120.0f, 260.0f, 61.2f, 79.1f, 215.1f, 190.9f, 24.8f, 190.9f, 178.8f, 79.1f };
+    static const VGfloat clearColor [4] = { 0, 0, 0, 1 };
+    static const VGfloat fillColor [4] = { 0.0f, 0.0f, 1.0f, 1.0f };
+    static const VGfloat strokeColor [4] = { 1.0f, 0.0f, 0.0f, 1.0f };
 
-    vgSetfv( VG_CLEAR_COLOR, 4, clear );
+    vgSetfv( VG_CLEAR_COLOR, 4, clearColor );
     vgClear( 0, 0, w, h );
 
     vgSeti( VG_STROKE_LINE_WIDTH, 1 );		// толщина лини
@@ -5891,7 +5884,7 @@ void rendertest(int w, int h)
     vgDestroyPaint( strokePaint );
 
 	eglSwapBuffers(egldisplay, eglsurface);
-	assert(eglGetError() == EGL_SUCCESS);
+	ASSERT(eglGetError() == EGL_SUCCESS);
 
 }
 
@@ -5944,11 +5937,11 @@ void rendertestx(int w, int h)
 	//		//vgTranslate(-tigerMinX, tigerMinY);
 	//		//vgRotate(30);
 	//		PS_render(tiger);
-	//		assert(vgGetError() == VG_NO_ERROR);
+	//		ASSERT(vgGetError() == VG_NO_ERROR);
 
 
 	eglSwapBuffers(egldisplay, eglsurface);
-	assert(eglGetError() == EGL_SUCCESS);
+	ASSERT(eglGetError() == EGL_SUCCESS);
 
 }
 
@@ -5975,15 +5968,16 @@ void hightests(void)
 		PRINTF("sizeof time_t == %u, t = %lu\n", sizeof (time_t), (unsigned long) t);
 	}
 #endif
-#if 1 && WITHOPENVG
+#if 0 && WITHOPENVG
 	{
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 		board_update();
 		TP();
-		init((NativeWindowType) NULL);
+		openvg_init((NativeWindowType) NULL);
 		TP();
-	#if 0
+	#if 1
 		tiger = PS_construct(tigerCommands, tigerCommandCount, tigerPoints, tigerPointCount);
+		TP();
 		render(DIM_X, DIM_Y);
 		PS_destruct(tiger);
 	#else
@@ -6000,7 +5994,7 @@ void hightests(void)
 				break;
 			}
 		}
-		deinit();
+		openvg_deinit();
 		TP();
 	}
 #endif
