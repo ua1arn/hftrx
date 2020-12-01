@@ -5835,11 +5835,11 @@ void rendertest(int w, int h)
 
 	eglSwapBuffers(egldisplay, eglsurface);	//force EGL to recognize resize
 
-	//vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_BETTER);
-	vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_NONANTIALIASED);
+	vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_BETTER);
+	//vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_NONANTIALIASED);
 	//vgSeti(VG_FILL_RULE, VG_NON_ZERO);
 
-	vgSeti(VG_PIXEL_LAYOUT, VG_PIXEL_LAYOUT_RGB_HORIZONTAL);
+	vgSeti(VG_PIXEL_LAYOUT, VG_PIXEL_LAYOUT_RGB_HORIZONTAL);	// для работы антииалиасинга треьуется знать расположение пикселей
 	//vgSeti(VG_SCREEN_LAYOUT, );
 
 	VGPath path;
@@ -5852,21 +5852,22 @@ void rendertest(int w, int h)
     static const VGfloat strokeColor[4] = { 1.0f, 0.0f, 0.0f, 1.0f };
 
     vgSetfv( VG_CLEAR_COLOR, 4, clear );
-    vgSetf( VG_STROKE_LINE_WIDTH, 8.0f );
     vgClear( 0, 0, w, h );
+
+    vgSeti( VG_STROKE_LINE_WIDTH, 1 );		// толщина лини
     fillPaint = vgCreatePaint();
     strokePaint = vgCreatePaint();
-    path = vgCreatePath(VG_PATH_FORMAT_STANDARD, VG_PATH_DATATYPE_F,1.0f, 0.0f, 0, 0, VG_PATH_CAPABILITY_ALL);
+    path = vgCreatePath(VG_PATH_FORMAT_STANDARD, VG_PATH_DATATYPE_F, 1.0f, 0.0f, 0, 0, VG_PATH_CAPABILITY_ALL);
     vgAppendPathData( path, 6, segments, coords );
+	VERIFY(VGU_NO_ERROR == vguRoundRect(path, 300, 100, 100, 100, 10, 10));
+
     vgSeti( VG_FILL_RULE, VG_EVEN_ODD ); // OR VG_NON_ZERO
     vgSetPaint(fillPaint, VG_FILL_PATH );
     vgSetPaint(strokePaint, VG_STROKE_PATH );
 
-
     vgSetParameterfv( fillPaint, VG_PAINT_COLOR, 4, fillColor);
     vgSetParameterfv( strokePaint, VG_PAINT_COLOR, 4, strokeColor);
 
-	VERIFY(VGU_NO_ERROR == vguRoundRect(path, 300, 100, 100, 100, 10, 10));
     vgDrawPath( path, (VG_FILL_PATH | VG_STROKE_PATH) );
     vgDestroyPath( path );
     vgDestroyPaint( fillPaint );
