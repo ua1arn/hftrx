@@ -6876,7 +6876,12 @@ static FLOAT_t filter_spectrum(
 	return Y;
 }
 
-enum { ADD_Y_3DSS = 12 };
+#if WITHVIEW_3DSS
+	enum { ADD_Y_3DSS = 15 };
+#else
+	enum { ADD_Y_3DSS = 0 };
+#endif
+
 #if defined (COLORPIP_SHADED)
 
 	/* быстрое отображение водопада (но требует больше памяти) */
@@ -7597,7 +7602,7 @@ display_colorgrid_3dss(
 
 #if WITHVIEW_3DSS
 enum {
-	MAX_3DSS_STEP = 43,
+	MAX_3DSS_STEP = 42,
 	Y_STEP = 2,
 	MAX_DELAY_3DSS = 1,
 	HALF_ALLDX = ALLDX / 2,

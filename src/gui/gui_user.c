@@ -328,13 +328,10 @@ static void gui_main_process(void)
 		button_t * btn_notch = find_gui_element(TYPE_BUTTON, win, "btn_notch");
 		btn_notch->is_locked = hamradio_get_gnotch() ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
 		uint_fast8_t notch_type = hamradio_get_gnotchtype();
-		char t [10];
 		if (notch_type == 1)
-			strcpy(t, "manual");
+			local_snprintf_P(btn_notch->text, ARRAY_SIZE(btn_notch->text), PSTR("Notch|manual"));
 		else if (notch_type == 2)
-			strcpy(t, "auto");
-		local_snprintf_P(btn_notch->text, ARRAY_SIZE(btn_notch->text), PSTR("Notch|%s"), t);
-
+			local_snprintf_P(btn_notch->text, ARRAY_SIZE(btn_notch->text), PSTR("Notch|auto"));
 
 		button_t * btn_speaker = find_gui_element(TYPE_BUTTON, win, "btn_speaker");
 		btn_speaker->is_locked = hamradio_get_gmutespkr() ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
@@ -559,7 +556,7 @@ static void window_memory_process(void)
 		win->bh_ptr = malloc(buttons_size);
 		GUI_MEM_ASSERT(win->bh_ptr);
 
-		label_t labels [] = {
+		static const label_t labels [] = {
 			{ 0, 0, WINDOW_MEMORY, DISABLED,  0, NON_VISIBLE, "lbl_note1", "",  FONT_MEDIUM, COLORMAIN_WHITE, },
 			{ 0, 0, WINDOW_MEMORY, DISABLED,  0, NON_VISIBLE, "lbl_note2", "",  FONT_MEDIUM, COLORMAIN_WHITE, },
 		};
@@ -952,7 +949,7 @@ static void window_display_process(void)
 		display_t.change = 0;
 		display_t.updated = 1;
 
-		button_t buttons [] = {
+		static const button_t buttons [] = {
 			{ 0, 0, 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_DISPLAY, NON_VISIBLE, INT32_MAX, "btn_zoom", "", },
 			{ 0, 0, 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_DISPLAY, NON_VISIBLE, INT32_MAX, "btn_view", "", },
 			{ 0, 0, 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_DISPLAY, NON_VISIBLE, INT32_MAX, "btn_params", "", },
@@ -1203,7 +1200,7 @@ static void window_utilites_process(void)
 		uint_fast8_t interval = 6, col1_int = 20, row1_int = window_title_height + 20, row_count = 4;
 		win->first_call = 0;
 
-		button_t buttons [] = {
+		static const button_t buttons [] = {
 			{ 0, 0, 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UTILS, NON_VISIBLE, INT32_MAX, "btn_SWRscan", "SWR|scanner", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
@@ -1366,7 +1363,7 @@ static void window_af_process(void)
 		GUI_MEM_ASSERT(win->bh_ptr);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
-		label_t labels [] = {
+		static const label_t labels [] = {
 			{ 0, 0, WINDOW_AF, CANCELLED, 0, NON_VISIBLE, "lbl_low",     "Low  cut : **** ", FONT_MEDIUM, COLORMAIN_WHITE, TYPE_BP_LOW, },
 			{ 0, 0, WINDOW_AF, CANCELLED, 0, NON_VISIBLE, "lbl_high",    "High cut : **** ", FONT_MEDIUM, COLORMAIN_WHITE, TYPE_BP_HIGH, },
 			{ 0, 0, WINDOW_AF, CANCELLED, 0, NON_VISIBLE, "lbl_afr",     "AFR      : **** ", FONT_MEDIUM, COLORMAIN_WHITE, TYPE_AFR, },
@@ -1576,7 +1573,7 @@ static void window_freq_process (void)
 		GUI_MEM_ASSERT(win->bh_ptr);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
-		label_t labels [] = {
+		static const label_t labels [] = {
 			{ 0, 0,	WINDOW_FREQ, DISABLED, 0, NON_VISIBLE, "lbl_freq_val", "", FONT_LARGE, COLORMAIN_WHITE, },
 		};
 		win->lh_count = ARRAY_SIZE(labels);
@@ -2017,7 +2014,7 @@ static void window_tx_vox_process(void)
 		uint_fast8_t interval = 50, col1_int = 20;
 		win->first_call = 0;
 
-		button_t buttons [] = {
+		static const button_t buttons [] = {
 			{ 0, 0,  44, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_TX_VOX_SETT, NON_VISIBLE, INT32_MAX, "btn_tx_vox_OK", "OK", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
@@ -2483,7 +2480,7 @@ static void window_ap_reverb_process(void)
 		uint_fast8_t interval = 60, col1_int = 20;
 		win->first_call = 0;
 
-		button_t buttons [] = {
+		static const button_t buttons [] = {
 			{ 0, 0,  40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_REVERB_SETT,	NON_VISIBLE, INT32_MAX, "btn_REVs_ok", "OK", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
@@ -3682,7 +3679,7 @@ static void window_notch_process(void)
 		GUI_MEM_ASSERT(win->bh_ptr);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
-		label_t labels [] = {
+		static const label_t labels [] = {
 			{ 0, 0, WINDOW_NOTCH, CANCELLED, 0, NON_VISIBLE, "lbl_freq",  "Freq:  *******",  FONT_MEDIUM, COLORMAIN_YELLOW, },
 			{ 0, 0, WINDOW_NOTCH, CANCELLED, 0, NON_VISIBLE, "lbl_width", "Width: *******",  FONT_MEDIUM, COLORMAIN_WHITE,  },
 			{ 0, 0, WINDOW_NOTCH, CANCELLED, 0, NON_VISIBLE, "lbl_type",  "Type: ",  		FONT_MEDIUM, COLORMAIN_WHITE,  },
@@ -3852,7 +3849,7 @@ static void window_gui_settings_process(void)
 		uint_fast8_t interval = 6, col1_int = 20, row1_int = window_title_height + 20, row_count = 4;
 		win->first_call = 0;
 
-		button_t buttons [] = {
+		static const button_t buttons [] = {
 			{ 0, 0, 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_GUI_SETTINGS, NON_VISIBLE, INT32_MAX, "btn_enc2_step", "", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
