@@ -5276,9 +5276,9 @@ GridTest(void)
 
 	// Тест порядка цветов в пикселе
 	const unsigned rct0 = DIM_Y / 4;
-	display_fillrect(rct0, rct0 * 1, rct0, rct0, COLOR_RED);
-	display_fillrect(rct0, rct0 * 2, rct0, rct0, COLOR_GREEN);
-	display_fillrect(rct0, rct0 * 3, rct0, rct0, COLOR_BLUE);
+	display_fillrect(rct0, rct0 * 1, rct0, rct0, COLORMAIN_RED);
+	display_fillrect(rct0, rct0 * 2, rct0, rct0, COLORMAIN_GREEN);
+	display_fillrect(rct0, rct0 * 3, rct0, rct0, COLORMAIN_BLUE);
 
 	for (k = 0; k < 16; ++ k)
 		for (n = 0; n < 16; ++ n)
@@ -5304,8 +5304,8 @@ GridTest(void)
 
 	// тест перестановки байтов при выборке видеоконтроллером
 	const unsigned rct = DIM_Y / 3;
-	display_line(rct, rct,  rct * 2 - 1, rct * 2 - 1, COLOR_BLACK);
-	display_line(rct, rct * 2 - 1, rct * 2 - 1,  rct, COLOR_BLACK);
+	display_line(rct, rct,  rct * 2 - 1, rct * 2 - 1, COLORMAIN_BLACK);
+	display_line(rct, rct * 2 - 1, rct * 2 - 1,  rct, COLORMAIN_BLACK);
 
 
 
