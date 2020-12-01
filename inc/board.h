@@ -82,6 +82,7 @@ void board_set_sleep(uint_fast8_t v);	/* перевести в режим мин
 void board_set_maxlabdac(uint_fast16_t n);	/* значение на выходе ЦАП для увода частоты опорного генератора PLL */
 
 void board_setfanflag(uint_fast8_t v);	/* включить вентилятор */
+void board_setfanpwm(uint_fast8_t n);	/* скорость ывентилятора 0..255 */
 void board_set_mainsubrxmode(uint_fast8_t v);	// Левый/правый, A - main RX, B - sub RX
 void board_set_detector(uint_fast8_t v);
 void board_set_nfm(uint_fast8_t v);
