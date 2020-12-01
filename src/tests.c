@@ -21,10 +21,10 @@
 #include "spi.h"
 #include "gpio.h"
 
-#if WITHUSEAUDIOREC
+#if WITHUSEFATFS
 	#include "fatfs/ff.h"
 	#include "sdcard.h"
-#endif /* WITHUSEAUDIOREC */
+#endif /* WITHUSEFATFS */
 
 #include <string.h>
 #include <ctype.h>
@@ -3453,7 +3453,7 @@ static const uint8_t pe2014 [] =
 
 #endif /* ARM_STM32L051_TQFP32_CPUSTYLE_V1_H_INCLUDED */
 
-#if 1 && WITHDEBUG && WITHUSEAUDIOREC
+#if 1 && WITHDEBUG && WITHUSEFATFS
 
 struct fb
 {
@@ -3662,7 +3662,17 @@ static void test_recodstart(void)
 	system_enableIRQ();
 }
 
-unsigned USBD_poke_u32(uint8_t * buff, uint_fast32_t v);
+#if 0
+/* записать в буфер для ответа 32-бит значение */
+unsigned USBD_poke_u32X(uint8_t * buff, uint_fast32_t v)
+{
+	buff [0] = LO_BYTE(v);
+	buff [1] = HI_BYTE(v);
+	buff [2] = HI_24BY(v);
+	buff [3] = HI_32BY(v);
+
+	return 4;
+}
 
 // сохранение потока данных большими блоками
 static void dosaveblocks(const char * fname)
@@ -3676,7 +3686,7 @@ static void dosaveblocks(const char * fname)
 	f_mount(& Fatfs, "", 0);		/* Register volume work area (never fails) */
 	memset(rbuff, 0xE5, sizeof rbuff);
 	static int i;
-	USBD_poke_u32(rbuff, ++ i);
+	USBD_poke_u32X(rbuff, ++ i);
 	rc = f_open(& Fil, fname, FA_WRITE | FA_CREATE_ALWAYS);
 	if (rc)
 	{
@@ -3762,6 +3772,7 @@ static void dosaveblocks(const char * fname)
 		PRINTF("Write speed %ld kB/S\n", (long) (kbs / 1000 / 60));
 	}
 }
+#endif
 
 #if 0
 
@@ -4161,7 +4172,7 @@ static void fatfs_filesystest(int speedtest)
 					dosaveserialport(testlog);
 				}
 				break;
-
+#if 0
 			case 'W':
 				if (speedtest)
 				{
@@ -4181,11 +4192,12 @@ static void fatfs_filesystest(int speedtest)
 					dosaveblocks(testlog);
 				}
 				break;
+#endif
 			}
 		}
 	}
 }
-
+#if 0
 static void fatfs_filesyspeedstest(void)
 {
 	uint_fast16_t year;
@@ -4208,6 +4220,7 @@ static void fatfs_filesyspeedstest(void)
 		);
 	dosaveblocks(testlog);
 }
+#endif
 
 #endif /* WITHDEBUG && WITHUSEAUDIOREC */
 
@@ -5389,8 +5402,8 @@ static uint_fast32_t any_rd_reg_32bits(uint_fast8_t i2caddr, uint_fast8_t regist
 {
 	uint8_t v0, v1, v2, v3;
 
-	i2c_start(i2caddr | 0x00);
-	i2c_write_withrestart(register_id);
+	//i2c_start(i2caddr | 0x00);
+	//i2c_write_withrestart(register_id);
 	i2c_start(i2caddr | 0x01);
 	i2c_read(& v0, I2C_READ_ACK_1);	// ||
 	i2c_read(& v1, I2C_READ_ACK);	// ||
@@ -5449,7 +5462,7 @@ static uint_fast32_t any_rd_reg_32bits(uint_fast8_t i2caddr, uint_fast8_t regist
 #include <string.h>
 #define UNREF(X) ((void)(X))
 
-#if 1 //ifdef HG_FLAT_INCLUDES
+#ifdef HG_FLAT_INCLUDES
 #	include "openvg.h"
 #	include "vgu.h"
 #	include "egl.h"
@@ -5459,6 +5472,13 @@ static uint_fast32_t any_rd_reg_32bits(uint_fast8_t i2caddr, uint_fast8_t regist
 #	include "EGL/egl.h"
 #endif
 
+EGLDisplay			egldisplay;
+EGLConfig			eglconfig;
+EGLSurface			eglsurface;
+EGLContext			eglcontext;
+
+#if 0
+
 #include "tiger.h"
 
 /*--------------------------------------------------------------*/
@@ -5466,10 +5486,6 @@ static uint_fast32_t any_rd_reg_32bits(uint_fast8_t i2caddr, uint_fast8_t regist
 const float			aspectRatio = 612.0f / 792.0f;
 int					renderWidth = 0;
 int					renderHeight = 0;
-EGLDisplay			egldisplay;
-EGLConfig			eglconfig;
-EGLSurface			eglsurface;
-EGLContext			eglcontext;
 
 /*--------------------------------------------------------------*/
 
@@ -5715,7 +5731,12 @@ void render(int w, int h)
 	if(renderWidth != w || renderHeight != h)
 	{
 		float clearColor[4] = {1,1,1,1};
-		float scale = w / (tigerMaxX - tigerMinX);
+		float scaleX = w / (tigerMaxX - tigerMinX);
+		float scaleY = h / (tigerMaxY - tigerMinY);
+		float scale = fminf(scaleX, scaleY);
+
+		//vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_BETTER);
+		//vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_NONANTIALIASED);
 
 		eglSwapBuffers(egldisplay, eglsurface);	//force EGL to recognize resize
 
@@ -5737,6 +5758,7 @@ void render(int w, int h)
 	assert(eglGetError() == EGL_SUCCESS);
 }
 
+#endif /* tiger */
 /*--------------------------------------------------------------*/
 
 void init(NativeWindowType window)
@@ -5770,19 +5792,147 @@ void init(NativeWindowType window)
 	eglMakeCurrent(egldisplay, eglsurface, eglsurface, eglcontext);
 	assert(eglGetError() == EGL_SUCCESS);
 
-	tiger = PS_construct(tigerCommands, tigerCommandCount, tigerPoints, tigerPointCount);
 }
 
 /*--------------------------------------------------------------*/
 
 void deinit(void)
 {
-	PS_destruct(tiger);
 	eglMakeCurrent(egldisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
 	assert(eglGetError() == EGL_SUCCESS);
 	eglTerminate(egldisplay);
 	assert(eglGetError() == EGL_SUCCESS);
 	eglReleaseThread();
+}
+
+// See https://github.com/Ajou-Khronies/OpenVG_tutorital_examples/blob/14d30f9a26cb5ed70ccb136bef7b229c8a51c444/samples/Chapter13/Sample_13_03/Sample_13_03.c
+#if 0
+{
+    VGPath path;
+
+    VGfloat clear[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+    vgSetfv( VG_CLEAR_COLOR, 4, clear );
+    vgClear( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT );
+
+    path = vgCreatePath(VG_PATH_FORMAT_STANDARD, VG_PATH_DATATYPE_F, 1, 0, 0, 0, VG_PATH_CAPABILITY_ALL );
+
+    vguRect( path, 40.5f, 40.5f, 160.0f, 100.0f );
+    vguRect( path, 40.0f, 180.0f, 160.0f, 100.0f );
+
+    vgDrawPath( path, VG_STROKE_PATH );
+
+    vgDestroyPath( path );
+}
+#endif
+
+void rendertest(int w, int h)
+{
+	static const float clearColor[4] = {0,1,0,1};
+	//		float scaleX = w / (tigerMaxX - tigerMinX);
+	//		float scaleY = h / (tigerMaxY - tigerMinY);
+	//		float scale = fminf(scaleX, scaleY);
+	//		PRINTF("render: scaleX=%f, scaleY=%f\n", scaleX, scaleY);
+
+	eglSwapBuffers(egldisplay, eglsurface);	//force EGL to recognize resize
+
+	vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_BETTER);
+	//vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_NONANTIALIASED);
+	//vgSeti(VG_FILL_RULE, VG_NON_ZERO);
+
+	vgSeti(VG_PIXEL_LAYOUT, VG_PIXEL_LAYOUT_RGB_HORIZONTAL);	// для работы антииалиасинга треьуется знать расположение пикселей
+	//vgSeti(VG_SCREEN_LAYOUT, );
+
+	VGPath path;
+    VGPaint fillPaint, strokePaint;
+    static const VGubyte segments[] = { VG_MOVE_TO_ABS, VG_LINE_TO_ABS, VG_LINE_TO_ABS,
+                           VG_LINE_TO_ABS, VG_LINE_TO_ABS, VG_CLOSE_PATH };
+    static const VGfloat coords[] = { 120.0f, 260.0f, 61.2f, 79.1f, 215.1f, 190.9f, 24.8f, 190.9f, 178.8f, 79.1f };
+    static const VGfloat clear[4] = { 0, 0, 0, 1 };
+    static const VGfloat fillColor[4] = { 0.0f, 0.0f, 1.0f, 1.0f };
+    static const VGfloat strokeColor[4] = { 1.0f, 0.0f, 0.0f, 1.0f };
+
+    vgSetfv( VG_CLEAR_COLOR, 4, clear );
+    vgClear( 0, 0, w, h );
+
+    vgSeti( VG_STROKE_LINE_WIDTH, 1 );		// толщина лини
+    fillPaint = vgCreatePaint();
+    strokePaint = vgCreatePaint();
+    path = vgCreatePath(VG_PATH_FORMAT_STANDARD, VG_PATH_DATATYPE_F, 1.0f, 0.0f, 0, 0, VG_PATH_CAPABILITY_ALL);
+    vgAppendPathData( path, 6, segments, coords );
+	VERIFY(VGU_NO_ERROR == vguRoundRect(path, 300, 100, 100, 100, 10, 10));
+
+    vgSeti( VG_FILL_RULE, VG_EVEN_ODD ); // OR VG_NON_ZERO
+    vgSetPaint(fillPaint, VG_FILL_PATH );
+    vgSetPaint(strokePaint, VG_STROKE_PATH );
+
+    vgSetParameterfv( fillPaint, VG_PAINT_COLOR, 4, fillColor);
+    vgSetParameterfv( strokePaint, VG_PAINT_COLOR, 4, strokeColor);
+
+    vgDrawPath( path, (VG_FILL_PATH | VG_STROKE_PATH) );
+    vgDestroyPath( path );
+    vgDestroyPaint( fillPaint );
+    vgDestroyPaint( strokePaint );
+
+	eglSwapBuffers(egldisplay, eglsurface);
+	assert(eglGetError() == EGL_SUCCESS);
+
+}
+
+void rendertestx(int w, int h)
+{
+	static const float clearColor[4] = {0,1,0,1};
+	//		float scaleX = w / (tigerMaxX - tigerMinX);
+	//		float scaleY = h / (tigerMaxY - tigerMinY);
+	//		float scale = fminf(scaleX, scaleY);
+	//		PRINTF("render: scaleX=%f, scaleY=%f\n", scaleX, scaleY);
+
+	eglSwapBuffers(egldisplay, eglsurface);	//force EGL to recognize resize
+
+	vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_BETTER);
+	//vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_NONANTIALIASED);
+	//vgSeti(VG_FILL_RULE, VG_NON_ZERO);
+
+	vgSeti(VG_PIXEL_LAYOUT, VG_PIXEL_LAYOUT_RGB_HORIZONTAL);
+	//vgSeti(VG_SCREEN_LAYOUT, );
+
+	vgSetfv(VG_CLEAR_COLOR, 4, clearColor);
+	vgClear(0, 0, w, h);
+
+	VGPaint paint = vgCreatePaint();
+
+	static const float drawColorRed[4] = {1,0,0,1};
+	vgSetParameterfv(paint, VG_PAINT_COLOR, 4, drawColorRed);
+	//vgSetColor(paint, VGuint rgba)
+
+	VGPath path = vgCreatePath(VG_PATH_FORMAT_STANDARD, VG_PATH_DATATYPE_S_16 /*VG_PATH_DATATYPE_F */, 1.0f, 0.0f, 0, 0, (unsigned int)VG_PATH_CAPABILITY_ALL);
+
+	//static const float drawColorRed[4] = {1,0,0,1};
+	vgSetfv(VG_TILE_FILL_COLOR, 4, drawColorRed);
+	VERIFY(VGU_NO_ERROR == vguRect(path, 0, 0, 100, 100));
+
+	static const float drawColorGreen[4] = {0,1,0,1};
+	vgSetfv(VG_TILE_FILL_COLOR, 4, drawColorGreen);
+	VERIFY(VGU_NO_ERROR == vguRoundRect(path, 100, 100, 100, 100, 10, 10));
+
+	vgDrawPath(path, VG_STROKE_PATH);	// VG_STROKE_PATH - линиями
+	vgDrawPath(path, VG_FILL_PATH);	// VG_FILL_PATH - заполняя
+
+	vgDestroyPath(path);
+
+	vgDestroyPaint(paint);
+	//		vgLoadIdentity();
+	//		vgScale(scale, scale);
+	//		vgTranslate(- tigerMinX, -tigerMinY + 0.5f * (h / scale - (tigerMaxY - tigerMinY)));
+	//		//vgTranslate(-tigerMinX + 0.5f * (w / scale - (tigerMaxX - tigerMinX)), -tigerMinY + 0.5f * (h / scale - (tigerMaxY - tigerMinY)));
+	//		//vgTranslate(-tigerMinX, tigerMinY);
+	//		//vgRotate(30);
+	//		PS_render(tiger);
+	//		assert(vgGetError() == VG_NO_ERROR);
+
+
+	eglSwapBuffers(egldisplay, eglsurface);
+	assert(eglGetError() == EGL_SUCCESS);
+
 }
 
 /*--------------------------------------------------------------*/
@@ -5808,12 +5958,33 @@ void hightests(void)
 		PRINTF("sizeof time_t == %u, t = %lu\n", sizeof (time_t), (unsigned long) t);
 	}
 #endif
-#if 0 && WITHOPENVG
+#if 1 && WITHOPENVG
 	{
-
+		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
+		board_update();
+		TP();
 		init((NativeWindowType) NULL);
+		TP();
+	#if 0
+		tiger = PS_construct(tigerCommands, tigerCommandCount, tigerPoints, tigerPointCount);
 		render(DIM_X, DIM_Y);
+		PS_destruct(tiger);
+	#else
+		rendertest(DIM_X, DIM_Y);
+	#endif
+		TP();
+		// wait for press any key
+		for (;;)
+		{
+			uint_fast8_t kbch, repeat;
+
+			if ((repeat = kbd_scan(& kbch)) != 0)
+			{
+				break;
+			}
+		}
 		deinit();
+		TP();
 	}
 #endif
 #if 0 && (__CORTEX_A != 0)
@@ -6437,19 +6608,19 @@ void hightests(void)
 		}
 	}
 #endif
-#if 0 && WITHDEBUG && WITHUSEAUDIOREC
+#if 0 && WITHDEBUG && WITHUSEFATFS
 	// SD CARD low level functions test
 	{
 		diskio_test();
 	}
 #endif
-#if 0 && WITHDEBUG && WITHUSEAUDIOREC
+#if 0 && WITHDEBUG && WITHUSEFATFS
 	// SD CARD FatFs functions test
 	{
 		fatfs_filesystest(0);
 	}
 #endif
-#if 0 && WITHDEBUG && WITHUSEAUDIOREC
+#if 0 && WITHDEBUG && WITHUSEFATFS
 	// SD CARD file system level functions test
 	// no interactive
 	{
@@ -6516,7 +6687,7 @@ void hightests(void)
 		fatfs_filesystest(1);
 	}
 #endif
-#if 0 && WITHDEBUG && WITHUSEAUDIOREC
+#if 0 && WITHDEBUG && WITHUSEFATFS
 	// Автономный программатор SPI flash memory
 	{
 		//diskio_test();

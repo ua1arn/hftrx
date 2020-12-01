@@ -294,6 +294,7 @@
 	//#define WITHUSEUSBFLASH		1	// Включение поддержки USB memory stick
 
 	// выбор функциональности
+	//#define WITHUSEFATFS		1	// FatFS
 	//#define WITHUSEAUDIOREC		1	// Запись звука
 	//#define WITHUSEAUDIOREC2CH	1	// Запись звука в стерео формате
 	//#define WITHUSEAUDIORECCLASSIC	1	// стандартный формат записи, без "дыр"

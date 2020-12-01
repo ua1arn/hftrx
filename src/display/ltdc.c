@@ -432,6 +432,9 @@ static void vdc5fb_init_graphics(struct st_vdc5 * const vdc)
 #if LCDMODE_MAIN_L8
 	const unsigned grx_format_MAIN = 0x05;	// GRx_FORMAT 5: CLUT8
 	const unsigned grx_rdswa_MAIN = 0x07;	// GRx_RDSWA 111: (8) (7) (6) (5) (4) (3) (2) (1) [32-bit swap + 16-bit swap + 8-bit swap]
+#elif LCDMODE_MAIN_ARGB888
+	const unsigned grx_format_MAIN = sss0x00;	// GRx_FORMAT 0: RGB565
+	const unsigned grx_rdswa_MAIN = sss0x06;	// GRx_RDSWA 110: (7) (8) (5) (6) (3) (4) (1) (2) [32-bit swap + 16-bit swap]
 #else /* LCDMODE_MAIN_L8 */
 	const unsigned grx_format_MAIN = 0x00;	// GRx_FORMAT 0: RGB565
 	const unsigned grx_rdswa_MAIN = 0x06;	// GRx_RDSWA 110: (7) (8) (5) (6) (3) (4) (1) (2) [32-bit swap + 16-bit swap]
@@ -440,6 +443,9 @@ static void vdc5fb_init_graphics(struct st_vdc5 * const vdc)
 #if LCDMODE_PIP_L8
 	const unsigned grx_format_PIP = 0x05;	// GRx_FORMAT 5: CLUT8
 	const unsigned grx_rdswa_PIP = 0x07;	// GRx_RDSWA 111: (8) (7) (6) (5) (4) (3) (2) (1) [32-bit swap + 16-bit swap + 8-bit swap]
+#elif LCDMODE_PIP_ARGB888
+	const unsigned grx_format_PIP = sss0x05;	// GRx_FORMAT 5: CLUT8
+	const unsigned grx_rdswa_PIP = sss0x07;	// GRx_RDSWA 111: (8) (7) (6) (5) (4) (3) (2) (1) [32-bit swap + 16-bit swap + 8-bit swap]
 #else
 	// LCDMODE_PIP_RGB565
 	const unsigned grx_format_PIP = 0x00;	// GRx_FORMAT 0: RGB565
@@ -1362,8 +1368,8 @@ static void LCD_LayerInit(
 
 	/* Pixel Format configuration*/
 	LTDC_Layer_InitStruct.LTDC_PixelFormat = LTDC_PixelFormat;
-	/* Alpha constant (255 totally opaque = непрозрачный) */
-	LTDC_Layer_InitStruct.LTDC_ConstantAlpha = 255; 
+	/* Alpha constant (255 = непрозрачный) */
+	LTDC_Layer_InitStruct.LTDC_ConstantAlpha = 255;
 	/* Default Color configuration (configure A,R,G,B component values) */          
 	LTDC_Layer_InitStruct.LTDC_DefaultColor = 0; // transparent=прозрачный black color. outside active layer area
 	/* Configure blending factors */       
@@ -1588,6 +1594,11 @@ arm_hardware_ltdc_initialize(void)
 
 	LCD_LayerInit(LAYER_MAIN, LEFTMARGIN, TOPMARGIN, & mainwnd, LTDC_Pixelformat_L8, 1, sizeof (PACKEDCOLORMAIN_T));
 
+#elif LCDMODE_MAIN_ARGB888
+
+	/* Без палитры */
+	LCD_LayerInit(LAYER_MAIN, LEFTMARGIN, TOPMARGIN, & mainwnd, LTDC_Pixelformat_ARGB8888, 1, sizeof (PACKEDCOLORMAIN_T));
+
 #else
 	/* Без палитры */
 	LCD_LayerInit(LAYER_MAIN, LEFTMARGIN, TOPMARGIN, & mainwnd, LTDC_Pixelformat_RGB565, 1, sizeof (PACKEDCOLORMAIN_T));
@@ -1608,6 +1619,14 @@ arm_hardware_ltdc_initialize(void)
 
 	// Bottom layer
 	LCD_LayerInit(LAYER_PIP, LEFTMARGIN, TOPMARGIN, & pipwnd, LTDC_Pixelformat_RGB565, 1, sizeof (PACKEDCOLORPIP_T));
+	LCD_LayerInitPIP(LAYER_PIP);	// довести инициализацию
+
+#elif LCDMODE_PIP_RGB888
+
+	LCD_LayerInitMain(LAYER_MAIN);	// довести инициализацию
+
+	// Bottom layer
+	LCD_LayerInit(LAYER_PIP, LEFTMARGIN, TOPMARGIN, & pipwnd, LTDC_Pixelformat_ARGB8888, 1, sizeof (PACKEDCOLORPIP_T));
 	LCD_LayerInitPIP(LAYER_PIP);	// довести инициализацию
 
 #endif /* LCDMODE_PIP_RGB565 */

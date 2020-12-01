@@ -30,7 +30,7 @@ BIN  = $(CP) -O binary -R .noinit -R .bss -R .vram -R .heap
 
 CMSISDIR = ../../../CMSIS_5/CMSIS
 LWIPDIR = ../../src/lwip-1.4.1/src
-# see usage of preprocessor HG_FLAT_INCLUDES symbol
+# see usage of preprocessor HG_FLAT_INCLUDES and EGL_STATIC_LIBRARY symbol
 OPENVGDIR = ../../src/OpenVG
 
 
@@ -41,21 +41,21 @@ CORE += -mfloat-abi=hard
 #CORE += -mcpu=cortex-a7
 #CORE += -mfpu=vfpv4-d16
 CORE += -mfpu=neon
+#CORE += -mlong-calls
 
 # Define optimisation level here
 # ony -Og for app
 ifeq "bootloader" "1 bootloader"
 
-CORE += -mlong-calls
-OPT = -Ofast
+#
+OPT = -Os
 LTO = -flto
 OBJDIR2 = objboot
-UDEFS += -DWITHISBOOTLOADER
+UDEFS += -D"WITHISBOOTLOADER"
 
 else
 
 OPT = -Og
-#LTO = -flto
 OBJDIR2 = objapp
 
 endif
@@ -108,7 +108,7 @@ LDSCRIPT_BOOT = ./stm32mp15xx_ca7_boot.ld
 LDSCRIPT_APP = ./stm32mp15xx_ca7_app.ld
 
 # List all user C define here, like -D_DEBUG=1
-UDEFS += -DNDEBUG=1 -DCPUSTYLE_STM32MP1=1 -DSTM32MP153Dxx=1 -DEGL_STATIC_LIBRARY=1
+UDEFS += -D"NDEBUG"=1 -D"CPUSTYLE_STM32MP1"=1 -D"STM32MP153Dxx"=1 -D"EGL_STATIC_LIBRARY"=1
 
 # Define ASM defines here
 UADEFS = 
@@ -210,7 +210,7 @@ $(OBJDIR)/%.o: %.c
 
 $(OBJDIR)/%.o: %.cpp
 	@mkdir -p $(@D)
-	$(GPP) -std=gnu++11 -fno-rtti -fno-exceptions -c $(CPFLAGS) $(INCDIR) $(addprefix $(SRCDIR)/, $(patsubst $(OBJDIR2)/%, %, $(patsubst %.o, %.cpp, $@))) -o $@
+	$(GPP) -std=gnu++11 -fno-rtti -fexceptions -c $(CPFLAGS) $(INCDIR) $(addprefix $(SRCDIR)/, $(patsubst $(OBJDIR2)/%, %, $(patsubst %.o, %.cpp, $@))) -o $@
 
 $(OBJDIR)/%.o: %.s
 	@mkdir -p $(@D)
