@@ -49,8 +49,8 @@ SECTIONS
 		
 		. = ALIGN(4);
 		KEEP(*(.init))
-		KEEP(*(.initfunc))
-		KEEP(*(.initdata))
+		KEEP(*(.initfunc*))
+		KEEP(*(.initdata*))
 		KEEP(*(.fini))
 		*(.text*)
 	} > RAM
