@@ -2656,6 +2656,9 @@ struct nvmap
 #endif /* WITHLCDBACKLIGHT || WITHKBDBACKLIGHT */
 #if WITHFANTIMER
 	uint8_t gfanpatime;
+	#if WITHFANPWM
+		uint16_t gfanpapwm;
+	#endif /* WITHFANPWM */
 #endif /* WITHFANTIMER */
 #if WITHSLEEPTIMER
 	uint8_t gsleeptime;
@@ -4821,6 +4824,9 @@ static uint_fast8_t gfanpatime = 15;	/* количество секунд до �
 static uint_fast8_t fanpacount = FANPATIMEMAX;
 static uint_fast8_t fanpaflag = 1;	/* не-0: выключить ыентилятор. */
 static uint_fast8_t fanpaflagch;	/* не-0: изменилось состояние fanpaflag */
+	#if WITHFANPWM
+		static uint_fast16_t gfanpapwm = 255;
+	#endif /* WITHFANPWM */
 
 #endif /* WITHFANTIMER */
 
@@ -9050,7 +9056,10 @@ updateboard(
 	#endif /* defined (DEFAULT_LCD_CONTRAST) */
 
 	#if WITHFANTIMER
-		board_setfanflag(! fanpaflag);
+		board_setfanflag(! fanpaflag);	// fanpaflag - сигнал выключения вентилятора
+		#if WITHFANPWM
+				board_setfanpwm(! fanpaflag ? gfanpapwm : 0);
+		#endif /* WITHFANPWM */
 	#endif /* WITHFANTIMER */
 	#if WITHDCDCFREQCTL
 		board_set_blfreq(bldividerout);
@@ -16059,6 +16068,18 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		& gfanpatime,
 		getzerobase, /* складывается со смещением и отображается */
 	},
+	#if WITHFANPWM
+	{
+		QLABEL("FAN PWM "), 7, 0, 0,	ISTEP5,
+		ITEM_VALUE,
+		0, 255,
+		offsetof(struct nvmap, gfanpapwm),
+		nvramoffs0,
+		& gfanpapwm,
+		NULL,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	#endif /* WITHFANPWM */
 #endif /* WITHFANTIMER */
 #endif /* WITHTX */
 

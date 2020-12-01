@@ -80,6 +80,7 @@ static uint_fast8_t 	glob_poweron = 1;
 //#endif /* WITHKEYBOARD */
 
 static uint_fast8_t		glob_fanflag;	/* включение вентилятора */
+static uint_fast8_t		glob_fanpwm = 255;	/* скорость вентилятора 0..255 */
 #if WITHDCDCFREQCTL
 	static uint_fast32_t 	glob_blfreq = UINT32_MAX;	/* DC-DC frequency divider */
 #endif /* WITHDCDCFREQCTL */
@@ -5125,6 +5126,17 @@ board_setfanflag(uint_fast8_t v)
 		board_ctlreg1changed();
 	}
 }
+/* скорость вентилятора */
+void
+board_setfanpwm(uint_fast8_t n)
+{
+	if (glob_fanpwm != n)
+	{
+		glob_fanpwm = n;
+		//board_ctlreg1changed();
+	}
+}
+
 
 /* отключить микрофонный усилитель */
 void
