@@ -433,8 +433,8 @@ static void vdc5fb_init_graphics(struct st_vdc5 * const vdc)
 	const unsigned grx_format_MAIN = 0x05;	// GRx_FORMAT 5: CLUT8
 	const unsigned grx_rdswa_MAIN = 0x07;	// GRx_RDSWA 111: (8) (7) (6) (5) (4) (3) (2) (1) [32-bit swap + 16-bit swap + 8-bit swap]
 #elif LCDMODE_MAIN_ARGB888
-	const unsigned grx_format_MAIN = sss0x00;	// GRx_FORMAT 0: RGB565
-	const unsigned grx_rdswa_MAIN = sss0x06;	// GRx_RDSWA 110: (7) (8) (5) (6) (3) (4) (1) (2) [32-bit swap + 16-bit swap]
+	const unsigned grx_format_MAIN = 0x04;	// GRx_FORMAT 4: ARGB8888, 1: RGB888
+	const unsigned grx_rdswa_MAIN = 0x04;	// GRx_RDSWA 100: (5) (6) (7) (8) (1) (2) (3) (4) [Swapped in 32-bit units]
 #else /* LCDMODE_MAIN_L8 */
 	const unsigned grx_format_MAIN = 0x00;	// GRx_FORMAT 0: RGB565
 	const unsigned grx_rdswa_MAIN = 0x06;	// GRx_RDSWA 110: (7) (8) (5) (6) (3) (4) (1) (2) [32-bit swap + 16-bit swap]
@@ -444,8 +444,8 @@ static void vdc5fb_init_graphics(struct st_vdc5 * const vdc)
 	const unsigned grx_format_PIP = 0x05;	// GRx_FORMAT 5: CLUT8
 	const unsigned grx_rdswa_PIP = 0x07;	// GRx_RDSWA 111: (8) (7) (6) (5) (4) (3) (2) (1) [32-bit swap + 16-bit swap + 8-bit swap]
 #elif LCDMODE_PIP_ARGB888
-	const unsigned grx_format_PIP = sss0x05;	// GRx_FORMAT 5: CLUT8
-	const unsigned grx_rdswa_PIP = sss0x07;	// GRx_RDSWA 111: (8) (7) (6) (5) (4) (3) (2) (1) [32-bit swap + 16-bit swap + 8-bit swap]
+	const unsigned grx_format_MAIN = 0x04;	// GRx_FORMAT 4: ARGB8888, 1: RGB888
+	const unsigned grx_rdswa_MAIN = 0x04;	// GRx_RDSWA 100: (5) (6) (7) (8) (1) (2) (3) (4) [Swapped in 32-bit units]
 #else
 	// LCDMODE_PIP_RGB565
 	const unsigned grx_format_PIP = 0x00;	// GRx_FORMAT 0: RGB565

@@ -5272,6 +5272,14 @@ GridTest(void)
 	/* Filled rectangle at center. */
 	display_solidbar(xm4 + xm1, ym4 + ym1, xm4 * 3 - xm1, ym4 * 3 - ym1, col23);
 
+
+
+	// Тест порядка цветов в пикселе
+	const unsigned rct0 = DIM_Y / 4;
+	display_fillrect(rct0, rct0 * 1, rct0, rct0, COLOR_RED);
+	display_fillrect(rct0, rct0 * 2, rct0, rct0, COLOR_GREEN);
+	display_fillrect(rct0, rct0 * 3, rct0, rct0, COLOR_BLUE);
+
 	for (k = 0; k < 16; ++ k)
 		for (n = 0; n < 16; ++ n)
 			display_solidbar(n * 18 + 1,
@@ -5281,10 +5289,11 @@ GridTest(void)
 				 TFTRGB(n * 16, k * 16, 255 - (n * 8 + k * 8) )
 				 );
 
-	/* Interlase test.	*/
-	display_line(0,  0,  xm, 1,  col3);
-	display_line(0,  0,  xm, 3,  col3);
-	display_line(0,  0,  xm, 5,  col3);
+	/* Interlase flockertest.	*/
+	display_line(10,  0,  xm, 10 + 1,  col3);
+	display_line(10,  0,  xm, 10 + 3,  col3);
+	display_line(10,  0,  xm, 10 + 5,  col3);
+	display_line(10,  0,  xm, 10 + 7,  col3);
 
 	/* diagonales test.	*/
 	display_line(xm, 0,  xm, ym, col3);
@@ -5292,10 +5301,18 @@ GridTest(void)
 	display_line(0,  ym, 0,  0,  col3);
 	display_line(0,  0,  xm, ym, col3);
 	display_line(0,  ym, xm, 0,  col3);
+
+	// тест перестановки байтов при выборке видеоконтроллером
+	const unsigned rct = DIM_Y / 3;
+	display_line(rct, rct,  rct * 2 - 1, rct * 2 - 1, COLOR_BLACK);
+	display_line(rct, rct * 2 - 1, rct * 2 - 1,  rct, COLOR_BLACK);
+
+
+
 	display_flush();
 
-	local_delay_ms((300));
-
+	for (;;)
+		;
 }
 
 #endif /* LCDMODE_COLORED && ! DSTYLE_G_DUMMY */
