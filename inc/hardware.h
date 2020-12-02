@@ -174,12 +174,6 @@ extern "C" {
 		#define ARM_MATH_NEON 1
 	#endif /* __ARM_NEON */
 
-	#define ARM_MATH_LOOPUNROLL 1
-	#define DISABLEFLOAT16 1
-
-	#include "arm_math.h"
-	#include "arm_const_structs.h"
-
 #elif CPUSTYLE_STM32F7XX
 	// STM32F745ZGT6 processors, up to 216 MHz 
 
@@ -201,12 +195,6 @@ extern "C" {
 		#define ARM_MATH_NEON 1
 	#endif /* __ARM_NEON */
 
-	#define ARM_MATH_LOOPUNROLL 1
-	#define DISABLEFLOAT16 1
-
-	#include "arm_math.h"
-	#include "arm_const_structs.h"
-
 #elif CPUSTYLE_STM32F4XX
 
 	#define CPUSTYLE_ARM	1		/* архитектура процессора ARM */
@@ -227,12 +215,6 @@ extern "C" {
 		#define ARM_MATH_NEON 1
 	#endif /* __ARM_NEON */
 
-	#define ARM_MATH_LOOPUNROLL 1
-	#define DISABLEFLOAT16 1
-
-	#include "arm_math.h"
-	#include "arm_const_structs.h"
-
 #elif CPUSTYLE_STM32F30X
 
 	#define CPUSTYLE_ARM	1		/* архитектура процессора ARM */
@@ -249,12 +231,6 @@ extern "C" {
 		#define ARM_MATH_NEON 1
 	#endif /* __ARM_NEON */
 
-	#define ARM_MATH_LOOPUNROLL 1
-	#define DISABLEFLOAT16 1
-
-	#include "arm_math.h"
-	#include "arm_const_structs.h"
-
 #elif CPUSTYLE_STM32F1XX
 
 	#define CPUSTYLE_ARM	1		/* архитектура процессора ARM */
@@ -269,12 +245,6 @@ extern "C" {
 	#if __ARM_NEON
 		#define ARM_MATH_NEON 1
 	#endif /* __ARM_NEON */
-
-	#define ARM_MATH_LOOPUNROLL 1
-	#define DISABLEFLOAT16 1
-
-	#include "arm_math.h"
-	#include "arm_const_structs.h"
 
 #elif CPUSTYLE_STM32F0XX
 
@@ -291,12 +261,6 @@ extern "C" {
 		#define ARM_MATH_NEON 1
 	#endif /* __ARM_NEON */
 
-	#define ARM_MATH_LOOPUNROLL 1
-	#define DISABLEFLOAT16 1
-
-	#include "arm_math.h"
-	#include "arm_const_structs.h"
-
 #elif CPUSTYLE_STM32L0XX
 
 	#define CPUSTYLE_ARM	1		/* архитектура процессора ARM */
@@ -310,12 +274,6 @@ extern "C" {
 	#if __ARM_NEON
 		#define ARM_MATH_NEON 1
 	#endif /* __ARM_NEON */
-
-	#define ARM_MATH_LOOPUNROLL 1
-	#define DISABLEFLOAT16 1
-
-	#include "arm_math.h"
-	#include "arm_const_structs.h"
 
 #elif CPUSTYLE_ATSAM3S
 
@@ -332,12 +290,6 @@ extern "C" {
 		#define ARM_MATH_NEON 1
 	#endif /* __ARM_NEON */
 
-	#define ARM_MATH_LOOPUNROLL 1
-	#define DISABLEFLOAT16 1
-
-	#include "arm_math.h"
-	#include "arm_const_structs.h"
-
 #elif CPUSTYLE_ATSAM4S
 
 	#define CPUSTYLE_ARM	1		/* архитектура процессора ARM */
@@ -353,12 +305,6 @@ extern "C" {
 		#define ARM_MATH_NEON 1
 	#endif /* __ARM_NEON */
 
-	#define ARM_MATH_LOOPUNROLL 1
-	#define DISABLEFLOAT16 1
-
-	#include "arm_math.h"
-	#include "arm_const_structs.h"
-
 #elif CPUSTYLE_MK20DX	// Teensy 3.1 - Freescale Semiconductor - KINETIS MK20DX256VLH7
 
 	#define CPUSTYLE_ARM	1		/* архитектура процессора ARM */
@@ -372,12 +318,6 @@ extern "C" {
 	#if __ARM_NEON
 		#define ARM_MATH_NEON 1
 	#endif /* __ARM_NEON */
-
-	#define ARM_MATH_LOOPUNROLL 1
-	#define DISABLEFLOAT16 1
-
-	#include "arm_math.h"
-	#include "arm_const_structs.h"
 
 #elif CPUSTYLE_AT91SAM7S
 
@@ -440,12 +380,6 @@ extern "C" {
 		//#define ARM_MATH_NEON 1
 	#endif /* __ARM_NEON */
 
-	#define ARM_MATH_LOOPUNROLL 1
-	#define DISABLEFLOAT16 1
-
-	#include "arm_math.h"
-	#include "arm_const_structs.h"
-
 #elif CPUSTYLE_STM32MP1
 
 	// ST dual core A7 + M4
@@ -470,11 +404,7 @@ extern "C" {
 	#if __ARM_NEON
 		//#define ARM_MATH_NEON 1
 	#endif /* __ARM_NEON */
-	#define ARM_MATH_LOOPUNROLL 1
-	#define DISABLEFLOAT16 1
 
-	#include "arm_math.h"
-	#include "arm_const_structs.h"
 
 #elif \
 	defined (__TMS320C28X__) || \
