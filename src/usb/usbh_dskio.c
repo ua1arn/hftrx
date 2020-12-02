@@ -162,7 +162,7 @@ DRESULT USB_Sync(BYTE drv)
 static
 DRESULT USB_Get_Sector_Count (
 	BYTE lun,		/* Physical drive nmuber (0..) */
-	DWORD  *buff	/* Data buffer to store read data */
+	LBA_t  *buff	/* Data buffer to store read data */
 	)
 {
 	DRESULT res;

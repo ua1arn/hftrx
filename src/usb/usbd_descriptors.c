@@ -4841,7 +4841,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 	}
 #endif /* CPUSTYLE_STM32F && defined(UID_BASE) */
 
-	arm_hardware_flush_invalidate((uintptr_t) alldescbuffer, score);
+	arm_hardware_flush_invalidate((uintptr_t) alldescbuffer, sizeof alldescbuffer);
 	PRINTF(PSTR("usbd_descriptors_initialize: total length=%u at %p\n"), score, alldescbuffer);
 }
 

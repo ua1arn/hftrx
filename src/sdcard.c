@@ -2176,30 +2176,26 @@ static uint32_t SDWriteBlock(uint32_t address, const void* buffer, uint32_t size
 }
 
 #endif
+
+static int multisectorWriteProblems(UINT count)
+{
+#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
+	if (count > 1)
+	{
+		return 1;
+	}
+#endif /* CPUSTYLE_STM32H7XX */
+	return 0;
+}
 // write a size Byte big block beginning at the address.
 static 
 DRESULT SD_disk_write(
 	BYTE drv,			/* Physical drive nmuber (0..) */
 	const BYTE *buff,	/* Data to be written */
-	DWORD sector,		/* Sector address (LBA) */
+	LBA_t sector,		/* Sector address (LBA) */
 	UINT count			/* Number of sectors to write */
 	)
 {
-#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
-	if (count > 1)
-	{
-		while (count --)
-		{
-			DRESULT ec = SD_disk_write(drv, buff, sector, 1);
-			if (ec != RES_OK)
-				return ec;
-			buff += 512;
-			sector += 1;
-		}
-		return RES_OK;
-	}
-#endif /* CPUSTYLE_STM32H7XX */
-
 	sector += USERFIRSTSBLOCK;
 
 	enum { txmode = 1 };
@@ -2362,7 +2358,7 @@ static
 DRESULT SD_disk_read(
 	BYTE drv,			/* Physical drive nmuber (0..) */
 	BYTE *buff,		/* Data buffer to store read data */
-	DWORD sector,	/* Sector address (LBA) */
+	LBA_t sector,	/* Sector address (LBA) */
 	UINT count		/* Number of sectors to read */
 	)
 {
@@ -2506,7 +2502,7 @@ static uint_fast8_t sdhost_sdcard_checkversion(void)
 			sdhost_SDType = SD_HIGH_CAPACITY;
 			sdhost_CardType = SDIO_STD_CAPACITY_SD_CARD_V2_0; /*!< SD Card 2.0 */
 
-			PRINTF(PSTR("SD CARD is V2, R1 resp: stuff=%08lX\n"), resp);
+			//PRINTF(PSTR("SD CARD is V2, R1 resp: stuff=%08lX\n"), resp);
 			return 0;
 		}
 	}
@@ -2522,7 +2518,7 @@ static uint_fast8_t sdhost_sdcard_checkversion(void)
 		PRINTF(PSTR("sdhost_sdcard_checkversion failure\n"));
 		return 1;
 	}
-	PRINTF(PSTR("SD CARD is V1, R1 resp: stuff=%08lX\n"), resp);
+	//PRINTF(PSTR("SD CARD is V1, R1 resp: stuff=%08lX\n"), resp);
 	return 0;
 }
 
@@ -2530,14 +2526,14 @@ static uint_fast8_t sdhost_sdcard_poweron(void)
 {
 	uint_fast32_t resp;
 
-	PRINTF(PSTR("SD CARD power on start\n"));
+	//PRINTF(PSTR("SD CARD power on start\n"));
 	sdhost_sdcard_RCA = 0;
 
 
 	if (sdhost_sdcard_checkversion() != 0)
 		return 1;
 
-	PRINTF(PSTR("Set voltage conditions\n"));
+	//PRINTF(PSTR("Set voltage conditions\n"));
 
 	const unsigned COUNTLIMIT = 10000;
 	unsigned count;
@@ -2560,13 +2556,13 @@ static uint_fast8_t sdhost_sdcard_poweron(void)
  		//PRINTF(PSTR("voltage send waiting: R3 resp: stuff=%08lX\n"), resp);
 		if ((resp & (1UL << 31)) == 0)	// check for voltage range is okay
 			continue;
-		PRINTF(PSTR("voltage send okay: R3 resp: stuff=%08lX\n"), resp);
+		//PRINTF(PSTR("voltage send okay: R3 resp: stuff=%08lX\n"), resp);
 		if ((resp & SD_HIGH_CAPACITY) != 0)
 		{
             sdhost_CardType = SDIO_HIGH_CAPACITY_SD_CARD;
-			PRINTF(PSTR("SD CARD is high capacity\n"));
+			//PRINTF(PSTR("SD CARD is high capacity\n"));
 		}
-		PRINTF(PSTR("SD CARD power on done, no errors\n"));
+		//PRINTF(PSTR("SD CARD power on done, no errors\n"));
 		return 0;
 	}
 	PRINTF(PSTR("SD CARD power on done, error\n"));
@@ -2621,7 +2617,7 @@ static uint_fast8_t sdhost_sdcard_identification(void)
 {
 	uint_fast32_t resp;
 
-	PRINTF(PSTR("SD CARD identification start\n"));
+	//PRINTF(PSTR("SD CARD identification start\n"));
 
 	sdhost_long_resp(encode_cmd(SD_CMD_ALL_SEND_CID), 0);	// CMD2
 	if (sdhost_get_R2(sdhost_sdcard_CID) != 0)
@@ -2641,7 +2637,7 @@ static uint_fast8_t sdhost_sdcard_identification(void)
 	else
 	{
 		sdhost_sdcard_RCA = 0xFFFF & (resp >> 16);
-		PRINTF(PSTR("RCA=%08lX\n"), sdhost_sdcard_RCA);
+		//PRINTF(PSTR("RCA=%08lX\n"), sdhost_sdcard_RCA);
 	}
 #endif /* WITHSDHCHW */
 
@@ -2652,7 +2648,7 @@ static uint_fast8_t sdhost_sdcard_identification(void)
 		PRINTF(PSTR("SD_CMD_SEND_CSD error\n"));
 		return 1;
 	}
-	PRINTF(PSTR("SD_CMD_SEND_CSD okay\n"));
+	//PRINTF(PSTR("SD_CMD_SEND_CSD okay\n"));
 
 #if WITHSDHCHW
 	// Select card
@@ -2662,7 +2658,7 @@ static uint_fast8_t sdhost_sdcard_identification(void)
 		PRINTF(PSTR("SD_CMD_SEL_DESEL_CARD error\n"));
 		return 1;
 	}
-	PRINTF(PSTR("SD_CMD_SEL_DESEL_CARD okay\n"));
+	//PRINTF(PSTR("SD_CMD_SEL_DESEL_CARD okay\n"));
 #endif /* WITHSDHCHW */
 
 	// Get SCR
@@ -2720,7 +2716,7 @@ static uint_fast8_t sdhost_sdcard_identification(void)
 			PRINTF(PSTR("SD_CMD_APP_SD_SET_BUSWIDTH error\n"));
 			return 1;
 		}
-		PRINTF(PSTR("SD_CMD_APP_SD_SET_BUSWIDTH okay\n"));
+		//PRINTF(PSTR("SD_CMD_APP_SD_SET_BUSWIDTH okay\n"));
 		hardware_sdhost_setbuswidth(1);		// 4-bit width
 	}
 	else if (bussupport1b != 0)
@@ -2855,10 +2851,10 @@ DRESULT SD_Get_Block_Size (
 static 
 DRESULT SD_Get_Sector_Count (
 	BYTE drv,		/* Physical drive nmuber (0..) */
-	DWORD  *buff	/* Data buffer to store read data */
+	LBA_t  *buff	/* Data buffer to store read data */
 	)
 {
-	uint_fast32_t val = SD_ReadCardSize() / FF_MAX_SS;
+	LBA_t val = SD_ReadCardSize() / FF_MAX_SS;
 	if (val > USERFIRSTSBLOCK)
 	{
 		//PRINTF(PSTR("SD_Get_Sector_Count: drv=%d\n"), (int) drv);
@@ -2922,13 +2918,81 @@ DSTATUS SD_Status (
 }
 
 
+
+// write a size Byte big block beginning at the address.
+static
+DRESULT SD_disk_writeMisalign(
+	BYTE drv,			/* Physical drive nmuber (0..) */
+	const BYTE *buff,	/* Data to be written */
+	LBA_t sector,		/* Sector address (LBA) */
+	UINT count			/* Number of sectors to write */
+	)
+{
+	if (multisectorWriteProblems(count) || ((uintptr_t) buff % DCACHEROWSIZE) != 0)
+	{
+		while (count --)
+		{
+			static FATFSALIGN_BEGIN BYTE tmpbuf[FF_MAX_SS] FATFSALIGN_END;
+			const BYTE *abuff = buff;
+			if (((uintptr_t) buff % DCACHEROWSIZE) != 0)
+			{
+				memcpy(tmpbuf, buff, FF_MAX_SS);
+				abuff = tmpbuf;
+			}
+
+			DRESULT ec = SD_disk_write(drv, abuff, sector, 1);
+			if (ec != RES_OK)
+				return ec;
+			buff += FF_MAX_SS;
+			sector += 1;
+		}
+		return RES_OK;
+	}
+	return SD_disk_write(drv, buff, sector, count);
+}
+
+// read a size Byte big block beginning at the address.
+static
+DRESULT SD_disk_readMisalign(
+	BYTE drv,			/* Physical drive nmuber (0..) */
+	BYTE *buff,		/* Data buffer to store read data */
+	LBA_t sector,	/* Sector address (LBA) */
+	UINT count		/* Number of sectors to read */
+	)
+{
+	if (((uintptr_t) buff % DCACHEROWSIZE) != 0)
+	{
+		while (count --)
+		{
+			static FATFSALIGN_BEGIN BYTE tmpbuf[FF_MAX_SS] FATFSALIGN_END;
+			BYTE *abuff = buff;
+			if (((uintptr_t) buff % DCACHEROWSIZE) != 0)
+			{
+				abuff = tmpbuf;
+			}
+
+			DRESULT ec = SD_disk_read(drv, abuff, sector, 1);
+			if (ec != RES_OK)
+				return ec;
+			if (((uintptr_t) buff % DCACHEROWSIZE) != 0)
+			{
+				memcpy(buff, tmpbuf, FF_MAX_SS);
+			}
+			buff += FF_MAX_SS;
+			sector += 1;
+		}
+		return RES_OK;
+	}
+	return SD_disk_read(drv, buff, sector, count);
+}
+
 const struct drvfunc SD_drvfunc =
 {
 	SD_Initialize,
 	SD_Status,
 	SD_Sync,
-	SD_disk_write,
-	SD_disk_read,
+	SD_disk_writeMisalign,
+	SD_disk_readMisalign,
 	SD_Get_Sector_Count,
 	SD_Get_Block_Size,
 };
@@ -3887,7 +3951,7 @@ static char mmcWriteSectors(
 static 
 DRESULT MMC_Get_Sector_Count (
 	BYTE drv,		/* Physical drive nmuber (0..) */
-	DWORD  *buff	/* Data buffer to store read data */
+	LBA_t  *buff	/* Data buffer to store read data */
 	)
 {
 	* buff = MMC_ReadCardSize() / FF_MAX_SS;

@@ -7254,7 +7254,7 @@ void hardware_lfm_setupdatefreq(unsigned ticksfreq)
 
 void hardware_sdhost_setbuswidth(uint_fast8_t use4bit)
 {
-	PRINTF(PSTR("hardware_sdhost_setbuswidth: use4bit=%u\n"), (unsigned) use4bit);
+	//PRINTF(PSTR("hardware_sdhost_setbuswidth: use4bit=%u\n"), (unsigned) use4bit);
 
 #if ! WITHSDHCHW4BIT
 	use4bit = 0;
@@ -7408,7 +7408,7 @@ void hardware_sdhost_setspeed(unsigned long ticksfreq)
 	const unsigned value = ulmin(calcdivround2(SDMMCCLK / 2, ticksfreq), 0x03FF);
 
 	//PRINTF(PSTR("hardware_sdhost_setspeed: stm32h7xx_pllq=%lu, SDMMCCLK=%lu, PLL_FREQ=%lu\n"), (unsigned long) stm32h7xx_pllq, SDMMCCLK, PLL_FREQ);
-	PRINTF(PSTR("hardware_sdhost_setspeed: CLKCR_CLKDIV=%lu\n"), (unsigned long) value);
+	//PRINTF(PSTR("hardware_sdhost_setspeed: CLKCR_CLKDIV=%lu\n"), (unsigned long) value);
 
 	SDMMC1->CLKCR = (SDMMC1->CLKCR & ~ (SDMMC_CLKCR_CLKDIV_Msk)) |
 		((value << SDMMC_CLKCR_CLKDIV_Pos) & SDMMC_CLKCR_CLKDIV_Msk);
@@ -10133,7 +10133,7 @@ void arm_hardware_flush_all(void)
 void arm_hardware_invalidate(uintptr_t addr, int_fast32_t dsize)
 {
 	ASSERT((addr % DCACHEROWSIZE) == 0);
-	ASSERT((dsize % DCACHEROWSIZE) == 0);
+	//ASSERT((dsize % DCACHEROWSIZE) == 0);
 
 	if (dsize > 0)
 	{
@@ -10162,7 +10162,7 @@ void arm_hardware_invalidate(uintptr_t addr, int_fast32_t dsize)
 // Сейчас эта память будет записываться по DMA куда-то
 void arm_hardware_flush(uintptr_t addr, int_fast32_t dsize)
 {
-	//ASSERT((addr % DCACHEROWSIZE) == 0);
+	ASSERT((addr % DCACHEROWSIZE) == 0);
 	//ASSERT((dsize % DCACHEROWSIZE) == 0);
 
 	if (dsize > 0)
