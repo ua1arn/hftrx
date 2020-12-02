@@ -14,6 +14,7 @@
 #include "display.h"
 #include <stdint.h>
 #include <string.h>
+#include <limits.h>
 
 #include "formats.h"	// for debug prints
 #include "gpio.h"
