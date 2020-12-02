@@ -415,7 +415,7 @@ int dbg_getchar(char * r);
 
 #endif /* WITHCAT && WITHUART2HW && WITHCAT_USART2 */
 
-#if WITHUART7HW
+#if WITHUART7HW && WITHCAT7_UART7
 	// CAT7 функции работают через UART7
 	// Вызывается из user-mode программы
 	#define HARDWARE_CAT7_INITIALIZE() do { \
@@ -457,7 +457,7 @@ int dbg_getchar(char * r);
 
 #endif /* WITHUART7HW */
 
-#if WITHUART5HW
+#if WITHUART5HW && WITHCAT7_UART5
 	// CAT7 функции работают через UART5
 	// Вызывается из user-mode программы
 	#define HARDWARE_CAT7_INITIALIZE() do { \
