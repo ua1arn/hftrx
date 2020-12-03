@@ -2879,7 +2879,7 @@ DSTATUS SD_Initialize (
 	BYTE drv				/* Physical drive nmuber (0..) */
 )
 {
-	PRINTF(PSTR("SD_Initialize: drv=%d\n"), (int) drv);
+	//PRINTF(PSTR("SD_Initialize: drv=%d\n"), (int) drv);
 	if (1)
 	{
 #if WITHSDHCHW
