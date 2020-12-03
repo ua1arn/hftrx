@@ -1538,7 +1538,7 @@ extern struct descholder ExtOsPropDescTbl [INTERFACE_count];
 uint_fast16_t usbd_dfu_get_xfer_size(uint_fast8_t alt);
 
 /* USB Host defines and prototypes */
-
+#include <string.h>
 /* Memory management macros */
 //#define USBH_malloc               malloc
 //#define USBH_free                 free

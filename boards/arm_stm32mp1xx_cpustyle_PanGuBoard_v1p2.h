@@ -43,7 +43,7 @@
 #define WITHNMEA_USART4		1	/* порт подключения GPS/GLONASS */
 
 //#define WITHUART5HW	1	/* net PanGu Board UART5_RX PB5, UART5_TX PB13 Используется периферийный контроллер последовательного порта #5 */
-#define WITHCAT7_UART5	1	// сетевой интерфейс SLIP на UART5
+//#define WITHCAT7_UART5	1	// сетевой интерфейс SLIP на UART5
 
 #if WITHISBOOTLOADER
 
@@ -129,6 +129,7 @@
 
 
 	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
+	#define WITHCAT7_CDC	1	// сетевой интерфейс SLIP на UART5
 	#define WITHMODEM_CDC	1
 
 	#if WITHINTEGRATEDDSP
@@ -141,7 +142,7 @@
 	#endif /* WITHINTEGRATEDDSP */
 
 	#define WITHUSBCDCACM		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
-	#define WITHUSBCDCACM_N	2	/* количество виртуальных последовательных портов */
+	#define WITHUSBCDCACM_N	1	/* количество виртуальных последовательных портов */
 	//#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
 	//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
 	//#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */

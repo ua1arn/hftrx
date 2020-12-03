@@ -550,6 +550,53 @@ int dbg_getchar(char * r);
 #endif /* WITHCAT && WITHUSBCDCACM && WITHCAT_CDC */
 
 
+#if WITHUSBCDCACM && WITHCAT7_CDC
+	// CAT функции работают через виртуальный USB последовательный порт
+	// Вызывается из user-mode программы
+	#define HARDWARE_CAT7_INITIALIZE() do { \
+		} while (0)
+	// Вызывается из user-mode программы
+	#define HARDWARE_CAT7_SET_SPEED(baudrate) do { \
+		} while (0)
+	// вызывается из state machie протокола CAT или NMEA (в прерываниях)
+	// для управления разрешением последующих вызовов прерывания
+	#define HARDWARE_CAT7_ENABLETX(v) do { \
+			usbd_cdc_enabletx(v); \
+		} while (0)
+	// вызывается из state machie протокола CAT или NMEA (в прерываниях)
+	// для управления разрешением последующих вызовов прерывания
+	#define HARDWARE_CAT7_ENABLERX(v) do { \
+			usbd_cdc_enablerx(v); \
+		} while (0)
+	// вызывается из state machie протокола CAT или NMEA (в прерываниях)
+	// для передачи символа
+	#define HARDWARE_CAT7_TX(ctx, c) do { \
+			usbd_cdc_tx((ctx), (c)); \
+		} while (0)
+
+	// вызывается из обработчика прерываний CDC
+	// с принятым символом
+	#define HARDWARE_CDC_ONRXCHAR(c) do { \
+			cat7_parsechar(c); \
+		} while (0)
+	// вызывается из обработчика прерываний CDC
+	#define HARDWARE_CDC_ONOVERFLOW() do { \
+			cat7_rxoverflow(); \
+		} while (0)
+	// вызывается из обработчика прерываний CDC
+	// произошёл разрыв связи при работе по USB CDC
+	#define HARDWARE_CDC_ONDISCONNECT() do { \
+			cat7_disconnect(); \
+		} while (0)
+	// вызывается из обработчика прерываний CDC
+	// по готовности передатчика
+	#define HARDWARE_CDC_ONTXCHAR(ctx) do { \
+			cat7_sendchar(ctx); \
+		} while (0)
+
+#endif /* WITHUSBCDCACM && WITHCAT7_CDC */
+
+
 #if WITHMODEM && WITHUSBCDCACM && WITHMODEM_CDC
 	// Модемные функции работают через виртуальный USB последовательный порт
 	// Вызывается из user-mode программы
