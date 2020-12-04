@@ -2671,8 +2671,8 @@ struct nvmap
 	uint8_t mainsubrxmode;		// Левый/правый, A - main RX, B - sub RX
 #endif /* WITHUSEDUALWATCH */
 #if WITHENCODER
-	uint8_t ghiresres;		/* индекс в таблице разрешений валкодера */
-	uint8_t ghiresdyn;	/* включение динамического енкодера */
+	uint8_t genc1pulses;		/* индекс в таблице разрешений валкодера */
+	uint8_t genc1dynamic;	/* включение динамического енкодера */
 #endif /* WITHENCODER */
 
 #if defined (DEFAULT_LCD_CONTRAST)
@@ -3322,13 +3322,13 @@ static uint_fast8_t gagcmode;
 #endif /* WITHUSEDUALWATCH */
 
 #if WITHENCODER
-	static uint_fast8_t ghiresres = ENCRES_DEFAULT;		/* 5: 128 индекс в таблице разрешений валкодера */
+	static uint_fast8_t genc1pulses = ENCRES_DEFAULT;		/* 5: 128 индекс в таблице разрешений валкодера */
 	#if defined (ENCDIV_DEFAULT)
 		static uint_fast8_t genc1div = ENCDIV_DEFAULT;	/* во сколько раз уменьшаем разрешение валкодера. */
 	#else /* defined (ENCDIV_DEFAULT) */
 		static uint_fast8_t genc1div = 1;	/* во сколько раз уменьшаем разрешение валкодера. */
 	#endif /* defined (ENCDIV_DEFAULT) */
-	static uint_fast8_t ghiresdyn = 1;
+	static uint_fast8_t genc1dynamic = 1;
 	static uint_fast8_t gbigstep = (ENCRES_24 >= ENCRES_DEFAULT);	/* модифицируется через меню. */
 
 	#if defined (BOARD_ENCODER2_DIVIDE)
@@ -7741,7 +7741,7 @@ static void
 updateboard2(void)
 {
 #if WITHENCODER
-	encoder_set_resolution(encresols [ghiresres], ghiresdyn);
+	encoder_set_resolution(encresols [genc1pulses], genc1dynamic);
 #endif /* WITHENCODER */
 	display_setbgcolor(gbluebgnd ? COLORMAIN_BLUE : COLORMAIN_BLACK);
 }
@@ -16063,27 +16063,27 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #endif /* WITHRFSG */
 #if WITHENCODER
 	{
-		QLABEL("ENC RES "), 7, 0, RJ_ENCRES,	ISTEP1,
+		QLABEL("ENC1 RES"), 7, 0, RJ_ENCRES,	ISTEP1,
 		ITEM_VALUE,
 		0, (sizeof encresols / sizeof encresols [0]) - 1,
-		offsetof(struct nvmap, ghiresres),
+		offsetof(struct nvmap, genc1pulses),
 		nvramoffs0,
 		NULL,
-		& ghiresres,
+		& genc1pulses,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		QLABEL("ENC DYNA"), 8, 3, RJ_ON,	ISTEP1,
+		QLABEL("ENC1 DYN"), 8, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,
-		offsetof(struct nvmap, ghiresdyn),
+		offsetof(struct nvmap, genc1dynamic),
 		nvramoffs0,
 		NULL,
-		& ghiresdyn,
+		& genc1dynamic,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		QLABEL("ENC DIVS"), 7, 0, 0,	ISTEP1,
+		QLABEL("ENC1 DIV"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		1, 128, 	/* /1 ... /128 */
 		offsetof(struct nvmap, genc1div),
