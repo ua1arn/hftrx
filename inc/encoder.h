@@ -20,7 +20,7 @@ extern "C" {
 
 
 int_least16_t getRotateHiRes(uint_fast8_t * jumpsize, uint_fast8_t hiresdiv);	/* получение накопленных значений прерываний от валкодера. накопитель сбрасывается */
-int_least16_t getRotateHiRes2(uint_fast8_t * jumpsize);	/* получение накопленных значений прерываний от валкодера. накопитель сбрасывается */
+int_least16_t getRotateHiRes2(uint_fast8_t * jumpsize, uint_fast8_t loresdiv);	/* получение накопленных значений прерываний от валкодера. накопитель сбрасывается */
 void encoder_clear(void);	/* накопитель сбрасывается */
 int getRotateLoRes(uint_fast8_t hiresdiv); /* получение "редуцированного" количества прерываний от валкодера. */
 void encoder_initialize(void);

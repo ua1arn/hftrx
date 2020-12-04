@@ -3079,7 +3079,8 @@ filter_t fi_2p0_455 =
 
 
 	uint8_t gbigstep;		/* больщой шаг валкодера */
-	uint8_t ghiresdiv;		/* во сколько раз уменьшаем разрешение валкодера. */
+	uint8_t genc1div;		/* во сколько раз уменьшаем разрешение валкодера. */
+	uint8_t genc2div;
 #if WITHSPKMUTE
 	uint8_t gmutespkr;		/* выключение динамика */
 #endif /* WITHSPKMUTE */
@@ -3323,15 +3324,24 @@ static uint_fast8_t gagcmode;
 #if WITHENCODER
 	static uint_fast8_t ghiresres = ENCRES_DEFAULT;		/* 5: 128 индекс в таблице разрешений валкодера */
 	#if defined (ENCDIV_DEFAULT)
-		static uint_fast8_t ghiresdiv = ENCDIV_DEFAULT;	/* во сколько раз уменьшаем разрешение валкодера. */
+		static uint_fast8_t genc1div = ENCDIV_DEFAULT;	/* во сколько раз уменьшаем разрешение валкодера. */
 	#else /* defined (ENCDIV_DEFAULT) */
-		static uint_fast8_t ghiresdiv = 1;	/* во сколько раз уменьшаем разрешение валкодера. */
+		static uint_fast8_t genc1div = 1;	/* во сколько раз уменьшаем разрешение валкодера. */
 	#endif /* defined (ENCDIV_DEFAULT) */
 	static uint_fast8_t ghiresdyn = 1;
 	static uint_fast8_t gbigstep = (ENCRES_24 >= ENCRES_DEFAULT);	/* модифицируется через меню. */
+
+	#if defined (BOARD_ENCODER2_DIVIDE)
+		static uint_fast8_t genc2div = BOARD_ENCODER2_DIVIDE;
+	#else /* defined (BOARD_ENCODER2_DIVIDE) */
+		static uint_fast8_t genc2div = 2;	/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
+	#endif /* defined (BOARD_ENCODER2_DIVIDE) */
+
+
 #else
 	static const uint_fast8_t gbigstep;
-	static const uint_fast8_t ghiresdiv = 1;
+	static const uint_fast8_t genc1div = 1;
+	static const uint_fast8_t genc2div = 1;
 #endif
 
 static uint_fast8_t lockmode;
@@ -12685,7 +12695,7 @@ processcatmsg(
 		if (cathasparam)
 		{
 			const int steps = vfy32up(catparam, 0, 99, 1);	/* 00 .. 99 */
-			encoder_pushback(steps, ghiresdiv);
+			encoder_pushback(steps, genc1div);
 		}
 	}
 	else if (match2('D', 'N'))
@@ -12693,7 +12703,7 @@ processcatmsg(
 		if (cathasparam)
 		{
 			const int steps = vfy32up(catparam, 0, 99, 1);	/* 00 .. 99 */
-			encoder_pushback(0 - steps, ghiresdiv);
+			encoder_pushback(0 - steps, genc1div);
 		}
 	}
 #if 0
@@ -16076,10 +16086,10 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		QLABEL("ENC DIVS"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		1, 128, 	/* /1 ... /128 */
-		offsetof(struct nvmap, ghiresdiv),
+		offsetof(struct nvmap, genc1div),
 		nvramoffs0,
 		NULL,
-		& ghiresdiv,
+		& genc1div,
 		getzerobase,
 	},
 	{
@@ -16092,6 +16102,18 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		& gbigstep,
 		getzerobase,
 	},
+#if WITHENCODER2
+	{
+		QLABEL("ENC2 DIV"), 7, 0, 0,	ISTEP1,
+		ITEM_VALUE,
+		1, 8, 	/* /1 ... /8 */
+		offsetof(struct nvmap, genc2div),
+		nvramoffs0,
+		NULL,
+		& genc2div,
+		getzerobase,
+	},
+#endif /* WITHENCODER2 */
 #endif /* WITHENCODER */
 
 #if WITHTX
@@ -17594,7 +17616,7 @@ modifysettings(
 		if (kbready == 0)
 		{
 			uint_fast8_t js;
-			const int_least16_t nr2 = getRotateHiRes2(& js);  // перемещение по меню также с помощью 2го энкодера
+			const int_least16_t nr2 = getRotateHiRes2(& js, genc2div);  // перемещение по меню также с помощью 2го энкодера
 
 			if (nr2 > 0)
 			{
@@ -17710,7 +17732,7 @@ modifysettings(
 
 #if WITHENCODER
 		/* редактирование значения с помощью поворота валкодера. */
-		nrotate = getRotateLoRes(ghiresdiv);
+		nrotate = getRotateLoRes(genc1div);
 		if (lockmode != 0)
 			nrotate = 0;	// ignore encoder
 
@@ -19750,8 +19772,8 @@ hamradio_main_step(void)
 				nrotate = 0;	// ignore encoder
 				nrotate2 = 0;	// ignore encoder
 			#else
-				nrotate = getRotateHiRes(& jumpsize, ghiresdiv * gencderate);
-				nrotate2 = getRotateHiRes2(& jumpsize2);
+				nrotate = getRotateHiRes(& jumpsize, genc1div * gencderate);
+				nrotate2 = getRotateHiRes2(& jumpsize2, genc2div * gencderate);
 			#endif
 
 			if (uif_encoder2_rotate(nrotate2))

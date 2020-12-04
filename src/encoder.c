@@ -430,20 +430,19 @@ getRotateHiRes(
 		накопитель сбрасывается */
 int_least16_t 
 getRotateHiRes2(
-	uint_fast8_t * jumpsize	/* jumpsize - во сколько раз увеличивается скорость перестройки */
+	uint_fast8_t * jumpsize,	/* jumpsize - во сколько раз увеличивается скорость перестройки */
+	uint_fast8_t loresdiv
 	)
 {
-	#if defined (BOARD_ENCODER2_DIVIDE)
-		const unsigned loresdiv = BOARD_ENCODER2_DIVIDE;
-	#else /* defined (BOARD_ENCODER2_DIVIDE) */
-		const unsigned loresdiv = 2;	/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
-	#endif /* defined (BOARD_ENCODER2_DIVIDE) */
-
+#if WITHENCODER2
 	unsigned speed;
 	int nrotate = encoder2_get_snapshot(& speed, loresdiv);
 
 	* jumpsize = 1;
 	return nrotate;
+#else /* WITHENCODER2 */
+	return 0;
+#endif /* WITHENCODER2 */
 }
 
 static void spool_encinterrupt2_local(void * ctx)
