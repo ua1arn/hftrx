@@ -393,47 +393,51 @@ enum {
 	/* строки, выводимые на индикатор для обозначения режимов.
 	 */
 	static const FLASHMEM struct {
-		unsigned char codeatt;	// признак включения аттенюатора
-		unsigned char codepre;	// признак включения предусилителя
+		uint8_t codeatt;	// признак включения аттенюатора
+		uint8_t codepre;	// признак включения предусилителя
+		int16_t atten10;	// результирующее затухание
 		char label [1];
 	}  attmodes [] =
 	{
-		{ 0, 0, "" },
+		{ 0, 0, "", 0  },
 	};
 
 	/* строки, выводимые на индикатор для обозначения режимов.
 	 */
 	static const FLASHMEM struct {
-		unsigned char code;
+		uint8_t code;
 		char label [4];
+		int16_t atten10;	// результирующее затухание
 	}  pampmodes [] =
 	{
-		{ 0, "   " },	// три символа нужны для стирания надписи OVF если используется индикация в одном месте с PRE
+		{ 0, "   ", 0 },	// три символа нужны для стирания надписи OVF если используется индикация в одном месте с PRE
 	};
 
 #elif WITHONEATTONEAMP
 	/* строки, выводимые на индикатор для обозначения режимов.
 	 */
 	static const FLASHMEM struct {
-		unsigned char codeatt;	// признак включения аттенюатора
-		unsigned char codepre;	// признак включения предусилителя
+		uint8_t codeatt;	// признак включения аттенюатора
+		uint8_t codepre;	// признак включения предусилителя
 		char label [4];
+		int16_t atten10;	// результирующее затухание
 	}  attmodes [] =
 	{
-		{ 0, 0, "   " },
-		{ 0, 1, "PRE" },
-		{ 0, 0, "   " },
-		{ 1, 0, "ATT" },
+		{ 0, 0, "   ", 0  },
+		{ 0, 1, "PRE", 0  },
+		{ 0, 0, "   ", 0  },
+		{ 1, 0, "ATT", 0  },
 	};
 
 	/* строки, выводимые на индикатор для обозначения режимов.
 	 */
 	static const FLASHMEM struct {
-		unsigned char code;
+		uint8_t code;
 		char label [4];
+		int16_t atten10;	// результирующее затухание
 	}  pampmodes [] =
 	{
-		{ 0, "   " },	// три символа нужны для стирания надписи OVF если используется индикация в одном месте с PRE
+		{ 0, "   ", 0 },	// три символа нужны для стирания надписи OVF если используется индикация в одном месте с PRE
 	};
 
 #elif WITHPREAMPATT2_6DB
@@ -443,25 +447,27 @@ enum {
 	 */
 
 	static const FLASHMEM struct {
-		unsigned char code;
+		uint8_t code;
 		char label [5];
+		int16_t atten10;	// результирующее затухание
 	}  attmodes [] =
 	{
-		{ 0, "    " },
-		{ 1, " 6dB" },
-		{ 2, "12dB" },
-		{ 3, "18dB" },
+		{ 0, "    ", 0 },
+		{ 1, " 6dB", 60 },
+		{ 2, "12dB", 120 },
+		{ 3, "18dB", 180 },
 	};
 
 	/* строки, выводимые на индикатор для обозначения режимов.
 	 */
 	static const FLASHMEM struct {
-		unsigned char code;
+		uint8_t code;
 		char label [4];
+		int16_t atten10;	// результирующее затухание
 	}  pampmodes [] =
 	{
-		{ 0, "   " },
-		{ 1, "PRE" },
+		{ 0, "   ", 0 },
+		{ 1, "PRE", -120 },
 	};
 
 #elif WITHPREAMPATT2_10DB
@@ -471,25 +477,27 @@ enum {
 	 */
 
 	static const FLASHMEM struct {
-		unsigned char code;
+		uint8_t code;
 		char label [5];
+		int16_t atten10;	// результирующее затухание
 	}  attmodes [] =
 	{
-		{ 0, "    " },
-		{ 1, "10dB" },
-		{ 2, "20dB" },
-		{ 3, "30dB" },
+		{ 0, "    ", 0  },
+		{ 1, "10dB", 100  },
+		{ 2, "20dB", 200  },
+		{ 3, "30dB", 300  },
 	};
 
 	/* строки, выводимые на индикатор для обозначения режимов.
 	 */
 	static const FLASHMEM struct {
-		unsigned char code;
+		uint8_t code;
 		char label [4];
+		int16_t atten10;	// результирующее затухание
 	}  pampmodes [] =
 	{
-		{ 0, "   " },
-		{ 1, "PRE" },
+		{ 0, "   ", 0 },
+		{ 1, "PRE", -120 },
 	};
 
 #elif WITHATT2_6DB
@@ -499,24 +507,26 @@ enum {
 	 */
 
 	static const FLASHMEM struct {
-		unsigned char code;
+		uint8_t code;
 		char label [5];
+		int16_t atten10;	// результирующее затухание
 	}  attmodes [] =
 	{
-		{ 0, "    " },
-		{ 1, " 6dB" },
-		{ 2, "12dB" },
-		{ 3, "18dB" },
+		{ 0, "    ", 0 },
+		{ 1, " 6dB", 60 },
+		{ 2, "12dB", 120 },
+		{ 3, "18dB", 180 },
 	};
 
 	/* строки, выводимые на индикатор для обозначения режимов.
 	 */
 	static const FLASHMEM struct {
-		unsigned char code;
+		uint8_t code;
 		char label [4];
+		int16_t atten10;	// результирующее затухание
 	}  pampmodes [] =
 	{
-		{ 0, "   " },	// три символа нужны для стирания надписи OVF если используется индикация в одном месте с PRE
+		{ 0, "   ", 0 },	// три символа нужны для стирания надписи OVF если используется индикация в одном месте с PRE
 	};
 #elif WITHATT2_10DB
 	/* Управление двухкаскадным аттенюатором с затуханиями 0 - 10 - 20 - 30 dB без УВЧ */
@@ -527,48 +537,71 @@ enum {
 	static const FLASHMEM struct {
 		unsigned char code;
 		char label [5];
+		int16_t atten10;	// результирующее затухание
 	}  attmodes [] =
 	{
-		{ 0, "    " },
-		{ 1, "10dB" },
-		{ 2, "20dB" },
-		{ 3, "30dB" },
+		{ 0, "    ", 0 },
+		{ 1, "10dB", 100  },
+		{ 2, "20dB", 200  },
+		{ 3, "30dB", 300  },
 	};
 
 	/* строки, выводимые на индикатор для обозначения режимов.
 	 */
 	static const FLASHMEM struct {
-		unsigned char code;
+		uint8_t code;
 		char label [4];
+		int16_t atten10;	// результирующее затухание
 	}  pampmodes [] =
 	{
-		{ 0, "   " },	// три символа нужны для стирания надписи OVF если используется индикация в одном месте с PRE
+		{ 0, "   ", 0 },	// три символа нужны для стирания надписи OVF если используется индикация в одном месте с PRE
 	};
 #elif WITHATT1PRE1
 
 	static const FLASHMEM struct {
-		unsigned char code;
+		uint8_t code;
 		char label [4];
+		int16_t atten10;	// результирующее затухание
 	}  attmodes [] =
 	{
-		{ 0, "   " },
-		{ 1, "ATT" },
+		{ 0, "   ", 0 },
+		{ 1, "ATT", 120 },
 	};
 
 
 	/* строки, выводимые на индикатор для обозначения режимов.
 	 */
 	static const FLASHMEM struct {
-		unsigned char code;
+		uint8_t code;
 		char label [4];
+		int16_t atten10;	// результирующее затухание
 	}  pampmodes [] =
 	{
-		{ 0, "   " },
-		{ 1, "PRE" },
+		{ 0, "   ", 0 },
+		{ 1, "PRE", - 120 },
 	};
 #else
 	#error ATT/PREAMP mode undefined
 #endif
+
+// вернуть положительное значение в случае необходимости коррекции С-метра на величину аттенюатора
+// и отрицательное щначение в случае коррекции на величину усиления.
+// Возвращаем с точностью 0.1 дБ
+
+static int_fast16_t gerflossdb10(uint_fast8_t xvrtr, uint_fast8_t att, uint_fast8_t pre)
+{
+	if (0 && ! xvrtr)
+	{
+		// если не трансвертор и не отклбчено - корректируем S-meter
+		return pampmodes [pre].atten10 + attmodes [att].atten10;
+	}
+	else
+	{
+		// без коррекции
+		return 0;
+	}
+}
+
 /* строки, выводимые на индикатор для обозначения режимов.
  */
 #if CTLREGMODE24_RK4CI	/* управляющий регистр 24 бита - "Воробей" RK4CI */
@@ -8962,7 +8995,7 @@ updateboard(
 		board_set_detector(BOARD_DETECTOR_SSB);		/* Всегда смесительный детектор */
 		board_set_digigainmax(gdigigainmax);
 		board_set_gvad605(gvad605);			/* напряжение на AD605 (управление усилением тракта ПЧ */
-		board_set_fsadcpower10((int_fast16_t) gfsadcpower10 [lo0side != LOCODE_INVALID] - (int_fast16_t) FSADCPOWEROFFSET10);	/*	Мощность, соответствующая full scale от IF ADC */
+		board_set_fsadcpower10((int_fast16_t) gfsadcpower10 [lo0side != LOCODE_INVALID] - (int_fast16_t) FSADCPOWEROFFSET10 + gerflossdb10(lo0side != LOCODE_INVALID, gatts [rxbi], gpamps [rxbi]));	/*	Мощность, соответствующая full scale от IF ADC */
 		#if WITHUSEDUALWATCH
 			board_set_mainsubrxmode(getactualmainsubrx());		// Левый/правый, A - main RX, B - sub RX
 		#endif /* WITHUSEDUALWATCH */
