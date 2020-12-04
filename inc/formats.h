@@ -415,7 +415,7 @@ int dbg_getchar(char * r);
 
 #endif /* WITHCAT && WITHUART2HW && WITHCAT_USART2 */
 
-#if WITHUART7HW && WITHCAT7_UART7
+#if WITHLWIP && WITHUART7HW && WITHCAT7_UART7
 	// CAT7 функции работают через UART7
 	// Вызывается из user-mode программы
 	#define HARDWARE_CAT7_INITIALIZE() do { \
@@ -455,9 +455,9 @@ int dbg_getchar(char * r);
 			cat7_sendchar(ctx); \
 		} while (0)
 
-#endif /* WITHUART7HW */
+#endif /* WITHLWIP && WITHUART7HW && WITHCAT7_UART7 */
 
-#if WITHUART5HW && WITHCAT7_UART5
+#if WITHLWIP && WITHUART5HW && WITHCAT7_UART5
 	// CAT7 функции работают через UART5
 	// Вызывается из user-mode программы
 	#define HARDWARE_CAT7_INITIALIZE() do { \
@@ -497,7 +497,7 @@ int dbg_getchar(char * r);
 			cat7_sendchar(ctx); \
 		} while (0)
 
-#endif /* WITHUART5HW */
+#endif /* WITHLWIP && WITHUART5HW && WITHCAT7_UART5 */
 
 #if WITHCAT && WITHUSBCDCACM && WITHCAT_CDC
 	// CAT функции работают через виртуальный USB последовательный порт
@@ -550,7 +550,7 @@ int dbg_getchar(char * r);
 #endif /* WITHCAT && WITHUSBCDCACM && WITHCAT_CDC */
 
 
-#if WITHUSBCDCACM && WITHCAT7_CDC
+#if WITHLWIP && WITHUSBCDCACM && WITHCAT7_CDC
 	// CAT функции работают через виртуальный USB последовательный порт
 	// Вызывается из user-mode программы
 	#define HARDWARE_CAT7_INITIALIZE() do { \
@@ -594,7 +594,7 @@ int dbg_getchar(char * r);
 			cat7_sendchar(ctx); \
 		} while (0)
 
-#endif /* WITHUSBCDCACM && WITHCAT7_CDC */
+#endif /* WITHLWIP && WITHUSBCDCACM && WITHCAT7_CDC */
 
 
 #if WITHMODEM && WITHUSBCDCACM && WITHMODEM_CDC
