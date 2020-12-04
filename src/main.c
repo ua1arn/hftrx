@@ -584,13 +584,16 @@ enum {
 	#error ATT/PREAMP mode undefined
 #endif
 
+// парамер меню
+static uint_fast8_t gattpresh;	/* корректировка показаний с-метра по включенному аттенюатору и предусилителю */
+
 // вернуть положительное значение в случае необходимости коррекции С-метра на величину аттенюатора
 // и отрицательное щначение в случае коррекции на величину усиления.
 // Возвращаем с точностью 0.1 дБ
 
 static int_fast16_t gerflossdb10(uint_fast8_t xvrtr, uint_fast8_t att, uint_fast8_t pre)
 {
-	if (0 && ! xvrtr)
+	if (gattpresh && ! xvrtr)
 	{
 		// если не трансвертор и не отклбчено - корректируем S-meter
 		return pampmodes [pre].atten10 + attmodes [att].atten10;
@@ -3107,6 +3110,8 @@ filter_t fi_2p0_455 =
 	uint8_t lo4powrx;		/* на сколько раз по 2 делим выходную частоту синтезатора четивертого гетеродина */
 	uint8_t lo4powtx;		/* на сколько раз по 2 делим выходную частоту синтезатора четивертого гетеродина */
 #endif /* LO1FDIV_ADJ */
+
+	uint8_t gattpresh;	/* корректировка показаний с-метра по включенному аттенюатору и предусилителю */
 
 #if WITHBARS
 	uint8_t s9level;			/* уровни калибровки S-метра */
@@ -16548,6 +16553,16 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		nvramoffs0,
 		NULL,			/* калибровка уровней S-метра */
 		& s9_60_delta,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		QLABEL("ATTPRESH"), 7, 0, RJ_ON,	ISTEP1,	/* attenuator-preamplifier shift */
+		ITEM_VALUE,
+		0, 1,
+		offsetof(struct nvmap, gattpresh),	/* корректировка показаний с-метра по включенному аттенюатору и предусилителю */
+		nvramoffs0,
+		NULL,
+		& gattpresh,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #endif /* WITHBARS */
