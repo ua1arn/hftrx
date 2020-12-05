@@ -264,8 +264,8 @@ hwacc_fillrect_u8(
 #if WITHMDMAHW
 	// MDMA implementation
 
-	ALIGNX_BEGIN volatile uint8_t tgcolor ALIGNX_END;	/* значение цвета для заполнения области памяти */
-	tgcolor = color;
+	static ALIGNX_BEGIN volatile uint8_t tgcolor [(DCACHEROWSIZE + sizeof (uint8_t) - 1) / sizeof (uint8_t)] ALIGNX_END;	/* значение цвета для заполнения области памяти */
+	tgcolor [0] = color;
 
 	arm_hardware_flush((uintptr_t) & tgcolor, sizeof tgcolor);
 	arm_hardware_flush_invalidate((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
@@ -352,8 +352,8 @@ hwacc_fillrect_u16(
 #if WITHMDMAHW
 	// MDMA implementation
 
-	ALIGNX_BEGIN volatile uint16_t tgcolor ALIGNX_END;	/* значение цвета для заполнения области памяти */
-	tgcolor = color;
+	static ALIGNX_BEGIN volatile uint16_t tgcolor [DCACHEROWSIZE / sizeof (uint16_t)] ALIGNX_END;	/* значение цвета для заполнения области памяти */
+	tgcolor [0] = color;
 
 	arm_hardware_flush((uintptr_t) & tgcolor, sizeof tgcolor);
 	arm_hardware_flush_invalidate((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
@@ -486,9 +486,9 @@ hwacc_fillrect_u24(
 #if 0//WITHMDMAHW
 	// MDMA implementation
 
-	//ALIGNX_BEGIN volatile uint32_t tgcolor ALIGNX_END;	/* значение цвета для заполнения области памяти */
+	static ALIGNX_BEGIN volatile PACKEDCOLORMAIN_T tgcolor [(DCACHEROWSIZE + sizeof (PACKEDCOLORMAIN_T) - 1) / sizeof (PACKEDCOLORMAIN_T)] ALIGNX_END;	/* значение цвета для заполнения области памяти */
+	tgcolor [0] = color;
 	#error MDMA implementation need
-	tgcolor = color;
 
 	arm_hardware_flush((uintptr_t) & tgcolor, sizeof tgcolor);
 	arm_hardware_flush_invalidate((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
@@ -621,8 +621,8 @@ hwacc_fillrect_u32(
 #if WITHMDMAHW
 	// MDMA implementation
 
-	ALIGNX_BEGIN volatile uint32_t tgcolor ALIGNX_END;	/* значение цвета для заполнения области памяти */
-	tgcolor = color;
+	static ALIGNX_BEGIN volatile uint32_t tgcolor [(DCACHEROWSIZE + sizeof (uint32_t) - 1) / sizeof (uint32_t)] ALIGNX_END;	/* значение цвета для заполнения области памяти */
+	tgcolor [0] = color;
 
 	arm_hardware_flush((uintptr_t) & tgcolor, sizeof tgcolor);
 	arm_hardware_flush_invalidate((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
