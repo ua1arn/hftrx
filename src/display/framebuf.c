@@ -30,7 +30,9 @@
 
 #define DMA2D_CR_LOM	(1u << 6)	/* documented but missing in headers. */
 
-#define MDMA_CH	MDMA_Channel0
+#define MDMA_CH		MDMA_Channel0
+#define MDMA_DATA	(MDMA_Channel1->CSAR)	// регистр выделенного канала MDMA используется для хранения значениz цвета. Переиферия не кэшируется.
+
 #define MDMA_CCR_PL_VALUE 0uL	// PL: priority 0..3: min..max
 
 #if LCDMODE_LTDC_L24
@@ -121,6 +123,9 @@ mdma_tlen(uint_fast32_t nb, uint_fast8_t ds)
 	return (nb < 128 ? nb : 128) / ds * ds;
 }
 
+//	For the TCM memory accesses, the burst access is only allowed when the increment
+//	and data size are identical and lower than or equal to 32-bit.
+
 // DBURST value must be programmed as to ensure that the burst size is lower than the
 // Transfer Length. If this is not ensured, the result is unpredictable.
 
@@ -190,8 +195,10 @@ mdma_startandwait(void)
 
 	/* wait for complete */
 	while ((MDMA_CH->CISR & MDMA_CISR_CTCIF_Msk) == 0)	// Channel x Channel Transfer Complete interrupt flag
+	{
+		ASSERT((MDMA_CH->CISR & MDMA_CISR_TEIF_Msk) == 0);	/* Channel x transfer error interrupt flag */
 		hardware_nonguiyield();
-
+	}
 	__DMB();	//ensure the ordering of data cache maintenance operations and their effects
 	ASSERT((MDMA_CH->CISR & MDMA_CISR_TEIF_Msk) == 0);	/* Channel x transfer error interrupt flag */
 
@@ -264,14 +271,16 @@ hwacc_fillrect_u8(
 #if WITHMDMAHW
 	// MDMA implementation
 
-	static ALIGNX_BEGIN volatile uint8_t tgcolor [(DCACHEROWSIZE + sizeof (uint8_t) - 1) / sizeof (uint8_t)] ALIGNX_END;	/* значение цвета для заполнения области памяти */
-	tgcolor [0] = color;
+	//static ALIGNX_BEGIN volatile uint8_t tgcolor [(DCACHEROWSIZE + sizeof (uint8_t) - 1) / sizeof (uint8_t)] ALIGNX_END;	/* значение цвета для заполнения области памяти */
+	//tgcolor [0] = color;
+	MDMA_DATA = color;	// регистр выделенного канала MDMA используется для хранения значение цвета. Переиферия не кэшируется.
+	(void) MDMA_DATA;
 
 	arm_hardware_flush((uintptr_t) & tgcolor, sizeof tgcolor);
 	arm_hardware_flush_invalidate((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
 
 	MDMA_CH->CDAR = (uintptr_t) colmain_mem_at(buffer, dx, dy, col, row); // dest address
-	MDMA_CH->CSAR = (uintptr_t) & tgcolor;
+	MDMA_CH->CSAR = (uintptr_t) & MDMA_DATA;
 	const uint_fast32_t tlen = mdma_tlen(w * PIXEL_SIZE, PIXEL_SIZE);
 	const uint_fast32_t sbus = mdma_getbus(MDMA_CH->CSAR);
 	const uint_fast32_t dbus = mdma_getbus(MDMA_CH->CDAR);
@@ -352,14 +361,16 @@ hwacc_fillrect_u16(
 #if WITHMDMAHW
 	// MDMA implementation
 
-	static ALIGNX_BEGIN volatile uint16_t tgcolor [DCACHEROWSIZE / sizeof (uint16_t)] ALIGNX_END;	/* значение цвета для заполнения области памяти */
-	tgcolor [0] = color;
+	//static ALIGNX_BEGIN volatile uint16_t tgcolor [DCACHEROWSIZE / sizeof (uint16_t)] ALIGNX_END;	/* значение цвета для заполнения области памяти */
+	//tgcolor [0] = color;
+	MDMA_DATA = color;	// регистр выделенного канала MDMA используется для хранения значение цвета. Переиферия не кэшируется.
+	(void) MDMA_DATA;
 
-	arm_hardware_flush((uintptr_t) & tgcolor, sizeof tgcolor);
+	//arm_hardware_flush((uintptr_t) & tgcolor, sizeof tgcolor);
 	arm_hardware_flush_invalidate((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
 
 	MDMA_CH->CDAR = (uintptr_t) colmain_mem_at(buffer, dx, dy, col, row); // dest address
-	MDMA_CH->CSAR = (uintptr_t) & tgcolor;
+	MDMA_CH->CSAR = (uintptr_t) & MDMA_DATA;
 	const uint_fast32_t tlen = mdma_tlen(w * PIXEL_SIZE, PIXEL_SIZE);
 	const uint_fast32_t sbus = mdma_getbus(MDMA_CH->CSAR);
 	const uint_fast32_t dbus = mdma_getbus(MDMA_CH->CDAR);
@@ -399,6 +410,7 @@ hwacc_fillrect_u16(
 		(dbus << MDMA_CTBR_DBUS_Pos) |
 		0;
 
+	//PRINTF("MDMA_CH->CDAR=%08X,dbus=%d, MDMA_CH->CSAR=%08X,sbus=%d, tlen=%u, BNDT-%08lX\n", MDMA_CH->CDAR, dbus, MDMA_CH->CSAR, sbus, tlen, (MDMA_CH->CBNDTR & MDMA_CBNDTR_BNDT_Msk) >> MDMA_CBNDTR_BNDT_Pos);
 	mdma_startandwait();
 
 #elif WITHDMA2DHW
@@ -486,15 +498,17 @@ hwacc_fillrect_u24(
 #if 0//WITHMDMAHW
 	// MDMA implementation
 
-	static ALIGNX_BEGIN volatile PACKEDCOLORMAIN_T tgcolor [(DCACHEROWSIZE + sizeof (PACKEDCOLORMAIN_T) - 1) / sizeof (PACKEDCOLORMAIN_T)] ALIGNX_END;	/* значение цвета для заполнения области памяти */
-	tgcolor [0] = color;
+	//static ALIGNX_BEGIN volatile PACKEDCOLORMAIN_T tgcolor [(DCACHEROWSIZE + sizeof (PACKEDCOLORMAIN_T) - 1) / sizeof (PACKEDCOLORMAIN_T)] ALIGNX_END;	/* значение цвета для заполнения области памяти */
+	//tgcolor [0] = color;
+	MDMA_DATA = color;	// регистр выделенного канала MDMA используется для хранения значение цвета. Переиферия не кэшируется.
+	(void) MDMA_DATA;
 	#error MDMA implementation need
 
-	arm_hardware_flush((uintptr_t) & tgcolor, sizeof tgcolor);
+	//arm_hardware_flush((uintptr_t) & tgcolor, sizeof tgcolor);
 	arm_hardware_flush_invalidate((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
 
 	MDMA_CH->CDAR = (uintptr_t) colmain_mem_at(buffer, dx, dy, col, row); // dest address
-	MDMA_CH->CSAR = (uintptr_t) & tgcolor;
+	MDMA_CH->CSAR = (uintptr_t) & MDMA_DATA;
 	const uint_fast32_t tlen = mdma_tlen(w * PIXEL_SIZE, PIXEL_SIZE);
 	const uint_fast32_t sbus = mdma_getbus(MDMA_CH->CSAR);
 	const uint_fast32_t dbus = mdma_getbus(MDMA_CH->CDAR);
@@ -621,14 +635,16 @@ hwacc_fillrect_u32(
 #if WITHMDMAHW
 	// MDMA implementation
 
-	static ALIGNX_BEGIN volatile uint32_t tgcolor [(DCACHEROWSIZE + sizeof (uint32_t) - 1) / sizeof (uint32_t)] ALIGNX_END;	/* значение цвета для заполнения области памяти */
-	tgcolor [0] = color;
+	//static ALIGNX_BEGIN volatile uint32_t tgcolor [(DCACHEROWSIZE + sizeof (uint32_t) - 1) / sizeof (uint32_t)] ALIGNX_END;	/* значение цвета для заполнения области памяти */
+	//tgcolor [0] = color;
+	MDMA_DATA = color;	// регистр выделенного канала MDMA используется для хранения значение цвета. Переиферия не кэшируется.
+	(void) MDMA_DATA;
 
-	arm_hardware_flush((uintptr_t) & tgcolor, sizeof tgcolor);
+	//arm_hardware_flush((uintptr_t) & tgcolor, sizeof tgcolor);
 	arm_hardware_flush_invalidate((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
 
 	MDMA_CH->CDAR = (uintptr_t) colmain_mem_at(buffer, dx, dy, col, row); // dest address
-	MDMA_CH->CSAR = (uintptr_t) & tgcolor;
+	MDMA_CH->CSAR = (uintptr_t) & MDMA_DATA;
 	const uint_fast32_t tlen = mdma_tlen(w * PIXEL_SIZE, PIXEL_SIZE);
 	const uint_fast32_t sbus = mdma_getbus(MDMA_CH->CSAR);
 	const uint_fast32_t dbus = mdma_getbus(MDMA_CH->CDAR);
