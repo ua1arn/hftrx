@@ -6938,8 +6938,9 @@ void hightests(void)
 		}
 	}
 #endif
-#if 0 && LCDMODE_COLORED && ! DSTYLE_G_DUMMY
+#if 1 && LCDMODE_COLORED && ! DSTYLE_G_DUMMY
 	{
+		TP();
 		unsigned cnt;
 		display2_bgreset();
 		//disableAllIRQs();
@@ -8097,6 +8098,7 @@ void hightests(void)
 		}
 	}
 #endif
+	TP();
 }
 
 // Вызывается перед инициализацией NVRAM, но после инициализации SPI
@@ -8553,18 +8555,21 @@ void lowtests(void)
 #endif
 #if 0
 	{
-		// PD13 signal pulses
-		enum { WORKMASK	 = 1ul << 13 };
-		arm_hardware_piod_outputs(WORKMASK, WORKMASK);
+		// Калиьбровка задержек для данного процссора
+		// See local_delay_uscycles()
+		//enum { WORKMASK	 = 1ul << 7 };	// PB7
+		enum { WORKMASK	 = 1ul << 10 };	// P7_10
+		//arm_hardware_piob_outputs(WORKMASK, WORKMASK);
+		arm_hardware_pio7_outputs(WORKMASK, WORKMASK);
 
 		for (;;)
 		{
-			arm_hardware_piod_outputs(WORKMASK, 1 * WORKMASK);
-			hardware_spi_io_delay();
-			local_delay_ms(300);
-			arm_hardware_piod_outputs(WORKMASK, 0 * WORKMASK);
-			hardware_spi_io_delay();
-			local_delay_ms(300);
+			//(GPIOB)->BSRR = BSRR_S(WORKMASK);
+			R7S721_TARGET_PORT_S(7, WORKMASK);
+			local_delay_ms(5);
+			//(GPIOB)->BSRR = BSRR_C(WORKMASK);
+			R7S721_TARGET_PORT_C(7, WORKMASK);
+			local_delay_ms(5);
 		}
 	}
 #endif
