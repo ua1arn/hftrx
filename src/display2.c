@@ -843,7 +843,7 @@ display2_smeter15(
 		// todo: get_swr(swr_fullscale) - использщовать MRRxxx.
 		// Для тюнера и измерений не годится, для показа - без торомозов.
 		const uint_fast16_t swr_fullscale = (SWRMIN * 40 / 10) - SWRMIN;	// количество рисок в шкале ииндикатора
-		gswr = smpr->gs + normalize(get_swr(swr_fullscale), 0, swr_fullscale, smpr->ge - smpr->gs);
+		gswr = smpr->gs + normalize(1, 0, swr_fullscale, smpr->ge - smpr->gs);
 
 		if (gp > smpr->gs)
 			gp_smooth = gp;
@@ -5792,9 +5792,10 @@ enum
 		{	45, 0,	display2_notch5,		REDRM_MODE, PGALL, },	// NOTCH on/off
 		{	47, 15,	display2_voxtune3,	REDRM_MODE, PGALL, },	// VOX
 		{	47, 5,	display2_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
-
+#if WITHBARS
 		{    0, 4,  display2_smeter15_init,REDRM_INIS, PGINI, },	//  Инициализация стрелочного прибора
 		{    0, 4,  display2_smeter15, 	REDRM_BARS, PGALL, },	// Изображение стрелочного прибора
+#endif /* WITHBARS */
 #if WITHAFSPECTRE
 		{	0,	4,	display2_af_spectre15_init,	REDRM_INIS, PGINI, },
 		{	0,	4,	display2_af_spectre15_latch,	REDRM_BARS,	PGLATCH, },

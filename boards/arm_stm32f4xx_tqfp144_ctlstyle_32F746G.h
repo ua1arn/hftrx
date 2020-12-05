@@ -145,8 +145,13 @@
 
 	// +++ Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
 	//#define LCDMODE_HARD_SPI	1	/* LCD over SPI line */
-	#define LCDMODE_V2	1
-	#define LCDMODE_LTDCSDRAMBUFF	1	/* используется область внешнего SDRAM для хранения framebuffer */
+	#define LCDMODE_AT070TN90 1	/* AT070TN90 panel (800*480) - 7" display */
+
+	#define LCDMODE_V2	1	/* только главный экран с тремя видеобуферами, L8, без PIP */
+
+	//#define WITHFLATLINK 1	/* Работа с TFT панелью через SN75LVDS83B	*/
+	#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
+	//#define LCDMODE_LTDCSDRAMBUFF	1	/* используется область внешнего SDRAM для хранения framebuffer */
 	//#define SDRAM_BANK_ADDR     ((uint32_t)0xC0000000)
 	//#define LCDMODE_WH2002	1	/* тип применяемого индикатора 20*2, возможно вместе с LCDMODE_HARD_SPI */
 	//#define LCDMODE_WH1602	1	/* тип применяемого индикатора 16*2 */
@@ -183,7 +188,7 @@
 	//#define LCDMODE_ILI9320	1	/* Индикатор 248*320 с контроллером ILI9320 */
 	//#define LCDMODE_ILI9341	1	/* 320*240 SF-TC240T-9370-T с контроллером ILI9341 - STM32F4DISCO */
 	//#define LCDMODE_ILI9341_TOPDOWN	1	/* LCDMODE_ILI9341 - перевернуть изображение (для выводов справа) */
-	#define LCDMODE_LQ043T3DX02K 1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 display */
+	//#define LCDMODE_LQ043T3DX02K 1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 display */
 	// --- Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
 
 	#define ENCRES_DEFAULT ENCRES_128
@@ -237,7 +242,7 @@
 	#define WITHDACSTRAIGHT 1	/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
 	#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 	//#define WITHRTS192 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
-	//#define WITHSUSBSPKONLY 1
+	#define WITHSUSBSPKONLY 1
 	//#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
 	#define BOARD_FFTZOOM_POW2MAX 1	// Возможные масштабы FFT x1, x2
 	//#define BOARD_FFTZOOM_POW2MAX 2	// Возможные масштабы FFT x1, x2, x4
@@ -245,6 +250,9 @@
 	//#define BOARD_FFTZOOM_POW2MAX 4	// Возможные масштабы FFT x1, x2, x4, x8, x16
 	#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
 	//#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
+	#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */
+	#define WITHFFTSIZEAF 	512		/* Отображение спектра НЧ сигнвлв */
+	#define WITHFFTOVERLAPPOW2	1	/* Количество перекрывающися буферов FFT спектра (2^param). */
 
 #if 0
 		#define WITHBBOX	1	// Black Box mode - устройство без органов управления
@@ -282,8 +290,9 @@
 	#endif
 	//#define WITHMODEMIQLOOPBACK	1	/* модем получает собственные передаваемые квадратуры */
 
-#if 1
+#if 0
 	#define WITHTOUCHGUI		1
+	#define WITHENCODER2	1
 #endif
 
 	// FPGA section
@@ -304,11 +313,11 @@
 	//#define WITHNMEA		1	/* используется NMEA parser */
 	//#define WITHBEACON	1	/* Используется режим маяка */
 	//#define WITHVOX			1	/* используется VOX */
-	#define WITHSHOWSWRPWR 1	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
+	//#define WITHSHOWSWRPWR 1	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
 	//#define WITHSWRMTR	1		/* Измеритель КСВ */
 	//#define WITHPWRMTR	1	/* Индикатор выходной мощности или */
 	//#define WITHPWRLIN	1	/* Индикатор выходной мощности показывает напряжение а не мощность */
-	#define WITHBARS		1	/* отображение S-метра и SWR-метра */
+	//#define WITHBARS		1	/* отображение S-метра и SWR-метра */
 	//#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
 	//#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
 	//#define WITHSWLMODE	1	/* поддержка запоминания множества частот в swl-mode */
@@ -367,8 +376,8 @@
 	//#define DDS2_TYPE DDS_TYPE_AD9834
 	//#define RTC1_TYPE RTC_TYPE_M41T81	/* ST M41T81M6 RTC clock chip with I2C interface */
 	#define RTC1_TYPE RTC_TYPE_STM32F4xx	/* STM32F4xx/STM32F7xx internal RTC peripherial */
-	//#define TSC1_TYPE TSC_TYPE_STMPE811	/* touch screen controller */
-	#define TSC1_TYPE TSC_TYPE_FT5336		/* FocalTech FT5336 touch screen controller */
+	#define TSC1_TYPE TSC_TYPE_STMPE811	/* touch screen controller */
+	//#define TSC1_TYPE TSC_TYPE_FT5336		/* FocalTech FT5336 touch screen controller */
 	//#define DAC1_TYPE	99999		/* наличие ЦАП для подстройки тактовой частоты */
 	//#define WITHRTCLSI 1	/* запуск LSI (без кварца) */
 

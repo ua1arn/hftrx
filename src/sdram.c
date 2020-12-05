@@ -647,21 +647,20 @@ void arm_hardware_sdram_initialize(void)
 		#define SDRAM_ADDR 		0xC0000000uL
 		#define SDRAM_SIZE 		0x800000uL
 	#endif
-	#define BUFFER_SIZE 		0x1000uL
+	#define BUFFER_SIZE 		0x100uL
 
-	uint32_t addr = SDRAM_ADDR;
+  	uint_fast32_t addr = SDRAM_ADDR;
 
 	PRINTF("sdram testing...\n");
 
-	do
+	for (; addr < SDRAM_ADDR + SDRAM_SIZE - BUFFER_SIZE; addr += BUFFER_SIZE)
 	{
+		PRINTF("addr %lx\n", addr);
 		sdram_test_pattern(addr, BUFFER_SIZE, 0x5555);
-		sdram_test_pattern(addr, BUFFER_SIZE, 0xCCCC);
-		sdram_test_increment(addr, BUFFER_SIZE, 0x7800);
-		sdram_test_random(addr, BUFFER_SIZE);
-
-		addr += BUFFER_SIZE;
-	} while(addr < SDRAM_ADDR + SDRAM_SIZE - BUFFER_SIZE);
+//		sdram_test_pattern(addr, BUFFER_SIZE, 0xCCCC);
+//		sdram_test_increment(addr, BUFFER_SIZE, 0x7800);
+//		sdram_test_random(addr, BUFFER_SIZE);
+	}
 
 	PRINTF("sdram testing done\n");
 	for(;;)
