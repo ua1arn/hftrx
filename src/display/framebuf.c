@@ -31,7 +31,7 @@
 #define DMA2D_CR_LOM	(1u << 6)	/* documented but missing in headers. */
 
 #define MDMA_CH		MDMA_Channel0
-#define MDMA_DATA	(MDMA_Channel1->CSAR)	// регистр выделенного канала MDMA используется для хранения значениz цвета. Переиферия не кэшируется.
+#define MDMA_DATA	(MDMA_Channel1->CSAR)	// регистр выделенного канала MDMA используется для хранения значения цвета. Переиферия не кэшируется.
 
 #define MDMA_CCR_PL_VALUE 0uL	// PL: priority 0..3: min..max
 
