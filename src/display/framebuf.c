@@ -277,7 +277,7 @@ hwacc_fillrect_u8(
 	MDMA_DATA = color;	// регистр выделенного канала MDMA используется для хранения значение цвета. Переиферия не кэшируется.
 	(void) MDMA_DATA;
 
-	arm_hardware_flush((uintptr_t) & tgcolor, sizeof tgcolor);
+	//arm_hardware_flush((uintptr_t) & tgcolor, sizeof tgcolor);
 	arm_hardware_flush_invalidate((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
 
 	MDMA_CH->CDAR = (uintptr_t) colmain_mem_at(buffer, dx, dy, col, row); // dest address
