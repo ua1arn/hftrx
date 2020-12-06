@@ -6054,22 +6054,26 @@ void hightests(void)
 		PRINTF("sizeof time_t == %u, t = %lu\n", sizeof (time_t), (unsigned long) t);
 	}
 #endif
-#if 0 && WITHOPENVG
 	{
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 		board_update();
-		TP();
 		openvg_init((NativeWindowType) NULL);
-		TP();
 	#if 1
 		tiger = PS_construct(tigerCommands, tigerCommandCount, tigerPoints, tigerPointCount);
-		TP();
-		render(DIM_X, DIM_Y);
+		for (;;)
+		{
+			TP();
+			uint_fast8_t kbch, repeat;
+
+			if ((repeat = kbd_scan(& kbch)) != 0)
+			{
+				break;
+			}
+			render(DIM_X, DIM_Y);
+		}
 		PS_destruct(tiger);
 	#else
 		rendertest(DIM_X, DIM_Y);
-	#endif
-		TP();
 		// wait for press any key
 		for (;;)
 		{
@@ -6080,8 +6084,8 @@ void hightests(void)
 				break;
 			}
 		}
+	#endif
 		openvg_deinit();
-		TP();
 	}
 #endif
 #if 0 && (__CORTEX_A != 0)
