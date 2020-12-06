@@ -5802,8 +5802,13 @@ static void render(int w, int h)
 	vgClear(0, 0, w, h);
 
 	vgLoadIdentity();
-	vgScale(scale, scale);
-	vgTranslate(-tigerMinX, -tigerMinY + 0.5f * (h / scale - (tigerMaxY - tigerMinY)));
+	// normal on Window (top-down mirror on Storch)
+//	vgScale(scale, scale);
+//	vgTranslate(-tigerMinX, -tigerMinY + 0.5f * (h / scale - (tigerMaxY - tigerMinY)));	// all parameters are zeroes
+
+	// top-down mirror
+	vgScale(scale, -scale);
+	vgTranslate(-tigerMinX, - (tigerMaxY - tigerMinY));
 
 	PS_render(tiger);
 	ASSERT(vgGetError() == VG_NO_ERROR);
