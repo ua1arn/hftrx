@@ -32,7 +32,7 @@
 
 #include "hardware.h"
 
-#if WITHOPENVG
+#if 1//WITHOPENVG
 
 #include "egl.h"
 #include "riImage.h"
@@ -147,14 +147,14 @@ void OSGetWindowSize(const void* context, int& width, int& height)
         height = 0;
     }
 }
-
-static bool isBigEndian()
-{
-	static const RIuint32 v = 0x12345678u;
-	const RIuint8* p = (const RIuint8*)&v;
-	RI_ASSERT (*p == (RIuint8)0x12u || *p == (RIuint8)0x78u);
-	return (*p == (RIuint8)(0x12)) ? true : false;
-}
+//
+//static bool isBigEndian()
+//{
+//	static const RIuint32 v = 0x12345678u;
+//	const RIuint8* p = (const RIuint8*)&v;
+//	RI_ASSERT (*p == (RIuint8)0x12u || *p == (RIuint8)0x78u);
+//	return (*p == (RIuint8)(0x12)) ? true : false;
+//}
 
 void OSBlitToWindow(void* context, const Drawable* drawable)
 {
