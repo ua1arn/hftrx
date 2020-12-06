@@ -5803,10 +5803,12 @@ static void render(int w, int h)
 
 	vgLoadIdentity();
 	// normal on Window (top-down mirror on Storch)
+//	vgLoadIdentity();
 //	vgScale(scale, scale);
 //	vgTranslate(-tigerMinX, -tigerMinY + 0.5f * (h / scale - (tigerMaxY - tigerMinY)));	// all parameters are zeroes
 
 	// top-down mirror
+	vgLoadIdentity();
 	vgScale(scale, -scale);
 	vgTranslate(-tigerMinX, - (tigerMaxY - tigerMinY));
 
@@ -5864,6 +5866,13 @@ static void rendertest(int w, int h)
     static const VGfloat clearColor [4] = { 0, 0, 0, 1 };
     static const VGfloat fillColor [4] = { 0.0f, 0.0f, 1.0f, 1.0f };
     static const VGfloat strokeColor [4] = { 1.0f, 0.0f, 0.0f, 1.0f };
+
+    // top-down mirror and back...
+	vgLoadIdentity();
+	vgScale(1, -1);
+	vgScale(1, -1);
+	vgTranslate(0, - h);
+	vgTranslate(0, + h);
 
     vgSetfv( VG_CLEAR_COLOR, 4, clearColor );
     vgClear( 0, 0, w, h );
@@ -5979,7 +5988,7 @@ void hightests(void)
 		TP();
 		openvg_init((NativeWindowType) NULL);
 		TP();
-	#if 1
+	#if 0
 		tiger = PS_construct(tigerCommands, tigerCommandCount, tigerPoints, tigerPointCount);
 		TP();
 		render(DIM_X, DIM_Y);
