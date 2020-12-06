@@ -6057,6 +6057,7 @@ void hightests(void)
 	{
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 		board_update();
+		//disableAllIRQs();
 		openvg_init((NativeWindowType) NULL);
 	#if 1
 		tiger = PS_construct(tigerCommands, tigerCommandCount, tigerPoints, tigerPointCount);
