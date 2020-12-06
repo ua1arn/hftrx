@@ -5502,29 +5502,32 @@ EGLClientBuffer * getClientImage(void)
 
 }
 */
-
+#if _BYTE_ORDER == _LITTLE_ENDIAN
 static int isBigEndian(void) { return 0; }
+#else
+static int isBigEndian(void) { return 1; }
+#endif
 
 static EGLNativePixmapType getClientPixmap(void)
 {
 	static NativePixmap pixmap;
 
 #if LCDMODE_MAIN_RGB565
-	VGImageFormat format = VG_sRGB_565;
+	VGImageFormat f = VG_sRGB_565;
 	if(isBigEndian())
-		format = VG_sBGR_565;
+		f = VG_sBGR_565;
 #elif LCDMODE_MAIN_ARGB888
-	VGImageFormat format = VG_sARGB_8888;	// 4-th byte alpha value
+	VGImageFormat f = VG_sARGB_8888;	// 4-th byte alpha value
 	 if(isBigEndian())
-		 format = VG_sBGRA_8888;
+		 f = VG_sBGRA_8888;
 #elif LCDMODE_MAIN_L8
-	VGImageFormat format = VG_sL_8;
+	VGImageFormat f = VG_sL_8;
 #else
 	#error Unsupported video format
 #endif
 
 	pixmap.data = colmain_fb_draw();
-	pixmap.format = format;
+	pixmap.format = f;
 	pixmap.height = DIM_Y;
 	pixmap.width = DIM_X;
 	pixmap.stride = GXADJ(DIM_X) * sizeof (PACKEDCOLORMAIN_T);
@@ -5859,11 +5862,13 @@ static void render(int w, int h)
 	//vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_NONANTIALIASED);
 
 	eglSwapBuffers(egldisplay, eglsurface);	//force EGL to recognize resize
+//	ASSERT(eglGetError() == EGL_SUCCESS);
 
 	vgSetfv(VG_CLEAR_COLOR, 4, clearColor);
+	ASSERT(vgGetError() == VG_NO_ERROR);
 	vgClear(0, 0, w, h);
+	ASSERT(vgGetError() == VG_NO_ERROR);
 
-	vgLoadIdentity();
 	// normal on Window (top-down mirror on Storch)
 //	vgLoadIdentity();
 //	vgScale(scale, scale);
@@ -5873,12 +5878,13 @@ static void render(int w, int h)
 	vgLoadIdentity();
 	vgScale(scale, -scale);
 	vgTranslate(-tigerMinX, - (tigerMaxY - tigerMinY));
+	ASSERT(vgGetError() == VG_NO_ERROR);
 
 	PS_render(tiger);
 	ASSERT(vgGetError() == VG_NO_ERROR);
 
 	eglSwapBuffers(egldisplay, eglsurface);
-	ASSERT(eglGetError() == EGL_SUCCESS);
+	//ASSERT(eglGetError() == EGL_SUCCESS);
 }
 
 #endif /* tiger */
@@ -6050,7 +6056,7 @@ void hightests(void)
 		TP();
 		openvg_init((NativeWindowType) NULL);
 		TP();
-	#if 0
+	#if 1
 		tiger = PS_construct(tigerCommands, tigerCommandCount, tigerPoints, tigerPointCount);
 		TP();
 		render(DIM_X, DIM_Y);
