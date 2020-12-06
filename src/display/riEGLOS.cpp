@@ -105,7 +105,7 @@ void* OSCreateWindowContext(EGLNativeWindowType window)
     {
         ctx = RI_NEW(OSWindowContext, ());
     }
-	catch(std::bad_alloc)
+	catch(const std::bad_alloc &)
 	{
 		return NULL;
 	}
