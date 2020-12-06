@@ -5154,7 +5154,7 @@ static void sdtick(void)
 }
 #endif
 
-#if LCDMODE_COLORED && ! DSTYLE_G_DUMMY && 1
+#if LCDMODE_COLORED && ! DSTYLE_G_DUMMY && 0
 
 
 
@@ -5782,11 +5782,11 @@ static void PS_render(PS* ps)
 	ASSERT(vgGetError() == VG_NO_ERROR);
 }
 
-PS* tiger = NULL;
+static PS* tiger = NULL;
 
 /*--------------------------------------------------------------*/
 
-void render(int w, int h)
+static void render(int w, int h)
 {
 	float clearColor[4] = {1,1,1,1};
 	float scaleX = w / (tigerMaxX - tigerMinX);
@@ -5835,9 +5835,8 @@ void render(int w, int h)
 }
 #endif
 
-void rendertest(int w, int h)
+static void rendertest(int w, int h)
 {
-	static const float clearColor[4] = {0,1,0,1};
 	//		float scaleX = w / (tigerMaxX - tigerMinX);
 	//		float scaleY = h / (tigerMaxY - tigerMinY);
 	//		float scale = fminf(scaleX, scaleY);
@@ -5888,7 +5887,7 @@ void rendertest(int w, int h)
 
 }
 
-void rendertestx(int w, int h)
+static void rendertestx(int w, int h)
 {
 	static const float clearColor[4] = {0,1,0,1};
 	//		float scaleX = w / (tigerMaxX - tigerMinX);
@@ -6938,7 +6937,7 @@ void hightests(void)
 		}
 	}
 #endif
-#if 1 && LCDMODE_COLORED && ! DSTYLE_G_DUMMY
+#if 0 && LCDMODE_COLORED && ! DSTYLE_G_DUMMY
 	{
 		TP();
 		unsigned cnt;
