@@ -4130,6 +4130,14 @@ demodulator_SAM(
 			a->d [j] = a->d [j - 1];
 		}
 	}
+	else
+	{
+		ai_ps = 0;
+		bi_ps = 0;
+		bq_ps = 0;
+		aq_ps = 0;
+
+	}
 
 	corr [0] = + ai + bq;
 	corr [1] = - bi + aq;
