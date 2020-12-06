@@ -5493,10 +5493,70 @@ EGLDisplay			egldisplay;
 EGLConfig			eglconfig;
 EGLSurface			eglsurface;
 EGLContext			eglcontext;
+/*
 
+EGLClientBuffer * getClientImage(void)
+{
+//	Image
+	return NULL;
+
+}
+*/
+
+static int isBigEndian(void) { return 0; }
+
+static EGLNativePixmapType getClientPixmap(void)
+{
+	static NativePixmap pixmap;
+
+#if LCDMODE_MAIN_RGB565
+	VGImageFormat format = VG_sRGB_565;
+	if(isBigEndian())
+		format = VG_sBGR_565;
+#elif LCDMODE_MAIN_ARGB888
+	VGImageFormat format = VG_sARGB_8888;	// 4-th byte alpha value
+	 if(isBigEndian())
+		 format = VG_sBGRA_8888;
+#elif LCDMODE_MAIN_L8
+	VGImageFormat format = VG_sL_8;
+#else
+	#error Unsupported video format
+#endif
+
+	pixmap.data = colmain_fb_draw();
+	pixmap.format = format;
+	pixmap.height = DIM_Y;
+	pixmap.width = DIM_X;
+	pixmap.stride = GXADJ(DIM_X) * sizeof (PACKEDCOLORMAIN_T);
+
+	return & pixmap;
+
+}
 
 void openvg_init(NativeWindowType window)
 {
+#if 0
+		PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
+		ctx->tmpWidth = drawable->getWidth();
+		ctx->tmpHeight = drawable->getHeight();
+		int w = drawable->getWidth();
+		int h = drawable->getHeight();
+	#if LCDMODE_MAIN_RGB565
+		VGImageFormat f = VG_sRGB_565;
+		if(isBigEndian())
+			f = VG_sBGR_565;
+	#elif LCDMODE_MAIN_ARGB888
+		VGImageFormat f = VG_sARGB_8888;	// 4-th byte alpha value
+		 if(isBigEndian())
+			 f = VG_sBGRA_8888;
+	#elif LCDMODE_MAIN_L8
+		VGImageFormat f = VG_sL_8;
+	#else
+		#error Unsupported video format
+	#endif
+		vgReadPixels(fr, w * sizeof (* fr), f, 0, 0, w, h);
+#endif
+
 	static const EGLint s_configAttribs[] =
 	{
 		EGL_RED_SIZE,		8,
@@ -5518,8 +5578,10 @@ void openvg_init(NativeWindowType window)
 	eglChooseConfig(egldisplay, s_configAttribs, &eglconfig, 1, &numconfigs);
 	ASSERT(eglGetError() == EGL_SUCCESS);
 	ASSERT(numconfigs == 1);
-
-	eglsurface = eglCreateWindowSurface(egldisplay, eglconfig, window, NULL);
+	EGLNativePixmapType pixmap;
+	//eglsurface = eglCreateWindowSurface(egldisplay, eglconfig, window, NULL);
+	//eglsurface = eglCreatePbufferFromClientBuffer(egldisplay, EGL_OPENVG_IMAGE, (EGLClientBuffer) getClientImage(), eglconfig, s_configAttribs);
+	eglsurface = eglCreatePixmapSurface(egldisplay, eglconfig, getClientPixmap(), s_configAttribs);
 	ASSERT(eglGetError() == EGL_SUCCESS);
 	eglcontext = eglCreateContext(egldisplay, eglconfig, NULL, NULL);
 	ASSERT(eglGetError() == EGL_SUCCESS);

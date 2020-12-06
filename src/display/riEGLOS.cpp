@@ -161,6 +161,7 @@ void OSBlitToWindow(void* context, const Drawable* drawable)
     OSWindowContext* ctx = (OSWindowContext*)context;
     if(ctx)
     {
+#if 0
 		PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
 		ctx->tmpWidth = drawable->getWidth();
 		ctx->tmpHeight = drawable->getHeight();
@@ -180,6 +181,7 @@ void OSBlitToWindow(void* context, const Drawable* drawable)
 		#error Unsupported video format
 	#endif
 		vgReadPixels(fr, w * sizeof (* fr), f, 0, 0, w, h);
+#endif
 		display_flush();
 		//PRINTF("OSBlitToWindow: tmpWidth=%d, tmpHeight=%d\n", ctx->tmpWidth, ctx->tmpHeight);
 		//display_fillrect(x, y, x2 - x, y2 - y, color);
