@@ -164,7 +164,7 @@ static void gui_main_process(void)
 		{
 			button_t * bh = & win->bh_ptr [id];
 			bh->x1 = x;
-			bh->y1 = WITHGUIMAXY - bh->h;
+			bh->y1 = WITHGUIMAXY - bh->h - 1;
 			bh->visible = VISIBLE;
 			x = x + interval_btn + bh->w;
 		}

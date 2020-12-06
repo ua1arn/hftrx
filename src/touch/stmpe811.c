@@ -246,6 +246,9 @@ void stmpe811_initialize(void)
 	unsigned chip_id;
 	unsigned ver;
 
+	/* Soft reset */
+	i2cperiph_write8(BOARD_I2C_STMPE811, STMPE811_REG_SYS_CTRL1, 0x02);
+
 	chip_id = i2cperiph_read16(BOARD_I2C_STMPE811, STMPE811_REG_CHP_ID);
 	ver = i2cperiph_read8(BOARD_I2C_STMPE811, STMPE811_REG_ID_VER);
 	PRINTF(PSTR("stmpe811_initialize: chip_id=%04X, expected %04X, ver=%02x\n"), chip_id, STMPE811_ID, ver);
