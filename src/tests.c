@@ -5489,10 +5489,10 @@ static uint_fast32_t any_rd_reg_32bits(uint_fast8_t i2caddr, uint_fast8_t regist
 #	include "EGL/egl.h"
 #endif
 
-EGLDisplay			egldisplay;
-EGLConfig			eglconfig;
-EGLSurface			eglsurface;
-EGLContext			eglcontext;
+static EGLDisplay			egldisplay;
+static EGLConfig			eglconfig;
+static EGLSurface			eglsurface;
+static EGLContext			eglcontext;
 /*
 
 EGLClientBuffer * getClientImage(void)
@@ -5861,6 +5861,7 @@ static void render(int w, int h)
 	//vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_BETTER);
 	//vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_NONANTIALIASED);
 
+	display_flush();
 	eglSwapBuffers(egldisplay, eglsurface);	//force EGL to recognize resize
 //	ASSERT(eglGetError() == EGL_SUCCESS);
 
@@ -5883,6 +5884,7 @@ static void render(int w, int h)
 	PS_render(tiger);
 	ASSERT(vgGetError() == VG_NO_ERROR);
 
+	display_flush();
 	eglSwapBuffers(egldisplay, eglsurface);
 	//ASSERT(eglGetError() == EGL_SUCCESS);
 }
@@ -5917,6 +5919,7 @@ static void rendertest(int w, int h)
 	//		float scale = fminf(scaleX, scaleY);
 	//		PRINTF("render: scaleX=%f, scaleY=%f\n", scaleX, scaleY);
 
+	display_flush();
 	eglSwapBuffers(egldisplay, eglsurface);	//force EGL to recognize resize
 
 	vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_BETTER);
@@ -5964,8 +5967,9 @@ static void rendertest(int w, int h)
     vgDestroyPaint( fillPaint );
     vgDestroyPaint( strokePaint );
 
+	display_flush();
 	eglSwapBuffers(egldisplay, eglsurface);
-	ASSERT(eglGetError() == EGL_SUCCESS);
+	//ASSERT(eglGetError() == EGL_SUCCESS);
 
 }
 
@@ -6021,8 +6025,9 @@ static void rendertestx(int w, int h)
 	//		ASSERT(vgGetError() == VG_NO_ERROR);
 
 
+	display_flush();
 	eglSwapBuffers(egldisplay, eglsurface);
-	ASSERT(eglGetError() == EGL_SUCCESS);
+	//ASSERT(eglGetError() == EGL_SUCCESS);
 
 }
 
