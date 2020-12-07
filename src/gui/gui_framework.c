@@ -652,16 +652,12 @@ static void draw_button(const button_t * const bh)
 	static const char delimeters [] = "|";
 	uint_fast16_t x1 = win->x1 + bh->x1;
 	uint_fast16_t y1 = win->y1 + bh->y1;
-	ASSERT(x1 + bh->w < WITHGUIMAXX);
-	ASSERT(y1 + bh->h < WITHGUIMAXY);
 
-//	if ((x1 + bh->w >= WITHGUIMAXX) || (y1 + bh->h >= WITHGUIMAXY))
-//	{
-//		PRINTF("%s %s\n", bh->name, bh->text);
-//		ASSERT(0);
-//	}
-
-//	PRINTF("%s: %d, %d\n", bh->name, x1 + bh->w, y1 + bh->h);
+	if ((x1 + bh->w >= WITHGUIMAXX) || (y1 + bh->h >= WITHGUIMAXY))
+	{
+		PRINTF("%s %s\n", bh->name, bh->text);
+		ASSERT(0);
+	}
 
 	btn_bg_t * b1 = NULL;
 	do {
@@ -705,6 +701,8 @@ static void draw_button(const button_t * const bh)
 		PACKEDCOLORMAIN_T * src = NULL, * dst = NULL, * row = NULL;
 		for (uint16_t yy = y1, yb = 0; yy < y1 + bh->h; yy ++, yb ++)
 		{
+			ASSERT(yy < WITHGUIMAXY);
+			ASSERT(yb < WITHGUIMAXY);
 			row = colmain_mem_at(bg, b1->w, b1->h, 0, yb);
 			if (* row == GUI_DEFAULTCOLOR)										// если в первой позиции строки буфера не прозрачный цвет,
 			{																	// скопировать ее целиком, иначе попиксельно с проверкой
@@ -721,6 +719,7 @@ static void draw_button(const button_t * const bh)
 			{
 				dst = colmain_mem_at(fr, DIM_X, DIM_Y, x1, yy);
 				memcpy(dst, row, b1->w * sizeof(PACKEDCOLORMAIN_T));
+//				colpip_plot((uintptr_t) fr, GXSIZE(DIM_X, DIM_Y), fr, DIM_X, DIM_Y, x1, yy, (uintptr_t) row, GXSIZE(b1->w, 1), row, b1->w, 1);
 			}
 		}
 #endif /* GUI_OLDBUTTONSTYLE */
