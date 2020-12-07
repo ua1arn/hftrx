@@ -139,8 +139,9 @@
 	#define	FONTSTYLE_ITALIC	1	// Использовать альтернативный шрифт
 
 	// +++ Особые варианты расположения кнопок на клавиатуре
-	#define KEYB_FPANEL20_V0A	1	/* 20 кнопок на 5 линий - плата rfrontpanel_v0 + LCDMODE_UC1608 в нормальном расположении */
+	//#define KEYB_FPANEL20_V0A	1	/* 20 кнопок на 5 линий - плата rfrontpanel_v0 + LCDMODE_UC1608 в нормальном расположении */
 	//#define KEYB_RAVEN20_V5	1		/* 5 линий клавиатуры: расположение кнопок для Воробей с DSP обработкой */
+	#define KEYBOARD_SINGLE	1	/*  */
 	// --- Особые варианты расположения кнопок на клавиатуре
 
 	// +++ Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
@@ -194,7 +195,7 @@
 	#define ENCRES_DEFAULT ENCRES_128
 	//#define ENCRES_DEFAULT ENCRES_24
 	//#define WITHDIRECTFREQENER	1 //(! CTLSTYLE_SW2011ALL && ! CTLSTYLE_UA3DKC)
-	//#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
+	#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
 
 	/* Board hardware configuration */
 	#define CODEC1_TYPE CODEC_TYPE_WM8994		// PH7 & PH8 I2C3
@@ -416,7 +417,7 @@
 	#define WITHCATEXT	1	/* Расширенный набор команд CAT */
 	//#define WITHELKEY	1
 	#define WITHKBDENCODER 1	// перестройка частоты кнопками
-	//#define WITHKEYBOARD 1	/* в данном устройстве есть клавиатура */
+	#define WITHKEYBOARD 1	/* в данном устройстве есть клавиатура */
 	//#define KEYBOARD_USE_ADC	1	/* на одной линии установлено  четыре  клавиши. на vref - 6.8K, далее 2.2К, 4.7К и 13K. */
 
 	#define VOLTLEVEL_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика напряжения

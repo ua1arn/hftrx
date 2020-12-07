@@ -188,23 +188,26 @@
 	// Encoder inputs: PF8 - PHASE A, PF7 = PHASE B
 	// Обязательно буфер (входы процессора низковольтные).
 
-	#define ENCODER_INPUT_PORT			(GPIOF->IDR) 
-	#define ENCODER_BITS ((1u << 8) | (1u << 7))		// PF8 & PF7
-	#define ENCODER_SHIFT 7
+	#define ENCODER_INPUT_PORT			(GPIOB->IDR)
+	#define ENCODER_BITS ((1u << 14) | (1u << 15))		// PB14 & PB15
+	#define ENCODER_SHIFT 14
 	// Обязательно буфер (входы процессора низковольтные).
 
-	#define ENCODER2_INPUT_PORT			(GPIOF->IDR) 
-	#define ENCODER2_BITS ((1u << 10) | (1u << 9))		// PF10 & PF9
-	#define ENCODER2_SHIFT 9
+	#define ENCODER2_INPUT_PORT			(GPIOB->IDR)
+	#define ENCODER2_BITS ((1u << 8) | (1u << 9))		// PB8 & PB9
+	#define ENCODER2_SHIFT 8
+
+	#define TARGET_ENC2BTN_BIT (1U << 1)				// PI1 - second encoder button with pull-up
+	#define TARGET_ENC2BTN_GET (((GPIOI->IDR) & TARGET_ENC2BTN_BIT) == 0)
 
 	#define ENCODER_INITIALIZE() \
 		do { \
-			arm_hardware_piof_inputs(ENCODER_BITS); \
-			arm_hardware_piof_updown(ENCODER_BITS, 0); \
-			arm_hardware_piof_onchangeinterrupt(ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
-			arm_hardware_piof_inputs(ENCODER2_BITS); \
-			arm_hardware_piof_updown(ENCODER2_BITS, 0); \
-			arm_hardware_piof_onchangeinterrupt(0 * ENCODER2_BITS, ENCODER2_BITS, ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY); \
+			arm_hardware_piob_inputs(ENCODER_BITS); \
+			arm_hardware_piob_updown(ENCODER_BITS, 0); \
+			arm_hardware_piob_onchangeinterrupt(ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
+			arm_hardware_piob_inputs(ENCODER2_BITS); \
+			arm_hardware_piob_updown(ENCODER2_BITS, 0); \
+			arm_hardware_piob_onchangeinterrupt(0 * ENCODER2_BITS, ENCODER2_BITS, ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
 		} while (0)
 
 #endif
@@ -528,6 +531,8 @@
 #else
 	#define HARDWARE_KBD_INITIALIZE() do { \
 		/*arm_hardware_pioa_inputs(KBD_MASK); */\
+		arm_hardware_pioi_inputs(TARGET_ENC2BTN_BIT); \
+		arm_hardware_pioi_updown(TARGET_ENC2BTN_BIT, 0); /* PF0: pull-up second encoder button */ \
 		} while (0)
 #endif
 
