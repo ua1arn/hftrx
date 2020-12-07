@@ -206,7 +206,8 @@ void usb_polling(void)
 	err_t e = ethernet_input(frame, & netif_data);
 	if (e != ERR_OK)
 	{
-		pbuf_free(frame);
+		  /* This means the pbuf is freed or consumed,
+		     so the caller doesn't have to free it again */
 	}
 }
 
