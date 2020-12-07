@@ -238,7 +238,7 @@
 	//#define WITHUSESDCARD		1	// Включение поддержки SD CARD
 	//#define WITHUSEAUDIOREC		1	// Запись звука на SD CARD
 	//#define WITHUSEDUALWATCH	1	// Второй приемник
-	#define WITHREVERB	1	// ревербератор в обработке микрофонного сигнала
+	//#define WITHREVERB	1	// ревербератор в обработке микрофонного сигнала
 	#define WITHDACSTRAIGHT 1	/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
 	#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 	//#define WITHRTS192 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
@@ -316,7 +316,7 @@
 	//#define WITHFREEDV	1	/* поддержка режима FreeDV - http://freedv.org/ */
 	//#define WITHNMEA		1	/* используется NMEA parser */
 	//#define WITHBEACON	1	/* Используется режим маяка */
-	#define WITHVOX			1	/* используется VOX */
+	//#define WITHVOX			1	/* используется VOX */
 	#define WITHSHOWSWRPWR 1	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
 	//#define WITHSWRMTR	1		/* Измеритель КСВ */
 	//#define WITHPWRMTR	1	/* Индикатор выходной мощности или */
@@ -326,7 +326,7 @@
 	//#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
 	//#define WITHSWLMODE	1	/* поддержка запоминания множества частот в swl-mode */
 	//#define WITHVIBROPLEX	1	/* возможность эмуляции передачи виброплексом */
-	#define WITHSPKMUTE		1	/* управление выключением динамика */
+	//#define WITHSPKMUTE		1	/* управление выключением динамика */
 	// Есть ли регулировка параметров потенциометрами
 	////#define WITHPOTWPM		1	/* используется регулировка скорости передачи в телеграфе потенциометром */
 	//#define WITHPOTGAIN		1	/* регуляторы усиления на потенциометрах */
@@ -345,7 +345,7 @@
 	//#define WITHSLEEPTIMER	1	/* выключить индикатор и вывод звука по истечениии указанного времени */
 	// --- Эти строки можно отключать, уменьшая функциональность готового изделия
 
-	#define WITHPOWERTRIM		1	// Имеется управление мощностью
+	//#define WITHPOWERTRIM		1	// Имеется управление мощностью
 	#define WITHPOWERTRIMMIN	5	// Нижний предел регулировки (показываемый на дисплее)
 	#define WITHPOWERTRIMMAX	100	// Верхний предел регулировки (показываемый на дисплее)
 	#define WITHPOWERTRIMATU	15	// Значение для работы автотюнера

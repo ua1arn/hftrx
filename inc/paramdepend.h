@@ -2259,6 +2259,10 @@ extern "C" {
 	#define WITHUSEMALLOC		1
 #endif /* ! defined WITHUSEMALLOC */
 
+#if ! WITHMENU
+	#error WITHMENU must be defined for WITHTOUCHGUI
+#endif
+
 #if ! defined WITHGUIHEAP || WITHGUIHEAP < (80 * 1024uL)
 	#undef WITHGUIHEAP
 	#define WITHGUIHEAP 		(80 * 1024uL)			// требуемый размер кучи для touch GUI

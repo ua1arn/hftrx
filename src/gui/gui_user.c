@@ -197,11 +197,13 @@ static void gui_main_process(void)
 				hamradio_set_gnotch(! hamradio_get_gnotch());
 				update = 1;
 			}
+#if WITHSPKMUTE
 			else if (bh == btn_speaker)
 			{
 				hamradio_set_gmutespkr(! hamradio_get_gmutespkr());
 				update = 1;
 			}
+#endif /* #if WITHSPKMUTE */
 			else if (bh == btn_Bands)
 			{
 				if (check_for_parent_window() != NO_PARENT_WINDOW)
@@ -334,8 +336,13 @@ static void gui_main_process(void)
 			local_snprintf_P(btn_notch->text, ARRAY_SIZE(btn_notch->text), PSTR("Notch|auto"));
 
 		button_t * btn_speaker = find_gui_element(TYPE_BUTTON, win, "btn_speaker");
+#if WITHSPKMUTE
 		btn_speaker->is_locked = hamradio_get_gmutespkr() ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
 		local_snprintf_P(btn_speaker->text, ARRAY_SIZE(btn_speaker->text), PSTR("Speaker|%s"), btn_speaker->is_locked ? "muted" : "on air");
+#else
+		btn_speaker->state = DISABLED;
+		local_snprintf_P(btn_speaker->text, ARRAY_SIZE(btn_speaker->text), PSTR("Speaker|on air"));
+#endif /* #if WITHSPKMUTE */
 
 		button_t * btn_txrx = find_gui_element(TYPE_BUTTON, win, "btn_txrx");
 		uint_fast8_t tune = hamradio_tunemode(0);
@@ -1964,6 +1971,14 @@ static void window_tx_process(void)
 			button_t * btn_tx_power = find_gui_element(TYPE_BUTTON, winTX, "btn_tx_power");
 			button_t * btn_tx_vox_settings = find_gui_element(TYPE_BUTTON, winTX, "btn_tx_vox_settings");
 
+#if WITHPOWERTRIM
+			if (bh == btn_tx_power)
+			{
+				open_window(winPower);
+				return;
+			}
+#endif /* WITHPOWERTRIM */
+#if WITHVOX
 			if (bh == btn_tx_vox)
 			{
 				hamradio_set_gvoxenable(! hamradio_get_gvoxenable());
@@ -1974,11 +1989,7 @@ static void window_tx_process(void)
 				open_window(winVOX);
 				return;
 			}
-			else if (bh == btn_tx_power)
-			{
-				open_window(winPower);
-				return;
-			}
+#endif /* WITHVOX */
 		}
 		break;
 
@@ -1989,12 +2000,26 @@ static void window_tx_process(void)
 
 	if (update)
 	{
+#if ! WITHPOWERTRIM
+		button_t * btn_tx_power= find_gui_element(TYPE_BUTTON, win, "btn_tx_power");
+		btn_tx_power->state = DISABLED;
+#endif /* ! WITHPOWERTRIM */
+
 		button_t * btn_tx_vox= find_gui_element(TYPE_BUTTON, win, "btn_tx_vox"); 						// vox on/off
+#if WITHVOX
 		btn_tx_vox->is_locked = hamradio_get_gvoxenable() ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
 		local_snprintf_P(btn_tx_vox->text, ARRAY_SIZE(btn_tx_vox->text), PSTR("VOX|%s"), btn_tx_vox->is_locked ? "ON" : "OFF");
+#else
+		btn_tx_vox->state = DISABLED;
+		local_snprintf_P(btn_tx_vox->text, ARRAY_SIZE(btn_tx_vox->text), PSTR("VOX"));
+#endif /* WITHVOX */
 
 		button_t * btn_tx_vox_settings = find_gui_element(TYPE_BUTTON, win, "btn_tx_vox_settings");		// vox settings
+#if WITHVOX
 		btn_tx_vox_settings->state = hamradio_get_gvoxenable() ? CANCELLED : DISABLED;
+#else
+		btn_tx_vox_settings->state = DISABLED;
+#endif /* WITHVOX */
 	}
 }
 
@@ -2002,6 +2027,7 @@ static void window_tx_process(void)
 
 static void window_tx_vox_process(void)
 {
+#if WITHVOX
 	window_t * win = get_win(WINDOW_TX_VOX_SETT);
 
 	static slider_t * sl_vox_delay = NULL, * sl_vox_level = NULL, * sl_avox_level = NULL;
@@ -2192,14 +2218,14 @@ static void window_tx_vox_process(void)
 
 		break;
 	}
-
-
+#endif /* WITHVOX */
 }
 
 // *********************************************************************************************************************************************************************
 
 static void window_tx_power_process(void)
 {
+#if WITHPOWERTRIM
 	window_t * win = get_win(WINDOW_TX_POWER);
 
 	static slider_t * sl_pwr_level = NULL, * sl_pwr_tuner_level = NULL;
@@ -2323,6 +2349,7 @@ static void window_tx_power_process(void)
 
 		break;
 	}
+#endif /* WITHPOWERTRIM */
 }
 
 // *********************************************************************************************************************************************************************
@@ -2401,12 +2428,7 @@ static void window_audiosettings_process(void)
 			button_t * btn_mic_settings = find_gui_element(TYPE_BUTTON, winAP, "btn_mic_settings");			// mic settings
 			button_t * btn_mic_profiles = find_gui_element(TYPE_BUTTON, winAP, "btn_mic_profiles");			// mic profiles
 
-			if (bh == btn_reverb)
-			{
-				hamradio_set_greverb(! hamradio_get_greverb());
-				update = 1;
-			}
-			else if (bh == btn_reverb_settings)
+			if (bh == btn_reverb_settings)
 			{
 				open_window(winRS);
 			}
@@ -2435,6 +2457,13 @@ static void window_audiosettings_process(void)
 				open_window(winMICpr);
 				return;
 			}
+#if WITHREVERB
+			else if (bh == btn_reverb)
+			{
+				hamradio_set_greverb(! hamradio_get_greverb());
+				update = 1;
+			}
+#endif /* WITHREVERB */
 		}
 		break;
 
@@ -2446,11 +2475,20 @@ static void window_audiosettings_process(void)
 	if (update)
 	{
 		button_t * bh = find_gui_element(TYPE_BUTTON, win, "btn_reverb"); 			// reverb on/off
+#if WITHREVERB
 		bh->is_locked = hamradio_get_greverb() ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
 		local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("Reverb|%s"), hamradio_get_greverb() ? "ON" : "OFF");
+#else
+		bh->state = DISABLED;
+		local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("Reverb|OFF"));
+#endif /* WITHREVERB */
 
 		bh = find_gui_element(TYPE_BUTTON, win, "btn_reverb_settings");				// reverb settings
+#if WITHREVERB
 		bh->state = hamradio_get_greverb() ? CANCELLED : DISABLED;
+#else
+		bh->state = DISABLED;
+#endif /* WITHREVERB */
 
 		bh = find_gui_element(TYPE_BUTTON, win, "btn_monitor");						// monitor on/off
 		bh->is_locked = hamradio_get_gmoniflag() ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
@@ -2469,6 +2507,7 @@ static void window_audiosettings_process(void)
 
 static void window_ap_reverb_process(void)
 {
+#if WITHREVERB
 	window_t * win = get_win(WINDOW_AP_REVERB_SETT);
 
 	static label_t * lbl_reverbDelay = NULL, * lbl_reverbLoss = NULL;
@@ -2612,6 +2651,7 @@ static void window_ap_reverb_process(void)
 
 		break;
 	}
+#endif /* WITHREVERB */
 }
 
 // *********************************************************************************************************************************************************************
