@@ -788,7 +788,7 @@
 					arm_hardware_piob_altfn50(SPDIF_SCLK_BIT, AF_QUADSPI_AF9); /* PB2 QSPI_CLK */ \
 					arm_hardware_piod_altfn50(SPDIF_MOSI_BIT, AF_QUADSPI_AF9); /* PD11 QSPI_D0 MOSI */ \
 					arm_hardware_piod_altfn50(SPDIF_MISO_BIT, AF_QUADSPI_AF9); /* PD12 QSPI_D1 MISO */ \
-					arm_hardware_piob_altfn50(SPDIF_NCS_BIT, AF_QUADSPI_AF10); /*  PB6 QSPI_NCS */ \
+					arm_hardware_piob_altfn50(SPDIF_NCS_BIT, AF_QUADSPI_AF10); /* PB6 QSPI_NCS */ \
 				} while (0)
 
 		#else /* WIHSPIDFHW */
