@@ -833,7 +833,7 @@ display2_smeter15(
 		// todo: get_swr(swr_fullscale) - использщовать MRRxxx.
 		// Для тюнера и измерений не годится, для показа - без торомозов.
 		const uint_fast16_t swr_fullscale = (SWRMIN * 40 / 10) - SWRMIN;	// количество рисок в шкале ииндикатора
-		gswr = smpr->gs + normalize(1, 0, swr_fullscale, smpr->ge - smpr->gs);
+		gswr = smpr->gs + normalize(get_swr(swr_fullscale), 0, swr_fullscale, smpr->ge - smpr->gs);
 
 		if (gp > smpr->gs)
 			gp_smooth = gp;

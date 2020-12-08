@@ -2253,7 +2253,10 @@ extern "C" {
 #define WITHGUIMAXX				800						// при разрешении больше чем 800х480 интерфейс будет сжат до 800х480.
 #define WITHGUIMAXY				480
 #define FOOTER_HEIGHT			50						// высота нижнего ряда кнопок
-//#define FORMATFROMLIBRARY 		1
+
+#if (__CORTEX_M == 0)
+	#define FORMATFROMLIBRARY 		1
+#endif
 
 #if ! defined WITHUSEMALLOC								// необходима поддержка динамического управления памятью
 	#define WITHUSEMALLOC		1

@@ -940,11 +940,13 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 
 	USART1->CR1 = 0;
 
-//#if WITHUARTFIFO
-//	USART1->CR1 |= USART_CR1_FIFOEN_Msk;
-//#else /* WITHUARTFIFO */
-//	USART1->CR1 &= ~ USART_CR1_FIFOEN_Msk;
-//#endif /* WITHUARTFIFO */
+#if (__CORTEX_M == 0)
+#if WITHUARTFIFO
+	USART1->CR1 |= USART_CR1_FIFOEN_Msk;
+#else /* WITHUARTFIFO */
+	USART1->CR1 &= ~ USART_CR1_FIFOEN_Msk;
+#endif /* WITHUARTFIFO */
+#endif
 
 	USART1->CR1 |= (USART_CR1_RE | USART_CR1_TE); // Transmitter Enable & Receiver Enables
 

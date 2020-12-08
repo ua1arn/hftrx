@@ -19886,16 +19886,6 @@ hamradio_main_step(void)
 #if WITHTOUCHGUI && WITHENCODER2
 			gui_set_encoder2_rotate(nrotate2);
 #endif /* WITHTOUCHGUI && WITHENCODER2 */
-
-#if defined TSC1_TYPE
-			#include "touch\touch.h"
-			uint_fast16_t tx = 0, ty = 0;
-			if (board_tsc_getxy(& tx, & ty))
-			{
-				PRINTF("x-%d y-%d\n", tx, ty);
-			}
-
-#endif /* defined TSC1_TYPE */
 		}
 		break;
 
