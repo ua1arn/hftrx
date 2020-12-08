@@ -23,9 +23,9 @@
 #define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 
 //#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
-#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
+//#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
 //#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */
-#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
+//#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
 
 //#define WITHI2SHW	1	/* Использование I2S - аудиокодек	*/
 
@@ -780,7 +780,7 @@
 
 		#if WIHSPIDFHW
 			#define SPIDF_HARDINITIALIZE() do { \
-					enum { AF_QUADSPI_AF9 = 9, AF_QUADSPI_AF10 = 10 }; \
+					enum { AF_QUADSPI_AF9 = 9xxx, AF_QUADSPI_AF10 = 10xxx }; \
 					arm_hardware_pioe_altfn50(SPDIF_D2_BIT, AF_QUADSPI_AF9);  	/* PE2 QSPI_D2 */ \
 					arm_hardware_piod_altfn50(SPDIF_D3_BIT, AF_QUADSPI_AF9);  	/* PD13 QSPI_D3 */ \
 					/*arm_hardware_pioe_outputs(SPDIF_D2_BIT, SPDIF_D2_BIT); */ /* PE2 QSPI_D2 tie-up */ \
@@ -788,7 +788,7 @@
 					arm_hardware_piob_altfn50(SPDIF_SCLK_BIT, AF_QUADSPI_AF9); /* PB2 QSPI_CLK */ \
 					arm_hardware_piod_altfn50(SPDIF_MOSI_BIT, AF_QUADSPI_AF9); /* PD11 QSPI_D0 MOSI */ \
 					arm_hardware_piod_altfn50(SPDIF_MISO_BIT, AF_QUADSPI_AF9); /* PD12 QSPI_D1 MISO */ \
-					arm_hardware_piob_altfn50(SPDIF_NCS_BIT, AF_QUADSPI_AF10); /* PB6 QSPI_NCS */ \
+					arm_hardware_piob_altfn50(SPDIF_NCS_BIT, AF_QUADSPI_AF10); /*  PB6 QSPI_NCS */ \
 				} while (0)
 
 		#else /* WIHSPIDFHW */
@@ -802,22 +802,22 @@
 					arm_hardware_piob_outputs(SPDIF_NCS_BIT, SPDIF_NCS_BIT); \
 					arm_hardware_piob_outputs(SPDIF_SCLK_BIT, SPDIF_SCLK_BIT); \
 					arm_hardware_piod_outputs(SPDIF_MOSI_BIT, SPDIF_MOSI_BIT); \
-					arm_hardware_piob_inputs(SPDIF_MISO_BIT); \
+					arm_hardware_piod_inputs(SPDIF_MISO_BIT); \
 				} while (0)
 			#define SPIDF_SELECT() do { \
 					arm_hardware_piob_outputs(SPDIF_NCS_BIT, SPDIF_NCS_BIT); \
 					arm_hardware_piob_outputs(SPDIF_SCLK_BIT, SPDIF_SCLK_BIT); \
 					arm_hardware_piod_outputs(SPDIF_MOSI_BIT, SPDIF_MOSI_BIT); \
-					arm_hardware_piob_inputs(SPDIF_MISO_BIT); \
+					arm_hardware_piod_inputs(SPDIF_MISO_BIT); \
 					GPIOB->BSRR = BSRR_C(SPDIF_NCS_BIT); \
 					__DSB(); \
 				} while (0)
 			#define SPIDF_UNSELECT() do { \
 					GPIOB->BSRR = BSRR_S(SPDIF_NCS_BIT); \
 					arm_hardware_piob_inputs(SPDIF_NCS_BIT); \
-					arm_hardware_piof_inputs(SPDIF_SCLK_BIT); \
+					arm_hardware_piob_inputs(SPDIF_SCLK_BIT); \
 					arm_hardware_piod_inputs(SPDIF_MOSI_BIT); \
-					arm_hardware_piob_inputs(SPDIF_MISO_BIT); \
+					arm_hardware_piod_inputs(SPDIF_MISO_BIT); \
 					__DSB(); \
 				} while (0)
 
