@@ -47,7 +47,7 @@
 	// use FS
 	//#define WITHUSBDEV_HSDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
 	//#define WITHUSBDEV_VBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
-	////#define WITHUSBHW_DEVICE	USB_OTG_FS	/* на этом устройстве поддерживается функциональность DEVICE	*/
+	#define WITHUSBHW_DEVICE	USB_OTG_FS	/* на этом устройстве поддерживается функциональность DEVICE	*/
 #else
 	// USE HS with ULPI
 	//#define WITHUSBDEV_HSDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
@@ -78,6 +78,9 @@
 	//#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
 	//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
 	//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
+	#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
+	#define WITHMOVEDFU 1	// Переместить интерфейс DFU в область меньших номеров. Утилита dfu-util 0.9 не работает с DFU на интерфейсе с индексом 10
+	#define WITHUSBWCID	1
 
 #endif
 
@@ -736,24 +739,24 @@
 	#if WITHSDRAMHW
 		// Bootloader parameters
 		#define BOOTLOADER_RAMAREA DRAM_MEM_BASE	/* адрес ОЗУ, куда перемещать application */
-		#define BOOTLOADER_RAMSIZE (1024uL * 1024uL * 256)	// 256M
+		#define BOOTLOADER_RAMSIZE (1024uL * 1024uL * 32)	// 32M
 		#define BOOTLOADER_RAMPAGESIZE	(1024uL * 1024)	// при загрузке на исполнение используется размер страницы в 1 мегабайт
 		#define USBD_DFU_RAM_XFER_SIZE 4096
 	#endif /* WITHSDRAMHW */
 
 	#define BOOTLOADER_FLASHSIZE (1024uL * 1024uL * 16)	// 16M FLASH CHIP
-	#define BOOTLOADER_SELFBASE QSPI_MEM_BASE	/* адрес где лежит во FLASH образ application */
-	#define BOOTLOADER_SELFSIZE (1024uL * 512)	// 512k
+	#define BOOTLOADER_SELFBASE QSPI_BASE	/* DFU адрес где лежит во FLASH образ application */
+	#define BOOTLOADER_SELFSIZE (1024uL * 128)	// 128K
 
 	#define BOOTLOADER_APPBASE (BOOTLOADER_SELFBASE + BOOTLOADER_SELFSIZE)	/* адрес где лежит во FLASH образ application */
 	#define BOOTLOADER_APPSIZE (BOOTLOADER_FLASHSIZE - BOOTLOADER_SELFSIZE)	// 2048 - 128
 
-	#define BOOTLOADER_PAGESIZE (1024uL * 64)	// W25Q32FV with 64 KB pages
+	#define BOOTLOADER_PAGESIZE (1024uL * 64)	// N25Q128A13EF840E with ???? 64 KB pages
 
 	#define USERFIRSTSBLOCK 0
 
 	#define USBD_DFU_FLASH_XFER_SIZE 256	// match to (Q)SPI FLASH MEMORY page size
-	#define USBD_DFU_FLASHNAME "W25Q128JV"
+	#define USBD_DFU_FLASHNAME "N25Q128A13EF840E"
 
 	/* Выводы соединения с QSPI BOOT NOR FLASH */
 	#define SPDIF_MISO_BIT (1u << 12)	// PD12 QSPI_D1 MISO
@@ -777,6 +780,7 @@
 
 		#if WIHSPIDFHW
 			#define SPIDF_HARDINITIALIZE() do { \
+					enum { AF_QUADSPI_AF9 = 9, AF_QUADSPI_AF10 = 10 }; \
 					arm_hardware_pioe_altfn50(SPDIF_D2_BIT, AF_QUADSPI_AF9);  	/* PE2 QSPI_D2 */ \
 					arm_hardware_piod_altfn50(SPDIF_D3_BIT, AF_QUADSPI_AF9);  	/* PD13 QSPI_D3 */ \
 					/*arm_hardware_pioe_outputs(SPDIF_D2_BIT, SPDIF_D2_BIT); */ /* PE2 QSPI_D2 tie-up */ \
@@ -825,7 +829,7 @@
 	//#define BOARD_BLINK_BIT (1uL << 13)	// PA13 - RED LED LD5 on DK1/DK2 MB1272.pdf
 	//#define BOARD_BLINK_BIT (1uL << 14)	// PA14 - GREEN LED LD5 on DK1/DK2 MB1272.pdf
 	//#define BOARD_BLINK_BIT (1uL << 14)	// PD14 - LED on small board
-	#define BOARD_BLINK_BIT (1uL << 11)	// PI11 - LED1# on PanGu board (BLUE)
+	#define BOARD_BLINK_BIT 0//(1uL << 11)	// PI11 - LED1# on PanGu board (BLUE)
 	//#define BOARD_BLINK_BIT (1uL << 11)	// PH6 - LED2# on PanGu board
 
 	#define BOARD_BLINK_INITIALIZE() do { \
