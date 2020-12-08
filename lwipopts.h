@@ -32,6 +32,11 @@
 #ifndef __LWIPOPTS_H__
 #define __LWIPOPTS_H__
 
+#include "hardware.h"
+#include "formats.h"
+#include <stdint.h>
+#include <inttypes.h>
+
 /* Prevent having to link sys_arch.c (we don't test the API layers in unit tests) */
 #define NO_SYS                          1
 #define MEM_ALIGNMENT                   4
@@ -43,6 +48,7 @@
 #define LWIP_UDP                        1
 #define LWIP_TCP                        1
 #define ETH_PAD_SIZE                    0
+//#define LWIP_HAVE_SLIPIF				1
 #define LWIP_IP_ACCEPT_UDP_PORT(p)      ((p) == PP_NTOHS(67))
 
 #define MEM_SIZE                        10000
@@ -56,5 +62,51 @@
 #define LWIP_HTTPD_SSI_INCLUDE_TAG      0
 
 #define LWIP_HTTPD_STRNSTR_PRIVATE		0
+
+
+#define X32_F "08X"
+#define S32_F "ld"
+#define U32_F "lu"
+
+#define X16_F "04X"
+#define S16_F "d"
+#define U16_F "u"
+
+#define LWIP_DEBUG             1
+#define LWIP_DBG_MIN_LEVEL     LWIP_DBG_LEVEL_ALL
+#define LWIP_DBG_TYPES_ON      (LWIP_DBG_TRACE | LWIP_DBG_STATE | LWIP_DBG_FRESH | LWIP_DBG_HALT)
+#define ETHARP_DEBUG           LWIP_DBG_ON
+#define NETIF_DEBUG            LWIP_DBG_ON
+//#define PBUF_DEBUG             LWIP_DBG_ON
+#define API_LIB_DEBUG          LWIP_DBG_ON
+#define API_MSG_DEBUG          LWIP_DBG_ON
+#define SOCKETS_DEBUG          LWIP_DBG_ON
+#define ICMP_DEBUG             LWIP_DBG_ON
+#define IGMP_DEBUG             LWIP_DBG_ON
+#define INET_DEBUG             LWIP_DBG_ON
+#define IP_DEBUG               LWIP_DBG_ON
+#define IP_REASS_DEBUG         LWIP_DBG_ON
+#define RAW_DEBUG              LWIP_DBG_ON
+#define MEM_DEBUG              LWIP_DBG_ON
+#define MEMP_DEBUG             LWIP_DBG_ON
+#define SYS_DEBUG              LWIP_DBG_ON
+#define TIMERS_DEBUG           LWIP_DBG_ON
+#define TCP_DEBUG              LWIP_DBG_ON
+#define TCP_INPUT_DEBUG        LWIP_DBG_ON
+#define TCP_FR_DEBUG           LWIP_DBG_ON
+#define TCP_RTO_DEBUG          LWIP_DBG_ON
+#define TCP_CWND_DEBUG         LWIP_DBG_ON
+#define TCP_WND_DEBUG          LWIP_DBG_ON
+#define TCP_OUTPUT_DEBUG       LWIP_DBG_ON
+#define TCP_RST_DEBUG          LWIP_DBG_ON
+#define TCP_QLEN_DEBUG         LWIP_DBG_ON
+#define UDP_DEBUG              LWIP_DBG_ON
+#define TCPIP_DEBUG            LWIP_DBG_ON
+#define SLIP_DEBUG             LWIP_DBG_ON
+#define DHCP_DEBUG             LWIP_DBG_ON
+#define AUTOIP_DEBUG           LWIP_DBG_ON
+#define DNS_DEBUG              LWIP_DBG_ON
+#define IP6_DEBUG              LWIP_DBG_ON
+#define LWIP_PLATFORM_DIAG(mmsg) do { PRINTF mmsg; } while (0)
 
 #endif /* __LWIPOPTS_H__ */
