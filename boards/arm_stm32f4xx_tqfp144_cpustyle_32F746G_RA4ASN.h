@@ -23,9 +23,9 @@
 #define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 
 //#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
-#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
+//#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
 //#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */
-#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
+//#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
 
 //#define WITHI2SHW	1	/* Использование I2S - аудиокодек	*/
 
@@ -47,7 +47,7 @@
 	// use FS
 	//#define WITHUSBDEV_HSDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
 	//#define WITHUSBDEV_VBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
-	#define WITHUSBHW_DEVICE	USB_OTG_FS	/* на этом устройстве поддерживается функциональность DEVICE	*/
+	//#define WITHUSBHW_DEVICE	USB_OTG_FS	/* на этом устройстве поддерживается функциональность DEVICE	*/
 #else
 	// USE HS with ULPI
 	//#define WITHUSBDEV_HSDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
@@ -854,5 +854,18 @@
 		arm_hardware_piob_inputs(BOARD_USERBOOT_BIT); /* set as input with pull-up */ \
 		} while (0)
 
+#define	HARDWARE_BL_INITIALIZE() do { \
+		const portholder_t enpins = (1U << 14); /* PB14 */ \
+		arm_hardware_piob_outputs(enpins, 0 ? enpins : 0);	/* BL ENABLE */ \
+		} while (0)
+	/* включение/выключение преобразователя подсветки */
+	#define HARDWARE_BL_SET(en, level) do { \
+		const portholder_t enpins = (1U << 14); /* PB14 */ \
+		arm_hardware_piob_outputs(enpins, en ? enpins : 0);	/* BL ENABLE */ \
+	} while (0)
+
+#define	HARDWARE_INITIALIZE() do { \
+		HARDWARE_BL_INITIALIZE(); \
+		} while (0)
 
 #endif /* ARM_STM32F4XX_TQFP144_CPUSTYLE_32F746G_H_INCLUDED */
