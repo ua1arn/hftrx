@@ -6054,7 +6054,7 @@ void hightests(void)
 		PRINTF("sizeof time_t == %u, t = %lu\n", sizeof (time_t), (unsigned long) t);
 	}
 #endif
-#if 0 && WITHDEBUG && WITHOPENVG
+#if 1 && WITHOPENVG
 	{
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 		board_update();
