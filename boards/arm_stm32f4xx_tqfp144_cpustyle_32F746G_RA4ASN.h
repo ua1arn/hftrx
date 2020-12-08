@@ -807,22 +807,22 @@
 					arm_hardware_piob_outputs(SPDIF_NCS_BIT, SPDIF_NCS_BIT); \
 					arm_hardware_piob_outputs(SPDIF_SCLK_BIT, SPDIF_SCLK_BIT); \
 					arm_hardware_piod_outputs(SPDIF_MOSI_BIT, SPDIF_MOSI_BIT); \
-					arm_hardware_piob_inputs(SPDIF_MISO_BIT); \
+					arm_hardware_piod_inputs(SPDIF_MISO_BIT); \
 				} while (0)
 			#define SPIDF_SELECT() do { \
 					arm_hardware_piob_outputs(SPDIF_NCS_BIT, SPDIF_NCS_BIT); \
 					arm_hardware_piob_outputs(SPDIF_SCLK_BIT, SPDIF_SCLK_BIT); \
 					arm_hardware_piod_outputs(SPDIF_MOSI_BIT, SPDIF_MOSI_BIT); \
-					arm_hardware_piob_inputs(SPDIF_MISO_BIT); \
+					arm_hardware_piod_inputs(SPDIF_MISO_BIT); \
 					GPIOB->BSRR = BSRR_C(SPDIF_NCS_BIT); \
 					__DSB(); \
 				} while (0)
 			#define SPIDF_UNSELECT() do { \
 					GPIOB->BSRR = BSRR_S(SPDIF_NCS_BIT); \
 					arm_hardware_piob_inputs(SPDIF_NCS_BIT); \
-					arm_hardware_piof_inputs(SPDIF_SCLK_BIT); \
+					arm_hardware_piob_inputs(SPDIF_SCLK_BIT); \
 					arm_hardware_piod_inputs(SPDIF_MOSI_BIT); \
-					arm_hardware_piob_inputs(SPDIF_MISO_BIT); \
+					arm_hardware_piod_inputs(SPDIF_MISO_BIT); \
 					__DSB(); \
 				} while (0)
 
