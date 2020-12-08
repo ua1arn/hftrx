@@ -5538,28 +5538,6 @@ static EGLNativePixmapType getClientPixmap(void)
 
 void openvg_init(NativeWindowType window)
 {
-#if 0
-		PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
-		ctx->tmpWidth = drawable->getWidth();
-		ctx->tmpHeight = drawable->getHeight();
-		int w = drawable->getWidth();
-		int h = drawable->getHeight();
-	#if LCDMODE_MAIN_RGB565
-		VGImageFormat f = VG_sRGB_565;
-		if(isBigEndian())
-			f = VG_sBGR_565;
-	#elif LCDMODE_MAIN_ARGB888
-		VGImageFormat f = VG_sARGB_8888;	// 4-th byte alpha value
-		 if(isBigEndian())
-			 f = VG_sBGRA_8888;
-	#elif LCDMODE_MAIN_L8
-		VGImageFormat f = VG_sL_8;
-	#else
-		#error Unsupported video format
-	#endif
-		vgReadPixels(fr, w * sizeof (* fr), f, 0, 0, w, h);
-#endif
-
 	static const EGLint s_configAttribs[] =
 	{
 		EGL_RED_SIZE,		8,
@@ -5610,7 +5588,7 @@ void openvg_deinit(void)
 
 /*--------------------------------------------------------------*/
 
-static const float			aspectRatio = 612.0f / 792.0f;
+//static const float			aspectRatio = 612.0f / 792.0f;
 
 /*--------------------------------------------------------------*/
 
@@ -5847,11 +5825,9 @@ static void PS_render(PS* ps)
 	ASSERT(vgGetError() == VG_NO_ERROR);
 }
 
-static PS* tiger = NULL;
-
 /*--------------------------------------------------------------*/
 
-static void render(int w, int h)
+static void rendertiger(PS* const tiger, int w, int h)
 {
 	float clearColor[4] = {1,1,1,1};
 	float scaleX = w / (tigerMaxX - tigerMinX);
@@ -6054,14 +6030,15 @@ void hightests(void)
 		PRINTF("sizeof time_t == %u, t = %lu\n", sizeof (time_t), (unsigned long) t);
 	}
 #endif
-#if 1 && WITHOPENVG
+#if 0 && WITHOPENVG
 	{
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 		board_update();
 		//disableAllIRQs();
 		openvg_init((NativeWindowType) NULL);
 	#if 1
-		tiger = PS_construct(tigerCommands, tigerCommandCount, tigerPoints, tigerPointCount);
+		PS* const tiger = PS_construct(tigerCommands, tigerCommandCount, tigerPoints, tigerPointCount);
+		ASSERT(tiger != NULL);
 		for (;;)
 		{
 			TP();
@@ -6071,7 +6048,7 @@ void hightests(void)
 			{
 				break;
 			}
-			render(DIM_X, DIM_Y);
+			rendertiger(tiger, DIM_X, DIM_Y);
 		}
 		PS_destruct(tiger);
 	#else
