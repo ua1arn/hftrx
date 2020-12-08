@@ -150,7 +150,7 @@ flash: ROM
 	ST-LINK_CLI.exe -Q -V -P $(PROJECT)_rom.hex -c UR -HardRst
 	
 app_run:
-	ST-LINK_CLI.exe -Q -rst
+	ST-LINK_CLI.exe -Q -c UR -HardRst
 	
 RAM: $(OBJS) $(PROJECT)_ram.elf $(PROJECT)_ram.hex
 
