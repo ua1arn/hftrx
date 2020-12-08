@@ -264,24 +264,28 @@ static void gui_main_process(void)
 					footer_buttons_state(DISABLED, btn_Receive);
 				}
 			}
+#if WITHTX
 			else if (bh == btn_txrx)
 			{
 				hamradio_moxmode(1);
 				update = 1;
 			}
+#endif /* WITHTX */
 		}
 		else if (IS_BUTTON_LONG_PRESS)			// обработка длинного нажатия
 		{
 			button_t * bh = (button_t *) ptr;
 			button_t * btn_txrx = find_gui_element(TYPE_BUTTON, win, "btn_txrx");
 			button_t * btn_notch = find_gui_element(TYPE_BUTTON, win, "btn_notch");
-
+#if WITHTX
 			if (bh == btn_txrx)
 			{
 				hamradio_tunemode(1);
 				update = 1;
 			}
-			else if (bh == btn_notch)
+			else
+#endif /* WITHTX */
+			if (bh == btn_notch)
 			{
 				window_t * win = get_win(WINDOW_NOTCH);
 				if (win->state == NON_VISIBLE)
@@ -345,6 +349,7 @@ static void gui_main_process(void)
 #endif /* #if WITHSPKMUTE */
 
 		button_t * btn_txrx = find_gui_element(TYPE_BUTTON, win, "btn_txrx");
+#if WITHTX
 		uint_fast8_t tune = hamradio_tunemode(0);
 		uint_fast8_t mox = hamradio_moxmode(0);
 
@@ -363,6 +368,10 @@ static void gui_main_process(void)
 			btn_txrx->is_locked = BUTTON_NON_LOCKED;
 			local_snprintf_P(btn_txrx->text, ARRAY_SIZE(btn_txrx->text), PSTR("RX"));
 		}
+#else
+		btn_txrx->state = DISABLED;
+		local_snprintf_P(btn_txrx->text, ARRAY_SIZE(btn_txrx->text), PSTR("RX"));
+#endif /* WITHTX */
 	}
 
 	// разметка инфобара
@@ -1201,11 +1210,14 @@ static void window_display_process(void)
 static void window_utilites_process(void)
 {
 	window_t * win = get_win(WINDOW_UTILS);
+	uint_fast8_t update = 0;
+
 	if (win->first_call)
 	{
 		uint_fast16_t x = 0, y = 0;
 		uint_fast8_t interval = 6, col1_int = 20, row1_int = window_title_height + 20, row_count = 4;
 		win->first_call = 0;
+		update = 1;
 
 		static const button_t buttons [] = {
 			{ 0, 0, 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UTILS, NON_VISIBLE, INT32_MAX, "btn_SWRscan", "SWR|scanner", },
@@ -1249,18 +1261,31 @@ static void window_utilites_process(void)
 		{
 			button_t * bh = (button_t *) ptr;
 			button_t * btn_SWRscan = find_gui_element(TYPE_BUTTON, win, "btn_SWRscan");
-
+#if WITHTX
 			if (bh == btn_SWRscan)
 			{
 				window_t * winSWR = get_win(WINDOW_SWR_SCANNER);
 				open_window(winSWR);
 			}
+#endif /* WITHTX */
 		}
 		break;
 
 	default:
 
 		break;
+	}
+
+	if (update)
+	{
+		update = 0;
+
+		button_t * btn_SWRscan = find_gui_element(TYPE_BUTTON, win, "btn_SWRscan");
+#if WITHTX
+		btn_SWRscan->state = CANCELLED;
+#else
+		btn_SWRscan->state = DISABLED;
+#endif /* WITHTX */
 	}
 }
 
@@ -1692,6 +1717,7 @@ static void window_freq_process (void)
 
 static void window_swrscan_process(void)
 {
+#if WITHTX
 	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
 	uint_fast16_t gr_w = 500, gr_h = 250;												// размеры области графика
 	uint_fast8_t interval = 20, col1_int = 20, row1_int = 30;
@@ -1904,6 +1930,7 @@ static void window_swrscan_process(void)
 				colmain_line(fr, DIM_X, DIM_Y, gr_x + j - 2, gr_y - y_vals [j - 2], gr_x + j - 1, gr_y - y_vals [j - 1], COLORMAIN_YELLOW, 1);
 		}
 	}
+#endif /* WITHTX */
 }
 
 // *********************************************************************************************************************************************************************

@@ -243,7 +243,7 @@
 	#define WITHDACSTRAIGHT 1	/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
 	#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 	//#define WITHRTS192 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
-	#define WITHSUSBSPKONLY 1
+	//#define WITHSUSBSPKONLY 1
 	//#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
 	#define BOARD_FFTZOOM_POW2MAX 1	// Возможные масштабы FFT x1, x2
 	//#define BOARD_FFTZOOM_POW2MAX 2	// Возможные масштабы FFT x1, x2, x4
@@ -306,7 +306,7 @@
 
 	// +++ Эти строки можно отключать, уменьшая функциональность готового изделия
 	//#define WITHRFSG	1	/* включено управление ВЧ сигнал-генератором. */
-	#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
+	//#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
 	//#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
 	//#define WITHIFSHIFT	1	/* используется IF SHIFT */
 	//#define WITHIFSHIFTOFFSET	(-250)	/* Начальное занчение IF SHIFT */
