@@ -105,7 +105,7 @@ void* OSCreateWindowContext(EGLNativeWindowType window)
     {
         ctx = RI_NEW(OSWindowContext, ());
     }
-	catch(std::bad_alloc)
+	catch(const std::bad_alloc &)
 	{
 		return NULL;
 	}
@@ -147,20 +147,21 @@ void OSGetWindowSize(const void* context, int& width, int& height)
         height = 0;
     }
 }
-
-static bool isBigEndian()
-{
-	static const RIuint32 v = 0x12345678u;
-	const RIuint8* p = (const RIuint8*)&v;
-	RI_ASSERT (*p == (RIuint8)0x12u || *p == (RIuint8)0x78u);
-	return (*p == (RIuint8)(0x12)) ? true : false;
-}
+//
+//static bool isBigEndian()
+//{
+//	static const RIuint32 v = 0x12345678u;
+//	const RIuint8* p = (const RIuint8*)&v;
+//	RI_ASSERT (*p == (RIuint8)0x12u || *p == (RIuint8)0x78u);
+//	return (*p == (RIuint8)(0x12)) ? true : false;
+//}
 
 void OSBlitToWindow(void* context, const Drawable* drawable)
 {
     OSWindowContext* ctx = (OSWindowContext*)context;
     if(ctx)
     {
+#if 0
 		PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
 		ctx->tmpWidth = drawable->getWidth();
 		ctx->tmpHeight = drawable->getHeight();
@@ -180,6 +181,7 @@ void OSBlitToWindow(void* context, const Drawable* drawable)
 		#error Unsupported video format
 	#endif
 		vgReadPixels(fr, w * sizeof (* fr), f, 0, 0, w, h);
+#endif
 		display_flush();
 		//PRINTF("OSBlitToWindow: tmpWidth=%d, tmpHeight=%d\n", ctx->tmpWidth, ctx->tmpHeight);
 		//display_fillrect(x, y, x2 - x, y2 - y, color);

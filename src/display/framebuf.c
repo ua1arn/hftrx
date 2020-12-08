@@ -36,23 +36,24 @@
 #define MDMA_CCR_PL_VALUE 0uL	// PL: priority 0..3: min..max
 
 #if LCDMODE_LTDC_L24
-	#define DMA2D_FGPFCCR_CM_VALUE_MAIN	(1 * DMA2D_FGPFCCR_CM_0)	/* 0001: RGB888 */
+	#define DMA2D_FGPFCCR_CM_VALUE_MAIN		(1 * DMA2D_FGPFCCR_CM_0)	/* 0001: RGB888 */
+	#define MDMA_CTCR_xSIZE_MAIN			0x00	// 1 byte
 	//#define DMA2D_OPFCCR_CM_VALUE_MAIN	(1 * DMA2D_OPFCCR_CM_0)	/* 001: RGB888 */
 
 #elif LCDMODE_MAIN_L8
-	#define DMA2D_FGPFCCR_CM_VALUE_MAIN	(5 * DMA2D_FGPFCCR_CM_0)	/* 0101: L8 */
+	#define DMA2D_FGPFCCR_CM_VALUE_MAIN		(5 * DMA2D_FGPFCCR_CM_0)	/* 0101: L8 */
 	#define MDMA_CTCR_xSIZE_MAIN			0x00	// 1 byte
 	////#define DMA2D_OPFCCR_CM_VALUE	(x * DMA2D_OPFCCR_CM_0)	/* not supported */
 
 #elif LCDMODE_MAIN_ARGB888
-	#define DMA2D_FGPFCCR_CM_VALUE_MAINxxxx	(0 * DMA2D_FGPFCCR_CM_0)	/* 0: ARGB888 */
+	#define DMA2D_FGPFCCR_CM_VALUE_MAIN		(0 * DMA2D_FGPFCCR_CM_0)	/* 0000: ARGB888 */
 	#define MDMA_CTCR_xSIZE_MAIN			0x02	// 10: Word (32-bit)
-	////#define DMA2D_OPFCCR_CM_VALUE	(x * DMA2D_OPFCCR_CM_0)	/* not supported */
+	#define DMA2D_OPFCCR_CM_VALUE_MAIN		(0 * DMA2D_OPFCCR_CM_0)	/* 0: 000: ARGB8888 */
 
-#else /* LCDMODE_MAIN_L8 */
-	#define DMA2D_FGPFCCR_CM_VALUE_MAIN	(2 * DMA2D_FGPFCCR_CM_0)	/* 0010: RGB565 */
-	//#define DMA2D_OPFCCR_CM_VALUE_MAIN	(2 * DMA2D_OPFCCR_CM_0)	/* 010: RGB565 */
+#elif LCDMODE_MAIN_RGB565
+	#define DMA2D_FGPFCCR_CM_VALUE_MAIN		(2 * DMA2D_FGPFCCR_CM_0)	/* 0010: RGB565 */
 	#define MDMA_CTCR_xSIZE_MAIN			0x01	// 2 byte
+	#define DMA2D_OPFCCR_CM_VALUE_MAIN		(2 * DMA2D_OPFCCR_CM_0)	/* 010: RGB565 */
 
 #endif /* LCDMODE_MAIN_L8 */
 
@@ -63,12 +64,12 @@
 
 #elif LCDMODE_PIP_RGB565
 	#define DMA2D_FGPFCCR_CM_VALUE_PIP	(2 * DMA2D_FGPFCCR_CM_0)	/* 0010: RGB565 */
-	//#define DMA2D_OPFCCR_CM_VALUE_PIP	(2 * DMA2D_OPFCCR_CM_0)	/* 010: RGB565 */
+	#define DMA2D_OPFCCR_CM_VALUE_PIP	(2 * DMA2D_OPFCCR_CM_0)	/* 010: RGB565 */
 	#define MDMA_CTCR_xSIZE_PIP			0x01	// 2 byte
 
 #else /* LCDMODE_MAIN_L8 */
 	#define DMA2D_FGPFCCR_CM_VALUE_PIP	DMA2D_FGPFCCR_CM_VALUE_MAIN
-	//#define DMA2D_OPFCCR_CM_VALUE_PIP	DMA2D_OPFCCR_CM_VALUE_MAIN
+	#define DMA2D_OPFCCR_CM_VALUE_PIP	DMA2D_OPFCCR_CM_VALUE_MAIN
 	#define MDMA_CTCR_xSIZE_PIP			MDMA_CTCR_xSIZE_MAIN
 
 #endif /* LCDMODE_MAIN_L8 */
@@ -276,7 +277,7 @@ hwacc_fillrect_u8(
 	MDMA_DATA = color;	// регистр выделенного канала MDMA используется для хранения значение цвета. Переиферия не кэшируется.
 	(void) MDMA_DATA;
 
-	arm_hardware_flush((uintptr_t) & tgcolor, sizeof tgcolor);
+	//arm_hardware_flush((uintptr_t) & tgcolor, sizeof tgcolor);
 	arm_hardware_flush_invalidate((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
 
 	MDMA_CH->CDAR = (uintptr_t) colmain_mem_at(buffer, dx, dy, col, row); // dest address

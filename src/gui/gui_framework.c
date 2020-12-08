@@ -652,6 +652,16 @@ static void draw_button(const button_t * const bh)
 	static const char delimeters [] = "|";
 	uint_fast16_t x1 = win->x1 + bh->x1;
 	uint_fast16_t y1 = win->y1 + bh->y1;
+	ASSERT(x1 + bh->w < WITHGUIMAXX);
+	ASSERT(y1 + bh->h < WITHGUIMAXY);
+
+//	if ((x1 + bh->w >= WITHGUIMAXX) || (y1 + bh->h >= WITHGUIMAXY))
+//	{
+//		PRINTF("%s %s\n", bh->name, bh->text);
+//		ASSERT(0);
+//	}
+
+//	PRINTF("%s: %d, %d\n", bh->name, x1 + bh->w, y1 + bh->h);
 
 	if ((x1 + bh->w >= WITHGUIMAXX) || (y1 + bh->h >= WITHGUIMAXY))
 	{

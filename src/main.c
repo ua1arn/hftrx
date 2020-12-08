@@ -19773,7 +19773,7 @@ hamradio_main_step(void)
 				nrotate2 = 0;	// ignore encoder
 			#else
 				nrotate = getRotateHiRes(& jumpsize, genc1div * gencderate);
-				nrotate2 = getRotateHiRes2(& jumpsize2, genc2div * gencderate);
+				nrotate2 = getRotateHiRes2(& jumpsize2, genc2div);
 			#endif
 
 			if (uif_encoder2_rotate(nrotate2))

@@ -5154,7 +5154,7 @@ static void sdtick(void)
 }
 #endif
 
-#if LCDMODE_COLORED && ! DSTYLE_G_DUMMY && 1
+#if LCDMODE_COLORED && ! DSTYLE_G_DUMMY && 0
 
 
 
@@ -5489,14 +5489,77 @@ static uint_fast32_t any_rd_reg_32bits(uint_fast8_t i2caddr, uint_fast8_t regist
 #	include "EGL/egl.h"
 #endif
 
-EGLDisplay			egldisplay;
-EGLConfig			eglconfig;
-EGLSurface			eglsurface;
-EGLContext			eglcontext;
+static EGLDisplay			egldisplay;
+static EGLConfig			eglconfig;
+static EGLSurface			eglsurface;
+static EGLContext			eglcontext;
+/*
 
+EGLClientBuffer * getClientImage(void)
+{
+//	Image
+	return NULL;
+
+}
+*/
+#if _BYTE_ORDER == _LITTLE_ENDIAN
+static int isBigEndian(void) { return 0; }
+#else
+static int isBigEndian(void) { return 1; }
+#endif
+
+static EGLNativePixmapType getClientPixmap(void)
+{
+	static NativePixmap pixmap;
+
+#if LCDMODE_MAIN_RGB565
+	VGImageFormat f = VG_sRGB_565;
+	if(isBigEndian())
+		f = VG_sBGR_565;
+#elif LCDMODE_MAIN_ARGB888
+	VGImageFormat f = VG_sARGB_8888;	// 4-th byte alpha value
+	 if(isBigEndian())
+		 f = VG_sBGRA_8888;
+#elif LCDMODE_MAIN_L8
+	VGImageFormat f = VG_sL_8;
+#else
+	#error Unsupported video format
+#endif
+
+	pixmap.data = colmain_fb_draw();
+	pixmap.format = f;
+	pixmap.height = DIM_Y;
+	pixmap.width = DIM_X;
+	pixmap.stride = GXADJ(DIM_X) * sizeof (PACKEDCOLORMAIN_T);
+
+	return & pixmap;
+
+}
 
 void openvg_init(NativeWindowType window)
 {
+#if 0
+		PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
+		ctx->tmpWidth = drawable->getWidth();
+		ctx->tmpHeight = drawable->getHeight();
+		int w = drawable->getWidth();
+		int h = drawable->getHeight();
+	#if LCDMODE_MAIN_RGB565
+		VGImageFormat f = VG_sRGB_565;
+		if(isBigEndian())
+			f = VG_sBGR_565;
+	#elif LCDMODE_MAIN_ARGB888
+		VGImageFormat f = VG_sARGB_8888;	// 4-th byte alpha value
+		 if(isBigEndian())
+			 f = VG_sBGRA_8888;
+	#elif LCDMODE_MAIN_L8
+		VGImageFormat f = VG_sL_8;
+	#else
+		#error Unsupported video format
+	#endif
+		vgReadPixels(fr, w * sizeof (* fr), f, 0, 0, w, h);
+#endif
+
 	static const EGLint s_configAttribs[] =
 	{
 		EGL_RED_SIZE,		8,
@@ -5518,8 +5581,10 @@ void openvg_init(NativeWindowType window)
 	eglChooseConfig(egldisplay, s_configAttribs, &eglconfig, 1, &numconfigs);
 	ASSERT(eglGetError() == EGL_SUCCESS);
 	ASSERT(numconfigs == 1);
-
-	eglsurface = eglCreateWindowSurface(egldisplay, eglconfig, window, NULL);
+	EGLNativePixmapType pixmap;
+	//eglsurface = eglCreateWindowSurface(egldisplay, eglconfig, window, NULL);
+	//eglsurface = eglCreatePbufferFromClientBuffer(egldisplay, EGL_OPENVG_IMAGE, (EGLClientBuffer) getClientImage(), eglconfig, s_configAttribs);
+	eglsurface = eglCreatePixmapSurface(egldisplay, eglconfig, getClientPixmap(), s_configAttribs);
 	ASSERT(eglGetError() == EGL_SUCCESS);
 	eglcontext = eglCreateContext(egldisplay, eglconfig, NULL, NULL);
 	ASSERT(eglGetError() == EGL_SUCCESS);
@@ -5782,11 +5847,11 @@ static void PS_render(PS* ps)
 	ASSERT(vgGetError() == VG_NO_ERROR);
 }
 
-PS* tiger = NULL;
+static PS* tiger = NULL;
 
 /*--------------------------------------------------------------*/
 
-void render(int w, int h)
+static void render(int w, int h)
 {
 	float clearColor[4] = {1,1,1,1};
 	float scaleX = w / (tigerMaxX - tigerMinX);
@@ -5796,20 +5861,32 @@ void render(int w, int h)
 	//vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_BETTER);
 	//vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_NONANTIALIASED);
 
+	display_flush();
 	eglSwapBuffers(egldisplay, eglsurface);	//force EGL to recognize resize
+//	ASSERT(eglGetError() == EGL_SUCCESS);
 
 	vgSetfv(VG_CLEAR_COLOR, 4, clearColor);
+	ASSERT(vgGetError() == VG_NO_ERROR);
 	vgClear(0, 0, w, h);
+	ASSERT(vgGetError() == VG_NO_ERROR);
 
+	// normal on Window (top-down mirror on Storch)
+//	vgLoadIdentity();
+//	vgScale(scale, scale);
+//	vgTranslate(-tigerMinX, -tigerMinY + 0.5f * (h / scale - (tigerMaxY - tigerMinY)));	// all parameters are zeroes
+
+	// top-down mirror
 	vgLoadIdentity();
-	vgScale(scale, scale);
-	vgTranslate(-tigerMinX, -tigerMinY + 0.5f * (h / scale - (tigerMaxY - tigerMinY)));
+	vgScale(scale, -scale);
+	vgTranslate(-tigerMinX, - (tigerMaxY - tigerMinY));
+	ASSERT(vgGetError() == VG_NO_ERROR);
 
 	PS_render(tiger);
 	ASSERT(vgGetError() == VG_NO_ERROR);
 
+	display_flush();
 	eglSwapBuffers(egldisplay, eglsurface);
-	ASSERT(eglGetError() == EGL_SUCCESS);
+	//ASSERT(eglGetError() == EGL_SUCCESS);
 }
 
 #endif /* tiger */
@@ -5835,14 +5912,14 @@ void render(int w, int h)
 }
 #endif
 
-void rendertest(int w, int h)
+static void rendertest(int w, int h)
 {
-	static const float clearColor[4] = {0,1,0,1};
 	//		float scaleX = w / (tigerMaxX - tigerMinX);
 	//		float scaleY = h / (tigerMaxY - tigerMinY);
 	//		float scale = fminf(scaleX, scaleY);
 	//		PRINTF("render: scaleX=%f, scaleY=%f\n", scaleX, scaleY);
 
+	display_flush();
 	eglSwapBuffers(egldisplay, eglsurface);	//force EGL to recognize resize
 
 	vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_BETTER);
@@ -5860,6 +5937,13 @@ void rendertest(int w, int h)
     static const VGfloat clearColor [4] = { 0, 0, 0, 1 };
     static const VGfloat fillColor [4] = { 0.0f, 0.0f, 1.0f, 1.0f };
     static const VGfloat strokeColor [4] = { 1.0f, 0.0f, 0.0f, 1.0f };
+
+    // top-down mirror and back...
+	vgLoadIdentity();
+	vgScale(1, -1);
+	vgScale(1, -1);
+	vgTranslate(0, - h);
+	vgTranslate(0, + h);
 
     vgSetfv( VG_CLEAR_COLOR, 4, clearColor );
     vgClear( 0, 0, w, h );
@@ -5883,12 +5967,13 @@ void rendertest(int w, int h)
     vgDestroyPaint( fillPaint );
     vgDestroyPaint( strokePaint );
 
+	display_flush();
 	eglSwapBuffers(egldisplay, eglsurface);
-	ASSERT(eglGetError() == EGL_SUCCESS);
+	//ASSERT(eglGetError() == EGL_SUCCESS);
 
 }
 
-void rendertestx(int w, int h)
+static void rendertestx(int w, int h)
 {
 	static const float clearColor[4] = {0,1,0,1};
 	//		float scaleX = w / (tigerMaxX - tigerMinX);
@@ -5940,8 +6025,9 @@ void rendertestx(int w, int h)
 	//		ASSERT(vgGetError() == VG_NO_ERROR);
 
 
+	display_flush();
 	eglSwapBuffers(egldisplay, eglsurface);
-	ASSERT(eglGetError() == EGL_SUCCESS);
+	//ASSERT(eglGetError() == EGL_SUCCESS);
 
 }
 
@@ -5968,22 +6054,28 @@ void hightests(void)
 		PRINTF("sizeof time_t == %u, t = %lu\n", sizeof (time_t), (unsigned long) t);
 	}
 #endif
-#if 0 && WITHOPENVG
+#if 0 && WITHDEBUG
 	{
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 		board_update();
-		TP();
+		//disableAllIRQs();
 		openvg_init((NativeWindowType) NULL);
-		TP();
 	#if 1
 		tiger = PS_construct(tigerCommands, tigerCommandCount, tigerPoints, tigerPointCount);
-		TP();
-		render(DIM_X, DIM_Y);
+		for (;;)
+		{
+			TP();
+			uint_fast8_t kbch, repeat;
+
+			if ((repeat = kbd_scan(& kbch)) != 0)
+			{
+				break;
+			}
+			render(DIM_X, DIM_Y);
+		}
 		PS_destruct(tiger);
 	#else
 		rendertest(DIM_X, DIM_Y);
-	#endif
-		TP();
 		// wait for press any key
 		for (;;)
 		{
@@ -5994,8 +6086,8 @@ void hightests(void)
 				break;
 			}
 		}
+	#endif
 		openvg_deinit();
-		TP();
 	}
 #endif
 #if 0 && (__CORTEX_A != 0)
@@ -6940,6 +7032,7 @@ void hightests(void)
 #endif
 #if 0 && LCDMODE_COLORED && ! DSTYLE_G_DUMMY
 	{
+		TP();
 		unsigned cnt;
 		display2_bgreset();
 		//disableAllIRQs();
@@ -8097,6 +8190,7 @@ void hightests(void)
 		}
 	}
 #endif
+//	TP();
 }
 
 // Вызывается перед инициализацией NVRAM, но после инициализации SPI
@@ -8553,18 +8647,21 @@ void lowtests(void)
 #endif
 #if 0
 	{
-		// PD13 signal pulses
-		enum { WORKMASK	 = 1ul << 13 };
-		arm_hardware_piod_outputs(WORKMASK, WORKMASK);
+		// Калиьбровка задержек для данного процссора
+		// See local_delay_uscycles()
+		//enum { WORKMASK	 = 1ul << 7 };	// PB7
+		enum { WORKMASK	 = 1ul << 10 };	// P7_10
+		//arm_hardware_piob_outputs(WORKMASK, WORKMASK);
+		arm_hardware_pio7_outputs(WORKMASK, WORKMASK);
 
 		for (;;)
 		{
-			arm_hardware_piod_outputs(WORKMASK, 1 * WORKMASK);
-			hardware_spi_io_delay();
-			local_delay_ms(300);
-			arm_hardware_piod_outputs(WORKMASK, 0 * WORKMASK);
-			hardware_spi_io_delay();
-			local_delay_ms(300);
+			//(GPIOB)->BSRR = BSRR_S(WORKMASK);
+			R7S721_TARGET_PORT_S(7, WORKMASK);
+			local_delay_ms(5);
+			//(GPIOB)->BSRR = BSRR_C(WORKMASK);
+			R7S721_TARGET_PORT_C(7, WORKMASK);
+			local_delay_ms(5);
 		}
 	}
 #endif
