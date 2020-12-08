@@ -22,6 +22,11 @@
 //#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 #define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 
+//#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
+#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
+//#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */
+#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
+
 //#define WITHI2SHW	1	/* Использование I2S - аудиокодек	*/
 
 #define WITHSAI1HW	1	/* Использование SAI1 - FPGA или IF codec	*/
@@ -204,7 +209,7 @@
 			arm_hardware_piof_onchangeinterrupt(ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
 			arm_hardware_piof_inputs(ENCODER2_BITS); \
 			arm_hardware_piof_updown(ENCODER2_BITS, 0); \
-			arm_hardware_piof_onchangeinterrupt(0 * ENCODER2_BITS, ENCODER2_BITS, ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY); \
+			arm_hardware_piof_onchangeinterrupt(0 * ENCODER2_BITS, ENCODER2_BITS, ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
 		} while (0)
 
 #endif
@@ -727,5 +732,118 @@
 		arm_hardware_pioi_outputs(mask, ((state) != 0) * mask);	/* DE=DISP, pin 31 - можно менять только при VSYNC=1 */ \
 	} while (0)
 #endif /* LCDMODE_LTDC */
+
+	#if WITHSDRAMHW
+		// Bootloader parameters
+		#define BOOTLOADER_RAMAREA DRAM_MEM_BASE	/* адрес ОЗУ, куда перемещать application */
+		#define BOOTLOADER_RAMSIZE (1024uL * 1024uL * 256)	// 256M
+		#define BOOTLOADER_RAMPAGESIZE	(1024uL * 1024)	// при загрузке на исполнение используется размер страницы в 1 мегабайт
+		#define USBD_DFU_RAM_XFER_SIZE 4096
+	#endif /* WITHSDRAMHW */
+
+	#define BOOTLOADER_FLASHSIZE (1024uL * 1024uL * 16)	// 16M FLASH CHIP
+	#define BOOTLOADER_SELFBASE QSPI_MEM_BASE	/* адрес где лежит во FLASH образ application */
+	#define BOOTLOADER_SELFSIZE (1024uL * 512)	// 512k
+
+	#define BOOTLOADER_APPBASE (BOOTLOADER_SELFBASE + BOOTLOADER_SELFSIZE)	/* адрес где лежит во FLASH образ application */
+	#define BOOTLOADER_APPSIZE (BOOTLOADER_FLASHSIZE - BOOTLOADER_SELFSIZE)	// 2048 - 128
+
+	#define BOOTLOADER_PAGESIZE (1024uL * 64)	// W25Q32FV with 64 KB pages
+
+	#define USERFIRSTSBLOCK 0
+
+	#define USBD_DFU_FLASH_XFER_SIZE 256	// match to (Q)SPI FLASH MEMORY page size
+	#define USBD_DFU_FLASHNAME "W25Q128JV"
+
+	/* Выводы соединения с QSPI BOOT NOR FLASH */
+	#define SPDIF_MISO_BIT (1u << 12)	// PD12 QSPI_D1 MISO
+	#define SPDIF_MOSI_BIT (1u << 11)	// PD11 QSPI_D0 MOSI
+	#define SPDIF_D2_BIT (1u << 2)		// PE2 QSPI_D2
+	#define SPDIF_D3_BIT (1u << 13)		// PD13 QSPI_D3
+	#define SPDIF_SCLK_BIT (1u << 2)	// PB2 QSPI_CLK
+	#define SPDIF_NCS_BIT (1u << 6)		// PB6 QSPI_NCS
+
+	/* Отсоединить процессор от BOOT ROM - для возможности работы внешнего программатора. */
+	#define SPIDF_HANGOFF() do { \
+			arm_hardware_piob_inputs(SPDIF_NCS_BIT); \
+			arm_hardware_piob_inputs(SPDIF_SCLK_BIT); \
+			arm_hardware_piod_inputs(SPDIF_MOSI_BIT); \
+			arm_hardware_piod_inputs(SPDIF_MISO_BIT); \
+			arm_hardware_pioe_inputs(SPDIF_D2_BIT); \
+			arm_hardware_piod_inputs(SPDIF_D3_BIT); \
+		} while (0)
+
+	#if WIHSPIDFSW || WIHSPIDFHW
+
+		#if WIHSPIDFHW
+			#define SPIDF_HARDINITIALIZE() do { \
+					arm_hardware_pioe_altfn50(SPDIF_D2_BIT, AF_QUADSPI_AF9);  	/* PE2 QSPI_D2 */ \
+					arm_hardware_piod_altfn50(SPDIF_D3_BIT, AF_QUADSPI_AF9);  	/* PD13 QSPI_D3 */ \
+					/*arm_hardware_pioe_outputs(SPDIF_D2_BIT, SPDIF_D2_BIT); */ /* PE2 QSPI_D2 tie-up */ \
+					/*arm_hardware_piod_outputs(SPDIF_D3_BIT, SPDIF_D3_BIT); */ /* PD13 QSPI_D3 tie-up */ \
+					arm_hardware_piob_altfn50(SPDIF_SCLK_BIT, AF_QUADSPI_AF9); /* PB2 QSPI_CLK */ \
+					arm_hardware_piod_altfn50(SPDIF_MOSI_BIT, AF_QUADSPI_AF9); /* PD11 QSPI_D0 MOSI */ \
+					arm_hardware_piod_altfn50(SPDIF_MISO_BIT, AF_QUADSPI_AF9); /* PD12 QSPI_D1 MISO */ \
+					arm_hardware_piob_altfn50(SPDIF_NCS_BIT, AF_QUADSPI_AF10); /* PB6 QSPI_NCS */ \
+				} while (0)
+
+		#else /* WIHSPIDFHW */
+
+			#define SPIDF_MISO() ((GPIOD->IDR & SPDIF_MISO_BIT) != 0)
+			#define SPIDF_MOSI(v) do { if (v) GPIOD->BSRR = BSRR_S(SPDIF_MOSI_BIT); else GPIOD->BSRR = BSRR_C(SPDIF_MOSI_BIT); } while (0)
+			#define SPIDF_SCLK(v) do { if (v) GPIOB->BSRR = BSRR_S(SPDIF_SCLK_BIT); else GPIOB->BSRR = BSRR_C(SPDIF_SCLK_BIT); } while (0)
+			#define SPIDF_SOFTINITIALIZE() do { \
+					arm_hardware_pioe_inputs(SPDIF_D2_BIT); \
+					arm_hardware_piod_inputs(SPDIF_D3_BIT); \
+					arm_hardware_piob_outputs(SPDIF_NCS_BIT, SPDIF_NCS_BIT); \
+					arm_hardware_piob_outputs(SPDIF_SCLK_BIT, SPDIF_SCLK_BIT); \
+					arm_hardware_piod_outputs(SPDIF_MOSI_BIT, SPDIF_MOSI_BIT); \
+					arm_hardware_piob_inputs(SPDIF_MISO_BIT); \
+				} while (0)
+			#define SPIDF_SELECT() do { \
+					arm_hardware_piob_outputs(SPDIF_NCS_BIT, SPDIF_NCS_BIT); \
+					arm_hardware_piob_outputs(SPDIF_SCLK_BIT, SPDIF_SCLK_BIT); \
+					arm_hardware_piod_outputs(SPDIF_MOSI_BIT, SPDIF_MOSI_BIT); \
+					arm_hardware_piob_inputs(SPDIF_MISO_BIT); \
+					GPIOB->BSRR = BSRR_C(SPDIF_NCS_BIT); \
+					__DSB(); \
+				} while (0)
+			#define SPIDF_UNSELECT() do { \
+					GPIOB->BSRR = BSRR_S(SPDIF_NCS_BIT); \
+					arm_hardware_piob_inputs(SPDIF_NCS_BIT); \
+					arm_hardware_piof_inputs(SPDIF_SCLK_BIT); \
+					arm_hardware_piod_inputs(SPDIF_MOSI_BIT); \
+					arm_hardware_piob_inputs(SPDIF_MISO_BIT); \
+					__DSB(); \
+				} while (0)
+
+		#endif /* WIHSPIDFHW */
+
+	#endif /* WIHSPIDFSW || WIHSPIDFHW */
+
+	//#define BOARD_BLINK_BIT (1uL << 13)	// PA13 - led on Storch board
+	//#define BOARD_BLINK_BIT (1uL << 13)	// PA13 - RED LED LD5 on DK1/DK2 MB1272.pdf
+	//#define BOARD_BLINK_BIT (1uL << 14)	// PA14 - GREEN LED LD5 on DK1/DK2 MB1272.pdf
+	//#define BOARD_BLINK_BIT (1uL << 14)	// PD14 - LED on small board
+	#define BOARD_BLINK_BIT (1uL << 11)	// PI11 - LED1# on PanGu board (BLUE)
+	//#define BOARD_BLINK_BIT (1uL << 11)	// PH6 - LED2# on PanGu board
+
+	#define BOARD_BLINK_INITIALIZE() do { \
+			arm_hardware_pioi_outputs(BOARD_BLINK_BIT, 0 * BOARD_BLINK_BIT); \
+		} while (0)
+	#define BOARD_BLINK_SETSTATE(state) do { \
+			if (state) \
+				(GPIOI)->BSRR = BSRR_C(BOARD_BLINK_BIT); \
+			else \
+				(GPIOI)->BSRR = BSRR_S(BOARD_BLINK_BIT); \
+		} while (0)
+
+	/* запрос на вход в режим загрузчика */
+	#define BOARD_USERBOOT_BIT	0//(1uL << 1)	/* PB1: ~USER_BOOT */
+	#define BOARD_IS_USERBOOT() 1//(((GPIOB->IDR) & BOARD_USERBOOT_BIT) == 0)
+	#define BOARD_USERBOOT_INITIALIZE() do { \
+		arm_hardware_piob_inputs(BOARD_USERBOOT_BIT); /* set as input with pull-up */ \
+		} while (0)
+
 
 #endif /* ARM_STM32F4XX_TQFP144_CPUSTYLE_32F746G_H_INCLUDED */
