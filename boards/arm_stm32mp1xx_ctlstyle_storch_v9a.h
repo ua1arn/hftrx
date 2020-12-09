@@ -213,13 +213,17 @@
 	//#define LCDMODE_DUMMY	1
 	//#define LCDMODE_HARD_SPI	1	/* LCD over SPI line */
 
-	//#define LCDMODE_V1B	1	/* Обычная конфигурация с PIP на часть экрана, MAIN=L8, PIP=L8 */
-	//#define LCDMODE_V1	1	/* Обычная конфигурация с PIP на часть экрана, MAIN=L8, PIP=RGB565 */
-	//#define LCDMODE_V2	1	/* только главный экран с тремя видеобуферами L8, без PIP */
-	#define LCDMODE_V2A	1	/* только главный экран с тремя видеобуферами 16 бит RGB565, без PIP */
+	//#define LCDMODE_V0	1	//* Обычная конфигурация одна страница без PIP с L8 на основном экране */
+
+	//#define LCDMODE_V2	1	/* только главный экран с тремя видеобуферами, L8, без PIP */
+	//#define LCDMODE_V2_2PAGE	1	/* только главный экран с двумя видеобуферами, L8, без PIP */
+
+	#define LCDMODE_V2A	/* только главный экран 16 бит (три страницы), без PIP */
+	//#define LCDMODE_V2A_2PAGE 1	/* только главный экран 16 бит (две страницы), без PIP */
+
 	//#define LCDMODE_V5A	1	/* только главный экран с тремя видеобуферами 32 бит ARGB888, без PIP */
+
 	//#define LCDMODE_V2B 1	/* только главный экран 16 бит RGB565 (одна страница), без PIP */
-	//#define LCDMODE_V0	1	/* Обычная конфигурация без PIP с L8 на основном экране */
 	//#define LCDMODE_V1A	1	/* Обычная конфигурация с PIP на часть экрана, MAIN=RGB565, PIP=RGB565 */
 
 	//#define LCDMODE_LQ043T3DX02K 1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 4.3" display */

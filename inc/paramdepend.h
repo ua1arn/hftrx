@@ -2036,7 +2036,7 @@ extern "C" {
 //#define LCDMODE_V2A	1	/* только главный экран, без PIP (но главный экран 16 бит) */
 
 #if LCDMODE_V0
-	/* Обычная конфигурация без PIP с L8 на основном экране */
+	/* Обычная конфигурация одна страница без PIP с L8 на основном экране */
 	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
 	#define LCDMODE_MAIN_L8	1
 	//#define LCDMODE_MAIN_RGB565	1

@@ -100,7 +100,16 @@
 
 	#define LCDMODE_AT070TN90 1	/* AT070TN90 panel (800*480) - 7" display */
 
+
+	//#define LCDMODE_V0	1	//* Обычная конфигурация одна страница без PIP с L8 на основном экране */
+
 	#define LCDMODE_V2	1	/* только главный экран с тремя видеобуферами, L8, без PIP */
+	//#define LCDMODE_V2_2PAGE	1	/* только главный экран с двумя видеобуферами, L8, без PIP */
+
+	//#define LCDMODE_V2A	/* только главный экран 16 бит (три страницы), без PIP */
+	//#define LCDMODE_V2A_2PAGE 1	/* только главный экран 16 бит (две страницы), без PIP */
+
+	//#define LCDMODE_V2B 1	/* только главный экран 16 бит (одна страница), без PIP */
 
 	//#define WITHFLATLINK 1	/* Работа с TFT панелью через SN75LVDS83B	*/
 	#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
