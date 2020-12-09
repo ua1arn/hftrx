@@ -255,7 +255,7 @@ enum
 
 #if CPUSTYLE_R7S721
 
-void vdc5_update(
+static void vdc5_update(
 	volatile uint32_t * reg,
 	const char * label,
 	uint_fast32_t mask
@@ -269,7 +269,25 @@ void vdc5_update(
 		local_delay_ms(1);
 		if (-- count == 0)
 		{
-			PRINTF(PSTR("wait reg=%p %s mask=%08lX, stay=%08lX\n"), reg, label, mask, * reg & mask);
+			PRINTF(PSTR("vdc5_update: wait reg=%p %s mask=%08lX, stay=%08lX\n"), reg, label, mask, * reg & mask);
+			return;
+		}
+	}
+}
+
+static void vdc5_wait(
+	volatile uint32_t * reg,
+	const char * label,
+	uint_fast32_t mask
+	)
+{
+	uint_fast32_t count = 1000;
+	while ((* reg & mask) != 0)
+	{
+		local_delay_ms(1);
+		if (-- count == 0)
+		{
+			PRINTF(PSTR("vdc5_wait: wait reg=%p %s mask=%08lX, stay=%08lX\n"), reg, label, mask, * reg & mask);
 			return;
 		}
 	}
@@ -291,7 +309,7 @@ void vdc5_update(
 	(void) * (reg);	/* dummy read */ \
 	uint_fast32_t count = 1000; \
 	do { \
-		if (count -- == 0) {PRINTF(PSTR("wait %s/%d\n"), __FILE__, __LINE__); break; } \
+		if (count -- == 0) {PRINTF(PSTR("SETREG32_UPDATE: wait %s/%d\n"), __FILE__, __LINE__); break; } \
 		local_delay_ms(1); \
 	} while (((* (reg)) & mask) != 0); /* wait for bit chamge to zero */ \
 } while (0)
@@ -935,7 +953,7 @@ void arm_hardware_ltdc_L8_palette(void)
 	vdc5fb_L8_palette(vdc);
 }
 
-/* set bottom buffer start */
+/* set top buffer start */
 void arm_hardware_ltdc_pip_set(uintptr_t p)
 {
 	struct st_vdc5 * const vdc = & VDC50;
@@ -948,13 +966,22 @@ void arm_hardware_ltdc_pip_set(uintptr_t p)
 	// GR3_IBUS_VEN and GR3_P_VEN in GR3_UPDATE are 1.
 	// GR3_P_VEN in GR3_UPDATE is 1.
 
-	//vdc5_update(& vdc->GR3_UPDATE, "GR3_UPDATE",
-		vdc->GR3_UPDATE = (
-			(1 << 8) |	// GR3_UPDATE Frame Buffer Read Control Register Update
-			(1 << 4) |	// GR3_P_VEN Graphics Display Register Update
-			(1 << 0) |	// GR3_IBUS_VEN Frame Buffer Read Control Register Update
-			0
-		);
+	if (0 && LCDMODE_MAIN_PAGES < 3)
+	{
+		/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
+		vdc5_wait(& vdc->GR3_UPDATE, "GR3_UPDATE",
+				(1 << 8) |	// GR3_UPDATE Frame Buffer Read Control Register Update
+				(1 << 4) |	// GR3_P_VEN Graphics Display Register Update
+				(1 << 0) |	// GR3_IBUS_VEN Frame Buffer Read Control Register Update
+				0
+			);
+	}
+	vdc->GR3_UPDATE = (
+	(1 << 8) |	// GR3_UPDATE Frame Buffer Read Control Register Update
+	(1 << 4) |	// GR3_P_VEN Graphics Display Register Update
+	(1 << 0) |	// GR3_IBUS_VEN Frame Buffer Read Control Register Update
+	0
+	);
 }
 
 void arm_hardware_ltdc_pip_off(void)	// set PIP framebuffer address
@@ -964,14 +991,14 @@ void arm_hardware_ltdc_pip_off(void)	// set PIP framebuffer address
 	SETREG32_CK(& vdc->GR3_FLM_RD, 1, 0, 0);			// GR3_R_ENB Frame Buffer Read Enable 0: Frame buffer reading is disabled.
 	SETREG32_CK(& vdc->GR3_AB1, 2, 0,	0x01);			// GR3_DISP_SEL 1: Lower-layer graphics display
 
-	//vdc5_update(& vdc->GR3_UPDATE, "GR3_UPDATE",
-		vdc->GR3_UPDATE = (
-			(1 << 8) |	// GR3_UPDATE Frame Buffer Read Control Register Update
-			(1 << 4) |	// GR3_P_VEN Graphics Display Register Update
-			(1 << 0) |	// GR3_IBUS_VEN Frame Buffer Read Control Register Update
-			0
-		);
+	vdc->GR3_UPDATE = (
+		(1 << 8) |	// GR3_UPDATE Frame Buffer Read Control Register Update
+		(1 << 4) |	// GR3_P_VEN Graphics Display Register Update
+		(1 << 0) |	// GR3_IBUS_VEN Frame Buffer Read Control Register Update
+		0
+	);
 }
+
 /* set bottom buffer start */
 void arm_hardware_ltdc_main_set(uintptr_t p)
 {
@@ -988,14 +1015,19 @@ void arm_hardware_ltdc_main_set(uintptr_t p)
 	if (LCDMODE_MAIN_PAGES < 3)
 	{
 		/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
+		vdc5_wait(& vdc->GR2_UPDATE, "GR2_UPDATE",
+				(1 << 8) |	// GR2_UPDATE Frame Buffer Read Control Register Update
+				(1 << 4) |	// GR2_P_VEN Graphics Display Register Update
+				(1 << 0) |	// GR2_IBUS_VEN Frame Buffer Read Control Register Update
+				0
+			);
 	}
-	//vdc5_update(& vdc->GR3_UPDATE, "GR3_UPDATE",
-		vdc->GR2_UPDATE = (
-			(1 << 8) |	// GR2_UPDATE Frame Buffer Read Control Register Update
-			(1 << 4) |	// GR2_P_VEN Graphics Display Register Update
-			(1 << 0) |	// GR2_IBUS_VEN Frame Buffer Read Control Register Update
-			0
-		);
+	vdc->GR2_UPDATE = (
+		(1 << 8) |	// GR2_UPDATE Frame Buffer Read Control Register Update
+		(1 << 4) |	// GR2_P_VEN Graphics Display Register Update
+		(1 << 0) |	// GR2_IBUS_VEN Frame Buffer Read Control Register Update
+		0
+	);
 }
 
 #elif CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
@@ -1703,11 +1735,12 @@ arm_hardware_ltdc_deinitialize(void)
 /* Set PIP frame buffer address. */
 void arm_hardware_ltdc_pip_set(uintptr_t p)
 {
-#if 0
-	/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
-	while ((LTDC->SRCR & LTDC_SRCR_VBR) != 0)
-		hardware_nonguiyield();
-#endif
+	if (LCDMODE_MAIN_PAGES < 3)
+	{
+		/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
+		while ((LTDC->SRCR & LTDC_SRCR_VBR) != 0)
+			hardware_nonguiyield();
+	}
 	LAYER_PIP->CFBAR = p;
 	(void) LAYER_PIP->CFBAR;
 	LAYER_PIP->CR |= LTDC_LxCR_LEN;
