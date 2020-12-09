@@ -5482,105 +5482,13 @@ static uint_fast32_t any_rd_reg_32bits(uint_fast8_t i2caddr, uint_fast8_t regist
 #ifdef HG_FLAT_INCLUDES
 #	include "openvg.h"
 #	include "vgu.h"
-#	include "egl.h"
+//#	include "egl.h"
 #else
 #	include "VG/openvg.h"
 #	include "VG/vgu.h"
-#	include "EGL/egl.h"
+//#	include "EGL/egl.h"
 #endif
 
-static EGLDisplay			egldisplay;
-static EGLConfig			eglconfig;
-static EGLSurface			eglsurface;
-static EGLContext			eglcontext;
-/*
-
-EGLClientBuffer * getClientImage(void)
-{
-//	Image
-	return NULL;
-
-}
-*/
-#if _BYTE_ORDER == _LITTLE_ENDIAN
-static int isBigEndian(void) { return 0; }
-#else
-static int isBigEndian(void) { return 1; }
-#endif
-
-static EGLNativePixmapType getClientPixmap(void)
-{
-	static NativePixmap pixmap;
-
-#if LCDMODE_MAIN_RGB565
-	VGImageFormat f = VG_sRGB_565;
-	if(isBigEndian())
-		f = VG_sBGR_565;
-#elif LCDMODE_MAIN_ARGB888
-	VGImageFormat f = VG_sARGB_8888;	// 4-th byte alpha value
-	 if(isBigEndian())
-		 f = VG_sBGRA_8888;
-#elif LCDMODE_MAIN_L8
-	VGImageFormat f = VG_sL_8;
-#else
-	#error Unsupported video format
-#endif
-
-	pixmap.data = colmain_fb_draw();
-	pixmap.format = f;
-	pixmap.height = DIM_Y;
-	pixmap.width = DIM_X;
-	pixmap.stride = GXADJ(DIM_X) * sizeof (PACKEDCOLORMAIN_T);
-
-	return & pixmap;
-
-}
-
-void openvg_init(NativeWindowType window)
-{
-	static const EGLint s_configAttribs[] =
-	{
-		EGL_RED_SIZE,		8,
-		EGL_GREEN_SIZE, 	8,
-		EGL_BLUE_SIZE,		8,
-		EGL_ALPHA_SIZE, 	8,
-		EGL_LUMINANCE_SIZE, EGL_DONT_CARE,			//EGL_DONT_CARE
-		EGL_SURFACE_TYPE,	EGL_WINDOW_BIT,
-		EGL_SAMPLES,		1,
-		EGL_NONE
-	};
-	EGLint numconfigs;
-
-	egldisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-	eglInitialize(egldisplay, NULL, NULL);
-	ASSERT(eglGetError() == EGL_SUCCESS);
-	eglBindAPI(EGL_OPENVG_API);
-
-	eglChooseConfig(egldisplay, s_configAttribs, &eglconfig, 1, &numconfigs);
-	ASSERT(eglGetError() == EGL_SUCCESS);
-	ASSERT(numconfigs == 1);
-	EGLNativePixmapType pixmap;
-	//eglsurface = eglCreateWindowSurface(egldisplay, eglconfig, window, NULL);
-	//eglsurface = eglCreatePbufferFromClientBuffer(egldisplay, EGL_OPENVG_IMAGE, (EGLClientBuffer) getClientImage(), eglconfig, s_configAttribs);
-	eglsurface = eglCreatePixmapSurface(egldisplay, eglconfig, getClientPixmap(), s_configAttribs);
-	ASSERT(eglGetError() == EGL_SUCCESS);
-	eglcontext = eglCreateContext(egldisplay, eglconfig, NULL, NULL);
-	ASSERT(eglGetError() == EGL_SUCCESS);
-	eglMakeCurrent(egldisplay, eglsurface, eglsurface, eglcontext);
-	ASSERT(eglGetError() == EGL_SUCCESS);
-
-}
-
-/*--------------------------------------------------------------*/
-
-void openvg_deinit(void)
-{
-	eglMakeCurrent(egldisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
-	ASSERT(eglGetError() == EGL_SUCCESS);
-	eglTerminate(egldisplay);
-	ASSERT(eglGetError() == EGL_SUCCESS);
-	eglReleaseThread();
-}
 
 #if 1
 
@@ -5838,7 +5746,7 @@ static void rendertiger(PS* const tiger, int w, int h)
 	//vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_NONANTIALIASED);
 
 	display_flush();
-	eglSwapBuffers(egldisplay, eglsurface);	//force EGL to recognize resize
+	////eglSwapBuffers(egldisplay, eglsurface);	//force EGL to recognize resize
 //	ASSERT(eglGetError() == EGL_SUCCESS);
 
 	vgSetfv(VG_CLEAR_COLOR, 4, clearColor);
@@ -5861,7 +5769,7 @@ static void rendertiger(PS* const tiger, int w, int h)
 	ASSERT(vgGetError() == VG_NO_ERROR);
 
 	display_flush();
-	eglSwapBuffers(egldisplay, eglsurface);
+	////eglSwapBuffers(egldisplay, eglsurface);
 	//ASSERT(eglGetError() == EGL_SUCCESS);
 }
 
@@ -5896,7 +5804,7 @@ static void rendertest(int w, int h)
 	//		PRINTF("render: scaleX=%f, scaleY=%f\n", scaleX, scaleY);
 
 	display_flush();
-	eglSwapBuffers(egldisplay, eglsurface);	//force EGL to recognize resize
+	////eglSwapBuffers(egldisplay, eglsurface);	//force EGL to recognize resize
 
 	vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_BETTER);
 	//vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_NONANTIALIASED);
@@ -5944,7 +5852,7 @@ static void rendertest(int w, int h)
     vgDestroyPaint( strokePaint );
 
 	display_flush();
-	eglSwapBuffers(egldisplay, eglsurface);
+	////eglSwapBuffers(egldisplay, eglsurface);
 	//ASSERT(eglGetError() == EGL_SUCCESS);
 
 }
@@ -5957,7 +5865,7 @@ static void rendertestx(int w, int h)
 	//		float scale = fminf(scaleX, scaleY);
 	//		PRINTF("render: scaleX=%f, scaleY=%f\n", scaleX, scaleY);
 
-	eglSwapBuffers(egldisplay, eglsurface);	//force EGL to recognize resize
+	////eglSwapBuffers(egldisplay, eglsurface);	//force EGL to recognize resize
 
 	vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_BETTER);
 	//vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_NONANTIALIASED);
@@ -6002,7 +5910,7 @@ static void rendertestx(int w, int h)
 
 
 	display_flush();
-	eglSwapBuffers(egldisplay, eglsurface);
+	////eglSwapBuffers(egldisplay, eglsurface);
 	//ASSERT(eglGetError() == EGL_SUCCESS);
 
 }
@@ -6030,12 +5938,12 @@ void hightests(void)
 		PRINTF("sizeof time_t == %u, t = %lu\n", sizeof (time_t), (unsigned long) t);
 	}
 #endif
-#if 0 && WITHOPENVG
+#if 1 && WITHOPENVG
 	{
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 		board_update();
 		//disableAllIRQs();
-		openvg_init((NativeWindowType) NULL);
+		openvg_init(NULL);
 	#if 1
 		PS* const tiger = PS_construct(tigerCommands, tigerCommandCount, tigerPoints, tigerPointCount);
 		ASSERT(tiger != NULL);

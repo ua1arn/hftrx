@@ -31,14 +31,12 @@
   *//*-------------------------------------------------------------------*/
 
 #include "hardware.h"
+#include "src/display/display.h"
 
 #if WITHOPENVG
 
 #include "egl.h"
 #include "riImage.h"
-
-#include "src/display/display.h"
-#include "display2.h"
 
 namespace OpenVGRI
 {
@@ -195,5 +193,155 @@ EGLDisplay OSGetDisplay(EGLNativeDisplayType display_id)
 }
 
 }   //namespace OpenVGRI
+#else
+
+
+namespace OpenVGRI
+{
+	void OSDeinitMutex(void)
+	{
+	}
+
+	void OSAcquireMutex(void)
+	{
+	}
+
+	void OSReleaseMutex(void)
+	{
+	}
+
+	void* OSGetCurrentThreadID(void)
+	{
+		return NULL;
+	}
+}   //namespace OpenVGRI
+
+#endif
+/*
+
+namespace OpenVGRI
+{
+
+	void* eglvgGetCurrentVGContext(void)
+	{
+		return NULL;
+	}
+
+	bool eglvgIsInUse(void*)
+	{
+		return false;
+	}
+}   //namespace OpenVGRI
+*/
+
+#if 1
+
+static EGLDisplay			egldisplay;
+static EGLConfig			eglconfig;
+static EGLSurface			eglsurface;
+static EGLContext			eglcontext;
+
+
+/*
+
+EGLClientBuffer * getClientImage(void)
+{
+//	Image
+	return NULL;
+
+}
+*/
+#if _BYTE_ORDER == _LITTLE_ENDIAN
+static int isBigEndian(void) { return 0; }
+#else
+static int isBigEndian(void) { return 1; }
+#endif
+
+static EGLNativePixmapType getClientPixmap(void)
+{
+	static NativePixmap pixmap;
+
+#if LCDMODE_MAIN_RGB565
+	VGImageFormat f = VG_sRGB_565;
+	if(isBigEndian())
+		f = VG_sBGR_565;
+#elif LCDMODE_MAIN_ARGB888
+	VGImageFormat f = VG_sARGB_8888;	// 4-th byte alpha value
+	 if(isBigEndian())
+		 f = VG_sBGRA_8888;
+#elif LCDMODE_MAIN_L8
+	VGImageFormat f = VG_sL_8;
+#else
+	#error Unsupported video format
+#endif
+
+	pixmap.data = colmain_fb_draw();
+	pixmap.format = f;
+	pixmap.height = DIM_Y;
+	pixmap.width = DIM_X;
+	pixmap.stride = GXADJ(DIM_X) * sizeof (PACKEDCOLORMAIN_T);
+
+	return & pixmap;
+
+}
+
+void openvg_init(void * window)
+{
+	static const EGLint s_configAttribs[] =
+	{
+		EGL_RED_SIZE,		8,
+		EGL_GREEN_SIZE, 	8,
+		EGL_BLUE_SIZE,		8,
+		EGL_ALPHA_SIZE, 	8,
+		EGL_LUMINANCE_SIZE, EGL_DONT_CARE,			//EGL_DONT_CARE
+		EGL_SURFACE_TYPE,	EGL_WINDOW_BIT,
+		EGL_SAMPLES,		1,
+		EGL_NONE
+	};
+	EGLint numconfigs;
+
+	egldisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+	eglInitialize(egldisplay, NULL, NULL);
+	ASSERT(eglGetError() == EGL_SUCCESS);
+	eglBindAPI(EGL_OPENVG_API);
+
+	eglChooseConfig(egldisplay, s_configAttribs, &eglconfig, 1, &numconfigs);
+	ASSERT(eglGetError() == EGL_SUCCESS);
+	ASSERT(numconfigs == 1);
+	EGLNativePixmapType pixmap;
+	//eglsurface = eglCreateWindowSurface(egldisplay, eglconfig, window, NULL);
+	//eglsurface = eglCreatePbufferFromClientBuffer(egldisplay, EGL_OPENVG_IMAGE, (EGLClientBuffer) getClientImage(), eglconfig, s_configAttribs);
+	eglsurface = eglCreatePixmapSurface(egldisplay, eglconfig, getClientPixmap(), s_configAttribs);
+	ASSERT(eglGetError() == EGL_SUCCESS);
+	eglcontext = eglCreateContext(egldisplay, eglconfig, NULL, NULL);
+	ASSERT(eglGetError() == EGL_SUCCESS);
+	eglMakeCurrent(egldisplay, eglsurface, eglsurface, eglcontext);
+	ASSERT(eglGetError() == EGL_SUCCESS);
+
+}
+
+/*--------------------------------------------------------------*/
+
+void openvg_deinit(void)
+{
+	eglMakeCurrent(egldisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+	ASSERT(eglGetError() == EGL_SUCCESS);
+	eglTerminate(egldisplay);
+	ASSERT(eglGetError() == EGL_SUCCESS);
+	eglReleaseThread();
+}
+
+#else
+
+
+void openvg_init(void * window)
+{
+
+}
+
+void openvg_deinit(void)
+{
+
+}
 
 #endif

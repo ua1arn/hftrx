@@ -1109,6 +1109,10 @@ int display_vtty_x2_maxx(void);
 int display_vtty_x2_maxy(void);
 void display_vtty_x2_gotoxy(unsigned x, unsigned y);
 
+void openvg_init(/*NativeWindowType */ void * window);
+void openvg_deinit(void);
+
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
