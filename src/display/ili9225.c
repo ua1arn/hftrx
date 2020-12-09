@@ -880,4 +880,8 @@ void display_uninitialize(void)
 {
 }
 
+void display_nextfb(void)
+{
+}
+
 #endif /* LCDMODE_ILI9225 */

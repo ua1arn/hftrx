@@ -133,6 +133,10 @@ void display_uninitialize(void)
 {
 }
 
+void display_nextfb(void)
+{
+}
+
 void
 display_wrdata2_end(void)
 {
