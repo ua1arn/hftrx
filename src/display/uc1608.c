@@ -415,4 +415,8 @@ void display_initialize(void)
 	uc1608_write_cmd(0xaf);	// Set Display Enable
 }
 
+void display_nextfb(void)
+{
+}
+
 #endif /* LCDMODE_UC1608 */

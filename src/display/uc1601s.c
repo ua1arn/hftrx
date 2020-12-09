@@ -573,4 +573,8 @@ void display_uninitialize(void)
 	i2c_stop();
 }
 
+void display_nextfb(void)
+{
+}
+
 #endif /* LCDMODE_UC1601 */

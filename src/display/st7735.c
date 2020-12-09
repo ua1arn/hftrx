@@ -1407,4 +1407,8 @@ void display_uninitialize(void)
 	spi_unselect(targetlcd);		/* Disable SPI */
 }
 
+void display_nextfb(void)
+{
+}
+
 #endif /* LCDMODE_ST7735 || LCDMODE_ILI9163 || LCDMODE_ILI9341 */

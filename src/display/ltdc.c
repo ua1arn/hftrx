@@ -985,6 +985,10 @@ void arm_hardware_ltdc_main_set(uintptr_t p)
 	// GR2_IBUS_VEN and GR2_P_VEN in GR2_UPDATE are 1.
 	// GR2_P_VEN in GR2_UPDATE is 1.
 
+	if (LCDMODE_MAIN_PAGES < 3)
+	{
+		/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
+	}
 	//vdc5_update(& vdc->GR3_UPDATE, "GR3_UPDATE",
 		vdc->GR2_UPDATE = (
 			(1 << 8) |	// GR2_UPDATE Frame Buffer Read Control Register Update
@@ -1741,11 +1745,12 @@ void arm_hardware_ltdc_L8_palette(void)
 /* Set MAIN frame buffer address. */
 void arm_hardware_ltdc_main_set(uintptr_t p)
 {
-#if 0
-	/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
-	while ((LTDC->SRCR & LTDC_SRCR_VBR) != 0)
-		hardware_nonguiyield();
-#endif
+	if (LCDMODE_MAIN_PAGES < 3)
+	{
+		/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
+		while ((LTDC->SRCR & LTDC_SRCR_VBR) != 0)
+			hardware_nonguiyield();
+	}
 	LAYER_MAIN->CFBAR = p;
 	(void) LAYER_MAIN->CFBAR;
 	LAYER_MAIN->CR |= LTDC_LxCR_LEN;

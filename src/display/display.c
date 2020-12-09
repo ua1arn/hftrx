@@ -689,7 +689,7 @@ void display_flush(void)
 void display_nextfb(void)
 {
 	const uintptr_t frame = (uintptr_t) colmain_fb_draw();	// Тот буфер, в котором рисовали, станет отображаемым
-	unsigned page = colmain_fb_next();
+	unsigned page = colmain_fb_next();	// возвращает новый индекс страницы отрисовки
 	ASSERT((frame % DCACHEROWSIZE) == 0);
 	arm_hardware_flush(frame, (uint_fast32_t) GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T));
 	arm_hardware_ltdc_main_set(frame);
@@ -702,7 +702,12 @@ void display_nextfb(void)
 void display_initialize(void)
 {
 #if WITHOPENVG
-	static PACKEDCOLORMAIN_T * frames [LCDMODE_MAIN_PAGES] = { fbfX [0], fbfX [1], fbfX [2], };
+	PACKEDCOLORMAIN_T * frames [LCDMODE_MAIN_PAGES];
+	unsigned i;
+	for (i = 0; i < LCDMODE_MAIN_PAGES; ++ i)
+	{
+		frames [i] = fbfX [i];
+	}
 	openvg_init(frames);
 #endif /* WITHOPENVG */
 }
