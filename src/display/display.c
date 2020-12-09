@@ -39,9 +39,10 @@ typedef PACKEDCOLORMAIN_T FRAMEBUFF_T [LCDMODE_MAIN_PAGES] [GXSIZE(DIM_SECOND, D
 
 	static uint_fast8_t mainphase;
 
-	void colmain_fb_next(void)
+	uint_fast8_t colmain_fb_next(void)
 	{
 		mainphase = (mainphase + 1) % ARRAY_SIZE(fbfX);
+		return mainphase;
 	}
 
 	PACKEDCOLORMAIN_T *
@@ -59,8 +60,9 @@ typedef PACKEDCOLORMAIN_T FRAMEBUFF_T [LCDMODE_MAIN_PAGES] [GXSIZE(DIM_SECOND, D
 
 #elif WITHSDRAMHW && LCDMODE_LTDCSDRAMBUFF
 
-	void colmain_fb_next(void)
+	uint_fast8_t colmain_fb_next(void)
 	{
+		return 0;
 	}
 
 	PACKEDCOLORMAIN_T *
@@ -304,14 +306,6 @@ void display_clear(void)
 	PACKEDCOLORMAIN_T * const buffer = colmain_fb_draw();
 
 	colmain_fillrect(buffer, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, bg);
-}
-
-// для framebufer дисплеев - вытолкнуть кэш память
-void display_flush(void)
-{
-	const uintptr_t frame = (uintptr_t) colmain_fb_draw();
-	arm_hardware_flush(frame, (uint_fast32_t) GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T));
-	arm_hardware_ltdc_main_set(frame);
 }
 
 void display_plotstart(
@@ -678,18 +672,47 @@ display_reset(void)
 	board_update();
 	local_delay_ms(50); // Delay 50 ms
 }
-/* вызывается при разрешённых прерываниях. */
-void display_initialize(void)
-{
-}
 
 void display_set_contrast(uint_fast8_t v)
 {
 }
 
-/* Разряжаем конденсаторы питания */
-void display_discharge(void)
+
+// для framebufer дисплеев - вытолкнуть кэш память
+void display_flush(void)
 {
+	const uintptr_t frame = (uintptr_t) colmain_fb_draw();
+	arm_hardware_flush(frame, (uint_fast32_t) GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T));
+	arm_hardware_ltdc_main_set(frame);
+}
+
+void display_nextfb(void)
+{
+	const uintptr_t frame = (uintptr_t) colmain_fb_draw();	// Тот буфер, в котором рисовали, станет отображаемым
+	unsigned page = colmain_fb_next();
+	ASSERT((frame % DCACHEROWSIZE) == 0);
+	arm_hardware_flush(frame, (uint_fast32_t) GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T));
+	arm_hardware_ltdc_main_set(frame);
+#if WITHOPENVG
+	openvg_next(page);
+#endif /* WITHOPENVG */
+}
+
+/* вызывается при разрешённых прерываниях. */
+void display_initialize(void)
+{
+#if WITHOPENVG
+	static PACKEDCOLORMAIN_T * frames [LCDMODE_MAIN_PAGES] = { fbfX [0], fbfX [1], fbfX [2], };
+	openvg_init(frames);
+#endif /* WITHOPENVG */
+}
+
+/* Разряжаем конденсаторы питания */
+void display_uninitialize(void)
+{
+#if WITHOPENVG
+	openvg_deinit();
+#endif /* WITHOPENVG */
 }
 
 #endif /* LCDMODE_LQ043T3DX02K */

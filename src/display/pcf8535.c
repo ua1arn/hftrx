@@ -639,7 +639,7 @@ display_reset(void)
 
 
 /* Разряжаем конденсаторы питания */
-void display_discharge(void)
+void display_uninitialize(void)
 {
 }
 

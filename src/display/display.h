@@ -401,7 +401,8 @@ void display_setbgcolor(COLORMAIN_T c);
 void display_hardware_initialize(void);	/* вызывается при запрещённых прерываниях. */
 void display_reset(void);				/* вызывается при разрешённых прерываниях. */
 void display_initialize(void);			/* вызывается при разрешённых прерываниях. */
-void display_discharge(void);			/* вызывается при разрешённых прерываниях. */
+void display_uninitialize(void);			/* вызывается при разрешённых прерываниях. */
+void display_nextfb(void);				/* переключаем на следующий фреймбуфер */
 void display_set_contrast(uint_fast8_t v);
 void display_palette(void);				// Palette reload
 
@@ -950,7 +951,7 @@ void board_set_afspeclow(int_fast16_t v);		// нижняя частота ото
 void board_set_afspechigh(int_fast16_t v);		// верхняя частота отображения спектроанализатора
 
 PACKEDCOLORMAIN_T * colmain_fb_draw(void);		// буфер для построения изображения
-void colmain_fb_next(void);						// переключиться на использование следующего фреймбуфера.
+uint_fast8_t colmain_fb_next(void);						// переключиться на использование следующего фреймбуфера (его номер возвращается)
 void colmain_fb_initialize(void);
 
 #if WITHALPHA
@@ -1109,8 +1110,9 @@ int display_vtty_x2_maxx(void);
 int display_vtty_x2_maxy(void);
 void display_vtty_x2_gotoxy(unsigned x, unsigned y);
 
-void openvg_init(/*NativeWindowType */ void * window);
+void openvg_init(PACKEDCOLORMAIN_T * const * frames);
 void openvg_deinit(void);
+void openvg_next(unsigned page);		// текущий буфер отрисовки становится отображаемым, OpenVG переключается на следующий буфер
 
 
 #ifdef __cplusplus

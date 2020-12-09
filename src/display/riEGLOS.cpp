@@ -247,8 +247,9 @@ static EGLNativePixmapType getClientPixmap(void)
 
 }
 
-void openvg_init(void * window)
+void openvg_init(PACKEDCOLORMAIN_T * const * frames)
 {
+	void * window = NULL;
 	static const EGLint s_configAttribs[] =
 	{
 		EGL_RED_SIZE,		8,
@@ -317,7 +318,7 @@ namespace OpenVGRI
 		return NULL;
 	}
 
-	static Drawable * d0;
+	static Drawable * d0 [LCDMODE_MAIN_PAGES];
 	static VGContext ctx(NULL);
 
 	void* eglvgGetCurrentVGContext(void)
@@ -337,7 +338,7 @@ static int isBigEndian(void) { return 0; }
 static int isBigEndian(void) { return 1; }
 #endif
 
-void openvg_init(void * window)
+void openvg_init(PACKEDCOLORMAIN_T * const * frames)
 {
 
 #if LCDMODE_MAIN_RGB565
@@ -356,19 +357,37 @@ void openvg_init(void * window)
 
 	try
 	{
-		int maskBits = 0;
-		OpenVGRI::d0 = RI_NEW(OpenVGRI::Drawable, (OpenVGRI::Color::formatToDescriptor(f), DIM_X, DIM_Y, GXADJ(DIM_X) * sizeof (PACKEDCOLORMAIN_T), (OpenVGRI::RIuint8 *) colmain_fb_draw(), maskBits));	//throws bad_alloc
+		const OpenVGRI::Color::Descriptor cds(OpenVGRI::Color::formatToDescriptor(f));
+
+		for (unsigned i = 0; i < LCDMODE_MAIN_PAGES; ++ i)
+		{
+			int maskBits = 0;
+			OpenVGRI::Drawable * d = RI_NEW(OpenVGRI::Drawable, (cds, DIM_X, DIM_Y, GXADJ(DIM_X) * sizeof (PACKEDCOLORMAIN_T), (OpenVGRI::RIuint8 *) frames [i], maskBits));	//throws bad_alloc
+			RI_ASSERT(d);
+			d->addReference();
+			OpenVGRI::d0 [i] = d;
+		}
 	}
 	catch(const std::bad_alloc &)
 	{
 	}
-	RI_ASSERT(d0);
-	OpenVGRI::ctx.setDefaultDrawable(OpenVGRI::d0);
+
+	OpenVGRI::ctx.setDefaultDrawable(OpenVGRI::d0 [0]);
 }
 
 void openvg_deinit(void)
 {
-	RI_DELETE(OpenVGRI::d0);
+	for (unsigned i = 0; i < LCDMODE_MAIN_PAGES; ++ i)
+	{
+		RI_DELETE(OpenVGRI::d0 [i]);
+	}
+}
+
+void openvg_next(unsigned page)
+{
+	RI_ASSERT(OpenVGRI::d0 [page]);
+	OpenVGRI::ctx.setDefaultDrawable(OpenVGRI::d0 [page]);
+
 }
 
 #endif

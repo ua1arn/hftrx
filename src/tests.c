@@ -5745,10 +5745,6 @@ static void rendertiger(PS* const tiger, int w, int h)
 	//vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_BETTER);
 	//vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_NONANTIALIASED);
 
-	display_flush();
-	////eglSwapBuffers(egldisplay, eglsurface);	//force EGL to recognize resize
-//	ASSERT(eglGetError() == EGL_SUCCESS);
-
 	vgSetfv(VG_CLEAR_COLOR, 4, clearColor);
 	ASSERT(vgGetError() == VG_NO_ERROR);
 	vgClear(0, 0, w, h);
@@ -5768,9 +5764,6 @@ static void rendertiger(PS* const tiger, int w, int h)
 	PS_render(tiger);
 	ASSERT(vgGetError() == VG_NO_ERROR);
 
-	display_flush();
-	////eglSwapBuffers(egldisplay, eglsurface);
-	//ASSERT(eglGetError() == EGL_SUCCESS);
 }
 
 #endif /* tiger */
@@ -5796,15 +5789,12 @@ static void rendertiger(PS* const tiger, int w, int h)
 }
 #endif
 
-static void rendertest(int w, int h)
+static void rendertest1(int w, int h)
 {
 	//		float scaleX = w / (tigerMaxX - tigerMinX);
 	//		float scaleY = h / (tigerMaxY - tigerMinY);
 	//		float scale = fminf(scaleX, scaleY);
 	//		PRINTF("render: scaleX=%f, scaleY=%f\n", scaleX, scaleY);
-
-	display_flush();
-	////eglSwapBuffers(egldisplay, eglsurface);	//force EGL to recognize resize
 
 	vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_BETTER);
 	//vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_NONANTIALIASED);
@@ -5850,14 +5840,9 @@ static void rendertest(int w, int h)
     vgDestroyPath( path );
     vgDestroyPaint( fillPaint );
     vgDestroyPaint( strokePaint );
-
-	display_flush();
-	////eglSwapBuffers(egldisplay, eglsurface);
-	//ASSERT(eglGetError() == EGL_SUCCESS);
-
 }
 
-static void rendertestx(int w, int h)
+static void rendertest2(int w, int h)
 {
 	static const float clearColor[4] = {0,1,0,1};
 	//		float scaleX = w / (tigerMaxX - tigerMinX);
@@ -5908,11 +5893,6 @@ static void rendertestx(int w, int h)
 	//		PS_render(tiger);
 	//		ASSERT(vgGetError() == VG_NO_ERROR);
 
-
-	display_flush();
-	////eglSwapBuffers(egldisplay, eglsurface);
-	//ASSERT(eglGetError() == EGL_SUCCESS);
-
 }
 
 /*--------------------------------------------------------------*/
@@ -5943,8 +5923,7 @@ void hightests(void)
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 		board_update();
 		//disableAllIRQs();
-		openvg_init(NULL);
-	#if 1
+	#if 0
 		PS* const tiger = PS_construct(tigerCommands, tigerCommandCount, tigerPoints, tigerPointCount);
 		ASSERT(tiger != NULL);
 		for (;;)
@@ -5957,10 +5936,10 @@ void hightests(void)
 				break;
 			}
 			rendertiger(tiger, DIM_X, DIM_Y);
+			display_flush();
 		}
 		PS_destruct(tiger);
 	#else
-		rendertest(DIM_X, DIM_Y);
 		// wait for press any key
 		for (;;)
 		{
@@ -5970,9 +5949,12 @@ void hightests(void)
 			{
 				break;
 			}
+			rendertest1(DIM_X, DIM_Y);
+			display_nextfb();
+			rendertest2(DIM_X, DIM_Y);
+			display_nextfb();
 		}
 	#endif
-		openvg_deinit();
 	}
 #endif
 #if 0 && (__CORTEX_A != 0)

@@ -1399,7 +1399,7 @@ void display_reset(void)
 }
 
 /* Разряжаем конденсаторы питания */
-void display_discharge(void)
+void display_uninitialize(void)
 {
 	spi_select2(targetlcd, ST7735_SPIMODE, ST7735_SPISPEED);	/* Enable SPI */
 	writecommand(ST7735_DISPOFF);

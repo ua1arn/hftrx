@@ -1134,12 +1134,7 @@ display2_nextfb(
 {
 #if WITHLTDCHW && LCDMODE_LTDC && ! (LCDMODE_PIP_RGB565 || LCDMODE_PIP_L8)
 
-	const uintptr_t frame = (uintptr_t) colmain_fb_draw();	// Тот буфер, в котором рисовали, станет отображаемым
-	colmain_fb_next();
-	ASSERT((frame % DCACHEROWSIZE) == 0);
-	arm_hardware_flush(frame, (uint_fast32_t) GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T));
-	arm_hardware_ltdc_main_set(frame);
-
+	display_nextfb();
 #endif /* WITHLTDCHW && LCDMODE_LTDC && ! (LCDMODE_PIP_RGB565 || LCDMODE_PIP_L8) */
 }
 

@@ -374,7 +374,7 @@ void display_reset(void)
 }
 
 /* Разряжаем конденсаторы питания */
-void display_discharge(void)
+void display_uninitialize(void)
 {
 	uc1608_write_cmd(0xe2);	// System reset
 	local_delay_ms(5);		// wait draining

@@ -565,7 +565,7 @@ display_reset(void)
 }
 
 /* Разряжаем конденсаторы питания */
-void display_discharge(void)
+void display_uninitialize(void)
 {
 	i2c_start(LCD_ADDR_W);
 	i2c_write(0xe2);		// system reset

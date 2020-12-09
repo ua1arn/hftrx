@@ -13156,7 +13156,7 @@ processmessages(
 {
 	if (hardware_getshutdown())	// признак провала питания
 	{
-		display_discharge();	// выключаем дисплей
+		display_uninitialize();	// выключаем дисплей
 		gtx = 0;
 		updateboard(1, 1);	// переходим на приём
 		for (;;)				// вешаемся...
