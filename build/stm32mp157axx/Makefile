@@ -29,7 +29,7 @@ HEX  = $(CP) -O ihex -R .noinit -R .bss -R .vram -R .heap
 BIN  = $(CP) -O binary -R .noinit -R .bss -R .vram -R .heap
 
 CMSISDIR = ../../../CMSIS_5/CMSIS
-LWIPDIR = ../../src/lwip-1.4.1/src
+LWIPDIR = ../../src/lwip-1.4.1
 # see usage of preprocessor HG_FLAT_INCLUDES and EGL_STATIC_LIBRARY symbol
 OPENVGDIR = ../../src/OpenVG
 
@@ -45,19 +45,25 @@ CORE += -mfpu=neon
 
 # Define optimisation level here
 # ony -Og for app
-ifeq "bootloader" "1 bootloader"
+CMSISDIR = ../../../CMSIS_5/CMSIS
+LWIPDIR = ../../src/lwip-1.4.1
 
-#
+
+ifeq "1" "1"
+# Application
+OPT = -Og
+#OPT = -Ofast
+#LTO = -flto
+OBJDIR2 = obj_app
+LDSCRIPT = ./stm32mp15xx_ca7_app.ld
+else
+# Bootloader
 OPT = -Os
 LTO = -flto
-OBJDIR2 = objboot
+
+OBJDIR2 = obj_boot
 UDEFS += -D"WITHISBOOTLOADER"
-
-else
-
-OPT = -Og
-OBJDIR2 = objapp
-
+LDSCRIPT = ./stm32mp15xx_ca7_boot.ld
 endif
 
 OBJDIR = ./$(OBJDIR2)
@@ -75,8 +81,9 @@ DINCDIR = \
 	$(CMSISDIR)/Core_A/Source \
 	$(CMSISDIR)/DSP/Source \
 	$(CMSISDIR)/DSP/PrivateInclude \
-	$(LWIPDIR)/include \
-	$(LWIPDIR)/include/ipv4 \
+	$(LWIPDIR)/src/include \
+	$(LWIPDIR)/src/include/ipv4 \
+	$(LWIPDIR)/apps/httpserver_raw \
 	$(OPENVGDIR)/include/VG \
 	$(OPENVGDIR)/include \
 	$(OPENVGDIR)/include/EGL \
