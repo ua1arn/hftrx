@@ -5796,6 +5796,8 @@ static void rendertest1(int w, int h)
 	//		float scale = fminf(scaleX, scaleY);
 	//		PRINTF("render: scaleX=%f, scaleY=%f\n", scaleX, scaleY);
 
+	vgLoadIdentity();
+
 	vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_BETTER);
 	//vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_NONANTIALIASED);
 	//vgSeti(VG_FILL_RULE, VG_NON_ZERO);
@@ -5808,9 +5810,9 @@ static void rendertest1(int w, int h)
     static const VGubyte segments[] = { VG_MOVE_TO_ABS, VG_LINE_TO_ABS, VG_LINE_TO_ABS,
                            VG_LINE_TO_ABS, VG_LINE_TO_ABS, VG_CLOSE_PATH };
     static const VGfloat coords [] = { 120.0f, 260.0f, 61.2f, 79.1f, 215.1f, 190.9f, 24.8f, 190.9f, 178.8f, 79.1f };
-    static const VGfloat clearColor [4] = { 0, 0, 0, 1 };
-    static const VGfloat fillColor [4] = { 0.0f, 0.0f, 1.0f, 1.0f };
-    static const VGfloat strokeColor [4] = { 1.0f, 0.0f, 0.0f, 1.0f };
+    static const VGfloat clearColor [4] = { 1, 0, 0, 1 };
+    static const VGfloat fillColor [4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+    static const VGfloat strokeColor [4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 
     // top-down mirror and back...
 	vgLoadIdentity();
@@ -5821,6 +5823,7 @@ static void rendertest1(int w, int h)
 
     vgSetfv( VG_CLEAR_COLOR, 4, clearColor );
     vgClear( 0, 0, w, h );
+#if 1
 
     vgSeti( VG_STROKE_LINE_WIDTH, 1 );		// толщина лини
     fillPaint = vgCreatePaint();
@@ -5840,6 +5843,7 @@ static void rendertest1(int w, int h)
     vgDestroyPath( path );
     vgDestroyPaint( fillPaint );
     vgDestroyPaint( strokePaint );
+#endif
 }
 
 static void rendertest2(int w, int h)
@@ -5850,6 +5854,7 @@ static void rendertest2(int w, int h)
 	//		float scale = fminf(scaleX, scaleY);
 	//		PRINTF("render: scaleX=%f, scaleY=%f\n", scaleX, scaleY);
 
+	vgLoadIdentity();
 	////eglSwapBuffers(egldisplay, eglsurface);	//force EGL to recognize resize
 
 	vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_BETTER);
@@ -5861,10 +5866,11 @@ static void rendertest2(int w, int h)
 
 	vgSetfv(VG_CLEAR_COLOR, 4, clearColor);
 	vgClear(0, 0, w, h);
+#if 1
 
 	VGPaint paint = vgCreatePaint();
 
-	static const float drawColorRed[4] = {1,0,0,1};
+	static const float drawColorRed[4] = {0,0,0,1};
 	vgSetParameterfv(paint, VG_PAINT_COLOR, 4, drawColorRed);
 	//vgSetColor(paint, VGuint rgba)
 
@@ -5874,7 +5880,7 @@ static void rendertest2(int w, int h)
 	vgSetfv(VG_TILE_FILL_COLOR, 4, drawColorRed);
 	VERIFY(VGU_NO_ERROR == vguRect(path, 0, 0, 100, 100));
 
-	static const float drawColorGreen[4] = {0,1,0,1};
+	static const float drawColorGreen[4] = {0,0,0,1};
 	vgSetfv(VG_TILE_FILL_COLOR, 4, drawColorGreen);
 	VERIFY(VGU_NO_ERROR == vguRoundRect(path, 100, 100, 100, 100, 10, 10));
 
@@ -5892,7 +5898,61 @@ static void rendertest2(int w, int h)
 	//		//vgRotate(30);
 	//		PS_render(tiger);
 	//		ASSERT(vgGetError() == VG_NO_ERROR);
+#endif
+}
 
+static void rendertest3(int w, int h)
+{
+	static const float clearColor[4] = {0,0,1,1};
+	//		float scaleX = w / (tigerMaxX - tigerMinX);
+	//		float scaleY = h / (tigerMaxY - tigerMinY);
+	//		float scale = fminf(scaleX, scaleY);
+	//		PRINTF("render: scaleX=%f, scaleY=%f\n", scaleX, scaleY);
+
+	vgLoadIdentity();
+	////eglSwapBuffers(egldisplay, eglsurface);	//force EGL to recognize resize
+
+	vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_BETTER);
+	//vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_NONANTIALIASED);
+	//vgSeti(VG_FILL_RULE, VG_NON_ZERO);
+
+	vgSeti(VG_PIXEL_LAYOUT, VG_PIXEL_LAYOUT_RGB_HORIZONTAL);
+	//vgSeti(VG_SCREEN_LAYOUT, );
+
+	vgSetfv(VG_CLEAR_COLOR, 4, clearColor);
+	vgClear(0, 0, w, h);
+#if 1
+	VGPaint paint = vgCreatePaint();
+
+	static const float drawColorRed[4] = {0,0,0,1};
+	vgSetParameterfv(paint, VG_PAINT_COLOR, 4, drawColorRed);
+	//vgSetColor(paint, VGuint rgba)
+
+	VGPath path = vgCreatePath(VG_PATH_FORMAT_STANDARD, VG_PATH_DATATYPE_S_16 /*VG_PATH_DATATYPE_F */, 1.0f, 0.0f, 0, 0, (unsigned int)VG_PATH_CAPABILITY_ALL);
+
+	//static const float drawColorRed[4] = {1,0,0,1};
+	vgSetfv(VG_TILE_FILL_COLOR, 4, drawColorRed);
+	VERIFY(VGU_NO_ERROR == vguRect(path, 0, 0, 100, 100));
+
+	static const float drawColorGreen[4] = {0,0,0,1};
+	vgSetfv(VG_TILE_FILL_COLOR, 4, drawColorGreen);
+	VERIFY(VGU_NO_ERROR == vguRoundRect(path, 100, 100, 100, 100, 10, 10));
+
+	vgDrawPath(path, VG_STROKE_PATH);	// VG_STROKE_PATH - линиями
+	vgDrawPath(path, VG_FILL_PATH);	// VG_FILL_PATH - заполняя
+
+	vgDestroyPath(path);
+
+	vgDestroyPaint(paint);
+	//		vgLoadIdentity();
+	//		vgScale(scale, scale);
+	//		vgTranslate(- tigerMinX, -tigerMinY + 0.5f * (h / scale - (tigerMaxY - tigerMinY)));
+	//		//vgTranslate(-tigerMinX + 0.5f * (w / scale - (tigerMaxX - tigerMinX)), -tigerMinY + 0.5f * (h / scale - (tigerMaxY - tigerMinY)));
+	//		//vgTranslate(-tigerMinX, tigerMinY);
+	//		//vgRotate(30);
+	//		PS_render(tiger);
+	//		ASSERT(vgGetError() == VG_NO_ERROR);
+#endif
 }
 
 /*--------------------------------------------------------------*/
@@ -5923,7 +5983,8 @@ void hightests(void)
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 		board_update();
 		//disableAllIRQs();
-	#if 0
+	#if 1
+
 		PS* const tiger = PS_construct(tigerCommands, tigerCommandCount, tigerPoints, tigerPointCount);
 		ASSERT(tiger != NULL);
 		for (;;)
@@ -5935,11 +5996,16 @@ void hightests(void)
 			{
 				break;
 			}
+
 			rendertiger(tiger, DIM_X, DIM_Y);
-			display_flush();
+			display_nextfb();
+			rendertest2(DIM_X, DIM_Y);
+			display_nextfb();
 		}
 		PS_destruct(tiger);
+
 	#else
+
 		// wait for press any key
 		for (;;)
 		{
@@ -5950,10 +6016,21 @@ void hightests(void)
 				break;
 			}
 			rendertest1(DIM_X, DIM_Y);
+			//display_fillrect(0, 0, DIM_X, DIM_Y, COLORMAIN_RED);
 			display_nextfb();
+			//local_delay_ms(300);
+
 			rendertest2(DIM_X, DIM_Y);
+			//display_fillrect(0, 0, DIM_X, DIM_Y, COLORMAIN_GREEN);
 			display_nextfb();
+			//local_delay_ms(300);
+
+			rendertest3(DIM_X, DIM_Y);
+			//display_fillrect(0, 0, DIM_X, DIM_Y, COLORMAIN_BLUE);
+			display_nextfb();
+			//local_delay_ms(300);
 		}
+
 	#endif
 	}
 #endif
@@ -8057,7 +8134,7 @@ void hightests(void)
 		}
 	}
 #endif
-//	TP();
+	display_nextfb();	// Скрыть резулбтаты теста, разнести рисуемый и ообрадаемый буферы
 }
 
 // Вызывается перед инициализацией NVRAM, но после инициализации SPI
