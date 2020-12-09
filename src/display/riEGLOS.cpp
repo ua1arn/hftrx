@@ -35,6 +35,8 @@
 
 #if WITHOPENVG
 
+#if 0
+
 #include "egl.h"
 #include "riImage.h"
 
@@ -193,48 +195,8 @@ EGLDisplay OSGetDisplay(EGLNativeDisplayType display_id)
 }
 
 }   //namespace OpenVGRI
-#else
 
 
-namespace OpenVGRI
-{
-	void OSDeinitMutex(void)
-	{
-	}
-
-	void OSAcquireMutex(void)
-	{
-	}
-
-	void OSReleaseMutex(void)
-	{
-	}
-
-	void* OSGetCurrentThreadID(void)
-	{
-		return NULL;
-	}
-}   //namespace OpenVGRI
-
-#endif
-/*
-
-namespace OpenVGRI
-{
-
-	void* eglvgGetCurrentVGContext(void)
-	{
-		return NULL;
-	}
-
-	bool eglvgIsInUse(void*)
-	{
-		return false;
-	}
-}   //namespace OpenVGRI
-*/
-
-#if 1
 
 static EGLDisplay			egldisplay;
 static EGLConfig			eglconfig;
@@ -333,15 +295,82 @@ void openvg_deinit(void)
 
 #else
 
+#include "riContext.h"
+
+
+namespace OpenVGRI
+{
+	void OSDeinitMutex(void)
+	{
+	}
+
+	void OSAcquireMutex(void)
+	{
+	}
+
+	void OSReleaseMutex(void)
+	{
+	}
+
+	void* OSGetCurrentThreadID(void)
+	{
+		return NULL;
+	}
+
+	static Drawable * d0;
+	static VGContext ctx(NULL);
+
+	void* eglvgGetCurrentVGContext(void)
+	{
+		return & ctx;
+	}
+
+	bool eglvgIsInUse(void*)
+	{
+		return false;
+	}
+}   //namespace OpenVGRI
+
+#if _BYTE_ORDER == _LITTLE_ENDIAN
+static int isBigEndian(void) { return 0; }
+#else
+static int isBigEndian(void) { return 1; }
+#endif
 
 void openvg_init(void * window)
 {
 
+#if LCDMODE_MAIN_RGB565
+	VGImageFormat f = VG_sRGB_565;
+	if (isBigEndian())
+		f = VG_sBGR_565;
+#elif LCDMODE_MAIN_ARGB888
+	VGImageFormat f = VG_sARGB_8888;	// 4-th byte alpha value
+	 if(isBigEndian())
+		 f = VG_sBGRA_8888;
+#elif LCDMODE_MAIN_L8
+	VGImageFormat f = VG_sL_8;
+#else
+	#error Unsupported video format
+#endif
+
+	try
+	{
+		int maskBits = 0;
+		OpenVGRI::d0 = RI_NEW(OpenVGRI::Drawable, (OpenVGRI::Color::formatToDescriptor(f), DIM_X, DIM_Y, GXADJ(DIM_X) * sizeof (PACKEDCOLORMAIN_T), (OpenVGRI::RIuint8 *) colmain_fb_draw(), maskBits));	//throws bad_alloc
+	}
+	catch(const std::bad_alloc &)
+	{
+	}
+	RI_ASSERT(d0);
+	OpenVGRI::ctx.setDefaultDrawable(OpenVGRI::d0);
 }
 
 void openvg_deinit(void)
 {
-
+	RI_DELETE(OpenVGRI::d0);
 }
 
 #endif
+
+#endif /* WITHOPENVG */
